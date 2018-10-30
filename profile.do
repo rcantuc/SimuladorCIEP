@@ -5,7 +5,7 @@ set more off, permanently
 set type double, permanently
 set scheme ciep
 graph set window fontface "Ubuntu"
-*set charset latin1, permanently
+set charset latin1, permanently
 *run `"`=c(sysdir_site)'acentos.do"'
 
 

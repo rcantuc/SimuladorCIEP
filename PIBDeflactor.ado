@@ -12,8 +12,8 @@ quietly {
 	***********************
 	** 1 PIB + Deflactor **
 	***********************
-	use "`c(sysdir_site)'/bases/INEGI/BIE/SCN/PIB/pib.dta", clear
-	merge 1:1 (anio trimestre) using "`c(sysdir_site)'/bases/INEGI/BIE/SCN/Deflactor/deflactor.dta", nogen
+	use "./bases/INEGI/SCN/PIB/pib.dta", clear
+	merge 1:1 (anio trimestre) using "./bases/INEGI/SCN/Deflactor/deflactor.dta", nogen
 
 	* Anio + Trimestre *
 	g aniotrimestre = yq(anio,trimestre)
