@@ -1,16 +1,14 @@
 **************************
 **** HOLA, HUMANO! :) ****
 **************************
-clear all
-timer on 1
-set more off
-
 if "`c(os)'" == "Unix" {
-	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/EquipoCIEP/TemplateCIEP/simuladorCIEP/4.10.1 (BID-SHCP)"
+	sysdir set SITE "/home/ciepmx/Dropbox (CIEP)/Github/simuladorCIEP"
 }
 if "`c(os)'" == "MacOSX" {
-	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/EquipoCIEP/TemplateCIEP/simuladorCIEP/4.10.1 (BID-SHCP)"
+	sysdir set SITE "/Users/ricardo/Dropbox (CIEP)/Github/simuladorCIEP"
 }
+clear all
+timer on 1
 
 
 
@@ -19,8 +17,6 @@ if "`c(os)'" == "MacOSX" {
 ****************************************
 *** 1. Parametros Macroecon${o}micos ***
 ****************************************
-global anioVP = 2018
-
 global pib2018 = 2.5					// pib${anioVP} (PIBDeflactor.ado)
 global pib2019 = 3.0					// pib${anioVP} (PIBDeflactor.ado)
 
@@ -28,6 +24,8 @@ global def2018 = 4.8					// def${anioVP} (PIBDeflactor.ado)
 global def2019 = 3.3					// def${anioVP} (PIBDeflactor.ado)
 
 global depreMXN = 0					// % de depreciaci${o}n (SHRFSP.ado)
+
+PIBDeflactor, aniovp(2019) graphs
 
 
 
@@ -51,7 +49,7 @@ capture log close
 
 **********************/
 *** 3. Simulaciones ***
-***********************
+/***********************
 local id "MexTax"
 capture mkdir "`c(sysdir_personal)'/users/`id'/"
 capture log using "`c(sysdir_personal)'/users/`id'/log `c(current_date)'", replace
