@@ -6,6 +6,8 @@ set more off, permanently
 set type double, permanently
 set charset latin1, permanently
 
+adopath ++ SITE
+
 set scheme ciep
 graph set window fontface "Ubuntu"
 
