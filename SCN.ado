@@ -5,7 +5,7 @@ program define SCN, return
 quietly {
 
 	syntax [, ANIO(int $anioVP) Graphs Update]
-	noisily di _newline(5) in g "{bf:INFORMACI${O}N ECON${O}MICA:" in y " SCN " `anio' "}"
+	noisily di _newline(5) in g "{bf:INFORMACI{c O'}N ECON{c O'}MICA:" in y " SCN " `anio' "}"
 
 
 
@@ -13,55 +13,55 @@ quietly {
 	*****************************************************
 	*** 1. Databases (D) and variable definitions (V) ***
 	*****************************************************
-	capture use "`c(sysdir_personal)'/bases/SIM/SCNNTA.dta", clear
-	if "$update" == "on" | "`update'" ==  "update" | _rc != 0 {
+	capture use "`c(sysdir_site)'/bases/SIM/SCNNTA.dta", clear
+	if "`update'" ==  "update" | _rc != 0 {
 
 
-		** D.1. Cuenta de generaci${o}n del ingreso **
-		import excel "`c(sysdir_personal)'/bases/INEGI/BIE/SCN/Cuentas/Cuenta de Generacion del Ingreso.xlsx", clear
-		limpiaBIE g
+		** D.1. Cuenta de generaci{c o'}n del ingreso **
+		import excel "`c(sysdir_site)'/bases/INEGI/SCN/Cuentas/Cuenta de Generacion del Ingreso.xlsx", clear
+		LimpiaBIE g
 		tempfile generacion
 		save `generacion'
 
 
 		** D.2. Cuenta por sectores institucionales **
-		import excel "`c(sysdir_personal)'/bases/INEGI/BIE/SCN/Cuentas/Cuentas por Sectores Institucionales.xlsx", clear
-		limpiaBIE s
+		import excel "`c(sysdir_site)'/bases/INEGI/SCN/Cuentas/Cuentas por Sectores Institucionales.xlsx", clear
+		LimpiaBIE s
 		tempfile sectores
 		save `sectores'
 
 
 		** D.3. Cuenta de ingreso nacional disponbile **
-		import excel "`c(sysdir_personal)'/bases/INEGI/BIE/SCN/Cuentas/Cuenta del ingreso nacional disponible.xlsx", clear
-		limpiaBIE d
+		import excel "`c(sysdir_site)'/bases/INEGI/SCN/Cuentas/Cuenta del ingreso nacional disponible.xlsx", clear
+		LimpiaBIE d
 		tempfile disponible
 		save `disponible'
 
 
 		** D.4. Cuenta de consumo **
-		import excel "`c(sysdir_personal)'/bases/INEGI/BIE/SCN/Cuentas/Consumo de los hogares.xlsx", clear
-		limpiaBIE c
+		import excel "`c(sysdir_site)'/bases/INEGI/SCN/Cuentas/Consumo de los hogares.xlsx", clear
+		LimpiaBIE c
 		tempfile consumo
 		save `consumo'
 
 
 		** D.5. Cuenta de consumo privado **
-		import excel "`c(sysdir_personal)'/bases/INEGI/BIE/SCN/Cuentas/Gasto de consumo privado.xlsx", clear
-		limpiaBIE gc
+		import excel "`c(sysdir_site)'/bases/INEGI/SCN/Cuentas/Gasto de consumo privado.xlsx", clear
+		LimpiaBIE gc
 		tempfile gasto
 		save `gasto'
 
 
 		** D.6. Cuenta de consumo de gobierno **
-		import excel "`c(sysdir_personal)'/bases/INEGI/BIE/SCN/Cuentas/Gasto de consumo de gobierno general.xlsx", clear
-		limpiaBIE cg
+		import excel "`c(sysdir_site)'/bases/INEGI/SCN/Cuentas/Gasto de consumo de gobierno general.xlsx", clear
+		LimpiaBIE cg
 		tempfile gobierno
 		save `gobierno'
 
 
 		** D.7. PIB actividad economica **
-		import excel "`c(sysdir_personal)'/bases/INEGI/BIE/SCN/Cuentas/PIB actividad economica.xlsx", clear
-		limpiaBIE ae
+		import excel "`c(sysdir_site)'/bases/INEGI/SCN/Cuentas/PIB actividad economica.xlsx", clear
+		LimpiaBIE ae
 		tempfile actividad
 		save `actividad'
 
@@ -90,7 +90,6 @@ quietly {
 		*******************************
 		** 1.2. Rename variables (V) **
 
-
 		** V.1. Anio **
 		rename A anio							// Anio
 		tsset anio
@@ -106,35 +105,35 @@ quietly {
 		rename Dg SSEmpleadores						// Contribuciones a la seguridad social, efectivas
 
 
-		** V.4. Impuesto sobre los productos, producci${o}n e importaciones **
-		rename Eg Imp							// Impuesto sobre los productos, producci${o}n e importaciones (total)
+		** V.4. Impuesto sobre los productos, producci{c o'}n e importaciones **
+		rename Eg Imp							// Impuesto sobre los productos, producci{c o'}n e importaciones (total)
 		rename Fg ImpProductos						// Impuestos sobre los productos
-		rename Jg ImpProduccion						// Impuestos sobre la producci${o}n e importaciones
+		rename Jg ImpProduccion						// Impuestos sobre la producci{c o'}n e importaciones
 
 
 		** V.5. Subsidios **
 		rename Kg Sub							// Subsidios (total)
 
 
-		** V.6. Excedente bruto de operaci${o}n **
-		rename Lg ExBOp							// Excedente bruto de operaci${o}n (con mixto)
-		rename Us ExBOpSinMix						// Excedente bruto de operaci${o}n (sin mixto)
+		** V.6. Excedente bruto de operaci{c o'}n **
+		rename Lg ExBOp							// Excedente bruto de operaci{c o'}n (con mixto)
+		rename Us ExBOpSinMix						// Excedente bruto de operaci{c o'}n (sin mixto)
 
 
-		** V.7. Excedente bruto de operaci${o}n, por sectores institucionales ** 
-		rename Vs ExBOpNoFin						// Excedente bruto de operaci${o}n sociedades no financieras
-		rename Ws ExBOpFin						// Excedente bruto de operaci${o}n sociedades financieras
-		rename Zs ExBOpISFLSH						// Excedente bruto de operaci${o}n ISFLSH
-		rename Ys ExBOpHog						// Excedente bruto de operaci${o}n de los hogares
-		rename Xs ExBOpGob						// Excedente bruto de operaci${o}n del gobierno
+		** V.7. Excedente bruto de operaci{c o'}n, por sectores institucionales ** 
+		rename Vs ExBOpNoFin						// Excedente bruto de operaci{c o'}n sociedades no financieras
+		rename Ws ExBOpFin						// Excedente bruto de operaci{c o'}n sociedades financieras
+		rename Zs ExBOpISFLSH						// Excedente bruto de operaci{c o'}n ISFLSH
+		rename Ys ExBOpHog						// Excedente bruto de operaci{c o'}n de los hogares
+		rename Xs ExBOpGob						// Excedente bruto de operaci{c o'}n del gobierno
 
 
-		** V.8. Excedente neto de operaci${o}n, por sectores institucionales ** 
-		rename ABs ExNOpNoFin						// Excedente neto de operaci${o}n sociedades no financieras
-		rename ACs ExNOpFin						// Excedente neto de operaci${o}n sociedades financieras
-		rename AFs ExNOpISFLSH						// Excedente neto de operaci${o}n ISFLSH
-		rename AEs ExNOpHog						// Excedente neto de operaci${o}n de los hogares (owner-occupied)
-		rename ADs ExNOpGob						// Excedente neto de operaci${o}n del gobierno
+		** V.8. Excedente neto de operaci{c o'}n, por sectores institucionales ** 
+		rename ABs ExNOpNoFin						// Excedente neto de operaci{c o'}n sociedades no financieras
+		rename ACs ExNOpFin						// Excedente neto de operaci{c o'}n sociedades financieras
+		rename AFs ExNOpISFLSH						// Excedente neto de operaci{c o'}n ISFLSH
+		rename AEs ExNOpHog						// Excedente neto de operaci{c o'}n de los hogares (owner-occupied)
+		rename ADs ExNOpGob						// Excedente neto de operaci{c o'}n del gobierno
 
 
 		** V.9. Consumo de capital fijo **
@@ -158,14 +157,14 @@ quietly {
 		rename Hgc ComprasN						// Compras netas en el extranjero
 		rename Bcg ConGob						// Consumo del gobierno general
 		rename AGs IngDisp						// Ingreso disponible
-		rename HWae Alquileres						// Alquileres sin intermediaci${o}n de bienes ra${i}ces
-		rename HXae Inmobiliarias 					// Inmobiliarias y corredores de bienes ra${i}ces
+		rename HWae Alquileres						// Alquileres sin intermediaci{c o'}n de bienes ra{c i'}ces
+		rename HXae Inmobiliarias 					// Inmobiliarias y corredores de bienes ra{c i'}ces
 		rename Mc Alojamiento						// Alquieres efectivos de alojamiento de los hogares
 
 
 		** V.12. Ingreso mixto **
-		rename IFae ServProf						// Servicios profesionales, cient${i}ficos y t${e}cnicos
-		rename JNae ConsMedi 						// Consultorios m${e}dicos
+		rename IFae ServProf						// Servicios profesionales, cient{c i'}ficos y t{c e'}cnicos
+		rename JNae ConsMedi 						// Consultorios m{c e'}dicos
 		rename JOae ConsDent						// Consultorios dentales
 		rename JPae ConsOtro						// Consultorios otros
 		rename JSae EnfeDomi						// Enfermeras a domicilio
@@ -174,14 +173,13 @@ quietly {
 		********************************
 		** 1.3. Construir cuentas (C) **
 
-
 		** C.1. Ingreso mixto **
 		g double IngMixto = ExBOp - ExBOpSinMix
 		format IngMixto %20.0fc
 		label var IngMixto "Ingreso mixto"
 
 
-		** C.2. Subsidios a los productos, producci${o}n e importaciones **
+		** C.2. Subsidios a los productos, producci{c o'}n e importaciones **
 		g double SubProductos = Sub*(-25654.178/-27143.521) if anio == 2003	// Tabulados 2003
 		replace SubProductos = Sub*(-31715.148/-33451.335) if anio == 2004	// Tabulados 2004
 		replace SubProductos = Sub*(-30435.676/-32400.514) if anio == 2005	// Tabulados 2005
@@ -195,7 +193,7 @@ quietly {
 		replace SubProductos = Sub*(-173251.387/-178770.61) if anio == 2013	// Tabulados 2013
 		replace SubProductos = Sub*(-109267.213/-114961.944) if anio == 2014	// Tabulados 2014
 		replace SubProductos = Sub*(-73102.575/-78600.072) if anio == 2015	// Tabulados 2015
-		replace SubProductos = Sub*(-40134.053/-47092.044) if anio == 2016	// Tabulados 2016
+		replace SubProductos = Sub*(-40134.053/-47092.044) if anio >= 2016	// Tabulados 2016
 		format SubProductos %20.0fc
 		label var SubProductos "Subsidios a los productos"
 
@@ -212,9 +210,9 @@ quietly {
 		replace SubProduccion = Sub*(-5519.223/-178770.610) if anio == 2013	// Tabulados 2013
 		replace SubProduccion = Sub*(-5694.731/-114961.944) if anio == 2014	// Tabulados 2014
 		replace SubProduccion = Sub*(-5497.497/-78600.072) if anio == 2015	// Tabulados 2015
-		replace SubProduccion = Sub*(-6957.991/-47092.044) if anio == 2016	// Tabulados 2016
+		replace SubProduccion = Sub*(-6957.991/-47092.044) if anio >= 2016	// Tabulados 2016
 		format SubProduccion %20.0fc
-		label var SubProduccion "Subsidios a la producci${o}n e importaciones"
+		label var SubProduccion "Subsidios a la producci{c o'}n e importaciones"
 
 
 		** C.3. Cuotas a la seguridad social imputada **
@@ -231,12 +229,12 @@ quietly {
 		replace SSImputada = 138455.819*1000000 if anio == 2013		// Tabulados 2013
 		replace SSImputada = 141844.904*1000000 if anio == 2014		// Tabulados 2014
 		replace SSImputada = 148685.916*1000000 if anio == 2015		// Tabulados 2015
-		replace SSImputada = 161032.88*1000000 if anio == 2016		// Tabulados 2016
+		replace SSImputada = 161032.88*1000000 if anio >= 2016		// Tabulados 2016
 		format SSImputada %20.0fc
 		label var SSImputada "Contribuciones sociales imputadas"
 
 
-		** C.4. Depreciaci${o}n del ingreso mixto **
+		** C.4. Depreciaci{c o'}n del ingreso mixto **
 		g double DepMix = (83680.639*1000000) if anio == 2003		// Tabulados 2003
 		replace DepMix = (94406.627*1000000) if anio == 2004		// Tabulados 2004
 		replace DepMix = (101888.33*1000000) if anio == 2005		// Tabulados 2005
@@ -250,17 +248,20 @@ quietly {
 		replace DepMix = (191575.471*1000000) if anio == 2013		// Tabulados 2013
 		replace DepMix = (197510.467*1000000) if anio == 2014		// Tabulados 2014
 		replace DepMix = (217922.3*1000000) if anio == 2015		// Tabulados 2015
-		replace DepMix = (245925.726*1000000) if anio == 2016		// Tabulados 2016
+		replace DepMix = (245925.726*1000000) if anio >= 2016		// Tabulados 2016
 		format DepMix %20.0fc
-		label var DepMix "Depreciaci${o}n del ingreso mixto"
+		label var DepMix "Depreciaci{c o'}n del ingreso mixto"
 
 
 
-		*******************
-		** 1.4. Forecast **
+		******************************
+		** 1.4. Forecast & Pastcast **
 		order indiceY-productivity, last
 		foreach k of varlist RemSalSS-DepMix {
 			replace `k' = L.`k'*(1+var_pibY/100)*indiceY/L.indiceY if `k' == .
+			forvalues j = 2002(-1)1993 {
+				replace `k' = F.`k'/(1+var_pibY/100)/(indiceY/L.indiceY) if anio == `j'
+			}
 		}
 
 
@@ -271,19 +272,19 @@ quietly {
 
 		g double ImpNetProduccion = ImpProduccion - SubProduccion
 		format ImpNetProduccion %20.0fc
-		label var ImpNetProduccion "Impuestos netos a la producci${o}n e importaciones"
+		label var ImpNetProduccion "Impuestos netos a la producci{c o'}n e importaciones"
 
 		g double ImpNet = Imp - Sub
 		format ImpNet %20.0fc
-		label var ImpNet "Impuestos sobre los productos, producci${o}n e importaciones"
+		label var ImpNet "Impuestos sobre los productos, producci{c o'}n e importaciones"
 
 		** Ajustes Remuneraciones a asalariados y Seguridad Social **
 		replace RemSal = RemSal - SSImputada
 
-		** Validaci${o}n **
+		** Validaci{c o'}n **
 		g double PIBval = RemSalSS + IngMixto + ExBOpSinMix + ImpNetProductos + ImpNetProduccion
 		format PIBval %20.0fc
-		label var PIBval "PIB (validaci${o}n)"
+		label var PIBval "PIB (validaci{c o'}n)"
 
 
 		** C.6. ROW, Compensation of Employees, pagadas **
@@ -291,7 +292,7 @@ quietly {
 			- ROWPropPagadas + ROWTransRecibidas - ROWTransPagadas - PIBval
 		g double ROWRem = ROWRemRecibidas - ROWRemPagadas
 		format ROWRem %20.0fc
-		label var ROWRem "Remuneraci${o}n de asalariados"
+		label var ROWRem "Remuneraci{c o'}n de asalariados"
 
 
 		** C.7. Ingreso mixto (laboral) **
@@ -411,7 +412,7 @@ quietly {
 		format DifGob %20.0fc
 
 		drop if RemSalSS == .
-		save "`c(sysdir_personal)'/bases/SIM/SCNNTA.dta", replace
+		save "`c(sysdir_site)'/bases/SIM/SCNNTA.dta", replace
 	}
 
 
@@ -433,10 +434,10 @@ quietly {
 
 
 	** R.2. Display (ingresos) **
-	noisily di _newline in g "{bf: A. Cuenta: " in y "generaci${o}n del ingreso" in g ///
+	noisily di _newline in g "{bf: A. Cuenta: " in y "generaci{c o'}n del ingreso" in g ///
 		_col(44) in g %20s "MXN" ///
 		_col(66) %7s "% PIB" "}" 
-	noisily di in g "  (+) Remuneraci${o}n de asalariados" ///
+	noisily di in g "  (+) Remuneraci{c o'}n de asalariados" ///
 		_col(44) in y %20.0fc RemSal[`obs'] ///
 		_col(66) in y %7.3fc RemSal[`obs']/PIB[`obs']*100
 	noisily di in g "  (+) Contribuciones sociales" ///
@@ -445,7 +446,7 @@ quietly {
 	noisily di in g "  (+) Ingreso mixto (laboral)" ///
 		_col(44) in y %20.0fc MixL[`obs']  ///
 		_col(66) in y %7.3fc MixL[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Impuestos a la producci${o}n (laboral)" ///
+	noisily di in g "  (+) Impuestos a la producci{c o'}n (laboral)" ///
 		_col(44) in y %20.0fc ImpNetProduccion[`obs']*(RemSal[`obs'] + MixL[`obs'])/(RemSal[`obs'] + MixL[`obs'] + CapInc[`obs'])  ///
 		_col(66) in y %7.3fc ImpNetProduccion[`obs']*(RemSal[`obs'] + MixL[`obs'])/(RemSal[`obs'] + MixL[`obs'] + CapInc[`obs'])/PIB[`obs']*100
 	noisily di in g _dup(72) "-"
@@ -459,7 +460,7 @@ quietly {
 	noisily di in g "  (+) Impuestos a los productos" ///
 		_col(44) in y %20.0fc ImpNetProductos[`obs'] ///
 		_col(66) in y %7.3fc ImpNetProductos[`obs'] /PIB[`obs']*100
-	noisily di in g "  (+) Impuestos a la producci${o}n (capital)" ///
+	noisily di in g "  (+) Impuestos a la producci{c o'}n (capital)" ///
 		_col(44) in y %20.0fc ImpNetProduccion[`obs']*CapInc[`obs']/(RemSal[`obs'] + MixL[`obs'] + CapInc[`obs']) ///
 		_col(66) in y %7.3fc ImpNetProduccion[`obs']*CapInc[`obs']/(RemSal[`obs'] + MixL[`obs'] + CapInc[`obs'])/PIB[`obs']*100
 
@@ -555,11 +556,11 @@ quietly {
 	if "$graphs" == "on" | "`graphs'" == "graphs" {
 		tempvar Rem RemImpMix RemImpMixEx RemImpMixExRow RemImpMixExRowCon
 		g `Rem' = (RemSalNTA + SSEmpleadores + SSImputada)/1000000
-		label var `Rem' "Remuneraci${o}n de asalariados"
+		label var `Rem' "Remuneraci{c o'}n de asalariados"
 		g `RemImpMix' = (RemSalNTA + SSEmpleadores + SSImputada + MixLNTA + MixKNTA)/1000000
 		label var `RemImpMix' "Ingreso mixto"
 		g `RemImpMixEx' = (RemSalNTA + SSEmpleadores + SSImputada + MixLNTA + CapitalNTA)/1000000
-		label var `RemImpMixEx' "Excedente bruto de operaci${o}n"
+		label var `RemImpMixEx' "Excedente bruto de operaci{c o'}n"
 		g `RemImpMixExRow' = (RemSalNTA + SSEmpleadores + SSImputada + MixLNTA + CapitalNTA + ROW)/1000000
 		label var `RemImpMixExRow' "Resto del mundo"
 		g `RemImpMixExRowCon' = (RemSalNTA + SSEmpleadores + SSImputada + MixLNTA + CapitalNTA + ROW + ConCapFij)/1000000
@@ -567,23 +568,23 @@ quietly {
 
 		twoway area `RemImpMixExRowCon' `RemImpMixExRow' `RemImpMixEx' `RemImpMix' `Rem' anio if anio <= `anio', ///
 			title("{bf:Producto Interno Bruto}") ///
-			subtitle(Cuenta de Generaci${o}n del Ingreso) ///			
-			caption("{it:Fuente: Elaborado por el CIEP, con informaci${o}n del INEGI, BIE.}") ///
-			note("{bf:Notas:} Impuestos netos de subsidios. Excedente bruto de operaci${o}n sin ingreso mixto.") ///
+			subtitle(Cuenta de Generaci{c o'}n del Ingreso) ///			
+			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n del INEGI, BIE.}") ///
+			note("{bf:Notas:} Impuestos netos de subsidios. Excedente bruto de operaci{c o'}n sin ingreso mixto.") ///
 			xlabel(2003(1)2018) xtitle("") ///
 			ylabel(, format(%20.0fc)) ytitle(millones MXN, height(8)) ///
 			name(gdp, replace)
 		
-		graph export `"`c(sysdir_personal)'/users/`id'/gdp.png"', replace name(gdp)
+		graph export `"`c(sysdir_site)'/users/`id'/gdp.png"', replace name(gdp)
 
 
 		tempvar RemPIB MixPIB ExBOpSinMixPIB RowPIB ConFijPIB
 		g `RemPIB' = (RemSalNTA + SSEmpleadores + SSImputada)/PIB*100
-		label var `RemPIB' "Remuneraci${o}n de asalariados"
+		label var `RemPIB' "Remuneraci{c o'}n de asalariados"
 		g `MixPIB' = (MixLNTA + MixKNNTA)/PIB*100
 		label var `MixPIB' "Ingreso mixto"
 		g `ExBOpSinMixPIB' = (CapitalNTA - MixKNNTA)/PIB*100
-		label var `ExBOpSinMixPIB' "Excedente bruto de operaci${o}n"
+		label var `ExBOpSinMixPIB' "Excedente bruto de operaci{c o'}n"
 		g `RowPIB' = ROW/PIB*100
 		label var `RowPIB' "Resto del mundo"
 		g `ConFijPIB' = ConCapFij/PIB*100
@@ -592,19 +593,19 @@ quietly {
 		graph bar `ConFijPIB' `RowPIB' `ExBOpSinMixPIB' `MixPIB' `RemPIB' if anio <= `anio', ///
 			over(anio) stack asyvars ///
 			title("{bf:Producto Interno Bruto}") ///
-			subtitle(Cuenta de Generaci${o}n del Ingreso) ///
+			subtitle(Cuenta de Generaci{c o'}n del Ingreso) ///
 			ytitle(% PIB) ///
-			note("{bf:Notas:} Impuestos netos de subsidios. Excedente bruto de operaci${o}n sin ingreso mixto.") ///
+			note("{bf:Notas:} Impuestos netos de subsidios. Excedente bruto de operaci{c o'}n sin ingreso mixto.") ///
 			legend( ///
-			label(5 "Remuneraci${o}n de asalariados") ///
+			label(5 "Remuneraci{c o'}n de asalariados") ///
 			label(2 "Resto del mundo") ///
 			label(4 "Ingreso mixto") ///
-			label(3 "Excedente bruto de operaci${o}n") ///
+			label(3 "Excedente bruto de operaci{c o'}n") ///
 			label(1 "Consumo de capital fijo") ) ///
 			blabel(bar, format(%7.1fc)) ///
 			name(gdpbar, replace)
 
-		graph export `"`c(sysdir_personal)'/users/`id'/gdpbar.png"', replace name(gdpbar)
+		graph export `"`c(sysdir_site)'/users/`id'/gdpbar.png"', replace name(gdpbar)
 	}
 
 
@@ -616,7 +617,7 @@ quietly {
 	noisily di in g "  (+) Ingreso nacional" ///
 		_col(44) in y %20.0fc IngNac[`obs'] ///
 		_col(66) in y %7.3fc IngNac[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Remuneraci${o}n a asalaraidos (ROW)" ///
+	noisily di in g "  (+) Remuneraci{c o'}n a asalaraidos (ROW)" ///
 		_col(44) in y %20.0fc ROWRem[`obs'] ///
 		_col(66) in y %7.3fc ROWRem[`obs']/PIB[`obs']*100
 	noisily di in g "  (+) Transferencias corrientes (ROW)" ///
@@ -636,7 +637,7 @@ quietly {
 	noisily di in g "  (+) Gobierno" ///
 		_col(44) in y %20.0fc ConGob[`obs'] ///
 		_col(66) in y %7.3fc ConGob[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Consumo fuera del pa${i}s" ///
+	noisily di in g "  (+) Consumo fuera del pa{c i'}s" ///
 		_col(44) in y %20.0fc ComprasN[`obs'] ///
 		_col(66) in y %7.3fc ComprasN[`obs']/PIB[`obs']*100
 	noisily di in g "  (+) Ahorro neto" ///
@@ -653,10 +654,10 @@ quietly {
 	noisily di in g "  (+) Alimentos" ///
 		_col(44) in y %20.0fc Dc[`obs'] ///
 		_col(66) in y %7.3fc Dc[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Bebidas no alcoh${o}licas" ///
+	noisily di in g "  (+) Bebidas no alcoh{c o'}licas" ///
 		_col(44) in y %20.0fc Ec[`obs'] ///
 		_col(66) in y %7.3fc Ec[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Bebidas alcoh${o}licas" ///
+	noisily di in g "  (+) Bebidas alcoh{c o'}licas" ///
 		_col(44) in y %20.0fc Gc[`obs'] ///
 		_col(66) in y %7.3fc Gc[`obs']/PIB[`obs']*100
 	noisily di in g "  (+) Tabaco" ///
@@ -677,13 +678,13 @@ quietly {
 	noisily di in g "  (+) Electricidad, gas, otros combustibles" ///
 		_col(44) in y %20.0fc Pc[`obs'] ///
 		_col(66) in y %7.3fc Pc[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Art${i}culos para el hogar" ///
+	noisily di in g "  (+) Art{c i'}culos para el hogar" ///
 		_col(44) in y %20.0fc Qc[`obs'] ///
 		_col(66) in y %7.3fc Qc[`obs']/PIB[`obs']*100
 	noisily di in g "  (+) Salud" ///
 		_col(44) in y %20.0fc Xc[`obs'] ///
 		_col(66) in y %7.3fc Xc[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Adquisici${o}n de veh${i}culos" ///
+	noisily di in g "  (+) Adquisici{c o'}n de veh{c i'}culos" ///
 		_col(44) in y %20.0fc ACc[`obs'] ///
 		_col(66) in y %7.3fc ACc[`obs']/PIB[`obs']*100
 	noisily di in g "  (+) Funcionamiento de transporte" ///
@@ -695,10 +696,10 @@ quietly {
 	noisily di in g "  (+) Comunicaciones" ///
 		_col(44) in y %20.0fc AFc[`obs'] ///
 		_col(66) in y %7.3fc AFc[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Recreaci${o}n y cultura" ///
+	noisily di in g "  (+) Recreaci{c o'}n y cultura" ///
 		_col(44) in y %20.0fc AJc[`obs'] ///
 		_col(66) in y %7.3fc AJc[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Educaci${o}n" ///
+	noisily di in g "  (+) Educaci{c o'}n" ///
 		_col(44) in y %20.0fc AQc[`obs'] ///
 		_col(66) in y %7.3fc AQc[`obs']/PIB[`obs']*100
 	noisily di in g "  (+) Restaurantes y hoteles" ///
@@ -712,19 +713,19 @@ quietly {
 		_col(44) in y %20.0fc ConHog[`obs'] ///
 		_col(66) in y %7.3fc ConHog[`obs']/PIB[`obs']*100 "}"
 
-	noisily di _newline in g "{bf: F. Cuenta: " in y "Actividad Econ${o}mica" in g ///
+	noisily di _newline in g "{bf: F. Cuenta: " in y "Actividad Econ{c o'}mica" in g ///
 		_col(44) in g %20s "MXN" ///
 		_col(66) %7s "% PIB" "}" 
-	noisily di in g "  (+) Agricultura, cr${i}a, etc." ///
+	noisily di in g "  (+) Agricultura, cr{c i'}a, etc." ///
 		_col(44) in y %20.0fc Eae[`obs'] ///
 		_col(66) in y %7.3fc Eae[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Miner${i}a" ///
+	noisily di in g "  (+) Miner{c i'}a" ///
 		_col(44) in y %20.0fc ADae[`obs'] ///
 		_col(66) in y %7.3fc ADae[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Generaci${o}n, ... energ${i}a el${e}ctrica" ///
+	noisily di in g "  (+) Generaci{c o'}n, ... energ{c i'}a el{c e'}ctrica" ///
 		_col(44) in y %20.0fc AKae[`obs'] ///
 		_col(66) in y %7.3fc AKae[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Construcci${o}n" ///
+	noisily di in g "  (+) Construcci{c o'}n" ///
 		_col(44) in y %20.0fc APae[`obs'] ///
 		_col(66) in y %7.3fc APae[`obs']/PIB[`obs']*100
 	noisily di in g "  (+) Industrias manufactureras" ///
@@ -795,22 +796,22 @@ quietly {
 	return scalar Hogares_e_ISFLSH = ConHog[`obs']
 
 	return scalar Alimentos = Dc[`obs']
-	return scalar Bebidas_no_alcoh${o}licas = Ec[`obs']
-	return scalar Bebidas_alcoh${o}licas = Gc[`obs']
+	return scalar Bebidas_no_alcoholicas = Ec[`obs']
+	return scalar Bebidas_alcoholicas = Gc[`obs']
 	return scalar Tabaco = Hc[`obs']
 	return scalar Prendas_de_vestir = Jc[`obs']
 	return scalar Calzado = Kc[`obs']
 	return scalar Vivienda = Mc[`obs']+Oc[`obs']
 	return scalar Agua = Pc[`obs']
 	return scalar Electricidad = Qc[`obs']
-	return scalar Art${i}culos_para_el_hogar = Rc[`obs']
+	return scalar Articulos_para_el_hogar = Rc[`obs']
 	return scalar Salud = Yc[`obs']
-	return scalar Adquisici${o}n_de_veh${i}culos = ADc[`obs']
+	return scalar Adquisicion_de_vehiculos = ADc[`obs']
 	return scalar Funcionamiento_de_transporte = AEc[`obs']
 	return scalar Servicios_de_transporte = AFc[`obs']
 	return scalar Comunicaciones = AGc[`obs']
-	return scalar Recreaci${o}n_y_cultura = AKc[`obs']
-	return scalar Educaci${o}n = ARc[`obs']
+	return scalar Recreacion_y_cultura = AKc[`obs']
+	return scalar Educacion = ARc[`obs']
 	return scalar Restaurantes_y_hoteles = AXc[`obs']
 	return scalar Bienes_y_servicios_diversos = BAc[`obs']
 	
@@ -819,97 +820,4 @@ quietly {
 	return scalar ConGob = ConGob[`obs']
 	return scalar ComprasN = ComprasN[`obs']
 }
-end
-
-
-
-
-****************************
-****  LIMPIA INEGI BIE  ****
-****      SCN, SNA      ****
-****************************
-program define limpiaBIE
-	drop if B == ""
-
-	foreach k of varlist _all {
-
-		* Nombre *
-		local name = reverse(`k'[1])
-		local name2 = `k'[2]
-		
-		local pos = strpos("`name'",">")
-		if `pos' > 0 {
-			local name = substr("`name'",1,`pos')
-		}
-		local name = reverse("`name'")
-
-		local name = subinstr("`name'",">","",.)
-		local name = subinstr("`name'","r1","",.)
-		local name = subinstr("`name'","p1","",.)
-		local name = subinstr("`name'","/","",.)
-		
-		* Acentos *
-		local name = subinstr("`name'","‡","${a}",.)
-		local name = subinstr("`name'","Ž","${e}",.)
-		local name = subinstr("`name'","’","${i}",.)
-		local name = subinstr("`name'","—","${o}",.)
-		local name = subinstr("`name'","œ","${u}",.)
-		local name = subinstr("`name'","ç","${A}",.)
-		local name = subinstr("`name'","ƒ","${E}",.)
-		local name = subinstr("`name'","ê","${I}",.)
-		local name = subinstr("`name'","î","${O}",.)
-		local name = subinstr("`name'","ò","${U}",.)
-		
-		local name2 = subinstr("`name2'","‡","${a}",.)
-		local name2 = subinstr("`name2'","Ž","${e}",.)
-		local name2 = subinstr("`name2'","’","${i}",.)
-		local name2 = subinstr("`name2'","—","${o}",.)
-		local name2 = subinstr("`name2'","œ","${u}",.)
-		local name2 = subinstr("`name2'","ç","${A}",.)
-		local name2 = subinstr("`name2'","ƒ","${E}",.)
-		local name2 = subinstr("`name2'","ê","${I}",.)
-		local name2 = subinstr("`name2'","î","${O}",.)
-		local name2 = subinstr("`name2'","ò","${U}",.)
-		
-		* Trim *
-		local name = trim("`name'")
-		local name = itrim("`name'")
-
-		local name2 = trim("`name2'")
-		local name2 = itrim("`name2'")
-		
-		* Nombre final *
-		replace `k' = "`name', `name2'" in 1
-		
-		* Label *
-		label var `k' "`=`k'[1]'"
-		
-		* Periodo *
-		replace `k' = subinstr(`k',"p/","",.)
-		replace `k' = subinstr(`k',"r/","",.)
-		replace `k' = subinstr(`k',"ND","",.)
-	}
-
-	drop in 1
-	drop if A == ""
-	destring _all, replace	
-	
-	* Pesos *
-	foreach k of varlist _all {
-		local label : var label `k'
-		if `"`=substr("`label'",1,7)'"' != "Periodo" {
-			replace `k' = `k'*1000000
-			format `k' %20.0fc
-			recast double `k'
-		}
-	}
-
-	foreach k of varlist _all {
-		local label : var label `k'
-		if `"`=substr("`label'",1,7)'"' != "Periodo" {
-			rename `k' `k'`1'
-		}
-	}	
-
-	compress
 end
