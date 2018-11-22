@@ -1,31 +1,34 @@
-****************************
-* Base de datos: Deflactor *
-****************************
+**********************************
+****                          ****
+**** Base de datos: Deflactor ****
+****                          ****
+**********************************
 
 * 1. Base de datos *
-import excel "`=c(sysdir_site)'../simuladorCIEP/$simuladorCIEP/bases/INEGI/BIE/SCN/Deflactor/deflactor.xlsx", clear //sheet("deflactor") 
+import excel "`=c(sysdir_site)'/bases/INEGI/SCN/Deflactor/Deflactor.xlsx", clear
 
 * 2. Limpia *
-drop if substr(A,1,1) != "1" & substr(A,1,1) != "2"
+LimpiaBIE, nomult
+
+* 3. Rename *
 rename A periodo
 rename B indiceQ
 
+* 4. Time Series *
 split periodo, destring p("/") ignore("r p")
 
 rename periodo1 anio
+label var anio "anio"
+
 rename periodo2 trimestre
-
-destring indice, replace
-drop periodo
-
-* 3. Labels *
-label var anio "a${ni}o"
 label var trimestre "trimestre"
-label var indiceQ "${I}ndice de precios impl${i}citos"
 
-* 4. Orden *
+destring indiceQ, replace
+label var indiceQ "${I}ndice de Precios Impl${i}citos"
+
+drop periodo
 order anio trimestre indiceQ
 
 * 5. Guardar *
 compress
-save "`=c(sysdir_site)'../simuladorCIEP/$simuladorCIEP/bases/INEGI/BIE/SCN/Deflactor/deflactor.dta", replace
+save "`=c(sysdir_site)'/bases/INEGI/SCN/Deflactor/Deflactor.dta", replace
