@@ -3,7 +3,7 @@ quietly {
 
 	capture use "`c(sysdir_site)'/bases/SIM/DatosAbiertos.dta", clear
 	if _rc != 0 {
-		run "`c(sysdir_site)'/DatosAbiertos.do"
+		run "`c(sysdir_site)'/UpdateDatosAbiertos.do"
 	}
 
 	syntax anything [if/] [, Graphs Restore PIBVP(real -999) PIBVF(real -999) UPDATE]
@@ -13,9 +13,7 @@ quietly {
 	}
 	
 	if "`update'" == "update" {
-		run "`c(sysdir_site)'/PIB.do"
-		run "`c(sysdir_site)'/Deflactor.do"
-		run "`c(sysdir_site)'/DatosAbiertos.do"
+		run "`c(sysdir_site)'/UpdateDatosAbiertos.do"
 	}
 
 
@@ -36,7 +34,6 @@ quietly {
 	}
 
 	* Informacion de la serie *
-	*acentos nombre
 	noisily di _newline(2) in g "Serie: " in y "`anything'" in g ". Nombre: " in y "`=nombre[1]'" in g "."	
 
 

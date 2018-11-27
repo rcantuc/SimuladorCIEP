@@ -4,8 +4,9 @@
 program define SCN, return
 quietly {
 
-	syntax [, ANIO(int $anioVP) Graphs Update]
+	syntax [, ANIO(int $anioVP) Graphs]
 	noisily di _newline(5) in g "{bf:INFORMACI{c O'}N ECON{c O'}MICA:" in y " SCN " `anio' "}"
+
 
 
 
@@ -13,407 +14,401 @@ quietly {
 	*****************************************************
 	*** 1. Databases (D) and variable definitions (V) ***
 	*****************************************************
-	capture use "`c(sysdir_site)'/bases/SIM/SCNNTA.dta", clear
-	if "`update'" ==  "update" | _rc != 0 {
+	** D.1. Cuenta de generaci{c o'}n del ingreso **
+	import excel "`c(sysdir_site)'/bases/INEGI/SCN/Cuentas/Cuenta de Generacion del Ingreso.xlsx", clear
+	LimpiaBIE g
+	tempfile generacion
+	save `generacion'
 
 
-		** D.1. Cuenta de generaci{c o'}n del ingreso **
-		import excel "`c(sysdir_site)'/bases/INEGI/SCN/Cuentas/Cuenta de Generacion del Ingreso.xlsx", clear
-		LimpiaBIE g
-		tempfile generacion
-		save `generacion'
+	** D.2. Cuenta por sectores institucionales **
+	import excel "`c(sysdir_site)'/bases/INEGI/SCN/Cuentas/Cuentas por Sectores Institucionales.xlsx", clear
+	LimpiaBIE s
+	tempfile sectores
+	save `sectores'
 
 
-		** D.2. Cuenta por sectores institucionales **
-		import excel "`c(sysdir_site)'/bases/INEGI/SCN/Cuentas/Cuentas por Sectores Institucionales.xlsx", clear
-		LimpiaBIE s
-		tempfile sectores
-		save `sectores'
+	** D.3. Cuenta de ingreso nacional disponbile **
+	import excel "`c(sysdir_site)'/bases/INEGI/SCN/Cuentas/Cuenta del ingreso nacional disponible.xlsx", clear
+	LimpiaBIE d
+	tempfile disponible
+	save `disponible'
 
 
-		** D.3. Cuenta de ingreso nacional disponbile **
-		import excel "`c(sysdir_site)'/bases/INEGI/SCN/Cuentas/Cuenta del ingreso nacional disponible.xlsx", clear
-		LimpiaBIE d
-		tempfile disponible
-		save `disponible'
+	** D.4. Cuenta de consumo **
+	import excel "`c(sysdir_site)'/bases/INEGI/SCN/Cuentas/Consumo de los hogares.xlsx", clear
+	LimpiaBIE c
+	tempfile consumo
+	save `consumo'
 
 
-		** D.4. Cuenta de consumo **
-		import excel "`c(sysdir_site)'/bases/INEGI/SCN/Cuentas/Consumo de los hogares.xlsx", clear
-		LimpiaBIE c
-		tempfile consumo
-		save `consumo'
+	** D.5. Cuenta de consumo privado **
+	import excel "`c(sysdir_site)'/bases/INEGI/SCN/Cuentas/Gasto de consumo privado.xlsx", clear
+	LimpiaBIE gc
+	tempfile gasto
+	save `gasto'
 
 
-		** D.5. Cuenta de consumo privado **
-		import excel "`c(sysdir_site)'/bases/INEGI/SCN/Cuentas/Gasto de consumo privado.xlsx", clear
-		LimpiaBIE gc
-		tempfile gasto
-		save `gasto'
+	** D.6. Cuenta de consumo de gobierno **
+	import excel "`c(sysdir_site)'/bases/INEGI/SCN/Cuentas/Gasto de consumo de gobierno general.xlsx", clear
+	LimpiaBIE cg
+	tempfile gobierno
+	save `gobierno'
 
 
-		** D.6. Cuenta de consumo de gobierno **
-		import excel "`c(sysdir_site)'/bases/INEGI/SCN/Cuentas/Gasto de consumo de gobierno general.xlsx", clear
-		LimpiaBIE cg
-		tempfile gobierno
-		save `gobierno'
+	** D.7. PIB actividad economica **
+	import excel "`c(sysdir_site)'/bases/INEGI/SCN/Cuentas/PIB actividad economica.xlsx", clear
+	LimpiaBIE ae
+	tempfile actividad
+	save `actividad'
 
 
-		** D.7. PIB actividad economica **
-		import excel "`c(sysdir_site)'/bases/INEGI/SCN/Cuentas/PIB actividad economica.xlsx", clear
-		LimpiaBIE ae
-		tempfile actividad
-		save `actividad'
-
-
-		** D.8. PIBDeflactor **
-		PIBDeflactor
-		rename anio A
-		tempfile basepib
-		save `basepib'
+	** D.8. PIBDeflactor **
+	PIBDeflactor
+	rename anio A
+	tempfile basepib
+	save `basepib'
 
 
 
-		**************************
-		** 1.1. Merge databases **
-		use `generacion', clear
-		merge 1:1 (A) using `sectores', nogen
-		merge 1:1 (A) using `disponible', nogen
-		merge 1:1 (A) using `consumo', nogen
-		merge 1:1 (A) using `gasto', nogen
-		merge 1:1 (A) using `gobierno', nogen
-		merge 1:1 (A) using `actividad', nogen
-		merge 1:1 (A) using `basepib', nogen
+	**************************
+	** 1.1. Merge databases **
+	use `generacion', clear
+	merge 1:1 (A) using `sectores', nogen
+	merge 1:1 (A) using `disponible', nogen
+	merge 1:1 (A) using `consumo', nogen
+	merge 1:1 (A) using `gasto', nogen
+	merge 1:1 (A) using `gobierno', nogen
+	merge 1:1 (A) using `actividad', nogen
+	merge 1:1 (A) using `basepib', nogen
 
 
 
-		*******************************
-		** 1.2. Rename variables (V) **
-
-		** V.1. Anio **
-		rename A anio							// Anio
-		tsset anio
-
-
-		** V.2. PIB **
-		rename Hs PIB							// Producto Interno Bruto
+	*******************************
+	** 1.2. Rename variables (V) **
+	** V.1. Anio **
+	rename A anio							// Anio
+	tsset anio
 
 
-		** V.3. Remuneraciones a asalariados **
-		rename Bg RemSalSS						// Remuneraciones a asalariados (total)
-		rename Cg RemSal						// Remuneraciones a asalariados (sin contribuciones, con contribuciones imputadas)
-		rename Dg SSEmpleadores						// Contribuciones a la seguridad social, efectivas
+	** V.2. PIB **
+	rename Hs PIB							// Producto Interno Bruto
 
 
-		** V.4. Impuesto sobre los productos, producci{c o'}n e importaciones **
-		rename Eg Imp							// Impuesto sobre los productos, producci{c o'}n e importaciones (total)
-		rename Fg ImpProductos						// Impuestos sobre los productos
-		rename Jg ImpProduccion						// Impuestos sobre la producci{c o'}n e importaciones
+	** V.3. Remuneraciones a asalariados **
+	rename Bg RemSalSS						// Remuneraciones a asalariados (total)
+	rename Cg RemSal						// Remuneraciones a asalariados (sin contribuciones, con contribuciones imputadas)
+	rename Dg SSEmpleadores						// Contribuciones a la seguridad social, efectivas
 
 
-		** V.5. Subsidios **
-		rename Kg Sub							// Subsidios (total)
+	** V.4. Impuesto sobre los productos, producci{c o'}n e importaciones **
+	rename Eg Imp							// Impuesto sobre los productos, producci{c o'}n e importaciones (total)
+	rename Fg ImpProductos						// Impuestos sobre los productos
+	rename Jg ImpProduccion						// Impuestos sobre la producci{c o'}n e importaciones
 
 
-		** V.6. Excedente bruto de operaci{c o'}n **
-		rename Lg ExBOp							// Excedente bruto de operaci{c o'}n (con mixto)
-		rename Us ExBOpSinMix						// Excedente bruto de operaci{c o'}n (sin mixto)
+	** V.5. Subsidios **
+	rename Kg Sub							// Subsidios (total)
 
 
-		** V.7. Excedente bruto de operaci{c o'}n, por sectores institucionales ** 
-		rename Vs ExBOpNoFin						// Excedente bruto de operaci{c o'}n sociedades no financieras
-		rename Ws ExBOpFin						// Excedente bruto de operaci{c o'}n sociedades financieras
-		rename Zs ExBOpISFLSH						// Excedente bruto de operaci{c o'}n ISFLSH
-		rename Ys ExBOpHog						// Excedente bruto de operaci{c o'}n de los hogares
-		rename Xs ExBOpGob						// Excedente bruto de operaci{c o'}n del gobierno
+	** V.6. Excedente bruto de operaci{c o'}n **
+	rename Lg ExBOp							// Excedente bruto de operaci{c o'}n (con mixto)
+	rename Us ExBOpSinMix						// Excedente bruto de operaci{c o'}n (sin mixto)
 
 
-		** V.8. Excedente neto de operaci{c o'}n, por sectores institucionales ** 
-		rename ABs ExNOpNoFin						// Excedente neto de operaci{c o'}n sociedades no financieras
-		rename ACs ExNOpFin						// Excedente neto de operaci{c o'}n sociedades financieras
-		rename AFs ExNOpISFLSH						// Excedente neto de operaci{c o'}n ISFLSH
-		rename AEs ExNOpHog						// Excedente neto de operaci{c o'}n de los hogares (owner-occupied)
-		rename ADs ExNOpGob						// Excedente neto de operaci{c o'}n del gobierno
+	** V.7. Excedente bruto de operaci{c o'}n, por sectores institucionales ** 
+	rename Vs ExBOpNoFin						// Excedente bruto de operaci{c o'}n sociedades no financieras
+	rename Ws ExBOpFin						// Excedente bruto de operaci{c o'}n sociedades financieras
+	rename Zs ExBOpISFLSH						// Excedente bruto de operaci{c o'}n ISFLSH
+	rename Ys ExBOpHog						// Excedente bruto de operaci{c o'}n de los hogares
+	rename Xs ExBOpGob						// Excedente bruto de operaci{c o'}n del gobierno
 
 
-		** V.9. Consumo de capital fijo **
-		rename Dd ConCapFij						// Consumo de capital fijo
+	** V.8. Excedente neto de operaci{c o'}n, por sectores institucionales ** 
+	rename ABs ExNOpNoFin						// Excedente neto de operaci{c o'}n sociedades no financieras
+	rename ACs ExNOpFin						// Excedente neto de operaci{c o'}n sociedades financieras
+	rename AFs ExNOpISFLSH						// Excedente neto de operaci{c o'}n ISFLSH
+	rename AEs ExNOpHog						// Excedente neto de operaci{c o'}n de los hogares (owner-occupied)
+	rename ADs ExNOpGob						// Excedente neto de operaci{c o'}n del gobierno
 
 
-		** V.10. Resto del mundo **
-		rename Ed PIN							// Producto Interno Neto
-		rename Fd ROWRemRecibidas					// ROW, Compensation of Employees, recibidas
-		rename Gd ROWRemPagadas						// ROW, Compensation of Employees, pagadas
-		rename Hd ROWPropRecibidas					// ROW, Ingresos a la propiedad, recibidas
-		rename Id ROWPropPagadas					// ROW, Ingresos a la propiedad, pagadas
-		rename Jd ROWTransRecibidas					// ROW, Transferencias corrientes, recibidas
-		rename Kd ROWTransPagadas					// ROW, Transferencias corrientes, pagadas
+	** V.9. Consumo de capital fijo **
+	rename Dd ConCapFij						// Consumo de capital fijo
 
 
-		** V.11. Consumo, usos **
-		rename Ld IngNacDisp						// Ingreso nacional disponible
-		rename AMs AhorroB						// Ahorro bruto
-		rename Bc ConHog						// Consumo de los hogares
-		rename Hgc ComprasN						// Compras netas en el extranjero
-		rename Bcg ConGob						// Consumo del gobierno general
-		rename AGs IngDisp						// Ingreso disponible
-		rename HWae Alquileres						// Alquileres sin intermediaci{c o'}n de bienes ra{c i'}ces
-		rename HXae Inmobiliarias 					// Inmobiliarias y corredores de bienes ra{c i'}ces
-		rename Mc Alojamiento						// Alquieres efectivos de alojamiento de los hogares
+	** V.10. Resto del mundo **
+	rename Ed PIN							// Producto Interno Neto
+	rename Fd ROWRemRecibidas					// ROW, Compensation of Employees, recibidas
+	rename Gd ROWRemPagadas						// ROW, Compensation of Employees, pagadas
+	rename Hd ROWPropRecibidas					// ROW, Ingresos a la propiedad, recibidas
+	rename Id ROWPropPagadas					// ROW, Ingresos a la propiedad, pagadas
+	rename Jd ROWTransRecibidas					// ROW, Transferencias corrientes, recibidas
+	rename Kd ROWTransPagadas					// ROW, Transferencias corrientes, pagadas
 
 
-		** V.12. Ingreso mixto **
-		rename IFae ServProf						// Servicios profesionales, cient{c i'}ficos y t{c e'}cnicos
-		rename JNae ConsMedi 						// Consultorios m{c e'}dicos
-		rename JOae ConsDent						// Consultorios dentales
-		rename JPae ConsOtro						// Consultorios otros
-		rename JSae EnfeDomi						// Enfermeras a domicilio
+	** V.11. Consumo, usos **
+	rename Ld IngNacDisp						// Ingreso nacional disponible
+	rename AMs AhorroB						// Ahorro bruto
+	rename Bc ConHog						// Consumo de los hogares
+	rename Hgc ComprasN						// Compras netas en el extranjero
+	rename Bcg ConGob						// Consumo del gobierno general
+	rename AGs IngDisp						// Ingreso disponible
+	rename HWae Alquileres						// Alquileres sin intermediaci{c o'}n de bienes ra{c i'}ces
+	rename HXae Inmobiliarias 					// Inmobiliarias y corredores de bienes ra{c i'}ces
+	rename Mc Alojamiento						// Alquieres efectivos de alojamiento de los hogares
 
 
-		********************************
-		** 1.3. Construir cuentas (C) **
-
-		** C.1. Ingreso mixto **
-		g double IngMixto = ExBOp - ExBOpSinMix
-		format IngMixto %20.0fc
-		label var IngMixto "Ingreso mixto"
-
-
-		** C.2. Subsidios a los productos, producci{c o'}n e importaciones **
-		g double SubProductos = Sub*(-25654.178/-27143.521) if anio == 2003	// Tabulados 2003
-		replace SubProductos = Sub*(-31715.148/-33451.335) if anio == 2004	// Tabulados 2004
-		replace SubProductos = Sub*(-30435.676/-32400.514) if anio == 2005	// Tabulados 2005
-		replace SubProductos = Sub*(-82570.179/-85389.438) if anio == 2006	// Tabulados 2006
-		replace SubProductos = Sub*(-86967.492/-90284.464) if anio == 2007	// Tabulados 2007
-		replace SubProductos = Sub*(-274075.031/-278027.853) if anio == 2008	// Tabulados 2008
-		replace SubProductos = Sub*(-47382.555/-51691.429) if anio == 2009	// Tabulados 2009
-		replace SubProductos = Sub*(-120461.693/-124207.239) if anio == 2010	// Tabulados 2010
-		replace SubProductos = Sub*(-202175.591/-206734.761) if anio == 2011	// Tabulados 2011
-		replace SubProductos = Sub*(-281083.533/-285812.359) if anio == 2012	// Tabulados 2012
-		replace SubProductos = Sub*(-173251.387/-178770.61) if anio == 2013	// Tabulados 2013
-		replace SubProductos = Sub*(-109267.213/-114961.944) if anio == 2014	// Tabulados 2014
-		replace SubProductos = Sub*(-73102.575/-78600.072) if anio == 2015	// Tabulados 2015
-		replace SubProductos = Sub*(-40134.053/-47092.044) if anio >= 2016	// Tabulados 2016
-		format SubProductos %20.0fc
-		label var SubProductos "Subsidios a los productos"
-
-		g double SubProduccion = Sub*(-1489.343/-27143.521) if anio == 2003	// Tabulados 2003
-		replace SubProduccion = Sub*(-1736.187/-33451.335) if anio == 2004	// Tabulados 2004
-		replace SubProduccion = Sub*(-1964.838/-32400.514) if anio == 2005	// Tabulados 2005
-		replace SubProduccion = Sub*(-2819.259/-85389.438) if anio == 2006	// Tabulados 2006
-		replace SubProduccion = Sub*(-3316.972/-90284.464) if anio == 2007	// Tabulados 2007
-		replace SubProduccion = Sub*(-3952.822/-278027.853) if anio == 2008	// Tabulados 2008
-		replace SubProduccion = Sub*(-4308.874/-51691.429) if anio == 2009	// Tabulados 2009
-		replace SubProduccion = Sub*(-3745.546/-124207.239) if anio == 2010	// Tabulados 2010
-		replace SubProduccion = Sub*(-4559.170/-206734.761) if anio == 2011	// Tabulados 2011
-		replace SubProduccion = Sub*(-4728.826/-285812.359) if anio == 2012	// Tabulados 2012
-		replace SubProduccion = Sub*(-5519.223/-178770.610) if anio == 2013	// Tabulados 2013
-		replace SubProduccion = Sub*(-5694.731/-114961.944) if anio == 2014	// Tabulados 2014
-		replace SubProduccion = Sub*(-5497.497/-78600.072) if anio == 2015	// Tabulados 2015
-		replace SubProduccion = Sub*(-6957.991/-47092.044) if anio >= 2016	// Tabulados 2016
-		format SubProduccion %20.0fc
-		label var SubProduccion "Subsidios a la producci{c o'}n e importaciones"
-
-
-		** C.3. Cuotas a la seguridad social imputada **
-		g double SSImputada = 101684.61*1000000 if anio == 2003		// Tabulados 2003
-		replace SSImputada = 102797.394*1000000 if anio == 2004		// Tabulados 2004
-		replace SSImputada = 99644.504*1000000 if anio == 2005		// Tabulados 2005
-		replace SSImputada = 105875.63*1000000 if anio == 2006		// Tabulados 2006
-		replace SSImputada = 111062.193*1000000 if anio == 2007		// Tabulados 2007
-		replace SSImputada = 114525.964*1000000 if anio == 2008		// Tabulados 2008
-		replace SSImputada = 127092.721*1000000 if anio == 2009		// Tabulados 2009
-		replace SSImputada = 122322.355*1000000 if anio == 2010		// Tabulados 2010
-		replace SSImputada = 134972.515*1000000 if anio == 2011		// Tabulados 2011
-		replace SSImputada = 141005.634*1000000 if anio == 2012		// Tabulados 2012
-		replace SSImputada = 138455.819*1000000 if anio == 2013		// Tabulados 2013
-		replace SSImputada = 141844.904*1000000 if anio == 2014		// Tabulados 2014
-		replace SSImputada = 148685.916*1000000 if anio == 2015		// Tabulados 2015
-		replace SSImputada = 161032.88*1000000 if anio >= 2016		// Tabulados 2016
-		format SSImputada %20.0fc
-		label var SSImputada "Contribuciones sociales imputadas"
-
-
-		** C.4. Depreciaci{c o'}n del ingreso mixto **
-		g double DepMix = (83680.639*1000000) if anio == 2003		// Tabulados 2003
-		replace DepMix = (94406.627*1000000) if anio == 2004		// Tabulados 2004
-		replace DepMix = (101888.33*1000000) if anio == 2005		// Tabulados 2005
-		replace DepMix = (112698.23*1000000) if anio == 2006		// Tabulados 2006
-		replace DepMix = (122478.52*1000000) if anio == 2007		// Tabulados 2007
-		replace DepMix = (137107.287*1000000) if anio == 2008		// Tabulados 2008
-		replace DepMix = (145711.922*1000000) if anio == 2009		// Tabulados 2009
-		replace DepMix = (156368.145*1000000) if anio == 2010		// Tabulados 2010
-		replace DepMix = (170548.474*1000000) if anio == 2011		// Tabulados 2011
-		replace DepMix = (183954.287*1000000) if anio == 2012		// Tabulados 2012
-		replace DepMix = (191575.471*1000000) if anio == 2013		// Tabulados 2013
-		replace DepMix = (197510.467*1000000) if anio == 2014		// Tabulados 2014
-		replace DepMix = (217922.3*1000000) if anio == 2015		// Tabulados 2015
-		replace DepMix = (245925.726*1000000) if anio >= 2016		// Tabulados 2016
-		format DepMix %20.0fc
-		label var DepMix "Depreciaci{c o'}n del ingreso mixto"
+	** V.12. Ingreso mixto **
+	rename IFae ServProf						// Servicios profesionales, cient{c i'}ficos y t{c e'}cnicos
+	rename JNae ConsMedi 						// Consultorios m{c e'}dicos
+	rename JOae ConsDent						// Consultorios dentales
+	rename JPae ConsOtro						// Consultorios otros
+	rename JSae EnfeDomi						// Enfermeras a domicilio
 
 
 
-		******************************
-		** 1.4. Forecast & Pastcast **
-		order indiceY-productivity, last
-		foreach k of varlist RemSalSS-DepMix {
-			replace `k' = L.`k'*(1+var_pibY/100)*indiceY/L.indiceY if `k' == .
-			forvalues j = 2002(-1)1993 {
-				replace `k' = F.`k'/(1+var_pibY/100)/(indiceY/L.indiceY) if anio == `j'
-			}
+	********************************
+	** 1.3. Construir cuentas (C) **
+	** C.1. Ingreso mixto **
+	g double IngMixto = ExBOp - ExBOpSinMix
+	format IngMixto %20.0fc
+	label var IngMixto "Ingreso mixto"
+
+
+	** C.2. Subsidios a los productos, producci{c o'}n e importaciones **
+	g double SubProductos = Sub*(-25654.178/-27143.521) if anio == 2003	// Tabulados 2003
+	replace SubProductos = Sub*(-31715.148/-33451.335) if anio == 2004	// Tabulados 2004
+	replace SubProductos = Sub*(-30435.676/-32400.514) if anio == 2005	// Tabulados 2005
+	replace SubProductos = Sub*(-82570.179/-85389.438) if anio == 2006	// Tabulados 2006
+	replace SubProductos = Sub*(-86967.492/-90284.464) if anio == 2007	// Tabulados 2007
+	replace SubProductos = Sub*(-274075.031/-278027.853) if anio == 2008	// Tabulados 2008
+	replace SubProductos = Sub*(-47382.555/-51691.429) if anio == 2009	// Tabulados 2009
+	replace SubProductos = Sub*(-120461.693/-124207.239) if anio == 2010	// Tabulados 2010
+	replace SubProductos = Sub*(-202175.591/-206734.761) if anio == 2011	// Tabulados 2011
+	replace SubProductos = Sub*(-281083.533/-285812.359) if anio == 2012	// Tabulados 2012
+	replace SubProductos = Sub*(-173251.387/-178770.61) if anio == 2013	// Tabulados 2013
+	replace SubProductos = Sub*(-109267.213/-114961.944) if anio == 2014	// Tabulados 2014
+	replace SubProductos = Sub*(-73102.575/-78600.072) if anio == 2015	// Tabulados 2015
+	replace SubProductos = Sub*(-40134.053/-47092.044) if anio >= 2016	// Tabulados 2016
+	format SubProductos %20.0fc
+	label var SubProductos "Subsidios a los productos"
+
+	g double SubProduccion = Sub*(-1489.343/-27143.521) if anio == 2003	// Tabulados 2003
+	replace SubProduccion = Sub*(-1736.187/-33451.335) if anio == 2004	// Tabulados 2004
+	replace SubProduccion = Sub*(-1964.838/-32400.514) if anio == 2005	// Tabulados 2005
+	replace SubProduccion = Sub*(-2819.259/-85389.438) if anio == 2006	// Tabulados 2006
+	replace SubProduccion = Sub*(-3316.972/-90284.464) if anio == 2007	// Tabulados 2007
+	replace SubProduccion = Sub*(-3952.822/-278027.853) if anio == 2008	// Tabulados 2008
+	replace SubProduccion = Sub*(-4308.874/-51691.429) if anio == 2009	// Tabulados 2009
+	replace SubProduccion = Sub*(-3745.546/-124207.239) if anio == 2010	// Tabulados 2010
+	replace SubProduccion = Sub*(-4559.170/-206734.761) if anio == 2011	// Tabulados 2011
+	replace SubProduccion = Sub*(-4728.826/-285812.359) if anio == 2012	// Tabulados 2012
+	replace SubProduccion = Sub*(-5519.223/-178770.610) if anio == 2013	// Tabulados 2013
+	replace SubProduccion = Sub*(-5694.731/-114961.944) if anio == 2014	// Tabulados 2014
+	replace SubProduccion = Sub*(-5497.497/-78600.072) if anio == 2015	// Tabulados 2015
+	replace SubProduccion = Sub*(-6957.991/-47092.044) if anio >= 2016	// Tabulados 2016
+	format SubProduccion %20.0fc
+	label var SubProduccion "Subsidios a la producci{c o'}n e importaciones"
+
+
+	** C.3. Cuotas a la seguridad social imputada **
+	g double SSImputada = 101684.61*1000000 if anio == 2003		// Tabulados 2003
+	replace SSImputada = 102797.394*1000000 if anio == 2004		// Tabulados 2004
+	replace SSImputada = 99644.504*1000000 if anio == 2005		// Tabulados 2005
+	replace SSImputada = 105875.63*1000000 if anio == 2006		// Tabulados 2006
+	replace SSImputada = 111062.193*1000000 if anio == 2007		// Tabulados 2007
+	replace SSImputada = 114525.964*1000000 if anio == 2008		// Tabulados 2008
+	replace SSImputada = 127092.721*1000000 if anio == 2009		// Tabulados 2009
+	replace SSImputada = 122322.355*1000000 if anio == 2010		// Tabulados 2010
+	replace SSImputada = 134972.515*1000000 if anio == 2011		// Tabulados 2011
+	replace SSImputada = 141005.634*1000000 if anio == 2012		// Tabulados 2012
+	replace SSImputada = 138455.819*1000000 if anio == 2013		// Tabulados 2013
+	replace SSImputada = 141844.904*1000000 if anio == 2014		// Tabulados 2014
+	replace SSImputada = 148685.916*1000000 if anio == 2015		// Tabulados 2015
+	replace SSImputada = 161032.88*1000000 if anio >= 2016		// Tabulados 2016
+	format SSImputada %20.0fc
+	label var SSImputada "Contribuciones sociales imputadas"
+
+
+	** C.4. Depreciaci{c o'}n del ingreso mixto **
+	g double DepMix = (83680.639*1000000) if anio == 2003		// Tabulados 2003
+	replace DepMix = (94406.627*1000000) if anio == 2004		// Tabulados 2004
+	replace DepMix = (101888.33*1000000) if anio == 2005		// Tabulados 2005
+	replace DepMix = (112698.23*1000000) if anio == 2006		// Tabulados 2006
+	replace DepMix = (122478.52*1000000) if anio == 2007		// Tabulados 2007
+	replace DepMix = (137107.287*1000000) if anio == 2008		// Tabulados 2008
+	replace DepMix = (145711.922*1000000) if anio == 2009		// Tabulados 2009
+	replace DepMix = (156368.145*1000000) if anio == 2010		// Tabulados 2010
+	replace DepMix = (170548.474*1000000) if anio == 2011		// Tabulados 2011
+	replace DepMix = (183954.287*1000000) if anio == 2012		// Tabulados 2012
+	replace DepMix = (191575.471*1000000) if anio == 2013		// Tabulados 2013
+	replace DepMix = (197510.467*1000000) if anio == 2014		// Tabulados 2014
+	replace DepMix = (217922.3*1000000) if anio == 2015		// Tabulados 2015
+	replace DepMix = (245925.726*1000000) if anio >= 2016		// Tabulados 2016
+	format DepMix %20.0fc
+	label var DepMix "Depreciaci{c o'}n del ingreso mixto"
+
+
+
+	******************************
+	** 1.4. Forecast & Pastcast **
+	order indiceY-productivity, last
+	foreach k of varlist RemSalSS-DepMix {
+		replace `k' = L.`k'*(1+var_pibY/100)*indiceY/L.indiceY if `k' == .
+		forvalues j = 2002(-1)1993 {
+			replace `k' = F.`k'/(1+var_pibY/100)/(indiceY/L.indiceY) if anio == `j'
 		}
-
-
-		** C.5. Impuestos Netos **
-		g double ImpNetProductos = ImpProductos - SubProductos
-		format ImpNetProductos %20.0fc
-		label var ImpNetProductos "Impuestos netos a los productos"
-
-		g double ImpNetProduccion = ImpProduccion - SubProduccion
-		format ImpNetProduccion %20.0fc
-		label var ImpNetProduccion "Impuestos netos a la producci{c o'}n e importaciones"
-
-		g double ImpNet = Imp - Sub
-		format ImpNet %20.0fc
-		label var ImpNet "Impuestos sobre los productos, producci{c o'}n e importaciones"
-
-		** Ajustes Remuneraciones a asalariados y Seguridad Social **
-		replace RemSal = RemSal - SSImputada
-
-		** Validaci{c o'}n **
-		g double PIBval = RemSalSS + IngMixto + ExBOpSinMix + ImpNetProductos + ImpNetProduccion
-		format PIBval %20.0fc
-		label var PIBval "PIB (validaci{c o'}n)"
-
-
-		** C.6. ROW, Compensation of Employees, pagadas **
-		replace ROWRemPagadas = PIN + ConCapFij + ROWRemRecibidas + ROWPropRecibidas ///
-			- ROWPropPagadas + ROWTransRecibidas - ROWTransPagadas - PIBval
-		g double ROWRem = ROWRemRecibidas - ROWRemPagadas
-		format ROWRem %20.0fc
-		label var ROWRem "Remuneraci{c o'}n de asalariados"
-
-
-		** C.7. Ingreso mixto (laboral) **
-		g double MixL = IngMixto*2/3
-		format MixL %20.0fc
-		label var MixL "Ingreso mixto (laboral)"
-
-
-		** C.8. Ingreso mixto (capital) **
-		g double MixK = IngMixto*1/3
-		format MixK %20.0fc
-		label var MixK "Ingreso mixto (capital)"
-
-
-		** C.9. Resto del Mundo **
-		g double ROW = ROWPropPagadas - ROWPropRecibidas
-
-
-		** C.10. Ingreso de capital **
-		g double CapInc = ExBOpSinMix + MixK - ConCapFij //- ROW
-		format CapInc %20.0fc
-		label var CapInc "Ingreso de capital"
-
-
-
-		****************************
-		** 1.5. NTA: Adding taxes **
-		g double RemSalNTA = RemSal + ImpNetProduccion*RemSal/(RemSal + MixL + CapInc)
-		g double MixLNTA = MixL + ImpNetProduccion*MixL/(RemSal + MixL + CapInc)
-		g double CapIncNTA = CapInc + ImpNetProduccion*CapInc/(RemSal + MixL + CapInc)
-
-
-
-		** C.11. Ingreso laboral bruto **
-		g double Yl = RemSalNTA + MixLNTA + SSImputada + SSEmpleadores
-		format Yl %20.0fc
-		label var Yl "Ingreso laboral"
-
-
-
-		** C.12. Depreciation **
-		g double DepNoFin = ExBOpNoFin - ExNOpNoFin
-		g double DepFin = ExBOpFin - ExNOpFin
-		g double DepISFLSH = ExBOpISFLSH - ExNOpISFLSH
-		g double DepHog = ExBOpHog - ExNOpHog
-		g double DepGob = ExBOpGob - ExNOpGob
-
-
-
-		****************************
-		** 1.6. NTA: Adding Taxes **
-		g double ExBOpSoc = ExBOpISFLSH + ExBOpNoFin + ExBOpFin + MixK
-
-		g double ExBOpNoFinNTA = ExBOpNoFin ///
-			+ ImpNetProductos*ExBOpNoFin/ExBOpSoc ///
-			+ ImpNetProduccion*ExBOpNoFin/ExBOpSoc*CapInc/(RemSal + MixL + CapInc) 
-		g double ExBOpFinNTA = ExBOpFin ///
-			+ ImpNetProductos*ExBOpFin/ExBOpSoc ///
-			+ ImpNetProduccion*ExBOpFin/ExBOpSoc*CapInc/(RemSal + MixL + CapInc)
-		g double ExBOpISFLSHNTA = ExBOpISFLSH ///
-			+ ImpNetProductos*ExBOpISFLSH/ExBOpSoc ///
-			+ ImpNetProduccion*ExBOpISFLSH/ExBOpSoc*CapInc/(RemSal + MixL + CapInc)
-		g double MixKNTA = MixK ///
-			+ ImpNetProductos*MixK/ExBOpSoc ///
-			+ ImpNetProduccion*MixK/ExBOpSoc*CapInc/(RemSal + MixL + CapInc)
-
-		g double ExBOpSocNTA = ExBOpNoFinNTA + ExBOpFinNTA + ExBOpISFLSHNTA + MixKNTA
-		label var ExBOpSocNTA "Sociedades e ISFLSH (NTA)"
-
-
-
-		** C.13. Ingreso de capita neto **
-		g double ExNOpSoc = ExBOpNoFin - DepNoFin + ExBOpFin - DepFin + ExBOpISFLSH - DepISFLSH - ROW
-		format ExNOpSoc %20.0fc
-		label var ExNOpSoc "Sociedades e ISFLSH"
-
-		g double ExNOpSocNTA = ExBOpNoFinNTA - DepNoFin + ExBOpFinNTA - DepFin + ExBOpISFLSHNTA - DepISFLSH - ROW
-		format ExNOpSocNTA %20.0fc
-		label var ExNOpSocNTA "Sociedades e ISFLSH (NTA)"
-
-		g double MixKN = MixK - DepMix
-		format MixKN %20.0fc
-		label var MixKN "Ingreso mixto neto (capital)"
-
-		g double MixKNNTA = MixKNTA - DepMix
-		format MixKNNTA %20.0fc
-		label var MixKNNTA "Ingreso mixto neto (capital) (NTA)"
-
-
-
-		****************************
-		** 1.7. Final adjustments **
-		g double Capital = ExNOpSoc + ExNOpHog + ExNOpGob + MixKN
-		format Capital %20.0fc
-		label var Capital "Ingreso de capital"
-
-		g double CapitalNTA = ExNOpSocNTA + ExNOpHog + ExNOpGob + MixKNNTA
-		format CapitalNTA %20.0fc
-		label var CapitalNTA "Ingreso de capital (NTA)"
-
-		replace IngMixto = MixK + MixL
-
-		g double IngNac = Yl + CapitalNTA
-		format IngNac %20.0fc
-		label var IngNac "Ingreso nacional"
-
-		g double ROWTrans = IngNacDisp - IngNac - ROWRem
-		format ROWTrans %20.0fc
-
-		g double AhorroN = AhorroB - ConCapFij
-		format AhorroN %20.0fc
-
-		g double CGob = IngNacDisp - ConHog - AhorroN - ComprasN
-		format CGob %20.0fc
-
-		g double DifGob = CGob - ConGob
-		format DifGob %20.0fc
-
-		drop if RemSalSS == .
-		save "`c(sysdir_site)'/bases/SIM/SCNNTA.dta", replace
 	}
+
+
+	** C.5. Impuestos Netos **
+	g double ImpNetProductos = ImpProductos - SubProductos
+	format ImpNetProductos %20.0fc
+	label var ImpNetProductos "Impuestos netos a los productos"
+
+	g double ImpNetProduccion = ImpProduccion - SubProduccion
+	format ImpNetProduccion %20.0fc
+	label var ImpNetProduccion "Impuestos netos a la producci{c o'}n e importaciones"
+
+	g double ImpNet = Imp - Sub
+	format ImpNet %20.0fc
+	label var ImpNet "Impuestos sobre los productos, producci{c o'}n e importaciones"
+
+	** Ajustes Remuneraciones a asalariados y Seguridad Social **
+	replace RemSal = RemSal - SSImputada
+
+	** Validaci{c o'}n **
+	g double PIBval = RemSalSS + IngMixto + ExBOpSinMix + ImpNetProductos + ImpNetProduccion
+	format PIBval %20.0fc
+	label var PIBval "PIB (validaci{c o'}n)"
+
+
+	** C.6. ROW, Compensation of Employees, pagadas **
+	replace ROWRemPagadas = PIN + ConCapFij + ROWRemRecibidas + ROWPropRecibidas ///
+		- ROWPropPagadas + ROWTransRecibidas - ROWTransPagadas - PIBval
+	g double ROWRem = ROWRemRecibidas - ROWRemPagadas
+	format ROWRem %20.0fc
+	label var ROWRem "Remuneraci{c o'}n de asalariados"
+
+
+	** C.7. Ingreso mixto (laboral) **
+	g double MixL = IngMixto*2/3
+	format MixL %20.0fc
+	label var MixL "Ingreso mixto (laboral)"
+
+
+	** C.8. Ingreso mixto (capital) **
+	g double MixK = IngMixto*1/3
+	format MixK %20.0fc
+	label var MixK "Ingreso mixto (capital)"
+
+
+	** C.9. Resto del Mundo **
+	g double ROW = ROWPropPagadas - ROWPropRecibidas
+
+
+	** C.10. Ingreso de capital **
+	g double CapInc = ExBOpSinMix + MixK - ConCapFij //- ROW
+	format CapInc %20.0fc
+	label var CapInc "Ingreso de capital"
+
+
+
+	****************************
+	** 1.5. NTA: Adding taxes **
+	g double RemSalNTA = RemSal + ImpNetProduccion*RemSal/(RemSal + MixL + CapInc)
+	g double MixLNTA = MixL + ImpNetProduccion*MixL/(RemSal + MixL + CapInc)
+	g double CapIncNTA = CapInc + ImpNetProduccion*CapInc/(RemSal + MixL + CapInc)
+
+
+
+	** C.11. Ingreso laboral bruto **
+	g double Yl = RemSalNTA + MixLNTA + SSImputada + SSEmpleadores
+	format Yl %20.0fc
+	label var Yl "Ingreso laboral"
+
+
+
+	** C.12. Depreciation **
+	g double DepNoFin = ExBOpNoFin - ExNOpNoFin
+	g double DepFin = ExBOpFin - ExNOpFin
+	g double DepISFLSH = ExBOpISFLSH - ExNOpISFLSH
+	g double DepHog = ExBOpHog - ExNOpHog
+	g double DepGob = ExBOpGob - ExNOpGob
+
+
+
+	****************************
+	** 1.6. NTA: Adding Taxes **
+	g double ExBOpSoc = ExBOpISFLSH + ExBOpNoFin + ExBOpFin + MixK
+
+	g double ExBOpNoFinNTA = ExBOpNoFin ///
+		+ ImpNetProductos*ExBOpNoFin/ExBOpSoc ///
+		+ ImpNetProduccion*ExBOpNoFin/ExBOpSoc*CapInc/(RemSal + MixL + CapInc) 
+	g double ExBOpFinNTA = ExBOpFin ///
+		+ ImpNetProductos*ExBOpFin/ExBOpSoc ///
+		+ ImpNetProduccion*ExBOpFin/ExBOpSoc*CapInc/(RemSal + MixL + CapInc)
+	g double ExBOpISFLSHNTA = ExBOpISFLSH ///
+		+ ImpNetProductos*ExBOpISFLSH/ExBOpSoc ///
+		+ ImpNetProduccion*ExBOpISFLSH/ExBOpSoc*CapInc/(RemSal + MixL + CapInc)
+	g double MixKNTA = MixK ///
+		+ ImpNetProductos*MixK/ExBOpSoc ///
+		+ ImpNetProduccion*MixK/ExBOpSoc*CapInc/(RemSal + MixL + CapInc)
+
+	g double ExBOpSocNTA = ExBOpNoFinNTA + ExBOpFinNTA + ExBOpISFLSHNTA + MixKNTA
+	label var ExBOpSocNTA "Sociedades e ISFLSH (NTA)"
+
+
+
+	** C.13. Ingreso de capita neto **
+	g double ExNOpSoc = ExBOpNoFin - DepNoFin + ExBOpFin - DepFin + ExBOpISFLSH - DepISFLSH - ROW
+	format ExNOpSoc %20.0fc
+	label var ExNOpSoc "Sociedades e ISFLSH"
+
+	g double ExNOpSocNTA = ExBOpNoFinNTA - DepNoFin + ExBOpFinNTA - DepFin + ExBOpISFLSHNTA - DepISFLSH - ROW
+	format ExNOpSocNTA %20.0fc
+	label var ExNOpSocNTA "Sociedades e ISFLSH (NTA)"
+
+	g double MixKN = MixK - DepMix
+	format MixKN %20.0fc
+	label var MixKN "Ingreso mixto neto (capital)"
+
+	g double MixKNNTA = MixKNTA - DepMix
+	format MixKNNTA %20.0fc
+	label var MixKNNTA "Ingreso mixto neto (capital) (NTA)"
+
+
+
+	****************************
+	** 1.7. Final adjustments **
+	g double Capital = ExNOpSoc + ExNOpHog + ExNOpGob + MixKN
+	format Capital %20.0fc
+	label var Capital "Ingreso de capital"
+
+	g double CapitalNTA = ExNOpSocNTA + ExNOpHog + ExNOpGob + MixKNNTA
+	format CapitalNTA %20.0fc
+	label var CapitalNTA "Ingreso de capital (NTA)"
+
+	replace IngMixto = MixK + MixL
+
+	g double IngNac = Yl + CapitalNTA
+	format IngNac %20.0fc
+	label var IngNac "Ingreso nacional"
+
+	g double ROWTrans = IngNacDisp - IngNac - ROWRem
+	format ROWTrans %20.0fc
+
+	g double AhorroN = AhorroB - ConCapFij
+	format AhorroN %20.0fc
+
+	g double CGob = IngNacDisp - ConHog - AhorroN - ComprasN
+	format CGob %20.0fc
+
+	g double DifGob = CGob - ConGob
+	format DifGob %20.0fc
+
+	drop if RemSalSS == .
+
 
 
 
@@ -421,8 +416,6 @@ quietly {
 	*************************
 	*** 2. Resultados (R) ***
 	*************************
-
-
 	** R.1. Observacion **
 	forvalues k = 1(1)`=_N' {
 		if anio[`k'] == `anio' {
