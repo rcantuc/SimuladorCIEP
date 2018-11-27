@@ -1,9 +1,9 @@
 program define DatosAbiertos, return
 quietly {
 
-	capture use "`c(sysdir_personal)'/bases/SHCP/Datos Abiertos/DatosAbiertos`c(os)'.dta", clear
+	capture use "`c(sysdir_site)'/bases/SIM/DatosAbiertos.dta", clear
 	if _rc != 0 {
-		run "`c(sysdir_personal)'/bases/SHCP/Datos Abiertos/DatosAbiertos.do"
+		run "`c(sysdir_site)'/DatosAbiertos.do"
 	}
 
 	syntax anything [if/] [, Graphs Restore PIBVP(real -999) PIBVF(real -999) UPDATE]
@@ -13,9 +13,9 @@ quietly {
 	}
 	
 	if "`update'" == "update" {
-		run "`c(sysdir_personal)'/bases/INEGI/BIE/SCN/PIB/PIB.do"
-		run "`c(sysdir_personal)'/bases/INEGI/BIE/SCN/Deflactor/Deflactor.do"
-		run "`c(sysdir_personal)'/bases/SHCP/Datos Abiertos/DatosAbiertos.do"
+		run "`c(sysdir_site)'/PIB.do"
+		run "`c(sysdir_site)'/Deflactor.do"
+		run "`c(sysdir_site)'/DatosAbiertos.do"
 	}
 
 
@@ -24,9 +24,9 @@ quietly {
 	****************************
 	*** 1 Base de datos SHCP ***
 	****************************
-	use if clave_de_concepto == "`anything'" & anio >= 1993 using "`c(sysdir_personal)'/bases/SHCP/Datos Abiertos/DatosAbiertos`c(os)'.dta", clear
+	use if clave_de_concepto == "`anything'" & anio >= 1993 using "`c(sysdir_site)'/bases/SIM/DatosAbiertos.dta", clear
 	if `=_N' == 0 {
-		noisily di in r "No se encontr${o} la serie {bf:`anything'}."
+		noisily di in r "No se encontr{c o'} la serie {bf:`anything'}."
 		return scalar error = 2000
 		exit
 	}
@@ -37,7 +37,7 @@ quietly {
 
 	* Informacion de la serie *
 	*acentos nombre
-	noisily di in g "Serie: " in y "`anything'" in g ". Nombre: " in y "`=nombre[1]'" in g "."	
+	noisily di _newline(2) in g "Serie: " in y "`anything'" in g ". Nombre: " in y "`=nombre[1]'" in g "."	
 
 
 
@@ -48,7 +48,8 @@ quietly {
 	if tipo_de_informacion == "Flujo" {
 		sort anio mes
 		collapse (sum) monto (last) mes if monto != ., by(anio nombre clave_de_concepto)
-		*replace monto = monto*12/mes if mes < 12
+		replace monto = monto*12/mes if mes < 12
+		local palabra "Proyectado"
 	}
 	else if tipo_de_informacion == "Saldo" {
 		tempvar maxmes
@@ -77,15 +78,17 @@ quietly {
 	save `PIB'
 	restore
 
-	merge m:1 (anio) using `PIB.dta', nogen keep(matched) keepus(pibY)			
+	merge m:1 (anio) using `PIB', nogen keep(matched) keepus(pibY)			
 
 	if `pibvp' != -999 {
 		replace monto = `pibvp'/100*pibY if mes < 12
+		local palabra "Estimado"
 	}
 
 	if `pibvf' != -999 {
+		local textovp `"{superscript:*}{bf:`palabra' `=anio[_N-1]':} `=string(monto[_N-1]/1000000,"%20.1fc")' millones de MXN"'
 		replace monto = `pibvf'/100*pibY in -1
-
+		local palabra "Estimado"
 	}
 
 	g double monto_pib = monto/pibY*100
@@ -112,24 +115,25 @@ quietly {
 		* Grafica *
 		local length = length("`=nombre[1]'")
 		if `length' > 60 {
-			local textsize ", size(medium)"
+			local textsize ", size(large)"
 		}
 		if `length' > 90 {
-			local textsize ", size(small)"
+			local textsize ", size(medium)"
 		}
 		if `length' > 120 {
-			local textsize ", size(vsmall)"
+			local textsize ", size(small)"
 		}
 		twoway (connected monto_pib anio) /*if monto != 0*/, ///
 			title({bf:`=nombre[1]'}`textsize') ///
 			subtitle(Montos observados) ///
-			b1title(`"{bf:Estimado `=anio[_N]'{superscript:*}:} `=string(monto[_N]/1000000,"%20.1fc")' millones de MXN"', size(small)) ///
+			b1title(`"{superscript:*}{bf:`palabra' `=anio[_N]':} `=string(monto[_N]/1000000,"%20.1fc")' millones de MXN"', size(small)) ///
+			b2title(`"`textovp'"', size(small)) ///
 			ytitle(% PIB) xtitle("") ///
 			/*xlabel(2007(1)2018)*/ ///
 			ylabel(0(10)10) ///
-			text(`text1',size(medsmall)) ///
-			caption("{it:Fuente: Elaborado por el CIEP, con informaci${o}n de la SHCP, Datos Abiertos y del INEGI, BIE.}") ///
-			note("{bf:${U}ltimo dato:} `ultanio'm`ultmes'.") ///
+			text(`text1', size(small)) ///
+			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP, Datos Abiertos y del INEGI, BIE.}") ///
+			note("{bf:{c U'}ltimo dato:} `ultanio'm`ultmes'.") ///
 			name(H`anything', replace)
 	}
 	noisily list, separator(30) string(30)

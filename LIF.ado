@@ -7,35 +7,25 @@ quietly {
 	************************
 	*** 1. BASE DE DATOS ***
 	************************
-	/* Generar base de datos para el simulador *
-	capture confirm file "`c(sysdir_personal)'/bases/SIM/LIF`c(os)'.dta"
-	if _rc != 0 {
-		capture confirm file "`c(sysdir_personal)'/bases/LIFs/Nacional/LIF`c(os)'.dta"
-		if _rc != 0 | "`remake'" == "remake" {
-			noisily run "`c(sysdir_personal)'/bases/LIFs/Nacional/LIFSIM.do"	// It takes a long time.
-		}
+	syntax [if/] [, ANIO(int $anioVP ) Graphs Update Base Remake ID(string)]
 
-		use "`c(sysdir_personal)'/bases/LIFs/Nacional/LIF`c(os)'.dta", clear
 
-		g double recaudacion = monto if mes == 12					// Se reemplazan cuando la serie esta completa
-		replace recaudacion = LIF if mes < 12 | mes == . 				// De lo contrario, es LIF
-		replace recaudacion = ILIF if mes == . & LIF == 0 & ILIF != 0			// De lo contrario, es ILIF
-		format recaudacion %20.0fc
-
-		replace serie = -1*divLIF if serie == .
-		save "`c(sysdir_personal)'/bases/SIM/LIF`c(os)'.dta", replace
+	** Base LIF **
+	capture use "`c(sysdir_site)'/bases/SIM/LIF.dta", clear
+	if _rc != 0 | "`remake'" == "remake" | "`update'" == "update" {
+		noisily run "`c(sysdir_site)'/LIF.do" `update'		// Update: It takes a long, long, long time.
 	}
 
 
-	** 1.2 Syntax **/
-	use "`c(sysdir_personal)'/bases/SIM/LIF`c(os)'.dta", clear
-	syntax [if/] [, ANIO(int $anioVP ) Graphs Update Base Remake ID(string)]
+	** Base ID **
+	if "`id'" != "" {
+		use "`c(sysdir_site)'/users/`id'/LIF", clear
+	}
+
 	noisily di _newline(5) in g "{bf:SISTEMA FISCAL: " in y "INGRESOS `anio'" "}"
 
-
-	** 1.3 Base ID **
-	if "`id'" != "" {
-		use "`c(sysdir_personal)'/users/`id'/LIF", clear
+	if "`base'" == "base" {
+		exit
 	}
 
 
@@ -44,27 +34,6 @@ quietly {
 	**************
 	*** 2. LIF ***
 	**************
-	if "$update" == "on" | "`update'" == "update" | "`remake'" == "remake" {
-		capture confirm file "`c(sysdir_personal)'/bases/LIFs/Nacional/LIF`c(os)'.dta"
-		if _rc != 0 | "`remake'" == "remake" {
-			noisily run "`c(sysdir_personal)'/bases/LIFs/Nacional/LIFSIM.do"	// It takes a long time.
-		}
-
-		use "`c(sysdir_personal)'/bases/LIFs/Nacional/LIF`c(os)'.dta", clear
-
-		g double recaudacion = monto if mes == 12					// Solo se reemplazan cuando la serie esta completa
-		replace recaudacion = LIF if mes < 12 | mes == . 				// De lo contrario, es LIF
-		replace recaudacion = ILIF if mes == . & LIF == 0 & ILIF != 0			// De lo contrario, es ILIF
-		format recaudacion %20.0fc
-
-		replace serie = -1*divLIF if serie == .
-		save "`c(sysdir_personal)'/bases/SIM/LIF`c(os)'.dta", replace
-	}
-
-	if "`base'" == "base" {
-		exit
-	}
-
 	levelsof divCIEP, local(levels)
 	foreach k of local levels {
 		local levellabel : label divCIEP `k'
@@ -100,6 +69,7 @@ quietly {
 	****************
 	*** 4. Graph ***
 	****************
+	drop if serie == .
 	xtset serie anio
 	forvalues k=1(1)`=_N' {
 		if monto[`k'] == . & mes[`k'] != . {
@@ -146,95 +116,75 @@ quietly {
 			local textosim `"text(`=`r6'[1,2]' 91.1392 `"{bf:`id': `=string(`r6'[1,2],"%5.1fc")'}"', color(black) placement(12))"'
 		}
 		
-		graph bar (sum) recaudacionPIB LIFPIB if anio >= 2013 & anio <= $anioVP & divCIEP != `deuda', ///
-			over(divOrigen, relabel(1 "Rec." 2 "LIF")) ///
+		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & anio <= $anioVP & divCIEP != `deuda', ///
+			over(divOrigen, relabel(1 "LIF" 2 "Obs")) ///
 			over(anio, label(labgap(vsmall))) ///
 			stack asyvars ///
-			title("Ingresos presupuestarios", margin(large)) ///
-			ytitle(% PIB) ylabel(0(10)20, labsize(small)) yscale(range(0(3)30)) ///
-			legend(on position(9) cols(1) justification(right) textfirst rowgap(3)) ///
+			title("{bf:Ingresos presupuestarios observados y estimados}") ///
+			/// subtitle("Observados y estimados") ///
+			ytitle(% PIB) ylabel(0(5)30, labsize(small)) ///
+			legend(on position(6) rows(1)) ///
 			name(ingresos, replace) ///
-			yalternate ///
 			blabel(bar, format(%7.1fc)) ///
-			plotregion(margin(zero)) graphregion(margin(zero)) ///
+			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}")
 			`textosim'
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 
-		graph bar (sum) recaudacionPIB LIFPIB if anio >= 2011 & anio <= $anioVP & divCIEP != `deuda' & divOrigen == 5, ///
-			over(`resumido', relabel(1 "Rec." 2 "LIF") gap(*1.2)) ///
-			over(anio, label(labgap(small))) ///
+		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & anio <= $anioVP & divCIEP != `deuda' & divOrigen == 5 & recaudacionPIB != 0, ///
+			over(`resumido', relabel(1 "LIF" 2 "Obs")) ///
+			over(anio, label(labgap(vsmall))) ///
 			stack asyvars ///
-			title("Ingresos presupuestarios recaudados y estimados") ///
-			ytitle(% PIB) ylabel(-2 0(10)15, labsize(small)) yscale(range(-2(1)15)) ///
-			legend(on position(9) cols(1) justification(right) textfirst rowgap(3) margin(-6 0 0 0)) ///
+			title("{bf:Ingresos tributarios observados y estimados}") ///
+			/// subtitle("Observados y estimados") ///
+			ytitle(% PIB) ylabel(0(5)15, labsize(small)) ///
+			legend(on position(6) rows(1)) ///
 			name(ingresosTributarios, replace) ///
-			yalternate ///
 			blabel(bar, format(%7.1fc)) ///
-			//caption("Fuente: Elaborado por el CIEP, utilizando el Simulador Fiscal $simuladorCIEP. Fecha: `c(current_date)', `c(current_time)'.")
+			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}")
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
-		gr_edit .scaleaxis.reset_rule 0 15 5 , tickset(major) ruletype(range) 
 
-
-		graph bar (sum) recaudacionPIB LIFPIB if anio >= 2011 & anio <= $anioVP & divCIEP != `deuda' & divOrigen == 3, ///
-			over(`resumido', relabel(1 "Rec." 2 "LIF") gap(*1.2)) ///
-			over(anio, label(labgap(small))) ///
+		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & anio <= $anioVP & divCIEP != `deuda' & divOrigen == 2 & recaudacionPIB != 0, ///
+			over(`resumido', relabel(1 "LIF" 2 "Obs")) ///
+			over(anio, label(labgap(vsmall))) ///
 			stack asyvars ///
-			title("Ingresos presupuestarios recaudados y estimados") ///
-			ytitle(% PIB) ylabel(, labsize(small)) ///
-			legend(on position(9) cols(1) justification(right) textfirst rowgap(3) margin(-6 0 0 0)) ///
+			title("{bf:Ingresos no tributarios recaudados y estimados}") ///
+			ytitle(% PIB) ylabel(0(5)15, labsize(small)) ///
+			legend(on position(6) rows(1)) ///
 			name(ingresosNoTributarios, replace) ///
-			yalternate ///
 			blabel(bar, format(%7.1fc)) ///
-			//caption("Fuente: Elaborado por el CIEP, utilizando el Simulador Fiscal $simuladorCIEP. Fecha: `c(current_date)', `c(current_time)'.")
+			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}")
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
-		
-		graph bar (sum) recaudacionPIB LIFPIB if anio >= 2011 & anio <= $anioVP & divCIEP != `deuda' & divOrigen == 4, ///
-			over(`resumido', relabel(1 "Rec." 2 "LIF") gap(*1.2)) ///
+
+		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & anio <= $anioVP & divCIEP != `deuda' & divOrigen == 4 & recaudacionPIB != 0, ///
+			over(`resumido', relabel(1 "LIF" 2 "Obs")) ///
 			over(anio, label(labgap(small))) ///
 			stack asyvars ///
-			title("Ingresos presupuestarios recaudados y estimados") ///
-			ytitle(% PIB) ylabel(, labsize(small)) ///
-			legend(on position(9) cols(1) justification(right) textfirst rowgap(3) margin(-6 0 0 0)) ///
+			title("{bf:Ingresos petroleros recaudados y estimados}") ///
+			ytitle(% PIB) ylabel(0(5)15, labsize(small)) ///
+			legend(on position(6) rows(1)) ///
 			name(ingresosPetroleros, replace) ///
-			yalternate ///
 			blabel(bar, format(%7.1fc)) ///
-			//caption("Fuente: Elaborado por el CIEP, utilizando el Simulador Fiscal $simuladorCIEP. Fecha: `c(current_date)', `c(current_time)'.")
+			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}")
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 
-		graph bar (sum) recaudacionPIB LIFPIB if anio >= 2011 & anio <= $anioVP & divCIEP != `deuda' & divOrigen == 1 & divCIEP != 18, ///
-			over(divCIEP, relabel(1 "Rec." 2 "LIF") gap(*1.2)) ///
+		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & anio <= $anioVP & divCIEP != `deuda' & divOrigen == 3 & recaudacionPIB != 0, ///
+			over(divCIEP, relabel(1 "LIF" 2 "Obs")) ///
 			over(anio, label(labgap(small))) ///
 			stack asyvars ///
-			title("Ingresos presupuestarios recaudados y estimados") ///
-			ytitle(% PIB) ylabel(, labsize(small)) ///
-			legend(on position(9) cols(1) justification(right) textfirst rowgap(3) margin(-6 0 0 0)) ///
+			title("{bf:Ingresos de organismos y empresas recaudados y estimados}") ///
+			ytitle(% PIB) ylabel(0(5)15, labsize(small)) ///
+			legend(on position(6) rows(1)) ///
 			name(ingresosOyE, replace) ///
-			yalternate ///
 			blabel(bar, format(%7.1fc)) ///
-			//caption("Fuente: Elaborado por el CIEP, utilizando el Simulador Fiscal $simuladorCIEP. Fecha: `c(current_date)', `c(current_time)'.")
-		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
-		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
-			
-		graph bar (sum) recaudacionPIB LIFPIB if anio >= 2011 & anio <= $anioVP & divCIEP != `deuda', ///
-			over(divOrigen, relabel(1 "Rec." 2 "LIF") gap(*1.2)) ///
-			over(anio, label(labgap(small))) ///
-			stack asyvars ///
-			title("Ingresos presupuestarios recaudados y estimados") ///
-			ytitle(% PIB) ylabel(0(10)30, labsize(small)) yscale(range(0(3)27)) ///
-			legend(on position(9) cols(1) justification(right) textfirst rowgap(3) margin(-6 0 0 0)) ///
-			name(ingresosOrigen, replace) ///
-			yalternate ///
-			blabel(bar, format(%7.1fc)) ///
-			/// caption("Fuente: Elaborado por el CIEP, utilizando el Simulador Fiscal $simuladorCIEP. Fecha: `c(current_date)', `c(current_time)'.") ///
-			`textosim'
+			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}")
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 
-		graph save ingresosOrigen "`c(sysdir_personal)'/users/`id'/Ingresos.gph", replace
+		*graph save ingresosOrigen "`c(sysdir_personal)'/users/`id'/Ingresos.gph", replace
 		*graph export "`c(sysdir_personal)'/users/`id'/Ingresos.eps", replace name(ingresosOrigen)
 		*graph export "`c(sysdir_personal)'/users/`id'/Ingresos.png", replace name(ingresosOrigen)
 	}

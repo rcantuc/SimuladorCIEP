@@ -4,7 +4,7 @@
 ****************************
 program define LimpiaBIE
 
-	syntax anything [, NOMultiply]
+	syntax [anything] [, NOMultiply]
 	drop if B == ""
 
 	foreach k of varlist _all {
