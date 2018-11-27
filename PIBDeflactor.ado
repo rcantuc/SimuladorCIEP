@@ -13,8 +13,8 @@ quietly {
 	*** 0 Update ***
 	****************
 	if "`update'" == "update" {
-		run "`c(sysdir_site)'/bases/INEGI/SCN/PIB/PIB.do"
-		run "`c(sysdir_site)'/bases/INEGI/SCN/Deflactor/Deflactor.do"
+		run "`c(sysdir_site)'/PIB.do"
+		run "`c(sysdir_site)'/Deflactor.do"
 	}
 
 
@@ -62,9 +62,9 @@ quietly {
 	label var var_indiceY "Anual"
 
 	g double var_indiceG = ((indiceY/L`=4*`geo''.indiceY)^(1/`geo')-1)*100
-	label var var_indiceG "Promedio geom${e}trico (`geo' a${ni}os)"
+	label var var_indiceG "Promedio geom{c e'}trico (`geo' a{c n~}os)"
 	
-	* Gr${a}fica hist${o}rica *
+	* Gr{c a'}fica hist{c o'}rica *
 	if "`graphs'" == "graphs" {
 		* Texto sobre lineas *
 		forvalues k=1(1)`=_N' {
@@ -75,12 +75,12 @@ quietly {
 
 		twoway (connected var_indiceQ aniotrimestre) ///
 			(connected var_indiceY aniotrimestre), ///
-			title({bf:${I}ndice de precios impl${i}citos}) ///
-			subtitle(Crecimiento anual) ///
-			ytitle(porcentaje) xtitle("") ///
+			title({bf:{c I'}ndice de precios impl{c i'}citos}) ///
+			subtitle(Crecimiento trimestral y anual) ///
+			ytitle(porcentaje) xtitle("") yline(0, lcolor(black) lpattern(dash)) ///
 			text(`crec_deflactor') ///
-			caption("{it:Fuente: Elaborado por el CIEP, con informaci${o}n del INEGI, BIE.}") ///
-			note("{bf:${U}ltimo dato}: `anio_last'q`trim_last'.") ///
+			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n del INEGI, BIE.}") ///
+			note("{bf:{c U'}ltimo dato}: `anio_last'q`trim_last'.") ///
 			name(deflactorH, replace)
 
 		*graph export `"`c(sysdir_personal)'/users/`id'/DeflactorH.png"', replace name(deflactorH)
@@ -89,7 +89,7 @@ quietly {
 
 
 	***********************************
-	** 2.1 Par${a}metros ex${o}genos **
+	** 2.1 Par{c a'}metros ex{c o'}genos **
 	tsappend, last(`fin'q4) tsfmt(tq)
 	replace anio = yofd(dofq(aniotrimestre)) if anio == .
 	replace trimestre = quarter(dofq(aniotrimestre)) if trim == .
@@ -153,7 +153,7 @@ quietly {
 	g double var_pibG = ((pibYR/L`=4*`geo''.pibYR)^(1/`geo')-1)*100
 	label var var_pibG "Geometric mean (`geo' years)"
 	
-	* Gr${a}fica hist${o}rica *
+	* Gr{c a'}fica hist{c o'}rica *
 	if "`graphs'" == "graphs" {
 		* Texto sobre lineas *
 		forvalues k=1(1)`=_N' {
@@ -165,11 +165,11 @@ quietly {
 		twoway (connected var_pibQ aniotrimestre) ///
 			(connected var_pibY aniotrimestre) if var_pibY != ., ///
 			title({bf:Producto Interno Bruto}) ///
-			subtitle(Crecimiento anual) ///
-			ytitle(percentaje) xtitle("") ///
+			subtitle(Crecimiento trimestral y anual) ///
+			ytitle(percentaje) xtitle("") yline(0, lcolor(black) lpattern(dash)) ///
 			text(`crec_PIB') ///
-			caption("{it:Fuente: Elaborado por el CIEP, con informaci${o}n del INEGI, BIE.}") ///
-			note("{bf:${U}ltimo dato}: `anio_last'q`trim_last'.") ///
+			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n del INEGI, BIE.}") ///
+			note("{bf:{c U'}ltimo dato}: `anio_last'q`trim_last'.") ///
 			name(PIBH, replace)
 
 		*graph export `"`c(sysdir_personal)'/users/`id'/PIBH.png"', replace name(PIBH)
@@ -178,7 +178,7 @@ quietly {
 
 
 	***********************************
-	** 3.1 Par${a}metros ex${o}genos **
+	** 3.1 Par{c a'}metros ex{c o'}genos **
 	* Imputar *
 	forvalues k=`anio_last'(1)`fin' {
 		capture confirm existence ${pib`k'}
@@ -233,13 +233,13 @@ quietly {
 		
 		twoway (connected var_indiceY anio if anio < `aniovp') ///
 			(connected var_indiceY anio if anio >= `aniovp'), ///
-			title({bf:${I}ndice de precio impl${i}citos}) ///
+			title({bf:{c I'}ndice de precio impl{c i'}citos}) ///
 			subtitle(Observado y proyectado) ///
-			ytitle(percentaje) xtitle("") ///
+			ytitle(percentaje) xtitle("") yline(0, lcolor(black) lpattern(dash)) ///
 			text(`crec_indicep') ///
 			legend(label(1 "Observado") label(2 "Proyecci{c o'}n")) ///
-			caption("{it:Fuente: Elaborado por el CIEP, con informaci${o}n del INEGI, BIE.}") ///
-			note("{bf:Nota}: `geo' a${ni}os promedio m${o}vil geom${e}trico despu${e}s de `anio_last'. `exceptI'{bf:${U}ltimo dato}: `anio_last'q`trim_last'.") ///
+			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n del INEGI, BIE.}") ///
+			note("{bf:Nota}: Promedio m{c o'}vil geom{c e'}trico de `geo' a{c n~}os despu{c e'}s de `anio_last'. `exceptI'{bf:{c U'}ltimo dato}: `anio_last'q`trim_last'.") ///
 			name(deflactorP, replace) ///
 			legend(on)
 		*graph export `"`c(sysdir_personal)'/users/`id'/DeflactorP.png"', replace name(deflactorP)
@@ -249,14 +249,25 @@ quietly {
 			(connected var_pibY anio if anio >= `aniovp'), ///
 			title({bf:Producto Interno Bruto}) ///
 			subtitle(Observado y proyectado) ///
-			ytitle(percentaje) xtitle("") ///
+			ytitle(percentaje) xtitle("") yline(0, lcolor(black) lpattern(dash)) ///
 			text(`crec_PIBp') ///
 			legend(label(1 "Observado") label(2 "Proyecci{c o'}n")) ///
-			caption("{it:Fuente: Elaborado por el CIEP, con informaci${o}n del INEGI, BIE.}") ///
-			note("{bf:Nota}: `geo' a${ni}os promedio m${o}vil geom${e}trico despu${e}s de `anio_last'. `except'{bf:${U}ltimo dato}: `anio_last'q`trim_last'.") ///
+			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n del INEGI, BIE.}") ///
+			note("{bf:Nota}: Promedio m{c o'}vil geom{c e'}trico de `geo' a{c n~}os despu{c e'}s de `anio_last'. `except'{bf:{c U'}ltimo dato}: `anio_last'q`trim_last'.") ///
 			name(PIBP, replace) ///
 			legend(on)
 		*graph export `"`c(sysdir_personal)'/users/`id'/PIBP.png"', replace name(PIBP)
+
 	}
+
+	***************
+	*** 3 Texto ***
+	***************
+	noisily di _newline in g "A{c n~}o" _col(11) %8s "Crec. PIB" _col(25) %20s "PIB" _col(50) %5s "Crec. Def." _col(64) %8.4fc "Deflactor"
+
+	forvalues k=2017(1)2020 {
+		noisily di in g "`k' " _col(10) %8.4fc in y ${pib_`k'} " %" _col(25) %20.0fc ${PIB_`k'} _col(50) %8.4fc in y ${def_`k'} " %" _col(65) %8.4fc ${DEF_`k'}
+	}
+
 }
 end

@@ -17,6 +17,8 @@ timer on 1
 ****************************************
 *** 1. Parametros Macroecon${o}micos ***
 ****************************************
+global anioVP = 2018
+
 global pib2018 = 2.5					// pib${anioVP} (PIBDeflactor.ado)
 global pib2019 = 3.0					// pib${anioVP} (PIBDeflactor.ado)
 
@@ -25,7 +27,7 @@ global def2019 = 3.3					// def${anioVP} (PIBDeflactor.ado)
 
 global depreMXN = 0					// % de depreciaci${o}n (SHRFSP.ado)
 
-PIBDeflactor, aniovp(2019) graphs
+noisily PIBDeflactor, graphs
 
 
 
