@@ -20,7 +20,7 @@ graph set window fontface "Ubuntu"
 ***********************
 *** 2 Par${a}metros ***
 ***********************
-global anioVP = 2019
+global anioVP = 2018
 
 global pib2018 = 2.5
 global pib2019 = 3.0
