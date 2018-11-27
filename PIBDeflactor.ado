@@ -2,20 +2,76 @@ program define PIBDeflactor
 quietly {
 	version 13.1
 	syntax [, ANIOvp(int $anioVP) GEO(int 5) FIN(int 2030) ///
-		ID(string) GLOBALs UPDATE ///
+		ID(string) GLOBALs ///
 		Graphs NOGraphs]
 
 
 
 
 
-	****************
-	*** 0 Update ***
-	****************
-	if "`update'" == "update" {
-		run "`c(sysdir_site)'/PIB.do"
-		run "`c(sysdir_site)'/Deflactor.do"
-	}
+	***************
+	*** 0 BASES ***
+	***************
+	* 0.1. PIB *
+	import excel "`=c(sysdir_site)'/bases/INEGI/SCN/PIB/PIB.xlsx", clear
+
+	* 0.2. Limpia *
+	LimpiaBIE
+
+	* 0.3. Rename *
+	rename A periodo
+	rename B pibQ
+
+	* 0.4. Time Series *
+	split periodo, destring p("/") ignore("r p")
+
+	rename periodo1 anio
+	label var anio "anio"
+
+	rename periodo2 trimestre
+	label var trimestre "trimestre"
+
+	destring pibQ, replace
+	label var pibQ "Producto Interno Bruto"
+
+	drop periodo
+	order anio trimestre pibQ
+
+	* 0.5. Guardar *
+	compress
+	tempfile PIB
+	save `PIB'
+
+
+	* 0.1. Deflactor *
+	import excel "`=c(sysdir_site)'/bases/INEGI/SCN/Deflactor/Deflactor.xlsx", clear
+
+	* 0.2. Limpia *
+	LimpiaBIE, nomult
+
+	* 0.3. Rename *
+	rename A periodo
+	rename B indiceQ
+
+	* 0.4. Time Series *
+	split periodo, destring p("/") ignore("r p")
+
+	rename periodo1 anio
+	label var anio "anio"
+
+	rename periodo2 trimestre
+	label var trimestre "trimestre"
+
+	destring indiceQ, replace
+	label var indiceQ "${I}ndice de Precios Impl${i}citos"
+
+	drop periodo
+	order anio trimestre indiceQ
+
+	* 0.5. Guardar *
+	compress
+	tempfile Deflactor
+	save `Deflactor', replace
 
 
 
@@ -24,8 +80,8 @@ quietly {
 	*************************
 	*** 1 PIB + Deflactor ***
 	*************************
-	use (anio trimestre pibQ) using "`c(sysdir_site)'/bases/INEGI/SCN/PIB/PIB.dta", clear
-	merge 1:1 (anio trimestre) using "`c(sysdir_site)'/bases/INEGI/SCN/Deflactor/Deflactor.dta", nogen keepus(indiceQ)
+	use (anio trimestre pibQ) using `PIB', clear
+	merge 1:1 (anio trimestre) using `Deflactor', nogen keepus(indiceQ)
 
 	* Anio + Trimestre *
 	g aniotrimestre = yq(anio,trimestre)
