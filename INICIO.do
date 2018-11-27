@@ -19,15 +19,31 @@ timer on 1
 ****************************************
 global anioVP = 2018
 
-global pib2018 = 2.5					// pib${anioVP} (PIBDeflactor.ado)
-global pib2019 = 3.0					// pib${anioVP} (PIBDeflactor.ado)
+global pib2018 = 2.5					// pib${[input]}
+global pib2019 = 3.0					// pib${[input]}
 
-global def2018 = 4.8					// def${anioVP} (PIBDeflactor.ado)
-global def2019 = 3.3					// def${anioVP} (PIBDeflactor.ado)
-
-global depreMXN = 0					// % de depreciaci${o}n (SHRFSP.ado)
+global def2018 = 4.8					// def${[input]}
+global def2019 = 3.3					// def${[input]}
 
 noisily PIBDeflactor, graphs 				// update
+
+
+
+
+
+**************
+*** 2. LIF ***
+**************
+LIF, graphs
+
+
+
+
+
+**************
+*** 3. PEF ***
+**************
+PEF, graphs
 
 
 
@@ -131,6 +147,8 @@ scalar sOYE     = (0.119 + 0.228 + 1.841 + 1.656)				// Organismos y empresas (I
 
 ********************
 ** 3.1 Resultados **
+global depreMXN = 0					// % de depreciaci${o}n (SHRFSP.ado)
+
 run "`c(sysdir_personal)'/Modulos.do" `id' $anioVP
 noisily Eficiencia, id(`id') graphs
 *noisily TransfNetas, id(`id') graphs reboot //noisily
