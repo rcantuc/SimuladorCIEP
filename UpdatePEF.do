@@ -9,7 +9,9 @@
 *** 1. BASE DE DATOS ***
 ************************
 forvalues k=2013(1)2017 {
-	import excel using "`c(sysdir_site)'/bases/PEFs/CP `k'.xlsx", clear firstrow
+	cd "`c(sysdir_site)'/bases/SIM/"
+	unzipfile "`c(sysdir_site)'/bases/PEFs/CP `k'.zip", replace
+	import delimited "`c(sysdir_site)'/bases/SIM/CP `k'.csv", clear
 	drop if ciclo == .
 	tostring ramo, replace
 	destring aprobado ejercido, replace
@@ -25,7 +27,8 @@ forvalues k=2013(1)2017 {
 }
 
 
-** PEF actual **
+***************/
+/** PEF actual **
 import excel using "`c(sysdir_site)'/bases/PEFs/PEF 2018.xlsx", clear
 drop if ciclo == .
 tostring ramo, replace
@@ -41,8 +44,9 @@ tempfile CPActual
 save `CPActual'
 
 
-** PEF siguiente **
-import excel using "`c(sysdir_site)'/bases/PEFs/PEF 2019.xlsx", clear
+******************/
+/** PEF siguiente **
+import excel using "`c(sysdir_site)'/bases/PEFs/PPEF 2019.xlsx", clear
 drop if ciclo == .
 tostring ramo, replace
 capture confirm var proyecto
@@ -58,15 +62,20 @@ tempfile CPSiguiente
 save `CPSiguiente'
 
 
+***********/
 ** Append **
 use `CP2013', clear
-forvalues k=2014(1)2018 {
+forvalues k=2014(1)2017 {
 	append using `CP`k'', force
 }
-drop modificado devengado pagado adefas v*
-order proyecto aprobado ejercido, last
+append using `CPActual'
+append using `CPSiguiente'
+drop adefas v*
+order proyecto aprobado ejercido modificado devengado pagado, last
 
+exit
 
+*******************
 ** Cuotas ISSSTE **
 destring proyecto aprobado ejercido, replace ignore(",")
 g new = 0
