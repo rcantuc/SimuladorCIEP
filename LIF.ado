@@ -7,13 +7,13 @@ quietly {
 	************************
 	*** 1. BASE DE DATOS ***
 	************************
-	syntax [if/] [, ANIO(int $anioVP ) Graphs Update Base Remake ID(string)]
+	syntax [if/] [, ANIO(int $anioVP ) Graphs Update Base ID(string)]
 
 
 	** Base LIF **
 	capture use "`c(sysdir_site)'/bases/SIM/LIF.dta", clear
-	if _rc != 0 | "`remake'" == "remake" | "`update'" == "update" {
-		noisily run "`c(sysdir_site)'/LIF.do" `update'		// Update: It takes a long, long, long time.
+	if _rc != 0 | "`update'" == "update" {
+		noisily run "`c(sysdir_site)'/UpdateLIF.do" `update'		// Update: It takes a long, long, long time.
 	}
 
 
