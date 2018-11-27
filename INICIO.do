@@ -27,8 +27,7 @@ global def2019 = 3.3					// def${anioVP} (PIBDeflactor.ado)
 
 global depreMXN = 0					// % de depreciaci${o}n (SHRFSP.ado)
 
-noisily PIBDeflactor //, graphs
-
+noisily PIBDeflactor, graphs 				// update
 
 
 
