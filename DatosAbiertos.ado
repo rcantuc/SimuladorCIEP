@@ -58,7 +58,7 @@ quietly {
 	local ultanio = anio in -1
 	local ultmes = mes in -1
 	return local ultimoAnio = `ultanio'
-	return local ultimoMex = `ultmes'
+	return local ultimoMes = `ultmes'
 	tsset anio
 
 	if `pibvf' != -999 {
@@ -83,7 +83,7 @@ quietly {
 	}
 
 	if `pibvf' != -999 {
-		local textovp `"{superscript:*}{bf:`palabra' `=anio[_N-1]':} `=string(monto[_N-1]/1000000,"%20.1fc")' millones de MXN"'
+		local textovp `"{superscript:*}{bf:`=anio[_N-1]':} `=string(monto[_N-1]/1000000,"%20.1fc")' millones de MXN"'
 		replace monto = `pibvf'/100*pibY in -1
 		local palabra "Estimado"
 	}
@@ -120,14 +120,16 @@ quietly {
 		if `length' > 120 {
 			local textsize ", size(small)"
 		}
-		twoway (connected monto_pib anio) /*if monto != 0*/, ///
+		twoway (connected monto_pib anio if anio < `ultanio') ///
+			(connected monto_pib anio if anio >= `ultanio'), ///
 			title({bf:`=nombre[1]'}`textsize') ///
 			subtitle(Montos observados) ///
-			b1title(`"{superscript:*}{bf:`palabra' `=anio[_N]':} `=string(monto[_N]/1000000,"%20.1fc")' millones de MXN"', size(small)) ///
+			b1title(`"{superscript:*}{bf:`=anio[_N]':} `=string(monto[_N]/1000000,"%20.1fc")' millones de MXN"', size(small)) ///
 			b2title(`"`textovp'"', size(small)) ///
 			ytitle(% PIB) xtitle("") ///
 			/*xlabel(2007(1)2018)*/ ///
 			ylabel(0(10)10) ///
+			legend(label(1 "Observado") label(2 "Estimado")) ///
 			text(`text1', size(small)) ///
 			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP, Datos Abiertos y del INEGI, BIE.}") ///
 			note("{bf:{c U'}ltimo dato:} `ultanio'm`ultmes'.") ///
