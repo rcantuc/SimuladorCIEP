@@ -124,11 +124,11 @@ quietly {
 			(connected monto_pib anio if anio >= `ultanio'), ///
 			title({bf:`=nombre[1]'}`textsize') ///
 			subtitle(Montos observados) ///
-			b1title(`"{superscript:*}{bf:`=anio[_N]':} `=string(monto[_N]/1000000,"%20.1fc")' millones de MXN"', size(small)) ///
+			b1title(`"{bf:`=anio[_N]':} `=string(monto[_N]/1000000,"%20.1fc")' millones de MXN"', size(small)) ///
 			b2title(`"`textovp'"', size(small)) ///
 			ytitle(% PIB) xtitle("") ///
-			/*xlabel(2007(1)2018)*/ ///
-			ylabel(0(10)10) ///
+			xlabel(1993(2)2019) ///
+			ylabel(, format(%4.1fc)) yscale(range(0)) ///
 			legend(label(1 "Observado") label(2 "Estimado")) ///
 			text(`text1', size(small)) ///
 			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP, Datos Abiertos y del INEGI, BIE.}") ///
