@@ -30,7 +30,7 @@ global def2019 = 3.3
 
 global depreMXN = 0.5
 
-PIBDeflactor, globals
+PIBDeflactor
 clear
 
 
