@@ -19,11 +19,11 @@ timer on 1
 ****************************************
 global anioVP = 2018
 
-global pib2018 = 2.5					// pib${[input]}
-global pib2019 = 3.0					// pib${[input]}
+global pib2018 = 2.5					// pib[input]
+global pib2019 = 3.0					// pib[input]
 
-global def2018 = 4.8					// def${[input]}
-global def2019 = 3.3					// def${[input]}
+global def2018 = 4.8					// def[input]
+global def2019 = 3.3					// def[input]
 
 noisily PIBDeflactor, graphs 				// update
 

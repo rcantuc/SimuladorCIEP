@@ -8,14 +8,14 @@ quietly {
 	*** 1. BASE DE DATOS ***
 	************************
 	* Generar base de datos para el simulador *
-	capture confirm file "`c(sysdir_personal)'/bases/SIM/PEF`=c(os)'.dta"
+	capture confirm file "`c(sysdir_site)'/bases/SIM/PEF.dta"
 	if _rc != 0 {
-		capture confirm file "`c(sysdir_personal)'/bases/PEFs/Nacional/PEFSIM`=c(os)'.dta"
+		capture confirm file "`c(sysdir_site)'/bases/PEFs/Nacional/PEFSIM`=c(os)'.dta"
 		if _rc != 0 {
-			noisily run "`c(sysdir_personal)'/bases/PEFs/Nacional/PEFSIM.do"	// It takes a long, long, long time
+			noisily run "`c(sysdir_site)'/bases/PEFs/Nacional/PEFSIM.do"	// It takes a long, long, long time
 		}
 
-		use "`c(sysdir_personal)'/bases/PEFs/Nacional/PEFSIM`=c(os)'.dta", clear
+		use "`c(sysdir_site)'/bases/PEFs/Nacional/PEFSIM`=c(os)'.dta", clear
 		foreach k of varlist ejercido aprobado {
 			tempvar `k'totbase
 			egen ``k'totbase' = sum(`k'), by(anio)
@@ -45,19 +45,19 @@ quietly {
 		}
 		
 		drop __*
-		save "`c(sysdir_personal)'/bases/SIM/PEF`=c(os)'.dta", replace
+		save "`c(sysdir_site)'/bases/SIM/PEF`=c(os)'.dta", replace
 	}
 
 	
 	** 1.2 Syntax **
-	use "`c(sysdir_personal)'/bases/SIM/PEF`=c(os)'.dta", clear	
+	use "`c(sysdir_site)'/bases/SIM/PEF`=c(os)'.dta", clear	
 	syntax [if] [, ANIO(int $anioVP) Graphs Update Concepto(string) Base Datosabiertos Remake ID(string) Fast]
 	noisily di _newline(5) in g "{bf:SISTEMA FISCAL: " in y "GASTOS `anio'}"
 
 
 	** 1.3 Base ID **
 	if "`id'" != "" {
-		use "`c(sysdir_personal)'/users/`id'/PEF", clear
+		use "`c(sysdir_site)'/users/`id'/PEF", clear
 	}
 
 
@@ -67,13 +67,13 @@ quietly {
 	*** 2. PEF ***
 	**************
 	if "$update" == "on" | "`update'" == "update" | "`remake'" == "remake" {
-		use "`c(sysdir_personal)'/bases/SIM/PEF`=c(os)'.dta", clear
+		use "`c(sysdir_site)'/bases/SIM/PEF`=c(os)'.dta", clear
 
 		if "`remake'" == "remake" {
-			noisily run "`c(sysdir_personal)'/bases/PEFs/Nacional/PEFSIM.do"	// It takes a long, long, long time
+			noisily run "`c(sysdir_site)'/bases/PEFs/Nacional/PEFSIM.do"	// It takes a long, long, long time
 		}
 
-		use "`c(sysdir_personal)'/bases/PEFs/Nacional/PEFSIM`=c(os)'.dta", clear
+		use "`c(sysdir_site)'/bases/PEFs/Nacional/PEFSIM`=c(os)'.dta", clear
 		foreach k of varlist ejercido aprobado {
 			tempvar `k'totbase
 			egen ``k'totbase' = sum(`k'), by(anio)
@@ -104,7 +104,7 @@ quietly {
 
 		*drop if serie == .
 		drop __*
-		save "`c(sysdir_personal)'/bases/SIM/PEF`=c(os)'.dta", replace
+		save "`c(sysdir_site)'/bases/SIM/PEF`=c(os)'.dta", replace
 	}
 
 	if "`fast'" == "fast" {
@@ -295,9 +295,9 @@ quietly {
 			`textgraph' `textosim'
 
 
-		graph save gastos2 "`c(sysdir_personal)'/users/`id'/Gastos.gph", replace
-		*graph export "`c(sysdir_personal)'/users/`id'/Gastos.eps", replace name(gastos2)
-		*graph export "`c(sysdir_personal)'/users/`id'/Gastos.png", replace name(gastos2)
+		graph save gastos2 "`c(sysdir_site)'/users/`id'/Gastos.gph", replace
+		*graph export "`c(sysdir_site)'/users/`id'/Gastos.eps", replace name(gastos2)
+		*graph export "`c(sysdir_site)'/users/`id'/Gastos.png", replace name(gastos2)
 	}
 
 

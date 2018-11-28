@@ -8,10 +8,11 @@
 ************************
 *** 1. BASE DE DATOS ***
 ************************
+cd "`c(sysdir_site)'/bases/SIM/"
 forvalues k=2013(1)2017 {
-	cd "`c(sysdir_site)'/bases/SIM/"
 	unzipfile "`c(sysdir_site)'/bases/PEFs/CP `k'.zip", replace
 	import delimited "`c(sysdir_site)'/bases/SIM/CP `k'.csv", clear
+
 	drop if ciclo == .
 	tostring ramo, replace
 	destring aprobado ejercido, replace
@@ -20,7 +21,7 @@ forvalues k=2013(1)2017 {
 		replace `j' = trim(`j')
 	}
 
-	noisily tabstat aprobado ejercido, stat(sum) by(ciclo) f(%25.2fc)
+	noisily tabstat aprobado ejercido, stat(sum) by(ciclo) f(%25.0fc)
 
 	tempfile CP`k'
 	save `CP`k''
@@ -28,8 +29,10 @@ forvalues k=2013(1)2017 {
 
 
 ***************/
-/** PEF actual **
-import excel using "`c(sysdir_site)'/bases/PEFs/PEF 2018.xlsx", clear
+** PEF actual **
+unzipfile "`c(sysdir_site)'/bases/PEFs/PEF 2018.zip", replace
+import delimited "`c(sysdir_site)'/bases/SIM/PEF 2018.csv", clear
+
 drop if ciclo == .
 tostring ramo, replace
 destring aprobado, replace
@@ -38,25 +41,26 @@ foreach j of varlist desc_* {
 	replace `j' = trim(`j')
 }
 
-noisily tabstat aprobado, stat(sum) by(ciclo) f(%25.2fc)
+noisily tabstat aprobado, stat(sum) by(ciclo) f(%25.0fc)
 
 tempfile CPActual
 save `CPActual'
 
 
 ******************/
-/** PEF siguiente **
-import excel using "`c(sysdir_site)'/bases/PEFs/PPEF 2019.xlsx", clear
+** PEF siguiente **
+unzipfile "`c(sysdir_site)'/bases/PEFs/PPEF 2019.zip", replace
+import delimited "`c(sysdir_site)'/bases/SIM/PPEF 2019.csv", clear
+
 drop if ciclo == .
 tostring ramo, replace
-capture confirm var proyecto
-if _rc != 0 {
-	g proyecto = .
-}
 destring proyecto, replace
-destring aprobado, replace
 
-noisily tabstat proyecto aprobado, stat(sum) by(ciclo) f(%25.2fc)
+foreach j of varlist desc_* {
+	replace `j' = trim(`j')
+}
+
+noisily tabstat proyecto, stat(sum) by(ciclo) f(%25.0fc)
 
 tempfile CPSiguiente
 save `CPSiguiente'
@@ -72,8 +76,9 @@ append using `CPActual'
 append using `CPSiguiente'
 drop adefas v*
 order proyecto aprobado ejercido modificado devengado pagado, last
+format proyecto aprobado ejercido modificado devengado pagado %20.0fc
 
-exit
+
 
 *******************
 ** Cuotas ISSSTE **
@@ -109,6 +114,12 @@ replace ciclo = 2018 in -1
 replace proyecto = 99233509443 in -1
 replace aprobado = 99233509443 in -1
 
+set obs `=_N+1'
+replace ciclo = 2019 in -1
+replace proyecto = 99233509443 in -1
+replace aprobado = 99233509443 in -1
+
+
 foreach k of varlist ramo-cartera {
 	capture confirm numeric variable `k'
 	if _rc == 0 {
@@ -118,18 +129,14 @@ foreach k of varlist ramo-cartera {
 		replace `k' = "Cuotas ISSSTE" if new == .
 	}
 }
-
 drop new
 
 
 
 
-
-**********************
+***********************
 *** 2. HOMOLOGACION ***
-**********************
-
-** Acentos **
+***********************
 foreach k of varlist _all {
 	di in w ".", _cont
 	capture confirm string variable `k'
@@ -137,14 +144,11 @@ foreach k of varlist _all {
 		quietly replace `k' = subinstr(`k',`"""',"",.)
 		quietly replace `k' = subinstr(`k',"'","",.)
 		quietly replace `k' = trim(`k')
-		forvalues j=1(1)`=_N' {
-			quietly replace `k' = `"`=`k'[`j']'"' in `j'
-		}
 	}
 }
 
 
-** Anio **/
+** Anio **
 rename ciclo anio
 
 
@@ -160,19 +164,19 @@ replace ramo = "53" if ramo == "TOQ" | ur == "TOQ"
 replace ramo = "-1" if ramo == "Cuotas ISSSTE"
 destring ramo, replace
 
-replace desc_ramo = "Oficina de la Presidencia de la Rep${u}blica" if ramo == 2
+replace desc_ramo = "Oficina de la Presidencia de la Rep{c u'}blica" if ramo == 2
 replace desc_ramo = "Instituto Nacional Electoral" if ramo == 22
 replace desc_ramo = "Tribunal Federal de Justicia Administrativa" if ramo == 32
-replace desc_ramo = "Instituto Nacional de Transparencia, Acceso a la Informaci${o}n y Protecci${o}n de Datos Personales" if ramo == 44
+replace desc_ramo = "Instituto Nacional de Transparencia, Acceso a la Informaci{c o'}n y Protecci{c o'}n de Datos Personales" if ramo == 44
 
-replace desc_ramo = "Petr${o}leos Mexicanos" if ramo == 52
-replace desc_ramo = "Comisi${o}n Federal de Electricidad" if ramo == 53
+replace desc_ramo = "Petr{c o'}leos Mexicanos" if ramo == 52
+replace desc_ramo = "Comisi{c o'}n Federal de Electricidad" if ramo == 53
 
 labmask ramo, values(desc_ramo)
 drop desc_ramo
 
 
-** Descripci${o}n Unidad Responsable **
+** Descripci{c o'}n Unidad Responsable **
 rename desc_ur desc_ur2
 encode desc_ur2 if desc_ur2 != "Cuotas ISSSTE", g(desc_ur)
 replace desc_ur = -1 if desc_ur == .
@@ -180,12 +184,12 @@ label define desc_ur -1 "Cuotas ISSSTE", add
 drop desc_ur2
 
 
-** Descripci${o}n Finalidad **
+** Descripci{c o'}n Finalidad **
 labmask finalidad, values(desc_finalidad)
 drop desc_finalidad
 
 
-** Descripci${o}n Funcion **
+** Descripci{c o'}n Funcion **
 rename desc_funcion desc_funcion2
 encode desc_funcion2 if desc_funcion2 != "Cuotas ISSSTE", g(desc_funcion)
 replace desc_funcion = -1 if desc_funcion == .
@@ -193,7 +197,7 @@ label define desc_funcion -1 "Cuotas ISSSTE", add
 drop desc_funcion2
 
 
-** Descripci${o}n Subfuncion **
+** Descripci{c o'}n Subfuncion **
 rename desc_subfuncion desc_subfuncion2
 encode desc_subfuncion2 if desc_subfuncion2 != "Cuotas ISSSTE", g(desc_subfuncion)
 replace desc_subfuncion = -1 if desc_subfuncion == .
@@ -201,7 +205,7 @@ label define desc_subfuncion -1 "Cuotas ISSSTE", add
 drop desc_subfuncion2
 
 
-** Descripci${o}n Actividad Institucional **
+** Descripci{c o'}n Actividad Institucional **
 rename desc_ai desc_ai2
 encode desc_ai2 if desc_ai2 != "Cuotas ISSSTE", g(desc_ai)
 replace desc_ai = -1 if desc_ai == .
@@ -209,7 +213,7 @@ label define desc_ai -1 "Cuotas ISSSTE", add
 drop desc_ai2
 
 
-** Descripci${o}n Modalidad **
+** Descripci{c o'}n Modalidad **
 rename desc_modalidad desc_modalidad2
 encode desc_modalidad2 if desc_modalidad2 != "Cuotas ISSSTE", g(desc_modalidad)
 replace desc_modalidad = -1 if desc_modalidad == .
@@ -217,7 +221,7 @@ label define desc_modalidad -1 "Cuotas ISSSTE", add
 drop desc_modalidad2
 
 
-** Descripci${o}n Programa Presupuestario **
+** Descripci{c o'}n Programa Presupuestario **
 rename desc_pp desc_pp2
 encode desc_pp2 if desc_pp2 != "Cuotas ISSSTE", g(desc_pp)
 replace desc_pp = -1 if desc_pp == .
@@ -225,7 +229,7 @@ label define desc_pp -1 "Cuotas ISSSTE", add
 drop desc_pp2
 
 
-** Descripci${o}n Objeto **
+** Descripci{c o'}n Objeto **
 rename desc_objeto desc_objeto2
 encode desc_objeto2 if desc_objeto2 != "Cuotas ISSSTE", g(desc_objeto)
 replace desc_objeto = -1 if desc_objeto == .
@@ -233,7 +237,7 @@ label define desc_objeto -1 "Cuotas ISSSTE", add
 drop desc_objeto2
 
 
-** Descripci${o}n Tipo de Gasto **
+** Descripci{c o'}n Tipo de Gasto **
 rename desc_tipogasto desc_tipogasto2
 encode desc_tipogasto2 if desc_tipogasto2 != "Cuotas ISSSTE", g(desc_tipogasto)
 replace desc_tipogasto = -1 if desc_tipogasto == .
@@ -241,27 +245,27 @@ label define desc_tipogasto -1 "Cuotas ISSSTE", add
 drop desc_tipogasto2
 
 
-** Descripci${o}n Fuente **
+** Descripci{c o'}n Fuente **
 labmask fuente, values(desc_fuente)
 drop desc_fuente
 
 
-** Descripci${o}n Entidad Federativa **
+** Descripci{c o'}n Entidad Federativa **
 replace desc_entidad = trim(desc_entidad)
-replace desc_entidad = "Ciudad de M${e}xico" if entidad == 9
+replace desc_entidad = "Ciudad de M{c e'}xico" if entidad == 9
 labmask entidad, values(desc_entidad)
 drop desc_entidad
 
 
-** Cap${i}tulo **
+** Cap{c i'}tulo **
 drop capitulo
 g capitulo = substr(string(objeto),1,1) if objeto != -1
 destring capitulo, replace
 
 label define capitulo 1 "Servicios personales" 2 "Materiales y suministros" ///
 	3 "Gastos generales" 4 "Subsidios y transferencias" ///
-	5 "Bienes muebles e inmuebles" 6 "Obras p${u}blicas" 7 "Inversi${o}n financiera" ///
-	8 "Participaciones y aportaciones" 9 "Deuda p${u}blica" -1 "Cuotas ISSSTE"
+	5 "Bienes muebles e inmuebles" 6 "Obras p{c u'}blicas" 7 "Inversi{c o'}n financiera" ///
+	8 "Participaciones y aportaciones" 9 "Deuda p{c u'}blica" -1 "Cuotas ISSSTE"
 label values capitulo capitulo
 
 

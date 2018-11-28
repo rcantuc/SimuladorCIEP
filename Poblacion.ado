@@ -3,18 +3,18 @@ program define Poblacion
 quietly {
 	version 13.1
 
-	syntax [anything] [, AI(int $anioVP) AF(int 2030) Graphs]
+	syntax [anything] [, AI(int $anioVP) AF(int 2050) Graphs UPDATE]
 
 	if "`anything'" == "" {
 		local anything = "poblacion"
 	}
 
-	capture use `"`c(sysdir_personal)'/bases/SIM/Poblacion/`anything'`c(os)'.dta"', clear
-	if _rc != 0 {
-		run "`c(sysdir_personal)'/bases/CONAPO/Poblacion.do"
-		use `"`c(sysdir_personal)'/bases/SIM/Poblacion/`anything'`c(os)'.dta"', clear
+	capture use `"`c(sysdir_site)'/bases/SIM/Poblacion.dta"', clear
+	if _rc != 0 | "`update'" == "update" {
+		run "`c(sysdir_site)'/UpdatePoblacion.do"
+		use `"`c(sysdir_site)'/bases/SIM/`=proper("`anything'")'.dta"', clear
 	}
-	
+
 	local poblacion : variable label `anything'
 
 	
@@ -97,30 +97,30 @@ quietly {
 			(sc edad2 zero if anio == `ai', msymbol(i) mlabel(edad2) mlabsize(vsmall)), ///
 			legend(label(1 "Hombres `ai'") label(2 "Mujeres `ai'") ///
 			label(3 "Hombres `af'") label(4 "Mujeres `af'")) ///
-			legend(order(1 2 3 4) cols(2)) ///
+			legend(order(1 2 3 4) rows(1)) ///
 			yscale(noline) ylabel(none) xscale(noline) ///
-			text(105 `=-`MaxH'[1,1]*.6' "{bf:Edad mediana `ai'}") ///
-			text(98 `=-`MaxH'[1,1]*.6' "Hombres: `=`H`ai''[1,1]'") ///
-			text(92 `=-`MaxH'[1,1]*.6' "Mujeres: `=`M`ai''[1,1]'") ///
-			text(105 `=`MaxH'[1,1]*.6' "{bf:Edad mediana `af'}") ///
-			text(98 `=`MaxH'[1,1]*.6' "Hombres: `=`H`af''[1,1]'") ///
-			text(92 `=`MaxH'[1,1]*.6' "Mujeres: `=`M`af''[1,1]'") ///
-			text(85 `=-`MaxH'[1,1]*.6' "{bf:Composici${o}n por edades `ai'}") ///
-			text(78 `=-`MaxH'[1,1]*.6' `"0-17: `=string(`P18_`ai''[1,1]/`P`ai''[1,1]*100,"%5.1fc")' %"') ///
-			text(72 `=-`MaxH'[1,1]*.6' `"18-64: `=string(`P1865_`ai''[1,1]/`P`ai''[1,1]*100,"%5.1fc")' %"') ///
-			text(66 `=-`MaxH'[1,1]*.6' `"65+: `=string(`P65_`ai''[1,1]/`P`ai''[1,1]*100,"%5.1fc")' %"') ///
-			text(85 `=`MaxH'[1,1]*.6' "{bf:Composici${o}n por edades `af'}") ///
-			text(78 `=`MaxH'[1,1]*.6' `"0-17: `=string(`P18_`af''[1,1]/`P`af''[1,1]*100,"%5.1fc")' %"') ///
-			text(72 `=`MaxH'[1,1]*.6' `"18-64: `=string(`P1865_`af''[1,1]/`P`af''[1,1]*100,"%5.1fc")' %"') ///
-			text(66 `=`MaxH'[1,1]*.6' `"65+: `=string(`P65_`af''[1,1]/`P`af''[1,1]*100,"%5.1fc")' %"') ///
+			text(105 `=-`MaxH'[1,1]*.6' "{bf:Edad mediana `ai'}",) ///
+			text(98 `=-`MaxH'[1,1]*.6' "Hombres: `=`H`ai''[1,1]'",) ///
+			text(92 `=-`MaxH'[1,1]*.6' "Mujeres: `=`M`ai''[1,1]'",) ///
+			text(105 `=`MaxH'[1,1]*.6' "{bf:Edad mediana `af'}",) ///
+			text(98 `=`MaxH'[1,1]*.6' "Hombres: `=`H`af''[1,1]'",) ///
+			text(92 `=`MaxH'[1,1]*.6' "Mujeres: `=`M`af''[1,1]'",) ///
+			text(85 `=-`MaxH'[1,1]*.6' "{bf:Composici${o}n por edades `ai'}",) ///
+			text(78 `=-`MaxH'[1,1]*.6' `"0-17: `=string(`P18_`ai''[1,1]/`P`ai''[1,1]*100,"%5.1fc")' %"',) ///
+			text(72 `=-`MaxH'[1,1]*.6' `"18-64: `=string(`P1865_`ai''[1,1]/`P`ai''[1,1]*100,"%5.1fc")' %"',) ///
+			text(66 `=-`MaxH'[1,1]*.6' `"65+: `=string(`P65_`ai''[1,1]/`P`ai''[1,1]*100,"%5.1fc")' %"',) ///
+			text(85 `=`MaxH'[1,1]*.6' "{bf:Composici${o}n por edades `af'}",) ///
+			text(78 `=`MaxH'[1,1]*.6' `"0-17: `=string(`P18_`af''[1,1]/`P`af''[1,1]*100,"%5.1fc")' %"',) ///
+			text(72 `=`MaxH'[1,1]*.6' `"18-64: `=string(`P1865_`af''[1,1]/`P`af''[1,1]*100,"%5.1fc")' %"',) ///
+			text(66 `=`MaxH'[1,1]*.6' `"65+: `=string(`P65_`af''[1,1]/`P`af''[1,1]*100,"%5.1fc")' %"',) ///
 			name(Piramide_`anything', replace) ///
 			xlabel(`=-`MaxH'[1,1]' `"`=string(`MaxH'[1,1],"%15.0fc")'"' `=-`MaxH'[1,1]/2' ///
 			`"`=string(`MaxH'[1,1]/2,"%15.0fc")'"' 0 `=`MaxM'[1,1]/2' `=`MaxM'[1,1]', angle(horizontal)) ///
-			caption("{it: Fuente: CONAPO (2017).}") ///
+			caption("{it: Fuente: CONAPO (2018).}") ///
 			xtitle("`poblacion'") ///
 			title({bf:`poblacion'}) subtitle(Pir${a}mides: `ai' y `af')
 		
-			graph save Piramide_`anything' `"`c(sysdir_personal)'/users/Piramide_`ai'-`af'.gph"', replace
+			*graph save Piramide_`anything' `"`c(sysdir_site)'/users/Piramide_`ai'-`af'.gph"', replace
 	}
 
 
@@ -203,10 +203,11 @@ quietly {
 			text(`=`MAX'[2,3]' `m65' `"{bf:Min:} `=string(`MAX'[2,3],"%5.1fc")' % (`m65')"', place(ne)) ///
 			text(`=`MAX'[2,3]-2.5' `m65' `"{bf:`poblacion':} `=string(`ym65',"%12.0fc")'"', place(ne)) ///
 			xtitle("") ytitle("porcentaje") ///
-			caption("{it:CONAPO (2017).}") ///
+			xlabel(1950(10)2050) ///
+			caption("{it:CONAPO (2018).}") ///
 			title({bf:`poblacion'}) subtitle(Transici${o}n demogr${a}fica)
 
-			graph save Estructura_`anything' `"`c(sysdir_personal)'/users/Estructura.gph"', replace
+			*graph save Estructura_`anything' `"`c(sysdir_site)'/users/Estructura.gph"', replace
 	}
 }
 end
