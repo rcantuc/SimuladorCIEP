@@ -7,104 +7,27 @@ quietly {
 	************************
 	*** 1. BASE DE DATOS ***
 	************************
-	* Generar base de datos para el simulador *
-	capture confirm file "`c(sysdir_site)'/bases/SIM/PEF.dta"
-	if _rc != 0 {
-		capture confirm file "`c(sysdir_site)'/bases/PEFs/Nacional/PEFSIM`=c(os)'.dta"
-		if _rc != 0 {
-			noisily run "`c(sysdir_site)'/bases/PEFs/Nacional/PEFSIM.do"	// It takes a long, long, long time
-		}
+	syntax [if] [, ANIO(int $anioVP) Graphs Update Base ID(string) ///
+		Concepto(string) Datosabiertos Fast ///
+		MINimum(real 1)]
 
-		use "`c(sysdir_site)'/bases/PEFs/Nacional/PEFSIM`=c(os)'.dta", clear
-		foreach k of varlist ejercido aprobado {
-			tempvar `k'totbase
-			egen ``k'totbase' = sum(`k'), by(anio)
-		}
 
-		g double gasto = ejercido if `ejercidototbase' != 0
-		replace gasto = aprobado if `ejercidototbase' == 0 & `aprobadototbase' != 0
-		replace gasto = proyecto if `ejercidototbase' == 0 & `aprobadototbase' == 0
-		format %20.0fc gasto ejercido aprobado proyecto
-
-		* Cuotas ISSSTE *
-		foreach k of varlist gasto aprobado ejercido proyecto {
-			tempvar `k' `k'Tot `k'cuotas `k'cuotasTot
-
-			g ``k'' = `k' if ramo != -1 & neto == 0 & (substr(string(objeto),1,1) == "1")
-			replace ``k'' = 0 if ``k'' == .
-			egen ``k'Tot' = sum(``k''), by(anio)
-
-			g ``k'cuotas' = `k' if ramo == -1
-			egen ``k'cuotasTot' = sum(``k'cuotas'), by(anio)
-
-			g double `k'neto = `k' - ``k''/``k'Tot'*``k'cuotasTot'
-			format `k'* %20.0fc
-
-			g double `k'CUOTAS = ``k''/``k'Tot'*``k'cuotasTot'
-			format `k'CUOTAS %20.0fc
-		}
-		
-		drop __*
-		save "`c(sysdir_site)'/bases/SIM/PEF`=c(os)'.dta", replace
+	** Base PEF **
+	capture use "`c(sysdir_site)'/bases/SIM/PEF.dta", clear
+	if _rc != 0 | "`update'" == "update" {
+		noisily run "`c(sysdir_site)'/UpdatePEF.do" `update'
 	}
 
-	
-	** 1.2 Syntax **
-	use "`c(sysdir_site)'/bases/SIM/PEF`=c(os)'.dta", clear	
-	syntax [if] [, ANIO(int $anioVP) Graphs Update Concepto(string) Base Datosabiertos Remake ID(string) Fast]
-	noisily di _newline(5) in g "{bf:SISTEMA FISCAL: " in y "GASTOS `anio'}"
 
-
-	** 1.3 Base ID **
+	** Base ID **
 	if "`id'" != "" {
 		use "`c(sysdir_site)'/users/`id'/PEF", clear
 	}
 
+	noisily di _newline(5) in g "{bf:SISTEMA FISCAL: " in y "GASTOS `anio'}"
 
-
-	
-	**************
-	*** 2. PEF ***
-	**************
-	if "$update" == "on" | "`update'" == "update" | "`remake'" == "remake" {
-		use "`c(sysdir_site)'/bases/SIM/PEF`=c(os)'.dta", clear
-
-		if "`remake'" == "remake" {
-			noisily run "`c(sysdir_site)'/bases/PEFs/Nacional/PEFSIM.do"	// It takes a long, long, long time
-		}
-
-		use "`c(sysdir_site)'/bases/PEFs/Nacional/PEFSIM`=c(os)'.dta", clear
-		foreach k of varlist ejercido aprobado {
-			tempvar `k'totbase
-			egen ``k'totbase' = sum(`k'), by(anio)
-		}
-
-		g double gasto = ejercido if `ejercidototbase' != 0
-		replace gasto = aprobado if `ejercidototbase' == 0 & `aprobadototbase' != 0
-		replace gasto = proyecto if `ejercidototbase' == 0 & `aprobadototbase' == 0
-		format %20.0fc gasto ejercido aprobado proyecto
-
-		* Cuotas ISSSTE *
-		foreach k of varlist gasto aprobado ejercido proyecto {
-			tempvar `k' `k'Tot `k'cuotas `k'cuotasTot
-
-			g ``k'' = `k' if ramo != -1 & neto == 0 & (substr(string(objeto),1,1) == "1")
-			replace ``k'' = 0 if ``k'' == .
-			egen ``k'Tot' = sum(``k''), by(anio)
-
-			g ``k'cuotas' = `k' if ramo == -1
-			egen ``k'cuotasTot' = sum(``k'cuotas'), by(anio)
-
-			g double `k'neto = `k' - ``k''/``k'Tot'*``k'cuotasTot'
-			format `k'* %20.0fc
-
-			g double `k'CUOTAS = ``k''/``k'Tot'*``k'cuotasTot'
-			format `k'CUOTAS %20.0fc
-		}
-
-		*drop if serie == .
-		drop __*
-		save "`c(sysdir_site)'/bases/SIM/PEF`=c(os)'.dta", replace
+	if "`base'" == "base" {
+		exit
 	}
 
 	if "`fast'" == "fast" {
@@ -115,14 +38,11 @@ quietly {
 		local concepto = "desc_funcion"
 	}
 
-	if "`base'" == "base" {
-		exit
-	}
 
 
 
 	************************
-	*** 3 Datos Abiertos ***
+	*** 2 Datos Abiertos ***
 	************************
 	if "`concepto'" == "desc_funcion" {
 		rename serie serielabel
@@ -220,84 +140,28 @@ quietly {
 	label copy `concepto' `label'
 	label values `over' `label'
 
-	replace `over' = -99 if (abs(gastonetoPIB) < 1 | gastonetoPIB == .)
-	label define `label' -99 "Otros (< 1% PIB)", add modify
+	replace `over' = -99 if (abs(gastonetoPIB) < `minimum' | gastonetoPIB == .)
+	label define `label' -99 "Otros (< `minimum'% PIB)", add modify
 
 	if "$graphs" == "on" | "`graphs'" == "graphs" {
-		tabstat aprobadonetoPIB ejercidonetoPIB proyectonetoPIB gastonetoPIB ///
-			if anio >= 2013 & anio <= 2018 & `concepto' != -1 & neto == 0, by(anio) stat(sum) save
-		tempname r1 r2 r3 r4 r5 r6
-		matrix `r1' = r(Stat1)
-		matrix `r2' = r(Stat2)
-		matrix `r3' = r(Stat3)
-		matrix `r4' = r(Stat4)
-		matrix `r5' = r(Stat5)
-		matrix `r6' = r(Stat6)
-
-		if "`concepto'" == "desc_funcion" & "`datosabiertos'" == "datosabiertos" {
-			local textgraph `"text(`=`r5'[1,4]' 74.6835 `"{bf:SHCP: `=string(`r5'[1,4],"%5.1fc")'}"', color(black) placement(6))"'
-		}
+		replace aprobadonetoPIB = proyectoPIB if anio == 2019
 		
-		if "`id'" != "" {
-			local textosim `"text(`=`r6'[1,4]' 91.1392 `"{bf:`id': `=string(`r6'[1,4],"%5.1fc")'}"', color(black) placement(6))"'		
-		}
-
-		graph bar (sum) gastonetoPIB if anio >= 2013 & anio <= 2018 & `concepto' != -1 & neto == 0, ///
-			over(`over', sort((sum) gastonetoPIB)) ///
-			over(anio, label(nolabels)) ///
+		graph bar (sum) aprobadonetoPIB ejercidoPIB if anio >= 2010 & `concepto' != -1 & neto == 0, ///
+			over(`over', relabel(1 "PEF" 2 "Obs")) ///
+			over(anio, label(labgap(vsmall))) ///
 			stack asyvars ///
-			title("Gastos presupuestarios", position(5)) ///
-			ytitle(% PIB) ylabel(0(10)20, labsize(small)) yscale(range(0(3)30)) ///
-			legend(on position(9) cols(1) justification(right) textfirst rowgap(3)) ///
+			title("Gastos presupuestarios", /*position(5)*/) ///
+			ytitle(% PIB) ylabel(0(5)30, labsize(small)) ///
+			legend(on position(6) rows(3)) ///
 			name(gastos, replace) ///
-			yreverse xalternate yalternate ///
+			/// yreverse xalternate yalternate ///
 			blabel(bar, format(%7.1fc)) ///
-			plotregion(margin(zero)) graphregion(margin(zero)) ///
-			text(`=`r1'[1,1]' 8.86076 `"{bf:---PEF: `=string(`r1'[1,1],"%5.1fc")'---}"', color(black) placement(0)) ///
-			text(`=`r2'[1,1]' 25.3165 `"{bf:---PEF: `=string(`r2'[1,1],"%5.1fc")'---}"', color(black) placement(0)) ///
-			text(`=`r3'[1,1]' 41.7722 `"{bf:---PEF: `=string(`r3'[1,1],"%5.1fc")'---}"', color(black) placement(0)) ///
-			text(`=`r4'[1,1]' 58.2278 `"{bf:---PEF: `=string(`r4'[1,1],"%5.1fc")'---}"', color(black) placement(0)) ///
-			text(`=`r5'[1,1]' 74.6835 `"{bf:---PEF: `=string(`r5'[1,1],"%5.1fc")'---}"', color(black) placement(0)) ///
-			text(`=`r6'[1,1]' 91.1392 `"{bf:---PEF: `=string(`r6'[1,1],"%5.1fc")'---}"', color(black) placement(0)) ///
-			text(`=`r1'[1,2]' 8.86076 `"{bf:CP: `=string(`r1'[1,2],"%5.1fc")'}"', color(black) placement(6)) ///
-			text(`=`r2'[1,2]' 25.3165 `"{bf:CP: `=string(`r2'[1,2],"%5.1fc")'}"', color(black) placement(6)) ///
-			text(`=`r3'[1,2]' 41.7722 `"{bf:CP: `=string(`r3'[1,2],"%5.1fc")'}"', color(black) placement(6)) ///
-			text(`=`r4'[1,2]' 58.2278 `"{bf:CP: `=string(`r4'[1,2],"%5.1fc")'}"', color(black) placement(6)) ///
-			text(`=`r5'[1,2]' 74.6835 `"{bf:CP: `=string(`r5'[1,2],"%5.1fc")'}"', color(black) placement(6)) ///
-			`textgraph' `textosim'
-
-		if "`id'" != "" {
-			local textosim `"text(`=`r6'[1,4]' 91.1392 `"{bf:`id': `=string(`r6'[1,4],"%5.1fc")'}"', color(black) placement(12))"'		
-		}
-
-		graph bar (sum) gastonetoPIB if anio >= 2013 & anio <= 2018 & `concepto' != -1 & neto == 0, ///
-			over(`over', sort((sum) gastonetoPIB)) ///
-			over(anio, label(labgap(small))) ///
-			stack asyvars ///
-			title("Gastos presupuestarios observados y estimados") ///
-			ytitle(% PIB) ylabel(0(10)20, labsize(small)) yscale(range(0(3)30)) ///
-			legend(on position(9) cols(1) justification(right) textfirst rowgap(3) margin(-6 0 0 0)) ///
-			name(gastos2, replace) ///
-			yalternate ///
-			blabel(bar, format(%7.1fc)) ///
-			caption("Fuente: Elaborado por el CIEP, utilizando el Simulador Fiscal $simuladorCIEP. Fecha: `c(current_date)', `c(current_time)'.") ///
-			text(`=`r1'[1,1]' 8.86076 `"{bf:---PEF: `=string(`r1'[1,1],"%5.1fc")'---}"', color(black) placement(0)) ///
-			text(`=`r2'[1,1]' 25.3165 `"{bf:---PEF: `=string(`r2'[1,1],"%5.1fc")'---}"', color(black) placement(0)) ///
-			text(`=`r3'[1,1]' 41.7722 `"{bf:---PEF: `=string(`r3'[1,1],"%5.1fc")'---}"', color(black) placement(0)) ///
-			text(`=`r4'[1,1]' 58.2278 `"{bf:---PEF: `=string(`r4'[1,1],"%5.1fc")'---}"', color(black) placement(0)) ///
-			text(`=`r5'[1,1]' 74.6835 `"{bf:---PEF: `=string(`r5'[1,1],"%5.1fc")'---}"', color(black) placement(0)) ///
-			text(`=`r6'[1,1]' 91.1392 `"{bf:---PEF: `=string(`r6'[1,1],"%5.1fc")'---}"', color(black) placement(0)) ///
-			text(`=`r1'[1,2]' 8.86076 `"{bf:CP: `=string(`r1'[1,2],"%5.1fc")'}"', color(black) placement(12)) ///
-			text(`=`r2'[1,2]' 25.3165 `"{bf:CP: `=string(`r2'[1,2],"%5.1fc")'}"', color(black) placement(12)) ///
-			text(`=`r3'[1,2]' 41.7722 `"{bf:CP: `=string(`r3'[1,2],"%5.1fc")'}"', color(black) placement(12)) ///
-			text(`=`r4'[1,2]' 58.2278 `"{bf:CP: `=string(`r4'[1,2],"%5.1fc")'}"', color(black) placement(12)) ///
-			text(`=`r5'[1,2]' 74.6835 `"{bf:CP: `=string(`r5'[1,2],"%5.1fc")'}"', color(black) placement(12)) ///
-			`textgraph' `textosim'
-
-
-		graph save gastos2 "`c(sysdir_site)'/users/`id'/Gastos.gph", replace
-		*graph export "`c(sysdir_site)'/users/`id'/Gastos.eps", replace name(gastos2)
-		*graph export "`c(sysdir_site)'/users/`id'/Gastos.png", replace name(gastos2)
+			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Cuenta P{c u'}blica y Paquetes Econ{c o'}micos).}") ///
+			`textosim'
+		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
+		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
+		
+		replace aprobadoPIB = 0 if anio == 2019
 	}
 
 
@@ -322,12 +186,17 @@ quietly {
 		tempname mat`k'
 		matrix `mat`k'' = r(Stat`k')
 
-		local name `"`=strtoname(`"`=substr(`"`=r(name`k')'"',1,31)'"')'"'
-
+		if substr(`"`=r(name`k')'"',1,31) == "'" {
+			local disptext = substr(`"`=r(name`k')'"',1,30)
+		}
+		else {
+			local disptext = substr(`"`=r(name`k')'"',1,31)
+		}
+		local name = strtoname(`"`disptext'"')
 		return scalar `name' = `mat`k''[1,1]
 		local division `"`division' `name'"'
 
-		noisily di in g `"  (+) `=substr(`"`=r(name`k')'"',1,35)'"' ///
+		noisily di in g `"  (+) `disptext'"' ///
 			_col(44) in y %20.0fc `mat`k''[1,1] ///
 			_col(66) in y %7.3fc `mat`k''[1,2] ///
 			_col(77) in y %7.1fc `mat`k''[1,1]/`mattot'[1,1]*100
@@ -379,10 +248,19 @@ quietly {
 		tempname mat`k'
 		matrix `mat`k'' = r(Stat`k')
 
-		return scalar neto_`=strtoname("`=substr(`"`=r(name`k')'"',1,25)'")' = `mat`k''[1,1]
-		local resumido `"`resumido' neto_`=strtoname("`=substr(`"`=r(name`k')'"',1,25)'")'"'
+		if substr(`"`=r(name`k')'"',1,25) == "'" {
+			local disptext = substr(`"`=r(name`k')'"',1,24)
+		}
+		else {
+			local disptext = substr(`"`=r(name`k')'"',1,25)
+		}
+		local name = strtoname(`"`disptext'"')
 
-		noisily di in g `"  (+) `=substr(`"`=r(name`k')'"',1,35)'"' ///
+		return scalar neto_`name' = `mat`k''[1,1]
+		local resumido `"`resumido' neto_`name'"'
+
+
+		noisily di in g `"  (+) `disptext'"' ///
 			_col(44) in y %20.0fc `mat`k''[1,1] ///
 			_col(66) in y %7.3fc `mat`k''[1,2] ///
 			_col(77) in y %7.1fc `mat`k''[1,1]/`mattot'[1,1]*100
@@ -436,8 +314,15 @@ quietly {
 				tempname mat5`k'
 				matrix `mat5`k'' = r(Stat`k')
 
+				if substr(`"`=r(name`k')'"',1,25) == "'" {
+					local disptext = substr(`"`=r(name`k')'"',1,24)
+				}
+				else {
+					local disptext = substr(`"`=r(name`k')'"',1,25)
+				}
+				
 				if abs(`mat`k''[1,2]-`mat5`k''[1,2]) > .4 {
-					noisily di in g `"  (+) `=substr(`"`=r(name`k')'"',1,35)'"' ///
+					noisily di in g `"  (+) `disptext'"' ///
 						_col(55) in y %7.3fc `mat5`k''[1,2] ///
 						_col(66) in y %7.3fc `mat`k''[1,2] ///
 						_col(77) in y %7.3fc `mat`k''[1,2]-`mat5`k''[1,2]

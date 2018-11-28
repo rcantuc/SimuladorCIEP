@@ -35,7 +35,7 @@ import delimited "`c(sysdir_site)'/bases/SIM/PEF 2018.csv", clear
 
 drop if ciclo == .
 tostring ramo, replace
-destring aprobado, replace
+destring aprobado, replace ignore(",")
 
 foreach j of varlist desc_* {
 	replace `j' = trim(`j')
@@ -108,6 +108,7 @@ replace ejercido = 68642820898.42 in -1
 set obs `=_N+1'
 replace ciclo = 2017 in -1
 replace aprobado = 91005191937 in -1
+replace ejercido = 93110689450 in -1
 
 set obs `=_N+1'
 replace ciclo = 2018 in -1
@@ -142,7 +143,6 @@ foreach k of varlist _all {
 	capture confirm string variable `k'
 	if _rc == 0 {
 		quietly replace `k' = subinstr(`k',`"""',"",.)
-		quietly replace `k' = subinstr(`k',"'","",.)
 		quietly replace `k' = trim(`k')
 	}
 }
@@ -261,6 +261,7 @@ drop desc_entidad
 drop capitulo
 g capitulo = substr(string(objeto),1,1) if objeto != -1
 destring capitulo, replace
+replace capitulo = -1 if ramo == -1
 
 label define capitulo 1 "Servicios personales" 2 "Materiales y suministros" ///
 	3 "Gastos generales" 4 "Subsidios y transferencias" ///
@@ -306,30 +307,60 @@ drop series
 
 
 ** Modulos **
-g modulo = "uso_Pension1" if neto == 0 & ramo != -1 ///
+g modulo = "uso_Pension" if neto == 0 & ramo != -1 ///
 		& (substr(string(objeto),1,2) == "45" | substr(string(objeto),1,2) == "47" | pp == 176)
 
-replace modulo = "uso_Educaci2" if neto == 0 & ramo != -1 ///
+replace modulo = "uso_Educaci" if neto == 0 & ramo != -1 ///
 		& (substr(string(objeto),1,2) != "45" & substr(string(objeto),1,2) != "47" & pp != 176) ///
 		& desc_funcion == 10
 
-replace modulo = "uso_Salud3" if neto == 0 & ramo != -1 ///
+replace modulo = "uso_Salud" if neto == 0 & ramo != -1 ///
 		& (substr(string(objeto),1,2) != "45" & substr(string(objeto),1,2) != "47" & pp != 176) ///
 		& desc_funcion != 10 ///
 		& desc_funcion == 21
 
-replace modulo = "uso_Salud3" if neto == 0 & ramo != -1 ///
+replace modulo = "uso_Salud" if neto == 0 & ramo != -1 ///
 		& (substr(string(objeto),1,2) != "45" & substr(string(objeto),1,2) != "47" & pp != 176) ///
 		& (modalidad == "E" & pp == 13 & ramo == 52)
 
 
+foreach k of varlist ejercido aprobado {
+	tempvar `k'totbase
+	egen ``k'totbase' = sum(`k') if ramo != -1, by(anio)
+}
+
+g double gasto = ejercido if `ejercidototbase' != 0
+replace gasto = aprobado if `ejercidototbase' == 0 & `aprobadototbase' != 0
+replace gasto = proyecto if `ejercidototbase' == 0 & `aprobadototbase' == 0
+format %20.0fc gasto ejercido aprobado proyecto
+
+
+** Cuotas ISSSTE **
+foreach k of varlist gasto aprobado ejercido proyecto {
+	tempvar `k' `k'Tot `k'cuotas `k'cuotasTot
+
+	g ``k'' = `k' if ramo != -1 & neto == 0 & (substr(string(objeto),1,1) == "1")
+	replace ``k'' = 0 if ``k'' == .
+	egen ``k'Tot' = sum(``k''), by(anio)
+
+	g ``k'cuotas' = `k' if ramo == -1
+	egen ``k'cuotasTot' = sum(``k'cuotas'), by(anio)
+
+	g double `k'neto = `k' - ``k''/``k'Tot'*``k'cuotasTot'
+	format `k'* %20.0fc
+
+	g double `k'CUOTAS = ``k''/``k'Tot'*``k'cuotasTot'
+	format `k'CUOTAS %20.0fc
+}
+
+
 ** Saving **
+drop __*
 order ramo desc_ur finalidad desc_funcion desc_subfuncion desc_ai desc_modalidad ///
 	desc_pp desc_objeto desc_tipogasto fuente entidad serie ///
 	proyecto aprobado ejercido 
 format %30.0fc ramo desc_ur finalidad desc_funcion desc_subfuncion desc_ai desc_modalidad ///
 	desc_pp desc_objeto desc_tipogasto fuente entidad serie
 format %20.0fc proyecto aprobado ejercido
-
 compress
 save "`c(sysdir_site)'/bases/SIM/PEF.dta", replace
