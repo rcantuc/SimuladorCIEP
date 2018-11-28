@@ -105,11 +105,11 @@ quietly {
 			text(105 `=`MaxH'[1,1]*.6' "{bf:Edad mediana `af'}",) ///
 			text(98 `=`MaxH'[1,1]*.6' "Hombres: `=`H`af''[1,1]'",) ///
 			text(92 `=`MaxH'[1,1]*.6' "Mujeres: `=`M`af''[1,1]'",) ///
-			text(85 `=-`MaxH'[1,1]*.6' "{bf:Composici${o}n por edades `ai'}",) ///
+			text(85 `=-`MaxH'[1,1]*.6' "{bf:Composici{c o'}n por edades `ai'}",) ///
 			text(78 `=-`MaxH'[1,1]*.6' `"0-17: `=string(`P18_`ai''[1,1]/`P`ai''[1,1]*100,"%5.1fc")' %"',) ///
 			text(72 `=-`MaxH'[1,1]*.6' `"18-64: `=string(`P1865_`ai''[1,1]/`P`ai''[1,1]*100,"%5.1fc")' %"',) ///
 			text(66 `=-`MaxH'[1,1]*.6' `"65+: `=string(`P65_`ai''[1,1]/`P`ai''[1,1]*100,"%5.1fc")' %"',) ///
-			text(85 `=`MaxH'[1,1]*.6' "{bf:Composici${o}n por edades `af'}",) ///
+			text(85 `=`MaxH'[1,1]*.6' "{bf:Composici{c o'}n por edades `af'}",) ///
 			text(78 `=`MaxH'[1,1]*.6' `"0-17: `=string(`P18_`af''[1,1]/`P`af''[1,1]*100,"%5.1fc")' %"',) ///
 			text(72 `=`MaxH'[1,1]*.6' `"18-64: `=string(`P1865_`af''[1,1]/`P`af''[1,1]*100,"%5.1fc")' %"',) ///
 			text(66 `=`MaxH'[1,1]*.6' `"65+: `=string(`P65_`af''[1,1]/`P`af''[1,1]*100,"%5.1fc")' %"',) ///
@@ -118,7 +118,7 @@ quietly {
 			`"`=string(`MaxH'[1,1]/2,"%15.0fc")'"' 0 `=`MaxM'[1,1]/2' `=`MaxM'[1,1]', angle(horizontal)) ///
 			caption("{it: Fuente: CONAPO (2018).}") ///
 			xtitle("`poblacion'") ///
-			title({bf:`poblacion'}) subtitle(Pir${a}mides: `ai' y `af')
+			title({bf:`poblacion'}) subtitle(Pir{c a'}mides: `ai' y `af')
 		
 			*graph save Piramide_`anything' `"`c(sysdir_site)'/users/Piramide_`ai'-`af'.gph"', replace
 	}
@@ -205,7 +205,7 @@ quietly {
 			xtitle("") ytitle("porcentaje") ///
 			xlabel(1950(10)2050) ///
 			caption("{it:CONAPO (2018).}") ///
-			title({bf:`poblacion'}) subtitle(Transici${o}n demogr${a}fica)
+			title({bf:`poblacion'}) subtitle(Transici{c o'}n demogr{c a'}fica)
 
 			*graph save Estructura_`anything' `"`c(sysdir_site)'/users/Estructura.gph"', replace
 	}
