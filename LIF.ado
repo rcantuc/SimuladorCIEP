@@ -7,7 +7,8 @@ quietly {
 	************************
 	*** 1. BASE DE DATOS ***
 	************************
-	syntax [if/] [, ANIO(int $anioVP ) Graphs Update Base ID(string)]
+	syntax [if/] [, ANIO(int $anioVP ) Graphs Update Base ID(string) ///
+		MINimum(real 1)]
 
 
 	** Base LIF **
@@ -91,32 +92,18 @@ quietly {
 	label copy divCIEP `label'
 	label values `resumido' `label'
 
-	replace `resumido' = -2 if (abs(recaudacionPIB) < .3 | recaudacionPIB == .) ///
-		& divCIEP != `deuda' & divCIEP != 7 & divCIEP != 13 & anio != $anioVP
-	replace `resumido' = -2 if (abs(LIFPIB) < .3 | LIFPIB == .) ///
-		& divCIEP != `deuda' & divCIEP != 7 & divCIEP != 13 & anio == $anioVP
+	replace `resumido' = -2 if (abs(recaudacionPIB) < `minimum' | recaudacionPIB == .) ///
+		& divCIEP != `deuda'
+	label define `label' -2 "Otros (< `minimum'% PIB)", add modify
 
-	label define `label' -2 "Otros (< .3% PIB)", add modify
-
-	replace nombre = subinstr(nombre,"Impuesto especial sobre producci${o}n y servicios de ","",.)
-	replace nombre = subinstr(nombre,"alimentos no b${a}sicos con alta densidad cal${o}rica","comida chatarra",.)
+	replace nombre = subinstr(nombre,"Impuesto especial sobre producci{c o'}n y servicios de ","",.)
+	replace nombre = subinstr(nombre,"alimentos no b{c a'}sicos con alta densidad cal{c o'}rica","comida chatarra",.)
 	replace nombre = subinstr(nombre,"/","_",.)
 
 	if "$graphs" == "on" | "`graphs'" == "graphs" {
-		tabstat LIFPIB recaudacionPIB if anio >= 2013 & anio <= $anioVP & divCIEP != `deuda', by(anio) stat(sum) save
-		tempname r1 r2 r3 r4 r5 r6
-		matrix `r1' = r(Stat1)
-		matrix `r2' = r(Stat2)
-		matrix `r3' = r(Stat3)
-		matrix `r4' = r(Stat4)
-		matrix `r5' = r(Stat5)
-		matrix `r6' = r(Stat6)
-
-		if "`id'" != "" {
-			local textosim `"text(`=`r6'[1,2]' 91.1392 `"{bf:`id': `=string(`r6'[1,2],"%5.1fc")'}"', color(black) placement(12))"'
-		}
+		replace LIFPIB = ILIFPIB if anio == 2019
 		
-		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & anio <= $anioVP & divCIEP != `deuda', ///
+		graph bar (sum) LIFPIB montoPIB if anio >= 2010 & divCIEP != `deuda', ///
 			over(divOrigen, relabel(1 "LIF" 2 "Obs")) ///
 			over(anio, label(labgap(vsmall))) ///
 			stack asyvars ///
@@ -131,7 +118,7 @@ quietly {
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 
-		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & anio <= $anioVP & divCIEP != `deuda' & divOrigen == 5 & recaudacionPIB != 0, ///
+		graph bar (sum) LIFPIB montoPIB if anio >= 2010 & divCIEP != `deuda' & divOrigen == 5, ///
 			over(`resumido', relabel(1 "LIF" 2 "Obs")) ///
 			over(anio, label(labgap(vsmall))) ///
 			stack asyvars ///
@@ -145,7 +132,7 @@ quietly {
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 
-		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & anio <= $anioVP & divCIEP != `deuda' & divOrigen == 2 & recaudacionPIB != 0, ///
+		graph bar (sum) LIFPIB montoPIB if anio >= 2010 & divCIEP != `deuda' & divOrigen == 2, ///
 			over(`resumido', relabel(1 "LIF" 2 "Obs")) ///
 			over(anio, label(labgap(vsmall))) ///
 			stack asyvars ///
@@ -158,7 +145,7 @@ quietly {
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 
-		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & anio <= $anioVP & divCIEP != `deuda' & divOrigen == 4 & recaudacionPIB != 0, ///
+		graph bar (sum) LIFPIB montoPIB if anio >= 2010 & divCIEP != `deuda' & divOrigen == 4, ///
 			over(`resumido', relabel(1 "LIF" 2 "Obs")) ///
 			over(anio, label(labgap(small))) ///
 			stack asyvars ///
@@ -171,7 +158,7 @@ quietly {
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 
-		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & anio <= $anioVP & divCIEP != `deuda' & divOrigen == 3 & recaudacionPIB != 0, ///
+		graph bar (sum) LIFPIB montoPIB if anio >= 2010 & divCIEP != `deuda' & divOrigen == 3, ///
 			over(divCIEP, relabel(1 "LIF" 2 "Obs")) ///
 			over(anio, label(labgap(small))) ///
 			stack asyvars ///
@@ -187,6 +174,8 @@ quietly {
 		*graph save ingresosOrigen "`c(sysdir_personal)'/users/`id'/Ingresos.gph", replace
 		*graph export "`c(sysdir_personal)'/users/`id'/Ingresos.eps", replace name(ingresosOrigen)
 		*graph export "`c(sysdir_personal)'/users/`id'/Ingresos.png", replace name(ingresosOrigen)
+
+		replace LIFPIB = 0 if anio == 2019
 	}
 
 
