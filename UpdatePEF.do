@@ -329,9 +329,14 @@ foreach k of varlist ejercido aprobado {
 	egen ``k'totbase' = sum(`k') if ramo != -1, by(anio)
 }
 
-g double gasto = ejercido if `ejercidototbase' != 0
-replace gasto = aprobado if `ejercidototbase' == 0 & `aprobadototbase' != 0
-replace gasto = proyecto if `ejercidototbase' == 0 & `aprobadototbase' == 0
+*g double gasto = ejercido if `ejercidototbase' != 0
+*replace gasto = aprobado if `ejercidototbase' == 0 & `aprobadototbase' != 0
+*replace gasto = proyecto if `ejercidototbase' == 0 & `aprobadototbase' == 0
+
+g double gasto = ejercido if ejercido != 0 & ejercido != .
+replace gasto = aprobado if (ejercido == 0 | ejercido == .) & (aprobado != 0 | aprobado != .)
+replace gasto = proyecto if (ejercido == 0 | ejercido == .) & (aprobado == 0 | aprobado == . ) & (proyecto != 0 | proyecto != .)
+
 format %20.0fc gasto ejercido aprobado proyecto
 
 
