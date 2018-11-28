@@ -1,9 +1,8 @@
 program define PIBDeflactor
 quietly {
 	version 13.1
-	syntax [, ANIOvp(int $anioVP) GEO(int 5) FIN(int 2030) ///
-		ID(string) GLOBALs ///
-		Graphs NOGraphs]
+	syntax [, ANIOvp(int -1) GEO(int 5) FIN(int 2030) ///
+		ID(string) Graphs]
 
 
 
@@ -169,11 +168,10 @@ quietly {
 	if _rc == 0 & `aniovp' == -1 {
 		local aniovp = $anioVP
 	}
-	if `aniovp' == -1 {
+	else if `aniovp' == -1 {
 		local aniovp : di %td_CY-N-D  date("$S_DATE", "DMY")
 		local aniovp = substr(`"`=trim("`aniovp'")'"',1,4)
 	}
-
 	forvalues k=1(1)`=_N' {
 		if anio[`k'] == `aniovp' {
 			local obsvp = `k'
@@ -262,14 +260,14 @@ quietly {
 	keep if trimestre == 1
 	drop *Q *trimestre
 	
-	if "`globals'" == "globals" {
+	*if "`globals'" == "globals" {
 		forvalues k=1(1)`=_N' {
 			global PIB_`=anio[`k']' = pibY[`k']
 			global DEF_`=anio[`k']' = deflator[`k']
 			global pib_`=anio[`k']' = var_pibY[`k']
 			global def_`=anio[`k']' = var_indiceY[`k']
 		}
-	}
+	*}
 
 	if "`graphs'" == "graphs" {
 		* Texto sobre lineas *
