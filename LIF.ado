@@ -92,7 +92,7 @@ quietly {
 	label copy divCIEP `label'
 	label values `resumido' `label'
 
-	replace `resumido' = -2 if (abs(recaudacionPIB) < `minimum' | recaudacionPIB == .) ///
+	replace `resumido' = -2 if (abs(recaudacionPIB) < `minimum' | recaudacionPIB == . | recaudacionPIB == 0) ///
 		& divCIEP != `deuda'
 	label define `label' -2 "Otros (< `minimum'% PIB)", add modify
 
@@ -102,8 +102,9 @@ quietly {
 
 	if "$graphs" == "on" | "`graphs'" == "graphs" {
 		replace LIFPIB = ILIFPIB if anio == 2019
+		replace recaudacionPIB = 0 if anio == 2019
 		
-		graph bar (sum) LIFPIB montoPIB if anio >= 2010 & divCIEP != `deuda', ///
+		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & divCIEP != `deuda', ///
 			over(divOrigen, relabel(1 "LIF" 2 "Obs")) ///
 			over(anio, label(labgap(vsmall))) ///
 			stack asyvars ///
@@ -118,7 +119,7 @@ quietly {
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 
-		graph bar (sum) LIFPIB montoPIB if anio >= 2010 & divCIEP != `deuda' & divOrigen == 5, ///
+		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & divCIEP != `deuda' & divOrigen == 5, ///
 			over(`resumido', relabel(1 "LIF" 2 "Obs")) ///
 			over(anio, label(labgap(vsmall))) ///
 			stack asyvars ///
@@ -132,7 +133,7 @@ quietly {
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 
-		graph bar (sum) LIFPIB montoPIB if anio >= 2010 & divCIEP != `deuda' & divOrigen == 2, ///
+		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & divCIEP != `deuda' & divOrigen == 2, ///
 			over(`resumido', relabel(1 "LIF" 2 "Obs")) ///
 			over(anio, label(labgap(vsmall))) ///
 			stack asyvars ///
@@ -145,7 +146,7 @@ quietly {
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 
-		graph bar (sum) LIFPIB montoPIB if anio >= 2010 & divCIEP != `deuda' & divOrigen == 4, ///
+		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & divCIEP != `deuda' & divOrigen == 4, ///
 			over(`resumido', relabel(1 "LIF" 2 "Obs")) ///
 			over(anio, label(labgap(small))) ///
 			stack asyvars ///
@@ -158,7 +159,7 @@ quietly {
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 
-		graph bar (sum) LIFPIB montoPIB if anio >= 2010 & divCIEP != `deuda' & divOrigen == 3, ///
+		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & divCIEP != `deuda' & divOrigen == 3 & divCIEP != 18, ///
 			over(divCIEP, relabel(1 "LIF" 2 "Obs")) ///
 			over(anio, label(labgap(small))) ///
 			stack asyvars ///
@@ -176,6 +177,7 @@ quietly {
 		*graph export "`c(sysdir_personal)'/users/`id'/Ingresos.png", replace name(ingresosOrigen)
 
 		replace LIFPIB = 0 if anio == 2019
+		replace recaudacionPIB = ILIF if anio == 2019
 	}
 
 
