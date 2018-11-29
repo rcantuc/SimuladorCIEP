@@ -324,15 +324,8 @@ replace modulo = "uso_Salud" if neto == 0 & ramo != -1 ///
 		& (modalidad == "E" & pp == 13 & ramo == 52)
 
 
-foreach k of varlist ejercido aprobado {
-	tempvar `k'totbase
-	egen ``k'totbase' = sum(`k') if ramo != -1, by(anio)
-}
-
-*g double gasto = ejercido if `ejercidototbase' != 0
-*replace gasto = aprobado if `ejercidototbase' == 0 & `aprobadototbase' != 0
-*replace gasto = proyecto if `ejercidototbase' == 0 & `aprobadototbase' == 0
-
+************************
+** Gasto Bruto y Neto **
 g double gasto = ejercido if ejercido != 0 & ejercido != .
 replace gasto = aprobado if (ejercido == 0 | ejercido == .) & (aprobado != 0 | aprobado != .)
 replace gasto = proyecto if (ejercido == 0 | ejercido == .) & (aprobado == 0 | aprobado == . ) & (proyecto != 0 | proyecto != .)

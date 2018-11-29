@@ -130,8 +130,7 @@ quietly {
 
 		twoway (connected var_indiceQ aniotrimestre) ///
 			(connected var_indiceY aniotrimestre), ///
-			title({bf:{c I'}ndice de precios impl{c i'}citos}) ///
-			subtitle(Crecimiento trimestral y anual) ///
+			title("{bf:{c I'}ndice de precios impl{c i'}citos}") ///
 			ytitle(porcentaje) xtitle("") yline(0, lcolor(black) lpattern(dash)) ///
 			text(`crec_deflactor') ///
 			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n del INEGI, BIE.}") ///
@@ -219,7 +218,6 @@ quietly {
 		twoway (connected var_pibQ aniotrimestre) ///
 			(connected var_pibY aniotrimestre) if var_pibY != ., ///
 			title({bf:Producto Interno Bruto}) ///
-			subtitle(Crecimiento trimestral y anual) ///
 			ytitle(percentaje) xtitle("") yline(0, lcolor(black) lpattern(dash)) ///
 			text(`crec_PIB') ///
 			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n del INEGI, BIE.}") ///
@@ -287,8 +285,7 @@ quietly {
 		
 		twoway (connected var_indiceY anio if anio < `aniovp') ///
 			(connected var_indiceY anio if anio >= `aniovp'), ///
-			title({bf:{c I'}ndice de precio impl{c i'}citos}) ///
-			subtitle(Observado y proyectado) ///
+			title({bf:{c I'}ndice de precio impl{c i'}citos observado y proyectado}) ///
 			ytitle(percentaje) xtitle("") yline(0, lcolor(black) lpattern(dash)) ///
 			text(`crec_indicep') ///
 			legend(label(1 "Observado") label(2 "Proyecci{c o'}n")) ///
@@ -301,8 +298,7 @@ quietly {
 
 		twoway (connected var_pibY anio if anio < `aniovp') ///
 			(connected var_pibY anio if anio >= `aniovp'), ///
-			title({bf:Producto Interno Bruto}) ///
-			subtitle(Observado y proyectado) ///
+			title({bf:Producto Interno Bruto observado y proyectado}) ///
 			ytitle(percentaje) xtitle("") yline(0, lcolor(black) lpattern(dash)) ///
 			text(`crec_PIBp') ///
 			legend(label(1 "Observado") label(2 "Proyecci{c o'}n")) ///

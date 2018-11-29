@@ -48,7 +48,7 @@ quietly {
 
 
 	**************
-	*** 3. PIB ***
+	*** 2. PIB ***
 	**************
 	preserve
 	PIBDeflactor
@@ -68,7 +68,7 @@ quietly {
 
 
 	****************
-	*** 4. Graph ***
+	*** 3. Graph ***
 	****************
 	drop if serie == .
 	xtset serie anio
@@ -181,8 +181,8 @@ quietly {
 	}
 
 
-	*********************
-	** 1.5 Display LIF **
+	********************
+	** 4. Display LIF **
 
 	** Division CIEP **
 	noisily di _newline in g "{bf: A. Ingresos presupuestarios (divCIEP) " ///
