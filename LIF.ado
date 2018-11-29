@@ -115,9 +115,10 @@ quietly {
 			name(ingresos, replace) ///
 			blabel(bar, format(%7.1fc)) ///
 			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}")
-			`textosim'
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
+		gr_edit .grpaxis.major.num_rule_ticks = 0
+		gr_edit .grpaxis.edit_tick 19 95.1691 `"ILIF"', tickset(major)
 
 		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & divCIEP != `deuda' & divOrigen == 5, ///
 			over(`resumido', relabel(1 "LIF" 2 "Obs")) ///
@@ -132,6 +133,8 @@ quietly {
 			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}")
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
+		gr_edit .grpaxis.major.num_rule_ticks = 0
+		gr_edit .grpaxis.edit_tick 19 95.1691 `"ILIF"', tickset(major)
 
 		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & divCIEP != `deuda' & divOrigen == 2, ///
 			over(`resumido', relabel(1 "LIF" 2 "Obs")) ///
@@ -145,6 +148,8 @@ quietly {
 			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}")
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
+		gr_edit .grpaxis.major.num_rule_ticks = 0
+		gr_edit .grpaxis.edit_tick 19 95.1691 `"ILIF"', tickset(major)
 
 		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & divCIEP != `deuda' & divOrigen == 4, ///
 			over(`resumido', relabel(1 "LIF" 2 "Obs")) ///
@@ -158,6 +163,8 @@ quietly {
 			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}")
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
+		gr_edit .grpaxis.major.num_rule_ticks = 0
+		gr_edit .grpaxis.edit_tick 19 95.1691 `"ILIF"', tickset(major)
 
 		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & divCIEP != `deuda' & divOrigen == 3 & divCIEP != 18, ///
 			over(divCIEP, relabel(1 "LIF" 2 "Obs")) ///
@@ -171,6 +178,8 @@ quietly {
 			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}")
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
+		gr_edit .grpaxis.major.num_rule_ticks = 0
+		gr_edit .grpaxis.edit_tick 19 95.1691 `"ILIF"', tickset(major)
 
 		*graph save ingresosOrigen "`c(sysdir_personal)'/users/`id'/Ingresos.gph", replace
 		*graph export "`c(sysdir_personal)'/users/`id'/Ingresos.eps", replace name(ingresosOrigen)
