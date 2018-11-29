@@ -10,7 +10,7 @@ quietly {
 	capture use "`c(sysdir_site)'/bases/SIM/PEF.dta", clear
 	local rc = _rc
 	syntax [if] [, ANIO(int $anioVP) Graphs Update Base ID(string) ///
-		BY(varname) Datosabiertos Fast ///
+		BY(varname) Datosabiertos Fast ROWS(int 1) COLS(int 4) ///
 		MINimum(real 1)]
 
 
@@ -101,14 +101,15 @@ quietly {
 			stack asyvars ///
 			title("{bf:Gastos presupuestarios aprobados y ejercidos}", /*position(5)*/) ///
 			ytitle(% PIB) ylabel(0(5)30, labsize(small)) ///
-			legend(on position(6) rows(3)) ///
+			legend(on position(6) rows(`rows') cols(`cols')) ///
 			name(gastos, replace) ///
 			/// yreverse xalternate yalternate ///
 			blabel(bar, format(%7.1fc)) ///
-			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Cuenta P{c u'}blica y Paquetes Econ{c o'}micos).}") ///
-			`textosim'
+			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}")
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
+		gr_edit .grpaxis.major.num_rule_ticks = 0
+		gr_edit .grpaxis.edit_tick 13 92.9825 `"PPEF"', tickset(major)
 		
 		replace aprobadonetoPIB = 0 if anio == 2019
 		replace gastonetoPIB = proyectonetoPIB if anio == 2019
