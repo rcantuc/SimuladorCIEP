@@ -34,7 +34,7 @@ noisily PIBDeflactor, graphs 				// update
 **************
 *** 2. LIF ***
 **************
-LIF, graphs
+noisily LIF, graphs
 
 
 
@@ -43,7 +43,7 @@ LIF, graphs
 **************
 *** 3. PEF ***
 **************
-PEF, graphs
+noisily PEF, graphs
 
 
 
