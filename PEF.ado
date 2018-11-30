@@ -95,7 +95,8 @@ quietly {
 		replace aprobadonetoPIB = proyectonetoPIB if anio == 2019
 		replace gastonetoPIB = 0 if anio == 2019 | anio == 2018
 		
-		graph bar (sum) aprobadonetoPIB gastonetoPIB if anio >= 2010 & `by' != -1 & neto == 0, ///
+		graph bar (sum) aprobadonetoPIB gastonetoPIB if anio >= 2010 & `by' != -1 ///
+			& neto == 0 & aprobadonetoPIB != 0, ///
 			over(`over', relabel(1 "PEF" 2 "Obs")) ///
 			over(anio, label(labgap(vsmall))) ///
 			stack asyvars ///
