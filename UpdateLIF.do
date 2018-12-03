@@ -82,7 +82,7 @@ forvalues j=1(1)`=_N' {
 **************************************
 ** Recaudacion observada y estimada **
 g double recaudacion = monto if mes == 12					// Se reemplazan cuando la serie esta completa
-replace recaudacion = monto if mes < 12 //| mes == . 				// De lo contrario, es LIF
+replace recaudacion = monto if mes < 12						// De lo contrario, lo observado se anualiza
 *replace recaudacion = LIF if mes < 12 | mes == . 				// De lo contrario, es LIF
 replace recaudacion = ILIF if mes == . & LIF == 0 & ILIF != 0			// De lo contrario, es ILIF
 format recaudacion %20.0fc

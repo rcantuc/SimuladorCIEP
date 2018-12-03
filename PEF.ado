@@ -96,7 +96,7 @@ quietly {
 		replace gastonetoPIB = 0 if anio == 2019 | anio == 2018
 		
 		graph bar (sum) aprobadonetoPIB gastonetoPIB if anio >= 2010 & `by' != -1 ///
-			& neto == 0 & aprobadonetoPIB != 0, ///
+			& neto == 0, ///
 			over(`over', relabel(1 "PEF" 2 "Obs")) ///
 			over(anio, label(labgap(vsmall))) ///
 			stack asyvars ///
@@ -107,11 +107,12 @@ quietly {
 			/// yreverse xalternate yalternate ///
 			blabel(bar, format(%7.1fc)) ///
 			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}")
+
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .grpaxis.major.num_rule_ticks = 0
 		gr_edit .grpaxis.edit_tick 13 92.9825 `"PPEF"', tickset(major)
-		
+
 		replace aprobadonetoPIB = 0 if anio == 2019
 		replace gastonetoPIB = proyectonetoPIB if anio == 2019
 		replace gastonetoPIB = aprobadonetoPIB if anio == 2018
@@ -129,7 +130,11 @@ quietly {
 		_col(66) %7s "% PIB" ///
 		_col(77) %7s "% Total" "}"
 
-	tabstat gasto gastoPIB if anio == `anio' & `by' != -1, by(`by') stat(sum) f(%20.0fc) save
+	capture tabstat gasto gastoPIB if anio == `anio' & `by' != -1, by(`by') stat(sum) f(%20.0fc) save
+	if _rc != 0 {
+		noisily di in r "No hay informaci{c o'}n para el a{c n~}o `anio'."
+		exit
+	}
 	tempname mattot
 	matrix `mattot' = r(StatTotal)
 
