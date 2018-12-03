@@ -181,12 +181,25 @@ quietly {
 		gr_edit .grpaxis.major.num_rule_ticks = 0
 		gr_edit .grpaxis.edit_tick 19 95.1691 `"ILIF"', tickset(major)
 
-		*graph save ingresosOrigen "`c(sysdir_personal)'/users/`id'/Ingresos.gph", replace
-		*graph export "`c(sysdir_personal)'/users/`id'/Ingresos.eps", replace name(ingresosOrigen)
-		*graph export "`c(sysdir_personal)'/users/`id'/Ingresos.png", replace name(ingresosOrigen)
+		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & divCIEP != `deuda' & (divCIEP == 21 | divCIEP == 2), ///
+			over(divCIEP, relabel(1 "LIF" 2 "Obs")) ///
+			over(anio, label(labgap(vsmall))) ///
+			stack asyvars ///
+			title("{bf:Ingresos de EPE observados y estimados}") ///
+			subtitle("Observados y estimados") ///
+			ytitle(% PIB) ylabel(0(5)30, labsize(small)) ///
+			legend(on position(6) rows(1)) ///
+			name(epe, replace) ///
+			blabel(bar, format(%7.1fc)) ///
+			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}")
+		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
+		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
+		gr_edit .grpaxis.major.num_rule_ticks = 0
+		gr_edit .grpaxis.edit_tick 19 95.1691 `"ILIF"', tickset(major)
+
 
 		replace LIFPIB = 0 if anio == 2019
-		replace recaudacionPIB = ILIF if anio == 2019
+		replace recaudacionPIB = ILIFPIB if anio == 2019
 	}
 
 
