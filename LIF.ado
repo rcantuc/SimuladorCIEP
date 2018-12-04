@@ -189,7 +189,7 @@ quietly {
 			subtitle("Observados y estimados") ///
 			ytitle(% PIB) ylabel(0(5)30, labsize(small)) ///
 			legend(on position(6) rows(1)) ///
-			name(epe, replace) ///
+			name(ingresosEPE, replace) ///
 			blabel(bar, format(%7.1fc)) ///
 			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}")
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
