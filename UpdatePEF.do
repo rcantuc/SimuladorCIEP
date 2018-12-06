@@ -79,7 +79,6 @@ order proyecto aprobado ejercido modificado devengado pagado, last
 format proyecto aprobado ejercido modificado devengado pagado %20.0fc
 
 
-
 *******************
 ** Cuotas ISSSTE **
 destring proyecto aprobado ejercido, replace ignore(",")
@@ -119,7 +118,6 @@ set obs `=_N+1'
 replace ciclo = 2019 in -1
 replace proyecto = 99233509443 in -1
 replace aprobado = 99233509443 in -1
-
 
 foreach k of varlist ramo-cartera {
 	capture confirm numeric variable `k'
@@ -324,14 +322,14 @@ replace modulo = "uso_Salud" if neto == 0 & ramo != -1 ///
 		& (modalidad == "E" & pp == 13 & ramo == 52)
 
 
-************************
-** Gasto Bruto y Neto **
-g double gasto = ejercido if ejercido != 0 & ejercido != .
-replace gasto = aprobado if (ejercido == 0 | ejercido == .) & (aprobado != 0 | aprobado != .)
-replace gasto = proyecto if (ejercido == 0 | ejercido == .) & (aprobado == 0 | aprobado == . ) & (proyecto != 0 | proyecto != .)
 
-format %20.0fc gasto ejercido aprobado proyecto
 
+****************
+*** 3. Gasto ***
+****************
+g double gasto = ejercido if anio <= 2017
+replace gasto = aprobado if anio == 2018
+replace gasto = proyecto if anio == 2019
 
 ** Cuotas ISSSTE **
 foreach k of varlist gasto aprobado ejercido proyecto {
@@ -350,10 +348,14 @@ foreach k of varlist gasto aprobado ejercido proyecto {
 	g double `k'CUOTAS = ``k''/``k'Tot'*``k'cuotasTot'
 	format `k'CUOTAS %20.0fc
 }
+	
 
-
-** Saving **
-drop __*
+	
+***************
+** 4. Saving **
+***************
+format %20.0fc ejercido aprobado proyecto
+capture drop __*
 order ramo desc_ur finalidad desc_funcion desc_subfuncion desc_ai desc_modalidad ///
 	desc_pp desc_objeto desc_tipogasto fuente entidad serie ///
 	proyecto aprobado ejercido 

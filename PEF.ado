@@ -59,7 +59,6 @@ quietly {
 	}
 
 
-	************************************************
 	** 2.1 Aportaciones y cuotas de la Federacion **
 	capture tabstat gasto gastoPIB if anio == `anio' & neto == 1, stat(sum) f(%20.0fc) save
 	tempname Aportaciones_Federacion
@@ -72,6 +71,7 @@ quietly {
 	return scalar Cuotas_ISSSTE = `Cuotas_ISSSTE'[1,1]
 
 	collapse (sum) gasto* aprobado* ejercido* proyecto* `if', by(`by' anio neto `varSerie' modulo) fast
+
 
 
 
@@ -114,8 +114,8 @@ quietly {
 		gr_edit .grpaxis.edit_tick 13 92.9825 `"PPEF"', tickset(major)
 
 		replace aprobadonetoPIB = 0 if anio == 2019
-		replace gastonetoPIB = proyectonetoPIB if anio == 2019
 		replace gastonetoPIB = aprobadonetoPIB if anio == 2018
+		replace gastonetoPIB = proyectonetoPIB if anio == 2019
 	}
 
 
@@ -190,7 +190,7 @@ quietly {
 	return scalar `=strtoname("Gasto neto")' = `mattot'[1,1]-`Cuotas_ISSSTE'[1,1]-`Aportaciones_Federacion'[1,1]
 
 
-	** 5.2. Resumido **
+	** 4.2. Resumido **
 	noisily di _newline in g "{bf: B. Gasto presupuestario (Resumido) " ///
 		_col(44) in g %20s "MXN" ///
 		_col(66) %7s "% PIB" ///
@@ -237,7 +237,7 @@ quietly {
 	return scalar Resumido_total = `Resumido_total'[1,1]
 
 
-	** Crecimientos **
+	** 4.3 Crecimientos **
 	preserve
 	collapse (sum) gastoneto* if `by' != -1 & neto == 0, by(anio `by')
 	if `=_N' > 5 {
