@@ -79,7 +79,8 @@ quietly {
 		}
 		local varserie "serie_`by'"
 	}
-	collapse (sum) gasto* aprobado* ejercido* proyecto* `if' (mean) pibY propneto, by(`by' anio neto `varserie') fast
+	collapse (sum) gasto* aprobado* ejercido* proyecto* (mean) pibY propneto `if', ///
+		by(`by' anio neto `varserie') fast
 	if "`datosabiertos'" == "datosabiertos" {
 		decode serie_`by', g(serie)
 		levelsof serie, l(serie)
