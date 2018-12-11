@@ -112,6 +112,7 @@ quietly {
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .grpaxis.major.num_rule_ticks = 0
 		gr_edit .grpaxis.edit_tick 13 92.9825 `"PPEF"', tickset(major)
+		gr_edit .grpaxis.edit_tick 14 97.5439 `" "', tickset(major)
 
 		replace aprobadonetoPIB = 0 if anio == 2019
 		replace gastonetoPIB = aprobadonetoPIB if anio == 2018
