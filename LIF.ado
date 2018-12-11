@@ -119,6 +119,7 @@ quietly {
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .grpaxis.major.num_rule_ticks = 0
 		gr_edit .grpaxis.edit_tick 19 95.1691 `"ILIF"', tickset(major)
+		gr_edit .grpaxis.edit_tick 18 87.9227 `"Est*"', tickset(major)
 
 		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & divCIEP != `deuda' & divOrigen == 5, ///
 			over(`resumido', relabel(1 "LIF" 2 "Obs")) ///
@@ -135,6 +136,7 @@ quietly {
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .grpaxis.major.num_rule_ticks = 0
 		gr_edit .grpaxis.edit_tick 19 95.1691 `"ILIF"', tickset(major)
+		gr_edit .grpaxis.edit_tick 18 87.9227 `"Est*"', tickset(major)
 
 		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & divCIEP != `deuda' & divOrigen == 2, ///
 			over(`resumido', relabel(1 "LIF" 2 "Obs")) ///
@@ -150,6 +152,7 @@ quietly {
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .grpaxis.major.num_rule_ticks = 0
 		gr_edit .grpaxis.edit_tick 19 95.1691 `"ILIF"', tickset(major)
+		gr_edit .grpaxis.edit_tick 18 87.9227 `"Est*"', tickset(major)
 
 		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & divCIEP != `deuda' & divOrigen == 4, ///
 			over(`resumido', relabel(1 "LIF" 2 "Obs")) ///
@@ -165,6 +168,7 @@ quietly {
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .grpaxis.major.num_rule_ticks = 0
 		gr_edit .grpaxis.edit_tick 19 95.1691 `"ILIF"', tickset(major)
+		gr_edit .grpaxis.edit_tick 18 87.9227 `"Est*"', tickset(major)
 
 		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & divCIEP != `deuda' & divOrigen == 3 & divCIEP != 18, ///
 			over(divCIEP, relabel(1 "LIF" 2 "Obs")) ///
@@ -180,6 +184,7 @@ quietly {
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .grpaxis.major.num_rule_ticks = 0
 		gr_edit .grpaxis.edit_tick 19 95.1691 `"ILIF"', tickset(major)
+		gr_edit .grpaxis.edit_tick 18 87.9227 `"Est*"', tickset(major)
 
 		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & divCIEP != `deuda' & (divCIEP == 21 | divCIEP == 2), ///
 			over(divCIEP, relabel(1 "LIF" 2 "Obs")) ///
@@ -196,7 +201,7 @@ quietly {
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .grpaxis.major.num_rule_ticks = 0
 		gr_edit .grpaxis.edit_tick 19 95.1691 `"ILIF"', tickset(major)
-
+		gr_edit .grpaxis.edit_tick 18 87.9227 `"Est*"', tickset(major)
 
 		replace LIFPIB = 0 if anio == 2019
 		replace recaudacionPIB = ILIFPIB if anio == 2019
