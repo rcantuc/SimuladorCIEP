@@ -30,7 +30,7 @@ forvalues k=2013(1)2017 {
 }
 
 
-***************/
+***************
 ** PEF actual **
 unzipfile "`c(sysdir_site)'/bases/PEFs/PEF 2018.csv.zip", replace
 import delimited "`c(sysdir_site)'/bases/SIM/PEF 2018.csv", clear
@@ -51,7 +51,7 @@ tempfile CPActual
 save `CPActual'
 
 
-******************/
+******************
 ** PEF siguiente **
 unzipfile "`c(sysdir_site)'/bases/PEFs/PPEF 2019.csv.zip", replace
 import delimited "`c(sysdir_site)'/bases/SIM/PPEF 2019.csv", clear
@@ -72,7 +72,7 @@ tempfile CPSiguiente
 save `CPSiguiente'
 
 
-***********/
+***********
 ** Append **
 use `CP2013', clear
 forvalues k=2014(1)2017 {
@@ -135,13 +135,15 @@ foreach k of varlist ramo-cartera {
 	}
 }
 drop new
+*save "`c(sysdir_site)'/bases/SIM/prePEF.dta", replace
 
 
 
 
-***********************
+**********************/
 *** 2. HOMOLOGACION ***
 ***********************
+*use "`c(sysdir_site)'/bases/SIM/prePEF.dta", clear
 foreach k of varlist _all {
 	di in w ".", _cont
 	capture confirm string variable `k'
@@ -273,43 +275,128 @@ label define capitulo 1 "Servicios personales" 2 "Materiales y suministros" ///
 label values capitulo capitulo
 
 
-** Series **
-g serie = "XNB0555" if desc_funcion == 1
-replace serie = "XOA0424" if desc_funcion == 2
-replace serie = "XOA0423" if desc_funcion == 3
-replace serie = "XOA0410" if desc_funcion == 4
-replace serie = "XOA0412" if desc_funcion == 5
-replace serie = "XOA0430" if desc_funcion == 6
-replace serie = "XOA0425" if desc_funcion == 7
-replace serie = "XOA0428" if desc_funcion == 8
-replace serie = "XOA0408" if desc_funcion == 9
-replace serie = "XOA0419" if desc_funcion == 10
-replace serie = "XOA0407" if desc_funcion == 11
-replace serie = "XOA0402" if desc_funcion == 12
-replace serie = "XOA0426" if desc_funcion == 13
-replace serie = "XOA0431" if desc_funcion == 14
-replace serie = "XOA0421" if desc_funcion == 15
-replace serie = "XOA0413" if desc_funcion == 16
-replace serie = "XOA0415" if desc_funcion == 17
-replace serie = "XOA0420" if desc_funcion == 18
-replace serie = "XOA0418" if desc_funcion == 19
-replace serie = "XOA0409" if desc_funcion == 20
-replace serie = "XOA0417" if desc_funcion == 21
-replace serie = "" if desc_funcion == 22
-replace serie = "XOA0411" if desc_funcion == 23
-replace serie = "XAC21" if desc_funcion == 24
-replace serie = "XAC2800" if desc_funcion == 25
-replace serie = "XOA0427" if desc_funcion == 26
-replace serie = "XOA0429" if desc_funcion == 27
-replace serie = "XOA0416" if desc_funcion == 28
-replace serie = "XKG0116" if desc_funcion == -1
 
-rename serie series
-encode series, generate(serie)
+*******************************
+*** 3. SHCP: Datos Abiertos ***
+*******************************
+
+** Funcion **
+g serie_desc_funcion = "XKG0116" if desc_funcion == -1
+replace serie_desc_funcion = "XAC23" if desc_funcion == 1
+replace serie_desc_funcion = "XOA0424" if desc_funcion == 2
+replace serie_desc_funcion = "XOA0423" if desc_funcion == 3
+replace serie_desc_funcion = "XOA0410" if desc_funcion == 4
+replace serie_desc_funcion = "XOA0412" if desc_funcion == 5
+replace serie_desc_funcion = "XOA0430" if desc_funcion == 6
+replace serie_desc_funcion = "XOA0425" if desc_funcion == 7
+replace serie_desc_funcion = "XOA0428" if desc_funcion == 8
+replace serie_desc_funcion = "XOA0408" if desc_funcion == 9
+replace serie_desc_funcion = "XOA0419" if desc_funcion == 10
+replace serie_desc_funcion = "XOA0407" if desc_funcion == 11
+replace serie_desc_funcion = "XOA0402" if desc_funcion == 12
+replace serie_desc_funcion = "XOA0426" if desc_funcion == 13
+replace serie_desc_funcion = "XOA0431" if desc_funcion == 14
+replace serie_desc_funcion = "XOA0421" if desc_funcion == 15
+replace serie_desc_funcion = "XOA0413" if desc_funcion == 16
+replace serie_desc_funcion = "XOA0415" if desc_funcion == 17
+replace serie_desc_funcion = "XOA0420" if desc_funcion == 18
+replace serie_desc_funcion = "XOA0418" if desc_funcion == 19
+replace serie_desc_funcion = "XOA0409" if desc_funcion == 20
+replace serie_desc_funcion = "XOA0417" if desc_funcion == 21
+replace serie_desc_funcion = "XAC2120" if desc_funcion == 22
+replace serie_desc_funcion = "XOA0411" if desc_funcion == 23
+replace serie_desc_funcion = "XAC21" if desc_funcion == 24
+replace serie_desc_funcion = "XAC2800" if desc_funcion == 25
+replace serie_desc_funcion = "XOA0427" if desc_funcion == 26
+replace serie_desc_funcion = "XOA0429" if desc_funcion == 27
+replace serie_desc_funcion = "XOA0416" if desc_funcion == 28
+
+levelsof serie_desc_funcion, l(serie_desc_funcion)
+rename serie_desc_funcion series
+encode series, generate(serie_desc_funcion)
 drop series
 
 
-** Modulos **
+** Ramo **
+g serie_ramo = "XKG0116" if ramo == -1
+replace serie_ramo = "XDB54" if ramo ==1
+replace serie_ramo = "XAC4210" if ramo == 2
+replace serie_ramo = "XDB55" if ramo == 3
+replace serie_ramo = "XAC4220" if ramo == 4
+replace serie_ramo = "XAC4230" if ramo == 5
+replace serie_ramo = "XAC4240" if ramo == 6
+replace serie_ramo = "XAC4250" if ramo == 7
+replace serie_ramo = "XAC4260" if ramo == 8
+replace serie_ramo = "XAC4270" if ramo == 9
+replace serie_ramo = "XAC4280" if ramo == 10
+replace serie_ramo = "XAC4290" if ramo == 11
+replace serie_ramo = "XAC4211" if ramo == 12
+replace serie_ramo = "XAC4212" if ramo == 13
+replace serie_ramo = "XAC4213" if ramo == 14
+replace serie_ramo = "XAC4214" if ramo == 15
+replace serie_ramo = "XAC4215" if ramo == 16
+replace serie_ramo = "XAC4216" if ramo == 17
+replace serie_ramo = "XAC4217" if ramo == 18
+replace serie_ramo = "XAC4218" if ramo == 19
+replace serie_ramo = "XAC4219" if ramo == 20
+replace serie_ramo = "XAC4310" if ramo == 21
+replace serie_ramo = "XDB56" if ramo == 22
+replace serie_ramo = "XAC4320" if ramo == 23
+replace serie_ramo = "XAC21" if ramo == 24
+replace serie_ramo = "XAC4330" if ramo == 25
+replace serie_ramo = "XAC4350" if ramo == 27
+replace serie_ramo = "XAC22" if ramo == 28
+replace serie_ramo = "XAC23" if ramo == 30
+replace serie_ramo = "XAC4370" if ramo == 31
+replace serie_ramo = "XAC4380" if ramo == 32
+replace serie_ramo = "XAC4390" if ramo == 33
+replace serie_ramo = "XAC2120" if ramo == 34
+replace serie_ramo = "XDB57" if ramo == 35
+replace serie_ramo = "XAC44" if ramo == 36
+replace serie_ramo = "XAC4410" if ramo == 37
+replace serie_ramo = "XAC4420" if ramo == 38
+replace serie_ramo = "XDB40" if ramo == 40
+replace serie_ramo = "XDB51" if ramo == 41
+replace serie_ramo = "XDB52" if ramo == 42
+replace serie_ramo = "XDB53" if ramo == 43
+replace serie_ramo = "XDB58" if ramo == 44
+replace serie_ramo = "XOA0832" if ramo == 45
+replace serie_ramo = "XOA0833" if ramo == 46
+replace serie_ramo = "XOA1013" if ramo == 47
+replace serie_ramo = "XOA1019" if ramo == 48
+replace serie_ramo = "XOA0145" if ramo == 50
+replace serie_ramo = "XOA0146" if ramo == 51
+replace serie_ramo = "XKC0131" if ramo == 52
+replace serie_ramo = "XOA0141" if ramo == 53
+
+levelsof serie_ramo, l(serie_ramo)
+rename serie_ramo series
+encode series, generate(serie_ramo)
+drop series
+
+
+
+
+*******************************
+*** 3. SHCP: Datos Abiertos ***
+*******************************
+preserve
+foreach k in `serie_desc_funcion' `serie_ramo' {
+	noisily DatosAbiertos `k'
+
+	rename clave_de_concepto serie
+	keep anio serie nombre monto mes
+
+	quietly save "`c(sysdir_site)'/bases/SIM/`k'.dta", replace
+}
+restore
+
+
+
+
+******************
+*** 4. Modulos ***
+/******************
 g modulo = "uso_Pension" if neto == 0 & ramo != -1 ///
 		& (substr(string(objeto),1,2) == "45" | substr(string(objeto),1,2) == "47" | pp == 176)
 
@@ -329,8 +416,8 @@ replace modulo = "uso_Salud" if neto == 0 & ramo != -1 ///
 
 
 
-****************
-*** 3. Gasto ***
+***************/
+*** 5. Gasto ***
 ****************
 g double gasto = ejercido if anio <= 2017
 replace gasto = aprobado if anio == 2018
@@ -353,19 +440,26 @@ foreach k of varlist gasto aprobado ejercido proyecto {
 	g double `k'CUOTAS = ``k''/``k'Tot'*``k'cuotasTot'
 	format `k'CUOTAS %20.0fc
 }
-	
 
-	
+
+** Proporcion Ramo 19 neto **
+tempvar neto19 neto190
+egen `neto19' = sum(gasto) if ramo == 19, by(anio)
+egen `neto190' = sum(gasto) if ramo == 19 & neto == 0, by(anio)
+g propneto19 = `neto190'/`neto19'
+
+
+
 ***************
-** 4. Saving **
+** 6. Saving **
 ***************
 format %20.0fc ejercido aprobado proyecto
 capture drop __*
 order ramo desc_ur finalidad desc_funcion desc_subfuncion desc_ai desc_modalidad ///
-	desc_pp desc_objeto desc_tipogasto fuente entidad serie ///
+	desc_pp desc_objeto desc_tipogasto fuente entidad serie* ///
 	proyecto aprobado ejercido 
 format %30.0fc ramo desc_ur finalidad desc_funcion desc_subfuncion desc_ai desc_modalidad ///
-	desc_pp desc_objeto desc_tipogasto fuente entidad serie
+	desc_pp desc_objeto desc_tipogasto fuente entidad serie*
 format %20.0fc proyecto aprobado ejercido
 compress
 save "`c(sysdir_site)'/bases/SIM/PEF.dta", replace

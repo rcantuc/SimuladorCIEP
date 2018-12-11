@@ -663,6 +663,7 @@ append using `gastofed'
 
 *drop if monto == .
 *drop tema subtema sector ambito base unidad periodo* frecuencia
+replace nombre = subinstr(nombre,"  "," ",.)
 compress
 
 save "`c(sysdir_site)'/bases/SIM/DatosAbiertos.dta", replace
