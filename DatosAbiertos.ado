@@ -6,7 +6,7 @@ quietly {
 		run "`c(sysdir_site)'/UpdateDatosAbiertos.do"
 	}
 
-	syntax anything [if/] [, Graphs Restore PIBVP(real -999) PIBVF(real -999) UPDATE]
+	syntax anything [if/] [, Graphs Restore PIBVP(real -999) PIBVF(real -999) UPDATE PROMedio(real 1993)]
 
 	if "`restore'" == "restore" {
 		preserve
@@ -44,8 +44,18 @@ quietly {
 	**************************
 	if tipo_de_informacion == "Flujo" {
 		sort anio mes
-		collapse (sum) monto (last) mes if monto != ., by(anio nombre clave_de_concepto)
-		replace monto = monto*12/mes if mes < 12
+
+		local last_anio = anio[_N]
+		local alst_mes = mes[_N]
+
+		tempvar montoanual propmensual
+		egen `montoanual' = sum(monto) if anio < `last_anio' & anio >= `promedio', by(anio)
+		g `propmensual' = monto/`montoanual' if anio < `last_anio' & anio >= `promedio'
+		egen acum_prom = mean(`propmensual'), by(mes)
+
+		collapse (sum) monto acum_prom (last) mes if monto != ., by(anio nombre clave_de_concepto)
+		replace monto = monto/acum_prom if mes < 12
+
 		local palabra "Proyectado"
 	}
 	else if tipo_de_informacion == "Saldo" {

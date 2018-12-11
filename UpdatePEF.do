@@ -10,7 +10,7 @@
 ************************
 cd "`c(sysdir_site)'/bases/SIM/"
 forvalues k=2013(1)2017 {
-	unzipfile "`c(sysdir_site)'/bases/PEFs/CP `k'.zip", replace
+	unzipfile "`c(sysdir_site)'/bases/PEFs/CP `k'.csv.zip", replace
 	import delimited "`c(sysdir_site)'/bases/SIM/CP `k'.csv", clear
 
 	drop if ciclo == .
@@ -19,6 +19,8 @@ forvalues k=2013(1)2017 {
 
 	foreach j of varlist desc_* {
 		replace `j' = trim(`j')
+		replace `j' = subinstr(`j',`"""',"",.)
+		replace `j' = subinstr(`j',"  "," ",.)
 	}
 
 	noisily tabstat aprobado ejercido, stat(sum) by(ciclo) f(%25.0fc)
@@ -30,7 +32,7 @@ forvalues k=2013(1)2017 {
 
 ***************/
 ** PEF actual **
-unzipfile "`c(sysdir_site)'/bases/PEFs/PEF 2018.zip", replace
+unzipfile "`c(sysdir_site)'/bases/PEFs/PEF 2018.csv.zip", replace
 import delimited "`c(sysdir_site)'/bases/SIM/PEF 2018.csv", clear
 
 drop if ciclo == .
@@ -39,6 +41,8 @@ destring aprobado, replace ignore(",")
 
 foreach j of varlist desc_* {
 	replace `j' = trim(`j')
+	replace `j' = subinstr(`j',`"""',"",.)
+	replace `j' = subinstr(`j',"  "," ",.)
 }
 
 noisily tabstat aprobado, stat(sum) by(ciclo) f(%25.0fc)
@@ -49,7 +53,7 @@ save `CPActual'
 
 ******************/
 ** PEF siguiente **
-unzipfile "`c(sysdir_site)'/bases/PEFs/PPEF 2019.zip", replace
+unzipfile "`c(sysdir_site)'/bases/PEFs/PPEF 2019.csv.zip", replace
 import delimited "`c(sysdir_site)'/bases/SIM/PPEF 2019.csv", clear
 
 drop if ciclo == .
@@ -58,6 +62,8 @@ destring proyecto, replace
 
 foreach j of varlist desc_* {
 	replace `j' = trim(`j')
+	replace `j' = subinstr(`j',`"""',"",.)
+	replace `j' = subinstr(`j',"  "," ",.)
 }
 
 noisily tabstat proyecto, stat(sum) by(ciclo) f(%25.0fc)
@@ -74,7 +80,7 @@ forvalues k=2014(1)2017 {
 }
 append using `CPActual'
 append using `CPSiguiente'
-drop adefas v*
+capture drop v*
 order proyecto aprobado ejercido modificado devengado pagado, last
 format proyecto aprobado ejercido modificado devengado pagado %20.0fc
 
@@ -140,7 +146,6 @@ foreach k of varlist _all {
 	di in w ".", _cont
 	capture confirm string variable `k'
 	if _rc == 0 {
-		quietly replace `k' = subinstr(`k',`"""',"",.)
 		quietly replace `k' = trim(`k')
 	}
 }

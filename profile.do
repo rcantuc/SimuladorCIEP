@@ -11,16 +11,13 @@ adopath ++ SITE
 set scheme ciep
 graph set window fontface "Ubuntu"
 
-*Acentos
-
-
 
 
 
 ***********************
 *** 2 Par${a}metros ***
 ***********************
-global anioVP = 2018
+global anioVP = 2019
 
 global pib2018 = 2.5
 global pib2019 = 3.0
@@ -32,7 +29,6 @@ global depreMXN = 0.5
 
 PIBDeflactor
 clear
-
 
 
 
