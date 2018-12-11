@@ -7,14 +7,19 @@ quietly {
 	************************
 	*** 1. BASE DE DATOS ***
 	************************
+	PIBDeflactor
+	tempfile PIB
+	save `PIB'
+
+	capture use "`c(sysdir_site)'/bases/SIM/LIF.dta", clear
+	local rc = _rc
 	syntax [if/] [, ANIO(int $anioVP ) Graphs Update Base ID(string) ///
 		MINimum(real 1)]
 
 
 	** Base LIF **
-	capture use "`c(sysdir_site)'/bases/SIM/LIF.dta", clear
-	if _rc != 0 | "`update'" == "update" {
-		noisily run "`c(sysdir_site)'/UpdateLIF.do" `update'		// Update: It takes a long, long, long time.
+	if `rc' != 0 | "`update'" == "update" {
+		noisily run "`c(sysdir_site)'/UpdateLIF.do" `update'
 	}
 
 
@@ -35,27 +40,6 @@ quietly {
 	**************
 	*** 2. LIF ***
 	**************
-	levelsof divCIEP, local(levels)
-	foreach k of local levels {
-		local levellabel : label divCIEP `k'
-		if "`levellabel'" == "Deuda" {
-			local deuda = `k'
-			continue, break
-		}
-	}
-
-
-
-
-	**************
-	*** 2. PIB ***
-	**************
-	preserve
-	PIBDeflactor
-	tempfile PIB
-	save `PIB'
-	restore
-
 	merge m:1 (anio) using `PIB', nogen keepus(pibY indiceY deflator productivity var_pibY) update replace keep(matched)
 
 	g double recaudacionPIB = recaudacion/pibY*100
@@ -70,6 +54,15 @@ quietly {
 	****************
 	*** 3. Graph ***
 	****************
+	levelsof divCIEP, local(levels)
+	foreach k of local levels {
+		local levellabel : label divCIEP `k'
+		if "`levellabel'" == "Deuda" {
+			local deuda = `k'
+			continue, break
+		}
+	}
+
 	drop if serie == .
 	xtset serie anio
 	forvalues k=1(1)`=_N' {

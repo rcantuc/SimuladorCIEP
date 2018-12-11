@@ -1,17 +1,16 @@
 program define DatosAbiertos, return
 quietly {
 
-	capture use "`c(sysdir_site)'/bases/SIM/DatosAbiertos.dta", clear
-	if _rc != 0 {
-		run "`c(sysdir_site)'/UpdateDatosAbiertos.do"
-	}
-
-	syntax anything [if/] [, Graphs Restore PIBVP(real -999) PIBVF(real -999) UPDATE PROMedio(real 1993)]
+	syntax anything [if/] [, Graphs Restore PIBVP(real -999) PIBVF(real -999) UPDATE DESDE(real 1993)]
 
 	if "`restore'" == "restore" {
 		preserve
 	}
-	
+
+	PIBDeflactor, nographs
+	tempfile PIB
+	save `PIB'
+
 	if "`update'" == "update" {
 		run "`c(sysdir_site)'/UpdateDatosAbiertos.do"
 	}
@@ -22,7 +21,7 @@ quietly {
 	****************************
 	*** 1 Base de datos SHCP ***
 	****************************
-	use if clave_de_concepto == "`anything'" & anio >= 1993 using "`c(sysdir_site)'/bases/SIM/DatosAbiertos.dta", clear
+	use if clave_de_concepto == "`anything'" using "`c(sysdir_site)'/bases/SIM/DatosAbiertos.dta", clear
 	if `=_N' == 0 {
 		noisily di in r "No se encontr{c o'} la serie {bf:`anything'}."
 		return scalar error = 2000
@@ -49,12 +48,12 @@ quietly {
 		local alst_mes = mes[_N]
 
 		tempvar montoanual propmensual
-		egen `montoanual' = sum(monto) if anio < `last_anio' & anio >= `promedio', by(anio)
-		g `propmensual' = monto/`montoanual' if anio < `last_anio' & anio >= `promedio'
+		egen `montoanual' = sum(monto) if anio < `last_anio' & anio >= `desde', by(anio)
+		g `propmensual' = monto/`montoanual' if anio < `last_anio' & anio >= `desde'
 		egen acum_prom = mean(`propmensual'), by(mes)
 
 		collapse (sum) monto acum_prom (last) mes if monto != ., by(anio nombre clave_de_concepto)
-		replace monto = monto/acum_prom if mes < 12
+		replace monto = monto/acum_prom if mes < 12 & acum_prom > 0 & acum_prom < 1
 
 		local palabra "Proyectado"
 	}
@@ -78,12 +77,6 @@ quietly {
 		local nombre = nombre[1]
 		replace nombre = "`nombre'" in -1
 	}
-
-	preserve
-	PIBDeflactor, nographs
-	tempfile PIB
-	save `PIB'
-	restore
 
 	merge m:1 (anio) using `PIB', nogen keep(matched) keepus(pibY)			
 

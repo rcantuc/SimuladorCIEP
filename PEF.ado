@@ -7,10 +7,15 @@ quietly {
 	************************
 	*** 1. BASE DE DATOS ***
 	************************
+	PIBDeflactor
+	sort anio
+	tempfile PIB
+	save `PIB'
+
 	capture use "`c(sysdir_site)'/bases/SIM/PEF.dta", clear
 	local rc = _rc
 	syntax [if] [, ANIO(int $anioVP) Graphs Update Base ID(string) ///
-		BY(varname) Datosabiertos Fast ROWS(int 1) COLS(int 4) ///
+		BY(varname) DATOSabiertos Fast ROWS(int 1) COLS(int 4) ///
 		MINimum(real 1)]
 
 
@@ -41,17 +46,11 @@ quietly {
 
 
 
-
 	**************
-	*** 2. PIB ***
+	*** 2. PEF ***
 	**************
-	preserve
-	PIBDeflactor
-	tempfile PIB
-	save `PIB'
-	restore
-
-	merge m:1 (anio) using `PIB', nogen keepus(pibY indiceY deflator var_pibY) update replace keep(matched)
+	sort anio
+	merge m:1 (anio) using `PIB', nogen keepus(pibY indiceY deflator var_pibY) update replace keep(matched) sorted
 	foreach k of varlist gasto aprobado ejercido proyecto {
 		g double `k'PIB = `k'/pibY*100
 		g double `k'netoPIB = `k'neto/pibY*100
@@ -70,17 +69,40 @@ quietly {
 	matrix `Cuotas_ISSSTE' = r(StatTotal)
 	return scalar Cuotas_ISSSTE = `Cuotas_ISSSTE'[1,1]
 
-	collapse (sum) gasto* aprobado* ejercido* proyecto* `if', by(`by' anio neto `varSerie' modulo) fast
+
+	** 2.2. Append **
+	if "`datosabiertos'" == "datosabiertos" {
+		capture confirm var serie_`by'
+		if _rc != 0 {
+			di in r "No hay datos para `by'."
+			exit
+		}
+		local varserie "serie_`by'"
+	}
+	collapse (sum) gasto* aprobado* ejercido* proyecto* `if' (mean) pibY propneto, by(`by' anio neto `varserie') fast
+	if "`datosabiertos'" == "datosabiertos" {
+		decode serie_`by', g(serie)
+		levelsof serie, l(serie)
+		foreach k of local serie {
+			joinby (anio serie) using "`c(sysdir_site)'/bases/SIM/`k'.dta", unmatched(both) update
+			drop _merge
+		}
+
+		replace monto = monto*propneto if serie == "XAC4218"
+
+		replace gastoneto = monto if anio <= 2018
+		replace gastonetoPIB = monto/pibY*100 if anio <= 2018
+	}
 
 
 
 
 	****************
-	*** 3. Graph ***
+	*** 4. Graph ***
 	****************
 	replace `by' = 999 if `by' == -2
 	label define `by' 999 "Ingreso b{c a'}sico", add modify
-	
+
 	tempvar over
 	g `over' = `by'
 
@@ -92,8 +114,11 @@ quietly {
 	label define `label' -99 "Otros (< `minimum'% PIB)", add modify
 
 	if "$graphs" == "on" | "`graphs'" == "graphs" {
+		if "`datosabiertos'" == "" {
+			replace gastonetoPIB = 0 if anio == 2018
+		}
+		replace gastonetoPIB = 0 if anio == 2019
 		replace aprobadonetoPIB = proyectonetoPIB if anio == 2019
-		replace gastonetoPIB = 0 if anio == 2019 | anio == 2018
 		
 		graph bar (sum) aprobadonetoPIB gastonetoPIB if anio >= 2010 & `by' != -1 ///
 			& neto == 0, ///
@@ -110,13 +135,15 @@ quietly {
 
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
-		gr_edit .grpaxis.major.num_rule_ticks = 0
+		gr_edit .grpaxis.edit_tick 12 82.4561 `"Est*"', tickset(major)
 		gr_edit .grpaxis.edit_tick 13 92.9825 `"PPEF"', tickset(major)
 		gr_edit .grpaxis.edit_tick 14 97.5439 `" "', tickset(major)
 
-		replace aprobadonetoPIB = 0 if anio == 2019
-		replace gastonetoPIB = aprobadonetoPIB if anio == 2018
+		if "`datosabiertos'" == "" {
+			replace gastonetoPIB = aprobadonetoPIB if anio == 2018
+		}
 		replace gastonetoPIB = proyectonetoPIB if anio == 2019
+		replace aprobadonetoPIB = 0 if anio == 2019
 	}
 
 
