@@ -16,7 +16,7 @@ quietly {
 	local rc = _rc
 	syntax [if] [, ANIO(int $anioVP) Graphs Update Base ID(string) ///
 		BY(varname) DATOSabiertos Fast ROWS(int 1) COLS(int 4) ///
-		MINimum(real 1)]
+		MINimum(real 1) HASTA(int $anioVP)]
 
 
 	** Base PEF **
@@ -121,7 +121,7 @@ quietly {
 		replace gastonetoPIB = 0 if anio == 2019
 		replace aprobadonetoPIB = proyectonetoPIB if anio == 2019
 		
-		graph bar (sum) aprobadonetoPIB gastonetoPIB if anio >= 2010 & `by' != -1 ///
+		graph bar (sum) aprobadonetoPIB gastonetoPIB if anio >= 2010 & anio <= `hasta' & `by' != -1 ///
 			& neto == 0, ///
 			over(`over', relabel(1 "PEF" 2 "Obs")) ///
 			over(anio, label(labgap(vsmall))) ///
@@ -136,9 +136,12 @@ quietly {
 
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
-		gr_edit .grpaxis.edit_tick 12 82.4561 `"Est*"', tickset(major)
-		gr_edit .grpaxis.edit_tick 13 92.9825 `"PPEF"', tickset(major)
-		gr_edit .grpaxis.edit_tick 14 97.5439 `" "', tickset(major)
+
+		if `hasta' == $anioVP {
+			gr_edit .grpaxis.edit_tick 12 82.4561 `"Est*"', tickset(major)
+			gr_edit .grpaxis.edit_tick 13 92.9825 `"PPEF"', tickset(major)
+			gr_edit .grpaxis.edit_tick 14 97.5439 `" "', tickset(major)
+		}
 
 		if "`datosabiertos'" == "" {
 			replace gastonetoPIB = aprobadonetoPIB if anio == 2018
