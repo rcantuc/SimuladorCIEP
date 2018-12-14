@@ -1,7 +1,7 @@
 **************************
 **** HOLA, HUMANO! :) ****
 **** SET UP FRAMEWORK ****
-**************************
+/**************************
 if "`c(os)'" == "Unix" {
 	sysdir set SITE "/home/ciepmx/Dropbox (CIEP)/Github/simuladorCIEP"
 	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/TemplateCIEP/simuladorCIEP"
@@ -16,7 +16,7 @@ timer on 1
 
 
 
-*********************
+********************/
 *** 1. Parametros ***
 *********************
 global anioVP = 2019
