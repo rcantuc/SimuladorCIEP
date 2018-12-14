@@ -26,7 +26,7 @@ global def2018 = 4.8						// def[input]
 global def2019 = 3.3						// def[input]
 
 local graphs "graphs"
-local update "update"
+local update ""
 
 
 
@@ -34,7 +34,7 @@ local update "update"
 ***********************
 *** 2. Informativos ***
 ***********************
-*do "`c(sysdir_site)'/UpdateDatosAbiertos.do"			// UNCOMMENT: actualiar bases de Datos Abiertos de SHCP
+do "`c(sysdir_site)'/UpdateDatosAbiertos.do"			// UNCOMMENT: actualiar bases de Datos Abiertos de SHCP
 Poblacion, `graphs'						// UPDATE: rarely used
 SCN, `graphs'							// UPDATE: abrir y guardar archivos .iqy (./bases/INEGI/SCN/)
 PIBDeflactor, `graphs'						// UPDATE: abrir y guardar archivos .iqy (./bases/INEGI/SCN/)
@@ -55,8 +55,8 @@ noisily PEF, `graphs' `update' rows(3) datos			// DATOS: con informacion de Dato
 ********************/
 *** 4. Incidencia ***
 *********************
-run "`c(sysdir_site)'/Income.do" 2016
-run "`c(sysdir_site)'/Expenditure.do" 2016
+noisily run "`c(sysdir_site)'/Income.do" 2016
+noisily run "`c(sysdir_site)'/Expenditure.do" 2016
 *noisily SHRFSP, graphs update
 
 
