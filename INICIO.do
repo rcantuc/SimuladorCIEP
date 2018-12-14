@@ -1,11 +1,14 @@
 **************************
 **** HOLA, HUMANO! :) ****
+**** SET UP FRAMEWORK ****
 **************************
 if "`c(os)'" == "Unix" {
 	sysdir set SITE "/home/ciepmx/Dropbox (CIEP)/Github/simuladorCIEP"
+	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/TemplateCIEP/simuladorCIEP"
 }
 if "`c(os)'" == "MacOSX" {
 	sysdir set SITE "/Users/ricardo/Dropbox (CIEP)/Github/simuladorCIEP"
+	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/TemplateCIEP/simuladorCIEP"
 }
 clear all
 timer on 1
@@ -13,53 +16,54 @@ timer on 1
 
 
 
+*********************
+*** 1. Parametros ***
+*********************
+global anioVP = 2019
+global pib2018 = 2.5						// pib[input]
+global pib2019 = 3.0						// pib[input]
+global def2018 = 4.8						// def[input]
+global def2019 = 3.3						// def[input]
 
-****************************************
-*** 1. Parametros Macroecon${o}micos ***
-/****************************************
-global anioVP = 2018
-
-global pib2018 = 2.5					// pib[input]
-global pib2019 = 3.0					// pib[input]
-
-global def2018 = 4.8					// def[input]
-global def2019 = 3.3					// def[input]
-
-noisily PIBDeflactor, graphs 				// update
+local graphs "graphs"
+local update "update"
 
 
 
 
-
-**************
-*** 2. LIF ***
-**************
-noisily LIF, graphs
-
-
-
-
-
-**************
-*** 3. PEF ***
-**************
-noisily PEF, graphs
+***********************
+*** 2. Informativos ***
+***********************
+*do "`c(sysdir_site)'/UpdateDatosAbiertos.do"			// UNCOMMENT: actualiar bases de Datos Abiertos de SHCP
+Poblacion, `graphs'						// UPDATE: rarely used
+SCN, `graphs'							// UPDATE: abrir y guardar archivos .iqy (./bases/INEGI/SCN/)
+PIBDeflactor, `graphs'						// UPDATE: abrir y guardar archivos .iqy (./bases/INEGI/SCN/)
 
 
 
 
-******************/
-*** 2. Defaults ***
-/*******************
-capture log using "`c(sysdir_personal)'/users/log `c(current_date)'", replace
-noisily di _newline(5) in g _dup(50) "+" in y "$simuladorCIEP (`id'): `c(current_date)' `c(current_time)'" in g _dup(50) "+"
+*******************/
+*** 3. Escencial ***
+********************
+noisily LIF, `graphs' `update'
+noisily PEF, `graphs' `update' rows(3) datos			// DATOS: con informacion de DatosAbiertos.
 
-noisily Eficiencia, reboot graphs noisily update //remake
-noisily TransfNetas, graphs update
-noisily SHRFSP, graphs update
 
-capture log close
 
+
+
+********************/
+*** 4. Incidencia ***
+*********************
+run "`c(sysdir_site)'/Income.do" 2016
+run "`c(sysdir_site)'/Expenditure.do" 2016
+*noisily SHRFSP, graphs update
+
+
+
+*noisily Eficiencia
+*noisily Eficiencia, reboot graphs noisily update
+*noisily TransfNetas, graphs update
 
 
 

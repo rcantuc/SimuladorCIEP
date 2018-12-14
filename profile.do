@@ -7,6 +7,7 @@ set type double, permanently
 set charset latin1, permanently
 
 adopath ++ SITE
+sysdir set PERSONAL "`c(sysdir_site)'"
 
 set scheme ciep
 graph set window fontface "Ubuntu"

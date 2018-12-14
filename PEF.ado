@@ -47,7 +47,7 @@ quietly {
 
 
 	**************
-	*** 2. PEF ***
+	*** 2. PIB ***
 	**************
 	sort anio
 	merge m:1 (anio) using `PIB', nogen keepus(pibY indiceY deflator var_pibY) update replace keep(matched) sorted
@@ -78,9 +78,15 @@ quietly {
 			exit
 		}
 		local varserie "serie_`by'"
+		
+		tempvar montototal proptotal
+		egen `montototal' = sum(gastoneto) if neto == 0 & desc_funcion != -1, by(`by' anio)
+		g `proptotal' = gasto/`montototal'
 	}
-	collapse (sum) gasto* aprobado* ejercido* proyecto* (mean) pibY propneto `if', ///
+
+	collapse (sum) gasto* aprobado* ejercido* proyecto* `proptotal' (mean) pibY `if', ///
 		by(`by' anio neto `varserie') fast
+
 	if "`datosabiertos'" == "datosabiertos" {
 		decode serie_`by', g(serie)
 		levelsof serie, l(serie)
@@ -89,10 +95,17 @@ quietly {
 			drop _merge
 		}
 
-		replace monto = monto*propneto if serie == "XAC4218"
+		tempvar neto19 propneto19
+		egen `neto19' = sum(gasto) if serie == "XAC4218", by(anio)
+		g `propneto19' = gasto/`neto19'
 
-		replace gastoneto = monto if anio <= 2018
-		replace gastonetoPIB = monto/pibY*100 if anio <= 2018
+		replace monto = monto*`propneto19' if serie == "XAC4218"
+
+		*replace gastoneto = monto if anio <= 2018
+		*replace gastonetoPIB = monto/pibY*100 if anio <= 2018
+
+		replace gastoneto = monto*`proptotal' if anio <= 2018
+		replace gastonetoPIB = monto*`proptotal'/pibY*100 if anio <= 2018
 	}
 
 

@@ -6,146 +6,59 @@ quietly {
 
 
 
-	***********************
-	*** 0 Base de datos ***
-	***********************
-	capture confirm file "`=c(sysdir_personal)'/bases/SIM/SHRFSP.dta"
-	if _rc != 0 | "`update'" ==  "update" {
-
-		** RFSP **
-		DatosAbiertos RF000000SPFCS if subtema != "RFSP"								// Total
-		rename monto rfsp
-		drop clave nombre mes monto_pib
-		tempfile rfsp
-		save `rfsp'
-
-		DatosAbiertos RF000002SPFCS if nombre != ""										// PIDIREGAS
-		rename monto rfspPIDIREGAS
-		drop clave nombre mes monto_pib
-		tempfile PIDIREGAS
-		save `PIDIREGAS'
-
-		DatosAbiertos RF000003SPFCS if nombre != ""										// IPAB
-		rename monto rfspIPAB
-		drop clave nombre mes monto_pib
-		tempfile IPAB
-		save `IPAB'
-
-		DatosAbiertos RF000004SPFCS if nombre != ""										// FONADIN
-		rename monto rfspFONADIN
-		drop clave nombre mes monto_pib
-		tempfile FONADIN
-		save `FONADIN'
-
-		DatosAbiertos RF000005SPFCS if nombre != ""										// Programa de deudores
-		rename monto rfspDeudores
-		drop clave nombre mes monto_pib
-		tempfile Deudores
-		save `Deudores'
-
-		DatosAbiertos RF000006SPFCS if nombre != ""										// Banca de desarrollo
-		rename monto rfspBanca
-		drop clave nombre mes monto_pib
-		tempfile Banca
-		save `Banca'
-
-		DatosAbiertos RF000007SPFCS if nombre != ""										// Adecuaciones presupuestarias
-		rename monto rfspAdecuaciones
-		drop clave nombre mes monto_pib
-		tempfile Adecuaciones
-		save `Adecuaciones'
-
-		DatosAbiertos RF000001SPFCS if nombre != ""										// Balance tradicional
-		rename monto rfspBalance
-		drop clave nombre mes monto_pib
-		tempfile Balance
-		save `Balance'
-
-
-
-		** SHRFSP **
-		DatosAbiertos SHRF5000																	// Total
-		rename monto shrfsp
-		drop clave nombre mes monto_pib
-		tempfile shrfsp
-		save `shrfsp'
-
-		DatosAbiertos SHRF5100																	// Interno
-		rename monto shrfspInterno
-		drop clave nombre mes monto_pib
-		tempfile interno
-		save `interno'
-
-		DatosAbiertos SHRF5200																	// Externo
-		rename monto shrfspExterno
-		drop clave nombre mes monto_pib
-		tempfile externo
-		save `externo'
-
-
-		** Tipo de cambio **
-		DatosAbiertos XET30																		// pesos
-		rename monto deudaMXN		
-		drop clave nombre mes monto_pib
-		tempfile MXN
-		save `MXN'
-
-		DatosAbiertos XET40																		// d${o}lares
-		rename monto deudaUSD
-		drop clave nombre mes monto_pib
-		tempfile USD
-		save `USD'
-
-
-		** Diferimientos de pagos **
-		LIF																							// Diferimientos de pagos
-		collapse (sum) diferimientos=recaudacion if serie == 1, by(anio)
-		tempfile diferimientos
-		save `diferimientos'
-
-
-		** Merge **
-		use `rfsp', clear
-		merge 1:1 (anio) using `PIDIREGAS', nogen
-		merge 1:1 (anio) using `IPAB', nogen
-		merge 1:1 (anio) using `FONADIN', nogen
-		merge 1:1 (anio) using `Deudores', nogen
-		merge 1:1 (anio) using `Banca', nogen
-		merge 1:1 (anio) using `Adecuaciones', nogen
-		merge 1:1 (anio) using `Balance', nogen
-		merge 1:1 (anio) using `shrfsp', nogen
-		merge 1:1 (anio) using `interno', nogen
-		merge 1:1 (anio) using `externo', nogen
-		merge 1:1 (anio) using `MXN', nogen
-		merge 1:1 (anio) using `USD', nogen
-		merge 1:1 (anio) using `diferimientos', nogen
-		tsset anio
-
-		
-		** Tipo de cambio **
-		g double tipoDeCambio = deudaMXN/deudaUSD
-		format tipoDeCambio %7.2fc
-		drop deuda*
-		
-		
-		** RFSP Otros **
-		egen double rfspOtros = rsum(rfspPIDIREGAS-rfspAdecuaciones) if rfsp != .
-		format rfspOtros %20.0fc
-		drop rfspPIDIREGAS-rfspAdecuaciones
-
-		save "`=c(sysdir_personal)'/bases/SIM/SHRFSP.dta", replace
-	}
-
-
-
-
-	***************************
-	*** 1 DATOS DEL USUARIO ***
-	***************************
+	************************
+	*** 1. BASE DE DATOS ***
+	************************
 	PIBDeflactor
-	keep anio pibY indiceY deflator var_pibY
 	tempfile PIB
 	save `PIB'
+
+	capture use "`c(sysdir_site)'/bases/SIM/SHRFSP.dta", clear
+	local rc = _rc
+	syntax [if/] [, ANIO(int $anioVP ) Graphs Update Base ID(string) ///
+		MINimum(real 1)]
+
+
+	** Base LIF **
+	if `rc' != 0 | "`update'" == "update" {
+		noisily run "`c(sysdir_site)'/UpdateSHRFSP.do" `update'
+	}
+
+	noisily di _newline(5) in g "{bf:SISTEMA FISCAL: " in y "DEUDA `anio'" "}"
+
+
+
+
+	**************
+	*** 2. PIB ***
+	**************
+	merge 1:1 (anio) using `PIB', nogen keepus(pibY indiceY deflator productivity var_pibY) update replace keep(matched)
+	foreach k of varlist rfsp* shrfsp* {
+		g `k'PIB = `k'/pibY*100
+	}
+	format *PIB %7.3fc
+
+
+
+
+	****************
+	*** 3. Graph ***
+	****************	
+	if "$graphs" == "on" | "`graphs'" == "graphs" {
+		graph bar (sum) shrfspInternoPIB shrfspExternoPIB if anio >= 2000, ///
+			over(anio, label(labgap(vsmall))) ///
+			stack asyvars ///
+			title("{bf:Saldo hist{c o'}rico de RFSP}") ///
+			/// subtitle("Observados y estimados") ///
+			ytitle(% PIB) ylabel(0(5)30, labsize(small)) ///
+			legend(on position(6) rows(1) label(1 "Interno") label(2 "Externo")) ///
+			name(shrfsp, replace) ///
+			blabel(bar, format(%7.1fc)) ///
+			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}")
+	}
+
+exit
+
 
 
 	******************************
