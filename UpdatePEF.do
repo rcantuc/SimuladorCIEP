@@ -10,7 +10,7 @@
 ************************
 cd "`c(sysdir_site)'/bases/SIM/"
 forvalues k=2013(1)2017 {
-	unzipfile "`c(sysdir_site)'/bases/PEFs/CP `k'.csv.zip", replace
+	unzipfile "`c(sysdir_personal)'../basesCIEP/PEFs/CP `k'.csv.zip", replace
 	import delimited "`c(sysdir_site)'/bases/SIM/CP `k'.csv", clear
 
 	drop if ciclo == .
@@ -32,7 +32,7 @@ forvalues k=2013(1)2017 {
 
 ***************
 ** PEF actual **
-unzipfile "`c(sysdir_site)'/bases/PEFs/PEF 2018.csv.zip", replace
+unzipfile "`c(sysdir_personal)'../basesCIEP/PEFs/PEF 2018.csv.zip", replace
 import delimited "`c(sysdir_site)'/bases/SIM/PEF 2018.csv", clear
 
 drop if ciclo == .
@@ -53,7 +53,7 @@ save `CPActual'
 
 ******************
 ** PEF siguiente **
-unzipfile "`c(sysdir_site)'/bases/PEFs/PPEF 2019.csv.zip", replace
+unzipfile "`c(sysdir_personal)'../basesCIEP/PEFs/PPEF 2019.csv.zip", replace
 import delimited "`c(sysdir_site)'/bases/SIM/PPEF 2019.csv", clear
 
 drop if ciclo == .
@@ -360,8 +360,8 @@ replace serie_ramo = "XDB51" if ramo == 41
 replace serie_ramo = "XDB52" if ramo == 42
 replace serie_ramo = "XDB53" if ramo == 43
 replace serie_ramo = "XDB58" if ramo == 44
-replace serie_ramo = "XOA0832" if ramo == 45
-replace serie_ramo = "XOA0833" if ramo == 46
+replace serie_ramo = "XOA0832" if ramo == 45 | (ur == "C00" & ramo == 18)
+replace serie_ramo = "XOA0833" if ramo == 46 | (ur == "D00" & ramo == 18)
 replace serie_ramo = "XOA1013" if ramo == 47
 replace serie_ramo = "XOA1019" if ramo == 48
 replace serie_ramo = "XOA0145" if ramo == 50
@@ -381,7 +381,7 @@ drop series
 *** 3. SHCP: Datos Abiertos ***
 *******************************
 preserve
-foreach k in `serie_desc_funcion' `serie_ramo' {
+foreach k in `serie_desc_funcion' `serie_ramo' XAC5210 {
 	noisily DatosAbiertos `k'
 
 	rename clave_de_concepto serie
@@ -442,12 +442,31 @@ foreach k of varlist gasto aprobado ejercido proyecto {
 }
 
 
-** Proporcion Ramo 19 neto **
-tempvar neto19 neto190
-egen `neto19' = sum(gasto) if ramo == 19, by(anio)
-egen `neto190' = sum(gasto) if ramo == 19 & neto == 0, by(anio)
-g propneto19 = `neto190'/`neto19'
 
+
+*****************
+*** Tipo Ramo ***
+*****************
+gen ramo_tipo = .
+replace ramo_tipo = 0 if ramo == -1
+replace ramo_tipo = 1 if ramo == 1 | ramo == 3 | ramo == 22 | ramo == 32 | ramo == 35 ///
+	| ramo == 40 | ramo == 41 | ramo == 42 | ramo == 43 | ramo == 44
+replace ramo_tipo = 2 if ramo == 19 | ramo == 23 | ramo == 25  | ramo == 33
+replace ramo_tipo = 3 if ramo == 50 | ramo == 51
+replace ramo_tipo = 4 if (ramo == 52 | ramo == 53) & capitulo != 9
+replace ramo_tipo = 5 if ramo == 2 | ramo == 4 | ramo == 5 | ramo == 6  | ramo == 7  ///
+	| ramo == 8  | ramo == 9 | ramo == 10 | ramo == 11  | ramo == 12  | ramo == 13  ///
+	| ramo == 14 | ramo == 15 | ramo == 16  | ramo == 17  | ramo == 18  | ramo == 20 ///
+	| ramo == 21 | ramo == 27  | ramo == 31  | ramo == 36  | ramo == 37 | ramo == 38 ///
+	| ramo == 45  | ramo == 46 | ramo == 47  | ramo == 48
+replace ramo_tipo = 6 if ramo == 24 | ramo == 28 | ramo == 30 | ramo == 34 
+replace ramo_tipo = 7 if (ramo == 52 | ramo == 53) & (capitulo == 9)
+
+label define tipos_ramo 0 "Cuotas al ISSSTE" 1 "Ramos aut{c o'}nomos" 2 "Ramos generales programables" ///
+	3 "Entidades de control directo" 4 "Empresas Productivas del Estado" ///
+	5 "Ramos administrativos" 7 "Gasto no programable de las empresas productivas del estado" ///
+	6 "Gasto no programable del gobierno federal"
+label values ramo_tipo tipos_ramo
 
 
 ***************
@@ -455,7 +474,7 @@ g propneto19 = `neto190'/`neto19'
 ***************
 format %20.0fc ejercido aprobado proyecto
 capture drop __*
-order ramo desc_ur finalidad desc_funcion desc_subfuncion desc_ai desc_modalidad ///
+order ramo* desc_ur finalidad desc_funcion desc_subfuncion desc_ai desc_modalidad ///
 	desc_pp desc_objeto desc_tipogasto fuente entidad serie* ///
 	proyecto aprobado ejercido 
 format %30.0fc ramo desc_ur finalidad desc_funcion desc_subfuncion desc_ai desc_modalidad ///

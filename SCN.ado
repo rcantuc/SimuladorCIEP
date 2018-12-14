@@ -15,49 +15,49 @@ quietly {
 	*** 1. Databases (D) and variable definitions (V) ***
 	*****************************************************
 	** D.1. Cuenta de generaci{c o'}n del ingreso **
-	import excel "`c(sysdir_site)'/bases/INEGI/SCN/Cuentas/Cuenta de Generacion del Ingreso.xlsx", clear
+	import excel "`c(sysdir_personal)'../basesCIEP/INEGI/SCN/Cuentas/Cuenta de Generacion del Ingreso.xlsx", clear
 	LimpiaBIE g
 	tempfile generacion
 	save `generacion'
 
 
 	** D.2. Cuenta por sectores institucionales **
-	import excel "`c(sysdir_site)'/bases/INEGI/SCN/Cuentas/Cuentas por Sectores Institucionales.xlsx", clear
+	import excel "`c(sysdir_personal)'../basesCIEP/INEGI/SCN/Cuentas/Cuentas por Sectores Institucionales.xlsx", clear
 	LimpiaBIE s
 	tempfile sectores
 	save `sectores'
 
 
 	** D.3. Cuenta de ingreso nacional disponbile **
-	import excel "`c(sysdir_site)'/bases/INEGI/SCN/Cuentas/Cuenta del ingreso nacional disponible.xlsx", clear
+	import excel "`c(sysdir_personal)'../basesCIEP/INEGI/SCN/Cuentas/Cuenta del ingreso nacional disponible.xlsx", clear
 	LimpiaBIE d
 	tempfile disponible
 	save `disponible'
 
 
 	** D.4. Cuenta de consumo **
-	import excel "`c(sysdir_site)'/bases/INEGI/SCN/Cuentas/Consumo de los hogares.xlsx", clear
+	import excel "`c(sysdir_personal)'../basesCIEP/INEGI/SCN/Cuentas/Consumo de los hogares.xlsx", clear
 	LimpiaBIE c
 	tempfile consumo
 	save `consumo'
 
 
 	** D.5. Cuenta de consumo privado **
-	import excel "`c(sysdir_site)'/bases/INEGI/SCN/Cuentas/Gasto de consumo privado.xlsx", clear
+	import excel "`c(sysdir_personal)'../basesCIEP/INEGI/SCN/Cuentas/Gasto de consumo privado.xlsx", clear
 	LimpiaBIE gc
 	tempfile gasto
 	save `gasto'
 
 
 	** D.6. Cuenta de consumo de gobierno **
-	import excel "`c(sysdir_site)'/bases/INEGI/SCN/Cuentas/Gasto de consumo de gobierno general.xlsx", clear
+	import excel "`c(sysdir_personal)'../basesCIEP/INEGI/SCN/Cuentas/Gasto de consumo de gobierno general.xlsx", clear
 	LimpiaBIE cg
 	tempfile gobierno
 	save `gobierno'
 
 
 	** D.7. PIB actividad economica **
-	import excel "`c(sysdir_site)'/bases/INEGI/SCN/Cuentas/PIB actividad economica.xlsx", clear
+	import excel "`c(sysdir_personal)'../basesCIEP/INEGI/SCN/Cuentas/PIB actividad economica.xlsx", clear
 	LimpiaBIE ae
 	tempfile actividad
 	save `actividad'
@@ -564,12 +564,10 @@ quietly {
 			subtitle(Cuenta de Generaci{c o'}n del Ingreso) ///			
 			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n del INEGI, BIE.}") ///
 			note("{bf:Notas:} Impuestos netos de subsidios. Excedente bruto de operaci{c o'}n sin ingreso mixto.") ///
-			xlabel(2003(1)2018) xtitle("") ///
+			xtitle("") ///
 			ylabel(, format(%20.0fc)) ytitle(millones MXN, height(8)) ///
 			name(gdp, replace)
 		
-		graph export `"`c(sysdir_site)'/users/`id'/gdp.png"', replace name(gdp)
-
 
 		tempvar RemPIB MixPIB ExBOpSinMixPIB RowPIB ConFijPIB
 		g `RemPIB' = (RemSalNTA + SSEmpleadores + SSImputada)/PIB*100
@@ -597,8 +595,6 @@ quietly {
 			label(1 "Consumo de capital fijo") ) ///
 			blabel(bar, format(%7.1fc)) ///
 			name(gdpbar, replace)
-
-		graph export `"`c(sysdir_site)'/users/`id'/gdpbar.png"', replace name(gdpbar)
 	}
 
 

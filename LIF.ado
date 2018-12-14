@@ -38,7 +38,7 @@ quietly {
 
 
 	**************
-	*** 2. LIF ***
+	*** 2. PIB ***
 	**************
 	merge m:1 (anio) using `PIB', nogen keepus(pibY indiceY deflator productivity var_pibY) update replace keep(matched)
 
@@ -189,7 +189,6 @@ quietly {
 			over(anio, label(labgap(vsmall))) ///
 			stack asyvars ///
 			title("{bf:Ingresos de EPE observados y estimados}") ///
-			subtitle("Observados y estimados") ///
 			ytitle(% PIB) ylabel(0(5)30, labsize(small)) ///
 			legend(on position(6) rows(1)) ///
 			name(ingresosEPE, replace) ///

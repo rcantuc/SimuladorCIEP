@@ -4,7 +4,7 @@
 ****                             ****
 *************************************
 if "`1'" == "" {
-	local 1 = 2014
+	local 1 = 2016
 }
 if `1' >= 2016 {
 	local enigh = "ENIGH"
@@ -120,11 +120,11 @@ local OtrasEmpresas = r(Otras_empresas)
 ************************
 *** A. Macros 3. PEF ***
 ************************
-PEF, anio(`macroanio') concepto(desc_funcion)
+PEF, anio(`macroanio') by(desc_funcion)
 local Cuotas_ISSSTE = r(Cuotas_ISSSTE)
 
 PEF if neto == 0 & ramo != -1 & (substr(string(objeto),1,2) == "45" ///
-	| substr(string(objeto),1,2) == "47" | desc_pp == 779), anio(`macroanio') concepto(ramo)
+	| substr(string(objeto),1,2) == "47" | desc_pp == 779), anio(`macroanio') by(ramo)
 local SSFederacion = r(Aportaciones_a_Seguridad_Social) + `Cuotas_ISSSTE'
 
 
@@ -141,8 +141,7 @@ if `macroanio' >= 2015 {
 			local deflactor = deflator[`k']
 		}
 	}
-
-	use "`c(sysdir_personal)'/bases/SAT/Personas fisicas/Stata/2015_labels.dta", clear
+	use "`c(sysdir_personal)'../basesCIEP/SAT/Personas fisicas/Stata/2015_labels.dta", clear
 	tabstat iaarrendamiento utgravacumap utgravacumriap, stat(sum) f(%20.0fc) save
 	tempname SATAbierto
 	matrix `SATAbierto' = r(StatTotal)  
@@ -150,7 +149,7 @@ if `macroanio' >= 2015 {
 	local util_serprof = `SATAbierto'[1,2]/`deflactor'
 }
 else {
-	use "`c(sysdir_personal)'/bases/SAT/Personas fisicas/Stata/`macroanio'_labels.dta", clear
+	use "`c(sysdir_personal)'../basesCIEP/SAT/Personas fisicas/Stata/`macroanio'_labels.dta", clear
 	tabstat iaarrendamiento utgravacumap utgravacumriap, stat(sum) f(%20.0fc) save
 	tempname SATAbierto
 	matrix `SATAbierto' = r(StatTotal)  
@@ -165,8 +164,8 @@ else {
 *** B. Micro 1. ENIGH. Ingresos ***
 ***********************************
 noisily di _newline(2) _col(04) in g "{bf:INGRESOS DE LOS HOGARES: " in y "`enigh' `enighanio'}"
-use "`c(sysdir_personal)'/bases/INEGI/`enigh'/`enighanio'/ingresos.dta", clear
-merge m:1 (`hogar') using "`c(sysdir_personal)'/bases/INEGI/`enigh'/`enighanio'/concentrado.dta", ///
+use "`c(sysdir_personal)'../basesCIEP/INEGI/`enigh'/`enighanio'/ingresos.dta", clear
+merge m:1 (`hogar') using "`c(sysdir_personal)'../basesCIEP/INEGI/`enigh'/`enighanio'/concentrado.dta", ///
 	keepusing(factor_hog tot_integ smg) keep(matched)
 
 * Reemplazar missings por ceros *
@@ -457,10 +456,10 @@ g double exen_prop = min(0,ing_prop)
 /* Articulo 93. No se pagara el impuesto sobre la renta por la obtencion de los siguientes ingresos:
 I. Las prestaciones distintas del salario que reciban los trabajadores del salario minimo general para una
 o varias areas geograficas, calculadas sobre la base de dicho salario, cuando no excedan de los minimos 
-senialados por la legislacion laboral, asi como las remuneraciones por concepto de tiempo extraordinario
+senialados por la legislacion laboral, asi como las remuneraciones por by de tiempo extraordinario
 o de prestacion de servicios que se realicen en los dias de descanso sin disfrutar de otros en
 sustitucion, hasta el limite establecido en la legislacion laboral, que perciban dichos trabajadores.
-Tratandose de los demas trabajadores, el 50% de las remuneraciones por concepto de tiempo 
+Tratandose de los demas trabajadores, el 50% de las remuneraciones por by de tiempo 
 extraordinario o de la prestacion de servicios que se realice en los dias de descanso sin disfrutar
 de otros en sustitucion, que no exceda el limite previsto en la legislacion laboral y sin que esta
 exencion exceda del equivalente de cinco veces el salario minimo general del area geografica del trabajador
@@ -479,7 +478,7 @@ hasta el equivalente del salario minimo general del area geografica del trabajad
 cuando dichas gratificaciones se otorguen en forma general; asi como las primas vacacionales que 
 otorguen los patrones durante el anio de calendario a sus trabajadores en forma general y la participacion
 de los trabajadores en las utilidades de las empresas, hasta por el equivalente a 15 dias de salario
-general del area geografica del trabajador, por cada uno de los conceptos senialados. Tratandose de primas 
+general del area geografica del trabajador, por cada uno de los bys senialados. Tratandose de primas 
 dominicales hasta por el equivalente de un salario minimo general del area geografica del trabajador por 
 cada domingo que se labore.
 
@@ -515,7 +514,7 @@ g double exen_indemn = ing_indemn
 
 /* Articulo 93. No se pagara el impuesto sobre la renta por la obtencion de los siguientes ingresos: (...)
 XIII. Los que obtengan las personas que han estado sujetas a una relacion laboral en el momento de su separacion, 
-por concepto de primas de antiguedad, retiro e indemnizaciones u otros pagos, asi como los obtenidos con cargo a 
+por by de primas de antiguedad, retiro e indemnizaciones u otros pagos, asi como los obtenidos con cargo a 
 la subcuenta del seguro de retiro o a la subcuenta de retiro, cestania en edad avanada y vejez, previstas en la 
 Ley del Seguro Social y los que obtengan los trabajadores al servicio del Estado con cargo a la cuenta individual 
 del sistema de ahorro para el retiro, prevista en la Ley del Instituto de Seguridad y Servicios Sociales de los 
@@ -525,16 +524,16 @@ la subcuenta de retiro, cestania en edad avanzada y vejez o de la cuenta individ
 retiro (...) Toda fraccion de mas de seis meses se considerara un anio completo. Por el excedente se pagara el 
 impuesto en los terminos de este Titulo.
 
-Articulo 95. Cuando se obtengan ingresos por concepto de primas de antiguedad, retiro e indemnizaciones u otros 
+Articulo 95. Cuando se obtengan ingresos por by de primas de antiguedad, retiro e indemnizaciones u otros 
 pagos, por separacion, se calculara el impuesto anual, conforme a las siguientes reglas:
 
-I. Del total de percepciones por este concepto, se separara una cantidad igual a la del ultimo sueldo mensual ordinario, 
+I. Del total de percepciones por este by, se separara una cantidad igual a la del ultimo sueldo mensual ordinario, 
 la cual se sumara a los demas ingresos por los que se deba pagar el impuesto en el anio de calendario de que se trate 
 y se calculara, en los terminos de este Titulo, el impuesto correspondiente a dichos ingresos. Cuando el total de las 
 percepciones sean inferiores al ultimo sueldo mensual ordinario, estas se sumaran en su totalidad a los demas ingresos 
 por los que se deba pagar el impuesto y no se aplicara la fraccion II de este articulo.
 
-II. Al total de percepciones por este concepto se restara una cantidad igual a la del ultimo sueldo mensual ordinario y 
+II. Al total de percepciones por este by se restara una cantidad igual a la del ultimo sueldo mensual ordinario y 
 al resultado se le aplicara la tasa que correspondio al impuesto que seniala la fraccion anterior. El impuesto que 
 resulte se sumara al calculado conforme a la fraccion que antecede.
 
@@ -562,7 +561,7 @@ casos de invalidez, incapacidad, cesantia, vejez, retiro y muerte, cuyo monto di
 salario minimo general del area geografica del contribuyente, y el beneficio previsto en la Ley de Pension Universal. 
 Por el excedente se pagara el impuesto en los terminos de este Titulo.
 
-V. Para aplicar la exencion sobre los conceptos a que se refiere la fraccion anterior, se debera consdierar la 
+V. Para aplicar la exencion sobre los bys a que se refiere la fraccion anterior, se debera consdierar la 
 totalidad de las pensiones y de los haberes de retiro pagados al trabajador a que se refiere la misma, independientemente 
 de quien los pague. Sobre el excedente se debera efectuar la retencion en los terminos que al efecto establezca el 
 Reglamento de esta Ley.*/
@@ -602,7 +601,7 @@ asegurados o a sus beneficiarios, que provengan de contratos de seguros de vida 
 directamente por el empleador en favor de sus trabajadores, siempre que los beneficios de dichos seguros se entreguen 
 unicamente por muerte, invalidez, perdidas organicas o incapacidad del asegurado para realizar un trabajo personal 
 remunerado(...) La exencion prevista en este parrafo no sera aplicable tratandose de las cantidades que paguen las 
-instituciones de seguros por concepto de dividendos derivados de la poliza de seguros o su colectividad. */
+instituciones de seguros por by de dividendos derivados de la poliza de seguros o su colectividad. */
 * t. Seguros de Vida *
 g double exen_segvida = ing_segvida
 
@@ -632,14 +631,14 @@ g double exen_empre = min((1-290533/475667)*ing_empre,ing_empre)
 
 *************************************************************************************************************************
 ** Capitulo III. DE LOS INGRESOS POR ARRENDAMIENTO Y EN GENERAL POR OTORGAR EL USO O GOCE TEMPORAL DE BIENES INMUEBLES **
-/* Articulo 115. Las personas que obtengan ingresos por conceptos a que se refiere este Capitulo, podran efectuar 
+/* Articulo 115. Las personas que obtengan ingresos por bys a que se refiere este Capitulo, podran efectuar 
 las siguientes deducciones:
 
 (...)
 
 (Segundo Parrafo) Los contribuyentes que otorguen el uso o goce temporal de bienes inmuebles podran optar por deducir 
 el 35% de los ingresos a que se refiere este Capitulo, en substitutcion de las deducciones a que este articulo se 
-refiere. Quienes ejercen esta opcion podran deducir, ademas, el monto de las erogaciones por concepto del impuesto 
+refiere. Quienes ejercen esta opcion podran deducir, ademas, el monto de las erogaciones por by del impuesto 
 predial de dichos inmuebles correspondiente al anio de calendario o al periodo durante el cual se obtuvieron los 
 ingresos en el ejercicio segun corresponda.*/
 
@@ -893,16 +892,16 @@ egen double exen_t4_cap9 = rsum(exen_autor exen_remesas exen_trabmenor exen_pres
 ************************************
 
 * Merges *
-merge m:1 (`hogar' numren id_trabajo) using "`c(sysdir_personal)'/bases/INEGI/`enigh'/`enighanio'/trabajos.dta", nogen ///
+merge m:1 (`hogar' numren id_trabajo) using "`c(sysdir_personal)'../basesCIEP/INEGI/`enigh'/`enighanio'/trabajos.dta", nogen ///
 	keepusing(htrab pres_* pago scian sinco subor)
 g trabajos = 1 if id_trabajo != ""
-merge m:1 (`hogar' numren) using "`c(sysdir_personal)'/bases/INEGI/`enigh'/`enighanio'/poblacion.dta", nogen ///
+merge m:1 (`hogar' numren) using "`c(sysdir_personal)'../basesCIEP/INEGI/`enigh'/`enighanio'/poblacion.dta", nogen ///
 	keepusing(sexo edad trabajo_mp inscr_* inst_* atemed segpop)
-merge m:1 (`hogar') using "`c(sysdir_personal)'/bases/INEGI/`enigh'/`enighanio'/concentrado.dta", nogen update replace ///
+merge m:1 (`hogar') using "`c(sysdir_personal)'../basesCIEP/INEGI/`enigh'/`enighanio'/concentrado.dta", nogen update replace ///
 	keepusing(factor_hog tot_integ smg ubica_geo estim_alqu)
-merge m:1 (folioviv) using "`c(sysdir_personal)'/bases/INEGI/`enigh'/`enighanio'/vivienda.dta", nogen ///
+merge m:1 (folioviv) using "`c(sysdir_personal)'../basesCIEP/INEGI/`enigh'/`enighanio'/vivienda.dta", nogen ///
 	keepusing(tenencia renta)
-merge m:1 (`hogar' numren) using "`c(sysdir_personal)'/bases/SIM/`enighanio'/deducciones.dta", nogen keepus(deduc_isr)
+merge m:1 (`hogar' numren) using "`c(sysdir_personal)'../basesCIEP/SIM/`enighanio'/deducciones.dta", nogen keepus(deduc_isr)
 
 noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "Las deducciones personales son beneficios para el jefe del hogar.}"
 tempvar tag tag2
@@ -1341,7 +1340,7 @@ label var cuotasTP "Seguridad social (trabajadores y patr${o}n)"
 egen double cuotasTPF = rsum(cuotasP cuotasT cuotasF)
 label var cuotasTPF "Contribuciones a la seguridad social"
 
-* Cuotas a la seguridad social por concepto *
+* Cuotas a la seguridad social por by *
 tabstat cuotasTP [aw=factor_hog] if (formal2 == 1 | formal2 == 2), ///
 	stat(sum) f(%20.0fc) save by(formal)
 tempname SBCIMSS SBCISSSTE
@@ -1703,7 +1702,7 @@ collapse (sum) ing_* exen_* cuotas* htrab isrE renta deduc_isr ///
 	(mean) factor_hog* sm sbc tot_integ ///
 	(max) scian formal* tipo_contribuyente sinco ///
 	(min) pago inscr_* subor, by(`hogar' numren)
-merge 1:1 (`hogar' numren) using "`c(sysdir_personal)'/bases/INEGI/`enigh'/`enighanio'/poblacion.dta", nogen ///
+merge 1:1 (`hogar' numren) using "`c(sysdir_personal)'../basesCIEP/INEGI/`enigh'/`enighanio'/poblacion.dta", nogen ///
 	keepusing(sexo edad nivelaprob gradoaprob)
 
 
@@ -2238,5 +2237,5 @@ xtile percentil = ing_decil_pc [aw=factor_hog], n(100)
 * Guardar *
 capture drop __*
 format ing_* exen_* renta %10.0fc
-capture mkdir "`c(sysdir_personal)'/bases/SIM/`enighanio'/"
-save "`c(sysdir_personal)'/bases/SIM/`enighanio'/income.dta", replace
+capture mkdir "`c(sysdir_personal)'../basesCIEP/SIM/`enighanio'/"
+save "`c(sysdir_personal)'../basesCIEP/SIM/`enighanio'/income.dta", replace

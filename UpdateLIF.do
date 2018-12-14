@@ -8,7 +8,7 @@
 ************************
 *** 1. BASE DE DATOS ***
 ************************
-import excel "`c(sysdir_site)'/bases/LIFs/LIFs.xlsx", clear firstrow
+import excel "`c(sysdir_personal)'../basesCIEP/LIFs/LIFs.xlsx", clear firstrow
 
 ** Encode **
 foreach k of varlist div* {

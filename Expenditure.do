@@ -13,7 +13,7 @@
 
 ** D.1. A${ni}o Macro **
 if "`1'" == "" {
-	local macroanio = 2014
+	local macroanio = 2016
 }
 else {
 	local macroanio = `1'
@@ -53,7 +53,7 @@ if `macroanio' <= 2013 {
 
 ** D.3. Texto introductorio **
 noisily di _newline(5) in g "{bf:GASTO DE LOS HOGARES:" in y " `enigh' `enighanio'}"
-local data "`c(sysdir_personal)'/bases/INEGI/`enigh'/`enighanio'"
+local data "`c(sysdir_personal)'../basesCIEP/INEGI/`enigh'/`enighanio'"
 
 
 
@@ -113,7 +113,7 @@ local Ieps13 = r(Alcohol)
 ****************************************
 *** 2. DATOS MICROECON${O}MICOS (MI) ***
 ****************************************
-capture confirm file "`c(sysdir_personal)'/bases/SIM/`enighanio'/preconsumption.dta"
+capture confirm file "`data'/preconsumption.dta"
 if _rc != 0 {
 
 
@@ -157,7 +157,7 @@ if _rc != 0 {
 
 
 	** MI.7. Uni${o}n de claves de IVA y IEPS **
-	merge m:1 (clave) using "`c(sysdir_personal)'/bases/INEGI/ENIGH/2014/clave_iva.dta", ///
+	merge m:1 (clave) using "`c(sysdir_personal)'../basesCIEP/INEGI/ENIGH/2014/clave_iva.dta", ///
 		nogen keepus(descripcion *2014 clase_de_actividad*) keep(matched master)
 	encode iva2014, gen(tiva)
 	tempfile pre_iva
@@ -166,7 +166,7 @@ if _rc != 0 {
 
 	** MI.8. Uni${o}n de censo econ${o}mico **
 	forvalues k=1(1)6 {
-		use "`c(sysdir_personal)'/bases/INEGI/Censo Economico/2014/censo_eco.dta", clear
+		use "`c(sysdir_personal)'../basesCIEP/INEGI/Censo Economico/2014/censo_eco.dta", clear
 
 		rename claseactividad clase_de_actividad`k'
 		rename produccin produccion`k'
@@ -368,7 +368,7 @@ if _rc != 0 {
 
 	** MI.17. Guardar pre-base **
 	capture drop __*
-	save "`c(sysdir_personal)'/bases/SIM/`enighanio'/preconsumption.dta", replace
+	save "`data'/preconsumption.dta", replace
 }
 
 
@@ -377,7 +377,7 @@ if _rc != 0 {
 ********************************
 *** 3. Precio, IVA, IEPS (P) ***
 ********************************
-use "`c(sysdir_personal)'/bases/SIM/`enighanio'/preconsumption.dta", clear
+use "`data'/preconsumption.dta", clear
 
 
 ** P.1 Cantidad **
@@ -475,7 +475,7 @@ collapse (sum) deduc_*, by(folioviv foliohog)
 g proyecto = "2"
 g numren = "01"
 egen deduc_isr = rsum(deduc_*)
-save "`c(sysdir_personal)'/bases/SIM/`enighanio'/deducciones.dta", replace
+save "`c(sysdir_personal)'../basesCIEP/SIM/`enighanio'/deducciones.dta", replace
 exit
 
 

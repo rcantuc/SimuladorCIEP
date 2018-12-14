@@ -1,9 +1,7 @@
 program define PIBDeflactor
 quietly {
 	version 13.1
-	syntax [, ANIOvp(int -1) GEO(int 5) FIN(int 2030) ///
-		ID(string) Graphs]
-
+	syntax [, ANIOvp(int -1) GEO(int 5) FIN(int 2030) Graphs]
 
 
 
@@ -12,7 +10,7 @@ quietly {
 	*** 0 BASES ***
 	***************
 	* 0.1. PIB *
-	import excel "`=c(sysdir_site)'/bases/INEGI/SCN/PIB/PIB.xlsx", clear
+	import excel "`=c(sysdir_personal)'../basesCIEP/INEGI/SCN/PIB/PIB.xlsx", clear
 
 	* 0.2. Limpia *
 	LimpiaBIE
@@ -43,7 +41,7 @@ quietly {
 
 
 	* 0.1. Deflactor *
-	import excel "`=c(sysdir_site)'/bases/INEGI/SCN/Deflactor/Deflactor.xlsx", clear
+	import excel "`=c(sysdir_personal)'../basesCIEP/INEGI/SCN/Deflactor/Deflactor.xlsx", clear
 
 	* 0.2. Limpia *
 	LimpiaBIE, nomult
@@ -71,7 +69,6 @@ quietly {
 	compress
 	tempfile Deflactor
 	save `Deflactor', replace
-
 
 
 
@@ -106,7 +103,6 @@ quietly {
 
 
 
-
 	*******************
 	*** 2 Deflactor ***
 	*******************
@@ -136,10 +132,7 @@ quietly {
 			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n del INEGI, BIE.}") ///
 			note("{bf:{c U'}ltimo dato}: `anio_last'q`trim_last'.") ///
 			name(deflactorH, replace)
-
-		*graph export `"`c(sysdir_personal)'/users/`id'/DeflactorH.png"', replace name(deflactorH)
 	}
-
 
 
 	***********************************
@@ -183,7 +176,6 @@ quietly {
 
 
 
-
 	*************
 	*** 3 PIB ***
 	*************
@@ -223,8 +215,6 @@ quietly {
 			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n del INEGI, BIE.}") ///
 			note("{bf:{c U'}ltimo dato}: `anio_last'q`trim_last'.") ///
 			name(PIBH, replace)
-
-		*graph export `"`c(sysdir_personal)'/users/`id'/PIBH.png"', replace name(PIBH)
 	}
 
 
@@ -249,6 +239,7 @@ quietly {
 	order aniotrimestre anio trimestre *Y* *G *Q*
 	g double productivity = pibYR/pibYR[`obsvp']
 	label var productivity "Productivity"
+
 
 
 
@@ -293,8 +284,6 @@ quietly {
 			note("{bf:Nota}: Promedio m{c o'}vil geom{c e'}trico de `geo' a{c n~}os despu{c e'}s de `anio_last'. `exceptI'{bf:{c U'}ltimo dato}: `anio_last'q`trim_last'.") ///
 			name(deflactorP, replace) ///
 			legend(on)
-		*graph export `"`c(sysdir_personal)'/users/`id'/DeflactorP.png"', replace name(deflactorP)
-
 
 		twoway (connected var_pibY anio if anio < `aniovp') ///
 			(connected var_pibY anio if anio >= `aniovp'), ///
@@ -306,12 +295,13 @@ quietly {
 			note("{bf:Nota}: Promedio m{c o'}vil geom{c e'}trico de `geo' a{c n~}os despu{c e'}s de `anio_last'. `except'{bf:{c U'}ltimo dato}: `anio_last'q`trim_last'.") ///
 			name(PIBP, replace) ///
 			legend(on)
-		*graph export `"`c(sysdir_personal)'/users/`id'/PIBP.png"', replace name(PIBP)
-
 	}
 
+
+
+
 	***************
-	*** 3 Texto ***
+	*** 5 Texto ***
 	***************
 	noisily di _newline in g "A{c n~}o" _col(11) %8s "Crec. PIB" _col(25) %20s "PIB" _col(50) %5s "Crec. Def." _col(64) %8.4fc "Deflactor"
 

@@ -1,6 +1,6 @@
 program Eficiencia, return
 quietly {
-	syntax [, Anio(int $anioVP) Update Graphs Noisily Fast ID(string) REMAKE REBOOT]
+	syntax [, Anio(int $anioVP) Update Graphs Noisily Fast ID(string) REBOOT]
 
 
 
@@ -8,7 +8,7 @@ quietly {
 	********************
 	*** 1. Deflactor ***
 	********************
-	PIBDeflactor, anio(`anio') id(`id') //`graphs'
+	PIBDeflactor, anio(`anio')
 	forvalues k=1(1)`=_N' {
 		if anio[`k'] == `anio' {
 			local deflactor = deflator in `k'
@@ -22,23 +22,23 @@ quietly {
 	****************************************
 	*** 2. Sistema de cuentas nacionales ***
 	****************************************
-	`noisily' SCN, anio(`anio') `update'
-	local SNAasalariados = r(RemSalNTA)+r(SSEmpleadores)+r(SSImputada)
-	local SNAmixto = r(MixLNTA)+r(MixKNNTA)
+	`noisily' SCN, anio(`anio')
+	local SNAasalariados = r(RemSalNTA) + r(SSEmpleadores) + r(SSImputada)
+	local SNAmixto = r(MixLNTA) + r(MixKNNTA)
 	local SNAmixtoL = r(MixLNTA)
 	local SNAmixtoK = r(MixKNNTA)
 	local SNAcapital = r(CapitalNTA)
-	
+
 	local SNAsociedades = r(ExNOpSoc)
 	local SNAExNOpHog = r(ExNOpHog)
 	local SNAExBOpHog = r(ExBOpHog)
 	local SNAAlquiler = r(Alquileres)
 	local SNAInmobiliarias = r(Inmobiliarias)
 
-	local SNAvehiculos = r(Adquisici${o}n_de_veh${i}culos)
-	local SNAnoBasico = r(Hogares_e_ISFLSH) - r(Alimentos) - r(Bebidas_no_alcoh${o}licas)
+	local SNAvehiculos = r(Adquisicion_de_vehiculos)
+	local SNAnoBasico = r(Hogares_e_ISFLSH) - r(Alimentos) - r(Bebidas_no_alcoholicas)
 	local SNAconsumo = r(Hogares_e_ISFLSH)
-	
+
 	local SNAConGob = r(ConGob)
 	local SNAComprasN = r(ComprasN)
 
@@ -84,25 +84,24 @@ quietly {
 
 
 	** Base de datos **
-	capture confirm file "`c(sysdir_personal)'/bases/SIM/`enighanio'/income.dta"
+	capture confirm file "`c(sysdir_site)'/bases/SIM/`enighanio'/income.dta"
 	if _rc != 0 {
-		run "`c(sysdir_personal)'/Income.do" `enighanio'
+		run "`c(sysdir_site)'/Income.do" `enighanio'
 	}
 
-	capture confirm file "`c(sysdir_personal)'/bases/SIM/`enighanio'/expenditure.dta"
+	capture confirm file "`c(sysdir_site)'/bases/SIM/`enighanio'/expenditure.dta"
 	if _rc != 0 {
-		run "`c(sysdir_personal)'/Expenditure.do" `enighanio'
+		run "`c(sysdir_site)'/Expenditure.do" `enighanio'
 	}
 	
 
-	use "`c(sysdir_personal)'/bases/SIM/`enighanio'/income.dta", clear
-	merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/bases/SIM/`enighanio'/expenditure.dta", nogen
-	merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/bases/INEGI/ENIGH/`enighanio'/poblacion.dta", nogen force
+	use "`c(sysdir_site)'/bases/SIM/`enighanio'/income.dta", clear
+	merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/bases/SIM/`enighanio'/expenditure.dta", nogen
+	merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/bases/INEGI/ENIGH/`enighanio'/poblacion.dta", nogen force
 
 	if `enighanio' == 2016 {
 		drop if folioviv == "1908164404"													// Outlier, 65 a${ni}os, hombre, ed. superior, decil X
 	}
-
 	tempfile enigh
 	save `enigh'
 
@@ -291,7 +290,7 @@ quietly {
 
 	if pamgeneral == 1 {
 		/*preserve
-		use if entidad == "Nacional" & anio == $anioVP & edad >= 65 using `"`c(sysdir_personal)'/bases/SIM/Poblacion/poblacion`c(os)'.dta"', clear
+		use if entidad == "Nacional" & anio == $anioVP & edad >= 65 using `"`c(sysdir_site)'/bases/SIM/Poblacion/poblacion`c(os)'.dta"', clear
 		tabstat poblacion, stat(sum) f(%20.0fc) save
 		tempname pob65
 		matrix `pob65' = r(StatTotal)
@@ -461,7 +460,7 @@ quietly {
 
 	save `enigh', replace
 	
-	save `"`c(sysdir_personal)'/bases/SIM/RECUSO.dta"', replace
+	save `"`c(sysdir_site)'/bases/SIM/RECUSO.dta"', replace
 
 
 
@@ -646,7 +645,7 @@ quietly {
 		0 "Ingreso b${a}sico"
 
 	capture drop __*
-	save "`c(sysdir_personal)'/users/`id'/Sankey`anio'.dta", replace
+	save "`c(sysdir_site)'/users/`id'/Sankey`anio'.dta", replace
 
 
 
@@ -662,7 +661,7 @@ quietly {
 			note("") ///
 			name(ingresosGastos, replace)
 
-		graph save ingresosGastos "`c(sysdir_personal)'/users/`id'/IngresosGastos.gph", replace
+		graph save ingresosGastos "`c(sysdir_site)'/users/`id'/IngresosGastos.gph", replace
 
 		capture window manage close graph ingresos
 		capture window manage close graph gastos
@@ -799,7 +798,7 @@ quietly {
 	*****************************
 	*** 11. Resultados: Gasto ***
 	*****************************
-	use if entidad == "Nacional" & anio == $anioVP using `"`c(sysdir_personal)'/bases/SIM/Poblacion/poblacion`c(os)'.dta"', clear
+	use if entidad == "Nacional" & anio == $anioVP using `"`c(sysdir_site)'/bases/SIM/Poblacion/poblacion`c(os)'.dta"', clear
 
 	tabstat poblacion, stat(sum) f(%20.0fc) save
 	tempname pob2018
