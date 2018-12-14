@@ -78,5 +78,4 @@ if "$graphs" == "on" {
 }
 
 collapse (sum) defunciones, by(anio entidad cve_geo)
-save `"`c(sysdir_site)'/bases/SIM/Defuncionestot.dta"', replace
-
+save `"`c(sysdir_personal)'../basesCIEP/SIM/Defuncionestot.dta"', replace

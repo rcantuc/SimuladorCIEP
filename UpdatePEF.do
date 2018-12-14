@@ -11,7 +11,7 @@
 cd "`c(sysdir_site)'/bases/SIM/"
 forvalues k=2013(1)2017 {
 	unzipfile "`c(sysdir_personal)'../basesCIEP/PEFs/CP `k'.csv.zip", replace
-	import delimited "`c(sysdir_site)'/bases/SIM/CP `k'.csv", clear
+	import delimited "`c(sysdir_personal)'../basesCIEP/SIM/CP `k'.csv", clear
 
 	drop if ciclo == .
 	tostring ramo, replace
@@ -33,7 +33,7 @@ forvalues k=2013(1)2017 {
 ***************
 ** PEF actual **
 unzipfile "`c(sysdir_personal)'../basesCIEP/PEFs/PEF 2018.csv.zip", replace
-import delimited "`c(sysdir_site)'/bases/SIM/PEF 2018.csv", clear
+import delimited "`c(sysdir_personal)'../basesCIEP/SIM/PEF 2018.csv", clear
 
 drop if ciclo == .
 tostring ramo, replace
@@ -54,7 +54,7 @@ save `CPActual'
 ******************
 ** PEF siguiente **
 unzipfile "`c(sysdir_personal)'../basesCIEP/PEFs/PPEF 2019.csv.zip", replace
-import delimited "`c(sysdir_site)'/bases/SIM/PPEF 2019.csv", clear
+import delimited "`c(sysdir_personal)'../basesCIEP/SIM/PPEF 2019.csv", clear
 
 drop if ciclo == .
 tostring ramo, replace
@@ -481,4 +481,4 @@ format %30.0fc ramo desc_ur finalidad desc_funcion desc_subfuncion desc_ai desc_
 	desc_pp desc_objeto desc_tipogasto fuente entidad serie*
 format %20.0fc proyecto aprobado ejercido
 compress
-save "`c(sysdir_site)'/bases/SIM/PEF.dta", replace
+save "`c(sysdir_personal)'../basesCIEP/SIM/PEF.dta", replace

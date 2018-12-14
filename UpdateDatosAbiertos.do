@@ -666,4 +666,4 @@ append using `gastofed'
 replace nombre = subinstr(nombre,"  "," ",.)
 compress
 
-save "`c(sysdir_site)'/bases/SIM/DatosAbiertos.dta", replace
+save "`c(sysdir_personal)'../basesCIEP/SIM/DatosAbiertos.dta", replace

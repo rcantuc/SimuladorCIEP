@@ -87,4 +87,4 @@ format recaudacion %20.0fc
 
 order div* nombre modulo* serie anio LIF ILIF monto
 compress
-save "`c(sysdir_site)'/bases/SIM/LIF.dta", replace
+save "`c(sysdir_personal)'../basesCIEP/SIM/LIF.dta", replace
