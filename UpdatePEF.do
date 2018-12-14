@@ -8,7 +8,7 @@
 ************************
 *** 1. BASE DE DATOS ***
 ************************
-cd "`c(sysdir_site)'/bases/SIM/"
+cd "`c(sysdir_personal)'../basesCIEP/SIM/"
 forvalues k=2013(1)2017 {
 	unzipfile "`c(sysdir_personal)'../basesCIEP/PEFs/CP `k'.csv.zip", replace
 	import delimited "`c(sysdir_personal)'../basesCIEP/SIM/CP `k'.csv", clear
