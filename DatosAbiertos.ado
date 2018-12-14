@@ -11,7 +11,8 @@ quietly {
 	tempfile PIB
 	save `PIB'
 
-	if "`update'" == "update" {
+	capture confirm file "`c(sysdir_site)'/bases/SIM/DatosAbiertos.dta"
+	if _rc != 0 | "`update'" == "update" {
 		run "`c(sysdir_site)'/UpdateDatosAbiertos.do"
 	}
 
