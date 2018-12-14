@@ -34,10 +34,10 @@ local update ""
 ***********************
 *** 2. Informativos ***
 ***********************
-do "`c(sysdir_site)'/UpdateDatosAbiertos.do"			// UNCOMMENT: actualiar bases de Datos Abiertos de SHCP
-Poblacion, `graphs'						// UPDATE: rarely used
-SCN, `graphs'							// UPDATE: abrir y guardar archivos .iqy (./bases/INEGI/SCN/)
-PIBDeflactor, `graphs'						// UPDATE: abrir y guardar archivos .iqy (./bases/INEGI/SCN/)
+do "`c(sysdir_site)'/UpdateDatosAbiertos.do"			// TO UPDATE: uncomment to actualizar bases de Datos Abiertos de SHCP
+Poblacion, `graphs'						// update: rarely used
+SCN, `graphs'							// TO UPDATE: abrir y guardar archivos .iqy (./bases/INEGI/SCN/)
+PIBDeflactor, `graphs'						// TO UPDATE: abrir y guardar archivos .iqy (./bases/INEGI/SCN/)
 
 
 
