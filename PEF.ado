@@ -98,14 +98,17 @@ quietly {
 		tempvar neto19 propneto19
 		egen `neto19' = sum(gasto) if serie == "XAC4218", by(anio)
 		g `propneto19' = gasto/`neto19'
-
 		replace monto = monto*`propneto19' if serie == "XAC4218"
 
-		*replace gastoneto = monto if anio <= 2018
-		*replace gastonetoPIB = monto/pibY*100 if anio <= 2018
+		replace gasto = monto if anio <= 2018
+		replace gastoPIB = monto/pibY*100 if anio <= 2018
+		replace gastoneto = monto if anio <= 2018
+		replace gastonetoPIB = monto/pibY*100 if anio <= 2018
 
-		replace gastoneto = monto*`proptotal' if anio <= 2018
-		replace gastonetoPIB = monto*`proptotal'/pibY*100 if anio <= 2018
+		*replace gasto = monto*`proptotal' if anio <= 2018
+		*replace gastoPIB = monto*`proptotal'/pibY*100 if anio <= 2018
+		*replace gastoneto = monto*`proptotal' if anio <= 2018
+		*replace gastonetoPIB = monto*`proptotal'/pibY*100 if anio <= 2018
 	}
 
 
@@ -133,7 +136,7 @@ quietly {
 		}
 		replace gastonetoPIB = 0 if anio == 2019
 		replace aprobadonetoPIB = proyectonetoPIB if anio == 2019
-		
+
 		graph bar (sum) aprobadonetoPIB gastonetoPIB if anio >= 2010 & anio <= `hasta' & `by' != -1 ///
 			& neto == 0, ///
 			over(`over', relabel(1 "PEF" 2 "Obs")) ///
