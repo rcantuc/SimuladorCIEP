@@ -448,7 +448,7 @@ foreach k of varlist gasto aprobado ejercido proyecto {
 *** Tipo Ramo ***
 *****************
 gen ramo_tipo = .
-replace ramo_tipo = 0 if ramo == -1
+replace ramo_tipo = -1 if ramo == -1
 replace ramo_tipo = 1 if ramo == 1 | ramo == 3 | ramo == 22 | ramo == 32 | ramo == 35 ///
 	| ramo == 40 | ramo == 41 | ramo == 42 | ramo == 43 | ramo == 44
 replace ramo_tipo = 2 if ramo == 19 | ramo == 23 | ramo == 25  | ramo == 33
@@ -462,7 +462,7 @@ replace ramo_tipo = 5 if ramo == 2 | ramo == 4 | ramo == 5 | ramo == 6  | ramo =
 replace ramo_tipo = 6 if ramo == 24 | ramo == 28 | ramo == 30 | ramo == 34 
 replace ramo_tipo = 7 if (ramo == 52 | ramo == 53) & (capitulo == 9)
 
-label define tipos_ramo 0 "Cuotas al ISSSTE" 1 "Ramos aut{c o'}nomos" 2 "Ramos generales programables" ///
+label define tipos_ramo -1 "Cuotas al ISSSTE" 1 "Ramos aut{c o'}nomos" 2 "Ramos generales programables" ///
 	3 "Entidades de control directo" 4 "Empresas Productivas del Estado" ///
 	5 "Ramos administrativos" 7 "Gasto no programable de las empresas productivas del estado" ///
 	6 "Gasto no programable del gobierno federal"

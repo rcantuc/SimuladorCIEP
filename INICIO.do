@@ -20,13 +20,15 @@ timer on 1
 *** 1. Parametros ***
 *********************
 global anioVP = 2019
-global pib2018 = 2.1						// pib[input]
-global pib2019 = 3.0						// pib[input]
-global def2018 = 4.8						// def[input]
-global def2019 = 3.3						// def[input]
+global pib2018 = 2.3
+global pib2019 = 2.0
+global def2018 = 5.1
+global def2019 = 3.9
+global depreMXN = 0.5
 
 local graphs "g"
 local update ""
+PIBDeflactor, `graphs'						// TO UPDATE: abrir y guardar archivos .iqy (./bases/INEGI/SCN/)
 
 
 
@@ -36,7 +38,6 @@ local update ""
 /***********************
 Poblacion, `graphs'						// update: rarely used
 SCN, `graphs'							// TO UPDATE: abrir y guardar archivos .iqy (./bases/INEGI/SCN/)
-PIBDeflactor, `graphs'						// TO UPDATE: abrir y guardar archivos .iqy (./bases/INEGI/SCN/)
 
 
 
@@ -48,7 +49,7 @@ if "`update'" == "update" {
 	*do "`c(sysdir_site)'/UpdateDatosAbiertos.do"		// Actualizar bases de Datos Abiertos de SHCP
 }
 *noisily LIF, `graphs' `update'
-*noisily PEF, `graphs' `update' rows(3) datos			// DATOS: con informacion de DatosAbiertos.
+noisily PEF, `graphs' `update' rows(3) datos			// DATOS: con informacion de DatosAbiertos.
 noisily SHRFSP, `graphs' `update'
 
 

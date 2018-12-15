@@ -85,11 +85,11 @@ save `USD'
 
 
 ** Diferimientos de pagos **
-noisily DatosAbiertos XOA0764							// Diferimientos de pagos
-rename monto diferimientos
+noisily DatosAbiertos XAC5210							// Operaciones compensadas (ISSSTE)
+rename monto operaciones
 drop clave nombre mes monto_pib pibY
-tempfile diferimientos
-save `diferimientos'
+tempfile operaciones
+save `operaciones'
 
 
 ** Balance no presupuestario **
@@ -102,14 +102,14 @@ save `nopresupuestario'
 
 ** LIF **
 LIF
-collapse (sum) recaudacion if divLIF!= 3 & divLIF != 10, by(anio)
+collapse (sum) recaudacion if divLIF != 10, by(anio)
 tempfile LIF
 save `LIF'
 
 
 ** PEF **
-PEF, datos
-collapse (sum) gastoneto if neto == 0 & desc_funcion != 1, by(anio)
+PEF, datos by(ramo)
+collapse (sum) gastoneto if ramo != 34 & ramo != -1, by(anio)
 tempfile PEF
 save `PEF'
 
@@ -128,7 +128,7 @@ merge 1:1 (anio) using `interno', nogen
 merge 1:1 (anio) using `externo', nogen
 merge 1:1 (anio) using `MXN', nogen
 merge 1:1 (anio) using `USD', nogen
-merge 1:1 (anio) using `diferimientos', nogen
+merge 1:1 (anio) using `operaciones', nogen
 merge 1:1 (anio) using `nopresupuestario', nogen
 merge 1:1 (anio) using `LIF', nogen
 merge 1:1 (anio) using `PEF', nogen
