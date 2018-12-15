@@ -13,7 +13,7 @@ quietly {
 	tempfile PIB
 	save `PIB'
 
-	capture use "`c(sysdir_site)'/bases/SIM/SHRFSP.dta", clear
+	capture use "`c(sysdir_personal)'../basesCIEP/SIM/SHRFSP.dta", clear
 	local rc = _rc
 	syntax [if/] [, ANIO(int $anioVP ) Graphs Update Base ID(string) ///
 		MINimum(real 1)]

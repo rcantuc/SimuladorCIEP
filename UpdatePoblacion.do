@@ -32,14 +32,14 @@ keep if entidad == "Nacional"
 
 
 * 5. Guardar *
-save `"`c(sysdir_site)'/bases/SIM/Poblacion.dta"', replace
+save `"`c(sysdir_personal)'../basesCIEP/SIM/Poblacion.dta"', replace
 
 if "$graphs" == "on" {
 	poblaciongraphs poblacion
 }
 
 collapse (sum) poblacion, by(anio entidad cve_geo)
-save `"`c(sysdir_site)'/bases/SIM/Poblaciontot.dta"', replace
+save `"`c(sysdir_personal)'../basesCIEP/SIM/Poblaciontot.dta"', replace
 
 
 
@@ -71,7 +71,7 @@ keep if entidad == "Nacional"
 
 
 * 5. Guardar *
-save `"`c(sysdir_site)'/bases/SIM/Defunciones.dta"', replace
+save `"`c(sysdir_personal)'../basesCIEP/SIM/Defunciones.dta"', replace
 
 if "$graphs" == "on" {
 	poblaciongraphs defunciones

@@ -11,7 +11,7 @@
 ***********************
 
 
-** D.1. A${ni}o Macro **
+** D.1. A{ni}o Macro **
 if "`1'" == "" {
 	local macroanio = 2016
 }
@@ -60,7 +60,7 @@ local data "`c(sysdir_personal)'../basesCIEP/INEGI/`enigh'/`enighanio'"
 
 
 ****************************************
-*** 1. DATOS MACROECON${O}MICOS (MA) ***
+*** 1. DATOS MACROECON{c o'}MICOS (MA) ***
 ****************************************
 
 
@@ -70,29 +70,29 @@ SCN, anio(`macroanio')
 local PIBSCN = r(PIB)
 
 local Food = r(Alimentos)
-local NBev = r(Bebidas_no_alcoh${o}licas)
-local ABev = r(Bebidas_alcoh${o}licas)
+local NBev = r(Bebidas_no_alcoh{c o'}licas)
+local ABev = r(Bebidas_alcoh{c o'}licas)
 local Toba = r(Tabaco)
 local Clot = r(Prendas_de_vestir)
 local Foot = r(Calzado)
 local Hous = r(Vivienda)
 local Wate = r(Agua)
 local Elec = r(Electricidad)
-local Furn = r(Art${i}culos_para_el_hogar)
+local Furn = r(Art{c i'}culos_para_el_hogar)
 local Heal = r(Salud)
-local Vehi = r(Adquisici${o}n_de_veh${i}culos)
+local Vehi = r(Adquisici{c o'}n_de_veh{c i'}culos)
 local Oper = r(Funcionamiento_de_transporte)
 local Tran = r(Servicios_de_transporte)
 local Comm = r(Comunicaciones)
-local Recr = r(Recreaci${o}n_y_cultura)
-local Educ = r(Educaci${o}n)
+local Recr = r(Recreaci{c o'}n_y_cultura)
+local Educ = r(Educaci{c o'}n)
 local Rest = r(Restaurantes_y_hoteles)
 local Misc = r(Bienes_y_servicios_diversos)
 local ExpHog = r(Hogares_e_ISFLSH)
 
 
 ** MA.2. SHCP: Datos Abiertos **
-noisily LIF if divCIEP == 8, anio(`macroanio')
+LIF if divCIEP == 8, anio(`macroanio')
 
 local IVA = r(IVA)
 local IEPS = r(IEPS__no_petrolero_)
@@ -111,7 +111,7 @@ local Ieps13 = r(Alcohol)
 
 
 ****************************************
-*** 2. DATOS MICROECON${O}MICOS (MI) ***
+*** 2. DATOS MICROECON{c o'}MICOS (MI) ***
 ****************************************
 capture confirm file "`data'/preconsumption.dta"
 if _rc != 0 {
@@ -149,14 +149,14 @@ if _rc != 0 {
 	format gasto_anual %10.2fc
 
 
-	** MI.6. Gasto en educaci${o}n *
+	** MI.6. Gasto en educaci{c o'}n *
 	replace inscrip = 0 if inscrip == . & clave >= "E001" & clave <= "E007"
 	replace colegia = 0 if colegia == . & clave >= "E001" & clave <= "E007"
 	replace material = 0 if material == . & clave >= "E001" & clave <= "E007"
 	replace gasto_anual = inscrip + colegia*12 + material if clave >= "E001" & clave <= "E007"
 
 
-	** MI.7. Uni${o}n de claves de IVA y IEPS **
+	** MI.7. Uni{c o'}n de claves de IVA y IEPS **
 	merge m:1 (clave) using "`c(sysdir_personal)'../basesCIEP/INEGI/ENIGH/2014/clave_iva.dta", ///
 		nogen keepus(descripcion *2014 clase_de_actividad*) keep(matched master)
 	encode iva2014, gen(tiva)
@@ -164,7 +164,7 @@ if _rc != 0 {
 	save `pre_iva'
 
 
-	** MI.8. Uni${o}n de censo econ${o}mico **
+	** MI.8. Uni{c o'}n de censo econ{c o'}mico **
 	forvalues k=1(1)6 {
 		use "`c(sysdir_personal)'../basesCIEP/INEGI/Censo Economico/2014/censo_eco.dta", clear
 
@@ -191,7 +191,7 @@ if _rc != 0 {
 	replace proporcion = `PR'[1,1] if clase_de_actividad1 == "000000"
 
 
-	** MI.10. Estado y ubicaci${o}n geogr${a}fica ***
+	** MI.10. Estado y ubicaci{c o'}n geogr{c a'}fica ***
 	g estado = substr(folioviv,1,2)
 	replace ubica_geo = substr(ubica_geo,1,5)
 	destring ubica_geo estado, replace
@@ -235,7 +235,7 @@ if _rc != 0 {
 	g rentab = tenencia == "1" | tenencia == "3"
 
 
-	** MI.12. SNA categor${i}as **
+	** MI.12. SNA categor{c i'}as **
 	g categ = 1 if letra == "A" & num <= 214
 	replace categ = 1 if letra == "T" & num == 1
 
@@ -305,18 +305,18 @@ if _rc != 0 {
 	replace categ = 19 if letra == "T" & num == 10
 	replace categ = 19 if letra == "T" & num == 15
 
-	label define categ 1 "Alimentos" 2 "Bebidas no alcoh${o}licas" 3 "Bebidas alcoh${o}licas" 4 "Tabaco" ///
+	label define categ 1 "Alimentos" 2 "Bebidas no alcoh{c o'}licas" 3 "Bebidas alcoh{c o'}licas" 4 "Tabaco" ///
 		5 "Prendas de vestir" 6 "Calzado" 7 "Vivienda" 8 "Agua" 9 "Electricidad" ///
-		10 "Art${i}culos para el hogar" ///
-		11 "Salud" 12 "Adquisici${o}n de veh${i}culos" 13 "Funcionamiento de transporte" ///
+		10 "Art{c i'}culos para el hogar" ///
+		11 "Salud" 12 "Adquisici{c o'}n de veh{c i'}culos" 13 "Funcionamiento de transporte" ///
 		14 "Servicios de transporte" ///
-		15 "Comunicaciones" 16 "Recreaci${o}n y cultura" 17 "Educaci${o}n" 18 "Restaurantes y hoteles" ///
+		15 "Comunicaciones" 16 "Recreaci{c o'}n y cultura" 17 "Educaci{c o'}n" 18 "Restaurantes y hoteles" ///
 		19 "Bienes y servicios diversos"
 	label values categ categ
 	replace categ = 99 if categ == .	// Individuos
 
 
-	** MI.13 IVA categor${i}as **
+	** MI.13 IVA categor{c i'}as **
 	g categ_iva = "alim" if letra == "A" & iva2014 == "Tasa Cero"
 	replace categ_iva = "fuera" if letra == "A" & ((num >= 198 & num <= 202) | (num >= 243 & num <= 247))
 	replace categ_iva = "cb" if letra == "A" & (iva2014 == "Tasa Cero" ///
@@ -334,7 +334,7 @@ if _rc != 0 {
 	replace categ_iva = "otros" if categ_iva == "" & tiva != .
 
 
-	** MI.14 IEPS categor${i}as **
+	** MI.14 IEPS categor{c i'}as **
 	g tipoieps = 1 if (letra == "A" & (num == 222 | num == 226 | num == 228 | num == 231 | num == 232 | num == 234 | num == 238))
 	replace tipoieps = 2 if (letra == "A" & num == 227)
 	replace tipoieps = 3 if (letra == "A" & (num == 223 | num == 225 | num == 229 | num == 230 | num == 233 | num == 235 | num == 236))
@@ -394,7 +394,7 @@ replace cantidad = gasto/14.81*52 if clave == "F008"
 replace cantidad = gasto/14.63*52 if clave == "F009"
 
 
-** P.2 C${a}lculo de precios **
+** P.2 C{c a'}lculo de precios **
 replace porcentaje_ieps = 0 if porcentaje_ieps == .
 
 g double precio = gasto_anual ///
@@ -418,7 +418,7 @@ replace precio = gasto_anual ///
 replace precio = gasto_anual/cantidad if tiva == 3				// Tasa cero
 
 
-** P.3 C${a}lculo del IVA **
+** P.3 C{c a'}lculo del IVA **
 g double IVA = gasto_anual - precio*(1+porcentaje_ieps2014/100)*cantidad ///
 	if informal == 0 & tiva == 2						// IVA general
 replace IVA = gasto_anual - precio*(1+porcentaje_ieps2014/100)*(1-proporcion)*cantidad ///
@@ -429,7 +429,7 @@ format IVA %10.2fc
 noisily tabstat IVA [aw=factor_hog], by(tiva) stat(sum) f(%20.0fc)
 
 
-** P.4 C${a}lculo del IEPS **
+** P.4 C{c a'}lculo del IEPS **
 g double IEPS = precio*porcentaje_ieps2014/100*cantidad				// Alcohol
 replace IEPS = IEPS + cantidad*1000/.75*cuota_ieps2014 if tipoieps == 5		// Tabaco
 replace IEPS = cantidad*cuota_ieps2014 if tipoieps == 9				// Refrescos
@@ -500,11 +500,11 @@ noisily di in g "  (+) Alimentos " ///
 	_col(44) in y %20.3fc `M1'[1,1]/`PIBSCN'*100 ///
 	_col(66) %6.3fc `Food'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`M1'[1,1]/`Food'-1)*100 "%"
-noisily di in g "  (+) Bebidas no alcoh${o}licas " ///
+noisily di in g "  (+) Bebidas no alcoh{c o'}licas " ///
 	_col(44) in y %20.3fc `M2'[1,1]/`PIBSCN'*100 ///
 	_col(66) %6.3fc `NBev'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`M2'[1,1]/`NBev'-1)*100 "%"
-noisily di in g "  (+) Bebidas alcoh${o}licas " ///
+noisily di in g "  (+) Bebidas alcoh{c o'}licas " ///
 	_col(44) in y %20.3fc `M3'[1,1]/`PIBSCN'*100 ///
 	_col(66) %6.3fc `ABev'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`M3'[1,1]/`ABev'-1)*100 "%"
@@ -532,7 +532,7 @@ noisily di in g "  (+) Electricidad " ///
 	_col(44) in y %20.3fc `M9'[1,1]/`PIBSCN'*100 ///
 	_col(66) %6.3fc `Elec'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`M9'[1,1]/`Elec'-1)*100 "%"
-noisily di in g "  (+) Art${i}culos para el hogar " ///
+noisily di in g "  (+) Art{c i'}culos para el hogar " ///
 	_col(44) in y %20.3fc `M10'[1,1]/`PIBSCN'*100 ///
 	_col(66) %6.3fc `Furn'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`M10'[1,1]/`Furn'-1)*100 "%"
@@ -540,7 +540,7 @@ noisily di in g "  (+) Salud " ///
 	_col(44) in y %20.3fc `M11'[1,1]/`PIBSCN'*100 ///
 	_col(66) %6.3fc `Heal'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`M11'[1,1]/`Heal'-1)*100 "%"
-noisily di in g "  (+) Aquisici${o}n de veh${i}culos " ///
+noisily di in g "  (+) Aquisici{c o'}n de veh{c i'}culos " ///
 	_col(44) in y %20.3fc `M12'[1,1]/`PIBSCN'*100 ///
 	_col(66) %6.3fc `Vehi'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`M12'[1,1]/`Vehi'-1)*100 "%"
@@ -556,11 +556,11 @@ noisily di in g "  (+) Comunicaciones " ///
 	_col(44) in y %20.3fc `M15'[1,1]/`PIBSCN'*100 ///
 	_col(66) %6.3fc `Comm'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`M15'[1,1]/`Comm'-1)*100 "%"
-noisily di in g "  (+) Recreaci${o}n y cultura " ///
+noisily di in g "  (+) Recreaci{c o'}n y cultura " ///
 	_col(44) in y %20.3fc `M16'[1,1]/`PIBSCN'*100 ///
 	_col(66) %6.3fc `Recr'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`M16'[1,1]/`Recr'-1)*100 "%"
-noisily di in g "  (+) Educaci${o}n " ///
+noisily di in g "  (+) Educaci{c o'}n " ///
 	_col(44) in y %20.3fc `M17'[1,1]/`PIBSCN'*100 ///
 	_col(66) %6.3fc `Educ'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`M17'[1,1]/`Educ'-1)*100 "%"
@@ -673,11 +673,11 @@ noisily di in g "  (+) Alimentos " ///
 	_col(44) in y %20.3fc `M1'[1,1]/`PIBSCN'*100 ///
 	_col(66) %6.3fc `Food'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`M1'[1,1]/`Food'-1)*100
-noisily di in g "  (+) Bebidas no alcoh${o}licas " ///
+noisily di in g "  (+) Bebidas no alcoh{c o'}licas " ///
 	_col(44) in y %20.3fc `M2'[1,1]/`PIBSCN'*100 ///
 	_col(66) %6.3fc `NBev'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`M2'[1,1]/`NBev'-1)*100
-noisily di in g "  (+) Bebidas alcoh${o}licas " ///
+noisily di in g "  (+) Bebidas alcoh{c o'}licas " ///
 	_col(44) in y %20.3fc `M3'[1,1]/`PIBSCN'*100 ///
 	_col(66) %6.3fc `ABev'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`M3'[1,1]/`ABev'-1)*100
@@ -705,7 +705,7 @@ noisily di in g "  (+) Electricidad " ///
 	_col(44) in y %20.3fc `M9'[1,1]/`PIBSCN'*100 ///
 	_col(66) %6.3fc `Elec'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`M9'[1,1]/`Elec'-1)*100
-noisily di in g "  (+) Art${i}culos para el hogar " ///
+noisily di in g "  (+) Art{c i'}culos para el hogar " ///
 	_col(44) in y %20.3fc `M10'[1,1]/`PIBSCN'*100 ///
 	_col(66) %6.3fc `Furn'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`M10'[1,1]/`Furn'-1)*100
@@ -713,7 +713,7 @@ noisily di in g "  (+) Salud " ///
 	_col(44) in y %20.3fc `M11'[1,1]/`PIBSCN'*100 ///
 	_col(66) %6.3fc `Heal'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`M11'[1,1]/`Heal'-1)*100
-noisily di in g "  (+) Aquisici${o}n de veh${i}culos " ///
+noisily di in g "  (+) Aquisici{c o'}n de veh{c i'}culos " ///
 	_col(44) in y %20.3fc `M12'[1,1]/`PIBSCN'*100 ///
 	_col(66) %6.3fc `Vehi'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`M12'[1,1]/`Vehi'-1)*100
@@ -729,11 +729,11 @@ noisily di in g "  (+) Comunicaciones " ///
 	_col(44) in y %20.3fc `M15'[1,1]/`PIBSCN'*100 ///
 	_col(66) %6.3fc `Comm'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`M15'[1,1]/`Comm'-1)*100
-noisily di in g "  (+) Recreaci${o}n y cultura " ///
+noisily di in g "  (+) Recreaci{c o'}n y cultura " ///
 	_col(44) in y %20.3fc `M16'[1,1]/`PIBSCN'*100 ///
 	_col(66) %6.3fc `Recr'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`M16'[1,1]/`Recr'-1)*100
-noisily di in g "  (+) Educaci${o}n " ///
+noisily di in g "  (+) Educaci{c o'}n " ///
 	_col(44) in y %20.3fc `M17'[1,1]/`PIBSCN'*100 ///
 	_col(66) %6.3fc `Educ'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`M17'[1,1]/`Educ'-1)*100

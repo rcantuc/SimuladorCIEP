@@ -9,10 +9,10 @@ quietly {
 		local anything = "poblacion"
 	}
 
-	capture use `"`c(sysdir_site)'/bases/SIM/Poblacion.dta"', clear
+	capture use `"`c(sysdir_personal)'../basesCIEP/SIM/Poblacion.dta"', clear
 	if _rc != 0 | "`update'" == "update" {
 		run "`c(sysdir_site)'/UpdatePoblacion.do"
-		use `"`c(sysdir_site)'/bases/SIM/`=proper("`anything'")'.dta"', clear
+		use `"`c(sysdir_personal)'../basesCIEP/SIM/`=proper("`anything'")'.dta"', clear
 	}
 
 	local poblacion : variable label `anything'

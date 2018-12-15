@@ -140,4 +140,4 @@ g double tipoDeCambio = deudaMXN/deudaUSD/1000
 format tipoDeCambio %7.2fc
 drop deuda* acum_prom
 
-save "`c(sysdir_site)'/bases/SIM/SHRFSP.dta", replace
+save "`c(sysdir_personal)'../basesCIEP/SIM/SHRFSP.dta", replace

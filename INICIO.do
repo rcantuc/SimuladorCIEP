@@ -1,7 +1,7 @@
 **************************
 **** HOLA, HUMANO! :) ****
 **** SET UP FRAMEWORK ****
-/**************************
+**************************
 if "`c(os)'" == "Unix" {
 	sysdir set SITE "/home/ciepmx/Dropbox (CIEP)/Github/simuladorCIEP"
 	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/TemplateCIEP/simuladorCIEP"
@@ -20,12 +20,12 @@ timer on 1
 *** 1. Parametros ***
 *********************
 global anioVP = 2019
-global pib2018 = 2.5						// pib[input]
+global pib2018 = 2.1						// pib[input]
 global pib2019 = 3.0						// pib[input]
 global def2018 = 4.8						// def[input]
 global def2019 = 3.3						// def[input]
 
-local graphs "graphs"
+local graphs ""
 local update ""
 
 
@@ -34,7 +34,6 @@ local update ""
 ***********************
 *** 2. Informativos ***
 ***********************
-do "`c(sysdir_site)'/UpdateDatosAbiertos.do"			// TO UPDATE: uncomment to actualizar bases de Datos Abiertos de SHCP
 Poblacion, `graphs'						// update: rarely used
 SCN, `graphs'							// TO UPDATE: abrir y guardar archivos .iqy (./bases/INEGI/SCN/)
 PIBDeflactor, `graphs'						// TO UPDATE: abrir y guardar archivos .iqy (./bases/INEGI/SCN/)
@@ -45,8 +44,12 @@ PIBDeflactor, `graphs'						// TO UPDATE: abrir y guardar archivos .iqy (./bases
 *******************/
 *** 3. Escencial ***
 ********************
+if "`update'" == "update" {
+	*do "`c(sysdir_site)'/UpdateDatosAbiertos.do"		// Actualizar bases de Datos Abiertos de SHCP
+}
 noisily LIF, `graphs' `update'
 noisily PEF, `graphs' `update' rows(3) datos			// DATOS: con informacion de DatosAbiertos.
+noisily SHRFSP, `graphs' `update'
 
 
 
@@ -54,14 +57,9 @@ noisily PEF, `graphs' `update' rows(3) datos			// DATOS: con informacion de Dato
 
 ********************/
 *** 4. Incidencia ***
-*********************
+/*********************
 noisily run "`c(sysdir_site)'/Income.do" 2016
 noisily run "`c(sysdir_site)'/Expenditure.do" 2016
-*noisily SHRFSP, graphs update
-
-
-
-*noisily Eficiencia
 *noisily Eficiencia, reboot graphs noisily update
 *noisily TransfNetas, graphs update
 

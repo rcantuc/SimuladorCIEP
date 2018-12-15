@@ -11,7 +11,7 @@ quietly {
 	tempfile PIB
 	save `PIB'
 
-	capture confirm file "`c(sysdir_site)'/bases/SIM/DatosAbiertos.dta"
+	capture confirm file "`c(sysdir_personal)'../basesCIEP/SIM/DatosAbiertos.dta"
 	if _rc != 0 | "`update'" == "update" {
 		run "`c(sysdir_site)'/UpdateDatosAbiertos.do"
 	}
@@ -22,7 +22,7 @@ quietly {
 	****************************
 	*** 1 Base de datos SHCP ***
 	****************************
-	use if clave_de_concepto == "`anything'" using "`c(sysdir_site)'/bases/SIM/DatosAbiertos.dta", clear
+	use if clave_de_concepto == "`anything'" using "`c(sysdir_personal)'../basesCIEP/SIM/DatosAbiertos.dta", clear
 	if `=_N' == 0 {
 		noisily di in r "No se encontr{c o'} la serie {bf:`anything'}."
 		return scalar error = 2000
