@@ -91,7 +91,7 @@ quietly {
 		decode serie_`by', g(serie)
 		levelsof serie, l(serie)
 		foreach k of local serie {
-			joinby (anio serie) using "`c(sysdir_site)'/bases/SIM/`k'.dta", unmatched(both) update
+			joinby (anio serie) using "`c(sysdir_personal)'../basesCIEP/SIM/`k'.dta", unmatched(both) update
 			drop _merge
 		}
 

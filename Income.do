@@ -277,7 +277,7 @@ g double ing_segvida = ing_anual if clave == "P065"
 
 ************************************************************************************
 ** 1.3 Capitulo II. DE LOS INGRESOS POR ACTIVIDADES EMPRESARIALES Y PROFESIONALES **
-noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "Los dem${a}s ingresos se reportan de manera bruta.}"
+noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "Los dem{c a'}s ingresos se reportan de manera bruta.}"
 * r. Honorarios *
 g double ing_honor = 0
 replace ing_honor = ing_anual if clave == "P070" | clave == "P077"
@@ -548,7 +548,7 @@ g double exen_indemn2 = min(90*sm*round(ing_indemn2/salario,1),ing_indemn2)
 /* Articulo 93. No se pagara el impuesto sobre la renta por la obtencion de los siguientes ingresos: (...)
 XXV. Las indemnizaciones por danios que no excedan al valor de mercado del bien de que se trate. Por el excedente 
 se pagara el impuesto en los terminos de este Titulo. */
-*noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "Las indemnizaciones por da${ni}os no se exceden al valor de mercado.}"
+*noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "Las indemnizaciones por da{c n~}os no se exceden al valor de mercado.}"
 * o. Indemnizaciones 3 *
 g double exen_indemn3 = ing_indemn3
 
@@ -618,7 +618,7 @@ Para efectos de este Capitulo se consideran:
 
 Articulo 109. Los contribuyentes a que se refiere esta Seccion, deberan calcular el impuesto del ejercicio a su 
 cargo en los terminos del articulo 152 de esta Ley. (...) */
-noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "Se exentan el " %5.2fc (1-290533/475667)*100 "% de los servicios profesionales por remuneraciones (Censo Econ${o}mico 2014).}"
+noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "Se exentan el " %5.2fc (1-290533/475667)*100 "% de los servicios profesionales por remuneraciones (Censo Econ{c o'}mico 2014).}"
 * u. Honorarios *
 *g double exen_honor = min((1-47809270435/102879038489)*ing_honor,ing_honor)
 g double exen_honor = min((1-290533/475667)*ing_honor,ing_honor)
@@ -642,7 +642,7 @@ refiere. Quienes ejercen esta opcion podran deducir, ademas, el monto de las ero
 predial de dichos inmuebles correspondiente al anio de calendario o al periodo durante el cual se obtuvieron los 
 ingresos en el ejercicio segun corresponda.*/
 
-noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "Todos los ingresos por rentas optan por la opci${o}n de deducir el 35%.}"
+noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "Todos los ingresos por rentas optan por la opci{c o'}n de deducir el 35%.}"
 *noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "Se supone un 2% del predial del total de los ingresos por rentas.}"
 * w. Rentas de bienes inmuebles *
 g double exen_rent = .35*ing_rent
@@ -669,7 +669,7 @@ obtenidos en el anio en que se realizo la enajenacion, disminuidos por las deduc
 excepto las establecidas en las fracciones I, II y III del articulo 151 de la misma. El resultado asi obtenido se 
 dividira entre la cantidad a la que se aplico la tarifa y el cociente sera la tasa. */
 
-*noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "S${o}lo se considera esta opci${o}n para calcular el impuesto.}"
+*noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "S{c o'}lo se considera esta opci{c o'}n para calcular el impuesto.}"
 * x. Enajenacion de bienes *
 g double exen_enaje = min(0,ing_enaje)
 
@@ -698,7 +698,7 @@ inversiones del contribuyente, cuando en un anio de calendario la diferencia ent
 y el costo comprobado de la adquisicion de los bienes enajeandos, no exceda de tres veces el salario minimo general 
 del area geografica del contribuyente elevado al anio. Por la utilidad que exceda se pagara el impuesto en los
 terminos de este Titulo. */
-*noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "Para la enajenaci${o}n de bienes muebles, nunca se sobrepasa el valor de adquisici${o}n de los bienes.}"
+*noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "Para la enajenaci{c o'}n de bienes muebles, nunca se sobrepasa el valor de adquisici{c o'}n de los bienes.}"
 * z. Enajenacion de bienes muebles *
 g double exen_enajem = min(3*sm*365,ing_enajem)
 
@@ -788,7 +788,7 @@ no podran considerar la retencion efectuada en los terminos de este articulo com
 a sus demas ingresos el monto de los ingresos obtenidos en los terminos de este Capitulo. En este caso, la persona que 
 obtenga el ingreso podra acreditar contra el impuesto que se determine en la delcaracion anual, la retencion del 
 impuesto federal que le hubiera efectuado la persona que pago el premio en los terminos de este percepto. */
-*noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "Las persons f${i}sicas deber${a}n acumular los ingreso por premios a sus dem${a}s ingresos.}"
+*noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "Las persons f{c i'}sicas deber{c a'}n acumular los ingreso por premios a sus dem{c a'}s ingresos.}"
 * C. Loterias *
 g double exen_loter = min(0,ing_loter)
 
@@ -925,7 +925,7 @@ replace tipo_contribuyente = 2 if ((ing_t4_cap2 != 0 & ing_t4_cap2 != .) ///
 label define tipo_contribuyente 1 "Asalariado" 2 "Persona fisica"
 label values tipo_contribuyente tipo_contribuyente
 
-noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "Los derechohabientes del IMSS, ISSSTE, ISSSTE Estatal, PEMEX, Defensa, Marina o aqu${e}llos con prestaciones sociales son el Sector Formal de la econom${i}a y quienes pagan sus impuestos.}"
+noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "Los derechohabientes del IMSS, ISSSTE, ISSSTE Estatal, PEMEX, Defensa, Marina o aqu{c e'}llos con prestaciones sociales son el Sector Formal de la econom{c i'}a y quienes pagan sus impuestos.}"
 * IMSS *
 g byte formal = inst_1 == "1"
 g byte formal2 = inst_1 == "1" & (inscr_1 == "1" | inscr_6 == "6")
@@ -957,7 +957,7 @@ replace formal2 = 6 if formal2 == 0 & (pres_1 == "01" | pres_2 == "02" | pres_3 
 	| pres_18 == "18" | pres_19 == "19") //& (inscr_1 == "1")
 
 * Formal max *
-noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "Si se paga impuestos en el trabajo principal, tambi${e}n se paga en el trabajo secundario.}"
+noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "Si se paga impuestos en el trabajo principal, tambi{c e'}n se paga en el trabajo secundario.}"
 tempvar formal_max
 egen `formal_max' = max(formal), by(`hogar' numren)
 replace formal = `formal_max'
@@ -974,7 +974,7 @@ label define formalidad_dummy 1 "Formal" 0 "Informal"
 label values formal_dummy formalidad_dummy
 
 /* Segun el SAT, habia 29,855,002 de asalariados en Diciembre de 2015 */
-noisily di _newline(2) _col(04) in g "{bf:Paso 0: Informaci${o}n inicial}"
+noisily di _newline(2) _col(04) in g "{bf:Paso 0: Informaci{c o'}n inicial}"
 
 noisily di _newline _col(04) in g "{bf:0.1. Trabajos asalariados formales}"
 noisily table formal2 [fw=factor_hog] if formal2 != 0, format(%12.0fc) row
@@ -1077,7 +1077,7 @@ noisily tabstat ing_t4_cap2 exen_t4_cap2 [aw=factor_hog], stat(sum) f(%20.0fc) b
 tempname EMPRE
 matrix `EMPRE' = r(StatTotal)
 
-noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "El " %5.2fc (1-106302/581969)*100 "% de los servicios profesionales provienen de las personas f${i}sicas (Censo Econ${o}mico 2014).}"
+noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "El " %5.2fc (1-106302/581969)*100 "% de los servicios profesionales provienen de las personas f{c i'}sicas (Censo Econ{c o'}mico 2014).}"
 replace ing_t4_cap2 = ing_t4_cap2*(`ServProf'+`ConsMedi'+`ConsDent'+`ConsOtro'+`EnfeDomi')*(1-106302/581969)/`EMPRE'[1,1]
 replace exen_t4_cap2 = ing_t4_cap2*(1-290533/475667)
 
@@ -1329,13 +1329,13 @@ egen double cuotasT = rsum(*T)
 label var cuotasT "Seguridad social (trabajadores)"
 
 egen double cuotasP = rsum(*P)
-label var cuotasP "Seguridad social (patr${o}n)"
+label var cuotasP "Seguridad social (patr{c o'}n)"
 
 egen double cuotasF = rsum(*F)
-label var cuotasF "Seguridad social (federaci${o}n)"
+label var cuotasF "Seguridad social (federaci{c o'}n)"
 
 egen double cuotasTP = rsum(cuotasP cuotasT)
-label var cuotasTP "Seguridad social (trabajadores y patr${o}n)"
+label var cuotasTP "Seguridad social (trabajadores y patr{c o'}n)"
 
 egen double cuotasTPF = rsum(cuotasP cuotasT cuotasF)
 label var cuotasTPF "Contribuciones a la seguridad social"
@@ -1420,7 +1420,7 @@ noisily di ///
 	_col(66) in y %7.3fc `CuotasISSSTE'/`PIBSCN'*100 ///
 	_col(77) in y %7.1fc (`SBCISSSTE'[1,1]/`CuotasISSSTE'-1)*100 "%"
 noisily di ///
-	_col(04) in g "(+) Federaci${o}n " ///
+	_col(04) in g "(+) Federaci{c o'}n " ///
 	_col(44) in y "(" %5.3fc `gini_cuotasFED' ")" ///
 	_col(57) in y %7.3fc `SBCFED'[1,1]/`PIBSCN'*100 ///
 	_col(66) in y %7.3fc `SSFederacion'/`PIBSCN'*100 ///
@@ -1832,7 +1832,7 @@ replace escol = 3 if nivelaprob == "5" | nivelaprob == "7"
 replace escol = 4 if nivelaprob == "8" | nivelaprob == "9"
 
 * Labels *
-label define escol 0 "Sin escolaridad" 1 "B${a}sica" 2 "Media Superior" 3 "Superior" 4 "Posgrado"
+label define escol 0 "Sin escolaridad" 1 "B{c a'}sica" 2 "Media Superior" 3 "Superior" 4 "Posgrado"
 label values escol escol
 
 label var escol "Nivel de escolaridad"
@@ -1843,7 +1843,7 @@ label var ing_jubila "Pensiones"
 label var ing_subor "Sueldos y salarios"
 label var ing_mixto "Ingreso mixto"
 label var ing_capital "Sociedades y ISFLSH"
-label var ing_estim_alqu "Imputaci${o}n de alquiler"
+label var ing_estim_alqu "Imputaci{c o'}n de alquiler"
 
 
 
@@ -1933,7 +1933,7 @@ replace subor = 2 if subor == .
 
 
 ** Probit formalidad (alquileres, produccion) **
-di _newline _col(04) in g "{bf:3.1. Probit de formalidad: " in y "Alquileres, producci${o}n.}"
+di _newline _col(04) in g "{bf:3.1. Probit de formalidad: " in y "Alquileres, producci{c o'}n.}"
 xi: probit formal_probit ing_bruto_tax exen_tot por_rent deduc_isr ///
 	edad edad2 i.sexo aniosesc aniosesc2 rural i.sinco2 i.subor ///
 	if ing_rent != 0 [pw=factor_cola]
@@ -1944,11 +1944,11 @@ gsort -prob_renta -ing_anual
 g double ing_renta_accum = sum(ing_rent*factor_cola)
 
 noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "Se hace el cut-off en la formalidad de alquileres en " %15.0fc `acum_arrenda'/.65 " (SAT PF 2015).}"
-g formal_renta = ing_renta_accum <= `acum_arrenda'/.65 & prob_renta != .	// SAT m${a}s abierto
+g formal_renta = ing_renta_accum <= `acum_arrenda'/.65 & prob_renta != .	// SAT m{c a'}s abierto
 
 noisily di _newline _col(04) in g "{bf:SUPUESTO: " ///
 	in y "El " %5.2fc (`SNAAlojamiento'-`SNAExBOpHog')/(`SNAAlquiler'+`SNAInmobiliarias'-`SNAExBOpHog')*100 ///
-	"% de los ingresos por rentas provienen de las personas f${i}sicas.}"
+	"% de los ingresos por rentas provienen de las personas f{c i'}sicas.}"
 g ing_renta_accum_hog = ing_renta_accum*(`SNAAlojamiento'-`SNAExBOpHog')/(`SNAAlquiler'+`SNAInmobiliarias'-`SNAExBOpHog')
 
 * Ingreso gravable (alquileres) *
@@ -1961,7 +1961,7 @@ replace exen_tot = exen_rent if formal_renta == 1 & prob_renta != . & formal == 
 
 
 ** Probit formalidad (servicios profesionales, produccion) **
-di _newline _col(04) in g "{bf:3.3. Probit de formalidad: " in y "Servicios profesionales, producci${o}n.}"
+di _newline _col(04) in g "{bf:3.3. Probit de formalidad: " in y "Servicios profesionales, producci{c o'}n.}"
 xi: probit formal_probit ing_bruto_tax exen_tot por_servprof deduc_isr ///
 	edad edad2 i.sexo aniosesc aniosesc2 rural i.sinco2 i.subor ///
 	if ing_t4_cap2 != 0 [pw=factor_cola]
@@ -1973,11 +1973,11 @@ g double ing_servprof_accum = sum((ing_t4_cap2-exen_t4_cap2)*factor_cola)
 
 noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "Se hace el cut-off en la formalidad de servicios profesionales en " ///
 	in y %15.0fc `util_serprof' in g " (SAT FP 2015).}"
-g formal_servprof = ing_servprof_accum < `util_serprof' & prob_servprof != .		// SAT m${a}s abierto
+g formal_servprof = ing_servprof_accum < `util_serprof' & prob_servprof != .		// SAT m{c a'}s abierto
 
 noisily di _newline _col(04) in g "{bf:SUPUESTO: " ///
 	in y "El " %5.2fc (`ServProfH'+`SaludH')/(`ServProf'+`ConsMedi'+`ConsDent'+`ConsOtro'+`EnfeDomi')*100 ///
-	"% de los ingresos por servicios profesionales provienen de las personas f${i}sicas.}"
+	"% de los ingresos por servicios profesionales provienen de las personas f{c i'}sicas.}"
 g ing_servprof_accum_hog = ing_servprof_accum*(`ServProfH'+`SaludH')/(`ServProf'+`ConsMedi'+`ConsDent'+`ConsOtro'+`EnfeDomi')
 
 * Ingreso gravable (servicios profesionales) *
@@ -1989,7 +1989,7 @@ replace exen_tot = (exen_honor + exen_empre) if formal_servprof == 1 & prob_serv
 
 
 
-** Escalar con informaci${o}n del SAT **
+** Escalar con informaci{c o'}n del SAT **
 noisily di _newline _col(04) in g "{bf:3.3. Deducciones personales y gastos profesionales}"
 noisily tabstat deduc_isr [aw=factor_cola], stat(sum) f(%20.0fc) by(formal_dummy) save
 *tempname deducfor
@@ -2003,7 +2003,7 @@ replace deduc_isr = 5*`smdf'*365 if 5*`smdf'*365 <= 15/100*ing_bruto_tax & deduc
 replace deduc_isr = 15/100*ing_bruto_tax if 5*`smdf'*365 >= 15/100*ing_bruto_tax & deduc_isr >= 15/100*ing_bruto_tax
 
 g double ISR = 0
-label var ISR "ISR (f${i}sicas y asalariados)"
+label var ISR "ISR (f{c i'}sicas y asalariados)"
 g categF = ""
 forvalues j=`=rowsof(ISR)'(-1)1 {
 	forvalues k=`=rowsof(SE)'(-1)1 {
@@ -2039,7 +2039,7 @@ label var ISR__asalariados "ISR (retenciones por salarios)"
 
 g double ISR__PF = ISR - isrE if ISR - isrE >= 0
 replace ISR__PF = 0 if ISR__PF == .
-label var ISR__PF "ISR (personas f${i}sicas)"
+label var ISR__PF "ISR (personas f{c i'}sicas)"
 
 tabstat ISR__PF [aw=factor_cola], stat(sum) f(%25.2fc) save
 tempname RESTAX0
@@ -2061,7 +2061,7 @@ g CuotasT = cuotasT if formal == 1
 label var CuotasT "Cuotas IMSS (trabajadores)"
 
 g CuotasP = cuotasP if formal == 1
-label var CuotasP "Cuotas IMSS (patr${o}n)"
+label var CuotasP "Cuotas IMSS (patr{c o'}n)"
 
 g IMSSISSSTE = factor_cola if formal == 1 | formal == 2
 label var IMSSISSSTE "Ingresos propios IMSS e ISSSTE"
@@ -2073,7 +2073,7 @@ g Otros = factor_cola
 label var Otros "Otros ingresos"
 
 g FMP = factor_cola
-label var FMP "Fondo Mexicano del Petr${o}leo (derechos petroleros)"
+label var FMP "Fondo Mexicano del Petr{c o'}leo (derechos petroleros)"
 
 * Gini's de ISR *
 Gini ISR__asalariados, hogar(`hogar') individuo(numren) factor(factor_hog)
@@ -2103,7 +2103,7 @@ noisily di ///
 	_col(66) in y %7.3fc `ISRSalarios'/`PIBSCN'*100 ///
 	_col(77) in y %7.1fc (`RESTAX'[1,1]/`ISRSalarios'-1)*100 "%"
 noisily di ///
-	_col(04) in g "ISR personas f${i}sicas" ///
+	_col(04) in g "ISR personas f{c i'}sicas" ///
 	_col(44) in y "(" %5.3fc `gini_ISR__PF' ")" ///
 	_col(57) in y %7.3fc `RESTAX'[1,2]/`PIBSCN'*100 ///
 	_col(66) in y %7.3fc `ISRFisicas'/`PIBSCN'*100 ///
@@ -2137,7 +2137,7 @@ end
 
 * Compensation of employees ROW *
 Distribucion ing_suborrow, relativo(ing_subor) macro(`ROWRem')
-label var ing_suborrow "Remuneraci${o}n a asalariados (ROW)"
+label var ing_suborrow "Remuneraci{c o'}n a asalariados (ROW)"
 
 
 * Capital *

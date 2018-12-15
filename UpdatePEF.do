@@ -387,7 +387,7 @@ foreach k in `serie_desc_funcion' `serie_ramo' XAC5210 {
 	rename clave_de_concepto serie
 	keep anio serie nombre monto mes
 
-	quietly save "`c(sysdir_site)'/bases/SIM/`k'.dta", replace
+	quietly save "`c(sysdir_personal)'../basesCIEP/SIM/`k'.dta", replace
 }
 restore
 
