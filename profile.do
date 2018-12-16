@@ -20,11 +20,11 @@ graph set window fontface "Ubuntu"
 ***********************
 global anioVP = 2019
 
-global pib2018 = 2.3
-global pib2019 = 2.0
+global pib2018 = 2.2474
+global pib2019 = 1.95
 
-global def2018 = 5.1
-global def2019 = 3.9
+global def2018 = 5.08
+global def2019 = 3.8745
 
 global depreMXN = 0.5
 

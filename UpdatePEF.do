@@ -21,6 +21,7 @@ forvalues k=2013(1)2017 {
 		replace `j' = trim(`j')
 		replace `j' = subinstr(`j',`"""',"",.)
 		replace `j' = subinstr(`j',"  "," ",.)
+		replace `j' = subinstr(`j',"Ê"," ",.)
 	}
 
 	noisily tabstat aprobado ejercido, stat(sum) by(ciclo) f(%25.0fc)
@@ -43,6 +44,7 @@ foreach j of varlist desc_* {
 	replace `j' = trim(`j')
 	replace `j' = subinstr(`j',`"""',"",.)
 	replace `j' = subinstr(`j',"  "," ",.)
+	replace `j' = subinstr(`j',"Ê"," ",.)
 }
 
 noisily tabstat aprobado, stat(sum) by(ciclo) f(%25.0fc)
@@ -64,6 +66,7 @@ foreach j of varlist desc_* {
 	replace `j' = trim(`j')
 	replace `j' = subinstr(`j',`"""',"",.)
 	replace `j' = subinstr(`j',"  "," ",.)
+	replace `j' = subinstr(`j',"Ê"," ",.)
 }
 
 noisily tabstat proyecto, stat(sum) by(ciclo) f(%25.0fc)
@@ -122,8 +125,8 @@ replace aprobado = 99233509443 in -1
 
 set obs `=_N+1'
 replace ciclo = 2019 in -1
-replace proyecto = 99233509443 in -1
-replace aprobado = 99233509443 in -1
+replace proyecto = 100895503961 in -1
+replace aprobado = 100895503961 in -1
 
 foreach k of varlist ramo-cartera {
 	capture confirm numeric variable `k'
@@ -169,6 +172,8 @@ replace ramo = "53" if ramo == "TOQ" | ur == "TOQ"
 replace ramo = "-1" if ramo == "Cuotas ISSSTE"
 destring ramo, replace
 
+replace desc_ramo = "Agricultura y Desarrollo Rural" if ramo == 8
+replace desc_ramo = "Bienestar" if ramo == 20
 replace desc_ramo = "Oficina de la Presidencia de la Rep{c u'}blica" if ramo == 2
 replace desc_ramo = "Instituto Nacional Electoral" if ramo == 22
 replace desc_ramo = "Tribunal Federal de Justicia Administrativa" if ramo == 32
