@@ -20,19 +20,19 @@ timer on 1
 *** 1. Parametros ***
 *********************
 global anioVP = 2019
-global pib2018 = 2.3
-global pib2019 = 2.0
-global def2018 = 5.1
-global def2019 = 3.9
+global pib2018 = 2.264
+global pib2019 = 1.951
+global def2018 = 5.063
+global def2019 = 3.8733
 global depreMXN = 0.5
 
-local graphs "g"
+local graphs ""
 local update ""
 PIBDeflactor, `graphs'						// TO UPDATE: abrir y guardar archivos .iqy (./bases/INEGI/SCN/)
 
 
 
-
+exit
 ***********************
 *** 2. Informativos ***
 /***********************
@@ -44,7 +44,7 @@ SCN, `graphs'							// TO UPDATE: abrir y guardar archivos .iqy (./bases/INEGI/S
 
 *******************/
 *** 3. Escencial ***
-********************
+/********************
 if "`update'" == "update" {
 	*do "`c(sysdir_site)'/UpdateDatosAbiertos.do"		// Actualizar bases de Datos Abiertos de SHCP
 }
