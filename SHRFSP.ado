@@ -37,6 +37,14 @@ quietly {
 		g `k'PIB = `k'/pibY*100
 	}
 	format *PIB %7.3fc
+	
+	
+	replace rfspBalance = recaudacion - gastoneto + operaciones + nopresupuestario if anio == $anioVP
+	replace rfspBalancePIB = rfspBalance/pibY*100 if anio == $anioVP
+	
+	replace rfsp = rfspPIDIREGAS + rfspIPAB + rfspFONADIN + rfspDeudores ///
+		+ rfspBanca + rfspAdecuaciones + rfspBalance if anio == $anioVP
+	replace rfspPIB = rfsp/pibY*100 if anio == $anioVP
 
 
 
@@ -50,7 +58,7 @@ quietly {
 			stack asyvars ///
 			title("{bf:Saldo hist{c o'}rico de RFSP}") ///
 			/// subtitle("Observados y estimados") ///
-			ytitle(% PIB) ylabel(0(5)30, labsize(small)) ///
+			ytitle(% PIB) ylabel(, labsize(small)) ///
 			legend(on position(6) rows(1) label(1 "Interno") label(2 "Externo")) ///
 			name(shrfsp, replace) ///
 			blabel(bar, format(%7.1fc)) ///

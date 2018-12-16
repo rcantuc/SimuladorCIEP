@@ -63,7 +63,7 @@ quietly {
 		}
 	}
 
-	drop if serie == .
+	drop if serie == . & nombre != "Diferimiento de pagos"
 	xtset serie anio
 	forvalues k=1(1)`=_N' {
 		if monto[`k'] == . & mes[`k'] != . {
@@ -86,7 +86,7 @@ quietly {
 	label values `resumido' `label'
 
 	replace `resumido' = -2 if (abs(recaudacionPIB) < `minimum' | recaudacionPIB == . | recaudacionPIB == 0) ///
-		& divCIEP != `deuda'
+		& divCIEP != `deuda' & divCIEP != 12 & divCIEP != 13 & divCIEP != 14
 	label define `label' -2 "Otros (< `minimum'% PIB)", add modify
 
 	replace nombre = subinstr(nombre,"Impuesto especial sobre producci{c o'}n y servicios de ","",.)
@@ -228,7 +228,7 @@ quietly {
 
 		return scalar `name' = `mat`k''[1,1]
 		local divCIEP `"`divCIEP' `name'"'
-		
+
 		noisily di in g "  (+) `=r(name`k')'" ///
 			_col(44) in y %20.0fc `mat`k''[1,1] ///
 			_col(66) in y %7.3fc `mat`k''[1,2] ///

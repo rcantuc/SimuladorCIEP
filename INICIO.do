@@ -26,17 +26,17 @@ global def2018 = 5.063
 global def2019 = 3.8733
 global depreMXN = 0.5
 
-local graphs ""
+local graphs "g"
 local update ""
-PIBDeflactor, `graphs'						// TO UPDATE: abrir y guardar archivos .iqy (./bases/INEGI/SCN/)
 
 
 
-exit
+
 ***********************
 *** 2. Informativos ***
 /***********************
 Poblacion, `graphs'						// update: rarely used
+PIBDeflactor, `graphs'						// TO UPDATE: abrir y guardar archivos .iqy (./bases/INEGI/SCN/)
 SCN, `graphs'							// TO UPDATE: abrir y guardar archivos .iqy (./bases/INEGI/SCN/)
 
 
@@ -44,12 +44,12 @@ SCN, `graphs'							// TO UPDATE: abrir y guardar archivos .iqy (./bases/INEGI/S
 
 *******************/
 *** 3. Escencial ***
-/********************
+********************
 if "`update'" == "update" {
 	*do "`c(sysdir_site)'/UpdateDatosAbiertos.do"		// Actualizar bases de Datos Abiertos de SHCP
 }
 *noisily LIF, `graphs' `update'
-noisily PEF, `graphs' `update' rows(3) datos			// DATOS: con informacion de DatosAbiertos.
+*noisily PEF, `graphs' `update' rows(3) datos			// DATOS: con informacion de DatosAbiertos.
 noisily SHRFSP, `graphs' `update'
 
 

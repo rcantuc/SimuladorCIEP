@@ -35,9 +35,9 @@ format concepto %30s
 *** 2. SHCP: Datos Abiertos ***
 *******************************
 preserve
-levelsof serie, local(serie)
+levelsof serie if serie != "diferimiento", local(serie)
 foreach k of local serie {
-	noisily DatosAbiertos `k', `1'
+	noisily DatosAbiertos `k', //`1'
 
 	rename clave_de_concepto serie
 	keep anio serie nombre monto mes
