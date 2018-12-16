@@ -131,8 +131,10 @@ quietly {
 	label define `label' -99 "Otros (< `minimum'% PIB)", add modify
 
 	if "$graphs" == "on" | "`graphs'" == "graphs" {
+		local est "Est*"
 		if "`datosabiertos'" == "" {
 			replace gastonetoPIB = 0 if anio == 2018
+			local est " "
 		}
 		replace gastonetoPIB = 0 if anio == 2019
 		replace aprobadonetoPIB = proyectonetoPIB if anio == 2019
@@ -148,13 +150,13 @@ quietly {
 			name(gastos, replace) ///
 			/// yreverse xalternate yalternate ///
 			blabel(bar, format(%7.1fc)) ///
-			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}")
+			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos, Cuenta P{c u'}blica y Paquetes Econ{c o'}micos).}")
 
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 
 		if `hasta' == $anioVP {
-			gr_edit .grpaxis.edit_tick 12 82.4561 `"Est*"', tickset(major)
+			gr_edit .grpaxis.edit_tick 12 82.4561 `"`est'"', tickset(major)
 			gr_edit .grpaxis.edit_tick 13 92.9825 `"PPEF"', tickset(major)
 			gr_edit .grpaxis.edit_tick 14 97.5439 `" "', tickset(major)
 		}
