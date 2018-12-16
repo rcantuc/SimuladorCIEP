@@ -53,7 +53,7 @@ quietly {
 	*** 3. Graph ***
 	****************	
 	if "$graphs" == "on" | "`graphs'" == "graphs" {
-		graph bar (sum) shrfspInternoPIB shrfspExternoPIB if anio >= 2000, ///
+		graph bar (sum) shrfspInternoPIB shrfspExternoPIB if anio >= 2010, ///
 			over(anio, label(labgap(vsmall))) ///
 			stack asyvars ///
 			title("{bf:Saldo hist{c o'}rico de RFSP}") ///
