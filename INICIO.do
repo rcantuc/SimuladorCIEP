@@ -3,13 +3,12 @@
 **** SET UP FRAMEWORK ****
 **************************
 if "`c(os)'" == "Unix" {
-	sysdir set SITE "/home/ciepmx/Dropbox (CIEP)/Github/simuladorCIEP"
-	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/TemplateCIEP/simuladorCIEP"
+	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Github/simuladorCIEP"
 }
 if "`c(os)'" == "MacOSX" {
-	sysdir set SITE "/Users/ricardo/Dropbox (CIEP)/Github/simuladorCIEP"
-	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/TemplateCIEP/simuladorCIEP"
+	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/Github/simuladorCIEP"
 }
+adopath ++ PERSONAL
 clear all
 timer on 1
 
@@ -19,15 +18,10 @@ timer on 1
 ********************/
 *** 1. Parametros ***
 *********************
-global anioVP = 2019
-global pib2018 = 2.264
-global pib2019 = 1.951
-global def2018 = 5.063
+*global anioVP = 2019
+global pib2019 = 1.9511
 global def2019 = 3.8733
-global depreMXN = 0.5
 
-local graphs "g"
-local update ""
 
 
 

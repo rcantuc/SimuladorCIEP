@@ -10,7 +10,7 @@ quietly {
 	*** 0 BASES ***
 	***************
 	* 0.1. PIB *
-	import excel "`=c(sysdir_personal)'../basesCIEP/INEGI/SCN/PIB/PIB.xlsx", clear
+	import excel "`=c(sysdir_site)'../basesCIEP/INEGI/SCN/PIB.xls", clear
 
 	* 0.2. Limpia *
 	LimpiaBIE
@@ -41,7 +41,7 @@ quietly {
 
 
 	* 0.1. Deflactor *
-	import excel "`=c(sysdir_personal)'../basesCIEP/INEGI/SCN/Deflactor/Deflactor.xlsx", clear
+	import excel "`=c(sysdir_site)'../basesCIEP/INEGI/SCN/deflactor.xls", clear
 
 	* 0.2. Limpia *
 	LimpiaBIE, nomult
@@ -163,6 +163,7 @@ quietly {
 	else if `aniovp' == -1 {
 		local aniovp : di %td_CY-N-D  date("$S_DATE", "DMY")
 		local aniovp = substr(`"`=trim("`aniovp'")'"',1,4)
+		*global anioVP = `aniovp'
 	}
 	forvalues k=1(1)`=_N' {
 		if anio[`k'] == `aniovp' {
