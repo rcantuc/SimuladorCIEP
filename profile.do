@@ -17,7 +17,7 @@ graph set window fontface "Ubuntu"
 global pib2019 = 2.0
 global def2019 = 3.9
 
-PIBDeflactor, g
+PIBDeflactor
 
 
 
@@ -25,7 +25,7 @@ PIBDeflactor, g
 *** 3 Texto ***
 ***************
 noisily di _newline(2) in w "{bf:Centro de Investigaci{c o'}n Econ{c o'}mica y Presupuestaria, A.C.}"
-noisily di _newline in g "{bf:Criterios Generales de Pol{c i'}tica Econ{c o'}mica" in y " 2019}"
+noisily di _newline in g "{bf:BIE + CGPE" in y " 2019}"
 noisily di _newline in g "A{c n~}o" _col(11) %8s "Crec. PIB" _col(25) %20s "PIB" _col(50) %5s "Crec. Def." _col(67) %8.4fc "Deflactor"
 
 forvalues k=2017(1)2020 {
