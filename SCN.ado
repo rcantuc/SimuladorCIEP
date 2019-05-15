@@ -18,14 +18,14 @@ quietly {
 	*** 1. Databases (D) and variable definitions (V) ***
 	*****************************************************
 	** D.1. Cuenta de generaci{c o'}n del ingreso **
-	import excel "`c(sysdir_site)'../basesCIEP/INEGI/SCN/Cuenta de Generacion del Ingreso.xls", clear
+	import excel "`c(sysdir_site)'../basesCIEP/INEGI/SCN/Cuenta de generacion del ingreso.xls", clear
 	LimpiaBIE g
 	tempfile generacion
 	save `generacion'
 
 
 	** D.2. Cuenta por sectores institucionales **
-	import excel "`c(sysdir_site)'../basesCIEP/INEGI/SCN/Cuentas por Sectores Institucionales.xls", clear
+	import excel "`c(sysdir_site)'../basesCIEP/INEGI/SCN/Cuentas por sectores institucionales.xls", clear
 	LimpiaBIE s
 	tempfile sectores
 	save `sectores'
@@ -60,12 +60,12 @@ quietly {
 
 
 	** D.7. PIB actividad economica **
-	import excel "`c(sysdir_site)'../basesCIEP/INEGI/SCN/PIB actividad economica.xls", clear
+	import excel "`c(sysdir_site)'../basesCIEP/INEGI/SCN/PIB actividad economica.xls", clear sheet("Pagina 1")
 	LimpiaBIE ae
 	tempfile actividad
 	save `actividad'
 	
-	import excel "`c(sysdir_site)'../basesCIEP/INEGI/SCN/PIB actividad economica.xls", clear sheet("Página 2")
+	import excel "`c(sysdir_site)'../basesCIEP/INEGI/SCN/PIB actividad economica.xls", clear sheet("Pagina 2")
 	LimpiaBIE ae2
 	tempfile actividad2
 	save `actividad2'
