@@ -8,7 +8,7 @@
 ************************
 *** 1. BASE DE DATOS ***
 ************************
-import excel "`c(sysdir_personal)'../basesCIEP/LIFs/LIFs.xlsx", clear firstrow
+import excel "`c(sysdir_site)'../basesCIEP/LIFs/LIFs.xlsx", clear firstrow
 
 ** Encode **
 foreach k of varlist div* {
@@ -24,7 +24,7 @@ foreach k of varlist div* {
 	drop `k's
 }
 order div* concepto
-reshape long LIF ILIF, i(div* modulo* concepto serie nombrecorto) j(anio)
+reshape long LIF ILIF, i(div* concepto serie) j(anio)
 format div* LIF* ILIF* %20.0fc
 format concepto %30s
 
@@ -35,9 +35,9 @@ format concepto %30s
 *** 2. SHCP: Datos Abiertos ***
 *******************************
 preserve
-levelsof serie if serie != "diferimiento", local(serie)
+levelsof serie, local(serie)
 foreach k of local serie {
-	noisily DatosAbiertos `k', //`1'
+	noisily DatosAbiertos `k', g
 
 	rename clave_de_concepto serie
 	keep anio serie nombre monto mes
@@ -49,7 +49,7 @@ restore
 
 
 ** 2.1.1 Append **
-collapse (sum) LIF ILIF, by(div* modulo* serie anio)
+collapse (sum) LIF ILIF, by(div* serie anio)
 foreach k of local serie {
 	joinby (anio serie) using ``k'', unmatched(both) update
 	drop _merge
@@ -62,7 +62,7 @@ drop series
 
 ** 2.1.2 Fill the blanks **
 forvalues j=1(1)`=_N' {
-	foreach k of varlist div* modulo* serie nombre {
+	foreach k of varlist div* serie nombre {
 		capture confirm numeric variable `k'
 		if _rc == 0 {
 			if `k'[`j'] != . {
@@ -85,6 +85,6 @@ replace recaudacion = monto if mes < 12						// De lo contrario, lo observado se
 replace recaudacion = ILIF if mes == . & LIF == 0 & ILIF != 0			// De lo contrario, es ILIF
 format recaudacion %20.0fc
 
-order div* nombre modulo* serie anio LIF ILIF monto
+order div* nombre serie anio LIF ILIF monto
 compress
-save "`c(sysdir_personal)'../basesCIEP/SIM/LIF.dta", replace
+save "`c(sysdir_site)'../basesCIEP/SIM/LIF.dta", replace

@@ -1,7 +1,11 @@
 **************************
 **** HOLA, HUMANO! :) ****
-**** SET UP FRAMEWORK ****
 **************************
+
+
+*****************
+*** 0. Github ***
+*****************
 if "`c(os)'" == "Unix" {
 	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Github/simuladorCIEP"
 }
@@ -15,36 +19,25 @@ timer on 1
 
 
 
-********************/
-*** 1. Parametros ***
-*********************
-*global anioVP = 2019
-global pib2019 = 1.9511
-global def2019 = 3.8733
+*************************
+*** 1. Bases MANUALES ***
+*************************
+PIBDeflactor, graphs //aniovp(2020)			// PARA ACTUALIZAR: reemplazar archivo .xls (./basesCIEP/INEGI/SCN/)
+noisily SCN, graphs //anio(2020)			// PARA ACTUALIZAR: reemplazar archivo .xls (./basesCIEP/INEGI/SCN/)
 
 
 
 
-
-***********************
-*** 2. Informativos ***
-/***********************
-Poblacion, `graphs'						// update: rarely used
-PIBDeflactor, `graphs'						// TO UPDATE: abrir y guardar archivos .iqy (./bases/INEGI/SCN/)
-SCN, `graphs'							// TO UPDATE: abrir y guardar archivos .iqy (./bases/INEGI/SCN/)
+***************************/
+*** 2. Bases AUTOMÁTICAS ***
+****************************
+Poblacion, graphs //anioi(1950) //aniof(2050) //update (downloads dataset again)
+noisily LIF, graphs
 
 
 
-
-*******************/
-*** 3. Escencial ***
-********************
-if "`update'" == "update" {
-	*do "`c(sysdir_site)'/UpdateDatosAbiertos.do"		// Actualizar bases de Datos Abiertos de SHCP
-}
-*noisily LIF, `graphs' `update'
 *noisily PEF, `graphs' `update' rows(3) datos			// DATOS: con informacion de DatosAbiertos.
-noisily SHRFSP, `graphs' `update'
+*noisily SHRFSP, `graphs' `update'
 
 
 

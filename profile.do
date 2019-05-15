@@ -11,13 +11,14 @@ graph set window fontface "Ubuntu"
 
 
 
-*************************
-*** 2 Par{c a'}metros ***
-************************
+*********************************
+*** 2 Par{c a'}metros de CGPE ***
+*********************************
+// Incorporar los que sean necesarios seg{c u'}n su a{c n~}o //
 global pib2019 = 2.0
 global def2019 = 3.9
-
 PIBDeflactor
+
 
 
 
