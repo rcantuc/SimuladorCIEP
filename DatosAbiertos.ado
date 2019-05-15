@@ -1,20 +1,13 @@
 program define DatosAbiertos, return
 quietly {
 
-	syntax anything [if/] [, Graphs Restore PIBVP(real -999) PIBVF(real -999) UPDATE DESDE(real 1993)]
-
-	if "`restore'" == "restore" {
-		preserve
-	}
+	syntax anything [if/] [, Graphs PIBVP(real -999) PIBVF(real -999) UPDATE DESDE(real 1993)]
 
 	PIBDeflactor, nographs
 	tempfile PIB
 	save `PIB'
 
-	capture confirm file "`c(sysdir_personal)'../basesCIEP/SIM/DatosAbiertos.dta"
-	if _rc != 0 | "`update'" == "update" {
-		run "`c(sysdir_site)'/UpdateDatosAbiertos.do"
-	}
+	noisily UpdateDatosAbiertos
 
 
 
@@ -22,7 +15,7 @@ quietly {
 	****************************
 	*** 1 Base de datos SHCP ***
 	****************************
-	use if clave_de_concepto == "`anything'" using "`c(sysdir_personal)'../basesCIEP/SIM/DatosAbiertos.dta", clear
+	use if clave_de_concepto == "`anything'" using "`c(sysdir_site)'../basesCIEP/SIM/DatosAbiertos.dta", clear
 	if `=_N' == 0 {
 		noisily di in r "No se encontr{c o'} la serie {bf:`anything'}."
 		return scalar error = 2000
@@ -46,7 +39,7 @@ quietly {
 		sort anio mes
 
 		local last_anio = anio[_N]
-		local alst_mes = mes[_N]
+		local last_mes = mes[_N]
 
 		tempvar montoanual propmensual
 		egen `montoanual' = sum(monto) if anio < `last_anio' & anio >= `desde', by(anio)
@@ -54,7 +47,7 @@ quietly {
 		egen acum_prom = mean(`propmensual'), by(mes)
 
 		collapse (sum) monto acum_prom (last) mes if monto != ., by(anio nombre clave_de_concepto)
-		replace monto = monto/acum_prom if mes < 12 & acum_prom > 0 & acum_prom < 1
+		replace monto = monto/acum_prom if mes < 12 //& acum_prom > 0 & acum_prom < 1
 
 		local palabra "Proyectado"
 	}
@@ -138,11 +131,9 @@ quietly {
 			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP, Datos Abiertos y del INEGI, BIE.}") ///
 			note("{bf:{c U'}ltimo dato:} `ultanio'm`ultmes'.") ///
 			name(H`anything', replace)
+		
+		graph export "`=c(sysdir_site)'../basesCIEP/SIM/`anything'.eps", name(H`anything') replace
 	}
 	noisily list, separator(30) string(30)
-	
-	if "`restore'" == "restore" {
-		restore
-	}
 }
 end

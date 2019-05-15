@@ -4,7 +4,10 @@
 program define SCN, return
 quietly {
 
-	syntax [, ANIO(int $anioVP) Graphs]
+	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
+	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
+
+	syntax [, ANIO(int `aniovp') Graphs]
 	noisily di _newline(5) in g "{bf:INFORMACI{c O'}N ECON{c O'}MICA:" in y " SCN " `anio' "}"
 
 
@@ -15,52 +18,57 @@ quietly {
 	*** 1. Databases (D) and variable definitions (V) ***
 	*****************************************************
 	** D.1. Cuenta de generaci{c o'}n del ingreso **
-	import excel "`c(sysdir_personal)'../basesCIEP/INEGI/SCN/Cuentas/Cuenta de Generacion del Ingreso.xlsx", clear
+	import excel "`c(sysdir_site)'../basesCIEP/INEGI/SCN/Cuenta de Generacion del Ingreso.xls", clear
 	LimpiaBIE g
 	tempfile generacion
 	save `generacion'
 
 
 	** D.2. Cuenta por sectores institucionales **
-	import excel "`c(sysdir_personal)'../basesCIEP/INEGI/SCN/Cuentas/Cuentas por Sectores Institucionales.xlsx", clear
+	import excel "`c(sysdir_site)'../basesCIEP/INEGI/SCN/Cuentas por Sectores Institucionales.xls", clear
 	LimpiaBIE s
 	tempfile sectores
 	save `sectores'
 
 
 	** D.3. Cuenta de ingreso nacional disponbile **
-	import excel "`c(sysdir_personal)'../basesCIEP/INEGI/SCN/Cuentas/Cuenta del ingreso nacional disponible.xlsx", clear
+	import excel "`c(sysdir_site)'../basesCIEP/INEGI/SCN/Cuenta del ingreso nacional disponible.xls", clear
 	LimpiaBIE d
 	tempfile disponible
 	save `disponible'
 
 
 	** D.4. Cuenta de consumo **
-	import excel "`c(sysdir_personal)'../basesCIEP/INEGI/SCN/Cuentas/Consumo de los hogares.xlsx", clear
+	import excel "`c(sysdir_site)'../basesCIEP/INEGI/SCN/Consumo de los hogares.xls", clear
 	LimpiaBIE c
 	tempfile consumo
 	save `consumo'
 
 
 	** D.5. Cuenta de consumo privado **
-	import excel "`c(sysdir_personal)'../basesCIEP/INEGI/SCN/Cuentas/Gasto de consumo privado.xlsx", clear
+	import excel "`c(sysdir_site)'../basesCIEP/INEGI/SCN/Gasto de consumo privado.xls", clear
 	LimpiaBIE gc
 	tempfile gasto
 	save `gasto'
 
 
 	** D.6. Cuenta de consumo de gobierno **
-	import excel "`c(sysdir_personal)'../basesCIEP/INEGI/SCN/Cuentas/Gasto de consumo de gobierno general.xlsx", clear
+	import excel "`c(sysdir_site)'../basesCIEP/INEGI/SCN/Gasto de consumo de gobierno general.xls", clear
 	LimpiaBIE cg
 	tempfile gobierno
 	save `gobierno'
 
 
 	** D.7. PIB actividad economica **
-	import excel "`c(sysdir_personal)'../basesCIEP/INEGI/SCN/Cuentas/PIB actividad economica.xlsx", clear
+	import excel "`c(sysdir_site)'../basesCIEP/INEGI/SCN/PIB actividad economica.xls", clear
 	LimpiaBIE ae
 	tempfile actividad
 	save `actividad'
+	
+	import excel "`c(sysdir_site)'../basesCIEP/INEGI/SCN/PIB actividad economica.xls", clear sheet("Página 2")
+	LimpiaBIE ae2
+	tempfile actividad2
+	save `actividad2'
 
 
 	** D.8. PIBDeflactor **
@@ -80,6 +88,7 @@ quietly {
 	merge 1:1 (A) using `gasto', nogen
 	merge 1:1 (A) using `gobierno', nogen
 	merge 1:1 (A) using `actividad', nogen
+	merge 1:1 (A) using `actividad2', nogen
 	merge 1:1 (A) using `basepib', nogen
 
 
@@ -160,10 +169,10 @@ quietly {
 
 	** V.12. Ingreso mixto **
 	rename IFae ServProf						// Servicios profesionales, cient{c i'}ficos y t{c e'}cnicos
-	rename JNae ConsMedi 						// Consultorios m{c e'}dicos
-	rename JOae ConsDent						// Consultorios dentales
-	rename JPae ConsOtro						// Consultorios otros
-	rename JSae EnfeDomi						// Enfermeras a domicilio
+	rename Tae2 ConsMedi 						// Consultorios m{c e'}dicos
+	rename Uae2 ConsDent						// Consultorios dentales
+	rename Vae2 ConsOtro						// Consultorios otros
+	rename Yae2 EnfeDomi						// Enfermeras a domicilio
 
 
 
@@ -559,7 +568,7 @@ quietly {
 		g `RemImpMixExRowCon' = (RemSalNTA + SSEmpleadores + SSImputada + MixLNTA + CapitalNTA + ROW + ConCapFij)/1000000
 		label var `RemImpMixExRowCon' "Consumo de capital fijo"
 
-		twoway area `RemImpMixExRowCon' `RemImpMixExRow' `RemImpMixEx' `RemImpMix' `Rem' anio if anio <= `anio', ///
+		*twoway area `RemImpMixExRowCon' `RemImpMixExRow' `RemImpMixEx' `RemImpMix' `Rem' anio if anio <= `anio', ///
 			title("{bf:Producto Interno Bruto}") ///
 			subtitle(Cuenta de Generaci{c o'}n del Ingreso) ///			
 			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n del INEGI, BIE.}") ///
@@ -581,7 +590,7 @@ quietly {
 		g `ConFijPIB' = ConCapFij/PIB*100
 		label var `ConFijPIB' "Consumo de capital fijo"
 		
-		graph bar `ConFijPIB' `RowPIB' `ExBOpSinMixPIB' `MixPIB' `RemPIB' if anio <= `anio', ///
+		graph bar `ConFijPIB' `RowPIB' `ExBOpSinMixPIB' `MixPIB' `RemPIB' if anio >= 2003 & anio <= `anio', ///
 			over(anio) stack asyvars ///
 			title("{bf:Producto Interno Bruto}") ///
 			subtitle(Cuenta de Generaci{c o'}n del Ingreso) ///
@@ -748,23 +757,23 @@ quietly {
 		_col(44) in y %20.0fc IRae[`obs'] ///
 		_col(66) in y %7.3fc IRae[`obs']/PIB[`obs']*100
 	noisily di in g "  (+) Servicios educativos" ///
-		_col(44) in y %20.0fc JCae[`obs'] ///
-		_col(66) in y %7.3fc JCae[`obs']/PIB[`obs']*100
+		_col(44) in y %20.0fc Iae2[`obs'] ///
+		_col(66) in y %7.3fc Iae2[`obs']/PIB[`obs']*100
 	noisily di in g "  (+) Servicios de salud y de asistencia..." ///
-		_col(44) in y %20.0fc JLae[`obs'] ///
-		_col(66) in y %7.3fc JLae[`obs']/PIB[`obs']*100
+		_col(44) in y %20.0fc Rae2[`obs'] ///
+		_col(66) in y %7.3fc Rae2[`obs']/PIB[`obs']*100
 	noisily di in g "  (+) Servicios de espar. culturales..." ///
-		_col(44) in y %20.0fc KIae[`obs'] ///
-		_col(66) in y %7.3fc KIae[`obs']/PIB[`obs']*100
+		_col(44) in y %20.0fc AOae2[`obs'] ///
+		_col(66) in y %7.3fc AOae2[`obs']/PIB[`obs']*100
 	noisily di in g "  (+) Servicios de alojamiento temporal..." ///
-		_col(44) in y %20.0fc KUae[`obs'] ///
-		_col(66) in y %7.3fc KUae[`obs']/PIB[`obs']*100
+		_col(44) in y %20.0fc BAae2[`obs'] ///
+		_col(66) in y %7.3fc BAae2[`obs']/PIB[`obs']*100
 	noisily di in g "  (+) Otros servicios excepto gobierno" ///
-		_col(44) in y %20.0fc LDae[`obs'] ///
-		_col(66) in y %7.3fc LDae[`obs']/PIB[`obs']*100
+		_col(44) in y %20.0fc BJae2[`obs'] ///
+		_col(66) in y %7.3fc BJae2[`obs']/PIB[`obs']*100
 	noisily di in g "  (+) Actividades de gobierno..." ///
-		_col(44) in y %20.0fc LTae[`obs'] ///
-		_col(66) in y %7.3fc LTae[`obs']/PIB[`obs']*100
+		_col(44) in y %20.0fc BZae2[`obs'] ///
+		_col(66) in y %7.3fc BZae2[`obs']/PIB[`obs']*100
 	noisily di in g _dup(72) "-"
 	noisily di in g "{bf:  (=) Valor Agregado Bruto" ///
 		_col(44) in y %20.0fc Dae[`obs'] ///

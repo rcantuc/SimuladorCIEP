@@ -11,17 +11,21 @@ quietly {
 	tempfile PIB
 	save `PIB'
 
-	capture use "`c(sysdir_personal)'../basesCIEP/SIM/LIF.dta", clear
-	local rc = _rc
-	syntax [if/] [, ANIO(int $anioVP ) Graphs Update Base ID(string) ///
+	noisily UpdateDatosAbiertos
+	local updated = r(updated)
+	local ultanio = r(ultanio)
+	local ultmes = r(ultmes)
+
+	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
+	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
+
+	use "`c(sysdir_site)'../basesCIEP/SIM/LIF.dta", clear
+	syntax [if/] [, ANIO(int `aniovp' ) Update Graphs Base ID(string) ///
 		MINimum(real 1)]
 
-
-	** Base LIF **
-	if `rc' != 0 | "`update'" == "update" {
-		noisily run "`c(sysdir_site)'/UpdateLIF.do" `update'
+	if "`update'" == "update" | "`updated'" != "yes" {
+		noisily run UpdateLIF.do					// Actualiza la base de Excel (./basesCIEP/LIFs/LIF.xlsx)
 	}
-
 
 	** Base ID **
 	if "`id'" != "" {
@@ -54,29 +58,8 @@ quietly {
 	****************
 	*** 3. Graph ***
 	****************
-	levelsof divCIEP, local(levels)
-	foreach k of local levels {
-		local levellabel : label divCIEP `k'
-		if "`levellabel'" == "Deuda" {
-			local deuda = `k'
-			continue, break
-		}
-	}
-
-	drop if serie == . & nombre != "Diferimiento de pagos"
+	drop if serie == .
 	xtset serie anio
-	forvalues k=1(1)`=_N' {
-		if monto[`k'] == . & mes[`k'] != . {
-			local ultanio = anio in `=`k'-1'
-			local ultmes = mes in `=`k'-1'
-			
-			if `ultmes' < 12 {
-				local textmes "(mes `ultmes')"
-			}
-
-			continue, break
-		}
-	}
 
 	tempvar resumido
 	g `resumido' = divCIEP
@@ -86,7 +69,7 @@ quietly {
 	label values `resumido' `label'
 
 	replace `resumido' = -2 if (abs(recaudacionPIB) < `minimum' | recaudacionPIB == . | recaudacionPIB == 0) ///
-		& divCIEP != `deuda' & divCIEP != 12 & divCIEP != 13 & divCIEP != 14
+		& divLIF != 10 & divCIEP != 12 & divCIEP != 13 & divCIEP != 14
 	label define `label' -2 "Otros (< `minimum'% PIB)", add modify
 
 	replace nombre = subinstr(nombre,"Impuesto especial sobre producci{c o'}n y servicios de ","",.)
@@ -94,115 +77,151 @@ quietly {
 	replace nombre = subinstr(nombre,"/","_",.)
 
 	if "$graphs" == "on" | "`graphs'" == "graphs" {
-		replace LIFPIB = ILIFPIB if anio == 2019
-		replace recaudacionPIB = 0 if anio == 2019
+		*replace LIFPIB = ILIFPIB if anio == 2019
+		*replace recaudacionPIB = 0 if anio == 2019
 		
-		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & divCIEP != `deuda', ///
-			over(divOrigen, relabel(1 "LIF" 2 "Obs")) ///
+		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 /*& divLIF != 10*/, ///
+			over(divOrigen, relabel(1 "LIF" 2 "SHCP")) ///
 			over(anio, label(labgap(vsmall))) ///
 			stack asyvars ///
-			title("{bf:Ingresos presupuestarios observados y estimados}") ///
-			/// subtitle("Observados y estimados") ///
+			title("{bf:Ingresos presupuestarios}") ///
+			subtitle("Observados (SHCP) y estimados (LIF)") ///
 			ytitle(% PIB) ylabel(0(5)30, labsize(small)) ///
 			legend(on position(6) rows(1)) ///
 			name(ingresos, replace) ///
 			blabel(bar, format(%7.1fc)) ///
-			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}")
+			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}") ///
+			note({bf:{c U'}ltimo dato:} `ultanio'm`ultmes')
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
-		gr_edit .grpaxis.major.num_rule_ticks = 0
-		gr_edit .grpaxis.edit_tick 18 87.9227 `"Est*"', tickset(major)
-		gr_edit .grpaxis.edit_tick 19 95.1691 `"ILIF"', tickset(major)
-		gr_edit .grpaxis.edit_tick 20 98.3092 `" "', tickset(major)
+		gr_edit .grpaxis.style.editstyle majorstyle(tickstyle(textstyle(size(vsmall)))) editcopy
+		*gr_edit .grpaxis.major.num_rule_ticks = 0
+		*gr_edit .grpaxis.edit_tick 18 87.9227 `"Est*"', tickset(major)
+		*gr_edit .grpaxis.edit_tick 19 95.1691 `"ILIF"', tickset(major)
+		*gr_edit .grpaxis.edit_tick 20 98.3092 `" "', tickset(major)
 
-		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & divCIEP != `deuda' & divOrigen == 5, ///
-			over(`resumido', relabel(1 "LIF" 2 "Obs")) ///
+		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & divLIF != 10 & divOrigen == 5, ///
+			over(divCIEP, relabel(1 "LIF" 2 "SHCP")) ///
 			over(anio, label(labgap(vsmall))) ///
 			stack asyvars ///
-			title("{bf:Ingresos tributarios observados y estimados}") ///
-			/// subtitle("Observados y estimados") ///
+			title("{bf:Ingresos tributarios}") ///
+			subtitle("Observados (SHCP) y estimados (LIF)") ///
 			ytitle(% PIB) ylabel(0(5)15, labsize(small)) ///
 			legend(on position(6) rows(1)) ///
 			name(ingresosTributarios, replace) ///
 			blabel(bar, format(%7.1fc)) ///
-			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}")
+			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}") ///
+			note({bf:{c U'}ltimo dato:} `ultanio'm`ultmes')
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
-		gr_edit .grpaxis.major.num_rule_ticks = 0
-		gr_edit .grpaxis.edit_tick 18 87.9227 `"Est*"', tickset(major)
-		gr_edit .grpaxis.edit_tick 19 95.1691 `"ILIF"', tickset(major)
-		gr_edit .grpaxis.edit_tick 20 98.3092 `" "', tickset(major)
+		gr_edit .grpaxis.style.editstyle majorstyle(tickstyle(textstyle(size(vsmall)))) editcopy
+		*gr_edit .grpaxis.major.num_rule_ticks = 0
+		*gr_edit .grpaxis.edit_tick 18 87.9227 `"Est*"', tickset(major)
+		*gr_edit .grpaxis.edit_tick 19 95.1691 `"ILIF"', tickset(major)
+		*gr_edit .grpaxis.edit_tick 20 98.3092 `" "', tickset(major)
 
-		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & divCIEP != `deuda' & divOrigen == 2, ///
-			over(`resumido', relabel(1 "LIF" 2 "Obs")) ///
+		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & divLIF != 10 & divOrigen == 2, ///
+			over(divCIEP, relabel(1 "LIF" 2 "SHCP")) ///
 			over(anio, label(labgap(vsmall))) ///
 			stack asyvars ///
-			title("{bf:Ingresos no tributarios recaudados y estimados}") ///
+			title("{bf:Ingresos no tributarios}") ///
+			subtitle("Observados (SHCP) y estimados (LIF)") ///
 			ytitle(% PIB) ylabel(0(5)15, labsize(small)) ///
 			legend(on position(6) rows(1)) ///
 			name(ingresosNoTributarios, replace) ///
 			blabel(bar, format(%7.1fc)) ///
-			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}")
+			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}") ///
+			note({bf:{c U'}ltimo dato:} `ultanio'm`ultmes')
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
-		gr_edit .grpaxis.major.num_rule_ticks = 0
-		gr_edit .grpaxis.edit_tick 18 87.9227 `"Est*"', tickset(major)
-		gr_edit .grpaxis.edit_tick 19 95.1691 `"ILIF"', tickset(major)
-		gr_edit .grpaxis.edit_tick 20 98.3092 `" "', tickset(major)
+		gr_edit .grpaxis.style.editstyle majorstyle(tickstyle(textstyle(size(vsmall)))) editcopy
+		*gr_edit .grpaxis.major.num_rule_ticks = 0
+		*gr_edit .grpaxis.edit_tick 18 87.9227 `"Est*"', tickset(major)
+		*gr_edit .grpaxis.edit_tick 19 95.1691 `"ILIF"', tickset(major)
+		*gr_edit .grpaxis.edit_tick 20 98.3092 `" "', tickset(major)
 
-		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & divCIEP != `deuda' & divOrigen == 4, ///
-			over(`resumido', relabel(1 "LIF" 2 "Obs")) ///
+		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & divLIF != 10 & divOrigen == 4, ///
+			over(divCIEP, relabel(1 "LIF" 2 "SHCP")) ///
 			over(anio, label(labgap(small))) ///
 			stack asyvars ///
-			title("{bf:Ingresos petroleros recaudados y estimados}") ///
+			title("{bf:Ingresos petroleros}") ///
+			subtitle("Observados (SHCP) y estimados (LIF)") ///
 			ytitle(% PIB) ylabel(0(5)15, labsize(small)) ///
 			legend(on position(6) rows(1)) ///
 			name(ingresosPetroleros, replace) ///
 			blabel(bar, format(%7.1fc)) ///
-			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}")
+			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}") ///
+			note({bf:{c U'}ltimo dato:} `ultanio'm`ultmes')
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
-		gr_edit .grpaxis.major.num_rule_ticks = 0
-		gr_edit .grpaxis.edit_tick 18 87.9227 `"Est*"', tickset(major)
-		gr_edit .grpaxis.edit_tick 19 95.1691 `"ILIF"', tickset(major)
-		gr_edit .grpaxis.edit_tick 20 98.3092 `" "', tickset(major)
+		gr_edit .grpaxis.style.editstyle majorstyle(tickstyle(textstyle(size(vsmall)))) editcopy
+		*gr_edit .grpaxis.major.num_rule_ticks = 0
+		*gr_edit .grpaxis.edit_tick 18 87.9227 `"Est*"', tickset(major)
+		*gr_edit .grpaxis.edit_tick 19 95.1691 `"ILIF"', tickset(major)
+		*gr_edit .grpaxis.edit_tick 20 98.3092 `" "', tickset(major)
 
-		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & divCIEP != `deuda' & divOrigen == 3 & divCIEP != 18, ///
-			over(divCIEP, relabel(1 "LIF" 2 "Obs")) ///
+		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & divLIF != 10 & (divCIEP == 10 | divCIEP == 13), ///
+			over(divCIEP, relabel(1 "LIF" 2 "SHCP")) ///
 			over(anio, label(labgap(small))) ///
 			stack asyvars ///
-			title("{bf:Ingresos de organismos y empresas recaudados y estimados}") ///
+			title("{bf:Ingresos de organismos p{c u'}blicos}") ///
+			subtitle("Observados (SHCP) y estimados (LIF)") ///
 			ytitle(% PIB) ylabel(0(5)15, labsize(small)) ///
 			legend(on position(6) rows(1)) ///
 			name(ingresosOyE, replace) ///
 			blabel(bar, format(%7.1fc)) ///
-			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}")
+			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}") ///
+			note({bf:{c U'}ltimo dato:} `ultanio'm`ultmes')
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
-		gr_edit .grpaxis.major.num_rule_ticks = 0
-		gr_edit .grpaxis.edit_tick 18 87.9227 `"Est*"', tickset(major)
-		gr_edit .grpaxis.edit_tick 19 95.1691 `"ILIF"', tickset(major)
-		gr_edit .grpaxis.edit_tick 20 98.3092 `" "', tickset(major)
+		gr_edit .grpaxis.style.editstyle majorstyle(tickstyle(textstyle(size(vsmall)))) editcopy
+		*gr_edit .grpaxis.major.num_rule_ticks = 0
+		*gr_edit .grpaxis.edit_tick 18 87.9227 `"Est*"', tickset(major)
+		*gr_edit .grpaxis.edit_tick 19 95.1691 `"ILIF"', tickset(major)
+		*gr_edit .grpaxis.edit_tick 20 98.3092 `" "', tickset(major)
 
-		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & divCIEP != `deuda' & (divCIEP == 21 | divCIEP == 2), ///
-			over(divCIEP, relabel(1 "LIF" 2 "Obs")) ///
+		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & divLIF != 10 & (divCIEP == 2 | divCIEP == 19), ///
+			over(divCIEP, relabel(1 "LIF" 2 "SHCP")) ///
 			over(anio, label(labgap(vsmall))) ///
 			stack asyvars ///
-			title("{bf:Ingresos de EPE observados y estimados}") ///
+			title("{bf:Ingresos de Empresas Productivas del Estado}") ///
+			subtitle("Observados (SHCP) y estimados (LIF)") ///
 			ytitle(% PIB) ylabel(0(5)30, labsize(small)) ///
 			legend(on position(6) rows(1)) ///
 			name(ingresosEPE, replace) ///
 			blabel(bar, format(%7.1fc)) ///
-			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}")
+			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}") ///
+			note({bf:{c U'}ltimo dato:} `ultanio'm`ultmes')
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
-		gr_edit .grpaxis.major.num_rule_ticks = 0
-		gr_edit .grpaxis.edit_tick 18 87.9227 `"Est*"', tickset(major)
-		gr_edit .grpaxis.edit_tick 19 95.1691 `"ILIF"', tickset(major)
-		gr_edit .grpaxis.edit_tick 20 98.3092 `" "', tickset(major)
+		gr_edit .grpaxis.style.editstyle majorstyle(tickstyle(textstyle(size(vsmall)))) editcopy
+		*gr_edit .grpaxis.major.num_rule_ticks = 0
+		*gr_edit .grpaxis.edit_tick 18 87.9227 `"Est*"', tickset(major)
+		*gr_edit .grpaxis.edit_tick 19 95.1691 `"ILIF"', tickset(major)
+		*gr_edit .grpaxis.edit_tick 20 98.3092 `" "', tickset(major)
 
-		replace LIFPIB = 0 if anio == 2019
-		replace recaudacionPIB = ILIFPIB if anio == 2019
+		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & divLIF == 10, ///
+			over(divCIEP, relabel(1 "LIF" 2 "SHCP")) ///
+			over(anio, label(labgap(vsmall))) ///
+			stack asyvars ///
+			title("{bf:Financiamiento p{c u'}blico}") ///
+			subtitle("Observados (SHCP) y estimados (LIF)") ///
+			ytitle(% PIB) ylabel(0(5)30, labsize(small)) ///
+			legend(on position(6) rows(1)) ///
+			name(ingresosEPE, replace) ///
+			blabel(bar, format(%7.1fc)) ///
+			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}") ///
+			note({bf:{c U'}ltimo dato:} `ultanio'm`ultmes')
+		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
+		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
+		gr_edit .grpaxis.style.editstyle majorstyle(tickstyle(textstyle(size(vsmall)))) editcopy
+		*gr_edit .grpaxis.major.num_rule_ticks = 0
+		*gr_edit .grpaxis.edit_tick 18 87.9227 `"Est*"', tickset(major)
+		*gr_edit .grpaxis.edit_tick 19 95.1691 `"ILIF"', tickset(major)
+		*gr_edit .grpaxis.edit_tick 20 98.3092 `" "', tickset(major)
+
+		*replace LIFPIB = 0 if anio == 2019
+		*replace recaudacionPIB = ILIFPIB if anio == 2019
 	}
 
 
@@ -282,7 +301,7 @@ quietly {
 		_col(66) %7s "% PIB" ///
 		_col(77) %7s "% Total" "}"
 
-	tabstat recaudacion recaudacionPIB if anio == `anio' & divCIEP != `deuda', by(`resumido') stat(sum) f(%20.1fc) save
+	tabstat recaudacion recaudacionPIB if anio == `anio' & divLIF != 10, by(`resumido') stat(sum) f(%20.1fc) save
 	tempname mattot
 	matrix `mattot' = r(StatTotal)
 
@@ -315,7 +334,7 @@ quietly {
 		_col(77) %7s "Cambio PIB" "}"
 
 
-	tabstat recaudacion recaudacionPIB if anio == `anio' & divCIEP != `deuda', by(divCIEP) stat(sum) f(%20.0fc) save
+	tabstat recaudacion recaudacionPIB if anio == `anio' & divLIF != 10, by(divCIEP) stat(sum) f(%20.0fc) save
 	tempname mattot
 	matrix `mattot' = r(StatTotal)
 
@@ -327,7 +346,7 @@ quietly {
 	}
 
 
-	capture tabstat recaudacion recaudacionPIB if anio == `anio'-5 & divCIEP != `deuda', by(divCIEP) stat(sum) f(%20.1fc) save
+	capture tabstat recaudacion recaudacionPIB if anio == `anio'-5 & divLIF != 10, by(divCIEP) stat(sum) f(%20.1fc) save
 	if _rc == 0 {
 		tempname mattot5
 		matrix `mattot5' = r(StatTotal)
