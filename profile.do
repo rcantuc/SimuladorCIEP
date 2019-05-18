@@ -6,7 +6,7 @@ set more off, permanently
 set type double, permanently
 set charset latin1, permanently
 set scheme ciep
-graph set window fontface "Ubuntu"
+graph set window fontface "Open Sans"
 
 
 
