@@ -61,16 +61,16 @@ quietly {
 	drop if serie == .
 	xtset serie anio
 
-	tempvar resumido
+	tempvar resumido recaudacionPIB
 	g `resumido' = divCIEP
 
 	tempname label
 	label copy divCIEP `label'
 	label values `resumido' `label'
 
-	replace `resumido' = -2 if (abs(recaudacionPIB) < `minimum' | recaudacionPIB == . | recaudacionPIB == 0) ///
-		& divLIF != 10 & divCIEP != 12 & divCIEP != 13 & divCIEP != 14
-	label define `label' -2 "Otros (< `minimum'% PIB)", add modify
+	egen `recaudacionPIB' = max(recaudacionPIB) if anio >= 2010, by(divCIEP)
+	replace `resumido' = -99 if abs(`recaudacionPIB') < `minimum' | recaudacionPIB == . | recaudacionPIB == 0
+	label define `label' -99 "Otros (< `minimum'% PIB)", add modify
 
 	replace nombre = subinstr(nombre,"Impuesto especial sobre producci{c o'}n y servicios de ","",.)
 	replace nombre = subinstr(nombre,"alimentos no b{c a'}sicos con alta densidad cal{c o'}rica","comida chatarra",.)
@@ -85,7 +85,6 @@ quietly {
 			over(anio, label(labgap(vsmall))) ///
 			stack asyvars ///
 			title("{bf:Ingresos presupuestarios}") ///
-			subtitle("Observados (SHCP) y estimados (LIF)") ///
 			ytitle(% PIB) ylabel(0(5)30, labsize(small)) ///
 			legend(on position(6) rows(1)) ///
 			name(ingresos, replace) ///
@@ -101,11 +100,10 @@ quietly {
 		*gr_edit .grpaxis.edit_tick 20 98.3092 `" "', tickset(major)
 
 		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & divLIF != 10 & divOrigen == 5, ///
-			over(divCIEP, relabel(1 "LIF" 2 "SHCP")) ///
+			over(`resumido', relabel(1 "LIF" 2 "SHCP")) ///
 			over(anio, label(labgap(vsmall))) ///
 			stack asyvars ///
 			title("{bf:Ingresos tributarios}") ///
-			subtitle("Observados (SHCP) y estimados (LIF)") ///
 			ytitle(% PIB) ylabel(0(5)15, labsize(small)) ///
 			legend(on position(6) rows(1)) ///
 			name(ingresosTributarios, replace) ///
@@ -121,11 +119,10 @@ quietly {
 		*gr_edit .grpaxis.edit_tick 20 98.3092 `" "', tickset(major)
 
 		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & divLIF != 10 & divOrigen == 2, ///
-			over(divCIEP, relabel(1 "LIF" 2 "SHCP")) ///
+			over(`resumido', relabel(1 "LIF" 2 "SHCP")) ///
 			over(anio, label(labgap(vsmall))) ///
 			stack asyvars ///
 			title("{bf:Ingresos no tributarios}") ///
-			subtitle("Observados (SHCP) y estimados (LIF)") ///
 			ytitle(% PIB) ylabel(0(5)15, labsize(small)) ///
 			legend(on position(6) rows(1)) ///
 			name(ingresosNoTributarios, replace) ///
@@ -141,11 +138,10 @@ quietly {
 		*gr_edit .grpaxis.edit_tick 20 98.3092 `" "', tickset(major)
 
 		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & divLIF != 10 & divOrigen == 4, ///
-			over(divCIEP, relabel(1 "LIF" 2 "SHCP")) ///
+			over(`resumido', relabel(1 "LIF" 2 "SHCP")) ///
 			over(anio, label(labgap(small))) ///
 			stack asyvars ///
 			title("{bf:Ingresos petroleros}") ///
-			subtitle("Observados (SHCP) y estimados (LIF)") ///
 			ytitle(% PIB) ylabel(0(5)15, labsize(small)) ///
 			legend(on position(6) rows(1)) ///
 			name(ingresosPetroleros, replace) ///
@@ -160,12 +156,11 @@ quietly {
 		*gr_edit .grpaxis.edit_tick 19 95.1691 `"ILIF"', tickset(major)
 		*gr_edit .grpaxis.edit_tick 20 98.3092 `" "', tickset(major)
 
-		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & divLIF != 10 & (divCIEP == 10 | divCIEP == 13), ///
+		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & divLIF != 10 & (divCIEP == 16 | divCIEP == 13), ///
 			over(divCIEP, relabel(1 "LIF" 2 "SHCP")) ///
 			over(anio, label(labgap(small))) ///
 			stack asyvars ///
 			title("{bf:Ingresos de organismos p{c u'}blicos}") ///
-			subtitle("Observados (SHCP) y estimados (LIF)") ///
 			ytitle(% PIB) ylabel(0(5)15, labsize(small)) ///
 			legend(on position(6) rows(1)) ///
 			name(ingresosOyE, replace) ///
@@ -180,12 +175,11 @@ quietly {
 		*gr_edit .grpaxis.edit_tick 19 95.1691 `"ILIF"', tickset(major)
 		*gr_edit .grpaxis.edit_tick 20 98.3092 `" "', tickset(major)
 
-		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & divLIF != 10 & (divCIEP == 2 | divCIEP == 19), ///
-			over(divCIEP, relabel(1 "LIF" 2 "SHCP")) ///
+		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & divLIF != 10 & (divCIEP == 2 | divCIEP == 22), ///
+			over(`resumido', relabel(1 "LIF" 2 "SHCP")) ///
 			over(anio, label(labgap(vsmall))) ///
 			stack asyvars ///
 			title("{bf:Ingresos de Empresas Productivas del Estado}") ///
-			subtitle("Observados (SHCP) y estimados (LIF)") ///
 			ytitle(% PIB) ylabel(0(5)30, labsize(small)) ///
 			legend(on position(6) rows(1)) ///
 			name(ingresosEPE, replace) ///
@@ -205,10 +199,9 @@ quietly {
 			over(anio, label(labgap(vsmall))) ///
 			stack asyvars ///
 			title("{bf:Financiamiento p{c u'}blico}") ///
-			subtitle("Observados (SHCP) y estimados (LIF)") ///
 			ytitle(% PIB) ylabel(0(5)30, labsize(small)) ///
 			legend(on position(6) rows(1)) ///
-			name(ingresosEPE, replace) ///
+			name(ingresosDeuda, replace) ///
 			blabel(bar, format(%7.1fc)) ///
 			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}") ///
 			note({bf:{c U'}ltimo dato:} `ultanio'm`ultmes')

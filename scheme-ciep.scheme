@@ -11,8 +11,8 @@ color 		plotregion 		"249,249,249"
 color 		plotregion_line		"249,249,249"
 
 // By background
-// color 		bylabel_outline   	none
-// color 		textbox  		"236,236,236"
+// color 	bylabel_outline   	none
+// color 	textbox  		"236,236,236"
 
 
 // Grids
@@ -50,7 +50,7 @@ color 		heading			black
 gsize 		heading			large
 yesno 		title_span		yes
 clockdir 	subtitle_position	1
-gsize 		subheading 		medlarge
+gsize 		subheading 		medsmall
 yesno 		subtitle_span		yes
 clockdir 	caption_position	1
 gsize 		body			vsmall

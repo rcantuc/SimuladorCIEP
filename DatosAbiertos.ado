@@ -109,13 +109,13 @@ quietly {
 		* Grafica *
 		local length = length("`=nombre[1]'")
 		if `length' > 60 {
-			local textsize ", size(large)"
-		}
-		if `length' > 90 {
 			local textsize ", size(medium)"
 		}
+		if `length' > 90 {
+			local textsize ", size(vsmall)"
+		}
 		if `length' > 120 {
-			local textsize ", size(small)"
+			local textsize ", size(tiny)"
 		}
 		twoway (connected monto_pib anio if anio < `ultanio') ///
 			(connected monto_pib anio if anio >= `ultanio'), ///

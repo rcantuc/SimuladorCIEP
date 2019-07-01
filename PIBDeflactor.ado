@@ -277,7 +277,7 @@ quietly {
 		
 		twoway (connected var_indiceY anio if anio < `aniovp') ///
 			(connected var_indiceY anio if anio >= `aniovp'), ///
-			title({bf:{c I'}ndice de precio impl{c i'}citos observado y proyectado}) ///
+			title({bf:{c I'}ndice de precio impl{c i'}citos}) ///
 			ytitle(percentaje) xtitle("") yline(0, lcolor(black) lpattern(dash)) ///
 			text(`crec_indicep') ///
 			legend(label(1 "Observado") label(2 "Proyecci{c o'}n")) ///
@@ -288,7 +288,7 @@ quietly {
 
 		twoway (connected var_pibY anio if anio < `aniovp') ///
 			(connected var_pibY anio if anio >= `aniovp'), ///
-			title({bf:Producto Interno Bruto observado y proyectado}) ///
+			title({bf:Producto Interno Bruto}) ///
 			ytitle(percentaje) xtitle("") yline(0, lcolor(black) lpattern(dash)) ///
 			text(`crec_PIBp') ///
 			legend(label(1 "Observado") label(2 "Proyecci{c o'}n")) ///
