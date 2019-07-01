@@ -12,18 +12,19 @@ quietly {
 	tempfile PIB
 	save `PIB'
 
-	capture use "`c(sysdir_personal)'../basesCIEP/SIM/PEF.dta", clear
-	local rc = _rc
-	syntax [if] [, ANIO(int $anioVP) Graphs Update Base ID(string) ///
-		BY(varname) DATOSabiertos Fast ROWS(int 1) COLS(int 4) ///
-		MINimum(real 1) HASTA(int $anioVP)]
+	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
+	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
+	use in 1 using "`c(sysdir_site)'../basesCIEP/SIM/PEF.dta", clear
+	syntax [if] [, ANIO(int `aniovp') Graphs Update Base ID(string) ///
+		BY(varname) Fast ROWS(int 3) COLS(int 4) MINimum(real 1)]
+
+	use `if' using "`c(sysdir_site)'../basesCIEP/SIM/PEF.dta", clear
 
 	** Base PEF **
-	if `rc' != 0 | "`update'" == "update" {
-		noisily run "`c(sysdir_site)'/UpdatePEF.do" `update'
+	if "`update'" == "update" {
+		noisily run UpdatePEF.do
 	}
-
 
 	** Base ID **
 	if "`id'" != "" {
@@ -43,6 +44,8 @@ quietly {
 	if "`by'" == "" {
 		local by = "desc_funcion"
 	}
+	
+	collapse (sum) gasto* aprobado* ejercido*, by(anio `by' transf_gf) 
 
 
 
@@ -51,15 +54,15 @@ quietly {
 	**************
 	sort anio
 	merge m:1 (anio) using `PIB', nogen keepus(pibY indiceY deflator var_pibY) update replace keep(matched) sorted
-	foreach k of varlist gasto aprobado ejercido proyecto {
+	foreach k of varlist gasto aprobado ejercido {
 		g double `k'PIB = `k'/pibY*100
 		g double `k'netoPIB = `k'neto/pibY*100
-		format *PIB %10.3fc
 	}
+	format *PIB %10.3fc
 
 
 	** 2.1 Aportaciones y cuotas de la Federacion **
-	capture tabstat gasto gastoPIB if anio == `anio' & neto == 1, stat(sum) f(%20.0fc) save
+	capture tabstat gasto gastoPIB if anio == `anio' & transf_gf == 1, stat(sum) f(%20.0fc) save
 	tempname Aportaciones_Federacion
 	matrix `Aportaciones_Federacion' = r(StatTotal)
 	return scalar Aportaciones_Federacion = `Aportaciones_Federacion'[1,1]
@@ -70,7 +73,7 @@ quietly {
 	return scalar Cuotas_ISSSTE = `Cuotas_ISSSTE'[1,1]
 
 
-	** 2.2. Append **
+	/** 2.2. Append **
 	if "`datosabiertos'" == "datosabiertos" {
 		capture confirm var serie_`by'
 		if _rc != 0 {
@@ -80,12 +83,12 @@ quietly {
 		local varserie "serie_`by'"
 		
 		tempvar montototal proptotal
-		egen `montototal' = sum(gastoneto) if neto == 0 & desc_funcion != -1, by(`by' anio)
+		egen `montototal' = sum(gastoneto) if transf_gf ==0 & desc_funcion != -1, by(`by' anio)
 		g `proptotal' = gasto/`montototal'
 	}
 
-	collapse (sum) gasto* aprobado* ejercido* proyecto* `proptotal' (mean) pibY `if', ///
-		by(`by' anio neto `varserie') fast
+	collapse (sum) gasto* aprobado* ejercido* `proptotal' (mean) pibY `if', ///
+		by(`by' anio transf_gf `varserie') fast
 
 	if "`datosabiertos'" == "datosabiertos" {
 		decode serie_`by', g(serie)
@@ -114,58 +117,37 @@ quietly {
 
 
 
-	****************
+	***************/
 	*** 4. Graph ***
 	****************
-	replace `by' = 999 if `by' == -2
-	label define `by' 999 "Ingreso b{c a'}sico", add modify
-
-	tempvar over
+	tempvar over gastonetoPIB
 	g `over' = `by'
 
 	tempname label
 	label copy `by' `label'
 	label values `over' `label'
 
-	replace `over' = -99 if (abs(gastonetoPIB) < `minimum' | gastonetoPIB == .)
+	egen `gastonetoPIB' = max(gastonetoPIB), by(`by')	
+	replace `over' = -99 if abs(`gastonetoPIB') < `minimum'
 	label define `label' -99 "Otros (< `minimum'% PIB)", add modify
 
 	if "$graphs" == "on" | "`graphs'" == "graphs" {
-		local est "Est*"
-		if "`datosabiertos'" == "" {
-			replace gastonetoPIB = 0 if anio == 2018
-			local est " "
-		}
-		replace gastonetoPIB = 0 if anio == 2019
-		replace aprobadonetoPIB = proyectonetoPIB if anio == 2019
-
-		graph bar (sum) aprobadonetoPIB gastonetoPIB if anio >= 2010 & anio <= `hasta' & `by' != -1 ///
-			& neto == 0, ///
-			over(`over', relabel(1 "PEF" 2 "Obs")) ///
+		graph bar (sum) aprobadonetoPIB ejercidoPIB if anio >= 2013 & `by' != -1 ///
+			& transf_gf ==0, ///
+			over(`over', relabel(1 "PEF" 2 "SHCP")) ///
 			over(anio, label(labgap(vsmall))) ///
 			stack asyvars ///
-			title("{bf:Gastos presupuestarios aprobados y ejercidos}", /*position(5)*/) ///
+			title("{bf:Gastos presupuestarios}", /*position(5)*/) ///
 			ytitle(% PIB) ylabel(0(5)30, labsize(small)) ///
 			legend(on position(6) rows(`rows') cols(`cols')) ///
 			name(gastos, replace) ///
 			/// yreverse xalternate yalternate ///
 			blabel(bar, format(%7.1fc)) ///
-			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos, Cuenta P{c u'}blica y Paquetes Econ{c o'}micos).}")
+			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Cuenta P{c u'}blica y Paquetes Econ{c o'}micos).}")
 
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 
-		if `hasta' == $anioVP {
-			gr_edit .grpaxis.edit_tick 12 82.4561 `"`est'"', tickset(major)
-			gr_edit .grpaxis.edit_tick 13 92.9825 `"PPEF"', tickset(major)
-			gr_edit .grpaxis.edit_tick 14 97.5439 `" "', tickset(major)
-		}
-
-		if "`datosabiertos'" == "" {
-			replace gastonetoPIB = aprobadonetoPIB if anio == 2018
-		}
-		replace gastonetoPIB = proyectonetoPIB if anio == 2019
-		replace aprobadonetoPIB = 0 if anio == 2019
 	}
 
 
@@ -246,7 +228,7 @@ quietly {
 		_col(66) %7s "% PIB" ///
 		_col(77) %7s "% Total" "}"
 
-	tabstat gastoneto gastonetoPIB if anio == `anio' & `by' != -1 & neto == 0, by(`over') stat(sum) f(%20.1fc) save
+	tabstat gastoneto gastonetoPIB if anio == `anio' & `by' != -1 & transf_gf ==0, by(`over') stat(sum) f(%20.1fc) save
 	tempname mattot
 	matrix `mattot' = r(StatTotal)
 
@@ -289,7 +271,7 @@ quietly {
 
 	** 4.3 Crecimientos **
 	preserve
-	collapse (sum) gastoneto* if `by' != -1 & neto == 0, by(anio `by')
+	collapse (sum) gastoneto* if `by' != -1 & transf_gf ==0, by(anio `by')
 	if `=_N' > 5 {
 		xtset `by' anio
 		tsfill, full

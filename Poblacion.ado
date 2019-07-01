@@ -12,13 +12,13 @@ quietly {
 		local anything = "poblacion"
 	}
 
-	capture use `"`c(sysdir_site)'../basesCIEP/SIM/Poblacion.dta"', clear
+	capture use `"`c(sysdir_site)'../basesCIEP/SIM/`=proper("`anything'")'.dta"', clear
 	if _rc != 0 | "`update'" == "update" {
 		run "`c(sysdir_site)'/UpdatePoblacion.do"
-		use `"`c(sysdir_site)'../basesCIEP/SIM/`=proper("`anything'")'.dta"', clear
 	}
-
+	use `"`c(sysdir_site)'../basesCIEP/SIM/`=proper("`anything'")'.dta"', clear
 	local poblacion : variable label `anything'
+	local poblacionl = lower("`poblacion'")
 
 	
 	*************
@@ -120,9 +120,9 @@ quietly {
 			name(Piramide_`anything', replace) ///
 			xlabel(`=-`MaxH'[1,1]' `"`=string(`MaxH'[1,1],"%15.0fc")'"' `=-`MaxH'[1,1]/2' ///
 			`"`=string(`MaxH'[1,1]/2,"%15.0fc")'"' 0 `=`MaxM'[1,1]/2' `=`MaxM'[1,1]', angle(horizontal)) ///
-			caption("{it: Fuente: CONAPO (2018).}") ///
+			caption("{it:Fuente: CONAPO (2018).}") ///
 			xtitle("`poblacion'") ///
-			title({bf:`poblacion'}) subtitle(Pir{c a'}mides: `anioinicial' y `aniofinal')
+			title({bf: Transici{c o'}n de `poblacionl'})
 	}
 
 
@@ -212,8 +212,8 @@ quietly {
 			text(`=`MAX'[2,3]-2.5' `m65' `"{bf:`poblacion':} `=string(`ym65',"%12.0fc")'"', place(ne)) ///
 			xtitle("") ytitle("porcentaje") ///
 			xlabel(1950(10)2050) ///
-			caption("{it:CONAPO (2018).}") ///
-			title({bf:`poblacion'}) subtitle(Transici{c o'}n demogr{c a'}fica)
+			caption("{it:Fuente: CONAPO (2018).}") ///
+			title({bf: Transici{c o'}n de `poblacionl'})
 	}
 
 	restore

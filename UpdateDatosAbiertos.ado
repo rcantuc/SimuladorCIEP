@@ -9,67 +9,78 @@ program define UpdateDatosAbiertos, return
 	local mesvp = substr(`"`=trim("`fecha'")'"',6,2)
 
 	sort anio mes
-	if `aniovp' == anio[_N] & `mesvp'-2 == mes[_N] {
-		noisily di _newline in g "Datos Abiertos: " in y "base actualizada." in g " {c U'}ltimo dato: "in y "`=anio[_N]'m`=mes[_N]'."
+
+	if `aniovp' == anio[_N] & `mesvp'-2 <= mes[_N] {
+		noisily di _newline(3) in g "Datos Abiertos: " in y "base actualizada." in g " {c U'}ltimo dato: "in y "`=anio[_N]'m`=mes[_N]'."
 		return local updated = "yes"
 		return local ultanio = anio[_N]
 		return local ultmes = mes[_N]
 		exit
 	}
 
-	noisily di _newline in g "Datos Abiertos: " in y "ACTUALIZANDO... favor de esperar. :) Descargando las nuevas bases de SHCP (10 mins. aprox.)."
+	noisily di _newline(3) in g "Datos Abiertos: " in y "ACTUALIZANDO... favor de esperar. :) Descargando las nuevas bases de SHCP (10 mins. aprox.)."
 
 	*****************************************
 	** 1.1 Ingreso, gasto y financiamiento **
-	import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/ingreso_gasto_finan.csv", clear
+	*import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/ingreso_gasto_finan.csv", clear
+	import delimited "`c(sysdir_site)'../basesCIEP/SHCP/Datos Abiertos/ingreso_gasto_finan.csv", clear
 	tempfile ing
 	save `ing'
 
-	import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/ingreso_gasto_finan_hist.csv", clear
+	*import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/ingreso_gasto_finan_hist.csv", clear
+	import delimited "`c(sysdir_site)'../basesCIEP/SHCP/Datos Abiertos/ingreso_gasto_finan_hist.csv", clear
 	tempfile ingH
 	save `ingH'
 
 
 	***************
 	** 1.2 Deuda **
-	import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/deuda_publica.csv", clear
+	*import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/deuda_publica.csv", clear
+	import delimited "`c(sysdir_site)'../basesCIEP/SHCP/Datos Abiertos/deuda_publica.csv", clear
 	tempfile deuda
 	save `deuda'
 
-	import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/deuda_publica_hist.csv", clear
+	*import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/deuda_publica_hist.csv", clear
+	import delimited "`c(sysdir_site)'../basesCIEP/SHCP/Datos Abiertos/deuda_publica_hist.csv", clear
 	tempfile deudaH
 	save `deudaH'
 
 
 	****************
 	** 1.3 SHRFSP **
-	import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/shrfsp_deuda_amplia_actual.csv", clear
+	*import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/shrfsp_deuda_amplia_actual.csv", clear
+	import delimited "`c(sysdir_site)'../basesCIEP/SHCP/Datos Abiertos/shrfsp_deuda_amplia_actual.csv", clear
 	tempfile shrf
 	save `shrf'
 
-	import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/shrfsp_deuda_amplia_antes_2014.csv", clear
+	*import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/shrfsp_deuda_amplia_antes_2014.csv", clear
+	import delimited "`c(sysdir_site)'../basesCIEP/SHCP/Datos Abiertos/shrfsp_deuda_amplia_antes_2014.csv", clear
 	tempfile shrfH
 	save `shrfH'
 
 
 	**************
 	** 1.4 RFSP **
-	import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/rfsp.csv", clear
+	*import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/rfsp.csv", clear
+	import delimited "`c(sysdir_site)'../basesCIEP/SHCP/Datos Abiertos/rfsp.csv", clear
 	tempfile rf
 	save `rf'
 
-	import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/rfsp_metodologia_anterior.csv", clear
+	*import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/rfsp_metodologia_anterior.csv", clear
+	import delimited "`c(sysdir_site)'../basesCIEP/SHCP/Datos Abiertos/rfsp_metodologia_anterior.csv", clear
 	tempfile rfH
 	save `rfH'
 
 
 	*************************************************
 	** 1.5 Transferencias a Entidades y Municipios **
-	import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/transferencias_entidades_fed.csv", clear
+	*import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/transferencias_entidades_fed.csv", clear
+	import delimited "`c(sysdir_site)'../basesCIEP/SHCP/Datos Abiertos/transferencias_entidades_fed.csv", clear
 	tempfile gf
 	save `gf'
 
-	import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/transferencias_entidades_fed_hist.csv", clear
+	*import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/transferencias_entidades_fed_hist.csv", clear
+	import delimited "`c(sysdir_site)'../basesCIEP/SHCP/Datos Abiertos/transferencias_entidades_fed_hist.csv", clear
 	tempfile gfH
 	save `gfH'
 
