@@ -35,28 +35,18 @@ quietly {
 	**************
 	*** 2. PIB ***
 	**************
-	merge 1:1 (anio) using `PIB', nogen keepus(pibY indiceY deflator productivity var_pibY) update replace keep(matched)
+	merge 1:1 (anio) using `PIB', nogen keepus(pibY indiceY deflator productivity var_pibY) update replace //keep(matched)
 	foreach k of varlist rfsp* shrfsp* {
 		g `k'PIB = `k'/pibY*100
 	}
 	format *PIB %7.3fc
-	
-	
-	replace rfspBalance = recaudacion - gastoneto + operaciones + nopresupuestario if anio == `aniovp'
-	replace rfspBalancePIB = rfspBalance/pibY*100 if anio == `aniovp'
-	
-	replace rfsp = rfspPIDIREGAS + rfspIPAB + rfspFONADIN + rfspDeudores ///
-		+ rfspBanca + rfspAdecuaciones + rfspBalance if anio == `aniovp'
-	replace rfspPIB = rfsp/pibY*100 if anio == `aniovp'
-
-
 
 
 	****************
 	*** 3. Graph ***
 	****************	
 	if "$graphs" == "on" | "`graphs'" == "graphs" {
-		graph bar (sum) shrfspInternoPIB shrfspExternoPIB if anio >= 2010, ///
+		graph bar (sum) shrfspInternoPIB shrfspExternoPIB if anio <= $aniovp & anio >= 2000, ///
 			over(anio, label(labgap(vsmall))) ///
 			stack asyvars ///
 			title("{bf:Saldo hist{c o'}rico de RFSP}") ///
@@ -70,6 +60,12 @@ quietly {
 
 exit
 
+	*replace rfspBalance = recaudacion - gastopagado + nopresupuestario if anio == `aniovp'
+	*replace rfspBalancePIB = rfspBalance/pibY*100 if anio == `aniovp'
+
+	*replace rfsp = rfspPIDIREGAS + rfspIPAB + rfspFONADIN + rfspDeudores ///
+		+ rfspBanca + rfspAdecuaciones + rfspBalance if anio == `aniovp'
+	*replace rfspPIB = rfsp/pibY*100 if anio == `aniovp'
 
 
 	******************************

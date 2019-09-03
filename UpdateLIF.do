@@ -62,16 +62,16 @@ drop series
 
 ** 2.1.2 Fill the blanks **
 forvalues j=1(1)`=_N' {
-	foreach k of varlist div* serie nombre {
+	foreach k of varlist div* nombre serie {
 		capture confirm numeric variable `k'
 		if _rc == 0 {
 			if `k'[`j'] != . {
-				quietly replace `k' = `k'[`j'] if `k' == . & serie == serie[`j']
+				quietly replace `k' = `k'[`j'] if `k' == . & serie == serie[`j'] & serie[`j'] != .
 			}
 		}
 		else {
 			if `k'[`j'] != "" {
-				quietly replace `k' = `k'[`j'] if `k' == "" & serie == serie[`j']		
+				quietly replace `k' = `k'[`j'] if `k' == "" & serie == serie[`j'] & serie[`j'] != .
 			}
 		}
 	}
