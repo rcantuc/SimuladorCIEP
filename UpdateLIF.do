@@ -37,7 +37,7 @@ format concepto %30s
 preserve
 levelsof serie, local(serie)
 foreach k of local serie {
-	noisily DatosAbiertos `k', g
+	noisily DatosAbiertos `k' //, g
 
 	rename clave_de_concepto serie
 	keep anio serie nombre monto mes

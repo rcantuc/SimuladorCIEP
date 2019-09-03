@@ -14,11 +14,12 @@ local archivos_csv: dir "`c(sysdir_site)'../basesCIEP/PEFs" files "*.csv"	// Bus
 foreach k of local archivos_csv {
 
 	* Importar archivo de la Cuenta Publicas*
+	noisily di in g "Importando: " in y "`k'" 
 	import delimited "`c(sysdir_site)'../basesCIEP/PEFs/`k'", clear
 
 	* Limpiar *
-	capture drop v*
 	drop if ciclo == .
+	capture drop v*
 	tostring _all, replace
 	foreach j of varlist desc_* {
 		replace `j' = trim(`j')
@@ -28,7 +29,10 @@ foreach k of local archivos_csv {
 	}
 
 	foreach j in aprobado modificado devengado pagado adefas ejercido proyecto {
-		capture destring `j', replace ignore("," "- ") 			// Ignorar coma y este otro caracter "raro".
+		capture confirm variable `j'
+		if _rc == 0 {
+			destring `j', replace ignore(",") 			// Ignorar coma.
+		}
 	}
 
 	* Save *
@@ -36,11 +40,13 @@ foreach k of local archivos_csv {
 	save ``=strtoname("`k'")''
 }
 
-** Cuotas ISSSTE **
+
+** 1.1 Cuotas ISSSTE **
 import excel "`c(sysdir_site)'../basesCIEP/PEFs/CuotasISSSTE.xlsx", clear firstrow
 tostring _all, replace
 tempfile cuotasissste
 save `cuotasissste'
+
 
 * Loop para unir los archivos (limpios y en Stata) *
 local j = 1
@@ -53,7 +59,9 @@ foreach k of local archivos_csv {
 		append using ``=strtoname("`k'")''
 	}
 }
+
 append using `cuotasissste'
+
 
 * Ordenar *
 foreach k of varlist _all {

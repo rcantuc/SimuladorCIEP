@@ -13,9 +13,12 @@ quietly {
 	tempfile PIB
 	save `PIB'
 
-	capture use "`c(sysdir_personal)'../basesCIEP/SIM/SHRFSP.dta", clear
+	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
+	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
+
+	capture use "`c(sysdir_site)'../basesCIEP/SIM/SHRFSP.dta", clear
 	local rc = _rc
-	syntax [if/] [, ANIO(int $anioVP ) Graphs Update Base ID(string) ///
+	syntax [if/] [, ANIO(int `aniovp' ) Graphs Update Base ID(string) ///
 		MINimum(real 1)]
 
 
@@ -39,12 +42,12 @@ quietly {
 	format *PIB %7.3fc
 	
 	
-	replace rfspBalance = recaudacion - gastoneto + operaciones + nopresupuestario if anio == $anioVP
-	replace rfspBalancePIB = rfspBalance/pibY*100 if anio == $anioVP
+	replace rfspBalance = recaudacion - gastoneto + operaciones + nopresupuestario if anio == `aniovp'
+	replace rfspBalancePIB = rfspBalance/pibY*100 if anio == `aniovp'
 	
 	replace rfsp = rfspPIDIREGAS + rfspIPAB + rfspFONADIN + rfspDeudores ///
-		+ rfspBanca + rfspAdecuaciones + rfspBalance if anio == $anioVP
-	replace rfspPIB = rfsp/pibY*100 if anio == $anioVP
+		+ rfspBanca + rfspAdecuaciones + rfspBalance if anio == `aniovp'
+	replace rfspPIB = rfsp/pibY*100 if anio == `aniovp'
 
 
 
@@ -188,11 +191,11 @@ exit
 	sort modulos anio
 	replace gasto = L.gasto* ///
 		(1+var_pibY/100)*indice/L.indice*estimacion/L.estimacion ///
-		if anio > $anioVP & estimacion != . & gasto == .
+		if anio > `aniovp' & estimacion != . & gasto == .
 
 	replace gasto = L.gasto* ///
 		(1+var_pibY/100)*indice/L.indice ///
-		if anio > $anioVP & estimacion == . & gasto == .
+		if anio > `aniovp' & estimacion == . & gasto == .
 
 	collapse (sum) gasto, by(anio)
 
@@ -273,15 +276,15 @@ exit
 	**********************
 
 	* Diferimientos *
-	replace diferimientos = L.diferimientos*(1+var_pibY/100)*indice/L.indice if anio > $anioVP
+	replace diferimientos = L.diferimientos*(1+var_pibY/100)*indice/L.indice if anio > `aniovp'
 
 	* Tipo de cambio *
-	replace tipoDeCambio = L.tipoDeCambio*(1+${depreMXN}/100) if anio >= $anioVP
+	replace tipoDeCambio = L.tipoDeCambio*(1+${depreMXN}/100) if anio >= `aniovp'
 
 	* Deuda interna y externa *
 	tempvar externo interno
-	g double `externo' = shrfspExterno if anio == $anioVP-1
-	g double `interno' = shrfspInterno if anio == $anioVP-1
+	g double `externo' = shrfspExterno if anio == `aniovp'-1
+	g double `interno' = shrfspInterno if anio == `aniovp'-1
 	egen double propExterno = mean(`externo'/(`externo'+`interno'))
 
 	* RFSP Otros. Supuesto: se promedian los ultimos 5 anios *
@@ -314,7 +317,7 @@ exit
 	g double cambioMXN = .
 	format cambio* %20.0fc
 
-	forvalues k=$anioVP(1)2030 {
+	forvalues k=`aniovp'(1)2030 {
 		replace balanceTradicional = recaudacion - (gasto - diferimientos) if anio == `k'			// (=) Balance Tradicional
 
 		* Simulador *

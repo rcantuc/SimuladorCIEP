@@ -4,6 +4,7 @@ quietly {
 
 
 
+	timer on 2
 	************************
 	*** 1. BASE DE DATOS ***
 	************************
@@ -129,11 +130,14 @@ quietly {
 
 	egen `gastonetoPIB' = max(gastonetoPIB), by(`by')	
 	replace `over' = -99 if abs(`gastonetoPIB') < `minimum'
+	
+	replace `over' = -99 if desc_funcion == 8
+	
 	label define `label' -99 "Otros (< `minimum'% PIB)", add modify
 
 	if "$graphs" == "on" | "`graphs'" == "graphs" {
 		graph bar (sum) aprobadonetoPIB ejercidoPIB if anio >= 2013 & `by' != -1 ///
-			& transf_gf ==0, ///
+			& transf_gf == 0, ///
 			over(`over', relabel(1 "PEF" 2 "SHCP")) ///
 			over(anio, label(labgap(vsmall))) ///
 			stack asyvars ///
@@ -228,7 +232,7 @@ quietly {
 		_col(66) %7s "% PIB" ///
 		_col(77) %7s "% Total" "}"
 
-	tabstat gastoneto gastonetoPIB if anio == `anio' & `by' != -1 & transf_gf ==0, by(`over') stat(sum) f(%20.1fc) save
+	tabstat gastoneto gastonetoPIB if anio == `anio' & `by' != -1 & transf_gf == 0, by(`over') stat(sum) f(%20.1fc) save
 	tempname mattot
 	matrix `mattot' = r(StatTotal)
 
@@ -271,7 +275,7 @@ quietly {
 
 	** 4.3 Crecimientos **
 	preserve
-	collapse (sum) gastoneto* if `by' != -1 & transf_gf ==0, by(anio `by')
+	collapse (sum) gastoneto* if `by' != -1 & transf_gf == 0, by(anio `by')
 	if `=_N' > 5 {
 		xtset `by' anio
 		tsfill, full
@@ -327,5 +331,9 @@ quietly {
 	restore
 
 	capture drop __*
+	timer off 2
+	timer list 2
+	noisily di _newline in g "{bf:Tiempo:} " in y round(`=r(t2)/r(nt2)',.1) in g " segs."
+
 }
 end

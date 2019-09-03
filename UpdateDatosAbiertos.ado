@@ -9,12 +9,12 @@ program define UpdateDatosAbiertos, return
 	local mesvp = substr(`"`=trim("`fecha'")'"',6,2)
 
 	sort anio mes
+	return local ultanio = anio[_N]
+	return local ultmes = mes[_N]
 
 	if `aniovp' == anio[_N] & `mesvp'-2 <= mes[_N] {
 		noisily di _newline(3) in g "Datos Abiertos: " in y "base actualizada." in g " {c U'}ltimo dato: "in y "`=anio[_N]'m`=mes[_N]'."
 		return local updated = "yes"
-		return local ultanio = anio[_N]
-		return local ultmes = mes[_N]
 		exit
 	}
 

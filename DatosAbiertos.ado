@@ -114,13 +114,13 @@ quietly {
 		if `length' > 90 {
 			local textsize ", size(vsmall)"
 		}
-		if `length' > 120 {
-			local textsize ", size(tiny)"
+		if `length' > 110 {
+			local textsize ", size(vvsmall)"
 		}
 		twoway (connected monto_pib anio if anio < `ultanio') ///
 			(connected monto_pib anio if anio >= `ultanio'), ///
 			title({bf:`=nombre[1]'}`textsize') ///
-			subtitle(Montos observados) ///
+			/*subtitle(Montos observados)*/ ///
 			b1title(`"{bf:`=anio[_N]':} `=string(monto[_N]/1000000,"%20.1fc")' millones de MXN"', size(small)) ///
 			b2title(`"`textovp'"', size(small)) ///
 			ytitle(% PIB) xtitle("") ///
@@ -132,7 +132,7 @@ quietly {
 			note("{bf:{c U'}ltimo dato:} `ultanio'm`ultmes'.") ///
 			name(H`anything', replace)
 		
-		graph export "`=c(sysdir_site)'../basesCIEP/SIM/`anything'.eps", name(H`anything') replace
+		graph save H`anything' "`=c(sysdir_site)'../basesCIEP/SIM/`anything'.gph", replace
 	}
 	noisily list, separator(30) string(30)
 }

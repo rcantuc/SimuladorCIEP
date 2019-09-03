@@ -5,77 +5,86 @@
 // help scheme entries
 // help scheme files
 
-// Background
-color 		background 		"249,249,249"
-color 		plotregion 		"249,249,249"
-color 		plotregion_line		"249,249,249"
+// Graph Size
+// graphsize 	x 			5.5
+// graphsize 	y 			4
+graphsize 	x 			13
+graphsize 	y 			8
+margin 		graph			small
+margin 		combinegraph		small
+margin 		piegraph		small
 
-// By background
+// Background
+color 		background 		white
+color 		plotregion 		white
+color 		plotregion_line		white
+color 		legend			white
 // color 	bylabel_outline   	none
 // color 	textbox  		"236,236,236"
 
-
-// Grids
-color 		major_grid 		"194,195,200"
-linepattern 	major_grid 		dash
-linewidth 	major_grid		thin
-yesno 		draw_major_nlt_vgrid 	yes
-
-// Axis
-axisstyle 	vertical_default 	vertical_nolinetick
-axisstyle 	bar_scale_vert		vertical_nolinetick
-anglestyle 	vertical_tick 		horizontal
-anglestyle 	horizontal_tick 	horizontal
-color 		tick_biglabel 		"122,122,122"
-color 		axis_title 		"122,122,122"
-tickposition	axis_tick		inside
-gsize      	tick_label		small
-linewidth	axisline		medthick
-
-
-
-// Graph Size
-// graphsize 	x 			5.5, 13
-// graphsize 	y 			4, 8
-graphsize 	x 			13
-graphsize 	y 			8
-margin 		graph			medlarge
-margin 		combinegraph		medlarge
-margin 		piegraph		medlarge
-
+// Added text
+gsize 		text_option 		small
+color 		text_option		"52,70,78"
+clockdir 	text_option		12
 
 // Title, subtitle, caption, notes
-clockdir 	title_position	1
-color 		heading			black
+clockdir 	title_position		12
+color 		heading			"52,70,78"
+clockdir 	subtitle_position	12
+color 		subheading		"52,70,78"
+clockdir 	caption_position	5
+color		body			"52,70,78"
+clockdir 	note_position		5
+color		small_body		"52,70,78"
+
 gsize 		heading			large
 yesno 		title_span		yes
-clockdir 	subtitle_position	1
+
 gsize 		subheading 		medsmall
 yesno 		subtitle_span		yes
-clockdir 	caption_position	1
+
 gsize 		body			vsmall
 yesno 		caption_span		yes
-clockdir 	note_position		5
+
 gsize 		small_body		vsmall
 yesno 		note_span		yes
+
 textboxstyle	t1title			body
 textboxstyle	t2title			small_body
 textboxstyle	b1title			body
 textboxstyle	b2title			small_body
 
+
+// Grids
+color 		major_grid 		white
+linepattern 	major_grid 		dash
+linewidth 	major_grid		thin
+yesno 		draw_major_nlt_vgrid 	yes
+
+
+// Axis
+color      	tick_label		"52,70,78"
+color		tick			white
+axisstyle 	vertical_default 	vertical_nolinetick
+axisstyle 	bar_scale_vert		vertical_nolinetick
+anglestyle 	vertical_tick 		horizontal
+anglestyle 	horizontal_tick 	horizontal
+color 		tick_biglabel 		"52,70,78"
+color 		axis_title 		"52,70,78"
+color		tickline		white
+gsize      	tick_label		small
+linewidth	axisline		none
+tickposition	axis_tick		inside
+
+
 // Legend
 clockdir 	legend_position		7
-color 		legend			"249,249,249"
 linestyle 	legend			none
 gsize 		legend_key_xsize	medlarge
 gsize 		legend_key_ysize	medlarge
 numstyle 	legend_cols		3
 gsize 		key_label		small
 
-// Added text
-gsize 		text_option 		vsmall
-color 		text_option		black
-clockdir 	text_option		12
 
 // Labels
 color 		label 			white
