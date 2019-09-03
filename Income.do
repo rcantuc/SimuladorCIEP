@@ -4,57 +4,51 @@
 ****                             ****
 *************************************
 if "`1'" == "" {
-	local 1 = 2016
+	local 1 = 2018
 }
-if `1' >= 2016 {
+if `1' >= 2018 {
 	local enigh = "ENIGH"
 	local hogar = "folioviv foliohog"
-	local enighanio = 2016
-	local macroanio = 2016
-	local betamin = 1							// ENIGH: 2.38
+	local betamin = 1
+	local altimir = "no"
+	local CuotasISSSTE = 134940744602					// ¿CP 2018?
+	local SubsidioEmpleo = 50979000000 					// Presupuesto de gastos fiscales (2018)
+	local udis = 6.054085								// Promedio de valor de UDIS de enero a diciembre 2016
+	local smdf = 88.36									// Salario minimo general
+}
+if `1' == 2016 {
+	local enigh = "ENIGH"
+	local hogar = "folioviv foliohog"
+	local betamin = 1									// ENIGH: 2.38
 	local altimir = "no"
 	local CuotasISSSTE = 79886000000					// Trabajadores y dependencias. Informe financiero y actuarial del ISSSTE (2016)
 	local SubsidioEmpleo = 43707000000					// Presupuesto de gastos fiscales (2016)
-	local udis = 5.4490872131						// Promedio de valor de UDIS de enero a diciembre 2016
-	local smdf = 73.04							// 2016
+	local udis = 5.4490872131							// Promedio de valor de UDIS de enero a diciembre 2016
+	local smdf = 73.04									// Salario minimo general
 }
 if `1' == 2015 {
 	local enigh = "ENIGH-MCS"
 	local hogar = "proyecto folioviv foliohog"
-	local enighanio = 2015
-	local macroanio = 2015
-	local betamin = 1.9935							// MCS: 1.9935
+	local betamin = 1.9935								// MCS: 1.9935
 	local altimir = "yes"
-	rename factor factor_hog
+	rename factor factor
 	local CuotasISSSTE = 74986000000					// Trabajadores y dependencias. Informe financiero y actuarial del ISSSTE (2015)
 	local SubsidioEmpleo = 42813000000					// Presupuesto de gastos fiscales (2015)
-	local udis = 5.3051696959  						// Promedio de valor de UDIS de enero a diciembre 2015
-	local smdf = 70.10							// 2015
+	local udis = 5.3051696959  							// Promedio de valor de UDIS de enero a diciembre 2015
+	local smdf = 70.10									// Salario minimo general
 }
 if `1' == 2014 {
 	local enigh = "ENIGH-MCS"
 	local hogar = "proyecto folioviv foliohog"
-	local enighanio = 2014
-	local macroanio = 2014
-	local betamin = 1							// ENIGH: 2.92, MCS: 2.8191 
+	local betamin = 1									// ENIGH: 2.92, MCS: 2.8191 
 	local altimir = "no"
 	local CuotasISSSTE = 71771000000					// Trabajadores y dependencias. Informe financiero y actuarial del ISSSTE (2014)
 	local SubsidioEmpleo = 41293000000					// Presupuesto de gastos fiscales (2014)
-	local udis = 5.1561230329  						// Promedio de valor de UDIS de enero a diciembre 2014
-	local smdf = 67.29							// Zona A. 2014
+	local udis = 5.1561230329  							// Promedio de valor de UDIS de enero a diciembre 2014
+	local smdf = 67.29									// Zona A. 2014
 }
-if `1' == 2013 {
-	local enigh = "ENIGH"
-	local hogar = "folioviv foliohog"
-	local enighanio = 2012
-	local macroanio = 2013
-	local betamin = 2.92							// ENIGH: 2.92, MCS: 2.8191 
-	local altimir = "yes"
-	local CuotasISSSTE = 71771000000					// Trabajadores y dependencias. Informe financiero y actuarial del ISSSTE (2014)
-	local SubsidioEmpleo = 41293000000					// Presupuesto de gastos fiscales (2014)
-	local udis = 5.1561230329  						// Promedio de valor de UDIS de enero a diciembre 2014
-	local smdf = 67.29							// Zona A. 2014
-}
+local enighanio = `1'
+local macroanio = `1'
 
 
 
@@ -123,7 +117,7 @@ local OtrasEmpresas = r(Otras_empresas)
 PEF, anio(`macroanio') by(desc_funcion)
 local Cuotas_ISSSTE = r(Cuotas_ISSSTE)
 
-PEF if neto == 0 & ramo != -1 & (substr(string(objeto),1,2) == "45" ///
+PEF if transf_gf == 0 & ramo != -1 & (substr(string(objeto),1,2) == "45" ///
 	| substr(string(objeto),1,2) == "47" | desc_pp == 779), anio(`macroanio') by(ramo)
 local SSFederacion = r(Aportaciones_a_Seguridad_Social) + `Cuotas_ISSSTE'
 
@@ -141,7 +135,7 @@ if `macroanio' >= 2015 {
 			local deflactor = deflator[`k']
 		}
 	}
-	use "`c(sysdir_personal)'../basesCIEP/SAT/Personas fisicas/Stata/2015_labels.dta", clear
+	use "`c(sysdir_site)'../basesCIEP/SAT/Personas fisicas/Stata/2015_labels.dta", clear
 	tabstat iaarrendamiento utgravacumap utgravacumriap, stat(sum) f(%20.0fc) save
 	tempname SATAbierto
 	matrix `SATAbierto' = r(StatTotal)  
@@ -149,7 +143,7 @@ if `macroanio' >= 2015 {
 	local util_serprof = `SATAbierto'[1,2]/`deflactor'
 }
 else {
-	use "`c(sysdir_personal)'../basesCIEP/SAT/Personas fisicas/Stata/`macroanio'_labels.dta", clear
+	use "`c(sysdir_site)'../basesCIEP/SAT/Personas fisicas/Stata/`macroanio'_labels.dta", clear
 	tabstat iaarrendamiento utgravacumap utgravacumriap, stat(sum) f(%20.0fc) save
 	tempname SATAbierto
 	matrix `SATAbierto' = r(StatTotal)  
@@ -164,9 +158,9 @@ else {
 *** B. Micro 1. ENIGH. Ingresos ***
 ***********************************
 noisily di _newline(2) _col(04) in g "{bf:INGRESOS DE LOS HOGARES: " in y "`enigh' `enighanio'}"
-use "`c(sysdir_personal)'../basesCIEP/INEGI/`enigh'/`enighanio'/ingresos.dta", clear
-merge m:1 (`hogar') using "`c(sysdir_personal)'../basesCIEP/INEGI/`enigh'/`enighanio'/concentrado.dta", ///
-	keepusing(factor_hog tot_integ smg) keep(matched)
+use "`c(sysdir_site)'../basesCIEP/INEGI/`enigh'/`enighanio'/ingresos.dta", clear
+merge m:1 (`hogar') using "`c(sysdir_site)'../basesCIEP/INEGI/`enigh'/`enighanio'/concentrado.dta", ///
+	keepusing(factor tot_integ smg) keep(matched)
 
 * Reemplazar missings por ceros *
 foreach k of varlist ing_*  {
@@ -374,7 +368,7 @@ g double ing_PAM = ing_anual if clave == "P044"
 ******************************
 *** 2. IDENTIFY EXEMPTIONS ***
 ******************************
-collapse (sum) ing_* p0*, by(`hogar' numren id_trabajo sm factor_hog)
+collapse (sum) ing_* p0*, by(`hogar' numren id_trabajo sm factor)
 sort `hogar' numren
 
 * Ingreso total *
@@ -892,16 +886,16 @@ egen double exen_t4_cap9 = rsum(exen_autor exen_remesas exen_trabmenor exen_pres
 ************************************
 
 * Merges *
-merge m:1 (`hogar' numren id_trabajo) using "`c(sysdir_personal)'../basesCIEP/INEGI/`enigh'/`enighanio'/trabajos.dta", nogen ///
+merge m:1 (`hogar' numren id_trabajo) using "`c(sysdir_site)'../basesCIEP/INEGI/`enigh'/`enighanio'/trabajos.dta", nogen ///
 	keepusing(htrab pres_* pago scian sinco subor)
 g trabajos = 1 if id_trabajo != ""
-merge m:1 (`hogar' numren) using "`c(sysdir_personal)'../basesCIEP/INEGI/`enigh'/`enighanio'/poblacion.dta", nogen ///
+merge m:1 (`hogar' numren) using "`c(sysdir_site)'../basesCIEP/INEGI/`enigh'/`enighanio'/poblacion.dta", nogen ///
 	keepusing(sexo edad trabajo_mp inscr_* inst_* atemed segpop)
-merge m:1 (`hogar') using "`c(sysdir_personal)'../basesCIEP/INEGI/`enigh'/`enighanio'/concentrado.dta", nogen update replace ///
-	keepusing(factor_hog tot_integ smg ubica_geo estim_alqu)
-merge m:1 (folioviv) using "`c(sysdir_personal)'../basesCIEP/INEGI/`enigh'/`enighanio'/vivienda.dta", nogen ///
+merge m:1 (`hogar') using "`c(sysdir_site)'../basesCIEP/INEGI/`enigh'/`enighanio'/concentrado.dta", nogen update replace ///
+	keepusing(factor tot_integ smg ubica_geo estim_alqu)
+merge m:1 (folioviv) using "`c(sysdir_site)'../basesCIEP/INEGI/`enigh'/`enighanio'/vivienda.dta", nogen ///
 	keepusing(tenencia renta)
-merge m:1 (`hogar' numren) using "`c(sysdir_personal)'../basesCIEP/SIM/`enighanio'/deducciones.dta", nogen keepus(deduc_isr)
+merge m:1 (`hogar' numren) using "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/deducciones.dta", nogen keepus(deduc_isr)
 
 noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "Las deducciones personales son beneficios para el jefe del hogar.}"
 tempvar tag tag2
@@ -977,10 +971,10 @@ label values formal_dummy formalidad_dummy
 noisily di _newline(2) _col(04) in g "{bf:Paso 0: Informaci{c o'}n inicial}"
 
 noisily di _newline _col(04) in g "{bf:0.1. Trabajos asalariados formales}"
-noisily table formal2 [fw=factor_hog] if formal2 != 0, format(%12.0fc) row
+noisily table formal2 [fw=factor] if formal2 != 0, format(%12.0fc) row
 
 noisily di _newline _col(04) in g "{bf:0.2. Personas formales}"
-noisily table formal [fw=factor_hog] if formal != 0, format(%12.0fc) row
+noisily table formal [fw=factor] if formal != 0, format(%12.0fc) row
 
 
 
@@ -1059,7 +1053,7 @@ replace ing_estim_alqu = 0 if numren != "01"
 
 * Alquileres *
 noisily di _newline _col(04) in g "{bf:O.3.1. Renta e ingresos por alquileres}"
-noisily tabstat renta ing_rent [aw=factor_hog], stat(sum) f(%20.0fc) by(formal_dummy) save
+noisily tabstat renta ing_rent [aw=factor], stat(sum) f(%20.0fc) by(formal_dummy) save
 tempname RENTA
 matrix `RENTA' = r(StatTotal)
 
@@ -1068,12 +1062,12 @@ replace ing_rent = ing_rent*(`SNAAlquiler'-`SNAExBOpHog')/`RENTA'[1,2]
 replace exen_rent = exen_rent*(`SNAAlquiler'-`SNAExBOpHog')/`RENTA'[1,2]
 
 noisily di _newline _col(04) in g "{bf:0.3.2. Renta e ingresos por alquileres (escalado)}"
-noisily tabstat renta ing_rent [aw=factor_hog], stat(sum) f(%20.0fc) by(formal_dummy) save
+noisily tabstat renta ing_rent [aw=factor], stat(sum) f(%20.0fc) by(formal_dummy) save
 
 
 * Activdad empresarial y profesional *
 noisily di _newline _col(04) in g "{bf:O.3.3. Actividad empresarial y profesional}"
-noisily tabstat ing_t4_cap2 exen_t4_cap2 [aw=factor_hog], stat(sum) f(%20.0fc) by(formal_dummy) save
+noisily tabstat ing_t4_cap2 exen_t4_cap2 [aw=factor], stat(sum) f(%20.0fc) by(formal_dummy) save
 tempname EMPRE
 matrix `EMPRE' = r(StatTotal)
 
@@ -1082,7 +1076,7 @@ replace ing_t4_cap2 = ing_t4_cap2*(`ServProf'+`ConsMedi'+`ConsDent'+`ConsOtro'+`
 replace exen_t4_cap2 = ing_t4_cap2*(1-290533/475667)
 
 noisily di _newline _col(04) in g "{bf:O.3.4. Actividad empresarial y profesional (escalado)}"
-noisily tabstat ing_t4_cap2 exen_t4_cap2 [aw=factor_hog], stat(sum) f(%20.0fc) by(formal_dummy) save
+noisily tabstat ing_t4_cap2 exen_t4_cap2 [aw=factor], stat(sum) f(%20.0fc) by(formal_dummy) save
 
 
 
@@ -1114,12 +1108,12 @@ egen double exen_capital = rsum(exen_util exen_ganan exen_indemn exen_indemn2 ex
 
 * Gini's de ingresos netos *
 foreach k of varlist ing_total ing_sueldos ing_mixto ing_capital ing_estim_alqu ing_laboral ing_mixto* {
-	Gini `k', hogar(`hogar') individuo(numren) factor(factor_hog)
+	Gini `k', hogar(`hogar') individuo(numren) factor(factor)
 	local gini_`k' = r(gini_`k')
 }
 
 * Results *
-tabstat ing_sueldos ing_mixto ing_total ing_estim_alqu ing_capital [aw=factor_hog], stat(sum) f(%25.0fc) save
+tabstat ing_sueldos ing_mixto ing_total ing_estim_alqu ing_capital [aw=factor], stat(sum) f(%25.0fc) save
 tempname AnnInc
 matrix `AnnInc' = r(StatTotal)
 
@@ -1341,38 +1335,38 @@ egen double cuotasTPF = rsum(cuotasP cuotasT cuotasF)
 label var cuotasTPF "Contribuciones a la seguridad social"
 
 * Cuotas a la seguridad social por by *
-tabstat cuotasTP [aw=factor_hog] if (formal2 == 1 | formal2 == 2), ///
+tabstat cuotasTP [aw=factor] if (formal2 == 1 | formal2 == 2), ///
 	stat(sum) f(%20.0fc) save by(formal)
 tempname SBCIMSS SBCISSSTE
 matrix `SBCIMSS' = r(Stat1)
 matrix `SBCISSSTE' = r(Stat2)
 
-tabstat cuotasF [aw=factor_hog] if (formal2 == 1 | formal2 == 2), ///
+tabstat cuotasF [aw=factor] if (formal2 == 1 | formal2 == 2), ///
 	stat(sum) f(%20.0fc) save by(formal)
 tempname SBCFED
 matrix `SBCFED' = r(StatTotal)
 
-tabstat cuotasTPF [aw=factor_hog] if formal == 6 | (formal == 1 & formal2 == 0) | (formal == 2 & formal2 == 0), ///
+tabstat cuotasTPF [aw=factor] if formal == 6 | (formal == 1 & formal2 == 0) | (formal == 2 & formal2 == 0), ///
 	stat(sum) f(%20.0fc) save by(formal)
 tempname SBCIMP
 matrix `SBCIMP' = r(StatTotal)
 
-tabstat cuotasTPF [aw=factor_hog] if (formal == 3 | formal == 4 | formal == 5), ///
+tabstat cuotasTPF [aw=factor] if (formal == 3 | formal == 4 | formal == 5), ///
 	stat(sum) f(%20.0fc) save by(formal)
 tempname SBCOTR
 matrix `SBCOTR' = r(StatTotal)
 
-tabstat infonavit [aw=factor_hog] if (formal != 6), ///
+tabstat infonavit [aw=factor] if (formal != 6), ///
 	stat(sum) f(%20.0fc) save by(formal)
 tempname SBCINF
 matrix `SBCINF' = r(StatTotal)
 
-tabstat infonavit [aw=factor_hog] if (formal == 6), ///
+tabstat infonavit [aw=factor] if (formal == 6), ///
 	stat(sum) f(%20.0fc) save by(formal)
 tempname SBCINF2
 matrix `SBCINF2' = r(StatTotal)
 
-tabstat cuotasTPF [aw=factor_hog], ///
+tabstat cuotasTPF [aw=factor], ///
 	stat(sum) f(%20.0fc) save by(formal)
 tempname SBCTOTAL
 matrix `SBCTOTAL' = r(StatTotal)
@@ -1386,17 +1380,17 @@ g `cuotasFED' = cuotasF if formal == 1 | formal == 2
 g `cuotasIMP' = cuotasTPF if formal == 6
 g `cuotasOTR' = cuotasTPF if formal != 1 & formal != 2 & formal != 6
 
-Gini `cuotasIMSS', hogar(`hogar') individuo(numren) factor(factor_hog)
+Gini `cuotasIMSS', hogar(`hogar') individuo(numren) factor(factor)
 local gini_cuotasIMSS = r(gini_`cuotasIMSS')
-Gini `cuotasISSSTE', hogar(`hogar') individuo(numren) factor(factor_hog)
+Gini `cuotasISSSTE', hogar(`hogar') individuo(numren) factor(factor)
 local gini_cuotasISSSTE = r(gini_`cuotasISSSTE')
-Gini `cuotasFED', hogar(`hogar') individuo(numren) factor(factor_hog)
+Gini `cuotasFED', hogar(`hogar') individuo(numren) factor(factor)
 local gini_cuotasFED = r(gini_`cuotasFED')
-Gini `cuotasIMP', hogar(`hogar') individuo(numren) factor(factor_hog)
+Gini `cuotasIMP', hogar(`hogar') individuo(numren) factor(factor)
 local gini_cuotasIMP = r(gini_`cuotasIMP')
-Gini `cuotasOTR', hogar(`hogar') individuo(numren) factor(factor_hog)
+Gini `cuotasOTR', hogar(`hogar') individuo(numren) factor(factor)
 local gini_cuotasOTR = r(gini_`cuotasOTR')
-Gini cuotasTPF, hogar(`hogar') individuo(numren) factor(factor_hog)
+Gini cuotasTPF, hogar(`hogar') individuo(numren) factor(factor)
 local gini_cuotasTPF = r(gini_cuotasTPF)
 
 
@@ -1554,16 +1548,16 @@ replace isrE = 0 if isrE == .
 label var isrE "ISR retenciones a asalariados"
 
 * Results *
-tabstat ing_subor isrE SE [aw=factor_hog], stats(sum) f(%25.0fc) by(formal) save
+tabstat ing_subor isrE SE [aw=factor], stats(sum) f(%25.0fc) by(formal) save
 tempname GROSS
 matrix `GROSS' = r(StatTotal)
 
 * Gini's de ingresos brutos *
-Gini ing_subor, hogar(`hogar') individuo(numren) factor(factor_hog)
+Gini ing_subor, hogar(`hogar') individuo(numren) factor(factor)
 local gini_ing_subor = r(gini_ing_subor)
-Gini isrE, hogar(`hogar') individuo(numren) factor(factor_hog)
+Gini isrE, hogar(`hogar') individuo(numren) factor(factor)
 local gini_isrE = r(gini_isrE)
-Gini SE, hogar(`hogar') individuo(numren) factor(factor_hog)
+Gini SE, hogar(`hogar') individuo(numren) factor(factor)
 local gini_SE = r(gini_SE)
 
 // Step 2 //
@@ -1608,12 +1602,12 @@ if `betamin' > 1 {
 	local ingreso "ing_subor"
 	*local sort "`hogar' numren"
 	local sort "`hogar'"
-	collapse (sum) `ingreso' (mean) factor_hog, by(`sort')
+	collapse (sum) `ingreso' (mean) factor, by(`sort')
 	gsort -`ingreso' `sort'
 
-	g double n = sum(factor_hog)
+	g double n = sum(factor)
 	g double lnxi = ln(`ingreso')
-	g double lnxi2 = ln(`ingreso')*factor_hog
+	g double lnxi2 = ln(`ingreso')*factor
 	g double lnxm = lnxi*n
 	g double slnxi = sum(lnxi2)
 
@@ -1631,9 +1625,9 @@ if `betamin' > 1 {
 	local count = `N' - r(N) + 1
 	display `count'
 
-	egen factorn = sum(factor_hog) if `ingreso' >= `R'[1,1]
+	egen factorn = sum(factor) if `ingreso' >= `R'[1,1]
 
-	g double n2 = sum(factor_hog) if `ingreso' >= `R'[1,1]
+	g double n2 = sum(factor) if `ingreso' >= `R'[1,1]
 	g double cdfe = n2/factorn * 100
 
 	* Metodo 2 *
@@ -1675,12 +1669,12 @@ if `betamin' > 1 {
 	replace cola = 1 in `N1'
 
 	g double factor_cola = pdft*factorn/100 if `ingreso' >= `R'[1,1]
-	replace factor_cola  = factor_hog if factor_cola  == .
+	replace factor_cola  = factor if factor_cola  == .
 	replace factor_cola  = round(factor_cola)
 
 	tabstat `ingreso' [aw=factor_cola], stats(sum) f(%25.2fc) save
 
-	keep `sort' factor_hog factor_cola cola `ingreso'
+	keep `sort' factor factor_cola cola `ingreso'
 
 	local ingreso_cola = `ingreso'[_N]
 	tempfile isr_cola
@@ -1699,15 +1693,15 @@ replace sinco = substr(sinco,1,2)
 destring pago inscr_* scian sinco subor, replace
 
 collapse (sum) ing_* exen_* cuotas* htrab isrE renta deduc_isr ///
-	(mean) factor_hog* sm sbc tot_integ ///
+	(mean) factor* sm sbc tot_integ ///
 	(max) scian formal* tipo_contribuyente sinco ///
 	(min) pago inscr_* subor, by(`hogar' numren)
-merge 1:1 (`hogar' numren) using "`c(sysdir_personal)'../basesCIEP/INEGI/`enigh'/`enighanio'/poblacion.dta", nogen ///
+merge 1:1 (`hogar' numren) using "`c(sysdir_site)'../basesCIEP/INEGI/`enigh'/`enighanio'/poblacion.dta", nogen ///
 	keepusing(sexo edad nivelaprob gradoaprob)
 
 
 * Formalidad *
-tabstat edad [fw=factor_hog] if ing_subor != 0 | ing_mixto != 0, stat(count) f(%15.0fc) save by(formal)
+tabstat edad [fw=factor] if ing_subor != 0 | ing_mixto != 0, stat(count) f(%15.0fc) save by(formal)
 tempname FORIMSS FORISSSTE FORPemex FOROtro FORISSSTEestatal FORIndependiente INFOR FORTOTMAT
 matrix `INFOR' = r(Stat1)
 matrix `FORIMSS' = r(Stat2)
@@ -1743,7 +1737,7 @@ if `betamin' > 1 {
 	merge m:1 (`sort') using `isr_cola', nogen keepus(factor_cola)
 
 	replace `ingreso' = `ingreso_cola' in `=_N'
-	replace factor_cola = factor_hog if factor_cola == .
+	replace factor_cola = factor if factor_cola == .
 
 	tabstat factor_cola, stat(sum) f(%20.0fc) save
 	tempname POBTOT
@@ -1807,7 +1801,7 @@ if `betamin' > 1 {
 		_col(77) in y %7.1fc (`TOP'[1,2]/`ISRSalarios'-1)*100 "%"
 }
 else {
-	g double factor_cola = factor_hog
+	g double factor_cola = factor
 }
 
 
@@ -2076,11 +2070,11 @@ g FMP = factor_cola
 label var FMP "Fondo Mexicano del Petr{c o'}leo (derechos petroleros)"
 
 * Gini's de ISR *
-Gini ISR__asalariados, hogar(`hogar') individuo(numren) factor(factor_hog)
+Gini ISR__asalariados, hogar(`hogar') individuo(numren) factor(factor)
 local gini_ISR__asalariados = r(gini_ISR__asalariados)
-Gini ISR__PF, hogar(`hogar') individuo(numren) factor(factor_hog)
+Gini ISR__PF, hogar(`hogar') individuo(numren) factor(factor)
 local gini_ISR__PF = r(gini_ISR__PF)
-Gini ISR, hogar(`hogar') individuo(numren) factor(factor_hog)
+Gini ISR, hogar(`hogar') individuo(numren) factor(factor)
 local gini_ISR = r(gini_ISR)
 
 * Results *
@@ -2161,15 +2155,15 @@ label var ing_nac "Ingreso nacional"
 *** 12. Altimirs ***
 ********************
 * Gini's de ingresos finales *
-Gini ing_subor, hogar(`hogar') individuo(numren) factor(factor_hog)
+Gini ing_subor, hogar(`hogar') individuo(numren) factor(factor)
 local gini_ing_subor = r(gini_ing_subor)
-Gini ing_mixto, hogar(`hogar') individuo(numren) factor(factor_hog)
+Gini ing_mixto, hogar(`hogar') individuo(numren) factor(factor)
 local gini_ing_mixto = r(gini_ing_mixto)
-Gini ing_capital, hogar(`hogar') individuo(numren) factor(factor_hog)
+Gini ing_capital, hogar(`hogar') individuo(numren) factor(factor)
 local gini_ing_capital = r(gini_ing_capital)
-Gini ing_estim_alqu, hogar(`hogar') individuo(numren) factor(factor_hog)
+Gini ing_estim_alqu, hogar(`hogar') individuo(numren) factor(factor)
 local gini_ing_estim_alqu = r(gini_ing_estim_alqu)
-Gini ing_nac, hogar(`hogar') individuo(numren) factor(factor_hog)
+Gini ing_nac, hogar(`hogar') individuo(numren) factor(factor)
 local gini_ing_nac = r(gini_ing_nac)
 
 * Results *
@@ -2230,12 +2224,12 @@ g double ing_decil_pc = ing_decil_hog/`tot_integ'
 
 
 * Deciles *
-xtile decil = ing_decil_pc [aw=factor_hog], n(10)
-xtile percentil = ing_decil_pc [aw=factor_hog], n(100)
+xtile decil = ing_decil_pc [aw=factor], n(10)
+xtile percentil = ing_decil_pc [aw=factor], n(100)
 
 
 * Guardar *
 capture drop __*
 format ing_* exen_* renta %10.0fc
-capture mkdir "`c(sysdir_personal)'../basesCIEP/SIM/`enighanio'/"
-save "`c(sysdir_personal)'../basesCIEP/SIM/`enighanio'/income.dta", replace
+capture mkdir "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/"
+save "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/income.dta", replace

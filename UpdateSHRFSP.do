@@ -108,7 +108,7 @@ save `LIF'
 
 
 ** PEF **
-PEF, datos by(ramo)
+PEF, by(ramo)
 collapse (sum) gastoneto if ramo != 34 & ramo != -1, by(anio)
 tempfile PEF
 save `PEF'
@@ -140,4 +140,4 @@ g double tipoDeCambio = deudaMXN/deudaUSD/1000
 format tipoDeCambio %7.2fc
 drop deuda* acum_prom
 
-save "`c(sysdir_personal)'../basesCIEP/SIM/SHRFSP.dta", replace
+save "`c(sysdir_site)'../basesCIEP/SIM/SHRFSP.dta", replace

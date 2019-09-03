@@ -1,6 +1,6 @@
 program Eficiencia, return
 quietly {
-	syntax [, Anio(int $anioVP) Update Graphs Noisily Fast ID(string) REBOOT]
+	syntax [, Anio(int $aniovp) Update Graphs Noisily Fast ID(string) REBOOT]
 
 
 
@@ -215,7 +215,7 @@ quietly {
 	*******************
 	** 5.1 Pensiones **
 	*******************
-	`noisily' PEF if neto == 0 & ramo != -2  ///
+	`noisily' PEF if transf_gf == 0 & ramo != -2  ///
 		& (substr(string(objeto),1,2) == "45" | substr(string(objeto),1,2) == "47" | pp == 176) ///
 		, anio(`anio') concepto(ramo) id(`id') fast
 	`noisily' di in g "{bf:  Pensiones}"
@@ -320,7 +320,7 @@ quietly {
 	**********************
 	** 5.2 Educaci${o}n **
 	**********************
-	`noisily' PEF if neto == 0 & ramo != -2  ///
+	`noisily' PEF if transf_gf == 0 & ramo != -2  ///
 		& (substr(string(objeto),1,2) != "45" & substr(string(objeto),1,2) != "47" & pp != 176) ///
 		& desc_funcion == 10 ///
 		, anio(`anio') concepto(desc_subfuncion) id(`id') fast
@@ -379,7 +379,7 @@ quietly {
 	***************
 	** 5.3 Salud **
 	***************
-	`noisily' PEF if neto == 0 & ramo != -2  ///
+	`noisily' PEF if transf_gf == 0 & ramo != -2  ///
 		& (substr(string(objeto),1,2) != "45" & substr(string(objeto),1,2) != "47" & pp != 176) ///
 		& desc_funcion != 10 ///
 		& desc_funcion == 21 ///
@@ -395,7 +395,7 @@ quietly {
 	local salSegPop = r(Seguro_Popular)															// Seguro Popular
 
 
-	`noisily' PEF if neto == 0 & ramo != -2  ///
+	`noisily' PEF if transf_gf == 0 & ramo != -2  ///
 		& (substr(string(objeto),1,2) != "45" & substr(string(objeto),1,2) != "47" & pp != 176) ///
 		& modalidad == "E" & pp == 13 & ramo == 52, ///
 		anio(`anio') concepto(ramo) id(`id') fast												// Salud - Pemex (no mover de lugar)
@@ -405,7 +405,7 @@ quietly {
 	local salPemex = r(Petr${o}leos_Mexicanos)
 
 
-	`noisily' PEF if neto == 0 & ramo != -2  ///
+	`noisily' PEF if transf_gf == 0 & ramo != -2  ///
 		& (substr(string(objeto),1,2) != "45" & substr(string(objeto),1,2) != "47" & pp != 176) ///
 		& desc_funcion != 10 ///
 		& desc_funcion == 21 ///
@@ -467,7 +467,7 @@ quietly {
 	*************
 	** 5.4 OyE **
 	*************
-	`noisily' PEF if neto == 0 & ramo != -2  ///
+	`noisily' PEF if transf_gf == 0 & ramo != -2  ///
 		& (substr(string(objeto),1,2) != "45" & substr(string(objeto),1,2) != "47" & pp != 176) ///
 		& desc_funcion != 10 ///
 		& desc_funcion != 21 ///
@@ -499,7 +499,7 @@ quietly {
 	******************
 	** 5.6 Gobierno **
 	/******************
-	`noisily' PEF if neto == 0 & ramo != -2  ///
+	`noisily' PEF if transf_gf == 0 & ramo != -2  ///
 		& (substr(string(objeto),1,2) != "45" & substr(string(objeto),1,2) != "47" & pp != 176) ///
 		& desc_funcion != 10 ///
 		& desc_funcion != 21 ///
@@ -523,7 +523,7 @@ quietly {
 	************************/
 	** 5.5 Infraestructura **
 	*************************
-	`noisily' PEF if neto == 0 & ramo != -2  ///
+	`noisily' PEF if transf_gf == 0 & ramo != -2  ///
 		& (substr(string(objeto),1,2) != "45" & substr(string(objeto),1,2) != "47" & pp != 176) ///
 		& desc_funcion != 10 ///
 		& desc_funcion != 21 ///
@@ -548,7 +548,7 @@ quietly {
 	***************
 	** 5.7 Otros **
 	***************
-	`noisily' PEF if neto == 0 & ramo != -2 ///
+	`noisily' PEF if transf_gf == 0 & ramo != -2 ///
 		& (substr(string(objeto),1,2) != "45" & substr(string(objeto),1,2) != "47" & pp != 176) ///
 		& desc_funcion != 10 ///
 		& desc_funcion != 21 ///
@@ -592,7 +592,7 @@ quietly {
 	** 5.8 Ingreso b${a}sico **
 	***************************
 	if "`id'" != "" {
-		`noisily' PEF if neto == 0 & ramo == -2 ///
+		`noisily' PEF if transf_gf == 0 & ramo == -2 ///
 			, anio(`anio') id(`id')
 		local usoIngBasi = r(Gasto_bruto)
 		`noisily' di in g "{bf:  Ingreso b${a}sico}" 

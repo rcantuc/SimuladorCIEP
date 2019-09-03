@@ -1,6 +1,8 @@
 **************************
 **** HOLA, HUMANO! :) ****
 **************************
+clear all
+timer on 1
 
 
 *****************
@@ -8,22 +10,34 @@
 *****************
 if "`c(os)'" == "Unix" {
 	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Github/simuladorCIEP"
+	global export "/home/ciepmx/Dropbox (CIEP)/Textbook/images/"
 }
 if "`c(os)'" == "MacOSX" {
 	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/Github/simuladorCIEP"
+	global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
 }
 adopath ++ PERSONAL
-clear all
-timer on 1
+
+global aniovp = 2019
+
+
+*********************************************************
+*** 1. Capítulo 1: La (macro)economía antropocéntrica ***
+Poblacion, graphs anioi(1950) aniof(2000) 					//update (downloads dataset again)
+Poblacion, graphs anioi(2000) aniof(2050) 					//update (downloads dataset again)
 
 
 
 
-*************************
-*** 1. Bases MANUALES ***
-*************************
-PIBDeflactor, graphs //aniovp(2020)			// PARA ACTUALIZAR: reemplazar archivos .xls (./basesCIEP/INEGI/SCN/)
-noisily SCN, graphs //anio(2020)			// PARA ACTUALIZAR: reemplazar archivos .xls (./basesCIEP/INEGI/SCN/)
+
+**************************************************
+*** 2. Capítulo 1: Cuánto hay y quién lo tiene ***
+**************************************************
+// PARA ACTUALIZAR: reemplazar PIB.xls e deflactor.xls (./basesCIEP/INEGI/SCN/)
+PIBDeflactor, graphs //aniovp(2020)
+
+// PARA ACTUALIZAR: reemplazar todos los .xls (./basesCIEP/INEGI/SCN/)
+noisily SCN, graphs //anio(2020)
 
 
 
@@ -31,7 +45,6 @@ noisily SCN, graphs //anio(2020)			// PARA ACTUALIZAR: reemplazar archivos .xls 
 ********************************/
 *** 2. Bases SEMI-AUTOMÁTICAS ***
 *********************************
-Poblacion, graphs //anioi(1950) //aniof(2050) //update (downloads dataset again)
 noisily LIF, graphs //update
 noisily PEF, graphs //update
 
@@ -39,18 +52,8 @@ noisily PEF, graphs //update
 
 
 *noisily SHRFSP, `graphs' `update'
-
-
-
-
-
-
-
-
-
-
-
-
+*Poblacion defunciones, graphs anioi(1950) aniof(2050) //update (downloads dataset again)
+*Poblacion defunciones, graphs anioi(2000) aniof($aniovp) //update (downloads dataset again)
 
 
 
