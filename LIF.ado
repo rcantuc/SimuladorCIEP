@@ -59,7 +59,7 @@ quietly {
 	****************
 	*** 3. Graph ***
 	****************
-	drop if serie == .
+	*drop if serie == .
 	*xtset serie anio
 
 	tempvar resumido recaudacionPIB

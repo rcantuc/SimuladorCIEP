@@ -18,13 +18,15 @@ if "`c(os)'" == "MacOSX" {
 }
 adopath ++ PERSONAL
 
-global aniovp = 2019
+global aniovp = 2020
 
 
 *********************************************************
 *** 1. Capítulo 1: La (macro)economía antropocéntrica ***
 Poblacion, graphs anioi(1950) aniof(2000) 					//update (downloads dataset again)
 Poblacion, graphs anioi(2000) aniof(2050) 					//update (downloads dataset again)
+Poblacion defunciones, graphs anioi(1950) aniof(2050) 				//update (downloads dataset again)
+Poblacion defunciones, graphs anioi(2000) aniof($aniovp) 			//update (downloads dataset again)
 
 
 
@@ -45,15 +47,9 @@ noisily SCN, graphs //anio(2020)
 ********************************/
 *** 2. Bases SEMI-AUTOMÁTICAS ***
 *********************************
-noisily LIF, graphs //update
-noisily PEF, graphs //update
-
-
-
-
-*noisily SHRFSP, `graphs' `update'
-*Poblacion defunciones, graphs anioi(1950) aniof(2050) //update (downloads dataset again)
-*Poblacion defunciones, graphs anioi(2000) aniof($aniovp) //update (downloads dataset again)
+noisily LIF, graphs 				//update
+noisily PEF, graphs 				//update
+noisily SHRFSP, graphs 				//`update'
 
 
 

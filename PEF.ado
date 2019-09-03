@@ -131,7 +131,7 @@ quietly {
 	egen `gastonetoPIB' = max(gastonetoPIB), by(`by')	
 	replace `over' = -99 if abs(`gastonetoPIB') < `minimum'
 	
-	replace `over' = -99 if desc_funcion == 8
+	*replace `over' = -99 if desc_funcion == 8
 	
 	label define `label' -99 "Otros (< `minimum'% PIB)", add modify
 
