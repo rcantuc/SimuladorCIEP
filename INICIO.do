@@ -24,9 +24,9 @@ global anioVP = 2020
 *********************************************************
 *** 1. Capítulo 1: La (macro)economía antropocéntrica ***
 Poblacion, graphs anioi(1950) aniof(2000) 					//update (downloads dataset again)
-Poblacion, graphs anioi(2000) aniof(2050) 					//update (downloads dataset again)
-Poblacion defunciones, graphs anioi(1950) aniof(2050) 				//update (downloads dataset again)
-Poblacion defunciones, graphs anioi(2000) aniof($anioVP) 			//update (downloads dataset again)
+Poblacion, graphs anioi(2000) aniof(2020) 					//update (downloads dataset again)
+Poblacion defunciones, graphs anioi(1950) aniof(2000) 				//update (downloads dataset again)
+Poblacion defunciones, graphs anioi(2000) aniof(2020) 			//update (downloads dataset again)
 
 
 
