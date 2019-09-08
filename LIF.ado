@@ -27,7 +27,7 @@ quietly {
 	}
 	use "`c(sysdir_site)'../basesCIEP/SIM/LIF.dta", clear
 	syntax [if/] [, ANIO(int `aniovp' ) Update Graphs Base ID(string) ///
-		MINimum(real 1) DESDE(int 2013)]
+		MINimum(real 1) DESDE(int 2013) ILIF]
 
 	if "`update'" == "update" | "`updated'" != "yes" {
 		noisily run "`c(sysdir_site)'/UpdateLIF.do"					// Actualiza la base de Excel (./basesCIEP/LIFs/LIF.xlsx)
@@ -51,6 +51,10 @@ quietly {
 	*** 2. PIB ***
 	**************
 	merge m:1 (anio) using `PIB', nogen keepus(pibY indiceY deflator productivity var_pibY) update replace keep(matched)
+
+	if "`ilif'" == "ilif" {
+		replace LIF = ILIF if anio == $anioVP
+	}
 
 	g double recaudacionPIB = recaudacion/pibY*100
 	g double montoPIB = monto/pibY*100
