@@ -17,6 +17,7 @@ graph set window fontface "Ubuntu"
 // Incorporar los que sean necesarios seg{c u'}n su a{c n~}o //
 global pib2019 = 2.0
 global def2019 = 3.9
+global anioVP = 2020
 PIBDeflactor
 
 
@@ -26,11 +27,11 @@ PIBDeflactor
 *** 3 Texto ***
 ***************
 noisily di _newline(2) in w "{bf:Centro de Investigaci{c o'}n Econ{c o'}mica y Presupuestaria, A.C.}"
-noisily di _newline in g "{bf:BIE + CGPE" in y " 2019}"
+noisily di _newline in g "{bf:BIE + CGPE" in y " $anioVP}"
 noisily di _newline in g "A{c n~}o" _col(11) %8s "Crec. PIB" _col(25) %20s "PIB" _col(50) %5s "Crec. Def." _col(67) %8.4fc "Deflactor"
 
-forvalues k=2017(1)2020 {
-	if `k' == 2019 {
+forvalues k=`=$anioVP-2'(1)`=$anioVP+2' {
+	if `k' == $anioVP {
 		local before "{bf:"
 		local after "}"
 	}
