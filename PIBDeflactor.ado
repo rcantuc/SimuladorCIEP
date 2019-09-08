@@ -306,7 +306,7 @@ quietly {
 	***************
 	noisily di _newline in g "A{c n~}o" _col(11) %8s "Crec. PIB" _col(25) %20s "PIB" _col(50) %5s "Crec. Def." _col(64) %8.4fc "Deflactor"
 
-	forvalues k=2017(1)2020 {
+	forvalues k=`=`aniovp'-1'(1)`=`aniovp'+1' {
 		noisily di in g "`k' " _col(10) %8.4fc in y ${pib_`k'} " %" _col(25) %20.0fc ${PIB_`k'} _col(50) %8.4fc in y ${def_`k'} " %" _col(65) %8.4fc ${DEF_`k'}
 	}
 

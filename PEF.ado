@@ -13,8 +13,14 @@ quietly {
 	tempfile PIB
 	save `PIB'
 
-	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
-	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
+	capture confirm existence $anioVP
+	*if _rc != 0 {
+		local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
+		local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
+	*}
+	*else {
+	*	local aniovp = $anioVP
+	*}
 
 	use in 1 using "`c(sysdir_site)'../basesCIEP/SIM/PEF.dta", clear
 	syntax [if] [, ANIO(int `aniovp') Graphs Update Base ID(string) ///
@@ -32,7 +38,7 @@ quietly {
 		use "`c(sysdir_site)'/users/`id'/PEF", clear
 	}
 
-	noisily di _newline(5) in g "{bf:SISTEMA FISCAL: " in y "GASTOS `anio'}"
+	noisily di _newline(5) in g "{bf:SISTEMA FISCAL: " in y "GASTO P{c U'}BLICO `anio'}"
 
 	if "`base'" == "base" {
 		exit

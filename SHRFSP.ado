@@ -13,9 +13,15 @@ quietly {
 	tempfile PIB
 	save `PIB'
 
-	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
-	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
-
+	capture confirm existence $anioVP
+	if _rc != 0 {
+		local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
+		local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
+	}
+	else {
+		local aniovp = $anioVP
+	}
+	
 	capture use "`c(sysdir_site)'../basesCIEP/SIM/SHRFSP.dta", clear
 	local rc = _rc
 	syntax [if/] [, ANIO(int `aniovp' ) Graphs Update Base ID(string) ///
@@ -46,7 +52,7 @@ quietly {
 	*** 3. Graph ***
 	****************	
 	if "$graphs" == "on" | "`graphs'" == "graphs" {
-		graph bar (sum) shrfspInternoPIB shrfspExternoPIB if anio <= $aniovp & anio >= 2000, ///
+		graph bar (sum) shrfspInternoPIB shrfspExternoPIB if anio <= $anioVP & anio >= 2000, ///
 			over(anio, label(labgap(vsmall))) ///
 			stack asyvars ///
 			title("{bf:Saldo hist{c o'}rico de RFSP}") ///
