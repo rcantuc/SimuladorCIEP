@@ -30,7 +30,7 @@ quietly {
 		MINimum(real 1) DESDE(int 2013)]
 
 	if "`update'" == "update" | "`updated'" != "yes" {
-		noisily run "UpdateLIF.do"					// Actualiza la base de Excel (./basesCIEP/LIFs/LIF.xlsx)
+		noisily run "`c(sysdir_site)'/UpdateLIF.do"					// Actualiza la base de Excel (./basesCIEP/LIFs/LIF.xlsx)
 	}
 
 	** Base ID **
