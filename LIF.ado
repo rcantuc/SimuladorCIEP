@@ -279,7 +279,7 @@ quietly {
 		*replace recaudacionPIB = 0 if anio == 2019
 		
 		if "`if'" != "" {
-			graph bar (sum) recaudacionPIB LIFPIB if `if', ///
+			graph bar (sum) LIFPIB recaudacionPIB if `if', ///
 				over(`resumido', relabel(1 "LIF" 2 "SHCP")) ///
 				over(anio, label(labgap(vsmall) labsize(vsmall))) ///
 				stack asyvars ///
@@ -294,7 +294,7 @@ quietly {
 			exit
 		}
 
-		graph bar (sum) recaudacionPIB LIFPIB if anio >= `desde' & divLIF != 10, ///
+		graph bar (sum) LIFPIB recaudacionPIB if anio >= `desde' & divLIF != 10, ///
 			over(divOrigen, relabel(1 "LIF" 2 "SHCP")) ///
 			over(anio, label(labgap(vsmall) labsize(vsmall))) ///
 			stack asyvars ///
@@ -309,7 +309,7 @@ quietly {
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 			
-		graph bar (sum) recaudacionPIB LIFPIB if anio >= `desde' & divLIF != 10 & divOrigen == 5, ///
+		graph bar (sum) LIFPIB recaudacionPIB if anio >= `desde' & divLIF != 10 & divOrigen == 5, ///
 			over(`resumido', relabel(1 "LIF" 2 "SHCP")) ///
 			over(anio, label(labgap(vsmall) labsize(vsmall))) ///
 			stack asyvars ///
@@ -324,7 +324,7 @@ quietly {
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 	
-		graph bar (sum) recaudacionPIB LIFPIB if anio >= `desde' & divLIF != 10 & divOrigen == 2, ///
+		graph bar (sum) LIFPIB recaudacionPIB if anio >= `desde' & divLIF != 10 & divOrigen == 2, ///
 			over(`resumido', relabel(1 "LIF" 2 "SHCP")) ///
 			over(anio, label(labgap(vsmall) labsize(vsmall))) ///
 			stack asyvars ///
@@ -339,7 +339,7 @@ quietly {
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 
-		graph bar (sum) recaudacionPIB LIFPIB if anio >= `desde' & divLIF != 10 & divOrigen == 4, ///
+		graph bar (sum) LIFPIB recaudacionPIB if anio >= `desde' & divLIF != 10 & divOrigen == 4, ///
 			over(`resumido', relabel(1 "LIF" 2 "SHCP")) ///
 			over(anio, label(labgap(vsmall) labsize(vsmall))) ///
 			stack asyvars ///
@@ -354,7 +354,7 @@ quietly {
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 
-		graph bar (sum) recaudacionPIB LIFPIB if anio >= `desde' & divLIF != 10 & (divCIEP == 12 | divCIEP == 15 | divCIEP == 2 | divCIEP == 18), ///
+		graph bar (sum) LIFPIB recaudacionPIB if anio >= `desde' & divLIF != 10 & (divCIEP == 12 | divCIEP == 15 | divCIEP == 2 | divCIEP == 18), ///
 			over(divCIEP, relabel(1 "LIF" 2 "SHCP")) ///
 			over(anio, label(labgap(vsmall) labsize(vsmall))) ///
 			stack asyvars ///
@@ -369,7 +369,7 @@ quietly {
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 	
-		graph bar (sum) recaudacionPIB LIFPIB if anio >= 2010 & divLIF == 10, ///
+		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & divLIF == 10, ///
 			over(`resumido', relabel(1 "LIF" 2 "SHCP")) ///
 			over(anio, label(labgap(vsmall) labsize(vsmall))) ///
 			stack asyvars ///
