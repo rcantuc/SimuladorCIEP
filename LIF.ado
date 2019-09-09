@@ -279,8 +279,7 @@ quietly {
 	}
 
 	if "$graphs" == "on" | "`graphs'" == "graphs" {
-		*replace LIFPIB = ILIFPIB if anio == 2019
-		*replace recaudacionPIB = 0 if anio == 2019
+		replace recaudacionPIB = 0 if anio == $anioVP
 		
 		if "`if'" != "" {
 			graph bar (sum) LIFPIB recaudacionPIB if `if', ///
