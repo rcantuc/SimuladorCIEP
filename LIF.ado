@@ -80,7 +80,9 @@ quietly {
 
 	egen `recaudacionPIB' = max(recaudacionPIB) /*if anio >= 2010*/, by(divCIEP)
 	replace `resumido' = -99 if abs(`recaudacionPIB') < `minimum' | recaudacionPIB == . | recaudacionPIB == 0
+	
 	*replace `resumido' = -99 if divCIEP == 1
+	
 	label define `label' -99 "Otros (< `minimum'% PIB)", add modify
 
 	replace nombre = subinstr(nombre,"Impuesto especial sobre producci{c o'}n y servicios de ","",.)
