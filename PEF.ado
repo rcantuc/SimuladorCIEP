@@ -165,6 +165,9 @@ quietly {
 
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
+		if "`ppef'" == "ppef" {
+			gr_edit .grpaxis.edit_tick 15 93.9024 `"PPEF"', tickset(major)
+		}
 
 	}
 
