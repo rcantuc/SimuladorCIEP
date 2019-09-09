@@ -111,6 +111,7 @@ replace desc_ramo = "Desarrollo Agrario, Territorial y Urbano" if ramo == 15
 replace desc_ramo = "Bienestar" if ramo == 20
 replace desc_ramo = "Instituto Nacional Electoral" if ramo == 22
 replace desc_ramo = "Tribunal Federal de Justicia Administrativa" if ramo == 32
+replace desc_ramo = "Seguridad y Protecci{c o'}n Ciudadana" if ramo == 36
 replace desc_ramo = "Instituto Nacional de Transparencia, Acceso a la Informaci{c o'}n y Protecci{c o'}n de Datos Personales" if ramo == 44
 replace desc_ramo = "Petr{c o'}leos Mexicanos" if ramo == 52
 replace desc_ramo = "Comisi{c o'}n Federal de Electricidad" if ramo == 53
@@ -322,9 +323,10 @@ replace modulo = "uso_Salud" if neto == 0 & ramo != -1 ///
 *********************
 g double gasto = ejercido if ejercido != .
 replace gasto = aprobado if aprobado != . & gasto == .
+replace gasto = proyecto if proyecto != . & gasto == .
 
 ** Cuotas ISSSTE **
-foreach k of varlist gasto aprobado ejercido {
+foreach k of varlist gasto aprobado ejercido proyecto {
 	tempvar `k' `k'Tot `k'cuotas `k'cuotasTot
 
 	g ``k'' = `k' if ramo != -1 & transf_gf == 0 & (substr(string(objeto),1,1) == "1")	// Identificar salarios
