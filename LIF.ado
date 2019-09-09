@@ -326,6 +326,25 @@ quietly {
 			note({bf:{c U'}ltimo dato:} `ultanio'm`ultmes')
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
+		
+*******************************
+		
+		graph bar (sum) LIFPIB recaudacionPIB if anio >= `desde' & (divOrigen == 4 | divOrigen==2 | divOrigen == 3), ///
+			over(`resumido', relabel(1 "LIF" 2 "SHCP")) ///
+			over(anio, label(labgap(vsmall) labsize(vsmall))) ///
+			stack asyvars ///
+			title("{bf:Ingresos no tributarios}") ///
+			ytitle(% PIB) ///
+			/*ylabel(0(5)30, labsize(small))*/ ///
+			legend(on position(6) rows(1)) ///
+			name(ingresosnoTributariosA, replace) ///
+			blabel(bar, format(%7.1fc)) ///
+			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}") ///
+			note({bf:{c U'}ltimo dato:} `ultanio'm`ultmes')
+		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
+		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
+		
+***************************************
 	
 		graph bar (sum) LIFPIB recaudacionPIB if anio >= `desde' & divLIF != 10 & divOrigen == 2, ///
 			over(`resumido', relabel(1 "LIF" 2 "SHCP")) ///
