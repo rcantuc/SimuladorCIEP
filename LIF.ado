@@ -372,7 +372,7 @@ quietly {
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 	
-		graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & divLIF == 10, ///
+		graph bar (sum) LIFPIB recaudacionPIB if anio >= `desde' & divLIF == 10, ///
 			over(`resumido', relabel(1 "LIF" 2 "SHCP")) ///
 			over(anio, label(labgap(vsmall) labsize(vsmall))) ///
 			stack asyvars ///
