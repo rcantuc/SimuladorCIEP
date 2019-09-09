@@ -311,6 +311,9 @@ quietly {
 			note({bf:{c U'}ltimo dato:} `ultanio'm`ultmes')
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
+		if "`ilif'" == "ilif" {
+			gr_edit .grpaxis.edit_tick 15 93.9024 `"ILIF"', tickset(major)
+		}
 			
 		graph bar (sum) LIFPIB recaudacionPIB if anio >= `desde' & divLIF != 10 & divOrigen == 5, ///
 			over(`resumido', relabel(1 "LIF" 2 "SHCP")) ///
@@ -326,6 +329,9 @@ quietly {
 			note({bf:{c U'}ltimo dato:} `ultanio'm`ultmes')
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
+		if "`ilif'" == "ilif" {
+			gr_edit .grpaxis.edit_tick 15 93.9024 `"ILIF"', tickset(major)
+		}
 		
 *******************************
 		
@@ -343,6 +349,9 @@ quietly {
 			note({bf:{c U'}ltimo dato:} `ultanio'm`ultmes')
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
+		if "`ilif'" == "ilif" {
+			gr_edit .grpaxis.edit_tick 15 93.9024 `"ILIF"', tickset(major)
+		}
 		
 ***************************************
 	
@@ -360,6 +369,9 @@ quietly {
 			note({bf:{c U'}ltimo dato:} `ultanio'm`ultmes')
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
+		if "`ilif'" == "ilif" {
+			gr_edit .grpaxis.edit_tick 15 93.9024 `"ILIF"', tickset(major)
+		}
 
 		graph bar (sum) LIFPIB recaudacionPIB if anio >= `desde' & divLIF != 10 & divOrigen == 4, ///
 			over(`resumido', relabel(1 "LIF" 2 "SHCP")) ///
@@ -375,6 +387,9 @@ quietly {
 			note({bf:{c U'}ltimo dato:} `ultanio'm`ultmes')
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
+		if "`ilif'" == "ilif" {
+			gr_edit .grpaxis.edit_tick 15 93.9024 `"ILIF"', tickset(major)
+		}
 
 		graph bar (sum) LIFPIB recaudacionPIB if anio >= `desde' & divLIF != 10 & (divCIEP == 12 | divCIEP == 15 | divCIEP == 2 | divCIEP == 18), ///
 			over(divCIEP, relabel(1 "LIF" 2 "SHCP")) ///
@@ -390,6 +405,9 @@ quietly {
 			note({bf:{c U'}ltimo dato:} `ultanio'm`ultmes')
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
+		if "`ilif'" == "ilif" {
+			gr_edit .grpaxis.edit_tick 15 93.9024 `"ILIF"', tickset(major)
+		}
 	
 		graph bar (sum) LIFPIB recaudacionPIB if anio >= `desde' & divLIF == 10, ///
 			over(`resumido', relabel(1 "LIF" 2 "SHCP")) ///
@@ -405,6 +423,9 @@ quietly {
 			note({bf:{c U'}ltimo dato:} `ultanio'm`ultmes')			
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
+		if "`ilif'" == "ilif" {
+			gr_edit .grpaxis.edit_tick 15 93.9024 `"ILIF"', tickset(major)
+		}
 			
 		/*graph pie LIFPIB if anio == `aniovp', over(`resumido') descending sort ///
 			plabel(_all percent, format(%5.1fc)) ///
