@@ -14,23 +14,24 @@ quietly {
 	save `PIB'
 
 	capture confirm existence $anioVP
-	*if _rc != 0 {
+	if _rc != 0 {
 		local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 		local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
-	*}
-	*else {
-	*	local aniovp = $anioVP
-	*}
+	}
+	else {
+		local aniovp = $anioVP
+	}
 
 	use in 1 using "`c(sysdir_site)'../basesCIEP/SIM/PEF.dta", clear
 	syntax [if] [, ANIO(int `aniovp') Graphs Update Base ID(string) ///
-		BY(varname) Fast ROWS(int 3) COLS(int 4) MINimum(real 1)]
+		BY(varname) Fast ROWS(int 3) COLS(int 4) MINimum(real 1) ///
+		PPEF]
 
 	use `if' using "`c(sysdir_site)'../basesCIEP/SIM/PEF.dta", clear
 
 	** Base PEF **
 	if "`update'" == "update" {
-		noisily run UpdatePEF.do
+		noisily run "`c(sysdir_site)'/UpdatePEF.do"
 	}
 
 	** Base ID **
@@ -51,7 +52,14 @@ quietly {
 	if "`by'" == "" {
 		local by = "desc_funcion"
 	}
-	
+
+	if "`ppef'" == "ppef" {
+		replace gasto = proyecto if anio == $anioVP
+		replace gastoneto = proyectoneto if anio == $anioVP
+		replace aprobado = proyecto if anio == $anioVP
+		replace aprobadoneto = proyectoneto if anio == $anioVP
+	}
+
 	collapse (sum) gasto* aprobado* ejercido*, by(anio `by' transf_gf) 
 
 
