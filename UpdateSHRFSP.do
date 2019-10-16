@@ -118,7 +118,7 @@ tempfile LIF
 save `LIF'
 
 LIF
-collapse (sum) diferimientos=LIF if divCIEP == 8, by(anio)
+collapse (sum) diferimientos=LIF if divCIEP == 7, by(anio)
 tempfile diferimientos
 save `diferimientos'
 
@@ -133,10 +133,15 @@ drop clave nombre mes monto_pib pibY
 tempfile gastopagado
 save `gastopagado'
 
-PEF, by(ramo)
-collapse (sum) gastoneto if /*ramo != 34 &*/ ramo != -1 & transf_gf == 0, by(anio)
+PEF if capitulo != 9, by(ramo)
+collapse (sum) gastoneto if ramo != -1 & transf_gf == 0, by(anio)
 tempfile PEF
 save `PEF'
+
+PEF if capitulo == 9
+collapse (sum) costodeuda=gastoneto, by(anio)
+tempfile costodeuda
+save `costodeuda'
 
 
 ***********
@@ -161,6 +166,7 @@ merge 1:1 (anio) using `LIF', nogen
 merge 1:1 (anio) using `diferimientos', nogen
 merge 1:1 (anio) using `PEF', nogen
 merge 1:1 (anio) using `gastopagado', nogen
+merge 1:1 (anio) using `costodeuda', nogen
 tsset anio
 
 
