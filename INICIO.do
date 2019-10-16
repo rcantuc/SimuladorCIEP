@@ -31,7 +31,6 @@ Poblacion defunciones, graphs anioi(2000) aniof(2020) 			//update (downloads dat
 
 
 
-
 **************************************************
 *** 2. Capítulo 1: Cuánto hay y quién lo tiene ***
 **************************************************
@@ -44,11 +43,12 @@ noisily SCN, graphs //anio(2020)
 
 
 
-********************************/
-*** 2. Bases SEMI-AUTOMÁTICAS ***
-*********************************
+***************************/
+*** 2. Finanzas públicas ***
+****************************
 noisily LIF, graphs 				//update
 noisily PEF, graphs 				//update
+noisily Balance, graphs
 noisily SHRFSP, graphs 				//`update'
 
 

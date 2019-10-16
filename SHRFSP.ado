@@ -42,10 +42,12 @@ quietly {
 	*** 2. PIB ***
 	**************
 	merge 1:1 (anio) using `PIB', nogen keepus(pibY indiceY deflator productivity var_pibY) update replace //keep(matched)
-	foreach k of varlist rfsp* shrfsp* {
+	foreach k of varlist rfsp* shrfsp* costodeuda gastoneto {
 		g `k'PIB = `k'/pibY*100
 	}
 	format *PIB %7.3fc
+
+
 
 
 	****************
@@ -59,6 +61,17 @@ quietly {
 			/// subtitle("Observados y estimados") ///
 			ytitle(% PIB) ylabel(, labsize(small)) ///
 			legend(on position(6) rows(1) label(1 "Interno") label(2 "Externo")) ///
+			name(shrfsp, replace) ///
+			blabel(bar, format(%7.1fc)) ///
+			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}")
+
+		graph bar (sum) gastonetoPIB costodeudaPIB if anio == $anioVP, ///
+			over(anio, label(labgap(vsmall))) ///
+			stack asyvars ///
+			title("{bf:Saldo hist{c o'}rico de RFSP}") ///
+			/// subtitle("Observados y estimados") ///
+			ytitle(% PIB) ylabel(, labsize(small)) ///
+			legend(on position(6) rows(1) label(1 "Gasto neto") label(2 "Costo financiero de la deuda")) ///
 			name(shrfsp, replace) ///
 			blabel(bar, format(%7.1fc)) ///
 			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}")
