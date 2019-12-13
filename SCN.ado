@@ -485,6 +485,28 @@ quietly {
 		_col(44) in y %20.0fc PIB[`obs'] ///
 		_col(66) in y %7.3fc PIB[`obs']/PIB[`obs']*100 "}"
 
+		
+	** R.4. Graph **
+	if "$graphs" == "on" | "`graphs'" == "graphs" {
+		tempvar Laboral Capital Depreciacion
+		g `Laboral' = (Yl)/1000000000000
+		label var `Laboral' "Laborales"
+		g `Capital' = (Capital + Yl)/1000000000000
+		label var `Capital' "De Capital"
+		g `Depreciacion' = (ConCapFij + Capital + Yl)/1000000000000
+		label var `Depreciacion' "Depreciaci{c o'}n"
+
+		twoway area `Depreciacion' `Capital' `Laboral' anio if anio <= `anio', ///
+			title("{bf:Producto Interno Bruto}") ///
+			subtitle(Cuenta de Generaci{c o'}n del Ingreso) ///			
+			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n del INEGI, BIE.}") ///
+			note("{bf:Notas:} Impuestos netos de subsidios. Excedente bruto de operaci{c o'}n sin ingreso mixto.") ///
+			legend(cols(5)) ///
+			xtitle("") ///
+			ylabel(, format(%20.0fc)) ytitle(billones MXN, height(8)) ///
+			name(gdp_generacion, replace)
+	}
+
 
 	noisily di _newline in g "{bf: B. Cuenta: " in y "capital (neto)" in g ///
 		_col(44) in g %20s "MXN" ///
@@ -557,24 +579,25 @@ quietly {
 	** R.4. Graph **
 	if "$graphs" == "on" | "`graphs'" == "graphs" {
 		tempvar Rem RemImpMix RemImpMixEx RemImpMixExRow RemImpMixExRowCon
-		g `Rem' = (RemSalNTA + SSEmpleadores + SSImputada)/1000000
+		g `Rem' = (RemSalNTA + SSEmpleadores + SSImputada)/1000000000000
 		label var `Rem' "Remuneraci{c o'}n de asalariados"
-		g `RemImpMix' = (RemSalNTA + SSEmpleadores + SSImputada + MixLNTA + MixKNTA)/1000000
+		g `RemImpMix' = (RemSalNTA + SSEmpleadores + SSImputada + MixLNTA + MixKNTA)/1000000000000
 		label var `RemImpMix' "Ingreso mixto"
-		g `RemImpMixEx' = (RemSalNTA + SSEmpleadores + SSImputada + MixLNTA + CapitalNTA)/1000000
+		g `RemImpMixEx' = (RemSalNTA + SSEmpleadores + SSImputada + MixLNTA + CapitalNTA)/1000000000000
 		label var `RemImpMixEx' "Excedente bruto de operaci{c o'}n"
-		g `RemImpMixExRow' = (RemSalNTA + SSEmpleadores + SSImputada + MixLNTA + CapitalNTA + ROW)/1000000
+		g `RemImpMixExRow' = (RemSalNTA + SSEmpleadores + SSImputada + MixLNTA + CapitalNTA + ROW)/1000000000000
 		label var `RemImpMixExRow' "Resto del mundo"
-		g `RemImpMixExRowCon' = (RemSalNTA + SSEmpleadores + SSImputada + MixLNTA + CapitalNTA + ROW + ConCapFij)/1000000
+		g `RemImpMixExRowCon' = (RemSalNTA + SSEmpleadores + SSImputada + MixLNTA + CapitalNTA + ROW + ConCapFij)/1000000000000
 		label var `RemImpMixExRowCon' "Consumo de capital fijo"
 
-		*twoway area `RemImpMixExRowCon' `RemImpMixExRow' `RemImpMixEx' `RemImpMix' `Rem' anio if anio <= `anio', ///
+		twoway area `RemImpMixExRowCon' `RemImpMixExRow' `RemImpMixEx' `RemImpMix' `Rem' anio if anio <= `anio', ///
 			title("{bf:Producto Interno Bruto}") ///
 			subtitle(Cuenta de Generaci{c o'}n del Ingreso) ///			
 			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n del INEGI, BIE.}") ///
 			note("{bf:Notas:} Impuestos netos de subsidios. Excedente bruto de operaci{c o'}n sin ingreso mixto.") ///
+			legend(cols(5)) ///
 			xtitle("") ///
-			ylabel(, format(%20.0fc)) ytitle(millones MXN, height(8)) ///
+			ylabel(, format(%20.0fc)) ytitle(billones MXN, height(8)) ///
 			name(gdp, replace)
 		
 
@@ -594,6 +617,7 @@ quietly {
 			over(anio) stack asyvars ///
 			title("{bf:Producto Interno Bruto}") ///
 			subtitle(Cuenta de Generaci{c o'}n del Ingreso) ///
+			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n del INEGI, BIE.}") ///
 			ytitle(% PIB) ///
 			note("{bf:Notas:} Impuestos netos de subsidios. Excedente bruto de operaci{c o'}n sin ingreso mixto.") ///
 			legend( ///
@@ -601,7 +625,7 @@ quietly {
 			label(2 "Resto del mundo") ///
 			label(4 "Ingreso mixto") ///
 			label(3 "Excedente bruto de operaci{c o'}n") ///
-			label(1 "Consumo de capital fijo") ) ///
+			label(1 "Consumo de capital fijo") cols(5)) ///
 			blabel(bar, format(%7.1fc)) ///
 			name(gdpbar, replace)
 	}
@@ -738,7 +762,7 @@ quietly {
 	noisily di in g "  (+) Transportes, correos y almacen..." ///
 		_col(44) in y %20.0fc FHae[`obs'] ///
 		_col(66) in y %7.3fc FHae[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Información en medios masivos" ///
+	noisily di in g "  (+) InformaciÃ³n en medios masivos" ///
 		_col(44) in y %20.0fc GOae[`obs'] ///
 		_col(66) in y %7.3fc GOae[`obs']/PIB[`obs']*100
 	noisily di in g "  (+) Servicios financieros y de seguridad" ///
@@ -750,7 +774,7 @@ quietly {
 	noisily di in g "  (+) Servicios profesionales..." ///
 		_col(44) in y %20.0fc ServProf[`obs'] ///
 		_col(66) in y %7.3fc ServProf[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Dirección de corporativos y empresas" ///
+	noisily di in g "  (+) DirecciÃ³n de corporativos y empresas" ///
 		_col(44) in y %20.0fc IQae[`obs'] ///
 		_col(66) in y %7.3fc IQae[`obs']/PIB[`obs']*100
 	noisily di in g "  (+) Servicios de apoyo a los negocios..." ///

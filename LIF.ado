@@ -286,48 +286,44 @@ quietly {
 		if "`if'" != "" {
 			graph bar (sum) LIFPIB recaudacionPIB if `if', ///
 				over(`resumido', relabel(1 "LIF" 2 "SHCP")) ///
-				over(anio, label(labgap(vsmall) labsize(vsmall))) ///
+				over(anio) ///
 				stack asyvars ///
 				title("{bf:Ingresos presupuestarios}") ///
-				ytitle(% PIB) ///
-				/*ylabel(0(5)30, labsize(small))*/ ///
-				legend(on position(6) rows(2)) ///
+				ytitle("{bf:% PIB}") ///
 				name(ingresosIf, replace) ///
 				blabel(bar, format(%7.1fc)) ///
-				caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}") ///
+				caption("Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).") ///
 				note({bf:{c U'}ltimo dato:} `ultanio'm`ultmes')
 			exit
 		}
 
-		graph bar (sum) LIFPIB recaudacionPIB if anio >= `desde' & divLIF != 10, ///
-			over(divOrigen, relabel(1 "LIF" 2 "SHCP")) ///
-			over(anio, label(labgap(vsmall) labsize(vsmall))) ///
+		/*graph bar (sum) LIFPIB recaudacionPIB if anio >= `desde' & divLIF != 10, ///
+			over(divOrigen, relabel(1 "LIF" 2 "OBS")) ///
+			over(anio) ///
 			stack asyvars ///
 			title("{bf:Ingresos presupuestarios}") ///
-			ytitle(% PIB) ///
-			/*ylabel(0(5)30, labsize(small))*/ ///
-			legend(on position(6) rows(2)) ///
+			subtitle("Estimados y observados") ///
+			ytitle("{bf:% PIB}") ///
 			name(ingresosH, replace) ///
-			blabel(bar, format(%7.1fc)) ///
-			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}") ///
+			blabel(, format(%7.1fc)) ///
+			caption("Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).") ///
 			note({bf:{c U'}ltimo dato:} `ultanio'm`ultmes')
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		if "`ilif'" == "ilif" {
 			gr_edit .grpaxis.edit_tick 15 93.9024 `"ILIF"', tickset(major)
 		}
-			
+
 		graph bar (sum) LIFPIB recaudacionPIB if anio >= `desde' & divLIF != 10 & divOrigen == 5, ///
 			over(`resumido', relabel(1 "LIF" 2 "SHCP")) ///
-			over(anio, label(labgap(vsmall) labsize(vsmall))) ///
+			over(anio) ///
 			stack asyvars ///
 			title("{bf:Ingresos tributarios}") ///
-			ytitle(% PIB) ///
-			/*ylabel(0(5)30, labsize(small))*/ ///
-			legend(on position(6) rows(1)) ///
+			subtitle("Estimados y observados") ///
+			ytitle("{bf:% PIB}") ///
 			name(ingresosTributariosH, replace) ///
 			blabel(bar, format(%7.1fc)) ///
-			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}") ///
+			caption("Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).") ///
 			note({bf:{c U'}ltimo dato:} `ultanio'm`ultmes')
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
@@ -335,19 +331,18 @@ quietly {
 			gr_edit .grpaxis.edit_tick 15 93.9024 `"ILIF"', tickset(major)
 		}
 		
-*******************************
+*******************************/
 		
-		graph bar (sum) LIFPIB recaudacionPIB if anio >= `desde' & (divOrigen == 4 | divOrigen==2 | divOrigen == 3), ///
+		graph bar (sum) LIFPIB recaudacionPIB if anio >= `desde' & (divOrigen == 4 | divOrigen == 2 | divOrigen == 3), ///
 			over(`resumido', relabel(1 "LIF" 2 "SHCP")) ///
-			over(anio, label(labgap(vsmall) labsize(vsmall))) ///
+			over(anio) ///
 			stack asyvars ///
 			title("{bf:Ingresos no tributarios}") ///
-			ytitle(% PIB) ///
-			/*ylabel(0(5)30, labsize(small))*/ ///
-			legend(on position(6) rows(1)) ///
+			subtitle("Estimados y observados") ///
+			ytitle("{bf:% PIB}") ///
 			name(ingresosnoTributariosA, replace) ///
 			blabel(bar, format(%7.1fc)) ///
-			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}") ///
+			caption("Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).") ///
 			note({bf:{c U'}ltimo dato:} `ultanio'm`ultmes')
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
@@ -355,19 +350,18 @@ quietly {
 			gr_edit .grpaxis.edit_tick 15 93.9024 `"ILIF"', tickset(major)
 		}
 		
-***************************************
+/***************************************
 	
 		graph bar (sum) LIFPIB recaudacionPIB if anio >= `desde' & divLIF != 10 & divOrigen == 2, ///
 			over(`resumido', relabel(1 "LIF" 2 "SHCP")) ///
-			over(anio, label(labgap(vsmall) labsize(vsmall))) ///
+			over(anio) ///
 			stack asyvars ///
 			title("{bf:Ingresos no tributarios}") ///
-			ytitle(% PIB) ///
-			/*ylabel(0(5)30, labsize(small))*/ ///
-			legend(on position(6) rows(1)) ///
+			subtitle("Estimados y observados") ///
+			ytitle("{bf:% PIB}") ///
 			name(ingresosNoTributariosH, replace) ///
 			blabel(bar, format(%7.1fc)) ///
-			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}") ///
+			caption("Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).") ///
 			note({bf:{c U'}ltimo dato:} `ultanio'm`ultmes')
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
@@ -377,15 +371,14 @@ quietly {
 
 		graph bar (sum) LIFPIB recaudacionPIB if anio >= `desde' & divLIF != 10 & divOrigen == 4, ///
 			over(`resumido', relabel(1 "LIF" 2 "SHCP")) ///
-			over(anio, label(labgap(vsmall) labsize(vsmall))) ///
+			over(anio) ///
 			stack asyvars ///
 			title("{bf:Ingresos petroleros}") ///
-			ytitle(% PIB) ///
-			/*ylabel(0(5)30, labsize(small))*/ ///
-			legend(on position(6) rows(1)) ///
+			subtitle("Estimados y observados") ///
+			ytitle("{bf:% PIB}") ///
 			name(ingresosPetrolerosH, replace) ///
 			blabel(bar, format(%7.1fc)) ///
-			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}") ///
+			caption("Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).") ///
 			note({bf:{c U'}ltimo dato:} `ultanio'm`ultmes')
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
@@ -395,15 +388,14 @@ quietly {
 
 		graph bar (sum) LIFPIB recaudacionPIB if anio >= `desde' & divLIF != 10 & (divCIEP == 12 | divCIEP == 15 | divCIEP == 2 | divCIEP == 18), ///
 			over(divCIEP, relabel(1 "LIF" 2 "SHCP")) ///
-			over(anio, label(labgap(vsmall) labsize(vsmall))) ///
+			over(anio) ///
 			stack asyvars ///
 			title("{bf:Ingresos de organismos y empresas}") ///
-			ytitle(% PIB) ///
-			/*ylabel(0(5)30, labsize(small))*/ ///
-			legend(on position(6) rows(1)) ///
+			subtitle("Estimados y observados") ///
+			ytitle("{bf:% PIB}") ///
 			name(ingresosOyEH, replace) ///
 			blabel(bar, format(%7.1fc)) ///
-			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}") ///
+			caption("Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).") ///
 			note({bf:{c U'}ltimo dato:} `ultanio'm`ultmes')
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
@@ -413,22 +405,21 @@ quietly {
 	
 		graph bar (sum) LIFPIB recaudacionPIB if anio >= `desde' & divLIF == 10, ///
 			over(`resumido', relabel(1 "LIF" 2 "SHCP")) ///
-			over(anio, label(labgap(vsmall) labsize(vsmall))) ///
+			over(anio) ///
 			stack asyvars ///
 			title("{bf:Endeudamiento}") ///
-			ytitle(% PIB) ///
-			/*ylabel(0(5)30, labsize(small))*/ ///
-			legend(on position(6) rows(1)) ///
+			subtitle("Estimados y observados") ///
+			ytitle("{bf:% PIB}") ///
 			name(ingresosDeudaH, replace) ///
 			blabel(bar, format(%7.1fc)) ///
-			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}") ///
+			caption("Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).") ///
 			note({bf:{c U'}ltimo dato:} `ultanio'm`ultmes')			
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		if "`ilif'" == "ilif" {
 			gr_edit .grpaxis.edit_tick 15 93.9024 `"ILIF"', tickset(major)
 		}
-			
+		*/	
 		/*graph pie LIFPIB if anio == `aniovp', over(`resumido') descending sort ///
 			plabel(_all percent, format(%5.1fc)) ///
 			title("{bf:Composici{c o'}n de la LIF}") ///

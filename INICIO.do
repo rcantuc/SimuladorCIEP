@@ -17,34 +17,51 @@ if "`c(os)'" == "MacOSX" {
 	global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
 }
 adopath ++ PERSONAL
+set scheme cieptextbook
 
 global anioVP = 2020
 
 
-*********************************************************
-*** 1. Capítulo 1: La (macro)economía antropocéntrica ***
-Poblacion, graphs anioi(1950) aniof(2000) 					//update (downloads dataset again)
-Poblacion, graphs anioi(2000) aniof(2020) 					//update (downloads dataset again)
-Poblacion defunciones, graphs anioi(1950) aniof(2000) 				//update (downloads dataset again)
-Poblacion defunciones, graphs anioi(2000) aniof(2020) 			//update (downloads dataset again)
 
 
 
-
-**************************************************
-*** 2. Capítulo 1: Cuánto hay y quién lo tiene ***
-**************************************************
-// PARA ACTUALIZAR: reemplazar PIB.xls e deflactor.xls (./basesCIEP/INEGI/SCN/)
-PIBDeflactor, graphs //aniovp(2020)
-
+*************************************************/
+*** 1. CapÃ­tulo 2: Las tres caras de la moneda ***
 // PARA ACTUALIZAR: reemplazar todos los .xls (./basesCIEP/INEGI/SCN/)
 noisily SCN, graphs //anio(2020)
 
 
 
 
+
+
+
+
+exit
+
+// PARA ACTUALIZAR: reemplazar PIB.xls e deflactor.xls (./basesCIEP/INEGI/SCN/)
+*PIBDeflactor, graphs //aniovp(2020)
+
+
+
+
+
+
+*********************************************************
+*** 1. CapÃ­tulo 1: La (macro)economÃ­a antropocÃ©ntrica ***
+Poblacion, graphs																// update (downloads dataset again)
+Poblacion defunciones, graphs 													// update (downloads dataset again)
+
+
+
+
+
+
+
+
+
 ***************************/
-*** 2. Finanzas públicas ***
+*** 2. Finanzas pÃºblicas ***
 ****************************
 noisily LIF, graphs 				//update
 noisily PEF, graphs 				//update

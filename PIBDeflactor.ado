@@ -9,17 +9,17 @@ quietly {
 	***************
 	*** 0 BASES ***
 	***************
-	* 0.1. PIB *
+	* 0.1.1. PIB *
 	import excel "`=c(sysdir_site)'../basesCIEP/INEGI/SCN/PIB.xls", clear
 
-	* 0.2. Limpia *
+	* 0.1.2. Limpia *
 	LimpiaBIE
 
-	* 0.3. Rename *
+	* 0.1.3. Rename *
 	rename A periodo
 	rename B pibQ
 
-	* 0.4. Time Series *
+	* 0.1.4. Time Series *
 	split periodo, destring p("/") ignore("r p")
 
 	rename periodo1 anio
@@ -34,23 +34,23 @@ quietly {
 	drop periodo
 	order anio trimestre pibQ
 
-	* 0.5. Guardar *
+	* 0.1.5. Guardar *
 	compress
 	tempfile PIB
 	save `PIB'
 
 
-	* 0.1. Deflactor *
+	* 0.2.1. Deflactor *
 	import excel "`=c(sysdir_site)'../basesCIEP/INEGI/SCN/deflactor.xls", clear
 
-	* 0.2. Limpia *
+	* 0.2.2. Limpia *
 	LimpiaBIE, nomult
 
-	* 0.3. Rename *
+	* 0.2.3. Rename *
 	rename A periodo
 	rename B indiceQ
 
-	* 0.4. Time Series *
+	* 0.2.4. Time Series *
 	split periodo, destring p("/") ignore("r p")
 
 	rename periodo1 anio
@@ -65,7 +65,7 @@ quietly {
 	drop periodo
 	order anio trimestre indiceQ
 
-	* 0.5. Guardar *
+	* 0.2.5. Guardar *
 	compress
 	tempfile Deflactor
 	save `Deflactor', replace
@@ -127,11 +127,16 @@ quietly {
 		twoway (connected var_indiceQ aniotrimestre) ///
 			(connected var_indiceY aniotrimestre), ///
 			title("{bf:{c I'}ndice de precios impl{c i'}citos}") ///
-			ytitle(porcentaje) xtitle("") yline(0, lcolor(black) lpattern(dash)) ///
+			ytitle(porcentaje) xtitle("") yline(0) ///
 			text(`crec_deflactor') ///
 			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n del INEGI, BIE.}") ///
 			note("{bf:{c U'}ltimo dato}: `anio_last'q`trim_last'.") ///
 			name(deflactorH, replace)
+			
+		capture confirm existence $export
+		if _rc == 0 {
+			graph export "$export/deflactorH.png", replace name(deflactorH)
+		}
 	}
 
 
@@ -211,11 +216,17 @@ quietly {
 		twoway (connected var_pibQ aniotrimestre) ///
 			(connected var_pibY aniotrimestre) if var_pibY != ., ///
 			title({bf:Producto Interno Bruto}) ///
-			ytitle(percentaje) xtitle("") yline(0, lcolor(black) lpattern(dash)) ///
+			subtitle(Crecimiento real) ///
+			ytitle(porcentaje) xtitle("") yline(0) ///
 			text(`crec_PIB') ///
 			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n del INEGI, BIE.}") ///
 			note("{bf:{c U'}ltimo dato}: `anio_last'q`trim_last'.") ///
 			name(PIBH, replace)
+
+		capture confirm existence $export
+		if _rc == 0 {
+			graph export "$export/PIBH.png", replace name(PIBH)
+		}
 	}
 
 
@@ -250,14 +261,14 @@ quietly {
 	keep if trimestre == 1
 	drop *Q *trimestre
 	
-	*if "`globals'" == "globals" {
+	if "`globals'" == "globals" {
 		forvalues k=1(1)`=_N' {
 			global PIB_`=anio[`k']' = pibY[`k']
 			global DEF_`=anio[`k']' = deflator[`k']
 			global pib_`=anio[`k']' = var_pibY[`k']
 			global def_`=anio[`k']' = var_indiceY[`k']
 		}
-	*}
+	}
 
 	if "`graphs'" == "graphs" {
 		* Texto sobre lineas *
@@ -278,7 +289,7 @@ quietly {
 		twoway (connected var_indiceY anio if anio < `aniovp') ///
 			(connected var_indiceY anio if anio >= `aniovp'), ///
 			title({bf:{c I'}ndice de precio impl{c i'}citos}) ///
-			ytitle(percentaje) xtitle("") yline(0, lcolor(black) lpattern(dash)) ///
+			ytitle(porcentaje) xtitle("") yline(0) ///
 			text(`crec_indicep') ///
 			legend(label(1 "Observado") label(2 "Proyecci{c o'}n")) ///
 			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n del INEGI, BIE.}") ///
@@ -289,7 +300,8 @@ quietly {
 		twoway (connected var_pibY anio if anio < `aniovp') ///
 			(connected var_pibY anio if anio >= `aniovp'), ///
 			title({bf:Producto Interno Bruto}) ///
-			ytitle(percentaje) xtitle("") yline(0, lcolor(black) lpattern(dash)) ///
+			subtitle(Crecimiento real) ///
+			ytitle(porcentaje) xtitle("") yline(0) ///
 			text(`crec_PIBp') ///
 			legend(label(1 "Observado") label(2 "Proyecci{c o'}n")) ///
 			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n del INEGI, BIE.}") ///
