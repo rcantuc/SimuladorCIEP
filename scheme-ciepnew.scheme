@@ -108,7 +108,7 @@ gsize 		legend_key_xsize	medlarge
 gsize 		legend_key_ysize	medlarge
 numstyle 	legend_cols		4
 gsize 		key_label		vsmall
-margin		legend			medlarge
+margin		legend			zero
 
 
 
