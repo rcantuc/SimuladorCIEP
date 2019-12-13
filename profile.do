@@ -9,11 +9,14 @@ set scheme ciepnew
 graph set window fontface "Ubuntu"
 
 
+* Bienvenida *
+noisily di _newline(2) in w "{bf:Centro de Investigaci{c o'}n Econ{c o'}mica y Presupuestaria, A.C.}"
+
 
 
 *********************************
 *** 2 Par{c a'}metros de CGPE ***
-*********************************
+/*********************************
 // Incorporar los que sean necesarios seg{c u'}n su a{c n~}o //
 global pib2019 = 1.1227
 global def2019 = 4.5
@@ -29,7 +32,6 @@ PIBDeflactor
 ***************
 *** 3 Texto ***
 ***************
-noisily di _newline(2) in w "{bf:Centro de Investigaci{c o'}n Econ{c o'}mica y Presupuestaria, A.C.}"
 noisily di _newline in g "{bf:Paquete Econ{c o'}mico" in y " $anioVP}"
 noisily di _newline in g "A{c n~}o" _col(11) %8s "Crec. PIB" _col(25) %20s "PIB" _col(50) %5s "Crec. Def." _col(67) %8.4fc "Deflactor"
 
@@ -42,5 +44,10 @@ forvalues k=`=$anioVP-2'(1)`=$anioVP' {
 	local before ""
 	local after ""
 }
-	
+
+
+
+************/
+*** Clear ***
+*************
 clear
