@@ -25,7 +25,7 @@ foreach k of local archivos_csv {
 		replace `j' = trim(`j')
 		replace `j' = subinstr(`j',`"""',"",.)
 		replace `j' = subinstr(`j',"  "," ",.)
-		replace `j' = subinstr(`j',"Ê"," ",.)				// Algunas bases tienen este caracter "raro".
+		replace `j' = subinstr(`j',"ÃŠ"," ",.)				// Algunas bases tienen este caracter "raro".
 	}
 
 	foreach j in aprobado modificado devengado pagado adefas ejercido proyecto {

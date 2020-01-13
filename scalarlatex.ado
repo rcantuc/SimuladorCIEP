@@ -23,46 +23,33 @@ program define scalarlatex
 	file close `myfile'	
 	
 	* New log *
-	quietly log using "$results/$id/outputstata_`logname'.tex", name(latex) replace text
+	quietly log using "$export/../statalatex_`logname'.tex", name(latex) replace text
 	quietly log close latex
 
 	* LaTeX-friendly log *
 	foreach name in `scalars' {
 
-		quietly log using "$results/$id/outputstata_`logname'.tex", name(latex) append text
+		quietly log using "$export/../statalatex_`logname'.tex", name(latex) append text
 				
-		if `"`=substr("`name'",1,4)'"' == "anio" | `"`name'"' == "lif" | `"`name'"' == "pef" ///
-			| `"`=substr("`name'",1,5)'"' == "enigh" {
+		if `"`=substr("`name'",1,4)'"' == "anio" {
+			local value = scalar(`name')
 			di in w "\def\d`name'#1{\gdef\\`name'{#1}}"
-			local value = `name'
 			di in w `"\d`name'{`value'}"'		
 		}
 
-		else if `"`=substr("`name'",1,3)'"' == "pib" | `"`=substr("`name'",1,3)'"' == "def" {
-			*di in w "\def\d`name'#1{\gdef\\`name'{#1}}"
-			*di in w `"\num\d`name'{`=string(`value',"%10.1fc")'}"'
-		}
-
-		else if `"`=substr("`name'",1,1)'"' == "T" | `"`=substr("`name'",-3,3)'"' == "PIB" {
+		else if `"`=substr("`name'",-3,3)'"' == "PIB" & `"`=substr("`name'",1,3)'"' != "PIB" {
+			local value = scalar(`name')
 			di in w "\def\d`name'#1{\gdef\\`name'{#1}}"
-			local value = string(`=round(`name',.001)',"%6.3fc")
-			di in w `"\d`name'{`value'}"'
+			di in w `"\d`name'{`=string(`value',"%6.1fc")'}"'
 		}
-
-		else if `"`=substr("`name'",1,1)'"' == "Z" {
-			di in w "\def\d`name'#1{\gdef\\`name'{#1}}"
-			local value = string(`=round(`name',1)',"%10.0fc")
-			di in w `"\d`name'{`value'}"'		
-		}
-
 		else {
+			local value = scalar(`name')/1000000
 			di in w "\def\d`name'#1{\gdef\\`name'{#1}}"
-			local value = string(`=round(`name'/1000000,.1)',"%20.1fc")
-			di in w `"\d`name'{`value'}"'
+			di in w `"\d`name'{`=string(`value',"%12.1fc")'}"'		
 		}
 
 		quietly log close latex
 	}
-	scalar drop _all
+	*scalar drop _all
 	capture log on overall
 end
