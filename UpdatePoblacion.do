@@ -1,5 +1,5 @@
 ************************************************
-**** Base de datos: Población y Defunciones ****
+**** Base de datos: PoblaciÃ³n y Defunciones ****
 ************************************************
 
 ********************
@@ -27,7 +27,7 @@ label var anio "A{c n~}o"
 
 
 * 4. Orden *
-replace entidad = "Nacional" if entidad == "República Mexicana"
+replace entidad = "Nacional" if entidad == "RepÃºblica Mexicana"
 keep if entidad == "Nacional"
 
 
@@ -66,7 +66,7 @@ label var anio "A{c n~}o"
 
 
 * 4. Orden *
-replace entidad = "Nacional" if entidad == "República Mexicana"
+replace entidad = "Nacional" if entidad == "RepÃºblica Mexicana"
 keep if entidad == "Nacional"
 
 

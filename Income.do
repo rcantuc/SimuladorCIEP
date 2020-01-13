@@ -11,7 +11,7 @@ if `1' >= 2018 {
 	local hogar = "folioviv foliohog"
 	local betamin = 1
 	local altimir = "no"
-	local CuotasISSSTE = 134940744602					// ¿CP 2018?
+	local CuotasISSSTE = 134940744602					// Â¿CP 2018?
 	local SubsidioEmpleo = 50979000000 					// Presupuesto de gastos fiscales (2018)
 	local udis = 6.054085								// Promedio de valor de UDIS de enero a diciembre 2016
 	local smdf = 88.36									// Salario minimo general
@@ -52,41 +52,44 @@ local macroanio = `1'
 
 
 
+noisily di _newline(2) _col(04) in g "{bf:INGRESOS DE LOS HOGARES: " in y "`enigh' `enighanio'}"
+
 
 
 ***************************************
-*** A. Macros 1. Cuentas Nacionales ***
+*** A.1. Macros: Cuentas Nacionales ***
 ***************************************
-SCN, anio(`macroanio')
-local PIBSCN = r(PIB)
-local RemSal = r(RemSal)
-local SSEmpleadores = r(SSEmpleadores)
-local SSImputada = r(SSImputada)
-local MixL = r(MixL)
-local ExNOpSoc = r(ExNOpSoc)
-local ExNOpHog = r(ExNOpHog)
-local MixKN = r(MixKN)
-local MixK = r(MixK)
-local ROWRem = r(ROWRem)
-local ROWTrans = r(ROWTrans)
-local SNAAlquiler = r(Alquileres)
-local SNAInmobiliarias = r(Inmobiliarias)
-local SNAExBOpHog = r(ExBOpHog)
-local SNAAlojamiento = r(Alojamiento)
-local ServProf = r(ServProf)
-local ConsMedi = r(ConsMedi)
-local ConsDent = r(ConsDent)
-local ConsOtro = r(ConsOtro)
-local EnfeDomi = r(EnfeDomi)
+noisily SCN, anio(`macroanio')
+local PIBSCN = scalar(PIB)
+local RemSal = scalar(RemSal)
+local SSEmpleadores = scalar(SSEmpleadores)
+local SSImputada = scalar(SSImputada)
+local MixL = scalar(MixL)
+local ExNOpSoc = scalar(ExNOpSoc)
+local ExNOpHog = scalar(ExNOpHog)
+local MixKN = scalar(MixKN)
+local ROWRem = scalar(ROWRem)
+local ROWTrans = scalar(ROWTrans)
+
+local ServProf = scalar(ServProf)
+local ConsMedi = scalar(ConsMedi)
+local ConsDent = scalar(ConsDent)
+local ConsOtro = scalar(ConsOtro)
+local EnfeDomi = scalar(EnfeDomi)
 local ServProfH = 67849000000
 local SaludH = 196882000000
+
+local SNAAlquiler = scalar(Alquileres)
+local SNAInmobiliarias = scalar(Inmobiliarias)
+local SNAExBOpHog = scalar(ExBOpHog)
+local SNAAlojamiento = scalar(Alojamiento)
 
 
 
 
 
 ************************
-*** A. Macros 2. LIF ***
+*** A.2. Macros: LIF ***
 ************************
 LIF, anio(`macroanio')
 local ISRSalarios = r(ISR__asalariados_)
@@ -112,7 +115,7 @@ local OtrasEmpresas = r(Otras_empresas)
 
 
 ************************
-*** A. Macros 3. PEF ***
+*** A.3. Macros: PEF ***
 ************************
 PEF, anio(`macroanio') by(desc_funcion)
 local Cuotas_ISSSTE = r(Cuotas_ISSSTE)
@@ -135,6 +138,7 @@ if `macroanio' >= 2015 {
 			local deflactor = deflator[`k']
 		}
 	}
+
 	use "`c(sysdir_site)'../basesCIEP/SAT/Personas fisicas/Stata/2015_labels.dta", clear
 	tabstat iaarrendamiento utgravacumap utgravacumriap, stat(sum) f(%20.0fc) save
 	tempname SATAbierto
@@ -157,7 +161,6 @@ else {
 ***********************************
 *** B. Micro 1. ENIGH. Ingresos ***
 ***********************************
-noisily di _newline(2) _col(04) in g "{bf:INGRESOS DE LOS HOGARES: " in y "`enigh' `enighanio'}"
 use "`c(sysdir_site)'../basesCIEP/INEGI/`enigh'/`enighanio'/ingresos.dta", clear
 merge m:1 (`hogar') using "`c(sysdir_site)'../basesCIEP/INEGI/`enigh'/`enighanio'/concentrado.dta", ///
 	keepusing(factor tot_integ smg) keep(matched)
@@ -1113,7 +1116,7 @@ foreach k of varlist ing_total ing_sueldos ing_mixto ing_capital ing_estim_alqu 
 }
 
 * Results *
-tabstat ing_sueldos ing_mixto ing_total ing_estim_alqu ing_capital [aw=factor], stat(sum) f(%25.0fc) save
+noisily tabstat ing_sueldos ing_mixto ing_total ing_estim_alqu ing_capital [aw=factor], stat(sum) f(%25.0fc) save
 tempname AnnInc
 matrix `AnnInc' = r(StatTotal)
 

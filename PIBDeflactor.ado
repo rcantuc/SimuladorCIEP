@@ -1,4 +1,4 @@
-program define PIBDeflactor
+program define PIBDeflactor, return
 quietly {
 	version 13.1
 	syntax [, ANIOvp(int -1) GEO(int 5) FIN(int 2030) Graphs]
@@ -231,7 +231,7 @@ quietly {
 
 
 
-	***********************************
+	***************************************
 	** 3.1 Par{c a'}metros ex{c o'}genos **
 	* Imputar *
 	forvalues k=`anio_last'(1)`fin' {
@@ -239,6 +239,7 @@ quietly {
 		if _rc == 0 {
 			replace var_pibY = ${pib`k'} if anio == `k'
 			local except "`except'`k' (${pib`k'}%), "
+			local bold`k' "bold"
 		}
 		else {
 			replace var_pibY = L4.var_pibG if anio == `k'
@@ -261,14 +262,14 @@ quietly {
 	keep if trimestre == 1
 	drop *Q *trimestre
 	
-	if "`globals'" == "globals" {
+	*if "`globals'" == "globals" {
 		forvalues k=1(1)`=_N' {
 			global PIB_`=anio[`k']' = pibY[`k']
 			global DEF_`=anio[`k']' = deflator[`k']
 			global pib_`=anio[`k']' = var_pibY[`k']
 			global def_`=anio[`k']' = var_indiceY[`k']
 		}
-	}
+	*}
 
 	if "`graphs'" == "graphs" {
 		* Texto sobre lineas *
@@ -310,16 +311,32 @@ quietly {
 			legend(on)
 	}
 
+	
+	return local except "`except'"
+	return local exceptI "`exceptI'"
+	return scalar geo = `geo'
 
 
 
 	***************
 	*** 5 Texto ***
 	***************
-	noisily di _newline in g "A{c n~}o" _col(11) %8s "Crec. PIB" _col(25) %20s "PIB" _col(50) %5s "Crec. Def." _col(64) %8.4fc "Deflactor"
+	noisily di _newline in g "  A{c n~}o" _col(11) %8s "Crec. PIB" _col(25) %20s "PIB" _col(50) %5s "Crec. Def." _col(64) %8.4fc "Deflactor"
 
-	forvalues k=`=`aniovp'-1'(1)`=`aniovp'+1' {
-		noisily di in g "`k' " _col(10) %8.4fc in y ${pib_`k'} " %" _col(25) %20.0fc ${PIB_`k'} _col(50) %8.4fc in y ${def_`k'} " %" _col(65) %8.4fc ${DEF_`k'}
+	forvalues k=`=`aniovp'-5'(1)`=`aniovp'+5' {
+		capture confirm existence `bold`k''
+		if _rc != 0 {
+			noisily di in g "  `k' " _col(10) %8.4fc in y ${pib_`k'} " %" _col(25) %20.0fc ${PIB_`k'} _col(50) %8.4fc in y ${def_`k'} " %" _col(65) %8.4fc ${DEF_`k'}
+		}
+		else {
+			capture confirm existence `firstrow'
+			if _rc != 0 {
+				noisily di in g _dup(72) "-"
+				local firstrow "firstrow"
+			}
+			noisily di in g "{bf:  `k' " _col(10) %8.4fc in y ${pib_`k'} " %" _col(25) %20.0fc ${PIB_`k'} _col(50) %8.4fc in y ${def_`k'} " %" _col(65) %8.4fc ${DEF_`k'} "}"
+			noisily di in g _dup(72) "-"
+		}
 	}
 
 }

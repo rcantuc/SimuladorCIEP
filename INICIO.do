@@ -2,55 +2,63 @@
 **** HOLA, HUMANO! :) ****
 **************************
 clear all
+macro drop _all
+capture log close _all
+set scheme ciepnew
 timer on 1
+
+
+
 
 
 *****************
 *** 0. Github ***
 *****************
 if "`c(os)'" == "Unix" {
-	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Github/simuladorCIEP"
-	global export "/home/ciepmx/Dropbox (CIEP)/Textbook/images/"
+	cd "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
+	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
+	global export "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Textbook/images/"
 }
 if "`c(os)'" == "MacOSX" {
-	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/Github/simuladorCIEP"
-	global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
+	cd "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
+	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
+	global export "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Textbook/images/"
 }
 adopath ++ PERSONAL
-set scheme cieptextbook
 
-global anioVP = 2020
 
+
+
+
+********************
+*** 1. Variables ***
+********************
+local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
+scalar aniovp = substr(`"`=trim("`fecha'")'"',1,4)
+scalar aniovp = 2020
+
+global pib2019 = 0.25
+global def2019 = 4.25
 
 
 
 
 *************************************************/
-*** 1. Capítulo 2: Las tres caras de la moneda ***
-// PARA ACTUALIZAR: reemplazar todos los .xls (./basesCIEP/INEGI/SCN/)
-noisily SCN, graphs //anio(2020)
+*** 2. Capítulo 2: Las tres caras de la moneda ***
+// ACTUALIZACIÓN: actualizar todos los .xls dentro de ./TemplateCIEP/basesCIEP/INEGI/SCN/
+noisily SCN, anio(`=aniovp') //graphs 											//update
 
 
 
 
 
+**********************************************************
+*** 3. Capítulo 3: La economía-sistema antropocéntrica ***
+noisily run Income.do 2018
+*noisily run "`c(sysdir_site)'/Expenditure.do" 2018
 
 
 
-exit
-
-// PARA ACTUALIZAR: reemplazar PIB.xls e deflactor.xls (./basesCIEP/INEGI/SCN/)
-*PIBDeflactor, graphs //aniovp(2020)
-
-
-
-
-
-
-*********************************************************
-*** 1. Capítulo 1: La (macro)economía antropocéntrica ***
-Poblacion, graphs																// update (downloads dataset again)
-Poblacion defunciones, graphs 													// update (downloads dataset again)
 
 
 
@@ -62,7 +70,7 @@ Poblacion defunciones, graphs 													// update (downloads dataset again)
 
 ***************************/
 *** 2. Finanzas públicas ***
-****************************
+/****************************
 noisily LIF, graphs 				//update
 noisily PEF, graphs 				//update
 noisily Balance, graphs
@@ -70,11 +78,23 @@ noisily SHRFSP, graphs 				//`update'
 
 
 
-********************/
-*** 4. Incidencia ***
-/*********************
-noisily run "`c(sysdir_site)'/Income.do" 2016
-noisily run "`c(sysdir_site)'/Expenditure.do" 2016
+Poblacion, graphs																// update (downloads dataset again)
+Poblacion defunciones, graphs 													// update (downloads dataset again)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 *noisily Eficiencia, reboot graphs noisily update
 *noisily TransfNetas, graphs update
 
@@ -180,6 +200,7 @@ capture log close
 *********************/
 *** 4. Touch Down! ***
 **********************
+*noisily scalarlatex
 timer off 1
 timer list 1
 noisily di _newline in g _dup(55) "+" in y round(`=r(t1)/r(nt1)',.1) in g " segs." _dup(55) "+" _newline(5)
