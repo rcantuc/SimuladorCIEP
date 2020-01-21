@@ -38,12 +38,22 @@ program define scalarlatex
 		}
 
 		else if `"`=substr("`name'",-3,3)'"' == "PIB" & `"`=substr("`name'",1,3)'"' != "PIB" {
-			local value = scalar(`name')
+			if scalar(`name') != . {
+				local value = scalar(`name')
+			}
+			else {
+				local value = 0
+			}
 			di in w "\def\d`name'#1{\gdef\\`name'{#1}}"
 			di in w `"\d`name'{`=string(`value',"%6.1fc")'}"'
 		}
 		else {
-			local value = scalar(`name')/1000000
+			if scalar(`name') != . {
+				local value = scalar(`name')/1000000
+			}
+			else {
+				local value = 0
+			}
 			di in w "\def\d`name'#1{\gdef\\`name'{#1}}"
 			di in w `"\d`name'{`=string(`value',"%12.1fc")'}"'		
 		}

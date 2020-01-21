@@ -4,7 +4,7 @@ quietly {
 	version 13.1
 	syntax varname [if] [fweight/], ///
 		[BASE(string) ///
-		Anio(int $anioVP) BOOTstrap(int 1) ///
+		Anio(int -1) BOOTstrap(int 1) ///
 		Graphs REboot Noisily ///
 		MACro(string) BIE ///
 		POBlacion(string) FOLIO(string) NOKernel POBGraph ID(string)]

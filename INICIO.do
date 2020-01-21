@@ -10,52 +10,163 @@ timer on 1
 
 
 
-
 *****************
 *** 0. Github ***
 *****************
 if "`c(os)'" == "Unix" {
 	cd "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
 	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
-	global export "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Textbook/images/"
+	*global export "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Textbook/images/"
 }
 if "`c(os)'" == "MacOSX" {
 	cd "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
 	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
-	global export "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Textbook/images/"
+	*global export "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Textbook/images/"
 }
 adopath ++ PERSONAL
 
 
 
+******************
+** 0.1 Globales **
+global pib2022 = 4.5
+global discount = 3.0
+
+global pais = "ElSalvador"
+
+
 
 
 ********************
-*** 1. Variables ***
+***              ***
+*** 1. POBLACIÓN ***
+***              ***
 ********************
-local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
-scalar aniovp = substr(`"`=trim("`fecha'")'"',1,4)
-scalar aniovp = 2020
-
-global pib2019 = 0.25
-global def2019 = 4.25
+noisily Poblacion, g anio(2018) //update
 
 
 
 
 *************************************************/
+***                                            ***
 *** 2. Capítulo 2: Las tres caras de la moneda ***
-// ACTUALIZACIÓN: actualizar todos los .xls dentro de ./TemplateCIEP/basesCIEP/INEGI/SCN/
-noisily SCN, anio(`=aniovp') //graphs 											//update
+***                                            ***
+***               ACTUALIZACIÓN                *** 
+*** 1) abrir archivos .iqy en Excel de Windows ***
+*** 2) guardar y reemplazar .xls dentro de     ***
+***      ./TemplateCIEP/basesCIEP/INEGI/SCN/   ***
+*** 3) correr SCN con opción "update"          ***
+***                                            ***
+**************************************************
+if "$pais" == "" {
+	noisily SCN, graphs //update
+}
+else {
+	noisily PIBDeflactor, g aniovp(2018) //update
+}
 
 
 
 
-
-**********************************************************
+*********************************************************/
+***                                                    ***
 *** 3. Capítulo 3: La economía-sistema antropocéntrica ***
-noisily run Income.do 2018
-*noisily run "`c(sysdir_site)'/Expenditure.do" 2018
+***                                                    ***
+**********************************************************
+*noisily run Income.do 2018
+use "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/income.dta", clear
+Simulador ing_laboral if ing_laboral != 0 [fw=factor], anio(2018) noisily graphs
+
+
+
+
+
+
+
+exit
+*noisily run Expenditure.do 2018
+*noisily Sankey escol sexo grupo_edad rural formalmax decil ///
+	using "`c(sysdir_site)'../basesCIEP/SIM/2018/income.dta", ///
+	anio(2018) profile(Poblacion)
+
+	
+use "`c(sysdir_site)'../basesCIEP/SIM/2018/income.dta", clear
+rename Depreciacion ing_Depreciacion
+collapse (sum) ing_laboral ing_capital ing_Depreciacion, by(escol)
+
+tempvar cuenta
+reshape long ing_, i(escol) j(`cuenta') string
+encode `cuenta', g(cuenta)
+
+rename escol from
+rename cuenta to
+rename ing_ profile
+
+tempfile eje1
+save `eje1'
+
+
+use "`c(sysdir_site)'../basesCIEP/SIM/2018/income.dta", clear
+rename Depreciacion ing_Depreciacion
+collapse (sum) ing_laboral ing_capital ing_Depreciacion, by(sexo)
+
+tempvar cuenta
+reshape long ing_, i(sexo) j(`cuenta') string
+encode `cuenta', g(cuenta)
+
+rename cuenta from
+rename sexo to
+rename ing_ profile
+
+tempfile eje2
+save `eje2'
+
+
+use "`c(sysdir_site)'../basesCIEP/SIM/2018/income.dta", clear
+collapse (sum) ing_honor ing_sueldos, by(sexo)
+tempvar cuenta
+reshape long ing_, i(sexo) j(`cuenta') string
+encode `cuenta', g(cuenta)
+
+rename sexo from
+rename cuenta to
+rename ing_ profile
+
+tempfile eje3
+save `eje3'
+
+
+use "`c(sysdir_site)'../basesCIEP/SIM/2018/income.dta", clear
+collapse (sum) ing_honor ing_sueldos, by(escol)
+tempvar cuenta
+reshape long ing_, i(escol) j(`cuenta') string
+encode `cuenta', g(cuenta)
+
+rename cuenta from
+rename escol to
+rename ing_ profile
+
+tempfile eje4
+save `eje4'
+
+
+
+
+noisily SankeySum, a(`eje1') b(`eje2') c(`eje3') d(`eje4') cycle
+
+
+exit
+
+
+
+*********************/
+*** 4. Touch Down! ***
+**********************
+*noisily scalarlatex
+timer off 1
+timer list 1
+noisily di _newline in g _dup(55) "+" in y round(`=r(t1)/r(nt1)',.1) in g " segs." _dup(55) "+" _newline(5)
+
 
 
 
@@ -80,19 +191,6 @@ noisily SHRFSP, graphs 				//`update'
 
 Poblacion, graphs																// update (downloads dataset again)
 Poblacion defunciones, graphs 													// update (downloads dataset again)
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 *noisily Eficiencia, reboot graphs noisily update
@@ -193,14 +291,3 @@ noisily Eficiencia, id(`id') graphs
 
 capture log close
 
-
-
-
-
-*********************/
-*** 4. Touch Down! ***
-**********************
-*noisily scalarlatex
-timer off 1
-timer list 1
-noisily di _newline in g _dup(55) "+" in y round(`=r(t1)/r(nt1)',.1) in g " segs." _dup(55) "+" _newline(5)

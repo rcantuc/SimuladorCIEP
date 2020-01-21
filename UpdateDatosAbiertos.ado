@@ -546,11 +546,15 @@ program define UpdateDatosAbiertos, return
 	replace monto_s = monto*(382732.0-194651.6)/(877421.3-437681.4) if anio == 2018 & trimestre == 2
 	replace monto_r = monto*(26529.3-14006.4)/(877421.3-437681.4) if anio == 2018 & trimestre == 2
 
-	replace monto_m = monto*(627129.8-444511.9)/(1257525.4-877421.3) if anio >= 2018 & trimestre == 3
-	replace monto_f = monto*(33176.6-23648.2)/(1257525.4-877421.3) if anio >= 2018 & trimestre == 3
-	replace monto_s = monto*(558673.2-382732.0)/(1257525.4-877421.3) if anio >= 2018 & trimestre == 3
-	replace monto_r = monto*(38545.9-26529.3)/(1257525.4-877421.3) if anio >= 2018 & trimestre == 3
+	replace monto_m = monto*(627129.8-444511.9)/(1257525.4-877421.3) if anio == 2018 & trimestre == 3
+	replace monto_f = monto*(33176.6-23648.2)/(1257525.4-877421.3) if anio == 2018 & trimestre == 3
+	replace monto_s = monto*(558673.2-382732.0)/(1257525.4-877421.3) if anio == 2018 & trimestre == 3
+	replace monto_r = monto*(38545.9-26529.3)/(1257525.4-877421.3) if anio == 2018 & trimestre == 3
 
+	replace monto_m = monto*(809833.5-627129.8)/(1664949.1-1257525.4) if anio == 2018 & trimestre == 4
+	replace monto_f = monto*(43683.5-33176.6)/(1664949.1-1257525.4) if anio == 2018 & trimestre == 4
+	replace monto_s = monto*(760552.9-558673.2)/(1664949.1-1257525.4) if anio == 2018 & trimestre == 4
+	replace monto_r = monto*(50879.3-38545.9)/(1664949.1-1257525.4) if anio == 2018 & trimestre == 4
 
 
 	* Modulo isr.ado *

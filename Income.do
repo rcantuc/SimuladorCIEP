@@ -3,15 +3,22 @@
 **** MACRO + MICRO HARMONIZATION ****
 ****                             ****
 *************************************
+
+
+
+
+********************
+*** A.0 Defaults ***
+********************
 if "`1'" == "" {
+	clear all
 	local 1 = 2018
 }
 if `1' >= 2018 {
 	local enigh = "ENIGH"
 	local hogar = "folioviv foliohog"
 	local betamin = 1
-	local altimir = "no"
-	local CuotasISSSTE = 134940744602					// ¿CP 2018?
+	local altimir = "yes"
 	local SubsidioEmpleo = 50979000000 					// Presupuesto de gastos fiscales (2018)
 	local udis = 6.054085								// Promedio de valor de UDIS de enero a diciembre 2016
 	local smdf = 88.36									// Salario minimo general
@@ -21,7 +28,6 @@ if `1' == 2016 {
 	local hogar = "folioviv foliohog"
 	local betamin = 1									// ENIGH: 2.38
 	local altimir = "no"
-	local CuotasISSSTE = 79886000000					// Trabajadores y dependencias. Informe financiero y actuarial del ISSSTE (2016)
 	local SubsidioEmpleo = 43707000000					// Presupuesto de gastos fiscales (2016)
 	local udis = 5.4490872131							// Promedio de valor de UDIS de enero a diciembre 2016
 	local smdf = 73.04									// Salario minimo general
@@ -30,9 +36,7 @@ if `1' == 2015 {
 	local enigh = "ENIGH-MCS"
 	local hogar = "proyecto folioviv foliohog"
 	local betamin = 1.9935								// MCS: 1.9935
-	local altimir = "yes"
-	rename factor factor
-	local CuotasISSSTE = 74986000000					// Trabajadores y dependencias. Informe financiero y actuarial del ISSSTE (2015)
+	local altimir = "no"
 	local SubsidioEmpleo = 42813000000					// Presupuesto de gastos fiscales (2015)
 	local udis = 5.3051696959  							// Promedio de valor de UDIS de enero a diciembre 2015
 	local smdf = 70.10									// Salario minimo general
@@ -42,7 +46,6 @@ if `1' == 2014 {
 	local hogar = "proyecto folioviv foliohog"
 	local betamin = 1									// ENIGH: 2.92, MCS: 2.8191 
 	local altimir = "no"
-	local CuotasISSSTE = 71771000000					// Trabajadores y dependencias. Informe financiero y actuarial del ISSSTE (2014)
 	local SubsidioEmpleo = 41293000000					// Presupuesto de gastos fiscales (2014)
 	local udis = 5.1561230329  							// Promedio de valor de UDIS de enero a diciembre 2014
 	local smdf = 67.29									// Zona A. 2014
@@ -51,14 +54,13 @@ local enighanio = `1'
 local macroanio = `1'
 
 
-
 noisily di _newline(2) _col(04) in g "{bf:INGRESOS DE LOS HOGARES: " in y "`enigh' `enighanio'}"
 
 
 
-***************************************
-*** A.1. Macros: Cuentas Nacionales ***
-***************************************
+**************************************
+*** A.1 Macros: Cuentas Nacionales ***
+**************************************
 noisily SCN, anio(`macroanio')
 local PIBSCN = scalar(PIB)
 local RemSal = scalar(RemSal)
@@ -70,7 +72,9 @@ local ExNOpHog = scalar(ExNOpHog)
 local MixKN = scalar(MixKN)
 local ROWRem = scalar(ROWRem)
 local ROWTrans = scalar(ROWTrans)
+local ConCapFij = scalar(ConCapFij)
 
+* Ajuste Rentas y Servicios Profesionales (Documento BID + SHCP) *
 local ServProf = scalar(ServProf)
 local ConsMedi = scalar(ConsMedi)
 local ConsDent = scalar(ConsDent)
@@ -78,7 +82,6 @@ local ConsOtro = scalar(ConsOtro)
 local EnfeDomi = scalar(EnfeDomi)
 local ServProfH = 67849000000
 local SaludH = 196882000000
-
 local SNAAlquiler = scalar(Alquileres)
 local SNAInmobiliarias = scalar(Inmobiliarias)
 local SNAExBOpHog = scalar(ExBOpHog)
@@ -87,17 +90,15 @@ local SNAAlojamiento = scalar(Alojamiento)
 
 
 
-
-************************
-*** A.2. Macros: LIF ***
-************************
-LIF, anio(`macroanio')
-local ISRSalarios = r(ISR__asalariados_)
-local ISRFisicas = r(ISR__PF_)
-local ISRMorales = r(ISR__PM_)
-local ISROtros = r(ISR__contratistas_y_asignatarios)
-local CuotasIMSS = r(Cuotas__IMSS_)
-local IMSSpropio = r(IMSS)
+***********************
+*** A.2 Macros: LIF ***
+***********************
+noisily LIF, anio(`macroanio')
+local ISRSalarios = r(ISR)*(760552.9/1664949.1)									// Informe Trimestral SHCP (2018-IV).
+local ISRFisicas = r(ISR)*(43683.5/1664949.1)									// Informe Trimestral SHCP (2018-IV).
+local ISRMorales = r(ISR)*(809833.5/1664949.1)									// Informe Trimestral SHCP (2018-IV).
+local CuotasIMSS = r(Cuotas_IMSS)
+local IMSSpropio = r(IMSS)-`CuotasIMSS'
 local ISSSTEpropio = r(ISSSTE)
 local CFEpropio = r(CFE)
 local Pemexpropio = r(Pemex)
@@ -113,14 +114,13 @@ local OtrasEmpresas = r(Otras_empresas)
 
 
 
-
-************************
-*** A.3. Macros: PEF ***
-************************
-PEF, anio(`macroanio') by(desc_funcion)
+***********************
+*** A.3 Macros: PEF ***
+***********************
+noisily PEF, anio(`macroanio') by(desc_funcion)
 local Cuotas_ISSSTE = r(Cuotas_ISSSTE)
 
-PEF if transf_gf == 0 & ramo != -1 & (substr(string(objeto),1,2) == "45" ///
+noisily PEF if transf_gf == 0 & ramo != -1 & (substr(string(objeto),1,2) == "45" ///
 	| substr(string(objeto),1,2) == "47" | desc_pp == 779), anio(`macroanio') by(ramo)
 local SSFederacion = r(Aportaciones_a_Seguridad_Social) + `Cuotas_ISSSTE'
 
@@ -128,9 +128,9 @@ local SSFederacion = r(Aportaciones_a_Seguridad_Social) + `Cuotas_ISSSTE'
 
 
 
-************************
-*** A. Macros 4. SAT ***
-************************
+*************************
+*** A.4 Macros 4. SAT ***
+*************************
 if `macroanio' >= 2015 {
 	PIBDeflactor, aniovp(`macroanio')
 	forvalues k=1(1)`=_N' {
@@ -826,7 +826,6 @@ g double exen_otrocap = ing_otrocap
 
 
 
-
 ******************
 *** 5. TOTALES ***
 ******************
@@ -883,7 +882,6 @@ egen double exen_t4_cap9 = rsum(exen_autor exen_remesas exen_trabmenor exen_pres
 
 
 
-
 ************************************
 *** 6. IDENTIFICAR LA FORMALIDAD ***
 ************************************
@@ -923,6 +921,7 @@ label define tipo_contribuyente 1 "Asalariado" 2 "Persona fisica"
 label values tipo_contribuyente tipo_contribuyente
 
 noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "Los derechohabientes del IMSS, ISSSTE, ISSSTE Estatal, PEMEX, Defensa, Marina o aqu{c e'}llos con prestaciones sociales son el Sector Formal de la econom{c i'}a y quienes pagan sus impuestos.}"
+
 * IMSS *
 g byte formal = inst_1 == "1"
 g byte formal2 = inst_1 == "1" & (inscr_1 == "1" | inscr_6 == "6")
@@ -963,23 +962,20 @@ replace formal = `formal_max'
 g formal_dummy = formal != 0
 
 * Labels *
-label define formalidad 1 "IMSS" 2 "ISSSTE" 3 "Pemex" 4 "Otro" 5 "ISSSTE estatal" 6 "Independiente" 0 "Informal"
+label define formalidad 1 "IMSS" 2 "ISSSTE" 3 "Pemex" 4 "Otro" 5 "ISSSTE estatal" 6 "Independiente" 0 "Sin acceso"
 label values formal formalidad
 label values formal2 formalidad
 
 label define formalidad_dummy 1 "Formal" 0 "Informal"
 label values formal_dummy formalidad_dummy
 
-/* Segun el SAT, habia 29,855,002 de asalariados en Diciembre de 2015 */
-noisily di _newline(2) _col(04) in g "{bf:Paso 0: Informaci{c o'}n inicial}"
+/* Segun el SAT, habia 41,255,409 de asalariados en Agosto de 2018 */
+di _newline(2) _col(04) in g "{bf:Paso 0: Informaci{c o'}n inicial}"
+di _newline _col(04) in g "{bf:0.1. Trabajos asalariados formales}"
+table formal2 [fw=factor] if formal2 != 0, format(%12.0fc) row
 
-noisily di _newline _col(04) in g "{bf:0.1. Trabajos asalariados formales}"
-noisily table formal2 [fw=factor] if formal2 != 0, format(%12.0fc) row
-
-noisily di _newline _col(04) in g "{bf:0.2. Personas formales}"
-noisily table formal [fw=factor] if formal != 0, format(%12.0fc) row
-
-
+di _newline _col(04) in g "{bf:0.2. Personas formales}"
+table formal [fw=factor] if formal != 0, format(%12.0fc) row
 
 
 
@@ -1055,8 +1051,8 @@ rename estim_alqu ing_estim_alqu
 replace ing_estim_alqu = 0 if numren != "01"
 
 * Alquileres *
-noisily di _newline _col(04) in g "{bf:O.3.1. Renta e ingresos por alquileres}"
-noisily tabstat renta ing_rent [aw=factor], stat(sum) f(%20.0fc) by(formal_dummy) save
+di _newline _col(04) in g "{bf:O.3.1. Renta e ingresos por alquileres}"
+tabstat renta ing_rent [aw=factor], stat(sum) f(%20.0fc) by(formal_dummy) save
 tempname RENTA
 matrix `RENTA' = r(StatTotal)
 
@@ -1064,13 +1060,12 @@ replace renta = renta*(`SNAAlojamiento'-`SNAExBOpHog')/`RENTA'[1,1]
 replace ing_rent = ing_rent*(`SNAAlquiler'-`SNAExBOpHog')/`RENTA'[1,2]
 replace exen_rent = exen_rent*(`SNAAlquiler'-`SNAExBOpHog')/`RENTA'[1,2]
 
-noisily di _newline _col(04) in g "{bf:0.3.2. Renta e ingresos por alquileres (escalado)}"
-noisily tabstat renta ing_rent [aw=factor], stat(sum) f(%20.0fc) by(formal_dummy) save
-
+di _newline _col(04) in g "{bf:0.3.2. Renta e ingresos por alquileres (escalado)}"
+tabstat renta ing_rent [aw=factor], stat(sum) f(%20.0fc) by(formal_dummy) save
 
 * Activdad empresarial y profesional *
-noisily di _newline _col(04) in g "{bf:O.3.3. Actividad empresarial y profesional}"
-noisily tabstat ing_t4_cap2 exen_t4_cap2 [aw=factor], stat(sum) f(%20.0fc) by(formal_dummy) save
+di _newline _col(04) in g "{bf:O.3.3. Actividad empresarial y profesional}"
+tabstat ing_t4_cap2 exen_t4_cap2 [aw=factor], stat(sum) f(%20.0fc) by(formal_dummy) save
 tempname EMPRE
 matrix `EMPRE' = r(StatTotal)
 
@@ -1078,9 +1073,22 @@ noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "El " %5.2fc (1-106302/5
 replace ing_t4_cap2 = ing_t4_cap2*(`ServProf'+`ConsMedi'+`ConsDent'+`ConsOtro'+`EnfeDomi')*(1-106302/581969)/`EMPRE'[1,1]
 replace exen_t4_cap2 = ing_t4_cap2*(1-290533/475667)
 
-noisily di _newline _col(04) in g "{bf:O.3.4. Actividad empresarial y profesional (escalado)}"
-noisily tabstat ing_t4_cap2 exen_t4_cap2 [aw=factor], stat(sum) f(%20.0fc) by(formal_dummy) save
+di _newline _col(04) in g "{bf:O.3.4. Actividad empresarial y profesional (escalado)}"
+tabstat ing_t4_cap2 exen_t4_cap2 [aw=factor], stat(sum) f(%20.0fc) by(formal_dummy) save
 
+
+
+*********************************
+* Distribuciones proporcionales *
+*********************************
+capture program drop Distribucion
+program Distribucion, return
+	syntax anything, RELativo(varname) MACro(real)
+
+	tempvar TOT
+	egen double `TOT' = sum(`relativo') if factor_cola != 0
+	g double `anything' = `relativo'/`TOT'*`macro'/factor_cola if factor_cola != 0
+end
 
 
 
@@ -1116,13 +1124,13 @@ foreach k of varlist ing_total ing_sueldos ing_mixto ing_capital ing_estim_alqu 
 }
 
 * Results *
-noisily tabstat ing_sueldos ing_mixto ing_total ing_estim_alqu ing_capital [aw=factor], stat(sum) f(%25.0fc) save
+tabstat ing_sueldos ing_mixto ing_total ing_estim_alqu ing_capital [aw=factor], stat(sum) f(%25.0fc) save
 tempname AnnInc
 matrix `AnnInc' = r(StatTotal)
 
 
 // ENIGH As Is //
-noisily di _newline _col(04) in g "{bf:0.4. Ingresos " ///
+noisily di _newline _col(04) in g "{bf:Paso 0. Ingresos " ///
 	_col(44) in g "(Gini)" ///
 	_col(57) in g %7s "`enigh'" ///
 	_col(66) %7s "SCN" in g ///
@@ -1147,6 +1155,12 @@ noisily di ///
 	_col(77) in y %7.1fc (0/`SSImputada'-1)*100 "%"
 noisily di ///
 	_col(04) in g "(+) Ingreso mixto (laboral)" ///
+	_col(44) in y "(" %5.3fc `gini_ing_mixtoL' ")" ///
+	_col(57) in y %7.3fc `AnnInc'[1,2]*2/3/`PIBSCN'*100 ///
+	_col(66) in y %7.3fc `MixL'/`PIBSCN'*100 ///
+	_col(77) in y %7.1fc (`AnnInc'[1,2]*2/3/`MixL'-1)*100 "%"
+noisily di ///
+	_col(04) in g "(+) Impuestos producci{c o'}n (laboral)" ///
 	_col(44) in y "(" %5.3fc `gini_ing_mixtoL' ")" ///
 	_col(57) in y %7.3fc `AnnInc'[1,2]*2/3/`PIBSCN'*100 ///
 	_col(66) in y %7.3fc `MixL'/`PIBSCN'*100 ///
@@ -1183,8 +1197,6 @@ noisily di ///
 	_col(57) in y %7.3fc `AnnInc'[1,3]/`PIBSCN'*100 ///
 	_col(66) in y %7.3fc (`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'+`ExNOpSoc'+`ExNOpHog'+`MixKN')/`PIBSCN'*100 ///
 	_col(77) in y %7.1fc (`AnnInc'[1,3]/(`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'+`ExNOpSoc'+`ExNOpHog'+`MixKN')-1)*100 "%}"
-
-
 
 
 
@@ -1414,8 +1426,8 @@ noisily di ///
 	_col(04) in g "(+) ISSSTE " ///
 	_col(44) in y "(" %5.3fc `gini_cuotasISSSTE' ")" ///
 	_col(57) in y %7.3fc `SBCISSSTE'[1,1]/`PIBSCN'*100 ///
-	_col(66) in y %7.3fc `CuotasISSSTE'/`PIBSCN'*100 ///
-	_col(77) in y %7.1fc (`SBCISSSTE'[1,1]/`CuotasISSSTE'-1)*100 "%"
+	_col(66) in y %7.3fc `Cuotas_ISSSTE'/`PIBSCN'*100 ///
+	_col(77) in y %7.1fc (`SBCISSSTE'[1,1]/`Cuotas_ISSSTE'-1)*100 "%"
 noisily di ///
 	_col(04) in g "(+) Federaci{c o'}n " ///
 	_col(44) in y "(" %5.3fc `gini_cuotasFED' ")" ///
@@ -1426,8 +1438,8 @@ noisily di ///
 	_col(04) in g "(+) Otros " ///
 	_col(44) in y "(" %5.3fc `gini_cuotasOTR' ")" ///
 	_col(57) in y %7.3fc (`SBCOTR'[1,1]+`SBCINF'[1,1])/`PIBSCN'*100 ///
-	_col(66) in y %7.3fc ((`SSEmpleadores'+`SSImputada')-`SSFederacion'-`SSImputada'-`CuotasISSSTE'-`CuotasIMSS')/`PIBSCN'*100 ///
-	_col(77) in y %7.1fc ((`SBCOTR'[1,1]+`SBCINF'[1,1])/((`SSEmpleadores'+`SSImputada')-`SSFederacion'-`SSImputada'-`CuotasISSSTE'-`CuotasIMSS')-1)*100 "%"
+	_col(66) in y %7.3fc ((`SSEmpleadores'+`SSImputada')-`SSFederacion'-`SSImputada'-`Cuotas_ISSSTE'-`CuotasIMSS')/`PIBSCN'*100 ///
+	_col(77) in y %7.1fc ((`SBCOTR'[1,1]+`SBCINF'[1,1])/((`SSEmpleadores'+`SSImputada')-`SSFederacion'-`SSImputada'-`Cuotas_ISSSTE'-`CuotasIMSS')-1)*100 "%"
 noisily di ///
 	_col(04) in g "(+) Imputada " ///
 	_col(44) in y "(" %5.3fc `gini_cuotasIMP' ")" ///
@@ -1695,6 +1707,13 @@ replace scian = substr(scian,1,2)
 replace sinco = substr(sinco,1,2)
 destring pago inscr_* scian sinco subor, replace
 
+tempvar ingformalidadmax formalidadmax
+egen `ingformalidadmax' = max(ing_total), by(`hogar' numren formal)
+g formalmax = formal if ing_total == `ingformalidadmax'
+
+egen `formalidadmax' = max(formalmax), by(`hogar' numren)
+replace formalmax = `formalidadmax'
+
 collapse (sum) ing_* exen_* cuotas* htrab isrE renta deduc_isr ///
 	(mean) factor* sm sbc tot_integ ///
 	(max) scian formal* tipo_contribuyente sinco ///
@@ -1822,6 +1841,7 @@ replace aniosesc = gradoaprob + 13 if nivelaprob == "5" | nivelaprob == "7"
 replace aniosesc = gradoaprob + 18 if nivelaprob == "8"
 replace aniosesc = gradoaprob + 20 if nivelaprob == "9"
 
+replace nivelaprob = trim(nivelaprob)
 g escol = 0 if nivelaprob == "0" | nivelaprob == ""
 replace escol = 1 if nivelaprob == "1" | nivelaprob == "2" | nivelaprob == "3"
 replace escol = 2 if nivelaprob == "4" | nivelaprob == "6"
@@ -1829,9 +1849,8 @@ replace escol = 3 if nivelaprob == "5" | nivelaprob == "7"
 replace escol = 4 if nivelaprob == "8" | nivelaprob == "9"
 
 * Labels *
-label define escol 0 "Sin escolaridad" 1 "B{c a'}sica" 2 "Media Superior" 3 "Superior" 4 "Posgrado"
+label define escol 0 "Sin escolaridad" 1 "Basica" 2 "Media Superior" 3 "Superior" 4 "Posgrado"
 label values escol escol
-
 label var escol "Nivel de escolaridad"
 
 label values tipo_contribuyente tipo_contribuyente
@@ -2121,17 +2140,6 @@ noisily di ///
 *** 11. Capital ***
 *******************
 
-* Distribuciones proporcionales *
-capture program drop Distribucion
-program Distribucion, return
-	syntax anything, RELativo(varname) MACro(real)
-
-	tempvar TOT
-	egen double `TOT' = sum(`relativo') if factor_cola != 0
-	g double `anything' = `relativo'/`TOT'*`macro'/factor_cola if factor_cola != 0
-end
-
-
 * Compensation of employees ROW *
 Distribucion ing_suborrow, relativo(ing_subor) macro(`ROWRem')
 label var ing_suborrow "Remuneraci{c o'}n a asalariados (ROW)"
@@ -2141,6 +2149,11 @@ label var ing_suborrow "Remuneraci{c o'}n a asalariados (ROW)"
 Distribucion ing_capitalGov, relativo(factor_cola) ///
 	macro(`=`IMSSpropio'+`ISSSTEpropio'+`CFEpropio'+`Pemexpropio'+`FMP'+`Derechos'+`Productos'+`Aprovechamientos'')
 replace ing_capital = ing_capital //+ ing_capitalGov
+
+
+* Depreciacion *
+Distribucion Depreciacion, relativo(ing_capital) macro(`ConCapFij')
+label var Depreciacion  "Consumo de Capital Fijo"
 
 
 * Totales *
@@ -2227,8 +2240,32 @@ g double ing_decil_pc = ing_decil_hog/`tot_integ'
 
 
 * Deciles *
-xtile decil = ing_decil_pc [aw=factor], n(10)
-xtile percentil = ing_decil_pc [aw=factor], n(100)
+xtile decil = ing_decil_pc [pw=factor], n(10)
+xtile percentil = ing_decil_pc [pw=factor], n(100)
+xtile decil_hog = ing_decil_hog [pw=factor], n(10)
+
+* Label values *
+label define decil 1 "I" 2 "II" 3 "III" 4 "IV" 5 "V" 6 "VI" 7 "VII" 8 "VIII" 9 "IX" 10 "X"
+label values decil decil
+
+destring sexo, replace
+label define sexo 1 "Hombres" 2 "Mujeres"
+label values sexo sexo
+
+label define rural 1 "Rural" 0 "Urbano"
+label values rural rural
+
+g grupo_edad = 1 if edad < 18
+replace grupo_edad = 2 if edad >= 18 & edad < 65
+replace grupo_edad = 3 if edad >= 65
+label define grupo_edad 1 "0 a 17" 2 "18 a 64" 3 "65 y mas"
+label values grupo_edad grupo_edad
+
+replace formalmax = 3 if formalmax == 4
+label define formalidad 3 "Pemex y otros", modify
+label values formalmax formalidad
+
+g Poblacion = 1
 
 
 * Guardar *
