@@ -147,7 +147,7 @@ quietly {
 	** 4 Simulador **
 	*****************
 	noisily di _newline(2) in g "Output per worker: " in y _col(25) %10.1fc OutputPerWorker[`obsvp'] " `=currency[`obsvp']'"
-	noisily di in g "Lambda (productividad): " in y _col(25) %10.4f scalar(lambda) in g " %" 
+	noisily di in g "Lambda (productividad): " in y _col(25) %10.4f scalar(lambda) " %" 
 	
 	scalar pibINF = pibYR[_N]*((pibYR[_N]/pibYR[_N-10])^(1/10))*(1+`discount'/100)^((`=anio[`obsvp']'-`=anio[_N]')/(((pibYR[_N]/pibYR[_N-10])^(1/10)-1)-(`discount'/100)))
 	noisily di in g "PIB `=anio[_N]' al infinito: " in y _col(25) %20.0fc pibINF
