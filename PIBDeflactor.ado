@@ -1,7 +1,7 @@
 program define PIBDeflactor, return
 quietly {
 	version 13.1
-	syntax [, ANIOvp(int -1) GEO(int 5) FIN(int -1) Graphs UPDATE]
+	syntax [, ANIOvp(int -1) GEO(int 5) FIN(int -1) Graphs UPDATE DIScount(real 3)]
 
 
 
@@ -30,6 +30,10 @@ quietly {
 	drop if anio < `anio_first'
 	if `fin' == -1 {
 		local fin = anio[_N]
+	}
+	
+	if "$discount" != "" {
+		local discount = $discount
 	}
 
 
@@ -132,7 +136,7 @@ quietly {
 	replace var_pibG = ((pibYR/L`=`geo''.pibYR)^(1/`geo')-1)*100
 	replace var_pibY = (pibYR/L.pibYR-1)*100
 		
-	g double pibYVP = pibYR/(1+${discount}/100)^(anio-`=anio[`obsvp']')
+	g double pibYVP = pibYR/(1+`discount'/100)^(anio-`=anio[`obsvp']')
 	format pibYVP %20.0fc
 	
 	replace OutputPerWorker = pibYR/WorkingAge if OutputPerWorker == .
@@ -145,7 +149,7 @@ quietly {
 	noisily di _newline(2) in g "Output per worker: " in y _col(25) %10.1fc OutputPerWorker[`obsvp'] " `=currency[`obsvp']'"
 	noisily di in g "Lambda (productividad): " in y _col(25) %10.4f scalar(lambda) in g " %" 
 	
-	scalar pibINF = pibYR[_N]*((pibYR[_N]/pibYR[_N-10])^(1/10))*(1+${discount}/100)^((`=anio[`obsvp']'-`=anio[_N]')/(((pibYR[_N]/pibYR[_N-10])^(1/10)-1)-(${discount}/100)))
+	scalar pibINF = pibYR[_N]*((pibYR[_N]/pibYR[_N-10])^(1/10))*(1+`discount'/100)^((`=anio[`obsvp']'-`=anio[_N]')/(((pibYR[_N]/pibYR[_N-10])^(1/10)-1)-(`discount'/100)))
 	noisily di in g "PIB `=anio[_N]' al infinito: " in y _col(25) %20.0fc pibINF
 
 	*if "`globals'" == "globals" {
