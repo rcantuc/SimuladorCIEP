@@ -7,10 +7,12 @@ quietly {
 
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
+	
 	syntax [, ANIO(int `aniovp') Graphs Update]
 	noisily di _newline(5) in g "{bf:INFORMACI{c O'}N ECON{c O'}MICA:" in y " SCN " `anio' "}"
 
 
+	scalar aniovp = `aniovp'
 
 
 
@@ -260,7 +262,7 @@ quietly {
 
 
 	** D.8. PIBDeflactor **
-	noisily PIBDeflactor
+	noisily PIBDeflactor, `graphs'
 	tempfile basepib
 	save `basepib'
 
@@ -600,7 +602,7 @@ quietly {
 			text(31 `latest'.5 "Observados  ", place(nw)) ///
 			text(31 `latest'.5 "  Proyectados", place(ne)) ///
 			xlabel(`=`anio'-15'(1)`=`anio'+5') ///
-			ylabel(, format(%20.0fc)) ytitle(billones MXN, height(8)) ///
+			ylabel(, format(%20.0fc)) ytitle(billones MXN `anio', height(8)) ///
 			yscale(range(0)) ///
 			note("{bf:Nota}: Crecimientos geom{c e'}tricos m{c o'}viles de `geo' a{c n~}os despu{c e'}s de `latest'. `except'") ///
 			name(gdp_generacion, replace)
@@ -720,7 +722,7 @@ quietly {
 			text(31 `latest'.5 "Observados  ", place(nw)) ///
 			text(31 `latest'.5 "  Proyectados", place(ne)) ///
 			xlabel(`=`anio'-15'(1)`=`anio'+5') ///
-			ylabel(0(5)25, format(%20.0fc)) ytitle(billones MXN, height(8)) ///
+			ylabel(0(5)25, format(%20.0fc)) ytitle(billones MXN `anio', height(8)) ///
 			yscale(range(0)) ///
 			note("{bf:Nota}: Crecimientos geom{c e'}tricos m{c o'}viles de `geo' a{c n~}os despu{c e'}s de `latest'. `except'") ///
 			name(gdp_utilizacion, replace)

@@ -1,150 +1,55 @@
 program define PIBDeflactor, return
 quietly {
 	version 13.1
-	syntax [, ANIOvp(int -1) GEO(int 5) FIN(int 2030) Graphs]
+	syntax [, ANIOvp(int -1) GEO(int 5) FIN(int -1) Graphs UPDATE]
 
 
 
 
-	***************
-	*** 0 BASES ***
-	***************
-	* 0.1.1. PIB *
-	import excel "`=c(sysdir_site)'../basesCIEP/INEGI/SCN/PIB.xls", clear
-
-	* 0.1.2. Limpia *
-	LimpiaBIE
-
-	* 0.1.3. Rename *
-	rename A periodo
-	rename B pibQ
-
-	* 0.1.4. Time Series *
-	split periodo, destring p("/") ignore("r p")
-
-	rename periodo1 anio
-	label var anio "anio"
-
-	rename periodo2 trimestre
-	label var trimestre "trimestre"
-
-	destring pibQ, replace
-	label var pibQ "Producto Interno Bruto"
-
-	drop periodo
-	order anio trimestre pibQ
-
-	* 0.1.5. Guardar *
-	compress
-	tempfile PIB
-	save `PIB'
-
-
-	* 0.2.1. Deflactor *
-	import excel "`=c(sysdir_site)'../basesCIEP/INEGI/SCN/deflactor.xls", clear
-
-	* 0.2.2. Limpia *
-	LimpiaBIE, nomult
-
-	* 0.2.3. Rename *
-	rename A periodo
-	rename B indiceQ
-
-	* 0.2.4. Time Series *
-	split periodo, destring p("/") ignore("r p")
-
-	rename periodo1 anio
-	label var anio "anio"
-
-	rename periodo2 trimestre
-	label var trimestre "trimestre"
-
-	destring indiceQ, replace
-	label var indiceQ "${I}ndice de Precios Impl${i}citos"
-
-	drop periodo
-	order anio trimestre indiceQ
-
-	* 0.2.5. Guardar *
-	compress
-	tempfile Deflactor
-	save `Deflactor', replace
-
-
-
-
-	*************************
-	*** 1 PIB + Deflactor ***
-	*************************
-	use (anio trimestre pibQ) using `PIB', clear
-	merge 1:1 (anio trimestre) using `Deflactor', nogen keepus(indiceQ)
-
-	* Anio + Trimestre *
-	g aniotrimestre = yq(anio,trimestre)
-	format aniotrimestre %tq
-	label var aniotrimestre "YearQuarter"
-	tsset aniotrimestre
-
-	* Ultimos valores *
-	local anio_last = anio[_N]
-	local trim_last = trimestre[_N]
-
-	* Anualizar *
-	egen double indiceY = mean(indiceQ), by(anio)
-	label var indiceY "Crecimiento anual"
-	format indiceY %10.4fc
-
-	egen double pibY = mean(pibQ), by(anio)
-	label var pibY "Crecimiento anual"
-	format pibY %25.0fc
+	***********************
+	*** 0 Base de datos ***
+	***********************
+	capture confirm file `"`c(sysdir_site)'../basesCIEP/SIM/Poblacion${pais}.dta"'
+	if _rc == 0 | "`update'" == "update" {
+		use `"`c(sysdir_site)'../basesCIEP/SIM/Poblacion${pais}.dta"', clear
+		collapse (sum) WorkingAge=poblacion if edad >= 16 & edad <= 65, by(anio)
+		format WorkingAge %15.0fc
+		tempfile workingage
+		save `workingage'
+	}
 	
-	order aniotrimestre anio trimestre *Q *Y
+	capture use `"`c(sysdir_site)'../basesCIEP/SIM/PIBDeflactor${pais}.dta"', clear
+	if _rc != 0 | "`update'" == "update" {
+		run "`c(sysdir_personal)'/PIBDeflactorBase${pais}.do"
+		use `"`c(sysdir_site)'../basesCIEP/SIM/PIBDeflactor${pais}.dta"', clear
+	}
+	local anio_first = anio[1]
+	local anio_last = anio[_N]
+
+	merge 1:1 (anio) using `workingage', nogen
+	drop if anio < `anio_first'
+	if `fin' == -1 {
+		local fin = anio[_N]
+	}
 
 
 
 
 	*******************
-	*** 2 Deflactor ***
+	*** 1 Deflactor ***
 	*******************
-	g double var_indiceQ = (indiceQ/L4.indiceQ-1)*100
-	label var var_indiceQ "Trimestral"
-
-	g double var_indiceY = (indiceY/L4.indiceY-1)*100
+	tsset anio
+	g double var_indiceY = (indiceY/L.indiceY-1)*100
 	label var var_indiceY "Anual"
 
-	g double var_indiceG = ((indiceY/L`=4*`geo''.indiceY)^(1/`geo')-1)*100
+	g double var_indiceG = ((indiceY/L`=`geo''.indiceY)^(1/`geo')-1)*100
 	label var var_indiceG "Promedio geom{c e'}trico (`geo' a{c n~}os)"
-	
-	* Gr{c a'}fica hist{c o'}rica *
-	if "`graphs'" == "graphs" {
-		* Texto sobre lineas *
-		forvalues k=1(1)`=_N' {
-			if trimestre[`k'] == 1 & var_indiceY[`k'] != . {
-				local crec_deflactor `"`crec_deflactor' `=var_indiceY[`k']' `=aniotrimestre[`k']+2' "`=string(var_indiceY[`k'],"%5.1fc")'" "'
-			}
-		}
 
-		twoway (connected var_indiceQ aniotrimestre) ///
-			(connected var_indiceY aniotrimestre), ///
-			title("{bf:{c I'}ndice de precios impl{c i'}citos}") ///
-			ytitle(porcentaje) xtitle("") yline(0) ///
-			text(`crec_deflactor') ///
-			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n del INEGI, BIE.}") ///
-			note("{bf:{c U'}ltimo dato}: `anio_last'q`trim_last'.") ///
-			name(deflactorH, replace)
-			
-		capture confirm existence $export
-		if _rc == 0 {
-			graph export "$export/deflactorH.png", replace name(deflactorH)
-		}
-	}
 
 
 	***********************************
 	** 2.1 Par{c a'}metros ex{c o'}genos **
-	tsappend, last(`fin'q4) tsfmt(tq)
-	replace anio = yofd(dofq(aniotrimestre)) if anio == .
-	replace trimestre = quarter(dofq(aniotrimestre)) if trim == .
+	*tsappend, add(`=`fin'-`=anio[_N]'') //tsfmt(ty)
 
 	* Imputar *
 	forvalues k=`anio_last'(1)`fin' {
@@ -154,10 +59,10 @@ quietly {
 			local exceptI "`exceptI'`k' (${def`k'}%), "
 		}
 		else {
-			replace var_indiceY = L4.var_indiceG if anio == `k'
+			replace var_indiceY = L.var_indiceG if anio == `k'
 		}
-		replace indiceY = L4.indiceY*(1+var_indiceY/100) if anio == `k'
-		replace var_indiceG = ((indiceY/L`=4*`geo''.indiceY)^(1/`geo')-1)*100 if anio == `k'
+		replace indiceY = L.indiceY*(1+var_indiceY/100) if anio == `k'
+		replace var_indiceG = ((indiceY/L`=`geo''.indiceY)^(1/`geo')-1)*100 if anio == `k'
 	}	
 
 	* Valor presente *
@@ -168,72 +73,44 @@ quietly {
 	else if `aniovp' == -1 {
 		local aniovp : di %td_CY-N-D  date("$S_DATE", "DMY")
 		local aniovp = substr(`"`=trim("`aniovp'")'"',1,4)
-		*global anioVP = `aniovp'
 	}
 	forvalues k=1(1)`=_N' {
 		if anio[`k'] == `aniovp' {
 			local obsvp = `k'
-			continue, break
+		}
+		if anio[`k'] == `anio_last' {
+			local obslast = `k'
 		}
 	}
 	g double deflator = indiceY/indiceY[`obsvp']
 	label var deflator "Deflactor"
-
-
+	
 
 
 	*************
 	*** 3 PIB ***
 	*************
-	g double pibQR = pibQ/deflator
-	label var pibQR "Quarter Real (`=anio[`obsvp']'q`=trimestre[`obsvp']')"
-	format pibQR %25.0fc
-
 	g double pibYR = pibY/deflator
-	label var pibYR "Annual Real (`=anio[`obsvp']'q`=trimestre[`obsvp']')"
+	label var pibYR "PIB Real (`=anio[`obsvp'])"
 	format pibYR %25.0fc
 
-	g double var_pibQ = (pibQR/L4.pibQR-1)*100
-	label var var_pibQ "Trimestral"
-	*label var var_pibQ "Quarter On Quarter"
-	
-	g double var_pibY = (pibYR/L4.pibYR-1)*100
+	g double var_pibY = (pibYR/L.pibYR-1)*100
 	label var var_pibY "Anual"
 	*label var var_pibY "Year On Year"
 	
-	g double var_pibG = ((pibYR/L`=4*`geo''.pibYR)^(1/`geo')-1)*100
+	g double var_pibG = ((pibYR/L`=`geo''.pibYR)^(1/`geo')-1)*100
 	label var var_pibG "Geometric mean (`geo' years)"
-	
-	* Gr{c a'}fica hist{c o'}rica *
-	if "`graphs'" == "graphs" {
-		* Texto sobre lineas *
-		forvalues k=1(1)`=_N' {
-			if trimestre[`k'] == 1 & var_pibY[`k'] != . {
-				local crec_PIB `"`crec_PIB' `=var_pibY[`k']' `=aniotrimestre[`k']+2' "`=string(var_pibY[`k'],"%5.1fc")'" "'
-			}
-		}
-
-		twoway (connected var_pibQ aniotrimestre) ///
-			(connected var_pibY aniotrimestre) if var_pibY != ., ///
-			title({bf:Producto Interno Bruto}) ///
-			subtitle(Crecimiento real) ///
-			ytitle(porcentaje) xtitle("") yline(0) ///
-			text(`crec_PIB') ///
-			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n del INEGI, BIE.}") ///
-			note("{bf:{c U'}ltimo dato}: `anio_last'q`trim_last'.") ///
-			name(PIBH, replace)
-
-		capture confirm existence $export
-		if _rc == 0 {
-			graph export "$export/PIBH.png", replace name(PIBH)
-		}
-	}
 
 
 
 	***************************************
 	** 3.1 Par{c a'}metros ex{c o'}genos **
+	replace currency = currency[`obslast']
+	g OutputPerWorker = pibYR/WorkingAge
+	scalar lambda = ((OutputPerWorker[`obslast']/OutputPerWorker[`=`obslast'-10'])^(1/10)-1)*100
+
 	* Imputar *
+	g lambda = .
 	forvalues k=`anio_last'(1)`fin' {
 		capture confirm existence ${pib`k'}
 		if _rc == 0 {
@@ -242,26 +119,35 @@ quietly {
 			local bold`k' "bold"
 		}
 		else {
-			replace var_pibY = L4.var_pibG if anio == `k'
+			replace var_pibY = L.var_pibG if anio == `k'
 		}
-		replace pibY = L4.pibY*(1+var_pibY/100)*indiceY/L4.indiceY if anio == `k'
-		replace pibYR = L4.pibYR*(1+var_pibY/100) if anio == `k'
-		replace var_pibG = ((pibYR/L`=4*`geo''.pibYR)^(1/`geo')-1)*100 if anio == `k'
+		replace pibY = L.pibY*(1+var_pibY/100)*(1+var_indiceY/100) if anio == `k'
+		replace pibYR = L.pibYR*(1+var_pibY/100) if anio == `k'
 	}		
-	
-	order aniotrimestre anio trimestre *Y* *G *Q*
-	g double productivity = pibYR/pibYR[`obsvp']
-	label var productivity "Productivity"
 
+	replace lambda = (1+scalar(lambda)/100)^(anio-`anio_last')
+	replace pibYR = `=pibYR[`obsvp']'/`=WorkingAge[`obsvp']'*WorkingAge* ///
+		(1+scalar(lambda)/100)^(anio-`anio_last') if pibYR == .
+	replace pibY = pibYR*deflator if pibY == .
+	replace var_pibG = ((pibYR/L`=`geo''.pibYR)^(1/`geo')-1)*100
+	replace var_pibY = (pibYR/L.pibYR-1)*100
+		
+	g double pibYVP = pibYR/(1+${discount}/100)^(anio-`=anio[`obsvp']')
+	format pibYVP %20.0fc
+	
+	replace OutputPerWorker = pibYR/WorkingAge if OutputPerWorker == .
 
 
 
 	*****************
 	** 4 Simulador **
 	*****************
-	keep if trimestre == 1
-	drop *Q *trimestre
+	noisily di _newline(2) in g "Output per worker: " in y _col(25) %10.1fc OutputPerWorker[`obsvp'] " `=currency[`obsvp']'"
+	noisily di in g "Lambda (productividad): " in y _col(25) %10.4f scalar(lambda) in g " %" 
 	
+	scalar pibINF = pibYR[_N]*((pibYR[_N]/pibYR[_N-10])^(1/10))*(1+${discount}/100)^((`=anio[`obsvp']'-`=anio[_N]')/(((pibYR[_N]/pibYR[_N-10])^(1/10)-1)-(${discount}/100)))
+	noisily di in g "PIB `=anio[_N]' al infinito: " in y _col(25) %20.0fc pibINF
+
 	*if "`globals'" == "globals" {
 		forvalues k=1(1)`=_N' {
 			global PIB_`=anio[`k']' = pibY[`k']
@@ -270,45 +156,69 @@ quietly {
 			global def_`=anio[`k']' = var_indiceY[`k']
 		}
 	*}
-
+	
+	
 	if "`graphs'" == "graphs" {
 		* Texto sobre lineas *
 		forvalues k=1(1)`=_N' {
-			if var_pibY[`k'] != . {
-				local crec_PIBp `"`crec_PIBp' `=var_pibY[`k']' `=anio[`k']' "`=string(var_pibY[`k'],"%5.1fc")'" "'
-			}
 			if var_indiceY[`k'] != . {
-				local crec_indicep `"`crec_indicep' `=var_indiceY[`k']' `=anio[`k']' "`=string(var_indiceY[`k'],"%5.1fc")'" "'
+				local crec_deflactor `"`crec_deflactor' `=var_indiceY[`k']' `=anio[`k']' "`=string(var_indiceY[`k'],"%5.1fc")'" "'
 			}
 		}
 
-		if "`except'" != "" {
-			local except `"Excepto: `=substr("`except'",1,`=strlen("`except'")-2')'. "'
-			local exceptI `"Excepto: `=substr("`exceptI'",1,`=strlen("`exceptI'")-2')'. "'
+		twoway (connected var_indiceY anio if anio <= `anio_last') ///
+			(connected var_indiceY anio if anio >= `anio_last'), ///
+			title("{bf:{c I'}ndice de precios impl{c i'}citos}") ///
+			ytitle("Variaci{c o'}n anual (%)") xtitle("") yline(0) ///
+			text(`crec_deflactor', place(c)) ///
+			legend(label(1 "Observado") label(2 "Proyectado")) ///
+			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
+			note("{bf:{c U'}ltimo dato}: `anio_last'$trim_last.") ///
+			name(deflactorH, replace)
+			
+		capture confirm existence $export
+		if _rc == 0 {
+			graph export "$export/deflactorH.png", replace name(deflactorH)
 		}
-		
-		twoway (connected var_indiceY anio if anio < `aniovp') ///
-			(connected var_indiceY anio if anio >= `aniovp'), ///
-			title({bf:{c I'}ndice de precio impl{c i'}citos}) ///
-			ytitle(porcentaje) xtitle("") yline(0) ///
-			text(`crec_indicep') ///
-			legend(label(1 "Observado") label(2 "Proyecci{c o'}n")) ///
-			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n del INEGI, BIE.}") ///
-			note("{bf:Nota}: Promedio m{c o'}vil geom{c e'}trico de `geo' a{c n~}os despu{c e'}s de `anio_last'. `exceptI'{bf:{c U'}ltimo dato}: `anio_last'q`trim_last'.") ///
-			name(deflactorP, replace) ///
-			legend(on)
 
-		twoway (connected var_pibY anio if anio < `aniovp') ///
-			(connected var_pibY anio if anio >= `aniovp'), ///
+		* Texto sobre lineas *
+		forvalues k=1(1)`=_N' {
+			if var_pibY[`k'] != . {
+				local crec_PIB `"`crec_PIB' `=var_pibY[`k']' `=anio[`k']' "`=string(var_pibY[`k'],"%5.1fc")'" "'
+			}
+		}
+
+		twoway (connected var_pibY anio if anio <= `anio_last') ///
+			(connected var_pibY anio if anio > `anio_last'), ///
 			title({bf:Producto Interno Bruto}) ///
-			subtitle(Crecimiento real) ///
-			ytitle(porcentaje) xtitle("") yline(0) ///
-			text(`crec_PIBp') ///
-			legend(label(1 "Observado") label(2 "Proyecci{c o'}n")) ///
-			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n del INEGI, BIE.}") ///
-			note("{bf:Nota}: Promedio m{c o'}vil geom{c e'}trico de `geo' a{c n~}os despu{c e'}s de `anio_last'. `except'{bf:{c U'}ltimo dato}: `anio_last'q`trim_last'.") ///
-			name(PIBP, replace) ///
-			legend(on)
+			ytitle("Crecimiento real (%)") xtitle("") yline(0, lcolor(black)) ///
+			text(`crec_PIB') ///
+			legend(label(1 "Observado") label(2 "Proyectado")) ///
+			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
+			note("{bf:{c U'}ltimo dato}: `anio_last'$trim_last.") ///
+			name(PIBH, replace)
+
+		capture confirm existence $export
+		if _rc == 0 {
+			graph export "$export/PIBH.png", replace name(PIBH)
+		}
+
+		tempvar pibYRmil
+		g `pibYRmil' = pibYR/1000000
+		twoway (area `pibYRmil' anio if anio <= `anio_last') ///
+			(area `pibYRmil' anio if anio > `anio_last'), ///
+			title({bf:Producto Interno Bruto}) ///
+			ytitle(millones de `=currency[`obsvp']' `aniovp') xtitle("") yline(0) ///
+			text(`=`pibYRmil'[1]*.05' `=`anio_last'-1' "`anio_last'", place(nw) color(white)) ///
+			text(`=`pibYRmil'[1]*.05' `=anio[1]+.5' "Observado" ///
+			`=`pibYRmil'[1]*.05' `=`anio_last'+1.5' "Proyectado", place(ne) color(white)) ///
+			ylabel(, format(%10.0fc)) xlabel(`=round(`anio_first',10)'(10)`fin') ///
+			xline(`anio_last'.5) ///
+			yscale(range(0)) ///
+			legend(label(1 "Observado") label(2 "Proyecci{c o'}n") off) ///
+			note("{bf:Nota}: Crecimiento promedio anual de la producitividad (lambda): `=string(scalar(lambda),"%6.4f")'%. {bf:{c U'}ltimo dato}: `anio_last'$trim_last.") ///
+			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
+			name(PIBP, replace)
 	}
 
 	

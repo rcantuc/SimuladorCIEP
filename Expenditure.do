@@ -4,6 +4,7 @@
 ****                                  ****
 ******************************************
 if "`1'" == "" {
+	clear all
 	local macroanio = 2018
 }
 else {
@@ -17,7 +18,7 @@ if `macroanio' >= 2018 {
 	local enighanio = 2018
 	local tasagener = 16
 	local tasafront = 16
-	local altimir = "no"
+	local altimir = "yes"
 }
 if `macroanio' == 2016 {
 	local enigh = "ENIGH"
@@ -63,47 +64,47 @@ local data "`c(sysdir_site)'../basesCIEP/INEGI/`enigh'/`enighanio'"
 
 
 ** MA.1. Sistema de Cuentas Nacionales **
-SCN, anio(`macroanio')
+noisily SCN, anio(`macroanio')
 
-local PIBSCN = r(PIB)
+local PIBSCN = scalar(PIB)
 
-local Food = r(Alimentos)
-local NBev = r(Bebidas_no_alcoholicas)
-local ABev = r(Bebidas_alcoholicas)
-local Toba = r(Tabaco)
-local Clot = r(Prendas_de_vestir)
-local Foot = r(Calzado)
-local Hous = r(Vivienda)
-local Wate = r(Agua)
-local Elec = r(Electricidad)
-local Furn = r(Articulos_para_el_hogar)
-local Heal = r(Salud)
-local Vehi = r(Adquisicion_de_vehiculos)
-local Oper = r(Funcionamiento_de_transporte)
-local Tran = r(Servicios_de_transporte)
-local Comm = r(Comunicaciones)
-local Recr = r(Recreacion_y_cultura)
-local Educ = r(Educacion)
-local Rest = r(Restaurantes_y_hoteles)
-local Misc = r(Bienes_y_servicios_diversos)
-local ExpHog = r(Hogares_e_ISFLSH)
+local Food = scalar(Alim)
+local NBev = scalar(BebN)
+local ABev = scalar(BebA)
+local Toba = scalar(Taba)
+local Clot = scalar(Vest)
+local Foot = scalar(Calz)
+local Hous = scalar(Alqu)
+local Wate = scalar(Agua)
+local Elec = scalar(Elec)
+local Furn = scalar(Hoga)
+local Heal = scalar(Salu)
+local Vehi = scalar(Vehi)
+local Oper = scalar(FTra)
+local Tran = scalar(STra)
+local Comm = scalar(Comu)
+local Recr = scalar(Recr)
+local Educ = scalar(Educ)
+local Rest = scalar(Rest)
+local Misc = scalar(Dive)
+local ExpHog = scalar(ConHog)
 
 
 ** MA.2. SHCP: Datos Abiertos **
-LIF, anio(`macroanio')
+noisily LIF, anio(`macroanio')
 
 local IVA = r(IVA)
 local IEPS = r(IEPS__no_petrolero_)
-local Ieps4 = r(cerveza_y_bebidas_refrescantes)
-local Ieps5 = r(tabacos_labrados)
-local Ieps6 = r(juegos_y_sorteos)
-local Ieps7 = r(telecomunicaciones)
-local Ieps8 = r(bebidas_energetizantes)
-local Ieps9 = r(bebidas_saborizadas)
-local Ieps10 = r(comida_chatarra)
-local Ieps11 = r(carbono_combustibles_fosiles)
+local Ieps4 = r(Impuesto_especi_as_refrescantes)
+local Ieps5 = r(Impuesto_especi_abacos_labrados)
+local Ieps6 = r(Impuesto_especi_uegos_y_sorteos)
+local Ieps7 = r(Impuesto_especi_ecomunicaciones)
+local Ieps8 = r(Impuesto_especi__energetizantes)
+local Ieps9 = r(Impuesto_especi_das_saborizadas)
+local Ieps10 = r(Impuesto_especi_sidad_calórica)
+local Ieps11 = r(Impuesto_especi_stibles_fosiles)
 local Ieps12 = r(IEPS__petrolero_)
-local Ieps13 = r(Alcohol)
+local Ieps13 = r(Impuesto_especi_cios_de_Alcohol)
 
 
 
@@ -137,7 +138,7 @@ if _rc != 0 {
 
 	** MI.4. Quitar gastos no necesarios **
 	// T916: gasto en regalso a personas ajenas al hogar, erogaciones financieras y de capital. 
-	// N012: P�rdidas y robos de dinero
+	// N012: Pérdidas y robos de dinero
 	drop if clave == "T916" | clave == "N012" //| substr(clave,1,1) == "Q"
 
 
@@ -467,33 +468,15 @@ g deduc_gasto_colegi3 = min(gasto_anual,19900) if clave == "E003"
 g deduc_gasto_colegi4 = min(gasto_anual,17100) if clave == "E007"
 g deduc_gasto_colegi5 = min(gasto_anual,24500) if clave == "E004"
 
+
+
+preserve
 collapse (sum) deduc_*, by(folioviv foliohog)
 g proyecto = "2"
 g numren = "01"
 egen deduc_isr = rsum(deduc_*)
 save "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/deducciones.dta", replace
-exit
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+restore
 
 
 
@@ -856,4 +839,4 @@ label var CFE_PM "CFE (empresas)"
 
 capture drop __*
 compress
-save "`c(sysdir_site)'/bases/SIM/`enighanio'/expenditure.dta", replace
+save "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/expenditure.dta", replace

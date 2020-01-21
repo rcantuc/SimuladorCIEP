@@ -53,7 +53,7 @@ quietly {
 	merge m:1 (anio) using `PIB', nogen keepus(pibY indiceY deflator productivity var_pibY) update replace keep(matched)
 
 	if "`ilif'" == "ilif" {
-		replace LIF = ILIF if anio == $anioVP
+		replace LIF = ILIF if anio == `aniovp'
 	}
 
 	g double recaudacionPIB = recaudacion/pibY*100
@@ -194,6 +194,33 @@ quietly {
 		_col(77) in y %7.1fc `mattot'[1,1]/`mattot'[1,1]*100 "}"
 
 
+	* Returns Extras *
+	tabstat recaudacion recaudacionPIB if anio == `anio' & nombre == "Cuotas a la seguridad social (IMSS)", stat(sum) f(%20.1fc) save
+	tempname cuotas
+	matrix `cuotas' = r(StatTotal)
+	return scalar Cuotas_IMSS = `cuotas'[1,1]
+
+	tabstat recaudacion recaudacionPIB if anio == `anio', by(nombre) stat(sum) f(%20.1fc) save
+	tempname nombre
+	matrix `nombre' = r(StatTotal)
+
+	local k = 1
+	while "`=r(name`k')'" != "." {
+		tempname mat`k'
+		matrix `mat`k'' = r(Stat`k')
+		return scalar `=strtoname("`=substr("`=r(name`k')'",1,15)'_`=substr("`=r(name`k')'",-15,15)'")' = `mat`k''[1,1]
+		local divNombre `"`divNombre' `=strtoname(abbrev("`=r(name`k')'",7))'"'
+
+		*noisily di in g "  (+) `=strtoname("`=substr("`=r(name`k')'",1,15)'_`=substr("`=r(name`k')'",-15,15)'")'" ///
+			_col(44) in y %20.0fc `mat`k''[1,1] ///
+			_col(66) in y %7.3fc `mat`k''[1,2] ///
+			_col(77) in y %7.1fc `mat`k''[1,1]/`mattot'[1,1]*100
+		local ++k
+	}
+
+	
+exit
+
 	** Crecimientos **
 	noisily di _newline in g "{bf: D. Mayores cambios:" in y " `=`anio'-5' - `anio'" in g ///
 		_col(55) %7s "`=`anio'-5'" ///
@@ -281,8 +308,28 @@ quietly {
 	}
 
 	if "$graphs" == "on" | "`graphs'" == "graphs" {
-		replace recaudacionPIB = 0 if anio == $anioVP
-		
+		replace recaudacionPIB = 0 if anio == `aniovp'
+
+		graph bar (sum) LIFPIB recaudacionPIB if anio > `aniovp'-10 & divLIF != 10, ///
+			over(divOrigen, relabel(1 "LIF" 2 "SHCP")) ///
+			over(anio, label(labgap(vsmall))) ///
+			stack asyvars ///
+			title("{bf:Ingresos presupuestarios}") ///
+			ytitle(% PIB) ylabel(0(5)30, labsize(small)) ///
+			legend(on position(6) cols(4)) ///
+			name(ingresos, replace) ///
+			blabel(bar, format(%7.1fc)) ///
+			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}") ///
+			note({bf:{c U'}ltimo dato:} `ultanio'm`ultmes')
+		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
+		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
+
+
+
+exit
+
+
+
 		if "`if'" != "" {
 			graph bar (sum) LIFPIB recaudacionPIB if `if', ///
 				over(`resumido', relabel(1 "LIF" 2 "SHCP")) ///
@@ -297,7 +344,7 @@ quietly {
 			exit
 		}
 
-		/*graph bar (sum) LIFPIB recaudacionPIB if anio >= `desde' & divLIF != 10, ///
+		graph bar (sum) LIFPIB recaudacionPIB if anio >= `desde' & divLIF != 10, ///
 			over(divOrigen, relabel(1 "LIF" 2 "OBS")) ///
 			over(anio) ///
 			stack asyvars ///
@@ -350,7 +397,7 @@ quietly {
 			gr_edit .grpaxis.edit_tick 15 93.9024 `"ILIF"', tickset(major)
 		}
 		
-/***************************************
+***************************************
 	
 		graph bar (sum) LIFPIB recaudacionPIB if anio >= `desde' & divLIF != 10 & divOrigen == 2, ///
 			over(`resumido', relabel(1 "LIF" 2 "SHCP")) ///
@@ -419,28 +466,16 @@ quietly {
 		if "`ilif'" == "ilif" {
 			gr_edit .grpaxis.edit_tick 15 93.9024 `"ILIF"', tickset(major)
 		}
-		*/	
-		/*graph pie LIFPIB if anio == `aniovp', over(`resumido') descending sort ///
+
+		graph pie LIFPIB if anio == `aniovp', over(`resumido') descending sort ///
 			plabel(_all percent, format(%5.1fc)) ///
 			title("{bf:Composici{c o'}n de la LIF}") ///
 			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}") ///
 			name(ingresospie, replace) ///
-			legend(on position(3) cols(1))*/
+			legend(on position(3) cols(1))
 
-		/*graph bar (sum) LIFPIB recaudacionPIB if anio >= 2010 & divLIF != 10, ///
-			over(divOrigen, relabel(1 "LIF" 2 "SHCP")) ///
-			over(anio, label(labgap(vsmall))) ///
-			stack asyvars ///
-			title("{bf:Ingresos presupuestarios}") ///
-			ytitle(% PIB) ylabel(0(5)30, labsize(small)) ///
-			legend(on position(6) rows(2)) ///
-			name(ingresos, replace) ///
-			blabel(bar, format(%7.1fc)) ///
-			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}") ///
-			note({bf:{c U'}ltimo dato:} `ultanio'm`ultmes')
-		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
-		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
-		gr_edit .grpaxis.style.editstyle majorstyle(tickstyle(textstyle(size(vsmall)))) editcopy
+
+		*gr_edit .grpaxis.style.editstyle majorstyle(tickstyle(textstyle(size(vsmall)))) editcopy
 		*gr_edit .grpaxis.major.num_rule_ticks = 0
 		*gr_edit .grpaxis.edit_tick 18 87.9227 `"Est*"', tickset(major)
 		*gr_edit .grpaxis.edit_tick 19 95.1691 `"ILIF"', tickset(major)
