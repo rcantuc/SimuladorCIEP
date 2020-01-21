@@ -35,10 +35,10 @@ keep if entidad == "Nacional"
 
 
 * 5. Guardar *
-save `"`c(sysdir_site)'../basesCIEP/SIM/Poblacion.dta"', replace
+saveold `"`c(sysdir_site)'../basesCIEP/SIM/Poblacion.dta"', replace version(13)
 
 collapse (sum) poblacion, by(anio entidad cve_geo)
-save `"`c(sysdir_site)'../basesCIEP/SIM/Poblaciontot.dta"', replace
+saveold `"`c(sysdir_site)'../basesCIEP/SIM/Poblaciontot.dta"', replace version(13)
 
 
 
@@ -73,7 +73,7 @@ keep if entidad == "Nacional"
 
 
 * 5. Guardar *
-save `"`c(sysdir_site)'../basesCIEP/SIM/Defunciones.dta"', replace
+saveold `"`c(sysdir_site)'../basesCIEP/SIM/Defunciones.dta"', replace version(13)
 
 collapse (sum) defunciones, by(anio entidad cve_geo)
-save `"`c(sysdir_site)'../basesCIEP/SIM/Defuncionestot.dta"', replace
+saveold `"`c(sysdir_site)'../basesCIEP/SIM/Defuncionestot.dta"', replace version(13)
