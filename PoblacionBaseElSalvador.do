@@ -7,7 +7,7 @@
 ********************
 *** A. Poblacion ***
 ********************
-if "$S_OS" == "MacOS" {
+if "$S_OS" == "MacOSX" {
 	cd "/Users/ricardo/Dropbox (CIEP)/UNICEF GA/Datos/"
 }
 if "$S_OS" == "Unix" {
@@ -19,13 +19,13 @@ if "$S_OS" == "Unix" {
 **********************
 ** 1. Base de datos **
 import delimited using "WPP2019_PopulationBySingleAgeSex_2020-2100.csv", clear
-keep if locid == 222
+keep if locid == 222 // 484
 tempfile futuro
 save `futuro'
 
 
 import delimited using "WPP2019_PopulationBySingleAgeSex_1950-2019.csv", clear
-keep if locid == 222
+keep if locid == 222 // 484
 append using `futuro'
 
 rename time anio

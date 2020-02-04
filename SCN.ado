@@ -8,8 +8,8 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 	
-	syntax [, ANIO(int `aniovp') Graphs Update]
-	noisily di _newline(5) in g "{bf:INFORMACI{c O'}N ECON{c O'}MICA:" in y " SCN " `anio' "}"
+	syntax [, ANIO(int `aniovp') Graphs Update Discount(int 3)]
+	noisily di _newline(2) in g "{bf: INFORMACI{c O'}N ECON{c O'}MICA:" in y " SCN " `anio' "}"
 
 
 	scalar aniovp = `aniovp'
@@ -262,9 +262,13 @@ quietly {
 
 
 	** D.8. PIBDeflactor **
-	noisily PIBDeflactor, `graphs'
+	noisily PIBDeflactor, `graphs' anio(`anio') `update' discount(`discount')
 	tempfile basepib
 	save `basepib'
+	
+	if "$pais" != "" {
+		exit
+	}
 
 	local except = r(except)	
 	local exceptI = r(exceptI)
@@ -288,6 +292,7 @@ quietly {
 	**************************
 	** 1.1. Merge databases **
 	use "`c(sysdir_site)'../basesCIEP/SIM/baseSCN.dta", clear
+	local anio_last = anio[_N]
 	merge 1:1 (anio) using `basepib', nogen
 	tsset anio
 
@@ -297,7 +302,7 @@ quietly {
 
 	******************************
 	** 1.3. Forecast & Pastcast **
-	order indiceY-productivity, last
+	order indiceY-lambda, last
 	forvalues k = `=_N'(-1)1 {
 		if PIB[`k'] != . {
 			local latest = anio[`k']
@@ -590,21 +595,22 @@ quietly {
 		g `Depreciacion' = (ConCapFij + CapIncImp + Yl)/deflator/1000000000000
 		label var `Depreciacion' "Depreciaci{c o'}n"
 
-		twoway (area `Depreciacion' `Capital' `Laboral' anio if anio <= `latest' & anio >= `anio'-15) ///
-			(area `Depreciacion' anio if anio > `latest' & anio <= `anio'+5, color("255 129 0")) ///
-			(area `Capital' anio if anio > `latest' & anio <= `anio'+5, color("255 189 0")) ///
-			(area `Laboral' anio if anio > `latest' & anio <= `anio'+5, color("39 97 47")), ///
-			/*title("{bf:Producto Interno Bruto}") ///
-			subtitle(Cuenta de Generaci{c o'}n del Ingreso)*/ ///
-			caption("Fuente: Elaborado por el CIEP, con informaci{c o'}n del INEGI, BIE.") ///
+		twoway (area `Depreciacion' `Capital' `Laboral' anio if anio <= `latest') ///
+			(area `Depreciacion' anio if anio > `latest', color("255 129 0")) ///
+			(area `Capital' anio if anio > `latest', color("255 189 0")) ///
+			(area `Laboral' anio if anio > `latest', color("39 97 47")), ///
+			title("{bf:PIB: Cuenta de Generaci{c o'}n del Ingreso}") ///
+			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
 			legend(cols(3) order(1 2 3)) ///
 			xtitle("") xline(`latest'.5) ///
-			text(31 `latest'.5 "Observados  ", place(nw)) ///
-			text(31 `latest'.5 "  Proyectados", place(ne)) ///
-			xlabel(`=`anio'-15'(1)`=`anio'+5') ///
-			ylabel(, format(%20.0fc)) ytitle(billones MXN `anio', height(8)) ///
+			text(`=`Depreciacion'[1]*.05' `=`latest'-.5' "`latest'", place(nw) color(white)) ///
+			text(`=`Depreciacion'[1]*.05' `=anio[1]+.5' "Observado", place(ne) color(white)) ///
+			text(`=`Depreciacion'[1]*.05' `=`latest'+1.5' "Proyectado", place(ne) color(white)) ///
+			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
+			ylabel(0(5)`=ceil(`Depreciacion'[_N])', format(%20.0fc)) ///
+			ytitle(billones MXN `anio', height(8)) ///
 			yscale(range(0)) ///
-			note("{bf:Nota}: Crecimientos geom{c e'}tricos m{c o'}viles de `geo' a{c n~}os despu{c e'}s de `latest'. `except'") ///
+			note("{bf:Nota}: Crecimiento promedio anual de la producitividad (lambda): `=string(scalar(lambda),"%6.3f")'%. {bf:{c U'}ltimo dato}: `anio_last'.") ///
 			name(gdp_generacion, replace)
 
 		capture confirm existence $export
@@ -709,22 +715,23 @@ quietly {
 		g `AhorroN' = (AhorroN + ConGob + ConHog + ComprasN)/deflator/1000000000000
 		label var `AhorroN' "Ahorro neto"
 
-		twoway (area `AhorroN' `ConGob' `ConHog' `ComprasN' anio if anio <= `latest' & anio >= `anio'-15) ///
-			(area `AhorroN' anio if anio > `latest' & anio <= `anio'+5, color("255 129 0")) ///
-			(area `ConGob' anio if anio > `latest' & anio <= `anio'+5, color("255 189 0")) ///
-			(area `ConHog' anio if anio > `latest' & anio <= `anio'+5, color("39 97 47")) ///
-			(area `ComprasN' anio if anio > `latest' & anio <= `anio'+5, color("53 200 71")), ///
-			/*title("{bf:Producto Interno Bruto}") ///
-			subtitle(Cuenta de Generaci{c o'}n del Ingreso)*/ ///
-			caption("Fuente: Elaborado por el CIEP, con informaci{c o'}n del INEGI, BIE.") ///
+		twoway (area `AhorroN' `ConGob' `ConHog' `ComprasN' anio if anio <= `latest') ///
+			(area `AhorroN' anio if anio > `latest', color("255 129 0")) ///
+			(area `ConGob' anio if anio > `latest' & anio, color("255 189 0")) ///
+			(area `ConHog' anio if anio > `latest' & anio, color("39 97 47")) ///
+			(area `ComprasN' anio if anio > `latest' & anio, color("53 200 71")), ///
+			title("{bf:Utilización del ingreso}") ///
+			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
 			legend(cols(4) order(1 2 3 4)) ///
 			xtitle("") xline(`latest'.5) ///
-			text(31 `latest'.5 "Observados  ", place(nw)) ///
-			text(31 `latest'.5 "  Proyectados", place(ne)) ///
-			xlabel(`=`anio'-15'(1)`=`anio'+5') ///
-			ylabel(0(5)25, format(%20.0fc)) ytitle(billones MXN `anio', height(8)) ///
+			text(`=`AhorroN'[1]*.05' `=`latest'-.5' "`latest'", place(nw) color(white)) ///
+			text(`=`AhorroN'[1]*.05' `=anio[1]+.5' "Observado", place(ne) color(white)) ///
+			text(`=`AhorroN'[1]*.05' `=`latest'+1.5' "Proyectado", place(ne) color(white)) ///
+			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
+			ylabel(0(5)`=ceil(`Depreciacion'[_N])', format(%20.0fc)) ///
+			ytitle(billones MXN `anio', height(8)) ///
 			yscale(range(0)) ///
-			note("{bf:Nota}: Crecimientos geom{c e'}tricos m{c o'}viles de `geo' a{c n~}os despu{c e'}s de `latest'. `except'") ///
+			note("{bf:Nota}: Crecimiento promedio anual de la producitividad (lambda): `=string(scalar(lambda),"%6.3f")'%. {bf:{c U'}ltimo dato}: `anio_last'.") ///
 			name(gdp_utilizacion, replace)
 
 		capture confirm existence $export

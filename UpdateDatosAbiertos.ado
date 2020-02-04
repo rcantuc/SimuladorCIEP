@@ -4,23 +4,24 @@ program define UpdateDatosAbiertos, return
 	************************
 	*** 1. Base de datos ***
 	************************
-	use "`c(sysdir_site)'../basesCIEP/SIM/DatosAbiertos.dta", clear
+	capture use "`c(sysdir_site)'../basesCIEP/SIM/DatosAbiertos.dta", clear
 
-	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
-	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
-	local mesvp = substr(`"`=trim("`fecha'")'"',6,2)
+	if _rc == 0 {
+		local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
+		local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
+		local mesvp = substr(`"`=trim("`fecha'")'"',6,2)
+		
+		sort anio mes
+		return local ultanio = anio[_N]
+		return local ultmes = mes[_N]
 
-	sort anio mes
-	return local ultanio = anio[_N]
-	return local ultmes = mes[_N]
-
-	if (`aniovp' == anio[_N] & `mesvp'-2 <= mes[_N]) | (`aniovp'-1 == anio[_N] & `mesvp'-2 < 1) {
-		noisily di _newline(3) in g "Datos Abiertos: " in y "base actualizada." in g " {c U'}ltimo dato: "in y "`=anio[_N]'m`=mes[_N]'."
-		return local updated = "yes"
-		exit
+		if (`aniovp' == anio[_N] & `mesvp'-2 <= mes[_N]) | (`aniovp'-1 == anio[_N] & `mesvp'-2 < 0) {
+			noisily di _newline in g "Datos Abiertos: " in y "base actualizada." in g " {c U'}ltimo dato: "in y "`=anio[_N]'m`=mes[_N]'."
+			return local updated = "yes"
+			exit
+		}
 	}
-
-	noisily di _newline(3) in w "Datos Abiertos: " in y "ACTUALIZANDO... favor de esperar. :) Descargando las nuevas bases de SHCP (10 mins. aprox.)."
+	noisily di _newline in w "Datos Abiertos: " in y "ACTUALIZANDO... favor de esperar. :) Descargando las nuevas bases de SHCP (10 mins. aprox.)."
 
 
 	*****************************************

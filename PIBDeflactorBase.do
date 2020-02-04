@@ -82,11 +82,8 @@ format aniotrimestre %tq
 label var aniotrimestre "YearQuarter"
 tsset aniotrimestre
 
-* Ultimos valores *
-local anio_last = anio[_N]
-global trim_last = "q`=trimestre[_N]'"
 
-collapse (mean) pibY=pibQ indiceY=indiceQ, by(anio)
+collapse (mean) pibY=pibQ indiceY=indiceQ (max) trimestre, by(anio)
 
 format indiceY %10.4fc
 format pibY %25.0fc

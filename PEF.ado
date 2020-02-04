@@ -22,12 +22,16 @@ quietly {
 		local aniovp = $anioVP
 	}
 
-	use in 1 using "`c(sysdir_site)'../basesCIEP/SIM/PEF.dta", clear
+	capture use in 1 using "`c(sysdir_site)'../basesCIEP/SIM/PEF.dta", clear
+	if _rc != 0 {
+		run UpdatePEF.do
+	}
 	syntax [if] [, ANIO(int `aniovp') Graphs Update Base ID(string) ///
 		BY(varname) Fast ROWS(int 3) COLS(int 4) MINimum(real 1) ///
 		PPEF]
 
 	use `if' using "`c(sysdir_site)'../basesCIEP/SIM/PEF.dta", clear
+
 
 	** Base PEF **
 	if "`update'" == "update" {

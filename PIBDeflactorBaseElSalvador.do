@@ -63,10 +63,6 @@ save `PIBR', replace
 use `PIB', clear
 merge 1:1 (anio) using `PIBR', nogen
 
-
-* Ultimos valores *
-local anio_last = anio[_N]
-
 g indiceY = pibY/pibR*100
 
 drop pibR

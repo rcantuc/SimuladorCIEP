@@ -4,7 +4,6 @@
 clear all
 macro drop _all
 capture log close _all
-set scheme ciepnew
 timer on 1
 
 
@@ -27,22 +26,13 @@ adopath ++ PERSONAL
 
 
 
-******************
-** 0.1 Globales **
-global pib2022 = 4.5
-global discount = 3.0
 
-global pais = "ElSalvador"
-
-
-
-
-********************
-***              ***
-*** 1. POBLACIÓN ***
-***              ***
-********************
-noisily Poblacion, g anio(2018) //update
+*******************
+***             ***
+*** 1. Globales ***
+***             ***
+*******************
+*global pais = "El Salvador"
 
 
 
@@ -50,6 +40,7 @@ noisily Poblacion, g anio(2018) //update
 *************************************************/
 ***                                            ***
 *** 2. Capítulo 2: Las tres caras de la moneda ***
+***              ¿QUÉ ES EL PIB?               ***
 ***                                            ***
 ***               ACTUALIZACIÓN                *** 
 *** 1) abrir archivos .iqy en Excel de Windows ***
@@ -58,12 +49,7 @@ noisily Poblacion, g anio(2018) //update
 *** 3) correr SCN con opción "update"          ***
 ***                                            ***
 **************************************************
-if "$pais" == "" {
-	noisily SCN, graphs //update
-}
-else {
-	noisily PIBDeflactor, g aniovp(2018) //update
-}
+noisily SCN, discount(3.0) graphs //anio(2018) //update
 
 
 
@@ -73,9 +59,27 @@ else {
 *** 3. Capítulo 3: La economía-sistema antropocéntrica ***
 ***                                                    ***
 **********************************************************
-*noisily run Income.do 2018
-use "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/income.dta", clear
-Simulador ing_laboral if ing_laboral != 0 [fw=factor], anio(2018) noisily graphs
+capture confirm file `"`c(sysdir_site)'../basesCIEP/SIM/2018/income`=subinstr("${pais}"," ","",.)'.dta"'
+if _rc != 0 {
+	noisily run Income`=subinstr("${pais}"," ","",.)'.do 2018
+}
+
+
+
+
+*******************************************/
+***                                      ***
+*** 4. Parte 2: Ingresos presupuestarios ***
+***                                      ***
+********************************************
+LIF, by(divGA) graphs
+collapse (sum) recaudacion if anio == 2018, by(divGA)
+mkmat recaudacion, matrix(INGRESOS)
+
+ 
+use `"`c(sysdir_site)'../basesCIEP/SIM/2018/income`=subinstr("${pais}"," ","",.)'.dta"', clear
+noisily Simulador ISR if ISR != 0 [fw=factor], ///
+	anio(2018) base("EHPM 2018") reescala(`=INGRESOS[3,1]') graphs folio(folio) boot(20) //reboot //noisily
 
 
 
@@ -83,8 +87,25 @@ Simulador ing_laboral if ing_laboral != 0 [fw=factor], anio(2018) noisily graphs
 
 
 
-exit
-*noisily run Expenditure.do 2018
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*noisily run Expenditure.do 2018
 *noisily Sankey escol sexo grupo_edad rural formalmax decil ///
 	using "`c(sysdir_site)'../basesCIEP/SIM/2018/income.dta", ///
 	anio(2018) profile(Poblacion)
@@ -160,8 +181,8 @@ exit
 
 
 *********************/
-*** 4. Touch Down! ***
-**********************
+*** 4. Touchdown! ***
+*********************
 *noisily scalarlatex
 timer off 1
 timer list 1

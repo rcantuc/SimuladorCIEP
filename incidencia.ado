@@ -29,19 +29,19 @@ quietly {
 	tempname REC
 	tabstat `varlist2', stat(sum) f(%25.2fc) save
 	matrix `REC' = r(StatTotal)
-	noisily di in g "  Amount (" in y `"`=upper("`1'")'"' in g "):" _column(40) in y %25.0fc `REC'[1,1]
+	noisily di in g "  Monto:" _column(40) in y %25.0fc `REC'[1,1]
 
 	* 1.2 Hogares *
 	tempname FOR
 	tabstat `hog', stat(sum) f(%12.0fc) save
 	matrix `FOR' = r(StatTotal)
-	noisily di in g "  Households (" in y `"`=upper("`1'")'"' in g "):" _column(40) in y %25.0fc `FOR'[1,1]
+	noisily di in g "  Hogares:" _column(40) in y %25.0fc `FOR'[1,1]
 
 	* 1.3 Relativo *
 	tempname REL
 	tabstat `relativo', stat(sum) f(%25.2fc) save
 	matrix `REL' = r(StatTotal)
-	noisily di in g "  `rellabel' (" in y `"`=upper("`1'")'"' in g "):" _column(40) in y %25.0fc `REL'[1,1]
+	noisily di in g "  `rellabel':" _column(40) in y %25.0fc `REL'[1,1]
 
 	sort `n'
 	if _N != 10 {

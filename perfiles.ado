@@ -11,12 +11,17 @@ quietly {
 	*** 0. Guardar base original ***
 	********************************
 	preserve
-
+	use`"`c(sysdir_site)'../basesCIEP/SIM/Poblacion$pais.dta"', clear
+	local edadmax = edad[_N]
+	restore
+	preserve
 
 
 	*****************************
 	*** 1. Variables internas ***
 	*****************************
+	sort edad
+	local edadmaxEncuesta = edad[_N]
 	local title : variable label `varlist'
 
 	tempvar pob for rec
@@ -32,12 +37,12 @@ quietly {
 	}
 
 	* Labels *
-	label variable `pob' "Population"
-	label variable `for' "Taxpayers/Beneficiaries"
+	label variable `pob' "Poblaci{c o'}n"
+	label variable `for' "Contribuyentes/Beneficiarios"
 	label variable `rec' "`title'"
 
-	* Edades 109+ y collapse *
-	replace edad = 109 if edad > 109 & edad != . 					// Si hay observaciones mayores a 109 anios.
+	* Edades `edadmax'+ y collapse *
+	replace edad = `edadmax' if edad > `edadmax' & edad != . 					// Si hay observaciones mayores a `edadmax' anios.
 	collapse (sum) `rec' `pob' `for' [`weight' = `exp'], by(sexo edad)
 
 
@@ -88,46 +93,42 @@ quietly {
 	tempname POB
 	tabstat `pob', stat(sum) f(%12.0fc) save
 	matrix `POB' = r(StatTotal)
-	*noisily di in g "  Population (" in y `"`=upper("`varlist'")'"' in g "):" _column(40) in y %25.0fc `POB'[1,1]
+	*noisily di in g "  Poblaci{c o'}n:" _column(40) in y %25.0fc `POB'[1,1]
+	noisily di in g "  Per c{c a'}pita:" _column(40) in y %25.0fc `montopc'
 
 
 	***************************
 	** 1.4. Completar edades **
-	tostring sexo, replace
+	destring sexo, replace
 
-	* Edades de 97 a 109 *
-	tabstat `rec' `for' `pob' if edad >= 92 & sexo == "1", stat(sum) save
+	* Edades de 97 a `edadmax' *
+	tabstat `rec' `for' `pob' if edad >= `edadmaxEncuesta'-5 & sexo == 1, stat(sum) save
 	tempname RES1
 	matrix `RES1' = r(StatTotal)
-	tabstat `rec' `for' `pob' if edad >= 92 & sexo == "2", stat(sum) save
+	tabstat `rec' `for' `pob' if edad >= `edadmaxEncuesta'-5 & sexo == 2, stat(sum) save
 	tempname RES2
 	matrix `RES2' = r(StatTotal)
 
 	* Observaciones no encontradas *
-	forvalues k=0(1)109 {									// Edades segun CONAPO
+	forvalues k=0(1)`edadmax' {									// Edades segun CONAPO
 		forvalues j=1(1)2 {
-			count if edad == `k' & sexo == "`j'"
+			count if edad == `k' & sexo == `j'
 			if r(N) == 0 {
 				set obs `=_N+1'
 				replace edad = `k' in -1
-				replace sexo = "`j'" in -1
-				if `k' >= 97 {
-					*replace `rec' = `RES`j''[1,1]/(109-91) in -1
-					*replace `for' = `RES`j''[1,2]/(109-91) in -1
-					*replace `pob' = `RES`j''[1,3]/(109-91) in -1
-				}
+				replace sexo = `j' in -1
 			}
 		}
 	}
 
 	* Mayores de 92 anios *
-	replace `rec' = `RES1'[1,1]/(109-91) if edad >= 92 & sexo == "1"
-	replace `for' = `RES1'[1,2]/(109-91) if edad >= 92 & sexo == "1"
-	replace `pob' = `RES1'[1,3]/(109-91) if edad >= 92 & sexo == "1"
+	replace `rec' = `RES1'[1,1]/(`edadmax'-`edadmaxEncuesta'-1) if edad >= `edadmaxEncuesta' & sexo == 1
+	replace `for' = `RES1'[1,2]/(`edadmax'-`edadmaxEncuesta'-1) if edad >= `edadmaxEncuesta' & sexo == 1
+	replace `pob' = `RES1'[1,3]/(`edadmax'-`edadmaxEncuesta'-1) if edad >= `edadmaxEncuesta' & sexo == 1
 
-	replace `rec' = `RES2'[1,1]/(109-91) if edad >= 92 & sexo == "2"
-	replace `for' = `RES2'[1,2]/(109-91) if edad >= 92 & sexo == "2"
-	replace `pob' = `RES2'[1,3]/(109-91) if edad >= 92 & sexo == "2"
+	replace `rec' = `RES2'[1,1]/(`edadmax'-`edadmaxEncuesta'-1) if edad >= `edadmaxEncuesta' & sexo == 2
+	replace `for' = `RES2'[1,2]/(`edadmax'-`edadmaxEncuesta'-1) if edad >= `edadmaxEncuesta' & sexo == 2
+	replace `pob' = `RES2'[1,3]/(`edadmax'-`edadmaxEncuesta'-1) if edad >= `edadmaxEncuesta' & sexo == 2
 
 	capture drop `rect' `fort' `pobt'
 
@@ -136,24 +137,24 @@ quietly {
 	tempname REC
 	tabstat `rec', stat(sum) f(%25.2fc) save
 	matrix `REC' = r(StatTotal)
-	noisily di in g "  Amount (" in y `"`=upper("`varlist'")'"' in g "):" _column(40) in y %25.0fc `REC'[1,1]
+	noisily di in g "  Monto:" _column(40) in y %25.0fc `REC'[1,1]
 
 	tempname FOR
 	tabstat `for', stat(sum) f(%12.0fc) save
 	matrix `FOR' = r(StatTotal)
-	noisily di in g "  Taxpay./Benef. (" in y `"`=upper("`varlist'")'"' in g "):" _column(40) in y %25.0fc `FOR'[1,1]
+	noisily di in g "  Contribuyentes/Beneficiarios:" _column(40) in y %25.0fc `FOR'[1,1]
 
 	tempname POB
 	tabstat `pob', stat(sum) f(%12.0fc) save
 	matrix `POB' = r(StatTotal)
-	noisily di in g "  Population (" in y `"`=upper("`varlist'")'"' in g "):" _column(40) in y %25.0fc `POB'[1,1]
+	noisily di in g "  Poblaci{c o'}n:" _column(40) in y %25.0fc `POB'[1,1]
 
 
 
 	********************
 	*** 2.0. Reshape ***
 	********************
-	reshape wide `rec' `for' `pob', i(edad) j(sexo) string
+	reshape wide `rec' `for' `pob', i(edad) j(sexo)
 
 
 	*************************
