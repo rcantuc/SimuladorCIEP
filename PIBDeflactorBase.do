@@ -90,4 +90,4 @@ format pibY %25.0fc
 
 g currency = "MXN"
 
-save "`c(sysdir_site)'../basesCIEP/SIM/PIBDeflactor.dta", replace
+saveold `"`c(sysdir_site)'../basesCIEP/SIM/PIBDeflactor.dta"', replace version(13)
