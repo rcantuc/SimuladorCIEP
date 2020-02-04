@@ -19,24 +19,11 @@ quietly {
 	********************
 	*** 1. Poblacion ***
 	********************
-	capture confirm file `"`c(sysdir_personal)'/bases/SIM/Poblacion/`poblacion'`c(os)'.dta"'
-	if _rc != 0 {
-		if `"`=upper("`poblacion'")'"' == "POBLACION" | `"`=upper("`poblacion'")'"' == "DEFUNCIONES" {
-			run "`c(sysdir_personal)'/bases/CONAPO/Poblacion.do"
-		}
-	}
-
-	if "$entidad" == "" {
-		local entidad = "Nacional"
-	}
-	else {
-		local entidad = "$entidad"
-	}
-	use if entidad == "`entidad'" using `"`c(sysdir_personal)'/bases/SIM/Poblacion/`poblacion'`c(os)'.dta"', clear
+	use `"`c(sysdir_site)'../basesCIEP/SIM/`=proper("`poblacion'")'${pais}.dta"', clear
 	sort anio
 	local anio = anio in 1
 
-	reshape wide `poblacion', i(edad sexo ent) j(anio)
+	reshape wide `poblacion', i(edad sexo) j(anio)
 
 	mkmat `poblacion'* if sexo == 1, matrix(HOM)
 	mata: HOM = st_matrix("HOM")

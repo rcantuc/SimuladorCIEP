@@ -1,9 +1,9 @@
-program define CuentasGeneracionales, rclass
+program define cuentasgeneracionales, rclass
 quietly {
 	version 13.1
 	syntax varname, POBlacion(string) ANIObase(int) [BOOTstrap(int 1) Graphs POST]
 
-	noisily di _newline in y "  CuentasGeneracionales.ado"
+	noisily di _newline in y "  cuentasgeneracionales.ado"
 
 
 
@@ -19,31 +19,23 @@ quietly {
 	********************
 	*** 1. Poblacion ***
 	********************
-	capture confirm file `"`c(sysdir_personal)'/bases/SIM/Poblacion/`poblacion'`c(os)'.dta"'
-	if _rc != 0 {
-		if `"`=upper("`poblacion'")'"' == "POBLACION" | `"`=upper("`poblacion'")'"' == "DEFUNCIONES" {
-			run "`c(sysdir_personal)'/bases/CONAPO/Poblacion.do"
-		}
-	}
-
-	if "$entidad" == "" {
-		local entidad = "Nacional"
-	}
-	else {
-		local entidad = "$entidad"
-	}
-	use if entidad == "`entidad'" using `"`c(sysdir_personal)'/bases/SIM/Poblacion/`poblacion'`c(os)'.dta"', clear
+	use `"`c(sysdir_site)'../basesCIEP/SIM/`poblacion'.dta"', clear
+	
 
 	sort anio
-	local anio = anio in 1
-	keep if anio >= $anioVP
+	local anio = anio[1]
+	local aniofin = anio[_N]
+	local edadmax = edad[_N]+1
+	keep if anio >= `aniobase'
 	
-	reshape wide `poblacion', i(edad sexo ent) j(anio)
+	reshape wide `poblacion', i(edad sexo) j(anio)
 
 	mkmat `poblacion'* if sexo == 1, matrix(HOM)
 	mata: HOM = st_matrix("HOM")
 	mkmat `poblacion'* if sexo == 2, matrix(MUJ)
 	mata: MUJ = st_matrix("MUJ")
+	
+	mata: lambda = st_numscalar("lambda")
 
 
 
@@ -51,37 +43,37 @@ quietly {
 	******************************
 	*** 2. Proyecciones Modulo ***
 	******************************
-	mata GA = J(110,2,0)
-	forvalues edad = 1(1)110 {
-		forvalues row = 1(1)110 {
-			forvalues col = 1(1)110 {
+	mata GA = J(`edadmax',2,0)
+	forvalues edad = 1(1)`edadmax' {
+		forvalues row = 1(1)`edadmax' {
+			forvalues col = 1(1)`edadmax' {
 				if `row' == `col'+`edad'-1 {
-					if `col' <= 2030-$anioVP+1 {
+					if `col' <= `aniofin'-`aniobase'+1 {
 						mata GA[`edad',1] = GA[`edad',1] + ///
 							PERFIL[`row',1] :* HOM[`row',`col'] * PC * ///
-							(1 + ${pib$anioVP}/100)^(`col'-1) / (1 + ${def$anioVP}/100)^(`col'-1)
+							(1 + lambda[1,1]/100)^(`col'-1) / (1 + ${discount}/100)^(`col'-1)
 						mata GA[`edad',2] = GA[`edad',2] + ///
 							PERFIL[`row',2] :* MUJ[`row',`col'] * PC * ///
-							(1 + ${pib$anioVP}/100)^(`col'-1) / (1 + ${def$anioVP}/100)^(`col'-1)
+							(1 + lambda[1,1]/100)^(`col'-1) / (1 + ${discount}/100)^(`col'-1)
 						*if `edad' == 5 {
 						*	noisily di "EDAD: " `edad' ", ROW: " `row' ", COL: " `col'
 						*	noisily di "Anio: " 2017+`col'
 						*	noisily mata GA[`edad',1] :/ HOM[`row',`col']
-						*	noisily di (1 + ${pib$anioVP}/100)^(`col'-1) / (1 + ${def$anioVP}/100)^(`col'-1)
+						*	noisily di (1 + ${pib`aniobase'}/100)^(`col'-1) / (1 + ${def`aniobase'}/100)^(`col'-1)
 						*}
 					}
 					else {
 						mata GA[`edad',1] = GA[`edad',1] + ///
-							PERFIL[`row',1] :* HOM[`row',`=2030-$anioVP+1'] * PC * ///
-							(1 + ${pib$anioVP}/100)^(`col'-1) / (1 + ${def$anioVP}/100)^(`col'-1)
+							PERFIL[`row',1] :* HOM[`row',`=2030-`aniobase'+1'] * PC * ///
+							(1 + lambda[1,1]/100)^(`col'-1) / (1 + ${discount}/100)^(`col'-1)
 						mata GA[`edad',2] = GA[`edad',2] + ///
-							PERFIL[`row',2] :* MUJ[`row',`=2030-$anioVP+1'] * PC * ///
-							(1 + ${pib$anioVP}/100)^(`col'-1) / (1 + ${def$anioVP}/100)^(`col'-1)
+							PERFIL[`row',2] :* MUJ[`row',`=2030-`aniobase'+1'] * PC * ///
+							(1 + lambda[1,1]/100)^(`col'-1) / (1 + ${discount}/100)^(`col'-1)
 						*if `edad' == 5 {
 						*	noisily di "EDAD: " `edad' ", ROW: " `row' ", COL: " `col'
 						*	noisily di "Anio: " 2017+`col'
-						*	noisily mata GA[`edad',1] :/ HOM[`row',`=2030-$anioVP+1']
-						*	noisily di (1 + ${pib$anioVP}/100)^(`col'-1) / (1 + ${def$anioVP}/100)^(`col'-1)
+						*	noisily mata GA[`edad',1] :/ HOM[`row',`=2030-`aniobase'+1']
+						*	noisily di (1 + ${pib`aniobase'}/100)^(`col'-1) / (1 + ${def`aniobase'}/100)^(`col'-1)
 						*}
 					}
 				}

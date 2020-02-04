@@ -25,9 +25,12 @@ quietly {
 	else {
 		local aniovp = $anioVP
 	}
-	use "`c(sysdir_site)'../basesCIEP/SIM/LIF.dta", clear
+	capture use "`c(sysdir_site)'../basesCIEP/SIM/LIF.dta", clear
+	if _rc != 0 {
+		run UpdateLIF.do
+	}
 	syntax [if/] [, ANIO(int `aniovp' ) Update Graphs Base ID(string) ///
-		MINimum(real 1) DESDE(int 2013) ILIF]
+		MINimum(real 1) DESDE(int 2013) ILIF BY(varname)]
 
 	if "`update'" == "update" | "`updated'" != "yes" {
 		noisily run "`c(sysdir_site)'/UpdateLIF.do"					// Actualiza la base de Excel (./basesCIEP/LIFs/LIF.xlsx)
@@ -43,6 +46,9 @@ quietly {
 	if "`base'" == "base" {
 		exit
 	}
+	if "`by'" == "" {
+		local by = "divCIEP"
+	}
 
 
 
@@ -50,7 +56,7 @@ quietly {
 	**************
 	*** 2. PIB ***
 	**************
-	merge m:1 (anio) using `PIB', nogen keepus(pibY indiceY deflator productivity var_pibY) update replace keep(matched)
+	merge m:1 (anio) using `PIB', nogen keepus(pibY indiceY deflator lambda var_pibY) update replace keep(matched)
 
 	if "`ilif'" == "ilif" {
 		replace LIF = ILIF if anio == `aniovp'
@@ -72,16 +78,16 @@ quietly {
 	*xtset serie anio
 
 	tempvar resumido recaudacionPIB
-	g `resumido' = divCIEP
+	g `resumido' = `by'
 
 	tempname label
-	label copy divCIEP `label'
+	label copy `by' `label'
 	label values `resumido' `label'
 
-	egen `recaudacionPIB' = max(recaudacionPIB) /*if anio >= 2010*/, by(divCIEP)
-	replace `resumido' = -99 if abs(`recaudacionPIB') < `minimum' | recaudacionPIB == . | recaudacionPIB == 0
+	egen `recaudacionPIB' = max(recaudacionPIB) /*if anio >= 2010*/, by(`by')
+	replace `resumido' = -99 if abs(`recaudacionPIB') < `minimum' // | recaudacionPIB == . | recaudacionPIB == 0
 	
-	*replace `resumido' = -99 if divCIEP == 1
+	*replace `resumido' = -99 if `by' == 1
 	
 	label define `label' -99 "Otros (< `minimum'% PIB)", add modify
 
@@ -96,12 +102,12 @@ quietly {
 	** 4. Display LIF **
 
 	** Division CIEP **
-	noisily di _newline in g "{bf: A. Ingresos presupuestarios (divCIEP) " ///
+	noisily di _newline in g "{bf: A. Ingresos presupuestarios (`by') " ///
 		_col(44) in g %20s "MXN" ///
 		_col(66) %7s "% PIB" ///
 		_col(77) %7s "% Total" "}"
 
-	tabstat recaudacion recaudacionPIB if anio == `anio', by(divCIEP) stat(sum) f(%20.0fc) save
+	tabstat recaudacion recaudacionPIB if anio == `anio', by(`by') stat(sum) f(%20.0fc) save
 	tempname mattot
 	matrix `mattot' = r(StatTotal)
 
@@ -113,7 +119,7 @@ quietly {
 		local name = strtoname("`=r(name`k')'")
 
 		return scalar `name' = `mat`k''[1,1]
-		local divCIEP `"`divCIEP' `name'"'
+		local `by' `"``by'' `name'"'
 
 		noisily di in g "  (+) `=r(name`k')'" ///
 			_col(44) in y %20.0fc `mat`k''[1,1] ///
@@ -122,39 +128,7 @@ quietly {
 		local ++k
 	}
 
-	return local divCIEP `"`divCIEP'"'
-	noisily di in g _dup(83) "-"
-	noisily di in g "{bf:  (=) Total" ///
-		_col(44) in y %20.0fc `mattot'[1,1] ///
-		_col(66) in y %7.3fc `mattot'[1,2] ///
-		_col(77) in y %7.1fc `mattot'[1,1]/`mattot'[1,1]*100 "}"
-
-
-	** Division Origen **
-	noisily di _newline in g "{bf: B. Ingresos presupuestarios (divOrigen) " ///
-		_col(44) in g %20s "MXN" ///
-		_col(66) %7s "% PIB" ///
-		_col(77) %7s "% Total" "}"
-
-	tabstat recaudacion recaudacionPIB if anio == `anio', by(divOrigen) stat(sum) f(%20.0fc) save
-	tempname mattot
-	matrix `mattot' = r(StatTotal)
-
-	local k = 1
-	while "`=r(name`k')'" != "." {
-		tempname mat`k'
-		matrix `mat`k'' = r(Stat`k')
-		return scalar `=strtoname(abbrev("`=r(name`k')'",7))' = `mat`k''[1,1]
-		local divOrigen `"`divOrigen' `=strtoname(abbrev("`=r(name`k')'",7))'"'
-
-		noisily di in g "  (+) `=r(name`k')'" ///
-			_col(44) in y %20.0fc `mat`k''[1,1] ///
-			_col(66) in y %7.3fc `mat`k''[1,2] ///
-			_col(77) in y %7.1fc `mat`k''[1,1]/`mattot'[1,1]*100
-		local ++k
-	}
-
-	return local divOrigen `"`divOrigen'"'
+	return local `by' `"``by''"'
 	noisily di in g _dup(83) "-"
 	noisily di in g "{bf:  (=) Total" ///
 		_col(44) in y %20.0fc `mattot'[1,1] ///
@@ -163,7 +137,7 @@ quietly {
 
 
 	** Division Resumido **
-	noisily di _newline in g "{bf: C. Ingresos presupuestarios (divResumido) " ///
+	noisily di _newline in g "{bf: B. Ingresos presupuestarios (divResumido) " ///
 		_col(44) in g %20s "MXN" ///
 		_col(66) %7s "% PIB" ///
 		_col(77) %7s "% Total" "}"
@@ -218,17 +192,15 @@ quietly {
 		local ++k
 	}
 
-	
-exit
 
 	** Crecimientos **
-	noisily di _newline in g "{bf: D. Mayores cambios:" in y " `=`anio'-5' - `anio'" in g ///
+	noisily di _newline in g "{bf: C. Mayores cambios:" in y " `=`anio'-5' - `anio'" in g ///
 		_col(55) %7s "`=`anio'-5'" ///
 		_col(66) %7s "`anio'" ///
 		_col(77) %7s "Cambio PIB" "}"
 
 
-	tabstat recaudacion recaudacionPIB if anio == `anio' & divLIF != 10, by(divCIEP) stat(sum) f(%20.0fc) save
+	tabstat recaudacion recaudacionPIB if anio == `anio' & divLIF != 10, by(`by') stat(sum) f(%20.0fc) save
 	tempname mattot
 	matrix `mattot' = r(StatTotal)
 
@@ -240,7 +212,7 @@ exit
 	}
 
 
-	capture tabstat recaudacion recaudacionPIB if anio == `anio'-5 & divLIF != 10, by(divCIEP) stat(sum) f(%20.1fc) save
+	capture tabstat recaudacion recaudacionPIB if anio == `anio'-5 & divLIF != 10, by(`by') stat(sum) f(%20.1fc) save
 	if _rc == 0 {
 		tempname mattot5
 		matrix `mattot5' = r(StatTotal)
@@ -274,7 +246,7 @@ exit
 		_col(66) %7s "% PIB" ///
 		_col(77) %7s "% Total" "}"
 
-		tabstat recaudacion recaudacionPIB if anio == `anio', by(divCIEP) stat(sum) f(%20.0fc) save
+		tabstat recaudacion recaudacionPIB if anio == `anio', by(`by') stat(sum) f(%20.0fc) save
 		tempname mattot
 		matrix `mattot' = r(StatTotal)
 
@@ -310,27 +282,29 @@ exit
 	if "$graphs" == "on" | "`graphs'" == "graphs" {
 		replace recaudacionPIB = 0 if anio == `aniovp'
 
-		graph bar (sum) LIFPIB recaudacionPIB if anio > `aniovp'-10 & divLIF != 10, ///
-			over(divOrigen, relabel(1 "LIF" 2 "SHCP")) ///
+		graph pie LIFPIB if anio == `aniovp', over(`resumido') descending sort ///
+			plabel(_all percent, format(%5.1fc)) ///
+			title("{bf:Composici{c o'}n de los ingresos presupuestarios}") ///
+			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
+			name(ingresospie, replace) ///
+			legend(on position(3) cols(1))
+			
+		graph bar (sum) LIFPIB recaudacionPIB if anio > `aniovp'-5 & divLIF != 10, ///
+			over(`resumido', relabel(1 "LIF" 2 "SHCP")) ///
 			over(anio, label(labgap(vsmall))) ///
-			stack asyvars ///
+			bargap(-30) stack asyvars ///
 			title("{bf:Ingresos presupuestarios}") ///
 			ytitle(% PIB) ylabel(0(5)30, labsize(small)) ///
 			legend(on position(6) cols(4)) ///
 			name(ingresos, replace) ///
 			blabel(bar, format(%7.1fc)) ///
-			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}") ///
+			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
 			note({bf:{c U'}ltimo dato:} `ultanio'm`ultmes')
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
 
 
-
-exit
-
-
-
-		if "`if'" != "" {
+		/*if "`if'" != "" {
 			graph bar (sum) LIFPIB recaudacionPIB if `if', ///
 				over(`resumido', relabel(1 "LIF" 2 "SHCP")) ///
 				over(anio) ///
@@ -377,9 +351,7 @@ exit
 		if "`ilif'" == "ilif" {
 			gr_edit .grpaxis.edit_tick 15 93.9024 `"ILIF"', tickset(major)
 		}
-		
-*******************************/
-		
+				
 		graph bar (sum) LIFPIB recaudacionPIB if anio >= `desde' & (divOrigen == 4 | divOrigen == 2 | divOrigen == 3), ///
 			over(`resumido', relabel(1 "LIF" 2 "SHCP")) ///
 			over(anio) ///
@@ -397,7 +369,6 @@ exit
 			gr_edit .grpaxis.edit_tick 15 93.9024 `"ILIF"', tickset(major)
 		}
 		
-***************************************
 	
 		graph bar (sum) LIFPIB recaudacionPIB if anio >= `desde' & divLIF != 10 & divOrigen == 2, ///
 			over(`resumido', relabel(1 "LIF" 2 "SHCP")) ///
@@ -466,13 +437,6 @@ exit
 		if "`ilif'" == "ilif" {
 			gr_edit .grpaxis.edit_tick 15 93.9024 `"ILIF"', tickset(major)
 		}
-
-		graph pie LIFPIB if anio == `aniovp', over(`resumido') descending sort ///
-			plabel(_all percent, format(%5.1fc)) ///
-			title("{bf:Composici{c o'}n de la LIF}") ///
-			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).}") ///
-			name(ingresospie, replace) ///
-			legend(on position(3) cols(1))
 
 
 		*gr_edit .grpaxis.style.editstyle majorstyle(tickstyle(textstyle(size(vsmall)))) editcopy

@@ -132,7 +132,7 @@ quietly {
 			note("{bf:{c U'}ltimo dato:} `ultanio'm`ultmes'.") ///
 			name(H`anything', replace)
 		
-		graph save H`anything' "`=c(sysdir_site)'../basesCIEP/SIM/`anything'.gph", replace
+		*graph save H`anything' "`=c(sysdir_site)'../basesCIEP/SIM/`anything'.gph", replace
 	}
 	noisily list, separator(30) string(30)
 }

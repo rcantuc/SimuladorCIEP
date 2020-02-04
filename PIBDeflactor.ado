@@ -9,22 +9,21 @@ quietly {
 	***********************
 	*** 0 Base de datos ***
 	***********************
-	capture confirm file `"`c(sysdir_site)'../basesCIEP/SIM/Poblacion${pais}.dta"'
-	if _rc == 0 | "`update'" == "update" {
-		use `"`c(sysdir_site)'../basesCIEP/SIM/Poblacion${pais}.dta"', clear
-		collapse (sum) WorkingAge=poblacion if edad >= 16 & edad <= 65, by(anio)
-		format WorkingAge %15.0fc
-		tempfile workingage
-		save `workingage'
-	}
+	Poblacion, anio(`aniovp') `graphs' `update'
+	collapse (sum) WorkingAge=poblacion if edad >= 16 & edad <= 65, by(anio)
+	format WorkingAge %15.0fc
+	tempfile workingage
+	save `workingage'
 	
 	capture use `"`c(sysdir_site)'../basesCIEP/SIM/PIBDeflactor${pais}.dta"', clear
 	if _rc != 0 | "`update'" == "update" {
-		run "`c(sysdir_personal)'/PIBDeflactorBase${pais}.do"
+		run `"`c(sysdir_personal)'/PIBDeflactorBase`=subinstr("${pais}"," ","",.)'.do"'
 		use `"`c(sysdir_site)'../basesCIEP/SIM/PIBDeflactor${pais}.dta"', clear
 	}
 	local anio_first = anio[1]
 	local anio_last = anio[_N]
+	capture local trim_last = trimestre[_N]
+	capture local trim_last = "q`trim_last'"
 
 	merge 1:1 (anio) using `workingage', nogen
 	drop if anio < `anio_first'
@@ -32,9 +31,7 @@ quietly {
 		local fin = anio[_N]
 	}
 	
-	if "$discount" != "" {
-		local discount = $discount
-	}
+	global discount = `discount'
 
 
 
@@ -70,11 +67,7 @@ quietly {
 	}	
 
 	* Valor presente *
-	capture confirm existence $anioVP
-	if _rc == 0 & `aniovp' == -1 {
-		local aniovp = $anioVP
-	}
-	else if `aniovp' == -1 {
+	if `aniovp' == -1 {
 		local aniovp : di %td_CY-N-D  date("$S_DATE", "DMY")
 		local aniovp = substr(`"`=trim("`aniovp'")'"',1,4)
 	}
@@ -95,7 +88,7 @@ quietly {
 	*** 3 PIB ***
 	*************
 	g double pibYR = pibY/deflator
-	label var pibYR "PIB Real (`=anio[`obsvp'])"
+	label var pibYR "PIB Real (`=anio[`obsvp']')"
 	format pibYR %25.0fc
 
 	g double var_pibY = (pibYR/L.pibYR-1)*100
@@ -129,13 +122,14 @@ quietly {
 		replace pibYR = L.pibYR*(1+var_pibY/100) if anio == `k'
 	}		
 
+	* Lambda (productividad) *
 	replace lambda = (1+scalar(lambda)/100)^(anio-`anio_last')
-	replace pibYR = `=pibYR[`obsvp']'/`=WorkingAge[`obsvp']'*WorkingAge* ///
+	*replace lambda = 1
+	replace pibYR = `=pibYR[`obslast']'/`=WorkingAge[`obslast']'*WorkingAge* ///
 		(1+scalar(lambda)/100)^(anio-`anio_last') if pibYR == .
 	replace pibY = pibYR*deflator if pibY == .
 	replace var_pibG = ((pibYR/L`=`geo''.pibYR)^(1/`geo')-1)*100
 	replace var_pibY = (pibYR/L.pibYR-1)*100
-		
 	g double pibYVP = pibYR/(1+`discount'/100)^(anio-`=anio[`obsvp']')
 	format pibYVP %20.0fc
 	
@@ -146,11 +140,11 @@ quietly {
 	*****************
 	** 4 Simulador **
 	*****************
-	noisily di _newline(2) in g "Output per worker: " in y _col(25) %10.1fc OutputPerWorker[`obsvp'] " `=currency[`obsvp']'"
-	noisily di in g "Lambda (productividad): " in y _col(25) %10.4f scalar(lambda) " %" 
+	noisily di _newline in g " Output per worker: " in y _col(25) %10.1fc OutputPerWorker[`obsvp'] " `=currency[`obsvp']'"
+	noisily di in g " Lambda (productividad): " in y _col(25) %10.4f scalar(lambda) " %" 
 	
 	scalar pibINF = pibYR[_N]*((pibYR[_N]/pibYR[_N-10])^(1/10))*(1+`discount'/100)^((`=anio[`obsvp']'-`=anio[_N]')/(((pibYR[_N]/pibYR[_N-10])^(1/10)-1)-(`discount'/100)))
-	noisily di in g "PIB `=anio[_N]' al infinito: " in y _col(25) %20.0fc pibINF
+	noisily di in g " PIB `=anio[_N]' al infinito: " in y _col(25) %20.0fc pibINF
 
 	*if "`globals'" == "globals" {
 		forvalues k=1(1)`=_N' {
@@ -173,11 +167,13 @@ quietly {
 		twoway (connected var_indiceY anio if anio <= `anio_last') ///
 			(connected var_indiceY anio if anio >= `anio_last'), ///
 			title("{bf:{c I'}ndice de precios impl{c i'}citos}") ///
+			subtitle(${pais}) ///
+			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
 			ytitle("Variaci{c o'}n anual (%)") xtitle("") yline(0) ///
 			text(`crec_deflactor', place(c)) ///
 			legend(label(1 "Observado") label(2 "Proyectado")) ///
 			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
-			note("{bf:{c U'}ltimo dato}: `anio_last'$trim_last.") ///
+			note("{bf:{c U'}ltimo dato}: `anio_last'`trim_last'.") ///
 			name(deflactorH, replace)
 			
 		capture confirm existence $export
@@ -195,11 +191,13 @@ quietly {
 		twoway (connected var_pibY anio if anio <= `anio_last') ///
 			(connected var_pibY anio if anio > `anio_last'), ///
 			title({bf:Producto Interno Bruto}) ///
+			subtitle(${pais}) ///
+			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
 			ytitle("Crecimiento real (%)") xtitle("") yline(0, lcolor(black)) ///
 			text(`crec_PIB') ///
 			legend(label(1 "Observado") label(2 "Proyectado")) ///
 			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
-			note("{bf:{c U'}ltimo dato}: `anio_last'$trim_last.") ///
+			note("{bf:{c U'}ltimo dato}: `anio_last'`trim_last'.") ///
 			name(PIBH, replace)
 
 		capture confirm existence $export
@@ -208,19 +206,21 @@ quietly {
 		}
 
 		tempvar pibYRmil
-		g `pibYRmil' = pibYR/1000000
+		g `pibYRmil' = pibYR/1000000000000
 		twoway (area `pibYRmil' anio if anio <= `anio_last') ///
 			(area `pibYRmil' anio if anio > `anio_last'), ///
 			title({bf:Producto Interno Bruto}) ///
-			ytitle(millones de `=currency[`obsvp']' `aniovp') xtitle("") yline(0) ///
-			text(`=`pibYRmil'[1]*.05' `=`anio_last'-1' "`anio_last'", place(nw) color(white)) ///
+			subtitle(${pais}) ///
+			ytitle(billones `=currency[`obsvp']' `aniovp') xtitle("") yline(0) ///
+			text(`=`pibYRmil'[1]*.05' `=`anio_last'-.5' "`anio_last'", place(nw) color(white)) ///
 			text(`=`pibYRmil'[1]*.05' `=anio[1]+.5' "Observado" ///
 			`=`pibYRmil'[1]*.05' `=`anio_last'+1.5' "Proyectado", place(ne) color(white)) ///
-			ylabel(, format(%10.0fc)) xlabel(`=round(`anio_first',10)'(10)`fin') ///
+			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
+			ylabel(0(5)`=round(`pibYRmil'[_N],5)', format(%10.0fc)) ///
 			xline(`anio_last'.5) ///
 			yscale(range(0)) ///
 			legend(label(1 "Observado") label(2 "Proyecci{c o'}n") off) ///
-			note("{bf:Nota}: Crecimiento promedio anual de la producitividad (lambda): `=string(scalar(lambda),"%6.4f")'%. {bf:{c U'}ltimo dato}: `anio_last'$trim_last.") ///
+			note("{bf:Nota}: Crecimiento promedio anual de la producitividad (lambda): `=string(scalar(lambda),"%6.3f")'%. {bf:{c U'}ltimo dato}: `anio_last'`trim_last'.") ///
 			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
 			name(PIBP, replace)
 	}

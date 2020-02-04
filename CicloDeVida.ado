@@ -1,9 +1,9 @@
-program define CicloDeVida, rclass
+program define ciclodevida, rclass
 quietly {
 	version 13.1
-	syntax varname [if] [fweight] [, BOOTstrap(int 1) POST]
+	syntax varname [if] [fweight], DECIL(varname) [BOOTstrap(int 1) POST]
 
-	noisily di _newline in y "  CicloDeVida.ado"
+	noisily di _newline in y "  ciclodevida.ado"
 
 
 
@@ -20,22 +20,12 @@ quietly {
 	tempvar pob
 	g double `pob' = 1
 	
-	g entidad = substr(folioviv,1,2) 
-	destring sexo entidad, replace ignore("co")
+	destring sexo, replace ignore("co")
 
 	tempvar varlist2
 	g double `varlist2' = `varlist' `if'
-
-	capture confirm variable decil
-	tempvar decil
-	if _rc != 0 {
-		xtile `decil' = `varlist' [`weight' `exp'], n(10) 
-	}
-	else {
-		g `decil' = decil
-	}
 	
-	collapse (sum) `varlist2' `pob' [`weight' `exp'], by(sexo edad `decil' entidad escol)
+	collapse (sum) `varlist2' `pob' [`weight' `exp'], by(sexo edad `decil' escol)
 	format `varlist2' %20.0fc
 
 
@@ -47,8 +37,8 @@ quietly {
 	tempname REC
 	matrix `REC' = r(StatTotal)
 
-	noisily di in g "  Amount (" in y `"`=upper("`1'")'"' in g "):" _column(40) in y %25.0fc `REC'[1,1]
-	noisily di in g "  Population (" in y `"`=upper("`1'")'"' in g "):" _column(40) in y %25.0fc `REC'[1,2]
+	noisily di in g "  Monto:" _column(40) in y %25.0fc `REC'[1,1]
+	noisily di in g "  Poblaci{c o'}n:" _column(40) in y %25.0fc `REC'[1,2]
 
 
 
@@ -57,7 +47,7 @@ quietly {
 	*********************************
 	if "`post'" == "post" {
 		forvalues k=1(1)`=_N' {
-			capture post CICLO (`bootstrap') (sexo[`k']) (edad[`k']) (`decil'[`k']) (entidad[`k']) ///
+			capture post CICLO (`bootstrap') (sexo[`k']) (edad[`k']) (`decil'[`k']) ///
 				(escol[`k']) (`pob'[`k']) (`varlist2'[`k'])
 		}
 	}

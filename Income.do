@@ -54,7 +54,9 @@ local enighanio = `1'
 local macroanio = `1'
 
 
-noisily di _newline(2) _col(04) in g "{bf:INGRESOS DE LOS HOGARES: " in y "`enigh' `enighanio'}"
+capture log close
+log using "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/income.smcl", replace
+noisily di _newline(3) in g "{bf:INGRESOS DE LOS HOGARES: " in y "`enigh' `enighanio'}"
 
 
 
@@ -1959,7 +1961,7 @@ predict double prob_renta if e(sample)
 gsort -prob_renta -ing_anual
 g double ing_renta_accum = sum(ing_rent*factor_cola)
 
-noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "Se hace el cut-off en la formalidad de alquileres en " %15.0fc `acum_arrenda'/.65 " (SAT PF 2015).}"
+noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "Se hace el cut-off en la formalidad de alquileres en " %15.0fc `acum_arrenda'/.65 " in g (SAT PF 2015).}"
 g formal_renta = ing_renta_accum <= `acum_arrenda'/.65 & prob_renta != .	// SAT m{c a'}s abierto
 
 noisily di _newline _col(04) in g "{bf:SUPUESTO: " ///
@@ -1988,7 +1990,7 @@ gsort -prob_servprof -ing_t4_cap2
 g double ing_servprof_accum = sum((ing_t4_cap2-exen_t4_cap2)*factor_cola)
 
 noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "Se hace el cut-off en la formalidad de servicios profesionales en " ///
-	in y %15.0fc `util_serprof' in g " (SAT FP 2015).}"
+	in y %15.0fc `util_serprof' in g " (SAT PF 2015).}"
 g formal_servprof = ing_servprof_accum < `util_serprof' & prob_servprof != .		// SAT m{c a'}s abierto
 
 noisily di _newline _col(04) in g "{bf:SUPUESTO: " ///
@@ -2267,9 +2269,12 @@ label values formalmax formalidad
 
 g Poblacion = 1
 
+g folio = folioviv + foliohog
+
 
 * Guardar *
 capture drop __*
 format ing_* exen_* renta %10.0fc
 capture mkdir "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/"
 save "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/income.dta", replace
+log close

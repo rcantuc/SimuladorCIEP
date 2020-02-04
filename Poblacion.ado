@@ -7,15 +7,15 @@ quietly {
 	local aniovp : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`aniovp'")'"',1,4)
 
-	syntax [anything] [, ANIOinicial(int `aniovp') ANIOFinal(int -1) Graphs ///
-		UPDATE]
+	syntax [anything] [, ANIOinicial(int `aniovp') ANIOFinal(int -1) Graphs UPDATE]
 
 	if "`anything'" == "" {
 		local anything = "poblacion"
-		local poblacionl = "Pir{c a'}mide generacional"
-		local poblacionl2 = "Transici{c o'}n demogr{c a'}fica"
 	}
-
+	if `anioinicial' == -1 {
+		local anioinicial : di %td_CY-N-D  date("$S_DATE", "DMY")
+		local anioinicial = substr(`"`=trim("`aniovp'")'"',1,4)
+	}
 
 
 
@@ -25,7 +25,7 @@ quietly {
 	************************
 	capture use `"`c(sysdir_site)'../basesCIEP/SIM/`=proper("`anything'")'${pais}.dta"', clear
 	if _rc != 0 | "`update'" == "update" {
-		run "`c(sysdir_personal)'/PoblacionBase${pais}.do"
+		run `"`c(sysdir_personal)'/PoblacionBase`=subinstr("${pais}"," ","",.)'.do"'
 		use `"`c(sysdir_site)'../basesCIEP/SIM/`=proper("`anything'")'${pais}.dta"', clear
 	}
 	local poblacion : variable label `anything'
@@ -160,8 +160,8 @@ quietly {
 				(sc edad2 zero if anio == `anioinicial', msymbol(i) mlabel(edad2) ///
 				mlabsize(vsmall) mlabcolor("114 113 118")), ///
 				legend(label(1 "Hombres") label(2 "Mujeres") ///
-				label(3 "Hombres nuevos desde `anioinicial'") ///
-				label(4 "Mujeres nuevas desde `anioinicial'")) ///
+				label(3 "Hombres nacidos desde `anioinicial'") ///
+				label(4 "Mujeres nacidas desde `anioinicial'")) ///
 				legend(label(5 "Hombres `aniofinal'") label(6 "Mujeres `aniofinal'") ///
 				label(7 "Hombres fallecidos para `aniofinal'") ///
 				label(8 "Mujeres fallecidas para `aniofinal'")) ///
@@ -194,7 +194,7 @@ quietly {
 				/*`=`MaxM'[1,1]'*/, angle(horizontal)) ///
 				caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
 				/*xtitle("personas")*/ ///
-				title({bf:$pais})
+				title("{bf:Pir{c a'}mide demogr{c a'}fica}") subtitle(${pais})
 		}
 		else {
 			twoway (bar `pob2' edad if sexo == 1 & anio == `anioinicial', horizontal) ///
@@ -224,7 +224,7 @@ quietly {
 				`"{bf:Hombres}"' 0 `=`MaxM'[1,1]/2' "{bf:Mujeres}" `=`MaxM'[1,1]', angle(horizontal)) ///
 				/*caption("{it:Fuente: CONAPO (2018).}")*/ ///
 				/*xtitle("personas")*/ ///
-				/*title({bf:`poblacionl'})*/		
+				title("{bf:Pir{c a'}mide demogr{c a'}fica}") subtitle(${pais})
 		}
 
 			if "$export" != "" {
@@ -320,14 +320,14 @@ quietly {
 			text(`=`MAX'[2,3]-2.5' `m3' `"{bf:`poblacion':} `=string(`z3',"%12.0fc")'"', place(ne)) ///
 			text(`=`MAX'[2,4]' `m4' `"{bf:Min:} `=string(`MAX'[2,4],"%5.1fc")' % (`m4')"', place(ne)) ///
 			text(`=`MAX'[2,4]-2.5' `m4' `"{bf:`poblacion':} `=string(`z4',"%12.0fc")'"', place(ne))*/ ///
-			text(2 `=`anioinicial'+1' "{bf:Hoy:} `anioinicial'", place(e)) ///
+			text(2 `=`anioinicial'-1' "{bf:Hoy:} `anioinicial'", place(w)) ///
 			xtitle("") ytitle("porcentaje") ///
 			xlabel(1950(10)`aniofinal') ///
 			xline(`anioinicial', lpattern(dash) lcolor("52 70 78")) ///
 			xline(`aniofinal', lpattern(dash) lcolor("52 70 78")) ///
 			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
 			name(Estructura_`anything'_`anioinicial'_`aniofinal', replace) ///
-			title({bf:$pais})
+			title("{bf:Transici{c o'}n demogr{c a'}fica}") subtitle(${pais})
 			
 			if "$export" != "" {
 				graph export "$export/Estructura_`anything'_`anioinicial'_`aniofinal'.png", replace name(Estructura_`anything'_`anioinicial'_`aniofinal')

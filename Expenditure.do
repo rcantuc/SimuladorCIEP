@@ -51,7 +51,7 @@ if `macroanio' <= 2013 {
 
 
 ** D.3. Texto introductorio **
-noisily di _newline(5) in g "{bf:GASTO DE LOS HOGARES:" in y " `enigh' `enighanio'}"
+noisily di _newline(3) in g "{bf:GASTO DE LOS HOGARES:" in y " `enigh' `enighanio'}"
 local data "`c(sysdir_site)'../basesCIEP/INEGI/`enigh'/`enighanio'"
 
 
@@ -113,7 +113,7 @@ local Ieps13 = r(Impuesto_especi_cios_de_Alcohol)
 *** 2. DATOS MICROECON{c o'}MICOS (MI) ***
 ****************************************
 capture confirm file "`data'/preconsumption.dta"
-if _rc != 0 {
+if _rc == 0 {
 
 
 	** MI.1. Factor de expansion (cola derecha) **
@@ -137,9 +137,9 @@ if _rc != 0 {
 
 
 	** MI.4. Quitar gastos no necesarios **
-	// T916: gasto en regalso a personas ajenas al hogar, erogaciones financieras y de capital. 
+	// T916: gasto en regalos a personas ajenas al hogar, erogaciones financieras y de capital. 
 	// N012: Pérdidas y robos de dinero
-	drop if clave == "T916" | clave == "N012" //| substr(clave,1,1) == "Q"
+	drop if clave == "T916" | clave == "N012"
 
 
 	** MI.5. Gasto anual **
@@ -161,7 +161,7 @@ if _rc != 0 {
 	encode iva2014, gen(tiva)
 	tempfile pre_iva
 	save `pre_iva'
-
+xxx
 
 	** MI.8. Uni{c o'}n de censo econ{c o'}mico **
 	forvalues k=1(1)6 {
