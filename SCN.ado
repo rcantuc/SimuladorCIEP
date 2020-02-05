@@ -257,7 +257,11 @@ quietly {
 				continue, break
 			}
 		}
-		save "`c(sysdir_site)'../basesCIEP/SIM/baseSCN.dta", replace
+		foreach k of varlist _all {
+			local label : var label `k'
+			label var `k' `"`=substr("`label'",1,31)'"'
+		}
+		saveold "`c(sysdir_site)'../basesCIEP/SIM/baseSCN.dta", replace version(13)
 	}
 
 
