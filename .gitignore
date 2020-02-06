@@ -1,5 +1,4 @@
 /bases/SIM/**
 /users/**
 .DS_Store
-Icon\r
-Icon^M
+Icon?
