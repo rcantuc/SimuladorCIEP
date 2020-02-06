@@ -165,7 +165,9 @@ quietly {
 		g double IngMixto = .
 		label var IngMixto "Ingreso mixto"
 		format IngMixto %20.0fc
-
+		
+		* Importa los datos para cada año, si hay un error, el loop termina *
+		
 		forvalues k = 2003(1)`aniovp' {
 			preserve
 			capture import excel using "`c(sysdir_site)'../basesCIEP/INEGI/SCN/Tabulados/Base 2013/`k'-E_43_186_`k'.xlsx", sheet("`k'-E") cellrange(BD63:BD63) clear
@@ -185,7 +187,9 @@ quietly {
 		g double SSImputada = .
 		label var SSImputada "Contribuciones sociales imputadas"
 		format SSImputada %20.0fc
-
+		
+	
+		
 		forvalues k = 2003(1)`aniovp' {
 			preserve
 			capture import excel using "`c(sysdir_site)'../basesCIEP/INEGI/SCN/Tabulados/Base 2013/`k'-E_43_186_`k'.xlsx", sheet("`k'-E") cellrange(BD44:BD44) clear
@@ -205,7 +209,8 @@ quietly {
 		g double SubProductos = .
 		format SubProductos %20.0fc
 		label var SubProductos "Subsidios a los productos"
-
+		
+		
 		forvalues k = 2003(1)`aniovp' {
 			preserve
 			capture import excel using "`c(sysdir_site)'../basesCIEP/INEGI/SCN/Tabulados/Base 2013/`k'-E_43_186_`k'.xlsx", sheet("`k'-E") cellrange(BD57:BD57) clear
@@ -307,13 +312,20 @@ quietly {
 	******************************
 	** 1.3. Forecast & Pastcast **
 	order indiceY-lambda, last
+	
+	* guarda el primer año para el que hay un valor de PIB*
+	
 	forvalues k = `=_N'(-1)1 {
 		if PIB[`k'] != . {
 			local latest = anio[`k']
 			continue, break
 		}
 	}
-
+	
+	/* Calcula los valores futuros de las variables a partir de la última 
+	observación y los valores anteriores de 2002 a 1993 (utiliza la tasa de 
+	crecimiento del PIB en términos reales */
+ 
 	foreach k of varlist RemSalSS-DepMix {
 		replace `k' = L.`k'*(1+var_pibY/100)*indiceY/L.indiceY if `k' == .
 		forvalues j = 2002(-1)1993 {
