@@ -41,6 +41,9 @@ quietly {
 	*******************
 	*** 1 Deflactor ***
 	*******************
+	
+	* Time series operators: L = lag *
+	
 	tsset anio
 	g double var_indiceY = (indiceY/L.indiceY-1)*100
 	label var var_indiceY "Anual"
