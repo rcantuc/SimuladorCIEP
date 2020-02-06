@@ -9,25 +9,36 @@ quietly {
 
 	syntax [anything] [, ANIOinicial(int `aniovp') ANIOFinal(int -1) Graphs UPDATE]
 
+* Si la funcion se llama sin argumento, utiliza población *
+
 	if "`anything'" == "" {
 		local anything = "poblacion"
 	}
+
+*Si no hay año inicial utiliza la fecha más reciente*
+
 	if `anioinicial' == -1 {
 		local anioinicial : di %td_CY-N-D  date("$S_DATE", "DMY")
 		local anioinicial = substr(`"`=trim("`aniovp'")'"',1,4)
 	}
 
 
-
-
 	************************
 	*** 0. Base de datos ***
 	************************
+
+* Revisa si se puede usar la base de datos *
 	capture use `"`c(sysdir_site)'../basesCIEP/SIM/`=proper("`anything'")'${pais}.dta"', clear
+
+* Si hay un error o la opción "update" es llamada, limpia la base de datos y la usa *
+
 	if _rc != 0 | "`update'" == "update" {
 		run `"`c(sysdir_personal)'/PoblacionBase`=subinstr("${pais}"," ","",.)'.do"'
 		use `"`c(sysdir_site)'../basesCIEP/SIM/`=proper("`anything'")'${pais}.dta"', clear
 	}
+	
+* Si no hay año final, utiliza el último elemento del vector "anio" *
+
 	local poblacion : variable label `anything'
 	if `aniofinal' == -1 {
 		sort anio
@@ -39,7 +50,9 @@ quietly {
 	****************
 	* EstadÃ­sticos *
 	****************
-
+	
+	* Calcula las estadísticas descriptivas y las guarda en matrices *
+	
 	* Mediana *
 	tabstat edad [fw=round(abs(`anything'),1)] if anio == `anioinicial', ///
 		stat(median) by(sexo) save
@@ -133,7 +146,13 @@ quietly {
 			& edad != 75 & edad != 80 & edad != 85 & edad != 90 & edad != 95 ///
 			& edad != 100 & edad != 105
 		g zero = 0
-
+		
+	* Grafica sexo = 1 como negativos y sexo = 2 como positivos por grupos etarios, en el presente y futuro *
+	* 1. Vivios en el año inicial y con una edad menor a 109  para el año final *
+	* 2. Vivos en el año final; nacidos durante o después del año inicial *
+	* 3. Vivos en el año final;  nacidos antes del año inicial *
+	* 4. Vivios en el año inicial y  mayores a 109 en el año final *
+	
 		if "`anything'" == "poblacion" {
 			twoway (bar `pob2' edad if sexo == 1 & anio == `anioinicial' ///
 				& edad+`aniofinal'-`anioinicial' <= 109, horizontal lwidth(none)) ///
@@ -265,6 +284,9 @@ quietly {
 
 	forvalues k = 1(1)`=_N' {
 		* Maximos *
+		
+		* Busca la población máxima y guarda el año y el número *
+		
 		if pob18_2[`k'] == `MAX'[1,1] {
 			local x1 = anio[`k']
 			local y1 = pob18[`k']
@@ -283,6 +305,9 @@ quietly {
 		}
 		
 		* Minimos *
+		
+		* Busca la población mínima y guarda el año y el número *
+		
 		if pob18_2[`k'] == `MAX'[2,1] {
 			local m1 = anio[`k']
 			local z1 = pob18[`k']
