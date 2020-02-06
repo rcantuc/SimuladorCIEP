@@ -15,7 +15,8 @@ quietly {
 	tempfile workingage
 	save `workingage'
 	
-	* Verifica si se puede usar la base, si no es así o la opción update es llamada, limpia la base y la usa *
+	/* Verifica si se puede usar la base, si no es así o la opción update es llamada, 
+	limpia la base y la usa */
 	
 	capture use `"`c(sysdir_site)'../basesCIEP/SIM/PIBDeflactor${pais}.dta"', clear
 	if _rc != 0 | "`update'" == "update" {
@@ -58,6 +59,11 @@ quietly {
 	*tsappend, add(`=`fin'-`=anio[_N]'') //tsfmt(ty)
 
 	* Imputar *
+	
+	/* Para todos los años, si existe información sobre el crecimiento del deflactor 
+	utilizarla, si no existe, tomar el rezago del índice geométrico. Posteriormente
+	ajustar los valores del índice con sus rezagos. */
+	
 	forvalues k=`anio_last'(1)`fin' {
 		capture confirm existence ${def`k'}
 		if _rc == 0 {
@@ -109,10 +115,14 @@ quietly {
 	** 3.1 Par{c a'}metros ex{c o'}genos **
 	replace currency = currency[`obslast']
 	g OutputPerWorker = pibYR/WorkingAge
+	
+	* Crecimiento promedio del producto por trabajador en los últimos diez años *
+	
 	scalar lambda = ((OutputPerWorker[`obslast']/OutputPerWorker[`=`obslast'-10'])^(1/10)-1)*100
 
 	* Imputar *
 	g lambda = .
+	
 	forvalues k=`anio_last'(1)`fin' {
 		capture confirm existence ${pib`k'}
 		if _rc == 0 {
@@ -168,7 +178,8 @@ quietly {
 				local crec_deflactor `"`crec_deflactor' `=var_indiceY[`k']' `=anio[`k']' "`=string(var_indiceY[`k'],"%5.1fc")'" "'
 			}
 		}
-
+		
+		* IPC *
 		twoway (connected var_indiceY anio if anio <= `anio_last') ///
 			(connected var_indiceY anio if anio >= `anio_last'), ///
 			title("{bf:{c I'}ndice de precios impl{c i'}citos}") ///
@@ -192,7 +203,9 @@ quietly {
 				local crec_PIB `"`crec_PIB' `=var_pibY[`k']' `=anio[`k']' "`=string(var_pibY[`k'],"%5.1fc")'" "'
 			}
 		}
-
+		
+		* Crecimiento PIB *
+		
 		twoway (connected var_pibY anio if anio <= `anio_last') ///
 			(connected var_pibY anio if anio > `anio_last'), ///
 			title({bf:Producto Interno Bruto}) ///
@@ -209,7 +222,9 @@ quietly {
 		if _rc == 0 {
 			graph export "$export/PIBH.png", replace name(PIBH)
 		}
-
+		
+		* PIB real *
+		
 		tempvar pibYRmil
 		g `pibYRmil' = pibYR/1000000000000
 		twoway (area `pibYRmil' anio if anio <= `anio_last') ///
