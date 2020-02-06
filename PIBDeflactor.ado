@@ -15,6 +15,8 @@ quietly {
 	tempfile workingage
 	save `workingage'
 	
+	* Verifica si se puede usar la base, si no es así o la opción update es llamada, limpia la base y la usa *
+	
 	capture use `"`c(sysdir_site)'../basesCIEP/SIM/PIBDeflactor${pais}.dta"', clear
 	if _rc != 0 | "`update'" == "update" {
 		run `"`c(sysdir_personal)'/PIBDeflactorBase`=subinstr("${pais}"," ","",.)'.do"'

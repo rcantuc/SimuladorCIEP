@@ -13,12 +13,17 @@ program define LimpiaBIE
 		local name = reverse(`k'[1])
 		local name2 = `k'[2]
 		
+		* Busca la posición de > en el string name, si existe el símbolo, el nombre cambia \
+		* al substring que termina en la posición*
+		
 		local pos = strpos("`name'",">")
 		if `pos' > 0 {
 			local name = substr("`name'",1,`pos')
 		}
 		local name = reverse("`name'")
-
+		
+		* Limpia el nombre de símbolos *
+		
 		local name = subinstr("`name'",">","",.)
 		local name = subinstr("`name'","r1","",.)
 		local name = subinstr("`name'","p1","",.)
