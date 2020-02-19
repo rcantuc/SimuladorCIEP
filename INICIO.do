@@ -32,7 +32,8 @@ adopath ++ PERSONAL
 *** 1. Globales ***
 ***             ***
 *******************
-*global pais = "El Salvador"
+global pais = "El Salvador"
+local anio = 2018
 
 
 
@@ -49,7 +50,7 @@ adopath ++ PERSONAL
 *** 3) correr SCN con opción "update"          ***
 ***                                            ***
 **************************************************
-noisily SCN, discount(3.0) graphs //anio(2018) //update
+noisily SCN, discount(3.0) graphs //anio(`anio') //update
 
 
 
@@ -59,9 +60,9 @@ noisily SCN, discount(3.0) graphs //anio(2018) //update
 *** 3. Capítulo 3: La economía-sistema antropocéntrica ***
 ***                                                    ***
 **********************************************************
-capture confirm file `"`c(sysdir_site)'../basesCIEP/SIM/2018/income`=subinstr("${pais}"," ","",.)'.dta"'
+capture confirm file `"`c(sysdir_site)'../basesCIEP/SIM/`anio'/income`=subinstr("${pais}"," ","",.)'.dta"'
 if _rc != 0 {
-	noisily run Income`=subinstr("${pais}"," ","",.)'.do 2018
+	noisily run Income`=subinstr("${pais}"," ","",.)'.do `anio'
 }
 
 
@@ -72,14 +73,20 @@ if _rc != 0 {
 *** 4. Parte 2: Ingresos presupuestarios ***
 ***                                      ***
 ********************************************
-LIF, by(divGA) graphs
-collapse (sum) recaudacion if anio == 2018, by(divGA)
+noisily LIF, by(divGA) graphs anio(`anio') //update
+
+
+
+
+
+exit
+collapse (sum) recaudacion if anio == `anio', by(divGA)
 mkmat recaudacion, matrix(INGRESOS)
 
  
-use `"`c(sysdir_site)'../basesCIEP/SIM/2018/income`=subinstr("${pais}"," ","",.)'.dta"', clear
+use `"`c(sysdir_site)'../basesCIEP/SIM/`anio'/income`=subinstr("${pais}"," ","",.)'.dta"', clear
 noisily Simulador ISR if ISR != 0 [fw=factor], ///
-	anio(2018) base("EHPM 2018") reescala(`=INGRESOS[3,1]') graphs folio(folio) boot(20) //reboot //noisily
+	anio(`anio') base("EHPM `anio'") reescala(`=INGRESOS[3,1]') graphs folio(folio) //boot(20) //reboot //noisily
 
 
 
@@ -105,13 +112,13 @@ noisily Simulador ISR if ISR != 0 [fw=factor], ///
 
 
 
-/*noisily run Expenditure.do 2018
+/*noisily run Expenditure.do `anio'
 *noisily Sankey escol sexo grupo_edad rural formalmax decil ///
-	using "`c(sysdir_site)'../basesCIEP/SIM/2018/income.dta", ///
-	anio(2018) profile(Poblacion)
+	using "`c(sysdir_site)'../basesCIEP/SIM/`anio'/income.dta", ///
+	anio(`anio') profile(Poblacion)
 
 	
-use "`c(sysdir_site)'../basesCIEP/SIM/2018/income.dta", clear
+use "`c(sysdir_site)'../basesCIEP/SIM/`anio'/income.dta", clear
 rename Depreciacion ing_Depreciacion
 collapse (sum) ing_laboral ing_capital ing_Depreciacion, by(escol)
 
@@ -127,7 +134,7 @@ tempfile eje1
 save `eje1'
 
 
-use "`c(sysdir_site)'../basesCIEP/SIM/2018/income.dta", clear
+use "`c(sysdir_site)'../basesCIEP/SIM/`anio'/income.dta", clear
 rename Depreciacion ing_Depreciacion
 collapse (sum) ing_laboral ing_capital ing_Depreciacion, by(sexo)
 
@@ -143,7 +150,7 @@ tempfile eje2
 save `eje2'
 
 
-use "`c(sysdir_site)'../basesCIEP/SIM/2018/income.dta", clear
+use "`c(sysdir_site)'../basesCIEP/SIM/`anio'/income.dta", clear
 collapse (sum) ing_honor ing_sueldos, by(sexo)
 tempvar cuenta
 reshape long ing_, i(sexo) j(`cuenta') string
@@ -157,7 +164,7 @@ tempfile eje3
 save `eje3'
 
 
-use "`c(sysdir_site)'../basesCIEP/SIM/2018/income.dta", clear
+use "`c(sysdir_site)'../basesCIEP/SIM/`anio'/income.dta", clear
 collapse (sum) ing_honor ing_sueldos, by(escol)
 tempvar cuenta
 reshape long ing_, i(escol) j(`cuenta') string

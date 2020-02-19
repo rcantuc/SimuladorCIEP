@@ -15,9 +15,8 @@ quietly {
 	tempfile workingage
 	save `workingage'
 	
-	/* Verifica si se puede usar la base, si no es así o la opción update es llamada, 
+	/* Verifica si se puede usar la base, si no es asÃ­ o la opciÃ³n update es llamada, 
 	limpia la base y la usa */
-	
 	capture use `"`c(sysdir_site)'../basesCIEP/SIM/PIBDeflactor${pais}.dta"', clear
 	if _rc != 0 | "`update'" == "update" {
 		run `"`c(sysdir_personal)'/PIBDeflactorBase`=subinstr("${pais}"," ","",.)'.do"'
@@ -60,9 +59,9 @@ quietly {
 
 	* Imputar *
 	
-	/* Para todos los años, si existe información sobre el crecimiento del deflactor 
-	utilizarla, si no existe, tomar el rezago del índice geométrico. Posteriormente
-	ajustar los valores del índice con sus rezagos. */
+	/* Para todos los aÃ±os, si existe informaciÃ³n sobre el crecimiento del deflactor 
+	utilizarla, si no existe, tomar el rezago del Ã­ndice geomÃ©trico. Posteriormente
+	ajustar los valores del Ã­ndice con sus rezagos. */
 	
 	forvalues k=`anio_last'(1)`fin' {
 		capture confirm existence ${def`k'}
@@ -116,7 +115,7 @@ quietly {
 	replace currency = currency[`obslast']
 	g OutputPerWorker = pibYR/WorkingAge
 	
-	* Crecimiento promedio del producto por trabajador en los últimos diez años *
+	* Crecimiento promedio del producto por trabajador en los Ãºltimos diez aÃ±os *
 	
 	scalar lambda = ((OutputPerWorker[`obslast']/OutputPerWorker[`=`obslast'-10'])^(1/10)-1)*100
 
@@ -155,11 +154,11 @@ quietly {
 	*****************
 	** 4 Simulador **
 	*****************
-	noisily di _newline in g " Output per worker: " in y _col(25) %10.1fc OutputPerWorker[`obsvp'] " `=currency[`obsvp']'"
-	noisily di in g " Lambda (productividad): " in y _col(25) %10.4f scalar(lambda) " %" 
+	noisily di _newline in g " Output per worker: " in y _col(35) %10.1fc OutputPerWorker[`obsvp'] in g " `=currency[`obsvp']'"
+	noisily di in g " Lambda (productividad): " in y _col(35) %10.4f scalar(lambda) in g " %" 
 	
-	scalar pibINF = pibYR[_N]*((pibYR[_N]/pibYR[_N-10])^(1/10))*(1+`discount'/100)^((`=anio[`obsvp']'-`=anio[_N]')/(((pibYR[_N]/pibYR[_N-10])^(1/10)-1)-(`discount'/100)))
-	noisily di in g " PIB `=anio[_N]' al infinito: " in y _col(25) %20.0fc pibINF
+	scalar pibINF = pibYR[_N]*((pibYR[_N]/pibYR[_N-10])^(1/10))*(1+`discount'/100)^(`=anio[`obsvp']'-`=anio[_N]')/((`discount'/100)-((pibYR[_N]/pibYR[_N-10])^(1/10)-1))
+	noisily di in g " PIBR `=anio[_N]' al infinito: " in y _col(25) %20.0fc pibINF in g " `=currency[`obsvp']'"
 
 	*if "`globals'" == "globals" {
 		forvalues k=1(1)`=_N' {
