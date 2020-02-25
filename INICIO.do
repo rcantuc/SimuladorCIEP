@@ -27,13 +27,12 @@ adopath ++ PERSONAL
 
 
 
-*******************
-***             ***
-*** 1. Globales ***
-***             ***
-*******************
+*********************
+***               ***
+*** 1. Parámetros ***
+***               ***
+*********************
 global pais = "El Salvador"
-local anio = 2018
 
 
 
@@ -49,8 +48,8 @@ local anio = 2018
 ***      ./TemplateCIEP/basesCIEP/INEGI/SCN/   ***
 *** 3) correr SCN con opción "update"          ***
 ***                                            ***
-**************************************************
-noisily SCN, discount(3.0) graphs //anio(`anio') //update
+/**************************************************
+noisily SCN, discount(3.0) graphs anio(2018) //update
 
 
 
@@ -59,10 +58,14 @@ noisily SCN, discount(3.0) graphs //anio(`anio') //update
 ***                                                    ***
 *** 3. Capítulo 3: La economía-sistema antropocéntrica ***
 ***                                                    ***
-**********************************************************
-capture confirm file `"`c(sysdir_site)'../basesCIEP/SIM/`anio'/income`=subinstr("${pais}"," ","",.)'.dta"'
+/**********************************************************
+capture confirm file `"`c(sysdir_site)'../basesCIEP/SIM/2018/income`=subinstr("${pais}"," ","",.)'.dta"'
 if _rc != 0 {
-	noisily run Income`=subinstr("${pais}"," ","",.)'.do `anio'
+	noisily run Income`=subinstr("${pais}"," ","",.)'.do 2018
+}
+capture confirm file `"`c(sysdir_site)'../basesCIEP/SIM/2018/expenditure`=subinstr("${pais}"," ","",.)'.dta"'
+if _rc != 0 {
+	noisily run Expenditure`=subinstr("${pais}"," ","",.)'.do 2018
 }
 
 
@@ -72,53 +75,72 @@ if _rc != 0 {
 ***                                      ***
 *** 4. Parte 2: Ingresos presupuestarios ***
 ***                                      ***
-********************************************
-noisily LIF, by(divGA) graphs anio(`anio') //update
+/********************************************
+noisily LIF, by(divGA) graphs anio(2018) //update
+local alingreso = r(Impuestos_al_ingreso)
+local alconsumo = r(Impuestos_al_consumo)
+
+
+* HOGARES *
+use `"`c(sysdir_site)'../basesCIEP/SIM/2018/income`=subinstr("${pais}"," ","",.)'.dta"', clear
+merge 1:1 (folio numren) using `"`c(sysdir_site)'../basesCIEP/SIM/2018/expenditure`=subinstr("${pais}"," ","",.)'.dta"', keepus(Consumo) nogen keep(matched)
+capture drop if folioviv == "1960306424"
+
+noisily Simulador Ingreso if Ingreso != 0 [fw=factor], ///
+	anio(2018) base("EHPM 2018") reescala(`alingreso') graphs folio(folio) boot(20) //reboot //noisily
+noisily Simulador Consumo [fw=factor], ///
+	anio(2018) base("EHPM 2018") reescala(`alconsumo') graphs folio(folio) boot(20) //reboot //noisily
 
 
 
 
-
-exit
-collapse (sum) recaudacion if anio == `anio', by(divGA)
-mkmat recaudacion, matrix(INGRESOS)
-
- 
-use `"`c(sysdir_site)'../basesCIEP/SIM/`anio'/income`=subinstr("${pais}"," ","",.)'.dta"', clear
-noisily Simulador ISR if ISR != 0 [fw=factor], ///
-	anio(`anio') base("EHPM `anio'") reescala(`=INGRESOS[3,1]') graphs folio(folio) //boot(20) //reboot //noisily
-
-
-
+*****************************************/
+***                                    ***
+*** 5. Parte 3: Gastos presupuestarios ***
+***                                    ***
+******************************************
+noisily PEF, graphs anio(2018) //update //by(divGA)
+local pensiones = r(Pensiones)
+local salud = r(Salud)
+local educacion = r(Educación)
+local deuda = r(Deuda)
 
 
+* HOGARES *
+use `"`c(sysdir_site)'../basesCIEP/SIM/2018/income`=subinstr("${pais}"," ","",.)'.dta"', clear
+merge 1:1 (folio numren) using `"`c(sysdir_site)'../basesCIEP/SIM/2018/expenditure`=subinstr("${pais}"," ","",.)'.dta"', keepus(Consumo) nogen keep(matched)
+capture drop if folioviv == "1960306424"
 
-
-
-
-
-
-
+noisily Simulador Pension if Pension != 0 [fw=factor], ///
+	anio(2018) base("EHPM 2018") reescala(`pensiones') graphs folio(folio) boot(20) reboot //noisily
 
 
 
 
+*****************************************/
+***                                    ***
+*** 6. Parte 4: Balance presupuestario ***
+***                                    ***
+******************************************
+*noisily Balance, graphs
+*global depreMXN = 0					// % de depreciaci${o}n (SHRFSP.ado)
+*noisily SHRFSP, graphs 				//`update'
+*noisily Eficiencia, reboot graphs noisily update
+*noisily TransfNetas, graphs update
+*run "`c(sysdir_personal)'/Modulos.do" `id' $anioVP
 
 
 
-
-
-
-
-
-
-/*noisily run Expenditure.do `anio'
+**************
+*** SANKEY ***
+**************
+/*noisily run Expenditure.do 2018
 *noisily Sankey escol sexo grupo_edad rural formalmax decil ///
-	using "`c(sysdir_site)'../basesCIEP/SIM/`anio'/income.dta", ///
-	anio(`anio') profile(Poblacion)
+	using "`c(sysdir_site)'../basesCIEP/SIM/2018/income.dta", ///
+	anio(2018) profile(Poblacion)
 
 	
-use "`c(sysdir_site)'../basesCIEP/SIM/`anio'/income.dta", clear
+use "`c(sysdir_site)'../basesCIEP/SIM/2018/income.dta", clear
 rename Depreciacion ing_Depreciacion
 collapse (sum) ing_laboral ing_capital ing_Depreciacion, by(escol)
 
@@ -134,7 +156,7 @@ tempfile eje1
 save `eje1'
 
 
-use "`c(sysdir_site)'../basesCIEP/SIM/`anio'/income.dta", clear
+use "`c(sysdir_site)'../basesCIEP/SIM/2018/income.dta", clear
 rename Depreciacion ing_Depreciacion
 collapse (sum) ing_laboral ing_capital ing_Depreciacion, by(sexo)
 
@@ -150,7 +172,7 @@ tempfile eje2
 save `eje2'
 
 
-use "`c(sysdir_site)'../basesCIEP/SIM/`anio'/income.dta", clear
+use "`c(sysdir_site)'../basesCIEP/SIM/2018/income.dta", clear
 collapse (sum) ing_honor ing_sueldos, by(sexo)
 tempvar cuenta
 reshape long ing_, i(sexo) j(`cuenta') string
@@ -164,7 +186,7 @@ tempfile eje3
 save `eje3'
 
 
-use "`c(sysdir_site)'../basesCIEP/SIM/`anio'/income.dta", clear
+use "`c(sysdir_site)'../basesCIEP/SIM/2018/income.dta", clear
 collapse (sum) ing_honor ing_sueldos, by(escol)
 tempvar cuenta
 reshape long ing_, i(escol) j(`cuenta') string
@@ -178,51 +200,14 @@ tempfile eje4
 save `eje4'
 
 
-
-
 noisily SankeySum, a(`eje1') b(`eje2') c(`eje3') d(`eje4') cycle
 
 
-exit
-
-
-
-*********************/
-*** 4. Touchdown! ***
-*********************
-*noisily scalarlatex
-timer off 1
-timer list 1
-noisily di _newline in g _dup(55) "+" in y round(`=r(t1)/r(nt1)',.1) in g " segs." _dup(55) "+" _newline(5)
 
 
 
 
 
-
-
-
-
-
-
-
-
-***************************/
-*** 2. Finanzas públicas ***
-/****************************
-noisily LIF, graphs 				//update
-noisily PEF, graphs 				//update
-noisily Balance, graphs
-noisily SHRFSP, graphs 				//`update'
-
-
-
-Poblacion, graphs																// update (downloads dataset again)
-Poblacion defunciones, graphs 													// update (downloads dataset again)
-
-
-*noisily Eficiencia, reboot graphs noisily update
-*noisily TransfNetas, graphs update
 
 
 
@@ -234,7 +219,6 @@ local id "MexTax"
 capture mkdir "`c(sysdir_personal)'/users/`id'/"
 capture log using "`c(sysdir_personal)'/users/`id'/log `c(current_date)'", replace
 noisily di _newline(5) in g _dup(50) "+" in y "$simuladorCIEP. (ID: `id'): `c(current_date)' `c(current_time)'" in g _dup(50) "+"
-
 
 
 ************
@@ -303,19 +287,15 @@ scalar sISR__PM = 3.508								// ISR (personas morales)
 scalar sFMP_Der = 1.986								// Fondo Mexicano del Petr${o}leo
 scalar sOYE     = (0.119 + 0.228 + 1.841 + 1.656)				// Organismos y empresas (IMSS + ISSSTE + Pemex + CFE)
 
-*noisily TasaFairTax `=sIVA-((singbas*.24*(1-.06608))+(spam*.24*(1-.06608)))'
 
 
 
 
-********************
-** 3.1 Resultados **
-global depreMXN = 0					// % de depreciaci${o}n (SHRFSP.ado)
-
-run "`c(sysdir_personal)'/Modulos.do" `id' $anioVP
-noisily Eficiencia, id(`id') graphs
-*noisily TransfNetas, id(`id') graphs reboot //noisily
-*noisily SHRFSP, id(`id') graphs
-
-capture log close
+*********************/
+*** 4. Touchdown! ***
+*********************
+*noisily scalarlatex
+timer off 1
+timer list 1
+noisily di _newline in g _dup(55) "+" in y round(`=r(t1)/r(nt1)',.1) in g " segs." _dup(55) "+" _newline(5)
 

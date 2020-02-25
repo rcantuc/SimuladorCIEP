@@ -5,8 +5,6 @@
 *************************************
 
 
-
-
 ********************
 *** A.0 Defaults ***
 ********************
@@ -20,7 +18,7 @@ if `1' >= 2018 {
 	local betamin = 1
 	local altimir = "yes"
 	local SubsidioEmpleo = 50979000000 					// Presupuesto de gastos fiscales (2018)
-	local udis = 6.054085								// Promedio de valor de UDIS de enero a diciembre 2016
+	local udis = 6.054085								// Promedio de valor de UDIS de enero a diciembre 2018
 	local smdf = 88.36									// Salario minimo general
 }
 if `1' == 2016 {
@@ -53,10 +51,10 @@ if `1' == 2014 {
 local enighanio = `1'
 local macroanio = `1'
 
-
 capture log close
 log using "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/income.smcl", replace
 noisily di _newline(3) in g "{bf:INGRESOS DE LOS HOGARES: " in y "`enigh' `enighanio'}"
+
 
 
 
@@ -129,7 +127,6 @@ local SSFederacion = r(Aportaciones_a_Seguridad_Social) + `Cuotas_ISSSTE'
 
 
 
-
 *************************
 *** A.4 Macros 4. SAT ***
 *************************
@@ -178,12 +175,11 @@ egen double ing_unico = rsum(ing_1 ing_2 ing_3 ing_4 ing_5 ing_6)
 
 * Tipo de trabajo *
 g id_trabajo = "1" if clave >= "P001" & clave <= "P013"				// Ingresos del trabajo principal
-replace id_trabajo = "2" if clave >= "P014" & clave <= "P020"			// Ingresos del trabajo secundario
-replace id_trabajo = "0" if id_trabajo == ""					// Ingresos ajenos al trabajo
+replace id_trabajo = "2" if clave >= "P014" & clave <= "P020"		// Ingresos del trabajo secundario
+replace id_trabajo = "0" if id_trabajo == ""						// Ingresos ajenos al trabajo
 
 * Salario minimo mensual *
 g sm = round(smg/90,.01)
-
 
 
 
@@ -205,14 +201,12 @@ g sm = round(smg/90,.01)
 *	Capitulo IX. 	DE LOS DEMAS INGRESOS QUE OBTENGAN LAS PERSONAS FISICAS *
 
 
-
 ********************************************
 ** 1.1 Titulo II. De las Personas Morales **
 ** Capitulo VIII. REGIMEN DE ACTIVIDADES AGRICOLAS, GANADERAS, SILVICOLAS Y PESQUERAS **
 * a. Agricultura *
 g double ing_agri = ing_anual if clave == "P071" | clave == "P072" | clave == "P073" | clave == "P074" ///
 	| clave == "P078" | clave == "P079" | clave == "P080" | clave == "P081"
-
 
 
 *******************************************
@@ -273,7 +267,6 @@ g double ing_jubila = ing_anual if clave == "P032" //| clave == "P033"
 g double ing_segvida = ing_anual if clave == "P065"
 
 
-
 ************************************************************************************
 ** 1.3 Capitulo II. DE LOS INGRESOS POR ACTIVIDADES EMPRESARIALES Y PROFESIONALES **
 noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "Los dem{c a'}s ingresos se reportan de manera bruta.}"
@@ -288,12 +281,10 @@ replace ing_empre = ing_anual if clave == "P068" | clave == "P069" | clave == "P
 	| clave == "P078" | clave == "P079" | clave == "P080" | clave == "P081"*/
 
 
-
 *****************************************************************************************************************************
 ** 1.4 Capitulo III. DE LOS INGRESOS POR ARRENDAMIENTO Y EN GENERAL POR OTORGAR EL USO O GOCE TEMPORAL DE BIENES INMUEBLES **
 * t. Renta de bienes inmuebles *
 g double ing_rent = ing_anual if clave == "P023" | clave == "P024" | clave == "P025"
-
 
 
 ****************************************************************
@@ -308,12 +299,10 @@ g double ing_enajecasa = ing_anual if clave == "P059"
 g double ing_enajem = ing_anual if clave == "P061" | clave == "P062" | clave == "P063"
 
 
-
 ***************************************************************
 ** 1.6 Capitulo V. DE LOS INGRESOS POR ADQUISICION DE BIENES **
 * x. Donaciones *
 g double ing_dona = ing_anual if clave == "P039" | clave == "P040"
-
 
 
 ****************************************************
@@ -322,19 +311,16 @@ g double ing_dona = ing_anual if clave == "P039" | clave == "P040"
 g double ing_intereses = ing_anual if clave == "P026" | clave == "P027" | clave == "P028" | clave == "P029" | clave == "P031"
 
 
-
 *******************************************************************
 ** 1.8 Capitulo VII. DE LOS INGRESOS POR LA OBTENCION DE PREMIOS **
 * z. Loterias *
 g double ing_loter = ing_anual if clave == "P058"
 
 
-
 ************************************************************************************************************************
 ** 1.9 Capitulo VIII. DE LOS INGRESOS POR DIVIDENDOS Y EN GENERAL POR LAS GANANCIAS DISBRIBUIDAS POR PERSONAS MORALES **
 * aa. Acciones *
 g double ing_acc = ing_anual if clave == "P050"
-
 
 
 ********************************************************************************
@@ -365,7 +351,6 @@ g double ing_heren = ing_anual if clave == "P057"
 
 * aj. PAM *
 g double ing_PAM = ing_anual if clave == "P044"
-
 
 
 
@@ -434,7 +419,6 @@ parrafo de este articulo hasta por los montos en el establecidos.
 g agri = ing_agri/ing_exclusivo > .9 & ing_agri > 0			// Dummy exclusivamente agricola
 g double exen_agri = min(40*sm*365,ing_agri) if agri == 0		// General
 replace exen_agri = min(423*sm*365,ing_agri) if agri == 1		// Exclusivamente agricola
-
 
 
 ***************************************
@@ -687,8 +671,8 @@ obtenido la exencion prevista en este inciso (...)
 
 El limite establecido en el primer parrafo de este inciso no sera aplicable cuando el enajenante demuestre haber 
 residido en su casa habitacion durante los cinco anios inmediatos anteriores a la fecha de su enajenacion */
-
 local limudis = 700000
+
 * y. Enajenacion casa habitacion *
 g double exen_enajecasa = min(`limudis'*`udis',ing_enajecasa)
 
@@ -831,7 +815,6 @@ g double exen_otrocap = ing_otrocap
 ******************
 *** 5. TOTALES ***
 ******************
-
 * Titulo II, Capitulo IV *
 egen double ing_t2_cap8 = rsum(ing_agri)
 egen double exen_t2_cap8 = rsum(exen_agri)
@@ -887,7 +870,6 @@ egen double exen_t4_cap9 = rsum(exen_autor exen_remesas exen_trabmenor exen_pres
 ************************************
 *** 6. IDENTIFICAR LA FORMALIDAD ***
 ************************************
-
 * Merges *
 merge m:1 (`hogar' numren id_trabajo) using "`c(sysdir_site)'../basesCIEP/INEGI/`enigh'/`enighanio'/trabajos.dta", nogen ///
 	keepusing(htrab pres_* pago scian sinco subor)
@@ -980,7 +962,6 @@ di _newline _col(04) in g "{bf:0.2. Personas formales}"
 table formal [fw=factor] if formal != 0, format(%12.0fc) row
 
 
-
 *************
 ** Totales **
 egen double ing_total = rsum(ing_agri ///
@@ -1011,14 +992,12 @@ egen double exen_total = rsum(exen_agri ///
 	exen_autor exen_remesas exen_prest exen_otrocap exen_ahorro exen_heren exen_benef)
 
 
-
 *************
 ** Sueldos **
 egen double ing_sueldos = rsum(ing_ss ing_desta ing_prop ing_horas ing_grati ing_prima ///
 	ing_jubila ing_agui ing_otros ing_trabajos ing_trabmenor)					// 11
 egen double exen_sueldos = rsum(exen_ss exen_desta exen_prop exen_horas exen_grati exen_prima ///
 	exen_jubila exen_agui exen_otros exen_trabajos exen_trabmenor)
-
 
 
 ***********
@@ -1033,7 +1012,6 @@ g double ing_mixtoK = ing_mixto*1/3
 g double exen_mixtoK = exen_mixto*1/3
 
 
-
 *************
 ** Laboral **
 egen double ing_laboral = rsum(ing_sueldos ing_mixtoL)
@@ -1042,7 +1020,6 @@ egen double exen_laboral = rsum(exen_sueldos exen_mixtoL)
 
 *************
 ** Capital **
-
 * Renta de la vivienda *
 noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "La renta por la vivienda y el alquiler imputado son pagados por el jefe del hogar.}"
 replace renta = 0 if renta == . | numren != "01" | `tag2' > 1
@@ -1093,10 +1070,8 @@ program Distribucion, return
 end
 
 
-
-***************
-*** Totales ***
-***************
+*************
+** Totales **
 replace ing_total = 0 if ing_total == .
 replace ing_total = ing_total + ing_estim_alqu
 
@@ -1129,7 +1104,6 @@ foreach k of varlist ing_total ing_sueldos ing_mixto ing_capital ing_estim_alqu 
 tabstat ing_sueldos ing_mixto ing_total ing_estim_alqu ing_capital [aw=factor], stat(sum) f(%25.0fc) save
 tempname AnnInc
 matrix `AnnInc' = r(StatTotal)
-
 
 // ENIGH As Is //
 noisily di _newline _col(04) in g "{bf:Paso 0. Ingresos " ///
@@ -1202,6 +1176,7 @@ noisily di ///
 
 
 
+
 ********************************************************************************
 *** 7. RECUPERAR LOS INGRESOS BRUTOS DE LOS INGRESOS POR TRABAJO SUBORDINADO ***
 ********************************************************************************
@@ -1227,7 +1202,7 @@ local TcestyvejF = 1.650		// Cesantia y vejez, federacion
 
 local TguardP = 1.000			// Guarderias y prestaciones sociales, patron
 
-local TcuotaSocIMSSF = 6.334		// Cuota social, federacion
+local TcuotaSocIMSSF = 6.334	// Cuota social, federacion
 
 * ISSSTE *
 local TfondomedT = 2.750		// Salud trabajadores activos, trabajador
@@ -1262,7 +1237,6 @@ local Tinfonavit = 5			// Infonavit
 
 ************************************
 ** 7.1. CUOTAS A LA SSEmpleadores **
-
 * Salario Base de Cotizacion: IMSS *
 g double sbc = ing_ss/360/`smdf' if (formal == 1 | formal == 3 | formal == 4 | formal == 6) & ing_ss > 0 & ing_ss != .
 replace sbc = 25 if sbc > 25 & (formal == 1 | formal == 3 | formal == 4 | formal == 6) & ing_ss > 0 & ing_ss != .
@@ -1276,7 +1250,6 @@ replace sbc = 1 if sbc > 0 & sbc < 1 & (formal == 1 | formal == 6)
 *replace sbc = floor(sbc) if formal != 1
 *replace sbc = ceil(sbc) if formal == 1
 replace sbc = sbc*`smdf'
-
 
 * IMSS *
 g double riesgoP = sbc*`TriesgoP'/100*360 if (formal == 1 | formal == 3 | formal == 4 | formal == 6)
@@ -1300,7 +1273,6 @@ g double cestyvejP = sbc*`TcestyvejP'/100*360 if (formal == 1 | formal == 3 | fo
 g double cestyvejF = sbc*`TcestyvejF'/100*360 if (formal == 1 | formal == 3 | formal == 4 | formal == 6)
 
 g double cuotasocimssF = sbc*`TcuotaSocIMSSF'/100*360 if (formal == 1 | formal == 3 | formal == 4 | formal == 6) & sbc/`smdf' <= 15
-
 
 * ISSSTE *
 g double fondomedT = `TfondomedT'/100*sbc*360 if (formal == 2 | formal == 5)
@@ -1328,10 +1300,8 @@ g double fvivP = `TfvivP'/100*sbc*360 if (formal == 2 | formal == 5)
 
 g double cuotasocisssteF = `smdf'*`TcuotaSocISSSTEF'/100*360 if (formal2 == 2 | formal == 5)
 
-
 * INFONAVIT *
 g double infonavit = sbc*`Tinfonavit'/100*360 if formal != 0
-
 
 
 ******************************************
@@ -1351,7 +1321,7 @@ label var cuotasTP "Seguridad social (trabajadores y patr{c o'}n)"
 egen double cuotasTPF = rsum(cuotasP cuotasT cuotasF)
 label var cuotasTPF "Contribuciones a la seguridad social"
 
-* Cuotas a la seguridad social por by *
+* Cuotas a la seguridad social por institucion *
 tabstat cuotasTP [aw=factor] if (formal2 == 1 | formal2 == 2), ///
 	stat(sum) f(%20.0fc) save by(formal)
 tempname SBCIMSS SBCISSSTE
@@ -1388,7 +1358,6 @@ tabstat cuotasTPF [aw=factor], ///
 tempname SBCTOTAL
 matrix `SBCTOTAL' = r(StatTotal)
 
-
 * Gini's de seguridad social *
 tempvar cuotasIMSS cuotasISSSTE cuotasFED cuotasIMP cuotasOTR
 g `cuotasIMSS' = cuotasTP if formal == 1
@@ -1409,7 +1378,6 @@ Gini `cuotasOTR', hogar(`hogar') individuo(numren) factor(factor)
 local gini_cuotasOTR = r(gini_`cuotasOTR')
 Gini cuotasTPF, hogar(`hogar') individuo(numren) factor(factor)
 local gini_cuotasTPF = r(gini_cuotasTPF)
-
 
 // Step 1 //
 noisily di _newline(2) _col(04) in g "{bf:Paso 1: Estimar las contribuciones de seguridad social}"
@@ -1723,7 +1691,6 @@ collapse (sum) ing_* exen_* cuotas* htrab isrE renta deduc_isr ///
 merge 1:1 (`hogar' numren) using "`c(sysdir_site)'../basesCIEP/INEGI/`enigh'/`enighanio'/poblacion.dta", nogen ///
 	keepusing(sexo edad nivelaprob gradoaprob)
 
-
 * Formalidad *
 tabstat edad [fw=factor] if ing_subor != 0 | ing_mixto != 0, stat(count) f(%15.0fc) save by(formal)
 tempname FORIMSS FORISSSTE FORPemex FOROtro FORISSSTEestatal FORIndependiente INFOR FORTOTMAT
@@ -1829,7 +1796,6 @@ else {
 }
 
 
-
 **********************
 ** 9.2. Escolaridad **
 destring gradoaprob, replace
@@ -1866,22 +1832,18 @@ label var ing_estim_alqu "Imputaci{c o'}n de alquiler"
 
 
 
-
 *****************************
 *** 10. Re-calculo de ISR ***
 *****************************
-
 * Ingreso mixto *
 tabstat ing_mixto [aw=factor_cola], stat(sum) f(%20.0fc) save by(formal)
 tempname ALTIMIR00
 matrix `ALTIMIR00' = r(StatTotal)
 
-
 * Capital *
 tabstat ing_subor ing_mixto ing_capital ing_estim_alqu ing_remesas [aw=factor_cola], stat(sum) f(%20.0fc) save by(formal)
 tempname ALTIMIR0
 matrix `ALTIMIR0' = r(StatTotal)
-
 
 // Step 5 //
 local TaltimirSelf = (`MixKN'+`MixL')/`ALTIMIR00'[1,1]
@@ -1916,7 +1878,6 @@ if "`altimir'" == "yes" {
 }
 
 
-
 ***************
 ** 10.1. ISR **
 noisily di _newline(2) _col(04) in g "{bf:Paso 3: Sumar ingresos por individuo y re-calcular ISR}"
@@ -1925,7 +1886,6 @@ label var ing_bruto_tax "Ingreso gravable"
 
 g double exen_tot = exen_t4_cap1 + exen_mixto + exen_capital
 label var exen_tot "Exenciones totales"
-
 
 
 *************
@@ -1977,7 +1937,6 @@ replace ing_bruto_tax = ing_rent if formal_renta == 1 & prob_renta != . & formal
 replace exen_tot = exen_rent if formal_renta == 1 & prob_renta != . & formal == 0
 
 
-
 ** Probit formalidad (servicios profesionales, produccion) **
 di _newline _col(04) in g "{bf:3.3. Probit de formalidad: " in y "Servicios profesionales, producci{c o'}n.}"
 xi: probit formal_probit ing_bruto_tax exen_tot por_servprof deduc_isr ///
@@ -2006,7 +1965,6 @@ replace ing_bruto_tax = (ing_honor + ing_empre) if formal_servprof == 1 & prob_s
 replace exen_tot = (exen_honor + exen_empre) if formal_servprof == 1 & prob_servprof != . & formal == 0
 
 
-
 ** Escalar con informaci{c o'}n del SAT **
 noisily di _newline _col(04) in g "{bf:3.3. Deducciones personales y gastos profesionales}"
 noisily tabstat deduc_isr [aw=factor_cola], stat(sum) f(%20.0fc) by(formal_dummy) save
@@ -2014,7 +1972,6 @@ noisily tabstat deduc_isr [aw=factor_cola], stat(sum) f(%20.0fc) by(formal_dummy
 *matrix `deducfor' = r(StatTotal)
 *replace deduc_isr = deduc_isr*67473904696/`deducfor'[1,1] if formal != 0
 *replace deduc_isr = deduc_isr*67473904696/`deducfor'[1,1] if formal == 0
-
 
 * Limitar deducciones *
 replace deduc_isr = 5*`smdf'*365 if 5*`smdf'*365 <= 15/100*ing_bruto_tax & deduc_isr >= 5*`smdf'*365
@@ -2049,8 +2006,6 @@ replace TE = 0 if TE == .
 *replace ing_bruto_tax = 0 if formal == 0
 replace ISR = 0 if formal == 0 & formal_renta == 0 & formal_servprof == 0
 
-
-* Sankey *
 g double ISR__asalariados = isrE
 replace ISR__asalariados = 0 if ISR__asalariados == .
 label var ISR__asalariados "ISR (retenciones por salarios)"
@@ -2058,40 +2013,6 @@ label var ISR__asalariados "ISR (retenciones por salarios)"
 g double ISR__PF = ISR - isrE if ISR - isrE >= 0
 replace ISR__PF = 0 if ISR__PF == .
 label var ISR__PF "ISR (personas f{c i'}sicas)"
-
-tabstat ISR__PF [aw=factor_cola], stat(sum) f(%25.2fc) save
-tempname RESTAX0
-matrix `RESTAX0' = r(StatTotal)
-
-*replace ISR__PF = ISR__PF*(`ISRFisicas'/`RESTAX0'[1,1])
-
-*g double ISR__ar = ISR__PF*(ing_rent - exen_rent)/(ing_bruto_tax - exen_tot - deduc_isr - cuotasTPF) if formal_renta == 1
-*replace ISR__ar = 0 if ISR__ar == .
-*label var ISR__ar "ISR (arrendamiento)"
-
-g ISR__PM = ing_capital if formal != 0
-label var ISR__PM "ISR (personas morales)"
-
-g ISR__co = ing_capital if formal != 0
-label var ISR__co "ISR (contratistas y asignatarios)"
-
-g CuotasT = cuotasT if formal == 1
-label var CuotasT "Cuotas IMSS (trabajadores)"
-
-g CuotasP = cuotasP if formal == 1
-label var CuotasP "Cuotas IMSS (patr{c o'}n)"
-
-g IMSSISSSTE = factor_cola if formal == 1 | formal == 2
-label var IMSSISSSTE "Ingresos propios IMSS e ISSSTE"
-
-g PemexCFE = factor_cola
-label var PemexCFE "Ingresos propios Pemex y CFE"
-
-g Otros = factor_cola
-label var Otros "Otros ingresos"
-
-g FMP = factor_cola
-label var FMP "Fondo Mexicano del Petr{c o'}leo (derechos petroleros)"
 
 * Gini's de ISR *
 Gini ISR__asalariados, hogar(`hogar') individuo(numren) factor(factor)
@@ -2137,26 +2058,21 @@ noisily di ///
 
 
 
-
 *******************
 *** 11. Capital ***
 *******************
-
 * Compensation of employees ROW *
 Distribucion ing_suborrow, relativo(ing_subor) macro(`ROWRem')
 label var ing_suborrow "Remuneraci{c o'}n a asalariados (ROW)"
-
 
 * Capital *
 Distribucion ing_capitalGov, relativo(factor_cola) ///
 	macro(`=`IMSSpropio'+`ISSSTEpropio'+`CFEpropio'+`Pemexpropio'+`FMP'+`Derechos'+`Productos'+`Aprovechamientos'')
 replace ing_capital = ing_capital //+ ing_capitalGov
 
-
 * Depreciacion *
 Distribucion Depreciacion, relativo(ing_capital) macro(`ConCapFij')
 label var Depreciacion  "Consumo de Capital Fijo"
-
 
 * Totales *
 g double ing_bruto_tot = ing_subor + ing_mixto + ing_capital + ing_estim_alqu
@@ -2164,7 +2080,6 @@ label var ing_bruto_tot "Ingreso total bruto"
 
 egen double ing_nac = rsum(ing_bruto_tot ing_suborrow ing_remesas)
 label var ing_nac "Ingreso nacional"
-
 
 
 
@@ -2230,16 +2145,13 @@ noisily di ///
 
 
 
-
 ****************/
 *** 13. Final ***
 *****************
 tempvar tot_integ
 egen `tot_integ' = count(edad), by(`hogar')
-
 egen double ing_decil_hog = sum(ing_bruto_tot), by(`hogar')
 g double ing_decil_pc = ing_decil_hog/`tot_integ'
-
 
 * Deciles *
 xtile decil = ing_decil_pc [pw=factor], n(10)
@@ -2257,6 +2169,7 @@ label values sexo sexo
 label define rural 1 "Rural" 0 "Urbano"
 label values rural rural
 
+* Otras variables *
 g grupo_edad = 1 if edad < 18
 replace grupo_edad = 2 if edad >= 18 & edad < 65
 replace grupo_edad = 3 if edad >= 65
@@ -2269,12 +2182,26 @@ label values formalmax formalidad
 
 g Poblacion = 1
 
+
+********************
+*** Variables GA *** 
 g folio = folioviv + foliohog
 
+g Ingreso = ISR if formal == 1
+replace Ingreso = 0 if Ingreso == .
+label var Ingreso "Impuestos al ingreso"
 
-* Guardar *
+
+
+
+***********
+*** END ***
 capture drop __*
 format ing_* exen_* renta %10.0fc
 capture mkdir "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/"
+
+merge 1:1 (`hogar' numren) using "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/expenditure.dta", nogen keepus(Consumo)
+
+compress
 save "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/income.dta", replace
 log close

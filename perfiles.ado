@@ -11,7 +11,7 @@ quietly {
 	*** 0. Guardar base original ***
 	********************************
 	preserve
-	use`"`c(sysdir_site)'../basesCIEP/SIM/Poblacion$pais.dta"', clear
+	use`"`c(sysdir_site)'../basesCIEP/SIM/Poblacion`=subinstr("${pais}"," ","",.)'.dta"', clear
 	local edadmax = edad[_N]
 	restore
 	preserve
@@ -101,15 +101,15 @@ quietly {
 	** 1.4. Completar edades **
 	destring sexo, replace
 
-	* Edades de 97 a `edadmax' *
-	tabstat `rec' `for' `pob' if edad >= `edadmaxEncuesta'-5 & sexo == 1, stat(sum) save
+	/* Edades de 97 a `edadmax' *
+	tabstat `rec' `for' `pob' if edad >= `edadmaxEncuesta'-8 & sexo == 1, stat(sum) save
 	tempname RES1
 	matrix `RES1' = r(StatTotal)
-	tabstat `rec' `for' `pob' if edad >= `edadmaxEncuesta'-5 & sexo == 2, stat(sum) save
+	tabstat `rec' `for' `pob' if edad >= `edadmaxEncuesta'-8 & sexo == 2, stat(sum) save
 	tempname RES2
 	matrix `RES2' = r(StatTotal)
 
-	* Observaciones no encontradas *
+	* Observaciones no encontradas */
 	forvalues k=0(1)`edadmax' {									// Edades segun CONAPO
 		forvalues j=1(1)2 {
 			count if edad == `k' & sexo == `j'
@@ -121,7 +121,7 @@ quietly {
 		}
 	}
 
-	* Mayores de 92 anios *
+	/* Mayores de 92 anios *
 	replace `rec' = `RES1'[1,1]/(`edadmax'-`edadmaxEncuesta'-1) if edad >= `edadmaxEncuesta' & sexo == 1
 	replace `for' = `RES1'[1,2]/(`edadmax'-`edadmaxEncuesta'-1) if edad >= `edadmaxEncuesta' & sexo == 1
 	replace `pob' = `RES1'[1,3]/(`edadmax'-`edadmaxEncuesta'-1) if edad >= `edadmaxEncuesta' & sexo == 1
@@ -133,7 +133,7 @@ quietly {
 	capture drop `rect' `fort' `pobt'
 
 
-	* Validation *
+	* Validation */
 	tempname REC
 	tabstat `rec', stat(sum) f(%25.2fc) save
 	matrix `REC' = r(StatTotal)

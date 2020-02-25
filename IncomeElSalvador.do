@@ -14,7 +14,6 @@ label var escol "Nivel de escolaridad"
 xtile decil = ingpe [fw=fac00], n(10)
 
 rename ingfa ing_bruto_tot
-* 1,859.8
 
 g formal = r422a == 1 | r422a == 2 | ///
 	r422b == 1 | r422b == 2 | ///
@@ -25,12 +24,27 @@ g formal = r422a == 1 | r422a == 2 | ///
 	r422g == 1 | r422g == 2
 
 rename fac00 factor
-	
 
-g ISR = ingre if formal == 1
-replace ISR = 0 if ISR == .
-label var ISR "Impuesto Sobre la Renta"
-
+rename folio folioold
+rename idboleta folio
+rename r101 numren
 
 
+
+********************
+*** Variables GA *** 
+g Ingreso = ingre if formal == 1
+replace Ingreso = 0 if Ingreso == .
+label var Ingreso "Impuestos al ingreso"
+
+g Pension = r44407a
+replace Pension = 0 if Pension == .
+label var Pension "Pensiones"
+
+
+
+***********
+*** END ***
+capture drop __*
+compress
 save `"`c(sysdir_site)'../basesCIEP/SIM/2018/income`=subinstr("${pais}"," ","",.)'.dta"', replace

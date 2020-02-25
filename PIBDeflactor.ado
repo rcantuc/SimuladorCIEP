@@ -17,15 +17,17 @@ quietly {
 	
 	/* Verifica si se puede usar la base, si no es así o la opción update es llamada, 
 	limpia la base y la usa */
-	capture use `"`c(sysdir_site)'../basesCIEP/SIM/PIBDeflactor${pais}.dta"', clear
+	capture use `"`c(sysdir_site)'../basesCIEP/SIM/PIBDeflactor`=subinstr("${pais}"," ","",.)'.dta"', clear
 	if _rc != 0 | "`update'" == "update" {
 		run `"`c(sysdir_personal)'/PIBDeflactorBase`=subinstr("${pais}"," ","",.)'.do"'
-		use `"`c(sysdir_site)'../basesCIEP/SIM/PIBDeflactor${pais}.dta"', clear
+		use `"`c(sysdir_site)'../basesCIEP/SIM/PIBDeflactor`=subinstr("${pais}"," ","",.)'.dta"', clear
 	}
 	local anio_first = anio[1]
 	local anio_last = anio[_N]
 	capture local trim_last = trimestre[_N]
-	capture local trim_last = "q`trim_last'"
+	if _rc == 0 {
+		local trim_last = "q`trim_last'"
+	}
 
 	merge 1:1 (anio) using `workingage', nogen
 	drop if anio < `anio_first'
@@ -114,14 +116,11 @@ quietly {
 	** 3.1 Par{c a'}metros ex{c o'}genos **
 	replace currency = currency[`obslast']
 	g OutputPerWorker = pibYR/WorkingAge
-	
+
 	* Crecimiento promedio del producto por trabajador en los últimos diez años *
-	
 	scalar lambda = ((OutputPerWorker[`obslast']/OutputPerWorker[`=`obslast'-10'])^(1/10)-1)*100
 
 	* Imputar *
-	g lambda = .
-	
 	forvalues k=`anio_last'(1)`fin' {
 		capture confirm existence ${pib`k'}
 		if _rc == 0 {
@@ -137,8 +136,9 @@ quietly {
 	}		
 
 	* Lambda (productividad) *
-	replace lambda = (1+scalar(lambda)/100)^(anio-`anio_last')
+	g lambda = (1+scalar(lambda)/100)^(anio-`anio_last')
 	*replace lambda = 1
+
 	replace pibYR = `=pibYR[`obslast']'/`=WorkingAge[`obslast']'*WorkingAge* ///
 		(1+scalar(lambda)/100)^(anio-`anio_last') if pibYR == .
 	replace pibY = pibYR*deflator if pibY == .
@@ -161,16 +161,17 @@ quietly {
 	noisily di in g " PIBR `=anio[_N]' al infinito: " in y _col(25) %20.0fc pibINF in g " `=currency[`obsvp']'"
 
 	*if "`globals'" == "globals" {
-		forvalues k=1(1)`=_N' {
-			global PIB_`=anio[`k']' = pibY[`k']
-			global DEF_`=anio[`k']' = deflator[`k']
-			global pib_`=anio[`k']' = var_pibY[`k']
-			global def_`=anio[`k']' = var_indiceY[`k']
-		}
+		*forvalues k=1(1)`=_N' {
+		*	global PIB_`=anio[`k']' = pibY[`k']
+		*	global DEF_`=anio[`k']' = deflator[`k']
+		*	global pib_`=anio[`k']' = var_pibY[`k']
+		*	global def_`=anio[`k']' = var_indiceY[`k']
+		*}
 	*}
 	
 	
 	if "`graphs'" == "graphs" {
+
 		* Texto sobre lineas *
 		forvalues k=1(1)`=_N' {
 			if var_indiceY[`k'] != . {
@@ -178,7 +179,7 @@ quietly {
 			}
 		}
 		
-		* IPC *
+		* Deflactor *
 		twoway (connected var_indiceY anio if anio <= `anio_last') ///
 			(connected var_indiceY anio if anio >= `anio_last'), ///
 			title("{bf:{c I'}ndice de precios impl{c i'}citos}") ///
@@ -204,7 +205,6 @@ quietly {
 		}
 		
 		* Crecimiento PIB *
-		
 		twoway (connected var_pibY anio if anio <= `anio_last') ///
 			(connected var_pibY anio if anio > `anio_last'), ///
 			title({bf:Producto Interno Bruto}) ///
@@ -221,21 +221,21 @@ quietly {
 		if _rc == 0 {
 			graph export "$export/PIBH.png", replace name(PIBH)
 		}
-		
+
+
 		* PIB real *
-		
 		tempvar pibYRmil
-		g `pibYRmil' = pibYR/1000000000000
+		g `pibYRmil' = pibYR/1000000
 		twoway (area `pibYRmil' anio if anio <= `anio_last') ///
 			(area `pibYRmil' anio if anio > `anio_last'), ///
 			title({bf:Producto Interno Bruto}) ///
 			subtitle(${pais}) ///
-			ytitle(billones `=currency[`obsvp']' `aniovp') xtitle("") yline(0) ///
+			ytitle(millones `=currency[`obsvp']' `aniovp') xtitle("") yline(0) ///
 			text(`=`pibYRmil'[1]*.05' `=`anio_last'-.5' "`anio_last'", place(nw) color(white)) ///
 			text(`=`pibYRmil'[1]*.05' `=anio[1]+.5' "Observado" ///
 			`=`pibYRmil'[1]*.05' `=`anio_last'+1.5' "Proyectado", place(ne) color(white)) ///
-			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
-			ylabel(0(5)`=round(`pibYRmil'[_N],5)', format(%10.0fc)) ///
+			xlabel(`=anio[1]' `=round(anio[1],10)'(10)`=round(anio[_N],10)') ///
+			ylabel(#4, format(%10.0fc)) ///
 			xline(`anio_last'.5) ///
 			yscale(range(0)) ///
 			legend(label(1 "Observado") label(2 "Proyecci{c o'}n") off) ///
@@ -256,10 +256,10 @@ quietly {
 	***************
 	noisily di _newline in g "  A{c n~}o" _col(11) %8s "Crec. PIB" _col(25) %20s "PIB" _col(50) %5s "Crec. Def." _col(64) %8.4fc "Deflactor"
 
-	forvalues k=`=`aniovp'-5'(1)`=`aniovp'+5' {
+	forvalues k=`=`obsvp'-5'(1)`=`obsvp'+5' {
 		capture confirm existence `bold`k''
 		if _rc != 0 {
-			noisily di in g "  `k' " _col(10) %8.4fc in y ${pib_`k'} " %" _col(25) %20.0fc ${PIB_`k'} _col(50) %8.4fc in y ${def_`k'} " %" _col(65) %8.4fc ${DEF_`k'}
+			noisily di in g " `=anio[`k']' " _col(10) %8.1fc in y var_pibY[`k'] " %" _col(25) %20.0fc pibY[`k'] _col(50) %8.4fc in y var_indiceY[`k'] " %" _col(65) %8.4fc deflator[`k']
 		}
 		else {
 			capture confirm existence `firstrow'
@@ -267,7 +267,7 @@ quietly {
 				noisily di in g _dup(72) "-"
 				local firstrow "firstrow"
 			}
-			noisily di in g "{bf:  `k' " _col(10) %8.4fc in y ${pib_`k'} " %" _col(25) %20.0fc ${PIB_`k'} _col(50) %8.4fc in y ${def_`k'} " %" _col(65) %8.4fc ${DEF_`k'} "}"
+			noisily di in g "{bf: `=anio[`k']' " _col(10) %8.1fc in y var_pibY[`k'] " %" _col(25) %20.0fc pibY[`k'] _col(50) %8.4fc in y var_indiceY[`k'] " %" _col(65) %8.4fc deflator[`k'] "}"
 			noisily di in g _dup(72) "-"
 		}
 	}

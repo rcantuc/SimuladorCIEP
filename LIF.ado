@@ -60,14 +60,16 @@ quietly {
 		local by = "divCIEP"
 	}
 
-	noisily di _newline(5) in g "{bf:SISTEMA FISCAL: " in y "INGRESOS `anio'" "}"
+	noisily di _newline(2) in g "{bf:SISTEMA FISCAL: " in y "INGRESOS `aniovp'" "}"
 
 
 
 	***************
 	*** 3 Merge ***
 	***************
-	merge m:1 (anio) using `PIB', nogen keepus(pibY indiceY deflator lambda var_pibY) update replace keep(matched)
+	sort anio
+	merge m:1 (anio) using `PIB', nogen keepus(pibY indiceY deflator lambda var_pibY) ///
+		update replace keep(matched) sorted
 
 	** 3.1 Utilizar ILIF **
 	if "`ilif'" == "ilif" {
@@ -75,11 +77,10 @@ quietly {
 	}
 
 	** 3.2 Valores como % del PIB **
-	g double recaudacionPIB = recaudacion/pibY*100
-	g double montoPIB = monto/pibY*100
-	g double LIFPIB = LIF/pibY*100
-	g double ILIFPIB = ILIF/pibY*100
-	format *PIB %7.3fc
+	foreach k of varlist recaudacion monto LIF ILIF {
+		g double `k'PIB = `k'/pibY*100
+	}
+	format *PIB %10.3fc
 
 
 
@@ -102,15 +103,15 @@ quietly {
 	capture replace nombre = subinstr(nombre,"/","_",.)
 
 	if "$graphs" == "on" | "`graphs'" == "graphs" {
-		graph pie recaudacionPIB if anio == `aniovp', over(`by') descending sort ///
+		graph pie recaudacionPIB if anio == `aniovp' & divLIF != 10, over(`resumido') ///
 			plabel(_all percent, format(%5.1fc)) ///
-			title("{bf:Composici{c o'}n de los ingresos presupuestarios}") ///
+			title("{bf:Ingresos presupuestarios `aniovp'}") ///
 			subtitle($pais) ///
 			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
 			name(ingresospie, replace) ///
 			legend(on position(3) cols(1))
 
-		graph bar (sum) recaudacionPIB /*if anio > `aniovp'-5 & divLIF != 10*/, ///
+		graph bar (sum) recaudacionPIB if divLIF != 10, ///
 			over(`by', /*relabel(1 "LIF" 2 "SHCP")*/) ///
 			over(anio, label(labgap(vsmall))) ///
 			bargap(-30) stack asyvars ///
@@ -131,13 +132,17 @@ quietly {
 	********************
 	** 4. Display LIF **
 
-	** Division CIEP **
+	** 4.1 Division `by' **
 	noisily di _newline in g "{bf: A. Ingresos presupuestarios (`by') " ///
 		_col(44) in g %20s "MXN" ///
 		_col(66) %7s "% PIB" ///
 		_col(77) %7s "% Total" "}"
 
-	tabstat recaudacion recaudacionPIB if anio == `aniovp', by(`by') stat(sum) f(%20.0fc) save
+	capture tabstat recaudacion recaudacionPIB if anio == `aniovp', by(`by') stat(sum) f(%20.0fc) save
+	if _rc != 0 {
+		noisily di in r "No hay informaci{c o'}n para el a{c n~}o `aniovp'."
+		exit
+	}
 	tempname mattot
 	matrix `mattot' = r(StatTotal)
 
@@ -146,27 +151,36 @@ quietly {
 		tempname mat`k'
 		matrix `mat`k'' = r(Stat`k')
 
-		local name = strtoname("`=r(name`k')'")
+		* Display text *
+		if substr(`"`=r(name`k')'"',1,31) == "'" {
+			local disptext = substr(`"`=r(name`k')'"',1,30)
+		}
+		else {
+			local disptext = substr(`"`=r(name`k')'"',1,31)
+		}
+		local name = strtoname(`"`disptext'"')
 
+		* Display *
 		return scalar `name' = `mat`k''[1,1]
 		local `by' `"``by'' `name'"'
 
-		noisily di in g "  (+) `=r(name`k')'" ///
+		noisily di in g `"  (+) `disptext'"' ///
 			_col(44) in y %20.0fc `mat`k''[1,1] ///
 			_col(66) in y %7.3fc `mat`k''[1,2] ///
 			_col(77) in y %7.1fc `mat`k''[1,1]/`mattot'[1,1]*100
 		local ++k
 	}
-
 	return local `by' `"``by''"'
+
 	noisily di in g _dup(83) "-"
-	noisily di in g "{bf:  (=) Total" ///
+	noisily di in g "{bf:  (=) Ingresos totales" ///
 		_col(44) in y %20.0fc `mattot'[1,1] ///
 		_col(66) in y %7.3fc `mattot'[1,2] ///
 		_col(77) in y %7.1fc `mattot'[1,1]/`mattot'[1,1]*100 "}"
 
+	return scalar `=strtoname("Ingresos totales")' = `mattot'[1,1]
 
-	** Division Resumido **
+	** 4.2 Division Resumido **
 	noisily di _newline in g "{bf: B. Ingresos presupuestarios (divResumido) " ///
 		_col(44) in g %20s "MXN" ///
 		_col(66) %7s "% PIB" ///
@@ -180,6 +194,17 @@ quietly {
 	while "`=r(name`k')'" != "." {
 		tempname mat`k'
 		matrix `mat`k'' = r(Stat`k')
+
+		* Display text *
+		if substr(`"`=r(name`k')'"',1,25) == "'" {
+			local disptext = substr(`"`=r(name`k')'"',1,24)
+		}
+		else {
+			local disptext = substr(`"`=r(name`k')'"',1,25)
+		}
+		local name = strtoname(`"`disptext'"')
+
+		* Display *
 		return scalar `=strtoname("`=r(name`k')'")' = `mat`k''[1,1]
 		local divResumido `"`divResumido' `=strtoname(abbrev("`=r(name`k')'",7))'"'
 
@@ -189,8 +214,8 @@ quietly {
 			_col(77) in y %7.1fc `mat`k''[1,1]/`mattot'[1,1]*100
 		local ++k
 	}
-
 	return local divResumido `"`divResumido'"'
+
 	noisily di in g _dup(83) "-"
 	noisily di in g "{bf:  (=) Total (sin deuda)" ///
 		_col(44) in y %20.0fc `mattot'[1,1] ///
@@ -198,34 +223,14 @@ quietly {
 		_col(77) in y %7.1fc `mattot'[1,1]/`mattot'[1,1]*100 "}"
 
 
-	** Division concepto **
-	tabstat recaudacion recaudacionPIB if anio == `aniovp', by(concepto) stat(sum) f(%20.1fc) save
-	tempname nombre
-	matrix `nombre' = r(StatTotal)
-
-	local k = 1
-	while "`=r(name`k')'" != "." {
-		tempname mat`k'
-		matrix `mat`k'' = r(Stat`k')
-		return scalar `=strtoname("`=substr("`=r(name`k')'",1,15)'_`=substr("`=r(name`k')'",-15,15)'")' = `mat`k''[1,1]
-		local divNombre `"`divNombre' `=strtoname(abbrev("`=r(name`k')'",7))'"'
-
-		*noisily di in g "  (+) `=strtoname("`=substr("`=r(name`k')'",1,15)'_`=substr("`=r(name`k')'",-15,15)'")'" ///
-			_col(44) in y %20.0fc `mat`k''[1,1] ///
-			_col(66) in y %7.3fc `mat`k''[1,2] ///
-			_col(77) in y %7.1fc `mat`k''[1,1]/`mattot'[1,1]*100
-		local ++k
-	}
-
-
-	** Crecimientos **
-	noisily di _newline in g "{bf: C. Mayores cambios:" in y " `=`aniovp'-5' - `aniovp'" in g ///
-		_col(55) %7s "`=`aniovp'-5'" ///
+	** 4.3 Crecimientos **
+	noisily di _newline in g "{bf: C. Mayores cambios:" in y " `=`aniovp'-4' - `aniovp'" in g ///
+		_col(55) %7s "`=`aniovp'-4'" ///
 		_col(66) %7s "`aniovp'" ///
 		_col(77) %7s "Cambio PIB" "}"
 
 
-	tabstat recaudacion recaudacionPIB if anio == `aniovp' & divLIF != 10, by(`by') stat(sum) f(%20.0fc) save
+	tabstat recaudacion recaudacionPIB if anio == `aniovp', by(`by') stat(sum) f(%20.0fc) save
 	tempname mattot
 	matrix `mattot' = r(StatTotal)
 
@@ -236,8 +241,7 @@ quietly {
 		local ++k
 	}
 
-
-	capture tabstat recaudacion recaudacionPIB if anio == `aniovp'-5 & divLIF != 10, by(`by') stat(sum) f(%20.1fc) save
+	capture tabstat recaudacion recaudacionPIB if anio == `aniovp'-4 & divLIF != 10, by(`by') stat(sum) f(%20.1fc) save
 	if _rc == 0 {
 		tempname mattot5
 		matrix `mattot5' = r(StatTotal)
@@ -261,214 +265,6 @@ quietly {
 			_col(55) in y %7.3fc `mattot5'[1,2] ///
 			_col(66) in y %7.3fc `mattot'[1,2] ///
 			_col(77) in y %7.3fc `mattot'[1,2]-`mattot5'[1,2] "}"
-	}
-
-
-	/** If **
-	if "`if'" != "" {
-	noisily di _newline in g "{bf: E. Ingresos (if `if') " ///
-		_col(44) in g %20s "MXN" ///
-		_col(66) %7s "% PIB" ///
-		_col(77) %7s "% Total" "}"
-
-		tabstat recaudacion recaudacionPIB if anio == `aniovp', by(`by') stat(sum) f(%20.0fc) save
-		tempname mattot
-		matrix `mattot' = r(StatTotal)
-
-		tabstat recaudacion recaudacionPIB if anio == `aniovp' & recaudacionPIB != 0 & `if', by(nombre) f(%7.3fc) stat(sum) save
-		tempname matiftot
-		matrix `matiftot' = r(StatTotal)
-
-		local k = 1
-		while "`=r(name`k')'" != "." {
-			tempname matif`k'
-			matrix `matif`k'' = r(Stat`k')
-			
-			return scalar `=strtoname("`=r(name`k')'")' = `matif`k''[1,1]
-			local name = strtoname("`=r(name`k')'")
-			local divIf `"`divIf' `name'"'
-
-			noisily di in g "  (+) `=r(name`k')'" ///
-				_col(44) in y %20.0fc `matif`k''[1,1] ///
-				_col(66) in y %7.3fc `matif`k''[1,2] ///
-				_col(77) in y %7.1fc `matif`k''[1,1]/`mattot'[1,1]*100
-			local ++k
-		}
-
-		return local divIf `"`divIf'"'
-		noisily di in g _dup(83) "-"
-		noisily di in g "{bf:  (=) Total" ///
-			_col(44) in y %20.0fc `matiftot'[1,1] ///
-			_col(66) in y %7.3fc `matiftot'[1,2] ///
-			_col(77) in y %7.1fc `matiftot'[1,1]/`matiftot'[1,1]*100 "}"
-
-	}
-
-	if "$graphs" == "on" | "`graphs'" == "graphs" {
-		replace recaudacionPIB = 0 if anio == `aniovp'
-
-		graph pie LIFPIB if anio == `aniovp', over(`resumido') descending sort ///
-			plabel(_all percent, format(%5.1fc)) ///
-			title("{bf:Composici{c o'}n de los ingresos presupuestarios}") ///
-			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
-			name(ingresospie, replace) ///
-			legend(on position(3) cols(1))
-			
-		graph bar (sum) LIFPIB recaudacionPIB if anio > `aniovp'-5 & divLIF != 10, ///
-			over(`resumido', relabel(1 "LIF" 2 "SHCP")) ///
-			over(anio, label(labgap(vsmall))) ///
-			bargap(-30) stack asyvars ///
-			title("{bf:Ingresos presupuestarios}") ///
-			ytitle(% PIB) ylabel(0(5)30, labsize(small)) ///
-			legend(on position(6) cols(4)) ///
-			name(ingresos, replace) ///
-			blabel(bar, format(%7.1fc)) ///
-			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
-			note({bf:{c U'}ltimo dato:} `ultanio'm`ultmes')
-		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
-		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
-
-
-		if "`if'" != "" {
-			graph bar (sum) LIFPIB recaudacionPIB if `if', ///
-				over(`resumido', relabel(1 "LIF" 2 "SHCP")) ///
-				over(anio) ///
-				stack asyvars ///
-				title("{bf:Ingresos presupuestarios}") ///
-				ytitle("{bf:% PIB}") ///
-				name(ingresosIf, replace) ///
-				blabel(bar, format(%7.1fc)) ///
-				caption("Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).") ///
-				note({bf:{c U'}ltimo dato:} `ultanio'm`ultmes')
-			exit
-		}
-
-		graph bar (sum) LIFPIB recaudacionPIB if anio >= `desde' & divLIF != 10, ///
-			over(divOrigen, relabel(1 "LIF" 2 "OBS")) ///
-			over(anio) ///
-			stack asyvars ///
-			title("{bf:Ingresos presupuestarios}") ///
-			subtitle("Estimados y observados") ///
-			ytitle("{bf:% PIB}") ///
-			name(ingresosH, replace) ///
-			blabel(, format(%7.1fc)) ///
-			caption("Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).") ///
-			note({bf:{c U'}ltimo dato:} `ultanio'm`ultmes')
-		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
-		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
-		if "`ilif'" == "ilif" {
-			gr_edit .grpaxis.edit_tick 15 93.9024 `"ILIF"', tickset(major)
-		}
-
-		graph bar (sum) LIFPIB recaudacionPIB if anio >= `desde' & divLIF != 10 & divOrigen == 5, ///
-			over(`resumido', relabel(1 "LIF" 2 "SHCP")) ///
-			over(anio) ///
-			stack asyvars ///
-			title("{bf:Ingresos tributarios}") ///
-			subtitle("Estimados y observados") ///
-			ytitle("{bf:% PIB}") ///
-			name(ingresosTributariosH, replace) ///
-			blabel(bar, format(%7.1fc)) ///
-			caption("Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).") ///
-			note({bf:{c U'}ltimo dato:} `ultanio'm`ultmes')
-		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
-		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
-		if "`ilif'" == "ilif" {
-			gr_edit .grpaxis.edit_tick 15 93.9024 `"ILIF"', tickset(major)
-		}
-				
-		graph bar (sum) LIFPIB recaudacionPIB if anio >= `desde' & (divOrigen == 4 | divOrigen == 2 | divOrigen == 3), ///
-			over(`resumido', relabel(1 "LIF" 2 "SHCP")) ///
-			over(anio) ///
-			stack asyvars ///
-			title("{bf:Ingresos no tributarios}") ///
-			subtitle("Estimados y observados") ///
-			ytitle("{bf:% PIB}") ///
-			name(ingresosnoTributariosA, replace) ///
-			blabel(bar, format(%7.1fc)) ///
-			caption("Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).") ///
-			note({bf:{c U'}ltimo dato:} `ultanio'm`ultmes')
-		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
-		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
-		if "`ilif'" == "ilif" {
-			gr_edit .grpaxis.edit_tick 15 93.9024 `"ILIF"', tickset(major)
-		}
-		
-	
-		graph bar (sum) LIFPIB recaudacionPIB if anio >= `desde' & divLIF != 10 & divOrigen == 2, ///
-			over(`resumido', relabel(1 "LIF" 2 "SHCP")) ///
-			over(anio) ///
-			stack asyvars ///
-			title("{bf:Ingresos no tributarios}") ///
-			subtitle("Estimados y observados") ///
-			ytitle("{bf:% PIB}") ///
-			name(ingresosNoTributariosH, replace) ///
-			blabel(bar, format(%7.1fc)) ///
-			caption("Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).") ///
-			note({bf:{c U'}ltimo dato:} `ultanio'm`ultmes')
-		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
-		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
-		if "`ilif'" == "ilif" {
-			gr_edit .grpaxis.edit_tick 15 93.9024 `"ILIF"', tickset(major)
-		}
-
-		graph bar (sum) LIFPIB recaudacionPIB if anio >= `desde' & divLIF != 10 & divOrigen == 4, ///
-			over(`resumido', relabel(1 "LIF" 2 "SHCP")) ///
-			over(anio) ///
-			stack asyvars ///
-			title("{bf:Ingresos petroleros}") ///
-			subtitle("Estimados y observados") ///
-			ytitle("{bf:% PIB}") ///
-			name(ingresosPetrolerosH, replace) ///
-			blabel(bar, format(%7.1fc)) ///
-			caption("Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).") ///
-			note({bf:{c U'}ltimo dato:} `ultanio'm`ultmes')
-		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
-		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
-		if "`ilif'" == "ilif" {
-			gr_edit .grpaxis.edit_tick 15 93.9024 `"ILIF"', tickset(major)
-		}
-
-		graph bar (sum) LIFPIB recaudacionPIB if anio >= `desde' & divLIF != 10 & (divCIEP == 12 | divCIEP == 15 | divCIEP == 2 | divCIEP == 18), ///
-			over(divCIEP, relabel(1 "LIF" 2 "SHCP")) ///
-			over(anio) ///
-			stack asyvars ///
-			title("{bf:Ingresos de organismos y empresas}") ///
-			subtitle("Estimados y observados") ///
-			ytitle("{bf:% PIB}") ///
-			name(ingresosOyEH, replace) ///
-			blabel(bar, format(%7.1fc)) ///
-			caption("Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).") ///
-			note({bf:{c U'}ltimo dato:} `ultanio'm`ultmes')
-		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
-		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
-		if "`ilif'" == "ilif" {
-			gr_edit .grpaxis.edit_tick 15 93.9024 `"ILIF"', tickset(major)
-		}
-	
-		graph bar (sum) LIFPIB recaudacionPIB if anio >= `desde' & divLIF == 10, ///
-			over(`resumido', relabel(1 "LIF" 2 "SHCP")) ///
-			over(anio) ///
-			stack asyvars ///
-			title("{bf:Endeudamiento}") ///
-			subtitle("Estimados y observados") ///
-			ytitle("{bf:% PIB}") ///
-			name(ingresosDeudaH, replace) ///
-			blabel(bar, format(%7.1fc)) ///
-			caption("Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos y Paquetes Econ{c o'}micos).") ///
-			note({bf:{c U'}ltimo dato:} `ultanio'm`ultmes')			
-		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
-		gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
-		if "`ilif'" == "ilif" {
-			gr_edit .grpaxis.edit_tick 15 93.9024 `"ILIF"', tickset(major)
-		}
-
-
-		*gr_edit .grpaxis.style.editstyle majorstyle(tickstyle(textstyle(size(vsmall)))) editcopy
-		*gr_edit .grpaxis.major.num_rule_ticks = 0
-		*gr_edit .grpaxis.edit_tick 18 87.9227 `"Est*"', tickset(major)
-		*gr_edit .grpaxis.edit_tick 19 95.1691 `"ILIF"', tickset(major)
-		*gr_edit .grpaxis.edit_tick 20 98.3092 `" "', tickset(major)
 	}
 
 
