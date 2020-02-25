@@ -170,7 +170,7 @@ quietly {
 
 
 			** 1.3.1. Monto per capita **
-			* Recaudacion *
+			** Recaudacion **
 			tempname REC REC39
 			capture tabstat `varlist' [`weight' = `exp'*`boot'] `if', stat(sum) f(%20.2fc) save
 			if _rc == 0 {
@@ -179,6 +179,8 @@ quietly {
 			else {
 				matrix `REC' = J(1,1,0)
 			}
+			
+			* Recaudacion, Edad 39, Hombres *
 			if "`if'" != "" {
 				local if39 = "`if' & edad == 39 & sexo == 1"
 			}
@@ -193,7 +195,7 @@ quietly {
 				matrix `REC39' = J(1,1,0)
 			}
 
-			* Contribuyentes *
+			** Contribuyentes **
 			tempname FOR
 			capture tabstat `cont' [`weight' = `exp'*`boot'] `if', stat(sum) f(%12.0fc) save
 			if _rc == 0 {
@@ -203,7 +205,7 @@ quietly {
 				matrix `FOR' = J(1,1,0)
 			}
 
-			* Poblacion *
+			** Poblacion **
 			tempname POB POB39
 			capture tabstat `cont' [`weight' = `exp'*`boot'], stat(sum) f(%12.0fc) save
 			if _rc == 0 {
@@ -212,6 +214,8 @@ quietly {
 			else {
 				matrix `POB' = J(1,1,0)
 			}
+			
+			* Poblacion, Edad 39, Hombres *
 			capture tabstat `cont' [`weight' = `exp'*`boot'] `if39', stat(sum) f(%12.0fc) save
 			if _rc == 0 {
 				matrix `POB39' = r(StatTotal)
@@ -220,18 +224,28 @@ quietly {
 				matrix `POB39' = J(1,1,0)
 			}
 
-			* Monto per capita *
+
+			** Monto per capita promedio **
 			if `FOR'[1,1] != 0 {
 				local montopc = `REC'[1,1]/`FOR'[1,1]
 			}
 			else {
 				local montopc = 0
 			}
-			
-			* Edad 39 *
-			local edad39 = `REC39'[1,1]/`POB39'[1,1]
 
-			mata: PC = `edad39'
+
+			** Mata: PC **
+			local edad39 = `REC39'[1,1]/`POB39'[1,1]
+			if `edad39' == . {
+				local pc = `montopc'
+				local ylabelpc = "Promedio"
+			}
+			else {
+				local pc = `edad39'
+				local ylabelpc = "39 a{c n~}os hombre"
+			}
+
+			mata: PC = `pc'
 
 			* Desplegar estadisticos *
 			`noisily' di in y "  montopc (`aniobase')"
@@ -247,7 +261,7 @@ quietly {
 
 
 			*** 1.3.2. Perfiles ***
-			`noisily' perfiles `varlist' `if' [`weight' = `exp'*`boot'], montopc(`edad39') post
+			`noisily' perfiles `varlist' `if' [`weight' = `exp'*`boot'], montopc(`pc') post
 
 
 
@@ -386,7 +400,7 @@ quietly {
 				name(PerfilH`varlist', replace) generate(perfilH) at(edad) noscatter ///
 				title("{bf:`title'}") ///
 				xtitle(edad) ///
-				ytitle(39 a{c n~}os hombre equivalente) ///
+				ytitle(`ylabelpc' equivalente) ///
 				ylabel(0(.5)1.5) ///
 				subtitle(Perfil de hombres) ///
 				caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.`boottext'}")
@@ -397,7 +411,7 @@ quietly {
 				name(PerfilM`varlist', replace) generate(perfilM) at(edad) noscatter ///
 				title("{bf:`title'}") ///
 				xtitle(edad) ///
-				ytitle(39 a{c n~}os hombre equivalente) ///
+				ytitle(`ylabelpc' equivalente) ///
 				ylabel(0(.5)1.5) ///
 				subtitle(Perfil de mujeres) ///
 				caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.`boottext'}")
@@ -568,7 +582,13 @@ quietly {
 
 	*************************
 	*** 6.3 OLS Simulador ***
-	merge 1:1 (anio) using `PIBBASE', nogen keepus(indiceY pibY* deflator lambda)
+	merge 1:1 (anio) using `PIBBASE', nogen keepus(indiceY pibY* deflator lambda currency)
+	forvalues k=1(1)`=_N' {
+		if deflator[`k'] == 1 {
+			local aniovp = anio[`k']
+			continue, break
+		}
+	}
 
 
 	*********AQUI*********
@@ -615,14 +635,14 @@ quietly {
 	*** 6.4 Graphs ***
 	if ("`graphs'" == "graphs" | "$graphs" == "on") {
 		twoway connected `profileproj' `gvarpredict' `seriehacienda' anio if `profileproj' != ., ///
-			ytitle("millones") ///
+			ytitle("millones `=currency[_N]' `aniovp'") ///
 			yscale(range(0)) /*ylabel(0(1)4)*/ ///
 			ylabel(, format(%20.0fc) labsize(small)) ///
 			xlabel(, labsize(small) labgap(2)) ///
 			xtitle("") ///
-			title("{bf:`title'}") ///
-			subtitle("Proyecciones demogr{c a'}ficas de largo plazo") ///
-			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.`boottext'}") ///
+			title("{bf:Proyecciones demogr{c a'}ficas de `title'}") ///
+			subtitle("$pais") ///
+		caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5. Fecha: `c(current_date)', `c(current_time)'.`boottext'}") ///
 			name(`varlist'Proj, replace)
 		graph save `varlist'Proj `"`c(sysdir_personal)'/users/$pais/`id'/bootstraps/`bootstrap'/`varlist'Proj.gph"', replace
 	}
@@ -902,8 +922,8 @@ program graphpiramide
 		graphregion(margin(zero)) aspectratio(, placement(left))
 
 	graph combine H`varlist' M`varlist', name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)', replace) ycommon ///
-		title("{bf:`title'}") ///
-		subtitle("Sexo, edad y `titleover'") ///
+		title("{bf:`title' por sexo, edad y `titleover'}") ///
+		subtitle("$pais") ///
 		/*title("`title' by sex, age and `titleover'")*/ ///
 		caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5. Fecha: `c(current_date)', `c(current_time)'.}") ///
 		/*caption("{it: Source: Own estimations.`boottext'}")*/ ///

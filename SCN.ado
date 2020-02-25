@@ -9,7 +9,7 @@ quietly {
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 	
 	syntax [, ANIO(int `aniovp') Graphs Update Discount(int 3)]
-	noisily di _newline(2) in g "{bf: INFORMACI{c O'}N ECON{c O'}MICA:" in y " SCN " `anio' "}"
+	noisily di _newline(2) in g "{bf:INFORMACI{c O'}N ECON{c O'}MICA:" in y " SCN " `anio' "}"
 
 
 	scalar aniovp = `aniovp'
@@ -153,7 +153,7 @@ quietly {
 		rename Mc Alojamiento					// Alquieres efectivos de alojamiento de los hogares
 
 
-		** V.12. Actividades económicas **
+		** V.12. Actividades econÃ³micas **
 		rename IFae ServProf					// Servicios profesionales, cient{c i'}ficos y t{c e'}cnicos
 		rename JNae ConsMedi 					// Consultorios m{c e'}dicos
 		rename JOae ConsDent					// Consultorios dentales
@@ -166,7 +166,7 @@ quietly {
 		label var IngMixto "Ingreso mixto"
 		format IngMixto %20.0fc
 		
-		* Importa los datos para cada a�o, si hay un error, el loop termina *
+		* Importa los datos para cada año, si hay un error, el loop termina *
 		
 		forvalues k = 2003(1)`aniovp' {
 			preserve
@@ -313,7 +313,7 @@ quietly {
 	** 1.3. Forecast & Pastcast **
 	order indiceY-lambda, last
 	
-	* guarda el primer a�o para el que hay un valor de PIB*
+	* guarda el primer año para el que hay un valor de PIB*
 	
 	forvalues k = `=_N'(-1)1 {
 		if PIB[`k'] != . {
@@ -322,9 +322,9 @@ quietly {
 		}
 	}
 	
-	/* Calcula los valores futuros de las variables a partir de la �ltima 
-	observaci�n y los valores anteriores de 2002 a 1993 (utiliza la tasa de 
-	crecimiento del PIB en t�rminos reales */
+	/* Calcula los valores futuros de las variables a partir de la última 
+	observación y los valores anteriores de 2002 a 1993 (utiliza la tasa de 
+	crecimiento del PIB en términos reales */
  
 	foreach k of varlist RemSalSS-DepMix {
 		replace `k' = L.`k'*(1+var_pibY/100)*indiceY/L.indiceY if `k' == .
@@ -341,11 +341,11 @@ quietly {
 	** 1.4. Construir cuentas (C) **
 
 	** C.1. Ingreso mixto **
-	g double MixL = IngMixto*2/3			// NTA metodología
+	g double MixL = IngMixto*2/3			// NTA metodologÃ­a
 	format MixL %20.0fc
 	label var MixL "Ingreso mixto (laboral)"
 
-	g double MixK = IngMixto*1/3			// NTA metodología
+	g double MixK = IngMixto*1/3			// NTA metodologÃ­a
 	format MixK %20.0fc
 	label var MixK "Ingreso mixto (capital)"
 
@@ -475,7 +475,7 @@ quietly {
 
 
 	** R.2. Display **
-	* Generación de ingresos *
+	* GeneraciÃ³n de ingresos *
 	noisily di _newline(3) in g "{bf: A. Cuenta: " in y "generaci{c o'}n del ingreso" in g ///
 		_col(44) in g %20s "MXN" ///
 		_col(66) %7s "% PIB" "}" 
@@ -638,7 +638,7 @@ quietly {
 
 
 
-	** R.5 Display (de la producción al ingreso) ***
+	** R.5 Display (de la producciÃ³n al ingreso) ***
 	noisily di _newline in g "{bf: C. Cuenta: " in y "distribuci{c o'}n secundaria del ingreso" in g ///
 		_col(44) in g %20s "MXN" ///
 		_col(66) %7s "% PIB" "}" 
@@ -736,7 +736,7 @@ quietly {
 			(area `ConGob' anio if anio > `latest' & anio, color("255 189 0")) ///
 			(area `ConHog' anio if anio > `latest' & anio, color("39 97 47")) ///
 			(area `ComprasN' anio if anio > `latest' & anio, color("53 200 71")), ///
-			title("{bf:Utilización del ingreso}") ///
+			title("{bf:Utilizaci{c o'}n del ingreso}") ///
 			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
 			legend(cols(4) order(1 2 3 4)) ///
 			xtitle("") xline(`latest'.5) ///
@@ -921,7 +921,7 @@ quietly {
 	noisily di in g "  (+) Transportes, correos y almacen..." ///
 		_col(44) in y %20.0fc Jcg[`obs'] ///
 		_col(66) in y %7.3fc Jcg[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Información en medios masivos" ///
+	noisily di in g "  (+) InformaciÃ³n en medios masivos" ///
 		_col(44) in y %20.0fc Kcg[`obs'] ///
 		_col(66) in y %7.3fc Kcg[`obs']/PIB[`obs']*100
 	noisily di in g "  (+) Servicios financieros y de seguridad" ///
@@ -933,7 +933,7 @@ quietly {
 	noisily di in g "  (+) Servicios profesionales..." ///
 		_col(44) in y %20.0fc Ncg[`obs'] ///
 		_col(66) in y %7.3fc Ncg[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Dirección de corporativos y empresas" ///
+	noisily di in g "  (+) DirecciÃ³n de corporativos y empresas" ///
 		_col(44) in y %20.0fc Ocg[`obs'] ///
 		_col(66) in y %7.3fc Ocg[`obs']/PIB[`obs']*100
 	noisily di in g "  (+) Servicios de apoyo a los negocios..." ///
@@ -1057,7 +1057,7 @@ quietly {
 	noisily di in g "  (+) Transportes, correos y almacen..." ///
 		_col(44) in y %20.0fc FHae[`obs'] ///
 		_col(66) in y %7.3fc FHae[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Información en medios masivos" ///
+	noisily di in g "  (+) InformaciÃ³n en medios masivos" ///
 		_col(44) in y %20.0fc GOae[`obs'] ///
 		_col(66) in y %7.3fc GOae[`obs']/PIB[`obs']*100
 	noisily di in g "  (+) Servicios financieros y de seguridad" ///
@@ -1069,7 +1069,7 @@ quietly {
 	noisily di in g "  (+) Servicios profesionales..." ///
 		_col(44) in y %20.0fc ServProf[`obs'] ///
 		_col(66) in y %7.3fc ServProf[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Dirección de corporativos y empresas" ///
+	noisily di in g "  (+) DirecciÃ³n de corporativos y empresas" ///
 		_col(44) in y %20.0fc IQae[`obs'] ///
 		_col(66) in y %7.3fc IQae[`obs']/PIB[`obs']*100
 	noisily di in g "  (+) Servicios de apoyo a los negocios..." ///

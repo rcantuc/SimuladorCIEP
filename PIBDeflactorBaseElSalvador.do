@@ -74,4 +74,4 @@ format pibY %25.0fc
 g currency = "USD"
 
 
-save "`c(sysdir_site)'../basesCIEP/SIM/PIBDeflactor${pais}.dta", replace
+save "`c(sysdir_site)'../basesCIEP/SIM/PIBDeflactor`=subinstr("${pais}"," ","",.)'.dta", replace

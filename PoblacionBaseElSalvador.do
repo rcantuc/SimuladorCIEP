@@ -61,8 +61,8 @@ drop if sexo == 3
 
 ****************
 ** 3. Guardar **
-save `"`c(sysdir_site)'../basesCIEP/SIM/Poblacion$pais.dta"', replace
+save `"`c(sysdir_site)'../basesCIEP/SIM/Poblacion`=subinstr("${pais}"," ","",.)'.dta"', replace
 
 
 collapse (sum) poblacion, by(anio)
-save `"`c(sysdir_site)'../basesCIEP/SIM/Poblaciontot$pais.dta"', replace
+save `"`c(sysdir_site)'../basesCIEP/SIM/Poblaciontot`=subinstr("${pais}"," ","",.)'.dta"', replace
