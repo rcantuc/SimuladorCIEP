@@ -72,6 +72,7 @@ format indiceY %10.4fc
 format pibY %25.0fc
 
 g currency = "USD"
+g trimestre = 4
 
 
 save "`c(sysdir_site)'../basesCIEP/SIM/PIBDeflactor`=subinstr("${pais}"," ","",.)'.dta", replace

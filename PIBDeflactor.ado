@@ -5,7 +5,6 @@ quietly {
 
 
 
-
 	***********************
 	*** 0 Base de datos ***
 	***********************
@@ -39,13 +38,10 @@ quietly {
 
 
 
-
 	*******************
 	*** 1 Deflactor ***
 	*******************
-	
 	* Time series operators: L = lag *
-	
 	tsset anio
 	g double var_indiceY = (indiceY/L.indiceY-1)*100
 	label var var_indiceY "Anual"
@@ -55,27 +51,22 @@ quietly {
 
 
 
-	***********************************
-	** 2.1 Par{c a'}metros ex{c o'}genos **
-	*tsappend, add(`=`fin'-`=anio[_N]'') //tsfmt(ty)
-
-	* Imputar *
-	
+	***********************************************
+	** 2.1 Imputar Par{c a'}metros ex{c o'}genos **
 	/* Para todos los años, si existe información sobre el crecimiento del deflactor 
 	utilizarla, si no existe, tomar el rezago del índice geométrico. Posteriormente
 	ajustar los valores del índice con sus rezagos. */
-	
 	forvalues k=`anio_last'(1)`fin' {
 		capture confirm existence ${def`k'}
 		if _rc == 0 {
-			replace var_indiceY = ${def`k'} if anio == `k'
+			replace var_indiceY = ${def`k'} if anio == `k' & trimestre != 4
 			local exceptI "`exceptI'`k' (${def`k'}%), "
 		}
 		else {
-			replace var_indiceY = L.var_indiceG if anio == `k'
+			replace var_indiceY = L.var_indiceG if anio == `k' & trimestre != 4
 		}
-		replace indiceY = L.indiceY*(1+var_indiceY/100) if anio == `k'
-		replace var_indiceG = ((indiceY/L`=`geo''.indiceY)^(1/`geo')-1)*100 if anio == `k'
+		replace indiceY = L.indiceY*(1+var_indiceY/100) if anio == `k' & trimestre != 4
+		replace var_indiceG = ((indiceY/L`=`geo''.indiceY)^(1/`geo')-1)*100 if anio == `k' & trimestre != 4
 	}	
 
 	* Valor presente *
@@ -105,7 +96,6 @@ quietly {
 
 	g double var_pibY = (pibYR/L.pibYR-1)*100
 	label var var_pibY "Anual"
-	*label var var_pibY "Year On Year"
 	
 	g double var_pibG = ((pibYR/L`=`geo''.pibYR)^(1/`geo')-1)*100
 	label var var_pibG "Geometric mean (`geo' years)"
@@ -124,15 +114,14 @@ quietly {
 	forvalues k=`anio_last'(1)`fin' {
 		capture confirm existence ${pib`k'}
 		if _rc == 0 {
-			replace var_pibY = ${pib`k'} if anio == `k'
+			replace var_pibY = ${pib`k'} if anio == `k' & trimestre != 4
 			local except "`except'`k' (${pib`k'}%), "
-			local bold`k' "bold"
 		}
 		else {
-			replace var_pibY = L.var_pibG if anio == `k'
+			replace var_pibY = L.var_pibG if anio == `k' & trimestre != 4
 		}
-		replace pibY = L.pibY*(1+var_pibY/100)*(1+var_indiceY/100) if anio == `k'
-		replace pibYR = L.pibYR*(1+var_pibY/100) if anio == `k'
+		replace pibY = L.pibY*(1+var_pibY/100)*(1+var_indiceY/100) if anio == `k' & trimestre != 4
+		replace pibYR = L.pibYR*(1+var_pibY/100) if anio == `k' & trimestre != 4
 	}		
 
 	* Lambda (productividad) *
@@ -181,7 +170,7 @@ quietly {
 		
 		* Deflactor *
 		twoway (connected var_indiceY anio if anio <= `anio_last') ///
-			(connected var_indiceY anio if anio >= `anio_last'), ///
+			(connected var_indiceY anio if anio > `anio_last'), ///
 			title("{bf:{c I'}ndice de precios impl{c i'}citos}") ///
 			subtitle(${pais}) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
@@ -255,10 +244,8 @@ quietly {
 	*** 5 Texto ***
 	***************
 	noisily di _newline in g "  A{c n~}o" _col(11) %8s "Crec. PIB" _col(25) %20s "PIB" _col(50) %5s "Crec. Def." _col(64) %8.4fc "Deflactor"
-
 	forvalues k=`=`obsvp'-5'(1)`=`obsvp'+5' {
-		capture confirm existence `bold`k''
-		if _rc != 0 {
+		if anio[`k'] <= `anio_last' | (anio[`k'] == `anio_last' & trimestre < 4) {
 			noisily di in g " `=anio[`k']' " _col(10) %8.1fc in y var_pibY[`k'] " %" _col(25) %20.0fc pibY[`k'] _col(50) %8.4fc in y var_indiceY[`k'] " %" _col(65) %8.4fc deflator[`k']
 		}
 		else {
@@ -268,7 +255,6 @@ quietly {
 				local firstrow "firstrow"
 			}
 			noisily di in g "{bf: `=anio[`k']' " _col(10) %8.1fc in y var_pibY[`k'] " %" _col(25) %20.0fc pibY[`k'] _col(50) %8.4fc in y var_indiceY[`k'] " %" _col(65) %8.4fc deflator[`k'] "}"
-			noisily di in g _dup(72) "-"
 		}
 	}
 
