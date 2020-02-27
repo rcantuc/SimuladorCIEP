@@ -805,4 +805,4 @@ label var Consumo "Impuestos al consumo"
 
 capture drop __*
 compress
-save "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/expenditure.dta", replace
+saveold "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/expenditure.dta", replace version(13)

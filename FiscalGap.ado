@@ -7,7 +7,7 @@ quietly {
 	***********
 	** 1 PIB **
 	***********
-	PIBDeflactor
+	PIBDeflactor, anio(`anio')
 	tempfile PIB
 	save `PIB'
 
