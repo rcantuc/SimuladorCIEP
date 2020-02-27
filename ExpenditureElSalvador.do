@@ -51,5 +51,5 @@ Distribucion Consumo, macro(`alconsumo')
 *** END ***
 compress
 capture drop __*
-save `"`c(sysdir_site)'../basesCIEP/SIM/2018/expenditure`=subinstr("${pais}"," ","",.)'.dta"', replace
+saveold `"`c(sysdir_site)'../basesCIEP/SIM/2018/expenditure`=subinstr("${pais}"," ","",.)'.dta"', replace version(13)
 

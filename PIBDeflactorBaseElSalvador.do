@@ -6,7 +6,12 @@
 ***************
 *** 0 BASES ***
 ***************
-cd "/Users/ricardo/Dropbox (CIEP)/UNICEF GA/Datos/"
+if "`c(os)'" == "Unix" {
+	cd "/home/ciepmx/Dropbox (CIEP)/UNICEF GA/Datos/"
+}
+if "`c(os)'" == "MacOSX" {
+	cd "/Users/ricardo/Dropbox (CIEP)/UNICEF GA/Datos/"
+}
 
 
 * 0.1.1. PIB *
@@ -75,4 +80,4 @@ g currency = "USD"
 g trimestre = 4
 
 
-save "`c(sysdir_site)'../basesCIEP/SIM/PIBDeflactor`=subinstr("${pais}"," ","",.)'.dta", replace
+saveold "`c(sysdir_site)'../basesCIEP/SIM/PIBDeflactor`=subinstr("${pais}"," ","",.)'.dta", replace version(13)
