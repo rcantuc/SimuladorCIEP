@@ -146,13 +146,6 @@ quietly {
 			using `"`c(sysdir_personal)'/users/$pais/`id'/bootstraps/`bootstrap'/`varlist'REC"', replace
 
 
-		** Cuentas Generacionales **
-		if "`GA'" == "GA" {
-			postfile GA sexo edad double(`varlist') ///
-				using `"`c(sysdir_personal)'/users/$pais/`id'/bootstraps/`bootstrap'/`varlist'GA"', replace
-		}
-
-
 
 		*******************
 		** 1.3 Bootstrap **
@@ -236,13 +229,11 @@ quietly {
 
 			** Mata: PC **
 			local edad39 = `REC39'[1,1]/`POB39'[1,1]
-			if `edad39' == . {
+			if `edad39' == . | `edad39' == 0 {
 				local pc = `montopc'
-				local ylabelpc = "Promedio"
 			}
 			else {
 				local pc = `edad39'
-				local ylabelpc = "39 a{c n~}os hombre"
 			}
 
 			mata: PC = `pc'
@@ -301,14 +292,6 @@ quietly {
 			*** 1.3.5. Proyecciones ***
 			`noisily' proyecciones `varlist', `graphs' post ///
 				pob(`poblacion') boot(`k') aniobase(`aniobase')
-			
-			
-			*** 1.3.6. Cuentas Generacionales ***
-			if "`GA'" == "GA" {
-				`noisily' cuentasgeneracionales `varlist', post ///
-					pob(`poblacion') boot(`k') aniobase(`aniobase')
-			}
-
 		}
 
 
@@ -319,9 +302,6 @@ quietly {
 		postclose INCI
 		postclose CICLO
 		postclose REC
-		if "`GA'" == "GA" {
-			postclose GA
-		}
 	}
 
 
@@ -357,14 +337,19 @@ quietly {
 	ci montopc
 	noisily di in g "  Per c{c a'}pita:" _column(40) in y %20.0fc r(mean) ///
 		in g "  I.C. (95%): " in y "+/-" %7.2fc (r(ub)/r(mean)-1)*100 "%"
-	local montopc_boot = r(mean)
-
 
 	ci edad39
 	noisily di in g "  Edad 39:" _column(40) in y %20.0fc r(mean) ///
 		in g "  I.C. (95%): " in y "+/-" %7.2fc (r(ub)/r(mean)-1)*100 "%"
-	local montopc_boot = r(mean)
+	local edad39_boot = r(mean)
 
+	* Y label *
+	if `edad39_boot' == . | `edad39_boot' == 0 {
+		local ylabelpc = "Promedio"
+	}
+	else {
+		local ylabelpc = "39 a{c n~}os hombre"
+	}
 
 
 	******************
@@ -382,76 +367,85 @@ quietly {
 
 	***********************************
 	** 3.2 Variables de los perfiles **
-	tempvar perfilH perfilM contH contM
+	local pais = ". ${pais}."
 
 	* Sin kernel *
-	if "`nokernel'" == "nokernel" {
-		g double `perfilH' = perfil1
-		g double `perfilM' = perfil2
-		g double `contH' = contribuyentes1
-		g double `contM' = contribuyentes2
+	if "`nokernel'" == "nokernel" & "`graphs'" == "graphs" {
+		twoway line perfil1 edad, ///
+			name(PerfilH`varlist', replace) ///
+			title("{bf:`title'}") ///
+			xtitle(edad) ///
+			ytitle(`ylabelpc' equivalente) ///
+			/*ylabel(0(.5)1.5)*/ ///
+			subtitle(Perfil de hombres`pais') ///
+			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.`boottext'}")
+
+		twoway line perfil2 edad, ///
+			name(PerfilM`varlist', replace) ///
+			title("{bf:`title'}") ///
+			xtitle(edad) ///
+			ytitle(`ylabelpc' equivalente) ///
+			/*ylabel(0(.5)1.5)*/ ///
+			subtitle(Perfil de mujeres`pais') ///
+			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.`boottext'}")
+
+		twoway line contribuyentes1 edad, ///
+			name(ContH`varlist', replace) ///
+			title("{bf:`title'}") ///
+			xtitle(edad) ///
+			ytitle(porcentaje) yscale(range(0 100)) ///
+			ylabel(0(20)100) ///
+			subtitle(Participaci{c o'}n de hombres`pais') ///
+			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.`boottext'}")
+
+		twoway line contribuyentes2 edad, ///
+			name(ContM`varlist', replace) ///
+			title("{bf:`title'}") ///
+			xtitle(edad) ///
+			ytitle(porcentaje) yscale(range(0 100)) ///
+			ylabel(0(20)100) ///
+			subtitle(Participaci{c o'}n de mujeres`pais') ///
+			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.`boottext'}")
 	}
 
 	* Con kernel *
-	else {
-		capture confirm variable perfilH
-		if _rc != 0 {
-			lpoly perfil1 edad, bwidth(`bandwidth') ci kernel(gaussian) degree(2) ///
-				name(PerfilH`varlist', replace) generate(perfilH) at(edad) noscatter ///
-				title("{bf:`title'}") ///
-				xtitle(edad) ///
-				ytitle(`ylabelpc' equivalente) ///
-				ylabel(0(.5)1.5) ///
-				subtitle(Perfil de hombres) ///
-				caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.`boottext'}")
-			graph save PerfilH`varlist' `"`c(sysdir_personal)'/users/$pais/`id'/graphs/`varlist'PerfilHCI.gph"', replace
+	else if "`graphs'" == "graphs" {
+		lpoly perfil1 edad, bwidth(`bandwidth') ci kernel(gaussian) degree(2) ///
+			name(PerfilH`varlist', replace) generate(perfilH) at(edad) noscatter ///
+			title("{bf:`title'}") ///
+			xtitle(edad) ///
+			ytitle(`ylabelpc' equivalente) ///
+			/*ylabel(0(.5)1.5)*/ ///
+			subtitle(Perfil de hombres`pais') ///
+			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.`boottext'}")
 
+		lpoly perfil2 edad, bwidth(`bandwidth') ci kernel(gaussian) degree(2) ///
+			name(PerfilM`varlist', replace) generate(perfilM) at(edad) noscatter ///
+			title("{bf:`title'}") ///
+			xtitle(edad) ///
+			ytitle(`ylabelpc' equivalente) ///
+			/*ylabel(0(.5)1.5)*/ ///
+			subtitle(Perfil de mujeres`pais') ///
+			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.`boottext'}")
 
-			lpoly perfil2 edad, bwidth(`bandwidth') ci kernel(gaussian) degree(2) ///
-				name(PerfilM`varlist', replace) generate(perfilM) at(edad) noscatter ///
-				title("{bf:`title'}") ///
-				xtitle(edad) ///
-				ytitle(`ylabelpc' equivalente) ///
-				ylabel(0(.5)1.5) ///
-				subtitle(Perfil de mujeres) ///
-				caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.`boottext'}")
-			graph save PerfilM`varlist' `"`c(sysdir_personal)'/users/$pais/`id'/graphs/`varlist'PerfilMCI.gph"', replace
+		lpoly contribuyentes1 edad, bwidth(`bandwidth') ci kernel(gaussian) degree(2) ///
+			name(ContH`varlist', replace) generate(contH) at(edad) noscatter ///
+			title("{bf:`title'}") ///
+			xtitle(edad) ///
+			ytitle(porcentaje) yscale(range(0 100)) ///
+			ylabel(0(20)100) ///
+			subtitle(Participaci{c o'}n de hombres`pais') ///
+			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.`boottext'}")
 
-
-			lpoly contribuyentes1 edad, bwidth(`bandwidth') ci kernel(gaussian) degree(2) ///
-				name(ContH`varlist', replace) generate(contH) at(edad) noscatter ///
-				title("{bf:`title'}") ///
-				xtitle(edad) ///
-				ytitle(porcentaje) yscale(range(0 100)) ///
-				ylabel(0(20)100) ///
-				subtitle(Participaci{c o'}n de hombres) ///
-				caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.`boottext'}")
-			graph save ContH`varlist' `"`c(sysdir_personal)'/users/$pais/`id'/graphs/`varlist'ContHCI.gph"', replace
-
-
-			lpoly contribuyentes2 edad, bwidth(`bandwidth') ci kernel(gaussian) degree(2) ///
-				name(ContM`varlist', replace) generate(contM) at(edad) noscatter ///
-				title("{bf:`title'}") ///
-				xtitle(edad) ///
-				ytitle(porcentaje) yscale(range(0 100)) ///
-				ylabel(0(20)100) ///
-				subtitle(Participaci{c o'}n de mujeres) ///
-				caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.`boottext'}")
-			graph save ContM`varlist' `"`c(sysdir_personal)'/users/$pais/`id'/graphs/`varlist'ContMCI.gph"', replace
-
-			save `"`c(sysdir_personal)'/users/$pais/`id'/bootstraps/`bootstrap'/`varlist'PERF"', replace
-		}
-		g double `perfilH' = perfilH
-		g double `perfilM' = perfilM
-		g double `contH' = contH
-		g double `contM' = contM
+		lpoly contribuyentes2 edad, bwidth(`bandwidth') ci kernel(gaussian) degree(2) ///
+			name(ContM`varlist', replace) generate(contM) at(edad) noscatter ///
+			title("{bf:`title'}") ///
+			xtitle(edad) ///
+			ytitle(porcentaje) yscale(range(0 100)) ///
+			ylabel(0(20)100) ///
+			subtitle(Participaci{c o'}n de mujeres`pais') ///
+			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.`boottext'}")
 	}
-
-	label var `perfilH' "{bf:Perfil}: Hombres"
-	label var `perfilM' "{bf:Perfil}: Women"
-	label var `contH' "{bf:Participaci{c o'}n}: Hombres"
-	label var `contM' "{bf:Participaci{c o'}n}: Women"
-
 
 
 
@@ -642,9 +636,8 @@ quietly {
 			xtitle("") ///
 			title("{bf:Proyecciones demogr{c a'}ficas de `title'}") ///
 			subtitle("$pais") ///
-		caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5. Fecha: `c(current_date)', `c(current_time)'.`boottext'}") ///
+			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5. Fecha: `c(current_date)', `c(current_time)'.`boottext'}") ///
 			name(`varlist'Proj, replace)
-		graph save `varlist'Proj `"`c(sysdir_personal)'/users/$pais/`id'/bootstraps/`bootstrap'/`varlist'Proj.gph"', replace
 	}
 
 	*capture drop __*
@@ -653,56 +646,6 @@ quietly {
 	*g title = "`title'"
 	*save `"`c(sysdir_personal)'/users/$pais/`id'/bootstraps/`bootstrap'/`varlist'RECFinal"', replace
 
-
-
-
-	*********************************
-	*** 7. Cuentas Generacionales ***
-	*********************************
-	if "`GA'" == "GA" {
-		use `"`c(sysdir_personal)'/users/$pais/`id'/bootstraps/`bootstrap'/`varlist'GA"', clear
-		
-		levelsof edad, local(edades)
-		noisily di _newline in g "   Cuenta Generacional" ///
-			_column(20) %20s "Hombres" ///
-			_column(40) %20s "Mujeres"
-		forvalues k = 0(5)109 {
-			noisily di in g _col(5) "`k'" _cont
-			ci `varlist' if edad >= `k' & edad < `k'+4 & sexo == 1
-			noisily di in g _column(23) in y %20.0fc r(mean) _cont
-			ci `varlist' if edad >= `k' & edad < `k'+4 & sexo == 2
-			noisily di in g _column(43) in y %20.0fc r(mean)
-		}
-
-
-		noisily di _newline in g "   Cuenta Generacional" ///
-			_column(20) %20s "Hombres" ///
-			_column(40) %20s "Mujeres"
-
-		noisily di in g _col(5) "Z-entenials" _cont
-		ci `varlist' if edad >= 0 & edad < 17 & sexo == 1
-		noisily di in g _column(23) in y %20.0fc r(mean) _cont
-		ci `varlist' if edad >= 0 & edad < 17 & sexo == 2
-		noisily di in g _column(43) in y %20.0fc r(mean)
-
-		noisily di in g _col(5) "Milenials" _cont
-		ci `varlist' if edad >= 17 & edad < 37 & sexo == 1
-		noisily di in g _column(23) in y %20.0fc r(mean) _cont
-		ci `varlist' if edad >= 17 & edad < 37 & sexo == 2
-		noisily di in g _column(43) in y %20.0fc r(mean)
-
-		noisily di in g _col(5) "Generaci{c o'}n X" _cont
-		ci `varlist' if edad >= 37 & edad < 57 & sexo == 1
-		noisily di in g _column(23) in y %20.0fc r(mean) _cont
-		ci `varlist' if edad >= 37 & edad < 57 & sexo == 2
-		noisily di in g _column(43) in y %20.0fc r(mean)
-
-		noisily di in g _col(5) "Baby-Boomers" _cont
-		ci `varlist' if edad >= 57 & edad < 77 & sexo == 1
-		noisily di in g _column(23) in y %20.0fc r(mean) _cont
-		ci `varlist' if edad >= 57 & edad < 77 & sexo == 2
-		noisily di in g _column(43) in y %20.0fc r(mean)
-	}
 
 
 	************/

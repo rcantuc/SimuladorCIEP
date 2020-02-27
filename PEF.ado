@@ -70,7 +70,7 @@ quietly {
 	if "`fast'" == "fast" {
 		keep if anio == `aniovp'
 	}
-	collapse (sum) gasto*, by(anio `by' transf_gf) 
+	collapse (sum) gasto* `if', by(anio `by' transf_gf) 
 	merge m:1 (anio) using `PIB', nogen keepus(pibY indiceY deflator var_pibY) ///
 		update replace keep(matched) sorted
 
