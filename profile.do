@@ -28,6 +28,6 @@ noisily di _newline(2) in w "{bf:Centro de Investigaci{c o'}n Econ{c o'}mica y P
 global pib2020 = 1.9717
 global def2020 = 3.6
 
-noisily di _newline(3) in g "{bf:Paquete Econ{c o'}mico" in y " 2020}"
+noisily di _newline in g "{bf:Paquete Econ{c o'}mico" in y " 2020}"
 noisily PIBDeflactor
 clear
