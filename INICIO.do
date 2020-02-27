@@ -48,7 +48,7 @@ global pais = "El Salvador"
 ***      ./TemplateCIEP/basesCIEP/INEGI/SCN/   ***
 *** 3) correr SCN con opción "update"          ***
 ***                                            ***
-/**************************************************
+**************************************************
 noisily SCN, discount(3.0) anio(2018) graphs //update
 
 
@@ -58,7 +58,7 @@ noisily SCN, discount(3.0) anio(2018) graphs //update
 ***                                                    ***
 *** 3. Capítulo 3: La economía-sistema antropocéntrica ***
 ***                                                    ***
-/**********************************************************
+**********************************************************
 capture use `"`c(sysdir_site)'../basesCIEP/SIM/2018/income`=subinstr("${pais}"," ","",.)'.dta"', clear
 if _rc != 0 {
 	noisily run Income`=subinstr("${pais}"," ","",.)'.do 2018
@@ -79,7 +79,7 @@ capture drop if folioviv == "1960306424"
 ***                                      ***
 *** 4. Parte 2: Ingresos presupuestarios ***
 ***                                      ***
-/********************************************
+********************************************
 preserve
 noisily LIF, by(divGA) graphs anio(2018) //update
 restore
@@ -99,7 +99,7 @@ noisily Simulador Consumo if Consumo != 0 [fw=factor], ///
 ***                                    ***
 *** 5. Parte 3: Gastos presupuestarios ***
 ***                                    ***
-/*****************************************
+*****************************************
 preserve
 noisily PEF, graphs anio(2018) //update
 restore
@@ -122,7 +122,7 @@ noisily Simulador Salud if Salud != 0 [fw=factor], ///
 ***                                    ***
 *** 6. Parte 4: Balance presupuestario ***
 ***                                    ***
-/******************************************
+******************************************
 g TransfNetas = Ingreso + Consumo - Pension - Educacion - Salud
 label var TransfNetas "Transferencias Netas"
 
