@@ -7,10 +7,9 @@ quietly {
 
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
-	
+
 	syntax [, ANIO(int `aniovp') Graphs Update Discount(int 3)]
 	noisily di _newline(2) in g "{bf:INFORMACI{c O'}N ECON{c O'}MICA:" in y " SCN " `anio' "}"
-
 
 	scalar aniovp = `aniovp'
 
@@ -1107,6 +1106,6 @@ quietly {
 
 	timer off 2
 	timer list 2
-	noisily di _newline in g "Tiempo: " in y round(`=r(t2)/r(nt2)',.1) in g " segs." _newline(5)
+	noisily di _newline in g "Tiempo: " in y round(`=r(t2)/r(nt2)',.1) in g " segs."
 }
 end

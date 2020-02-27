@@ -289,7 +289,7 @@ capture replace gasto = proyecto if proyecto != . & gasto == .
 
 if "$pais" == "" {
 	** Transferencias del gobierno federal **
-	g byte transf_gf = (ramo == "19" & ur == "GYN") | (ramo == "19" & ur == "GYR")
+	g byte transf_gf = (ramo == 19 & ur == "GYN") | (ramo == 19 & ur == "GYR")
 
 	** Cuotas ISSSTE **
 	foreach k of varlist gasto aprobado ejercido proyecto {

@@ -9,14 +9,12 @@ quietly {
 
 	syntax [anything] [, ANIOinicial(int `aniovp') ANIOFinal(int -1) Graphs UPDATE]
 
-* Si la funcion se llama sin argumento, utiliza población *
-
+	* Si la funcion se llama sin argumento, utiliza población *
 	if "`anything'" == "" {
 		local anything = "poblacion"
 	}
 
-*Si no hay año inicial utiliza la fecha más reciente*
-
+	*Si no hay año inicial utiliza la fecha más reciente*
 	if `anioinicial' == -1 {
 		local anioinicial : di %td_CY-N-D  date("$S_DATE", "DMY")
 		local anioinicial = substr(`"`=trim("`aniovp'")'"',1,4)
@@ -27,18 +25,16 @@ quietly {
 	*** 0. Base de datos ***
 	************************
 
-* Revisa si se puede usar la base de datos *
+	* Revisa si se puede usar la base de datos *
 	capture use `"`c(sysdir_site)'../basesCIEP/SIM/`=proper("`anything'")'`=subinstr("${pais}"," ","",.)'.dta"', clear
 
-* Si hay un error o la opción "update" es llamada, limpia la base de datos y la usa *
-
+	* Si hay un error o la opción "update" es llamada, limpia la base de datos y la usa *
 	if _rc != 0 | "`update'" == "update" {
 		run `"`c(sysdir_personal)'/PoblacionBase`=subinstr("${pais}"," ","",.)'.do"'
 		use `"`c(sysdir_site)'../basesCIEP/SIM/`=proper("`anything'")'`=subinstr("${pais}"," ","",.)'.dta"', clear
 	}
-	
-* Si no hay año final, utiliza el último elemento del vector "anio" *
 
+	* Si no hay año final, utiliza el último elemento del vector "anio" *
 	local poblacion : variable label `anything'
 	if `aniofinal' == -1 {
 		sort anio
@@ -146,110 +142,71 @@ quietly {
 			& edad != 75 & edad != 80 & edad != 85 & edad != 90 & edad != 95 ///
 			& edad != 100 & edad != 105
 		g zero = 0
-		
-	* Grafica sexo = 1 como negativos y sexo = 2 como positivos por grupos etarios, en el presente y futuro *
-	* 1. Vivios en el año inicial y con una edad menor a 109  para el año final *
-	* 2. Vivos en el año final; nacidos durante o después del año inicial *
-	* 3. Vivos en el año final;  nacidos antes del año inicial *
-	* 4. Vivios en el año inicial y  mayores a 109 en el año final *
-	
-		if "`anything'" == "poblacion" {
-			twoway (bar `pob2' edad if sexo == 1 & anio == `anioinicial' ///
-				& edad+`aniofinal'-`anioinicial' <= 109, horizontal lwidth(none)) ///
-				(bar `pob2' edad if sexo == 2 & anio == `anioinicial' ///
-				& edad+`aniofinal'-`anioinicial' <= 109, horizontal lwidth(none)) ///
-				(bar `pob2' edad if sexo == 1 & anio == `aniofinal' ///
-				& edad <= `aniofinal'-`anioinicial', horizontal barwidth(.15) ///
-				lwidth(none) /*color("83 144 0")*/) ///
-				(bar `pob2' edad if sexo == 2 & anio == `aniofinal' ///
-				& edad <= `aniofinal'-`anioinicial', horizontal barwidth(.15) ///
-				lwidth(none) /*color("149 191 75")*/) ///
-				(bar `pob2' edad if sexo == 1 & anio == `aniofinal' ///
-				& edad > `aniofinal'-`anioinicial', horizontal barwidth(.66) ///
-				lwidth(none) color("255 107 24")) ///
-				(bar `pob2' edad if sexo == 2 & anio == `aniofinal' ///
-				& edad > `aniofinal'-`anioinicial', horizontal barwidth(.66) ///
-				lwidth(none) color("255 189 0")) ///
-				(bar `pob2' edad if sexo == 1 & anio == `anioinicial' ///
-				& edad+`aniofinal'-`anioinicial' > 109, horizontal barwidth(.5) ///
-				lwidth(none)) ///
-				(bar `pob2' edad if sexo == 2 & anio == `anioinicial' ///
-				& edad+`aniofinal'-`anioinicial' > 109, horizontal barwidth(.5) ///
-				lwidth(none)) ///
-				(sc edad2 zero if anio == `anioinicial', msymbol(i) mlabel(edad2) ///
-				mlabsize(vsmall) mlabcolor("114 113 118")), ///
-				legend(label(1 "Hombres") label(2 "Mujeres") ///
-				label(3 "Hombres nacidos desde `anioinicial'") ///
-				label(4 "Mujeres nacidas desde `anioinicial'")) ///
-				legend(label(5 "Hombres `aniofinal'") label(6 "Mujeres `aniofinal'") ///
-				label(7 "Hombres fallecidos para `aniofinal'") ///
-				label(8 "Mujeres fallecidas para `aniofinal'")) ///
-				legend(order(1 2 3 4 7 8) holes(1 4) rows(2) on) ///
-				yscale(noline) ylabel(none) xscale(noline) ///
-				text(105 `=-`MaxH'[1,1]*.6' "{bf:Edad mediana `anioinicial'}") ///
-				text(100 `=-`MaxH'[1,1]*.6' "Hombres: `=`H`anioinicial''[1,1]'") ///
-				text(95 `=-`MaxH'[1,1]*.6' "Mujeres: `=`M`anioinicial''[1,1]'") ///
-				text(105 `=`MaxH'[1,1]*.6' "{bf:Edad mediana `aniofinal'}") ///
-				text(100 `=`MaxH'[1,1]*.6' "Hombres: `=`H`aniofinal''[1,1]'") ///
-				text(95 `=`MaxH'[1,1]*.6' "Mujeres: `=`M`aniofinal''[1,1]'") ///
-				text(90 `=-`MaxH'[1,1]*.6' "{bf:Poblaci{c o'}n `anioinicial'}") ///
-				text(85 `=-`MaxH'[1,1]*.6' ///
-					`"`=string(`P`anioinicial''[1,1],"%20.0fc")'"') ///
-				text(80 `=-`MaxH'[1,1]*.6' ///
-				"{bf: Poblaci{c o'}n `anioinicial' viva en `aniofinal'} ") ///
-				text(75 `=-`MaxH'[1,1]*.6' ///
-				`"`=string(`Pviva'[1,1],"%20.0fc")' (`=string(`Pviva'[1,1]/`P`anioinicial''[1,1]*100,"%7.1fc")'%)"') ///
-				text(90 `=`MaxH'[1,1]*.6' "{bf:Poblaci{c o'}n `aniofinal'}") ///
-				text(85 `=`MaxH'[1,1]*.6' ///
-				`"`=string(`P`aniofinal''[1,1],"%20.0fc")'"') ///
-				text(80 `=`MaxH'[1,1]*.6' ///
-				"{bf:Poblaci{c o'}n `aniofinal' nacida desde `anioinicial'} ") ///
-				text(75 `=`MaxH'[1,1]*.6' ///
-				`"`=string(`Pnacida'[1,1],"%20.0fc")' (`=string(`Pnacida'[1,1]/`P`aniofinal''[1,1]*100,"%7.1fc")'%)"') ///
-				name(Piramide_`anything'_`anioinicial'_`aniofinal', replace) ///
-				xlabel(`=-`MaxH'[1,1]' `"`=string(`MaxH'[1,1],"%15.0fc")'"' ///
-				`=-`MaxH'[1,1]/2' `"`=string(`MaxH'[1,1]/2,"%15.0fc")'"' 0 ///
-				`=`MaxM'[1,1]/2' `"`=string(`MaxM'[1,1]/2,"%15.0fc")'"' ///
-				`=`MaxM'[1,1]' `"`=string(`MaxM'[1,1],"%15.0fc")'"', angle(horizontal)) ///
-				caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
-				/*xtitle("personas")*/ ///
-				title("{bf:Pir{c a'}mide demogr{c a'}fica}") subtitle(${pais})
-		}
-		else {
-			twoway (bar `pob2' edad if sexo == 1 & anio == `anioinicial', horizontal) ///
-				(bar `pob2' edad if sexo == 2 & anio == `anioinicial', horizontal) ///
-				(bar `pob2' edad if sexo == 1 & anio == `aniofinal', ///
-				horizontal barwidth(.25) lwidth(none)) ///
-				(bar `pob2' edad if sexo == 2 & anio == `aniofinal', ///
-				horizontal barwidth(.25) lwidth(none)) ///
-				(sc edad2 zero if anio == `anioinicial', msymbol(i) mlabel(edad2) ///
-				mlabsize(vsmall) mlabcolor("114 113 118")), ///
-				legend(label(1 "Hombres `anioinicial'") label(2 "Mujeres `anioinicial'") ///
-				label(3 "Hombres `aniofinal'") label(4 "Mujeres `aniofinal'")) ///
-				legend(order(1 2 3 4) rows(1) off) ///
-				yscale(noline) ylabel(none) xscale(noline) ///
-				text(105 `=-`MaxH'[1,1]*.6' "{bf:Edad mediana `anioinicial'}") ///
-				text(100 `=-`MaxH'[1,1]*.6' "Hombres: `=`H`anioinicial''[1,1]'") ///
-				text(95 `=-`MaxH'[1,1]*.6' "Mujeres: `=`M`anioinicial''[1,1]'") ///
-				text(105 `=`MaxH'[1,1]*.6' "{bf:Edad mediana `aniofinal'}") ///
-				text(100 `=`MaxH'[1,1]*.6' "Hombres: `=`H`aniofinal''[1,1]'") ///
-				text(95 `=`MaxH'[1,1]*.6' "Mujeres: `=`M`aniofinal''[1,1]'") ///
-				text(90 `=-`MaxH'[1,1]*.6' "{bf:Poblaci{c o'}n `anioinicial'}") ///
-				text(85 `=-`MaxH'[1,1]*.6' `"`=string(`P`anioinicial''[1,1],"%20.0fc")'"') ///
-				text(90 `=`MaxH'[1,1]*.6' "{bf:Poblaci{c o'}n `aniofinal'}") ///
-				text(85 `=`MaxH'[1,1]*.6' `"`=string(`P`aniofinal''[1,1],"%20.0fc")'"') ///
-				name(Piramide_`anything'_`anioinicial'_`aniofinal', replace) ///
-				xlabel(`=-`MaxH'[1,1]' `"`=string(`MaxH'[1,1],"%15.0fc")'"' `=-`MaxH'[1,1]/2' ///
-				`"{bf:Hombres}"' 0 `=`MaxM'[1,1]/2' "{bf:Mujeres}" `=`MaxM'[1,1]', angle(horizontal)) ///
-				/*caption("{it:Fuente: CONAPO (2018).}")*/ ///
-				/*xtitle("personas")*/ ///
-				title("{bf:Pir{c a'}mide demogr{c a'}fica}") subtitle(${pais})
-		}
 
-			if "$export" != "" {
-				graph export "$export/Piramide_`anything'_`anioinicial'_`aniofinal'.png", ///
-					replace name(Piramide_`anything'_`anioinicial'_`aniofinal')
-			}
+		* Grafica sexo = 1 como negativos y sexo = 2 como positivos por grupos etarios, en el presente y futuro *
+		* 1. Vivios en el año inicial y con una edad menor a 109  para el año final *
+		* 2. Vivos en el año final; nacidos durante o después del año inicial *
+		* 3. Vivos en el año final;  nacidos antes del año inicial *
+		* 4. Vivios en el año inicial y  mayores a 109 en el año final *
+		twoway (bar `pob2' edad if sexo == 1 & anio == `anioinicial' ///
+			& edad+`aniofinal'-`anioinicial' <= 109, horizontal lwidth(none)) ///
+			(bar `pob2' edad if sexo == 2 & anio == `anioinicial' ///
+			& edad+`aniofinal'-`anioinicial' <= 109, horizontal lwidth(none)) ///
+			(bar `pob2' edad if sexo == 1 & anio == `aniofinal' ///
+			& edad <= `aniofinal'-`anioinicial', horizontal barwidth(.15) ///
+			lwidth(none) /*color("83 144 0")*/) ///
+			(bar `pob2' edad if sexo == 2 & anio == `aniofinal' ///
+			& edad <= `aniofinal'-`anioinicial', horizontal barwidth(.15) ///
+			lwidth(none) /*color("149 191 75")*/) ///
+			(bar `pob2' edad if sexo == 1 & anio == `aniofinal' ///
+			& edad > `aniofinal'-`anioinicial', horizontal barwidth(.66) ///
+			lwidth(none) color("255 107 24")) ///
+			(bar `pob2' edad if sexo == 2 & anio == `aniofinal' ///
+			& edad > `aniofinal'-`anioinicial', horizontal barwidth(.66) ///
+			lwidth(none) color("255 189 0")) ///
+			(bar `pob2' edad if sexo == 1 & anio == `anioinicial' ///
+			& edad+`aniofinal'-`anioinicial' > 109, horizontal barwidth(.5) ///
+			lwidth(none)) ///
+			(bar `pob2' edad if sexo == 2 & anio == `anioinicial' ///
+			& edad+`aniofinal'-`anioinicial' > 109, horizontal barwidth(.5) ///
+			lwidth(none)) ///
+			(sc edad2 zero if anio == `anioinicial', msymbol(i) mlabel(edad2) ///
+			mlabsize(vsmall) mlabcolor("114 113 118")), ///
+			legend(label(1 "Hombres") label(2 "Mujeres") ///
+			label(3 "Hombres nacidos desde `anioinicial'") ///
+			label(4 "Mujeres nacidas desde `anioinicial'")) ///
+			legend(label(5 "Hombres `aniofinal'") label(6 "Mujeres `aniofinal'") ///
+			label(7 "Hombres fallecidos para `aniofinal'") ///
+			label(8 "Mujeres fallecidas para `aniofinal'")) ///
+			legend(order(1 2 3 4 7 8) holes(1 4) rows(2) on) ///
+			yscale(noline) ylabel(none) xscale(noline) ///
+			text(105 `=-`MaxH'[1,1]*.6' "{bf:Edad mediana `anioinicial'}") ///
+			text(100 `=-`MaxH'[1,1]*.6' "Hombres: `=`H`anioinicial''[1,1]'") ///
+			text(95 `=-`MaxH'[1,1]*.6' "Mujeres: `=`M`anioinicial''[1,1]'") ///
+			text(105 `=`MaxH'[1,1]*.6' "{bf:Edad mediana `aniofinal'}") ///
+			text(100 `=`MaxH'[1,1]*.6' "Hombres: `=`H`aniofinal''[1,1]'") ///
+			text(95 `=`MaxH'[1,1]*.6' "Mujeres: `=`M`aniofinal''[1,1]'") ///
+			text(90 `=-`MaxH'[1,1]*.6' "{bf:Poblaci{c o'}n `anioinicial'}") ///
+			text(85 `=-`MaxH'[1,1]*.6' `"`=string(`P`anioinicial''[1,1],"%20.0fc")'"') ///
+			text(80 `=-`MaxH'[1,1]*.6' "{bf: Poblaci{c o'}n `anioinicial' viva en `aniofinal'} ") ///
+			text(75 `=-`MaxH'[1,1]*.6' `"`=string(`Pviva'[1,1],"%20.0fc")' (`=string(`Pviva'[1,1]/`P`anioinicial''[1,1]*100,"%7.1fc")'%)"') ///
+			text(90 `=`MaxH'[1,1]*.6' "{bf:Poblaci{c o'}n `aniofinal'}") ///
+			text(85 `=`MaxH'[1,1]*.6' `"`=string(`P`aniofinal''[1,1],"%20.0fc")'"') ///
+			text(80 `=`MaxH'[1,1]*.6' "{bf:Poblaci{c o'}n `aniofinal' nacida desde `anioinicial'} ") ///
+			text(75 `=`MaxH'[1,1]*.6' `"`=string(`Pnacida'[1,1],"%20.0fc")' (`=string(`Pnacida'[1,1]/`P`aniofinal''[1,1]*100,"%7.1fc")'%)"') ///
+			name(Piramide_`anything'_`anioinicial'_`aniofinal', replace) ///
+			xlabel(`=-`MaxH'[1,1]' `"`=string(`MaxH'[1,1],"%15.0fc")'"' ///
+			`=-`MaxH'[1,1]/2' `"`=string(`MaxH'[1,1]/2,"%15.0fc")'"' 0 ///
+			`=`MaxM'[1,1]/2' `"`=string(`MaxM'[1,1]/2,"%15.0fc")'"' ///
+			`=`MaxM'[1,1]' `"`=string(`MaxM'[1,1],"%15.0fc")'"', angle(horizontal)) ///
+			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
+			/*xtitle("personas")*/ ///
+			title("{bf:Pir{c a'}mide demogr{c a'}fica}") subtitle(${pais})
+
+		if "$export" != "" {
+			graph export "$export/Piramide_`anything'_`anioinicial'_`aniofinal'.png", ///
+				replace name(Piramide_`anything'_`anioinicial'_`aniofinal')
+		}
 
 	}
 
