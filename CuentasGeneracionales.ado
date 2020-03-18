@@ -79,7 +79,7 @@ quietly {
 	*****************************
 	*** 4 Proyecciones Modulo ***
 	*****************************
-	mata GA = J(`edadmax',2,0)
+	mata GA = J(`edadmax',3,0)
 	forvalues edad = 1(1)`edadmax' {
 		forvalues row = 1(1)`edadmax' {
 			forvalues col = 1(1)`edadmax' {
@@ -104,8 +104,9 @@ quietly {
 			}
 		}
 	}
+	mata GA[.,3] = (GA[.,1] + GA[.,2]) :/ (HOM[.,1] + MUJ[.,1])
 	mata GA[.,1] = GA[.,1] :/ HOM[.,1] 
-	mata GA[.,2] = GA[.,2] :/ MUJ[.,1] 
+	mata GA[.,2] = GA[.,2] :/ MUJ[.,1]
 
 
 	** 2.4 A Stata **
@@ -114,11 +115,13 @@ quietly {
 	levelsof edad, local(edades)
 	noisily di _newline in g " Edad" ///
 		_column(10) %20s "Hombres" ///
-		_column(20) %20s "Mujeres"
+		_column(20) %20s "Mujeres" ///
+		_column(30) %20s "Total"
 	forvalues k = 0(5)`edadmax' {
 		noisily di in g _col(3) "`k'" _cont
 		noisily di in g _column(10) in y %20.0fc GA[`k'+1,1] _cont
-		noisily di in g _column(20) in y %20.0fc GA[`k'+1,2]
+		noisily di in g _column(20) in y %20.0fc GA[`k'+1,2] _cont
+		noisily di in g _column(30) in y %20.0fc GA[`k'+1,3]
 	}
 
 

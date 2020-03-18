@@ -10,14 +10,9 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
-	** 1.2 PIB + Deflactor **
-	PIBDeflactor, anio(`aniovp')
-	tempfile PIB
-	save `PIB'
-
-	** 1.3 Datos Abiertos (México) **
+	** 1.2 Datos Abiertos (México) **
 	if "$pais" == "" {
-		noisily UpdateDatosAbiertos
+		UpdateDatosAbiertos
 		local updated = r(updated)
 		local ultanio = r(ultanio)
 		local ultmes = r(ultmes)
@@ -26,7 +21,7 @@ quietly {
 		local updated = "yes"
 	}
 
-	** 1.4 Base LIF **
+	** 1.3 Base PEF **
 	capture use `"`c(sysdir_site)'../basesCIEP/SIM/PEF`=subinstr("${pais}"," ","",.)'.dta"', clear
 	if _rc != 0 {
 		noisily run UpdatePEF.do
@@ -37,30 +32,38 @@ quietly {
 	****************
 	*** 2 SYNTAX ***
 	****************
-	syntax [if] [, ANIOvp(int `aniovp') Graphs Update Base ID(string) ///
+	syntax [if] [, ANIO(int `aniovp') Graphs Update Base ID(string) ///
 		BY(varname) Fast ROWS(int 3) COLS(int 4) MINimum(real 1) PPEF]
 
 	** 2.1 Update PEF **
-	if "`update'" == "update" {
+	if "`update'" == "update" | "`updated'" != "yes" {
 		noisily run UpdatePEF.do
 	}
 
-	** 2.2 Base ID **
+	** 2.2 PIB + Deflactor **
+	preserve
+	PIBDeflactor, anio(`anio')
+	local currency = currency[1]
+	tempfile PIB
+	save `PIB'
+	restore
+
+	** 2.3 Base ID **
 	if "`id'" != "" {
 		use "`c(sysdir_site)'/users/`id'/PEF", clear
 	}
 
-	** 2.3 Base RAW **
+	** 2.4 Base RAW **
 	if "`base'" == "base" {
 		exit
 	}
 
-	** 2.4 Default `by' **
+	** 2.5 Default `by' **
 	if "`by'" == "" {
 		local by = "desc_funcion"
 	}
 	
-	noisily di _newline(2) in g "{bf:SISTEMA FISCAL: " in y "GASTO P{c U'}BLICO `aniovp'}"
+	noisily di _newline(2) in g "{bf:SISTEMA FISCAL: " in y "GASTO P{c U'}BLICO `anio'}"
 
 
 
@@ -68,7 +71,7 @@ quietly {
 	*** 3 Merge ***
 	***************
 	if "`fast'" == "fast" {
-		keep if anio == `aniovp'
+		keep if anio == `anio'
 	}
 	collapse (sum) gasto* `if', by(anio `by' transf_gf) 
 	merge m:1 (anio) using `PIB', nogen keepus(pibY indiceY deflator var_pibY) ///
@@ -76,8 +79,8 @@ quietly {
 
 	** 3.1 Utilizar PPEF **
 	if "`ppef'" == "ppef" {
-		replace gasto = proyecto if anio == `aniovp'
-		replace gastoneto = proyectoneto if anio == `aniovp'
+		replace gasto = proyecto if anio == `anio'
+		replace gastoneto = proyectoneto if anio == `anio'
 	}
 
 	** 3.2 Valores como % del PIB **
@@ -100,21 +103,27 @@ quietly {
 
 	egen `gastonetoPIB' = max(gastonetoPIB), by(`by')	
 	replace `resumido' = -99 if abs(`gastonetoPIB') < `minimum'
-	
-	*replace `resumido' = -99 if desc_funcion == 8
-	
 	label define `label' -99 "Otros (< `minimum'% PIB)", add modify
+	
+	levelsof `by', local(levelsof)
+	foreach k of local levelsof {
+		local labelotros : label `by' `k'
+		if "`labelotros'" == "Otros" { 
+			replace `resumido' = -98 if `by' == `k'
+			label define `label' -98 "Otros", modify
+		}
+	}
 
 	if "$graphs" == "on" | "`graphs'" == "graphs" {
-		graph pie gastonetoPIB if anio == `aniovp', over(`resumido') ///
+		graph pie gastonetoPIB if anio == `anio', over(`resumido') ///
 			plabel(_all percent, format(%5.1fc)) ///
-			title("{bf:Gastos presupuestarios `aniovp'}") ///
+			title("{bf:Gastos presupuestarios `anio'}") ///
 			subtitle($pais) ///
 			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
 			name(gastospie, replace) ///
 			legend(on position(3) cols(1))
 
-		graph bar (sum) gastonetoPIB if `by' != -1 & transf_gf == 0, ///
+		graph bar (sum) gastonetoPIB if `by' != -1 & transf_gf == 0 & anio >= 2013, ///
 			over(`resumido') ///
 			over(anio, label(labgap(vsmall))) ///
 			bargap(-30) stack asyvars ///
@@ -137,13 +146,13 @@ quietly {
 	
 	** 4.1 Division `by' **
 	noisily di _newline in g "{bf: A. Gasto presupuestario (`by') " ///
-		_col(44) in g %20s "MXN" ///
+		_col(44) in g %20s "`currency'" ///
 		_col(66) %7s "% PIB" ///
 		_col(77) %7s "% Total" "}"
 
-	capture tabstat gasto gastoPIB if anio == `aniovp' & `by' != -1, by(`by') stat(sum) f(%20.0fc) save
+	capture tabstat gasto gastoPIB if anio == `anio' & `by' != -1, by(`by') stat(sum) f(%20.0fc) save
 	if _rc != 0 {
-		noisily di in r "No hay informaci{c o'}n para el a{c n~}o `aniovp'."
+		noisily di in r "No hay informaci{c o'}n para el a{c n~}o `anio'."
 		exit
 	}
 	tempname mattot
@@ -181,13 +190,13 @@ quietly {
 		_col(66) in y %7.3fc `mattot'[1,2] ///
 		_col(77) in y %7.1fc `mattot'[1,1]/`mattot'[1,1]*100 "}"
 	
-	return scalar `=strtoname("Gasto bruto")' = `mattot'[1,1]
+	return scalar Gasto_bruto = `mattot'[1,1]
 
 	** 4.1.1 Gasto neto **
 	if "`if'" == "" & "$pais" == "" {
 
 		* 4.0 Aportaciones y cuotas de la Federacion *
-		tabstat gasto gastoPIB if anio == `aniovp' & transf_gf == 1, stat(sum) f(%20.0fc) save
+		tabstat gasto gastoPIB if anio == `anio' & transf_gf == 1, stat(sum) f(%20.0fc) save
 		tempname Aportaciones_Federacion
 		if _rc == 0 {
 			matrix `Aportaciones_Federacion' = r(StatTotal)
@@ -197,7 +206,7 @@ quietly {
 		}
 		return scalar Aportaciones_Federacion = `Aportaciones_Federacion'[1,1]
 
-		capture tabstat gasto gastoPIB if `by' == -1 & anio == `aniovp', stat(sum) f(%20.0fc) save
+		capture tabstat gasto gastoPIB if `by' == -1 & anio == `anio', stat(sum) f(%20.0fc) save
 		tempname Cuotas_ISSSTE
 		if _rc == 0 {
 			matrix `Cuotas_ISSSTE' = r(StatTotal)
@@ -222,16 +231,16 @@ quietly {
 			_col(66) in y %7.3fc  `mattot'[1,2]-`Cuotas_ISSSTE'[1,2]-`Aportaciones_Federacion'[1,2] ///
 			_col(77) in y %7.1fc (`mattot'[1,1]-`Cuotas_ISSSTE'[1,1]-`Aportaciones_Federacion'[1,1])/`mattot'[1,1]*100 "}"
 		
-		return scalar `=strtoname("Gasto neto")' = `mattot'[1,1]-`Cuotas_ISSSTE'[1,1]-`Aportaciones_Federacion'[1,1]
+		return scalar Gasto_neto = `mattot'[1,1]-`Cuotas_ISSSTE'[1,1]-`Aportaciones_Federacion'[1,1]
 	}
 
 	** 4.2. Division Resumido **
 	noisily di _newline in g "{bf: B. Gasto presupuestario (Resumido) " ///
-		_col(44) in g %20s "MXN" ///
+		_col(44) in g %20s "`currency'" ///
 		_col(66) %7s "% PIB" ///
 		_col(77) %7s "% Total" "}"
 
-	tabstat gastoneto gastonetoPIB if anio == `aniovp' & `by' != -1 & transf_gf == 0, by(`resumido') stat(sum) f(%20.1fc) save
+	tabstat gastoneto gastonetoPIB if anio == `anio' & `by' != -1 & transf_gf == 0, by(`resumido') stat(sum) f(%20.1fc) save
 	tempname mattot
 	matrix `mattot' = r(StatTotal)
 
@@ -250,7 +259,7 @@ quietly {
 		local name = strtoname(`"`disptext'"')
 
 		* Display *
-		return scalar `=strtoname("`=r(name`k')'")' = `mat`k''[1,1]
+		return scalar `name' = `mat`k''[1,1]
 		local divResumido `"`divResumido' neto_`name'"'
 
 		noisily di in g `"  (+) `disptext'"' ///
@@ -272,11 +281,10 @@ quietly {
 	matrix `Resumido_total' = r(StatTotal)
 	return scalar Resumido_total = `Resumido_total'[1,1]
 
-
 	** 4.3 Crecimientos **
-	noisily di _newline in g "{bf: C. Mayores cambios:" in y " `=`aniovp'-4' - `aniovp'" in g ///
-		_col(55) %7s "`=`aniovp'-4'" ///
-		_col(66) %7s "`aniovp'" ///
+	noisily di _newline in g "{bf: C. Mayores cambios:" in y " `=`anio'-4' - `anio'" in g ///
+		_col(55) %7s "`=`anio'-4'" ///
+		_col(66) %7s "`anio'" ///
 		_col(77) %7s "Cambio PIB" "}"
 
 	preserve
@@ -284,7 +292,7 @@ quietly {
 	xtset `by' anio
 	tsfill, full
 
-	tabstat gastoneto gastonetoPIB if anio == `aniovp', by(`by') stat(sum) f(%20.1fc) missing save
+	tabstat gastoneto gastonetoPIB if anio == `anio', by(`by') stat(sum) f(%20.1fc) missing save
 	tempname mattot
 	matrix `mattot' = r(StatTotal)
 
@@ -295,7 +303,7 @@ quietly {
 		local ++k
 	}
 
-	capture tabstat gastoneto gastonetoPIB if anio == `aniovp'-4, by(`by') stat(sum) f(%20.1fc) missing save
+	capture tabstat gastoneto gastonetoPIB if anio == `anio'-4, by(`by') stat(sum) f(%20.1fc) missing save
 	if _rc == 0 {
 		tempname mattot5
 		matrix `mattot5' = r(StatTotal)
@@ -331,7 +339,6 @@ quietly {
 
 
 
-
 	***********
 	*** END ***
 	***********
@@ -339,6 +346,5 @@ quietly {
 	timer off 4
 	timer list 4
 	noisily di _newline in g "{bf:Tiempo:} " in y round(`=r(t4)/r(nt4)',.1) in g " segs."
-
 }
 end

@@ -367,7 +367,12 @@ quietly {
 
 	***********************************
 	** 3.2 Variables de los perfiles **
-	local pais = ". ${pais}."
+	if "$pais" != "" {
+		local pais = ". ${pais}."
+	}
+	else {
+		local pais = ""
+	}
 
 	* Sin kernel *
 	if "`nokernel'" == "nokernel" & "`graphs'" == "graphs" {
@@ -376,7 +381,7 @@ quietly {
 			title("{bf:`title'}") ///
 			xtitle(edad) ///
 			ytitle(`ylabelpc' equivalente) ///
-			/*ylabel(0(.5)1.5)*/ ///
+			ylabel(0(.5)1.5) ///
 			subtitle(Perfil de hombres`pais') ///
 			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.`boottext'}")
 
@@ -385,7 +390,7 @@ quietly {
 			title("{bf:`title'}") ///
 			xtitle(edad) ///
 			ytitle(`ylabelpc' equivalente) ///
-			/*ylabel(0(.5)1.5)*/ ///
+			ylabel(0(.5)1.5) ///
 			subtitle(Perfil de mujeres`pais') ///
 			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.`boottext'}")
 
@@ -415,7 +420,7 @@ quietly {
 			title("{bf:`title'}") ///
 			xtitle(edad) ///
 			ytitle(`ylabelpc' equivalente) ///
-			/*ylabel(0(.5)1.5)*/ ///
+			ylabel(0(.5)1.5) ///
 			subtitle(Perfil de hombres`pais') ///
 			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.`boottext'}")
 
@@ -424,7 +429,7 @@ quietly {
 			title("{bf:`title'}") ///
 			xtitle(edad) ///
 			ytitle(`ylabelpc' equivalente) ///
-			/*ylabel(0(.5)1.5)*/ ///
+			ylabel(0(.5)1.5) ///
 			subtitle(Perfil de mujeres`pais') ///
 			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.`boottext'}")
 
@@ -595,7 +600,7 @@ quietly {
 		regress `seriehacienda' `profileproj' pibYR `dummy14'
 		tempvar predict
 		predict `predict'
-		replace `predict' = `predict'*deflator/pibY*100
+		replace `predict' = `predict'*lambda/pibY*100
 		label var `predict' "Projecci{c o'}n MCO"
 
 		* RECfinal *
@@ -603,7 +608,7 @@ quietly {
 		format estimacion %20.0fc
 
 		* Grafica *
-		replace `seriehacienda' = `seriehacienda'*deflator/pibY*100
+		replace `seriehacienda' = `seriehacienda'*lambda/pibY*100
 		label var `seriehacienda' "Observados"
 		local gvarpredict "`predict'"
 	}

@@ -14,7 +14,7 @@ quietly {
 		local anything = "poblacion"
 	}
 
-	*Si no hay año inicial utiliza la fecha más reciente*
+	* Si no hay año inicial utiliza la fecha más reciente *
 	if `anioinicial' == -1 {
 		local anioinicial : di %td_CY-N-D  date("$S_DATE", "DMY")
 		local anioinicial = substr(`"`=trim("`aniovp'")'"',1,4)
@@ -24,7 +24,6 @@ quietly {
 	************************
 	*** 0. Base de datos ***
 	************************
-
 	* Revisa si se puede usar la base de datos *
 	capture use `"`c(sysdir_site)'../basesCIEP/SIM/`=proper("`anything'")'`=subinstr("${pais}"," ","",.)'.dta"', clear
 
@@ -46,9 +45,7 @@ quietly {
 	****************
 	* EstadÃ­sticos *
 	****************
-	
 	* Calcula las estadísticas descriptivas y las guarda en matrices *
-	
 	* Mediana *
 	tabstat edad [fw=round(abs(`anything'),1)] if anio == `anioinicial', ///
 		stat(median) by(sexo) save
@@ -212,9 +209,9 @@ quietly {
 
 
 
-	***************************************
-	** GrÃ¡fica 2: TransiciÃ³n demogrÃ¡fica **
-	***************************************
+	**************************************************
+	** GrÃ¡fica 2: Transici{c o'}n demogr{c a'}fica **
+	**************************************************
 	g pob18 = `anything' if edad <= 18
 	g pob1934 = `anything' if edad >= 19 & edad <= 34
 	g pob3560 = `anything' if edad >= 35 & edad <= 60
@@ -234,82 +231,90 @@ quietly {
 	tempname MAX
 	matrix `MAX' = r(StatTotal)
 
-	* Valores finales *
-	tabstat pob18 pob1934 pob3560 pob61 if anio == `aniofinal', stat(mean) save
-	tempname FIN
-	matrix `FIN' = r(StatTotal)
-
 	forvalues k = 1(1)`=_N' {
 		* Maximos *
-		
 		* Busca la población máxima y guarda el año y el número *
-		
 		if pob18_2[`k'] == `MAX'[1,1] {
 			local x1 = anio[`k']
 			local y1 = pob18[`k']
+			local p1 = `k'
 		}
 		if pob1934_2[`k'] == `MAX'[1,2] {
 			local x2 = anio[`k']
-			local y2 = pob1934[`k']
+			local y2 = pob1934[`k'] + pob18[`k']
+			local p2 = `k'
 		}
 		if pob3560_2[`k'] == `MAX'[1,3] {
 			local x3 = anio[`k']
-			local y3 = pob3560[`k']
+			local y3 = pob3560[`k'] + pob1934[`k'] + pob18[`k']
+			local p3 = `k'
 		}
 		if pob61_2[`k'] == `MAX'[1,4] {
 			local x4 = anio[`k']
-			local y4 = pob61[`k']
+			local y4 = pob61[`k'] + pob3560[`k'] + pob1934[`k'] + pob18[`k']
+			local p4 = `k'
 		}
 		
 		* Minimos *
-		
 		* Busca la población mínima y guarda el año y el número *
-		
 		if pob18_2[`k'] == `MAX'[2,1] {
 			local m1 = anio[`k']
 			local z1 = pob18[`k']
+			local q1 = `k'
 		}
 		if pob1934_2[`k'] == `MAX'[2,2] {
 			local m2 = anio[`k']
-			local z2 = pob1934[`k']
+			local z2 = pob1934[`k'] + pob18[`k']
+			local q2 = `k'
 		}
 		if pob3560_2[`k'] == `MAX'[2,3] {
 			local m3 = anio[`k']
-			local z3 = pob3560[`k']
+			local z3 = pob3560[`k'] + pob1934[`k'] + pob18[`k']
+			local q3 = `k'
 		}		
 		if pob61_2[`k'] == `MAX'[2,4] {
 			local m4 = anio[`k']
-			local z4 = pob61[`k']
+			local z4 = pob61[`k'] + pob3560[`k'] + pob1934[`k'] + pob18[`k']
+			local q4 = `k'
 		}
 	}
 
 	if "$graphs" == "on" | "`graphs'" == "graphs" {
-		twoway (line pob18_2 anio) (line pob1934_2 anio) (line pob3560_2 anio) (line pob61_2 anio), ///
-			legend(label(1 "0-18") label(2 "19-34") label(3 "35-60") label(4 "61+") cols(4)) ///
-			text(`=`MAX'[1,1]+2.5' `x1' `"{bf:Max:} `=string(`MAX'[1,1],"%5.1fc")' % (`x1')"', place(ne)) ///
-			text(`=`MAX'[1,1]' `x1' `"{bf:`poblacion':} `=string(`y1',"%12.0fc")'"', place(ne)) ///
-			text(`=`MAX'[1,2]+2.5' `x2' `"{bf:Max:} `=string(`MAX'[1,2],"%5.1fc")' % (`x2')"', place(nw)) ///
-			text(`=`MAX'[1,2]' `x2' `"{bf:`poblacion':} `=string(`y2',"%12.0fc")'"', place(nw)) ///
-			text(`=`MAX'[1,3]+2.5' `x3' `"{bf:Max:} `=string(`MAX'[1,3],"%5.1fc")' % (`x3')"', place(nw)) ///
-			text(`=`MAX'[1,3]' `x3' `"{bf:`poblacion':} `=string(`y3',"%12.0fc")'"', place(nw)) ///
-			text(`=`MAX'[1,4]+2.5' `x4' `"{bf:Max:} `=string(`MAX'[1,4],"%5.1fc")' % (`x4')"', place(nw)) ///
-			text(`=`MAX'[1,4]' `x4' `"{bf:`poblacion':} `=string(`y4',"%12.0fc")'"', place(nw)) ///
-			text(`=`MAX'[2,1]' `m1' `"{bf:Min:} `=string(`MAX'[2,1],"%5.1fc")' % (`m1')"', place(nw)) ///
-			text(`=`MAX'[2,1]-2.5' `m1' `"{bf:`poblacion':} `=string(`z1',"%12.0fc")'"', place(nw)) ///
-			text(`=`MAX'[2,2]' `m2' `"{bf:Min:} `=string(`MAX'[2,2],"%5.1fc")' % (`m2')"', place(sw)) ///
-			text(`=`MAX'[2,2]-2.5' `m2' `"{bf:`poblacion':} `=string(`z2',"%12.0fc")'"', place(sw)) ///
-			text(`=`MAX'[2,3]' `m3' `"{bf:Min:} `=string(`MAX'[2,3],"%5.1fc")' % (`m3')"', place(s)) ///
-			text(`=`MAX'[2,3]-2.5' `m3' `"{bf:`poblacion':} `=string(`z3',"%12.0fc")'"', place(s)) ///
-			text(`=`MAX'[2,4]' `m4' `"{bf:Min:} `=string(`MAX'[2,4],"%5.1fc")' % (`m4')"', place(s)) ///
-			text(`=`MAX'[2,4]-2.5' `m4' `"{bf:`poblacion':} `=string(`z4',"%12.0fc")'"', place(s)) ///
-			text(2 `=`anioinicial'-1' "{bf:Hoy:} `anioinicial'", place(w)) ///
+		tempvar pob18 pob1934 pob3560 pob61
+		g `pob18' = pob18
+		g `pob1934' = pob1934 + pob18
+		g `pob3560' = pob3560 + pob1934 + pob18
+		g `pob61' = pob61 + pob3560 + pob1934 + pob18
+
+		twoway (area `pob61' `pob3560' `pob1934' `pob18' anio if anio <= `anioinicial') ///
+			(area `pob61' anio if anio > `anioinicial', color("255 129 0")) ///
+			(area `pob3560' anio if anio > `anioinicial', color("255 189 0")) ///
+			(area `pob1934' anio if anio > `anioinicial', color("39 97 47")) ///
+			(area `pob18' anio if anio > `anioinicial', color("53 200 71")), ///
+			legend(label(1 "61 y m{c a'}s") label(2 "35 a 60") label(3 "19 a 34") label(4 "18 y menos") order(1 2 3 4)) ///
+			text(`y1' `x1' `"{bf:Max:} `=string(`MAX'[1,1],"%5.1fc")' % (`x1')"', place(n)) ///
+			text(`y1' `x1' `"{bf:`poblacion':} `=string(pob18[`p1'],"%12.0fc")'"', place(s)) ///
+			text(`y2' `x2' `"{bf:Max:} `=string(`MAX'[1,2],"%5.1fc")' % (`x2')"', place(n)) ///
+			text(`y2' `x2' `"{bf:`poblacion':} `=string(pob1934[`p2'],"%12.0fc")'"', place(s)) ///
+			text(`y3' `x3' `"{bf:Max:} `=string(`MAX'[1,3],"%5.1fc")' % (`x3')"', place(nw)) ///
+			text(`y3' `x3' `"{bf:`poblacion':} `=string(pob3560[`p3'],"%12.0fc")'"', place(sw)) ///
+			text(`y4' `x4' `"{bf:Max:} `=string(`MAX'[1,4],"%5.1fc")' % (`x4')"', place(nw)) ///
+			text(`y4' `x4' `"{bf:`poblacion':} `=string(pob61[`p4'],"%12.0fc")'"', place(sw)) ///
+			text(`z1' `m1' `"{bf:Min:} `=string(`MAX'[2,1],"%5.1fc")' % (`m1')"', place(nw)) ///
+			text(`z1' `m1' `"{bf:`poblacion':} `=string(pob18[`q1'],"%12.0fc")'"', place(sw)) ///
+			text(`z2' `m2' `"{bf:Min:} `=string(`MAX'[2,2],"%5.1fc")' % (`m2')"', place(nw)) ///
+			text(`z2' `m2' `"{bf:`poblacion':} `=string(pob1934[`q2'],"%12.0fc")'"', place(sw)) ///
+			text(`z3' `m3' `"{bf:Min:} `=string(`MAX'[2,3],"%5.1fc")' % (`m3')"', place(n)) ///
+			text(`z3' `m3' `"{bf:`poblacion':} `=string(pob3560[`q3'],"%12.0fc")'"', place(s)) ///
+			text(`z4' `m4' `"{bf:Min:} `=string(`MAX'[2,4],"%5.1fc")' % (`m4')"', place(n)) ///
+			text(`z4' `m4' `"{bf:`poblacion':} `=string(pob61[`q4'],"%12.0fc")'"', place(s)) ///
+			text(`=`y1'*.175' `=`anioinicial'-1' "{bf:Hoy:} `anioinicial'", place(w)) ///
 			xtitle("") ytitle("Distribuci{c o'}n (%)") ///
-			xlabel(1950(10)`aniofinal') ///
-			xline(`anioinicial', lpattern(dash) lcolor("52 70 78")) ///
-			xline(`aniofinal', lpattern(dash) lcolor("52 70 78")) ///
+			xline(`=`anioinicial'+.5', lpattern(dash) lcolor("52 70 78")) ///
 			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
 			name(Estructura_`anything'_`anioinicial'_`aniofinal', replace) ///
-			title("{bf:Transici{c o'}n demogr{c a'}fica}") subtitle(${pais})
+			title("{bf:Transici{c o'}n demogr{c a'}fica}") subtitle(${pais}) ///
+			ylabel(, format(%20.0fc)) 
 			
 			if "$export" != "" {
 				graph export "$export/Estructura_`anything'_`anioinicial'_`aniofinal'.png", replace name(Estructura_`anything'_`anioinicial'_`aniofinal')
@@ -317,6 +322,5 @@ quietly {
 	}
 
 	restore
-
 }
 end

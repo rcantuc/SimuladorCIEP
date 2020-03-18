@@ -6,7 +6,7 @@ program define UpdateDatosAbiertos, return
 	************************
 	capture use "`c(sysdir_site)'../basesCIEP/SIM/DatosAbiertos.dta", clear
 
-	if _rc == 0 {
+	if _rc == 0 | _rc == 610 {
 		local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 		local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 		local mesvp = substr(`"`=trim("`fecha'")'"',6,2)
@@ -21,7 +21,7 @@ program define UpdateDatosAbiertos, return
 			exit
 		}
 	}
-	noisily di _newline in w "Datos Abiertos: " in y "ACTUALIZANDO... favor de esperar. :) Descargando las nuevas bases de SHCP (10 mins. aprox.)."
+	noisily di _newline in g "Datos Abiertos: " in y "ACTUALIZANDO. Favor de esperar. :) Descargando las nuevas bases de SHCP (10 mins. aprox.)."
 
 
 	*****************************************
@@ -31,8 +31,8 @@ program define UpdateDatosAbiertos, return
 	tempfile ing
 	save `ing'
 
-	import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/ingreso_gasto_finan_hist.csv", clear
-	*import delimited "`c(sysdir_site)'../basesCIEP/SHCP/Datos Abiertos/ingreso_gasto_finan_hist.csv", clear
+	*import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/ingreso_gasto_finan_hist.csv", clear
+	import delimited "`c(sysdir_site)'../basesCIEP/SHCP/Datos Abiertos/ingreso_gasto_finan_hist.csv", clear
 	tempfile ingH
 	save `ingH'
 
@@ -44,8 +44,8 @@ program define UpdateDatosAbiertos, return
 	tempfile deuda
 	save `deuda'
 
-	import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/deuda_publica_hist.csv", clear
-	*import delimited "`c(sysdir_site)'../basesCIEP/SHCP/Datos Abiertos/deuda_publica_hist.csv", clear
+	*import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/deuda_publica_hist.csv", clear
+	import delimited "`c(sysdir_site)'../basesCIEP/SHCP/Datos Abiertos/deuda_publica_hist.csv", clear
 	tempfile deudaH
 	save `deudaH'
 
@@ -57,8 +57,8 @@ program define UpdateDatosAbiertos, return
 	tempfile shrf
 	save `shrf'
 
-	import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/shrfsp_deuda_amplia_antes_2014.csv", clear
-	*import delimited "`c(sysdir_site)'../basesCIEP/SHCP/Datos Abiertos/shrfsp_deuda_amplia_antes_2014.csv", clear
+	*import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/shrfsp_deuda_amplia_antes_2014.csv", clear
+	import delimited "`c(sysdir_site)'../basesCIEP/SHCP/Datos Abiertos/shrfsp_deuda_amplia_antes_2014.csv", clear
 	tempfile shrfH
 	save `shrfH'
 
@@ -83,8 +83,8 @@ program define UpdateDatosAbiertos, return
 	tempfile gf
 	save `gf'
 
-	import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/transferencias_entidades_fed_hist.csv", clear
-	*import delimited "`c(sysdir_site)'../basesCIEP/SHCP/Datos Abiertos/transferencias_entidades_fed_hist.csv", clear
+	*import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/transferencias_entidades_fed_hist.csv", clear
+	import delimited "`c(sysdir_site)'../basesCIEP/SHCP/Datos Abiertos/transferencias_entidades_fed_hist.csv", clear
 	tempfile gfH
 	save `gfH'
 
@@ -693,5 +693,5 @@ program define UpdateDatosAbiertos, return
 	replace nombre = subinstr(nombre,"  "," ",.)
 	compress
 
-	save "`c(sysdir_site)'../basesCIEP/SIM/DatosAbiertos.dta", replace
+	saveold "`c(sysdir_site)'../basesCIEP/SIM/DatosAbiertos.dta", replace version(13)
 end
