@@ -634,6 +634,8 @@ quietly {
 			ylabel(, format(%20.0fc) labsize(small)) ///
 			xlabel(, labsize(small) labgap(2)) ///
 			xtitle("") ///
+			xline(`aniobase', lpattern(dash) lcolor("52 70 78")) ///
+			text(2 `=`aniobase'-1' "{bf:A{c n~}o base:} `aniobase'", place(w)) ///
 			title("{bf:Proyecciones demogr{c a'}ficas de `title'}") ///
 			subtitle("$pais") ///
 			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5. Fecha: `c(current_date)', `c(current_time)'.`boottext'}") ///

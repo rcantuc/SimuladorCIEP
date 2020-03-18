@@ -138,4 +138,4 @@ Distribucion Salud, macro(`salud')
 *** END ***
 capture drop __*
 compress
-save `"`c(sysdir_site)'../basesCIEP/SIM/2018/income`=subinstr("${pais}"," ","",.)'.dta"', replace
+saveold `"`c(sysdir_site)'../basesCIEP/SIM/2018/income`=subinstr("${pais}"," ","",.)'.dta"', replace version(13)

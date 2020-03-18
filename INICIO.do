@@ -81,7 +81,7 @@ capture drop if folioviv == "1960306424"
 ***                                      ***
 ********************************************
 preserve
-noisily LIF, by(divGA) graphs anio(2018) //update
+noisily LIF, by(divGA) anio(2018) graphs //update
 restore
 
 * Simulador *
@@ -101,7 +101,7 @@ noisily Simulador Consumo if Consumo != 0 [fw=factor], ///
 ***                                    ***
 *****************************************
 preserve
-noisily PEF, graphs anio(2018) //update
+noisily PEF, anio(2018) graphs //update
 restore
 
 * Simulador *

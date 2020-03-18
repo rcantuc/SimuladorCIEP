@@ -2203,5 +2203,5 @@ capture mkdir "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/"
 merge 1:1 (`hogar' numren) using "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/expenditure.dta", nogen keepus(Consumo)
 
 compress
-save "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/income.dta", replace
+saveold "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/income.dta", replace version(13)
 log close

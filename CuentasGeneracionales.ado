@@ -20,7 +20,7 @@ quietly {
 	*******************
 	*** 1 Poblacion ***
 	*******************
-	use `"`c(sysdir_site)'../basesCIEP/SIM/poblacion`=subinstr("${pais}"," ","",.)'.dta"', clear
+	use `"`c(sysdir_site)'../basesCIEP/SIM/Poblacion`=subinstr("${pais}"," ","",.)'.dta"', clear
 
 	sort anio
 	local anio = anio[1]
