@@ -6,12 +6,16 @@ quietly {
 	*** 1 BASE DE DATOS ***
 	***********************
 
-	** 1.1 PIB + Deflactor **
-	PIBDeflactor
+	** 1.1 Anio valor presente **
+	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
+	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
+
+	** 1.2 PIB + Deflactor **
+	PIBDeflactor, anio(`aniovp')
 	tempfile PIB
 	save `PIB'
 
-	** 1.2 Datos Abiertos (México) **
+	** 1.3 Datos Abiertos (México) **
 	if "$pais" == "" {
 		noisily UpdateDatosAbiertos
 		local updated = r(updated)
@@ -22,12 +26,8 @@ quietly {
 		local updated = "yes"
 	}
 
-	** 1.3 Anio valor presente **
-	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
-	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
-
 	** 1.4 Base LIF **
-	capture use "`c(sysdir_site)'../basesCIEP/SIM/LIF`=subinstr("${pais}"," ","",.)'.dta", clear
+	capture use `"`c(sysdir_site)'../basesCIEP/SIM/LIF`=subinstr("${pais}"," ","",.)'.dta"', clear
 	if _rc != 0 {
 		noisily run UpdateLIF.do					// Genera a partir de la base ./basesCIEP/LIFs/LIF.xlsx
 	}

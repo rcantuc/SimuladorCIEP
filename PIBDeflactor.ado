@@ -3,12 +3,22 @@ quietly {
 	version 13.1
 	syntax [, ANIOvp(int -1) GEO(int 5) FIN(int -1) Graphs UPDATE DIScount(real 3)]
 
+	** 1.1 Anio valor presente **
+	if `aniovp' == -1 {
+		local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
+		local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
+	}
+
 
 
 	***********************
 	*** 0 Base de datos ***
 	***********************
 	Poblacion, anio(`aniovp') `graphs' `update'
+	tabstat poblacion if anio == `aniovp', stat(sum) f(%15.0fc) save
+	tempname pobtotal
+	matrix `pobtotal' = r(StatTotal)
+	
 	collapse (sum) WorkingAge=poblacion if edad >= 16 & edad <= 65, by(anio)
 	format WorkingAge %15.0fc
 	tempfile workingage
@@ -143,7 +153,8 @@ quietly {
 	*****************
 	** 4 Simulador **
 	*****************
-	noisily di _newline in g " Output per worker: " in y _col(35) %10.1fc OutputPerWorker[`obsvp'] in g " `=currency[`obsvp']'"
+	noisily di _newline in g " PIB per c{c a'}pita: " in y _col(35) %10.1fc pibY[`obsvp']/`pobtotal'[1,1] in g " `=currency[`obsvp']'"
+	noisily di in g " Output per worker: " in y _col(35) %10.1fc OutputPerWorker[`obsvp'] in g " `=currency[`obsvp']'"
 	noisily di in g " Lambda (productividad): " in y _col(35) %10.4f scalar(lambda) in g " %" 
 	
 	scalar pibINF = pibYR[_N]*((pibYR[_N]/pibYR[_N-10])^(1/10))*(1+`discount'/100)^(`=anio[`obsvp']'-`=anio[_N]')/((`discount'/100)-((pibYR[_N]/pibYR[_N-10])^(1/10)-1))
