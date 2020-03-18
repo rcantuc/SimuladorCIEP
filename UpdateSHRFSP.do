@@ -1,178 +1,218 @@
-**********
-** RFSP **
-**********
-noisily DatosAbiertos RF000000SPFCS, pibvp(-2.7) pibvf(-2.6)						// Total
-rename monto rfsp
-drop clave nombre mes monto_pib pibY
-tempfile rfsp
-save `rfsp'
-
-noisily DatosAbiertos RF000002SPFCS, pibvp(0) pibvf(-.1)			// PIDIREGAS
-rename monto rfspPIDIREGAS
-drop clave nombre mes monto_pib pibY
-tempfile PIDIREGAS
-save `PIDIREGAS'
-
-noisily DatosAbiertos RF000003SPFCS, pibvp(0) pibvf(-.1)			// IPAB
-rename monto rfspIPAB
-drop clave nombre mes monto_pib pibY
-tempfile IPAB
-save `IPAB'
-
-noisily DatosAbiertos RF000004SPFCS, pibvp(0) pibvf(-.1)			// FONADIN
-rename monto rfspFONADIN
-drop clave nombre mes monto_pib pibY
-tempfile FONADIN
-save `FONADIN'
-
-noisily DatosAbiertos RF000005SPFCS, pibvp(0) pibvf(0)			// Programa de deudores
-rename monto rfspDeudores
-drop clave nombre mes monto_pib pibY
-tempfile Deudores
-save `Deudores'
-
-noisily DatosAbiertos RF000006SPFCS, pibvp(.1) pibvf(.1)			// Banca de desarrollo
-rename monto rfspBanca
-drop clave nombre mes monto_pib pibY
-tempfile Banca
-save `Banca'
-
-noisily DatosAbiertos RF000007SPFCS, pibvp(-.9) pibvf(-.3)			// Adecuaciones presupuestarias
-rename monto rfspAdecuaciones
-drop clave nombre mes monto_pib pibY
-tempfile Adecuaciones
-save `Adecuaciones'
-
-noisily DatosAbiertos RF000001SPFCS						// Balance tradicional
-rename monto rfspBalance
-drop clave nombre mes monto_pib pibY
-tempfile Balance
-save `Balance'
-
-
-
 ************
-** SHRFSP **
+** 1 RFSP **
 ************
-noisily DatosAbiertos SHRF5000, pibvp(45.3) pibvf(45.6)			// Total
-rename monto shrfsp
-drop clave nombre mes monto_pib pibY
-tempfile shrfsp
-save `shrfsp'
+if "$pais" == "" {
+	noisily DatosAbiertos RF000000SPFCS			// Total
+	keep anio monto
+	rename monto rfsp
+	tempfile rfsp
+	save `rfsp'
 
-noisily DatosAbiertos SHRF5100, pibvp(29.2) pibvf(29.8)			// Interno
-rename monto shrfspInterno
-drop clave nombre mes monto_pib pibY
-tempfile interno
-save `interno'
+	noisily DatosAbiertos RF000001SPFCS			// Balance tradicional
+	keep anio monto
+	rename monto rfspBalance
+	tempfile Balance
+	save `Balance'
 
-noisily DatosAbiertos SHRF5200, pibvp(16.0) pibvf(15.8)			// Externo
-rename monto shrfspExterno
-drop clave nombre mes monto_pib pibY
-tempfile externo
-save `externo'
+	noisily DatosAbiertos RF000002SPFCS			// PIDIREGAS
+	keep anio monto
+	rename monto rfspPIDIREGAS
+	tempfile PIDIREGAS
+	save `PIDIREGAS'
+
+	noisily DatosAbiertos RF000003SPFCS			// IPAB
+	keep anio monto
+	rename monto rfspIPAB
+	tempfile IPAB
+	save `IPAB'
+
+	noisily DatosAbiertos RF000004SPFCS			// FONADIN
+	keep anio monto
+	rename monto rfspFONADIN
+	tempfile FONADIN
+	save `FONADIN'
+
+	noisily DatosAbiertos RF000005SPFCS			// Programa de deudores
+	keep anio monto
+	rename monto rfspDeudores
+	tempfile Deudores
+	save `Deudores'
+
+	noisily DatosAbiertos RF000006SPFCS			// Banca de desarrollo
+	keep anio monto
+	rename monto rfspBanca
+	tempfile Banca
+	save `Banca'
+
+	noisily DatosAbiertos RF000007SPFCS			// Adecuaciones presupuestarias
+	keep anio monto
+	rename monto rfspAdecuaciones
+	tempfile Adecuaciones
+	save `Adecuaciones'
+}
+if "$pais" == "El Salvador" {
+	LIF
+	collapse (sum) recaudacion, by(anio)
+	tempfile LIF0
+	save `LIF0'
+	
+	PEF
+	collapse (sum) gastoneto, by(anio)
+	tempfile PEF0
+	save `PEF0'
+	
+	use `LIF0', clear
+	merge 1:1 (anio) using `PEF0', nogen
+	g rfsp = gastoneto - recaudacion
+	format rfsp %20.0fc
+	
+	keep anio rfsp
+	tempfile rfsp
+	save `rfsp'
+}
 
 
-********************
-** Tipo de cambio **
-********************
-noisily DatosAbiertos XET30							// pesos
-rename monto deudaMXN		
-drop clave nombre mes monto_pib pibY
-tempfile MXN
-save `MXN'
+**************
+** 2 SHRFSP **
+**************
+if "$pais" == "" {
+	noisily DatosAbiertos SHRF5000				// Total
+	keep anio monto
+	rename monto shrfsp
+	tempfile shrfsp
+	save `shrfsp'
 
-noisily DatosAbiertos XET40							// d${o}lares
-rename monto deudaUSD
-drop clave nombre mes monto_pib pibY
-tempfile USD
-save `USD'
+	noisily DatosAbiertos SHRF5100				// Interno
+	keep anio monto
+	rename monto shrfspInterno
+	tempfile interno
+	save `interno'
+
+	noisily DatosAbiertos SHRF5200				// Externo
+	keep anio monto
+	rename monto shrfspExterno
+	tempfile externo
+	save `externo'
+}
+if "$pais" == "El Salvador" {
+	if "`c(os)'" == "Unix" {
+		import excel "/home/ciepmx/Dropbox (CIEP)/UNICEF GA/shrfspElSalvador.xlsx", sheet("Sheet1") clear
+	}
+	if "`c(os)'" == "MacOSX" {
+		import excel "/Users/ricardo/Dropbox (CIEP)/UNICEF GA/shrfspElSalvador.xlsx", sheet("Sheet1") clear
+	}
+	drop if R == ""
+	drop R
+
+	replace B = "anio" if B == "VARIABLES"
+	replace B = "shrfsp" if B == "SALDO DEUDA TOTAL SPNF (con FOP Serie A)"
+	replace B = "interno" if B == "2. DEUDA INTERNA DE CORTO, MEDIANO Y LARGO PLAZO  3/" ///
+		| B == "FOP (CIP Series A)"
+	replace B = "externo" if B == "1. DEUDA EXTERNA MEDIANO Y LARGO PLAZO"
+	
+	keep if B == "anio" | B == "shrfsp" | B == "interno" | B == "externo"
+	
+	foreach k of varlist C - Q {
+		rename `k' monto`=`k'[1]'
+	}
+	drop if B == "anio"
+	rename B cuenta
+
+	collapse (sum) monto*, by(cuenta)
+	reshape long monto, i(cuenta) j(anio)
+	
+	compress
+	reshape wide monto, i(anio) j(cuenta) string
+	rename montoshrfsp shrfsp
+	rename montointerno shrfspInterno
+	rename montoexterno shrfspExterno
+	
+	foreach k of varlist shrfsp shrfspInterno shrfspExterno {
+		replace `k' = `k'*1000000
+		format `k' %20.0fc
+	}
+
+	tempfile shrfsp
+	save `shrfsp'
+}
 
 
-**************************************
-** Operaciones compensadas (ISSSTE) **
-/**************************************
-noisily DatosAbiertos XAC5210, //pibvf(2.580355)				// Operaciones compensadas (ISSSTE)
-rename monto operaciones
-drop clave nombre mes monto_pib pibY
-tempfile operaciones
-save `operaciones'
+**********************
+** 3 Tipo de cambio **
+**********************
+if "$pais" == "" {
+	noisily DatosAbiertos XET30				// pesos
+	keep anio monto
+	rename monto deudaMXN		
+	tempfile MXN
+	save `MXN'
+
+	noisily DatosAbiertos XET40				// d{c o'}lares
+	keep anio monto
+	rename monto deudaUSD
+	tempfile USD
+	save `USD'
+}
+
+*********************************
+** 4 Balance no presupuestario **
+*********************************
+if "$pais" == "" {
+	noisily DatosAbiertos XAA20					// Balance no presupuestario
+	keep anio monto
+	rename monto nopresupuestario
+	tempfile nopresupuestario
+	save `nopresupuestario'
+}
 
 
-******************************/
-** Balance no presupuestario **
-*******************************
-noisily DatosAbiertos XAA20, //pibvf(0)						// Balance no presupuestario
-rename monto nopresupuestario
-drop clave nombre mes monto_pib pibY
-tempfile nopresupuestario
-save `nopresupuestario'
-
-
-*********
-** LIF **
-*********
-LIF
-collapse (sum) recaudacion if divLIF != 10, by(anio)
-tempfile LIF
-save `LIF'
-
-LIF
-collapse (sum) diferimientos=LIF if divCIEP == 7, by(anio)
-tempfile diferimientos
-save `diferimientos'
-
-
-
-*********
-** PEF **
-*********
-noisily DatosAbiertos XAC
-rename monto gastopagado
-drop clave nombre mes monto_pib pibY
-tempfile gastopagado
-save `gastopagado'
-
-PEF if capitulo != 9, by(ramo)
-collapse (sum) gastoneto if ramo != -1 & transf_gf == 0, by(anio)
-tempfile PEF
-save `PEF'
-
-PEF if capitulo == 9
+*************************
+** 5 Costo de la deuda **
+*************************
+PEF if divGA == 2
 collapse (sum) costodeuda=gastoneto, by(anio)
 tempfile costodeuda
 save `costodeuda'
 
+PEF if divGA == 1
+collapse (sum) amortizacion=gastoneto, by(anio)
+tempfile amortizacion
+save `amortizacion'
 
-***********
-** Merge **
-***********
+
+
+************/
+** 6 Merge **
+*************
 use `rfsp', clear
-merge 1:1 (anio) using `PIDIREGAS', nogen
-merge 1:1 (anio) using `IPAB', nogen
-merge 1:1 (anio) using `FONADIN', nogen
-merge 1:1 (anio) using `Deudores', nogen
-merge 1:1 (anio) using `Banca', nogen
-merge 1:1 (anio) using `Adecuaciones', nogen
-merge 1:1 (anio) using `Balance', nogen
+capture merge 1:1 (anio) using `Balance', nogen
+capture merge 1:1 (anio) using `PIDIREGAS', nogen
+capture merge 1:1 (anio) using `IPAB', nogen
+capture merge 1:1 (anio) using `FONADIN', nogen
+capture merge 1:1 (anio) using `Deudores', nogen
+capture merge 1:1 (anio) using `Banca', nogen
+capture merge 1:1 (anio) using `Adecuaciones', nogen
 merge 1:1 (anio) using `shrfsp', nogen
-merge 1:1 (anio) using `interno', nogen
-merge 1:1 (anio) using `externo', nogen
-merge 1:1 (anio) using `MXN', nogen
-merge 1:1 (anio) using `USD', nogen
-*merge 1:1 (anio) using `operaciones', nogen
-merge 1:1 (anio) using `nopresupuestario', nogen
-merge 1:1 (anio) using `LIF', nogen
-merge 1:1 (anio) using `diferimientos', nogen
-merge 1:1 (anio) using `PEF', nogen
-merge 1:1 (anio) using `gastopagado', nogen
+capture merge 1:1 (anio) using `interno', nogen
+capture merge 1:1 (anio) using `externo', nogen
+capture merge 1:1 (anio) using `MXN', nogen
+capture merge 1:1 (anio) using `USD', nogen
+capture merge 1:1 (anio) using `nopresupuestario', nogen
 merge 1:1 (anio) using `costodeuda', nogen
+merge 1:1 (anio) using `amortizacion', nogen
 tsset anio
 
+if "$pais" == "" {
+	** Tipo de cambio **
+	g double tipoDeCambio = deudaMXN/deudaUSD/1000
+	format tipoDeCambio %7.2fc
+	drop deuda*
+}
 
-** Tipo de cambio **
-g double tipoDeCambio = deudaMXN/deudaUSD/1000
-format tipoDeCambio %7.2fc
-drop deuda* acum_prom
-
-save "`c(sysdir_site)'../basesCIEP/SIM/SHRFSP.dta", replace
+compress
+if `c(version)' == 15.1 {
+	saveold `"`c(sysdir_site)'../basesCIEP/SIM/SHRFSP`=subinstr("${pais}"," ","",.)'.dta"', replace version(13)
+}
+else {
+	save `"`c(sysdir_site)'../basesCIEP/SIM/SHRFSP`=subinstr("${pais}"," ","",.)'.dta"', replace
+}

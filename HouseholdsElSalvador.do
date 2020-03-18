@@ -11,7 +11,7 @@ local alingreso = r(Impuestos_al_ingreso)
 ******************************
 noisily PEF, anio(2018)
 local pensiones = r(Pensiones)
-local educacion = r(Educaci√≥n)
+local educacion = r(Educaci_c_o__n)
 local salud = r(Salud)
 local deuda = r(Deuda)
 
@@ -20,6 +20,8 @@ local deuda = r(Deuda)
 ***************************
 *** Encuesta de hogares ***
 ***************************
+noisily run ExpenditureElSalvador.do 2018
+
 use "`c(sysdir_site)'../basesCIEP/Otros/EHPM2018.dta", clear
 rename r106 edad
 rename r104 sexo
@@ -90,7 +92,7 @@ Distribucion Pension, macro(`pensiones')
 
 
 ***************
-** Educaci√≥n **
+** EducaciÛn **
 tabstat factor, stat(sum) by(r204) f(%10.0fc) save
 matrix TotAlum = r(StatTotal)
 matrix BasAlum = r(Stat1)+r(Stat2)+r(Stat3)+r(Stat7)
@@ -101,7 +103,7 @@ g Educacion = 157.2*1000000/TotAlum[1,1] + 638.5*1000000/BasAlum[1,1] if r204 ==
 replace Educacion = 157.2*1000000/TotAlum[1,1] + 102.5*1000000/MedAlum[1,1] if r204 == 4
 replace Educacion = 157.2*1000000/TotAlum[1,1] + 84.3/SupAlum[1,1] if r204 == 5 | r204 == 6
 replace Educacion = 0 if Educacion == .
-label var Educacion "Educaci√≥n"
+label var Educacion "EducaciÛn"
 * Reescalar *
 Distribucion Educacion, macro(`educacion')
 
@@ -137,5 +139,13 @@ Distribucion Salud, macro(`salud')
 ***********
 *** END ***
 capture drop __*
+
+merge 1:1 (folio numren) using `"`c(sysdir_site)'../basesCIEP/SIM/2018/expenditureElSalvador.dta"', nogen
+
 compress
-saveold `"`c(sysdir_site)'../basesCIEP/SIM/2018/income`=subinstr("${pais}"," ","",.)'.dta"', replace version(13)
+if `c(version)' == 15.1 {
+	saveold `"`c(sysdir_site)'../basesCIEP/SIM/2018/householdsElSalvador.dta"', replace version(13)
+}
+else {
+	save `"`c(sysdir_site)'../basesCIEP/SIM/2018/householdsElSalvador.dta"', replace
+}

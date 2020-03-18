@@ -20,7 +20,6 @@ foreach k of local archivos_csv {
 	* Limpiar *
 	drop if ciclo == .
 	capture drop v*
-
 	foreach j of varlist _all {
 		di in w ".", _cont
 		tostring `j', replace
@@ -36,6 +35,7 @@ foreach k of local archivos_csv {
 	}
 	noisily di
 
+	* Destring all variables *
 	foreach j in aprobado modificado devengado pagado adefas ejercido proyecto {
 		capture destring `j', replace ignore(",") 			// Ignorar coma.
 		if _rc == 0 {
@@ -55,7 +55,7 @@ foreach k of local archivos_csv {
 * Loop para unir los archivos (limpios y en Stata) *
 local j = 0
 foreach k of local archivos_csv {
-	noisily di in g "Appending: " in y "`k'"
+	di in g "Appending: " in y "`k'"
 	if `j' == 0 {
 		use ``=strtoname("`k'")'', clear
 		local ++j
@@ -95,7 +95,6 @@ if "$pais" == "" {
 	labmask finalidad, values(desc_finalidad)
 	drop desc_finalidad
 
-
 	** Ramo **
 	replace ramo = "50" if ramo == "GYR"
 	replace ramo = "51" if ramo == "GYN"
@@ -117,7 +116,6 @@ if "$pais" == "" {
 	labmask ramo, values(desc_ramo)
 	drop desc_ramo
 
-
 	** Encode y agregar Cuotas ISSSTE **
 	foreach k of varlist desc_ur desc_funcion desc_subfuncion desc_ai desc_modalidad desc_pp ///
 		desc_objeto desc_tipogasto {
@@ -131,18 +129,15 @@ if "$pais" == "" {
 		label define `k' -1 "Cuotas ISSSTE", add
 	}
 
-
 	** Descripci{c o'}n Fuente **
 	labmask fuente, values(desc_fuente)
 	drop desc_fuente
-
 
 	** Descripci{c o'}n Entidad Federativa **
 	replace desc_entidad = trim(desc_entidad)
 	replace desc_entidad = "Ciudad de M{c e'}xico" if entidad == 9
 	labmask entidad, values(desc_entidad)
 	drop desc_entidad
-
 
 	** Cap{c i'}tulo **
 	capture drop capitulo
@@ -155,7 +150,6 @@ if "$pais" == "" {
 		5 "Bienes muebles e inmuebles" 6 "Obras p{c u'}blicas" 7 "Inversi{c o'}n financiera" ///
 		8 "Participaciones y aportaciones" 9 "Deuda p{c u'}blica" -1 "Cuotas ISSSTE"
 	label values capitulo capitulo
-
 
 	** Tipo de ramo **
 	g ramo_tipo = .
@@ -178,7 +172,6 @@ if "$pais" == "" {
 		5 "Ramos administrativos" 7 "Gasto no programable de las empresas productivas del estado" ///
 		6 "Gasto no programable del gobierno federal"
 	label values ramo_tipo tipos_ramo
-
 
 	** Funcion **
 	g serie_desc_funcion = "XKG0116" if desc_funcion == -1
@@ -210,7 +203,6 @@ if "$pais" == "" {
 	replace serie_desc_funcion = "XOA0427" if desc_funcion == 26
 	replace serie_desc_funcion = "XOA0429" if desc_funcion == 27
 	replace serie_desc_funcion = "XOA0416" if desc_funcion == 28
-
 
 	** Ramo **
 	g serie_ramo = "XKG0116" if ramo == -1
@@ -263,15 +255,63 @@ if "$pais" == "" {
 	replace serie_ramo = "XOA0146" if ramo == 51
 	replace serie_ramo = "XKC0131" if ramo == 52
 	replace serie_ramo = "XOA0141" if ramo == 53
+
+	** Transferencias del gobierno federal **
+	g byte transf_gf = (ramo == 19 & ur == "GYN") | (ramo == 19 & ur == "GYR")
+
+	** Modulos **
+	levelsof desc_pp, local(levelsof)
+	local ifpp "("
+	local ifpp2 "("
+	foreach k of local levelsof {
+		local label : label desc_pp `k'
+		if "`label'" == "Pensión para Adultos Mayores" | ///
+			"`label'" == "Pensión para el Bienestar de las Personas Adultas Mayores" | ///
+			"`label'" == "Pensión para el Bienestar de las Personas con Discapacidad Permanente" {
+			local ifpp "`ifpp'desc_pp == `k' | "
+			local ifpp2 "`ifpp2'desc_pp != `k' & "
+		}
+	}
+	local ifpp `"`=substr("`ifpp'",1,`=strlen("`ifpp'")-3')')"'
+	local ifpp2 `"`=substr("`ifpp2'",1,`=strlen("`ifpp2'")-3')')"'
+
+	g desc_divGA = "Pensiones" if transf_gf == 0 & ramo != -1 & capitulo != 9 ///	
+		& (substr(string(objeto),1,2) == "45" | substr(string(objeto),1,2) == "47" | `ifpp')
+
+	replace desc_divGA = "Educaci{c o'}n" if transf_gf == 0 & ramo != -1 & capitulo != 9  ///
+		& (substr(string(objeto),1,2) != "45" & substr(string(objeto),1,2) != "47" & `ifpp2') ///
+		& desc_funcion == 10
+
+	replace desc_divGA = "Salud" if transf_gf == 0 & ramo != -1 & capitulo != 9  ///
+		& (substr(string(objeto),1,2) != "45" & substr(string(objeto),1,2) != "47" & `ifpp2') ///
+		& desc_funcion != 10 ///
+		& desc_funcion == 21
+
+	replace desc_divGA = "Salud" if transf_gf == 0 & ramo != -1 & capitulo != 9  ///
+		& (substr(string(objeto),1,2) != "45" & substr(string(objeto),1,2) != "47" & `ifpp2') ///
+		& (modalidad == "E" & pp == 13 & ramo == 52)
+		
+	replace desc_divGA = "Costo financiero de la deuda" if capitulo == 9 & substr(string(objeto),1,2) != "91" 
+	
+	replace desc_divGA = "Amortizaci{c o'}n" if capitulo == 9 & substr(string(objeto),1,2) == "91" 
+	
+	replace desc_divGA = "Otros" if desc_divGA == ""
+
+	encode desc_divGA, generate(divGA)
 }
 else if "$pais" == "El Salvador" {
-	** Encode y agregar Cuotas ISSSTE **
+	** Encode **
 	foreach k of varlist desc_funcion {
 		rename `k' `k'2
 		encode `k'2, g(`k')
 		format %30.0fc `k'
 		drop `k'2	
 	}
+
+	** Modulos **
+	g divGA = desc_funcion
+	label copy desc_funcion divGA
+	label values divGA divGA
 }
 
 
@@ -288,9 +328,6 @@ capture replace gasto = aprobado if aprobado != . & gasto == .
 capture replace gasto = proyecto if proyecto != . & gasto == .
 
 if "$pais" == "" {
-	** Transferencias del gobierno federal **
-	g byte transf_gf = (ramo == 19 & ur == "GYN") | (ramo == 19 & ur == "GYR")
-
 	** Cuotas ISSSTE **
 	foreach k of varlist gasto aprobado ejercido proyecto {
 		tempvar `k' `k'Tot `k'cuotas `k'cuotasTot
@@ -311,6 +348,7 @@ else if "$pais" == "El Salvador" {
 	** Transferencias del gobierno federal **
 	g byte transf_gf = 0
 	g double gastoneto = gasto
+	format gastoneto %20.0fc
 }
 
 
@@ -323,4 +361,10 @@ capture order aprobado modificado devengado pagado, last
 capture order proyecto, last
 capture drop __*
 compress
-save "`c(sysdir_site)'../basesCIEP/SIM/PEF`=subinstr("${pais}"," ","",.)'.dta", replace
+
+if `c(version)' == 15.1 {
+	saveold `"`c(sysdir_site)'../basesCIEP/SIM/PEF`=subinstr("${pais}"," ","",.)'.dta"', replace version(13)
+}
+else {
+	save `"`c(sysdir_site)'../basesCIEP/SIM/PEF`=subinstr("${pais}"," ","",.)'.dta"', replace
+}

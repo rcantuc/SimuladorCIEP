@@ -8,7 +8,6 @@ timer on 1
 
 
 
-
 *****************
 *** 0. Github ***
 *****************
@@ -16,6 +15,7 @@ if "`c(os)'" == "Unix" {
 	cd "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
 	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
 	*global export "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Textbook/images/"
+	*local reboot = "reboot"
 }
 if "`c(os)'" == "MacOSX" {
 	cd "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
@@ -26,14 +26,12 @@ adopath ++ PERSONAL
 
 
 
-
 *********************
 ***               ***
 *** 1. Parámetros ***
 ***               ***
 *********************
 global pais = "El Salvador"
-
 
 
 
@@ -48,9 +46,8 @@ global pais = "El Salvador"
 ***      ./TemplateCIEP/basesCIEP/INEGI/SCN/   ***
 *** 3) correr SCN con opción "update"          ***
 ***                                            ***
-**************************************************
+/**************************************************
 noisily SCN, discount(3.0) anio(2018) graphs //update
-
 
 
 
@@ -58,20 +55,14 @@ noisily SCN, discount(3.0) anio(2018) graphs //update
 ***                                                    ***
 *** 3. Capítulo 3: La economía-sistema antropocéntrica ***
 ***                                                    ***
-**********************************************************
-capture use `"`c(sysdir_site)'../basesCIEP/SIM/2018/income`=subinstr("${pais}"," ","",.)'.dta"', clear
-if _rc != 0 {
-	noisily run Income`=subinstr("${pais}"," ","",.)'.do 2018
+/**********************************************************
+capture use `"`c(sysdir_site)'../basesCIEP/SIM/2018/households`=subinstr("${pais}"," ","",.)'.dta"', clear
+if "`c(os)'" == "Unix" | _rc != 0 {
+*	noisily run Households`=subinstr("${pais}"," ","",.)'.do 2018
 }
-capture merge 1:1 (folio numren) using `"`c(sysdir_site)'../basesCIEP/SIM/2018/expenditure`=subinstr("${pais}"," ","",.)'.dta"', keepus(Consumo) nogen keep(matched)
-if _rc != 0 {
-	preserve
-	noisily run Expenditure`=subinstr("${pais}"," ","",.)'.do 2018
-	restore
-	merge 1:1 (folio numren) using `"`c(sysdir_site)'../basesCIEP/SIM/2018/expenditure`=subinstr("${pais}"," ","",.)'.dta"', keepus(Consumo) nogen keep(matched)
-}
-capture drop if folioviv == "1960306424"
 
+* Database *
+use `"`c(sysdir_site)'../basesCIEP/SIM/2018/households`=subinstr("${pais}"," ","",.)'.dta"', clear
 
 
 
@@ -79,7 +70,7 @@ capture drop if folioviv == "1960306424"
 ***                                      ***
 *** 4. Parte 2: Ingresos presupuestarios ***
 ***                                      ***
-********************************************
+/********************************************
 preserve
 noisily LIF, by(divGA) anio(2018) graphs //update
 restore
@@ -87,11 +78,10 @@ restore
 * Simulador *
 noisily Simulador Ingreso if Ingreso != 0 [fw=factor], ///
 	anio(2018) base("EHPM 2018") ///
-	folio(folio) boot(20) graphs //reboot //noisily
+	folio(folio) graphs `reboot' //boot(20) //noisily
 noisily Simulador Consumo if Consumo != 0 [fw=factor], ///
 	anio(2018) base("EHPM 2018") ///
-	folio(folio) boot(20) graphs //reboot //noisily
-
+	folio(folio) graphs `reboot' //boot(20) //noisily
 
 
 
@@ -99,21 +89,21 @@ noisily Simulador Consumo if Consumo != 0 [fw=factor], ///
 ***                                    ***
 *** 5. Parte 3: Gastos presupuestarios ***
 ***                                    ***
-*****************************************
+/******************************************
 preserve
-noisily PEF, anio(2018) graphs //update
+noisily PEF, by(divGA) anio(2018) graphs //update
 restore
 
 * Simulador *
 noisily Simulador Pension if Pension != 0 [fw=factor], ///
 	anio(2018) base("EHPM 2018") ///
-	folio(folio) boot(20) graphs //reboot //noisily
+	folio(folio) graphs `reboot' //boot(20) //noisily
 noisily Simulador Educacion if Educacion != 0 [fw=factor], ///
 	anio(2018) base("EHPM 2018") ///
-	folio(folio) boot(20) graphs //reboot //noisily
+	folio(folio) graphs `reboot' //boot(20) //noisily
 noisily Simulador Salud if Salud != 0 [fw=factor], ///
 	anio(2018) base("EHPM 2018") ///
-	folio(folio) boot(20) graphs //reboot //noisily
+	folio(folio) graphs `reboot' //boot(20) //noisily
 
 
 
@@ -122,19 +112,19 @@ noisily Simulador Salud if Salud != 0 [fw=factor], ///
 ***                                    ***
 *** 6. Parte 4: Balance presupuestario ***
 ***                                    ***
-******************************************
+/******************************************
 g TransfNetas = Ingreso + Consumo - Pension - Educacion - Salud
 label var TransfNetas "Transferencias Netas"
 
 noisily Simulador TransfNetas if TransfNetas != 0 [fw=factor], ///
 	anio(2018) base("EHPM 2018") ///
-	folio(folio) boot(20) graphs //reboot //noisily
+	folio(folio) graphs `reboot' //boot(20) //noisily
 
 * Cuentas Generacionales *
-noisily CuentasGeneracionales TransfNetas, anio(2018) boot(20)
+noisily CuentasGeneracionales TransfNetas, anio(2018) //boot(20)
 
 * Fiscal Gap */
-noisily FiscalGap, anio(2018) graphs
+noisily FiscalGap, anio(2018) graphs //update //boot(20)
 
 
 

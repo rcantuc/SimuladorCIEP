@@ -24,7 +24,7 @@ quietly {
 	tempfile workingage
 	save `workingage'
 	
-	/* Verifica si se puede usar la base, si no es asÃ­ o la opciÃ³n update es llamada, 
+	/* Verifica si se puede usar la base, si no es así o la opción update es llamada, 
 	limpia la base y la usa */
 	capture use `"`c(sysdir_site)'../basesCIEP/SIM/PIBDeflactor`=subinstr("${pais}"," ","",.)'.dta"', clear
 	if _rc != 0 | "`update'" == "update" {
@@ -63,9 +63,9 @@ quietly {
 
 	***********************************************
 	** 2.1 Imputar Par{c a'}metros ex{c o'}genos **
-	/* Para todos los aÃ±os, si existe informaciÃ³n sobre el crecimiento del deflactor 
-	utilizarla, si no existe, tomar el rezago del Ã­ndice geomÃ©trico. Posteriormente
-	ajustar los valores del Ã­ndice con sus rezagos. */
+	/* Para todos los años, si existe información sobre el crecimiento del deflactor 
+	utilizarla, si no existe, tomar el rezago del índice geométrico. Posteriormente
+	ajustar los valores del índice con sus rezagos. */
 	forvalues k=`anio_last'(1)`fin' {
 		capture confirm existence ${def`k'}
 		if _rc == 0 {
@@ -117,7 +117,7 @@ quietly {
 	replace currency = currency[`obslast']
 	g OutputPerWorker = pibYR/WorkingAge
 
-	* Crecimiento promedio del producto por trabajador en los Ãºltimos diez aÃ±os *
+	* Crecimiento promedio del producto por trabajador en los últimos diez años *
 	scalar lambda = ((OutputPerWorker[`obslast']/OutputPerWorker[`=`obslast'-10'])^(1/10)-1)*100
 
 	* Imputar *
@@ -136,13 +136,13 @@ quietly {
 
 	* Lambda (productividad) *
 	g lambda = (1+scalar(lambda)/100)^(anio-`anio_last')
-	*replace lambda = 1
 
 	replace pibYR = `=pibYR[`obslast']'/`=WorkingAge[`obslast']'*WorkingAge* ///
 		(1+scalar(lambda)/100)^(anio-`anio_last') if pibYR == .
 	replace pibY = pibYR*deflator if pibY == .
 	replace var_pibG = ((pibYR/L`=`geo''.pibYR)^(1/`geo')-1)*100
 	replace var_pibY = (pibYR/L.pibYR-1)*100
+
 	g double pibYVP = pibYR/(1+`discount'/100)^(anio-`=anio[`obsvp']')
 	format pibYVP %20.0fc
 	
@@ -154,22 +154,25 @@ quietly {
 	** 4 Simulador **
 	*****************
 	noisily di _newline in g " PIB per c{c a'}pita: " in y _col(35) %10.1fc pibY[`obsvp']/`pobtotal'[1,1] in g " `=currency[`obsvp']'"
-	noisily di in g " Output per worker: " in y _col(35) %10.1fc OutputPerWorker[`obsvp'] in g " `=currency[`obsvp']'"
+	noisily di in g " Producci{c o'}n por trabajador: " in y _col(35) %10.1fc OutputPerWorker[`obsvp'] in g " `=currency[`obsvp']'"
 	noisily di in g " Lambda (productividad): " in y _col(35) %10.4f scalar(lambda) in g " %" 
 	
-	scalar pibINF = pibYR[_N]*((pibYR[_N]/pibYR[_N-10])^(1/10))*(1+`discount'/100)^(`=anio[`obsvp']'-`=anio[_N]')/((`discount'/100)-((pibYR[_N]/pibYR[_N-10])^(1/10)-1))
-	noisily di in g " PIBR `=anio[_N]' al infinito: " in y _col(25) %20.0fc pibINF in g " `=currency[`obsvp']'"
+	local grow_rate_LR = (pibYR[_N]/pibYR[_N-10])^(1/10)-1
+	scalar pibINF = pibYR[_N]*(1+`grow_rate_LR')*(1+`discount'/100)^(`=anio[`obsvp']'-`=anio[_N]')/((`discount'/100)-`grow_rate_LR'+((`discount'/100)*`grow_rate_LR'))
 
-	*if "`globals'" == "globals" {
-		*forvalues k=1(1)`=_N' {
-		*	global PIB_`=anio[`k']' = pibY[`k']
-		*	global DEF_`=anio[`k']' = deflator[`k']
-		*	global pib_`=anio[`k']' = var_pibY[`k']
-		*	global def_`=anio[`k']' = var_indiceY[`k']
-		*}
-	*}
+	tabstat pibYVP if anio >= `aniovp', stat(sum) f(%20.0fc) save
+	tempname pibYVP
+	matrix `pibYVP' = r(StatTotal)
 	
+	noisily di _newline in g " PIB VP al infinito: " in y _col(20) %23.0fc `pibYVP'[1,1] + pibINF in g " `=currency[`obsvp']'"
+	scalar pibVPINF = `pibYVP'[1,1] + pibINF
 	
+	scalar pibY = pibY[`obsvp']
+	
+	noisily di in g "  Crec. largo plazo: " in y _col(25) %20.1fc var_pibY[_N] in g " %"
+	noisily di in g "  Defl. largo plazo: " in y _col(25) %20.1fc var_indiceY[_N] in g " %"
+	noisily di in g "  Tasa de descuento: " in y _col(25) %20.1fc `discount' in g " %"
+
 	if "`graphs'" == "graphs" {
 
 		* Texto sobre lineas *
@@ -178,7 +181,7 @@ quietly {
 				local crec_deflactor `"`crec_deflactor' `=var_indiceY[`k']' `=anio[`k']' "`=string(var_indiceY[`k'],"%5.1fc")'" "'
 			}
 		}
-		
+
 		* Deflactor *
 		twoway (connected var_indiceY anio if anio <= `anio_last') ///
 			(connected var_indiceY anio if anio > `anio_last'), ///
@@ -203,7 +206,7 @@ quietly {
 				local crec_PIB `"`crec_PIB' `=var_pibY[`k']' `=anio[`k']' "`=string(var_pibY[`k'],"%5.1fc")'" "'
 			}
 		}
-		
+
 		* Crecimiento PIB *
 		twoway (connected var_pibY anio if anio <= `anio_last') ///
 			(connected var_pibY anio if anio > `anio_last'), ///
@@ -221,7 +224,6 @@ quietly {
 		if _rc == 0 {
 			graph export "$export/PIBH.png", replace name(PIBH)
 		}
-
 
 		* PIB real *
 		tempvar pibYRmil
@@ -243,11 +245,10 @@ quietly {
 			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
 			name(PIBP, replace)
 	}
-
-	
 	return local except "`except'"
 	return local exceptI "`exceptI'"
 	return scalar geo = `geo'
+	return scalar discount = `discount'
 
 
 
@@ -257,7 +258,7 @@ quietly {
 	noisily di _newline in g "  A{c n~}o" _col(11) %8s "Crec. PIB" _col(25) %20s "PIB" _col(50) %5s "Crec. Def." _col(64) %8.4fc "Deflactor"
 	forvalues k=`=`obsvp'-5'(1)`=`obsvp'+5' {
 		if anio[`k'] <= `anio_last' | (anio[`k'] == `anio_last' & trimestre < 4) {
-			noisily di in g " `=anio[`k']' " _col(10) %8.1fc in y var_pibY[`k'] " %" _col(25) %20.0fc pibY[`k'] _col(50) %8.4fc in y var_indiceY[`k'] " %" _col(65) %8.4fc deflator[`k']
+			noisily di in g " `=anio[`k']' " _col(10) %8.1fc in y var_pibY[`k'] " %" _col(25) %20.0fc pibY[`k'] _col(50) %8.1fc in y var_indiceY[`k'] " %" _col(65) %8.4fc deflator[`k']
 		}
 		else {
 			capture confirm existence `firstrow'
@@ -265,7 +266,7 @@ quietly {
 				noisily di in g _dup(72) "-"
 				local firstrow "firstrow"
 			}
-			noisily di in g "{bf: `=anio[`k']' " _col(10) %8.1fc in y var_pibY[`k'] " %" _col(25) %20.0fc pibY[`k'] _col(50) %8.4fc in y var_indiceY[`k'] " %" _col(65) %8.4fc deflator[`k'] "}"
+			noisily di in g "{bf: `=anio[`k']' " _col(10) %8.1fc in y var_pibY[`k'] " %" _col(25) %20.0fc pibY[`k'] _col(50) %8.1fc in y var_indiceY[`k'] " %" _col(65) %8.4fc deflator[`k'] "}"
 		}
 	}
 

@@ -98,8 +98,8 @@ quietly {
 	tempvar perfil1 perfil2
 	g double `perfil1' = `rec'1/`for'1/`montopc'
 	g double `perfil2' = `rec'2/`for'2/`montopc'
-	replace `perfil1' = L.`perfil1' if `perfil1' == . & edad >= `edadmaxEncuesta'
-	replace `perfil2' = L.`perfil2' if `perfil2' == . & edad >= `edadmaxEncuesta'
+	replace `perfil1' = L.`perfil1' if `perfil1' == . & edad >= `edadmaxEncuesta'-5
+	replace `perfil2' = L.`perfil2' if `perfil2' == . & edad >= `edadmaxEncuesta'-5
 	replace `perfil1' = 0 if `perfil1' == .
 	replace `perfil2' = 0 if `perfil2' == .
 
@@ -109,8 +109,8 @@ quietly {
 	tempvar pcont1 pcont2
 	g double `pcont1' = `for'1/`pob'1*100
 	g double `pcont2' = `for'2/`pob'2*100
-	replace `pcont1' = L.`pcont1' if `pcont1' == . & edad >= `edadmaxEncuesta'
-	replace `pcont2' = L.`pcont2' if `pcont2' == . & edad >= `edadmaxEncuesta'
+	replace `pcont1' = L.`pcont1' if `pcont1' == . & edad >= `edadmaxEncuesta'-5
+	replace `pcont2' = L.`pcont2' if `pcont2' == . & edad >= `edadmaxEncuesta'-5
 	replace `pcont1' = 0 if `pcont1' == .
 	replace `pcont2' = 0 if `pcont2' == .
 

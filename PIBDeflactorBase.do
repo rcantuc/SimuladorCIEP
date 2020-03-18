@@ -7,7 +7,7 @@
 *** 0 BASES ***
 ***************
 * 0.1.1. PIB *
-import excel "`=c(sysdir_site)'../basesCIEP/INEGI/SCN/PIB.xls", clear
+import excel "`=c(sysdir_site)'../basesCIEP/INEGI/SCN/PIB.xlsx", clear
 
 * 0.1.2. Limpia *
 LimpiaBIE
@@ -38,7 +38,7 @@ save `PIB'
 
 
 * 0.2.1. Deflactor *
-import excel "`=c(sysdir_site)'../basesCIEP/INEGI/SCN/deflactor.xls", clear
+import excel "`=c(sysdir_site)'../basesCIEP/INEGI/SCN/deflactor.xlsx", clear
 
 * 0.2.2. Limpia *
 LimpiaBIE, nomult

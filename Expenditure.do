@@ -5,50 +5,49 @@
 ******************************************
 if "`1'" == "" {
 	clear all
-	local macroanio = 2018
+	local enighanio = 2018
 }
 else {
-	local macroanio = `1'
+	local enighanio = `1'
 }
 
-
 ** D.2. Otros Parametros **
-if `macroanio' >= 2018 {
+if `enighanio' >= 2018 {
 	local enigh = "ENIGH"
-	local enighanio = 2018
 	local tasagener = 16
 	local tasafront = 16
 	local altimir = "yes"
 }
-if `macroanio' == 2016 {
+if `enighanio' == 2016 {
 	local enigh = "ENIGH"
-	local enighanio = 2016
 	local tasagener = 16
 	local tasafront = 16
-	local altimir = "no"
+	local altimir = "yes"
 }
-if `macroanio' == 2015 {
+if `enighanio' == 2014 {
 	local enigh = "ENIGH"
-	local enighanio = 2014
 	local tasagener = 16
 	local tasafront = 16
-	local altimir = "no"
+	local altimir = "yes"
 }
-if `macroanio' == 2014 {
+if `enighanio' == 2012 {
 	local enigh = "ENIGH"
-	local enighanio = 2014
-	local tasagener = 16
-	local tasafront = 16
-	local altimir = "no"
-}
-if `macroanio' <= 2013 {
-	local enigh = "ENIGH"
-	local enighanio = 2012
 	local tasagener = 16
 	local tasafront = 11
-	local altimir = "no"
+	local altimir = "yes"
 }
-
+if `enighanio' == 2010 {
+	local enigh = "ENIGH"
+	local tasagener = 16
+	local tasafront = 11
+	local altimir = "yes"
+}
+if `enighanio' == 2008 {
+	local enigh = "ENIGH"
+	local tasagener = 15
+	local tasafront = 10
+	local altimir = "yes"
+}
 
 ** D.3. Texto introductorio **
 noisily di _newline(3) in g "{bf:GASTO DE LOS HOGARES:" in y " `enigh' `enighanio'}"
@@ -56,12 +55,11 @@ local data "`c(sysdir_site)'../basesCIEP/INEGI/`enigh'/`enighanio'"
 
 
 
-
 ******************************************
 *** 1. DATOS MACROECON{c o'}MICOS (MA) ***
 ******************************************
 ** MA.1. Sistema de Cuentas Nacionales **
-noisily SCN, anio(`macroanio')
+SCN, anio(`enighanio')
 
 local PIBSCN = scalar(PIB)
 
@@ -88,27 +86,26 @@ local ExpHog = scalar(ConHog)
 
 
 ** MA.2. SHCP: Datos Abiertos **
-noisily LIF, anio(`macroanio')
+LIF, anio(`enighanio')
 
 local IVA = r(IVA)
 local IEPS = r(IEPS__no_petrolero_)
-local Ieps4 = r(Impuesto_especi_as_refrescantes)
-local Ieps5 = r(Impuesto_especi_abacos_labrados)
-local Ieps6 = r(Impuesto_especi_uegos_y_sorteos)
-local Ieps7 = r(Impuesto_especi_ecomunicaciones)
-local Ieps8 = r(Impuesto_especi__energetizantes)
-local Ieps9 = r(Impuesto_especi_das_saborizadas)
-local Ieps10 = r(Impuesto_especi_sidad_calórica)
-local Ieps11 = r(Impuesto_especi_stibles_fosiles)
+local Ieps4 = r(Cervezas)
+local Ieps5 = r(Tabacos)
+local Ieps6 = r(Juegos)
+local Ieps7 = r(Telecom)
+local Ieps8 = r(Energiza)
+local Ieps9 = r(Saboriza)
+local Ieps10 = r(AlimNoBa)
+local Ieps11 = r(Fosiles)
 local Ieps12 = r(IEPS__petrolero_)
-local Ieps13 = r(Impuesto_especi_cios_de_Alcohol)
+local Ieps13 = r(Alcohol)
 
 
 
-
-****************************************
+******************************************
 *** 2. DATOS MICROECON{c o'}MICOS (MI) ***
-****************************************
+******************************************
 capture confirm file "`data'/preconsumption.dta"
 if _rc != 0 {
 
@@ -118,24 +115,21 @@ if _rc != 0 {
 	append using "`data'/gastotarjetas.dta"
 	append using "`data'/erogaciones.dta"
 
-
 	** MI.2. Variables sociodemograficas **
 	merge m:1 (folioviv foliohog numren) using "`data'/poblacion.dta", keepus(tipoesc sexo edad) nogen
 	merge m:1 (folioviv) using "`data'/vivienda.dta", keepus(ubica_geo tenencia factor) nogen
 	merge m:1 (folioviv foliohog) using "`data'/concentrado.dta", nogen keepus(factor)
-
+	capture rename factor_hog factor
 
 	** MI.3. Quitar gastos "no necesarios" **
 	// T916: gasto en regalos a personas ajenas al hogar, erogaciones financieras y de capital. 
 	// N012: Pérdidas y robos de dinero
 	drop if clave == "T916" | clave == "N012"
 
-
 	** MI.4. Gasto anual **
 	egen gasto_anual = rsum(gas_nm_tri gasto_tri)
 	replace gasto_anual = gasto_anual*4
 	format gasto_anual %10.2fc
-
 
 	** MI.5. Gasto en educaci{c o'}n *
 	replace inscrip = 0 if inscrip == . & clave >= "E001" & clave <= "E007"
@@ -143,14 +137,12 @@ if _rc != 0 {
 	replace material = 0 if material == . & clave >= "E001" & clave <= "E007"
 	replace gasto_anual = inscrip + colegia*12 + material if clave >= "E001" & clave <= "E007"
 
-
 	** MI.6. Uni{c o'}n de claves de IVA y IEPS **
 	merge m:1 (clave) using "`c(sysdir_site)'../basesCIEP/INEGI/ENIGH/2014/clave_iva.dta", ///
 		nogen keepus(descripcion *2014 clase_de_actividad*) keep(matched master)
 	encode iva2014, gen(tiva)
 	tempfile pre_iva
 	save `pre_iva'
-
 
 	** MI.7. Uni{c o'}n de censo econ{c o'}mico **
 	forvalues k=1(1)6 {
@@ -165,7 +157,6 @@ if _rc != 0 {
 	}
 	order folioviv-porcentaje_ieps2014 *1 *2 *3 *4 *5 *6
 
-
 	** MI.8. Ponderador del IVA (exentos) **
 	egen agregado = rmean(valoragregado1 valoragregado2 valoragregado3 valoragregado4 valoragregado5 valoragregado6)
 	egen prod = rmean(produccion1 produccion2 produccion3 produccion4 produccion5 produccion6)
@@ -177,7 +168,6 @@ if _rc != 0 {
 	matrix `PR' = r(StatTotal)
 
 	replace proporcion = `PR'[1,1] if clase_de_actividad1 == "000000"
-
 
 	** MI.9. Estado y ubicaci{c o'}n geogr{c a'}fica ***
 	g estado = substr(folioviv,1,2)
@@ -206,7 +196,6 @@ if _rc != 0 {
 		| ubica_geo==07105 | ubica_geo==07114 | ubica_geo==07115 | ubica_geo==07116 ///
 		| ubica_geo==20079 | ubica_geo==27001 | ubica_geo==27017
 
-
 	** MI.10. Variables auxiliares **
 	g letra = substr(clave,1,1)
 	g letra2 = substr(clave,2,1)
@@ -221,7 +210,6 @@ if _rc != 0 {
 
 	g publica = tipoesc == "1"
 	g rentab = tenencia == "1" | tenencia == "3"
-
 
 	** MI.11. SNA categor{c i'}as **
 	g categ = 1 if letra == "A" & num <= 214
@@ -287,7 +275,6 @@ if _rc != 0 {
 	label values categ categ
 	replace categ = 99 if categ == .	// Individuos
 
-
 	** MI.12 IVA categor{c i'}as **
 	g categ_iva = "alim" if letra == "A" & iva2014 == "Tasa Cero"
 	replace categ_iva = "fuera" if letra == "A" & ((num >= 198 & num <= 202) | (num >= 243 & num <= 247))
@@ -304,7 +291,6 @@ if _rc != 0 {
 	replace categ_iva = "educacion" if letra == "E" & ((num >= 1 & num <= 7) | num == 16 | num == 19) //& publica == 0
 	replace categ_iva = "alquiler" if letra == "G" & ((num >= 1 & num <= 3) | (num >= 101 & num <= 106))
 	replace categ_iva = "otros" if categ_iva == "" & tiva != .
-
 
 	** MI.13 IEPS categor{c i'}as **
 	g tipoieps = 1 if (letra == "A" & (num == 222 | num == 226 | num == 228 | num == 231 | num == 232 | num == 234 | num == 238))
@@ -326,23 +312,26 @@ if _rc != 0 {
 		10 "Comida chatarra" 11 "Combustibles fosiles" 12 "Gasolinas" 13 "Alcohol (total)"
 	label values tipoieps tipoieps
 
-
 	** MI.14. Coeficientes de consumo por edades **
 	g alfa = 1 if edad != .
 	replace alfa = alfa - .6*(20-edad)/16 if edad >= 5 & edad <= 20
 	replace alfa = .4 if edad <= 4
 
-
 	** MI.15. Supuestos **
 	g informal = lugar_comp == "02" | lugar_comp == "03" | lugar_comp == "17"	// Informalidad
 	*replace numren = "01" if clave >= "M007" & clave <= "M009"			// Adquisicion de vehiculos (jefe del hogar)
-
-
+	
 	** MI.16. Guardar pre-base **
 	capture drop __*
 	compress
 	sort folioviv foliohog numren clave
-	save "`data'/preconsumption.dta", replace
+	
+	if `c(version)' == 15.1 {
+		saveold "`data'/preconsumption.dta", replace version(13)
+	}
+	else {
+		save "`data'/preconsumption.dta", replace
+	}
 }
 
 
@@ -352,6 +341,10 @@ if _rc != 0 {
 *** 3. Precio, IVA, IEPS (P) ***
 ********************************
 use "`data'/preconsumption.dta", clear
+destring sexo, replace
+label define sexo 1 "Hombres" 2 "Mujeres"
+label values sexo sexo
+
 
 ** P.1 Cantidad **
 replace cantidad = cantidad*365 if frecuencia == "1"
@@ -364,7 +357,6 @@ replace cantidad = 4 if cantidad == .
 replace cantidad = gasto/13.98*52 if clave == "F007"
 replace cantidad = gasto/14.81*52 if clave == "F008"
 replace cantidad = gasto/14.63*52 if clave == "F009"
-
 
 ** P.2 C{c a'}lculo de precios **
 replace porcentaje_ieps = 0 if porcentaje_ieps == .
@@ -388,7 +380,6 @@ replace precio = gasto_anual ///
 
 replace precio = gasto_anual/cantidad if tiva == 3				// Tasa cero
 
-
 ** P.3 C{c a'}lculo del IVA **
 g double IVA = gasto_anual - precio*(1+porcentaje_ieps2014/100)*cantidad ///
 	if informal == 0 & tiva == 2						// IVA general
@@ -398,7 +389,6 @@ replace IVA = 0 if informal == 1 | tiva == 3					// IVA tasa cero
 format IVA %10.2fc
 
 noisily tabstat IVA [aw=factor], by(tiva) stat(sum) f(%20.0fc)
-
 
 ** P.4 C{c a'}lculo del IEPS **
 g double IEPS = precio*porcentaje_ieps2014/100*cantidad				// Alcohol
@@ -410,7 +400,6 @@ format IEPS %10.2fc
 noisily tabstat precio [aw=factor], by(tipoieps) f(%20.0fc)
 replace tipoieps = 13 if tipoieps == 1 | tipoieps == 2 | tipoieps == 3
 noisily tabstat IEPS cantidad [aw=factor], by(tipoieps) stat(sum) f(%20.0fc)
-
 
 
 ****************************************/
@@ -435,10 +424,13 @@ collapse (sum) deduc_*, by(folioviv foliohog)
 g proyecto = "2"
 g numren = "01"
 egen deduc_isr = rsum(deduc_*)
-save "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/deducciones.dta", replace
+if `c(version)' == 15.1 {
+	saveold "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/deducciones.dta", replace version(13)
+}
+else {
+	save "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/deducciones.dta", replace
+}
 restore
-
-
 
 
 ************************************/
@@ -577,8 +569,6 @@ noisily di in g "  IEPS " ///
 	_col(77) %6.1fc (`MTot'[1,4]/`IEPS'-1)*100 "%"
 
 
-
-
 *****************
 *** 6 Altimir ***
 *****************
@@ -621,7 +611,6 @@ if "`altimir'" == "yes" {
 
 	noisily tabstat IVA [aw=factor], by(tiva) stat(sum) f(%20.0fc)
 
-
 	** Re C{c a'}lculo del IEPS **
 	replace IEPS = precio*porcentaje_ieps2014/100*cantidad						// Alcohol
 	replace IEPS = IEPS + cantidad*1000/.75*cuota_ieps2014 if tipoieps == 5		// Tabaco
@@ -638,7 +627,6 @@ forvalues k=1(1)19 {
 }
 tempname MTot
 matrix `MTot' = r(StatTotal)
-
 
 * Display *
 noisily di _newline in g "{bf: D. Gasto ajustado" ///
@@ -776,7 +764,6 @@ replace IEPS = IEPS*`IEPS'/`MTot'[1,4]
 ************************
 collapse (sum) gasto_anual IVA IEPS (max) factor, by(folioviv foliohog numren sexo edad alfa)
 
-
 ** 7.2 Distribucion **
 foreach k of varlist gasto_anual IVA IEPS {
 	tempvar temp0`k'
@@ -792,17 +779,12 @@ foreach k of varlist gasto_anual IVA IEPS {
 
 drop if numren == ""
 drop *0
-
-
-
-********************
-*** Variables GA *** 
-g folio = folioviv + foliohog
-
-g Consumo = IVA + IEPS
-label var Consumo "Impuestos al consumo"
-
-
 capture drop __*
 compress
-saveold "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/expenditure.dta", replace version(13)
+
+if `c(version)' == 15.1 {
+	saveold "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/expenditure.dta", replace version(13)
+}
+else {
+	save "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/expenditure.dta", replace
+}

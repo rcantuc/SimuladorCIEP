@@ -22,6 +22,7 @@ foreach k of varlist _all {
 		}
 	}
 }
+drop if numdivLIF == .
 
 ** Encode **
 foreach k of varlist div* {
@@ -110,4 +111,9 @@ format recaudacion %20.0fc
 
 capture order div* nombre serie anio LIF ILIF monto
 compress
-save `"`c(sysdir_site)'../basesCIEP/SIM/LIF`=subinstr("${pais}"," ","",.)'.dta"', replace
+if `c(version)' == 15.1 {
+	saveold `"`c(sysdir_site)'../basesCIEP/SIM/LIF`=subinstr("${pais}"," ","",.)'.dta"', replace version(13)
+}
+else {
+	save `"`c(sysdir_site)'../basesCIEP/SIM/LIF`=subinstr("${pais}"," ","",.)'.dta"', replace
+}
