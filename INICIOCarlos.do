@@ -4,343 +4,222 @@
 clear all
 macro drop _all
 capture log close _all
+cd "C:\Users\carlos\Dropbox (CIEP)\Github\simuladorCIEP\"
+sysdir set PERSONAL "C:\Users\carlos\Dropbox (CIEP)\Github\simuladorCIEP\"
+adopath ++ PERSONAL
 timer on 1
 
 
 
 
-*****************
-*** 0. Github ***
-*****************
-cd "C:\Users\carlos\Dropbox (CIEP)\Github\simuladorCIEP\"
-sysdir set PERSONAL "C:\Users\carlos\Dropbox (CIEP)\Github\simuladorCIEP\"
-adopath ++ PERSONAL
-
-
-
-
+global id = "Carlos"
 *********************
 ***               ***
 *** 1. Parámetros ***
 ***               ***
 *********************
 global pais = "El Salvador"
+global pib2019 = 3.47
 
+global pib2020 = -1.9		// Pre-criterios 2021 [-3.9,0.1]
+global def2020 = 3.5		// Pre-criterios 2021
 
+global pib2021 = 1.5		// Pre-criterios 2021 [1.5,3.5]
+global def2021 = 3.2		// Pre-criterios 2021
 
+global desemp2020 = 0		// Desempleo (para la lambda
+global desemp2021 = 0		// Desempleo (para la lambda
 
-*************************************************/
-***                                            ***
-*** 2. Capítulo 2: Las tres caras de la moneda ***
-***              ¿QUÉ ES EL PIB?               ***
-***                                            ***
-***               ACTUALIZACIÓN                *** 
-*** 1) abrir archivos .iqy en Excel de Windows ***
-*** 2) guardar y reemplazar .xls dentro de     ***
-***      ./TemplateCIEP/basesCIEP/INEGI/SCN/   ***
-*** 3) correr SCN con opción "update"          ***
-***                                            ***
-**************************************************
-noisily SCN, discount(3.0) anio(2018) graphs //update
-
-
-
-
-*********************************************************/
-***                                                    ***
-*** 3. Capítulo 3: La economía-sistema antropocéntrica ***
-***                                                    ***
-**********************************************************
-capture use `"`c(sysdir_site)'../basesCIEP/SIM/2018/income`=subinstr("${pais}"," ","",.)'.dta"', clear
-if _rc != 0 {
-	noisily run Income`=subinstr("${pais}"," ","",.)'.do 2018
+** PIB **
+noisily PIBDeflactor, graphs //discount(3.0)									<-- Cap. 1. Par{c a'}metros MACRO.
+if "$pais" == "" {
+	noisily SCN, //graphs //anio(2020) //update									<-- Cap. 2. Explicaci{c o'}n del PIB.
 }
-capture merge 1:1 (folio numren) using `"`c(sysdir_site)'../basesCIEP/SIM/2018/expenditure`=subinstr("${pais}"," ","",.)'.dta"', keepus(Consumo) nogen keep(matched)
-if _rc != 0 {
-	preserve
-	noisily run Expenditure`=subinstr("${pais}"," ","",.)'.do 2018
-	restore
-	merge 1:1 (folio numren) using `"`c(sysdir_site)'../basesCIEP/SIM/2018/expenditure`=subinstr("${pais}"," ","",.)'.dta"', keepus(Consumo) nogen keep(matched)
+
+** Sankey ECONOMIA **															<-- Cap. 3. Explicaci{c o'}n de la poblaci{c o'}n
+*noisily run Households`=subinstr("${pais}"," ","",.)'.do 2018
+if "$pais" == "" {
+	foreach k in sexo grupo_edad decil escol {
+		noisily run Sankey.do `k' 2018
+	}
 }
-capture drop if folioviv == "1960306424"
+
+** Sistema Fiscal: INGRESOS **/
+noisily LIF, by(divGA) lif anio(2018) //graphs //update						<-- Parte 2.
+local alingreso = r(Impuestos_al_ingreso)
+local alconsumo = r(Impuestos_al_consumo)
+local otrosing = r(Otros_ingresos)
+
+if "$pais" == "" {
+	* INGRESOS *
+	noisily TasasEfectivas, lif //anio(2018)									<-- Cap. 4.
+	
+	* Al ingreso *
+	scalar sISR_AS  = ISR_ASBase*0		// ISR (asalariados)
+	scalar sISR_PF  = ISR_PFBase*0		// ISR (personas f{c i'}sicas)
+	scalar sCuotasT = CuotasBase*0		// Cuotas (IMSS)
+
+	* Al consumo *
+	scalar sIVA     = IVABase*0+15.493			// IVA: 12.493
+	scalar sIEPS    = IEPSBase*0 			// IEPS (no petrolero + petrolero)
+	scalar sImporta = ImportaBase*0 		// Importaciones
+	scalar sISAN    = ISANBase*0 			// ISAN
+
+	* Al capital *
+	scalar sISR_PM  = ISR_PMBase		// ISR (personas morales)
+	scalar sFMP     = FMPBase			// Fondo Mexicano del Petr{c o'}leo
+	scalar sOYE     = OYEBase			// Organismos y empresas (IMSS + ISSSTE + Pemex + CFE)
+	scalar sOtrosI  = OtrosIngBase		// Productos, derechos, aprovechamientos, contribuciones
+}
+
+** Sistema Fiscal: GASTOS **
+noisily PEF, by(divGA) anio(2018) //graphs //update			<-- Parte 3.
+local OtrosGas = r(Otros)
+local Pensiones = r(Pensiones)
+local Educacion = r(Educaci_c_o__n)
+local Salud = r(Salud)
+
+if "$pais" == "" {
+	* GASTOS *
+	noisily GastoPC, //pef //anio(2018)											<-- Cap. 5.
+	* Pensiones *
+	scalar spam    = pamBase*0+4.072			// Pensi{c o'}n BIENESTAR: 4.072
+	scalar spenims = penimsBase*0			// Pensi{c o'}n IMSS
+	scalar speniss = penissBase*0			// Pensi{c o'}n ISSSTE
+	scalar spenpem = penpemBase*0			// Pensi{c o'}n Pemex, CFE, Pensi{c o'}n LFC, ISSFAM, Otros
+
+	* Educacion *
+	scalar sbasica = basicaBase			// Educaci{c o'}n b{c a'}sica
+	scalar smedias = mediasBase			// Educaci{c o'}n media superior
+	scalar ssuperi = superiBase			// Educaci{c o'}n superior
+	scalar sposgra = posgraBase			// Posgrado
+
+	* Salud *
+	scalar sssa    = ssaBase			// SSalud
+	scalar ssegpop = segpopBase			// Seguro Popular
+	scalar simss   = imssBase			// IMSS (salud)
+	scalar sissste = isssteBase			// ISSSTE (salud)
+	scalar sprospe = prospeBase			// IMSS-Prospera
+	scalar spemex  = pemexBase			// Pemex (salud)
+
+	* Otros gastos *
+	scalar servpers = servpersBase		// Servicios personales
+	scalar matesumi = matesumiBase		// Materiales y suministros
+	scalar gastgene = gastgeneBase		// Gastos generales
+	scalar substran = substranBase		// Subsidios y transferencias
+	scalar bienmueb = bienmuebBase		// Bienes muebles e inmuebles
+	scalar obrapubl = obrapublBase		// Obras p{c u'}blicas
+	scalar invefina = invefinaBase		// Inversi{c o'}n financiera
+	scalar partapor = partaporBase		// Participaciones y aportaciones
+	scalar deudpubl = deudpublBase		// Deuda p{c u'}blica
+}
+
+* Extras *
+scalar singbas = 0.000				// Ingreso b{c a'}sico	
+scalar ingbasico18 = 1				// Ingreso b{c a'}sico a menores de 18 a{c n~}os
+scalar ingbasico65 = 1				// Ingreso b{c a'}sico a mayores de 65 a{c n~}os
+
+use `"`c(sysdir_site)'../basesCIEP/SIM/2018/households`=subinstr("${pais}"," ","",.)'.dta"', clear
+tabstat factor, stat(sum) f(%20.0fc) save
+matrix POBLACION = r(StatTotal)
+
+tabstat Ingreso Consumo Otros [fw=factor], stat(sum) f(%20.0fc) save
+matrix INGRESOS = r(StatTotal)
+
+tabstat Pension Educacion Salud OtrosGas [fw=factor], stat(sum) f(%20.0fc) save
+matrix GASTOS = r(StatTotal)
 
 
-
-
-*******************************************/
+*******************************************
 ***                                      ***
 *** 4. Parte 2: Ingresos presupuestarios ***
 ***                                      ***
 ********************************************
-preserve
-noisily LIF, by(divGA) graphs anio(2018) //update
-restore
+replace Ingreso = Ingreso*`alingreso'/INGRESOS[1,1] ///
+	// *(sISR_AS+sISR_PF+sCuotasT+sISR_PM)/(ISR_ASBase+ISR_PFBase+CuotasBase+ISR_PMBase)
+Simulador Ingreso [fw=factor], base("ENIGH 2018") ///
+	reboot graphs //boot(20) //noisily
 
-* Simulador *
-noisily Simulador Ingreso if Ingreso != 0 [fw=factor], ///
-	anio(2018) base("EHPM 2018") ///
-	folio(folio) boot(20) graphs //reboot //noisily
-noisily Simulador Consumo if Consumo != 0 [fw=factor], ///
-	anio(2018) base("EHPM 2018") ///
-	folio(folio) boot(20) graphs //reboot //noisily
+replace Consumo = Consumo*`alconsumo'/INGRESOS[1,2] ///
+	// *(sIVA+sIEPS+sImporta+sISAN)/(IVABase+IEPSBase+ImportaBase+ISANBase) ///
+	// +ConsumoImp/100*singbas/100*scalar(pibY)*(1-.0618)/POBLACION[1,1]
+Simulador Consumo if Consumo != 0 [fw=factor], base("ENIGH 2018") ///
+	reboot graphs //boot(20) //noisily
+
+replace Otros = Otros*`otrosing'/INGRESOS[1,3] ///
+	// *(sFMP+sOYE+sOtrosI)/(FMPBase+OYEBase+OtrosIngBase)
+Simulador Otros if Otros != 0 [fw=factor], base("ENIGH 2018") ///
+	reboot graphs //boot(20) //noisily
 
 
-
-
-*****************************************/
+*****************************************
 ***                                    ***
 *** 5. Parte 3: Gastos presupuestarios ***
 ***                                    ***
+******************************************
+replace Pension = Pension*`Pensiones'/GASTOS[1,1] ///
+	// *(spam+spenims+speniss+spenpem)/(pamBase+penimsBase+penissBase+penpemBase)
+Simulador Pension if Pension != 0 [fw=factor], base("ENIGH 2018") ///
+	reboot graphs //boot(20) //noisily
+
+replace Educacion = Educacion*`Educacion'/GASTOS[1,2] ///
+	// *(sbasica+smedias+ssuperi+sposgra)/(basicaBase+mediasBase+superiBase+posgraBase)
+Simulador Educacion if Educacion != 0 [fw=factor], base("ENIGH 2018") ///
+	reboot graphs //boot(20) //noisily
+
+replace Salud = Salud*`Salud'/GASTOS[1,3] ///
+	// *(sssa+ssegpop+simss+sissste+sprospe+spemex)/(ssaBase+segpopBase+imssBase+isssteBase+prospeBase+pemexBase)
+Simulador Salud if Salud != 0 [fw=factor], base("ENIGH 2018") ///
+	reboot graphs //boot(20) //noisily
+
+replace OtrosGas = OtrosGas*`OtrosGas'/GASTOS[1,4] ///
+	// *(servpers+matesumi+gastgene+substran+bienmueb+obrapubl+invefina+partapor+deudpubl)/(servpersBase+matesumiBase+gastgeneBase+substranBase+bienmuebBase+obrapublBase+invefinaBase+partaporBase+deudpublBase)
+Simulador OtrosGas if OtrosGas != 0 [fw=factor], base("ENIGH 2018") ///
+	reboot graphs //boot(20) //noisily
+
+if ingbasico18 == 0 & ingbasico65 == 1 {
+	tabstat factor if edad >= 18, stat(sum) f(%20.0fc) save
+	matrix POBLACION = r(StatTotal)
+	g IngBasico = singbas/100*scalar(pibY)/POBLACION[1,1] if edad >= 18
+}
+else if ingbasico18 == 1 & ingbasico65 == 0 {
+	tabstat factor if edad < 65, stat(sum) f(%20.0fc) save
+	matrix POBLACION = r(StatTotal)
+	g IngBasico = singbas/100*scalar(pibY)/POBLACION[1,1] if edad < 65
+}
+else if ingbasico18 == 0 & ingbasico65 == 0 {
+	tabstat factor if edad < 65 & edad >= 18, stat(sum) f(%20.0fc) save
+	matrix POBLACION = r(StatTotal)
+	g IngBasico = singbas/100*scalar(pibY)/POBLACION[1,1] if edad >= 18 & edad < 65
+}
+g IngBasico = singbas/100*scalar(pibY)/POBLACION[1,1]
+label var IngBasico "Ingreso b{c a'}sico"
+Simulador IngBasico if IngBasico != 0 [fw=factor], base("ENIGH 2018") ///
+	reboot graphs //boot(20) //noisily
+
+
 *****************************************
-preserve
-noisily PEF, graphs anio(2018) //update
-restore
-
-* Simulador *
-noisily Simulador Pension if Pension != 0 [fw=factor], ///
-	anio(2018) base("EHPM 2018") ///
-	folio(folio) boot(20) graphs //reboot //noisily
-noisily Simulador Educacion if Educacion != 0 [fw=factor], ///
-	anio(2018) base("EHPM 2018") ///
-	folio(folio) boot(20) graphs //reboot //noisily
-noisily Simulador Salud if Salud != 0 [fw=factor], ///
-	anio(2018) base("EHPM 2018") ///
-	folio(folio) boot(20) graphs //reboot //noisily
-
-
-
-
-*****************************************/
 ***                                    ***
 *** 6. Parte 4: Balance presupuestario ***
 ***                                    ***
 ******************************************
-g TransfNetas = Ingreso + Consumo - Pension - Educacion - Salud
+g TransfNetas = Ingreso + Consumo - Pension - Educacion - Salud - IngBasico
 label var TransfNetas "Transferencias Netas"
-
-noisily Simulador TransfNetas if TransfNetas != 0 [fw=factor], ///
-	anio(2018) base("EHPM 2018") ///
-	folio(folio) boot(20) graphs //reboot //noisily
-
-* Cuentas Generacionales *
-noisily CuentasGeneracionales TransfNetas, anio(2018) boot(20)
-
-* Fiscal Gap */
-noisily FiscalGap, anio(2018) graphs
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-*global depreMXN = 0					// % de depreciaci${o}n (SHRFSP.ado)
-*noisily SHRFSP, graphs 				//`update'
-*noisily Eficiencia, reboot graphs noisily update
-*run "`c(sysdir_personal)'/Modulos.do" `id' $anioVP
-
-
-
-**************
-*** SANKEY ***
-**************
-/*noisily run Expenditure.do 2018
-*noisily Sankey escol sexo grupo_edad rural formalmax decil ///
-	using "`c(sysdir_site)'../basesCIEP/SIM/2018/income.dta", ///
-	anio(2018) profile(Poblacion)
-
-	
-use "`c(sysdir_site)'../basesCIEP/SIM/2018/income.dta", clear
-rename Depreciacion ing_Depreciacion
-collapse (sum) ing_laboral ing_capital ing_Depreciacion, by(escol)
-
-tempvar cuenta
-reshape long ing_, i(escol) j(`cuenta') string
-encode `cuenta', g(cuenta)
-
-rename escol from
-rename cuenta to
-rename ing_ profile
-
-tempfile eje1
-save `eje1'
-
-
-use "`c(sysdir_site)'../basesCIEP/SIM/2018/income.dta", clear
-rename Depreciacion ing_Depreciacion
-collapse (sum) ing_laboral ing_capital ing_Depreciacion, by(sexo)
-
-tempvar cuenta
-reshape long ing_, i(sexo) j(`cuenta') string
-encode `cuenta', g(cuenta)
-
-rename cuenta from
-rename sexo to
-rename ing_ profile
-
-tempfile eje2
-save `eje2'
-
-
-use "`c(sysdir_site)'../basesCIEP/SIM/2018/income.dta", clear
-collapse (sum) ing_honor ing_sueldos, by(sexo)
-tempvar cuenta
-reshape long ing_, i(sexo) j(`cuenta') string
-encode `cuenta', g(cuenta)
-
-rename sexo from
-rename cuenta to
-rename ing_ profile
-
-tempfile eje3
-save `eje3'
-
-
-use "`c(sysdir_site)'../basesCIEP/SIM/2018/income.dta", clear
-collapse (sum) ing_honor ing_sueldos, by(escol)
-tempvar cuenta
-reshape long ing_, i(escol) j(`cuenta') string
-encode `cuenta', g(cuenta)
-
-rename cuenta from
-rename escol to
-rename ing_ profile
-
-tempfile eje4
-save `eje4'
-
-
-noisily SankeySum, a(`eje1') b(`eje2') c(`eje3') d(`eje4') cycle
-
-
-
-
-
-
-
-
-
-
-
-**********************/
-*** 3. Simulaciones ***
-/***********************
-local id "MexTax"
-capture mkdir "`c(sysdir_personal)'/users/`id'/"
-capture log using "`c(sysdir_personal)'/users/`id'/log `c(current_date)'", replace
-noisily di _newline(5) in g _dup(50) "+" in y "$simuladorCIEP. (ID: `id'): `c(current_date)' `c(current_time)'" in g _dup(50) "+"
-
-
-************
-************
-** Gastos **
-
-* Educaci${o}n *
-scalar sbasica = 1.993								// Educaci${o}n b${a}sica
-scalar smedias = 0.410								// Educaci${o}n media superior
-scalar ssuperi = 0.521								// Educaci${o}n superior
-scalar sposgra = 0.033								// Posgrado
-
-* Pensiones *
-scalar spam    = 0.172								// Pensi${o}n para adultos mayores
-scalar spenims = 1.678								// Pensi${o}n IMSS
-scalar speniss = 0.901								// Pensi${o}n ISSSTE
-scalar spenpem = 0.278								// Pensi${o}n Pemex
-scalar spencfe = 0.168								// Pensi${o}n CFE
-scalar spenlfc = 0.426								// Pensi${o}n LFC, ISSFAM, Otros
-
-* Salud *
-scalar sssa    = 0.212								// SSalud
-scalar ssegpop = 0.706								// Seguro Popular
-scalar simss   = 1.205								// IMSS (salud)
-scalar sissste = 0.239								// ISSSTE (salud)
-scalar sprospe = 0.052								// IMSS-Prospera
-scalar spemex  = 0.097								// Pemex (salud)
-
-* Extras *
-scalar singbas = 0.000								// Ingreso b${a}sico	
-scalar pamgeneral = 1								// PAM general
-scalar ivageneral = 1								// IVA general
-scalar ingbasico18 = 1								// Ingreso b${a}sico a menores de 18 a${ni}os
-scalar ingbasico65 = 1								// Ingreso b${a}sico a mayores de 65 a${ni}os
-
-* Otros gastos *
-scalar servpers = 1.813								// Servicios personales
-scalar matesumi = 0.933								// Materiales y suministros
-scalar gastgene = 0.853								// Gastos generales
-scalar substran = 1.455								// Subsidios y transferencias
-scalar bienmueb = 0.196								// Bienes muebles e inmuebles
-scalar obrapubl = 1.265								// Obras p${u}blicas
-scalar invefina = 0.094								// Inversi${o}n financiera
-scalar partapor = 4.428								// Participaciones y aportaciones
-scalar deudpubl = 2.890								// Deuda p${u}blica
-
-
-
-**************
-** Ingresos **
-**************
-
-* Al ingreso *
-scalar sISR__as = 2.901								// ISR (asalariados)
-scalar sISR__PF = 0.402								// ISR (personas f${i}sicas)
-scalar sCuotasT = 1.345								// Cuotas (IMSS)
-
-* Al consumo *
-scalar sIVA     = 3.813 							//+2.901+0.402+1.345+.709+1.125+.046+.206+2.3+(singbas*.24*(1-.06608))+(spam*.24*(1-.06608))								// IVA
-scalar sIEPS    = (0.709 + 1.125) 						// IEPS (no petrolero + petrolero)
-scalar sISAN    = 0.046								// ISAN
-scalar sImporta = 0.206								// Importaciones
-
-* Al capital *
-scalar sISR__PM = 3.508								// ISR (personas morales)
-scalar sFMP_Der = 1.986								// Fondo Mexicano del Petr${o}leo
-scalar sOYE     = (0.119 + 0.228 + 1.841 + 1.656)				// Organismos y empresas (IMSS + ISSSTE + Pemex + CFE)
-
-
+noisily Simulador TransfNetas if TransfNetas != 0 [fw=factor], base("ENIGH 2018") ///
+	reboot graphs //boot(20) //noisily
+
+* Cuentas Generacionales */
+noisily CuentasGeneracionales TransfNetas //, anio(2018) //boot(20)			// <-- OPTIONAL!!!
+
+/* Sankey SISTEMA FISCAL *
+if "$pais" == "" {
+	foreach k in sexo grupo_edad decil escol {
+		noisily run Sankey.do `k' 2018											<-- TO DO!
+	}
+}
+
+* Fiscal Gap: Transferencias Intertemporales */
+noisily FiscalGap, graphs end(2040) //anio(2018) //update //boot(20)
 
 
 

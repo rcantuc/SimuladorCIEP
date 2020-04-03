@@ -1,9 +1,13 @@
 program define CuentasGeneracionales, rclass
 quietly {
 	timer on 95
-
 	version 13.1
-	syntax varname, ANIObase(int) [BOOTstrap(int 1) Graphs POST]
+
+	** Anio valor presente **
+	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
+	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
+
+	syntax varname [, ANIObase(int `aniovp') BOOTstrap(int 1) Graphs POST]
 
 	noisily di _newline in g "{bf:Cuentas Generacionales: " in y "$pais `aniobase'}"
 	local title : variable label `varlist'
@@ -42,7 +46,7 @@ quietly {
 	****************
 	** 2 Perfiles **
 	****************
-	use `"`c(sysdir_personal)'/users/$pais/`id'/bootstraps/`bootstrap'/`varlist'PERF"', clear
+	use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'PERF"', clear
 	collapse perfil1 perfil2 contribuyentes1 contribuyentes2, by(edad)
 
 	sort edad
@@ -57,7 +61,7 @@ quietly {
 	**************************
 	*** 3 Monto per capita ***
 	**************************
-	use `"`c(sysdir_personal)'/users/$pais/`id'/bootstraps/`bootstrap'/`varlist'PC"', clear
+	use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'PC"', clear
 
 	ci montopc
 	local montopc = r(mean)

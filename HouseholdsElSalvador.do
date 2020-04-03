@@ -3,7 +3,8 @@
 ********************************
 noisily LIF, by(divGA) anio(2018)
 local alingreso = r(Impuestos_al_ingreso)
-
+local alconsumo = r(Impuestos_al_consumo)
+local otrosing = r(Otros_ingresos)
 
 
 ******************************
@@ -14,14 +15,11 @@ local pensiones = r(Pensiones)
 local educacion = r(Educaci_c_o__n)
 local salud = r(Salud)
 local deuda = r(Deuda)
-
-
+local otrosgas = r(Otros)
 
 ***************************
 *** Encuesta de hogares ***
 ***************************
-noisily run ExpenditureElSalvador.do 2018
-
 use "`c(sysdir_site)'../basesCIEP/Otros/EHPM2018.dta", clear
 rename r106 edad
 rename r104 sexo
@@ -53,6 +51,13 @@ rename folio folioold
 rename idboleta folio
 rename r101 numren
 
+** Coeficientes de consumo por edades **
+g alfa = 1 if edad != .
+replace alfa = alfa - .6*(20-edad)/16 if edad >= 5 & edad <= 20
+replace alfa = .4 if edad <= 4
+
+tempvar alfatot
+egen `alfatot' = sum(alfa), by(folio)
 
 
 *************************************
@@ -68,12 +73,10 @@ program Distribucion
 end
 
 
-
 *******************************
 *** Variables Simulador.ado ***
 *******************************
 
-*************
 ** Ingreso **
 g Ingreso = ingre if formal == 1
 replace Ingreso = 0 if Ingreso == .
@@ -81,8 +84,19 @@ label var Ingreso "Impuestos al ingreso"
 * Reescalar *
 Distribucion Ingreso, macro(`alingreso')
 
+** Consumo **
+g Consumo = gastohog*alfa/`alfatot'
+label var Consumo "Impuestos al consumo"
+* Reescalar *
+Distribucion Consumo, macro(`alconsumo')
 
-***************
+** Otros ingresos **
+g Otros = 1
+replace Otros = 0 if Ingreso == .
+label var Otros "Otros ingresos"
+* Reescalar *
+Distribucion Otros, macro(`otrosing')
+
 ** Pensiones **
 g Pension = r44407a
 replace Pension = 0 if Pension == .
@@ -90,9 +104,7 @@ label var Pension "Pensiones"
 * Reescalar *
 Distribucion Pension, macro(`pensiones')
 
-
-***************
-** Educación **
+** EducaciÃ³n **
 tabstat factor, stat(sum) by(r204) f(%10.0fc) save
 matrix TotAlum = r(StatTotal)
 matrix BasAlum = r(Stat1)+r(Stat2)+r(Stat3)+r(Stat7)
@@ -103,12 +115,10 @@ g Educacion = 157.2*1000000/TotAlum[1,1] + 638.5*1000000/BasAlum[1,1] if r204 ==
 replace Educacion = 157.2*1000000/TotAlum[1,1] + 102.5*1000000/MedAlum[1,1] if r204 == 4
 replace Educacion = 157.2*1000000/TotAlum[1,1] + 84.3/SupAlum[1,1] if r204 == 5 | r204 == 6
 replace Educacion = 0 if Educacion == .
-label var Educacion "Educación"
+label var Educacion "EducaciÃ³n"
 * Reescalar *
 Distribucion Educacion, macro(`educacion')
 
-
-***********
 ** Salud **
 g Salud = 1.5 if edad <= 4
 replace Salud = 0.78 if edad >= 5 & edad <= 9
@@ -134,12 +144,17 @@ label var Salud "Salud"
 * Reescalar *
 Distribucion Salud, macro(`salud')
 
+** Otros gastos **
+g OtrosGas = 1
+replace OtrosGas = 0 if Ingreso == .
+label var OtrosGas "Otros gastos"
+* Reescalar *
+Distribucion OtrosGas, macro(`otrosgas')
 
 
 ***********
 *** END ***
 capture drop __*
-
 merge 1:1 (folio numren) using `"`c(sysdir_site)'../basesCIEP/SIM/2018/expenditureElSalvador.dta"', nogen
 
 compress

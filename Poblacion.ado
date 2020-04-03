@@ -29,7 +29,12 @@ quietly {
 
 	* Si hay un error o la opción "update" es llamada, limpia la base de datos y la usa *
 	if _rc != 0 | "`update'" == "update" {
-		run `"`c(sysdir_personal)'/PoblacionBase`=subinstr("${pais}"," ","",.)'.do"'
+		if "$pais" == "" {
+			run `"`c(sysdir_personal)'/PoblacionBase`=subinstr("${pais}"," ","",.)'.do"'
+		}
+		else {
+			run `"`c(sysdir_personal)'/PoblacionBaseOtrosPaises.do"'
+		}
 		use `"`c(sysdir_site)'../basesCIEP/SIM/`=proper("`anything'")'`=subinstr("${pais}"," ","",.)'.dta"', clear
 	}
 
@@ -309,7 +314,7 @@ quietly {
 			text(`z4' `m4' `"{bf:Min:} `=string(`MAX'[2,4],"%5.1fc")' % (`m4')"', place(n)) ///
 			text(`z4' `m4' `"{bf:`poblacion':} `=string(pob61[`q4'],"%12.0fc")'"', place(s)) ///
 			text(`=`y1'*.175' `=`anioinicial'-1' "{bf:Hoy:} `anioinicial'", place(w)) ///
-			xtitle("") ytitle("Distribuci{c o'}n (%)") ///
+			xtitle("") ytitle("Personas") ///
 			xline(`=`anioinicial'+.5', lpattern(dash) lcolor("52 70 78")) ///
 			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
 			name(Estructura_`anything'_`anioinicial'_`aniofinal', replace) ///

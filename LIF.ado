@@ -33,7 +33,7 @@ quietly {
 	*** 2 SYNTAX **
 	***************
 	syntax [if/] [, ANIO(int `aniovp' ) Update Graphs Base ID(string) ///
-		MINimum(real 1) DESDE(int 2013) ILIF BY(varname)]
+		MINimum(real 1) DESDE(int 2013) LIF BY(varname)]
 
 	** 2.1 Update LIF **
 	if "`update'" == "update" | "`updated'" != "yes" {
@@ -75,8 +75,8 @@ quietly {
 		update replace keep(matched) sorted
 
 	** 3.1 Utilizar ILIF **
-	if "`ilif'" == "ilif" {
-		replace LIF = ILIF if anio == `anio'
+	if "`lif'" == "lif" {
+		replace recaudacion = LIF if anio == `anio'
 	}
 
 	** 3.2 Valores como % del PIB **
@@ -310,6 +310,5 @@ quietly {
 	timer off 3
 	timer list 3
 	noisily di _newline in g "{bf:Tiempo:} " in y round(`=r(t3)/r(nt3)',.1) in g " segs."
-
 }
 end

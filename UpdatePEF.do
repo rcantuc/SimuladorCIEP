@@ -1,27 +1,28 @@
 *****************************
+****                     ****
 **** BASE DE DATOS: PEFs ****
+****                     ****
 *****************************
-
-
 
 
 ************************
 *** 1. BASE DE DATOS ***
 ************************
-local archivos_csv: dir "`c(sysdir_site)'../basesCIEP/PEFs/$pais" files "*.csv"	// Busca todos los archivos .csv en /basesCIEP/PEFs/
+local archivos_csv: dir "`c(sysdir_site)'../basesCIEP/PEFs/$pais" files "*.xlsx"	// Busca todos los archivos .csv en /basesCIEP/PEFs/
 
 * Loop para todos los archivos .csv *
 foreach k of local archivos_csv {
 
 	* Importar archivo de la Cuenta Publicas*
 	noisily di in g "Importando: " in y "`k'", _cont
-	import delimited "`c(sysdir_site)'../basesCIEP/PEFs/$pais/`k'", clear encoding("utf8") case(lower) stripquotes(yes)
+	*import delimited "`c(sysdir_site)'../basesCIEP/PEFs/$pais/`k'", clear encoding("utf8") case(lower) stripquotes(yes)
+	import excel "`c(sysdir_site)'../basesCIEP/PEFs/$pais/`k'", clear firstrow case(lower)
 
 	* Limpiar *
 	drop if ciclo == .
 	capture drop v*
 	foreach j of varlist _all {
-		di in w ".", _cont
+		di in w "`j' ", _cont
 		tostring `j', replace
 		capture confirm string variable `k'
 		if _rc == 0 {
@@ -65,8 +66,6 @@ foreach k of local archivos_csv {
 	}
 }
 compress
-
-
 
 
 **********************/
@@ -265,9 +264,9 @@ if "$pais" == "" {
 	local ifpp2 "("
 	foreach k of local levelsof {
 		local label : label desc_pp `k'
-		if "`label'" == "Pensión para Adultos Mayores" | ///
-			"`label'" == "Pensión para el Bienestar de las Personas Adultas Mayores" | ///
-			"`label'" == "Pensión para el Bienestar de las Personas con Discapacidad Permanente" {
+		if "`label'" == "Pensi{c o'}n para Adultos Mayores" | ///
+			"`label'" == "Pensi{c o'}n para el Bienestar de las Personas Adultas Mayores" | ///
+			"`label'" == "Pensi{c o'}n para el Bienestar de las Personas con Discapacidad Permanente" {
 			local ifpp "`ifpp'desc_pp == `k' | "
 			local ifpp2 "`ifpp2'desc_pp != `k' & "
 		}
@@ -275,7 +274,7 @@ if "$pais" == "" {
 	local ifpp `"`=substr("`ifpp'",1,`=strlen("`ifpp'")-3')')"'
 	local ifpp2 `"`=substr("`ifpp2'",1,`=strlen("`ifpp2'")-3')')"'
 
-	g desc_divGA = "Pensiones" if transf_gf == 0 & ramo != -1 & capitulo != 9 ///	
+	g desc_divGA = "Pensiones" if transf_gf == 0 & ramo != -1 & capitulo != 9 ///
 		& (substr(string(objeto),1,2) == "45" | substr(string(objeto),1,2) == "47" | `ifpp')
 
 	replace desc_divGA = "Educaci{c o'}n" if transf_gf == 0 & ramo != -1 & capitulo != 9  ///
@@ -323,6 +322,9 @@ else if "$pais" == "El Salvador" {
 capture g double gasto = ejercido if ejercido != .
 if _rc != 0 {
 	g double gasto = devengado if devengado != .
+}
+if "$pais" != "" {
+	replace gasto = aprobado if anio == 2020
 }
 capture replace gasto = aprobado if aprobado != . & gasto == .
 capture replace gasto = proyecto if proyecto != . & gasto == .

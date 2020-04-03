@@ -762,23 +762,36 @@ replace IEPS = IEPS*`IEPS'/`MTot'[1,4]
 ************************
 *** 7 Gasto por edad ***
 ************************
-collapse (sum) gasto_anual IVA IEPS (max) factor, by(folioviv foliohog numren sexo edad alfa)
+collapse (sum) gasto_anual IVA IEPS (max) factor sexo edad alfa, by(folioviv foliohog numren categ)
+reshape wide gasto_anual IVA IEPS, i(folioviv foliohog numren) j(categ)
 
-** 7.2 Distribucion **
-foreach k of varlist gasto_anual IVA IEPS {
-	tempvar temp0`k'
-	g double `temp0`k'' = `k' if numren == ""
-	egen double `k'0 = sum(`temp0`k''), by(folioviv foliohog)
+** 7.1 Distribucion **
+foreach k of varlist gasto_anual* IVA* IEPS* {
+	tempvar temp`k'
+	g double `temp`k'' = `k' if numren == ""
+	egen double T`k' = sum(`temp`k''), by(folioviv foliohog)
 }
 
 tempvar alfatot
 egen `alfatot' = sum(alfa), by(folioviv foliohog)
-foreach k of varlist gasto_anual IVA IEPS {
-	replace `k' = `k' + `k'0*alfa/`alfatot'
+foreach k of varlist gasto_anual* IVA* IEPS* {
+	replace `k' = 0 if `k' == .
+	replace `k' = `k' + T`k'*alfa/`alfatot'
 }
-
 drop if numren == ""
-drop *0
+drop T*
+drop *99
+
+** 7.2 Totales **
+egen TOTgasto_anual = rsum(gasto_anual*)
+egen TOTIVA = rsum(IVA*)
+egen TOTIEPS = rsum(IEPS*)
+
+
+
+***********
+*** END ***
+***********
 capture drop __*
 compress
 

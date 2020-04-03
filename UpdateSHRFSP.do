@@ -5,6 +5,7 @@ if "$pais" == "" {
 	noisily DatosAbiertos RF000000SPFCS			// Total
 	keep anio monto
 	rename monto rfsp
+	replace rfsp = -rfsp
 	tempfile rfsp
 	save `rfsp'
 
