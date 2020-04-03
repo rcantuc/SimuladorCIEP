@@ -3,7 +3,7 @@ quietly {
 	timer on 96
 	version 13.1
 	syntax varname [if] [fweight/], ///
-		[ANIObase(int -1) BOOTstrap(int 1) ///
+		[BOOTstrap(int 1) ///
 		Graphs REboot Noisily ///
 		REESCalar(real 1) BANDwidth(int 5) ///
 		BASE(string) GA ///
@@ -21,49 +21,38 @@ quietly {
 		local base = "ENIGH 2018"
 	}
 
-
 	** Anio de la BASE **
 	tokenize `base'
-
+	local aniobase = `2'
 
 	** Macros: PIB **
 	preserve
-	if "`bie'" == "bie" {
-		SNA, anio(`aniobase')
-		local PIB = r(PIB)
-	}
-	else {
-		PIBDeflactor, anio(`aniobase')
-		tempfile PIBBASE
-		save `PIBBASE'
+	PIBDeflactor, anio(`aniobase')
+	tempfile PIBBASE
+	save `PIBBASE'
 
-		forvalues k=1(1)`=_N' {
-			if anio[`k'] == `aniobase' {
-				local PIB = pibY[`k']
-				local deflactor = deflator[`k']
-				continue, break
-			}
+	forvalues k=1(1)`=_N' {
+		if deflator[`k'] == 1 {
+			local PIB = pibY[`k']
+			local aniovp = anio[`k']
+			continue, break
 		}
 	}
 	restore
-
 
 	** Poblacion **
 	if "`poblacion'" == "" {
 		local poblacion = "poblacion"
 	}
 
-
 	** Folio **
 	if "`folio'" == "" {
-		local folio = "folioviv foliohog"
+		local folio = "folio"
 	}
-
 
 	** T{c i'}tulo **
 	local title : variable label `varlist'
 	local nombre `"`=subinstr("`varlist'","_","",.)'"'
-
 
 	** Texto introductorio **
 	noisily di _newline(2) in g "  {bf:Variable label: " in y "`title'}"
@@ -76,12 +65,10 @@ quietly {
 	}
 	noisily di in g "  {bf:Bootstraps: " in y `bootstrap' "}" _newline
 
-
 	** Base original **
 	tempfile original
 	save `original', replace
-	
-	
+
 	** Reescalar **
 	if `reescalar' != 1 {
 		tempvar vartotal proporcion
@@ -96,7 +83,7 @@ quietly {
 	************************
 	*** 1. Archivos POST ***
 	************************
-	capture confirm file `"`c(sysdir_personal)'/users/$pais/`id'/bootstraps/`bootstrap'/`varlist'REC.dta"'
+	capture confirm file `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'REC.dta"'
 	if "`reboot'" == "reboot" | _rc != 0 {
 
 
@@ -110,31 +97,31 @@ quietly {
 		******************
 		** 1.2 Archivos **
 		capture mkdir `"`c(sysdir_personal)'/users/$pais"'
-		capture mkdir `"`c(sysdir_personal)'/users/$pais/`id'/"'
-		capture mkdir `"`c(sysdir_personal)'/users/$pais/`id'/graphs/"'
-		capture mkdir `"`c(sysdir_personal)'/users/$pais/`id'/bootstraps/"'
-		capture mkdir `"`c(sysdir_personal)'/users/$pais/`id'/bootstraps/`bootstrap'"'
+		capture mkdir `"`c(sysdir_personal)'/users/$pais/$id/"'
+		capture mkdir `"`c(sysdir_personal)'/users/$pais/$id/graphs/"'
+		capture mkdir `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/"'
+		capture mkdir `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'"'
 
 
 		** Per c{c a'}pita **
 		postfile PC double(estimacion contribuyentes poblacion montopc edad39) ///
-			using `"`c(sysdir_personal)'/users/$pais/`id'/bootstraps/`bootstrap'/`varlist'PC"', replace
+			using `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'PC"', replace
 
 
 		** Perfiles **
 		postfile PERF edad double(perfil1 perfil2 contribuyentes1 contribuyentes2 ///
 			estimacion1 estimacion2 pobcont1 pobcont2 poblacion1 poblacion2) ///
-			using `"`c(sysdir_personal)'/users/$pais/`id'/bootstraps/`bootstrap'/`varlist'PERF"', replace
+			using `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'PERF"', replace
 
 
 		** Incidencia por hogares **
 		postfile INCI decil double(xhogar distribucion incidencia hogares) ///
-			using `"`c(sysdir_personal)'/users/$pais/`id'/bootstraps/`bootstrap'/`varlist'INCI"', replace
+			using `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'INCI"', replace
 
 
 		** Ciclo de vida **
 		postfile CICLO bootstrap sexo edad decil escol double(poblacion `varlist') ///
-			using `"`c(sysdir_personal)'/users/$pais/`id'/bootstraps/`bootstrap'/`varlist'CICLO"', replace
+			using `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'CICLO"', replace
 
 
 		** Proyecciones **
@@ -143,7 +130,7 @@ quietly {
 			contribuyentes_Hom contribuyentes_Muj ///
 			contribuyentes_0_24 contribuyentes_25_49 ///
 			contribuyentes_50_74 contribuyentes_75_mas) ///
-			using `"`c(sysdir_personal)'/users/$pais/`id'/bootstraps/`bootstrap'/`varlist'REC"', replace
+			using `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'REC"', replace
 
 
 
@@ -160,7 +147,6 @@ quietly {
 			else {
 				replace `boot' = 1
 			}
-
 
 			** 1.3.1. Monto per capita **
 			** Recaudacion **
@@ -250,10 +236,8 @@ quietly {
 			post PC (`REC'[1,1]) (`FOR'[1,1]) (`POB'[1,1]) (`montopc') (`REC39'[1,1]/`POB39'[1,1])
 
 
-
 			*** 1.3.2. Perfiles ***
 			`noisily' perfiles `varlist' `if' [`weight' = `exp'*`boot'], montopc(`pc') post
-
 
 
 			*** 1.3.3. Incidencia por hogar ***
@@ -280,13 +264,13 @@ quietly {
 				label var `ingreso' "`rellabel'"
 			}
 
-			`noisily' incidencia `varlist' `if' [`weight' = `exp'*`boot'], folio(`folio') n(`decil') ///
-				relativo(`ingreso') post
+			*`noisily' incidencia `varlist' `if' [`weight' = `exp'*`boot'], folio(`folio') n(`decil') relativo(`ingreso') post
 
 
-
-			*** 1.3.4. Ciclo de Vida ***
-			`noisily' ciclodevida `varlist' `if' [`weight' = `exp'*`boot'], post boot(`k') decil(`decil')
+			*** 1.3.4. Ciclo de Vida ***/
+			if "`graphs'" == "graphs" {
+				`noisily' ciclodevida `varlist' `if' [`weight' = `exp'*`boot'], post boot(`k') decil(`decil')
+			}
 
 
 			*** 1.3.5. Proyecciones ***
@@ -311,7 +295,7 @@ quietly {
 	**************************
 	*** 2 Monto per capita ***
 	**************************
-	use `"`c(sysdir_personal)'/users/$pais/`id'/bootstraps/`bootstrap'/`varlist'PC"', clear
+	use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'PC"', clear
 
 
 	***********************************
@@ -355,7 +339,7 @@ quietly {
 	******************
 	*** 3 Perfiles ***
 	******************
-	use `"`c(sysdir_personal)'/users/$pais/`id'/bootstraps/`bootstrap'/`varlist'PERF"', clear
+	use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'PERF"', clear
 
 
 	*************************
@@ -422,7 +406,8 @@ quietly {
 			ytitle(`ylabelpc' equivalente) ///
 			ylabel(0(.5)1.5) ///
 			subtitle(Perfil de hombres`pais') ///
-			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.`boottext'}")
+			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.`boottext'}") ///
+			//nograph
 
 		lpoly perfil2 edad, bwidth(`bandwidth') ci kernel(gaussian) degree(2) ///
 			name(PerfilM`varlist', replace) generate(perfilM) at(edad) noscatter ///
@@ -431,7 +416,8 @@ quietly {
 			ytitle(`ylabelpc' equivalente) ///
 			ylabel(0(.5)1.5) ///
 			subtitle(Perfil de mujeres`pais') ///
-			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.`boottext'}")
+			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.`boottext'}") ///
+			//nograph
 
 		lpoly contribuyentes1 edad, bwidth(`bandwidth') ci kernel(gaussian) degree(2) ///
 			name(ContH`varlist', replace) generate(contH) at(edad) noscatter ///
@@ -440,7 +426,8 @@ quietly {
 			ytitle(porcentaje) yscale(range(0 100)) ///
 			ylabel(0(20)100) ///
 			subtitle(Participaci{c o'}n de hombres`pais') ///
-			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.`boottext'}")
+			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.`boottext'}") ///
+			//nograph
 
 		lpoly contribuyentes2 edad, bwidth(`bandwidth') ci kernel(gaussian) degree(2) ///
 			name(ContM`varlist', replace) generate(contM) at(edad) noscatter ///
@@ -449,15 +436,16 @@ quietly {
 			ytitle(porcentaje) yscale(range(0 100)) ///
 			ylabel(0(20)100) ///
 			subtitle(Participaci{c o'}n de mujeres`pais') ///
-			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.`boottext'}")
+			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.`boottext'}") ///
+			//nograph
 	}
 
 
 
 	***********************
 	*** 4. Incidencia *****
-	***********************
-	use `"`c(sysdir_personal)'/users/$pais/`id'/bootstraps/`bootstrap'/`varlist'INCI"', clear
+	/**********************
+	use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'INCI"', clear
 	format xhogar %15.1fc
 	format distribucion %6.1fc
 	format incidencia %6.1fc
@@ -501,10 +489,10 @@ quietly {
 
 
 
-	************************
+	***********************/
 	*** 5. CICLO DE VIDA ***
 	************************
-	use `"`c(sysdir_personal)'/users/$pais/`id'/bootstraps/`bootstrap'/`varlist'CICLO"', clear
+	use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'CICLO"', clear
 	
 	* Labels *
 	label define deciles 1 "I" 2 "II" 3 "III" 4 "IV" 5 "V" 6 "VI" 7 "VII" 8 "VIII" 9 "IX" 10 "X" 11 "Nacional"
@@ -521,14 +509,15 @@ quietly {
 
 	***********************************
 	*** 5.1 Piramide de la variable ***
-	poblaciongini `varlist', title("`title'") nombre(`nombre') boottext(`boottext') rect(`RECT') base(`base') `graphs' id(`id')
-
+	if "`graphs'" == "graphs" {
+		poblaciongini `varlist', title("`title'") nombre(`nombre') boottext(`boottext') rect(`RECT') base(`base') `graphs' id($id)
+	}
 
 
 	**************************************
 	*** 6. Proyecciones de largo plazo ***
 	**************************************
-	use `"`c(sysdir_personal)'/users/$pais/`id'/bootstraps/`bootstrap'/`varlist'REC"', clear
+	use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'REC"', clear
 
 
 	******************
@@ -573,8 +562,7 @@ quietly {
 		}
 	}
 
-	tempvar profileproj
-	collapse `profileproj'=estimacion contribuyentes poblacion `seriehacienda', by(anio modulo aniobase)
+	collapse estimacion contribuyentes poblacion `seriehacienda', by(anio modulo aniobase)
 	tsset anio
 
 
@@ -582,12 +570,9 @@ quietly {
 	*************************
 	*** 6.3 OLS Simulador ***
 	merge 1:1 (anio) using `PIBBASE', nogen keepus(indiceY pibY* deflator lambda currency)
-	forvalues k=1(1)`=_N' {
-		if deflator[`k'] == 1 {
-			local aniovp = anio[`k']
-			continue, break
-		}
-	}
+
+	replace estimacion = estimacion*lambda/1000000 //pibYR*100
+	label var estimacion "Proyecci{c o'}n del perfil"
 
 
 	*********AQUI*********
@@ -597,7 +582,7 @@ quietly {
 		g `dummy14' = anio >= 2014
 
 		* OLS *
-		regress `seriehacienda' `profileproj' pibYR `dummy14'
+		regress `seriehacienda' estimacion pibYR `dummy14'
 		tempvar predict
 		predict `predict'
 		replace `predict' = `predict'*lambda/pibY*100
@@ -615,25 +600,10 @@ quietly {
 	*********AQUI*********
 
 
-	replace `profileproj' = `profileproj'*lambda/1000000 //pibYR*100
-	label var `profileproj' "Proyecci{c o'}n del perfil"
-
-	/* RECfinal *
-	g double profile = `profileproj'/100*pibY
-	label var profile "Proyecci{c o'}n del perfil"
-	g double montopc = `montopc_boot'
-	label var montopc "Per c{c a'}pita"
-
-	capture confirm variable estimacion
-	if _rc != 0 {
-		g double estimacion = profile
-		format estimacion %20.0fc
-	}
-
 	*****************/
 	*** 6.4 Graphs ***
 	if ("`graphs'" == "graphs" | "$graphs" == "on") {
-		twoway connected `profileproj' `gvarpredict' `seriehacienda' anio if `profileproj' != ., ///
+		twoway connected estimacion `gvarpredict' `seriehacienda' anio if estimacion != ., ///
 			ytitle("millones `=currency[_N]' `aniovp'") ///
 			yscale(range(0)) /*ylabel(0(1)4)*/ ///
 			ylabel(, format(%20.0fc) labsize(small)) ///
@@ -646,13 +616,6 @@ quietly {
 			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5. Fecha: `c(current_date)', `c(current_time)'.`boottext'}") ///
 			name(`varlist'Proj, replace)
 	}
-
-	*capture drop __*
-	*drop pibY indiceY
-	*format profile contribuyentes poblacion %20.0fc
-	*g title = "`title'"
-	*save `"`c(sysdir_personal)'/users/$pais/`id'/bootstraps/`bootstrap'/`varlist'RECFinal"', replace
-
 
 
 	************/
@@ -744,14 +707,12 @@ program poblaciongini
 
 	*****************
 	*** 5. Graphs ***
-	if "`graphs'" == "graphs" | "$graphs" == "on" {
-		graphpiramide `varlist', over(`grupo') title("`title'") rect(`rect') ///
-			men(`=string(`gsexlab1',"%7.0fc")') women(`=string(`gsexlab2',"%7.0fc")') ///
-			boot(`boottext') base(`base') id(`id')
-		*graphpiramide `varlist', over(`grupoesc') title("`title'") rect(`rect') ///
-			men(`=string(`gsexlab1',"%7.0fc")') women(`=string(`gsexlab2',"%7.0fc")') ///
-			boot(`boottext') base(`base') id(`id')
-	}
+	graphpiramide `varlist', over(`grupo') title("`title'") rect(`rect') ///
+		men(`=string(`gsexlab1',"%7.0fc")') women(`=string(`gsexlab2',"%7.0fc")') ///
+		boot(`boottext') base(`base') id($id)
+	*graphpiramide `varlist', over(`grupoesc') title("`title'") rect(`rect') ///
+		men(`=string(`gsexlab1',"%7.0fc")') women(`=string(`gsexlab2',"%7.0fc")') ///
+		boot(`boottext') base(`base') id($id)
 end
 
 
@@ -880,8 +841,8 @@ program graphpiramide
 		/*note(`"{bf:Nota}: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n de `title' en cada grupo."')*/ ///
 		/*note(`"{bf:Note}: Percentages inside parenthesis represent the concentration of `title' in each group."')*/
 	
-	graph export `"`c(sysdir_personal)'/users/$pais/`id'/graphs/`varlist'_`titleover'.eps"', replace name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)')
-	*graph export `"`c(sysdir_personal)'/users/$pais/`id'/`varlist'_`titleover'.png"', replace name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)')
+	graph export `"`c(sysdir_personal)'/users/$pais/$id/graphs/`varlist'_`titleover'.eps"', replace name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)')
+	*graph export `"`c(sysdir_personal)'/users/$pais/$id/`varlist'_`titleover'.png"', replace name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)')
 
 	capture window manage close graph H`varlist'
 	capture window manage close graph M`varlist'

@@ -1,6 +1,10 @@
-***************************************
+***               ACTUALIZACIÓN                *** 
+*** 1) abrir archivos .iqy en Excel de Windows ***
+*** 2) guardar y reemplazar .xls dentro de     ***
+***      ./TemplateCIEP/basesCIEP/INEGI/SCN/   ***
+*** 3) correr SCN[.ado] con opción "update"    ***
+
 **** Sistema de Cuentas Nacionales ****
-***************************************
 program define SCN, return
 quietly {
 	timer on 2
@@ -256,13 +260,9 @@ quietly {
 	}
 
 	** D.8. PIBDeflactor **
-	noisily PIBDeflactor, `graphs' anio(`anio') `update' discount(`discount')
+	PIBDeflactor, anio(`anio') `update' discount(`discount')
 	tempfile basepib
 	save `basepib'
-
-	if "$pais" != "" {
-		exit
-	}
 
 	local except = r(except)
 	local exceptI = r(exceptI)
@@ -320,11 +320,11 @@ quietly {
 	** 1.3. Construir cuentas (C) **
 
 	** C.1. Ingreso mixto **
-	g double MixL = IngMixto*2/3			// NTA metodologÃ­a
+	g double MixL = IngMixto*2/3			// NTA metodología
 	format MixL %20.0fc
 	label var MixL "Ingreso mixto (laboral)"
 
-	g double MixK = IngMixto*1/3			// NTA metodologÃ­a
+	g double MixK = IngMixto*1/3			// NTA metodologí­a
 	format MixK %20.0fc
 	label var MixK "Ingreso mixto (capital)"
 
@@ -383,7 +383,7 @@ quietly {
 	label var ROWProp "Ingresos a la propiedad"
 
 	** C.9. Resto del Mundo **
-	g double ROW = ROWRemRecibidas + ROWPropRecibidas + ROWPropRecibidas - ROWPropPagadas + ROWTransRecibidas - ROWTransPagadas
+	g double ROW = ROWRemRecibidas + ROWTransRecibidas + ROWPropRecibidas - ROWTransPagadas - ROWPropPagadas
 	format ROW %20.0fc
 	label var ROW "Resto del mundo"
 
@@ -440,7 +440,7 @@ quietly {
 	}
 
 	** R.2. Display **
-	* GeneraciÃ³n de ingresos *
+	* Generación de ingresos *
 	noisily di _newline(3) in g "{bf: A. Cuenta: " in y "generaci{c o'}n del ingreso" in g ///
 		_col(44) in g %20s "MXN" ///
 		_col(66) %7s "% PIB" "}" 
@@ -595,7 +595,7 @@ quietly {
 		}
 	}
 
-	** R.5 Display (de la producciÃ³n al ingreso) ***
+	** R.5 Display (de la producción al ingreso) ***
 	noisily di _newline in g "{bf: C. Cuenta: " in y "distribuci{c o'}n secundaria del ingreso" in g ///
 		_col(44) in g %20s "MXN" ///
 		_col(66) %7s "% PIB" "}" 
@@ -632,6 +632,9 @@ quietly {
 
 	scalar ROWTrans = ROWTrans[`obs']
 	scalar ROWTransPIB = ROWTrans[`obs']/PIB[`obs']*100
+	
+	scalar ROW = ROW[`obs']
+	scalar ROWPIB = ROW[`obs']/PIB[`obs']*100
 
 	scalar IngNacDisp = IngNacDisp[`obs']
 	scalar IngNacDispPIB = IngNacDisp[`obs']/PIB[`obs']*100
@@ -980,7 +983,7 @@ quietly {
 	scalar CompGob = Wcg[`obs']
 	scalar CompGobPIB = Wcg[`obs']/PIB[`obs']*100
 
-	/*noisily di _newline in g "{bf: F. Cuenta: " in y "Actividad Econ{c o'}mica" in g ///
+	noisily di _newline in g "{bf: G. Cuenta: " in y "Actividad Econ{c o'}mica" in g ///
 		_col(44) in g %20s "MXN" ///
 		_col(66) %7s "% PIB" "}" 
 	noisily di in g "  (+) Agricultura, cr{c i'}a, etc." ///
@@ -1007,7 +1010,7 @@ quietly {
 	noisily di in g "  (+) Transportes, correos y almacen..." ///
 		_col(44) in y %20.0fc FHae[`obs'] ///
 		_col(66) in y %7.3fc FHae[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) InformaciÃ³n en medios masivos" ///
+	noisily di in g "  (+) Información en medios masivos" ///
 		_col(44) in y %20.0fc GOae[`obs'] ///
 		_col(66) in y %7.3fc GOae[`obs']/PIB[`obs']*100
 	noisily di in g "  (+) Servicios financieros y de seguridad" ///
@@ -1019,7 +1022,7 @@ quietly {
 	noisily di in g "  (+) Servicios profesionales..." ///
 		_col(44) in y %20.0fc ServProf[`obs'] ///
 		_col(66) in y %7.3fc ServProf[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) DirecciÃ³n de corporativos y empresas" ///
+	noisily di in g "  (+) Dirección de corporativos y empresas" ///
 		_col(44) in y %20.0fc IQae[`obs'] ///
 		_col(66) in y %7.3fc IQae[`obs']/PIB[`obs']*100
 	noisily di in g "  (+) Servicios de apoyo a los negocios..." ///
@@ -1053,7 +1056,7 @@ quietly {
 	noisily di in g _dup(72) "-"
 	noisily di in g "{bf:  (=) Producto Interno Bruto" ///
 		_col(44) in y %20.0fc PIB[`obs'] ///
-		_col(66) in y %7.3fc PIB[`obs']/PIB[`obs']*100 "}"*/
+		_col(66) in y %7.3fc PIB[`obs']/PIB[`obs']*100 "}"
 
 	timer off 2
 	timer list 2

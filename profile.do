@@ -25,9 +25,12 @@ noisily di _newline(2) in w "{bf:Centro de Investigaci{c o'}n Econ{c o'}mica y P
 *** 2 Par{c a'}metros de CGPE ***
 *********************************
 // Incorporar los que sean necesarios seg{c u'}n su a{c n~}o //
-global pib2020 = 1.9717
-global def2020 = 3.6
+global pib2020 = -1.9			// Pre-criterios 2021 [-3.9,0.1]
+global def2020 = 3.5			// Pre-criterios 2021
 
-noisily di _newline in g "{bf:Paquete Econ{c o'}mico" in y " 2020}"
+global pib2021 = 2.5			// Pre-criterios 2021 [1.5,3.5]
+global def2021 = 3.2			// Pre-criterios 2021
+
+noisily di _newline in g "{bf:Pre-criterios" in y " 2021}"
 noisily PIBDeflactor
 clear

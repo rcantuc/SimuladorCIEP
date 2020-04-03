@@ -47,7 +47,7 @@ quietly {
 		egen acum_prom = mean(`propmensual'), by(mes)
 
 		collapse (sum) monto acum_prom (last) mes if monto != ., by(anio nombre clave_de_concepto)
-		*replace monto = monto/acum_prom if mes < 12 //& acum_prom > 0 & acum_prom < 1
+		replace monto = monto/acum_prom if mes < 12 //& acum_prom > 0 & acum_prom < 1
 
 		local palabra "Proyectado"
 	}

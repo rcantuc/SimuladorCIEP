@@ -19,13 +19,23 @@ if "$S_OS" == "Unix" {
 **********************
 ** 1. Base de datos **
 import delimited using "WPP2019_PopulationBySingleAgeSex_2020-2100.csv", clear
-keep if locid == 222 // 484
+if "$pais" == "" {
+	keep if locid == 484
+}
+if "$pais" == "El Salvador" {
+	keep if locid == 222
+}
 tempfile futuro
 save `futuro'
 
 
 import delimited using "WPP2019_PopulationBySingleAgeSex_1950-2019.csv", clear
-keep if locid == 222 // 484
+if "$pais" == "" {
+	keep if locid == 484
+}
+if "$pais" == "El Salvador" {
+	keep if locid == 222
+}
 append using `futuro'
 
 rename time anio

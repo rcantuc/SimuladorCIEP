@@ -22,7 +22,7 @@ quietly {
 	}
 
 	** 1.3 Base PEF **
-	capture use `"`c(sysdir_site)'../basesCIEP/SIM/PEF`=subinstr("${pais}"," ","",.)'.dta"', clear
+	capture confirm file `"`c(sysdir_site)'../basesCIEP/SIM/PEF`=subinstr("${pais}"," ","",.)'.dta"'
 	if _rc != 0 {
 		noisily run UpdatePEF.do
 	}
@@ -32,37 +32,31 @@ quietly {
 	****************
 	*** 2 SYNTAX ***
 	****************
+	use in 1 using `"`c(sysdir_site)'../basesCIEP/SIM/PEF`=subinstr("${pais}"," ","",.)'.dta"', clear
 	syntax [if] [, ANIO(int `aniovp') Graphs Update Base ID(string) ///
-		BY(varname) Fast ROWS(int 3) COLS(int 4) MINimum(real 1) PPEF]
-
-	** 2.1 Update PEF **
-	if "`update'" == "update" | "`updated'" != "yes" {
-		noisily run UpdatePEF.do
-	}
-
-	** 2.2 PIB + Deflactor **
-	preserve
+		BY(varname) ROWS(int 3) COLS(int 4) MINimum(real 1) PEF]
+	
+	** 2.1 PIB + Deflactor **
 	PIBDeflactor, anio(`anio')
 	local currency = currency[1]
 	tempfile PIB
 	save `PIB'
-	restore
 
-	** 2.3 Base ID **
-	if "`id'" != "" {
-		use "`c(sysdir_site)'/users/`id'/PEF", clear
+	** 2.2 Update PEF **
+	if "`update'" == "update" | "`updated'" != "yes" {
+		noisily run UpdatePEF.do
 	}
 
-	** 2.4 Base RAW **
+	** 2.2 Base RAW **
+	use `if' using `"`c(sysdir_site)'../basesCIEP/SIM/PEF`=subinstr("${pais}"," ","",.)'.dta"', clear
 	if "`base'" == "base" {
 		exit
 	}
 
-	** 2.5 Default `by' **
+	** 2.3 Default `by' **
 	if "`by'" == "" {
 		local by = "desc_funcion"
 	}
-	
 	noisily di _newline(2) in g "{bf:SISTEMA FISCAL: " in y "GASTO P{c U'}BLICO `anio'}"
 
 
@@ -70,15 +64,12 @@ quietly {
 	***************
 	*** 3 Merge ***
 	***************
-	if "`fast'" == "fast" {
-		keep if anio == `anio'
-	}
-	collapse (sum) gasto* `if', by(anio `by' transf_gf) 
+	collapse (sum) gasto*, by(anio `by' transf_gf) 
 	merge m:1 (anio) using `PIB', nogen keepus(pibY indiceY deflator var_pibY) ///
 		update replace keep(matched) sorted
 
 	** 3.1 Utilizar PPEF **
-	if "`ppef'" == "ppef" {
+	if "`pef'" == "pef" {
 		replace gasto = proyecto if anio == `anio'
 		replace gastoneto = proyectoneto if anio == `anio'
 	}
@@ -130,7 +121,7 @@ quietly {
 			title("{bf:Gastos presupuestarios}") ///
 			subtitle($pais) ///
 			ytitle(% PIB) ylabel(0(5)30, labsize(small)) ///
-			legend(on position(6) cols(5)) ///
+			legend(on position(6) cols(6)) ///
 			name(gastos, replace) ///
 			blabel(bar, format(%7.1fc)) ///
 			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
