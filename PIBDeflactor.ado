@@ -254,8 +254,7 @@ quietly {
 		g `pibYRmil' = pibYR/1000000
 		twoway (area `pibYRmil' anio if anio <= `anio_last') ///
 			(area `pibYRmil' anio if anio > `anio_last'), ///
-			title({bf:Producto Interno Bruto}) ///
-			subtitle(${pais}) ///
+			title({bf:Producto Interno Bruto}) subtitle(${pais}) ///
 			ytitle(millones `=currency[`obsvp']' `aniovp') xtitle("") yline(0) ///
 			text(`=`pibYRmil'[1]*.05' `=`anio_last'-.5' "`anio_last'", place(nw) color(white)) ///
 			text(`=`pibYRmil'[1]*.05' `=anio[1]+.5' "Observado" ///
@@ -264,8 +263,9 @@ quietly {
 			ylabel(#4, format(%10.0fc)) ///
 			xline(`anio_last'.5) ///
 			yscale(range(0)) ///
-			legend(label(1 "Observado") label(2 "Proyecci{c o'}n") off) ///
-			note("{bf:Nota}: Crecimiento promedio anual de la producitividad (lambda): `=string(scalar(lambda),"%6.3f")'%. {bf:{c U'}ltimo dato}: `anio_last'`trim_last'.") ///
+			legend(label(1 "Observado") label(2 "Proyectado") off) ///
+			note("{bf:Nota}: Crecimiento promedio anual de la producitividad laboral (lambda): `=string(scalar(lambda),"%6.3f")'%. {bf:{c U'}ltimo dato}: `anio_last'`trim_last'.") ///
+			///note("{bf:Note}: Annual Labor Productivity Growth (lambda): `=string(scalar(lambda),"%6.3f")'%.") ///
 			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
 			name(PIBP, replace)
 	}

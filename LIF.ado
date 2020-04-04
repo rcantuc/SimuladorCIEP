@@ -75,7 +75,7 @@ quietly {
 		update replace keep(matched) sorted
 
 	** 3.1 Utilizar ILIF **
-	if "`lif'" == "lif" {
+	if "`lif'" == "lif" & "$pais" == "" {
 		replace recaudacion = LIF if anio == `anio'
 	}
 
