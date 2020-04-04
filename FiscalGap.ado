@@ -131,7 +131,7 @@ quietly {
 			xlabel(2010(10)`=round(anio[_N],10)') ///
 			ylabel(, format(%20.0fc)) ///
 			xline(`=`anio'-.5') ///
-			text(`=`otros'[`obs`anio_last'']*.05' `=`anio'+1.5' "Proyecci{c o'}n", place(ne) color(white)) ///
+			text(`=`otros'[`obs`anio_last'']*.05' `=`anio'+.5' "Proyecci{c o'}n", place(ne) color(white)) ///
 			yscale(range(0)) ///
 			title({bf:Proyecci{c o'}n de los ingresos}) ///
 			subtitle($pais) ///
@@ -281,9 +281,11 @@ quietly {
 	* Amortizacion */
 	g amortizacionpib = gastoamortizacion/pibYR*100
 	replace amortizacionpib = L.amortizacionpib if amortizacionpib == .
-	
+
 	replace gastoamortizacion = L.amortizacionpib/100*pibYR if gastoamortizacion == .
 	replace estimacionamortizacion = L.amortizacionpib/100*pibYR if estimacionamortizacion == .
+	
+	replace estimacionamortizacion = gastoamortizacion if anio == `anio' & estimacionamortizacion == 0
 
 	* Costo financiero de la deuda *
 	merge 1:1 (anio) using `shrfsp', nogen keepus(shrfsp rfsp)
@@ -356,7 +358,7 @@ quietly {
 			xlabel(2010(10)`=round(anio[_N],10)') ///
 			ylabel(, format(%20.0fc)) ///
 			xline(`=`anio'-.5') ///
-			text(`=`otrosg'[`obs`anio_last'']*.075' `=`anio'+1.5' "Proyecci{c o'}n", place(ne) color(white)) ///
+			text(`=`otrosg'[`obs`anio_last'']*.075' `=`anio'+.5' "Proyecci{c o'}n", place(ne) color(white)) ///
 			yscale(range(0)) ///
 			title({bf:Proyecci{c o'}n de los gastos}) ///
 			subtitle($pais) ///
@@ -430,7 +432,7 @@ quietly {
 			xlabel(2010(10)`end') ///
 			yscale(range(0)) ///
 			legend(off) ///
-			text(`=shrfspPIB[`obs`anio_last'']*.075' `=`anio'+1.5' "Proyecci{c o'}n", color(white) placement(e)) ///
+			text(`=shrfspPIB[`obs`anio_last'']*.075' `=`anio'+.5' "Proyecci{c o'}n", color(white) placement(e)) ///
 			xline(`=`anio'-.5') ///
 			name(Proy_shrfsp, replace)			
 	}

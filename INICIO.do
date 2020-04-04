@@ -144,19 +144,19 @@ matrix GASTOS = r(StatTotal)
 ********************************************
 replace Ingreso = Ingreso*`alingreso'/INGRESOS[1,1] ///
 	// *(sISR_AS+sISR_PF+sCuotasT+sISR_PM)/(ISR_ASBase+ISR_PFBase+CuotasBase+ISR_PMBase)
-noisily Simulador Ingreso [fw=factor], base("ENIGH 2018") ///
-	reboot graphs //boot(20) //noisily
+Simulador Ingreso [fw=factor], base("ENIGH 2018") ///
+	reboot //graphs //boot(20) //noisily
 	
 replace Consumo = Consumo*`alconsumo'/INGRESOS[1,2] ///
 	// *(sIVA+sIEPS+sImporta+sISAN)/(IVABase+IEPSBase+ImportaBase+ISANBase) ///
 	// +ConsumoImp/100*singbas/100*scalar(pibY)*(1-.0618)/POBLACION[1,1]
-noisily Simulador Consumo [fw=factor], base("ENIGH 2018") ///
-	reboot graphs //boot(20) //noisily
+Simulador Consumo [fw=factor], base("ENIGH 2018") ///
+	reboot //graphs //boot(20) //noisily
 
 replace Otros = Otros*`otrosing'/INGRESOS[1,3] ///
 	// *(sFMP+sOYE+sOtrosI)/(FMPBase+OYEBase+OtrosIngBase)
-noisily Simulador Otros [fw=factor], base("ENIGH 2018") ///
-	reboot graphs //boot(20) //noisily
+Simulador Otros [fw=factor], base("ENIGH 2018") ///
+	reboot //graphs //boot(20) //noisily
 
 
 *****************************************
@@ -166,23 +166,23 @@ noisily Simulador Otros [fw=factor], base("ENIGH 2018") ///
 ******************************************
 replace Pension = Pension*`Pensiones'/GASTOS[1,1] ///
 	// *(spam+spenims+speniss+spenpem)/(pamBase+penimsBase+penissBase+penpemBase)
-noisily Simulador Pension [fw=factor], base("ENIGH 2018") ///
+Simulador Pension [fw=factor], base("ENIGH 2018") ///
 	reboot //graphs //boot(20) //noisily
 
 replace Educacion = Educacion*`Educacion'/GASTOS[1,2] ///
 	// *(sbasica+smedias+ssuperi+sposgra)/(basicaBase+mediasBase+superiBase+posgraBase)
-noisily Simulador Educacion [fw=factor], base("ENIGH 2018") ///
-	reboot graphs //boot(20) //noisily
+Simulador Educacion [fw=factor], base("ENIGH 2018") ///
+	reboot //graphs //boot(20) //noisily
 
 replace Salud = Salud*`Salud'/GASTOS[1,3] ///
 	// *(sssa+ssegpop+simss+sissste+sprospe+spemex)/(ssaBase+segpopBase+imssBase+isssteBase+prospeBase+pemexBase)
-noisily Simulador Salud [fw=factor], base("ENIGH 2018") ///
-	reboot graphs //boot(20) //noisily
+Simulador Salud [fw=factor], base("ENIGH 2018") ///
+	reboot //graphs //boot(20) //noisily
 
 replace OtrosGas = OtrosGas*`OtrosGas'/GASTOS[1,4] ///
 	// *(servpers+matesumi+gastgene+substran+bienmueb+obrapubl+invefina+partapor+deudpubl)/(servpersBase+matesumiBase+gastgeneBase+substranBase+bienmuebBase+obrapublBase+invefinaBase+partaporBase+deudpublBase)
-noisily Simulador OtrosGas [fw=factor], base("ENIGH 2018") ///
-	reboot graphs //boot(20) //noisily
+Simulador OtrosGas [fw=factor], base("ENIGH 2018") ///
+	reboot //graphs //boot(20) //noisily
 
 if ingbasico18 == 0 & ingbasico65 == 1 {
 	tabstat factor if edad >= 18, stat(sum) f(%20.0fc) save
@@ -212,11 +212,11 @@ Simulador IngBasico if IngBasico != 0 [fw=factor], base("ENIGH 2018") ///
 ******************************************
 g TransfNetas = Ingreso + Consumo - Pension - Educacion - Salud - IngBasico
 label var TransfNetas "Transferencias Netas"
-noisily Simulador TransfNetas if TransfNetas != 0 [fw=factor], base("ENIGH 2018") ///
+Simulador TransfNetas if TransfNetas != 0 [fw=factor], base("ENIGH 2018") ///
 	reboot graphs //boot(20) //noisily
 
 * Cuentas Generacionales *
-noisily CuentasGeneracionales TransfNetas //, anio(2018) //boot(20)			// <-- OPTIONAL!!!
+noisily CuentasGeneracionales TransfNetas //, anio(2018) //boot(20)				// <-- OPTIONAL!!!
 
 * Sankey SISTEMA FISCAL *
 if "$pais" == "" {
