@@ -102,8 +102,8 @@ if "$pais" == "El Salvador" {
 	if "`c(os)'" == "MacOSX" {
 		import excel "/Users/ricardo/Dropbox (CIEP)/UNICEF GA/shrfspElSalvador.xlsx", sheet("Sheet1") clear
 	}
-	drop if R == ""
-	drop R
+	*drop if R == ""
+	*drop R
 
 	replace B = "anio" if B == "VARIABLES"
 	replace B = "shrfsp" if B == "SALDO DEUDA TOTAL SPNF (con FOP Serie A)"
@@ -113,7 +113,7 @@ if "$pais" == "El Salvador" {
 	
 	keep if B == "anio" | B == "shrfsp" | B == "interno" | B == "externo"
 	
-	foreach k of varlist C - Q {
+	foreach k of varlist C - S {
 		rename `k' monto`=`k'[1]'
 	}
 	drop if B == "anio"

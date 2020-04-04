@@ -296,7 +296,7 @@ quietly {
 			(area `pob3560' anio if anio > `anioinicial', color("255 189 0")) ///
 			(area `pob1934' anio if anio > `anioinicial', color("39 97 47")) ///
 			(area `pob18' anio if anio > `anioinicial', color("53 200 71")), ///
-			legend(label(1 "61 y m{c a'}s") label(2 "35 a 60") label(3 "19 a 34") label(4 "18 y menos") order(1 2 3 4)) ///
+			legend(label(1 "61+") label(2 "35 - 60") label(3 "19 - 34") label(4 "<18") order(1 2 3 4)) ///
 			text(`y1' `x1' `"{bf:Max:} `=string(`MAX'[1,1],"%5.1fc")' % (`x1')"', place(n)) ///
 			text(`y1' `x1' `"{bf:`poblacion':} `=string(pob18[`p1'],"%12.0fc")'"', place(s)) ///
 			text(`y2' `x2' `"{bf:Max:} `=string(`MAX'[1,2],"%5.1fc")' % (`x2')"', place(n)) ///
@@ -314,7 +314,8 @@ quietly {
 			text(`z4' `m4' `"{bf:Min:} `=string(`MAX'[2,4],"%5.1fc")' % (`m4')"', place(n)) ///
 			text(`z4' `m4' `"{bf:`poblacion':} `=string(pob61[`q4'],"%12.0fc")'"', place(s)) ///
 			text(`=`y1'*.175' `=`anioinicial'-1' "{bf:Hoy:} `anioinicial'", place(w)) ///
-			xtitle("") ytitle("Personas") ///
+			xtitle("") ///
+			ytitle("Persons") ///
 			xline(`=`anioinicial'+.5', lpattern(dash) lcolor("52 70 78")) ///
 			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
 			name(Estructura_`anything'_`anioinicial'_`aniofinal', replace) ///

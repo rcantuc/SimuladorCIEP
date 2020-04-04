@@ -329,10 +329,12 @@ quietly {
 
 	* Y label *
 	if `edad39_boot' == . | `edad39_boot' == 0 {
-		local ylabelpc = "Promedio"
+		*local ylabelpc = "Promedio"
+		local ylabelpc = "Average"
 	}
 	else {
-		local ylabelpc = "39 a{c n~}os hombre"
+		*local ylabelpc = "39 a{c n~}os hombre"
+		local ylabelpc = "39-year-old male"
 	}
 
 
@@ -401,22 +403,26 @@ quietly {
 	else if "`graphs'" == "graphs" {
 		lpoly perfil1 edad, bwidth(`bandwidth') ci kernel(gaussian) degree(2) ///
 			name(PerfilH`varlist', replace) generate(perfilH) at(edad) noscatter ///
-			title("{bf:`title'}") ///
-			xtitle(edad) ///
-			ytitle(`ylabelpc' equivalente) ///
-			ylabel(0(.5)1.5) ///
-			subtitle(Perfil de hombres`pais') ///
-			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.`boottext'}") ///
+			///title("{bf:`title'}") ///
+			title("") ///
+			xtitle(age) ///
+			///xtitle(edad) ///
+			ytitle(`ylabelpc' equivalent) ///
+			///ylabel(0(.5)1.5) ///
+			///subtitle(Perfil de hombres`pais') ///
+			///caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.`boottext'}") ///
 			//nograph
 
 		lpoly perfil2 edad, bwidth(`bandwidth') ci kernel(gaussian) degree(2) ///
 			name(PerfilM`varlist', replace) generate(perfilM) at(edad) noscatter ///
-			title("{bf:`title'}") ///
-			xtitle(edad) ///
-			ytitle(`ylabelpc' equivalente) ///
-			ylabel(0(.5)1.5) ///
-			subtitle(Perfil de mujeres`pais') ///
-			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.`boottext'}") ///
+			///title("{bf:`title'}") ///
+			title("") ///
+			xtitle(age) ///
+			///xtitle(edad) ///
+			ytitle(`ylabelpc' equivalent) ///
+			///ylabel(0(.5)1.5) ///
+			///subtitle(Perfil de mujeres`pais') ///
+			///caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.`boottext'}") ///
 			//nograph
 
 		lpoly contribuyentes1 edad, bwidth(`bandwidth') ci kernel(gaussian) degree(2) ///
@@ -604,16 +610,15 @@ quietly {
 	*** 6.4 Graphs ***
 	if ("`graphs'" == "graphs" | "$graphs" == "on") {
 		twoway connected estimacion `gvarpredict' `seriehacienda' anio if estimacion != ., ///
-			ytitle("millones `=currency[_N]' `aniovp'") ///
+			ytitle("millions `=currency[_N]' `aniovp'") ///
 			yscale(range(0)) /*ylabel(0(1)4)*/ ///
 			ylabel(, format(%20.0fc) labsize(small)) ///
 			xlabel(, labsize(small) labgap(2)) ///
 			xtitle("") ///
 			xline(`aniobase', lpattern(dash) lcolor("52 70 78")) ///
-			text(2 `=`aniobase'-1' "{bf:A{c n~}o base:} `aniobase'", place(w)) ///
-			title("{bf:Proyecciones demogr{c a'}ficas de `title'}") ///
-			subtitle("$pais") ///
-			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5. Fecha: `c(current_date)', `c(current_time)'.`boottext'}") ///
+			///text(2 `=`aniobase'-1' "{bf:A{c n~}o base:} `aniobase'", place(w)) ///
+			///title("{bf:Proyecciones demogr{c a'}ficas de `title'}") subtitle("$pais") ///
+			///caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5. Fecha: `c(current_date)', `c(current_time)'.`boottext'}") ///
 			name(`varlist'Proj, replace)
 	}
 
