@@ -361,7 +361,7 @@ quietly {
 	}
 
 	* Sin kernel *
-	if "`nokernel'" == "nokernel" & "`graphs'" == "graphs" {
+	if "`nokernel'" == "nokernel" & "`graphs'" == "graphsNO" {
 		twoway line perfil1 edad, ///
 			name(PerfilH`varlist', replace) ///
 			title("{bf:`title'}") ///
@@ -400,7 +400,7 @@ quietly {
 	}
 
 	* Con kernel *
-	else if "`graphs'" == "graphs" {
+	else if "`graphs'" == "graphsNO" {
 		lpoly perfil1 edad, bwidth(`bandwidth') ci kernel(gaussian) degree(2) ///
 			name(PerfilH`varlist', replace) generate(perfilH) at(edad) noscatter ///
 			///title("{bf:`title'}") ///
@@ -838,14 +838,13 @@ program graphpiramide
 		graphregion(margin(zero)) aspectratio(, placement(left))
 
 	graph combine H`varlist' M`varlist', name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)', replace) ycommon ///
-		title("{bf:`title' por sexo, edad y `titleover'}") ///
-		subtitle("$pais") ///
-		/*title("`title' by sex, age and `titleover'")*/ ///
+		///title("{bf:`title' por sexo, edad y `titleover'}") subtitle("$pais") ///
+		///title("`title' by sex, age and `titleover'") ///
 		caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5. Fecha: `c(current_date)', `c(current_time)'.}") ///
 		/*caption("{it: Source: Own estimations.`boottext'}")*/ ///
 		/*note(`"{bf:Nota}: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n de `title' en cada grupo."')*/ ///
 		/*note(`"{bf:Note}: Percentages inside parenthesis represent the concentration of `title' in each group."')*/
-	
+
 	graph export `"`c(sysdir_personal)'/users/$pais/$id/graphs/`varlist'_`titleover'.eps"', replace name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)')
 	*graph export `"`c(sysdir_personal)'/users/$pais/$id/`varlist'_`titleover'.png"', replace name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)')
 

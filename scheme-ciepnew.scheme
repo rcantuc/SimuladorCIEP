@@ -16,8 +16,8 @@ graphsize 	y 			8
 
 
 // Margins
-margin 		graph			large
-margin 		combinegraph		large
+margin 		graph			medium
+margin 		combinegraph	large
 margin 		piegraph		large
 
 
@@ -58,10 +58,10 @@ yesno 		title_span		yes
 gsize 		subheading 		small
 yesno 		subtitle_span		yes
 
-gsize 		body			vsmall
+gsize 		body			tiny
 yesno 		caption_span		yes
 
-gsize 		small_body		tiny
+gsize 		small_body		vsmall
 yesno 		note_span		yes
 
 textboxstyle	t1title			body

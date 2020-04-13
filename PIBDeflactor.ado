@@ -142,6 +142,7 @@ quietly {
 			replace WorkingAge = WorkingAge*(1-${desemp`k'}/100) if anio == `k' & trimestre != 4
 		}
 	}
+	local except " {bf:{&Delta}} `=substr("`except'",1,`=strlen("`except'")-2')'."
 	
 
 	* Lambda (productividad) *
@@ -154,13 +155,12 @@ quietly {
 		}
 	}
 
-	scalar lambda = ((OutputPerWorker[`obs_exo']/OutputPerWorker[`=`obs_exo'-10'])^(1/10)-1)*100
+	scalar lambda = ((OutputPerWorker[`obslast']/OutputPerWorker[1])^(1/(`=`anio_last'-`anio_first''))-1)*100
 	capture confirm existence $lambda
 	if _rc == 0 {
 		scalar lambda = $lambda
 	}
 	g lambda = (1+scalar(lambda)/100)^(anio-`anio_exo')
-	
 
 	* Proyección de crecimiento PIB *
 	replace pibYR = `=pibYR[`obs_exo']'/`=WorkingAge[`obs_exo']'*WorkingAge* ///
@@ -244,18 +244,14 @@ quietly {
 			note("{bf:{c U'}ltimo dato}: `anio_last'`trim_last'.") ///
 			name(PIBH, replace)
 
-		capture confirm existence $export
-		if _rc == 0 {
-			*graph export "$export/PIBH.png", replace name(PIBH)
-		}
 
 		* PIB real *
 		tempvar pibYRmil
-		g `pibYRmil' = pibYR/1000000
+		g `pibYRmil' = pibYR/1000000000000
 		twoway (area `pibYRmil' anio if anio <= `anio_last') ///
 			(area `pibYRmil' anio if anio > `anio_last'), ///
-			title({bf:Producto Interno Bruto}) subtitle(${pais}) ///
-			ytitle(millones `=currency[`obsvp']' `aniovp') xtitle("") yline(0) ///
+			/// title({bf:Producto Interno Bruto}) subtitle(${pais}) ///
+			ytitle(billones `=currency[`obsvp']' `aniovp') xtitle("") yline(0) ///
 			text(`=`pibYRmil'[1]*.05' `=`anio_last'-.5' "`anio_last'", place(nw) color(white)) ///
 			text(`=`pibYRmil'[1]*.05' `=anio[1]+.5' "Observado" ///
 			`=`pibYRmil'[1]*.05' `=`anio_last'+1.5' "Proyectado", place(ne) color(white)) ///
@@ -264,10 +260,15 @@ quietly {
 			xline(`anio_last'.5) ///
 			yscale(range(0)) ///
 			legend(label(1 "Observado") label(2 "Proyectado") off) ///
-			note("{bf:Nota}: Crecimiento promedio anual de la producitividad laboral (lambda): `=string(scalar(lambda),"%6.3f")'%. {bf:{c U'}ltimo dato}: `anio_last'`trim_last'.") ///
+			note("{bf:{&lambda}}: `=string(scalar(lambda),"%6.3f")'% desde `=anio[1]'. {bf:{c U'}ltimo dato}: `anio_last'`trim_last'." "`except'") ///
 			///note("{bf:Note}: Annual Labor Productivity Growth (lambda): `=string(scalar(lambda),"%6.3f")'%.") ///
-			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
+			caption("Fuente: {stMono:simuladorfiscal.ciep.mx}. `c(current_date)' `c(current_time)'.") ///
 			name(PIBP, replace)
+
+		capture confirm existence $export
+		if _rc == 0 {
+			graph export "$export/PIB.png", replace name(PIBP)
+		}
 	}
 	return local except "`except'"
 	return local exceptI "`exceptI'"

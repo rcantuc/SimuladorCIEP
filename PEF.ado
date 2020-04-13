@@ -272,7 +272,7 @@ quietly {
 	matrix `Resumido_total' = r(StatTotal)
 	return scalar Resumido_total = `Resumido_total'[1,1]
 
-	** 4.3 Crecimientos **
+	/** 4.3 Crecimientos **
 	noisily di _newline in g "{bf: C. Mayores cambios:" in y " `=`anio'-4' - `anio'" in g ///
 		_col(55) %7s "`=`anio'-4'" ///
 		_col(66) %7s "`anio'" ///
@@ -330,7 +330,7 @@ quietly {
 
 
 
-	***********
+	**********/
 	*** END ***
 	***********
 	capture drop __*
