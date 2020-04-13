@@ -122,7 +122,7 @@ quietly {
 	***********************
 	* Grafica 1: Piramide *
 	***********************
-	if "$graphs" == "on" | "`graphs'" == "graphs" {
+	if "$graphs" == "on" /*| "`graphs'" == "graphs"*/ {
 
 		* Variables a graficar *
 		tempvar pob2
@@ -203,7 +203,7 @@ quietly {
 			`=`MaxM'[1,1]' `"`=string(`MaxM'[1,1],"%15.0fc")'"', angle(horizontal)) ///
 			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
 			/*xtitle("personas")*/ ///
-			title("{bf:Pir{c a'}mide demogr{c a'}fica}") subtitle(${pais})
+			///title("{bf:Pir{c a'}mide demogr{c a'}fica}") subtitle(${pais})
 
 		if "$export" != "" {
 			graph export "$export/Piramide_`anything'_`anioinicial'_`aniofinal'.png", ///
@@ -315,11 +315,11 @@ quietly {
 			text(`z4' `m4' `"{bf:`poblacion':} `=string(pob61[`q4'],"%12.0fc")'"', place(s)) ///
 			text(`=`y1'*.175' `=`anioinicial'-1' "{bf:Hoy:} `anioinicial'", place(w)) ///
 			xtitle("") ///
-			ytitle("Persons") ///
+			ytitle("Personas") ///
 			xline(`=`anioinicial'+.5', lpattern(dash) lcolor("52 70 78")) ///
 			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
 			name(Estructura_`anything'_`anioinicial'_`aniofinal', replace) ///
-			title("{bf:Transici{c o'}n demogr{c a'}fica}") subtitle(${pais}) ///
+			///title("{bf:Olas demogr{c a'}ficas}") subtitle(${pais}) ///
 			ylabel(, format(%20.0fc)) 
 			
 			if "$export" != "" {

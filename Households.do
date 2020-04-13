@@ -117,6 +117,7 @@ local OtrosGas = r(Otros)
 local Pensiones = r(Pensiones)
 local Educacion = r(Educaci_c_o__n)
 local Salud = r(Salud)
+local PenBienestar = r(Pensi_c_o__n_Bienestar)
 
 
 ***********************
@@ -1862,9 +1863,9 @@ matrix `ALTIMIR0' = r(StatTotal)
 // Step 5 //
 local TaltimirSal = (`RemSal'+`SSEmpleadores'+`SSImputada')/`ALTIMIR0'[1,1]
 local TaltimirSelf = (`MixKN'+`MixL')/`ALTIMIR0'[1,2]
-local TaltimirCap = (`ExNOpSoc'-`IMSSpropio'-`ISSSTEpropio'-`CFEpropio'- ///
+local TaltimirCap = (`ExNOpSoc'/*-`IMSSpropio'-`ISSSTEpropio'-`CFEpropio'- ///
 	`Pemexpropio'-`FMP'-`Mejoras'-`Derechos'-`Productos'-`Aprovechamientos'- ///
-	`OtrosTributarios'-`OtrasEmpresas')/`ALTIMIR0'[1,3]
+	`OtrosTributarios'-`OtrasEmpresas'*/)/`ALTIMIR0'[1,3]
 local TaltimirHouse = `ExNOpHog'/`ALTIMIR0'[1,4]
 local TaltimirROWTrans = `ROWTrans'/`ALTIMIR0'[1,5]
 
@@ -2284,6 +2285,15 @@ label var Otros "Otros ingresos"
 ** Pensiones **
 Distribucion Pension, relativo(ing_jubila) macro(`Pensiones')
 label var Pension "Pensiones"
+
+***********************
+** Pension Bienestar **
+tabstat factor if edad >= 68, stat(sum) f(%20.0fc) save
+matrix POBLACION68 = r(StatTotal)
+
+g PenBienestar = `PenBienestar'/POBLACION68[1,1] if edad >= 68
+replace PenBienestar = 0 if PenBienestar == .
+label var PenBienestar "Pensi{c o'}n Bienestar"
 
 ***************
 ** Educación **

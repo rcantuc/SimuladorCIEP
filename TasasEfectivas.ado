@@ -13,7 +13,7 @@ quietly {
 	***************************************
 	*** 1 Sistema de cuentas nacionales ***
 	***************************************
-	SCN, anio(`anio')
+	noisily SCN, anio(`anio') //graphs
 
 
 
@@ -102,7 +102,7 @@ quietly {
 	scalar IEPSBase = (`recIEPS__p'+`recIEPS__n')/PIB*100
 	scalar ImportaBase = `recImporta'/PIB*100
 	scalar ISANBase = `recISAN'/PIB*100
-	scalar ConsumoImp = (`recIEPS__p'+`recIEPS__n'+`recIVA'+`recISAN'+`recImporta')/PIB*100
+	scalar ImpConsumo = (`recIEPS__p'+`recIEPS__n'+`recIVA'+`recISAN'+`recImporta')/PIB*100
 
 
 	noisily di _newline(2) in y "{bf: C. " in y "Impuestos e ingresos de capital" "}"

@@ -167,7 +167,7 @@ quietly {
 	****************************
 	*** 4 Fiscal Gap: Gastos ***
 	****************************
-	PEF, anio(`anio') by(divGA)
+	PEF if divGA != -1, anio(`anio') by(divGA)
 	collapse (sum) gasto=gastoneto if transf_gf == 0, by(anio divGA) fast
 	g modulo = ""
 
@@ -241,21 +241,35 @@ quietly {
 			restore
 			merge 1:1 (anio divGA) using `otrosgas', nogen update replace
 		}
+		if "`divGA`k''" == "Pensi{c o'}n Bienestar" {
+			preserve
+			use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/PenBienestarREC"', clear
+			collapse (mean) estimacion contribuyentes* poblacion aniobase, by(anio) fast
+			g divGA = `k'
+			g modulo = "penbienestar"
+
+			tempfile penbienestar
+			save `penbienestar'
+
+			restore
+			merge 1:1 (anio divGA) using `penbienestar', nogen update replace
+		}
 	}
 
-	* Ingreso basico *
-	preserve
-	use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/IngBasicoREC"', clear
-	collapse (mean) estimacion contribuyentes* poblacion aniobase, by(anio) fast
-	g divGA = -1
-	g modulo = "ingbasico"
+	if "$pais" == "" {
+		* Ingreso basico *
+		preserve
+		use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/IngBasicoREC"', clear
+		collapse (mean) estimacion contribuyentes* poblacion aniobase, by(anio) fast
+		g divGA = 99
+		g modulo = "ingbasico"
 
-	tempfile ingbasico
-	save `ingbasico'
+		tempfile ingbasico
+		save `ingbasico'
 
-	restore
-	merge 1:1 (anio divGA) using `ingbasico', nogen update replace
-
+		restore
+		merge 1:1 (anio divGA) using `ingbasico', nogen update replace
+	}
 	* PIB *
 	merge m:1 (anio) using `PIB', nogen keep(matched) update replace
 	collapse (sum) gasto estimacion (max) pibYR deflator lambda, by(anio modulo) fast
@@ -314,10 +328,22 @@ quietly {
 	replace costodeudashrfsp = L.costodeudashrfsp if costodeudashrfsp == .
 
 	* Iteraciones *
+	capture confirm variable estimacionpenbienestar
+	if _rc != 0 {
+		g estimacionpenbienestar = 0
+		g gastopenbienestar = 0
+	}
+	capture confirm variable estimacioningbasico
+	if _rc != 0 {
+		g estimacioningbasico = 0
+		g gastoingbasico = 0
+	}
 	forvalues k = `=`anio_last'+1'(1)`=anio[_N]' {
 		replace estimacioncostodeuda = L.costodeudashrfsp/100*L.shrfsp if anio == `k'
+		*replace estimacioncostodeuda = 0 if estimacioncostodeuda < 0
 		replace rfsp = estimacionamortizacion + estimacioncostodeuda + estimacioneducacion ///
 			+ estimacionsalud + estimacionpensiones + estimacionotrosgas + estimacioningbasico ///
+			+ estimacionpenbienestar ///
 			- estimacioningresos if anio == `k'
 		replace shrfsp = L.shrfsp*(1+actualizacion/100) + rfsp if anio == `k'
 	}
@@ -325,36 +351,44 @@ quietly {
 	****************
 	** 4.1 Graphs **
 	if "`graphs'" == "graphs" {
-		tempvar educaciong pensionesg saludg costog amortg otrosg ingbasg
+		tempvar educaciong pensionesg saludg costog amortg otrosg ingbasg bienestarg
 		g `educaciong' = (gastoeducacion)/1000000
 		g `pensionesg' = (gastopensiones + gastoeducacion)/1000000
 		g `saludg' = (gastosalud + gastopensiones + gastoeducacion)/1000000
 		g `costog' = (gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000
 		g `amortg' = (gastoamortizacion + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000
 		g `otrosg' = (gastootros + gastoamortizacion + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000
-		g `ingbasg' = (gastoingbasico + gastootros + gastoamortizacion + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000
+		g `bienestarg' = (gastopenbienestar + gastootros + gastoamortizacion + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000
+		g `ingbasg' = (gastoingbasico + gastopenbienestar + gastootros + gastoamortizacion + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000
 		
-		tempvar educaciong2 pensionesg2 saludg2 costog2 amortg2 otrosg2 ingbasg2
+		tempvar educaciong2 pensionesg2 saludg2 costog2 amortg2 otrosg2 ingbasg2 bienestarg2
 		g `educaciong2' = (estimacioneducacion)/1000000
 		g `pensionesg2' = (estimacionpensiones + estimacioneducacion)/1000000
 		g `saludg2' = (estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000
 		g `costog2' = (estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000
 		g `amortg2' = (estimacionamortizacion + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000
 		g `otrosg2' = (estimacionotros + estimacionamortizacion + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000
-		g `ingbasg2' = (estimacioningbasico + estimacionotros + estimacionamortizacion + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000
+		g `bienestarg2' = (estimacionpenbienestar + estimacionotros + estimacionamortizacion + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000
+		g `ingbasg2' = (estimacioningbasico + estimacionpenbienestar + estimacionotros + estimacionamortizacion + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000
 
-		twoway (area `ingbasg' `otrosg' `amortg' `costog' `saludg' `pensionesg' `educaciong' anio if anio < `anio' & anio >= 2013) ///
+		twoway (area `ingbasg' `bienestarg' `otrosg' `amortg' `costog' `saludg' `pensionesg' `educaciong' anio if anio < `anio' & anio >= 2013) ///
 			(area `ingbasg2' anio if anio >= `anio', color("255 129 0")) ///
-			(area `otrosg2' anio if anio >= `anio', color("255 189 0")) ///
-			(area `amortg2' anio if anio >= `anio', color("39 97 47")) ///
-			(area `costog2' anio if anio >= `anio', color("53 200 71")) ///
-			(area `saludg2' anio if anio >= `anio', color("0 78 198")) ///
-			(area `pensionesg2' anio if anio >= `anio', color("0 151 201")) ///
-			(area `educaciong2' anio if anio >= `anio', color("186 34 64")), ///
-			legend(cols(6) order(1 2 3 4 5 6) ///
-			label(1 "Renta b{c a'}sica") label(2 "Otros gastos") ///
-			label(3 "Amortizaci{c o'}n") label(4 "Costo financiero de la deuda") ///
-			label(5 "Salud") label(6 "Pensiones") label(7 "Educaci{c o'}n")) ///
+			(area `bienestarg2' anio if anio >= `anio', color("255 189 0")) ///
+			(area `otrosg2' anio if anio >= `anio', color("39 97 47")) ///
+			(area `amortg2' anio if anio >= `anio', color("53 200 71")) ///
+			(area `costog2' anio if anio >= `anio', color("0 78 198")) ///
+			(area `saludg2' anio if anio >= `anio', color("0 151 201")) ///
+			(area `pensionesg2' anio if anio >= `anio', color("186 34 64")) ///
+			(area `educaciong2' anio if anio >= `anio', color("254 118 109")), ///
+			legend(cols(8) order(1 2 3 4 5 6 7 8) ///
+			label(1 "Renta b{c a'}sica") ///
+			label(2 "Pensi{c o'}n Bienestar") ///
+			label(3 "Otros gastos") ///
+			label(4 "Amortizaci{c o'}n") ///
+			label(5 "Costo de la deuda") ///
+			label(6 "Salud") ///
+			label(7 "Pensiones") ///
+			label(8 "Educaci{c o'}n")) ///
 			xlabel(2010(10)`=round(anio[_N],10)') ///
 			ylabel(, format(%20.0fc)) ///
 			xline(`=`anio'-.5') ///

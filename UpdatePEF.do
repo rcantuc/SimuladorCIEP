@@ -8,15 +8,16 @@
 ************************
 *** 1. BASE DE DATOS ***
 ************************
-local archivos_csv: dir "`c(sysdir_site)'../basesCIEP/PEFs/$pais" files "*.xlsx"	// Busca todos los archivos .csv en /basesCIEP/PEFs/
+*local archivos_csv: dir "`c(sysdir_site)'../basesCIEP/PEFs/$pais" files "*.xlsx"	// Busca todos los archivos .csv en /basesCIEP/PEFs/
+local archivos_csv: dir "`c(sysdir_site)'../basesCIEP/PEFs/$pais" files "*.csv"	// Busca todos los archivos .csv en /basesCIEP/PEFs/
 
 * Loop para todos los archivos .csv *
 foreach k of local archivos_csv {
 
 	* Importar archivo de la Cuenta Publicas*
 	noisily di in g "Importando: " in y "`k'", _cont
-	*import delimited "`c(sysdir_site)'../basesCIEP/PEFs/$pais/`k'", clear encoding("utf8") case(lower) stripquotes(yes)
-	import excel "`c(sysdir_site)'../basesCIEP/PEFs/$pais/`k'", clear firstrow case(lower)
+	import delimited "`c(sysdir_site)'../basesCIEP/PEFs/$pais/`k'", clear encoding("utf8") case(lower) stripquotes(yes)
+	*import excel "`c(sysdir_site)'../basesCIEP/PEFs/$pais/`k'", clear firstrow case(lower)
 
 	* Limpiar *
 	drop if ciclo == .
@@ -275,19 +276,20 @@ if "$pais" == "" {
 	local ifpp2 `"`=substr("`ifpp2'",1,`=strlen("`ifpp2'")-3')')"'
 
 	g desc_divGA = "Pensiones" if transf_gf == 0 & ramo != -1 & capitulo != 9 ///
-		& (substr(string(objeto),1,2) == "45" | substr(string(objeto),1,2) == "47" | `ifpp')
+		& (substr(string(objeto),1,2) == "45" | substr(string(objeto),1,2) == "47")
+	
+	replace desc_divGA = "Pensi{c o'}n Bienestar" if transf_gf == 0 & ramo != -1 & capitulo != 9 ///
+			& `ifpp'
 
 	replace desc_divGA = "Educaci{c o'}n" if transf_gf == 0 & ramo != -1 & capitulo != 9  ///
-		& (substr(string(objeto),1,2) != "45" & substr(string(objeto),1,2) != "47" & `ifpp2') ///
+		& desc_divGA == "" ///
 		& desc_funcion == 10
 
 	replace desc_divGA = "Salud" if transf_gf == 0 & ramo != -1 & capitulo != 9  ///
-		& (substr(string(objeto),1,2) != "45" & substr(string(objeto),1,2) != "47" & `ifpp2') ///
-		& desc_funcion != 10 ///
+		& desc_divGA == "" ///
 		& desc_funcion == 21
-
 	replace desc_divGA = "Salud" if transf_gf == 0 & ramo != -1 & capitulo != 9  ///
-		& (substr(string(objeto),1,2) != "45" & substr(string(objeto),1,2) != "47" & `ifpp2') ///
+		& desc_divGA == "" ///
 		& (modalidad == "E" & pp == 13 & ramo == 52)
 		
 	replace desc_divGA = "Costo financiero de la deuda" if capitulo == 9 & substr(string(objeto),1,2) != "91" 
@@ -296,7 +298,11 @@ if "$pais" == "" {
 	
 	replace desc_divGA = "Otros" if desc_divGA == ""
 
+	replace desc_divGA = "zCuotas ISSSTE" if ramo == -1
+
 	encode desc_divGA, generate(divGA)
+	replace divGA = -1 if ramo == -1
+	label define divGA -1 "Cuotas ISSSTE", add
 }
 else if "$pais" == "El Salvador" {
 	** Encode **

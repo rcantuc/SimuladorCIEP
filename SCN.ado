@@ -13,7 +13,7 @@ quietly {
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
 	syntax [, ANIO(int `aniovp') Graphs Update Discount(int 3)]
-	noisily di _newline(2) in g "{bf:INFORMACI{c O'}N ECON{c O'}MICA:" in y " SCN " `anio' "}"
+	di _newline in g "{bf:INFORMACI{c O'}N ECON{c O'}MICA:" in y " SCN " `anio' "}"
 
 	scalar aniovp = `aniovp'
 
@@ -441,7 +441,7 @@ quietly {
 
 	** R.2. Display **
 	* Generación de ingresos *
-	noisily di _newline(3) in g "{bf: A. Cuenta: " in y "generaci{c o'}n del ingreso" in g ///
+	noisily di _newline in g "{bf: A. Cuenta: " in y "generaci{c o'}n del ingreso" in g ///
 		_col(44) in g %20s "MXN" ///
 		_col(66) %7s "% PIB" "}" 
 	noisily di in g "  (+) Remuneraci{c o'}n de asalariados" ///

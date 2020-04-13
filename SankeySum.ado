@@ -1,13 +1,13 @@
 program define SankeySum
 quietly {
 
-	syntax, A(string) NAME(string) [B(string) C(string) D(string) ANIO(int -1)]
-
 	** Anio valor presente **
-	if `anio' == -1 {
-		local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
-		local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
-	}
+	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
+	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
+
+	syntax, A(string) NAME(string) FOLDER(string) ///
+		[B(string) C(string) D(string) E(string) ANIO(int `aniovp')]
+
 	noisily di _newline(2) in g "{bf: Sankey}: " in y "`anio'"
 	PIBDeflactor, anio(`anio')
 
@@ -25,7 +25,7 @@ quietly {
 	**************
 	local number = 0
 	local color_num = 1
-	foreach base in `a' `b' `c' `d' {
+	foreach base in `a' `b' `c' `d' `e' {
 
 		use `base', clear
 
@@ -166,6 +166,8 @@ quietly {
 	}
 	filefilter `sankey1' `sankey2', from(" ") to("") replace
 	filefilter `sankey2' `sankey3', from("_") to(" ") replace
-	filefilter `sankey3' "/Applications/XAMPP/xamppfiles/htdocs/SankeySIM/`name'.json", from(".,") to("0") replace
+	if "`c(os)'" == "MacOSX" {
+		filefilter `sankey3' "/Applications/XAMPP/xamppfiles/htdocs/`folder'/`name'.json", from(".,") to("0") replace
+	}
 }
 end

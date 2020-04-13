@@ -1,7 +1,7 @@
 program define GastoPC, return
 quietly {
 
-	timer on 10
+	timer on 11
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
@@ -30,10 +30,12 @@ quietly {
 	local penIMSS = r(Instituto_Mexicano_del_Seguro_S)
 	local penISSSTE = r(Instituto_de_Seguridad_y_Servic)
 	local penLFCFerronales = r(Aportaciones_a_Seguridad_Social)						// incluye ISSFAM
-	local penPAM = r(Bienestar)
 	local penPemex = r(Petr_c_o__leos_Mexicanos)
 	local penCFE = r(Comisi_c_o__n_Federal_de_Electr)
 	local Pensiones = r(Gasto_bruto)
+
+	PEF if divGA == 6, anio(`anio') by(divGA)
+	local penPAM = r(Pensi_c_o__n_Bienestar)
 
 
 	* HOUSEHOLDS *
@@ -69,11 +71,11 @@ quietly {
 	noisily di in g _dup(80) "-"
 	noisily di in g "  Pensi{c o'}n para el bienestar" ///
 		_col(33) %15.0fc in y `pensPAM'[1,1] ///
-		_col(50) %7.3fc in y `penPAM'/PIB*100 ///
+		_col(50) %7.3fc in y `penPAM'/scalar(pibY)*100 ///
 		_col(60) %15.0fc in y `penPAM'/`pensPAM'[1,1]/`deflactor'
 	noisily di in g "  IMSS" ///
 		_col(33) %15.0fc in y `pensIMSS'[1,1] ///
-		_col(50) %7.3fc in y `penIMSS'/PIB*100 ///
+		_col(50) %7.3fc in y `penIMSS'/scalar(pibY)*100 ///
 		_col(60) %15.0fc in y `penIMSS'/`pensIMSS'[1,1]/`deflactor'
 	noisily di in g "  ISSSTE" ///
 		_col(33) %15.0fc in y `pensISSSTE'[1,1] ///
@@ -89,10 +91,10 @@ quietly {
 		_col(50) %7.3fc in y (`penPAM'+`penIMSS'+`penISSSTE'+`penPemex'+`penCFE'+`penLFCFerronales')/scalar(pibY)*100 ///
 		_col(60) %15.0fc in y (`penPAM'+`penIMSS'+`penISSSTE'+`penPemex'+`penCFE'+`penLFCFerronales')/(`pensPAM'[1,1]+`pensIMSS'[1,1]+`pensISSSTE'[1,1]+`pensPemex'[1,1])/`deflactor'
 
-	scalar pamBase = `penPAM'/PIB*100
-	scalar penimsBase = `penIMSS'/PIB*100
-	scalar penissBase = `penISSSTE'/PIB*100
-	scalar penpemBase = `penPemex'/PIB*100
+	scalar pamBase = `penPAM'/scalar(pibY)*100
+	scalar penimsBase = `penIMSS'/scalar(pibY)*100
+	scalar penissBase = `penISSSTE'/scalar(pibY)*100
+	scalar penpemBase = `penPemex'/scalar(pibY)*100
 
 
 	************************
@@ -181,7 +183,7 @@ quietly {
 	***************
 	noisily di _newline in y "{bf: C. " in y "Salud" "}"
 
-	PEF if divGA == 6, anio(`anio') by(desc_pp)
+	PEF if divGA == 7, anio(`anio') by(desc_pp)
 	local salPROSPERA = r(Programa_IMSS_BIENESTAR)
 	if `salPROSPERA' == . {
 		local salPROSPERA = r(Programa_IMSS_PROSPERA)							// IMSS-Prospera
@@ -191,11 +193,11 @@ quietly {
 	}
 	local salSegPop = r(Seguro_Popular)											// Seguro Popular
 
-	PEF if divGA == 6 ///
+	PEF if divGA == 7 ///
 		& modalidad == "E" & pp == 13 & ramo == 52, anio(`anio') by(ramo)		// Salud - Pemex (no mover de lugar)
 	local salPemex = r(Petr_c_o__leos_Mexicanos)
 
-	PEF if divGA == 6, anio(`anio') by(ramo)
+	PEF if divGA == 7, anio(`anio') by(ramo)
 	local salIMSS = r(Instituto_Mexicano_del_Seguro_S)							// IMSS
 	local salISSSTE = r(Instituto_de_Seguridad_y_Servic)						// ISSSTE
 	local salISSFAM = r(Defensa_Nacional)+r(Marina)								// ISSFAM
@@ -291,16 +293,6 @@ quietly {
 	* HOUSEHOLDS *
 	use `"`c(sysdir_site)'../basesCIEP/SIM/2018/households`=subinstr("${pais}"," ","",.)'.dta"', clear	
 
-	local IngBasi = 3
-	capture confirm scalar ingbasico18
-	if _rc != 0 {
-		scalar ingbasico18 = 1
-	}
-	capture confirm scalar ingbasico65
-	if _rc != 0 {
-		scalar ingbasico65 = 1
-	}
-
 	local bititle = "General"
 	if ingbasico18 == 0 & ingbasico65 == 1 {
 		tabstat factor if edad >= 18, stat(sum) f(%20.0fc) save
@@ -318,8 +310,7 @@ quietly {
 		local bititle = "Entre 18 y 65"
 	}
 	
-	g double IngBasi = `IngBasi'/`pobtot'[1,1]/`deflactor'
-
+	g double IngBasi = singbas/100*scalar(pibY)/`pobtot'[1,1]/`deflactor'
 	noisily di _newline in g "{bf:  Gasto" ///
 		_col(33) in g "Poblaci{c o'}n" ///
 		_col(50) %7s "% PIB" ///
@@ -327,11 +318,11 @@ quietly {
 	noisily di in g _dup(80) "-"
 	noisily di in g "  `bititle'" ///
 		_col(33) %15.0fc in y `pobtot'[1,1] ///
-		_col(50) %7.3fc in y `IngBasi' ///
-		_col(60) %15.0fc in y `IngBasi'/100*scalar(pibY)/`pobtot'[1,1]/`deflactor'
+		_col(50) %7.3fc in y singbas ///
+		_col(60) %15.0fc in y singbas/100*scalar(pibY)/`pobtot'[1,1]/`deflactor'
 
 
-	noisily PEF if divGA != 5 & divGA != 3 & divGA != 6, by(capitulo) anio(`anio')
+	PEF if divGA != 5 & divGA != 3 & divGA != 6, by(capitulo) anio(`anio')
 	scalar servpersBase = r(Servicios_personales)				// Servicios personales
 	scalar matesumiBase = r(Materiales_y_suministros)			// Materiales y suministros
 	scalar gastgeneBase = r(Gastos_generales)					// Gastos generales
@@ -346,10 +337,9 @@ quietly {
 	***********
 	*** END ***
 	***********
-	capture drop __*
-	timer off 10
-	timer list 10
-	noisily di _newline in g "{bf:Tiempo:} " in y round(`=r(t10)/r(nt10)',.1) in g " segs."
+	timer off 11
+	timer list 11
+	noisily di in g "{bf:Tiempo:} " in y round(`=r(t11)/r(nt11)',.1) in g " segs."
 }
 end
 
