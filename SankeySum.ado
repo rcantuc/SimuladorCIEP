@@ -169,5 +169,8 @@ quietly {
 	if "`c(os)'" == "MacOSX" {
 		filefilter `sankey3' "/Applications/XAMPP/xamppfiles/htdocs/`folder'/`name'.json", from(".,") to("0") replace
 	}
+	if "`c(os)'" == "Unix" {
+		filefilter `sankey3' "/var/www/html/`folder'/`name'.json", from(".,") to("0") replace
+	}
 }
 end

@@ -151,11 +151,10 @@ quietly {
 	forvalues k=1(1)`=_N' {
 		if anio[`k'] == `anio_exo' {
 			local obs_exo = `k'
-			continue, break
 		}
 	}
 
-	scalar lambda = ((OutputPerWorker[`obslast']/OutputPerWorker[1])^(1/(`=`anio_last'-`anio_first''))-1)*100
+	scalar lambda = ((OutputPerWorker[`obs_exo']/OutputPerWorker[`=`obs_exo'-10'])^(1/10)-1)*100
 	capture confirm existence $lambda
 	if _rc == 0 {
 		scalar lambda = $lambda
@@ -189,13 +188,14 @@ quietly {
 	tempname pibYVP
 	matrix `pibYVP' = r(StatTotal)
 
-	noisily di _newline in g " PIB VP al infinito: " in y _col(20) %23.0fc `pibYVP'[1,1] + pibINF in g " `=currency[`obsvp']'"
 	scalar pibVPINF = `pibYVP'[1,1] + pibINF
 	scalar pibY = pibY[`obsvp']
+	global pib`aniovp' = var_pibY[`obsvp']
 
-	noisily di in g "  Crec. largo plazo: " in y _col(25) %20.1fc var_pibY[_N] in g " %"
-	noisily di in g "  Defl. largo plazo: " in y _col(25) %20.1fc var_indiceY[_N] in g " %"
-	noisily di in g "  Tasa de descuento: " in y _col(25) %20.1fc `discount' in g " %"
+	noisily di _newline in g " Tasa de descuento: " in y _col(25) %20.1fc `discount' in g " %"
+	noisily di in g " Crec. al infinito: " in y _col(25) %20.1fc var_pibY[_N] in g " %"
+	noisily di in g " Defl. al infinito: " in y _col(25) %20.1fc var_indiceY[_N] in g " %"
+	noisily di in g "{bf: PIB VP al infinito: " in y _col(20) %23.0fc `pibYVP'[1,1] + pibINF in g " `=currency[`obsvp']'}"
 
 	if "`graphs'" == "graphs" {
 
@@ -232,7 +232,7 @@ quietly {
 		}
 
 		* Crecimiento PIB *
-		*twoway (connected var_pibY anio if anio <= `anio_last') ///
+		twoway (connected var_pibY anio if anio <= `anio_last') ///
 			(connected var_pibY anio if anio > `anio_last'), ///
 			title({bf:Producto Interno Bruto}) ///
 			subtitle(${pais}) ///
@@ -260,7 +260,7 @@ quietly {
 			xline(`anio_last'.5) ///
 			yscale(range(0)) ///
 			legend(label(1 "Observado") label(2 "Proyectado") off) ///
-			note("{bf:{&lambda}}: `=string(scalar(lambda),"%6.3f")'% desde `=anio[1]'. {bf:{c U'}ltimo dato}: `anio_last'`trim_last'." "`except'") ///
+			note("{bf:{&lambda}}: `=string(scalar(lambda),"%6.3f")'% desde `=anio[[`=`obs_exo'-10']]'. {bf:{c U'}ltimo dato}: `anio_last'`trim_last'." "`except'") ///
 			///note("{bf:Note}: Annual Labor Productivity Growth (lambda): `=string(scalar(lambda),"%6.3f")'%.") ///
 			caption("Fuente: {stMono:simuladorfiscal.ciep.mx}. `c(current_date)' `c(current_time)'.") ///
 			name(PIBP, replace)

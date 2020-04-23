@@ -309,8 +309,7 @@ quietly {
 		matrix `pobtot' = r(StatTotal)
 		local bititle = "Entre 18 y 65"
 	}
-	
-	g double IngBasi = singbas/100*scalar(pibY)/`pobtot'[1,1]/`deflactor'
+
 	noisily di _newline in g "{bf:  Gasto" ///
 		_col(33) in g "Poblaci{c o'}n" ///
 		_col(50) %7s "% PIB" ///
@@ -318,11 +317,12 @@ quietly {
 	noisily di in g _dup(80) "-"
 	noisily di in g "  `bititle'" ///
 		_col(33) %15.0fc in y `pobtot'[1,1] ///
-		_col(50) %7.3fc in y singbas ///
-		_col(60) %15.0fc in y singbas/100*scalar(pibY)/`pobtot'[1,1]/`deflactor'
+		_col(50) %7.3fc in y 0 ///
+		_col(60) %15.0fc in y 0/100*scalar(pibY)/`pobtot'[1,1]/`deflactor'
 
 
-	PEF if divGA != 5 & divGA != 3 & divGA != 6, by(capitulo) anio(`anio')
+	noisily di _newline in y "{bf: E. Otros gastos}" 
+	noisily PEF if divGA != 5 & divGA != 3 & divGA != 6 & divGA != 7, by(capitulo) anio(`anio')
 	scalar servpersBase = r(Servicios_personales)				// Servicios personales
 	scalar matesumiBase = r(Materiales_y_suministros)			// Materiales y suministros
 	scalar gastgeneBase = r(Gastos_generales)					// Gastos generales

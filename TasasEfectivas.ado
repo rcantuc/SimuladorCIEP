@@ -20,7 +20,7 @@ quietly {
 	*************
 	*** 2 LIF ***
 	*************
-	LIF, anio(`anio') `lif'
+	LIF, anio(`anio') lif
 	local recursos = r(divCIEP)
 	foreach k of local recursos {
 		local rec`=substr("`k'",1,7)' = r(`k')
@@ -102,7 +102,7 @@ quietly {
 	scalar IEPSBase = (`recIEPS__p'+`recIEPS__n')/PIB*100
 	scalar ImportaBase = `recImporta'/PIB*100
 	scalar ISANBase = `recISAN'/PIB*100
-	scalar ImpConsumo = (`recIEPS__p'+`recIEPS__n'+`recIVA'+`recISAN'+`recImporta')/PIB*100
+	scalar ImpConsumo = (`recIEPS__p'+`recIEPS__n'+`recIVA'+`recISAN'+`recImporta')/(ConHog)*100
 
 
 	noisily di _newline(2) in y "{bf: C. " in y "Impuestos e ingresos de capital" "}"
@@ -115,8 +115,8 @@ quietly {
 	noisily di in g "  Sociedades e ISFLSH" ///
 		_col(44) %7.3fc in y (ExNOpSoc)/PIB*100 ///
 		_col(55) in g "ISR (morales)" ///
-		_col(88) %7.3fc in y (`recISR'*(803643.1/1687830.1))/PIB*100 ///
-		_col(99) %7.1fc in y (`recISR'*(803643.1/1687830.1))/(ExNOpSoc)*100 " %"
+		_col(88) %7.3fc in y (`recISR'*((1687830.1-(783743.8+45756.7))/1687830.1))/PIB*100 ///
+		_col(99) %7.1fc in y (`recISR'*((1687830.1-(783743.8+45756.7))/1687830.1))/(ExNOpSoc)*100 " %"
 	noisily di in g "  Ingreso de capital (- alq. imp.)" ///
 		_col(44) %7.3fc in y (CapIncImp-ExNOpHog)/PIB*100 ///
 		_col(55) in g "FMP (petr{c o'}leo)" ///
@@ -136,8 +136,8 @@ quietly {
 	noisily di in g "  {bf:Ingreso de capital" ///
 		_col(44) %7.3fc in y (CapIncImp)/PIB*100 ///
 		_col(55) in g "Impuestos e ingresos de capital" ///
-		_col(88) %7.3fc in y (`recISR'*(803643.1/1687830.1)+`recPemex'+`recCFE'+`recIMSS'+`recISSSTE'+`recFMP__De'+`recOtros_t'+`recDerecho'+`recProduct'+`recAprovec')/PIB*100 ///
-		_col(99) %7.1fc in y (`recISR'*(803643.1/1687830.1)+`recPemex'+`recCFE'+`recIMSS'+`recISSSTE'+`recFMP__De'+`recOtros_t'+`recDerecho'+`recProduct'+`recAprovec')/(CapIncImp)*100 " %" "}"
+		_col(88) %7.3fc in y (`recISR'*((1687830.1-(783743.8+45756.7))/1687830.1)+`recPemex'+`recCFE'+`recIMSS'+`recISSSTE'+`recFMP__De'+`recOtros_t'+`recDerecho'+`recProduct'+`recAprovec')/PIB*100 ///
+		_col(99) %7.1fc in y (`recISR'*((1687830.1-(783743.8+45756.7))/1687830.1)+`recPemex'+`recCFE'+`recIMSS'+`recISSSTE'+`recFMP__De'+`recOtros_t'+`recDerecho'+`recProduct'+`recAprovec')/(CapIncImp)*100 " %" "}"
 
 	scalar ISR_PMBase = (`recISR'*(803643.1/1687830.1))/PIB*100
 	

@@ -8,16 +8,24 @@
 ************************
 *** 1. BASE DE DATOS ***
 ************************
-*local archivos_csv: dir "`c(sysdir_site)'../basesCIEP/PEFs/$pais" files "*.xlsx"	// Busca todos los archivos .csv en /basesCIEP/PEFs/
-local archivos_csv: dir "`c(sysdir_site)'../basesCIEP/PEFs/$pais" files "*.csv"	// Busca todos los archivos .csv en /basesCIEP/PEFs/
+if "$pais" == "" {
+	local archivos: dir "`c(sysdir_site)'../basesCIEP/PEFs/$pais" files "*.csv"			// Busca todos los archivos .csv en /basesCIEP/PEFs/
+}
+else {
+	local archivos: dir "`c(sysdir_site)'../basesCIEP/PEFs/$pais" files "*.xlsx"		// Busca todos los archivos .csv en /basesCIEP/PEFs/
+}
 
 * Loop para todos los archivos .csv *
-foreach k of local archivos_csv {
+foreach k of local archivos {
 
 	* Importar archivo de la Cuenta Publicas*
 	noisily di in g "Importando: " in y "`k'", _cont
-	import delimited "`c(sysdir_site)'../basesCIEP/PEFs/$pais/`k'", clear encoding("utf8") case(lower) stripquotes(yes)
-	*import excel "`c(sysdir_site)'../basesCIEP/PEFs/$pais/`k'", clear firstrow case(lower)
+	if "$pais" == "" {
+		import delimited "`c(sysdir_site)'../basesCIEP/PEFs/$pais/`k'", clear encoding("utf8") case(lower) stripquotes(yes)
+	}
+	else {
+		import excel "`c(sysdir_site)'../basesCIEP/PEFs/$pais/`k'", clear firstrow case(lower)
+	}
 
 	* Limpiar *
 	drop if ciclo == .
@@ -56,7 +64,7 @@ foreach k of local archivos_csv {
 
 * Loop para unir los archivos (limpios y en Stata) *
 local j = 0
-foreach k of local archivos_csv {
+foreach k of local archivos {
 	di in g "Appending: " in y "`k'"
 	if `j' == 0 {
 		use ``=strtoname("`k'")'', clear
@@ -292,7 +300,7 @@ if "$pais" == "" {
 		& desc_divGA == "" ///
 		& (modalidad == "E" & pp == 13 & ramo == 52)
 		
-	replace desc_divGA = "Costo financiero de la deuda" if capitulo == 9 & substr(string(objeto),1,2) != "91" 
+	replace desc_divGA = "Costo de la deuda" if capitulo == 9 & substr(string(objeto),1,2) != "91" 
 	
 	replace desc_divGA = "Amortizaci{c o'}n" if capitulo == 9 & substr(string(objeto),1,2) == "91" 
 	
