@@ -34,7 +34,7 @@ quietly {
 	****************
 	use in 1 using `"`c(sysdir_site)'../basesCIEP/SIM/PEF`=subinstr("${pais}"," ","",.)'.dta"', clear
 	syntax [if] [, ANIO(int `aniovp') Graphs Update Base ID(string) ///
-		BY(varname) ROWS(int 3) COLS(int 4) MINimum(real 1) PEF]
+		BY(varname) ROWS(int 3) COLS(int 4) MINimum(real 0) PEF PPEF]
 	
 	** 2.1 PIB + Deflactor **
 	PIBDeflactor, anio(`anio')
@@ -69,7 +69,7 @@ quietly {
 		update replace keep(matched) sorted
 
 	** 3.1 Utilizar PPEF **
-	if "`pef'" == "pef" {
+	if "`ppef'" == "ppef" {
 		replace gasto = proyecto if anio == `anio'
 		replace gastoneto = proyectoneto if anio == `anio'
 	}
@@ -93,26 +93,29 @@ quietly {
 	label values `resumido' `label'
 
 	egen `gastonetoPIB' = max(gastonetoPIB), by(`by')	
-	replace `resumido' = -99 if abs(`gastonetoPIB') < `minimum'
-	label define `label' -99 "Otros (< `minimum'% PIB)", add modify
-	
-	levelsof `by', local(levelsof)
+	replace `resumido' = 999 if abs(`gastonetoPIB') < `minimum'
+	label define `label' 999 "< 1% PIB", add modify
+
+	/*levelsof `by', local(levelsof)
 	foreach k of local levelsof {
 		local labelotros : label `by' `k'
 		if "`labelotros'" == "Otros" { 
-			replace `resumido' = -98 if `by' == `k'
-			label define `label' -98 "Otros", modify
+			replace `resumido' = 98 if `by' == `k'
+			label define `label' 98 "Otros", modify
 		}
-	}
+	}*/
 
 	if "$graphs" == "on" | "`graphs'" == "graphs" {
-		graph pie gastonetoPIB if anio == `anio', over(`resumido') ///
+		tabstat gastonetoPIB if anio == `anio' & `by' != -1 & transf_gf == 0, stat(sum) f(%20.0fc) save
+		tempname gasanio
+		matrix `gasanio' = r(StatTotal)
+		
+		graph pie gastonetoPIB if anio == `anio' & `by' != -1 & transf_gf == 0, over(`resumido') ///
 			plabel(_all percent, format(%5.1fc)) ///
-			title("{bf:Gastos presupuestarios `anio'}") ///
-			subtitle($pais) ///
-			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
+			title(`"Gastos `=upper("`pef'`ppef'")'"') /// subtitle($pais) ///
 			name(gastospie, replace) ///
-			legend(on position(3) cols(1))
+			legend(on position(6) rows(1)) ///
+			ptext(0 0 `"{bf:`=string(`gasanio'[1,1],"%6.1fc")' % PIB}"', color(white) size(small))
 
 		graph bar (sum) gastonetoPIB if `by' != -1 & transf_gf == 0 & anio >= 2013, ///
 			over(`resumido') ///
@@ -121,13 +124,10 @@ quietly {
 			title("{bf:Gastos presupuestarios}") ///
 			subtitle($pais) ///
 			ytitle(% PIB) ylabel(0(5)30, labsize(small)) ///
-			legend(on position(6) cols(6)) ///
+			legend(on position(6) rows(1)) ///
 			name(gastos, replace) ///
 			blabel(bar, format(%7.1fc)) ///
-			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
-			/*note({bf:{c U'}ltimo dato:} `ultanio'm`ultmes')*/
-		*gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
-		*gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
+			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}")
 	}
 
 
@@ -136,7 +136,7 @@ quietly {
 	** 4. Display PEF **
 	
 	** 4.1 Division `by' **
-	noisily di _newline in g "{bf: A. Gasto presupuestario (`by') " ///
+	noisily di _newline in g "{bf: A. Gasto bruto presupuestario (`by') " ///
 		_col(44) in g %20s "`currency'" ///
 		_col(66) %7s "% PIB" ///
 		_col(77) %7s "% Total" "}"
@@ -184,10 +184,10 @@ quietly {
 	return scalar Gasto_bruto = `mattot'[1,1]
 
 	** 4.1.1 Gasto neto **
-	if "`if'" == "" & "$pais" == "" {
+	if "$pais" == "" {
 
 		* 4.0 Aportaciones y cuotas de la Federacion *
-		tabstat gasto gastoPIB if anio == `anio' & transf_gf == 1, stat(sum) f(%20.0fc) save
+		capture tabstat gasto gastoPIB if anio == `anio' & transf_gf == 1, stat(sum) f(%20.0fc) save
 		tempname Aportaciones_Federacion
 		if _rc == 0 {
 			matrix `Aportaciones_Federacion' = r(StatTotal)
@@ -226,7 +226,7 @@ quietly {
 	}
 
 	** 4.2. Division Resumido **
-	noisily di _newline in g "{bf: B. Gasto presupuestario (Resumido) " ///
+	noisily di _newline in g "{bf: B. Gasto neto presupuestario (Resumido) " ///
 		_col(44) in g %20s "`currency'" ///
 		_col(66) %7s "% PIB" ///
 		_col(77) %7s "% Total" "}"

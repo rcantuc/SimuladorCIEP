@@ -1,3 +1,5 @@
+global pais = "El Salvador"
+
 ********************************
 *** Ingresos presupuestarios ***
 ********************************
@@ -77,34 +79,41 @@ end
 *** Variables Simulador.ado ***
 *******************************
 
-** Ingreso **
+** (+) Ingreso **
 g Ingreso = ingre if formal == 1
 replace Ingreso = 0 if Ingreso == .
 label var Ingreso "Impuestos al ingreso"
 * Reescalar *
 Distribucion Ingreso, macro(`alingreso')
+Simulador Ingreso [fw=factor], base("ENIGH 2018") ///
+	boot(1) reboot graphs
 
-** Consumo **
+** (+) Consumo **
 g Consumo = gastohog*alfa/`alfatot'
 label var Consumo "Impuestos al consumo"
 * Reescalar *
 Distribucion Consumo, macro(`alconsumo')
+Simulador Consumo [fw=factor], base("ENIGH 2018") ///
+	boot(1) reboot graphs
 
-** Otros ingresos **
+** (+) Otros ingresos **
 g Otros = 1
-replace Otros = 0 if Ingreso == .
 label var Otros "Otros ingresos"
 * Reescalar *
 Distribucion Otros, macro(`otrosing')
+Simulador Otros [fw=factor], base("ENIGH 2018") ///
+	boot(1) reboot graphs
 
-** Pensiones **
+** (-) Pensiones **
 g Pension = r44407a
 replace Pension = 0 if Pension == .
 label var Pension "Pensiones"
 * Reescalar *
 Distribucion Pension, macro(`pensiones')
+Simulador Pension [fw=factor], base("ENIGH 2018") ///
+	boot(1) reboot graphs
 
-** Educación **
+** (-) Educación **
 tabstat factor, stat(sum) by(r204) f(%10.0fc) save
 matrix TotAlum = r(StatTotal)
 matrix BasAlum = r(Stat1)+r(Stat2)+r(Stat3)+r(Stat7)
@@ -118,6 +127,8 @@ replace Educacion = 0 if Educacion == .
 label var Educacion "Educación"
 * Reescalar *
 Distribucion Educacion, macro(`educacion')
+Simulador Educacion [fw=factor], base("ENIGH 2018") ///
+	boot(1) reboot graphs
 
 ** Salud **
 g Salud = 1.5 if edad <= 4
@@ -143,6 +154,8 @@ replace Salud = 3.36 if edad >= 95
 label var Salud "Salud"
 * Reescalar *
 Distribucion Salud, macro(`salud')
+Simulador Salud [fw=factor], base("ENIGH 2018") ///
+	boot(1) reboot graphs
 
 ** Otros gastos **
 g OtrosGas = 1
@@ -150,6 +163,8 @@ replace OtrosGas = 0 if Ingreso == .
 label var OtrosGas "Otros gastos"
 * Reescalar *
 Distribucion OtrosGas, macro(`otrosgas')
+Simulador OtrosGas [fw=factor], base("ENIGH 2018") ///
+	boot(1) reboot graphs
 
 
 ***********

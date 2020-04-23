@@ -144,7 +144,7 @@ local OtrasEmpresas = r(Otras_empresas)
 LIF, anio(`enighanio') by(divGA)
 local alingreso = r(Impuestos_al_ingreso)
 local alconsumo = r(Impuestos_al_consumo)
-local otrosing = r(Otros_ingresos)
+local otrosing = r(Ingresos_de_capital)
 
 
 ***********************
@@ -2019,7 +2019,7 @@ forvalues j=`=rowsof(ISR)'(-1)1 {
 g double TE = ISR/(ing_bruto_tax - exen_tot - deduc_isr - cuotasTPF)
 replace TE = 0 if TE == .
 
-replace ISR = 0 if formal == 0 & formal_renta == 0 & formal_servprof == 0
+replace ISR = 0 if formal == 0 //& formal_renta == 0 & formal_servprof == 0
 
 g double ISR__asalariados = isrE
 replace ISR__asalariados = 0 if ISR__asalariados == .
@@ -2034,7 +2034,7 @@ g double ISR__PM = ing_capital*.3 if formal != 0
 replace ISR__PM = 0 if ISR__PM == .
 label var ISR__PM "ISR (personas morales)"
 
-replace ISR = ISR + ISR__PM
+replace ISR = ISR__asalariados + ISR__PF + ISR__PM
 
 * Gini's de ISR *
 Gini ISR__asalariados, hogar(`hogar') individuo(numren) factor(factor)
@@ -2122,11 +2122,9 @@ Distribucion ImpNetProductos_hog, relativo(ing_estim_alqu) ///
 	macro(`=`ImpNetProductos'*(`ExNOpHog')/(`MixKN'+`ExNOpSoc'+`ExNOpHog')')
 
 Distribucion gasto_anualDepreciacion, relativo(ing_capital) macro(`ConCapFij')
-
 Distribucion gasto_anualGobierno, relativo(factor) macro(`ConGob')
 
 Distribucion ing_capitalROW, relativo(ing_capital) macro(`ROWProp')
-
 Distribucion ing_suborROW, relativo(ing_subor) macro(`ROWRem')
 	
 * Ingresos finales *
@@ -2137,7 +2135,6 @@ replace ing_mixtoK = ing_mixtoK + ImpNetProduccionK_mixK + ImpNetProductos_mixK
 replace ing_mixto = ing_mixtoL + ing_mixtoK
 
 replace ing_capital = ing_capital + ImpNetProduccionK_soc + ImpNetProductos_soc
-
 replace ing_estim_alqu = ing_estim_alqu + ImpNetProduccionK_hog + ImpNetProductos_hog
 
 Gini ing_subor, hogar(`hogar') individuo(numren) factor(factor)
@@ -2217,9 +2214,10 @@ noisily di ///
 
 
 
-****************/
-*** 13. Final ***
-*****************
+
+*********************************/
+*** 13. Variables descriptivas ***
+**********************************
 tempvar tot_integ
 egen `tot_integ' = count(edad), by(`hogar')
 egen double ing_decil_hog = sum(ing_bruto_tot), by(`hogar')
@@ -2241,7 +2239,6 @@ label values sexo sexo
 label define rural 1 "Rural" 0 "Urbano"
 label values rural rural
 
-* Otras variables *
 g grupo_edad = 1 if edad < 18
 replace grupo_edad = 2 if edad >= 18 & edad < 65
 replace grupo_edad = 3 if edad >= 65
@@ -2252,9 +2249,11 @@ replace formalmax = 3 if formalmax == 4
 label define formalidad 3 "Pemex y otros", modify
 label values formalmax formalidad
 
+* Compas netas fuera del pais *
 merge 1:1 (`hogar' numren) using "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/expenditure.dta", nogen
-
 Distribucion gasto_anualComprasN, relativo(TOTgasto_anual) macro(`ComprasN')
+
+
 
 
 **********************************
@@ -2262,41 +2261,51 @@ Distribucion gasto_anualComprasN, relativo(TOTgasto_anual) macro(`ComprasN')
 **********************************
 capture g folio = folioviv + foliohog
 
-*************
-** Ingreso **
-egen ingreso = rsum(ISR cuotasTP) if formal == 1
-replace ingreso = 0 if ingreso == .
-Distribucion Ingreso, relativo(ingreso) macro(`alingreso')
-label var Ingreso "Impuestos al ingreso"
 
-*************
-** Consumo **
+** (+) Ingreso **
+egen ingreso = rsum(ISR__asalariados ISR__PF ISR__PM cuotasTP) if formal != 0
+replace ingreso = 0 if ingreso == .
+Distribucion Ingreso, relativo(ingreso) macro(`=`alingreso'-`ISRMorales'')
+label var Ingreso "Impuestos al ingreso"
+Simulador Ingreso [fw=factor], base("ENIGH 2018") ///
+	boot(1) reboot graphs
+
+
+** (+) Consumo **
 egen consumo = rsum(TOTIVA TOTIEPS)
 replace consumo = 0 if consumo == .
 Distribucion Consumo, relativo(consumo) macro(`alconsumo')
 label var Consumo "Impuestos al consumo"
+Simulador Consumo [fw=factor], base("ENIGH 2018") ///
+	boot(1) reboot graphs
 
-********************
-** Otros ingresos **
-Distribucion Otros, relativo(factor) macro(`otrosing')
-label var Otros "Otros ingresos"
 
-***************
-** Pensiones **
+** (+) Ingresos de capital **
+Distribucion Otros, relativo(factor) macro(`=`otrosing'+`ISRMorales'')
+label var Otros "Ingresos de capital"
+Simulador Otros [fw=factor], base("ENIGH 2018") ///
+	boot(1) reboot graphs
+
+
+** (-) Pensiones **
 Distribucion Pension, relativo(ing_jubila) macro(`Pensiones')
 label var Pension "Pensiones"
+Simulador Pension [fw=factor], base("ENIGH 2018") ///
+	boot(1) reboot graphs
 
-***********************
-** Pension Bienestar **
+
+** (-) Pension Bienestar **
 tabstat factor if edad >= 68, stat(sum) f(%20.0fc) save
 matrix POBLACION68 = r(StatTotal)
 
 g PenBienestar = `PenBienestar'/POBLACION68[1,1] if edad >= 68
 replace PenBienestar = 0 if PenBienestar == .
 label var PenBienestar "Pensi{c o'}n Bienestar"
+Simulador PenBienestar if edad >= 68 [fw=factor], base("ENIGH 2018") ///
+	boot(1) reboot graphs
 
-***************
-** Educación **
+
+** (-) Educación **
 tabstat factor if asis_esc == "1" & tipoesc == "1", stat(sum) by(escol) f(%15.0fc) save
 matrix TotAlum = r(StatTotal)
 matrix BasAlum = r(Stat2)
@@ -2310,10 +2319,11 @@ replace educacion = 0 if educacion == .
 
 Distribucion Educacion, relativo(educacion) macro(`Educacion')
 label var Educacion "Educaci{c o'}n"
+Simulador Educacion [fw=factor], base("ENIGH 2018") ///
+	boot(1) reboot graphs
 
 
-***********
-** Salud **
+** (-) Salud **
 g salud = 1.5 if edad <= 4
 replace salud = 0.78 if edad >= 5 & edad <= 9
 replace salud = 0.62 if edad >= 10 & edad <= 14
@@ -2335,14 +2345,19 @@ replace salud = 3.36 if edad >= 85 & edad <= 89
 replace salud = 3.36 if edad >= 90 & edad <= 94
 replace salud = 3.36 if edad >= 95
 
-* Reescalar *
 Distribucion Salud, relativo(salud) macro(`Salud')
 label var Salud "Salud"
+Simulador Salud [fw=factor], base("ENIGH 2018") ///
+	boot(1) reboot graphs
 
-******************
-** Otros gastos **
+
+** (-) Otros gastos **
 Distribucion OtrosGas, relativo(factor) macro(`OtrosGas')
 label var OtrosGas "Otros gastos"
+Simulador OtrosGas [fw=factor], base("ENIGH 2018") ///
+	boot(1) reboot graphs
+
+
 
 
 ***********
@@ -2351,7 +2366,6 @@ label var OtrosGas "Otros gastos"
 capture drop __*
 format ing_* exen_* renta %10.0fc
 compress
-
 capture mkdir "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/"
 if `c(version)' == 15.1 {
 	saveold "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/households.dta", replace version(13)
@@ -2359,7 +2373,6 @@ if `c(version)' == 15.1 {
 else {
 	save "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/households.dta", replace
 }
-
 timer off 90
 timer list 90
 noisily di _newline in g "{bf:Tiempo:} " in y round(`=r(t90)/r(nt90)',.1) in g " segs."

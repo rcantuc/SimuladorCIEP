@@ -22,9 +22,9 @@ quietly {
 	}
 
 	** 1.3 Base LIF **
-	capture use `"`c(sysdir_site)'../basesCIEP/SIM/LIF`=subinstr("${pais}"," ","",.)'.dta"', clear
+	capture confirm file `"`c(sysdir_site)'../basesCIEP/SIM/LIF`=subinstr("${pais}"," ","",.)'.dta"'
 	if _rc != 0 {
-		noisily run UpdateLIF.do					// Genera a partir de la base ./basesCIEP/LIFs/LIF.xlsx
+		noisily run UpdateLIF.do			// Genera a partir de la base ./basesCIEP/LIFs/LIF.xlsx
 	}
 	
 
@@ -32,28 +32,33 @@ quietly {
 	***************
 	*** 2 SYNTAX **
 	***************
-	syntax [if/] [, ANIO(int `aniovp' ) Update Graphs Base ID(string) ///
-		MINimum(real 1) DESDE(int 2013) LIF BY(varname)]
+	use in 1 using `"`c(sysdir_site)'../basesCIEP/SIM/LIF`=subinstr("${pais}"," ","",.)'.dta"', clear
+	syntax [if] [, ANIO(int `aniovp' ) Update Graphs Base ID(string) ///
+		MINimum(real 0) DESDE(int 2013) ILIF LIF BY(varname)]
 
-	** 2.1 Update LIF **
-	if "`update'" == "update" | "`updated'" != "yes" {
-		noisily run UpdateLIF.do					// Actualiza a partir de la base ./basesCIEP/LIFs/LIF.xlsx
-	}
-
-	** 2.2 PIB + Deflactor **
-	preserve
+	** 2.1 PIB + Deflactor **
 	PIBDeflactor, anio(`anio')
 	local currency = currency[1]
+	forvalues k=1(1)`=_N' {
+		if anio[`k'] == `anio' {
+			local pibYR`anio' = pibYR[`k']
+		}
+		if anio[`k'] == `anio'-10 {
+			local pibYR`=`anio'-10' = pibYR[`k']
+		}
+	}
+	
+	
 	tempfile PIB
 	save `PIB'
-	restore
 
-	** 2.3 Base ID **
-	if "`id'" != "" {
-		use "`c(sysdir_site)'/users/`id'/LIF", clear
+	** 2.2 Update LIF **
+	if "`update'" == "update" | "`updated'" != "yes" {
+		noisily run UpdateLIF.do			// Actualiza a partir de la base ./basesCIEP/LIFs/LIF.xlsx
 	}
 
 	** 2.4 Base RAW **
+	use `"`c(sysdir_site)'../basesCIEP/SIM/LIF`=subinstr("${pais}"," ","",.)'.dta"', clear
 	if "`base'" == "base" {
 		exit
 	}
@@ -74,9 +79,13 @@ quietly {
 	merge m:1 (anio) using `PIB', nogen keepus(pibY indiceY deflator lambda var_pibY) ///
 		update replace keep(matched) sorted
 
-	** 3.1 Utilizar ILIF **
-	if "`lif'" == "lif" & "$pais" == "" {
+	** 3.1 Utilizar LIF o ILIF **
+	if "`lif'" == "lif" {
 		replace recaudacion = LIF if anio == `anio'
+	}
+
+	if "`ilif'" == "ilif" {
+		replace recaudacion = ILIF if anio == `anio'
 	}
 
 	** 3.2 Valores como % del PIB **
@@ -98,21 +107,24 @@ quietly {
 	label values `resumido' `label'
 
 	egen `recaudacionPIB' = max(recaudacionPIB) /*if anio >= 2010*/, by(`by')
-	replace `resumido' = -99 if abs(`recaudacionPIB') < `minimum' // | recaudacionPIB == . | recaudacionPIB == 0
-	label define `label' -99 "Otros (< `minimum'% PIB)", add modify
+	replace `resumido' = 999 if abs(`recaudacionPIB') < `minimum' // | recaudacionPIB == . | recaudacionPIB == 0
+	label define `label' 999 "Otros", add modify
 
 	capture replace nombre = subinstr(nombre,"Impuesto especial sobre producci{c o'}n y servicios de ","",.)
 	capture replace nombre = subinstr(nombre,"alimentos no b{c a'}sicos con alta densidad cal{c o'}rica","comida chatarra",.)
 	capture replace nombre = subinstr(nombre,"/","_",.)
 
 	if "$graphs" == "on" | "`graphs'" == "graphs" {
+		tabstat recaudacionPIB if anio == `anio' & divLIF != 10, stat(sum) f(%20.0fc) save
+		tempname recanio
+		matrix `recanio' = r(StatTotal)
+		
 		graph pie recaudacionPIB if anio == `anio' & divLIF != 10, over(`resumido') ///
 			plabel(_all percent, format(%5.1fc)) ///
-			title("{bf:Ingresos presupuestarios `anio'}") ///
-			subtitle($pais) ///
-			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
+			title(`"Ingresos `=upper("`lif'`ilif'")'"') /// subtitle($pais) ///
 			name(ingresospie, replace) ///
-			legend(on position(3) cols(1))
+			legend(on position(6) rows(1)) ///
+			ptext(0 0 `"{bf:`=string(`recanio'[1,1],"%6.1fc")' % PIB}"', color(white) size(small))
 
 		graph bar (sum) recaudacionPIB if divLIF != 10, ///
 			over(`by', /*relabel(1 "LIF" 2 "SHCP")*/) ///
@@ -124,10 +136,7 @@ quietly {
 			legend(on position(6) cols(4)) ///
 			name(ingresos, replace) ///
 			blabel(bar, format(%7.1fc)) ///
-			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
-			/*note({bf:{c U'}ltimo dato:} `ultanio'm`ultmes')*/
-		*gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
-		*gr_edit .plotregion1.GraphEdit, cmd(_set_rotate)
+			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}")
 	}
 
 
@@ -184,7 +193,7 @@ quietly {
 	return scalar `=strtoname("Ingresos totales")' = `mattot'[1,1]
 
 	** 4.2 Division Resumido **
-	noisily di _newline in g "{bf: B. Ingresos presupuestarios (divResumido) " ///
+	di _newline in g "{bf: B. Ingresos presupuestarios (divResumido) " ///
 		_col(44) in g %20s "`currency'" ///
 		_col(66) %7s "% PIB" ///
 		_col(77) %7s "% Total" "}"
@@ -211,7 +220,7 @@ quietly {
 		return scalar `=strtoname("`=r(name`k')'")' = `mat`k''[1,1]
 		local divResumido `"`divResumido' `=strtoname(abbrev("`=r(name`k')'",7))'"'
 
-		noisily di in g "  (+) `=r(name`k')'" ///
+		di in g "  (+) `=r(name`k')'" ///
 			_col(44) in y %20.0fc `mat`k''[1,1] ///
 			_col(66) in y %7.3fc `mat`k''[1,2] ///
 			_col(77) in y %7.1fc `mat`k''[1,1]/`mattot'[1,1]*100
@@ -224,13 +233,15 @@ quietly {
 		_col(44) in y %20.0fc `mattot'[1,1] ///
 		_col(66) in y %7.3fc `mattot'[1,2] ///
 		_col(77) in y %7.1fc `mattot'[1,1]/`mattot'[1,1]*100 "}"
+	
+	return scalar Ingresos_sin_deuda = `mattot'[1,1]
 
 
 	** 4.3 Crecimientos **
-	noisily di _newline in g "{bf: C. Mayores cambios:" in y " `=`anio'-4' - `anio'" in g ///
-		_col(55) %7s "`=`anio'-4'" ///
+	noisily di _newline in g "{bf: C. Mayores cambios:" in y " `=`anio'-10' - `anio'" in g ///
+		_col(55) %7s "`=`anio'-10'" ///
 		_col(66) %7s "`anio'" ///
-		_col(77) %7s "Cambio PIB" "}"
+		_col(77) %7s "Elasticidad PIB" "}"
 
 
 	tabstat recaudacion recaudacionPIB if anio == `anio', by(`by') stat(sum) f(%20.0fc) save
@@ -244,7 +255,7 @@ quietly {
 		local ++k
 	}
 
-	capture tabstat recaudacion recaudacionPIB if anio == `anio'-4 & divLIF != 10, by(`by') stat(sum) f(%20.1fc) save
+	capture tabstat recaudacion recaudacionPIB if anio == `anio'-10 & divLIF != 10, by(`by') stat(sum) f(%20.1fc) save
 	if _rc == 0 {
 		tempname mattot5
 		matrix `mattot5' = r(StatTotal)
@@ -254,12 +265,12 @@ quietly {
 			tempname mat5`k'
 			matrix `mat5`k'' = r(Stat`k')
 
-			if abs(`mat`k''[1,2]-`mat5`k''[1,2]) > .5 {
-				noisily di in g "  (+) `=r(name`k')'" ///
-					_col(55) in y %7.3fc `mat5`k''[1,2] ///
-					_col(66) in y %7.3fc `mat`k''[1,2] ///
-					_col(77) in y %7.3fc `mat`k''[1,2]-`mat5`k''[1,2]
-			}
+			noisily di in g "  (+) `=r(name`k')'" ///
+				_col(55) in y %7.3fc (((`mat`k''[1,1]/`mat5`k''[1,1])^(1/10)-1)*100) ///
+				_col(66) in y %7.3fc (((`pibYR`anio''/`pibYR`=`anio'-10'')^(1/10)-1)*100) ///
+				_col(77) in y %7.3fc (((`mat`k''[1,1]/`mat5`k''[1,1])^(1/10)-1)*100)/ ///
+				(((`pibYR`anio''/`pibYR`=`anio'-10'')^(1/10)-1)*100)
+
 			local ++k
 		}
 

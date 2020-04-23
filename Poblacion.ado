@@ -316,7 +316,7 @@ quietly {
 			text(`=`y1'*.175' `=`anioinicial'-1' "{bf:Hoy:} `anioinicial'", place(w)) ///
 			xtitle("") ///
 			ytitle("Personas") ///
-			xline(`=`anioinicial'+.5', lpattern(dash) lcolor("52 70 78")) ///
+			xline(`=`anioinicial'+.5') ///
 			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
 			name(Estructura_`anything'_`anioinicial'_`aniofinal', replace) ///
 			///title("{bf:Olas demogr{c a'}ficas}") subtitle(${pais}) ///

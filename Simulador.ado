@@ -9,7 +9,7 @@ quietly {
 		BASE(string) GA ///
 		MACro(string) BIE ///
 		POBlacion(string) FOLIO(string) ///
-		NOKernel POBGraph ID(string)]
+		NOKernel POBGraph]
 
 
 
@@ -96,7 +96,7 @@ quietly {
 
 		******************
 		** 1.2 Archivos **
-		capture mkdir `"`c(sysdir_personal)'/users/$pais"'
+		capture mkdir `"`c(sysdir_personal)'/users/$pais/"'
 		capture mkdir `"`c(sysdir_personal)'/users/$pais/$id/"'
 		capture mkdir `"`c(sysdir_personal)'/users/$pais/$id/graphs/"'
 		capture mkdir `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/"'
@@ -446,6 +446,12 @@ quietly {
 			//nograph
 	}
 
+	if "`graphs'" == "graphsNO" {
+		graph save PerfilH`varlist' `"`c(sysdir_personal)'/users/$pais/$id/graphs/PerfilH`varlist'"', replace
+		graph save PerfilM`varlist' `"`c(sysdir_personal)'/users/$pais/$id/graphs/PerfilM`varlist'"', replace
+		graph save ContH`varlist' `"`c(sysdir_personal)'/users/$pais/$id/graphs/ContH`varlist'"', replace
+		graph save ContH`varlist' `"`c(sysdir_personal)'/users/$pais/$id/graphs/ContH`varlist'"', replace
+	}
 
 
 	***********************
@@ -714,10 +720,10 @@ program poblaciongini
 	*** 5. Graphs ***
 	graphpiramide `varlist', over(`grupo') title("`title'") rect(`rect') ///
 		men(`=string(`gsexlab1',"%7.0fc")') women(`=string(`gsexlab2',"%7.0fc")') ///
-		boot(`boottext') base(`base') id($id)
+		boot(`boottext') base(`base')
 	*graphpiramide `varlist', over(`grupoesc') title("`title'") rect(`rect') ///
 		men(`=string(`gsexlab1',"%7.0fc")') women(`=string(`gsexlab2',"%7.0fc")') ///
-		boot(`boottext') base(`base') id($id)
+		boot(`boottext') base(`base')
 end
 
 
@@ -807,7 +813,7 @@ program graphpiramide
 		relabel(`relabel')) ///
 		stack asyvars xalternate ///
 		yscale(noextend noline /*range(-7(1)7)*/) ///
-		blabel(bar, format(%5.1fc)) ///
+		blabel(none, format(%5.1fc)) ///
 		t2title({bf:Hombres} (`men'%), size(medsmall)) ///
 		/*t2title({bf:Men} (`men'%), size(medsmall))*/ ///
 		ytitle(porcentaje) ///
@@ -826,7 +832,7 @@ program graphpiramide
 		relabel(`relabel') label(labsize(vsmall) labcolor("122 122 122"))) ///
 		stack asyvars ///
 		yscale(noextend noline /*range(-7(1)7)*/) /// |
-		blabel(bar, format(%5.1fc)) ///
+		blabel(none, format(%5.1fc)) ///
 		t2title({bf:Mujeres} (`women'%), size(medsmall)) ///
 		/*t2title({bf:Women} (`women'%), size(medsmall))*/ ///
 		ytitle(porcentaje) ///
@@ -846,6 +852,7 @@ program graphpiramide
 		/*note(`"{bf:Note}: Percentages inside parenthesis represent the concentration of `title' in each group."')*/
 
 	graph export `"`c(sysdir_personal)'/users/$pais/$id/graphs/`varlist'_`titleover'.eps"', replace name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)')
+	graph save `=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)' `"`c(sysdir_personal)'/users/$pais/$id/graphs/`varlist'_`titleover'.gph"', replace
 	*graph export `"`c(sysdir_personal)'/users/$pais/$id/`varlist'_`titleover'.png"', replace name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)')
 
 	capture window manage close graph H`varlist'
