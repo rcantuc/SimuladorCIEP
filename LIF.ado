@@ -238,10 +238,10 @@ quietly {
 
 
 	** 4.3 Crecimientos **
-	noisily di _newline in g "{bf: C. Mayores cambios:" in y " `=`anio'-10' - `anio'" in g ///
-		_col(55) %7s "`=`anio'-10'" ///
-		_col(66) %7s "`anio'" ///
-		_col(77) %7s "Elasticidad PIB" "}"
+	noisily di _newline in g "{bf: B. Crecimientos geom{c e'}tricos:" in y " `=`anio'-10' - `anio'" in g ///
+		_col(55) %7s "Ingreso" ///
+		_col(66) %7s "PIB" ///
+		_col(77) %7s "Elasticidad" "}"
 
 
 	tabstat recaudacion recaudacionPIB if anio == `anio', by(`by') stat(sum) f(%20.0fc) save
@@ -276,9 +276,10 @@ quietly {
 
 		noisily di in g _dup(83) "-"
 		noisily di in g "{bf:  (=) Total (sin deuda)" ///
-			_col(55) in y %7.3fc `mattot5'[1,2] ///
-			_col(66) in y %7.3fc `mattot'[1,2] ///
-			_col(77) in y %7.3fc `mattot'[1,2]-`mattot5'[1,2] "}"
+				_col(55) in y %7.3fc (((`mattot'[1,1]/`mattot5'[1,1])^(1/10)-1)*100) ///
+				_col(66) in y %7.3fc (((`pibYR`anio''/`pibYR`=`anio'-10'')^(1/10)-1)*100) ///
+				_col(77) in y %7.3fc (((`mattot'[1,1]/`mattot5'[1,1])^(1/10)-1)*100)/ ///
+				(((`pibYR`anio''/`pibYR`=`anio'-10'')^(1/10)-1)*100) "}"
 	}
 
 

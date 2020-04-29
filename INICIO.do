@@ -29,12 +29,29 @@ local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 local anio = substr(`"`=trim("`fecha'")'"',1,4)		// anio BASE
 
 
+** PIB + Deflactor: Paquete Economico 2020 **
+global pib2020 = 2.0		// Pre-criterios 2021 [1.5,2.5]
+global pib2021 = 2.6		// Pre-criterios 2021 [1.5,3.5]
+
+global def2020 = 4.5		// Pre-criterios 2021 [3.5]
+global def2021 = 3.6		// Pre-criterios 2021 [3.2]
+
+
+** PIB + Deflactor: Current 2020 **
+global pib2020 = -1.9		// Pre-criterios 2021 [-3.9,0.1]
+global pib2021 = 2.5		// Pre-criterios 2021 [1.5,3.5]
+
+global def2020 = 3.5		// Pre-criterios 2021 [3.5]
+global def2021 = 3.2		// Pre-criterios 2021 [3.2]
+
+
 ** Economía BASE (laborales, capital, consumo, depreciacion) **
+noisily PIBDeflactor, graphs //discount(3.0)									
 noisily SCN, anio(`anio') graphs //												<-- Cap. 2. Sistema: Cuentas Nacionales
 
 
 ** Poblacion BASE: 2018 **
-if "go" == "go" {
+if "go" == "no" {
 	noisily run Households.do 2018
 	foreach k in grupo_edad sexo decil escol {
 		noisily run Sankey.do `k' 2018 //										<-- Cap. 3. Agentes econ{c o'}micos
@@ -42,16 +59,25 @@ if "go" == "go" {
 }
 
 
+
+
+
+
+
+*noisily scalarlatex
 exit
-** PIB + Deflactor **
-global pib2020 = -1.9		// Pre-criterios 2021 [-3.9,0.1]
-global pib2021 = 2.5		// Pre-criterios 2021 [1.5,3.5]
-*global lambda = 1.5
 
-global def2020 = 3.5		// Pre-criterios 2021 [-3.9,0.1]
-global def2021 = 3.2		// Pre-criterios 2021 [-3.9,0.1]
 
-noisily PIBDeflactor, graphs //discount(3.0)									
+
+
+
+
+
+
+
+** INGRESOS **
+*noisily TasasEfectivas, lif													//<-- Cap. 4.
+
 
 
 
@@ -63,15 +89,10 @@ scalar ingbasico18 = 1						// Incluye menores de 18 anios
 scalar ingbasico65 = 1						// Incluye mayores de 65 anios
 
 
-
 ** PENSION BIENESTAR **
 scalar Bienestar = 0
 scalar BienestarLP = 0						// 1: largo plazo; 0: corto plazo
 
-
-
-** INGRESOS PRESUPUESTARIOS **
-*noisily TasasEfectivas, lif													//<-- Cap. 4.
 
 * Al ingreso *
 local ISR_AS  = 3.496 // *0			//ISR_ASBase	// ISR (asalariados)
@@ -468,7 +489,6 @@ noisily FiscalGap, graphs end(2050) //boot(250) //update
 ********************/
 *** 4. Touchdown! ***
 *********************
-*noisily scalarlatex
 timer off 1
 timer list 1
 noisily di _newline in g _dup(55) "+" in y round(`=r(t1)/r(nt1)',.1) in g " segs." _dup(55) "+"
