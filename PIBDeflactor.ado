@@ -234,7 +234,7 @@ quietly {
 		* Crecimiento PIB *
 		twoway (connected var_pibY anio if anio <= `anio_last') ///
 			(connected var_pibY anio if anio > `anio_last'), ///
-			title({bf:Producto Interno Bruto}) ///
+			/// title({bf:Producto Interno Bruto}) ///
 			subtitle(${pais}) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
 			ytitle("Crecimiento real (%)") xtitle("") yline(0, lcolor(black)) ///
