@@ -296,7 +296,7 @@ quietly {
 	** 1.2. Forecast & Pastcast **
 	order indiceY-lambda, last
 
-	* guarda el primer año para el que hay un valor de PIB*
+	* guarda el primer año para el que hay un valor de PIB *
 	forvalues k = `=_N'(-1)1 {
 		if PIB[`k'] != . {
 			local latest = anio[`k']
@@ -586,7 +586,7 @@ quietly {
 			ylabel(0(5)`=ceil(`Depreciacion'[_N])', format(%20.0fc)) ///
 			ytitle(billones MXN `anio', height(8)) ///
 			yscale(range(0)) ///
-			note("{bf:Nota}: Crecimiento promedio anual de la producitividad (lambda): `=string(scalar(lambda),"%6.3f")'%. {bf:{c U'}ltimo dato}: `anio_last'.") ///
+			note("{bf:{&lambda}}: `=string(scalar(lambda),"%6.3f")'%. {bf:{c U'}ltimo dato}: `anio_last'.") ///
 			name(gdp_generacion, replace)
 
 		capture confirm existence $export
@@ -685,14 +685,14 @@ quietly {
 		g `AhorroN' = (AhorroN + ConGob + ConHog + ComprasN)/deflator/1000000000000
 		label var `AhorroN' "Ahorro neto"
 
-		twoway (area `AhorroN' anio if anio <= `latest', color("53 200 71")) ///
-			(area `ConGob' anio if anio <= `latest', color("0 78 198")) ///
-			(area `ConHog' anio if anio <= `latest', color("0 151 201")) ///
-			(area `ComprasN' anio if anio <= `latest', color("186 34 64")) ///) ///
-			(area `AhorroN' anio if anio > `latest', color("53 200 71")) ///
-			(area `ConGob' anio if anio > `latest' & anio, color("0 78 198")) ///
-			(area `ConHog' anio if anio > `latest' & anio, color("0 151 201")) ///
-			(area `ComprasN' anio if anio > `latest' & anio, color("186 34 64")), ///
+		twoway (area `AhorroN' anio if anio <= `latest', color("186 34 64")) ///
+			(area `ConGob' anio if anio <= `latest', color("0 151 201")) ///
+			(area `ConHog' anio if anio <= `latest', color("0 78 198")) ///
+			(area `ComprasN' anio if anio <= `latest', color("53 200 71")) ///
+			(area `AhorroN' anio if anio > `latest', color("186 34 64")) ///
+			(area `ConGob' anio if anio > `latest' & anio, color("0 151 201")) ///
+			(area `ConHog' anio if anio > `latest' & anio, color("0 78 198")) ///
+			(area `ComprasN' anio if anio > `latest' & anio, color("53 200 71")), ///
 			/// title("{bf:Utilizaci{c o'}n del ingreso}") ///
 			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
 			legend(cols(4) order(1 2 3 4)) ///
@@ -704,7 +704,7 @@ quietly {
 			ylabel(0(5)`=ceil(`Depreciacion'[_N])', format(%20.0fc)) ///
 			ytitle(billones MXN `anio', height(8)) ///
 			yscale(range(0)) ///
-			note("{bf:Nota}: Crecimiento promedio anual de la producitividad (lambda): `=string(scalar(lambda),"%6.3f")'%. {bf:{c U'}ltimo dato}: `anio_last'.") ///
+			note("{bf:{&lambda}}: `=string(scalar(lambda),"%6.3f")'%. {bf:{c U'}ltimo dato}: `anio_last'.") ///
 			name(gdp_utilizacion, replace)
 
 		capture confirm existence $export

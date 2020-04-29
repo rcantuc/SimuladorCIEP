@@ -13,10 +13,6 @@ if "`c(os)'" == "MacOSX" {
 	cd "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
 	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
 }
-if "`c(os)'" == "Windows" {
-	cd "C:\Users\carlos\Dropbox (CIEP)\Github\simuladorCIEP\"
-	sysdir set PERSONAL "C:\Users\carlos\Dropbox (CIEP)\Github\simuladorCIEP\"
-}
 adopath ++ PERSONAL
 timer on 1
 noisily di _newline(15) in g _dup(60) "~"
