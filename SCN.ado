@@ -575,7 +575,7 @@ quietly {
 			(area `Depreciacion' anio if anio > `latest', color("255 129 0")) ///
 			(area `Capital' anio if anio > `latest', color("255 189 0")) ///
 			(area `Laboral' anio if anio > `latest', color("39 97 47")), ///
-			title("{bf:PIB: Cuenta de Generaci{c o'}n del Ingreso}") ///
+			/// title("{bf:PIB: Cuenta de Generaci{c o'}n del Ingreso}") ///
 			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
 			legend(cols(3) order(1 2 3)) ///
 			xtitle("") xline(`latest'.5) ///
@@ -685,12 +685,15 @@ quietly {
 		g `AhorroN' = (AhorroN + ConGob + ConHog + ComprasN)/deflator/1000000000000
 		label var `AhorroN' "Ahorro neto"
 
-		twoway (area `AhorroN' `ConGob' `ConHog' `ComprasN' anio if anio <= `latest') ///
-			(area `AhorroN' anio if anio > `latest', color("255 129 0")) ///
-			(area `ConGob' anio if anio > `latest' & anio, color("255 189 0")) ///
-			(area `ConHog' anio if anio > `latest' & anio, color("39 97 47")) ///
-			(area `ComprasN' anio if anio > `latest' & anio, color("53 200 71")), ///
-			title("{bf:Utilizaci{c o'}n del ingreso}") ///
+		twoway (area `AhorroN' anio if anio <= `latest', color("53 200 71")) ///
+			(area `ConGob' anio if anio <= `latest', color("0 78 198")) ///
+			(area `ConHog' anio if anio <= `latest', color("0 151 201")) ///
+			(area `ComprasN' anio if anio <= `latest', color("186 34 64")) ///) ///
+			(area `AhorroN' anio if anio > `latest', color("53 200 71")) ///
+			(area `ConGob' anio if anio > `latest' & anio, color("0 78 198")) ///
+			(area `ConHog' anio if anio > `latest' & anio, color("0 151 201")) ///
+			(area `ComprasN' anio if anio > `latest' & anio, color("186 34 64")), ///
+			/// title("{bf:Utilizaci{c o'}n del ingreso}") ///
 			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
 			legend(cols(4) order(1 2 3 4)) ///
 			xtitle("") xline(`latest'.5) ///

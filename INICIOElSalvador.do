@@ -12,9 +12,11 @@ if "`c(os)'" == "Unix" {
 if "`c(os)'" == "MacOSX" {
 	cd "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
 	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
-	global export "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Textbook/images/"
 }
-
+if "`c(os)'" == "Windows" {
+	cd "C:\Users\carlos\Dropbox (CIEP)\Github\simuladorCIEP\"
+	sysdir set PERSONAL "C:\Users\carlos\Dropbox (CIEP)\Github\simuladorCIEP\"
+}
 adopath ++ PERSONAL
 timer on 1
 noisily di _newline(15) in g _dup(60) "~"
@@ -32,8 +34,8 @@ local anio = 2020
 global pib2019 = 3.47		// Banco Central de Reserva
 global pib2020 = 2.5		// Ministerio de Hacienda
 
-*global pib2020 = -5.6		// [-5.6,0.1]
-*global pib2021 = 4.3 		// [ 1.5,4.3]
+global pib2020 = -5.6		// [-5.6,0.1]
+global pib2021 = 4.3 		// [ 1.5,4.3]
 *global lambda = 1.4657
 
 
