@@ -26,18 +26,18 @@ noisily di _newline(40) in g _dup(60) "~"
 *************************
 global export "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Textbook/images/"
 local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
-local anio = substr(`"`=trim("`fecha'")'"',1,4)		// anio BASE
+local anio = substr(`"`=trim("`fecha'")'"',1,4) 	// anio BASE
 
 
 ** PIB + Deflactor: Paquete Economico 2020 **
-global pib2020 = 2.0		// Pre-criterios 2021 [1.5,2.5]
-global pib2021 = 2.6		// Pre-criterios 2021 [1.5,3.5]
+global pib2020 = 2.0		// Criterios 2020 [1.5,2.5]
+global pib2021 = 2.6		// Criterios 2020 [2.6]
 
-global def2020 = 4.5		// Pre-criterios 2021 [3.5]
-global def2021 = 3.6		// Pre-criterios 2021 [3.2]
+global def2020 = 4.5		// Criterios 2020 [4.5]
+global def2021 = 3.6		// Criterios 2020 [3.6]
 
 
-** PIB + Deflactor: Current 2020 **
+** PIB + Deflactor: Pre-Criterios 2021 (current 2020) **
 global pib2020 = -1.9		// Pre-criterios 2021 [-3.9,0.1]
 global pib2021 = 2.5		// Pre-criterios 2021 [1.5,3.5]
 
@@ -45,27 +45,26 @@ global def2020 = 3.5		// Pre-criterios 2021 [3.5]
 global def2021 = 3.2		// Pre-criterios 2021 [3.2]
 
 
-** Economía BASE (laborales, capital, consumo, depreciacion) **
+** Economía BASE (laborales, capital, consumo, depreciacion) **					<-- Cap. 2. Sistema: Cuentas Nacionales
 noisily PIBDeflactor, graphs //discount(3.0)									
-noisily SCN, anio(`anio') graphs //												<-- Cap. 2. Sistema: Cuentas Nacionales
+noisily SCN, anio(`anio') graphs
 
 
-** Poblacion BASE: 2018 **
-if "go" == "no" {
+** Poblacion BASE: ENIGH 2018 **												<-- Cap. 3. Agentes econ{c o'}micos
+*if "go" == "no" & "`c(os)'" == "Unix" {
 	noisily run Households.do 2018
 	foreach k in grupo_edad sexo decil escol {
-		noisily run Sankey.do `k' 2018 //										<-- Cap. 3. Agentes econ{c o'}micos
+		noisily run Sankey.do `k' 2018
 	}
-}
+*}
 
 
 
 
 
-
-
-*noisily scalarlatex
 exit
+
+
 
 
 
@@ -489,6 +488,7 @@ noisily FiscalGap, graphs end(2050) //boot(250) //update
 ********************/
 *** 4. Touchdown! ***
 *********************
+*noisily scalarlatex
 timer off 1
 timer list 1
 noisily di _newline in g _dup(55) "+" in y round(`=r(t1)/r(nt1)',.1) in g " segs." _dup(55) "+"

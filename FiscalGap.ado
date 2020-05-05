@@ -122,13 +122,13 @@ quietly {
 		g `ingreso2' = (estimacionalingreso + estimacionalconsumo)/1000000
 		g `otros2' = (estimacionotros + estimacionalingreso + estimacionalconsumo)/1000000
 
-		twoway (area `otros' `ingreso' `consumo' anio if anio < `anio' & anio >= 2010) ///
+		twoway (area `otros' `ingreso' `consumo' anio if anio < `anio' & anio >= 2015) ///
 			(area `otros2' anio if anio >= `anio', color("255 129 0")) ///
 			(area `ingreso2' anio if anio >= `anio', color("255 189 0")) ///
 			(area `consumo2' anio if anio >= `anio', color("39 97 47")), ///
 			legend(cols(3) order(1 2 3) ///
 			label(1 "Ingresos de capital") label(2 "Impuestos al ingreso") label(3 "Impuestos al consumo")) ///
-			xlabel(2010(10)`=round(anio[_N],10)') ///
+			xlabel(2015(5)`=round(anio[_N],10)') ///
 			ylabel(, format(%20.0fc)) ///
 			xline(`=`anio'-.5') ///
 			text(`=`otros'[`obs`anio_last'']*.05' `=`anio'+.5' "Proyecci{c o'}n", place(ne) color(white)) ///
@@ -378,9 +378,7 @@ quietly {
 		g gastoingbasico = 0
 	}
 
-	*replace estimacionotrosgas = estimacionotrosgas*.5 if anio > `anio_last'+1
-
-	forvalues k = `=`anio_last'+1'(1)`=anio[_N]' {
+	forvalues k = `anio'(1)`=anio[_N]' {
 		replace estimacioncostodeuda = L.costodeudashrfsp/100*L.shrfsp if anio == `k'
 		*replace estimacioncostodeuda = 0 if estimacioncostodeuda < 0
 		replace rfsp = estimacionamortizacion + estimacioncostodeuda + estimacioneducacion ///
@@ -433,7 +431,7 @@ quietly {
 			label(6 "Salud") ///
 			label(7 "Pensiones") ///
 			label(8 "Educaci{c o'}n")) ///
-			xlabel(2010(10)`=round(anio[_N],10)') ///
+			xlabel(2015(5)`=round(anio[_N],10)') ///
 			ylabel(, format(%20.0fc)) ///
 			xline(`=`anio'-.5') ///
 			text(`=`otrosg'[`obs`anio_last'']*.075' `=`anio'+.5' "Proyecci{c o'}n", place(ne) color(white)) ///
@@ -444,15 +442,16 @@ quietly {
 			xtitle("") ytitle(millones `currency' `anio') ///
 			name(Proy_gastos, replace)
 			
-		twoway (area rfsp_pib anio if anio < `anio' & anio >= 2013) ///
+		twoway (area rfsp_pib anio if anio < `anio' & anio >= 2015) ///
 			(area rfsp_pib anio if anio >= `anio'), ///
 			yscale(range(0)) ///
 			ytitle(% PIB) ///
 			xtitle("") ///
+			xlabel(2015(5)`=round(anio[_N],10)') ///
 			xline(`=`anio'-.5') ///
 			legend(off) ///
 			title({bf: Proyecci{c o'}n de los RFSP}) subtitle($pais) ///
-			name(rfsp_pib, replace)
+			name(Proy_rfsp, replace)
 	}
 
 	*********************
@@ -495,7 +494,7 @@ quietly {
 		in y _col(35) %25.0fc -`shrfsp'[1,1] ///
 		in g " `currency'"	
 	noisily di in g "  " _dup(61) "-"
-	noisily di in g "  (=) Fianancial wealth (" in y `end' in g ") :" ///
+	noisily di in g "  (=) Financial wealth (" in y `end' in g ") :" ///
 		in y _col(35) %25.0fc -`shrfsp'[1,1] + `estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1] ///
 		in g " `currency'"	
 	noisily di in g "  " _dup(61) "-"
@@ -511,20 +510,25 @@ quietly {
 
 	if "`graphs'" == "graphs" {
 		g shrfspPIB = shrfsp/pibY*100
-		twoway (area shrfspPIB anio if shrfspPIB != . & anio < `anio' & anio >= 2010) ///
+		twoway (area shrfspPIB anio if shrfspPIB != . & anio < `anio' & anio >= 2015) ///
 			(area shrfspPIB anio if anio >= `anio'), ///
 			title({bf:Proyecci{c o'}n del SHRFSP}) ///
 			subtitle($pais) ///
 			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
 			xtitle("") ytitle(% PIB) ///
-			xlabel(2010(10)`end') ///
+			xlabel(2015(5)`end') ///
 			yscale(range(0)) ///
 			legend(off) ///
 			text(`=shrfspPIB[`obs`anio_last'']*.075' `=`anio'+.5' "Proyecci{c o'}n", color(white) placement(e)) ///
 			xline(`=`anio'-.5') ///
 			name(Proy_shrfsp, replace)			
 	}
-
+	forvalues k=1(1)`=_N' {
+		if anio[`k'] == `end' {
+			local shrfsp_end = shrfspPIB[`k']
+			continue, break
+		}
+	}
 
 
 	*****************************************
@@ -545,6 +549,9 @@ quietly {
 	local poblacionINF = poblacion[_N]*(1+`grow_rate_LR')*(1+`discount'/100)^(`anio'-`=anio[_N]')/(1-((1+`grow_rate_LR')/(1+`discount'/100)))
 
 	noisily di in g "  " _dup(61) "-"
+	noisily di in g "  (*) Deuda (" in y `end' in g ") :" ///
+		in y _col(35) %25.0fc `shrfsp_end' ///
+		in g " % PIB"	
 	noisily di in g "  (*) Cuenta generaciones futuras:" ///
 		in y _col(35) %25.0fc -(`estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1])/(`poblacionVP'[1,1]+`poblacionINF') ///
 		in g " `currency' por persona"
