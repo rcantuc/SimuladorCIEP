@@ -73,13 +73,13 @@ scalar BienestarLP = 0						// 1: largo plazo; 0: corto plazo
 
 ** INGRESOS PRESUPUESTARIOS **
 scalar IngresosLP = 0															// 1: largo plazo; 0: corto plazo
-scalar IngresosGW = 1*(1+(${pib2020}-2.5)*2.835/100)
+scalar IngresosGW = 1*(1+(${pib2020}-2.5)*2.672/100)
 
 scalar ConsumoLP = 0															// 1: largo plazo; 0: corto plazo
-scalar ConsumoGW = 1*(1+(${pib2020}-2.5)*1.596/100)
+scalar ConsumoGW = 1*(1+(${pib2020}-2.5)*1.504/100)
 
 scalar OtrosILP = 0																// 1: largo plazo; 0: corto plazo
-scalar OtrosIGW = 1*(1+(${pib2020}-2.5)*2.289/100)
+scalar OtrosIGW = 1*(1+(${pib2020}-2.5)*2.157/100)
 
 ** ESCENARIOS: El Salvador **
 scalar PensionesLP = 0															// 1: largo plazo; 0: corto plazo
@@ -150,7 +150,7 @@ save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace
 *********************************/
 *** 4 Sistema Fiscal: INGRESOS ***
 **********************************
-LIF if anio == `anio', anio(`anio') by(divGA) lif //graphs //update					<-- Parte 2.
+noisily LIF if anio == `anio', anio(`anio') by(divGA) lif //graphs //update					<-- Parte 2.
 local ingresostot = r(Ingresos_sin_deuda)
 local alingreso = r(Impuestos_al_ingreso)
 local alconsumo = r(Impuestos_al_consumo)
