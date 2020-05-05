@@ -27,16 +27,38 @@ noisily di _newline(15) in g _dup(60) "~"
 global pais = "El Salvador"
 local anio = 2020
 
+** Pre-Covid19, lo que no fue **
 global pib2019 = 3.47		// Banco Central de Reserva
 global pib2020 = 2.5		// Ministerio de Hacienda
+scalar OtrosGasGW = 1
 
+** Post-Covid19, escenario actual **
 global pib2020 = -5.6		// [-5.6,0.1]
-global pib2021 = 4.3 		// [ 1.5,4.3]
-*global lambda = 1.4657
+global pib2021 = 1.5 		// [ 1.5,4.3]
+scalar OtrosGasGW = 1.41
 
+/** Alternativas **
+global pib2021 = 6			// [ 1.5,4.3]
+global pib2022 = 6			// [ 1.5,4.3]
+global pib2023 = 6			// [ 1.5,4.3]
 
+** Economía BASE **/
 noisily PIBDeflactor, graphs //discount(3.0)									<-- Cap. 3. Par{c a'}metros MACRO.
+tempfile PIB
+save `PIB'
 
+** Poblacion BASE: 2018 **
+if "`c(os)'" == "Unix" & "go" == "go" {
+	noisily run HouseholdsElSalvador.do 2018
+}
+
+
+
+
+
+********************
+*** 2 ESCENARIOS ***
+********************
 
 ** INGRESO BASICO **
 scalar IngBas = 0
@@ -45,11 +67,9 @@ scalar IngBasLP = 0							// 1: largo plazo; 0: corto plazo
 scalar ingbasico18 = 1						// Incluye menores de 18 anios
 scalar ingbasico65 = 1						// Incluye mayores de 65 anios
 
-
 ** PENSION BIENESTAR **
 scalar Bienestar = 0
 scalar BienestarLP = 0						// 1: largo plazo; 0: corto plazo
-
 
 ** INGRESOS PRESUPUESTARIOS **
 scalar IngresosLP = 0															// 1: largo plazo; 0: corto plazo
@@ -61,7 +81,6 @@ scalar ConsumoGW = 1*(1+(${pib2020}-2.5)*1.596/100)
 scalar OtrosILP = 0																// 1: largo plazo; 0: corto plazo
 scalar OtrosIGW = 1*(1+(${pib2020}-2.5)*2.289/100)
 
-
 ** ESCENARIOS: El Salvador **
 scalar PensionesLP = 0															// 1: largo plazo; 0: corto plazo
 scalar PensionesGW = 1
@@ -70,23 +89,17 @@ scalar EducacionLP = 0															// 1: largo plazo; 0: corto plazo
 scalar EducacionGW = 1
 
 scalar SaludLP = 0																// 1: largo plazo; 0: corto plazo
-scalar SaludGW = 1 //.2
+scalar SaludGW = 1
 
 scalar OtrosGasLP = 0															// 1: largo plazo; 0: corto plazo
-scalar OtrosGasGW = 1 //.18
 
 
 
 
 
-************************
-*** 2 Poblaci{c o'}n ***
-************************
-if "`c(os)'" == "Unix" & "go" == "no" {
-	noisily run HouseholdsElSalvador.do 2018
-}
-
-** A. POBLACION SIM **
+**************************
+*** 3 PRE-ASIGNACIONES ***
+**************************
 use `"`c(sysdir_site)'../basesCIEP/SIM/2018/householdsElSalvador.dta"', clear
 
 ** (+) Ingreso BASICO **
@@ -135,7 +148,7 @@ save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace
 
 
 *********************************/
-*** 3 Sistema Fiscal: INGRESOS ***
+*** 4 Sistema Fiscal: INGRESOS ***
 **********************************
 LIF if anio == `anio', anio(`anio') by(divGA) lif //graphs //update					<-- Parte 2.
 local ingresostot = r(Ingresos_sin_deuda)
@@ -159,51 +172,52 @@ save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace
 
 
 ** B. ESTIMACIONES LP SIM **
+tempname RECBase
 
 * (+) Al ingreso *
 use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/IngresoREC"', clear
+merge 1:1 (anio) using `PIB', nogen keepus(lambda)
 tabstat estimacion if anio == `anio', stat(sum) f(%20.0fc) save
-tempname INGRESOS
-matrix `INGRESOS' = r(StatTotal)
+matrix `RECBase' = r(StatTotal)
 
 if scalar(IngresosLP) == 1 {
-	replace estimacion = estimacion*INGRESOSSIM[1,1]/`INGRESOS'[1,1]
+	replace estimacion = estimacion*INGRESOSSIM[1,1]/`RECBase'[1,1]*lambda
 }
 else {
-	replace estimacion = estimacion*`alingreso'/`INGRESOS'[1,1] if anio != `anio'
-	replace estimacion = estimacion*INGRESOSSIM[1,1]/`INGRESOS'[1,1] if anio == `anio'
+	replace estimacion = estimacion*`alingreso'/`RECBase'[1,1]*lambda if anio > `anio'
+	replace estimacion = estimacion*INGRESOSSIM[1,1]/`RECBase'[1,1]*lambda if anio == `anio'
 }
 save `"`c(sysdir_personal)'/users/$pais/$id/IngresoREC.dta"', replace
 
 
 * (+) Al consumo *
 use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/ConsumoREC"', clear 
+merge 1:1 (anio) using `PIB', nogen keepus(lambda)
 tabstat estimacion if anio == `anio', stat(sum) f(%20.0fc) save
-tempname CONSUMO
-matrix `CONSUMO' = r(StatTotal)
+matrix `RECBase' = r(StatTotal)
 
 if scalar(ConsumoLP) == 1 {
-	replace estimacion = estimacion*INGRESOSSIM[1,2]/`CONSUMO'[1,1]
+	replace estimacion = estimacion*INGRESOSSIM[1,2]/`RECBase'[1,1]*lambda
 }
 else {
-	replace estimacion = estimacion*`alconsumo'/`CONSUMO'[1,1] if anio != `anio'
-	replace estimacion = estimacion*INGRESOSSIM[1,2]/`CONSUMO'[1,1] if anio == `anio'
+	replace estimacion = estimacion*`alconsumo'/`RECBase'[1,1]*lambda if anio != `anio'
+	replace estimacion = estimacion*INGRESOSSIM[1,2]/`RECBase'[1,1]*lambda if anio == `anio'
 }
 save `"`c(sysdir_personal)'/users/$pais/$id/ConsumoREC.dta"', replace
 
 
 * (+) Al capital *
 use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/OtrosREC"', clear
+merge 1:1 (anio) using `PIB', nogen keepus(lambda)
 tabstat estimacion if anio == `anio', stat(sum) f(%20.0fc) save
-tempname OTROS
-matrix `OTROS' = r(StatTotal)
+matrix `RECBase' = r(StatTotal)
 
 if scalar(OtrosILP) == 1 {
-	replace estimacion = estimacion*INGRESOSSIM[1,3]/`OTROS'[1,1]
+	replace estimacion = estimacion*INGRESOSSIM[1,3]/`RECBase'[1,1]*lambda
 }
 else {
-	replace estimacion = estimacion*`otrosing'/`OTROS'[1,1] if anio != `anio'
-	replace estimacion = estimacion*INGRESOSSIM[1,3]/`OTROS'[1,1] if anio == `anio'
+	replace estimacion = estimacion*`otrosing'/`RECBase'[1,1]*lambda if anio != `anio'
+	replace estimacion = estimacion*INGRESOSSIM[1,3]/`RECBase'[1,1]*lambda if anio == `anio'
 }
 save `"`c(sysdir_personal)'/users/$pais/$id/OtrosREC.dta"', replace
 
@@ -212,9 +226,9 @@ save `"`c(sysdir_personal)'/users/$pais/$id/OtrosREC.dta"', replace
 
 
 *******************************/
-*** 4 Sistema Fiscal: GASTOS ***
+*** 5 Sistema Fiscal: GASTOS ***
 ********************************
-PEF if anio == `anio', anio(`anio') by(divGA) pef //graphs //update					<-- Parte 3.
+noisily PEF if anio == `anio', anio(`anio') by(divGA) pef //graphs //update					<-- Parte 3.
 local gastostot = r(Resumido_total)
 local OtrosGas = r(Otros)
 local Pensiones = r(Pensiones)
@@ -244,64 +258,64 @@ save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace
 
 * (-) Pensiones *
 use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PensionREC"', clear
+merge 1:1 (anio) using `PIB', nogen keepus(lambda)
 tabstat estimacion if anio == `anio', stat(sum) f(%20.0fc) save
-tempname PensionREC
-matrix `PensionREC' = r(StatTotal)
+matrix `RECBase' = r(StatTotal)
 
 if scalar(PensionesLP) == 1 {
-	replace estimacion = estimacion*GASTOSSIM[1,2]/`PensionREC'[1,1]
+	replace estimacion = estimacion*GASTOSSIM[1,2]/`RECBase'[1,1]*lambda
 }
 else {
-	replace estimacion = estimacion*`Pensiones'/`PensionREC'[1,1] if anio != `anio'
-	replace estimacion = estimacion*GASTOSSIM[1,2]/`PensionREC'[1,1] if anio == `anio'
+	replace estimacion = estimacion*`Pensiones'/`RECBase'[1,1]*lambda if anio != `anio'
+	replace estimacion = estimacion*GASTOSSIM[1,2]/`RECBase'[1,1]*lambda if anio == `anio'
 }
 save `"`c(sysdir_personal)'/users/$pais/$id/PensionREC.dta"', replace
 
 
 * (-) Educacion *
 use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/EducacionREC"', clear
+merge 1:1 (anio) using `PIB', nogen keepus(lambda)
 tabstat estimacion if anio == `anio', stat(sum) f(%20.0fc) save
-tempname EducacionREC
-matrix `EducacionREC' = r(StatTotal)
+matrix `RECBase' = r(StatTotal)
 
 if scalar(EducacionLP) == 1 {
-	replace estimacion = estimacion*GASTOSSIM[1,1]/`EducacionREC'[1,1]
+	replace estimacion = estimacion*GASTOSSIM[1,1]/`RECBase'[1,1]*lambda
 }
 else {
-	replace estimacion = estimacion*`Educacion'/`EducacionREC'[1,1] if anio != `anio'
-	replace estimacion = estimacion*GASTOSSIM[1,1]/`EducacionREC'[1,1] if anio == `anio'
+	replace estimacion = estimacion*`Educacion'/`RECBase'[1,1]*lambda if anio != `anio'
+	replace estimacion = estimacion*GASTOSSIM[1,1]/`RECBase'[1,1]*lambda if anio == `anio'
 }
 save `"`c(sysdir_personal)'/users/$pais/$id/EducacionREC.dta"', replace
 
 
 * (-) Salud *
 use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/SaludREC"', clear
+merge 1:1 (anio) using `PIB', nogen keepus(lambda)
 tabstat estimacion if anio == `anio', stat(sum) f(%20.0fc) save
-tempname SaludREC
-matrix `SaludREC' = r(StatTotal)
+matrix `RECBase' = r(StatTotal)
 
 if scalar(SaludLP) == 1 {
-	replace estimacion = estimacion*GASTOSSIM[1,3]/`SaludREC'[1,1]
+	replace estimacion = estimacion*GASTOSSIM[1,3]/`RECBase'[1,1]*lambda
 }
 else {
-	replace estimacion = estimacion*`Salud'/`SaludREC'[1,1] if anio != `anio'
-	replace estimacion = estimacion*GASTOSSIM[1,3]/`SaludREC'[1,1] if anio == `anio'
+	replace estimacion = estimacion*`Salud'/`RECBase'[1,1]*lambda if anio != `anio'
+	replace estimacion = estimacion*GASTOSSIM[1,3]/`RECBase'[1,1]*lambda if anio == `anio'
 }
 save `"`c(sysdir_personal)'/users/$pais/$id/SaludREC.dta"', replace
 
 
 * (-) Otros gastos *
 use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/OtrosGasREC"', clear
+merge 1:1 (anio) using `PIB', nogen keepus(lambda)
 tabstat estimacion if anio == `anio', stat(sum) f(%20.0fc) save
-tempname OtrosGasREC
-matrix `OtrosGasREC' = r(StatTotal)
+matrix `RECBase' = r(StatTotal)
 
 if scalar(OtrosGasLP) == 1 {
-	replace estimacion = estimacion*GASTOSSIM[1,4]/`OtrosGasREC'[1,1]
+	replace estimacion = estimacion*GASTOSSIM[1,4]/`RECBase'[1,1]*lambda
 }
 else {
-	replace estimacion = estimacion*`OtrosGas'/`OtrosGasREC'[1,1] if anio != `anio'
-	replace estimacion = estimacion*GASTOSSIM[1,4]/`OtrosGasREC'[1,1] if anio == `anio'
+	replace estimacion = estimacion*`OtrosGas'/`RECBase'[1,1]*lambda if anio != `anio'
+	replace estimacion = estimacion*GASTOSSIM[1,4]/`RECBase'[1,1]*lambda if anio == `anio'
 }
 save `"`c(sysdir_personal)'/users/$pais/$id/OtrosGasREC.dta"', replace
 
@@ -309,11 +323,9 @@ save `"`c(sysdir_personal)'/users/$pais/$id/OtrosGasREC.dta"', replace
 
 
 
-*****************************************/
-***                                    ***
-*** 6. Parte 4: Balance presupuestario ***
-***                                    ***
-******************************************
+****************************************/
+*** 6 Parte 4: Balance presupuestario ***
+*****************************************
 noisily di _newline(2) in g "{bf: POL{c I'}TICA FISCAL " in y "`anio'" "}"
 noisily di in g "  (+) Ingresos: " ///
 	_col(30) in y %20.0fc (INGRESOSSIM[1,1]+INGRESOSSIM[1,2]+INGRESOSSIM[1,3]) in g " USD" ///
@@ -336,7 +348,7 @@ noisily di in g "  (*) Balance " in y "primario" in g ": " ///
 	+`CostoDeuda')/scalar(pibY)*100 - scalar(IngBas) - scalar(Bienestar) in g "% PIB"
 
 
-** C. POBLACION SIMULADA **
+/** C. POBLACION SIMULADA **
 use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
 
 g TransfNetas = Ingreso + Consumo - Pension - Educacion - Salud -  IngBasico - PenBienestar
@@ -365,3 +377,4 @@ noisily FiscalGap, graphs end(2050) //boot(250) //update
 timer off 1
 timer list 1
 noisily di _newline(3) in g "{bf:TOUCHDOWN! " in y %14.1fc round(`=r(t1)/r(nt1)',.1) in g " segs.}"
+noisily di in g _dup(60) "~"

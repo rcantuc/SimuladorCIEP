@@ -54,7 +54,7 @@ local enighanio = `1'
 
 capture log close
 capture mkdir "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/"
-log using "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/households.smcl", replace
+*log using "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/households.smcl", replace
 
 
 **************************************
@@ -2375,5 +2375,5 @@ else {
 }
 timer off 90
 timer list 90
-noisily di _newline in g "{bf:Tiempo:} " in y round(`=r(t90)/r(nt90)',.1) in g " segs."
-log close
+*noisily di _newline in g "{bf:Tiempo:} " in y round(`=r(t90)/r(nt90)',.1) in g " segs."
+*log close
