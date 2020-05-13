@@ -76,7 +76,7 @@ end
 
 
 *******************************
-*** Variables Simulador.ado ***
+*** Variables noisily Simulador.ado ***
 *******************************
 
 ** (+) Ingreso **
@@ -85,24 +85,24 @@ replace Ingreso = 0 if Ingreso == .
 label var Ingreso "Impuestos al ingreso"
 * Reescalar *
 Distribucion Ingreso, macro(`alingreso')
-Simulador Ingreso [fw=factor], base("ENIGH 2018") ///
-	boot(1) reboot //graphs
+noisily Simulador Ingreso [fw=factor], base("ENIGH 2018") ///
+	boot(1) reboot `2'
 
 ** (+) Consumo **
 g Consumo = gastohog*alfa/`alfatot'
 label var Consumo "Impuestos al consumo"
 * Reescalar *
 Distribucion Consumo, macro(`alconsumo')
-Simulador Consumo [fw=factor], base("ENIGH 2018") ///
-	boot(1) reboot //graphs
+noisily Simulador Consumo [fw=factor], base("ENIGH 2018") ///
+	boot(1) reboot `2'
 
 ** (+) Otros ingresos **
 g Otros = 1
 label var Otros "Otros ingresos"
 * Reescalar *
 Distribucion Otros, macro(`otrosing')
-Simulador Otros [fw=factor], base("ENIGH 2018") ///
-	boot(1) reboot //graphs
+noisily Simulador Otros [fw=factor], base("ENIGH 2018") ///
+	boot(1) reboot `2'
 
 ** (-) Pensiones **
 g Pension = r44407a
@@ -110,8 +110,8 @@ replace Pension = 0 if Pension == .
 label var Pension "Pensiones"
 * Reescalar *
 Distribucion Pension, macro(`pensiones')
-Simulador Pension [fw=factor], base("ENIGH 2018") ///
-	boot(1) reboot //graphs
+noisily Simulador Pension [fw=factor], base("ENIGH 2018") ///
+	boot(1) reboot `2'
 
 ** (-) Educación **
 tabstat factor, stat(sum) by(r204) f(%10.0fc) save
@@ -127,8 +127,8 @@ replace Educacion = 0 if Educacion == .
 label var Educacion "Educación"
 * Reescalar *
 Distribucion Educacion, macro(`educacion')
-Simulador Educacion [fw=factor], base("ENIGH 2018") ///
-	boot(1) reboot //graphs
+noisily Simulador Educacion [fw=factor], base("ENIGH 2018") ///
+	boot(1) reboot `2'
 
 ** Salud **
 g Salud = 1.5 if edad <= 4
@@ -154,8 +154,8 @@ replace Salud = 3.36 if edad >= 95
 label var Salud "Salud"
 * Reescalar *
 Distribucion Salud, macro(`salud')
-Simulador Salud [fw=factor], base("ENIGH 2018") ///
-	boot(1) reboot //graphs
+noisily Simulador Salud [fw=factor], base("ENIGH 2018") ///
+	boot(1) reboot `2'
 
 ** Otros gastos **
 g OtrosGas = 1
@@ -163,8 +163,8 @@ replace OtrosGas = 0 if Ingreso == .
 label var OtrosGas "Otros gastos"
 * Reescalar *
 Distribucion OtrosGas, macro(`otrosgas')
-Simulador OtrosGas [fw=factor], base("ENIGH 2018") ///
-	boot(1) reboot //graphs
+noisily Simulador OtrosGas [fw=factor], base("ENIGH 2018") ///
+	boot(1) reboot `2'
 
 
 ***********

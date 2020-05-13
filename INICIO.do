@@ -4,7 +4,6 @@
 clear all
 macro drop _all
 capture log close _all
-
 if "`c(os)'" == "Unix" {
 	cd "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
 	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
@@ -29,7 +28,7 @@ local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 local anio = substr(`"`=trim("`fecha'")'"',1,4) 	// anio BASE
 
 
-** PIB + Deflactor: Paquete Economico 2020 **
+** PIB + Deflactor: Paquete Economico 2020 (pre-Covid) **
 global pib2020 = 2.0		// Criterios 2020 [1.5,2.5]
 global pib2021 = 2.6		// Criterios 2020 [2.6]
 
@@ -37,7 +36,7 @@ global def2020 = 4.5		// Criterios 2020 [4.5]
 global def2021 = 3.6		// Criterios 2020 [3.6]
 
 
-** PIB + Deflactor: Pre-Criterios 2021 (current 2020) **
+** PIB + Deflactor: Pre-Criterios 2021 (post-Covid) **
 global pib2020 = -1.9		// Pre-criterios 2021 [-3.9,0.1]
 global pib2021 = 2.5		// Pre-criterios 2021 [1.5,3.5]
 

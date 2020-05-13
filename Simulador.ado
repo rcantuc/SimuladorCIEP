@@ -530,6 +530,11 @@ quietly {
 	*** 6. Proyecciones de largo plazo ***
 	**************************************
 	use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'REC"', clear
+	merge 1:1 (anio) using `PIBBASE', nogen keepus(indiceY pibY* deflator lambda currency)
+
+	replace estimacion = estimacion*lambda/1000000 //pibYR*100
+	label var estimacion "Proyecci{c o'}n del perfil"
+	local currency = currency[_N]
 
 
 	******************
@@ -563,7 +568,7 @@ quietly {
 	levelsof anio if `annual_growth' != ., local(anios)
 	noisily di _newline in g "  A{c n~}o" _column(20) %20s "Crecimiento real anual"
 	foreach k of local anios {
-		if `k' == round(`k',10) {
+		if `k' == round(`k',1) {
 			ci `annual_growth' if anio == `k'
 			local `varlist'_mean = r(mean)
 			local `varlist'_min = r(lb)
@@ -581,10 +586,6 @@ quietly {
 
 	*************************
 	*** 6.3 OLS Simulador ***
-	merge 1:1 (anio) using `PIBBASE', nogen keepus(indiceY pibY* deflator lambda currency)
-
-	replace estimacion = estimacion*lambda/1000000 //pibYR*100
-	label var estimacion "Proyecci{c o'}n del perfil"
 
 
 	*********AQUI*********
@@ -616,7 +617,7 @@ quietly {
 	*** 6.4 Graphs ***
 	if ("`graphs'" == "graphs" | "$graphs" == "on") {
 		twoway connected estimacion `gvarpredict' `seriehacienda' anio if estimacion != ., ///
-			ytitle("millions `=currency[_N]' `aniovp'") ///
+			ytitle("millions `currency' `aniovp'") ///
 			yscale(range(0)) /*ylabel(0(1)4)*/ ///
 			ylabel(, format(%20.0fc) labsize(small)) ///
 			xlabel(, labsize(small) labgap(2)) ///
