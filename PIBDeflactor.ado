@@ -14,6 +14,8 @@ quietly {
 	
 	syntax [, ANIOvp(int `aniovp') GEO(int 5) FIN(int -1) Graphs UPDATE DIScount(real 3)]
 
+	
+	noisily di _newline in g "{bf:PIB:} " in y "{bf:$pais} `aniovp'"
 
 
 	***********************
@@ -159,7 +161,7 @@ quietly {
 	if _rc == 0 {
 		scalar lambda = $lambda
 	}
-	g lambda = (1+scalar(lambda)/100)^(anio-`anio_exo')
+	g lambda = (1+scalar(lambda)/100)^(anio-`aniovp')
 
 	* Proyección de crecimiento PIB *
 	replace pibYR = `=pibYR[`obs_exo']'/`=WorkingAge[`obs_exo']'*WorkingAge* ///
@@ -177,7 +179,7 @@ quietly {
 	*****************
 	** 3 Simulador **
 	*****************
-	noisily di _newline in g " PIB per c{c a'}pita: " in y _col(35) %10.1fc pibY[`obsvp']/`pobtotal'[1,1] in g " `=currency[`obsvp']'"
+	noisily di in g " PIB per c{c a'}pita: " in y _col(35) %10.1fc pibY[`obsvp']/`pobtotal'[1,1] in g " `=currency[`obsvp']'"
 	noisily di in g " Producci{c o'}n por trabajador: " in y _col(35) %10.1fc OutputPerWorker[`obsvp'] in g " `=currency[`obsvp']'"
 	noisily di in g " Lambda (productividad): " in y _col(35) %10.4f scalar(lambda) in g " %" 
 

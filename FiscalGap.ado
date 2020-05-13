@@ -201,6 +201,8 @@ quietly {
 			}
 			g divGA = `k'
 			g modulo = "pensiones"
+			
+			replace estimacion = estimacion*scalar(PensionGW)
 
 			tempfile pensiones
 			save `pensiones'

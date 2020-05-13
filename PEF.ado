@@ -57,7 +57,7 @@ quietly {
 	if "`by'" == "" {
 		local by = "desc_funcion"
 	}
-	noisily di _newline(2) in g "{bf:SISTEMA FISCAL: " in y "GASTO P{c U'}BLICO `anio'}"
+	noisily di _newline(2) in g "{bf:SISTEMA FISCAL: " in y "$pais GASTO P{c U'}BLICO `anio'}"
 
 
 

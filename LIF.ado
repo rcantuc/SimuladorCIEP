@@ -68,7 +68,7 @@ quietly {
 		local by = "divCIEP"
 	}
 
-	noisily di _newline(2) in g "{bf:SISTEMA FISCAL: " in y "INGRESOS `anio'" "}"
+	noisily di _newline(2) in g "{bf:SISTEMA FISCAL: " in y "$pais INGRESOS `anio'" "}"
 
 
 
