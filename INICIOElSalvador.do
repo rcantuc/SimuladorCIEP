@@ -39,7 +39,7 @@ scalar OtrosGasGW = 1
 global pib2020 = -5.6		// [-5.6,0.1]
 global pib2021 = 1.5 		// [ 1.5,4.3]
 
-scalar OtrosGasGW = 1.43
+scalar OtrosGasGW = 1.42
 
 
 /** Alternativa 1: Productividad **
@@ -57,14 +57,14 @@ global pib2030 = 4
 
 
 ** Alternativa 2: Aumentar ingresos **/
-scalar IngresoLP = 0 //1														// 1: largo plazo; 0: corto plazo
-scalar IngresoGW = (1+(${pib2020}-2.5)*2.672/100) // *1.4 //1.15
+scalar IngresoLP = 0 //1				1										// 1: largo plazo; 0: corto plazo
+scalar IngresoGW = (1+(${pib2020}-2.5)*2.785/100) // *1.4 //1.15
 
 scalar ConsumoLP = 0 //1														// 1: largo plazo; 0: corto plazo
-scalar ConsumoGW = (1+(${pib2020}-2.5)*1.504/100) // *1.4 //1.15
+scalar ConsumoGW = (1+(${pib2020}-2.5)*1.568/100) // *1.4 //1.15
 
 scalar OtrosLP = 0 //1															// 1: largo plazo; 0: corto plazo
-scalar OtrosGW = (1+(${pib2020}-2.5)*2.157/100) // *1.4 //1.15
+scalar OtrosGW = (1+(${pib2020}-2.5)*2.248/100) // *1.4 //1.15
 
 
 ** Alternativa 3: Reducir gastos **
@@ -81,26 +81,6 @@ scalar SaludGW = 1 // *.85
 *scalar OtrosGasGW = .85
 
 
-** Economía BASE **/
-noisily PIBDeflactor, graphs //discount(3.0)									<-- Cap. 3. Par{c a'}metros MACRO.
-tempfile PIB
-save `PIB'
-
-
-** Poblacion BASE: 2018 **
-*if "`c(os)'" == "Unix" & "go" == "no" {
-	noisily run HouseholdsElSalvador.do 2018 graphs
-*}
-
-
-
-
-
-**************************
-*** 2 PRE-ASIGNACIONES ***
-**************************
-
-
 ** INGRESO BASICO **
 scalar IngBas = 0
 scalar IngBasLP = 0							// 1: largo plazo; 0: corto plazo
@@ -114,48 +94,16 @@ scalar Bienestar = 0
 scalar BienestarLP = 0						// 1: largo plazo; 0: corto plazo
 
 
-/*use `"`c(sysdir_site)'../basesCIEP/SIM/2018/householdsElSalvador.dta"', clear
+** Economía BASE **/
+noisily PIBDeflactor, graphs //discount(3.0)									<-- Cap. 3. Par{c a'}metros MACRO.
+tempfile PIB
+save `PIB'
 
-** (+) Ingreso BASICO **
-if ingbasico18 == 0 & ingbasico65 == 1 {
-	tabstat factor if edad >= 18, stat(sum) f(%20.0fc) save
-	matrix POBLACION1 = r(StatTotal)
-	g IngBasico = IngBas/100*scalar(pibY)/POBLACION1[1,1] if edad >= 18
-}
-else if ingbasico18 == 1 & ingbasico65 == 0 {
-	tabstat factor if edad < 68, stat(sum) f(%20.0fc) save
-	matrix POBLACION2 = r(StatTotal)
-	g IngBasico = IngBas/100*scalar(pibY)/POBLACION2[1,1] if edad < 68
-}
-else if ingbasico18 == 0 & ingbasico65 == 0 {
-	tabstat factor if edad < 68 & edad >= 18, stat(sum) f(%20.0fc) save
-	matrix POBLACION3 = r(StatTotal)
-	g IngBasico = IngBas/100*scalar(pibY)/POBLACION3[1,1] if edad >= 18 & edad < 68
-}
-else { 
-	tabstat factor, stat(sum) f(%20.0fc) save
-	matrix POBLACION = r(StatTotal)
-	g IngBasico = IngBas/100*scalar(pibY)/POBLACION[1,1]
-}
-label var IngBasico "Ingreso b{c a'}sico"
-Simulador IngBasico [fw=factor], base("ENIGH 2018") ///
-	boot(1) reboot //graphs
 
-** (+) Pension BIENESTAR **
-tabstat factor if edad >= 68, stat(sum) f(%20.0fc) save
-matrix POBLACION68 = r(StatTotal)
-
-capture g PenBienestar = scalar(Bienestar)/100*scalar(pibY)/POBLACION68[1,1] if edad >= 68
-if _rc != 0 {
-	replace PenBienestar = scalar(Bienestar)/100*scalar(pibY)/POBLACION68[1,1] if edad >= 68
+** Poblacion BASE: 2018 **
+if "`c(os)'" == "Unix" & "go" == "no" {
+	noisily run HouseholdsElSalvador.do 2018 graphs
 }
-replace PenBienestar = 0 if PenBienestar == .
-label var PenBienestar "Pensi{c o'}n Bienestar"
-Simulador PenBienestar [fw=factor], base("ENIGH 2018") ///
-	boot(1) reboot //graphs
-
-tabstat IngBasico PenBienestar [fw=factor], stat(sum) f(%20.0fc)
-save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace
 
 
 
@@ -300,7 +248,7 @@ noisily CuentasGeneracionales TransfNetas, //boot(250)							// <-- OPTIONAL!!! 
 
 
 ** E. FISCAL GAP **/
-noisily FiscalGap, graphs end(2050) //boot(250) //update
+noisily FiscalGap, graphs end(2050) //intervencion //boot(250) //update
 
 
 

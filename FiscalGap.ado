@@ -5,7 +5,7 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
-	syntax [, Graphs Anio(int `aniovp') BOOTstrap(int 1) Update END(int 2100)]
+	syntax [, Graphs Anio(int `aniovp') BOOTstrap(int 1) Update END(int 2100) INTERvencion]
 
 
 	*************
@@ -89,6 +89,19 @@ quietly {
 			restore
 			merge 1:1 (anio divGA) using `otros', nogen update replace
 		}
+	}
+	if "$pais" == "El Salvador" & "`intervencion'" == "intervencion" {
+		preserve
+		
+		import excel "`c(sysdir_site)'../basesCIEP/SIM/intervencion_neta.xlsx", sheet("Hoja1") firstrow clear
+		g divGA = 4
+		g modulo = "otrosing"
+
+		tempfile intervencion
+		save `intervencion'
+
+		restore
+		merge 1:1 (anio divGA) using `intervencion', nogen update replace
 	}
 	merge m:1 (anio) using `PIB', nogen keep(matched) update replace
 	collapse (sum) recaudacion estimacion (max) pibYR deflator lambda, by(anio modulo)
@@ -201,8 +214,6 @@ quietly {
 			}
 			g divGA = `k'
 			g modulo = "pensiones"
-			
-			replace estimacion = estimacion*scalar(PensionGW)
 
 			tempfile pensiones
 			save `pensiones'
