@@ -1,72 +1,96 @@
-**************************
-**** HOLA, HUMANO! :) ****
-**************************
+********************
+**** WAKE UP!!! ****
+********************
 clear all
 macro drop _all
 capture log close _all
 if "`c(os)'" == "Unix" {
 	cd "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
 	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
+	global export "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Textbook/images/"
 }
 if "`c(os)'" == "MacOSX" {
 	cd "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
 	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
+	global export "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Textbook/images/"
 }
 adopath ++ PERSONAL
 timer on 1
-noisily di _newline(40) in g _dup(60) "~"
+noisily di _newline(5) in g _dup(60) "·" 
+noisily di in g _dup(20) "·" in y "  HOLA, HUMANO! 8)  " in g _dup(20) "·"
+noisily di in g _dup(60) "·"
 
 
 
 
 
-*************************
-*** 1 Par{c a'}metros ***
-*************************
-global export "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Textbook/images/"
+********************
+*** 1 PARAMETROS ***
+********************
 local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
-local anio = substr(`"`=trim("`fecha'")'"',1,4) 	// anio BASE
+local anio = substr(`"`=trim("`fecha'")'"',1,4) // 								anio BASE
+local anio = 2018+2
 
 
-** PIB + Deflactor: Paquete Economico 2020 (pre-Covid) **
-global pib2020 = 2.0		// Criterios 2020 [1.5,2.5]
-global pib2021 = 2.6		// Criterios 2020 [2.6]
+**********************************************************
+/** PIB + Deflactor: Paquete Economico 2020 (pre-Covid) **
+global pib2020 = 2.0 // 														Criterios 2020 [1.5,2.5]
+global pib2021 = 2.6 // 														Criterios 2020 [2.6]
 
-global def2020 = 4.5		// Criterios 2020 [4.5]
-global def2021 = 3.6		// Criterios 2020 [3.6]
-
+global def2020 = 4.5 // 														Criterios 2020 [4.5]
+global def2021 = 3.6 // 														Criterios 2020 [3.6]
 
 ** PIB + Deflactor: Pre-Criterios 2021 (post-Covid) **
-global pib2020 = -1.9		// Pre-criterios 2021 [-3.9,0.1]
-global pib2021 = 2.5		// Pre-criterios 2021 [1.5,3.5]
+global pib2020 = -1.9 // 														Pre-criterios 2021 [-3.9,0.1]
+global pib2021 = 2.5 // 														Pre-criterios 2021 [1.5,3.5]
 
-global def2020 = 3.5		// Pre-criterios 2021 [3.5]
-global def2021 = 3.2		// Pre-criterios 2021 [3.2]
+global def2020 = 3.5 // 														Pre-criterios 2021 [3.5]
+global def2021 = 3.2 // 														Pre-criterios 2021 [3.2]
 
 
-** Economía BASE (laborales, capital, consumo, depreciacion) **					<-- Cap. 2. Sistema: Cuentas Nacionales
-noisily PIBDeflactor, graphs //discount(3.0)									<-- Cap. 3. Par{c a'}metros MACRO.
+**************************************************************/
+** Economía BASE (laborales, capital, consumo, depreciacion) **					Cap. 2. Sistema: (de) Cuentas Nacionales
+noisily PIBDeflactor, graphs //update //discount(3.0)
 tempfile PIB
 save `PIB'
 
-noisily SCN, anio(`anio') graphs
+noisily SCN, anio(`anio') graphs //update
 
 
-** Poblacion BASE: ENIGH 2018 **												<-- Cap. 3. Agentes econ{c o'}micos
-if "go" == "no" & "`c(os)'" == "Unix" {
+
+
+
+
+********************/
+*** 4. Touchdown! ***
+*********************
+*noisily scalarlatex
+timer off 1
+timer list 1
+noisily di _newline(2) in g _dup(20) "·" "  " in y round(`=r(t1)/r(nt1)',.1) in g " segs  " _dup(20) "·"
+exit
+
+
+
+
+
+********************************
+** Poblacion BASE: ENIGH 2018 **												Cap. 3. Agentes econ{c o'}micos
+*if "go" == "no" & "`c(os)'" == "Unix" {
 	noisily run Households.do 2018
 	foreach k in grupo_edad sexo decil escol {
-		noisily run Sankey.do `k' 2018
+*		noisily run Sankey.do `k' 2018
 	}
-}
+*}
 
 
 
+exit
 
 
-
-
-** INGRESOS **
+******************
+*** 2 INGRESOS ***
+******************
 *noisily TasasEfectivas, lif													//<-- Cap. 4.
 
 
@@ -409,10 +433,3 @@ noisily FiscalGap, graphs end(2050) //boot(250) //update
 
 
 
-********************/
-*** 4. Touchdown! ***
-*********************
-*noisily scalarlatex
-timer off 1
-timer list 1
-noisily di _newline in g _dup(55) "+" in y round(`=r(t1)/r(nt1)',.1) in g " segs." _dup(55) "+"

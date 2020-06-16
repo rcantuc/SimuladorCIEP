@@ -13,8 +13,8 @@ quietly {
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
 	syntax [, ANIO(int `aniovp') Graphs Update Discount(int 3)]
-	di _newline in g "{bf:INFORMACI{c O'}N ECON{c O'}MICA:" in y " SCN " `anio' "}"
-
+	
+	noisily di _newline(2) in g _dup(20) "·" "{bf:  Sistema de Cuentas Nacionales " in y `anio' "  }" in g _dup(20) "·"
 	scalar aniovp = `aniovp'
 
 
@@ -264,6 +264,7 @@ quietly {
 	tempfile basepib
 	save `basepib'
 
+	local anio_exo = r(anio_exo)
 	local except = r(except)
 	local exceptI = r(exceptI)
 	if "`except'" != "." {
@@ -308,10 +309,22 @@ quietly {
 	observación y los valores anteriores de 2002 a 1993 (utiliza la tasa de 
 	crecimiento del PIB en términos reales */
 	foreach k of varlist RemSalSS-DepMix {
-		replace `k' = L.`k'*(1+var_pibY/100)*indiceY/L.indiceY if `k' == .
+		replace `k' = L.`k'*pibY/L.pibY if `k' == .
 		forvalues j = 2002(-1)1993 {
-			replace `k' = F.`k'/(1+var_pibY/100)/(indiceY/L.indiceY) if anio == `j'
+			replace `k' = F.`k'*L.pibY/pibY if anio == `j'
 		}
+	}
+
+	* Ajuste *
+	forvalues k = `=_N'(-1)1 {
+		if anio[`k'] == `anio' {
+			local pibAjuste = pibY[`k']/PIB[`k']
+			noisily di in g " Ajuste SCN vs. PIB: " in y %5.3fc (`pibAjuste'-1)*100 " %"
+			continue, break
+		}
+	}
+	foreach k of varlist RemSalSS-DepMix {
+		replace `k' = `k'*`pibAjuste'
 	}
 
 
@@ -440,6 +453,7 @@ quietly {
 	}
 
 	** R.2. Display **
+
 	* Generación de ingresos *
 	noisily di _newline in g "{bf: A. Cuenta: " in y "generaci{c o'}n del ingreso" in g ///
 		_col(44) in g %20s "MXN" ///
@@ -570,23 +584,34 @@ quietly {
 		label var `Capital' "Ingresos de capital"
 		g `Depreciacion' = (ConCapFij + CapIncImp + Yl)/deflator/1000000000000
 		label var `Depreciacion' "Depreciaci{c o'}n"
+		
+		if `anio_exo'-`latest' == 1 {
+			local graphtype "bar"
+		}
+		else {
+			local graphtype "area"
+		}
 
-		twoway (area `Depreciacion' `Capital' `Laboral' anio if anio <= `latest') ///
-			(area `Depreciacion' anio if anio > `latest', color("255 129 0")) ///
-			(area `Capital' anio if anio > `latest', color("255 189 0")) ///
-			(area `Laboral' anio if anio > `latest', color("39 97 47")), ///
+
+		twoway (area `Depreciacion' `Capital' `Laboral' anio if anio < `latest') ///
+			(`graphtype' `Depreciacion' anio if anio <= `anio_exo' & anio >= `latest', color("255 129 0")) ///
+			(`graphtype' `Capital' anio if anio <= `anio_exo' & anio >= `latest', color("255 189 0")) ///
+			(`graphtype' `Laboral' anio if anio <= `anio_exo' & anio >= `latest', color("39 97 47")) ///
+			(area `Depreciacion' anio if anio > `latest' & anio > `anio_exo', color("255 129 0")) ///
+			(area `Capital' anio if anio > `latest' & anio > `anio_exo', color("255 189 0")) ///
+			(area `Laboral' anio if anio > `latest' & anio > `anio_exo', color("39 97 47")), ///
 			/// title("{bf:PIB: Cuenta de Generaci{c o'}n del Ingreso}") ///
-			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
+			///caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
 			legend(cols(3) order(1 2 3)) ///
-			xtitle("") xline(`latest'.5) ///
-			text(`=`Depreciacion'[1]*.05' `=`latest'-.5' "`latest'", place(nw) color(white)) ///
-			text(`=`Depreciacion'[1]*.05' `=anio[1]+.5' "Observado", place(ne) color(white)) ///
-			text(`=`Depreciacion'[1]*.05' `=`latest'+1.5' "Proyectado", place(ne) color(white)) ///
+			xtitle("") ///
+			text(`=`Depreciacion'[1]*.05' `=`latest'+(`anio_exo'-`latest')/2' "{bf:Est.}", place(n) color(white)) ///
+			text(`=`Depreciacion'[1]*.05' `=anio[1]+.5' "{bf:Reportado}", place(ne) color(white)) ///
+			text(`=`Depreciacion'[1]*.05' `=`anio_exo'+1.5' "{bf:Proyectado}", place(ne) color(white)) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
 			ylabel(0(5)`=ceil(`Depreciacion'[_N])', format(%20.0fc)) ///
 			ytitle(billones MXN `anio', height(8)) ///
 			yscale(range(0)) ///
-			note("{bf:{&lambda}}: `=string(scalar(lambda),"%6.3f")'%. {bf:{c U'}ltimo dato}: `anio_last'.") ///
+			note("{bf:{c U'}ltimo dato}: `anio_last'.") ///
 			name(gdp_generacion, replace)
 
 		capture confirm existence $export
@@ -685,26 +710,30 @@ quietly {
 		g `AhorroN' = (AhorroN + ConGob + ConHog + ComprasN)/deflator/1000000000000
 		label var `AhorroN' "Ahorro neto"
 
-		twoway (area `AhorroN' anio if anio <= `latest', color("186 34 64")) ///
-			(area `ConGob' anio if anio <= `latest', color("0 151 201")) ///
-			(area `ConHog' anio if anio <= `latest', color("0 78 198")) ///
-			(area `ComprasN' anio if anio <= `latest', color("53 200 71")) ///
-			(area `AhorroN' anio if anio > `latest', color("186 34 64")) ///
-			(area `ConGob' anio if anio > `latest' & anio, color("0 151 201")) ///
-			(area `ConHog' anio if anio > `latest' & anio, color("0 78 198")) ///
-			(area `ComprasN' anio if anio > `latest' & anio, color("53 200 71")), ///
+		twoway (area `AhorroN' anio if anio < `latest', color("0 78 198")) ///
+			(area `ConGob' anio if anio < `latest', color("0 151 201")) ///
+			(area `ConHog' anio if anio < `latest', color("186 34 64")) ///
+			(area `ComprasN' anio if anio < `latest', color("53 200 71")) ///
+			(`graphtype' `AhorroN' anio if anio <= `anio_exo' & anio >= `latest', color("0 78 198")) ///
+			(`graphtype' `ConGob' anio if anio <= `anio_exo' & anio >= `latest', color("0 151 201")) ///
+			(`graphtype' `ConHog' anio if anio <= `anio_exo' & anio >= `latest', color("186 34 64")) ///
+			(`graphtype' `ComprasN' anio if anio <= `anio_exo' & anio >= `latest', color("53 200 71")) ///
+			(area `AhorroN' anio if anio > `latest' & anio > `anio_exo', color("0 78 198")) ///
+			(area `ConGob' anio if anio > `latest' & anio > `anio_exo', color("0 151 201")) ///
+			(area `ConHog' anio if anio > `latest' & anio > `anio_exo', color("186 34 64")) ///
+			(area `ComprasN' anio if anio > `latest' & anio > `anio_exo', color("53 200 71")), ///
 			/// title("{bf:Utilizaci{c o'}n del ingreso}") ///
-			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
+			///caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
 			legend(cols(4) order(1 2 3 4)) ///
-			xtitle("") xline(`latest'.5) ///
-			text(`=`AhorroN'[1]*.05' `=`latest'-.5' "`latest'", place(nw) color(white)) ///
-			text(`=`AhorroN'[1]*.05' `=anio[1]+.5' "Observado", place(ne) color(white)) ///
-			text(`=`AhorroN'[1]*.05' `=`latest'+1.5' "Proyectado", place(ne) color(white)) ///
+			xtitle("") ///
+			text(`=`AhorroN'[1]*.05' `=`latest'+(`anio_exo'-`latest')/2' "{bf:Est.}", place(n) color(white)) ///
+			text(`=`AhorroN'[1]*.05' `=anio[1]+.5' "{bf:Reportado}", place(ne) color(white)) ///
+			text(`=`AhorroN'[1]*.05' `=`anio_exo'+1.5' "{bf:Proyectado}", place(ne) color(white)) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
 			ylabel(0(5)`=ceil(`Depreciacion'[_N])', format(%20.0fc)) ///
 			ytitle(billones MXN `anio', height(8)) ///
 			yscale(range(0)) ///
-			note("{bf:{&lambda}}: `=string(scalar(lambda),"%6.3f")'%. {bf:{c U'}ltimo dato}: `anio_last'.") ///
+			note("{bf:{c U'}ltimo dato}: `anio_last'.") ///
 			name(gdp_utilizacion, replace)
 
 		capture confirm existence $export
@@ -1066,104 +1095,3 @@ quietly {
 	noisily di _newline in g "Tiempo: " in y round(`=r(t2)/r(nt2)',.1) in g " segs."
 }
 end
-
-
-
-****************************
-****  LIMPIA INEGI BIE  ****
-****      SCN, SNA      ****
-****************************
-program define LimpiaBIE
-
-	syntax [anything] [, NOMultiply]
-	drop if B == ""
-
-	foreach k of varlist _all {
-
-		* Nombre *
-		local name = reverse(`k'[1])
-		local name2 = `k'[2]
-
-		* Busca la posición de > en el string name, si existe el símbolo, el nombre cambia *
-		* al substring que termina en la posición *
-		local pos = strpos("`name'",">")
-		if `pos' > 0 {
-			local name = substr("`name'",1,`pos')
-		}
-		local name = reverse("`name'")
-
-		* Limpia el nombre de símbolos *
-		local name = subinstr("`name'",">","",.)
-		local name = subinstr("`name'","r1","",.)
-		local name = subinstr("`name'","p1","",.)
-		local name = subinstr("`name'","/","",.)
-
-		* Acentos *
-		local name = subinstr("`name'","â€¡","{c a'}",.)
-		local name = subinstr("`name'","Å½","{c e'}",.)
-		local name = subinstr("`name'","â€™","{c i'}",.)
-		local name = subinstr("`name'","â€”","{c o'}",.)
-		local name = subinstr("`name'","Å“","{c u'}",.)
-		local name = subinstr("`name'","Ã§","{c A'}",.)
-		local name = subinstr("`name'","Æ’","{c E'}",.)
-		local name = subinstr("`name'","Ãª","{c I'}",.)
-		local name = subinstr("`name'","Ã®","{c O'}",.)
-		local name = subinstr("`name'","Ã²","{c U'}",.)
-		
-		local name2 = subinstr("`name2'","â€¡","{c a'}",.)
-		local name2 = subinstr("`name2'","Å½","{c e'}",.)
-		local name2 = subinstr("`name2'","â€™","{c i'}",.)
-		local name2 = subinstr("`name2'","â€”","{c o'}",.)
-		local name2 = subinstr("`name2'","Å“","{c u'}",.)
-		local name2 = subinstr("`name2'","Ã§","{c A'}",.)
-		local name2 = subinstr("`name2'","Æ’","{c E'}",.)
-		local name2 = subinstr("`name2'","Ãª","{c I'}",.)
-		local name2 = subinstr("`name2'","Ã®","{c O'}",.)
-		local name2 = subinstr("`name2'","Ã²","{c U'}",.)
-
-		* Trim *
-		local name = trim("`name'")
-		local name = itrim("`name'")
-
-		local name2 = trim("`name2'")
-		local name2 = itrim("`name2'")
-
-		* Nombre final *
-		replace `k' = "`name', `name2'" in 1
-
-		* Label *
-		label var `k' "`=`k'[1]'"
-
-		* Periodo *
-		replace `k' = subinstr(`k',"p/","",.)
-		replace `k' = subinstr(`k',"r/","",.)
-		replace `k' = subinstr(`k',"ND","",.)
-	}
-
-	drop in 1
-	drop if A == ""
-	destring _all, replace	
-
-	* Pesos *
-	if "`nomultiply'" == "" {
-		foreach k of varlist _all {
-			local label : var label `k'
-			if `"`=substr("`label'",1,7)'"' != "Periodo" {
-				replace `k' = `k'*1000000
-				format `k' %20.0fc
-				recast double `k'
-			}
-		}
-	}
-
-	* Rename *
-	foreach k of varlist _all {
-		local label : var label `k'
-		if `"`=substr("`label'",1,7)'"' != "Periodo" {
-			rename `k' `k'`anything'
-		}
-	}	
-
-	compress
-end
-

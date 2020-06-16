@@ -722,7 +722,7 @@ program poblaciongini
 	graphpiramide `varlist', over(`grupo') title("`title'") rect(`rect') ///
 		men(`=string(`gsexlab1',"%7.0fc")') women(`=string(`gsexlab2',"%7.0fc")') ///
 		boot(`boottext') base(`base')
-	*graphpiramide `varlist', over(`grupoesc') title("`title'") rect(`rect') ///
+	graphpiramide `varlist', over(`grupoesc') title("`title'") rect(`rect') ///
 		men(`=string(`gsexlab1',"%7.0fc")') women(`=string(`gsexlab2',"%7.0fc")') ///
 		boot(`boottext') base(`base')
 end
@@ -854,7 +854,7 @@ program graphpiramide
 
 	graph export `"`c(sysdir_personal)'/users/$pais/$id/graphs/`varlist'_`titleover'.eps"', replace name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)')
 	graph save `=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)' `"`c(sysdir_personal)'/users/$pais/$id/graphs/`varlist'_`titleover'.gph"', replace
-	*graph export `"`c(sysdir_personal)'/users/$pais/$id/`varlist'_`titleover'.png"', replace name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)')
+	graph export `"`c(sysdir_personal)'/users/$pais/$id/graphs/`varlist'_`titleover'.png"', replace name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)')
 
 	capture window manage close graph H`varlist'
 	capture window manage close graph M`varlist'
