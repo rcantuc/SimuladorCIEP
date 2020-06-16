@@ -52,7 +52,7 @@ drop v1-v4 v65
 g i = 1
 reshape long v, i(i) j(anio)
 drop i
-rename v pibR
+rename v pibYR
 
 * 0.2.5. Guardar *
 compress
@@ -68,13 +68,8 @@ save `PIBR', replace
 use `PIB', clear
 merge 1:1 (anio) using `PIBR', nogen
 
-g indiceY = pibY/pibR*100
-
-drop pibR
 drop if pibY == .
-
-format indiceY %10.4fc
-format pibY %25.0fc
+format pib* %25.0fc
 
 g currency = "USD"
 g trimestre = 4

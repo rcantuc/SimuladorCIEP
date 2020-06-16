@@ -35,14 +35,14 @@ scalar OtrosGasLP = 0															// 1: largo plazo; 0: corto plazo
 scalar OtrosGasGW = 1
 
 
-** Post-Covid19, escenario actual y pesimista **
+/** Post-Covid19, escenario actual y pesimista **
 global pib2020 = -5.6		// [-5.6,0.1]
 global pib2021 = 1.5 		// [ 1.5,4.3]
 
 scalar OtrosGasGW = 1.42
 
 
-/** Alternativa 1: Productividad **
+** Alternativa 1: Productividad **
 global pib2021 = 4			// 169% PIB
 global pib2022 = 4
 global pib2023 = 4
@@ -57,7 +57,7 @@ global pib2030 = 4
 
 
 ** Alternativa 2: Aumentar ingresos **/
-scalar IngresoLP = 0 //1				1										// 1: largo plazo; 0: corto plazo
+scalar IngresoLP = 0 //1														// 1: largo plazo; 0: corto plazo
 scalar IngresoGW = (1+(${pib2020}-2.5)*2.785/100) // *1.4 //1.15
 
 scalar ConsumoLP = 0 //1														// 1: largo plazo; 0: corto plazo
@@ -95,7 +95,7 @@ scalar BienestarLP = 0						// 1: largo plazo; 0: corto plazo
 
 
 ** Economía BASE **/
-noisily PIBDeflactor, graphs //discount(3.0)									<-- Cap. 3. Par{c a'}metros MACRO.
+noisily PIBDeflactor, graphs //update //discount(3.0)									<-- Cap. 3. Par{c a'}metros MACRO.
 tempfile PIB
 save `PIB'
 

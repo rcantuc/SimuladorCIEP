@@ -296,7 +296,7 @@ quietly {
 			(area `pob3560' anio if anio > `anioinicial', color("255 189 0")) ///
 			(area `pob1934' anio if anio > `anioinicial', color("39 97 47")) ///
 			(area `pob18' anio if anio > `anioinicial', color("53 200 71")), ///
-			legend(label(1 "61+") label(2 "35 - 60") label(3 "19 - 34") label(4 "<18") order(1 2 3 4)) ///
+			legend(label(1 "61+") label(2 "35 - 60") label(3 "19 - 34") label(4 "<18") order(4 3 2 1)) ///
 			text(`y1' `x1' `"{bf:Max:} `=string(`MAX'[1,1],"%5.1fc")' % (`x1')"', place(n)) ///
 			text(`y1' `x1' `"{bf:`poblacion':} `=string(pob18[`p1'],"%12.0fc")'"', place(s)) ///
 			text(`y2' `x2' `"{bf:Max:} `=string(`MAX'[1,2],"%5.1fc")' % (`x2')"', place(n)) ///
@@ -317,7 +317,7 @@ quietly {
 			xtitle("") ///
 			ytitle("Personas") ///
 			xline(`=`anioinicial'+.5') ///
-			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
+			///caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
 			name(Estructura_`anything'_`anioinicial'_`aniofinal', replace) ///
 			///title("{bf:Olas demogr{c a'}ficas}") subtitle(${pais}) ///
 			ylabel(, format(%20.0fc)) 

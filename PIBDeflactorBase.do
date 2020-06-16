@@ -82,9 +82,10 @@ format aniotrimestre %tq
 label var aniotrimestre "YearQuarter"
 tsset aniotrimestre
 
-collapse (mean) pibY=pibQ indiceY=indiceQ (max) trimestre, by(anio)
-format indiceY %10.4fc
-format pibY %25.0fc
+g pibQR = pibQ/(indiceQ/100)
+
+collapse (mean) pibY=pibQ pibYR=pibQR (last) trimestre, by(anio)
+format pib* %25.0fc
 
 g currency = "MXN"
 
