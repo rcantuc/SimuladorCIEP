@@ -618,7 +618,7 @@ quietly {
 	if ("`graphs'" == "graphs" | "$graphs" == "on") {
 		twoway connected estimacion `gvarpredict' `seriehacienda' anio if estimacion != ., ///
 			ytitle("millions `currency' `aniovp'") ///
-			yscale(range(0)) /*ylabel(0(1)4)*/ ///
+			yscale(range(0 2000000)) /*ylabel(0(1)4)*/ ///
 			ylabel(, format(%20.0fc) labsize(small)) ///
 			xlabel(, labsize(small) labgap(2)) ///
 			xtitle("") ///

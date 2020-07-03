@@ -14,7 +14,7 @@ quietly {
 	
 	syntax [, ANIOvp(int `aniovp') GEO(int 5) FIN(int -1) Graphs UPDATE DIScount(real 3)]
 
-	noisily di _newline(2) in g _dup(20) "·" "{bf:  Producto Interno Bruto  }" _dup(20) "·"
+	noisily di _newline(2) in g _dup(20) "·" "{bf:   Producto Interno Bruto   }" _dup(20) "·"
 
 
 
@@ -166,7 +166,7 @@ quietly {
 	}
 	return scalar anio_exo = `anio_exo'
 
-	scalar lambda = ((OutputPerWorker[`obs_exo']/OutputPerWorker[`=`obs_exo'-10'])^(1/10)-1)*100
+	scalar lambda = ((OutputPerWorker[`obs_exo']/OutputPerWorker[`=`obs_exo'-20'])^(1/20)-1)*100
 	local Lambda = ((OutputPerWorker[`obs_exo']/OutputPerWorker[1])^(1/(`obs_exo'-1))-1)*100
 	capture confirm existence $lambda
 	if _rc == 0 {
@@ -199,7 +199,7 @@ quietly {
 	noisily di in g " PIB " in y "`anio_last'`trim_last'" _col(25) %20.0fc `pib_last' in g " `=currency[`obsvp']' ({c u'}ltimo reportado)"
 	noisily di _newline in g " PIB " in y anio[`obsvp'] in g " per c{c a'}pita " in y _col(35) %10.1fc pibY[`obsvp']/`pobtotal'[1,1] in g " `=currency[`obsvp']'"
 	noisily di in g " PIB " in y anio[`obsvp'] in g " por trabajador " in y _col(35) %10.1fc OutputPerWorker[`obsvp'] in g " `=currency[`obsvp']'"
-	noisily di in g " Lambda " in y anio[`obs_exo'] "-" anio[`=`obs_exo'-10'] _col(35) %10.4f scalar(lambda) in g " %" 
+	noisily di in g " Lambda " in y anio[`obs_exo'] "-" anio[`=`obs_exo'-20'] _col(35) %10.4f scalar(lambda) in g " %" 
 	noisily di in g " Lambda " in y anio[`obs_exo'] "-" anio[1] _col(35) %10.4f `Lambda' in g " %" 
 
 	local grow_rate_LR = (pibYR[_N]/pibYR[_N-10])^(1/10)-1
@@ -257,8 +257,8 @@ quietly {
 		twoway (connected var_pibY anio if anio < `anio_last' | (anio == `anio_last' & trimestre == 4)) ///
 			(connected var_pibY anio if anio >= `anio_last' & anio > anio[`obs_exo']) ///
 			(connected var_pibY anio if anio == `anio_last' & trimestre < 4 | anio <= anio[`obs_exo'] & anio > `anio_last'), ///
-			/// title({bf:Producto Interno Bruto}) ///
-			subtitle(${pais}) ///
+			///title({bf:Producto Interno Bruto}) ///
+			///subtitle(${pais}) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
 			ylabel(-6(3)6, format(%5.1fc)) ///
 			ytitle("Crecimiento real (%)") xtitle("") yline(0, lcolor(black)) ///
@@ -292,7 +292,7 @@ quietly {
 			///xline(`anio_last'.5) ///
 			yscale(range(0)) ///
 			legend(label(1 "Reportado") label(2 "Proyectado") label(3 "Estimado") order(1 3 2)) ///
-			note("{bf:Productividad ({&lambda})}: `=string(scalar(lambda),"%6.3f")'% (`=anio[`obs_exo']' - `=anio[[`=`obs_exo'-10']]'); `=string(`Lambda',"%6.3f")'% (`=anio[`obs_exo']' - `=anio[1]'). {bf:{c U'}ltimo dato}: `anio_last'`trim_last'." "`except'") ///
+			note("{bf:Productividad ({&lambda})}: `=string(scalar(lambda),"%6.3f")'% (`=anio[`obs_exo']' - `=anio[[`=`obs_exo'-20']]'); `=string(`Lambda',"%6.3f")'% (`=anio[`obs_exo']' - `=anio[1]'). `except'" "{bf:{c U'}ltimo dato}: `anio_last'`trim_last'.") ///
 			///note("{bf:Note}: Annual Labor Productivity Growth (lambda): `=string(scalar(lambda),"%6.3f")'%.") ///
 			///caption("Fuente: {stMono:simuladorfiscal.ciep.mx}. `c(current_date)' `c(current_time)'.") ///
 			name(PIBP, replace)
@@ -320,7 +320,7 @@ quietly {
 			}
 			noisily di in g " `=anio[`k']' " _col(10) %8.1fc in y var_pibY[`k'] " %" _col(25) %20.0fc pibY[`k'] _col(50) %8.1fc in y var_indiceY[`k'] " %" _col(65) %8.4fc deflator[`k']
 		}
-		if (anio[`k'] == `anio_last' & trimestre[`k'] < 4) | anio[`k'] == anio[`obs_exo'] {
+		if (anio[`k'] == `anio_last' & trimestre[`k'] < 4) | anio[`k'] <= anio[`obs_exo'] & anio[`k'] > `anio_last' {
 			if "`estimado'" == "" {
 				noisily di in g %~72s "ESTIMADO"
 				local estimado = "done"
