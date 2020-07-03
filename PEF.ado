@@ -34,7 +34,7 @@ quietly {
 	****************
 	use in 1 using `"`c(sysdir_site)'../basesCIEP/SIM/PEF`=subinstr("${pais}"," ","",.)'.dta"', clear
 	syntax [if] [, ANIO(int `aniovp') Graphs Update Base ID(string) ///
-		BY(varname) ROWS(int 3) COLS(int 4) MINimum(real 0) PEF PPEF]
+		BY(varname) ROWS(int 3) COLS(int 4) MINimum(real 1) PEF PPEF]
 	
 	** 2.1 PIB + Deflactor **
 	PIBDeflactor, anio(`anio')

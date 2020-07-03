@@ -23,17 +23,15 @@ noisily di in g _dup(60) "·"
 
 
 
-
 ********************
 *** 1 PARAMETROS ***
 ********************
 local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 local anio = substr(`"`=trim("`fecha'")'"',1,4) // 								anio BASE
-local anio = 2018+2
 
 
 **********************************************************
-/** PIB + Deflactor: Paquete Economico 2020 (pre-Covid) **
+** PIB + Deflactor: Paquete Economico 2020 (pre-Covid) **
 global pib2020 = 2.0 // 														Criterios 2020 [1.5,2.5]
 global pib2021 = 2.6 // 														Criterios 2020 [2.6]
 
@@ -57,14 +55,21 @@ save `PIB'
 noisily SCN, anio(`anio') graphs //update
 
 
-
+********************************
+** Poblacion BASE: ENIGH 2018 **												Cap. 3. Agentes econ{c o'}micos
+if "go" == "go" {
+*	noisily run Households.do 2018
+	foreach k in grupo_edad sexo decil escol {
+*		noisily run Sankey.do `k' 2018
+	}
+}
 
 
 
 ********************/
 *** 4. Touchdown! ***
 *********************
-*noisily scalarlatex
+noisily scalarlatex
 timer off 1
 timer list 1
 noisily di _newline(2) in g _dup(20) "·" "  " in y round(`=r(t1)/r(nt1)',.1) in g " segs  " _dup(20) "·"
@@ -74,18 +79,26 @@ exit
 
 
 
-********************************
-** Poblacion BASE: ENIGH 2018 **												Cap. 3. Agentes econ{c o'}micos
-*if "go" == "no" & "`c(os)'" == "Unix" {
-	noisily run Households.do 2018
-	foreach k in grupo_edad sexo decil escol {
-*		noisily run Sankey.do `k' 2018
-	}
-*}
 
 
 
-exit
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ******************
@@ -297,7 +310,7 @@ foreach k in Ingreso Consumo Otros {
 	matrix `RECBase' = r(StatTotal)
 
 	if scalar(`k'LP) == 1 {
-		replace estimacion = estimacion*INGRESOSSIM[1,`j']/`RECBase'[1,1]*lambda
+		replace estimacion = estimacion*INGRESOSSIM[1,`j']/`RECBase'[1,1]*lambda if anio > `anio'
 	}
 	else {
 		replace estimacion = estimacion*``k''/`RECBase'[1,1]*lambda if anio != `anio'
@@ -360,7 +373,7 @@ foreach k in Pension Educacion Salud OtrosGas {
 	matrix `RECBase' = r(StatTotal)
 
 	if scalar(`k'LP) == 1 {
-		replace estimacion = estimacion*GASTOSSIM[1,`j']/`RECBase'[1,1]*lambda
+		replace estimacion = estimacion*GASTOSSIM[1,`j']/`RECBase'[1,1]*lambda if anio > `anio'
 	}
 	else {
 		replace estimacion = estimacion*``k''/`RECBase'[1,1]*lambda if anio != `anio'
