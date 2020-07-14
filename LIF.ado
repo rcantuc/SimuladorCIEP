@@ -1,7 +1,7 @@
 program define LIF, return
 quietly {
 
-	timer on 3
+	timer on 4
 	***********************
 	*** 1 BASE DE DATOS ***
 	***********************
@@ -10,9 +10,9 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
-	** 1.2 Datos Abiertos (MÃ©xico) **
+	** 1.2 Datos Abiertos (México) **
 	if "$pais" == "" {
-		noisily UpdateDatosAbiertos
+		UpdateDatosAbiertos
 		local updated = r(updated)
 		local ultanio = r(ultanio)
 		local ultmes = r(ultmes)
@@ -34,7 +34,9 @@ quietly {
 	***************
 	use in 1 using `"`c(sysdir_site)'../basesCIEP/SIM/LIF`=subinstr("${pais}"," ","",.)'.dta"', clear
 	syntax [if] [, ANIO(int `aniovp' ) Update Graphs Base ID(string) ///
-		MINimum(real 0) DESDE(int 2013) ILIF LIF BY(varname)]
+		MINimum(real 0) DESDE(int 2013) ILIF EOFP BY(varname)]
+
+	noisily di _newline(2) in g _dup(20) "." "{bf:  Sistema Fiscal: INGRESOS $pais" in y `anio' "  }" in g _dup(20) "."
 
 	** 2.1 PIB + Deflactor **
 	PIBDeflactor, anio(`anio')
@@ -68,7 +70,6 @@ quietly {
 		local by = "divCIEP"
 	}
 
-	noisily di _newline(2) in g "{bf:SISTEMA FISCAL: " in y "$pais INGRESOS `anio'" "}"
 
 
 
@@ -80,7 +81,7 @@ quietly {
 		update replace keep(matched) sorted
 
 	** 3.1 Utilizar LIF o ILIF **
-	if "`lif'" == "lif" {
+	if "`eofp'" == "" {
 		replace recaudacion = LIF if anio == `anio'
 	}
 
@@ -238,48 +239,50 @@ quietly {
 
 
 	** 4.3 Crecimientos **
-	noisily di _newline in g "{bf: B. Crecimientos geom{c e'}tricos:" in y " `=`anio'-10' - `anio'" in g ///
-		_col(55) %7s "Ingreso" ///
-		_col(66) %7s "PIB" ///
-		_col(77) %7s "Elasticidad" "}"
+	if "`by'" == "divGA" {
+		noisily di _newline in g "{bf: B. Crecimientos geom{c e'}tricos:" in y " `=`anio'-10' - `anio'" in g ///
+			_col(55) %7s "Ingreso" ///
+			_col(66) %7s "PIB" ///
+			_col(77) %7s "Elasticidad" "}"
 
 
-	tabstat recaudacion recaudacionPIB if anio == `anio', by(`by') stat(sum) f(%20.0fc) save
-	tempname mattot
-	matrix `mattot' = r(StatTotal)
-
-	local k = 1
-	while "`=r(name`k')'" != "." {
-		tempname mat`k'
-		matrix `mat`k'' = r(Stat`k')
-		local ++k
-	}
-
-	capture tabstat recaudacion recaudacionPIB if anio == `anio'-10 & divLIF != 10, by(`by') stat(sum) f(%20.1fc) save
-	if _rc == 0 {
-		tempname mattot5
-		matrix `mattot5' = r(StatTotal)
+		tabstat recaudacion recaudacionPIB if anio == `anio', by(`by') stat(sum) f(%20.0fc) save
+		tempname mattot
+		matrix `mattot' = r(StatTotal)
 
 		local k = 1
 		while "`=r(name`k')'" != "." {
-			tempname mat5`k'
-			matrix `mat5`k'' = r(Stat`k')
-
-			noisily di in g "  (+) `=r(name`k')'" ///
-				_col(55) in y %7.3fc (((`mat`k''[1,1]/`mat5`k''[1,1])^(1/10)-1)*100) ///
-				_col(66) in y %7.3fc (((`pibYR`anio''/`pibYR`=`anio'-10'')^(1/10)-1)*100) ///
-				_col(77) in y %7.3fc (((`mat`k''[1,1]/`mat5`k''[1,1])^(1/10)-1)*100)/ ///
-				(((`pibYR`anio''/`pibYR`=`anio'-10'')^(1/10)-1)*100)
-
+			tempname mat`k'
+			matrix `mat`k'' = r(Stat`k')
 			local ++k
 		}
 
-		noisily di in g _dup(83) "-"
-		noisily di in g "{bf:  (=) Total (sin deuda)" ///
-				_col(55) in y %7.3fc (((`mattot'[1,1]/`mattot5'[1,1])^(1/10)-1)*100) ///
-				_col(66) in y %7.3fc (((`pibYR`anio''/`pibYR`=`anio'-10'')^(1/10)-1)*100) ///
-				_col(77) in y %7.3fc (((`mattot'[1,1]/`mattot5'[1,1])^(1/10)-1)*100)/ ///
-				(((`pibYR`anio''/`pibYR`=`anio'-10'')^(1/10)-1)*100) "}"
+		capture tabstat recaudacion recaudacionPIB if anio == `anio'-10 & divLIF != 10, by(`by') stat(sum) f(%20.1fc) save
+		if _rc == 0 {
+			tempname mattot5
+			matrix `mattot5' = r(StatTotal)
+
+			local k = 1
+			while "`=r(name`k')'" != "." {
+				tempname mat5`k'
+				matrix `mat5`k'' = r(Stat`k')
+
+				noisily di in g "  (+) `=r(name`k')'" ///
+					_col(55) in y %7.3fc (((`mat`k''[1,1]/`mat5`k''[1,1])^(1/10)-1)*100) ///
+					_col(66) in y %7.3fc (((`pibYR`anio''/`pibYR`=`anio'-10'')^(1/10)-1)*100) ///
+					_col(77) in y %7.3fc (((`mat`k''[1,1]/`mat5`k''[1,1])^(1/10)-1)*100)/ ///
+					(((`pibYR`anio''/`pibYR`=`anio'-10'')^(1/10)-1)*100)
+
+				local ++k
+			}
+
+			noisily di in g _dup(83) "-"
+			noisily di in g "{bf:  (=) Total (sin deuda)" ///
+					_col(55) in y %7.3fc (((`mattot'[1,1]/`mattot5'[1,1])^(1/10)-1)*100) ///
+					_col(66) in y %7.3fc (((`pibYR`anio''/`pibYR`=`anio'-10'')^(1/10)-1)*100) ///
+					_col(77) in y %7.3fc (((`mattot'[1,1]/`mattot5'[1,1])^(1/10)-1)*100)/ ///
+					(((`pibYR`anio''/`pibYR`=`anio'-10'')^(1/10)-1)*100) "}"
+		}
 	}
 
 
@@ -319,8 +322,8 @@ quietly {
 	*** END ***
 	***********
 	capture drop __*
-	timer off 3
-	timer list 3
-	noisily di _newline in g "{bf:Tiempo:} " in y round(`=r(t3)/r(nt3)',.1) in g " segs."
+	timer off 4
+	timer list 4
+	noisily di _newline in g "Tiempo: " in y round(`=r(t4)/r(nt4)',.1) in g " segs."
 }
 end

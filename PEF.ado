@@ -1,7 +1,7 @@
 program define PEF, return
 quietly {
 
-	timer on 4
+	timer on 5
 	***********************
 	*** 1 BASE DE DATOS ***
 	***********************
@@ -10,7 +10,7 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
-	** 1.2 Datos Abiertos (MÃ©xico) **
+	** 1.2 Datos Abiertos (México) **
 	if "$pais" == "" {
 		UpdateDatosAbiertos
 		local updated = r(updated)
@@ -35,6 +35,8 @@ quietly {
 	use in 1 using `"`c(sysdir_site)'../basesCIEP/SIM/PEF`=subinstr("${pais}"," ","",.)'.dta"', clear
 	syntax [if] [, ANIO(int `aniovp') Graphs Update Base ID(string) ///
 		BY(varname) ROWS(int 3) COLS(int 4) MINimum(real 1) PEF PPEF]
+
+	noisily di _newline(2) in g _dup(20) "." "{bf:  Sistema Fiscal: GASTOS $pais" in y `anio' "  }" in g _dup(20) "."
 	
 	** 2.1 PIB + Deflactor **
 	PIBDeflactor, anio(`anio')
@@ -57,7 +59,6 @@ quietly {
 	if "`by'" == "" {
 		local by = "desc_funcion"
 	}
-	noisily di _newline(2) in g "{bf:SISTEMA FISCAL: " in y "$pais GASTO P{c U'}BLICO `anio'}"
 
 
 
@@ -334,8 +335,8 @@ quietly {
 	*** END ***
 	***********
 	capture drop __*
-	timer off 4
-	timer list 4
-	noisily di _newline in g "{bf:Tiempo:} " in y round(`=r(t4)/r(nt4)',.1) in g " segs."
+	timer off 5
+	timer list 5
+	noisily di _newline in g "Tiempo: " in y round(`=r(t5)/r(nt5)',.1) in g " segs."
 }
 end

@@ -12,35 +12,12 @@ if "$pais" != "" {
 }
 
 
-********************
-** Sistema Fiscal **
-LIF, anio(`2') lif
-local ISR = r(ISR)
-local ISRPM = `ISR'*((1687830.1-(783743.8+45756.7))/1687830.1)
-local oye = r(CFE)+r(Pemex)+r(IMSS)+r(ISSSTE)+r(Otras_empresas)
-
-LIF, anio(`2') by(divGA) lif
-local alingreso = r(Impuestos_al_ingreso)
-local alconsumo = r(Impuestos_al_consumo)
-local otros = r(Ingresos_de_capital)
-
-PEF if anio == `2', by(divGA)
-local OtrosGas = r(Otros)
-local Pensiones = r(Pensiones)
-local Educacion = r(Educaci_c_o__n)
-local Salud = r(Salud)
-local PenBienestar = r(Pensi_c_o__n_Bienestar)
-local CostodeDeuda = r(Costo_de_la_deuda)
-
-PEF if anio == `2' & ramo == 28
-local Part = r(Resumido_total)
-
 
 **********************************/
 ** Eje 1: Generación del ingreso **
 use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
 
-collapse (sum) ing_Ingreso=Ingreso ing_Consumo=Consumo ing__De_Capital=ISR__PM [fw=factor], by(`1')
+collapse (sum) ing_Laboral=Laboral ing__Consumo=Consumo ing__FMP=ing_cap_fmp ing___De_Capital=ISR__PM [fw=factor], by(`1')
 
 * to *
 tempvar to
@@ -52,16 +29,17 @@ encode `to', g(to)
 rename `1' from
 
 * Otros ingresos *
-set obs `=_N+2'
-replace from = 99 in -2
-replace profile = `oye' in -2
-replace to = 3 in -2
+set obs `=_N+1'
+replace from = 99 in -1
+replace profile = scalar(OYE)/100*scalar(PIB) in -1
+replace to = 4 in -1
 label define `1' 99 "OyE estatales", add
 
+set obs `=_N+1'
 replace from = 98 in -1
-replace profile = `otros'-`oye' in -1
-replace to = 3 in -1
-label define `1' 98 "Aprov Produc Otros", add
+replace profile = scalar(OtrosI)/100*scalar(PIB) in -1
+replace to = 4 in -1
+label define `1' 98 "Otros ingresos", add
 
 * Gasto total *
 noisily tabstat profile, stat(sum) f(%20.0fc) save
@@ -84,8 +62,8 @@ tabstat Pension Educacion Salud PenBienestar OtrosGas [fw=factor], stat(sum) f(%
 tempname GAST 
 matrix `GAST' = r(StatTotal)
 
-collapse (sum) gas_Pensiones=Pension gas_Educacion=Educacion gas_Salud=Salud ///
-	gas__Pension_Bienestar=PenBienestar gas_Salarios_de_gobierno=Salarios gas_Ingreso_Basico=IngBasico [fw=factor], by(`1')
+collapse (sum) gas_Educacion=Educacion gas_Salud=Salud gas__Salarios_de_gobierno=Salarios ///
+	gas___Pensiones=Pension gas___Pension_Bienestar=PenBienestar gas____Ingreso_Basico=IngBasico [fw=factor], by(`1')
 
 levelsof `1', local(`1')
 foreach k of local `1' {
@@ -108,16 +86,16 @@ set obs `=_N+3'
 replace from = 97 in -1
 label define from 97 "Costo de la deuda", add
 
-replace profile = `CostodeDeuda' in -1
+replace profile = scalar(costodeu)/100*scalar(PIB) in -1
 
 replace to = 11 in -1
 label define `1' 11 "Sistema financiero", add
 
 * Aportaciones y participaciones *
 replace from = 96 in -2
-label define from 96 "Participaciones", add
+label define from 96 "Otras Part y Aport", add
 
-replace profile = `Part' in -2
+replace profile = scalar(partapor)/100*scalar(PIB) in -2
 
 replace to = 12 in -2
 label define `1' 12 "Estados y municipios", add
@@ -126,10 +104,10 @@ label define `1' 12 "Estados y municipios", add
 replace from = 95 in -3
 label define from 95 "Otros gastos", add
 
-replace profile = (`OtrosGas'-`Part'-scalar(servpers)/100*scalar(pibY)) in -3
+replace profile = (scalar(matesumi)+scalar(gastgene)+scalar(substran)+scalar(bienmueb)+scalar(obrapubl)+scalar(invefina))/100*scalar(PIB) in -3
 
 replace to = 13 in -3
-label define `1' 13 "No distribuible", add
+label define `1' 13 "No distribuibles", add
 
 * Gasto total *
 noisily tabstat profile, stat(sum) f(%20.0fc) save
@@ -150,10 +128,10 @@ if `gastot'[1,1]-`ingtot'[1,1] > 0 {
 
 	replace from = 100 in -1
 	replace profile = (`gastot'[1,1]-`ingtot'[1,1]) in -1
-	replace to = 4 in -1
+	replace to = 5 in -1
 
 	label define `1' 100 "Futuro", add
-	label define to 4 "Endeudamiento", add
+	label define to 5 "Endeudamiento", add
 
 	save `eje1', replace
 }
@@ -166,8 +144,8 @@ else {
 	replace profile = (`ingtot'[1,1]-`gastot'[1,1]) in -1
 	replace to = 14 in -1
 
-	label define to 14 "Futuro", add
-	label define `1' 101 "Ahorro", add
+	label define `1' 14 "Futuro", add
+	label define from 101 "Ahorro", add
 
 	save `eje4', replace
 }
@@ -207,4 +185,4 @@ noisily SankeySum, anio(`2') name(`1') folder(SankeySF) a(`eje1') b(`eje2') c(`e
 
 timer off 6
 timer list 6
-noisily di _newline in g "{bf:Tiempo:} " in y round(`=r(t6)/r(nt6)',.1) in g " segs."
+noisily di _newline in g "Tiempo: " in y round(`=r(t6)/r(nt6)',.1) in g " segs."

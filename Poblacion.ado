@@ -122,7 +122,7 @@ quietly {
 	***********************
 	* Grafica 1: Piramide *
 	***********************
-	if "$graphs" == "on" /*| "`graphs'" == "graphs"*/ {
+	if "$graphs" == "on" | "`graphs'" == "graphs" {
 
 		* Variables a graficar *
 		tempvar pob2
@@ -201,7 +201,7 @@ quietly {
 			`=-`MaxH'[1,1]/2' `"`=string(`MaxH'[1,1]/2,"%15.0fc")'"' 0 ///
 			`=`MaxM'[1,1]/2' `"`=string(`MaxM'[1,1]/2,"%15.0fc")'"' ///
 			`=`MaxM'[1,1]' `"`=string(`MaxM'[1,1],"%15.0fc")'"', angle(horizontal)) ///
-			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
+			///caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
 			/*xtitle("personas")*/ ///
 			///title("{bf:Pir{c a'}mide demogr{c a'}fica}") subtitle(${pais})
 

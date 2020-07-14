@@ -1,27 +1,31 @@
-***               ACTUALIZACIÓN                *** 
-*** 1) abrir archivos .iqy en Excel de Windows ***
-*** 2) guardar y reemplazar .xls dentro de     ***
-***      ./TemplateCIEP/basesCIEP/INEGI/SCN/   ***
-*** 3) correr PIBDeflactor[.ado] con opción "update" ***
+**********************************************************
+***                  ACTUALIZACIÓN                     ***
+***   1) abrir archivos .iqy en Excel de Windows       ***
+***   2) guardar y reemplazar .xls dentro de           ***
+***      ./TemplateCIEP/basesCIEP/INEGI/SCN/           ***
+***   3) correr PIBDeflactor[.ado] con opción "update" ***
+**********************************************************
 
 **** Crecimiento del PIB ****
 program define PIBDeflactor, return
 quietly {
 	version 13.1
+	timer on 2
+
 	** Anio valor presente **
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 	
 	syntax [, ANIOvp(int `aniovp') GEO(int 5) FIN(int -1) Graphs UPDATE DIScount(real 3)]
 
-	noisily di _newline(2) in g _dup(20) "·" "{bf:   Producto Interno Bruto   }" _dup(20) "·"
+	noisily di _newline(2) in g _dup(20) "." "{bf:   Producto Interno Bruto " in y `aniovp' "   }" in g _dup(20) "."
 
 
 
 	***********************
 	*** 0 Base de datos ***
 	***********************
-	Poblacion, anio(`aniovp') `graphs' //`update'
+	Poblacion, anio(`aniovp') //`graphs' //`update'
 	tabstat poblacion if anio == `aniovp', stat(sum) f(%15.0fc) save
 	tempname pobtotal
 	matrix `pobtotal' = r(StatTotal)
@@ -257,8 +261,7 @@ quietly {
 		twoway (connected var_pibY anio if anio < `anio_last' | (anio == `anio_last' & trimestre == 4)) ///
 			(connected var_pibY anio if anio >= `anio_last' & anio > anio[`obs_exo']) ///
 			(connected var_pibY anio if anio == `anio_last' & trimestre < 4 | anio <= anio[`obs_exo'] & anio > `anio_last'), ///
-			///title({bf:Producto Interno Bruto}) ///
-			///subtitle(${pais}) ///
+			title({bf:Producto Interno Bruto}) subtitle(${pais}) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
 			ylabel(-6(3)6, format(%5.1fc)) ///
 			ytitle("Crecimiento real (%)") xtitle("") yline(0, lcolor(black)) ///
@@ -282,12 +285,12 @@ quietly {
 		twoway (area `pibYRmil' anio if anio < `anio_last' | (anio == `anio_last' & trimestre == 4)) ///
 			(area `pibYRmil' anio if anio >= `anio_last' & anio > anio[`obs_exo']) ///
 			(`graphtype' `pibYRmil' anio if anio == `anio_last' & trimestre < 4 | anio <= anio[`obs_exo'] & anio > `anio_last', lwidth(none)), ///
-			/// title({bf:Producto Interno Bruto}) subtitle(${pais}) ///
+			title({bf:Producto Interno Bruto}) subtitle(${pais}) ///
 			ytitle(billones `=currency[`obsvp']' `aniovp') xtitle("") yline(0) ///
 			///text(`=`pibYRmil'[1]*.05' `=`anio_last'-.5' "`anio_last'", place(nw) color(white)) ///
 			///text(`=`pibYRmil'[1]*.05' `=anio[1]+.5' "Reportado" ///
 			///`=`pibYRmil'[1]*.05' `=`anio_last'+1.5' "Proyectado", place(ne) color(white) size(small)) ///
-			xlabel(`=anio[1]' `=round(anio[1],10)'(10)`=round(anio[_N],10)') ///
+			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],10)') ///
 			ylabel(#5, format(%10.0fc)) ///
 			///xline(`anio_last'.5) ///
 			yscale(range(0)) ///
@@ -335,5 +338,9 @@ quietly {
 			noisily di in g " `=anio[`k']' " _col(10) %8.1fc in y var_pibY[`k'] " %" _col(25) %20.0fc pibY[`k'] _col(50) %8.1fc in y var_indiceY[`k'] " %" _col(65) %8.4fc deflator[`k']
 		}
 	}
+
+	timer off 2
+	timer list 2
+	noisily di _newline in g "Tiempo: " in y round(`=r(t2)/r(nt2)',.1) in g " segs."
 }
 end
