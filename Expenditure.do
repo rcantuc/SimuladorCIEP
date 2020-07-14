@@ -48,9 +48,10 @@ if `enighanio' == 2008 {
 	local tasafront = 10
 	local altimir = "yes"
 }
+timer on 5
 
 ** D.3. Texto introductorio **
-noisily di _newline(3) in g "{bf:GASTO DE LOS HOGARES:" in y " `enigh' `enighanio'}"
+noisily di _newline(2) in g _dup(20) "." "{bf:  Gastos de los hogares " in y "`enigh' `enighanio'" "  }" in g _dup(20) "."
 local data "`c(sysdir_site)'../basesCIEP/INEGI/`enigh'/`enighanio'"
 
 
@@ -801,3 +802,7 @@ if `c(version)' == 15.1 {
 else {
 	save "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/expenditure.dta", replace
 }
+
+timer off 5
+timer list 5
+noisily di _newline in g "{bf:Tiempo:} " in y round(`=r(t5)/r(nt5)',.1) in g " segs."

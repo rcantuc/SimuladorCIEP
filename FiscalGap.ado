@@ -40,7 +40,7 @@ quietly {
 	******************************
 	*** 3 Fiscal Gap: Ingresos ***
 	******************************
-	LIF, anio(`anio') lif
+	LIF, anio(`anio')
 	collapse (sum) recaudacion if divLIF != 10, by(anio divGA) fast
 	g modulo = ""
 
@@ -50,7 +50,7 @@ quietly {
 		if "`divGA`k''" == "Impuestos al ingreso" {
 			preserve
 
-			use `"`c(sysdir_personal)'/users/$pais/$id/IngresoREC.dta"', clear
+			use `"`c(sysdir_personal)'/users/$pais/$id/LaboralREC.dta"', clear
 			collapse (mean) estimacion contribuyentes* poblacion aniobase, by(anio) fast
 			g divGA = `k'
 			g modulo = "alingreso"
@@ -90,19 +90,6 @@ quietly {
 			merge 1:1 (anio divGA) using `otros', nogen update replace
 		}
 	}
-	if "$pais" == "El Salvador" & "`intervencion'" == "intervencion" {
-		preserve
-		
-		import excel "`c(sysdir_site)'../basesCIEP/SIM/intervencion_neta.xlsx", sheet("Hoja1") firstrow clear
-		g divGA = 4
-		g modulo = "otrosing"
-
-		tempfile intervencion
-		save `intervencion'
-
-		restore
-		merge 1:1 (anio divGA) using `intervencion', nogen update replace
-	}
 	merge m:1 (anio) using `PIB', nogen keep(matched) update replace
 	collapse (sum) recaudacion estimacion (max) pibYR deflator lambda, by(anio modulo)
 
@@ -135,13 +122,13 @@ quietly {
 		g `ingreso2' = (estimacionalingreso + estimacionalconsumo)/1000000
 		g `otros2' = (estimacionotros + estimacionalingreso + estimacionalconsumo)/1000000
 
-		twoway (area `otros' `ingreso' `consumo' anio if anio < `anio' & anio >= 2015) ///
+		twoway (area `otros' `ingreso' `consumo' anio if anio < `anio' & anio >= 2003) ///
 			(area `otros2' anio if anio >= `anio', color("255 129 0")) ///
 			(area `ingreso2' anio if anio >= `anio', color("255 189 0")) ///
 			(area `consumo2' anio if anio >= `anio', color("39 97 47")), ///
 			legend(cols(3) order(1 2 3) ///
 			label(1 "Ingresos de capital") label(2 "Impuestos al ingreso") label(3 "Impuestos al consumo")) ///
-			xlabel(2015(5)`=round(anio[_N],10)') ///
+			xlabel(2003 2005(5)`=round(anio[_N],10)') ///
 			ylabel(, format(%20.0fc)) ///
 			xline(`=`anio'-.5') ///
 			text(`=`otros'[`obs`anio_last'']*.05' `=`anio'+.5' "Proyecci{c o'}n", place(ne) color(white)) ///
@@ -205,13 +192,8 @@ quietly {
 		if "`divGA`k''" == "Pensiones" {
 			preserve
 
-			if "$pais" == "" {
-				use `"`c(sysdir_personal)'/users/$pais/$id/PensionREC.dta"', clear
-				collapse (mean) estimacion contribuyentes* poblacion aniobase, by(anio) fast
-			}
-			if "$pais" == "El Salvador" {
-				import excel "`c(sysdir_site)'../basesCIEP/SIM/PensionesElSalvador.xlsx", sheet("Sheet1") firstrow clear
-			}
+			use `"`c(sysdir_personal)'/users/$pais/$id/PensionREC.dta"', clear
+			collapse (mean) estimacion contribuyentes* poblacion aniobase, by(anio) fast
 			g divGA = `k'
 			g modulo = "pensiones"
 
@@ -275,13 +257,7 @@ quietly {
 	tempname pob
 	matrix `pob' = r(StatTotal)
 	
-	if scalar(BienestarLP) == 1 {
-		replace estimacion = poblacion*`=`=scalar(Bienestar)'/100*`=scalar(pibY)'/`=`pob'[1,1]''
-	}
-	else {
-		replace estimacion = poblacion*`=`=scalar(Bienestar)'/100*`=scalar(pibY)'/`=`pob'[1,1]'' if anio == `anio'
-		replace estimacion = 0 if anio != `anio'
-	}
+	replace estimacion = poblacion*`=`=scalar(Bienestar)'/100*`=scalar(pibY)'/`=`pob'[1,1]''
 
 	tempfile penbienestar
 	save `penbienestar'
@@ -301,13 +277,7 @@ quietly {
 	tempname pob
 	matrix `pob' = r(StatTotal)
 	
-	if scalar(IngBasLP) == 1 {
-		replace estimacion = poblacion*`=`=scalar(IngBas)'/100*`=scalar(pibY)'/`=`pob'[1,1]''
-	}
-	else {
-		replace estimacion = poblacion*`=`=scalar(IngBas)'/100*`=scalar(pibY)'/`=`pob'[1,1]'' if anio == `anio'
-		replace estimacion = 0 if anio != `anio'
-	}
+	replace estimacion = poblacion*`=`=scalar(IngBas)'/100*`=scalar(pibY)'/`=`pob'[1,1]''
 	
 	tempfile ingbasico
 	save `ingbasico'
@@ -434,7 +404,7 @@ quietly {
 			(area `costog2' anio if anio >= `anio', color("0 78 198")) ///
 			(area `saludg2' anio if anio >= `anio', color("0 151 201")) ///
 			(area `pensionesg2' anio if anio >= `anio', color("186 34 64")) ///
-			(area `educaciong2' anio if anio >= `anio', color("254 118 109")) if anio >= 2015, ///
+			(area `educaciong2' anio if anio >= `anio', color("254 118 109")) if anio >= 2013, ///
 			legend(cols(8) order(1 2 3 4 5 6 7 8) ///
 			label(1 "Renta b{c a'}sica") ///
 			label(2 "Pensi{c o'}n Bienestar") ///
@@ -444,7 +414,7 @@ quietly {
 			label(6 "Salud") ///
 			label(7 "Pensiones") ///
 			label(8 "Educaci{c o'}n")) ///
-			xlabel(2015(5)`=round(anio[_N],10)') ///
+			xlabel(2013 2015(5)`=round(anio[_N],10)') ///
 			ylabel(, format(%20.0fc)) ///
 			xline(`=`anio'-.5') ///
 			text(`=`otrosg'[`obs`anio_last'']*.075' `=`anio'+.5' "Proyecci{c o'}n", place(ne) color(white)) ///
@@ -455,12 +425,12 @@ quietly {
 			xtitle("") ytitle(millones `currency' `anio') ///
 			name(Proy_gastos, replace)
 			
-		twoway (area rfsp_pib anio if anio < `anio' & anio >= 2015) ///
+		twoway (area rfsp_pib anio if anio < `anio' & anio >= 2008) ///
 			(area rfsp_pib anio if anio >= `anio'), ///
 			yscale(range(0)) ///
 			ytitle(% PIB) ///
 			xtitle("") ///
-			xlabel(2015(5)`=round(anio[_N],10)') ///
+			xlabel(2008 2010(5)`=round(anio[_N],10)') ///
 			xline(`=`anio'-.5') ///
 			legend(off) ///
 			title({bf: Proyecci{c o'}n de los RFSP}) subtitle($pais) ///
@@ -523,13 +493,13 @@ quietly {
 
 	if "`graphs'" == "graphs" {
 		g shrfspPIB = shrfsp/pibY*100
-		twoway (area shrfspPIB anio if shrfspPIB != . & anio < `anio' & anio >= 2015) ///
+		twoway (area shrfspPIB anio if shrfspPIB != . & anio < `anio' & anio >= 2000) ///
 			(area shrfspPIB anio if anio >= `anio'), ///
 			title({bf:Proyecci{c o'}n del SHRFSP}) ///
 			subtitle($pais) ///
 			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
 			xtitle("") ytitle(% PIB) ///
-			xlabel(2015(5)`end') ///
+			xlabel(2000(5)`end') ///
 			yscale(range(0)) ///
 			legend(off) ///
 			text(`=shrfspPIB[`obs`anio_last'']*.075' `=`anio'+.5' "Proyecci{c o'}n", color(white) placement(e)) ///
@@ -576,3 +546,41 @@ quietly {
 	}
 }
 end
+
+
+
+
+*****************************************/
+***                                    ***
+*** 6. Parte 4: Balance presupuestario ***
+***                                    ***
+/******************************************
+noisily di _newline(2) in g "{bf: POL{c I'}TICA FISCAL " in y "`anio'" "}"
+noisily di in g "  (+) Ingresos: " ///
+	_col(30) in y %20.0fc (INGRESOSSIM[1,1]+INGRESOSSIM[1,2]+INGRESOSSIM[1,3]) in g " MXN" ///
+	_col(60) in y %8.1fc (INGRESOSSIM[1,1]+INGRESOSSIM[1,2]+INGRESOSSIM[1,3])/scalar(pibY)*100 in g "% PIB"
+noisily di in g "  (-) Gastos: " ///
+	_col(30) in y %20.0fc GASTOSSIM[1,1]+GASTOSSIM[1,2]+GASTOSSIM[1,3]+GASTOSSIM[1,4]+`CostoDeuda'+`Amort'+scalar(IngBas)/100*scalar(pibY)+scalar(Bienestar)/100*scalar(pibY) in g " MXN" ///
+	_col(60) in y %8.1fc (GASTOSSIM[1,1]+GASTOSSIM[1,2]+GASTOSSIM[1,3]+GASTOSSIM[1,4]+`CostoDeuda'+`Amort')/scalar(pibY)*100 + scalar(IngBas) + scalar(Bienestar) in g "% PIB"
+noisily di _dup(72) in g "-"
+noisily di in g "  (=) Balance "in y "econ{c o'}mico" in g ": " ///
+	_col(30) in y %20.0fc (INGRESOSSIM[1,1]+INGRESOSSIM[1,2]+INGRESOSSIM[1,3] ///
+	-(GASTOSSIM[1,1]+GASTOSSIM[1,2]+GASTOSSIM[1,3]+GASTOSSIM[1,4]+`CostoDeuda'+`Amort'+scalar(IngBas)/100*scalar(pibY)+scalar(Bienestar)/100*scalar(pibY))) in g " MXN" ///
+	_col(60) in y %8.1fc (INGRESOSSIM[1,1]+INGRESOSSIM[1,2]+INGRESOSSIM[1,3] ///
+	-(GASTOSSIM[1,1]+GASTOSSIM[1,2]+GASTOSSIM[1,3]+GASTOSSIM[1,4]+`CostoDeuda'+`Amort'))/scalar(pibY)*100 - scalar(IngBas) - scalar(Bienestar) in g "% PIB"
+noisily di in g "  (-) Costo de la deuda: " ///
+	_col(30) in y %20.0fc -`CostoDeuda' in g " MXN" ///
+	_col(60) in y %8.1fc -`CostoDeuda'/scalar(pibY)*100 in g "% PIB"
+noisily di _dup(72) in g "-"
+noisily di in g "  (=) Balance " in y "primario" in g ": " ///
+	_col(30) in y %20.0fc (((INGRESOSSIM[1,1]+INGRESOSSIM[1,2]+INGRESOSSIM[1,3])) ///
+	-((GASTOSSIM[1,1]+GASTOSSIM[1,2]+GASTOSSIM[1,3]+GASTOSSIM[1,4]+`CostoDeuda'+`Amort'+scalar(IngBas)/100*scalar(pibY)+scalar(Bienestar)/100*scalar(pibY))) ///
+	+`CostoDeuda') in g " MXN" ///
+	_col(60) in y %8.1fc (((INGRESOSSIM[1,1]+INGRESOSSIM[1,2]+INGRESOSSIM[1,3])) ///
+	-((GASTOSSIM[1,1]+GASTOSSIM[1,2]+GASTOSSIM[1,3]+GASTOSSIM[1,4]+`CostoDeuda'+`Amort')) ///
+	+`CostoDeuda')/scalar(pibY)*100 - scalar(IngBas) - scalar(Bienestar) in g "% PIB"
+
+
+
+
+

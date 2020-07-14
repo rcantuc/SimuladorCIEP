@@ -1,6 +1,6 @@
 program define Simulador
 quietly {
-	timer on 96
+	timer on 7
 	version 13.1
 	syntax varname [if] [fweight/], ///
 		[BOOTstrap(int 1) ///
@@ -635,9 +635,9 @@ quietly {
 	*************
 	use `original', clear
 
-	timer off 96
-	timer list 96
-	noisily di _newline in g "  {bf:`title' time}: " in y round(`=r(t96)/r(nt96)',.1) in g " segs."
+	timer off 7
+	timer list 7
+	noisily di _newline in g "  {bf:`title' time}: " in y round(`=r(t7)/r(nt7)',.1) in g " segs."
 }
 end
 
@@ -722,7 +722,7 @@ program poblaciongini
 	graphpiramide `varlist', over(`grupo') title("`title'") rect(`rect') ///
 		men(`=string(`gsexlab1',"%7.0fc")') women(`=string(`gsexlab2',"%7.0fc")') ///
 		boot(`boottext') base(`base')
-	graphpiramide `varlist', over(`grupoesc') title("`title'") rect(`rect') ///
+	*graphpiramide `varlist', over(`grupoesc') title("`title'") rect(`rect') ///
 		men(`=string(`gsexlab1',"%7.0fc")') women(`=string(`gsexlab2',"%7.0fc")') ///
 		boot(`boottext') base(`base')
 end
@@ -845,11 +845,11 @@ program graphpiramide
 		graphregion(margin(zero)) aspectratio(, placement(left))
 
 	graph combine H`varlist' M`varlist', name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)', replace) ycommon ///
-		///title("{bf:`title' por sexo, edad y `titleover'}") subtitle("$pais") ///
+		title("{bf:`title' por sexo, edad y `titleover'}") subtitle("$pais") ///
 		///title("`title' by sex, age and `titleover'") ///
 		caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5. Fecha: `c(current_date)', `c(current_time)'.}") ///
 		/*caption("{it: Source: Own estimations.`boottext'}")*/ ///
-		/*note(`"{bf:Nota}: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n de `title' en cada grupo."')*/ ///
+		note(`"{bf:Nota}: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n de `title' en cada grupo."') ///
 		/*note(`"{bf:Note}: Percentages inside parenthesis represent the concentration of `title' in each group."')*/
 
 	graph export `"`c(sysdir_personal)'/users/$pais/$id/graphs/`varlist'_`titleover'.eps"', replace name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)')

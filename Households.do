@@ -49,18 +49,18 @@ if `1' == 2012 {
 	local udis = 4.776797282  							// Promedio de valor de UDIS de enero a diciembre 2014
 	local smdf = 62.33									// Zona A. 2012
 }
-timer on 90
+timer on 6
 local enighanio = `1'
 
 capture log close
 capture mkdir "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/"
-*log using "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/households.smcl", replace
+log using "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/households.smcl", replace
 
 
 **************************************
 *** A.1 Macros: Cuentas Nacionales ***
 **************************************
-SCN, anio(`enighanio')
+noisily SCN, anio(`enighanio')
 local PIBSCN = scalar(PIB)
 local RemSal = scalar(RemSal)
 local SSEmpleadores = scalar(SSEmpleadores)
@@ -73,9 +73,11 @@ local ImpNetProductos = scalar(ImpNetProductos)
 local ExNOpSoc = scalar(ExNOpSoc)
 local ExNOpHog = scalar(ExNOpHog)
 local MixKN = scalar(MixKN)
+
 local ROWRem = scalar(ROWRem)
 local ROWTrans = scalar(ROWTrans)
 local ROWProp = scalar(ROWProp)
+
 local ComprasN = scalar(ComprasN)
 local ConCapFij = scalar(ConCapFij)
 local ConGob = scalar(ConGob)
@@ -99,7 +101,7 @@ local SNAAlojamiento = scalar(Alojamiento)
 ***********************
 *** A.2 Macros: PEF ***
 ***********************
-PEF, anio(`enighanio') by(desc_funcion)
+noisily PEF, anio(`enighanio') by(desc_funcion)
 local Cuotas_ISSSTE = r(Cuotas_ISSSTE)
 
 PEF if transf_gf == 0 & ramo != -1 & (substr(string(objeto),1,2) == "45" ///
@@ -123,10 +125,10 @@ local PenBienestar = r(Pensi_c_o__n_Bienestar)
 ***********************
 *** A.3 Macros: LIF ***
 ***********************
-LIF, anio(`enighanio')
-local ISRSalarios = r(ISR)*(760552.9/1664949.1)					// Informe Trimestral SHCP (2018-IV).
-local ISRFisicas = r(ISR)*(43683.5/1664949.1)					// Informe Trimestral SHCP (2018-IV).
-local ISRMorales = r(ISR)*(809833.5/1664949.1)					// Informe Trimestral SHCP (2018-IV).
+noisily LIF, anio(`enighanio')
+local ISRSalarios = r(ISR_PF)*(760552.9/(760552.9+43683.5))					// Informe Trimestral SHCP (2018-IV).
+local ISRFisicas = r(ISR_PF)*(43683.5/(760552.9+43683.5))					// Informe Trimestral SHCP (2018-IV).
+local ISRMorales = r(ISR_PM)												// Informe Trimestral SHCP (2018-IV).
 local CuotasIMSS = r(Cuotas_IMSS)
 local IMSSpropio = r(IMSS)-`CuotasIMSS'
 local ISSSTEpropio = r(ISSSTE)
@@ -176,19 +178,20 @@ else {
 
 
 
+
 *********************************
 *** B. Micro 1. ENIGH. Gastos ***
 *********************************
 capture confirm file "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/deducciones.dta"
-if _rc != 0 {
-	run Expenditure`=subinstr("${pais}"," ","",.)'.do `enighanio'
-}
+*if _rc != 0 {
+	noisily run Expenditure`=subinstr("${pais}"," ","",.)'.do `enighanio'
+*}
 
 
 ***********************************
 *** B. Micro 2. ENIGH. Ingresos ***
 ***********************************
-noisily di _newline(3) in g "{bf:INGRESOS DE LOS HOGARES: " in y "`enigh' `enighanio'}"
+noisily di _newline(2) in g _dup(20) "." "{bf:  Ingresos de los hogares " in y "`enigh' `enighanio'" "  }" in g _dup(20) "."
 use "`c(sysdir_site)'../basesCIEP/INEGI/`enigh'/`enighanio'/ingresos.dta", clear
 merge m:1 (`hogar') using "`c(sysdir_site)'../basesCIEP/INEGI/`enigh'/`enighanio'/concentrado.dta", ///
 	keepusing(factor tot_integ) keep(matched)
@@ -217,6 +220,7 @@ egen double ing_unico = rsum(ing_1 ing_2 ing_3 ing_4 ing_5 ing_6)
 g id_trabajo = "1" if clave >= "P001" & clave <= "P013"				// Ingresos del trabajo principal
 replace id_trabajo = "2" if clave >= "P014" & clave <= "P020"		// Ingresos del trabajo secundario
 replace id_trabajo = "0" if id_trabajo == ""						// Ingresos ajenos al trabajo
+
 
 
 
@@ -1121,7 +1125,8 @@ tempname AnnInc
 matrix `AnnInc' = r(StatTotal)
 
 // ENIGH As Is //
-noisily di _newline _col(04) in g "{bf:Paso 0. Ingresos " ///
+noisily di _newline(2) _col(04) in g "{bf:Paso 0: `enigh' vs. SCN}"
+noisily di _newline _col(04) in g "{bf:0.1 Producto Interno Neto" ///
 	_col(44) in g "(Gini)" ///
 	_col(57) in g %7s "`enigh'" ///
 	_col(66) %7s "SCN" in g ///
@@ -1877,7 +1882,7 @@ if "`altimir'" == "yes" {
 		replace `k' = `k'*`TaltimirSal'
 	}
 
-	foreach k of varlist *_agri *_honor *_empre *_mixt* {
+	foreach k of varlist *_agri *_honor *_empre *_mixto* {
 		replace `k' = `k'*`TaltimirSelf'
 	}
 
@@ -2103,14 +2108,16 @@ end
 
 * Impuestos *
 Distribucion ImpNetProduccionL_subor, relativo(ing_subor) ///
-	macro(`=`ImpNetProduccionL'*(`RemSal'+`SSEmpleadores'+`SSImputada')/(`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'+`MixKN')')
+	macro(`=`ImpNetProduccionL'*(`RemSal'+`SSEmpleadores'+`SSImputada')/(`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL')')
 Distribucion ImpNetProduccionL_mixL, relativo(ing_mixtoL) ///
-	macro(`=`ImpNetProduccionL'*(`MixL'+`MixKN')/(`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'+`MixKN')')
+	macro(`=`ImpNetProduccionL'*(`MixL')/(`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL')')
 
 Distribucion ImpNetProduccionK_mixK, relativo(ing_mixtoK) ///
 	macro(`=`ImpNetProduccionK'*(`MixKN')/(`MixKN'+`ExNOpSoc'+`ExNOpHog')')
+
 Distribucion ImpNetProduccionK_soc, relativo(ing_capital) ///
 	macro(`=`ImpNetProduccionK'*(`ExNOpSoc')/(`MixKN'+`ExNOpSoc'+`ExNOpHog')')
+
 Distribucion ImpNetProduccionK_hog, relativo(ing_estim_alqu) ///
 	macro(`=`ImpNetProduccionK'*(`ExNOpHog')/(`MixKN'+`ExNOpSoc'+`ExNOpHog')')
 
@@ -2126,7 +2133,8 @@ Distribucion gasto_anualGobierno, relativo(factor) macro(`ConGob')
 
 Distribucion ing_capitalROW, relativo(ing_capital) macro(`ROWProp')
 Distribucion ing_suborROW, relativo(ing_subor) macro(`ROWRem')
-	
+
+
 * Ingresos finales *
 replace ing_subor = ing_subor + ImpNetProduccionL_subor
 
@@ -2168,42 +2176,42 @@ noisily di _newline(2) _col(04) in g "{bf:Paso 4: Factores de escala" ///
 	_col(66) %7s "Macro" in g ///
 	_col(77) %7s "Factor" "}"
 noisily di ///
-	_col(04) in g "(+) Remun. de asal. + CSS + Imp. Producc" ///
+	_col(04) in g "(+) Rem. de asal. + CSS + Imp. Producc" ///
 	_col(44) in y "(" %5.3fc `gini_ing_subor' ")" ///
 	_col(57) in y %7.3fc `ALTIMIR'[1,1]/`PIBSCN'*100 ///
-	_col(66) in y %7.3fc (`RemSal'+`SSEmpleadores'+`SSImputada'+`ImpNetProduccionL'*(`RemSal'+`SSEmpleadores'+`SSImputada')/(`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'+`MixKN'))/`PIBSCN'*100 ///
-	_col(77) in y %7.1fc `TaltimirSal'
+	_col(66) in y %7.3fc (`RemSal'+`SSEmpleadores'+`SSImputada'+`ImpNetProduccionL'*(`RemSal'+`SSEmpleadores'+`SSImputada')/(`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'))/`PIBSCN'*100 ///
+	_col(77) in y %7.3fc `TaltimirSal'
 noisily di ///
 	_col(04) in g "(+) Ingreso mixto + Impuestos" ///
 	_col(44) in y "(" %5.3fc `gini_ing_mixto' ")" ///
 	_col(57) in y %7.3fc `ALTIMIR'[1,2]/`PIBSCN'*100 ///
-	_col(66) in y %7.3fc (`MixL'+`MixKN'+`ImpNetProduccionL'*(`MixL'+`MixKN')/(`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'+`MixKN')+`ImpNetProduccionK'*(`MixKN')/(`MixKN'+`ExNOpSoc'+`ExNOpHog')+`ImpNetProductos'*(`MixKN')/(`MixKN'+`ExNOpSoc'+`ExNOpHog'))/`PIBSCN'*100 ///
-	_col(77) in y %7.1fc `TaltimirSelf'
+	_col(66) in y %7.3fc (`MixL'+`MixKN'+`ImpNetProduccionL'*(`MixL')/(`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL')+`ImpNetProduccionK'*(`MixKN')/(`MixKN'+`ExNOpSoc'+`ExNOpHog')+`ImpNetProductos'*(`MixKN')/(`MixKN'+`ExNOpSoc'+`ExNOpHog'))/`PIBSCN'*100 ///
+	_col(77) in y %7.3fc `TaltimirSelf'
 noisily di ///
 	_col(04) in g "(+) Sociedades e ISFLSH + Impuestos" ///
 	_col(44) in y "(" %5.3fc `gini_ing_capital' ")" ///
 	_col(57) in y %7.3fc `ALTIMIR'[1,3]/`PIBSCN'*100 ///
 	_col(66) in y %7.3fc (`ExNOpSoc'+`ImpNetProduccionK'*(`ExNOpSoc')/(`MixKN'+`ExNOpSoc'+`ExNOpHog')+`ImpNetProductos'*(`ExNOpSoc')/(`MixKN'+`ExNOpSoc'+`ExNOpHog'))/`PIBSCN'*100 ///
-	_col(77) in y %7.1fc `TaltimirCap'
+	_col(77) in y %7.3fc `TaltimirCap'
 noisily di ///
 	_col(04) in g "(+) Alquiler imputado + Impuestos" ///
 	_col(44) in y "(" %5.3fc `gini_ing_estim_alqu' ")" ///
 	_col(57) in y %7.3fc `ALTIMIR'[1,4]/`PIBSCN'*100 ///
 	_col(66) in y %7.3fc (`ExNOpHog'+`ImpNetProduccionK'*(`ExNOpHog')/(`MixKN'+`ExNOpSoc'+`ExNOpHog')+`ImpNetProductos'*(`ExNOpHog')/(`MixKN'+`ExNOpSoc'+`ExNOpHog'))/`PIBSCN'*100 ///
-	_col(77) in y %7.1fc `TaltimirHouse'
+	_col(77) in y %7.3fc `TaltimirHouse'
 noisily di in g _dup(83) "-"
 noisily di ///
 	_col(04) in g "(=) Producto Interno Neto" ///
 	_col(44) in y "(" %5.3fc `gini_ing_bruto_tot' ")" ///
 	_col(57) in y %7.3fc (`ALTIMIR'[1,1]+`ALTIMIR'[1,2]+`ALTIMIR'[1,3]+`ALTIMIR'[1,4])/`PIBSCN'*100 ///
 	_col(66) in y %7.3fc (`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'+`MixKN'+`ExNOpSoc'+`ExNOpHog'+`ImpNetProduccionL'+`ImpNetProduccionK'+`ImpNetProductos')/`PIBSCN'*100 ///
-	_col(77) in y %7.1fc ((`ALTIMIR'[1,1]+`ALTIMIR'[1,2]+`ALTIMIR'[1,3]+`ALTIMIR'[1,4])/(`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'+`MixKN'+`ExNOpSoc'+`ExNOpHog'+`ImpNetProduccionL'+`ImpNetProduccionK'+`ImpNetProductos'))^(-1)
+	_col(77) in y %7.3fc ((`ALTIMIR'[1,1]+`ALTIMIR'[1,2]+`ALTIMIR'[1,3]+`ALTIMIR'[1,4])/(`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'+`MixKN'+`ExNOpSoc'+`ExNOpHog'+`ImpNetProduccionL'+`ImpNetProduccionK'+`ImpNetProductos'))^(-1)
 noisily di ///
 	_col(04) in g "(+) Depreciaci{c o'}n" ///
 	_col(44) in y "(" %5.3fc `gini_gasto_anualDepreciacion' ")" ///
 	_col(57) in y %7.3fc `ALTIMIR'[1,5]/`PIBSCN'*100 ///
 	_col(66) in y %7.3fc (`ConCapFij')/`PIBSCN'*100 ///
-	_col(77) in y %7.1fc (`ALTIMIR'[1,5]/`ConCapFij')^(-1)
+	_col(77) in y %7.3fc (`ALTIMIR'[1,5]/`ConCapFij')^(-1)
 noisily di in g _dup(83) "-"
 noisily di ///
 	_col(04) in g "(=) Producto Interno Bruto" ///
@@ -2225,12 +2233,16 @@ g double ing_decil_pc = ing_decil_hog/`tot_integ'
 
 * Deciles *
 xtile decil = ing_decil_pc [pw=factor_cola], n(10)
+xtile quintil = ing_decil_pc [pw=factor_cola], n(5)
 xtile percentil = ing_decil_pc [pw=factor_cola], n(100)
 xtile decil_hog = ing_decil_hog [pw=factor_cola], n(10)
 
 * Label values *
 label define decil 1 "I" 2 "II" 3 "III" 4 "IV" 5 "V" 6 "VI" 7 "VII" 8 "VIII" 9 "IX" 10 "X"
 label values decil decil
+
+label define quintil 1 "I" 2 "II" 3 "III" 4 "IV" 5 "V"
+label values quintil quintil
 
 destring sexo, replace
 label define sexo 1 "Hombres" 2 "Mujeres"
@@ -2253,6 +2265,18 @@ label values formalmax formalidad
 merge 1:1 (`hogar' numren) using "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/expenditure.dta", nogen
 Distribucion gasto_anualComprasN, relativo(TOTgasto_anual) macro(`ComprasN')
 
+* Sector p{c u'}blico *
+Distribucion ing_cap_imss, relativo(factor) macro(`IMSSpropio')
+Distribucion ing_cap_issste, relativo(factor) macro(`ISSSTEpropio')
+Distribucion ing_cap_cfe, relativo(factor) macro(`CFEpropio')
+Distribucion ing_cap_pemex, relativo(factor) macro(`Pemexpropio')
+Distribucion ing_cap_fmp, relativo(factor) macro(`FMP')
+Distribucion ing_cap_mejoras, relativo(factor) macro(`Mejoras')
+Distribucion ing_cap_derechos, relativo(factor) macro(`Derechos')
+Distribucion ing_cap_productos, relativo(factor) macro(`Productos')
+Distribucion ing_cap_aprovecha, relativo(factor) macro(`Aprovechamientos')
+Distribucion ing_cap_otrostrib, relativo(factor) macro(`OtrosTributarios')
+Distribucion ing_cap_otrasempr, relativo(factor) macro(`OtrasEmpresas')
 
 
 
@@ -2262,35 +2286,46 @@ Distribucion gasto_anualComprasN, relativo(TOTgasto_anual) macro(`ComprasN')
 capture g folio = folioviv + foliohog
 
 
-** (+) Ingreso **
-egen ingreso = rsum(ISR__asalariados ISR__PF ISR__PM cuotasTP) if formal != 0
-replace ingreso = 0 if ingreso == .
-Distribucion Ingreso, relativo(ingreso) macro(`=`alingreso'-`ISRMorales'')
-label var Ingreso "Impuestos al ingreso"
-Simulador Ingreso [fw=factor], base("ENIGH 2018") ///
-	boot(1) reboot graphs
+** Ingresos laborales **
+egen double Yl = rsum(ing_subor ing_mixtoL)
+label var Yl "Ingreso laboral (Sankey)"
+
+egen double Yk = rsum(ing_capital ing_mixtoK ing_estim_alqu gasto_anualDepreciacion)
+replace Yk = Yk - (ing_cap_imss + ing_cap_issste + ing_cap_cfe + ///
+	ing_cap_pemex + ing_cap_fmp + ing_cap_mejoras + ing_cap_derechos + ///
+	ing_cap_productos + ing_cap_aprovecha + ///
+	ing_cap_otrostrib + ing_cap_otrasempr)
+label var Yk "Ingreso de capital (Sankey)"
 
 
-** (+) Consumo **
+** (+) Impuestos al ingreso laboral **
+egen laboral = rsum(ISR__asalariados ISR__PF cuotasTP) if formal != 0
+replace laboral = 0 if laboral == .
+Distribucion Laboral, relativo(laboral) macro(`=`ISRSalarios'+`ISRFisicas'+`CuotasIMSS'')
+label var Laboral "Impuestos al ingreso laboral"
+Simulador Laboral [fw=factor_cola], base("ENIGH 2018") boot(1) reboot graphs
+
+
+** (+) Impuestos al consumo **
 egen consumo = rsum(TOTIVA TOTIEPS)
 replace consumo = 0 if consumo == .
 Distribucion Consumo, relativo(consumo) macro(`alconsumo')
 label var Consumo "Impuestos al consumo"
-Simulador Consumo [fw=factor], base("ENIGH 2018") ///
+Simulador Consumo [fw=factor_cola], base("ENIGH 2018") ///
 	boot(1) reboot graphs
 
 
-** (+) Ingresos de capital **
+** (+) Impuestos e ingresos de capital **
 Distribucion Otros, relativo(factor) macro(`=`otrosing'+`ISRMorales'')
 label var Otros "Ingresos de capital"
-Simulador Otros [fw=factor], base("ENIGH 2018") ///
+Simulador Otros [fw=factor_cola], base("ENIGH 2018") ///
 	boot(1) reboot graphs
 
 
 ** (-) Pensiones **
 Distribucion Pension, relativo(ing_jubila) macro(`Pensiones')
 label var Pension "Pensiones"
-Simulador Pension [fw=factor], base("ENIGH 2018") ///
+Simulador Pension [fw=factor_cola], base("ENIGH 2018") ///
 	boot(1) reboot graphs
 
 
@@ -2319,7 +2354,7 @@ replace educacion = 0 if educacion == .
 
 Distribucion Educacion, relativo(educacion) macro(`Educacion')
 label var Educacion "Educaci{c o'}n"
-Simulador Educacion [fw=factor], base("ENIGH 2018") ///
+*Simulador Educacion [fw=factor], base("ENIGH 2018") ///
 	boot(1) reboot graphs
 
 
@@ -2347,15 +2382,22 @@ replace salud = 3.36 if edad >= 95
 
 Distribucion Salud, relativo(salud) macro(`Salud')
 label var Salud "Salud"
-Simulador Salud [fw=factor], base("ENIGH 2018") ///
+Simulador Salud [fw=factor_cola], base("ENIGH 2018") ///
 	boot(1) reboot graphs
 
 
 ** (-) Otros gastos **
-Distribucion OtrosGas, relativo(factor) macro(`OtrosGas')
+Distribucion OtrosGas, relativo(factor_cola) macro(`OtrosGas')
 label var OtrosGas "Otros gastos"
-Simulador OtrosGas [fw=factor], base("ENIGH 2018") ///
+Simulador OtrosGas [fw=factor_cola], base("ENIGH 2018") ///
 	boot(1) reboot graphs
+
+
+** (-) Ingreso B{c a'}sico **
+g IngBasico = 0.1
+Simulador IngBasico [fw=factor_cola], base("ENIGH 2018") ///
+	boot(1) reboot graphs
+label var IngBasico "Ingreso b{c a'}sico"
 
 
 
@@ -2373,7 +2415,7 @@ if `c(version)' == 15.1 {
 else {
 	save "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/households.dta", replace
 }
-timer off 90
-timer list 90
-*noisily di _newline in g "{bf:Tiempo:} " in y round(`=r(t90)/r(nt90)',.1) in g " segs."
-*log close
+timer off 6
+timer list 6
+noisily di _newline in g "{bf:Tiempo:} " in y round(`=r(t6)/r(nt6)',.1) in g " segs."
+log close

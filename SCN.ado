@@ -1,20 +1,24 @@
+**************************************************
 ***               ACTUALIZACIÓN                *** 
 *** 1) abrir archivos .iqy en Excel de Windows ***
 *** 2) guardar y reemplazar .xls dentro de     ***
 ***      ./TemplateCIEP/basesCIEP/INEGI/SCN/   ***
 *** 3) correr SCN[.ado] con opción "update"    ***
+**************************************************
+
+
 
 **** Sistema de Cuentas Nacionales ****
 program define SCN, return
 quietly {
-	timer on 2
+	timer on 3
 
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
 	syntax [, ANIO(int `aniovp') Graphs Update Discount(int 3)]
 	
-	noisily di _newline(2) in g _dup(20) "·" "{bf:  Sistema de Cuentas Nacionales " in y `anio' "  }" in g _dup(20) "·"
+	noisily di _newline(2) in g _dup(20) "." "{bf:  Sistema de Cuentas Nacionales " in y `anio' "  }" in g _dup(20) "."
 	scalar aniovp = `aniovp'
 
 
@@ -94,7 +98,7 @@ quietly {
 
 		** V.3. Remuneraciones a asalariados **
 		rename Bg RemSalSS						// Remuneraciones a asalariados (total)
-		rename Cg RemSal						// Remuneraciones a asalariados (sin contribuciones, con contribuciones imputadas)
+		rename Cg RemSal						// Remuneraciones a asalariados (sin contribuciones efectivas, con contribuciones imputadas)
 		rename Dg SSEmpleadores					// Contribuciones a la seguridad social, efectivas
 
 		** V.4. Impuesto sobre los productos, producci{c o'}n e importaciones **
@@ -333,11 +337,15 @@ quietly {
 	** 1.3. Construir cuentas (C) **
 
 	** C.1. Ingreso mixto **
-	g double MixL = IngMixto*2/3			// NTA metodología
+	g double MixN = IngMixto-DepMix
+	format MixN %20.0fc
+	label var MixN "Ingreso mixto neto"
+	
+	g double MixL = MixN*2/3 //												<-- NTA metodología
 	format MixL %20.0fc
 	label var MixL "Ingreso mixto (laboral)"
 
-	g double MixK = IngMixto*1/3			// NTA metodologí­a
+	g double MixK = MixN*1/3 + DepMix //												<-- NTA metodologí­a
 	format MixK %20.0fc
 	label var MixK "Ingreso mixto (capital)"
 
@@ -345,10 +353,37 @@ quietly {
 	format MixKN %20.0fc
 	label var MixKN "Ingreso mixto neto (capital)"
 
-	** C.10. Ingreso de capital **
+	** C.2. Depreciation **
+	g double DepNoFin = ExBOpNoFin - ExNOpNoFin
+	g double DepFin = ExBOpFin - ExNOpFin
+	g double DepISFLSH = ExBOpISFLSH - ExNOpISFLSH
+	g double DepHog = ExBOpHog - ExNOpHog
+	g double DepGob = ExBOpGob - ExNOpGob
+
+	** C.3. Ingreso de capital neto **
+	g double ExNOpSoc = ExBOpNoFin - DepNoFin + ExBOpFin - DepFin + ExBOpISFLSH - DepISFLSH //+ ROW
+	format ExNOpSoc %20.0fc
+	label var ExNOpSoc "Sociedades e ISFLSH"
+
+	** C.4 Ingreso de capital **
 	g double CapInc = ExBOp - MixL - ConCapFij //- ROW
 	format CapInc %20.0fc
 	label var CapInc "Ingreso de capital"
+
+	g double Capital = ExNOpSoc + ExNOpHog + ExNOpGob + MixKN
+	format Capital %20.0fc
+	label var Capital "Ingreso de capital"
+
+	g double AhorroN = AhorroB - ConCapFij
+	format AhorroN %20.0fc
+
+	g double CGob = IngNacDisp - ConHog - AhorroN - ComprasN
+	format CGob %20.0fc
+
+	g double DifGob = CGob - ConGob
+	format DifGob %20.0fc
+
+	drop if RemSalSS == .
 
 	** C.5. Impuestos Netos **
 	g double ImpNetProductos = ImpProductos + SubProductos
@@ -359,11 +394,11 @@ quietly {
 	format ImpNetProduccion %20.0fc
 	label var ImpNetProduccion "Impuestos netos a la producci{c o'}n e importaciones"
 
-	g double ImpNetProduccionL = ImpNetProduccion*(RemSal + MixL)/(RemSal + MixL + CapInc)
+	g double ImpNetProduccionL = ImpNetProduccion*(RemSal + SSEmpleadores + MixL)/(RemSal + SSEmpleadores + MixL + MixKN + ExNOpSoc + ExNOpHog)
 	format ImpNetProduccionL %20.0fc
 	label var ImpNetProduccion "Impuestos netos a la producci{c o'}n e importaciones (laboral)"
 
-	g double ImpNetProduccionK = ImpNetProduccion*CapInc/(RemSal + MixL + CapInc)
+	g double ImpNetProduccionK = ImpNetProduccion*(MixKN + ExNOpSoc + ExNOpHog)/(RemSal + SSEmpleadores + MixL + MixKN + ExNOpSoc + ExNOpHog)
 	format ImpNetProduccionK %20.0fc
 	label var ImpNetProduccionK "Impuestos netos a la producci{c o'}n e importaciones (capital)"
 
@@ -404,34 +439,6 @@ quietly {
 	g double Yl = RemSal + MixL + SSImputada + SSEmpleadores + ImpNetProduccionL
 	format Yl %20.0fc
 	label var Yl "Ingreso laboral"
-
-	** C.12. Depreciation **
-	g double DepNoFin = ExBOpNoFin - ExNOpNoFin
-	g double DepFin = ExBOpFin - ExNOpFin
-	g double DepISFLSH = ExBOpISFLSH - ExNOpISFLSH
-	g double DepHog = ExBOpHog - ExNOpHog
-	g double DepGob = ExBOpGob - ExNOpGob
-
-	** C.13. Ingreso de capital neto **
-	g double ExNOpSoc = ExBOpNoFin - DepNoFin + ExBOpFin - DepFin + ExBOpISFLSH - DepISFLSH //+ ROW
-	format ExNOpSoc %20.0fc
-	label var ExNOpSoc "Sociedades e ISFLSH"
-
-	** C.2 Ingreso de capital **
-	g double Capital = ExNOpSoc + ExNOpHog + ExNOpGob + MixKN
-	format Capital %20.0fc
-	label var Capital "Ingreso de capital"
-
-	g double AhorroN = AhorroB - ConCapFij
-	format AhorroN %20.0fc
-
-	g double CGob = IngNacDisp - ConHog - AhorroN - ComprasN
-	format CGob %20.0fc
-
-	g double DifGob = CGob - ConGob
-	format DifGob %20.0fc
-
-	drop if RemSalSS == .
 
 	* Ingresos de capital con impuestos *
 	g double CapIncImp = Capital + ImpNetProduccionK + ImpNetProductos
@@ -600,7 +607,7 @@ quietly {
 			(area `Depreciacion' anio if anio > `latest' & anio > `anio_exo', color("255 129 0")) ///
 			(area `Capital' anio if anio > `latest' & anio > `anio_exo', color("255 189 0")) ///
 			(area `Laboral' anio if anio > `latest' & anio > `anio_exo', color("39 97 47")), ///
-			/// title("{bf:PIB: Cuenta de Generaci{c o'}n del Ingreso}") ///
+			title("{bf:Generaci{c o'}n del Ingreso}") ///
 			///caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
 			legend(cols(3) order(1 2 3)) ///
 			xtitle("") ///
@@ -722,7 +729,7 @@ quietly {
 			(area `ConGob' anio if anio > `latest' & anio > `anio_exo', color("0 151 201")) ///
 			(area `ConHog' anio if anio > `latest' & anio > `anio_exo', color("186 34 64")) ///
 			(area `ComprasN' anio if anio > `latest' & anio > `anio_exo', color("53 200 71")), ///
-			/// title("{bf:Utilizaci{c o'}n del ingreso}") ///
+			title("{bf:Utilizaci{c o'}n del ingreso}") ///
 			///caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
 			legend(cols(4) order(1 2 3 4)) ///
 			xtitle("") ///
@@ -1090,8 +1097,8 @@ quietly {
 		_col(44) in y %20.0fc PIB[`obs'] ///
 		_col(66) in y %7.3fc PIB[`obs']/PIB[`obs']*100 "}"
 
-	timer off 2
-	timer list 2
-	noisily di _newline in g "Tiempo: " in y round(`=r(t2)/r(nt2)',.1) in g " segs."
+	timer off 3
+	timer list 3
+	noisily di _newline in g "Tiempo: " in y round(`=r(t3)/r(nt3)',.1) in g " segs."
 }
 end
