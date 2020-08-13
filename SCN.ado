@@ -3,7 +3,7 @@
 *** 1) abrir archivos .iqy en Excel de Windows ***
 *** 2) guardar y reemplazar .xls dentro de     ***
 ***      ./TemplateCIEP/basesCIEP/INEGI/SCN/   ***
-*** 3) correr SCN[.ado] con opción "update"    ***
+*** 3) correr SCN[.ado] con opci{c o'}n "update"    ***
 **************************************************
 
 
@@ -16,7 +16,7 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
-	syntax [, ANIO(int `aniovp') Graphs Update Discount(int 3)]
+	syntax [, ANIO(int `aniovp') NOGraphs Update Discount(int 3)]
 	
 	noisily di _newline(2) in g _dup(20) "." "{bf:  Sistema de Cuentas Nacionales " in y `anio' "  }" in g _dup(20) "."
 	scalar aniovp = `aniovp'
@@ -264,7 +264,7 @@ quietly {
 	}
 
 	** D.8. PIBDeflactor **
-	PIBDeflactor, anio(`anio') `update' discount(`discount')
+	PIBDeflactor, anio(`anio') `update' discount(`discount') nographs
 	tempfile basepib
 	save `basepib'
 
@@ -309,9 +309,9 @@ quietly {
 		}
 	}
 
-	/* Calcula los valores futuros de las variables a partir de la última 
-	observación y los valores anteriores de 2002 a 1993 (utiliza la tasa de 
-	crecimiento del PIB en términos reales */
+	/* Calcula los valores futuros de las variables a partir de la {c u'}ltima 
+	observaci{c o'}n y los valores anteriores de 2002 a 1993 (utiliza la tasa de 
+	crecimiento del PIB en t{c e'}rminos reales */
 	foreach k of varlist RemSalSS-DepMix {
 		replace `k' = L.`k'*pibY/L.pibY if `k' == .
 		forvalues j = 2002(-1)1993 {
@@ -341,11 +341,11 @@ quietly {
 	format MixN %20.0fc
 	label var MixN "Ingreso mixto neto"
 	
-	g double MixL = MixN*2/3 //												<-- NTA metodología
+	g double MixL = MixN*2/3 //												<-- NTA metodolog{c i'}a
 	format MixL %20.0fc
 	label var MixL "Ingreso mixto (laboral)"
 
-	g double MixK = MixN*1/3 + DepMix //												<-- NTA metodologí­a
+	g double MixK = MixN*1/3 + DepMix //												<-- NTA metodolog{c i'}­a
 	format MixK %20.0fc
 	label var MixK "Ingreso mixto (capital)"
 
@@ -460,8 +460,25 @@ quietly {
 	}
 
 	** R.2. Display **
+	
+	* Generaci{c o'}n de la producci{c o'}n **
+	noisily di _newline in g "{bf: A. Cuenta: " in y "generaci{c o'}n del ingreso" in g ///
+		_col(44) in g %20s "MXN" ///
+		_col(66) %7s "% PIB" "}" 
+	noisily di in g "  (+) Producci{c o'}n bruta" ///
+		_col(44) in y %20.0fc Bs[`obs'] ///
+		_col(66) in y %7.3fc Bs[`obs']/PIB[`obs']*100
+	noisily di in g "  (-) Consumo intermedio" ///
+		_col(44) in y %20.0fc SSEmpleadores[`obs']+SSImputada[`obs'] ///
+		_col(66) in y %7.3fc (SSEmpleadores[`obs']+SSImputada[`obs'])/PIB[`obs']*100
+	noisily di in g _dup(72) "-"
+	noisily di in g "{bf:  (=) Ingresos laborales" ///
+		_col(44) in y %20.0fc Yl[`obs'] ///
+		_col(66) in y %7.3fc Yl[`obs']/PIB[`obs']*100 "}"
 
-	* Generación de ingresos *
+
+
+	* Generaci{c o'}n de ingresos *
 	noisily di _newline in g "{bf: A. Cuenta: " in y "generaci{c o'}n del ingreso" in g ///
 		_col(44) in g %20s "MXN" ///
 		_col(66) %7s "% PIB" "}" 
@@ -583,7 +600,7 @@ quietly {
 	scalar ImpNetProduccionKPIB = ImpNetProduccionK[`obs']/PIB[`obs']*100
 
 	** R.3. Graph **
-	if "$graphs" == "on" | "`graphs'" == "graphs" {
+	if "`nographs'" != "nographs" {
 		tempvar Laboral Capital Depreciacion
 		g `Laboral' = (Yl)/deflator/1000000000000
 		label var `Laboral' "Ingresos laborales"
@@ -607,8 +624,8 @@ quietly {
 			(area `Depreciacion' anio if anio > `latest' & anio > `anio_exo', color("255 129 0")) ///
 			(area `Capital' anio if anio > `latest' & anio > `anio_exo', color("255 189 0")) ///
 			(area `Laboral' anio if anio > `latest' & anio > `anio_exo', color("39 97 47")), ///
-			title("{bf:Generaci{c o'}n del Ingreso}") ///
-			///caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
+			title("{bf:Generaci{c o'}n} del Producto Interno Bruto") ///
+			caption("{it:Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, BIE.}") ///
 			legend(cols(3) order(1 2 3)) ///
 			xtitle("") ///
 			text(`=`Depreciacion'[1]*.05' `=`latest'+(`anio_exo'-`latest')/2' "{bf:Est.}", place(n) color(white)) ///
@@ -616,9 +633,9 @@ quietly {
 			text(`=`Depreciacion'[1]*.05' `=`anio_exo'+1.5' "{bf:Proyectado}", place(ne) color(white)) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
 			ylabel(0(5)`=ceil(`Depreciacion'[_N])', format(%20.0fc)) ///
-			ytitle(billones MXN `anio', height(8)) ///
-			yscale(range(0)) ///
-			note("{bf:{c U'}ltimo dato}: `anio_last'.") ///
+			ytitle(billones MXN `anio') ///
+			yscale(range(0)) xscale(range(1993)) ///
+			note("{bf:{c U'}ltimo dato reportado}: `anio_last'.") ///
 			name(gdp_generacion, replace)
 
 		capture confirm existence $export
@@ -627,7 +644,7 @@ quietly {
 		}
 	}
 
-	** R.5 Display (de la producción al ingreso) ***
+	** R.5 Display (de la producci{c o'}n al ingreso) ***
 	noisily di _newline in g "{bf: C. Cuenta: " in y "distribuci{c o'}n secundaria del ingreso" in g ///
 		_col(44) in g %20s "MXN" ///
 		_col(66) %7s "% PIB" "}" 
@@ -706,7 +723,7 @@ quietly {
 	scalar AhorroNPIB = AhorroN[`obs']/PIB[`obs']*100
 
 	** R.3. Graph **
-	if "$graphs" == "on" | "`graphs'" == "graphs" {
+	if "`nographs'" != "nographs" {
 		tempvar ConHog ConGob ComprasN AhorroN
 		g `ComprasN' = (ComprasN)/deflator/1000000000000
 		label var `ComprasN' "Compras netas"
@@ -729,8 +746,8 @@ quietly {
 			(area `ConGob' anio if anio > `latest' & anio > `anio_exo', color("0 151 201")) ///
 			(area `ConHog' anio if anio > `latest' & anio > `anio_exo', color("186 34 64")) ///
 			(area `ComprasN' anio if anio > `latest' & anio > `anio_exo', color("53 200 71")), ///
-			title("{bf:Utilizaci{c o'}n del ingreso}") ///
-			///caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
+			title("{bf:Utilizaci{c o'}n} del Ingreso Nacional Disponible") ///
+			caption("{it:Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, BIE.}") ///
 			legend(cols(4) order(1 2 3 4)) ///
 			xtitle("") ///
 			text(`=`AhorroN'[1]*.05' `=`latest'+(`anio_exo'-`latest')/2' "{bf:Est.}", place(n) color(white)) ///
@@ -738,9 +755,9 @@ quietly {
 			text(`=`AhorroN'[1]*.05' `=`anio_exo'+1.5' "{bf:Proyectado}", place(ne) color(white)) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
 			ylabel(0(5)`=ceil(`Depreciacion'[_N])', format(%20.0fc)) ///
-			ytitle(billones MXN `anio', height(8)) ///
-			yscale(range(0)) ///
-			note("{bf:{c U'}ltimo dato}: `anio_last'.") ///
+			ytitle(billones MXN `anio') ///
+			yscale(range(0)) xscale(range(1993)) ///
+			note("{bf:{c U'}ltimo dato reportado}: `anio_last'.") ///
 			name(gdp_utilizacion, replace)
 
 		capture confirm existence $export
@@ -1049,7 +1066,7 @@ quietly {
 	noisily di in g "  (+) Transportes, correos y almacen..." ///
 		_col(44) in y %20.0fc FHae[`obs'] ///
 		_col(66) in y %7.3fc FHae[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Información en medios masivos" ///
+	noisily di in g "  (+) Informaci{c o'}n en medios masivos" ///
 		_col(44) in y %20.0fc GOae[`obs'] ///
 		_col(66) in y %7.3fc GOae[`obs']/PIB[`obs']*100
 	noisily di in g "  (+) Servicios financieros y de seguridad" ///
@@ -1061,7 +1078,7 @@ quietly {
 	noisily di in g "  (+) Servicios profesionales..." ///
 		_col(44) in y %20.0fc ServProf[`obs'] ///
 		_col(66) in y %7.3fc ServProf[`obs']/PIB[`obs']*100
-	noisily di in g "  (+) Dirección de corporativos y empresas" ///
+	noisily di in g "  (+) Direcci{c o'}n de corporativos y empresas" ///
 		_col(44) in y %20.0fc IQae[`obs'] ///
 		_col(66) in y %7.3fc IQae[`obs']/PIB[`obs']*100
 	noisily di in g "  (+) Servicios de apoyo a los negocios..." ///

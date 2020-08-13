@@ -1,7 +1,7 @@
 **************
 *** SANKEY ***
 **************
-timer on 6
+timer on 9
 if "`1'" == "" {
 	local 1 = "decil"
 	local 2 = 2020
@@ -42,7 +42,7 @@ replace to = 4 in -1
 label define `1' 98 "Otros ingresos", add
 
 * Gasto total *
-noisily tabstat profile, stat(sum) f(%20.0fc) save
+tabstat profile, stat(sum) f(%20.0fc) save
 tempname ingtot
 matrix `ingtot' = r(StatTotal)
 
@@ -58,12 +58,20 @@ tabstat factor if edad >= 68, stat(sum) f(%20.0fc) save
 tempname pobpenbien
 matrix `pobpenbien' = r(StatTotal)
 
+tabstat factor, stat(sum) f(%20.0fc) save
+tempname pobtot
+matrix `pobtot' = r(StatTotal)
+
+
+replace OtrosGas = OtrosGas - Infra
+
 tabstat Pension Educacion Salud PenBienestar OtrosGas [fw=factor], stat(sum) f(%20.0fc) save
 tempname GAST 
 matrix `GAST' = r(StatTotal)
 
 collapse (sum) gas_Educacion=Educacion gas_Salud=Salud gas__Salarios_de_gobierno=Salarios ///
-	gas___Pensiones=Pension gas___Pension_Bienestar=PenBienestar gas____Ingreso_Basico=IngBasico [fw=factor], by(`1')
+	gas___Pensiones=Pension gas___Pension_Bienestar=PenBienestar gas____Ingreso_Basico=IngBasico ///
+	gas____Infraestructura=Infra [fw=factor], by(`1')
 
 levelsof `1', local(`1')
 foreach k of local `1' {
@@ -86,7 +94,7 @@ set obs `=_N+3'
 replace from = 97 in -1
 label define from 97 "Costo de la deuda", add
 
-replace profile = scalar(costodeu)/100*scalar(PIB) in -1
+replace profile = scalar(costodeu)*`pobtot'[1,1] in -1
 
 replace to = 11 in -1
 label define `1' 11 "Sistema financiero", add
@@ -95,7 +103,7 @@ label define `1' 11 "Sistema financiero", add
 replace from = 96 in -2
 label define from 96 "Otras Part y Aport", add
 
-replace profile = scalar(partapor)/100*scalar(PIB) in -2
+replace profile = scalar(partapor)*`pobtot'[1,1] in -2
 
 replace to = 12 in -2
 label define `1' 12 "Estados y municipios", add
@@ -104,13 +112,13 @@ label define `1' 12 "Estados y municipios", add
 replace from = 95 in -3
 label define from 95 "Otros gastos", add
 
-replace profile = (scalar(matesumi)+scalar(gastgene)+scalar(substran)+scalar(bienmueb)+scalar(obrapubl)+scalar(invefina))/100*scalar(PIB) in -3
+replace profile = (scalar(matesumi)+scalar(gastgene)+scalar(substran)+scalar(bienmueb)+scalar(invefina))*`pobtot'[1,1] in -3
 
 replace to = 13 in -3
 label define `1' 13 "No distribuibles", add
 
 * Gasto total *
-noisily tabstat profile, stat(sum) f(%20.0fc) save
+tabstat profile, stat(sum) f(%20.0fc) save
 tempname gastot
 matrix `gastot' = r(StatTotal)
 
@@ -183,6 +191,6 @@ save `eje3'
 ** Sankey **
 noisily SankeySum, anio(`2') name(`1') folder(SankeySF) a(`eje1') b(`eje2') c(`eje3') d(`eje4') 
 
-timer off 6
-timer list 6
-noisily di _newline in g "Tiempo: " in y round(`=r(t6)/r(nt6)',.1) in g " segs."
+timer off 9
+timer list 9
+noisily di _newline in g "Tiempo: " in y round(`=r(t9)/r(nt9)',.1) in g " segs."

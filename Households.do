@@ -83,7 +83,7 @@ local ConCapFij = scalar(ConCapFij)
 local ConGob = scalar(ConGob)
 
 * Ajustes Rentas y Servicios Profesionales *
-* ver documento: Tributación a ingresos por alquileres y servicios profesionales *
+* ver documento: Tributaci€n a ingresos por alquileres y servicios profesionales *
 * BID, SHCP, CIEP, 2018 *
 local ServProf = scalar(ServProf)
 local ConsMedi = scalar(ConsMedi)
@@ -120,6 +120,41 @@ local Pensiones = r(Pensiones)
 local Educacion = r(Educaci_c_o__n)
 local Salud = r(Salud)
 local PenBienestar = r(Pensi_c_o__n_Bienestar)
+
+PEF if capitulo == 6 & divGA != 3 & divGA != 7, anio(`enighanio') by(entidad)
+local Aguas = r(Aguascalientes)
+local BajaN = r(Baja_California)
+local BajaS = r(Baja_California_Sur)
+local Campe = r(Campeche)
+local Coahu = r(Coahuila)
+local Colim = r(Colima)
+local Chiap = r(Chiapas)
+local Chihu = r(Chihuahua)
+local Ciuda = r(Ciudad_de_M_c_e__xico)
+local Duran = r(Durango)
+local Guana = r(Guanajuato)
+local Guerr = r(Guerrero)
+local Hidal = r(Hidalgo)
+local Jalis = r(Jalisco)
+local Estad = r(Estado_de_M_c_e__xico)
+local Micho = r(Michoac_c_a__n)
+local Morel = r(Morelos)
+local Nayar = r(Nayarit)
+local Nuevo = r(Nuevo_Le_c_o__n)
+local Oaxac = r(Oaxaca)
+local Puebl = r(Puebla)
+local Quere = r(Quer_c_e__taro)
+local Quint = r(Quintana_Roo)
+local SanLu = r(San_Luis_Potos_c_i__)
+local Sinal = r(Sinaloa)
+local Sonor = r(Sonora)
+local Tabas = r(Tabasco)
+local Tamau = r(Tamaulipas)
+local Tlaxc = r(Tlaxcala)
+local Verac = r(Veracruz)
+local Yucat = r(Yucat_c_a__n)
+local Zacat = r(Zacatecas)
+local InfraT = r(StatTotal)
 
 
 ***********************
@@ -183,9 +218,9 @@ else {
 *** B. Micro 1. ENIGH. Gastos ***
 *********************************
 capture confirm file "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/deducciones.dta"
-*if _rc != 0 {
+if _rc != 0 {
 	noisily run Expenditure`=subinstr("${pais}"," ","",.)'.do `enighanio'
-*}
+}
 
 
 ***********************************
@@ -1460,31 +1495,32 @@ noisily di ///
 ** 7.2. Ingresos brutos trabajo subordinado **
 * Tarifa y Subsidio Empleo: Decreto publicado en el DOF el 7 de diciembre de 2009 y el 11 de diciembre de 2013. *
 *		Inferior	Superior	CF		Tasa		
-matrix ISR = 	(0.00,		5952.84,	0.0,		1.92  \ 	///	1
-		5952.85,	50524.92,	114.24,		6.40  \ 	///	2
-		50524.93,	88793.04,	2966.76,	10.88 \ 	///	3
-		88793.05,	103218.00,	7130.88,	16.00 \ 	///	4
-		103218.01,	123580.20,	9438.60,	17.92 \ 	///	5
-		123580.21,	249243.48,	13087.44,	21.36 \ 	///	6
-		249243.49,	392841.96,	39929.04,	23.52 \ 	///	7
-		392841.97,	750000.00, 	73703.40,	30.00 \ 	///	8
-		750000.01,	1000000.00,	180850.82,	32.00 \ 	///	9
-		1000000.01,	3000000.00,	260850.81,	34.00 \ 	///	10
-		3000000.01,	1E+14, 		940850.81,	35.00)		//	11
+*				Inferior	Superior	CF			Tasa		
+matrix	ISR	=	(0.00,		5952.84,	0.0,		1.92	\	///	1
+				5952.85,	50524.92,	114.24,		6.40	\ 	///	2
+				50524.93,	88793.04,	2966.76,	10.88	\ 	///	3
+				88793.05,	103218.00,	7130.88,	16.00	\ 	///	4
+				103218.01,	123580.20,	9438.60,	17.92	\ 	///	5
+				123580.21,	249243.48,	13087.44,	21.36	\ 	///	6
+				249243.49,	392841.96,	39929.04,	23.52	\ 	///	7
+				392841.97,	750000.00, 	73703.40,	30.00	\ 	///	8
+				750000.01,	1000000.00,	180850.82,	32.00	\ 	///	9
+				1000000.01,	3000000.00,	260850.81,	34.00	\ 	///	10
+				3000000.01,	1E+14, 		940850.81,	35.00)		//	11
 
-*		Inferior	Superior	Subsidio
-matrix SE = 	(0.00,		21227.52,	4884.24 \	///	1
-		21227.53,	23744.40,	4881.96 \	///	2
-		23744.41,	31840.56,	4318.08 \	///	3
-		31840.57,	41674.08,	4123.20 \	///	4
-		41674.09,	42454.44,	3723.48 \	///	5
-		42454.45,	53353.80,	3581.28 \	///	6
-		53353.81,	56606.16,	4250.76 \	///	7
-		56606.17,	64025.04,	3898.44 \	///	8
-		64025.05,	74696.04,	3535.56 \	///	9
-		74696.05,	85366.80,	3042.48 \	///	10
-		85366.81,	88587.96,	2611.32 \	///	11
-		88587.97, 	1E+14,		0)		//	12
+*				Inferior	Superior	Subsidio
+matrix	SE	=	(0.00,		21227.52,	4884.24	\	///	1
+				21227.53,	23744.40,	4881.96	\	///	2
+				23744.41,	31840.56,	4318.08	\	///	3
+				31840.57,	41674.08,	4123.20	\	///	4
+				41674.09,	42454.44,	3723.48	\	///	5
+				42454.45,	53353.80,	3581.28	\	///	6
+				53353.81,	56606.16,	4250.76	\	///	7
+				56606.17,	64025.04,	3898.44	\	///	8
+				64025.05,	74696.04,	3535.56	\	///	9
+				74696.05,	85366.80,	3042.48	\	///	10
+				85366.81,	88587.96,	2611.32	\	///	11
+				88587.97, 	1E+14,		0)			//	12
 
 * Calculo de ISR retenciones por salarios *
 g double ing_subor = .
@@ -1989,17 +2025,21 @@ replace exen_tot = exen_tot - (exen_honor + exen_empre) if formal_servprof == 0 
 replace ing_bruto_tax = (ing_honor + ing_empre) if formal_servprof == 1 & prob_servprof != . & formal == 0
 replace exen_tot = (exen_honor + exen_empre) if formal_servprof == 1 & prob_servprof != . & formal == 0
 
+
+
+**************************
+** CALCULO DE ISR FINAL **
+g double ISR = 0
+label var ISR "ISR (f{c i'}sicas y asalariados)"
+
 * Deducciones personales y gastos profesionales *
 noisily di _newline _col(04) in g "{bf:3.3. Deducciones personales y gastos profesionales}"
 noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "Las deducciones personales son beneficios para el jefe del hogar.}"
-tabstat deduc_isr [aw=factor_cola], stat(sum) f(%20.0fc) by(formal_dummy)
 
 * Limitar deducciones *
 replace deduc_isr = 5*`smdf'*365 if 5*`smdf'*365 <= 15/100*ing_bruto_tax & deduc_isr >= 5*`smdf'*365
 replace deduc_isr = 15/100*ing_bruto_tax if 5*`smdf'*365 >= 15/100*ing_bruto_tax & deduc_isr >= 15/100*ing_bruto_tax
 
-g double ISR = 0
-label var ISR "ISR (f{c i'}sicas y asalariados)"
 g categF = ""
 forvalues j=`=rowsof(ISR)'(-1)1 {
 	forvalues k=`=rowsof(SE)'(-1)1 {
@@ -2059,7 +2099,7 @@ tabstat ISR__asalariados ISR__PF ISR__PM [aw=factor_cola] if formal != 0, stat(s
 tempname RESTAX
 matrix `RESTAX' = r(StatTotal)
 
-global isrPF_ENIGH = `RESTAX'[1,2]/`PIBSCN'*100
+*global isrPF_ENIGH = `RESTAX'[1,2]/`PIBSCN'*100
 
 // Step 4 //
 noisily di _newline _col(04) in g "{bf:3.4. ISR anual" ///
@@ -2218,7 +2258,7 @@ noisily di ///
 	_col(44) in y "(" %5.3fc `gini_ing_bruto_tot' ")" ///
 	_col(57) in y %7.3fc (`ALTIMIR'[1,1]+`ALTIMIR'[1,2]+`ALTIMIR'[1,3]+`ALTIMIR'[1,4]+`ALTIMIR'[1,5])/`PIBSCN'*100 ///
 	_col(66) in y %7.3fc (`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'+`MixKN'+`ExNOpSoc'+`ExNOpHog'+`ImpNetProduccionL'+`ImpNetProduccionK'+`ImpNetProductos'+`ConCapFij')/`PIBSCN'*100 ///
-	_col(77) in y %7.1fc ((`ALTIMIR'[1,1]+`ALTIMIR'[1,2]+`ALTIMIR'[1,3]+`ALTIMIR'[1,4]+`ALTIMIR'[1,5])/(`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'+`MixKN'+`ExNOpSoc'+`ExNOpHog'+`ImpNetProduccionL'+`ImpNetProduccionK'+`ImpNetProductos'+`ConCapFij'))^(-1)
+	_col(77) in y %7.3fc ((`ALTIMIR'[1,1]+`ALTIMIR'[1,2]+`ALTIMIR'[1,3]+`ALTIMIR'[1,4]+`ALTIMIR'[1,5])/(`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'+`MixKN'+`ExNOpSoc'+`ExNOpHog'+`ImpNetProduccionL'+`ImpNetProduccionK'+`ImpNetProductos'+`ConCapFij'))^(-1)
 
 
 
@@ -2302,7 +2342,7 @@ label var Yk "Ingreso de capital (Sankey)"
 egen laboral = rsum(ISR__asalariados ISR__PF cuotasTP) if formal != 0
 replace laboral = 0 if laboral == .
 Distribucion Laboral, relativo(laboral) macro(`=`ISRSalarios'+`ISRFisicas'+`CuotasIMSS'')
-label var Laboral "Impuestos al ingreso laboral"
+label var Laboral "los impuestos al ingreso laboral"
 Simulador Laboral [fw=factor_cola], base("ENIGH 2018") boot(1) reboot graphs
 
 
@@ -2310,21 +2350,23 @@ Simulador Laboral [fw=factor_cola], base("ENIGH 2018") boot(1) reboot graphs
 egen consumo = rsum(TOTIVA TOTIEPS)
 replace consumo = 0 if consumo == .
 Distribucion Consumo, relativo(consumo) macro(`alconsumo')
-label var Consumo "Impuestos al consumo"
+label var Consumo "los impuestos al consumo"
 Simulador Consumo [fw=factor_cola], base("ENIGH 2018") ///
 	boot(1) reboot graphs
 
 
 ** (+) Impuestos e ingresos de capital **
-Distribucion Otros, relativo(factor) macro(`=`otrosing'+`ISRMorales'')
-label var Otros "Ingresos de capital"
+Distribucion Otros, relativo(Yk) macro(`=`otrosing'+`ISRMorales'')
+label var Otros "los ingresos de capital"
 Simulador Otros [fw=factor_cola], base("ENIGH 2018") ///
 	boot(1) reboot graphs
 
 
 ** (-) Pensiones **
-Distribucion Pension, relativo(ing_jubila) macro(`Pensiones')
-label var Pension "Pensiones"
+g ing_jubila_pub = ing_jubila if (formal == 1 | formal == 2 | formal == 3) & ing_jubila != 0
+replace ing_jubila_pub = 0 if ing_jubila_pub == .
+Distribucion Pension, relativo(ing_jubila_pub) macro(`Pensiones')
+label var Pension "pensiones"
 Simulador Pension [fw=factor_cola], base("ENIGH 2018") ///
 	boot(1) reboot graphs
 
@@ -2340,7 +2382,7 @@ Simulador PenBienestar if edad >= 68 [fw=factor], base("ENIGH 2018") ///
 	boot(1) reboot graphs
 
 
-** (-) Educación **
+** (-) Educaci€n **
 tabstat factor if asis_esc == "1" & tipoesc == "1", stat(sum) by(escol) f(%15.0fc) save
 matrix TotAlum = r(StatTotal)
 matrix BasAlum = r(Stat2)
@@ -2353,8 +2395,8 @@ replace educacion = `Superior'/SupAlum[1,1] if (escol == 3 | escol == 4) & asis_
 replace educacion = 0 if educacion == .
 
 Distribucion Educacion, relativo(educacion) macro(`Educacion')
-label var Educacion "Educaci{c o'}n"
-*Simulador Educacion [fw=factor], base("ENIGH 2018") ///
+label var Educacion "educaci{c o'}n"
+Simulador Educacion [fw=factor_cola], base("ENIGH 2018") ///
 	boot(1) reboot graphs
 
 
@@ -2381,24 +2423,47 @@ replace salud = 3.36 if edad >= 90 & edad <= 94
 replace salud = 3.36 if edad >= 95
 
 Distribucion Salud, relativo(salud) macro(`Salud')
-label var Salud "Salud"
+label var Salud "salud"
 Simulador Salud [fw=factor_cola], base("ENIGH 2018") ///
 	boot(1) reboot graphs
 
 
 ** (-) Otros gastos **
 Distribucion OtrosGas, relativo(factor_cola) macro(`OtrosGas')
-label var OtrosGas "Otros gastos"
+label var OtrosGas "otros gastos"
 Simulador OtrosGas [fw=factor_cola], base("ENIGH 2018") ///
 	boot(1) reboot graphs
 
 
 ** (-) Ingreso B{c a'}sico **
 g IngBasico = 0.1
+label var IngBasico "ingreso b{c a'}sico"
 Simulador IngBasico [fw=factor_cola], base("ENIGH 2018") ///
 	boot(1) reboot graphs
-label var IngBasico "Ingreso b{c a'}sico"
 
+
+** (*) Infraestructura **
+g entidad = substr(folio,1,2)
+destring entidad, replace
+local j = 1
+foreach k in Aguas BajaN BajaS Campe Coahu Colim Chiap Chihu Ciuda Duran Guana ///
+	Guerr Hidal Jalis Estad Micho Morel Nayar Nuevo Oaxac Puebl Quere Quint ///
+	SanLu Sinal Sonor Tabas Tamau Tlaxc Verac Yucat Zacat {
+
+	tempvar factor_`k'
+	g `factor_`k'' = factor_cola if entidad == `j'
+	Distribucion Infra_`k', relativo(`factor_`k'') macro(``k'')
+	local ++j
+}
+egen Infra = rsum(Infra_*)
+
+
+** (=) Sankey **
+foreach k in grupo_edad sexo decil escol {
+	preserve
+	noisily run Sankey.do `k' 2018
+	restore
+}
 
 
 

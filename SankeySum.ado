@@ -9,7 +9,7 @@ quietly {
 		[B(string) C(string) D(string) E(string) ANIO(int `aniovp')]
 
 	noisily di _newline(2) in g "{bf: Sankey}: " in y "`anio'"
-	PIBDeflactor, anio(`anio')
+	PIBDeflactor, anio(`anio') nographs
 
 
 	******************
