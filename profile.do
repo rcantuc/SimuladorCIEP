@@ -36,5 +36,5 @@ global def2020 = 3.5			// Pre-criterios 2021
 global def2021 = 3.2			// Pre-criterios 2021
 
 noisily di _newline in g "{bf:Pre-criterios" in y " 2021}"
-noisily PIBDeflactor
+noisily PIBDeflactor, nographs
 clear
