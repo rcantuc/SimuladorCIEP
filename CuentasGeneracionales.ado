@@ -1,6 +1,6 @@
 program define CuentasGeneracionales, rclass
 quietly {
-	timer on 95
+	timer on 10
 	version 13.1
 
 	** Anio valor presente **
@@ -17,7 +17,7 @@ quietly {
 	*******************************
 	*** 0 Guardar base original ***
 	*******************************
-	preserve
+	*preserve
 
 
 
@@ -133,10 +133,10 @@ quietly {
 	***************
 	*** 5 Final ***
 	***************
-	restore
+	*restore
 
-	timer off 95
-	timer list 95
-	noisily di _newline in g "  {bf:Cuentas Generacionales de `title' time}: " in y round(`=r(t95)/r(nt95)',.1) in g " segs."
+	timer off 10
+	timer list 10
+	noisily di _newline in g "  {bf:Cuentas Generacionales de `title' time}: " in y round(`=r(t10)/r(nt10)',.1) in g " segs."
 }
 end

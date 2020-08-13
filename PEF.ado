@@ -10,7 +10,7 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
-	** 1.2 Datos Abiertos (México) **
+	** 1.2 Datos Abiertos (MÃˆxico) **
 	if "$pais" == "" {
 		UpdateDatosAbiertos
 		local updated = r(updated)
@@ -39,7 +39,7 @@ quietly {
 	noisily di _newline(2) in g _dup(20) "." "{bf:  Sistema Fiscal: GASTOS $pais" in y `anio' "  }" in g _dup(20) "."
 	
 	** 2.1 PIB + Deflactor **
-	PIBDeflactor, anio(`anio')
+	PIBDeflactor, anio(`anio') nographs
 	local currency = currency[1]
 	tempfile PIB
 	save `PIB'

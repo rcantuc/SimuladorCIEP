@@ -27,7 +27,7 @@ quietly {
 
 	** Macros: PIB **
 	preserve
-	PIBDeflactor, anio(`aniobase')
+	PIBDeflactor, anio(`aniobase') nographs
 	tempfile PIBBASE
 	save `PIBBASE'
 
@@ -560,7 +560,7 @@ quietly {
 
 
 	******************************************
-	*** 6.2. Mean, upper and lower limits ***
+	/*** 6.2. Mean, upper and lower limits ***
 	xtset bootstrap anio
 	tempvar annual_growth
 	g double `annual_growth' = (estimacion/L.estimacion-1)*100
@@ -577,7 +577,7 @@ quietly {
 			noisily di in g "  `k'" in y _column(20) %20.2fc ``varlist'_mean' "%" ///
 				in g "  I.C. (95%): " in y "+/-" %7.2fc (``varlist'_max'/``varlist'_mean'-1)*100 "%"
 		}
-	}
+	}*/
 
 	collapse estimacion contribuyentes poblacion `seriehacienda', by(anio modulo aniobase)
 	tsset anio
@@ -618,14 +618,14 @@ quietly {
 	if ("`graphs'" == "graphs" | "$graphs" == "on") {
 		twoway connected estimacion `gvarpredict' `seriehacienda' anio if estimacion != ., ///
 			ytitle("millions `currency' `aniovp'") ///
-			yscale(range(0 2000000)) /*ylabel(0(1)4)*/ ///
+			yscale(range(0)) /*ylabel(0(1)4)*/ ///
 			ylabel(, format(%20.0fc) labsize(small)) ///
 			xlabel(, labsize(small) labgap(2)) ///
 			xtitle("") ///
 			xline(`aniobase', lpattern(dash) lcolor("52 70 78")) ///
 			///text(2 `=`aniobase'-1' "{bf:A{c n~}o base:} `aniobase'", place(w)) ///
-			///title("{bf:Proyecciones demogr{c a'}ficas de `title'}") subtitle("$pais") ///
-			///caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5. Fecha: `c(current_date)', `c(current_time)'.`boottext'}") ///
+			title("{bf:Proyecciones} de `title'") subtitle("$pais") ///
+			caption("{it:Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, ENIGH 2018.}" "Fecha: `c(current_date)', `c(current_time)'.") ///
 			name(`varlist'Proj, replace)
 	}
 
@@ -793,7 +793,7 @@ program graphpiramide
 	* REC % del PIB * 
 	if "`rect'" != "100" {
 		local rect `"{bf: Tama{c n~}o}: `=string(`rect',"%6.3fc")' % PIB"'
-		*local rect ""
+		local rect ""
 	}
 	else {
 		local rect ""
@@ -845,16 +845,19 @@ program graphpiramide
 		graphregion(margin(zero)) aspectratio(, placement(left))
 
 	graph combine H`varlist' M`varlist', name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)', replace) ycommon ///
-		title("{bf:`title' por sexo, edad y `titleover'}") subtitle("$pais") ///
+		title("{bf:Perfil} de `title'") subtitle("$pais") ///
 		///title("`title' by sex, age and `titleover'") ///
-		caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5. Fecha: `c(current_date)', `c(current_time)'.}") ///
+		caption("{it:Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, ENIGH 2018.}" "Fecha: `c(current_date)', `c(current_time)'.") ///
 		/*caption("{it: Source: Own estimations.`boottext'}")*/ ///
 		note(`"{bf:Nota}: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n de `title' en cada grupo."') ///
 		/*note(`"{bf:Note}: Percentages inside parenthesis represent the concentration of `title' in each group."')*/
 
-	graph export `"`c(sysdir_personal)'/users/$pais/$id/graphs/`varlist'_`titleover'.eps"', replace name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)')
+	*graph export `"`c(sysdir_personal)'/users/$pais/$id/graphs/`varlist'_`titleover'.eps"', replace name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)')
 	graph save `=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)' `"`c(sysdir_personal)'/users/$pais/$id/graphs/`varlist'_`titleover'.gph"', replace
-	graph export `"`c(sysdir_personal)'/users/$pais/$id/graphs/`varlist'_`titleover'.png"', replace name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)')
+
+	if "$export" != "" {
+		graph export `"$export/`varlist'_`titleover'.png"', replace name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)')
+	}
 
 	capture window manage close graph H`varlist'
 	capture window manage close graph M`varlist'

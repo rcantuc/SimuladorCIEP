@@ -201,9 +201,9 @@ quietly {
 			`=-`MaxH'[1,1]/2' `"`=string(`MaxH'[1,1]/2,"%15.0fc")'"' 0 ///
 			`=`MaxM'[1,1]/2' `"`=string(`MaxM'[1,1]/2,"%15.0fc")'"' ///
 			`=`MaxM'[1,1]' `"`=string(`MaxM'[1,1],"%15.0fc")'"', angle(horizontal)) ///
-			///caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
-			/*xtitle("personas")*/ ///
-			///title("{bf:Pir{c a'}mide demogr{c a'}fica}") subtitle(${pais})
+			caption("{it:Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, BIE.}") ///
+			///xtitle("Personas") ///
+			title("{bf:Pir{c a'}mide} demogr{c a'}fica") subtitle(${pais})
 
 		if "$export" != "" {
 			graph export "$export/Piramide_`anything'_`anioinicial'_`aniofinal'.png", ///
@@ -315,11 +315,11 @@ quietly {
 			text(`z4' `m4' `"{bf:`poblacion':} `=string(pob61[`q4'],"%12.0fc")'"', place(s)) ///
 			text(`=`y1'*.175' `=`anioinicial'-1' "{bf:Hoy:} `anioinicial'", place(w)) ///
 			xtitle("") ///
-			ytitle("Personas") ///
+			ytitle("Poblaci{c o'}n") ///
 			xline(`=`anioinicial'+.5') ///
-			///caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
+			caption("{it:Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, BIE.}") ///
 			name(Estructura_`anything'_`anioinicial'_`aniofinal', replace) ///
-			///title("{bf:Olas demogr{c a'}ficas}") subtitle(${pais}) ///
+			title("{bf:Transici{c o'}n} demogr{c a'}fica") subtitle(${pais}) ///
 			ylabel(, format(%20.0fc)) 
 			
 			if "$export" != "" {

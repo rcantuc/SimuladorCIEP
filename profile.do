@@ -30,9 +30,9 @@ noisily di in w "7) Expr{c e'}sate creativamente."
 *********************************
 // Incorporar los que sean necesarios seg{c u'}n su a{c n~}o //
 global pib2020 = -1.9			// Pre-criterios 2021 [-3.9,0.1]
-global def2020 = 3.5			// Pre-criterios 2021
-
 global pib2021 = 2.5			// Pre-criterios 2021 [1.5,3.5]
+
+global def2020 = 3.5			// Pre-criterios 2021
 global def2021 = 3.2			// Pre-criterios 2021
 
 noisily di _newline in g "{bf:Pre-criterios" in y " 2021}"

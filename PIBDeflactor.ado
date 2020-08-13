@@ -16,7 +16,7 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 	
-	syntax [, ANIOvp(int `aniovp') GEO(int 5) FIN(int -1) Graphs UPDATE DIScount(real 3)]
+	syntax [, ANIOvp(int `aniovp') GEO(int 5) FIN(int -1) NOGraphs UPDATE DIScount(real 3)]
 
 	noisily di _newline(2) in g _dup(20) "." "{bf:   Producto Interno Bruto " in y `aniovp' "   }" in g _dup(20) "."
 
@@ -222,7 +222,7 @@ quietly {
 	noisily di in g " Crec. al infinito: " in y _col(25) %20.1fc var_pibY[_N] in g " %"
 	noisily di in g " Defl. al infinito: " in y _col(25) %20.1fc var_indiceY[_N] in g " %"
 
-	if "`graphs'" == "graphs" {
+	if "`nographs'" != "nographs" {
 
 		/* Texto sobre lineas *
 		forvalues k=1(1)`=_N' {
@@ -258,17 +258,17 @@ quietly {
 		}
 
 		* Crecimiento PIB var_pibY *
-		twoway (connected var_pibY anio if anio < `anio_last' | (anio == `anio_last' & trimestre == 4)) ///
+		twoway (connected var_pibY anio if anio <= `anio_last' | (anio == `anio_last' & trimestre == 4)) ///
 			(connected var_pibY anio if anio >= `anio_last' & anio > anio[`obs_exo']) ///
-			(connected var_pibY anio if anio == `anio_last' & trimestre < 4 | anio <= anio[`obs_exo'] & anio > `anio_last'), ///
-			title({bf:Producto Interno Bruto}) subtitle(${pais}) ///
+			(connected var_pibY anio if /*anio == `anio_last' & trimestre < 4 |*/ anio <= anio[`obs_exo'] & anio > `anio_last'), ///
+			title({bf:Crecimientos} del Producto Interno Bruto) subtitle(${pais}) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
 			ylabel(-6(3)6, format(%5.1fc)) ///
 			ytitle("Crecimiento real (%)") xtitle("") yline(0, lcolor(black)) ///
 			text(`crec_PIB') ///
 			legend(label(1 "Reportado") label(2 "Proyectado") label(3 "Estimado") order(1 3 2)) ///
-			///caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
-			note("{bf:{c U'}ltimo dato}: `anio_last'`trim_last'.") ///
+			caption("{it:Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, BIE.}") ///
+			note("{bf:{c U'}ltimo dato reportado}: `anio_last'`trim_last'.") ///
 			name(PIBH, replace)
 
 
@@ -282,22 +282,22 @@ quietly {
 			local graphtype "area"
 		}
 		
-		twoway (area `pibYRmil' anio if anio < `anio_last' | (anio == `anio_last' & trimestre == 4)) ///
+		twoway (area `pibYRmil' anio if anio <= `anio_last' | (anio == `anio_last' & trimestre == 4)) ///
 			(area `pibYRmil' anio if anio >= `anio_last' & anio > anio[`obs_exo']) ///
-			(`graphtype' `pibYRmil' anio if anio == `anio_last' & trimestre < 4 | anio <= anio[`obs_exo'] & anio > `anio_last', lwidth(none)), ///
-			title({bf:Producto Interno Bruto}) subtitle(${pais}) ///
+			(`graphtype' `pibYRmil' anio if /*anio == `anio_last' & trimestre < 4 |*/ anio <= anio[`obs_exo'] & anio > `anio_last', lwidth(none)), ///
+			title({bf:Flujo} del Producto Interno Bruto) subtitle(${pais}) ///
 			ytitle(billones `=currency[`obsvp']' `aniovp') xtitle("") yline(0) ///
 			///text(`=`pibYRmil'[1]*.05' `=`anio_last'-.5' "`anio_last'", place(nw) color(white)) ///
 			///text(`=`pibYRmil'[1]*.05' `=anio[1]+.5' "Reportado" ///
 			///`=`pibYRmil'[1]*.05' `=`anio_last'+1.5' "Proyectado", place(ne) color(white) size(small)) ///
-			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],10)') ///
-			ylabel(#5, format(%10.0fc)) ///
+			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
+			ylabel(0(5)`=ceil(`pibYRmil'[_N])', format(%20.0fc)) ///
 			///xline(`anio_last'.5) ///
-			yscale(range(0)) ///
+			yscale(range(0)) xscale(range(1993)) ///
 			legend(label(1 "Reportado") label(2 "Proyectado") label(3 "Estimado") order(1 3 2)) ///
-			note("{bf:Productividad ({&lambda})}: `=string(scalar(lambda),"%6.3f")'% (`=anio[`obs_exo']' - `=anio[[`=`obs_exo'-20']]'); `=string(`Lambda',"%6.3f")'% (`=anio[`obs_exo']' - `=anio[1]'). `except'" "{bf:{c U'}ltimo dato}: `anio_last'`trim_last'.") ///
+			note("{bf:Productividad laboral}: `=string(scalar(lambda),"%6.3f")'% (`=anio[`obs_exo']' - `=anio[[`=`obs_exo'-20']]'); `=string(`Lambda',"%6.3f")'% (`=anio[`obs_exo']' - `=anio[1]'). {bf:{c U'}ltimo dato reportado}: `anio_last'`trim_last'.") ///
 			///note("{bf:Note}: Annual Labor Productivity Growth (lambda): `=string(scalar(lambda),"%6.3f")'%.") ///
-			///caption("Fuente: {stMono:simuladorfiscal.ciep.mx}. `c(current_date)' `c(current_time)'.") ///
+			caption("{it:Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, BIE.}") ///
 			name(PIBP, replace)
 
 		capture confirm existence $export

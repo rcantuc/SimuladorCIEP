@@ -10,7 +10,7 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
-	** 1.2 Datos Abiertos (México) **
+	** 1.2 Datos Abiertos (MÃˆxico) **
 	if "$pais" == "" {
 		UpdateDatosAbiertos
 		local updated = r(updated)
@@ -24,7 +24,7 @@ quietly {
 	** 1.3 Base LIF **
 	capture confirm file `"`c(sysdir_site)'../basesCIEP/SIM/LIF`=subinstr("${pais}"," ","",.)'.dta"'
 	if _rc != 0 {
-		noisily run UpdateLIF.do			// Genera a partir de la base ./basesCIEP/LIFs/LIF.xlsx
+		noisily run "`c(sysdir_site)'/UpdateLIF.do"			// Genera a partir de la base ./basesCIEP/LIFs/LIF.xlsx
 	}
 	
 
@@ -39,7 +39,7 @@ quietly {
 	noisily di _newline(2) in g _dup(20) "." "{bf:  Sistema Fiscal: INGRESOS $pais" in y `anio' "  }" in g _dup(20) "."
 
 	** 2.1 PIB + Deflactor **
-	PIBDeflactor, anio(`anio')
+	PIBDeflactor, anio(`anio') nographs
 	local currency = currency[1]
 	forvalues k=1(1)`=_N' {
 		if anio[`k'] == `anio' {
@@ -109,7 +109,7 @@ quietly {
 
 	egen `recaudacionPIB' = max(recaudacionPIB) /*if anio >= 2010*/, by(`by')
 	replace `resumido' = 999 if abs(`recaudacionPIB') < `minimum' // | recaudacionPIB == . | recaudacionPIB == 0
-	label define `label' 999 "Otros", add modify
+	label define `label' 999 `"< `=string(`minimum',"%5.1fc")'% PIB"', add modify
 
 	capture replace nombre = subinstr(nombre,"Impuesto especial sobre producci{c o'}n y servicios de ","",.)
 	capture replace nombre = subinstr(nombre,"alimentos no b{c a'}sicos con alta densidad cal{c o'}rica","comida chatarra",.)
@@ -128,13 +128,13 @@ quietly {
 			ptext(0 0 `"{bf:`=string(`recanio'[1,1],"%6.1fc")' % PIB}"', color(white) size(small))
 
 		graph bar (sum) recaudacionPIB if divLIF != 10, ///
-			over(`by', /*relabel(1 "LIF" 2 "SHCP")*/) ///
+			over(`resumido', /*relabel(1 "LIF" 2 "SHCP")*/) ///
 			over(anio, label(labgap(vsmall))) ///
 			bargap(-30) stack asyvars ///
 			title("{bf:Ingresos presupuestarios}") ///
 			subtitle($pais) ///
 			ytitle(% PIB) ylabel(0(5)30, labsize(small)) ///
-			legend(on position(6) cols(4)) ///
+			legend(on position(6) cols(5)) ///
 			name(ingresos, replace) ///
 			blabel(bar, format(%7.1fc)) ///
 			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}")
@@ -295,7 +295,7 @@ quietly {
 		matrix `cuotas' = r(StatTotal)
 		return scalar Cuotas_IMSS = `cuotas'[1,1]
 		
-		tabstat recaudacion recaudacionPIB if anio == `anio' & divCIEP == 10, stat(sum) by(nombre) f(%20.1fc) save
+		tabstat recaudacion recaudacionPIB if anio == `anio' & divCIEP == 11, stat(sum) by(nombre) f(%20.1fc) save
 		tempname ieps
 		matrix `ieps'7 = r(Stat7)
 		matrix `ieps'10 = r(Stat10)

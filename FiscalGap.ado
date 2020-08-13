@@ -1,6 +1,7 @@
 program define FiscalGap
 quietly {
 
+	timer on 11
 	** Anio valor presente **
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
@@ -11,7 +12,7 @@ quietly {
 	*************
 	*** 1 PIB ***
 	*************
-	PIBDeflactor, anio(`anio')
+	PIBDeflactor, anio(`anio') nographs
 	local currency = currency[1]
 	local discount = r(discount)
 	local anio_last = r(anio_last)
@@ -90,6 +91,7 @@ quietly {
 			merge 1:1 (anio divGA) using `otros', nogen update replace
 		}
 	}
+
 	merge m:1 (anio) using `PIB', nogen keep(matched) update replace
 	collapse (sum) recaudacion estimacion (max) pibYR deflator lambda, by(anio modulo)
 
@@ -127,13 +129,13 @@ quietly {
 			(area `ingreso2' anio if anio >= `anio', color("255 189 0")) ///
 			(area `consumo2' anio if anio >= `anio', color("39 97 47")), ///
 			legend(cols(3) order(1 2 3) ///
-			label(1 "Ingresos de capital") label(2 "Impuestos al ingreso") label(3 "Impuestos al consumo")) ///
+			label(1 "Ingresos de capital") label(2 "Impuestos laborales") label(3 "Impuestos al consumo")) ///
 			xlabel(2003 2005(5)`=round(anio[_N],10)') ///
 			ylabel(, format(%20.0fc)) ///
 			xline(`=`anio'-.5') ///
 			text(`=`otros'[`obs`anio_last'']*.05' `=`anio'+.5' "Proyecci{c o'}n", place(ne) color(white)) ///
 			yscale(range(0)) ///
-			title({bf:Proyecci{c o'}n de los ingresos}) ///
+			title({bf:Proyecci{c o'}n} de los ingresos p{c u'}blicos) ///
 			subtitle($pais) ///
 			xtitle("") ytitle(millones `currency' `anio') ///
 			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
@@ -224,7 +226,18 @@ quietly {
 			replace modulo = "amortizacion" if divGA == `k'
 		}
 		if "`divGA`k''" == "Pensi{c o'}n Bienestar" {
-			local modpenbien = `k'
+			preserve
+
+			use `"`c(sysdir_personal)'/users/$pais/$id/PenBienestarREC.dta"', clear
+			collapse (mean) estimacion contribuyentes* poblacion aniobase, by(anio) fast
+			g divGA = `k'
+			g modulo = "penbienestar"
+
+			tempfile penbienestar
+			save `penbienestar'
+
+			restore
+			merge 1:1 (anio divGA) using `penbienestar', nogen update replace
 		}
 		if "`divGA`k''" == "Otros" {
 			preserve
@@ -242,42 +255,13 @@ quietly {
 		}
 	}
 
-
-	** Pension Bienestar **
-	preserve
-	use `"`c(sysdir_personal)'/users/$pais/bootstraps/`bootstrap'/PenBienestarREC"', clear
-	collapse (mean) estimacion contribuyentes* poblacion aniobase, by(anio) fast
-	capture g divGA = `modpenbien'
-	if _rc != 0 {
-		g divGA = 98
-	}
-	g modulo = "penbienestar"
-
-	tabstat poblacion if anio == `anio', save
-	tempname pob
-	matrix `pob' = r(StatTotal)
-	
-	replace estimacion = poblacion*`=`=scalar(Bienestar)'/100*`=scalar(pibY)'/`=`pob'[1,1]''
-
-	tempfile penbienestar
-	save `penbienestar'
-
-	restore
-	merge 1:1 (anio divGA) using `penbienestar', nogen update replace
-
-
 	** Ingreso basico **
 	preserve
-	use `"`c(sysdir_personal)'/users/$pais/bootstraps/`bootstrap'/IngBasicoREC"', clear
+
+	use `"`c(sysdir_personal)'/users/$pais/$id/IngBasicoREC"', clear
 	collapse (mean) estimacion contribuyentes* poblacion aniobase, by(anio) fast
 	g divGA = 99
 	g modulo = "ingbasico"
-
-	tabstat poblacion if anio == `anio', save
-	tempname pob
-	matrix `pob' = r(StatTotal)
-	
-	replace estimacion = poblacion*`=`=scalar(IngBas)'/100*`=scalar(pibY)'/`=`pob'[1,1]''
 	
 	tempfile ingbasico
 	save `ingbasico'
@@ -419,7 +403,7 @@ quietly {
 			xline(`=`anio'-.5') ///
 			text(`=`otrosg'[`obs`anio_last'']*.075' `=`anio'+.5' "Proyecci{c o'}n", place(ne) color(white)) ///
 			yscale(range(0)) ///
-			title({bf:Proyecci{c o'}n de los gastos}) ///
+			title({bf:Proyecci{c o'}n} del gasto p{c u'}blico) ///
 			subtitle($pais) ///
 			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
 			xtitle("") ytitle(millones `currency' `anio') ///
@@ -433,7 +417,7 @@ quietly {
 			xlabel(2008 2010(5)`=round(anio[_N],10)') ///
 			xline(`=`anio'-.5') ///
 			legend(off) ///
-			title({bf: Proyecci{c o'}n de los RFSP}) subtitle($pais) ///
+			title({bf: Proyecci{c o'}n} de los RFSP) subtitle($pais) ///
 			name(Proy_rfsp, replace)
 	}
 
@@ -495,7 +479,7 @@ quietly {
 		g shrfspPIB = shrfsp/pibY*100
 		twoway (area shrfspPIB anio if shrfspPIB != . & anio < `anio' & anio >= 2000) ///
 			(area shrfspPIB anio if anio >= `anio'), ///
-			title({bf:Proyecci{c o'}n del SHRFSP}) ///
+			title({bf:Proyecci{c o'}n} del SHRFSP) ///
 			subtitle($pais) ///
 			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
 			xtitle("") ytitle(% PIB) ///
@@ -544,6 +528,16 @@ quietly {
 			in y _col(35) %25.0fc ((-(`estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1])/(`poblacionVP'[1,1]+`poblacionINF'))/GA[1,3]-1)*100 ///
 			in g " %"
 	}
+
+
+
+
+	************************/
+	**** Touchdown!!! :) ****
+	*************************
+	timer off 11
+	timer list 11
+	noisily di _newline(2) in g _dup(20) "." "  " in y round(`=r(t11)/r(nt11)',.1) in g " segs  " _dup(20) "."
 }
 end
 
