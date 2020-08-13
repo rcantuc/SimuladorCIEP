@@ -129,19 +129,19 @@ quietly {
 			legend(on position(6) rows(1)) ///
 			ptext(0 0 `"{bf:`=string(`recanio'[1,1],"%6.1fc")' % PIB}"', color(white) size(small))
 
-		*graph bar (sum) recaudacionPIB if divLIF != 10, ///
-			*over(`by', /*relabel(1 "LIF" 2 "SHCP")*/) ///
-			*over(anio, label(labgap(vsmall))) ///
-			*bargap(-30) stack asyvars ///
-			*title("{bf:Ingresos presupuestarios}") ///
-			*subtitle($pais) ///
-			*ytitle(% PIB) ylabel(0(5)30, labsize(small)) ///
-			*legend(on position(6) cols(4)) ///
-			*name(ingresos, replace) ///
-			*blabel(bar, format(%7.1fc)) ///
-			*caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}")
+		graph bar (sum) recaudacionPIB if divLIF != 10, ///
+			over(`by', /*relabel(1 "LIF" 2 "SHCP")*/) ///
+			over(anio, label(labgap(vsmall))) ///
+			bargap(-30) stack asyvars ///
+			title("{bf:Ingresos presupuestarios}") ///
+			subtitle($pais) ///
+			ytitle(% PIB) ylabel(0(5)30, labsize(small)) ///
+			legend(on position(6) cols(4)) ///
+			name(ingresos, replace) ///
+			blabel(bar, format(%7.1fc)) ///
+			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}")
 			
-					graph bar (sum) recaudacionPIB if (divOrigen >= 2 & anio >=2010), ///
+					graph bar (sum) recaudacionPIB if (divOrigen >= 2 & anio >=2010 & anio <=2019 ), ///
 			over(divOrigen, /*relabel(1 "LIF" 2 "SHCP")*/) ///
 			over(anio, label(labgap(vsmall))) ///
 			bargap(-30) stack asyvars ///
@@ -165,23 +165,23 @@ quietly {
 			blabel(bar, format(%7.1fc)) ///
 			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}")
 			
-			graph bar (sum) recaudacionPIB if (divCIEP == 11 | divCIEP == 20 | divCIEP == 15 | divCIEP == 18 | divCIEP == 17 | divCIEP == 12) & anio >=2010, ///
+			graph bar (sum) recaudacionPIB if (divCIEP == 21 | divCIEP == 11 | divCIEP == 14 | divCIEP == 18 | divCIEP == 16 | divCIEP == 15 | divCIEP == 12 | divCIEP == 14 | divCIEP == 19) & anio >=2010 & anio <=2019 , ///
 			over(divCIEP, /*relabel(1 "LIF" 2 "SHCP")*/) ///
 			over(anio, label(labgap(vsmall))) ///
 			bargap(-30) stack asyvars ///
 			title("{bf:Ingresos tributarios}") ///
 			subtitle($pais) ///
-			ytitle(% PIB) ylabel(0(1)5, labsize(small)) ///
+			ytitle(% PIB) ylabel(0(1)15, labsize(small)) ///
 			legend(on position(6) cols(4)) ///
 			name(ingresos, replace) ///
 			blabel(bar, format(%7.1fc)) ///
 			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}")
 			
-			graph bar (sum) recaudacionPIB if (divCIEP == 23 | divCIEP == 5 | divCIEP == 1) & anio >=2010, ///
+			graph bar (sum) recaudacionPIB if (divOrigen == 2) & anio >=2010 & anio <=2019, ///
 			over(divCIEP, /*relabel(1 "LIF" 2 "SHCP")*/) ///
 			over(anio, label(labgap(vsmall))) ///
 			bargap(-30) stack asyvars ///
-			title("{bf:Ingresos no tributarios}") ///
+			title("{bf:Ingresos no tributarios no petroleros}") ///
 			subtitle($pais) ///
 			ytitle(% PIB) ylabel(0(1)2, labsize(small)) ///
 			legend(on position(6) cols(4)) ///
@@ -189,11 +189,23 @@ quietly {
 			blabel(bar, format(%7.1fc)) ///
 			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}")
 			
-						graph bar (sum) recaudacionPIB if (divCIEP == 10 | divCIEP == 22) & anio >=2010, ///
+						graph bar (sum) recaudacionPIB if (divOrigen == 4) & anio >=2010 & anio <=2019, ///
 			over(divCIEP, /*relabel(1 "LIF" 2 "SHCP")*/) ///
 			over(anio, label(labgap(vsmall))) ///
 			bargap(-30) stack asyvars ///
 			title("{bf:Ingresos petroleros}") ///
+			subtitle($pais) ///
+			ytitle(% PIB) ylabel(0(2)8, labsize(small)) ///
+			legend(on position(6) cols(4)) ///
+			name(ingresos, replace) ///
+			blabel(bar, format(%7.1fc)) ///
+			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}")
+			
+			graph bar (sum) recaudacionPIB if (divOrigen == 3) & anio >=2010 & anio <=2019, ///
+			over(divCIEP, /*relabel(1 "LIF" 2 "SHCP")*/) ///
+			over(anio, label(labgap(vsmall))) ///
+			bargap(-30) stack asyvars ///
+			title("{bf:Ingresos de organismos y empresas sin PEMEX}") ///
 			subtitle($pais) ///
 			ytitle(% PIB) ylabel(0(2)8, labsize(small)) ///
 			legend(on position(6) cols(4)) ///
