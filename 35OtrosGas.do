@@ -4,7 +4,7 @@ local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 local anio = substr(`"`=trim("`fecha'")'"',1,4) // 								<-- anio base: HOY
 
 *sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
-global id = "Ricardo"
+*global id = "Ricardo"
 
 
 

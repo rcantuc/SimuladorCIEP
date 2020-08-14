@@ -6,7 +6,7 @@ local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 local anio = substr(`"`=trim("`fecha'")'"',1,4) // 								<-- anio base: HOY
 
 *sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
-global id = "Ricardo"
+*global id = "Ricardo"
 
 
 
@@ -56,7 +56,7 @@ scalar costodeu = 5982 // 2.924 //												Costo de la deuda
 noisily GastoPC //																Cap. 5
 
 
-/** 3.1 Educacion **
+** 3.1 Educacion **
 noisily run 31Educacion.do
 
 ** 3.2 Salud **
