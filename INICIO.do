@@ -1,6 +1,6 @@
 ********************
 **** WAKE UP!!! ****
-********************
+/********************
 clear all
 macro drop _all
 capture log close _all
@@ -19,7 +19,7 @@ adopath ++ PERSONAL
 
 
 
-***********************
+**********************/
 *** 0 HELLO, WORLD! ***
 ***********************
 timer on 1
@@ -38,7 +38,7 @@ local anio = substr(`"`=trim("`fecha'")'"',1,4) // 								<-- anio base: HOY
 ***   Simulador v5: Intro   ***
 *******************************
 Poblacion, anio(`anio') graphs //`update'
-*noisily run Households.do 2018
+noisily run Households.do 2018
 view "`c(sysdir_site)'../basesCIEP/SIM/2018/households.smcl"
 
 
@@ -79,7 +79,7 @@ noisily run 5CGWeb.do //														<-- OPTIONAL!!! Toma mucho tiempo.
 ************************/
 **** Touchdown!!! :) ****
 *************************
-*noisily scalarlatex
+noisily scalarlatex
 timer off 1
 timer list 1
 noisily di _newline(2) in g _dup(20) ":" "  " in y round(`=r(t1)/r(nt1)',.1) in g " segs  " _dup(20) ":"

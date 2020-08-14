@@ -76,6 +76,12 @@ quietly {
 		tempfile consumoprivado
 		save `consumoprivado'
 
+		** D.9. Cuenta de produccion **
+		import excel "`c(sysdir_site)'../basesCIEP/INEGI/SCN/Produccion bruta.xlsx", clear
+		LimpiaBIE pb
+		tempfile produccion
+		save `produccion'
+
 		** Merge bases **
 		use `generacion', clear
 		merge 1:1 (A) using `sectores', nogen
@@ -85,6 +91,7 @@ quietly {
 		merge 1:1 (A) using `gobierno', nogen
 		merge 1:1 (A) using `actividad', nogen
 		merge 1:1 (A) using `consumoprivado', nogen
+		merge 1:1 (A) using `produccion', nogen
 
 
 		*******************************
@@ -319,7 +326,7 @@ quietly {
 		}
 	}
 
-	* Ajuste *
+	/* Ajuste *
 	forvalues k = `=_N'(-1)1 {
 		if anio[`k'] == `anio' {
 			local pibAjuste = pibY[`k']/PIB[`k']
@@ -333,7 +340,7 @@ quietly {
 
 
 
-	********************************
+	*******************************/
 	** 1.3. Construir cuentas (C) **
 
 	** C.1. Ingreso mixto **
@@ -460,26 +467,44 @@ quietly {
 	}
 
 	** R.2. Display **
-	
 	* Generaci{c o'}n de la producci{c o'}n **
-	noisily di _newline in g "{bf: A. Cuenta: " in y "generaci{c o'}n del ingreso" in g ///
+	noisily di _newline in g "{bf: A. Cuenta: " in y "de producci{c o'}n (bruta)" in g ///
 		_col(44) in g %20s "MXN" ///
 		_col(66) %7s "% PIB" "}" 
 	noisily di in g "  (+) Producci{c o'}n bruta" ///
-		_col(44) in y %20.0fc Bs[`obs'] ///
-		_col(66) in y %7.3fc Bs[`obs']/PIB[`obs']*100
+		_col(44) in y %20.0fc Cpb[`obs'] ///
+		_col(66) in y %7.3fc Cpb[`obs']/PIB[`obs']*100
 	noisily di in g "  (-) Consumo intermedio" ///
-		_col(44) in y %20.0fc SSEmpleadores[`obs']+SSImputada[`obs'] ///
-		_col(66) in y %7.3fc (SSEmpleadores[`obs']+SSImputada[`obs'])/PIB[`obs']*100
+		_col(44) in y %20.0fc Npb[`obs'] ///
+		_col(66) in y %7.3fc Npb[`obs']/PIB[`obs']*100
 	noisily di in g _dup(72) "-"
-	noisily di in g "{bf:  (=) Ingresos laborales" ///
-		_col(44) in y %20.0fc Yl[`obs'] ///
-		_col(66) in y %7.3fc Yl[`obs']/PIB[`obs']*100 "}"
+	noisily di in g "{bf:  (=) Valor agregado" ///
+		_col(44) in y %20.0fc (Cpb[`obs']-Npb[`obs']) ///
+		_col(66) in y %7.3fc (Cpb[`obs']-Npb[`obs'])/PIB[`obs']*100 "}"
+	noisily di in g "  (+) Impuestos a los productos" ///
+		_col(44) in y %20.0fc (Gpb[`obs']) ///
+		_col(66) in y %7.3fc (Gpb[`obs'])/PIB[`obs']*100
+	noisily di in g _dup(72) "-"
+	noisily di in g "{bf:  (=) Producto Interno Bruto" ///
+		_col(44) in y %20.0fc (Cpb[`obs']-Npb[`obs']+Gpb[`obs']) ///
+		_col(66) in y %7.3fc (Cpb[`obs']-Npb[`obs']+Gpb[`obs'])/PIB[`obs']*100 "}"
 
+	* Returns *
+	scalar ProdBruta = Cpb[`obs']
+	scalar ProdBrutaPIB = Cpb[`obs']/PIB[`obs']*100
+	
+	scalar ConsInter = Npb[`obs']
+	scalar ConsInterPIB = Npb[`obs']/PIB[`obs']*100
+	
+	scalar ValoAgreg = (Cpb[`obs']-Npb[`obs'])
+	scalar ValoAgregPIB = (Cpb[`obs']-Npb[`obs'])/PIB[`obs']*100
+	
+	scalar ImpuProdu = Gpb[`obs']
+	scalar ImpuProduPIB = Gpb[`obs']/PIB[`obs']*100
 
 
 	* Generaci{c o'}n de ingresos *
-	noisily di _newline in g "{bf: A. Cuenta: " in y "generaci{c o'}n del ingreso" in g ///
+	noisily di _newline in g "{bf: B.1. Cuenta: " in y "distribuc{c o'}n del ingreso" in g ///
 		_col(44) in g %20s "MXN" ///
 		_col(66) %7s "% PIB" "}" 
 	noisily di in g "  (+) Remuneraci{c o'}n de asalariados" ///
@@ -546,7 +571,7 @@ quietly {
 
 
 	* Cuenta de capital *
-	noisily di _newline in g "{bf: B. Cuenta: " in y "de capital" in g ///
+	noisily di _newline in g "{bf: B.2. Cuenta: " in y "de los ingresos de capital" in g ///
 		_col(44) in g %20s "MXN" ///
 		_col(66) %7s "% PIB" "}" 
 	noisily di in g "  (+) Sociedades e ISFLSH" ///
