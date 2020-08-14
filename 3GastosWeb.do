@@ -57,19 +57,19 @@ noisily GastoPC //																Cap. 5
 
 
 ** 3.1 Educacion **
-noisily run 31Educacion.do
+noisily run "`c(sysdir_personal)'/31Educacion.do"
 
 ** 3.2 Salud **
-noisily run 32Salud.do
+noisily run "`c(sysdir_personal)'/32Salud.do"
 
 ** 3.3 Pensiones **
-noisily run 33Pensiones.do
+noisily run "`c(sysdir_personal)'/33Pensiones.do"
 
 ** 3.4 Ingreso b{c a'}sico **
-noisily run 34IngBasico.do
+noisily run "`c(sysdir_personal)'/34IngBasico.do"
 
 ** 3.5 Otros gastos **
-noisily run 35OtrosGas.do
+noisily run "`c(sysdir_personal)'/35OtrosGas.do"
 
 
 

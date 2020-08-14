@@ -2461,7 +2461,7 @@ egen Infra = rsum(Infra_*)
 ** (=) Sankey **
 foreach k in grupo_edad sexo decil escol {
 	preserve
-	noisily run Sankey.do `k' 2018
+	noisily run "`c(sysdir_personal)'/Sankey.do" `k' 2018
 	restore
 }
 
