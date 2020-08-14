@@ -36,10 +36,9 @@ local anio = substr(`"`=trim("`fecha'")'"',1,4) // 								<-- anio base: HOY
 *******************************
 *** 1 POBLACION: ENIGH 2018 ***													Cap. 2. Agentes economicos
 ***   Simulador v5: Intro   ***
-*******************************
+/*******************************
 Poblacion, anio(`anio') graphs //`update'
-noisily run Households.do 2018
-view "`c(sysdir_site)'../basesCIEP/SIM/2018/households.smcl"
+noisily run "`c(sysdir_personal)'/Households.do" 2018
 
 
 
@@ -47,7 +46,7 @@ view "`c(sysdir_site)'../basesCIEP/SIM/2018/households.smcl"
 ***************************/
 *** 2 ECONOMIA Y CUENTAS ***													Cap. 3. Sistema: de Cuentas Nacionales
 ****************************
-noisily run 2PIBWeb.do
+noisily run "`c(sysdir_personal)'/2PIBWeb.do"
 
 
 
@@ -55,7 +54,7 @@ noisily run 2PIBWeb.do
 ****************
 *** 3 GASTOS ***
 ****************
-noisily run 3GastosWeb.do
+noisily run "`c(sysdir_personal)'/3GastosWeb.do"
 
 
 
@@ -63,7 +62,7 @@ noisily run 3GastosWeb.do
 ******************
 *** 4 INGRESOS ***
 ******************
-noisily run 4IngresosWeb.do
+noisily run "`c(sysdir_personal)'/4IngresosWeb.do"
 
 
 
@@ -71,7 +70,7 @@ noisily run 4IngresosWeb.do
 ******************************
 ** 5 Cuentas Generacionales **
 ******************************
-noisily run 5CGWeb.do //														<-- OPTIONAL!!! Toma mucho tiempo.
+noisily run "`c(sysdir_personal)'/5CGWeb.do" //														<-- OPTIONAL!!! Toma mucho tiempo.
 
 
 
