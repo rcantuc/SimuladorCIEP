@@ -2064,7 +2064,7 @@ forvalues j=`=rowsof(ISR)'(-1)1 {
 g double TE = ISR/(ing_bruto_tax - exen_tot - deduc_isr - cuotasTPF)
 replace TE = 0 if TE == .
 
-replace ISR = 0 if formal == 0 //& formal_renta == 0 & formal_servprof == 0
+//replace ISR = 0 if formal == 0 //& formal_renta == 0 & formal_servprof == 0
 
 g double ISR__asalariados = isrE
 replace ISR__asalariados = 0 if ISR__asalariados == .
