@@ -25,7 +25,8 @@ quietly {
 	***********************
 	*** 0 Base de datos ***
 	***********************
-	Poblacion, anio(`aniovp') //`graphs' //`update'
+	use `"`c(sysdir_site)'../basesCIEP/SIM/Poblacion.dta"', clear
+	
 	tabstat poblacion if anio == `aniovp', stat(sum) f(%15.0fc) save
 	tempname pobtotal
 	matrix `pobtotal' = r(StatTotal)
@@ -38,7 +39,7 @@ quietly {
 	/* Verifica si se puede usar la base, si no es así o la opción update es llamada, 
 	limpia la base y la usa */
 	capture use `"`c(sysdir_site)'../basesCIEP/SIM/PIBDeflactor`=subinstr("${pais}"," ","",.)'.dta"', clear
-	if _rc != 0 | "`update'" == "update" {
+	if _rc != 0 | "`update'" == "update" | "`c(os)'" == "Unix" {
 		run `"`c(sysdir_personal)'/PIBDeflactorBase`=subinstr("${pais}"," ","",.)'.do"'
 		use `"`c(sysdir_site)'../basesCIEP/SIM/PIBDeflactor`=subinstr("${pais}"," ","",.)'.dta"', clear
 	}
