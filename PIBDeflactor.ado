@@ -40,7 +40,7 @@ quietly {
 	limpia la base y la usa */
 	capture use `"`c(sysdir_site)'../basesCIEP/SIM/PIBDeflactor`=subinstr("${pais}"," ","",.)'.dta"', clear
 	if _rc != 0 | "`update'" == "update" | "`c(os)'" == "Unix" {
-		run `"`c(sysdir_personal)'/PIBDeflactorBase`=subinstr("${pais}"," ","",.)'.do"'
+		run `"`c(sysdir_site)'/PIBDeflactorBase`=subinstr("${pais}"," ","",.)'.do"'
 		use `"`c(sysdir_site)'../basesCIEP/SIM/PIBDeflactor`=subinstr("${pais}"," ","",.)'.dta"', clear
 	}
 	local anio_first = anio[1]
