@@ -1533,37 +1533,37 @@ forvalues j=`=rowsof(ISR)'(-1)1 {
 		replace ing_subor = (ing_t4_cap1 + ISR[`j',3] ///
 			- ISR[`j',4]/100*ISR[`j',1] - SE[`k',3]*htrab/48 - ISR[`j',4]/100*cuotasTPF ///
 			- ISR[`j',4]/100*exen_t4_cap1 + cuotasTPF) / (1-ISR[`j',4]/100) ///
-			if formal != 0 & ing_t4_cap1 != 0 & htrab < 48 & categ == .
+			if /*formal != 0 &*/ ing_t4_cap1 != 0 & htrab < 48 & categ == .
 
 		replace ing_subor = (ing_t4_cap1 + ISR[`j',3] ///
 			- ISR[`j',4]/100*ISR[`j',1] - SE[`k',3] - ISR[`j',4]/100*cuotasTPF ///
 			- ISR[`j',4]/100*exen_t4_cap1 + cuotasTPF) / (1-ISR[`j',4]/100) ///
-			if formal != 0 & ing_t4_cap1 != 0 & htrab >= 48 & categ == .
+			if /*formal != 0 &*/ ing_t4_cap1 != 0 & htrab >= 48 & categ == .
 
 		replace ing_subor = (ing_t4_cap1 + ISR[`j',3] ///
 			- ISR[`j',4]/100*ISR[`j',1] - ISR[`j',4]/100*cuotasTPF ///
 			- ISR[`j',4]/100*exen_t4_cap1 + cuotasTPF) / (1-ISR[`j',4]/100) ///
-			if formal != 0 & ing_t4_cap1 != 0 & htrab == . & categ == .
+			if /*formal != 0 &*/ ing_t4_cap1 != 0 & htrab == . & categ == .
 
 		replace categI = `j' if ing_subor - exen_t4_cap1 - cuotasTPF >= ISR[`j',1] ///
 			& ing_subor - exen_t4_cap1 - cuotasTPF <= ISR[`j',2] ///
-			& formal != 0 & categ == .
+			& /*formal != 0 &*/ categ == .
 
 		replace categS = `k' if ing_subor - ing_t4_cap1_nosubsidio >= SE[`k',1] ///
 			& ing_subor - ing_t4_cap1_nosubsidio <= SE[`k',2] ///
-			& formal != 0 & categ == .
+			& /*formal != 0 &*/ categ == .
 
 		replace categ = `j'`k' if ing_subor - exen_t4_cap1 - cuotasTPF >= ISR[`j',1] ///
 			& ing_subor - exen_t4_cap1 - cuotasTPF <= ISR[`j',2] ///
 			& ing_subor - ing_t4_cap1_nosubsidio >= SE[`k',1] ///
 			& ing_subor - ing_t4_cap1_nosubsidio <= SE[`k',2] ///
-			& formal != 0 & categ == .
+			& /*formal != 0 &*/ categ == .
 
-		replace SE = SE[`k',3]*htrab/48 if formal != 0 & categ == `j'`k' & htrab < 48
+		replace SE = SE[`k',3]*htrab/48 if /*formal != 0 &*/ categ == `j'`k' & htrab < 48
 
-		replace SE = SE[`k',3] if formal != 0 & categ == `j'`k' & htrab >= 48
+		replace SE = SE[`k',3] if /*formal != 0 &*/ categ == `j'`k' & htrab >= 48
 
-		replace SE = 0 if formal != 0 & categ == `j'`k' & htrab == .
+		replace SE = 0 if /*formal != 0 &*/ categ == `j'`k' & htrab == .
 	}
 }
 
@@ -1571,24 +1571,24 @@ forvalues j=`=rowsof(ISR)'(-1)1 {
 replace ing_subor = (ing_t4_cap1 + ISR[categI,3] ///
 	- ISR[categI,4]/100*ISR[categI,1] - SE[categS,3]*htrab/48 - ISR[categI,4]/100*cuotasTPF ///
 	- ISR[categI,4]/100*exen_t4_cap1 + cuotasTPF) / (1-ISR[categI,4]/100) ///
-	if formal != 0 & ing_t4_cap1 != 0 & htrab < 48 ///
+	if /*formal != 0 &*/ ing_t4_cap1 != 0 & htrab < 48 ///
 	& categ == . & categI != . & categS != .
 
 replace ing_subor = (ing_t4_cap1 + ISR[categI,3] ///
 	- ISR[categI,4]/100*ISR[categI,1] - SE[categS,3] - ISR[categI,4]/100*cuotasTPF ///
 	- ISR[categI,4]/100*exen_t4_cap1 + cuotasTPF) / (1-ISR[categI,4]/100) ///
-	if formal != 0 & ing_t4_cap1 != 0 & htrab >= 48 ///
+	if /*formal != 0 &*/ ing_t4_cap1 != 0 & htrab >= 48 ///
 	& categ == . & categI != . & categS != .
 
 replace ing_subor = (ing_t4_cap1 + ISR[categI,3] ///
 	- ISR[categI,4]/100*ISR[categI,1] - ISR[categI,4]/100*cuotasTPF ///
 	- ISR[categI,4]/100*exen_t4_cap1 + cuotasTPF) / (1-ISR[categI,4]/100) ///
-	if formal != 0 & ing_t4_cap1 != 0 & htrab == . ///
+	if /*formal != 0 &*/ ing_t4_cap1 != 0 & htrab == . ///
 	& categ == . & categI != . & categS != .
 
-replace SE = SE[categS,3]*htrab/48 if formal != 0 & categ == . & categI != . & categS != . & htrab < 48
-replace SE = SE[categS,3] if formal != 0 & categ == . & categI != . & categS != . & htrab >= 48
-replace SE = 0 if formal != 0 & categ == . & categI != . & categS != . & htrab == .
+replace SE = SE[categS,3]*htrab/48 if /*formal != 0 &*/ categ == . & categI != . & categS != . & htrab < 48
+replace SE = SE[categS,3] if /*formal != 0 &*/ categ == . & categI != . & categS != . & htrab >= 48
+replace SE = 0 if /*formal != 0 &*/ categ == . & categI != . & categS != . & htrab == .
 
 * Ingreso bruto informales *
 replace ing_subor = ing_t4_cap1 if formal == 0
@@ -1911,6 +1911,7 @@ local TaltimirHouse = `ExNOpHog'/`ALTIMIR0'[1,4]
 local TaltimirROWTrans = `ROWTrans'/`ALTIMIR0'[1,5]
 
 if "`altimir'" == "yes" {
+	noisily di in g "  Altimir: " in y "`altimir'"
 	replace ing_estim_alqu = ing_estim_alqu*`TaltimirHouse'
 	replace ing_remesas = ing_remesas*`TaltimirROWTrans'
 
@@ -2458,7 +2459,7 @@ foreach k in Aguas BajaN BajaS Campe Coahu Colim Chiap Chihu Ciuda Duran Guana /
 egen Infra = rsum(Infra_*)
 
 
-** (=) Sankey **
+/** (=) Sankey **
 foreach k in grupo_edad sexo decil escol {
 	preserve
 	noisily run "`c(sysdir_personal)'/Sankey.do" `k' 2018
@@ -2467,7 +2468,7 @@ foreach k in grupo_edad sexo decil escol {
 
 
 
-***********
+**********/
 *** END ***
 ***********
 capture drop __*

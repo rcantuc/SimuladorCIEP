@@ -3,11 +3,12 @@ program define Poblacion
 quietly {
 
 	version 13.1
+	timer on 14
 
 	local aniovp : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`aniovp'")'"',1,4)
 
-	syntax [anything] [, ANIOinicial(int `aniovp') ANIOFinal(int -1) Graphs UPDATE]
+	syntax [anything] [, ANIOinicial(int `aniovp') ANIOFinal(int -1) NOGraphs UPDATE]
 
 	* Si la funcion se llama sin argumento, utiliza población *
 	if "`anything'" == "" {
@@ -38,91 +39,86 @@ quietly {
 		use `"`c(sysdir_site)'../basesCIEP/SIM/`=proper("`anything'")'`=subinstr("${pais}"," ","",.)'.dta"', clear
 	}
 
-	* Si no hay año final, utiliza el último elemento del vector "anio" *
-	local poblacion : variable label `anything'
-	if `aniofinal' == -1 {
-		sort anio
-		local aniofinal = anio[_N]
-	}
-
-
-
-	****************
-	* EstadÃ­sticos *
-	****************
-	* Calcula las estadísticas descriptivas y las guarda en matrices *
-	* Mediana *
-	tabstat edad [fw=round(abs(`anything'),1)] if anio == `anioinicial', ///
-		stat(median) by(sexo) save
-	tempname H`anioinicial' M`anioinicial'
-	matrix `H`anioinicial'' = r(Stat1)
-	matrix `M`anioinicial'' = r(Stat2)
-
-	tabstat edad [fw=round(abs(`anything'),1)] if anio == `aniofinal', ///
-		stat(median) by(sexo) save
-	tempname H`aniofinal' M`aniofinal'
-	matrix `H`aniofinal'' = r(Stat1)
-	matrix `M`aniofinal'' = r(Stat2)
-
-	* Distribucion inicial *
-	tabstat `anything' if anio == `anioinicial' & edad < 18, ///
-		stat(sum) f(%15.0fc) save
-	tempname P18_`anioinicial'
-	matrix `P18_`anioinicial'' = r(StatTotal)
-
-	tabstat `anything' if anio == `anioinicial' & edad >= 18 & edad < 65, ///
-		stat(sum) f(%15.0fc) save
-	tempname P1865_`anioinicial'
-	matrix `P1865_`anioinicial'' = r(StatTotal)
-
-	tabstat `anything' if anio == `anioinicial' & edad >= 65, ///
-		stat(sum) f(%15.0fc) save
-	tempname P65_`anioinicial'
-	matrix `P65_`anioinicial'' = r(StatTotal)
-
-	tabstat `anything' if anio == `anioinicial', stat(sum) f(%15.0fc) save
-	tempname P`anioinicial'
-	matrix `P`anioinicial'' = r(StatTotal)
-
-	* Distribucion final *
-	tabstat `anything' if anio == `aniofinal' & edad < 18, ///
-		stat(sum) f(%15.0fc) save
-	tempname P18_`aniofinal'
-	matrix `P18_`aniofinal'' = r(StatTotal)
-
-	tabstat `anything' if anio == `aniofinal' & edad >= 18 & edad < 65, ///
-		stat(sum) f(%15.0fc) save
-	tempname P1865_`aniofinal'
-	matrix `P1865_`aniofinal'' = r(StatTotal)
-
-	tabstat `anything' if anio == `aniofinal' & edad >= 65, ///
-		stat(sum) f(%15.0fc) save
-	tempname P65_`aniofinal'
-	matrix `P65_`aniofinal'' = r(StatTotal)
-
-	tabstat `anything' if anio == `aniofinal', stat(sum) f(%15.0fc) save
-	tempname P`aniofinal'
-	matrix `P`aniofinal'' = r(StatTotal)
-
-	* Poblacion viva *
-	tabstat `anything' if anio == `aniofinal' & edad > `aniofinal'-`anioinicial', ///
-		stat(sum) f(%15.0fc) save
-	tempname Pviva
-	matrix `Pviva' = r(StatTotal)
-
-	tabstat `anything' if anio == `aniofinal' & edad <= `aniofinal'-`anioinicial', ///
-		stat(sum) f(%15.0fc) save
-	tempname Pnacida
-	matrix `Pnacida' = r(StatTotal)
-
-	preserve
-
-
-
 	***********************
 	* Grafica 1: Piramide *
 	***********************
-	if "$graphs" == "on" | "`graphs'" == "graphs" {
+	if "`nographs'" != "nographs" {
+	* Si no hay año final, utiliza el último elemento del vector "anio" *
+		local poblacion : variable label `anything'
+		if `aniofinal' == -1 {
+			sort anio
+			local aniofinal = anio[_N]
+		}
+
+
+
+		****************
+		* EstadÃ­sticos *
+		****************
+		* Calcula las estadísticas descriptivas y las guarda en matrices *
+		* Mediana *
+		tabstat edad [fw=round(abs(`anything'),1)] if anio == `anioinicial', ///
+			stat(median) by(sexo) save
+		tempname H`anioinicial' M`anioinicial'
+		matrix `H`anioinicial'' = r(Stat1)
+		matrix `M`anioinicial'' = r(Stat2)
+
+		tabstat edad [fw=round(abs(`anything'),1)] if anio == `aniofinal', ///
+			stat(median) by(sexo) save
+		tempname H`aniofinal' M`aniofinal'
+		matrix `H`aniofinal'' = r(Stat1)
+		matrix `M`aniofinal'' = r(Stat2)
+
+		* Distribucion inicial *
+		tabstat `anything' if anio == `anioinicial' & edad < 18, ///
+			stat(sum) f(%15.0fc) save
+		tempname P18_`anioinicial'
+		matrix `P18_`anioinicial'' = r(StatTotal)
+
+		tabstat `anything' if anio == `anioinicial' & edad >= 18 & edad < 65, ///
+			stat(sum) f(%15.0fc) save
+		tempname P1865_`anioinicial'
+		matrix `P1865_`anioinicial'' = r(StatTotal)
+
+		tabstat `anything' if anio == `anioinicial' & edad >= 65, ///
+			stat(sum) f(%15.0fc) save
+		tempname P65_`anioinicial'
+		matrix `P65_`anioinicial'' = r(StatTotal)
+
+		tabstat `anything' if anio == `anioinicial', stat(sum) f(%15.0fc) save
+		tempname P`anioinicial'
+		matrix `P`anioinicial'' = r(StatTotal)
+
+		* Distribucion final *
+		tabstat `anything' if anio == `aniofinal' & edad < 18, ///
+			stat(sum) f(%15.0fc) save
+		tempname P18_`aniofinal'
+		matrix `P18_`aniofinal'' = r(StatTotal)
+
+		tabstat `anything' if anio == `aniofinal' & edad >= 18 & edad < 65, ///
+			stat(sum) f(%15.0fc) save
+		tempname P1865_`aniofinal'
+		matrix `P1865_`aniofinal'' = r(StatTotal)
+
+		tabstat `anything' if anio == `aniofinal' & edad >= 65, ///
+			stat(sum) f(%15.0fc) save
+		tempname P65_`aniofinal'
+		matrix `P65_`aniofinal'' = r(StatTotal)
+
+		tabstat `anything' if anio == `aniofinal', stat(sum) f(%15.0fc) save
+		tempname P`aniofinal'
+		matrix `P`aniofinal'' = r(StatTotal)
+
+		* Poblacion viva *
+		tabstat `anything' if anio == `aniofinal' & edad > `aniofinal'-`anioinicial', ///
+			stat(sum) f(%15.0fc) save
+		tempname Pviva
+		matrix `Pviva' = r(StatTotal)
+
+		tabstat `anything' if anio == `aniofinal' & edad <= `aniofinal'-`anioinicial', ///
+			stat(sum) f(%15.0fc) save
+		tempname Pnacida
+		matrix `Pnacida' = r(StatTotal)
 
 		* Variables a graficar *
 		tempvar pob2
@@ -210,81 +206,78 @@ quietly {
 				replace name(Piramide_`anything'_`anioinicial'_`aniofinal')
 		}
 
-	}
 
 
+		**************************************************
+		** GrÃ¡fica 2: Transici{c o'}n demogr{c a'}fica **
+		**************************************************
+		g pob18 = `anything' if edad <= 18
+		g pob1934 = `anything' if edad >= 19 & edad <= 34
+		g pob3560 = `anything' if edad >= 35 & edad <= 60
+		g pob61 = `anything' if edad >= 61
 
-	**************************************************
-	** GrÃ¡fica 2: Transici{c o'}n demogr{c a'}fica **
-	**************************************************
-	g pob18 = `anything' if edad <= 18
-	g pob1934 = `anything' if edad >= 19 & edad <= 34
-	g pob3560 = `anything' if edad >= 35 & edad <= 60
-	g pob61 = `anything' if edad >= 61
+		collapse (sum) pob18 pob1934 pob3560 pob61 `anything', by(anio)
+		format `anything' pob* %15.0fc
 
-	collapse (sum) pob18 pob1934 pob3560 pob61 `anything', by(anio)
-	format `anything' pob* %15.0fc
+		* Distribucion *
+		g pob18_2 = pob18/`anything'*100
+		g pob1934_2 = pob1934/`anything'*100
+		g pob3560_2 = pob3560/`anything'*100
+		g pob61_2 = pob61/`anything'*100
 
-	* Distribucion *
-	g pob18_2 = pob18/`anything'*100
-	g pob1934_2 = pob1934/`anything'*100
-	g pob3560_2 = pob3560/`anything'*100
-	g pob61_2 = pob61/`anything'*100
+		* Valores maximos *
+		tabstat pob18_2 pob1934_2 pob3560_2 pob61_2, stat(max min) save
+		tempname MAX
+		matrix `MAX' = r(StatTotal)
 
-	* Valores maximos *
-	tabstat pob18_2 pob1934_2 pob3560_2 pob61_2, stat(max min) save
-	tempname MAX
-	matrix `MAX' = r(StatTotal)
-
-	forvalues k = 1(1)`=_N' {
-		* Maximos *
-		* Busca la población máxima y guarda el año y el número *
-		if pob18_2[`k'] == `MAX'[1,1] {
-			local x1 = anio[`k']
-			local y1 = pob18[`k']
-			local p1 = `k'
+		forvalues k = 1(1)`=_N' {
+			* Maximos *
+			* Busca la población máxima y guarda el año y el número *
+			if pob18_2[`k'] == `MAX'[1,1] {
+				local x1 = anio[`k']
+				local y1 = pob18[`k']
+				local p1 = `k'
+			}
+			if pob1934_2[`k'] == `MAX'[1,2] {
+				local x2 = anio[`k']
+				local y2 = pob1934[`k'] + pob18[`k']
+				local p2 = `k'
+			}
+			if pob3560_2[`k'] == `MAX'[1,3] {
+				local x3 = anio[`k']
+				local y3 = pob3560[`k'] + pob1934[`k'] + pob18[`k']
+				local p3 = `k'
+			}
+			if pob61_2[`k'] == `MAX'[1,4] {
+				local x4 = anio[`k']
+				local y4 = pob61[`k'] + pob3560[`k'] + pob1934[`k'] + pob18[`k']
+				local p4 = `k'
+			}
+			
+			* Minimos *
+			* Busca la población mínima y guarda el año y el número *
+			if pob18_2[`k'] == `MAX'[2,1] {
+				local m1 = anio[`k']
+				local z1 = pob18[`k']
+				local q1 = `k'
+			}
+			if pob1934_2[`k'] == `MAX'[2,2] {
+				local m2 = anio[`k']
+				local z2 = pob1934[`k'] + pob18[`k']
+				local q2 = `k'
+			}
+			if pob3560_2[`k'] == `MAX'[2,3] {
+				local m3 = anio[`k']
+				local z3 = pob3560[`k'] + pob1934[`k'] + pob18[`k']
+				local q3 = `k'
+			}		
+			if pob61_2[`k'] == `MAX'[2,4] {
+				local m4 = anio[`k']
+				local z4 = pob61[`k'] + pob3560[`k'] + pob1934[`k'] + pob18[`k']
+				local q4 = `k'
+			}
 		}
-		if pob1934_2[`k'] == `MAX'[1,2] {
-			local x2 = anio[`k']
-			local y2 = pob1934[`k'] + pob18[`k']
-			local p2 = `k'
-		}
-		if pob3560_2[`k'] == `MAX'[1,3] {
-			local x3 = anio[`k']
-			local y3 = pob3560[`k'] + pob1934[`k'] + pob18[`k']
-			local p3 = `k'
-		}
-		if pob61_2[`k'] == `MAX'[1,4] {
-			local x4 = anio[`k']
-			local y4 = pob61[`k'] + pob3560[`k'] + pob1934[`k'] + pob18[`k']
-			local p4 = `k'
-		}
-		
-		* Minimos *
-		* Busca la población mínima y guarda el año y el número *
-		if pob18_2[`k'] == `MAX'[2,1] {
-			local m1 = anio[`k']
-			local z1 = pob18[`k']
-			local q1 = `k'
-		}
-		if pob1934_2[`k'] == `MAX'[2,2] {
-			local m2 = anio[`k']
-			local z2 = pob1934[`k'] + pob18[`k']
-			local q2 = `k'
-		}
-		if pob3560_2[`k'] == `MAX'[2,3] {
-			local m3 = anio[`k']
-			local z3 = pob3560[`k'] + pob1934[`k'] + pob18[`k']
-			local q3 = `k'
-		}		
-		if pob61_2[`k'] == `MAX'[2,4] {
-			local m4 = anio[`k']
-			local z4 = pob61[`k'] + pob3560[`k'] + pob1934[`k'] + pob18[`k']
-			local q4 = `k'
-		}
-	}
 
-	if "$graphs" == "on" | "`graphs'" == "graphs" {
 		tempvar pob18 pob1934 pob3560 pob61
 		g `pob18' = pob18
 		g `pob1934' = pob1934 + pob18
@@ -327,6 +320,8 @@ quietly {
 			}
 	}
 
-	restore
+	timer off 14
+	timer list 14
+	noisily di _newline in g "Tiempo: " in y round(`=r(t14)/r(nt14)',.1) in g " segs."
 }
 end

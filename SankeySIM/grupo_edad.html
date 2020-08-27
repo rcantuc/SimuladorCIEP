@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Fiscal System v2.0</title>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="https://rawgit.com/newrelic-forks/d3-plugins-sankey/master/sankey.js"></script>
+    <script src="https://rawgit.com/misoproject/d3.chart/master/d3.chart.min.js"></script>
+    <script src="https://rawgit.com/q-m/d3.chart.sankey/master/d3.chart.sankey.min.js"></script>
+    <style>
+    body {
+        background-color: #ECECEC
+    }
+    </style>
+    <link rel="stylesheet" href="css/estilos.css">
+
+  </head>
+  <body>
+  <table id="tabla-box" width="100%" border="0" cellspacing="0" cellpadding="0">
+      <tr>
+        <td width="2%" class="principal" align="left"></td>
+        <td width="5%" class="principal" align="left">Población</td>
+        <td width="5%" class="principal" align="center">Generación del ingreso</td>
+        <td width="5%" class="principal" align="center">Ingreso disponible</td>
+        <td width="20%" class="principal" align="center">Consumo</td>
+        <td width="45%" class="principal" align="right">Población</td>
+        <td width="2%" class="principal" align="left"></td>
+      </tr>
+      <tr>
+         <td colspan="11"><div id="chart" style="width:95%; margin:auto; margin-bottom:8pt;"></div></td>
+      </tr>
+      <tr>
+        <td width="3%" class="principal" align="left"></td>
+        <td colspan="11" class="principal" align="left">Elaborado por el CIEP, con información del INEGI (ENIGH 2018 y Sistema de Cuentas Nacionales). Escrito intencionalmente sin acentos.</td>
+      </tr>      
+    </table>
+    <script>
+      var colors = {
+            'one':              '#FF8100',
+            'two':              '#FFBD00',
+            'three':            '#27612F',
+            'four':             '#35C847',
+            'five':             '#004EC6',
+            'six':              '#0097C9',
+            'seven':            '#BA2240',
+            'eight':            '#FE766D',
+            'nine':             '#96065C',
+            'ten':              '#D59BBE',
+            'eleven':           '#176972',
+            'twelve':           '#39C6B8',
+            'thirteen':         '#85580E',
+            'fourteen':         '#E3E563',
+            'fifteen':          '#663E4C',
+            'sixteen':          '#00977D',
+            'seventeen':        '#B5B91B',
+            'eighteen':         '#093F5D',
+            'nineteen':         '#00977D',
+            'twenty':           '#85352C'
+          };
+      d3.json("grupo_edad.json", function(error, json) {
+        var chart = d3.select("#chart").append("svg").chart("Sankey.Path");
+        chart
+          .name(label)
+          .colorNodes(function(name, node) {
+            return color(node, 1) || '#9a9a9a' || colors.fallback;
+          })
+          .colorLinks(function(link) {
+            return color(link.target, 1) || color(link.source, 4) || colors.fallback;
+          })
+          .nodeWidth(25)
+          .nodePadding(5)
+          .spread(true)
+          .iterations(0)
+          .draw(json);
+        function label(node) {
+          return node.name.replace(/\s*\(.*?\)$/, '');
+        }
+        function color(node, depth) {
+          var id = node.id.replace(/(_score)?(_\d+)?$/, '');
+          if (colors[id]) {
+            return colors[id];
+          } else if (depth > 0 && node.targetLinks && node.targetLinks.length == 1) {
+            return color(node.targetLinks[0].source, depth-1);
+			return null;
+          } else {
+            return null;
+          }
+        }
+      });
+    </script>
+  </body>
+</html>
