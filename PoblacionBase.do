@@ -74,7 +74,7 @@ keep if entidad == "Nacional"
 
 * 5. Guardar *
 
-if `c(version)' > 13 {
+if `c(version)' > 13.1 {
 	saveold `"`c(sysdir_site)'../basesCIEP/SIM/Defunciones.dta"', replace version(13)
 }
 else {
@@ -83,7 +83,7 @@ else {
 
 collapse (sum) defunciones, by(anio entidad cve_geo)
 
-if `c(version)' > 13 {
+if `c(version)' > 13.1 {
 	saveold `"`c(sysdir_site)'../basesCIEP/SIM/Defuncionestot.dta"', replace version(13)
 }
 else {
