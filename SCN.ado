@@ -267,7 +267,7 @@ quietly {
 			local label = substr("`label'",1,31)
 			label var `k' "`label'"
 		}
-		if `c(version)' > 13 {
+		if `c(version)' > 13.1 {
 			saveold "`c(sysdir_site)'../basesCIEP/SIM/baseSCN.dta", replace version(13)
 		}
 		else {
