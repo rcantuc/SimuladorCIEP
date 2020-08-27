@@ -2475,7 +2475,7 @@ capture drop __*
 format ing_* exen_* renta %10.0fc
 compress
 capture mkdir "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/"
-if `c(version)' == 15.1 {
+if `c(version)' > 13 {
 	saveold "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/households.dta", replace version(13)
 }
 else {
