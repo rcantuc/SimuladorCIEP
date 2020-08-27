@@ -51,5 +51,5 @@ global def2025 =
 *************************/
 *** 4 Informaci{c o'}n ***
 **************************
-noisily PIBDeflactor, nographs //update
+noisily PIBDeflactor, nographs update
 clear
