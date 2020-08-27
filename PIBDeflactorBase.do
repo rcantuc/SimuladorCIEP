@@ -89,4 +89,9 @@ format pib* %25.0fc
 
 g currency = "MXN"
 
-saveold `"`c(sysdir_site)'../basesCIEP/SIM/PIBDeflactor.dta"', replace version(13)
+if `c(version)' > 13 {
+	saveold `"`c(sysdir_site)'../basesCIEP/SIM/PIBDeflactor.dta"', replace version(13)
+}
+else {
+	save `"`c(sysdir_site)'../basesCIEP/SIM/PIBDeflactor.dta"', replace
+}
