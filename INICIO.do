@@ -1,7 +1,7 @@
 ***************************************
 **** FOR PROGRAMMING PURPOSES ONLY ****
 ****   COMMENT SECTION OTHERWISE   ****
-***************************************
+/***************************************
 clear all
 macro drop _all
 capture log close _all
@@ -22,7 +22,7 @@ adopath ++ PERSONAL
 
 
 
-********************************
+*******************************/
 *** 1 POBLACION: ENIGH 2018  ***
 ***   Simulador v5: Set up   ***
 /********************************

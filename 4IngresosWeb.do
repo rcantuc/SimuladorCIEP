@@ -117,14 +117,14 @@ IVA_Mod
 ** 4.4 Resultados **
 ********************
 * Modulos *
-capture confirm matrix ISR
+capture confirm scalar ISR_AS_Mod
 if _rc == 0 {
 	scalar ISR_AS = ISR_AS_Mod
 	scalar ISR_PF = ISR_PF_Mod
 	scalar ISR_PM = ISR_PM_Mod
 }
 
-capture confirm matrix IVA
+capture confirm scalar IVA_Mod
 if _rc == 0 {
 	scalar IVA = IVA_Mod
 }
