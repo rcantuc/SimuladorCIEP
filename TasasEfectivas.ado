@@ -12,18 +12,18 @@ quietly {
 
 
 	***************************************
-	*** 1 Sistema de cuentas nacionales ***
+	*** 1 Sistema de Cuentas Nacionales ***
 	***************************************
-	run "`c(sysdir_personal)'/2PIBWeb.do" nographs
-	run "`c(sysdir_personal)'/3GastosWeb.do"
-
+	use if anio == `anio' using "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", clear
+	scalar PIB = pibY[1]
+	SCN, anio(`anio') nographs
 
 
 
 	****************************
 	*** 2 Ingresos iniciales ***
 	****************************
-	noisily LIF, anio(`anio')
+	noisily LIF, anio(`anio') //min(1) //graphs
 	local recursos = r(divCIEP)
 	foreach k of local recursos {
 		local rec`=substr("`k'",1,7)' = r(`k')
@@ -246,6 +246,8 @@ quietly {
 
 	tabstat Laboral Consumo Otros [fw=factor], stat(sum) f(%20.0fc) save
 	matrix INGRESOSSIM = r(StatTotal)
+
+	save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace
 
 
 

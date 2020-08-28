@@ -10,7 +10,7 @@ set charset latin1, permanently
 
 *set trace on
 
-*sysdir set PERSONAL "`c(sysdir_site)'"
+sysdir set PERSONAL "`c(sysdir_site)'"
 
 
 
@@ -53,5 +53,5 @@ global def2025 =
 *************************/
 *** 4 Informaci{c o'}n ***
 **************************
-noisily PIBDeflactor, nographs
+noisily PIBDeflactor, nographs //update
 clear

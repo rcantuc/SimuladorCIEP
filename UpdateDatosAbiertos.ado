@@ -1,5 +1,6 @@
 program define UpdateDatosAbiertos, return
 
+	syntax [, UPDATE]
 
 	************************
 	*** 1. Base de datos ***
@@ -70,8 +71,8 @@ program define UpdateDatosAbiertos, return
 	tempfile rf
 	save `rf'
 
-	import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/rfsp_metodologia_anterior.csv", clear
-	*import delimited "`c(sysdir_site)'../basesCIEP/SHCP/Datos Abiertos/rfsp_metodologia_anterior.csv", clear
+	*import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/rfsp_metodologia_anterior.csv", clear
+	import delimited "`c(sysdir_site)'../basesCIEP/SHCP/Datos Abiertos/rfsp_metodologia_anterior.csv", clear
 	tempfile rfH
 	save `rfH'
 
@@ -716,4 +717,8 @@ program define UpdateDatosAbiertos, return
 	compress
 
 	saveold "`c(sysdir_site)'../basesCIEP/SIM/DatosAbiertos.dta", replace version(13)
+
+	noisily LIF, update
+	noisily SHRFSP, update
+
 end

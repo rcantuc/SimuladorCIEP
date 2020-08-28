@@ -53,7 +53,7 @@ local data "`c(sysdir_site)'../basesCIEP/INEGI/`enigh'/`enighanio'"
 *** 1. DATOS MACROECON{c o'}MICOS (MA) ***
 ******************************************
 ** MA.1. Sistema de Cuentas Nacionales **
-noisily SCN, anio(`enighanio')
+noisily SCN, anio(`enighanio') nographs
 local PIBSCN = scalar(PIB)
 local Food = scalar(Alim)
 local NBev = scalar(BebN)
@@ -323,7 +323,7 @@ if _rc != 0 {
 	compress
 	sort folioviv foliohog numren clave
 
-	if `c(version)' == 15.1 {
+	if `c(version)' > 13.1 {
 		saveold "`data'/preconsumption.dta", replace version(13)
 	}
 	else {
@@ -409,7 +409,7 @@ collapse (sum) deduc_*, by(folioviv foliohog)
 g proyecto = "2"
 g numren = "01"
 egen deduc_isr = rsum(deduc_*)
-if `c(version)' == 15.1 {
+if `c(version)' > 13.1 {
 	saveold "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/deducciones.dta", replace version(13)
 }
 else {
@@ -741,45 +741,53 @@ replace IEPS = IEPS*`IEPS'/`MTot'[1,4]
 *** 7 Gasto por edad ***
 ************************
 replace categ_iva = "sin_iva" if categ_iva == ""
-collapse (sum) gasto_anual IVA IEPS (max) factor sexo edad alfa, by(folioviv foliohog numren categ_iva)
-reshape wide gasto_anual IVA IEPS, i(folioviv foliohog numren) j(categ_iva) string
+foreach categ of varlist categ categ_iva {
+	preserve
+	collapse (sum) gasto_anual IVA IEPS (max) factor sexo edad alfa, by(folioviv foliohog numren `categ')
+	capture reshape wide gasto_anual IVA IEPS, i(folioviv foliohog numren) j(`categ') string
+	if _rc != 0 {
+		reshape wide gasto_anual IVA IEPS, i(folioviv foliohog numren) j(`categ')
+	}
 
-** 7.1 Distribucion **
-foreach k of varlist gasto_anual* IVA* IEPS* {
-	tempvar temp`k'
-	g double `temp`k'' = `k' if numren == ""
-	egen double T`k' = sum(`temp`k''), by(folioviv foliohog)
+	** 7.1 Distribucion **
+	foreach k of varlist gasto_anual* IVA* IEPS* {
+		tempvar temp`k'
+		g double `temp`k'' = `k' if numren == ""
+		egen double T`k' = sum(`temp`k''), by(folioviv foliohog)
+	}
+
+	tempvar alfatot
+	egen `alfatot' = sum(alfa), by(folioviv foliohog)
+	foreach k of varlist gasto_anual* IVA* IEPS* {
+		replace `k' = 0 if `k' == .
+		replace `k' = `k' + T`k'*alfa/`alfatot'
+	}
+	drop if numren == ""
+	drop T*
+	capture drop *sin_iva
+
+	** 7.2 Totales **
+	egen TOTgasto_anual = rsum(gasto_anual*)
+	egen TOTIVA = rsum(IVA*)
+	egen TOTIEPS = rsum(IEPS*)
+
+
+
+	***********
+	*** END ***
+	***********
+	capture drop __*
+	compress
+
+	if `c(version)' > 13.1 {
+		saveold "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/expenditure_`categ'.dta", replace version(13)
+	}
+	else {
+		save "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/expenditure_`categ'.dta", replace
+	}
+	restore
 }
 
-tempvar alfatot
-egen `alfatot' = sum(alfa), by(folioviv foliohog)
-foreach k of varlist gasto_anual* IVA* IEPS* {
-	replace `k' = 0 if `k' == .
-	replace `k' = `k' + T`k'*alfa/`alfatot'
-}
-drop if numren == ""
-drop T*
-drop *sin_iva
-
-** 7.2 Totales **
-egen TOTgasto_anual = rsum(gasto_anual*)
-egen TOTIVA = rsum(IVA*)
-egen TOTIEPS = rsum(IEPS*)
-
-
-
-***********
-*** END ***
-***********
-capture drop __*
-compress
-
-if `c(version)' == 15.1 {
-	saveold "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/expenditure.dta", replace version(13)
-}
-else {
-	save "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/expenditure.dta", replace
-}
 
 timer off 5
 timer list 5

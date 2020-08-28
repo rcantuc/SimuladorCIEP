@@ -5,7 +5,7 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
-	syntax [, ANIO(int `aniovp') PEF]
+	syntax [, ANIO(int `aniovp') PEF NOGraphs]
 
 	noisily di _newline(2) in g _dup(20) "." "{bf:   Transferencias per c{c a'}pita de los GASTOS " in y `anio' "   }" in g _dup(20) "."
 
@@ -287,11 +287,11 @@ quietly {
 
 
 	replace Salud = `ssa'/`pobtot'[1,1]
-	replace Salud = (`segpop')/(`Salud'[1,5]+`Salud'[1,7]) if benef_seg_pop == 1 | benef_isssteest == 1
-	replace Salud = `imss'/`Salud'[1,1] if benef_imss == 1
-	replace Salud = `issste'/`Salud'[1,2] if benef_issste == 1
-	replace Salud = `prospe'/`Salud'[1,4] if benef_imssprospera == 1
-	replace Salud = `pemex'/`Salud'[1,3] if benef_pemex == 1
+	replace Salud = Salud + (`segpop')/(`Salud'[1,5]+`Salud'[1,7]) if benef_seg_pop == 1 | benef_isssteest == 1
+	replace Salud = Salud + `imss'/`Salud'[1,1] if benef_imss == 1
+	replace Salud = Salud + `issste'/`Salud'[1,2] if benef_issste == 1
+	replace Salud = Salud + `prospe'/`Salud'[1,4] if benef_imssprospera == 1
+	replace Salud = Salud + `pemex'/`Salud'[1,3] if benef_pemex == 1
 
 
 
@@ -663,8 +663,8 @@ quietly {
 	keep folio* numren factor* Laboral Consumo Otros ISR__PM ing_cap_fmp ///
 		Pension Educacion Salud IngBasico PenBienestar Salarios OtrosGas Infra ///
 		sexo grupo_edad decil escol edad ///
-		deduc_isr ISR categF ISR__asalariados ISR__PF cuotas* ing_bruto_tax htrab ///
-		tipo_contribuyente exen_tot formal* ing_capital isrE ing_subor
+		deduc_isr ISR categF ISR__asalariados ISR__PF cuotas* ing_bruto_* htrab ///
+		tipo_contribuyente exen_tot formal* ing_capital isrE ing_subor IVA* IEPS*
 	save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace
 
 

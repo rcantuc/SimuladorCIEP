@@ -16,7 +16,7 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 	
-	syntax [, ANIOvp(int `aniovp') GEO(int 5) FIN(int -1) NOGraphs UPDATE DIScount(real 3)]
+	syntax [, ANIOvp(int `aniovp') GEO(int 20) FIN(int -1) NOGraphs UPDATE DIScount(real 3)]
 
 	noisily di _newline(2) in g _dup(20) "." "{bf:   Producto Interno Bruto " in y `aniovp' "   }" in g _dup(20) "."
 
@@ -39,7 +39,7 @@ quietly {
 	/* Verifica si se puede usar la base, si no es así o la opción update es llamada, 
 	limpia la base y la usa */
 	capture use `"`c(sysdir_site)'../basesCIEP/SIM/PIBDeflactor`=subinstr("${pais}"," ","",.)'.dta"', clear
-	if _rc != 0 | "`update'" == "update" | "`c(os)'" != "Unix" {
+	if (_rc != 0 | "`update'" == "update") & "`c(os)'" != "Unix" {
 		run `"`c(sysdir_site)'/PIBDeflactorBase`=subinstr("${pais}"," ","",.)'.do"'
 		use `"`c(sysdir_site)'../basesCIEP/SIM/PIBDeflactor`=subinstr("${pais}"," ","",.)'.dta"', clear
 	}
@@ -171,7 +171,7 @@ quietly {
 	}
 	return scalar anio_exo = `anio_exo'
 
-	scalar lambda = ((OutputPerWorker[`obs_exo']/OutputPerWorker[`=`obs_exo'-20'])^(1/20)-1)*100
+	scalar lambda = ((OutputPerWorker[`obs_exo']/OutputPerWorker[`=`obs_exo'-`geo''])^(1/`geo')-1)*100
 	local Lambda = ((OutputPerWorker[`obs_exo']/OutputPerWorker[1])^(1/(`obs_exo'-1))-1)*100
 	capture confirm existence $lambda
 	if _rc == 0 {
@@ -259,9 +259,9 @@ quietly {
 		}
 
 		* Crecimiento PIB var_pibY *
-		twoway (connected var_pibY anio if anio <= `anio_last' | (anio == `anio_last' & trimestre == 4)) ///
+		twoway (connected var_pibY anio if anio < `anio_last' | (anio == `anio_last' & trimestre == 4)) ///
 			(connected var_pibY anio if anio >= `anio_last' & anio > anio[`obs_exo']) ///
-			(connected var_pibY anio if /*anio == `anio_last' & trimestre < 4 |*/ anio <= anio[`obs_exo'] & anio > `anio_last'), ///
+			(connected var_pibY anio if /*anio == `anio_last' & trimestre < 4 |*/ anio <= anio[`obs_exo'] & anio >= `anio_last'), ///
 			title({bf:Crecimientos} del Producto Interno Bruto) subtitle(${pais}) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
 			ylabel(-6(3)6, format(%5.1fc)) ///
@@ -283,9 +283,9 @@ quietly {
 			local graphtype "area"
 		}
 		
-		twoway (area `pibYRmil' anio if anio <= `anio_last' | (anio == `anio_last' & trimestre == 4)) ///
+		twoway (area `pibYRmil' anio if anio < `anio_last' | (anio == `anio_last' & trimestre == 4)) ///
 			(area `pibYRmil' anio if anio >= `anio_last' & anio > anio[`obs_exo']) ///
-			(`graphtype' `pibYRmil' anio if /*anio == `anio_last' & trimestre < 4 |*/ anio <= anio[`obs_exo'] & anio > `anio_last', lwidth(none)), ///
+			(`graphtype' `pibYRmil' anio if /*anio == `anio_last' & trimestre < 4 |*/ anio <= anio[`obs_exo'] & anio >= `anio_last', lwidth(none)), ///
 			title({bf:Flujo} del Producto Interno Bruto) subtitle(${pais}) ///
 			ytitle(billones `=currency[`obsvp']' `aniovp') xtitle("") yline(0) ///
 			///text(`=`pibYRmil'[1]*.05' `=`anio_last'-.5' "`anio_last'", place(nw) color(white)) ///

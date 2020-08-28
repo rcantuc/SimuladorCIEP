@@ -34,7 +34,7 @@ quietly {
 	***************
 	use in 1 using `"`c(sysdir_site)'../basesCIEP/SIM/LIF`=subinstr("${pais}"," ","",.)'.dta"', clear
 	syntax [if] [, ANIO(int `aniovp' ) Update Graphs Base ID(string) ///
-		MINimum(real 0) DESDE(int 2013) ILIF EOFP BY(varname)]
+		MINimum(real 0) DESDE(int 2013) ILIF EOFP BY(varname) ROWS(int 2) COLS(int 5)]
 
 	noisily di _newline(2) in g _dup(20) "." "{bf:  Sistema Fiscal: INGRESOS $pais" in y `anio' "  }" in g _dup(20) "."
 
@@ -124,7 +124,7 @@ quietly {
 			plabel(_all percent, format(%5.1fc)) ///
 			title(`"Ingresos `=upper("`lif'`ilif'")'"') /// subtitle($pais) ///
 			name(ingresospie, replace) ///
-			legend(on position(6) rows(1)) ///
+			legend(on position(6) rows(`rows') cols(`cols')) ///
 			ptext(0 0 `"{bf:`=string(`recanio'[1,1],"%6.1fc")' % PIB}"', color(white) size(small))
 
 		graph bar (sum) recaudacionPIB if divLIF != 10, ///
@@ -134,7 +134,7 @@ quietly {
 			title("{bf:Ingresos presupuestarios}") ///
 			subtitle($pais) ///
 			ytitle(% PIB) ylabel(0(5)30, labsize(small)) ///
-			legend(on position(6) cols(5)) ///
+			legend(on position(6) rows(`rows') cols(`cols')) ///
 			name(ingresos, replace) ///
 			blabel(bar, format(%7.1fc)) ///
 			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}")

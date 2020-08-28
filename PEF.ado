@@ -34,7 +34,7 @@ quietly {
 	****************
 	use in 1 using `"`c(sysdir_site)'../basesCIEP/SIM/PEF`=subinstr("${pais}"," ","",.)'.dta"', clear
 	syntax [if] [, ANIO(int `aniovp') Graphs Update Base ID(string) ///
-		BY(varname) ROWS(int 3) COLS(int 4) MINimum(real 1) PEF PPEF]
+		BY(varname) ROWS(int 2) COLS(int 5) MINimum(real 1) PEF PPEF]
 
 	noisily di _newline(2) in g _dup(20) "." "{bf:  Sistema Fiscal: GASTOS $pais" in y `anio' "  }" in g _dup(20) "."
 	
@@ -113,9 +113,9 @@ quietly {
 		
 		graph pie gastonetoPIB if anio == `anio' & `by' != -1 & transf_gf == 0, over(`resumido') ///
 			plabel(_all percent, format(%5.1fc)) ///
-			title(`"Gastos `=upper("`pef'`ppef'")'"') /// subtitle($pais) ///
+			title(`"Gastos `=upper("`pef'`ppef'")' `anio'"') /// subtitle($pais) ///
 			name(gastospie, replace) ///
-			legend(on position(6) rows(1)) ///
+			legend(on position(6) rows(`rows') cols(`cols')) ///
 			ptext(0 0 `"{bf:`=string(`gasanio'[1,1],"%6.1fc")' % PIB}"', color(white) size(small))
 
 		graph bar (sum) gastonetoPIB if `by' != -1 & transf_gf == 0 & anio >= 2013, ///
@@ -125,7 +125,7 @@ quietly {
 			title("{bf:Gastos presupuestarios}") ///
 			subtitle($pais) ///
 			ytitle(% PIB) ylabel(0(5)30, labsize(small)) ///
-			legend(on position(6) rows(1)) ///
+			legend(on position(6) rows(`rows') cols(`cols')) ///
 			name(gastos, replace) ///
 			blabel(bar, format(%7.1fc)) ///
 			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}")

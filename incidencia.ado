@@ -45,7 +45,7 @@ quietly {
 
 	sort `n'
 	if _N != 10 {
-		set obs 10
+		*set obs 10
 		forvalues k=1(1)10 {
 			if `n'[`k'] != `k' {
 				replace `n' = `k' in -1

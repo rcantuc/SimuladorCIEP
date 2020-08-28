@@ -86,7 +86,7 @@ if "$pais" == "" {
 	preserve
 	import excel "`c(sysdir_site)'../basesCIEP/PEFs/CuotasISSSTE.xlsx", clear firstrow
 
-	** Anio y Ramo (Básicos) **
+	** Anio y Ramo **
 	capture rename ciclo anio
 	capture tostring ramo, replace
 

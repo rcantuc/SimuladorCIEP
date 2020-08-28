@@ -81,11 +81,12 @@ replace ISR__asalariados = ISR*ing_subor/(ing_bruto_tax - exen_tot - deduc_isr -
 replace ISR__asalariados = 0 if ISR__asalariados == .
 label var ISR__asalariados "ISR (retenciones por salarios)"
 
-replace ISR__PF = ISR - ISR__asalariados //if ISR > ISR__asalariados
+replace ISR__PF = ISR - ISR__asalariados if ISR > ISR__asalariados
+replace ISR__PF = ISR__PF*(1-PM[1,3]/100)
 replace ISR__PF = 0 if ISR__PF == .
 label var ISR__PF "ISR (personas f{c i'}sicas)"
 
-replace ISR__PM = ing_capital*PM[1,1]/100/(`lambda'*`deflator')*79185533/77096593 if formal != 0
+replace ISR__PM = ing_capital*PM[1,1]/100/(`lambda'*`deflator')*(1-PM[1,2]/100) if formal != 0
 replace ISR__PM = 0 if ISR__PM == .
 label var ISR__PM "ISR (personas morales)"
 
@@ -96,9 +97,9 @@ tabstat ISR__asalariados ISR__PF ISR__PM [fw=factor_cola] if formal != 0, stat(s
 tempname SIMTAX
 matrix `SIMTAX' = r(StatTotal)
 
-scalar ISR_AS = `SIMTAX'[1,1]/scalar(PIB)*100 //								ISR (asalariados)
-scalar ISR_PF = `SIMTAX'[1,2]/scalar(PIB)*100 //								ISR (personas f{c i'}sicas)
-scalar ISR_PM = `SIMTAX'[1,3]/scalar(PIB)*100 //								ISR (personas morales)
+scalar ISR_AS_Mod = `SIMTAX'[1,1]/scalar(PIB)*100 //								ISR (asalariados)
+scalar ISR_PF_Mod = `SIMTAX'[1,2]/scalar(PIB)*100 //								ISR (personas f{c i'}sicas)
+scalar ISR_PM_Mod = `SIMTAX'[1,3]/scalar(PIB)*100 //								ISR (personas morales)
 
 
 tabstat cuotasTP [fw=factor_cola] if formal2 == 1, stat(sum) f(%25.2fc) save
@@ -113,7 +114,7 @@ drop Laboral
 egen Laboral = rsum(ISR__asalariados ISR__PF cuotasTP) if formal != 0
 replace Laboral = 0 if Laboral == .
 label var Laboral "los impuestos al ingreso laboral"
-noisily Simulador Laboral [fw=factor_cola], base("ENIGH 2018") boot(1) reboot graphs
+noisily Simulador Laboral [fw=factor_cola], base("ENIGH 2018") boot(1) reboot //graphs
 *noisily Simulador ISR__PM if ISR__PM != 0 [fw=factor], base("ENIGH 2018") boot(1) graphs reboot
 
 save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace
