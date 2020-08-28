@@ -269,7 +269,7 @@ quietly {
 
 			*** 1.3.4. Ciclo de Vida ***/
 			if "`graphs'" == "graphs" {
-				`noisily' ciclodevida `varlist' `if' [`weight' = `exp'*`boot'], post boot(`k') decil(`decil')
+				`noisily' CicloDeVida `varlist' `if' [`weight' = `exp'*`boot'], post boot(`k') decil(`decil')
 			}
 
 
