@@ -320,6 +320,9 @@ quietly {
 			}
 	}
 
+	use `"`c(sysdir_site)'../basesCIEP/SIM/`=proper("`anything'")'`=subinstr("${pais}"," ","",.)'tot.dta"', clear
+	noisily list anio poblacion if entidad == "Nacional" & anio == `aniovp'
+
 	timer off 14
 	timer list 14
 	noisily di _newline in g "Tiempo: " in y round(`=r(t14)/r(nt14)',.1) in g " segs."

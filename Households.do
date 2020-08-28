@@ -55,12 +55,13 @@ local enighanio = `1'
 capture log close
 capture mkdir "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/"
 log using "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/households.smcl", replace
+noisily di _newline(2) in g _dup(20) "." "{bf:  Ingresos de los hogares " in y "`enigh' `enighanio'" "  }" in g _dup(20) "."
 
 
 **************************************
 *** A.1 Macros: Cuentas Nacionales ***
 **************************************
-noisily SCN, anio(`enighanio')
+noisily SCN, anio(`enighanio') nographs
 local PIBSCN = scalar(PIB)
 local RemSal = scalar(RemSal)
 local SSEmpleadores = scalar(SSEmpleadores)
@@ -188,7 +189,7 @@ local otrosing = r(Ingresos_de_capital)
 *** A.4 Macros: SAT ***
 ***********************
 if `enighanio' >= 2015 {
-	PIBDeflactor, aniovp(`enighanio')
+	PIBDeflactor, aniovp(`enighanio') nographs
 	forvalues k=1(1)`=_N' {
 		if anio[`k'] == 2015 {
 			local deflactor = deflator[`k']
@@ -226,7 +227,6 @@ if _rc != 0 {
 ***********************************
 *** B. Micro 2. ENIGH. Ingresos ***
 ***********************************
-noisily di _newline(2) in g _dup(20) "." "{bf:  Ingresos de los hogares " in y "`enigh' `enighanio'" "  }" in g _dup(20) "."
 use "`c(sysdir_site)'../basesCIEP/INEGI/`enigh'/`enighanio'/ingresos.dta", clear
 merge m:1 (`hogar') using "`c(sysdir_site)'../basesCIEP/INEGI/`enigh'/`enighanio'/concentrado.dta", ///
 	keepusing(factor tot_integ) keep(matched)
@@ -1911,7 +1911,7 @@ local TaltimirHouse = `ExNOpHog'/`ALTIMIR0'[1,4]
 local TaltimirROWTrans = `ROWTrans'/`ALTIMIR0'[1,5]
 
 if "`altimir'" == "yes" {
-	noisily di in g "  Altimir: " in y "`altimir'"
+	noisily di in g "   Altimir: " in y "`altimir'"
 	replace ing_estim_alqu = ing_estim_alqu*`TaltimirHouse'
 	replace ing_remesas = ing_remesas*`TaltimirROWTrans'
 
@@ -2100,7 +2100,6 @@ tabstat ISR__asalariados ISR__PF ISR__PM [aw=factor_cola] if formal != 0, stat(s
 tempname RESTAX
 matrix `RESTAX' = r(StatTotal)
 
-*global isrPF_ENIGH = `RESTAX'[1,2]/`PIBSCN'*100
 
 // Step 4 //
 noisily di _newline _col(04) in g "{bf:3.4. ISR anual" ///
@@ -2303,7 +2302,8 @@ label define formalidad 3 "Pemex y otros", modify
 label values formalmax formalidad
 
 * Compas netas fuera del pais *
-merge 1:1 (`hogar' numren) using "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/expenditure.dta", nogen
+merge 1:1 (`hogar' numren) using "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/expenditure_categ.dta", nogen
+merge 1:1 (`hogar' numren) using "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/expenditure_categ_iva.dta", nogen
 Distribucion gasto_anualComprasN, relativo(TOTgasto_anual) macro(`ComprasN')
 
 * Sector p{c u'}blico *
@@ -2459,14 +2459,6 @@ foreach k in Aguas BajaN BajaS Campe Coahu Colim Chiap Chihu Ciuda Duran Guana /
 egen Infra = rsum(Infra_*)
 
 
-/** (=) Sankey **
-foreach k in grupo_edad sexo decil escol {
-	preserve
-	noisily run "`c(sysdir_personal)'/Sankey.do" `k' 2018
-	restore
-}
-
-
 
 **********/
 *** END ***
@@ -2481,6 +2473,7 @@ if `c(version)' > 13 {
 else {
 	save "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/households.dta", replace
 }
+
 timer off 6
 timer list 6
 noisily di _newline in g "{bf:Tiempo:} " in y round(`=r(t6)/r(nt6)',.1) in g " segs."

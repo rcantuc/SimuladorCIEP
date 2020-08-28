@@ -13,6 +13,15 @@ if "$pais" != "" {
 
 
 
+
+***************************************
+*** 1 Sistema de Cuentas Nacionales ***
+***************************************
+SCN, anio(`2') nographs
+
+
+
+
 **********************************/
 ** Eje 1: Generación del ingreso **
 use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
@@ -48,6 +57,8 @@ matrix `ingtot' = r(StatTotal)
 
 tempfile eje1
 save `eje1'
+
+
 
 
 ********************
@@ -127,6 +138,8 @@ tempfile eje4
 save `eje4'
 
 
+
+
 ********************
 ** DEUDA o AHORRO **
 if `gastot'[1,1]-`ingtot'[1,1] > 0 {
@@ -159,6 +172,8 @@ else {
 }
 
 
+
+
 ********************
 ** Eje 2: Total 1 **
 use `eje1', clear
@@ -173,6 +188,8 @@ tempfile eje2
 save `eje2'
 
 
+
+
 ********************
 ** Eje 3: Total 2 **
 use `eje4', clear
@@ -185,6 +202,8 @@ label values from PIB
 
 tempfile eje3
 save `eje3'
+
+
 
 
 ************

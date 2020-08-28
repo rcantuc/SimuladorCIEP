@@ -23,16 +23,14 @@ quietly {
 	}
 
 	** 1.3 Base PEF **
-	capture use `"`c(sysdir_site)'../basesCIEP/SIM/SHRFSP`=subinstr("${pais}"," ","",.)'.dta"', clear
-	if _rc != 0 {
-		noisily run UpdateSHRFSP.do
-	}
-	
+	use `"`c(sysdir_site)'../basesCIEP/SIM/SHRFSP`=subinstr("${pais}"," ","",.)'.dta"', clear
+
+
 
 	****************
 	*** 2 SYNTAX ***
 	****************
-	syntax [if/] [, ANIO(int `aniovp' ) Graphs Update Base ID(string) ///
+	syntax [if/] [, ANIO(int `aniovp' ) NOGraphs Update Base ID(string) ///
 		MINimum(real 1)]
 
 	** 2.1 Update SHRFSP **
@@ -64,7 +62,7 @@ quietly {
 	***************
 	*** 4 Graph ***
 	***************	
-	if "`graphs'" == "graphs" {
+	if "`nographs'" != "nographs" {
 		graph bar (sum) `shrfspInterno' `shrfspExterno' if anio <= `anio' & shrfsp != ., ///
 			over(anio, label(labgap(vsmall))) ///
 			stack asyvars ///

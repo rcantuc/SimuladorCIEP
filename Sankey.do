@@ -15,8 +15,8 @@ timer on 7
 
 ****************
 ** 0 Economia **
-SCN, anio(`2')
-LIF, anio(`2')
+SCN, anio(`2') nographs
+LIF, anio(`2') nographs
 local CuotasIMSS = r(Cuotas_IMSS)
 local IMSSpropio = r(IMSS)-`CuotasIMSS'
 local ISSSTEpropio = r(ISSSTE)

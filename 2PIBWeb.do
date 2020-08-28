@@ -5,35 +5,42 @@ timer on 99
 local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 local anio = substr(`"`=trim("`fecha'")'"',1,4) // 								<-- anio base: HOY
 
-*sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
-*global id = "Ricardo"
-*capture mkdir "`c(sysdir_personal)'/users/$pais/$id/"
-
 
 
 
 ***********************************
 ** PAR{c A'}METROS DEL SIMULADOR **
 
-*global pib2020 = -1.9 // 														Pre-criterios 2021 [-3.9,0.1]
-*global pib2021 =  2.5 // 														Pre-criterios 2021 [1.5,3.5]
-*global pib2022 =  1.2 //														Proyecci{c o'}n
-*global pib2023 =  1.1 //														Proyecci{c o'}n
-*global pib2024 =  1.1 //														Proyecci{c o'}n
-*global pib2025 =  1.1 //														Proyecci{c o'}n
+global id = "`id'"
 
-global pib2020 =  2.0 //														Criterios 2020
-global def2020 = 3.6 // 														Criterios 2020
-*global def2021 = 3.2 // 														Pre-criterios 2021
+*sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
+*adopath ++ PERSONAL
+*capture mkdir "`c(sysdir_personal)'/users/$pais/$id/"
+
+* Crecimiento PIB *
+global pib2020 = -3.9 // Precriterios 2021 [-3.9,0.1]
+global pib2021 =  3.5 // Precriterios 2021 [1.5,3.5]
+global pib2022 =  2.5 // CGPE 2020
+global pib2023 =  2.6 // CGPE 2020
+global pib2024 =  2.7 // CGPE 2020
+global pib2025 =  2.7 // CGPE 2020
+
+global def2020 =  3.5 // Precriterios 2021 [-3.9,0.1]
+global def2021 =  3.2 // Precriterios 2021 [-3.9,0.1]
+global def2022 =  3.5 // CGPE 2020
+global def2023 =  3.5 // CGPE 2020
+global def2024 =  3.5 // CGPE 2020
+global def2025 =  3.5 // CGPE 2020
 
 
 ***********************************/
 
 
 
-noisily PIBDeflactor, `1' //nographs //update //discount(3.0)
+
+noisily PIBDeflactor, anio(`anio') `1' //nographs //update //discount(3.0)
 save "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", replace
-noisily SCN, anio(`anio') `1'
+noisily SCN, anio(`anio') nographs
 
 
 
