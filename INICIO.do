@@ -25,7 +25,7 @@ adopath ++ PERSONAL
 *******************************/
 *** 1 POBLACION: ENIGH 2018  ***
 ***   Simulador v5: Set up   ***
-********************************
+/********************************
 noisily Poblacion, //nographs //update
 noisily run "`c(sysdir_personal)'/Expenditure.do" 2018 //						<-- a calibrar
 noisily run "`c(sysdir_personal)'/Households.do" 2018 //				Cap. 3. Agentes economicos
