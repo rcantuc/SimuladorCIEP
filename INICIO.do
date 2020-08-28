@@ -1,7 +1,7 @@
 ***************************************
 **** FOR PROGRAMMING PURPOSES ONLY ****
 ****   COMMENT SECTION OTHERWISE   ****
-/***************************************
+***************************************
 clear all
 macro drop _all
 capture log close _all
@@ -40,7 +40,7 @@ foreach k in grupo_edad sexo decil escol {
 ***************************/
 *** 2 ECONOMIA Y CUENTAS ***
 ****************************
-noisily run "`c(sysdir_personal)'/2PIBWeb.do" //nographs //						Cap. 2. Sistema: DesempeÃ±o + SCN
+noisily run "`c(sysdir_personal)'/2PIBWeb.do" //nographs //						Cap. 2. Sistema: Desempeño + SCN
 
 
 
