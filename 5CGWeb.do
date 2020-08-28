@@ -56,7 +56,7 @@ twoway connected estimacion anio, ///
 	
 ***************/
 *** 7 SANKEY ***
-****************
+/****************
 run "`c(sysdir_personal)'/3GastosWeb.do"
 run "`c(sysdir_personal)'/4IngresosWeb.do"
 
