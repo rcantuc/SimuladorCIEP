@@ -7,7 +7,7 @@ program define UpdateDatosAbiertos, return
 	************************
 	capture use "`c(sysdir_site)'../basesCIEP/SIM/DatosAbiertos.dta", clear
 
-	if _rc == 0 | _rc == 610 {
+	if (_rc == 0 | _rc == 610) & "`update'" != "update" {
 		local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 		local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 		local mesvp = substr(`"`=trim("`fecha'")'"',6,2)
@@ -574,10 +574,32 @@ program define UpdateDatosAbiertos, return
 	replace monto_s = monto*(580223.7-399962.6)/(1298987.0-927350.8) if anio == 2019 & trimestre == 3
 	replace monto_r = monto*(42987.6-29588.7)/(1298987.0-927350.8) if anio == 2019 & trimestre == 3
 
-	replace monto_m = monto*(803643.1-641345.0)/(1687830.1-1298987.0) if (anio == 2019 & trimestre == 4) | anio > 2019
-	replace monto_f = monto*(45756.7-34430.7)/(1687830.1-1298987.0) if (anio == 2019 & trimestre == 4) | anio > 2019
-	replace monto_s = monto*(783743.8-580223.7)/(1687830.1-1298987.0) if (anio == 2019 & trimestre == 4) | anio > 2019
-	replace monto_r = monto*(54686.5-42987.6)/(1687830.1-1298987.0) if (anio == 2019 & trimestre == 4) | anio > 2019
+	replace monto_m = monto*(803643.1-641345.0)/(1687830.1-1298987.0) if anio == 2019 & trimestre == 4
+	replace monto_f = monto*(45756.7-34430.7)/(1687830.1-1298987.0) if anio == 2019 & trimestre == 4
+	replace monto_s = monto*(783743.8-580223.7)/(1687830.1-1298987.0) if anio == 2019 & trimestre == 4
+	replace monto_r = monto*(54686.5-42987.6)/(1687830.1-1298987.0) if anio == 2019 & trimestre == 4
+
+	* 2020 *
+	replace monto_m = monto*287883.4/542596.9  if anio == 2020 & trimestre == 1
+	replace monto_f = monto*13569.5/542596.9 if anio == 2020 & trimestre == 1
+	replace monto_s = monto*223982.7/542596.9 if anio == 2020 & trimestre == 1
+	replace monto_r = monto*17161.2/542596.9 if anio == 2020 & trimestre == 1
+
+	replace monto_m = monto*(490742.2-287883.4)/(968446.9-542596.9) if anio == 2020 & trimestre == 2
+	replace monto_f = monto*(20504.0-13569.5)/(927350.8-542596.9) if anio == 2020 & trimestre == 2
+	replace monto_s = monto*(423225.4-223982.7)/(927350.8-542596.9) if anio == 2020 & trimestre == 2
+	replace monto_r = monto*(33975.3-17161.2)/(927350.8-542596.9) if anio == 2020 & trimestre == 2
+
+	/*replace monto_m = monto*(-490742.2)/(-968446.9) if anio == 2020 & trimestre == 3
+	replace monto_f = monto*(-20504.0)/(-968446.9) if anio == 2020 & trimestre == 3
+	replace monto_s = monto*(-423225.4)/(-968446.9) if anio == 2020 & trimestre == 3
+	replace monto_r = monto*(-33975.3)/(-968446.9) if anio == 2020 & trimestre == 3
+
+	replace monto_m = monto*(-490742.2)/(-968446.9) if anio == 2020 & trimestre == 4
+	replace monto_f = monto*(-20504.0)/(-968446.9) if anio == 2020 & trimestre == 4
+	replace monto_s = monto*(-423225.4)/(-968446.9) if anio == 2020 & trimestre == 4
+	replace monto_r = monto*(-33975.3)/(-968446.9) if anio == 2020 & trimestre == 4*/
+
 
 
 

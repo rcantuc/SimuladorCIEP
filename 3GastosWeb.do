@@ -12,17 +12,19 @@ local anio = substr(`"`=trim("`fecha'")'"',1,4) // 								<-- anio base: HOY
 ** PAR{c A'}METROS DEL SIMULADOR **
 **    Paquete Economico 2021     **
 
-global id = "`id'"
+global id = "$id"
 
 *sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
 *adopath ++ PERSONAL
 *capture mkdir "`c(sysdir_personal)'/users/$pais/$id/"
 
 * Educacion *
-scalar basica = 21340 //														Educaci{c o'}n b{c a'}sica
+scalar basica = 21541 //														Educaci{c o'}n b{c a'}sica
 scalar medsup = 21640 //														Educaci{c o'}n media superior
 scalar superi = 39613 //														Educaci{c o'}n superior
 scalar posgra = 46602 //														Posgrado
+scalar eduadu = 22178 // 														Educaci{c o'}n para adultos
+scalar otrose =   867 //														Otros gastos educativos
 
 * Salud *
 scalar ssa    =   414 //														SSalud

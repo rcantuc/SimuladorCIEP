@@ -24,7 +24,7 @@ global id = "`1'"
 
 ******************************
 *** 5 Transferencias Netas ***
-******************************
+/******************************
 use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
 capture g AportacionesNetas = Laboral + Consumo + ISR__PM + ing_cap_fmp ///
 	- Pension - Educacion - Salud - IngBasico - PenBienestar - Infra

@@ -34,20 +34,22 @@ quietly {
 	*** 3 Educacion ***
 	*******************
 	if `anio' >= 2016 {
-		g alum_basica = asis_esc == "1" & tipoesc == "1" & (nivel >= "01" & nivel <= "07")
+		g alum_basica = asis_esc == "1" & tipoesc == "1" & (nivel >= "01" & nivel <= "07") & edad <= 18
 		g alum_medsup = asis_esc == "1" & tipoesc == "1" & (nivel >= "08" & nivel <= "10")
 		g alum_superi = asis_esc == "1" & tipoesc == "1" & (nivel >= "11" & nivel <= "12")
 		g alum_posgra = asis_esc == "1" & tipoesc == "1" & nivel == "13"
+		g alum_adulto = asis_esc == "1" & tipoesc == "1" & (nivel >= "01" & nivel <= "07") & edad > 18
 	}
 
 	if `anio' < 2016 {
-		g alum_basica = asis_esc == "1" & tipoesc == "1" & (nivel >= "1" & nivel <= "3")
+		g alum_basica = asis_esc == "1" & tipoesc == "1" & (nivel >= "1" & nivel <= "3") & edad <= 18
 		g alum_medsup = asis_esc == "1" & tipoesc == "1" & (nivel >= "4" & nivel <= "6")
 		g alum_superi = asis_esc == "1" & tipoesc == "1" & (nivel >= "7" & nivel <= "8")
 		g alum_posgra = asis_esc == "1" & tipoesc == "1" & nivel == "9"
+		g alum_adulto = asis_esc == "1" & tipoesc == "1" & (nivel >= "1" & nivel <= "3") & edad > 18
 	}
 
-	tabstat alum_basica alum_medsup alum_superi alum_posgra [fw=factor], stat(sum) f(%15.0fc) save
+	tabstat alum_basica alum_medsup alum_superi alum_posgra alum_adulto [fw=factor], stat(sum) f(%15.0fc) save
 	tempname Educacion 
 	matrix `Educacion' = r(StatTotal)
 
@@ -97,6 +99,31 @@ quietly {
 		scalar posgra = `posgra'/`Educacion'[1,4]
 		restore
 	}
+	capture confirm scalar eduadu
+	if _rc == 0 {
+		local eduadu = scalar(eduadu)*`Educacion'[1,5]
+	}
+	else {
+		preserve
+		PEF if divGA == 3, anio(`anio') by(desc_subfuncion)
+		local eduadu = r(Educaci_c_o__n_para_Adultos)
+
+		scalar eduadu = `eduadu'/`Educacion'[1,5]
+		restore
+	}
+	capture confirm scalar otrose
+	if _rc == 0 {
+		local otrose = scalar(otrose)*(`Educacion'[1,1]+`Educacion'[1,2]+`Educacion'[1,3]+`Educacion'[1,4]+`Educacion'[1,5])
+	}
+	else {
+		preserve
+		PEF if divGA == 3, anio(`anio') by(desc_subfuncion)
+		local otrose = r(Otros_Servicios_Educativos_y_Ac)
+
+		scalar otrose = `otrose'/(`Educacion'[1,1]+`Educacion'[1,2]+`Educacion'[1,3]+`Educacion'[1,4]+`Educacion'[1,5])
+		restore
+	}
+
 
 
 	* Resultados *
@@ -122,26 +149,28 @@ quietly {
 		_col(33) %15.0fc in y `Educacion'[1,4] ///
 		_col(50) %7.3fc in y (`posgra')/PIB*100 ///
 		_col(60) %15.0fc in y `posgra'/`Educacion'[1,4]
+	noisily di in g "  Para adultos" ///
+		_col(33) %15.0fc in y `Educacion'[1,5] ///
+		_col(50) %7.3fc in y (`eduadu')/PIB*100 ///
+		_col(60) %15.0fc in y `eduadu'/`Educacion'[1,5]
+	noisily di in g "  Otros gastos educativos" ///
+		_col(33) %15.0fc in y (`Educacion'[1,1]+`Educacion'[1,2]+`Educacion'[1,3]+`Educacion'[1,4]+`Educacion'[1,5]) ///
+		_col(50) %7.3fc in y (`otrose')/PIB*100 ///
+		_col(60) %15.0fc in y `otrose'/(`Educacion'[1,1]+`Educacion'[1,2]+`Educacion'[1,3]+`Educacion'[1,4]+`Educacion'[1,5])
 	noisily di in g _dup(75) "-"
 	noisily di in g "  Educaci{c o'}n" ///
-		_col(33) %15.0fc in y (`Educacion'[1,1]+`Educacion'[1,2]+`Educacion'[1,3]+`Educacion'[1,4]) ///
-		_col(50) %7.3fc in y (`basica'+`medsup'+`superi'+`posgra')/PIB*100 ///
-		_col(60) %15.0fc in y (`basica'+`medsup'+`superi'+`posgra')/(`Educacion'[1,1]+`Educacion'[1,2]+`Educacion'[1,3]+`Educacion'[1,4])
+		_col(33) %15.0fc in y (`Educacion'[1,1]+`Educacion'[1,2]+`Educacion'[1,3]+`Educacion'[1,4]+`Educacion'[1,5]) ///
+		_col(50) %7.3fc in y (`basica'+`medsup'+`superi'+`posgra'+`eduadu'+`otrose')/PIB*100 ///
+		_col(60) %15.0fc in y (`basica'+`medsup'+`superi'+`posgra'+`eduadu'+`otrose')/(`Educacion'[1,1]+`Educacion'[1,2]+`Educacion'[1,3]+`Educacion'[1,4]+`Educacion'[1,5])
 
-		
-	if `anio' >= 2016 {
-		replace Educacion = `basica'/`Educacion'[1,1] if alum_basica == 1
-		replace Educacion = `medsup'/`Educacion'[1,2] if alum_medsup == 1
-		replace Educacion = `superi'/`Educacion'[1,3] if alum_superi == 1
-		replace Educacion = `posgra'/`Educacion'[1,4] if alum_posgra == 1
-	}
 
-	if `anio' < 2016 {
-		replace Educacion = `basica'/`Educacion'[1,1] if alum_basica == 1
-		replace Educacion = `medsup'/`Educacion'[1,2] if alum_medsup == 1
-		replace Educacion = `superi'/`Educacion'[1,3] if alum_superi == 1
-		replace Educacion = `posgra'/`Educacion'[1,4] if alum_posgra == 1
-	}
+	replace Educacion = `basica'/`Educacion'[1,1] if alum_basica == 1
+	replace Educacion = `medsup'/`Educacion'[1,2] if alum_medsup == 1
+	replace Educacion = `superi'/`Educacion'[1,3] if alum_superi == 1
+	replace Educacion = `posgra'/`Educacion'[1,4] if alum_posgra == 1
+	replace Educacion = `eduadu'/`Educacion'[1,5] if alum_adulto == 1
+	replace Educacion = Educacion + `otrose'/(`Educacion'[1,1]+`Educacion'[1,2]+`Educacion'[1,3]+`Educacion'[1,4]+`Educacion'[1,5]) ///
+		if alum_basica == 1 | alum_medsup == 1 | alum_superi == 1 | alum_posgra == 1 | alum_adulto == 1
 
 
 
@@ -241,7 +270,7 @@ quietly {
 		local pemex = r(Petr_c_o__leos_Mexicanos)
 		
 		PEF if divGA == 7, anio(`anio') by(ramo)
-		local pemex = `pemex' + r(Defensa_Nacional)+r(Marina)
+		local pemex = `pemex' + r(Defensa_Nacional) + r(Marina)
 
 		scalar pemex = (`pemex')/`Salud'[1,3]
 		restore
@@ -286,12 +315,13 @@ quietly {
 		_col(60) %15.0fc in y (`ssa'+`segpop'+`imss'+`issste'+`prospe'+`pemex')/(`pobtot'[1,1])
 
 
-	replace Salud = `ssa'/`pobtot'[1,1]
-	replace Salud = Salud + (`segpop')/(`Salud'[1,5]+`Salud'[1,7]) if benef_seg_pop == 1 | benef_isssteest == 1
+	replace Salud = 0
+	replace Salud = Salud + `segpop'/(`Salud'[1,5]+`Salud'[1,7]) if benef_seg_pop == 1 | benef_isssteest == 1
 	replace Salud = Salud + `imss'/`Salud'[1,1] if benef_imss == 1
 	replace Salud = Salud + `issste'/`Salud'[1,2] if benef_issste == 1
 	replace Salud = Salud + `prospe'/`Salud'[1,4] if benef_imssprospera == 1
 	replace Salud = Salud + `pemex'/`Salud'[1,3] if benef_pemex == 1
+	replace Salud = Salud + `ssa'/`pobtot'[1,1] if benef_ssa == 1
 
 
 
@@ -394,9 +424,9 @@ quietly {
 		_col(50) %7.3fc in y (`bienestar'+`penims'+`peniss'+`penotr')/PIB*100 ///
 		_col(60) %15.0fc in y (`bienestar'+`penims'+`peniss'+`penotr')/(`mbienestar'[1,1]+`mpenims'[1,1]+`mpeniss'[1,1]+`mpenotr'[1,1])
 
-	
+
 	replace Pension = `penims'/`mpenims'[1,1] if formal == 1 & ing_jubila != 0
-    replace Pension = `peniss'/`mpeniss'[1,1] if formal == 2 & ing_jubila != 0 
+	replace Pension = `peniss'/`mpeniss'[1,1] if formal == 2 & ing_jubila != 0 
 	replace Pension = `penotr'/`mpenotr'[1,1] if formal == 3 & ing_jubila != 0
 	replace PenBienestar = `bienestar'/`mbienestar'[1,1] if edad >= 68
 
@@ -446,7 +476,7 @@ quietly {
 
 	* Resultados *
 	noisily di _newline in y "{bf: D. Ingreso b{c a'}sico}" 
-	noisily di _newline in g "{bf:  Gasto" ///
+	noisily di _newline in g "{bf:  Gasto por ingreso b{c a'}sico" ///
 		_col(33) %15s in g "Poblaci{c o'}n" ///
 		_col(50) %7s "% PIB" ///
 		_col(60) %10s in g "Per c{c a'}pita (MXN `anio')" "}"
@@ -470,7 +500,7 @@ quietly {
 	else { 
 		replace IngBasico = `IngBas'/`pobtot'[1,1]
 	}
-	
+
 
 
 
@@ -633,6 +663,7 @@ quietly {
 
 	replace OtrosGas = OtrosGas*(`servpers'+`matesumi'+`gastgene'+`substran'+ ////
 		`bienmueb'+`obrapubl'+`invefina'+`partapor')/GASTOS[1,4]
+
 	replace Infra = Infra*`obrapubl'/GASTOS[1,5]
 
 
@@ -655,10 +686,11 @@ quietly {
 	*** Base SIM ***
 	****************
 	tabstat Pension Educacion Salud OtrosGas Infra [fw=factor], stat(sum) f(%20.0fc) save
-	matrix GASTOSSIM = r(StatTotal)
+	tempname GASTOSSIM TRANSFSIM
+	matrix `GASTOSSIM' = r(StatTotal)
 
 	tabstat IngBasico PenBienestar [fw=factor], stat(sum) f(%20.0fc) save
-	matrix TRANSFSIM = r(StatTotal)
+	matrix `TRANSFSIM' = r(StatTotal)
 
 	keep folio* numren factor* Laboral Consumo Otros ISR__PM ing_cap_fmp ///
 		Pension Educacion Salud IngBasico PenBienestar Salarios OtrosGas Infra ///
@@ -669,7 +701,7 @@ quietly {
 
 
 
-	
+
 	*************************/
 	** 7 Estimaciones de LP **
 	**************************
@@ -681,7 +713,7 @@ quietly {
 		tabstat estimacion if anio == `anio', stat(sum) f(%20.0fc) save
 		matrix `GASBase' = r(StatTotal)
 
-		replace estimacion = estimacion*GASTOSSIM[1,`j']/`GASBase'[1,1]*lambda //if anio > `anio'
+		replace estimacion = estimacion*`GASTOSSIM'[1,`j']/`GASBase'[1,1] //if anio > `anio'
 
 		local ++j
 		save `"`c(sysdir_personal)'/users/$pais/$id/`k'REC.dta"', replace
@@ -695,7 +727,7 @@ quietly {
 		tabstat estimacion if anio == `anio', stat(sum) f(%20.0fc) save
 		matrix `TRABase' = r(StatTotal)
 
-		replace estimacion = estimacion*TRANSFSIM[1,`j']/`TRABase'[1,1]*lambda //if anio > `anio'
+		replace estimacion = estimacion*`TRANSFSIM'[1,`j']/`TRABase'[1,1] //if anio > `anio'
 
 		local ++j
 		save `"`c(sysdir_personal)'/users/$pais/$id/`k'REC.dta"', replace
