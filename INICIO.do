@@ -6,7 +6,6 @@ clear all
 macro drop _all
 capture log close _all
 
-timer on 1
 noisily di _newline(20) in g _col(35) "8) " in w "8) " in y "8) " in g "8)"
 
 if "`c(os)'" == "Unix" {
@@ -26,6 +25,7 @@ adopath ++ PERSONAL
 ***     1 ECONOMIA Y CUENTAS      ***
 *** Simulador v5: PIB + Deflactor ***
 *************************************
+timer on 1
 noisily run "`c(sysdir_personal)'/2PIBWeb.do" //nographs //						Cap. 2. Sistema: Desempe{c n~}o + SCN
 
 
