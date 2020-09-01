@@ -14,9 +14,9 @@ quietly {
 	***************************************
 	*** 1 Sistema de Cuentas Nacionales ***
 	***************************************
+	SCN, anio(`anio') nographs
 	use if anio == `anio' using "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", clear
 	scalar PIB = pibY[1]
-	SCN, anio(`anio') nographs
 
 
 
@@ -35,7 +35,7 @@ quietly {
 		local recISR_AS = scalar(ISR_AS)/100*scalar(PIB)
 	}
 	else {
-		local recISR_AS = `recISR_PF'*(760552.9/(760552.9+43683.5))
+		local recISR_AS = `recISR_PF'*(783743.8/(783743.8+45756.7))
 		scalar ISR_AS  = (`recISR_AS')/scalar(PIB)*100 // 						ISR (asalariados)
 	}
 	capture confirm scalar ISR_PF
@@ -43,7 +43,7 @@ quietly {
 		local recISR_PF = scalar(ISR_PF)/100*scalar(PIB)
 	}
 	else {
-		local recISR_PF = `recISR_PF'*(43683.5/(760552.9+43683.5))
+		local recISR_PF = `recISR_PF'*(45756.7/(783743.8+45756.7))
 		scalar ISR_PF  = (`recISR_PF')/scalar(PIB)*100 // 						ISR (personas f{c i'}sicas)
 	}
 	capture confirm scalar CuotasT
@@ -237,11 +237,10 @@ quietly {
 	matrix INGRESOS = r(StatTotal)
 
 	replace Laboral = Laboral*((scalar(ISR_AS)+scalar(ISR_PF)+scalar(CuotasT))/100*scalar(PIB))/INGRESOS[1,1]
-	replace ISR__PM = ISR__PM*((scalar(ISR_PM))/100*scalar(PIB))/INGRESOS[1,4]
 	replace Consumo = Consumo*((scalar(IVA)+scalar(ISAN)+scalar(IEPS)+scalar(Importa))/100*scalar(PIB))/INGRESOS[1,2]
-	*Simulador Consumo if Consumo != 0 [fw=factor], base("ENIGH 2018") boot(1) graphs reboot
 	replace Otros = Otros*((scalar(ISR_PM)+scalar(FMP)+scalar(OYE)+scalar(OtrosI))/100*scalar(PIB))/INGRESOS[1,3]
-	*Simulador Otros if Otros != 0 [fw=factor], base("ENIGH 2018") boot(1) graphs reboot
+
+	replace ISR__PM = ISR__PM*((scalar(ISR_PM))/100*scalar(PIB))/INGRESOS[1,4]
 	replace ing_cap_fmp = ing_cap_fmp*((scalar(FMP))/100*scalar(PIB))/INGRESOS[1,5]
 
 	tabstat Laboral Consumo Otros [fw=factor], stat(sum) f(%20.0fc) save
@@ -263,11 +262,13 @@ quietly {
 		tabstat estimacion if anio == `anio', stat(sum) f(%20.0fc) save
 		matrix `RECBase' = r(StatTotal)
 
-		replace estimacion = estimacion*INGRESOSSIM[1,`j']/`RECBase'[1,1]*lambda //if anio >= `anio'
+		replace estimacion = estimacion*INGRESOSSIM[1,`j']/`RECBase'[1,1] if anio >= `anio'
 
 		local ++j
 		save `"`c(sysdir_personal)'/users/$pais/$id/`k'REC.dta"', replace
 	}
+
+
 
 
 	***********

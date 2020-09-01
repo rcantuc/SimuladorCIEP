@@ -12,28 +12,28 @@ local anio = substr(`"`=trim("`fecha'")'"',1,4) // 								<-- anio base: HOY
 ** PAR{c A'}METROS DEL SIMULADOR (BASICO) **
 **        Paquete Economico 2021          **
 
-global id = "`id'"
+global id = "$id"
 
 *sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
 *adopath ++ PERSONAL
 *capture mkdir "`c(sysdir_personal)'/users/$pais/$id/"
 
 ** Al ingreso **
-scalar ISR_AS  = 3.511 // 														ISR (asalariados)
-scalar ISR_PF  = 0.202 // 														ISR (personas f{c i'}sicas)
-scalar CuotasT = 1.551 // 														Cuotas (IMSS)
+scalar ISR_AS  = 3.800 // 														ISR (asalariados)
+scalar ISR_PF  = 0.222 // 														ISR (personas f{c i'}sicas)
+scalar CuotasT = 1.681 // 														Cuotas (IMSS)
 
 * Al consumo *
-scalar IVA     = 4.179 //														IVA 
-scalar ISAN    = 0.045 //														ISAN
-scalar IEPS    = 2.139 // 														IEPS (no petrolero + petrolero)
-scalar Importa = 0.294 //														Importaciones
+scalar IVA     = 4.528 //														IVA 
+scalar ISAN    = 0.048 //														ISAN
+scalar IEPS    = 2.318 // 														IEPS (no petrolero + petrolero)
+scalar Importa = 0.319 //														Importaciones
 
 * Al capital *
-scalar ISR_PM  = 3.973 //														ISR (personas morales)
-scalar FMP     = 1.712 // 														Fondo Mexicano del Petr{c o'}leo
-scalar OYE     = 4.418 //														Organismos y empresas (IMSS + ISSSTE + Pemex + CFE)
-scalar OtrosI  = 0.885 //														Productos, derechos, aprovechamientos, contribuciones
+scalar ISR_PM  = 4.305 //														ISR (personas morales)
+scalar FMP     = 1.855 // 														Fondo Mexicano del Petr{c o'}leo
+scalar OYE     = 4.787 //														Organismos y empresas (IMSS + ISSSTE + Pemex + CFE)
+scalar OtrosI  = 0.959 //														Productos, derechos, aprovechamientos, contribuciones
 
 run "`c(sysdir_personal)'/2PIBWeb.do" //								Cap. 2. Sistema: Desempeño + SCN
 
@@ -78,8 +78,8 @@ matrix	DED	= (	5, 	/// # de SS.MM.
 
 *				Tasa ISR PM
 matrix PM	= (	30, 	/// Tasa ISR PM
-				20.10, 	/// Evasion PM
-				96.07) 	 // Evasion PF
+				20.10*0, 	/// Evasion PM
+				96.07*0) 	 // Evasion PF
 noisily run "`c(sysdir_personal)'/41ISR.do"
 
 
@@ -103,7 +103,7 @@ matrix IVA = (	16	\ ///  1  Tasa general
 				3	\ ///  9  Otros
 				2	\ /// 10  Transporte local
 				2 	\ /// 11  Transporte foraneo
-				52.37 /// 12  Evasion e informalidad IVA
+				52.37*0 /// 12  Evasion e informalidad IVA
 				)
 IVA_Mod
 

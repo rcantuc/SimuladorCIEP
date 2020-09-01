@@ -22,8 +22,6 @@ quietly {
 		local updated = "yes"
 	}
 
-	** 1.3 Base PEF **
-	use `"`c(sysdir_site)'../basesCIEP/SIM/SHRFSP`=subinstr("${pais}"," ","",.)'.dta"', clear
 
 
 
@@ -39,13 +37,14 @@ quietly {
 	}
 
 	** 2.2 PIB + Deflactor **
-	preserve
 	PIBDeflactor, anio(`anio') nographs
 	local currency = currency[1]
 	tempfile PIB
 	save `PIB'
-	restore
 
+
+	** 2.3 Base PEF **
+	use `"`c(sysdir_site)'../basesCIEP/SIM/SHRFSP`=subinstr("${pais}"," ","",.)'.dta"', clear
 	noisily di _newline(5) in g "{bf:SISTEMA FISCAL: " in y "DEUDA `anio'" "}"
 
 

@@ -1,7 +1,7 @@
-/***************************************
-**** FOR PROGRAMMING PURPOSES ONLY ****
-****   COMMENT SECTION OTHERWISE   ****
-***************************************
+*********************************************
+****    FOR PROGRAMMING PURPOSES ONLY    ****
+**** SECTION MUST BE COMMENTED OTHERWISE ****
+*********************************************
 clear all
 macro drop _all
 capture log close _all
@@ -22,13 +22,22 @@ adopath ++ PERSONAL
 
 
 
+************************************/
+***     1 ECONOMIA Y CUENTAS      ***
+*** Simulador v5: PIB + Deflactor ***
+*************************************
+noisily run "`c(sysdir_personal)'/2PIBWeb.do" //nographs //						Cap. 2. Sistema: Desempe{c n~}o + SCN
+
+
+
+
 *******************************/
-*** 1 POBLACION: ENIGH 2018  ***
+*** 2 POBLACION: ENIGH 2018  ***
 ***   Simulador v5: Set up   ***
-********************************
+/********************************
 noisily Poblacion, //nographs //update
-noisily run "`c(sysdir_personal)'/Expenditure.do" 2018 //						<-- a calibrar
-noisily run "`c(sysdir_personal)'/Households.do" 2018 //				Cap. 3. Agentes economicos
+*noisily run "`c(sysdir_personal)'/Expenditure.do" 2018 //						<-- a calibrar!!!
+noisily run "`c(sysdir_personal)'/Households.do" 2018 //						Cap. 3. Agentes economicos
 foreach k in grupo_edad sexo decil escol {
 	use "`c(sysdir_site)'../basesCIEP/SIM/2018/households.dta", clear
 	noisily run "`c(sysdir_personal)'/Sankey.do" `k' 2018
@@ -37,26 +46,18 @@ foreach k in grupo_edad sexo decil escol {
 
 
 
-***************************/
-*** 2 ECONOMIA Y CUENTAS ***
-****************************
-noisily run "`c(sysdir_personal)'/2PIBWeb.do" //nographs //						Cap. 2. Sistema: Desempeño + SCN
-
-
-
-
-****************
+***************/
 *** 3 GASTOS ***
 ****************
-noisily run "`c(sysdir_personal)'/3GastosWeb.do" //						Parte III
+noisily run "`c(sysdir_personal)'/3GastosWeb.do" //								Parte III
 
 
 
 
-******************
+*****************/
 *** 4 INGRESOS ***
 ******************
-noisily run "`c(sysdir_personal)'/4IngresosWeb.do" //					Parte II
+noisily run "`c(sysdir_personal)'/4IngresosWeb.do" //							Parte II
 
 
 
@@ -64,7 +65,7 @@ noisily run "`c(sysdir_personal)'/4IngresosWeb.do" //					Parte II
 *****************************/
 ** 5 Cuentas Generacionales **
 ******************************
-noisily run "`c(sysdir_personal)'/5CGWeb.do" //							Parte IV
+noisily run "`c(sysdir_personal)'/5CGWeb.do" //									Parte IV
 
 
 
