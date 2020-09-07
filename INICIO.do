@@ -1,7 +1,7 @@
 *********************************************
 ****    FOR PROGRAMMING PURPOSES ONLY    ****
 **** SECTION MUST BE COMMENTED OTHERWISE ****
-*********************************************
+/*********************************************
 clear all
 macro drop _all
 capture log close _all
