@@ -46,8 +46,40 @@ program define scalarlatex
 					local value = 0
 				}
 				di in w "\def\d`name'#1{\gdef\\`name'{#1}}"
-				di in w `"\d`name'{`=string(`value',"%6.1fc")'}"'
+				di in w `"\d`name'{`=string(`value',"%6.3fc")'}"'
 			}
+
+			else if "`name'" == "ISRAS" | "`name'" == "ISRPF" | "`name'" == "CuotasT" ///
+				| "`name'" == "IVA" | "`name'" == "ISAN" | "`name'" == "IEPS" ///
+				| "`name'" == "Importa" | "`name'" == "ISRPM" | "`name'" == "FMP" ///
+				| "`name'" == "OYE" | "`name'" == "OtrosI"  {
+				local value = scalar(`name')
+				di in w "\def\d`name'#1{\gdef\\`name'{#1}}"
+				di in w `"\d`name'{`=string(`value',"%12.3fc")'}"'
+			}
+			
+			else if "`name'" == "basica" | "`name'" == "medsup" | "`name'" == "superi" ///
+			| "`name'" == "posgra" | "`name'" == "eduadu" | "`name'" == "otrose" ///
+			| "`name'" == "ssa" | "`name'" == "segpop" | "`name'" == "imss" ///
+			| "`name'" == "issste" | "`name'" == "prospe" | "`name'" == "pemex" ///
+			| "`name'" == "bienestar" | "`name'" == "penims" | "`name'" == "peniss" ///
+			| "`name'" == "penotr" | "`name'" == "servpers" | "`name'" == "matesumi" ///
+			| "`name'" == "gastgene" | "`name'" == "substran" | "`name'" == "bienmueb" ///
+			| "`name'" == "obrapubl" | "`name'" == "invefina" | "`name'" == "partapor" ///
+			| "`name'" == "costodeu" | "`name'" == "educacion" | "`name'" == "salud" ///
+			| "`name'" == "pensiones" | "`name'" == "otrosgastos" {
+				local value = scalar(`name')
+				di in w "\def\d`name'#1{\gdef\\`name'{#1}}"
+				di in w `"\d`name'{`=string(`value',"%12.0fc")'}"'			
+			}
+			
+			else if `"`=substr("`name'",-1,1)'"' == "I" | `"`=substr("`name'",-1,1)'"' == "V" ///
+				| `"`=substr("`name'",-1,1)'"' == "X" | `"`=substr("`name'",-8,8)'"' == "Nacional" {
+				local value = scalar(`name')
+				di in w "\def\d`name'#1{\gdef\\`name'{#1}}"
+				di in w `"\d`name'{`=string(`value',"%12.1fc")'}"'				
+			}
+
 			else {
 				if scalar(`name') != . {
 					local value = scalar(`name')/1000000

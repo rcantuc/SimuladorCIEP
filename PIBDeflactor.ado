@@ -44,13 +44,18 @@ quietly {
 		use `"`c(sysdir_site)'../basesCIEP/SIM/PIBDeflactor`=subinstr("${pais}"," ","",.)'.dta"', clear
 	}
 	local anio_first = anio[1]
+	scalar aniofirst = anio[1]
+	
 	local anio_last = anio[_N]
+	scalar aniolast = anio[_N]
+	
 	local pib_last = pibY[_N]
 
 	return scalar anio_last = `anio_last'
 
 	capture local trim_last = trimestre[_N]
 	if _rc == 0 {
+		scalar aniotrimlast = `trim_last'
 		local trim_last = "q`trim_last'"
 	}
 	merge 1:1 (anio) using `workingage', nogen
@@ -204,8 +209,8 @@ quietly {
 	noisily di in g " PIB " in y "`anio_last'`trim_last'" _col(25) %20.0fc `pib_last' in g " `=currency[`obsvp']' ({c u'}ltimo reportado)"
 	noisily di _newline in g " PIB " in y anio[`obsvp'] in g " per c{c a'}pita " in y _col(35) %10.1fc pibY[`obsvp']/`pobtotal'[1,1] in g " `=currency[`obsvp']'"
 	noisily di in g " PIB " in y anio[`obsvp'] in g " por trabajador " in y _col(35) %10.1fc OutputPerWorker[`obsvp'] in g " `=currency[`obsvp']'"
-	noisily di in g " Lambda " in y anio[`obs_exo'] "-" anio[`=`obs_exo'-20'] _col(35) %10.4f scalar(lambda) in g " %" 
-	noisily di in g " Lambda " in y anio[`obs_exo'] "-" anio[1] _col(35) %10.4f `Lambda' in g " %" 
+	noisily di in g " Lambda " in y anio[`=`obs_exo'-20'] "-" anio[`obs_exo'] _col(35) %10.4f scalar(lambda) in g " %" 
+	noisily di in g " Lambda " in y anio[1] "-" anio[`obs_exo'] _col(35) %10.4f `Lambda' in g " %" 
 
 	local grow_rate_LR = (pibYR[_N]/pibYR[_N-10])^(1/10)-1
 	scalar pibINF = pibYR[_N]*(1+`grow_rate_LR')*(1+`discount'/100)^(`=anio[`obsvp']'-`=anio[_N]')/((`discount'/100)-`grow_rate_LR'+((`discount'/100)*`grow_rate_LR'))
@@ -225,24 +230,24 @@ quietly {
 
 	if "`nographs'" != "nographs" {
 
-		/* Texto sobre lineas *
-		forvalues k=1(1)`=_N' {
+		* Texto sobre lineas *
+		forvalues k=1(3)`=_N' {
 			if var_indiceY[`k'] != . {
-				local crec_deflactor `"`crec_deflactor' `=var_indiceY[`k']' `=anio[`k']' "`=string(var_indiceY[`k'],"%5.1fc")'" "'
+				*local crec_deflactor `"`crec_deflactor' `=var_indiceY[`k']' `=anio[`k']' "`=string(var_indiceY[`k'],"%5.1fc")'" "'
 			}
 		}
 
 		* Deflactor var_indiceY *
-		twoway (connected var_indiceY anio if anio < `anio_last' | (anio == `anio_last' & trimestre == 4)) ///
-			(connected var_indiceY anio if anio >= `anio_last' & anio > anio[`obs_exo']) ///
-			(connected var_indiceY anio if anio == `anio_last' & trimestre < 4 | (anio <= anio[`obs_exo'] & anio > `anio_last')), ///
-			///title("{bf:{c I'}ndice de precios impl{c i'}citos}") ///
+		twoway (area deflator anio if anio < `anio_last' | (anio == `anio_last' & trimestre == 4)) ///
+			(area deflator anio if anio >= `anio_last' & anio > anio[`obs_exo']) ///
+			(area deflator anio if anio == `anio_last' & trimestre < 4 | (anio <= anio[`obs_exo'] & anio > `anio_last')), ///
+			title("{bf:{c I'}ndice de precios} impl{c i'}citos") ///
 			subtitle(${pais}) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
-			ytitle("Variaci{c o'}n anual (%)") xtitle("") yline(0) ///
-			///text(`crec_deflactor', place(c)) ///
+			ytitle("A{c n~}o `aniovp' = 1.000") xtitle("") yline(0) ///
+			text(`crec_deflactor', place(c)) ///
 			legend(label(1 "Reportado") label(2 "Proyectado") label(3 "Estimado") order(1 3 2)) ///
-			///caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
+			///caption("{it:Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, BIE.}") ///
 			note("{bf:{c U'}ltimo dato}: `anio_last'`trim_last'.") ///
 			name(deflactorH, replace)
 			
@@ -251,7 +256,7 @@ quietly {
 			graph export "$export/deflactorH.png", replace name(deflactorH)
 		}
 
-		* Texto sobre lineas */
+		/* Texto sobre lineas *
 		forvalues k=1(3)`=_N' {
 			if var_pibY[`k'] != . {
 				local crec_PIB `"`crec_PIB' `=var_pibY[`k']' `=anio[`k']' "`=string(var_pibY[`k'],"%5.1fc")'" "'
@@ -273,7 +278,7 @@ quietly {
 			name(PIBH, replace)
 
 
-		* PIB real *
+		* PIB real */
 		tempvar pibYRmil
 		g `pibYRmil' = pibYR/1000000000000
 		if `exo_count' == 0 {
@@ -296,9 +301,9 @@ quietly {
 			///xline(`anio_last'.5) ///
 			yscale(range(0)) xscale(range(1993)) ///
 			legend(label(1 "Reportado") label(2 "Proyectado") label(3 "Estimado") order(1 3 2)) ///
-			note("{bf:Productividad laboral}: `=string(scalar(lambda),"%6.3f")'% (`=anio[`obs_exo']' - `=anio[[`=`obs_exo'-20']]'); `=string(`Lambda',"%6.3f")'% (`=anio[`obs_exo']' - `=anio[1]'). {bf:{c U'}ltimo dato reportado}: `anio_last'`trim_last'.") ///
+			note("{bf:Productividad laboral}: `=string(scalar(lambda),"%6.3f")'% (`=anio[[`=`obs_exo'-20']]'-`=anio[`obs_exo']'); `=string(`Lambda',"%6.3f")'% (`=anio[1]'-`=anio[`obs_exo']'). {bf:{c U'}ltimo dato reportado}: `anio_last'`trim_last'.") ///
 			///note("{bf:Note}: Annual Labor Productivity Growth (lambda): `=string(scalar(lambda),"%6.3f")'%.") ///
-			caption("{it:Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, BIE.}") ///
+			///caption("{it:Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, BIE.}") ///
 			name(PIBP, replace)
 
 		capture confirm existence $export

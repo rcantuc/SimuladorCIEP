@@ -1,7 +1,7 @@
 *********************************************
 ****    FOR PROGRAMMING PURPOSES ONLY    ****
 **** SECTION MUST BE COMMENTED OTHERWISE ****
-/*********************************************
+*********************************************
 clear all
 macro drop _all
 capture log close _all
@@ -11,12 +11,15 @@ noisily di _newline(20) in g _col(35) "8) " in w "8) " in y "8) " in g "8)"
 if "`c(os)'" == "Unix" {
 	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
 	global export "/home/ciepmx/Dropbox (CIEP)/Textbook/images/"
+	*global export "/home/ciepmx/Dropbox (CIEP)/LaTeX/images/"
 }
 if "`c(os)'" == "MacOSX" {
 	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
 	global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
+	*global export "/Users/ricardo/Dropbox (CIEP)/LaTeX/images/"
 }
 adopath ++ PERSONAL
+global param = "off"	// "on" or "off"
 
 
 
@@ -26,7 +29,7 @@ adopath ++ PERSONAL
 *** Simulador v5: PIB + Deflactor ***
 *************************************
 timer on 1
-noisily run "`c(sysdir_personal)'/2PIBWeb.do" //nographs //						Cap. 2. Sistema: Desempe{c n~}o + SCN
+noisily run "`c(sysdir_personal)'/2PIBWeb.do" //								Cap. 2. Sistema: PIBDeflactor.ado + SCN.ado
 
 
 

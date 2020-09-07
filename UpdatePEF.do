@@ -17,6 +17,7 @@ else {
 
 * Loop para todos los archivos .csv *
 foreach k of local archivos {
+*foreach k in "CP 2019.csv" "CP 2018.csv" {
 
 	* Importar archivo de la Cuenta Publicas*
 	noisily di in g "Importando: " in y "`k'", _cont
@@ -30,7 +31,31 @@ foreach k of local archivos {
 	* Limpiar *
 	drop if ciclo == .
 	capture drop v*
+	capture rename ejercicio ejercido
 	foreach j of varlist _all {
+		if `"`=substr("`j'",1,3)'"' == "id_" {
+			local newname = `"`=substr("`j'",4,.)'"'
+			capture rename `j' `newname'
+			if _rc != 0 {
+				rename `newname' desc_`newname'
+				rename `j' `newname'				
+			}
+			local j = "`newname'"
+		}
+		if `"`=substr("`j'",1,6)'"' == "monto_" {
+			local newname = `"`=substr("`j'",7,.)'"'
+			rename `j' `newname'	
+			local j = "`newname'"
+		}
+		if "`j'" == "objeto_del_gasto" {
+			rename `j' objeto
+			local j = "objeto"
+		}
+		if "`j'" == "desc_objeto_del_gasto" {
+			rename `j' desc_objeto
+			local j = "desc_objeto"
+		}
+
 		di in w "`j' ", _cont
 		tostring `j', replace
 		capture confirm string variable `k'
@@ -65,6 +90,7 @@ foreach k of local archivos {
 * Loop para unir los archivos (limpios y en Stata) *
 local j = 0
 foreach k of local archivos {
+*foreach k in "CP 2019.csv" "CP 2018.csv" {
 	di in g "Appending: " in y "`k'"
 	if `j' == 0 {
 		use ``=strtoname("`k'")'', clear
@@ -378,7 +404,7 @@ capture order proyecto, last
 capture drop __*
 compress
 
-if `c(version)' == 15.1 {
+if `c(version)' > 13.1 {
 	saveold `"`c(sysdir_site)'../basesCIEP/SIM/PEF`=subinstr("${pais}"," ","",.)'.dta"', replace version(13)
 }
 else {

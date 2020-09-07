@@ -11,33 +11,30 @@ local anio = substr(`"`=trim("`fecha'")'"',1,4) // 								<-- anio base: HOY
 ********************************************
 ** PAR{c A'}METROS DEL SIMULADOR (BASICO) **
 **        Paquete Economico 2021          **
+if "$param" == "on" {
+	global id = "$id"
 
-global id = "$id"
+	*sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
+	*adopath ++ PERSONAL
+	*capture mkdir "`c(sysdir_personal)'/users/$pais/$id/"
 
-*sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
-*adopath ++ PERSONAL
-*capture mkdir "`c(sysdir_personal)'/users/$pais/$id/"
+	** Al ingreso **
+	scalar ISRAS  = 3.800 // 														ISR (asalariados)
+	scalar ISRPF  = 0.222 // 														ISR (personas f{c i'}sicas)
+	scalar CuotasT = 1.681 // 														Cuotas (IMSS)
 
-** Al ingreso **
-scalar ISR_AS  = 3.800 // 														ISR (asalariados)
-scalar ISR_PF  = 0.222 // 														ISR (personas f{c i'}sicas)
-scalar CuotasT = 1.681 // 														Cuotas (IMSS)
+	* Al consumo *
+	scalar IVA     = 4.528 //														IVA 
+	scalar ISAN    = 0.048 //														ISAN
+	scalar IEPS    = 2.318 // 														IEPS (no petrolero + petrolero)
+	scalar Importa = 0.319 //														Importaciones
 
-* Al consumo *
-scalar IVA     = 4.528 //														IVA 
-scalar ISAN    = 0.048 //														ISAN
-scalar IEPS    = 2.318 // 														IEPS (no petrolero + petrolero)
-scalar Importa = 0.319 //														Importaciones
-
-* Al capital *
-scalar ISR_PM  = 4.305 //														ISR (personas morales)
-scalar FMP     = 1.855 // 														Fondo Mexicano del Petr{c o'}leo
-scalar OYE     = 4.787 //														Organismos y empresas (IMSS + ISSSTE + Pemex + CFE)
-scalar OtrosI  = 0.959 //														Productos, derechos, aprovechamientos, contribuciones
-
-run "`c(sysdir_personal)'/2PIBWeb.do" //								Cap. 2. Sistema: Desempeño + SCN
-
-
+	* Al capital *
+	scalar ISRPM  = 4.305 //														ISR (personas morales)
+	scalar FMP     = 1.855 // 														Fondo Mexicano del Petr{c o'}leo
+	scalar OYE     = 4.787 //														Organismos y empresas (IMSS + ISSSTE + Pemex + CFE)
+	scalar OtrosI  = 0.959 //														Productos, derechos, aprovechamientos, contribuciones
+}
 ***********************************/
 
 
