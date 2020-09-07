@@ -475,6 +475,7 @@ quietly {
 		local decil2 : label deciles `k'
 		noisily di in g "  `decil2'" _column(20) in y %20.0fc r(mean) ///
 			in g "  I.C. (95%): " in y "+/-" %7.2fc (r(ub)/r(mean)-1)*100 "%"
+		scalar `varlist'`decil2' = r(mean)
 	}
 
 
@@ -486,6 +487,7 @@ quietly {
 		local decil2 : label deciles `k'
 		noisily di in g "  `decil2'" _column(20) in y %20.1fc r(mean) ///
 			in g "  I.C. (95%): " in y "+/-" %7.2fc (r(ub)/r(mean)-1)*100 "%"
+		scalar dis`varlist'`decil2' = r(mean)
 	}
 
 
@@ -497,6 +499,7 @@ quietly {
 		local decil2 : label deciles `k'
 		noisily di in g "  `decil2'" _column(20) in y %20.1fc r(mean) ///
 			in g "  I.C. (95%): " in y "+/-" %7.2fc (r(ub)/r(mean)-1)*100 "%"
+		scalar inc`varlist'`decil2' = r(mean)
 	}
 
 
@@ -745,7 +748,7 @@ program graphpiramide
 		name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)', replace) ycommon ///
 		title("{bf:Perfil} de `title'") subtitle("$pais") ///
 		///title("`title' by sex, age and `titleover'") ///
-		caption("{it:Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, ENIGH 2018.}" "Fecha: `c(current_date)', `c(current_time)'.") ///
+		caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, ENIGH 2018. Fecha: `c(current_date)', `c(current_time)'.") ///
 		/*caption("{it: Source: Own estimations.`boottext'}")*/ ///
 		note(`"{bf:Nota}: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n de `title' en cada grupo."') ///
 		/*note(`"{bf:Note}: Percentages inside parenthesis represent the concentration of `title' in each group."')*/

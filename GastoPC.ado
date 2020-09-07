@@ -172,6 +172,16 @@ quietly {
 	replace Educacion = Educacion + `otrose'/(`Educacion'[1,1]+`Educacion'[1,2]+`Educacion'[1,3]+`Educacion'[1,4]+`Educacion'[1,5]) ///
 		if alum_basica == 1 | alum_medsup == 1 | alum_superi == 1 | alum_posgra == 1 | alum_adulto == 1
 
+	scalar basicaPIB = (`basica')/PIB*100
+	scalar medsupPIB = (`medsup')/PIB*100
+	scalar superiPIB = (`superi')/PIB*100
+	scalar posgraPIB = (`posgra')/PIB*100
+	scalar eduaduPIB = (`eduadu')/PIB*100
+	scalar otrosePIB = (`otrose')/PIB*100
+	scalar educacPIB = (`basica'+`medsup'+`superi'+`posgra'+`eduadu'+`otrose')/PIB*100
+	scalar educacion = (`basica'+`medsup'+`superi'+`posgra'+`eduadu'+`otrose')/(`Educacion'[1,1]+`Educacion'[1,2]+`Educacion'[1,3]+`Educacion'[1,4]+`Educacion'[1,5])
+
+
 
 
 
@@ -322,6 +332,16 @@ quietly {
 	replace Salud = Salud + `prospe'/`Salud'[1,4] if benef_imssprospera == 1
 	replace Salud = Salud + `pemex'/`Salud'[1,3] if benef_pemex == 1
 	replace Salud = Salud + `ssa'/`pobtot'[1,1] if benef_ssa == 1
+	
+	scalar ssaPIB = `ssa'/PIB*100
+	scalar segpopPIB = `segpop'/PIB*100
+	scalar imssPIB = `imss'/PIB*100
+	scalar issstePIB = `issste'/PIB*100
+	scalar prospePIB = `prospe'/PIB*100
+	scalar pemexPIB = `pemex'/PIB*100
+	scalar saludPIB = (`ssa'+`segpop'+`imss'+`issste'+`prospe'+`pemex')/PIB*100
+	scalar salud = (`ssa'+`segpop'+`imss'+`issste'+`prospe'+`pemex')/(`pobtot'[1,1])
+
 
 
 
@@ -430,6 +450,14 @@ quietly {
 	replace Pension = `penotr'/`mpenotr'[1,1] if formal == 3 & ing_jubila != 0
 	replace PenBienestar = `bienestar'/`mbienestar'[1,1] if edad >= 68
 
+	scalar bienestarPIB = `bienestar'/PIB*100
+	scalar penimsPIB = `penims'/PIB*100
+	scalar penissPIB = `peniss'/PIB*100
+	scalar penotrPIB = `penotr'/PIB*100
+	scalar pensionPIB = (`bienestar'+`penims'+`peniss'+`penotr')/PIB*100
+	scalar pensiones = (`bienestar'+`penims'+`peniss'+`penotr')/(`mbienestar'[1,1]+`mpenims'[1,1]+`mpeniss'[1,1]+`mpenotr'[1,1])
+
+
 
 
 
@@ -500,6 +528,7 @@ quietly {
 	else { 
 		replace IngBasico = `IngBas'/`pobtot'[1,1]
 	}
+
 
 
 
@@ -666,6 +695,18 @@ quietly {
 
 	replace Infra = Infra*`obrapubl'/GASTOS[1,5]
 
+	scalar servpersPIB = `servpers'/PIB*100
+	scalar matesumiPIB = `matesumi'/PIB*100
+	scalar gastgenePIB = `gastgene'/PIB*100
+	scalar substranPIB = `substran'/PIB*100
+	scalar bienmuebPIB = `bienmueb'/PIB*100
+	scalar obrapublPIB = `obrapubl'/PIB*100
+	scalar invefinaPIB = `invefina'/PIB*100
+	scalar partaporPIB = `partapor'/PIB*100
+	scalar costodeuPIB = `costodeu'/PIB*100
+	scalar otrosgasPIB = (`servpers'+`matesumi'+`gastgene'+`substran'+`bienmueb'+`obrapubl'+`invefina'+`partapor'+`costodeu')/PIB*100
+	scalar otrosgastos = (`servpers'+`matesumi'+`gastgene'+`substran'+`bienmueb'+`obrapubl'+`invefina'+`partapor'+`costodeu')/`pobtot'[1,1]
+
 
 
 
@@ -697,7 +738,13 @@ quietly {
 		sexo grupo_edad decil escol edad ///
 		deduc_isr ISR categF ISR__asalariados ISR__PF cuotas* ing_bruto_* htrab ///
 		tipo_contribuyente exen_tot formal* ing_capital isrE ing_subor IVA* IEPS*
-	save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace
+
+	if `c(version)' > 13.1 {
+		saveold `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace version(13)
+	}
+	else {
+		save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace	
+	}
 
 
 
@@ -716,7 +763,12 @@ quietly {
 		replace estimacion = estimacion*`GASTOSSIM'[1,`j']/`GASBase'[1,1] //if anio > `anio'
 
 		local ++j
-		save `"`c(sysdir_personal)'/users/$pais/$id/`k'REC.dta"', replace
+		if `c(version)' > 13.1 {
+			saveold `"`c(sysdir_personal)'/users/$pais/$id/`k'REC.dta"', replace version(13)
+		}
+		else {
+			save `"`c(sysdir_personal)'/users/$pais/$id/`k'REC.dta"', replace		
+		}
 	}
 
 	tempname TRABase
@@ -730,7 +782,12 @@ quietly {
 		replace estimacion = estimacion*`TRANSFSIM'[1,`j']/`TRABase'[1,1] //if anio > `anio'
 
 		local ++j
-		save `"`c(sysdir_personal)'/users/$pais/$id/`k'REC.dta"', replace
+		if `c(version)' > 13.1 {
+			saveold `"`c(sysdir_personal)'/users/$pais/$id/`k'REC.dta"', replace version(13)
+		}
+		else {
+			save `"`c(sysdir_personal)'/users/$pais/$id/`k'REC.dta"', replace		
+		}
 	}
 
 

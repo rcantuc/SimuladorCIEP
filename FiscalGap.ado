@@ -146,6 +146,9 @@ quietly {
 			xtitle("") ytitle(millones `currency' `anio') ///
 			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
 			name(Proy_ingresos, replace)
+		if "$export" != "" {
+			graph export `"$export/Proy_ingresos.png"', replace name(Proy_ingresos)
+		}
 
 		*twoway (connected estimacionotros estimacionalingreso estimacionalconsumo anio) ///
 			(connected recaudacionotros anio if anio <= `anio', color("255 129 0")) ///
@@ -462,6 +465,9 @@ quietly {
 			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
 			xtitle("") ytitle(millones `currency' `anio') ///
 			name(Proy_gastos, replace)
+		if "$export" != "" {
+			graph export `"$export/Proy_gastos.png"', replace name(Proy_gastos)
+		}
 			
 		twoway (area rfsp_pib anio if anio <= `anio' & anio >= 2008) ///
 			(area rfsp_pib anio if anio > `anio'), ///
@@ -544,7 +550,10 @@ quietly {
 			legend(off) ///
 			text(`=shrfspPIB[`obs`anio_last'']*.0618' `=`anio'+1.5' "Proyecci{c o'}n", color(white) placement(e)) ///
 			xline(`=`anio'+.5') ///
-			name(Proy_shrfsp, replace)			
+			name(Proy_shrfsp, replace)
+		if "$export" != "" {
+			graph export `"$export/Proy_shrfsp.png"', replace name(Proy_shrfsp)
+		}
 	}
 	forvalues k=1(1)`=_N' {
 		if anio[`k'] == `end' {

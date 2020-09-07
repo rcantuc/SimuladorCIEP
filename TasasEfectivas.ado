@@ -30,21 +30,21 @@ quietly {
 	}
 
 	* Al ingreso *
-	capture confirm scalar ISR_AS
+	capture confirm scalar ISRAS
 	if _rc == 0 {
-		local recISR_AS = scalar(ISR_AS)/100*scalar(PIB)
+		local recISR_AS = scalar(ISRAS)/100*scalar(PIB)
 	}
 	else {
 		local recISR_AS = `recISR_PF'*(783743.8/(783743.8+45756.7))
-		scalar ISR_AS  = (`recISR_AS')/scalar(PIB)*100 // 						ISR (asalariados)
+		scalar ISRAS  = (`recISR_AS')/scalar(PIB)*100 // 						ISR (asalariados)
 	}
-	capture confirm scalar ISR_PF
+	capture confirm scalar ISRPF
 	if _rc == 0 {
-		local recISR_PF = scalar(ISR_PF)/100*scalar(PIB)
+		local recISR_PF = scalar(ISRPF)/100*scalar(PIB)
 	}
 	else {
 		local recISR_PF = `recISR_PF'*(45756.7/(783743.8+45756.7))
-		scalar ISR_PF  = (`recISR_PF')/scalar(PIB)*100 // 						ISR (personas f{c i'}sicas)
+		scalar ISRPF  = (`recISR_PF')/scalar(PIB)*100 // 						ISR (personas f{c i'}sicas)
 	}
 	capture confirm scalar CuotasT
 	if _rc == 0 {
@@ -87,13 +87,13 @@ quietly {
 	}
 
 	* Al capital *
-	capture confirm scalar ISR_PM
+	capture confirm scalar ISRPM
 	if _rc == 0 {
-		local recISR_PM = scalar(ISR_PM)/100*scalar(PIB)
+		local recISR_PM = scalar(ISRPM)/100*scalar(PIB)
 	}
 	else {
 		local recISR_PM = `recISR_PM'
-		scalar ISR_PM  = (`recISR_PM')/scalar(PIB)*100 //						ISR (personas morales)
+		scalar ISRPM  = (`recISR_PM')/scalar(PIB)*100 //						ISR (personas morales)
 	}
 	capture confirm scalar FMP
 	if _rc == 0 {
@@ -142,7 +142,7 @@ quietly {
 		_col(55) in g "ISR (f{c i'}sicas)" ///
 		_col(88) %7.3fc in y (`recISR_PF')/scalar(PIB)*100 ///
 		_col(99) %7.1fc in y (`recISR_PF')/MixL*100 " %"
-	noisily di in g "  Compensaci{c o'}n de asalariados (+ Cuotas SS)" ///
+	noisily di in g "  Compensaci{c o'}n de asalariados" ///
 		_col(44) %7.3fc in y (RemSal+SSImputada+SSEmpleadores)/scalar(PIB)*100 ///
 		_col(55) in g "Cuotas IMSS" ///
 		_col(88) %7.3fc in y (`recCuotas_')/scalar(PIB)*100 ///
@@ -163,10 +163,10 @@ quietly {
 		_col(99) in g "Tasa efectiva" "}"
 	noisily di in g _dup(111) "-"
 	noisily di in g "  Consumo hogares (sin alim.)" ///
-		_col(44) %7.3fc in y (ConHog - Alim - BebN)/scalar(PIB)*100 ///
+		_col(44) %7.3fc in y (ConHog - Alim - BebN - Salu)/scalar(PIB)*100 ///
 		_col(55) in g "IVA" ///
 		_col(88) %7.3fc in y `recIVA'/scalar(PIB)*100 ///
-		_col(99) %7.1fc in y `recIVA'/(ConHog - Alim - BebN)*100 " %"
+		_col(99) %7.1fc in y `recIVA'/(ConHog - Alim - BebN - Salu)*100 " %"
 	noisily di in g "  Compra de veh{c i'}culos" ///
 		_col(44) %7.3fc in y Vehi/scalar(PIB)*100 ///
 		_col(55) in g "ISAN" ///
@@ -236,17 +236,22 @@ quietly {
 	tabstat Laboral Consumo Otros ISR__PM ing_cap_fmp [fw=factor], stat(sum) f(%20.0fc) save
 	matrix INGRESOS = r(StatTotal)
 
-	replace Laboral = Laboral*((scalar(ISR_AS)+scalar(ISR_PF)+scalar(CuotasT))/100*scalar(PIB))/INGRESOS[1,1]
+	replace Laboral = Laboral*((scalar(ISRAS)+scalar(ISRPF)+scalar(CuotasT))/100*scalar(PIB))/INGRESOS[1,1]
 	replace Consumo = Consumo*((scalar(IVA)+scalar(ISAN)+scalar(IEPS)+scalar(Importa))/100*scalar(PIB))/INGRESOS[1,2]
-	replace Otros = Otros*((scalar(ISR_PM)+scalar(FMP)+scalar(OYE)+scalar(OtrosI))/100*scalar(PIB))/INGRESOS[1,3]
+	replace Otros = Otros*((scalar(ISRPM)+scalar(FMP)+scalar(OYE)+scalar(OtrosI))/100*scalar(PIB))/INGRESOS[1,3]
 
-	replace ISR__PM = ISR__PM*((scalar(ISR_PM))/100*scalar(PIB))/INGRESOS[1,4]
+	replace ISR__PM = ISR__PM*((scalar(ISRPM))/100*scalar(PIB))/INGRESOS[1,4]
 	replace ing_cap_fmp = ing_cap_fmp*((scalar(FMP))/100*scalar(PIB))/INGRESOS[1,5]
 
 	tabstat Laboral Consumo Otros [fw=factor], stat(sum) f(%20.0fc) save
 	matrix INGRESOSSIM = r(StatTotal)
 
-	save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace
+	if `c(version)' > 13.1 {
+		saveold `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace version(13)
+	}
+	else {
+		save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace	
+	}
 
 
 
@@ -265,7 +270,12 @@ quietly {
 		replace estimacion = estimacion*INGRESOSSIM[1,`j']/`RECBase'[1,1] if anio >= `anio'
 
 		local ++j
-		save `"`c(sysdir_personal)'/users/$pais/$id/`k'REC.dta"', replace
+		if `c(version)' > 13.1 {
+			saveold `"`c(sysdir_personal)'/users/$pais/$id/`k'REC.dta"', replace version(13)
+		}
+		else {
+			save `"`c(sysdir_personal)'/users/$pais/$id/`k'REC.dta"', replace		
+		}
 	}
 
 
