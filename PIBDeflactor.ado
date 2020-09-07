@@ -237,10 +237,18 @@ quietly {
 			}
 		}
 
+		* Graph type *
+		if `exo_count' == 0 {
+			local graphtype "bar"
+		}
+		else {
+			local graphtype "area"
+		}
+
 		* Deflactor var_indiceY *
 		twoway (area deflator anio if anio < `anio_last' | (anio == `anio_last' & trimestre == 4)) ///
 			(area deflator anio if anio >= `anio_last' & anio > anio[`obs_exo']) ///
-			(area deflator anio if /*anio == `anio_last' & trimestre < 4 |*/ anio <= anio[`obs_exo'] & anio >= `anio_last'), ///
+			(`graphtype' deflator anio if /*anio == `anio_last' & trimestre < 4 |*/ anio <= anio[`obs_exo'] & anio >= `anio_last', lwidth(none)), ///
 			title("{bf:{c I'}ndice de precios} impl{c i'}citos") ///
 			subtitle(${pais}) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
@@ -281,12 +289,6 @@ quietly {
 		* PIB real */
 		tempvar pibYRmil
 		g `pibYRmil' = pibYR/1000000000000
-		if `exo_count' == 0 {
-			local graphtype "bar"
-		}
-		else {
-			local graphtype "area"
-		}
 		
 		twoway (area `pibYRmil' anio if anio < `anio_last' | (anio == `anio_last' & trimestre == 4)) ///
 			(area `pibYRmil' anio if anio >= `anio_last' & anio > anio[`obs_exo']) ///
