@@ -240,7 +240,7 @@ quietly {
 		* Deflactor var_indiceY *
 		twoway (area deflator anio if anio < `anio_last' | (anio == `anio_last' & trimestre == 4)) ///
 			(area deflator anio if anio >= `anio_last' & anio > anio[`obs_exo']) ///
-			(area deflator anio if anio == `anio_last' & trimestre < 4 | (anio <= anio[`obs_exo'] & anio > `anio_last')), ///
+			(area deflator anio if /*anio == `anio_last' & trimestre < 4 |*/ anio <= anio[`obs_exo'] & anio >= `anio_last'), ///
 			title("{bf:{c I'}ndice de precios} impl{c i'}citos") ///
 			subtitle(${pais}) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///

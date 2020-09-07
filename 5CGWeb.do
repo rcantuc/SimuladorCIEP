@@ -33,11 +33,11 @@ if _rc != 0 {
 	- Pension - Educacion - Salud - IngBasico - PenBienestar - Infra
 }
 label var AportacionesNetas "Aportaciones P{c u'}blicas Netas"
+save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace
 
 noisily Simulador AportacionesNetas if AportacionesNetas != 0 [fw=factor], base("ENIGH 2018") boot(1) graphs reboot
 noisily CuentasGeneracionales AportacionesNetas, //boot(250)					// <-- OPTIONAL!!! Toma mucho tiempo.
 
-save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace
 
 
 use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/AportacionesNetasREC.dta"', clear
