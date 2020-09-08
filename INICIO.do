@@ -37,7 +37,7 @@ noisily run "`c(sysdir_personal)'/2PIBWeb.do" //								Cap. 2. Sistema: PIBDefl
 *******************************/
 *** 2 POBLACION: ENIGH 2018  ***
 ***   Simulador v5: Set up   ***
-/********************************
+********************************
 noisily Poblacion, //nographs //update
 noisily run "`c(sysdir_personal)'/Expenditure.do" 2018 //						<-- a calibrar!!!
 noisily run "`c(sysdir_personal)'/Households.do" 2018 //						Cap. 3. Agentes economicos
