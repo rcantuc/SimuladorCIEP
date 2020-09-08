@@ -733,7 +733,7 @@ quietly {
 	tabstat IngBasico PenBienestar [fw=factor], stat(sum) f(%20.0fc) save
 	matrix `TRANSFSIM' = r(StatTotal)
 
-	keep folio* numren factor* Laboral Consumo Otros ISR__PM ing_cap_fmp ///
+	keep folio* numren factor* Laboral Consumo OtrosC ISR__PM ing_cap_fmp ///
 		Pension Educacion Salud IngBasico PenBienestar Salarios OtrosGas Infra ///
 		sexo grupo_edad decil escol edad ///
 		deduc_isr ISR categF ISR__asalariados ISR__PF cuotas* ing_bruto_* htrab ///
