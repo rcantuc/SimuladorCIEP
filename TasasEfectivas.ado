@@ -243,7 +243,7 @@ quietly {
 	replace ISR__PM = ISR__PM*((scalar(ISRPM))/100*scalar(PIB))/INGRESOS[1,4]
 	replace ing_cap_fmp = ing_cap_fmp*((scalar(FMP))/100*scalar(PIB))/INGRESOS[1,5]
 
-	tabstat Laboral Consumo Otros [fw=factor], stat(sum) f(%20.0fc) save
+	tabstat Laboral Consumo OtrosC [fw=factor], stat(sum) f(%20.0fc) save
 	matrix INGRESOSSIM = r(StatTotal)
 
 	if `c(version)' > 13.1 {
