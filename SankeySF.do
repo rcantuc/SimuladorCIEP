@@ -46,7 +46,7 @@ label define `1' 99 "OyE estatales", add
 
 set obs `=_N+1'
 replace from = 98 in -1
-replace profile = scalar(OtrosI)/100*scalar(PIB) in -1
+replace profile = scalar(OtrosC)/100*scalar(PIB) in -1
 replace to = 4 in -1
 label define `1' 98 "Otros ingresos", add
 

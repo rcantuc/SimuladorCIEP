@@ -83,7 +83,7 @@ quietly {
 		if "`divGA`k''" == "Ingresos de capital" | "`divGA`k''" == "Otros ingresos" {
 			preserve
 
-			use `"`c(sysdir_personal)'/users/$pais/$id/OtrosREC"', clear
+			use `"`c(sysdir_personal)'/users/$pais/$id/OtrosCREC"', clear
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
 

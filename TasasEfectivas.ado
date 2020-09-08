@@ -110,13 +110,13 @@ quietly {
 		local recOYE = `recCFE'+`recPemex'+`recIMSS'+`recISSSTE'
 		scalar OYE     = (`recOYE')/scalar(PIB)*100 //							Organismos y empresas (IMSS + ISSSTE + Pemex + CFE)
 	}
-	capture confirm scalar OtrosI
+	capture confirm scalar OtrosC
 	if _rc == 0 {
-		local recOtrosI = scalar(OtrosI)/100*scalar(PIB)
+		local recOtrosC = scalar(OtrosC)/100*scalar(PIB)
 	}
 	else {
-		local recOtrosI = `recOtros_t'+`recDerecho'+`recProduct'+`recAprovec'+`recContrib'
-		scalar OtrosI  = (`recOtrosI')/scalar(PIB)*100 //						Productos, derechos, aprovechamientos, contribuciones
+		local recOtrosC = `recOtros_t'+`recDerecho'+`recProduct'+`recAprovec'+`recContrib'
+		scalar OtrosC  = (`recOtrosC')/scalar(PIB)*100 //						Productos, derechos, aprovechamientos, contribuciones
 	}
 
 
@@ -215,14 +215,14 @@ quietly {
 	noisily di in g "  Ingreso de capital (- alq. imp.)" ///
 		_col(44) %7.3fc in y (CapIncImp-ExNOpHog)/scalar(PIB)*100 ///
 		_col(55) in g "Productos, derechos, aprovech..." ///
-		_col(88) %7.3fc in y (`recOtrosI')/scalar(PIB)*100 ///
-		_col(99) %7.1fc in y (`recOtrosI')/(CapIncImp-ExNOpHog)*100 " %"
+		_col(88) %7.3fc in y (`recOtrosC')/scalar(PIB)*100 ///
+		_col(99) %7.1fc in y (`recOtrosC')/(CapIncImp-ExNOpHog)*100 " %"
 	noisily di in g _dup(111) "-"
 	noisily di in g "  {bf:Ingreso de capital" ///
 		_col(44) %7.3fc in y (CapIncImp)/scalar(PIB)*100 ///
 		_col(55) in g "Impuestos e ingresos de capital" ///
-		_col(88) %7.3fc in y (`recISR_PM'+`recFMP__De'+`recOYE'+`recOtrosI')/scalar(PIB)*100 ///
-		_col(99) %7.1fc in y (`recISR_PM'+`recFMP__De'+`recOYE'+`recOtrosI')/(CapIncImp)*100 " %" "}"
+		_col(88) %7.3fc in y (`recISR_PM'+`recFMP__De'+`recOYE'+`recOtrosC')/scalar(PIB)*100 ///
+		_col(99) %7.1fc in y (`recISR_PM'+`recFMP__De'+`recOYE'+`recOtrosC')/(CapIncImp)*100 " %" "}"
 
 
 
@@ -238,7 +238,7 @@ quietly {
 
 	replace Laboral = Laboral*((scalar(ISRAS)+scalar(ISRPF)+scalar(CuotasT))/100*scalar(PIB))/INGRESOS[1,1]
 	replace Consumo = Consumo*((scalar(IVA)+scalar(ISAN)+scalar(IEPS)+scalar(Importa))/100*scalar(PIB))/INGRESOS[1,2]
-	replace Otros = Otros*((scalar(ISRPM)+scalar(FMP)+scalar(OYE)+scalar(OtrosI))/100*scalar(PIB))/INGRESOS[1,3]
+	replace Otros = Otros*((scalar(ISRPM)+scalar(FMP)+scalar(OYE)+scalar(OtrosC))/100*scalar(PIB))/INGRESOS[1,3]
 
 	replace ISR__PM = ISR__PM*((scalar(ISRPM))/100*scalar(PIB))/INGRESOS[1,4]
 	replace ing_cap_fmp = ing_cap_fmp*((scalar(FMP))/100*scalar(PIB))/INGRESOS[1,5]
@@ -261,7 +261,7 @@ quietly {
 	****************************
 	tempname RECBase
 	local j = 1
-	foreach k in Laboral Consumo Otros {
+	foreach k in Laboral Consumo OtrosC {
 		use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/`k'REC"', clear
 		merge 1:1 (anio) using "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", nogen keepus(lambda)
 		tabstat estimacion if anio == `anio', stat(sum) f(%20.0fc) save

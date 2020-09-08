@@ -19,7 +19,6 @@ if "`c(os)'" == "MacOSX" {
 	*global export "/Users/ricardo/Dropbox (CIEP)/LaTeX/images/"
 }
 adopath ++ PERSONAL
-global param = "off"	// "on" or "off"
 
 
 
@@ -29,6 +28,7 @@ global param = "off"	// "on" or "off"
 *** Simulador v5: PIB + Deflactor ***
 *************************************
 timer on 1
+global param = "on"	// "on" or "off"
 noisily run "`c(sysdir_personal)'/2PIBWeb.do" //								Cap. 2. Sistema: PIBDeflactor.ado + SCN.ado
 
 
@@ -39,7 +39,7 @@ noisily run "`c(sysdir_personal)'/2PIBWeb.do" //								Cap. 2. Sistema: PIBDefl
 ***   Simulador v5: Set up   ***
 /********************************
 noisily Poblacion, //nographs //update
-*noisily run "`c(sysdir_personal)'/Expenditure.do" 2018 //						<-- a calibrar!!!
+noisily run "`c(sysdir_personal)'/Expenditure.do" 2018 //						<-- a calibrar!!!
 noisily run "`c(sysdir_personal)'/Households.do" 2018 //						Cap. 3. Agentes economicos
 foreach k in grupo_edad sexo decil escol {
 	use "`c(sysdir_site)'../basesCIEP/SIM/2018/households.dta", clear
