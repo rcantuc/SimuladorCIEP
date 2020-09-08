@@ -2357,9 +2357,9 @@ Simulador Consumo [fw=factor_cola], base("ENIGH 2018") ///
 
 
 ** (+) Impuestos e ingresos de capital **
-Distribucion Otros, relativo(Yk) macro(`=`otrosing'+`ISRMorales'')
-label var Otros "los ingresos de capital"
-Simulador Otros [fw=factor_cola], base("ENIGH 2018") ///
+Distribucion OtrosC, relativo(Yk) macro(`=`otrosing'+`ISRMorales'')
+label var OtrosC "los ingresos de capital"
+Simulador OtrosC [fw=factor_cola], base("ENIGH 2018") ///
 	boot(1) reboot graphs
 
 

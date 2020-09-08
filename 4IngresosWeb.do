@@ -33,7 +33,7 @@ if "$param" == "on" {
 	scalar ISRPM  = 4.305 //														ISR (personas morales)
 	scalar FMP     = 1.855 // 														Fondo Mexicano del Petr{c o'}leo
 	scalar OYE     = 4.787 //														Organismos y empresas (IMSS + ISSSTE + Pemex + CFE)
-	scalar OtrosI  = 0.959 //														Productos, derechos, aprovechamientos, contribuciones
+	scalar OtrosC  = 0.959 //														Productos, derechos, aprovechamientos, contribuciones
 }
 ***********************************/
 
@@ -116,9 +116,9 @@ IVA_Mod
 * Modulos *
 capture confirm scalar ISR_AS_Mod
 if _rc == 0 {
-	scalar ISR_AS = ISR_AS_Mod
-	scalar ISR_PF = ISR_PF_Mod
-	scalar ISR_PM = ISR_PM_Mod
+	scalar ISRAS = ISR_AS_Mod
+	scalar ISRPF = ISR_PF_Mod
+	scalar ISRPM = ISR_PM_Mod
 }
 
 capture confirm scalar IVA_Mod

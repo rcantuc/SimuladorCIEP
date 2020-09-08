@@ -56,9 +56,9 @@ twoway connected estimacion anio, ///
 	
 ***************/
 *** 7 SANKEY ***
-/****************
-run "`c(sysdir_personal)'/3GastosWeb.do"
-run "`c(sysdir_personal)'/4IngresosWeb.do"
+****************
+*run "`c(sysdir_personal)'/3GastosWeb.do"
+*run "`c(sysdir_personal)'/4IngresosWeb.do"
 
 foreach k in sexo escol grupo_edad decil {
 	noisily run "`c(sysdir_personal)'/SankeySF.do" `k' `anio'

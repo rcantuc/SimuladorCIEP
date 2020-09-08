@@ -31,13 +31,14 @@ if "$param" == "on" {
 	global def2023 =   3.5 // CGPE 2020
 	global def2024 =   3.5 // CGPE 2020
 	global def2025 =   3.5 // CGPE 2020
+	
 }
 ***********************************/
 
 
 
 
-noisily PIBDeflactor, anio(`anio') `1' //nographs //update //discount(3.0)
+noisily PIBDeflactor, anio(`anio') //nographs //update //discount(3.0)
 if `c(version)' > 13.1 {
 	saveold "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", replace version(13)
 }
