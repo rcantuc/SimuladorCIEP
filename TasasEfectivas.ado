@@ -233,12 +233,12 @@ quietly {
 	use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
 
 	* ISR *
-	tabstat Laboral Consumo Otros ISR__PM ing_cap_fmp [fw=factor], stat(sum) f(%20.0fc) save
+	tabstat Laboral Consumo OtrosC ISR__PM ing_cap_fmp [fw=factor], stat(sum) f(%20.0fc) save
 	matrix INGRESOS = r(StatTotal)
 
 	replace Laboral = Laboral*((scalar(ISRAS)+scalar(ISRPF)+scalar(CuotasT))/100*scalar(PIB))/INGRESOS[1,1]
 	replace Consumo = Consumo*((scalar(IVA)+scalar(ISAN)+scalar(IEPS)+scalar(Importa))/100*scalar(PIB))/INGRESOS[1,2]
-	replace Otros = Otros*((scalar(ISRPM)+scalar(FMP)+scalar(OYE)+scalar(OtrosC))/100*scalar(PIB))/INGRESOS[1,3]
+	replace OtrosC = OtrosC*((scalar(ISRPM)+scalar(FMP)+scalar(OYE)+scalar(OtrosC))/100*scalar(PIB))/INGRESOS[1,3]
 
 	replace ISR__PM = ISR__PM*((scalar(ISRPM))/100*scalar(PIB))/INGRESOS[1,4]
 	replace ing_cap_fmp = ing_cap_fmp*((scalar(FMP))/100*scalar(PIB))/INGRESOS[1,5]
