@@ -10,7 +10,7 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
-	** 1.2 Datos Abiertos (MÃˆxico) **
+	** 1.2 Datos Abiertos (MÈxico) **
 	if "$pais" == "" {
 		UpdateDatosAbiertos
 		local updated = r(updated)
@@ -24,7 +24,7 @@ quietly {
 	** 1.3 Base PEF **
 	capture confirm file `"`c(sysdir_site)'../basesCIEP/SIM/PEF`=subinstr("${pais}"," ","",.)'.dta"'
 	if _rc != 0 {
-		noisily run UpdatePEF.do
+		noisily run "`c(sysdir_site)'/UpdatePEF.do"
 	}
 
 
@@ -46,7 +46,7 @@ quietly {
 
 	** 2.2 Update PEF **
 	if "`update'" == "update" | "`updated'" != "yes" {
-		noisily run UpdatePEF.do
+		noisily run "`c(sysdir_site)'/UpdatePEF.do"
 	}
 
 	** 2.2 Base RAW **
@@ -111,7 +111,7 @@ quietly {
 		tempname gasanio
 		matrix `gasanio' = r(StatTotal)
 		
-		graph pie gastonetoPIB if anio == `anio' & `by' != -1 & transf_gf == 0, over(`resumido') ///
+		*graph pie gastonetoPIB if anio == `anio' & `by' != -1 & transf_gf == 0, over(`resumido') ///
 			plabel(_all percent, format(%5.1fc)) ///
 			title(`"Gastos `=upper("`pef'`ppef'")' `anio'"') /// subtitle($pais) ///
 			name(gastospie, replace) ///

@@ -10,7 +10,7 @@ local anio = substr(`"`=trim("`fecha'")'"',1,4) // 								<-- anio base: HOY
 
 ***********************************
 ** PAR{c A'}METROS DEL SIMULADOR **
-**    Paquete Economico 2021     **
+/**    Paquete Economico 2021     **
 if "$param" == "on" {
 	global id = "$id"
 

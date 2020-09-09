@@ -4,13 +4,14 @@
 timer on 97
 local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 local anio = substr(`"`=trim("`fecha'")'"',1,4) // 								<-- anio base: HOY
+local anio = 2020
 
 
 
 
 ********************************************
 ** PAR{c A'}METROS DEL SIMULADOR (BASICO) **
-**        Paquete Economico 2021          **
+/**        Paquete Economico 2021          **
 if "$param" == "on" {
 	global id = "$id"
 
@@ -19,21 +20,21 @@ if "$param" == "on" {
 	*capture mkdir "`c(sysdir_personal)'/users/$pais/$id/"
 
 	** Al ingreso **
-	scalar ISRAS  = 3.800 // 														ISR (asalariados)
-	scalar ISRPF  = 0.222 // 														ISR (personas f{c i'}sicas)
-	scalar CuotasT = 1.681 // 														Cuotas (IMSS)
+	scalar ISRAS   = 3.559 // 														ISR (asalariados)
+	scalar ISRPF   = 0.208 // 														ISR (personas f{c i'}sicas)
+	scalar CuotasT = 1.528 // 														Cuotas (IMSS)
 
 	* Al consumo *
-	scalar IVA     = 4.528 //														IVA 
-	scalar ISAN    = 0.048 //														ISAN
-	scalar IEPS    = 2.318 // 														IEPS (no petrolero + petrolero)
-	scalar Importa = 0.319 //														Importaciones
+	scalar IVA     = 3.918 //														IVA 
+	scalar ISAN    = 0.030 //														ISAN
+	scalar IEPS    = 2.044 // 														IEPS (no petrolero + petrolero)
+	scalar Importa = 0.247 //														Importaciones
 
 	* Al capital *
-	scalar ISRPM  = 4.305 //														ISR (personas morales)
-	scalar FMP     = 1.855 // 														Fondo Mexicano del Petr{c o'}leo
-	scalar OYE     = 4.787 //														Organismos y empresas (IMSS + ISSSTE + Pemex + CFE)
-	scalar OtrosC  = 0.959 //														Productos, derechos, aprovechamientos, contribuciones
+	scalar ISRPM   = 3.874 //														ISR (personas morales)
+	scalar FMP     = 1.373 // 														Fondo Mexicano del Petr{c o'}leo
+	scalar OYE     = 4.310 //														Organismos y empresas (IMSS + ISSSTE + Pemex + CFE)
+	scalar OtrosC  = 1.079 //														Productos, derechos, aprovechamientos, contribuciones
 }
 ***********************************/
 
@@ -125,7 +126,7 @@ capture confirm scalar IVA_Mod
 if _rc == 0 {
 	scalar IVA = IVA_Mod
 }
-noisily TasasEfectivas //														Cap. 4. Ingresos
+noisily TasasEfectivas, anio(`anio') //														Cap. 4. Ingresos
 
 
 
