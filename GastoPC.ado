@@ -61,6 +61,8 @@ quietly {
 	}
 	else {
 		preserve
+		noisily PEF, anio(`anio') g
+		
 		PEF if divGA == 3, anio(`anio') by(desc_subfuncion)
 		local basica = r(Educaci_c_o__n_B_c_a__sica)
 		scalar basica = `basica'/`Educacion'[1,1]
@@ -218,8 +220,8 @@ quietly {
 	else {
 		preserve
 		PEF if divGA == 7, anio(`anio') by(desc_pp)
-		local segpop0 = r(Seguro_Popular)
-		local segpop = r(Seguro_Popular)
+		local segpop0 = 0 //r(Seguro_Popular)
+		local segpop = 0 //r(Seguro_Popular)
 
 		PEF if divGA == 7, anio(`anio') by(ramo)
 		local segpop = `segpop'+r(Aportaciones_Federales_para_Ent)
@@ -420,7 +422,7 @@ quietly {
 	noisily di _newline in g "{bf:  Gasto por instituci{c o'}n" ///
 		_col(33) %15s in g "Pensionados" ///
 		_col(50) %7s "% PIB" ///
-		_col(60) %10s in g "Per c{c a'}pita (MXN `aniovp')" "}"
+		_col(60) %10s in g "Per c{c a'}pita (MXN `anio')" "}"
 	noisily di in g _dup(80) "-"
 	noisily di in g "  Pensi{c o'}n para el bienestar" ///
 		_col(33) %15.0fc in y `mbienestar'[1,1] ///

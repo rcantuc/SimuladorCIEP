@@ -53,7 +53,7 @@ foreach k in grupo_edad sexo decil escol {
 
 ***************/
 *** 3 GASTOS ***
-/****************
+****************
 noisily run "`c(sysdir_personal)'/3GastosWeb.do" //								Parte III
 
 
@@ -69,7 +69,7 @@ noisily run "`c(sysdir_personal)'/4IngresosWeb.do" //							Parte II
 
 *****************************/
 ** 5 Cuentas Generacionales **
-/******************************
+******************************
 noisily run "`c(sysdir_personal)'/5CGWeb.do" //									Parte IV
 
 

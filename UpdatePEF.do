@@ -22,7 +22,7 @@ foreach k of local archivos {
 	* Importar archivo de la Cuenta Publicas*
 	noisily di in g "Importando: " in y "`k'", _cont
 	if "$pais" == "" {
-		import delimited "`c(sysdir_site)'../basesCIEP/PEFs/$pais/`k'", clear case(lower) stripquotes(yes) stringcols(_all) //encoding("utf8") 
+		import delimited "`c(sysdir_site)'../basesCIEP/PEFs/$pais/`k'", clear case(lower) stripquotes(yes) stringcols(_all) encoding("utf8") 
 	}
 	else {
 		import excel "`c(sysdir_site)'../basesCIEP/PEFs/$pais/`k'", clear firstrow case(lower)
@@ -47,11 +47,11 @@ foreach k of local archivos {
 			rename `j' `newname'	
 			local j = "`newname'"
 		}
-		if "`j'" == "objeto_del_gasto" {
+		if "`j'" == "objeto_del_gasto" | "`j'" == "concepto" {
 			rename `j' objeto
 			local j = "objeto"
 		}
-		if "`j'" == "desc_objeto_del_gasto" {
+		if "`j'" == "desc_objeto_del_gasto" | "`j'" == "desc_concepto" {
 			rename `j' desc_objeto
 			local j = "desc_objeto"
 		}
@@ -63,7 +63,7 @@ foreach k of local archivos {
 			replace `j' = trim(`j')
 			replace `j' = subinstr(`j',`"""',"",.)
 			replace `j' = subinstr(`j',"  "," ",.)
-			replace `j' = subinstr(`j',"Ê"," ",.)			// Algunas bases tienen este caracter "raro".
+			replace `j' = subinstr(`j',"ÃŠ"," ",.)			// Algunas bases tienen este caracter "raro".
 			format `j' %30s
 		}
 		destring `j', replace
@@ -78,7 +78,7 @@ foreach k of local archivos {
 		}
 	}
 
-	** Anio y Ramo (Básicos) **
+	** Anio y Ramo (BÃ¡sicos) **
 	capture rename ciclo anio
 	capture tostring ramo, replace
 
