@@ -10,7 +10,7 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
-	** 1.2 Datos Abiertos (MÃˆxico) **
+	** 1.2 Datos Abiertos (MÈxico) **
 	if "$pais" == "" {
 		UpdateDatosAbiertos
 		local updated = r(updated)
@@ -39,7 +39,7 @@ quietly {
 	noisily di _newline(2) in g _dup(20) "." "{bf:  Sistema Fiscal: INGRESOS $pais" in y `anio' "  }" in g _dup(20) "."
 
 	** 2.1 PIB + Deflactor **
-	PIBDeflactor, anio(`anio') nographs
+	PIBDeflactor, anio(`anio') //nographs
 	local currency = currency[1]
 	forvalues k=1(1)`=_N' {
 		if anio[`k'] == `anio' {
@@ -49,14 +49,12 @@ quietly {
 			local pibYR`=`anio'-10' = pibYR[`k']
 		}
 	}
-	
-	
 	tempfile PIB
 	save `PIB'
 
 	** 2.2 Update LIF **
 	if "`update'" == "update" | "`updated'" != "yes" {
-		noisily run UpdateLIF.do			// Actualiza a partir de la base ./basesCIEP/LIFs/LIF.xlsx
+		noisily run "`c(sysdir_site)'/UpdateLIF.do"			// Actualiza a partir de la base ./basesCIEP/LIFs/LIF.xlsx
 	}
 
 	** 2.4 Base RAW **
@@ -104,7 +102,10 @@ quietly {
 	g `resumido' = `by'
 
 	tempname label
-	label copy `by' `label'
+	capture label copy `by' `label'
+	if _rc != 0 {
+		label copy num`by' `label'
+	}
 	label values `resumido' `label'
 
 	egen `recaudacionPIB' = max(recaudacionPIB) /*if anio >= 2010*/, by(`by')

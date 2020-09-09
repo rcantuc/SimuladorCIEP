@@ -17,19 +17,19 @@ else {
 
 * Loop para todos los archivos .csv *
 foreach k of local archivos {
-*foreach k in "CP 2019.csv" "CP 2018.csv" {
+*foreach k in "CP 2019" "PPEF 2021" {
 
 	* Importar archivo de la Cuenta Publicas*
 	noisily di in g "Importando: " in y "`k'", _cont
 	if "$pais" == "" {
-		import delimited "`c(sysdir_site)'../basesCIEP/PEFs/$pais/`k'", clear encoding("utf8") case(lower) stripquotes(yes)
+		import delimited "`c(sysdir_site)'../basesCIEP/PEFs/$pais/`k'", clear case(lower) stripquotes(yes) stringcols(_all) //encoding("utf8") 
 	}
 	else {
 		import excel "`c(sysdir_site)'../basesCIEP/PEFs/$pais/`k'", clear firstrow case(lower)
 	}
 
 	* Limpiar *
-	drop if ciclo == .
+	drop if ciclo == ""
 	capture drop v*
 	capture rename ejercicio ejercido
 	foreach j of varlist _all {
@@ -63,7 +63,7 @@ foreach k of local archivos {
 			replace `j' = trim(`j')
 			replace `j' = subinstr(`j',`"""',"",.)
 			replace `j' = subinstr(`j',"  "," ",.)
-			replace `j' = subinstr(`j',"ÃŠ"," ",.)			// Algunas bases tienen este caracter "raro".
+			replace `j' = subinstr(`j',"Ê"," ",.)			// Algunas bases tienen este caracter "raro".
 			format `j' %30s
 		}
 		destring `j', replace
@@ -78,7 +78,7 @@ foreach k of local archivos {
 		}
 	}
 
-	** Anio y Ramo (BÃ¡sicos) **
+	** Anio y Ramo (Básicos) **
 	capture rename ciclo anio
 	capture tostring ramo, replace
 
@@ -90,8 +90,8 @@ foreach k of local archivos {
 * Loop para unir los archivos (limpios y en Stata) *
 local j = 0
 foreach k of local archivos {
-*foreach k in "CP 2019.csv" "CP 2018.csv" {
-	di in g "Appending: " in y "`k'"
+*foreach k in "CP 2019" "PPEF 2021" {
+	noisily di in g "Appending: " in y "`k'"
 	if `j' == 0 {
 		use ``=strtoname("`k'")'', clear
 		local ++j
@@ -163,11 +163,11 @@ if "$pais" == "" {
 		label define `k' -1 "Cuotas ISSSTE", add
 	}
 
-	** Descripci{c o'}n Fuente **
+	/** Descripci{c o'}n Fuente **
 	labmask fuente, values(desc_fuente)
 	drop desc_fuente
 
-	** Descripci{c o'}n Entidad Federativa **
+	** Descripci{c o'}n Entidad Federativa **/
 	replace desc_entidad = trim(desc_entidad)
 	replace desc_entidad = "Ciudad de M{c e'}xico" if entidad == 9
 	labmask entidad, values(desc_entidad)

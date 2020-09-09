@@ -27,6 +27,8 @@ adopath ++ PERSONAL
 ***     1 ECONOMIA Y CUENTAS      ***
 *** Simulador v5: PIB + Deflactor ***
 *************************************
+clear all
+macro drop _all
 timer on 1
 global param = "on"	// "on" or "off"
 noisily run "`c(sysdir_personal)'/2PIBWeb.do" //								Cap. 2. Sistema: PIBDeflactor.ado + SCN.ado
@@ -51,7 +53,7 @@ foreach k in grupo_edad sexo decil escol {
 
 ***************/
 *** 3 GASTOS ***
-****************
+/****************
 noisily run "`c(sysdir_personal)'/3GastosWeb.do" //								Parte III
 
 
@@ -67,7 +69,7 @@ noisily run "`c(sysdir_personal)'/4IngresosWeb.do" //							Parte II
 
 *****************************/
 ** 5 Cuentas Generacionales **
-******************************
+/******************************
 noisily run "`c(sysdir_personal)'/5CGWeb.do" //									Parte IV
 
 

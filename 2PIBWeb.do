@@ -4,6 +4,7 @@
 timer on 99
 local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 local anio = substr(`"`=trim("`fecha'")'"',1,4) // 								<-- anio base: HOY
+local anio = 2021
 
 
 
@@ -18,20 +19,17 @@ if "$param" == "on" {
 	*capture mkdir "`c(sysdir_personal)'/users/$pais/$id/"
 
 	* Crecimiento PIB *
-	global pib2020 = -11.3 // Banxico 2020 [-3.9,0.1]
-	global pib2021 =   2.8 // Banxico 2020 [1.5,3.5]
-	global pib2022 =   2.5 // CGPE 2020
-	global pib2023 =   2.6 // CGPE 2020
-	global pib2024 =   2.7 // CGPE 2020
-	global pib2025 =   2.7 // CGPE 2020
+	global pib2020 = -8.0
+	global pib2021 =  4.6
+	global pib2022 =  2.6
+	global pib2023 =  2.5
+	global pib2024 =  2.5
+	global pib2025 =  2.5
+	global pib2026 =  2.5
 
-	global def2020 =   3.5 // Precriterios 2021 [-3.9,0.1]
-	global def2021 =   3.2 // Precriterios 2021 [-3.9,0.1]
-	global def2022 =   3.5 // CGPE 2020
-	global def2023 =   3.5 // CGPE 2020
-	global def2024 =   3.5 // CGPE 2020
-	global def2025 =   3.5 // CGPE 2020
-	
+	global def2020 =  3.568
+	global def2021 =  3.425
+
 }
 ***********************************/
 
