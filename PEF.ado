@@ -10,7 +10,7 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
-	** 1.2 Datos Abiertos (MÈxico) **
+	** 1.2 Datos Abiertos (MÃˆxico) **
 	if "$pais" == "" {
 		UpdateDatosAbiertos
 		local updated = r(updated)
@@ -24,7 +24,7 @@ quietly {
 	** 1.3 Base PEF **
 	capture confirm file `"`c(sysdir_site)'../basesCIEP/SIM/PEF`=subinstr("${pais}"," ","",.)'.dta"'
 	if _rc != 0 {
-		noisily run "`c(sysdir_site)'/UpdatePEF.do"
+		noisily run "`c(sysdir_personal)'/UpdatePEF.do"
 	}
 
 
@@ -46,7 +46,7 @@ quietly {
 
 	** 2.2 Update PEF **
 	if "`update'" == "update" | "`updated'" != "yes" {
-		noisily run "`c(sysdir_site)'/UpdatePEF.do"
+		noisily run "`c(sysdir_personal)'/UpdatePEF.do"
 	}
 
 	** 2.2 Base RAW **

@@ -4,6 +4,7 @@
 timer on 98
 local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 local anio = substr(`"`=trim("`fecha'")'"',1,4) // 								<-- anio base: HOY
+local anio = 2021
 
 
 
@@ -64,7 +65,7 @@ if "$param" == "on" {
 ********************
 ** 4.4 Resultados **
 ********************
-noisily GastoPC
+noisily GastoPC, anio(`anio')
 
 
 

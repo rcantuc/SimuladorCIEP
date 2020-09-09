@@ -20,7 +20,7 @@ global SIMULADOR = `"`c(sysdir_site)'/INICIO.do"'
 *** 2 Bienvenida ***
 ********************
 noisily di _newline(3) in w "{bf:Centro de Investigaci{c o'}n Econ{c o'}mica y Presupuestaria, A.C.}"
-noisily di in w "¡Feliz de verte! Las 7 necesidades b{c a'}sicas para una mejor salud:"
+noisily di in w "Â¡Feliz de verte! Las 7 necesidades b{c a'}sicas para una mejor salud:"
 noisily di in w "1) Respira profundamente. 2) Toma mucha agua. 3) Duerme bien. 4) Come saludablemente."
 noisily di in w "5) Limpia tu casa y tu cuerpo de toxinas. 6) R{c i'}e y rod{c e'}ate de gente querida."
 noisily di in w "7) Expr{c e'}sate creativamente."

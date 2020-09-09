@@ -4,6 +4,7 @@
 timer on 96
 local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 local anio = substr(`"`=trim("`fecha'")'"',1,4) // 								<-- anio base: HOY
+local anio = 2021
 
 
 
@@ -36,7 +37,7 @@ label var AportacionesNetas "Aportaciones P{c u'}blicas Netas"
 save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace
 
 noisily Simulador AportacionesNetas if AportacionesNetas != 0 [fw=factor], base("ENIGH 2018") boot(1) graphs reboot
-noisily CuentasGeneracionales AportacionesNetas, //boot(250)					// <-- OPTIONAL!!! Toma mucho tiempo.
+noisily CuentasGeneracionales AportacionesNetas, anio(`anio') //boot(250)					// <-- OPTIONAL!!! Toma mucho tiempo.
 
 
 
@@ -70,7 +71,7 @@ foreach k in sexo escol grupo_edad decil {
 *******************/
 *** 8 FISCAL GAP ***
 ********************
-noisily FiscalGap, graphs end(2030) //boot(250) //update
+noisily FiscalGap, anio(`anio') graphs end(2030) //boot(250) //update
 
 
 
