@@ -10,7 +10,7 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
-	** 1.2 Datos Abiertos (MÈxico) **
+	** 1.2 Datos Abiertos (MÃˆxico) **
 	if "$pais" == "" {
 		UpdateDatosAbiertos
 		local updated = r(updated)
@@ -95,7 +95,7 @@ quietly {
 
 	egen `gastonetoPIB' = max(gastonetoPIB), by(`by')	
 	replace `resumido' = 999 if abs(`gastonetoPIB') < `minimum'
-	label define `label' 999 "< 1% PIB", add modify
+	label define `label' 999 "< `minimum'% PIB", add modify
 
 	/*levelsof `by', local(levelsof)
 	foreach k of local levelsof {
