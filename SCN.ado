@@ -656,7 +656,7 @@ quietly {
 			(area `Capital' anio if anio > `latest' & anio > `anio_exo', color("255 189 0")) ///
 			(area `Laboral' anio if anio > `latest' & anio > `anio_exo', color("39 97 47")), ///
 			title("{bf:Generaci{c o'}n} del Producto Interno Bruto") ///
-			caption("{it:Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, BIE.}") ///
+			/// caption("{it:Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, BIE.}") ///
 			legend(cols(3) order(1 2 3)) ///
 			xtitle("") ///
 			text(`=`Depreciacion'[1]*.05' `=`latest'+(`anio_exo'-`latest')/2' "{bf:Est.}", place(n) color(white)) ///
@@ -778,7 +778,7 @@ quietly {
 			(area `ConHog' anio if anio > `latest' & anio > `anio_exo', color("186 34 64")) ///
 			(area `ComprasN' anio if anio > `latest' & anio > `anio_exo', color("53 200 71")), ///
 			title("{bf:Utilizaci{c o'}n} del Ingreso Nacional Disponible") ///
-			caption("{it:Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, BIE.}") ///
+			/// caption("{it:Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, BIE.}") ///
 			legend(cols(4) order(1 2 3 4)) ///
 			xtitle("") ///
 			text(`=`AhorroN'[1]*.05' `=`latest'+(`anio_exo'-`latest')/2' "{bf:Est.}", place(n) color(white)) ///

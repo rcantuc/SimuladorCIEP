@@ -128,7 +128,7 @@ quietly {
 			legend(on position(6) rows(`rows') cols(`cols')) ///
 			ptext(0 0 `"{bf:`=string(`recanio'[1,1],"%6.1fc")' % PIB}"', color(white) size(small))
 
-		graph bar (sum) recaudacionPIB if divLIF != 10, ///
+		graph bar (sum) recaudacionPIB if divLIF != 10 & anio >= 2002, ///
 			over(`resumido', /*relabel(1 "LIF" 2 "SHCP")*/) ///
 			over(anio, label(labgap(vsmall))) ///
 			bargap(-30) stack asyvars ///
