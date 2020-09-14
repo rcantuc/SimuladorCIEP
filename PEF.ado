@@ -10,7 +10,7 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
-	** 1.2 Datos Abiertos (MÃˆxico) **
+	** 1.2 Datos Abiertos (MÈxico) **
 	if "$pais" == "" {
 		UpdateDatosAbiertos
 		local updated = r(updated)
@@ -122,7 +122,7 @@ quietly {
 			over(`resumido') ///
 			over(anio, label(labgap(vsmall))) ///
 			bargap(-30) stack asyvars ///
-			title("{bf:Gastos presupuestarios}") ///
+			title("{bf:Gasto} p{c u'}blico") ///
 			subtitle($pais) ///
 			ytitle(% PIB) ylabel(0(5)30, labsize(small)) ///
 			legend(on position(6) rows(`rows') cols(`cols')) ///
@@ -165,7 +165,7 @@ quietly {
 		local name = strtoname(`"`disptext'"')
 
 		* Display *
-		return scalar `name' = `mat`k''[1,1]
+		*return scalar `name' = `mat`k''[1,1]
 		local `by' `"``by'' `name'"'
 
 		noisily di in g `"  (+) `disptext'"' ///
@@ -194,7 +194,7 @@ quietly {
 			matrix `Aportaciones_Federacion' = r(StatTotal)
 		}
 		else {
-				matrix `Aportaciones_Federacion' = J(1,1,0)
+			matrix `Aportaciones_Federacion' = J(1,1,0)
 		}
 		return scalar Aportaciones_Federacion = `Aportaciones_Federacion'[1,1]
 
@@ -242,11 +242,11 @@ quietly {
 		matrix `mat`k'' = r(Stat`k')
 
 		* Display text *
-		if substr(`"`=r(name`k')'"',1,25) == "'" {
-			local disptext = substr(`"`=r(name`k')'"',1,24)
+		if substr(`"`=r(name`k')'"',1,31) == "'" {
+			local disptext = substr(`"`=r(name`k')'"',1,30)
 		}
 		else {
-			local disptext = substr(`"`=r(name`k')'"',1,25)
+			local disptext = substr(`"`=r(name`k')'"',1,31)
 		}
 		local name = strtoname(`"`disptext'"')
 

@@ -153,7 +153,6 @@ quietly {
 		_col(55) in g "Impuestos al ingreso" ///
 		_col(88) %7.3fc in y (`recISR_AS'+`recISR_PF'+`recCuotas_')/scalar(PIB)*100 ///
 		_col(99) %7.1fc in y (`recISR_AS'+`recISR_PF'+`recCuotas_')/(Yl)*100 " %" "}"
-	noisily di %20.0fc `recCuotas_'
 
 
 	noisily di _newline(2) in y "{bf: B. " in y "Impuestos al consumo" "}"

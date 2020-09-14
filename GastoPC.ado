@@ -23,7 +23,16 @@ quietly {
 	**************************
 	*** 2 Gastos iniciales ***
 	**************************
+	use if anio == `anio' using `"`c(sysdir_site)'../basesCIEP/SIM/`=proper("poblacion")'`=subinstr("${pais}"," ","",.)'tot.dta"', clear
+	local ajustepob = poblacion
+	
 	use `"`c(sysdir_site)'../basesCIEP/SIM/2018/households.dta"', clear
+	tabstat factor, stat(sum) f(%20.0fc) save
+	tempname pobenigh
+	matrix `pobenigh' = r(StatTotal)
+	
+	replace factor = round(factor*`ajustepob'/`pobenigh'[1,1],1)
+	
 	tabstat Pension Educacion Salud OtrosGas Infra [fw=factor], stat(sum) f(%20.0fc) save
 	matrix GASTOS = r(StatTotal)
 
@@ -61,9 +70,9 @@ quietly {
 	}
 	else {
 		preserve
-		noisily PEF, anio(`anio') g
+		noisily PEF, anio(`anio') g by(divGA) min(0)
 		
-		PEF if divGA == 3, anio(`anio') by(desc_subfuncion)
+		PEF if divGA == 3, anio(`anio') by(desc_subfuncion) min(0)
 		local basica = r(Educaci_c_o__n_B_c_a__sica)
 		scalar basica = `basica'/`Educacion'[1,1]
 		restore
@@ -74,7 +83,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if divGA == 3, anio(`anio') by(desc_subfuncion)
+		PEF if divGA == 3, anio(`anio') by(desc_subfuncion) min(0)
 		local medsup = r(Educaci_c_o__n_Media_Superior)
 		scalar medsup = `medsup'/`Educacion'[1,2]
 		restore
@@ -85,7 +94,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if divGA == 3, anio(`anio') by(desc_subfuncion)
+		PEF if divGA == 3, anio(`anio') by(desc_subfuncion) min(0)
 		local superi = r(Educaci_c_o__n_Superior)
 		scalar superi = `superi'/`Educacion'[1,3]
 		restore
@@ -96,7 +105,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if divGA == 3, anio(`anio') by(desc_subfuncion)
+		PEF if divGA == 3, anio(`anio') by(desc_subfuncion) min(0)
 		local posgra = r(Posgrado)
 		scalar posgra = `posgra'/`Educacion'[1,4]
 		restore
@@ -107,7 +116,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if divGA == 3, anio(`anio') by(desc_subfuncion)
+		PEF if divGA == 3, anio(`anio') by(desc_subfuncion) min(0)
 		local eduadu = r(Educaci_c_o__n_para_Adultos)
 
 		scalar eduadu = `eduadu'/`Educacion'[1,5]
@@ -119,8 +128,10 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if divGA == 3, anio(`anio') by(desc_subfuncion)
-		local otrose = r(Otros_Servicios_Educativos_y_Ac)
+		PEF if divGA == 3, anio(`anio') by(desc_subfuncion) min(0)
+		local otrose = r(Otros_Servicios_Educativos_y_Ac) +r(Cultura)+r(Deporte_y_Recreaci_c_o__n) ///
+			+r(Desarrollo_Tecnol_c_o__gico)+r(Funci_c_o__n_P_c_u__blica) ///
+			+r(Investigaci_c_o__n_Cient_c_i__f)+r(Servicios_Cient_c_i__ficos_y_Te)
 
 		scalar otrose = `otrose'/(`Educacion'[1,1]+`Educacion'[1,2]+`Educacion'[1,3]+`Educacion'[1,4]+`Educacion'[1,5])
 		restore
@@ -194,12 +205,18 @@ quietly {
 	g benef_issste = inst_2 == "2"
 	g benef_isssteest = inst_3 == "3"
 	g benef_pemex = inst_4 == "4"
-	g benef_imssprospera = inst_5 == "5"
-	capture g benef_otro = inst_6 == "6"
+	
+	tempvar benef_imssprospera
+	g `benef_imssprospera' = inst_5 == "5"
+	egen benef_imssprospera = max(`benef_imssprospera'), by(folioviv foliohog)
+
+	tempvar benef_otro
+	capture g `benef_otro' = inst_6 == "6"
 	if _rc != 0 {
-		g benef_otro = 0
+		g `benef_otro' = 0
 	}
-	g benef_seg_pop = segpop == "1"
+	egen benef_otro = max(`benef_otro'), by(folioviv foliohog)
+	g benef_seg_pop = benef_imss == 0 & benef_issste == 0 & benef_pemex == 0
 	g benef_ssa = 1
 
 	tabstat benef_imss benef_issste benef_pemex benef_imssprospera benef_seg_pop ///
@@ -219,11 +236,17 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if divGA == 7, anio(`anio') by(desc_pp)
-		local segpop0 = 0 //r(Seguro_Popular)
-		local segpop = 0 //r(Seguro_Popular)
+		PEF if divGA == 7, anio(`anio') by(desc_pp) min(0)
+		local segpop0 = r(Seguro_Popular)
+		local segpop = r(Seguro_Popular)
+		if `segpop0' == . {
+			local segpop0 = r(Atenci_c_o__n_a_la_Salud_y_Medi)
+			local segpop = r(Atenci_c_o__n_a_la_Salud_y_Medi)
+		}
+		local caneros = r(Seguridad_Social_Ca_c_n__eros)
+		local incorpo = r(R_c_e__gimen_de_Incorporaci_c_o)
 
-		PEF if divGA == 7, anio(`anio') by(ramo)
+		PEF if divGA == 7, anio(`anio') by(ramo) min(0)
 		local segpop = `segpop'+r(Aportaciones_Federales_para_Ent)
 		scalar segpop = `segpop'/(`Salud'[1,5]+`Salud'[1,7])
 		restore
@@ -234,8 +257,8 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if divGA == 7, anio(`anio') by(ramo)
-		local ssa = r(Salud)-`segpop0'
+		PEF if divGA == 7, anio(`anio') by(ramo) min(0)
+		local ssa = r(Salud)-`segpop0'+`caneros'+`incorpo'
 		scalar ssa = `ssa'/`pobtot'[1,1]
 		restore
 	}
@@ -245,7 +268,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if divGA == 7, anio(`anio') by(ramo)
+		PEF if divGA == 7, anio(`anio') by(ramo) min(0)
 		local imss = r(Instituto_Mexicano_del_Seguro_S)
 		scalar imss = `imss'/`Salud'[1,1]
 		restore
@@ -256,20 +279,20 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if divGA == 7, anio(`anio') by(ramo)
+		PEF if divGA == 7, anio(`anio') by(ramo) min(0)
 		local issste = r(Instituto_de_Seguridad_y_Servic)
 		scalar issste = `issste'/`Salud'[1,2]
 		restore
 	}
 	capture confirm scalar prospe
 	if _rc == 0 {
-		local prospe = scalar(prospe)*`Salud'[1,4]
+		local prospe = scalar(prospe)*12587429 //`Salud'[1,4]
 	}
 	else {
 		preserve
-		PEF if divGA == 7, anio(`anio') by(desc_pp)
+		PEF if divGA == 7, anio(`anio') by(desc_pp) min(0)
 		local prospe = r(Programa_IMSS_BIENESTAR)
-		scalar prospe = `prospe'/`Salud'[1,4]
+		scalar prospe = `prospe'/12587429 //`Salud'[1,4]
 		restore
 	}
 	capture confirm scalar pemex
@@ -278,10 +301,10 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if divGA == 7 & modalidad == "E" & pp == 13 & ramo == 52, anio(`anio') by(ramo)
+		PEF if divGA == 7 & modalidad == "E" & pp == 13 & ramo == 52, anio(`anio') by(ramo) min(0)
 		local pemex = r(Petr_c_o__leos_Mexicanos)
 		
-		PEF if divGA == 7, anio(`anio') by(ramo)
+		PEF if divGA == 7, anio(`anio') by(ramo) min(0)
 		local pemex = `pemex' + r(Defensa_Nacional) + r(Marina)
 
 		scalar pemex = (`pemex')/`Salud'[1,3]
@@ -300,7 +323,11 @@ quietly {
 		_col(33) %15.0fc in y `pobtot'[1,1] ///
 		_col(50) %7.3fc in y `ssa'/PIB*100 ///
 		_col(60) %15.0fc in y `ssa'/`pobtot'[1,1]
-	noisily di in g "  FASSA, Seguro Popular" ///
+	noisily di in g "  IMSS-Bienestar" ///
+		_col(33) %15.0fc in y 12587429 /// `Salud'[1,4] /// 
+		_col(50) %7.3fc in y `prospe'/PIB*100 ///
+		_col(60) %15.0fc in y `prospe'/12587429 //`Salud'[1,4]
+	noisily di in g "  INSABI" ///
 		_col(33) %15.0fc in y `Salud'[1,5]+`Salud'[1,7] ///
 		_col(50) %7.3fc in y (`segpop')/PIB*100 ///
 		_col(60) %15.0fc in y (`segpop')/(`Salud'[1,5]+`Salud'[1,7])
@@ -312,10 +339,6 @@ quietly {
 		_col(33) %15.0fc in y `Salud'[1,2] ///
 		_col(50) %7.3fc in y `issste'/PIB*100 ///
 		_col(60) %15.0fc in y `issste'/`Salud'[1,2]
-	noisily di in g "  IMSS-Bienestar" ///
-		_col(33) %15.0fc in y `Salud'[1,4] ///
-		_col(50) %7.3fc in y `prospe'/PIB*100 ///
-		_col(60) %15.0fc in y `prospe'/`Salud'[1,4]
 	noisily di in g "  Pemex, ISSFAM" ///
 		_col(33) %15.0fc in y `Salud'[1,3] ///
 		_col(50) %7.3fc in y `pemex'/PIB*100 ///
@@ -377,7 +400,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if divGA == 6, anio(`anio') by(divGA)
+		PEF if divGA == 6, anio(`anio') by(divGA) min(0)
 		local bienestar = r(Pensi_c_o__n_Bienestar)
 		scalar bienestar = `bienestar'/`mbienestar'[1,1]
 		restore
@@ -388,7 +411,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if divGA == 5, anio(`anio') by(ramo)
+		PEF if divGA == 5, anio(`anio') by(ramo) min(0)
 		local penims = r(Instituto_Mexicano_del_Seguro_S)
 		scalar penims = `penims'/`mpenims'[1,1]
 		restore
@@ -399,7 +422,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if divGA == 5, anio(`anio') by(ramo)
+		PEF if divGA == 5, anio(`anio') by(ramo) min(0)
 		local peniss = r(Instituto_de_Seguridad_y_Servic)
 		scalar peniss = `peniss'/`mpeniss'[1,1]
 		restore
@@ -410,7 +433,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if divGA == 5, anio(`anio') by(ramo)
+		PEF if divGA == 5, anio(`anio') by(ramo) min(0)
 		local penotr = r(Petr_c_o__leos_Mexicanos)+r(Aportaciones_a_Seguridad_Social)+r(Comisi_c_o__n_Federal_de_Electr)
 		scalar penotr = `penotr'/`mpenotr'[1,1]
 		restore
@@ -547,7 +570,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if divGA != 5 & divGA != 3 & divGA != 6 & divGA != 7, by(capitulo) anio(`anio')
+		PEF if divGA != 5 & divGA != 3 & divGA != 6 & divGA != 7 & transf_gf == 0, by(capitulo) anio(`anio') min(0)
 		local servpers = r(Servicios_personales)
 		scalar servpers = `servpers'/`pobtot'[1,1]
 		restore
@@ -558,7 +581,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if divGA != 5 & divGA != 3 & divGA != 6 & divGA != 7, by(capitulo) anio(`anio')
+		PEF if divGA != 5 & divGA != 3 & divGA != 6 & divGA != 7 & transf_gf == 0, by(capitulo) anio(`anio') min(0)
 		local matesumi = r(Materiales_y_suministros)
 		scalar matesumi = `matesumi'/`pobtot'[1,1]
 		restore
@@ -569,7 +592,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if divGA != 5 & divGA != 3 & divGA != 6 & divGA != 7, by(capitulo) anio(`anio')
+		PEF if divGA != 5 & divGA != 3 & divGA != 6 & divGA != 7 & transf_gf == 0, by(capitulo) anio(`anio') min(0)
 		local gastgene = r(Gastos_generales)
 		scalar gastgene = `gastgene'/`pobtot'[1,1]
 		restore
@@ -580,8 +603,8 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if divGA != 5 & divGA != 3 & divGA != 6 & divGA != 7, by(capitulo) anio(`anio')
-		local substran = r(Subsidios_y_transferencia)
+		PEF if divGA != 5 & divGA != 3 & divGA != 6 & divGA != 7 & transf_gf == 0, by(capitulo) anio(`anio') min(0)
+		local substran = r(Subsidios_y_transferencias)
 		scalar substran = `substran'/`pobtot'[1,1]
 		restore
 	}
@@ -591,7 +614,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if divGA != 5 & divGA != 3 & divGA != 6 & divGA != 7, by(capitulo) anio(`anio')
+		PEF if divGA != 5 & divGA != 3 & divGA != 6 & divGA != 7 & transf_gf == 0, by(capitulo) anio(`anio') min(0)
 		local bienmueb = r(Bienes_muebles_e_inmuebles)
 		scalar bienmueb = `bienmueb'/`pobtot'[1,1]
 		restore
@@ -602,7 +625,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if divGA != 5 & divGA != 3 & divGA != 6 & divGA != 7, by(capitulo) anio(`anio')
+		PEF if divGA != 5 & divGA != 3 & divGA != 6 & divGA != 7 & transf_gf == 0, by(capitulo) anio(`anio') min(0)
 		local obrapubl = r(Obras_p_c_u__blicas)
 		scalar obrapubl = `obrapubl'/`pobtot'[1,1]
 		restore
@@ -613,7 +636,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if divGA != 5 & divGA != 3 & divGA != 6 & divGA != 7, by(capitulo) anio(`anio')
+		PEF if divGA != 5 & divGA != 3 & divGA != 6 & divGA != 7 & transf_gf == 0, by(capitulo) anio(`anio') min(0)
 		local invefina = r(Inversi_c_o__n_financiera)
 		scalar invefina = `invefina'/`pobtot'[1,1]
 		restore
@@ -624,8 +647,8 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if divGA != 5 & divGA != 3 & divGA != 6 & divGA != 7, by(capitulo) anio(`anio')
-		local partapor = r(Participaciones_y_aportac)
+		PEF if divGA != 5 & divGA != 3 & divGA != 6 & divGA != 7 & transf_gf == 0, by(capitulo) anio(`anio') min(0)
+		local partapor = r(Participaciones_y_aportaciones)
 		scalar partapor = `partapor'/`pobtot'[1,1]
 		restore
 	}
@@ -635,7 +658,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if divGA != 5 & divGA != 3 & divGA != 6 & divGA != 7, by(capitulo) anio(`anio')
+		PEF if divGA != 5 & divGA != 3 & divGA != 6 & divGA != 7 & transf_gf == 0, by(capitulo) anio(`anio') min(0)
 		local costodeu = r(Deuda_p_c_u__blica)
 		scalar costodeu = `costodeu'/`pobtot'[1,1]
 		restore

@@ -4,7 +4,7 @@
 timer on 96
 local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 local anio = substr(`"`=trim("`fecha'")'"',1,4) // 								<-- anio base: HOY
-local anio = 2021
+local anio = 2020
 
 
 
