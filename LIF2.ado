@@ -141,17 +141,17 @@ quietly {
 			blabel(bar, format(%7.1fc)) ///
 			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}")
 			
-					graph bar (sum) recaudacionPIB if (divOrigen >= 2 & anio >=2010 & anio <=2019 ), ///
+					graph bar (sum) recaudacionreal if (divOrigen >= 2 & anio >=2010), ///
 			over(divOrigen, /*relabel(1 "LIF" 2 "SHCP")*/) ///
 			over(anio, label(labgap(vsmall))) ///
 			bargap(-30) stack asyvars ///
 			title("{bf:Ingresos presupuestarios}") ///
 			subtitle($pais) ///
-			ytitle(% PIB) ylabel(0(5)30, labsize(small)) ///
+			ytitle(mmdp) ylabel(0(1000)6000, labsize(small)) ///
 			legend(on position(6) cols(4)) ///
 			name(ingresos, replace) ///
 			blabel(bar, format(%7.1fc)) ///
-			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}")
+			caption("{it:Fuente: Elaborado por el CIEP con información de SHCP}")
 			
 			graph bar (sum) recaudacionPIB if (divCIEP == 2 | divCIEP == 16 | divCIEP == 4 | divCIEP == 13) & anio >=2010, ///
 			over(divCIEP, /*relabel(1 "LIF" 2 "SHCP")*/) ///
@@ -165,53 +165,53 @@ quietly {
 			blabel(bar, format(%7.1fc)) ///
 			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}")
 			
-			graph bar (sum) recaudacionPIB if (divCIEP == 21 | divCIEP == 11 | divCIEP == 14 | divCIEP == 18 | divCIEP == 16 | divCIEP == 15 | divCIEP == 12 | divCIEP == 14 | divCIEP == 19) & anio >=2010 & anio <=2019 , ///
-			over(divCIEP, /*relabel(1 "LIF" 2 "SHCP")*/) ///
+			graph bar (sum) recaudacionreal if (divCIEP2 == 18 | divCIEP2 == 10 | divCIEP2 == 15 | divCIEP2 == 13 | divCIEP2 == 11) & anio >=2010, ///
+			over(divCIEP2, /*relabel(1 "LIF" 2 "SHCP")*/) ///
 			over(anio, label(labgap(vsmall))) ///
 			bargap(-30) stack asyvars ///
 			title("{bf:Ingresos tributarios}") ///
 			subtitle($pais) ///
-			ytitle(% PIB) ylabel(0(1)15, labsize(small)) ///
+			ytitle(mmdp) ylabel(0(500)4000, labsize(small)) ///
 			legend(on position(6) cols(4)) ///
 			name(ingresos, replace) ///
 			blabel(bar, format(%7.1fc)) ///
-			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}")
+			caption("{it:Fuente: Elaborado por el CIEP con información de SHCP}")
 			
-			graph bar (sum) recaudacionPIB if (divOrigen == 2) & anio >=2010 & anio <=2019, ///
-			over(divCIEP, /*relabel(1 "LIF" 2 "SHCP")*/) ///
+			graph bar (sum) recaudacionreal if (divCIEP2 == 4 | divCIEP2 == 1 | divCIEP2 == 2 | divCIEP2 == 12 | divCIEP2 == 14) & anio >=2010, ///
+			over(divCIEP2, /*relabel(1 "LIF" 2 "SHCP")*/) ///
 			over(anio, label(labgap(vsmall))) ///
 			bargap(-30) stack asyvars ///
 			title("{bf:Ingresos no tributarios no petroleros}") ///
 			subtitle($pais) ///
-			ytitle(% PIB) ylabel(0(1)2, labsize(small)) ///
+			ytitle(mmdp) ylabel(0(200)1800, labsize(small)) ///
 			legend(on position(6) cols(4)) ///
 			name(ingresos, replace) ///
 			blabel(bar, format(%7.1fc)) ///
-			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}")
+			caption("{it:Fuente: Elaborado por el CIEP con información de SHCP}")
 			
-						graph bar (sum) recaudacionPIB if (divOrigen == 4) & anio >=2010 & anio <=2019, ///
+						graph bar (sum) recaudacionreal if (divOrigen == 4) & anio >=2010, ///
 			over(divCIEP, /*relabel(1 "LIF" 2 "SHCP")*/) ///
 			over(anio, label(labgap(vsmall))) ///
 			bargap(-30) stack asyvars ///
 			title("{bf:Ingresos petroleros}") ///
 			subtitle($pais) ///
-			ytitle(% PIB) ylabel(0(2)8, labsize(small)) ///
+			ytitle(mmdp) ylabel(0(200)2000, labsize(small)) ///
 			legend(on position(6) cols(4)) ///
 			name(ingresos, replace) ///
 			blabel(bar, format(%7.1fc)) ///
-			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}")
+			caption("{it:Fuente: Elaborado por el CIEP con información de SHCP}")
 			
-			graph bar (sum) recaudacionPIB if (divOrigen == 3) & anio >=2010 & anio <=2019, ///
-			over(divCIEP, /*relabel(1 "LIF" 2 "SHCP")*/) ///
+			graph bar (sum) recaudacionreal if (divCIEP2 == 2 | divCIEP2 == 12 | divCIEP2 == 14) & anio >=2010, ///
+			over(divCIEP2, /*relabel(1 "LIF" 2 "SHCP")*/) ///
 			over(anio, label(labgap(vsmall))) ///
 			bargap(-30) stack asyvars ///
 			title("{bf:Ingresos de organismos y empresas sin PEMEX}") ///
 			subtitle($pais) ///
-			ytitle(% PIB) ylabel(0(2)8, labsize(small)) ///
+			ytitle(mmdp) ylabel(0(200)1000, labsize(small)) ///
 			legend(on position(6) cols(4)) ///
 			name(ingresos, replace) ///
 			blabel(bar, format(%7.1fc)) ///
-			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}")
+			caption("{it:Fuente: Elaborado por el CIEP con información de SHCP}")
 	}
 
 
