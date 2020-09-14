@@ -321,7 +321,7 @@ quietly {
 	}
 
 	use `"`c(sysdir_site)'../basesCIEP/SIM/`=proper("`anything'")'`=subinstr("${pais}"," ","",.)'tot.dta"', clear
-	noisily list anio poblacion if entidad == "Nacional" & anio == `aniovp'
+	noisily list anio poblacion if entidad == "Nacional" & anio == `anio'
 
 	timer off 14
 	timer list 14

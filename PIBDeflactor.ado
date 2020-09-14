@@ -1,9 +1,9 @@
 **********************************************************
-***                  ACTUALIZACIÃ“N                     ***
+***                  ACTUALIZACIÓN                     ***
 ***   1) abrir archivos .iqy en Excel de Windows       ***
 ***   2) guardar y reemplazar .xls dentro de           ***
 ***      ./TemplateCIEP/basesCIEP/INEGI/SCN/           ***
-***   3) correr PIBDeflactor[.ado] con opciÃ³n "update" ***
+***   3) correr PIBDeflactor[.ado] con opción "update" ***
 **********************************************************
 
 **** Crecimiento del PIB ****
@@ -36,7 +36,7 @@ quietly {
 	tempfile workingage
 	save `workingage'
 
-	/* Verifica si se puede usar la base, si no es asÃ­ o la opciÃ³n update es llamada, 
+	/* Verifica si se puede usar la base, si no es así o la opción update es llamada, 
 	limpia la base y la usa */
 	capture use `"`c(sysdir_site)'../basesCIEP/SIM/PIBDeflactor`=subinstr("${pais}"," ","",.)'.dta"', clear
 	if (_rc != 0 | "`update'" == "update") & "`c(os)'" != "Unix" {
@@ -83,9 +83,9 @@ quietly {
 
 	***********************************************
 	** 1.1 Imputar Par{c a'}metros ex{c o'}genos **
-	/* Para todos los aÃ±os, si existe informaciÃ³n sobre el crecimiento del deflactor 
-	utilizarla, si no existe, tomar el rezago del Ã­ndice geomÃ©trico. Posteriormente
-	ajustar los valores del Ã­ndice con sus rezagos. */
+	/* Para todos los años, si existe información sobre el crecimiento del deflactor 
+	utilizarla, si no existe, tomar el rezago del índice geométrico. Posteriormente
+	ajustar los valores del índice con sus rezagos. */
 	forvalues k=`anio_last'(1)`fin' {
 		capture confirm existence ${def`k'}
 		if _rc == 0 {
@@ -188,7 +188,7 @@ quietly {
 	replace deflator = indiceY/indiceY[`obsvp']
 	replace pibYR = pibY/deflator
 
-	* ProyecciÃ³n de crecimiento PIB *
+	* Proyección de crecimiento PIB *
 	replace pibYR = `=pibYR[`obs_exo']'/`=WorkingAge[`obs_exo']'*WorkingAge* ///
 		(1+scalar(lambda)/100)^(anio-`anio_exo') if pibYR == .
 	replace pibY = pibYR*deflator if pibY == .
@@ -329,21 +329,21 @@ quietly {
 				noisily di in g %~72s "REPORTADO"
 				local reportado = "done"
 			}
-			noisily di in g " `=anio[`k']' " _col(10) %8.1fc in y var_pibY[`k'] " %" _col(25) %20.0fc pibY[`k'] _col(50) %8.1fc in y var_indiceY[`k'] " %" _col(65) %8.6fc deflator[`k']
+			noisily di in g " `=anio[`k']' " _col(10) %8.1fc in y var_pibY[`k'] " %" _col(25) %20.0fc pibY[`k'] _col(50) %8.1fc in y var_indiceY[`k'] " %" _col(65) %12.10fc deflator[`k']
 		}
 		if (anio[`k'] == `anio_last' & trimestre[`k'] < 4) | anio[`k'] <= anio[`obs_exo'] & anio[`k'] > `anio_last' {
 			if "`estimado'" == "" {
 				noisily di in g %~72s "ESTIMADO"
 				local estimado = "done"
 			}
-			noisily di in g "{bf: `=anio[`k']' " _col(10) %8.1fc in y var_pibY[`k'] " %" _col(25) %20.0fc pibY[`k'] _col(50) %8.1fc in y var_indiceY[`k'] " %" _col(65) %8.6fc deflator[`k'] "}"
+			noisily di in g "{bf: `=anio[`k']' " _col(10) %8.1fc in y var_pibY[`k'] " %" _col(25) %20.0fc pibY[`k'] _col(50) %8.1fc in y var_indiceY[`k'] " %" _col(65) %12.10fc deflator[`k'] "}"
 		}
 		if (anio[`k'] > `anio_last') & anio[`k'] > anio[`obs_exo'] {
 			if "`proyectado'" == "" {
 				noisily di in g %~72s "PROYECTADO"
 				local proyectado = "done"
 			}
-			noisily di in g " `=anio[`k']' " _col(10) %8.1fc in y var_pibY[`k'] " %" _col(25) %20.0fc pibY[`k'] _col(50) %8.1fc in y var_indiceY[`k'] " %" _col(65) %8.6fc deflator[`k']
+			noisily di in g " `=anio[`k']' " _col(10) %8.1fc in y var_pibY[`k'] " %" _col(25) %20.0fc pibY[`k'] _col(50) %8.1fc in y var_indiceY[`k'] " %" _col(65) %12.10fc deflator[`k']
 		}
 	}
 

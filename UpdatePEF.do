@@ -17,12 +17,12 @@ else {
 
 * Loop para todos los archivos .csv *
 foreach k of local archivos {
-*foreach k in "CP 2019" "PPEF 2021" {
+*foreach k in "PPEF 2021" {
 
 	* Importar archivo de la Cuenta Publicas*
 	noisily di in g "Importando: " in y "`k'", _cont
 	if "$pais" == "" {
-		import delimited "`c(sysdir_site)'../basesCIEP/PEFs/$pais/`k'", clear case(lower) stripquotes(yes) stringcols(_all) encoding("utf8") 
+		import delimited "`c(sysdir_site)'../basesCIEP/PEFs/$pais/`k'", clear case(lower) stripquotes(yes) stringcols(_all) //encoding("utf8") 
 	}
 	else {
 		import excel "`c(sysdir_site)'../basesCIEP/PEFs/$pais/`k'", clear firstrow case(lower)
@@ -55,6 +55,23 @@ foreach k of local archivos {
 			rename `j' desc_objeto
 			local j = "desc_objeto"
 		}
+		if "`j'" == "desc_gpo_funcional" {
+			rename `j' desc_finalidad
+			local j = "desc_finalidad"
+		}
+		if "`j'" == "gpo_funcional" {
+			rename `j' finalidad
+			local j = "finalidad"
+		}
+		if "`j'" == "ff" {
+			rename `j' fuente
+			local j = "fuente"
+		}
+		if "`j'" == "desc_ff" {
+			rename `j' desc_fuente
+			local j = "desc_fuente"
+		}
+
 
 		di in w "`j' ", _cont
 		tostring `j', replace
@@ -64,6 +81,7 @@ foreach k of local archivos {
 			replace `j' = subinstr(`j',`"""',"",.)
 			replace `j' = subinstr(`j',"  "," ",.)
 			replace `j' = subinstr(`j',"Ê"," ",.)			// Algunas bases tienen este caracter "raro".
+			replace `j' = subinstr(`j',"Â","",.)
 			format `j' %30s
 		}
 		destring `j', replace
@@ -90,7 +108,7 @@ foreach k of local archivos {
 * Loop para unir los archivos (limpios y en Stata) *
 local j = 0
 foreach k of local archivos {
-*foreach k in "CP 2019" "PPEF 2021" {
+*foreach k in "PPEF 2021" {
 	noisily di in g "Appending: " in y "`k'"
 	if `j' == 0 {
 		use ``=strtoname("`k'")'', clear
@@ -294,6 +312,7 @@ if "$pais" == "" {
 	g byte transf_gf = (ramo == 19 & ur == "GYN") | (ramo == 19 & ur == "GYR")
 
 	** Modulos **
+	* Pensiones *
 	levelsof desc_pp, local(levelsof)
 	local ifpp "("
 	local ifpp2 "("
@@ -311,24 +330,27 @@ if "$pais" == "" {
 
 	g desc_divGA = "Pensiones" if transf_gf == 0 & ramo != -1 & capitulo != 9 ///
 		& (substr(string(objeto),1,2) == "45" | substr(string(objeto),1,2) == "47")
-	
 	replace desc_divGA = "Pensi{c o'}n Bienestar" if transf_gf == 0 & ramo != -1 & capitulo != 9 ///
 			& `ifpp'
 
+	* Educacion *
 	replace desc_divGA = "Educaci{c o'}n" if transf_gf == 0 & ramo != -1 & capitulo != 9  ///
 		& desc_divGA == "" ///
-		& desc_funcion == 10
+		& (desc_funcion == 10 | ramo == 11)
 
+	* Salud *
 	replace desc_divGA = "Salud" if transf_gf == 0 & ramo != -1 & capitulo != 9  ///
 		& desc_divGA == "" ///
-		& desc_funcion == 21
+		& (desc_funcion == 21 | ramo == 12)
 	replace desc_divGA = "Salud" if transf_gf == 0 & ramo != -1 & capitulo != 9  ///
 		& desc_divGA == "" ///
 		& (modalidad == "E" & pp == 13 & ramo == 52)
 		
-	replace desc_divGA = "Costo de la deuda" if capitulo == 9 & substr(string(objeto),1,2) != "91" 
+	replace desc_divGA = "Costo de la deuda" if transf_gf == 0 & ramo != -1 ///
+		& capitulo == 9 & substr(string(objeto),1,2) != "91" 
 	
-	replace desc_divGA = "Amortizaci{c o'}n" if capitulo == 9 & substr(string(objeto),1,2) == "91" 
+	replace desc_divGA = "Amortizaci{c o'}n" if transf_gf == 0 & ramo != -1 ///
+		& capitulo == 9 & substr(string(objeto),1,2) == "91" 
 	
 	replace desc_divGA = "Otros" if desc_divGA == ""
 
