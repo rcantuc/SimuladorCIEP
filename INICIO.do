@@ -1,7 +1,7 @@
 *********************************************
 ****    FOR PROGRAMMING PURPOSES ONLY    ****
 **** SECTION MUST BE COMMENTED OTHERWISE ****
-/*********************************************
+*********************************************
 clear all
 macro drop _all
 capture log close _all
@@ -10,13 +10,11 @@ noisily di _newline(20) in g _col(35) "8) " in w "8) " in y "8) " in g "8)"
 
 if "`c(os)'" == "Unix" {
 	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
-	*global export "/home/ciepmx/Dropbox (CIEP)/Textbook/images/"
-	global export "/home/ciepmx/Dropbox (CIEP)/Paquete Económico 2021/03 Documento CIEP/images/"
+	global export "/home/ciepmx/Dropbox (CIEP)/Textbook/images/"
 }
 if "`c(os)'" == "MacOSX" {
 	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
-	*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
-	global export "/Users/ricardo/Dropbox (CIEP)/Paquete Económico 2021/03 Documento CIEP/images/"
+	global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
 }
 adopath ++ PERSONAL
 
