@@ -31,7 +31,7 @@ noisily di in w "7) Expr{c e'}sate creativamente."
 *********************************
 *** 3 Par{c a'}metros de CGPE ***
 *********************************
-noisily di _newline in g "{bf:Paquete Econ{c o'}mico" in y " CGPE 2021" in g ": El a{c n~}o post-covid. :)}"
+noisily di _newline in g "{bf:Paquete Econ{c o'}mico" in y " CGPE 2021" in g "}"
 
 // Incorporar los que sean necesarios seg{c u'}n su a{c n~}o //
 global pib2020 = -8.0
