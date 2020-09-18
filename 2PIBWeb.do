@@ -29,7 +29,11 @@ if "$param" == "on" {
 
 	global def2020 =  3.568
 	global def2021 =  3.425
-
+	global def2022 =  3.425
+	global def2023 =  3.425 
+	global def2024 =  3.425
+	global def2025 =  3.425
+	global def2026 =  3.425
 }
 ***********************************/
 

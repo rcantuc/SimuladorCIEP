@@ -1,9 +1,9 @@
 **********************************************************
-***                  ACTUALIZACIÓN                     ***
+***                  ACTUALIZACIÃ“N                     ***
 ***   1) abrir archivos .iqy en Excel de Windows       ***
 ***   2) guardar y reemplazar .xls dentro de           ***
 ***      ./TemplateCIEP/basesCIEP/INEGI/SCN/           ***
-***   3) correr PIBDeflactor[.ado] con opción "update" ***
+***   3) correr PIBDeflactor[.ado] con opciÃ³n "update" ***
 **********************************************************
 
 **** Crecimiento del PIB ****
@@ -36,7 +36,7 @@ quietly {
 	tempfile workingage
 	save `workingage'
 
-	/* Verifica si se puede usar la base, si no es así o la opción update es llamada, 
+	/* Verifica si se puede usar la base, si no es asÃ­ o la opciÃ³n update es llamada, 
 	limpia la base y la usa */
 	capture use `"`c(sysdir_site)'../basesCIEP/SIM/PIBDeflactor`=subinstr("${pais}"," ","",.)'.dta"', clear
 	if (_rc != 0 | "`update'" == "update") & "`c(os)'" != "Unix" {
@@ -83,9 +83,9 @@ quietly {
 
 	***********************************************
 	** 1.1 Imputar Par{c a'}metros ex{c o'}genos **
-	/* Para todos los años, si existe información sobre el crecimiento del deflactor 
-	utilizarla, si no existe, tomar el rezago del índice geométrico. Posteriormente
-	ajustar los valores del índice con sus rezagos. */
+	/* Para todos los aÃ±os, si existe informaciÃ³n sobre el crecimiento del deflactor 
+	utilizarla, si no existe, tomar el rezago del Ã­ndice geomÃ©trico. Posteriormente
+	ajustar los valores del Ã­ndice con sus rezagos. */
 	forvalues k=`anio_last'(1)`fin' {
 		capture confirm existence ${def`k'}
 		if _rc == 0 {
@@ -188,7 +188,7 @@ quietly {
 	replace deflator = indiceY/indiceY[`obsvp']
 	replace pibYR = pibY/deflator
 
-	* Proyección de crecimiento PIB *
+	* ProyecciÃ³n de crecimiento PIB *
 	replace pibYR = `=pibYR[`obs_exo']'/`=WorkingAge[`obs_exo']'*WorkingAge* ///
 		(1+scalar(lambda)/100)^(anio-`anio_exo') if pibYR == .
 	replace pibY = pibYR*deflator if pibY == .
@@ -233,7 +233,7 @@ quietly {
 		* Texto sobre lineas *
 		forvalues k=1(3)`=_N' {
 			if var_indiceY[`k'] != . {
-				*local crec_deflactor `"`crec_deflactor' `=var_indiceY[`k']' `=anio[`k']' "`=string(var_indiceY[`k'],"%5.1fc")'" "'
+				local crec_deflactor `"`crec_deflactor' `=var_indiceY[`k']' `=anio[`k']' "`=string(var_indiceY[`k'],"%5.1fc")'" "'
 			}
 		}
 
@@ -253,7 +253,7 @@ quietly {
 			subtitle(${pais}) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
 			ytitle("A{c n~}o `aniovp' = 1.000") xtitle("") yline(0) ///
-			text(`crec_deflactor', place(c)) ///
+			///text(`crec_deflactor', place(c)) ///
 			legend(label(1 "Reportado") label(2 "Proyectado") label(3 "Estimado") order(1 3 2)) ///
 			///caption("{it:Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, BIE.}") ///
 			note("{bf:{c U'}ltimo dato}: `anio_last'`trim_last'.") ///
@@ -264,12 +264,30 @@ quietly {
 			graph export "$export/deflactorH.png", replace name(deflactorH)
 		}
 
-		/* Texto sobre lineas *
+		* Texto sobre lineas *
 		forvalues k=1(3)`=_N' {
 			if var_pibY[`k'] != . {
 				local crec_PIB `"`crec_PIB' `=var_pibY[`k']' `=anio[`k']' "`=string(var_pibY[`k'],"%5.1fc")'" "'
 			}
 		}
+
+		* Crecimiento PIB var_indiceY *
+		twoway (connected var_indiceY anio if anio < `anio_last' | (anio == `anio_last' & trimestre == 4)) ///
+			(connected var_indiceY anio if anio >= `anio_last' & anio > anio[`obs_exo']) ///
+			(connected var_indiceY anio if /*anio == `anio_last' & trimestre < 4 |*/ anio <= anio[`obs_exo'] & anio >= `anio_last'), ///
+			title({bf:Crecimientos} del {c i'}ndice de precios impl{c i'}citos) subtitle(${pais}) ///
+			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
+			ylabel(, format(%5.1fc)) ///
+			ytitle("Crecimiento real (%)") xtitle("") yline(0, lcolor(black)) ///
+			text(`crec_deflactor') ///
+			legend(label(1 "Reportado") label(2 "Proyectado") label(3 "Estimado") order(1 3 2)) ///
+			caption("{it:Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, BIE.}") ///
+			note("{bf:{c U'}ltimo dato reportado}: `anio_last'`trim_last'.") ///
+			name(var_indiceYH, replace)
+		capture confirm existence $export
+		if _rc == 0 {
+			graph export "$export/var_indiceYH.png", replace name(var_indiceYH)
+		}	
 
 		* Crecimiento PIB var_pibY *
 		twoway (connected var_pibY anio if anio < `anio_last' | (anio == `anio_last' & trimestre == 4)) ///
@@ -286,7 +304,7 @@ quietly {
 			name(PIBH, replace)
 
 
-		* PIB real */
+		* PIB real *
 		tempvar pibYRmil
 		g `pibYRmil' = pibYR/1000000000000
 		

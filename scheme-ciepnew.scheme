@@ -8,10 +8,10 @@
 
 
 // Graph Size
-// graphsize 	x 			5.5
-// graphsize 	y 			4
-graphsize 	x 			13
-graphsize 	y 			8
+graphsize 	x 			5.5
+graphsize 	y 			4
+// graphsize 	x 			13
+// graphsize 	y 			8
 
 
 
