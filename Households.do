@@ -102,27 +102,27 @@ local SNAAlojamiento = scalar(Alojamiento)
 ***********************
 *** A.2 Macros: PEF ***
 ***********************
-noisily PEF, anio(`enighanio') by(desc_funcion)
+noisily PEF, anio(`enighanio') by(desc_funcion) min(0)
 local Cuotas_ISSSTE = r(Cuotas_ISSSTE)
 
 PEF if transf_gf == 0 & ramo != -1 & (substr(string(objeto),1,2) == "45" ///
-	| substr(string(objeto),1,2) == "47" | desc_pp == 779), anio(`enighanio') by(ramo)
+	| substr(string(objeto),1,2) == "47" | desc_pp == 779), anio(`enighanio') by(ramo) min(0)
 local SSFederacion = r(Aportaciones_a_Seguridad_Social) + `Cuotas_ISSSTE'
 
-PEF if divGA == 3, anio(`enighanio') by(desc_subfuncion)
+PEF if divGA == 3, anio(`enighanio') by(desc_subfuncion) min(0)
 local Basica = r(Educaci_c_o__n_B_c_a__sica)
 local Media = r(Educaci_c_o__n_Media_Superior)
 local Superior = r(Educaci_c_o__n_Superior)
 local Adultos = r(Educaci_c_o__n_para_Adultos)
 
-PEF, anio(`enighanio') by(divGA)
+PEF, anio(`enighanio') by(divGA) min(0)
 local OtrosGas = r(Otros)
 local Pensiones = r(Pensiones)
 local Educacion = r(Educaci_c_o__n)
 local Salud = r(Salud)
 local PenBienestar = r(Pensi_c_o__n_Bienestar)
 
-PEF if capitulo == 6 & divGA != 3 & divGA != 7, anio(`enighanio') by(entidad)
+PEF if capitulo == 6 & divGA != 3 & divGA != 7, anio(`enighanio') by(entidad) min(0)
 local Aguas = r(Aguascalientes)
 local BajaN = r(Baja_California)
 local BajaS = r(Baja_California_Sur)

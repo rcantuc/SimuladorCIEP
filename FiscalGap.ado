@@ -225,6 +225,21 @@ quietly {
 			use `"`c(sysdir_personal)'/users/$pais/$id/PensionREC.dta"', clear
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
+			tempfile proypensiones
+			save `proypensiones'
+			
+			import excel `"`c(sysdir_site)'/../basesCIEP/SIM/Proyecciones_pensiones.xlsx"', clear
+			rename A anio
+			rename B estimacion
+			rename C estimacionPIB
+			drop if anio == .
+			drop D-M
+			destring estimacion*, replace
+			format estimacion* %20.0fc
+
+			merge 1:1 (anio) using `proypensiones', nogen
+			replace estimacion = estimacionPIB*pibY
+			drop estimacionPIB
 
 			g divGA = `k'
 			replace modulo = "pensiones"
