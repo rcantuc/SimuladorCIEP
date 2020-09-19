@@ -10,7 +10,7 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
-	** 1.2 Datos Abiertos (MÃˆxico) **
+	** 1.2 Datos Abiertos (MÈxico) **
 	if "$pais" == "" {
 		UpdateDatosAbiertos
 		local updated = r(updated)
@@ -196,7 +196,7 @@ quietly {
 		else {
 			matrix `Aportaciones_Federacion' = J(1,1,0)
 		}
-		return scalar Aportaciones_Federacion = `Aportaciones_Federacion'[1,1]
+		return scalar Aportaciones_a_Seguridad_Social = `Aportaciones_Federacion'[1,1]
 
 		capture tabstat gasto gastoPIB if `by' == -1 & anio == `anio', stat(sum) f(%20.0fc) save
 		tempname Cuotas_ISSSTE

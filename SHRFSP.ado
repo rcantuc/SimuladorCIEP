@@ -59,7 +59,7 @@ quietly {
 		g ``k'' = `k'/pibY*100
 	}
 	
-	replace `shrfspInterno' = 34.7 if anio == 2020
+	/*replace `shrfspInterno' = 34.7 if anio == 2020
 	replace `shrfspInterno' = 35.0 if anio == 2021
 	replace `shrfspInterno' = 35.1 if anio == 2022
 	replace `shrfspInterno' = 35.2 if anio == 2023
@@ -73,7 +73,7 @@ quietly {
 	replace `shrfspExterno' = 17.8 if anio == 2023
 	replace `shrfspExterno' = 17.4 if anio == 2024
 	replace `shrfspExterno' = 17.0 if anio == 2025
-	replace `shrfspExterno' = 16.6 if anio == 2026
+	replace `shrfspExterno' = 16.6 if anio == 2026*/
 
 
 

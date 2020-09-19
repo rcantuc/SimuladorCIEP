@@ -71,7 +71,7 @@ foreach k in sexo escol grupo_edad decil {
 *******************/
 *** 8 FISCAL GAP ***
 ********************
-noisily FiscalGap, anio(`anio') graphs end(2030) //boot(250) //update
+noisily FiscalGap, anio(`anio') graphs end(2050) //boot(250) //update
 
 
 

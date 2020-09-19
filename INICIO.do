@@ -8,7 +8,7 @@ capture log close _all
 
 noisily di _newline(20) in g _col(35) "8) " in w "8) " in y "8) " in g "8)"
 
-if "`c(os)'" == "Unix" {
+/*if "`c(os)'" == "Unix" {
 	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
 	global export "/home/ciepmx/Dropbox (CIEP)/Textbook/images/"
 }
@@ -35,9 +35,9 @@ noisily run "`c(sysdir_personal)'/2PIBWeb.do" //								Cap. 2. Sistema: PIBDefl
 *******************************/
 *** 2 POBLACION: ENIGH 2018  ***
 ***   Simulador v5: Set up   ***
-********************************
+/********************************
 noisily Poblacion, //nographs //update
-noisily run "`c(sysdir_personal)'/Expenditure.do" 2018 //						<-- a calibrar!!!
+*noisily run "`c(sysdir_personal)'/Expenditure.do" 2018 //						<-- a calibrar!!!
 noisily run "`c(sysdir_personal)'/Households.do" 2018 //						Cap. 3. Agentes economicos
 foreach k in grupo_edad sexo decil escol {
 	use "`c(sysdir_site)'../basesCIEP/SIM/2018/households.dta", clear
