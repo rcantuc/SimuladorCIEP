@@ -5,7 +5,7 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
-	syntax [, ANIO(int `aniovp')]
+	syntax [, ANIO(int `aniovp') OUTPUT]
 
 	noisily di _newline(2) in g _dup(20) "." "{bf:   Tasas Efectivas de los INGRESOS " in y `anio' "   }" in g _dup(20) "."
 
@@ -23,7 +23,7 @@ quietly {
 	****************************
 	*** 2 Ingresos iniciales ***
 	****************************
-	noisily LIF, anio(`anio') graphs min(1) 
+	noisily LIF, anio(`anio') min(1) //graphs
 	local recursos = r(divCIEP)
 	foreach k of local recursos {
 		local rec`=substr("`k'",1,7)' = r(`k')
@@ -153,6 +153,7 @@ quietly {
 		_col(55) in g "Impuestos al ingreso" ///
 		_col(88) %7.3fc in y (`recISR_AS'+`recISR_PF'+`recCuotas_')/scalar(PIB)*100 ///
 		_col(99) %7.1fc in y (`recISR_AS'+`recISR_PF'+`recCuotas_')/(Yl)*100 " %" "}"
+	scalar inglaboralPIB = (`recISR_AS'+`recISR_PF'+`recCuotas_')/scalar(PIB)*100
 
 
 	noisily di _newline(2) in y "{bf: B. " in y "Impuestos al consumo" "}"
@@ -188,6 +189,7 @@ quietly {
 		_col(55) in g "Impuestos al consumo" ///
 		_col(88) %7.3fc in y (`recIEPS'+`recIVA'+`recISAN'+`recImporta')/scalar(PIB)*100 ///
 		_col(99) %7.1fc in y (`recIEPS'+`recIVA'+`recISAN'+`recImporta')/ConHog*100 " %" "}"
+	scalar ingconsumoPIB = (`recIEPS'+`recIVA'+`recISAN'+`recImporta')/scalar(PIB)*100
 
 
 	noisily di _newline(2) in y "{bf: C. " in y "Impuestos e ingresos de capital" "}"
@@ -223,7 +225,7 @@ quietly {
 		_col(55) in g "Impuestos e ingresos de capital" ///
 		_col(88) %7.3fc in y (`recISR_PM'+`recFMP__De'+`recOYE'+`recOtrosC')/scalar(PIB)*100 ///
 		_col(99) %7.1fc in y (`recISR_PM'+`recFMP__De'+`recOYE'+`recOtrosC')/(CapIncImp)*100 " %" "}"
-
+	scalar ingcapitalPIB = (`recISR_PM'+`recFMP__De'+`recOYE'+`recOtrosC')/scalar(PIB)*100
 
 
 
@@ -281,6 +283,33 @@ quietly {
 
 
 
+	**************
+	*** OUTPUT ***
+	**************
+	if "`output'" == "output" {
+		noisily di in w "INGRESOS: " in w "["  ///
+			%8.3f ISRAS ", " ///
+			%8.3f ISRPF ", " ///
+			%8.3f CuotasT ", " ///
+			%8.3f inglaboralPIB ", " ///
+			%8.3f IVA ", " ///
+			%8.3f ISAN ", " ///
+			%8.3f IEPS ", " ///
+			%8.3f Importa ", " ///
+			%8.3f ingconsumoPIB ", " ///
+			%8.3f ISRPM ", " ///
+			%8.3f FMP ", " ///
+			%8.3f OYE ", " ///
+			%8.3f OtrosC ", " ///
+			%8.3f ingcapitalPIB ///
+		"]"	
+		noisily di in w "INGRESOSTOTAL: " in w "["  ///
+			%8.3f inglaboralPIB+ingconsumoPIB+ingcapitalPIB ///
+		"]"
+	}
+	
+	
+	
 	***********
 	*** END ***
 	***********

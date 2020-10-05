@@ -7,7 +7,7 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
-	syntax varname [, ANIObase(int `aniovp') BOOTstrap(int 1) Graphs POST]
+	syntax varname [, ANIObase(int `aniovp') BOOTstrap(int 1) Graphs POST OUTPUT]
 
 	noisily di _newline in g "{bf:Cuentas Generacionales: " in y "$pais `aniobase'}"
 	local title : variable label `varlist'
@@ -121,12 +121,36 @@ quietly {
 		_column(10) %20s "Hombres" ///
 		_column(20) %20s "Mujeres" ///
 		_column(30) %20s "Total"
-	forvalues k = 0(5)`edadmax' {
+	forvalues k = 0(5)`=`edadmax'-1' {
 		noisily di in g _col(3) "`k'" _cont
 		noisily di in g _column(10) in y %20.0fc GA[`k'+1,1] _cont
 		noisily di in g _column(20) in y %20.0fc GA[`k'+1,2] _cont
 		noisily di in g _column(30) in y %20.0fc GA[`k'+1,3]
 	}
+
+
+
+
+
+	**************
+	*** OUTPUT ***
+	**************
+	if "`output'" == "output" {
+		forvalues k = 0(5)`=`edadmax'-1' {
+				local GAH = "`GAH' `=string(GA[`k'+1,1],"%20.0f")',"
+				local GAM = "`GAM' `=string(GA[`k'+1,2],"%20.0f")',"
+				local GAT = "`GAT' `=string(GA[`k'+1,3],"%20.0f")',"
+		}
+
+		local lenghtGAH = strlen("`GAH'")
+		local lenghtGAM = strlen("`GAM'")
+		local lenghtGAT = strlen("`GAT'")
+		noisily di in w _col(3) "GAH: [`=substr("`GAH'",1,`=`lenghtGAH'-1')']"
+		noisily di in w _col(3) "GAM: [`=substr("`GAM'",1,`=`lenghtGAM'-1')']"
+		noisily di in w _col(3) "GAT: [`=substr("`GAT'",1,`=`lenghtGAT'-1')']"
+	}
+
+
 
 
 

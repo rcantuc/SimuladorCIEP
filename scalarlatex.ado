@@ -32,7 +32,8 @@ program define scalarlatex
 
 			quietly log using "$export/../statalatex_`logname'.tex", name(latex) append text
 					
-			if `"`=substr("`name'",1,4)'"' == "anio" {
+			if `"`=substr("`name'",1,4)'"' == "anio" | `"`=substr("`name'",1,4)'"' == "defl" ///
+				| `"`=substr("`name'",1,4)'"' == "trim" | `"`=substr("`name'",1,4)'"' == "infl" {
 				local value = scalar(`name')
 				di in w "\def\d`name'#1{\gdef\\`name'{#1}}"
 				di in w `"\d`name'{`value'}"'		

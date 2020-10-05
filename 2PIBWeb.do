@@ -9,14 +9,12 @@ local anio = 2021
 
 
 
+
 ***********************************
 ** PAR{c A'}METROS DEL SIMULADOR **
-if "$param" == "on" {
-	global id = "$id"
-
+if "$id" != "" {
 	*sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
 	*adopath ++ PERSONAL
-	*capture mkdir "`c(sysdir_personal)'/users/$pais/$id/"
 
 	* Crecimiento PIB *
 	global pib2020 = -8.0
@@ -25,29 +23,33 @@ if "$param" == "on" {
 	global pib2023 =  2.5
 	global pib2024 =  2.5
 	global pib2025 =  2.5
-	global pib2026 =  2.5
 
 	global def2020 =  3.568
 	global def2021 =  3.425
-	global def2022 =  3.425
-	global def2023 =  3.425 
-	global def2024 =  3.425
-	global def2025 =  3.425
-	global def2026 =  3.425
+	
+	global inf2020 =  3.5
+	global inf2021 =  3.0
 }
 ***********************************/
 
 
 
 
-noisily PIBDeflactor, anio(`anio') //nographs //update //discount(3.0)
+
+noisily PIBDeflactor, anio(`anio') nographs output update //discount(3.0)
+
+capture mkdir "`c(sysdir_personal)'/users"
+capture mkdir "`c(sysdir_personal)'/users/$pais/"
+capture mkdir "`c(sysdir_personal)'/users/$pais/$id/"
 if `c(version)' > 13.1 {
 	saveold "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", replace version(13)
 }
 else {
 	save "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", replace
 }
-noisily SCN, anio(`anio') //nographs
+
+noisily Inflacion, anio(`anio') nographs //update
+noisily SCN, anio(`anio') nographs //update
 
 
 

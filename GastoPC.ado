@@ -5,7 +5,7 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
-	syntax [, ANIO(int `aniovp') PEF NOGraphs]
+	syntax [, ANIO(int `aniovp') OUTPUT]
 
 	noisily di _newline(2) in g _dup(20) "." "{bf:   Transferencias per c{c a'}pita de los GASTOS " in y `anio' "   }" in g _dup(20) "."
 
@@ -70,7 +70,7 @@ quietly {
 	}
 	else {
 		preserve
-		noisily PEF, anio(`anio') g by(divGA) min(0)
+		noisily PEF, anio(`anio') g by(divGA) min(0) //graphs
 		
 		PEF if divGA == 3, anio(`anio') by(desc_subfuncion) min(0)
 		local basica = r(Educaci_c_o__n_B_c_a__sica)
@@ -554,6 +554,8 @@ quietly {
 		replace IngBasico = `IngBas'/`pobtot'[1,1]
 	}
 
+	scalar ingbasPIB = `IngBas'/PIB*100
+
 
 
 
@@ -814,6 +816,52 @@ quietly {
 			save `"`c(sysdir_personal)'/users/$pais/$id/`k'REC.dta"', replace		
 		}
 	}
+
+
+
+	**************
+	*** OUTPUT ***
+	**************
+	if "`output'" == "output" {
+		noisily di in w "GASTOS: " in w "["  ///
+			/*"basicaPIB "*/ %8.3f basicaPIB ", " ///
+			/*"medsupPIB "*/ %8.3f medsupPIB ", " ///
+			/*"superiPIB "*/ %8.3f superiPIB ", " ///
+			/*"posgraPIB "*/ %8.3f posgraPIB ", " ///
+			/*"eduaduPIB "*/ %8.3f eduaduPIB ", " ///
+			/*"otrosePIB "*/ %8.3f otrosePIB ", " ///
+			/*"educacPIB "*/ %8.3f educacPIB ", " ///
+			/*"ssaPIB "*/ %8.3f ssaPIB ", " ///
+			/*"prospePIB "*/ %8.3f prospePIB ", " ///
+			/*"segpopPIB "*/ %8.3f segpopPIB ", " ///
+			/*"imssPIB "*/ %8.3f imssPIB ", " ///
+			/*"issstePIB "*/ %8.3f issstePIB ", " ///
+			/*"pemexPIB "*/ %8.3f pemexPIB ", " ///
+			/*"saludPIB "*/ %8.3f saludPIB ", " ///
+			/*"bienestarPIB "*/ %8.3f bienestarPIB ", " ///
+			/*"penimsPIB "*/ %8.3f penimsPIB ", " ///
+			/*"penissPIB "*/ %8.3f penissPIB ", " ///
+			/*"penotrPIB "*/ %8.3f penotrPIB ", " ///
+			/*"pensionPIB "*/ %8.3f pensionPIB ", " ///
+			/*"servpersPIB "*/ %8.3f servpersPIB ", " ///
+			/*"matesumiPIB "*/ %8.3f matesumiPIB ", " ///
+			/*"gastgenePIB "*/ %8.3f gastgenePIB ", " ///
+			/*"substranPIB "*/ %8.3f substranPIB ", " ///
+			/*"bienmuebPIB "*/ %8.3f bienmuebPIB ", " ///
+			/*"obrapublPIB "*/ %8.3f obrapublPIB ", " ///
+			/*"invefinaPIB "*/ %8.3f invefinaPIB ", " ///
+			/*"partaporPIB "*/ %8.3f partaporPIB ", " ///
+			/*"costodeuPIB "*/ %8.3f costodeuPIB ", " ///
+			/*"otrosgasPIB "*/ %8.3f otrosgasPIB ", " ///
+			/*"ingbasPIB "*/ %8.3f ingbasPIB ///
+		"]"
+		noisily di in w "GASTOSTOTAL: " in w "["  ///
+			%8.3f educacPIB +saludPIB+pensionPIB+otrosgasPIB+ingbasPIB ///
+		"]"
+	}
+
+
+
 
 
 	***********

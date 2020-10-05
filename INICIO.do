@@ -1,14 +1,14 @@
 *********************************************
 ****    FOR PROGRAMMING PURPOSES ONLY    ****
 **** SECTION MUST BE COMMENTED OTHERWISE ****
-*********************************************
+/*********************************************
 clear all
 macro drop _all
 capture log close _all
 
 noisily di _newline(20) in g _col(35) "8) " in w "8) " in y "8) " in g "8)"
 
-/*if "`c(os)'" == "Unix" {
+if "`c(os)'" == "Unix" {
 	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
 	global export "/home/ciepmx/Dropbox (CIEP)/Textbook/images/"
 }
@@ -26,8 +26,10 @@ adopath ++ PERSONAL
 *** Simulador v5: PIB + Deflactor ***
 *************************************
 timer on 1
-global param = "on"	// "on" or "off"
+global id = "PE2021"
+
 noisily run "`c(sysdir_personal)'/2PIBWeb.do" //								Cap. 2. Sistema: PIBDeflactor.ado + SCN.ado
+
 
 
 
@@ -38,10 +40,10 @@ noisily run "`c(sysdir_personal)'/2PIBWeb.do" //								Cap. 2. Sistema: PIBDefl
 /********************************
 noisily Poblacion, //nographs //update
 *noisily run "`c(sysdir_personal)'/Expenditure.do" 2018 //						<-- a calibrar!!!
-noisily run "`c(sysdir_personal)'/Households.do" 2018 //						Cap. 3. Agentes economicos
+*noisily run "`c(sysdir_personal)'/Households.do" 2018 //						Cap. 3. Agentes economicos
 foreach k in grupo_edad sexo decil escol {
 	use "`c(sysdir_site)'../basesCIEP/SIM/2018/households.dta", clear
-	noisily run "`c(sysdir_personal)'/Sankey.do" `k' 2018
+	*noisily run "`c(sysdir_personal)'/Sankey.do" `k' 2018
 }
 
 
@@ -67,6 +69,16 @@ noisily run "`c(sysdir_personal)'/4IngresosWeb.do" //							Parte II
 ** 5 Cuentas Generacionales **
 ******************************
 noisily run "`c(sysdir_personal)'/5CGWeb.do" //									Parte IV
+
+
+
+
+
+*****************/
+** 6 Fiscal Gap **
+******************
+noisily run "`c(sysdir_personal)'/6FiscalGapWeb.do" //									Parte IV
+
 
 
 

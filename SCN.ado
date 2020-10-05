@@ -648,18 +648,18 @@ quietly {
 		}
 
 
-		twoway (area `Depreciacion' `Capital' `Laboral' anio if anio < `latest') ///
-			(`graphtype' `Depreciacion' anio if anio <= `anio_exo' & anio >= `latest', color("255 129 0")) ///
-			(`graphtype' `Capital' anio if anio <= `anio_exo' & anio >= `latest', color("255 189 0")) ///
-			(`graphtype' `Laboral' anio if anio <= `anio_exo' & anio >= `latest', color("39 97 47")) ///
-			(area `Depreciacion' anio if anio > `latest' & anio > `anio_exo', color("255 129 0")) ///
-			(area `Capital' anio if anio > `latest' & anio > `anio_exo', color("255 189 0")) ///
-			(area `Laboral' anio if anio > `latest' & anio > `anio_exo', color("39 97 47")), ///
+		twoway (area `Depreciacion' `Capital' `Laboral' anio if anio <= `anio_last') ///
+			(`graphtype' `Depreciacion' anio if anio <= `anio_exo' & anio > `anio_last', color("255 129 0")) ///
+			(`graphtype' `Capital' anio if anio <= `anio_exo' & anio > `anio_last', color("255 189 0")) ///
+			(`graphtype' `Laboral' anio if anio <= `anio_exo' & anio > `anio_last', color("39 97 47")) ///
+			(area `Depreciacion' anio if anio > `anio_last' & anio > `anio_exo', color("255 129 0")) ///
+			(area `Capital' anio if anio > `anio_last' & anio > `anio_exo', color("255 189 0")) ///
+			(area `Laboral' anio if anio > `anio_last' & anio > `anio_exo', color("39 97 47")), ///
 			title("{bf:Distribuci{c o'}n} del ingreso") ///
 			/// caption("{it:Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, BIE.}") ///
 			legend(cols(3) order(1 2 3)) ///
 			xtitle("") ///
-			text(`=`Depreciacion'[1]*.05' `=`latest'+(`anio_exo'-`latest')/2' "{bf:Est.}", place(n) color(white)) ///
+			text(`=`Depreciacion'[1]*.05' `=`latest'+(`anio_exo'-`latest')/2' "{bf:Estim.}", place(n) color(white)) ///
 			text(`=`Depreciacion'[1]*.05' `=anio[1]+.5' "{bf:Reportado}", place(ne) color(white)) ///
 			text(`=`Depreciacion'[1]*.05' `=`anio_exo'+1.5' "{bf:Proyectado}", place(ne) color(white)) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
@@ -765,23 +765,23 @@ quietly {
 		g `AhorroN' = (AhorroN + ConGob + ConHog + ComprasN)/deflator/1000000000000
 		label var `AhorroN' "Ahorro neto"
 
-		twoway (area `AhorroN' anio if anio < `latest', color("0 78 198")) ///
-			(area `ConGob' anio if anio < `latest', color("0 151 201")) ///
-			(area `ConHog' anio if anio < `latest', color("186 34 64")) ///
-			(area `ComprasN' anio if anio < `latest', color("53 200 71")) ///
-			(`graphtype' `AhorroN' anio if anio <= `anio_exo' & anio >= `latest', color("0 78 198")) ///
-			(`graphtype' `ConGob' anio if anio <= `anio_exo' & anio >= `latest', color("0 151 201")) ///
-			(`graphtype' `ConHog' anio if anio <= `anio_exo' & anio >= `latest', color("186 34 64")) ///
-			(`graphtype' `ComprasN' anio if anio <= `anio_exo' & anio >= `latest', color("53 200 71")) ///
-			(area `AhorroN' anio if anio > `latest' & anio > `anio_exo', color("0 78 198")) ///
-			(area `ConGob' anio if anio > `latest' & anio > `anio_exo', color("0 151 201")) ///
-			(area `ConHog' anio if anio > `latest' & anio > `anio_exo', color("186 34 64")) ///
-			(area `ComprasN' anio if anio > `latest' & anio > `anio_exo', color("53 200 71")), ///
+		twoway (area `AhorroN' anio if anio <= `anio_last', color("0 78 198")) ///
+			(area `ConGob' anio if anio <= `anio_last', color("0 151 201")) ///
+			(area `ConHog' anio if anio <= `anio_last', color("186 34 64")) ///
+			(area `ComprasN' anio if anio <= `anio_last', color("53 200 71")) ///
+			(`graphtype' `AhorroN' anio if anio <= `anio_exo' & anio > `anio_last', color("0 78 198")) ///
+			(`graphtype' `ConGob' anio if anio <= `anio_exo' & anio > `anio_last', color("0 151 201")) ///
+			(`graphtype' `ConHog' anio if anio <= `anio_exo' & anio > `anio_last', color("186 34 64")) ///
+			(`graphtype' `ComprasN' anio if anio <= `anio_exo' & anio > `anio_last', color("53 200 71")) ///
+			(area `AhorroN' anio if anio > `anio_last' & anio > `anio_exo', color("0 78 198")) ///
+			(area `ConGob' anio if anio > `anio_last' & anio > `anio_exo', color("0 151 201")) ///
+			(area `ConHog' anio if anio > `anio_last' & anio > `anio_exo', color("186 34 64")) ///
+			(area `ComprasN' anio if anio > `anio_last' & anio > `anio_exo', color("53 200 71")), ///
 			title("{bf:Utilizaci{c o'}n} del ingreso disponible") ///
 			/// caption("{it:Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, BIE.}") ///
 			legend(cols(4) order(1 2 3 4)) ///
 			xtitle("") ///
-			text(`=`AhorroN'[1]*.05' `=`latest'+(`anio_exo'-`latest')/2' "{bf:Est.}", place(n) color(white)) ///
+			text(`=`AhorroN'[1]*.05' `=`latest'+(`anio_exo'-`latest')/2' "{bf:Estim.}", place(n) color(white)) ///
 			text(`=`AhorroN'[1]*.05' `=anio[1]+.5' "{bf:Reportado}", place(ne) color(white)) ///
 			text(`=`AhorroN'[1]*.05' `=`anio_exo'+1.5' "{bf:Proyectado}", place(ne) color(white)) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///

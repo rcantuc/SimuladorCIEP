@@ -83,10 +83,6 @@ label var aniotrimestre "YearQuarter"
 tsset aniotrimestre
 
 g pibQR = pibQ/(indiceQ/100)
-
-collapse (mean) pibY=pibQ pibYR=pibQR (last) trimestre, by(anio)
-format pib* %25.0fc
-
 g currency = "MXN"
 
 if `c(version)' > 13.1 {

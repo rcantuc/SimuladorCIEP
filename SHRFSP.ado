@@ -11,7 +11,7 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
-	** 1.2 Datos Abiertos (México) **
+	** 1.2 Datos Abiertos (MÃ©xico) **
 	if "$pais" == "" {
 		UpdateDatosAbiertos
 		local updated = r(updated)

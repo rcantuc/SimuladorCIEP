@@ -9,7 +9,7 @@ quietly {
 		BASE(string) GA ///
 		MACro(string) BIE ///
 		POBlacion(string) FOLIO(string) ///
-		NOKernel POBGraph]
+		NOKernel POBGraph OUTPUT]
 
 
 
@@ -83,7 +83,7 @@ quietly {
 	************************
 	*** 1. Archivos POST ***
 	************************
-	capture confirm file `"`c(sysdir_personal)'/users/$pais/bootstraps/`bootstrap'/`varlist'REC.dta"'
+	capture confirm file `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'REC.dta"'
 	if "`reboot'" == "reboot" | _rc != 0 {
 
 
@@ -97,31 +97,31 @@ quietly {
 		******************
 		** 1.2 Archivos **
 		capture mkdir `"`c(sysdir_personal)'/users/$pais/"'
-		capture mkdir `"`c(sysdir_personal)'/users/$pais/"'
-		capture mkdir `"`c(sysdir_personal)'/users/$pais/graphs/"'
-		capture mkdir `"`c(sysdir_personal)'/users/$pais/bootstraps/"'
-		capture mkdir `"`c(sysdir_personal)'/users/$pais/bootstraps/`bootstrap'"'
+		capture mkdir `"`c(sysdir_personal)'/users/$pais/$id/"'
+		capture mkdir `"`c(sysdir_personal)'/users/$pais/$id/graphs/"'
+		capture mkdir `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/"'
+		capture mkdir `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'"'
 
 
 		** Per c{c a'}pita **
 		postfile PC double(estimacion contribuyentes poblacion montopc edad39) ///
-			using `"`c(sysdir_personal)'/users/$pais/bootstraps/`bootstrap'/`varlist'PC"', replace
+			using `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'PC"', replace
 
 
 		** Perfiles **
 		postfile PERF edad double(perfil1 perfil2 contribuyentes1 contribuyentes2 ///
 			estimacion1 estimacion2 pobcont1 pobcont2 poblacion1 poblacion2) ///
-			using `"`c(sysdir_personal)'/users/$pais/bootstraps/`bootstrap'/`varlist'PERF"', replace
+			using `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'PERF"', replace
 
 
 		** Incidencia por hogares **
 		postfile INCI decil double(xhogar distribucion incidencia hogares) ///
-			using `"`c(sysdir_personal)'/users/$pais/bootstraps/`bootstrap'/`varlist'INCI"', replace
+			using `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'INCI"', replace
 
 
 		** Ciclo de vida **
 		postfile CICLO bootstrap sexo edad decil escol double(poblacion `varlist') ///
-			using `"`c(sysdir_personal)'/users/$pais/bootstraps/`bootstrap'/`varlist'CICLO"', replace
+			using `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'CICLO"', replace
 
 
 		** Proyecciones **
@@ -130,7 +130,7 @@ quietly {
 			contribuyentes_Hom contribuyentes_Muj ///
 			contribuyentes_0_24 contribuyentes_25_49 ///
 			contribuyentes_50_74 contribuyentes_75_mas) ///
-			using `"`c(sysdir_personal)'/users/$pais/bootstraps/`bootstrap'/`varlist'REC"', replace
+			using `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'REC"', replace
 
 
 
@@ -295,7 +295,7 @@ quietly {
 	**************************
 	*** 2 Monto per capita ***
 	**************************
-	use `"`c(sysdir_personal)'/users/$pais/bootstraps/`bootstrap'/`varlist'PC"', clear
+	use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'PC"', clear
 
 
 	***********************************
@@ -341,7 +341,7 @@ quietly {
 	******************
 	*** 3 Perfiles ***
 	******************
-	use `"`c(sysdir_personal)'/users/$pais/bootstraps/`bootstrap'/`varlist'PERF"', clear
+	use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'PERF"', clear
 
 
 	*************************
@@ -447,17 +447,17 @@ quietly {
 	}
 
 	if "`graphs'" == "graphsNO" {
-		graph save PerfilH`varlist' `"`c(sysdir_personal)'/users/$pais/graphs/PerfilH`varlist'"', replace
-		graph save PerfilM`varlist' `"`c(sysdir_personal)'/users/$pais/graphs/PerfilM`varlist'"', replace
-		graph save ContH`varlist' `"`c(sysdir_personal)'/users/$pais/graphs/ContH`varlist'"', replace
-		graph save ContH`varlist' `"`c(sysdir_personal)'/users/$pais/graphs/ContH`varlist'"', replace
+		graph save PerfilH`varlist' `"`c(sysdir_personal)'/users/$pais/$id/graphs/PerfilH`varlist'"', replace
+		graph save PerfilM`varlist' `"`c(sysdir_personal)'/users/$pais/$id/graphs/PerfilM`varlist'"', replace
+		graph save ContH`varlist' `"`c(sysdir_personal)'/users/$pais/$id/graphs/ContH`varlist'"', replace
+		graph save ContH`varlist' `"`c(sysdir_personal)'/users/$pais/$id/graphs/ContH`varlist'"', replace
 	}
 
 
 	***********************
 	*** 4. Incidencia *****
 	**********************
-	use `"`c(sysdir_personal)'/users/$pais/bootstraps/`bootstrap'/`varlist'INCI"', clear
+	use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'INCI"', clear
 	format xhogar %15.1fc
 	format distribucion %6.1fc
 	format incidencia %6.1fc
@@ -476,6 +476,15 @@ quietly {
 		noisily di in g "  `decil2'" _column(20) in y %20.0fc r(mean) ///
 			in g "  I.C. (95%): " in y "+/-" %7.2fc (r(ub)/r(mean)-1)*100 "%"
 		scalar `varlist'`decil2' = r(mean)
+
+		if "`output'" == "output" {
+			local incd = "`incd' `=string(`=`varlist'`decil2'',"%10.0f")',"
+		}
+	}
+	
+	if "`output'" == "output" {
+		local lengthINCD = strlen("`incd'")
+		noisily di in w "INCD: [`=substr("`incd'",1,`=`lengthINCD'-1')']"
 	}
 
 
@@ -489,6 +498,8 @@ quietly {
 			in g "  I.C. (95%): " in y "+/-" %7.2fc (r(ub)/r(mean)-1)*100 "%"
 		scalar dis`varlist'`decil2' = r(mean)
 	}
+	
+
 
 
 	***********************
@@ -507,7 +518,7 @@ quietly {
 	***********************/
 	*** 5. CICLO DE VIDA ***
 	************************
-	use `"`c(sysdir_personal)'/users/$pais/bootstraps/`bootstrap'/`varlist'CICLO"', clear
+	use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'CICLO"', clear
 	
 	* Labels *
 	label define deciles 1 "I" 2 "II" 3 "III" 4 "IV" 5 "V" 6 "VI" 7 "VII" 8 "VIII" 9 "IX" 10 "X" 11 "Nacional"
@@ -525,7 +536,8 @@ quietly {
 	***********************************
 	*** 5.1 Piramide de la variable ***
 	if "`graphs'" == "graphs" {
-		poblaciongini `varlist', title("`title'") nombre(`nombre') boottext(`boottext') rect(`RECT') base(`base') `graphs' id($id)
+		poblaciongini `varlist', title("`title'") nombre(`nombre') ///
+		boottext(`boottext') rect(`RECT') base(`base') `graphs' id($id) `output'
 	}
 
 
@@ -548,7 +560,8 @@ end
 *****************
 program poblaciongini
 	version 13.1
-	syntax varname, NOMbre(string) [TITle(string) Rect(real 100) BOOTtext(string) BASE(string) Graphs ID(string)]
+	syntax varname, NOMbre(string) [TITle(string) Rect(real 100) BOOTtext(string) ///
+		BASE(string) Graphs ID(string) OUTPUT]
 
 
 	*************************
@@ -621,10 +634,10 @@ program poblaciongini
 	*** 5. Graphs ***
 	graphpiramide `varlist', over(`grupo') title("`title'") rect(`rect') ///
 		men(`=string(`gsexlab1',"%7.0fc")') women(`=string(`gsexlab2',"%7.0fc")') ///
-		boot(`boottext') base(`base')
+		boot(`boottext') base(`base') `output'
 	*graphpiramide `varlist', over(`grupoesc') title("`title'") rect(`rect') ///
 		men(`=string(`gsexlab1',"%7.0fc")') women(`=string(`gsexlab2',"%7.0fc")') ///
-		boot(`boottext') base(`base')
+		boot(`boottext') base(`base') `output'
 end
 
 
@@ -635,7 +648,7 @@ program graphpiramide
 	version 13.1
 
 	syntax varname, Over(varname) Men(string) Women(string) ///
-		[Title(string) BOOTtext(string) Rect(real 100) BASE(string) ID(string)]
+		[Title(string) BOOTtext(string) Rect(real 100) BASE(string) ID(string) OUTPUT]
 
 	* Title *
 	local titleover : variable label `over'
@@ -676,91 +689,166 @@ program graphpiramide
 
 	*******************
 	*** 2. GRAFICAS ***
-	* Edades *
-	forvalues k=0(1)120 {
-		if `k' != 0 & `k' != 5 & `k' != 10 & `k' != 15 & `k' != 20 & `k' != 25 & `k' != 30 ///
-			& `k' != 35 & `k' != 40 & `k' != 45 & `k' != 50 & `k' != 55 ///
-			& `k' != 60 & `k' != 65 & `k' != 70 & `k' != 75 & `k' != 80 ///
-			& `k' != 85 & `k' != 90 & `k' != 95 & `k' != 100 & `k' != 105 ///
-			& `k' != 110 & `k' != 115 & `k' != 120 {
-			local relabel `"`relabel' `=`k'+1' " " "'
+	if "`output'" != "output" {
+		* Edades *
+		forvalues k=0(1)120 {
+			if `k' != 0 & `k' != 5 & `k' != 10 & `k' != 15 & `k' != 20 & `k' != 25 & `k' != 30 ///
+				& `k' != 35 & `k' != 40 & `k' != 45 & `k' != 50 & `k' != 55 ///
+				& `k' != 60 & `k' != 65 & `k' != 70 & `k' != 75 & `k' != 80 ///
+				& `k' != 85 & `k' != 90 & `k' != 95 & `k' != 100 & `k' != 105 ///
+				& `k' != 110 & `k' != 115 & `k' != 120 {
+				local relabel `"`relabel' `=`k'+1' " " "'
+			}
+			else {
+				local relabel `"`relabel' `=`k'+1' "`k'" "'
+			}
+		}
+
+		* REC % del PIB * 
+		if "`rect'" != "100" {
+			local rect `"{bf: Tama{c n~}o}: `=string(`rect',"%6.3fc")' % PIB"'
+			local rect ""
 		}
 		else {
-			local relabel `"`relabel' `=`k'+1' "`k'" "'
+			local rect ""
 		}
-	}
 
-	* REC % del PIB * 
-	if "`rect'" != "100" {
-		local rect `"{bf: Tama{c n~}o}: `=string(`rect',"%6.3fc")' % PIB"'
-		local rect ""
+		* Base *
+		if "`base'" != "" {
+			local base " `base'"
+		}
+
+		* Boottext *
+		if "`boottext'" != "" {
+			local boottext " `boottext'"
+		}
+
+		graph hbar (sum) `POR' if sexo == 1, ///
+			over(`over') over(edad, axis(off noextend noline outergap(0)) descending ///
+			relabel(`relabel')) ///
+			stack asyvars xalternate ///
+			yscale(noextend noline /*range(-7(1)7)*/) ///
+			blabel(none, format(%5.1fc)) ///
+			t2title({bf:Hombres} (`men'%), size(medsmall)) ///
+			/*t2title({bf:Men} (`men'%), size(medsmall))*/ ///
+			ytitle(porcentaje) ///
+			/*ytitle(percentage)*/ ///
+			ylabel(`=`PORmaxval'[2,1]'(1)`=`PORmaxval'[1,1]', format(%7.0fc) noticks) ///
+			name(H`varlist', replace) ///
+			legend(cols(4) pos(6) bmargin(zero) label(1 "") label(2 "") label(3 "`rect'") ///
+			label(4 "") label(5 "") label(6 "") label(7 "") label(8 "") label(9 "") ///
+			label(10 "") symxsize(0)) ///
+			yreverse ///
+			plotregion(margin(zero)) ///
+			graphregion(margin(zero)) aspectratio(, placement(right))
+
+		graph hbar (sum) `POR' if sexo == 2, ///
+			over(`over') over(edad, axis(noextend noline outergap(0)) descending ///
+			relabel(`relabel') label(labsize(vsmall) labcolor("122 122 122"))) ///
+			stack asyvars ///
+			yscale(noextend noline /*range(-7(1)7)*/) /// |
+			blabel(none, format(%5.1fc)) ///
+			t2title({bf:Mujeres} (`women'%), size(medsmall)) ///
+			/*t2title({bf:Women} (`women'%), size(medsmall))*/ ///
+			ytitle(porcentaje) ///
+			/*ytitle(percentage)*/ ///
+			ylabel(`=`PORmaxval'[2,1]'(1)`=`PORmaxval'[1,1]', format(%7.0fc) noticks) ///
+			name(M`varlist', replace) ///
+			legend(cols(4) pos(5) bmargin(zero) size(vsmall) keygap(1) symxsize(3) textwidth(30) forcesize) ///
+			plotregion(margin(zero)) ///
+			graphregion(margin(zero)) aspectratio(, placement(left))
+
+		graph combine H`varlist' M`varlist', ///
+			name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)', replace) ycommon ///
+			title("{bf:Perfil} de `title'") subtitle("$pais") ///
+			///title("`title' by sex, age and `titleover'") ///
+			caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, ENIGH 2018. Fecha: `c(current_date)', `c(current_time)'.") ///
+			/*caption("{it: Source: Own estimations.`boottext'}")*/ ///
+			note(`"{bf:Nota}: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n de `title' en cada grupo."') ///
+			/*note(`"{bf:Note}: Percentages inside parenthesis represent the concentration of `title' in each group."')*/
+
+		*graph export `"`c(sysdir_personal)'/users/$pais/$id/graphs/`varlist'_`titleover'.eps"', replace name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)')
+		graph save `=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)' `"`c(sysdir_personal)'/users/$pais/$id/graphs/`varlist'_`titleover'.gph"', replace
+
+		if "$export" != "" {
+			graph export `"$export/`varlist'_`titleover'.png"', replace name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)')
+		}
+
+		capture window manage close graph H`varlist'
+		capture window manage close graph M`varlist'
 	}
 	else {
-		local rect ""
+		g grupo_edad = 1
+		replace grupo_edad = 2 if edad > 4
+		replace grupo_edad = 3 if edad > 9
+		replace grupo_edad = 4 if edad > 14
+		replace grupo_edad = 5 if edad > 19
+		replace grupo_edad = 6 if edad > 24
+		replace grupo_edad = 7 if edad > 29
+		replace grupo_edad = 8 if edad > 34
+		replace grupo_edad = 9 if edad > 39
+		replace grupo_edad = 10 if edad > 44
+		replace grupo_edad = 11 if edad > 49
+		replace grupo_edad = 12 if edad > 54
+		replace grupo_edad = 13 if edad > 59
+		replace grupo_edad = 14 if edad > 64
+		replace grupo_edad = 15 if edad > 69
+		replace grupo_edad = 16 if edad > 74
+		replace grupo_edad = 17 if edad > 79
+		replace grupo_edad = 18 if edad > 84
+		replace grupo_edad = 19 if edad > 89
+		replace grupo_edad = 20 if edad > 94
+		replace grupo_edad = 21 if edad > 99
+		replace grupo_edad = 22 if edad > 104
+		replace grupo_edad = 23 if edad > 109
+
+		label define grupo_edad 1 "0-4" 2 "5-9" 3 "10-14" 4 "15-19" ///
+			5 "20-24" 6 "25-29" 7 "30-34" 8 "35-39" 9 "40-44" 10 "45-49" ///
+			11 "50-54" 12 "55-59" 13 "60-64" 14 "65-69" 15 "70-74" ///
+			16 "75-79" 17 "80-84" 18 "85-89" 19 "90-94" 20 "95-99" ///
+			21 "100-104" 22 "105-109" 23 "109+"
+		label values grupo_edad grupo_edad
+
+		g over = `over'
+		label define over 1 "I-V" 2 "VI-IX" 3 "X"
+		label values over over
+		collapse (sum) porcentaje=`POR', by(sexo grupo_edad over)
+		
+		forvalues k=`=_N'(-1)1 {
+			if sexo[`k'] == 1 {
+				if over[`k'] == 1 {
+					local aportHIV = "`aportHIV' `=string(`=porcentaje[`k']*-1',"%8.3f")',"
+				}
+				if over[`k'] == 2 {
+					local aportHVIIX = "`aportHVIIX' `=string(`=porcentaje[`k']*-1',"%8.3f")',"
+				}
+				if over[`k'] == 3 {
+					local aportHX = "`aportHX' `=string(`=porcentaje[`k']*-1',"%8.3f")',"			
+				}
+			}
+			if sexo[`k'] == 2 {
+				if over[`k'] == 1 {
+					local aportMIV = "`aportMIV' `=string(`=porcentaje[`k']',"%8.3f")',"
+				}
+				if over[`k'] == 2 {
+					local aportMVIIX = "`aportMVIIX' `=string(`=porcentaje[`k']',"%8.3f")',"
+				}
+				if over[`k'] == 3 {
+					local aportMX = "`aportMX' `=string(`=porcentaje[`k']',"%8.3f")',"			
+				}		
+			}
+		}
+		local lengthHIV = strlen("`aportHIV'")
+		noisily di in w "APORTHIV: [`=substr("`aportHIV'",1,`=`lengthHIV'-1')']"
+		local lengthHVIIX = strlen("`aportHVIIX'")
+		noisily di in w "APORTHVIIX: [`=substr("`aportHVIIX'",1,`=`lengthHVIIX'-1')']"
+		local lengthHX = strlen("`aportHX'")
+		noisily di in w "APORTHX: [`=substr("`aportHX'",1,`=`lengthHX'-1')']"
+		local lengthMIV = strlen("`aportMIV'")
+		noisily di in w "APORTMIV: [`=substr("`aportMIV'",1,`=`lengthMIV'-1')']"
+		local lengthMVIIX = strlen("`aportMVIIX'")
+		noisily di in w "APORTMVIIX: [`=substr("`aportMVIIX'",1,`=`lengthMVIIX'-1')']"
+		local lengthMX = strlen("`aportMX'")
+		noisily di in w "APORTMX: [`=substr("`aportMX'",1,`=`lengthMX'-1')']"
 	}
-
-	* Base *
-	if "`base'" != "" {
-		local base " `base'"
-	}
-
-	* Boottext *
-	if "`boottext'" != "" {
-		local boottext " `boottext'"
-	}
-
-	graph hbar (sum) `POR' if sexo == 1, ///
-		over(`over') over(edad, axis(off noextend noline outergap(0)) descending ///
-		relabel(`relabel')) ///
-		stack asyvars xalternate ///
-		yscale(noextend noline /*range(-7(1)7)*/) ///
-		blabel(none, format(%5.1fc)) ///
-		t2title({bf:Hombres} (`men'%), size(medsmall)) ///
-		/*t2title({bf:Men} (`men'%), size(medsmall))*/ ///
-		ytitle(porcentaje) ///
-		/*ytitle(percentage)*/ ///
-		ylabel(`=`PORmaxval'[2,1]'(1)`=`PORmaxval'[1,1]', format(%7.0fc) noticks) ///
-		name(H`varlist', replace) ///
-		legend(cols(4) pos(6) bmargin(zero) label(1 "") label(2 "") label(3 "`rect'") ///
-		label(4 "") label(5 "") label(6 "") label(7 "") label(8 "") label(9 "") ///
-		label(10 "") symxsize(0)) ///
-		yreverse ///
-		plotregion(margin(zero)) ///
-		graphregion(margin(zero)) aspectratio(, placement(right))
-
-	graph hbar (sum) `POR' if sexo == 2, ///
-		over(`over') over(edad, axis(noextend noline outergap(0)) descending ///
-		relabel(`relabel') label(labsize(vsmall) labcolor("122 122 122"))) ///
-		stack asyvars ///
-		yscale(noextend noline /*range(-7(1)7)*/) /// |
-		blabel(none, format(%5.1fc)) ///
-		t2title({bf:Mujeres} (`women'%), size(medsmall)) ///
-		/*t2title({bf:Women} (`women'%), size(medsmall))*/ ///
-		ytitle(porcentaje) ///
-		/*ytitle(percentage)*/ ///
-		ylabel(`=`PORmaxval'[2,1]'(1)`=`PORmaxval'[1,1]', format(%7.0fc) noticks) ///
-		name(M`varlist', replace) ///
-		legend(cols(4) pos(5) bmargin(zero) size(vsmall) keygap(1) symxsize(3) textwidth(30) forcesize) ///
-		plotregion(margin(zero)) ///
-		graphregion(margin(zero)) aspectratio(, placement(left))
-
-	graph combine H`varlist' M`varlist', ///
-		name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)', replace) ycommon ///
-		title("{bf:Perfil} de `title'") subtitle("$pais") ///
-		///title("`title' by sex, age and `titleover'") ///
-		caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, ENIGH 2018. Fecha: `c(current_date)', `c(current_time)'.") ///
-		/*caption("{it: Source: Own estimations.`boottext'}")*/ ///
-		note(`"{bf:Nota}: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n de `title' en cada grupo."') ///
-		/*note(`"{bf:Note}: Percentages inside parenthesis represent the concentration of `title' in each group."')*/
-
-	*graph export `"`c(sysdir_personal)'/users/$pais/graphs/`varlist'_`titleover'.eps"', replace name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)')
-	graph save `=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)' `"`c(sysdir_personal)'/users/$pais/graphs/`varlist'_`titleover'.gph"', replace
-
-	if "$export" != "" {
-		graph export `"$export/`varlist'_`titleover'.png"', replace name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)')
-	}
-
-	capture window manage close graph H`varlist'
-	capture window manage close graph M`varlist'
-
 end
