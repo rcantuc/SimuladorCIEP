@@ -9,15 +9,14 @@ local anio = 2021
 
 
 
+
 ***********************************
 ** PAR{c A'}METROS DEL SIMULADOR **
 **    Paquete Economico 2021     **
-if "$param" == "on" {
-	global id = "$id"
-
+global id "$id"
+if "$id" != "" {
 	*sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
 	*adopath ++ PERSONAL
-	*capture mkdir "`c(sysdir_personal)'/users/$pais/$id/"
 
 	* Educacion *
 	scalar basica = 21333 // 													Educaci{c o'}n b{c a'}sica
@@ -61,11 +60,16 @@ if "$param" == "on" {
 
 
 
+if "`1'" == "fast" {
+	exit
+}
+
+
 
 ********************
 ** 4.4 Resultados **
 ********************
-noisily GastoPC, anio(`anio')
+noisily GastoPC, anio(`anio') output
 
 
 

@@ -12,7 +12,7 @@ local anio = 2021
 ********************************************
 ** PAR{c A'}METROS DEL SIMULADOR (BASICO) **
 **        Paquete Economico 2021          **
-if "$param" == "on" {
+if "$id" != "" {
 	global id = "$id"
 
 	*sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
@@ -37,6 +37,12 @@ if "$param" == "on" {
 	scalar OtrosC  = 1.079 //														Productos, derechos, aprovechamientos, contribuciones
 }
 ***********************************/
+
+
+
+if "`1'" == "fast" {
+	exit
+}
 
 
 
@@ -126,7 +132,7 @@ capture confirm scalar IVA_Mod
 if _rc == 0 {
 	scalar IVA = IVA_Mod
 }
-noisily TasasEfectivas, anio(`anio') //														Cap. 4. Ingresos
+noisily TasasEfectivas, anio(`anio') output //									Cap. 4. Ingresos
 
 
 
