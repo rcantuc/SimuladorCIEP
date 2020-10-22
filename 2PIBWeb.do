@@ -3,16 +3,20 @@
 ****************************
 timer on 99
 local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
-local anio = substr(`"`=trim("`fecha'")'"',1,4) // 								<-- anio base: HOY
-local anio = 2021
+scalar aniovp = substr(`"`=trim("`fecha'")'"',1,4) // 								<-- anio base: HOY
+scalar aniovp = 2021
+
+capture mkdir "`c(sysdir_personal)'/users"
+capture mkdir "`c(sysdir_personal)'/users/$pais/"
+capture mkdir "`c(sysdir_personal)'/users/$pais/$id/"
 
 
 
 
 
-***********************************
+**********************************/
 ** PAR{c A'}METROS DEL SIMULADOR **
-if "$id" != "" {
+if "$id" == "PE2021" {
 	*sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
 	*adopath ++ PERSONAL
 
@@ -36,20 +40,16 @@ if "$id" != "" {
 
 
 
-noisily PIBDeflactor, anio(`anio') nographs output update //discount(3.0)
-
-capture mkdir "`c(sysdir_personal)'/users"
-capture mkdir "`c(sysdir_personal)'/users/$pais/"
-capture mkdir "`c(sysdir_personal)'/users/$pais/$id/"
+noisily PIBDeflactor, anio(`=scalar(aniovp)') nographs output //discount(3.0)
 if `c(version)' > 13.1 {
 	saveold "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", replace version(13)
 }
 else {
 	save "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", replace
 }
+noisily Inflacion, anio(`=scalar(aniovp)') nographs //update
+noisily SCN, anio(`=scalar(aniovp)') nographs //update
 
-noisily Inflacion, anio(`anio') nographs //update
-noisily SCN, anio(`anio') nographs //update
 
 
 

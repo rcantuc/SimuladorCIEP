@@ -31,7 +31,7 @@ global id = "$id"
 run "`c(sysdir_personal)'/3GastosWeb.do" fast
 run "`c(sysdir_personal)'/4IngresosWeb.do" fast
 
-foreach k in sexo escol grupo_edad decil {
+foreach k in sexo decil /*escol grupo_edad*/ {
 	noisily run "`c(sysdir_personal)'/SankeySF.do" `k' `anio'
 }
 

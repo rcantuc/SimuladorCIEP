@@ -113,11 +113,10 @@ quietly {
 			local graphtype "area"
 		}
 
-		* Deflactor var_indiceY *
 		twoway (area deflatorpp anio if (anio < `anio_last' & anio >= 1993) | (anio == `anio_last' & mes == 12)) ///
 			(area deflatorpp anio if anio >= `anio_last' & anio > anio[`obslast'+`exo_count'-1]) ///
 			(`graphtype' deflatorpp anio if /*anio == `anio_last' & trimestre < 4 |*/ anio <= anio[`obslast'+`exo_count'-1] & anio >= `anio_last', lwidth(none)), ///
-			title("{bf:{c I'}ndice} nacional de precios al consumidor") ///
+			///title("{bf:{c I'}ndice} nacional de precios al consumidor") ///
 			subtitle(${pais}) ///
 			xlabel(1995(5)`=round(anio[_N],5)') ///
 			ytitle("A{c n~}o `aniovp' = 1.000") xtitle("") yline(0) ///
@@ -125,13 +124,37 @@ quietly {
 			///text(`crec_deflactor', place(c)) ///
 			legend(label(1 "Reportado") label(2 "Proyectado") label(3 "Estimado") order(1 3 2)) ///
 			///caption("{it:Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, BIE.}") ///
-			note("{bf:{c U'}ltimo dato reportado}: `anio_last'm`mes_last'.") ///
+			note("{bf:{c U'}ltimo dato reportado}: `anio_last' mes `mes_last'.") ///
 			name(inflacionH, replace)
 			
 		capture confirm existence $export
 		if _rc == 0 {
 			graph export "$export/inflacionH.png", replace name(inflacionH)
 		}
+
+		* Texto sobre lineas *
+		forvalues k=1(3)`=_N' {
+			if var_inflY[`k'] != . & anio[`k'] >= 1993 {
+				local crec_infl `"`crec_infl' `=var_inflY[`k']' `=anio[`k']' "`=string(var_inflY[`k'],"%5.1fc")'" "'
+			}
+		}
+		twoway (connected var_inflY anio if (anio < `anio_last' & anio >= 1993) | (anio == `anio_last' & mes == 12)) ///
+			(connected var_inflY anio if anio >= `anio_last' & anio > anio[`obslast'+`exo_count'-1]) ///
+			(connected var_inflY anio if /*anio == `anio_last' & trimestre < 4 |*/ anio <= anio[`obslast'+`exo_count'-1] & anio >= `anio_last', lwidth(none)), ///
+			///title({bf:Crecimientos} del {c i'}ndice nacional de precios al consumidor) subtitle(${pais}) ///
+			xlabel(1995(5)`=round(anio[_N],5)') ///
+			ylabel(, format(%3.0f)) ///
+			ytitle("Variaci{c o'}n (%)") xtitle("") yline(0, lcolor(black)) ///
+			text(`crec_infl') ///
+			legend(label(1 "Reportado") label(2 "Proyectado") label(3 "Estimado") order(1 3 2)) ///
+			///caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, BIE.") ///
+			note("{bf:{c U'}ltimo dato reportado}: `anio_last' mes `mes_last'.") ///
+			name(var_inflYH, replace)
+		capture confirm existence $export
+		if _rc == 0 {
+			graph export "$export/var_inflYH.png", replace name(var_inflYH)
+		}	
+
 	}
 	
 	scalar inflacionLP = string(deflatorpp[_N],"%5.1f")

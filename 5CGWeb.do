@@ -37,8 +37,8 @@ label var AportacionesNetas "de las aportaciones netas"
 save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace
 
 noisily Simulador AportacionesNetas if AportacionesNetas != 0 [fw=factor], ///
-	base("ENIGH 2018") boot(1) graphs reboot output
-*noisily CuentasGeneracionales AportacionesNetas, anio(`anio') output //boot(250)		// <-- OPTIONAL!!! Toma mucho tiempo.
+	base("ENIGH 2018") boot(1) reboot //graphs //output
+*noisily CuentasGeneracionales AportacionesNetas, anio(`anio') output //boot(250) //	<-- OPTIONAL!!! Toma mucho tiempo.
 
 
 use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/AportacionesNetasREC.dta"', clear
@@ -54,7 +54,7 @@ forvalues k=1(1)`=_N' {
 	}
 }
 
-*twoway connected estimacion anio, ///
+/*twoway connected estimacion anio, ///
 	ytitle("billiones MXN `anio'") ///
 	yscale(range(0)) /*ylabel(0(1)4)*/ ///
 	ylabel(, format(%20.1fc) labsize(small)) ///
@@ -66,6 +66,7 @@ forvalues k=1(1)`=_N' {
 	caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5." "Fecha: `c(current_date)', `c(current_time)'.") ///
 	name(AportacionesNetasProj, replace)
 
+* Output */
 forvalues k=1(10)`=_N' {
 	local out_proy = "`out_proy' `=string(estimacion[`k'],"%8.3f")',"
 }

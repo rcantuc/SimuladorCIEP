@@ -31,15 +31,18 @@ program define scalarlatex
 		foreach name in `scalars' {
 
 			quietly log using "$export/../statalatex_`logname'.tex", name(latex) append text
-					
+
 			if `"`=substr("`name'",1,4)'"' == "anio" | `"`=substr("`name'",1,4)'"' == "defl" ///
-				| `"`=substr("`name'",1,4)'"' == "trim" | `"`=substr("`name'",1,4)'"' == "infl" {
+				| `"`=substr("`name'",1,4)'"' == "trim" | `"`=substr("`name'",1,4)'"' == "infl" ///
+				| `"`=substr("`name'",1,9)'"' == "poblacion" | `"`=substr("`name'",1,4)'"' == "gini" ///
+				| `"`=substr("`name'",1,6)'"' == "output" | `"`=substr("`name'",1,4)'"' == "asis" {
 				local value = scalar(`name')
 				di in w "\def\d`name'#1{\gdef\\`name'{#1}}"
 				di in w `"\d`name'{`value'}"'		
 			}
 
-			else if `"`=substr("`name'",-3,3)'"' == "PIB" & `"`=substr("`name'",1,3)'"' != "PIB" {
+			else if (`"`=substr("`name'",-3,3)'"' == "PIB" & `"`=substr("`name'",1,3)'"' != "PIB") ///
+				| `"`=substr("`name'",1,6)'"' == "lambda" | `"`=substr("`name'",1,2)'"' == "TT" {
 				if scalar(`name') != . {
 					local value = scalar(`name')
 				}
@@ -75,7 +78,8 @@ program define scalarlatex
 			}
 			
 			else if `"`=substr("`name'",-1,1)'"' == "I" | `"`=substr("`name'",-1,1)'"' == "V" ///
-				| `"`=substr("`name'",-1,1)'"' == "X" | `"`=substr("`name'",-8,8)'"' == "Nacional" {
+				| `"`=substr("`name'",-1,1)'"' == "X" | `"`=substr("`name'",-1,1)'"' == "H" ///
+				| `"`=substr("`name'",-1,1)'"' == "M" | `"`=substr("`name'",-8,8)'"' == "Nacional" {
 				local value = scalar(`name')
 				di in w "\def\d`name'#1{\gdef\\`name'{#1}}"
 				di in w `"\d`name'{`=string(`value',"%12.1fc")'}"'				

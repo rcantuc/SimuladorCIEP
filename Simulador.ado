@@ -38,6 +38,9 @@ quietly {
 			continue, break
 		}
 	}
+	
+	SCN, anio(`aniobase') nographs
+	local PIB = scalar(PIB)
 	restore
 
 	** Poblacion **
@@ -251,7 +254,7 @@ quietly {
 				g `decil' = decil
 			}
 
-			capture confirm variable ing_bruto_tot
+			capture confirm variable ingbrutotot
 			tempvar ingreso
 			if _rc != 0 {
 				g double `ingreso' = `varlist'
@@ -259,8 +262,8 @@ quietly {
 				label var `ingreso' "[Sin variable de ingreso total]"
 			}
 			else {
-				g double `ingreso' = ing_bruto_tot
-				local rellabel : variable label ing_bruto_tot
+				g double `ingreso' = ingbrutotot
+				local rellabel : variable label ingbrutotot
 				label var `ingreso' "`rellabel'"
 			}
 
@@ -308,6 +311,7 @@ quietly {
 	*******************************
 	*** 2.2 Resultados globales ***
 	local RECT = r(mean)/`PIB'*100
+	scalar `varlist'GPIB = `RECT'
 
 	ci contribuyentes
 	noisily di in g "  Contribuyentes/Beneficiarios:" _column(40) in y %20.0fc r(mean) ///
@@ -593,6 +597,9 @@ program poblaciongini
 		3 `"{bf:X} (`=string(`gdeclab10',"%7.0fc")'%)"'
 	label values `grupo' `grupoval'
 	label var `grupo' "deciles"
+	scalar `varlist'GIV = `gdeclab1'+`gdeclab2'+`gdeclab3'+`gdeclab4'+`gdeclab5'
+	scalar `varlist'GVIIX = `gdeclab6'+`gdeclab7'+`gdeclab8'+`gdeclab9'
+	scalar `varlist'GX = `gdeclab10'
 
 
 	***************
@@ -604,6 +611,8 @@ program poblaciongini
 		matrix `GSEX' = r(StatTotal)
 		local gsexlab`k' = `GSEX'[1,1]/`GTOT'[1,1]*100
 	}
+	scalar `varlist'GH = `gsexlab1'
+	scalar `varlist'GM = `gsexlab2'
 
 
 	*********************************
@@ -657,7 +666,7 @@ program graphpiramide
 	*** 1. Valores agregados ***
 	tempname TOT POR
 	egen double `TOT' = sum(`varlist')
-	g double `POR' = `varlist'/`TOT'*100
+	g double `POR' = `varlist'/scalar(PIB)*100
 
 	* Max number *
 	tempvar PORmax
@@ -707,7 +716,6 @@ program graphpiramide
 		* REC % del PIB * 
 		if "`rect'" != "100" {
 			local rect `"{bf: Tama{c n~}o}: `=string(`rect',"%6.3fc")' % PIB"'
-			local rect ""
 		}
 		else {
 			local rect ""
@@ -731,9 +739,9 @@ program graphpiramide
 			blabel(none, format(%5.1fc)) ///
 			t2title({bf:Hombres} (`men'%), size(medsmall)) ///
 			/*t2title({bf:Men} (`men'%), size(medsmall))*/ ///
-			ytitle(porcentaje) ///
+			ytitle(% PIB) ///
 			/*ytitle(percentage)*/ ///
-			ylabel(`=`PORmaxval'[2,1]'(1)`=`PORmaxval'[1,1]', format(%7.0fc) noticks) ///
+			ylabel(`=round(`PORmaxval'[2,1],.1)'(.2)`=`PORmaxval'[1,1]', format(%7.1fc) noticks) ///
 			name(H`varlist', replace) ///
 			legend(cols(4) pos(6) bmargin(zero) label(1 "") label(2 "") label(3 "`rect'") ///
 			label(4 "") label(5 "") label(6 "") label(7 "") label(8 "") label(9 "") ///
@@ -750,21 +758,21 @@ program graphpiramide
 			blabel(none, format(%5.1fc)) ///
 			t2title({bf:Mujeres} (`women'%), size(medsmall)) ///
 			/*t2title({bf:Women} (`women'%), size(medsmall))*/ ///
-			ytitle(porcentaje) ///
+			ytitle(% PIB) ///
 			/*ytitle(percentage)*/ ///
-			ylabel(`=`PORmaxval'[2,1]'(1)`=`PORmaxval'[1,1]', format(%7.0fc) noticks) ///
+			ylabel(`=round(`PORmaxval'[2,1],.1)'(.2)`=`PORmaxval'[1,1]', format(%7.1fc) noticks) ///
 			name(M`varlist', replace) ///
 			legend(cols(4) pos(5) bmargin(zero) size(vsmall) keygap(1) symxsize(3) textwidth(30) forcesize) ///
 			plotregion(margin(zero)) ///
 			graphregion(margin(zero)) aspectratio(, placement(left))
 
 		graph combine H`varlist' M`varlist', ///
-			name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)', replace) ycommon ///
-			title("{bf:Perfil} de `title'") subtitle("$pais") ///
+			name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)', replace) ycommon xcommon ///
+			///title("{bf:Perfil} de `title'") subtitle("$pais") ///
 			///title("`title' by sex, age and `titleover'") ///
-			caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, ENIGH 2018. Fecha: `c(current_date)', `c(current_time)'.") ///
+			///caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, ENIGH 2018. Fecha: `c(current_date)', `c(current_time)'.") ///
 			/*caption("{it: Source: Own estimations.`boottext'}")*/ ///
-			note(`"{bf:Nota}: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n de `title' en cada grupo."') ///
+			note(`"{bf:Nota}: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n de `=lower("`title'")' en cada grupo."') ///
 			/*note(`"{bf:Note}: Percentages inside parenthesis represent the concentration of `title' in each group."')*/
 
 		*graph export `"`c(sysdir_personal)'/users/$pais/$id/graphs/`varlist'_`titleover'.eps"', replace name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)')
