@@ -13,8 +13,8 @@ local anio = 2021
 ***********************************
 ** PAR{c A'}METROS DEL SIMULADOR **
 **    Paquete Economico 2021     **
-global id "$id"
-if "$id" != "" {
+global id = "$id"
+if "$id" == "PE2021" {
 	*sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
 	*adopath ++ PERSONAL
 

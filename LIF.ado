@@ -36,7 +36,16 @@ quietly {
 	syntax [if] [, ANIO(int `aniovp' ) Update Graphs Base ID(string) ///
 		MINimum(real 0) DESDE(int 2013) ILIF EOFP BY(varname) ROWS(int 2) COLS(int 5)]
 
-	noisily di _newline(2) in g _dup(20) "." "{bf:  Sistema Fiscal: INGRESOS $pais" in y `anio' "  }" in g _dup(20) "."
+	if "`ilif'" == "ilif" {
+		local textintro = "ILIF"
+	}
+	else if "`eofp'" == "eofp" {
+		local textintro = "Estad{c i'}sticas oportunas"
+	}
+	else {
+		local textintro = "LIF"
+	}
+	noisily di _newline(2) in g _dup(20) "." "{bf:  Sistema Fiscal: `textintro' $pais" in y `anio' "  }" in g _dup(20) "."
 
 	** 2.1 PIB + Deflactor **
 	PIBDeflactor, anio(`anio') nographs

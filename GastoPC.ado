@@ -201,23 +201,23 @@ quietly {
 	***************
 	*** 4 Salud ***
 	***************
-	g benef_imss = inst_1 == "1"
-	g benef_issste = inst_2 == "2"
-	g benef_isssteest = inst_3 == "3"
-	g benef_pemex = inst_4 == "4"
+	*g benef_imss = inst_1 == "1"
+	*g benef_issste = inst_2 == "2"
+	*g benef_isssteest = inst_3 == "3"
+	*g benef_pemex = inst_4 == "4"
 	
-	tempvar benef_imssprospera
-	g `benef_imssprospera' = inst_5 == "5"
-	egen benef_imssprospera = max(`benef_imssprospera'), by(folioviv foliohog)
+	*tempvar benef_imssprospera
+	*g `benef_imssprospera' = inst_5 == "5"
+	*egen benef_imssprospera = max(`benef_imssprospera'), by(folioviv foliohog)
 
-	tempvar benef_otro
-	capture g `benef_otro' = inst_6 == "6"
-	if _rc != 0 {
-		g `benef_otro' = 0
-	}
-	egen benef_otro = max(`benef_otro'), by(folioviv foliohog)
-	g benef_seg_pop = benef_imss == 0 & benef_issste == 0 & benef_pemex == 0
-	g benef_ssa = 1
+	*tempvar benef_otro
+	*capture g `benef_otro' = inst_6 == "6"
+	*if _rc != 0 {
+	*	g `benef_otro' = 0
+	*}
+	*egen benef_otro = max(`benef_otro'), by(folioviv foliohog)
+	*g benef_seg_pop = benef_imss == 0 & benef_issste == 0 & benef_pemex == 0
+	*g benef_ssa = 1
 
 	tabstat benef_imss benef_issste benef_pemex benef_imssprospera benef_seg_pop ///
 		benef_ssa benef_isssteest benef_otro [fw=factor], stat(sum) f(%15.0fc) save

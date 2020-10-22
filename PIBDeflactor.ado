@@ -61,7 +61,7 @@ quietly {
 	capture local trim_last = trimestre[_N]
 	if _rc == 0 {
 		scalar trimlast = `trim_last'
-		local trim_last = "q`trim_last'"
+		local trim_last = " trim. `trim_last'"
 	}
 	merge 1:1 (anio) using `workingage', nogen
 	drop if anio < `anio_first'
@@ -233,6 +233,11 @@ quietly {
 	scalar deflatorINI = string(round(1/deflator[1],.1),"%5.1f")
 	scalar anioLP = anio[_N]
 	
+	scalar anioPWI = anio[`=`obs_exo'-`geo'']
+	scalar anioPWF = anio[`obs_exo']
+	scalar outputPW = string(OutputPerWorker[`obsvp'],"%10.0fc")
+	scalar lambdaNW = ((pibYR[`obs_exo']/pibYR[`=`obs_exo'-`geo''])^(1/`geo')-1)*100
+	
 
 	noisily di _newline in g " PIB " in y "al infinito" in y _col(22) %23.0fc `pibYVP'[1,1] + pibINF in g " `=currency[`obsvp']'"
 	noisily di in g " Tasa de descuento: " in y _col(25) %20.1fc `discount' in g " %"
@@ -260,7 +265,7 @@ quietly {
 		twoway (area deflator anio if anio < `anio_last' | (anio == `anio_last' & trimestre == 4)) ///
 			(area deflator anio if anio >= `anio_last' & anio > anio[`obsvp'+`exo_def'-2]) ///
 			(`graphtype' deflator anio if /*anio == `anio_last' & trimestre < 4 |*/ anio <= anio[`obsvp'+`exo_def'-2] & anio >= `anio_last', lwidth(none)), ///
-			title("{bf:{c I'}ndice} de precios impl{c i'}citos") ///
+			///title("{bf:{c I'}ndice} de precios impl{c i'}citos") ///
 			subtitle(${pais}) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
 			ylabel(0(1)4, format(%3.0f)) ///
@@ -287,10 +292,10 @@ quietly {
 		twoway (connected var_indiceY anio if anio < `anio_last' | (anio == `anio_last' & trimestre == 4)) ///
 			(connected var_indiceY anio if anio >= `anio_last' & anio > anio[`obsvp'+`exo_def'-2]) ///
 			(connected var_indiceY anio if /*anio == `anio_last' & trimestre < 4 |*/ anio <= anio[`obsvp'+`exo_def'-2] & anio >= `anio_last'), ///
-			title({bf:Crecimientos} del {c i'}ndice de precios impl{c i'}citos) subtitle(${pais}) ///
+			///title({bf:Crecimientos} del {c i'}ndice de precios impl{c i'}citos) subtitle(${pais}) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
 			ylabel(, format(%3.0f)) ///
-			ytitle("Crecimiento real (%)") xtitle("") yline(0, lcolor(black)) ///
+			ytitle("Variaci{c o'}n (%)") xtitle("") yline(0, lcolor(black)) ///
 			text(`crec_deflactor') ///
 			legend(label(1 "Reportado") label(2 "Proyectado") label(3 "Estimado") order(1 3 2)) ///
 			///caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, BIE.") ///
@@ -305,15 +310,19 @@ quietly {
 		twoway (connected var_pibY anio if anio < `anio_last' | (anio == `anio_last' & trimestre == 4)) ///
 			(connected var_pibY anio if anio >= `anio_last' & anio > anio[`obs_exo']) ///
 			(connected var_pibY anio if /*anio == `anio_last' & trimestre < 4 |*/ anio <= anio[`obs_exo'] & anio >= `anio_last'), ///
-			title({bf:Crecimientos} del Producto Interno Bruto) subtitle(${pais}) ///
+			///title({bf:Crecimientos} del Producto Interno Bruto) subtitle(${pais}) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
 			ylabel(-6(3)6, format(%3.0fc)) ///
-			ytitle("Crecimiento real (%)") xtitle("") yline(0, lcolor(black)) ///
+			ytitle("Variaci{c o'}n de la producci{c o'}n (%)") xtitle("") yline(0, lcolor(black)) ///
 			text(`crec_PIB') ///
 			legend(label(1 "Reportado") label(2 "Proyectado") label(3 "Estimado") order(1 3 2)) ///
 			///caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, BIE.") ///
 			note("{bf:{c U'}ltimo dato reportado}: `anio_last'`trim_last'.") ///
 			name(PIBH, replace)
+		capture confirm existence $export
+		if _rc == 0 {
+			graph export "$export/PIBH.png", replace name(PIBH)
+		}	
 
 
 		* PIB real *
@@ -323,7 +332,7 @@ quietly {
 		twoway (area `pibYRmil' anio if anio < `anio_last' | (anio == `anio_last' & trimestre == 4)) ///
 			(area `pibYRmil' anio if anio >= `anio_last' & anio > anio[`obs_exo']) ///
 			(`graphtype' `pibYRmil' anio if /*anio == `anio_last' & trimestre < 4 |*/ anio <= anio[`obs_exo'] & anio >= `anio_last', lwidth(none)), ///
-			title({bf:Flujo} del Producto Interno Bruto) subtitle(${pais}) ///
+			///title({bf:Flujo} del Producto Interno Bruto) subtitle(${pais}) ///
 			ytitle(billones `=currency[`obsvp']' `aniovp') xtitle("") yline(0) ///
 			///text(`=`pibYRmil'[1]*.05' `=`anio_last'-.5' "`anio_last'", place(nw) color(white)) ///
 			///text(`=`pibYRmil'[1]*.05' `=anio[1]+.5' "Reportado" ///

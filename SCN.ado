@@ -1,10 +1,10 @@
-**************************************************
-***               ACTUALIZACIÓN                *** 
-*** 1) abrir archivos .iqy en Excel de Windows ***
-*** 2) guardar y reemplazar .xls dentro de     ***
-***      ./TemplateCIEP/basesCIEP/INEGI/SCN/   ***
-*** 3) correr SCN[.ado] con opci{c o'}n "update"    ***
-**************************************************
+****************************************************
+***               ACTUALIZACIÓN                  *** 
+*** 1) abrir archivos .iqy en Excel de Windows   ***
+*** 2) guardar y reemplazar .xls dentro de       ***
+***      ./TemplateCIEP/basesCIEP/INEGI/SCN/     ***
+*** 3) correr SCN[.ado] con opci{c o'}n "update" ***
+****************************************************
 
 
 
@@ -19,7 +19,6 @@ quietly {
 	syntax [, ANIO(int `aniovp') NOGraphs Update Discount(int 3)]
 	
 	noisily di _newline(2) in g _dup(20) "." "{bf:  Sistema de Cuentas Nacionales " in y `anio' "  }" in g _dup(20) "."
-	scalar aniovp = `aniovp'
 
 
 
@@ -97,76 +96,76 @@ quietly {
 		*******************************
 		** 1.2. Rename variables (V) **
 		** V.1. Anio **
-		rename A anio							// Anio
+		rename A anio				// Anio
 		tsset anio
 
 		** V.2. PIB **
-		rename Mg PIB							// Producto Interno Bruto
+		rename Mg PIB				// Producto Interno Bruto
 
 		** V.3. Remuneraciones a asalariados **
-		rename Bg RemSalSS						// Remuneraciones a asalariados (total)
-		rename Cg RemSal						// Remuneraciones a asalariados (sin contribuciones efectivas, con contribuciones imputadas)
-		rename Dg SSEmpleadores					// Contribuciones a la seguridad social, efectivas
+		rename Bg RemSalSS			// Remuneraciones a asalariados (total)
+		rename Cg RemSal			// Remuneraciones a asalariados (sin contribuciones efectivas, con contribuciones imputadas)
+		rename Dg SSEmpleadores			// Contribuciones a la seguridad social, efectivas
 
 		** V.4. Impuesto sobre los productos, producci{c o'}n e importaciones **
-		rename Eg Imp							// Impuesto sobre los productos, producci{c o'}n e importaciones (total)
-		rename Fg ImpProductos					// Impuestos sobre los productos
-		rename Jg ImpProduccion					// Impuestos sobre la producci{c o'}n e importaciones
+		rename Eg Imp				// Impuesto sobre los productos, producci{c o'}n e importaciones (total)
+		rename Fg ImpProductos			// Impuestos sobre los productos
+		rename Jg ImpProduccion			// Impuestos sobre la producci{c o'}n e importaciones
 
 		** V.5. Subsidios **
-		rename Kg Sub							// Subsidios (total)
+		rename Kg Sub				// Subsidios (total)
 
 		** V.6. Excedente bruto de operaci{c o'}n **
-		rename Lg ExBOp							// Excedente bruto de operaci{c o'}n (con mixto)
-		rename Us ExBOpSinMix					// Excedente bruto de operaci{c o'}n (sin mixto)
+		rename Lg ExBOp				// Excedente bruto de operaci{c o'}n (con mixto)
+		rename Us ExBOpSinMix			// Excedente bruto de operaci{c o'}n (sin mixto)
 
 		** V.7. Excedente bruto de operaci{c o'}n, por sectores institucionales ** 
-		rename Vs ExBOpNoFin					// Excedente bruto de operaci{c o'}n sociedades no financieras
-		rename Ws ExBOpFin						// Excedente bruto de operaci{c o'}n sociedades financieras
-		rename Zs ExBOpISFLSH					// Excedente bruto de operaci{c o'}n ISFLSH
-		rename Ys ExBOpHog						// Excedente bruto de operaci{c o'}n de los hogares
-		rename Xs ExBOpGob						// Excedente bruto de operaci{c o'}n del gobierno
+		rename Vs ExBOpNoFin			// Excedente bruto de operaci{c o'}n sociedades no financieras
+		rename Ws ExBOpFin			// Excedente bruto de operaci{c o'}n sociedades financieras
+		rename Zs ExBOpISFLSH			// Excedente bruto de operaci{c o'}n ISFLSH
+		rename Ys ExBOpHog			// Excedente bruto de operaci{c o'}n de los hogares
+		rename Xs ExBOpGob			// Excedente bruto de operaci{c o'}n del gobierno
 
 		** V.8. Excedente neto de operaci{c o'}n, por sectores institucionales ** 
-		rename ABs ExNOpNoFin					// Excedente neto de operaci{c o'}n sociedades no financieras
-		rename ACs ExNOpFin						// Excedente neto de operaci{c o'}n sociedades financieras
-		rename AFs ExNOpISFLSH					// Excedente neto de operaci{c o'}n ISFLSH
-		rename AEs ExNOpHog						// Excedente neto de operaci{c o'}n de los hogares (owner-occupied)
-		rename ADs ExNOpGob						// Excedente neto de operaci{c o'}n del gobierno
+		rename ABs ExNOpNoFin			// Excedente neto de operaci{c o'}n sociedades no financieras
+		rename ACs ExNOpFin			// Excedente neto de operaci{c o'}n sociedades financieras
+		rename AFs ExNOpISFLSH			// Excedente neto de operaci{c o'}n ISFLSH
+		rename AEs ExNOpHog			// Excedente neto de operaci{c o'}n de los hogares (owner-occupied)
+		rename ADs ExNOpGob			// Excedente neto de operaci{c o'}n del gobierno
 
 		** V.9. Consumo de capital fijo **
-		rename Dd ConCapFij						// Consumo de capital fijo
+		rename Dd ConCapFij			// Consumo de capital fijo
 
 		** V.10. Resto del mundo **
-		rename Ed PIN							// Producto Interno Neto
-		rename Fd ROWRemRecibidas				// ROW, Compensation of Employees, recibidas
-		rename Gd ROWRemPagadas					// ROW, Compensation of Employees, pagadas
-		rename Hd ROWPropRecibidas				// ROW, Ingresos a la propiedad, recibidas
-		rename Id ROWPropPagadas				// ROW, Ingresos a la propiedad, pagadas
-		rename Jd ROWTransRecibidas				// ROW, Transferencias corrientes, recibidas
-		rename Kd ROWTransPagadas				// ROW, Transferencias corrientes, pagadas
+		rename Ed PIN				// Producto Interno Neto
+		rename Fd ROWRemRecibidas		// ROW, Compensation of Employees, recibidas
+		rename Gd ROWRemPagadas			// ROW, Compensation of Employees, pagadas
+		rename Hd ROWPropRecibidas		// ROW, Ingresos a la propiedad, recibidas
+		rename Id ROWPropPagadas		// ROW, Ingresos a la propiedad, pagadas
+		rename Jd ROWTransRecibidas		// ROW, Transferencias corrientes, recibidas
+		rename Kd ROWTransPagadas		// ROW, Transferencias corrientes, pagadas
+		rename Ld IngNacDisp			// Ingreso nacional disponible
 
 		** V.11. Consumo, usos **
-		rename Ld IngNacDisp					// Ingreso nacional disponible
-		rename AMs AhorroB						// Ahorro bruto
-		rename Bc ConHog						// Consumo de los hogares
-		rename Hgc ComprasN						// Compras netas en el extranjero
-		rename Bcg ConGob						// Consumo del gobierno general
-		rename AGs IngDisp						// Ingreso disponible
-		rename HWae Alquileres					// Alquileres sin intermediaci{c o'}n de bienes ra{c i'}ces
-		rename HXae Inmobiliarias 				// Inmobiliarias y corredores de bienes ra{c i'}ces
-		rename Mc Alojamiento					// Alquieres efectivos de alojamiento de los hogares
+		rename AMs AhorroB			// Ahorro bruto
+		rename Bc ConHog			// Consumo de los hogares
+		rename Hgc ComprasN			// Compras netas en el extranjero
+		rename Bcg ConGob			// Consumo del gobierno general
+		rename AGs IngDisp			// Ingreso disponible
+		rename HWae Alquileres			// Alquileres sin intermediaci{c o'}n de bienes ra{c i'}ces
+		rename HXae Inmobiliarias 		// Inmobiliarias y corredores de bienes ra{c i'}ces
+		rename Mc Alojamiento			// Alquieres efectivos de alojamiento de los hogares
 
 		** V.12. Actividades econ{c o'}micas **
-		rename IFae ServProf					// Servicios profesionales, cient{c i'}ficos y t{c e'}cnicos
-		rename JNae ConsMedi 					// Consultorios m{c e'}dicos
-		rename JOae ConsDent					// Consultorios dentales
-		rename JPae ConsOtro					// Consultorios otros
-		rename JSae EnfeDomi					// Enfermeras a domicilio
+		rename IFae ServProf			// Servicios profesionales, cient{c i'}ficos y t{c e'}cnicos
+		rename JNae ConsMedi 			// Consultorios m{c e'}dicos
+		rename JOae ConsDent			// Consultorios dentales
+		rename JPae ConsOtro			// Consultorios otros
+		rename JSae EnfeDomi			// Enfermeras a domicilio
 
 		** V.13. Consumo de consumo privado **
-		rename Ccp SaludH						// Consumo de los hogares por servicios de salud
-		rename Bcp ServProfH					// Consumo de los hogares por servicios profesionales
+		rename Ccp SaludH			// Consumo de los hogares por servicios de salud
+		rename Bcp ServProfH			// Consumo de los hogares por servicios profesionales
 
 		** V.14. Ingreso mixto **
 		g double IngMixto = .
@@ -350,7 +349,7 @@ quietly {
 	** 1.3. Construir cuentas (C) **
 
 	** C.1. Ingreso mixto **
-	g double MixN = IngMixto-DepMix
+	g double MixN = IngMixto - DepMix
 	format MixN %20.0fc
 	label var MixN "Ingreso mixto neto"
 	
@@ -372,11 +371,19 @@ quietly {
 	g double DepISFLSH = ExBOpISFLSH - ExNOpISFLSH
 	g double DepHog = ExBOpHog - ExNOpHog
 	g double DepGob = ExBOpGob - ExNOpGob
+	
+	** C.9. Resto del Mundo **
+	g double ROW = ROWRemRecibidas + ROWTransRecibidas + ROWPropRecibidas - ROWTransPagadas - ROWPropPagadas
+	format ROW %20.0fc
+	label var ROW "Resto del mundo"
 
-	** C.3. Ingreso de capital neto **
-	g double ExNOpSoc = ExBOpNoFin - DepNoFin + ExBOpFin - DepFin + ExBOpISFLSH - DepISFLSH //+ ROW
+	** C.3. Ingreso de capital neto **	// <--- Hay un error en la base de SCN!
+	g double ExNOpSoc = ExBOpNoFin - DepNoFin + ExBOpFin - DepFin + ExBOpISFLSH - DepISFLSH + ROW
 	format ExNOpSoc %20.0fc
 	label var ExNOpSoc "Sociedades e ISFLSH"
+
+	replace ExNOpSoc = PIN - RemSalSS - MixN - (ImpProductos + SubProductos) - ///
+		(ImpProduccion + SubProduccion) - ExNOpHog
 
 	** C.4 Ingreso de capital **
 	g double CapInc = ExBOp - MixL - ConCapFij //- ROW
@@ -387,14 +394,8 @@ quietly {
 	format Capital %20.0fc
 	label var Capital "Ingreso de capital"
 
-	g double AhorroN = AhorroB - ConCapFij
+	g double AhorroN = IngNacDisp - ConHog - ConGob - ComprasN
 	format AhorroN %20.0fc
-
-	g double CGob = IngNacDisp - ConHog - AhorroN - ComprasN
-	format CGob %20.0fc
-
-	g double DifGob = CGob - ConGob
-	format DifGob %20.0fc
 
 	drop if RemSalSS == .
 
@@ -407,11 +408,11 @@ quietly {
 	format ImpNetProduccion %20.0fc
 	label var ImpNetProduccion "Impuestos netos a la producci{c o'}n e importaciones"
 
-	g double ImpNetProduccionL = ImpNetProduccion*(RemSal + SSEmpleadores + MixL)/(RemSal + SSEmpleadores + MixL + MixKN + ExNOpSoc + ExNOpHog)
+	g double ImpNetProduccionL = ImpNetProduccion*(RemSal + SSEmpleadores + SSImputada + MixL)/(RemSal + SSEmpleadores + SSImputada + MixL + MixKN + ExNOpSoc + ExNOpHog)
 	format ImpNetProduccionL %20.0fc
 	label var ImpNetProduccion "Impuestos netos a la producci{c o'}n e importaciones (laboral)"
 
-	g double ImpNetProduccionK = ImpNetProduccion*(MixKN + ExNOpSoc + ExNOpHog)/(RemSal + SSEmpleadores + MixL + MixKN + ExNOpSoc + ExNOpHog)
+	g double ImpNetProduccionK = ImpNetProduccion*(MixKN + ExNOpSoc + ExNOpHog)/(RemSal + SSEmpleadores + SSImputada + MixL + MixKN + ExNOpSoc + ExNOpHog)
 	format ImpNetProduccionK %20.0fc
 	label var ImpNetProduccionK "Impuestos netos a la producci{c o'}n e importaciones (capital)"
 
@@ -442,11 +443,6 @@ quietly {
 	g double ROWProp = ROWPropRecibidas - ROWPropPagadas
 	format ROWProp %20.0fc
 	label var ROWProp "Ingresos a la propiedad"
-
-	** C.9. Resto del Mundo **
-	g double ROW = ROWRemRecibidas + ROWTransRecibidas + ROWPropRecibidas - ROWTransPagadas - ROWPropPagadas
-	format ROW %20.0fc
-	label var ROW "Resto del mundo"
 
 	** C.11. Ingreso laboral bruto **
 	g double Yl = RemSal + MixL + SSImputada + SSEmpleadores + ImpNetProduccionL
@@ -655,7 +651,7 @@ quietly {
 			(area `Depreciacion' anio if anio > `anio_last' & anio > `anio_exo', color("255 129 0")) ///
 			(area `Capital' anio if anio > `anio_last' & anio > `anio_exo', color("255 189 0")) ///
 			(area `Laboral' anio if anio > `anio_last' & anio > `anio_exo', color("39 97 47")), ///
-			title("{bf:Distribuci{c o'}n} del ingreso") ///
+			///title("{bf:Distribuci{c o'}n} del ingreso") ///
 			/// caption("{it:Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, BIE.}") ///
 			legend(cols(3) order(1 2 3)) ///
 			xtitle("") ///
@@ -737,8 +733,8 @@ quietly {
 		_col(66) in y %7.3fc AhorroN[`obs']/PIB[`obs']*100
 	noisily di in g _dup(72) "-"
 	noisily di in g "{bf:  (=) Ingreso disponible" ///
-		_col(44) in y %20.0fc IngDisp[`obs'] ///
-		_col(66) in y %7.3fc IngDisp[`obs']/PIB[`obs']*100 "}"
+		_col(44) in y %20.0fc IngNacDisp[`obs'] ///
+		_col(66) in y %7.3fc IngNacDisp[`obs']/PIB[`obs']*100 "}"
 
 	* Returns *
 	scalar ConHog = ConHog[`obs']
@@ -777,7 +773,7 @@ quietly {
 			(area `ConGob' anio if anio > `anio_last' & anio > `anio_exo', color("0 151 201")) ///
 			(area `ConHog' anio if anio > `anio_last' & anio > `anio_exo', color("186 34 64")) ///
 			(area `ComprasN' anio if anio > `anio_last' & anio > `anio_exo', color("53 200 71")), ///
-			title("{bf:Utilizaci{c o'}n} del ingreso disponible") ///
+			///title("{bf:Utilizaci{c o'}n} del ingreso disponible") ///
 			/// caption("{it:Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, BIE.}") ///
 			legend(cols(4) order(1 2 3 4)) ///
 			xtitle("") ///

@@ -1,9 +1,9 @@
-*************************************
-****                             ****
-**** MACRO + MICRO HARMONIZATION ****
-****  INFORMATION OF HOUSEHOLDS  ****
-****                             ****
-*************************************
+***************************************
+****                               ****
+**** ARMONIZACION SCN + ENIGH 2018 ****
+****    INFORMACION DE HOGARES     ****
+****                               ****
+***************************************
 
 
 ********************
@@ -16,45 +16,48 @@ if "`1'" == "" {
 if `1' >= 2018 {
 	local enigh = "ENIGH"
 	local hogar = "folioviv foliohog"
-	local betamin = 1									// ENIGH: 2.25
+	local betamin = 1			// ENIGH: 2.25
 	local altimir = "yes"
-	local SubsidioEmpleo = 50979000000 					// Presupuesto de gastos fiscales (2018)
-	local udis = 6.054085								// Promedio de valor de UDIS de enero a diciembre 2018
-	local smdf = 88.36									// Salario minimo general
+	local SubsidioEmpleo = 50979000000 	// Presupuesto de gastos fiscales (2018)
+	local udis = 6.054085			// Promedio de valor de UDIS de enero a diciembre 2018
+	local smdf = 88.36			// Salario minimo general
 }
 if `1' == 2016 {
 	local enigh = "ENIGH"
 	local hogar = "folioviv foliohog"
-	local betamin = 1									// ENIGH: 2.38
+	local betamin = 1			// ENIGH: 2.38
 	local altimir = "yes"
-	local SubsidioEmpleo = 43707000000					// Presupuesto de gastos fiscales (2016)
-	local udis = 5.4490872131							// Promedio de valor de UDIS de enero a diciembre 2016
-	local smdf = 73.04									// Salario minimo general
+	local SubsidioEmpleo = 43707000000	// Presupuesto de gastos fiscales (2016)
+	local udis = 5.4490872131		// Promedio de valor de UDIS de enero a diciembre 2016
+	local smdf = 73.04			// Salario minimo general
 }
 if `1' == 2014 {
 	local enigh = "ENIGH"
 	local hogar = "folioviv foliohog"
-	local betamin = 1									// ENIGH: 2.95
+	local betamin = 1			// ENIGH: 2.95
 	local altimir = "yes"
-	local SubsidioEmpleo = 41293000000					// Presupuesto de gastos fiscales (2014)
-	local udis = 5.1561230329  							// Promedio de valor de UDIS de enero a diciembre 2014
-	local smdf = 67.29									// Zona A. 2014
+	local SubsidioEmpleo = 41293000000	// Presupuesto de gastos fiscales (2014)
+	local udis = 5.1561230329  		// Promedio de valor de UDIS de enero a diciembre 2014
+	local smdf = 67.29			// Zona A. 2014
 }
 if `1' == 2012 {
 	local enigh = "ENIGH"
 	local hogar = "folioviv foliohog"
-	local betamin = 1									// ENIGH: 2.95
+	local betamin = 1			// ENIGH: 2.95
 	local altimir = "yes"
-	local SubsidioEmpleo = 29594000000					// Presupuesto de gastos fiscales (2012)
-	local udis = 4.776797282  							// Promedio de valor de UDIS de enero a diciembre 2014
-	local smdf = 62.33									// Zona A. 2012
+	local SubsidioEmpleo = 29594000000	// Presupuesto de gastos fiscales (2012)
+	local udis = 4.776797282  		// Promedio de valor de UDIS de enero a diciembre 2014
+	local smdf = 62.33			// Zona A. 2012
 }
 timer on 6
 local enighanio = `1'
 
+** A.0.1 Log-file **
 capture log close
 capture mkdir "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/"
 log using "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/households.smcl", replace
+
+** A.0.2 Bienvenida **
 noisily di _newline(2) in g _dup(20) "." "{bf:  Ingresos de los hogares " in y "`enigh' `enighanio'" "  }" in g _dup(20) "."
 
 
@@ -84,7 +87,7 @@ local ConCapFij = scalar(ConCapFij)
 local ConGob = scalar(ConGob)
 
 * Ajustes Rentas y Servicios Profesionales *
-* ver documento: Tributaci€n a ingresos por alquileres y servicios profesionales *
+* ver documento: Tributacion a ingresos por alquileres y servicios profesionales *
 * BID, SHCP, CIEP, 2018 *
 local ServProf = scalar(ServProf)
 local ConsMedi = scalar(ConsMedi)
@@ -162,9 +165,9 @@ local InfraT = r(StatTotal)
 *** A.3 Macros: LIF ***
 ***********************
 noisily LIF, anio(`enighanio')
-local ISRSalarios = r(ISR_PF)*(760552.9/(760552.9+43683.5))					// Informe Trimestral SHCP (2018-IV).
-local ISRFisicas = r(ISR_PF)*(43683.5/(760552.9+43683.5))					// Informe Trimestral SHCP (2018-IV).
-local ISRMorales = r(ISR_PM)												// Informe Trimestral SHCP (2018-IV).
+local ISRSalarios = r(ISR_PF)*(760552.9/(760552.9+43683.5))	// Informe Trimestral SHCP (2018-IV).
+local ISRFisicas = r(ISR_PF)*(43683.5/(760552.9+43683.5))	// Informe Trimestral SHCP (2018-IV).
+local ISRMorales = r(ISR_PM)
 local CuotasIMSS = r(Cuotas_IMSS)
 local IMSSpropio = r(IMSS)-`CuotasIMSS'
 local ISSSTEpropio = r(ISSSTE)
@@ -215,25 +218,25 @@ else {
 
 
 
-*********************************
-*** B. Micro 1. ENIGH. Gastos ***
-*********************************
+**********************************
+*** B.1 Micro 1. ENIGH. Gastos ***
+**********************************
 capture confirm file "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/deducciones.dta"
 if _rc != 0 {
 	noisily run Expenditure`=subinstr("${pais}"," ","",.)'.do `enighanio'
 }
 
 
-***********************************
-*** B. Micro 2. ENIGH. Ingresos ***
-***********************************
+************************************
+*** B.2 Micro 2. ENIGH. Ingresos ***
+************************************
 use "`c(sysdir_site)'../basesCIEP/INEGI/`enigh'/`enighanio'/ingresos.dta", clear
 merge m:1 (`hogar') using "`c(sysdir_site)'../basesCIEP/INEGI/`enigh'/`enighanio'/concentrado.dta", ///
 	keepusing(factor tot_integ) keep(matched)
 capture rename factor_hog factor
 capture merge m:1 (`hogar') using "`c(sysdir_site)'../basesCIEP/INEGI/`enigh'/`enighanio'/concentrado.dta", ///
 	keepusing(smg) keep(matched)
-	
+
 * Salario minimo mensual *
 capture g sm = round(smg/90,.01)
 if _rc != 0 {
@@ -252,9 +255,9 @@ g double ing_anual = ing_tri*4
 egen double ing_unico = rsum(ing_1 ing_2 ing_3 ing_4 ing_5 ing_6)
 
 * Tipo de trabajo *
-g id_trabajo = "1" if clave >= "P001" & clave <= "P013"				// Ingresos del trabajo principal
-replace id_trabajo = "2" if clave >= "P014" & clave <= "P020"		// Ingresos del trabajo secundario
-replace id_trabajo = "0" if id_trabajo == ""						// Ingresos ajenos al trabajo
+g id_trabajo = "1" if clave >= "P001" & clave <= "P013"		// Ingresos del trabajo principal
+replace id_trabajo = "2" if clave >= "P014" & clave <= "P020"	// Ingresos del trabajo secundario
+replace id_trabajo = "0" if id_trabajo == ""			// Ingresos ajenos al trabajo
 
 
 
@@ -287,7 +290,8 @@ g double ing_agri = ing_anual if clave == "P071" | clave == "P072" | clave == "P
 *******************************************
 ** 1.2 Titulo IV De las Personas Fisicas **
 ** Capitulo I. DE LOS INGRESOS POR SALARIOS Y EN GENERAL POR LA PRESTACION DE UN SERVICIO PERSONAL SUBORDINADO **
-noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "Los ingresos reportados por el trabajo subordinado son netos de las retenciones de ISR a asalariados.}"
+noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y ///
+	"Los ingresos reportados por el trabajo subordinado son netos de las retenciones de ISR a asalariados.}"
 
 * b. Sueldos, Salarios o Jornal *
 g double ing_ss = ing_anual if clave == "P001" | clave == "P011" | clave == "P014" | clave == "P018"
@@ -488,7 +492,8 @@ parrafo de este articulo hasta por los montos en el establecidos.
 2.2. Zona B 423SMGAGC*365 = 423*63.77*365 = 9,845,769.15   */
 
 * a. Agricultura *
-noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "Se dedican exclusivamente a actividades agricolas si es mayor al 90%.}"
+noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y ///
+	"Se dedican exclusivamente a actividades agricolas si es mayor al 90%.}"
 g agri = ing_agri/ing_exclusivo > .9 & ing_agri > 0			// Dummy exclusivamente agricola
 g double exen_agri = min(40*sm*365,ing_agri) if agri == 0		// General
 replace exen_agri = min(423*sm*365,ing_agri) if agri == 1		// Exclusivamente agricola
@@ -611,7 +616,8 @@ XXV. Las indemnizaciones por danios que no excedan al valor de mercado del bien 
 se pagara el impuesto en los terminos de este Titulo. */
 
 * o. Indemnizaciones 3 *
-noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "Las indemnizaciones por da{c n~}os no se exceden al valor de mercado.}"
+noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y ///
+	"Las indemnizaciones por da{c n~}os no se exceden al valor de mercado.}"
 g double exen_indemn3 = ing_indemn3
 
 /* Articulo 93. No se pagara el impuesto sobre la renta por la obtencion de los siguientes ingresos: (...)
@@ -686,7 +692,9 @@ Articulo 109. Los contribuyentes a que se refiere esta Seccion, deberan calcular
 cargo en los terminos del articulo 152 de esta Ley. (...) */
 
 * u. Honorarios *
-noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "Se exentan el " %5.2fc (1-290533/475667)*100 "% de los servicios profesionales por remuneraciones (Censo Econ{c o'}mico 2014).}"
+noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y ///
+	"Se exentan el " %5.2fc (1-290533/475667)*100 ///
+	"% de los servicios profesionales por remuneraciones (Censo Econ{c o'}mico 2014).}"
 g double exen_honor = min((1-290533/475667)*ing_honor,ing_honor)
 
 * v. Actividades empresariales *
@@ -707,8 +715,10 @@ predial de dichos inmuebles correspondiente al anio de calendario o al periodo d
 ingresos en el ejercicio segun corresponda.*/
 
 * w. Rentas de bienes inmuebles *
-noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "Todos los ingresos por rentas optan por la opci{c o'}n de deducir el 35%.}"
-noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "Se supone un 2% del predial del total de los ingresos por rentas.}"
+noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y ///
+	"Todos los ingresos por rentas optan por la opci{c o'}n de deducir el 35%.}"
+noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y ///
+	"Se supone un 2% del predial del total de los ingresos por rentas.}"
 g double exen_rent = .35*ing_rent+.02*ing_rent
 
 
@@ -734,7 +744,8 @@ dividira entre la cantidad a la que se aplico la tarifa y el cociente sera la ta
 
 
 * x. Enajenacion de bienes *
-noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "Se aplica la tarifa que resulte conforme al articulo 152 para la enajenaci{c o'}n de bienes.}"
+noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y ///
+	"Se aplica la tarifa que resulte conforme al articulo 152 para la enajenaci{c o'}n de bienes.}"
 g double exen_enaje = min(0,ing_enaje)
 
 /* Articulo 93. No se pagara el impuesto sobre la renta por la obtencion de los siguientes ingresos: (...)
@@ -764,7 +775,8 @@ del area geografica del contribuyente elevado al anio. Por la utilidad que exced
 terminos de este Titulo. */
 
 * z. Enajenacion de bienes muebles *
-noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "Para la enajenaci{c o'}n de bienes muebles, nunca se sobrepasa el valor de adquisici{c o'}n de los bienes.}"
+noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y ///
+	"Para la enajenaci{c o'}n de bienes muebles, nunca se sobrepasa el valor de adquisici{c o'}n de los bienes.}"
 g double exen_enajem = min(3*sm*365,ing_enajem)
 
 
@@ -821,8 +833,8 @@ Las personas fisicas que unicamente obtengan ingresos acumulables de los seniala
 por considerar la retencion que se efectue en los terminos de este articulo como pago definitivo, siempre que dichos 
 ingresos correspondan al ejercicio de que se trate y no excedan de $100,000.00
 
-LIF 2014. Art. 21. Durente el ejercicio fiscal de 2014 la tasa de retencion anual a que se refieren los articulos 54 y 135 de la 
-LISR sera del 0.60%. 
+LIF 2014. Art. 21. Durente el ejercicio fiscal de 2014 la tasa de retencion anual a que se refieren los articulos 54 y 
+135 de la LISR sera del 0.60%. 
 
 RMF 2015.
 I.3.5.2. Las instituciones que componen el sistema financiero podran optar por efectuar la retencion a que se refiere 
@@ -857,7 +869,8 @@ obtenga el ingreso podra acreditar contra el impuesto que se determine en la del
 impuesto federal que le hubiera efectuado la persona que pago el premio en los terminos de este percepto. */
 
 * C. Loterias *
-noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "Las persons f{c i'}sicas deber{c a'}n acumular los ingreso por premios a sus dem{c a'}s ingresos.}"
+noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y ///
+	"Las persons f{c i'}sicas deber{c a'}n acumular los ingreso por premios a sus dem{c a'}s ingresos.}"
 g double exen_loter = min(0,ing_loter)
 
 
@@ -956,16 +969,17 @@ egen double exen_t4_cap9 = rsum(exen_autor exen_remesas exen_trabmenor exen_pres
 ************************************
 *** 6. IDENTIFICAR LA FORMALIDAD ***
 ************************************
-merge m:1 (`hogar' numren id_trabajo) using "`c(sysdir_site)'../basesCIEP/INEGI/`enigh'/`enighanio'/trabajos.dta", nogen ///
-	keepusing(htrab pres_* pago scian sinco subor)
+merge m:1 (`hogar' numren id_trabajo) using "`c(sysdir_site)'../basesCIEP/INEGI/`enigh'/`enighanio'/trabajos.dta", ///
+	nogen keepusing(htrab pres_* pago scian sinco subor)
 g trabajos = 1 if id_trabajo != ""
-merge m:1 (`hogar' numren) using "`c(sysdir_site)'../basesCIEP/INEGI/`enigh'/`enighanio'/poblacion.dta", nogen ///
-	keepusing(sexo edad trabajo_mp inscr_* inst_* atemed segpop)
-merge m:1 (`hogar') using "`c(sysdir_site)'../basesCIEP/INEGI/`enigh'/`enighanio'/concentrado.dta", nogen update replace ///
-	keepusing(factor tot_integ ubica_geo estim_alqu)
-merge m:1 (folioviv) using "`c(sysdir_site)'../basesCIEP/INEGI/`enigh'/`enighanio'/vivienda.dta", nogen ///
-	keepusing(tenencia renta)
-merge m:1 (`hogar' numren) using "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/deducciones.dta", nogen keepus(deduc_isr)
+merge m:1 (`hogar' numren) using "`c(sysdir_site)'../basesCIEP/INEGI/`enigh'/`enighanio'/poblacion.dta", ///
+	nogen keepusing(sexo edad trabajo_mp inscr_* inst_* atemed segpop)
+merge m:1 (`hogar') using "`c(sysdir_site)'../basesCIEP/INEGI/`enigh'/`enighanio'/concentrado.dta", ///
+	nogen update replace keepusing(factor tot_integ ubica_geo estim_alqu)
+merge m:1 (folioviv) using "`c(sysdir_site)'../basesCIEP/INEGI/`enigh'/`enighanio'/vivienda.dta", ///
+	nogen keepusing(tenencia renta)
+merge m:1 (`hogar' numren) using "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/deducciones.dta", ///
+	nogen keepus(deduc_isr)
 
 capture replace factor = factor_hog
 
@@ -988,7 +1002,8 @@ replace tipo_contribuyente = 2 if ((ing_t4_cap2 != 0 & ing_t4_cap2 != .) ///
 label define tipo_contribuyente 1 "Asalariado" 2 "Persona fisica"
 label values tipo_contribuyente tipo_contribuyente
 
-noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "Los derechohabientes del IMSS, ISSSTE, ISSSTE Estatal, PEMEX, Defensa, Marina o aqu{c e'}llos con prestaciones sociales son el Sector Formal.}"
+noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y ///
+	"Los derechohabientes del IMSS, ISSSTE, ISSSTE Estatal, PEMEX, ISSFAM o con prestaciones laborales son el sector formal.}"
 
 * IMSS *
 g byte formal = inst_1 == "1"
@@ -1021,7 +1036,8 @@ replace formal2 = 6 if formal2 == 0 & (pres_1 == "01" | pres_2 == "02" | pres_3 
 	| pres_18 == "18" | pres_19 == "19") //& (inscr_1 == "1")
 
 * Formal max *
-noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "Si se paga impuestos en el trabajo principal, tambi{c e'}n se paga en el trabajo secundario.}"
+noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y ///
+	"Si se paga impuestos en el trabajo principal, tambi{c e'}n se paga en el trabajo secundario.}"
 tempvar formal_max
 egen `formal_max' = max(formal), by(`hogar' numren)
 replace formal = `formal_max'
@@ -1130,7 +1146,9 @@ tabstat ing_t4_cap2 exen_t4_cap2 [aw=factor], stat(sum) f(%20.0fc) by(formal_dum
 tempname EMPRE
 matrix `EMPRE' = r(StatTotal)
 
-noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "El " %5.2fc (1-106302/581969)*100 "% de los servicios profesionales provienen de las personas f{c i'}sicas (Censo Econ{c o'}mico 2014).}"
+noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y ///
+	"El " %5.2fc (1-106302/581969)*100 ///
+	"% de los servicios profesionales provienen de las personas f{c i'}sicas (Censo Econ{c o'}mico 2014).}"
 replace ing_t4_cap2 = ing_t4_cap2*(`ServProf'+`ConsMedi'+`ConsDent'+`ConsOtro'+`EnfeDomi')*(1-106302/581969)/`EMPRE'[1,1]
 replace exen_t4_cap2 = ing_t4_cap2*(1-290533/475667)
 
@@ -1172,6 +1190,9 @@ noisily di ///
 	_col(57) in y %7.3fc `AnnInc'[1,1]/`PIBSCN'*100 ///
 	_col(66) in y %7.3fc `RemSal'/`PIBSCN'*100 ///
 	_col(77) in y %7.1fc (`AnnInc'[1,1]/`RemSal'-1)*100 "%"
+scalar RemSalSCNPIB = `RemSal'/`PIBSCN'*100
+scalar RemSalHHSPIB = `AnnInc'[1,1]/`PIBSCN'*100
+scalar giniRemSal = string(`gini_ing_sueldos',"%5.3f")
 noisily di ///
 	_col(04) in g "(+) Contribuc. sociales (empleadores)" ///
 	_col(44) in y "(" %5.3fc 0 ")" ///
@@ -1184,121 +1205,154 @@ noisily di ///
 	_col(57) in y %7.3fc 0 ///
 	_col(66) in y %7.3fc `SSImputada'/`PIBSCN'*100 ///
 	_col(77) in y %7.1fc (0/`SSImputada'-1)*100 "%"
+scalar CSSSCNPIB = (`SSEmpleadores'+`SSImputada')/`PIBSCN'*100
+scalar CSSHHSPIB = 0
+scalar giniCSS = string(0,"%5.3f")
 noisily di ///
 	_col(04) in g "(+) Ingreso mixto (laboral)" ///
 	_col(44) in y "(" %5.3fc `gini_ing_mixtoL' ")" ///
 	_col(57) in y %7.3fc `AnnInc'[1,2]*2/3/`PIBSCN'*100 ///
 	_col(66) in y %7.3fc `MixL'/`PIBSCN'*100 ///
 	_col(77) in y %7.1fc (`AnnInc'[1,2]*2/3/`MixL'-1)*100 "%"
+scalar MixLSCNPIB = `MixL'/`PIBSCN'*100
+scalar MixLHHSPIB = `AnnInc'[1,2]*2/3/`PIBSCN'*100
+scalar giniMixL = string(`gini_ing_mixtoL',"%5.3f")
 noisily di ///
 	_col(04) in g "(+) Impuestos producci{c o'}n (laboral)" ///
 	_col(44) in y "(" %5.3fc 0 ")" ///
 	_col(57) in y %7.3fc 0 ///
 	_col(66) in y %7.3fc `ImpNetProduccionL'/`PIBSCN'*100 ///
 	_col(77) in y %7.1fc (0/`ImpNetProduccionL'-1)*100 "%"
+scalar ImpProduccionSCNPIB = `ImpNetProduccionL'/`PIBSCN'*100
+scalar ImpProduccionHHSPIB = 0
+scalar giniImpProduccion = string(0,"%5.3f")
 noisily di in g _dup(84) "-"
 noisily di ///
 	_col(04) in g "{bf:(=) Ingreso laboral" ///
 	_col(44) in y "(" %5.3fc `gini_ing_laboral' ")" ///
 	_col(57) in y %7.3fc (`AnnInc'[1,1]+`AnnInc'[1,2]*2/3)/`PIBSCN'*100 ///
 	_col(66) in y %7.3fc (`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'+`ImpNetProduccionL')/`PIBSCN'*100 ///
-	_col(77) in y %7.1fc ((`AnnInc'[1,1]+`AnnInc'[1,2]*2/3)/(`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'+`ImpNetProduccionL')-1)*100 "%}"
+	_col(77) in y %7.1fc ((`AnnInc'[1,1]+`AnnInc'[1,2]*2/3)/(`RemSal'+`SSEmpleadores' ///
+		+`SSImputada'+`MixL'+`ImpNetProduccionL')-1)*100 "%}"
+scalar IngLabSCNPIB = (`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'+`ImpNetProduccionL')/`PIBSCN'*100
+scalar IngLabHHSPIB = (`AnnInc'[1,1]+`AnnInc'[1,2]*2/3)/`PIBSCN'*100
+scalar giniIngLab = string(`gini_ing_laboral',"%5.3f")
 noisily di ///
 	_col(04) in g "(+) Sociedades e ISFLSH" ///
 	_col(44) in y "(" %5.3fc `gini_ing_capital' ")" ///
 	_col(57) in y %7.3fc `AnnInc'[1,5]/`PIBSCN'*100 ///
 	_col(66) in y %7.3fc `ExNOpSoc'/`PIBSCN'*100 ///
 	_col(77) in y %7.1fc (`AnnInc'[1,5]/`ExNOpSoc'-1)*100 "%"
+scalar SocSCNPIB = `ExNOpSoc'/`PIBSCN'*100
+scalar SocHHSPIB = `AnnInc'[1,5]/`PIBSCN'*100
+scalar giniSoc = string(`gini_ing_capital',"%5.3f")
 noisily di ///
 	_col(04) in g "(+) Alquiler imputado" ///
 	_col(44) in y "(" %5.3fc `gini_ing_estim_alqu' ")" ///
 	_col(57) in y %7.3fc `AnnInc'[1,4]/`PIBSCN'*100 ///
 	_col(66) in y %7.3fc `ExNOpHog'/`PIBSCN'*100 ///
 	_col(77) in y %7.1fc (`AnnInc'[1,4]/`ExNOpHog'-1)*100 "%"
+scalar AlqSCNPIB = `ExNOpHog'/`PIBSCN'*100
+scalar AlqHHSPIB = `AnnInc'[1,4]/`PIBSCN'*100
+scalar giniAlq = string(`gini_ing_estim_alqu',"%5.3f")
 noisily di ///
 	_col(04) in g "(+) Ingreso mixto (capital)" ///
 	_col(44) in y "(" %5.3fc `gini_ing_mixtoK' ")" ///
 	_col(57) in y %7.3fc (`AnnInc'[1,2]*1/3)/`PIBSCN'*100 ///
 	_col(66) in y %7.3fc `MixKN'/`PIBSCN'*100  ///
 	_col(77) in y %7.1fc ((`AnnInc'[1,2]*1/3)/`MixKN'-1)*100 "%"
+scalar MixKSCNPIB = `MixKN'/`PIBSCN'*100
+scalar MixKHHSPIB = (`AnnInc'[1,2]*1/3)/`PIBSCN'*100
+scalar giniMixK = string(`gini_ing_mixtoK',"%5.3f")
 noisily di ///
 	_col(04) in g "(+) Impuestos producci{c o'}n (capital)" ///
 	_col(44) in y "(" %5.3fc 0 ")" ///
 	_col(57) in y %7.3fc 0 ///
 	_col(66) in y %7.3fc `ImpNetProduccionK'/`PIBSCN'*100 ///
 	_col(77) in y %7.1fc (0/`ImpNetProduccionK'-1)*100 "%"
+scalar ImpProduccionKSCNPIB = `ImpNetProduccionK'/`PIBSCN'*100
+scalar ImpProduccionKHHSPIB = 0
+scalar giniImpProduccionK = string(0,"%5.3f")
 noisily di ///
 	_col(04) in g "(+) Impuestos a los productos" ///
 	_col(44) in y "(" %5.3fc 0 ")" ///
 	_col(57) in y %7.3fc 0 ///
 	_col(66) in y %7.3fc `ImpNetProductos'/`PIBSCN'*100 ///
 	_col(77) in y %7.1fc (0/`ImpNetProductos'-1)*100 "%"
-
+scalar ImpProductosSCNPIB = `ImpNetProductos'/`PIBSCN'*100
+scalar ImpProductosHHSPIB = 0
+scalar giniImpProductos = string(0,"%5.3f")
 noisily di in g _dup(84) "-"
 noisily di ///
 	_col(04) in g "{bf:(=) Producto Interno Neto" ///
 	_col(44) in y "(" %5.3fc `gini_ing_total' ")" ///
 	_col(57) in y %7.3fc `AnnInc'[1,3]/`PIBSCN'*100 ///
-	_col(66) in y %7.3fc (`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'+`ImpNetProduccionL'+`ExNOpSoc'+`ExNOpHog'+`MixKN'+`ImpNetProduccionK'+`ImpNetProductos')/`PIBSCN'*100 ///
-	_col(77) in y %7.1fc (`AnnInc'[1,3]/(`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'+`ImpNetProduccionL'+`ExNOpSoc'+`ExNOpHog'+`MixKN'+`ImpNetProduccionK'+`ImpNetProductos')-1)*100 "%}"
-
+	_col(66) in y %7.3fc (`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'+`ImpNetProduccionL' ///
+		+`ExNOpSoc'+`ExNOpHog'+`MixKN'+`ImpNetProduccionK'+`ImpNetProductos')/`PIBSCN'*100 ///
+	_col(77) in y %7.1fc (`AnnInc'[1,3]/(`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'+`ImpNetProduccionL' ///
+		+`ExNOpSoc'+`ExNOpHog'+`MixKN'+`ImpNetProduccionK'+`ImpNetProductos')-1)*100 "%}"
+scalar PINSCNPIB = (`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'+`ImpNetProduccionL'+`ExNOpSoc'+`ExNOpHog' ///
+	+`MixKN'+`ImpNetProduccionK'+`ImpNetProductos')/`PIBSCN'*100
+scalar PINHHSPIB = `AnnInc'[1,3]/`PIBSCN'*100
+scalar giniPIN = string(`gini_ing_total',"%5.3f")
 
 
 ********************************************************************************
 *** 7. RECUPERAR LOS INGRESOS BRUTOS DE LOS INGRESOS POR TRABAJO SUBORDINADO ***
 ********************************************************************************
-/* IMSS, tasas efectivas (Informe al ejecutivo federal y al congreos de la union 
-	la situacion financiera y los riesgos del IMSS, Anexo A, Cuadro A.4 , 2017) */
-local TriesgoP = 1.884			// Resgos de trabajo, patron
+/*IMSS, tasas efectivas (Informe al ejecutivo federal y al congreso de la union 
+	la situacion financiera y los riesgos del IMSS 2018-2019, Anexo A, Cuadro A.4)*/
+local TriesgoP = 1.884		// Riesgos de trabajo, patron
 
-local TgmasgT = 0.436			// Asegurados, trabajador
-local TgmasgP = 5.934			// Asegurados, patron
-local TgmasgF = 3.396			// Asegurados, federacion
+local TgmasgT = 0.436		// Enfermedad y maternidad, asegurados, trabajador
+local TgmasgP = 5.892		// Enfermedad y maternidad, asegurados, patron
+local TgmasgF = 3.476		// Enfermedad y maternidad, asegurados, federacion
 
-local TgmpenT = 0.375			// Pensionados, trabajador
-local TgmpenP = 1.050			// Pensionados, patron
-local TgmpenF = 0.075			// Pensionados, federacion
+local TgmpenT = 0.375		// Enfermedad y maternidad, pensionados, trabajador
+local TgmpenP = 1.050		// Enfermedad y maternidad, pensionados, patron
+local TgmpenF = 0.075		// Enfermedad y maternidad, pensionados, federacion
 
-local TinvyvidaT = 0.625		// Invalidez y vida, trabajador
-local TinvyvidaP = 1.750		// Invalidez y vida, patron
-local TinvyvidaF = 0.125		// Invalidez y vida, federacion
+local TinvyvidaT = 0.625	// Invalidez y vida, trabajador
+local TinvyvidaP = 1.750	// Invalidez y vida, patron
+local TinvyvidaF = 0.125	// Invalidez y vida, federacion
 
-local TcestyvejT = 1.125		// Cesantia y vejez, trabajador
-local TcestyvejP = 5.150		// Cesantia y vejez, patron
-local TcestyvejF = 1.650		// Cesantia y vejez, federacion
+local TcestyvejT = 1.125	// Retiro, cesantia en edad avanzada y vejez, trabajador
+local TcestyvejP = 5.150	// Retiro, cesantia en edad avanzada y vejez, patron
+local TcestyvejF = 1.639	// Retiro, cesantia en edad avanzada y vejez, federacion
 
-local TguardP = 1.000			// Guarderias y prestaciones sociales, patron
+local TguardP = 1.000		// Guarderias y prestaciones sociales, patron
 
-local TcuotaSocIMSSF = 6.334	// Cuota social, federacion
+local TcuotaSocIMSSF = 6.410	// Cuota social, federacion
 
 * ISSSTE *
-local TfondomedT = 2.750		// Salud trabajadores activos, trabajador
-local TfondomedP = 7.375		// Salud trabajadores activos, patron
-local TfondomedF = 3.090		// Salud trabajadores activos, federacion
+local TfondomedT = 2.750	// Salud trabajadores activos, trabajador
+local TfondomedP = 7.375	// Salud trabajadores activos, patron
+local TfondomedF = 3.090	// Salud trabajadores activos, federacion
 
-local TpresperT = 0.625			// Invalidez y vida, trabajador
-local TpresperP = 0.625			// Invalidez y vida, patron
+local TpresperT = 0.625		// Invalidez y vida, trabajador
+local TpresperP = 0.625		// Invalidez y vida, patron
 
-local TservsocculT =  0.500		// Servicios sociales y culturales, trabajador
-local TservsocculP = 0.500		// Servicios sociales y culturales, patron
+local TservsocculT =  0.500	// Servicios sociales y culturales, trabajador
+local TservsocculP = 0.500	// Servicios sociales y culturales, patron
 
-local TsegriesgT = 0.000		// Riesgo de trabajo, trabajador
-local TsegriesgP = 0.750		// Riesgo de trabajo, patron
+local TsegriesgT = 0.000	// Riesgo de trabajo, trabajador
+local TsegriesgP = 0.750	// Riesgo de trabajo, patron
 
-local TpensjubT = 0.625			// Salud pensionados, trabajador
-local TpensjubP = 0.720			// Salud pensionados, patron
+local TpensjubT = 0.625		// Salud pensionados, trabajador
+local TpensjubP = 0.720		// Salud pensionados, patron
 
-local TadmingenT = 6.125		// Retiro, cesantia en edad avanzada y vejez, trabajador
-local TadmingenP = 5.175		// Retiro, cesantia en edad avanzada y vejez, patron
-local TadmingenF = 1.220		// Retiro, cesantia en edad avanzada y vejez, federacion
+local TadmingenT = 6.125	// Retiro, cesantia en edad avanzada y vejez, trabajador
+local TadmingenP = 5.175	// Retiro, cesantia en edad avanzada y vejez, patron
+local TadmingenF = 1.220	// Retiro, cesantia en edad avanzada y vejez, federacion
 
-local TfvivT = 0.000			// Vivienda, trabajador
-local TfvivP = 5.000			// Vivienda, patron
+local TfvivT = 0.000		// Vivienda, trabajador
+local TfvivP = 5.000		// Vivienda, patron
 
-local TcuotaSocISSSTEF = 13.9		// Cuota social, federacion
+local TcuotaSocISSSTEF = 13.9	// Cuota social, federacion
 
 * INFONAVIT *
-local Tinfonavit = 5			// Infonavit
+local Tinfonavit = 5		// Infonavit
+local Tfovissste = 5		// FOVISSSTE
 
 
 ************************************
@@ -1340,6 +1394,9 @@ g double cestyvejF = sbc*`TcestyvejF'/100*360 if (formal == 1 | formal == 3 | fo
 
 g double cuotasocimssF = sbc*`TcuotaSocIMSSF'/100*360 if (formal == 1 | formal == 3 | formal == 4 | formal == 6) & sbc/`smdf' <= 15
 
+* INFONAVIT *
+g double infonavit = sbc*`Tinfonavit'/100*360 if (formal == 1 | formal == 3 | formal == 4 | formal == 6)
+
 * ISSSTE *
 g double fondomedT = `TfondomedT'/100*sbc*360 if (formal == 2 | formal == 5)
 g double fondomedP = `TfondomedP'/100*sbc*360 if (formal == 2 | formal == 5)
@@ -1351,8 +1408,8 @@ g double presperP = `TpresperP'/100*sbc*360 if (formal == 2 | formal == 5)
 g double servsocculT = `TservsocculT'/100*sbc*360 if (formal == 2 | formal == 5)
 g double servsocculP = `TservsocculP'/100*sbc*360 if (formal == 2 | formal == 5)
 
-g double segriesgT = `TsegriesgT'/100*sbc*360 if (formal == 2 | formal == 5)
-g double segriesgP = `TsegriesgP'/100*sbc*360 if (formal == 2 | formal == 5)
+g double segriesgT = `TsegriesgT'/100*ing_ss if (formal == 2 | formal == 5)
+g double segriesgP = `TsegriesgP'/100*ing_ss if (formal == 2 | formal == 5)
 
 g double pensjubT = `TpensjubT'/100*sbc*360 if (formal == 2 | formal == 5)
 g double pensjubP = `TpensjubP'/100*sbc*360 if (formal == 2 | formal == 5)
@@ -1364,10 +1421,11 @@ g double admingenF = `TadmingenF'/100*sbc*360 if (formal == 2 | formal == 5)
 g double fvivT = `TfvivT'/100*sbc*360 if (formal == 2 | formal == 5)
 g double fvivP = `TfvivP'/100*sbc*360 if (formal == 2 | formal == 5)
 
-g double cuotasocisssteF = `smdf'*`TcuotaSocISSSTEF'/100*360 if (formal2 == 2 | formal == 5)
+g double cuotasocisssteF = 2.1879*26.45*`TcuotaSocISSSTEF'/100*360 if (formal2 == 2 | formal == 5)
 
-* INFONAVIT *
-g double infonavit = sbc*`Tinfonavit'/100*360 if formal != 0
+* FOVISSSTE *
+g double fovisssteP = sbc*`Tfovissste'/100*360 if (formal == 2 | formal == 5)
+
 
 
 ******************************************
@@ -1458,30 +1516,48 @@ noisily di ///
 	_col(57) in y %7.3fc `SBCIMSS'[1,1]/`PIBSCN'*100 ///
 	_col(66) in y %7.3fc `CuotasIMSS'/`PIBSCN'*100 ///
 	_col(77) in y %7.1fc (`SBCIMSS'[1,1]/`CuotasIMSS'-1)*100 "%"
+scalar IMSSCSSSCNPIB = `CuotasIMSS'/`PIBSCN'*100
+scalar IMSSCSSHHSPIB = `SBCIMSS'[1,1]/`PIBSCN'*100
+scalar giniIMSSCSS = string(`gini_cuotasIMSS',"%5.3f")
 noisily di ///
 	_col(04) in g "(+) ISSSTE " ///
 	_col(44) in y "(" %5.3fc `gini_cuotasISSSTE' ")" ///
 	_col(57) in y %7.3fc `SBCISSSTE'[1,1]/`PIBSCN'*100 ///
 	_col(66) in y %7.3fc `Cuotas_ISSSTE'/`PIBSCN'*100 ///
 	_col(77) in y %7.1fc (`SBCISSSTE'[1,1]/`Cuotas_ISSSTE'-1)*100 "%"
+scalar ISSSTECSSSCNPIB = `Cuotas_ISSSTE'/`PIBSCN'*100
+scalar ISSSTECSSHHSPIB = `SBCISSSTE'[1,1]/`PIBSCN'*100
+scalar giniISSSTECSS = string(`gini_cuotasISSSTE',"%5.3f")
 noisily di ///
 	_col(04) in g "(+) Federaci{c o'}n " ///
 	_col(44) in y "(" %5.3fc `gini_cuotasFED' ")" ///
 	_col(57) in y %7.3fc `SBCFED'[1,1]/`PIBSCN'*100 ///
 	_col(66) in y %7.3fc `SSFederacion'/`PIBSCN'*100 ///
 	_col(77) in y %7.1fc (`SBCFED'[1,1]/`SSFederacion'-1)*100 "%"
+scalar FEDCSSSCNPIB = `SSFederacion'/`PIBSCN'*100
+scalar FEDCSSHHSPIB = `SBCFED'[1,1]/`PIBSCN'*100
+scalar giniFEDCSS = string(`gini_cuotasFED',"%5.3f")
 noisily di ///
 	_col(04) in g "(+) Otros " ///
 	_col(44) in y "(" %5.3fc `gini_cuotasOTR' ")" ///
 	_col(57) in y %7.3fc (`SBCOTR'[1,1]+`SBCINF'[1,1])/`PIBSCN'*100 ///
-	_col(66) in y %7.3fc ((`SSEmpleadores'+`SSImputada')-`SSFederacion'-`SSImputada'-`Cuotas_ISSSTE'-`CuotasIMSS')/`PIBSCN'*100 ///
-	_col(77) in y %7.1fc ((`SBCOTR'[1,1]+`SBCINF'[1,1])/((`SSEmpleadores'+`SSImputada')-`SSFederacion'-`SSImputada'-`Cuotas_ISSSTE'-`CuotasIMSS')-1)*100 "%"
+	_col(66) in y %7.3fc ((`SSEmpleadores'+`SSImputada')-`SSFederacion'-`SSImputada' ///
+		-`Cuotas_ISSSTE'-`CuotasIMSS')/`PIBSCN'*100 ///
+	_col(77) in y %7.1fc ((`SBCOTR'[1,1]+`SBCINF'[1,1])/((`SSEmpleadores'+`SSImputada') ///
+		-`SSFederacion'-`SSImputada'-`Cuotas_ISSSTE'-`CuotasIMSS')-1)*100 "%"
+scalar OTROCSSSCNPIB = ((`SSEmpleadores'+`SSImputada')-`SSFederacion'-`SSImputada' ///
+	-`Cuotas_ISSSTE'-`CuotasIMSS')/`PIBSCN'*100
+scalar OTROCSSHHSPIB = (`SBCOTR'[1,1]+`SBCINF'[1,1])/`PIBSCN'*100
+scalar giniOTROCSS = string(`gini_cuotasOTR',"%5.3f")
 noisily di ///
 	_col(04) in g "(+) Imputada " ///
 	_col(44) in y "(" %5.3fc `gini_cuotasIMP' ")" ///
 	_col(57) in y %7.3fc (`SBCIMP'[1,1]+`SBCINF2'[1,1])/`PIBSCN'*100 ///
 	_col(66) in y %7.3fc `SSImputada'/`PIBSCN'*100 ///
 	_col(77) in y %7.1fc ((`SBCIMP'[1,1]+`SBCINF2'[1,1])/`SSImputada'-1)*100 "%"
+scalar IMPCSSSCNPIB = `SSImputada'/`PIBSCN'*100
+scalar IMPCSSHHSPIB = (`SBCIMP'[1,1]+`SBCINF2'[1,1])/`PIBSCN'*100
+scalar giniIMPCSS = string(`gini_cuotasIMP',"%5.3f")
 noisily di in g _dup(84) "-"
 noisily di ///
 	_col(04) in g "{bf:(=) Cuotas a la Seguridad Social" ///
@@ -1489,6 +1565,9 @@ noisily di ///
 	_col(57) in y %7.3fc (`SBCTOTAL'[1,1]+`SBCINF'[1,1]+`SBCINF2'[1,1])/`PIBSCN'*100 ///
 	_col(66) in y %7.3fc (`SSEmpleadores'+`SSImputada')/`PIBSCN'*100 ///
 	_col(77) in y %7.1fc ((`SBCTOTAL'[1,1]+`SBCINF'[1,1]+`SBCINF2'[1,1])/(`SSEmpleadores'+`SSImputada')-1)*100 "%" "}"
+scalar CSSESCNPIB = (`SSEmpleadores'+`SSImputada')/`PIBSCN'*100
+scalar CSSEHHSPIB = (`SBCTOTAL'[1,1]+`SBCINF'[1,1]+`SBCINF2'[1,1])/`PIBSCN'*100
+scalar giniCSSE = string(`gini_cuotasTPF',"%5.3f")
 
 
 **********************************************
@@ -1624,18 +1703,27 @@ noisily di ///
 	_col(57) in y %7.3fc `GROSS'[1,1]/`PIBSCN'*100 ///
 	_col(66) in y %7.3fc (`RemSal'+`SSEmpleadores'+`SSImputada')/`PIBSCN'*100 ///
 	_col(77) in y %7.1fc (`GROSS'[1,1]/(`RemSal'+`SSEmpleadores'+`SSImputada')-1)*100 "%"
+scalar YBSCNPIB = (`RemSal'+`SSEmpleadores'+`SSImputada')/`PIBSCN'*100
+scalar YBHHSPIB = `GROSS'[1,1]/`PIBSCN'*100
+scalar giniYB = string(`gini_ing_subor',"%5.3f")
 noisily di ///
 	_col(04) in g "ISR retenciones a asalariados" ///
 	_col(44) in y "(" %5.3fc `gini_isrE' ")" ///
 	_col(57) in y %7.3fc `GROSS'[1,2]/`PIBSCN'*100 ///
 	_col(66) in y %7.3fc `ISRSalarios'/`PIBSCN'*100 ///
 	_col(77) in y %7.1fc (`GROSS'[1,2]/`ISRSalarios'-1)*100 "%"
+scalar ISRASSCNPIB = `ISRSalarios'/`PIBSCN'*100
+scalar ISRASHHSPIB = `GROSS'[1,2]/`PIBSCN'*100
+scalar giniISRAS = string(`gini_isrE',"%5.3f")
 noisily di ///
 	_col(04) in g "Subsidio al empleo" ///
 	_col(44) in y "(" %5.3fc `gini_SE' ")" ///
 	_col(57) in y %7.3fc `GROSS'[1,3]/`PIBSCN'*100  ///
 	_col(66) in y %7.3fc `SubsidioEmpleo'/`PIBSCN'*100 ///
 	_col(77) in y %7.1fc (`GROSS'[1,3]/`SubsidioEmpleo'-1)*100 "%"
+scalar SESCNPIB = `SubsidioEmpleo'/`PIBSCN'*100
+scalar SEHHSPIB = `GROSS'[1,3]/`PIBSCN'*100
+scalar giniSE = string(`gini_SE',"%5.3f")
 
 egen double ing_cola = rsum(ing_subor ing_mixto ing_capital)
 
@@ -1910,6 +1998,11 @@ local TaltimirCap = (`ExNOpSoc'/*-`IMSSpropio'-`ISSSTEpropio'-`CFEpropio'- ///
 local TaltimirHouse = `ExNOpHog'/`ALTIMIR0'[1,4]
 local TaltimirROWTrans = `ROWTrans'/`ALTIMIR0'[1,5]
 
+scalar asisREMFDIF = string(`TaltimirSal',"%6.3f")
+scalar asisMIXFDIF = string(`TaltimirSelf',"%6.3f")
+scalar asisSOCFDIF = string(`TaltimirCap',"%6.3f")
+scalar asisALQFDIF = string(`TaltimirHouse',"%6.3f")
+
 if "`altimir'" == "yes" {
 	noisily di in g "   Altimir: " in y "`altimir'"
 	replace ing_estim_alqu = ing_estim_alqu*`TaltimirHouse'
@@ -1982,7 +2075,8 @@ predict double prob_renta if e(sample)
 gsort -prob_renta -ing_anual
 g double ing_renta_accum = sum(ing_rent*factor_cola)
 
-noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "Se hace el cut-off en la formalidad de alquileres en " %15.0fc `acum_arrenda'/.65 in g " (SAT PF 2015).}"
+noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y ///
+	"Se hace el cut-off en la formalidad de alquileres en " %15.0fc `acum_arrenda'/.65 in g " (SAT PF 2015).}"
 g formal_renta = ing_renta_accum <= `acum_arrenda'/.65 & prob_renta != .	// SAT m{c a'}s abierto
 
 noisily di _newline _col(04) in g "{bf:SUPUESTO: " ///
@@ -2113,18 +2207,27 @@ noisily di ///
 	_col(57) in y %7.3fc `RESTAX'[1,1]/`PIBSCN'*100 ///
 	_col(66) in y %7.3fc `ISRSalarios'/`PIBSCN'*100 ///
 	_col(77) in y %7.1fc (`RESTAX'[1,1]/`ISRSalarios'-1)*100 "%"
+scalar ISRASFSCNPIB = `ISRSalarios'/`PIBSCN'*100  
+scalar ISRASFHHSPIB = `RESTAX'[1,1]/`PIBSCN'*100
+scalar giniISRASF = string(`gini_ISR__asalariados',"%5.3f")
 noisily di ///
 	_col(04) in g "ISR personas f{c i'}sicas" ///
 	_col(44) in y "(" %5.3fc `gini_ISR__PF' ")" ///
 	_col(57) in y %7.3fc `RESTAX'[1,2]/`PIBSCN'*100 ///
 	_col(66) in y %7.3fc `ISRFisicas'/`PIBSCN'*100 ///
 	_col(77) in y %7.1fc (`RESTAX'[1,2]/`ISRFisicas'-1)*100 "%"
+scalar ISRPFFSCNPIB = `ISRFisicas'/`PIBSCN'*100
+scalar ISRPFFHHSPIB = `RESTAX'[1,2]/`PIBSCN'*100
+scalar giniISRPFF = string(`gini_ISR__PF',"%5.3f")
 noisily di ///
 	_col(04) in g "ISR personas morales" ///
 	_col(44) in y "(" %5.3fc `gini_ISR__PM' ")" ///
 	_col(57) in y %7.3fc `RESTAX'[1,3]/`PIBSCN'*100 ///
 	_col(66) in y %7.3fc `ISRMorales'/`PIBSCN'*100 ///
 	_col(77) in y %7.1fc (`RESTAX'[1,3]/`ISRMorales'-1)*100 "%"
+scalar ISRPMFSCNPIB = `ISRMorales'/`PIBSCN'*100
+scalar ISRPMFHHSPIB = `RESTAX'[1,3]/`PIBSCN'*100
+scalar giniISRPMF = string(`gini_ISR__PM',"%5.3f")
 noisily di in g _dup(84) "-"
 noisily di ///
 	_col(04) in g "ISR total" ///
@@ -2132,6 +2235,9 @@ noisily di ///
 	_col(57) in y %7.3fc (`RESTAX'[1,1]+`RESTAX'[1,2]+`RESTAX'[1,3])/`PIBSCN'*100 ///
 	_col(66) in y %7.3fc (`ISRSalarios'+`ISRFisicas'+`ISRMorales')/`PIBSCN'*100 ///
 	_col(77) in y %7.1fc ((`RESTAX'[1,1]+`RESTAX'[1,2]+`RESTAX'[1,3])/(`ISRSalarios'+`ISRFisicas'+`ISRMorales')-1)*100 "%"
+scalar ISRFSCNPIB = (`ISRSalarios'+`ISRFisicas'+`ISRMorales')/`PIBSCN'*100
+scalar ISRFHHSPIB = (`RESTAX'[1,1]+`RESTAX'[1,2]+`RESTAX'[1,3])/`PIBSCN'*100
+scalar giniISRF = string(`gini_ISR',"%5.3f")
 
 
 *********************************
@@ -2198,11 +2304,11 @@ Gini gasto_anualDepreciacion, hogar(`hogar') individuo(numren) factor(factor)
 local gini_gasto_anualDepreciacion = r(gini_gasto_anualDepreciacion)
 
 * Totales *
-egen double ing_bruto_tot = rsum(ing_subor ing_mixto ing_capital ing_estim_alqu)
-label var ing_bruto_tot "Ingreso total bruto"
+egen double ingbrutotot = rsum(ing_subor ing_mixto ing_capital ing_estim_alqu)
+label var ingbrutotot "Ingreso total bruto"
 
-Gini ing_bruto_tot, hogar(`hogar') individuo(numren) factor(factor)
-local gini_ing_bruto_tot = r(gini_ing_bruto_tot)
+Gini ingbrutotot, hogar(`hogar') individuo(numren) factor(factor)
+local gini_ingbrutotot = r(gini_ingbrutotot)
 
 * Results *
 tabstat ing_subor ing_mixto ing_capital ing_estim_alqu gasto_anualDepreciacion [aw=factor_cola], stat(sum) f(%20.0fc) save by(formal)	
@@ -2219,46 +2325,84 @@ noisily di ///
 	_col(04) in g "(+) Rem. de asal. + CSS + Imp. Producc" ///
 	_col(44) in y "(" %5.3fc `gini_ing_subor' ")" ///
 	_col(57) in y %7.3fc `ALTIMIR'[1,1]/`PIBSCN'*100 ///
-	_col(66) in y %7.3fc (`RemSal'+`SSEmpleadores'+`SSImputada'+`ImpNetProduccionL'*(`RemSal'+`SSEmpleadores'+`SSImputada')/(`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'))/`PIBSCN'*100 ///
+	_col(66) in y %7.3fc (`RemSal'+`SSEmpleadores'+`SSImputada'+`ImpNetProduccionL'*(`RemSal' ///
+		+`SSEmpleadores'+`SSImputada')/(`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'))/`PIBSCN'*100 ///
 	_col(77) in y %7.3fc `TaltimirSal'
+scalar REMFSCNPIB = (`RemSal'+`SSEmpleadores'+`SSImputada'+`ImpNetProduccionL'*(`RemSal' ///
+		+`SSEmpleadores'+`SSImputada')/(`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'))/`PIBSCN'*100
+scalar REMFHHSPIB = `ALTIMIR'[1,1]/`PIBSCN'*100
+scalar giniREMF = string(`gini_ing_subor',"%5.3f")
 noisily di ///
 	_col(04) in g "(+) Ingreso mixto + Impuestos" ///
 	_col(44) in y "(" %5.3fc `gini_ing_mixto' ")" ///
 	_col(57) in y %7.3fc `ALTIMIR'[1,2]/`PIBSCN'*100 ///
-	_col(66) in y %7.3fc (`MixL'+`MixKN'+`ImpNetProduccionL'*(`MixL')/(`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL')+`ImpNetProduccionK'*(`MixKN')/(`MixKN'+`ExNOpSoc'+`ExNOpHog')+`ImpNetProductos'*(`MixKN')/(`MixKN'+`ExNOpSoc'+`ExNOpHog'))/`PIBSCN'*100 ///
+	_col(66) in y %7.3fc (`MixL'+`MixKN'+`ImpNetProduccionL'*(`MixL')/(`RemSal' ///
+		+`SSEmpleadores'+`SSImputada'+`MixL')+`ImpNetProduccionK'*(`MixKN')/(`MixKN' ///
+		+`ExNOpSoc'+`ExNOpHog')+`ImpNetProductos'*(`MixKN')/(`MixKN'+`ExNOpSoc'+`ExNOpHog'))/`PIBSCN'*100 ///
 	_col(77) in y %7.3fc `TaltimirSelf'
+scalar MIXFSCNPIB = (`MixL'+`MixKN'+`ImpNetProduccionL'*(`MixL')/(`RemSal' ///
+		+`SSEmpleadores'+`SSImputada'+`MixL')+`ImpNetProduccionK'*(`MixKN')/(`MixKN' ///
+		+`ExNOpSoc'+`ExNOpHog')+`ImpNetProductos'*(`MixKN')/(`MixKN'+`ExNOpSoc'+`ExNOpHog'))/`PIBSCN'*100
+scalar MIXFHHSPIB = `ALTIMIR'[1,2]/`PIBSCN'*100
+scalar giniMIXF = string(`gini_ing_mixto',"%5.3f")
 noisily di ///
 	_col(04) in g "(+) Sociedades e ISFLSH + Impuestos" ///
 	_col(44) in y "(" %5.3fc `gini_ing_capital' ")" ///
 	_col(57) in y %7.3fc `ALTIMIR'[1,3]/`PIBSCN'*100 ///
-	_col(66) in y %7.3fc (`ExNOpSoc'+`ImpNetProduccionK'*(`ExNOpSoc')/(`MixKN'+`ExNOpSoc'+`ExNOpHog')+`ImpNetProductos'*(`ExNOpSoc')/(`MixKN'+`ExNOpSoc'+`ExNOpHog'))/`PIBSCN'*100 ///
+	_col(66) in y %7.3fc (`ExNOpSoc'+`ImpNetProduccionK'*(`ExNOpSoc')/(`MixKN' ///
+		+`ExNOpSoc'+`ExNOpHog')+`ImpNetProductos'*(`ExNOpSoc')/(`MixKN'+`ExNOpSoc'+`ExNOpHog'))/`PIBSCN'*100 ///
 	_col(77) in y %7.3fc `TaltimirCap'
+scalar SOCFSCNPIB = (`ExNOpSoc'+`ImpNetProduccionK'*(`ExNOpSoc')/(`MixKN' ///
+		+`ExNOpSoc'+`ExNOpHog')+`ImpNetProductos'*(`ExNOpSoc')/(`MixKN'+`ExNOpSoc'+`ExNOpHog'))/`PIBSCN'*100
+scalar SOCFHHSPIB = `ALTIMIR'[1,3]/`PIBSCN'*100
+scalar giniSOCF = string(`gini_ing_capital',"%5.3f")
 noisily di ///
 	_col(04) in g "(+) Alquiler imputado + Impuestos" ///
 	_col(44) in y "(" %5.3fc `gini_ing_estim_alqu' ")" ///
 	_col(57) in y %7.3fc `ALTIMIR'[1,4]/`PIBSCN'*100 ///
-	_col(66) in y %7.3fc (`ExNOpHog'+`ImpNetProduccionK'*(`ExNOpHog')/(`MixKN'+`ExNOpSoc'+`ExNOpHog')+`ImpNetProductos'*(`ExNOpHog')/(`MixKN'+`ExNOpSoc'+`ExNOpHog'))/`PIBSCN'*100 ///
+	_col(66) in y %7.3fc (`ExNOpHog'+`ImpNetProduccionK'*(`ExNOpHog')/(`MixKN' ///
+		+`ExNOpSoc'+`ExNOpHog')+`ImpNetProductos'*(`ExNOpHog')/(`MixKN'+`ExNOpSoc'+`ExNOpHog'))/`PIBSCN'*100 ///
 	_col(77) in y %7.3fc `TaltimirHouse'
+scalar ALQFSCNPIB = (`ExNOpHog'+`ImpNetProduccionK'*(`ExNOpHog')/(`MixKN' ///
+		+`ExNOpSoc'+`ExNOpHog')+`ImpNetProductos'*(`ExNOpHog')/(`MixKN'+`ExNOpSoc'+`ExNOpHog'))/`PIBSCN'*100
+scalar ALQFHHSPIB = `ALTIMIR'[1,4]/`PIBSCN'*100
+scalar giniALQF = string(`gini_ing_estim_alqu',"%5.3f")
 noisily di in g _dup(83) "-"
 noisily di ///
 	_col(04) in g "(=) Producto Interno Neto" ///
-	_col(44) in y "(" %5.3fc `gini_ing_bruto_tot' ")" ///
+	_col(44) in y "(" %5.3fc `gini_ingbrutotot' ")" ///
 	_col(57) in y %7.3fc (`ALTIMIR'[1,1]+`ALTIMIR'[1,2]+`ALTIMIR'[1,3]+`ALTIMIR'[1,4])/`PIBSCN'*100 ///
-	_col(66) in y %7.3fc (`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'+`MixKN'+`ExNOpSoc'+`ExNOpHog'+`ImpNetProduccionL'+`ImpNetProduccionK'+`ImpNetProductos')/`PIBSCN'*100 ///
-	_col(77) in y %7.3fc ((`ALTIMIR'[1,1]+`ALTIMIR'[1,2]+`ALTIMIR'[1,3]+`ALTIMIR'[1,4])/(`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'+`MixKN'+`ExNOpSoc'+`ExNOpHog'+`ImpNetProduccionL'+`ImpNetProduccionK'+`ImpNetProductos'))^(-1)
+	_col(66) in y %7.3fc (`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'+`MixKN'+`ExNOpSoc'+`ExNOpHog' ///
+		+`ImpNetProduccionL'+`ImpNetProduccionK'+`ImpNetProductos')/`PIBSCN'*100 ///
+	_col(77) in y %7.3fc ((`ALTIMIR'[1,1]+`ALTIMIR'[1,2]+`ALTIMIR'[1,3]+`ALTIMIR'[1,4])/(`RemSal'+`SSEmpleadores' ///
+		+`SSImputada'+`MixL'+`MixKN'+`ExNOpSoc'+`ExNOpHog'+`ImpNetProduccionL'+`ImpNetProduccionK'+`ImpNetProductos'))^(-1)
+scalar PINFSCNPIB = (`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'+`MixKN'+`ExNOpSoc'+`ExNOpHog' ///
+		+`ImpNetProduccionL'+`ImpNetProduccionK'+`ImpNetProductos')/`PIBSCN'*100
+scalar PINFHHSPIB = (`ALTIMIR'[1,1]+`ALTIMIR'[1,2]+`ALTIMIR'[1,3]+`ALTIMIR'[1,4])/`PIBSCN'*100
+scalar giniPINF = string(`gini_ingbrutotot',"%5.3f")
 noisily di ///
 	_col(04) in g "(+) Depreciaci{c o'}n" ///
 	_col(44) in y "(" %5.3fc `gini_gasto_anualDepreciacion' ")" ///
 	_col(57) in y %7.3fc `ALTIMIR'[1,5]/`PIBSCN'*100 ///
 	_col(66) in y %7.3fc (`ConCapFij')/`PIBSCN'*100 ///
 	_col(77) in y %7.3fc (`ALTIMIR'[1,5]/`ConCapFij')^(-1)
+*scalar DEPFSCNPIB = (`ConCapFij')/`PIBSCN'*100
+*scalar DEPFHHSPIB = `ALTIMIR'[1,5]/`PIBSCN'*100
+*scalar giniDEPF = string(`gini_gasto_anualDepreciacion',"%5.3f")
 noisily di in g _dup(83) "-"
 noisily di ///
 	_col(04) in g "(=) Producto Interno Bruto" ///
-	_col(44) in y "(" %5.3fc `gini_ing_bruto_tot' ")" ///
+	_col(44) in y "(" %5.3fc `gini_ingbrutotot' ")" ///
 	_col(57) in y %7.3fc (`ALTIMIR'[1,1]+`ALTIMIR'[1,2]+`ALTIMIR'[1,3]+`ALTIMIR'[1,4]+`ALTIMIR'[1,5])/`PIBSCN'*100 ///
-	_col(66) in y %7.3fc (`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'+`MixKN'+`ExNOpSoc'+`ExNOpHog'+`ImpNetProduccionL'+`ImpNetProduccionK'+`ImpNetProductos'+`ConCapFij')/`PIBSCN'*100 ///
-	_col(77) in y %7.3fc ((`ALTIMIR'[1,1]+`ALTIMIR'[1,2]+`ALTIMIR'[1,3]+`ALTIMIR'[1,4]+`ALTIMIR'[1,5])/(`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'+`MixKN'+`ExNOpSoc'+`ExNOpHog'+`ImpNetProduccionL'+`ImpNetProduccionK'+`ImpNetProductos'+`ConCapFij'))^(-1)
+	_col(66) in y %7.3fc (`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'+`MixKN'+`ExNOpSoc'+`ExNOpHog' ///
+		+`ImpNetProduccionL'+`ImpNetProduccionK'+`ImpNetProductos'+`ConCapFij')/`PIBSCN'*100 ///
+	_col(77) in y %7.3fc ((`ALTIMIR'[1,1]+`ALTIMIR'[1,2]+`ALTIMIR'[1,3]+`ALTIMIR'[1,4]+`ALTIMIR'[1,5])/(`RemSal' ///
+		+`SSEmpleadores'+`SSImputada'+`MixL'+`MixKN'+`ExNOpSoc'+`ExNOpHog'+`ImpNetProduccionL'+`ImpNetProduccionK' ///
+		+`ImpNetProductos'+`ConCapFij'))^(-1)
+*scalar FPIBSCNPIB = (`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'+`MixKN'+`ExNOpSoc'+`ExNOpHog' ///
+		+`ImpNetProduccionL'+`ImpNetProduccionK'+`ImpNetProductos'+`ConCapFij')/`PIBSCN'*100
+*scalar FPIBHHSPIB = (`ALTIMIR'[1,1]+`ALTIMIR'[1,2]+`ALTIMIR'[1,3]+`ALTIMIR'[1,4]+`ALTIMIR'[1,5])/`PIBSCN'*100
+*scalar giniPIBF = string(`gini_ingbrutotot',"%5.3f")
 
 
 
@@ -2268,7 +2412,7 @@ noisily di ///
 **********************************
 tempvar tot_integ
 egen `tot_integ' = count(edad), by(`hogar')
-egen double ing_decil_hog = sum(ing_bruto_tot), by(`hogar')
+egen double ing_decil_hog = sum(ingbrutotot), by(`hogar')
 g double ing_decil_pc = ing_decil_hog/`tot_integ'
 
 * Deciles *
@@ -2329,14 +2473,14 @@ capture g folio = folioviv + foliohog
 
 ** Ingresos laborales **
 egen double Yl = rsum(ing_subor ing_mixtoL)
-label var Yl "Ingreso laboral (Sankey)"
+label var Yl "Ingreso laboral"
 
 egen double Yk = rsum(ing_capital ing_mixtoK ing_estim_alqu gasto_anualDepreciacion)
 replace Yk = Yk - (ing_cap_imss + ing_cap_issste + ing_cap_cfe + ///
 	ing_cap_pemex + ing_cap_fmp + ing_cap_mejoras + ing_cap_derechos + ///
 	ing_cap_productos + ing_cap_aprovecha + ///
 	ing_cap_otrostrib + ing_cap_otrasempr)
-label var Yk "Ingreso de capital (Sankey)"
+label var Yk "Ingreso de capital"
 
 
 ** (+) Impuestos al ingreso laboral **
@@ -2344,7 +2488,6 @@ egen laboral = rsum(ISR__asalariados ISR__PF cuotasTP) if formal != 0
 replace laboral = 0 if laboral == .
 Distribucion Laboral, relativo(laboral) macro(`=`ISRSalarios'+`ISRFisicas'+`CuotasIMSS'')
 label var Laboral "los impuestos al ingreso laboral"
-Simulador Laboral [fw=factor_cola], base("ENIGH 2018") boot(1) reboot graphs
 
 
 ** (+) Impuestos al consumo **
@@ -2352,15 +2495,11 @@ egen consumo = rsum(TOTIVA TOTIEPS)
 replace consumo = 0 if consumo == .
 Distribucion Consumo, relativo(consumo) macro(`alconsumo')
 label var Consumo "los impuestos al consumo"
-Simulador Consumo [fw=factor_cola], base("ENIGH 2018") ///
-	boot(1) reboot graphs
 
 
 ** (+) Impuestos e ingresos de capital **
 Distribucion OtrosC, relativo(Yk) macro(`=`otrosing'+`ISRMorales'')
 label var OtrosC "los ingresos de capital"
-Simulador OtrosC [fw=factor_cola], base("ENIGH 2018") ///
-	boot(1) reboot graphs
 
 
 ** (-) Pensiones **
@@ -2368,8 +2507,6 @@ g ing_jubila_pub = ing_jubila if (formal == 1 | formal == 2 | formal == 3) & ing
 replace ing_jubila_pub = 0 if ing_jubila_pub == .
 Distribucion Pension, relativo(ing_jubila_pub) macro(`Pensiones')
 label var Pension "pensiones"
-Simulador Pension [fw=factor_cola], base("ENIGH 2018") ///
-	boot(1) reboot graphs
 
 
 ** (-) Pension Bienestar **
@@ -2379,8 +2516,6 @@ matrix POBLACION68 = r(StatTotal)
 g PenBienestar = `PenBienestar'/POBLACION68[1,1] if edad >= 68
 replace PenBienestar = 0 if PenBienestar == .
 label var PenBienestar "Pensi{c o'}n Bienestar"
-Simulador PenBienestar if edad >= 68 [fw=factor], base("ENIGH 2018") ///
-	boot(1) reboot graphs
 
 
 ** (-) Educaci€n **
@@ -2397,50 +2532,98 @@ replace educacion = 0 if educacion == .
 
 Distribucion Educacion, relativo(educacion) macro(`Educacion')
 label var Educacion "educaci{c o'}n"
-Simulador Educacion [fw=factor_cola], base("ENIGH 2018") ///
-	boot(1) reboot graphs
 
 
 ** (-) Salud **
-g salud = 1.5 if edad <= 4
-replace salud = 0.78 if edad >= 5 & edad <= 9
-replace salud = 0.62 if edad >= 10 & edad <= 14
-replace salud = 0.58 if edad >= 15 & edad <= 19
-replace salud = 0.63 if edad >= 20 & edad <= 24
-replace salud = 0.82 if edad >= 25 & edad <= 29
-replace salud = 0.81 if edad >= 30 & edad <= 34
-replace salud = 1.00 if edad >= 35 & edad <= 39
-replace salud = 0.97 if edad >= 40 & edad <= 44
-replace salud = 1.06 if edad >= 45 & edad <= 49
-replace salud = 1.12 if edad >= 50 & edad <= 54
-replace salud = 1.34 if edad >= 55 & edad <= 59
-replace salud = 1.60 if edad >= 60 & edad <= 64
-replace salud = 1.83 if edad >= 65 & edad <= 69
-replace salud = 2.22 if edad >= 70 & edad <= 74
-replace salud = 2.66 if edad >= 75 & edad <= 79
-replace salud = 3.36 if edad >= 80 & edad <= 84
-replace salud = 3.36 if edad >= 85 & edad <= 89
-replace salud = 3.36 if edad >= 90 & edad <= 94
-replace salud = 3.36 if edad >= 95
+g benef_imss = inst_1 == "1"
+g benef_issste = inst_2 == "2"
+g benef_isssteest = inst_3 == "3"
+g benef_pemex = inst_4 == "4"
 
+tempvar benef_imssprospera
+g `benef_imssprospera' = inst_5 == "5"
+egen benef_imssprospera = max(`benef_imssprospera'), by(folioviv foliohog)
+
+tempvar benef_otro
+capture g `benef_otro' = inst_6 == "6"
+if _rc != 0 {
+	g `benef_otro' = 0
+}
+egen benef_otro = max(`benef_otro'), by(folioviv foliohog)
+g benef_seg_pop = benef_imss == 0 & benef_issste == 0 & benef_pemex == 0
+g benef_ssa = 1
+
+tabstat benef_imss benef_issste benef_pemex benef_imssprospera benef_seg_pop ///
+	benef_ssa benef_isssteest benef_otro [fw=factor], stat(sum) f(%15.0fc) save
+tempname MSalud
+matrix `MSalud' = r(StatTotal)
+
+tabstat factor, stat(sum) f(%20.0fc) save
+tempname pobtot
+matrix `pobtot' = r(StatTotal)
+
+preserve
+PEF if divGA == 7, anio(`enighanio') by(desc_pp) min(0)
+local segpop0 = r(Seguro_Popular)
+local segpop = r(Seguro_Popular)
+if `segpop0' == . {
+	local segpop0 = r(Atenci_c_o__n_a_la_Salud_y_Medi)
+	local segpop = r(Atenci_c_o__n_a_la_Salud_y_Medi)
+}
+local caneros = r(Seguridad_Social_Ca_c_n__eros)
+local incorpo = r(R_c_e__gimen_de_Incorporaci_c_o)
+
+PEF if divGA == 7, anio(`enighanio') by(ramo) min(0)
+local segpop = `segpop'+r(Aportaciones_Federales_para_Ent)
+restore
+
+preserve
+PEF if divGA == 7, anio(`enighanio') by(ramo) min(0)
+local ssa = r(Salud)-`segpop0'+`caneros'+`incorpo'
+restore
+
+preserve
+PEF if divGA == 7, anio(`enighanio') by(ramo) min(0)
+local imss = r(Instituto_Mexicano_del_Seguro_S)
+restore
+
+preserve
+PEF if divGA == 7, anio(`enighanio') by(ramo) min(0)
+local issste = r(Instituto_de_Seguridad_y_Servic)
+restore
+
+preserve
+PEF if divGA == 7, anio(`enighanio') by(desc_pp) min(0)
+local prospe = r(Programa_IMSS_BIENESTAR)
+restore
+
+preserve
+PEF if divGA == 7 & modalidad == "E" & pp == 13 & ramo == 52, anio(`enighanio') by(ramo) min(0)
+local pemex = r(Petr_c_o__leos_Mexicanos)
+
+PEF if divGA == 7, anio(`enighanio') by(ramo) min(0)
+local pemex = `pemex' + r(Defensa_Nacional) + r(Marina)
+restore
+
+g salud = 0
+replace salud = salud + `segpop'/(`MSalud'[1,5]+`MSalud'[1,7]) if benef_seg_pop == 1 | benef_isssteest == 1
+replace salud = salud + `imss'/`MSalud'[1,1] if benef_imss == 1
+replace salud = salud + `issste'/`MSalud'[1,2] if benef_issste == 1
+replace salud = salud + `prospe'/`MSalud'[1,4] if benef_imssprospera == 1
+replace salud = salud + `pemex'/`MSalud'[1,3] if benef_pemex == 1
+replace salud = salud + `ssa'/`pobtot'[1,1] if benef_ssa == 1
 Distribucion Salud, relativo(salud) macro(`Salud')
 label var Salud "salud"
-Simulador Salud [fw=factor_cola], base("ENIGH 2018") ///
-	boot(1) reboot graphs
 
 
 ** (-) Otros gastos **
 Distribucion OtrosGas, relativo(factor_cola) macro(`OtrosGas')
 label var OtrosGas "otros gastos"
-Simulador OtrosGas [fw=factor_cola], base("ENIGH 2018") ///
-	boot(1) reboot graphs
 
 
 ** (-) Ingreso B{c a'}sico **
 g IngBasico = 0.1
 label var IngBasico "ingreso b{c a'}sico"
-Simulador IngBasico [fw=factor_cola], base("ENIGH 2018") ///
-	boot(1) reboot graphs
 
 
 ** (*) Infraestructura **
@@ -2457,6 +2640,18 @@ foreach k in Aguas BajaN BajaS Campe Coahu Colim Chiap Chihu Ciuda Duran Guana /
 	local ++j
 }
 egen Infra = rsum(Infra_*)
+
+
+
+**********************************************
+*** 15 Cuentas Nacionales de Transferencia ***
+**********************************************
+g Ciclodevida = TOTgasto_anual - Yl
+label var Ciclodevida "ciclo de vida"
+
+g Ahorro = ingbrutotot + ing_capitalROW + ing_suborROW + ing_remesas ///
+	- TOTgasto_anual - gasto_anualComprasN - gasto_anualGobierno
+label var Ahorro "ahorro"
 
 
 

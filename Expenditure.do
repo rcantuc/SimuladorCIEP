@@ -404,6 +404,7 @@ g deduc_gasto_colegi3 = min(gasto_anual,19900) if clave == "E003"
 g deduc_gasto_colegi4 = min(gasto_anual,17100) if clave == "E007"
 g deduc_gasto_colegi5 = min(gasto_anual,24500) if clave == "E004"
 
+
 preserve
 collapse (sum) deduc_*, by(folioviv foliohog)
 g proyecto = "2"
@@ -557,33 +558,74 @@ noisily di in g "  IEPS " ///
 *****************
 *** 6 Altimir ***
 *****************
-local TFood = (`M1'[1,1]/`Food')^(-1)
-local TNBev = (`M2'[1,1]/`NBev')^(-1)
-local TABev = (`M3'[1,1]/`ABev')^(-1)
-local TToba = (`M4'[1,1]/`Toba')^(-1)
-local TClot = (`M5'[1,1]/`Clot')^(-1)
-local TFoot = (`M6'[1,1]/`Foot')^(-1)
-local THous = (`M7'[1,1]/`Hous')^(-1)
-local TWate = (`M8'[1,1]/`Wate')^(-1)
-local TElec = (`M9'[1,1]/`Elec')^(-1)
-local TFurn = (`M10'[1,1]/`Furn')^(-1)
-local THeal = (`M11'[1,1]/`Heal')^(-1)
-local TVehi = (`M12'[1,1]/`Vehi')^(-1)
-local TOper = (`M13'[1,1]/`Oper')^(-1)
-local TTran = (`M14'[1,1]/`Tran')^(-1)
-local TComm = (`M15'[1,1]/`Comm')^(-1)
-local TRecr = (`M16'[1,1]/`Recr')^(-1)
-local TEduc = (`M17'[1,1]/`Educ')^(-1)
-local TRest = (`M18'[1,1]/`Rest')^(-1)
-local TMisc = (`M19'[1,1]/`Misc')^(-1)
+scalar TTAlim = (`M1'[1,1]/`Food')^(-1)
+scalar TTBebN = (`M2'[1,1]/`NBev')^(-1)
+scalar TTBebA = (`M3'[1,1]/`ABev')^(-1)
+scalar TTTaba = (`M4'[1,1]/`Toba')^(-1)
+scalar TTVest = (`M5'[1,1]/`Clot')^(-1)
+scalar TTCalz = (`M6'[1,1]/`Foot')^(-1)
+scalar TTAlqu = (`M7'[1,1]/`Hous')^(-1)
+scalar TTAgua = (`M8'[1,1]/`Wate')^(-1)
+scalar TTElec = (`M9'[1,1]/`Elec')^(-1)
+scalar TTHoga = (`M10'[1,1]/`Furn')^(-1)
+scalar TTSalu = (`M11'[1,1]/`Heal')^(-1)
+scalar TTVehi = (`M12'[1,1]/`Vehi')^(-1)
+scalar TTFTra = (`M13'[1,1]/`Oper')^(-1)
+scalar TTSTra = (`M14'[1,1]/`Tran')^(-1)
+scalar TTComu = (`M15'[1,1]/`Comm')^(-1)
+scalar TTRecr = (`M16'[1,1]/`Recr')^(-1)
+scalar TTEduc = (`M17'[1,1]/`Educ')^(-1)
+scalar TTRest = (`M18'[1,1]/`Rest')^(-1)
+scalar TTDive = (`M19'[1,1]/`Misc')^(-1)
+
+scalar TAlimPIB = `Food'/`PIBSCN'*100
+scalar TBebNPIB = `NBev'/`PIBSCN'*100
+scalar TBebAPIB = `ABev'/`PIBSCN'*100
+scalar TTabaPIB = `Toba'/`PIBSCN'*100
+scalar TVestPIB = `Clot'/`PIBSCN'*100
+scalar TCalzPIB = `Foot'/`PIBSCN'*100
+scalar TAlquPIB = `Hous'/`PIBSCN'*100
+scalar TAguaPIB = `Wate'/`PIBSCN'*100
+scalar TElecPIB = `Elec'/`PIBSCN'*100
+scalar THogaPIB = `Furn'/`PIBSCN'*100
+scalar TSaluPIB = `Heal'/`PIBSCN'*100
+scalar TVehiPIB = `Vehi'/`PIBSCN'*100
+scalar TFTraPIB = `Oper'/`PIBSCN'*100
+scalar TSTraPIB = `Tran'/`PIBSCN'*100
+scalar TComuPIB = `Comm'/`PIBSCN'*100
+scalar TRecrPIB = `Recr'/`PIBSCN'*100
+scalar TEducPIB = `Educ'/`PIBSCN'*100
+scalar TRestPIB = `Rest'/`PIBSCN'*100
+scalar TDivePIB = `Misc'/`PIBSCN'*100
+
+scalar EAlimPIB = `M1'[1,1]/`PIBSCN'*100
+scalar EBebNPIB = `M2'[1,1]/`PIBSCN'*100
+scalar EBebAPIB = `M3'[1,1]/`PIBSCN'*100
+scalar ETabaPIB = `M4'[1,1]/`PIBSCN'*100
+scalar EVestPIB = `M5'[1,1]/`PIBSCN'*100
+scalar ECalzPIB = `M6'[1,1]/`PIBSCN'*100
+scalar EAlquPIB = `M7'[1,1]/`PIBSCN'*100
+scalar EAguaPIB = `M8'[1,1]/`PIBSCN'*100
+scalar EElecPIB = `M9'[1,1]/`PIBSCN'*100
+scalar EHogaPIB = `M10'[1,1]/`PIBSCN'*100
+scalar ESaluPIB = `M11'[1,1]/`PIBSCN'*100
+scalar EVehiPIB = `M12'[1,1]/`PIBSCN'*100
+scalar EFTraPIB = `M13'[1,1]/`PIBSCN'*100
+scalar ESTraPIB = `M14'[1,1]/`PIBSCN'*100
+scalar EComuPIB = `M15'[1,1]/`PIBSCN'*100
+scalar ERecrPIB = `M16'[1,1]/`PIBSCN'*100
+scalar EEducPIB = `M17'[1,1]/`PIBSCN'*100
+scalar ERestPIB = `M18'[1,1]/`PIBSCN'*100
+scalar EDivePIB = `M19'[1,1]/`PIBSCN'*100
+
 
 if "`altimir'" == "yes" {
 	local j = 0
-	foreach k in Food NBev ABev Toba Clot Foot Hous Wate Elec Furn Heal Vehi Oper ///
-		Tran Comm Recr Educ Rest Misc {
+	foreach k in Alim BebN BebA Taba Vest Calz Alqu Agua Elec Hoga ///
+		Salu Vehi FTra STra Comu Recr Educ Rest Dive {
 		local ++j
-		replace gasto_anual = gasto_anual*`T`k'' if categ == `j'
-		replace precio = precio*`T`k'' if categ == `j'
+		replace gasto_anual = gasto_anual*scalar(TT`k') if categ == `j'
+		replace precio = precio*scalar(TT`k') if categ == `j'
 	}
 
 	** Re C{c a'}lculo del IVA **
@@ -768,6 +810,7 @@ foreach categ of varlist categ categ_iva {
 
 	** 7.2 Totales **
 	egen TOTgasto_anual = rsum(gasto_anual*)
+	label var TOTgasto_anual "gasto total"
 	egen TOTIVA = rsum(IVA*)
 	egen TOTIEPS = rsum(IEPS*)
 

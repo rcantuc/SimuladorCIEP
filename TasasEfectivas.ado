@@ -23,7 +23,7 @@ quietly {
 	****************************
 	*** 2 Ingresos iniciales ***
 	****************************
-	noisily LIF, anio(`anio') min(1) //graphs
+	noisily LIF, anio(`anio') min(1) ilif //graphs
 	local recursos = r(divCIEP)
 	foreach k of local recursos {
 		local rec`=substr("`k'",1,7)' = r(`k')

@@ -89,9 +89,6 @@ save `eje1'
 ** Eje 4: Consumo **
 use `"`c(sysdir_site)'../basesCIEP/SIM/2018/households`=subinstr("${pais}"," ","",.)'.dta"', clear
 
-g gasto_anualAhorro = ing_bruto_tot + ing_capitalROW + ing_suborROW + ing_remesas ///
-	- TOTgasto_anual - gasto_anualDepreciacion - gasto_anualComprasN - gasto_anualGobierno
-
 collapse (sum) gasto_anual* [fw=factor_cola], by(`1')
 
 egen gasto_Alimentos = rsum(gasto_anual1-gasto_anual3)

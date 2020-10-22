@@ -197,9 +197,9 @@ quietly {
 			`=-`MaxH'[1,1]/2' `"`=string(`MaxH'[1,1]/2,"%15.0fc")'"' 0 ///
 			`=`MaxM'[1,1]/2' `"`=string(`MaxM'[1,1]/2,"%15.0fc")'"' ///
 			`=`MaxM'[1,1]' `"`=string(`MaxM'[1,1],"%15.0fc")'"', angle(horizontal)) ///
-			caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5, utilizando informaci{c o'}n de CONAPO.") ///
+			///caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5, utilizando informaci{c o'}n de CONAPO.") ///
 			///xtitle("Personas") ///
-			title("Comparativo {bf:generacional}") subtitle(${pais})
+			///title("Pir{c a'}mide {bf:demogr{c a'}fica}") subtitle(${pais})
 
 		if "$export" != "" {
 			graph export "$export/Piramide_`anything'_`anioinicial'_`aniofinal'.png", ///
@@ -310,21 +310,33 @@ quietly {
 			xtitle("") ///
 			ytitle("Poblaci{c o'}n") ///
 			xline(`=`anioinicial'+.5') ///
-			caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, BIE.") ///
+			///caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, BIE.") ///
 			name(Estructura_`anything'_`anioinicial'_`aniofinal', replace) ///
-			title("{bf:Transici{c o'}n} demogr{c a'}fica") subtitle(${pais}) ///
-			ylabel(, format(%20.0fc)) 
+			///title("{bf:Transici{c o'}n} demogr{c a'}fica") subtitle(${pais}) ///
+			ylabel(, format(%20.0fc)) xlabel(1950(10)2050)
 			
 			if "$export" != "" {
-				*graph export "$export/Estructura_`anything'_`anioinicial'_`aniofinal'.png", replace name(Estructura_`anything'_`anioinicial'_`aniofinal')
+				graph export "$export/Estructura_`anything'_`anioinicial'_`aniofinal'.png", replace name(Estructura_`anything'_`anioinicial'_`aniofinal')
 			}
 	}
 
 	use `"`c(sysdir_site)'../basesCIEP/SIM/`=proper("`anything'")'`=subinstr("${pais}"," ","",.)'tot.dta"', clear
-	noisily list anio poblacion if entidad == "Nacional" & anio == `aniovp'
+	tabstat poblacion if entidad == "Nacional" & anio == `aniovp', f(%20.0fc) save
+	tempname POBTOT
+	matrix `POBTOT' = r(StatTotal)
+	
+	noisily di _newline(2) in g _dup(20) "." "{bf:  Poblaci{c o'}n: $pais} " in y `aniovp' " " in g _dup(20) "."
+	noisily di in y %15.0fc `POBTOT'[1,1]
+	scalar poblaciontotal = string(`POBTOT'[1,1],"%20.0fc")
+
+	tabstat poblacion if entidad == "Nacional" & anio == 2050, f(%20.0fc) save
+	tempname POBFIN
+	matrix `POBFIN' = r(StatTotal)
+	scalar poblacionfinal = string(`POBFIN'[1,1],"%20.0fc")
+
 
 	timer off 14
 	timer list 14
-	noisily di _newline in g "Tiempo: " in y round(`=r(t14)/r(nt14)',.1) in g " segs."
+	noisily di _newline in g _dup(20) "." in y round(`=r(t14)/r(nt14)',.1) in g " segs" _dup(20) "." 
 }
 end
