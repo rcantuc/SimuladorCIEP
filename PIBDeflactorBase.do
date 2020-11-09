@@ -6,6 +6,7 @@
 ***************
 *** 0 BASES ***
 ***************
+
 * 0.1.1. PIB *
 import excel "`=c(sysdir_site)'../basesCIEP/INEGI/SCN/PIB.xlsx", clear
 

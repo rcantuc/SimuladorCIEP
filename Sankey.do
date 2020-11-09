@@ -79,6 +79,10 @@ if scalar(ComprasN) < 0 {
 	label define to -2 "Compras por extranjeros", add
 }
 
+rename to to2
+rename from to
+rename to2 from
+
 * Eje */
 tempfile eje1
 save `eje1'
@@ -99,17 +103,17 @@ egen gasto___Vivienda = rsum(gasto_anual7-gasto_anual10)
 egen gasto___Transporte_y_Comunica = rsum(gasto_anual12-gasto_anual15)
 egen gasto____Otros_gastos = rsum(gasto_anual4 gasto_anual19)
 *egen gasto___Consumo_Gobierno = rsum(gasto_anualGobierno)
-egen gasto_____Consumo_capital = rsum(gasto_anualDepreciacion)
+*egen gasto_____Consumo_capital = rsum(gasto_anualDepreciacion)
 *egen gasto____Ahorro = rsum(gasto_anualAhorro)
 drop gasto_anual*
 
-levelsof `1', local(`1')
+/*levelsof `1', local(`1')
 foreach k of local `1' {
 	local oldlabel : label (`1') `k'
 	label define `1' `k' "_`oldlabel'", modify
 }
 
-* from *
+* from */
 tempvar from
 reshape long gasto_, i(`1') j(`from') string
 rename gasto_ profile
@@ -121,7 +125,7 @@ rename `1' to
 * ROW *
 set obs `=_N+1'
 replace to = -3 if from == .
-label define `1' -3 "_Resto del mundo", add
+label define `1' -3 "Resto del mundo", add
 
 replace from = 99 in -1
 replace profile = scalar(ROWTrans) in -1
@@ -130,7 +134,7 @@ label define from 99 "__Ing a la propiedad", add
 * Sector Publico *
 set obs `=_N+3'
 replace to = -1 if from == .
-label define `1' -1 "Gobierno", add
+label define `1' -1 "Sector_publico", add
 
 replace profile = scalar(SerEGob) in -1
 replace from = 4 in -1
@@ -141,7 +145,7 @@ replace from = 3 in -2
 replace profile = scalar(ConGob) - scalar(SerEGob) - scalar(SaluGob) in -3
 replace from = 7 in -3
 
-* Ahorro *
+/* Ahorro *
 set obs `=_N+1'
 drop if from == 98
 replace from = 98 in -1
@@ -152,9 +156,15 @@ label define from 98 "Ahorro", add
 
 * Depreciacion *
 replace to = -4 if from == 8
-label define `1' -4 "Depreciacion", add
+label define `1' -4 "Depreciacion", add*/
 
 sort from to
+
+rename to to2
+rename from to
+rename to2 from
+
+
 tempfile eje4
 save `eje4'
 
@@ -169,6 +179,10 @@ rename to from
 g to = 999
 label define PIB 999 "Ing nacional"
 label values to PIB
+
+rename to to2
+rename from to
+rename to2 from
 
 tempfile eje2
 save `eje2'
@@ -192,7 +206,8 @@ save `eje3'
 
 ************
 ** Sankey **
-noisily SankeySum, anio(`2') name(`1') folder(SankeySIM) a(`eje1') b(`eje2') c(`eje3') d(`eje4')
+noisily SankeySum, anio(`2') name(`1') folder(SankeySIM) a(`eje1') b(`eje4') c(`eje3') d(`eje4')
+noisily SankeySum, anio(`2') name(`1') folder(SankeySIMC) b(`eje1') a(`eje4') //c(`eje3') d(`eje4')
 
 timer off 7
 timer list 7

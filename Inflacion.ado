@@ -142,6 +142,7 @@ quietly {
 			(connected var_inflY anio if anio >= `anio_last' & anio > anio[`obslast'+`exo_count'-1]) ///
 			(connected var_inflY anio if /*anio == `anio_last' & trimestre < 4 |*/ anio <= anio[`obslast'+`exo_count'-1] & anio >= `anio_last', lwidth(none)), ///
 			///title({bf:Crecimientos} del {c i'}ndice nacional de precios al consumidor) subtitle(${pais}) ///
+			subtitle(${pais}) ///
 			xlabel(1995(5)`=round(anio[_N],5)') ///
 			ylabel(, format(%3.0f)) ///
 			ytitle("Variaci{c o'}n (%)") xtitle("") yline(0, lcolor(black)) ///

@@ -39,7 +39,7 @@ quietly {
 	mkmat poblacion* if sexo == 2, matrix(MUJ)
 	mata: MUJ = st_matrix("MUJ")
 
-	mata: lambda = st_numscalar("lambda")
+	mata: lambda = st_numscalar("llambda")
 
 
 	

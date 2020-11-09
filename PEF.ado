@@ -36,7 +36,16 @@ quietly {
 	syntax [if] [, ANIO(int `aniovp') Graphs Update Base ID(string) ///
 		BY(varname) ROWS(int 2) COLS(int 5) MINimum(real 1) PEF PPEF]
 
-	noisily di _newline(2) in g _dup(20) "." "{bf:  Sistema Fiscal: GASTOS $pais" in y `anio' "  }" in g _dup(20) "."
+	if "`ppef'" == "ppef" {
+		local textintro = "PPEF"
+	}
+	else if "`pef'" == "pef" {
+		local textintro = "PEF"
+	}
+	else {
+		local textintro = "Cuenta P{c u'}blica"
+	}
+	noisily di _newline(2) in g _dup(20) "." "{bf:  Sistema Fiscal: GASTOS $pais " in y `anio' "  }" in g _dup(20) "."
 	
 	** 2.1 PIB + Deflactor **
 	PIBDeflactor, anio(`anio') nographs
@@ -111,7 +120,7 @@ quietly {
 		tempname gasanio
 		matrix `gasanio' = r(StatTotal)
 		
-		*graph pie gastonetoPIB if anio == `anio' & `by' != -1 & transf_gf == 0, over(`resumido') ///
+		graph pie gastonetoPIB if anio == `anio' & `by' != -1 & transf_gf == 0, over(`resumido') ///
 			plabel(_all percent, format(%5.1fc)) ///
 			title(`"Gastos `=upper("`pef'`ppef'")' `anio'"') /// subtitle($pais) ///
 			name(gastospie, replace) ///
@@ -122,9 +131,10 @@ quietly {
 			over(`resumido') ///
 			over(anio, label(labgap(vsmall))) ///
 			bargap(-30) stack asyvars ///
-			title("{bf:Gasto} p{c u'}blico") ///
+			///title("{bf:Gasto} p{c u'}blico") ///
 			subtitle($pais) ///
-			ytitle(% PIB) ylabel(0(5)30, labsize(small)) ///
+			ytitle(% PIB) ///
+			ylabel(/*0(5)30*/, format(%5.1fc) labsize(small)) ///
 			legend(on position(6) rows(`rows') cols(`cols')) ///
 			name(gastos, replace) ///
 			blabel(bar, format(%7.1fc)) ///
@@ -137,7 +147,7 @@ quietly {
 	** 4. Display PEF **
 	
 	** 4.1 Division `by' **
-	noisily di _newline in g "{bf: A. Gasto bruto presupuestario (`by') " ///
+	noisily di _newline in g "{bf: A. Gasto bruto (`by') " ///
 		_col(44) in g %20s "`currency'" ///
 		_col(66) %7s "% PIB" ///
 		_col(77) %7s "% Total" "}"
@@ -227,7 +237,7 @@ quietly {
 	}
 
 	** 4.2. Division Resumido **
-	noisily di _newline in g "{bf: B. Gasto neto presupuestario (Resumido) " ///
+	noisily di _newline in g "{bf: B. Gasto neto (Resumido) " ///
 		_col(44) in g %20s "`currency'" ///
 		_col(66) %7s "% PIB" ///
 		_col(77) %7s "% Total" "}"

@@ -585,10 +585,10 @@ program define UpdateDatosAbiertos, return
 	replace monto_s = monto*223982.7/542596.9 if anio == 2020 & trimestre == 1
 	replace monto_r = monto*17161.2/542596.9 if anio == 2020 & trimestre == 1
 
-	replace monto_m = monto*(490742.2-287883.4)/(968446.9-542596.9) if anio == 2020 & trimestre == 2
-	replace monto_f = monto*(20504.0-13569.5)/(927350.8-542596.9) if anio == 2020 & trimestre == 2
-	replace monto_s = monto*(423225.4-223982.7)/(927350.8-542596.9) if anio == 2020 & trimestre == 2
-	replace monto_r = monto*(33975.3-17161.2)/(927350.8-542596.9) if anio == 2020 & trimestre == 2
+	replace monto_m = monto*(490742.2-287883.4)/(968446.9-542596.9) if anio == 2020 & trimestre >= 2
+	replace monto_f = monto*(20504.0-13569.5)/(927350.8-542596.9) if anio == 2020 & trimestre >= 2
+	replace monto_s = monto*(423225.4-223982.7)/(927350.8-542596.9) if anio == 2020 & trimestre >= 2
+	replace monto_r = monto*(33975.3-17161.2)/(927350.8-542596.9) if anio == 2020 & trimestre >= 2
 
 	/*replace monto_m = monto*(-490742.2)/(-968446.9) if anio == 2020 & trimestre == 3
 	replace monto_f = monto*(-20504.0)/(-968446.9) if anio == 2020 & trimestre == 3

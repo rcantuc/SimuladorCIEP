@@ -14,7 +14,7 @@ quietly {
 	*************
 	use "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", clear
 	local currency = currency[1]
-	local discount = $discount
+	local discount = discount[1]
 	local anio_last = 2020
 	
 	forvalues k = 1(1)`=_N' {
@@ -33,7 +33,7 @@ quietly {
 	****************
 	*** 2 SHRFSP ***
 	****************
-	SHRFSP, anio(`anio') nographs
+	SHRFSP, anio(`anio') //nographs //update
 	tempfile shrfsp
 	save `shrfsp'
 
@@ -41,7 +41,7 @@ quietly {
 	******************************
 	*** 3 Fiscal Gap: Ingresos ***
 	******************************
-	LIF, anio(`anio') eofp
+	LIF, anio(`anio') //eofp
 	collapse (sum) recaudacion if divLIF != 10, by(anio divGA) fast
 	g modulo = ""
 
@@ -51,7 +51,10 @@ quietly {
 		if "`divGA`k''" == "Impuestos al ingreso" {
 			preserve
 
-			use `"`c(sysdir_personal)'/users/$pais/$id/LaboralREC.dta"', clear
+			capture use `"`c(sysdir_personal)'/users/$pais/$id/LaboralREC.dta"', clear
+			if _rc != 0 {
+				use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/LaboralREC.dta"', clear			
+			}
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
 
@@ -67,7 +70,10 @@ quietly {
 		if "`divGA`k''" == "Impuestos al consumo" {
 			preserve
 
-			use `"`c(sysdir_personal)'/users/$pais/$id/ConsumoREC.dta"', clear
+			capture use `"`c(sysdir_personal)'/users/$pais/$id/ConsumoREC.dta"', clear
+			if _rc != 0 {
+				use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/ConsumoREC.dta"', clear			
+			}
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
 
@@ -83,7 +89,10 @@ quietly {
 		if "`divGA`k''" == "Ingresos de capital" | "`divGA`k''" == "Otros ingresos" {
 			preserve
 
-			use `"`c(sysdir_personal)'/users/$pais/$id/OtrosCREC"', clear
+			capture use `"`c(sysdir_personal)'/users/$pais/$id/OtrosCREC"', clear
+			if _rc != 0 {
+				use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/OtrosCREC.dta"', clear			
+			}
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
 
@@ -220,7 +229,10 @@ quietly {
 		if "`divGA`k''" == "Educaci{c o'}n" {
 			preserve
 
-			use `"`c(sysdir_personal)'/users/$pais/$id/EducacionREC.dta"', clear
+			capture use `"`c(sysdir_personal)'/users/$pais/$id/EducacionREC.dta"', clear
+			if _rc != 0 {
+				use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/EducacionREC.dta"', clear			
+			}
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
 
@@ -236,7 +248,10 @@ quietly {
 		if "`divGA`k''" == "Pensiones" {
 			preserve
 
-			use `"`c(sysdir_personal)'/users/$pais/$id/PensionREC.dta"', clear
+			capture use `"`c(sysdir_personal)'/users/$pais/$id/PensionREC.dta"', clear
+			if _rc != 0 {
+				use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/PensionREC.dta"', clear			
+			}
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
 
@@ -268,7 +283,10 @@ quietly {
 		if "`divGA`k''" == "Salud" {
 			preserve
 
-			use `"`c(sysdir_personal)'/users/$pais/$id/SaludREC.dta"', clear
+			capture use `"`c(sysdir_personal)'/users/$pais/$id/SaludREC.dta"', clear
+			if _rc != 0 {
+				use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/SaludREC.dta"', clear			
+			}
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
 
@@ -290,7 +308,10 @@ quietly {
 		if "`divGA`k''" == "Pensi{c o'}n Bienestar" {
 			preserve
 
-			use `"`c(sysdir_personal)'/users/$pais/$id/PenBienestarREC.dta"', clear
+			capture use `"`c(sysdir_personal)'/users/$pais/$id/PenBienestarREC.dta"', clear
+			if _rc != 0 {
+				use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/PenBienestarREC.dta"', clear			
+			}
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
 
@@ -306,7 +327,10 @@ quietly {
 		if "`divGA`k''" == "Otros" {
 			preserve
 
-			use `"`c(sysdir_personal)'/users/$pais/$id/OtrosGasREC.dta"', clear
+			capture use `"`c(sysdir_personal)'/users/$pais/$id/OtrosGasREC.dta"', clear
+			if _rc != 0 {
+				use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/OtrosGasREC.dta"', clear			
+			}
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
 
@@ -324,7 +348,10 @@ quietly {
 	** Ingreso basico **
 	preserve
 
-	use `"`c(sysdir_personal)'/users/$pais/$id/IngBasicoREC"', clear
+	capture use `"`c(sysdir_personal)'/users/$pais/$id/IngBasicoREC"', clear
+	if _rc != 0 {
+		use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/IngBasicoREC.dta"', clear			
+	}
 	merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 	collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
 
@@ -372,7 +399,7 @@ quietly {
 
 	***********
 	** DEUDA **
-	merge 1:1 (anio) using `shrfsp', nogen keepus(shrfsp* rfsp* nopresupuestario tipoDeCambio)
+	merge 1:1 (anio) using `shrfsp', nogen keepus(shrfsp* rfsp* /*nopresupuestario*/ tipoDeCambio)
 	merge 1:1 (anio) using `baseingresos', nogen
 
 	g difshrfsp = shrfsp-L.shrfsp
@@ -434,6 +461,13 @@ quietly {
 		replace estimacioncostodeuda = L.costodeudashrfsp/100*L.shrfsp if anio == `k'
 		*replace estimacioncostodeuda = 0 if estimacioncostodeuda < 0
 
+		capture confirm variable rfspBalance
+		if _rc != 0 {
+			g rfspBalance = estimacionamortizacion + estimacioncostodeuda + estimacioneducacion ///
+				+ estimacionsalud + estimacionpensiones + estimacionotrosgas + estimacioningbasico ///
+				+ estimacionpenbienestar ///
+				- estimacioningresos if anio == `k'
+		}
 		replace rfspBalance = estimacionamortizacion + estimacioncostodeuda + estimacioneducacion ///
 			+ estimacionsalud + estimacionpensiones + estimacionotrosgas + estimacioningbasico ///
 			+ estimacionpenbienestar ///
@@ -671,6 +705,10 @@ quietly {
 				local proy_shrfsp2 = "`proy_shrfsp2' `=string(`=shrfspPIB[`k']',"%10.3f")',"
 			}
 		}
+		local length_shrfsp = strlen("`proy_shrfsp'")
+		noisily di in w "PROYSHRFSP1: [`=substr("`proy_shrfsp'",1,`=`length_shrfsp'-1')']"
+		local length_shrfsp2 = strlen("`proy_shrfsp2'")
+		noisily di in w "PROYSHRFSP2: [`=substr("`proy_shrfsp2'",1,`=`length_shrfsp2'-1')']"	
 	}
 	forvalues k=1(1)`=_N' {
 		if anio[`k'] == `end' {
@@ -681,13 +719,7 @@ quietly {
 	noisily di in g "  " _dup(61) "-"
 	noisily di in g "  (*) Deuda (" in y `end' in g ") :" ///
 		in y _col(35) %25.0fc `shrfsp_end' ///
-		in g " % PIB"
-		
-	local length_shrfsp = strlen("`proy_shrfsp'")
-	noisily di in w "PROYSHRFSP1: [`=substr("`proy_shrfsp'",1,`=`length_shrfsp'-1')']"
-	local length_shrfsp2 = strlen("`proy_shrfsp2'")
-	noisily di in w "PROYSHRFSP2: [`=substr("`proy_shrfsp2'",1,`=`length_shrfsp2'-1')']"
-	
+		in g " % PIB"	
 
 
 
@@ -708,6 +740,8 @@ quietly {
 	
 	local poblacionINF = poblacion[_N]*(1+`grow_rate_LR')*(1+`discount'/100)^(`anio'-`=anio[_N]')/(1-((1+`grow_rate_LR')/(1+`discount'/100)))
 
+	noisily di _newline in g "Poblaci{c o'}n al infinito: " in y %15.0fc `poblacionINF'
+	noisily di _newline in g "Poblaci{c o'}n valor presente: " in y %15.0fc `poblacionVP'[1,1]
 	noisily di in g "  (*) Cuenta generaciones futuras:" ///
 		in y _col(35) %25.0fc -(`estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1])/(`poblacionVP'[1,1]+`poblacionINF') ///
 		in g " `currency' por persona"

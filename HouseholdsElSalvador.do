@@ -22,7 +22,7 @@ local otrosgas = r(Otros)
 ***************************
 *** Encuesta de hogares ***
 ***************************
-use "`c(sysdir_site)'../basesCIEP/Otros/EHPM2018.dta", clear
+use "`c(sysdir_site)'../basesCIEP/Otros/El Salvador/EHPM2018.dta", clear
 rename r106 edad
 rename r104 sexo
 
@@ -37,7 +37,7 @@ label var escol "Nivel de escolaridad"
 
 xtile decil = ingpe [fw=fac00], n(10)
 
-rename ingfa ing_bruto_tot
+rename ingfa ingbrutotot
 
 g formal = r422a == 1 | r422a == 2 | ///
 	r422b == 1 | r422b == 2 | ///
@@ -80,29 +80,44 @@ end
 *******************************
 
 ** (+) Ingreso **
-g Ingreso = ingre if formal == 1
-replace Ingreso = 0 if Ingreso == .
-label var Ingreso "Impuestos al ingreso"
+g Laboral = ingre if formal == 1
+replace Laboral = 0 if Laboral == .
+label var Laboral "Impuestos al ingreso laboral"
 * Reescalar *
-Distribucion Ingreso, macro(`alingreso')
-noisily Simulador Ingreso [fw=factor], base("ENIGH 2018") ///
-	boot(1) reboot `2'
+Distribucion Laboral, macro(`alingreso')
 
 ** (+) Consumo **
 g Consumo = gastohog*alfa/`alfatot'
 label var Consumo "Impuestos al consumo"
 * Reescalar *
 Distribucion Consumo, macro(`alconsumo')
-noisily Simulador Consumo [fw=factor], base("ENIGH 2018") ///
-	boot(1) reboot `2'
 
 ** (+) Otros ingresos **
-g Otros = 1
-label var Otros "Otros ingresos"
+g OtrosC = 1
+label var OtrosC "Otros impuestos de capital"
 * Reescalar *
-Distribucion Otros, macro(`otrosing')
-noisily Simulador Otros [fw=factor], base("ENIGH 2018") ///
-	boot(1) reboot `2'
+Distribucion OtrosC, macro(`otrosing')
+
+** (+) ISR_PM **
+g ISR__PM = 0
+label var ISR__PM "ISR personas morales"
+
+** (+) FMP **
+g ing_cap_fmp = 0
+label var ing_cap_fmp "FMP"
+
+** (-) IngBasico **
+g IngBasico = 0
+label var IngBasico "IngBasico"
+
+** (-) PenBienestar **
+g PenBienestar = 0
+label var PenBienestar "PenBienestar"
+
+** (-) Infra **
+g Infra = 0
+label var Infra "Infra"
+
 
 ** (-) Pensiones **
 g Pension = r44407a
@@ -110,8 +125,6 @@ replace Pension = 0 if Pension == .
 label var Pension "Pensiones"
 * Reescalar *
 Distribucion Pension, macro(`pensiones')
-noisily Simulador Pension [fw=factor], base("ENIGH 2018") ///
-	boot(1) reboot `2'
 
 ** (-) Educación **
 tabstat factor, stat(sum) by(r204) f(%10.0fc) save
@@ -127,8 +140,6 @@ replace Educacion = 0 if Educacion == .
 label var Educacion "Educación"
 * Reescalar *
 Distribucion Educacion, macro(`educacion')
-noisily Simulador Educacion [fw=factor], base("ENIGH 2018") ///
-	boot(1) reboot `2'
 
 ** Salud **
 g Salud = 1.5 if edad <= 4
@@ -154,17 +165,13 @@ replace Salud = 3.36 if edad >= 95
 label var Salud "Salud"
 * Reescalar *
 Distribucion Salud, macro(`salud')
-noisily Simulador Salud [fw=factor], base("ENIGH 2018") ///
-	boot(1) reboot `2'
 
 ** Otros gastos **
 g OtrosGas = 1
-replace OtrosGas = 0 if Ingreso == .
+replace OtrosGas = 0 if OtrosGas == .
 label var OtrosGas "Otros gastos"
 * Reescalar *
 Distribucion OtrosGas, macro(`otrosgas')
-noisily Simulador OtrosGas [fw=factor], base("ENIGH 2018") ///
-	boot(1) reboot `2'
 
 
 ***********

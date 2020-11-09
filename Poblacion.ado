@@ -34,7 +34,7 @@ quietly {
 			run `"`c(sysdir_personal)'/PoblacionBase`=subinstr("${pais}"," ","",.)'.do"'
 		}
 		else {
-			run `"`c(sysdir_personal)'/PoblacionBaseOtrosPaises.do"'
+			run `"`c(sysdir_personal)'/PoblacionBaseMundial.do"'
 		}
 		use `"`c(sysdir_site)'../basesCIEP/SIM/`=proper("`anything'")'`=subinstr("${pais}"," ","",.)'.dta"', clear
 	}

@@ -763,7 +763,7 @@ quietly {
 	keep folio* numren factor* Laboral Consumo OtrosC ISR__PM ing_cap_fmp ///
 		Pension Educacion Salud IngBasico PenBienestar Salarios OtrosGas Infra ///
 		sexo grupo_edad decil escol edad ///
-		deduc_isr ISR categF ISR__asalariados ISR__PF cuotas* ing_bruto_* htrab ///
+		deduc_isr ISR categF ISR__asalariados ISR__PF cuotas* ingbrutotot htrab ///
 		tipo_contribuyente exen_tot formal* ing_capital isrE ing_subor IVA* IEPS*
 
 	if `c(version)' > 13.1 {
