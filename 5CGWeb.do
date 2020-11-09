@@ -26,7 +26,6 @@ global id = "$id"
 ******************************
 *** 5 Transferencias Netas ***
 ******************************
-use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
 capture g AportacionesNetas = Laboral + Consumo + ISR__PM + ing_cap_fmp ///
 	- Pension - Educacion - Salud - IngBasico - PenBienestar - Infra
 if _rc != 0 {
@@ -37,8 +36,9 @@ label var AportacionesNetas "de las aportaciones netas"
 save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace
 
 noisily Simulador AportacionesNetas if AportacionesNetas != 0 [fw=factor], ///
-	base("ENIGH 2018") boot(1) reboot //graphs //output
-*noisily CuentasGeneracionales AportacionesNetas, anio(`anio') output //boot(250) //	<-- OPTIONAL!!! Toma mucho tiempo.
+	base("ENIGH 2018") boot(1) reboot graphs //output
+
+noisily CuentasGeneracionales AportacionesNetas, anio(`anio') output //boot(250) //	<-- OPTIONAL!!! Toma mucho tiempo.
 
 
 use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/AportacionesNetasREC.dta"', clear
@@ -54,7 +54,7 @@ forvalues k=1(1)`=_N' {
 	}
 }
 
-/*twoway connected estimacion anio, ///
+twoway connected estimacion anio, ///
 	ytitle("billiones MXN `anio'") ///
 	yscale(range(0)) /*ylabel(0(1)4)*/ ///
 	ylabel(, format(%20.1fc) labsize(small)) ///

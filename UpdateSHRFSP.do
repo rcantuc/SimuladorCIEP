@@ -147,8 +147,8 @@ drop deuda*
 
 compress
 if `c(version)' == 15.1 {
-	saveold `"`c(sysdir_site)'../basesCIEP/SIM/SHRFSP`=subinstr("${pais}"," ","",.)'.dta"', replace version(13)
+	saveold `"`c(sysdir_site)'../basesCIEP/SIM/SHRFSP.dta"', replace version(13)
 }
 else {
-	save `"`c(sysdir_site)'../basesCIEP/SIM/SHRFSP`=subinstr("${pais}"," ","",.)'.dta"', replace
+	save `"`c(sysdir_site)'../basesCIEP/SIM/SHRFSP.dta"', replace
 }

@@ -13,7 +13,7 @@ local anio = 2021
 ** PAR{c A'}METROS DEL SIMULADOR (BASICO) **
 **        Paquete Economico 2021          **
 global id = "$id"
-if "$id" == "PE2021" {
+if "$id" == "PE2021" & "$pais" == "" {
 	*sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
 	*adopath ++ PERSONAL
 	*capture mkdir "`c(sysdir_personal)'/users/$pais/$id/"
@@ -131,7 +131,7 @@ capture confirm scalar IVA_Mod
 if _rc == 0 {
 	scalar IVA = IVA_Mod
 }
-noisily TasasEfectivas, anio(`anio') output //									Cap. 4. Ingresos
+noisily TasasEfectivas, anio(`anio') output //					Cap. 4. Ingresos
 
 
 

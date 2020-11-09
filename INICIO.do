@@ -1,4 +1,4 @@
-*********************************************
+**********************************************
 ****    FOR PROGRAMMING PURPOSES ONLY    ****
 **** SECTION MUST BE COMMENTED OTHERWISE ****
 /*********************************************
@@ -20,42 +20,46 @@ adopath ++ PERSONAL
 
 
 
-
-
-************************************/
-***     1 ECONOMIA Y CUENTAS      ***
-*** Simulador v5: PIB + Deflactor ***
-*************************************
 timer on 1
-global id = "PE2021"
-
-noisily run "`c(sysdir_personal)'/2PIBWeb.do" //		Cap. 2. Sistema: PIBDeflactor.ado + SCN.ado
-
+*global id = "PE2021"
+global pais = "El Salvador"
 
 
 
+***************************************/
+*** Cap. 2. El sistema de la ciencia ***
+***  Simulador v5: PIB + Deflactor   ***
+****************************************
+noisily run "`c(sysdir_personal)'/2PIBWeb.do"
 
-*******************************/
-*** 2 POBLACION: ENIGH 2018  ***
-***   Simulador v5: Set up   ***
-/********************************
+
+
+
+
+******************************************/
+*** Cap. 3. La economia antropocentrica ***
+***        Simulador v5: Set up         ***
+*******************************************
 noisily Poblacion, //nographs //update
-noisily run "`c(sysdir_personal)'/Expenditure.do" 2018 // 	<-- a calibrar!!!
-noisily run "`c(sysdir_personal)'/Households.do" 2018 //	Cap. 3. Agentes economicos
+/*noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' 2018
 
-use "`c(sysdir_site)'../basesCIEP/SIM/2018/households.dta", clear
-Simulador ingbrutotot [fw=factor_cola], base("ENIGH 2018") boot(1) reboot graphs
-Simulador TOTgasto_anual [fw=factor_cola], base("ENIGH 2018") boot(1) reboot graphs
-Simulador Yl [fw=factor_cola], base("ENIGH 2018") boot(1) reboot graphs
-Simulador Yk [fw=factor_cola], base("ENIGH 2018") boot(1) reboot graphs
-Simulador Ahorro [fw=factor_cola], base("ENIGH 2018") boot(1) reboot graphs
-Simulador Ciclodevida [fw=factor_cola], base("ENIGH 2018") boot(1) reboot graphs
-
-
-* Sankey *
-foreach k in grupo_edad decil escol sexo {
+if "$pais" == "" {
+	noisily run "`c(sysdir_personal)'/Expenditure.do" 2018 // 	<-- a calibrar!!!
 	use "`c(sysdir_site)'../basesCIEP/SIM/2018/households.dta", clear
-	noisily run "`c(sysdir_personal)'/Sankey.do" `k' 2018
+
+	* ENIGH + SCN *
+	Simulador ingbrutotot [fw=factor_cola], base("ENIGH 2018") boot(1) reboot graphs
+	Simulador TOTgasto_anual [fw=factor_cola], base("ENIGH 2018") boot(1) reboot graphs
+	Simulador Yl [fw=factor_cola], base("ENIGH 2018") boot(1) reboot graphs
+	Simulador Yk [fw=factor_cola], base("ENIGH 2018") boot(1) reboot graphs
+	Simulador Ahorro [fw=factor_cola], base("ENIGH 2018") boot(1) reboot graphs
+	Simulador Ciclodevida [fw=factor_cola], base("ENIGH 2018") boot(1) reboot graphs
+
+	* Sankey *
+	foreach k in grupo_edad decil escol sexo {
+		use "`c(sysdir_site)'../basesCIEP/SIM/2018/households.dta", clear
+		noisily run "`c(sysdir_personal)'/Sankey.do" `k' 2018
+	}
 }
 
 
@@ -65,15 +69,19 @@ foreach k in grupo_edad decil escol sexo {
 ***************/
 *** 3 GASTOS ***
 ****************
-noisily run "`c(sysdir_personal)'/3GastosWeb.do" //			Parte III
-
-
-/*Simulador Pension [fw=factor_cola], base("ENIGH 2018") boot(1) reboot graphs
+if "$pais" == "" {
+	noisily run "`c(sysdir_personal)'/3GastosWeb.do" //			Parte III
+	use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
+}
+else if "$pais" == "El Salvador" {
+	use `"`c(sysdir_site)'../basesCIEP/SIM/2018/householdsElSalvador.dta"', clear
+}
+Simulador Pension [fw=factor], base("ENIGH 2018") boot(1) reboot graphs
+Simulador Educacion [fw=factor], base("ENIGH 2018") boot(1) reboot graphs
+Simulador Salud [fw=factor], base("ENIGH 2018") boot(1) reboot graphs
+Simulador OtrosGas [fw=factor], base("ENIGH 2018") boot(1) reboot graphs
 Simulador PenBienestar if edad >= 68 [fw=factor], base("ENIGH 2018") boot(1) reboot graphs
-Simulador Educacion [fw=factor_cola], base("ENIGH 2018") boot(1) reboot graphs
-Simulador Salud [fw=factor_cola], base("ENIGH 2018") boot(1) reboot graphs
-Simulador OtrosGas [fw=factor_cola], base("ENIGH 2018") boot(1) reboot graphs
-Simulador IngBasico [fw=factor_cola], base("ENIGH 2018") boot(1) reboot graphs
+Simulador IngBasico [fw=factor], base("ENIGH 2018") boot(1) reboot graphs
 
 
 
@@ -81,11 +89,31 @@ Simulador IngBasico [fw=factor_cola], base("ENIGH 2018") boot(1) reboot graphs
 *****************/
 *** 4 INGRESOS ***
 ******************
-noisily run "`c(sysdir_personal)'/4IngresosWeb.do" //			Parte II
+if "$pais" == "" {
+	* Ingresos: Datos Abiertos *
+	DatosAbiertos XNA0120_s, g //						ISR salarios
+	DatosAbiertos XNA0120_pf, g //						ISR PF
+	DatosAbiertos XNA0120_m, g //						ISR PM
+	DatosAbiertos XKF0114, g //						Cuotas IMSS
+	DatosAbiertos XAB1120, g //						IVA
+	DatosAbiertos XNA0141, g //						ISAN
+	DatosAbiertos XAB1130, g //						IEPS
+	DatosAbiertos XNA0136, g //						Importaciones
+	DatosAbiertos FMP_Derechos, g //					FMP_Derechos
+	DatosAbiertos XAB2110, g //						Ingresos propios Pemex
+	DatosAbiertos XOA0115, g //						Ingresos propios CFE
+	DatosAbiertos XKF0179, g //						Ingresos propios IMSS
+	DatosAbiertos XOA0120, g //						Ingresos propios ISSSTE
 
-/*Simulador Laboral [fw=factor_cola], base("ENIGH 2018") boot(1) reboot graphs
-Simulador Consumo [fw=factor_cola], base("ENIGH 2018") boot(1) reboot graphs
-Simulador OtrosC [fw=factor_cola], base("ENIGH 2018") boot(1) reboot graphs
+	noisily run "`c(sysdir_personal)'/4IngresosWeb.do" //			Parte II
+	use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
+}
+else if "$pais" == "El Salvador" {
+	use `"`c(sysdir_site)'../basesCIEP/SIM/2018/householdsElSalvador.dta"', clear
+}
+Simulador Laboral [fw=factor], base("ENIGH 2018") boot(1) reboot graphs
+Simulador Consumo [fw=factor], base("ENIGH 2018") boot(1) reboot graphs
+Simulador OtrosC [fw=factor], base("ENIGH 2018") boot(1) reboot graphs
 
 
 
@@ -93,7 +121,13 @@ Simulador OtrosC [fw=factor_cola], base("ENIGH 2018") boot(1) reboot graphs
 *****************************/
 ** 5 Cuentas Generacionales **
 ******************************
-noisily run "`c(sysdir_personal)'/5CGWeb.do" //				Parte IV
+if "$pais" == "" {
+	use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
+}
+else if "$pais" == "El Salvador" {
+	use `"`c(sysdir_site)'../basesCIEP/SIM/2018/householdsElSalvador.dta"', clear
+}
+noisily run "`c(sysdir_personal)'/5CGWeb.do" //					Parte IV
 
 
 
@@ -102,7 +136,7 @@ noisily run "`c(sysdir_personal)'/5CGWeb.do" //				Parte IV
 *****************/
 ** 6 Fiscal Gap **
 ******************
-noisily run "`c(sysdir_personal)'/6FiscalGapWeb.do" //			Parte IV
+noisily run "`c(sysdir_personal)'/6FiscalGapWeb.do" //				Parte IV
 
 
 

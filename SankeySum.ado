@@ -41,32 +41,6 @@ quietly {
 
 			local color ""
 			if _rc != 0 & profile[`k'] != 0 {
-				tabstat profile, stat(sum) f(%20.0fc) save
-				tempname ptotal
-				matrix `ptotal' = r(StatTotal)
-
-				tabstat profile if from == `=from[`k']', stat(sum) f(%20.0fc) save
-				tempname profile
-				matrix `profile' = r(StatTotal)
-
-				local nodes `"`nodes'{"name":"`faccountname':_`=string(`=`profile'[1,1]/`=scalar(pibY)'*100',"%5.1fc")'%_PIB","id":"`color'"},"'
-				local node`faccountname' = `number'
-				local ++number
-			}
-
-
-			* TO Nodes *
-			local taccountname : label (to) `=to[`k']'
-			local taccountname = subinstr("`taccountname'"," ","_",.)
-			local taccountname = substr("`taccountname'",1,20)
-			local taccountname = strtoname("`taccountname'")
-			if "`cycle'" != "" & "`base'" == "`d'" {
-				local taccountname = "_`taccountname'"
-			}
-			capture confirm existence `node`taccountname''
-
-			local color ""
-			if _rc != 0 & profile[`k'] != 0 {
 				if `color_num' == 1 & ("`base'" == "`a'" | "`base'" == "`c'") {
 					local color = "one"
 				}
@@ -129,6 +103,32 @@ quietly {
 				}
 				local ++color_num
 
+				tabstat profile, stat(sum) f(%20.0fc) save
+				tempname ptotal
+				matrix `ptotal' = r(StatTotal)
+
+				tabstat profile if from == `=from[`k']', stat(sum) f(%20.0fc) save
+				tempname profile
+				matrix `profile' = r(StatTotal)
+
+				local nodes `"`nodes'{"name":"`faccountname':_`=string(`=`profile'[1,1]/`=scalar(pibY)'*100',"%5.1fc")'%_PIB","id":"`color'"},"'
+				local node`faccountname' = `number'
+				local ++number
+			}
+
+
+			* TO Nodes *
+			local taccountname : label (to) `=to[`k']'
+			local taccountname = subinstr("`taccountname'"," ","_",.)
+			local taccountname = substr("`taccountname'",1,20)
+			local taccountname = strtoname("`taccountname'")
+			if "`cycle'" != "" & "`base'" == "`d'" {
+				local taccountname = "_`taccountname'"
+			}
+			capture confirm existence `node`taccountname''
+
+			local color ""
+			if _rc != 0 & profile[`k'] != 0 {
 				tabstat profile, stat(sum) f(%20.0fc) save
 				tempname ptotal
 				matrix `ptotal' = r(StatTotal)

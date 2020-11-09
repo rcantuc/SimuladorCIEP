@@ -33,7 +33,7 @@ quietly {
 
 	** 2.1 Update SHRFSP **
 	if "`update'" == "update" | "`updated'" != "yes" {
-		noisily run UpdateSHRFSP.do
+		noisily run UpdateSHRFSP`=subinstr("${pais}"," ","",.)'.do
 	}
 
 	** 2.2 PIB + Deflactor **

@@ -28,11 +28,13 @@ global id = "$id"
 ***************/
 *** 1 SANKEY ***
 ****************
-run "`c(sysdir_personal)'/3GastosWeb.do" fast
-run "`c(sysdir_personal)'/4IngresosWeb.do" fast
+if "$pais" == "" {
+	run "`c(sysdir_personal)'/3GastosWeb.do" fast
+	run "`c(sysdir_personal)'/4IngresosWeb.do" fast
 
-foreach k in sexo decil /*escol grupo_edad*/ {
-	noisily run "`c(sysdir_personal)'/SankeySF.do" `k' `anio'
+	foreach k in sexo decil /*escol grupo_edad*/ {
+		noisily run "`c(sysdir_personal)'/SankeySF.do" `k' `anio'
+	}
 }
 
 
@@ -42,7 +44,7 @@ foreach k in sexo decil /*escol grupo_edad*/ {
 *******************/
 *** 2 FISCAL GAP ***
 ********************
-noisily FiscalGap, anio(`anio') graphs end(2030) output //boot(250) //update
+noisily FiscalGap, anio(`anio') graphs end(2050) //output //boot(250) //update
 
 
 

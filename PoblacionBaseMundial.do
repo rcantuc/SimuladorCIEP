@@ -75,4 +75,5 @@ saveold `"`c(sysdir_site)'../basesCIEP/SIM/Poblacion`=subinstr("${pais}"," ","",
 
 
 collapse (sum) poblacion, by(anio)
-saveold `"`c(sysdir_site)'../basesCIEP/SIM/Poblaciontot`=subinstr("${pais}"," ","",.)'.dta"', replace version(13)
+g entidad = "Nacional"
+saveold `"`c(sysdir_site)'../basesCIEP/SIM/Poblacion`=subinstr("${pais}"," ","",.)'tot.dta"', replace version(13)

@@ -16,6 +16,8 @@ quietly {
 	*** 1 Base de datos SHCP ***
 	****************************
 	use if clave_de_concepto == "`anything'" using "`c(sysdir_site)'../basesCIEP/SIM/DatosAbiertos.dta", clear
+	drop if monto == 0 | monto == .
+	drop if anio < 2003
 	if `=_N' == 0 {
 		noisily di in r "No se encontr{c o'} la serie {bf:`anything'}."
 		return scalar error = 2000
@@ -58,11 +60,12 @@ quietly {
 		sort anio mes
 		collapse (last) monto mes if monto != ., by(anio nombre clave_de_concepto)
 	}
+	tsset anio
+	local prianio = anio in 1
 	local ultanio = anio in -1
 	local ultmes = mes in -1
 	return local ultimoAnio = `ultanio'
 	return local ultimoMes = `ultmes'
-	tsset anio
 
 	if `pibvf' != -999 {
 		tsappend, add(1)
@@ -117,22 +120,32 @@ quietly {
 		if `length' > 110 {
 			local textsize ", size(vvsmall)"
 		}
-		twoway (connected monto_pib anio if anio < `ultanio') ///
-			(connected monto_pib anio if anio >= `ultanio'), ///
-			title({bf:`=nombre[1]'}`textsize') ///
+		tempvar monto
+		g `monto' = monto/1000000
+		twoway (area `monto' anio if anio < `ultanio') ///
+			(bar `monto' anio if anio >= `ultanio') ///
+			(connected monto_pib anio if anio < `ultanio', yaxis(2) mfcolor(white) color("255 129 0")) ///
+			(connected monto_pib anio if anio >= `ultanio', yaxis(2) mfcolor(white) color("255 189 0")), ///
+			///title({bf:`=nombre[1]'}`textsize') ///
 			/*subtitle(Montos observados)*/ ///
-			b1title(`"{bf:`=anio[_N]':} `=string(monto[_N]/1000000,"%20.1fc")' millones de MXN"', size(small)) ///
-			b2title(`"`textovp'"', size(small)) ///
-			ytitle(% PIB) xtitle("") ///
-			xlabel(1993(2)2019) ///
-			ylabel(, format(%4.1fc)) yscale(range(0)) ///
-			legend(label(1 "Observado") label(2 "Estimado")) ///
-			text(`text1', size(small)) ///
-			caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP, Datos Abiertos y del INEGI, BIE.}") ///
+			b1title(`"{bf:Proyectado `=anio[_N]':} `=string(monto[_N]/1000000,"%20.1fc")' millones de MXN"', size(small)) ///
+			///b2title(`"`textovp'"', size(small)) ///
+			ytitle(millones MXN) ///
+			ytitle(% PIB, axis(2)) xtitle("") ///
+			xlabel(`prianio' `=round(`prianio',5)'(5)`ultanio') ///
+			ylabel(, format(%10.0fc)) yscale(range(0)) ///
+			ylabel(, axis(2) format(%5.1fc) noticks) ///
+			yscale(range(0) noline axis(2)) ///
+			legend(label(1 "Observado") label(2 "Proyectado") order(1 2)) ///
+			text(`text1', size(small) yaxis(2)) ///
+			///caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP, Datos Abiertos y del INEGI, BIE.}") ///
 			note("{bf:{c U'}ltimo dato:} `ultanio'm`ultmes'.") ///
 			name(H`anything', replace)
 		
-		*graph save H`anything' "`=c(sysdir_site)'../basesCIEP/SIM/`anything'.gph", replace
+		capture confirm existence $export
+		if _rc == 0 {
+			graph export "$export/`anything'.png", replace name(H`anything')
+		}
 	}
 	noisily list, separator(30) string(30)
 }
