@@ -17,7 +17,6 @@ if "`c(os)'" == "MacOSX" {
 	global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
 }
 adopath ++ PERSONAL
-timer on 1
 
 
 
@@ -26,8 +25,9 @@ timer on 1
 *** Cap. 2. El sistema de la ciencia ***
 ***  Simulador v5: PIB + Deflactor   ***
 ****************************************
+timer on 1
 *global id = "PE2021"
-global pais = "El Salvador"
+*global pais = "El Salvador"
 local aniovp = 2021
 
 noisily run "`c(sysdir_personal)'/2PIBWeb.do" `aniovp'
