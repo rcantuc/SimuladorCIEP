@@ -33,7 +33,7 @@ quietly {
 	*** 2 SYNTAX **
 	***************
 	use in 1 using `"`c(sysdir_site)'../basesCIEP/SIM/LIF`=subinstr("${pais}"," ","",.)'.dta"', clear
-	syntax [if] [, ANIO(int `aniovp' ) Update Graphs Base ID(string) ///
+	syntax [if] [, ANIO(int `aniovp' ) Update NOGraphs Base ID(string) ///
 		MINimum(real 0) DESDE(int 2013) ILIF LIF BY(varname) ROWS(int 2) COLS(int 5)]
 
 	noisily di _newline(2) in g _dup(20) "." "{bf:  Sistema Fiscal: INGRESOS $pais " in y `anio' "  }" in g _dup(20) "."
@@ -77,9 +77,11 @@ quietly {
 	sort anio
 	merge m:1 (anio) using `PIB', nogen keepus(pibY indiceY deflator lambda var_pibY) ///
 		update replace keep(matched) sorted
+	local aniofirst = anio[1]
+	local aniolast = anio[_N]
 
 	** 3.1 Utilizar LIF o ILIF **
-	if "`eofp'" == "" {
+	if "`lif'" == "" {
 		replace recaudacion = LIF if anio == `anio'
 	}
 
@@ -115,31 +117,6 @@ quietly {
 	capture replace nombre = subinstr(nombre,"Impuesto especial sobre producci{c o'}n y servicios de ","",.)
 	capture replace nombre = subinstr(nombre,"alimentos no b{c a'}sicos con alta densidad cal{c o'}rica","comida chatarra",.)
 	capture replace nombre = subinstr(nombre,"/","_",.)
-
-	if "$graphs" == "on" | "`graphs'" == "graphs" {
-		tabstat recaudacionPIB if anio == `anio' & divLIF != 10, stat(sum) f(%20.0fc) save
-		tempname recanio
-		matrix `recanio' = r(StatTotal)
-		
-		graph pie recaudacionPIB if anio == `anio' & divLIF != 10, over(`resumido') ///
-			plabel(_all percent, format(%5.1fc)) ///
-			title(`"Ingresos `=upper("`lif'`ilif'")'"') /// subtitle($pais) ///
-			name(ingresospie, replace) ///
-			legend(on position(6) rows(`rows') cols(`cols')) ///
-			ptext(0 0 `"{bf:`=string(`recanio'[1,1],"%6.1fc")' % PIB}"', color(white) size(small))
-
-		graph bar (sum) recaudacionPIB if divLIF != 10 & anio >= 2002, ///
-			over(`resumido', /*relabel(1 "LIF" 2 "SHCP")*/) ///
-			over(anio, label(labgap(vsmall))) ///
-			bargap(-30) stack asyvars ///
-			title("{bf:Ingresos presupuestarios}") ///
-			subtitle($pais) ///
-			ytitle(% PIB) ylabel(0(5)30, labsize(small)) ///
-			legend(on position(6) rows(`rows') cols(`cols')) ///
-			name(ingresos, replace) ///
-			blabel(bar, format(%7.1fc)) ///
-			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}")
-	}
 
 
 
@@ -318,6 +295,67 @@ quietly {
 		return scalar Fosiles = `ieps'6[1,1]
 		return scalar Alcohol = `ieps'1[1,1]
 	}
+
+
+
+	if "$graphs" == "on" | "`nographs'" != "nographs" {
+		preserve
+		tabstat recaudacionPIB if anio == `anio' & divLIF != 10, stat(sum) f(%20.0fc) save
+		tempname recanio
+		matrix `recanio' = r(StatTotal)
+		
+		*graph pie recaudacionPIB if anio == `anio' & divLIF != 10, over(`resumido') ///
+			plabel(_all percent, format(%5.1fc)) ///
+			title(`"Ingresos `=upper("`lif'`ilif'")'"') /// subtitle($pais) ///
+			name(ingresospie, replace) ///
+			legend(on position(6) rows(`rows') cols(`cols')) ///
+			ptext(0 0 `"{bf:`=string(`recanio'[1,1],"%6.1fc")' % PIB}"', color(white) size(small))
+
+		levelsof `resumido' if divLIF != 10, local(lev_resumido)
+		local totlev = 0
+		foreach k of local lev_resumido {
+			local legend`k' : label `label' `k'
+			local ++totlev
+		}
+		collapse (sum) recaudacion* ///
+			if divLIF != 10 | recaudacion != 0 | recaudacion == ., by(anio `resumido')
+		reshape wide recaudacion recaudacionPIB, i(anio) j(`resumido')
+		local countlev = 1
+		foreach k of local lev_resumido {
+			tempvar lev_res`countlev'
+			if `countlev' == 1 {
+				g `lev_res`countlev'' = recaudacion`k'/1000000
+			}
+			else {
+				g `lev_res`countlev'' = recaudacion`k'/1000000 + `lev_res`=`countlev'-1''
+			}
+			replace `lev_res`countlev'' = 0 if `lev_res`countlev'' == .
+			
+			local graphvars = "`lev_res`countlev'' `graphvars' "
+			local legend = `"`legend' label(`=`totlev'-`countlev'+1' "`legend`k''")"'
+			local ++countlev
+		}
+		noisily di in w "`graphsvars'"
+
+		tempvar TOTPIB
+		egen `TOTPIB' = rsum(recaudacionPIB*)
+		twoway (area `graphvars' anio if anio >= 2003) ///
+			(connected `TOTPIB' anio if anio >= 2003, yaxis(2) mlcolor("255 129 0") lcolor("255 129 0")), ///
+			title("{bf:Ingresos} p{c u'}blicos") ///
+			subtitle($pais) ///
+			ytitle(millones `currency') ytitle(% PIB, axis(2)) xtitle("") ///
+			ylabel(/*0(5)30*/, format(%15.0fc) labsize(small)) ///
+			ylabel(/*0(5)30*/, axis(2) noticks format(%5.1fc) labsize(small)) ///
+			yscale(range(0)) yscale(range(0) axis(2) noline) ///
+			xlabel(2010(1)`aniovp') ///
+			xlabel(`aniofirst'(1)`aniolast') ///
+			legend(on position(6) rows(`rows') cols(`cols') `legend' label(`=`totlev'+1' "= Total % PIB")) ///
+			name(ingresos, replace) ///
+			caption("Fuente: Elaborado por el CIEP.")
+		restore
+	}
+
+
 
 	***********
 	*** END ***

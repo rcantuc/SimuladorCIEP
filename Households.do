@@ -21,6 +21,7 @@ if `1' >= 2018 {
 	local SubsidioEmpleo = 50979000000 	// Presupuesto de gastos fiscales (2018)
 	local udis = 6.054085			// Promedio de valor de UDIS de enero a diciembre 2018
 	local smdf = 88.36			// Salario minimo general
+	local enighanio = 2018
 }
 if `1' == 2016 {
 	local enigh = "ENIGH"
@@ -30,6 +31,7 @@ if `1' == 2016 {
 	local SubsidioEmpleo = 43707000000	// Presupuesto de gastos fiscales (2016)
 	local udis = 5.4490872131		// Promedio de valor de UDIS de enero a diciembre 2016
 	local smdf = 73.04			// Salario minimo general
+	local enighanio = 2016
 }
 if `1' == 2014 {
 	local enigh = "ENIGH"
@@ -39,6 +41,7 @@ if `1' == 2014 {
 	local SubsidioEmpleo = 41293000000	// Presupuesto de gastos fiscales (2014)
 	local udis = 5.1561230329  		// Promedio de valor de UDIS de enero a diciembre 2014
 	local smdf = 67.29			// Zona A. 2014
+	local enighanio = 2014
 }
 if `1' == 2012 {
 	local enigh = "ENIGH"
@@ -48,9 +51,9 @@ if `1' == 2012 {
 	local SubsidioEmpleo = 29594000000	// Presupuesto de gastos fiscales (2012)
 	local udis = 4.776797282  		// Promedio de valor de UDIS de enero a diciembre 2014
 	local smdf = 62.33			// Zona A. 2012
+	local enighanio = 2012
 }
 timer on 6
-local enighanio = `1'
 
 ** A.0.1 Log-file **
 capture log close

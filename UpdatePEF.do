@@ -29,7 +29,8 @@ foreach k of local archivos {
 	}
 
 	* Limpiar *
-	drop if ciclo == ""
+	capture drop if ciclo == ""
+	capture drop if ciclo == .
 	capture drop v*
 	capture rename ejercicio ejercido
 	foreach j of varlist _all {
