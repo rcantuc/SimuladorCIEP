@@ -27,7 +27,7 @@ adopath ++ PERSONAL
 ****************************************
 timer on 1
 *global id = "PE2021"
-*global pais = "El Salvador"
+global pais = "El Salvador"
 local aniovp = 2021
 
 noisily run "`c(sysdir_personal)'/2PIBWeb.do" `aniovp'
@@ -40,7 +40,7 @@ noisily run "`c(sysdir_personal)'/2PIBWeb.do" `aniovp'
 ***        Simulador v5: Set up         ***
 *******************************************
 noisily Poblacion, //nographs //update
-*noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' `aniovp'
+noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' `aniovp'
 
 if "$pais" == "" {
 	*noisily run "`c(sysdir_personal)'/Expenditure.do" 2018 // 	<-- a calibrar!!!
