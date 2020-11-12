@@ -2,9 +2,13 @@
 ** 8 Cuentas Generacionales **
 ******************************
 timer on 96
-local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
-local anio = substr(`"`=trim("`fecha'")'"',1,4) // 								<-- anio base: HOY
-local anio = 2021
+if "`1'" == "" {
+	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
+	local anio = substr(`"`=trim("`fecha'")'"',1,4) // 								<-- anio base: HOY
+}
+else {
+	local anio = `1'
+}
 
 
 
@@ -36,7 +40,7 @@ label var AportacionesNetas "de las aportaciones netas"
 save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace
 
 noisily Simulador AportacionesNetas if AportacionesNetas != 0 [fw=factor], ///
-	base("ENIGH 2018") boot(1) reboot graphs //output
+	base("ENIGH 2018") boot(1) reboot graphs anio(2020) //output
 
 noisily CuentasGeneracionales AportacionesNetas, anio(`anio') output //boot(250) //	<-- OPTIONAL!!! Toma mucho tiempo.
 

@@ -2,9 +2,13 @@
 *** 9 FISCAL GAP ***
 ********************
 timer on 95
-local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
-local anio = substr(`"`=trim("`fecha'")'"',1,4) // 								<-- anio base: HOY
-local anio = 2020
+if "`1'" == "" {
+	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
+	local anio = substr(`"`=trim("`fecha'")'"',1,4) // 								<-- anio base: HOY
+}
+else {
+	local anio = `1'
+}
 
 
 
@@ -29,8 +33,8 @@ global id = "$id"
 *** 1 SANKEY ***
 ****************
 if "$pais" == "" {
-	run "`c(sysdir_personal)'/3GastosWeb.do" fast
-	run "`c(sysdir_personal)'/4IngresosWeb.do" fast
+	run "`c(sysdir_personal)'/3GastosWeb.do" `anio' fast
+	run "`c(sysdir_personal)'/4IngresosWeb.do" `anio' fast
 
 	foreach k in sexo decil /*escol grupo_edad*/ {
 		noisily run "`c(sysdir_personal)'/SankeySF.do" `k' `anio'

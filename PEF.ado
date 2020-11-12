@@ -33,7 +33,7 @@ quietly {
 	*** 2 SYNTAX ***
 	****************
 	use in 1 using `"`c(sysdir_site)'../basesCIEP/SIM/PEF`=subinstr("${pais}"," ","",.)'.dta"', clear
-	syntax [if] [, ANIO(int `aniovp') Graphs Update Base ID(string) ///
+	syntax [if] [, ANIO(int `aniovp') NOGraphs Update Base ID(string) ///
 		BY(varname) ROWS(int 2) COLS(int 5) MINimum(real 1) PEF PPEF]
 
 	if "`ppef'" == "ppef" {
@@ -77,6 +77,8 @@ quietly {
 	collapse (sum) gasto*, by(anio `by' transf_gf) 
 	merge m:1 (anio) using `PIB', nogen keepus(pibY indiceY deflator var_pibY) ///
 		update replace keep(matched) sorted
+	local aniofirst = anio[1]
+	local aniolast = anio[_N]
 
 	** 3.1 Utilizar PPEF **
 	if "`ppef'" == "ppef" {
@@ -114,32 +116,6 @@ quietly {
 			label define `label' 98 "Otros", modify
 		}
 	}*/
-
-	if "$graphs" == "on" | "`graphs'" == "graphs" {
-		tabstat gastonetoPIB if anio == `anio' & `by' != -1 & transf_gf == 0, stat(sum) f(%20.0fc) save
-		tempname gasanio
-		matrix `gasanio' = r(StatTotal)
-		
-		graph pie gastonetoPIB if anio == `anio' & `by' != -1 & transf_gf == 0, over(`resumido') ///
-			plabel(_all percent, format(%5.1fc)) ///
-			title(`"Gastos `=upper("`pef'`ppef'")' `anio'"') /// subtitle($pais) ///
-			name(gastospie, replace) ///
-			legend(on position(6) rows(`rows') cols(`cols')) ///
-			ptext(0 0 `"{bf:`=string(`gasanio'[1,1],"%6.1fc")' % PIB}"', color(white) size(small))
-
-		graph bar (sum) gastonetoPIB if `by' != -1 & transf_gf == 0 & anio >= 2013, ///
-			over(`resumido') ///
-			over(anio, label(labgap(vsmall))) ///
-			bargap(-30) stack asyvars ///
-			///title("{bf:Gasto} p{c u'}blico") ///
-			subtitle($pais) ///
-			ytitle(% PIB) ///
-			ylabel(/*0(5)30*/, format(%5.1fc) labsize(small)) ///
-			legend(on position(6) rows(`rows') cols(`cols')) ///
-			name(gastos, replace) ///
-			blabel(bar, format(%7.1fc)) ///
-			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}")
-	}
 
 
 
@@ -337,7 +313,66 @@ quietly {
 			_col(66) in y %7.3fc `mattot'[1,2] ///
 			_col(77) in y %7.3fc `mattot'[1,2]-`mattot5'[1,2] "}"
 	}
-	restore
+	restore*/
+
+
+
+	if "$graphs" == "on" | "`nographs'" != "nographs" {
+		preserve
+		tabstat gastonetoPIB if anio == `anio' & `by' != -1 & transf_gf == 0, stat(sum) f(%20.0fc) save
+		tempname gasanio
+		matrix `gasanio' = r(StatTotal)
+
+		*graph pie gastonetoPIB if anio == `anio' & `by' != -1 & transf_gf == 0, over(`resumido') ///
+			plabel(_all percent, format(%5.1fc)) ///
+			title(`"Gastos `=upper("`pef'`ppef'")' `anio'"') /// subtitle($pais) ///
+			name(gastospie, replace) ///
+			legend(on position(6) rows(`rows') cols(`cols')) ///
+			ptext(0 0 `"{bf:`=string(`gasanio'[1,1],"%6.1fc")' % PIB}"', color(white) size(small))
+
+
+		levelsof `resumido' if `by' != -1, local(lev_resumido)
+		local totlev = 0
+		foreach k of local lev_resumido {
+			local legend`k' : label `label' `k'
+			local ++totlev
+		}
+
+		collapse (sum) gastoneto* if `by' != -1 & transf_gf == 0, by(anio `resumido')
+		reshape wide gastoneto gastonetoPIB, i(anio) j(`resumido')
+		local countlev = 1
+		foreach k of local lev_resumido {
+			tempvar lev_res`countlev'
+			if `countlev' == 1 {
+				g `lev_res`countlev'' = gastoneto`k'/1000000
+			}
+			else {
+				g `lev_res`countlev'' = gastoneto`k'/1000000 + `lev_res`=`countlev'-1''
+			}
+			replace `lev_res`countlev'' = 0 if `lev_res`countlev'' == .
+			
+			local graphvars = "`lev_res`countlev'' `graphvars' "
+			local legend = `"`legend' label(`=`totlev'-`countlev'+1' "`legend`k''")"'
+			local ++countlev
+		}
+
+		tempvar TOTPIB
+		egen `TOTPIB' = rsum(gastonetoPIB*)
+		twoway (area `graphvars' anio if anio >= 2014) ///
+			(connected `TOTPIB' anio if anio >= 2014, yaxis(2) mlcolor("255 129 0") lcolor("255 129 0")), ///
+			title("{bf:Gasto} p{c u'}blico") ///
+			subtitle($pais) ///
+			ytitle(millones `currency') ytitle(% PIB, axis(2)) xtitle("") ///
+			ylabel(/*0(5)30*/, format(%15.0fc) labsize(small)) ///
+			ylabel(/*0(5)30*/, axis(2) noticks format(%5.1fc) labsize(small)) ///
+			yscale(range(0)) yscale(range(0) axis(2) noline) ///
+			xlabel(2014(1)`aniolast') ///
+			legend(on position(6) rows(`rows') cols(`cols') `legend' label(`=`totlev'+1' "= Total % PIB")) ///
+			name(gastos, replace) ///
+			caption("Fuente: Elaborado por el CIEP.")
+		
+		restore
+	}
 
 
 

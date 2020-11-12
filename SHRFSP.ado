@@ -82,7 +82,7 @@ quietly {
 	*** 4 Graph ***
 	***************	
 	if "`nographs'" != "nographs" {
-		graph bar (sum) `shrfspInterno' `shrfspExterno' if anio <= 2026 & anio >= 2000, ///
+		graph bar (sum) `shrfspInterno' `shrfspExterno' if `shrfspInterno' != ., ///
 			over(anio, label(labgap(vsmall))) ///
 			stack asyvars ///
 			title("{bf:Saldo hist{c o'}rico de RFSP}") ///

@@ -2,9 +2,13 @@
 *** 4 INGRESOS ***
 ******************
 timer on 97
-local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
-local anio = substr(`"`=trim("`fecha'")'"',1,4) // 								<-- anio base: HOY
-local anio = 2021
+if "`1'" == "" {
+	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
+	local anio = substr(`"`=trim("`fecha'")'"',1,4) // 								<-- anio base: HOY
+}
+else {
+	local anio = `1'
+}
 
 
 
@@ -39,7 +43,7 @@ if "$id" == "PE2021" & "$pais" == "" {
 
 
 
-if "`1'" == "fast" {
+if "`2'" == "fast" {
 	exit
 }
 

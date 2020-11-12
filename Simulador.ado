@@ -9,7 +9,7 @@ quietly {
 		BASE(string) GA ///
 		MACro(string) BIE ///
 		POBlacion(string) FOLIO(string) ///
-		NOKernel POBGraph OUTPUT]
+		NOKernel POBGraph OUTPUT ANIO(int -1)]
 
 
 
@@ -27,7 +27,7 @@ quietly {
 
 	** Macros: PIB **
 	preserve
-	PIBDeflactor, anio(`aniobase') nographs
+	PIBDeflactor, anio(`anio') nographs
 	tempfile PIBBASE
 	save `PIBBASE'
 
@@ -38,9 +38,9 @@ quietly {
 			continue, break
 		}
 	}
-	
-	SCN, anio(`aniobase') nographs
-	local PIB = scalar(PIB)
+
+	*SCN, anio(`aniobase') nographs
+	*local PIB = scalar(PIB)
 	restore
 
 	** Poblacion **
@@ -541,7 +541,7 @@ quietly {
 	*** 5.1 Piramide de la variable ***
 	if "`graphs'" == "graphs" {
 		poblaciongini `varlist', title("`title'") nombre(`nombre') ///
-		boottext(`boottext') rect(`RECT') base(`base') `graphs' id($id) `output'
+			boottext(`boottext') rect(`RECT') base(`base') `graphs' id($id) `output' pib(`PIB')
 	}
 
 
@@ -564,8 +564,8 @@ end
 *****************
 program poblaciongini
 	version 13.1
-	syntax varname, NOMbre(string) [TITle(string) Rect(real 100) BOOTtext(string) ///
-		BASE(string) Graphs ID(string) OUTPUT]
+	syntax varname, NOMbre(string) PIB(real) ///
+		[TITle(string) Rect(real 100) BOOTtext(string) BASE(string) Graphs ID(string) OUTPUT]
 
 
 	*************************
@@ -643,10 +643,10 @@ program poblaciongini
 	*** 5. Graphs ***
 	graphpiramide `varlist', over(`grupo') title("`title'") rect(`rect') ///
 		men(`=string(`gsexlab1',"%7.0fc")') women(`=string(`gsexlab2',"%7.0fc")') ///
-		boot(`boottext') base(`base') `output'
+		boot(`boottext') base(`base') `output' pib(`pib')
 	*graphpiramide `varlist', over(`grupoesc') title("`title'") rect(`rect') ///
 		men(`=string(`gsexlab1',"%7.0fc")') women(`=string(`gsexlab2',"%7.0fc")') ///
-		boot(`boottext') base(`base') `output'
+		boot(`boottext') base(`base') `output' pib(`pib')
 end
 
 
@@ -656,7 +656,7 @@ end
 program graphpiramide
 	version 13.1
 
-	syntax varname, Over(varname) Men(string) Women(string) ///
+	syntax varname, Over(varname) Men(string) Women(string) PIB(real) ///
 		[Title(string) BOOTtext(string) Rect(real 100) BASE(string) ID(string) OUTPUT]
 
 	* Title *
@@ -666,7 +666,7 @@ program graphpiramide
 	*** 1. Valores agregados ***
 	tempname TOT POR
 	egen double `TOT' = sum(`varlist')
-	g double `POR' = `varlist'/scalar(PIB)*100
+	g double `POR' = `varlist'/`pib'*100
 
 	* Max number *
 	tempvar PORmax

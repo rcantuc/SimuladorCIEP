@@ -33,7 +33,7 @@ quietly {
 	****************
 	*** 2 SHRFSP ***
 	****************
-	SHRFSP, anio(`anio') //nographs //update
+	SHRFSP, anio(`anio') //update //nographs
 	tempfile shrfsp
 	save `shrfsp'
 
@@ -41,7 +41,7 @@ quietly {
 	******************************
 	*** 3 Fiscal Gap: Ingresos ***
 	******************************
-	LIF, anio(`anio') //eofp
+	LIF, anio(`anio') nographs ilif //eofp
 	collapse (sum) recaudacion if divLIF != 10, by(anio divGA) fast
 	g modulo = ""
 
@@ -130,14 +130,14 @@ quietly {
 	** 3.1 Graphs **
 	if "`graphs'" == "graphs" {
 		tempvar consumo ingreso otros
-		g `consumo' = (recaudacionalconsumo)/1000000000000
-		g `ingreso' = (recaudacionalingreso + recaudacionalconsumo)/1000000000000
-		g `otros' = (recaudacionotros + recaudacionalingreso + recaudacionalconsumo)/1000000000000
+		g `consumo' = (recaudacionalconsumo)/1000000000
+		g `ingreso' = (recaudacionalingreso + recaudacionalconsumo)/1000000000
+		g `otros' = (recaudacionotros + recaudacionalingreso + recaudacionalconsumo)/1000000000
 
 		tempvar consumo2 ingreso2 otros2
-		g `consumo2' = (estimacionalconsumo)/1000000000000
-		g `ingreso2' = (estimacionalingreso + estimacionalconsumo)/1000000000000
-		g `otros2' = (estimacionotros + estimacionalingreso + estimacionalconsumo)/1000000000000
+		g `consumo2' = (estimacionalconsumo)/1000000000
+		g `ingreso2' = (estimacionalingreso + estimacionalconsumo)/1000000000
+		g `otros2' = (estimacionotros + estimacionalingreso + estimacionalconsumo)/1000000000
 
 		if "`output'" == "" {
 			twoway (area `otros' `ingreso' `consumo' anio if anio < `anio' & anio >= 2003) ///
@@ -146,14 +146,14 @@ quietly {
 				(area `consumo2' anio if anio >= `anio', color("39 97 47")), ///
 				legend(cols(3) order(1 2 3) ///
 				label(1 "Ingresos de capital") label(2 "Impuestos laborales") label(3 "Impuestos al consumo")) ///
-				xlabel(2003 2005(5)`=round(anio[_N],10)') ///
+				xlabel(2010(5)`=round(anio[_N],10)') ///
 				ylabel(, format(%20.0fc)) ///
 				xline(`=`anio'-.5') ///
 				text(`=`otros'[`obs`anio_last'']*.0618' `=`anio'+.5' "Proyecci{c o'}n", place(ne) color(white)) ///
 				yscale(range(0)) ///
 				title({bf:Proyecci{c o'}n} de los ingresos p{c u'}blicos) ///
 				subtitle($pais) ///
-				xtitle("") ytitle(billones `currency' `anio') ///
+				xtitle("") ytitle(mil millones `currency' `anio') ///
 				caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
 				name(Proy_ingresos, replace)
 			if "$export" != "" {
@@ -164,22 +164,22 @@ quietly {
 			keep if anio >= 2010
 			forvalues k=1(1)`=_N' {
 				if anio[`k'] >= 2010 & anio[`k'] < `anio' {
-					local proy_consumo = "`proy_consumo' `=string(`=recaudacionalconsumo[`k']/1000000000000',"%10.3f")',"
+					local proy_consumo = "`proy_consumo' `=string(`=recaudacionalconsumo[`k']/1000000000',"%10.3f")',"
 				}
 				if anio[`k'] >= `anio' & anio[`k'] <= 2030 {
-					local proy_consumo = "`proy_consumo' `=string(`=estimacionalconsumo[`k']/1000000000000',"%10.3f")',"
+					local proy_consumo = "`proy_consumo' `=string(`=estimacionalconsumo[`k']/1000000000',"%10.3f")',"
 				}
 				if anio[`k'] >= 2010 & anio[`k'] < `anio' {
-					local proy_ingreso = "`proy_ingreso' `=string(`=recaudacionalingreso[`k']/1000000000000',"%10.3f")',"
+					local proy_ingreso = "`proy_ingreso' `=string(`=recaudacionalingreso[`k']/1000000000',"%10.3f")',"
 				}
 				if anio[`k'] >= `anio' & anio[`k'] <= 2030 {
-					local proy_ingreso = "`proy_ingreso' `=string(`=estimacionalingreso[`k']/1000000000000',"%10.3f")',"
+					local proy_ingreso = "`proy_ingreso' `=string(`=estimacionalingreso[`k']/1000000000',"%10.3f")',"
 				}
 				if anio[`k'] >= 2010 & anio[`k'] < `anio' {
-					local proy_otrosing = "`proy_otrosing' `=string(`=recaudacionotrosing[`k']/1000000000000',"%10.3f")',"
+					local proy_otrosing = "`proy_otrosing' `=string(`=recaudacionotrosing[`k']/1000000000',"%10.3f")',"
 				}
 				if anio[`k'] >= `anio' & anio[`k'] <= 2030 {
-					local proy_otrosing = "`proy_otrosing' `=string(`=estimacionotrosing[`k']/1000000000000',"%10.3f")',"
+					local proy_otrosing = "`proy_otrosing' `=string(`=estimacionotrosing[`k']/1000000000',"%10.3f")',"
 				}
 			}
 			local length_consumo = strlen("`proy_consumo'")
@@ -219,7 +219,11 @@ quietly {
 	****************************
 	*** 4 Fiscal Gap: Gastos ***
 	****************************
-	PEF if divGA != -1, anio(`anio') by(divGA)
+	PEF if divGA != -1, anio(`anio') by(divGA) nographs
+	capture confirm variable transf_gf
+	if _rc != 0 {
+		g transf_gf = 0
+	}
 	collapse (sum) gasto if transf_gf == 0, by(anio divGA) fast
 	g modulo = ""
 
@@ -397,9 +401,10 @@ quietly {
 	replace estimacionamortizacion = gastoamortizacion if anio == `anio' & estimacionamortizacion == 0
 
 
+
 	***********
 	** DEUDA **
-	merge 1:1 (anio) using `shrfsp', nogen keepus(shrfsp* rfsp* /*nopresupuestario*/ tipoDeCambio)
+	merge 1:1 (anio) using `shrfsp', nogen keepus(shrfsp* rfsp* /*nopresupuestario*/ tipoDeCambio) keep(matched)
 	merge 1:1 (anio) using `baseingresos', nogen
 
 	g difshrfsp = shrfsp-L.shrfsp
@@ -411,20 +416,23 @@ quietly {
 	matrix `ACT' = r(StatTotal)
 
 	forvalues k=`=_N'(-1)1 {
-		if rfsp[`k'] != . & "`foundlast'" != "yes" {
+		if shrfsp[`k'] != . & "`lastfound'" != "yes" {
 			local obslast = `k'
-			local foundlast = "yes"
+			local lastfound = "yes"
 		}
-		if rfsp[`k'] == . & "`foundlast'" == "yes" {
+		if shrfsp[`k'] == . & "`lastfound'" == "yes" {
 			local obsfirs = `k'+1
 			continue, break
 		}
+	}
+	if "`lastfound'" == "yes" & "`obsfirs'" == "" {
+		local obsfirs = 1
 	}
 	local shrfspobslast = shrfsp[`obslast']/pibY[`obslast']*100
 
 	* Actualizacion de los saldos *
 	*g actualizacion = `actualizacion_geo'
-	local actualizacion_geo = (((shrfsp[`obslast']-shrfsp[`=`obsfirs'-1'])/(`ACT'[1,1]+`ACT'[1,2]))^(1/(`obslast'-`obsfirs'))-1)*100
+	local actualizacion_geo = (((shrfsp[`obslast']-shrfsp[`obsfirs'])/(`ACT'[1,1]+`ACT'[1,2]))^(1/(`obslast'-`obsfirs'))-1)*100
 
 	* MXN Reales *
 	replace rfsp = rfsp/deflator
@@ -438,6 +446,9 @@ quietly {
 	egen `costodeudashrfsp_ari2' = mean(costodeudashrfsp_ari)
 	replace costodeudashrfsp = `costodeudashrfsp_ari2' if costodeudashrfsp == .
 
+	replace estimacioncostodeuda = costodeudashrfsp/100*shrfsp if estimacioncostodeuda == . //anio == `anio'
+
+
 	* Iteraciones *
 	capture confirm variable estimacionpenbienestar
 	if _rc != 0 {
@@ -450,14 +461,7 @@ quietly {
 		g gastoingbasico = 0
 	}
 
-	egen estimaciongastos = rsum(estimacionamortizacion estimacioncostodeuda estimacioneducacion ///
-			estimacionsalud estimacionpensiones estimacionotrosgas estimacioningbasico ///
-			estimacionpenbienestar)
-	format estimaciongastos %20.0fc
-
-	replace estimacioncostodeuda = costodeudashrfsp/100*shrfsp if anio == `anio'
-
-	forvalues k = `=`anio'+1'(1)`=anio[_N]' {
+	forvalues k = `=`anio''(1)`=anio[_N]' {
 		replace estimacioncostodeuda = L.costodeudashrfsp/100*L.shrfsp if anio == `k'
 		*replace estimacioncostodeuda = 0 if estimacioncostodeuda < 0
 
@@ -468,42 +472,50 @@ quietly {
 				+ estimacionpenbienestar ///
 				- estimacioningresos if anio == `k'
 		}
-		replace rfspBalance = estimacionamortizacion + estimacioncostodeuda + estimacioneducacion ///
-			+ estimacionsalud + estimacionpensiones + estimacionotrosgas + estimacioningbasico ///
-			+ estimacionpenbienestar ///
-			- estimacioningresos if anio == `k'
+		else {
+			replace rfspBalance = estimacionamortizacion + estimacioncostodeuda + estimacioneducacion ///
+				+ estimacionsalud + estimacionpensiones + estimacionotrosgas + estimacioningbasico ///
+				+ estimacionpenbienestar ///
+				- estimacioningresos if anio == `k'
+		}
 		replace rfsp = rfspBalance if anio == `k'
 
-		replace shrfsp = L.shrfsp*(1+`actualizacion_geo'/100*0) + rfspBalance if anio == `k'
+		replace shrfsp = L.shrfsp*(1+`actualizacion_geo'/100*0) + rfspBalance if anio == `k' & shrfsp == .
 	}
 
 	g rfsp_pib = rfsp/pibYR*100
 
+	egen estimaciongastos = rsum(estimacionamortizacion estimacioncostodeuda estimacioneducacion ///
+			estimacionsalud estimacionpensiones estimacionotrosgas estimacioningbasico ///
+			estimacionpenbienestar)
+	format estimaciongastos %20.0fc
+
+
 	****************
 	** 4.1 Graphs **
 	tempvar educaciong pensionesg saludg costog amortg otrosg ingbasg bienestarg
-	g `educaciong' = (gastoeducacion)/1000000000000
-	g `pensionesg' = (gastopensiones + gastoeducacion)/1000000000000
-	g `saludg' = (gastosalud + gastopensiones + gastoeducacion)/1000000000000
-	g `costog' = (gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000000
-	g `amortg' = (gastoamortizacion + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000000
-	g `otrosg' = (gastootros + gastoamortizacion + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000000
-	g `bienestarg' = (gastopenbienestar + gastootros + gastoamortizacion + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000000
-	g `ingbasg' = (gastoingbasico + gastopenbienestar + gastootros + gastoamortizacion + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000000
+	g `educaciong' = (gastoeducacion)/1000000000
+	g `pensionesg' = (gastopensiones + gastoeducacion)/1000000000
+	g `saludg' = (gastosalud + gastopensiones + gastoeducacion)/1000000000
+	g `costog' = (gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000
+	g `amortg' = (gastoamortizacion + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000
+	g `otrosg' = (gastootros + gastoamortizacion + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000
+	g `bienestarg' = (gastopenbienestar + gastootros + gastoamortizacion + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000
+	g `ingbasg' = (gastoingbasico + gastopenbienestar + gastootros + gastoamortizacion + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000
 	
 	tempvar educaciong2 pensionesg2 saludg2 costog2 amortg2 otrosg2 ingbasg2 bienestarg2
-	g `educaciong2' = (estimacioneducacion)/1000000000000
-	g `pensionesg2' = (estimacionpensiones + estimacioneducacion)/1000000000000
-	g `saludg2' = (estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000000
-	g `costog2' = (estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000000
-	g `amortg2' = (estimacionamortizacion + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000000
-	g `otrosg2' = (estimacionotros + estimacionamortizacion + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000000
-	g `bienestarg2' = (estimacionpenbienestar + estimacionotros + estimacionamortizacion + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000000
-	g `ingbasg2' = (estimacioningbasico + estimacionpenbienestar + estimacionotros + estimacionamortizacion + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000000
+	g `educaciong2' = (estimacioneducacion)/1000000000
+	g `pensionesg2' = (estimacionpensiones + estimacioneducacion)/1000000000
+	g `saludg2' = (estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000
+	g `costog2' = (estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000
+	g `amortg2' = (estimacionamortizacion + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000
+	g `otrosg2' = (estimacionotros + estimacionamortizacion + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000
+	g `bienestarg2' = (estimacionpenbienestar + estimacionotros + estimacionamortizacion + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000
+	g `ingbasg2' = (estimacioningbasico + estimacionpenbienestar + estimacionotros + estimacionamortizacion + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000
 
 	if "`graphs'" == "graphs" {
 		if "`output'" == "" {
-		twoway (area `ingbasg' `bienestarg' `otrosg' `amortg' `costog' `saludg' `pensionesg' `educaciong' anio if anio < `anio' & anio >= 2013) ///
+		twoway (area `ingbasg' `bienestarg' `otrosg' `amortg' `costog' `saludg' `pensionesg' `educaciong' anio if anio < `anio' & anio > 2013) ///
 			(area `ingbasg2' anio if anio >= `anio', color("255 129 0")) ///
 			(area `bienestarg2' anio if anio >= `anio', color("255 189 0")) ///
 			(area `otrosg2' anio if anio >= `anio', color("39 97 47")) ///
@@ -521,7 +533,7 @@ quietly {
 			label(6 "Salud") ///
 			label(7 "Pensiones") ///
 			label(8 "Educaci{c o'}n")) ///
-			xlabel(2013 2015(5)`=round(anio[_N],10)') ///
+			xlabel(2015(5)`=round(anio[_N],10)') ///
 			ylabel(, format(%20.0fc)) ///
 			xline(`=`anio'-.5') ///
 			text(`=`otrosg'[`obs`anio_last'']*.0618' `=`anio'+.5' "Proyecci{c o'}n", place(ne) color(white)) ///
@@ -529,7 +541,7 @@ quietly {
 			title({bf:Proyecci{c o'}n} del gasto p{c u'}blico) ///
 			subtitle($pais) ///
 			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
-			xtitle("") ytitle(billones `currency' `anio') ///
+			xtitle("") ytitle(mil millones `currency' `anio') ///
 			name(Proy_gastos, replace)
 		if "$export" != "" {
 			graph export `"$export/Proy_gastos.png"', replace name(Proy_gastos)
@@ -540,7 +552,7 @@ quietly {
 			yscale(range(0)) ///
 			ytitle(% PIB) ///
 			xtitle("") ///
-			xlabel(2008 2010(5)`=round(anio[_N],10)') ///
+			xlabel(2015(5)`=round(anio[_N],10)') ///
 			xline(`=`anio'+.5') ///
 			legend(off) ///
 			text(`=rfsp_pib[`obs`anio_last'']*.0618' `=`anio'+1.5' "Proyecci{c o'}n", color(white) placement(e)) ///
@@ -550,52 +562,52 @@ quietly {
 		else {
 			forvalues k=1(1)`=_N' {
 				if anio[`k'] >= 2013 & anio[`k'] < `anio' {
-					local proy_educa = "`proy_educa' `=string(`=gastoeducacion[`k']/1000000000000',"%10.3f")',"
+					local proy_educa = "`proy_educa' `=string(`=gastoeducacion[`k']/1000000000',"%10.3f")',"
 				}
 				if anio[`k'] >= `anio' & anio[`k'] <= 2030 {
-					local proy_educa = "`proy_educa' `=string(`=estimacioneducacion[`k']/1000000000000',"%10.3f")',"
+					local proy_educa = "`proy_educa' `=string(`=estimacioneducacion[`k']/1000000000',"%10.3f")',"
 				}
 				if anio[`k'] >= 2013 & anio[`k'] < `anio' {
-					local proy_pension = "`proy_pension' `=string(`=gastopensiones[`k']/1000000000000',"%10.3f")',"
+					local proy_pension = "`proy_pension' `=string(`=gastopensiones[`k']/1000000000',"%10.3f")',"
 				}
 				if anio[`k'] >= `anio' & anio[`k'] <= 2030 {
-					local proy_pension = "`proy_pension' `=string(`=estimacionpensiones[`k']/1000000000000',"%10.3f")',"
+					local proy_pension = "`proy_pension' `=string(`=estimacionpensiones[`k']/1000000000',"%10.3f")',"
 				}
 				if anio[`k'] >= 2013 & anio[`k'] < `anio' {
-					local proy_salud = "`proy_salud' `=string(`=gastosalud[`k']/1000000000000',"%10.3f")',"
+					local proy_salud = "`proy_salud' `=string(`=gastosalud[`k']/1000000000',"%10.3f")',"
 				}
 				if anio[`k'] >= `anio' & anio[`k'] <= 2030 {
-					local proy_salud = "`proy_salud' `=string(`=estimacionsalud[`k']/1000000000000',"%10.3f")',"
+					local proy_salud = "`proy_salud' `=string(`=estimacionsalud[`k']/1000000000',"%10.3f")',"
 				}
 				if anio[`k'] >= 2013 & anio[`k'] < `anio' {
-					local proy_costo = "`proy_costo' `=string(`=gastocostodeuda[`k']/1000000000000',"%10.3f")',"
+					local proy_costo = "`proy_costo' `=string(`=gastocostodeuda[`k']/1000000000',"%10.3f")',"
 				}
 				if anio[`k'] >= `anio' & anio[`k'] <= 2030 {
-					local proy_costo = "`proy_costo' `=string(`=estimacioncostodeuda[`k']/1000000000000',"%10.3f")',"
+					local proy_costo = "`proy_costo' `=string(`=estimacioncostodeuda[`k']/1000000000',"%10.3f")',"
 				}				
 				if anio[`k'] >= 2013 & anio[`k'] < `anio' {
-					local proy_amort = "`proy_amort' `=string(`=gastoamortizacion[`k']/1000000000000',"%10.3f")',"
+					local proy_amort = "`proy_amort' `=string(`=gastoamortizacion[`k']/1000000000',"%10.3f")',"
 				}
 				if anio[`k'] >= `anio' & anio[`k'] <= 2030 {
-					local proy_amort = "`proy_amort' `=string(`=estimacionamortizacion[`k']/1000000000000',"%10.3f")',"
+					local proy_amort = "`proy_amort' `=string(`=estimacionamortizacion[`k']/1000000000',"%10.3f")',"
 				}				
 				if anio[`k'] >= 2013 & anio[`k'] < `anio' {
-					local proy_otrosg = "`proy_otrosg' `=string(`=gastootros[`k']/1000000000000',"%10.3f")',"
+					local proy_otrosg = "`proy_otrosg' `=string(`=gastootros[`k']/1000000000',"%10.3f")',"
 				}
 				if anio[`k'] >= `anio' & anio[`k'] <= 2030 {
-					local proy_otrosg = "`proy_otrosg' `=string(`=estimacionotros[`k']/1000000000000',"%10.3f")',"
+					local proy_otrosg = "`proy_otrosg' `=string(`=estimacionotros[`k']/1000000000',"%10.3f")',"
 				}				
 				if anio[`k'] >= 2013 & anio[`k'] < `anio' {
-					local proy_bienestar = "`proy_bienestar' `=string(`=gastopenbienestar[`k']/1000000000000',"%10.3f")',"
+					local proy_bienestar = "`proy_bienestar' `=string(`=gastopenbienestar[`k']/1000000000',"%10.3f")',"
 				}
 				if anio[`k'] >= `anio' & anio[`k'] <= 2030 {
-					local proy_bienestar = "`proy_bienestar' `=string(`=estimacionpenbienestar[`k']/1000000000000',"%10.3f")',"
+					local proy_bienestar = "`proy_bienestar' `=string(`=estimacionpenbienestar[`k']/1000000000',"%10.3f")',"
 				}				
 				if anio[`k'] >= 2013 & anio[`k'] < `anio' {
-					local proy_ingbas = "`proy_ingbas' `=string(`=gastoingbasico[`k']/1000000000000',"%10.3f")',"
+					local proy_ingbas = "`proy_ingbas' `=string(`=gastoingbasico[`k']/1000000000',"%10.3f")',"
 				}
 				if anio[`k'] >= `anio' & anio[`k'] <= 2030 {
-					local proy_ingbas = "`proy_ingbas' `=string(`=estimacioningbasico[`k']/1000000000000',"%10.3f")',"
+					local proy_ingbas = "`proy_ingbas' `=string(`=estimacioningbasico[`k']/1000000000',"%10.3f")',"
 				}
 			}
 			local length_educa = strlen("`proy_educa'")
@@ -650,11 +662,11 @@ quietly {
 		in g " `currency'"	
 
 	* Saldo de la deuda *
-	tabstat shrfsp if anio == `anio', stat(sum) f(%20.0fc) save
+	tabstat shrfsp if anio == `=`anio'-1', stat(sum) f(%20.0fc) save
 	tempname shrfsp
 	matrix `shrfsp' = r(StatTotal)
 
-	noisily di in g "  (+) Deuda (`anio'):" ///
+	noisily di in g "  (+) Deuda (" in y `=`anio'-1' in g "):" ///
 		in y _col(35) %25.0fc -`shrfsp'[1,1] ///
 		in g " `currency'"	
 	noisily di in g "  " _dup(61) "-"
@@ -680,7 +692,7 @@ quietly {
 			subtitle($pais) ///
 			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
 			xtitle("") ytitle(% PIB) ///
-			xlabel(2000(5)`end') ///
+			xlabel(2015(5)`end') ///
 			yscale(range(0)) ///
 			legend(off) ///
 			text(`=shrfspPIB[`obs`anio_last'']*.0618' `=`anio'+1.5' "Proyecci{c o'}n", color(white) placement(e)) ///
@@ -721,7 +733,7 @@ quietly {
 		in y _col(35) %25.0fc `shrfsp_end' ///
 		in g " % PIB"	
 
-
+exit
 
 	*****************************************
 	*** 5 Fiscal Gap: Cuenta Generacional ***
@@ -740,8 +752,8 @@ quietly {
 	
 	local poblacionINF = poblacion[_N]*(1+`grow_rate_LR')*(1+`discount'/100)^(`anio'-`=anio[_N]')/(1-((1+`grow_rate_LR')/(1+`discount'/100)))
 
-	noisily di _newline in g "Poblaci{c o'}n al infinito: " in y %15.0fc `poblacionINF'
-	noisily di _newline in g "Poblaci{c o'}n valor presente: " in y %15.0fc `poblacionVP'[1,1]
+	di in g "Poblaci{c o'}n al infinito: " in y %15.0fc `poblacionINF'
+	di in g "Poblaci{c o'}n valor presente: " in y %15.0fc `poblacionVP'[1,1]
 	noisily di in g "  (*) Cuenta generaciones futuras:" ///
 		in y _col(35) %25.0fc -(`estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1])/(`poblacionVP'[1,1]+`poblacionINF') ///
 		in g " `currency' por persona"

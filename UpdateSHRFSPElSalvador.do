@@ -1,12 +1,12 @@
 ************
 ** 1 RFSP **
 ************
-	LIF
+	LIF, anio(2021) ilif
 	collapse (sum) recaudacion, by(anio)
 	tempfile LIF0
 	save `LIF0'
 	
-	PEF
+	PEF, anio(2021)
 	collapse (sum) gastoneto, by(anio)
 	tempfile PEF0
 	save `PEF0'
@@ -81,12 +81,12 @@
 *************************
 ** 5 Costo de la deuda **
 *************************
-PEF if divGA == 2
+PEF if divGA == 2, nographs
 collapse (sum) costodeuda=gastoneto, by(anio)
 tempfile costodeuda
 save `costodeuda'
 
-PEF if divGA == 1
+PEF if divGA == 1, nographs
 collapse (sum) amortizacion=gastoneto, by(anio)
 tempfile amortizacion
 save `amortizacion'
