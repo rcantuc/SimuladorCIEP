@@ -30,7 +30,7 @@ noisily di in w "7) Expr{c e'}sate creativamente."
 
 *********************************
 *** 3 Par{c a'}metros de CGPE ***
-*********************************
+/*********************************
 noisily di _newline in g "{bf:Paquete Econ{c o'}mico" in y " CGPE 2021" in g "}"
 
 // Incorporar los que sean necesarios seg{c u'}n su a{c n~}o //
@@ -51,5 +51,6 @@ global def2021 =  3.425
 *************************/
 *** 4 Informaci{c o'}n ***
 **************************
+noisily di _newline in g "{bf:INEGI" in y " Banco de Informaci{c o'}n Econ{c o'}mica" in g "}"
 noisily PIBDeflactor, nographs anio(2021) //update
 clear

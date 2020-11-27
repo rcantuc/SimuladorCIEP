@@ -78,7 +78,7 @@ local ExpHog = scalar(ConHog)
 
 
 ** MA.2. SHCP: Datos Abiertos **
-noisily LIF, anio(`enighanio')
+noisily LIF, anio(`enighanio') by(divCIEP2)
 local IVA = r(IVA)
 local IEPS = r(IEPS__no_petrolero_)
 local Ieps1 = r(Cervezas)
@@ -515,6 +515,8 @@ noisily di in g "{bf:  (=) Total " ///
 	_col(44) in y %20.3fc `MTot'[1,1]/`PIBSCN'*100 ///
 	_col(66) %6.3fc `ExpHog'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`MTot'[1,1]/`ExpHog'-1)*100 "}" "%"
+
+scalar GastoTotPIB = `MTot'[1,1]/`PIBSCN'*100
 
 noisily di _newline in g "{bf: B. IVA" ///
 	_col(44) in g %20s "`enigh'" ///

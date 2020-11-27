@@ -4,7 +4,7 @@ quietly {
 	version 13.1
 	syntax varname [if] [fweight/], ///
 		[BOOTstrap(int 1) ///
-		Graphs REboot Noisily ///
+		NOGraphs REboot Noisily ///
 		REESCalar(real 1) BANDwidth(int 5) ///
 		BASE(string) GA ///
 		MACro(string) BIE ///
@@ -243,7 +243,7 @@ quietly {
 			`noisily' perfiles `varlist' `if' [`weight' = `exp'*`boot'], montopc(`pc') post
 
 
-			*** 1.3.3. Incidencia por hogar ***
+			*** 1.3.3. Incidencia por hogar **/
 			capture confirm variable decil
 			tempvar decil
 			if _rc != 0 {
@@ -271,13 +271,11 @@ quietly {
 
 
 			*** 1.3.4. Ciclo de Vida ***/
-			if "`graphs'" == "graphs" {
-				`noisily' CicloDeVida `varlist' `if' [`weight' = `exp'*`boot'], post boot(`k') decil(`decil')
-			}
+			`noisily' CicloDeVida `varlist' `if' [`weight' = `exp'*`boot'], post boot(`k') decil(`decil')
 
 
 			*** 1.3.5. Proyecciones ***
-			`noisily' proyecciones `varlist', `graphs' post ///
+			`noisily' proyecciones `varlist', post ///
 				pob(`poblacion') boot(`k') aniobase(`aniobase')
 		}
 
@@ -344,7 +342,7 @@ quietly {
 
 	******************
 	*** 3 Perfiles ***
-	******************
+	/******************
 	use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'PERF"', clear
 
 
@@ -365,7 +363,7 @@ quietly {
 	}
 
 	* Sin kernel *
-	if "`nokernel'" == "nokernel" & "`graphs'" == "graphsNO" {
+	if "`nokernel'" == "nokernel" & "`nographs'" != "nographs" {
 		twoway line perfil1 edad, ///
 			name(PerfilH`varlist', replace) ///
 			title("{bf:`title'}") ///
@@ -404,7 +402,7 @@ quietly {
 	}
 
 	* Con kernel *
-	else if "`graphs'" == "graphsNO" {
+	else if "`nographs'" != "nographs" {
 		lpoly perfil1 edad, bwidth(`bandwidth') ci kernel(gaussian) degree(2) ///
 			name(PerfilH`varlist', replace) generate(perfilH) at(edad) noscatter ///
 			///title("{bf:`title'}") ///
@@ -450,7 +448,7 @@ quietly {
 			//nograph
 	}
 
-	if "`graphs'" == "graphsNO" {
+	if "`nographs'" != "nographs" {
 		graph save PerfilH`varlist' `"`c(sysdir_personal)'/users/$pais/$id/graphs/PerfilH`varlist'"', replace
 		graph save PerfilM`varlist' `"`c(sysdir_personal)'/users/$pais/$id/graphs/PerfilM`varlist'"', replace
 		graph save ContH`varlist' `"`c(sysdir_personal)'/users/$pais/$id/graphs/ContH`varlist'"', replace
@@ -458,9 +456,9 @@ quietly {
 	}
 
 
-	***********************
+	**********************/
 	*** 4. Incidencia *****
-	**********************
+	***********************
 	use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'INCI"', clear
 	format xhogar %15.1fc
 	format distribucion %6.1fc
@@ -539,9 +537,9 @@ quietly {
 
 	***********************************
 	*** 5.1 Piramide de la variable ***
-	if "`graphs'" == "graphs" {
+	if "`nographs'" != "nographs" {
 		poblaciongini `varlist', title("`title'") nombre(`nombre') ///
-			boottext(`boottext') rect(`RECT') base(`base') `graphs' id($id) `output' pib(`PIB')
+			boottext(`boottext') rect(`RECT') base(`base') graphs id($id) `output' pib(`PIB')
 	}
 
 
@@ -732,8 +730,9 @@ program graphpiramide
 		}
 
 		graph hbar (sum) `POR' if sexo == 1, ///
-			over(`over') over(edad, axis(off noextend noline outergap(0)) descending ///
-			relabel(`relabel')) ///
+			over(`over') over(edad, axis(noextend noline outergap(0)) descending ///
+			relabel(`relabel') ///
+			label(labsize(vsmall) labgap(*.618) labcolor(white))) ///
 			stack asyvars xalternate ///
 			yscale(noextend noline /*range(-7(1)7)*/) ///
 			blabel(none, format(%5.1fc)) ///
@@ -752,7 +751,8 @@ program graphpiramide
 
 		graph hbar (sum) `POR' if sexo == 2, ///
 			over(`over') over(edad, axis(noextend noline outergap(0)) descending ///
-			relabel(`relabel') label(labsize(vsmall) labcolor("122 122 122"))) ///
+			relabel(`relabel') ///
+			label(labsize(vsmall) labgap(*2) labcolor("122 122 122"))) ///
 			stack asyvars ///
 			yscale(noextend noline /*range(-7(1)7)*/) /// |
 			blabel(none, format(%5.1fc)) ///

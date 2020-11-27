@@ -34,7 +34,7 @@ quietly {
 	***************
 	use in 1 using `"`c(sysdir_site)'../basesCIEP/SIM/LIF`=subinstr("${pais}"," ","",.)'.dta"', clear
 	syntax [if] [, ANIO(int `aniovp' ) Update NOGraphs Base ID(string) ///
-		MINimum(real 0) DESDE(int 2013) ILIF LIF BY(varname) ROWS(int 2) COLS(int 5)]
+		MINimum(real 0.5) DESDE(int 2013) ILIF LIF BY(varname) ROWS(int 2) COLS(int 5)]
 
 	noisily di _newline(2) in g _dup(20) "." "{bf:  Sistema Fiscal: INGRESOS $pais " in y `anio' "  }" in g _dup(20) "."
 
@@ -77,6 +77,8 @@ quietly {
 	sort anio
 	merge m:1 (anio) using `PIB', nogen keepus(pibY indiceY deflator lambda var_pibY) ///
 		update replace keep(matched) sorted
+
+	*keep if anio >= 2002
 	local aniofirst = anio[1]
 	local aniolast = anio[_N]
 
@@ -298,7 +300,7 @@ quietly {
 
 
 
-	if "$graphs" == "on" | "`nographs'" != "nographs" {
+	if "`nographs'" != "nographs" {
 		preserve
 		tabstat recaudacionPIB if anio == `anio' & divLIF != 10, stat(sum) f(%20.0fc) save
 		tempname recanio
@@ -335,19 +337,17 @@ quietly {
 			local legend = `"`legend' label(`=`totlev'-`countlev'+1' "`legend`k''")"'
 			local ++countlev
 		}
-		noisily di in w "`graphsvars'"
 
 		tempvar TOTPIB
 		egen `TOTPIB' = rsum(recaudacionPIB*)
-		twoway (area `graphvars' anio if anio >= 2003) ///
-			(connected `TOTPIB' anio if anio >= 2003, yaxis(2) mlcolor("255 129 0") lcolor("255 129 0")), ///
+		twoway (area `graphvars' anio if anio >= `aniofirst') ///
+			(connected `TOTPIB' anio if anio >= `aniofirst', yaxis(2) mlcolor("255 129 0") lcolor("255 129 0")), ///
 			title("{bf:Ingresos} p{c u'}blicos") ///
 			subtitle($pais) ///
 			ytitle(millones `currency') ytitle(% PIB, axis(2)) xtitle("") ///
-			ylabel(/*0(5)30*/, format(%15.0fc) labsize(small)) ///
-			ylabel(/*0(5)30*/, axis(2) noticks format(%5.1fc) labsize(small)) ///
-			yscale(range(0)) yscale(range(0) axis(2) noline) ///
-			xlabel(2010(1)`aniovp') ///
+			ylabel(, format(%15.0fc) labsize(small)) ///
+			ylabel(, axis(2) noticks format(%5.1fc) labsize(small)) ///
+			yscale(range(0) axis(2) noline) ///
 			xlabel(`aniofirst'(1)`aniolast') ///
 			legend(on position(6) rows(`rows') cols(`cols') `legend' label(`=`totlev'+1' "= Total % PIB")) ///
 			name(ingresos, replace) ///

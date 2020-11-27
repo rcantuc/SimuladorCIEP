@@ -305,6 +305,7 @@ quietly {
 	use "`c(sysdir_site)'../basesCIEP/SIM/baseSCN.dta", clear
 	local anio_last = anio[_N]
 	merge 1:1 (anio) using `basepib', nogen
+	merge 1:1 (anio) using "`c(sysdir_site)'../basesCIEP/SIM/Poblaciontot.dta", nogen keep(matched)
 	tsset anio
 
 
@@ -567,6 +568,10 @@ quietly {
 
 	scalar PIB = PIB[`obs']
 	scalar PIPIB = PIB[`obs']/PIB[`obs']*100
+	
+	g geoPIB = (((PIB/deflator)/(L5.PIB/L5.deflator))^(1/5)-1)*100
+	scalar crecpibpGEO = geoPIB[`obs']
+	scalar crecpibfGEO = geoPIB[`=`obs'+5']
 
 	scalar SSEmpleadores = SSEmpleadores[`obs']
 	scalar SSImputada = SSImputada[`obs']
@@ -655,7 +660,7 @@ quietly {
 			/// caption("{it:Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, BIE.}") ///
 			legend(cols(3) order(1 2 3)) ///
 			xtitle("") ///
-			text(`=`Depreciacion'[1]*.05' `=`latest'+(`anio_exo'-`latest')/2' "{bf:Estim.}", place(n) color(white)) ///
+			text(`=`Depreciacion'[1]*.05' `=`latest'+(`anio_exo'-`latest')/2+.5' "{bf:Estimado}", place(n) color(white)) ///
 			text(`=`Depreciacion'[1]*.05' `=anio[1]+.5' "{bf:Reportado}", place(ne) color(white)) ///
 			text(`=`Depreciacion'[1]*.05' `=`anio_exo'+1.5' "{bf:Proyectado}", place(ne) color(white)) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
@@ -748,6 +753,7 @@ quietly {
 
 	scalar AhorroN = AhorroN[`obs']
 	scalar AhorroNPIB = AhorroN[`obs']/PIB[`obs']*100
+	scalar AhorroNPC = AhorroN[`obs']/poblacion[`obs']
 
 	** R.3. Graph **
 	if "`nographs'" != "nographs" {
@@ -777,7 +783,7 @@ quietly {
 			/// caption("{it:Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, BIE.}") ///
 			legend(cols(4) order(1 2 3 4)) ///
 			xtitle("") ///
-			text(`=`AhorroN'[1]*.05' `=`latest'+(`anio_exo'-`latest')/2' "{bf:Estim.}", place(n) color(white)) ///
+			text(`=`AhorroN'[1]*.05' `=`latest'+(`anio_exo'-`latest')/2+.5' "{bf:Estimado}", place(n) color(white)) ///
 			text(`=`AhorroN'[1]*.05' `=anio[1]+.5' "{bf:Reportado}", place(ne) color(white)) ///
 			text(`=`AhorroN'[1]*.05' `=`anio_exo'+1.5' "{bf:Proyectado}", place(ne) color(white)) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///

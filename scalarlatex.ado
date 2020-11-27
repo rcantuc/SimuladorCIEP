@@ -79,7 +79,8 @@ program define scalarlatex
 			
 			else if `"`=substr("`name'",-1,1)'"' == "I" | `"`=substr("`name'",-1,1)'"' == "V" ///
 				| `"`=substr("`name'",-1,1)'"' == "X" | `"`=substr("`name'",-1,1)'"' == "H" ///
-				| `"`=substr("`name'",-1,1)'"' == "M" | `"`=substr("`name'",-8,8)'"' == "Nacional" {
+				| `"`=substr("`name'",-1,1)'"' == "M" | `"`=substr("`name'",-8,8)'"' == "Nacional" ///
+				| `"`=substr("`name'",-2,2)'"' == "PC" | `"`=substr("`name'",-3,3)'"' == "GEO" {
 				local value = scalar(`name')
 				di in w "\def\d`name'#1{\gdef\\`name'{#1}}"
 				di in w `"\d`name'{`=string(`value',"%12.1fc")'}"'				

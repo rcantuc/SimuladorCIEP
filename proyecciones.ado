@@ -1,7 +1,7 @@
 program define proyecciones
 quietly {
 	version 13.1
-	syntax varname, POBlacion(string) ANIObase(int) [BOOTstrap(int 1) Graphs POST]
+	syntax varname, POBlacion(string) ANIObase(int) [BOOTstrap(int 1) POST]
 
 	noisily di _newline in y "  proyecciones.ado"
 

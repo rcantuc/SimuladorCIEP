@@ -28,7 +28,7 @@ quietly {
 	***********************
 	capture use `"`c(sysdir_site)'../basesCIEP/SIM/inflacion.dta"', clear
 	if _rc != 0 | "`update'" == "update" {
-		run `"`c(sysdir_personal)'/Inflacion`=subinstr("${pais}"," ","",.)'.do"'
+		run `"`c(sysdir_personal)'/inflacion`=subinstr("${pais}"," ","",.)'.do"'
 		use `"`c(sysdir_site)'../basesCIEP/SIM/inflacion.dta"', clear
 	}
 
@@ -114,8 +114,8 @@ quietly {
 		}
 
 		twoway (area deflatorpp anio if (anio < `anio_last' & anio >= 1993) | (anio == `anio_last' & mes == 12)) ///
-			(area deflatorpp anio if anio >= `anio_last' & anio > anio[`obslast'+`exo_count'-1]) ///
-			(`graphtype' deflatorpp anio if /*anio == `anio_last' & trimestre < 4 |*/ anio <= anio[`obslast'+`exo_count'-1] & anio >= `anio_last', lwidth(none)), ///
+			(area deflatorpp anio if anio >= `anio_last' & anio > anio[`obslast'+`exo_count']) ///
+			(`graphtype' deflatorpp anio if /*anio == `anio_last' & trimestre < 4 |*/ anio <= anio[`obslast'+`exo_count'] & anio >= `anio_last', lwidth(none)), ///
 			///title("{bf:{c I'}ndice} nacional de precios al consumidor") ///
 			subtitle(${pais}) ///
 			xlabel(1995(5)`=round(anio[_N],5)') ///
@@ -139,8 +139,8 @@ quietly {
 			}
 		}
 		twoway (connected var_inflY anio if (anio < `anio_last' & anio >= 1993) | (anio == `anio_last' & mes == 12)) ///
-			(connected var_inflY anio if anio >= `anio_last' & anio > anio[`obslast'+`exo_count'-1]) ///
-			(connected var_inflY anio if /*anio == `anio_last' & trimestre < 4 |*/ anio <= anio[`obslast'+`exo_count'-1] & anio >= `anio_last', lwidth(none)), ///
+			(connected var_inflY anio if anio >= `anio_last' & anio > anio[`obslast'+`exo_count']) ///
+			(connected var_inflY anio if /*anio == `anio_last' & trimestre < 4 |*/ anio <= anio[`obslast'+`exo_count'] & anio >= `anio_last', lwidth(none)), ///
 			///title({bf:Crecimientos} del {c i'}ndice nacional de precios al consumidor) subtitle(${pais}) ///
 			subtitle(${pais}) ///
 			xlabel(1995(5)`=round(anio[_N],5)') ///

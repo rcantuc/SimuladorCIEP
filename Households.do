@@ -108,27 +108,27 @@ local SNAAlojamiento = scalar(Alojamiento)
 ***********************
 *** A.2 Macros: PEF ***
 ***********************
-noisily PEF, anio(`enighanio') by(desc_funcion) min(0)
+noisily PEF, anio(`enighanio') by(desc_funcion) min(0) nographs
 local Cuotas_ISSSTE = r(Cuotas_ISSSTE)
 
 PEF if transf_gf == 0 & ramo != -1 & (substr(string(objeto),1,2) == "45" ///
-	| substr(string(objeto),1,2) == "47" | desc_pp == 779), anio(`enighanio') by(ramo) min(0)
+	| substr(string(objeto),1,2) == "47" | desc_pp == 779), anio(`enighanio') by(ramo) min(0) nographs
 local SSFederacion = r(Aportaciones_a_Seguridad_Social) + `Cuotas_ISSSTE'
 
-PEF if divGA == 3, anio(`enighanio') by(desc_subfuncion) min(0)
+PEF if divGA == 3, anio(`enighanio') by(desc_subfuncion) min(0) nographs
 local Basica = r(Educaci_c_o__n_B_c_a__sica)
 local Media = r(Educaci_c_o__n_Media_Superior)
 local Superior = r(Educaci_c_o__n_Superior)
 local Adultos = r(Educaci_c_o__n_para_Adultos)
 
-PEF, anio(`enighanio') by(divGA) min(0)
+PEF, anio(`enighanio') by(divGA) min(0) nographs
 local OtrosGas = r(Otros)
 local Pensiones = r(Pensiones)
 local Educacion = r(Educaci_c_o__n)
 local Salud = r(Salud)
 local PenBienestar = r(Pensi_c_o__n_Bienestar)
 
-PEF if capitulo == 6 & divGA != 3 & divGA != 7, anio(`enighanio') by(entidad) min(0)
+PEF if capitulo == 6 & divGA != 3 & divGA != 7, anio(`enighanio') by(entidad) min(0) nographs
 local Aguas = r(Aguascalientes)
 local BajaN = r(Baja_California)
 local BajaS = r(Baja_California_Sur)
@@ -167,16 +167,16 @@ local InfraT = r(StatTotal)
 ***********************
 *** A.3 Macros: LIF ***
 ***********************
-noisily LIF, anio(`enighanio')
-local ISRSalarios = r(ISR_PF)*(760552.9/(760552.9+43683.5))	// Informe Trimestral SHCP (2018-IV).
-local ISRFisicas = r(ISR_PF)*(43683.5/(760552.9+43683.5))	// Informe Trimestral SHCP (2018-IV).
-local ISRMorales = r(ISR_PM)
+noisily LIF, anio(`enighanio') nographs min(0)
+local ISRSalarios = r(ISR)*(760552.9/1664949.1)				// Informe Trimestral SHCP (2018-IV).
+local ISRFisicas = r(ISR)*((43683.5+50879.3)/1664949.1)		// Informe Trimestral SHCP (2018-IV).
+local ISRMorales = r(ISR)*(809833.5/1664949.1)				// Informe Trimestral SHCP (2018-IV).
 local CuotasIMSS = r(Cuotas_IMSS)
 local IMSSpropio = r(IMSS)-`CuotasIMSS'
 local ISSSTEpropio = r(ISSSTE)
 local CFEpropio = r(CFE)
 local Pemexpropio = r(Pemex)
-local FMP = r(FMP__Derechos_petroleros)
+local FMP = r(FMP__Der__petroleros)
 local Deuda = r(Deuda)
 local Mejoras = r(Contribuciones_de_mejoras)
 local Derechos = r(Derechos)
@@ -185,10 +185,10 @@ local Aprovechamientos = r(Aprovechamientos)
 local OtrosTributarios = r(Otros_tributarios)
 local OtrasEmpresas = r(Otras_empresas)
 
-LIF, anio(`enighanio') by(divGA)
-local alingreso = r(Impuestos_al_ingreso)
+LIF, anio(`enighanio') by(divGA) nographs min(0)
+local alingreso = r(Impuestos_al_ingreso)-`ISRMorales'
 local alconsumo = r(Impuestos_al_consumo)
-local otrosing = r(Ingresos_de_capital)
+local otrosing = r(Ingresos_de_capital)+`ISRMorales'
 
 
 ***********************
@@ -2097,7 +2097,7 @@ replace exen_tot = exen_rent if formal_renta == 1 & prob_renta != . & formal == 
 
 *************************************************************
 ** Probit formalidad (servicios profesionales, produccion) **
-noisily di _newline _col(04) in g "{bf:3.3. Probit de formalidad: " in y "Servicios profesionales, producci{c o'}n.}"
+noisily di _newline _col(04) in g "{bf:3.2. Probit de formalidad: " in y "Servicios profesionales, producci{c o'}n.}"
 xi: probit formal_probit ing_bruto_tax exen_tot por_servprof deduc_isr ///
 	edad edad2 i.sexo aniosesc aniosesc2 rural i.sinco2 i.subor ///
 	if ing_t4_cap2 != 0 [pw=factor_cola]
@@ -2566,7 +2566,7 @@ tempname pobtot
 matrix `pobtot' = r(StatTotal)
 
 preserve
-PEF if divGA == 7, anio(`enighanio') by(desc_pp) min(0)
+PEF if divGA == 7, anio(`enighanio') by(desc_pp) min(0) nographs
 local segpop0 = r(Seguro_Popular)
 local segpop = r(Seguro_Popular)
 if `segpop0' == . {
@@ -2576,35 +2576,35 @@ if `segpop0' == . {
 local caneros = r(Seguridad_Social_Ca_c_n__eros)
 local incorpo = r(R_c_e__gimen_de_Incorporaci_c_o)
 
-PEF if divGA == 7, anio(`enighanio') by(ramo) min(0)
+PEF if divGA == 7, anio(`enighanio') by(ramo) min(0) nographs
 local segpop = `segpop'+r(Aportaciones_Federales_para_Ent)
 restore
 
 preserve
-PEF if divGA == 7, anio(`enighanio') by(ramo) min(0)
+PEF if divGA == 7, anio(`enighanio') by(ramo) min(0) nographs
 local ssa = r(Salud)-`segpop0'+`caneros'+`incorpo'
 restore
 
 preserve
-PEF if divGA == 7, anio(`enighanio') by(ramo) min(0)
+PEF if divGA == 7, anio(`enighanio') by(ramo) min(0) nographs
 local imss = r(Instituto_Mexicano_del_Seguro_S)
 restore
 
 preserve
-PEF if divGA == 7, anio(`enighanio') by(ramo) min(0)
+PEF if divGA == 7, anio(`enighanio') by(ramo) min(0) nographs
 local issste = r(Instituto_de_Seguridad_y_Servic)
 restore
 
 preserve
-PEF if divGA == 7, anio(`enighanio') by(desc_pp) min(0)
+PEF if divGA == 7, anio(`enighanio') by(desc_pp) min(0) nographs
 local prospe = r(Programa_IMSS_BIENESTAR)
 restore
 
 preserve
-PEF if divGA == 7 & modalidad == "E" & pp == 13 & ramo == 52, anio(`enighanio') by(ramo) min(0)
+PEF if divGA == 7 & modalidad == "E" & pp == 13 & ramo == 52, anio(`enighanio') by(ramo) min(0) nographs
 local pemex = r(Petr_c_o__leos_Mexicanos)
 
-PEF if divGA == 7, anio(`enighanio') by(ramo) min(0)
+PEF if divGA == 7, anio(`enighanio') by(ramo) min(0) nographs
 local pemex = `pemex' + r(Defensa_Nacional) + r(Marina)
 restore
 

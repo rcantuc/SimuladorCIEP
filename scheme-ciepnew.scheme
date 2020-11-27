@@ -17,7 +17,7 @@ graphsize 	y 			4
 
 // Margins
 margin 		graph			medium
-margin 		combinegraph	large
+margin 		combinegraph		large
 margin 		piegraph		large
 
 

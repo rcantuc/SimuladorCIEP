@@ -5,7 +5,7 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
-	syntax [, ANIO(int `aniovp') OUTPUT]
+	syntax [, ANIO(int `aniovp') OUTPUT NOGraphs]
 
 	noisily di _newline(2) in g _dup(20) "." "{bf:   Transferencias per c{c a'}pita de los GASTOS " in y `anio' "   }" in g _dup(20) "."
 
@@ -70,7 +70,7 @@ quietly {
 	}
 	else {
 		preserve
-		noisily PEF, anio(`anio') by(divGA) min(0)
+		noisily PEF, anio(`anio') by(divGA) min(0) `nographs'
 		
 		PEF if divGA == 3, anio(`anio') by(desc_subfuncion) min(0) rows(3) nographs
 		local basica = r(Educaci_c_o__n_B_c_a__sica)

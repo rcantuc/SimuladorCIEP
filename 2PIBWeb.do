@@ -1,27 +1,24 @@
 ****************************
-*** 2 ECONOMIA Y CUENTAS ***													Cap. 3. Sistema: de Cuentas Nacionales
+*** 2 ECONOMIA Y CUENTAS ***
 ****************************
 timer on 99
 if "`1'" == "" {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
-	local anio = substr(`"`=trim("`fecha'")'"',1,4) // 								<-- anio base: HOY
+	local anio = substr(`"`=trim("`fecha'")'"',1,4)
+	local nographs "nographs"
 }
 else {
 	local anio = `1'
+	local nographs "$nographs"
 }
-capture mkdir "`c(sysdir_personal)'/users"
-capture mkdir "`c(sysdir_personal)'/users/$pais/"
-capture mkdir "`c(sysdir_personal)'/users/$pais/$id/"
-
 
 
 
 
 **********************************/
 ** PAR{c A'}METROS DEL SIMULADOR **
+***********************************
 if "$id" == "PE2021" {
-	*sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
-	*adopath ++ PERSONAL
 
 	* Crecimiento PIB *
 	global pib2020 = -8.0
@@ -40,30 +37,38 @@ if "$id" == "PE2021" {
 if "$pais" == "El Salvador" {
 
 	* Crecimiento PIB *
-	global pib2020 = -7.499*0
+	global pib2020 = -7.499
 	global pib2021 =  3.745
 	global def2020 =  0.383
 	global def2021 =  0.512
 }
 
-***********************************/
 
 
 
+********************/
+** PIB + Deflactor **
+*********************
+noisily PIBDeflactor, anio(`anio') geo(9) output `nographs' //discount(3.0)
 
 
-noisily PIBDeflactor, anio(`anio') geo(9) //output //nographs //discount(3.0)
+** Guardar base de $pais y $id **
+capture mkdir "`c(sysdir_personal)'/users"
+capture mkdir "`c(sysdir_personal)'/users/$pais/"
+capture mkdir "`c(sysdir_personal)'/users/$pais/$id/"
 if `c(version)' > 13.1 {
 	saveold "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", replace version(13)
 }
 else {
 	save "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", replace
 }
-if "$pais" == "" {
-	noisily Inflacion, anio(`anio') //nographs //update
-	noisily SCN, anio(`anio') //nographs //update
-}
 
+
+** SCN + Inflacion **
+if "$pais" == "" & "`1'" != "" {
+	noisily Inflacion, anio(`anio') `nographs' //update
+	noisily SCN, anio(`anio') `nographs' //update
+}
 
 
 

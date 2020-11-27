@@ -4,10 +4,12 @@
 timer on 96
 if "`1'" == "" {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
-	local anio = substr(`"`=trim("`fecha'")'"',1,4) // 								<-- anio base: HOY
+	local anio = substr(`"`=trim("`fecha'")'"',1,4)
+	local nographs "nographs"
 }
 else {
 	local anio = `1'
+	local nographs "$nographs"
 }
 
 
@@ -15,14 +17,7 @@ else {
 
 ***********************************
 ** PAR{c A'}METROS DEL SIMULADOR **
-
-global id = "$id"
-
-*sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
-*adopath ++ PERSONAL
-*capture mkdir "`c(sysdir_personal)'/users/$pais/$id/"
-
-***********************************/
+***********************************
 
 
 
@@ -30,6 +25,13 @@ global id = "$id"
 ******************************
 *** 5 Transferencias Netas ***
 ******************************
+if "$pais" == "" {
+	use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
+}
+else if "$pais" == "El Salvador" {
+	use `"`c(sysdir_site)'../basesCIEP/SIM/2018/householdsElSalvador.dta"', clear
+}
+
 capture g AportacionesNetas = Laboral + Consumo + ISR__PM + ing_cap_fmp ///
 	- Pension - Educacion - Salud - IngBasico - PenBienestar - Infra
 if _rc != 0 {
@@ -40,9 +42,9 @@ label var AportacionesNetas "de las aportaciones netas"
 save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace
 
 noisily Simulador AportacionesNetas if AportacionesNetas != 0 [fw=factor], ///
-	base("ENIGH 2018") boot(1) reboot graphs anio(2020) //output
+	base("ENIGH 2018") boot(1) reboot `nographs' anio(2020) //output
 
-noisily CuentasGeneracionales AportacionesNetas, anio(`anio') output //boot(250) //	<-- OPTIONAL!!! Toma mucho tiempo.
+*noisily CuentasGeneracionales AportacionesNetas, anio(`anio') output //boot(250) //	<-- OPTIONAL!!! Toma mucho tiempo.
 
 
 use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/AportacionesNetasREC.dta"', clear
@@ -58,17 +60,19 @@ forvalues k=1(1)`=_N' {
 	}
 }
 
-twoway connected estimacion anio, ///
-	ytitle("billiones MXN `anio'") ///
-	yscale(range(0)) /*ylabel(0(1)4)*/ ///
-	ylabel(, format(%20.1fc) labsize(small)) ///
-	xlabel(, labsize(small) labgap(2)) ///
-	xtitle("") ///
-	xline(`anio', lpattern(dash) lcolor("52 70 78")) ///
-	text(`=`MAX'[1,1]' `aniomax' "{bf:M{c a'}ximo:} `aniomax'", place(n)) ///
-	title("{bf:Proyecciones} de las aportaciones netas") subtitle("$pais") ///
-	caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5." "Fecha: `c(current_date)', `c(current_time)'.") ///
-	name(AportacionesNetasProj, replace)
+if "`nographs'" != "nographs" {
+	twoway connected estimacion anio, ///
+		ytitle("billiones MXN `anio'") ///
+		yscale(range(0)) /*ylabel(0(1)4)*/ ///
+		ylabel(, format(%20.1fc) labsize(small)) ///
+		xlabel(, labsize(small) labgap(2)) ///
+		xtitle("") ///
+		xline(`anio', lpattern(dash) lcolor("52 70 78")) ///
+		text(`=`MAX'[1,1]' `aniomax' "{bf:M{c a'}ximo:} `aniomax'", place(n)) ///
+		title("{bf:Proyecciones} de las aportaciones netas") subtitle("$pais") ///
+		caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5." "Fecha: `c(current_date)', `c(current_time)'.") ///
+		name(AportacionesNetasProj, replace)
+}
 
 * Output */
 forvalues k=1(10)`=_N' {

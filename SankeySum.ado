@@ -41,67 +41,69 @@ quietly {
 
 			local color ""
 			if _rc != 0 & profile[`k'] != 0 {
-				if `color_num' == 1 & ("`base'" == "`a'" | "`base'" == "`c'") {
-					local color = "one"
+				if "`folder'" ==  "SankeySIMC" {
+					if `color_num' == 1 & ("`base'" == "`a'" | "`base'" == "`c'") {
+						local color = "one"
+					}
+					if `color_num' == 2 & ("`base'" == "`a'" | "`base'" == "`c'") {
+						local color = "two"
+					}
+					if `color_num' == 3 & ("`base'" == "`a'" | "`base'" == "`c'") {
+						local color = "three"
+					}
+					if `color_num' == 4 & ("`base'" == "`a'" | "`base'" == "`c'") {
+						local color = "four"
+					}
+					if `color_num' == 5 & ("`base'" == "`a'" | "`base'" == "`c'") {
+						local color = "five"
+					}
+					if `color_num' == 6 & ("`base'" == "`a'" | "`base'" == "`c'") {
+						local color = "six"
+					}
+					if `color_num' == 7 & ("`base'" == "`a'" | "`base'" == "`c'") {
+						local color = "seven"
+					}
+					if `color_num' == 8 & ("`base'" == "`a'" | "`base'" == "`c'") {
+						local color = "eight"
+					}
+					if `color_num' == 9 & ("`base'" == "`a'" | "`base'" == "`c'") {
+						local color = "nine"
+					}
+					if `color_num' == 10 & ("`base'" == "`a'" | "`base'" == "`c'") {
+						local color = "ten"
+					}
+					if `color_num' == 11 & ("`base'" == "`a'" | "`base'" == "`c'") {
+						local color = "eleven"
+					}
+					if `color_num' == 12 & ("`base'" == "`a'" | "`base'" == "`c'") {
+						local color = "twelve"
+					}
+					if `color_num' == 13 & ("`base'" == "`a'" | "`base'" == "`c'") {
+						local color = "thirteen"
+					}
+					if `color_num' == 14 & ("`base'" == "`a'" | "`base'" == "`c'") {
+						local color = "fourteen"
+					}
+					if `color_num' == 15 & ("`base'" == "`a'" | "`base'" == "`c'") {
+						local color = "fifteen"
+					}
+					if `color_num' == 16 & ("`base'" == "`a'" | "`base'" == "`c'") {
+						local color = "sixteen"
+					}
+					if `color_num' == 17 & ("`base'" == "`a'" | "`base'" == "`c'") {
+						local color = "seventeen"
+					}
+					if `color_num' == 18 & ("`base'" == "`a'" | "`base'" == "`c'") {
+						local color = "eighteen"
+					}
+					if `color_num' == 19 & ("`base'" == "`a'" | "`base'" == "`c'") {
+						local color = "nineteen"
+					}
+					if `color_num' == 20 & ("`base'" == "`a'" | "`base'" == "`c'") {
+						local color = "twenty"
+					}
+					local ++color_num
 				}
-				if `color_num' == 2 & ("`base'" == "`a'" | "`base'" == "`c'") {
-					local color = "two"
-				}
-				if `color_num' == 3 & ("`base'" == "`a'" | "`base'" == "`c'") {
-					local color = "three"
-				}
-				if `color_num' == 4 & ("`base'" == "`a'" | "`base'" == "`c'") {
-					local color = "four"
-				}
-				if `color_num' == 5 & ("`base'" == "`a'" | "`base'" == "`c'") {
-					local color = "five"
-				}
-				if `color_num' == 6 & ("`base'" == "`a'" | "`base'" == "`c'") {
-					local color = "six"
-				}
-				if `color_num' == 7 & ("`base'" == "`a'" | "`base'" == "`c'") {
-					local color = "seven"
-				}
-				if `color_num' == 8 & ("`base'" == "`a'" | "`base'" == "`c'") {
-					local color = "eight"
-				}
-				if `color_num' == 9 & ("`base'" == "`a'" | "`base'" == "`c'") {
-					local color = "nine"
-				}
-				if `color_num' == 10 & ("`base'" == "`a'" | "`base'" == "`c'") {
-					local color = "ten"
-				}
-				if `color_num' == 11 & ("`base'" == "`a'" | "`base'" == "`c'") {
-					local color = "eleven"
-				}
-				if `color_num' == 12 & ("`base'" == "`a'" | "`base'" == "`c'") {
-					local color = "twelve"
-				}
-				if `color_num' == 13 & ("`base'" == "`a'" | "`base'" == "`c'") {
-					local color = "thirteen"
-				}
-				if `color_num' == 14 & ("`base'" == "`a'" | "`base'" == "`c'") {
-					local color = "fourteen"
-				}
-				if `color_num' == 15 & ("`base'" == "`a'" | "`base'" == "`c'") {
-					local color = "fifteen"
-				}
-				if `color_num' == 16 & ("`base'" == "`a'" | "`base'" == "`c'") {
-					local color = "sixteen"
-				}
-				if `color_num' == 17 & ("`base'" == "`a'" | "`base'" == "`c'") {
-					local color = "seventeen"
-				}
-				if `color_num' == 18 & ("`base'" == "`a'" | "`base'" == "`c'") {
-					local color = "eighteen"
-				}
-				if `color_num' == 19 & ("`base'" == "`a'" | "`base'" == "`c'") {
-					local color = "nineteen"
-				}
-				if `color_num' == 20 & ("`base'" == "`a'" | "`base'" == "`c'") {
-					local color = "twenty"
-				}
-				local ++color_num
 
 				tabstat profile, stat(sum) f(%20.0fc) save
 				tempname ptotal
@@ -129,6 +131,70 @@ quietly {
 
 			local color ""
 			if _rc != 0 & profile[`k'] != 0 {
+				if "`folder'" ==  "SankeySIM" {
+					if `color_num' == 1 & ("`base'" == "`a'" | "`base'" == "`c'") {
+						local color = "one"
+					}
+					if `color_num' == 2 & ("`base'" == "`a'" | "`base'" == "`c'") {
+						local color = "two"
+					}
+					if `color_num' == 3 & ("`base'" == "`a'" | "`base'" == "`c'") {
+						local color = "three"
+					}
+					if `color_num' == 4 & ("`base'" == "`a'" | "`base'" == "`c'") {
+						local color = "four"
+					}
+					if `color_num' == 5 & ("`base'" == "`a'" | "`base'" == "`c'") {
+						local color = "five"
+					}
+					if `color_num' == 6 & ("`base'" == "`a'" | "`base'" == "`c'") {
+						local color = "six"
+					}
+					if `color_num' == 7 & ("`base'" == "`a'" | "`base'" == "`c'") {
+						local color = "seven"
+					}
+					if `color_num' == 8 & ("`base'" == "`a'" | "`base'" == "`c'") {
+						local color = "eight"
+					}
+					if `color_num' == 9 & ("`base'" == "`a'" | "`base'" == "`c'") {
+						local color = "nine"
+					}
+					if `color_num' == 10 & ("`base'" == "`a'" | "`base'" == "`c'") {
+						local color = "ten"
+					}
+					if `color_num' == 11 & ("`base'" == "`a'" | "`base'" == "`c'") {
+						local color = "eleven"
+					}
+					if `color_num' == 12 & ("`base'" == "`a'" | "`base'" == "`c'") {
+						local color = "twelve"
+					}
+					if `color_num' == 13 & ("`base'" == "`a'" | "`base'" == "`c'") {
+						local color = "thirteen"
+					}
+					if `color_num' == 14 & ("`base'" == "`a'" | "`base'" == "`c'") {
+						local color = "fourteen"
+					}
+					if `color_num' == 15 & ("`base'" == "`a'" | "`base'" == "`c'") {
+						local color = "fifteen"
+					}
+					if `color_num' == 16 & ("`base'" == "`a'" | "`base'" == "`c'") {
+						local color = "sixteen"
+					}
+					if `color_num' == 17 & ("`base'" == "`a'" | "`base'" == "`c'") {
+						local color = "seventeen"
+					}
+					if `color_num' == 18 & ("`base'" == "`a'" | "`base'" == "`c'") {
+						local color = "eighteen"
+					}
+					if `color_num' == 19 & ("`base'" == "`a'" | "`base'" == "`c'") {
+						local color = "nineteen"
+					}
+					if `color_num' == 20 & ("`base'" == "`a'" | "`base'" == "`c'") {
+						local color = "twenty"
+					}
+					local ++color_num
+				}
+
 				tabstat profile, stat(sum) f(%20.0fc) save
 				tempname ptotal
 				matrix `ptotal' = r(StatTotal)

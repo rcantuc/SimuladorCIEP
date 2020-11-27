@@ -146,7 +146,7 @@ format tipoDeCambio %7.2fc
 drop deuda*
 
 compress
-if `c(version)' == 15.1 {
+if `c(version)' > 13.1 {
 	saveold `"`c(sysdir_site)'../basesCIEP/SIM/SHRFSP.dta"', replace version(13)
 }
 else {

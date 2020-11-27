@@ -46,6 +46,8 @@ quietly {
 	}
 	local anio_first = anio[1]
 	scalar aniofirst = anio[1]
+	
+	scalar aniovp = `aniovp'
 
 	local anio_last = anio[_N]
 	scalar aniolast = anio[_N]
@@ -56,7 +58,7 @@ quietly {
 	collapse (mean) pibY=pibQ pibYR=pibQR (last) trimestre, by(anio currency)
 	format pib* %25.0fc
 
-	scalar aniogeo = anio[_N-20]
+	scalar aniogeo = anio[_N-`geo']
 
 	capture local trim_last = trimestre[_N]
 	if _rc == 0 {
@@ -264,8 +266,8 @@ quietly {
 
 		* Deflactor var_indiceY *
 		twoway (area deflator anio if anio < `anio_last' | (anio == `anio_last' & trimestre == 4)) ///
-			(area deflator anio if anio >= `anio_last' & anio > anio[`obs_exo']) ///
-			(`graphtype' deflator anio if anio <= anio[`obs_exo'] & anio >= `anio_last', lwidth(none)), ///
+			(area deflator anio if anio >= `anio_last' & anio > `anio_last'+`exo_def') ///
+			(`graphtype' deflator anio if anio <= `anio_last'+`exo_def' & anio >= `anio_last', lwidth(none)), ///
 			///title("{bf:{c I'}ndice} de precios impl{c i'}citos") ///
 			subtitle(${pais}) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
@@ -292,8 +294,8 @@ quietly {
 
 		* Crecimiento PIB var_indiceY *
 		twoway (connected var_indiceY anio if anio < `anio_last' | (anio == `anio_last' & trimestre == 4)) ///
-			(connected var_indiceY anio if anio >= `anio_last' & anio > anio[`obs_exo']) ///
-			(connected var_indiceY anio if /*anio == `anio_last' & trimestre < 4 |*/ anio <= anio[`obs_exo'] & anio >= `anio_last'), ///
+			(connected var_indiceY anio if anio >= `anio_last' & anio > `anio_last'+`exo_def') ///
+			(connected var_indiceY anio if anio <= `anio_last'+`exo_def' & anio >= `anio_last'), ///
 			///title({bf:Crecimientos} del {c i'}ndice de precios impl{c i'}citos) subtitle(${pais}) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
 			ylabel(, format(%3.0f)) ///
