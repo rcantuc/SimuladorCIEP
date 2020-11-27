@@ -32,7 +32,7 @@ else {
 	local aniovp = `1'
 }
 *global pais = "El Salvador"
-global id = "PE2021"
+*global id = "PE2021"
 global nographs "nographs"
 
 
