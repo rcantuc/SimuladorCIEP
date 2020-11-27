@@ -50,9 +50,9 @@ noisily run "`c(sysdir_personal)'/2PIBWeb.do" `aniovp'
 ******************************************/
 *** Cap. 3. La economia antropocentrica ***
 ***        Simulador v5: Set up         ***
-/*******************************************
+*******************************************
 noisily Poblacion, anio(`aniovp') $nographs //update
-noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' `aniovp'
+*noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' `aniovp'
 
 if "$pais" == "" & "$id" == "" {
 	*noisily run "`c(sysdir_personal)'/Expenditure.do" 2018 // 	<-- a calibrar!!!
