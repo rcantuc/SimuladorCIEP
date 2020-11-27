@@ -33,7 +33,7 @@ else {
 }
 *global pais = "El Salvador"
 *global id = "PE2021"
-global nographs "nographs"
+*global nographs "nographs"
 
 
 
