@@ -5,7 +5,7 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
-	syntax [, ANIO(int `aniovp') OUTPUT]
+	syntax [, ANIO(int `aniovp') OUTPUT NOGraphs]
 
 	noisily di _newline(2) in g _dup(20) "." "{bf:   Tasas Efectivas de los INGRESOS " in y `anio' "   }" in g _dup(20) "."
 
@@ -23,7 +23,7 @@ quietly {
 	****************************
 	*** 2 Ingresos iniciales ***
 	****************************
-	noisily LIF, anio(`anio') min(1) ilif //graphs
+	noisily LIF, anio(`anio') min(1) ilif `nographs'
 	local recursos = r(divCIEP)
 	foreach k of local recursos {
 		local rec`=substr("`k'",1,7)' = r(`k')
@@ -35,7 +35,7 @@ quietly {
 		local recISR_AS = scalar(ISRAS)/100*scalar(PIB)
 	}
 	else {
-		local recISR_AS = `recISR_PF'*(783743.8/(783743.8+45756.7))
+		local recISR_AS = `recISR'*(608735.5/1345513.4)
 		scalar ISRAS  = (`recISR_AS')/scalar(PIB)*100 // 						ISR (asalariados)
 	}
 	capture confirm scalar ISRPF
@@ -43,7 +43,7 @@ quietly {
 		local recISR_PF = scalar(ISRPF)/100*scalar(PIB)
 	}
 	else {
-		local recISR_PF = `recISR_PF'*(45756.7/(783743.8+45756.7))
+		local recISR_PF = `recISR'*((30906.8+46909.2)/1345513.4)
 		scalar ISRPF  = (`recISR_PF')/scalar(PIB)*100 // 						ISR (personas f{c i'}sicas)
 	}
 	capture confirm scalar CuotasT
@@ -75,7 +75,7 @@ quietly {
 		local recIEPS = scalar(IEPS)/100*scalar(PIB)
 	}
 	else {
-		local recIEPS = `recIEPS__p' + `recIEPS__n'
+		local recIEPS = `recIEPS'
 		scalar IEPS    = `recIEPS'/scalar(PIB)*100 // 							IEPS (no petrolero + petrolero)
 	}
 	capture confirm scalar Importa
@@ -92,7 +92,7 @@ quietly {
 		local recISR_PM = scalar(ISRPM)/100*scalar(PIB)
 	}
 	else {
-		local recISR_PM = `recISR_PM'
+		local recISR_PM = `recISR'*(658962.0/1345513.4)
 		scalar ISRPM  = (`recISR_PM')/scalar(PIB)*100 //						ISR (personas morales)
 	}
 	capture confirm scalar FMP

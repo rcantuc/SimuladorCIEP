@@ -5,24 +5,24 @@ program define UpdateDatosAbiertos, return
 	************************
 	*** 1. Base de datos ***
 	************************
+	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
+	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
+	local mesvp = substr(`"`=trim("`fecha'")'"',6,2)
+
 	capture use "`c(sysdir_site)'../basesCIEP/SIM/DatosAbiertos.dta", clear
 
-	if (_rc == 0 | _rc == 610) & "`update'" != "update" {
-		local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
-		local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
-		local mesvp = substr(`"`=trim("`fecha'")'"',6,2)
-		
+	if (_rc == 0 | _rc == 610) & "`update'" != "update" {	
 		sort anio mes
 		return local ultanio = anio[_N]
 		return local ultmes = mes[_N]
 
 		if (`aniovp' == anio[_N] & `mesvp'-2 <= mes[_N]) | (`aniovp'-1 == anio[_N] & `mesvp'-2 <= 0) {
-			noisily di _newline in g "Datos Abiertos: " in y "base actualizada." in g " {c U'}ltimo dato: "in y "`=anio[_N]'m`=mes[_N]'."
+			noisily di _newline in g "Datos Abiertos: " in y "base actualizada." in g " {c U'}ltimo dato: " in y "`=anio[_N]'m`=mes[_N]'."
 			return local updated = "yes"
 			exit
 		}
 	}
-	noisily di _newline in g "Datos Abiertos: " in y "ACTUALIZANDO. Favor de esperar. :) Descargando las nuevas bases de SHCP (10 mins. aprox.)."
+	noisily di _newline in g "Datos Abiertos: " in y "ACTUALIZANDO. Favor de esperar. Descargando bases de SHCP (10 mins. aprox.)."
 
 
 	*****************************************
@@ -149,10 +149,10 @@ program define UpdateDatosAbiertos, return
 	format aniomes %tm
 
 	label var anio "a{c n~}o"
-	label var monto "Monto nominal (pesos)"
+	label var monto "Monto nominal (pesos)"	
 
-	tempfile ingresos
-	save `ingresos'
+	tempfile datosabiertos
+	save `datosabiertos'
 
 
 
@@ -165,7 +165,7 @@ program define UpdateDatosAbiertos, return
 
 	***************************************************
 	** 4.1 ISR fisicas, morales, asalariados y otros **
-	use if clave_de_concepto == "XNA0120" using `ingresos', clear
+	use if clave_de_concepto == "XNA0120" using `datosabiertos', clear
 
 
 	* 2002 *
@@ -557,51 +557,52 @@ program define UpdateDatosAbiertos, return
 	replace monto_f = monto*(43683.5-33176.6)/(1664949.1-1257525.4) if anio == 2018 & trimestre == 4
 	replace monto_s = monto*(760552.9-558673.2)/(1664949.1-1257525.4) if anio == 2018 & trimestre == 4
 	replace monto_r = monto*(50879.3-38545.9)/(1664949.1-1257525.4) if anio == 2018 & trimestre == 4
-	
-	* 2019 *
-	replace monto_m = monto*232173.4/464295.0  if anio == 2019 & trimestre == 1
-	replace monto_f = monto*11586.7/464295.0 if anio == 2019 & trimestre == 1
-	replace monto_s = monto*204052.0/464295.0 if anio == 2019 & trimestre == 1
-	replace monto_r = monto*16482.9/464295.0 if anio == 2019 & trimestre == 1
 
-	replace monto_m = monto*(473910.1-232173.4)/(927350.8-464295.0) if anio == 2019 & trimestre == 2
-	replace monto_f = monto*(23889.4-11586.7)/(927350.8-464295.0) if anio == 2019 & trimestre == 2
-	replace monto_s = monto*(399962.6-204052.0)/(927350.8-464295.0) if anio == 2019 & trimestre == 2
-	replace monto_r = monto*(29588.7-16482.9)/(927350.8-464295.0) if anio == 2019 & trimestre == 2
+	* 2019+ *
+	forvalues k=2019(1)`aniovp' {
+		forvalues j=1(1)4 {
 
-	replace monto_m = monto*(641345.0-473910.1)/(1298987.0-927350.8) if anio == 2019 & trimestre == 3
-	replace monto_f = monto*(34430.7-23889.4)/(1298987.0-927350.8) if anio == 2019 & trimestre == 3
-	replace monto_s = monto*(580223.7-399962.6)/(1298987.0-927350.8) if anio == 2019 & trimestre == 3
-	replace monto_r = monto*(42987.6-29588.7)/(1298987.0-927350.8) if anio == 2019 & trimestre == 3
+			if `j' == 1 {
+				local trimt = "it"
+			}
+			if `j' == 2 {
+				local trimt = "iit"
+			}
+			if `j' == 3 {
+				local trimt = "iiit"
+			}
+			if `j' == 4 {
+				local trimt = "ivt"
+			}
 
-	replace monto_m = monto*(803643.1-641345.0)/(1687830.1-1298987.0) if anio == 2019 & trimestre == 4
-	replace monto_f = monto*(45756.7-34430.7)/(1687830.1-1298987.0) if anio == 2019 & trimestre == 4
-	replace monto_s = monto*(783743.8-580223.7)/(1687830.1-1298987.0) if anio == 2019 & trimestre == 4
-	replace monto_r = monto*(54686.5-42987.6)/(1687830.1-1298987.0) if anio == 2019 & trimestre == 4
+			preserve
+			capture import excel "https://www.finanzaspublicas.hacienda.gob.mx/work/models/Finanzas_Publicas/docs/congreso/infotrim/`k'/`trimt'/04afp/itanfp02_`k'0`j'.xlsx", ///
+				sheet("I.II RecGobFed a) ISR") cellrange(B18:C22) clear
+			if _rc == 0 {
+				local t`k'`j' = C in 1
+				local m`k'`j' = C in 2
+				local f`k'`j' = C in 3
+				local r`k'`j' = C in 4
+				local s`k'`j' = C in 5
+			}
+			restore
 
-	* 2020 *
-	replace monto_m = monto*287883.4/542596.9  if anio == 2020 & trimestre == 1
-	replace monto_f = monto*13569.5/542596.9 if anio == 2020 & trimestre == 1
-	replace monto_s = monto*223982.7/542596.9 if anio == 2020 & trimestre == 1
-	replace monto_r = monto*17161.2/542596.9 if anio == 2020 & trimestre == 1
-
-	replace monto_m = monto*(490742.2-287883.4)/(968446.9-542596.9) if anio == 2020 & trimestre >= 2
-	replace monto_f = monto*(20504.0-13569.5)/(927350.8-542596.9) if anio == 2020 & trimestre >= 2
-	replace monto_s = monto*(423225.4-223982.7)/(927350.8-542596.9) if anio == 2020 & trimestre >= 2
-	replace monto_r = monto*(33975.3-17161.2)/(927350.8-542596.9) if anio == 2020 & trimestre >= 2
-
-	/*replace monto_m = monto*(-490742.2)/(-968446.9) if anio == 2020 & trimestre == 3
-	replace monto_f = monto*(-20504.0)/(-968446.9) if anio == 2020 & trimestre == 3
-	replace monto_s = monto*(-423225.4)/(-968446.9) if anio == 2020 & trimestre == 3
-	replace monto_r = monto*(-33975.3)/(-968446.9) if anio == 2020 & trimestre == 3
-
-	replace monto_m = monto*(-490742.2)/(-968446.9) if anio == 2020 & trimestre == 4
-	replace monto_f = monto*(-20504.0)/(-968446.9) if anio == 2020 & trimestre == 4
-	replace monto_s = monto*(-423225.4)/(-968446.9) if anio == 2020 & trimestre == 4
-	replace monto_r = monto*(-33975.3)/(-968446.9) if anio == 2020 & trimestre == 4*/
-
-
-
+			if _rc == 0 {
+				if `j' > 1 {
+					replace monto_m = monto*(`m`k'`j''-`m`k'`=`j'-1'')/(`t`k'`j''-`t`k'`=`j'-1'') if anio >= `k' & trimestre >= `j'
+					replace monto_f = monto*(`f`k'`j''-`f`k'`=`j'-1'')/(`t`k'`j''-`t`k'`=`j'-1'') if anio >= `k' & trimestre >= `j'
+					replace monto_r = monto*(`r`k'`j''-`r`k'`=`j'-1'')/(`t`k'`j''-`t`k'`=`j'-1'') if anio >= `k' & trimestre >= `j'
+					replace monto_s = monto*(`s`k'`j''-`s`k'`=`j'-1'')/(`t`k'`j''-`t`k'`=`j'-1'') if anio >= `k' & trimestre >= `j'
+				}
+				else {
+					replace monto_m = monto*(`m`k'`j'')/(`t`k'`j'') if anio >= `k' & trimestre >= `j'
+					replace monto_f = monto*(`f`k'`j'')/(`t`k'`j'') if anio >= `k' & trimestre >= `j'
+					replace monto_r = monto*(`r`k'`j'')/(`t`k'`j'') if anio >= `k' & trimestre >= `j'
+					replace monto_s = monto*(`s`k'`j'')/(`t`k'`j'') if anio >= `k' & trimestre >= `j'
+				}
+			}
+		}
+	}
 
 	* Modulo isr.ado *
 	egen double monto_pf = rsum(monto_s monto_f)
@@ -633,7 +634,7 @@ program define UpdateDatosAbiertos, return
 
 	***************************************
 	** 4.2 ISR morales sin ISR petrolero **
-	use if clave_de_concepto == "XOA0825" using `ingresos', clear
+	use if clave_de_concepto == "XOA0825" using `datosabiertos', clear
 	rename monto monto_isrpet
 	tempfile isrpet
 	save `isrpet'
@@ -654,7 +655,7 @@ program define UpdateDatosAbiertos, return
 
 	***********************************
 	** 4.3 Derechos petroleros y FMP **
-	use if clave_de_concepto == "XOA0806" | clave_de_concepto == "XAB2123" using `ingresos', clear
+	use if clave_de_concepto == "XOA0806" | clave_de_concepto == "XAB2123" using `datosabiertos', clear
 	collapse (sum) monto, by(anio mes trimestre aniotrimestre aniomes)
 
 	g nombre = "Derechos a los hidrocarburos // FMP"
@@ -667,7 +668,7 @@ program define UpdateDatosAbiertos, return
 
 	*************************************************
 	** 4.4 Deficit Empresas Productivas del Estado **
-	use if clave_de_concepto == "XAA1210" | clave_de_concepto == "XOA0101" using `ingresos', clear
+	use if clave_de_concepto == "XAA1210" | clave_de_concepto == "XOA0101" using `datosabiertos', clear
 	collapse (sum) monto, by(anio mes trimestre aniotrimestre aniomes)
 
 	replace monto = -monto
@@ -682,7 +683,7 @@ program define UpdateDatosAbiertos, return
 	**********************************************************
 	** 4.5 Deficit Organismos y empresas de control directo **
 	use if clave_de_concepto == "XKE0000" | clave_de_concepto == "XOA0105" ///
-		| clave_de_concepto == "XOA0106" | clave_de_concepto == "XOA0103" using `ingresos', clear
+		| clave_de_concepto == "XOA0106" | clave_de_concepto == "XOA0103" using `datosabiertos', clear
 	collapse (sum) monto, by(anio mes trimestre aniotrimestre aniomes)
 
 	replace monto = -monto
@@ -696,7 +697,7 @@ program define UpdateDatosAbiertos, return
 
 	***************************************************
 	** 4.6 Diferencias con fuentes de financiamiento **
-	use if clave_de_concepto == "XOA0108" using `ingresos', clear
+	use if clave_de_concepto == "XOA0108" using `datosabiertos', clear
 
 	replace monto = -monto
 	replace clave_de_concepto = "XOA0108_2"
@@ -708,7 +709,7 @@ program define UpdateDatosAbiertos, return
 
 	****************************
 	** 4.7 Gasto federalizado **
-	use if clave_de_concepto == "XAC2800" | clave_de_concepto == "XAC3300" using `ingresos', clear
+	use if clave_de_concepto == "XAC2800" | clave_de_concepto == "XAC3300" using `datosabiertos', clear
 	collapse (sum) monto, by(anio mes trimestre aniotrimestre aniomes)
 
 	g clave_de_concepto = "XACGF00"
@@ -724,7 +725,7 @@ program define UpdateDatosAbiertos, return
 	*****************
 	*** 5 Guardar ***
 	*****************
-	use `ingresos', clear
+	use `datosabiertos', clear
 	append using `isr'
 	append using `fmp'
 	append using `isrpmnopet'
@@ -739,7 +740,6 @@ program define UpdateDatosAbiertos, return
 	compress
 
 	saveold "`c(sysdir_site)'../basesCIEP/SIM/DatosAbiertos.dta", replace version(13)
-
 	noisily LIF, update
 	noisily SHRFSP, update
 

@@ -4,10 +4,12 @@
 timer on 95
 if "`1'" == "" {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
-	local anio = substr(`"`=trim("`fecha'")'"',1,4) // 								<-- anio base: HOY
+	local anio = substr(`"`=trim("`fecha'")'"',1,4)
+	local nographs "nographs"
 }
 else {
 	local anio = `1'
+	local nographs "$nographs"
 }
 
 
@@ -17,21 +19,12 @@ else {
 ***********************************
 ** PAR{c A'}METROS DEL SIMULADOR **
 
-global id = "$id"
-
-*sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
-*adopath ++ PERSONAL
-*capture mkdir "`c(sysdir_personal)'/users/$pais/$id/"
-
-***********************************/
-
-
 
 
 
 ***************/
 *** 1 SANKEY ***
-****************
+/****************
 if "$pais" == "" {
 	run "`c(sysdir_personal)'/3GastosWeb.do" `anio' fast
 	run "`c(sysdir_personal)'/4IngresosWeb.do" `anio' fast
@@ -48,7 +41,7 @@ if "$pais" == "" {
 *******************/
 *** 2 FISCAL GAP ***
 ********************
-noisily FiscalGap, anio(`anio') graphs end(2050) //output //boot(250) //update
+noisily FiscalGap, anio(`anio') `nographs' end(2050) output //boot(250) //update
 
 
 

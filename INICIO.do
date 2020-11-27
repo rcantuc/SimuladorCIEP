@@ -10,13 +10,30 @@ noisily di _newline(20) in g _col(35) "8) " in w "8) " in y "8) " in g "8)"
 
 if "`c(os)'" == "Unix" {
 	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
-	global export "/home/ciepmx/Dropbox (CIEP)/Textbook/images/"
+	*global export "/home/ciepmx/Dropbox (CIEP)/Textbook/images/"
 }
 if "`c(os)'" == "MacOSX" {
 	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
-	global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
+	*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
 }
 adopath ++ PERSONAL
+
+
+
+
+*****************/
+*** PARAMETROS ***
+******************
+timer on 1
+if "`1'" == "" {
+	local aniovp = 2021
+}
+else {
+	local aniovp = `1'
+}
+*global pais = "El Salvador"
+global id = "PE2021"
+global nographs "nographs"
 
 
 
@@ -25,11 +42,6 @@ adopath ++ PERSONAL
 *** Cap. 2. El sistema de la ciencia ***
 ***  Simulador v5: PIB + Deflactor   ***
 ****************************************
-timer on 1
-*global id = "PE2021"
-global pais = "El Salvador"
-local aniovp = 2021
-
 noisily run "`c(sysdir_personal)'/2PIBWeb.do" `aniovp'
 
 
@@ -38,38 +50,38 @@ noisily run "`c(sysdir_personal)'/2PIBWeb.do" `aniovp'
 ******************************************/
 *** Cap. 3. La economia antropocentrica ***
 ***        Simulador v5: Set up         ***
-*******************************************
-noisily Poblacion, //nographs //update
+/*******************************************
+noisily Poblacion, anio(`aniovp') $nographs //update
 noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' `aniovp'
 
-if "$pais" == "" {
+if "$pais" == "" & "$id" == "" {
 	*noisily run "`c(sysdir_personal)'/Expenditure.do" 2018 // 	<-- a calibrar!!!
 	use "`c(sysdir_site)'../basesCIEP/SIM/2018/households.dta", clear
 
 	* ENIGH + SCN *
-	Simulador ingbrutotot [fw=factor_cola], base("ENIGH 2018") boot(1) reboot graphs anio(2018)
-	Simulador TOTgasto_anual [fw=factor_cola], base("ENIGH 2018") boot(1) reboot graphs anio(2018)
-	Simulador Yl [fw=factor_cola], base("ENIGH 2018") boot(1) reboot graphs anio(2018)
-	Simulador Yk [fw=factor_cola], base("ENIGH 2018") boot(1) reboot graphs anio(2018)
-	Simulador Ahorro [fw=factor_cola], base("ENIGH 2018") boot(1) reboot graphs anio(2018)
-	Simulador Ciclodevida [fw=factor_cola], base("ENIGH 2018") boot(1) reboot graphs anio(2018)
+	Simulador ingbrutotot [fw=factor_cola], base("ENIGH 2018") boot(1) reboot anio(2018) $nographs
+	Simulador TOTgasto_anual [fw=factor_cola], base("ENIGH 2018") boot(1) reboot anio(2018) $nographs
+	Simulador Yl [fw=factor_cola], base("ENIGH 2018") boot(1) reboot anio(2018) $nographs
+	Simulador Yk [fw=factor_cola], base("ENIGH 2018") boot(1) reboot anio(2018) $nographs
+	Simulador Ahorro [fw=factor_cola], base("ENIGH 2018") boot(1) reboot anio(2018) $nographs
+	Simulador Ciclodevida [fw=factor_cola], base("ENIGH 2018") boot(1) reboot anio(2018) $nographs
 	
 	* Gastos *
-	Simulador Pension [fw=factor], base("ENIGH 2018") boot(1) reboot graphs anio(2018)
-	Simulador Educacion [fw=factor], base("ENIGH 2018") boot(1) reboot graphs anio(2018)
-	Simulador Salud [fw=factor], base("ENIGH 2018") boot(1) reboot graphs anio(2018)
-	Simulador OtrosGas [fw=factor], base("ENIGH 2018") boot(1) reboot graphs anio(2018)
-	Simulador PenBienestar if edad >= 68 [fw=factor], base("ENIGH 2018") boot(1) reboot graphs anio(2018)
-	Simulador IngBasico [fw=factor], base("ENIGH 2018") boot(1) reboot graphs anio(2018)
+	Simulador Pension [fw=factor], base("ENIGH 2018") boot(1) reboot anio(2018) $nographs
+	Simulador Educacion [fw=factor], base("ENIGH 2018") boot(1) reboot anio(2018) $nographs
+	Simulador Salud [fw=factor], base("ENIGH 2018") boot(1) reboot anio(2018) $nographs
+	Simulador OtrosGas [fw=factor], base("ENIGH 2018") boot(1) reboot anio(2018) $nographs
+	Simulador PenBienestar if edad >= 68 [fw=factor], base("ENIGH 2018") boot(1) reboot anio(2018) $nographs
+	Simulador IngBasico [fw=factor], base("ENIGH 2018") boot(1) reboot anio(2018) $nographs
 
 	* Ingresos *
-	Simulador Laboral [fw=factor], base("ENIGH 2018") boot(1) reboot graphs anio(2018)
-	Simulador Consumo [fw=factor], base("ENIGH 2018") boot(1) reboot graphs anio(2018)
-	Simulador OtrosC [fw=factor], base("ENIGH 2018") boot(1) reboot graphs anio(2018)	
+	Simulador Laboral [fw=factor], base("ENIGH 2018") boot(1) reboot anio(2018) $nographs
+	Simulador Consumo [fw=factor], base("ENIGH 2018") boot(1) reboot anio(2018) $nographs
+	Simulador OtrosC [fw=factor], base("ENIGH 2018") boot(1) reboot anio(2018) $nographs
 
 	* Sankey *
 	foreach k in grupo_edad decil escol sexo {
-		use "`c(sysdir_site)'../basesCIEP/SIM/2018/households.dta", clear
+		noisily run "`c(sysdir_personal)'/SankeyC.do" `k' 2018
 		noisily run "`c(sysdir_personal)'/Sankey.do" `k' 2018
 	}
 }
@@ -81,15 +93,8 @@ if "$pais" == "" {
 *** PARTE III: GASTOS ***
 *************************
 if "$pais" == "" {
+	* Gastos *
 	noisily run "`c(sysdir_personal)'/3GastosWeb.do" `aniovp'
-	use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
-
-	Simulador Pension [fw=factor], base("ENIGH 2018") boot(1) reboot graphs anio(`aniovp')
-	Simulador Educacion [fw=factor], base("ENIGH 2018") boot(1) reboot graphs anio(`aniovp')
-	Simulador Salud [fw=factor], base("ENIGH 2018") boot(1) reboot graphs anio(`aniovp')
-	Simulador OtrosGas [fw=factor], base("ENIGH 2018") boot(1) reboot graphs anio(`aniovp')
-	Simulador PenBienestar if edad >= 68 [fw=factor], base("ENIGH 2018") boot(1) reboot graphs anio(`aniovp')
-	Simulador IngBasico [fw=factor], base("ENIGH 2018") boot(1) reboot graphs anio(`aniovp')
 }
 else if "$pais" == "El Salvador" {
 	noisily PEF, anio(`aniovp') by(divGA)
@@ -128,26 +133,24 @@ else if "$pais" == "El Salvador" {
 **************************
 if "$pais" == "" {
 	* Ingresos: Datos Abiertos *
-	DatosAbiertos XNA0120_s, g //						ISR salarios
-	DatosAbiertos XNA0120_pf, g //						ISR PF
-	DatosAbiertos XNA0120_m, g //						ISR PM
-	DatosAbiertos XKF0114, g //						Cuotas IMSS
-	DatosAbiertos XAB1120, g //						IVA
-	DatosAbiertos XNA0141, g //						ISAN
-	DatosAbiertos XAB1130, g //						IEPS
-	DatosAbiertos XNA0136, g //						Importaciones
-	DatosAbiertos FMP_Derechos, g //					FMP_Derechos
-	DatosAbiertos XAB2110, g //						Ingresos propios Pemex
-	DatosAbiertos XOA0115, g //						Ingresos propios CFE
-	DatosAbiertos XKF0179, g //						Ingresos propios IMSS
-	DatosAbiertos XOA0120, g //						Ingresos propios ISSSTE
+	if "$nographs" != "nographs" {
+		DatosAbiertos XNA0120_s, g //					ISR salarios
+		DatosAbiertos XNA0120_f, g //					ISR PF
+		DatosAbiertos XNA0120_m, g //					ISR PM
+		DatosAbiertos XKF0114, g //						Cuotas IMSS
+		DatosAbiertos XAB1120, g //						IVA
+		DatosAbiertos XNA0141, g //						ISAN
+		DatosAbiertos XAB1130, g //						IEPS
+		DatosAbiertos XNA0136, g //						Importaciones
+		DatosAbiertos FMP_Derechos, g //				FMP_Derechos
+		DatosAbiertos XAB2110, g //						Ingresos propios Pemex
+		DatosAbiertos XOA0115, g //						Ingresos propios CFE
+		DatosAbiertos XKF0179, g //						Ingresos propios IMSS
+		DatosAbiertos XOA0120, g //						Ingresos propios ISSSTE
+	}
 
+	* Ingresos *
 	noisily run "`c(sysdir_personal)'/4IngresosWeb.do" `aniovp' //		Parte II
-	use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
-
-	Simulador Laboral [fw=factor], base("ENIGH 2018") boot(1) reboot graphs anio(`aniovp')
-	Simulador Consumo [fw=factor], base("ENIGH 2018") boot(1) reboot graphs anio(`aniovp')
-	Simulador OtrosC [fw=factor], base("ENIGH 2018") boot(1) reboot graphs anio(`aniovp')
 }
 else if "$pais" == "El Salvador" {
 	noisily LIF, anio(`aniovp') by(divGA) ilif
@@ -183,13 +186,7 @@ else if "$pais" == "El Salvador" {
 **********************/
 *** PARTE IV: DEUDA ***
 ***********************
-if "$pais" == "" {
-	use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
-}
-else if "$pais" == "El Salvador" {
-	use `"`c(sysdir_site)'../basesCIEP/SIM/2018/householdsElSalvador.dta"', clear
-}
-noisily run "`c(sysdir_personal)'/5CGWeb.do" `aniovp' //			Cuentas Generacionales
+noisily run "`c(sysdir_personal)'/5CGWeb.do" `aniovp' //				Cuentas Generacionales
 noisily run "`c(sysdir_personal)'/6FiscalGapWeb.do" `aniovp' //			Fiscal Gap
 
 

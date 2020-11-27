@@ -41,7 +41,7 @@ g ing_Sector_Publico = ing_cap_imss + ing_cap_issste + ing_cap_cfe + ing_cap_pem
 	+ ing_cap_otrostrib + ing_cap_otrasempr
 replace Yk = Yk - ing_estim_alqu //- ing_Sector_Publico
 collapse (sum) ing_Ing_Laboral=Yl ing_Ing_Capital=Yk ing_Empresas_Publicas=ing_Sector_Publico ///
-	ing_Alquiler_imputado=ing_estim_alqu [fw=factor_cola], by(`1')
+	ing_Alquiler_imputado=ing_estim_alqu ing_Remesas=ing_remesas [fw=factor_cola], by(`1')
 
 * to *
 tempvar to
@@ -52,37 +52,21 @@ encode `to', g(to)
 * from *
 rename `1' from
 
-/* Sector Publico *
-set obs `=_N+1'
-replace from = -2 in -1
-replace profile = `IMSSpropio' + `ISSSTEpropio' + `CFEpropio' + ///
-	`Pemexpropio' + `FMP' + `Mejoras' + `Derechos' + `Productos' + `Aprovechamientos' + ///
-	`OtrosTributarios' + `OtrasEmpresas' in -1
-label define `1' -2 "Sector_publico", add
-replace to = 2 in -1
-
-* ROW */
-set obs `=_N+2'
-replace from = -1 if from == .
-
-replace to = 4 in -1
-replace profile = scalar(ROWRem) in -1
-
-replace to = -1 in -2
-replace profile = scalar(ROWTrans) in -2
-label define to -1 "Remesas", add
-
-* Compras Netas */
+* Compras Netas *
 if scalar(ComprasN) < 0 {
 	set obs `=_N+1'
 	replace from = -1 if from == .
 	replace to = -2 in -1
 	replace profile = -scalar(ComprasN) in -1
-	label define to -2 "Compras por extranjeros", add
+	label define to -2 "__Compras por extranjeros", add
 }
 label define `1' -1 "Resto del mundo", add
 
-* Eje *
+rename to to2
+rename from to
+rename to2 from
+
+* Eje */
 tempfile eje1
 save `eje1'
 
@@ -97,22 +81,16 @@ collapse (sum) gasto_anual* gasto_anualAhorro=Ahorro [fw=factor_cola], by(`1')
 egen gasto_Alimentos = rsum(gasto_anual1-gasto_anual3)
 egen gasto_Vestido = rsum(gasto_anual5-gasto_anual6)
 egen gasto__Salud = rsum(gasto_anual11)
-egen gasto___Educacion = rsum(gasto_anual16-gasto_anual18)
+egen gasto___Educacion_y_Recreacion = rsum(gasto_anual16-gasto_anual18)
 egen gasto___Vivienda = rsum(gasto_anual7-gasto_anual10)
-egen gasto___Transporte = rsum(gasto_anual12-gasto_anual15)
+egen gasto___Transporte_y_Comunica = rsum(gasto_anual12-gasto_anual15)
 egen gasto____Otros_gastos = rsum(gasto_anual4 gasto_anual19)
 egen gasto_____Consumo_gobierno = rsum(gasto_anualGobierno)
 egen gasto_____Consumo_capital = rsum(gasto_anualDepreciacion)
 *egen gasto____Ahorro = rsum(gasto_anualAhorro)
 drop gasto_anual*
 
-levelsof `1', local(`1')
-foreach k of local `1' {
-	local oldlabel : label (`1') `k'
-	label define `1' `k' "_`oldlabel'", modify
-}
-
-* from */
+* from *
 tempvar from
 reshape long gasto_, i(`1') j(`from') string
 rename gasto_ profile
@@ -121,44 +99,19 @@ encode `from', g(from)
 * to *
 rename `1' to
 
-/* Sector Publico *
-set obs `=_N+3'
-replace to = -1 if from == .
-label define `1' -1 "Sector_publico", add
-
-replace profile = scalar(SerEGob) in -1
-replace from = 4 in -1
-
-replace profile = scalar(SaluGob) in -2
-replace from = 3 in -2
-
-replace profile = scalar(ConGob) - scalar(SerEGob) - scalar(SaluGob) in -3
-replace from = 7 in -3*/
-
-* Ahorro *
-set obs `=_N+1'
-drop if from == 98
-replace from = 98 in -1
-replace to = -2 in -1 
-replace profile = scalar(AhorroN) in -1
-label define `1' -2 "__Futuro", add
-label define from 98 "Ahorro", add
-
 * ROW *
 set obs `=_N+1'
 replace to = -3 if from == .
-label define `1' -3 "__Resto del mundo", add
+label define `1' -3 "Resto del mundo", add
 
 replace from = 99 in -1
 replace profile = scalar(ROWTrans) in -1
 label define from 99 "__Ing a la propiedad", add
 
+rename to to2
+rename from to
+rename to2 from
 
-/* Depreciacion *
-replace to = -4 if from == 9
-label define `1' -4 "__Depreciacion", add
-
-* Eje */
 tempfile eje4
 save `eje4'
 
@@ -173,6 +126,10 @@ rename to from
 g to = 999
 label define PIB 999 "Ing nacional"
 label values to PIB
+
+rename to to2
+rename from to
+rename to2 from
 
 tempfile eje2
 save `eje2'
@@ -196,7 +153,7 @@ save `eje3'
 
 ************
 ** Sankey **
-noisily SankeySum, anio(`2') name(`1') folder(SankeySIM) a(`eje1') b(`eje2') c(`eje3') d(`eje4') 
+noisily SankeySum, anio(`2') name(`1') folder(SankeySIMC) a(`eje4') b(`eje1') //c(`eje3') d(`eje4')
 
 timer off 7
 timer list 7
