@@ -168,9 +168,9 @@ local InfraT = r(StatTotal)
 *** A.3 Macros: LIF ***
 ***********************
 noisily LIF, anio(`enighanio') nographs min(0)
-local ISRSalarios = r(ISR)*(760552.9/1664949.1)				// Informe Trimestral SHCP (2018-IV).
-local ISRFisicas = r(ISR)*((43683.5+50879.3)/1664949.1)		// Informe Trimestral SHCP (2018-IV).
-local ISRMorales = r(ISR)*(809833.5/1664949.1)				// Informe Trimestral SHCP (2018-IV).
+local ISRSalarios = r(ISR)*760552.9/1664949.1									// Informe Trimestral SHCP (2018-IV).
+local ISRFisicas = r(ISR)*43683.5/1664949.1										// Informe Trimestral SHCP (2018-IV).
+local ISRMorales = r(ISR)*(809833.5+50879.3)/1664949.1							// Informe Trimestral SHCP (2018-IV).
 local CuotasIMSS = r(Cuotas_IMSS)
 local IMSSpropio = r(IMSS)-`CuotasIMSS'
 local ISSSTEpropio = r(ISSSTE)

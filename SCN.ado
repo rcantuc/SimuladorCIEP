@@ -647,12 +647,15 @@ quietly {
 		else {
 			local graphtype "area"
 		}
-
+		
+		tabstat `Depreciacion', stat(max) save
+		tempname DEPMAX
+		matrix `DEPMAX' = r(StatTotal)
 
 		twoway (area `Depreciacion' `Capital' `Laboral' anio if anio <= `anio_last') ///
-			(`graphtype' `Depreciacion' anio if anio <= `anio_exo' & anio > `anio_last', color("255 129 0")) ///
-			(`graphtype' `Capital' anio if anio <= `anio_exo' & anio > `anio_last', color("255 189 0")) ///
-			(`graphtype' `Laboral' anio if anio <= `anio_exo' & anio > `anio_last', color("39 97 47")) ///
+			(`graphtype' `Depreciacion' anio if anio <= `anio_exo' & anio > `anio_last', color("255 129 0") lwidth(none)) ///
+			(`graphtype' `Capital' anio if anio <= `anio_exo' & anio > `anio_last', color("255 189 0") lwidth(none)) ///
+			(`graphtype' `Laboral' anio if anio <= `anio_exo' & anio > `anio_last', color("39 97 47") lwidth(none)) ///
 			(area `Depreciacion' anio if anio > `anio_last' & anio > `anio_exo', color("255 129 0")) ///
 			(area `Capital' anio if anio > `anio_last' & anio > `anio_exo', color("255 189 0")) ///
 			(area `Laboral' anio if anio > `anio_last' & anio > `anio_exo', color("39 97 47")), ///
@@ -662,9 +665,9 @@ quietly {
 			xtitle("") ///
 			text(`=`Depreciacion'[1]*.05' `=`latest'+(`anio_exo'-`latest')/2+.5' "{bf:Estimado}", place(n) color(white)) ///
 			text(`=`Depreciacion'[1]*.05' `=anio[1]+.5' "{bf:Reportado}", place(ne) color(white)) ///
-			text(`=`Depreciacion'[1]*.05' `=`anio_exo'+1.5' "{bf:Proyectado}", place(ne) color(white)) ///
+			text(`=`Depreciacion'[1]*.05' `=anio[_N]-6.5' "{bf:Proyectado}", place(ne) color(white)) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
-			ylabel(0(5)`=ceil(`Depreciacion'[_N])', format(%20.0fc)) ///
+			ylabel(0(5)`=ceil(`DEPMAX'[1,1])+2.5', format(%20.0fc)) ///
 			ytitle(billones MXN `anio') ///
 			yscale(range(0)) xscale(range(1993)) ///
 			note("{bf:{c U'}ltimo dato reportado}: `anio_last'.") ///
@@ -761,7 +764,7 @@ quietly {
 		g `ComprasN' = (ComprasN)/deflator/1000000000000
 		label var `ComprasN' "Compras netas"
 		g `ConHog' = (ConHog + ComprasN)/deflator/1000000000000
-		label var `ConHog' "Consumo de hogares e ISFLSH"
+		label var `ConHog' "Consumo de hogares"
 		g `ConGob' = (ConGob + ConHog + ComprasN)/deflator/1000000000000
 		label var `ConGob' "Consumo de gobierno"
 		g `AhorroN' = (AhorroN + ConGob + ConHog + ComprasN)/deflator/1000000000000
@@ -771,10 +774,10 @@ quietly {
 			(area `ConGob' anio if anio <= `anio_last', color("0 151 201")) ///
 			(area `ConHog' anio if anio <= `anio_last', color("186 34 64")) ///
 			(area `ComprasN' anio if anio <= `anio_last', color("53 200 71")) ///
-			(`graphtype' `AhorroN' anio if anio <= `anio_exo' & anio > `anio_last', color("0 78 198")) ///
-			(`graphtype' `ConGob' anio if anio <= `anio_exo' & anio > `anio_last', color("0 151 201")) ///
-			(`graphtype' `ConHog' anio if anio <= `anio_exo' & anio > `anio_last', color("186 34 64")) ///
-			(`graphtype' `ComprasN' anio if anio <= `anio_exo' & anio > `anio_last', color("53 200 71")) ///
+			(`graphtype' `AhorroN' anio if anio <= `anio_exo' & anio > `anio_last', color("0 78 198") lwidth(none)) ///
+			(`graphtype' `ConGob' anio if anio <= `anio_exo' & anio > `anio_last', color("0 151 201") lwidth(none)) ///
+			(`graphtype' `ConHog' anio if anio <= `anio_exo' & anio > `anio_last', color("186 34 64") lwidth(none)) ///
+			(`graphtype' `ComprasN' anio if anio <= `anio_exo' & anio > `anio_last', color("53 200 71") lwidth(none)) ///
 			(area `AhorroN' anio if anio > `anio_last' & anio > `anio_exo', color("0 78 198")) ///
 			(area `ConGob' anio if anio > `anio_last' & anio > `anio_exo', color("0 151 201")) ///
 			(area `ConHog' anio if anio > `anio_last' & anio > `anio_exo', color("186 34 64")) ///
@@ -785,9 +788,9 @@ quietly {
 			xtitle("") ///
 			text(`=`AhorroN'[1]*.05' `=`latest'+(`anio_exo'-`latest')/2+.5' "{bf:Estimado}", place(n) color(white)) ///
 			text(`=`AhorroN'[1]*.05' `=anio[1]+.5' "{bf:Reportado}", place(ne) color(white)) ///
-			text(`=`AhorroN'[1]*.05' `=`anio_exo'+1.5' "{bf:Proyectado}", place(ne) color(white)) ///
+			text(`=`AhorroN'[1]*.05' `=anio[_N]-6.5' "{bf:Proyectado}", place(ne) color(white)) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
-			ylabel(0(5)`=ceil(`Depreciacion'[_N])', format(%20.0fc)) ///
+			ylabel(0(5)`=ceil(`DEPMAX'[1,1])+2.5', format(%20.0fc)) ///
 			ytitle(billones MXN `anio') ///
 			yscale(range(0)) xscale(range(1993)) ///
 			note("{bf:{c U'}ltimo dato reportado}: `anio_last'.") ///

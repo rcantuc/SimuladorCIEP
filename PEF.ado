@@ -34,7 +34,7 @@ quietly {
 	****************
 	use in 1 using `"`c(sysdir_site)'../basesCIEP/SIM/PEF`=subinstr("${pais}"," ","",.)'.dta"', clear
 	syntax [if] [, ANIO(int `aniovp') NOGraphs Update Base ID(string) ///
-		BY(varname) ROWS(int 2) COLS(int 5) MINimum(real 1) PEF PPEF]
+		BY(varname) ROWS(int 1) COLS(int 5) MINimum(real 1) PEF PPEF]
 
 	if "`ppef'" == "ppef" {
 		local textintro = "PPEF"

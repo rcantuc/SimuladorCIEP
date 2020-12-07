@@ -83,21 +83,21 @@ replace Laboral = 0 if Laboral == .
 label var Laboral "Impuestos al ingreso laboral"
 * Reescalar *
 Distribucion Laboral, macro(`alingreso')
-Simulador Laboral [fw=factor], base("ENIGH 2018") boot(1) reboot graphs anio(`1')
+Simulador Laboral [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1')
 
 ** (+) Consumo **
 g Consumo = gastohog*alfa/`alfatot'
 label var Consumo "Impuestos al consumo"
 * Reescalar *
 Distribucion Consumo, macro(`alconsumo')
-Simulador Consumo [fw=factor], base("ENIGH 2018") boot(1) reboot graphs anio(`1')
+Simulador Consumo [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1')
 
 ** (+) Otros ingresos **
 g OtrosC = 1
 label var OtrosC "Otros impuestos de capital"
 * Reescalar *
 Distribucion OtrosC, macro(`otrosing')
-Simulador OtrosC [fw=factor], base("ENIGH 2018") boot(1) reboot graphs anio(`1')
+Simulador OtrosC [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1')
 
 ** (+) ISR_PM **
 g ISR__PM = 0
@@ -110,12 +110,12 @@ label var ing_cap_fmp "FMP"
 ** (-) IngBasico **
 g IngBasico = 0
 label var IngBasico "IngBasico"
-Simulador IngBasico [fw=factor], base("ENIGH 2018") boot(1) reboot graphs anio(`1')
+Simulador IngBasico [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1')
 
 ** (-) PenBienestar **
 g PenBienestar = 0
 label var PenBienestar "PenBienestar"
-Simulador PenBienestar if edad >= 68 [fw=factor], base("ENIGH 2018") boot(1) reboot graphs anio(`1')
+Simulador PenBienestar if edad >= 68 [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1')
 
 ** (-) Infra **
 g Infra = 0
@@ -128,7 +128,7 @@ replace Pension = 0 if Pension == .
 label var Pension "Pensiones"
 * Reescalar *
 Distribucion Pension, macro(`pensiones')
-Simulador Pension [fw=factor], base("ENIGH 2018") boot(1) reboot graphs anio(`1')
+Simulador Pension [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1')
 
 ** (-) Educación **
 tabstat factor, stat(sum) by(r204) f(%10.0fc) save
@@ -144,7 +144,7 @@ replace Educacion = 0 if Educacion == .
 label var Educacion "Educación"
 * Reescalar *
 Distribucion Educacion, macro(`educacion')
-Simulador Educacion [fw=factor], base("ENIGH 2018") boot(1) reboot graphs anio(`1')
+Simulador Educacion [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1')
 
 ** Salud **
 g Salud = 1.5 if edad <= 4
@@ -170,7 +170,7 @@ replace Salud = 3.36 if edad >= 95
 label var Salud "Salud"
 * Reescalar *
 Distribucion Salud, macro(`salud')
-Simulador Salud [fw=factor], base("ENIGH 2018") boot(1) reboot graphs anio(`1')
+Simulador Salud [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1')
 
 ** Otros gastos **
 g OtrosGas = 1
@@ -178,7 +178,7 @@ replace OtrosGas = 0 if OtrosGas == .
 label var OtrosGas "Otros gastos"
 * Reescalar *
 Distribucion OtrosGas, macro(`otrosgas')
-Simulador OtrosGas [fw=factor], base("ENIGH 2018") boot(1) reboot graphs anio(`1')
+Simulador OtrosGas [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1')
 
 
 

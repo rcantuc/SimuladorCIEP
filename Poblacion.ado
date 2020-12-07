@@ -313,7 +313,7 @@ quietly {
 			///caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, BIE.") ///
 			name(Estructura_`anything'_`anioinicial'_`aniofinal', replace) ///
 			///title("{bf:Transici{c o'}n} demogr{c a'}fica") subtitle(${pais}) ///
-			ylabel(, format(%20.0fc)) xlabel(1950(10)2050)
+			ylabel(, format(%20.0fc)) xlabel(1950(10)`aniofinal')
 			
 			if "$export" != "" {
 				graph export "$export/Estructura_`anything'_`anioinicial'_`aniofinal'.png", replace name(Estructura_`anything'_`anioinicial'_`aniofinal')

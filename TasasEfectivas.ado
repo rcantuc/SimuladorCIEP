@@ -17,6 +17,8 @@ quietly {
 	SCN, anio(`anio') nographs
 	use if anio == `anio' using "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", clear
 	scalar PIB = pibY[1]
+	
+	balanzacomercial, anio(`anio')
 
 
 
@@ -178,11 +180,11 @@ quietly {
 		_col(55) in g "IEPS" ///
 		_col(88) %7.3fc in y `recIEPS'/scalar(PIB)*100 ///
 		_col(99) %7.1fc in y `recIEPS'/ConHog*100 " %"
-	noisily di in g "  Consumo hogares e ISFLSH" ///
-		_col(44) %7.3fc in y ConHog/scalar(PIB)*100 ///
+	noisily di in g "  Importaciones (balanza comercial)" ///
+		_col(44) %7.3fc in y scalar(importacionesBCPIB) ///
 		_col(55) in g "Importaciones" ///
 		_col(88) %7.3fc in y `recImporta'/scalar(PIB)*100 ///
-		_col(99) %7.1fc in y `recImporta'/ConHog*100 " %"
+		_col(99) %7.1fc in y (`recImporta'/scalar(PIB)*100)/scalar(importacionesBCPIB)*100 " %"
 	noisily di in g _dup(111) "-"
 	noisily di in g "{bf:  Consumo hogares e ISFLSH" ///
 		_col(44) %7.3fc in y ConHog/scalar(PIB)*100 ///

@@ -33,11 +33,15 @@ quietly {
 	}
 
 	collapse (last) inflacion (last) mes, by(anio)
-	
 	replace inflacion = inflacion/100
 	
+	local anio_first = anio[1]
 	local anio_last = anio[_N]
 	local mes_last = mes[_N]
+
+	if `geo' == -1 {
+		local geo = `anio_last' - `anio_first'
+	}
 
 
 
@@ -47,7 +51,7 @@ quietly {
 	* Time series operators: L = lag *
 	tsset anio
 	tsappend, add(`=`fin'-`anio_last'')
-	
+
 	g double var_inflY = (inflacion/L.inflacion-1)*100
 	label var var_inflY "Anual"
 
@@ -73,7 +77,7 @@ quietly {
 		}
 		replace inflacion = L.inflacion*(1+var_inflY/100) if anio == `k' & mes != 12
 		replace var_inflG = ((inflacion/L`=`geo''.inflacion)^(1/`geo')-1)*100 if anio == `k' & mes != 12
-	}	
+	}
 
 	* Valor presente *
 	if `aniovp' == -1 {
@@ -114,8 +118,8 @@ quietly {
 		}
 
 		twoway (area deflatorpp anio if (anio < `anio_last' & anio >= 1993) | (anio == `anio_last' & mes == 12)) ///
-			(area deflatorpp anio if anio >= `anio_last' & anio > anio[`obslast'+`exo_count']) ///
-			(`graphtype' deflatorpp anio if /*anio == `anio_last' & trimestre < 4 |*/ anio <= anio[`obslast'+`exo_count'] & anio >= `anio_last', lwidth(none)), ///
+			(area deflatorpp anio if anio >= `anio_last' & anio >= anio[`obslast'+`exo_count']) ///
+			(`graphtype' deflatorpp anio if anio < anio[`obslast'+`exo_count'] & anio >= `anio_last', lwidth(none)), ///
 			///title("{bf:{c I'}ndice} nacional de precios al consumidor") ///
 			subtitle(${pais}) ///
 			xlabel(1995(5)`=round(anio[_N],5)') ///
@@ -139,8 +143,8 @@ quietly {
 			}
 		}
 		twoway (connected var_inflY anio if (anio < `anio_last' & anio >= 1993) | (anio == `anio_last' & mes == 12)) ///
-			(connected var_inflY anio if anio >= `anio_last' & anio > anio[`obslast'+`exo_count']) ///
-			(connected var_inflY anio if /*anio == `anio_last' & trimestre < 4 |*/ anio <= anio[`obslast'+`exo_count'] & anio >= `anio_last', lwidth(none)), ///
+			(connected var_inflY anio if anio >= `anio_last' & anio >= anio[`obslast'+`exo_count']) ///
+			(connected var_inflY anio if anio < anio[`obslast'+`exo_count'] & anio >= `anio_last', lwidth(none)), ///
 			///title({bf:Crecimientos} del {c i'}ndice nacional de precios al consumidor) subtitle(${pais}) ///
 			subtitle(${pais}) ///
 			xlabel(1995(5)`=round(anio[_N],5)') ///
@@ -154,7 +158,7 @@ quietly {
 		capture confirm existence $export
 		if _rc == 0 {
 			graph export "$export/var_inflYH.png", replace name(var_inflYH)
-		}	
+		}
 
 	}
 	
