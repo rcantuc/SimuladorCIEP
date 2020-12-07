@@ -24,7 +24,7 @@ else {
 
 ***************/
 *** 1 SANKEY ***
-/****************
+****************
 if "$pais" == "" {
 	run "`c(sysdir_personal)'/3GastosWeb.do" `anio' fast
 	run "`c(sysdir_personal)'/4IngresosWeb.do" `anio' fast

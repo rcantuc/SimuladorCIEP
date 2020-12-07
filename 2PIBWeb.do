@@ -49,7 +49,7 @@ if "$pais" == "El Salvador" {
 ********************/
 ** PIB + Deflactor **
 *********************
-noisily PIBDeflactor, anio(`anio') geo(9) output `nographs' //discount(3.0)
+noisily PIBDeflactor, anio(`anio') output `nographs' //geo(`geo') //discount(3.0)
 
 
 ** Guardar base de $pais y $id **

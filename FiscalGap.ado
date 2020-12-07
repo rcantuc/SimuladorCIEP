@@ -52,7 +52,7 @@ quietly {
 		save `pm_capital'
 	}
 	
-	LIF, anio(`anio') `nographs' //eofp
+	LIF, anio(`anio') `nographs' dy(divGA) //eofp
 	collapse (sum) recaudacion if divLIF != 10, by(anio divGA) fast
 	if "$pais" == "" {
 		merge 1:1 (anio divGA) using `pm_ingreso', nogen keepus(monto)

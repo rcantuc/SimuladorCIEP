@@ -10,11 +10,9 @@ noisily di _newline(20) in g _col(35) "8) " in w "8) " in y "8) " in g "8)"
 
 if "`c(os)'" == "Unix" {
 	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
-	*global export "/home/ciepmx/Dropbox (CIEP)/Textbook/images/"
 }
 if "`c(os)'" == "MacOSX" {
 	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
-	*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
 }
 adopath ++ PERSONAL
 
@@ -31,9 +29,17 @@ if "`1'" == "" {
 else {
 	local aniovp = `1'
 }
-*global pais = "El Salvador"
+
+global pais = "El Salvador"
 *global id = "PE2021"
 *global nographs "nographs"
+
+if "`c(os)'" == "Unix" & "$pais" == "" {
+	global export "/home/ciepmx/Dropbox (CIEP)/Textbook/images/"
+}
+if "`c(os)'" == "MacOSX" & "$pais" == "" {
+	global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
+}
 
 
 
@@ -52,7 +58,7 @@ noisily run "`c(sysdir_personal)'/2PIBWeb.do" `aniovp'
 ***        Simulador v5: Set up         ***
 *******************************************
 noisily Poblacion, anio(`aniovp') $nographs //update
-*noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' `aniovp'
+noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' `aniovp'
 
 if "$pais" == "" & "$id" == "" {
 	*noisily run "`c(sysdir_personal)'/Expenditure.do" 2018 // 	<-- a calibrar!!!
@@ -81,7 +87,7 @@ if "$pais" == "" & "$id" == "" {
 
 	* Sankey *
 	foreach k in grupo_edad decil escol sexo {
-		noisily run "`c(sysdir_personal)'/SankeyC.do" `k' 2018
+		*noisily run "`c(sysdir_personal)'/SankeyC.do" `k' 2018
 		noisily run "`c(sysdir_personal)'/Sankey.do" `k' 2018
 	}
 }
@@ -132,7 +138,7 @@ else if "$pais" == "El Salvador" {
 *** PARTE II: INGRESOS ***
 **************************
 if "$pais" == "" {
-	* Ingresos: Datos Abiertos *
+	/* Ingresos: Datos Abiertos *
 	if "$nographs" != "nographs" {
 		DatosAbiertos XNA0120_s, g //					ISR salarios
 		DatosAbiertos XNA0120_f, g //					ISR PF
@@ -149,7 +155,7 @@ if "$pais" == "" {
 		DatosAbiertos XOA0120, g //						Ingresos propios ISSSTE
 	}
 
-	* Ingresos *
+	* Ingresos */
 	noisily run "`c(sysdir_personal)'/4IngresosWeb.do" `aniovp' //		Parte II
 }
 else if "$pais" == "El Salvador" {
