@@ -39,7 +39,7 @@ quietly {
 	noisily di _newline(2) in g _dup(20) "." "{bf:  Sistema Fiscal: INGRESOS $pais " in y `anio' "  }" in g _dup(20) "."
 
 	** 2.1 PIB + Deflactor **
-	PIBDeflactor, anio(`anio') nographs
+	PIBDeflactor, anio(`anio') nographs nooutput
 	local currency = currency[1]
 	forvalues k=1(1)`=_N' {
 		if anio[`k'] == `anio' {

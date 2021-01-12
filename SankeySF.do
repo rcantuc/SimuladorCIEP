@@ -208,7 +208,7 @@ save `eje3'
 
 ************
 ** Sankey **
-noisily SankeySum, anio(`2') name(`1') folder(SankeySF) a(`eje1') b(`eje2') c(`eje3') d(`eje4') 
+*noisily SankeySum, anio(`2') name(`1') folder(SankeySF) a(`eje1') b(`eje2') c(`eje3') d(`eje4') 
 noisily SankeySumSim, anio(`2') name(`1') folder(SankeySF5) a(`eje1') b(`eje2') c(`eje3') d(`eje4') 
 
 timer off 9

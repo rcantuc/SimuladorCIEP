@@ -813,6 +813,7 @@ foreach categ of varlist categ categ_iva {
 	** 7.2 Totales **
 	egen TOTgasto_anual = rsum(gasto_anual*)
 	label var TOTgasto_anual "gasto total"
+
 	egen TOTIVA = rsum(IVA*)
 	egen TOTIEPS = rsum(IEPS*)
 
@@ -832,6 +833,7 @@ foreach categ of varlist categ categ_iva {
 	}
 	restore
 }
+
 
 
 timer off 5

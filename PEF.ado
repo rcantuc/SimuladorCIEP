@@ -48,7 +48,7 @@ quietly {
 	noisily di _newline(2) in g _dup(20) "." "{bf:  Sistema Fiscal: GASTOS $pais " in y `anio' "  }" in g _dup(20) "."
 	
 	** 2.1 PIB + Deflactor **
-	PIBDeflactor, anio(`anio') nographs
+	PIBDeflactor, anio(`anio') nographs nooutput
 	local currency = currency[1]
 	tempfile PIB
 	save `PIB'
@@ -344,10 +344,10 @@ quietly {
 		foreach k of local lev_resumido {
 			tempvar lev_res`countlev'
 			if `countlev' == 1 {
-				g `lev_res`countlev'' = gastoneto`k'/1000000
+				g `lev_res`countlev'' = gastoneto`k'/1000000000
 			}
 			else {
-				g `lev_res`countlev'' = gastoneto`k'/1000000 + `lev_res`=`countlev'-1''
+				g `lev_res`countlev'' = gastoneto`k'/1000000000 + `lev_res`=`countlev'-1''
 			}
 			replace `lev_res`countlev'' = 0 if `lev_res`countlev'' == .
 			
@@ -358,11 +358,19 @@ quietly {
 
 		tempvar TOTPIB
 		egen `TOTPIB' = rsum(gastonetoPIB*)
+
+		forvalues k=1(1)`=_N' {
+			if `TOTPIB'[`k'] != . & anio[`k'] >= 2014 {
+				local text `"`text' `=`TOTPIB'[`k']' `=anio[`k']' "`=string(`TOTPIB'[`k'],"%5.1fc")'""'
+			}
+		}
+		
 		twoway (area `graphvars' anio if anio >= 2014) ///
 			(connected `TOTPIB' anio if anio >= 2014, yaxis(2) mlcolor("255 129 0") lcolor("255 129 0")), ///
 			title("{bf:Gasto} p{c u'}blico") ///
 			subtitle($pais) ///
-			ytitle(millones `currency') ytitle(% PIB, axis(2)) xtitle("") ///
+			text(`text', yaxis(2)) ///
+			ytitle(mil millones `currency') ytitle(% PIB, axis(2)) xtitle("") ///
 			ylabel(/*0(5)30*/, format(%15.0fc) labsize(small)) ///
 			ylabel(/*0(5)30*/, axis(2) noticks format(%5.1fc) labsize(small)) ///
 			yscale(range(0)) yscale(range(0) axis(2) noline) ///

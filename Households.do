@@ -195,7 +195,7 @@ local otrosing = r(Ingresos_de_capital)+`ISRMorales'
 *** A.4 Macros: SAT ***
 ***********************
 if `enighanio' >= 2015 {
-	PIBDeflactor, aniovp(`enighanio') nographs
+	PIBDeflactor, aniovp(`enighanio') nographs nooutput
 	forvalues k=1(1)`=_N' {
 		if anio[`k'] == 2015 {
 			local deflactor = deflator[`k']
@@ -1980,7 +1980,7 @@ label values tipo_contribuyente tipo_contribuyente
 label var ing_jubila "Pensiones"
 label var ing_subor "Sueldos y salarios"
 label var ing_mixto "Ingreso mixto"
-label var ing_capital "Sociedades y ISFLSH"
+label var ing_capital "Sociedades e ISFLSH"
 label var ing_estim_alqu "Imputaci{c o'}n de alquiler"
 
 
@@ -2064,6 +2064,8 @@ replace sinco = "9" if sinco == "."
 g sinco2 = substr(sinco,1,1)
 
 replace subor = 2 if subor == .
+
+capture g folio = folioviv + foliohog
 
 
 ************************************************
@@ -2243,18 +2245,6 @@ scalar ISRFHHSPIB = (`RESTAX'[1,1]+`RESTAX'[1,2]+`RESTAX'[1,3])/`PIBSCN'*100
 scalar giniISRF = string(`gini_ISR',"%5.3f")
 
 
-*********************************
-* Distribuciones proporcionales *
-capture program drop Distribucion
-program Distribucion, return
-	syntax anything, RELativo(varname) MACro(real)
-
-	tempvar TOT
-	egen double `TOT' = sum(`relativo') if factor_cola != 0
-	g double `anything' = `relativo'/`TOT'*`macro'/factor_cola if factor_cola != 0
-	*replace `anything' = 0 if `anything' == .
-end
-
 * Impuestos *
 Distribucion ImpNetProduccionL_subor, relativo(ing_subor) ///
 	macro(`=`ImpNetProduccionL'*(`RemSal'+`SSEmpleadores'+`SSImputada')/(`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL')')
@@ -2291,6 +2281,9 @@ replace ing_mixtoL = ing_mixtoL + ImpNetProduccionL_mixL
 replace ing_mixtoK = ing_mixtoK + ImpNetProduccionK_mixK + ImpNetProductos_mixK
 replace ing_mixto = ing_mixtoL + ing_mixtoK
 
+replace ing_mixtoL = 2/3*ing_mixto
+replace ing_mixtoK = 1/3*ing_mixto
+
 replace ing_capital = ing_capital + ImpNetProduccionK_soc + ImpNetProductos_soc
 replace ing_estim_alqu = ing_estim_alqu + ImpNetProduccionK_hog + ImpNetProductos_hog
 
@@ -2312,6 +2305,9 @@ label var ingbrutotot "Ingreso total bruto"
 
 Gini ingbrutotot, hogar(`hogar') individuo(numren) factor(factor)
 local gini_ingbrutotot = r(gini_ingbrutotot)
+
+Simulador ingbrutotot [fw=factor_cola], base("ENIGH 2018") boot(1) reboot anio(2018) $nographs nooutput
+
 
 * Results *
 tabstat ing_subor ing_mixto ing_capital ing_estim_alqu gasto_anualDepreciacion [aw=factor_cola], stat(sum) f(%20.0fc) save by(formal)	
@@ -2438,11 +2434,11 @@ label values sexo sexo
 label define rural 1 "Rural" 0 "Urbano"
 label values rural rural
 
-g grupo_edad = 1 if edad < 18
-replace grupo_edad = 2 if edad >= 18 & edad < 65
-replace grupo_edad = 3 if edad >= 65
-label define grupo_edad 1 "De 0 a 17" 2 "De 18 a 64" 3 "De 65 y mas"
-label values grupo_edad grupo_edad
+g grupoedad = 1 if edad < 18
+replace grupoedad = 2 if edad >= 18 & edad < 65
+replace grupoedad = 3 if edad >= 65
+label define grupoedad 1 "De 0 a 17" 2 "De 18 a 64" 3 "De 65 y más"
+label values grupoedad grupoedad
 
 replace formalmax = 3 if formalmax == 4
 label define formalidad 3 "Pemex y otros", modify
@@ -2471,26 +2467,27 @@ Distribucion ing_cap_otrasempr, relativo(factor) macro(`OtrasEmpresas')
 **********************************
 *** 14 Variables Simulador.ado ***
 **********************************
-capture g folio = folioviv + foliohog
 
 
 ** Ingresos laborales **
 egen double Yl = rsum(ing_subor ing_mixtoL)
 label var Yl "Ingreso laboral"
+Simulador Yl [fw=factor_cola], base("ENIGH 2018") boot(1) reboot anio(2018) $nographs nooutput
 
-egen double Yk = rsum(ing_capital ing_mixtoK ing_estim_alqu gasto_anualDepreciacion)
-replace Yk = Yk - (ing_cap_imss + ing_cap_issste + ing_cap_cfe + ///
+egen double Yk = rsum(ing_capital ing_mixtoK ing_estim_alqu)
+label var Yk "Ingreso de capital"
+Simulador Yk [fw=factor_cola], base("ENIGH 2018") boot(1) reboot anio(2018) $nographs nooutput
+replace Yk = Yk + gasto_anualDepreciacion - (ing_cap_imss + ing_cap_issste + ing_cap_cfe + ///
 	ing_cap_pemex + ing_cap_fmp + ing_cap_mejoras + ing_cap_derechos + ///
 	ing_cap_productos + ing_cap_aprovecha + ///
 	ing_cap_otrostrib + ing_cap_otrasempr)
-label var Yk "Ingreso de capital"
-
 
 ** (+) Impuestos al ingreso laboral **
 egen laboral = rsum(ISR__asalariados ISR__PF cuotasTP) if formal != 0
 replace laboral = 0 if laboral == .
 Distribucion Laboral, relativo(laboral) macro(`=`ISRSalarios'+`ISRFisicas'+`CuotasIMSS'')
 label var Laboral "los impuestos al ingreso laboral"
+Simulador Laboral [fw=factor], base("ENIGH 2018") boot(1) reboot anio(2018) $nographs nooutput
 
 
 ** (+) Impuestos al consumo **
@@ -2498,11 +2495,13 @@ egen consumo = rsum(TOTIVA TOTIEPS)
 replace consumo = 0 if consumo == .
 Distribucion Consumo, relativo(consumo) macro(`alconsumo')
 label var Consumo "los impuestos al consumo"
+Simulador Consumo [fw=factor], base("ENIGH 2018") boot(1) reboot anio(2018) $nographs nooutput
 
 
 ** (+) Impuestos e ingresos de capital **
 Distribucion OtrosC, relativo(Yk) macro(`=`otrosing'+`ISRMorales'')
 label var OtrosC "los ingresos de capital"
+Simulador OtrosC [fw=factor], base("ENIGH 2018") boot(1) reboot anio(2018) $nographs nooutput
 
 
 ** (-) Pensiones **
@@ -2510,6 +2509,7 @@ g ing_jubila_pub = ing_jubila if (formal == 1 | formal == 2 | formal == 3) & ing
 replace ing_jubila_pub = 0 if ing_jubila_pub == .
 Distribucion Pension, relativo(ing_jubila_pub) macro(`Pensiones')
 label var Pension "pensiones"
+Simulador Pension [fw=factor], base("ENIGH 2018") boot(1) reboot anio(2018) $nographs nooutput
 
 
 ** (-) Pension Bienestar **
@@ -2519,6 +2519,7 @@ matrix POBLACION68 = r(StatTotal)
 g PenBienestar = `PenBienestar'/POBLACION68[1,1] if edad >= 68
 replace PenBienestar = 0 if PenBienestar == .
 label var PenBienestar "Pensi{c o'}n Bienestar"
+Simulador PenBienestar if edad >= 68 [fw=factor], base("ENIGH 2018") boot(1) reboot anio(2018) $nographs nooutput
 
 
 ** (-) Educaci€n **
@@ -2535,6 +2536,7 @@ replace educacion = 0 if educacion == .
 
 Distribucion Educacion, relativo(educacion) macro(`Educacion')
 label var Educacion "educaci{c o'}n"
+Simulador Educacion [fw=factor], base("ENIGH 2018") boot(1) reboot anio(2018) $nographs nooutput
 
 
 ** (-) Salud **
@@ -2617,16 +2619,19 @@ replace salud = salud + `pemex'/`MSalud'[1,3] if benef_pemex == 1
 replace salud = salud + `ssa'/`pobtot'[1,1] if benef_ssa == 1
 Distribucion Salud, relativo(salud) macro(`Salud')
 label var Salud "salud"
+Simulador Salud [fw=factor], base("ENIGH 2018") boot(1) reboot anio(2018) $nographs nooutput
 
 
 ** (-) Otros gastos **
 Distribucion OtrosGas, relativo(factor_cola) macro(`OtrosGas')
 label var OtrosGas "otros gastos"
+Simulador OtrosGas [fw=factor], base("ENIGH 2018") boot(1) reboot anio(2018) $nographs nooutput
 
 
 ** (-) Ingreso B{c a'}sico **
 g IngBasico = 0.1
 label var IngBasico "ingreso b{c a'}sico"
+Simulador IngBasico [fw=factor], base("ENIGH 2018") boot(1) reboot anio(2018) $nographs nooutput
 
 
 ** (*) Infraestructura **
@@ -2651,10 +2656,22 @@ egen Infra = rsum(Infra_*)
 **********************************************
 g Ciclodevida = TOTgasto_anual - Yl
 label var Ciclodevida "ciclo de vida"
+Simulador Ciclodevida [fw=factor_cola], base("ENIGH 2018") boot(1) reboot anio(2018) $nographs nooutput
 
 g Ahorro = ingbrutotot + ing_capitalROW + ing_suborROW + ing_remesas ///
 	- TOTgasto_anual - gasto_anualComprasN - gasto_anualGobierno
 label var Ahorro "ahorro"
+Simulador Ahorro [fw=factor_cola], base("ENIGH 2018") boot(1) reboot anio(2018) $nographs nooutput
+Simulador TOTgasto_anual [fw=factor_cola], base("ENIGH 2018") boot(1) reboot anio(2018) $nographs nooutput
+
+* Impuestos y aportaciones *
+egen ImpuestosAportaciones = rsum(Laboral Consumo ISR__PM)
+Simulador ImpuestosAportaciones [fw=factor], base("ENIGH 2018") boot(1) reboot anio(2018) $nographs nooutput	
+Simulador ISR__PM [fw=factor], base("ENIGH 2018") boot(1) reboot anio(2018) $nographs nooutput	
+
+* Ingresos Publicos *
+egen IngresosPublicos = rsum(Laboral Consumo OtrosC)
+Simulador IngresosPublicos [fw=factor], base("ENIGH 2018") boot(1) reboot anio(2018) $nographs nooutput
 
 
 

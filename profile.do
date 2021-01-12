@@ -50,5 +50,5 @@ global def2021 =  3.425
 *************************/
 *** 4 Informaci{c o'}n ***
 **************************
-noisily PIBDeflactor, nographs anio(2021) //update
+noisily PIBDeflactor, nographs nooutput anio(2021) //update
 clear

@@ -53,7 +53,7 @@ quietly {
 	save`balanza'
 	
 	
-	PIBDeflactor, nographs
+	PIBDeflactor, nographs nooutput
 	merge 1:1 (anio) using `balanza', keep(matched) nogen
 	merge 1:1 (anio) using `"`c(sysdir_site)'../basesCIEP/SIM/SHRFSP.dta"', keep(matched) keepus(tipoDeCambio) nogen
 
