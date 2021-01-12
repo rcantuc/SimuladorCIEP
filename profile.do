@@ -11,7 +11,6 @@ set charset latin1, permanently
 *set trace on
 
 sysdir set PERSONAL "`c(sysdir_site)'"
-global SIMULADOR = `"`c(sysdir_site)'/INICIO.do"'
 
 
 

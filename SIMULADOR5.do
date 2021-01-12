@@ -86,7 +86,7 @@ global id = "PE2021"
 
 ***************************************
 ** PARAMETROS SIMULADOR: DIRECTORIOS **
-sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
+*sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
 capture mkdir "`c(sysdir_personal)'/users"
 capture mkdir "`c(sysdir_personal)'/users/$pais/"
 capture mkdir "`c(sysdir_personal)'/users/$pais/$id/"
