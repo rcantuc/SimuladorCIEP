@@ -326,6 +326,8 @@ if "$nographs" != "nographs" {
 	use `"`c(sysdir_site)'../basesCIEP/SIM/2018//households`=subinstr("${pais}"," ","",.)'.dta"', clear
 	noisily Simulador ImpuestosAportaciones if ImpuestosAportaciones != 0 [fw=factor], ///
 		base("ENIGH 2018") boot(1) reboot nographs anio(2020)
+
+	use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/ImpuestosAportacionesREC.dta"', clear
 	merge 1:1 (anio) using `"`c(sysdir_personal)'/users/$pais/$id/PIB.dta"', nogen
 	replace estimacion = estimacion/pibYR*100
 
