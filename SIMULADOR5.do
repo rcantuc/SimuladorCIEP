@@ -323,12 +323,9 @@ noisily TasasEfectivas, anio(`aniovp') `nographs'
 
 ** GRAFICA PROYECCION **
 if "$nographs" != "nographs" {
-	capture use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/ImpuestosAportacionesREC.dta"', clear
-	if _rc != 0 {
-		use `"`c(sysdir_personal)'/users/$pais/$id/households`=subinstr("${pais}"," ","",.)'.dta"', clear
-		noisily Simulador ImpuestosAportaciones if AportacionesNetas != 0 [fw=factor], ///
-			base("ENIGH 2018") boot(1) reboot nographs anio(2020)
-	}
+	use `"`c(sysdir_site)'/SIM/2018//households`=subinstr("${pais}"," ","",.)'.dta"', clear
+	noisily Simulador ImpuestosAportaciones if AportacionesNetas != 0 [fw=factor], ///
+		base("ENIGH 2018") boot(1) reboot nographs anio(2020)
 	merge 1:1 (anio) using `"`c(sysdir_personal)'/users/$pais/$id/PIB.dta"', nogen
 	replace estimacion = estimacion/pibYR*100
 
