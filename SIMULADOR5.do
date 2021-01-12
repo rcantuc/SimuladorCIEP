@@ -51,9 +51,11 @@ if "$pais" == "" {
 
 
 	** Sankey **
-	foreach k in grupoedad decil escol sexo {
-		noisily run "`c(sysdir_personal)'/SankeyCC.do" `k' 2018
-		noisily run "`c(sysdir_personal)'/Sankey.do" `k' 2018
+	if "`c(os)'" != "Unix" {
+		foreach k in grupoedad decil escol sexo {
+			noisily run "`c(sysdir_personal)'/SankeyCC.do" `k' 2018
+			noisily run "`c(sysdir_personal)'/Sankey.do" `k' 2018
+		}
 	}
 
 	** Datos Abiertos **
