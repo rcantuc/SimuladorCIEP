@@ -82,6 +82,10 @@ if scalar(ComprasN) < 0 {
 }
 label define `1' -1 "Resto del mundo", add
 
+rename to to2
+rename from to
+rename to2 from
+
 * Eje *
 tempfile eje1
 save `eje1'
@@ -109,7 +113,7 @@ drop gasto_anual*
 levelsof `1', local(`1')
 foreach k of local `1' {
 	local oldlabel : label (`1') `k'
-	label define `1' `k' "_`oldlabel'", modify
+	*label define `1' `k' "_`oldlabel'", modify
 }
 
 * from */
@@ -135,7 +139,7 @@ replace from = 3 in -2
 replace profile = scalar(ConGob) - scalar(SerEGob) - scalar(SaluGob) in -3
 replace from = 7 in -3*/
 
-* Ahorro *
+/* Ahorro *
 set obs `=_N+1'
 drop if from == 98
 replace from = 98 in -1
@@ -144,10 +148,10 @@ replace profile = scalar(AhorroN) in -1
 label define `1' -2 "__Futuro", add
 label define from 98 "Ahorro", add
 
-* ROW *
+* ROW */
 set obs `=_N+1'
 replace to = -3 if from == .
-label define `1' -3 "__Resto del mundo", add
+label define `1' -3 "Resto del mundo", add
 
 replace from = 99 in -1
 replace profile = scalar(ROWTrans) in -1
@@ -159,6 +163,10 @@ replace to = -4 if from == 9
 label define `1' -4 "__Depreciacion", add
 
 * Eje */
+rename to to2
+rename from to
+rename to2 from
+
 tempfile eje4
 save `eje4'
 
@@ -196,7 +204,7 @@ save `eje3'
 
 ************
 ** Sankey **
-noisily SankeySumSim, anio(`2') name(`1') folder(SankeySIM5) a(`eje1') b(`eje2') c(`eje3') d(`eje4') 
+noisily SankeySumSim, anio(`2') name(`1') folder(SankeySIM5C) a(`eje1') b(`eje4') //(`eje3') d(`eje4') 
 
 timer off 7
 timer list 7

@@ -3,7 +3,7 @@ quietly {
 
 	syntax anything [if/] [, Graphs PIBVP(real -999) PIBVF(real -999) UPDATE DESDE(real 1993)]
 
-	PIBDeflactor, nographs
+	PIBDeflactor, nographs nooutput
 	tempfile PIB
 	save `PIB'
 
@@ -137,7 +137,7 @@ quietly {
 			ylabel(, axis(2) format(%5.1fc) noticks) ///
 			yscale(range(0) noline axis(2)) ///
 			legend(label(1 "Observado") label(2 "Proyectado") order(1 2)) ///
-			text(`text1', size(small) yaxis(2)) ///
+			text(`text1', yaxis(2)) ///
 			///caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP, Datos Abiertos y del INEGI, BIE.}") ///
 			note("{bf:{c U'}ltimo dato:} `ultanio'm`ultmes'.") ///
 			name(H`anything', replace)

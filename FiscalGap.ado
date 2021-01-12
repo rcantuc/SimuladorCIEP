@@ -6,7 +6,7 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
-	syntax [, NOGraphs Anio(int `aniovp') BOOTstrap(int 1) Update END(int 2100) OUTPUT]
+	syntax [, NOGraphs Anio(int `aniovp') BOOTstrap(int 1) Update END(int 2100)]
 
 
 	*************
@@ -176,7 +176,7 @@ quietly {
 			graph export `"$export/Proy_ingresos.png"', replace name(Proy_ingresos)
 		}
 	}
-	if "`output'" == "output" {
+	if "$output" == "output" {
 		keep if anio >= 2010
 		forvalues k=1(1)`=_N' {
 			if anio[`k'] >= 2010 & anio[`k'] < `anio' {
@@ -201,9 +201,11 @@ quietly {
 		local length_consumo = strlen("`proy_consumo'")
 		local length_ingreso = strlen("`proy_ingreso'")
 		local length_otrosing = strlen("`proy_otrosing'")
+		capture log on output
 		noisily di in w "PROYCON: [`=substr("`proy_consumo'",1,`=`length_consumo'-1')']"
 		noisily di in w "PROYING: [`=substr("`proy_ingreso'",1,`=`length_ingreso'-1')']"
 		noisily di in w "PROYOTRING: [`=substr("`proy_otrosing'",1,`=`length_otrosing'-1')']"
+		capture log off output
 	}
 	
 
@@ -574,7 +576,7 @@ quietly {
 			title({bf: Proyecci{c o'}n} de los RFSP) subtitle($pais) ///
 			name(Proy_rfsp, replace)
 	}
-	if "`output'" == "output" {
+	if "$output" == "output" {
 		forvalues k=1(1)`=_N' {
 			if anio[`k'] >= 2013 & anio[`k'] < `anio' {
 				local proy_educa = "`proy_educa' `=string(`=gastoeducacion[`k']/1000000000',"%10.3f")',"
@@ -633,6 +635,7 @@ quietly {
 		local length_otrosg = strlen("`proy_otrosg'")
 		local length_bienestar = strlen("`proy_bienestar'")
 		local length_ingbas = strlen("`proy_ingbas'")
+		capture log on output
 		noisily di in w "PROYEDUCA: [`=substr("`proy_educa'",1,`=`length_educa'-1')']"
 		noisily di in w "PROYPENSION: [`=substr("`proy_pension'",1,`=`length_pension'-1')']"
 		noisily di in w "PROYSALUD: [`=substr("`proy_salud'",1,`=`length_salud'-1')']"
@@ -641,7 +644,7 @@ quietly {
 		noisily di in w "PROYOTROSG: [`=substr("`proy_otrosg'",1,`=`length_otrosg'-1')']"
 		noisily di in w "PROYBIENESTAR: [`=substr("`proy_bienestar'",1,`=`length_bienestar'-1')']"
 		noisily di in w "PROYINGBAS: [`=substr("`proy_ingbas'",1,`=`length_ingbas'-1')']"
-		
+		capture log off output	
 	}
 
 	*********************
@@ -717,7 +720,7 @@ quietly {
 			graph export `"$export/Proy_shrfsp.png"', replace name(Proy_shrfsp)
 		}
 	}
-	if "`output'" == "output" {
+	if "$output" == "output" {
 		forvalues k=1(1)`=_N' {
 			if anio[`k'] < `anio' & anio[`k'] >= 2010 {
 				local proy_shrfsp = "`proy_shrfsp' `=string(`=shrfspPIB[`k']',"%10.3f")',"
@@ -733,9 +736,11 @@ quietly {
 			}
 		}
 		local length_shrfsp = strlen("`proy_shrfsp'")
-		noisily di in w "PROYSHRFSP1: [`=substr("`proy_shrfsp'",1,`=`length_shrfsp'-1')']"
 		local length_shrfsp2 = strlen("`proy_shrfsp2'")
+		capture log on output
+		noisily di in w "PROYSHRFSP1: [`=substr("`proy_shrfsp'",1,`=`length_shrfsp'-1')']"
 		noisily di in w "PROYSHRFSP2: [`=substr("`proy_shrfsp2'",1,`=`length_shrfsp2'-1')']"	
+		capture log off output
 	}
 	forvalues k=1(1)`=_N' {
 		if anio[`k'] == `end' {
@@ -748,11 +753,10 @@ quietly {
 		in y _col(35) %25.0fc `shrfsp_end' ///
 		in g " % PIB"	
 
-exit
 
 	*****************************************
 	*** 5 Fiscal Gap: Cuenta Generacional ***
-	*****************************************
+	/*****************************************
 	use `"`c(sysdir_site)'../basesCIEP/SIM/Poblacion.dta"', clear
 
 	collapse (sum) poblacion if edad == 0, by(anio) fast

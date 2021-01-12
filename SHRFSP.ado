@@ -37,7 +37,7 @@ quietly {
 	}
 
 	** 2.2 PIB + Deflactor **
-	PIBDeflactor, anio(`anio') nographs
+	PIBDeflactor, anio(`anio') nographs nooutput
 	local currency = currency[1]
 	tempfile PIB
 	save `PIB'

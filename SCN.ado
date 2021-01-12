@@ -276,7 +276,7 @@ quietly {
 
 	** D.8. PIBDeflactor **
 	*capture use "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", clear
-	PIBDeflactor, anio(`anio') `update' discount(`discount') nographs
+	PIBDeflactor, anio(`anio') `update' discount(`discount') nographs nooutput
 	tempfile basepib
 	save `basepib'
 

@@ -23,6 +23,7 @@ quietly {
 	sort anio
 	local anio = anio in 1
 
+	keep `poblacion' edad sexo anio
 	reshape wide `poblacion', i(edad sexo) j(anio)
 
 	mkmat `poblacion'* if sexo == 1, matrix(HOM)

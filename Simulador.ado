@@ -4,12 +4,12 @@ quietly {
 	version 13.1
 	syntax varname [if] [fweight/], ///
 		[BOOTstrap(int 1) ///
-		NOGraphs REboot Noisily ///
+		NOGraphs NOOutput REboot Noisily ///
 		REESCalar(real 1) BANDwidth(int 5) ///
 		BASE(string) GA ///
 		MACro(string) BIE ///
 		POBlacion(string) FOLIO(string) ///
-		NOKernel POBGraph OUTPUT ANIO(int -1)]
+		NOKernel POBGraph ANIO(int -1)]
 
 
 
@@ -27,7 +27,7 @@ quietly {
 
 	** Macros: PIB **
 	preserve
-	PIBDeflactor, anio(`anio') nographs
+	PIBDeflactor, anio(`anio') nographs nooutput
 	tempfile PIBBASE
 	save `PIBBASE'
 
@@ -100,7 +100,7 @@ quietly {
 		******************
 		** 1.2 Archivos **
 		capture mkdir `"`c(sysdir_personal)'/users/$pais/"'
-		capture mkdir `"`c(sysdir_personal)'/users/$pais/$id/"'
+		*capture mkdir `"`c(sysdir_personal)'/users/$pais/$id/"'
 		capture mkdir `"`c(sysdir_personal)'/users/$pais/$id/graphs/"'
 		capture mkdir `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/"'
 		capture mkdir `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'"'
@@ -479,14 +479,16 @@ quietly {
 			in g "  I.C. (95%): " in y "+/-" %7.2fc (r(ub)/r(mean)-1)*100 "%"
 		scalar `varlist'`decil2' = r(mean)
 
-		if "`output'" == "output" {
+		if "$output" == "output" {
 			local incd = "`incd' `=string(`=`varlist'`decil2'',"%10.0f")',"
 		}
 	}
 	
-	if "`output'" == "output" {
+	if "$output" == "output" & "`nooutput'" == "" {
 		local lengthINCD = strlen("`incd'")
+		capture log on output
 		noisily di in w "INCD: [`=substr("`incd'",1,`=`lengthINCD'-1')']"
+		capture log off output
 	}
 
 
@@ -539,7 +541,7 @@ quietly {
 	*** 5.1 Piramide de la variable ***
 	if "`nographs'" != "nographs" {
 		poblaciongini `varlist', title("`title'") nombre(`nombre') ///
-			boottext(`boottext') rect(`RECT') base(`base') graphs id($id) `output' pib(`PIB')
+			boottext(`boottext') rect(`RECT') base(`base') graphs id($id) pib(`PIB')
 	}
 
 
@@ -563,7 +565,7 @@ end
 program poblaciongini
 	version 13.1
 	syntax varname, NOMbre(string) PIB(real) ///
-		[TITle(string) Rect(real 100) BOOTtext(string) BASE(string) Graphs ID(string) OUTPUT]
+		[TITle(string) Rect(real 100) BOOTtext(string) BASE(string) Graphs ID(string)]
 
 
 	*************************
@@ -641,10 +643,10 @@ program poblaciongini
 	*** 5. Graphs ***
 	graphpiramide `varlist', over(`grupo') title("`title'") rect(`rect') ///
 		men(`=string(`gsexlab1',"%7.0fc")') women(`=string(`gsexlab2',"%7.0fc")') ///
-		boot(`boottext') base(`base') `output' pib(`pib')
+		boot(`boottext') base(`base') pib(`pib')
 	*graphpiramide `varlist', over(`grupoesc') title("`title'") rect(`rect') ///
 		men(`=string(`gsexlab1',"%7.0fc")') women(`=string(`gsexlab2',"%7.0fc")') ///
-		boot(`boottext') base(`base') `output' pib(`pib')
+		boot(`boottext') base(`base') pib(`pib')
 end
 
 
@@ -655,7 +657,7 @@ program graphpiramide
 	version 13.1
 
 	syntax varname, Over(varname) Men(string) Women(string) PIB(real) ///
-		[Title(string) BOOTtext(string) Rect(real 100) BASE(string) ID(string) OUTPUT]
+		[Title(string) BOOTtext(string) Rect(real 100) BASE(string) ID(string)]
 
 	* Title *
 	local titleover : variable label `over'
@@ -696,7 +698,7 @@ program graphpiramide
 
 	*******************
 	*** 2. GRAFICAS ***
-	if "`output'" != "output" {
+	if "$output" != "output" {
 		* Edades *
 		forvalues k=0(1)120 {
 			if `k' != 0 & `k' != 5 & `k' != 10 & `k' != 15 & `k' != 20 & `k' != 25 & `k' != 30 ///

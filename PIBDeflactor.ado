@@ -16,8 +16,7 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
-	syntax [, ANIOvp(int `aniovp') GEO(int -1) FIN(int -1) NOGraphs UPDATE DIScount(real 3) ///
-		OUTPUT]
+	syntax [, ANIOvp(int `aniovp') GEO(int -1) FIN(int -1) NOGraphs NOOutput UPDATE DIScount(real 3)]
 
 	noisily di _newline(2) in g _dup(20) "." "{bf:   Producto Interno Bruto " in y `aniovp' "   }" in g _dup(20) "."
 
@@ -223,7 +222,7 @@ quietly {
 	noisily di in g " PIB " in y "`anio_last'`trim_last'" _col(25) %20.0fc `pib_last' in g " `=currency[`obsvp']' ({c u'}ltimo reportado)"
 	noisily di _newline in g " PIB " in y anio[`obsvp'] in g " per c{c a'}pita " in y _col(35) %10.1fc pibY[`obsvp']/`pobtotal'[1,1] in g " `=currency[`obsvp']'"
 	noisily di in g " PIB " in y anio[`obsvp'] in g " por trabajador " in y _col(35) %10.1fc OutputPerWorker[`obsvp'] in g " `=currency[`obsvp']'"
-	noisily di in g " Lambda " in y anio[`=`obs_exo'-20'] "-" anio[`obs_exo'] _col(35) %10.4f scalar(llambda) in g " %" 
+	noisily di in g " Lambda " in y anio[`=`obs_exo'-`geo''] "-" anio[`obs_exo'] _col(35) %10.4f scalar(llambda) in g " %" 
 	noisily di in g " Lambda " in y anio[1] "-" anio[`obs_exo'] _col(35) %10.4f `Lambda' in g " %" 
 
 	local grow_rate_LR = (pibYR[_N]/pibYR[_N-10])^(1/10)-1
@@ -352,7 +351,7 @@ quietly {
 			///xline(`anio_last'.5) ///
 			yscale(range(0)) /*xscale(range(1993))*/ ///
 			legend(label(1 "Reportado") label(2 "Proyectado") label(3 "Estimado") order(1 3 2)) ///
-			note("{bf:Productividad laboral}: `=string(scalar(llambda),"%6.3f")'% (`=anio[[`=`obs_exo'-20']]'-`=anio[`obs_exo']'); `=string(`Lambda',"%6.3f")'% (`=anio[1]'-`=anio[`obs_exo']'). {bf:{c U'}ltimo dato reportado}: `anio_last'`trim_last'.") ///
+			note("{bf:Productividad laboral}: `=string(scalar(llambda),"%6.3f")'% (`=anio[[`=`obs_exo'-`geo'']]'-`=anio[`obs_exo']'); `=string(`Lambda',"%6.3f")'% (`=anio[1]'-`=anio[`obs_exo']'). {bf:{c U'}ltimo dato reportado}: `anio_last'`trim_last'.") ///
 			///note("{bf:Note}: Annual Labor Productivity Growth (lambda): `=string(scalar(llambda),"%6.3f")'%.") ///
 			///caption("{it:Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, BIE.}") ///
 			name(PIBP, replace)
@@ -401,7 +400,7 @@ quietly {
 	********************
 	*** 5 Output SIM ***
 	********************
-	if "`output'" == "output" {
+	if "$output" == "output" & "`nooutput'" == "" {
 		tempvar reportado estimado proyectado
 		g reportado = pibY/1000000000000 if (anio < `anio_last' & anio >= 2010) ///
 			| (anio == `anio_last' & trimestre == 4)
@@ -437,9 +436,11 @@ quietly {
 		local length_estima = strlen("`out_estima'")
 		local length_proyec = strlen("`out_proyec'")
 
+		capture log on output
 		noisily di in w "Reportado: " in w "[`=substr("`out_report'",1,`length_report'-1)']"
 		noisily di in w "Estimado: " in w "[`=substr("`out_estima'",1,`length_estima'-1)']"
 		noisily di in w "Proyectado: " in w "[`=substr("`out_proyec'",1,`length_proyec'-1)']"
+		capture log off output
 	}
 
 

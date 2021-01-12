@@ -89,6 +89,7 @@ quietly {
 	****************/
 	*** 3 Reshape ***
 	*****************
+	keep `rec' `for' `pob' edad sexo
 	reshape wide `rec' `for' `pob', i(edad) j(sexo)
 
 

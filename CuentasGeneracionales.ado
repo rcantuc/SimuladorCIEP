@@ -7,7 +7,7 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
-	syntax varname [, ANIObase(int `aniovp') BOOTstrap(int 1) Graphs POST OUTPUT]
+	syntax varname [, ANIObase(int `aniovp') BOOTstrap(int 1) Graphs POST]
 
 	noisily di _newline in g "{bf:Cuentas Generacionales: " in y "$pais `aniobase'}"
 	local title : variable label `varlist'
@@ -135,7 +135,7 @@ quietly {
 	**************
 	*** OUTPUT ***
 	**************
-	if "`output'" == "output" {
+	if "$output" == "output" {
 		forvalues k = 0(5)`=`edadmax'-1' {
 				local GAH = "`GAH' `=string(GA[`k'+1,1],"%20.0f")',"
 				local GAM = "`GAM' `=string(GA[`k'+1,2],"%20.0f")',"

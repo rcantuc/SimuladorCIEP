@@ -8,25 +8,22 @@ quietly {
 	local aniovp : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`aniovp'")'"',1,4)
 
-	syntax [anything] [, ANIOinicial(int `aniovp') ANIOFinal(int -1) NOGraphs UPDATE]
+	syntax [anything] [, ANIOinicial(int `aniovp') ANIOFinal(int -1) NOGraphs UPDATE ///
+		TF(real -1) TM2044(real -1) TM4564(real -1) TM65(real -1)]
 
 	* Si la funcion se llama sin argumento, utiliza población *
 	if "`anything'" == "" {
 		local anything = "poblacion"
 	}
 
-	* Si no hay año inicial utiliza la fecha más reciente *
+	* Si no hay año inicial, utiliza la fecha de hoy *
 	if `anioinicial' == -1 {
 		local anioinicial : di %td_CY-N-D  date("$S_DATE", "DMY")
 		local anioinicial = substr(`"`=trim("`aniovp'")'"',1,4)
 	}
 
-
-	************************
-	*** 0. Base de datos ***
-	************************
 	* Revisa si se puede usar la base de datos *
-	capture use `"`c(sysdir_site)'../basesCIEP/SIM/`=proper("`anything'")'`=subinstr("${pais}"," ","",.)'.dta"', clear
+	capture use `"`c(sysdir_site)'../basesCIEP/SIM/Poblacion`=subinstr("${pais}"," ","",.)'.dta"', clear
 
 	* Si hay un error o la opción "update" es llamada, limpia la base de datos y la usa *
 	if _rc != 0 | "`update'" == "update" {
@@ -39,22 +36,119 @@ quietly {
 		use `"`c(sysdir_site)'../basesCIEP/SIM/`=proper("`anything'")'`=subinstr("${pais}"," ","",.)'.dta"', clear
 	}
 
-	***********************
-	* Grafica 1: Piramide *
-	***********************
-	if "`nographs'" != "nographs" {
 	* Si no hay año final, utiliza el último elemento del vector "anio" *
-		local poblacion : variable label `anything'
-		if `aniofinal' == -1 {
-			sort anio
-			local aniofinal = anio[_N]
+	if `aniofinal' == -1 {
+		local aniofinal = anio in -1
+	}
+
+
+
+	************************
+	*** 0. Base de datos ***
+	************************
+	noisily di _newline(2) in g _dup(20) "." "{bf:  Poblaci{c o'}n $pais} " in g _dup(20) "."
+
+	tabstat poblacion if anio == `aniovp', f(%20.0fc) stat(sum) save
+	tempname POBTOT
+	matrix `POBTOT' = r(StatTotal)
+	noisily di in g "  Poblaci{c o'}n " in y `aniovp' in g ": " in y %15.0fc `POBTOT'[1,1]
+	scalar poblaciontotal = string(`POBTOT'[1,1],"%20.0fc")
+
+	tabstat poblacion if anio == `aniofinal', f(%20.0fc) stat(sum) save
+	tempname POBFIN
+	matrix `POBFIN' = r(StatTotal)
+	noisily di in g "  Poblaci{c o'}n " in y `aniofinal' in g ": " in y %15.0fc `POBFIN'[1,1]
+	scalar poblacionfinal = string(`POBFIN'[1,1],"%20.0fc")
+
+
+
+	*****************************
+	*** 1 Tasas de fecundidad ***
+	*****************************
+	if "$pais" == "" {
+		drop entidad nacimientos
+		format mujeresfert %10.0fc
+
+		if `tm2044' != -1 {
+			replace defunciones = defunciones*(1+`tm2044'/100) if edad >= 20 & edad <= 44
+		}
+		
+		if `tm4564' != -1 {
+			replace defunciones = defunciones*(1+`tm4564'/100) if edad >= 45 & edad <= 64	
+		}
+		
+		if `tm65' != -1 {
+			replace defunciones = defunciones*(1+`tm65'/100) if edad >= 65		
 		}
 
+		g tasamortalidad = defunciones/poblacion*100
+		replace tasamortalidad = 100 if tasamortalidad > 100
+		label var tasamortalidad "Porcentaje de muertes"
+		drop defunciones
+
+		reshape wide poblacion tasamortalidad *migrantes, i(anio edad) j(sexo)
+		xtset edad anio
+		g difTF = tasafecundidad-L.tasafecundidad
+
+		if `tf' != -1 {
+			replace tasafecundidad = `tf' if anio == 2020
+		}
+		replace tasafecundidad = L.tasafecundidad + difTF if anio > 2020
+
+		g nacimientosSIM = mujeresfert*tasafecundidad/1000 if edad == 0
+		drop mujeresfert tasafecundidad
+
+		g poblacionSIM1 = nacimientosSIM*poblacion1/(poblacion1+poblacion2) if edad == 0
+		g poblacionSIM2 = nacimientosSIM*poblacion2/(poblacion1+poblacion2) if edad == 0
+
+		xtset anio edad
+		replace inmigrantes1 = L.inmigrantes1*0 if inmigrantes1 == .
+		replace inmigrantes2 = L.inmigrantes2*0 if inmigrantes2 == .
+		replace emigrantes1 = L.emigrantes1*0 if emigrantes1 == .
+		replace emigrantes2 = L.emigrantes2*0 if emigrantes2 == .
+
+		format *SIM* %10.0fc
+		drop nacimientosSIM
+
+		levelsof anio, local(anio)
+		levelsof edad, local(edad)
+		reshape wide poblacion* tasamortalidad* *migrantes* difTF, i(anio) j(edad)
+		tsset anio
+
+		foreach k of local anio {
+			foreach j of local edad {
+				if `k' > `anioinicial' {
+					if `j' > 0 {
+						replace poblacionSIM1`j' = L.poblacionSIM1`=`j'-1' * (1 - tasamortalidad1`=`j'-1'/100) + inmigrantes1`j' - emigrantes1`j' if anio == `k'
+						replace poblacionSIM2`j' = L.poblacionSIM2`=`j'-1' * (1 - tasamortalidad1`=`j'-1'/100) + inmigrantes2`j' - emigrantes2`j' if anio == `k'
+					}
+				}
+				else {
+						replace poblacionSIM1`j' = poblacion1`j' if anio == `k'
+						replace poblacionSIM2`j' = poblacion2`j' if anio == `k'
+				}
+			}
+		}
+	}
+	
+	reshape long poblacion1 poblacionSIM1 emigrantes1 inmigrantes1 tasamortalidad1 ///
+			poblacion2 poblacionSIM2 emigrantes2 inmigrantes2 tasamortalidad2, i(anio) j(edad)
+	label values edad .
+	reshape long poblacion poblacionSIM emigrantes inmigrantes tasamortalidad, i(anio edad) j(sexo)
+	label values sexo sexo
+	*drop *migrantes* *TF*
+	*******************************/
 
 
+
+	***************************
+	*** 1. Grafica Piramide ***
+	***************************
+	if "`nographs'" != "nographs" {
+		local poblacion : variable label `anything'
+
 		****************
-		* EstadÃ­sticos *
-		****************
+		* Estadisticos *
 		* Calcula las estadísticas descriptivas y las guarda en matrices *
 		* Mediana *
 		tabstat edad [fw=round(abs(`anything'),1)] if anio == `anioinicial', ///
@@ -121,10 +215,12 @@ quietly {
 		matrix `Pnacida' = r(StatTotal)
 
 		* Variables a graficar *
-		tempvar pob2
+		tempvar pob2 pob2SIM
 		g `pob2' = -`anything' if sexo == 1
 		replace `pob2' = `anything' if sexo == 2
-		format `pob2' %10.0fc
+		g `pob2SIM' = -`anything'SIM if sexo == 1
+		replace `pob2SIM' = `anything'SIM if sexo == 2
+		format `pob2' `pob2SIM' %10.0fc
 
 		* X label *
 		tabstat `anything' if (anio == `anioinicial' | anio == `aniofinal'), ///
@@ -201,6 +297,25 @@ quietly {
 			///xtitle("Personas") ///
 			///title("Pir{c a'}mide {bf:demogr{c a'}fica}") subtitle(${pais})
 
+		g pob2sim = `pob2SIM'
+		twoway (bar `pob2' edad if sexo == 1 & anio == `aniofinal'-1, horizontal lwidth(none)) ///
+			(bar `pob2' edad if sexo == 2 & anio == `aniofinal'-1, horizontal lwidth(none)) ///
+			(bar `pob2SIM' edad if sexo == 1 & anio == `aniofinal'-1, horizontal lwidth(none) barwidth(.33)) ///
+			(bar `pob2SIM' edad if sexo == 2 & anio == `aniofinal'-1, horizontal lwidth(none) barwidth(.33)) ///
+			(sc edad2 zero if anio == `aniofinal', msymbol(i) mlabel(edad2) mlabsize(vsmall) mlabcolor("114 113 118")), ///
+			legend(label(1 "Hombres CONAPO") label(2 "Mujeres CONAPO") ///
+			label(3 "Hombres Simulado") ///
+			label(4 "Mujeres Simulado") order(1 2 3 4)) ///
+			yscale(noline) ylabel(none) xscale(noline) ///
+			name(PiramideSIM_`anything', replace) ///
+			xlabel(`=-`MaxH'[1,1]' `"`=string(`MaxH'[1,1],"%15.0fc")'"' ///
+			`=-`MaxH'[1,1]/2' `"`=string(`MaxH'[1,1]/2,"%15.0fc")'"' 0 ///
+			`=`MaxM'[1,1]/2' `"`=string(`MaxM'[1,1]/2,"%15.0fc")'"' ///
+			`=`MaxM'[1,1]' `"`=string(`MaxM'[1,1],"%15.0fc")'"', angle(horizontal)) ///
+			///caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5, utilizando informaci{c o'}n de CONAPO.") ///
+			///xtitle("Personas") ///
+			title("Pir{c a'}mide {bf:demogr{c a'}fica}: observado vs. simulado") subtitle("${pais} `=`aniofinal'-1'")
+
 		if "$export" != "" {
 			graph export "$export/Piramide_`anything'_`anioinicial'_`aniofinal'.png", ///
 				replace name(Piramide_`anything'_`anioinicial'_`aniofinal')
@@ -208,9 +323,9 @@ quietly {
 
 
 
-		**************************************************
-		** GrÃ¡fica 2: Transici{c o'}n demogr{c a'}fica **
-		**************************************************
+		**************************************
+		*** Grafica Transicion demografica ***
+		**************************************
 		g pob18 = `anything' if edad <= 18
 		g pob1934 = `anything' if edad >= 19 & edad <= 34
 		g pob3560 = `anything' if edad >= 35 & edad <= 60
@@ -320,23 +435,10 @@ quietly {
 			}
 	}
 
-	use `"`c(sysdir_site)'../basesCIEP/SIM/`=proper("`anything'")'`=subinstr("${pais}"," ","",.)'tot.dta"', clear
-	tabstat poblacion if entidad == "Nacional" & anio == `aniovp', f(%20.0fc) save
-	tempname POBTOT
-	matrix `POBTOT' = r(StatTotal)
-	
-	noisily di _newline(2) in g _dup(20) "." "{bf:  Poblaci{c o'}n: $pais} " in y `aniovp' " " in g _dup(20) "."
-	noisily di in y %15.0fc `POBTOT'[1,1]
-	scalar poblaciontotal = string(`POBTOT'[1,1],"%20.0fc")
 
-	tabstat poblacion if entidad == "Nacional" & anio == 2050, f(%20.0fc) save
-	tempname POBFIN
-	matrix `POBFIN' = r(StatTotal)
-	scalar poblacionfinal = string(`POBFIN'[1,1],"%20.0fc")
-
-
+	** END **
 	timer off 14
 	timer list 14
-	noisily di _newline in g _dup(20) "." in y round(`=r(t14)/r(nt14)',.1) in g " segs" _dup(20) "." 
+	noisily di _newline in g _dup(20) "." "  " in y round(`=r(t14)/r(nt14)',.1) in g " segs  " _dup(20) "." 
 }
 end
