@@ -21,7 +21,7 @@ adopath ++ PERSONAL
 
 **************************************/
 ** PARAMETROS SIMULADOR: DIRECTORIOS **
-capture sysdir set PERSONAL "/SIM/OUT/5.0/"
+capture sysdir set PERSONAL "/SIM/OUT/5/5.0/"
 capture mkdir "`c(sysdir_personal)'/users"
 capture mkdir "`c(sysdir_personal)'/users/$pais/"
 capture mkdir "`c(sysdir_personal)'/users/$pais/$id/"
