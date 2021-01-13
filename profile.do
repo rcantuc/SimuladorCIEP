@@ -8,10 +8,8 @@ set more off, permanently
 set type double, permanently
 set charset latin1, permanently
 
-*set trace on
-
 sysdir set PERSONAL "`c(sysdir_site)'"
-
+cd "`c(sysdir_site)'"
 
 
 

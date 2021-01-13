@@ -1,11 +1,10 @@
 *****************************************************
 ****    SECTION FOR PROGRAMMING PURPOSES ONLY    ****
 ****         MUST BE COMMENTED OTHERWISE         ****
-/*****************************************************
+*****************************************************
 clear all
 macro drop _all
 capture log close _all
-timer on 1
 
 if "`c(os)'" == "Unix" {
 	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
@@ -25,6 +24,7 @@ adopath ++ PERSONAL
 ***    0. ARRANQUE    ***
 ***                   ***
 *************************
+timer on 1
 noisily di _newline(50) _col(35) in w "Simulador Fiscal CIEP v5.0" in y " $pais"
 
 
@@ -43,10 +43,21 @@ if "`2'" != "" {
 }
 
 
-/** Set-up: Cap. 3. La economia antropocentrica **
+
+
+******************************************************
+***                                                ***
+*** 1. SET-UP: Cap. 3. La economia antropocentrica ***
+***                                                ***
+/******************************************************
 noisily Poblacion, //tm2044(18.9) tm4564(63.9) tm65(35.0) //tf(`=64.333315*.8') //anio(`aniovp') //aniofinal(2030) //nographs //update
+
+
+** HOUSEHOLDS: INCOMES **
 noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' 2018
 if "$pais" == "" {
+
+	** HOUSEHOLDS: EXPENDITURES **
 	noisily run "`c(sysdir_personal)'/Expenditure.do" 2018
 
 
@@ -86,7 +97,7 @@ global id = "PE2021"
 
 ***************************************
 ** PARAMETROS SIMULADOR: DIRECTORIOS **
-*sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
+*capture sysdir set PERSONAL "/SIM/OUT/5.0/"
 capture mkdir "`c(sysdir_personal)'/users"
 capture mkdir "`c(sysdir_personal)'/users/$pais/"
 capture mkdir "`c(sysdir_personal)'/users/$pais/$id/"

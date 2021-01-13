@@ -65,7 +65,7 @@ quietly {
 	*****************************
 	*** 1 Tasas de fecundidad ***
 	*****************************
-	if "$pais" == "" {
+	if "$pais" == "" & (`tm2044' != -1 | `tm4564' != -1 | `tm65' != -1 | `tf' != -1) {
 		drop entidad nacimientos
 		format mujeresfert %10.0fc
 
@@ -129,15 +129,12 @@ quietly {
 				}
 			}
 		}
+		reshape long poblacion1 poblacionSIM1 emigrantes1 inmigrantes1 tasamortalidad1 ///
+				poblacion2 poblacionSIM2 emigrantes2 inmigrantes2 tasamortalidad2, i(anio) j(edad)
+		label values edad .
+		reshape long poblacion poblacionSIM emigrantes inmigrantes tasamortalidad, i(anio edad) j(sexo)
+		label values sexo sexo
 	}
-	
-	reshape long poblacion1 poblacionSIM1 emigrantes1 inmigrantes1 tasamortalidad1 ///
-			poblacion2 poblacionSIM2 emigrantes2 inmigrantes2 tasamortalidad2, i(anio) j(edad)
-	label values edad .
-	reshape long poblacion poblacionSIM emigrantes inmigrantes tasamortalidad, i(anio edad) j(sexo)
-	label values sexo sexo
-	*drop *migrantes* *TF*
-	*******************************/
 
 
 
@@ -218,9 +215,6 @@ quietly {
 		tempvar pob2 pob2SIM
 		g `pob2' = -`anything' if sexo == 1
 		replace `pob2' = `anything' if sexo == 2
-		g `pob2SIM' = -`anything'SIM if sexo == 1
-		replace `pob2SIM' = `anything'SIM if sexo == 2
-		format `pob2' `pob2SIM' %10.0fc
 
 		* X label *
 		tabstat `anything' if (anio == `anioinicial' | anio == `aniofinal'), ///
@@ -297,30 +291,34 @@ quietly {
 			///xtitle("Personas") ///
 			///title("Pir{c a'}mide {bf:demogr{c a'}fica}") subtitle(${pais})
 
-		g pob2sim = `pob2SIM'
-		twoway (bar `pob2' edad if sexo == 1 & anio == `aniofinal'-1, horizontal lwidth(none)) ///
-			(bar `pob2' edad if sexo == 2 & anio == `aniofinal'-1, horizontal lwidth(none)) ///
-			(bar `pob2SIM' edad if sexo == 1 & anio == `aniofinal'-1, horizontal lwidth(none) barwidth(.33)) ///
-			(bar `pob2SIM' edad if sexo == 2 & anio == `aniofinal'-1, horizontal lwidth(none) barwidth(.33)) ///
-			(sc edad2 zero if anio == `aniofinal', msymbol(i) mlabel(edad2) mlabsize(vsmall) mlabcolor("114 113 118")), ///
-			legend(label(1 "Hombres CONAPO") label(2 "Mujeres CONAPO") ///
-			label(3 "Hombres Simulado") ///
-			label(4 "Mujeres Simulado") order(1 2 3 4)) ///
-			yscale(noline) ylabel(none) xscale(noline) ///
-			name(PiramideSIM_`anything', replace) ///
-			xlabel(`=-`MaxH'[1,1]' `"`=string(`MaxH'[1,1],"%15.0fc")'"' ///
-			`=-`MaxH'[1,1]/2' `"`=string(`MaxH'[1,1]/2,"%15.0fc")'"' 0 ///
-			`=`MaxM'[1,1]/2' `"`=string(`MaxM'[1,1]/2,"%15.0fc")'"' ///
-			`=`MaxM'[1,1]' `"`=string(`MaxM'[1,1],"%15.0fc")'"', angle(horizontal)) ///
-			///caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5, utilizando informaci{c o'}n de CONAPO.") ///
-			///xtitle("Personas") ///
-			title("Pir{c a'}mide {bf:demogr{c a'}fica}: observado vs. simulado") subtitle("${pais} `=`aniofinal'-1'")
+		capture g `pob2SIM' = -`anything'SIM if sexo == 1
+		if _rc == 0 {
+			replace `pob2SIM' = `anything'SIM if sexo == 2
+			format `pob2' `pob2SIM' %10.0fc
 
-		if "$export" != "" {
-			graph export "$export/Piramide_`anything'_`anioinicial'_`aniofinal'.png", ///
-				replace name(Piramide_`anything'_`anioinicial'_`aniofinal')
+			twoway (bar `pob2' edad if sexo == 1 & anio == `aniofinal'-1, horizontal lwidth(none)) ///
+				(bar `pob2' edad if sexo == 2 & anio == `aniofinal'-1, horizontal lwidth(none)) ///
+				(bar `pob2SIM' edad if sexo == 1 & anio == `aniofinal'-1, horizontal lwidth(none) barwidth(.33)) ///
+				(bar `pob2SIM' edad if sexo == 2 & anio == `aniofinal'-1, horizontal lwidth(none) barwidth(.33)) ///
+				(sc edad2 zero if anio == `aniofinal', msymbol(i) mlabel(edad2) mlabsize(vsmall) mlabcolor("114 113 118")), ///
+				legend(label(1 "Hombres CONAPO") label(2 "Mujeres CONAPO") ///
+				label(3 "Hombres Simulado") ///
+				label(4 "Mujeres Simulado") order(1 2 3 4)) ///
+				yscale(noline) ylabel(none) xscale(noline) ///
+				name(PiramideSIM_`anything', replace) ///
+				xlabel(`=-`MaxH'[1,1]' `"`=string(`MaxH'[1,1],"%15.0fc")'"' ///
+				`=-`MaxH'[1,1]/2' `"`=string(`MaxH'[1,1]/2,"%15.0fc")'"' 0 ///
+				`=`MaxM'[1,1]/2' `"`=string(`MaxM'[1,1]/2,"%15.0fc")'"' ///
+				`=`MaxM'[1,1]' `"`=string(`MaxM'[1,1],"%15.0fc")'"', angle(horizontal)) ///
+				///caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5, utilizando informaci{c o'}n de CONAPO.") ///
+				///xtitle("Personas") ///
+				title("Pir{c a'}mide {bf:demogr{c a'}fica}: observado vs. simulado") subtitle("${pais} `=`aniofinal'-1'")
+
+			if "$export" != "" {
+				graph export "$export/Piramide_`anything'_`anioinicial'_`aniofinal'.png", ///
+					replace name(Piramide_`anything'_`anioinicial'_`aniofinal')
+			}
 		}
-
 
 
 		**************************************

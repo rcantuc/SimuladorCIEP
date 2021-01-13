@@ -57,8 +57,9 @@ timer on 6
 
 ** A.0.1 Log-file **
 capture log close
-capture mkdir "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/"
-log using "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/households.smcl", replace
+capture mkdir "`c(sysdir_personal)'/SIM/"
+capture mkdir "`c(sysdir_personal)'/SIM/`enighanio'/"
+log using "`c(sysdir_personal)'/SIM/`enighanio'/households.smcl", replace
 
 ** A.0.2 Bienvenida **
 noisily di _newline(2) in g _dup(20) "." "{bf:  Ingresos de los hogares " in y "`enigh' `enighanio'" "  }" in g _dup(20) "."
@@ -224,7 +225,7 @@ else {
 **********************************
 *** B.1 Micro 1. ENIGH. Gastos ***
 **********************************
-capture confirm file "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/deducciones.dta"
+capture confirm file "`c(sysdir_personal)'/SIM/`enighanio'/deducciones.dta"
 if _rc != 0 {
 	noisily run Expenditure`=subinstr("${pais}"," ","",.)'.do `enighanio'
 }
@@ -981,7 +982,7 @@ merge m:1 (`hogar') using "`c(sysdir_site)'../basesCIEP/INEGI/`enigh'/`enighanio
 	nogen update replace keepusing(factor tot_integ ubica_geo estim_alqu)
 merge m:1 (folioviv) using "`c(sysdir_site)'../basesCIEP/INEGI/`enigh'/`enighanio'/vivienda.dta", ///
 	nogen keepusing(tenencia renta)
-merge m:1 (`hogar' numren) using "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/deducciones.dta", ///
+merge m:1 (`hogar' numren) using "`c(sysdir_personal)'/SIM/`enighanio'/deducciones.dta", ///
 	nogen keepus(deduc_isr)
 
 capture replace factor = factor_hog
@@ -2445,8 +2446,8 @@ label define formalidad 3 "Pemex y otros", modify
 label values formalmax formalidad
 
 * Compas netas fuera del pais *
-merge 1:1 (`hogar' numren) using "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/expenditure_categ.dta", nogen
-merge 1:1 (`hogar' numren) using "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/expenditure_categ_iva.dta", nogen
+merge 1:1 (`hogar' numren) using "`c(sysdir_personal)'/SIM/`enighanio'/expenditure_categ.dta", nogen
+merge 1:1 (`hogar' numren) using "`c(sysdir_personal)'/SIM/`enighanio'/expenditure_categ_iva.dta", nogen
 Distribucion gasto_anualComprasN, relativo(TOTgasto_anual) macro(`ComprasN')
 
 * Sector p{c u'}blico *
@@ -2681,12 +2682,11 @@ Simulador IngresosPublicos [fw=factor], base("ENIGH 2018") boot(1) reboot anio(2
 capture drop __*
 format ing_* exen_* renta %10.0fc
 compress
-capture mkdir "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/"
 if `c(version)' > 13.1 {
-	saveold "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/households.dta", replace version(13)
+	saveold "`c(sysdir_personal)'/SIM/`enighanio'/households.dta", replace version(13)
 }
 else {
-	save "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/households.dta", replace
+	save "`c(sysdir_personal)'/SIM/`enighanio'/households.dta", replace
 }
 
 timer off 6
