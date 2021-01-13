@@ -227,7 +227,7 @@ else {
 **********************************
 capture confirm file "`c(sysdir_personal)'/SIM/`enighanio'/deducciones.dta"
 if _rc != 0 {
-	noisily run Expenditure`=subinstr("${pais}"," ","",.)'.do `enighanio'
+	noisily run "`c(sysdir_site)'/Expenditure.do" `enighanio'
 }
 
 
