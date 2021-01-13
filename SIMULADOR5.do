@@ -66,11 +66,11 @@ noisily Poblacion, //tm2044(18.9) tm4564(63.9) tm65(35.0) //tf(`=64.333315*.8') 
 
 
 ** HOUSEHOLDS: INCOMES **
-noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' 2018
+noisily run `"`c(sysdir_site)'/Households`=subinstr("${pais}"," ","",.)'.do"' 2018
 if "$pais" == "" {
 
 	** HOUSEHOLDS: EXPENDITURES **
-	noisily run "`c(sysdir_personal)'/Expenditure.do" 2018
+	noisily run "`c(sysdir_site)'/Expenditure.do" 2018
 
 
 	** Sankey **
