@@ -61,7 +61,7 @@ if "`2'" != "" {
 ***                                                ***
 *** 1. SET-UP: Cap. 3. La economia antropocentrica ***
 ***                                                ***
-******************************************************
+/******************************************************
 noisily Poblacion, //tm2044(18.9) tm4564(63.9) tm65(35.0) //tf(`=64.333315*.8') //anio(`aniovp') //aniofinal(2030) //nographs //update
 
 
@@ -108,7 +108,7 @@ global id = "PE2021"
 
 
 ** OPTIONS **
-*global nographs "nographs"
+global nographs "nographs"
 global output "output"
 
 
