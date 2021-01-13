@@ -39,8 +39,8 @@ if `enighanio' == 2012 {
 timer on 5
 
 capture log close
-capture mkdir "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/"
-log using "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/expenditures.smcl", replace
+capture mkdir "`c(sysdir_personal)'/SIM/`enighanio'/"
+log using "`c(sysdir_personal)'/SIM/`enighanio'/expenditures.smcl", replace
 
 
 ** D.3. Texto introductorio **
@@ -411,10 +411,10 @@ g proyecto = "2"
 g numren = "01"
 egen deduc_isr = rsum(deduc_*)
 if `c(version)' > 13.1 {
-	saveold "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/deducciones.dta", replace version(13)
+	saveold "`c(sysdir_personal)'/SIM/`enighanio'/deducciones.dta", replace version(13)
 }
 else {
-	save "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/deducciones.dta", replace
+	save "`c(sysdir_personal)'/SIM/`enighanio'/deducciones.dta", replace
 }
 restore
 
@@ -826,10 +826,10 @@ foreach categ of varlist categ categ_iva {
 	compress
 
 	if `c(version)' > 13.1 {
-		saveold "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/expenditure_`categ'.dta", replace version(13)
+		saveold "`c(sysdir_personal)'/SIM/`enighanio'/expenditure_`categ'.dta", replace version(13)
 	}
 	else {
-		save "`c(sysdir_site)'../basesCIEP/SIM/`enighanio'/expenditure_`categ'.dta", replace
+		save "`c(sysdir_personal)'/SIM/`enighanio'/expenditure_`categ'.dta", replace
 	}
 	restore
 }
