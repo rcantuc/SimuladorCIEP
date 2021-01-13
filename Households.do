@@ -57,7 +57,7 @@ timer on 6
 
 ** A.0.1 Log-file **
 capture log close
-capture mkdir "`c(sysdir_personal)'/SIM/"
+mkdir "`c(sysdir_personal)'/SIM/"
 capture mkdir "`c(sysdir_personal)'/SIM/`enighanio'/"
 log using "`c(sysdir_personal)'/SIM/`enighanio'/households.smcl", replace
 
