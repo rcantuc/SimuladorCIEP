@@ -1,7 +1,7 @@
 *****************************************************
 ****    SECTION FOR PROGRAMMING PURPOSES ONLY    ****
 ****         MUST BE COMMENTED OTHERWISE         ****
-*****************************************************
+/*****************************************************
 clear all
 macro drop _all
 capture log close _all
@@ -15,6 +15,18 @@ if "`c(os)'" == "MacOSX" {
 	global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
 }
 adopath ++ PERSONAL
+
+
+
+
+**************************************/
+** PARAMETROS SIMULADOR: DIRECTORIOS **
+capture sysdir set PERSONAL "/SIM/OUT/5.0/"
+capture mkdir "`c(sysdir_personal)'/users"
+capture mkdir "`c(sysdir_personal)'/users/$pais/"
+capture mkdir "`c(sysdir_personal)'/users/$pais/$id/"
+** PARAMETROS SIMULADOR: DIRECTORIOS **
+***************************************
 
 
 
@@ -49,7 +61,7 @@ if "`2'" != "" {
 ***                                                ***
 *** 1. SET-UP: Cap. 3. La economia antropocentrica ***
 ***                                                ***
-/******************************************************
+******************************************************
 noisily Poblacion, //tm2044(18.9) tm4564(63.9) tm65(35.0) //tf(`=64.333315*.8') //anio(`aniovp') //aniofinal(2030) //nographs //update
 
 
@@ -93,16 +105,6 @@ if "$pais" == "" {
 global id = "PE2021"
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
 *****************************************
-
-
-***************************************
-** PARAMETROS SIMULADOR: DIRECTORIOS **
-*capture sysdir set PERSONAL "/SIM/OUT/5.0/"
-capture mkdir "`c(sysdir_personal)'/users"
-capture mkdir "`c(sysdir_personal)'/users/$pais/"
-capture mkdir "`c(sysdir_personal)'/users/$pais/$id/"
-** PARAMETROS SIMULADOR: DIRECTORIOS **
-***************************************
 
 
 ** OPTIONS **
