@@ -443,8 +443,10 @@ if "$nographs" != "nographs" {
 
 ** OUTPUT **
 if "$output" == "output" {
-	forvalues k=1(10)`=_N' {
-		local out_proy = "`out_proy' `=string(estimacion[`k'],"%8.3f")',"
+	forvalues k=1(5)`=_N' {
+		if anio[`k'] >= 2010 {
+			local out_proy = "`out_proy' `=string(estimacion[`k'],"%8.3f")',"
+		}
 	}
 
 	local lengthproy = strlen("`out_proy'")
