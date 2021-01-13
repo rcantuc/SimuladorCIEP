@@ -405,23 +405,22 @@ noisily Simulador AportacionesNetas if AportacionesNetas != 0 [fw=factor], ///
 
 
 ** GRAFICA PROYECCION **
-if "$nographs" != "nographs" {
-	use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/AportacionesNetasREC.dta"', clear
-	merge 1:1 (anio) using `"`c(sysdir_personal)'/users/$pais/$id/PIB.dta"', nogen
-	replace estimacion = estimacion/pibYR*100
+use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/AportacionesNetasREC.dta"', clear
+merge 1:1 (anio) using `"`c(sysdir_personal)'/users/$pais/$id/PIB.dta"', nogen
+replace estimacion = estimacion/pibYR*100
 
-	tabstat estimacion, stat(max) save
-	tempname MAX
-	matrix `MAX' = r(StatTotal)
-	forvalues k=1(1)`=_N' {
-		if estimacion[`k'] == `MAX'[1,1] {
-			local aniomax = anio[`k']
-		}
-		if anio[`k'] == `aniovp' {
-			local estimacionvp = estimacion[`k']
-		}
+tabstat estimacion, stat(max) save
+tempname MAX
+matrix `MAX' = r(StatTotal)
+forvalues k=1(1)`=_N' {
+	if estimacion[`k'] == `MAX'[1,1] {
+		local aniomax = anio[`k']
 	}
-
+	if anio[`k'] == `aniovp' {
+		local estimacionvp = estimacion[`k']
+	}
+}
+if "$nographs" != "nographs" {
 	twoway (connected estimacion anio) (connected estimacion anio if anio == `aniovp') if anio > 1990, ///
 		ytitle("% PIB") ///
 		yscale(range(0)) /*ylabel(0(1)4)*/ ///
