@@ -1,7 +1,7 @@
 *****************************************************
 ****    SECTION FOR PROGRAMMING PURPOSES ONLY    ****
 ****         MUST BE COMMENTED OTHERWISE         ****
-/*****************************************************
+*****************************************************
 clear all
 macro drop _all
 capture log close _all
@@ -41,7 +41,7 @@ noisily di _newline(50) _col(35) in w "Simulador Fiscal CIEP v5.0" in y " $pais"
 ****************************************/
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
 if "$pais" == "" {
-	global id = "PE2021"
+	*global id = "PE2021"
 }
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
 *****************************************
