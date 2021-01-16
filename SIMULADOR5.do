@@ -1,4 +1,4 @@
-*****************************************************
+/*****************************************************
 ****    SECTION FOR PROGRAMMING PURPOSES ONLY    ****
 ****         MUST BE COMMENTED OTHERWISE         ****
 *****************************************************
@@ -23,7 +23,7 @@ if "`c(os)'" == "MacOSX" {
 
 
 *****************************************
-** PAIS (comentar o vacío para Mexico) **
+** PAIS (comentar o vacÃ­o para Mexico) **
 *global pais = "El Salvador"
 
 
@@ -56,7 +56,7 @@ capture mkdir "`c(sysdir_personal)'/users/$id/"
 capture mkdir "`c(sysdir_personal)'/users/$pais/"
 
 
-** AÑO VALOR BASE **
+** AÃ‘O VALOR BASE **
 local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
@@ -78,9 +78,9 @@ if "`2'" != "" {
 ***    1. SET-UP: Cap. 3. La economia antropocentrica    ***
 ***                                                      ***
 ************************************************************
-noisily Poblacion, update //tf(`=64.333315/2.2*2.07') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040) //nographs //anio(`aniovp')
+noisily Poblacion, //update //tf(`=64.333315/2.2*2.07') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040) //nographs //anio(`aniovp')
 
-exit
+
 ** HOUSEHOLDS: INCOMES **
 noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' 2018
 if "$pais" == "" {
