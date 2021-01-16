@@ -173,12 +173,12 @@ if `c(version)' > 13.1 {
 	saveold "`c(sysdir_personal)'/SIM/Poblacion.dta", replace version(13)
 }
 else {
-	save "`c(sysdir_personal)'/SIM/Poblacion.dta", replace
+	save "`c(sysdir_personal)'/SIM/Poblaciontot.dta", replace
 }
 
 collapse (sum) poblacion, by(anio entidad)
 if `c(version)' > 13.1 {
-	saveold `"`c(sysdir_personal)'/SIM/Poblaciontot.dta"', replace version(13)
+	saveold `"`c(sysdir_personal)'/SIM/Poblacion.dta"', replace version(13)
 }
 else {
 	save `"`c(sysdir_personal)'/SIM/Poblaciontot.dta"', replace
