@@ -1,7 +1,7 @@
 *****************************************************
 ****    SECTION FOR PROGRAMMING PURPOSES ONLY    ****
 ****         MUST BE COMMENTED OTHERWISE         ****
-/*****************************************************
+*****************************************************
 clear all
 macro drop _all
 capture log close _all
@@ -23,7 +23,7 @@ if "`c(os)'" == "MacOSX" {
 
 
 *****************************************
-** PAIS (comentar o vacÃ­o para Mexico) **
+** PAIS (comentar o vacío para Mexico) **
 *global pais = "El Salvador"
 
 
@@ -56,7 +56,7 @@ capture mkdir "`c(sysdir_personal)'/users/$id/"
 capture mkdir "`c(sysdir_personal)'/users/$pais/"
 
 
-** AÃ‘O VALOR BASE **
+** AÑO VALOR BASE **
 local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 

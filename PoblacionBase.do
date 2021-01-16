@@ -1,5 +1,5 @@
 ************************************************
-**** Base de datos: PoblaciÃ³n y Defunciones ****
+**** Base de datos: Población y Defunciones ****
 ************************************************
 
 
@@ -14,7 +14,7 @@ import delimited "http://www.conapo.gob.mx/work/models/CONAPO/Datos_Abiertos/Pro
 
 
 * 2. Limpia *
-capture rename aÃ±o anio
+capture rename año anio
 if _rc != 0 {
 	rename ao anio
 }
@@ -32,7 +32,7 @@ label var anio "A{c n~}o"
 
 
 * 4. Orden *
-replace entidad = "Nacional" if entidad == "RepÃºblica Mexicana"
+replace entidad = "Nacional" if entidad == "República Mexicana"
 keep if entidad == "Nacional"
 
 
@@ -57,7 +57,7 @@ if _rc != 0 {
 
 
 * 2. Limpia *
-capture rename aÃ±o anio
+capture rename año anio
 if _rc != 0 {
 	rename ao anio
 }
@@ -75,7 +75,7 @@ label var anio "A{c n~}o"
 
 
 * 4. Orden *
-replace entidad = "Nacional" if entidad == "RepÃºblica Mexicana"
+replace entidad = "Nacional" if substr(entidad,1,3) == "Rep"
 keep if entidad == "Nacional"
 
 
@@ -97,7 +97,7 @@ import delimited "http://www.conapo.gob.mx/work/models/CONAPO/Datos_Abiertos/Pro
 
 
 * 2. Limpia *
-capture rename aÃ±o anio
+capture rename año anio
 if _rc != 0 {
 	rename ao anio
 }
@@ -138,7 +138,7 @@ label var anio "A{c n~}o"
 
 
 * 4. Orden *
-replace entidad = "Nacional" if entidad == "RepÃºblica Mexicana"
+replace entidad = "Nacional" if entidad == "República Mexicana"
 keep if entidad == "Nacional"
 
 
