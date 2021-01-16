@@ -104,7 +104,7 @@ replace emigrantes = emigrantes/(anio2-anio1)
 replace inmigrantes = inmigrantes/(anio2-anio1)
 sort entidad anio1 anio2 edad1 edad2 sexo
 by entidad anio1 anio2 edad1 edad2 sexo: g n = _n
-replace anio1 = anio1 + n - 1
+replace anio1 = anio1 + n
 drop anio2 n
 rename anio1 anio
 
@@ -158,9 +158,9 @@ g tasafecundidad = nacimientos/mujeresfert*1000
 label var tasafecundidad "Nacimientos por cada mil mujeres"
 noisily tabstat tasafecundidad, stat(mean) by(anio) f(%10.1fc) save
 
-drop mujeresf nacimien
+drop mujeresf nacimien nacimientos
 compress
-saveold `"`c(sysdir_site)'../basesCIEP/SIM/Poblacion.dta"', replace version(13)
+saveold "`c(sysdir_personal)'/SIM/Poblacion.dta", replace version(13)
 
 collapse (sum) poblacion, by(anio entidad)
-saveold `"`c(sysdir_site)'../basesCIEP/SIM/Poblaciontot.dta"', replace version(13)
+saveold `"`c(sysdir_personal)'/SIM/Poblaciontot.dta"', replace version(13)

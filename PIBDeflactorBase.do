@@ -87,8 +87,8 @@ g pibQR = pibQ/(indiceQ/100)
 g currency = "MXN"
 
 if `c(version)' > 13.1 {
-	saveold `"`c(sysdir_site)'../basesCIEP/SIM/PIBDeflactor.dta"', replace version(13)
+	saveold "`c(sysdir_personal)'/SIM/PIBDeflactor.dta", replace version(13)
 }
 else {
-	save `"`c(sysdir_site)'../basesCIEP/SIM/PIBDeflactor.dta"', replace
+	save "`c(sysdir_personal)'/SIM/PIBDeflactor.dta", replace
 }

@@ -17,12 +17,12 @@ else {
 
 * Loop para todos los archivos .csv *
 foreach k of local archivos {
-*foreach k in "PPEF 2021" {
+*foreach k in "PEF 2021" {
 
-	* Importar archivo de la Cuenta Publicas*
+	* Importar archivo de la Cuenta Publica *
 	noisily di in g "Importando: " in y "`k'", _cont
 	if "$pais" == "" {
-		import delimited "`c(sysdir_site)'../basesCIEP/PEFs/$pais/`k'", clear case(lower) stripquotes(yes) stringcols(_all) //encoding("utf8") 
+		import delimited "`c(sysdir_site)'../basesCIEP/PEFs/$pais/`k'", clear case(lower) stripquotes(yes) stringcols(_all) encoding("utf8") 
 	}
 	else {
 		import excel "`c(sysdir_site)'../basesCIEP/PEFs/$pais/`k'", clear firstrow case(lower)
@@ -387,9 +387,6 @@ capture g double gasto = ejercido if ejercido != .
 if _rc != 0 {
 	g double gasto = devengado if devengado != .
 }
-if "$pais" != "" {
-	replace gasto = aprobado if anio == 2020
-}
 capture replace gasto = aprobado if aprobado != . & gasto == .
 capture replace gasto = proyecto if proyecto != . & gasto == .
 
@@ -429,8 +426,8 @@ capture drop __*
 compress
 
 if `c(version)' > 13.1 {
-	saveold `"`c(sysdir_site)'../basesCIEP/SIM/PEF`=subinstr("${pais}"," ","",.)'.dta"', replace version(13)
+	saveold "`c(sysdir_personal)'/SIM/$pais/PEF.dta", replace version(13)
 }
 else {
-	save `"`c(sysdir_site)'../basesCIEP/SIM/PEF`=subinstr("${pais}"," ","",.)'.dta"', replace
+	save "`c(sysdir_personal)'/SIM/$pais/PEF.dta", replace
 }

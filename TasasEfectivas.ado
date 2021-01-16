@@ -24,7 +24,7 @@ quietly {
 		****************************
 		*** 2 Ingresos iniciales ***
 		****************************
-		noisily LIF, anio(`anio') min(1) ilif nographs
+		noisily LIF, anio(`anio') min(1) nographs //ilif
 		local recursos = r(divCIEP)
 		foreach k of local recursos {
 			local rec`=substr("`k'",1,7)' = r(`k')
@@ -249,21 +249,29 @@ quietly {
 		tabstat Laboral Consumo OtrosC [fw=factor], stat(sum) f(%20.0fc) save
 		tempname INGRESOSSIM
 		matrix `INGRESOSSIM' = r(StatTotal)
-
-		if `c(version)' > 13.1 {
-			saveold `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace version(13)
-		}
-		else {
-			save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace	
-		}
 	}
 
 	else if "$pais" == "El Salvador" {
-		noisily LIF, anio(`aniovp') by(divGA) ilif
+		noisily LIF, anio(`aniovp') by(divGA) nographs
 		local Laboral = r(Impuestos_al_ingreso)
 		local Consumo = r(Impuestos_al_consumo)
 		local OtrosC = r(Otros_ingresos)
+
+		use "`c(sysdir_personal)'/SIM/$pais/2018/households.dta", clear
+		tabstat Laboral Consumo OtrosC [fw=factor], stat(sum) f(%20.0fc) save
+		tempname INGRESOSSIM
+		matrix `INGRESOSSIM' = r(StatTotal)
 	}
+
+
+	** Guardar **
+	if `c(version)' > 13.1 {
+		saveold `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace version(13)
+	}
+	else {
+		save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace	
+	}
+
 
 
 

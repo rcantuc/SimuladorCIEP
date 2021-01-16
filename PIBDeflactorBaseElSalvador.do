@@ -62,8 +62,8 @@ g pibQR = pibQ/(indiceQ/100)
 g currency = "USD"
 
 if `c(version)' > 13.1 {
-	saveold "`c(sysdir_site)'../basesCIEP/SIM/PIBDeflactor`=subinstr("${pais}"," ","",.)'.dta", replace version(13)
+	saveold "`c(sysdir_personal)'/SIM/$pais/PIBDeflactor.dta", replace version(13)
 }
 else {
-	save "`c(sysdir_site)'../basesCIEP/SIM/PIBDeflactor`=subinstr("${pais}"," ","",.)'.dta", replace
+	save "`c(sysdir_personal)'/SIM/$pais/PIBDeflactor.dta", replace
 }

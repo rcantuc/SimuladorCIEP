@@ -32,7 +32,8 @@ quietly {
 		MINimum(real 1)]
 
 	** 2.1 Update SHRFSP **
-	if "`update'" == "update" | "`updated'" != "yes" {
+	capture confirm `"`c(sysdir_personal)'/SIM/$pais/SHRFSP.dta"'
+	if "`update'" == "update" | "`updated'" != "yes" | _rc != 0 {
 		noisily run UpdateSHRFSP`=subinstr("${pais}"," ","",.)'.do
 	}
 
@@ -44,7 +45,7 @@ quietly {
 
 
 	** 2.3 Base PEF **
-	use `"`c(sysdir_site)'../basesCIEP/SIM/SHRFSP`=subinstr("${pais}"," ","",.)'.dta"', clear
+	use `"`c(sysdir_personal)'/SIM/$pais/SHRFSP.dta"', clear
 	noisily di _newline(5) in g "{bf:SISTEMA FISCAL: " in y "DEUDA `anio'" "}"
 
 
@@ -86,7 +87,7 @@ quietly {
 			over(anio, label(labgap(vsmall))) ///
 			stack asyvars ///
 			title("{bf:Saldo hist{c o'}rico de RFSP}") ///
-			/// subtitle("Observados y estimados") ///
+			subtitle("$pais") ///
 			ytitle(% PIB) ylabel(, labsize(small)) ///
 			legend(on position(6) rows(1) label(1 "Interno") label(2 "Externo")) ///
 			name(shrfsp, replace) ///

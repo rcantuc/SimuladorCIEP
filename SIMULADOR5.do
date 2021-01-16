@@ -5,7 +5,6 @@
 clear all
 macro drop _all
 capture log close _all
-
 if "`c(os)'" == "Unix" {
 	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
 	global export "/home/ciepmx/Dropbox (CIEP)/Textbook/images/"
@@ -14,17 +13,16 @@ if "`c(os)'" == "MacOSX" {
 	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
 	global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
 }
-adopath ++ PERSONAL
 
 
+*****************************************
+** PAIS (comentar o vacío para Mexico) **
+*global pais = "El Salvador"
 
 
-**************************************/
+***************************************
 ** PARAMETROS SIMULADOR: DIRECTORIOS **
-capture sysdir set PERSONAL "/SIM/OUT/5/5.0/"
-capture mkdir "`c(sysdir_personal)'/users"
-capture mkdir "`c(sysdir_personal)'/users/$pais/"
-capture mkdir "`c(sysdir_personal)'/users/$pais/$id/"
+*sysdir set PERSONAL "/SIM/OUT/5/5.0/"
 ** PARAMETROS SIMULADOR: DIRECTORIOS **
 ***************************************
 
@@ -40,37 +38,56 @@ timer on 1
 noisily di _newline(50) _col(35) in w "Simulador Fiscal CIEP v5.0" in y " $pais"
 
 
+****************************************/
+** PARAMETROS SIMULADOR: IDENTIFICADOR **
+if "$pais" == "" {
+	global id = "PE2021"
+}
+** PARAMETROS SIMULADOR: IDENTIFICADOR **
+*****************************************
+
+
+** DIRECTORIOS **
+adopath ++ PERSONAL
+cd "`c(sysdir_personal)'"
+capture mkdir "`c(sysdir_personal)'/users/"
+capture mkdir "`c(sysdir_personal)'/SIM/"
+capture mkdir "`c(sysdir_personal)'/users/$id/"
+capture mkdir "`c(sysdir_personal)'/users/$pais/"
+
+
 ** AÑO VALOR BASE **
 local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
+
+
+** DO-FILE PARAMS **
 if "`1'" != "" {
 	local aniovp = `1'
 }
 
-
-** PAIS (comentar o vacío para Mexico) **
-*global pais = "El Salvador"
 if "`2'" != "" {
-	global pais = `2'
+	global pais = "`2'"
 }
 
 
 
 
-******************************************************
-***                                                ***
-*** 1. SET-UP: Cap. 3. La economia antropocentrica ***
-***                                                ***
-/******************************************************
-noisily Poblacion, //tm2044(18.9) tm4564(63.9) tm65(35.0) //tf(`=64.333315*.8') //anio(`aniovp') //aniofinal(2030) //nographs //update
+************************************************************
+***                                                      ***
+***    1. SET-UP: Cap. 3. La economia antropocentrica    ***
+***                                                      ***
+/************************************************************
+noisily Poblacion, update //tf(`=64.333315/2.2*2.07') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040) //nographs //anio(`aniovp')
 
 
 ** HOUSEHOLDS: INCOMES **
-noisily run `"`c(sysdir_site)'/Households`=subinstr("${pais}"," ","",.)'.do"' 2018
+noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' 2018
 if "$pais" == "" {
 
+
 	** HOUSEHOLDS: EXPENDITURES **
-	noisily run "`c(sysdir_site)'/Expenditure.do" 2018
+	*noisily run "`c(sysdir_personal)'/Expenditure.do" 2018
 
 
 	** Sankey **
@@ -80,6 +97,7 @@ if "$pais" == "" {
 			noisily run "`c(sysdir_personal)'/Sankey.do" `k' 2018
 		}
 	}
+
 
 	** Datos Abiertos **
 	if "$nographs" != "nographs" {
@@ -100,16 +118,9 @@ if "$pais" == "" {
 }
 
 
-****************************************/
-** PARAMETROS SIMULADOR: IDENTIFICADOR **
-global id = "PE2021"
-** PARAMETROS SIMULADOR: IDENTIFICADOR **
-*****************************************
-
-
 ** OPTIONS **
 global nographs "nographs"
-global output "output"
+*global output "output"
 
 
 ** OUTPUT LOG FILE **
@@ -118,9 +129,10 @@ log off output
 
 
 
+
 *********************************************/
 ***                                        ***
-***    1. Simulador v5: PIB + Deflactor    ***
+***    2. Simulador v5: PIB + Deflactor    ***
 ***    Cap. 2. El sistema de la ciencia    ***
 ***                                        ***
 **********************************************
@@ -146,8 +158,8 @@ global inf2020 =  3.5
 global inf2021 =  3.0
 
 if "$pais" == "El Salvador" {
-	global pib2020 = -7.499
-	global pib2021 =  3.745
+	global pib2020 = -7.200
+	global pib2021 =  4.600
 	global def2020 =  0.383
 	global def2021 =  0.512
 }
@@ -335,8 +347,8 @@ noisily TasasEfectivas, anio(`aniovp') `nographs'
 
 
 ** GRAFICA PROYECCION **
-if "$nographs" != "nographs" {
-	use `"`c(sysdir_site)'../basesCIEP/SIM/2018//households`=subinstr("${pais}"," ","",.)'.dta"', clear
+if "$nographs" != "nographs" & "$pais" == "" {
+	use `"`c(sysdir_personal)'/SIM/2018//households.dta"', clear
 	noisily Simulador ImpuestosAportaciones if ImpuestosAportaciones != 0 [fw=factor], ///
 		base("ENIGH 2018") boot(1) reboot nographs anio(2020)
 
@@ -384,7 +396,7 @@ if "$nographs" != "nographs" {
 ***    4. PARTE IV: REDISTRIBUCION    ***
 ***                                   ***
 *****************************************
-use `"`c(sysdir_personal)'/users/$pais/$id/households`=subinstr("${pais}"," ","",.)'.dta"', clear
+use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
 capture g AportacionesNetas = Laboral + Consumo + ISR__PM + ing_cap_fmp ///
 	- Pension - Educacion - Salud - IngBasico - PenBienestar - Infra
 if _rc != 0 {
@@ -420,6 +432,7 @@ forvalues k=1(1)`=_N' {
 		local estimacionvp = estimacion[`k']
 	}
 }
+
 if "$nographs" != "nographs" {
 	twoway (connected estimacion anio) (connected estimacion anio if anio == `aniovp') if anio > 1990, ///
 		ytitle("% PIB") ///

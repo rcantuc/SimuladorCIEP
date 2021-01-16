@@ -34,7 +34,7 @@ local OtrasEmpresas = r(Otras_empresas)
 
 **********************************/
 ** Eje 1: Generación del ingreso **
-use `"`c(sysdir_site)'../basesCIEP/SIM/2018/households`=subinstr("${pais}"," ","",.)'.dta"', clear
+use `"`c(sysdir_personal)'/SIM/$pais/2018/households.dta"', clear
 
 g ing_Sector_Publico = ing_cap_imss + ing_cap_issste + ing_cap_cfe + ing_cap_pemex ///
 	+ ing_cap_fmp + ing_cap_mejoras + ing_cap_derechos + ing_cap_productos + ing_cap_aprovecha ///
@@ -90,7 +90,7 @@ save `eje1'
 
 ********************
 ** Eje 4: Consumo **
-use `"`c(sysdir_site)'../basesCIEP/SIM/2018/households`=subinstr("${pais}"," ","",.)'.dta"', clear
+use `"`c(sysdir_personal)'/SIM/$pais/2018/households.dta"', clear
 
 collapse (sum) gasto_anual* gasto_anualAhorro=Ahorro [fw=factor_cola], by(`1')
 
