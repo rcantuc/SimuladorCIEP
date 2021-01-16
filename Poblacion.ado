@@ -60,7 +60,7 @@ quietly {
 	*****************************
 	*** 1 Tasas de fecundidad ***
 	*****************************
-	if "$pais" == "" /*& (`tm2044' != -1 | `tm4564' != -1 | `tm65' != -1 | `tf' != -1)*/ {
+	if "$pais" == "" & (`tm2044' != -1 | `tm4564' != -1 | `tm65' != -1 | `tf' != -1) {
 		if `tm2044' != -1 {
 			replace defunciones = defunciones*(1+`tm2044'/100) if edad >= 20 & edad <= 44
 		}
