@@ -49,7 +49,10 @@ save `poblacion'
 
 ********************
 * 1. Base de datos *
-import delimited "http://www.conapo.gob.mx/work/models/CONAPO/Datos_Abiertos/Proyecciones2018/def_edad_proyecciones_n.csv", clear encoding("utf-8")
+capture import delimited "http://www.conapo.gob.mx/work/models/CONAPO/Datos_Abiertos/Proyecciones2018/def_edad_proyecciones_n.csv", clear encoding("utf-8")
+if _rc != 0 {
+	import delimited "http://www.conapo.gob.mx/work/models/CONAPO/Datos_Abiertos/Proyecciones2018/def_edad_proyecciones_n.csv", clear
+}
 *import delimited "/Users/ricardo/Dropbox (CIEP)/def_edad_proyecciones_n.csv", clear encoding("utf-8")
 
 
