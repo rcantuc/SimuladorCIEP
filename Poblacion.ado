@@ -156,6 +156,7 @@ quietly {
 			title("Pir{c a'}mide {bf:demogr{c a'}fica}: CONAPO vs. simulado") subtitle("$pais `aniofinal'")
 
 		capture drop __*
+		drop tasamortalidad
 		if `c(version)' > 13.1 {
 			preserve
 			saveold "`c(sysdir_personal)'/SIM/$pais/Poblacion.dta", replace version(13)
