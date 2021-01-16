@@ -1,7 +1,7 @@
 *****************************************************
 ****    SECTION FOR PROGRAMMING PURPOSES ONLY    ****
 ****         MUST BE COMMENTED OTHERWISE         ****
-*****************************************************
+/*****************************************************
 clear all
 macro drop _all
 capture log close _all
@@ -15,16 +15,25 @@ if "`c(os)'" == "MacOSX" {
 }
 
 
-*****************************************
-** PAIS (comentar o vacío para Mexico) **
-*global pais = "El Salvador"
-
-
 ***************************************
 ** PARAMETROS SIMULADOR: DIRECTORIOS **
 *sysdir set PERSONAL "/SIM/OUT/5/5.0/"
 ** PARAMETROS SIMULADOR: DIRECTORIOS **
 ***************************************
+
+
+*****************************************
+** PAIS (comentar o vacío para Mexico) **
+*global pais = "El Salvador"
+
+
+****************************************/
+** PARAMETROS SIMULADOR: IDENTIFICADOR **
+if "$pais" == "" {
+	*global id = "PE2021"
+}
+** PARAMETROS SIMULADOR: IDENTIFICADOR **
+*****************************************
 
 
 
@@ -36,15 +45,6 @@ if "`c(os)'" == "MacOSX" {
 *************************
 timer on 1
 noisily di _newline(50) _col(35) in w "Simulador Fiscal CIEP v5.0" in y " $pais"
-
-
-****************************************/
-** PARAMETROS SIMULADOR: IDENTIFICADOR **
-if "$pais" == "" {
-	*global id = "PE2021"
-}
-** PARAMETROS SIMULADOR: IDENTIFICADOR **
-*****************************************
 
 
 ** DIRECTORIOS **
