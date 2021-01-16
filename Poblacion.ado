@@ -23,7 +23,7 @@ quietly {
 	* Si hay un error o la opción "update" es llamada, limpia la base de datos y la usa *
 	if _rc != 0 | "`update'" == "update" {
 		if "$pais" == "" {
-			run `"`c(sysdir_personal)'/PoblacionBase`=subinstr("${pais}"," ","",.)'.do"'
+			run `"`c(sysdir_personal)'/PoblacionBase.do"'
 		}
 		else {
 			run `"`c(sysdir_personal)'/PoblacionBaseMundial.do"'
