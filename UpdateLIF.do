@@ -112,8 +112,8 @@ format recaudacion %20.0fc
 capture order div* nombre serie anio LIF ILIF monto
 compress
 if `c(version)' > 13.1 {
-	saveold `"`c(sysdir_site)'../basesCIEP/SIM/LIF`=subinstr("${pais}"," ","",.)'.dta"', replace version(13)
+	saveold "`c(sysdir_personal)'/SIM/$pais/LIF.dta", replace version(13)
 }
 else {
-	save `"`c(sysdir_site)'../basesCIEP/SIM/LIF`=subinstr("${pais}"," ","",.)'.dta"', replace
+	save "`c(sysdir_personal)'/SIM/$pais/LIF.dta", replace
 }

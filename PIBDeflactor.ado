@@ -25,7 +25,16 @@ quietly {
 	***********************
 	*** 0 Base de datos ***
 	***********************
-	use `"`c(sysdir_site)'../basesCIEP/SIM/Poblacion`=subinstr("${pais}"," ","",.)'.dta"', clear
+	capture use `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
+	if _rc != 0 | "`update'" == "update" {
+		if "$pais" == "" {
+			run PoblacionBase.do
+		}
+		else if "$pais" == "El Salvador" {
+			run PoblacionnBaseMundial.do
+		}
+		use `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
+	}
 
 	tabstat poblacion if anio == `aniovp', stat(sum) f(%15.0fc) save
 	tempname pobtotal
@@ -38,10 +47,10 @@ quietly {
 
 	/* Verifica si se puede usar la base, si no es así o la opción update es llamada, 
 	limpia la base y la usa */
-	capture use `"`c(sysdir_site)'../basesCIEP/SIM/PIBDeflactor`=subinstr("${pais}"," ","",.)'.dta"', clear
+	capture use "`c(sysdir_personal)'/SIM/$pais/PIBDeflactor.dta", clear
 	if _rc != 0 | "`update'" == "update" {
 		run `"`c(sysdir_personal)'/PIBDeflactorBase`=subinstr("${pais}"," ","",.)'.do"'
-		use `"`c(sysdir_site)'../basesCIEP/SIM/PIBDeflactor`=subinstr("${pais}"," ","",.)'.dta"', clear
+		use "`c(sysdir_personal)'/SIM/$pais/PIBDeflactor.dta", clear
 	}
 	local anio_first = anio[1]
 	scalar aniofirst = anio[1]

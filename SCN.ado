@@ -26,7 +26,7 @@ quietly {
 	*** 1. Databases (D) and variable definitions (V) ***
 	*****************************************************
 	** D.1. Cuenta de generaci{c o'}n del ingreso **
-	capture confirm file "`c(sysdir_site)'../basesCIEP/SIM/baseSCN.dta"
+	capture confirm file "`c(sysdir_personal)'/SIM/baseSCN.dta"
 	if _rc != 0 | "`update'" == "update" {
 		import excel "`c(sysdir_site)'../basesCIEP/INEGI/SCN/Cuenta de generacion del ingreso.xlsx", clear
 		LimpiaBIE g
@@ -267,10 +267,10 @@ quietly {
 			label var `k' "`label'"
 		}
 		if `c(version)' > 13.1 {
-			saveold "`c(sysdir_site)'../basesCIEP/SIM/baseSCN.dta", replace version(13)
+			saveold "`c(sysdir_personal)'/SIM/baseSCN.dta", replace version(13)
 		}
 		else {
-			save "`c(sysdir_site)'../basesCIEP/SIM/baseSCN.dta", replace		
+			save "`c(sysdir_personal)'/SIM/baseSCN.dta", replace		
 		}
 	}
 
@@ -302,10 +302,10 @@ quietly {
 
 	**************************
 	** 1.1. Merge databases **
-	use "`c(sysdir_site)'../basesCIEP/SIM/baseSCN.dta", clear
+	use "`c(sysdir_personal)'/SIM/baseSCN.dta", clear
 	local anio_last = anio[_N]
 	merge 1:1 (anio) using `basepib', nogen
-	merge 1:1 (anio) using "`c(sysdir_site)'../basesCIEP/SIM/Poblaciontot.dta", nogen keep(matched)
+	merge 1:1 (anio) using "`c(sysdir_personal)'/SIM/Poblaciontot.dta", nogen keep(matched)
 	tsset anio
 
 

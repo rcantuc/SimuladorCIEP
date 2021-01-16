@@ -22,7 +22,7 @@ quietly {
 	}
 
 	** 1.3 Base LIF **
-	capture confirm file `"`c(sysdir_site)'../basesCIEP/SIM/LIF`=subinstr("${pais}"," ","",.)'.dta"'
+	capture confirm file "`c(sysdir_personal)'/SIM/$pais/LIF.dta"
 	if _rc != 0 {
 		noisily run "`c(sysdir_personal)'/UpdateLIF.do"			// Genera a partir de la base ./basesCIEP/LIFs/LIF.xlsx
 	}
@@ -32,7 +32,7 @@ quietly {
 	***************
 	*** 2 SYNTAX **
 	***************
-	use in 1 using `"`c(sysdir_site)'../basesCIEP/SIM/LIF`=subinstr("${pais}"," ","",.)'.dta"', clear
+	use in 1 using "`c(sysdir_personal)'/SIM/$pais/LIF.dta", clear
 	syntax [if] [, ANIO(int `aniovp' ) Update NOGraphs Base ID(string) ///
 		MINimum(real 0.5) DESDE(int 2013) ILIF LIF BY(varname) ROWS(int 1) COLS(int 5)]
 
@@ -58,7 +58,7 @@ quietly {
 	}
 
 	** 2.4 Base RAW **
-	use `"`c(sysdir_site)'../basesCIEP/SIM/LIF`=subinstr("${pais}"," ","",.)'.dta"', clear
+	use "`c(sysdir_personal)'/SIM/$pais/LIF.dta", clear
 	if "`base'" == "base" {
 		exit
 	}
@@ -210,7 +210,7 @@ quietly {
 	return local divResumido `"`divResumido'"'
 
 	noisily di in g _dup(83) "-"
-	noisily di in g "{bf:  (=) Total (sin deuda)" ///
+	noisily di in g "{bf:  (=) Ingresos (sin deuda)" ///
 		_col(44) in y %20.0fc `mattot'[1,1] ///
 		_col(66) in y %7.3fc `mattot'[1,2] ///
 		_col(77) in y %7.1fc `mattot'[1,1]/`mattot'[1,1]*100 "}"
@@ -257,7 +257,7 @@ quietly {
 			}
 
 			noisily di in g _dup(83) "-"
-			noisily di in g "{bf:  (=) Total (sin deuda)" ///
+			noisily di in g "{bf:  (=) Ingresos (sin deuda)" ///
 					_col(55) in y %7.3fc (((`mattot'[1,1]/`mattot5'[1,1])^(1/10)-1)*100) ///
 					_col(66) in y %7.3fc (((`pibYR`anio''/`pibYR`=`anio'-10'')^(1/10)-1)*100) ///
 					_col(77) in y %7.3fc (((`mattot'[1,1]/`mattot5'[1,1])^(1/10)-1)*100)/ ///
@@ -340,10 +340,16 @@ quietly {
 
 		tempvar TOTPIB
 		egen `TOTPIB' = rsum(recaudacionPIB*)
+		forvalues k=1(1)`=_N' {
+			if `TOTPIB'[`k'] != . & anio[`k'] >= 2010 {
+				local text `"`text' `=`TOTPIB'[`k']' `=anio[`k']' "`=string(`TOTPIB'[`k'],"%5.1fc")'""'
+			}
+		}
 		twoway (area `graphvars' anio if anio >= `aniofirst') ///
 			(connected `TOTPIB' anio if anio >= `aniofirst', yaxis(2) mlcolor("255 129 0") lcolor("255 129 0")), ///
 			title("{bf:Ingresos} p{c u'}blicos") ///
 			subtitle($pais) ///
+			text(`text', yaxis(2)) ///
 			ytitle(millones `currency') ytitle(% PIB, axis(2)) xtitle("") ///
 			ylabel(, format(%15.0fc) labsize(small)) ///
 			ylabel(, axis(2) noticks format(%5.1fc) labsize(small)) ///

@@ -55,7 +55,7 @@ quietly {
 	
 	PIBDeflactor, nographs nooutput
 	merge 1:1 (anio) using `balanza', keep(matched) nogen
-	merge 1:1 (anio) using `"`c(sysdir_site)'../basesCIEP/SIM/SHRFSP.dta"', keep(matched) keepus(tipoDeCambio) nogen
+	merge 1:1 (anio) using `"`c(sysdir_personal)'/SIM/SHRFSP.dta"', keep(matched) keepus(tipoDeCambio) nogen
 
 
 	forvalues k=1(1)`=_N' {

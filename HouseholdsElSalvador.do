@@ -1,7 +1,12 @@
+if "`1'" == "" {
+	local 1 = 2018
+}
+
+
 ********************************
 *** Ingresos presupuestarios ***
 ********************************
-noisily LIF, by(divGA) anio(`1') ilif //update
+noisily LIF, by(divGA) anio(`1') //ilif //update
 local alingreso = r(Impuestos_al_ingreso)
 local alconsumo = r(Impuestos_al_consumo)
 local otrosing = r(Otros_ingresos)
@@ -186,12 +191,12 @@ Simulador OtrosGas [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1')
 ***********
 *** END ***
 capture drop __*
-merge 1:1 (folio numren) using `"`c(sysdir_site)'../basesCIEP/SIM/2018/expenditureElSalvador.dta"', nogen
-
 compress
+capture mkdir "`c(sysdir_personal)'/SIM/$pais/"
+capture mkdir "`c(sysdir_personal)'/SIM/$pais/2018/"
 if `c(version)' == 15.1 {
-	saveold `"`c(sysdir_site)'../basesCIEP/SIM/2018/householdsElSalvador.dta"', replace version(13)
+	saveold "`c(sysdir_personal)'/SIM/$pais/2018/households.dta", replace version(13)
 }
 else {
-	save `"`c(sysdir_site)'../basesCIEP/SIM/2018/householdsElSalvador.dta"', replace
+	save "`c(sysdir_personal)'/SIM/$pais/2018/households.dta", replace
 }

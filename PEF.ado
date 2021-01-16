@@ -22,7 +22,7 @@ quietly {
 	}
 
 	** 1.3 Base PEF **
-	capture confirm file `"`c(sysdir_site)'../basesCIEP/SIM/PEF`=subinstr("${pais}"," ","",.)'.dta"'
+	capture confirm file "`c(sysdir_personal)'/SIM/$pais/PEF.dta"
 	if _rc != 0 {
 		noisily run "`c(sysdir_personal)'/UpdatePEF.do"
 	}
@@ -32,7 +32,7 @@ quietly {
 	****************
 	*** 2 SYNTAX ***
 	****************
-	use in 1 using `"`c(sysdir_site)'../basesCIEP/SIM/PEF`=subinstr("${pais}"," ","",.)'.dta"', clear
+	use in 1 using "`c(sysdir_personal)'/SIM/$pais/PEF.dta", clear
 	syntax [if] [, ANIO(int `aniovp') NOGraphs Update Base ID(string) ///
 		BY(varname) ROWS(int 1) COLS(int 5) MINimum(real 1) PEF PPEF]
 
@@ -54,12 +54,12 @@ quietly {
 	save `PIB'
 
 	** 2.2 Update PEF **
-	if "`update'" == "update" | "`updated'" != "yes" {
+	if "`update'" == "update" /*| "`updated'" != "yes"*/ {
 		noisily run "`c(sysdir_personal)'/UpdatePEF.do"
 	}
 
 	** 2.2 Base RAW **
-	use `if' using `"`c(sysdir_site)'../basesCIEP/SIM/PEF`=subinstr("${pais}"," ","",.)'.dta"', clear
+	use `if' using "`c(sysdir_personal)'/SIM/$pais/PEF.dta", clear
 	if "`base'" == "base" {
 		exit
 	}
@@ -358,13 +358,11 @@ quietly {
 
 		tempvar TOTPIB
 		egen `TOTPIB' = rsum(gastonetoPIB*)
-
 		forvalues k=1(1)`=_N' {
 			if `TOTPIB'[`k'] != . & anio[`k'] >= 2014 {
 				local text `"`text' `=`TOTPIB'[`k']' `=anio[`k']' "`=string(`TOTPIB'[`k'],"%5.1fc")'""'
 			}
 		}
-		
 		twoway (area `graphvars' anio if anio >= 2014) ///
 			(connected `TOTPIB' anio if anio >= 2014, yaxis(2) mlcolor("255 129 0") lcolor("255 129 0")), ///
 			title("{bf:Gasto} p{c u'}blico") ///

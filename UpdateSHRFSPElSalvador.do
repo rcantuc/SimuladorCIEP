@@ -1,7 +1,7 @@
 ************
 ** 1 RFSP **
 ************
-	LIF, anio(2021) ilif
+	LIF, anio(2021)
 	collapse (sum) recaudacion, by(anio)
 	tempfile LIF0
 	save `LIF0'
@@ -118,8 +118,8 @@ g tipoDeCambio = 1
 
 compress
 if `c(version)' == 15.1 {
-	saveold `"`c(sysdir_site)'../basesCIEP/SIM/SHRFSPElSalvador.dta"', replace version(13)
+	saveold `"`c(sysdir_personal)'/SIM/$pais/SHRFSP.dta"', replace version(13)
 }
 else {
-	save `"`c(sysdir_site)'../basesCIEP/SIM/SHRFSPElSalvador.dta"', replace
+	save `"`c(sysdir_personal)'/SIM/$pais/SHRFSP.dta"', replace
 }
