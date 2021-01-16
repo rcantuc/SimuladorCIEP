@@ -741,7 +741,12 @@ program define UpdateDatosAbiertos, return
 	replace nombre = subinstr(nombre,"  "," ",.)
 	compress
 
-	saveold "`c(sysdir_personal)'/SIM/DatosAbiertos.dta", replace version(13)
+	if `c(version)' > 13.1 {
+		saveold "`c(sysdir_personal)'/SIM/DatosAbiertos.dta", replace version(13)
+	}
+	else {
+		save "`c(sysdir_personal)'/SIM/DatosAbiertos.dta", replace	
+	}
 	noisily LIF, update
 	noisily SHRFSP, update
 
