@@ -22,7 +22,7 @@ foreach k of local archivos {
 	* Importar archivo de la Cuenta Publica *
 	noisily di in g "Importando: " in y "`k'", _cont
 	if "$pais" == "" {
-		import delimited "`c(sysdir_site)'../basesCIEP/PEFs/$pais/`k'", clear case(lower) stripquotes(yes) stringcols(_all) encoding("utf8") 
+		import delimited "`c(sysdir_site)'../basesCIEP/PEFs/$pais/`k'", clear case(lower) stripquotes(yes) stringcols(_all) //encoding("utf8") 
 	}
 	else {
 		import excel "`c(sysdir_site)'../basesCIEP/PEFs/$pais/`k'", clear firstrow case(lower)
