@@ -1,6 +1,6 @@
 ***************************************
 ** PARAMETROS SIMULADOR: DIRECTORIOS **
-sysdir set PERSONAL "/SIM/OUT/5/5.0/"
+*sysdir set PERSONAL "/SIM/OUT/5/5.0/"
 ** PARAMETROS SIMULADOR: DIRECTORIOS **
 ***************************************
 
