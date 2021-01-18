@@ -32,7 +32,7 @@ label var anio "A{c n~}o"
 
 
 * 4. Orden *
-replace entidad = "Nacional" if entidad == "República Mexicana"
+replace entidad = "Nacional" if substr(entidad,1,3) == "Rep"
 keep if entidad == "Nacional"
 
 
@@ -138,7 +138,7 @@ label var anio "A{c n~}o"
 
 
 * 4. Orden *
-replace entidad = "Nacional" if entidad == "República Mexicana"
+replace entidad = "Nacional" if substr(entidad,1,3) == "Rep"
 keep if entidad == "Nacional"
 
 
