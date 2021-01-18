@@ -18,9 +18,13 @@ if "`c(os)'" == "MacOSX" {
 ***************************************
 
 
-*****************************************
-** PAIS (comentar o vacío para Mexico) **
-global pais = "El Salvador"
+************************************
+** PARAMETROS SIMULADOR: OPCIONES **
+global pais = "El Salvador"		// Comentar o "" (vacío) para Mexico
+*global nographs "nographs"
+*global output "output"
+** PARAMETROS SIMULADOR: OPCIONES **
+************************************
 
 
 ****************************************/
@@ -66,11 +70,6 @@ if "`1'" != "" {
 if "`2'" != "" {
 	global pais = "`2'"
 }
-
-
-** OPTIONS **
-global nographs "nographs"
-global output "output"
 
 
 ** OUTPUT LOG FILE **
@@ -130,6 +129,7 @@ if _rc != 0 {
 
 
 
+
 *********************************************/
 ***                                        ***
 ***    2. Simulador v5: PIB + Deflactor    ***
@@ -186,7 +186,7 @@ if "$pais" == "" & "`1'" != "" {
 
 *********************************/
 ***                            ***
-***    2. PARTE III: GASTOS    ***
+***    3. PARTE III: GASTOS    ***
 ***                            ***
 **********************************
 
@@ -242,7 +242,7 @@ noisily GastoPC, anio(`aniovp') `nographs'
 
 **********************************/
 ***                             ***
-***    3. PARTE II: INGRESOS    ***
+***    4. PARTE II: INGRESOS    ***
 ***                             ***
 ***********************************
 
@@ -393,7 +393,7 @@ if "$nographs" != "nographs" & "$pais" == "" {
 
 ****************************************/
 ***                                   ***
-***    4. PARTE IV: REDISTRIBUCION    ***
+***    5. PARTE IV: REDISTRIBUCION    ***
 ***                                   ***
 *****************************************
 use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
@@ -474,7 +474,7 @@ if "$output" == "output" {
 
 *******************************/
 ***                          ***
-***    5. PARTE IV: DEUDA    ***
+***    6. PARTE IV: DEUDA    ***
 ***                          ***
 ********************************
 
@@ -508,7 +508,9 @@ filefilter `output3' "`c(sysdir_personal)'/users/$pais/$id/output.txt", from(".,
 
 
 ***************************/
+****                    ****
 ****    Touchdown!!!    ****
+****                    ****
 ****************************
 *noisily scalarlatex
 timer off 1
