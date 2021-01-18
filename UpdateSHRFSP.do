@@ -107,12 +107,12 @@ save `nopresupuestario'
 *************************
 ** 5 Costo de la deuda **
 *************************
-PEF if divGA == 2
+PEF if divGA == 2, anio(2020)
 collapse (sum) costodeuda=gastoneto, by(anio)
 tempfile costodeuda
 save `costodeuda'
 
-PEF if divGA == 1
+PEF if divGA == 1, anio(2018)
 collapse (sum) amortizacion=gastoneto, by(anio)
 tempfile amortizacion
 save `amortizacion'
