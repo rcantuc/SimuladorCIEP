@@ -835,7 +835,7 @@ quietly {
 	*****************
 	*** 11 OUTPUT ***
 	*****************
-	if "$output" == "output" {
+	if "$output" == "output" & "$pais" == "" {
 		capture log on output
 		noisily di in w "GASTOS: " in w "["  ///
 			/*"basicaPIB "*/ %8.3f basicaPIB ", " ///

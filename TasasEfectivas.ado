@@ -302,7 +302,7 @@ quietly {
 	**************
 	*** OUTPUT ***
 	**************
-	if "$output" == "output" {
+	if "$output" == "output" & "$pais" == "" {
 		capture log on output
 		noisily di in w "INGRESOS: " in w "["  ///
 			%8.3f ISRAS ", " ///
