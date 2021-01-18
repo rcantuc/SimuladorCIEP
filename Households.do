@@ -56,10 +56,10 @@ if `1' == 2012 {
 timer on 6
 
 ** A.0.1 Log-file **
-capture log close
+capture log close households
 capture mkdir "`c(sysdir_personal)'/SIM/"
 capture mkdir "`c(sysdir_personal)'/SIM/`enighanio'/"
-log using "`c(sysdir_personal)'/SIM/`enighanio'/households.smcl", replace
+log using "`c(sysdir_personal)'/SIM/`enighanio'/households.smcl", replace name(households)
 
 ** A.0.2 Bienvenida **
 noisily di _newline(2) in g _dup(20) "." "{bf:  Ingresos de los hogares " in y "`enigh' `enighanio'" "  }" in g _dup(20) "."
@@ -2692,4 +2692,4 @@ else {
 timer off 6
 timer list 6
 noisily di _newline in g "{bf:Tiempo:} " in y round(`=r(t6)/r(nt6)',.1) in g " segs."
-log close
+log close households
