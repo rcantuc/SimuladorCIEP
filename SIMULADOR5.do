@@ -88,45 +88,47 @@ log off output
 ***    1. SET-UP: Cap. 3. La economia antropocentrica    ***
 ***                                                      ***
 ************************************************************
-noisily Poblacion, $nographs //update //tf(`=64.333315/2.2*2.07') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040) //anio(`aniovp')
+capture confirm file `"`c(sysdir_personal)'/SIM/2018//households.dta"'
+if _rc != 0 {
+	noisily Poblacion, $nographs //update //tf(`=64.333315/2.2*2.07') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040) //anio(`aniovp')
 
 
-** HOUSEHOLDS: INCOMES **
-noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' 2018
-if "$pais" == "" {
+	** HOUSEHOLDS: INCOMES **
+	noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' 2018
+	if "$pais" == "" {
 
 
-	** HOUSEHOLDS: EXPENDITURES **
-	*noisily run "`c(sysdir_personal)'/Expenditure.do" 2018
+		** HOUSEHOLDS: EXPENDITURES **
+		*noisily run "`c(sysdir_personal)'/Expenditure.do" 2018
 
 
-	** Sankey **
-	if "`c(os)'" != "Unix" {
-		foreach k in grupoedad decil escol sexo {
-			noisily run "`c(sysdir_personal)'/SankeyCC.do" `k' 2018
-			noisily run "`c(sysdir_personal)'/Sankey.do" `k' 2018
+		** Sankey **
+		if "`c(os)'" != "Unix" {
+			foreach k in grupoedad decil escol sexo {
+				noisily run "`c(sysdir_personal)'/SankeyCC.do" `k' 2018
+				noisily run "`c(sysdir_personal)'/Sankey.do" `k' 2018
+			}
+		}
+
+
+		** Datos Abiertos **
+		if "$nographs" != "nographs" {
+			DatosAbiertos XNA0120_s, g //		ISR salarios
+			DatosAbiertos XNA0120_f, g //		ISR PF
+			DatosAbiertos XNA0120_m, g //		ISR PM
+			DatosAbiertos XKF0114, g //		Cuotas IMSS
+			DatosAbiertos XAB1120, g //		IVA
+			DatosAbiertos XNA0141, g //		ISAN
+			DatosAbiertos XAB1130, g //		IEPS
+			DatosAbiertos XNA0136, g //		Importaciones
+			DatosAbiertos FMP_Derechos, g //	FMP_Derechos
+			DatosAbiertos XAB2110, g //		Ingresos propios Pemex
+			DatosAbiertos XOA0115, g //		Ingresos propios CFE
+			DatosAbiertos XKF0179, g //		Ingresos propios IMSS
+			DatosAbiertos XOA0120, g //		Ingresos propios ISSSTE
 		}
 	}
-
-
-	** Datos Abiertos **
-	if "$nographs" != "nographs" {
-		DatosAbiertos XNA0120_s, g //		ISR salarios
-		DatosAbiertos XNA0120_f, g //		ISR PF
-		DatosAbiertos XNA0120_m, g //		ISR PM
-		DatosAbiertos XKF0114, g //		Cuotas IMSS
-		DatosAbiertos XAB1120, g //		IVA
-		DatosAbiertos XNA0141, g //		ISAN
-		DatosAbiertos XAB1130, g //		IEPS
-		DatosAbiertos XNA0136, g //		Importaciones
-		DatosAbiertos FMP_Derechos, g //	FMP_Derechos
-		DatosAbiertos XAB2110, g //		Ingresos propios Pemex
-		DatosAbiertos XOA0115, g //		Ingresos propios CFE
-		DatosAbiertos XKF0179, g //		Ingresos propios IMSS
-		DatosAbiertos XOA0120, g //		Ingresos propios ISSSTE
-	}
 }
-
 
 
 
