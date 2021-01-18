@@ -40,7 +40,7 @@ timer on 5
 
 
 capture mkdir "`c(sysdir_personal)'/SIM/`enighanio'/"
-log using "`c(sysdir_personal)'/SIM/`enighanio'/expenditures.smcl", replace
+log using "`c(sysdir_personal)'/SIM/`enighanio'/expenditures.smcl", replace name(expenditures)
 
 
 ** D.3. Texto introductorio **
@@ -839,4 +839,4 @@ foreach categ of varlist categ categ_iva {
 timer off 5
 timer list 5
 noisily di _newline in g "{bf:Tiempo:} " in y round(`=r(t5)/r(nt5)',.1) in g " segs."
-log close
+log close expenditures
