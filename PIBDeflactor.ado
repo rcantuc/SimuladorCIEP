@@ -31,7 +31,7 @@ quietly {
 			run PoblacionBase.do
 		}
 		else if "$pais" == "El Salvador" {
-			run PoblacionnBaseMundial.do
+			run PoblacionBaseMundial.do
 		}
 		use `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
 	}
