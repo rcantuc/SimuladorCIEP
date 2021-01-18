@@ -9,15 +9,15 @@
 *** 1. BASE DE DATOS ***
 ************************
 if "$pais" == "" {
-	local archivos: dir "`c(sysdir_site)'../basesCIEP/PEFs/$pais" files "*.csv"			// Busca todos los archivos .csv en /basesCIEP/PEFs/
+	local archivos: dir "`c(sysdir_site)'../basesCIEP/PEFs/$pais" files "*.csv"	// Busca todos los archivos .csv en /basesCIEP/PEFs/
 }
 else {
-	local archivos: dir "`c(sysdir_site)'../basesCIEP/PEFs/$pais" files "*.xlsx"		// Busca todos los archivos .csv en /basesCIEP/PEFs/
+	local archivos: dir "`c(sysdir_site)'../basesCIEP/PEFs/$pais" files "*.xlsx"	// Busca todos los archivos .csv en /basesCIEP/PEFs/
 }
 
 * Loop para todos los archivos .csv *
 foreach k of local archivos {
-*foreach k in "PEF 2021" {
+*foreach k in "CP 2014" {
 
 	* Importar archivo de la Cuenta Publica *
 	noisily di in g "Importando: " in y "`k'", _cont

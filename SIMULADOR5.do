@@ -1,7 +1,7 @@
 *****************************************************
 ****    SECTION FOR PROGRAMMING PURPOSES ONLY    ****
 ****         MUST BE COMMENTED OTHERWISE         ****
-/*****************************************************
+*****************************************************
 clear all
 macro drop _all
 capture log close _all
@@ -71,6 +71,11 @@ if "`2'" != "" {
 }
 
 
+** OPTIONS **
+global nographs "nographs"
+global output "output"
+
+
 
 
 ************************************************************
@@ -116,11 +121,6 @@ if "$pais" == "" {
 		DatosAbiertos XOA0120, g //		Ingresos propios ISSSTE
 	}
 }
-
-
-** OPTIONS **
-global nographs "nographs"
-*global output "output"
 
 
 ** OUTPUT LOG FILE **
