@@ -32,7 +32,7 @@ if "$pais" == "" {
 *************************
 timer on 1
 noisily di _newline(50) _col(35) in w "Simulador Fiscal CIEP v5.0"
-noisily di _newline     _col(45) in y "$pais"
+noisily di _newline     _col(43) in y "$pais"
 
 
 ** DIRECTORIOS **
