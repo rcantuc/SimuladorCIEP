@@ -1,19 +1,23 @@
-***************************************
+**************************************/
 ** PARAMETROS SIMULADOR: DIRECTORIOS **
 sysdir set PERSONAL "/SIM/OUT/5/5.0/"
 ** PARAMETROS SIMULADOR: DIRECTORIOS **
 ***************************************
 
 
-*****************************************
-** PAIS (comentar o vacío para Mexico) **
-*global pais = "El Salvador"
+************************************
+** PARAMETROS SIMULADOR: OPCIONES **
+global pais = "El Salvador"		// Comentar o "" (vacío) para Mexico
+global nographs "nographs"
+global output "output"
+** PARAMETROS SIMULADOR: OPCIONES **
+************************************
 
 
 ****************************************/
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
 if "$pais" == "" {
-	*global id = "PE2021"
+	global id = "PE2021"
 }
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
 *****************************************
@@ -27,14 +31,15 @@ if "$pais" == "" {
 ***                   ***
 *************************
 timer on 1
-noisily di _newline(50) _col(35) in w "Simulador Fiscal CIEP v5.0" in y " $pais"
+noisily di _newline(50) _col(35) in w "Simulador Fiscal CIEP v5.0"
+noisily di _newline     _col(45) in y "$pais"
 
 
 ** DIRECTORIOS **
 adopath ++ PERSONAL
 cd "`c(sysdir_personal)'"
-capture mkdir "`c(sysdir_personal)'/users/"
 capture mkdir "`c(sysdir_personal)'/SIM/"
+capture mkdir "`c(sysdir_personal)'/users/"
 capture mkdir "`c(sysdir_personal)'/users/$id/"
 capture mkdir "`c(sysdir_personal)'/users/$pais/"
 
@@ -54,11 +59,6 @@ if "`2'" != "" {
 }
 
 
-** OPTIONS **
-global nographs "nographs"
-global output "output"
-
-
 ** OUTPUT LOG FILE **
 quietly log using "`c(sysdir_personal)'/users/$pais/$id/output.txt", replace text name(output)
 log off output
@@ -71,8 +71,9 @@ log off output
 ***    1. SET-UP: Cap. 3. La economia antropocentrica    ***
 ***                                                      ***
 ************************************************************
-capture confirm file `"`c(sysdir_personal)'/SIM/2018//households.dta"'
+capture confirm file `"`c(sysdir_personal)'/SIM/$pais/2018//households.dta"'
 if _rc != 0 {
+	global id = ""
 	noisily Poblacion, $nographs //update //tf(`=64.333315/2.2*2.07') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040) //anio(`aniovp')
 
 
@@ -112,6 +113,7 @@ if _rc != 0 {
 		}
 	}
 }
+
 
 
 
@@ -171,7 +173,7 @@ if "$pais" == "" & "`1'" != "" {
 
 *********************************/
 ***                            ***
-***    2. PARTE III: GASTOS    ***
+***    3. PARTE III: GASTOS    ***
 ***                            ***
 **********************************
 
@@ -179,26 +181,26 @@ if "$pais" == "" & "`1'" != "" {
 **********************************
 ** PARAMETROS SIMULADOR: GASTOS **
 * Educacion *
-scalar basica = 21333 //		Educaci{c o'}n b{c a'}sica
-scalar medsup = 21056 //		Educaci{c o'}n media superior
-scalar superi = 38069 //		Educaci{c o'}n superior
-scalar posgra = 45789 //		Posgrado
-scalar eduadu = 19452 //		Educaci{c o'}n para adultos
-scalar otrose =  1475 //		Otros gastos educativos
+scalar basica = 21422 //		Educaci{c o'}n b{c a'}sica
+scalar medsup = 21152 //		Educaci{c o'}n media superior
+scalar superi = 38283 //		Educaci{c o'}n superior
+scalar posgra = 45996 //		Posgrado
+scalar eduadu = 19538 //		Educaci{c o'}n para adultos
+scalar otrose =  1483 //		Otros gastos educativos
 
 * Salud *
-scalar ssa    =   519 //		SSalud
+scalar ssa    =   522 //		SSalud
 scalar prospe =  1081 //		IMSS-Prospera
-scalar segpop =  2406 //		Seguro Popular
-scalar imss   =  6385 //		IMSS (salud)
-scalar issste =  8590 //		ISSSTE (salud)
-scalar pemex  = 24179 //		Pemex (salud) + ISSFAM (salud)
+scalar segpop =  2417 //		Seguro Popular
+scalar imss   =  6414 //		IMSS (salud)
+scalar issste =  8628 //		ISSSTE (salud)
+scalar pemex  = 24288 //		Pemex (salud) + ISSFAM (salud)
 
 * Pensiones *
-scalar bienestar =   18063 //		Pensi{c o'}n Bienestar
-scalar penims    =  134649 //		Pensi{c o'}n IMSS
-scalar peniss    =  226463 //		Pensi{c o'}n ISSSTE
-scalar penotr    = 1402288 //		Pensi{c o'}n Pemex, CFE, Pensi{c o'}n LFC, ISSFAM, Otros
+scalar bienestar =   18356 //		Pensi{c o'}n Bienestar
+scalar penims    =  135259 //		Pensi{c o'}n IMSS
+scalar peniss    =  227486 //		Pensi{c o'}n ISSSTE
+scalar penotr    = 1408633 //		Pensi{c o'}n Pemex, CFE, Pensi{c o'}n LFC, ISSFAM, Otros
 
 * Ingreso b{c a'}sico *
 scalar IngBas      = 0 //		Ingreso b{c a'}sico
@@ -206,17 +208,17 @@ scalar ingbasico18 = 1 //		1: Incluye menores de 18 anios, 0: no
 scalar ingbasico65 = 1 //		1: Incluye mayores de 65 anios, 0: no
 
 * Otros gastos *
-scalar servpers = 3383 //		Servicios personales
-scalar matesumi = 1694 //		Materiales y suministros
-scalar gastgene = 1791 //		Gastos generales
-scalar substran = 1897 //		Subsidios y transferencias
-scalar bienmueb =  301 //		Bienes muebles e inmuebles
-scalar obrapubl = 3341 //		Obras p{c u'}blicas
-scalar invefina =  784 //		Inversi{c o'}n financiera
-scalar partapor = 8988 //		Participaciones y aportaciones
-scalar costodeu = 5862 //		Costo de la deuda
+scalar servpers = 3395 //		Servicios personales
+scalar matesumi = 1700 //		Materiales y suministros
+scalar gastgene = 1794 //		Gastos generales
+scalar substran = 1906 //		Subsidios y transferencias
+scalar bienmueb =  302 //		Bienes muebles e inmuebles
+scalar obrapubl = 3352 //		Obras p{c u'}blicas
+scalar invefina =  787 //		Inversi{c o'}n financiera
+scalar partapor = 9029 //		Participaciones y aportaciones
+scalar costodeu = 5888 //		Costo de la deuda
 ** PARAMETROS SIMULADOR: GASTOS **
-**********************************
+*********************************/
 
 
 ** Gastos per capita **
@@ -227,7 +229,7 @@ noisily GastoPC, anio(`aniovp') `nographs'
 
 **********************************/
 ***                             ***
-***    3. PARTE II: INGRESOS    ***
+***    4. PARTE II: INGRESOS    ***
 ***                             ***
 ***********************************
 
@@ -235,23 +237,23 @@ noisily GastoPC, anio(`aniovp') `nographs'
 ************************************
 ** PARAMETROS SIMULADOR: INGRESOS **
 ** Al ingreso **
-scalar ISRAS   = 3.559 //		ISR (asalariados)
-scalar ISRPF   = 0.208 //		ISR (personas f{c i'}sicas)
-scalar CuotasT = 1.528 //		Cuotas (IMSS)
+scalar ISRAS   = 3.428 //		ISR (asalariados)
+scalar ISRPF   = 0.438 //		ISR (personas f{c i'}sicas)
+scalar CuotasT = 1.515 //		Cuotas (IMSS)
 
 * Al consumo *
-scalar IVA     = 3.918 //		IVA
+scalar IVA     = 3.885 //		IVA
 scalar ISAN    = 0.030 //		ISAN
-scalar IEPS    = 2.044 //		IEPS (no petrolero + petrolero)
-scalar Importa = 0.247 //		Importaciones
+scalar IEPS    = 2.027 //		IEPS (no petrolero + petrolero)
+scalar Importa = 0.245 //		Importaciones
 
 * Al capital *
-scalar ISRPM   = 3.874 //		ISR (personas morales)
-scalar FMP     = 1.373 //		Fondo Mexicano del Petr{c o'}leo
-scalar OYE     = 4.310 //		Organismos y empresas (IMSS + ISSSTE + Pemex + CFE)
-scalar OtrosC  = 1.079 //		Productos, derechos, aprovechamientos, contribuciones
+scalar ISRPM   = 3.710 //		ISR (personas morales)
+scalar FMP     = 1.362 //		Fondo Mexicano del Petr{c o'}leo
+scalar OYE     = 4.274 //		Organismos y empresas (IMSS + ISSSTE + Pemex + CFE)
+scalar OtrosC  = 1.070 //		Productos, derechos, aprovechamientos, contribuciones
 ** PARAMETROS SIMULADOR: INGRESOS **
-************************************
+***********************************/
 
 
 *******************************
@@ -378,7 +380,7 @@ if "$nographs" != "nographs" & "$pais" == "" {
 
 ****************************************/
 ***                                   ***
-***    4. PARTE IV: REDISTRIBUCION    ***
+***    5. PARTE IV: REDISTRIBUCION    ***
 ***                                   ***
 *****************************************
 use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
@@ -459,7 +461,7 @@ if "$output" == "output" {
 
 *******************************/
 ***                          ***
-***    5. PARTE IV: DEUDA    ***
+***    6. PARTE IV: DEUDA    ***
 ***                          ***
 ********************************
 
@@ -493,7 +495,9 @@ filefilter `output3' "`c(sysdir_personal)'/users/$pais/$id/output.txt", from(".,
 
 
 ***************************/
+****                    ****
 ****    Touchdown!!!    ****
+****                    ****
 ****************************
 *noisily scalarlatex
 timer off 1
