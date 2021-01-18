@@ -30,7 +30,7 @@ if "`c(os)'" == "MacOSX" {
 ****************************************/
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
 if "$pais" == "" {
-	global id = "PE2021"
+	*global id = "PE2021"
 }
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
 *****************************************
