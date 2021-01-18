@@ -7,7 +7,7 @@ sysdir set PERSONAL "/SIM/OUT/5/5.0/"
 
 ************************************
 ** PARAMETROS SIMULADOR: OPCIONES **
-global pais = "El Salvador"		// Comentar o "" (vacío) para Mexico
+*global pais = "El Salvador"		// Comentar o "" (vacío) para Mexico
 global nographs "nographs"
 global output "output"
 ** PARAMETROS SIMULADOR: OPCIONES **
