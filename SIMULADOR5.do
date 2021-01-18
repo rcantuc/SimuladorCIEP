@@ -1,7 +1,7 @@
 *****************************************************
 ****    SECTION FOR PROGRAMMING PURPOSES ONLY    ****
 ****         MUST BE COMMENTED OTHERWISE         ****
-/*****************************************************
+*****************************************************
 clear all
 macro drop _all
 capture log close _all
@@ -76,6 +76,11 @@ global nographs "nographs"
 global output "output"
 
 
+** OUTPUT LOG FILE **
+quietly log using "`c(sysdir_personal)'/users/$pais/$id/output.txt", replace text name(output)
+log off output
+
+
 
 
 ************************************************************
@@ -83,7 +88,7 @@ global output "output"
 ***    1. SET-UP: Cap. 3. La economia antropocentrica    ***
 ***                                                      ***
 ************************************************************
-noisily Poblacion, //update //tf(`=64.333315/2.2*2.07') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040) //nographs //anio(`aniovp')
+noisily Poblacion, $nographs //update //tf(`=64.333315/2.2*2.07') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040) //anio(`aniovp')
 
 
 ** HOUSEHOLDS: INCOMES **
@@ -121,11 +126,6 @@ if "$pais" == "" {
 		DatosAbiertos XOA0120, g //		Ingresos propios ISSSTE
 	}
 }
-
-
-** OUTPUT LOG FILE **
-quietly log using "`c(sysdir_personal)'/users/$pais/$id/output.txt", replace text name(output)
-log off output
 
 
 
