@@ -38,7 +38,7 @@ if `enighanio' == 2012 {
 }
 timer on 5
 
-capture log close
+
 capture mkdir "`c(sysdir_personal)'/SIM/`enighanio'/"
 log using "`c(sysdir_personal)'/SIM/`enighanio'/expenditures.smcl", replace
 
