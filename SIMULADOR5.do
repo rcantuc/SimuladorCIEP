@@ -5,10 +5,6 @@
 clear all
 macro drop _all
 capture log close _all
-if "`c(os)'" == "Unix" {
-	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
-	global export "/home/ciepmx/Dropbox (CIEP)/Textbook/images/"
-}
 if "`c(os)'" == "MacOSX" {
 	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
 	global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
