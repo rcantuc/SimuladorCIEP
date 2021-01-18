@@ -13,7 +13,7 @@ sysdir set PERSONAL "/SIM/OUT/5/5.0/"
 ****************************************/
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
 if "$pais" == "" {
-	global id = "PE2021"
+	*global id = "PE2021"
 }
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
 *****************************************
