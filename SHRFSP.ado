@@ -33,7 +33,7 @@ quietly {
 
 	** 2.1 Update SHRFSP **
 	capture confirm `"`c(sysdir_personal)'/SIM/$pais/SHRFSP.dta"'
-	if "`update'" == "update" | "`updated'" != "yes" | _rc != 0 {
+	if "`update'" == "update" | /*"`updated'" != "yes" |*/ _rc != 0 {
 		noisily run UpdateSHRFSP`=subinstr("${pais}"," ","",.)'.do
 	}
 

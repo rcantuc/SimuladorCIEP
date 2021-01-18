@@ -30,7 +30,7 @@ if "`c(os)'" == "MacOSX" {
 ****************************************/
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
 if "$pais" == "" {
-	*global id = "PE2021"
+	global id = "PE2021"
 }
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
 *****************************************
@@ -90,6 +90,7 @@ log off output
 ************************************************************
 capture confirm file `"`c(sysdir_personal)'/SIM/2018//households.dta"'
 if _rc != 0 {
+	global pais = ""
 	noisily Poblacion, $nographs //update //tf(`=64.333315/2.2*2.07') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040) //anio(`aniovp')
 
 
