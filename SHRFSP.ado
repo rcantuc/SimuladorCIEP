@@ -24,7 +24,6 @@ quietly {
 
 
 
-
 	****************
 	*** 2 SYNTAX ***
 	****************
@@ -32,7 +31,7 @@ quietly {
 		MINimum(real 1)]
 
 	** 2.1 Update SHRFSP **
-	capture confirm `"`c(sysdir_personal)'/SIM/$pais/SHRFSP.dta"'
+	capture confirm file `"`c(sysdir_personal)'/SIM/$pais/SHRFSP.dta"'
 	if "`update'" == "update" | /*"`updated'" != "yes" |*/ _rc != 0 {
 		noisily run UpdateSHRFSP`=subinstr("${pais}"," ","",.)'.do
 	}
