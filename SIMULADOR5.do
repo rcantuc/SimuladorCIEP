@@ -20,7 +20,7 @@ if "`c(os)'" == "MacOSX" {
 
 ************************************
 ** PARAMETROS SIMULADOR: OPCIONES **
-global pais = "El Salvador"		// Comentar o "" (vacío) para Mexico
+*global pais = "El Salvador"		// Comentar o "" (vacío) para Mexico
 *global nographs "nographs"
 *global output "output"
 ** PARAMETROS SIMULADOR: OPCIONES **
@@ -44,8 +44,8 @@ if "$pais" == "" {
 ***                   ***
 *************************
 timer on 1
-noisily di _newline(50) _col(35) in w "Simulador Fiscal CIEP v5.0"
-noisily di _newline     _col(43) in y "$pais"
+noisily di _newline(50) _col(35) in w "Simulador Fiscal CIEP v5.0" ///
+	_newline _col(43) in y "$pais"
 
 
 ** DIRECTORIOS **
