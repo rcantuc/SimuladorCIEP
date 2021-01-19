@@ -771,8 +771,8 @@ quietly {
 	
 	local poblacionINF = poblacion[_N]*(1+`grow_rate_LR')*(1+`discount'/100)^(`anio'-`=anio[_N]')/(1-((1+`grow_rate_LR')/(1+`discount'/100)))
 
-	di in g "Poblaci{c o'}n al infinito: " in y %15.0fc `poblacionINF'
-	di in g "Poblaci{c o'}n valor presente: " in y %15.0fc `poblacionVP'[1,1]
+	noisily di in g "  (*) Poblaci{c o'}n al infinito: " in y _col(35) %25.0fc `poblacionINF'
+	noisily di in g "  (*) Poblaci{c o'}n valor presente: " in y _col(35) %25.0fc `poblacionVP'[1,1]
 	noisily di in g "  (*) Cuenta generaciones futuras:" ///
 		in y _col(35) %25.0fc -(-`shrfsp'[1,1] + `estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1])/(`poblacionVP'[1,1]+`poblacionINF') ///
 		in g " `currency' por persona"
