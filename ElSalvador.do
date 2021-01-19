@@ -42,7 +42,7 @@ noisily di _newline(50) _col(35) in w "Simulador Fiscal CIEP v5.0" ///
 
 ** DIRECTORIOS **
 adopath ++ PERSONAL
-cd "`c(sysdir_personal)'"
+*cd "`c(sysdir_personal)'"
 capture mkdir "`c(sysdir_personal)'/SIM/"
 capture mkdir "`c(sysdir_personal)'/users/"
 capture mkdir "`c(sysdir_personal)'/users/$id/"

@@ -194,7 +194,7 @@ capture drop __*
 compress
 capture mkdir "`c(sysdir_personal)'/SIM/$pais/"
 capture mkdir "`c(sysdir_personal)'/SIM/$pais/2018/"
-if `c(version)' == 15.1 {
+if `c(version)' > 13.1 {
 	saveold "`c(sysdir_personal)'/SIM/$pais/2018/households.dta", replace version(13)
 }
 else {
