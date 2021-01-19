@@ -1,7 +1,7 @@
 *****************************************************
 ****    SECTION FOR PROGRAMMING PURPOSES ONLY    ****
 ****         MUST BE COMMENTED OTHERWISE         ****
-/*****************************************************
+*****************************************************
 clear all
 macro drop _all
 capture log close _all
@@ -79,7 +79,7 @@ if "$output" == "output" {
 ***    1. SET-UP: Cap. 3. La economia antropocentrica    ***
 ***                                                      ***
 ************************************************************
-capture confirm file `"`c(sysdir_personal)'/SIM/$pais/2018//householdss.dta"'
+capture confirm file `"`c(sysdir_personal)'/SIM/$pais/2018/householdss.dta"'
 if _rc != 0 {
 	Poblacion, $nographs update //tf(`=64.333315/2.2*2.07') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040) //anio(`aniovp')
 
