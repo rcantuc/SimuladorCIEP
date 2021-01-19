@@ -32,7 +32,7 @@ global output "output"
 
 ****************************************/
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
-*global id = "PE2021"
+global id = "PE2021"
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
 *****************************************
 
