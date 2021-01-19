@@ -774,12 +774,12 @@ quietly {
 	di in g "Poblaci{c o'}n al infinito: " in y %15.0fc `poblacionINF'
 	di in g "Poblaci{c o'}n valor presente: " in y %15.0fc `poblacionVP'[1,1]
 	noisily di in g "  (*) Cuenta generaciones futuras:" ///
-		in y _col(35) %25.0fc -(`estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1])/(`poblacionVP'[1,1]+`poblacionINF') ///
+		in y _col(35) %25.0fc -(-`shrfsp'[1,1] + `estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1])/(`poblacionVP'[1,1]+`poblacionINF') ///
 		in g " `currency' por persona"
 	capture confirm matrix GA
 	if _rc == 0 {
 		noisily di in g "  (*) Inequidad generacional:" ///
-			in y _col(35) %25.0fc ((-(`estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1])/(`poblacionVP'[1,1]+`poblacionINF'))/GA[1,3]-1)*100 ///
+			in y _col(35) %25.0fc ((-(-`shrfsp'[1,1] + `estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1])/(`poblacionVP'[1,1]+`poblacionINF'))/GA[1,3]-1)*100 ///
 			in g " %"
 	}
 
