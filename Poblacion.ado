@@ -2,7 +2,6 @@
 program define Poblacion
 quietly {
 
-	version 13.1
 	timer on 14
 
 	local aniovp : di %td_CY-N-D  date("$S_DATE", "DMY")
