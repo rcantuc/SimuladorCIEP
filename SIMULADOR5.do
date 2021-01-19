@@ -24,7 +24,6 @@ if "`c(os)'" == "Unix" {
 
 ************************************
 ** PARAMETROS SIMULADOR: OPCIONES **
-*global pais = "El Salvador"			// Comentar o "" (vacío) para Mexico
 global nographs "nographs"
 global output "output"
 ** PARAMETROS SIMULADOR: OPCIONES **
@@ -33,9 +32,7 @@ global output "output"
 
 ****************************************/
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
-if "$pais" == "" {
-	*global id = "PE2021"
-}
+*global id = "PE2021"
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
 *****************************************
 
@@ -81,19 +78,21 @@ if "$output" == "output" {
 ************************************************************
 capture confirm file `"`c(sysdir_personal)'/SIM/$pais/2018/households.dta"'
 if _rc != 0 {
+
+	** POBLACION **
 	Poblacion, $nographs update //tf(`=64.333315/2.2*2.07') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040) //anio(`aniovp')
 
 
 	** HOUSEHOLDS: INCOMES **
 	noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' 2018
-	if "$pais" == "" & "$export" != "" {
+	if "$export" != "" {
 
 
 		** HOUSEHOLDS: EXPENDITURES **
 		*noisily run "`c(sysdir_personal)'/Expenditure.do" 2018
 
 
-		** Sankey **
+		** SANKEY **
 		if "`c(os)'" != "Unix" {
 			foreach k in grupoedad decil escol sexo {
 				noisily run "`c(sysdir_personal)'/SankeyCC.do" `k' 2018
@@ -102,7 +101,7 @@ if _rc != 0 {
 		}
 
 
-		** Datos Abiertos **
+		** DATOS ABIERTOS **
 		DatosAbiertos XNA0120_s, g //		ISR salarios
 		DatosAbiertos XNA0120_f, g //		ISR PF
 		DatosAbiertos XNA0120_m, g //		ISR PM
@@ -149,13 +148,6 @@ global def2021 =  3.425
 global inf2020 =  3.5
 global inf2021 =  3.0
 
-if "$pais" == "El Salvador" {
-	global pib2020 = -7.200
-	global pib2021 =  4.600
-	global def2020 =  0.383
-	global def2021 =  0.512
-}
-
 
 ** PIB + Deflactor **
 noisily PIBDeflactor, anio(`aniovp') $nographs //geo(`geo') //discount(3.0)
@@ -168,7 +160,7 @@ else {
 
 
 ** SCN + Inflacion **
-if "$pais" == "" & "$export" != "" {
+if "$export" != "" {
 	noisily Inflacion, anio(`aniovp') $nographs //update
 	noisily SCN, anio(`aniovp') $nographs //update
 }
@@ -339,7 +331,7 @@ noisily TasasEfectivas, anio(`aniovp') `nographs'
 
 
 ** GRAFICA PROYECCION **
-if "$nographs" != "nographs" & "$pais" == "" {
+if "$nographs" != "nographs" {
 	use `"`c(sysdir_personal)'/SIM/2018//households.dta"', clear
 	noisily Simulador ImpuestosAportaciones if ImpuestosAportaciones != 0 [fw=factor], ///
 		base("ENIGH 2018") boot(1) reboot nographs anio(2020)
@@ -472,10 +464,8 @@ if "$output" == "output" {
 
 
 ** SANKEY **
-if "$pais" == "" {
-	foreach k in escol decil /*sexo grupo_edad*/ {
-		noisily run "`c(sysdir_personal)'/SankeySF.do" `k' `aniovp'
-	}
+foreach k in escol decil /*sexo grupo_edad*/ {
+	noisily run "`c(sysdir_personal)'/SankeySF.do" `k' `aniovp'
 }
 
 
