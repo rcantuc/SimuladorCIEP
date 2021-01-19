@@ -76,9 +76,8 @@ quietly {
 		g tasamortalidad = defunciones/poblacion*100
 		replace tasamortalidad = 100 if tasamortalidad > 100
 		label var tasamortalidad "Porcentaje de muertes"
-		drop defunciones
 
-		reshape wide poblacion tasamortalidad *migrantes, i(anio edad) j(sexo)
+		reshape wide poblacion defunciones tasamortalidad *migrantes, i(anio edad) j(sexo)
 		xtset edad anio
 		g difTF = tasafecundidad-L.tasafecundidad
 
@@ -104,7 +103,7 @@ quietly {
 
 		levelsof anio, local(anio)
 		levelsof edad, local(edad)
-		reshape wide poblacion* tasamortalidad* *migrantes*, i(anio) j(edad)
+		reshape wide poblacion* tasamortalidad* *migrantes* defunciones*, i(anio) j(edad)
 		tsset anio
 
 		foreach k of local anio {
@@ -122,9 +121,10 @@ quietly {
 			}
 		}
 		reshape long poblacion1 poblacionSIM1 emigrantes1 inmigrantes1 tasamortalidad1 ///
-				poblacion2 poblacionSIM2 emigrantes2 inmigrantes2 tasamortalidad2, i(anio) j(edad)
+				poblacion2 poblacionSIM2 emigrantes2 inmigrantes2 tasamortalidad2 ///
+				defunciones1 defunciones2, i(anio) j(edad)
 		label values edad .
-		reshape long poblacion poblacionSIM emigrantes inmigrantes tasamortalidad, i(anio edad) j(sexo)
+		reshape long poblacion poblacionSIM emigrantes inmigrantes tasamortalidad defunciones, i(anio edad) j(sexo)
 		label values sexo sexo
 
 		tempvar edad2 zero poblacionTF poblacionTFSIM
@@ -157,18 +157,20 @@ quietly {
 
 		capture drop __*
 		drop tasamortalidad
+		rename poblacion poblacionOriginal
+		rename poblacionSIM poblacion
 		if `c(version)' > 13.1 {
 			preserve
-			saveold "`c(sysdir_personal)'/SIM/$pais/Poblacion.dta", replace version(13)
+			saveold "`c(sysdir_personal)'/SIM//Poblacion.dta", replace version(13)
 			collapse (sum) poblacion, by(anio)
-			saveold "`c(sysdir_personal)'/SIM/$pais/Poblaciontot.dta", replace version(13)
+			saveold "`c(sysdir_personal)'/SIM//Poblaciontot.dta", replace version(13)
 			restore
 		}
 		else {
 			preserve
-			save "`c(sysdir_personal)'/SIM/$pais/Poblacion.dta", replace
+			save "`c(sysdir_personal)'/SIM//Poblacion.dta", replace
 			collapse (sum) poblacion, by(anio)
-			save "`c(sysdir_personal)'/SIM/$pais/Poblaciontot.dta", replace
+			save "`c(sysdir_personal)'/SIM//Poblaciontot.dta", replace
 			restore
 		}
 	}
@@ -178,7 +180,7 @@ quietly {
 	***************************
 	*** 1. Grafica Piramide ***
 	***************************
-	if "`nographs'" != "nographs" {
+	if "`nographs'" != "nographs" & "$nographs" == "" {
 		local poblacion : variable label poblacion
 
 		tempvar pob2

@@ -1,13 +1,17 @@
 *****************************************************
 ****    SECTION FOR PROGRAMMING PURPOSES ONLY    ****
 ****         MUST BE COMMENTED OTHERWISE         ****
-*****************************************************
+/*****************************************************
 clear all
 macro drop _all
 capture log close _all
 if "`c(os)'" == "MacOSX" {
 	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
-	global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
+	*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
+}
+if "`c(os)'" == "Unix" {
+	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
+	*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
 }
 
 
@@ -20,9 +24,9 @@ if "`c(os)'" == "MacOSX" {
 
 ************************************
 ** PARAMETROS SIMULADOR: OPCIONES **
-*global pais = "El Salvador"		// Comentar o "" (vacío) para Mexico
-*global nographs "nographs"
-*global output "output"
+*global pais = "El Salvador"			// Comentar o "" (vacío) para Mexico
+global nographs "nographs"
+global output "output"
 ** PARAMETROS SIMULADOR: OPCIONES **
 ************************************
 
@@ -62,20 +66,11 @@ local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
 
-** DO-FILE PARAMS **
-if "`1'" != "" {
-	local aniovp = `1'
-}
-
-if "`2'" != "" {
-	global pais = "`2'"
-}
-
-
 ** OUTPUT LOG FILE **
-quietly log using "`c(sysdir_personal)'/users/$pais/$id/output.txt", replace text name(output)
-log off output
-
+if "$output" == "output" {
+	quietly log using "`c(sysdir_personal)'/users/$pais/$id/output.txt", replace text name(output)
+	quietly log off output
+}
 
 
 
@@ -83,16 +78,16 @@ log off output
 ***                                                      ***
 ***    1. SET-UP: Cap. 3. La economia antropocentrica    ***
 ***                                                      ***
-************************************************************
-capture confirm file `"`c(sysdir_personal)'/SIM/$pais/2018//households.dta"'
+/************************************************************
+Poblacion, $nographs update //tf(`=64.333315/2.2*2.07') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040) //anio(`aniovp')
+
+capture confirm file `"`c(sysdir_personal)'/SIM/$pais/2018//householdss.dta"'
 if _rc != 0 {
-	global id = ""
-	noisily Poblacion, $nographs //update //tf(`=64.333315/2.2*2.07') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040) //anio(`aniovp')
 
 
 	** HOUSEHOLDS: INCOMES **
 	noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' 2018
-	if "$pais" == "" {
+	if "$pais" == "" & "$export" != "" {
 
 
 		** HOUSEHOLDS: EXPENDITURES **
@@ -109,21 +104,19 @@ if _rc != 0 {
 
 
 		** Datos Abiertos **
-		if "$nographs" != "nographs" {
-			DatosAbiertos XNA0120_s, g //		ISR salarios
-			DatosAbiertos XNA0120_f, g //		ISR PF
-			DatosAbiertos XNA0120_m, g //		ISR PM
-			DatosAbiertos XKF0114, g //		Cuotas IMSS
-			DatosAbiertos XAB1120, g //		IVA
-			DatosAbiertos XNA0141, g //		ISAN
-			DatosAbiertos XAB1130, g //		IEPS
-			DatosAbiertos XNA0136, g //		Importaciones
-			DatosAbiertos FMP_Derechos, g //	FMP_Derechos
-			DatosAbiertos XAB2110, g //		Ingresos propios Pemex
-			DatosAbiertos XOA0115, g //		Ingresos propios CFE
-			DatosAbiertos XKF0179, g //		Ingresos propios IMSS
-			DatosAbiertos XOA0120, g //		Ingresos propios ISSSTE
-		}
+		DatosAbiertos XNA0120_s, g //		ISR salarios
+		DatosAbiertos XNA0120_f, g //		ISR PF
+		DatosAbiertos XNA0120_m, g //		ISR PM
+		DatosAbiertos XKF0114, g //		Cuotas IMSS
+		DatosAbiertos XAB1120, g //		IVA
+		DatosAbiertos XNA0141, g //		ISAN
+		DatosAbiertos XAB1130, g //		IEPS
+		DatosAbiertos XNA0136, g //		Importaciones
+		DatosAbiertos FMP_Derechos, g //	FMP_Derechos
+		DatosAbiertos XAB2110, g //		Ingresos propios Pemex
+		DatosAbiertos XOA0115, g //		Ingresos propios CFE
+		DatosAbiertos XKF0179, g //		Ingresos propios IMSS
+		DatosAbiertos XOA0120, g //		Ingresos propios ISSSTE
 	}
 }
 
@@ -176,7 +169,7 @@ else {
 
 
 ** SCN + Inflacion **
-if "$pais" == "" & "`1'" != "" {
+if "$pais" == "" & "$export" != "" {
 	noisily Inflacion, anio(`aniovp') $nographs //update
 	noisily SCN, anio(`aniovp') $nographs //update
 }
@@ -463,10 +456,10 @@ if "$output" == "output" {
 	}
 
 	local lengthproy = strlen("`out_proy'")
-	capture log on output
+	quietly log on output
 	noisily di in w "PROY: [`=substr("`out_proy'",1,`=`lengthproy'-1')']"
 	noisily di in w "PROYMAX: [`aniomax']"
-	capture log off output
+	quietly log off output
 }
 
 
@@ -492,18 +485,20 @@ noisily FiscalGap, anio(`aniovp') $nographs end(2050) //boot(250) //update
 
 
 ** OUTPUT **
-capture quietly log close output
-tempfile output1 output2 output3
-if "`=c(os)'" == "Windows" {
-	filefilter "`c(sysdir_personal)'/users/$pais/$id/output.txt" `output1', from(\r\n>) to("") replace // Windows
+if "$output" == "output" {
+	quietly log close output
+	tempfile output1 output2 output3
+	if "`=c(os)'" == "Windows" {
+		filefilter "`c(sysdir_personal)'/users/$pais/$id/output.txt" `output1', from(\r\n>) to("") replace // Windows
+	}
+	else {
+		filefilter "`c(sysdir_personal)'/users/$pais/$id/output.txt" `output1', from(\n>) to("") replace // Mac & Linux
+	}
+	*filefilter `output1' `output2', from(" ") to("") replace
+	*filefilter `output2' `output3', from("_") to(" ") replace
+	*filefilter `output3' "`c(sysdir_personal)'/users/$pais/$id/output.txt", from(".,") to("0") replace
+	filefilter `output1' "`c(sysdir_personal)'/users/$pais/$id/output.txt", from(".,") to("0") replace
 }
-else {
-	filefilter "`c(sysdir_personal)'/users/$pais/$id/output.txt" `output1', from(\n>) to("") replace // Mac & Linux
-}
-filefilter `output1' `output2', from(" ") to("") replace
-filefilter `output2' `output3', from("_") to(" ") replace
-filefilter `output3' "`c(sysdir_personal)'/users/$pais/$id/output.txt", from(".,") to("0") replace
-
 
 
 
