@@ -72,9 +72,19 @@ drop if sexo == 3
 ****************
 ** 3. Guardar **
 capture mkdir "`c(sysdir_personal)'/SIM/$pais/"
-saveold "`c(sysdir_personal)'/SIM/$pais/Poblacion.dta", replace version(13)
+if `c(version)' > 13.1 {
+	saveold "`c(sysdir_personal)'/SIM/$pais/Poblacion.dta", replace version(13)
+}
+else {
+	save "`c(sysdir_personal)'/SIM/$pais/Poblacion.dta", replace
+}
 
 
 collapse (sum) poblacion, by(anio)
 g entidad = "Nacional"
-saveold "`c(sysdir_personal)'/SIM/$pais/Poblaciontot.dta", replace version(13)
+if `c(version)' > 13.1 {
+	saveold "`c(sysdir_personal)'/SIM/$pais/Poblaciontot.dta", replace version(13)
+}
+else {
+	save "`c(sysdir_personal)'/SIM/$pais/Poblaciontot.dta", replace
+}
