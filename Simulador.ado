@@ -539,10 +539,8 @@ quietly {
 
 	***********************************
 	*** 5.1 Piramide de la variable ***
-	if "`nographs'" != "nographs" {
-		poblaciongini `varlist', title("`title'") nombre(`nombre') ///
-			boottext(`boottext') rect(`RECT') base(`base') graphs id($id) pib(`PIB')
-	}
+	poblaciongini `varlist', title("`title'") nombre(`nombre') ///
+		boottext(`boottext') rect(`RECT') base(`base') graphs id($id) pib(`PIB')
 
 
 
@@ -698,7 +696,7 @@ program graphpiramide
 
 	*******************
 	*** 2. GRAFICAS ***
-	if "$output" != "output" {
+	if "$nographs" != "nographs" & "`nographs'" != "nographs" {
 		* Edades *
 		forvalues k=0(1)120 {
 			if `k' != 0 & `k' != 5 & `k' != 10 & `k' != 15 & `k' != 20 & `k' != 25 & `k' != 30 ///
@@ -787,7 +785,7 @@ program graphpiramide
 		capture window manage close graph H`varlist'
 		capture window manage close graph M`varlist'
 	}
-	else {
+	if "$output" == "output" {
 		g grupo_edad = 1
 		replace grupo_edad = 2 if edad > 4
 		replace grupo_edad = 3 if edad > 9
@@ -848,6 +846,7 @@ program graphpiramide
 				}		
 			}
 		}
+		quietly log on output
 		local lengthHIV = strlen("`aportHIV'")
 		noisily di in w "APORTHIV: [`=substr("`aportHIV'",1,`=`lengthHIV'-1')']"
 		local lengthHVIIX = strlen("`aportHVIIX'")
@@ -860,5 +859,6 @@ program graphpiramide
 		noisily di in w "APORTMVIIX: [`=substr("`aportMVIIX'",1,`=`lengthMVIIX'-1')']"
 		local lengthMX = strlen("`aportMX'")
 		noisily di in w "APORTMX: [`=substr("`aportMX'",1,`=`lengthMX'-1')']"
+		quietly log off output
 	}
 end

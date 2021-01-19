@@ -9,9 +9,13 @@
 
 **********************
 ** 1. Base de datos **
-import delimited "http://www.conapo.gob.mx/work/models/CONAPO/Datos_Abiertos/Proyecciones2018/pob_ini_proyecciones.csv", clear
-*import delimited "/Users/ricardo/Dropbox (CIEP)/pob_mit_proyecciones.csv", clear encoding("windows-1252")
-
+*import delimited "http://www.conapo.gob.mx/work/models/CONAPO/Datos_Abiertos/Proyecciones2018/pob_ini_proyecciones.csv", clear
+if `c(version)' > 13.1 {
+	import delimited "`c(sysdir_site)'../basesCIEP/CONAPO/pob_mit_proyecciones.csv", clear encoding("windows-1252")
+}
+else {
+	import delimited "`c(sysdir_site)'../basesCIEP/CONAPO/pob_mit_proyecciones.csv", clear
+}
 
 * 2. Limpia *
 capture rename año anio
@@ -48,13 +52,17 @@ save `poblacion'
 **********************
 
 ********************
-* 1. Base de datos *
+/* 1. Base de datos *
 capture import delimited "http://www.conapo.gob.mx/work/models/CONAPO/Datos_Abiertos/Proyecciones2018/def_edad_proyecciones_n.csv", clear encoding("utf-8")
 if _rc != 0 {
 	import delimited "http://www.conapo.gob.mx/work/models/CONAPO/Datos_Abiertos/Proyecciones2018/def_edad_proyecciones_n.csv", clear
+}*/
+if `c(version)' > 13.1 {
+	import delimited "`c(sysdir_site)'../basesCIEP/CONAPO/def_edad_proyecciones_n.csv", clear encoding("utf-8")
 }
-*import delimited "/Users/ricardo/Dropbox (CIEP)/def_edad_proyecciones_n.csv", clear encoding("utf-8")
-
+else {
+	import delimited "`c(sysdir_site)'../basesCIEP/CONAPO/def_edad_proyecciones_n.csv", clear
+}
 
 * 2. Limpia *
 capture rename año anio
@@ -92,8 +100,8 @@ save `defunciones'
 
 ********************
 * 1. Base de datos *
-import delimited "http://www.conapo.gob.mx/work/models/CONAPO/Datos_Abiertos/Proyecciones2018/mig_inter_quin_proyecciones.csv", clear
-*import delimited "/Users/ricardo/Dropbox (CIEP)/mig_inter_quin_proyecciones.csv", clear
+*import delimited "http://www.conapo.gob.mx/work/models/CONAPO/Datos_Abiertos/Proyecciones2018/mig_inter_quin_proyecciones.csv", clear
+import delimited "`c(sysdir_site)'../basesCIEP/CONAPO/mig_inter_quin_proyecciones.csv", clear
 
 
 * 2. Limpia *
