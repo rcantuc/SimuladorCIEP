@@ -756,8 +756,8 @@ quietly {
 
 	*****************************************
 	*** 5 Fiscal Gap: Cuenta Generacional ***
-	/*****************************************
-	use `"`c(sysdir_site)'../basesCIEP/SIM/Poblacion.dta"', clear
+	*****************************************
+	use `"`c(sysdir_personal)'/SIM/Poblacion.dta"', clear
 
 	collapse (sum) poblacion if edad == 0, by(anio) fast
 	merge 1:1 (anio) using `PIB', nogen keepus(lambda)
