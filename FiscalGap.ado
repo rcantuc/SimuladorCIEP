@@ -68,9 +68,9 @@ quietly {
 		if "`divGA`k''" == "Impuestos al ingreso" {
 			preserve
 
-			capture use `"`c(sysdir_personal)'/users/$pais/$id/LaboralREC.dta"', clear
+			capture use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/LaboralREC.dta"', clear			
 			if _rc != 0 {
-				use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/LaboralREC.dta"', clear			
+				use `"`c(sysdir_personal)'/users/$pais/$id/LaboralREC.dta"', clear
 			}
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
@@ -87,9 +87,9 @@ quietly {
 		if "`divGA`k''" == "Impuestos al consumo" {
 			preserve
 
-			capture use `"`c(sysdir_personal)'/users/$pais/$id/ConsumoREC.dta"', clear
+			capture use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/ConsumoREC.dta"', clear			
 			if _rc != 0 {
-				use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/ConsumoREC.dta"', clear			
+				use `"`c(sysdir_personal)'/users/$pais/$id/ConsumoREC.dta"', clear
 			}
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
@@ -106,9 +106,9 @@ quietly {
 		if "`divGA`k''" == "Ingresos de capital" | "`divGA`k''" == "Otros ingresos" {
 			preserve
 
-			capture use `"`c(sysdir_personal)'/users/$pais/$id/OtrosCREC"', clear
+			capture use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/OtrosCREC.dta"', clear			
 			if _rc != 0 {
-				use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/OtrosCREC.dta"', clear			
+				use `"`c(sysdir_personal)'/users/$pais/$id/OtrosCREC"', clear
 			}
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
@@ -251,9 +251,9 @@ quietly {
 		if "`divGA`k''" == "Educaci{c o'}n" {
 			preserve
 
-			capture use `"`c(sysdir_personal)'/users/$pais/$id/EducacionREC.dta"', clear
+			capture use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/EducacionREC.dta"', clear			
 			if _rc != 0 {
-				use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/EducacionREC.dta"', clear			
+				use `"`c(sysdir_personal)'/users/$pais/$id/EducacionREC.dta"', clear
 			}
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
@@ -270,9 +270,9 @@ quietly {
 		if "`divGA`k''" == "Pensiones" {
 			preserve
 
-			capture use `"`c(sysdir_personal)'/users/$pais/$id/PensionREC.dta"', clear
+			capture use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/PensionREC.dta"', clear			
 			if _rc != 0 {
-				use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/PensionREC.dta"', clear			
+				use `"`c(sysdir_personal)'/users/$pais/$id/PensionREC.dta"', clear
 			}
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
@@ -305,9 +305,9 @@ quietly {
 		if "`divGA`k''" == "Salud" {
 			preserve
 
-			capture use `"`c(sysdir_personal)'/users/$pais/$id/SaludREC.dta"', clear
+			capture use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/SaludREC.dta"', clear			
 			if _rc != 0 {
-				use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/SaludREC.dta"', clear			
+				use `"`c(sysdir_personal)'/users/$pais/$id/SaludREC.dta"', clear
 			}
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
@@ -330,9 +330,9 @@ quietly {
 		if "`divGA`k''" == "Pensi{c o'}n Bienestar" {
 			preserve
 
-			capture use `"`c(sysdir_personal)'/users/$pais/$id/PenBienestarREC.dta"', clear
+			capture use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/PenBienestarREC.dta"', clear			
 			if _rc != 0 {
-				use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/PenBienestarREC.dta"', clear			
+				use `"`c(sysdir_personal)'/users/$pais/$id/PenBienestarREC.dta"', clear
 			}
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
@@ -349,9 +349,9 @@ quietly {
 		if "`divGA`k''" == "Otros" {
 			preserve
 
-			capture use `"`c(sysdir_personal)'/users/$pais/$id/OtrosGasREC.dta"', clear
+			capture use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/OtrosGasREC.dta"', clear			
 			if _rc != 0 {
-				use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/OtrosGasREC.dta"', clear			
+				use `"`c(sysdir_personal)'/users/$pais/$id/OtrosGasREC.dta"', clear
 			}
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
@@ -370,9 +370,9 @@ quietly {
 	** Ingreso basico **
 	preserve
 
-	capture use `"`c(sysdir_personal)'/users/$pais/$id/IngBasicoREC"', clear
+	capture use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/IngBasicoREC.dta"', clear			
 	if _rc != 0 {
-		use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/IngBasicoREC.dta"', clear			
+		use `"`c(sysdir_personal)'/users/$pais/$id/IngBasicoREC"', clear
 	}
 	merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 	collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)

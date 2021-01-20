@@ -1,7 +1,7 @@
 *****************************************************
 ****    SECTION FOR PROGRAMMING PURPOSES ONLY    ****
 ****         MUST BE COMMENTED OTHERWISE         ****
-/*****************************************************
+*****************************************************
 clear all
 macro drop _all
 capture log close _all
@@ -16,16 +16,8 @@ if "`c(username)'" == "ciepmx" {
 ***********************************/
 ** PARAMETROS SIMULADOR: OPCIONES **
 global pais = "El Salvador"			// Comentar o "" (vacío) para Mexico
-*global nographs "nographs"
 ** PARAMETROS SIMULADOR: OPCIONES **
 ************************************
-
-
-****************************************/
-** PARAMETROS SIMULADOR: IDENTIFICADOR **
-*global id = "PE2021
-** PARAMETROS SIMULADOR: IDENTIFICADOR **
-*****************************************
 
 
 
@@ -42,7 +34,7 @@ noisily di _newline(50) _col(35) in w "Simulador Fiscal CIEP v5.0" ///
 
 ** DIRECTORIOS **
 adopath ++ PERSONAL
-*cd "`c(sysdir_personal)'"
+cd "`c(sysdir_personal)'"
 capture mkdir "`c(sysdir_personal)'/SIM/"
 capture mkdir "`c(sysdir_personal)'/users/"
 capture mkdir "`c(sysdir_personal)'/users/$id/"
@@ -134,19 +126,38 @@ noisily TasasEfectivas, anio(`aniovp') `nographs'
 ***                                   ***
 *****************************************
 use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
-capture g AportacionesNetas = Laboral + Consumo + ISR__PM + ing_cap_fmp ///
-	- Pension - Educacion - Salud - IngBasico - PenBienestar - Infra
+capture g AportacionesNetas = (Laboral + Consumo + ISR__PM + ing_cap_fmp)*1.2 ///
+	+ (- Pension - Educacion - Salud - IngBasico - PenBienestar - Infra)*.8
 if _rc != 0 {
-	replace AportacionesNetas = Laboral + Consumo + ISR__PM + ing_cap_fmp ///
-	- Pension - Educacion - Salud - IngBasico - PenBienestar - Infra
+	replace AportacionesNetas = (Laboral + Consumo + ISR__PM + ing_cap_fmp)*1.2 ///
+	+ (- Pension - Educacion - Salud - IngBasico - PenBienestar - Infra)*.8
 }
 label var AportacionesNetas "de las aportaciones netas"
-save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace
 
 
 ** REDISTRIBUCION **
-noisily Simulador AportacionesNetas if AportacionesNetas != 0 [fw=factor], ///
+replace Laboral = Laboral*1.2
+noisily Simulador Laboral if AportacionesNetas != 0 [fw=factor], ///
 	base("ENIGH 2018") boot(1) reboot nographs anio(2020)
+
+replace Consumo = Consumo*1.2
+noisily Simulador Consumo if AportacionesNetas != 0 [fw=factor], ///
+	base("ENIGH 2018") boot(1) reboot nographs anio(2020)
+
+replace Pension = Pension*.8
+noisily Simulador Pension if AportacionesNetas != 0 [fw=factor], ///
+	base("ENIGH 2018") boot(1) reboot nographs anio(2020)
+
+replace Educacion = Educacion*.8
+noisily Simulador Educacion if AportacionesNetas != 0 [fw=factor], ///
+	base("ENIGH 2018") boot(1) reboot nographs anio(2020)
+
+replace Salud = Salud*.8
+noisily Simulador Salud if AportacionesNetas != 0 [fw=factor], ///
+	base("ENIGH 2018") boot(1) reboot nographs anio(2020)
+
+save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace
+
 
 
 ** CUENTA GENERACIONAL **
