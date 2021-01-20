@@ -92,6 +92,11 @@ quietly {
 			name(shrfsp, replace) ///
 			blabel(bar, format(%7.1fc)) ///
 			//caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}")
+			
+		capture confirm existence $export
+		if _rc == 0 {
+			graph export "$export/SHRFSP.png", replace name(shrfsp)
+		}			
 	}
 
 

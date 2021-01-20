@@ -1,40 +1,17 @@
 *****************************************************
 ****    SECTION FOR PROGRAMMING PURPOSES ONLY    ****
 ****         MUST BE COMMENTED OTHERWISE         ****
-/*****************************************************
+*****************************************************
 clear all
 macro drop _all
 capture log close _all
-if "`c(os)'" == "MacOSX" {
+if "`c(username)'" == "ricardo" {
 	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
-	*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
+	global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
 }
-if "`c(os)'" == "Unix" {
-	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
-	*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
+if "`c(username)'" == "ciepmx" {
+	sysdir set PERSONAL "/SIM/OUT/5/5.0/"
 }
-
-
-**************************************/
-** PARAMETROS SIMULADOR: DIRECTORIOS **
-*sysdir set PERSONAL "/SIM/OUT/5/5.0/"
-** PARAMETROS SIMULADOR: DIRECTORIOS **
-***************************************
-
-
-************************************
-** PARAMETROS SIMULADOR: OPCIONES **
-global nographs "nographs"
-global output "output"
-** PARAMETROS SIMULADOR: OPCIONES **
-************************************
-
-
-****************************************/
-** PARAMETROS SIMULADOR: IDENTIFICADOR **
-global id = "PE2021"
-** PARAMETROS SIMULADOR: IDENTIFICADOR **
-*****************************************
 
 
 
@@ -45,8 +22,13 @@ global id = "PE2021"
 ***                   ***
 *************************
 timer on 1
-noisily di _newline(50) _col(35) in w "Simulador Fiscal CIEP v5.0" ///
-	_newline _col(43) in y "$pais"
+
+
+****************************************/
+** PARAMETROS SIMULADOR: IDENTIFICADOR **
+global id = "PE2021"
+** PARAMETROS SIMULADOR: IDENTIFICADOR **
+*****************************************
 
 
 ** DIRECTORIOS **
@@ -63,11 +45,25 @@ local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
 
+** OPCIONES **
+if "`c(username)'" == "ciepmx" {
+	global nographs "nographs"
+	global output "output"
+}
+
+
 ** OUTPUT LOG FILE **
 if "$output" == "output" {
 	quietly log using "`c(sysdir_personal)'/users/$pais/$id/output.txt", replace text name(output)
 	quietly log off output
 }
+
+
+** INICIO *
+noisily di _newline(50) _col(35) in w "Simulador Fiscal CIEP v5.0" ///
+	_newline _col(43) in y "$pais"
+
+
 
 
 

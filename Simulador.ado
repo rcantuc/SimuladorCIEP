@@ -768,14 +768,13 @@ program graphpiramide
 
 		graph combine H`varlist' M`varlist', ///
 			name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)', replace) ycommon xcommon ///
-			///title("{bf:Perfil} de `title'") subtitle("$pais") ///
+			title("{bf:Perfil} de `title'") subtitle("$pais") ///
 			///title("`title' by sex, age and `titleover'") ///
-			///caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, ENIGH 2018. Fecha: `c(current_date)', `c(current_time)'.") ///
-			/*caption("{it: Source: Own estimations.`boottext'}")*/ ///
+			caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, ENIGH 2018. Fecha: `c(current_date)', `c(current_time)'.") ///
+			///caption("{it: Source: Own estimations.`boottext'}") ///
 			///note(`"{bf:Nota}: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n de `=lower("`title'")' en cada grupo."') ///
-			/*note(`"{bf:Note}: Percentages inside parenthesis represent the concentration of `title' in each group."')*/
+			///note(`"{bf:Note}: Percentages inside parenthesis represent the concentration of `title' in each group."')
 
-		*graph export `"`c(sysdir_personal)'/users/$pais/$id/graphs/`varlist'_`titleover'.eps"', replace name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)')
 		graph save `=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)' `"`c(sysdir_personal)'/users/$pais/$id/graphs/`varlist'_`titleover'.gph"', replace
 
 		if "$export" != "" {
