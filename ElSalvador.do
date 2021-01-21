@@ -125,34 +125,36 @@ noisily TasasEfectivas, anio(`aniovp') `nographs'
 ***    5. PARTE IV: REDISTRIBUCION    ***
 ***                                   ***
 *****************************************
+local crecimiento_ingresos = 1.2
+local crecimiento_gastos = .8
 use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
-capture g AportacionesNetas = (Laboral + Consumo + ISR__PM + ing_cap_fmp)*1.2 ///
-	+ (- Pension - Educacion - Salud - IngBasico - PenBienestar - Infra)*.8
+capture g AportacionesNetas = (Laboral + Consumo + ISR__PM + ing_cap_fmp)*`crecimiento_ingresos' ///
+	+ (- Pension - Educacion - Salud - IngBasico - PenBienestar - Infra)*`crecimiento_gastos'
 if _rc != 0 {
-	replace AportacionesNetas = (Laboral + Consumo + ISR__PM + ing_cap_fmp)*1.2 ///
-	+ (- Pension - Educacion - Salud - IngBasico - PenBienestar - Infra)*.8
+	replace AportacionesNetas = (Laboral + Consumo + ISR__PM + ing_cap_fmp)*`crecimiento_ingresos' ///
+	+ (- Pension - Educacion - Salud - IngBasico - PenBienestar - Infra)*`crecimiento_gastos'
 }
-label var AportacionesNetas "de las aportaciones netas"
+label var AportacionesNetas "las aportaciones netas"
 
 
 ** REDISTRIBUCION **
-replace Laboral = Laboral*1.2
+replace Laboral = Laboral*`crecimiento_ingresos'
 noisily Simulador Laboral if AportacionesNetas != 0 [fw=factor], ///
 	base("ENIGH 2018") boot(1) reboot nographs anio(2020)
 
-replace Consumo = Consumo*1.2
+replace Consumo = Consumo*`crecimiento_ingresos'
 noisily Simulador Consumo if AportacionesNetas != 0 [fw=factor], ///
 	base("ENIGH 2018") boot(1) reboot nographs anio(2020)
 
-replace Pension = Pension*.8
+replace Pension = Pension*`crecimiento_gastos'
 noisily Simulador Pension if AportacionesNetas != 0 [fw=factor], ///
 	base("ENIGH 2018") boot(1) reboot nographs anio(2020)
 
-replace Educacion = Educacion*.8
+replace Educacion = Educacion*`crecimiento_gastos'
 noisily Simulador Educacion if AportacionesNetas != 0 [fw=factor], ///
 	base("ENIGH 2018") boot(1) reboot nographs anio(2020)
 
-replace Salud = Salud*.8
+replace Salud = Salud*`crecimiento_gastos'
 noisily Simulador Salud if AportacionesNetas != 0 [fw=factor], ///
 	base("ENIGH 2018") boot(1) reboot nographs anio(2020)
 
