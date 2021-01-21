@@ -57,8 +57,8 @@ quietly {
 	if "$pais" == "" {
 		merge 1:1 (anio divGA) using `pm_ingreso', nogen keepus(monto)
 		merge 1:1 (anio divGA) using `pm_capital', nogen keepus(monto) update
-		replace recaudacion = recaudacion - monto if divGA == 3
-		replace recaudacion = recaudacion + monto if divGA == 4
+		replace recaudacion = recaudacion - monto if divGA == 3 & monto != .
+		replace recaudacion = recaudacion + monto if divGA == 4 & monto != .
 	}
 	g modulo = ""
 
@@ -164,7 +164,7 @@ quietly {
 			label(1 "Ingresos de capital") label(2 "Impuestos laborales") label(3 "Impuestos al consumo")) ///
 			xlabel(2010(5)`=round(anio[_N],10)') ///
 			ylabel(, format(%20.0fc)) ///
-			xline(`=`anio'-.5') ///
+			xline(`=`anio'+.5') ///
 			text(`=`otros'[`obs`anio_last'']*.0618' `=`anio'+.5' "Proyecci{c o'}n", place(ne) color(white)) ///
 			yscale(range(0)) ///
 			title({bf:Proyecci{c o'}n} de los ingresos p{c u'}blicos) ///
