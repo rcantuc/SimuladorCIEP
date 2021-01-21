@@ -32,6 +32,7 @@ quietly {
 	local edadmax = edad[_N]+1
 	keep if anio >= `aniobase'
 
+	keep poblacion edad sexo anio
 	reshape wide poblacion, i(edad sexo) j(anio)
 
 	mkmat poblacion* if sexo == 1, matrix(HOM)

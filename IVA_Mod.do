@@ -46,7 +46,7 @@ merge 1:1 (folioviv foliohog numren) using ///
 replace Consumo = 0 if Consumo == .
 label var Consumo "los impuestos al consumo"
 
-noisily Simulador Consumo [fw=factor], base("ENIGH 2018") boot(1) reboot //graphs
+noisily Simulador Consumo [fw=factor], base("ENIGH 2018") boot(1) reboot $nographs
 
 capture egen IVATotal = rsum(IVAalim IVAalquiler IVAcb IVAeducacion IVAfuera ///
 	IVAmascotas IVAmed IVAotros IVAtrans IVAtransf)

@@ -128,7 +128,7 @@ label var Infra "Infra"
 
 
 ** (-) Pensiones **
-g Pension = r44407a
+egen Pension = rsum(r44407a r44409a)
 replace Pension = 0 if Pension == .
 label var Pension "Pensiones"
 * Reescalar *

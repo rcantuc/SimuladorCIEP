@@ -229,8 +229,8 @@ quietly {
 	** 3 Simulador **
 	*****************
 	noisily di in g " PIB " in y "`anio_last'`trim_last'" _col(25) %20.0fc `pib_last' in g " `=currency[`obsvp']' ({c u'}ltimo reportado)"
-	noisily di _newline in g " PIB " in y anio[`obsvp'] in g " per c{c a'}pita " in y _col(35) %10.1fc pibY[`obsvp']/`pobtotal'[1,1] in g " `=currency[`obsvp']'"
-	noisily di in g " PIB " in y anio[`obsvp'] in g " por trabajador " in y _col(35) %10.1fc OutputPerWorker[`obsvp'] in g " `=currency[`obsvp']'"
+	noisily di _newline in g " PIB " in y anio[`obsvp'] in g " per c{c a'}pita " in y _col(35) %10.1fc pibY[`obsvp']/`pobtotal'[1,1] in g " `=currency[`obs_exo']'"
+	noisily di in g " PIB " in y anio[`obs_exo'] in g " por trabajador " in y _col(35) %10.1fc OutputPerWorker[`obs_exo'] in g " `=currency[`obs_exo']'"
 	noisily di in g " Lambda " in y anio[`=`obs_exo'-`geo''] "-" anio[`obs_exo'] _col(35) %10.4f scalar(llambda) in g " %" 
 	noisily di in g " Lambda " in y anio[1] "-" anio[`obs_exo'] _col(35) %10.4f `Lambda' in g " %" 
 
@@ -350,7 +350,7 @@ quietly {
 		twoway (area `pibYRmil' anio if (anio < `anio_last' & anio >= `anio_first') | (anio == `anio_last' & trimestre == 4)) ///
 			(area `pibYRmil' anio if anio >= `anio_last' & anio > anio[`obs_exo']) ///
 			(`graphtype' `pibYRmil' anio if /*anio == `anio_last' & trimestre < 4 |*/ anio <= anio[`obs_exo'] & anio >= `anio_last', lwidth(none)), ///
-			title({bf:Flujo} del Producto Interno Bruto) subtitle(${pais}) ///
+			///title({bf:Flujo} del Producto Interno Bruto) subtitle(${pais}) ///
 			ytitle(mil millones `=currency[`obsvp']' `aniovp') xtitle("") ///
 			///text(`=`pibYRmil'[1]*.05' `=`anio_last'-.5' "`anio_last'", place(nw) color(white)) ///
 			///text(`=`pibYRmil'[1]*.05' `=anio[1]+.5' "Reportado" ///

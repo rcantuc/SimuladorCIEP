@@ -761,13 +761,26 @@ quietly {
 	}
 
 	else if "$pais" == "El Salvador" {
-		noisily PEF, anio(`aniovp') by(divGA) nographs
+		noisily PEF, anio(`anio') by(divGA) nographs
 		local Pension = r(Pensiones)
 		local Educacion = r(Educaci_c_o__n)
 		local Salud = r(Salud)
 		local OtrosGas = r(Otros)
 
 		use "`c(sysdir_personal)'/SIM/$pais/2018/households.dta", clear
+	
+		tabstat Pension Educacion Salud OtrosGas Infra [fw=factor], stat(sum) f(%20.0fc) save
+		tempname GASTOS TRANSF
+		matrix `GASTOS' = r(StatTotal)
+
+		tabstat IngBasico PenBienestar [fw=factor], stat(sum) f(%20.0fc) save
+		matrix `TRANSF' = r(StatTotal)
+		
+		replace Pension = Pension*`Pension'/`GASTOS'[1,1]
+		replace Educacion = Educacion*`Educacion'/`GASTOS'[1,2]
+		replace Salud = Salud*`Salud'/`GASTOS'[1,3]
+		replace OtrosGas = OtrosGas*`OtrosGas'/`GASTOS'[1,4]
+
 		tabstat Pension Educacion Salud OtrosGas Infra [fw=factor], stat(sum) f(%20.0fc) save
 		tempname GASTOSSIM TRANSFSIM
 		matrix `GASTOSSIM' = r(StatTotal)

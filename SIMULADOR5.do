@@ -10,7 +10,8 @@ if "`c(username)'" == "ricardo" {
 	global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
 }
 if "`c(username)'" == "ciepmx" {
-	sysdir set PERSONAL "/SIM/OUT/5/5.0/"
+	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
+	*sysdir set PERSONAL "/SIM/OUT/5/5.0/"
 }
 
 
@@ -26,7 +27,7 @@ timer on 1
 
 ****************************************/
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
-global id = "PE2021"
+global id = "PNUD"
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
 *****************************************
 
@@ -48,7 +49,7 @@ local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 ** OPCIONES **
 if "`c(username)'" == "ciepmx" {
 	global nographs "nographs"
-	global output "output"
+	*global output "output"
 }
 
 
@@ -73,10 +74,11 @@ noisily di _newline(50) _col(35) in w "Simulador Fiscal CIEP v5.0" ///
 ***                                                      ***
 ************************************************************
 capture confirm file `"`c(sysdir_personal)'/SIM/$pais/2018/households.dta"'
-if _rc != 0 {
+if _rc != 0 | "`c(username)'" == "ciepmx" {
+
 
 	** POBLACION **
-	Poblacion, $nographs update //tf(`=64.333315/2.2*2.07') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040) //anio(`aniovp')
+	noisily Poblacion, $nographs update //tf(`=64.333315/2.2*2.07') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040) //anio(`aniovp')
 
 
 	** HOUSEHOLDS: INCOMES **
@@ -89,15 +91,13 @@ if _rc != 0 {
 
 
 		** SANKEY **
-		if "`c(os)'" != "Unix" {
-			foreach k in grupoedad decil escol sexo {
-				noisily run "`c(sysdir_personal)'/SankeyCC.do" `k' 2018
-				noisily run "`c(sysdir_personal)'/Sankey.do" `k' 2018
-			}
+		foreach k in grupoedad decil escol sexo {
+			*noisily run "`c(sysdir_personal)'/SankeyCC.do" `k' 2018
+			*noisily run "`c(sysdir_personal)'/Sankey.do" `k' 2018
 		}
 
 
-		** DATOS ABIERTOS **
+		/** DATOS ABIERTOS **
 		DatosAbiertos XNA0120_s, g //		ISR salarios
 		DatosAbiertos XNA0120_f, g //		ISR PF
 		DatosAbiertos XNA0120_m, g //		ISR PM
@@ -110,7 +110,7 @@ if _rc != 0 {
 		DatosAbiertos XAB2110, g //		Ingresos propios Pemex
 		DatosAbiertos XOA0115, g //		Ingresos propios CFE
 		DatosAbiertos XKF0179, g //		Ingresos propios IMSS
-		DatosAbiertos XOA0120, g //		Ingresos propios ISSSTE
+		DatosAbiertos XOA0120, g //		Ingresos propios ISSSTE*/
 	}
 }
 
@@ -190,10 +190,10 @@ scalar issste =  8628 //		ISSSTE (salud)
 scalar pemex  = 24288 //		Pemex (salud) + ISSFAM (salud)
 
 * Pensiones *
-scalar bienestar =   18356 //		Pensi{c o'}n Bienestar
-scalar penims    =  135259 //		Pensi{c o'}n IMSS
-scalar peniss    =  227486 //		Pensi{c o'}n ISSSTE
-scalar penotr    = 1408633 //		Pensi{c o'}n Pemex, CFE, Pensi{c o'}n LFC, ISSFAM, Otros
+scalar bienestar =   18356 //	Pensi{c o'}n Bienestar
+scalar penims    =  135259 //	Pensi{c o'}n IMSS
+scalar peniss    =  227486 //	Pensi{c o'}n ISSSTE
+scalar penotr    = 1408633 //	Pensi{c o'}n Pemex, CFE, Pensi{c o'}n LFC, ISSFAM, Otros
 
 * Ingreso b{c a'}sico *
 scalar IngBas      = 0 //		Ingreso b{c a'}sico
@@ -251,8 +251,8 @@ scalar OtrosC  = 1.070 //		Productos, derechos, aprovechamientos, contribuciones
 
 *******************************
 ** PARAMETROS SIMULADOR: ISR **
-*			Inferior	Superior	CF		Tasa
-matrix	ISR	= (	0.00,		5952.84,	0.0,		1.92	\	/// 1
+*			Inferior	Superior	CF			Tasa
+matrix	ISR	= (	0.00,	5952.84,	0.0,		1.92	\	/// 1
 			5952.85,	50524.92,	114.24,		6.40	\	/// 2
 			50524.93,	88793.04,	2966.76,	10.88	\	/// 3
 			88793.05,	103218.00,	7130.88,	16.00	\	/// 4
@@ -265,7 +265,7 @@ matrix	ISR	= (	0.00,		5952.84,	0.0,		1.92	\	/// 1
 			3000000.01,	1E+14, 		940850.81,	35.00)		//  11
 
 *			Inferior	Superior	Subsidio
-matrix	SE	= (	0.00,		21227.52,	4884.24		\		/// 1
+matrix	SE	= (	0.00,	21227.52,	4884.24		\		/// 1
 			21227.53,	23744.40,	4881.96		\		/// 2
 			23744.41,	31840.56,	4318.08		\		/// 3
 			31840.57,	41674.08,	4123.20		\		/// 4
@@ -326,7 +326,7 @@ if _rc == 0 {
 noisily TasasEfectivas, anio(`aniovp') `nographs'
 
 
-** GRAFICA PROYECCION **
+/** GRAFICA PROYECCION **
 if "$nographs" != "nographs" {
 	use `"`c(sysdir_personal)'/SIM/2018//households.dta"', clear
 	noisily Simulador ImpuestosAportaciones if ImpuestosAportaciones != 0 [fw=factor], ///
@@ -393,13 +393,16 @@ noisily Simulador AportacionesNetas if AportacionesNetas != 0 [fw=factor], ///
 
 
 ** CUENTA GENERACIONAL **
-*noisily CuentasGeneracionales AportacionesNetas, anio(`anio') //boot(250) //	<-- OPTIONAL!!! Toma mucho tiempo.
+*noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) //	<-- OPTIONAL!!! Toma mucho tiempo.
 
 
-** GRAFICA PROYECCION **
+** GRAFICA PROYECCION **/
 use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/AportacionesNetasREC.dta"', clear
+//rename estimacion estimacionOrig
+//merge 1:1 (anio) using `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/AportacionesNetasRECOrig.dta"', nogen
 merge 1:1 (anio) using `"`c(sysdir_personal)'/users/$pais/$id/PIB.dta"', nogen
 replace estimacion = estimacion/pibYR*100
+//replace estimacionOrig = estimacionOrig/pibYR*100
 
 tabstat estimacion, stat(max) save
 tempname MAX
@@ -414,13 +417,16 @@ forvalues k=1(1)`=_N' {
 }
 
 if "$nographs" != "nographs" {
-	twoway (connected estimacion anio) (connected estimacion anio if anio == `aniovp') if anio > 1990, ///
+	twoway (connected estimacion anio) ///
+		///(connected estimacionOrig anio if anio >= 2021) ///
+		(connected estimacion anio if anio == `aniovp') ///
+		if anio > 1990, ///
 		ytitle("% PIB") ///
 		yscale(range(0)) /*ylabel(0(1)4)*/ ///
 		ylabel(0(1)5, format(%20.1fc) labsize(small)) ///
 		xlabel(1990(10)2050, labsize(small) labgap(2)) ///
 		xtitle("") ///
-		legend(off) ///
+		legend(on label(1 "Original") label(2 "Simulada")) ///
 		text(`=`MAX'[1,1]' `aniomax' "{bf:M{c a'}ximo:} `aniomax'", place(w)) ///
 		text(`estimacionvp' `aniovp' "{bf:Paquete Econ{c o'}mico} `aniovp'", place(e)) ///
 		///title("{bf:Proyecciones} de las aportaciones netas") subtitle("$pais") ///
@@ -459,13 +465,13 @@ if "$output" == "output" {
 ********************************
 
 
-** SANKEY **
-foreach k in escol decil /*sexo grupo_edad*/ {
+/** SANKEY **
+foreach k in escol decil sexo grupoedad {
 	noisily run "`c(sysdir_personal)'/SankeySF.do" `k' `aniovp'
 }
 
 
-** FISCAL GAP **
+** FISCAL GAP **/
 noisily FiscalGap, anio(`aniovp') $nographs end(2050) //boot(250) //update
 
 
@@ -481,7 +487,6 @@ if "$output" == "output" {
 	}
 	*filefilter `output1' `output2', from(" ") to("") replace
 	*filefilter `output2' `output3', from("_") to(" ") replace
-	*filefilter `output3' "`c(sysdir_personal)'/users/$pais/$id/output.txt", from(".,") to("0") replace
 	filefilter `output1' "`c(sysdir_personal)'/users/$pais/$id/output.txt", from(".,") to("0") replace
 }
 

@@ -110,7 +110,7 @@ quietly {
 				if `k' > `anioinicial' {
 					if `j' > 0 {
 						replace poblacionSIM1`j' = L.poblacionSIM1`=`j'-1' * (1 - tasamortalidad1`=`j'-1'/100) + inmigrantes1`j' - emigrantes1`j' if anio == `k'
-						replace poblacionSIM2`j' = L.poblacionSIM2`=`j'-1' * (1 - tasamortalidad1`=`j'-1'/100) + inmigrantes2`j' - emigrantes2`j' if anio == `k'
+						replace poblacionSIM2`j' = L.poblacionSIM2`=`j'-1' * (1 - tasamortalidad2`=`j'-1'/100) + inmigrantes2`j' - emigrantes2`j' if anio == `k'
 					}
 				}
 				else {
