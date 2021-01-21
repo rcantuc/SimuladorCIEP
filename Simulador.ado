@@ -489,12 +489,6 @@ quietly {
 		}
 	}
 	
-	if "$output" == "output" & "`nooutput'" == "" {
-		local lengthINCD = strlen("`incd'")
-		capture log on output
-		noisily di in w "INCD: [`=substr("`incd'",1,`=`lengthINCD'-1')']"
-		capture log off output
-	}
 
 
 	*************************
@@ -506,6 +500,10 @@ quietly {
 		noisily di in g "  `decil2'" _column(20) in y %20.1fc r(mean) ///
 			in g "  I.C. (95%): " in y "+/-" %7.2fc (r(ub)/r(mean)-1)*100 "%"
 		scalar dis`varlist'`decil2' = r(mean)
+
+		if "$output" == "output" {
+			local incd2 = "`incd2' `=string(`=dis`varlist'`decil2'',"%10.1f")',"
+		}
 	}
 	
 
@@ -520,6 +518,22 @@ quietly {
 		noisily di in g "  `decil2'" _column(20) in y %20.1fc r(mean) ///
 			in g "  I.C. (95%): " in y "+/-" %7.2fc (r(ub)/r(mean)-1)*100 "%"
 		scalar inc`varlist'`decil2' = r(mean)
+
+		if "$output" == "output" {
+			local incd3 = "`incd3' `=string(`=inc`varlist'`decil2'',"%10.1f")',"
+		}
+	}
+
+
+	if "$output" == "output" & "`nooutput'" == "" {
+		local lengthINCD = strlen("`incd'")
+		local lengthINCD2 = strlen("`incd2'")
+		local lengthINCD3 = strlen("`incd3'")
+		capture log on output
+		noisily di in w "INCD: [`=substr("`incd'",1,`=`lengthINCD'-1')']"
+		noisily di in w "INCD2: [`=substr("`incd2'",1,`=`lengthINCD'-1')']"
+		noisily di in w "INCD3: [`=substr("`incd3'",1,`=`lengthINCD'-1')']"
+		capture log off output
 	}
 
 

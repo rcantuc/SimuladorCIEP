@@ -27,7 +27,7 @@ timer on 1
 
 ****************************************/
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
-global id = "PE2021"
+global id = "PNUD"
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
 *****************************************
 
@@ -49,7 +49,7 @@ local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 ** OPCIONES **
 if "`c(username)'" == "ciepmx" {
 	global nographs "nographs"
-	*global output "output"
+	global output "output"
 }
 
 
@@ -78,7 +78,7 @@ if _rc != 0 | "`c(username)'" == "ciepmx" {
 
 
 	** POBLACION **
-	noisily Poblacion, $nographs //update //tf(`=64.333315/2.2*2.07') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040) //anio(`aniovp')
+	noisily Poblacion, $nographs update tf(`=64.333315/2.1*2.07') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040) //anio(`aniovp')
 
 
 	** HOUSEHOLDS: INCOMES **
@@ -393,7 +393,7 @@ noisily Simulador AportacionesNetas if AportacionesNetas != 0 [fw=factor], ///
 
 
 ** CUENTA GENERACIONAL **
-*noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) //	<-- OPTIONAL!!! Toma mucho tiempo.
+noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) //	<-- OPTIONAL!!! Toma mucho tiempo.
 
 
 ** GRAFICA PROYECCION **/
@@ -472,7 +472,7 @@ foreach k in escol decil sexo grupoedad {
 
 
 ** FISCAL GAP **/
-noisily FiscalGap, anio(`aniovp') $nographs end(2050) //boot(250) //update
+noisily FiscalGap, anio(`aniovp') $nographs end(2030) //boot(250) //update
 
 
 ** OUTPUT **
