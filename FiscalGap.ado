@@ -165,7 +165,7 @@ quietly {
 			xlabel(2010(5)`=round(anio[_N],10)') ///
 			ylabel(, format(%20.0fc)) ///
 			xline(`=`anio'+.5') ///
-			text(`=`otros'[`obs`anio_last'']*.0618' `=`anio'+.5' "Proyecci{c o'}n", place(ne) color(white)) ///
+			text(`=`otros'[`obs`anio_last'']*.0618' `=`anio'+1.5' "Proyecci{c o'}n", place(ne) color(white)) ///
 			yscale(range(0)) ///
 			title({bf:Proyecci{c o'}n} de los ingresos p{c u'}blicos) ///
 			subtitle($pais) ///
@@ -546,8 +546,8 @@ quietly {
 			label(8 "Educaci{c o'}n")) ///
 			xlabel(2015(5)`=round(anio[_N],10)') ///
 			ylabel(, format(%20.0fc)) ///
-			xline(`=`anio'-.5') ///
-			text(`=`otrosg'[`obs`anio_last'']*.0618' `=`anio'+.5' "Proyecci{c o'}n", place(ne) color(white)) ///
+			xline(`=`anio'+.5') ///
+			text(`=`otrosg'[`obs`anio_last'']*.0618' `=`anio'+1.5' "Proyecci{c o'}n", place(ne) color(white)) ///
 			yscale(range(0)) ///
 			title({bf:Proyecci{c o'}n} del gasto p{c u'}blico) ///
 			subtitle($pais) ///
