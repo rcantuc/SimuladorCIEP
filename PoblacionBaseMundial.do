@@ -7,18 +7,12 @@
 ********************
 *** A. Poblacion ***
 ********************
-if "$S_OS" == "MacOSX" {
-	cd "/Users/ricardo/Dropbox (CIEP)/UNICEF GA/Datos/"
-}
-if "$S_OS" == "Unix" {
-	cd "/home/ciepmx/Dropbox (CIEP)/UNICEF GA/Datos/"
-}
 
 
 
 **********************
 ** 1. Base de datos **
-import delimited using "WPP2019_PopulationBySingleAgeSex_2020-2100.csv", clear
+import delimited using "`c(sysdir_site)'../basesCIEP/Otros/El Salvador/WPP2019_PopulationBySingleAgeSex_2020-2100.csv", clear
 if "$pais" == "" {
 	keep if locid == 484
 }
@@ -29,7 +23,7 @@ tempfile futuro
 save `futuro'
 
 
-import delimited using "WPP2019_PopulationBySingleAgeSex_1950-2019.csv", clear
+import delimited using "`c(sysdir_site)'../basesCIEP/Otros/El Salvador/WPP2019_PopulationBySingleAgeSex_1950-2019.csv", clear
 if "$pais" == "" {
 	keep if locid == 484
 }
