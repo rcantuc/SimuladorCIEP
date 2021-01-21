@@ -252,12 +252,21 @@ quietly {
 	}
 
 	else if "$pais" == "El Salvador" {
-		noisily LIF, anio(`aniovp') by(divGA) nographs
+		noisily LIF, anio(`anio') by(divGA) nographs
 		local Laboral = r(Impuestos_al_ingreso)
 		local Consumo = r(Impuestos_al_consumo)
 		local OtrosC = r(Otros_ingresos)
 
-		use "`c(sysdir_personal)'/SIM/$pais/2018/households.dta", clear
+		use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
+
+		tabstat Laboral Consumo OtrosC [fw=factor], stat(sum) f(%20.0fc) save
+		tempname INGRESOS
+		matrix `INGRESOS' = r(StatTotal)
+		
+		replace Laboral = Laboral*`Laboral'/`INGRESOS'[1,1]
+		replace Consumo = Consumo*`Consumo'/`INGRESOS'[1,2]
+		replace OtrosC = OtrosC*`OtrosC'/`INGRESOS'[1,3]
+
 		tabstat Laboral Consumo OtrosC [fw=factor], stat(sum) f(%20.0fc) save
 		tempname INGRESOSSIM
 		matrix `INGRESOSSIM' = r(StatTotal)

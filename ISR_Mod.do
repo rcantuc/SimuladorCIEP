@@ -3,10 +3,6 @@ timer on 94
 local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 local anio = substr(`"`=trim("`fecha'")'"',1,4) // 								<-- anio base: HOY
 
-*sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
-*global id = "Ricardo"
-
-
 
 
 *******************
@@ -115,8 +111,8 @@ egen Laboral = rsum(ISR__asalariados ISR__PF cuotasTP) if formal != 0
 replace Laboral = 0 if Laboral == .
 label var Laboral "los impuestos al ingreso laboral"
 
-noisily Simulador Laboral [fw=factor_cola], base("ENIGH 2018") boot(1) reboot //graphs
-*noisily Simulador ISR__PM if ISR__PM != 0 [fw=factor], base("ENIGH 2018") boot(1) graphs reboot
+noisily Simulador Laboral [fw=factor_cola], base("ENIGH 2018") boot(1) reboot $nographs
+noisily Simulador ISR__PM if ISR__PM != 0 [fw=factor], base("ENIGH 2018") boot(1) reboot $nographs
 
 save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace
 

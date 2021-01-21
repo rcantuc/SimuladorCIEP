@@ -24,6 +24,11 @@ quietly {
 	** Anio de la BASE **
 	tokenize `base'
 	local aniobase = `2'
+	
+	if `anio' == -1 {
+		local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
+		local anio = substr(`"`=trim("`fecha'")'"',1,4)
+	}
 
 	** Macros: PIB **
 	preserve
@@ -768,7 +773,7 @@ program graphpiramide
 
 		graph combine H`varlist' M`varlist', ///
 			name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)', replace) ycommon xcommon ///
-			title("{bf:Perfil} de `title'") subtitle("$pais") ///
+			///title("{bf:Perfil} de `title'") subtitle("$pais") ///
 			///title("`title' by sex, age and `titleover'") ///
 			caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, ENIGH 2018. Fecha: `c(current_date)', `c(current_time)'.") ///
 			///caption("{it: Source: Own estimations.`boottext'}") ///

@@ -16,6 +16,7 @@ if "`c(username)'" == "ciepmx" {
 ***********************************/
 ** PARAMETROS SIMULADOR: OPCIONES **
 global pais = "El Salvador"			// Comentar o "" (vacío) para Mexico
+*global nographs = "nographs"
 ** PARAMETROS SIMULADOR: OPCIONES **
 ************************************
 
@@ -44,6 +45,7 @@ capture mkdir "`c(sysdir_personal)'/users/$pais/"
 ** AÑO VALOR BASE **
 local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
+local aniovp = 2021
 
 
 
@@ -53,13 +55,15 @@ local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 ***    1. SET-UP: Cap. 3. La economia antropocentrica    ***
 ***                                                      ***
 ************************************************************
+
+
+** POBLACION **
+Poblacion, anio(`aniovp') $nographs //update //tf(`=64.333315/2.2*2.07') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040)
+
+
+** HOUSEHOLDS **
 capture confirm file `"`c(sysdir_personal)'/SIM/$pais/2018/households.dta"'
 if _rc != 0 {
-
-	** POBLACION **
-	Poblacion, $nographs update //tf(`=64.333315/2.2*2.07') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040) //anio(`aniovp')
-
-	** HOUSEHOLDS: INCOMES **
 	noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' 2018
 }
 
@@ -84,7 +88,6 @@ global def2021 =  0.512
 *******************************
 
 
-** PIB + Deflactor **
 noisily PIBDeflactor, anio(`aniovp') $nographs //geo(`geo') //discount(3.0)
 if `c(version)' > 13.1 {
 	saveold "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", replace version(13)
@@ -101,8 +104,6 @@ else {
 ***    3. PARTE III: GASTOS    ***
 ***                            ***
 **********************************
-
-** Gastos per capita **
 noisily GastoPC, anio(`aniovp') `nographs'
 
 
@@ -113,8 +114,6 @@ noisily GastoPC, anio(`aniovp') `nographs'
 ***    4. PARTE II: INGRESOS    ***
 ***                             ***
 ***********************************
-
-** TASAS EFECTIVAS **
 noisily TasasEfectivas, anio(`aniovp') `nographs'
 
 
@@ -125,8 +124,8 @@ noisily TasasEfectivas, anio(`aniovp') `nographs'
 ***    5. PARTE IV: REDISTRIBUCION    ***
 ***                                   ***
 *****************************************
-local crecimiento_ingresos = 1.2
-local crecimiento_gastos = .8
+local crecimiento_ingresos = 1
+local crecimiento_gastos = 1
 use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
 capture g AportacionesNetas = (Laboral + Consumo + ISR__PM + ing_cap_fmp)*`crecimiento_ingresos' ///
 	+ (- Pension - Educacion - Salud - IngBasico - PenBienestar - Infra)*`crecimiento_gastos'
@@ -135,34 +134,35 @@ if _rc != 0 {
 	+ (- Pension - Educacion - Salud - IngBasico - PenBienestar - Infra)*`crecimiento_gastos'
 }
 label var AportacionesNetas "las aportaciones netas"
+noisily Simulador AportacionesNetas if AportacionesNetas != 0 [fw=factor], ///
+	base("ENIGH 2018") boot(1) reboot nographs anio(`aniovp')
 
 
 ** REDISTRIBUCION **
 replace Laboral = Laboral*`crecimiento_ingresos'
-noisily Simulador Laboral if AportacionesNetas != 0 [fw=factor], ///
-	base("ENIGH 2018") boot(1) reboot nographs anio(2020)
+noisily Simulador Laboral if Laboral != 0 [fw=factor], ///
+	base("ENIGH 2018") boot(1) reboot nographs anio(`aniovp')
 
 replace Consumo = Consumo*`crecimiento_ingresos'
-noisily Simulador Consumo if AportacionesNetas != 0 [fw=factor], ///
-	base("ENIGH 2018") boot(1) reboot nographs anio(2020)
+noisily Simulador Consumo if Consumo != 0 [fw=factor], ///
+	base("ENIGH 2018") boot(1) reboot nographs anio(`aniovp')
 
 replace Pension = Pension*`crecimiento_gastos'
-noisily Simulador Pension if AportacionesNetas != 0 [fw=factor], ///
-	base("ENIGH 2018") boot(1) reboot nographs anio(2020)
+noisily Simulador Pension if Pension != 0 [fw=factor], ///
+	base("ENIGH 2018") boot(1) reboot nographs anio(`aniovp')
 
 replace Educacion = Educacion*`crecimiento_gastos'
-noisily Simulador Educacion if AportacionesNetas != 0 [fw=factor], ///
-	base("ENIGH 2018") boot(1) reboot nographs anio(2020)
+noisily Simulador Educacion if Educacion != 0 [fw=factor], ///
+	base("ENIGH 2018") boot(1) reboot nographs anio(`aniovp')
 
 replace Salud = Salud*`crecimiento_gastos'
-noisily Simulador Salud if AportacionesNetas != 0 [fw=factor], ///
-	base("ENIGH 2018") boot(1) reboot nographs anio(2020)
+noisily Simulador Salud if Salud != 0 [fw=factor], ///
+	base("ENIGH 2018") boot(1) reboot nographs anio(`aniovp')
 
 save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace
 
 
-
-** CUENTA GENERACIONAL **
+** CUENTA GENERACIONAL **/
 noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) //	<-- OPTIONAL!!! Toma mucho tiempo.
 
 
@@ -211,8 +211,6 @@ if "$nographs" != "nographs" {
 ***    6. PARTE IV: DEUDA    ***
 ***                          ***
 ********************************
-
-** FISCAL GAP **
 noisily FiscalGap, anio(`aniovp') $nographs end(2050) //boot(250) //update
 
 

@@ -2729,11 +2729,11 @@ replace salud = .0162861 if edad == 105
 replace salud = .0092489 if edad == 106
 replace salud = .0049595 if edad == 107
 replace salud = .0004021 if edad == 108
-replace salud = .0030159 if edad == 109
+replace salud = .00030159 if edad == 109		// original: .0030159
 
 Distribucion Salud, relativo(salud) macro(`Salud')
-label var Salud "salud"
-Simulador Salud [fw=factor], base("ENIGH 2018") boot(1) reboot anio(2018) $nographs nooutput poblacion(defunciones)
+label var Salud "Salud"
+Simulador Salud [fw=factor], base("ENIGH 2018") boot(1) reboot anio(2018) $nographs nooutput //poblacion(defunciones)
 
 
 ** (-) Otros gastos **
