@@ -559,7 +559,7 @@ quietly {
 	***********************************
 	*** 5.1 Piramide de la variable ***
 	poblaciongini `varlist', title("`title'") nombre(`nombre') ///
-		boottext(`boottext') rect(`RECT') base(`base') graphs id($id) pib(`PIB')
+		boottext(`boottext') rect(`RECT') base(`base') graphs id($id) pib(`PIB') `nooutput'
 
 
 
@@ -582,7 +582,7 @@ end
 program poblaciongini
 	version 13.1
 	syntax varname, NOMbre(string) PIB(real) ///
-		[TITle(string) Rect(real 100) BOOTtext(string) BASE(string) Graphs ID(string)]
+		[TITle(string) Rect(real 100) BOOTtext(string) BASE(string) Graphs ID(string) NOOutput]
 
 
 	*************************
@@ -660,10 +660,10 @@ program poblaciongini
 	*** 5. Graphs ***
 	graphpiramide `varlist', over(`grupo') title("`title'") rect(`rect') ///
 		men(`=string(`gsexlab1',"%7.0fc")') women(`=string(`gsexlab2',"%7.0fc")') ///
-		boot(`boottext') base(`base') pib(`pib')
+		boot(`boottext') base(`base') pib(`pib') `nooutput'
 	*graphpiramide `varlist', over(`grupoesc') title("`title'") rect(`rect') ///
 		men(`=string(`gsexlab1',"%7.0fc")') women(`=string(`gsexlab2',"%7.0fc")') ///
-		boot(`boottext') base(`base') pib(`pib')
+		boot(`boottext') base(`base') pib(`pib') `nooutput'
 end
 
 
@@ -674,7 +674,7 @@ program graphpiramide
 	version 13.1
 
 	syntax varname, Over(varname) Men(string) Women(string) PIB(real) ///
-		[Title(string) BOOTtext(string) Rect(real 100) BASE(string) ID(string)]
+		[Title(string) BOOTtext(string) Rect(real 100) BASE(string) ID(string) NOOutput]
 
 	* Title *
 	local titleover : variable label `over'
