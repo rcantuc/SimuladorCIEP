@@ -10,7 +10,7 @@ if "`c(username)'" == "ricardo" {
 	global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
 }
 if "`c(username)'" == "ciepmx" {
-	*sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
+	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
 	*sysdir set PERSONAL "/SIM/OUT/5/5.0/"
 }
 
@@ -47,10 +47,10 @@ local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
 
 ** OPCIONES **
-if "`c(username)'" == "ciepmx" {
+*if "`c(username)'" == "ciepmx" {
 	global nographs "nographs"
 	global output "output"
-}
+*}
 
 
 ** OUTPUT LOG FILE **
@@ -78,7 +78,7 @@ if _rc != 0 | "`c(username)'" == "ciepmx" | "$id" == "PNUD" {
 
 
 	** POBLACION **
-	noisily Poblacion, $nographs update //tf(`=64.333315/2.1*2.07') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040) //anio(`aniovp')
+	noisily Poblacion, $nographs //update tf(`=64.333315/2.1*2.07') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040) //anio(`aniovp')
 
 
 	** HOUSEHOLDS: INCOMES **
@@ -375,7 +375,7 @@ if "$nographs" != "nographs" {
 ***                                   ***
 ***    5. PARTE IV: REDISTRIBUCION    ***
 ***                                   ***
-*****************************************
+/*****************************************
 use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
 capture g AportacionesNetas = Laboral + Consumo + ISR__PM + ing_cap_fmp ///
 	- Pension - Educacion - Salud - IngBasico - PenBienestar - Infra
@@ -396,7 +396,7 @@ noisily Simulador AportacionesNetas if AportacionesNetas != 0 [fw=factor], ///
 noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) //	<-- OPTIONAL!!! Toma mucho tiempo.
 
 
-** GRAFICA PROYECCION **/
+** GRAFICA PROYECCION **
 use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/AportacionesNetasREC.dta"', clear
 //rename estimacion estimacionOrig
 //merge 1:1 (anio) using `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/AportacionesNetasRECOrig.dta"', nogen
@@ -462,16 +462,16 @@ if "$output" == "output" {
 ***                          ***
 ***    6. PARTE IV: DEUDA    ***
 ***                          ***
-********************************
+/********************************
 
 
-/** SANKEY **
-foreach k in escol decil sexo grupoedad {
+** SANKEY **
+foreach k in escol decil /*sexo grupoedad*/ {
 	noisily run "`c(sysdir_personal)'/SankeySF.do" `k' `aniovp'
 }
 
 
-** FISCAL GAP **/
+** FISCAL GAP **
 noisily FiscalGap, anio(`aniovp') $nographs end(2030) //boot(250) //update
 
 
