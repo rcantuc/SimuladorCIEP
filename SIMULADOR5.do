@@ -27,7 +27,7 @@ timer on 1
 
 ****************************************/
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
-*global id = "PNUD"
+global id = "PE2021"
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
 *****************************************
 
@@ -78,7 +78,7 @@ if _rc != 0 | "`c(username)'" == "ciepmx" | "$id" == "PNUD" {
 
 
 	** POBLACION **
-	noisily Poblacion, $nographs update tf(`=64.333315/2.1*2.07') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040) //anio(`aniovp')
+	noisily Poblacion, $nographs update //tf(`=64.333315/2.1*2.07') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040) //anio(`aniovp')
 
 
 	** HOUSEHOLDS: INCOMES **
