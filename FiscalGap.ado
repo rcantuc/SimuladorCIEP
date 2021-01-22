@@ -759,7 +759,7 @@ quietly {
 	
 	g poblacionVP = poblacion*lambda/(1+`discount'/100)^(anio-`anio')
 	format poblacionVP %20.0fc
-	
+
 	tabstat poblacionVP if anio >= `anio', stat(sum) f(%20.0fc) save
 	tempname poblacionVP
 	matrix `poblacionVP' = r(StatTotal)

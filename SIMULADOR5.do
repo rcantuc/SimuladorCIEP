@@ -27,7 +27,7 @@ timer on 1
 
 ****************************************/
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
-global id = "PE2021"
+*global id = "PE2021"
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
 *****************************************
 
@@ -326,7 +326,7 @@ if _rc == 0 {
 noisily TasasEfectivas, anio(`aniovp') `nographs'
 
 
-/** GRAFICA PROYECCION **
+** GRAFICA PROYECCION **
 if "$nographs" != "nographs" {
 	use `"`c(sysdir_personal)'/SIM/2018//households.dta"', clear
 	noisily Simulador ImpuestosAportaciones if ImpuestosAportaciones != 0 [fw=factor], ///
@@ -375,7 +375,7 @@ if "$nographs" != "nographs" {
 ***                                   ***
 ***    5. PARTE IV: REDISTRIBUCION    ***
 ***                                   ***
-/*****************************************
+*****************************************
 use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
 capture g AportacionesNetas = Laboral + Consumo + ISR__PM + ing_cap_fmp ///
 	- Pension - Educacion - Salud - IngBasico - PenBienestar - Infra
@@ -393,7 +393,7 @@ noisily Simulador AportacionesNetas if AportacionesNetas != 0 [fw=factor], ///
 
 
 ** CUENTA GENERACIONAL **
-noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) //	<-- OPTIONAL!!! Toma mucho tiempo.
+*noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) //	<-- OPTIONAL!!! Toma mucho tiempo.
 
 
 ** GRAFICA PROYECCION **
@@ -462,7 +462,7 @@ if "$output" == "output" {
 ***                          ***
 ***    6. PARTE IV: DEUDA    ***
 ***                          ***
-/********************************
+********************************
 
 
 ** SANKEY **
@@ -485,9 +485,9 @@ if "$output" == "output" {
 	else {
 		filefilter "`c(sysdir_personal)'/users/$pais/$id/output.txt" `output1', from(\n>) to("") replace // Mac & Linux
 	}
-	*filefilter `output1' `output2', from(" ") to("") replace
-	*filefilter `output2' `output3', from("_") to(" ") replace
-	filefilter `output1' "`c(sysdir_personal)'/users/$pais/$id/output.txt", from(".,") to("0") replace
+	filefilter `output1' `output2', from(" ") to("") replace
+	filefilter `output2' `output3', from("_") to(" ") replace
+	filefilter `output3' "`c(sysdir_personal)'/users/$pais/$id/output.txt", from(".,") to("0") replace
 }
 
 
