@@ -779,7 +779,7 @@ quietly {
 		replace Pension = Pension*`Pension'/`GASTOS'[1,1]
 		replace Educacion = Educacion*`Educacion'/`GASTOS'[1,2]
 		replace Salud = Salud*`Salud'/`GASTOS'[1,3]
-		replace OtrosGas = OtrosGas*`OtrosGas'/`GASTOS'[1,4]
+		replace OtrosGas = OtrosGas*`OtrosGas'/`GASTOS'[1,4]*`crec'
 
 		tabstat Pension Educacion Salud OtrosGas Infra [fw=factor], stat(sum) f(%20.0fc) save
 		tempname GASTOSSIM TRANSFSIM
@@ -835,7 +835,7 @@ quietly {
 		tabstat estimacion if anio == `anio', stat(sum) f(%20.0fc) save
 		matrix `TRABase' = r(StatTotal)
 
-		replace estimacion = estimacion*`TRANSFSIM'[1,`j']/`TRABase'[1,1]*`crec' if anio >= `anio'
+		replace estimacion = estimacion*`TRANSFSIM'[1,`j']/`TRABase'[1,1] if anio >= `anio'
 
 		local ++j
 		if `c(version)' > 13.1 {

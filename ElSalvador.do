@@ -16,7 +16,7 @@ if "`c(username)'" == "ciepmx" {
 ***********************************/
 ** PARAMETROS SIMULADOR: OPCIONES **
 global pais = "El Salvador"			// Comentar o "" (vacío) para Mexico
-global nographs = "nographs"
+*global nographs = "nographs"
 ** PARAMETROS SIMULADOR: OPCIONES **
 ************************************
 
@@ -45,7 +45,7 @@ capture mkdir "`c(sysdir_personal)'/users/$pais/"
 ** AÑO VALOR BASE **
 local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
-local aniovp = 2020
+local aniovp = 2021
 
 
 
@@ -63,12 +63,12 @@ Poblacion, anio(`aniovp') $nographs //update //tf(`=64.333315/2.2*2.07') //tm204
 
 ** HOUSEHOLDS **
 capture confirm file `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PensionREC.dta"'
-*if _rc != 0 {
+if _rc != 0 {
 	local id = "$id"
 	global id = ""
 	noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' `aniovp'
 	global id = "`id'"
-*}
+}
 
 
 
@@ -86,10 +86,15 @@ capture confirm file `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PensionREC.
 global pib2020 = -7.200
 global pib2021 =  4.600
 
-*global pib2022 =  2.500
-*global pib2023 =  2.500
-*global pib2024 =  2.500
-*global pib2025 =  2.500
+global pib2022 =  3.100
+global pib2023 =  2.500
+global pib2024 =  2.500
+global pib2025 =  2.500
+global pib2026 =  2.500
+global pib2027 =  2.500
+global pib2028 =  2.500
+global pib2029 =  2.500
+global pib2030 =  2.500
 
 global def2020 =  0.383
 global def2021 =  0.512
@@ -113,7 +118,7 @@ else {
 ***    3. PARTE III: GASTOS    ***
 ***                            ***
 **********************************
-noisily GastoPC, anio(`aniovp') `nographs' //crec(.92)
+noisily GastoPC, anio(`aniovp') `nographs' crec(0.92)
 
 
 
@@ -123,7 +128,7 @@ noisily GastoPC, anio(`aniovp') `nographs' //crec(.92)
 ***    4. PARTE II: INGRESOS    ***
 ***                             ***
 ***********************************
-noisily TasasEfectivas, anio(`aniovp') `nographs' //crec(1.05)
+noisily TasasEfectivas, anio(`aniovp') `nographs' crec(1.05)
 
 
 
@@ -146,7 +151,7 @@ noisily Simulador AportacionesNetas if AportacionesNetas != 0 [fw=factor], ///
 
 
 ** CUENTA GENERACIONAL **/
-noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) //	<-- OPTIONAL!!! Toma mucho tiempo.
+*noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) //	<-- OPTIONAL!!! Toma mucho tiempo.
 
 
 ** GRAFICA PROYECCION **

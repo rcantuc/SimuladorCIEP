@@ -17,10 +17,8 @@ if "`c(username)'" == "ciepmx" {
 
 ************************************
 ** PARAMETROS SIMULADOR: OPCIONES **
-if "`c(username)'" == "ciepmx" {
-	global nographs "nographs"
-	global output "output"
-}
+*global nographs "nographs"
+*global output "output"
 ** PARAMETROS SIMULADOR: OPCIONES **
 ************************************
 
