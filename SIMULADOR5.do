@@ -74,7 +74,7 @@ noisily di _newline(50) _col(35) in w "Simulador Fiscal CIEP v5.0" ///
 ***                                                      ***
 ************************************************************
 capture confirm file `"`c(sysdir_personal)'/SIM/$pais/2018/households.dta"'
-if _rc != 0 | "`c(username)'" == "ciepmx" | "$id" == "PNUD" {
+if _rc != 0 | "$id" == "PNUD" {
 
 
 	** POBLACION **
