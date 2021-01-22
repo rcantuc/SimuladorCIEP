@@ -9,7 +9,7 @@ if "`c(username)'" == "ricardo" {
 	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
 }
 if "`c(username)'" == "ciepmx" {
-	*sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
+	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
 }
 
 
@@ -45,7 +45,7 @@ capture mkdir "`c(sysdir_personal)'/users/$pais/"
 ** AÑO VALOR BASE **
 local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
-local aniovp = 2021
+local aniovp = 2020
 
 
 
@@ -63,12 +63,12 @@ Poblacion, anio(`aniovp') $nographs //update //tf(`=64.333315/2.2*2.07') //tm204
 
 ** HOUSEHOLDS **
 capture confirm file `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PensionREC.dta"'
-if _rc != 0 {
+*if _rc != 0 {
 	local id = "$id"
 	global id = ""
 	noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' 2018
 	global id = "`id'"
-}
+*}
 
 
 
