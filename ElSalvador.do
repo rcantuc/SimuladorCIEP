@@ -16,7 +16,7 @@ if "`c(username)'" == "ciepmx" {
 ***********************************/
 ** PARAMETROS SIMULADOR: OPCIONES **
 global pais = "El Salvador"			// Comentar o "" (vacío) para Mexico
-*global nographs = "nographs"
+global nographs = "nographs"
 ** PARAMETROS SIMULADOR: OPCIONES **
 ************************************
 
@@ -62,9 +62,12 @@ Poblacion, anio(`aniovp') $nographs //update //tf(`=64.333315/2.2*2.07') //tm204
 
 
 ** HOUSEHOLDS **
-capture confirm file `"`c(sysdir_personal)'/SIM/$pais/2018/households.dta"'
+capture confirm file `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PensionREC.dta"'
 if _rc != 0 {
+	local id = "$id"
+	global id = ""
 	noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' 2018
+	global id = "`id'"
 }
 
 
@@ -82,6 +85,12 @@ if _rc != 0 {
 ** PARAMETROS SIMULADOR: PIB **
 global pib2020 = -7.200
 global pib2021 =  4.600
+
+*global pib2022 =  2.500
+*global pib2023 =  2.500
+*global pib2024 =  2.500
+*global pib2025 =  2.500
+
 global def2020 =  0.383
 global def2021 =  0.512
 ** PARAMETROS SIMULADOR: PIB **
@@ -104,7 +113,7 @@ else {
 ***    3. PARTE III: GASTOS    ***
 ***                            ***
 **********************************
-noisily GastoPC, anio(`aniovp') `nographs'
+noisily GastoPC, anio(`aniovp') `nographs' //crec(.92)
 
 
 
@@ -114,7 +123,7 @@ noisily GastoPC, anio(`aniovp') `nographs'
 ***    4. PARTE II: INGRESOS    ***
 ***                             ***
 ***********************************
-noisily TasasEfectivas, anio(`aniovp') `nographs'
+noisily TasasEfectivas, anio(`aniovp') `nographs' //crec(1.05)
 
 
 
@@ -124,42 +133,16 @@ noisily TasasEfectivas, anio(`aniovp') `nographs'
 ***    5. PARTE IV: REDISTRIBUCION    ***
 ***                                   ***
 *****************************************
-local crecimiento_ingresos = 1
-local crecimiento_gastos = 1
 use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
-capture g AportacionesNetas = (Laboral + Consumo + ISR__PM + ing_cap_fmp)*`crecimiento_ingresos' ///
-	+ (- Pension - Educacion - Salud - IngBasico - PenBienestar - Infra)*`crecimiento_gastos'
+capture g AportacionesNetas = (Laboral + Consumo + ISR__PM + ing_cap_fmp) ///
+	+ (- Pension - Educacion - Salud - IngBasico - PenBienestar - Infra)
 if _rc != 0 {
-	replace AportacionesNetas = (Laboral + Consumo + ISR__PM + ing_cap_fmp)*`crecimiento_ingresos' ///
-	+ (- Pension - Educacion - Salud - IngBasico - PenBienestar - Infra)*`crecimiento_gastos'
+	replace AportacionesNetas = (Laboral + Consumo + ISR__PM + ing_cap_fmp) ///
+	+ (- Pension - Educacion - Salud - IngBasico - PenBienestar - Infra)
 }
 label var AportacionesNetas "las aportaciones netas"
 noisily Simulador AportacionesNetas if AportacionesNetas != 0 [fw=factor], ///
 	base("ENIGH 2018") boot(1) reboot nographs anio(`aniovp')
-
-
-** REDISTRIBUCION **
-replace Laboral = Laboral*`crecimiento_ingresos'
-noisily Simulador Laboral if Laboral != 0 [fw=factor], ///
-	base("ENIGH 2018") boot(1) reboot nographs anio(`aniovp')
-
-replace Consumo = Consumo*`crecimiento_ingresos'
-noisily Simulador Consumo if Consumo != 0 [fw=factor], ///
-	base("ENIGH 2018") boot(1) reboot nographs anio(`aniovp')
-
-replace Pension = Pension*`crecimiento_gastos'
-noisily Simulador Pension if Pension != 0 [fw=factor], ///
-	base("ENIGH 2018") boot(1) reboot nographs anio(`aniovp')
-
-replace Educacion = Educacion*`crecimiento_gastos'
-noisily Simulador Educacion if Educacion != 0 [fw=factor], ///
-	base("ENIGH 2018") boot(1) reboot nographs anio(`aniovp')
-
-replace Salud = Salud*`crecimiento_gastos'
-noisily Simulador Salud if Salud != 0 [fw=factor], ///
-	base("ENIGH 2018") boot(1) reboot nographs anio(`aniovp')
-
-save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace
 
 
 ** CUENTA GENERACIONAL **/
