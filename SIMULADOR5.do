@@ -17,17 +17,17 @@ if "`c(username)'" == "ciepmx" {
 
 ************************************
 ** PARAMETROS SIMULADOR: OPCIONES **
-*if "`c(username)'" == "ciepmx" {
+if "`c(username)'" == "ciepmx" {
 	global nographs "nographs"
 	global output "output"
-*}
+}
 ** PARAMETROS SIMULADOR: OPCIONES **
 ************************************
 
 
 ****************************************/
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
-global id = "PNUD"
+*global id = "PNUD"
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
 *****************************************
 
@@ -72,15 +72,16 @@ if "$output" == "output" {
 ***    1. SET-UP: Cap. 3. La economia antropocentrica    ***
 ***                                                      ***
 ************************************************************
-capture confirm file `"`c(sysdir_personal)'/SIM/$pais/2018/households.dta"'
-if _rc != 0 | "$id" == "PNUD" {
 
+** POBLACION **
+noisily Poblacion, $nographs //update tf(`=64.333315/2.1*2.07') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040) //anio(`aniovp')
 
-	** POBLACION **
-	noisily Poblacion, $nographs update tf(`=64.333315/2.1*2.07') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040) //anio(`aniovp')
-
+capture confirm file `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PensionREC.dta"'
+if _rc != 0 {
 
 	** HOUSEHOLDS: INCOMES **
+	local id = "$id"
+	global id = ""
 	noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' 2018
 	if "$export" != "" {
 
@@ -100,17 +101,18 @@ if _rc != 0 | "$id" == "PNUD" {
 		DatosAbiertos XNA0120_s, g //		ISR salarios
 		DatosAbiertos XNA0120_f, g //		ISR PF
 		DatosAbiertos XNA0120_m, g //		ISR PM
-		DatosAbiertos XKF0114, g //		Cuotas IMSS
-		DatosAbiertos XAB1120, g //		IVA
-		DatosAbiertos XNA0141, g //		ISAN
-		DatosAbiertos XAB1130, g //		IEPS
-		DatosAbiertos XNA0136, g //		Importaciones
+		DatosAbiertos XKF0114, g   //		Cuotas IMSS
+		DatosAbiertos XAB1120, g   //		IVA
+		DatosAbiertos XNA0141, g   //		ISAN
+		DatosAbiertos XAB1130, g   //		IEPS
+		DatosAbiertos XNA0136, g   //		Importaciones
 		DatosAbiertos FMP_Derechos, g //	FMP_Derechos
-		DatosAbiertos XAB2110, g //		Ingresos propios Pemex
-		DatosAbiertos XOA0115, g //		Ingresos propios CFE
-		DatosAbiertos XKF0179, g //		Ingresos propios IMSS
-		DatosAbiertos XOA0120, g //		Ingresos propios ISSSTE*/
+		DatosAbiertos XAB2110, g   //		Ingresos propios Pemex
+		DatosAbiertos XOA0115, g   //		Ingresos propios CFE
+		DatosAbiertos XKF0179, g   //		Ingresos propios IMSS
+		DatosAbiertos XOA0120, g   //		Ingresos propios ISSSTE*/
 	}
+	global id = "`id'"
 }
 
 
@@ -325,7 +327,7 @@ if _rc == 0 {
 noisily TasasEfectivas, anio(`aniovp') `nographs'
 
 
-** GRAFICA PROYECCION **
+/** GRAFICA PROYECCION **
 if "$nographs" != "nographs" {
 	use `"`c(sysdir_personal)'/SIM/2018//households.dta"', clear
 	noisily Simulador ImpuestosAportaciones if ImpuestosAportaciones != 0 [fw=factor], ///
@@ -364,7 +366,7 @@ if "$nographs" != "nographs" {
 	if _rc == 0 {
 		graph export "$export/ImpuestosAportacionesProj.png", replace name(ImpuestosAportacionesProj)
 	}
-}
+}*/
 
 
 
@@ -398,10 +400,12 @@ noisily Simulador AportacionesNetas if AportacionesNetas != 0 [fw=factor], ///
 ** GRAFICA PROYECCION **
 use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/AportacionesNetasREC.dta"', clear
 //rename estimacion estimacionOrig
-//merge 1:1 (anio) using `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/AportacionesNetasRECOrig.dta"', nogen
+//merge 1:1 (anio) using `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/AportacionesNetasRECSIM.dta"', nogen
+//rename estimacion estimacionSIM
+//rename estimacionOrig estimacion
 merge 1:1 (anio) using `"`c(sysdir_personal)'/users/$pais/$id/PIB.dta"', nogen
 replace estimacion = estimacion/pibYR*100
-//replace estimacionOrig = estimacionOrig/pibYR*100
+//replace estimacionSIM = estimacionSIM/pibYR*100
 
 tabstat estimacion, stat(max) save
 tempname MAX
@@ -417,7 +421,7 @@ forvalues k=1(1)`=_N' {
 
 if "$nographs" != "nographs" {
 	twoway (connected estimacion anio) ///
-		///(connected estimacionOrig anio if anio >= 2021) ///
+		///(connected estimacionSIM anio if anio >= 2021) ///
 		(connected estimacion anio if anio == `aniovp') ///
 		if anio > 1990, ///
 		ytitle("% PIB") ///
@@ -471,7 +475,7 @@ foreach k in escol decil /*sexo grupoedad*/ {
 
 
 ** FISCAL GAP **
-noisily FiscalGap, anio(`aniovp') $nographs end(2030) //boot(250) //update
+noisily FiscalGap, anio(`aniovp') $nographs end(2050) //boot(250) //update
 
 
 ** OUTPUT **

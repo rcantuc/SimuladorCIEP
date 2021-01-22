@@ -5,7 +5,7 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
-	syntax [, ANIO(int `aniovp') OUTPUT NOGraphs]
+	syntax [, ANIO(int `aniovp') OUTPUT NOGraphs CREC(real 1)]
 
 	noisily di _newline(2) in g _dup(20) "." "{bf:   Transferencias per c{c a'}pita de los GASTOS " in y `anio' "   }" in g _dup(20) "."
 
@@ -812,7 +812,11 @@ quietly {
 		tabstat estimacion if anio == `anio', stat(sum) f(%20.0fc) save
 		matrix `GASBase' = r(StatTotal)
 
-		replace estimacion = estimacion*`GASTOSSIM'[1,`j']/`GASBase'[1,1] //if anio > `anio'
+		replace estimacion = estimacion*`GASTOSSIM'[1,`j']/`GASBase'[1,1] if anio >= `anio'
+		
+		if "`k'" == "OtrosGas" {
+			replace estimacion = estimacion*`GASTOSSIM'[1,`j']/`GASBase'[1,1]*`crec' if anio >= `anio'
+		}
 
 		local ++j
 		if `c(version)' > 13.1 {
@@ -831,7 +835,7 @@ quietly {
 		tabstat estimacion if anio == `anio', stat(sum) f(%20.0fc) save
 		matrix `TRABase' = r(StatTotal)
 
-		replace estimacion = estimacion*`TRANSFSIM'[1,`j']/`TRABase'[1,1] //if anio > `anio'
+		replace estimacion = estimacion*`TRANSFSIM'[1,`j']/`TRABase'[1,1]*`crec' if anio >= `anio'
 
 		local ++j
 		if `c(version)' > 13.1 {
