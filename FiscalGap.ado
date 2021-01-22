@@ -42,7 +42,7 @@ quietly {
 	*** 3 Fiscal Gap: Ingresos ***
 	******************************
 	if "$pais" == "" {
-		DatosAbiertos XNA0120_m
+		DatosAbiertos XNA0120_m, pibvf(3.632)
 		g divGA = 3
 		tempfile pm_ingreso
 		save `pm_ingreso'

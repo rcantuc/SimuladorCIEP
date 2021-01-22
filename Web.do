@@ -63,7 +63,7 @@ capture confirm file `"`c(sysdir_personal)'/SIM/$pais/2018/households.dta"'
 if _rc != 0 {
 
 	** POBLACION **
-	Poblacion, $nographs update //tf(`=64.333315/2.2*2.07') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040) //anio(`aniovp')
+	Poblacion, $nographs //update //tf(`=64.333315/2.2*2.07') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040) //anio(`aniovp')
 
 	** HOUSEHOLDS: INCOMES **
 	noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' 2018
