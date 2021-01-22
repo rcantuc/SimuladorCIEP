@@ -803,7 +803,7 @@ program graphpiramide
 		capture window manage close graph H`varlist'
 		capture window manage close graph M`varlist'
 	}
-	if "$output" == "output" {
+	if "$output" == "output" & "`nooutput'" != "nooutput" {
 		g grupo_edad = 1
 		replace grupo_edad = 2 if edad > 4
 		replace grupo_edad = 3 if edad > 9

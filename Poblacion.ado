@@ -443,21 +443,21 @@ quietly {
 			(area `pob18' anio if anio > `anioinicial', color("53 200 71")), ///
 			legend(label(1 "61+") label(2 "35 - 60") label(3 "19 - 34") label(4 "<18") order(4 3 2 1)) ///
 			text(`y1' `x1' `"{bf:Max:} `=string(`MAX'[1,1],"%5.1fc")' % (`x1')"', place(n)) ///
-			text(`y1' `x1' `"{bf:`poblacion':} `=string(pob18[`p1'],"%12.0fc")'"', place(s)) ///
+			text(`y1' `x1' `"{bf:Poblaci{c o'}n:} `=string(pob18[`p1'],"%12.0fc")'"', place(s)) ///
 			text(`y2' `x2' `"{bf:Max:} `=string(`MAX'[1,2],"%5.1fc")' % (`x2')"', place(n)) ///
-			text(`y2' `x2' `"{bf:`poblacion':} `=string(pob1934[`p2'],"%12.0fc")'"', place(s)) ///
+			text(`y2' `x2' `"{bf:Poblaci{c o'}n} `=string(pob1934[`p2'],"%12.0fc")'"', place(s)) ///
 			text(`y3' `x3' `"{bf:Max:} `=string(`MAX'[1,3],"%5.1fc")' % (`x3')"', place(nw)) ///
-			text(`y3' `x3' `"{bf:`poblacion':} `=string(pob3560[`p3'],"%12.0fc")'"', place(sw)) ///
+			text(`y3' `x3' `"{bf:Poblaci{c o'}n} `=string(pob3560[`p3'],"%12.0fc")'"', place(sw)) ///
 			text(`y4' `x4' `"{bf:Max:} `=string(`MAX'[1,4],"%5.1fc")' % (`x4')"', place(nw)) ///
-			text(`y4' `x4' `"{bf:`poblacion':} `=string(pob61[`p4'],"%12.0fc")'"', place(sw)) ///
+			text(`y4' `x4' `"{bf:Poblaci{c o'}n} `=string(pob61[`p4'],"%12.0fc")'"', place(sw)) ///
 			text(`z1' `m1' `"{bf:Min:} `=string(`MAX'[2,1],"%5.1fc")' % (`m1')"', place(nw)) ///
-			text(`z1' `m1' `"{bf:`poblacion':} `=string(pob18[`q1'],"%12.0fc")'"', place(sw)) ///
+			text(`z1' `m1' `"{bf:Poblaci{c o'}n} `=string(pob18[`q1'],"%12.0fc")'"', place(sw)) ///
 			text(`z2' `m2' `"{bf:Min:} `=string(`MAX'[2,2],"%5.1fc")' % (`m2')"', place(nw)) ///
-			text(`z2' `m2' `"{bf:`poblacion':} `=string(pob1934[`q2'],"%12.0fc")'"', place(sw)) ///
+			text(`z2' `m2' `"{bf:Poblaci{c o'}n} `=string(pob1934[`q2'],"%12.0fc")'"', place(sw)) ///
 			text(`z3' `m3' `"{bf:Min:} `=string(`MAX'[2,3],"%5.1fc")' % (`m3')"', place(n)) ///
-			text(`z3' `m3' `"{bf:`poblacion':} `=string(pob3560[`q3'],"%12.0fc")'"', place(s)) ///
+			text(`z3' `m3' `"{bf:Poblaci{c o'}n} `=string(pob3560[`q3'],"%12.0fc")'"', place(s)) ///
 			text(`z4' `m4' `"{bf:Min:} `=string(`MAX'[2,4],"%5.1fc")' % (`m4')"', place(n)) ///
-			text(`z4' `m4' `"{bf:`poblacion':} `=string(pob61[`q4'],"%12.0fc")'"', place(s)) ///
+			text(`z4' `m4' `"{bf:Poblaci{c o'}n} `=string(pob61[`q4'],"%12.0fc")'"', place(s)) ///
 			text(`=`y1'*.175' `=`anioinicial'-1' "{bf:Hoy:} `anioinicial'", place(w)) ///
 			xtitle("") ///
 			ytitle("Poblaci{c o'}n") ///

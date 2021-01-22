@@ -27,7 +27,7 @@ timer on 1
 
 ****************************************/
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
-global id = "PNUD"
+*global id = "PNUD"
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
 *****************************************
 
