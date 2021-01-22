@@ -66,7 +66,7 @@ capture confirm file `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PensionREC.
 *if _rc != 0 {
 	local id = "$id"
 	global id = ""
-	noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' 2018
+	noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' `aniovp'
 	global id = "`id'"
 *}
 
