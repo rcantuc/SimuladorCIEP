@@ -1,7 +1,5 @@
-*****************************************************
-****    SECTION FOR PROGRAMMING PURPOSES ONLY    ****
-****         MUST BE COMMENTED OTHERWISE         ****
-*****************************************************
+**************************************/
+** PARAMETROS SIMULADOR: DIRECTORIOS **
 clear all
 macro drop _all
 capture log close _all
@@ -13,6 +11,25 @@ if "`c(username)'" == "ciepmx" {
 	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
 	*sysdir set PERSONAL "/SIM/OUT/5/5.0/"
 }
+** PARAMETROS SIMULADOR: DIRECTORIOS **
+***************************************
+
+
+************************************
+** PARAMETROS SIMULADOR: OPCIONES **
+*if "`c(username)'" == "ciepmx" {
+	global nographs "nographs"
+	global output "output"
+*}
+** PARAMETROS SIMULADOR: OPCIONES **
+************************************
+
+
+****************************************/
+** PARAMETROS SIMULADOR: IDENTIFICADOR **
+global id = "PNUD"
+** PARAMETROS SIMULADOR: IDENTIFICADOR **
+*****************************************
 
 
 
@@ -23,13 +40,8 @@ if "`c(username)'" == "ciepmx" {
 ***                   ***
 *************************
 timer on 1
-
-
-****************************************/
-** PARAMETROS SIMULADOR: IDENTIFICADOR **
-*global id = "PE2021"
-** PARAMETROS SIMULADOR: IDENTIFICADOR **
-*****************************************
+noisily di _newline(50) _col(35) in w "Simulador Fiscal CIEP v5.0" ///
+	_newline _col(43) in y "$pais"
 
 
 ** DIRECTORIOS **
@@ -46,24 +58,11 @@ local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
 
-** OPCIONES **
-*if "`c(username)'" == "ciepmx" {
-	global nographs "nographs"
-	global output "output"
-*}
-
-
 ** OUTPUT LOG FILE **
 if "$output" == "output" {
 	quietly log using "`c(sysdir_personal)'/users/$pais/$id/output.txt", replace text name(output)
 	quietly log off output
 }
-
-
-** INICIO *
-noisily di _newline(50) _col(35) in w "Simulador Fiscal CIEP v5.0" ///
-	_newline _col(43) in y "$pais"
-
 
 
 
@@ -78,7 +77,7 @@ if _rc != 0 | "$id" == "PNUD" {
 
 
 	** POBLACION **
-	noisily Poblacion, $nographs //update tf(`=64.333315/2.1*2.07') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040) //anio(`aniovp')
+	noisily Poblacion, $nographs update tf(`=64.333315/2.1*2.07') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040) //anio(`aniovp')
 
 
 	** HOUSEHOLDS: INCOMES **
@@ -230,21 +229,21 @@ noisily GastoPC, anio(`aniovp') `nographs'
 ************************************
 ** PARAMETROS SIMULADOR: INGRESOS **
 ** Al ingreso **
-scalar ISRAS   = 3.428 //		ISR (asalariados)
-scalar ISRPF   = 0.438 //		ISR (personas f{c i'}sicas)
-scalar CuotasT = 1.515 //		Cuotas (IMSS)
+scalar ISRAS   = 22.018*15.6/100 	//		ISR (asalariados): 3.428
+scalar ISRPF   = 13.211*3.3/100 	//		ISR (personas f{c i'}sicas): 0.438
+scalar CuotasT = 26.454*5.7/100		//		Cuotas (IMSS): 1.515
 
 * Al consumo *
-scalar IVA     = 3.885 //		IVA
-scalar ISAN    = 0.030 //		ISAN
-scalar IEPS    = 2.027 //		IEPS (no petrolero + petrolero)
-scalar Importa = 0.245 //		Importaciones
+scalar IVA     = 47.277*8.2/100 	//		IVA: 3.885
+scalar ISAN    =  2.913*1.0/100 	//		ISAN: 0.030
+scalar IEPS    = 66.041*3.1/100 	//		IEPS (no petrolero + petrolero): 2.027
+scalar Importa = 31.060*0.8/100 	//		Importaciones: 0.245
 
 * Al capital *
-scalar ISRPM   = 3.710 //		ISR (personas morales)
-scalar FMP     = 1.362 //		Fondo Mexicano del Petr{c o'}leo
-scalar OYE     = 4.274 //		Organismos y empresas (IMSS + ISSSTE + Pemex + CFE)
-scalar OtrosC  = 1.070 //		Productos, derechos, aprovechamientos, contribuciones
+scalar ISRPM   = 25.438*14.6/100 	//		ISR (personas morales): 3.710
+scalar FMP     = 38.125*3.6/100 	//		Fondo Mexicano del Petr{c o'}leo: 1.362
+scalar OYE     = 38.125*11.2/100 	//		Organismos y empresas (IMSS + ISSSTE + Pemex + CFE): 4.274
+scalar OtrosC  = 38.125*2.8/100		//		Productos, derechos, aprovechamientos, contribuciones: 1.070
 ** PARAMETROS SIMULADOR: INGRESOS **
 ***********************************/
 

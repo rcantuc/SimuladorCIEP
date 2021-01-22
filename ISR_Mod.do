@@ -111,8 +111,8 @@ egen Laboral = rsum(ISR__asalariados ISR__PF cuotasTP) if formal != 0
 replace Laboral = 0 if Laboral == .
 label var Laboral "los impuestos al ingreso laboral"
 
-noisily Simulador Laboral [fw=factor_cola], base("ENIGH 2018") boot(1) reboot $nographs
-noisily Simulador ISR__PM if ISR__PM != 0 [fw=factor], base("ENIGH 2018") boot(1) reboot $nographs
+noisily Simulador Laboral [fw=factor_cola], base("ENIGH 2018") boot(1) reboot $nographs nooutput
+noisily Simulador ISR__PM if ISR__PM != 0 [fw=factor], base("ENIGH 2018") boot(1) reboot $nographs nooutput
 
 save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace
 

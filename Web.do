@@ -185,21 +185,21 @@ noisily GastoPC, anio(`aniovp') `nographs'
 ************************************
 ** PARAMETROS SIMULADOR: INGRESOS **
 ** Al ingreso **
-scalar ISRAS   = 3.428 //		ISR (asalariados)
-scalar ISRPF   = 0.438 //		ISR (personas f{c i'}sicas)
-scalar CuotasT = 1.515 //		Cuotas (IMSS)
+scalar ISRAS   = 22.018*15.6/100 	//		ISR (asalariados): 3.428
+scalar ISRPF   = 13.211*3.3/100 	//		ISR (personas f{c i'}sicas): 0.438
+scalar CuotasT = 26.454*5.7/100		//		Cuotas (IMSS): 1.515
 
 * Al consumo *
-scalar IVA     = 3.885 //		IVA
-scalar ISAN    = 0.030 //		ISAN
-scalar IEPS    = 2.027 //		IEPS (no petrolero + petrolero)
-scalar Importa = 0.245 //		Importaciones
+scalar IVA     = 47.277*8.2/100 	//		IVA: 3.885
+scalar ISAN    =  2.913*1.0/100 	//		ISAN: 0.030
+scalar IEPS    = 66.041*3.1/100 	//		IEPS (no petrolero + petrolero): 2.027
+scalar Importa = 31.060*0.8/100 	//		Importaciones: 0.245
 
 * Al capital *
-scalar ISRPM   = 3.710 //		ISR (personas morales)
-scalar FMP     = 1.362 //		Fondo Mexicano del Petr{c o'}leo
-scalar OYE     = 4.274 //		Organismos y empresas (IMSS + ISSSTE + Pemex + CFE)
-scalar OtrosC  = 1.070 //		Productos, derechos, aprovechamientos, contribuciones
+scalar ISRPM   = 25.438*14.6/100 	//		ISR (personas morales): 3.710
+scalar FMP     = 38.125*3.6/100 	//		Fondo Mexicano del Petr{c o'}leo: 1.362
+scalar OYE     = 38.125*11.2/100 	//		Organismos y empresas (IMSS + ISSSTE + Pemex + CFE): 4.274
+scalar OtrosC  = 38.125*2.8/100		//		Productos, derechos, aprovechamientos, contribuciones: 1.070
 ** PARAMETROS SIMULADOR: INGRESOS **
 ***********************************/
 
@@ -279,49 +279,6 @@ if _rc == 0 {
 
 ** TASAS EFECTIVAS **
 noisily TasasEfectivas, anio(`aniovp') `nographs'
-
-
-** GRAFICA PROYECCION **
-if "$nographs" != "nographs" & "$pais" == "" {
-	use `"`c(sysdir_personal)'/SIM/2018/households.dta"', clear
-	noisily Simulador ImpuestosAportaciones if ImpuestosAportaciones != 0 [fw=factor], ///
-		base("ENIGH 2018") boot(1) reboot nographs anio(2020)
-
-	use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/ImpuestosAportacionesREC.dta"', clear
-	merge 1:1 (anio) using `"`c(sysdir_personal)'/users/$pais/$id/PIB.dta"', nogen
-	replace estimacion = estimacion/pibYR*100
-
-	tabstat estimacion, stat(max) save
-	tempname MAX
-	matrix `MAX' = r(StatTotal)
-	forvalues k=1(1)`=_N' {
-		if estimacion[`k'] == `MAX'[1,1] {
-			local aniomax = anio[`k']
-		}
-		if anio[`k'] == `aniovp' {
-			local estimacionvp = estimacion[`k']
-		}
-	}
-
-	twoway (connected estimacion anio) (connected estimacion anio if anio == `aniovp') if anio > 1990, ///
-		ytitle("% PIB") ///
-		yscale(range(0)) /*ylabel(0(1)4)*/ ///
-		ylabel(0(5)15, format(%20.1fc) labsize(small)) ///
-		xlabel(1990(10)2050, labsize(small) labgap(2)) ///
-		xtitle("") ///
-		legend(off) ///
-		text(`=`MAX'[1,1]' `aniomax' "{bf:M{c a'}ximo:} `aniomax'", place(w)) ///
-		text(`estimacionvp' `aniovp' "{bf:Paquete Econ{c o'}mico} `aniovp'", place(e)) ///
-		///title("{bf:Proyecciones} de los impuestos y aportaciones") subtitle("$pais") ///
-		///caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5.") ///
-		name(ImpuestosAportacionesProj, replace)
-
-	capture confirm existence $export
-	if _rc == 0 {
-		graph export "$export/ImpuestosAportacionesProj.png", replace name(ImpuestosAportacionesProj)
-	}
-}
-
 
 
 

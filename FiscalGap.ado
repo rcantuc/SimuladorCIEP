@@ -751,11 +751,11 @@ quietly {
 	*****************************************
 	*** 5 Fiscal Gap: Cuenta Generacional ***
 	*****************************************
-	preserve
 	use `"`c(sysdir_personal)'/SIM/Poblacion.dta"', clear
 
 	collapse (sum) poblacion if edad == 0, by(anio) fast
 	merge 1:1 (anio) using `PIB', nogen keepus(lambda)
+	drop if lambda == .
 	
 	g poblacionVP = poblacion*lambda/(1+`discount'/100)^(anio-`anio')
 	format poblacionVP %20.0fc
@@ -777,7 +777,6 @@ quietly {
 			in y _col(35) %25.0fc ((-(-`shrfsp'[1,1] + `estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1])/(`poblacionVP'[1,1]+`poblacionINF'))/GA[1,3]-1)*100 ///
 			in g " %"
 	}
-	restore
 
 
 

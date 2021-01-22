@@ -16,7 +16,7 @@ scalar PIB = pibY[_N]
 
 
 * Households *
-use "`c(sysdir_site)'../basesCIEP/SIM/2018/expenditure_categ_iva.dta", clear
+use "`c(sysdir_personal)'/SIM/2018/expenditure_categ_iva.dta", clear
 *replace factor = factor*79185533/77096593
 *replace factor = round(factor,1)
 
@@ -46,7 +46,7 @@ merge 1:1 (folioviv foliohog numren) using ///
 replace Consumo = 0 if Consumo == .
 label var Consumo "los impuestos al consumo"
 
-noisily Simulador Consumo [fw=factor], base("ENIGH 2018") boot(1) reboot $nographs
+noisily Simulador Consumo [fw=factor], base("ENIGH 2018") boot(1) reboot $nographs nooutput
 
 capture egen IVATotal = rsum(IVAalim IVAalquiler IVAcb IVAeducacion IVAfuera ///
 	IVAmascotas IVAmed IVAotros IVAtrans IVAtransf)

@@ -312,7 +312,7 @@ quietly {
 	*** OUTPUT ***
 	**************
 	if "$output" == "output" & "$pais" == "" {
-		capture log on output
+		quietly log on output
 		noisily di in w "INGRESOS: " in w "["  ///
 			%8.3f ISRAS ", " ///
 			%8.3f ISRPF ", " ///
@@ -332,7 +332,7 @@ quietly {
 		noisily di in w "INGRESOSTOTAL: " in w "["  ///
 			%8.3f inglaboralPIB+ingconsumoPIB+ingcapitalPIB ///
 		"]"
-		capture log off output
+		quietly log off output
 	}
 	
 	
