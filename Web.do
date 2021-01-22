@@ -404,7 +404,6 @@ if "$output" == "output" {
 ****    Touchdown!!!    ****
 ****                    ****
 ****************************
-*noisily scalarlatex
 timer off 1
 timer list 1
 noisily di _newline(2) in g _dup(20) ":" "  " in y round(`=r(t1)/r(nt1)',.1) in g " segs  " _dup(20) ":"
