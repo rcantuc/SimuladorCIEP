@@ -755,7 +755,7 @@ quietly {
 
 		keep folio* numren factor* Laboral Consumo OtrosC ISR__PM ing_cap_fmp ///
 			Pension Educacion Salud IngBasico PenBienestar Salarios OtrosGas Infra ///
-			sexo grupoedad decil escol edad ///
+			sexo grupoedad decil escol edad ing_bruto_tax ///
 			deduc_isr ISR categF ISR__asalariados ISR__PF cuotas* ingbrutotot htrab ///
 			tipo_contribuyente exen_tot formal* ing_capital isrE ing_subor IVA* IEPS*
 	}
@@ -849,7 +849,7 @@ quietly {
 	*** 11 OUTPUT ***
 	*****************
 	if "$output" == "output" & "$pais" == "" {
-		capture log on output
+		quietly log on output
 		noisily di in w "GASTOS: " in w "["  ///
 			/*"basicaPIB "*/ %8.3f basicaPIB ", " ///
 			/*"medsupPIB "*/ %8.3f medsupPIB ", " ///
@@ -885,7 +885,7 @@ quietly {
 		noisily di in w "GASTOSTOTAL: " in w "["  ///
 			%8.3f educacPIB +saludPIB+pensionPIB+otrosgasPIB+ingbasPIB ///
 		"]"
-		capture log off output
+		quietly log off output
 	}
 
 
