@@ -128,7 +128,7 @@ noisily GastoPC, anio(`aniovp') `nographs' crec(0.92)
 ***    4. PARTE II: INGRESOS    ***
 ***                             ***
 ***********************************
-noisily TasasEfectivas, anio(`aniovp') `nographs' crec(1.05)
+noisily TasasEfectivas, anio(`aniovp') `nographs' crec(1.02)
 
 
 
