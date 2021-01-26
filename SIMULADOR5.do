@@ -18,7 +18,7 @@ if "`c(username)'" == "ciepmx" {
 ************************************
 ** PARAMETROS SIMULADOR: OPCIONES **
 *global nographs "nographs"
-*global output "output"
+global output "output"
 ** PARAMETROS SIMULADOR: OPCIONES **
 ************************************
 
@@ -72,7 +72,7 @@ if "$output" == "output" {
 ************************************************************
 
 ** POBLACION **
-noisily Poblacion, $nographs //update tf(`=64.333315/2.1*2.07') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040) //anio(`aniovp')
+noisily Poblacion, $nographs //update //tf(`=64.333315/2.1*1.8') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040) //anio(`aniovp')
 
 capture confirm file `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PensionREC.dta"'
 if _rc != 0 {
@@ -427,9 +427,9 @@ if "$nographs" != "nographs" {
 		ylabel(0(1)5, format(%20.1fc) labsize(small)) ///
 		xlabel(1990(10)2050, labsize(small) labgap(2)) ///
 		xtitle("") ///
-		legend(on label(1 "Original") label(2 "Simulada")) ///
-		text(`=`MAX'[1,1]' `aniomax' "{bf:M{c a'}ximo:} `aniomax'", place(w)) ///
-		text(`estimacionvp' `aniovp' "{bf:Paquete Econ{c o'}mico} `aniovp'", place(e)) ///
+		legend(on label(1 "Original") label(2 "Simulation") order(1 2)) ///
+		text(`=`MAX'[1,1]' `aniomax' "{bf:Max:} `aniomax'", place(w)) ///
+		text(`estimacionvp' `aniovp' "{bf:`aniovp' policies}", place(e)) ///
 		///title("{bf:Proyecciones} de las aportaciones netas") subtitle("$pais") ///
 		///caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5.") ///
 		name(AportacionesNetasProj, replace)
@@ -468,12 +468,12 @@ if "$output" == "output" {
 
 ** SANKEY **
 foreach k in escol decil /*sexo grupoedad*/ {
-	noisily run "`c(sysdir_personal)'/SankeySF.do" `k' `aniovp'
+	*noisily run "`c(sysdir_personal)'/SankeySF.do" `k' `aniovp'
 }
 
 
 ** FISCAL GAP **
-noisily FiscalGap, anio(`aniovp') $nographs end(2050) //boot(250) //update
+noisily FiscalGap, anio(`aniovp') $nographs end(2030) //boot(250) //update
 
 
 ** OUTPUT **

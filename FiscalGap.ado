@@ -704,7 +704,7 @@ quietly {
 			subtitle($pais) ///
 			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
 			xtitle("") ytitle(% PIB) ///
-			xlabel(2015(5)`end') ///
+			xlabel(2005(5)`end') ///
 			yscale(range(0)) ///
 			legend(off) ///
 			text(`=shrfspPIB[`obs`anio_last'']*.0618' `=`anio'+1.5' "Proyecci{c o'}n", color(white) placement(e)) ///
