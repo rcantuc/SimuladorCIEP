@@ -62,7 +62,7 @@ if "$output" == "output" {
 ***                                                      ***
 ************************************************************
 capture confirm file `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PensionREC.dta"'
-*if _rc != 0 {
+if _rc != 0 {
 
 	** POBLACION **
 	Poblacion, $nographs anio(`aniovp') update //tf(`=64.333315/2.2*2.07') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040) 
@@ -72,7 +72,7 @@ capture confirm file `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PensionREC.
 	global id = ""
 	noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' 2018
 	global id = "`id'"
-*}
+}
 
 
 
