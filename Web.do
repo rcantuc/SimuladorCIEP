@@ -1,6 +1,8 @@
 **************************************/
 ** PARAMETROS SIMULADOR: DIRECTORIOS **
-sysdir set PERSONAL "/SIM/OUT/5/5.0/"
+if "`c(username)'" == "ciepmx" {
+	sysdir set PERSONAL "/SIM/OUT/5/5.0/"
+}
 ** PARAMETROS SIMULADOR: DIRECTORIOS **
 ***************************************
 
@@ -15,7 +17,7 @@ global output "output"
 
 ****************************************/
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
-global id = "PE2021"
+global id = ""
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
 *****************************************
 
