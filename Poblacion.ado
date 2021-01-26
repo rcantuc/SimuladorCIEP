@@ -306,21 +306,21 @@ quietly {
 			lwidth(none)) ///
 			(sc edad2 zero if anio == `anioinicial', msymbol(i) mlabel(edad2) ///
 			mlabsize(vsmall) mlabcolor("114 113 118")), ///
-			/*legend(label(1 "Hombres vivos hoy") label(2 "Mujeres vivas hoy") ///
-			label(3 "H. nacidos desde `anioinicial'") ///
-			label(4 "M. nacidas desde `anioinicial'")) ///
+			legend(label(1 "Hombres vivos hoy") label(2 "Mujeres vivas hoy") ///
+			label(3 "H. nacidos despu{c e'}s de `anioinicial'") ///
+			label(4 "M. nacidas despu{c e'}s de `anioinicial'")) ///
 			legend(label(5 "H. `aniofinal'") label(6 "M. `aniofinal'") ///
 			label(7 "H. fallecidos para `aniofinal'") ///
-			label(8 "M. fallecidas para `aniofinal'"))*/ ///
-			legend(label(1 "Men alive") label(2 "Women alive") ///
+			label(8 "M. fallecidas para `aniofinal'")) ///
+			/*legend(label(1 "Men alive") label(2 "Women alive") ///
 			label(3 "Men born since `anioinicial'") ///
 			label(4 "Women born since `anioinicial'")) ///
 			legend(label(5 "H. `aniofinal'") label(6 "M. `aniofinal'") ///
 			label(7 "Men dead by `aniofinal'") ///
-			label(8 "Women dead by `aniofinal'")) ///
+			label(8 "Women dead by `aniofinal'"))*/ ///
 			legend(order(1 2 3 4 7 8) holes(1 4) rows(2) on) ///
 			yscale(noline) ylabel(none) xscale(noline) ///
-			/*text(105 `=-`MaxH'[1,1]*.6' "{bf:Edad mediana `anioinicial'}") ///
+			text(105 `=-`MaxH'[1,1]*.6' "{bf:Edad mediana `anioinicial'}") ///
 			text(100 `=-`MaxH'[1,1]*.6' "Hombres: `=`H`anioinicial''[1,1]'") ///
 			text(95 `=-`MaxH'[1,1]*.6' "Mujeres: `=`M`anioinicial''[1,1]'") ///
 			text(105 `=`MaxH'[1,1]*.6' "{bf:Edad mediana `aniofinal'}") ///
@@ -333,8 +333,8 @@ quietly {
 			text(90 `=`MaxH'[1,1]*.6' "{bf:Poblaci{c o'}n `aniofinal'}") ///
 			text(85 `=`MaxH'[1,1]*.6' `"`=string(`P`aniofinal''[1,1],"%20.0fc")'"') ///
 			text(80 `=`MaxH'[1,1]*.6' "{bf:Personas post `anioinicial' vivas en `aniofinal'} ") ///
-			text(75 `=`MaxH'[1,1]*.6' `"`=string(`Pnacida'[1,1],"%20.0fc")' (`=string(`Pnacida'[1,1]/`P`aniofinal''[1,1]*100,"%7.1fc")'%)"')*/ ///
-			text(105 `=-`MaxH'[1,1]*.6' "{bf:Median age `anioinicial'}") ///
+			text(75 `=`MaxH'[1,1]*.6' `"`=string(`Pnacida'[1,1],"%20.0fc")' (`=string(`Pnacida'[1,1]/`P`aniofinal''[1,1]*100,"%7.1fc")'%)"') ///
+			/*text(105 `=-`MaxH'[1,1]*.6' "{bf:Median age `anioinicial'}") ///
 			text(100 `=-`MaxH'[1,1]*.6' "Men: `=`H`anioinicial''[1,1]'") ///
 			text(95 `=-`MaxH'[1,1]*.6' "Women: `=`M`anioinicial''[1,1]'") ///
 			text(105 `=`MaxH'[1,1]*.6' "{bf:Median age `aniofinal'}") ///
@@ -347,15 +347,15 @@ quietly {
 			text(90 `=`MaxH'[1,1]*.6' "{bf:Population `aniofinal'}") ///
 			text(85 `=`MaxH'[1,1]*.6' `"`=string(`P`aniofinal''[1,1],"%20.0fc")'"') ///
 			text(80 `=`MaxH'[1,1]*.6' "{bf:Post `anioinicial' people alive in `aniofinal'} ") ///
-			text(75 `=`MaxH'[1,1]*.6' `"`=string(`Pnacida'[1,1],"%20.0fc")' (`=string(`Pnacida'[1,1]/`P`aniofinal''[1,1]*100,"%7.1fc")'%)"') ///
+			text(75 `=`MaxH'[1,1]*.6' `"`=string(`Pnacida'[1,1],"%20.0fc")' (`=string(`Pnacida'[1,1]/`P`aniofinal''[1,1]*100,"%7.1fc")'%)"')*/ ///
 			name(Piramide_`anioinicial'_`aniofinal', replace) ///
 			xlabel(`=-`MaxH'[1,1]' `"`=string(`MaxH'[1,1],"%15.0fc")'"' ///
 			`=-`MaxH'[1,1]/2' `"`=string(`MaxH'[1,1]/2,"%15.0fc")'"' 0 ///
 			`=`MaxM'[1,1]/2' `"`=string(`MaxM'[1,1]/2,"%15.0fc")'"' ///
 			`=`MaxM'[1,1]' `"`=string(`MaxM'[1,1],"%15.0fc")'"', angle(horizontal)) ///
-			///caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5, utilizando informaci{c o'}n de CONAPO.") ///
+			caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5, utilizando informaci{c o'}n de CONAPO.") ///
 			///xtitle("Personas") ///
-			///title("Pir{c a'}mide {bf:demogr{c a'}fica}") subtitle(${pais})
+			title("Pir{c a'}mide {bf:demogr{c a'}fica}") subtitle(${pais})
 
 		if "$export" != "" {
 			graph export "$export/Piramide_poblacion_`anioinicial'_`aniofinal'.png", ///

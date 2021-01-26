@@ -72,10 +72,13 @@ if "$output" == "output" {
 ************************************************************
 
 ** POBLACION **
-noisily Poblacion, $nographs //update //tf(`=64.333315/2.1*1.8') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040) //anio(`aniovp')
+*forvalues k=1950(1)2050 {
+foreach k in `aniovp' {
+	noisily Poblacion, $nographs anio(`k') //update //tf(`=64.333315/2.1*1.8') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040)
+}
 
 capture confirm file `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PensionREC.dta"'
-if _rc != 0 {
+*if _rc != 0 {
 
 	** HOUSEHOLDS: INCOMES **
 	local id = "$id"
@@ -83,19 +86,16 @@ if _rc != 0 {
 	noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' 2018
 	if "$export" != "" {
 
-
 		** HOUSEHOLDS: EXPENDITURES **
 		*noisily run "`c(sysdir_personal)'/Expenditure.do" 2018
 
-
 		** SANKEY **
 		foreach k in grupoedad decil escol sexo {
-			*noisily run "`c(sysdir_personal)'/SankeyCC.do" `k' 2018
-			*noisily run "`c(sysdir_personal)'/Sankey.do" `k' 2018
+			noisily run "`c(sysdir_personal)'/SankeyCC.do" `k' 2018
+			noisily run "`c(sysdir_personal)'/Sankey.do" `k' 2018
 		}
 
-
-		/** DATOS ABIERTOS **
+		** DATOS ABIERTOS **
 		DatosAbiertos XNA0120_s, g //		ISR salarios
 		DatosAbiertos XNA0120_f, g //		ISR PF
 		DatosAbiertos XNA0120_m, g //		ISR PM
@@ -108,10 +108,10 @@ if _rc != 0 {
 		DatosAbiertos XAB2110, g   //		Ingresos propios Pemex
 		DatosAbiertos XOA0115, g   //		Ingresos propios CFE
 		DatosAbiertos XKF0179, g   //		Ingresos propios IMSS
-		DatosAbiertos XOA0120, g   //		Ingresos propios ISSSTE*/
+		DatosAbiertos XOA0120, g   //		Ingresos propios ISSSTE
 	}
 	global id = "`id'"
-}
+*}
 
 
 
