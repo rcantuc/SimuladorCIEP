@@ -391,10 +391,8 @@ if "$output" == "output" {
 	else {
 		filefilter "`c(sysdir_personal)'/users/$pais/$id/output.txt" `output1', from(\n>) to("") replace // Mac & Linux
 	}
-	*filefilter `output1' `output2', from(" ") to("") replace
-	*filefilter `output2' `output3', from("_") to(" ") replace
-	*filefilter `output3' "`c(sysdir_personal)'/users/$pais/$id/output.txt", from(".,") to("0") replace
-	filefilter `output1' "`c(sysdir_personal)'/users/$pais/$id/output.txt", from(".,") to("0") replace
+	filefilter `output1' `output2', from(" ") to("") replace
+	filefilter `output2' "`c(sysdir_personal)'/users/$pais/$id/output.txt", from(".,") to("0") replace
 }
 
 

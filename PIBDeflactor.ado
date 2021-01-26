@@ -351,7 +351,8 @@ quietly {
 			(area `pibYRmil' anio if anio >= `anio_last' & anio > anio[`obs_exo']) ///
 			(`graphtype' `pibYRmil' anio if /*anio == `anio_last' & trimestre < 4 |*/ anio <= anio[`obs_exo'] & anio >= `anio_last', lwidth(none)), ///
 			///title({bf:Flujo} del Producto Interno Bruto) subtitle(${pais}) ///
-			ytitle(mil millones `=currency[`obsvp']' `aniovp') xtitle("") ///
+			///ytitle(mil millones `=currency[`obsvp']' `aniovp') xtitle("") ///
+			ytitle(billions `=currency[`obsvp']' `aniovp') xtitle("") ///
 			///text(`=`pibYRmil'[1]*.05' `=`anio_last'-.5' "`anio_last'", place(nw) color(white)) ///
 			///text(`=`pibYRmil'[1]*.05' `=anio[1]+.5' "Reportado" ///
 			///`=`pibYRmil'[1]*.05' `=`anio_last'+1.5' "Proyectado", place(ne) color(white) size(small)) ///
@@ -359,10 +360,11 @@ quietly {
 			ylabel(/*0(5)`=ceil(`pibYRmil'[_N])'*/, format(%20.0fc)) ///
 			///xline(`anio_last'.5) ///
 			yscale(range(0)) /*xscale(range(1993))*/ ///
-			legend(label(1 "Reportado") label(2 "Proyectado") label(3 "Estimado") order(1 3 2)) ///
-			note("{bf:Productividad laboral}: `=string(scalar(llambda),"%6.3f")'% (`=anio[[`=`obs_exo'-`geo'']]'-`=anio[`obs_exo']'); `=string(`Lambda',"%6.3f")'% (`=anio[1]'-`=anio[`obs_exo']'). {bf:{c U'}ltimo dato reportado}: `anio_last'`trim_last'.") ///
-			///note("{bf:Note}: Annual Labor Productivity Growth (lambda): `=string(scalar(llambda),"%6.3f")'%.") ///
-			caption("{it:Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, BIE.}") ///
+			///legend(label(1 "Reportado") label(2 "Proyectado") label(3 "Estimado") order(1 3 2)) ///
+			legend(label(1 "Observed") label(2 "Projected") label(3 "Estimated") order(1 3)) ///
+			///note("{bf:Productividad laboral}: `=string(scalar(llambda),"%6.3f")'% (`=anio[[`=`obs_exo'-`geo'']]'-`=anio[`obs_exo']'); `=string(`Lambda',"%6.3f")'% (`=anio[1]'-`=anio[`obs_exo']'). {bf:{c U'}ltimo dato reportado}: `anio_last'`trim_last'.") ///
+			///note("{bf:Note}: Annual Labor Productivity Growth: `=string(scalar(llambda),"%6.3f")'% (`=anio[[`=`obs_exo'-`geo'']]'-`=anio[`obs_exo']').") ///
+			///caption("{it:Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, BIE.}") ///
 			name(PIBP, replace)
 
 		capture confirm existence $export

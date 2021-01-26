@@ -531,8 +531,8 @@ quietly {
 		local lengthINCD3 = strlen("`incd3'")
 		capture log on output
 		noisily di in w "INCD: [`=substr("`incd'",1,`=`lengthINCD'-1')']"
-		noisily di in w "INCD2: [`=substr("`incd2'",1,`=`lengthINCD'-1')']"
-		noisily di in w "INCD3: [`=substr("`incd3'",1,`=`lengthINCD'-1')']"
+		noisily di in w "INCD2: [`=substr("`incd2'",1,`=`lengthINCD2'-1')']"
+		noisily di in w "INCD3: [`=substr("`incd3'",1,`=`lengthINCD3'-1')']"
 		capture log off output
 	}
 
@@ -732,7 +732,7 @@ program graphpiramide
 
 		* REC % del PIB * 
 		if "`rect'" != "100" {
-			local rect `"{bf: Tama{c n~}o}: `=string(`rect',"%6.3fc")' % PIB"'
+			*local rect `"{bf: Tama{c n~}o}: `=string(`rect',"%6.3fc")' % PIB"'
 		}
 		else {
 			local rect ""
@@ -755,8 +755,8 @@ program graphpiramide
 			stack asyvars xalternate ///
 			yscale(noextend noline /*range(-7(1)7)*/) ///
 			blabel(none, format(%5.1fc)) ///
-			t2title({bf:Hombres} (`men'%), size(medsmall)) ///
-			/*t2title({bf:Men} (`men'%), size(medsmall))*/ ///
+			///t2title({bf:Hombres} (`men'%), size(medsmall)) ///
+			t2title({bf:Men} (`men'%), size(medsmall)) ///
 			ytitle(% PIB) ///
 			/*ytitle(percentage)*/ ///
 			ylabel(`=round(`PORmaxval'[2,1],.1)'(.2)`=`PORmaxval'[1,1]', format(%7.1fc) noticks) ///
@@ -775,8 +775,8 @@ program graphpiramide
 			stack asyvars ///
 			yscale(noextend noline /*range(-7(1)7)*/) /// |
 			blabel(none, format(%5.1fc)) ///
-			t2title({bf:Mujeres} (`women'%), size(medsmall)) ///
-			/*t2title({bf:Women} (`women'%), size(medsmall))*/ ///
+			///t2title({bf:Mujeres} (`women'%), size(medsmall)) ///
+			t2title({bf:Women} (`women'%), size(medsmall)) ///
 			ytitle(% PIB) ///
 			/*ytitle(percentage)*/ ///
 			ylabel(`=round(`PORmaxval'[2,1],.1)'(.2)`=`PORmaxval'[1,1]', format(%7.1fc) noticks) ///
@@ -789,7 +789,7 @@ program graphpiramide
 			name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)', replace) ycommon xcommon ///
 			///title("{bf:Perfil} de `title'") subtitle("$pais") ///
 			///title("`title' by sex, age and `titleover'") ///
-			caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, ENIGH 2018. Fecha: `c(current_date)', `c(current_time)'.") ///
+			///caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, ENIGH 2018. Fecha: `c(current_date)', `c(current_time)'.") ///
 			///caption("{it: Source: Own estimations.`boottext'}") ///
 			///note(`"{bf:Nota}: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n de `=lower("`title'")' en cada grupo."') ///
 			///note(`"{bf:Note}: Percentages inside parenthesis represent the concentration of `title' in each group."')
