@@ -383,7 +383,7 @@ foreach k in escol decil /*sexo grupo_edad*/ {
 
 
 ** FISCAL GAP **
-noisily FiscalGap, anio(`aniovp') $nographs end(2050) //boot(250) //update
+noisily FiscalGap, anio(`aniovp') $nographs end(2030) //boot(250) //update
 
 
 ** OUTPUT **
