@@ -143,7 +143,7 @@ quietly {
 			_col(55) in g "ISR (f{c i'}sicas)" ///
 			_col(88) %7.3fc in y (`recISR_PF')/scalar(PIB)*100 ///
 			_col(99) %7.1fc in y (`recISR_PF')/MixL*100 " %"
-		noisily di in g "  Compensaci{c o'}n de asalariados" ///
+		noisily di in g "  Compensaci{c o'}n de asalariados (con CSS)" ///
 			_col(44) %7.3fc in y (RemSal+SSImputada+SSEmpleadores)/scalar(PIB)*100 ///
 			_col(55) in g "Cuotas IMSS" ///
 			_col(88) %7.3fc in y (`recCuotas_')/scalar(PIB)*100 ///
