@@ -134,26 +134,26 @@ if "$pais" == "" & "$export" != "" {
 **********************************
 ** PARAMETROS SIMULADOR: GASTOS **
 * Educacion *
-scalar basica = 21422 //		Educaci{c o'}n b{c a'}sica
-scalar medsup = 21152 //		Educaci{c o'}n media superior
-scalar superi = 38283 //		Educaci{c o'}n superior
-scalar posgra = 45996 //		Posgrado
-scalar eduadu = 19538 //		Educaci{c o'}n para adultos
-scalar otrose =  1483 //		Otros gastos educativos
+scalar basica = 21325 //		Educaci{c o'}n b{c a'}sica
+scalar medsup = 21056 //		Educaci{c o'}n media superior
+scalar superi = 38111 //		Educaci{c o'}n superior
+scalar posgra = 45788 //		Posgrado
+scalar eduadu = 19451 //		Educaci{c o'}n para adultos
+scalar otrose =  1476 //		Otros gastos educativos
 
 * Salud *
-scalar ssa    =   522 //		SSalud
+scalar ssa    =   519 //		SSalud
 scalar prospe =  1081 //		IMSS-Prospera
-scalar segpop =  2417 //		Seguro Popular
-scalar imss   =  6414 //		IMSS (salud)
-scalar issste =  8628 //		ISSSTE (salud)
-scalar pemex  = 24288 //		Pemex (salud) + ISSFAM (salud)
+scalar segpop =  2406 //		Seguro Popular
+scalar imss   =  6385 //		IMSS (salud)
+scalar issste =  8589 //		ISSSTE (salud)
+scalar pemex  = 24178 //		Pemex (salud) + ISSFAM (salud)
 
 * Pensiones *
-scalar bienestar =   18356 //		Pensi{c o'}n Bienestar
-scalar penims    =  135259 //		Pensi{c o'}n IMSS
-scalar peniss    =  227486 //		Pensi{c o'}n ISSSTE
-scalar penotr    = 1408633 //		Pensi{c o'}n Pemex, CFE, Pensi{c o'}n LFC, ISSFAM, Otros
+scalar bienestar =   18273 //	Pensi{c o'}n Bienestar
+scalar penims    =  134649 //	Pensi{c o'}n IMSS
+scalar peniss    =  226463 //	Pensi{c o'}n ISSSTE
+scalar penotr    = 1402288 //	Pensi{c o'}n Pemex, CFE, Pensi{c o'}n LFC, ISSFAM, Otros
 
 * Ingreso b{c a'}sico *
 scalar IngBas      = 0 //		Ingreso b{c a'}sico
@@ -161,15 +161,15 @@ scalar ingbasico18 = 1 //		1: Incluye menores de 18 anios, 0: no
 scalar ingbasico65 = 1 //		1: Incluye mayores de 65 anios, 0: no
 
 * Otros gastos *
-scalar servpers = 3395 //		Servicios personales
-scalar matesumi = 1700 //		Materiales y suministros
-scalar gastgene = 1794 //		Gastos generales
-scalar substran = 1906 //		Subsidios y transferencias
-scalar bienmueb =  302 //		Bienes muebles e inmuebles
-scalar obrapubl = 3352 //		Obras p{c u'}blicas
-scalar invefina =  787 //		Inversi{c o'}n financiera
-scalar partapor = 9029 //		Participaciones y aportaciones
-scalar costodeu = 5888 //		Costo de la deuda
+scalar servpers = 3380 //		Servicios personales
+scalar matesumi = 1692 //		Materiales y suministros
+scalar gastgene = 1786 //		Gastos generales
+scalar substran = 1897 //		Subsidios y transferencias
+scalar bienmueb =  300 //		Bienes muebles e inmuebles
+scalar obrapubl = 3337 //		Obras p{c u'}blicas
+scalar invefina =  784 //		Inversi{c o'}n financiera
+scalar partapor = 8988 //		Participaciones y aportaciones
+scalar costodeu = 5862 //		Costo de la deuda
 ** PARAMETROS SIMULADOR: GASTOS **
 *********************************/
 

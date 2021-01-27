@@ -17,7 +17,7 @@ if "`c(username)'" == "ciepmx" {
 ************************************
 ** PARAMETROS SIMULADOR: OPCIONES **
 *global nographs "nographs"
-global output "output"
+*global output "output"
 ** PARAMETROS SIMULADOR: OPCIONES **
 ************************************
 
@@ -77,7 +77,7 @@ foreach k in `aniovp' {
 }
 
 capture confirm file `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PensionREC.dta"'
-*if _rc != 0 {
+if _rc != 0 {
 
 	** HOUSEHOLDS: INCOMES **
 	local id = "$id"
@@ -86,7 +86,7 @@ capture confirm file `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PensionREC.
 	if "$export" != "" {
 
 		** HOUSEHOLDS: EXPENDITURES **
-		*noisily run "`c(sysdir_personal)'/Expenditure.do" 2018
+		noisily run "`c(sysdir_personal)'/Expenditure.do" 2018
 
 		** SANKEY **
 		foreach k in grupoedad decil escol sexo {
@@ -110,7 +110,7 @@ capture confirm file `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PensionREC.
 		DatosAbiertos XOA0120, g   //		Ingresos propios ISSSTE
 	}
 	global id = "`id'"
-*}
+}
 
 
 
@@ -172,26 +172,26 @@ if "$export" != "" {
 **********************************
 ** PARAMETROS SIMULADOR: GASTOS **
 * Educacion *
-scalar basica = 21422 //		Educaci{c o'}n b{c a'}sica
-scalar medsup = 21152 //		Educaci{c o'}n media superior
-scalar superi = 38283 //		Educaci{c o'}n superior
-scalar posgra = 45996 //		Posgrado
-scalar eduadu = 19538 //		Educaci{c o'}n para adultos
-scalar otrose =  1483 //		Otros gastos educativos
+scalar basica = 21325 //		Educaci{c o'}n b{c a'}sica
+scalar medsup = 21056 //		Educaci{c o'}n media superior
+scalar superi = 38111 //		Educaci{c o'}n superior
+scalar posgra = 45788 //		Posgrado
+scalar eduadu = 19451 //		Educaci{c o'}n para adultos
+scalar otrose =  1476 //		Otros gastos educativos
 
 * Salud *
-scalar ssa    =   522 //		SSalud
+scalar ssa    =   519 //		SSalud
 scalar prospe =  1081 //		IMSS-Prospera
-scalar segpop =  2417 //		Seguro Popular
-scalar imss   =  6414 //		IMSS (salud)
-scalar issste =  8628 //		ISSSTE (salud)
-scalar pemex  = 24288 //		Pemex (salud) + ISSFAM (salud)
+scalar segpop =  2406 //		Seguro Popular
+scalar imss   =  6385 //		IMSS (salud)
+scalar issste =  8589 //		ISSSTE (salud)
+scalar pemex  = 24178 //		Pemex (salud) + ISSFAM (salud)
 
 * Pensiones *
-scalar bienestar =   18356 //	Pensi{c o'}n Bienestar
-scalar penims    =  135259 //	Pensi{c o'}n IMSS
-scalar peniss    =  227486 //	Pensi{c o'}n ISSSTE
-scalar penotr    = 1408633 //	Pensi{c o'}n Pemex, CFE, Pensi{c o'}n LFC, ISSFAM, Otros
+scalar bienestar =   18273 //	Pensi{c o'}n Bienestar
+scalar penims    =  134649 //	Pensi{c o'}n IMSS
+scalar peniss    =  226463 //	Pensi{c o'}n ISSSTE
+scalar penotr    = 1402288 //	Pensi{c o'}n Pemex, CFE, Pensi{c o'}n LFC, ISSFAM, Otros
 
 * Ingreso b{c a'}sico *
 scalar IngBas      = 0 //		Ingreso b{c a'}sico
@@ -199,15 +199,15 @@ scalar ingbasico18 = 1 //		1: Incluye menores de 18 anios, 0: no
 scalar ingbasico65 = 1 //		1: Incluye mayores de 65 anios, 0: no
 
 * Otros gastos *
-scalar servpers = 3395 //		Servicios personales
-scalar matesumi = 1700 //		Materiales y suministros
-scalar gastgene = 1794 //		Gastos generales
-scalar substran = 1906 //		Subsidios y transferencias
-scalar bienmueb =  302 //		Bienes muebles e inmuebles
-scalar obrapubl = 3352 //		Obras p{c u'}blicas
-scalar invefina =  787 //		Inversi{c o'}n financiera
-scalar partapor = 9029 //		Participaciones y aportaciones
-scalar costodeu = 5888 //		Costo de la deuda
+scalar servpers = 3380 //		Servicios personales
+scalar matesumi = 1692 //		Materiales y suministros
+scalar gastgene = 1786 //		Gastos generales
+scalar substran = 1897 //		Subsidios y transferencias
+scalar bienmueb =  300 //		Bienes muebles e inmuebles
+scalar obrapubl = 3337 //		Obras p{c u'}blicas
+scalar invefina =  784 //		Inversi{c o'}n financiera
+scalar partapor = 8988 //		Participaciones y aportaciones
+scalar costodeu = 5862 //		Costo de la deuda
 ** PARAMETROS SIMULADOR: GASTOS **
 *********************************/
 
@@ -324,15 +324,15 @@ if _rc == 0 {
 noisily TasasEfectivas, anio(`aniovp') `nographs'
 
 
-/** GRAFICA PROYECCION **
+** GRAFICA PROYECCION **
 if "$nographs" != "nographs" {
-	use `"`c(sysdir_personal)'/SIM/2018//households.dta"', clear
+	use `"`c(sysdir_personal)'/SIM/2018/households.dta"', clear
 	noisily Simulador ImpuestosAportaciones if ImpuestosAportaciones != 0 [fw=factor], ///
 		base("ENIGH 2018") boot(1) reboot nographs anio(2020)
 
-	use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/ImpuestosAportacionesREC.dta"', clear
-	merge 1:1 (anio) using `"`c(sysdir_personal)'/users/$pais/$id/PIB.dta"', nogen
-	replace estimacion = estimacion/pibYR*100
+	use `"`c(sysdir_personal)'/users/$id/bootstraps/1/ImpuestosAportacionesREC.dta"', clear
+	merge 1:1 (anio) using `"`c(sysdir_personal)'/users/$id/PIB.dta"', nogen
+	replace estimacion = estimacion/1000000000000
 
 	tabstat estimacion, stat(max) save
 	tempname MAX
@@ -347,9 +347,9 @@ if "$nographs" != "nographs" {
 	}
 
 	twoway (connected estimacion anio) (connected estimacion anio if anio == `aniovp') if anio > 1990, ///
-		ytitle("% PIB") ///
+		ytitle("billones MXN `aniovp'") ///
 		yscale(range(0)) /*ylabel(0(1)4)*/ ///
-		ylabel(0(5)15, format(%20.1fc) labsize(small)) ///
+		ylabel(#5, format(%5.1fc) labsize(small)) ///
 		xlabel(1990(10)2050, labsize(small) labgap(2)) ///
 		xtitle("") ///
 		legend(off) ///
@@ -363,7 +363,7 @@ if "$nographs" != "nographs" {
 	if _rc == 0 {
 		graph export "$export/ImpuestosAportacionesProj.png", replace name(ImpuestosAportacionesProj)
 	}
-}*/
+}
 
 
 
@@ -391,7 +391,7 @@ noisily Simulador AportacionesNetas if AportacionesNetas != 0 [fw=factor], ///
 
 
 ** CUENTA GENERACIONAL **
-*noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) //	<-- OPTIONAL!!! Toma mucho tiempo.
+noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) //	<-- OPTIONAL!!! Toma mucho tiempo.
 
 
 ** GRAFICA PROYECCION **
@@ -400,8 +400,8 @@ use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/AportacionesNetasREC.dta
 //merge 1:1 (anio) using `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/AportacionesNetasRECSIM.dta"', nogen
 //rename estimacion estimacionSIM
 //rename estimacionOrig estimacion
-merge 1:1 (anio) using `"`c(sysdir_personal)'/users/$pais/$id/PIB.dta"', nogen
-replace estimacion = estimacion/pibYR*100
+//merge 1:1 (anio) using `"`c(sysdir_personal)'/users/$pais/$id/PIB.dta"', nogen
+replace estimacion = estimacion/1000000000000
 //replace estimacionSIM = estimacionSIM/pibYR*100
 
 tabstat estimacion, stat(max) save
@@ -421,14 +421,14 @@ if "$nographs" != "nographs" {
 		///(connected estimacionSIM anio if anio >= 2021) ///
 		(connected estimacion anio if anio == `aniovp') ///
 		if anio > 1990, ///
-		ytitle("% PIB") ///
+		ytitle("billones MXN `aniovp'") ///
 		yscale(range(0)) /*ylabel(0(1)4)*/ ///
-		ylabel(0(1)5, format(%20.1fc) labsize(small)) ///
+		ylabel(#5, format(%5.1fc) labsize(small)) ///
 		xlabel(1990(10)2050, labsize(small) labgap(2)) ///
 		xtitle("") ///
-		legend(on label(1 "Original") label(2 "Simulation") order(1 2)) ///
-		text(`=`MAX'[1,1]' `aniomax' "{bf:Max:} `aniomax'", place(w)) ///
-		text(`estimacionvp' `aniovp' "{bf:`aniovp' policies}", place(e)) ///
+		legend(off) ///
+		text(`=`MAX'[1,1]' `aniomax' "{bf:Max:} `aniomax'", place(n)) ///
+		text(`estimacionvp' `aniovp' "{bf:Hoy:} `aniovp'", place(s)) ///
 		///title("{bf:Proyecciones} de las aportaciones netas") subtitle("$pais") ///
 		///caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5.") ///
 		name(AportacionesNetasProj, replace)
@@ -467,7 +467,7 @@ if "$output" == "output" {
 
 ** SANKEY **
 foreach k in escol decil /*sexo grupoedad*/ {
-	*noisily run "`c(sysdir_personal)'/SankeySF.do" `k' `aniovp'
+	noisily run "`c(sysdir_personal)'/SankeySF.do" `k' `aniovp'
 }
 
 

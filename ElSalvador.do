@@ -85,16 +85,16 @@ if _rc != 0 {
 ** PARAMETROS SIMULADOR: PIB **
 global pib2020 = -7.200
 global pib2021 =  4.600
-
 global pib2022 =  3.100
-global pib2023 =  2.500
+
+/*global pib2023 =  2.500
 global pib2024 =  2.500
 global pib2025 =  2.500
 global pib2026 =  2.500
 global pib2027 =  2.500
 global pib2028 =  2.500
 global pib2029 =  2.500
-global pib2030 =  2.500
+global pib2030 =  2.500*/
 
 global def2020 =  0.383
 global def2021 =  0.512
@@ -118,7 +118,7 @@ else {
 ***    3. PARTE III: GASTOS    ***
 ***                            ***
 **********************************
-noisily GastoPC, anio(`aniovp') `nographs' crec(0.92)
+noisily GastoPC, anio(`aniovp') `nographs' //crec(0.92)
 
 
 
@@ -128,7 +128,7 @@ noisily GastoPC, anio(`aniovp') `nographs' crec(0.92)
 ***    4. PARTE II: INGRESOS    ***
 ***                             ***
 ***********************************
-noisily TasasEfectivas, anio(`aniovp') `nographs' crec(1.02)
+noisily TasasEfectivas, anio(`aniovp') `nographs' //crec(1.02)
 
 
 
@@ -151,7 +151,7 @@ noisily Simulador AportacionesNetas if AportacionesNetas != 0 [fw=factor], ///
 
 
 ** CUENTA GENERACIONAL **/
-*noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) //	<-- OPTIONAL!!! Toma mucho tiempo.
+noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) //	<-- OPTIONAL!!! Toma mucho tiempo.
 
 
 ** GRAFICA PROYECCION **
