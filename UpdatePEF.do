@@ -17,7 +17,7 @@ else {
 
 * Loop para todos los archivos .csv *
 foreach k of local archivos {
-*foreach k in "CP 2014" {
+*foreach k in "PEF 2021" {
 
 	* Importar archivo de la Cuenta Publica *
 	noisily di in g "Importando: " in y "`k'", _cont
@@ -114,7 +114,7 @@ foreach k of local archivos {
 * Loop para unir los archivos (limpios y en Stata) *
 local j = 0
 foreach k of local archivos {
-*foreach k in "PPEF 2021" {
+*foreach k in "PEF 2021" {
 	noisily di in g "Appending: " in y "`k'"
 	if `j' == 0 {
 		use ``=strtoname("`k'")'', clear

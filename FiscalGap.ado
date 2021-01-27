@@ -225,7 +225,7 @@ quietly {
 	tempname estimacionVP
 	matrix `estimacionVP' = r(StatTotal)
 
-	noisily di in g "  (+) Ingresos al infinito en VP:" in y _col(35) %25.0fc `estimacionINF'+`estimacionVP'[1,1] in g " `currency'"	
+	noisily di in g "  (+) Ingresos INF en VP:" in y _col(35) %25.0fc `estimacionINF'+`estimacionVP'[1,1] in g " `currency'"	
 	
 	* Save *
 	rename estimacion estimacioningresos
@@ -281,8 +281,9 @@ quietly {
 				tempfile proypensiones
 				save `proypensiones'
 				
-				import excel `"`c(sysdir_site)'/../basesCIEP/SIM/$pais/PensionesElSalvador.xlsx"', clear firstrow
+				import excel `"`c(sysdir_site)'/../basesCIEP/SIM/$pais/Pensiones.xlsx"', clear firstrow
 				drop if anio == .
+				capture drop PIB
 				rename estimacion estimacionSIM
 				format estimacion* %20.0fc
 
@@ -657,7 +658,7 @@ quietly {
 	tempname gastoVP
 	matrix `gastoVP' = r(StatTotal)
 
-	noisily di in g "  (-) Gastos al infinito en VP:" in y _col(35) %25.0fc `gastoINF'+`gastoVP'[1,1] in g " `currency'"	
+	noisily di in g "  (-) Gastos INF en VP:" in y _col(35) %25.0fc `gastoINF'+`gastoVP'[1,1] in g " `currency'"	
 	
 	* Save *
 	rename estimacion estimaciongastos
@@ -669,7 +670,7 @@ quietly {
 	*** 5 Fiscal Gap: Balance ***
 	*****************************
 	noisily di in g "  " _dup(61) "-"
-	noisily di in g "  (=) Balance al infinito en VP:" ///
+	noisily di in g "  (=) Balance INF en VP:" ///
 		in y _col(35) %25.0fc `estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1] ///
 		in g " `currency'"	
 
@@ -682,17 +683,17 @@ quietly {
 		in y _col(35) %25.0fc -`shrfsp'[1,1] ///
 		in g " `currency'"	
 	noisily di in g "  " _dup(61) "-"
-	noisily di in g "  (=) Financial wealth (" in y `end' in g ") :" ///
+	noisily di in g "  (=) Financial wealth INF en VP:" ///
 		in y _col(35) %25.0fc -`shrfsp'[1,1] + `estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1] ///
 		in g " `currency'"	
 	noisily di in g "  " _dup(61) "-"
-	noisily di in g "  (/) Ingresos al infinito en VP:" ///
+	noisily di in g "  (/) Ingresos INF en VP:" ///
 		in y _col(35) %25.1fc -(-`shrfsp'[1,1] + `estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1])/(`estimacionINF'+`estimacionVP'[1,1])*100 ///
 		in g " %"	
-	noisily di in g "  (/) Gastos al infinito en VP:" ///
+	noisily di in g "  (/) Gastos INF en VP:" ///
 		in y _col(35) %25.1fc (-`shrfsp'[1,1] + `estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1])/(`gastoINF'+`gastoVP'[1,1])*100 ///
 		in g " %"	
-	noisily di in g "  (/) PIB al infinito en VP:" ///
+	noisily di in g "  (/) PIB INF en VP:" ///
 		in y _col(35) %25.1fc (-`shrfsp'[1,1] + `estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1])/scalar(pibVPINF)*100 ///
 		in g " %"
 
@@ -751,7 +752,7 @@ quietly {
 	*****************************************
 	*** 5 Fiscal Gap: Cuenta Generacional ***
 	*****************************************
-	use `"`c(sysdir_personal)'/SIM/Poblacion.dta"', clear
+	use `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
 
 	collapse (sum) poblacion if edad == 0, by(anio) fast
 	merge 1:1 (anio) using `PIB', nogen keepus(lambda)
@@ -760,14 +761,16 @@ quietly {
 	g poblacionVP = poblacion*lambda/(1+`discount'/100)^(anio-`anio')
 	format poblacionVP %20.0fc
 
-	tabstat poblacionVP if anio >= `anio', stat(sum) f(%20.0fc) save
+	tabstat poblacionVP if anio > `anio', stat(sum) f(%20.0fc) save
 	tempname poblacionVP
 	matrix `poblacionVP' = r(StatTotal)
 	
+	noisily di in g "  (*) Poblaci{c o'}n futura VP: " in y _col(35) %25.0fc `poblacionVP'[1,1] in g " personas"
+
 	local poblacionINF = poblacionVP[_N] /*(1+`grow_rate_LR')*(1+`discount'/100)^(`anio'-`=anio[_N]')*/ /(1-((1+`grow_rate_LR')/(1+`discount'/100)))
 
-	noisily di in g "  (*) Poblaci{c o'}n al infinito: " in y _col(35) %25.0fc `poblacionINF' in g " personas"
-	noisily di in g "  (*) Poblaci{c o'}n valor presente: " in y _col(35) %25.0fc `poblacionVP'[1,1] in g " personas"
+	noisily di in g "  (*) Poblaci{c o'}n futura INF: " in y _col(35) %25.0fc `poblacionINF' in g " personas"
+
 	noisily di in g "  (*) Cuenta generaciones futuras:" ///
 		in y _col(35) %25.0fc -(-`shrfsp'[1,1] + `estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1])/(`poblacionVP'[1,1]+`poblacionINF') ///
 		in g " `currency' por persona"
