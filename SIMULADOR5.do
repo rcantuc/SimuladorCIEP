@@ -7,9 +7,6 @@ if "`c(username)'" == "ricardo" {
 	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
 	global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
 }
-if "`c(username)'" == "ciepmx" {
-	*sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
-}
 ** PARAMETROS SIMULADOR: DIRECTORIOS **
 ***************************************
 
@@ -24,7 +21,9 @@ if "`c(username)'" == "ciepmx" {
 
 ****************************************/
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
-global id = "`c(username)'"
+if "`c(username)'" != "ricardo" {
+	global id = "`c(username)'"
+}
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
 *****************************************
 
