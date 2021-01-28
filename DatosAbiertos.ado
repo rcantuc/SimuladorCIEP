@@ -7,8 +7,9 @@ quietly {
 	tempfile PIB
 	save `PIB'
 
-	noisily UpdateDatosAbiertos
-
+	if "`c(username)'" == "ricardo" {
+		noisily UpdateDatosAbiertos
+	}
 
 
 
