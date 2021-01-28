@@ -1,5 +1,8 @@
 **************************************/
 ** PARAMETROS SIMULADOR: DIRECTORIOS **
+if "`c(username)'" == "ricardo" {
+	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
+}
 if "`c(username)'" == "ciepmx" {
 	sysdir set PERSONAL "/SIM/OUT/5/5.0/"
 }
