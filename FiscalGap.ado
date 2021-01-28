@@ -42,7 +42,12 @@ quietly {
 	*** 3 Fiscal Gap: Ingresos ***
 	******************************
 	if "$pais" == "" {
-		DatosAbiertos XNA0120_m, pibvf(3.632)
+		capture confirm file "`c(sysdir_personal)'/SIM/XNA0120_m.dta"
+		if _rc != 0 | "`update'" == "update" {
+			DatosAbiertos XNA0120_m, pibvf(3.632)
+			save "`c(sysdir_personal)'/SIM/XNA0120_m.dta", replace
+		}
+		use "`c(sysdir_personal)'/SIM/XNA0120_m.dta", clear
 		g divGA = 3
 		tempfile pm_ingreso
 		save `pm_ingreso'
