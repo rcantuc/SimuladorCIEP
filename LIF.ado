@@ -11,7 +11,7 @@ quietly {
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
 	** 1.2 Datos Abiertos (MÈxico) **
-	if "`c(username)'" != "ricardo" & "$pais" == "" {
+	if "`c(username)'" == "ricardo" & "$pais" == "" {
 		UpdateDatosAbiertos
 		local updated = r(updated)
 		local ultanio = r(ultanio)
