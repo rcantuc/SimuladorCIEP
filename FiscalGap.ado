@@ -45,7 +45,12 @@ quietly {
 		capture confirm file "`c(sysdir_personal)'/SIM/XNA0120_m.dta"
 		if _rc != 0 | "`update'" == "update" {
 			DatosAbiertos XNA0120_m, pibvf(3.632)
-			save "`c(sysdir_personal)'/SIM/XNA0120_m.dta", replace
+			if `c(version)' > 13.1 {
+				saveold "`c(sysdir_personal)'/SIM/XNA0120_m.dta", replace version(13)
+			}
+			else {
+				save "`c(sysdir_personal)'/SIM/XNA0120_m.dta", replace
+			}
 		}
 		use "`c(sysdir_personal)'/SIM/XNA0120_m.dta", clear
 		g divGA = 3
