@@ -58,7 +58,7 @@ local aniovp = 2021
 
 
 ** POBLACION **
-Poblacion, anio(`aniovp') $nographs //update //tf(`=64.333315/2.2*2.07') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040)
+Poblacion, anio(`aniovp') $nographs //update //aniofinal(2040)
 
 
 ** HOUSEHOLDS **
@@ -199,7 +199,7 @@ if "$nographs" != "nographs" {
 ***    6. PARTE IV: DEUDA    ***
 ***                          ***
 ********************************
-noisily FiscalGap, anio(`aniovp') $nographs end(2050) //boot(250) //update
+noisily FiscalGap, anio(`aniovp') $nographs end(2030) //boot(250) //update
 
 
 

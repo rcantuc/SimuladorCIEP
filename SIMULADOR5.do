@@ -24,7 +24,7 @@ if "`c(username)'" == "ciepmx" {
 
 ****************************************/
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
-*global id = "PNUD"
+global id = "`c(username)'"
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
 *****************************************
 
@@ -324,7 +324,7 @@ if _rc == 0 {
 noisily TasasEfectivas, anio(`aniovp') `nographs'
 
 
-** GRAFICA PROYECCION **
+/** GRAFICA PROYECCION **
 if "$nographs" != "nographs" {
 	use `"`c(sysdir_personal)'/SIM/2018/households.dta"', clear
 	noisily Simulador ImpuestosAportaciones if ImpuestosAportaciones != 0 [fw=factor], ///
@@ -391,7 +391,7 @@ noisily Simulador AportacionesNetas if AportacionesNetas != 0 [fw=factor], ///
 
 
 ** CUENTA GENERACIONAL **
-noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) //	<-- OPTIONAL!!! Toma mucho tiempo.
+*noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) //	<-- OPTIONAL!!! Toma mucho tiempo.
 
 
 ** GRAFICA PROYECCION **
@@ -467,7 +467,7 @@ if "$output" == "output" {
 
 ** SANKEY **
 foreach k in escol decil /*sexo grupoedad*/ {
-	noisily run "`c(sysdir_personal)'/SankeySF.do" `k' `aniovp'
+	*noisily run "`c(sysdir_personal)'/SankeySF.do" `k' `aniovp'
 }
 
 
