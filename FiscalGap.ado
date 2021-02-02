@@ -423,8 +423,8 @@ quietly {
 	replace amortizacionpib = amortizacionprom if amortizacionpib == .
 
 	replace gastoamortizacion = amortizacionpib/100*pibYR if gastoamortizacion == .
+	
 	replace estimacionamortizacion = amortizacionpib/100*pibYR if estimacionamortizacion == .
-
 	replace estimacionamortizacion = gastoamortizacion if anio > `anio' //& estimacionamortizacion == 0
 
 
@@ -466,7 +466,7 @@ quietly {
 	replace shrfsp = shrfsp/deflator
 
 	* Costo de la deuda *
-	g costodeudashrfsp = gastocostodeuda/shrfsp*100 if anio <= `anio'
+	g costodeudashrfsp = gastocostodeuda/L.shrfsp*100 if anio <= `anio'
 	egen costodeudashrfsp_ari = mean(costodeudashrfsp)
 	replace costodeudashrfsp = costodeudashrfsp_ari if costodeudashrfsp == .
 

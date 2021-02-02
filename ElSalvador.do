@@ -42,7 +42,7 @@ capture mkdir "`c(sysdir_personal)'/users/$pais/"
 ** AÑO VALOR BASE **
 local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
-local aniovp = 2021
+local aniovp = 2020
 
 
 
@@ -54,35 +54,13 @@ local aniovp = 2021
 ************************************************************
 
 
-** POBLACION **
-Poblacion, anio(`aniovp') $nographs //update //aniofinal(2040)
-
-
-** HOUSEHOLDS **
-capture confirm file `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PensionREC.dta"'
-if _rc != 0 {
-	local id = "$id"
-	global id = ""
-	noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' `aniovp'
-	global id = "`id'"
-}
-
-
-
-
-*********************************************/
-***                                        ***
-***    2. Simulador v5: PIB + Deflactor    ***
-***    Cap. 2. El sistema de la ciencia    ***
-***                                        ***
-**********************************************
-
-
 *******************************
 ** PARAMETROS SIMULADOR: PIB **
-global pib2020 = -7.200
-global pib2021 =  4.600
-global pib2022 =  3.100
+*global pib2020 = -7.200
+*global pib2021 =  4.600
+*global pib2022 =  3.100
+
+global pib2020 =  2.5
 
 /*global pib2023 =  2.500
 global pib2024 =  2.500
@@ -99,6 +77,28 @@ global def2021 =  0.512
 *******************************
 
 
+** POBLACION **
+Poblacion, anio(`aniovp') $nographs //update //aniofinal(2040)
+
+
+** HOUSEHOLDS **
+capture confirm file `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PensionREC.dta"'
+*if _rc != 0 {
+	local id = "$id"
+	global id = ""
+	noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' 2018
+	global id = "`id'"
+*}
+
+
+
+
+*********************************************/
+***                                        ***
+***    2. Simulador v5: PIB + Deflactor    ***
+***    Cap. 2. El sistema de la ciencia    ***
+***                                        ***
+**********************************************
 noisily PIBDeflactor, anio(`aniovp') $nographs //geo(`geo') //discount(3.0)
 if `c(version)' > 13.1 {
 	saveold "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", replace version(13)
@@ -115,7 +115,7 @@ else {
 ***    3. PARTE III: GASTOS    ***
 ***                            ***
 **********************************
-noisily GastoPC, anio(`aniovp') `nographs' //crec(0.92)
+noisily GastoPC, anio(`aniovp') `nographs' //crec(0.825)
 
 
 
@@ -148,7 +148,7 @@ noisily Simulador AportacionesNetas if AportacionesNetas != 0 [fw=factor], ///
 
 
 ** CUENTA GENERACIONAL **/
-noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) //	<-- OPTIONAL!!! Toma mucho tiempo.
+*noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) //	<-- OPTIONAL!!! Toma mucho tiempo.
 
 
 ** GRAFICA PROYECCION **
@@ -196,7 +196,7 @@ if "$nographs" != "nographs" {
 ***    6. PARTE IV: DEUDA    ***
 ***                          ***
 ********************************
-noisily FiscalGap, anio(`aniovp') $nographs end(2030) //boot(250) //update
+noisily FiscalGap, anio(`aniovp') $nographs end(2050) //boot(250) //update
 
 
 

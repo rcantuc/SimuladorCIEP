@@ -550,6 +550,7 @@ quietly {
 		}
 
 		scalar ingbasPIB = `IngBas'/PIB*100
+		scalar ingbasico = `IngBas'/`pobtot'[1,1]
 
 
 
@@ -761,7 +762,14 @@ quietly {
 	}
 
 	else if "$pais" == "El Salvador" {
-		noisily PEF, anio(`anio') by(divGA) nographs
+
+		if "`anio'" == "2020" {
+			noisily PEF, anio(`anio') by(divGA) nographs aprobado
+		}
+		else {
+			noisily PEF, anio(`anio') by(divGA) nographs
+		}
+		
 		local Pension = r(Pensiones)
 		local Educacion = r(Educaci_c_o__n)
 		local Salud = r(Salud)
@@ -815,7 +823,7 @@ quietly {
 		replace estimacion = estimacion*`GASTOSSIM'[1,`j']/`GASBase'[1,1] if anio >= `anio'
 		
 		if "`k'" == "OtrosGas" {
-			replace estimacion = estimacion*`GASTOSSIM'[1,`j']/`GASBase'[1,1]*`crec' if anio >= `anio'
+			*replace estimacion = estimacion*`GASTOSSIM'[1,`j']/`GASBase'[1,1]*`crec' if anio >= `anio'
 		}
 
 		local ++j
@@ -885,7 +893,39 @@ quietly {
 			/*"costodeuPIB "*/ %8.3f costodeuPIB ", " ///
 			/*"otrosgasPIB "*/ %8.3f otrosgasPIB ", " ///
 			/*"ingbasPIB "*/ %8.3f ingbasPIB ///
-		"]"
+			"]"		
+		noisily di in w "INPUTSG: " in w "["  ///
+			/*"basicaPIB "*/ %8.0f basica ", " ///
+			/*"medsupPIB "*/ %8.0f medsup ", " ///
+			/*"superiPIB "*/ %8.0f superi ", " ///
+			/*"posgraPIB "*/ %8.0f posgra ", " ///
+			/*"eduaduPIB "*/ %8.0f eduadu ", " ///
+			/*"otrosePIB "*/ %8.0f otrose ", " ///
+			/*"educacPIB "*/ %8.0f educacion ", " ///
+			/*"ssaPIB "*/ %8.0f ssa ", " ///
+			/*"prospePIB "*/ %8.0f prospe ", " ///
+			/*"segpopPIB "*/ %8.0f segpop ", " ///
+			/*"imssPIB "*/ %8.0f imss ", " ///
+			/*"issstePIB "*/ %8.0f issste ", " ///
+			/*"pemexPIB "*/ %8.0f pemex ", " ///
+			/*"saludPIB "*/ %8.0f salud ", " ///
+			/*"bienestarPIB "*/ %8.0f bienestar ", " ///
+			/*"penimsPIB "*/ %8.0f penims ", " ///
+			/*"penissPIB "*/ %8.0f peniss ", " ///
+			/*"penotrPIB "*/ %8.0f penotr ", " ///
+			/*"pensionPIB "*/ %8.0f pensiones ", " ///
+			/*"servpersPIB "*/ %8.0f servpers ", " ///
+			/*"matesumiPIB "*/ %8.0f matesumi ", " ///
+			/*"gastgenePIB "*/ %8.0f gastgene ", " ///
+			/*"substranPIB "*/ %8.0f substran ", " ///
+			/*"bienmuebPIB "*/ %8.0f bienmueb ", " ///
+			/*"obrapublPIB "*/ %8.0f obrapubl ", " ///
+			/*"invefinaPIB "*/ %8.0f invefina ", " ///
+			/*"partaporPIB "*/ %8.0f partapor ", " ///
+			/*"costodeuPIB "*/ %8.0f costodeu ", " ///
+			/*"otrosgasPIB "*/ %8.0f otrosgastos ", " ///
+			/*"ingbasPIB "*/ %8.0f ingbasico ///
+			"]"
 		noisily di in w "GASTOSTOTAL: " in w "["  ///
 			%8.3f educacPIB +saludPIB+pensionPIB+otrosgasPIB+ingbasPIB ///
 		"]"
