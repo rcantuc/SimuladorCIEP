@@ -561,6 +561,13 @@ program define UpdateDatosAbiertos, return
 	replace monto_r = monto*(50879.3-38545.9)/(1664949.1-1257525.4) if anio == 2018 & trimestre == 4
 
 	* 2019+ *
+	replace monto_m = monto*(809833.5-627129.8)/(1664949.1-1257525.4) if anio > 2018
+	replace monto_f = monto*(43683.5-33176.6)/(1664949.1-1257525.4) if anio > 2018
+	replace monto_s = monto*(760552.9-558673.2)/(1664949.1-1257525.4) if anio > 2018
+	replace monto_r = monto*(50879.3-38545.9)/(1664949.1-1257525.4) if anio > 2018
+
+	
+	/* 2019+ *
 	forvalues k=2019(1)`aniovp' {
 		forvalues j=1(1)4 {
 
@@ -604,7 +611,7 @@ program define UpdateDatosAbiertos, return
 				}
 			}
 		}
-	}
+	}*/
 
 	* Modulo isr.ado *
 	egen double monto_pf = rsum(monto_s monto_f)

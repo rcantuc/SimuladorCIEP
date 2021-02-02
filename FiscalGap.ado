@@ -44,7 +44,7 @@ quietly {
 	if "$pais" == "" {
 		capture confirm file "`c(sysdir_personal)'/SIM/XNA0120_m.dta"
 		if _rc != 0 | "`update'" == "update" {
-			DatosAbiertos XNA0120_m, pibvf(3.632)
+			DatosAbiertos XNA0120_m, pibvp(3.714)
 			if `c(version)' > 13.1 {
 				saveold "`c(sysdir_personal)'/SIM/XNA0120_m.dta", replace version(13)
 			}
@@ -485,7 +485,7 @@ quietly {
 	}
 
 	forvalues k = `=`anio''(1)`=anio[_N]' {
-		replace estimacioncostodeuda = L.costodeudashrfsp/100*L.shrfsp if anio == `k'
+		replace estimacioncostodeuda = costodeudashrfsp/100*L.shrfsp if anio == `k'
 		*replace estimacioncostodeuda = 0 if estimacioncostodeuda < 0
 
 		capture confirm variable rfspBalance
@@ -762,6 +762,7 @@ quietly {
 	*****************************************
 	*** 5 Fiscal Gap: Cuenta Generacional ***
 	*****************************************
+	preserve
 	use `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
 
 	collapse (sum) poblacion if edad == 0, by(anio) fast
@@ -790,6 +791,7 @@ quietly {
 			in y _col(35) %25.0fc ((-(-`shrfsp'[1,1] + `estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1])/(`poblacionVP'[1,1]+`poblacionINF'))/GA[1,3]-1)*100 ///
 			in g " %"
 	}
+	restore
 
 
 

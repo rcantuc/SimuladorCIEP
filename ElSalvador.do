@@ -42,7 +42,7 @@ capture mkdir "`c(sysdir_personal)'/users/$pais/"
 ** AÑO VALOR BASE **
 local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
-local aniovp = 2020
+local aniovp = 2021
 
 
 
@@ -56,11 +56,11 @@ local aniovp = 2020
 
 *******************************
 ** PARAMETROS SIMULADOR: PIB **
-*global pib2020 = -7.200
-*global pib2021 =  4.600
-*global pib2022 =  3.100
+global pib2020 = -7.200
+global pib2021 =  4.600
+global pib2022 =  3.100
 
-global pib2020 =  2.5
+*global pib2020 =  2.5
 
 /*global pib2023 =  2.500
 global pib2024 =  2.500
@@ -83,12 +83,9 @@ Poblacion, anio(`aniovp') $nographs //update //aniofinal(2040)
 
 ** HOUSEHOLDS **
 capture confirm file `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PensionREC.dta"'
-*if _rc != 0 {
-	local id = "$id"
-	global id = ""
+if _rc != 0 {
 	noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' 2018
-	global id = "`id'"
-*}
+}
 
 
 
@@ -173,7 +170,7 @@ if "$nographs" != "nographs" {
 		ytitle("% PIB") ///
 		yscale(range(0)) /*ylabel(0(1)4)*/ ///
 		ylabel(0(1)5, format(%20.1fc) labsize(small)) ///
-		xlabel(1990(10)2050, labsize(small) labgap(2)) ///
+		xlabel(1990(10)2100, labsize(small) labgap(2)) ///
 		xtitle("") ///
 		legend(off) ///
 		text(`=`MAX'[1,1]' `aniomax' "{bf:M{c a'}ximo:} `aniomax'", place(w)) ///
