@@ -134,10 +134,10 @@ quietly {
 			_col(99) in g "Tasa efectiva" "}"
 		noisily di in g _dup(111) "-"
 		noisily di in g "  Compensaci{c o'}n de asalariados" ///
-			_col(44) %7.3fc in y (RemSal)/scalar(PIB)*100 ///
+			_col(44) %7.3fc in y RemSal/scalar(PIB)*100 ///
 			_col(55) in g "ISR (salarios)" ///
 			_col(88) %7.3fc in y (`recISR_AS')/scalar(PIB)*100 ///
-			_col(99) %7.1fc in y (`recISR_AS')/(RemSal)*100 " %"
+			_col(99) %7.1fc in y (`recISR_AS')/RemSal*100 " %"
 		noisily di in g "  Ingreso mixto laboral" ///
 			_col(44) %7.3fc in y MixL/scalar(PIB)*100 ///
 			_col(55) in g "ISR (f{c i'}sicas)" ///
@@ -328,6 +328,22 @@ quietly {
 			%8.3f OYE ", " ///
 			%8.3f OtrosC ", " ///
 			%8.3f ingcapitalPIB ///
+		"]"			
+		noisily di in w "INPUTSI: " in w "["  ///
+			%8.3f `recISR_AS'/(RemSal)*100 ", " ///
+			%8.3f `recISR_PF'/MixL*100 ", " ///
+			%8.3f `recCuotas_'/(RemSal+SSImputada+SSEmpleadores)*100 ", " ///
+			%8.3f (`recISR_AS'+`recISR_PF'+`recCuotas_')/(Yl)*100 ", " ///
+			%8.3f `recIVA'/(ConHog - Alim - BebN - Salu)*100 ", " ///
+			%8.3f `recISAN'/Vehi*100 ", " ///
+			%8.3f `recIEPS'/ConHog*100 ", " ///
+			%8.3f (`recImporta'/scalar(PIB)*100)/scalar(importacionesBCPIB)*100 ", " ///
+			%8.3f (`recIEPS'+`recIVA'+`recISAN'+`recImporta')/ConHog*100 ", " ///
+			%8.3f `recISR_PM'/(ExNOpSoc)*100 ", " ///
+			%8.3f `recFMP__De'/(CapIncImp-ExNOpHog)*100 ", " ///
+			%8.3f `recOYE'/(CapIncImp-ExNOpHog)*100 ", " ///
+			%8.3f `recOtrosC'/(CapIncImp-ExNOpHog)*100 ", " ///
+			%8.3f (`recISR_PM'+`recFMP__De'+`recOYE'+`recOtrosC')/(CapIncImp)*100 ///
 		"]"	
 		noisily di in w "INGRESOSTOTAL: " in w "["  ///
 			%8.3f inglaboralPIB+ingconsumoPIB+ingcapitalPIB ///

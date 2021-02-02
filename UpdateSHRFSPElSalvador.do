@@ -24,12 +24,7 @@
 **************
 ** 2 SHRFSP **
 **************
-	if "`c(os)'" == "Unix" {
-		import excel "/home/ciepmx/Dropbox (CIEP)/UNICEF GA/shrfspElSalvador.xlsx", sheet("Sheet1") clear
-	}
-	if "`c(os)'" == "MacOSX" {
-		import excel "/Users/ricardo/Dropbox (CIEP)/UNICEF GA/shrfspElSalvador.xlsx", sheet("Sheet1") clear
-	}
+	import excel "`c(sysdir_site)'../basesCIEP/Otros/El Salvador/shrfspElSalvador.xlsx", sheet("Sheet1") clear
 	*drop if R == ""
 	*drop R
 

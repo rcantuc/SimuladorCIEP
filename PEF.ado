@@ -34,7 +34,7 @@ quietly {
 	****************
 	use in 1 using "`c(sysdir_personal)'/SIM/$pais/PEF.dta", clear
 	syntax [if] [, ANIO(int `aniovp') NOGraphs Update Base ID(string) ///
-		BY(varname) ROWS(int 1) COLS(int 5) MINimum(real 1) PEF PPEF]
+		BY(varname) ROWS(int 1) COLS(int 5) MINimum(real 1) PEF PPEF APROBado]
 
 	if "`ppef'" == "ppef" {
 		local textintro = "PPEF"
@@ -74,7 +74,7 @@ quietly {
 	***************
 	*** 3 Merge ***
 	***************
-	collapse (sum) gasto*, by(anio `by' transf_gf) 
+	collapse (sum) gasto* aprobado, by(anio `by' transf_gf) 
 	merge m:1 (anio) using `PIB', nogen keepus(pibY indiceY deflator var_pibY) ///
 		update replace keep(matched) sorted
 	local aniofirst = anio[1]
@@ -84,6 +84,16 @@ quietly {
 	if "`ppef'" == "ppef" {
 		replace gasto = proyecto if anio == `anio'
 		replace gastoneto = proyectoneto if anio == `anio'
+	}
+	if "`aprobado'" == "aprobado" {
+		replace gasto = aprobado if anio == `anio'
+		capture confirm variable aprobadoneto
+		if _rc == 0 {
+			replace gastoneto = aprobadoneto if anio == `anio'
+		}
+		else {
+			replace gastoneto = aprobado if anio == `anio'
+		}
 	}
 
 	** 3.2 Valores como % del PIB **
