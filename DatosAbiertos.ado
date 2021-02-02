@@ -1,6 +1,9 @@
 program define DatosAbiertos, return
 quietly {
 
+	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
+	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
+
 	syntax anything [if/] [, Graphs PIBVP(real -999) PIBVF(real -999) UPDATE DESDE(real 1993)]
 
 	PIBDeflactor, nographs nooutput
@@ -76,10 +79,20 @@ quietly {
 		replace nombre = "`nombre'" in -1
 	}
 
+	if `pibvp' != -999 {
+		if `aniovp' == `last_anio'+1 {
+			tsappend, add(1)
+		}
+		local clave = clave_de_concepto[1]
+		replace clave_de_concepto = "`clave'" in -1
+		local nombre = nombre[1]
+		replace nombre = "`nombre'" in -1
+	}
+
 	merge m:1 (anio) using `PIB', nogen keep(matched) keepus(pibY)			
 
 	if `pibvp' != -999 {
-		replace monto = `pibvp'/100*pibY if mes < 12
+		replace monto = `pibvp'/100*pibY if mes < 12 | mes == .
 		local palabra "Estimado"
 	}
 

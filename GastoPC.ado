@@ -823,7 +823,7 @@ quietly {
 		replace estimacion = estimacion*`GASTOSSIM'[1,`j']/`GASBase'[1,1] if anio >= `anio'
 		
 		if "`k'" == "OtrosGas" {
-			*replace estimacion = estimacion*`GASTOSSIM'[1,`j']/`GASBase'[1,1]*`crec' if anio >= `anio'
+			replace estimacion = estimacion*`GASTOSSIM'[1,`j']/`GASBase'[1,1]*`crec' if anio >= `anio'
 		}
 
 		local ++j
