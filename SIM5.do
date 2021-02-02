@@ -7,6 +7,9 @@ if "`c(username)'" == "ricardo" {
 	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
 	*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
 }
+if "`c(username)'" == "ciepmx" {
+	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
+}
 ** PARAMETROS SIMULADOR: DIRECTORIOS **
 ***************************************
 
@@ -228,8 +231,8 @@ noisily GastoPC, anio(`aniovp') `nographs'
 ** PARAMETROS SIMULADOR: INGRESOS **
 ** Al ingreso **
 scalar ISRAS   = 22.018*15.6/100 	//		ISR (asalariados): 3.428
-scalar ISRPF   = 13.211*3.3/100 	//		ISR (personas f{c i'}sicas): 0.438
-scalar CuotasT = 26.454*5.7/100		//		Cuotas (IMSS): 1.515
+scalar ISRPF   = 13.211* 3.3/100 	//		ISR (personas f{c i'}sicas): 0.438
+scalar CuotasT = 26.454* 5.7/100	//		Cuotas (IMSS): 1.515
 
 * Al consumo *
 scalar IVA     = 47.277*8.2/100 	//		IVA: 3.885
@@ -239,9 +242,9 @@ scalar Importa = 31.060*0.8/100 	//		Importaciones: 0.245
 
 * Al capital *
 scalar ISRPM   = 25.438*14.6/100 	//		ISR (personas morales): 3.710
-scalar FMP     = 38.125*3.6/100 	//		Fondo Mexicano del Petr{c o'}leo: 1.362
+scalar FMP     = 38.125* 3.6/100 	//		Fondo Mexicano del Petr{c o'}leo: 1.362
 scalar OYE     = 38.125*11.2/100 	//		Organismos y empresas (IMSS + ISSSTE + Pemex + CFE): 4.274
-scalar OtrosC  = 38.125*2.8/100		//		Productos, derechos, aprovechamientos, contribuciones: 1.070
+scalar OtrosC  = 38.125* 2.8/100	//		Productos, derechos, aprovechamientos, contribuciones: 1.070
 ** PARAMETROS SIMULADOR: INGRESOS **
 ***********************************/
 
