@@ -139,7 +139,7 @@ if "$pais" == "" & "$export" != "" {
 
 **********************************
 ** PARAMETROS SIMULADOR: GASTOS **
-/* Educacion *
+* Educacion *
 scalar basica = 21325 //		Educaci{c o'}n b{c a'}sica
 scalar medsup = 21056 //		Educaci{c o'}n media superior
 scalar superi = 38111 //		Educaci{c o'}n superior
@@ -195,7 +195,7 @@ noisily GastoPC, anio(`aniovp') `nographs'
 
 ************************************
 ** PARAMETROS SIMULADOR: INGRESOS **
-/** Al ingreso **
+** Al ingreso **
 scalar ISRAS   = 22.018*15.6/100 	//		ISR (asalariados): 3.428
 scalar ISRPF   = 13.211*3.3/100 	//		ISR (personas f{c i'}sicas): 0.438
 scalar CuotasT = 26.454*5.7/100		//		Cuotas (IMSS): 1.515
@@ -369,6 +369,7 @@ if "$output" == "output" {
 	quietly log on output
 	noisily di in w "PROY: [`=substr("`out_proy'",1,`=`lengthproy'-1')']"
 	noisily di in w "PROYMAX: [`aniomax']"
+	noisily di in w "CRECPIB: [$pib2021,$pib2022,$pib2023,$pib2024,$pib2025]"
 	quietly log off output
 }
 
