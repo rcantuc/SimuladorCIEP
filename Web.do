@@ -329,7 +329,7 @@ noisily Simulador AportacionesNetas if AportacionesNetas != 0 [fw=factor], ///
 ** GRAFICA PROYECCION **
 use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/AportacionesNetasREC.dta"', clear
 merge 1:1 (anio) using `"`c(sysdir_personal)'/users/$pais/$id/PIB.dta"', nogen
-replace estimacion = estimacion/pibYR*100
+replace estimacion = estimacion/1000000000000
 
 tabstat estimacion, stat(max) save
 tempname MAX
@@ -345,9 +345,9 @@ forvalues k=1(1)`=_N' {
 
 if "$nographs" != "nographs" {
 	twoway (connected estimacion anio) (connected estimacion anio if anio == `aniovp') if anio > 1990, ///
-		ytitle("% PIB") ///
+		ytitle("billones de MXN `aniovp'") ///
 		yscale(range(0)) /*ylabel(0(1)4)*/ ///
-		ylabel(0(1)5, format(%20.1fc) labsize(small)) ///
+		ylabel(#4, format(%20.1fc) labsize(small)) ///
 		xlabel(1990(10)2050, labsize(small) labgap(2)) ///
 		xtitle("") ///
 		legend(off) ///
