@@ -323,7 +323,7 @@ noisily Simulador AportacionesNetas if AportacionesNetas != 0 [fw=factor], ///
 
 
 ** CUENTA GENERACIONAL **
-noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) //	<-- OPTIONAL!!! Toma mucho tiempo.
+*noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) //	<-- OPTIONAL!!! Toma mucho tiempo.
 
 
 ** GRAFICA PROYECCION **
