@@ -5,7 +5,7 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
-	syntax [, ANIO(int `aniovp') OUTPUT NOGraphs CREC(real 1)]
+	syntax [, ANIO(int `aniovp') OUTPUT NOGraphs OTROS(real 1)]
 
 	noisily di _newline(2) in g _dup(20) "." "{bf:   Transferencias per c{c a'}pita de los GASTOS " in y `anio' "   }" in g _dup(20) "."
 
@@ -787,7 +787,7 @@ quietly {
 		replace Pension = Pension*`Pension'/`GASTOS'[1,1]
 		replace Educacion = Educacion*`Educacion'/`GASTOS'[1,2]
 		replace Salud = Salud*`Salud'/`GASTOS'[1,3]
-		replace OtrosGas = OtrosGas*`OtrosGas'/`GASTOS'[1,4] // *`crec'
+		replace OtrosGas = OtrosGas*`OtrosGas'/`GASTOS'[1,4]*`otros'
 
 		tabstat Pension Educacion Salud OtrosGas Infra [fw=factor], stat(sum) f(%20.0fc) save
 		tempname GASTOSSIM TRANSFSIM
@@ -822,9 +822,9 @@ quietly {
 
 		replace estimacion = estimacion*`GASTOSSIM'[1,`j']/`GASBase'[1,1] if anio >= `anio'
 		
-		*if "`k'" == "OtrosGas" {
-		*	replace estimacion = estimacion*`GASTOSSIM'[1,`j']/`GASBase'[1,1]*`crec' if anio >= `anio'
-		*}
+		if "`k'" == "OtrosGas" {
+			replace estimacion = estimacion*`GASTOSSIM'[1,`j']/`GASBase'[1,1]*`otros' if anio >= `anio'
+		}
 
 		local ++j
 		if `c(version)' > 13.1 {
