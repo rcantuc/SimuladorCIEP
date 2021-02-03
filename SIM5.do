@@ -379,7 +379,7 @@ if "$nographs" != "nographs" {
 ***                                   ***
 ***    5. PARTE IV: REDISTRIBUCION    ***
 ***                                   ***
-/*****************************************
+*****************************************
 use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
 capture g AportacionesNetas = Laboral + Consumo + ISR__PM + ing_cap_fmp ///
 	- Pension - Educacion - Salud - IngBasico - PenBienestar - Infra
@@ -397,7 +397,7 @@ noisily Simulador AportacionesNetas if AportacionesNetas != 0 [fw=factor], ///
 
 
 ** CUENTA GENERACIONAL **
-*noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) //	<-- OPTIONAL!!! Toma mucho tiempo.
+noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) //	<-- OPTIONAL!!! Toma mucho tiempo.
 
 
 ** GRAFICA PROYECCION **

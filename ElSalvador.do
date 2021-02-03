@@ -20,9 +20,10 @@ if "`c(username)'" == "ricardo" {
 
 ***********************************/
 ** PARAMETROS SIMULADOR: OPCIONES **
-*if "`c(username)'" != "ricardo" {
-	global pais = "El Salvador"			// Comentar o "" (vacío) para Mexico
-*}
+global pais = "El Salvador"			// Comentar o "" (vacío) para Mexico
+if "`c(username)'" != "ricardo" {
+	global id = "`c(username)'"
+}
 ** PARAMETROS SIMULADOR: OPCIONES **
 ************************************
 
@@ -48,12 +49,13 @@ capture mkdir "`c(sysdir_personal)'/SIM/"
 capture mkdir "`c(sysdir_personal)'/users/"
 capture mkdir "`c(sysdir_personal)'/users/$id/"
 capture mkdir "`c(sysdir_personal)'/users/$pais/"
+capture mkdir "`c(sysdir_personal)'/users/$pais/$id"
 
 
 ** AÑO VALOR BASE **
 local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
-local aniovp = 2021
+local aniovp = 2020
 
 
 
@@ -67,21 +69,27 @@ local aniovp = 2021
 
 *******************************
 ** PARAMETROS SIMULADOR: PIB **
-*global pib2020 = -7.200
-*global pib2021 =  4.600
-*global pib2022 =  3.100
 
+/* Pre covid * 
 global pib2020 =  2.5
 
-/*global pib2023 =  2.500
+* Post covid */
+global pib2020 = -7.200
+global pib2021 =  4.600
+global pib2022 =  3.100
+
+/* Escenario 1 *
+global pib2023 =  2.500
 global pib2024 =  2.500
 global pib2025 =  2.500
 global pib2026 =  2.500
 global pib2027 =  2.500
 global pib2028 =  2.500
 global pib2029 =  2.500
-global pib2030 =  2.500*/
+global pib2030 =  2.500
 
+
+* Otros */
 global def2020 =  0.383
 global def2021 =  0.512
 ** PARAMETROS SIMULADOR: PIB **
@@ -95,7 +103,10 @@ Poblacion, anio(`aniovp') $nographs //update //aniofinal(2040)
 ** HOUSEHOLDS **
 capture confirm file `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PensionREC.dta"'
 if _rc != 0 {
+	local id = "$id"
+	global id = ""
 	noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' 2018
+	global id = "`id'"
 }
 
 
@@ -123,7 +134,7 @@ else {
 ***    3. PARTE III: GASTOS    ***
 ***                            ***
 **********************************
-noisily GastoPC, anio(`aniovp') `nographs' //crec(0.825)
+noisily GastoPC, anio(`aniovp') `nographs' //otros(0.95)
 
 
 
@@ -133,7 +144,7 @@ noisily GastoPC, anio(`aniovp') `nographs' //crec(0.825)
 ***    4. PARTE II: INGRESOS    ***
 ***                             ***
 ***********************************
-noisily TasasEfectivas, anio(`aniovp') `nographs' //crec(1.02)
+noisily TasasEfectivas, anio(`aniovp') `nographs' //crecsim(1.05)
 
 
 
@@ -142,7 +153,7 @@ noisily TasasEfectivas, anio(`aniovp') `nographs' //crec(1.02)
 ***                                   ***
 ***    5. PARTE IV: REDISTRIBUCION    ***
 ***                                   ***
-/*****************************************
+*****************************************
 use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
 capture g AportacionesNetas = (Laboral + Consumo + ISR__PM + ing_cap_fmp) ///
 	+ (- Pension - Educacion - Salud - IngBasico - PenBienestar - Infra)
@@ -162,7 +173,6 @@ noisily Simulador AportacionesNetas if AportacionesNetas != 0 [fw=factor], ///
 ** GRAFICA PROYECCION **
 use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/AportacionesNetasREC.dta"', clear
 merge 1:1 (anio) using `"`c(sysdir_personal)'/users/$pais/$id/PIB.dta"', nogen
-*replace estimacion = estimacion/pibYR*100
 replace estimacion = estimacion/1000000000
 
 tabstat estimacion, stat(max) save
