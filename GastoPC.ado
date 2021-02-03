@@ -763,7 +763,7 @@ quietly {
 
 	else if "$pais" == "El Salvador" {
 
-		if "`anio'" == "2020" {
+		if `aniovp' > `anio' {
 			noisily PEF, anio(`anio') by(divGA) nographs aprobado
 		}
 		else {
@@ -787,7 +787,7 @@ quietly {
 		replace Pension = Pension*`Pension'/`GASTOS'[1,1]
 		replace Educacion = Educacion*`Educacion'/`GASTOS'[1,2]
 		replace Salud = Salud*`Salud'/`GASTOS'[1,3]
-		replace OtrosGas = OtrosGas*`OtrosGas'/`GASTOS'[1,4]*`crec'
+		replace OtrosGas = OtrosGas*`OtrosGas'/`GASTOS'[1,4] // *`crec'
 
 		tabstat Pension Educacion Salud OtrosGas Infra [fw=factor], stat(sum) f(%20.0fc) save
 		tempname GASTOSSIM TRANSFSIM
@@ -822,9 +822,9 @@ quietly {
 
 		replace estimacion = estimacion*`GASTOSSIM'[1,`j']/`GASBase'[1,1] if anio >= `anio'
 		
-		if "`k'" == "OtrosGas" {
-			replace estimacion = estimacion*`GASTOSSIM'[1,`j']/`GASBase'[1,1]*`crec' if anio >= `anio'
-		}
+		*if "`k'" == "OtrosGas" {
+		*	replace estimacion = estimacion*`GASTOSSIM'[1,`j']/`GASBase'[1,1]*`crec' if anio >= `anio'
+		*}
 
 		local ++j
 		if `c(version)' > 13.1 {
@@ -924,7 +924,9 @@ quietly {
 			/*"partaporPIB "*/ %8.0f partapor ", " ///
 			/*"costodeuPIB "*/ %8.0f costodeu ", " ///
 			/*"otrosgasPIB "*/ %8.0f otrosgastos ", " ///
-			/*"ingbasPIB "*/ %8.0f ingbasico ///
+			/*"costodeuPIB "*/ %8.0f ingbasico ", " ///
+			/*"otrosgasPIB "*/ %8.0f ingbasico18 ", " ///
+			/*"ingbasPIB "*/ %8.0f ingbasico65 ///
 			"]"
 		noisily di in w "GASTOSTOTAL: " in w "["  ///
 			%8.3f educacPIB +saludPIB+pensionPIB+otrosgasPIB+ingbasPIB ///

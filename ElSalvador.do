@@ -1,21 +1,32 @@
-*****************************************************
-****    SECTION FOR PROGRAMMING PURPOSES ONLY    ****
-****         MUST BE COMMENTED OTHERWISE         ****
-*****************************************************
+**************************************/
+** PARAMETROS SIMULADOR: DIRECTORIOS **
 clear all
 macro drop _all
 capture log close _all
 if "`c(username)'" == "ricardo" {
 	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
 }
+** PARAMETROS SIMULADOR: DIRECTORIOS **
+***************************************
+
+
+************************************
+** PARAMETROS SIMULADOR: OPCIONES **
+*global nographs "nographs"
+*global output "output"
+** PARAMETROS SIMULADOR: OPCIONES **
+************************************
 
 
 ***********************************/
 ** PARAMETROS SIMULADOR: OPCIONES **
-global pais = "El Salvador"			// Comentar o "" (vacío) para Mexico
-*global nographs = "nographs"
+*if "`c(username)'" != "ricardo" {
+	global pais = "El Salvador"			// Comentar o "" (vacío) para Mexico
+*}
 ** PARAMETROS SIMULADOR: OPCIONES **
 ************************************
+
+
 
 
 
@@ -56,11 +67,11 @@ local aniovp = 2021
 
 *******************************
 ** PARAMETROS SIMULADOR: PIB **
-global pib2020 = -7.200
-global pib2021 =  4.600
-global pib2022 =  3.100
+*global pib2020 = -7.200
+*global pib2021 =  4.600
+*global pib2022 =  3.100
 
-*global pib2020 =  2.5
+global pib2020 =  2.5
 
 /*global pib2023 =  2.500
 global pib2024 =  2.500
@@ -131,7 +142,7 @@ noisily TasasEfectivas, anio(`aniovp') `nographs' //crec(1.02)
 ***                                   ***
 ***    5. PARTE IV: REDISTRIBUCION    ***
 ***                                   ***
-*****************************************
+/*****************************************
 use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
 capture g AportacionesNetas = (Laboral + Consumo + ISR__PM + ing_cap_fmp) ///
 	+ (- Pension - Educacion - Salud - IngBasico - PenBienestar - Infra)
@@ -144,14 +155,15 @@ noisily Simulador AportacionesNetas if AportacionesNetas != 0 [fw=factor], ///
 	base("ENIGH 2018") boot(1) reboot nographs anio(`aniovp')
 
 
-** CUENTA GENERACIONAL **/
+** CUENTA GENERACIONAL **
 *noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) //	<-- OPTIONAL!!! Toma mucho tiempo.
 
 
 ** GRAFICA PROYECCION **
 use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/AportacionesNetasREC.dta"', clear
 merge 1:1 (anio) using `"`c(sysdir_personal)'/users/$pais/$id/PIB.dta"', nogen
-replace estimacion = estimacion/pibYR*100
+*replace estimacion = estimacion/pibYR*100
+replace estimacion = estimacion/1000000000
 
 tabstat estimacion, stat(max) save
 tempname MAX
@@ -167,9 +179,9 @@ forvalues k=1(1)`=_N' {
 
 if "$nographs" != "nographs" {
 	twoway (connected estimacion anio) (connected estimacion anio if anio == `aniovp') if anio > 1990, ///
-		ytitle("% PIB") ///
+		ytitle("billions USD `aniovp'") ///
 		yscale(range(0)) /*ylabel(0(1)4)*/ ///
-		ylabel(0(1)5, format(%20.1fc) labsize(small)) ///
+		ylabel(#4, format(%20.0fc) labsize(small)) ///
 		xlabel(1990(10)2100, labsize(small) labgap(2)) ///
 		xtitle("") ///
 		legend(off) ///
@@ -193,7 +205,7 @@ if "$nographs" != "nographs" {
 ***    6. PARTE IV: DEUDA    ***
 ***                          ***
 ********************************
-noisily FiscalGap, anio(`aniovp') $nographs end(2050) //boot(250) //update
+noisily FiscalGap, anio(`aniovp') $nographs end(2030) //boot(250) //update
 
 
 

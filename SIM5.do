@@ -7,9 +7,6 @@ if "`c(username)'" == "ricardo" {
 	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
 	*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
 }
-if "`c(username)'" == "ciepmx" {
-	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
-}
 ** PARAMETROS SIMULADOR: DIRECTORIOS **
 ***************************************
 
@@ -33,14 +30,14 @@ if "`c(username)'" != "ricardo" {
 
 
 
+
 ************************/
 ***                   ***
 ***    0. ARRANQUE    ***
 ***                   ***
 *************************
 timer on 1
-noisily di _newline(50) _col(35) in w "Simulador Fiscal CIEP v5.0" ///
-	_newline _col(43) in y "$pais"
+noisily di _newline(50) _col(35) in w "Simulador Fiscal CIEP v5.0" _newline _col(43) in y "$pais"
 
 
 ** DIRECTORIOS **
@@ -71,6 +68,26 @@ if "$output" == "output" {
 ***    1. SET-UP: Cap. 3. La economia antropocentrica    ***
 ***                                                      ***
 ************************************************************
+
+
+*******************************
+** PARAMETROS SIMULADOR: PIB **
+global pib2020 = -8.0
+global pib2021 =  4.6
+global pib2022 =  2.6
+global pib2023 =  2.5
+global pib2024 =  2.5
+global pib2025 =  2.5
+
+* 2025+ *
+global pib2026 =  $pib2025
+global pib2027 =  $pib2025
+global pib2028 =  $pib2025
+global pib2029 =  $pib2025
+global pib2030 =  $pib2025
+** PARAMETROS SIMULADOR: PIB */
+*******************************
+
 
 ** POBLACION **
 *forvalues k=1950(1)2050 {
@@ -123,19 +140,6 @@ if _rc != 0 {
 ***    Cap. 2. El sistema de la ciencia    ***
 ***                                        ***
 **********************************************
-
-
-*******************************
-** PARAMETROS SIMULADOR: PIB **
-global pib2020 = -8.0
-global pib2021 =  4.6
-global pib2022 =  2.6
-global pib2023 =  2.5
-global pib2024 =  2.5
-global pib2025 =  2.5
-** PARAMETROS SIMULADOR: PIB **
-*******************************
-
 
 ** OTROS PARAMETROS **
 global def2020 =  3.568
@@ -375,7 +379,7 @@ if "$nographs" != "nographs" {
 ***                                   ***
 ***    5. PARTE IV: REDISTRIBUCION    ***
 ***                                   ***
-*****************************************
+/*****************************************
 use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
 capture g AportacionesNetas = Laboral + Consumo + ISR__PM + ing_cap_fmp ///
 	- Pension - Educacion - Salud - IngBasico - PenBienestar - Infra
@@ -465,7 +469,6 @@ if "$output" == "output" {
 ***    6. PARTE IV: DEUDA    ***
 ***                          ***
 ********************************
-
 
 ** SANKEY **
 foreach k in escol decil /*sexo grupoedad*/ {
