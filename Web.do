@@ -99,6 +99,13 @@ global pib2022 =  2.6
 global pib2023 =  2.5
 global pib2024 =  2.5
 global pib2025 =  2.5
+
+* 2025+ *
+global pib2026 =  $pib2025
+global pib2027 =  $pib2025
+global pib2028 =  $pib2025
+global pib2029 =  $pib2025
+global pib2030 =  $pib2025
 ** PARAMETROS SIMULADOR: PIB **
 *******************************
 
