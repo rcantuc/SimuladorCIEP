@@ -263,9 +263,9 @@ quietly {
 		tempname INGRESOS
 		matrix `INGRESOS' = r(StatTotal)
 		
-		replace Laboral = Laboral*`Laboral'/`INGRESOS'[1,1]*`crec'
-		replace Consumo = Consumo*`Consumo'/`INGRESOS'[1,2]*`crec'
-		replace OtrosC = OtrosC*`OtrosC'/`INGRESOS'[1,3]*`crec'
+		replace Laboral = Laboral*`Laboral'/`INGRESOS'[1,1] // *`crec'
+		replace Consumo = Consumo*`Consumo'/`INGRESOS'[1,2] // *`crec'
+		replace OtrosC = OtrosC*`OtrosC'/`INGRESOS'[1,3] // *`crec'
 
 		tabstat Laboral Consumo OtrosC [fw=factor], stat(sum) f(%20.0fc) save
 		tempname INGRESOSSIM
@@ -295,7 +295,7 @@ quietly {
 		tabstat estimacion if anio == `anio', stat(sum) f(%20.0fc) save
 		matrix `RECBase' = r(StatTotal)
 
-		replace estimacion = estimacion*`INGRESOSSIM'[1,`j']/`RECBase'[1,1]*`crec' if anio >= `anio'
+		replace estimacion = estimacion*`INGRESOSSIM'[1,`j']/`RECBase'[1,1] /*`crec'*/ if anio >= `anio'
 
 		local ++j
 		if `c(version)' > 13.1 {

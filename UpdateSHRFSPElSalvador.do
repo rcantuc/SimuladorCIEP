@@ -111,6 +111,8 @@ tsset anio
 
 g tipoDeCambio = 1
 
+keep if anio <= 2020
+
 compress
 if `c(version)' == 15.1 {
 	saveold `"`c(sysdir_personal)'/SIM/$pais/SHRFSP.dta"', replace version(13)
