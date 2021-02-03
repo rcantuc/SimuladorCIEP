@@ -446,7 +446,7 @@ if "$nographs" != "nographs" {
 }
 
 
-** OUTPUT **
+** OUTPUT **/
 if "$output" == "output" {
 	forvalues k=1(5)`=_N' {
 		if anio[`k'] >= 2010 {
@@ -458,13 +458,14 @@ if "$output" == "output" {
 	quietly log on output
 	noisily di in w "PROY: [`=substr("`out_proy'",1,`=`lengthproy'-1')']"
 	noisily di in w "PROYMAX: [`aniomax']"
+	noisily di in w "CRECPIB: [$pib2021,$pib2022,$pib2023,$pib2024,$pib2025]"
 	quietly log off output
 }
 
 
 
 
-*******************************/
+********************************
 ***                          ***
 ***    6. PARTE IV: DEUDA    ***
 ***                          ***
