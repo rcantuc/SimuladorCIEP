@@ -9,7 +9,7 @@ if "`c(username)'" == "ricardo" {
 }
 if "`c(username)'" == "ciepmx" {
 	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
-	global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
+	global export "/home/ciepmx/Dropbox (CIEP)/Textbook/images/"
 }
 ** PARAMETROS SIMULADOR: DIRECTORIOS **
 ***************************************
