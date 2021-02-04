@@ -7,6 +7,10 @@ if "`c(username)'" == "ricardo" {
 	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
 	*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
 }
+if "`c(username)'" == "ciepmx" {
+	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
+	*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
+}
 ** PARAMETROS SIMULADOR: DIRECTORIOS **
 ***************************************
 
@@ -21,7 +25,7 @@ if "`c(username)'" == "ricardo" {
 
 ****************************************/
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
-if "`c(username)'" != "ricardo" {
+if "`c(username)'" != "ricardo" & "`c(username)'" != "ciepmx" {
 	global id = "`c(username)'"
 }
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
@@ -79,14 +83,22 @@ global pib2023 =  2.5
 global pib2024 =  2.5
 global pib2025 =  2.5
 
-* 2025+ *
+
+** 2025+ **
 global pib2026 =  $pib2025
 global pib2027 =  $pib2025
 global pib2028 =  $pib2025
 global pib2029 =  $pib2025
 global pib2030 =  $pib2025
-** PARAMETROS SIMULADOR: PIB */
-*******************************
+
+
+** OTROS PARAMETROS **
+global def2020 =  3.568
+global def2021 =  3.425
+global inf2020 =  3.500
+global inf2021 =  3.000
+** PARAMETROS SIMULADOR: PIB **
+******************************/
 
 
 ** POBLACION **
@@ -96,7 +108,7 @@ foreach k in `aniovp' {
 }
 
 capture confirm file `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PensionREC.dta"'
-if _rc != 0 {
+if _rc != 0 | "$export" != "" {
 
 	** HOUSEHOLDS: INCOMES **
 	local id = "$id"
@@ -140,14 +152,6 @@ if _rc != 0 {
 ***    Cap. 2. El sistema de la ciencia    ***
 ***                                        ***
 **********************************************
-
-** OTROS PARAMETROS **
-global def2020 =  3.568
-global def2021 =  3.425
-
-global inf2020 =  3.5
-global inf2021 =  3.0
-
 
 ** PIB + Deflactor **
 noisily PIBDeflactor, anio(`aniovp') $nographs //geo(`geo') //discount(3.0)
@@ -234,21 +238,21 @@ noisily GastoPC, anio(`aniovp') `nographs'
 ************************************
 ** PARAMETROS SIMULADOR: INGRESOS **
 ** Al ingreso **
-scalar ISRAS   = 22.018*15.6/100 	//		ISR (asalariados): 3.428
-scalar ISRPF   = 13.211* 3.3/100 	//		ISR (personas f{c i'}sicas): 0.438
-scalar CuotasT = 26.454* 5.7/100	//		Cuotas (IMSS): 1.515
+scalar ISRAS   = 22.018*15.567/100 	//		ISR (asalariados): 3.428
+scalar ISRPF   = 13.211* 3.316/100 	//		ISR (personas f{c i'}sicas): 0.438
+scalar CuotasT = 26.454* 5.729/100	//		Cuotas (IMSS): 1.515
 
 * Al consumo *
-scalar IVA     = 47.277*8.2/100 	//		IVA: 3.885
-scalar ISAN    =  2.913*1.0/100 	//		ISAN: 0.030
-scalar IEPS    = 66.041*3.1/100 	//		IEPS (no petrolero + petrolero): 2.027
-scalar Importa = 31.060*0.8/100 	//		Importaciones: 0.245
+scalar IVA     = 47.277*8.218/100 	//		IVA: 3.885
+scalar ISAN    =  2.913*1.025/100 	//		ISAN: 0.030
+scalar IEPS    = 66.041*3.069/100 	//		IEPS (no petrolero + petrolero): 2.027
+scalar Importa = 31.060*0.792/100 	//		Importaciones: 0.245
 
 * Al capital *
-scalar ISRPM   = 25.438*14.6/100 	//		ISR (personas morales): 3.710
-scalar FMP     = 38.125* 3.6/100 	//		Fondo Mexicano del Petr{c o'}leo: 1.362
-scalar OYE     = 38.125*11.2/100 	//		Organismos y empresas (IMSS + ISSSTE + Pemex + CFE): 4.274
-scalar OtrosC  = 38.125* 2.8/100	//		Productos, derechos, aprovechamientos, contribuciones: 1.070
+scalar ISRPM   = 25.438*14.586/100 	//		ISR (personas morales): 3.710
+scalar FMP     = 38.125* 3.571/100 	//		Fondo Mexicano del Petr{c o'}leo: 1.362
+scalar OYE     = 38.125*11.211/100 	//		Organismos y empresas (IMSS + ISSSTE + Pemex + CFE): 4.274
+scalar OtrosC  = 38.125* 2.806/100	//		Productos, derechos, aprovechamientos, contribuciones: 1.070
 ** PARAMETROS SIMULADOR: INGRESOS **
 ***********************************/
 
@@ -330,8 +334,8 @@ if _rc == 0 {
 noisily TasasEfectivas, anio(`aniovp') `nographs'
 
 
-/** GRAFICA PROYECCION **
-if "$nographs" != "nographs" {
+** GRAFICA PROYECCION **
+if "$export" != "" {
 	use `"`c(sysdir_personal)'/SIM/2018/households.dta"', clear
 	noisily Simulador ImpuestosAportaciones if ImpuestosAportaciones != 0 [fw=factor], ///
 		base("ENIGH 2018") boot(1) reboot nographs anio(2020)
@@ -393,7 +397,7 @@ save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace
 
 ** REDISTRIBUCION **
 noisily Simulador AportacionesNetas if AportacionesNetas != 0 [fw=factor], ///
-	base("ENIGH 2018") boot(1) reboot nographs anio(2020)
+	base("ENIGH 2018") boot(1) reboot nographs anio(`aniovp')
 
 
 ** CUENTA GENERACIONAL **
@@ -472,8 +476,10 @@ if "$output" == "output" {
 ********************************
 
 ** SANKEY **
-foreach k in escol decil /*sexo grupoedad*/ {
-	*noisily run "`c(sysdir_personal)'/SankeySF.do" `k' `aniovp'
+if "$export" != "" {
+	foreach k in escol decil sexo grupoedad {
+		noisily run "`c(sysdir_personal)'/SankeySF.do" `k' `aniovp'
+	}
 }
 
 
@@ -503,7 +509,9 @@ if "$output" == "output" {
 ****    Touchdown!!!    ****
 ****                    ****
 ****************************
-*noisily scalarlatex
+if "$export" != "" {
+	noisily scalarlatex
+}
 timer off 1
 timer list 1
 noisily di _newline(2) in g _dup(20) ":" "  " in y round(`=r(t1)/r(nt1)',.1) in g " segs  " _dup(20) ":"

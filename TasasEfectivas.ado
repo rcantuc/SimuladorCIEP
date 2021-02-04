@@ -137,23 +137,23 @@ quietly {
 			_col(44) %7.3fc in y RemSal/scalar(PIB)*100 ///
 			_col(55) in g "ISR (salarios)" ///
 			_col(88) %7.3fc in y (`recISR_AS')/scalar(PIB)*100 ///
-			_col(99) %7.1fc in y (`recISR_AS')/RemSal*100 " %"
+			_col(99) %7.3fc in y (`recISR_AS')/RemSal*100 " %"
 		noisily di in g "  Ingreso mixto laboral" ///
 			_col(44) %7.3fc in y MixL/scalar(PIB)*100 ///
 			_col(55) in g "ISR (f{c i'}sicas)" ///
 			_col(88) %7.3fc in y (`recISR_PF')/scalar(PIB)*100 ///
-			_col(99) %7.1fc in y (`recISR_PF')/MixL*100 " %"
+			_col(99) %7.3fc in y (`recISR_PF')/MixL*100 " %"
 		noisily di in g "  Compensaci{c o'}n de asalariados (con CSS)" ///
 			_col(44) %7.3fc in y (RemSal+SSImputada+SSEmpleadores)/scalar(PIB)*100 ///
 			_col(55) in g "Cuotas IMSS" ///
 			_col(88) %7.3fc in y (`recCuotas_')/scalar(PIB)*100 ///
-			_col(99) %7.1fc in y (`recCuotas_')/(RemSal+SSImputada+SSEmpleadores)*100 " %"
+			_col(99) %7.3fc in y (`recCuotas_')/(RemSal+SSImputada+SSEmpleadores)*100 " %"
 		noisily di in g _dup(111) "-"
 		noisily di in g "{bf:  Ingresos laborales" ///
 			_col(44) %7.3fc in y (Yl)/scalar(PIB)*100 ///
 			_col(55) in g "Impuestos al ingreso" ///
 			_col(88) %7.3fc in y (`recISR_AS'+`recISR_PF'+`recCuotas_')/scalar(PIB)*100 ///
-			_col(99) %7.1fc in y (`recISR_AS'+`recISR_PF'+`recCuotas_')/(Yl)*100 " %" "}"
+			_col(99) %7.3fc in y (`recISR_AS'+`recISR_PF'+`recCuotas_')/(Yl)*100 " %" "}"
 		scalar inglaboralPIB = (`recISR_AS'+`recISR_PF'+`recCuotas_')/scalar(PIB)*100
 
 
@@ -168,28 +168,28 @@ quietly {
 			_col(44) %7.3fc in y (ConHog - Alim - BebN - Salu)/scalar(PIB)*100 ///
 			_col(55) in g "IVA" ///
 			_col(88) %7.3fc in y `recIVA'/scalar(PIB)*100 ///
-			_col(99) %7.1fc in y `recIVA'/(ConHog - Alim - BebN - Salu)*100 " %"
+			_col(99) %7.3fc in y `recIVA'/(ConHog - Alim - BebN - Salu)*100 " %"
 		noisily di in g "  Compra de veh{c i'}culos" ///
 			_col(44) %7.3fc in y Vehi/scalar(PIB)*100 ///
 			_col(55) in g "ISAN" ///
 			_col(88) %7.3fc in y `recISAN'/scalar(PIB)*100 ///
-			_col(99) %7.1fc in y `recISAN'/Vehi*100 " %"
+			_col(99) %7.3fc in y `recISAN'/Vehi*100 " %"
 		noisily di in g "  Consumo hogares e ISFLSH" ///
 			_col(44) %7.3fc in y ConHog/scalar(PIB)*100 ///
 			_col(55) in g "IEPS" ///
 			_col(88) %7.3fc in y `recIEPS'/scalar(PIB)*100 ///
-			_col(99) %7.1fc in y `recIEPS'/ConHog*100 " %"
+			_col(99) %7.3fc in y `recIEPS'/ConHog*100 " %"
 		noisily di in g "  Importaciones (balanza comercial)" ///
 			_col(44) %7.3fc in y scalar(importacionesBCPIB) ///
 			_col(55) in g "Importaciones" ///
 			_col(88) %7.3fc in y `recImporta'/scalar(PIB)*100 ///
-			_col(99) %7.1fc in y (`recImporta'/scalar(PIB)*100)/scalar(importacionesBCPIB)*100 " %"
+			_col(99) %7.3fc in y (`recImporta'/scalar(PIB)*100)/scalar(importacionesBCPIB)*100 " %"
 		noisily di in g _dup(111) "-"
 		noisily di in g "{bf:  Consumo hogares e ISFLSH" ///
 			_col(44) %7.3fc in y ConHog/scalar(PIB)*100 ///
 			_col(55) in g "Impuestos al consumo" ///
 			_col(88) %7.3fc in y (`recIEPS'+`recIVA'+`recISAN'+`recImporta')/scalar(PIB)*100 ///
-			_col(99) %7.1fc in y (`recIEPS'+`recIVA'+`recISAN'+`recImporta')/ConHog*100 " %" "}"
+			_col(99) %7.3fc in y (`recIEPS'+`recIVA'+`recISAN'+`recImporta')/ConHog*100 " %" "}"
 		scalar ingconsumoPIB = (`recIEPS'+`recIVA'+`recISAN'+`recImporta')/scalar(PIB)*100
 
 
@@ -204,28 +204,28 @@ quietly {
 			_col(44) %7.3fc in y (ExNOpSoc)/scalar(PIB)*100 ///
 			_col(55) in g "ISR (morales)" ///
 			_col(88) %7.3fc in y (`recISR_PM')/scalar(PIB)*100 ///
-			_col(99) %7.1fc in y (`recISR_PM')/(ExNOpSoc)*100 " %"
+			_col(99) %7.3fc in y (`recISR_PM')/(ExNOpSoc)*100 " %"
 		noisily di in g "  Ingreso de capital (- alq. imp.)" ///
 			_col(44) %7.3fc in y (CapIncImp-ExNOpHog)/scalar(PIB)*100 ///
 			_col(55) in g "FMP (petr{c o'}leo)" ///
 			_col(88) %7.3fc in y (`recFMP__De')/scalar(PIB)*100 ///
-			_col(99) %7.1fc in y (`recFMP__De')/(CapIncImp-ExNOpHog)*100 " %"
+			_col(99) %7.3fc in y (`recFMP__De')/(CapIncImp-ExNOpHog)*100 " %"
 		noisily di in g "  Ingreso de capital (- alq. imp.)" ///
 			_col(44) %7.3fc in y (CapIncImp-ExNOpHog)/scalar(PIB)*100 ///
 			_col(55) in g "CFE, Pemex, IMSS, ISSSTE" ///
 			_col(88) %7.3fc in y (`recOYE')/scalar(PIB)*100 ///
-			_col(99) %7.1fc in y (`recOYE')/(CapIncImp-ExNOpHog)*100 " %"
+			_col(99) %7.3fc in y (`recOYE')/(CapIncImp-ExNOpHog)*100 " %"
 		noisily di in g "  Ingreso de capital (- alq. imp.)" ///
 			_col(44) %7.3fc in y (CapIncImp-ExNOpHog)/scalar(PIB)*100 ///
 			_col(55) in g "Productos, derechos, aprovech..." ///
 			_col(88) %7.3fc in y (`recOtrosC')/scalar(PIB)*100 ///
-			_col(99) %7.1fc in y (`recOtrosC')/(CapIncImp-ExNOpHog)*100 " %"
+			_col(99) %7.3fc in y (`recOtrosC')/(CapIncImp-ExNOpHog)*100 " %"
 		noisily di in g _dup(111) "-"
 		noisily di in g "  {bf:Ingreso de capital" ///
 			_col(44) %7.3fc in y (CapIncImp)/scalar(PIB)*100 ///
 			_col(55) in g "Impuestos e ingresos de capital" ///
 			_col(88) %7.3fc in y (`recISR_PM'+`recFMP__De'+`recOYE'+`recOtrosC')/scalar(PIB)*100 ///
-			_col(99) %7.1fc in y (`recISR_PM'+`recFMP__De'+`recOYE'+`recOtrosC')/(CapIncImp)*100 " %" "}"
+			_col(99) %7.3fc in y (`recISR_PM'+`recFMP__De'+`recOYE'+`recOtrosC')/(CapIncImp)*100 " %" "}"
 		scalar ingcapitalPIB = (`recISR_PM'+`recFMP__De'+`recOYE'+`recOtrosC')/scalar(PIB)*100
 
 
