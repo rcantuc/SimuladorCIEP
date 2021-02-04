@@ -8,7 +8,7 @@ if "`c(username)'" == "ricardo" {
 	global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
 }
 if "`c(username)'" == "ciepmx" {
-	*sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
+	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
 }
 ** PARAMETROS SIMULADOR: DIRECTORIOS **
 ***************************************
@@ -488,6 +488,10 @@ noisily FiscalGap, anio(`aniovp') $nographs end(2030) //boot(250) //update
 
 ** OUTPUT **
 if "$output" == "output" {
+	quietly log on output
+	noisily di in w "CRECPIB: [$pib2021,$pib2022,$pib2023,$pib2024,$pib2025]"
+	quietly log off output
+
 	quietly log close output
 	tempfile output1 output2 output3
 	if "`=c(os)'" == "Windows" {
