@@ -2729,7 +2729,7 @@ replace salud = .0162861 if edad == 105
 replace salud = .0092489 if edad == 106
 replace salud = .0049595 if edad == 107
 replace salud = .0004021 if edad == 108
-replace salud = .00030159 if edad == 109		// original: .0030159
+replace salud = .0030159 if edad >= 109		// original: .0030159*/
 
 Distribucion Salud, relativo(salud) macro(`Salud')
 label var Salud "Salud"
