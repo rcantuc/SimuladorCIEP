@@ -5,11 +5,10 @@ macro drop _all
 capture log close _all
 if "`c(username)'" == "ricardo" {
 	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
-	*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
+	global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
 }
 if "`c(username)'" == "ciepmx" {
-	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
-	global export "/home/ciepmx/Dropbox (CIEP)/Textbook/images/"
+	*sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
 }
 ** PARAMETROS SIMULADOR: DIRECTORIOS **
 ***************************************
@@ -25,7 +24,7 @@ if "`c(username)'" == "ciepmx" {
 
 ****************************************/
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
-if "`c(username)'" != "ricardo" & "`c(username)'" != "ciepmx" {
+if "`c(username)'" != "ricardo" /*& "`c(username)'" != "ciepmx"*/ {
 	global id = "`c(username)'"
 }
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
@@ -113,11 +112,11 @@ if _rc != 0 | "$export" != "" {
 	** HOUSEHOLDS: INCOMES **
 	local id = "$id"
 	global id = ""
-	noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' 2018
+	*noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' 2018
 	if "$export" != "" {
 
 		** HOUSEHOLDS: EXPENDITURES **
-		noisily run "`c(sysdir_personal)'/Expenditure.do" 2018
+		*noisily run "`c(sysdir_personal)'/Expenditure.do" 2018
 
 		** SANKEY **
 		foreach k in grupoedad decil escol sexo {
