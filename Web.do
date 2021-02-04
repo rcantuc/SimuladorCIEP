@@ -376,7 +376,6 @@ if "$output" == "output" {
 	quietly log on output
 	noisily di in w "PROY: [`=substr("`out_proy'",1,`=`lengthproy'-1')']"
 	noisily di in w "PROYMAX: [`aniomax']"
-	noisily di in w "CRECPIB: [$pib2021,$pib2022,$pib2023,$pib2024,$pib2025]"
 	quietly log off output
 }
 
@@ -402,6 +401,10 @@ noisily FiscalGap, anio(`aniovp') $nographs end(2030) //boot(250) //update
 
 ** OUTPUT **
 if "$output" == "output" {
+	quietly log on output
+	noisily di in w "CRECPIB: [$pib2021,$pib2022,$pib2023,$pib2024,$pib2025]"
+	quietly log off output
+
 	quietly log close output
 	tempfile output1 output2 output3
 	if "`=c(os)'" == "Windows" {
