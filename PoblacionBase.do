@@ -10,11 +10,15 @@
 **********************
 ** 1. Base de datos **
 *import delimited "http://www.conapo.gob.mx/work/models/CONAPO/Datos_Abiertos/Proyecciones2018/pob_ini_proyecciones.csv", clear
+use "`c(sysdir_site)'../basesCIEP/CONAPO/censo2020.dta", clear
+tostring sexo, replace
+destring edad, replace
+
 if `c(version)' > 13.1 {
-	import delimited "`c(sysdir_site)'../basesCIEP/CONAPO/pob_mit_proyecciones.csv", clear encoding("windows-1252")
+	*import delimited "`c(sysdir_site)'../basesCIEP/CONAPO/pob_mit_proyecciones.csv", clear encoding("windows-1252")
 }
 else {
-	import delimited "`c(sysdir_site)'../basesCIEP/CONAPO/pob_mit_proyecciones.csv", clear
+	*import delimited "`c(sysdir_site)'../basesCIEP/CONAPO/pob_mit_proyecciones.csv", clear
 }
 
 * 2. Limpia *
@@ -24,12 +28,13 @@ if _rc != 0 {
 }
 rename sexo sexo0
 encode sexo0, generate(sexo)
+drop sexo0
 
-drop renglon sexo0
-format poblacion %10.0fc
+capture drop renglon
 
 
 * 3. Labels *
+format poblacion %10.0fc
 label var poblacion "Poblaci{c o'}n"
 label var entidad "Entidad federativa"
 label var anio "A{c n~}o"
@@ -166,6 +171,10 @@ merge 1:1 (anio edad sexo entidad) using `migracion', nogen
 drop cve_geo
 order anio sexo edad entidad poblacion defunciones
 
+replace poblacion = 0 if poblacion == .
+replace emigrantes = 0 if emigrantes == .
+replace inmigrantes = 0 if inmigrantes == .
+
 drop if anio > 2050
 
 egen mujeresf = sum(poblacion) if edad >= 16 & edad <= 49 & sexo == 2, by(anio)
@@ -188,6 +197,8 @@ else {
 	save "`c(sysdir_personal)'/SIM/Poblacion.dta", replace
 }
 
+
+exit
 collapse (sum) poblacion, by(anio entidad)
 if `c(version)' > 13.1 {
 	saveold `"`c(sysdir_personal)'/SIM/Poblaciontot.dta"', replace version(13)
