@@ -8,7 +8,7 @@ if "`c(username)'" == "ricardo" {
 	*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
 }
 if "`c(username)'" == "ciepmx" {
-	*sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
+	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
 }
 ** PARAMETROS SIMULADOR: DIRECTORIOS **
 ***************************************
@@ -300,7 +300,7 @@ matrix PM	= (	30,		20.10,		96.07)
 
 
 ** MODULO ISR **
-noisily run "`c(sysdir_personal)'/ISR_Mod.do"
+*noisily run "`c(sysdir_personal)'/ISR_Mod.do"
 capture confirm scalar ISR_AS_Mod
 if _rc == 0 {
 	scalar ISRAS = ISR_AS_Mod
@@ -327,7 +327,7 @@ matrix IVAT = (	16	\	///  1  Tasa general
 *******************************
 
 
-noisily run "`c(sysdir_personal)'/IVA_Mod.do"
+*noisily run "`c(sysdir_personal)'/IVA_Mod.do"
 capture confirm scalar IVA_Mod
 if _rc == 0 {
 	scalar IVA = IVA_Mod
