@@ -25,14 +25,14 @@ use "`c(sysdir_personal)'/SIM/2018/expenditure_categ_iva.dta", clear
 local j = 2
 foreach k in alim alquiler cb educacion fuera mascotas med otros trans transf {
 	replace gasto_anual`k' = gasto_anual`k'/(`lambda'*`deflator')
-	if IVA[`j',1] == 1 {
+	if IVAT[`j',1] == 1 {
 		replace IVA`k' = 0
 	}
-	if IVA[`j',1] == 2 {
-		replace IVA`k' = gasto_anual`k'*IVA[1,1]/100*(1-.35125482)*(1-IVA[12,1]/100)
+	if IVAT[`j',1] == 2 {
+		replace IVA`k' = gasto_anual`k'*IVAT[1,1]/100*(1-.35125482)*(1-IVAT[12,1]/100)
 	}
-	if IVA[`j',1] == 3 {
-		replace IVA`k' = gasto_anual`k'*IVA[1,1]/100*(1-IVA[12,1]/100)
+	if IVAT[`j',1] == 3 {
+		replace IVA`k' = gasto_anual`k'*IVAT[1,1]/100*(1-IVAT[12,1]/100)
 	}
 	local ++j
 }

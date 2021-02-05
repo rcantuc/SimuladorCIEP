@@ -12,7 +12,7 @@ if "`c(username)'" == "ricardo" {
 
 ************************************
 ** PARAMETROS SIMULADOR: OPCIONES **
-*global nographs "nographs"
+global nographs "nographs"
 *global output "output"
 ** PARAMETROS SIMULADOR: OPCIONES **
 ************************************
@@ -55,7 +55,7 @@ capture mkdir "`c(sysdir_personal)'/users/$pais/$id"
 ** AÑO VALOR BASE **
 local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
-local aniovp = 2020
+local aniovp = 2021
 
 
 
@@ -70,15 +70,15 @@ local aniovp = 2020
 *******************************
 ** PARAMETROS SIMULADOR: PIB **
 
-/* Pre covid * 
+* Pre covid * 
 global pib2020 =  2.5
 
-* Post covid */
+/* Post covid *
 global pib2020 = -7.200
 global pib2021 =  4.600
 global pib2022 =  3.100
 
-/* Escenario 1 *
+* Escenario 1 *
 global pib2023 =  2.500
 global pib2024 =  2.500
 global pib2025 =  2.500

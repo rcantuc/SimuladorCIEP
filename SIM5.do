@@ -5,7 +5,7 @@ macro drop _all
 capture log close _all
 if "`c(username)'" == "ricardo" {
 	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
-	global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
+	*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
 }
 if "`c(username)'" == "ciepmx" {
 	*sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
@@ -66,6 +66,7 @@ if "$output" == "output" {
 
 
 
+
 ************************************************************
 ***                                                      ***
 ***    1. SET-UP: Cap. 3. La economia antropocentrica    ***
@@ -91,7 +92,7 @@ global pib2029 =  $pib2025
 global pib2030 =  $pib2025
 
 
-** OTROS PARAMETROS **
+** OTROS PARAMETROS **/
 global def2020 =  3.568
 global def2021 =  3.425
 global inf2020 =  3.500
@@ -106,17 +107,19 @@ foreach k in `aniovp' {
 	noisily Poblacion, $nographs anio(`k') //update //tf(`=64.333315/2.1*1.8') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040)
 }
 
+
+
 capture confirm file `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PensionREC.dta"'
 if _rc != 0 | "$export" != "" {
 
 	** HOUSEHOLDS: INCOMES **
 	local id = "$id"
 	global id = ""
-	*noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' 2018
+	noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' 2018
 	if "$export" != "" {
 
 		** HOUSEHOLDS: EXPENDITURES **
-		*noisily run "`c(sysdir_personal)'/Expenditure.do" 2018
+		noisily run "`c(sysdir_personal)'/Expenditure.do" 2018
 
 		** SANKEY **
 		foreach k in grupoedad decil escol sexo {
@@ -167,6 +170,7 @@ if "$export" != "" {
 	noisily Inflacion, anio(`aniovp') $nographs //update
 	noisily SCN, anio(`aniovp') $nographs //update
 }
+
 
 
 
@@ -223,6 +227,7 @@ scalar costodeu = 5862 //		Costo de la deuda
 
 ** Gastos per capita **
 noisily GastoPC, anio(`aniovp') `nographs'
+
 
 
 
@@ -295,7 +300,7 @@ matrix PM	= (	30,		20.10,		96.07)
 
 
 ** MODULO ISR **
-*noisily run "`c(sysdir_personal)'/ISR_Mod.do"
+noisily run "`c(sysdir_personal)'/ISR_Mod.do"
 capture confirm scalar ISR_AS_Mod
 if _rc == 0 {
 	scalar ISRAS = ISR_AS_Mod
@@ -306,7 +311,7 @@ if _rc == 0 {
 
 *******************************
 ** PARAMETROS SIMULADOR: ISR **
-matrix IVA = (	16	\	///  1  Tasa general 
+matrix IVAT = (	16	\	///  1  Tasa general 
 		1	\	///  2  Alimentos, 1: Tasa Cero, 2: Exento, 3: Gravado
 		2	\	///  3  Alquiler, idem
 		1	\	///  4  Canasta basica, idem
@@ -322,7 +327,7 @@ matrix IVA = (	16	\	///  1  Tasa general
 *******************************
 
 
-*noisily run "`c(sysdir_personal)'/IVA_Mod.do"
+noisily run "`c(sysdir_personal)'/IVA_Mod.do"
 capture confirm scalar IVA_Mod
 if _rc == 0 {
 	scalar IVA = IVA_Mod
