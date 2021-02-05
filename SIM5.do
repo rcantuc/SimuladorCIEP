@@ -8,7 +8,8 @@ if "`c(username)'" == "ricardo" {
 	*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
 }
 if "`c(username)'" == "ciepmx" {
-	*sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
+	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
+	global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
 }
 ** PARAMETROS SIMULADOR: DIRECTORIOS **
 ***************************************
