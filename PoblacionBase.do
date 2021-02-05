@@ -198,7 +198,6 @@ else {
 }
 
 
-exit
 collapse (sum) poblacion, by(anio entidad)
 if `c(version)' > 13.1 {
 	saveold `"`c(sysdir_personal)'/SIM/Poblaciontot.dta"', replace version(13)
