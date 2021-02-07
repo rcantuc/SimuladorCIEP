@@ -8,7 +8,12 @@
 ************************
 *** 1. BASE DE DATOS ***
 ************************
-import excel `"`c(sysdir_site)'../basesCIEP/LIFs/LIFs`=subinstr("${pais}"," ","",.)'.xlsx"', clear firstrow
+if "$pais" == "" {
+	import excel `"`c(sysdir_site)'../basesCIEP/LIFs/LIFs.xlsx"', clear firstrow
+}
+else {
+	import excel `"`c(sysdir_site)'../basesCIEP/Otros/$pais/LIFs.xlsx"', clear firstrow
+}
 foreach k of varlist _all {
 	capture confirm string variable `k'
 	if _rc == 0 {

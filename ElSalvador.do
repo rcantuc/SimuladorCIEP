@@ -12,7 +12,7 @@ if "`c(username)'" == "ricardo" {
 
 ************************************
 ** PARAMETROS SIMULADOR: OPCIONES **
-global nographs "nographs"
+*global nographs "nographs"
 *global output "output"
 ** PARAMETROS SIMULADOR: OPCIONES **
 ************************************
@@ -73,12 +73,12 @@ local aniovp = 2021
 * Pre covid * 
 global pib2020 =  2.5
 
-/* Post covid *
+* Post covid *
 global pib2020 = -7.200
 global pib2021 =  4.600
-global pib2022 =  3.100
+*global pib2022 =  3.100
 
-* Escenario 1 *
+/* Escenario 1 *
 global pib2023 =  2.500
 global pib2024 =  2.500
 global pib2025 =  2.500
@@ -118,6 +118,7 @@ if _rc != 0 {
 ***    Cap. 2. El sistema de la ciencia    ***
 ***                                        ***
 **********************************************
+*global lambda = 1.4921
 noisily PIBDeflactor, anio(`aniovp') $nographs //geo(`geo') //discount(3.0)
 if `c(version)' > 13.1 {
 	saveold "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", replace version(13)
@@ -134,7 +135,7 @@ else {
 ***    3. PARTE III: GASTOS    ***
 ***                            ***
 **********************************
-noisily GastoPC, anio(`aniovp') `nographs' //otros(0.95)
+noisily GastoPC, anio(`aniovp') `nographs' //otros(0.975)
 
 
 
@@ -144,7 +145,7 @@ noisily GastoPC, anio(`aniovp') `nographs' //otros(0.95)
 ***    4. PARTE II: INGRESOS    ***
 ***                             ***
 ***********************************
-noisily TasasEfectivas, anio(`aniovp') `nographs' //crecsim(1.05)
+noisily TasasEfectivas, anio(`aniovp') `nographs' //crecsim(1.025)
 
 
 
@@ -215,7 +216,7 @@ if "$nographs" != "nographs" {
 ***    6. PARTE IV: DEUDA    ***
 ***                          ***
 ********************************
-noisily FiscalGap, anio(`aniovp') $nographs end(2030) //boot(250) //update
+noisily FiscalGap, anio(`aniovp') $nographs //end(2050) //boot(250) //update
 
 
 

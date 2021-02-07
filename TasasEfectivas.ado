@@ -252,7 +252,12 @@ quietly {
 	}
 
 	else if "$pais" == "El Salvador" {
-		noisily LIF, anio(`anio') by(divGA) nographs
+		if `aniovp' > `anio' {
+			noisily LIF, anio(`anio') by(divGA) nographs //ilif
+		}
+		else {
+			noisily LIF, anio(`anio') by(divGA) nographs
+		}
 		local Laboral = r(Impuestos_al_ingreso)
 		local Consumo = r(Impuestos_al_consumo)
 		local OtrosC = r(Otros_ingresos)

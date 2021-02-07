@@ -2307,9 +2307,6 @@ label var ingbrutotot "Ingreso total bruto"
 Gini ingbrutotot, hogar(`hogar') individuo(numren) factor(factor)
 local gini_ingbrutotot = r(gini_ingbrutotot)
 
-Simulador ingbrutotot [fw=factor_cola], base("ENIGH 2018") boot(1) reboot anio(2018) $nographs nooutput
-
-
 * Results *
 tabstat ing_subor ing_mixto ing_capital ing_estim_alqu gasto_anualDepreciacion [aw=factor_cola], stat(sum) f(%20.0fc) save by(formal)	
 tempname ALTIMIR
@@ -2469,6 +2466,7 @@ Distribucion ing_cap_otrasempr, relativo(factor) macro(`OtrasEmpresas')
 *** 14 Variables Simulador.ado ***
 **********************************
 
+noisily Simulador ingbrutotot [fw=factor_cola], base("ENIGH 2018") boot(1) reboot anio(2018) $nographs nooutput
 
 ** Ingresos laborales **
 egen double Yl = rsum(ing_subor ing_mixtoL)

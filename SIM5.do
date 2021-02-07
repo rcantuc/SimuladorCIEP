@@ -6,10 +6,11 @@ capture log close _all
 if "`c(username)'" == "ricardo" {
 	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
 	*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
+	global export "/Users/ricardo/Dropbox (CIEP)/PrePaquete/Cuarto documento/"
 }
 if "`c(username)'" == "ciepmx" {
 	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
-	global export "/home/ciepmx/Dropbox (CIEP)/Textbook/images/"
+	global export "/home/ciepmx/Dropbox (CIEP)/Textbook/"
 }
 ** PARAMETROS SIMULADOR: DIRECTORIOS **
 ***************************************
@@ -25,7 +26,7 @@ if "`c(username)'" == "ciepmx" {
 
 ****************************************/
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
-if "`c(username)'" != "ricardo" /*& "`c(username)'" != "ciepmx"*/ {
+if "`c(username)'" != "ricardo" & "`c(username)'" != "ciepmx" {
 	global id = "`c(username)'"
 }
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
@@ -102,10 +103,10 @@ global inf2021 =  3.000
 ******************************/
 
 
-** POBLACION **
+/** POBLACION **
 *forvalues k=1950(1)2050 {
 foreach k in `aniovp' {
-	noisily Poblacion, $nographs anio(`k') //update //tf(`=64.333315/2.1*1.8') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040)
+	noisily Poblacion, $nographs anio(`k') update //tf(`=64.333315/2.1*1.8') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040)
 }
 
 
@@ -117,32 +118,31 @@ if _rc != 0 | "$export" != "" {
 	local id = "$id"
 	global id = ""
 	noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' 2018
-	if "$export" != "" {
 
-		** HOUSEHOLDS: EXPENDITURES **
-		noisily run "`c(sysdir_personal)'/Expenditure.do" 2018
+	** HOUSEHOLDS: EXPENDITURES **
+	noisily run "`c(sysdir_personal)'/Expenditure.do" 2018
 
-		** SANKEY **
-		foreach k in grupoedad decil escol sexo {
-			noisily run "`c(sysdir_personal)'/SankeyCC.do" `k' 2018
-			noisily run "`c(sysdir_personal)'/Sankey.do" `k' 2018
-		}
-
-		** DATOS ABIERTOS **
-		DatosAbiertos XNA0120_s, g //		ISR salarios
-		DatosAbiertos XNA0120_f, g //		ISR PF
-		DatosAbiertos XNA0120_m, g //		ISR PM
-		DatosAbiertos XKF0114, g   //		Cuotas IMSS
-		DatosAbiertos XAB1120, g   //		IVA
-		DatosAbiertos XNA0141, g   //		ISAN
-		DatosAbiertos XAB1130, g   //		IEPS
-		DatosAbiertos XNA0136, g   //		Importaciones
-		DatosAbiertos FMP_Derechos, g //	FMP_Derechos
-		DatosAbiertos XAB2110, g   //		Ingresos propios Pemex
-		DatosAbiertos XOA0115, g   //		Ingresos propios CFE
-		DatosAbiertos XKF0179, g   //		Ingresos propios IMSS
-		DatosAbiertos XOA0120, g   //		Ingresos propios ISSSTE
+	** SANKEY **
+	foreach k in grupoedad decil escol sexo {
+		noisily run "`c(sysdir_personal)'/SankeyCC.do" `k' 2018
+		noisily run "`c(sysdir_personal)'/Sankey.do" `k' 2018
 	}
+
+	** DATOS ABIERTOS **
+	DatosAbiertos XNA0120_s, g //		ISR salarios
+	DatosAbiertos XNA0120_f, g //		ISR PF
+	DatosAbiertos XNA0120_m, g //		ISR PM
+	DatosAbiertos XKF0114, g   //		Cuotas IMSS
+	DatosAbiertos XAB1120, g   //		IVA
+	DatosAbiertos XNA0141, g   //		ISAN
+	DatosAbiertos XAB1130, g   //		IEPS
+	DatosAbiertos XNA0136, g   //		Importaciones
+	DatosAbiertos FMP_Derechos, g //	FMP_Derechos
+	DatosAbiertos XAB2110, g   //		Ingresos propios Pemex
+	DatosAbiertos XOA0115, g   //		Ingresos propios CFE
+	DatosAbiertos XKF0179, g   //		Ingresos propios IMSS
+	DatosAbiertos XOA0120, g   //		Ingresos propios ISSSTE
+	
 	global id = "`id'"
 }
 
@@ -186,26 +186,26 @@ if "$export" != "" {
 **********************************
 ** PARAMETROS SIMULADOR: GASTOS **
 * Educacion *
-scalar basica = 21325 //		Educaci{c o'}n b{c a'}sica
-scalar medsup = 21056 //		Educaci{c o'}n media superior
-scalar superi = 38111 //		Educaci{c o'}n superior
-scalar posgra = 45788 //		Posgrado
-scalar eduadu = 19451 //		Educaci{c o'}n para adultos
-scalar otrose =  1476 //		Otros gastos educativos
+scalar basica = 21669 //		Educaci{c o'}n b{c a'}sica
+scalar medsup = 21396 //		Educaci{c o'}n media superior
+scalar superi = 38726 //		Educaci{c o'}n superior
+scalar posgra = 46528 //		Posgrado
+scalar eduadu = 19765 //		Educaci{c o'}n para adultos
+scalar otrose =  1500 //		Otros gastos educativos
 
 * Salud *
-scalar ssa    =   519 //		SSalud
+scalar ssa    =   528 //		SSalud
 scalar prospe =  1081 //		IMSS-Prospera
-scalar segpop =  2406 //		Seguro Popular
-scalar imss   =  6385 //		IMSS (salud)
-scalar issste =  8589 //		ISSSTE (salud)
-scalar pemex  = 24178 //		Pemex (salud) + ISSFAM (salud)
+scalar segpop =  2445 //		Seguro Popular
+scalar imss   =  6488 //		IMSS (salud)
+scalar issste =  8728 //		ISSSTE (salud)
+scalar pemex  = 24568 //		Pemex (salud) + ISSFAM (salud)
 
 * Pensiones *
-scalar bienestar =   18273 //	Pensi{c o'}n Bienestar
-scalar penims    =  134649 //	Pensi{c o'}n IMSS
-scalar peniss    =  226463 //	Pensi{c o'}n ISSSTE
-scalar penotr    = 1402288 //	Pensi{c o'}n Pemex, CFE, Pensi{c o'}n LFC, ISSFAM, Otros
+scalar bienestar =   18568 //	Pensi{c o'}n Bienestar
+scalar penims    =  136820 //	Pensi{c o'}n IMSS
+scalar peniss    =  230104 //	Pensi{c o'}n ISSSTE
+scalar penotr    = 1424891 //	Pensi{c o'}n Pemex, CFE, Pensi{c o'}n LFC, ISSFAM, Otros
 
 * Ingreso b{c a'}sico *
 scalar IngBas      = 0 //		Ingreso b{c a'}sico
@@ -213,21 +213,21 @@ scalar ingbasico18 = 1 //		1: Incluye menores de 18 anios, 0: no
 scalar ingbasico65 = 1 //		1: Incluye mayores de 65 anios, 0: no
 
 * Otros gastos *
-scalar servpers = 3380 //		Servicios personales
-scalar matesumi = 1692 //		Materiales y suministros
-scalar gastgene = 1786 //		Gastos generales
-scalar substran = 1897 //		Subsidios y transferencias
-scalar bienmueb =  300 //		Bienes muebles e inmuebles
-scalar obrapubl = 3337 //		Obras p{c u'}blicas
-scalar invefina =  784 //		Inversi{c o'}n financiera
-scalar partapor = 8988 //		Participaciones y aportaciones
-scalar costodeu = 5862 //		Costo de la deuda
+scalar servpers = 3435 //		Servicios personales
+scalar matesumi = 1720 //		Materiales y suministros
+scalar gastgene = 1815 //		Gastos generales
+scalar substran = 1928 //		Subsidios y transferencias
+scalar bienmueb =  305 //		Bienes muebles e inmuebles
+scalar obrapubl = 3391 //		Obras p{c u'}blicas
+scalar invefina =  796 //		Inversi{c o'}n financiera
+scalar partapor = 9133 //		Participaciones y aportaciones
+scalar costodeu = 5956 //		Costo de la deuda
 ** PARAMETROS SIMULADOR: GASTOS **
 *********************************/
 
 
 ** Gastos per capita **
-noisily GastoPC, anio(`aniovp') `nographs'
+*noisily GastoPC, anio(`aniovp') `nographs'
 
 
 
@@ -242,7 +242,7 @@ noisily GastoPC, anio(`aniovp') `nographs'
 
 ************************************
 ** PARAMETROS SIMULADOR: INGRESOS **
-** Al ingreso **
+* Al ingreso *
 scalar ISRAS   = 22.018*15.567/100 	//		ISR (asalariados): 3.428
 scalar ISRPF   = 13.211* 3.316/100 	//		ISR (personas f{c i'}sicas): 0.438
 scalar CuotasT = 26.454* 5.729/100	//		Cuotas (IMSS): 1.515
@@ -259,7 +259,7 @@ scalar FMP     = 38.125* 3.571/100 	//		Fondo Mexicano del Petr{c o'}leo: 1.362
 scalar OYE     = 38.125*11.211/100 	//		Organismos y empresas (IMSS + ISSSTE + Pemex + CFE): 4.274
 scalar OtrosC  = 38.125* 2.806/100	//		Productos, derechos, aprovechamientos, contribuciones: 1.070
 ** PARAMETROS SIMULADOR: INGRESOS **
-***********************************/
+************************************
 
 
 *******************************
@@ -406,16 +406,11 @@ noisily Simulador AportacionesNetas if AportacionesNetas != 0 [fw=factor], ///
 
 
 ** CUENTA GENERACIONAL **
-noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) //	<-- OPTIONAL!!! Toma mucho tiempo.
+*noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) //	<-- OPTIONAL!!! Toma mucho tiempo.
 
 
 ** GRAFICA PROYECCION **
 use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/AportacionesNetasREC.dta"', clear
-//rename estimacion estimacionOrig
-//merge 1:1 (anio) using `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/AportacionesNetasRECSIM.dta"', nogen
-//rename estimacion estimacionSIM
-//rename estimacionOrig estimacion
-//merge 1:1 (anio) using `"`c(sysdir_personal)'/users/$pais/$id/PIB.dta"', nogen
 replace estimacion = estimacion/1000000000000
 //replace estimacionSIM = estimacionSIM/pibYR*100
 
@@ -482,7 +477,7 @@ if "$output" == "output" {
 
 ** SANKEY **
 if "$export" != "" {
-	foreach k in escol decil sexo grupoedad {
+	foreach k in decil sexo /*grupoedad sexo*/ {
 		noisily run "`c(sysdir_personal)'/SankeySF.do" `k' `aniovp'
 	}
 }
