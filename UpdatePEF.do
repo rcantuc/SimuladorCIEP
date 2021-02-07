@@ -10,9 +10,11 @@
 ************************
 if "$pais" == "" {
 	local archivos: dir "`c(sysdir_site)'../basesCIEP/PEFs/$pais" files "*.csv"	// Busca todos los archivos .csv en /basesCIEP/PEFs/
+	local dir "`c(sysdir_site)'../basesCIEP/PEFs/$pais"
 }
 else {
-	local archivos: dir "`c(sysdir_site)'../basesCIEP/PEFs/$pais" files "*.xlsx"	// Busca todos los archivos .csv en /basesCIEP/PEFs/
+	local archivos: dir "`c(sysdir_site)'../basesCIEP/Otros/$pais/PEFs" files "*.xlsx"	// Busca todos los archivos .csv en /basesCIEP/PEFs/
+	local dir "`c(sysdir_site)'../basesCIEP/Otros/$pais/PEFs"
 }
 
 * Loop para todos los archivos .csv *
@@ -23,14 +25,14 @@ foreach k of local archivos {
 	noisily di in g "Importando: " in y "`k'", _cont
 	if "$pais" == "" {
 		if `c(version)' > 13.1 {
-			import delimited "`c(sysdir_site)'../basesCIEP/PEFs/$pais/`k'", clear case(lower) stripquotes(yes) stringcols(_all) encoding("utf8")
+			import delimited "`dir'/`k'", clear case(lower) stripquotes(yes) stringcols(_all) encoding("utf8")
 		}
 		else {
-			import delimited "`c(sysdir_site)'../basesCIEP/PEFs/$pais/`k'", clear case(lower) stripquotes(yes) stringcols(_all) //encoding("utf8")
+			import delimited "`dir'/`k'", clear case(lower) stripquotes(yes) stringcols(_all) //encoding("utf8")
 		}
 	}
 	else {
-		import excel "`c(sysdir_site)'../basesCIEP/PEFs/$pais/`k'", clear firstrow case(lower)
+		import excel "`dir'/`k'", clear firstrow case(lower)
 	}
 
 	* Limpiar *

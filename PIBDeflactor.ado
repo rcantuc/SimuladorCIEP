@@ -202,7 +202,7 @@ quietly {
 	local Lambda = ((OutputPerWorker[`obs_exo']/OutputPerWorker[1])^(1/(`obs_exo'-1))-1)*100
 	capture confirm existence $lambda
 	if _rc == 0 {
-		scalar lambda = $lambda
+		scalar llambda = $lambda
 	}
 	g lambda = (1+scalar(llambda)/100)^(anio-`aniovp')
 
