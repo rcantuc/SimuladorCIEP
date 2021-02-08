@@ -253,7 +253,7 @@ quietly {
 
 	else if "$pais" == "El Salvador" {
 		if `aniovp' > `anio' {
-			noisily LIF, anio(`anio') by(divGA) nographs //ilif
+			noisily LIF, anio(`anio') by(divGA) nographs ilif
 		}
 		else {
 			noisily LIF, anio(`anio') by(divGA) nographs
