@@ -21,9 +21,9 @@ if "`c(username)'" == "ricardo" {
 ***********************************/
 ** PARAMETROS SIMULADOR: OPCIONES **
 global pais = "El Salvador"			// Comentar o "" (vacío) para Mexico
-if "`c(username)'" != "ricardo" {
+*if "`c(username)'" != "ricardo" {
 	global id = "`c(username)'"
-}
+*}
 ** PARAMETROS SIMULADOR: OPCIONES **
 ************************************
 
@@ -74,11 +74,13 @@ local aniovp = 2021
 global pib2020 =  2.5
 
 * Post covid *
-global pib2020 = -7.200
-global pib2021 =  4.600
-*global pib2022 =  3.100
+if `aniovp' > 2020 {
+	global pib2020 = -7.200
+	global pib2021 =  4.600
+	global pib2022 =  3.100
+}
 
-/* Escenario 1 *
+* Escenario 1 *
 global pib2023 =  2.500
 global pib2024 =  2.500
 global pib2025 =  2.500
@@ -87,7 +89,6 @@ global pib2027 =  2.500
 global pib2028 =  2.500
 global pib2029 =  2.500
 global pib2030 =  2.500
-
 
 * Otros */
 global def2020 =  0.383
@@ -135,7 +136,7 @@ else {
 ***    3. PARTE III: GASTOS    ***
 ***                            ***
 **********************************
-noisily GastoPC, anio(`aniovp') `nographs' //otros(0.975)
+noisily GastoPC, anio(`aniovp') `nographs' //otros(0.935)
 
 
 
@@ -145,7 +146,7 @@ noisily GastoPC, anio(`aniovp') `nographs' //otros(0.975)
 ***    4. PARTE II: INGRESOS    ***
 ***                             ***
 ***********************************
-noisily TasasEfectivas, anio(`aniovp') `nographs' //crecsim(1.025)
+noisily TasasEfectivas, anio(`aniovp') `nographs' //crecsim(1.035)
 
 
 
@@ -168,7 +169,7 @@ noisily Simulador AportacionesNetas if AportacionesNetas != 0 [fw=factor], ///
 
 
 ** CUENTA GENERACIONAL **
-*noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) //	<-- OPTIONAL!!! Toma mucho tiempo.
+noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) //	<-- OPTIONAL!!! Toma mucho tiempo.
 
 
 ** GRAFICA PROYECCION **
@@ -216,7 +217,7 @@ if "$nographs" != "nographs" {
 ***    6. PARTE IV: DEUDA    ***
 ***                          ***
 ********************************
-noisily FiscalGap, anio(`aniovp') $nographs //end(2050) //boot(250) //update
+noisily FiscalGap, anio(`aniovp') $nographs end(2030) //boot(250) //update
 
 
 

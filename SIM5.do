@@ -6,7 +6,6 @@ capture log close _all
 if "`c(username)'" == "ricardo" {
 	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
 	*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
-	global export "/Users/ricardo/Dropbox (CIEP)/PrePaquete/Cuarto documento/"
 }
 if "`c(username)'" == "ciepmx" {
 	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
@@ -103,7 +102,7 @@ global inf2021 =  3.000
 ******************************/
 
 
-/** POBLACION **
+** POBLACION **
 *forvalues k=1950(1)2050 {
 foreach k in `aniovp' {
 	noisily Poblacion, $nographs anio(`k') update //tf(`=64.333315/2.1*1.8') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040)
@@ -123,9 +122,11 @@ if _rc != 0 | "$export" != "" {
 	noisily run "`c(sysdir_personal)'/Expenditure.do" 2018
 
 	** SANKEY **
-	foreach k in grupoedad decil escol sexo {
-		noisily run "`c(sysdir_personal)'/SankeyCC.do" `k' 2018
-		noisily run "`c(sysdir_personal)'/Sankey.do" `k' 2018
+	if `c(version)' > 13.1 {
+		foreach k in grupoedad decil escol sexo {
+			noisily run "`c(sysdir_personal)'/SankeyCC.do" `k' 2018
+			noisily run "`c(sysdir_personal)'/Sankey.do" `k' 2018
+		}
 	}
 
 	** DATOS ABIERTOS **
@@ -227,7 +228,7 @@ scalar costodeu = 5956 //		Costo de la deuda
 
 
 ** Gastos per capita **
-*noisily GastoPC, anio(`aniovp') `nographs'
+noisily GastoPC, anio(`aniovp') `nographs'
 
 
 
@@ -406,13 +407,12 @@ noisily Simulador AportacionesNetas if AportacionesNetas != 0 [fw=factor], ///
 
 
 ** CUENTA GENERACIONAL **
-*noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) //	<-- OPTIONAL!!! Toma mucho tiempo.
+noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) //	<-- OPTIONAL!!! Toma mucho tiempo.
 
 
 ** GRAFICA PROYECCION **
 use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/AportacionesNetasREC.dta"', clear
 replace estimacion = estimacion/1000000000000
-//replace estimacionSIM = estimacionSIM/pibYR*100
 
 tabstat estimacion, stat(max) save
 tempname MAX
@@ -428,7 +428,6 @@ forvalues k=1(1)`=_N' {
 
 if "$nographs" != "nographs" {
 	twoway (connected estimacion anio) ///
-		///(connected estimacionSIM anio if anio >= 2021) ///
 		(connected estimacion anio if anio == `aniovp') ///
 		if anio > 1990, ///
 		ytitle("billones MXN `aniovp'") ///

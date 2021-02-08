@@ -1,5 +1,5 @@
 if "`1'" == "" {
-	local 1 = 2018
+	local 1 = 2021
 }
 
 
@@ -186,7 +186,7 @@ Distribucion OtrosGas, macro(`otrosgas')
 Simulador OtrosGas [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1')
 
 
-
+exit
 
 ***********
 *** END ***
