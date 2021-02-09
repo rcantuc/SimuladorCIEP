@@ -105,7 +105,7 @@ global inf2021 =  3.000
 ** POBLACION **
 *forvalues k=1950(1)2050 {
 foreach k in `aniovp' {
-	noisily Poblacion, $nographs anio(`k') update //tf(`=64.333315/2.1*1.8') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040)
+	*noisily Poblacion, $nographs anio(`k') update //tf(`=64.333315/2.1*1.8') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040)
 }
 
 
@@ -173,7 +173,7 @@ if "$export" != "" {
 	noisily SCN, anio(`aniovp') $nographs //update
 }
 
-
+exit
 
 
 

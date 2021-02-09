@@ -414,12 +414,12 @@ quietly {
 	********************
 	if "$output" == "output" & "`nooutput'" == "" {
 		tempvar reportado estimado proyectado
-		g reportado = pibYR/1000000000000 if (anio < `anio_last' & anio >= 2010) ///
+		g reportado = pibY/1000000000000/deflator if (anio < `anio_last' & anio >= 2010) ///
 			| (anio == `anio_last' & trimestre == 4)
-		replace reportado = `pib_last'/1000000000000 if anio == `anio_last'
-		g estimado = pibYR/1000000000000 if (anio <= anio[`obs_exo'] & anio >= `anio_last')
-		g proyectado = pibYR/1000000000000 if anio >= `anio_last' & anio > anio[`obs_exo'] & anio <= 2030
-		replace proyectado = pibYR/1000000000000 if anio == anio[`obs_exo']
+		replace reportado = `pib_last'/1000000000000/deflator if anio == `anio_last'
+		g estimado = pibY/1000000000000/deflator if (anio <= anio[`obs_exo'] & anio >= `anio_last')
+		g proyectado = pibY/1000000000000/deflator if anio >= `anio_last' & anio > anio[`obs_exo'] & anio <= 2030
+		replace proyectado = pibY/1000000000000/deflator if anio == anio[`obs_exo']
 
 		forvalues k = 1(1)`=_N' {
 			if anio[`k'] >= 2010 & anio[`k'] <= 2030 {
