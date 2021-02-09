@@ -186,7 +186,7 @@ Distribucion OtrosGas, macro(`otrosgas')
 Simulador OtrosGas [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1')
 
 
-exit
+
 
 ***********
 *** END ***
