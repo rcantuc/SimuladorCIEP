@@ -173,7 +173,7 @@ if "$export" != "" {
 	noisily SCN, anio(`aniovp') $nographs //update
 }
 
-exit
+
 
 
 
