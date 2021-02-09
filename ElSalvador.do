@@ -80,7 +80,7 @@ if `aniovp' > 2020 {
 	global pib2022 =  3.100
 }
 
-* Escenario 1 *
+/* Escenario 1 *
 global pib2023 =  2.500
 global pib2024 =  2.500
 global pib2025 =  2.500
