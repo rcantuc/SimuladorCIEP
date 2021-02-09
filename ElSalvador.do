@@ -136,7 +136,7 @@ else {
 ***    3. PARTE III: GASTOS    ***
 ***                            ***
 **********************************
-noisily GastoPC, anio(`aniovp') `nographs' //otros(0.935)
+noisily GastoPC, anio(`aniovp') `nographs' //otros(0.95)
 
 
 
@@ -146,7 +146,7 @@ noisily GastoPC, anio(`aniovp') `nographs' //otros(0.935)
 ***    4. PARTE II: INGRESOS    ***
 ***                             ***
 ***********************************
-noisily TasasEfectivas, anio(`aniovp') `nographs' //crecsim(1.035)
+noisily TasasEfectivas, anio(`aniovp') `nographs' //crecsim(1.05)
 
 
 
