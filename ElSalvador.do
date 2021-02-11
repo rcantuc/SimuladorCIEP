@@ -21,9 +21,9 @@ if "`c(username)'" == "ricardo" {
 ***********************************/
 ** PARAMETROS SIMULADOR: OPCIONES **
 global pais = "El Salvador"			// Comentar o "" (vacío) para Mexico
-*if "`c(username)'" != "ricardo" {
+if "`c(username)'" != "ricardo" {
 	global id = "`c(username)'"
-*}
+}
 ** PARAMETROS SIMULADOR: OPCIONES **
 ************************************
 
@@ -217,7 +217,7 @@ if "$nographs" != "nographs" {
 ***    6. PARTE IV: DEUDA    ***
 ***                          ***
 ********************************
-noisily FiscalGap, anio(`aniovp') $nographs end(2030) //boot(250) //update
+noisily FiscalGap, anio(`aniovp') $nographs end(2050) //boot(250) //update
 
 
 
