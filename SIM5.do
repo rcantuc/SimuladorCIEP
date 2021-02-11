@@ -17,8 +17,8 @@ if "`c(username)'" == "ciepmx" {
 
 ************************************
 ** PARAMETROS SIMULADOR: OPCIONES **
-*global nographs "nographs"
-*global output "output"
+global nographs "nographs"
+global output "output"
 ** PARAMETROS SIMULADOR: OPCIONES **
 ************************************
 
@@ -105,7 +105,7 @@ global inf2021 =  3.000
 ** POBLACION **
 *forvalues k=1950(1)2050 {
 foreach k in `aniovp' {
-	*noisily Poblacion, $nographs anio(`k') update //tf(`=64.333315/2.1*1.8') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040)
+	noisily Poblacion, $nographs anio(`k') update //tf(`=64.333315/2.1*1.8') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040)
 }
 
 
@@ -209,7 +209,7 @@ scalar peniss    =  230104 //	Pensi{c o'}n ISSSTE
 scalar penotr    = 1424891 //	Pensi{c o'}n Pemex, CFE, Pensi{c o'}n LFC, ISSFAM, Otros
 
 * Ingreso b{c a'}sico *
-scalar IngBas      = 0 //		Ingreso b{c a'}sico
+scalar IngBas      = 9999 //		Ingreso b{c a'}sico
 scalar ingbasico18 = 1 //		1: Incluye menores de 18 anios, 0: no
 scalar ingbasico65 = 1 //		1: Incluye mayores de 65 anios, 0: no
 
@@ -407,7 +407,7 @@ noisily Simulador AportacionesNetas if AportacionesNetas != 0 [fw=factor], ///
 
 
 ** CUENTA GENERACIONAL **
-noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) //	<-- OPTIONAL!!! Toma mucho tiempo.
+*noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) //	<-- OPTIONAL!!! Toma mucho tiempo.
 
 
 ** GRAFICA PROYECCION **
