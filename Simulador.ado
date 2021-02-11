@@ -843,24 +843,24 @@ program graphpiramide
 		forvalues k=`=_N'(-1)1 {
 			if sexo[`k'] == 1 {
 				if over[`k'] == 1 {
-					local aportHIV = "`aportHIV' `=string(`=porcentaje[`k']*-1*100',"%8.3f")',"
+					local aportHIV = "`aportHIV' `=string(`=porcentaje[`k']*-1',"%8.3f")',"
 				}
 				if over[`k'] == 2 {
-					local aportHVIIX = "`aportHVIIX' `=string(`=porcentaje[`k']*-1*100',"%8.3f")',"
+					local aportHVIIX = "`aportHVIIX' `=string(`=porcentaje[`k']*-1',"%8.3f")',"
 				}
 				if over[`k'] == 3 {
-					local aportHX = "`aportHX' `=string(`=porcentaje[`k']*-1*100',"%8.3f")',"			
+					local aportHX = "`aportHX' `=string(`=porcentaje[`k']*-1',"%8.3f")',"			
 				}
 			}
 			if sexo[`k'] == 2 {
 				if over[`k'] == 1 {
-					local aportMIV = "`aportMIV' `=string(`=porcentaje[`k']*100',"%8.3f")',"
+					local aportMIV = "`aportMIV' `=string(`=porcentaje[`k']',"%8.3f")',"
 				}
 				if over[`k'] == 2 {
-					local aportMVIIX = "`aportMVIIX' `=string(`=porcentaje[`k']*100',"%8.3f")',"
+					local aportMVIIX = "`aportMVIIX' `=string(`=porcentaje[`k']',"%8.3f")',"
 				}
 				if over[`k'] == 3 {
-					local aportMX = "`aportMX' `=string(`=porcentaje[`k']*100',"%8.3f")',"			
+					local aportMX = "`aportMX' `=string(`=porcentaje[`k']',"%8.3f")',"			
 				}		
 			}
 		}
