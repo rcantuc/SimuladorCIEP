@@ -515,7 +515,7 @@ quietly {
 		capture confirm scalar IngBas
 		if _rc == 0 {
 			local IngBas = scalar(IngBas)*`pobtot'[1,1]
-			local IngBas = `IngBas'-(`IngBas'*(1-.06270)*0.084)
+			*local IngBas = `IngBas'-(`IngBas'*(1-.06270)*0.084)
 		}
 		else {
 			local IngBas = 0
