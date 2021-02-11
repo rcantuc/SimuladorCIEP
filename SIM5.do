@@ -209,7 +209,7 @@ scalar peniss    =  230104 //	Pensi{c o'}n ISSSTE
 scalar penotr    = 1424891 //	Pensi{c o'}n Pemex, CFE, Pensi{c o'}n LFC, ISSFAM, Otros
 
 * Ingreso b{c a'}sico *
-scalar IngBas      = 9999 //		Ingreso b{c a'}sico
+scalar IngBas      = 0 //		Ingreso b{c a'}sico
 scalar ingbasico18 = 1 //		1: Incluye menores de 18 anios, 0: no
 scalar ingbasico65 = 1 //		1: Incluye mayores de 65 anios, 0: no
 
