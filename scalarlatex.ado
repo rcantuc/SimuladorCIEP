@@ -42,7 +42,8 @@ program define scalarlatex
 			}
 
 			else if (`"`=substr("`name'",-3,3)'"' == "PIB" & `"`=substr("`name'",1,3)'"' != "PIB") ///
-				| `"`=substr("`name'",1,6)'"' == "lambda" | `"`=substr("`name'",1,2)'"' == "TT" {
+				| `"`=substr("`name'",1,6)'"' == "lambda" | `"`=substr("`name'",1,2)'"' == "TT" ///
+				| `"`=substr("`name'",1,7)'"' == "llambda" {
 				if scalar(`name') != . {
 					local value = scalar(`name')
 				}
