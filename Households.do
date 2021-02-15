@@ -2517,7 +2517,7 @@ matrix POBLACION68 = r(StatTotal)
 
 g PenBienestar = `PenBienestar'/POBLACION68[1,1] if edad >= 68
 replace PenBienestar = 0 if PenBienestar == .
-label var PenBienestar "Pensi{c o'}n Bienestar"
+label var PenBienestar "pensi{c o'}n Bienestar"
 Simulador PenBienestar if edad >= 68 [fw=factor], base("ENIGH 2018") boot(1) reboot anio(2018) $nographs nooutput
 
 
@@ -2730,7 +2730,7 @@ replace salud = .0004021 if edad == 108
 replace salud = .0030159 if edad >= 109		// original: .0030159*/
 
 Distribucion Salud, relativo(salud) macro(`Salud')
-label var Salud "Salud"
+label var Salud "salud"
 Simulador Salud [fw=factor], base("ENIGH 2018") boot(1) reboot anio(2018) $nographs nooutput //poblacion(defunciones)
 
 
