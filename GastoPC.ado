@@ -69,7 +69,7 @@ quietly {
 		}
 		else {
 			preserve
-			noisily PEF, anio(`anio') by(divGA) min(0) `nographs'
+			noisily PEF, anio(`anio') by(divGA) min(0) nographs
 			
 			PEF if divGA == 3, anio(`anio') by(desc_subfuncion) min(0) rows(3) nographs
 			local basica = r(Educaci_c_o__n_B_c_a__sica)

@@ -734,9 +734,9 @@ program graphpiramide
 		if "`rect'" != "100" {
 			local rect `"{bf: Tama{c n~}o}: `=string(`rect',"%6.3fc")' % PIB"'
 		}
-		else {
+		*else {
 			local rect ""
-		}
+		*}
 
 		* Base *
 		if "`base'" != "" {
@@ -755,8 +755,8 @@ program graphpiramide
 			stack asyvars xalternate ///
 			yscale(noextend noline /*range(-7(1)7)*/) ///
 			blabel(none, format(%5.1fc)) ///
-			///t2title({bf:Hombres} (`men'%), size(medsmall)) ///
-			t2title({bf:Men} (`men'%), size(medsmall)) ///
+			t2title({bf:Hombres} (`men'%), size(medsmall)) ///
+			///t2title({bf:Men} (`men'%), size(medsmall)) ///
 			ytitle(% PIB) ///
 			/*ytitle(percentage)*/ ///
 			ylabel(`=round(`PORmaxval'[2,1],.1)'(.2)`=`PORmaxval'[1,1]', format(%7.1fc) noticks) ///
@@ -775,8 +775,8 @@ program graphpiramide
 			stack asyvars ///
 			yscale(noextend noline /*range(-7(1)7)*/) /// |
 			blabel(none, format(%5.1fc)) ///
-			///t2title({bf:Mujeres} (`women'%), size(medsmall)) ///
-			t2title({bf:Women} (`women'%), size(medsmall)) ///
+			t2title({bf:Mujeres} (`women'%), size(medsmall)) ///
+			///t2title({bf:Women} (`women'%), size(medsmall)) ///
 			ytitle(% PIB) ///
 			/*ytitle(percentage)*/ ///
 			ylabel(`=round(`PORmaxval'[2,1],.1)'(.2)`=`PORmaxval'[1,1]', format(%7.1fc) noticks) ///
@@ -789,7 +789,7 @@ program graphpiramide
 			name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)', replace) ycommon xcommon ///
 			title("{bf:Perfil} de `title'") subtitle("$pais") ///
 			///title("`title' by sex, age and `titleover'") ///
-			caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, ENIGH 2018. Fecha: `c(current_date)', `c(current_time)'.") ///
+			caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, ENIGH 2018.") ///
 			///caption("{it: Source: Own estimations.`boottext'}") ///
 			note(`"{bf:Nota}: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n en cada grupo."') ///
 			///note(`"{bf:Note}: Percentages inside parenthesis represent the concentration of `title' in each group."')
@@ -843,13 +843,13 @@ program graphpiramide
 		forvalues k=`=_N'(-1)1 {
 			if sexo[`k'] == 1 {
 				if over[`k'] == 1 {
-					local aportHIV = "`aportHIV' `=string(`=porcentaje[`k']*-1',"%8.3f")',"
+					local aportHIV = "`aportHIV' `=string(`=porcentaje[`k']',"%8.3f")',"
 				}
 				if over[`k'] == 2 {
-					local aportHVIIX = "`aportHVIIX' `=string(`=porcentaje[`k']*-1',"%8.3f")',"
+					local aportHVIIX = "`aportHVIIX' `=string(`=porcentaje[`k']',"%8.3f")',"
 				}
 				if over[`k'] == 3 {
-					local aportHX = "`aportHX' `=string(`=porcentaje[`k']*-1',"%8.3f")',"			
+					local aportHX = "`aportHX' `=string(`=porcentaje[`k']',"%8.3f")',"			
 				}
 			}
 			if sexo[`k'] == 2 {
