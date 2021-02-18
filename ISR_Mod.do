@@ -27,12 +27,13 @@ forvalues k=2(1)12 {
 		matrix SE[`k',2] = SE[`k',1]+.01
 	}
 }
-local smdf = 88.36																// Salario minimo general
+local smdf = 141.7																// Salario minimo general
 
 
 * Households *
 use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
-replace ing_bruto_tax = ing_bruto_tax/(`lambda'*`deflator')*79185533/77096593
+replace ing_bruto_tax = ing_bruto_tax/(`lambda'*`deflator')
+replace ing_capital = ing_capital/(`lambda'*`deflator')
 
 
 * Cuotas a la Seguridad Social IMSS *
@@ -44,45 +45,65 @@ replace cuotasTP = cuotasTP*(scalar(CuotasT)/100*scalar(PIB))/`cuotasTP'[1,1] if
 replace cuotasT = cuotasTP*cuotasT/(cuotasT + cuotasP) //cuotasT/(`lambda'*`deflator') // *79185533/77096593 if formal2 == 1
 
 
-* Limitar deducciones *
-replace deduc_isr = `=DED[1,1]'*`smdf'*365 if `=DED[1,1]'*`smdf'*365 <= `=DED[1,2]'/100*(ing_bruto_tax - exen_tot - deduc_isr - cuotasT) & deduc_isr >= `=DED[1,1]'*`smdf'*365
-replace deduc_isr = `=DED[1,2]'/100*(ing_bruto_tax - exen_tot - deduc_isr - cuotasT) if `=DED[1,1]'*`smdf'*365 >= `=DED[1,2]'/100*(ing_bruto_tax - exen_tot - deduc_isr - cuotasT) & deduc_isr >= `=DED[1,2]'/100*(ing_bruto_tax - exen_tot - deduc_isr - cuotasT)
 
+**************************
+** CALCULO DE ISR FINAL **
+g ISR0 = ISR
+g ISR__asalariados0 = ISR__asalariados
 
-* Calcular ISR *
 replace ISR = 0
+replace ISR__asalariados = 0
+replace ISR__PF = 0
+replace ISR__PM = 0
+
+label var ISR "ISR (f{c i'}sicas y asalariados)"
+
+* Deducciones personales y gastos profesionales *
+*noisily di _newline _col(04) in g "{bf:3.3. Deducciones personales y gastos profesionales}"
+*noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y "Las deducciones personales son beneficios para el jefe del hogar.}"
+
+* Limitar deducciones *
+replace deduc_isr = `=DED[1,1]'*`smdf'*365 ///
+	if `=DED[1,1]'*`smdf'*365 <= `=DED[1,2]'/100*(ing_bruto_tax) & deduc_isr >= `=DED[1,1]'*`smdf'*365
+replace deduc_isr = `=DED[1,2]'/100*(ing_bruto_tax) ///
+	if `=DED[1,1]'*`smdf'*365 >= `=DED[1,2]'/100*(ing_bruto_tax) & deduc_isr >= `=DED[1,2]'/100*(ing_bruto_tax)
+
 replace categF = ""
 forvalues j=`=rowsof(ISR)'(-1)1 {
 	forvalues k=`=rowsof(SE)'(-1)1 {
 		replace categF = "J`j'K`k'" ///
-			if (ing_bruto_tax - exen_tot - deduc_isr - cuotasT) >= ISR[`j',1] ///
-			 & (ing_bruto_tax - exen_tot - deduc_isr - cuotasT) <= ISR[`j',2] ///
-			 & (ing_bruto_tax - exen_tot - deduc_isr - cuotasT) >= SE[`k',1] ///
-			 & (ing_bruto_tax - exen_tot - deduc_isr - cuotasT) <= SE[`k',2] ///
+			if (ing_bruto_tax - exen_tot - deduc_isr - cuotasTPF) >= ISR[`j',1] ///
+			 & (ing_bruto_tax - exen_tot - deduc_isr - cuotasTPF) <= ISR[`j',2] ///
+			 & (ing_bruto_tax - exen_tot - deduc_isr - cuotasTPF) >= SE[`k',1] ///
+			 & (ing_bruto_tax - exen_tot - deduc_isr - cuotasTPF) <= SE[`k',2] ///
 			 //& formal != 0
 
-		replace ISR = ISR[`j',3] + (ISR[`j',4]/100)*(ing_bruto_tax - exen_tot - deduc_isr - cuotasT - ISR[`j',1]) ///
+		replace ISR = ISR[`j',3] + (ISR[`j',4]/100)*(ing_bruto_tax - exen_tot - deduc_isr - cuotasTPF - ISR[`j',1]) ///
 			- SE[`k',3]*htrab/48 ///
 			if categF == "J`j'K`k'" /*& formal != 0*/ & htrab < 48 & tipo_contribuyente == 1
-		replace ISR = ISR[`j',3] + (ISR[`j',4]/100)*(ing_bruto_tax - exen_tot - deduc_isr - cuotasT - ISR[`j',1]) ///
+		replace ISR = ISR[`j',3] + (ISR[`j',4]/100)*(ing_bruto_tax - exen_tot - deduc_isr - cuotasTPF - ISR[`j',1]) ///
 			- SE[`k',3] ///
 			if categF == "J`j'K`k'" /*& formal != 0*/ & htrab >= 48 & tipo_contribuyente == 1
-		replace ISR = ISR[`j',3] + (ISR[`j',4]/100)*(ing_bruto_tax - exen_tot - deduc_isr - cuotasT - ISR[`j',1]) ///
+		replace ISR = ISR[`j',3] + (ISR[`j',4]/100)*(ing_bruto_tax - exen_tot - deduc_isr - cuotasTPF - ISR[`j',1]) ///
 			if categF == "J`j'K`k'" /*& formal != 0*/ & (tipo_contribuyente == 2 | htrab == 0)
 	}
 }
-replace ISR = 0 if formal == 0 //& formal_renta == 0 & formal_servprof == 0
 
-replace ISR__asalariados = ISR*ing_subor/(ing_bruto_tax - exen_tot - deduc_isr - cuotasT) //if formal != 0
+g TE = ISR/(ing_bruto_tax - exen_tot - deduc_isr - cuotasTPF)
+replace TE = 0 if TE == .
+
+//replace ISR = 0 if formal == 0 //& formal_renta == 0 & formal_servprof == 0
+
+replace ISR__asalariados = ISR*3.748/3.232*3.417/2.815 if tipo_contribuyente == 1 & ISR > 0
+replace ISR__asalariados = ISR*0.210/0.125 if ISR < 0
 replace ISR__asalariados = 0 if ISR__asalariados == .
 label var ISR__asalariados "ISR (retenciones por salarios)"
 
-replace ISR__PF = ISR - ISR__asalariados if ISR > ISR__asalariados
-replace ISR__PF = ISR__PF*(1-PM[1,3]/100)
+replace ISR__PF = (ISR - ISR__asalariados)*0.195/0.186*0.438/0.369 if (tipo_contribuyente == 2 | htrab == 0) & ISR - ISR__asalariados > 0
 replace ISR__PF = 0 if ISR__PF == .
 label var ISR__PF "ISR (personas f{c i'}sicas)"
 
-replace ISR__PM = ing_capital*PM[1,1]/100/(`lambda'*`deflator')*(1-PM[1,2]/100) if formal != 0
+replace ISR__PM = ing_capital*3.392/3.442*PM[1,1]/100*(1-PM[1,2]/100) //if formal != 0
 replace ISR__PM = 0 if ISR__PM == .
 label var ISR__PM "ISR (personas morales)"
 
@@ -96,6 +117,11 @@ matrix `SIMTAX' = r(StatTotal)
 scalar ISR_AS_Mod = `SIMTAX'[1,1]/scalar(PIB)*100 //								ISR (asalariados)
 scalar ISR_PF_Mod = `SIMTAX'[1,2]/scalar(PIB)*100 //								ISR (personas f{c i'}sicas)
 scalar ISR_PM_Mod = `SIMTAX'[1,3]/scalar(PIB)*100 //								ISR (personas morales)
+
+
+noisily di _newline in g " RESULTADOS ISR (salarios): " in y %10.3fc ISR_AS_Mod
+noisily di in g " RESULTADOS ISR (f{c i'}sicas):  " in y %10.3fc ISR_PF_Mod
+noisily di in g " RESULTADOS ISR (morales):  " in y %10.3fc ISR_PM_Mod
 
 
 tabstat cuotasTP [fw=factor_cola] if formal2 == 1, stat(sum) f(%25.2fc) save

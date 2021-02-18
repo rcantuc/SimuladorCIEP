@@ -452,6 +452,7 @@ quietly {
 		noisily di in w "Reportado: " in w "[`=substr("`out_report'",1,`length_report'-1)']"
 		noisily di in w "Estimado: " in w "[`=substr("`out_estima'",1,`length_estima'-1)']"
 		noisily di in w "Proyectado: " in w "[`=substr("`out_proyec'",1,`length_proyec'-1)']"
+		noisily di in w "CRECPIB: [$pib2021,$pib2022,$pib2023,$pib2024,$pib2025]"
 		capture log off output
 	}
 
