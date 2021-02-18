@@ -105,7 +105,7 @@ set obs `=_N+3'
 replace from = 97 in -1
 label define from 97 "Costo de la deuda", add
 
-replace profile = scalar(costodeu)*`pobtot'[1,1]*0 in -1
+replace profile = scalar(costodeu)*`pobtot'[1,1] in -1
 
 replace to = 11 in -1
 label define `1' 11 "Sistema financiero", add
