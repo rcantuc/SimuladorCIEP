@@ -24,7 +24,7 @@ SCN, anio(`2') nographs
 **************************
 *** 2 Poblacion ajuste ***
 **************************
-use if anio == `anio' using `"`c(sysdir_personal)'/SIM/Poblaciontot.dta"', clear
+use if anio == `2' using `"`c(sysdir_personal)'/SIM/Poblaciontot.dta"', clear
 local ajustepob = poblacion
 
 		
