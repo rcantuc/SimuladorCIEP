@@ -344,7 +344,7 @@ matrix IVAT = (	16	\	///  1  Tasa general
 		44)	//  12  Evasion e informalidad IVA, idem
 		
 * Cambios IVA *
-local cambioIVA = 1
+local cambioIVA = 0
 ** PARAMETROS SIMULADOR: IVA **
 *******************************
 
