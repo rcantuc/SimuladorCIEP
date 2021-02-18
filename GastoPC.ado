@@ -502,11 +502,13 @@ quietly {
 		}
 		if ingbasico18 == 1 & ingbasico65 == 0 {
 			tabstat factor if edad < 65, stat(sum) f(%20.0fc) save
+			tempname pobIngBas
 			matrix `pobIngBas' = r(StatTotal)
 			local bititle = "Menores de 65"
 		}
 		if ingbasico18 == 0 & ingbasico65 == 0 {
 			tabstat factor if edad < 65 & edad >= 18, stat(sum) f(%20.0fc) save
+			tempname pobIngBas
 			matrix `pobIngBas' = r(StatTotal)
 			local bititle = "Entre 18 y 65"
 		}
