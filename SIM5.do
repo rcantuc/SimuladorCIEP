@@ -505,13 +505,13 @@ if "$output" == "output" {
 ********************************
 
 ** SANKEY **
-if "$export" != "" {
+*if "$export" != "" {
 	foreach k in decil sexo grupoedad sexo {
 		noisily run "`c(sysdir_personal)'/SankeySF.do" `k' `aniovp'
 	}
-}
+*}
 
-
+exit
 ** FISCAL GAP **
 noisily FiscalGap, anio(`aniovp') $nographs end(2030) //boot(250) //update
 

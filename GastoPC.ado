@@ -26,11 +26,13 @@ quietly {
 		local ajustepob = poblacion
 		
 		use "`c(sysdir_personal)'/SIM/2018/households.dta", clear
-		tabstat factor, stat(sum) f(%20.0fc) save
+		noisily tabstat factor, stat(sum) f(%20.0fc) save
 		tempname pobenigh
 		matrix `pobenigh' = r(StatTotal)
 		
 		replace factor = round(factor*`ajustepob'/`pobenigh'[1,1],1)
+
+		noisily tabstat factor, stat(sum) f(%20.0fc)
 		
 		tabstat Pension Educacion Salud OtrosGas Infra [fw=factor], stat(sum) f(%20.0fc) save
 		matrix GASTOS = r(StatTotal)
@@ -496,17 +498,18 @@ quietly {
 		
 		if ingbasico18 == 0 & ingbasico65 == 1 {
 			tabstat factor if edad >= 18, stat(sum) f(%20.0fc) save
-			matrix `pobtot' = r(StatTotal)
+			tempname pobIngBas
+			matrix `pobIngBas' = r(StatTotal)
 			local bititle = "Mayores de 18"
 		}
 		if ingbasico18 == 1 & ingbasico65 == 0 {
 			tabstat factor if edad < 65, stat(sum) f(%20.0fc) save
-			matrix `pobtot' = r(StatTotal)
+			matrix `pobIngBas' = r(StatTotal)
 			local bititle = "Menores de 65"
 		}
 		if ingbasico18 == 0 & ingbasico65 == 0 {
 			tabstat factor if edad < 65 & edad >= 18, stat(sum) f(%20.0fc) save
-			matrix `pobtot' = r(StatTotal)
+			matrix `pobIngBas' = r(StatTotal)
 			local bititle = "Entre 18 y 65"
 		}
 
@@ -514,12 +517,12 @@ quietly {
 		* Inputs *
 		capture confirm scalar IngBas
 		if _rc == 0 {
-			local IngBas = scalar(IngBas)*`pobtot'[1,1]
+			local IngBas = scalar(IngBas)*`pobIngBas'[1,1]
 			*local IngBas = `IngBas'-(`IngBas'*(1-.06270)*0.084)
 		}
 		else {
 			local IngBas = 0
-			scalar IngBas = `IngBas'/`pobtot'[1,1]
+			scalar IngBas = `IngBas'/`pobIngBas'[1,1]
 		}
 
 		* Resultados *
@@ -530,27 +533,27 @@ quietly {
 			_col(60) %10s in g "Per c{c a'}pita (MXN `anio')" "}"
 		noisily di in g _dup(80) "-"
 		noisily di in g "  `bititle'" ///
-			_col(33) %15.0fc in y `pobtot'[1,1] ///
+			_col(33) %15.0fc in y `pobIngBas'[1,1] ///
 			_col(50) %7.3fc in y `IngBas'/PIB*100 ///
-			_col(60) %15.0fc in y `IngBas'/`pobtot'[1,1]
+			_col(60) %15.0fc in y `IngBas'/`pobIngBas'[1,1]
 
 
 
 		if ingbasico18 == 0 & ingbasico65 == 1 {
-			replace IngBasico = `IngBas'/`pobtot'[1,1] if edad >= 18
+			replace IngBasico = `IngBas'/`pobIngBas'[1,1] if edad >= 18
 		}
 		else if ingbasico18 == 1 & ingbasico65 == 0 {
-			replace IngBasico = `IngBas'/`pobtot'[1,1] if edad < 65
+			replace IngBasico = `IngBas'/`pobIngBas'[1,1] if edad < 65
 		}
 		else if ingbasico18 == 0 & ingbasico65 == 0 {
-			replace IngBasico = `IngBas'/`pobtot'[1,1] if edad >= 18 & edad < 65
+			replace IngBasico = `IngBas'/`pobIngBas'[1,1] if edad >= 18 & edad < 65
 		}
 		else { 
-			replace IngBasico = `IngBas'/`pobtot'[1,1]
+			replace IngBasico = `IngBas'/`pobIngBas'[1,1]
 		}
 
 		scalar ingbasPIB = `IngBas'/PIB*100
-		scalar ingbasico = `IngBas'/`pobtot'[1,1]
+		scalar ingbasico = `IngBas'/`pobIngBas'[1,1]
 
 
 
