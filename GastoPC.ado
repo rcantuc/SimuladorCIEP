@@ -540,10 +540,10 @@ quietly {
 			replace IngBasico = `IngBas'/`pobtot'[1,1] if edad >= 18
 		}
 		else if ingbasico18 == 1 & ingbasico65 == 0 {
-			replace IngBasico = `IngBas'/`pobtot'[1,1] if edad < 68
+			replace IngBasico = `IngBas'/`pobtot'[1,1] if edad < 65
 		}
 		else if ingbasico18 == 0 & ingbasico65 == 0 {
-			replace IngBasico = `IngBas'/`pobtot'[1,1] if edad >= 18 & edad < 68
+			replace IngBasico = `IngBas'/`pobtot'[1,1] if edad >= 18 & edad < 65
 		}
 		else { 
 			replace IngBasico = `IngBas'/`pobtot'[1,1]
