@@ -17,14 +17,12 @@ scalar PIB = pibY[_N]
 
 * Households *
 use "`c(sysdir_personal)'/SIM/2018/expenditure_categ_iva.dta", clear
-*replace factor = factor*79185533/77096593
-*replace factor = round(factor,1)
 
 
 ** Re C{c a'}lculo del IVA **
 local j = 2
 foreach k in alim alquiler cb educacion fuera mascotas med otros trans transf {
-	replace gasto_anual`k' = gasto_anual`k'/(`lambda'*`deflator')
+	replace gasto_anual`k' = gasto_anual`k' //(`lambda'*`deflator')
 	if IVAT[`j',1] == 1 {
 		replace IVA`k' = 0
 	}
@@ -60,6 +58,8 @@ noisily tabstat IVATotal Consumo [fw=factor], stat(sum) f(%20.0fc) save
 tempname IVA
 matrix `IVA' = r(StatTotal)
 scalar IVA_Mod = `IVA'[1,1]/scalar(PIB)*100
+
+noisily di _newline in g " RESULTADOS ISR (salarios): " in y %10.3fc IVA_Mod
 
 save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace
 

@@ -225,7 +225,7 @@ scalar OtrosC  = 38.125* 2.806/100	//		Productos, derechos, aprovechamientos, co
 *******************************
 ** PARAMETROS SIMULADOR: ISR **
 *			Inferior	Superior	CF		Tasa
-matrix	ISR	= (	0.00,		5952.84,	0.0,		1.92	\	/// 1
+matrix	ISR	= (	0.00,	5952.84,	0.0,		1.92	\	/// 1
 			5952.85,	50524.92,	114.24,		6.40	\	/// 2
 			50524.93,	88793.04,	2966.76,	10.88	\	/// 3
 			88793.05,	103218.00,	7130.88,	16.00	\	/// 4
@@ -238,7 +238,7 @@ matrix	ISR	= (	0.00,		5952.84,	0.0,		1.92	\	/// 1
 			3000000.01,	1E+14, 		940850.81,	35.00)		//  11
 
 *			Inferior	Superior	Subsidio
-matrix	SE	= (	0.00,		21227.52,	4884.24		\		/// 1
+matrix	SE	= (	0.00,	21227.52,	4884.24		\		/// 1
 			21227.53,	23744.40,	4881.96		\		/// 2
 			23744.41,	31840.56,	4318.08		\		/// 3
 			31840.57,	41674.08,	4123.20		\		/// 4
@@ -256,12 +256,17 @@ matrix	DED	= (	5,	15)
 
 *			Tasa ISR PM	Evasion PM
 matrix PM	= (	30,		11.77)
+
+* Cambios ISR *
+local cambioISR = 0
 ** PARAMETROS SIMULADOR: ISR **
 *******************************
 
 
 ** MODULO ISR **
-*noisily run "`c(sysdir_personal)'/ISR_Mod.do"
+if `cambioISR' != 0 {
+	noisily run "`c(sysdir_personal)'/ISR_Mod.do"
+}
 capture confirm scalar ISR_AS_Mod
 if _rc == 0 {
 	scalar ISRAS = ISR_AS_Mod
@@ -277,13 +282,14 @@ if "$output" == "output" {
 	noisily di in w "ISRCUFI: [`=string(ISR[1,3],"%10.2f")',`=string(ISR[2,3],"%10.2f")',`=string(ISR[3,3],"%10.2f")',`=string(ISR[4,3],"%10.2f")',`=string(ISR[5,3],"%10.2f")',`=string(ISR[6,3],"%10.2f")',`=string(ISR[7,3],"%10.2f")',`=string(ISR[8,3],"%10.2f")',`=string(ISR[9,3],"%10.2f")',`=string(ISR[10,3],"%10.2f")',`=string(ISR[11,3],"%10.2f")']"
 	noisily di in w "ISRSUBS: [`=string(SE[1,3],"%10.2f")',`=string(SE[2,3],"%10.2f")',`=string(SE[3,3],"%10.2f")',`=string(SE[4,3],"%10.2f")',`=string(SE[5,3],"%10.2f")',`=string(SE[6,3],"%10.2f")',`=string(SE[7,3],"%10.2f")',`=string(SE[8,3],"%10.2f")',`=string(SE[9,3],"%10.2f")',`=string(SE[10,3],"%10.2f")',`=string(SE[11,3],"%10.2f")',`=string(SE[12,3],"%10.2f")']"
 	noisily di in w "ISRDEDU: [`=string(DED[1,1],"%10.2f")',`=string(DED[1,2],"%10.2f")']"
+	noisily di in w "ISRMORA: [`=string(PM[1,1],"%10.2f")',`=string(PM[1,2],"%10.2f")']"
 	quietly log off output
 }
 
 
 *******************************
-** PARAMETROS SIMULADOR: ISR **
-matrix IVA = (	16	\	///  1  Tasa general 
+** PARAMETROS SIMULADOR: IVA **
+matrix IVAT = (	16	\	///  1  Tasa general 
 		1	\	///  2  Alimentos, 1: Tasa Cero, 2: Exento, 3: Gravado
 		2	\	///  3  Alquiler, idem
 		1	\	///  4  Canasta basica, idem
@@ -295,14 +301,28 @@ matrix IVA = (	16	\	///  1  Tasa general
 		2	\	/// 10  Transporte local, idem
 		2	\	/// 11  Transporte foraneo, idem
 		52.37	)	//  12  Evasion e informalidad IVA, idem
+	
+* Cambios IVA *
+local cambioIVA = 0
 ** PARAMETROS SIMULADOR: IVA **
 *******************************
 
 
-*noisily run "`c(sysdir_personal)'/IVA_Mod.do"
+** MODULO IVA **
+if "`cambioIVA'" != 0 {
+	noisily run "`c(sysdir_personal)'/IVA_Mod.do"
+}
 capture confirm scalar IVA_Mod
 if _rc == 0 {
 	scalar IVA = IVA_Mod
+}
+
+
+** OUTPUT **/
+if "$output" == "output" {
+	quietly log on output
+	noisily di in w "IVA: [`=string(IVAT[1,1],"%10.2f")',`=string(IVAT[2,1],"%10.2f")',`=string(IVAT[3,1],"%10.2f")',`=string(IVAT[4,1],"%10.2f")',`=string(IVAT[5,1],"%10.2f")',`=string(IVAT[6,1],"%10.2f")',`=string(IVAT[7,1],"%10.2f")',`=string(IVAT[8,1],"%10.2f")',`=string(IVAT[9,1],"%10.2f")',`=string(IVAT[10,1],"%10.2f")',`=string(IVAT[11,1],"%10.2f")',`=string(IVAT[12,1],"%10.2f")']"
+	quietly log off output
 }
 
 

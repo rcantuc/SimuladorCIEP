@@ -40,6 +40,7 @@ timer on 5
 
 
 capture mkdir "`c(sysdir_personal)'/SIM/`enighanio'/"
+capture log close expenditures
 log using "`c(sysdir_personal)'/SIM/`enighanio'/expenditures.smcl", replace name(expenditures)
 
 
@@ -778,6 +779,7 @@ noisily di in g "  IEPS " ///
 ** Ajuste IVA y IEPS **
 replace IVA = IVA*`IVA'/`MTot'[1,3]
 replace IEPS = IEPS*`IEPS'/`MTot'[1,4]
+
 
 
 
