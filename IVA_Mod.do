@@ -23,6 +23,7 @@ use "`c(sysdir_personal)'/SIM/2018/expenditure_categ_iva.dta", clear
 local j = 2
 foreach k in alim alquiler cb educacion fuera mascotas med otros trans transf {
 	replace gasto_anual`k' = gasto_anual`k' //(`lambda'*`deflator')
+	
 	if IVAT[`j',1] == 1 {
 		replace IVA`k' = 0
 	}
@@ -38,13 +39,13 @@ foreach k in alim alquiler cb educacion fuera mascotas med otros trans transf {
 
 * SIMULACI{c O'}N: Impuesto al consumo *
 egen Consumo = rsum(IVAalim IVAalquiler IVAcb IVAeducacion IVAfuera ///
-	IVAmascotas IVAmed IVAotros IVAtrans IVAtransf)
+	IVAmascotas IVAmed IVAotros IVAtrans IVAtransf TOTIEPS)
 merge 1:1 (folioviv foliohog numren) using ///
 	`"`c(sysdir_personal)'/users/$pais/$id/households.dta"', nogen //update replace
 replace Consumo = 0 if Consumo == .
 label var Consumo "los impuestos al consumo"
 
-noisily Simulador Consumo [fw=factor], base("ENIGH 2018") boot(1) reboot $nographs nooutput
+*noisily Simulador Consumo [fw=factor], base("ENIGH 2018") boot(1) reboot $nographs nooutput
 
 capture egen IVATotal = rsum(IVAalim IVAalquiler IVAcb IVAeducacion IVAfuera ///
 	IVAmascotas IVAmed IVAotros IVAtrans IVAtransf)
@@ -59,7 +60,7 @@ tempname IVA
 matrix `IVA' = r(StatTotal)
 scalar IVA_Mod = `IVA'[1,1]/scalar(PIB)*100
 
-noisily di _newline in g " RESULTADOS ISR (salarios): " in y %10.3fc IVA_Mod
+noisily di _newline in g " RESULTADOS IVA: " in y %10.3fc IVA_Mod
 
 save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace
 

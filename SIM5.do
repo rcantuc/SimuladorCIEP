@@ -17,7 +17,7 @@ if "`c(username)'" == "ciepmx" {
 
 ************************************
 ** PARAMETROS SIMULADOR: OPCIONES **
-*global nographs "nographs"
+global nographs "nographs"
 *global output "output"
 ** PARAMETROS SIMULADOR: OPCIONES **
 ************************************
@@ -428,7 +428,7 @@ if _rc != 0 {
 	replace AportacionesNetas = Laboral + Consumo + ISR__PM + ing_cap_fmp ///
 	- Pension - Educacion - Salud - IngBasico - PenBienestar - Infra
 }
-label var AportacionesNetas "de las aportaciones netas"
+label var AportacionesNetas "las aportaciones netas"
 save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace
 
 
@@ -438,7 +438,7 @@ noisily Simulador AportacionesNetas if AportacionesNetas != 0 [fw=factor], ///
 
 
 ** CUENTA GENERACIONAL **
-noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) //	<-- OPTIONAL!!! Toma mucho tiempo.
+*noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) //	<-- OPTIONAL!!! Toma mucho tiempo.
 
 
 ** GRAFICA PROYECCION **
@@ -506,7 +506,7 @@ if "$output" == "output" {
 
 ** SANKEY **
 if "$export" != "" {
-	foreach k in decil sexo /*grupoedad sexo*/ {
+	foreach k in decil sexo grupoedad sexo {
 		noisily run "`c(sysdir_personal)'/SankeySF.do" `k' `aniovp'
 	}
 }
