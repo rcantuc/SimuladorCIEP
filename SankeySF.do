@@ -21,23 +21,10 @@ SCN, anio(`2') nographs
 
 
 
-**************************
-*** 2 Poblacion ajuste ***
-**************************
-use if anio == `2' using `"`c(sysdir_personal)'/SIM/Poblaciontot.dta"', clear
-local ajustepob = poblacion
-
-		
-		
 
 **********************************/
 ** Eje 1: Generación del ingreso **
 use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
-tabstat factor, stat(sum) f(%20.0fc) save
-tempname pobenigh
-matrix `pobenigh' = r(StatTotal)
-
-replace factor = round(factor*`ajustepob'/`pobenigh'[1,1],1)
 
 collapse (sum) ing_Laboral=Laboral ing__Consumo=Consumo ing__FMP=ing_cap_fmp ing___De_Capital=ISR__PM [fw=factor], by(`1')
 
@@ -118,7 +105,7 @@ set obs `=_N+3'
 replace from = 97 in -1
 label define from 97 "Costo de la deuda", add
 
-replace profile = scalar(costodeu)*`pobtot'[1,1] in -1
+replace profile = scalar(costodeu)*`pobtot'[1,1]*0 in -1
 
 replace to = 11 in -1
 label define `1' 11 "Sistema financiero", add
