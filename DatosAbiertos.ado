@@ -136,10 +136,10 @@ quietly {
 		}
 		tempvar monto
 		g `monto' = monto/1000000
-		twoway (area `monto' anio if anio < `ultanio') ///
-			(bar `monto' anio if anio >= `ultanio') ///
-			(connected monto_pib anio if anio < `ultanio', yaxis(2) mfcolor(white) color("255 129 0")) ///
-			(connected monto_pib anio if anio >= `ultanio', yaxis(2) mfcolor(white) color("255 189 0")), ///
+		twoway (area `monto' anio if anio <= `ultanio') ///
+			(bar `monto' anio if anio > `ultanio') ///
+			(connected monto_pib anio if anio <= `ultanio', yaxis(2) mfcolor(white) color("255 129 0")) ///
+			(connected monto_pib anio if anio > `ultanio', yaxis(2) mfcolor(white) color("255 189 0")), ///
 			///title({bf:`=nombre[1]'}`textsize') ///
 			/*subtitle(Montos observados)*/ ///
 			b1title(`"{bf:Proyectado `=anio[_N]':} `=string(monto[_N]/1000000,"%20.1fc")' millones de MXN"', size(small)) ///

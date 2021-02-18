@@ -25,7 +25,7 @@ if "`c(username)'" == "ciepmx" {
 
 ****************************************/
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
-if "`c(username)'" != "ricardo" & "`c(username)'" != "ciepmx" {
+if "`c(username)'" != "ricardo" /*& "`c(username)'" != "ciepmx"*/ {
 	global id = "`c(username)'"
 }
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
@@ -259,14 +259,14 @@ scalar ISRPM   = 25.438*14.586/100 	//		ISR (personas morales): 3.710
 scalar FMP     = 38.125* 3.571/100 	//		Fondo Mexicano del Petr{c o'}leo: 1.362
 scalar OYE     = 38.125*11.211/100 	//		Organismos y empresas (IMSS + ISSSTE + Pemex + CFE): 4.274
 scalar OtrosC  = 38.125* 2.806/100	//		Productos, derechos, aprovechamientos, contribuciones: 1.070
-** PARAMETROS SIMULADOR: INGRESOS **
+** PARAMETROS SIMULADOR: INGRESOS */
 ************************************
 
 
 *******************************
 ** PARAMETROS SIMULADOR: ISR **
 *			Inferior	Superior	CF			Tasa
-matrix	ISR	= (	0.00,	5952.84,	0.0,		1.92	\	/// 1
+matrix ISR	= (	0.00,	5952.84,	0.0,		1.92	\	/// 1
 			5952.85,	50524.92,	114.24,		6.40	\	/// 2
 			50524.93,	88793.04,	2966.76,	10.88	\	/// 3
 			88793.05,	103218.00,	7130.88,	16.00	\	/// 4
@@ -279,7 +279,7 @@ matrix	ISR	= (	0.00,	5952.84,	0.0,		1.92	\	/// 1
 			3000000.01,	1E+14, 		940850.81,	35.00)		//  11
 
 *			Inferior	Superior	Subsidio
-matrix	SE	= (	0.00,	21227.52,	4884.24		\		/// 1
+matrix SE	= (	0.00,	21227.52,	4884.24		\		/// 1
 			21227.53,	23744.40,	4881.96		\		/// 2
 			23744.41,	31840.56,	4318.08		\		/// 3
 			31840.57,	41674.08,	4123.20		\		/// 4
@@ -292,17 +292,22 @@ matrix	SE	= (	0.00,	21227.52,	4884.24		\		/// 1
 			85366.81,	88587.96,	2611.32		\		/// 11
 			88587.97, 	1E+14,		0)				//  12
 
-*			SS.MM.	% ingreso gravable
-matrix	DED	= (	5,	15)
+*			SS.MM.	% ing. gravable
+matrix DED	= (	5,	15)
 
-*			Tasa ISR PM	Evasion PM	Evasion PF
-matrix PM	= (	30,		20.10,		96.07)
+*			Tasa ISR PM	Evasion PM
+matrix PM	= (	30,		11.77)
+
+* Cambios ISR *
+local cambioISR = 0
 ** PARAMETROS SIMULADOR: ISR **
 *******************************
 
 
 ** MODULO ISR **
-*noisily run "`c(sysdir_personal)'/ISR_Mod.do"
+if `cambioISR' != 0 {
+	noisily run "`c(sysdir_personal)'/ISR_Mod.do"
+}
 capture confirm scalar ISR_AS_Mod
 if _rc == 0 {
 	scalar ISRAS = ISR_AS_Mod
@@ -472,7 +477,6 @@ if "$output" == "output" {
 	quietly log on output
 	noisily di in w "PROY: [`=substr("`out_proy'",1,`=`lengthproy'-1')']"
 	noisily di in w "PROYMAX: [`aniomax']"
-	noisily di in w "CRECPIB: [$pib2021,$pib2022,$pib2023,$pib2024,$pib2025]"
 	quietly log off output
 }
 
@@ -499,10 +503,6 @@ noisily FiscalGap, anio(`aniovp') $nographs end(2030) //boot(250) //update
 
 ** OUTPUT **
 if "$output" == "output" {
-	quietly log on output
-	noisily di in w "CRECPIB: [$pib2021,$pib2022,$pib2023,$pib2024,$pib2025]"
-	quietly log off output
-
 	quietly log close output
 	tempfile output1 output2 output3
 	if "`=c(os)'" == "Windows" {

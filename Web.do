@@ -254,8 +254,8 @@ matrix	SE	= (	0.00,		21227.52,	4884.24		\		/// 1
 *			SS.MM.	% ingreso gravable
 matrix	DED	= (	5,	15)
 
-*			Tasa ISR PM	Evasion PM	Evasion PF
-matrix PM	= (	30,		20.10,		96.07)
+*			Tasa ISR PM	Evasion PM
+matrix PM	= (	30,		11.77)
 ** PARAMETROS SIMULADOR: ISR **
 *******************************
 
@@ -412,10 +412,6 @@ noisily FiscalGap, anio(`aniovp') $nographs end(2030) //boot(250) //update
 
 ** OUTPUT **
 if "$output" == "output" {
-	quietly log on output
-	noisily di in w "CRECPIB: [$pib2021,$pib2022,$pib2023,$pib2024,$pib2025]"
-	quietly log off output
-
 	quietly log close output
 	tempfile output1 output2 output3
 	if "`=c(os)'" == "Windows" {
