@@ -299,7 +299,7 @@ local cambioIVA = 0
 
 
 ** MODULO IVA **
-if "`cambioIVA'" != 0 {
+if `cambioIVA' != 0 {
 	noisily run "`c(sysdir_personal)'/IVA_Mod.do"
 }
 capture confirm scalar IVA_Mod
