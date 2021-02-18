@@ -244,7 +244,10 @@ quietly {
 		replace OtrosC = OtrosC*((scalar(ISRPM)+scalar(FMP)+scalar(OYE)+scalar(OtrosC))/100*scalar(PIB))/INGRESOS[1,3]
 
 		replace ISR__PM = ISR__PM*((scalar(ISRPM))/100*scalar(PIB))/INGRESOS[1,4]
+		replace ISR__PM = 0 if ISR__PM == .
+
 		replace ing_cap_fmp = ing_cap_fmp*((scalar(FMP))/100*scalar(PIB))/INGRESOS[1,5]
+		replace ing_cap_fmp = 0 if ing_cap_fmp == .
 
 		tabstat Laboral Consumo OtrosC [fw=factor], stat(sum) f(%20.0fc) save
 		tempname INGRESOSSIM

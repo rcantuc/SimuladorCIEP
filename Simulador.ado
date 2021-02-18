@@ -734,9 +734,9 @@ program graphpiramide
 		if "`rect'" != "100" {
 			local rect `"{bf: Tama{c n~}o}: `=string(`rect',"%6.3fc")' % PIB"'
 		}
-		*else {
+		else {
 			local rect ""
-		*}
+		}
 
 		* Base *
 		if "`base'" != "" {
