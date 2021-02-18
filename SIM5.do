@@ -25,7 +25,7 @@ global nographs "nographs"
 
 ****************************************/
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
-if "`c(username)'" != "ricardo" /*& "`c(username)'" != "ciepmx"*/ {
+if "`c(username)'" != "ricardo" & "`c(username)'" != "ciepmx" {
 	global id = "`c(username)'"
 }
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
