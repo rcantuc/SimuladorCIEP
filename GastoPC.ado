@@ -26,13 +26,11 @@ quietly {
 		local ajustepob = poblacion
 		
 		use "`c(sysdir_personal)'/SIM/2018/households.dta", clear
-		noisily tabstat factor, stat(sum) f(%20.0fc) save
+		tabstat factor, stat(sum) f(%20.0fc) save
 		tempname pobenigh
 		matrix `pobenigh' = r(StatTotal)
 		
 		replace factor = round(factor*`ajustepob'/`pobenigh'[1,1],1)
-
-		noisily tabstat factor, stat(sum) f(%20.0fc)
 		
 		tabstat Pension Educacion Salud OtrosGas Infra [fw=factor], stat(sum) f(%20.0fc) save
 		matrix GASTOS = r(StatTotal)
