@@ -2069,6 +2069,34 @@ replace subor = 2 if subor == .
 capture g folio = folioviv + foliohog
 
 
+*********************************
+** Probit formalidad (general) **
+noisily di _newline _col(04) in g "{bf:3.1. Probit de formalidad: " in y "general.}"
+xi: probit formal_probit ing_bruto_tax deduc_isr ///
+	edad i.sexo aniosesc rural i.sinco2 i.subor ///
+	if ing_anual != 0 [pw=factor_cola]
+predict double prob_formal if e(sample)
+
+* Seleccionar individuo formales (general) *
+gsort -formal_probit -prob_formal
+g double factor_cola_accum = sum(factor_cola) if prob_formal != .
+egen factor_cola_NAC = sum(factor_cola) if prob_formal != .
+g prop_factor_cola = factor_cola_accum/factor_cola_NAC
+
+tabstat factor_cola if formal_probit != 0 & prob_formal != ., stat(sum) f(%20.0fc) save
+tempname Mfactor_cola
+matrix `Mfactor_cola' = r(StatTotal)
+
+g formal_general = factor_cola_accum <= `Mfactor_cola'[1,1] & prob_formal != .
+
+tabstat prop_factor_cola if formal_general == 1, stat(max) save
+tempname FORGEN
+matrix `FORGEN' = r(StatTotal)
+
+noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y ///
+	"La informalidad general estimada es del " %6.2fc (1-`FORGEN'[1,1])*100 in g "%.}"
+
+
 ************************************************
 ** Probit formalidad (alquileres, produccion) **
 noisily di _newline _col(04) in g "{bf:3.1. Probit de formalidad: " in y "Alquileres, producci{c o'}n.}"
