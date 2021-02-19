@@ -5,10 +5,10 @@ macro drop _all
 capture log close _all
 if "`c(username)'" == "ricardo" {
 	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
-	global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
+	*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
 }
 if "`c(username)'" == "ciepmx" {
-	*sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
+	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
 	*global export "/home/ciepmx/Dropbox (CIEP)/Textbook/"
 }
 ** PARAMETROS SIMULADOR: DIRECTORIOS **
@@ -17,7 +17,7 @@ if "`c(username)'" == "ciepmx" {
 
 ************************************
 ** PARAMETROS SIMULADOR: OPCIONES **
-*global nographs "nographs"
+global nographs "nographs"
 *global output "output"
 ** PARAMETROS SIMULADOR: OPCIONES **
 ************************************
@@ -129,7 +129,7 @@ if _rc != 0 | "$export" != "" {
 		}
 	}
 
-	** DATOS ABIERTOS **
+	/** DATOS ABIERTOS **
 	DatosAbiertos XNA0120_s, g //		ISR salarios
 	DatosAbiertos XNA0120_f, g //		ISR PF
 	DatosAbiertos XNA0120_m, g //		ISR PM
@@ -142,7 +142,7 @@ if _rc != 0 | "$export" != "" {
 	DatosAbiertos XAB2110, g   //		Ingresos propios Pemex
 	DatosAbiertos XOA0115, g   //		Ingresos propios CFE
 	DatosAbiertos XKF0179, g   //		Ingresos propios IMSS
-	DatosAbiertos XOA0120, g   //		Ingresos propios ISSSTE
+	DatosAbiertos XOA0120, g   //		Ingresos propios ISSSTE*/
 	
 	global id = "`id'"
 }
@@ -292,14 +292,14 @@ matrix SE	= (	0.00,	21227.52,	4884.24		\		/// 1
 			85366.81,	88587.96,	2611.32		\		/// 11
 			88587.97, 	1E+14,		0)				//  12
 
-*			SS.MM.	% ing. gravable
-matrix DED	= (	5,	15)
+*			SS.MM.	% ing. gravable		Informalidad (%)
+matrix DED	= (	5,	15, 				50.36*0)	// 50.36
 
 *			Tasa ISR PM	Evasion PM
 matrix PM	= (	30,		11.77)
 
 * Cambios ISR *
-local cambioISR = 0
+local cambioISR = 1
 ** PARAMETROS SIMULADOR: ISR **
 *******************************
 
@@ -314,7 +314,7 @@ if _rc == 0 {
 	scalar ISRPF = ISR_PF_Mod
 	scalar ISRPM = ISR_PM_Mod
 }
-
+exit
 
 ** OUTPUT **/
 if "$output" == "output" {
