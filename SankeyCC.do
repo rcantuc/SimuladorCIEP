@@ -36,11 +36,11 @@ local OtrasEmpresas = r(Otras_empresas)
 ** Eje 1: Generación del ingreso **
 use `"`c(sysdir_personal)'/SIM/$pais/2018/households.dta"', clear
 
-g ing_Sector_Publico = ing_cap_imss + ing_cap_issste + ing_cap_cfe + ing_cap_pemex ///
+*g ing_Sector_Publico = ing_cap_imss + ing_cap_issste + ing_cap_cfe + ing_cap_pemex ///
 	+ ing_cap_fmp + ing_cap_mejoras + ing_cap_derechos + ing_cap_productos + ing_cap_aprovecha ///
 	+ ing_cap_otrostrib + ing_cap_otrasempr
 replace Yk = Yk - ing_estim_alqu //- ing_Sector_Publico
-collapse (sum) ing_Ing_Laboral=Yl ing_Ing_Capital=Yk ing_Empresas_Públicas=ing_Sector_Publico ///
+collapse (sum) ing_Ing_Laboral=Yl ing_Ing_Capital=Yk /*ing_Empresas_Públicas=ing_Sector_Publico*/ ///
 	ing_Alquiler_imputado=ing_estim_alqu [fw=factor_cola], by(`1')
 
 * to *
@@ -52,7 +52,7 @@ encode `to', g(to)
 * from *
 rename `1' from
 
-/* Sector Publico *
+* Sector Publico *
 set obs `=_N+1'
 replace from = -2 in -1
 replace profile = `IMSSpropio' + `ISSSTEpropio' + `CFEpropio' + ///
@@ -65,7 +65,7 @@ replace to = 2 in -1
 set obs `=_N+2'
 replace from = -1 if from == .
 
-replace to = 4 in -1
+replace to = 3 in -1
 replace profile = scalar(ROWRem) in -1
 
 replace to = 101 in -2

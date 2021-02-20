@@ -2068,11 +2068,13 @@ replace subor = 2 if subor == .
 
 capture g folio = folioviv + foliohog
 
+g prop_mixto = ing_mixto/(ing_mixto+ing_subor)
+
 
 *********************************
 ** Probit formalidad (general) **
 noisily di _newline _col(04) in g "{bf:3.1. Probit de formalidad: " in y "general.}"
-xi: probit formal_probit ing_bruto_tax deduc_isr ///
+xi: probit formal_probit ing_bruto_tax deduc_isr prop_mixto ///
 	edad i.sexo aniosesc rural i.sinco2 i.subor ///
 	if ing_anual != 0 [pw=factor_cola]
 predict double prob_formal if e(sample)
