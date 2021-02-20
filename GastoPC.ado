@@ -516,7 +516,7 @@ quietly {
 			tabstat factor, stat(sum) f(%20.0fc) save
 			tempname pobIngBas
 			matrix `pobIngBas' = r(StatTotal)
-			local bititle = "Entre 18 y 65"			
+			local bititle = "Poblaci{c o'}n general"		
 		}
 
 
@@ -767,7 +767,8 @@ quietly {
 			Pension Educacion Salud IngBasico PenBienestar Salarios OtrosGas Infra ///
 			sexo grupoedad decil escol edad ing_bruto_tax prop_factor_cola ///
 			deduc_isr ISR categF ISR__asalariados ISR__PF cuotas* ingbrutotot htrab ///
-			tipo_contribuyente exen_tot formal* ing_capital isrE ing_subor IVA* IEPS*
+			tipo_contribuyente exen_tot formal* ing_capital isrE ing_subor IVA* IEPS* ///
+			gasto_anualDepreciacion
 	}
 
 	else if "$pais" == "El Salvador" {

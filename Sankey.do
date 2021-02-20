@@ -65,12 +65,12 @@ replace to = 2 in -1
 set obs `=_N+2'
 replace from = -1 if from == .
 
-replace to = 4 in -1
+replace to = 3 in -1
 replace profile = scalar(ROWRem) in -1
 
 replace to = 101 in -2
 replace profile = scalar(ROWTrans) in -2
-label define to 101 "Remesas", add
+label define to 101 "Transf. corrientes", add
 
 * Compras Netas */
 if scalar(ComprasN) < 0 {
