@@ -205,13 +205,13 @@ noisily GastoPC, anio(`aniovp') `nographs'
 /** Al ingreso **
 scalar ISRAS   = 22.018*15.567/100 	//		ISR (asalariados): 3.428
 scalar ISRPF   = 13.211* 3.316/100 	//		ISR (personas f{c i'}sicas): 0.438
-scalar CuotasT = 26.454* 5.729/100	//		Cuotas (IMSS): 1.515
+scalar CuotasT = 26.454* 5.729/100	//		Cuotas (IMSS): 1.516
 
 * Al consumo *
-scalar IVA     = 66.041*5.883/100 	//		IVA: 3.885
+scalar IVA     = 66.041*5.882/100 	//		IVA: 3.885
 scalar ISAN    =  2.913*1.025/100 	//		ISAN: 0.030
 scalar IEPS    = 66.041*3.069/100 	//		IEPS (no petrolero + petrolero): 2.027
-scalar Importa = 31.060*0.792/100 	//		Importaciones: 0.245
+scalar Importa = 30.908*0.796/100 	//		Importaciones: 0.246
 
 * Al capital *
 scalar ISRPM   = 25.438*14.586/100 	//		ISR (personas morales): 3.710
@@ -251,11 +251,11 @@ matrix	SE	= (	0.00,	21227.52,	4884.24		\		/// 1
 			85366.81,	88587.96,	2611.32		\		/// 11
 			88587.97, 	1E+14,		0)				//  12
 
-*			SS.MM.	% ing. gravable		Informalidad (%)
-matrix DED	= (	5,	15, 				50.36)
+*			SS.MM.		% ing. gr	Informalidad (%)
+matrix DED	= (	5,		15, 		43.15)
 
-*			Tasa ISR PM	Evasion PM
-matrix PM	= (	30,		21.63)
+*			Tasa ISR PM				Reducciones PM
+matrix PM	= (	30,					29.18)
 
 * Cambios ISR *
 local cambioISR = 0
