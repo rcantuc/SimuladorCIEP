@@ -358,7 +358,7 @@ if _rc == 0 {
 	scalar IVA = IVA_Mod
 }
 
-exit
+
 ** OUTPUT **/
 if "$output" == "output" {
 	quietly log on output
