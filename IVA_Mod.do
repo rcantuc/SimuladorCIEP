@@ -22,16 +22,16 @@ use "`c(sysdir_personal)'/SIM/2018/expenditure_categ_iva.dta", clear
 ** Re C{c a'}lculo del IVA **
 local j = 2
 foreach k in alim alquiler cb educacion fuera mascotas med otros trans transf {
-	replace gasto_anual`k' = gasto_anual`k' //(`lambda'*`deflator')
+	replace gasto_anual`k' = gasto_anual`k'/(`deflator')
 	
 	if IVAT[`j',1] == 1 {
 		replace IVA`k' = 0
 	}
 	if IVAT[`j',1] == 2 {
-		replace IVA`k' = gasto_anual`k'*IVAT[1,1]/100*(1-.35125482)*(1-IVAT[12,1]/100)
+		replace IVA`k' = gasto_anual`k'*IVAT[1,1]/100/(1+IVAT[1,1]/100)*(1-.35125482)*(1-IVAT[12,1]/100)
 	}
 	if IVAT[`j',1] == 3 {
-		replace IVA`k' = gasto_anual`k'*IVAT[1,1]/100*(1-IVAT[12,1]/100)
+		replace IVA`k' = gasto_anual`k'*IVAT[1,1]/100/(1+IVAT[1,1]/100)*(1-IVAT[12,1]/100)
 	}
 	local ++j
 }
@@ -45,6 +45,9 @@ merge 1:1 (folioviv foliohog numren) using ///
 replace Consumo = 0 if Consumo == .
 label var Consumo "los impuestos al consumo"
 
+egen GastoTOT = rsum(gasto_anualalim gasto_anualalquiler gasto_anualcb gasto_anualeducacion ///
+	gasto_anualfuera gasto_anualmascotas gasto_anualmed gasto_anualotros gasto_anualtrans gasto_anualtransf)
+
 *noisily Simulador Consumo [fw=factor], base("ENIGH 2018") boot(1) reboot $nographs nooutput
 
 capture egen IVATotal = rsum(IVAalim IVAalquiler IVAcb IVAeducacion IVAfuera ///
@@ -55,12 +58,13 @@ if _rc != 0 {
 	IVAmascotas IVAmed IVAotros IVAtrans IVAtransf)
 }
 
-noisily tabstat IVATotal Consumo [fw=factor], stat(sum) f(%20.0fc) save
+noisily tabstat IVATotal Consumo GastoTOT [fw=factor], stat(sum) f(%20.0fc) save
 tempname IVA
 matrix `IVA' = r(StatTotal)
 scalar IVA_Mod = `IVA'[1,1]/scalar(PIB)*100
 
 noisily di _newline in g " RESULTADOS IVA: " in y %10.3fc IVA_Mod
+noisily di _newline in g " GASTO ANUAL: " in y %10.3fc `IVA'[1,3]/scalar(PIB)*100
 
 save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace
 
