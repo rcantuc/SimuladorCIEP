@@ -252,7 +252,7 @@ scalar CuotasT = 26.454* 5.729/100	//		Cuotas (IMSS): 1.515
 scalar IVA     = 66.041*5.883/100 	//		IVA: 3.885
 scalar ISAN    =  2.913*1.025/100 	//		ISAN: 0.030
 scalar IEPS    = 66.041*3.069/100 	//		IEPS (no petrolero + petrolero): 2.027
-scalar Importa = 30.908*0.796/100 	//		Importaciones: 0.245
+scalar Importa = 30.908*0.792/100 	//		Importaciones: 0.245
 
 * Al capital *
 scalar ISRPM   = 25.438*14.586/100 	//		ISR (personas morales): 3.710
