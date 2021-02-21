@@ -58,7 +58,7 @@ if _rc != 0 {
 	IVAmascotas IVAmed IVAotros IVAtrans IVAtransf)
 }
 
-noisily tabstat IVATotal Consumo GastoTOT [fw=factor], stat(sum) f(%20.0fc) save
+tabstat IVATotal Consumo GastoTOT [fw=factor], stat(sum) f(%20.0fc) save
 tempname IVA
 matrix `IVA' = r(StatTotal)
 scalar IVA_Mod = `IVA'[1,1]/scalar(PIB)*100
