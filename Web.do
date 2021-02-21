@@ -293,7 +293,7 @@ matrix IVAT = (	16	\	///  1  Tasa general
 		1	\	///  2  Alimentos, 1: Tasa Cero, 2: Exento, 3: Gravado
 		2	\	///  3  Alquiler, idem
 		1	\	///  4  Canasta basica, idem
-		1	\	///  5  Educacion, idem
+		2	\	///  5  Educacion, idem
 		3	\	///  6  Consumo fuera del hogar, idem
 		3	\	///  7  Mascotas, idem
 		1	\	///  8  Medicinas, idem
