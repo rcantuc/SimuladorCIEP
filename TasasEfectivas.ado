@@ -342,7 +342,7 @@ quietly {
 			%8.3f `recISR_PF'/MixL*100 ", " ///
 			%8.3f `recCuotas_'/(RemSal+SSImputada+SSEmpleadores)*100 ", " ///
 			%8.3f (`recISR_AS'+`recISR_PF'+`recCuotas_')/(Yl)*100 ", " ///
-			%8.3f `recIVA'/(ConHog - Alim - BebN - Salu)*100 ", " ///
+			%8.3f `recIVA'/(ConHog)*100 ", " ///
 			%8.3f `recISAN'/Vehi*100 ", " ///
 			%8.3f `recIEPS'/ConHog*100 ", " ///
 			%8.3f (`recImporta'/scalar(PIB)*100)/scalar(importacionesBCPIB)*100 ", " ///
