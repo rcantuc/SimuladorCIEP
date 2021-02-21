@@ -370,7 +370,7 @@ if "$output" == "output" {
 ** TASAS EFECTIVAS **
 noisily TasasEfectivas, anio(`aniovp') `nographs'
 
-exit
+
 ** GRAFICA PROYECCION **
 if "$export" != "" {
 	forvalues aniohoy = `aniovp'(1)`aniovp' {
