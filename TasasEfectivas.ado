@@ -164,11 +164,11 @@ quietly {
 			_col(88) %7s in g "% PIB" ///
 			_col(99) in g "Tasa efectiva" "}"
 		noisily di in g _dup(111) "-"
-		noisily di in g "  Consumo hogares (sin alim.)" ///
-			_col(44) %7.3fc in y (ConHog - Alim - BebN - Salu)/scalar(PIB)*100 ///
+		noisily di in g "  Consumo hogares e ISFLSH" ///
+			_col(44) %7.3fc in y (ConHog /*- Alim - BebN - Salu*/)/scalar(PIB)*100 ///
 			_col(55) in g "IVA" ///
 			_col(88) %7.3fc in y `recIVA'/scalar(PIB)*100 ///
-			_col(99) %7.3fc in y `recIVA'/(ConHog - Alim - BebN - Salu)*100 " %"
+			_col(99) %7.3fc in y `recIVA'/(ConHog /*- Alim - BebN - Salu*/)*100 " %"
 		noisily di in g "  Compra de veh{c i'}culos" ///
 			_col(44) %7.3fc in y Vehi/scalar(PIB)*100 ///
 			_col(55) in g "ISAN" ///

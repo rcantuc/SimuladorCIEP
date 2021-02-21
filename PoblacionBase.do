@@ -10,15 +10,15 @@
 **********************
 ** 1. Base de datos **
 *import delimited "http://www.conapo.gob.mx/work/models/CONAPO/Datos_Abiertos/Proyecciones2018/pob_ini_proyecciones.csv", clear
-use "`c(sysdir_site)'../basesCIEP/CONAPO/censo2020.dta", clear
-tostring sexo, replace
-destring edad, replace
+*use "`c(sysdir_site)'../basesCIEP/CONAPO/censo2020.dta", clear
+*tostring sexo, replace
+*destring edad, replace
 
 if `c(version)' > 13.1 {
-	*import delimited "`c(sysdir_site)'../basesCIEP/CONAPO/pob_mit_proyecciones.csv", clear encoding("windows-1252")
+	import delimited "`c(sysdir_site)'../basesCIEP/CONAPO/pob_mit_proyecciones.csv", clear encoding("windows-1252")
 }
 else {
-	*import delimited "`c(sysdir_site)'../basesCIEP/CONAPO/pob_mit_proyecciones.csv", clear
+	import delimited "`c(sysdir_site)'../basesCIEP/CONAPO/pob_mit_proyecciones.csv", clear
 }
 
 * 2. Limpia *

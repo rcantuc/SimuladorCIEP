@@ -26,7 +26,7 @@ SCN, anio(`2') nographs
 ** Eje 1: Generación del ingreso **
 use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
 
-collapse (sum) ing_Laboral=Laboral ing__Consumo=Consumo ing__FMP=ing_cap_fmp ing___De_Capital=ISR__PM [fw=factor], by(`1')
+collapse (sum) ing_Imp_Laborales=Laboral ing__Imp_Consumo=Consumo ing__FMP=ing_cap_fmp ing___Imp_al_capital=ISR__PM [fw=factor], by(`1')
 
 * to *
 tempvar to

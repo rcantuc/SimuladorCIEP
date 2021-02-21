@@ -198,7 +198,7 @@ scalar ISRPF   = 13.211*3.3/100 	//		ISR (personas f{c i'}sicas): 0.438
 scalar CuotasT = 26.454*5.7/100		//		Cuotas (IMSS): 1.515
 
 * Al consumo *
-scalar IVA     = 47.277*8.2/100 	//		IVA: 3.885
+scalar IVA     = 66.041*5.9/100 	//		IVA: 3.885
 scalar ISAN    =  2.913*1.0/100 	//		ISAN: 0.030
 scalar IEPS    = 66.041*3.1/100 	//		IEPS (no petrolero + petrolero): 2.027
 scalar Importa = 31.060*0.8/100 	//		Importaciones: 0.245
