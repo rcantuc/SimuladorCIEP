@@ -5,7 +5,7 @@ macro drop _all
 capture log close _all
 if "`c(username)'" == "ricardo" {
 	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
-	*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
+	global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
 }
 if "`c(username)'" == "ciepmx" {
 	*sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
@@ -103,14 +103,14 @@ global inf2021 =  3.000
 
 
 ** POBLACION **
-*forvalues k=1950(1)2050 {
 foreach k in `aniovp' {
-	noisily Poblacion, $nographs anio(`k') update //tf(`=64.333315/2.1*1.8') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040)
+*forvalues k=1950(1)2050 {
+	noisily Poblacion, $nographs anio(`k') //update //tf(`=64.333315/2.1*1.8') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040)
 }
 
 
 
-capture confirm file `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PensionREC.dta"'
+/*capture confirm file `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PensionREC.dta"'
 if _rc != 0 | "$export" != "" {
 
 	** HOUSEHOLDS: INCOMES **
@@ -243,13 +243,13 @@ noisily GastoPC, anio(`aniovp') `nographs'
 
 ************************************
 ** PARAMETROS SIMULADOR: INGRESOS **
-* Al ingreso *
+/* Al ingreso *
 scalar ISRAS   = 22.018*15.567/100 	//		ISR (asalariados): 3.428
 scalar ISRPF   = 13.211* 3.316/100 	//		ISR (personas f{c i'}sicas): 0.438
 scalar CuotasT = 26.454* 5.729/100	//		Cuotas (IMSS): 1.515
 
 * Al consumo *
-scalar IVA     = 47.277*8.218/100 	//		IVA: 3.885
+scalar IVA     = 66.041*5.883/100 	//		IVA: 3.885
 scalar ISAN    =  2.913*1.025/100 	//		ISAN: 0.030
 scalar IEPS    = 66.041*3.069/100 	//		IEPS (no petrolero + petrolero): 2.027
 scalar Importa = 31.060*0.792/100 	//		Importaciones: 0.245
@@ -299,7 +299,7 @@ matrix DED	= (	5,	15, 				50.36)
 matrix PM	= (	30,		21.63)
 
 * Cambios ISR *
-local cambioISR = 1
+local cambioISR = 0
 ** PARAMETROS SIMULADOR: ISR **
 *******************************
 
@@ -341,10 +341,10 @@ matrix IVAT = (	16	\	///  1  Tasa general
 		3	\	///  9  Otros, idem
 		2	\	/// 10  Transporte local, idem
 		2	\	/// 11  Transporte foraneo, idem
-		44)	//  12  Evasion e informalidad IVA, idem
+		44.00)	//  12  Evasion e informalidad IVA, idem
 		
 * Cambios IVA *
-local cambioIVA = 0
+local cambioIVA = 1
 ** PARAMETROS SIMULADOR: IVA **
 *******************************
 
@@ -373,42 +373,45 @@ noisily TasasEfectivas, anio(`aniovp') `nographs'
 
 ** GRAFICA PROYECCION **
 if "$export" != "" {
-	use `"`c(sysdir_personal)'/SIM/2018/households.dta"', clear
-	noisily Simulador ImpuestosAportaciones if ImpuestosAportaciones != 0 [fw=factor], ///
-		base("ENIGH 2018") boot(1) reboot nographs anio(2020)
+	forvalues aniohoy = `aniovp'(1)`aniovp' {
+	*forvalues aniohoy = 1990(1)2050 {
+		use `"`c(sysdir_personal)'/SIM/2018/households.dta"', clear
+		noisily Simulador ImpuestosAportaciones if ImpuestosAportaciones != 0 [fw=factor], ///
+			base("ENIGH 2018") boot(1) reboot nographs anio(2020)
 
-	use `"`c(sysdir_personal)'/users/$id/bootstraps/1/ImpuestosAportacionesREC.dta"', clear
-	merge 1:1 (anio) using `"`c(sysdir_personal)'/users/$id/PIB.dta"', nogen
-	replace estimacion = estimacion/1000000000000
+		use `"`c(sysdir_personal)'/users/$id/bootstraps/1/ImpuestosAportacionesREC.dta"', clear
+		merge 1:1 (anio) using `"`c(sysdir_personal)'/users/$id/PIB.dta"', nogen
+		replace estimacion = estimacion/1000000000000
 
-	tabstat estimacion, stat(max) save
-	tempname MAX
-	matrix `MAX' = r(StatTotal)
-	forvalues k=1(1)`=_N' {
-		if estimacion[`k'] == `MAX'[1,1] {
-			local aniomax = anio[`k']
+		tabstat estimacion, stat(max) save
+		tempname MAX
+		matrix `MAX' = r(StatTotal)
+		forvalues k=1(1)`=_N' {
+			if estimacion[`k'] == `MAX'[1,1] {
+				local aniomax = anio[`k']
+			}
+			if anio[`k'] == `aniohoy' {
+				local estimacionvp = estimacion[`k']
+			}
 		}
-		if anio[`k'] == `aniovp' {
-			local estimacionvp = estimacion[`k']
+
+		twoway (connected estimacion anio) (connected estimacion anio if anio == `aniohoy') if anio > 1990, ///
+			ytitle("billones MXN `aniovp'") ///
+			yscale(range(0)) /*ylabel(0(1)4)*/ ///
+			ylabel(#5, format(%5.1fc) labsize(small)) ///
+			xlabel(1990(10)2050, labsize(small) labgap(2)) ///
+			xtitle("") ///
+			legend(off) ///
+			text(`=`MAX'[1,1]' `aniomax' "{bf:M{c a'}ximo:} `aniomax'", place(w)) ///
+			text(`estimacionvp' `aniohoy' "{bf:`aniohoy'}", place(e)) ///
+			///title("{bf:Proyecciones} de los impuestos y aportaciones") subtitle("$pais") ///
+			///caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5.") ///
+			name(ImpuestosAportacionesProj, replace)
+
+		capture confirm existence $export
+		if _rc == 0 {
+			graph export "$export/ImpuestosAportacionesProj`aniohoy'.png", replace name(ImpuestosAportacionesProj)
 		}
-	}
-
-	twoway (connected estimacion anio) (connected estimacion anio if anio == `aniovp') if anio > 1990, ///
-		ytitle("billones MXN `aniovp'") ///
-		yscale(range(0)) /*ylabel(0(1)4)*/ ///
-		ylabel(#5, format(%5.1fc) labsize(small)) ///
-		xlabel(1990(10)2050, labsize(small) labgap(2)) ///
-		xtitle("") ///
-		legend(off) ///
-		text(`=`MAX'[1,1]' `aniomax' "{bf:M{c a'}ximo:} `aniomax'", place(w)) ///
-		text(`estimacionvp' `aniovp' "{bf:Paquete Econ{c o'}mico} `aniovp'", place(e)) ///
-		///title("{bf:Proyecciones} de los impuestos y aportaciones") subtitle("$pais") ///
-		///caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5.") ///
-		name(ImpuestosAportacionesProj, replace)
-
-	capture confirm existence $export
-	if _rc == 0 {
-		graph export "$export/ImpuestosAportacionesProj.png", replace name(ImpuestosAportacionesProj)
 	}
 }
 
@@ -445,21 +448,22 @@ noisily Simulador AportacionesNetas if AportacionesNetas != 0 [fw=factor], ///
 use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/AportacionesNetasREC.dta"', clear
 replace estimacion = estimacion/1000000000000
 
-tabstat estimacion, stat(max) save
-tempname MAX
-matrix `MAX' = r(StatTotal)
-forvalues k=1(1)`=_N' {
-	if estimacion[`k'] == `MAX'[1,1] {
-		local aniomax = anio[`k']
+forvalues aniohoy = `aniovp'(1)`aniovp' {
+*forvalues aniohoy = 1990(1)2050 {
+	tabstat estimacion, stat(max) save
+	tempname MAX
+	matrix `MAX' = r(StatTotal)
+	forvalues k=1(1)`=_N' {
+		if estimacion[`k'] == `MAX'[1,1] {
+			local aniomax = anio[`k']
+		}
+		if anio[`k'] == `aniohoy' {
+			local estimacionvp = estimacion[`k']
+		}
 	}
-	if anio[`k'] == `aniovp' {
-		local estimacionvp = estimacion[`k']
-	}
-}
 
-if "$nographs" != "nographs" {
 	twoway (connected estimacion anio) ///
-		(connected estimacion anio if anio == `aniovp') ///
+		(connected estimacion anio if anio == `aniohoy') ///
 		if anio > 1990, ///
 		ytitle("billones MXN `aniovp'") ///
 		yscale(range(0)) /*ylabel(0(1)4)*/ ///
@@ -468,14 +472,14 @@ if "$nographs" != "nographs" {
 		xtitle("") ///
 		legend(off) ///
 		text(`=`MAX'[1,1]' `aniomax' "{bf:Max:} `aniomax'", place(n)) ///
-		text(`estimacionvp' `aniovp' "{bf:Hoy:} `aniovp'", place(s)) ///
-		///title("{bf:Proyecciones} de las aportaciones netas") subtitle("$pais") ///
-		///caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5.") ///
+		text(`estimacionvp' `aniohoy' "{bf:`aniohoy'}", place(s)) ///
+		title("{bf:Proyecciones} de las aportaciones netas") subtitle("$pais") ///
+		caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5.") ///
 		name(AportacionesNetasProj, replace)
 
 	capture confirm existence $export
 	if _rc == 0 {
-		graph export "$export/AportacionesNetasProj.png", replace name(AportacionesNetasProj)
+		graph export "$export/AportacionesNetasProj`aniohoy'.png", replace name(AportacionesNetasProj)
 	}
 }
 
