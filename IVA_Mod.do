@@ -29,7 +29,7 @@ foreach k in alim alquiler cb educacion fuera mascotas med otros trans transf {
 		g cero`k' = gasto_anual`k'
 	}
 	if IVAT[`j',1] == 2 {
-		replace IVA`k' = gasto_anual`k'*IVAT[1,1]/100/(1+IVAT[1,1]/100)*(1-proporcion`k')*(1-IVAT[12,1]/100)
+		replace IVA`k' = gasto_anual`k'*(1-proporcion`k')*IVAT[1,1]/100/(1+IVAT[1,1]/100)*(1-IVAT[12,1]/100)
 		g exento`k' = gasto_anual`k'
 	}
 	if IVAT[`j',1] == 3 {
