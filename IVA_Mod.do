@@ -26,12 +26,15 @@ foreach k in alim alquiler cb educacion fuera mascotas med otros trans transf {
 	
 	if IVAT[`j',1] == 1 {
 		replace IVA`k' = 0
+		g cero`k' = gasto_anual`k'
 	}
 	if IVAT[`j',1] == 2 {
-		replace IVA`k' = gasto_anual`k'*IVAT[1,1]/100/(1+IVAT[1,1]/100)*(1-.35125482)*(1-IVAT[12,1]/100)
+		replace IVA`k' = gasto_anual`k'*IVAT[1,1]/100/(1+IVAT[1,1]/100)*(1-proporcion`k')*(1-IVAT[12,1]/100)
+		g exento`k' = gasto_anual`k'
 	}
 	if IVAT[`j',1] == 3 {
 		replace IVA`k' = gasto_anual`k'*IVAT[1,1]/100/(1+IVAT[1,1]/100)*(1-IVAT[12,1]/100)
+		g gravado`k' = gasto_anual`k'
 	}
 	local ++j
 }
@@ -48,6 +51,20 @@ label var Consumo "los impuestos al consumo"
 egen GastoTOT = rsum(gasto_anualalim gasto_anualalquiler gasto_anualcb gasto_anualeducacion ///
 	gasto_anualfuera gasto_anualmascotas gasto_anualmed gasto_anualotros gasto_anualtrans gasto_anualtransf)
 
+capture egen GastoTOTC = rsum(cero*)
+if _rc != 0 {
+	g GastoTOTC = 0
+}
+capture egen GastoTOTE = rsum(exento*)
+if _rc != 0 {
+	g GastoTOTE = 0
+}
+capture egen GastoTOTG = rsum(gravado*)
+if _rc != 0 {
+	g GastoTOTG = 0
+}
+
+
 *noisily Simulador Consumo [fw=factor], base("ENIGH 2018") boot(1) reboot $nographs nooutput
 
 capture egen IVATotal = rsum(IVAalim IVAalquiler IVAcb IVAeducacion IVAfuera ///
@@ -58,13 +75,24 @@ if _rc != 0 {
 	IVAmascotas IVAmed IVAotros IVAtrans IVAtransf)
 }
 
-tabstat IVATotal Consumo GastoTOT [fw=factor], stat(sum) f(%20.0fc) save
+tabstat IVATotal Consumo [fw=factor], stat(sum) f(%20.0fc) save
 tempname IVA
 matrix `IVA' = r(StatTotal)
 scalar IVA_Mod = `IVA'[1,1]/scalar(PIB)*100
 
-noisily di _newline in g " RESULTADOS IVA: " in y %10.3fc IVA_Mod
-noisily di _newline in g " GASTO ANUAL: " in y %10.3fc `IVA'[1,3]/scalar(PIB)*100
+noisily di _newline in g " RESULTADOS IVA: " _col(29) in y %10.3fc IVA_Mod
+
+
+
+tabstat GastoTOT GastoTOTC GastoTOTE GastoTOTG [fw=factor], stat(sum) f(%20.0fc) save
+tempname IVA2
+matrix `IVA2' = r(StatTotal)
+
+
+noisily di _newline in g " GASTO ANUAL: " _col(29) in y %10.3fc `IVA2'[1,1]/scalar(PIB)*100
+noisily di in g " GASTO 0%: " _col(29)  in y %10.3fc `IVA2'[1,2]/scalar(PIB)*100
+noisily di in g " GASTO EXENTO: " _col(29)  in y %10.3fc `IVA2'[1,3]/scalar(PIB)*100
+noisily di in g " GASTO GRAVADO: " _col(29)  in y %10.3fc `IVA2'[1,4]/scalar(PIB)*100
 
 save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace
 

@@ -79,7 +79,7 @@ local ExpHog = scalar(ConHog)
 
 
 ** MA.2. SHCP: Datos Abiertos **
-noisily LIF, anio(`enighanio') by(divCIEP2)
+noisily LIF, anio(`enighanio') by(divCIEP2) nographs
 local IVA = r(IVA)
 local IEPS = r(IEPS__no_petrolero_)
 local Ieps1 = r(Cervezas)
@@ -789,10 +789,10 @@ replace IEPS = IEPS*`IEPS'/`MTot'[1,4]
 replace categ_iva = "sin_iva" if categ_iva == ""
 foreach categ of varlist categ categ_iva {
 	preserve
-	collapse (sum) gasto_anual IVA IEPS (max) factor sexo edad alfa, by(folioviv foliohog numren `categ')
-	capture reshape wide gasto_anual IVA IEPS, i(folioviv foliohog numren) j(`categ') string
+	collapse (sum) gasto_anual IVA IEPS (max) factor sexo edad alfa (mean) proporcion, by(folioviv foliohog numren `categ')
+	capture reshape wide gasto_anual IVA IEPS proporcion, i(folioviv foliohog numren) j(`categ') string
 	if _rc != 0 {
-		reshape wide gasto_anual IVA IEPS, i(folioviv foliohog numren) j(`categ')
+		reshape wide gasto_anual IVA IEPS proporcion, i(folioviv foliohog numren) j(`categ')
 	}
 
 	** 7.1 Distribucion **
