@@ -789,6 +789,8 @@ replace IEPS = IEPS*`IEPS'/`MTot'[1,4]
 replace categ_iva = "sin_iva" if categ_iva == ""
 foreach categ of varlist categ categ_iva {
 	preserve
+	levelsof `categ', l(levelscateg)
+
 	collapse (sum) gasto_anual IVA IEPS (max) factor sexo edad alfa (mean) proporcion, by(folioviv foliohog numren `categ')
 	capture reshape wide gasto_anual IVA IEPS proporcion, i(folioviv foliohog numren) j(`categ') string
 	if _rc != 0 {
@@ -801,6 +803,10 @@ foreach categ of varlist categ categ_iva {
 		g double `temp`k'' = `k' if numren == ""
 		egen double T`k' = sum(`temp`k''), by(folioviv foliohog)
 	}
+	
+	foreach categlevel of local levelscateg {
+		egen prop_exen`categlevel' = mean(proporcion`categlevel')
+	}
 
 	tempvar alfatot
 	egen `alfatot' = sum(alfa), by(folioviv foliohog)
@@ -810,7 +816,7 @@ foreach categ of varlist categ categ_iva {
 	}
 	drop if numren == ""
 	drop T*
-	capture drop *sin_iva
+	capture drop *sin_iva proporcion*
 
 	** 7.2 Totales **
 	egen TOTgasto_anual = rsum(gasto_anual*)
@@ -818,7 +824,6 @@ foreach categ of varlist categ categ_iva {
 
 	egen TOTIVA = rsum(IVA*)
 	egen TOTIEPS = rsum(IEPS*)
-
 
 
 	***********
