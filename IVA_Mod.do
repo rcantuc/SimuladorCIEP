@@ -29,9 +29,9 @@ foreach k in alim alquiler cb educacion fuera mascotas med otros trans transf {
 		g cero`k' = gasto_anual`k'
 	}
 	if IVAT[`j',1] == 2 {
-		replace IVA`k' = gasto_anual`k'*(1-proporcion`k')*IVAT[1,1]/100/(1+IVAT[1,1]/100)*(1-IVAT[12,1]/100)
+		replace IVA`k' = gasto_anual`k'*(1-prop_exen`k')*IVAT[1,1]/100/(1+IVAT[1,1]/100)*(1-IVAT[12,1]/100)
 		g exento`k' = gasto_anual`k'
-		g gas_exento`k' = gasto_anual`k'*(1-proporcion`k')
+		g gas_exento`k' = gasto_anual`k'*(1-prop_exen`k')
 	}
 	if IVAT[`j',1] == 3 {
 		replace IVA`k' = gasto_anual`k'*IVAT[1,1]/100/(1+IVAT[1,1]/100)*(1-IVAT[12,1]/100)
@@ -66,7 +66,7 @@ if _rc != 0 {
 }
 capture egen GastoTOTEG = rsum(gas_exento*)
 if _rc != 0 {
-	g GastoTOTG = 0
+	g GastoTOTEG = 0
 }
 
 
@@ -89,7 +89,7 @@ noisily di _newline in g " RESULTADOS IVA: " _col(29) in y %10.3fc IVA_Mod
 
 
 
-tabstat GastoTOT GastoTOTC GastoTOTE GastoTOTG GastoTOTE [fw=factor], stat(sum) f(%20.0fc) save
+tabstat GastoTOT GastoTOTC GastoTOTE GastoTOTG GastoTOTEG [fw=factor], stat(sum) f(%20.0fc) save
 tempname IVA2
 matrix `IVA2' = r(StatTotal)
 
