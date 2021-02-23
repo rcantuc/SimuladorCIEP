@@ -34,7 +34,6 @@ global pib2023 =  2.5
 global pib2024 =  2.5
 global pib2025 =  2.5
 
-global def2020 =  3.568
 global def2021 =  3.425
 
 
