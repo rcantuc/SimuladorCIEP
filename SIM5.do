@@ -298,7 +298,7 @@ matrix DED	= (	5,		15, 		43.15)
 matrix PM	= (	30,					29.18)
 
 * Cambios ISR *
-local cambioISR = 1
+local cambioISR = 0
 ** PARAMETROS SIMULADOR: ISR **
 *******************************
 

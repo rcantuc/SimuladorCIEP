@@ -104,7 +104,8 @@ replace ISR = 0 if prop_factor_cola >= (1-DED[1,3]/100)
 
 
 * ISR PERSONAS FISICAS *
-replace ISR__PF = (ISR - ISR__asalariados)*0.195/0.186*0.442/0.431 if (tipo_contribuyente == 2 | htrab == 0) & ISR - ISR__asalariados > 0
+replace ISR__PF = (ISR - ISR__asalariados)*0.195/0.186*0.442/0.431 if (tipo_contribuyente == 2 | htrab == 0) ///
+	& ISR - ISR__asalariados > 0 & ISR > 0
 replace ISR__PF = 0 if ISR__PF == .
 label var ISR__PF "ISR (personas f{c i'}sicas)"
 
