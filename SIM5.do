@@ -462,7 +462,8 @@ forvalues aniohoy = `aniovp'(1)`aniovp' {
 		}
 	}
 
-	twoway (connected estimacion anio) ///
+	if "$nographs" == "" {
+		twoway (connected estimacion anio) ///
 		(connected estimacion anio if anio == `aniohoy') ///
 		if anio > 1990, ///
 		ytitle("billones MXN `aniovp'") ///
@@ -476,6 +477,7 @@ forvalues aniohoy = `aniovp'(1)`aniovp' {
 		title("{bf:Proyecciones} de las aportaciones netas") subtitle("$pais") ///
 		caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5.") ///
 		name(AportacionesNetasProj, replace)
+	}
 
 	capture confirm existence $export
 	if _rc == 0 {
