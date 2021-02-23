@@ -348,13 +348,14 @@ quietly {
 
 
 		replace Salud = 0
-		replace Salud = Salud + `segpop'/(`Salud'[1,5]+`Salud'[1,7]) if benef_seg_pop == 1 | benef_isssteest == 1
+		replace Salud = Salud + `segpop'/(`Salud'[1,5]+`Salud'[1,7]) if benef_seg_pop == 1 
+		replace Salud = Salud + `segpop'/(`Salud'[1,5]+`Salud'[1,7]) if benef_isssteest == 1
 		replace Salud = Salud + `imss'/`Salud'[1,1] if benef_imss == 1
 		replace Salud = Salud + `issste'/`Salud'[1,2] if benef_issste == 1
-		replace Salud = Salud + `prospe'/`Salud'[1,4]*1.21 if benef_imssprospera == 1
+		replace Salud = Salud + `prospe'/`Salud'[1,4] if benef_imssprospera == 1
 		replace Salud = Salud + `pemex'/`Salud'[1,3] if benef_pemex == 1
 		replace Salud = Salud + `ssa'/`pobtot'[1,1] if benef_ssa == 1
-		
+
 		scalar ssaPIB = `ssa'/PIB*100
 		scalar segpopPIB = `segpop'/PIB*100
 		scalar imssPIB = `imss'/PIB*100
@@ -363,7 +364,6 @@ quietly {
 		scalar pemexPIB = `pemex'/PIB*100
 		scalar saludPIB = (`ssa'+`segpop'+`imss'+`issste'+`prospe'+`pemex')/PIB*100
 		scalar salud = (`ssa'+`segpop'+`imss'+`issste'+`prospe'+`pemex')/(`pobtot'[1,1])
-
 
 
 
@@ -756,11 +756,11 @@ quietly {
 		******************
 		*** 9 Base SIM ***
 		******************
-		noisily tabstat Pension Educacion Salud OtrosGas Infra [fw=factor], stat(sum) f(%20.0fc) save
+		tabstat Pension Educacion Salud OtrosGas Infra [fw=factor], stat(sum) f(%20.0fc) save
 		tempname GASTOSSIM TRANSFSIM
 		matrix `GASTOSSIM' = r(StatTotal)
 
-		noisily tabstat IngBasico PenBienestar [fw=factor], stat(sum) f(%20.0fc) save
+		tabstat IngBasico PenBienestar [fw=factor], stat(sum) f(%20.0fc) save
 		matrix `TRANSFSIM' = r(StatTotal)
 
 		keep folio* numren factor* Laboral Consumo OtrosC ISR__PM ing_cap_fmp ///
