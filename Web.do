@@ -299,7 +299,7 @@ matrix IVAT = (	16	\	///  1  Tasa general
 		3	\	///  9  Otros, idem
 		2	\	/// 10  Transporte local, idem
 		3	\	/// 11  Transporte foraneo, idem
-		39.64	)	//  12  Evasion e informalidad IVA, idem
+		39.12	)	//  12  Evasion e informalidad IVA, idem
 	
 * Cambios IVA *
 local cambioIVA = 0
