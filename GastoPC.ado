@@ -321,7 +321,7 @@ quietly {
 			_col(50) %7.3fc in y `ssa'/PIB*100 ///
 			_col(60) %15.0fc in y `ssa'/`pobtot'[1,1]
 		noisily di in g "  IMSS-Bienestar" ///
-			_col(33) %15.0fc in y 12587429 /// `Salud'[1,4] /// 
+			_col(33) %15.0fc in y 12587429 /// `Salud'[1,4] ///
 			_col(50) %7.3fc in y `prospe'/PIB*100 ///
 			_col(60) %15.0fc in y `prospe'/12587429 //`Salud'[1,4]
 		noisily di in g "  INSABI" ///
@@ -351,7 +351,7 @@ quietly {
 		replace Salud = Salud + `segpop'/(`Salud'[1,5]+`Salud'[1,7]) if benef_seg_pop == 1 | benef_isssteest == 1
 		replace Salud = Salud + `imss'/`Salud'[1,1] if benef_imss == 1
 		replace Salud = Salud + `issste'/`Salud'[1,2] if benef_issste == 1
-		replace Salud = Salud + `prospe'/`Salud'[1,4] if benef_imssprospera == 1
+		replace Salud = Salud + `prospe'/`Salud'[1,4]*1.21 if benef_imssprospera == 1
 		replace Salud = Salud + `pemex'/`Salud'[1,3] if benef_pemex == 1
 		replace Salud = Salud + `ssa'/`pobtot'[1,1] if benef_ssa == 1
 		
@@ -756,11 +756,11 @@ quietly {
 		******************
 		*** 9 Base SIM ***
 		******************
-		tabstat Pension Educacion Salud OtrosGas Infra [fw=factor], stat(sum) f(%20.0fc) save
+		noisily tabstat Pension Educacion Salud OtrosGas Infra [fw=factor], stat(sum) f(%20.0fc) save
 		tempname GASTOSSIM TRANSFSIM
 		matrix `GASTOSSIM' = r(StatTotal)
 
-		tabstat IngBasico PenBienestar [fw=factor], stat(sum) f(%20.0fc) save
+		noisily tabstat IngBasico PenBienestar [fw=factor], stat(sum) f(%20.0fc) save
 		matrix `TRANSFSIM' = r(StatTotal)
 
 		keep folio* numren factor* Laboral Consumo OtrosC ISR__PM ing_cap_fmp ///
