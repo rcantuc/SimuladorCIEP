@@ -5,7 +5,7 @@ macro drop _all
 capture log close _all
 if "`c(username)'" == "ricardo" {
 	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
-	*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
+	global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
 }
 if "`c(username)'" == "ciepmx" {
 	*sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
@@ -94,10 +94,10 @@ global pib2030 =  $pib2025
 
 
 ** OTROS PARAMETROS **/
-global def2020 =  3.568
-global def2021 =  3.425
-global inf2020 =  3.500
-global inf2021 =  3.000
+global def2020 =  3.6
+global def2021 =  3.4
+global inf2020 =  3.5
+global inf2021 =  3.0
 ** PARAMETROS SIMULADOR: PIB **
 ******************************/
 
@@ -344,7 +344,7 @@ matrix IVAT = (	16	\	///  1  Tasa general
 		39.64)	//  12  Evasion e informalidad IVA, idem
 		
 * Cambios IVA *
-local cambioIVA = 1
+local cambioIVA = 0
 ** PARAMETROS SIMULADOR: IVA **
 *******************************
 
@@ -376,7 +376,7 @@ if "$export" != "" {
 	forvalues aniohoy = `aniovp'(1)`aniovp' {
 	*forvalues aniohoy = 1990(1)2050 {
 		use `"`c(sysdir_personal)'/SIM/2018/households.dta"', clear
-		noisily Simulador ImpuestosAportaciones if ImpuestosAportaciones != 0 [fw=factor], ///
+		*noisily Simulador ImpuestosAportaciones if ImpuestosAportaciones != 0 [fw=factor], ///
 			base("ENIGH 2018") boot(1) reboot nographs anio(2020)
 
 		use `"`c(sysdir_personal)'/users/$id/bootstraps/1/ImpuestosAportacionesREC.dta"', clear
@@ -510,7 +510,7 @@ if "$output" == "output" {
 
 ** SANKEY **
 if "$export" != "" {
-	foreach k in decil sexo grupoedad sexo {
+	foreach k in decil sexo grupoedad escol {
 		noisily run "`c(sysdir_personal)'/SankeySF.do" `k' `aniovp'
 	}
 }
