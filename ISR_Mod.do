@@ -93,7 +93,7 @@ replace TE = 0 if TE == .
 
 
 * ISR SALARIOS + SUBSIDIO AL EMPLEO *
-replace ISR__asalariados = ISR*3.748/3.232*3.428/3.267*3.428/3.431 if tipo_contribuyente == 1 & ISR > 0
+replace ISR__asalariados = ISR*3.748/3.232*3.457/3.247*3.457/3.461 if tipo_contribuyente == 1 & ISR > 0
 replace ISR__asalariados = ISR*0.210/0.285 if tipo_contribuyente == 1 & ISR < 0
 replace ISR__asalariados = 0 if ISR__asalariados == .
 label var ISR__asalariados "ISR (retenciones por salarios)"
@@ -104,7 +104,7 @@ replace ISR = 0 if prop_factor_cola >= (1-DED[1,3]/100)
 
 
 * ISR PERSONAS FISICAS *
-replace ISR__PF = (ISR - ISR__asalariados)*0.195/0.186*0.438/0.434 if (tipo_contribuyente == 2 | htrab == 0) & ISR - ISR__asalariados > 0
+replace ISR__PF = (ISR - ISR__asalariados)*0.195/0.186*0.442/0.431 if (tipo_contribuyente == 2 | htrab == 0) & ISR - ISR__asalariados > 0
 replace ISR__PF = 0 if ISR__PF == .
 label var ISR__PF "ISR (personas f{c i'}sicas)"
 
