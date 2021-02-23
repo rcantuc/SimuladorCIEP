@@ -111,9 +111,8 @@ global pib2030 =  $pib2025
 
 
 ** OTROS PARAMETROS **
-global def2020 =  3.568
+*global def2020 =  3.568
 global def2021 =  3.425
-
 global inf2020 =  3.5
 global inf2021 =  3.0
 
