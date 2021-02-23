@@ -5,7 +5,7 @@ macro drop _all
 capture log close _all
 if "`c(username)'" == "ricardo" {
 	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
-	global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
+	*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
 }
 if "`c(username)'" == "ciepmx" {
 	*sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
@@ -107,7 +107,6 @@ foreach k in `aniovp' {
 *forvalues k=1950(1)2050 {
 	noisily Poblacion, $nographs anio(`k') //update //tf(`=64.333315/2.1*1.8') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040)
 }
-
 
 
 /*capture confirm file `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PensionREC.dta"'
