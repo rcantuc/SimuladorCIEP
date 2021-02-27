@@ -9,7 +9,6 @@
 **** Crecimiento del PIB ****
 program define PIBDeflactor, return
 quietly {
-	version 13.1
 	timer on 2
 
 	** Anio valor presente **
@@ -28,10 +27,10 @@ quietly {
 	capture use `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
 	if _rc != 0 | "`update'" == "update" {
 		if "$pais" == "" {
-			run PoblacionBase.do
+			run "`c(sysdir_personal)'/PoblacionBase.do"
 		}
 		else if "$pais" == "El Salvador" {
-			run PoblacionBaseMundial.do
+			run "`c(sysdir_personal)'/PoblacionBaseMundial.do"
 		}
 		use `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
 	}

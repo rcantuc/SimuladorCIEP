@@ -25,9 +25,9 @@ global nographs "nographs"
 
 ****************************************/
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
-*if "`c(username)'" != "ricardo" & "`c(username)'" != "ciepmx" {
+if "`c(username)'" != "ricardo" & "`c(username)'" != "ciepmx" {
 	global id = "`c(username)'"
-*}
+}
 ** PARAMETROS SIMULADOR: IDENTIFICADOR **
 *****************************************
 
@@ -109,7 +109,7 @@ foreach k in `aniovp' {
 }
 
 
-/*capture confirm file `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PensionREC.dta"'
+capture confirm file `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PensionREC.dta"'
 if _rc != 0 | "$export" != "" {
 
 	** HOUSEHOLDS: INCOMES **
@@ -128,7 +128,7 @@ if _rc != 0 | "$export" != "" {
 		}
 	}
 
-	/** DATOS ABIERTOS **
+	** DATOS ABIERTOS **
 	DatosAbiertos XNA0120_s, g //		ISR salarios
 	DatosAbiertos XNA0120_f, g //		ISR PF
 	DatosAbiertos XNA0120_m, g //		ISR PM
@@ -291,11 +291,11 @@ matrix SE	= (	0.00,	21227.52,	4884.24		\		/// 1
 			85366.81,	88587.96,	2611.32		\		/// 11
 			88587.97, 	1E+14,		0)				//  12
 
-*			SS.MM.		% ing. gr	Informalidad (%)
-matrix DED	= (	5,		15, 		43.15)
+*			SS.MM.		% ing. gr	Informalidad PF (%)
+matrix DED	= (	5,		15, 		65.55)
 
 *			Tasa ISR PM				Reducciones PM
-matrix PM	= (	30,					29.18)
+matrix PM	= (	30,					40.21)
 
 * Cambios ISR *
 local cambioISR = 0
@@ -375,7 +375,7 @@ if "$export" != "" {
 	forvalues aniohoy = `aniovp'(1)`aniovp' {
 	*forvalues aniohoy = 1990(1)2050 {
 		use `"`c(sysdir_personal)'/SIM/2018/households.dta"', clear
-		*noisily Simulador ImpuestosAportaciones if ImpuestosAportaciones != 0 [fw=factor], ///
+		noisily Simulador ImpuestosAportaciones if ImpuestosAportaciones != 0 [fw=factor], ///
 			base("ENIGH 2018") boot(1) reboot nographs anio(2020)
 
 		use `"`c(sysdir_personal)'/users/$id/bootstraps/1/ImpuestosAportacionesREC.dta"', clear
