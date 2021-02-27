@@ -765,7 +765,7 @@ quietly {
 
 		keep folio* numren factor* Laboral Consumo OtrosC ISR__PM ing_cap_fmp ///
 			Pension Educacion Salud IngBasico PenBienestar Salarios OtrosGas Infra ///
-			sexo grupoedad decil escol edad ing_bruto_tax prop_factor_cola ///
+			sexo grupoedad decil escol edad ing_bruto_tax prop_formal ///
 			deduc_isr ISR categF ISR__asalariados ISR__PF cuotas* ingbrutotot htrab ///
 			tipo_contribuyente exen_tot formal* ing_capital isrE ing_subor IVA* IEPS* ///
 			gasto_anualDepreciacion

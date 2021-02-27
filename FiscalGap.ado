@@ -157,14 +157,14 @@ quietly {
 	** 3.1 Graphs **
 	if "`nographs'" != "nographs" {
 		tempvar consumo ingreso otros
-		g `consumo' = (recaudacionalconsumo)/1000000000
-		g `ingreso' = (recaudacionalingreso + recaudacionalconsumo)/1000000000
-		g `otros' = (recaudacionotros + recaudacionalingreso + recaudacionalconsumo)/1000000000
+		g `consumo' = (recaudacionalconsumo)/1000000000000
+		g `ingreso' = (recaudacionalingreso + recaudacionalconsumo)/1000000000000
+		g `otros' = (recaudacionotros + recaudacionalingreso + recaudacionalconsumo)/1000000000000
 
 		tempvar consumo2 ingreso2 otros2
-		g `consumo2' = (estimacionalconsumo)/1000000000
-		g `ingreso2' = (estimacionalingreso + estimacionalconsumo)/1000000000
-		g `otros2' = (estimacionotros + estimacionalingreso + estimacionalconsumo)/1000000000
+		g `consumo2' = (estimacionalconsumo)/1000000000000
+		g `ingreso2' = (estimacionalingreso + estimacionalconsumo)/1000000000000
+		g `otros2' = (estimacionotros + estimacionalingreso + estimacionalconsumo)/1000000000000
 
 		twoway (area `otros' `ingreso' `consumo' anio if anio <= `anio' & anio >= 2003) ///
 			(area `otros2' anio if anio > `anio', color("255 129 0")) ///
@@ -190,22 +190,22 @@ quietly {
 		keep if anio >= 2010
 		forvalues k=1(1)`=_N' {
 			if anio[`k'] >= 2010 & anio[`k'] < `anio' {
-				local proy_consumo = "`proy_consumo' `=string(`=recaudacionalconsumo[`k']/1000000000',"%10.3f")',"
+				local proy_consumo = "`proy_consumo' `=string(`=recaudacionalconsumo[`k']/1000000000000',"%10.3f")',"
 			}
 			if anio[`k'] >= `anio' & anio[`k'] <= 2030 {
-				local proy_consumo = "`proy_consumo' `=string(`=estimacionalconsumo[`k']/1000000000',"%10.3f")',"
+				local proy_consumo = "`proy_consumo' `=string(`=estimacionalconsumo[`k']/1000000000000',"%10.3f")',"
 			}
 			if anio[`k'] >= 2010 & anio[`k'] < `anio' {
-				local proy_ingreso = "`proy_ingreso' `=string(`=recaudacionalingreso[`k']/1000000000',"%10.3f")',"
+				local proy_ingreso = "`proy_ingreso' `=string(`=recaudacionalingreso[`k']/1000000000000',"%10.3f")',"
 			}
 			if anio[`k'] >= `anio' & anio[`k'] <= 2030 {
-				local proy_ingreso = "`proy_ingreso' `=string(`=estimacionalingreso[`k']/1000000000',"%10.3f")',"
+				local proy_ingreso = "`proy_ingreso' `=string(`=estimacionalingreso[`k']/1000000000000',"%10.3f")',"
 			}
 			if anio[`k'] >= 2010 & anio[`k'] < `anio' {
-				local proy_otrosing = "`proy_otrosing' `=string(`=recaudacionotrosing[`k']/1000000000',"%10.3f")',"
+				local proy_otrosing = "`proy_otrosing' `=string(`=recaudacionotrosing[`k']/1000000000000',"%10.3f")',"
 			}
 			if anio[`k'] >= `anio' & anio[`k'] <= 2030 {
-				local proy_otrosing = "`proy_otrosing' `=string(`=estimacionotrosing[`k']/1000000000',"%10.3f")',"
+				local proy_otrosing = "`proy_otrosing' `=string(`=estimacionotrosing[`k']/1000000000000',"%10.3f")',"
 			}
 		}
 		local length_consumo = strlen("`proy_consumo'")
@@ -518,24 +518,24 @@ quietly {
 	****************
 	** 4.1 Graphs **
 	tempvar educaciong pensionesg saludg costog amortg otrosg ingbasg bienestarg
-	g `educaciong' = (gastoeducacion)/1000000000
-	g `pensionesg' = (gastopensiones + gastoeducacion)/1000000000
-	g `saludg' = (gastosalud + gastopensiones + gastoeducacion)/1000000000
-	g `costog' = (gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000
-	g `amortg' = (gastoamortizacion + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000
-	g `otrosg' = (gastootros + gastoamortizacion + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000
-	g `bienestarg' = (gastopenbienestar + gastootros + gastoamortizacion + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000
-	g `ingbasg' = (gastoingbasico + gastopenbienestar + gastootros + gastoamortizacion + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000
+	g `educaciong' = (gastoeducacion)/1000000000000
+	g `pensionesg' = (gastopensiones + gastoeducacion)/1000000000000
+	g `saludg' = (gastosalud + gastopensiones + gastoeducacion)/1000000000000
+	g `costog' = (gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000000
+	g `amortg' = (gastoamortizacion + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000000
+	g `otrosg' = (gastootros + gastoamortizacion + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000000
+	g `bienestarg' = (gastopenbienestar + gastootros + gastoamortizacion + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000000
+	g `ingbasg' = (gastoingbasico + gastopenbienestar + gastootros + gastoamortizacion + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000000
 	
 	tempvar educaciong2 pensionesg2 saludg2 costog2 amortg2 otrosg2 ingbasg2 bienestarg2
-	g `educaciong2' = (estimacioneducacion)/1000000000
-	g `pensionesg2' = (estimacionpensiones + estimacioneducacion)/1000000000
-	g `saludg2' = (estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000
-	g `costog2' = (estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000
-	g `amortg2' = (estimacionamortizacion + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000
-	g `otrosg2' = (estimacionotros + estimacionamortizacion + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000
-	g `bienestarg2' = (estimacionpenbienestar + estimacionotros + estimacionamortizacion + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000
-	g `ingbasg2' = (estimacioningbasico + estimacionpenbienestar + estimacionotros + estimacionamortizacion + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000
+	g `educaciong2' = (estimacioneducacion)/1000000000000
+	g `pensionesg2' = (estimacionpensiones + estimacioneducacion)/1000000000000
+	g `saludg2' = (estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000000
+	g `costog2' = (estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000000
+	g `amortg2' = (estimacionamortizacion + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000000
+	g `otrosg2' = (estimacionotros + estimacionamortizacion + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000000
+	g `bienestarg2' = (estimacionpenbienestar + estimacionotros + estimacionamortizacion + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000000
+	g `ingbasg2' = (estimacioningbasico + estimacionpenbienestar + estimacionotros + estimacionamortizacion + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000000
 
 	if "`nographs'" != "nographs" {
 		twoway (area `ingbasg' `bienestarg' `otrosg' `amortg' `costog' `saludg' `pensionesg' `educaciong' anio if anio <= `anio' & anio > 2013) ///
@@ -585,52 +585,52 @@ quietly {
 	if "$output" == "output" {
 		forvalues k=1(1)`=_N' {
 			if anio[`k'] >= 2013 & anio[`k'] < `anio' {
-				local proy_educa = "`proy_educa' `=string(`=gastoeducacion[`k']/1000000000',"%10.3f")',"
+				local proy_educa = "`proy_educa' `=string(`=gastoeducacion[`k']/1000000000000',"%10.3f")',"
 			}
 			if anio[`k'] >= `anio' & anio[`k'] <= 2030 {
-				local proy_educa = "`proy_educa' `=string(`=estimacioneducacion[`k']/1000000000',"%10.3f")',"
+				local proy_educa = "`proy_educa' `=string(`=estimacioneducacion[`k']/1000000000000',"%10.3f")',"
 			}
 			if anio[`k'] >= 2013 & anio[`k'] < `anio' {
-				local proy_pension = "`proy_pension' `=string(`=gastopensiones[`k']/1000000000',"%10.3f")',"
+				local proy_pension = "`proy_pension' `=string(`=gastopensiones[`k']/1000000000000',"%10.3f")',"
 			}
 			if anio[`k'] >= `anio' & anio[`k'] <= 2030 {
-				local proy_pension = "`proy_pension' `=string(`=estimacionpensiones[`k']/1000000000',"%10.3f")',"
+				local proy_pension = "`proy_pension' `=string(`=estimacionpensiones[`k']/1000000000000',"%10.3f")',"
 			}
 			if anio[`k'] >= 2013 & anio[`k'] < `anio' {
-				local proy_salud = "`proy_salud' `=string(`=gastosalud[`k']/1000000000',"%10.3f")',"
+				local proy_salud = "`proy_salud' `=string(`=gastosalud[`k']/1000000000000',"%10.3f")',"
 			}
 			if anio[`k'] >= `anio' & anio[`k'] <= 2030 {
-				local proy_salud = "`proy_salud' `=string(`=estimacionsalud[`k']/1000000000',"%10.3f")',"
+				local proy_salud = "`proy_salud' `=string(`=estimacionsalud[`k']/1000000000000',"%10.3f")',"
 			}
 			if anio[`k'] >= 2013 & anio[`k'] < `anio' {
-				local proy_costo = "`proy_costo' `=string(`=gastocostodeuda[`k']/1000000000',"%10.3f")',"
+				local proy_costo = "`proy_costo' `=string(`=gastocostodeuda[`k']/1000000000000',"%10.3f")',"
 			}
 			if anio[`k'] >= `anio' & anio[`k'] <= 2030 {
-				local proy_costo = "`proy_costo' `=string(`=estimacioncostodeuda[`k']/1000000000',"%10.3f")',"
+				local proy_costo = "`proy_costo' `=string(`=estimacioncostodeuda[`k']/1000000000000',"%10.3f")',"
 			}				
 			if anio[`k'] >= 2013 & anio[`k'] < `anio' {
-				local proy_amort = "`proy_amort' `=string(`=gastoamortizacion[`k']/1000000000',"%10.3f")',"
+				local proy_amort = "`proy_amort' `=string(`=gastoamortizacion[`k']/1000000000000',"%10.3f")',"
 			}
 			if anio[`k'] >= `anio' & anio[`k'] <= 2030 {
-				local proy_amort = "`proy_amort' `=string(`=estimacionamortizacion[`k']/1000000000',"%10.3f")',"
+				local proy_amort = "`proy_amort' `=string(`=estimacionamortizacion[`k']/1000000000000',"%10.3f")',"
 			}				
 			if anio[`k'] >= 2013 & anio[`k'] < `anio' {
-				local proy_otrosg = "`proy_otrosg' `=string(`=gastootros[`k']/1000000000',"%10.3f")',"
+				local proy_otrosg = "`proy_otrosg' `=string(`=gastootros[`k']/1000000000000',"%10.3f")',"
 			}
 			if anio[`k'] >= `anio' & anio[`k'] <= 2030 {
-				local proy_otrosg = "`proy_otrosg' `=string(`=estimacionotros[`k']/1000000000',"%10.3f")',"
+				local proy_otrosg = "`proy_otrosg' `=string(`=estimacionotros[`k']/1000000000000',"%10.3f")',"
 			}				
 			if anio[`k'] >= 2013 & anio[`k'] < `anio' {
-				local proy_bienestar = "`proy_bienestar' `=string(`=gastopenbienestar[`k']/1000000000',"%10.3f")',"
+				local proy_bienestar = "`proy_bienestar' `=string(`=gastopenbienestar[`k']/1000000000000',"%10.3f")',"
 			}
 			if anio[`k'] >= `anio' & anio[`k'] <= 2030 {
-				local proy_bienestar = "`proy_bienestar' `=string(`=estimacionpenbienestar[`k']/1000000000',"%10.3f")',"
+				local proy_bienestar = "`proy_bienestar' `=string(`=estimacionpenbienestar[`k']/1000000000000',"%10.3f")',"
 			}				
 			if anio[`k'] >= 2013 & anio[`k'] < `anio' {
-				local proy_ingbas = "`proy_ingbas' `=string(`=gastoingbasico[`k']/1000000000',"%10.3f")',"
+				local proy_ingbas = "`proy_ingbas' `=string(`=gastoingbasico[`k']/1000000000000',"%10.3f")',"
 			}
 			if anio[`k'] >= `anio' & anio[`k'] <= 2030 {
-				local proy_ingbas = "`proy_ingbas' `=string(`=estimacioningbasico[`k']/1000000000',"%10.3f")',"
+				local proy_ingbas = "`proy_ingbas' `=string(`=estimacioningbasico[`k']/1000000000000',"%10.3f")',"
 			}
 		}
 		local length_educa = strlen("`proy_educa'")
