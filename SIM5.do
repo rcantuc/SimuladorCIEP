@@ -108,7 +108,7 @@ foreach k in `aniovp' {
 
 
 capture use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PensionREC.dta"', clear
-*if _rc != 0 | "$export" != "" {
+if _rc != 0 | "$export" != "" {
 
 	** HOUSEHOLDS: INCOMES **
 	local id = "$id"
@@ -142,7 +142,7 @@ capture use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PensionREC.dta"', cl
 	DatosAbiertos XOA0120, g   //		Ingresos propios ISSSTE*/
 	
 	global id = "`id'"
-*}
+}
 
 
 
@@ -380,7 +380,7 @@ if "$export" != "" {
 		merge 1:1 (anio) using `"`c(sysdir_personal)'/users/$id/PIB.dta"', nogen
 		replace estimacion = estimacion/1000000000000
 
-		tabstat estimacion if anio >= `aniovp', stat(max) save
+		tabstat estimacion, stat(max) save
 		tempname MAX
 		matrix `MAX' = r(StatTotal)
 		forvalues k=1(1)`=_N' {
@@ -447,7 +447,7 @@ replace estimacion = estimacion/1000000000000
 
 forvalues aniohoy = `aniovp'(1)`aniovp' {
 *forvalues aniohoy = 1990(1)2050 {
-	tabstat estimacion, stat(max) save
+	tabstat estimacion if anio >= `aniovp', stat(max) save
 	tempname MAX
 	matrix `MAX' = r(StatTotal)
 	forvalues k=1(1)`=_N' {
