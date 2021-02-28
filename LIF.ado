@@ -58,7 +58,7 @@ quietly {
 	}
 
 	** 2.4 Base RAW **
-	use "`c(sysdir_personal)'/SIM/$pais/LIF.dta", clear
+	use `if' using "`c(sysdir_personal)'/SIM/$pais/LIF.dta", clear
 	if "`base'" == "base" {
 		exit
 	}
@@ -270,12 +270,12 @@ quietly {
 	*****************/
 	* Returns Extras *
 	if "$pais" == "" {
-		tabstat recaudacion recaudacionPIB if anio == `anio' & nombre == "Cuotas a la seguridad social (IMSS)", stat(sum) f(%20.1fc) save
+		capture tabstat recaudacion recaudacionPIB if anio == `anio' & nombre == "Cuotas a la seguridad social (IMSS)", stat(sum) f(%20.1fc) save
 		tempname cuotas
 		matrix `cuotas' = r(StatTotal)
 		return scalar Cuotas_IMSS = `cuotas'[1,1]
 		
-		tabstat recaudacion recaudacionPIB if anio == `anio' & divCIEP == 11, stat(sum) by(nombre) f(%20.1fc) save
+		capture tabstat recaudacion recaudacionPIB if anio == `anio' & divCIEP == 11, stat(sum) by(nombre) f(%20.1fc) save
 		tempname ieps
 		matrix `ieps'7 = r(Stat7)
 		matrix `ieps'10 = r(Stat10)
@@ -326,10 +326,10 @@ quietly {
 		foreach k of local lev_resumido {
 			tempvar lev_res`countlev'
 			if `countlev' == 1 {
-				g `lev_res`countlev'' = recaudacion`k'/1000000
+				g `lev_res`countlev'' = recaudacion`k'/1000000000000
 			}
 			else {
-				g `lev_res`countlev'' = recaudacion`k'/1000000 + `lev_res`=`countlev'-1''
+				g `lev_res`countlev'' = recaudacion`k'/1000000000000 + `lev_res`=`countlev'-1''
 			}
 			replace `lev_res`countlev'' = 0 if `lev_res`countlev'' == .
 			
@@ -341,7 +341,7 @@ quietly {
 		tempvar TOTPIB
 		egen `TOTPIB' = rsum(recaudacionPIB*)
 		forvalues k=1(1)`=_N' {
-			if `TOTPIB'[`k'] != . & anio[`k'] >= 2010 {
+			if `TOTPIB'[`k'] != . & anio[`k'] >= 2003 {
 				local text `"`text' `=`TOTPIB'[`k']' `=anio[`k']' "`=string(`TOTPIB'[`k'],"%5.1fc")'""'
 			}
 		}
@@ -350,7 +350,7 @@ quietly {
 			title("{bf:Ingresos} p{c u'}blicos") ///
 			subtitle($pais) ///
 			text(`text', yaxis(2)) ///
-			ytitle(millones `currency') ytitle(% PIB, axis(2)) xtitle("") ///
+			ytitle(billones `currency') ytitle(% PIB, axis(2)) xtitle("") ///
 			ylabel(, format(%15.0fc) labsize(small)) ///
 			ylabel(, axis(2) noticks format(%5.1fc) labsize(small)) ///
 			yscale(range(0) axis(2) noline) ///

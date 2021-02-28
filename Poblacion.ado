@@ -73,7 +73,7 @@ quietly {
 		}
 
 		g tasamortalidad = defunciones/poblacion*100
-		replace tasamortalidad = 100 if tasamortalidad > 100
+		replace tasamortalidad = 100 if tasamortalidad >= 100
 		label var tasamortalidad "Porcentaje de muertes"
 
 		reshape wide poblacion defunciones tasamortalidad *migrantes, i(anio edad) j(sexo)
@@ -92,10 +92,10 @@ quietly {
 		g poblacionSIM2 = nacimientosSIM*poblacion2/(poblacion1+poblacion2) if edad == 0
 
 		xtset anio edad
-		replace inmigrantes1 = L.inmigrantes1*0 if inmigrantes1 == .
-		replace inmigrantes2 = L.inmigrantes2*0 if inmigrantes2 == .
-		replace emigrantes1 = L.emigrantes1*0 if emigrantes1 == .
-		replace emigrantes2 = L.emigrantes2*0 if emigrantes2 == .
+		replace inmigrantes1 = L.inmigrantes1 if inmigrantes1 == .
+		replace inmigrantes2 = L.inmigrantes2 if inmigrantes2 == .
+		replace emigrantes1 = L.emigrantes1 if emigrantes1 == .
+		replace emigrantes2 = L.emigrantes2 if emigrantes2 == .
 
 		format *SIM* %10.0fc
 		drop nacimientosSIM
@@ -109,8 +109,8 @@ quietly {
 			foreach j of local edad {
 				if `k' > `anioinicial' {
 					if `j' > 0 {
-						replace poblacionSIM1`j' = L.poblacionSIM1`=`j'-1' * (1 - tasamortalidad1`=`j'-1'/100) + inmigrantes1`j' - emigrantes1`j' if anio == `k'
-						replace poblacionSIM2`j' = L.poblacionSIM2`=`j'-1' * (1 - tasamortalidad2`=`j'-1'/100) + inmigrantes2`j' - emigrantes2`j' if anio == `k'
+						replace poblacionSIM1`j' = L.poblacionSIM1`=`j'-1' * (1 - tasamortalidad1`=`j'-1'/100) + inmigrantes1`=`j'-1' - emigrantes1`=`j'-1' if anio == `k'
+						replace poblacionSIM2`j' = L.poblacionSIM2`=`j'-1' * (1 - tasamortalidad2`=`j'-1'/100) + inmigrantes2`=`j'-1' - emigrantes2`=`j'-1' if anio == `k'
 					}
 				}
 				else {
@@ -126,6 +126,12 @@ quietly {
 		reshape long poblacion poblacionSIM emigrantes inmigrantes tasamortalidad defunciones, i(anio edad) j(sexo)
 		label values sexo sexo
 
+		* Texto *
+		tabstat poblacionSIM if anio == `aniofinal', f(%20.0fc) stat(sum) save
+		tempname POBFINS
+		matrix `POBFINS' = r(StatTotal)
+		noisily di in g "  Simulaci{c o'}n " in y `aniofinal' in g ": " in y %14.0fc `POBFINS'[1,1]
+
 		tempvar edad2 zero poblacionTF poblacionTFSIM
 		g `edad2' = edad
 		replace `edad2' = . if edad != 5 & edad != 10 & edad != 15 & edad != 20 ///
@@ -140,6 +146,13 @@ quietly {
 		g `poblacionTFSIM' = -poblacionSIM if sexo == 1
 		replace `poblacionTFSIM' = poblacionSIM if sexo == 2
 
+		* X label *
+		tabstat poblacion if (anio == `anioinicial' | anio == `aniofinal'), ///
+			stat(max) f(%15.0fc) by(sexo) save
+		tempname MaxHS MaxMS
+		matrix `MaxHS' = r(Stat1)
+		matrix `MaxMS' = r(Stat2)
+
 		twoway (bar `poblacionTF' edad if sexo == 1 & anio == `aniofinal', horizontal lwidth(none)) ///
 			(bar `poblacionTF' edad if sexo == 2 & anio == `aniofinal', horizontal lwidth(none)) ///
 			(bar `poblacionTFSIM' edad if sexo == 1 & anio == `aniofinal', horizontal lwidth(none) barwidth(.33)) ///
@@ -150,6 +163,10 @@ quietly {
 			label(4 "Mujeres Simulado") order(1 2 3 4)) ///
 			yscale(noline) ylabel(none) xscale(noline) ///
 			name(PiramideSIM, replace) ///
+			xlabel(`=-`MaxHS'[1,1]' `"`=string(`MaxHS'[1,1],"%15.0fc")'"' ///
+			`=-`MaxHS'[1,1]/2' `"`=string(`MaxHS'[1,1]/2,"%15.0fc")'"' 0 ///
+			`=`MaxMS'[1,1]/2' `"`=string(`MaxMS'[1,1]/2,"%15.0fc")'"' ///
+			`=`MaxMS'[1,1]' `"`=string(`MaxMS'[1,1],"%15.0fc")'"', angle(horizontal)) ///
 			///caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5, utilizando informaci{c o'}n de CONAPO.") ///
 			///xtitle("Personas") ///
 			title("Pir{c a'}mide {bf:demogr{c a'}fica}: CONAPO vs. simulado") subtitle("$pais `aniofinal'")
@@ -465,23 +482,23 @@ quietly {
 			(area `pob3560' anio if anio > `anioinicial', color("255 189 0")) ///
 			(area `pob1934' anio if anio > `anioinicial', color("39 97 47")) ///
 			(area `pob18' anio if anio > `anioinicial', color("53 200 71")), ///
-			legend(label(1 "61+") label(2 "35 - 60") label(3 "19 - 34") label(4 "<18") order(4 3 2 1)) ///
-			text(`y1' `x1' `"{bf:Max:} `=string(`MAX'[1,1],"%5.1fc")' % (`x1')"', place(n)) ///
-			text(`y1' `x1' `"{bf:Poblaci{c o'}n:} `=string(pob18[`p1'],"%12.0fc")'"', place(s)) ///
-			text(`y2' `x2' `"{bf:Max:} `=string(`MAX'[1,2],"%5.1fc")' % (`x2')"', place(n)) ///
-			text(`y2' `x2' `"{bf:Poblaci{c o'}n} `=string(pob1934[`p2'],"%12.0fc")'"', place(s)) ///
-			text(`y3' `x3' `"{bf:Max:} `=string(`MAX'[1,3],"%5.1fc")' % (`x3')"', place(nw)) ///
-			text(`y3' `x3' `"{bf:Poblaci{c o'}n} `=string(pob3560[`p3'],"%12.0fc")'"', place(sw)) ///
-			text(`y4' `x4' `"{bf:Max:} `=string(`MAX'[1,4],"%5.1fc")' % (`x4')"', place(nw)) ///
-			text(`y4' `x4' `"{bf:Poblaci{c o'}n} `=string(pob61[`p4'],"%12.0fc")'"', place(sw)) ///
-			text(`z1' `m1' `"{bf:Min:} `=string(`MAX'[2,1],"%5.1fc")' % (`m1')"', place(nw)) ///
-			text(`z1' `m1' `"{bf:Poblaci{c o'}n} `=string(pob18[`q1'],"%12.0fc")'"', place(sw)) ///
-			text(`z2' `m2' `"{bf:Min:} `=string(`MAX'[2,2],"%5.1fc")' % (`m2')"', place(nw)) ///
-			text(`z2' `m2' `"{bf:Poblaci{c o'}n} `=string(pob1934[`q2'],"%12.0fc")'"', place(sw)) ///
-			text(`z3' `m3' `"{bf:Min:} `=string(`MAX'[2,3],"%5.1fc")' % (`m3')"', place(n)) ///
-			text(`z3' `m3' `"{bf:Poblaci{c o'}n} `=string(pob3560[`q3'],"%12.0fc")'"', place(s)) ///
-			text(`z4' `m4' `"{bf:Min:} `=string(`MAX'[2,4],"%5.1fc")' % (`m4')"', place(n)) ///
-			text(`z4' `m4' `"{bf:Poblaci{c o'}n} `=string(pob61[`q4'],"%12.0fc")'"', place(s)) ///
+			legend(label(1 "61+") label(2 "35 - 60") label(3 "19 - 34") label(4 "-18") order(4 3 2 1)) ///
+			text(`y1' `x1' `"{bf:Max:} `=string(`MAX'[1,1],"%5.1fc")' % (`x1')"', place(s)) ///
+			text(`y1' `x1' `"{bf:-18:} `=string(pob18[`p1'],"%12.0fc")'"', place(n)) ///
+			text(`y2' `x2' `"{bf:Max:} `=string(`MAX'[1,2],"%5.1fc")' % (`x2')"', place(s)) ///
+			text(`y2' `x2' `"{bf:19-34:} `=string(pob1934[`p2'],"%12.0fc")'"', place(n)) ///
+			text(`y3' `x3' `"{bf:Max:} `=string(`MAX'[1,3],"%5.1fc")' % (`x3')"', place(sw)) ///
+			text(`y3' `x3' `"{bf:35-60:} `=string(pob3560[`p3'],"%12.0fc")'"', place(nw)) ///
+			text(`y4' `x4' `"{bf:Max:} `=string(`MAX'[1,4],"%5.1fc")' % (`x4')"', place(sw)) ///
+			text(`y4' `x4' `"{bf:61+:} `=string(pob61[`p4'],"%12.0fc")'"', place(nw)) ///
+			text(`z1' `m1' `"{bf:Min:} `=string(`MAX'[2,1],"%5.1fc")' % (`m1')"', place(sw)) ///
+			text(`z1' `m1' `"{bf:-18:} `=string(pob18[`q1'],"%12.0fc")'"', place(nw)) ///
+			text(`z2' `m2' `"{bf:Min:} `=string(`MAX'[2,2],"%5.1fc")' % (`m2')"', place(sw)) ///
+			text(`z2' `m2' `"{bf:19-34:} `=string(pob1934[`q2'],"%12.0fc")'"', place(nw)) ///
+			text(`z3' `m3' `"{bf:Min:} `=string(`MAX'[2,3],"%5.1fc")' % (`m3')"', place(s)) ///
+			text(`z3' `m3' `"{bf:35-60:} `=string(pob3560[`q3'],"%12.0fc")'"', place(n)) ///
+			text(`z4' `m4' `"{bf:Min:} `=string(`MAX'[2,4],"%5.1fc")' % (`m4')"', place(s)) ///
+			text(`z4' `m4' `"{bf:61+:} `=string(pob61[`q4'],"%12.0fc")'"', place(n)) ///
 			text(`=`y1'*.175' `=`anioinicial'-1' "{bf:`anioinicial'}", place(w)) ///
 			xtitle("") ///
 			ytitle("Poblaci{c o'}n") ///

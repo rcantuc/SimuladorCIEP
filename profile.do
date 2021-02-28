@@ -27,7 +27,6 @@ noisily di _newline(3) in w "{bf:Centro de Investigaci{c o'}n Econ{c o'}mica y P
 noisily di _newline in g "{bf:Fuente}:" in y " Paquete Econ{c o'}mico CGPE 2021 + BIE, INEGI"
 
 // Incorporar los que sean necesarios seg{c u'}n su a{c n~}o //
-global pib2020 = -8.0
 global pib2021 =  4.6
 global pib2022 =  2.6
 global pib2023 =  2.5

@@ -275,11 +275,18 @@ quietly {
 		else {
 			local graphtype "area"
 		}
+		
+		if `exo_def' <= 1 {
+			local graphtype2 "bar"
+		}
+		else {
+			local graphtype2 "area"
+		}
 
 		* Deflactor var_indiceY *
-		twoway (area deflator anio if anio < `anio_last' | (anio == `anio_last' & trimestre == 4)) ///
-			(area deflator anio if anio >= `anio_last' & anio > `anio_last'+`exo_def'-1) ///
-			(`graphtype' deflator anio if anio < `anio_last'+`exo_def' & anio >= `anio_last', lwidth(none)), ///
+		twoway (area deflator anio if (anio < `anio_last' & anio >= `anio_first') | (anio == `anio_last' & trimestre == 4)) ///
+			(area deflator anio if anio >= `anio_last' & anio > `anio_last'+`exo_def') ///
+			(`graphtype2' deflator anio if anio <= `anio_last'+`exo_def' & anio > `anio_last', lwidth(none)), ///
 			///title("{bf:{c I'}ndice} de precios impl{c i'}citos") ///
 			subtitle(${pais}) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
@@ -306,8 +313,8 @@ quietly {
 
 		* Crecimiento var_indiceY *
 		twoway (connected var_indiceY anio if anio < `anio_last' | (anio == `anio_last' & trimestre == 4)) ///
-			(connected var_indiceY anio if anio >= `anio_last' & anio > `anio_last'+`exo_def'-1) ///
-			(connected var_indiceY anio if anio < `anio_last'+`exo_def' & anio >= `anio_last'), ///
+			(connected var_indiceY anio if anio >= `anio_last' & anio > `anio_last'+`exo_def') ///
+			(connected var_indiceY anio if anio <= `anio_last'+`exo_def' & anio > `anio_last'), ///
 			///title({bf:Crecimientos} del {c i'}ndice de precios impl{c i'}citos) subtitle(${pais}) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
 			ylabel(, format(%3.0f)) ///
@@ -326,7 +333,7 @@ quietly {
 		* Crecimiento var_pibY *
 		twoway (connected var_pibY anio if anio < `anio_last' | (anio == `anio_last' & trimestre == 4)) ///
 			(connected var_pibY anio if anio >= `anio_last' & anio > anio[`obs_exo']) ///
-			(connected var_pibY anio if anio <= anio[`obs_exo'] & anio >= `anio_last'), ///
+			(connected var_pibY anio if anio <= anio[`obs_exo'] & anio > `anio_last'), ///
 			///title({bf:Crecimientos} del Producto Interno Bruto) subtitle(${pais}) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
 			ylabel(/*-6(3)6*/, format(%3.0fc)) ///
@@ -349,7 +356,7 @@ quietly {
 
 		twoway (area `pibYRmil' anio if (anio < `anio_last' & anio >= `anio_first') | (anio == `anio_last' & trimestre == 4)) ///
 			(area `pibYRmil' anio if anio >= `anio_last' & anio > anio[`obs_exo']) ///
-			(`graphtype' `pibYRmil' anio if /*anio == `anio_last' & trimestre < 4 |*/ anio <= anio[`obs_exo'] & anio >= `anio_last', lwidth(none)), ///
+			(`graphtype' `pibYRmil' anio if /*anio == `anio_last' & trimestre < 4 |*/ anio <= anio[`obs_exo'] & anio > `anio_last', lwidth(none)), ///
 			///title({bf:Flujo} del Producto Interno Bruto) subtitle(${pais}) ///
 			ytitle(mil millones `=currency[`obsvp']' `aniovp') xtitle("") ///
 			///ytitle(billions `=currency[`obsvp']' `aniovp') xtitle("") ///
@@ -381,28 +388,28 @@ quietly {
 	***************
 	*** 4 Texto ***
 	***************
-	noisily di _newline in g _col(11) %~14s "Crec. PIB" _col(25) %~23s "PIB nominal" _col(50) %~14s "Crec. Def" _col(64) %~14s "Deflactor"
+	noisily di _newline in g _col(11) %~14s "Crec. PIB" _col(25) %~23s "PIB real" _col(50) %~14s "Crec. Def" _col(64) %~14s "Deflactor"
 	forvalues k=`=`obsvp'-5'(1)`=`obsvp'+5' {
 		if anio[`k'] < `anio_last' | (anio[`k'] == `anio_last' & trimestre[`k'] == 4) {
 			if "`reportado'" == "" {
 				noisily di in g %~72s "REPORTADO"
 				local reportado = "done"
 			}
-			noisily di in g " `=anio[`k']' " _col(10) %8.1fc in y var_pibY[`k'] " %" _col(25) %20.0fc pibY[`k'] _col(50) %8.1fc in y var_indiceY[`k'] " %" _col(65) %12.10fc deflator[`k']
+			noisily di in g " `=anio[`k']' " _col(10) %8.1fc in y var_pibY[`k'] " %" _col(25) %20.0fc pibYR[`k'] _col(50) %8.1fc in y var_indiceY[`k'] " %" _col(65) %12.10fc deflator[`k']
 		}
 		if (anio[`k'] == `anio_last' & trimestre[`k'] < 4) | anio[`k'] <= anio[`obs_exo'] & anio[`k'] > `anio_last' {
 			if "`estimado'" == "" {
 				noisily di in g %~72s "ESTIMADO"
 				local estimado = "done"
 			}
-			noisily di in g "{bf: `=anio[`k']' " _col(10) %8.1fc in y var_pibY[`k'] " %" _col(25) %20.0fc pibY[`k'] _col(50) %8.1fc in y var_indiceY[`k'] " %" _col(65) %12.10fc deflator[`k'] "}"
+			noisily di in g "{bf: `=anio[`k']' " _col(10) %8.1fc in y var_pibY[`k'] " %" _col(25) %20.0fc pibYR[`k'] _col(50) %8.1fc in y var_indiceY[`k'] " %" _col(65) %12.10fc deflator[`k'] "}"
 		}
 		if (anio[`k'] > `anio_last') & anio[`k'] > anio[`obs_exo'] {
 			if "`proyectado'" == "" {
 				noisily di in g %~72s "PROYECTADO"
 				local proyectado = "done"
 			}
-			noisily di in g " `=anio[`k']' " _col(10) %8.1fc in y var_pibY[`k'] " %" _col(25) %20.0fc pibY[`k'] _col(50) %8.1fc in y var_indiceY[`k'] " %" _col(65) %12.10fc deflator[`k']
+			noisily di in g " `=anio[`k']' " _col(10) %8.1fc in y var_pibY[`k'] " %" _col(25) %20.0fc pibYR[`k'] _col(50) %8.1fc in y var_indiceY[`k'] " %" _col(65) %12.10fc deflator[`k']
 		}
 	}
 
@@ -413,9 +420,9 @@ quietly {
 	********************
 	if "$output" == "output" & "`nooutput'" == "" {
 		tempvar reportado estimado proyectado
-		g reportado = pibY/1000000000000/deflator if (anio < `anio_last' & anio >= 2010) ///
+		g reportado = pibY/1000000000000/deflator if (anio <= `anio_last' & anio >= 2010) ///
 			| (anio == `anio_last' & trimestre == 4)
-		replace reportado = `pib_last'/1000000000000/deflator if anio == `anio_last'
+		*replace reportado = `pib_last'/1000000000000/deflator if anio == `anio_last'
 		g estimado = pibY/1000000000000/deflator if (anio <= anio[`obs_exo'] & anio >= `anio_last')
 		g proyectado = pibY/1000000000000/deflator if anio >= `anio_last' & anio > anio[`obs_exo'] & anio <= 2030
 		replace proyectado = pibY/1000000000000/deflator if anio == anio[`obs_exo']
