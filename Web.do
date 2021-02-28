@@ -361,7 +361,7 @@ use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/AportacionesNetasREC.dta
 merge 1:1 (anio) using `"`c(sysdir_personal)'/users/$pais/$id/PIB.dta"', nogen
 replace estimacion = estimacion/1000000000000
 
-tabstat estimacion, stat(max) save
+tabstat estimacion if anio >= `aniovp', stat(max) save
 tempname MAX
 matrix `MAX' = r(StatTotal)
 forvalues k=1(1)`=_N' {
