@@ -261,10 +261,12 @@ if _rc != 0 {
 ************************************
 use "`c(sysdir_site)'../basesCIEP/INEGI/`enigh'/`enighanio'/ingresos.dta", clear
 merge m:1 (folioviv foliohog) using "`c(sysdir_site)'../basesCIEP/INEGI/`enigh'/`enighanio'/concentrado.dta", ///
-	keepusing(factor tot_integ) keep(matched)
+	keepusing(factor tot_integ) keep(matched) nogen
 capture rename factor_hog factor
-capture merge m:1 (folioviv foliohog) using "`c(sysdir_site)'../basesCIEP/INEGI/`enigh'/`enighanio'/concentrado.dta", ///
-	keepusing(smg) keep(matched)
+merge m:1 (folioviv foliohog) using "`c(sysdir_site)'../basesCIEP/INEGI/`enigh'/`enighanio'/concentrado.dta", ///
+	keepusing(smg) keep(matched) nogen
+merge m:1 (folioviv foliohog numren) using "`c(sysdir_site)'../basesCIEP/INEGI/`enigh'/`enighanio'/poblacion.dta", ///
+	keepusing(edad) keep(matched) nogen
 
 * Salario minimo mensual *
 capture g sm = round(smg/90,.01)

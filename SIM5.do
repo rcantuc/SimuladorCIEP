@@ -8,7 +8,7 @@ if "`c(username)'" == "ricardo" {
 	*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
 }
 if "`c(username)'" == "ciepmx" {
-	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
+	*sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
 	*global export "/home/ciepmx/Dropbox (CIEP)/Textbook/"
 }
 adopath ++ PERSONAL
@@ -19,7 +19,7 @@ adopath ++ PERSONAL
 ************************************
 ** PARAMETROS SIMULADOR: OPCIONES **
 *global nographs "nographs"
-*global output "output"
+global output "output"
 ** PARAMETROS SIMULADOR: OPCIONES **
 ************************************
 
@@ -107,13 +107,13 @@ foreach k in `aniovp' {
 }
 
 
-capture confirm file `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PensionREC.dta"'
-if _rc != 0 | "$export" != "" {
+capture use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PensionREC.dta"', clear
+*if _rc != 0 | "$export" != "" {
 
 	** HOUSEHOLDS: INCOMES **
 	local id = "$id"
 	global id = ""
-	noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' 2018
+	noisily run `"`c(sysdir_personal)'/Households.do"' 2018
 
 	** HOUSEHOLDS: EXPENDITURES **
 	noisily run "`c(sysdir_personal)'/Expenditure.do" 2018
@@ -142,7 +142,7 @@ if _rc != 0 | "$export" != "" {
 	DatosAbiertos XOA0120, g   //		Ingresos propios ISSSTE*/
 	
 	global id = "`id'"
-}
+*}
 
 
 
@@ -184,26 +184,26 @@ if "$export" != "" {
 **********************************
 ** PARAMETROS SIMULADOR: GASTOS **
 * Educacion *
-scalar basica = 21669 //		Educaci{c o'}n b{c a'}sica
-scalar medsup = 21396 //		Educaci{c o'}n media superior
-scalar superi = 38726 //		Educaci{c o'}n superior
-scalar posgra = 46528 //		Posgrado
-scalar eduadu = 19765 //		Educaci{c o'}n para adultos
+scalar basica = 21666 //		Educaci{c o'}n b{c a'}sica
+scalar medsup = 21393 //		Educaci{c o'}n media superior
+scalar superi = 38720 //		Educaci{c o'}n superior
+scalar posgra = 46520 //		Posgrado
+scalar eduadu = 19762 //		Educaci{c o'}n para adultos
 scalar otrose =  1500 //		Otros gastos educativos
 
 * Salud *
 scalar ssa    =   528 //		SSalud
 scalar prospe =  1081 //		IMSS-Prospera
 scalar segpop =  2445 //		Seguro Popular
-scalar imss   =  6488 //		IMSS (salud)
-scalar issste =  8728 //		ISSSTE (salud)
-scalar pemex  = 24568 //		Pemex (salud) + ISSFAM (salud)
+scalar imss   =  6487 //		IMSS (salud)
+scalar issste =  8726 //		ISSSTE (salud)
+scalar pemex  = 24564 //		Pemex (salud) + ISSFAM (salud)
 
 * Pensiones *
-scalar bienestar =   18568 //	Pensi{c o'}n Bienestar
-scalar penims    =  136820 //	Pensi{c o'}n IMSS
-scalar peniss    =  230104 //	Pensi{c o'}n ISSSTE
-scalar penotr    = 1424891 //	Pensi{c o'}n Pemex, CFE, Pensi{c o'}n LFC, ISSFAM, Otros
+scalar bienestar =   18565 //	Pensi{c o'}n Bienestar
+scalar penims    =  150469 //	Pensi{c o'}n IMSS
+scalar peniss    =  241652 //	Pensi{c o'}n ISSSTE
+scalar penotr    = 1521475 //	Pensi{c o'}n Pemex, CFE, Pensi{c o'}n LFC, ISSFAM, Otros
 
 * Ingreso b{c a'}sico *
 scalar IngBas      = 0 //		Ingreso b{c a'}sico
@@ -211,15 +211,15 @@ scalar ingbasico18 = 1 //		1: Incluye menores de 18 anios, 0: no
 scalar ingbasico65 = 1 //		1: Incluye mayores de 65 anios, 0: no
 
 * Otros gastos *
-scalar servpers = 3435 //		Servicios personales
+scalar servpers = 3434 //		Servicios personales
 scalar matesumi = 1720 //		Materiales y suministros
 scalar gastgene = 1815 //		Gastos generales
 scalar substran = 1928 //		Subsidios y transferencias
 scalar bienmueb =  305 //		Bienes muebles e inmuebles
-scalar obrapubl = 3391 //		Obras p{c u'}blicas
+scalar obrapubl = 3390 //		Obras p{c u'}blicas
 scalar invefina =  796 //		Inversi{c o'}n financiera
-scalar partapor = 9133 //		Participaciones y aportaciones
-scalar costodeu = 5956 //		Costo de la deuda
+scalar partapor = 9132 //		Participaciones y aportaciones
+scalar costodeu = 5955 //		Costo de la deuda
 ** PARAMETROS SIMULADOR: GASTOS **
 *********************************/
 
@@ -241,21 +241,21 @@ noisily GastoPC, anio(`aniovp') `nographs'
 ************************************
 ** PARAMETROS SIMULADOR: INGRESOS **
 * Al ingreso *
-scalar ISRAS   = 22.018*15.703/100 	//		ISR (asalariados): 3.428
-scalar ISRPF   = 13.211* 3.345/100 	//		ISR (personas f{c i'}sicas): 0.438
-scalar CuotasT = 26.454* 5.779/100	//		Cuotas (IMSS): 1.515
+scalar ISRAS   = 22.018*15.684/100 	//		ISR (asalariados): 3.428
+scalar ISRPF   = 13.211* 3.341/100 	//		ISR (personas f{c i'}sicas): 0.438
+scalar CuotasT = 26.454* 5.772/100	//		Cuotas (IMSS): 1.515
 
 * Al consumo *
-scalar IVA     = 66.041*5.935/100 	//		IVA: 3.885
-scalar ISAN    =  2.913*1.034/100 	//		ISAN: 0.030
-scalar IEPS    = 66.041*3.096/100 	//		IEPS (no petrolero + petrolero): 2.027
-scalar Importa = 30.908*0.792/100 	//		Importaciones: 0.245
+scalar IVA     = 66.041* 5.927/100 	//		IVA: 3.885
+scalar ISAN    =  2.913* 1.033/100 	//		ISAN: 0.030
+scalar IEPS    = 66.041* 3.092/100 	//		IEPS (no petrolero + petrolero): 2.027
+scalar Importa = 30.908* 0.792/100 	//		Importaciones: 0.245
 
 * Al capital *
-scalar ISRPM   = 25.438*14.713/100 	//		ISR (personas morales): 3.710
-scalar FMP     = 38.125* 3.602/100	/*+  38.125*10.040656/100*/	//		Fondo Mexicano del Petr{c o'}leo: 1.362
-scalar OYE     = 38.125*11.309/100 	//		Organismos y empresas (IMSS + ISSSTE + Pemex + CFE): 4.274
-scalar OtrosC  = 38.125* 2.831/100	//		Productos, derechos, aprovechamientos, contribuciones: 1.070
+scalar ISRPM   = 25.438*14.695/100 	//		ISR (personas morales): 3.710
+scalar FMP     = 38.125* 3.598/100	/*+  38.125*10.040656/100*/	//		Fondo Mexicano del Petr{c o'}leo: 1.362
+scalar OYE     = 38.125*11.295/100 	//		Organismos y empresas (IMSS + ISSSTE + Pemex + CFE): 4.274
+scalar OtrosC  = 38.125* 2.827/100	//		Productos, derechos, aprovechamientos, contribuciones: 1.070
 ** PARAMETROS SIMULADOR: INGRESOS */
 ************************************
 
@@ -290,10 +290,10 @@ matrix SE	= (	0.00,	21227.52,	4884.24		\		/// 1
 			88587.97, 	1E+14,		0)				//  12
 
 *			SS.MM.		% ing. gr	Informalidad PF (%)
-matrix DED	= (	5,		15, 		65.48)
+matrix DED	= (	5,		15, 		65.36)
 
 *			Tasa ISR PM				Reducciones PM
-matrix PM	= (	30,					41.30)
+matrix PM	= (	30,					41.47)
 
 * Cambios ISR *
 local cambioISR = 0
@@ -380,7 +380,7 @@ if "$export" != "" {
 		merge 1:1 (anio) using `"`c(sysdir_personal)'/users/$id/PIB.dta"', nogen
 		replace estimacion = estimacion/1000000000000
 
-		tabstat estimacion, stat(max) save
+		tabstat estimacion if anio >= `aniovp', stat(max) save
 		tempname MAX
 		matrix `MAX' = r(StatTotal)
 		forvalues k=1(1)`=_N' {
@@ -422,10 +422,10 @@ if "$export" != "" {
 ***                                   ***
 *****************************************
 use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
-capture g AportacionesNetas = Laboral + Consumo + ISR__PM /*+ ing_cap_fmp*/ ///
+capture g AportacionesNetas = Laboral + Consumo + ISR__PM + ing_cap_fmp ///
 	- Pension - Educacion - Salud - IngBasico - PenBienestar - Infra
 if _rc != 0 {
-	replace AportacionesNetas = Laboral + Consumo + ISR__PM /*+ ing_cap_fmp*/ ///
+	replace AportacionesNetas = Laboral + Consumo + ISR__PM + ing_cap_fmp ///
 	- Pension - Educacion - Salud - IngBasico - PenBienestar - Infra
 }
 label var AportacionesNetas "las aportaciones netas"
@@ -438,7 +438,7 @@ noisily Simulador AportacionesNetas if AportacionesNetas != 0 [fw=factor], ///
 
 
 ** CUENTA GENERACIONAL **
-noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) //	<-- OPTIONAL!!! Toma mucho tiempo.
+*noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) //	<-- OPTIONAL!!! Toma mucho tiempo.
 
 
 ** GRAFICA PROYECCION **
