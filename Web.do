@@ -251,10 +251,10 @@ matrix	SE	= (	0.00,	21227.52,	4884.24		\		/// 1
 			88587.97, 	1E+14,		0)				//  12
 
 *			SS.MM.		% ing. gr	Informalidad (%)
-matrix DED	= (	5,		15, 		43.15)
+matrix DED	= (	5,		15, 		65.36)
 
 *			Tasa ISR PM				Reducciones PM
-matrix PM	= (	30,					29.18)
+matrix PM	= (	30,					41.47)
 
 * Cambios ISR *
 local cambioISR = 0
@@ -299,7 +299,7 @@ matrix IVAT = (	16	\	///  1  Tasa general
 		3	\	///  9  Otros, idem
 		2	\	/// 10  Transporte local, idem
 		3	\	/// 11  Transporte foraneo, idem
-		39.12	)	//  12  Evasion e informalidad IVA, idem
+		40.40	)	//  12  Evasion e informalidad IVA, idem
 	
 * Cambios IVA *
 local cambioIVA = 0
