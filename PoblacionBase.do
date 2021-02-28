@@ -12,7 +12,6 @@
 *import delimited "http://www.conapo.gob.mx/work/models/CONAPO/Datos_Abiertos/Proyecciones2018/pob_ini_proyecciones.csv", clear
 use "`c(sysdir_site)'../basesCIEP/CONAPO/censo2020.dta", clear
 tostring sexo, replace
-destring edad, replace
 
 if `c(version)' > 13.1 {
 	*import delimited "`c(sysdir_site)'../basesCIEP/CONAPO/pob_mit_proyecciones.csv", clear encoding("windows-1252")
@@ -23,9 +22,6 @@ else {
 
 * 2. Limpia *
 capture rename año anio
-if _rc != 0 {
-	rename ao anio
-}
 rename sexo sexo0
 encode sexo0, generate(sexo)
 drop sexo0

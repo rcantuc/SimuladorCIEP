@@ -369,7 +369,7 @@ g double ing_indemn2 = ing_anual if clave == "P036"
 g double ing_indemn3 = ing_anual if clave == "P034"
 
 * p. Jubilaciones y ahorros *
-g double ing_jubila = ing_anual if clave == "P032" //| clave == "P033"
+g double ing_jubila = ing_anual if (clave == "P032" & edad >= 18)
 
 * q. Seguros de Vida *
 g double ing_segvida = ing_anual if clave == "P065"
@@ -446,7 +446,7 @@ g double ing_trabmenor = ing_anual if clave == "P067"
 g double ing_prest = ing_anual if clave == "P052" | clave == "P053" | clave == "P064"
 
 * af. Ingreso por otras percepciones de capital *
-g double ing_otrocap = ing_anual if  clave == "P066"
+g double ing_otrocap = ing_anual if clave == "P066" | clave == "P033"
 
 * ag. Retiros de ahorro *
 g double ing_ahorro = ing_anual if clave == "P051"
@@ -455,7 +455,7 @@ g double ing_ahorro = ing_anual if clave == "P051"
 g double ing_benef = ing_anual if clave == "P037" | clave == "P038" | (clave >= "P042" & clave <= "P048")
 
 * ai. Herencias o Legados *
-g double ing_heren = ing_anual if clave == "P057"
+g double ing_heren = ing_anual if clave == "P057" | (clave == "P032" & edad < 18)
 
 * aj. PAM *
 g double ing_PAM = ing_anual if clave == "P044"
@@ -1961,7 +1961,7 @@ else {
 **********************
 ** 9.2. Escolaridad **
 destring gradoaprob, replace
-g aniosesc = 0 if nivelaprob == "0"
+g aniosesc = 0 //if nivelaprob == "0"
 replace aniosesc = 1 if nivelaprob == "1"
 replace aniosesc = gradoaprob + 1 if nivelaprob == "2"
 replace aniosesc = gradoaprob + 7 if nivelaprob == "3"

@@ -8,16 +8,17 @@ if "`c(username)'" == "ricardo" {
 	*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
 }
 if "`c(username)'" == "ciepmx" {
-	*sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
+	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
 	*global export "/home/ciepmx/Dropbox (CIEP)/Textbook/"
 }
+adopath ++ PERSONAL
 ** PARAMETROS SIMULADOR: DIRECTORIOS **
 ***************************************
 
 
 ************************************
 ** PARAMETROS SIMULADOR: OPCIONES **
-global nographs "nographs"
+*global nographs "nographs"
 *global output "output"
 ** PARAMETROS SIMULADOR: OPCIONES **
 ************************************
@@ -77,7 +78,6 @@ if "$output" == "output" {
 
 *******************************
 ** PARAMETROS SIMULADOR: PIB **
-global pib2020 = -8.0
 global pib2021 =  4.6
 global pib2022 =  2.6
 global pib2023 =  2.5
@@ -94,9 +94,7 @@ global pib2030 =  $pib2025
 
 
 ** OTROS PARAMETROS **/
-*global def2020 =  3.6
 global def2021 =  3.4
-global inf2020 =  3.5
 global inf2021 =  3.0
 ** PARAMETROS SIMULADOR: PIB **
 ******************************/
@@ -255,7 +253,7 @@ scalar Importa = 30.908*0.792/100 	//		Importaciones: 0.245
 
 * Al capital *
 scalar ISRPM   = 25.438*14.713/100 	//		ISR (personas morales): 3.710
-scalar FMP     = 38.125* 3.602/100 	//		Fondo Mexicano del Petr{c o'}leo: 1.362
+scalar FMP     = 38.125* 3.602/100	/*+  38.125*10.040656/100*/	//		Fondo Mexicano del Petr{c o'}leo: 1.362
 scalar OYE     = 38.125*11.309/100 	//		Organismos y empresas (IMSS + ISSSTE + Pemex + CFE): 4.274
 scalar OtrosC  = 38.125* 2.831/100	//		Productos, derechos, aprovechamientos, contribuciones: 1.070
 ** PARAMETROS SIMULADOR: INGRESOS */
@@ -292,10 +290,10 @@ matrix SE	= (	0.00,	21227.52,	4884.24		\		/// 1
 			88587.97, 	1E+14,		0)				//  12
 
 *			SS.MM.		% ing. gr	Informalidad PF (%)
-matrix DED	= (	5,		15, 		65.55)
+matrix DED	= (	5,		15, 		65.48)
 
 *			Tasa ISR PM				Reducciones PM
-matrix PM	= (	30,					40.21)
+matrix PM	= (	30,					41.30)
 
 * Cambios ISR *
 local cambioISR = 0
@@ -424,10 +422,10 @@ if "$export" != "" {
 ***                                   ***
 *****************************************
 use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
-capture g AportacionesNetas = Laboral + Consumo + ISR__PM + ing_cap_fmp ///
+capture g AportacionesNetas = Laboral + Consumo + ISR__PM /*+ ing_cap_fmp*/ ///
 	- Pension - Educacion - Salud - IngBasico - PenBienestar - Infra
 if _rc != 0 {
-	replace AportacionesNetas = Laboral + Consumo + ISR__PM + ing_cap_fmp ///
+	replace AportacionesNetas = Laboral + Consumo + ISR__PM /*+ ing_cap_fmp*/ ///
 	- Pension - Educacion - Salud - IngBasico - PenBienestar - Infra
 }
 label var AportacionesNetas "las aportaciones netas"
@@ -440,7 +438,7 @@ noisily Simulador AportacionesNetas if AportacionesNetas != 0 [fw=factor], ///
 
 
 ** CUENTA GENERACIONAL **
-*noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) //	<-- OPTIONAL!!! Toma mucho tiempo.
+noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) //	<-- OPTIONAL!!! Toma mucho tiempo.
 
 
 ** GRAFICA PROYECCION **
