@@ -96,7 +96,7 @@ replace TE = 0 if TE == .
 
 
 * Ajuste ISR Salarios *
-replace ISR = isrE if tipo_contribuyente == 1 & formal != 0
+replace ISR = ISR if tipo_contribuyente == 1 & formal != 0
 
 
 ***********************
@@ -105,7 +105,7 @@ replace formal_asalariados = 0
 replace formal_asalariados = 1 //if prop_formal <= (1-DED[1,4]/100)
 
 * ISR SALARIOS + SUBSIDIO AL EMPLEO *
-replace ISR__asalariados = ISR*3.748/3.232*3.452/3.486 if formal_asalariados == 1 & tipo_contribuyente == 1
+replace ISR__asalariados = ISR*3.748/3.232*3.452/3.250 if formal_asalariados == 1 & tipo_contribuyente == 1
 replace ISR__asalariados = 0 if ISR__asalariados == .
 label var ISR__asalariados "ISR (retenciones por salarios)"
 

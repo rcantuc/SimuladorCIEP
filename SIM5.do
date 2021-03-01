@@ -313,7 +313,7 @@ matrix DED	= (	5,		15, 		49.85)										// 65.36
 matrix PM	= (	30,					35.95)										// 41.47
 
 * Cambios ISR *
-local cambioISR = 1
+local cambioISR = 0
 ** PARAMETROS SIMULADOR: ISR **
 *******************************
 
@@ -360,7 +360,7 @@ matrix IVAT = (	16	\	///  1  Tasa general
 		39.19)	//  12  Evasion e informalidad IVA, idem
 		
 * Cambios IVA *
-local cambioIVA = 1
+local cambioIVA = 0
 ** PARAMETROS SIMULADOR: IVA **
 *******************************
 
