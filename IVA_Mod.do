@@ -22,7 +22,7 @@ use "`c(sysdir_personal)'/SIM/2018/expenditure_categ_iva.dta", clear
 ** Re C{c a'}lculo del IVA **
 local j = 2
 foreach k in alim alquiler cb educacion fuera mascotas med otros trans transf {
-	replace gasto_anual`k' = gasto_anual`k'/(`deflator') //66.041/67.194
+	replace gasto_anual`k' = gasto_anual`k'/(`deflator')*66.041/67.369
 	
 	if IVAT[`j',1] == 1 {
 		replace IVA`k' = 0

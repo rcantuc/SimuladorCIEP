@@ -33,7 +33,7 @@ local smdf = 141.7																// Salario minimo general
 * Households *
 use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
 replace ing_bruto_tax = ing_bruto_tax/(`lambda'*`deflator')
-replace ing_capital = ing_capital /*25.438/28.279*/ //(`lambda'*`deflator')
+replace ing_capital = ing_capital*25.438/28.491 //(`lambda'*`deflator')
 
 
 * Cuotas a la Seguridad Social IMSS *
@@ -47,8 +47,8 @@ replace cuotasT = cuotasTP*cuotasT/(cuotasT + cuotasP) //cuotasT/(`lambda'*`defl
 
 **************************
 ** CALCULO DE ISR FINAL **
-g ISR0 = ISR
-g ISR__asalariados0 = ISR__asalariados
+capture g ISR0 = ISR
+capture g ISR__asalariados0 = ISR__asalariados
 
 replace ISR = 0
 replace ISR__asalariados = 0
@@ -88,7 +88,10 @@ forvalues j=`=rowsof(ISR)'(-1)1 {
 	}
 }
 
-g TE = ISR/(ing_bruto_tax - exen_tot - deduc_isr - cuotasTPF)
+capture g TE = ISR/(ing_bruto_tax - exen_tot - deduc_isr - cuotasTPF)
+if _rc != 0 {
+	replace TE = ISR/(ing_bruto_tax - exen_tot - deduc_isr - cuotasTPF)
+}
 replace TE = 0 if TE == .
 
 
@@ -113,7 +116,7 @@ replace formal_fisicas = 0
 replace formal_fisicas = 1 if prop_formal <= (1-DED[1,3]/100)
 
 * ISR PERSONAS FISICAS *
-replace ISR__PF = ISR*0.195/0.186*0.4415/0.219 if formal_fisicas == 1 & tipo_contribuyente != 1
+replace ISR__PF = ISR*0.195/0.186*0.441/0.469 if formal_fisicas == 1 & tipo_contribuyente != 1
 replace ISR__PF = 0 if ISR__PF == .
 label var ISR__PF "ISR (personas f{c i'}sicas)"
 
@@ -124,7 +127,7 @@ replace formal_morales = 0
 replace formal_morales = 1 if prop_formal <= (1-PM[1,2]/100)
 
 * ISR PERSONAS MORALES *
-replace ISR__PM = (ing_capital*(1-.31353561))*PM[1,1]/100*3.737/3.694			// 0.31353561: Ahorro bruto de Sociedad e ISFLSH
+replace ISR__PM = (ing_capital*(1-.31353561))*PM[1,1]/100*3.737/3.777			// 0.31353561: Ahorro bruto de Sociedad e ISFLSH
 replace ISR__PM = 0 if ISR__PM == .
 label var ISR__PM "ISR (personas morales)"
 
