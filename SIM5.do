@@ -16,12 +16,14 @@ adopath ++ PERSONAL
 ***************************************
 
 
+
 ************************************
 ** PARAMETROS SIMULADOR: OPCIONES **
-*global nographs "nographs"
+global nographs "nographs"
 *global output "output"
 ** PARAMETROS SIMULADOR: OPCIONES **
 ************************************
+
 
 
 ****************************************/
@@ -35,7 +37,6 @@ if "`c(username)'" != "ricardo" & "`c(username)'" != "ciepmx" {
 
 
 
-
 ************************/
 ***                   ***
 ***    0. ARRANQUE    ***
@@ -43,7 +44,6 @@ if "`c(username)'" != "ricardo" & "`c(username)'" != "ciepmx" {
 *************************
 timer on 1
 noisily di _newline(50) _col(35) in w "Simulador Fiscal CIEP v5.0" _newline _col(43) in y "$pais"
-
 
 ** DIRECTORIOS **
 adopath ++ PERSONAL
@@ -53,18 +53,15 @@ capture mkdir "`c(sysdir_personal)'/users/"
 capture mkdir "`c(sysdir_personal)'/users/$id/"
 capture mkdir "`c(sysdir_personal)'/users/$pais/"
 
-
 ** AÑO VALOR BASE **
 local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
-
 
 ** OUTPUT LOG FILE **
 if "$output" == "output" {
 	quietly log using "`c(sysdir_personal)'/users/$pais/$id/output.txt", replace text name(output)
 	quietly log off output
 }
-
 
 
 
@@ -76,6 +73,7 @@ if "$output" == "output" {
 ************************************************************
 
 
+
 *******************************
 ** PARAMETROS SIMULADOR: PIB **
 global pib2021 =  4.6
@@ -84,14 +82,32 @@ global pib2023 =  2.5
 global pib2024 =  2.5
 global pib2025 =  2.5
 
-
 ** 2025+ **
 global pib2026 =  $pib2025
 global pib2027 =  $pib2025
 global pib2028 =  $pib2025
 global pib2029 =  $pib2025
 global pib2030 =  $pib2025
-
+/*global pib2031 =  $pib2025
+global pib2032 =  $pib2025
+global pib2033 =  $pib2025
+global pib2034 =  $pib2025
+global pib2035 =  $pib2025
+global pib2036 =  $pib2025
+global pib2037 =  $pib2025
+global pib2038 =  $pib2025
+global pib2039 =  $pib2025
+global pib2040 =  $pib2025
+global pib2041 =  $pib2025
+global pib2042 =  $pib2025
+global pib2043 =  $pib2025
+global pib2044 =  $pib2025
+global pib2045 =  $pib2025
+global pib2046 =  $pib2025
+global pib2047 =  $pib2025
+global pib2048 =  $pib2025
+global pib2049 =  $pib2025
+global pib2050 =  $pib2025
 
 ** OTROS PARAMETROS **/
 global def2021 =  3.4
@@ -100,12 +116,12 @@ global inf2021 =  3.0
 ******************************/
 
 
+
 ** POBLACION **
 foreach k in `aniovp' {
 *forvalues k=1950(1)2050 {
-	noisily Poblacion, $nographs anio(`k') //update //tf(`=64.333315/2.1*1.8') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040)
+	noisily Poblacion, $nographs anio(`k') update //tf(`=64.333315/2.1*1.8') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040)
 }
-
 
 capture use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PensionREC.dta"', clear
 if _rc != 0 | "$export" != "" {
@@ -163,7 +179,6 @@ else {
 	save "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", replace
 }
 
-
 ** SCN + Inflacion **
 if "$export" != "" {
 	noisily Inflacion, anio(`aniovp') $nographs //update
@@ -173,12 +188,12 @@ if "$export" != "" {
 
 
 
-
 *********************************/
 ***                            ***
 ***    3. PARTE III: GASTOS    ***
 ***                            ***
 **********************************
+
 
 
 **********************************
@@ -224,9 +239,9 @@ scalar costodeu = 5955 //		Costo de la deuda
 *********************************/
 
 
+
 ** Gastos per capita **
 noisily GastoPC, anio(`aniovp') `nographs'
-
 
 
 
@@ -238,26 +253,28 @@ noisily GastoPC, anio(`aniovp') `nographs'
 ***********************************
 
 
+
 ************************************
 ** PARAMETROS SIMULADOR: INGRESOS **
 * Al ingreso *
-scalar ISRAS   = 22.018*15.684/100 	//		ISR (asalariados): 3.428
-scalar ISRPF   = 13.211* 3.341/100 	//		ISR (personas f{c i'}sicas): 0.438
-scalar CuotasT = 26.454* 5.772/100	//		Cuotas (IMSS): 1.515
+scalar ISRAS   = 22.018*15.684/100 // *(1 + .157/2) 	//		ISR (asalariados): 3.428
+scalar ISRPF   = 13.211* 3.341/100 // *(1 + .157/2) 	//		ISR (personas f{c i'}sicas): 0.438
+scalar CuotasT = 26.454* 5.772/100 // *(1 + .157/2)	//		Cuotas (IMSS): 1.515
 
 * Al consumo *
-scalar IVA     = 66.041* 5.927/100 	//		IVA: 3.885
-scalar ISAN    =  2.913* 1.033/100 	//		ISAN: 0.030
-scalar IEPS    = 66.041* 3.092/100 	//		IEPS (no petrolero + petrolero): 2.027
-scalar Importa = 30.908* 0.792/100 	//		Importaciones: 0.245
+scalar IVA     = 66.041* 5.927/100 // *(1 + .157/2) 	//		IVA: 3.885
+scalar ISAN    =  2.913* 1.033/100 // *(1 + .157/2) 	//		ISAN: 0.030
+scalar IEPS    = 66.041* 3.092/100 // *(1 + .157/2) 	//		IEPS (no petrolero + petrolero): 2.027
+scalar Importa = 30.908* 0.792/100 // *(1 + .157/2) 	//		Importaciones: 0.245
 
 * Al capital *
-scalar ISRPM   = 25.438*14.695/100 	//		ISR (personas morales): 3.710
-scalar FMP     = 38.125* 3.598/100	/*+  38.125*10.040656/100*/	//		Fondo Mexicano del Petr{c o'}leo: 1.362
-scalar OYE     = 38.125*11.295/100 	//		Organismos y empresas (IMSS + ISSSTE + Pemex + CFE): 4.274
-scalar OtrosC  = 38.125* 2.827/100	//		Productos, derechos, aprovechamientos, contribuciones: 1.070
+scalar ISRPM   = 25.438*14.695/100 // *(1 + .157/2) 	//		ISR (personas morales): 3.710
+scalar FMP     = 38.125* 3.598/100 // + 38.125*10.040656/100/2 	//		Fondo Mexicano del Petr{c o'}leo: 1.362
+scalar OYE     = 38.125*11.295/100 // + 38.125*10.040656/100/2 	//		Organismos y empresas (IMSS + ISSSTE + Pemex + CFE): 4.274
+scalar OtrosC  = 38.125* 2.827/100 // *(1 + .157/2)	//		Productos, derechos, aprovechamientos, contribuciones: 1.070
 ** PARAMETROS SIMULADOR: INGRESOS */
 ************************************
+
 
 
 *******************************
@@ -290,17 +307,19 @@ matrix SE	= (	0.00,	21227.52,	4884.24		\		/// 1
 			88587.97, 	1E+14,		0)				//  12
 
 *			SS.MM.		% ing. gr	Informalidad PF (%)
-matrix DED	= (	5,		15, 		65.36)
+matrix DED	= (	5,		15, 		49.85)										// 65.36
 
-*			Tasa ISR PM				Reducciones PM
-matrix PM	= (	30,					41.47)
+*			Tasa ISR PM				Informalidad PM
+matrix PM	= (	30,					35.95)										// 41.47
 
 * Cambios ISR *
-local cambioISR = 0
+local cambioISR = 1
 ** PARAMETROS SIMULADOR: ISR **
 *******************************
 
 
+
+****************
 ** MODULO ISR **
 if `cambioISR' != 0 {
 	noisily run "`c(sysdir_personal)'/ISR_Mod.do"
@@ -312,7 +331,6 @@ if _rc == 0 {
 	scalar ISRPM = ISR_PM_Mod
 }
 
-
 ** OUTPUT **/
 if "$output" == "output" {
 	quietly log on output
@@ -323,6 +341,7 @@ if "$output" == "output" {
 	noisily di in w "ISRMORA: [`=string(PM[1,1],"%10.2f")',`=string(PM[1,2],"%10.2f")']"
 	quietly log off output
 }
+
 
 
 *******************************
@@ -338,14 +357,16 @@ matrix IVAT = (	16	\	///  1  Tasa general
 		3	\	///  9  Otros, idem
 		2	\	/// 10  Transporte local, idem
 		3	\	/// 11  Transporte foraneo, idem
-		40.40)	//  12  Evasion e informalidad IVA, idem
+		39.19)	//  12  Evasion e informalidad IVA, idem
 		
 * Cambios IVA *
-local cambioIVA = 0
+local cambioIVA = 1
 ** PARAMETROS SIMULADOR: IVA **
 *******************************
 
 
+
+****************
 ** MODULO IVA **
 if `cambioIVA' != 0 {
 	noisily run "`c(sysdir_personal)'/IVA_Mod.do"
@@ -355,7 +376,6 @@ if _rc == 0 {
 	scalar IVA = IVA_Mod
 }
 
-
 ** OUTPUT **/
 if "$output" == "output" {
 	quietly log on output
@@ -363,10 +383,8 @@ if "$output" == "output" {
 	quietly log off output
 }
 
-
 ** TASAS EFECTIVAS **
 noisily TasasEfectivas, anio(`aniovp') `nographs'
-
 
 ** GRAFICA PROYECCION **
 if "$export" != "" {
@@ -415,7 +433,6 @@ if "$export" != "" {
 
 
 
-
 ****************************************/
 ***                                   ***
 ***    5. PARTE IV: REDISTRIBUCION    ***
@@ -431,15 +448,12 @@ if _rc != 0 {
 label var AportacionesNetas "las aportaciones netas"
 save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace
 
-
 ** REDISTRIBUCION **
 noisily Simulador AportacionesNetas if AportacionesNetas != 0 [fw=factor], ///
 	base("ENIGH 2018") boot(1) reboot nographs anio(`aniovp')
 
-
 ** CUENTA GENERACIONAL **
 *noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) //	<-- OPTIONAL!!! Toma mucho tiempo.
-
 
 ** GRAFICA PROYECCION **
 use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/AportacionesNetasREC.dta"', clear
@@ -481,7 +495,6 @@ forvalues aniohoy = `aniovp'(1)`aniovp' {
 		graph export "$export/AportacionesNetasProj`aniohoy'.png", replace name(AportacionesNetasProj)
 	}
 }
-
 
 ** OUTPUT **/
 if "$output" == "output" {
@@ -533,6 +546,7 @@ if "$output" == "output" {
 	filefilter `output2' `output3', from("_") to(" ") replace
 	filefilter `output3' "`c(sysdir_personal)'/users/$pais/$id/output.txt", from(".,") to("0") replace
 }
+
 
 
 
