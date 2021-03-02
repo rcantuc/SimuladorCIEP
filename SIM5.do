@@ -19,7 +19,7 @@ adopath ++ PERSONAL
 
 ************************************
 ** PARAMETROS SIMULADOR: OPCIONES **
-global nographs "nographs"
+*global nographs "nographs"
 *global output "output"
 ** PARAMETROS SIMULADOR: OPCIONES **
 ************************************
@@ -265,7 +265,7 @@ scalar CuotasT = 26.454* 5.772/100 // *(1 + .157/2)	//		Cuotas (IMSS): 1.515
 scalar IVA     = 66.041* 5.927/100 // *(1 + .157/2) 	//		IVA: 3.885
 scalar ISAN    =  2.913* 1.033/100 // *(1 + .157/2) 	//		ISAN: 0.030
 scalar IEPS    = 66.041* 3.092/100 // *(1 + .157/2) 	//		IEPS (no petrolero + petrolero): 2.027
-scalar Importa = 30.908* 0.792/100 // *(1 + .157/2) 	//		Importaciones: 0.245
+scalar Importa = 31.140* 0.792/100 // *(1 + .157/2) 	//		Importaciones: 0.245
 
 * Al capital *
 scalar ISRPM   = 25.438*14.695/100 // *(1 + .157/2) 	//		ISR (personas morales): 3.710

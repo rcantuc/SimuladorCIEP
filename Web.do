@@ -36,9 +36,7 @@ global id = ""
 ***                   ***
 *************************
 timer on 1
-noisily di _newline(50) _col(35) in w "Simulador Fiscal CIEP v5.0" ///
-	_newline _col(43) in y "$pais"
-
+noisily di _newline(50) _col(35) in w "Simulador Fiscal CIEP v5.0" _newline _col(43) in y "$pais"
 
 ** DIRECTORIOS **
 adopath ++ PERSONAL
@@ -48,17 +46,16 @@ capture mkdir "`c(sysdir_personal)'/users/"
 capture mkdir "`c(sysdir_personal)'/users/$id/"
 capture mkdir "`c(sysdir_personal)'/users/$pais/"
 
-
 ** AÑO VALOR BASE **
 local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
-
 
 ** OUTPUT LOG FILE **
 if "$output" == "output" {
 	quietly log using "`c(sysdir_personal)'/users/$pais/$id/output.txt", replace text name(output)
 	quietly log off output
 }
+
 
 
 
@@ -93,7 +90,6 @@ if _rc != 0 {
 
 *******************************
 ** PARAMETROS SIMULADOR: PIB **
-global pib2020 = -8.0
 global pib2021 =  4.6
 global pib2022 =  2.6
 global pib2023 =  2.5
@@ -111,8 +107,7 @@ global pib2030 =  $pib2025
 
 
 ** OTROS PARAMETROS **
-*global def2020 =  3.568
-global def2021 =  3.425
+global def2021 =  3.4
 global inf2020 =  3.5
 global inf2021 =  3.0
 
@@ -145,43 +140,6 @@ if "$pais" == "" & "$export" != "" {
 
 **********************************
 ** PARAMETROS SIMULADOR: GASTOS **
-/* Educacion *
-scalar basica = 21669 //		Educaci{c o'}n b{c a'}sica
-scalar medsup = 21396 //		Educaci{c o'}n media superior
-scalar superi = 38726 //		Educaci{c o'}n superior
-scalar posgra = 46528 //		Posgrado
-scalar eduadu = 19765 //		Educaci{c o'}n para adultos
-scalar otrose =  1500 //		Otros gastos educativos
-
-* Salud *
-scalar ssa    =   528 //		SSalud
-scalar prospe =  1081 //		IMSS-Prospera
-scalar segpop =  2445 //		Seguro Popular
-scalar imss   =  6488 //		IMSS (salud)
-scalar issste =  8728 //		ISSSTE (salud)
-scalar pemex  = 24568 //		Pemex (salud) + ISSFAM (salud)
-
-* Pensiones *
-scalar bienestar =   18568 //	Pensi{c o'}n Bienestar
-scalar penims    =  136820 //	Pensi{c o'}n IMSS
-scalar peniss    =  230104 //	Pensi{c o'}n ISSSTE
-scalar penotr    = 1424891 //	Pensi{c o'}n Pemex, CFE, Pensi{c o'}n LFC, ISSFAM, Otros
-
-* Ingreso b{c a'}sico *
-scalar IngBas      = 0 //		Ingreso b{c a'}sico
-scalar ingbasico18 = 1 //		1: Incluye menores de 18 anios, 0: no
-scalar ingbasico65 = 1 //		1: Incluye mayores de 65 anios, 0: no
-
-* Otros gastos *
-scalar servpers = 3435 //		Servicios personales
-scalar matesumi = 1720 //		Materiales y suministros
-scalar gastgene = 1815 //		Gastos generales
-scalar substran = 1928 //		Subsidios y transferencias
-scalar bienmueb =  305 //		Bienes muebles e inmuebles
-scalar obrapubl = 3391 //		Obras p{c u'}blicas
-scalar invefina =  796 //		Inversi{c o'}n financiera
-scalar partapor = 9133 //		Participaciones y aportaciones
-scalar costodeu = 5956 //		Costo de la deuda
 ** PARAMETROS SIMULADOR: GASTOS **
 *********************************/
 
@@ -201,22 +159,6 @@ noisily GastoPC, anio(`aniovp') `nographs'
 
 ************************************
 ** PARAMETROS SIMULADOR: INGRESOS **
-/** Al ingreso **
-scalar ISRAS   = 22.018*15.567/100 	//		ISR (asalariados): 3.428
-scalar ISRPF   = 13.211* 3.316/100 	//		ISR (personas f{c i'}sicas): 0.438
-scalar CuotasT = 26.454* 5.729/100	//		Cuotas (IMSS): 1.516
-
-* Al consumo *
-scalar IVA     = 66.041*5.882/100 	//		IVA: 3.885
-scalar ISAN    =  2.913*1.025/100 	//		ISAN: 0.030
-scalar IEPS    = 66.041*3.069/100 	//		IEPS (no petrolero + petrolero): 2.027
-scalar Importa = 30.908*0.796/100 	//		Importaciones: 0.246
-
-* Al capital *
-scalar ISRPM   = 25.438*14.586/100 	//		ISR (personas morales): 3.710
-scalar FMP     = 38.125* 3.571/100 	//		Fondo Mexicano del Petr{c o'}leo: 1.362
-scalar OYE     = 38.125*11.211/100 	//		Organismos y empresas (IMSS + ISSSTE + Pemex + CFE): 4.274
-scalar OtrosC  = 38.125* 2.806/100	//		Productos, derechos, aprovechamientos, contribuciones: 1.070
 ** PARAMETROS SIMULADOR: INGRESOS **
 ***********************************/
 
