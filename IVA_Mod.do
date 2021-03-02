@@ -48,7 +48,7 @@ tempfile ivamod
 save `ivamod'	
 
 use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
-merge 1:1 (folioviv foliohog numren) using `ivamod', nogen //update replace
+merge 1:1 (folioviv foliohog numren) using `ivamod', nogen update replace
 replace Consumo = 0 if Consumo == .
 label var Consumo "los impuestos al consumo"
 
