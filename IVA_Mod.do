@@ -44,8 +44,11 @@ foreach k in alim alquiler cb educacion fuera mascotas med otros trans transf {
 * SIMULACI{c O'}N: Impuesto al consumo *
 egen Consumo = rsum(IVAalim IVAalquiler IVAcb IVAeducacion IVAfuera ///
 	IVAmascotas IVAmed IVAotros IVAtrans IVAtransf TOTIEPS)
-merge 1:1 (folioviv foliohog numren) using ///
-	`"`c(sysdir_personal)'/users/$pais/$id/households.dta"', nogen update //replace
+tempfile ivamod
+save `ivamod'	
+
+use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
+merge 1:1 (folioviv foliohog numren) using `ivamod', nogen update replace
 replace Consumo = 0 if Consumo == .
 label var Consumo "los impuestos al consumo"
 
