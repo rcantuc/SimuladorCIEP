@@ -45,7 +45,7 @@ foreach k in alim alquiler cb educacion fuera mascotas med otros trans transf {
 egen Consumo = rsum(IVAalim IVAalquiler IVAcb IVAeducacion IVAfuera ///
 	IVAmascotas IVAmed IVAotros IVAtrans IVAtransf TOTIEPS)
 merge 1:1 (folioviv foliohog numren) using ///
-	`"`c(sysdir_personal)'/users/$pais/$id/households.dta"', nogen //update replace
+	`"`c(sysdir_personal)'/users/$pais/$id/households.dta"', nogen update replace
 replace Consumo = 0 if Consumo == .
 label var Consumo "los impuestos al consumo"
 
