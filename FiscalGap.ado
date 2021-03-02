@@ -504,7 +504,7 @@ quietly {
 		}
 		replace rfsp = rfspBalance if anio == `k'
 
-		replace shrfsp = L.shrfsp*(1+`actualizacion_geo'/100*0) + rfspBalance if anio == `k' & shrfsp == .
+		replace shrfsp = L.shrfsp*(1+`actualizacion_geo'/100*0) + rfspBalance if anio == `k' //& shrfsp == .
 	}
 
 	g rfsp_pib = rfsp/pibYR*100
@@ -733,8 +733,8 @@ quietly {
 				local proy_shrfsp2 = "`proy_shrfsp2' null,"
 			}
 			if anio[`k'] == `anio' {
-				*local proy_shrfsp = "`proy_shrfsp' `=string(`shrfspobslast',"%10.3f")',"
-				local proy_shrfsp = "`proy_shrfsp' `=string(52.348,"%10.3f")',"
+				local proy_shrfsp = "`proy_shrfsp' `=string(`shrfspobslast',"%10.3f")',"
+				*local proy_shrfsp = "`proy_shrfsp' `=string(52.348,"%10.3f")',"
 				local proy_shrfsp2 = "`proy_shrfsp2' `=string(`=shrfspPIB[`k']',"%10.3f")',"
 			}
 			if anio[`k'] > `anio' & anio[`k'] <= 2030 {

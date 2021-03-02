@@ -56,20 +56,35 @@ save `Adecuaciones'
 ** 2 SHRFSP **
 **************
 noisily DatosAbiertos SHRF5000				// Total
-keep anio monto
+keep anio monto mes
 rename monto shrfsp
+
+tsset anio
+replace shrfsp = L.shrfsp+D.shrfsp*12/mes if mes != 12
+drop mes
+
 tempfile shrfsp
 save `shrfsp'
 
 noisily DatosAbiertos SHRF5100				// Interno
-keep anio monto
+keep anio monto mes
 rename monto shrfspInterno
+
+tsset anio
+replace shrfspInterno = L.shrfspInterno+D.shrfspInterno*12/mes if mes != 12
+drop mes
+
 tempfile interno
 save `interno'
 
 noisily DatosAbiertos SHRF5200				// Externo
-keep anio monto
+keep anio monto mes
 rename monto shrfspExterno
+
+tsset anio
+replace shrfspExterno = L.shrfspExterno+D.shrfspExterno*12/mes if mes != 12
+drop mes
+
 tempfile externo
 save `externo'
 
@@ -107,12 +122,12 @@ save `nopresupuestario'
 *************************
 ** 5 Costo de la deuda **
 *************************
-PEF if divGA == 2, anio(2020)
+PEF if divGA == 2, anio(2020) nographs
 collapse (sum) costodeuda=gastoneto, by(anio)
 tempfile costodeuda
 save `costodeuda'
 
-PEF if divGA == 1, anio(2018)
+PEF if divGA == 1, anio(2018) nographs
 collapse (sum) amortizacion=gastoneto, by(anio)
 tempfile amortizacion
 save `amortizacion'

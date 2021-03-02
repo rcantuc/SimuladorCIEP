@@ -560,11 +560,47 @@ program define UpdateDatosAbiertos, return
 	replace monto_s = monto*(760552.9-558673.2)/(1664949.1-1257525.4) if anio == 2018 & trimestre == 4
 	replace monto_r = monto*(50879.3-38545.9)/(1664949.1-1257525.4) if anio == 2018 & trimestre == 4
 
-	* 2019+ *
-	replace monto_m = monto*(809833.5-627129.8)/(1664949.1-1257525.4) if anio > 2018
-	replace monto_f = monto*(43683.5-33176.6)/(1664949.1-1257525.4) if anio > 2018
-	replace monto_s = monto*(760552.9-558673.2)/(1664949.1-1257525.4) if anio > 2018
-	replace monto_r = monto*(50879.3-38545.9)/(1664949.1-1257525.4) if anio > 2018
+	* 2019 *
+	replace monto_m = monto*232173.4/464295.0 if anio == 2019 & trimestre == 1
+	replace monto_f = monto*11586.7/464295.0 if anio == 2019 & trimestre == 1
+	replace monto_s = monto*204052.0/464295.0 if anio == 2019 & trimestre == 1
+	replace monto_r = monto*16482.9/464295.0 if anio == 2019 & trimestre == 1
+
+	replace monto_m = monto*(473910.1-232173.4)/(927350.8-464295.0) if anio == 2019 & trimestre == 2
+	replace monto_f = monto*(23889.4-11586.7)/(927350.8-464295.0) if anio == 2019 & trimestre == 2
+	replace monto_s = monto*(399962.6-204052.0)/(927350.8-464295.0) if anio == 2019 & trimestre == 2
+	replace monto_r = monto*(29588.7-16482.9)/(927350.8-464295.0) if anio == 2019 & trimestre == 2
+
+	replace monto_m = monto*(641345.0-473910.1)/(1298987.0-927350.8) if anio == 2019 & trimestre == 3
+	replace monto_f = monto*(34430.7-23889.4)/(1298987.0-927350.8) if anio == 2019 & trimestre == 3
+	replace monto_s = monto*(580223.7-399962.6)/(1298987.0-927350.8) if anio == 2019 & trimestre == 3
+	replace monto_r = monto*(42987.6-29588.7)/(1298987.0-927350.8) if anio == 2019 & trimestre == 3
+
+	replace monto_m = monto*(803643.1-641345.0)/(1687830.1-1298987.0) if anio == 2019 & trimestre == 4
+	replace monto_f = monto*(45756.7-34430.7)/(1687830.1-1298987.0) if anio == 2019 & trimestre == 4
+	replace monto_s = monto*(783743.8-580223.7)/(1687830.1-1298987.0) if anio == 2019 & trimestre == 4
+	replace monto_r = monto*(54686.5-42987.6)/(1687830.1-1298987.0) if anio == 2019 & trimestre == 4
+
+	* 2020 *
+	replace monto_m = monto*287883.4/542596.9 if anio == 2020 & trimestre == 1
+	replace monto_f = monto*13569.5/542596.9 if anio == 2020 & trimestre == 1
+	replace monto_s = monto*223982.7/542596.9 if anio == 2020 & trimestre == 1
+	replace monto_r = monto*17161.2/542596.9 if anio == 2020 & trimestre == 1
+
+	replace monto_m = monto*(490742.2-287883.4)/(968446.9-542596.9) if anio == 2020 & trimestre == 2
+	replace monto_f = monto*(20504.0-13569.5)/(968446.9-542596.9) if anio == 2020 & trimestre == 2
+	replace monto_s = monto*(423225.4-223982.7)/(968446.9-542596.9) if anio == 2020 & trimestre == 2
+	replace monto_r = monto*(33975.3-17161.2)/(968446.9-542596.9) if anio == 2020 & trimestre == 2
+
+	replace monto_m = monto*(658962.0-490742.2)/(1345513.4-968446.9) if anio == 2020 & trimestre == 3
+	replace monto_f = monto*(30906.8-20504.0)/(1345513.4-968446.9) if anio == 2020 & trimestre == 3
+	replace monto_s = monto*(608735.5-423225.4)/(1345513.4-968446.9) if anio == 2020 & trimestre == 3
+	replace monto_r = monto*(46909.2-33975.3)/(1345513.4-968446.9) if anio == 2020 & trimestre == 3
+
+	replace monto_m = monto*(832119.7-658962.0)/(1762913.4-1345513.4) if (anio == 2020 & trimestre == 4) | anio > 2020
+	replace monto_f = monto*(43306.6-30906.8)/(1762913.4-1345513.4) if (anio == 2020 & trimestre == 4) | anio > 2020
+	replace monto_s = monto*(829291.2-608735.5)/(1762913.4-1345513.4) if (anio == 2020 & trimestre == 4) | anio > 2020
+	replace monto_r = monto*(58195.8-46909.2)/(1762913.4-1345513.4) if (anio == 2020 & trimestre == 4) | anio > 2020
 
 	
 	/* 2019+ *
@@ -754,7 +790,7 @@ program define UpdateDatosAbiertos, return
 	else {
 		save "`c(sysdir_personal)'/SIM/DatosAbiertos.dta", replace	
 	}
-	noisily LIF, update
+	noisily LIF, update nographs
 	noisily SHRFSP, update
 
 end

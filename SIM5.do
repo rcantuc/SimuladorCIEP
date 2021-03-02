@@ -1,37 +1,26 @@
-**************************************/
-** PARAMETROS SIMULADOR: DIRECTORIOS **
+********************************************
+** SIMULADOR: DIRECTORIOS DE PROGRAMACION **
 clear all
 macro drop _all
 capture log close _all
 if "`c(username)'" == "ricardo" {
 	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
 	*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
+	adopath ++ PERSONAL
 }
-if "`c(username)'" == "ciepmx" {
-	*sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
-	*global export "/home/ciepmx/Dropbox (CIEP)/Textbook/"
-}
-adopath ++ PERSONAL
-** PARAMETROS SIMULADOR: DIRECTORIOS **
-***************************************
-
-
-
-************************************
-** PARAMETROS SIMULADOR: OPCIONES **
-global nographs "nographs"
-*global output "output"
-** PARAMETROS SIMULADOR: OPCIONES **
-************************************
+** SIMULADOR: DIRECTORIOS DE PROGRAMACION **
+********************************************
 
 
 
 ****************************************/
-** PARAMETROS SIMULADOR: IDENTIFICADOR **
+** SIMULADOR: IDENTIFICADOR & OPCIONES **
 if "`c(username)'" != "ricardo" & "`c(username)'" != "ciepmx" {
 	global id = "`c(username)'"
 }
-** PARAMETROS SIMULADOR: IDENTIFICADOR **
+*global nographs "nographs"
+*global output "output"
+** SIMULADOR: IDENTIFICADOR & OPCIONES **
 *****************************************
 
 
@@ -73,9 +62,8 @@ if "$output" == "output" {
 ************************************************************
 
 
-
-*******************************
-** PARAMETROS SIMULADOR: PIB **
+********************
+** SIMULADOR: PIB **
 global pib2021 =  4.6
 global pib2022 =  2.6
 global pib2023 =  2.5
@@ -112,8 +100,8 @@ global pib2050 =  $pib2025
 ** OTROS PARAMETROS **/
 global def2021 =  3.4
 global inf2021 =  3.0
-** PARAMETROS SIMULADOR: PIB **
-******************************/
+** SIMULADOR: PIB **
+*******************/
 
 
 
@@ -155,7 +143,7 @@ if _rc != 0 | "$export" != "" {
 	DatosAbiertos XAB2110, g   //		Ingresos propios Pemex
 	DatosAbiertos XOA0115, g   //		Ingresos propios CFE
 	DatosAbiertos XKF0179, g   //		Ingresos propios IMSS
-	DatosAbiertos XOA0120, g   //		Ingresos propios ISSSTE*/
+	DatosAbiertos XOA0120, g   //		Ingresos propios ISSSTE
 	
 	global id = "`id'"
 }
@@ -236,7 +224,7 @@ scalar invefina =  796 //		Inversi{c o'}n financiera
 scalar partapor = 9132 //		Participaciones y aportaciones
 scalar costodeu = 5955 //		Costo de la deuda
 ** PARAMETROS SIMULADOR: GASTOS **
-*********************************/
+*********************************
 
 
 
@@ -272,7 +260,7 @@ scalar ISRPM   = 25.438*14.695/100 // *(1 + .157/2) 	//		ISR (personas morales):
 scalar FMP     = 38.125* 3.598/100 // + 38.125*10.040656/100/2 	//		Fondo Mexicano del Petr{c o'}leo: 1.362
 scalar OYE     = 38.125*11.295/100 // + 38.125*10.040656/100/2 	//		Organismos y empresas (IMSS + ISSSTE + Pemex + CFE): 4.274
 scalar OtrosC  = 38.125* 2.827/100 // *(1 + .157/2)	//		Productos, derechos, aprovechamientos, contribuciones: 1.070
-** PARAMETROS SIMULADOR: INGRESOS */
+** PARAMETROS SIMULADOR: INGRESOS *
 ************************************
 
 
@@ -331,7 +319,7 @@ if _rc == 0 {
 	scalar ISRPM = ISR_PM_Mod
 }
 
-** OUTPUT **/
+** OUTPUT **
 if "$output" == "output" {
 	quietly log on output
 	noisily di in w "ISRTASA: [`=string(ISR[1,4],"%10.2f")',`=string(ISR[2,4],"%10.2f")',`=string(ISR[3,4],"%10.2f")',`=string(ISR[4,4],"%10.2f")',`=string(ISR[5,4],"%10.2f")',`=string(ISR[6,4],"%10.2f")',`=string(ISR[7,4],"%10.2f")',`=string(ISR[8,4],"%10.2f")',`=string(ISR[9,4],"%10.2f")',`=string(ISR[10,4],"%10.2f")',`=string(ISR[11,4],"%10.2f")']"
@@ -376,7 +364,7 @@ if _rc == 0 {
 	scalar IVA = IVA_Mod
 }
 
-** OUTPUT **/
+** OUTPUT **
 if "$output" == "output" {
 	quietly log on output
 	noisily di in w "IVA: [`=string(IVAT[1,1],"%10.2f")',`=string(IVAT[2,1],"%10.0f")',`=string(IVAT[3,1],"%10.0f")',`=string(IVAT[4,1],"%10.0f")',`=string(IVAT[5,1],"%10.0f")',`=string(IVAT[6,1],"%10.0f")',`=string(IVAT[7,1],"%10.0f")',`=string(IVAT[8,1],"%10.0f")',`=string(IVAT[9,1],"%10.0f")',`=string(IVAT[10,1],"%10.0f")',`=string(IVAT[11,1],"%10.0f")',`=string(IVAT[12,1],"%10.2f")']"
@@ -496,7 +484,7 @@ forvalues aniohoy = `aniovp'(1)`aniovp' {
 	}
 }
 
-** OUTPUT **/
+** OUTPUT **
 if "$output" == "output" {
 	forvalues k=1(5)`=_N' {
 		if anio[`k'] >= 2010 {
@@ -514,7 +502,7 @@ if "$output" == "output" {
 
 
 
-********************************
+*******************************/
 ***                          ***
 ***    6. PARTE IV: DEUDA    ***
 ***                          ***
