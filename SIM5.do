@@ -20,7 +20,7 @@ adopath ++ PERSONAL
 ************************************
 ** PARAMETROS SIMULADOR: OPCIONES **
 *global nographs "nographs"
-*global output "output"
+global output "output"
 ** PARAMETROS SIMULADOR: OPCIONES **
 ************************************
 
@@ -385,7 +385,7 @@ if "$output" == "output" {
 
 ** TASAS EFECTIVAS **
 noisily TasasEfectivas, anio(`aniovp') `nographs'
-
+exit
 ** GRAFICA PROYECCION **
 if "$export" != "" {
 	forvalues aniohoy = `aniovp'(1)`aniovp' {
