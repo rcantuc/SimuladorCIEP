@@ -48,7 +48,7 @@ tempfile ivamod
 save `ivamod'	
 
 use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
-merge 1:1 (folioviv foliohog numren) using `ivamod', nogen update replace
+merge 1:1 (folioviv foliohog numren) using `ivamod', nogen //update //replace
 replace Consumo = 0 if Consumo == .
 label var Consumo "los impuestos al consumo"
 
@@ -71,7 +71,6 @@ capture egen GastoTOTEG = rsum(gas_exento*)
 if _rc != 0 {
 	g GastoTOTEG = 0
 }
-
 
 *noisily Simulador Consumo [fw=factor], base("ENIGH 2018") boot(1) reboot $nographs nooutput
 
