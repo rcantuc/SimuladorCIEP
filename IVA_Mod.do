@@ -48,7 +48,8 @@ tempfile ivamod
 save `ivamod'	
 
 use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
-merge 1:1 (folioviv foliohog numren) using `ivamod', nogen update replace
+merge 1:1 (folioviv foliohog numren) using `ivamod', nogen update replace ///
+	keepus(Consumo gasto_anual* cero* exento* gravado* gas_exento* IVA*)
 replace Consumo = 0 if Consumo == .
 label var Consumo "los impuestos al consumo"
 
@@ -82,6 +83,8 @@ if _rc != 0 {
 	IVAmascotas IVAmed IVAotros IVAtrans IVAtransf)
 }
 
+
+* RESULTS IVA *
 tabstat IVATotal Consumo [fw=factor], stat(sum) f(%20.0fc) save
 tempname IVA
 matrix `IVA' = r(StatTotal)
@@ -90,11 +93,10 @@ scalar IVA_Mod = `IVA'[1,1]/scalar(PIB)*100
 noisily di _newline in g " RESULTADOS IVA: " _col(29) in y %10.3fc IVA_Mod
 
 
-
+* RESULTS GASTO *
 tabstat GastoTOT GastoTOTC GastoTOTE GastoTOTG GastoTOTEG [fw=factor], stat(sum) f(%20.0fc) save
 tempname IVA2
 matrix `IVA2' = r(StatTotal)
-
 
 noisily di _newline in g " GASTO ANUAL: " _col(29) in y %10.3fc `IVA2'[1,1]/scalar(PIB)*100
 noisily di in g " GASTO 0%: " _col(29)  in y %10.3fc `IVA2'[1,2]/scalar(PIB)*100

@@ -19,7 +19,7 @@ adopath ++ PERSONAL
 
 ************************************
 ** PARAMETROS SIMULADOR: OPCIONES **
-*global nographs "nographs"
+global nographs "nographs"
 global output "output"
 ** PARAMETROS SIMULADOR: OPCIONES **
 ************************************
@@ -358,7 +358,7 @@ matrix IVAT = (	16	\	///  1  Tasa general
 		2	\	/// 10  Transporte local, idem
 		3	\	/// 11  Transporte foraneo, idem
 		39.19)	//  12  Evasion e informalidad IVA, idem
-		
+
 * Cambios IVA *
 local cambioIVA = 0
 ** PARAMETROS SIMULADOR: IVA **
@@ -385,7 +385,7 @@ if "$output" == "output" {
 
 ** TASAS EFECTIVAS **
 noisily TasasEfectivas, anio(`aniovp') `nographs'
-exit
+
 ** GRAFICA PROYECCION **
 if "$export" != "" {
 	forvalues aniohoy = `aniovp'(1)`aniovp' {
