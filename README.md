@@ -1,2 +1,0 @@
-# simuladorCIEP
-Versión Github.
