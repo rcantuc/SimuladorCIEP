@@ -3,9 +3,10 @@
 clear all
 macro drop _all
 capture log close _all
+
 if "`c(username)'" == "ricardo" {
-	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP/"
-	global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
+	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/SimuladorCIEP/5.0/simuladorCIEP/"
+	*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
 	adopath ++ PERSONAL
 }
 ** SIMULADOR: DIRECTORIOS DE PROGRAMACION **
