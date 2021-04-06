@@ -388,28 +388,28 @@ quietly {
 	***************
 	*** 4 Texto ***
 	***************
-	noisily di _newline in g _col(11) %~14s "Crec. PIB" _col(25) %~23s "PIB real" _col(50) %~14s "Crec. Def" _col(64) %~14s "Deflactor"
+	noisily di _newline in g _col(11) %~14s "Crec. PIB" _col(25) %~23s "PIB nom." _col(50) %~14s "Crec. Def" _col(64) %~14s "Deflactor"
 	forvalues k=`=`obsvp'-5'(1)`=`obsvp'+5' {
 		if anio[`k'] < `anio_last' | (anio[`k'] == `anio_last' & trimestre[`k'] == 4) {
 			if "`reportado'" == "" {
 				noisily di in g %~72s "REPORTADO"
 				local reportado = "done"
 			}
-			noisily di in g " `=anio[`k']' " _col(10) %8.1fc in y var_pibY[`k'] " %" _col(25) %20.0fc pibYR[`k'] _col(50) %8.1fc in y var_indiceY[`k'] " %" _col(65) %12.10fc deflator[`k']
+			noisily di in g " `=anio[`k']' " _col(10) %8.1fc in y var_pibY[`k'] " %" _col(25) %20.0fc pibY[`k'] _col(50) %8.1fc in y var_indiceY[`k'] " %" _col(65) %12.10fc deflator[`k']
 		}
 		if (anio[`k'] == `anio_last' & trimestre[`k'] < 4) | anio[`k'] <= anio[`obs_exo'] & anio[`k'] > `anio_last' {
 			if "`estimado'" == "" {
 				noisily di in g %~72s "ESTIMADO"
 				local estimado = "done"
 			}
-			noisily di in g "{bf: `=anio[`k']' " _col(10) %8.1fc in y var_pibY[`k'] " %" _col(25) %20.0fc pibYR[`k'] _col(50) %8.1fc in y var_indiceY[`k'] " %" _col(65) %12.10fc deflator[`k'] "}"
+			noisily di in g "{bf: `=anio[`k']' " _col(10) %8.1fc in y var_pibY[`k'] " %" _col(25) %20.0fc pibY[`k'] _col(50) %8.1fc in y var_indiceY[`k'] " %" _col(65) %12.10fc deflator[`k'] "}"
 		}
 		if (anio[`k'] > `anio_last') & anio[`k'] > anio[`obs_exo'] {
 			if "`proyectado'" == "" {
 				noisily di in g %~72s "PROYECTADO"
 				local proyectado = "done"
 			}
-			noisily di in g " `=anio[`k']' " _col(10) %8.1fc in y var_pibY[`k'] " %" _col(25) %20.0fc pibYR[`k'] _col(50) %8.1fc in y var_indiceY[`k'] " %" _col(65) %12.10fc deflator[`k']
+			noisily di in g " `=anio[`k']' " _col(10) %8.1fc in y var_pibY[`k'] " %" _col(25) %20.0fc pibY[`k'] _col(50) %8.1fc in y var_indiceY[`k'] " %" _col(65) %12.10fc deflator[`k']
 		}
 	}
 

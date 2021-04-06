@@ -77,10 +77,16 @@ quietly {
 	sort anio
 	merge m:1 (anio) using `PIB', nogen keepus(pibY indiceY deflator lambda var_pibY) ///
 		update replace keep(matched) sorted
+	sort anio mes
 
 	*keep if anio >= 2002
 	local aniofirst = anio[1]
 	local aniolast = anio[_N]
+
+	tabstat mes if anio == `aniolast', stat(max) save
+	tempname MLast
+	matrix `MLast' = r(StatTotal)
+	local meslast = `MLast'[1,1]
 
 	** 3.1 Utilizar LIF o ILIF **
 	if "`lif'" == "" {
@@ -113,7 +119,7 @@ quietly {
 	label values `resumido' `label'
 
 	egen `recaudacionPIB' = max(recaudacionPIB) /*if anio >= 2010*/, by(`by')
-	replace `resumido' = 999 if abs(`recaudacionPIB') < `minimum' // | recaudacionPIB == . | recaudacionPIB == 0
+	replace `resumido' = 999 if abs(`recaudacionPIB') < `minimum' & divCIEP != 15 // | recaudacionPIB == . | recaudacionPIB == 0
 	label define `label' 999 `"< `=string(`minimum',"%5.1fc")'% PIB"', add modify
 
 	capture replace nombre = subinstr(nombre,"Impuesto especial sobre producci{c o'}n y servicios de ","",.)
@@ -226,7 +232,7 @@ quietly {
 			_col(77) %7s "Elasticidad" "}"
 
 
-		tabstat recaudacion recaudacionPIB if anio == `anio', by(`by') stat(sum) f(%20.0fc) save
+		tabstat recaudacion recaudacionPIB if anio == `anio' & divLIF != 10, by(`by') stat(sum) f(%20.0fc) save
 		tempname mattot
 		matrix `mattot' = r(StatTotal)
 
@@ -342,7 +348,7 @@ quietly {
 		egen `TOTPIB' = rsum(recaudacionPIB*)
 		forvalues k=1(1)`=_N' {
 			if `TOTPIB'[`k'] != . & anio[`k'] >= 2003 {
-				local text `"`text' `=`TOTPIB'[`k']' `=anio[`k']' "`=string(`TOTPIB'[`k'],"%5.1fc")'""'
+				local text `"`text' `=`TOTPIB'[`k']' `=anio[`k']' "{bf:`=string(`TOTPIB'[`k'],"%5.1fc")'}""'
 			}
 		}
 		twoway (area `graphvars' anio if anio >= `aniofirst') ///
@@ -352,12 +358,12 @@ quietly {
 			text(`text', yaxis(2)) ///
 			ytitle(billones `currency') ytitle(% PIB, axis(2)) xtitle("") ///
 			ylabel(, format(%15.0fc) labsize(small)) ///
-			ylabel(, axis(2) noticks format(%5.1fc) labsize(small)) ///
+			ylabel(, axis(2) noticks format(%5.0fc) labsize(small)) ///
 			yscale(range(0) axis(2) noline) ///
-			xlabel(`aniofirst'(1)`aniolast') ///
-			legend(on position(6) rows(`rows') cols(`cols') `legend' label(`=`totlev'+1' "= Total % PIB")) ///
+			xlabel(`aniofirst'(1)`aniolast', noticks) ///
+			legend(on position(6) rows(`rows') cols(`cols') `legend' label(`=`totlev'+1' "= Total (% PIB)")) ///
 			name(ingresos, replace) ///
-			caption("Fuente: Elaborado por el CIEP.")
+			caption("Elaborado por el CIEP, con informaci{c o'}n de la SHCP, EOFP (`aniolast'm`meslast').")
 		restore
 	}
 

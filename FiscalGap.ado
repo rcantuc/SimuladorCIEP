@@ -41,7 +41,7 @@ quietly {
 	******************************
 	*** 3 Fiscal Gap: Ingresos ***
 	******************************
-	if "$pais" == "" {
+	/*if "$pais" == "" {
 		capture confirm file "`c(sysdir_personal)'/SIM/XNA0120_m.dta"
 		if _rc != 0 | "`update'" == "update" {
 			DatosAbiertos XNA0120_m, pibvp(3.714)
@@ -60,15 +60,15 @@ quietly {
 		replace divGA = 4
 		tempfile pm_capital
 		save `pm_capital'
-	}
+	}*/
 	
 	LIF, anio(`anio') `nographs' by(divGA) //eofp
 	collapse (sum) recaudacion if divLIF != 10, by(anio divGA) fast
 	if "$pais" == "" {
-		merge 1:1 (anio divGA) using `pm_ingreso', nogen keepus(monto)
-		merge 1:1 (anio divGA) using `pm_capital', nogen keepus(monto) update
-		replace recaudacion = recaudacion - monto if divGA == 3 & monto != .
-		replace recaudacion = recaudacion + monto if divGA == 4 & monto != .
+		*merge 1:1 (anio divGA) using `pm_ingreso', nogen keepus(monto)
+		*merge 1:1 (anio divGA) using `pm_capital', nogen keepus(monto) update
+		*replace recaudacion = recaudacion - monto if divGA == 3 & monto != .
+		*replace recaudacion = recaudacion + monto if divGA == 4 & monto != .
 	}
 	g modulo = ""
 
@@ -180,7 +180,7 @@ quietly {
 			title({bf:Proyecci{c o'}n} de los ingresos p{c u'}blicos) ///
 			subtitle($pais) ///
 			xtitle("") ytitle(mil millones `currency' `anio') ///
-			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
+			caption("{it:Fuente: Elaborado por el CIEP con el Simulador Fiscal CIEP v5.}") ///
 			name(Proy_ingresos, replace)
 		if "$export" != "" {
 			graph export `"$export/Proy_ingresos.png"', replace name(Proy_ingresos)
@@ -398,6 +398,8 @@ quietly {
 	* PIB *
 	merge m:1 (anio) using `PIB', nogen keep(matched) update replace
 	collapse (sum) gasto estimacion (max) pibYR deflator lambda, by(anio modulo) fast
+	
+	*replace estimacion = pibYR*.04 if modulo == "pensiones"
 
 
 	*********************
@@ -563,7 +565,7 @@ quietly {
 			yscale(range(0)) ///
 			title({bf:Proyecci{c o'}n} del gasto p{c u'}blico) ///
 			subtitle($pais) ///
-			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
+			caption("{it:Fuente: Elaborado por el CIEP con el Simulador Fiscal CIEP v5.}") ///
 			xtitle("") ytitle(mil millones `currency' `anio') ///
 			name(Proy_gastos, replace)
 		if "$export" != "" {
@@ -714,7 +716,7 @@ quietly {
 			(area shrfspPIB anio if anio > `anio' & anio <= `end'), ///
 			title({bf:Proyecci{c o'}n} del SHRFSP) ///
 			subtitle($pais) ///
-			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}") ///
+			caption("{it:Fuente: Elaborado por el CIEP con el Simulador Fiscal CIEP v5.}") ///
 			xtitle("") ytitle(% PIB) ///
 			xlabel(2005(5)`end') ///
 			yscale(range(0)) ///

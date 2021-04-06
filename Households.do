@@ -165,9 +165,9 @@ local InfraT = r(StatTotal)
 *** A.3 Macros: LIF ***
 ***********************
 noisily LIF, anio(`enighanio') nographs min(0)
-local ISRSalarios = r(ISR)*760552.9/1664949.1									// Informe Trimestral SHCP (2018-IV).
-local ISRFisicas = r(ISR)*43683.5/1664949.1										// Informe Trimestral SHCP (2018-IV).
-local ISRMorales = r(ISR)*(809833.5+50879.3)/1664949.1							// Informe Trimestral SHCP (2018-IV).
+local ISRSalarios = r(ISR_Asa_)
+local ISRFisicas = r(ISR_PF)
+local ISRMorales = r(ISR_PM)
 local CuotasIMSS = r(Cuotas_IMSS)
 local IMSSpropio = r(IMSS)-`CuotasIMSS'
 local ISSSTEpropio = r(ISSSTE)
@@ -725,11 +725,11 @@ cargo en los terminos del articulo 152 de esta Ley. (...) */
 * u. Honorarios *
 noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y ///
 	"Se exentan el " %5.2fc (1-290533/475667)*100 ///
-	"% de los servicios profesionales por remuneraciones (Censo Econ{c o'}mico 2014).}"
+	"% de los servicios profesionales (honorarios) por remuneraciones (Censo Econ{c o'}mico 2014).}"
 g double exen_honor = min((1-290533/475667)*ing_honor,ing_honor)
 
 * v. Actividades empresariales *
-g double exen_empre = min((1-290533/475667)*ing_empre,ing_empre)
+g double exen_empre = min(0,ing_empre)
 
 
 *************************************************************************************************************************
@@ -946,24 +946,28 @@ g double exen_otrocap = ing_otrocap
 *** 5. SUMAR LOS TOTALES DE LAS VARIABLES ***
 *********************************************
 
-* Titulo II, Capitulo IV *
+* Titulo II, Capitulo I *
+egen double ing_t2_cap1 = rsum(ing_empre)	// 1
+egen double exen_t2_cap1 = rsum(exen_empre)
+
+* Titulo II, Capitulo VII *
 egen double ing_t2_cap8 = rsum(ing_agri)	// 1
 egen double exen_t2_cap8 = rsum(exen_agri)
 
 * Titulo IV, Capitulo I *
-egen double ing_t4_cap1 = rsum(ing_ss ing_desta ing_prop ing_horas ing_grati ing_prima /// 15
+egen double ing_t4_cap1 = rsum(ing_ss ing_desta ing_prop ing_horas ing_grati ing_prima /// 16
 	ing_util ing_agui ing_otros ing_trabajos ing_indemn ing_indemn2 ing_indemn3 ing_jubila ///
-	ing_segvida)
+	ing_segvida ing_trabmenor)
 egen double exen_t4_cap1 = rsum(exen_ss exen_desta exen_prop exen_horas exen_grati exen_prima ///
 	exen_util exen_agui exen_otros exen_trabajos exen_indemn exen_indemn2 exen_indemn3 exen_jubila ///
-	exen_segvida)
+	exen_segvida exen_trabmenor)
 egen double ing_t4_cap1_nosubsidio = rsum(ing_desta ing_prop ing_horas ing_grati ing_prima ///
 	ing_util ing_agui ing_otros ing_trabajos ing_indemn ing_indemn2 ing_indemn3 ing_jubila ///
 	ing_segvida)
 
 * Titulo IV, Capitulo II *
-egen double ing_t4_cap2 = rsum(ing_honor ing_empre) // 2
-egen double exen_t4_cap2 = rsum(exen_honor exen_empre)
+egen double ing_t4_cap2 = rsum(ing_honor) // 1
+egen double exen_t4_cap2 = rsum(exen_honor)
 
 * Titulo IV, Capitulo III *
 egen double ing_t4_cap3 = rsum(ing_rent) // 1
@@ -990,9 +994,9 @@ egen double ing_t4_cap8 = rsum(ing_acc ing_ganan) // 2
 egen double exen_t4_cap8 = rsum(exen_acc ing_ganan)
 
 * Titulo IV, Capitulo IX *
-egen double ing_t4_cap9 = rsum(ing_autor ing_remesas ing_trabmenor ing_prest ing_otrocap /// 8
+egen double ing_t4_cap9 = rsum(ing_autor /*ing_remesas*/ ing_prest ing_otrocap /// 6
 	ing_ahorro ing_heren ing_benef)
-egen double exen_t4_cap9 = rsum(exen_autor exen_remesas exen_trabmenor exen_prest exen_otrocap ///
+egen double exen_t4_cap9 = rsum(exen_autor /*exen_remesas*/ exen_prest exen_otrocap ///
 	exen_ahorro exen_heren exen_benef)
 
 
@@ -1192,9 +1196,9 @@ tabstat ing_t4_cap2 exen_t4_cap2 [aw=factor], stat(sum) f(%20.0fc) by(formal_dum
 replace ing_total = 0 if ing_total == .
 replace ing_total = ing_total + ing_estim_alqu
 
-egen double ing_capital = rsum(ing_t4_cap3 ing_t4_cap4 ing_t4_cap5 ing_t4_cap6 ing_t4_cap7 ///
+egen double ing_capital = rsum(ing_t2_cap1 ing_t4_cap3 ing_t4_cap4 ing_t4_cap5 ing_t4_cap6 ing_t4_cap7 ///
 	ing_t4_cap8 ing_t4_cap9)
-egen double exen_capital = rsum(exen_t4_cap3 exen_t4_cap4 exen_t4_cap5 exen_t4_cap6 exen_t4_cap7 ///
+egen double exen_capital = rsum(exen_t2_cap1 exen_t4_cap3 exen_t4_cap4 exen_t4_cap5 exen_t4_cap6 exen_t4_cap7 ///
 	exen_t4_cap8 exen_t4_cap9)
 
 * Gini's de ingresos netos *
@@ -2243,7 +2247,8 @@ noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y ///
 
 **************************
 ** ISR PERSONAS MORALES **
-g double ISR__PM = ing_capital*(1-.31353561)*.3 //if formal != 0
+*g double ISR__PM = ing_capital*(1-.31353561)*.3 //if formal != 0
+g double ISR__PM = ing_t2_cap1*.3 //if formal != 0
 replace ISR__PM = 0 if ISR__PM == .
 label var ISR__PM "ISR (personas morales)"
 
@@ -2260,7 +2265,7 @@ matrix `FORPM' = r(StatTotal)
 
 noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y ///
 	"Se hace el cut-off en " %15.0fc `ISRMorales' ///
-	". La informalidad estimada para las personas f{c i'}sicas es de " %6.2fc (1-`FORPM'[1,1])*100 in g "%.}"
+	". La informalidad estimada para las personas morales es de " %6.2fc (1-`FORPM'[1,1])*100 in g "%.}"
 
 
 ***************
@@ -2341,7 +2346,7 @@ noisily di ///
 scalar ISRFSCNPIB = (`ISRSalarios'+`ISRFisicas'+`ISRMorales')/`PIBSCN'*100
 scalar ISRFHHSPIB = (`RESTAXS'[1,1]+`RESTAXF'[1,1]+`RESTAX'[1,1])/`PIBSCN'*100
 scalar giniISRF = string(`gini_ISR',"%5.3f")
-
+exit
 
 * Impuestos *
 Distribucion ImpNetProduccionL_subor, relativo(ing_subor) ///
