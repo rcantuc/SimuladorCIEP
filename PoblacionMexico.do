@@ -1,26 +1,33 @@
-************************************************
-**** Base de datos: Población y Defunciones ****
-************************************************
+****************************************************************************************
+****                                                                                ****
+****   Bases de datos de Mexico: Población, defunciones y migración internacional   ****
+****                                                                                ****
+****************************************************************************************
 
 
 ********************
 *** A. Poblacion ***
 ********************
 
-**********************
-** 1. Base de datos **
-*import delimited "http://www.conapo.gob.mx/work/models/CONAPO/Datos_Abiertos/Proyecciones2018/pob_ini_proyecciones.csv", clear
+/** 1. Base de datos (online) **
+import delimited "http://www.conapo.gob.mx/work/models/CONAPO/Datos_Abiertos/Proyecciones2018/pob_mit_proyecciones.csv", clear
+
+
+** 1.Bis Base de datos (TemplateCIEP) **/
+if `c(version)' > 13.1 {
+	import delimited "`c(sysdir_site)'../basesCIEP/CONAPO/pob_mit_proyecciones.csv", clear encoding("windows-1252")
+}
+else {
+	import delimited "`c(sysdir_site)'../basesCIEP/CONAPO/pob_mit_proyecciones.csv", clear
+}
+
+
+/** 1.Tris Base de datos (CIEP). Responsable: Ale Macias **
 use "`c(sysdir_site)'../basesCIEP/CONAPO/censo2020.dta", clear
 tostring sexo, replace
 
-if `c(version)' > 13.1 {
-	*import delimited "`c(sysdir_site)'../basesCIEP/CONAPO/pob_mit_proyecciones.csv", clear encoding("windows-1252")
-}
-else {
-	*import delimited "`c(sysdir_site)'../basesCIEP/CONAPO/pob_mit_proyecciones.csv", clear
-}
 
-* 2. Limpia *
+** 2. Limpia **/
 capture rename año anio
 rename sexo sexo0
 encode sexo0, generate(sexo)
@@ -29,19 +36,19 @@ drop sexo0
 capture drop renglon
 
 
-* 3. Labels *
+** 3. Labels **
 format poblacion %10.0fc
 label var poblacion "Poblaci{c o'}n"
 label var entidad "Entidad federativa"
 label var anio "A{c n~}o"
 
 
-* 4. Orden *
+** 4. Orden **
 replace entidad = "Nacional" if substr(entidad,1,3) == "Rep"
 keep if entidad == "Nacional"
 
 
-* 5. Guardar *
+** 5. Guardar **
 tempfile poblacion
 save `poblacion'
 
@@ -52,12 +59,14 @@ save `poblacion'
 *** B. Defunciones ***
 **********************
 
-********************
-/* 1. Base de datos *
+/** 1. Base de datos (online) **
 capture import delimited "http://www.conapo.gob.mx/work/models/CONAPO/Datos_Abiertos/Proyecciones2018/def_edad_proyecciones_n.csv", clear encoding("utf-8")
 if _rc != 0 {
 	import delimited "http://www.conapo.gob.mx/work/models/CONAPO/Datos_Abiertos/Proyecciones2018/def_edad_proyecciones_n.csv", clear
-}*/
+}
+
+
+** 1.Bis Base de datos (TemplateCIEP) **/
 if `c(version)' > 13.1 {
 	import delimited "`c(sysdir_site)'../basesCIEP/CONAPO/def_edad_proyecciones_n.csv", clear encoding("utf-8")
 }
@@ -65,7 +74,8 @@ else {
 	import delimited "`c(sysdir_site)'../basesCIEP/CONAPO/def_edad_proyecciones_n.csv", clear
 }
 
-* 2. Limpia *
+
+** 2. Limpia **
 capture rename año anio
 if _rc != 0 {
 	rename ao anio
@@ -77,18 +87,18 @@ drop *renglon sexo0
 format defunciones %10.0fc
 
 
-* 3. Labels *
+** 3. Labels **
 label var defunciones "Defunciones"
 label var entidad "Entidad federativa"
 label var anio "A{c n~}o"
 
 
-* 4. Orden *
+** 4. Orden **
 replace entidad = "Nacional" if substr(entidad,1,3) == "Rep"
 keep if entidad == "Nacional"
 
 
-* 5. Guardar *
+** 5. Guardar **
 tempfile defunciones
 save `defunciones'
 
@@ -96,16 +106,18 @@ save `defunciones'
 
 
 **********************************
-*** B. Migracion Internacional ***
+*** C. Migracion Internacional ***
 **********************************
 
-********************
-* 1. Base de datos *
-*import delimited "http://www.conapo.gob.mx/work/models/CONAPO/Datos_Abiertos/Proyecciones2018/mig_inter_quin_proyecciones.csv", clear
+/** 1. Base de datos (online) **
+import delimited "http://www.conapo.gob.mx/work/models/CONAPO/Datos_Abiertos/Proyecciones2018/mig_inter_quin_proyecciones.csv", clear
+
+
+** 1.Bis Base de datos (TemplateCIEP) **/
 import delimited "`c(sysdir_site)'../basesCIEP/CONAPO/mig_inter_quin_proyecciones.csv", clear
 
 
-* 2. Limpia *
+** 2. Limpia **
 capture rename año anio
 if _rc != 0 {
 	rename ao anio
@@ -139,19 +151,19 @@ drop edad2 n
 rename edad1 edad
 
 
-* 3. Labels *
+** 3. Labels **
 label var emigrantes "Emigrantes internacionales"
 label var inmigrantes "Inmigrantes internacionales"
 label var entidad "Entidad federativa"
 label var anio "A{c n~}o"
 
 
-* 4. Orden *
+** 4. Orden **
 replace entidad = "Nacional" if substr(entidad,1,3) == "Rep"
 keep if entidad == "Nacional"
 
 
-* 5. Guardar *
+** 5. Guardar **
 tempfile migracion
 save `migracion'
 
@@ -183,21 +195,22 @@ g tasafecundidad = nacimientos/mujeresfert*1000
 label var tasafecundidad "Nacimientos por cada mil mujeres"
 noisily tabstat tasafecundidad, stat(mean) by(anio) f(%10.1fc) save
 
+
+** Guardar **
 drop mujeresf nacimien nacimientos
 compress
-capture mkdir "`c(sysdir_personal)'/SIM/"
+capture mkdir "$sysdir_principal/SIM/"
 if `c(version)' > 13.1 {
-	saveold "`c(sysdir_personal)'/SIM/Poblacion.dta", replace version(13)
+	saveold "$sysdir_principal/SIM/Poblacion.dta", replace version(13)
 }
 else {
-	save "`c(sysdir_personal)'/SIM/Poblacion.dta", replace
+	save "$sysdir_principal/SIM/Poblacion.dta", replace
 }
-
 
 collapse (sum) poblacion, by(anio entidad)
 if `c(version)' > 13.1 {
-	saveold `"`c(sysdir_personal)'/SIM/Poblaciontot.dta"', replace version(13)
+	saveold `"$sysdir_principal/SIM/Poblaciontot.dta"', replace version(13)
 }
 else {
-	save `"`c(sysdir_personal)'/SIM/Poblaciontot.dta"', replace
+	save `"$sysdir_principal/SIM/Poblaciontot.dta"', replace
 }

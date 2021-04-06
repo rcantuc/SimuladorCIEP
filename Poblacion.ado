@@ -22,12 +22,12 @@ quietly {
 	* Si hay un error o la opción "update" es llamada, limpia la base de datos y la usa *
 	if _rc != 0 | "`update'" == "update" {
 		if "$pais" == "" {
-			run `"`c(sysdir_personal)'/PoblacionBase.do"'
+			run `"$sysdir_principal/PoblacionMexico.do"'
 		}
 		else {
-			run `"`c(sysdir_personal)'/PoblacionBaseMundial.do"'
+			run `"$sysdir_principal/PoblacionMundial.do"'
 		}
-		use `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
+		use `"$sysdir_principal/SIM/$pais/Poblacion.dta"', clear
 	}
 
 	* Si no hay año final, utiliza el último elemento del vector "anio" *
@@ -40,18 +40,18 @@ quietly {
 	************************
 	*** 0. Base de datos ***
 	************************
-	noisily di _newline(2) in g _dup(20) "." "{bf:  Poblaci{c o'}n $pais} " in g _dup(20) "."
+	noisily di _newline(2) in g _dup(20) "·" "{bf:  Poblaci{c o'}n $pais} " in g _dup(20) "·" _newline
 
 	tabstat poblacion if anio == `aniovp', f(%20.0fc) stat(sum) save
 	tempname POBTOT
 	matrix `POBTOT' = r(StatTotal)
-	noisily di in g "  Poblaci{c o'}n " in y `aniovp' in g ": " in y %15.0fc `POBTOT'[1,1]
+	noisily di in g " POBLACI{c O'}N " in y `aniovp' in g ": " in y %15.0fc `POBTOT'[1,1] in g " personas"
 	scalar poblaciontotal = string(`POBTOT'[1,1],"%20.0fc")
 
 	tabstat poblacion if anio == `aniofinal', f(%20.0fc) stat(sum) save
 	tempname POBFIN
 	matrix `POBFIN' = r(StatTotal)
-	noisily di in g "  Poblaci{c o'}n " in y `aniofinal' in g ": " in y %15.0fc `POBFIN'[1,1]
+	noisily di in g " POBLACI{c O'}N " in y `aniofinal' in g ": " in y %15.0fc `POBFIN'[1,1] in g " personas"
 	scalar poblacionfinal = string(`POBFIN'[1,1],"%20.0fc")
 
 
@@ -303,7 +303,7 @@ quietly {
 			& edad+`aniofinal'-`anioinicial' <= 109, horizontal lwidth(none)) ///
 			(bar `pob2' edad if sexo == 2 & anio == `anioinicial' ///
 			& edad+`aniofinal'-`anioinicial' <= 109, horizontal lwidth(none)) ///
-			/*(bar `pob2' edad if sexo == 1 & anio == `aniofinal' ///
+			(bar `pob2' edad if sexo == 1 & anio == `aniofinal' ///
 			& edad <= `aniofinal'-`anioinicial', horizontal barwidth(.15) ///
 			lwidth(none) /*color("83 144 0")*/) ///
 			(bar `pob2' edad if sexo == 2 & anio == `aniofinal' ///
@@ -314,47 +314,48 @@ quietly {
 			lwidth(none) color("255 107 24")) ///
 			(bar `pob2' edad if sexo == 2 & anio == `aniofinal' ///
 			& edad > `aniofinal'-`anioinicial', horizontal barwidth(.66) ///
-			lwidth(none) color("255 189 0"))*/ ///
-			(bar `pob2' edad if sexo == 1 & anio == `anioinicial' ///
-			& edad+`aniofinal'-`anioinicial' > 109, horizontal /*barwidth(.5)*/ ///
-			lwidth(none) color("255 129 0")) ///
-			(bar `pob2' edad if sexo == 2 & anio == `anioinicial' ///
-			& edad+`aniofinal'-`anioinicial' > 109, horizontal /*barwidth(.5)*/ ///
 			lwidth(none) color("255 189 0")) ///
+			(bar `pob2' edad if sexo == 1 & anio == `anioinicial' ///
+			& edad+`aniofinal'-`anioinicial' > 109, horizontal barwidth(.5) ///
+			lwidth(none) /*color("255 129 0")*/) ///
+			(bar `pob2' edad if sexo == 2 & anio == `anioinicial' ///
+			& edad+`aniofinal'-`anioinicial' > 109, horizontal barwidth(.5) ///
+			lwidth(none) /*color("255 189 0")*/) ///
 			(sc edad2 zero if anio == `anioinicial', msymbol(i) mlabel(edad2) ///
 			mlabsize(vsmall) mlabcolor("114 113 118")), ///
 			legend( ///
 			label(1 "Hombres" /*vivos en `anioinicial' y `aniofinal'*/) ///
 			label(2 "Mujeres" /*vivas en `anioinicial' y `aniofinal'*/) ///
-			/*label(3 "H. nacidos despu{c e'}s de `anioinicial'") ///
-			label(4 "M. nacidas despu{c e'}s de `anioinicial'") ///
-			label(5 "H. `aniofinal'") label(6 "M. `aniofinal'") ///
+			label(3 "H. nacidos post `anioinicial'") ///
+			label(4 "M. nacidas post `anioinicial'") ///
+			label(5 "H. `aniofinal'") ///
+			label(6 "M. `aniofinal'") ///
 			label(7 "H. fallecidos para `aniofinal'") ///
-			label(8 "M. fallecidas para `aniofinal'")*/) ///
+			label(8 "M. fallecidas para `aniofinal'")) ///
 			/*legend(label(1 "Men alive") label(2 "Women alive") ///
 			label(3 "Men born since `anioinicial'") ///
 			label(4 "Women born since `anioinicial'")) ///
 			legend(label(5 "H. `aniofinal'") label(6 "M. `aniofinal'") ///
 			label(7 "Men dead by `aniofinal'") ///
 			label(8 "Women dead by `aniofinal'"))*/ ///
-			legend(order(1 2) holes(1 2) rows(1) on) ///
+			legend(order(1 2 3 4 7 8) holes(1 2 5 6) rows(2) on) ///
 			yscale(noline) ylabel(none) xscale(noline) ///
 			text(105 `=-`MaxH'[1,1]*.618' "{bf:Edad mediana `anioinicial'}") ///
 			text(100 `=-`MaxH'[1,1]*.618' "Hombres: `=`H`anioinicial''[1,1]'") ///
 			text(95 `=-`MaxH'[1,1]*.618' "Mujeres: `=`M`anioinicial''[1,1]'") ///
-			///text(105 `=`MaxH'[1,1]*.618' "{bf:Edad mediana `aniofinal'}") ///
-			///text(100 `=`MaxH'[1,1]*.618' "Hombres: `=`H`aniofinal''[1,1]'") ///
-			///text(95 `=`MaxH'[1,1]*.618' "Mujeres: `=`M`aniofinal''[1,1]'") ///
-			///text(90 `=-`MaxH'[1,1]*.618' "{bf:Poblaci{c o'}n `anioinicial'}") ///
-			///text(85 `=-`MaxH'[1,1]*.618' `"`=string(`P`anioinicial''[1,1],"%20.0fc")'"') ///
-			text(105 `=`MaxH'[1,1]*.618' "{bf:Poblaci{c o'}n `anioinicial'}") ///
-			text(100 `=`MaxH'[1,1]*.618' `"`=string(`P`anioinicial''[1,1],"%20.0fc")'"') ///
-			///text(80 `=-`MaxH'[1,1]*.618' "{bf: Personas `anioinicial' vivas en `aniofinal'} ") ///
-			///text(75 `=-`MaxH'[1,1]*.618' `"`=string(`Pviva'[1,1],"%20.0fc")' (`=string(`Pviva'[1,1]/`P`anioinicial''[1,1]*100,"%7.1fc")'%)"') ///
-			///text(90 `=`MaxH'[1,1]*.618' "{bf:Poblaci{c o'}n `aniofinal'}") ///
-			///text(85 `=`MaxH'[1,1]*.618' `"`=string(`P`aniofinal''[1,1],"%20.0fc")'"') ///
-			///text(80 `=`MaxH'[1,1]*.618' "{bf:Personas post `anioinicial' vivas en `aniofinal'} ") ///
-			///text(75 `=`MaxH'[1,1]*.618' `"`=string(`Pnacida'[1,1],"%20.0fc")' (`=string(`Pnacida'[1,1]/`P`aniofinal''[1,1]*100,"%7.1fc")'%)"') ///
+			text(105 `=`MaxH'[1,1]*.618' "{bf:Edad mediana `aniofinal'}") ///
+			text(100 `=`MaxH'[1,1]*.618' "Hombres: `=`H`aniofinal''[1,1]'") ///
+			text(95 `=`MaxH'[1,1]*.618' "Mujeres: `=`M`aniofinal''[1,1]'") ///
+			text(90 `=-`MaxH'[1,1]*.618' "{bf:Poblaci{c o'}n `anioinicial'}") ///
+			text(85 `=-`MaxH'[1,1]*.618' `"`=string(`P`anioinicial''[1,1],"%20.0fc")'"') ///
+			///text(105 `=`MaxH'[1,1]*.618' "{bf:Poblaci{c o'}n `anioinicial'}") ///
+			///text(100 `=`MaxH'[1,1]*.618' `"`=string(`P`anioinicial''[1,1],"%20.0fc")'"') ///
+			text(80 `=-`MaxH'[1,1]*.618' "{bf: Personas de `anioinicial' vivas en `aniofinal'} ") ///
+			text(75 `=-`MaxH'[1,1]*.618' `"`=string(`Pviva'[1,1],"%20.0fc")' (`=string(`Pviva'[1,1]/`P`anioinicial''[1,1]*100,"%7.1fc")'%)"') ///
+			text(90 `=`MaxH'[1,1]*.618' "{bf:Poblaci{c o'}n `aniofinal'}") ///
+			text(85 `=`MaxH'[1,1]*.618' `"`=string(`P`aniofinal''[1,1],"%20.0fc")'"') ///
+			text(80 `=`MaxH'[1,1]*.618' "{bf:Personas post `anioinicial' vivas en `aniofinal'} ") ///
+			text(75 `=`MaxH'[1,1]*.618' `"`=string(`Pnacida'[1,1],"%20.0fc")' (`=string(`Pnacida'[1,1]/`P`aniofinal''[1,1]*100,"%7.1fc")'%)"') ///
 			/*text(105 `=-`MaxH'[1,1]*.618' "{bf:Median age `anioinicial'}") ///
 			text(100 `=-`MaxH'[1,1]*.618' "Men: `=`H`anioinicial''[1,1]'") ///
 			text(95 `=-`MaxH'[1,1]*.618' "Women: `=`M`anioinicial''[1,1]'") ///
@@ -374,9 +375,10 @@ quietly {
 			`=-`MaxH'[1,1]/2' `"`=string(`MaxH'[1,1]/2,"%15.0fc")'"' 0 ///
 			`=`MaxM'[1,1]/2' `"`=string(`MaxM'[1,1]/2,"%15.0fc")'"' ///
 			`=`MaxM'[1,1]' `"`=string(`MaxM'[1,1],"%15.0fc")'"', angle(horizontal)) ///
-			caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5, utilizando informaci{c o'}n de CONAPO.") ///
-			///xtitle("Personas") ///
-			title("Pir{c a'}mide {bf:demogr{c a'}fica}") subtitle(${pais})
+			caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5, utilizando informaci{c o'}n CONAPO (2018).") ///
+			///caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5, utilizando informaci{c o'}n del Censo de Poblaci{c o'}n y Vivienda 2020.") ///
+			///subtitle("`anioinicial' vs. `aniofinal'") ///
+			///title("Pir{c a'}mide {bf:demogr{c a'}fica}") subtitle(${pais})
 
 		if "$export" != "" {
 			graph export "$export/Piramide_poblacion_`anioinicial'_`aniofinal'.png", ///
@@ -428,22 +430,22 @@ quietly {
 			* Busca la población máxima y guarda el año y el número *
 			if pob18_2[`k'] == `MAX'[1,1] {
 				local x1 = anio[`k']
-				local y1 = pob18[`k']
+				local y1 = (pob18[`k'])/1000000
 				local p1 = `k'
 			}
 			if pob1934_2[`k'] == `MAX'[1,2] {
 				local x2 = anio[`k']
-				local y2 = pob1934[`k'] + pob18[`k']
+				local y2 = (pob1934[`k'] + pob18[`k'])/1000000
 				local p2 = `k'
 			}
 			if pob3560_2[`k'] == `MAX'[1,3] {
 				local x3 = anio[`k']
-				local y3 = pob3560[`k'] + pob1934[`k'] + pob18[`k']
+				local y3 = (pob3560[`k'] + pob1934[`k'] + pob18[`k'])/1000000
 				local p3 = `k'
 			}
 			if pob61_2[`k'] == `MAX'[1,4] {
 				local x4 = anio[`k']
-				local y4 = pob61[`k'] + pob3560[`k'] + pob1934[`k'] + pob18[`k']
+				local y4 = (pob61[`k'] + pob3560[`k'] + pob1934[`k'] + pob18[`k'])/1000000
 				local p4 = `k'
 			}
 			
@@ -451,31 +453,31 @@ quietly {
 			* Busca la población mínima y guarda el año y el número *
 			if pob18_2[`k'] == `MAX'[2,1] {
 				local m1 = anio[`k']
-				local z1 = pob18[`k']
+				local z1 = (pob18[`k'])/1000000
 				local q1 = `k'
 			}
 			if pob1934_2[`k'] == `MAX'[2,2] {
 				local m2 = anio[`k']
-				local z2 = pob1934[`k'] + pob18[`k']
+				local z2 = (pob1934[`k'] + pob18[`k'])/1000000
 				local q2 = `k'
 			}
 			if pob3560_2[`k'] == `MAX'[2,3] {
 				local m3 = anio[`k']
-				local z3 = pob3560[`k'] + pob1934[`k'] + pob18[`k']
+				local z3 = (pob3560[`k'] + pob1934[`k'] + pob18[`k'])/1000000
 				local q3 = `k'
 			}		
 			if pob61_2[`k'] == `MAX'[2,4] {
 				local m4 = anio[`k']
-				local z4 = pob61[`k'] + pob3560[`k'] + pob1934[`k'] + pob18[`k']
+				local z4 = (pob61[`k'] + pob3560[`k'] + pob1934[`k'] + pob18[`k'])/1000000
 				local q4 = `k'
 			}
 		}
 
 		tempvar pob18 pob1934 pob3560 pob61
-		g `pob18' = pob18
-		g `pob1934' = pob1934 + pob18
-		g `pob3560' = pob3560 + pob1934 + pob18
-		g `pob61' = pob61 + pob3560 + pob1934 + pob18
+		g `pob18' = pob18/1000000
+		g `pob1934' = (pob1934 + pob18)/1000000
+		g `pob3560' = (pob3560 + pob1934 + pob18)/1000000
+		g `pob61' = (pob61 + pob3560 + pob1934 + pob18)/1000000
 
 		twoway (area `pob61' `pob3560' `pob1934' `pob18' anio if anio <= `anioinicial') ///
 			(area `pob61' anio if anio > `anioinicial', color("255 129 0")) ///
@@ -501,11 +503,11 @@ quietly {
 			text(`z4' `m4' `"{bf:61+:} `=string(pob61[`q4'],"%12.0fc")'"', place(n)) ///
 			text(`=`y1'*.175' `=`anioinicial'-1' "{bf:`anioinicial'}", place(w)) ///
 			xtitle("") ///
-			ytitle("Poblaci{c o'}n") ///
+			ytitle("millones de personas") ///
 			xline(`=`anioinicial'+.5') ///
 			caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5, utilizando informaci{c o'}n de CONAPO.") ///
 			name(Estructura_`anioinicial'_`aniofinal', replace) ///
-			title("{bf:Transici{c o'}n} demogr{c a'}fica") subtitle(${pais}) ///
+			///title("{bf:Transici{c o'}n} demogr{c a'}fica") subtitle(${pais}) ///
 			ylabel(, format(%20.0fc)) xlabel(1950(10)`aniofinal')
 			
 			if "$export" != "" {
@@ -517,6 +519,6 @@ quietly {
 	** END **
 	timer off 14
 	timer list 14
-	noisily di _newline in g _dup(20) "." "  " in y round(`=r(t14)/r(nt14)',.1) in g " segs  " _dup(20) "." 
+	noisily di _newline in g _dup(20) "·" "   " in y round(`=r(t14)/r(nt14)',.1) in g " segs  " _dup(20) "·" 
 }
 end

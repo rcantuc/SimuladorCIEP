@@ -46,6 +46,10 @@ quietly {
 	** 2.3 Base PEF **
 	use `"`c(sysdir_personal)'/SIM/$pais/SHRFSP.dta"', clear
 	noisily di _newline(5) in g "{bf:SISTEMA FISCAL: " in y "DEUDA `anio'" "}"
+	
+	local aniofirst = anio[1]
+	local aniolast = anio[_N]
+	local meslast = mes[_N]
 
 
 
@@ -58,16 +62,8 @@ quietly {
 		tempvar `k'
 		g ``k'' = `k'/pibY*100
 	}
-	
-	/*replace `shrfspInterno' = 34.7 if anio == 2020
-	replace `shrfspInterno' = 35.0 if anio == 2021
-	replace `shrfspInterno' = 35.1 if anio == 2022
-	replace `shrfspInterno' = 35.2 if anio == 2023
-	replace `shrfspInterno' = 35.4 if anio == 2024
-	replace `shrfspInterno' = 35.4 if anio == 2025
-	replace `shrfspInterno' = 35.6 if anio == 2026
 
-	replace `shrfspExterno' = 20.0 if anio == 2020
+	/*replace `shrfspExterno' = 20.0 if anio == 2020
 	replace `shrfspExterno' = 18.7 if anio == 2021
 	replace `shrfspExterno' = 18.2 if anio == 2022
 	replace `shrfspExterno' = 17.8 if anio == 2023
@@ -75,6 +71,15 @@ quietly {
 	replace `shrfspExterno' = 17.0 if anio == 2025
 	replace `shrfspExterno' = 16.6 if anio == 2026*/
 
+	noisily di _newline in g _col(3) "A{c N~}O" _col(15) %10s "Interna" _col(25) %10s "Externa" _col(35) %10s "Total"
+	forvalues k=1(1)`=_N' {
+		if `shrfsp'[`k'] != . {
+			noisily di in y _col(3) anio[`k'] ///
+			%10.1fc _col(15) `shrfspInterno'[`k'] ///
+			%10.1fc _col(25) `shrfspExterno'[`k'] ///
+			%10.1fc _col(35) `shrfsp'[`k']
+		}
+	}
 
 
 
@@ -82,16 +87,31 @@ quietly {
 	*** 4 Graph ***
 	***************	
 	if "`nographs'" != "nographs" {
-		graph bar (sum) `shrfspInterno' `shrfspExterno' if `shrfspInterno' != ., ///
-			over(anio, label(labgap(vsmall))) ///
-			stack asyvars ///
-			title("{bf:Saldo hist{c o'}rico de RFSP}") ///
-			subtitle("$pais") ///
-			ytitle(% PIB) ylabel(, labsize(small)) ///
-			legend(on position(6) rows(1) label(1 "Interno") label(2 "Externo")) ///
+		tempvar interno externo
+		g `interno' = shrfspInterno/1000000000000
+		g `externo' = `interno' + shrfspExterno/1000000000000
+
+		forvalues k=1(1)`=_N' {
+			if `shrfsp'[`k'] != . & anio[`k'] >= 2003 {
+				local text `"`text' `=`shrfsp'[`k']' `=anio[`k']' "{bf:`=string(`shrfsp'[`k'],"%5.1fc")'}""'
+				local textI `"`textI' `=`interno'[`k']' `=anio[`k']' "`=string(shrfspInterno[`k']/1000000000000,"%5.1fc")'""'
+				local textE `"`textE' `=`externo'[`k']' `=anio[`k']' "`=string(shrfspExterno[`k']/1000000000000,"%5.1fc")'""'
+			}
+		}
+
+		twoway (area `externo' `interno' anio if `externo' != .) ///
+			(connected `shrfsp' anio if `externo' != ., yaxis(2) mlcolor("255 129 0") lcolor("255 129 0")), ///
+			title("{bf:Saldo hist{c o'}rico} de RFSP") ///
+			subtitle($pais) ///
+			ylabel(, format(%15.0fc) labsize(small)) ///
+			xlabel(`aniofirst'(1)`aniolast', noticks) ///
+			text(`text', yaxis(2)) /*text(`textI', size(vsmall)) text(`textE', size(vsmall))*/ ///
+			ylabel(, axis(2) noticks format(%5.0fc) labsize(small)) ///
+			yscale(range(0) axis(2) noline) ///
+			ytitle(billones MXN) ytitle(% PIB, axis(2)) xtitle("") ///
+			legend(on position(6) rows(1) label(1 "Interno") label(2 "Externo") label(3 "= Total (% PIB)")) ///
 			name(shrfsp, replace) ///
-			blabel(bar, format(%7.1fc)) ///
-			//caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}")
+			caption("Elaborado por el CIEP, con informaci{c o'}n de la SHCP, EOFP (`aniolast'm`meslast').")
 			
 		capture confirm existence $export
 		if _rc == 0 {

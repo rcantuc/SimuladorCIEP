@@ -33,26 +33,24 @@ quietly {
 		* Al ingreso *
 		capture confirm scalar ISRAS
 		if _rc == 0 {
-			local recISR_AS = scalar(ISRAS)/100*scalar(PIB)
+			local recISR_Asa = scalar(ISRAS)/100*scalar(PIB)
 		}
 		else {
-			local recISR_AS = `recISR'*(608735.5/1345513.4)
-			scalar ISRAS  = (`recISR_AS')/scalar(PIB)*100 // 						ISR (asalariados)
+			scalar ISRAS  = (`recISR_Asa')/scalar(PIB)*100 // ISR (asalariados)
 		}
 		capture confirm scalar ISRPF
 		if _rc == 0 {
 			local recISR_PF = scalar(ISRPF)/100*scalar(PIB)
 		}
 		else {
-			local recISR_PF = `recISR'*((30906.8+46909.2)/1345513.4)
-			scalar ISRPF  = (`recISR_PF')/scalar(PIB)*100 // 						ISR (personas f{c i'}sicas)
+			scalar ISRPF  = (`recISR_PF')/scalar(PIB)*100 // ISR (personas f{c i'}sicas)
 		}
 		capture confirm scalar CuotasT
 		if _rc == 0 {
 			local recCuotas_ = scalar(CuotasT)/100*scalar(PIB)
 		}
 		else {
-			scalar CuotasT = (`recCuotas_')/scalar(PIB)*100 // 						Cuotas (IMSS)
+			scalar CuotasT = (`recCuotas_')/scalar(PIB)*100 // Cuotas (IMSS)
 		}
 
 		* Al consumo *
@@ -61,7 +59,7 @@ quietly {
 			local recIVA = scalar(IVA)/100*scalar(PIB)
 		}
 		else {
-			scalar IVA     = `recIVA'/scalar(PIB)*100 //							IVA 
+			scalar IVA     = `recIVA'/scalar(PIB)*100 // IVA 
 		}
 
 		capture confirm scalar ISAN
@@ -69,7 +67,7 @@ quietly {
 			local recISAN = scalar(ISAN)/100*scalar(PIB)
 		}
 		else {
-			scalar ISAN    = `recISAN'/scalar(PIB)*100 //							ISAN
+			scalar ISAN    = `recISAN'/scalar(PIB)*100 // ISAN
 		}
 		capture confirm scalar IEPS
 		if _rc == 0 {
@@ -77,14 +75,14 @@ quietly {
 		}
 		else {
 			local recIEPS = `recIEPS'
-			scalar IEPS    = `recIEPS'/scalar(PIB)*100 // 							IEPS (no petrolero + petrolero)
+			scalar IEPS    = `recIEPS'/scalar(PIB)*100 // IEPS (no petrolero + petrolero)
 		}
 		capture confirm scalar Importa
 		if _rc == 0 {
 			local recImporta = scalar(Importa)/100*scalar(PIB)
 		}
 		else {
-			scalar Importa = `recImporta'/scalar(PIB)*100 //						Importaciones
+			scalar Importa = `recImporta'/scalar(PIB)*100 // Importaciones
 		}
 
 		* Al capital *
@@ -93,15 +91,14 @@ quietly {
 			local recISR_PM = scalar(ISRPM)/100*scalar(PIB)
 		}
 		else {
-			local recISR_PM = `recISR'*(658962.0/1345513.4)
-			scalar ISRPM  = (`recISR_PM')/scalar(PIB)*100 //						ISR (personas morales)
+			scalar ISRPM  = (`recISR_PM')/scalar(PIB)*100 // ISR (personas morales)
 		}
 		capture confirm scalar FMP
 		if _rc == 0 {
 			local recFMP__De = scalar(FMP)/100*scalar(PIB)
 		}
 		else {
-			scalar FMP     = (`recFMP__De')/scalar(PIB)*100 // 						Fondo Mexicano del Petr{c o'}leo
+			scalar FMP     = (`recFMP__De')/scalar(PIB)*100 // Fondo Mexicano del Petr{c o'}leo
 		}
 		capture confirm scalar OYE
 		if _rc == 0 {
@@ -109,7 +106,7 @@ quietly {
 		}
 		else {
 			local recOYE = `recCFE'+`recPemex'+`recIMSS'+`recISSSTE'
-			scalar OYE     = (`recOYE')/scalar(PIB)*100 //							Organismos y empresas (IMSS + ISSSTE + Pemex + CFE)
+			scalar OYE     = (`recOYE')/scalar(PIB)*100 // Organismos y empresas (IMSS + ISSSTE + Pemex + CFE)
 		}
 		capture confirm scalar OtrosC
 		if _rc == 0 {
@@ -117,7 +114,7 @@ quietly {
 		}
 		else {
 			local recOtrosC = `recOtros_t'+`recDerecho'+`recProduct'+`recAprovec'+`recContrib'
-			scalar OtrosC  = (`recOtrosC')/scalar(PIB)*100 //						Productos, derechos, aprovechamientos, contribuciones
+			scalar OtrosC  = (`recOtrosC')/scalar(PIB)*100 // Productos, derechos, aprovechamientos, contribuciones
 		}
 
 
@@ -136,8 +133,8 @@ quietly {
 		noisily di in g "  Compensaci{c o'}n de asalariados" ///
 			_col(44) %7.3fc in y RemSal/scalar(PIB)*100 ///
 			_col(55) in g "ISR (salarios)" ///
-			_col(88) %7.3fc in y (`recISR_AS')/scalar(PIB)*100 ///
-			_col(99) %7.3fc in y (`recISR_AS')/RemSal*100 " %"
+			_col(88) %7.3fc in y (`recISR_Asa')/scalar(PIB)*100 ///
+			_col(99) %7.3fc in y (`recISR_Asa')/RemSal*100 " %"
 		noisily di in g "  Ingreso mixto laboral" ///
 			_col(44) %7.3fc in y MixL/scalar(PIB)*100 ///
 			_col(55) in g "ISR (f{c i'}sicas)" ///
@@ -152,9 +149,9 @@ quietly {
 		noisily di in g "{bf:  Ingresos laborales" ///
 			_col(44) %7.3fc in y (Yl)/scalar(PIB)*100 ///
 			_col(55) in g "Impuestos al ingreso" ///
-			_col(88) %7.3fc in y (`recISR_AS'+`recISR_PF'+`recCuotas_')/scalar(PIB)*100 ///
-			_col(99) %7.3fc in y (`recISR_AS'+`recISR_PF'+`recCuotas_')/(Yl)*100 " %" "}"
-		scalar inglaboralPIB = (`recISR_AS'+`recISR_PF'+`recCuotas_')/scalar(PIB)*100
+			_col(88) %7.3fc in y (`recISR_Asa'+`recISR_PF'+`recCuotas_')/scalar(PIB)*100 ///
+			_col(99) %7.3fc in y (`recISR_Asa'+`recISR_PF'+`recCuotas_')/(Yl)*100 " %" "}"
+		scalar inglaboralPIB = (`recISR_Asa'+`recISR_PF'+`recCuotas_')/scalar(PIB)*100
 
 
 		noisily di _newline(2) in y "{bf: B. " in y "Impuestos al consumo" "}"
@@ -338,10 +335,10 @@ quietly {
 			%8.3f ingcapitalPIB ///
 		"]"			
 		noisily di in w "INPUTSI: " in w "["  ///
-			%8.3f `recISR_AS'/(RemSal)*100 ", " ///
+			%8.3f `recISR_Asa'/(RemSal)*100 ", " ///
 			%8.3f `recISR_PF'/MixL*100 ", " ///
 			%8.3f `recCuotas_'/(RemSal+SSImputada+SSEmpleadores)*100 ", " ///
-			%8.3f (`recISR_AS'+`recISR_PF'+`recCuotas_')/(Yl)*100 ", " ///
+			%8.3f (`recISR_Asa'+`recISR_PF'+`recCuotas_')/(Yl)*100 ", " ///
 			%8.3f `recIVA'/(ConHog)*100 ", " ///
 			%8.3f `recISAN'/Vehi*100 ", " ///
 			%8.3f `recIEPS'/ConHog*100 ", " ///

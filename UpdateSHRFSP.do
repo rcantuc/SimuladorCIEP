@@ -2,50 +2,50 @@
 ** 1 RFSP **
 ************
 noisily DatosAbiertos RF000000SPFCS			// Total
-keep anio monto
+keep anio mes monto
 rename monto rfsp
 replace rfsp = -rfsp
 tempfile rfsp
 save `rfsp'
 
 noisily DatosAbiertos RF000001SPFCS			// Balance tradicional
-keep anio monto
+keep anio mes monto
 rename monto rfspBalance
 tempfile Balance
 save `Balance'
 
 noisily DatosAbiertos RF000002SPFCS			// PIDIREGAS
-keep anio monto
+keep anio mes monto
 rename monto rfspPIDIREGAS
 tempfile PIDIREGAS
 save `PIDIREGAS'
 
 noisily DatosAbiertos RF000003SPFCS			// IPAB
-keep anio monto
+keep anio mes monto
 rename monto rfspIPAB
 tempfile IPAB
 save `IPAB'
 
 noisily DatosAbiertos RF000004SPFCS			// FONADIN
-keep anio monto
+keep anio mes monto
 rename monto rfspFONADIN
 tempfile FONADIN
 save `FONADIN'
 
 noisily DatosAbiertos RF000005SPFCS			// Programa de deudores
-keep anio monto
+keep anio mes monto
 rename monto rfspDeudores
 tempfile Deudores
 save `Deudores'
 
 noisily DatosAbiertos RF000006SPFCS			// Banca de desarrollo
-keep anio monto
+keep anio mes monto
 rename monto rfspBanca
 tempfile Banca
 save `Banca'
 
 noisily DatosAbiertos RF000007SPFCS			// Adecuaciones presupuestarias
-keep anio monto
+keep anio mes monto
 rename monto rfspAdecuaciones
 tempfile Adecuaciones
 save `Adecuaciones'
@@ -56,7 +56,7 @@ save `Adecuaciones'
 ** 2 SHRFSP **
 **************
 noisily DatosAbiertos SHRF5000				// Total
-keep anio monto mes
+keep anio mes monto mes
 rename monto shrfsp
 
 tsset anio
@@ -67,7 +67,7 @@ tempfile shrfsp
 save `shrfsp'
 
 noisily DatosAbiertos SHRF5100				// Interno
-keep anio monto mes
+keep anio mes monto mes
 rename monto shrfspInterno
 
 tsset anio
@@ -78,7 +78,7 @@ tempfile interno
 save `interno'
 
 noisily DatosAbiertos SHRF5200				// Externo
-keep anio monto mes
+keep anio mes monto mes
 rename monto shrfspExterno
 
 tsset anio
@@ -95,13 +95,13 @@ save `externo'
 ** 3 Tipo de cambio **
 **********************
 noisily DatosAbiertos XET30				// pesos
-keep anio monto
+keep anio mes monto
 rename monto deudaMXN		
 tempfile MXN
 save `MXN'
 
 noisily DatosAbiertos XET40				// d{c o'}lares
-keep anio monto
+keep anio mes monto
 rename monto deudaUSD
 tempfile USD
 save `USD'
@@ -112,7 +112,7 @@ save `USD'
 ** 4 Balance no presupuestario **
 *********************************
 noisily DatosAbiertos XAA20					// Balance no presupuestario
-keep anio monto
+keep anio mes monto
 rename monto nopresupuestario
 tempfile nopresupuestario
 save `nopresupuestario'
