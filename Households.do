@@ -1135,8 +1135,8 @@ g double exen_sueldos = exen_t4_cap1
 
 ***********
 ** Mixto **
-egen double ing_mixto = rsum(ing_t2_cap8 ing_t4_cap2)
-egen double exen_mixto = rsum(exen_t2_cap8 exen_t4_cap2)
+egen double ing_mixto = rsum(ing_t2_cap8 ing_t4_cap2 ing_t4_cap3 ing_t4_cap4 ing_t4_cap5 ing_t4_cap7 ing_t4_cap9)
+egen double exen_mixto = rsum(exen_t2_cap8 exen_t4_cap2 exen_t4_cap3 exen_t4_cap4 exen_t4_cap5 exen_t4_cap7 exen_t4_cap9)
 
 g double ing_mixtoL = ing_mixto*2/3
 g double exen_mixtoL = exen_mixto*2/3
@@ -1196,13 +1196,11 @@ tabstat ing_t4_cap2 exen_t4_cap2 [aw=factor], stat(sum) f(%20.0fc) by(formal_dum
 replace ing_total = 0 if ing_total == .
 replace ing_total = ing_total + ing_estim_alqu
 
-egen double ing_capital = rsum(ing_t2_cap1 ing_t4_cap3 ing_t4_cap4 ing_t4_cap5 ing_t4_cap6 ing_t4_cap7 ///
-	ing_t4_cap8 ing_t4_cap9)
-egen double exen_capital = rsum(exen_t2_cap1 exen_t4_cap3 exen_t4_cap4 exen_t4_cap5 exen_t4_cap6 exen_t4_cap7 ///
-	exen_t4_cap8 exen_t4_cap9)
+egen double ing_capital = rsum(ing_t2_cap1 ing_t4_cap6 ing_t4_cap8)
+egen double exen_capital = rsum(exen_t2_cap1 exen_t4_cap6 exen_t4_cap8)
 
 * Gini's de ingresos netos *
-foreach k of varlist ing_total ing_sueldos ing_mixto ing_capital ing_estim_alqu ing_laboral ing_mixto* {
+foreach k of varlist ing_total ing_sueldos ing_mixto* ing_capital ing_estim_alqu ing_laboral {
 	Gini `k', hogar(folioviv foliohog) individuo(numren) factor(factor)
 	local gini_`k' = r(gini_`k')
 }
@@ -1921,7 +1919,7 @@ if `betamin' > 1 {
 	replace isrE = isrE + `ingcola'*`ingreso'/`ingpercentcola'*.3 ///
 		in -11/-1 if folioviv != ""
 
-	foreach k of varlist ing_mixto ing_capital ing_estim_alqu {
+	foreach k of varlist ing_mixto* ing_capital ing_estim_alqu {
 		tabstat `k', stat(max) f(%15.0fc) save
 		tempname TOPING
 		matrix `TOPING' = r(StatTotal)
@@ -2091,7 +2089,7 @@ replace prop_capital = 0 if prop_capital == .
 *********************************
 ** Probit formalidad (general) **
 noisily di _newline _col(04) in g "{bf:3.0. Probit de formalidad: " in y "General.}"
-xi: probit formal_probit ing_bruto_tax deduc_isr prop_mixto prop_capital ///
+noisily xi: probit formal_probit deduc_isr prop_mixto prop_capital ///
 	edad i.sexo aniosesc rural i.sinco2 i.subor ///
 	if ing_anual != 0 | ing_capital != 0 [pw=factor_cola]
 predict double prob_formal if e(sample)
@@ -2106,8 +2104,8 @@ g prop_formal = formal_accum/formal_NAC
 ************************************************
 ** Probit formalidad (alquileres, produccion) **
 noisily di _newline _col(04) in g "{bf:3.1. Probit de formalidad: " in y "Alquileres, producci{c o'}n.}"
-xi: probit formal_probit ing_bruto_tax exen_tot por_rent deduc_isr ///
-	edad i.sexo aniosesc rural i.sinco2 i.subor ///
+noisily xi: probit formal_probit por_rent prop_mixto prop_capital ///
+	edad i.sexo aniosesc rural ///
 	if ing_rent != 0 [pw=factor_cola]
 predict double prob_renta if e(sample)
 
@@ -2135,8 +2133,8 @@ replace exen_tot = exen_rent if formal_renta == 1 & prob_renta != . & formal == 
 *************************************************************
 ** Probit formalidad (servicios profesionales, produccion) **
 noisily di _newline _col(04) in g "{bf:3.2. Probit de formalidad: " in y "Servicios profesionales, producci{c o'}n.}"
-xi: probit formal_probit ing_bruto_tax exen_tot por_servprof deduc_isr ///
-	edad edad2 i.sexo aniosesc aniosesc2 rural i.sinco2 i.subor ///
+noisily xi: probit formal_probit prop_mixto ///
+	edad edad2 i.sexo aniosesc aniosesc2 rural i.subor ///
 	if ing_t4_cap2 != 0 [pw=factor_cola]
 predict double prob_servprof if e(sample)
 
@@ -2247,8 +2245,7 @@ noisily di _newline _col(04) in g "{bf:SUPUESTO: " in y ///
 
 **************************
 ** ISR PERSONAS MORALES **
-*g double ISR__PM = ing_capital*(1-.31353561)*.3 //if formal != 0
-g double ISR__PM = ing_t2_cap1*.3 //if formal != 0
+g double ISR__PM = ing_capital*(1-.31353561)*.3 //if formal != 0
 replace ISR__PM = 0 if ISR__PM == .
 label var ISR__PM "ISR (personas morales)"
 
@@ -2346,7 +2343,7 @@ noisily di ///
 scalar ISRFSCNPIB = (`ISRSalarios'+`ISRFisicas'+`ISRMorales')/`PIBSCN'*100
 scalar ISRFHHSPIB = (`RESTAXS'[1,1]+`RESTAXF'[1,1]+`RESTAX'[1,1])/`PIBSCN'*100
 scalar giniISRF = string(`gini_ISR',"%5.3f")
-exit
+
 
 * Impuestos *
 Distribucion ImpNetProduccionL_subor, relativo(ing_subor) ///
@@ -2578,10 +2575,6 @@ Simulador Yl [fw=factor_cola], base("ENIGH 2018") boot(1) reboot anio(2018) $nog
 egen double Yk = rsum(ing_capital ing_mixtoK ing_estim_alqu)
 label var Yk "Ingreso de capital"
 Simulador Yk [fw=factor_cola], base("ENIGH 2018") boot(1) reboot anio(2018) $nographs nooutput
-replace Yk = Yk + gasto_anualDepreciacion - (ing_cap_imss + ing_cap_issste + ing_cap_cfe + ///
-	ing_cap_pemex + ing_cap_fmp + ing_cap_mejoras + ing_cap_derechos + ///
-	ing_cap_productos + ing_cap_aprovecha + ///
-	ing_cap_otrostrib + ing_cap_otrasempr)
 
 ** (+) Impuestos al ingreso laboral **
 egen laboral = rsum(ISR__asalariados ISR__PF cuotasTP) if formal != 0
@@ -2605,6 +2598,12 @@ label var OtrosC "los ingresos de capital"
 Simulador OtrosC [fw=factor], base("ENIGH 2018") boot(1) reboot anio(2018) $nographs nooutput
 
 
+replace Yk = Yk + gasto_anualDepreciacion - (ing_cap_imss + ing_cap_issste + ing_cap_cfe + ///
+	ing_cap_pemex + ing_cap_fmp + ing_cap_mejoras + ing_cap_derechos + ///
+	ing_cap_productos + ing_cap_aprovecha + ///
+	ing_cap_otrostrib + ing_cap_otrasempr)
+
+
 ** (-) Pensiones **
 g ing_jubila_pub = ing_jubila if (formal == 1 | formal == 2 | formal == 3) & ing_jubila != 0
 replace ing_jubila_pub = 0 if ing_jubila_pub == .
@@ -2614,7 +2613,7 @@ Simulador Pension [fw=factor], base("ENIGH 2018") boot(1) reboot anio(2018) $nog
 
 
 ** (-) Pension Bienestar **
-tabstat factor if edad >= 68 | (edad >= 65 & rural == 1), stat(sum) f(%20.0fc) save
+tabstat factor if edad >= 65, stat(sum) f(%20.0fc) save
 matrix POBLACION68 = r(StatTotal)
 
 g PenBienestar = `PenBienestar'/POBLACION68[1,1] if edad >= 68 | (edad >= 65 & rural == 1)

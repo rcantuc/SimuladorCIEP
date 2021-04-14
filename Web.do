@@ -4,11 +4,12 @@ capture log close _all
 **************************************/
 ** PARAMETROS SIMULADOR: DIRECTORIOS **
 if "`c(username)'" == "ricardo" {
-	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/Simulador v5/Github/simuladorCIEP"
+	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/SimuladorCIEP/5.1/simuladorCIEP"
 }
 if "`c(username)'" == "ciepmx" {
 	sysdir set PERSONAL "/SIM/OUT/5/5.0/"
 }
+adopath ++ PERSONAL                                                             // SUBIR DIRECTORIO BRANCH COMO PRINCIPAL
 ** PARAMETROS SIMULADOR: DIRECTORIOS **
 ***************************************
 
@@ -46,7 +47,7 @@ capture mkdir "`c(sysdir_personal)'/users/"
 capture mkdir "`c(sysdir_personal)'/users/$id/"
 capture mkdir "`c(sysdir_personal)'/users/$pais/"
 
-** AÑO VALOR BASE **
+** AÃ‘O VALOR BASE **
 local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
