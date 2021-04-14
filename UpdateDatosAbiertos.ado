@@ -167,7 +167,7 @@ program define UpdateDatosAbiertos, return
 
 	***************************************************
 	** 4.1 ISR fisicas, morales, asalariados y otros **
-	import excel "`c(sysdir_site)'../basesCIEP/SHCP/Informes trimestrales/ISRInformesTrimestrales.xlsx", ///
+	import excel "`c(sysdir_site)'../basesCIEP/SHCP/Informes trimestrales/ISRInformesTrimestrales.xls", ///
 		clear sheet("TipoDeContribuyente") firstrow case(lower)
 	tsset anio trimestre
 	drop total
