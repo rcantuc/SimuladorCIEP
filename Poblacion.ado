@@ -375,7 +375,7 @@ quietly {
 			`=-`MaxH'[1,1]/2' `"`=string(`MaxH'[1,1]/2,"%15.0fc")'"' 0 ///
 			`=`MaxM'[1,1]/2' `"`=string(`MaxM'[1,1]/2,"%15.0fc")'"' ///
 			`=`MaxM'[1,1]' `"`=string(`MaxM'[1,1],"%15.0fc")'"', angle(horizontal)) ///
-			caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5, utilizando informaci{c o'}n CONAPO (2018).") ///
+			///caption("Elaborado por el CIEP con informaci{c o'}n de: CONAPO (2018).") ///
 			///caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5, utilizando informaci{c o'}n del Censo de Poblaci{c o'}n y Vivienda 2020.") ///
 			///subtitle("`anioinicial' vs. `aniofinal'") ///
 			///title("Pir{c a'}mide {bf:demogr{c a'}fica}") subtitle(${pais})
@@ -505,7 +505,7 @@ quietly {
 			xtitle("") ///
 			ytitle("millones de personas") ///
 			xline(`=`anioinicial'+.5') ///
-			caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5, utilizando informaci{c o'}n de CONAPO.") ///
+			///caption("Elaborado por el CIEP con informaci{c o'}n de: CONAPO (2018).") ///
 			name(Estructura_`anioinicial'_`aniofinal', replace) ///
 			///title("{bf:Transici{c o'}n} demogr{c a'}fica") subtitle(${pais}) ///
 			ylabel(, format(%20.0fc)) xlabel(1950(10)`aniofinal')

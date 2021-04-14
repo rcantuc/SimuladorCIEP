@@ -105,7 +105,7 @@ replace formal_asalariados = 0
 replace formal_asalariados = 1 //if prop_formal <= (1-DED[1,4]/100)
 
 * ISR SALARIOS + SUBSIDIO AL EMPLEO *
-replace ISR__asalariados = ISR*3.748/3.232*3.452/3.250 if formal_asalariados == 1 & tipo_contribuyente == 1
+replace ISR__asalariados = ISR*3.491/3.232*3.491/2.611 if formal_asalariados == 1 & tipo_contribuyente == 1
 replace ISR__asalariados = 0 if ISR__asalariados == .
 label var ISR__asalariados "ISR (retenciones por salarios)"
 
@@ -116,7 +116,7 @@ replace formal_fisicas = 0
 replace formal_fisicas = 1 if prop_formal <= (1-DED[1,3]/100)
 
 * ISR PERSONAS FISICAS *
-replace ISR__PF = ISR*0.195/0.186*0.441/0.469 if formal_fisicas == 1 & tipo_contribuyente != 1
+replace ISR__PF = ISR*0.195/0.186 /*0.227/0.469*/ if formal_fisicas == 1 & tipo_contribuyente != 1
 replace ISR__PF = 0 if ISR__PF == .
 label var ISR__PF "ISR (personas f{c i'}sicas)"
 
@@ -127,7 +127,7 @@ replace formal_morales = 0
 replace formal_morales = 1 if prop_formal <= (1-PM[1,2]/100)
 
 * ISR PERSONAS MORALES *
-replace ISR__PM = (ing_capital*(1-.31353561))*PM[1,1]/100*3.737/3.777			// 0.31353561: Ahorro bruto de Sociedad e ISFLSH
+replace ISR__PM = (ing_capital*(1-.31353561))*PM[1,1]/100*3.839/3.840			// 0.31353561: Ahorro bruto de Sociedad e ISFLSH
 replace ISR__PM = 0 if ISR__PM == .
 label var ISR__PM "ISR (personas morales)"
 

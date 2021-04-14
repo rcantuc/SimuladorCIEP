@@ -10,10 +10,12 @@ capture log close _all
 * Github: Directorio del Branch *
 if "`c(os)'" == "Unix" & "`c(username)'" == "ciepmx" {                          // ServidorCIEP
 	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/SimuladorCIEP/5.1/simuladorCIEP/"
+	*global export "/home/ciepmx/Dropbox (CIEP)/Textbook/images/".              // GUARDAR GRAFICOS EN...
 }
 
 if"`c(os)'" == "MacOSX" & "`c(username)'" == "ricardo" {                        // Ricardo
 	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/SimuladorCIEP/5.1/simuladorCIEP/"
+	*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"             // GUARDAR GRAFICOS EN...
 }
 adopath ++ PERSONAL                                                             // SUBIR DIRECTORIO BRANCH COMO PRINCIPAL
 
@@ -23,7 +25,7 @@ adopath ++ PERSONAL                                                             
 ** OPCIONES (GLOBALES + LOCALES) **
 local aniovp = substr(`"`c(current_date)'"',-4,4)                               // AÑO VALOR PRESENTE
 global id = "`c(username)'"                                                     // ID DEL USUARIO
-*global nographs "nographs"                                                      // SUPRIMIR GRAFICAS
+global nographs "nographs"                                                      // SUPRIMIR GRAFICAS
 *global output "output"                                                         // IMPRIMIR OUTPUTS
 *global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"                 // GUARDAR GRAFICOS EN...
 *global pais "El Salvador"                                                      // OTROS PAISES (si aplica)
@@ -43,8 +45,8 @@ noisily run "$sysdir_principal/Arranque.do" `aniovp'
 ***    1. CRECIMIENTO PIB    ***
 ***                          ***
 ********************************
-global pib2021 = 5.3 // Pre-CGPE 2022: 5.3
-global pib2022 = 3.6 // Pre-CGPE 2022: 3.6
+global pib2021 = 5.3                                                            // Pre-CGPE 2022: 5.3
+global pib2022 = 3.6                                                            // Pre-CGPE 2022: 3.6
 global pib2023 = 2.5
 global pib2024 = 2.5
 global pib2025 = 2.5
@@ -79,8 +81,8 @@ global pib2049 = $pib2025
 global pib2050 = $pib2025
 
 * OTROS */
-global def2021 = 3.7393 // Pre-CGPE 2022: 3.7
-global def2022 = 3.282  // Pre-CGPE 2022: 3.2
+global def2021 = 3.7393                                                         // Pre-CGPE 2022: 3.7
+global def2022 = 3.2820                                                         // Pre-CGPE 2022: 3.2
 global inf2021 = 3.8
 global inf2022 = 3.0
 ** SIMULADOR: PIB **
@@ -94,12 +96,10 @@ foreach k in `aniovp' {
 *forvalues k=1950(1)2050 {
 	noisily Poblacion, $nographs anio(`k') //update //aniofinal(2040) //tf(`=64.333315/2.1*1.8') //tm2044(18.9) tm4564(63.9) tm65(35.0)
 }
-** 1.1 POBLACION **
-*******************
 
 
 
-********************
+*******************/
 ** 1.2 HOUSEHOLDS **
 capture use `"$sysdir_principal/users/$pais/bootstraps/1/PensionREC.dta"', clear
 if _rc != 0 | "$export" != "" {
@@ -137,9 +137,6 @@ if _rc != 0 | "$export" != "" {
 	
 	global id = "`id'"
 }
-** 1.2 HOUSEHOLDS **
-********************
-
 
 
 
@@ -161,7 +158,7 @@ else {
 }
 
 ** SCN + Inflacion **
-noisily Inflacion, anio(`aniovp') $nographs //update
+noisily Inflacion, anio(`aniovp') $nographs update
 noisily SCN, anio(`aniovp') $nographs //update
 
 
@@ -236,60 +233,60 @@ noisily GastoPC, anio(`aniovp') `nographs'
 ************************************
 ** PARAMETROS SIMULADOR: INGRESOS **
 * Al ingreso *
-scalar ISRAS   = 22.018*15.684/100 //    ISR (asalariados): 3.428
-scalar ISRPF   = 13.211* 3.341/100 //    ISR (personas f{c i'}sicas): 0.438
-scalar CuotasT = 26.454* 5.772/100 //    Cuotas (IMSS): 1.515
+scalar ISRAS   = 22.018*15.858/100 //    ISR (asalariados): 3.453
+scalar ISRPF   = 13.211* 1.716/100 //    ISR (personas f{c i'}sicas): 0.441
+scalar CuotasT = 26.454* 5.715/100 //    Cuotas (IMSS): 1.515
 
 * Al consumo *
-scalar IVA     = 66.041* 5.927/100 //    IVA: 3.885
-scalar ISAN    =  2.913* 1.033/100 //    ISAN: 0.030
-scalar IEPS    = 66.041* 3.092/100 //    IEPS (no petrolero + petrolero): 2.027
-scalar Importa = 31.140* 0.792/100 //    Importaciones: 0.245
+scalar IVA     = 66.041* 5.869/100 //    IVA: 3.885
+scalar ISAN    =  2.913* 1.022/100 //    ISAN: 0.030
+scalar IEPS    = 66.041* 3.062/100 //    IEPS (no petrolero + petrolero): 2.027
+scalar Importa = 31.140* 0.786/100 //    Importaciones: 0.245
 
 * Al capital *
-scalar ISRPM   = 25.438*14.695/100 //    ISR (personas morales): 3.710
-scalar FMP     = 38.125* 3.598/100 //    Fondo Mexicano del Petr{c o'}leo: 1.362
-scalar OYE     = 38.125*11.295/100 //    Organismos y empresas (IMSS + ISSSTE + Pemex + CFE): 4.274
-scalar OtrosC  = 38.125* 2.827/100 //    Productos, derechos, aprovechamientos, contribuciones: 1.070
-** PARAMETROS SIMULADOR: INGRESOS *
-************************************
+scalar ISRPM   = 25.438*15.092/100 //    ISR (personas morales): 3.710
+scalar FMP     = 38.125* 3.562/100 //    Fondo Mexicano del Petr{c o'}leo: 1.362
+scalar OYE     = 38.125*11.183/100 //    Organismos y empresas (IMSS + ISSSTE + Pemex + CFE): 4.274
+scalar OtrosC  = 38.125* 2.799/100 //    Productos, derechos, aprovechamientos, contribuciones: 1.070
+** PARAMETROS SIMULADOR: INGRESOS **
+***********************************/
 
 
 
 *******************************
 ** PARAMETROS SIMULADOR: ISR **
 *             Inferior    Superior    CF         Tasa
-matrix ISR = (0.00,       5952.84,    0.0,       1.92  \   /// 1
-              5952.85,    50524.92,   114.24,    6.40  \   /// 2
-              50524.93,   88793.04,   2966.76,   10.88 \   /// 3
-              88793.05,   103218.00,  7130.88,   16.00 \   /// 4
-              103218.01,  123580.20,  9438.60,   17.92 \   /// 5
-              123580.21,  249243.48,  13087.44,  21.36 \   /// 6
-              249243.49,  392841.96,  39929.04,  23.52 \   /// 7
-              392841.97,  750000.00,  73703.40,  30.00 \   /// 8
-              750000.01,  1000000.00, 180850.82, 32.00 \   /// 9
-              1000000.01, 3000000.00, 260850.81, 34.00 \   /// 10
-              3000000.01, 1E+14,      940850.81, 35.00)    //  11
+matrix	ISR	= (	0.01,	7735.00,	0.0,		1.92	\	/// 1
+			7735.01,	65651.07,	148.51,		6.40	\	/// 2
+			65651.08,	115375.90,	3855.14,	10.88	\	/// 3
+			115375.91,	134119.41,	9265.20,	16.00	\	/// 4
+			134119.42,	160577.65,	12264.16,	17.92	\	/// 5
+			160577.66,	323862.00,	17005.47,	21.36	\	/// 6
+			323862.01,	510451.00,	51883.01,	23.52	\	/// 7
+			510451.01,	974535.03, 	95768.74,	30.00	\	/// 8
+			974535.04,	1299380.04,	234993.95,	32.00	\	/// 9
+			1299380.05,	3898140.12,	338944.34,	34.00	\	/// 10
+			3898140.13,	1E+14, 		1222522.76,	35.00)		//  11
 
-*             Inferior  Superior  Subsidio
-matrix SE  = (0.00,     21227.52, 4884.24 \   /// 1
-              21227.53, 23744.40, 4881.96 \   /// 2
-              23744.41, 31840.56, 4318.08 \   /// 3
-              31840.57, 41674.08, 4123.20 \   /// 4
-              41674.09, 42454.44, 3723.48 \   /// 5
-              42454.45, 53353.80, 3581.28 \   /// 6
-              53353.81, 56606.16, 4250.76 \   /// 7
-              56606.17, 64025.04, 3898.44 \   /// 8
-              64025.05, 74696.04, 3535.56 \   /// 9
-              74696.05, 85366.80, 3042.48 \   /// 10
-              85366.81, 88587.96, 2611.32 \   /// 11
-              88587.97, 1E+14,    0)          //  12
+*			Inferior	Superior	Subsidio
+matrix	SE	= (	0.00,	21227.52,	4884.24		\		/// 1
+			21227.53,	23744.40,	4881.96		\		/// 2
+			23744.41,	31840.56,	4881.96		\		/// 3
+			31840.57,	41674.08,	4879.44		\		/// 4
+			41674.09,	42454.44,	4713.24		\		/// 5
+			42454.45,	53353.80,	4589.52		\		/// 6
+			53353.81,	56606.16,	4250.76		\		/// 7
+			56606.17,	64025.04,	3898.44		\		/// 8
+			64025.05,	74696.04,	3535.56		\		/// 9
+			74696.05,	85366.80,	3042.48		\		/// 10
+			85366.81,	88587.96,	2611.32		\		/// 11
+			88587.97, 	1E+14,		0)					//  12
 
-*             SS.MM.  % ing. gr  Informalidad PF (%)
-matrix DED = (5,      15,        49.85)       // 65.36
+*             SS.MM.       % ing. gr  Informalidad PF (%)
+matrix DED = (5,           15,        60.0)       // 65.36
 
-*            Tasa ISR PM  Informalidad PM
-matrix PM = (30,          35.95)              // 41.47
+*            Tasa ISR PM.             Informalidad PM
+matrix PM = (30,                      14.6)       // 41.47 // 35.95
 
 * Cambios ISR *
 local cambioISR = 0
@@ -505,7 +502,7 @@ if "$output" == "output" {
 ** SANKEY **
 if "$export" != "" {
 	foreach k in decil sexo grupoedad escol {
-		*noisily run "$sysdir_principal/SankeySF.do" `k' `aniovp'
+		noisily run "$sysdir_principal/SankeySF.do" `k' `aniovp'
 	}
 }
 
@@ -538,7 +535,7 @@ if "$output" == "output" {
 ****                    ****
 ****************************
 if "$export" != "" {
-	*noisily scalarlatex
+	noisily scalarlatex
 }
 timer off 1
 timer list 1

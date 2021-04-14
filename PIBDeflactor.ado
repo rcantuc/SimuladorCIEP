@@ -296,7 +296,7 @@ quietly {
 			///text(`crec_deflactor', place(c)) ///
 			legend(label(1 "Reportado") label(2 "Proyectado") label(3 "Estimado") order(1 3 2)) ///
 			///caption("{it:Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, BIE.}") ///
-			note("{bf:{c U'}ltimo dato}: `anio_last'`trim_last'.") ///
+			note("{bf:{c U'}ltimo dato reportado}: `anio_last'`trim_last'.") ///
 			name(deflactorH, replace)
 
 		capture confirm existence $export

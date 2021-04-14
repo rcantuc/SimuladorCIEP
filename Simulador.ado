@@ -789,7 +789,7 @@ program graphpiramide
 			name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)', replace) ycommon xcommon ///
 			///title("{bf:Perfil} de `title'") subtitle("$pais") ///
 			///title("`title' by sex, age and `titleover'") ///
-			caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, ENIGH 2018.") ///
+			///caption("Elaborado por el CIEP con informaci{c o'}n de: INEGI, ENIGH 2018.") ///
 			///caption("{it: Source: Own estimations.`boottext'}") ///
 			note(`"{bf:Nota}: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n en cada grupo."') ///
 			///note(`"{bf:Note}: Percentages inside parenthesis represent the concentration of `title' in each group."')

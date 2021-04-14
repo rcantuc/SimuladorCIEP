@@ -34,7 +34,7 @@ quietly {
 	***************
 	use in 1 using "`c(sysdir_personal)'/SIM/$pais/LIF.dta", clear
 	syntax [if] [, ANIO(int `aniovp' ) Update NOGraphs Base ID(string) ///
-		MINimum(real 0.5) DESDE(int 2013) ILIF LIF BY(varname) ROWS(int 1) COLS(int 5)]
+		MINimum(real 0.5) DESDE(int 2013) ILIF LIF BY(varname) ROWS(int 2) COLS(int 5)]
 
 	noisily di _newline(2) in g _dup(20) "." "{bf:  Sistema Fiscal: INGRESOS $pais " in y `anio' "  }" in g _dup(20) "."
 
