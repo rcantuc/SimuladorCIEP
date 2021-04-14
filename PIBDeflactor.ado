@@ -27,10 +27,10 @@ quietly {
 	capture use `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
 	if _rc != 0 | "`update'" == "update" {
 		if "$pais" == "" {
-			run "`c(sysdir_personal)'/PoblacionBase.do"
+			run "`c(sysdir_personal)'/PoblacionMexico.do"
 		}
 		else if "$pais" == "El Salvador" {
-			run "`c(sysdir_personal)'/PoblacionBaseMundial.do"
+			run "`c(sysdir_personal)'/PoblacionMundial.do"
 		}
 		use `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
 	}
