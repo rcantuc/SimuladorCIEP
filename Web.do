@@ -89,29 +89,51 @@ if _rc != 0 {
 **********************************************
 
 
-*******************************
-** PARAMETROS SIMULADOR: PIB **
-global pib2021 =  5.3
-global pib2022 =  3.6
-global pib2023 =  2.5
-global pib2024 =  2.5
-global pib2025 =  2.5
+********************************
+***                          ***
+***    1. CRECIMIENTO PIB    ***
+***                          ***
+********************************
+global pib2021 = 5.3                                                            // Pre-CGPE 2022: 5.3
+global pib2022 = 3.6                                                            // Pre-CGPE 2022: 3.6
+global pib2023 = 2.5
+global pib2024 = 2.5
+global pib2025 = 2.5
 
-* 2025+ *
-global pib2026 =  $pib2025
-global pib2027 =  $pib2025
-global pib2028 =  $pib2025
-global pib2029 =  $pib2025
-global pib2030 =  $pib2025
-** PARAMETROS SIMULADOR: PIB **
-*******************************
+* 2026-2030 *
+global pib2026 = $pib2025
+global pib2027 = $pib2025
+global pib2028 = $pib2025
+global pib2029 = $pib2025
+global pib2030 = $pib2025
 
+/* 2031+ *
+global pib2031 = $pib2025
+global pib2032 = $pib2025
+global pib2033 = $pib2025
+global pib2034 = $pib2025
+global pib2035 = $pib2025
+global pib2036 = $pib2025
+global pib2037 = $pib2025
+global pib2038 = $pib2025
+global pib2039 = $pib2025
+global pib2040 = $pib2025
+global pib2041 = $pib2025
+global pib2042 = $pib2025
+global pib2043 = $pib2025
+global pib2044 = $pib2025
+global pib2045 = $pib2025
+global pib2046 = $pib2025
+global pib2047 = $pib2025
+global pib2048 = $pib2025
+global pib2049 = $pib2025
+global pib2050 = $pib2025
 
-** OTROS PARAMETROS **
-global def2021 =  3.7393
-global def2022 =  3.2820
-global inf2020 =  3.5
-global inf2021 =  3.0
+* OTROS */
+global def2021 = 3.7393                                                         // Pre-CGPE 2022: 3.7
+global def2022 = 3.2820                                                         // Pre-CGPE 2022: 3.2
+global inf2021 = 3.8                                                            // Pre-CGPE 2022: 3.8
+global inf2022 = 3.0                                                            // Pre-CGPE 2022: 3.0
 
 
 ** PIB + Deflactor **
@@ -167,8 +189,8 @@ noisily GastoPC, anio(`aniovp') `nographs'
 
 *******************************
 ** PARAMETROS SIMULADOR: ISR **
-*			Inferior	Superior	CF		Tasa
-matrix	ISR	= (	0.01,		7735.00,	0.0,		1.92	\	/// 1
+*             Inferior    Superior    CF         Tasa
+matrix	ISR	= (	0.01,	7735.00,	0.0,		1.92	\	/// 1
 			7735.01,	65651.07,	148.51,		6.40	\	/// 2
 			65651.08,	115375.90,	3855.14,	10.88	\	/// 3
 			115375.91,	134119.41,	9265.20,	16.00	\	/// 4
@@ -181,7 +203,7 @@ matrix	ISR	= (	0.01,		7735.00,	0.0,		1.92	\	/// 1
 			3898140.13,	1E+14, 		1222522.76,	35.00)		//  11
 
 *			Inferior	Superior	Subsidio
-matrix	SE	= (	0.00,		21227.52,	4884.24		\		/// 1
+matrix	SE	= (	0.00,	21227.52,	4884.24		\		/// 1
 			21227.53,	23744.40,	4881.96		\		/// 2
 			23744.41,	31840.56,	4881.96		\		/// 3
 			31840.57,	41674.08,	4879.44		\		/// 4
@@ -192,13 +214,14 @@ matrix	SE	= (	0.00,		21227.52,	4884.24		\		/// 1
 			64025.05,	74696.04,	3535.56		\		/// 9
 			74696.05,	85366.80,	3042.48		\		/// 10
 			85366.81,	88587.96,	2611.32		\		/// 11
-			88587.97, 	1E+14,		0)				//  12
+			88587.97, 	1E+14,		0)					//  12
 
-*			SS.MM.		% ing. gr	Informalidad PF (%)
-matrix DED	= (	5,		15, 		49.85)										// 65.36
+*             SS.MM.       % ing. gr  Informalidad PF (%)
+matrix DED = (5,           15,        60.0)       // 65.36
 
-*			Tasa ISR PM			Informalidad PM
-matrix PM	= (	30,				35.95)										// 41.47
+*            Tasa ISR PM.             Informalidad PM
+matrix PM = (30,                      14.6)       // 41.47 // 35.95
+
 
 * Cambios ISR *
 local cambioISR = 0
@@ -232,18 +255,18 @@ if "$output" == "output" {
 
 *******************************
 ** PARAMETROS SIMULADOR: IVA **
-matrix IVAT = (	16	\	///  1  Tasa general 
-		1	\	///  2  Alimentos, 1: Tasa Cero, 2: Exento, 3: Gravado
-		2	\	///  3  Alquiler, idem
-		1	\	///  4  Canasta basica, idem
-		2	\	///  5  Educacion, idem
-		3	\	///  6  Consumo fuera del hogar, idem
-		3	\	///  7  Mascotas, idem
-		1	\	///  8  Medicinas, idem
-		3	\	///  9  Otros, idem
-		2	\	/// 10  Transporte local, idem
-		3	\	/// 11  Transporte foraneo, idem
-		39.19	)	//  12  Evasion e informalidad IVA, idem
+matrix IVAT = (16 \     ///  1  Tasa general 
+               1  \     ///  2  Alimentos, 1: Tasa Cero, 2: Exento, 3: Gravado
+               2  \     ///  3  Alquiler, idem
+               1  \     ///  4  Canasta basica, idem
+               2  \     ///  5  Educacion, idem
+               3  \     ///  6  Consumo fuera del hogar, idem
+               3  \     ///  7  Mascotas, idem
+               1  \     ///  8  Medicinas, idem
+               3  \     ///  9  Otros, idem
+               2  \     /// 10  Transporte local, idem
+               3  \     /// 11  Transporte foraneo, idem
+               39.19)   //  12  Evasion e informalidad IVA, idem
 	
 * Cambios IVA *
 local cambioIVA = 0
