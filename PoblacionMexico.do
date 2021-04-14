@@ -199,18 +199,18 @@ noisily tabstat tasafecundidad, stat(mean) by(anio) f(%10.1fc) save
 ** Guardar **
 drop mujeresf nacimien nacimientos
 compress
-capture mkdir "$sysdir_principal/SIM/"
+capture mkdir "`c(sysdir_personal)'/SIM/"
 if `c(version)' > 13.1 {
-	saveold "$sysdir_principal/SIM/Poblacion.dta", replace version(13)
+	saveold "`c(sysdir_personal)'/SIM/Poblacion.dta", replace version(13)
 }
 else {
-	save "$sysdir_principal/SIM/Poblacion.dta", replace
+	save "`c(sysdir_personal)'/SIM/Poblacion.dta", replace
 }
 
 collapse (sum) poblacion, by(anio entidad)
 if `c(version)' > 13.1 {
-	saveold `"$sysdir_principal/SIM/Poblaciontot.dta"', replace version(13)
+	saveold `"`c(sysdir_personal)'/SIM/Poblaciontot.dta"', replace version(13)
 }
 else {
-	save `"$sysdir_principal/SIM/Poblaciontot.dta"', replace
+	save `"`c(sysdir_personal)'/SIM/Poblaciontot.dta"', replace
 }
