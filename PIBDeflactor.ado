@@ -15,7 +15,7 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
-	syntax [, ANIOvp(int `aniovp') GEO(int -1) FIN(int -1) NOGraphs NOOutput UPDATE DIScount(real 3)]
+	syntax [, ANIOvp(int `aniovp') GEO(int -1) FIN(int -1) NOGraphs NOOutput UPDATE DIScount(real 3) SAVE]
 
 	noisily di _newline(2) in g _dup(20) "." "{bf:   Producto Interno Bruto " in y `aniovp' "   }" in g _dup(20) "."
 
@@ -464,6 +464,15 @@ quietly {
 		capture log off output
 	}
 
+
+	if "`save'" == "save" {
+		if `c(version)' > 13.1 {
+			saveold "$sysdir_principal/users/$pais/$id/PIB.dta", replace version(13)
+		}
+		else {
+			save "$sysdir_principal/users/$pais/$id/PIB.dta", replace
+		}
+	}
 
 
 	timer off 2
