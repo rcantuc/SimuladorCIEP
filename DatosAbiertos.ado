@@ -11,7 +11,7 @@ quietly {
 	save `PIB'
 
 	if "`c(username)'" == "ricardo" | "`c(username)'" == "ciepmx" {
-		noisily UpdateDatosAbiertos
+		*noisily UpdateDatosAbiertos
 	}
 
 

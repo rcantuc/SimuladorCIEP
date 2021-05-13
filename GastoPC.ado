@@ -767,7 +767,7 @@ quietly {
 			Pension Educacion Salud IngBasico PenBienestar Salarios OtrosGas Infra ///
 			sexo grupoedad decil escol edad ing_bruto_tax prop_formal ///
 			deduc_isr ISR categF ISR__asalariados ISR__PF cuotas* ingbrutotot htrab ///
-			tipo_contribuyente exen_tot formal* ing_capital isrE ing_subor IVA* IEPS* ///
+			tipo_contribuyente exen_tot formal* ing_capital *_t2_* *_t4_* ing_mixto* isrE ing_subor IVA* IEPS* ///
 			gasto_anualDepreciacion
 	}
 
