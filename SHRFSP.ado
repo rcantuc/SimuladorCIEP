@@ -13,10 +13,10 @@ quietly {
 
 	** 1.2 Datos Abiertos (México) **
 	if "`c(username)'" == "ricardo" & "$pais" == "" {
-		UpdateDatosAbiertos
-		local updated = r(updated)
-		local ultanio = r(ultanio)
-		local ultmes = r(ultmes)
+		*UpdateDatosAbiertos
+		local updated = "yes" //r(updated)
+		*local ultanio = r(ultanio)
+		*local ultmes = r(ultmes)
 	}
 	else {
 		local updated = "yes"

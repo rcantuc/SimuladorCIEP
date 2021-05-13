@@ -100,6 +100,7 @@ local Ieps10 = r(Alcohol)
 ******************************************
 capture confirm file "`data'/preconsumption.dta"
 if _rc != 0 {
+*if _rc == 0 {
 
 	** MI.1. Base de datos de gastos de los hogares **
 	use "`data'/gastospersona.dta", clear
@@ -133,18 +134,21 @@ if _rc != 0 {
 	merge m:1 (clave) using "`data'/clave_iva.dta", ///
 		nogen keepus(descripcion *2018 clase_de_actividad*) keep(matched master)
 	encode iva2018, gen(tiva)
+	compress
 	tempfile pre_iva
 	save `pre_iva'
 
 	** MI.7. Uni{c o'}n de censo econ{c o'}mico **
 	forvalues k=1(1)6 {
-		use "`c(sysdir_site)'../basesCIEP/INEGI/Censo Economico/2014/censo_eco.dta", clear
+		use "`c(sysdir_site)'../basesCIEP/INEGI/Censo Economico/2019/censo_eco.dta", clear
 
 		rename claseactividad clase_de_actividad`k'
-		rename produccin produccion`k'
+		rename produccion produccion`k'
 		rename valoragregado valoragregado`k'
+		rename margen margen`k'
 
 		merge 1:m (clase_de_actividad`k') using `pre_iva', nogen keep(matched using)
+		compress
 		save `pre_iva', replace
 	}
 	order folioviv-porcentaje_ieps2018 *1 *2 *3 *4 *5 *6
@@ -152,8 +156,10 @@ if _rc != 0 {
 	** MI.8. Ponderador del IVA (exentos) **
 	egen agregado = rmean(valoragregado1 valoragregado2 valoragregado3 valoragregado4 valoragregado5 valoragregado6)
 	egen prod = rmean(produccion1 produccion2 produccion3 produccion4 produccion5 produccion6)
+	egen marg = rmean(margen1 margen2 margen3 margen4 margen5 margen6)
 
-	g double proporcion = agregado/prod
+	*g double proporcion = agregado/prod
+	g double proporcion = marg/prod
 
 	tabstat proporcion [aw=factor], save
 	tempname PR

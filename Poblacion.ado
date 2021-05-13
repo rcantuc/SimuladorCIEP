@@ -402,6 +402,7 @@ quietly {
 			g pob61 = poblacionSIM if edad >= 61
 		}
 
+		preserve
 		collapse (sum) pob18 pob1934 pob3560 pob61 poblacion*, by(anio)
 		format poblacion pob* %15.0fc
 
@@ -513,6 +514,8 @@ quietly {
 			if "$export" != "" {
 				graph export "$export/Estructura_poblacion_`anioinicial'_`aniofinal'.png", replace name(Estructura_`anioinicial'_`aniofinal')
 			}
+			
+			restore
 	}
 
 
