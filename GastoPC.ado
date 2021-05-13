@@ -25,7 +25,7 @@ quietly {
 		use if anio == `anio' using `"`c(sysdir_personal)'/SIM/Poblaciontot.dta"', clear
 		local ajustepob = poblacion
 		
-		use "`c(sysdir_personal)'/SIM/2018/households.dta", clear
+		use "`c(sysdir_personal)'/SIM/2018/households`anio'.dta", clear
 		tabstat factor, stat(sum) f(%20.0fc) save
 		tempname pobenigh
 		matrix `pobenigh' = r(StatTotal)

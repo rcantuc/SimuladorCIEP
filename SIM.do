@@ -21,9 +21,9 @@ if "`c(os)'" == "Unix" & "`c(username)'" == "ciepmx" {                          
 adopath ++ PERSONAL                                                             // SUBIR DIRECTORIO BRANCH COMO PRINCIPAL
 
 
-****************************************/
-**    OPCIONES (GLOBALES + LOCALES)    **
-*****************************************
+**********************************************/
+**       OPCIONES (GLOBALES + LOCALES)       **
+***********************************************
 local aniovp = substr(`"`c(current_date)'"',-4,4)                               // AÑO VALOR PRESENTE
 global id = "`c(username)'"                                                     // ID DEL USUARIO
 *global nographs "nographs"                                                      // SUPRIMIR GRAFICAS
@@ -76,34 +76,34 @@ global inf2021 = 3.8                                                            
 global inf2022 = 3.0                                                            // Pre-CGPE 2022: 3.0
 
 
-*************************
-**    1.1 POBLACION    **
-*************************
+*******************************
+**       1.1 POBLACION       **
+*******************************
 *forvalues k=1950(1)2050 {
 foreach k in `aniovp' {
 	noisily Poblacion, $nographs anio(`k') //update //tf(`=64.333315/2.1*1.8') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040) 
 }
 
 
-*************************/
-**    1.2 HOUSEHOLDS    **
-**************************
+*******************************/
+**       1.2 HOUSEHOLDS       **
+********************************
 capture use `"$sysdir_principal/users/$pais/bootstraps/1/PensionREC.dta"', clear
 if _rc != 0 | "$export" != "" {
-
-	** HOUSEHOLDS: INCOMES **
 	local id = "$id"
 	global id = ""
-	noisily run `"$sysdir_principal/Households.do"' 2018
 
-	** HOUSEHOLDS: EXPENDITURES **
+	** 1.2.1 HOUSEHOLDS: INCOMES **
+	noisily run `"$sysdir_principal/Households.do"' 2018
+	noisily run `"$sysdir_principal/PerfilesSim.do"' `aniovp'
+
+	** 1.2.2 HOUSEHOLDS: EXPENDITURES **
 	noisily run "$sysdir_principal/Expenditure.do" 2018
 
-	** SANKEY **
+	** 1.2.3 SANKEY **
 	if `c(version)' > 13.1 {
 		foreach k in grupoedad decil escol sexo {
-			noisily run "$sysdir_principal/SankeyCC.do" `k' 2018
-			*noisily run "$sysdir_principal/Sankey.do" `k' 2018
+			noisily run "$sysdir_principal/Sankey.do" `k' 2018
 		}
 	}
 	global id = "`id'"
@@ -118,19 +118,13 @@ if _rc != 0 | "$export" != "" {
 ***    2. Simulador v5: PIB + Deflactor    ***
 ***                                        ***
 **********************************************
-noisily PIBDeflactor, anio(`aniovp') $nographs //geo(`geo') //discount(3.0)
-if `c(version)' > 13.1 {
-	saveold "$sysdir_principal/users/$pais/$id/PIB.dta", replace version(13)
-}
-else {
-	save "$sysdir_principal/users/$pais/$id/PIB.dta", replace
-}
+noisily PIBDeflactor, anio(`aniovp') $nographs save //update //geo(`geo') //discount(3.0)
 
 
-*******************************
-**    2.1 SCN + Inflacion    **
-*******************************
-noisily Inflacion, anio(`aniovp') $nographs update
+*************************************
+**       2.1 SCN + Inflacion       **
+*************************************
+noisily Inflacion, anio(`aniovp') $nographs //update
 noisily SCN, anio(`aniovp') $nographs //update
 
 
@@ -208,9 +202,9 @@ scalar OtrosC  = 36.902* 2.892/100 //    Productos, derechos, aprovechamientos, 
 
 
 
-************************************************
-***    4.1. Impuesto Sobre la Renta (ISR)    ***
-************************************************
+******************************************************
+***       4.1. Impuesto Sobre la Renta (ISR)       ***
+******************************************************
 
 *               Inferior    Superior    CF          Tasa
 matrix	ISR	= (	0.01,		7735.00,	0.0,		1.92	\	/// 1
@@ -257,8 +251,8 @@ if _rc == 0 {
 	scalar ISRPF = ISR_PF_Mod
 	scalar ISRPM = ISR_PM_Mod
 }
-***    FIN: PARAMETROS ISR    ***
-*********************************
+***       FIN: PARAMETROS ISR       ***
+***************************************
 
 
 if "$output" == "output" {
@@ -272,9 +266,9 @@ if "$output" == "output" {
 }
 
 
-**************************************************
-***    4.2. Impuesto al Valor Agregado (VA)    ***
-**************************************************
+********************************************************
+***       4.2. Impuesto al Valor Agregado (VA)       ***
+********************************************************
 matrix IVAT = (16 \     ///  1  Tasa general 
                1  \     ///  2  Alimentos, 1: Tasa Cero, 2: Exento, 3: Gravado
                2  \     ///  3  Alquiler, idem
@@ -298,8 +292,8 @@ capture confirm scalar IVA_Mod
 if _rc == 0 {
 	scalar IVA = IVA_Mod
 }
-***    FIN: PARAMETROS IVA    ***
-*********************************
+***       FIN: PARAMETROS IVA       ***
+***************************************
 
 
 if "$output" == "output" {
@@ -332,22 +326,21 @@ label var AportacionesNetas "las aportaciones netas"
 save `"$sysdir_principal/users/$pais/$id/households.dta"', replace
 
 
-******************************
-**    5.1 REDISTRIBUCION    **
-******************************
-noisily Simulador AportacionesNetas if AportacionesNetas != 0 [fw=factor], ///
-	base("ENIGH 2018") boot(1) reboot nographs anio(`aniovp')
+************************************
+**       5.1 REDISTRIBUCION       **
+************************************
+noisily Simulador AportacionesNetas [fw=factor], base("ENIGH 2018") boot(1) reboot nographs anio(`aniovp')
 
 
-********************************
-**    5.2 CUENTA GENERACIONAL **
-/********************************
+****************************************
+**       5.2 CUENTA GENERACIONAL      **
+/***************************************
 noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) 	//	<-- OPTIONAL!!! Toma mucho tiempo.
 
 
-*********************************************/
-**    5.3 PROYECCION DE LAS APORTACIONES    **
-**********************************************
+***************************************************/
+**       5.3 PROYECCION DE LAS APORTACIONES       **
+****************************************************
 use `"$sysdir_principal/users/$pais/$id/bootstraps/1/AportacionesNetasREC.dta"', clear
 merge 1:1 (anio) using "$sysdir_principal/users/$pais/$id/PIB.dta", nogen
 *replace estimacion = estimacion/1000000000000
@@ -417,9 +410,9 @@ if "$output" == "output" {
 ********************************
 
 
-**********************
-**    6.1 SANKEY    **
-**********************
+****************************
+**       6.1 SANKEY       **
+****************************
 if "$export" != "" {
 	foreach k in decil sexo grupoedad escol {
 		noisily run "$sysdir_principal/SankeySF.do" `k' `aniovp'
@@ -427,11 +420,10 @@ if "$export" != "" {
 }
 
 
-**************************
-**    6.2 FISCAL GAP    **
-**************************
+********************************
+**       6.2 FISCAL GAP       **
+********************************
 noisily FiscalGap, anio(`aniovp') $nographs end(2030) //boot(250) //update
-
 
 if "$output" == "output" {
 	quietly log close output
