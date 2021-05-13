@@ -198,7 +198,7 @@ quietly {
 	return scalar anio_exo = `anio_exo'
 
 	scalar llambda = ((OutputPerWorker[`obs_exo']/OutputPerWorker[`=`obs_exo'-`geo''])^(1/`geo')-1)*100
-	local Lambda = ((OutputPerWorker[`obs_exo']/OutputPerWorker[1])^(1/(`obs_exo'-1))-1)*100
+	scalar LLambda = ((OutputPerWorker[`obs_exo']/OutputPerWorker[1])^(1/(`obs_exo'-1))-1)*100
 	capture confirm existence $lambda
 	if _rc == 0 {
 		scalar llambda = $lambda
@@ -230,8 +230,9 @@ quietly {
 	noisily di in g " PIB " in y "`anio_last'`trim_last'" _col(25) %20.0fc `pib_last' in g " `=currency[`obsvp']' ({c u'}ltimo reportado)"
 	noisily di _newline in g " PIB " in y anio[`obsvp'] in g " per c{c a'}pita " in y _col(35) %10.1fc pibY[`obsvp']/`pobtotal'[1,1] in g " `=currency[`obs_exo']'"
 	noisily di in g " PIB " in y anio[`obs_exo'] in g " por trabajador " in y _col(35) %10.1fc OutputPerWorker[`obs_exo'] in g " `=currency[`obs_exo']'"
-	noisily di in g " Lambda " in y anio[`=`obs_exo'-`geo''] "-" anio[`obs_exo'] _col(35) %10.4f scalar(llambda) in g " %" 
-	noisily di in g " Lambda " in y anio[1] "-" anio[`obs_exo'] _col(35) %10.4f `Lambda' in g " %" 
+	noisily di in g " Lambda total " in y anio[`=`obs_exo'-`geo''] "-" anio[`obs_exo'] _col(35) %10.4f ((pibYR[`obs_exo']/pibYR[`=`obs_exo'-`geo'-1'])^(1/`geo')-1)*100 in g " %" 
+	noisily di in g " Lambda por trabajador " in y anio[`=`obs_exo'-`geo''] "-" anio[`obs_exo'] _col(35) %10.4f scalar(llambda) in g " %" 
+	noisily di in g " Lambda por trabajador " in y anio[1] "-" anio[`obs_exo'] _col(35) %10.4f scalar(LLambda) in g " %" 
 
 	local grow_rate_LR = (pibYR[_N]/pibYR[_N-10])^(1/10)-1
 	*scalar pibINF = pibYR[_N]*(1+`grow_rate_LR')*(1+`discount'/100)^(`=anio[`obsvp']'-`=anio[_N]')/((`discount'/100)-`grow_rate_LR'+((`discount'/100)*`grow_rate_LR'))
@@ -251,7 +252,8 @@ quietly {
 	scalar anioPWI = anio[`=`obs_exo'-`geo'']
 	scalar anioPWF = anio[`obs_exo']
 	scalar outputPW = string(OutputPerWorker[`obsvp'],"%10.0fc")
-	scalar lambdaNW = ((pibYR[`obs_exo']/pibYR[`=`obs_exo'-`geo''])^(1/`geo')-1)*100
+	scalar lambdaNW = ((pibYR[`obs_exo']/pibYR[`=`obs_exo'-`geo'-1'])^(1/`geo')-1)*100
+	scalar LambdaNW = ((pibYR[`obs_exo']/pibYR[1])^(1/(anio[`obs_exo']-anio[1]))-1)*100
 
 
 	noisily di _newline in g " PIB " in y "al infinito" in y _col(22) %23.0fc `pibYVP'[1,1] + pibINF in g " `=currency[`obsvp']'"
@@ -369,7 +371,7 @@ quietly {
 			yscale(range(0)) /*xscale(range(1993))*/ ///
 			legend(label(1 "Reportado") label(2 "Proyectado") label(3 "Estimado") order(1 3 2)) ///
 			///legend(label(1 "Observed") label(2 "Projected") label(3 "Estimated") order(1 3 2)) ///
-			note("{bf:Productividad laboral}: `=string(scalar(llambda),"%6.3f")'% (`=anio[[`=`obs_exo'-`geo'']]'-`=anio[`obs_exo']'); `=string(`Lambda',"%6.3f")'% (`=anio[1]'-`=anio[`obs_exo']'). {bf:{c U'}ltimo dato reportado}: `anio_last'`trim_last'.") ///
+			note("{bf:Productividad laboral}: `=string(scalar(llambda),"%6.3f")'% (`=anio[[`=`obs_exo'-`geo'']]'-`=anio[`obs_exo']'); `=string(scalar(LLambda),"%6.3f")'% (`=anio[1]'-`=anio[`obs_exo']'). {bf:{c U'}ltimo dato reportado}: `anio_last'`trim_last'.") ///
 			///note("{bf:Note}: Annual Labor Productivity Growth: `=string(scalar(llambda),"%6.3f")'% (`=anio[[`=`obs_exo'-`geo'']]'-`=anio[`obs_exo']').") ///
 			///caption("{it:Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, BIE.}") ///
 			name(PIBP, replace)
