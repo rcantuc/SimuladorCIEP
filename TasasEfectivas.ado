@@ -355,6 +355,72 @@ quietly {
 		"]"
 		quietly log off output
 	}
+
+
+	** DATOS ABIERTOS **
+	if "$export" != "" {
+		DatosAbiertos XNA0120_s, g    //    ISR salarios
+		DatosAbiertos XNA0120_f, g    //    ISR PF
+		DatosAbiertos XNA0120_m, g    //    ISR PM
+		DatosAbiertos XKF0114, g      //    Cuotas IMSS
+		DatosAbiertos XAB1120, g      //    IVA
+		DatosAbiertos XNA0141, g      //    ISAN
+		DatosAbiertos XAB1130, g      //    IEPS
+		DatosAbiertos XNA0136, g      //    Importaciones
+		DatosAbiertos FMP_Derechos, g //    FMP_Derechos
+		DatosAbiertos XAB2110, g      //    Ingresos propios Pemex
+		DatosAbiertos XOA0115, g      //    Ingresos propios CFE
+		DatosAbiertos XKF0179, g      //    Ingresos propios IMSS
+		DatosAbiertos XOA0120, g      //    Ingresos propios ISSSTE
+	}
+
+
+	** GRAFICA PROYECCION **
+	if "$export" != "" {
+		forvalues aniohoy = `anio'(1)`anio' {
+		*forvalues aniohoy = 1990(1)2050 {
+			use `"$sysdir_principal/SIM/2018/households.dta"', clear
+			noisily Simulador ImpuestosAportaciones if ImpuestosAportaciones != 0 [fw=factor], ///
+				base("ENIGH 2018") boot(1) reboot nographs anio(2020)
+
+			use `"$sysdir_principal/users/$id/bootstraps/1/ImpuestosAportacionesREC.dta"', clear
+			merge 1:1 (anio) using `"$sysdir_principal/users/$id/PIB.dta"', nogen
+			replace estimacion = estimacion/1000000000000
+
+			tabstat estimacion, stat(max) save
+			tempname MAX
+			matrix `MAX' = r(StatTotal)
+			forvalues k=1(1)`=_N' {
+				if estimacion[`k'] == `MAX'[1,1] {
+					local aniomax = anio[`k']
+				}
+				if anio[`k'] == `aniohoy' {
+					local estimacionvp = estimacion[`k']
+				}
+			}
+
+			if "$nographs" == "" {
+				twoway (connected estimacion anio) (connected estimacion anio if anio == `aniohoy') if anio > 1990, ///
+					ytitle("billones MXN `aniovp'") ///
+					yscale(range(0)) /*ylabel(0(1)4)*/ ///
+					ylabel(#5, format(%5.1fc) labsize(small)) ///
+					xlabel(1990(10)2050, labsize(small) labgap(2)) ///
+					xtitle("") ///
+					legend(off) ///
+					text(`=`MAX'[1,1]' `aniomax' "{bf:M{c a'}ximo:} `aniomax'", place(w)) ///
+					text(`estimacionvp' `aniohoy' "{bf:`aniohoy'}", place(e)) ///
+					///title("{bf:Proyecciones} de los impuestos y aportaciones") subtitle("$pais") ///
+					///caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5.") ///
+					name(ImpuestosAportacionesProj, replace)
+
+				capture confirm existence $export
+				if _rc == 0 {
+					graph export "$export/ImpuestosAportacionesProj`aniohoy'.png", replace name(ImpuestosAportacionesProj)
+				}
+			}
+		}
+	}
+
 	
 	
 	

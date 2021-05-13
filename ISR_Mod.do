@@ -2,6 +2,7 @@
 timer on 94
 local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 local anio = substr(`"`=trim("`fecha'")'"',1,4) // 								<-- anio base: HOY
+noisily di _newline(2) in g "   MODULO: " in y "ISR"
 
 
 
@@ -33,7 +34,7 @@ local smdf = 141.7																// Salario minimo general
 * Households *
 use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
 replace ing_bruto_tax = ing_bruto_tax/(`lambda'*`deflator')
-replace ing_capital = ing_capital*25.438/28.491 //(`lambda'*`deflator')
+*replace ing_capital = ing_capital*25.438/28.491 //(`lambda'*`deflator')
 
 
 * Cuotas a la Seguridad Social IMSS *
@@ -42,7 +43,7 @@ tempname cuotasTP
 matrix `cuotasTP' = r(StatTotal)
 
 replace cuotasTP = cuotasTP*(scalar(CuotasT)/100*scalar(PIB))/`cuotasTP'[1,1] if formal2 == 1
-replace cuotasT = cuotasTP*cuotasT/(cuotasT + cuotasP) //cuotasT/(`lambda'*`deflator') // *79185533/77096593 if formal2 == 1
+replace cuotasTPF = cuotasF + cuotasTP
 
 
 **************************
@@ -78,13 +79,11 @@ forvalues j=`=rowsof(ISR)'(-1)1 {
 			 //& formal != 0
 
 		replace ISR = ISR[`j',3] + (ISR[`j',4]/100)*(ing_bruto_tax - exen_tot - deduc_isr - cuotasTPF - ISR[`j',1]) ///
-			- SE[`k',3]*htrab/48 ///
-			if categF == "J`j'K`k'" /*& formal != 0*/ & htrab < 48 & tipo_contribuyente == 1
+			- SE[`k',3]*htrab/48 if categF == "J`j'K`k'" /*& formal != 0*/ & htrab < 48 & ing_t4_cap1 > 0
 		replace ISR = ISR[`j',3] + (ISR[`j',4]/100)*(ing_bruto_tax - exen_tot - deduc_isr - cuotasTPF - ISR[`j',1]) ///
-			- SE[`k',3] ///
-			if categF == "J`j'K`k'" /*& formal != 0*/ & htrab >= 48 & tipo_contribuyente == 1
+			- SE[`k',3] if categF == "J`j'K`k'" /*& formal != 0*/ & htrab >= 48 & ing_t4_cap1 > 0
 		replace ISR = ISR[`j',3] + (ISR[`j',4]/100)*(ing_bruto_tax - exen_tot - deduc_isr - cuotasTPF - ISR[`j',1]) ///
-			if categF == "J`j'K`k'" /*& formal != 0*/ & (tipo_contribuyente == 2 | tipo_contribuyente == . | htrab == 0)
+			if categF == "J`j'K`k'" /*& formal != 0*/ & ((ing_t4_cap1 == 0 & ing_bruto_tax > 0) | htrab == . | htrab == 0)
 	}
 }
 
@@ -95,28 +94,22 @@ if _rc != 0 {
 replace TE = 0 if TE == .
 
 
-* Ajuste ISR Salarios *
-replace ISR = ISR if tipo_contribuyente == 1 & formal != 0
-
-
 ***********************
 * FORMALIDAD SALARIOS *
 replace formal_asalariados = 0
 replace formal_asalariados = 1 //if prop_formal <= (1-DED[1,4]/100)
 
 * ISR SALARIOS + SUBSIDIO AL EMPLEO *
-replace ISR__asalariados = ISR*3.491/3.232*3.491/2.611 if formal_asalariados == 1 & tipo_contribuyente == 1
+replace ISR__asalariados = ISR /*3.491/3.232*3.491/2.611*/ if formal_asalariados == 1
 replace ISR__asalariados = 0 if ISR__asalariados == .
 label var ISR__asalariados "ISR (retenciones por salarios)"
 
 
-**********************
-* FORMALIDAD FISICAS *
+************************
+* ISR PERSONAS FISICAS *
 replace formal_fisicas = 0
 replace formal_fisicas = 1 if prop_formal <= (1-DED[1,3]/100)
-
-* ISR PERSONAS FISICAS *
-replace ISR__PF = ISR*0.195/0.186 /*0.227/0.469*/ if formal_fisicas == 1 & tipo_contribuyente != 1
+replace ISR__PF = ISR - ISR__asalariados /*0.195/0.186*0.227/0.469*/ if ISR - ISR__asalariados > 0 & ISR > 0 & formal_fisicas == 1
 replace ISR__PF = 0 if ISR__PF == .
 label var ISR__PF "ISR (personas f{c i'}sicas)"
 
@@ -127,7 +120,7 @@ replace formal_morales = 0
 replace formal_morales = 1 if prop_formal <= (1-PM[1,2]/100)
 
 * ISR PERSONAS MORALES *
-replace ISR__PM = (ing_capital*(1-.31353561))*PM[1,1]/100*3.839/3.840			// 0.31353561: Ahorro bruto de Sociedad e ISFLSH
+replace ISR__PM = (ing_t2_cap1+ing_t2_cap8)*PM[1,1]/100 // *3.839/3.840			// 0.31353561: Ahorro bruto de Sociedad e ISFLSH
 replace ISR__PM = 0 if ISR__PM == .
 label var ISR__PM "ISR (personas morales)"
 

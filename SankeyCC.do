@@ -52,7 +52,7 @@ encode `to', g(to)
 * from *
 rename `1' from
 
-* Sector Publico *
+/* Sector Publico *
 set obs `=_N+1'
 replace from = -2 in -1
 replace profile = `IMSSpropio' + `ISSSTEpropio' + `CFEpropio' + ///

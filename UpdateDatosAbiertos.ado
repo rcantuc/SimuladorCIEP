@@ -26,7 +26,6 @@ program define UpdateDatosAbiertos, return
 	}
 	noisily di _newline in g "Datos Abiertos: " in y "ACTUALIZANDO. Favor de esperar. Descargando bases de SHCP (10 mins. aprox.)."
 
-
 	*****************************************
 	** 1.1 Ingreso, gasto y financiamiento **
 	*import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/ingreso_gasto_finan.csv", clear
