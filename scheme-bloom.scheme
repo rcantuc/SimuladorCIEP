@@ -1,0 +1,427 @@
+#include s2color
+// #include economist
+// #include s1rcolor
+
+// help scheme entries
+// help scheme files
+
+// Background
+color 		background 		"249,249,249"
+color 		plotregion 		"249,249,249"
+color 		plotregion_line		"249,249,249"
+
+// By background
+// color 		bylabel_outline   	none
+// color 		textbox  		"236,236,236"
+
+
+// Grids
+color 		major_grid 		"194,195,200"
+linepattern 	major_grid 		dash
+linewidth 	major_grid		thin
+yesno 		draw_major_nlt_vgrid 	yes
+
+// Axis
+axisstyle 	vertical_default 	vertical_nolinetick
+axisstyle 	bar_scale_vert		vertical_nolinetick
+anglestyle 	vertical_tick 		horizontal
+anglestyle 	horizontal_tick 	horizontal
+color 		tick_biglabel 		"122,122,122"
+color 		axis_title 		"122,122,122"
+tickposition	axis_tick		inside
+gsize      	tick_label		small
+linewidth	axisline		medthick
+
+
+
+// Graph Size
+// graphsize 	x 			5.5, 13
+// graphsize 	y 			4, 8
+graphsize 	x 			13
+graphsize 	y 			8
+margin 		graph			medlarge
+margin 		combinegraph		medlarge
+margin 		piegraph		medlarge
+
+
+// Title, subtitle, caption, notes
+clockdir 	title_position	1
+color 		heading			black
+gsize 		heading			large
+yesno 		title_span		yes
+clockdir 	subtitle_position	1
+gsize 		subheading 		medlarge
+yesno 		subtitle_span		yes
+clockdir 	caption_position	1
+gsize 		body			vsmall
+yesno 		caption_span		yes
+clockdir 	note_position		5
+gsize 		small_body		vsmall
+yesno 		note_span		yes
+textboxstyle	t1title			body
+textboxstyle	t2title			small_body
+textboxstyle	b1title			body
+textboxstyle	b2title			small_body
+
+// Legend
+clockdir 	legend_position		7
+color 		legend			"249,249,249"
+linestyle 	legend			none
+gsize 		legend_key_xsize	medlarge
+gsize 		legend_key_ysize	medlarge
+numstyle 	legend_cols		3
+gsize 		key_label		small
+
+// Added text
+gsize 		text_option 		vsmall
+color 		text_option		black
+clockdir 	text_option		12
+
+// Labels
+color 		label 			white
+
+// Bar labels
+barlabelpos 	bar 			center
+// relsize 	bar_gap			500
+relsize 	bar_groupgap		30
+// relsize 	bar_subgroupgap		500
+
+
+// Símbolos
+// symbol 		p 			square
+// symbolsize 	p			small
+
+// Grosor
+linewidth 	p1mark			thick
+linewidth 	p2mark			thick
+linewidth 	p3mark			thick
+linewidth 	p4mark			thick
+linewidth 	p5mark			thick
+linewidth 	p6mark			thick
+linewidth 	p7mark			thick
+linewidth 	p8mark			thick
+linewidth 	p9mark			thick
+linewidth 	p10mark			thick
+linewidth 	p11mark			thick
+linewidth 	p12mark			thick
+linewidth 	p13mark			thick
+linewidth 	p14mark			thick
+linewidth 	p15mark			thick
+linewidth 	p16mark			thick
+linewidth 	p17mark			thick
+
+linewidth 	p1			thick
+linewidth 	p2			thick
+linewidth 	p3			thick
+linewidth 	p4			thick
+linewidth 	p5			thick
+linewidth 	p6			thick
+linewidth 	p7			thick
+linewidth 	p8			thick
+linewidth 	p9			thick
+linewidth 	p10			thick
+linewidth 	p11			thick
+linewidth 	p12			thick
+linewidth 	p13			thick
+linewidth 	p14			thick
+linewidth 	p15			thick
+linewidth 	p16			thick
+linewidth 	p17			thick
+
+linewidth 	p1lineplot		thick
+linewidth 	p2lineplot		thick
+linewidth 	p3lineplot		thick
+linewidth 	p4lineplot		thick
+linewidth 	p5lineplot		thick
+linewidth 	p6lineplot		thick
+linewidth 	p7lineplot		thick
+linewidth 	p8lineplot		thick
+linewidth 	p9lineplot		thick
+linewidth 	p10lineplot		thick
+linewidth 	p11lineplot		thick
+linewidth 	p12lineplot		thick
+linewidth 	p13lineplot		thick
+linewidth 	p14lineplot		thick
+linewidth 	p15lineplot		thick
+linewidth 	p16lineplot		thick
+linewidth 	p17lineplot		thick
+
+linewidth 	p1bar			thick
+linewidth 	p2bar			thick
+linewidth 	p3bar			thick
+linewidth 	p4bar			thick
+linewidth 	p5bar			thick
+linewidth 	p6bar			thick
+linewidth 	p7bar			thick
+linewidth 	p8bar			thick
+linewidth 	p9bar			thick
+linewidth 	p10bar			thick
+linewidth 	p11bar			thick
+linewidth 	p12bar			thick
+linewidth 	p13bar			thick
+linewidth 	p14bar			thick
+linewidth 	p15bar			thick
+linewidth 	p16bar			thick
+linewidth 	p17bar			thick
+
+// Colores
+color 		p1markfill		white
+color 		p2markfill		white
+color 		p3markfill		white
+color 		p4markfill		white
+color 		p5markfill		white
+color 		p6markfill		white
+color 		p7markfill		white
+color 		p8markfill		white
+color 		p9markfill		white
+color 		p10markfill		white
+color 		p11markfill		white
+color 		p12markfill		white
+color 		p13markfill		white
+color 		p14markfill		white
+color 		p15markfill		white
+color 		p16markfill		white
+color 		p17markfill		white
+
+color 		p1markline		"0,78,198"
+color 		p2markline		"185,207,240"
+color 		p3markline		"9,38,91"
+color 		p4markline		"254,118,109"
+color 		p5markline		"255,217,215"
+color 		p6markline		"115,51,62"
+color 		p7markline		"103,223,86"
+color 		p8markline		"214,246,209"
+color 		p9markline		"39,97,48"
+color 		p10markline		"255,182,75"
+color 		p11markline		"255,235,206"
+color 		p12markline		"113,81,48"
+color 		p13markline		"150,6,92"
+color 		p14markline		"226,187,210"
+color 		p15markline		"46,9,40"
+color 		p16markline		"57,198,184"
+color 		p17markline		"201,240,236"
+color 		p18markline		"18,79,86"
+color 		p19markline		"227,229,99"
+color 		p20markline		"248,248,212"
+color 		p21markline		"98,102,54"
+
+
+color 		p1line			"0,78,198"
+color 		p2line			"185,207,240"
+color 		p3line			"9,38,91"
+color 		p4line			"254,118,109"
+color 		p5line			"255,217,215"
+color 		p6line			"115,51,62"
+color 		p7line			"103,223,86"
+color 		p8line			"214,246,209"
+color 		p9line			"39,97,48"
+color 		p10line			"255,182,75"
+color 		p11line			"255,235,206"
+color 		p12line			"113,81,48"
+color 		p13line			"150,6,92"
+color 		p14line			"226,187,210"
+color 		p15line			"46,9,40"
+color 		p16line			"57,198,184"
+color 		p17line			"201,240,236"
+color 		p18line			"18,79,86"
+color 		p19line			"227,229,99"
+color 		p20line			"248,248,212"
+color 		p21line			"98,102,54"
+
+
+
+
+color 		p1lineplot		"0,78,198"
+color 		p2lineplot		"185,207,240"
+color 		p3lineplot		"9,38,91"
+color 		p4lineplot		"254,118,109"
+color 		p5lineplot		"255,217,215"
+color 		p6lineplot		"115,51,62"
+color 		p7lineplot		"103,223,86"
+color 		p8lineplot		"214,246,209"
+color 		p9lineplot		"39,97,48"
+color 		p10lineplot		"255,182,75"
+color 		p11lineplot		"255,235,206"
+color 		p12lineplot		"113,81,48"
+color 		p13lineplot		"150,6,92"
+color 		p14lineplot		"226,187,210"
+color 		p15lineplot		"46,9,40"
+color 		p16lineplot		"57,198,184"
+color 		p17lineplot		"201,240,236"
+color 		p18lineplot		"18,79,86"
+color 		p19lineplot		"227,229,99"
+color 		p20lineplot		"248,248,212"
+color 		p21lineplot		"98,102,54"
+
+color 		p1area			"0,78,198"
+color 		p2area			"185,207,240"
+color 		p3area			"9,38,91"
+color 		p4area			"254,118,109"
+color 		p5area			"255,217,215"
+color 		p6area			"115,51,62"
+color 		p7area			"103,223,86"
+color 		p8area			"214,246,209"
+color 		p9area			"39,97,48"
+color 		p10area			"255,185,75"
+color 		p11area			"255,235,206"
+color 		p12area			"113,81,48"
+color 		p13area			"150,6,92"
+color 		p14area			"226,187,210"
+color 		p15area			"46,9,40"
+color 		p16area			"57,198,184"
+color 		p17area			"201,240,236"
+color 		p18area			"18,79,86"
+color 		p19area			"227,229,99"
+color 		p20area			"248,248,212"
+color 		p21area			"98,102,54"
+
+linewidth	p1area			none
+linewidth	p2area			none
+linewidth	p3area			none
+linewidth	p4area			none
+linewidth	p5area			none
+linewidth	p6area			none
+linewidth	p7area			none
+linewidth	p8area			none
+linewidth	p9area			none
+linewidth	p10area			none
+linewidth	p11area			none
+linewidth	p12area			none
+linewidth	p13area			none
+linewidth	p14area			none
+linewidth	p15area			none
+linewidth	p16area			none
+linewidth	p17area			none
+
+color 		p1arealine		"0,78,198"
+color 		p2arealine		"185,207,240"
+color 		p3arealine		"9,38,91"
+color 		p4arealine		"254,118,109"
+color 		p5arealine		"255,217,215"
+color 		p6arealine		"115,51,62"
+color 		p7arealine		"103,223,86"
+color 		p8arealine		"214,246,209"
+color 		p9arealine		"39,97,48"
+color 		p10arealine		"255,182,75"
+color 		p11arealine		"255,235,206"
+color 		p12arealine		"113,81,48"
+color 		p13arealine		"150,6,92"
+color 		p14arealine		"226,187,210"
+color 		p15arealine		"46,9,40"
+color 		p16arealine		"57,198,184"
+color 		p17arealine		"201,240,236"
+color 		p18arealine		"18,79,86"
+color 		p19arealine		"227,229,99"
+color 		p20arealine		"248,248,212"
+color 		p21arealine		"98,102,54"
+
+color 		p1bar			"0,78,198"
+color 		p2bar			"185,207,240"
+color 		p3bar			"9,38,91"
+color 		p4bar			"254,118,109"
+color 		p5bar			"255,217,215"
+color 		p6bar			"115,51,62"
+color 		p7bar			"103,223,86"
+color 		p8bar			"214,246,209"
+color 		p9bar			"39,97,48"
+color 		p10bar			"255,182,75"
+color 		p11bar			"255,235,206"
+color 		p12bar			"113,81,48"
+color 		p13bar			"150,6,92"
+color 		p14bar			"226,187,210"
+color 		p15bar			"46,9,40"
+color 		p16bar			"57,198,184"
+color 		p17bar			"201,240,236"
+color 		p18bar			"18,79,86"
+color 		p19bar			"227,229,99"
+color 		p20bar			"248,248,212"
+color 		p21bar			"98,102,54"
+
+color 		p1barline		"0,78,198"
+color 		p2barline		"185,207,240"
+color 		p3barline		"9,38,91"
+color 		p4barline		"254,118,109"
+color 		p5barline		"255,217,215"
+color 		p6barline		"115,51,62"
+color 		p7barline		"103,223,86"
+color 		p8barline		"214,246,209"
+color 		p9barline		"39,97,48"
+color 		p10barline		"255,182,75"
+color 		p11barline		"255,235,206"
+color 		p12barline		"113,81,48"
+color 		p13barline		"150,6,92"
+color 		p14barline		"226,187,210"
+color 		p15barline		"46,9,40"
+color 		p16barline		"57,198,184"
+color 		p17barline		"201,240,236"
+color 		p18barline		"18,79,86"
+color 		p19barline		"227,229,99"
+color 		p20barline		"248,248,212"
+color 		p21barline		"98,102,54"
+
+color 		p1box			"0,78,198"
+color 		p2box			"185,207,240"
+color 		p3box			"9,38,91"
+color 		p4box			"254,118,109"
+color 		p5box			"255,217,215"
+color 		p6box			"115,51,62"
+color 		p7box			"103,223,86"
+color 		p8box			"214,246,209"
+color 		p9box			"39,97,48"
+color 		p10box			"255,182,75"
+color 		p11box			"255,235,206"
+color 		p12box			"113,81,48"
+color 		p13box			"150,6,92"
+color 		p14box			"226,187,210"
+color 		p15box			"46,9,40"
+color 		p16box			"57,198,184"
+color 		p17box			"201,240,236"
+color 		p18box			"18,79,86"
+color 		p19box			"227,229,99"
+color 		p20box			"248,248,212"
+color 		p21box			"98,102,54"
+
+color 		p1pie			"0,78,198"
+color 		p2pie			"185,207,240"
+color 		p3pie			"9,38,91"
+color 		p4pie			"254,118,109"
+color 		p5pie			"255,217,215"
+color 		p6pie			"115,51,62"
+color 		p7pie			"103,223,86"
+color 		p8pie			"214,246,209"
+color 		p9pie			"39,97,48"
+color 		p10pie			"255,182,75"
+color 		p11pie			"255,235,206"
+color 		p12pie			"113,81,48"
+color 		p13pie			"150,6,92"
+color 		p14pie			"226,187,210"
+color 		p15pie			"46,9,40"
+color 		p16pie			"57,198,184"
+color 		p17pie			"201,240,236"
+color 		p18pie			"18,79,86"
+color 		p19pie			"227,229,99"
+color 		p20pie			"248,248,212"
+color 		p21pie			"98,102,54"
+
+
+color 		p1dotmarkfill		"0,78,198"
+color 		p2dotmarkfill		"185,207,240"
+color 		p3dotmarkfill		"9,38,91"
+color 		p4dotmarkfill		"254,118,109"
+color 		p5dotmarkfill		"255,217,215"
+color 		p6dotmarkfill		"115,51,62"
+color 		p7dotmarkfill		"103,223,86"
+color 		p8dotmarkfill		"214,246,209"
+color 		p9dotmarkfill		"39,97,48"
+color 		p10dotmarkfill		"255,182,75"
+color 		p11dotmarkfill		"255,235,206"
+color 		p12dotmarkfill		"113,81,48"
+color 		p13dotmarkfill		"150,6,92"
+color 		p14dotmarkfill		"226,187,210"
+color 		p15dotmarkfill		"46,9,40"
+color 		p16dotmarkfill		"57,198,184"
+color 		p17dotmarkfill		"201,240,236"
+color 		p17dotmarkfill		"18,79,86"
+color 		p17dotmarkfill		"227,229,99"
+color 		p17dotmarkfill		"248,248,212"
+color 		p17dotmarkfill		"98,102,54"
