@@ -13,10 +13,12 @@ capture log close _all
 ********************************
 if"`c(os)'" == "MacOSX" & "`c(username)'" == "ricardo" {                        // Ricardo
 	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/SimuladorCIEP/5.1/simuladorCIEP/"
+	global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"              // GUARDAR GRAFICOS EN...
 }
 
 if "`c(os)'" == "Unix" & "`c(username)'" == "ciepmx" {                          // ServidorCIEP
 	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/SimuladorCIEP/5.1/simuladorCIEP/"
+	global export "/home/ciepmx/Dropbox (CIEP)/Textbook/images/"                // GUARDAR GRAFICOS EN...
 }
 adopath ++ PERSONAL                                                             // SUBIR DIRECTORIO BRANCH COMO PRINCIPAL
 
@@ -28,7 +30,6 @@ local aniovp = substr(`"`c(current_date)'"',-4,4)                               
 global id = "`c(username)'"                                                     // ID DEL USUARIO
 *global nographs "nographs"                                                      // SUPRIMIR GRAFICAS
 *global output "output"                                                         // IMPRIMIR OUTPUTS
-*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"                 // GUARDAR GRAFICOS EN...
 *global pais "El Salvador"                                                      // OTROS PAISES (si aplica)
 
 
@@ -413,11 +414,11 @@ if "$output" == "output" {
 ****************************
 **       6.1 SANKEY       **
 ****************************
-if "$export" != "" {
+*if "$export" != "" {
 	foreach k in decil sexo grupoedad escol {
 		noisily run "$sysdir_principal/SankeySF.do" `k' `aniovp'
 	}
-}
+*}
 
 
 ********************************

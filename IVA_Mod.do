@@ -21,7 +21,7 @@ use "`c(sysdir_personal)'/SIM/2018/expenditure_categ_iva.dta", clear
 
 ** Re C{c a'}lculo del IVA **
 local j = 2
-foreach k in alim alquiler cb educacion fuera mascotas med otros trans transf {
+foreach k in alim alquiler cb educacion fuera mascotas med mujer otros trans transf {
 	replace gasto_anual`k' = gasto_anual`k'/(`deflator')*66.041/68.314
 	
 	if IVAT[`j',1] == 1 {
@@ -43,10 +43,11 @@ foreach k in alim alquiler cb educacion fuera mascotas med otros trans transf {
 
 * SIMULACI{c O'}N: Impuesto al consumo *
 egen Consumo = rsum(IVAalim IVAalquiler IVAcb IVAeducacion IVAfuera ///
-	IVAmascotas IVAmed IVAotros IVAtrans IVAtransf TOTIEPS)
+	IVAmascotas IVAmed IVAmujer IVAotros IVAtrans IVAtransf TOTIEPS)
 
 egen GastoTOT = rsum(gasto_anualalim gasto_anualalquiler gasto_anualcb gasto_anualeducacion ///
-	gasto_anualfuera gasto_anualmascotas gasto_anualmed gasto_anualotros gasto_anualtrans gasto_anualtransf)
+	gasto_anualfuera gasto_anualmascotas gasto_anualmed gasto_mujer gasto_anualotros ///
+	gasto_anualtrans gasto_anualtransf)
 
 capture egen GastoTOTC = rsum(cero*)
 if _rc != 0 {
@@ -65,11 +66,11 @@ if _rc != 0 {
 	g GastoTOTEG = 0
 }
 capture egen IVATotal = rsum(IVAalim IVAalquiler IVAcb IVAeducacion IVAfuera ///
-	IVAmascotas IVAmed IVAotros IVAtrans IVAtransf)
+	IVAmascotas IVAmed IVAmujer IVAotros IVAtrans IVAtransf)
 if _rc != 0 {
 	drop IVATotal
 	egen IVATotal = rsum(IVAalim IVAalquiler IVAcb IVAeducacion IVAfuera ///
-	IVAmascotas IVAmed IVAotros IVAtrans IVAtransf)
+	IVAmascotas IVAmed IVAmujer IVAotros IVAtrans IVAtransf)
 }
 tempfile ivamod
 save `ivamod'	
