@@ -99,8 +99,8 @@ local Ieps10 = r(Alcohol)
 *** 2. DATOS MICROECON{c o'}MICOS (MI) ***
 ******************************************
 capture confirm file "`data'/preconsumption.dta"
-if _rc != 0 {
-*if _rc == 0 {
+*if _rc != 0 {
+if _rc == 0 {
 
 	** MI.1. Base de datos de gastos de los hogares **
 	use "`data'/gastospersona.dta", clear
@@ -289,6 +289,7 @@ if _rc != 0 {
 	replace categ_iva = "transf" if (letra == "M" & num == 1) | (letra == "B" & num == 6)
 	replace categ_iva = "educacion" if letra == "E" & ((num >= 1 & num <= 7) | num == 16 | num == 19) //& publica == 0
 	replace categ_iva = "alquiler" if letra == "G" & ((num >= 1 & num <= 3) | (num >= 101 & num <= 106))
+	replace categ_iva = "mujer" if letra == "D" & num == 15
 	replace categ_iva = "otros" if categ_iva == "" & tiva != .
 
 	** MI.13 IEPS categor{c i'}as **

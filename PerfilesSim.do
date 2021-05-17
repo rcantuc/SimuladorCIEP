@@ -417,5 +417,6 @@ label var IngresosPublicos "Ingresos P{c u'}blicos"
 Simulador IngresosPublicos [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1') $nographs nooutput
 
 
+compress
 drop __*
 save "`c(sysdir_personal)'/SIM/2018/households`1'.dta", replace
