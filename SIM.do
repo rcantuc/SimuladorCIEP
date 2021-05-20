@@ -13,12 +13,12 @@ capture log close _all
 ********************************
 if"`c(os)'" == "MacOSX" & "`c(username)'" == "ricardo" {                        // Ricardo
 	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/SimuladorCIEP/5.1/simuladorCIEP/"
-	global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"              // GUARDAR GRAFICOS EN...
+	*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"              // GUARDAR GRAFICOS EN...
 }
 
 if "`c(os)'" == "Unix" & "`c(username)'" == "ciepmx" {                          // ServidorCIEP
 	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/SimuladorCIEP/5.1/simuladorCIEP/"
-	global export "/home/ciepmx/Dropbox (CIEP)/Textbook/images/"                // GUARDAR GRAFICOS EN...
+	*global export "/home/ciepmx/Dropbox (CIEP)/Textbook/images/"                // GUARDAR GRAFICOS EN...
 }
 adopath ++ PERSONAL                                                             // SUBIR DIRECTORIO BRANCH COMO PRINCIPAL
 
@@ -28,7 +28,7 @@ adopath ++ PERSONAL                                                             
 ***********************************************
 local aniovp = substr(`"`c(current_date)'"',-4,4)                               // AÑO VALOR PRESENTE
 global id = "`c(username)'"                                                     // ID DEL USUARIO
-*global nographs "nographs"                                                      // SUPRIMIR GRAFICAS
+global nographs "nographs"                                                      // SUPRIMIR GRAFICAS
 *global output "output"                                                         // IMPRIMIR OUTPUTS
 *global pais "El Salvador"                                                      // OTROS PAISES (si aplica)
 
@@ -60,12 +60,12 @@ global pib2023 = 2.5
 global pib2024 = 2.5
 global pib2025 = 2.5
 
-/* 2026-2030 *
+* 2026-2030 *
 forvalues k=2026(1)2030 {
 	global pib`k' = $pib2025
 }
 
-* 2031-2050 *
+/* 2031-2050 *
 forvalues k=2031(1)2050 {
 	global pib`k' = $pib2025
 }
@@ -234,11 +234,11 @@ matrix	SE	= (	0.00,		21227.52,	4884.24		\		/// 1
 				85366.81,	88587.96,	2611.32		\		/// 11
 				88587.97, 	1E+14,		0)					//  12
 
-*				SS.MM.		% ing. gr	% Informalidad PF
-matrix DED = (	5,			15,			60.0*0)      		// 65.36
+*				SS.MM.		% ing. gr	% Informalidad PF	% Informalidad Salarios
+matrix DED = (	5,			15,			71.30, 				14.13)
 
 *				Tasa ISR PM.			% Informalidad PM
-matrix PM = (	30,						14.6*0)       		// 41.47 // 35.95
+matrix PM = (	30,						23.39)       		// 41.47 // 35.95
 
 * Cambios ISR */
 local cambioISR = 0
@@ -281,7 +281,7 @@ matrix IVAT = (16 \     ///  1  Tasa general
                3  \     ///  9  Otros, idem
                2  \     /// 10  Transporte local, idem
                3  \     /// 11  Transporte foraneo, idem
-               38.55)   //  12  Evasion e informalidad IVA, idem
+               47.23+.21)   //  12  Evasion e informalidad IVA, idem
 
 * Cambios IVA */
 local cambioIVA = 0
@@ -349,7 +349,7 @@ replace estimacion = estimacion/pibYR*100
 
 forvalues aniohoy = `aniovp'(1)`aniovp' {
 *forvalues aniohoy = 1990(1)2050 {
-	tabstat estimacion if anio >= `aniovp', stat(max) save
+	tabstat estimacion, stat(max) save
 	tempname MAX
 	matrix `MAX' = r(StatTotal)
 	forvalues k=1(1)`=_N' {
@@ -372,10 +372,10 @@ forvalues aniohoy = `aniovp'(1)`aniovp' {
 		xlabel(1990(10)2050, labsize(small) labgap(2)) ///
 		xtitle("") ///
 		legend(off) ///
-		text(`=`MAX'[1,1]' `aniomax' "{bf:Max:} `aniomax'", place(n)) ///
-		text(`estimacionvp' `aniohoy' "{bf:`aniohoy'}", place(s)) ///
-		title("{bf:Proyecciones} de las aportaciones netas") subtitle("$pais") ///
-		caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5.") ///
+		text(`=`MAX'[1,1]' `aniomax' "{bf:M{c a'}ximo:} `aniomax'", place(c)) ///
+		text(`estimacionvp' `aniohoy' "{bf:Hoy:} `aniohoy'", place(c)) ///
+		///title("{bf:Proyecciones} de las aportaciones netas") subtitle("$pais") ///
+		///caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5.") ///
 		name(AportacionesNetasProj, replace)
 
 		capture confirm existence $export
@@ -414,11 +414,11 @@ if "$output" == "output" {
 ****************************
 **       6.1 SANKEY       **
 ****************************
-*if "$export" != "" {
+if "$export" != "" {
 	foreach k in decil sexo grupoedad escol {
 		noisily run "$sysdir_principal/SankeySF.do" `k' `aniovp'
 	}
-*}
+}
 
 
 ********************************

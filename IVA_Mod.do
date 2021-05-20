@@ -1,14 +1,18 @@
-******************
-*** MÓDULO IVA ***
-******************
+****************************
+***                      ***
+***    4.2 MÓDULO IVA    ***
+***                      ***
+****************************
 timer on 93
 local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 local anio = substr(`"`=trim("`fecha'")'"',1,4) // 								<-- anio base: HOY
+noisily di _newline(2) in g "   MODULO: " in y "IVA"
 
 
 
-*******************
-* Microsimulacion *
+*********************
+** Microsimulacion **
+*********************
 use if anio == `anio' | anio == 2018 using "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", clear
 local lambda = lambda[1]
 local deflator = deflator[1]
@@ -46,7 +50,7 @@ egen Consumo = rsum(IVAalim IVAalquiler IVAcb IVAeducacion IVAfuera ///
 	IVAmascotas IVAmed IVAmujer IVAotros IVAtrans IVAtransf TOTIEPS)
 
 egen GastoTOT = rsum(gasto_anualalim gasto_anualalquiler gasto_anualcb gasto_anualeducacion ///
-	gasto_anualfuera gasto_anualmascotas gasto_anualmed gasto_mujer gasto_anualotros ///
+	gasto_anualfuera gasto_anualmascotas gasto_anualmed gasto_anualmujer gasto_anualotros ///
 	gasto_anualtrans gasto_anualtransf)
 
 capture egen GastoTOTC = rsum(cero*)
