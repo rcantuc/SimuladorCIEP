@@ -11,7 +11,7 @@
 *** Defaults ***
 ****************
 if "`1'" == "" {
-	local 1 = 2018
+	local 1 = 2021
 }
 
 
@@ -111,7 +111,7 @@ use "`c(sysdir_personal)'/SIM/2018/households.dta", clear
 
 
 ** (+) Impuestos al ingreso laboral **
-egen laboral = rsum(ISR__asalariados ISR__PF cuotasTP) if formal != 0
+egen laboral = rsum(ISR__asalariados ISR__PF cuotasTPF) if formal != 0
 replace laboral = 0 if laboral == .
 Distribucion Laboral, relativo(laboral) macro(`=`ISRSalarios'+`ISRFisicas'+`CuotasIMSS'')
 label var Laboral "los impuestos al ingreso laboral"

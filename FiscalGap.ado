@@ -177,10 +177,10 @@ quietly {
 			xline(`=`anio'+.5') ///
 			text(`=`otros'[`obs`anio_last'']*.0618' `=`anio'+1.5' "Proyecci{c o'}n", place(ne) color(white)) ///
 			yscale(range(0)) ///
-			title({bf:Proyecci{c o'}n} de los ingresos p{c u'}blicos) ///
+			///title({bf:Proyecci{c o'}n} de los ingresos p{c u'}blicos) ///
 			subtitle($pais) ///
 			xtitle("") ytitle(mil millones `currency' `anio') ///
-			caption("{it:Fuente: Elaborado por el CIEP con el Simulador Fiscal CIEP v5.}") ///
+			///caption("{it:Fuente: Elaborado por el CIEP con el Simulador Fiscal CIEP v5.}") ///
 			name(Proy_ingresos, replace)
 		if "$export" != "" {
 			graph export `"$export/Proy_ingresos.png"', replace name(Proy_ingresos)
@@ -563,9 +563,9 @@ quietly {
 			xline(`=`anio'+.5') ///
 			text(`=`otrosg'[`obs`anio_last'']*.0618' `=`anio'+1.5' "Proyecci{c o'}n", place(ne) color(white)) ///
 			yscale(range(0)) ///
-			title({bf:Proyecci{c o'}n} del gasto p{c u'}blico) ///
+			///title({bf:Proyecci{c o'}n} del gasto p{c u'}blico) ///
 			subtitle($pais) ///
-			caption("{it:Fuente: Elaborado por el CIEP con el Simulador Fiscal CIEP v5.}") ///
+			///caption("{it:Fuente: Elaborado por el CIEP con el Simulador Fiscal CIEP v5.}") ///
 			xtitle("") ytitle(mil millones `currency' `anio') ///
 			name(Proy_gastos, replace)
 		if "$export" != "" {
@@ -581,7 +581,7 @@ quietly {
 			xline(`=`anio'+.5') ///
 			legend(off) ///
 			text(`=rfsp_pib[`obs`anio_last'']*.0618' `=`anio'+1.5' "Proyecci{c o'}n", color(white) placement(e)) ///
-			title({bf: Proyecci{c o'}n} de los RFSP) subtitle($pais) ///
+			///title({bf: Proyecci{c o'}n} de los RFSP) subtitle($pais) ///
 			name(Proy_rfsp, replace)
 	}
 	if "$output" == "output" {
@@ -714,9 +714,9 @@ quietly {
 	if "`nographs'" != "nographs" {
 		twoway (area shrfspPIB anio if shrfspPIB != . & anio <= `anio' & anio >= 2000) ///
 			(area shrfspPIB anio if anio > `anio' & anio <= `end'), ///
-			title({bf:Proyecci{c o'}n} del SHRFSP) ///
+			///title({bf:Proyecci{c o'}n} del SHRFSP) ///
 			subtitle($pais) ///
-			caption("{it:Fuente: Elaborado por el CIEP con el Simulador Fiscal CIEP v5.}") ///
+			///caption("{it:Fuente: Elaborado por el CIEP con el Simulador Fiscal CIEP v5.}") ///
 			xtitle("") ytitle(% PIB) ///
 			xlabel(2005(5)`end') ///
 			yscale(range(0)) ///

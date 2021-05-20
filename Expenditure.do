@@ -99,8 +99,8 @@ local Ieps10 = r(Alcohol)
 *** 2. DATOS MICROECON{c o'}MICOS (MI) ***
 ******************************************
 capture confirm file "`data'/preconsumption.dta"
-*if _rc != 0 {
-if _rc == 0 {
+if _rc != 0 {
+*if _rc == 0 {
 
 	** MI.1. Base de datos de gastos de los hogares **
 	use "`data'/gastospersona.dta", clear
@@ -116,7 +116,7 @@ if _rc == 0 {
 
 	** MI.3. Quitar gastos "no necesarios" **
 	// T916: gasto en regalos a personas ajenas al hogar, erogaciones financieras y de capital. 
-	// N012: PÃ©rdidas y robos de dinero
+	// N012: Pérdidas y robos de dinero
 	drop if clave == "T916" | clave == "N012"
 
 	** MI.4. Gasto anual **
