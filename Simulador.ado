@@ -55,7 +55,7 @@ quietly {
 
 	** Folio **
 	if "`folio'" == "" {
-		local folio = "folio"
+		local folio = "folioviv foliohog"
 	}
 
 	** T{c i'}tulo **

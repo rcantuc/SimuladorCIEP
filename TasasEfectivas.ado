@@ -358,7 +358,7 @@ quietly {
 
 
 	** DATOS ABIERTOS **
-	if "$export" != "" {
+	if "$export" != "" & "$nographs" != "nograhs" {
 		DatosAbiertos XNA0120_s, g    //    ISR salarios
 		DatosAbiertos XNA0120_f, g    //    ISR PF
 		DatosAbiertos XNA0120_m, g    //    ISR PM
