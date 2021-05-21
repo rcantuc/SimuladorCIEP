@@ -116,7 +116,7 @@ if _rc != 0 {
 
 	** MI.3. Quitar gastos "no necesarios" **
 	// T916: gasto en regalos a personas ajenas al hogar, erogaciones financieras y de capital. 
-	// N012: Pérdidas y robos de dinero
+	// N012: PÃ©rdidas y robos de dinero
 	drop if clave == "T916" | clave == "N012"
 
 	** MI.4. Gasto anual **
@@ -634,14 +634,20 @@ if "`altimir'" == "yes" {
 	foreach k in Alim BebN BebA Taba Vest Calz Alqu Agua Elec Hoga ///
 		Salu Vehi FTra STra Comu Recr Educ Rest Dive {
 		local ++j
-		replace gasto_anual = gasto_anual*scalar(TT`k') if categ == `j'
-		replace precio = precio*scalar(TT`k') if categ == `j'
+		if "`k'" == "BebA" | "`k'" == "Taba" {
+			replace gasto_anual = gasto_anual*scalar(TT`k') if categ == `j' & edad > 18
+			replace precio = precio*scalar(TT`k') if categ == `j' & edad > 18
+		}
+		else {
+			replace gasto_anual = gasto_anual*scalar(TT`k') if categ == `j'
+			replace precio = precio*scalar(TT`k') if categ == `j'
+		}
 	}
 
 	** Re C{c a'}lculo del IVA **
 	replace IVA = precio*(`tasagener'/100)*cantidad if informal == 0 & tiva == 2						// IVA general
-	replace IVA = precio*(`tasagener'/100)*(1-proporcion)*cantidad if informal == 0 & tiva == 1						// IVA exento
-	replace IVA = 0 if informal == 1 | tiva == 3					// IVA tasa cero
+	replace IVA = precio*(`tasagener'/100)*(1-proporcion)*cantidad if informal == 0 & tiva == 1			// IVA exento
+	replace IVA = 0 if informal == 1 | tiva == 3													// IVA tasa cero
 	format IVA %10.2fc
 
 	** Re C{c a'}lculo del IEPS **

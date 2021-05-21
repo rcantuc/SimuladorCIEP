@@ -172,14 +172,17 @@ matrix `SIMCSS' = r(StatTotal)
 scalar CuotasT = `SIMCSS'[1,1]/scalar(PIB)*100 //								Cuotas IMSS
 
 
-* SIMULACION: Impuesto al ingreso laboral *
-drop Laboral
-egen Laboral = rsum(ISR__asalariados ISR__PF cuotasTP) if formal != 0
-replace Laboral = 0 if Laboral == .
-label var Laboral "los impuestos al ingreso laboral"
+* SIMULACION *
+*drop Laboral
+*egen Laboral = rsum(ISR__asalariados ISR__PF cuotasTP) if formal != 0
+*replace Laboral = 0 if Laboral == .
+*label var Laboral "los impuestos al ingreso laboral"
 
 *noisily Simulador Laboral [fw=factor_cola], base("ENIGH 2018") boot(1) reboot $nographs nooutput
-*noisily Simulador ISR__PM if ISR__PM != 0 [fw=factor], base("ENIGH 2018") boot(1) reboot $nographs nooutput
+*noisily Simulador ISR__PM [fw=factor], base("ENIGH 2018") boot(1) reboot $nographs nooutput
+
+g ing_bruto_tpm`anio' = ing_bruto_tpm
+noisily Simulador ing_bruto_tpm`anio' [fw=factor], base("ENIGH 2018") boot(1) reboot $nographs nooutput
 
 save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace
 

@@ -12,13 +12,13 @@ capture log close _all
 **    GITHUB (REPOSITORIO)    **
 ********************************
 if"`c(os)'" == "MacOSX" & "`c(username)'" == "ricardo" {                        // Ricardo
-	*sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/SimuladorCIEP/5.1/simuladorCIEP/"
-	*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"              // GUARDAR GRAFICOS EN...
+	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/SimuladorCIEP/5.1/simuladorCIEP/"
+	global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"              // GUARDAR GRAFICOS EN...
 }
 
 if "`c(os)'" == "Unix" & "`c(username)'" == "ciepmx" {                          // ServidorCIEP
 	*sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/SimuladorCIEP/5.1/simuladorCIEP/"
-	*global export "/home/ciepmx/Dropbox (CIEP)/Textbook/images/"                // GUARDAR GRAFICOS EN...
+	global export "/home/ciepmx/Dropbox (CIEP)/Textbook/images/"                // GUARDAR GRAFICOS EN...
 }
 adopath ++ PERSONAL                                                             // SUBIR DIRECTORIO BRANCH COMO PRINCIPAL
 
@@ -28,7 +28,7 @@ adopath ++ PERSONAL                                                             
 ***********************************************
 local aniovp = substr(`"`c(current_date)'"',-4,4)                               // AÑO VALOR PRESENTE
 global id = "`c(username)'"                                                     // ID DEL USUARIO
-global nographs "nographs"                                                      // SUPRIMIR GRAFICAS
+*global nographs "nographs"                                                      // SUPRIMIR GRAFICAS
 *global output "output"                                                         // IMPRIMIR OUTPUTS
 *global pais "El Salvador"                                                      // OTROS PAISES (si aplica)
 
@@ -94,12 +94,12 @@ if _rc != 0 | "$export" != "" {
 	local id = "$id"
 	global id = ""
 
-	** 1.2.1 HOUSEHOLDS: INCOMES **
+	** 1.2.1 HOUSEHOLDS: EXPENDITURES **
+	noisily run "$sysdir_principal/Expenditure.do" 2018
+
+	** 1.2.2 HOUSEHOLDS: INCOMES **
 	noisily run `"$sysdir_principal/Households.do"' 2018
 	noisily run `"$sysdir_principal/PerfilesSim.do"' `aniovp'
-
-	** 1.2.2 HOUSEHOLDS: EXPENDITURES **
-	noisily run "$sysdir_principal/Expenditure.do" 2018
 
 	** 1.2.3 SANKEY **
 	if `c(version)' > 13.1 {
@@ -109,7 +109,7 @@ if _rc != 0 | "$export" != "" {
 	}
 	global id = "`id'"
 }
-
+exit
 
 
 
