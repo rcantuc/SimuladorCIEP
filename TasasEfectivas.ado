@@ -359,19 +359,19 @@ quietly {
 
 	** DATOS ABIERTOS **
 	if "$export" != "" & "$nographs" != "nograhs" {
-		DatosAbiertos XNA0120_s, g    //    ISR salarios
-		DatosAbiertos XNA0120_f, g    //    ISR PF
-		DatosAbiertos XNA0120_m, g    //    ISR PM
-		DatosAbiertos XKF0114, g      //    Cuotas IMSS
-		DatosAbiertos XAB1120, g      //    IVA
-		DatosAbiertos XNA0141, g      //    ISAN
-		DatosAbiertos XAB1130, g      //    IEPS
-		DatosAbiertos XNA0136, g      //    Importaciones
-		DatosAbiertos FMP_Derechos, g //    FMP_Derechos
-		DatosAbiertos XAB2110, g      //    Ingresos propios Pemex
-		DatosAbiertos XOA0115, g      //    Ingresos propios CFE
-		DatosAbiertos XKF0179, g      //    Ingresos propios IMSS
-		DatosAbiertos XOA0120, g      //    Ingresos propios ISSSTE
+		DatosAbiertos XNA0120_s, g pibvp(`=ISRAS')   //    ISR salarios
+		DatosAbiertos XNA0120_f, g pibvp(`=ISRPF')    //    ISR PF
+		DatosAbiertos XNA0120_m, g pibvp(`=ISRPM')    //    ISR PM
+		DatosAbiertos XKF0114, g pibvp(`=CuotasT')      //    Cuotas IMSS
+		DatosAbiertos XAB1120, g pibvp(`=IVA')      //    IVA
+		DatosAbiertos XNA0141, g pibvp(`=ISAN')      //    ISAN
+		DatosAbiertos XAB1130, g pibvp(`=IEPS')      //    IEPS
+		DatosAbiertos XNA0136, g pibvp(`=Importa')      //    Importaciones
+		DatosAbiertos FMP_Derechos, g pibvp(`=FMP') //    FMP_Derechos
+		DatosAbiertos XAB2110, g pibvp(`=`recPemex'/scalar(PIB)*100')      //    Ingresos propios Pemex
+		DatosAbiertos XOA0115, g pibvp(`=`recCFE'/scalar(PIB)*100')      //    Ingresos propios CFE
+		DatosAbiertos XKF0179, g pibvp(`=`recIMSS'/scalar(PIB)*100')      //    Ingresos propios IMSS
+		DatosAbiertos XOA0120, g pibvp(`=`recISSSTE'/scalar(PIB)*100')      //    Ingresos propios ISSSTE
 	}
 
 
