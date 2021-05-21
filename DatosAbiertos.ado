@@ -136,10 +136,10 @@ quietly {
 		}
 		tempvar monto
 		g `monto' = monto/1000000
-		twoway (area `monto' anio if anio <= `ultanio') ///
-			(bar `monto' anio if anio > `ultanio') ///
-			(connected monto_pib anio if anio <= `ultanio', yaxis(2) mfcolor(white) color("255 129 0")) ///
-			(connected monto_pib anio if anio > `ultanio', yaxis(2) mfcolor(white) color("255 189 0")), ///
+		twoway (area `monto' anio if anio < `ultanio') ///
+			(bar `monto' anio if anio >= `ultanio') ///
+			(connected monto_pib anio if anio < `ultanio', yaxis(2) mfcolor(white) color("255 129 0")) ///
+			(connected monto_pib anio if anio >= `ultanio', yaxis(2) mfcolor(white) color("255 189 0")), ///
 			///title({bf:`=nombre[1]'}`textsize') ///
 			/*subtitle(Montos observados)*/ ///
 			b1title(`"{bf:Proyectado `=anio[_N]':} `=string(monto[_N]/1000000,"%20.1fc")' millones de MXN"', size(small)) ///
@@ -150,7 +150,7 @@ quietly {
 			ylabel(, format(%10.0fc)) yscale(range(0)) ///
 			ylabel(, axis(2) format(%5.1fc) noticks) ///
 			yscale(range(0) noline axis(2)) ///
-			legend(label(1 "Observado") label(2 "Proyectado") order(1 2)) ///
+			legend(label(1 "Reportado") label(2 "LIF") order(1 2)) ///
 			text(`text1', yaxis(2)) ///
 			///caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP, Datos Abiertos y del INEGI, BIE.}") ///
 			note("{bf:{c U'}ltimo dato:} `ultanio'm`ultmes'.") ///
