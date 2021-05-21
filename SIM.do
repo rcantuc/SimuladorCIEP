@@ -109,7 +109,7 @@ if _rc != 0 | "$export" != "" {
 	}
 	global id = "`id'"
 }
-exit
+
 
 
 

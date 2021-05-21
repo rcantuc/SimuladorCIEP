@@ -117,7 +117,7 @@ local deflator = deflator[1]
 **********************************
 use "`c(sysdir_personal)'/SIM/2018/households.dta", clear
 
-/** (+) Impuestos al ingreso laboral **
+** (+) Impuestos al ingreso laboral **
 egen laboral = rsum(ISR__asalariados ISR__PF cuotasTPF) if formal != 0
 replace laboral = 0 if laboral == .
 Distribucion Laboral, relativo(laboral) macro(`=`ISRSalarios'+`ISRFisicas'+`CuotasIMSS'')
@@ -155,9 +155,6 @@ Simulador IEPSAlcohol [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1') $
 Distribucion IEPSTabaco, relativo(IEPS4) macro(`IEPSTabaco')
 label var IEPSTabaco "IEPS (tabacp)"
 Simulador IEPSTabaco [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1') $nographs nooutput
-
-
-exit
 
 ** (+) IVA **
 Distribucion IVA, relativo(TOTIVA) macro(`IVATOT')
