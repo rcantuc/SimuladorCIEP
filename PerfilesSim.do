@@ -98,7 +98,7 @@ local alingreso = r(Impuestos_al_ingreso)-`ISRMorales'
 local alconsumo = r(Impuestos_al_consumo)
 local otrosing = r(Ingresos_de_capital)+`ISRMorales'
 
-noisily LIF, anio(`1') nographs min(0) by(serie)
+LIF, anio(`1') nographs min(0) by(serie)
 local IEPSAlcohol = r(XNA0203)
 local IEPSTabaco = r(XNA0125)
 
