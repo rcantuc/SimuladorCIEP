@@ -98,6 +98,9 @@ local alingreso = r(Impuestos_al_ingreso)-`ISRMorales'
 local alconsumo = r(Impuestos_al_consumo)
 local otrosing = r(Ingresos_de_capital)+`ISRMorales'
 
+noisily LIF, anio(`1') nographs min(0) by(serie)
+local IEPSAlcohol = r(XNA0203)
+local IEPSTabaco = r(XNA0125)
 
 
 **********************
@@ -114,7 +117,7 @@ local deflator = deflator[1]
 **********************************
 use "`c(sysdir_personal)'/SIM/2018/households.dta", clear
 
-** (+) Impuestos al ingreso laboral **
+/** (+) Impuestos al ingreso laboral **
 egen laboral = rsum(ISR__asalariados ISR__PF cuotasTPF) if formal != 0
 replace laboral = 0 if laboral == .
 Distribucion Laboral, relativo(laboral) macro(`=`ISRSalarios'+`ISRFisicas'+`CuotasIMSS'')
@@ -133,7 +136,7 @@ Distribucion OtrosC, relativo(ISR__PM) macro(`=`otrosing'+`ISRMorales'')
 label var OtrosC "los ingresos de capital"
 Simulador OtrosC [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1') $nographs nooutput
 
-** (+) ISR Personas Morales **
+** (+) ISR Personas Morales **/
 Distribucion ISRPM, relativo(ISR__PM) macro(`ISRMorales')
 label var ISRPM "ISR (personas morales)"
 Simulador ISRPM [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1') $nographs nooutput
@@ -144,14 +147,17 @@ label var IEPS "IEPS (total)"
 Simulador IEPS [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1') $nographs nooutput
 
 ** (+) IEPS Alcohol **
-Distribucion IEPSAlcohol, relativo(IEPS3) macro(`IEPSTOT')
+Distribucion IEPSAlcohol, relativo(IEPS3) macro(`IEPSAlcohol')
 label var IEPSAlcohol "IEPS (alcohol)"
 Simulador IEPSAlcohol [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1') $nographs nooutput
 
 ** (+) IEPS Tabaco **
-Distribucion IEPSTabaco, relativo(IEPS4) macro(`IEPSTOT')
+Distribucion IEPSTabaco, relativo(IEPS4) macro(`IEPSTabaco')
 label var IEPSTabaco "IEPS (tabacp)"
 Simulador IEPSTabaco [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1') $nographs nooutput
+
+
+exit
 
 ** (+) IVA **
 Distribucion IVA, relativo(TOTIVA) macro(`IVATOT')
