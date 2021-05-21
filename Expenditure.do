@@ -817,7 +817,7 @@ foreach categ of varlist categ categ_iva {
 
 	foreach k of varlist gasto_anual* IVA* IEPS* {
 		tempvar alfatot`k'
-		if "`=substr(`k',-4,4)'" == "Toba" | "`=substr(`k',-4,4)'" == "ABev" {
+		if `"`=substr("`k'",-4,4)'"' == "Toba" | `"`=substr("`k'",-4,4)'"' == "ABev" {
 			egen `alfatot`k'' = sum(alfa) if edad >= 18, by(folioviv foliohog)
 			replace `k' = 0 if `k' == .
 			replace `k' = `k' + T`k'*alfa/`alfatot`k'' if edad >= 18
