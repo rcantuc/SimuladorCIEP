@@ -788,8 +788,6 @@ replace IVA = IVA*`IVA'/`MTot'[1,3]
 replace IEPS = IEPS*`IEPS'/`MTot'[1,4]
 
 
-
-
 ************************
 *** 7 Gasto por edad ***
 ************************
@@ -817,7 +815,7 @@ foreach categ of varlist categ categ_iva {
 
 	foreach k of varlist gasto_anual* IVA* IEPS* {
 		tempvar alfatot`k'
-		if `"`=substr("`k'",-4,4)'"' == "Toba" | `"`=substr("`k'",-4,4)'"' == "ABev" {
+		if `"`=substr("`k'",-2,2)'"' == "l3" | `"`=substr("`k'",-2,2)'"' == "l4" {
 			egen `alfatot`k'' = sum(alfa) if edad >= 18, by(folioviv foliohog)
 			replace `k' = 0 if `k' == .
 			replace `k' = `k' + T`k'*alfa/`alfatot`k'' if edad >= 18
