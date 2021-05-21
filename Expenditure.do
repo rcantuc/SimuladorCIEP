@@ -634,20 +634,14 @@ if "`altimir'" == "yes" {
 	foreach k in Alim BebN BebA Taba Vest Calz Alqu Agua Elec Hoga ///
 		Salu Vehi FTra STra Comu Recr Educ Rest Dive {
 		local ++j
-		if "`k'" == "BebA" | "`k'" == "Taba" {
-			replace gasto_anual = gasto_anual*scalar(TT`k') if categ == `j' & edad > 18
-			replace precio = precio*scalar(TT`k') if categ == `j' & edad > 18
-		}
-		else {
-			replace gasto_anual = gasto_anual*scalar(TT`k') if categ == `j'
-			replace precio = precio*scalar(TT`k') if categ == `j'
-		}
+		replace gasto_anual = gasto_anual*scalar(TT`k') if categ == `j'
+		replace precio = precio*scalar(TT`k') if categ == `j'
 	}
 
 	** Re C{c a'}lculo del IVA **
 	replace IVA = precio*(`tasagener'/100)*cantidad if informal == 0 & tiva == 2						// IVA general
 	replace IVA = precio*(`tasagener'/100)*(1-proporcion)*cantidad if informal == 0 & tiva == 1			// IVA exento
-	replace IVA = 0 if informal == 1 | tiva == 3													// IVA tasa cero
+	replace IVA = 0 if informal == 1 | tiva == 3														// IVA tasa cero
 	format IVA %10.2fc
 
 	** Re C{c a'}lculo del IEPS **
@@ -816,7 +810,7 @@ foreach categ of varlist categ categ_iva {
 		g double `temp`k'' = `k' if numren == ""
 		egen double T`k' = sum(`temp`k''), by(folioviv foliohog)
 	}
-	
+
 	foreach categlevel of local levelscateg {
 		egen prop_exen`categlevel' = mean(proporcion`categlevel')
 	}
@@ -824,8 +818,14 @@ foreach categ of varlist categ categ_iva {
 	tempvar alfatot
 	egen `alfatot' = sum(alfa), by(folioviv foliohog)
 	foreach k of varlist gasto_anual* IVA* IEPS* {
-		replace `k' = 0 if `k' == .
-		replace `k' = `k' + T`k'*alfa/`alfatot'
+		if "`=substr(`k',-4,4)'" == "Toba" | "`=substr(`k',-4,4)'" == "ABev" {
+			replace `k' = 0 if `k' == .
+			replace `k' = `k' + T`k'*alfa/`alfatot'
+		}
+		else {
+			replace `k' = 0 if `k' == .
+			replace `k' = `k' + T`k'*alfa/`alfatot'
+		}
 	}
 	drop if numren == ""
 	drop T*
