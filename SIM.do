@@ -88,7 +88,7 @@ foreach k in `aniovp' {
 
 *******************************/
 **       1.2 HOUSEHOLDS       **
-********************************
+/********************************
 capture use `"$sysdir_principal/users/$pais/bootstraps/1/PensionREC.dta"', clear
 if _rc != 0 | "$export" != "" {
 	local id = "$id"
@@ -281,7 +281,7 @@ matrix IVAT = (16 \     ///  1  Tasa general
                3  \     ///  9  Otros, idem
                2  \     /// 10  Transporte local, idem
                3  \     /// 11  Transporte foraneo, idem
-               47.23+.21)   //  12  Evasion e informalidad IVA, idem
+               19.18)   //  12  Evasion e informalidad IVA, idem
 
 * Cambios IVA */
 local cambioIVA = 0
@@ -302,7 +302,6 @@ if "$output" == "output" {
 	noisily di in w "IVA: [`=string(IVAT[1,1],"%10.2f")',`=string(IVAT[2,1],"%10.0f")',`=string(IVAT[3,1],"%10.0f")',`=string(IVAT[4,1],"%10.0f")',`=string(IVAT[5,1],"%10.0f")',`=string(IVAT[6,1],"%10.0f")',`=string(IVAT[7,1],"%10.0f")',`=string(IVAT[8,1],"%10.0f")',`=string(IVAT[9,1],"%10.0f")',`=string(IVAT[10,1],"%10.0f")',`=string(IVAT[11,1],"%10.0f")',`=string(IVAT[12,1],"%10.2f")']"
 	quietly log off output
 }
-
 
 
 noisily TasasEfectivas, anio(`aniovp') `nographs'
@@ -450,7 +449,7 @@ if "$output" == "output" {
 ****                    ****
 ****************************
 if "$export" != "" {
-	noisily scalarlatex
+	*noisily scalarlatex
 }
 timer off 1
 timer list 1

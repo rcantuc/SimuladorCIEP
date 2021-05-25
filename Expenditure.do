@@ -98,7 +98,7 @@ local Ieps10 = r(Alcohol)
 ******************************************
 *** 2. DATOS MICROECON{c o'}MICOS (MI) ***
 ******************************************
-capture confirm file "`data'/preconsumption.dta"
+capture confirm file "`c(sysdir_personal)'/SIM/`enighanio'/preconsumption.dta"
 if _rc != 0 {
 *if _rc == 0 {
 
@@ -158,8 +158,8 @@ if _rc != 0 {
 	egen prod = rmean(produccion1 produccion2 produccion3 produccion4 produccion5 produccion6)
 	egen marg = rmean(margen1 margen2 margen3 margen4 margen5 margen6)
 
-	*g double proporcion = agregado/prod
-	g double proporcion = marg/prod
+	g double proporcion = agregado/prod
+	*g double proporcion = marg/prod
 
 	tabstat proporcion [aw=factor], save
 	tempname PR
@@ -332,10 +332,10 @@ if _rc != 0 {
 	sort folioviv foliohog numren clave
 
 	if `c(version)' > 13.1 {
-		saveold "`data'/preconsumption.dta", replace version(13)
+		saveold "`c(sysdir_personal)'/SIM/`enighanio'/preconsumption.dta", replace version(13)
 	}
 	else {
-		save "`data'/preconsumption.dta", replace
+		save "`c(sysdir_personal)'/SIM/`enighanio'/preconsumption.dta", replace
 	}
 }
 
@@ -345,7 +345,7 @@ if _rc != 0 {
 ********************************
 *** 3. Precio, IVA, IEPS (P) ***
 ********************************
-use "`data'/preconsumption.dta", clear
+use "`c(sysdir_personal)'/SIM/`enighanio'/preconsumption.dta", clear
 
 ** P.1 Cantidad **
 replace cantidad = cantidad*365 if frecuencia == "1"

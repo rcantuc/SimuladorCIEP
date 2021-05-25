@@ -89,7 +89,7 @@ quietly {
 		replace nombre = "`nombre'" in -1
 	}
 
-	merge m:1 (anio) using `PIB', nogen keep(matched) keepus(pibY)			
+	merge m:1 (anio) using `PIB', nogen keep(matched) keepus(pibY deflator)			
 
 	if `pibvp' != -999 {
 		replace monto = `pibvp'/100*pibY if mes < 12 | mes == .
@@ -121,6 +121,34 @@ quietly {
 					local text1 = `"`text1' `=monto_pib[`k']' `=anio[`k']' "`=string(monto_pib[`k'],"%5.1fc")'" "'
 				}
 			}
+			if anio[`k'] == 2003 {
+				if "`anything'" == "FMP_Derechos" | "`anything'" == "OtrosIngresosC" {
+					local scalarname = subinstr("`anything'","_","",.)
+				}
+				else if substr("`anything'",-1,1) == "s" | substr("`anything'",-1,1) == "f" | substr("`anything'",-1,1) == "m" {
+					local numone = substr("`anything'",4,1)
+					local numtwo = substr("`anything'",5,1)
+					local numthr = substr("`anything'",6,1)
+					local numfou = substr("`anything'",7,1)
+					local scalarname = substr("`anything'",1,3) + char(`=65+`numone'') + char(`=65+`numtwo'') + char(`=65+`numthr'') + char(`=65+`numfou'') + substr("`anything'",-1,1)
+
+				}
+				else {
+					local numone = substr("`anything'",4,1)
+					local numtwo = substr("`anything'",5,1)
+					local numthr = substr("`anything'",6,1)
+					if "`numthr'" == "" {
+						local numthr = 0
+					}
+					local numfou = substr("`anything'",7,1)
+					if "`numfou'" == "" {
+						local numfou = 0
+					}
+					local scalarname = substr("`anything'",1,3) + char(`=65+`numone'') + char(`=65+`numtwo'') + char(`=65+`numthr'') + char(`=65+`numfou'')
+				}
+				scalar dif`scalarname'PIB = monto_pib[_N] - monto_pib[`k']
+				scalar `scalarname'GEO = ((monto[_N]/(monto[`k']/deflator[`k']))^(1/(anio[_N]-anio[`k']))-1)*100
+			}
 		}
 
 		* Grafica *
@@ -140,7 +168,7 @@ quietly {
 			(bar `monto' anio if anio >= `ultanio') ///
 			(connected monto_pib anio if anio < `ultanio', yaxis(2) mfcolor(white) color("255 129 0")) ///
 			(connected monto_pib anio if anio >= `ultanio', yaxis(2) mfcolor(white) color("255 189 0")), ///
-			///title({bf:`=nombre[1]'}`textsize') ///
+			title("{bf:`=nombre[1]'}"`textsize') ///
 			/*subtitle(Montos observados)*/ ///
 			b1title(`"{bf:Proyectado `=anio[_N]':} `=string(monto[_N]/1000000,"%20.1fc")' millones de MXN"', size(small)) ///
 			///b2title(`"`textovp'"', size(small)) ///
@@ -153,7 +181,7 @@ quietly {
 			legend(label(1 "Reportado") label(2 "LIF") order(1 2)) ///
 			text(`text1', yaxis(2)) ///
 			///caption("{it:Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP, Datos Abiertos y del INEGI, BIE.}") ///
-			note("{bf:{c U'}ltimo dato:} `ultanio'm`ultmes'.") ///
+			///note("{bf:{c U'}ltimo dato:} `ultanio'm`ultmes'.") ///
 			name(H`anything', replace)
 		
 		capture confirm existence $export
