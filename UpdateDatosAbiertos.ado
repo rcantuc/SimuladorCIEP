@@ -310,6 +310,20 @@ program define UpdateDatosAbiertos, return
 	save `gastofed'
 
 
+	************************
+	** 4.7 Otros ingresos **
+	use if clave_de_concepto == "XBB24" | clave_de_concepto == "XNA0151" ///
+		| clave_de_concepto == "XNA0152" | clave_de_concepto == "XNA0153" ///
+		| clave_de_concepto == "XOA0111" using `datosabiertos', clear
+	collapse (sum) monto, by(anio mes trimestre aniotrimestre aniomes)
+
+	g clave_de_concepto = "OtrosIngresosC"
+	g nombre = "Aprov, Der, Prod, otros"
+	g tipo_de_informacion = "Flujo"
+
+	tempfile gastofed
+	save `gastofed'
+
 
 
 	*****************

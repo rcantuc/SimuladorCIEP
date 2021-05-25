@@ -751,7 +751,7 @@ program graphpiramide
 		graph hbar (sum) `POR' if sexo == 1, ///
 			over(`over') over(edad, axis(noextend noline outergap(0)) descending ///
 			relabel(`relabel') ///
-			label(labsize(vsmall) labgap(*.618) labcolor(white))) ///
+			label(labsize(vsmall) labcolor(white))) ///
 			stack asyvars xalternate ///
 			yscale(noextend noline /*range(-7(1)7)*/) ///
 			blabel(none, format(%5.1fc)) ///
@@ -771,7 +771,7 @@ program graphpiramide
 		graph hbar (sum) `POR' if sexo == 2, ///
 			over(`over') over(edad, axis(noextend noline outergap(0)) descending ///
 			relabel(`relabel') ///
-			label(labsize(vsmall) labgap(*2) labcolor("122 122 122"))) ///
+			label(labsize(vsmall) labcolor("122 122 122"))) ///
 			stack asyvars ///
 			yscale(noextend noline /*range(-7(1)7)*/) /// |
 			blabel(none, format(%5.1fc)) ///

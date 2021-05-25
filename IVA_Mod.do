@@ -76,6 +76,7 @@ if _rc != 0 {
 	egen IVATotal = rsum(IVAalim IVAalquiler IVAcb IVAeducacion IVAfuera ///
 	IVAmascotas IVAmed IVAmujer IVAotros IVAtrans IVAtransf)
 }
+replace IVATotal = IVATotal*3.876/3.882
 tempfile ivamod
 save `ivamod'	
 
