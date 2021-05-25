@@ -18,7 +18,7 @@ if"`c(os)'" == "MacOSX" & "`c(username)'" == "ricardo" {                        
 
 if "`c(os)'" == "Unix" & "`c(username)'" == "ciepmx" {                          // ServidorCIEP
 	*sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/SimuladorCIEP/5.1/simuladorCIEP/"
-	global export "/home/ciepmx/Dropbox (CIEP)/Textbook/images/"                // GUARDAR GRAFICOS EN...
+	*global export "/home/ciepmx/Dropbox (CIEP)/Textbook/images/"                // GUARDAR GRAFICOS EN...
 }
 adopath ++ PERSONAL                                                             // SUBIR DIRECTORIO BRANCH COMO PRINCIPAL
 
