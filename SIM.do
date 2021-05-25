@@ -284,7 +284,7 @@ matrix IVAT = (16 \     ///  1  Tasa general
                19.18)   //  12  Evasion e informalidad IVA, idem
 
 * Cambios IVA */
-local cambioIVA = 0
+local cambioIVA = 1
 if `cambioIVA' != 0 {
 	noisily run "$sysdir_principal/IVA_Mod.do"
 }
@@ -449,7 +449,7 @@ if "$output" == "output" {
 ****                    ****
 ****************************
 if "$export" != "" {
-	*noisily scalarlatex
+	noisily scalarlatex
 }
 timer off 1
 timer list 1
