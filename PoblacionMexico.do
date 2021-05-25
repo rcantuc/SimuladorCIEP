@@ -29,6 +29,7 @@ tostring sexo, replace
 
 ** 2. Limpia **/
 capture rename año anio
+capture rename ao anio
 rename sexo sexo0
 encode sexo0, generate(sexo)
 drop sexo0

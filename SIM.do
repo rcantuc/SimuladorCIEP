@@ -88,7 +88,7 @@ foreach k in `aniovp' {
 
 *******************************/
 **       1.2 HOUSEHOLDS       **
-/********************************
+********************************
 capture use `"$sysdir_principal/users/$pais/bootstraps/1/PensionREC.dta"', clear
 if _rc != 0 | "$export" != "" {
 	local id = "$id"
