@@ -122,6 +122,7 @@ egen laboral = rsum(ISR__asalariados ISR__PF cuotasTPF) if formal != 0
 replace laboral = 0 if laboral == .
 Distribucion Laboral, relativo(laboral) macro(`=`ISRSalarios'+`ISRFisicas'+`CuotasIMSS'')
 label var Laboral "los impuestos al ingreso laboral"
+label var Laboral "Labor-based income tax"
 Simulador Laboral [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1') $nographs nooutput
 
 ** (+) Impuestos al consumo **
@@ -129,11 +130,13 @@ egen consumo = rsum(TOTIVA TOTIEPS)
 replace consumo = 0 if consumo == .
 Distribucion Consumo, relativo(consumo) macro(`alconsumo')
 label var Consumo "los impuestos al consumo"
+label var Consumo "Consumption tax"
 Simulador Consumo [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1') $nographs nooutput
 
 ** (+) Impuestos e ingresos de capital **
 Distribucion OtrosC, relativo(ISR__PM) macro(`=`otrosing'+`ISRMorales'')
 label var OtrosC "los ingresos de capital"
+label var OtrosC "Capital income"
 Simulador OtrosC [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1') $nographs nooutput
 
 ** (+) ISR Personas Morales **/
@@ -168,6 +171,7 @@ g ing_jubila_pub = ing_jubila if (formal == 1 | formal == 2 | formal == 3) & ing
 replace ing_jubila_pub = 0 if ing_jubila_pub == .
 Distribucion Pension, relativo(ing_jubila_pub) macro(`Pensiones')
 label var Pension "pensiones"
+label var Pension "Pensions"
 Simulador Pension [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1') $nographs nooutput
 
 ** (-) Pension Bienestar **
@@ -177,6 +181,7 @@ matrix POBLACION68 = r(StatTotal)
 g PenBienestar = `PenBienestar'/POBLACION68[1,1] if edad >= 68 | (edad >= 65 & rural == 1)
 replace PenBienestar = 0 if PenBienestar == .
 label var PenBienestar "pensi{c o'}n Bienestar"
+label var PenBienestar "Bienestar pension"
 Simulador PenBienestar if edad >= 68 [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1') $nographs nooutput
 
 ** (-) Educacion **
@@ -193,6 +198,7 @@ replace educacion = 0 if educacion == .
 
 Distribucion Educacion, relativo(educacion) macro(`Educacion')
 label var Educacion "educaci{c o'}n"
+label var Educacion "Education"
 Simulador Educacion [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1') $nographs nooutput
 
 ** (-) Salud **
@@ -388,16 +394,19 @@ replace salud = .0030159 if edad >= 109
 
 Distribucion Salud, relativo(salud) macro(`Salud')
 label var Salud "salud"
+label var Salud "Health"
 Simulador Salud [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1') $nographs nooutput //poblacion(defunciones)
 
 ** (-) Otros gastos **
 Distribucion OtrosGas, relativo(factor_cola) macro(`OtrosGas')
 label var OtrosGas "otros gastos"
+label var OtrosGas "Other expenditures"
 Simulador OtrosGas [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1') $nographs nooutput
 
 ** (-) Ingreso B{c a'}sico **
 g IngBasico = 0.1
 label var IngBasico "ingreso b{c a'}sico"
+label var IngBasico "Basic universal income"
 Simulador IngBasico [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1') $nographs nooutput
 
 ** (*) Infraestructura **
