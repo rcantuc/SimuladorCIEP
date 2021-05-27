@@ -733,6 +733,7 @@ program graphpiramide
 		* REC % del PIB * 
 		if "`rect'" != "100" {
 			local rect `"{bf: Tama{c n~}o}: `=string(`rect',"%6.3fc")' % PIB"'
+			*local rect `"{bf: Size}: `=string(`rect',"%6.3fc")' % GDP"'
 		}
 		else {
 			local rect ""
@@ -756,9 +757,9 @@ program graphpiramide
 			yscale(noextend noline /*range(-7(1)7)*/) ///
 			blabel(none, format(%5.1fc)) ///
 			t2title({bf:Hombres} (`men'%), size(medsmall)) ///
-			///t2title({bf:Men} (`men'%), size(medsmall)) ///
 			ytitle(% PIB) ///
-			/*ytitle(percentage)*/ ///
+			///t2title({bf:Men} (`men'%), size(medsmall)) ///
+			///ytitle(% GDP) ///
 			ylabel(`=round(`PORmaxval'[2,1],.1)'(.2)`=`PORmaxval'[1,1]', format(%7.1fc) noticks) ///
 			name(H`varlist', replace) ///
 			legend(cols(4) pos(6) bmargin(zero) label(1 "") label(2 "") label(3 "`rect'") ///
@@ -776,9 +777,9 @@ program graphpiramide
 			yscale(noextend noline /*range(-7(1)7)*/) /// |
 			blabel(none, format(%5.1fc)) ///
 			t2title({bf:Mujeres} (`women'%), size(medsmall)) ///
-			///t2title({bf:Women} (`women'%), size(medsmall)) ///
 			ytitle(% PIB) ///
-			/*ytitle(percentage)*/ ///
+			///t2title({bf:Women} (`women'%), size(medsmall)) ///
+			///ytitle(% GDP) ///
 			ylabel(`=round(`PORmaxval'[2,1],.1)'(.2)`=`PORmaxval'[1,1]', format(%7.1fc) noticks) ///
 			name(M`varlist', replace) ///
 			legend(cols(4) pos(5) bmargin(zero) size(vsmall) keygap(1) symxsize(3) textwidth(30) forcesize) ///
@@ -787,12 +788,12 @@ program graphpiramide
 
 		graph combine H`varlist' M`varlist', ///
 			name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)', replace) ycommon xcommon ///
-			///title("{bf:Perfil} de `title'") subtitle("$pais") ///
-			///title("`title' by sex, age and `titleover'") ///
-			///caption("Elaborado por el CIEP con informaci{c o'}n de: INEGI, ENIGH 2018.") ///
-			///caption("{it: Source: Own estimations.`boottext'}") ///
+			title("{bf:Perfil} de `title'") subtitle("$pais") ///
+			///title("`title' {bf:profile}") ///
+			caption("Elaborado por el CIEP con informaci{c o'}n de: INEGI, ENIGH 2018.") ///
+			///caption("Source: Prepared with the CIEP Tax Simulator v5 and information from INEGI, ENIGH 2018.") ///
 			note(`"{bf:Nota}: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n en cada grupo."') ///
-			///note(`"{bf:Note}: Percentages inside parenthesis represent the concentration of `title' in each group."')
+			///note(`"{bf:Note}: The percentages in parentheses show the concentration in each group."')
 
 		graph save `=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)' `"`c(sysdir_personal)'/users/$pais/$id/graphs/`varlist'_`titleover'.gph"', replace
 

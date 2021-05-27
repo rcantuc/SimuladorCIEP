@@ -26,7 +26,7 @@ adopath ++ PERSONAL                                                             
 **********************************************/
 **       OPCIONES (GLOBALES + LOCALES)       **
 ***********************************************
-local aniovp = substr(`"`c(current_date)'"',-4,4)                               // AÃ‘O VALOR PRESENTE
+local aniovp = substr(`"`c(current_date)'"',-4,4)                               // AÑO VALOR PRESENTE
 global id = "`c(username)'"                                                     // ID DEL USUARIO
 *global nographs "nographs"                                                      // SUPRIMIR GRAFICAS
 *global output "output"                                                         // IMPRIMIR OUTPUTS
@@ -75,6 +75,8 @@ global def2021 = 3.7393                                                         
 global def2022 = 3.2820                                                         // Pre-CGPE 2022: 3.2
 global inf2021 = 3.8                                                            // Pre-CGPE 2022: 3.8
 global inf2022 = 3.0                                                            // Pre-CGPE 2022: 3.0
+***    FIN: PARAMETROS PIB    ***
+********************************/
 
 
 *******************************
@@ -272,7 +274,7 @@ if "$output" == "output" {
 ********************************************************
 matrix IVAT = (16 \     ///  1  Tasa general 
                1  \     ///  2  Alimentos, 1: Tasa Cero, 2: Exento, 3: Gravado
-               2  \     ///  3  Alquiler, idem
+               3  \     ///  3  Alquiler, idem
                1  \     ///  4  Canasta basica, idem
                2  \     ///  5  Educacion, idem
                3  \     ///  6  Consumo fuera del hogar, idem
