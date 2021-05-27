@@ -74,5 +74,5 @@ global inf2022 = 3.0                                                            
 *************************/
 *** 4 Informaci{c o'}n ***
 **************************
-noisily PIBDeflactor, nographs nooutput anio(2021) save //update
+noisily PIBDeflactor, nographs nooutput anio(2021) //update
 clear
