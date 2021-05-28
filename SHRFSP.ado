@@ -33,7 +33,7 @@ quietly {
 	** 2.1 Update SHRFSP **
 	capture confirm file `"`c(sysdir_personal)'/SIM/$pais/SHRFSP.dta"'
 	if "`update'" == "update" | /*"`updated'" != "yes" |*/ _rc != 0 {
-		noisily run `"$sysdir_principal/UpdateSHRFSP`=subinstr("${pais}"," ","",.)'.do"'
+		noisily run `"`c(sysdir_personal)'/UpdateSHRFSP`=subinstr("${pais}"," ","",.)'.do"'
 	}
 
 	** 2.2 PIB + Deflactor **

@@ -8,29 +8,19 @@ macro drop _all
 capture log close _all
 
 
-*******************************/
-**    GITHUB (REPOSITORIO)    **
-********************************
-if"`c(os)'" == "MacOSX" & "`c(username)'" == "ricardo" {                        // Ricardo
+********************************/
+**    GITHUB (PROGRAMACION)    **
+*********************************
+if"`c(os)'" == "MacOSX" & "`c(username)'" == "ricardo" {						// Ricardo
 	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/SimuladorCIEP/5.1/simuladorCIEP/"
-	global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"              // GUARDAR GRAFICOS EN...
+	*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"				// GUARDAR GRAFICOS EN...
 }
 
-if "`c(os)'" == "Unix" & "`c(username)'" == "ciepmx" {                          // ServidorCIEP
+if "`c(os)'" == "Unix" & "`c(username)'" == "ciepmx" {							// ServidorCIEP
 	*sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/SimuladorCIEP/5.1/simuladorCIEP/"
-	*global export "/home/ciepmx/Dropbox (CIEP)/Textbook/images/"                // GUARDAR GRAFICOS EN...
+	*global export "/home/ciepmx/Dropbox (CIEP)/Textbook/images/"				// GUARDAR GRAFICOS EN...
 }
-adopath ++ PERSONAL                                                             // SUBIR DIRECTORIO BRANCH COMO PRINCIPAL
-
-
-**********************************************/
-**       OPCIONES (GLOBALES + LOCALES)       **
-***********************************************
-local aniovp = substr(`"`c(current_date)'"',-4,4)                               // AÑO VALOR PRESENTE
-global id = "`c(username)'"                                                     // ID DEL USUARIO
-*global nographs "nographs"                                                      // SUPRIMIR GRAFICAS
-*global output "output"                                                         // IMPRIMIR OUTPUTS
-*global pais "El Salvador"                                                      // OTROS PAISES (si aplica)
+adopath ++ PERSONAL																// SUBIR DIRECTORIO BRANCH COMO PRINCIPAL
 
 
 
@@ -41,9 +31,12 @@ global id = "`c(username)'"                                                     
 ***    0. ARRANQUE    ***
 ***                   ***
 *************************
-tokenize `"`c(adopath)'"', parse(";")
-global sysdir_principal  `"`c(sysdir_`=lower("`1'")')'"'
-noisily run "$sysdir_principal/Arranque.do" `aniovp'
+local aniovp = substr(`"`c(current_date)'"',-4,4)								// AÃ‘O VALOR PRESENTE
+global id = "`c(username)'"														// ID DEL USUARIO
+*global nographs "nographs"														// SUPRIMIR GRAFICAS
+*global output "output"															// IMPRIMIR OUTPUTS
+*global pais "El Salvador"														// OTROS PAISES (si aplica)
+noisily run "`c(sysdir_personal)'/Arranque.do" `aniovp'
 
 
 
@@ -54,8 +47,8 @@ noisily run "$sysdir_principal/Arranque.do" `aniovp'
 ***    1. CRECIMIENTO PIB    ***
 ***                          ***
 ********************************
-global pib2021 = 5.3                                                            // Pre-CGPE 2022: 5.3
-global pib2022 = 3.6                                                            // Pre-CGPE 2022: 3.6
+global pib2021 = 5.3															// Pre-CGPE 2022: 5.3
+global pib2022 = 3.6															// Pre-CGPE 2022: 3.6
 global pib2023 = 2.5
 global pib2024 = 2.5
 global pib2025 = 2.5
@@ -71,10 +64,10 @@ forvalues k=2031(1)2050 {
 }
 
 * OTROS */
-global def2021 = 3.7393                                                         // Pre-CGPE 2022: 3.7
-global def2022 = 3.2820                                                         // Pre-CGPE 2022: 3.2
-global inf2021 = 3.8                                                            // Pre-CGPE 2022: 3.8
-global inf2022 = 3.0                                                            // Pre-CGPE 2022: 3.0
+global def2021 = 3.7393															// Pre-CGPE 2022: 3.7
+global def2022 = 3.2820															// Pre-CGPE 2022: 3.2
+global inf2021 = 3.8															// Pre-CGPE 2022: 3.8
+global inf2022 = 3.0															// Pre-CGPE 2022: 3.0
 ***    FIN: PARAMETROS PIB    ***
 ********************************/
 
@@ -88,47 +81,38 @@ foreach k in `aniovp' {
 }
 
 
+*****************************************************
+**       1.2 PIB + Deflactor, Inflacion, SCN       **
+*****************************************************
+noisily PIBDeflactor, anio(`aniovp') $nographs save //update //geo(`geo') //discount(3.0)
+noisily Inflacion, anio(`aniovp') $nographs //update
+noisily SCN, anio(`aniovp') $nographs //update
+
+
+
 *******************************/
 **       1.2 HOUSEHOLDS       **
 ********************************
-capture use `"$sysdir_principal/users/$pais/bootstraps/1/PensionREC.dta"', clear
+capture use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PensionREC.dta"', clear
 if _rc != 0 | "$export" != "" {
 	local id = "$id"
 	global id = ""
 
 	** 1.2.1 HOUSEHOLDS: EXPENDITURES **
-	noisily run "$sysdir_principal/Expenditure.do" 2018
+	noisily run "`c(sysdir_personal)'/Expenditure.do" 2018
 
 	** 1.2.2 HOUSEHOLDS: INCOMES **
-	noisily run `"$sysdir_principal/Households.do"' 2018
-	noisily run `"$sysdir_principal/PerfilesSim.do"' `aniovp'
+	noisily run `"`c(sysdir_personal)'/Households.do"' 2018
+	noisily run `"`c(sysdir_personal)'/PerfilesSim.do"' `aniovp'
 
 	** 1.2.3 SANKEY **
 	if `c(version)' > 13.1 {
 		foreach k in grupoedad decil escol sexo {
-			noisily run "$sysdir_principal/Sankey.do" `k' 2018
+			noisily run "`c(sysdir_personal)'/Sankey.do" `k' 2018
 		}
 	}
 	global id = "`id'"
 }
-
-
-
-
-
-*********************************************/
-***                                        ***
-***    2. Simulador v5: PIB + Deflactor    ***
-***                                        ***
-**********************************************
-noisily PIBDeflactor, anio(`aniovp') $nographs save //update //geo(`geo') //discount(3.0)
-
-
-*************************************
-**       2.1 SCN + Inflacion       **
-*************************************
-noisily Inflacion, anio(`aniovp') $nographs //update
-noisily SCN, anio(`aniovp') $nographs //update
 
 
 
@@ -245,7 +229,7 @@ matrix PM = (	30,						23.39)       		// 41.47 // 35.95
 * Cambios ISR */
 local cambioISR = 0
 if `cambioISR' != 0 {
-	noisily run "$sysdir_principal/ISR_Mod.do"
+	noisily run "`c(sysdir_personal)'/ISR_Mod.do"
 }
 
 capture confirm scalar ISR_AS_Mod
@@ -274,21 +258,22 @@ if "$output" == "output" {
 ********************************************************
 matrix IVAT = (16 \     ///  1  Tasa general 
                1  \     ///  2  Alimentos, 1: Tasa Cero, 2: Exento, 3: Gravado
-               3  \     ///  3  Alquiler, idem
+               2  \     ///  3  Alquiler, idem
                1  \     ///  4  Canasta basica, idem
                2  \     ///  5  Educacion, idem
                3  \     ///  6  Consumo fuera del hogar, idem
                3  \     ///  7  Mascotas, idem
                1  \     ///  8  Medicinas, idem
-               3  \     ///  9  Otros, idem
-               2  \     /// 10  Transporte local, idem
-               3  \     /// 11  Transporte foraneo, idem
-               19.18)   //  12  Evasion e informalidad IVA, idem
+               3  \     ///  9  Toallas sanitarias, idem
+               3  \     /// 10  Otros, idem
+               2  \     /// 11  Transporte local, idem
+               3  \     /// 12  Transporte foraneo, idem
+               38.38)   //  13  Evasion e informalidad IVA, idem
 
 * Cambios IVA */
-local cambioIVA = 1
+local cambioIVA = 0
 if `cambioIVA' != 0 {
-	noisily run "$sysdir_principal/IVA_Mod.do"
+	noisily run "`c(sysdir_personal)'/IVA_Mod.do"
 }
 
 capture confirm scalar IVA_Mod
@@ -317,7 +302,7 @@ noisily TasasEfectivas, anio(`aniovp') `nographs'
 ***    5. PARTE IV: REDISTRIBUCION    ***
 ***                                   ***
 *****************************************
-use `"$sysdir_principal/users/$pais/$id/households.dta"', clear
+use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
 capture g AportacionesNetas = Laboral + Consumo + ISR__PM + ing_cap_fmp ///
 	- Pension - Educacion - Salud - IngBasico - PenBienestar - Infra
 if _rc != 0 {
@@ -325,7 +310,7 @@ if _rc != 0 {
 	- Pension - Educacion - Salud - IngBasico - PenBienestar - Infra
 }
 label var AportacionesNetas "las aportaciones netas"
-save `"$sysdir_principal/users/$pais/$id/households.dta"', replace
+save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace
 
 
 ************************************
@@ -343,8 +328,8 @@ noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) 	//	
 ***************************************************/
 **       5.3 PROYECCION DE LAS APORTACIONES       **
 ****************************************************
-use `"$sysdir_principal/users/$pais/$id/bootstraps/1/AportacionesNetasREC.dta"', clear
-merge 1:1 (anio) using "$sysdir_principal/users/$pais/$id/PIB.dta", nogen
+use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/AportacionesNetasREC.dta"', clear
+merge 1:1 (anio) using "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", nogen
 *replace estimacion = estimacion/1000000000000
 replace estimacion = estimacion/pibYR*100
 
@@ -417,7 +402,7 @@ if "$output" == "output" {
 ****************************
 if "$export" != "" {
 	foreach k in decil sexo grupoedad escol {
-		noisily run "$sysdir_principal/SankeySF.do" `k' `aniovp'
+		noisily run "`c(sysdir_personal)'/SankeySF.do" `k' `aniovp'
 	}
 }
 
@@ -431,14 +416,14 @@ if "$output" == "output" {
 	quietly log close output
 	tempfile output1 output2 output3
 	if "`=c(os)'" == "Windows" {
-		filefilter "$sysdir_principal/users/$pais/$id/output.txt" `output1', from(\r\n>) to("") replace // Windows
+		filefilter "`c(sysdir_personal)'/users/$pais/$id/output.txt" `output1', from(\r\n>) to("") replace // Windows
 	}
 	else {
-		filefilter "$sysdir_principal/users/$pais/$id/output.txt" `output1', from(\n>) to("") replace // Mac & Linux
+		filefilter "`c(sysdir_personal)'/users/$pais/$id/output.txt" `output1', from(\n>) to("") replace // Mac & Linux
 	}
 	filefilter `output1' `output2', from(" ") to("") replace
 	filefilter `output2' `output3', from("_") to(" ") replace
-	filefilter `output3' "$sysdir_principal/users/$pais/$id/output.txt", from(".,") to("0") replace
+	filefilter `output3' "`c(sysdir_personal)'/users/$pais/$id/output.txt", from(".,") to("0") replace
 }
 
 

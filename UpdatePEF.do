@@ -81,7 +81,7 @@ foreach k of local archivos {
 		}
 
 
-		di in w "`j' ", _cont
+		di in g "`j' ", _cont
 		tostring `j', replace
 		capture confirm string variable `k'
 		if _rc == 0 {

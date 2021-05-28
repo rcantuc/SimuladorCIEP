@@ -12,10 +12,16 @@ quietly {
 
 	** 1.2 Datos Abiertos (MÈxico) **
 	if "`c(username)'" == "ricardo" & "$pais" == "" {
-		*UpdateDatosAbiertos									// TO-DO: Updates deben estar en el arranque, no aqui
-		local updated = "yes" // r(updated)
-		*local ultanio = r(ultanio)
-		*local ultmes = r(ultmes)
+		capture confirm file "`c(sysdir_personal)'/SIM/DatosAbiertos.dta"
+		if _rc != 0 {
+			UpdateDatosAbiertos, update
+			local updated = r(updated)
+			local ultanio = r(ultanio)
+			local ultmes = r(ultmes)
+		}
+		else {
+			local updated = "yes" // r(updated)
+		}
 	}
 	else {
 		local updated = "yes"

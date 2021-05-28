@@ -432,8 +432,8 @@ Simulador Infra [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1') $nograp
 ****************
 
 ** (+) Ingresos de PM **
-g ing_bruto_tpm`1' = ing_bruto_tpm
-noisily Simulador ing_bruto_tpm`1' [fw=factor], base("ENIGH 2018") boot(1) reboot $nographs nooutput
+label var ing_bruto_tpm "Ingresos brutos (personas morales)"
+noisily Simulador ing_bruto_tpm [fw=factor], base("ENIGH 2018") boot(1) reboot $nographs nooutput
 
 ** (+) Impuestos y aportaciones **
 egen ImpuestosAportaciones = rsum(Laboral Consumo ISR__PM)

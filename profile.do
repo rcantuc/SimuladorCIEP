@@ -1,14 +1,14 @@
 **************
 *** 1 CIEP ***
 **************
-set scheme ciepnew
-graph set window fontface "Ubuntu"
-
 set more off, permanently
 set type double, permanently
 set charset latin1, permanently
+set scheme ciepnew
+graph set window fontface "Ubuntu"
 
-adopath ++ SITE				// SUBIR DIRECTORIO SITE COMO EL PRINCIPAL
+* Directorios principales *
+adopath ++ SITE
 sysdir set PERSONAL "`c(sysdir_site)'"
 cd "`c(sysdir_site)'"
 
