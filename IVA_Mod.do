@@ -26,19 +26,19 @@ use "`c(sysdir_personal)'/SIM/2018/expenditure_categ_iva.dta", clear
 ** Re C{c a'}lculo del IVA **
 local j = 2
 foreach k in alim alquiler cb educacion fuera mascotas med mujer otros trans transf {
-	replace gasto_anual`k' = gasto_anual`k'/(`deflator')*66.041/68.314
+	replace gasto_anual`k' = gasto_anual`k'*66.041/62.007
 	
 	if IVAT[`j',1] == 1 {
 		replace IVA`k' = 0
 		g cero`k' = gasto_anual`k'
 	}
 	if IVAT[`j',1] == 2 {
-		replace IVA`k' = gasto_anual`k'*(1-prop_exen`k')*IVAT[1,1]/100/(1+IVAT[1,1]/100)*(1-IVAT[12,1]/100)
-		g exento`k' = gasto_anual`k'
+		replace IVA`k' = gasto_anual`k'*(1-prop_exen`k')*IVAT[1,1]/100/(1+IVAT[1,1]/100)*(1-IVAT[13,1]/100)
+		g exento`k' = gasto_anual`k'*(prop_exen`k')
 		g gas_exento`k' = gasto_anual`k'*(1-prop_exen`k')
 	}
 	if IVAT[`j',1] == 3 {
-		replace IVA`k' = gasto_anual`k'*IVAT[1,1]/100/(1+IVAT[1,1]/100)*(1-IVAT[12,1]/100)
+		replace IVA`k' = gasto_anual`k'*IVAT[1,1]/100/(1+IVAT[1,1]/100)*(1-IVAT[13,1]/100)
 		g gravado`k' = gasto_anual`k'
 	}
 	local ++j
@@ -76,7 +76,7 @@ if _rc != 0 {
 	egen IVATotal = rsum(IVAalim IVAalquiler IVAcb IVAeducacion IVAfuera ///
 	IVAmascotas IVAmed IVAmujer IVAotros IVAtrans IVAtransf)
 }
-replace IVATotal = IVATotal*3.876/3.882
+replace IVATotal = IVATotal // *3.876/3.882
 tempfile ivamod
 save `ivamod'	
 

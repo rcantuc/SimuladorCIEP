@@ -36,7 +36,7 @@ if `enighanio' == 2012 {
 	local tasafront = 11
 	local altimir = "yes"
 }
-timer on 5
+timer on 15
 
 
 capture mkdir "`c(sysdir_personal)'/SIM/`enighanio'/"
@@ -856,7 +856,7 @@ foreach categ of varlist categ categ_iva {
 
 
 
-timer off 5
-timer list 5
-noisily di _newline in g "{bf:Tiempo:} " in y round(`=r(t5)/r(nt5)',.1) in g " segs."
+timer off 15
+timer list 15
+noisily di _newline in g "{bf:Tiempo:} " in y round(`=r(t15)/r(nt15)',.1) in g " segs."
 log close expenditures

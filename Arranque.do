@@ -5,15 +5,15 @@ if "`c(username)'" == "ricardo" | "`c(username)'" == "ciepmx" {
 
 
 ** DIRECTORIOS DE LAS BASES A GENERAR POR EL SIMULADOR **
-capture mkdir `"$sysdir_principal/SIM/"'
-capture mkdir `"$sysdir_principal/users/"'
-capture mkdir `"$sysdir_principal/users/$id/"'
-capture mkdir `"$sysdir_principal/users/$pais/"'
+capture mkdir `"`c(sysdir_personal)'/SIM/"'
+capture mkdir `"`c(sysdir_personal)'/users/"'
+capture mkdir `"`c(sysdir_personal)'/users/$id/"'
+capture mkdir `"`c(sysdir_personal)'/users/$pais/"'
 
 
 ** OUTPUT SIMULADOR **
 if "$output" == "output" {
-	quietly log using "$sysdir_principal/users/$pais/$id/output.txt", replace text name(output)
+	quietly log using "`c(sysdir_personal)'/users/$pais/$id/output.txt", replace text name(output)
 	quietly log off output
 }
 

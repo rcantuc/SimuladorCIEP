@@ -22,12 +22,12 @@ quietly {
 	* Si hay un error o la opción "update" es llamada, limpia la base de datos y la usa *
 	if _rc != 0 | "`update'" == "update" {
 		if "$pais" == "" {
-			run `"$sysdir_principal/PoblacionMexico.do"'
+			run `"`c(sysdir_personal)'/PoblacionMexico.do"'
 		}
 		else {
-			run `"$sysdir_principal/PoblacionMundial.do"'
+			run `"`c(sysdir_personal)'/PoblacionMundial.do"'
 		}
-		use `"$sysdir_principal/SIM/$pais/Poblacion.dta"', clear
+		use `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
 	}
 
 	* Si no hay año final, utiliza el último elemento del vector "anio" *
