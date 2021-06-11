@@ -768,7 +768,7 @@ quietly {
 			sexo grupoedad decil escol edad ing_bruto_tax prop_formal ///
 			deduc_isr ISR categF ISR__asalariados ISR__PF cuotas* ingbrutotot htrab ///
 			tipo_contribuyente exen_tot formal* *_tpm *_t2_* *_t4_* ing_mixto* isrE ing_subor IVA* IEPS* ///
-			gasto_anualDepreciacion prop_* SE
+			gasto_anualDepreciacion prop_* SE ImpNet* infonavit fovissste
 	}
 
 	else if "$pais" == "El Salvador" {
@@ -808,6 +808,7 @@ quietly {
 	}
 
 
+	capture drop __*
 	** Guardar **
 	if `c(version)' > 13.1 {
 		saveold `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace version(13)

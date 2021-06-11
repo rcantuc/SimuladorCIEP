@@ -1,3 +1,7 @@
+** USER(S) **
+global id = "`c(username)'"							// ID DEL USUARIO
+
+
 ** SUPERUSER(S) **
 if "`c(username)'" == "ricardo" | "`c(username)'" == "ciepmx" {
 	global id = ""

@@ -130,7 +130,7 @@ quietly {
 			_col(88) %7s in g "% PIB" ///
 			_col(99) in g "Tasa efectiva" "}"
 		noisily di in g _dup(111) "-"
-		noisily di in g "  Compensaci{c o'}n de asalariados" ///
+		noisily di in g "  Compensaci{c o'}n de asalariados (sin CSS)" ///
 			_col(44) %7.3fc in y RemSal/scalar(PIB)*100 ///
 			_col(55) in g "ISR (salarios)" ///
 			_col(88) %7.3fc in y (`recISR_Asa')/scalar(PIB)*100 ///
@@ -198,10 +198,10 @@ quietly {
 			_col(99) in g "Tasa efectiva" "}"
 		noisily di in g _dup(111) "-"
 		noisily di in g "  Sociedades e ISFLSH" ///
-			_col(44) %7.3fc in y (ExNOpSoc)/scalar(PIB)*100 ///
+			_col(44) %7.3fc in y (ExNOpSoc+ImpNetProduccionK+ImpNetProductos)/scalar(PIB)*100 ///
 			_col(55) in g "ISR (morales)" ///
 			_col(88) %7.3fc in y (`recISR_PM')/scalar(PIB)*100 ///
-			_col(99) %7.3fc in y (`recISR_PM')/(ExNOpSoc)*100 " %"
+			_col(99) %7.3fc in y (`recISR_PM')/(ExNOpSoc+ImpNetProduccionK+ImpNetProductos)*100 " %"
 		noisily di in g "  Ingreso de capital (- alq. imp.)" ///
 			_col(44) %7.3fc in y (CapIncImp-ExNOpHog)/scalar(PIB)*100 ///
 			_col(55) in g "FMP (petr{c o'}leo)" ///

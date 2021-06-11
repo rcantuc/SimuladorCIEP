@@ -1,6 +1,6 @@
 ****************************
 ***                      ***
-***    4.2 MÓDULO IVA    ***
+***    4.2 MODULO IVA    ***
 ***                      ***
 ****************************
 timer on 93
@@ -76,7 +76,7 @@ if _rc != 0 {
 	egen IVATotal = rsum(IVAalim IVAalquiler IVAcb IVAeducacion IVAfuera ///
 	IVAmascotas IVAmed IVAmujer IVAotros IVAtrans IVAtransf)
 }
-replace IVATotal = IVATotal // *3.876/3.882
+replace IVATotal = IVATotal
 tempfile ivamod
 save `ivamod'	
 
