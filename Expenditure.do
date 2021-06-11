@@ -116,7 +116,7 @@ if _rc != 0 {
 
 	** MI.3. Quitar gastos "no necesarios" **
 	// T916: gasto en regalos a personas ajenas al hogar, erogaciones financieras y de capital. 
-	// N012: Pérdidas y robos de dinero
+	// N012: P{c e'}rdidas y robos de dinero
 	drop if clave == "T916" | clave == "N012"
 
 	** MI.4. Gasto anual **
@@ -141,11 +141,20 @@ if _rc != 0 {
 	** MI.7. Uni{c o'}n de censo econ{c o'}mico **
 	forvalues k=1(1)6 {
 		use "`c(sysdir_site)'../basesCIEP/INEGI/Censo Economico/2019/censo_eco.dta", clear
-
-		rename claseactividad clase_de_actividad`k'
-		rename produccion produccion`k'
-		rename valoragregado valoragregado`k'
-		rename margen margen`k'
+		g num = length(codigo)
+		drop if num != 6
+		keep if id_estrato == .
+		keep codigo a*
+		rename codigo clase_de_actividad`k'
+		rename a111a produccion`k'
+		rename a121a consumointerm`k'
+		rename a131a valoragregado`k'
+		rename a211a inversion`k'
+		rename a221a formacionbruta`k'
+		rename a511a margen`k'
+		rename a700a gastos`k'
+		rename a800a ingresos`k'
+		drop a*
 
 		merge 1:m (clase_de_actividad`k') using `pre_iva', nogen keep(matched using)
 		compress
@@ -154,14 +163,19 @@ if _rc != 0 {
 	order folioviv-porcentaje_ieps2018 *1 *2 *3 *4 *5 *6
 
 	** MI.8. Ponderador del IVA (exentos) **
-	egen agregado = rmean(valoragregado1 valoragregado2 valoragregado3 valoragregado4 valoragregado5 valoragregado6)
-	egen prod = rmean(produccion1 produccion2 produccion3 produccion4 produccion5 produccion6)
-	egen marg = rmean(margen1 margen2 margen3 margen4 margen5 margen6)
+	egen prod = rmean(produccion*)
+	egen consinte = rmean(consumointerm*)
+	egen agregado = rmean(valoragregado*)
+	egen inve = rmean(inversion*)
+	egen form = rmean(formacionbruta*)
+	egen margen = rmean(margen*)
+	egen gastos = rmean(gastos*)
+	egen ingresos = rmean(ingresos*)
 
-	g double proporcion = agregado/prod
-	*g double proporcion = marg/prod
+	g double proporcion = (agregado-inve-form-margen)/prod
+	*g double proporcion = margen/(agregado-inve-form)
 
-	tabstat proporcion [aw=factor], save
+	tabstat proporcion [aw=prod], save
 	tempname PR
 	matrix `PR' = r(StatTotal)
 
@@ -205,7 +219,7 @@ if _rc != 0 {
 	destring num, replace
 	replace num = num - 900 if letra == "T" & (letra2 != "R" & letra2 != "B")
 
-	drop letra2 clase_de_actividad* produccion* valoragregado* agregado prod estado
+	*drop letra2 clase_de_actividad* produccion* valoragregado* agregado prod estado
 
 	g publica = tipoesc == "1"
 	g rentab = tenencia == "1" | tenencia == "3"
@@ -378,13 +392,13 @@ replace precio = gasto_anual/((1+`tasafront'/100)*(1-proporcion)*cantidad) ///
 replace precio = gasto_anual/cantidad if tiva == 3 // 							Tasa cero
 
 ** P.3 C{c a'}lculo del IVA **
-g double IVA = precio*(`tasagener'/100)*cantidad if informal == 0 & tiva == 2 // IVA general
-replace IVA = precio*(`tasagener'/100)*(1-proporcion)*cantidad if informal == 0 & tiva == 1						// IVA exento
+g double IVA = precio*(`tasagener'/100)*cantidad if tiva == 2 // IVA general
+replace IVA = precio*(`tasagener'/100)*(1-proporcion)*cantidad if tiva == 1						// IVA exento
 replace IVA = 0 if informal == 1 | tiva == 3 // 								IVA tasa cero
 format IVA %10.2fc
 
 ** P.4 C{c a'}lculo del IEPS **
-g double precio_p = precio/(1+porcentaje_ieps2018/100)-cuota_ieps2018 if tipoieps != .
+g double precio_p = precio*(1-proporcion)/(1+porcentaje_ieps2018/100)-cuota_ieps2018 if tipoieps != .
 g double IEPS = (precio - precio_p)*cantidad if tipoieps != .
 format IEPS %10.2fc
 
@@ -639,8 +653,8 @@ if "`altimir'" == "yes" {
 	}
 
 	** Re C{c a'}lculo del IVA **
-	replace IVA = precio*(`tasagener'/100)*cantidad if informal == 0 & tiva == 2						// IVA general
-	replace IVA = precio*(`tasagener'/100)*(1-proporcion)*cantidad if informal == 0 & tiva == 1			// IVA exento
+	replace IVA = precio*(`tasagener'/100)*cantidad if tiva == 2						// IVA general
+	replace IVA = precio*(`tasagener'/100)*(1-proporcion)*cantidad if tiva == 1			// IVA exento
 	replace IVA = 0 if informal == 1 | tiva == 3														// IVA tasa cero
 	format IVA %10.2fc
 

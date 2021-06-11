@@ -5,7 +5,7 @@
 *****************************
 timer on 94
 local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
-local anio = substr(`"`=trim("`fecha'")'"',1,4) // 								<-- anio base: HOY
+local anio = substr(`"`=trim("`fecha'")'"',1,4)
 noisily di _newline(2) in g "   MODULO: " in y "ISR"
 
 
@@ -13,10 +13,9 @@ noisily di _newline(2) in g "   MODULO: " in y "ISR"
 *********************
 ** Microsimulacion **
 *********************
-use if anio == `anio' | anio == 2018 using "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", clear
+use if anio == 2018 using "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", clear
 local lambda = lambda[1]
 local deflator = deflator[1]
-scalar PIB = pibY[_N]
 
 * Verificar limites *
 forvalues k=2(1)11 {
@@ -38,8 +37,22 @@ local smdf = 141.7																// Salario minimo general
 ****************
 ** Households **
 use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
-replace ing_bruto_tax = ing_bruto_tax/(`lambda'*`deflator')
-replace ing_bruto_tpm = ing_bruto_tpm/(`lambda'*`deflator')
+
+tempvar ImpNet
+egen `ImpNet' = rsum(ImpNetProduccion* ImpNetProductos_mixK ImpNetProductos_hog)
+
+replace ing_bruto_tax = (ing_bruto_tax)/(`lambda'*`deflator')
+replace ing_bruto_tpm = (ing_bruto_tpm)/(`lambda'*`deflator')
+
+tabstat ing_subor ing_bruto_tax ing_bruto_tpm cuotasTPF `ImpNet' infonavit fovissste [fw=factor_cola], stat(sum) save f(%20.0fc)
+tempname BRUT
+matrix `BRUT' = r(StatTotal)
+
+noisily di _newline in g "    Ing. Bruto Salarios: " _col(33) in y %10.3fc (`BRUT'[1,1]/*-`BRUT'[1,4]*/)/scalar(PIB)*100
+noisily di in g "    Cuotas a la Seg. Soc.:  " _col(33) in y %10.3fc (`BRUT'[1,4]+`BRUT'[1,6]+`BRUT'[1,7])/scalar(PIB)*100
+noisily di in g "    Ing. Bruto Tax PF:  " _col(33) in y %10.3fc (`BRUT'[1,2]-`BRUT'[1,1])/scalar(PIB)*100
+noisily di in g "    Ing. Bruto Tax (Sal + PF):  " _col(33) in y %10.3fc (`BRUT'[1,2])/scalar(PIB)*100
+noisily di in g "    Ing. Bruto Tax PM:  " _col(33) in y %10.3fc `BRUT'[1,3]/scalar(PIB)*100
 
 
 ************************
@@ -75,13 +88,22 @@ capture g ISR0 = ISR
 capture g ISR__asalariados0 = ISR__asalariados
 capture g ISR__PF0 = ISR__PF
 capture g ISR__PM0 = ISR__PM
+capture g SE0 = SE
 
 replace ISR = 0
-replace ISR__asalariados = 0
-replace ISR__PF = 0
-replace ISR__PM = 0
-
 label var ISR "ISR (f{c i'}sicas y asalariados)"
+
+replace ISR__asalariados = 0
+label var ISR__asalariados "ISR (retenciones por salarios SIM)"
+
+replace ISR__PF = 0
+label var ISR__PF "ISR (personas f{c i'}sicas SIM)"
+
+replace ISR__PM = 0
+label var ISR__PM "ISR (personas morales SIM)"
+
+replace SE = 0
+label var SE "Subsidio al empleo SIM"
 
 * Limitar deducciones *
 replace deduc_isr = `=DED[1,1]'*`smdf'*365 ///
@@ -95,50 +117,49 @@ forvalues j=`=rowsof(ISR)'(-1)1 {
 		replace categF = "J`j'K`k'" ///
 			if (ing_bruto_tax - exen_tot - deduc_isr - cuotasTPF) >= ISR[`j',1] ///
 			 & (ing_bruto_tax - exen_tot - deduc_isr - cuotasTPF) <= ISR[`j',2] ///
-			 & (ing_bruto_tax - exen_tot - deduc_isr - cuotasTPF) >= SE[`k',1] ///
-			 & (ing_bruto_tax - exen_tot - deduc_isr - cuotasTPF) <= SE[`k',2]
+			 & (ing_bruto_tax /*- exen_tot - deduc_isr - cuotasTPF*/) >= SE[`k',1] ///
+			 & (ing_bruto_tax /*- exen_tot - deduc_isr - cuotasTPF*/) <= SE[`k',2]
 
-		replace ISR = ISR[`j',3] + (ISR[`j',4]/100)*(ing_bruto_tax - exen_tot - deduc_isr - cuotasTPF - ISR[`j',1] - SE) ///
-			if categF == "J`j'K`k'"
+		replace ISR = ISR[`j',3] + (ISR[`j',4]/100)*(ing_bruto_tax - exen_tot - deduc_isr - cuotasTPF - ISR[`j',1]) if categF == "J`j'K`k'"
+		replace SE = SE[`k',3] if categF == "J`j'K`k'"
 	}
 }
 
 
-***********************
-* FORMALIDAD SALARIOS *
-replace formal_asalariados = prop_salarios <= (1-DED[1,4]/100)
-
-
 ******************
 ** ISR SALARIOS **
-replace ISR__asalariados = ISR*3.491/3.604 if formal_asalariados == 1 & ing_t4_cap1 != 0
-replace ISR__asalariados = ISR if ISR < 0
-replace ISR__asalariados = 0 if ISR__asalariados == .
-label var ISR__asalariados "ISR (retenciones por salarios SIM)"
+replace formal_asalariados = prop_salarios <= (1-DED[1,4]/100)
+replace ISR__asalariados = ISR if ing_t4_cap1 != 0
+replace ISR__asalariados = 0 if formal_asalariados == 0 | ISR__asalariados == .
+replace ISR__asalariados = ISR__asalariados*3.491/3.196
 
+*replace ISR__asalariados = 0 if (formal_asalariados == 0 & ing_t4_cap1 != 0) | ISR__asalariados == . | ISR__asalariados < 0
+*replace ISR__asalariados = ISR*ing_t4_cap1/(ing_t4_cap1+ing_t4_cap2+ing_t4_cap3+ing_t4_cap4+ing_t4_cap5+ing_t4_cap6+ing_t4_cap7+ing_t4_cap8+ing_t4_cap9) if formal_asalariados == 1 & ing_t4_cap1 != 0
 
-*******************************
-* FORMALIDAD PERSONAS FISICAS *
-replace formal_fisicas = prop_formal <= (1-DED[1,3]/100)
+replace SE = 0 if formal_asalariados == 0
 
 
 **************************
 ** ISR PERSONAS FISICAS **
-replace ISR__PF = (ISR - ISR__asalariados)*0.227/0.262 if ISR - ISR__asalariados > 0 & formal_fisicas == 1
-replace ISR__PF = 0 if ISR__PF == .
-label var ISR__PF "ISR (personas f{c i'}sicas SIM)"
-
-
-**********************
-* FORMALIDAD MORALES *
-replace formal_morales = prop_moral <= (1-PM[1,2]/100)
+replace formal_fisicas = prop_formal <= (1-DED[1,3]/100)
+replace ISR__PF = (ISR - ISR__asalariados) if ISR - ISR__asalariados > 0 & formal_fisicas == 1
+replace ISR__PF = 0 if formal_fisicas == 0 | ISR__PF == .
+replace ISR__PF = ISR__PF*0.227/0.291
 
 
 **************************
 ** ISR PERSONAS MORALES **
-replace ISR__PM = (ing_bruto_tpm-exen_tpm)*PM[1,1]/100*3.879/4.070 if formal_morales == 1
+replace formal_morales = prop_moral <= (1-PM[1,2]/100)
+
+tabstat SE [fw=factor], stat(sum) f(%20.0fc) save
+tempname SE
+matrix `SE' = r(StatTotal)
+capture drop SE_empresas
+Distribucion SE_empresas, relativo(ing_bruto_tpm) macro(`=`SE'[1,1]')
+
+replace ISR__PM = (ing_bruto_tpm-exen_tpm)*PM[1,1]/100 - SE_empresas if formal_morales == 1
 replace ISR__PM = 0 if ISR__PM == .
-label var ISR__PM "ISR (personas morales SIM)"
+replace ISR__PM = ISR__PM*3.839/3.906
 
 
 ***************
@@ -162,9 +183,9 @@ scalar ISR_AS_Mod = `SIMTAXS'[1,1]/scalar(PIB)*100 								// ISR (asalariados)
 scalar ISR_PF_Mod = `SIMTAX'[1,1]/scalar(PIB)*100 								// ISR (personas f{c i'}sicas)
 scalar ISR_PM_Mod = `SIMTAXM'[1,1]/scalar(PIB)*100 								// ISR (personas morales)
 
-noisily di _newline in g " RESULTADOS ISR (salarios): " _col(29) in y %10.3fc ISR_AS_Mod
-noisily di in g " RESULTADOS ISR (f{c i'}sicas):  " _col(29) in y %10.3fc ISR_PF_Mod
-noisily di in g " RESULTADOS ISR (morales):  " _col(29) in y %10.3fc ISR_PM_Mod
+noisily di _newline in g "    RESULTADOS ISR (salarios): " _col(33) in y %10.3fc ISR_AS_Mod
+noisily di in g "    RESULTADOS ISR (f{c i'}sicas):  " _col(33) in y %10.3fc ISR_PF_Mod
+noisily di in g "    RESULTADOS ISR (morales):  " _col(33) in y %10.3fc ISR_PM_Mod
 
 tabstat cuotasTP [fw=factor_cola] if formal2 == 1, stat(sum) f(%25.2fc) save
 tempname SIMCSS
@@ -181,6 +202,8 @@ scalar CuotasT = `SIMCSS'[1,1]/scalar(PIB)*100 //								Cuotas IMSS
 *noisily Simulador Laboral [fw=factor_cola], base("ENIGH 2018") boot(1) reboot $nographs nooutput
 *noisily Simulador ISR__PM [fw=factor], base("ENIGH 2018") boot(1) reboot $nographs nooutput
 
+
+capture drop __*
 save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace
 
 
