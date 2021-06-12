@@ -55,8 +55,8 @@ noisily di in g "    Ing. Bruto Tax (Sal + PF):  " _col(33) in y %10.3fc (`BRUT'
 noisily di in g "    Ing. Bruto Tax PM:  " _col(33) in y %10.3fc `BRUT'[1,3]/scalar(PIB)*100
 
 
-************************
-/** Igualdad de genero **
+/************************
+** Igualdad de genero **
 noisily tabstat ing_bruto_tax ing_bruto_tpm [fw=factor], stat(mean) f(%10.0fc) by(sexo) save
 tempname INGH INGM
 matrix `INGH' = r(Stat1)
@@ -193,18 +193,11 @@ matrix `SIMCSS' = r(StatTotal)
 scalar CuotasT = `SIMCSS'[1,1]/scalar(PIB)*100 //								Cuotas IMSS
 
 
-* SIMULACION *
-*drop Laboral
-*egen Laboral = rsum(ISR__asalariados ISR__PF cuotasTP) if formal != 0
-*replace Laboral = 0 if Laboral == .
-*label var Laboral "los impuestos al ingreso laboral"
+/* SIMULACION EQUIDAD DE GENERO *
+egen Equidad = rsum(ISR__asalariados ISR__PF)
+label var Equidad "del ISR Salarios + PF"
+noisily Simulador Equidad [fw=factor_cola], base("ENIGH 2018") boot(1) reboot nooutput
 
-*noisily Simulador Laboral [fw=factor_cola], base("ENIGH 2018") boot(1) reboot $nographs nooutput
-*noisily Simulador ISR__PM [fw=factor], base("ENIGH 2018") boot(1) reboot $nographs nooutput
-
-
-capture drop __*
-save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace
 
 
 
@@ -212,7 +205,8 @@ save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace
 ************************/
 **** Touchdown!!! :) ****
 *************************
+capture drop __*
+save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace
 timer off 94
 timer list 94
 noisily di _newline(2) in g _dup(20) "." "  " in y round(`=r(t94)/r(nt94)',.1) in g " segs  " _dup(20) "."
-

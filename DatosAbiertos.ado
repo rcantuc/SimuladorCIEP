@@ -19,7 +19,11 @@ quietly {
 	****************************
 	*** 1 Base de datos SHCP ***
 	****************************
-	use if clave_de_concepto == "`anything'" using "`c(sysdir_personal)'/SIM/DatosAbiertos.dta", clear
+	capture use if clave_de_concepto == "`anything'" using "`c(sysdir_personal)'/SIM/DatosAbiertos.dta", clear
+	if _rc != 0 {
+		UpdateDatosAbiertos
+	}
+	
 	drop if monto == 0 | monto == .
 	drop if anio < 2003
 	if `=_N' == 0 {
