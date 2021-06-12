@@ -102,8 +102,8 @@ local Ieps10 = r(Alcohol)
 *** 2. DATOS MICROECON{c o'}MICOS (MI) ***
 ******************************************
 capture confirm file "`c(sysdir_personal)'/SIM/`enighanio'/preconsumption.dta"
-*if _rc != 0 {
-if _rc == 0 {
+if _rc != 0 {
+*if _rc == 0 {
 
 	** MI.1. Base de datos de gastos de los hogares **
 	use "`c(sysdir_site)'../basesCIEP/INEGI/`enigh'/`enighanio'/gastospersona.dta", clear
