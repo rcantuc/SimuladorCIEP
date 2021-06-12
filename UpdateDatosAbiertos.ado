@@ -13,7 +13,7 @@ program define UpdateDatosAbiertos, return
 
 	capture use "`c(sysdir_personal)'/SIM/DatosAbiertos.dta", clear
 
-	if (_rc == 0 | _rc == 610) & "`update'" != "update" {	
+	if _rc == 0 & "`update'" != "update" {	
 		sort anio mes
 		return local ultanio = anio[_N]
 		return local ultmes = mes[_N]

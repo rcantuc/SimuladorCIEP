@@ -14,16 +14,16 @@ capture log close _all
 ********************************/
 **    GITHUB (PROGRAMACION)    **
 *********************************
-if"`c(os)'" == "MacOSX" & "`c(username)'" == "ricardo" {						// Ricardo
+if"`c(os)'" == "MacOSX" & "`c(username)'" == "ricardo" {                        // Ricardo
 	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/SimuladorCIEP/5.1/simuladorCIEP/"
-	*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"				// GUARDAR GRAFICOS EN...
+	global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
 }
 
-if "`c(os)'" == "Unix" & "`c(username)'" == "ciepmx" {							// ServidorCIEP
+if "`c(os)'" == "Unix" & "`c(username)'" == "ciepmx" {                          // ServidorCIEP
 	*sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/SimuladorCIEP/5.1/simuladorCIEP/"
-	*global export "/home/ciepmx/Dropbox (CIEP)/Textbook/images/"				// GUARDAR GRAFICOS EN...
+	*global export "/home/ciepmx/Dropbox (CIEP)/Textbook/images/"
 }
-adopath ++ PERSONAL																// SUBIR DIRECTORIO BRANCH COMO PRINCIPAL
+adopath ++ PERSONAL                                                             // SUBIR DIRECTORIO BRANCH COMO PRINCIPAL
 
 
 
@@ -34,10 +34,10 @@ adopath ++ PERSONAL																// SUBIR DIRECTORIO BRANCH COMO PRINCIPAL
 ***    0. ARRANQUE    ***
 ***                   ***
 *************************
-local aniovp = substr(`"`c(current_date)'"',-4,4)				// A{c N~}O VALOR PRESENTE
-global nographs "nographs"										// SUPRIMIR GRAFICAS
-*global output "output"											// IMPRIMIR OUTPUTS
-*global pais "El Salvador"										// OTROS PAISES (si aplica)
+local aniovp = substr(`"`c(current_date)'"',-4,4)                               // A{c N~}O VALOR PRESENTE
+*global nographs "nographs"                                                      // SUPRIMIR GRAFICAS
+*global output "output"                                                         // IMPRIMIR OUTPUTS
+*global pais "El Salvador"                                                      // OTROS PAISES (si aplica)
 noisily run "`c(sysdir_personal)'/Arranque.do" `aniovp'
 
 
@@ -57,7 +57,7 @@ global pib2025 = 2.5
 
 * 2026-2030 *
 forvalues k=2026(1)2030 {
-	global pib`k' = $pib2025
+	global pib`k' = $pib2025                                                    // SUPUESTO DE LARGO PLAZO
 }
 
 /* 2031-2050 *
@@ -217,7 +217,7 @@ matrix	SE = (0.01,			21227.52,	4884.24		\	/// 1
 matrix DED = (5,		15,			56.44, 			17.06)
 
 *            Tasa ISR PM.	% Informalidad PM
-matrix PM = (30,		26.50)
+matrix PM = (30,		26.49)
 
 * Cambios ISR */
 local cambioISR = 0
@@ -261,7 +261,7 @@ matrix IVAT = (16 \     ///  1  Tasa general
                3  \     /// 10  Otros, idem
                2  \     /// 11  Transporte local, idem
                3  \     /// 12  Transporte foraneo, idem
-               39.57)   //  13  Evasion e informalidad IVA, idem
+               38.51)   //  13  Evasion e informalidad IVA, idem
 
 * Cambios IVA */
 local cambioIVA = 1
@@ -285,7 +285,7 @@ if "$output" == "output" {
 
 noisily TasasEfectivas, anio(`aniovp') `nographs'
 
-exit
+
 
 
 
