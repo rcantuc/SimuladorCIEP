@@ -1,3 +1,12 @@
+***************
+** 0 MUNDIAL **
+***************
+if "$pais" != "" {
+		run UpdateSHRFSPMundial.do `1'
+		exit
+}
+
+
 ************
 ** 1 RFSP **
 ************

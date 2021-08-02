@@ -18,20 +18,20 @@ local lambda = lambda[1]
 local deflator = deflator[1]
 
 * Verificar limites *
-forvalues k=2(1)11 {
+forvalues k=2(1)`=rowsof(ISR)' {
 	matrix ISR[`k',1] = ISR[`=`k'-1',2]+.01
 	if ISR[`k',1] >= ISR[`k',2] {
 		matrix ISR[`k',2] = ISR[`k',1]+.01
 	}
 	matrix ISR[`k',3] = (ISR[`=`k'-1',2] - ISR[`=`k'-1',1])*ISR[`=`k'-1',4]/100 + ISR[`=`k'-1',3]
 }
-forvalues k=2(1)12 {
+forvalues k=2(1)`=rowsof(SE)' {
 	matrix SE[`k',1] = SE[`=`k'-1',2]+.01
 	if SE[`k',1] >= SE[`k',2] {
 		matrix SE[`k',2] = SE[`k',1]+.01
 	}
 }
-local smdf = 141.7																// Salario minimo general
+local smdf = 86.88																// Salario minimo general
 
 
 ****************
@@ -41,8 +41,8 @@ use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
 tempvar ImpNet
 egen `ImpNet' = rsum(ImpNetProduccion* ImpNetProductos_mixK ImpNetProductos_hog)
 
-replace ing_bruto_tax = (ing_bruto_tax)/(`lambda'*`deflator')
-replace ing_bruto_tpm = (ing_bruto_tpm)/(`lambda'*`deflator')
+*replace ing_bruto_tax = (ing_bruto_tax)/(`deflator')
+*replace ing_bruto_tpm = (ing_bruto_tpm)/(`deflator')
 
 tabstat ing_subor ing_bruto_tax ing_bruto_tpm cuotasTPF `ImpNet' infonavit fovissste [fw=factor_cola], stat(sum) save f(%20.0fc)
 tempname BRUT
@@ -106,21 +106,21 @@ replace SE = 0
 label var SE "Subsidio al empleo SIM"
 
 * Limitar deducciones *
-replace deduc_isr = `=DED[1,1]'*`smdf'*365 ///
-	if `=DED[1,1]'*`smdf'*365 <= `=DED[1,2]'/100*ing_bruto_tax & deduc_isr >= `=DED[1,1]'*`smdf'*365
+replace deduc_isr = `=DED[1,1]'*`smdf'*360 ///
+	if `=DED[1,1]'*`smdf'*360 <= `=DED[1,2]'/100*ing_bruto_tax & deduc_isr >= `=DED[1,1]'*`smdf'*360
 replace deduc_isr = `=DED[1,2]'/100*ing_bruto_tax ///
-	if `=DED[1,1]'*`smdf'*365 >= `=DED[1,2]'/100*ing_bruto_tax & deduc_isr >= `=DED[1,2]'/100*ing_bruto_tax
+	if `=DED[1,1]'*`smdf'*360 >= `=DED[1,2]'/100*ing_bruto_tax & deduc_isr >= `=DED[1,2]'/100*ing_bruto_tax
 
 replace categF = ""
 forvalues j=`=rowsof(ISR)'(-1)1 {
 	forvalues k=`=rowsof(SE)'(-1)1 {
 		replace categF = "J`j'K`k'" ///
-			if (ing_bruto_tax - exen_tot - deduc_isr - cuotasTPF) >= ISR[`j',1] ///
-			 & (ing_bruto_tax - exen_tot - deduc_isr - cuotasTPF) <= ISR[`j',2] ///
-			 & (ing_bruto_tax /*- exen_tot - deduc_isr - cuotasTPF*/) >= SE[`k',1] ///
-			 & (ing_bruto_tax /*- exen_tot - deduc_isr - cuotasTPF*/) <= SE[`k',2]
+			if (ing_bruto_tax - exen_tot - deduc_isr - cuotasTPF*0) >= ISR[`j',1] ///
+			 & (ing_bruto_tax - exen_tot - deduc_isr - cuotasTPF*0) <= ISR[`j',2] ///
+			 & (ing_bruto_tax - exen_tot - deduc_isr - cuotasTPF*0) >= SE[`k',1] ///
+			 & (ing_bruto_tax - exen_tot - deduc_isr - cuotasTPF*0) <= SE[`k',2]
 
-		replace ISR = ISR[`j',3] + (ISR[`j',4]/100)*(ing_bruto_tax - exen_tot - deduc_isr - cuotasTPF - ISR[`j',1]) if categF == "J`j'K`k'"
+		replace ISR = ISR[`j',3] + (ISR[`j',4]/100)*(ing_bruto_tax - exen_tot - deduc_isr - cuotasTPF*0 - ISR[`j',1]) if categF == "J`j'K`k'"
 		replace SE = SE[`k',3] if categF == "J`j'K`k'"
 	}
 }
@@ -131,7 +131,7 @@ forvalues j=`=rowsof(ISR)'(-1)1 {
 replace formal_asalariados = prop_salarios <= (1-DED[1,4]/100)
 replace ISR__asalariados = ISR if ing_t4_cap1 != 0
 replace ISR__asalariados = 0 if formal_asalariados == 0 | ISR__asalariados == .
-replace ISR__asalariados = ISR__asalariados*3.491/3.196
+replace ISR__asalariados = ISR__asalariados*3.491/3.639
 
 *replace ISR__asalariados = 0 if (formal_asalariados == 0 & ing_t4_cap1 != 0) | ISR__asalariados == . | ISR__asalariados < 0
 *replace ISR__asalariados = ISR*ing_t4_cap1/(ing_t4_cap1+ing_t4_cap2+ing_t4_cap3+ing_t4_cap4+ing_t4_cap5+ing_t4_cap6+ing_t4_cap7+ing_t4_cap8+ing_t4_cap9) if formal_asalariados == 1 & ing_t4_cap1 != 0
@@ -144,7 +144,7 @@ replace SE = 0 if formal_asalariados == 0
 replace formal_fisicas = prop_formal <= (1-DED[1,3]/100)
 replace ISR__PF = (ISR - ISR__asalariados) if ISR - ISR__asalariados > 0 & formal_fisicas == 1
 replace ISR__PF = 0 if formal_fisicas == 0 | ISR__PF == .
-replace ISR__PF = ISR__PF*0.227/0.291
+replace ISR__PF = ISR__PF*0.227/0.325
 
 
 **************************
@@ -159,7 +159,7 @@ Distribucion SE_empresas, relativo(ing_bruto_tpm) macro(`=`SE'[1,1]')
 
 replace ISR__PM = (ing_bruto_tpm-exen_tpm)*PM[1,1]/100 - SE_empresas if formal_morales == 1
 replace ISR__PM = 0 if ISR__PM == .
-replace ISR__PM = ISR__PM*3.839/3.906
+replace ISR__PM = ISR__PM*3.839/3.278
 
 
 ***************

@@ -110,7 +110,9 @@ quietly {
 		** V.4. Impuesto sobre los productos, producci{c o'}n e importaciones **
 		rename Eg Imp				// Impuesto sobre los productos, producci{c o'}n e importaciones (total)
 		rename Fg ImpProductos			// Impuestos sobre los productos
+		rename Gpb ImpNetProductos		// Impuestos sobre los productos netos
 		rename Jg ImpProduccion			// Impuestos sobre la producci{c o'}n e importaciones
+		
 
 		** V.5. Subsidios **
 		rename Kg Sub				// Subsidios (total)
@@ -354,11 +356,11 @@ quietly {
 	format MixN %20.0fc
 	label var MixN "Ingreso mixto neto"
 	
-	g double MixL = MixN*2/3 //												<-- NTA metodolog{c i'}a
+	g double MixL = MixN*2/3 //						<-- NTA metodolog{c i'}a
 	format MixL %20.0fc
 	label var MixL "Ingreso mixto (laboral)"
 
-	g double MixK = MixN*1/3 + DepMix //												<-- NTA metodolog{c i'}­a
+	g double MixK = MixN*1/3 + DepMix //					<-- NTA metodolog{c i'}­a
 	format MixK %20.0fc
 	label var MixK "Ingreso mixto (capital)"
 
@@ -383,7 +385,7 @@ quietly {
 	format ExNOpSoc %20.0fc
 	label var ExNOpSoc "Sociedades e ISFLSH"
 
-	replace ExNOpSoc = PIN - RemSalSS - MixN - (ImpProductos + SubProductos) - ///
+	replace ExNOpSoc = PIN - RemSalSS - MixN - (ImpNetProductos) - ///
 		(ImpProduccion + SubProduccion) - ExNOpHog
 
 	** C.4 Ingreso de capital **
@@ -401,7 +403,7 @@ quietly {
 	drop if RemSalSS == .
 
 	** C.5. Impuestos Netos **
-	g double ImpNetProductos = ImpProductos + SubProductos
+	*g double ImpNetProductos = ImpProductos + SubProductos
 	format ImpNetProductos %20.0fc
 	label var ImpNetProductos "Impuestos netos a los productos"
 
@@ -485,13 +487,15 @@ quietly {
 		_col(44) in y %20.0fc (Cpb[`obs']-Npb[`obs']) ///
 		_col(66) in y %7.3fc (Cpb[`obs']-Npb[`obs'])/PIB[`obs']*100 "}"
 	noisily di in g "  (+) Impuestos a los productos" ///
-		_col(44) in y %20.0fc (Gpb[`obs']) ///
-		_col(66) in y %7.3fc (Gpb[`obs'])/PIB[`obs']*100
+		_col(44) in y %20.0fc (ImpNetProductos[`obs']) ///
+		_col(66) in y %7.3fc (ImpNetProductos[`obs'])/PIB[`obs']*100
 	noisily di in g _dup(72) "-"
 	noisily di in g "{bf:  (=) Producto Interno Bruto" ///
-		_col(44) in y %20.0fc (Cpb[`obs']-Npb[`obs']+Gpb[`obs']) ///
-		_col(66) in y %7.3fc (Cpb[`obs']-Npb[`obs']+Gpb[`obs'])/PIB[`obs']*100 "}"
+		_col(44) in y %20.0fc (PIB[`obs']) ///
+		_col(66) in y %7.3fc (PIB[`obs'])/PIB[`obs']*100 "}"
 
+
+		
 	* Returns *
 	scalar ProdBruta = Cpb[`obs']
 	scalar ProdBrutaPIB = Cpb[`obs']/PIB[`obs']*100
@@ -502,8 +506,8 @@ quietly {
 	scalar ValoAgreg = (Cpb[`obs']-Npb[`obs'])
 	scalar ValoAgregPIB = (Cpb[`obs']-Npb[`obs'])/PIB[`obs']*100
 	
-	scalar ImpuProdu = Gpb[`obs']
-	scalar ImpuProduPIB = Gpb[`obs']/PIB[`obs']*100
+	scalar ImpuProdu = ImpNetProductos[`obs']
+	scalar ImpuProduPIB = ImpNetProductos[`obs']/PIB[`obs']*100
 
 
 	* Generaci{c o'}n de ingresos *
@@ -680,7 +684,7 @@ quietly {
 	}
 
 	** R.5 Display (de la producci{c o'}n al ingreso) ***
-	noisily di _newline in g "{bf: C. Cuenta: " in y "distribuci{c o'}n secundaria del ingreso" in g ///
+	noisily di _newline in g "{bf: C. Cuenta: " in y "distribuci{c o'}n secundaria del ing" in g ///
 		_col(44) in g %20s "MXN" ///
 		_col(66) %7s "% PIB" "}" 
 	noisily di in g "{bf:  (+) Producto Interno Bruto" ///
@@ -724,7 +728,7 @@ quietly {
 	scalar IngNacDispPIB = IngNacDisp[`obs']/PIB[`obs']*100
 
 	* R.6 Consumo *
-	noisily di _newline in g "{bf: D. Cuenta: " in y "utilizaci{c o'}n del ingreso disponible" in g ///
+	noisily di _newline in g "{bf: D. Cuenta: " in y "utilizaci{c o'}n del ingreso disp" in g ///
 		_col(44) in g %20s "MXN" ///
 		_col(66) %7s "% PIB" "}" 
 	noisily di in g "  (+) Consumo de hogares e ISFLSH" ///

@@ -12,23 +12,23 @@
 
 **********************
 ** 1. Base de datos **
-import delimited using "`c(sysdir_site)'../basesCIEP/Otros/El Salvador/WPP2019_PopulationBySingleAgeSex_2020-2100.csv", clear
+import delimited using "`c(sysdir_site)'../basesCIEP/Otros/WPP2019_PopulationBySingleAgeSex_2020-2100.csv", clear
 if "$pais" == "" {
 	keep if locid == 484
 }
-if "$pais" == "El Salvador" {
-	keep if locid == 222
+else {
+	keep if location == "$pais"
 }
 tempfile futuro
 save `futuro'
 
 
-import delimited using "`c(sysdir_site)'../basesCIEP/Otros/El Salvador/WPP2019_PopulationBySingleAgeSex_1950-2019.csv", clear
+import delimited using "`c(sysdir_site)'../basesCIEP/Otros/WPP2019_PopulationBySingleAgeSex_1950-2019.csv", clear
 if "$pais" == "" {
 	keep if locid == 484
 }
-if "$pais" == "El Salvador" {
-	keep if locid == 222
+else {
+	keep if location == "$pais"
 }
 append using `futuro'
 

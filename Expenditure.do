@@ -5,26 +5,14 @@
 ******************************************
 if "`1'" == "" {
 	clear all
-	local enighanio = 2018
+	local enighanio = 2020
 }
-else {
-	local enighanio = `1'
+if `1' >= 2020  {
+	local enighanio = 2020
 }
 
 ** 0.1 Otros Parametros **
-if `enighanio' >= 2018 {
-	local enigh = "ENIGH"
-	local tasagener = 16
-	local tasafront = 16
-	local altimir = "yes"
-}
-if `enighanio' == 2016 {
-	local enigh = "ENIGH"
-	local tasagener = 16
-	local tasafront = 16
-	local altimir = "yes"
-}
-if `enighanio' == 2014 {
+if `enighanio' >= 2014 {
 	local enigh = "ENIGH"
 	local tasagener = 16
 	local tasafront = 16
@@ -142,7 +130,7 @@ if _rc != 0 {
 	save `pre_iva'
 
 	use "`c(sysdir_site)'../basesCIEP/INEGI/Censo Economico/2019/censo_eco.dta", clear
-	tabstat a201a [aw=a111a] if length(codigo) == 2, save by(codigo)
+	tabstat a218a a201a [aw=a111a] if length(codigo) == 2, save by(codigo)
 	tempname PR11 PR21 PR22 PR23 PR43 PR46 PR51 PR52 PR53 PR54 PR55 PR56 PR61 PR62 PR71 PR72 PR81 PR
 	matrix `PR11' = r(Stat1)
 	matrix `PR21' = r(Stat2)
@@ -181,25 +169,25 @@ if _rc != 0 {
 	}
 
 	order folioviv-porcentaje_ieps2018 *1 *2 *3 *4 *5 *6
-	replace proporcion = `PR11'[1,1]/100 if substr(clase_de_actividad1,1,2) == "11" | proporcion == . | proporcion < 0
-	replace proporcion = `PR21'[1,1]/100 if substr(clase_de_actividad1,1,2) == "21" | proporcion == . | proporcion < 0
-	replace proporcion = `PR22'[1,1]/100 if substr(clase_de_actividad1,1,2) == "22" | proporcion == . | proporcion < 0
-	replace proporcion = `PR23'[1,1]/100 if substr(clase_de_actividad1,1,2) == "23" | proporcion == . | proporcion < 0
-	replace proporcion = `PR43'[1,1]/100 if substr(clase_de_actividad1,1,2) == "43" | proporcion == . | proporcion < 0
-	replace proporcion = `PR46'[1,1]/100 if substr(clase_de_actividad1,1,2) == "46" | proporcion == . | proporcion < 0
-	replace proporcion = `PR51'[1,1]/100 if substr(clase_de_actividad1,1,2) == "51" | proporcion == . | proporcion < 0
-	replace proporcion = `PR52'[1,1]/100 if substr(clase_de_actividad1,1,2) == "52" | proporcion == . | proporcion < 0
-	replace proporcion = `PR53'[1,1]/100 if substr(clase_de_actividad1,1,2) == "53" | proporcion == . | proporcion < 0
-	replace proporcion = `PR54'[1,1]/100 if substr(clase_de_actividad1,1,2) == "54" | proporcion == . | proporcion < 0
-	replace proporcion = `PR55'[1,1]/100 if substr(clase_de_actividad1,1,2) == "55" | proporcion == . | proporcion < 0
-	replace proporcion = `PR56'[1,1]/100 if substr(clase_de_actividad1,1,2) == "56" | proporcion == . | proporcion < 0
-	replace proporcion = `PR61'[1,1]/100 if substr(clase_de_actividad1,1,2) == "61" | proporcion == . | proporcion < 0
-	replace proporcion = `PR62'[1,1]/100 if substr(clase_de_actividad1,1,2) == "62" | proporcion == . | proporcion < 0
-	replace proporcion = `PR71'[1,1]/100 if substr(clase_de_actividad1,1,2) == "71" | proporcion == . | proporcion < 0
-	replace proporcion = `PR72'[1,1]/100 if substr(clase_de_actividad1,1,2) == "72" | proporcion == . | proporcion < 0
-	replace proporcion = `PR81'[1,1]/100 if substr(clase_de_actividad1,1,2) == "81" | proporcion == . | proporcion < 0
-	replace proporcion = `PR'[1,1]/100 if clase_de_actividad1 == "000000" | proporcion == . | proporcion < 0
-	noisily di in g "Proporcion: " in y `PR'[1,1] "%"
+	replace proporcion = (1-`PR11'[1,1]/100)*`PR11'[1,2]/100 if substr(clase_de_actividad1,1,2) == "11" | proporcion == . | proporcion < 0
+	replace proporcion = (1-`PR21'[1,1]/100)*`PR21'[1,2]/100 if substr(clase_de_actividad1,1,2) == "21" | proporcion == . | proporcion < 0
+	replace proporcion = (1-`PR22'[1,1]/100)*`PR22'[1,2]/100 if substr(clase_de_actividad1,1,2) == "22" | proporcion == . | proporcion < 0
+	replace proporcion = (1-`PR23'[1,1]/100)*`PR23'[1,2]/100 if substr(clase_de_actividad1,1,2) == "23" | proporcion == . | proporcion < 0
+	replace proporcion = (1-`PR43'[1,1]/100)*`PR43'[1,2]/100 if substr(clase_de_actividad1,1,2) == "43" | proporcion == . | proporcion < 0
+	replace proporcion = (1-`PR46'[1,1]/100)*`PR46'[1,2]/100 if substr(clase_de_actividad1,1,2) == "46" | proporcion == . | proporcion < 0
+	replace proporcion = (1-`PR51'[1,1]/100)*`PR51'[1,2]/100 if substr(clase_de_actividad1,1,2) == "51" | proporcion == . | proporcion < 0
+	replace proporcion = (1-`PR52'[1,1]/100)*`PR52'[1,2]/100 if substr(clase_de_actividad1,1,2) == "52" | proporcion == . | proporcion < 0
+	replace proporcion = (1-`PR53'[1,1]/100)*`PR53'[1,2]/100 if substr(clase_de_actividad1,1,2) == "53" | proporcion == . | proporcion < 0
+	replace proporcion = (1-`PR54'[1,1]/100)*`PR54'[1,2]/100 if substr(clase_de_actividad1,1,2) == "54" | proporcion == . | proporcion < 0
+	replace proporcion = (1-`PR55'[1,1]/100)*`PR55'[1,2]/100 if substr(clase_de_actividad1,1,2) == "55" | proporcion == . | proporcion < 0
+	replace proporcion = (1-`PR56'[1,1]/100)*`PR56'[1,2]/100 if substr(clase_de_actividad1,1,2) == "56" | proporcion == . | proporcion < 0
+	replace proporcion = (1-`PR61'[1,1]/100)*`PR61'[1,2]/100 if substr(clase_de_actividad1,1,2) == "61" | proporcion == . | proporcion < 0
+	replace proporcion = (1-`PR62'[1,1]/100)*`PR62'[1,2]/100 if substr(clase_de_actividad1,1,2) == "62" | proporcion == . | proporcion < 0
+	replace proporcion = (1-`PR71'[1,1]/100)*`PR71'[1,2]/100 if substr(clase_de_actividad1,1,2) == "71" | proporcion == . | proporcion < 0
+	replace proporcion = (1-`PR72'[1,1]/100)*`PR72'[1,2]/100 if substr(clase_de_actividad1,1,2) == "72" | proporcion == . | proporcion < 0
+	replace proporcion = (1-`PR81'[1,1]/100)*`PR81'[1,2]/100 if substr(clase_de_actividad1,1,2) == "81" | proporcion == . | proporcion < 0
+	replace proporcion = (1-`PR'[1,1]/100)*`PR'[1,2]/100 if clase_de_actividad1 == "000000" | proporcion == . | proporcion < 0
+	noisily di in g "Proporcion: " in y (1-`PR'[1,1])*`PR'[1,2]/100 "%"
 
 	** MI.9. Estado y ubicaci{c o'}n geogr{c a'}fica ***
 	g estado = substr(folioviv,1,2)
@@ -396,14 +384,14 @@ replace cantidad = gasto/14.63*52 if clave == "F009"
 g double precio = gasto_anual/cantidad
 
 ** P.3 C{c a'}lculo del IVA **
-g double IVA = precio*(`tasagener'/100)/(1+(`tasagener'/100))*cantidad*(1-proporcion) if tiva == 1		// Exento
+g double IVA = precio*(`tasagener'/100)/(1+(`tasagener'/100))*cantidad*(proporcion) if tiva == 1		// Exento
 replace IVA = precio*(`tasagener'/100)/(1+(`tasagener'/100))*cantidad if tiva == 2                   	// General gravado
 replace IVA = 0 if /*informal == 1 |*/ tiva == 3 														// Tasa cero
 format IVA %10.2fc
 
 ** P.4 C{c a'}lculo del IEPS **
 replace porcentaje_ieps = 0 if porcentaje_ieps == .
-g double precio_p = precio*(1-proporcion)/(1+porcentaje_ieps2018/100)-cuota_ieps2018 if tipoieps != .
+g double precio_p = precio*(proporcion)/(1+porcentaje_ieps2018/100)-cuota_ieps2018 if tipoieps != .
 g double IEPS = (precio - precio_p)*cantidad if tipoieps != .
 format IEPS %10.2fc
 

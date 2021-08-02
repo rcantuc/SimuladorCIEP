@@ -62,7 +62,7 @@ quietly {
 		save `pm_capital'
 	}*/
 	
-	LIF, anio(`anio') `nographs' by(divGA) //eofp
+	LIF, anio(`anio') nographs by(divGA) //eofp
 	collapse (sum) recaudacion if divLIF != 10, by(anio divGA) fast
 	if "$pais" == "" {
 		*merge 1:1 (anio divGA) using `pm_ingreso', nogen keepus(monto)
@@ -135,7 +135,7 @@ quietly {
 	}
 
 	merge m:1 (anio) using `PIB', nogen keep(matched) update replace
-	collapse (sum) recaudacion estimacion (max) pibYR deflator lambda, by(anio modulo)
+	collapse (sum) recaudacion estimacion (max) pibYR deflator lambda Poblacion, by(anio modulo)
 
 	* Actualizaciones *
 	replace estimacion = 0 if estimacion == .
@@ -170,12 +170,12 @@ quietly {
 			(area `otros2' anio if anio > `anio', color("255 129 0")) ///
 			(area `ingreso2' anio if anio > `anio', color("255 189 0")) ///
 			(area `consumo2' anio if anio > `anio', color("39 97 47")), ///
-			legend(cols(3) order(1 2 3) ///
+			legend(rows(1) order(1 2 3) ///
 			label(1 "Ingresos de capital") label(2 "Impuestos laborales") label(3 "Impuestos al consumo")) ///
 			xlabel(2010(5)`=round(anio[_N],10)') ///
 			ylabel(, format(%20.0fc)) ///
 			xline(`=`anio'+.5') ///
-			text(`=`otros'[`obs`anio_last'']*.0618' `=`anio'+1.5' "Proyecci{c o'}n", place(ne) color(white)) ///
+			text(`=`otros'[`obs`anio_last'']*.0618' `=`anio'+1.5' "{bf:Proyecci{c o'}n}", place(ne) color(white)) ///
 			yscale(range(0)) ///
 			///title({bf:Proyecci{c o'}n} de los ingresos p{c u'}blicos) ///
 			subtitle($pais) ///
@@ -247,7 +247,7 @@ quietly {
 	****************************
 	*** 4 Fiscal Gap: Gastos ***
 	****************************
-	PEF if divGA != -1, anio(`anio') by(divGA) `nographs'
+	PEF if divGA != -1, anio(`anio') by(divGA) nographs
 	capture confirm variable transf_gf
 	if _rc != 0 {
 		g transf_gf = 0
@@ -397,7 +397,7 @@ quietly {
 
 	* PIB *
 	merge m:1 (anio) using `PIB', nogen keep(matched) update replace
-	collapse (sum) gasto estimacion (max) pibYR deflator lambda, by(anio modulo) fast
+	collapse (sum) gasto estimacion (max) pibYR deflator lambda Poblacion, by(anio modulo) fast
 	
 	*replace estimacion = pibYR*.04 if modulo == "pensiones"
 
@@ -471,6 +471,13 @@ quietly {
 	g costodeudashrfsp = gastocostodeuda/shrfsp*100 if anio <= `anio'
 	egen costodeudashrfsp_ari = mean(costodeudashrfsp)
 	replace costodeudashrfsp = costodeudashrfsp_ari if costodeudashrfsp == .
+
+	capture confirm scalar costodeu
+	if _rc == 0 {
+		replace gastocostodeuda = scalar(costodeu)*Poblacion if anio == `anio'
+		replace costodeudashrfsp = gastocostodeuda/shrfsp*100 if anio == `anio'
+		replace costodeudashrfsp = L.costodeudashrfsp if costodeudashrfsp == .
+	}
 
 	replace estimacioncostodeuda = costodeudashrfsp/100*shrfsp if estimacioncostodeuda == . //anio == `anio'
 
@@ -561,7 +568,7 @@ quietly {
 			xlabel(2015(5)`=round(anio[_N],10)') ///
 			ylabel(, format(%20.0fc)) ///
 			xline(`=`anio'+.5') ///
-			text(`=`otrosg'[`obs`anio_last'']*.0618' `=`anio'+1.5' "Proyecci{c o'}n", place(ne) color(white)) ///
+			text(`=`otrosg'[`obs`anio_last'']*.0618' `=`anio'+1.5' "{bf:Proyecci{c o'}n}", place(ne) color(white)) ///
 			yscale(range(0)) ///
 			///title({bf:Proyecci{c o'}n} del gasto p{c u'}blico) ///
 			subtitle($pais) ///

@@ -22,7 +22,7 @@ quietly {
 	* Si hay un error o la opción "update" es llamada, limpia la base de datos y la usa *
 	if _rc != 0 | "`update'" == "update" {
 		if "$pais" == "" {
-			run `"`c(sysdir_personal)'/PoblacionMexico.do"'
+			run `"`c(sysdir_personal)'/Poblacion.do"'
 		}
 		else {
 			run `"`c(sysdir_personal)'/PoblacionMundial.do"'
@@ -269,15 +269,27 @@ quietly {
 		matrix `P`aniofinal'' = r(StatTotal)
 
 		* poblacion viva *
-		tabstat poblacion if anio == `aniofinal' & edad > `aniofinal'-`anioinicial', ///
-			stat(sum) f(%15.0fc) save
 		tempname Pviva
-		matrix `Pviva' = r(StatTotal)
-
-		tabstat poblacion if anio == `aniofinal' & edad <= `aniofinal'-`anioinicial', ///
+		capture tabstat poblacion if anio == `aniofinal' & edad > `aniofinal'-`anioinicial', ///
 			stat(sum) f(%15.0fc) save
+		if _rc != 0 {
+			matrix `Pviva' = J(1,1,0)
+		
+		}
+		else {
+			matrix `Pviva' = r(StatTotal)
+		}
+
 		tempname Pnacida
-		matrix `Pnacida' = r(StatTotal)
+		capture tabstat poblacion if anio == `aniofinal' & edad <= `aniofinal'-`anioinicial', ///
+			stat(sum) f(%15.0fc) save
+		if _rc != 0 {
+			matrix `Pnacida' = J(1,1,0)
+		
+		}
+		else {
+			matrix `Pnacida' = r(StatTotal)
+		}
 
 		* X label *
 		tabstat poblacion if (anio == `anioinicial' | anio == `aniofinal'), ///
@@ -358,10 +370,8 @@ quietly {
 			`=`MaxM'[1,1]/2' `"`=string(`MaxM'[1,1]/2,"%15.0fc")'"' ///
 			`=`MaxM'[1,1]' `"`=string(`MaxM'[1,1],"%15.0fc")'"', angle(horizontal)) ///
 			///caption("Elaborado por el CIEP con informaci{c o'}n de: CONAPO (2018).") ///
-			///caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5, utilizando informaci{c o'}n del Censo de Poblaci{c o'}n y Vivienda 2020.") ///
-			///subtitle("`anioinicial'") ///
-			///title("Pir{c a'}mide {bf:demogr{c a'}fica}") 
-			///subtitle(${pais})
+			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.") ///
+			title("Pir{c a'}mide {bf:demogr{c a'}fica}") subtitle("$pais") ///
 			///title("{bf:Population} pyramid")
 
 
@@ -492,8 +502,9 @@ quietly {
 			ytitle("millones de personas") ///
 			xline(`=`anioinicial'+.5') ///
 			///caption("Elaborado por el CIEP con informaci{c o'}n de: CONAPO (2018).") ///
+			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.") ///
 			name(Estructura_`anioinicial'_`aniofinal', replace) ///
-			///title("{bf:Transici{c o'}n} demogr{c a'}fica") subtitle(${pais}) ///
+			title("{bf:Transici{c o'}n} demogr{c a'}fica") subtitle(${pais}) ///
 			ylabel(, format(%20.0fc)) xlabel(1950(10)`aniofinal')
 			
 			if "$export" != "" {

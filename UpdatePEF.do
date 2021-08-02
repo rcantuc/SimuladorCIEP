@@ -369,7 +369,7 @@ if "$pais" == "" {
 	replace divGA = -1 if ramo == -1
 	label define divGA -1 "Cuotas ISSSTE", add
 }
-else if "$pais" == "El Salvador" {
+else {
 	** Encode **
 	foreach k of varlist desc_funcion {
 		rename `k' `k'2
@@ -414,7 +414,7 @@ if "$pais" == "" {
 	}
 	format *CUOTAS *neto %20.0fc
 }
-else if "$pais" == "El Salvador" {
+else {
 	** Transferencias del gobierno federal **
 	g byte transf_gf = 0
 	g double gastoneto = gasto
