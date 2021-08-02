@@ -92,18 +92,36 @@ quietly {
 	*** 4 Graph ***
 	***************	
 	if "`nographs'" != "nographs" {
-		tempvar interno externo
+		tempvar interno externo rfsp rfsppib
 		g `externo' = shrfspExterno/1000000000
 		g `interno' = `externo' + shrfspInterno/1000000000
+		g `rfsp' = rfsp/1000000000
+		g `rfsppib' = rfsp/pibY*100
 
 		forvalues k=1(1)`=_N' {
 			if `shrfsp'[`k'] != . & anio[`k'] >= 2003 {
 				local text `"`text' `=`shrfsp'[`k']' `=anio[`k']' "{bf:`=string(`shrfsp'[`k'],"%5.1fc")'}""'
 				local textI `"`textI' `=`shrfspInterno'[`k']' `=anio[`k']' "`=string(shrfspInterno[`k']/pibY[`k']*100,"%5.1fc")'""'
 				local textE `"`textE' `=`shrfspExterno'[`k']' `=anio[`k']' "`=string(shrfspExterno[`k']/pibY[`k']*100,"%5.1fc")'""'
+				local textR `"`textR' `=`rfsppib'[`k']' `=anio[`k']' "{bf:`=string(rfsp[`k']/pibY[`k']*100,"%5.1fc")'}""'
 			}
 		}
-
+		
+		twoway (area `rfsp' anio) (connected `rfsppib' anio, yaxis(2) mlcolor("255 129 0") lcolor("255 129 0")) if rfsp != ., ///
+			title("{bf:Requerimientos financieros} del sector p{c u'}blico") ///
+			subtitle($pais) ///
+			name(rfsp, replace) ///
+			ylabel(, format(%15.0fc) labsize(small)) ///
+			xlabel(`aniofirst'(1)`aniolast', noticks) ///
+			text(`textR', yaxis(2)) ///
+			ylabel(, axis(2) noticks format(%5.0fc) labsize(small)) ///
+			yscale(range(0) axis(2) noline) ///
+			ytitle(mil millones `currency') ytitle(% PIB, axis(2)) xtitle("") ///
+			legend(off position(6) rows(1)) ///
+			note("{bf:{c U'}ltimo dato}: `aniolast'`meslast'") ///
+			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.")
+		
+		
 		twoway (area `interno' `externo' anio if `externo' != .) ///
 			(connected `shrfspInterno' anio if `externo' != ., yaxis(2) mlcolor("255 129 0") lcolor("255 129 0")) ///
 			(connected `shrfspExterno' anio if `externo' != ., yaxis(2) mlcolor("255 189 0") lcolor("255 189 0")) ///
@@ -124,6 +142,7 @@ quietly {
 			
 		capture confirm existence $export
 		if _rc == 0 {
+			graph export "$export/RFSP.png", replace name(rfsp)
 			graph export "$export/SHRFSP.png", replace name(shrfsp)
 		}			
 	}
