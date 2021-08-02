@@ -73,7 +73,6 @@ tabstat factor, stat(sum) f(%20.0fc) save
 tempname pobtot
 matrix `pobtot' = r(StatTotal)
 
-
 replace OtrosGas = OtrosGas - Infra
 
 tabstat Pension Educacion Salud PenBienestar OtrosGas [fw=factor], stat(sum) f(%20.0fc) save

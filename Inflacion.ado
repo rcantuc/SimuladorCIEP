@@ -28,7 +28,7 @@ quietly {
 	***********************
 	capture use `"`c(sysdir_site)'../basesCIEP/SIM/inflacion.dta"', clear
 	if _rc != 0 | "`update'" == "update" {
-		run `"`c(sysdir_personal)'/inflacion`=subinstr("${pais}"," ","",.)'.do"'
+		run `"`c(sysdir_personal)'/Inflacion`=subinstr("${pais}"," ","",.)'.do"'
 		use `"`c(sysdir_site)'../basesCIEP/SIM/inflacion.dta"', clear
 	}
 
@@ -123,7 +123,7 @@ quietly {
 			///title("{bf:{c I'}ndice} nacional de precios al consumidor") ///
 			subtitle(${pais}) ///
 			xlabel(1995(5)`=round(anio[_N],5)') ///
-			ytitle("A{c n~}o `aniovp' = 1.000") xtitle("") yline(0) ///
+			ytitle("`aniovp' = 1.000") xtitle("") yline(0) ///
 			ylabel(0(1)4, format("%3.0f")) ///
 			///text(`crec_deflactor', place(c)) ///
 			legend(label(1 "Reportado") label(2 "Proyectado") label(3 "Estimado") order(1 3 2)) ///

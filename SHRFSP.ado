@@ -12,7 +12,7 @@ quietly {
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
 	** 1.2 Datos Abiertos (México) **
-	if "`c(username)'" == "ricardo" & "$pais" == "" {
+	if "`c(username)'" == "ciepmx" & "$pais" == "" {
 		*UpdateDatosAbiertos
 		local updated = "yes" //r(updated)
 		*local ultanio = r(ultanio)
@@ -32,8 +32,11 @@ quietly {
 
 	** 2.1 Update SHRFSP **
 	capture confirm file `"`c(sysdir_personal)'/SIM/$pais/SHRFSP.dta"'
-	if "`update'" == "update" | /*"`updated'" != "yes" |*/ _rc != 0 {
-		noisily run `"`c(sysdir_personal)'/UpdateSHRFSP`=subinstr("${pais}"," ","",.)'.do"'
+	if ("`update'" == "update" | _rc != 0) & "$pais" != "" {
+		noisily run `"`c(sysdir_personal)'/UpdateSHRFSPMundial.do"' `anio'
+	}
+	if ("`update'" == "update" | _rc != 0) & "$pais" == "" {
+		noisily run `"`c(sysdir_personal)'/UpdateSHRFSP.do"'
 	}
 
 	** 2.2 PIB + Deflactor **
@@ -45,12 +48,14 @@ quietly {
 
 	** 2.3 Base PEF **
 	use `"`c(sysdir_personal)'/SIM/$pais/SHRFSP.dta"', clear
-	noisily di _newline(5) in g "{bf:SISTEMA FISCAL: " in y "DEUDA `anio'" "}"
+	noisily di _newline(2) in g _dup(20) "." "{bf:  Sistema Fiscal: DEUDA $pais " in y `anio' "  }" in g _dup(20) "."
 	
 	local aniofirst = anio[1]
 	local aniolast = anio[_N]
-	local meslast = mes[_N]
-
+	capture local meslast = mes[_N]
+	if _rc == 0 {
+		local meslast = "m`meslast'"		
+	}
 
 
 
@@ -88,30 +93,34 @@ quietly {
 	***************	
 	if "`nographs'" != "nographs" {
 		tempvar interno externo
-		g `interno' = shrfspInterno/1000000000000
-		g `externo' = `interno' + shrfspExterno/1000000000000
+		g `externo' = shrfspExterno/1000000000000
+		g `interno' = `externo' + shrfspInterno/1000000000000
 
 		forvalues k=1(1)`=_N' {
 			if `shrfsp'[`k'] != . & anio[`k'] >= 2003 {
 				local text `"`text' `=`shrfsp'[`k']' `=anio[`k']' "{bf:`=string(`shrfsp'[`k'],"%5.1fc")'}""'
-				local textI `"`textI' `=`interno'[`k']' `=anio[`k']' "`=string(shrfspInterno[`k']/1000000000000,"%5.1fc")'""'
-				local textE `"`textE' `=`externo'[`k']' `=anio[`k']' "`=string(shrfspExterno[`k']/1000000000000,"%5.1fc")'""'
+				local textI `"`textI' `=`shrfspInterno'[`k']' `=anio[`k']' "`=string(shrfspInterno[`k']/pibY[`k']*100,"%5.1fc")'""'
+				local textE `"`textE' `=`shrfspExterno'[`k']' `=anio[`k']' "`=string(shrfspExterno[`k']/pibY[`k']*100,"%5.1fc")'""'
 			}
 		}
 
-		twoway (area `externo' `interno' anio if `externo' != .) ///
-			(connected `shrfsp' anio if `externo' != ., yaxis(2) mlcolor("255 129 0") lcolor("255 129 0")), ///
+		twoway (area `interno' `externo' anio if `externo' != .) ///
+			(connected `shrfspInterno' anio if `externo' != ., yaxis(2) mlcolor("255 129 0") lcolor("255 129 0")) ///
+			(connected `shrfspExterno' anio if `externo' != ., yaxis(2) mlcolor("255 189 0") lcolor("255 189 0")) ///
+			(connected `shrfsp' anio if `externo' != ., yaxis(2) mlcolor("53 200 71") lcolor("53 200 71")), ///
 			title("{bf:Saldo hist{c o'}rico} de RFSP") ///
 			subtitle($pais) ///
 			ylabel(, format(%15.0fc) labsize(small)) ///
 			xlabel(`aniofirst'(1)`aniolast', noticks) ///
-			text(`text', yaxis(2)) /*text(`textI', size(vsmall)) text(`textE', size(vsmall))*/ ///
+			text(`text' `textE' `textI', yaxis(2)) /*text(`textI', size(vsmall)) text(`textE', size(vsmall))*/ ///
 			ylabel(, axis(2) noticks format(%5.0fc) labsize(small)) ///
 			yscale(range(0) axis(2) noline) ///
 			ytitle(billones MXN) ytitle(% PIB, axis(2)) xtitle("") ///
-			legend(on position(6) rows(1) label(1 "Interno") label(2 "Externo") label(3 "= Total (% PIB)")) ///
+			legend(on position(6) rows(1) label(1 "Interno") label(2 "Externo") label(5 "= Total (% PIB)") ///
+			label(3 "Interno (% PIB)") label(4 "Externo (% PIB)")) ///
 			name(shrfsp, replace) ///
-			caption("Elaborado por el CIEP, con informaci{c o'}n de la SHCP, EOFP (`aniolast'm`meslast').")
+			note("{bf:{c U'}ltimo dato}: `aniolast'`meslast'") ///
+			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.")
 			
 		capture confirm existence $export
 		if _rc == 0 {

@@ -33,9 +33,9 @@ foreach k in alim alquiler cb educacion fuera mascotas med mujer otros trans tra
 		g cero`k' = gasto_anual`k'
 	}
 	if IVAT[`j',1] == 2 {
-		replace IVA`k' = gasto_anual`k'*(1-prop_exen`k')*IVAT[1,1]/100/(1+IVAT[1,1]/100)*(1-IVAT[13,1]/100)
-		g exento`k' = gasto_anual`k'*(prop_exen`k')
-		g gas_exento`k' = gasto_anual`k'*(1-prop_exen`k')
+		replace IVA`k' = gasto_anual`k'*(prop_exen`k')*IVAT[1,1]/100/(1+IVAT[1,1]/100)*(1-IVAT[13,1]/100)
+		g exento`k' = gasto_anual`k'*(1-prop_exen`k')
+		g gas_exento`k' = gasto_anual`k'*(prop_exen`k')
 	}
 	if IVAT[`j',1] == 3 {
 		replace IVA`k' = gasto_anual`k'*IVAT[1,1]/100/(1+IVAT[1,1]/100)*(1-IVAT[13,1]/100)

@@ -370,7 +370,7 @@ quietly {
 		egen `TOTPIB' = rsum(gastonetoPIB*)
 		forvalues k=1(1)`=_N' {
 			if `TOTPIB'[`k'] != . & anio[`k'] >= 2014 {
-				local text `"`text' `=`TOTPIB'[`k']' `=anio[`k']' "`=string(`TOTPIB'[`k'],"%5.1fc")'""'
+				local text `"`text' `=`TOTPIB'[`k']' `=anio[`k']' "{bf:`=string(`TOTPIB'[`k'],"%5.1fc")'}""'
 			}
 		}
 		twoway (area `graphvars' anio if anio >= 2014) ///
@@ -380,12 +380,12 @@ quietly {
 			text(`text', yaxis(2)) ///
 			ytitle(mil millones `currency') ytitle(% PIB, axis(2)) xtitle("") ///
 			ylabel(/*0(5)30*/, format(%15.0fc) labsize(small)) ///
-			ylabel(/*0(5)30*/, axis(2) noticks format(%5.1fc) labsize(small)) ///
+			ylabel(/*0(5)30*/, axis(2) noticks format(%5.0fc) labsize(small)) ///
 			yscale(range(0)) yscale(range(0) axis(2) noline) ///
 			xlabel(2014(1)`aniolast') ///
 			legend(on position(6) rows(`rows') cols(`cols') `legend' label(`=`totlev'+1' "= Total % PIB")) ///
 			name(gastos, replace) ///
-			caption("Fuente: Elaborado por el CIEP.")
+			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.")
 		
 		restore
 	}
