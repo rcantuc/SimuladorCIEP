@@ -93,8 +93,8 @@ quietly {
 	***************	
 	if "`nographs'" != "nographs" {
 		tempvar interno externo
-		g `externo' = shrfspExterno/1000000000000
-		g `interno' = `externo' + shrfspInterno/1000000000000
+		g `externo' = shrfspExterno/1000000000
+		g `interno' = `externo' + shrfspInterno/1000000000
 
 		forvalues k=1(1)`=_N' {
 			if `shrfsp'[`k'] != . & anio[`k'] >= 2003 {
@@ -115,7 +115,7 @@ quietly {
 			text(`text' `textE' `textI', yaxis(2)) /*text(`textI', size(vsmall)) text(`textE', size(vsmall))*/ ///
 			ylabel(, axis(2) noticks format(%5.0fc) labsize(small)) ///
 			yscale(range(0) axis(2) noline) ///
-			ytitle(billones MXN) ytitle(% PIB, axis(2)) xtitle("") ///
+			ytitle(mil millones `currency') ytitle(% PIB, axis(2)) xtitle("") ///
 			legend(on position(6) rows(1) label(1 "Interno") label(2 "Externo") label(5 "= Total (% PIB)") ///
 			label(3 "Interno (% PIB)") label(4 "Externo (% PIB)")) ///
 			name(shrfsp, replace) ///
