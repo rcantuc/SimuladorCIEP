@@ -34,13 +34,16 @@ adopath ++ PERSONAL                                                             
 ***    0. ARRANQUE    ***
 ***                   ***
 *************************
-local aniovp = substr(`"`c(current_date)'"',-4,4)                               // A{c N~}O VALOR PRESENTE
-local noisily "noisily"                                                         // "NOISILY" OUTPUS
-*global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
-*global output "output"                                                         // IMPRIMIR OUTPUTS
 *global pais "El Salvador"                                                      // OTROS PAISES (si aplica)
-global pais "Ecuador"                                                           // OTROS PAISES (si aplica)
-local aniovp = 2020
+*global pais "Ecuador"                                                           // OTROS PAISES (si aplica)
+
+local aniovp = substr(`"`c(current_date)'"',-4,4)                               // A{c N~}O VALOR PRESENTE
+*local aniovp = 2020                                                             // A{c N~}O VALOR PRESENTE
+
+local noisily "noisily"                                                         // "NOISILY" OUTPUTS
+global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
+*global output "output"                                                         // IMPRIMIR OUTPUTS
+
 noisily run "`c(sysdir_personal)'/Arranque.do" `aniovp'
 
 
@@ -52,37 +55,40 @@ noisily run "`c(sysdir_personal)'/Arranque.do" `aniovp'
 ***    1. CRECIMIENTO PIB    ***
 ***                          ***
 ********************************
-global pib2021 = 2.5                                                            // Pre-CGPE 2022: 5.3
-global pib2022 = 1.3                                                            // Pre-CGPE 2022: 3.6
-global pib2023 = 1.7                                                            // Supuesto: 2.5
-global pib2024 = 2.0                                                            // Supuesto: 2.5
-global pib2025 = 2.3                                                            // Supuesto: 2.5
-global pib2026 = 2.5                                                            // Supuesto: 2.5
+global pib2021 = 5.3 //*0+2.5                                                            // Pre-CGPE 2022: 5.3
+global pib2022 = 3.6 //*0+1.3                                                            // Pre-CGPE 2022: 3.6
+global pib2023 = 2.5 //*0+1.7                                                            // Supuesto: 2.5
+global pib2024 = 2.5 //*0+2.0                                                            // Supuesto: 2.5
+global pib2025 = 2.5 //*0+2.3                                                            // Supuesto: 2.5
+global pib2026 = 2.5 //*0+2.5                                                            // Supuesto: 2.5
 
 * 2026-2030 *
 forvalues k=2027(1)2030 {
-	global pib`k' = $pib2026                                                    // SUPUESTO DE LARGO PLAZO
+	*global pib`k' = $pib2026                                                   // SUPUESTO DE LARGO PLAZO
 }
 
-/* 2031-2050 *
+* 2031-2050 *
 forvalues k=2031(1)2050 {
-	global pib`k' = $pib2025
+	*global pib`k' = $pib2025
 }
 
-* OTROS */
-global inf2021 = 3.8                                                            // Pre-CGPE 2022: 3.8
-global inf2022 = 3.0                                                            // Pre-CGPE 2022: 3.0
+* OTROS *
+if "$pais" == "" {
+	global inf2021 = 3.8                                                            // Pre-CGPE 2022: 3.8
+	global inf2022 = 3.0                                                            // Pre-CGPE 2022: 3.0
 
-*global def2021 = 3.7393                                                         // Pre-CGPE 2022: 3.7
-*global def2022 = 3.2820                                                         // Pre-CGPE 2022: 3.2
+	global def2021 = 3.7393                                                         // Pre-CGPE 2022: 3.7
+	global def2022 = 3.2820                                                        // Pre-CGPE 2022: 3.2
 
-*global interesI =                                                              // Tasa de inter{c e'}s INTERNA
-*global interesE =                                                              // Tasa de inter{c e'}s EXTERNA
-*global porExter =                                                              // Porcentaje de deuda EXTERNA
-*global tipoDeCa =                                                              // Tipo de cambio
-*global deprecia =                                                              // Depreciaci{c o'}n
+	*global interesI =                                                              // Tasa de inter{c e'}s INTERNA
+	*global interesE =                                                              // Tasa de inter{c e'}s EXTERNA
+	*global porExter =                                                              // Porcentaje de deuda EXTERNA
+	*global tipoDeCa =                                                              // Tipo de cambio
+	*global deprecia =                                                              // Depreciaci{c o'}n
+}
 ***    FIN: PARAMETROS PIB    ***
 ********************************/
+
 
 
 *******************************
@@ -93,21 +99,23 @@ foreach k in `aniovp' {
 }
 
 
+
 *****************************************************
 **       1.2 PIB + Deflactor, Inflacion, SCN       **
-`noisily' PIBDeflactor, anio(`aniovp') $nographs save //update //geo(`geo') //discount(3.0)
+`noisily' PIBDeflactor, anio(`aniovp') $nographs save geopib(2000) geodef(2010) //update //discount(3.0)
 if "$pais" == "" {
 	`noisily' Inflacion, anio(`aniovp') $nographs //update
 	`noisily' SCN, anio(`aniovp') $nographs //update
 }
 
 
+
 **********************************************
 **       1.3 Ingresos, Gastos y Deuda       **
-`noisily' LIF, anio(`aniovp') $nographs //update
+`noisily' LIF, anio(`aniovp') $nographs by(divGA) rows(1) //update
 `noisily' PEF, anio(`aniovp') $nographs rows(2) //update
 `noisily' SHRFSP, anio(`aniovp') $nographs //update
-exit
+
 
 
 *******************************/
@@ -123,11 +131,13 @@ if _rc != 0 | "$export" != "" {
 	}
 
 	** 1.2.2 HOUSEHOLDS: INCOMES **
-	noisily run `"`c(sysdir_personal)'/Households.do"' `aniovp'
-	noisily run `"`c(sysdir_personal)'/PerfilesSim.do"' `aniovp'
+	noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' `aniovp'
+	if "$pais" == "" {
+		noisily run `"`c(sysdir_personal)'/PerfilesSim.do"' `aniovp'
+	}
 
 	** 1.2.3 SANKEY **
-	if `c(version)' > 13.1 {
+	if "$pais" == "" & `c(version)' > 13.1 {
 		foreach k in grupoedad decil escol sexo {
 			noisily run "`c(sysdir_personal)'/Sankey.do" `k' `aniovp'
 		}
@@ -169,13 +179,14 @@ scalar bienmueb    =     305 //    Bienes muebles e inmuebles
 scalar obrapubl    =    3390 //    Obras p{c u'}blicas
 scalar invefina    =     796 //    Inversi{c o'}n financiera
 scalar partapor    =    9132 //    Participaciones y aportaciones
-scalar costodeu    =    5955*0 //    Costo de la deuda
+scalar costodeu    =    5955 //    Costo de la deuda
 
 scalar IngBas      =       0 //    Ingreso b{c a'}sico
 scalar ingbasico18 =       1 //    1: Incluye menores de 18 anios, 0: no
 scalar ingbasico65 =       1 //    1: Incluye mayores de 65 anios, 0: no
 ***    FIN: PARAMETROS GASTOS    ***
 ***********************************/
+
 
 `noisily' GastoPC, anio(`aniovp') `nographs'
 
@@ -208,7 +219,7 @@ scalar OtrosC  = 1.067 //    Productos, derechos, aprovechamientos, contribucion
 ******************************************************
 ***       3.1. Impuesto Sobre la Renta (ISR)       ***
 *             Inferior		Superior	CF		Tasa
-matrix ISR = (0.01,		7735.00,	0.0,		1.92	\	/// 1
+matrix ISR = (0.01,			7735.00,	0.0,		1.92	\	/// 1
               7735.01,		65651.07,	148.51,		6.40	\	/// 2
               65651.08,		115375.90,	3855.14,	10.88	\	/// 3
               115375.91,	134119.41,	9265.20,	16.00	\	/// 4
@@ -219,6 +230,40 @@ matrix ISR = (0.01,		7735.00,	0.0,		1.92	\	/// 1
               974535.04,	1299380.04,	234993.95,	32.00	\	/// 9
               1299380.05,	3898140.12,	338944.34,	34.00	\	/// 10
               3898140.13,	1E+14,		1222522.76,	35.00)		//  11
+
+*matrix ISR = (0.01,			7734.96,	0.0,		1.92	\	/// 1
+              7734.97,		65651.07,	148.56,		6.40	\	/// 2
+              65651.08,		115375.90,	3855.14,	10.88	\	/// 3
+              115375.91,	134119.41,	9265.20,	16.00	\	/// 4
+              134119.42,	160577.65,	12264.16,	17.92	\	/// 5
+              160577.66,	323862.00,	17005.47,	21.36	\	/// 6
+              323862.01,	510451.00,	51883.01,	23.52	\	/// 7
+              510451.01,	974535.03,	95768.74,	30.00	\	/// 8
+              974535.04,	1299380.04,	234993.95,	32.00	\	/// 9
+              1299380.05,	3898140.10,	338944.34,	34.00	\	/// 10
+              3898140.11,	5375382.60,	1222522.8,	36.00	\	/// 11
+              5375382.61,	6949899.10,	1754330.1,	38.00	\	/// 12
+              6949899.11,	8614081.10,	2352646.3,	40.00	\	/// 13
+              8614081.11,	10287809.00,3018319.0,	42.00	\	/// 14
+              10287809.01,	12082107.10,3721284.8,	44.00	\	/// 15
+              12082107.11,	13872553.20,4510775.9,	46.00	\	/// 16
+              13872553.21,	15763795.50,5334381.1,	48.00	\	/// 17
+              15763795.51,	1E+14,		6242177.4,	50.00)		//  18
+
+matrix ISR = (0.01,		7734.96,	0.0,		1.92	\	/// 1
+              7734.97,		65651.07,	148.56,		6.40	\	/// 2
+              65651.08,		115375.90,	3855.14,	10.88	\	/// 3
+              115375.91,	134119.41,	9265.20,	16.00	\	/// 4
+              134119.42,	160577.65,	12264.16,	17.92	\	/// 5
+              160577.66,	323862.00,	17005.47,	21.36	\	/// 6
+              323862.01,	510451.00,	51883.01,	23.52	\	/// 7
+              510451.01,	974535.03,	95768.74,	30.00	\	/// 8
+              974535.04,	1299380.04,	234993.95,	32.00	\	/// 9
+              1299380.05,	1600000.00, 	338944.34,	35.00	\	/// 10
+              1600000.01,	1900000.00,	444161.33,	36.00	\	/// 11
+              1900000.01,	2660000.00,	552161.33,	38.00	\	/// 12
+              2660000.01,	3500000.00,	840961.32,	40.00	\	/// 13
+              3500000.01,	1E+14,		1176961.32,	42.00)		//  14
 
 *             Inferior		Superior	Subsidio
 matrix	SE = (0.01,		21227.52,	4884.24		\	/// 1
@@ -237,11 +282,11 @@ matrix	SE = (0.01,		21227.52,	4884.24		\	/// 1
 matrix DED = (5,		15,			46.28, 			0)
 
 *            Tasa ISR PM.	% Informalidad PM
-matrix PM = (30,		10.81)
+matrix PM = (30,		10.82)
 
 * Cambios ISR */
-local cambioISR = 0
-if `cambioISR' != 0 {
+local cambioISR = 1
+if `cambioISR' != 0 & "$pais" == "" {
 	noisily run "`c(sysdir_personal)'/ISR_Mod.do"
 }
 
@@ -285,7 +330,7 @@ matrix IVAT = (16 \     ///  1  Tasa general
 
 * Cambios IVA */
 local cambioIVA = 0
-if `cambioIVA' != 0 {
+if `cambioIVA' != 0 & "$pais" == "" {
 	noisily run "`c(sysdir_personal)'/IVA_Mod.do"
 }
 
@@ -303,7 +348,7 @@ if "$output" == "output" {
 	quietly log off output
 }
 
-noisily TasasEfectivas, anio(`aniovp') `nographs'
+`noisily' TasasEfectivas, anio(`aniovp') `nographs'
 
 
 
@@ -315,35 +360,38 @@ noisily TasasEfectivas, anio(`aniovp') `nographs'
 ***                                   ***
 *****************************************
 use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
-capture g AportacionesNetas = Laboral + Consumo + ISR__PM + ing_cap_fmp ///
+g AportacionesNetas = Laboral + Consumo + ISR__PM + Petroleo ///
 	- Pension - Educacion - Salud - IngBasico - PenBienestar - Infra
 if _rc != 0 {
-	replace AportacionesNetas = Laboral + Consumo + ISR__PM + ing_cap_fmp ///
+	replace AportacionesNetas = Laboral + Consumo + ISR__PM + Petroleo ///
 	- Pension - Educacion - Salud - IngBasico - PenBienestar - Infra
 }
 label var AportacionesNetas "las aportaciones netas"
 save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace
 
 
+
 ************************************
 **       5.1 REDISTRIBUCION       **
 ************************************
-noisily Simulador AportacionesNetas [fw=factor], base("ENIGH 2018") boot(1) reboot nographs anio(`aniovp')
+noisily Simulador AportacionesNetas [fw=factor], base("ENIGH 2018") boot(1) reboot nographs anio(`aniovp') //folio(Identif_hog)
+
 
 
 ****************************************
 **       5.2 CUENTA GENERACIONAL      **
-***************************************
-noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) 	//	<-- OPTIONAL!!! Toma mucho tiempo.
+****************************************
+*noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) 	//	<-- OPTIONAL!!! Toma mucho tiempo.
 
 
-***************************************************/
+
+***************************************************
 **       5.3 PROYECCION DE LAS APORTACIONES       **
 ****************************************************
 use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/AportacionesNetasREC.dta"', clear
 merge 1:1 (anio) using "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", nogen
-*replace estimacion = estimacion/1000000000000
-replace estimacion = estimacion/pibYR*100
+replace estimacion = estimacion/1000000000
+*replace estimacion = estimacion/pibYR*100
 
 forvalues aniohoy = `aniovp'(1)`aniovp' {
 *forvalues aniohoy = 1990(1)2050 {
@@ -363,8 +411,8 @@ forvalues aniohoy = `aniovp'(1)`aniovp' {
 		twoway (connected estimacion anio) ///
 		(connected estimacion anio if anio == `aniohoy') ///
 		if anio > 1990, ///
-		///ytitle("billones MXN `aniovp'") ///
-		ytitle("% PIB") ///
+		ytitle("mil millones USD `aniovp'") ///
+		///ytitle("% PIB") ///
 		yscale(range(0)) /*ylabel(0(1)4)*/ ///
 		ylabel(#5, format(%5.1fc) labsize(small)) ///
 		xlabel(1990(10)2050, labsize(small) labgap(2)) ///
@@ -372,8 +420,8 @@ forvalues aniohoy = `aniovp'(1)`aniovp' {
 		legend(off) ///
 		text(`=`MAX'[1,1]' `aniomax' "{bf:M{c a'}ximo:} `aniomax'", place(c)) ///
 		text(`estimacionvp' `aniohoy' "{bf:Hoy:} `aniohoy'", place(c)) ///
-		///title("{bf:Proyecciones} de las aportaciones netas") subtitle("$pais") ///
-		///caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5.") ///
+		title("{bf:Proyecciones} de las aportaciones netas") subtitle("$pais") ///
+		caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.") ///
 		name(AportacionesNetasProj, replace)
 
 		capture confirm existence $export
@@ -383,7 +431,6 @@ forvalues aniohoy = `aniovp'(1)`aniovp' {
 	}
 
 }
-
 
 if "$output" == "output" {
 	forvalues k=1(5)`=_N' {
@@ -402,27 +449,30 @@ if "$output" == "output" {
 
 
 
-*******************************/
-***                          ***
-***    6. PARTE IV: DEUDA    ***
-***                          ***
-********************************
+
+************************************************/
+***                                           ***
+***    6. PARTE IV: DEUDA + REDISTRIBUCION    ***
+***                                           ***
+*************************************************
+
 
 
 ****************************
 **       6.1 SANKEY       **
 ****************************
-if "$export" != "" {
+if "$pais" == "" & "$export" != "" {
 	foreach k in decil sexo grupoedad escol {
 		noisily run "`c(sysdir_personal)'/SankeySF.do" `k' `aniovp'
 	}
 }
 
 
+
 ********************************
 **       6.2 FISCAL GAP       **
 ********************************
-noisily FiscalGap, anio(`aniovp') end(2030) //boot(250) //update
+noisily FiscalGap, anio(`aniovp') end(2050) aniomin(2015) //boot(250) //update
 
 if "$output" == "output" {
 	quietly log close output

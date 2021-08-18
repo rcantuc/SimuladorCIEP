@@ -371,7 +371,7 @@ quietly {
 			`=`MaxM'[1,1]' `"`=string(`MaxM'[1,1],"%15.0fc")'"', angle(horizontal)) ///
 			///caption("Elaborado por el CIEP con informaci{c o'}n de: CONAPO (2018).") ///
 			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.") ///
-			title("Pir{c a'}mide {bf:demogr{c a'}fica}") subtitle("$pais") ///
+			title("{bf:Pir{c a'}mide} demogr{c a'}fica") subtitle("$pais") ///
 			///title("{bf:Population} pyramid")
 
 

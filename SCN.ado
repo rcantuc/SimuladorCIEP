@@ -663,8 +663,8 @@ quietly {
 			(area `Depreciacion' anio if anio > `anio_last' & anio > `anio_exo', color("255 129 0")) ///
 			(area `Capital' anio if anio > `anio_last' & anio > `anio_exo', color("255 189 0")) ///
 			(area `Laboral' anio if anio > `anio_last' & anio > `anio_exo', color("39 97 47")), ///
-			///title("{bf:Distribuci{c o'}n} del ingreso") ///
-			/// caption("{it:Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, BIE.}") ///
+			title("{bf:Distribuci{c o'}n} del ingreso") ///
+			caption("{it:Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, BIE.}") ///
 			legend(cols(3) order(1 2 3)) ///
 			xtitle("") ///
 			text(`=`Depreciacion'[1]*.05' `=`latest'+(`anio_exo'-`latest')/2+.5' "{bf:Estimado}", place(n) color(white)) ///
@@ -786,8 +786,8 @@ quietly {
 			(area `ConGob' anio if anio > `anio_last' & anio > `anio_exo', color("0 151 201")) ///
 			(area `ConHog' anio if anio > `anio_last' & anio > `anio_exo', color("186 34 64")) ///
 			(area `ComprasN' anio if anio > `anio_last' & anio > `anio_exo', color("53 200 71")), ///
-			///title("{bf:Utilizaci{c o'}n} del ingreso disponible") ///
-			/// caption("{it:Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, BIE.}") ///
+			title("{bf:Utilizaci{c o'}n} del ingreso disponible") ///
+			caption("{it:Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, BIE.}") ///
 			legend(cols(4) order(1 2 3 4)) ///
 			xtitle("") ///
 			text(`=`AhorroN'[1]*.05' `=`latest'+(`anio_exo'-`latest')/2+.5' "{bf:Estimado}", place(n) color(white)) ///

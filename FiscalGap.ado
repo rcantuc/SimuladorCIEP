@@ -6,7 +6,8 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
-	syntax [, NOGraphs Anio(int `aniovp') BOOTstrap(int 1) Update END(int 2100)]
+	syntax [, NOGraphs Anio(int `aniovp') BOOTstrap(int 1) Update END(int 2100) ANIOMIN(int 2000)]
+
 
 
 	*************
@@ -30,12 +31,14 @@ quietly {
 	save `PIB'
 
 
+
 	****************
 	*** 2 SHRFSP ***
 	****************
 	SHRFSP, anio(`anio') `nographs' //update
 	tempfile shrfsp
 	save `shrfsp'
+
 
 
 	******************************
@@ -61,17 +64,20 @@ quietly {
 		tempfile pm_capital
 		save `pm_capital'
 	}*/
-	
+
+
 	LIF, anio(`anio') nographs by(divGA) //eofp
 	collapse (sum) recaudacion if divLIF != 10, by(anio divGA) fast
-	if "$pais" == "" {
-		*merge 1:1 (anio divGA) using `pm_ingreso', nogen keepus(monto)
-		*merge 1:1 (anio divGA) using `pm_capital', nogen keepus(monto) update
-		*replace recaudacion = recaudacion - monto if divGA == 3 & monto != .
-		*replace recaudacion = recaudacion + monto if divGA == 4 & monto != .
-	}
-	g modulo = ""
 
+	/*if "$pais" == "" {
+		merge 1:1 (anio divGA) using `pm_ingreso', nogen keepus(monto)
+		merge 1:1 (anio divGA) using `pm_capital', nogen keepus(monto) update
+		replace recaudacion = recaudacion - monto if divGA == 3 & monto != .
+		replace recaudacion = recaudacion + monto if divGA == 4 & monto != .
+	}*/
+
+
+	g modulo = ""
 	levelsof divGA, local(divGA)
 	foreach k of local divGA {
 		local divGA`k' : label divGA `k'
@@ -132,6 +138,44 @@ quietly {
 			restore
 			merge 1:1 (anio divGA) using `otros', nogen update replace
 		}
+		if "`divGA`k''" == "Seguridad Social" {
+			preserve
+
+			capture use `"`c(sysdir_personal)'/users/$pais/$id/CuotasSSREC"', clear
+			if _rc != 0 {
+				use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/CuotasSSREC.dta"', clear			
+			}
+			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
+			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
+
+			g divGA = `k'
+			replace modulo = "seguridadsocial"
+
+			tempfile seguridadsocial
+			save `seguridadsocial'
+
+			restore
+			merge 1:1 (anio divGA) using `seguridadsocial', nogen update replace
+		}
+		if "`divGA`k''" == "Petroleros" {
+			preserve
+
+			capture use `"`c(sysdir_personal)'/users/$pais/$id/PetroleoREC"', clear
+			if _rc != 0 {
+				use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PetroleoREC.dta"', clear			
+			}
+			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
+			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
+
+			g divGA = `k'
+			replace modulo = "petroleo"
+
+			tempfile petroleo
+			save `petroleo'
+
+			restore
+			merge 1:1 (anio divGA) using `petroleo', nogen update replace
+		}
 	}
 
 	merge m:1 (anio) using `PIB', nogen keep(matched) update replace
@@ -148,44 +192,60 @@ quietly {
 	format recaudacion* estimacion* %20.0fc
 	tsset anio
 
-	/* Otros ingresos *
+	* Otros ingresos (como % PIB) *
 	g otrospib = recaudacionotros/pibYR*100
 	replace otrospib = L.otrospib if anio > `anio'
 	replace estimacionotros = L.otrospib/100*pibYR if anio > `anio'
 
+	* Ingresos petroleros (como % PIB) *
+	g petroleopib = recaudacionpetroleo/pibYR*100
+	replace petroleopib = L.petroleopib if anio > `anio'
+	replace estimacionpetroleo = L.petroleopib/100*pibYR if anio > `anio'
+
+
 	***************/
 	** 3.1 Graphs **
 	if "`nographs'" != "nographs" {
-		tempvar consumo ingreso otros
-		g `consumo' = (recaudacionalconsumo)/1000000000000
-		g `ingreso' = (recaudacionalingreso + recaudacionalconsumo)/1000000000000
-		g `otros' = (recaudacionotros + recaudacionalingreso + recaudacionalconsumo)/1000000000000
+		tempvar consumo ingreso otros petroleo cuotasss
+		g `consumo' = (recaudacionalconsumo)/1000000000
+		g `ingreso' = (recaudacionalingreso + recaudacionalconsumo)/1000000000
+		g `otros' = (recaudacionotros + recaudacionalingreso + recaudacionalconsumo)/1000000000
+		g `petroleo' = (recaudacionpetroleo + recaudacionotros + recaudacionalingreso + recaudacionalconsumo)/1000000000
+		g `cuotasss' = (recaudacionseguridadsocial + recaudacionpetroleo + recaudacionotros + recaudacionalingreso + recaudacionalconsumo)/1000000000
 
-		tempvar consumo2 ingreso2 otros2
-		g `consumo2' = (estimacionalconsumo)/1000000000000
-		g `ingreso2' = (estimacionalingreso + estimacionalconsumo)/1000000000000
-		g `otros2' = (estimacionotros + estimacionalingreso + estimacionalconsumo)/1000000000000
+		tempvar consumo2 ingreso2 otros2 petroleo2 cuotasss2
+		g `consumo2' = (estimacionalconsumo)/1000000000
+		g `ingreso2' = (estimacionalingreso + estimacionalconsumo)/1000000000
+		g `otros2' = (estimacionotros + estimacionalingreso + estimacionalconsumo)/1000000000
+		g `petroleo2' = (estimacionpetroleo + estimacionotros + estimacionalingreso + estimacionalconsumo)/1000000000
+		g `cuotasss2' = (estimacionseguridadsocial + estimacionpetroleo + estimacionotros + estimacionalingreso + estimacionalconsumo)/1000000000
 
-		twoway (area `otros' `ingreso' `consumo' anio if anio <= `anio' & anio >= 2003) ///
-			(area `otros2' anio if anio > `anio', color("255 129 0")) ///
-			(area `ingreso2' anio if anio > `anio', color("255 189 0")) ///
-			(area `consumo2' anio if anio > `anio', color("39 97 47")), ///
-			legend(rows(1) order(1 2 3) ///
-			label(1 "Ingresos de capital") label(2 "Impuestos laborales") label(3 "Impuestos al consumo")) ///
-			xlabel(2010(5)`=round(anio[_N],10)') ///
+		twoway (area `cuotasss' `petroleo' `otros' `ingreso' `consumo' anio if anio <= `anio' & anio >= `aniomin') ///
+			(area `cuotasss2' anio if anio > `anio', color("255 129 0")) ///
+			(area `petroleo2' anio if anio > `anio', color("255 189 0")) ///
+			(area `otros2' anio if anio > `anio', color("39 97 47")) ///
+			(area `ingreso2' anio if anio > `anio', color("53 200 71")) ///
+			(area `consumo2' anio if anio > `anio', color("0 78 198")), ///
+			legend(rows(1) order(1 2 3 4 5) ///
+			label(1 "Aport. Seguridad Social") label(2 "Petroleros") label(3 "Otros ingresos") ///
+			label(4 "Impuestos laborales") label(5 "Impuestos al consumo")) ///
+			xlabel(`aniomin'(5)`=round(anio[_N],10)') ///
 			ylabel(, format(%20.0fc)) ///
 			xline(`=`anio'+.5') ///
 			text(`=`otros'[`obs`anio_last'']*.0618' `=`anio'+1.5' "{bf:Proyecci{c o'}n}", place(ne) color(white)) ///
 			yscale(range(0)) ///
-			///title({bf:Proyecci{c o'}n} de los ingresos p{c u'}blicos) ///
+			title({bf:Proyecci{c o'}n} de los ingresos p{c u'}blicos) ///
 			subtitle($pais) ///
 			xtitle("") ytitle(mil millones `currency' `anio') ///
-			///caption("{it:Fuente: Elaborado por el CIEP con el Simulador Fiscal CIEP v5.}") ///
+			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.") ///
 			name(Proy_ingresos, replace)
 		if "$export" != "" {
 			graph export `"$export/Proy_ingresos.png"', replace name(Proy_ingresos)
 		}
 	}
+
+
+
 	if "$output" == "output" {
 		keep if anio >= 2010
 		forvalues k=1(1)`=_N' {
@@ -414,7 +474,7 @@ quietly {
 	format gasto* estimacion* %20.0fc
 	tsset anio
 
-	* Otros gastos *
+	* Otros gastos (como % PIB) *
 	g otrospib = gastootros/pibYR*100
 	replace otrospib = L.otrospib if otrospib == .
 	replace estimacionotros = L.otrospib/100*pibYR if estimacionotros == .
@@ -472,12 +532,12 @@ quietly {
 	egen costodeudashrfsp_ari = mean(costodeudashrfsp)
 	replace costodeudashrfsp = costodeudashrfsp_ari if costodeudashrfsp == .
 
-	capture confirm scalar costodeu
-	if _rc == 0 {
-		replace gastocostodeuda = scalar(costodeu)*Poblacion if anio == `anio'
-		replace costodeudashrfsp = gastocostodeuda/shrfsp*100 if anio == `anio'
-		replace costodeudashrfsp = L.costodeudashrfsp if costodeudashrfsp == .
-	}
+	*capture confirm scalar costodeu
+	*if _rc == 0 {
+	*	replace gastocostodeuda = scalar(costodeu)*Poblacion if anio == `anio'
+	*	replace costodeudashrfsp = gastocostodeuda/shrfsp*100 if anio == `anio'
+	*	replace costodeudashrfsp = L.costodeudashrfsp if costodeudashrfsp == .
+	*}
 
 	replace estimacioncostodeuda = costodeudashrfsp/100*shrfsp if estimacioncostodeuda == . //anio == `anio'
 
@@ -527,27 +587,27 @@ quietly {
 	****************
 	** 4.1 Graphs **
 	tempvar educaciong pensionesg saludg costog amortg otrosg ingbasg bienestarg
-	g `educaciong' = (gastoeducacion)/1000000000000
-	g `pensionesg' = (gastopensiones + gastoeducacion)/1000000000000
-	g `saludg' = (gastosalud + gastopensiones + gastoeducacion)/1000000000000
-	g `costog' = (gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000000
-	g `amortg' = (gastoamortizacion + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000000
-	g `otrosg' = (gastootros + gastoamortizacion + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000000
-	g `bienestarg' = (gastopenbienestar + gastootros + gastoamortizacion + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000000
-	g `ingbasg' = (gastoingbasico + gastopenbienestar + gastootros + gastoamortizacion + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000000
+	g `educaciong' = (gastoeducacion)/1000000000
+	g `pensionesg' = (gastopensiones + gastoeducacion)/1000000000
+	g `saludg' = (gastosalud + gastopensiones + gastoeducacion)/1000000000
+	g `costog' = (gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000
+	g `amortg' = (gastoamortizacion + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000
+	g `otrosg' = (gastootros + gastoamortizacion + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000
+	g `bienestarg' = (gastopenbienestar + gastootros + gastoamortizacion + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000
+	g `ingbasg' = (gastoingbasico + gastopenbienestar + gastootros + gastoamortizacion + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000
 	
 	tempvar educaciong2 pensionesg2 saludg2 costog2 amortg2 otrosg2 ingbasg2 bienestarg2
-	g `educaciong2' = (estimacioneducacion)/1000000000000
-	g `pensionesg2' = (estimacionpensiones + estimacioneducacion)/1000000000000
-	g `saludg2' = (estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000000
-	g `costog2' = (estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000000
-	g `amortg2' = (estimacionamortizacion + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000000
-	g `otrosg2' = (estimacionotros + estimacionamortizacion + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000000
-	g `bienestarg2' = (estimacionpenbienestar + estimacionotros + estimacionamortizacion + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000000
-	g `ingbasg2' = (estimacioningbasico + estimacionpenbienestar + estimacionotros + estimacionamortizacion + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000000
+	g `educaciong2' = (estimacioneducacion)/1000000000
+	g `pensionesg2' = (estimacionpensiones + estimacioneducacion)/1000000000
+	g `saludg2' = (estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000
+	g `costog2' = (estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000
+	g `amortg2' = (estimacionamortizacion + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000
+	g `otrosg2' = (estimacionotros + estimacionamortizacion + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000
+	g `bienestarg2' = (estimacionpenbienestar + estimacionotros + estimacionamortizacion + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000
+	g `ingbasg2' = (estimacioningbasico + estimacionpenbienestar + estimacionotros + estimacionamortizacion + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000
 
 	if "`nographs'" != "nographs" {
-		twoway (area `ingbasg' `bienestarg' `otrosg' `amortg' `costog' `saludg' `pensionesg' `educaciong' anio if anio <= `anio' & anio > 2013) ///
+		twoway (area `ingbasg' `bienestarg' `otrosg' `amortg' `costog' `saludg' `pensionesg' `educaciong' anio if anio <= `anio' & anio > `aniomin') ///
 			(area `ingbasg2' anio if anio > `anio', color("255 129 0")) ///
 			(area `bienestarg2' anio if anio > `anio', color("255 189 0")) ///
 			(area `otrosg2' anio if anio > `anio', color("39 97 47")) ///
@@ -555,8 +615,8 @@ quietly {
 			(area `costog2' anio if anio > `anio', color("0 78 198")) ///
 			(area `saludg2' anio if anio > `anio', color("0 151 201")) ///
 			(area `pensionesg2' anio if anio > `anio', color("186 34 64")) ///
-			(area `educaciong2' anio if anio > `anio', color("254 118 109")) if anio >= 2013, ///
-			legend(cols(8) order(1 2 3 4 5 6 7 8) ///
+			(area `educaciong2' anio if anio > `anio', color("254 118 109")) if anio >= `aniomin', ///
+			legend(cols(8) order(3 4 5 6 7 8) ///
 			label(1 "Renta b{c a'}sica") ///
 			label(2 "Pensi{c o'}n Bienestar") ///
 			label(3 "Otros gastos") ///
@@ -565,30 +625,31 @@ quietly {
 			label(6 "Salud") ///
 			label(7 "Pensiones") ///
 			label(8 "Educaci{c o'}n")) ///
-			xlabel(2015(5)`=round(anio[_N],10)') ///
+			xlabel(`aniomin'(5)`=round(anio[_N],10)') ///
 			ylabel(, format(%20.0fc)) ///
 			xline(`=`anio'+.5') ///
 			text(`=`otrosg'[`obs`anio_last'']*.0618' `=`anio'+1.5' "{bf:Proyecci{c o'}n}", place(ne) color(white)) ///
 			yscale(range(0)) ///
-			///title({bf:Proyecci{c o'}n} del gasto p{c u'}blico) ///
+			title({bf:Proyecci{c o'}n} del gasto p{c u'}blico) ///
 			subtitle($pais) ///
-			///caption("{it:Fuente: Elaborado por el CIEP con el Simulador Fiscal CIEP v5.}") ///
+			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.") ///
 			xtitle("") ytitle(mil millones `currency' `anio') ///
 			name(Proy_gastos, replace)
 		if "$export" != "" {
 			graph export `"$export/Proy_gastos.png"', replace name(Proy_gastos)
 		}
 
-		twoway (area rfsp_pib anio if anio <= `anio' & anio >= 2008) ///
+		twoway (area rfsp_pib anio if anio <= `anio' & anio >= `aniomin') ///
 			(area rfsp_pib anio if anio > `anio' & anio <= `end'), ///
 			yscale(range(0)) ///
 			ytitle(% PIB) ///
 			xtitle("") ///
-			xlabel(2015(5)`=round(anio[_N],10)') ///
+			xlabel(`aniomin'(5)`=round(anio[_N],10)') ///
 			xline(`=`anio'+.5') ///
 			legend(off) ///
-			text(`=rfsp_pib[`obs`anio_last'']*.0618' `=`anio'+1.5' "Proyecci{c o'}n", color(white) placement(e)) ///
-			///title({bf: Proyecci{c o'}n} de los RFSP) subtitle($pais) ///
+			text(`=rfsp_pib[`obs`anio_last'']*.1' `=`anio'+1.5' "{bf:Proyecci{c o'}n}", color(white) placement(e)) ///
+			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.") ///
+			title({bf: Proyecci{c o'}n} de los RFSP) subtitle($pais) ///
 			name(Proy_rfsp, replace)
 	}
 	if "$output" == "output" {
@@ -721,14 +782,14 @@ quietly {
 	if "`nographs'" != "nographs" {
 		twoway (area shrfspPIB anio if shrfspPIB != . & anio <= `anio' & anio >= 2000) ///
 			(area shrfspPIB anio if anio > `anio' & anio <= `end'), ///
-			///title({bf:Proyecci{c o'}n} del SHRFSP) ///
+			title({bf:Proyecci{c o'}n} del SHRFSP) ///
 			subtitle($pais) ///
-			///caption("{it:Fuente: Elaborado por el CIEP con el Simulador Fiscal CIEP v5.}") ///
+			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.") ///
 			xtitle("") ytitle(% PIB) ///
-			xlabel(2005(5)`end') ///
+			xlabel(`aniomin'(5)`end') ///
 			yscale(range(0)) ///
 			legend(off) ///
-			text(`=shrfspPIB[`obs`anio_last'']*.0618' `=`anio'+1.5' "Proyecci{c o'}n", color(white) placement(e)) ///
+			text(`=shrfspPIB[`obs`anio_last'']*.1' `=`anio'+1.5' "{bf:Proyecci{c o'}n}", color(white) placement(e)) ///
 			xline(`=`anio'+.5') ///
 			name(Proy_shrfsp, replace)
 		if "$export" != "" {
