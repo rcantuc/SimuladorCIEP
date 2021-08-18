@@ -118,12 +118,20 @@ local deflator = deflator[1]
 use "`c(sysdir_personal)'/SIM/2018/households.dta", clear
 
 ** (+) Impuestos al ingreso laboral **
-egen laboral = rsum(ISR__asalariados ISR__PF cuotasTPF) if formal != 0
+egen laboral = rsum(ISR__asalariados ISR__PF) if formal != 0
 replace laboral = 0 if laboral == .
-Distribucion Laboral, relativo(laboral) macro(`=`ISRSalarios'+`ISRFisicas'+`CuotasIMSS'')
+Distribucion Laboral, relativo(laboral) macro(`=`ISRSalarios'+`ISRFisicas'')
 label var Laboral "los impuestos al ingreso laboral"
 label var Laboral "Labor-based income tax"
 Simulador Laboral [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1') $nographs nooutput
+
+** (+) Cuotas a la SS **
+egen cuotasss = rsum(cuotasTPF) if formal != 0
+replace cuotasss = 0 if laboral == .
+Distribucion CuotasSS, relativo(cuotasss) macro(`=`CuotasIMSS'')
+label var CuotasSS "las contribuciones a la seguridad social"
+label var CuotasSS "Social Security"
+Simulador CuotasSS [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1') $nographs nooutput
 
 ** (+) Impuestos al consumo **
 egen consumo = rsum(TOTIVA TOTIEPS)
@@ -163,6 +171,12 @@ Simulador IEPSTabaco [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1') $n
 Distribucion IVA, relativo(TOTIVA) macro(`IVATOT')
 label var IVA "IVA (total)"
 Simulador IVA [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1') $nographs nooutput
+
+** (+) Petroleo **
+g pob = 1
+Distribucion Petroleo, relativo(pob) macro(`FMP')
+label var Petroleo "IVA (total)"
+Simulador Petroleo [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1') $nographs nooutput
 
 
 

@@ -27,7 +27,7 @@ quietly {
 	****************
 	*** 2 SYNTAX ***
 	****************
-	syntax [if/] [, ANIO(int `aniovp' ) NOGraphs Update Base ID(string) ///
+	syntax [if/] [, ANIO(int `aniovp' ) DEPreciacion(int 5) NOGraphs Update Base ID(string) ///
 		MINimum(real 1)]
 
 	** 2.1 Update SHRFSP **
@@ -45,8 +45,7 @@ quietly {
 	tempfile PIB
 	save `PIB'
 
-
-	** 2.3 Base PEF **
+	** 2.3 Base SHRFSP **
 	use `"`c(sysdir_personal)'/SIM/$pais/SHRFSP.dta"', clear
 	noisily di _newline(2) in g _dup(20) "." "{bf:  Sistema Fiscal: DEUDA $pais " in y `anio' "  }" in g _dup(20) "."
 	
@@ -62,19 +61,73 @@ quietly {
 	***************
 	*** 3 Merge ***
 	***************
-	merge 1:1 (anio) using `PIB', nogen keepus(pibY) update replace
+	merge 1:1 (anio) using `PIB', nogen keepus(pibY pibYR var_*) update replace
+	tsset anio
+
+	** 3.1 NUEVOS par{c a'}metros ** 
+	if "$pais" == "" {
+		g tasaInterno = costodeudaInterno/shrfspInterno
+		g tasaExterno = costodeudaExterno/shrfspExterno
+
+		g porInterno = shrfspInterno/shrfsp
+		g porExterno = shrfspExterno/shrfsp
+
+		g balprimario = (-rfspBalance-costodeudaInterno-costodeudaExterno)/pibY*100
+		
+		g depreciacion = tipoDeCambio-L.tipoDeCambio
+		g Depreciacion = tipoDeCambio/L.tipoDeCambio-1
+		
+		g tasaEfectiva = porInterno*tasaInterno + porExterno*tasaExterno
+
+		g efectoIntereses = (tasaEfectiva/((1+var_pibY/100)*(1+var_indiceY/100)))*L.shrfsp/L.pibY*100 
+		g efectoInflacion = ((-(var_indiceY/100*(1+var_pibY/100)))/(1+var_pibY/100)*(1+var_indiceY/100))*L.shrfsp/L.pibY*100
+		g efectoCrecimiento = -((var_pibY/100)/((1+var_pibY/100)*(1+var_indiceY/100)))*L.shrfsp/L.pibY*100
+		g efectoTipoDeCambio = ((porExterno*Depreciacion*(1+tasaExterno))/(1+var_pibY/100)*(1+var_indiceY/100))*L.shrfsp/L.pibY*100
+
+		if "`nographs'" != "nographs" {
+			graph bar efectoIntereses efectoInflacion efectoCrecimiento balprimario efectoTipoDeCambio if anio < `anio' & Depreciacion != ., ///
+				over(anio) stack blabel(, format(%5.1fc)) ///
+				legend(on position(6) rows(1) label(1 "Tasas de inter{c e'}s") label(2 "Inflaci{c o'}n") label(3 "Crec. Econ{c o'}mico") ///
+				label(4 "Balance Primario") label(5 "Tipo de cambio")) ///
+				title("{bf:Efectos} sobre el Indicador de la Deuda") ///
+				name(efectoDeuda, replace)
+		}
+
+		tabstat depreciacion if anio <= `anio' & anio >= `=`anio'-`depreciacion'+1', stat(sum) save
+		tempname depre
+		matrix `depre' = r(StatTotal)
+
+		replace depreciacion = `depre'[1,1] if depreciacion == . & anio > `anio'
+
+		tabstat depreciacion if anio <= `anio' & anio >= `=`anio'-`depreciacion'+1+1', stat(sum) save
+		tempname deprea
+		matrix `deprea' = r(StatTotal)
+
+		tabstat depreciacion if anio <= `anio' & anio >= `=`anio'-`depreciacion'+1+2', stat(sum) save
+		tempname depreb
+		matrix `depreb' = r(StatTotal)
+
+		tabstat depreciacion if anio <= `anio' & anio >= `=`anio'-`depreciacion'+1+3', stat(sum) save
+		tempname deprec
+		matrix `deprec' = r(StatTotal)
+
+		tabstat depreciacion if anio <= `anio' & anio >= `=`anio'-`depreciacion'+1+4', stat(sum) save
+		tempname depred
+		matrix `depred' = r(StatTotal)
+
+		noisily di _newline(2) in g "  {bf:Depreciaci{c o'}n acumulada}: " 
+		noisily di in g "   `anio'-`=`anio'-`depreciacion'': " in y %7.3fc `depre'[1,1] in g " `currency'"
+		noisily di in g "   `anio'-`=`anio'-`depreciacion'+1': " in y %7.3fc `deprea'[1,1] in g " `currency'"
+		noisily di in g "   `anio'-`=`anio'-`depreciacion'+2': " in y %7.3fc `depreb'[1,1] in g " `currency'"
+		noisily di in g "   `anio'-`=`anio'-`depreciacion'+3': " in y %7.3fc `deprec'[1,1] in g " `currency'"
+		noisily di in g "   `anio'-`=`anio'-`depreciacion'+4': " in y %7.3fc `depred'[1,1] in g " `currency'"
+
+	}
+
 	foreach k of varlist shrfsp* {
 		tempvar `k'
 		g ``k'' = `k'/pibY*100
 	}
-
-	/*replace `shrfspExterno' = 20.0 if anio == 2020
-	replace `shrfspExterno' = 18.7 if anio == 2021
-	replace `shrfspExterno' = 18.2 if anio == 2022
-	replace `shrfspExterno' = 17.8 if anio == 2023
-	replace `shrfspExterno' = 17.4 if anio == 2024
-	replace `shrfspExterno' = 17.0 if anio == 2025
-	replace `shrfspExterno' = 16.6 if anio == 2026*/
 
 	noisily di _newline in g _col(3) "A{c N~}O" _col(15) %10s "Interna" _col(25) %10s "Externa" _col(35) %10s "Total"
 	forvalues k=1(1)`=_N' {
@@ -103,21 +156,24 @@ quietly {
 				local text `"`text' `=`shrfsp'[`k']' `=anio[`k']' "{bf:`=string(`shrfsp'[`k'],"%5.1fc")'}""'
 				local textI `"`textI' `=`shrfspInterno'[`k']' `=anio[`k']' "`=string(shrfspInterno[`k']/pibY[`k']*100,"%5.1fc")'""'
 				local textE `"`textE' `=`shrfspExterno'[`k']' `=anio[`k']' "`=string(shrfspExterno[`k']/pibY[`k']*100,"%5.1fc")'""'
+			}
+			if `rfsppib'[`k'] != . & anio[`k'] >= 2003 {
 				local textR `"`textR' `=`rfsppib'[`k']' `=anio[`k']' "{bf:`=string(rfsp[`k']/pibY[`k']*100,"%5.1fc")'}""'
 			}
 		}
 		
-		twoway (area `rfsp' anio) (connected `rfsppib' anio, yaxis(2) mlcolor("255 129 0") lcolor("255 129 0")) if rfsp != ., ///
+		twoway (area `rfsp' anio) (connected `rfsppib' anio, yaxis(2) mlcolor("255 129 0") lcolor("255 129 0")) if anio >= 2013 & rfsp != ., ///
 			title("{bf:Requerimientos financieros} del sector p{c u'}blico") ///
 			subtitle($pais) ///
 			name(rfsp, replace) ///
 			ylabel(, format(%15.0fc) labsize(small)) ///
-			xlabel(`aniofirst'(1)`aniolast', noticks) ///
+			xlabel(2013(1)`anio', noticks) ///
 			text(`textR', yaxis(2)) ///
 			ylabel(, axis(2) noticks format(%5.0fc) labsize(small)) ///
+			yscale(range(0) axis(1) noline) ///
 			yscale(range(0) axis(2) noline) ///
 			ytitle(mil millones `currency') ytitle(% PIB, axis(2)) xtitle("") ///
-			legend(off position(6) rows(1)) ///
+			legend(off position(6) rows(2)) ///
 			note("{bf:{c U'}ltimo dato}: `aniolast'`meslast'") ///
 			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.")
 		
@@ -125,7 +181,7 @@ quietly {
 		twoway (area `interno' `externo' anio if `externo' != .) ///
 			(connected `shrfspInterno' anio if `externo' != ., yaxis(2) mlcolor("255 129 0") lcolor("255 129 0")) ///
 			(connected `shrfspExterno' anio if `externo' != ., yaxis(2) mlcolor("255 189 0") lcolor("255 189 0")) ///
-			(connected `shrfsp' anio if `externo' != ., yaxis(2) mlcolor("53 200 71") lcolor("53 200 71")), ///
+			(connected `shrfsp' anio if `externo' != ., yaxis(2) mlcolor("53 200 71") lcolor("53 200 71")) if anio >= 2013, ///
 			title("{bf:Saldo hist{c o'}rico} de RFSP") ///
 			subtitle($pais) ///
 			ylabel(, format(%15.0fc) labsize(small)) ///

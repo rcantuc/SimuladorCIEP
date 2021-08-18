@@ -251,9 +251,9 @@ quietly {
 		matrix `INGRESOSSIM' = r(StatTotal)
 	}
 
-	else if "$pais" == "El Salvador" {
+	if "$pais" != "" {
 		if `aniovp' > `anio' {
-			noisily LIF, anio(`anio') by(divGA) nographs ilif
+			noisily LIF, anio(`anio') by(divGA) nographs //ilif
 		}
 		else {
 			noisily LIF, anio(`anio') by(divGA) nographs
@@ -261,18 +261,22 @@ quietly {
 		local Laboral = r(Impuestos_al_ingreso)
 		local Consumo = r(Impuestos_al_consumo)
 		local OtrosC = r(Otros_ingresos)
+		local CuotasSS = r(Seguridad_Social)
+		local Petroleo = r(Petroleros)
 
 		use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
 
-		tabstat Laboral Consumo OtrosC [fw=factor], stat(sum) f(%20.0fc) save
+		tabstat Laboral Consumo OtrosC CuotasSS Petroleo [fw=factor], stat(sum) f(%20.0fc) save
 		tempname INGRESOS
 		matrix `INGRESOS' = r(StatTotal)
 		
 		replace Laboral = Laboral*`Laboral'/`INGRESOS'[1,1]*`crecsim'
 		replace Consumo = Consumo*`Consumo'/`INGRESOS'[1,2]*`crecsim'
 		replace OtrosC = OtrosC*`OtrosC'/`INGRESOS'[1,3]*`crecsim'
+		replace CuotasSS = CuotasSS*`CuotasSS'/`INGRESOS'[1,4]*`crecsim'
+		replace Petroleo = Petroleo*`Petroleo'/`INGRESOS'[1,5]*`crecsim'
 
-		tabstat Laboral Consumo OtrosC [fw=factor], stat(sum) f(%20.0fc) save
+		tabstat Laboral Consumo OtrosC CuotasSS Petroleo [fw=factor], stat(sum) f(%20.0fc) save
 		tempname INGRESOSSIM
 		matrix `INGRESOSSIM' = r(StatTotal)
 	}
@@ -294,7 +298,7 @@ quietly {
 	****************************
 	tempname RECBase
 	local j = 1
-	foreach k in Laboral Consumo OtrosC {
+	foreach k in Laboral Consumo OtrosC CuotasSS Petroleo {
 		use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/`k'REC"', clear
 		merge 1:1 (anio) using "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", nogen keepus(lambda)
 		tabstat estimacion if anio == `anio', stat(sum) f(%20.0fc) save

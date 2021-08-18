@@ -112,6 +112,7 @@ replace deduc_isr = `=DED[1,2]'/100*ing_bruto_tax ///
 	if `=DED[1,1]'*`smdf'*360 >= `=DED[1,2]'/100*ing_bruto_tax & deduc_isr >= `=DED[1,2]'/100*ing_bruto_tax
 
 replace categF = ""
+g categISR = ""
 forvalues j=`=rowsof(ISR)'(-1)1 {
 	forvalues k=`=rowsof(SE)'(-1)1 {
 		replace categF = "J`j'K`k'" ///
@@ -119,7 +120,7 @@ forvalues j=`=rowsof(ISR)'(-1)1 {
 			 & (ing_bruto_tax - exen_tot - deduc_isr - cuotasTPF*0) <= ISR[`j',2] ///
 			 & (ing_bruto_tax - exen_tot - deduc_isr - cuotasTPF*0) >= SE[`k',1] ///
 			 & (ing_bruto_tax - exen_tot - deduc_isr - cuotasTPF*0) <= SE[`k',2]
-
+		replace categISR = "J`j'" if categF == "J`j'K`k'"
 		replace ISR = ISR[`j',3] + (ISR[`j',4]/100)*(ing_bruto_tax - exen_tot - deduc_isr - cuotasTPF*0 - ISR[`j',1]) if categF == "J`j'K`k'"
 		replace SE = SE[`k',3] if categF == "J`j'K`k'"
 	}
@@ -197,6 +198,18 @@ scalar CuotasT = `SIMCSS'[1,1]/scalar(PIB)*100 //								Cuotas IMSS
 egen Equidad = rsum(ISR__asalariados ISR__PF)
 label var Equidad "del ISR Salarios + PF"
 noisily Simulador Equidad [fw=factor_cola], base("ENIGH 2018") boot(1) reboot nooutput
+
+
+* Results */
+g ing_gravable = ing_bruto_tax - exen_tot - deduc_isr - cuotasTPF*0
+noisily tabstat ing_subor ISR__asalariados [fw=factor_cola] if formal_asalariados == 1, stat(mean) f(%25.2fc) by(categISR) save
+tempname SIMTAXS
+matrix `SIMTAXS' = r(StatTotal)
+
+xxx
+tabstat ISR__PF [fw=factor_cola] if formal_fisicas == 1, stat(sum) f(%25.2fc) save
+tempname SIMTAX
+matrix `SIMTAX' = r(StatTotal)
 
 
 

@@ -790,7 +790,7 @@ program graphpiramide
 			name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)', replace) ycommon xcommon ///
 			title("{bf:Perfil} de `title'") subtitle("$pais") ///
 			///title("`title' {bf:profile}") ///
-			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5 y la ENIGH 2020.") ///
+			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5 y la `base'.") ///
 			///caption("Source: Prepared with the CIEP Tax Simulator v5 and information from INEGI, ENIGH 2018.") ///
 			note(`"{bf:Nota}: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n en cada grupo."') ///
 			///note(`"{bf:Note}: The percentages in parentheses show the concentration in each group."')

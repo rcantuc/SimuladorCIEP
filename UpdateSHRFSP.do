@@ -131,10 +131,20 @@ save `nopresupuestario'
 *************************
 ** 5 Costo de la deuda **
 *************************
-PEF if divGA == 2, anio(2020) nographs
-collapse (sum) costodeuda=gastoneto, by(anio)
-tempfile costodeuda
-save `costodeuda'
+*PEF if divGA == 2, anio(2020) nographs
+*collapse (sum) costodeuda=gastoneto, by(anio)
+
+noisily DatosAbiertos XOA0155			// costo deuda interna
+keep anio mes monto
+rename monto costodeudaInterno
+tempfile costodeudaI
+save `costodeudaI'
+
+noisily DatosAbiertos XOA0156			// costo deuda externa
+keep anio mes monto
+rename monto costodeudaExterno
+tempfile costodeudaE
+save `costodeudaE'
 
 PEF if divGA == 1, anio(2018) nographs
 collapse (sum) amortizacion=gastoneto, by(anio)
@@ -147,26 +157,28 @@ save `amortizacion'
 ** 6 Merge **
 *************
 use `rfsp', clear
-capture merge 1:1 (anio) using `Balance', nogen
-capture merge 1:1 (anio) using `PIDIREGAS', nogen
-capture merge 1:1 (anio) using `IPAB', nogen
-capture merge 1:1 (anio) using `FONADIN', nogen
-capture merge 1:1 (anio) using `Deudores', nogen
-capture merge 1:1 (anio) using `Banca', nogen
-capture merge 1:1 (anio) using `Adecuaciones', nogen
+merge 1:1 (anio) using `Balance', nogen
+merge 1:1 (anio) using `PIDIREGAS', nogen
+merge 1:1 (anio) using `IPAB', nogen
+merge 1:1 (anio) using `FONADIN', nogen
+merge 1:1 (anio) using `Deudores', nogen
+merge 1:1 (anio) using `Banca', nogen
+merge 1:1 (anio) using `Adecuaciones', nogen
 merge 1:1 (anio) using `shrfsp', nogen
-capture merge 1:1 (anio) using `interno', nogen
-capture merge 1:1 (anio) using `externo', nogen
-capture merge 1:1 (anio) using `MXN', nogen
-capture merge 1:1 (anio) using `USD', nogen
-capture merge 1:1 (anio) using `nopresupuestario', nogen
-merge 1:1 (anio) using `costodeuda', nogen
+merge 1:1 (anio) using `interno', nogen
+merge 1:1 (anio) using `externo', nogen
+merge 1:1 (anio) using `MXN', nogen
+merge 1:1 (anio) using `USD', nogen
+merge 1:1 (anio) using `nopresupuestario', nogen
+merge 1:1 (anio) using `costodeudaI', nogen
+merge 1:1 (anio) using `costodeudaE', nogen
 merge 1:1 (anio) using `amortizacion', nogen
 tsset anio
 
 ** Tipo de cambio **
 g double tipoDeCambio = deudaMXN/deudaUSD/1000
 format tipoDeCambio %7.2fc
+
 drop deuda*
 
 compress
