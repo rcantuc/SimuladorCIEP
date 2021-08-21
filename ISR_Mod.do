@@ -200,13 +200,12 @@ label var Equidad "del ISR Salarios + PF"
 noisily Simulador Equidad [fw=factor_cola], base("ENIGH 2018") boot(1) reboot nooutput
 
 
-* Results */
+* Results *
 g ing_gravable = ing_bruto_tax - exen_tot - deduc_isr - cuotasTPF*0
 noisily tabstat ing_subor ISR__asalariados [fw=factor_cola] if formal_asalariados == 1, stat(mean) f(%25.2fc) by(categISR) save
 tempname SIMTAXS
 matrix `SIMTAXS' = r(StatTotal)
 
-xxx
 tabstat ISR__PF [fw=factor_cola] if formal_fisicas == 1, stat(sum) f(%25.2fc) save
 tempname SIMTAX
 matrix `SIMTAX' = r(StatTotal)

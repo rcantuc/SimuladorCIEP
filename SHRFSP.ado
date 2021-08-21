@@ -89,8 +89,10 @@ quietly {
 				over(anio) stack blabel(, format(%5.1fc)) ///
 				legend(on position(6) rows(1) label(1 "Tasas de inter{c e'}s") label(2 "Inflaci{c o'}n") label(3 "Crec. Econ{c o'}mico") ///
 				label(4 "Balance Primario") label(5 "Tipo de cambio")) ///
-				title("{bf:Efectos} sobre el Indicador de la Deuda") ///
-				name(efectoDeuda, replace)
+				title("Componentes del {bf:Indicador de la Deuda}") ///
+				name(efectoDeuda, replace) ///
+				note("{bf:{c U'}ltimo dato}: `aniolast'`meslast'") ///
+				caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.")
 		}
 
 		tabstat depreciacion if anio <= `anio' & anio >= `=`anio'-`depreciacion'+1', stat(sum) save
@@ -153,21 +155,27 @@ quietly {
 
 		forvalues k=1(1)`=_N' {
 			if `shrfsp'[`k'] != . & anio[`k'] >= 2003 {
+				if "`anioshrfsp'" == "" {
+					local anioshrfsp = anio[`k']
+				}
 				local text `"`text' `=`shrfsp'[`k']' `=anio[`k']' "{bf:`=string(`shrfsp'[`k'],"%5.1fc")'}""'
 				local textI `"`textI' `=`shrfspInterno'[`k']' `=anio[`k']' "`=string(shrfspInterno[`k']/pibY[`k']*100,"%5.1fc")'""'
 				local textE `"`textE' `=`shrfspExterno'[`k']' `=anio[`k']' "`=string(shrfspExterno[`k']/pibY[`k']*100,"%5.1fc")'""'
 			}
 			if `rfsppib'[`k'] != . & anio[`k'] >= 2003 {
+				if "`aniorfsp'" == "" {
+					local aniorfsp = anio[`k']
+				}
 				local textR `"`textR' `=`rfsppib'[`k']' `=anio[`k']' "{bf:`=string(rfsp[`k']/pibY[`k']*100,"%5.1fc")'}""'
 			}
 		}
-		
-		twoway (area `rfsp' anio) (connected `rfsppib' anio, yaxis(2) mlcolor("255 129 0") lcolor("255 129 0")) if anio >= 2013 & rfsp != ., ///
+
+		twoway (area `rfsp' anio) (connected `rfsppib' anio, yaxis(2) mlcolor("255 129 0") lcolor("255 129 0")) if anio <= `anio' & rfsp != ., ///
 			title("{bf:Requerimientos financieros} del sector p{c u'}blico") ///
 			subtitle($pais) ///
 			name(rfsp, replace) ///
 			ylabel(, format(%15.0fc) labsize(small)) ///
-			xlabel(2013(1)`anio', noticks) ///
+			xlabel(`aniorfsp'(1)`anio', noticks) ///
 			text(`textR', yaxis(2)) ///
 			ylabel(, axis(2) noticks format(%5.0fc) labsize(small)) ///
 			yscale(range(0) axis(1) noline) ///
@@ -176,18 +184,18 @@ quietly {
 			legend(off position(6) rows(2)) ///
 			note("{bf:{c U'}ltimo dato}: `aniolast'`meslast'") ///
 			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.")
-		
-		
+
 		twoway (area `interno' `externo' anio if `externo' != .) ///
 			(connected `shrfspInterno' anio if `externo' != ., yaxis(2) mlcolor("255 129 0") lcolor("255 129 0")) ///
 			(connected `shrfspExterno' anio if `externo' != ., yaxis(2) mlcolor("255 189 0") lcolor("255 189 0")) ///
-			(connected `shrfsp' anio if `externo' != ., yaxis(2) mlcolor("53 200 71") lcolor("53 200 71")) if anio >= 2013, ///
+			(connected `shrfsp' anio if `externo' != ., yaxis(2) mlcolor("53 200 71") lcolor("53 200 71")) if `shrfsp' != ., ///
 			title("{bf:Saldo hist{c o'}rico} de RFSP") ///
 			subtitle($pais) ///
 			ylabel(, format(%15.0fc) labsize(small)) ///
-			xlabel(`aniofirst'(1)`aniolast', noticks) ///
+			xlabel(`anioshrfsp'(1)`aniolast', noticks) ///
 			text(`text' `textE' `textI', yaxis(2)) /*text(`textI', size(vsmall)) text(`textE', size(vsmall))*/ ///
 			ylabel(, axis(2) noticks format(%5.0fc) labsize(small)) ///
+			yscale(range(0) axis(1) noline) ///
 			yscale(range(0) axis(2) noline) ///
 			ytitle(mil millones `currency') ytitle(% PIB, axis(2)) xtitle("") ///
 			legend(on position(6) rows(1) label(1 "Interno") label(2 "Externo") label(5 "= Total (% PIB)") ///
@@ -195,7 +203,7 @@ quietly {
 			name(shrfsp, replace) ///
 			note("{bf:{c U'}ltimo dato}: `aniolast'`meslast'") ///
 			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.")
-			
+
 		capture confirm existence $export
 		if _rc == 0 {
 			graph export "$export/RFSP.png", replace name(rfsp)

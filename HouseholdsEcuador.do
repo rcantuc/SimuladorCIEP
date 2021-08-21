@@ -183,19 +183,20 @@ append using `parteb'
 *append using `parted'
 append using `partee'
 append using `partef'
-exit
+
 
 
 keep if /*PERCEP == "Impuesto a la renta" |*/ PERCEP == "Aportaciones al seguro social" ///
-	| PERCEP == "Pensi髇 x jubilaci髇, cesantia" | PERCEP == "Remuneraci髇 mensual unificada" 
+	| PERCEP == "Pensi贸n x jubilaci贸n, cesantia" | PERCEP == "Remuneraci贸n mensual unificada" 
 collapse (sum) VALOR, by(Identif* PERCEP)
 
 g ingresos = 1 if PERCEP == "Aportaciones al seguro social"
-replace ingresos = 2 if PERCEP == "Remuneraci髇 mensual unificada"
-replace ingresos = 3 if PERCEP == "Pensi髇 x jubilaci髇, cesantia"
+replace ingresos = 2 if PERCEP == "Remuneraci贸n mensual unificada"
+replace ingresos = 3 if PERCEP == "Pensi贸n x jubilaci贸n, cesantia"
+
 drop PERCEP
 reshape wide VALOR, i(Identif_perna) j(ingresos)
-exit
+
 merge 1:1 (Identif_perna) using `base', nogen
 merge m:1 (Identif_hog) using "`c(sysdir_site)'../basesCIEP/Otros/Ecuador/ENIGHUR11_HOGARES_AGREGADOS.dta", nogen keepus(dec_nac_per ing_cor_tot ing_no_mon gas_gru_cor)
 
@@ -286,25 +287,24 @@ label var Infra "Infra"
 ** (-) Pensiones **
 g Pension = VALOR3
 replace Pension = 0 if Pension == .
-label var Pension "Pensiones"
+label var Pension "pensiones p{c u'}blicas"
 Distribucion Pension, macro(`pensiones')
-noisily Simulador Pension [fw=factor], base("ENIGHUR 2011-2012") boot(1) reboot anio(`1') folio(Identif_hog)
+noisily Simulador Pension if P05A >= 1 & P05A <= 4 [fw=factor], base("ENIGHUR 2011-2012") boot(1) reboot anio(`1') folio(Identif_hog)
 
 
 
-** (-) Educaci髇 **
+** (-) Educaci贸n **
 tabstat factor if P18 == 1, stat(sum) by(P14A) f(%10.0fc) save
 matrix TotAlum = r(StatTotal)
 matrix BasAlum = r(Stat1)+r(Stat2)+r(Stat3)
 matrix MedAlum = r(Stat4)+r(Stat5)
 matrix SupAlum = r(Stat6)+r(Stat7)+r(Stat8)
 
-
 g Educacion = 157.2*1000000/TotAlum[1,1] + 638.5*1000000/BasAlum[1,1] if (P14A == 2 | P14A == 3 | P14A == 4 | P14A == 5) & P18 == 1
 replace Educacion = 157.2*1000000/TotAlum[1,1] + 102.5*1000000/MedAlum[1,1] if (P14A == 6 | P14A == 7) & P18 == 1
 replace Educacion = 157.2*1000000/TotAlum[1,1] + 84.3*1000000/SupAlum[1,1] if (P14A == 8 | P14A == 9 | P14A == 10) & P18 == 1
 replace Educacion = 0 if Educacion == .
-label var Educacion "Educaci髇"
+label var Educacion "Educaci贸n"
 
 Distribucion Educacion, macro(`educacion')
 Simulador Educacion [fw=factor], base("ENIGHUR 2011-2012") boot(1) reboot anio(`1') folio(Identif_hog)
@@ -313,116 +313,51 @@ Simulador Educacion [fw=factor], base("ENIGHUR 2011-2012") boot(1) reboot anio(`
 
 ** Salud **
 g Salud = 0
-replace Salud = 1.963106 if edad == 0
-replace Salud = .1351139 if edad == 1
-replace Salud = .0710421 if edad == 2
-replace Salud = .0499305 if edad == 3
-replace Salud = .0435635 if edad == 4
-replace Salud = .0406816 if edad == 5
-replace Salud = .0377997 if edad == 6
-replace Salud = .0366604 if edad == 7
-replace Salud = .0367274 if edad == 8
-replace Salud = .0380008 if edad == 9
-replace Salud = .0408157 if edad == 10
-replace Salud = .0454401 if edad == 11
-replace Salud = .0518741 if edad == 12
-replace Salud = .06119 if edad == 13
-replace Salud = .0719133 if edad == 14
-replace Salud = .0845803 if edad == 15
-replace Salud = .0985876 if edad == 16
-replace Salud = .1129301 if edad == 17
-replace Salud = .1279427 if edad == 18
-replace Salud = .1428213 if edad == 19
-replace Salud = .1573648 if edad == 20
-replace Salud = .1705009 if edad == 21
-replace Salud = .183637 if edad == 22
-replace Salud = .1950976 if edad == 23
-replace Salud = .2048156 if edad == 24
-replace Salud = .21259 if edad == 25
-replace Salud = .2184208 if edad == 26
-replace Salud = .2221069 if edad == 27
-replace Salud = .2247208 if edad == 28
-replace Salud = .2269995 if edad == 29
-replace Salud = .2280048 if edad == 30
-replace Salud = .2303505 if edad == 31
-replace Salud = .231825 if edad == 32
-replace Salud = .2343047 if edad == 33
-replace Salud = .2374547 if edad == 34
-replace Salud = .2412079 if edad == 35
-replace Salud = .2464355 if edad == 36
-replace Salud = .2534057 if edad == 37
-replace Salud = .2617162 if edad == 38
-replace Salud = .2727747 if edad == 39
-replace Salud = .2861118 if edad == 40
-replace Salud = .3017277 if edad == 41
-replace Salud = .3197563 if edad == 42
-replace Salud = .3391923 if edad == 43
-replace Salud = .3592315 if edad == 44
-replace Salud = .3803431 if edad == 45
-replace Salud = .4013206 if edad == 46
-replace Salud = .421963 if edad == 47
-replace Salud = .4438788 if edad == 48
-replace Salud = .4657276 if edad == 49
-replace Salud = .489654 if edad == 50
-replace Salud = .5133794 if edad == 51
-replace Salud = .5393164 if edad == 52
-replace Salud = .567063 if edad == 53
-replace Salud = .5955469 if edad == 54
-replace Salud = .6245669 if edad == 55
-replace Salud = .6546592 if edad == 56
-replace Salud = .6843494 if edad == 57
-replace Salud = .7137045 if edad == 58
-replace Salud = .740915 if edad == 59
-replace Salud = .7671201 if edad == 60
-replace Salud = .7916497 if edad == 61
-replace Salud = .815107 if edad == 62
-replace Salud = .837492 if edad == 63
-replace Salud = .8573301 if edad == 64
-replace Salud = .8764981 if edad == 65
-replace Salud = .8941916 if edad == 66
-replace Salud = .9090032 if edad == 67
-replace Salud = .9293775 if edad == 68
-replace Salud = .9522986 if edad == 69
-replace Salud = .9701261 if edad == 70
-replace Salud = .9868143 if edad == 71
-replace Salud = 1.002765 if edad == 72
-replace Salud = 1.016505 if edad == 73
-replace Salud = 1.02944 if edad == 74
-replace Salud = 1.03842 if edad == 75
-replace Salud = 1.047937 if edad == 76
-replace Salud = 1.053567 if edad == 77
-replace Salud = 1.053165 if edad == 78
-replace Salud = 1.046731 if edad == 79
-replace Salud = 1.037013 if edad == 80
-replace Salud = 1.023408 if edad == 81
-replace Salud = 1.005111 if edad == 82
-replace Salud = .9829941 if edad == 83
-replace Salud = .9557837 if edad == 84
-replace Salud = .9243509 if edad == 85
-replace Salud = .8868863 if edad == 86
-replace Salud = .844127 if edad == 87
-replace Salud = .7932582 if edad == 88
-replace Salud = .7351512 if edad == 89
-replace Salud = .6751676 if edad == 90
-replace Salud = .612168 if edad == 91
-replace Salud = .54756 if edad == 92
-replace Salud = .4848955 if edad == 93
-replace Salud = .4216949 if edad == 94
-replace Salud = .3601028 if edad == 95
-replace Salud = .3007894 if edad == 96
-replace Salud = .2456312 if edad == 97
-replace Salud = .1952316 if edad == 98
-replace Salud = .151333 if edad == 99
-replace Salud = .1138013 if edad == 100
-replace Salud = .0828377 if edad == 101
-replace Salud = .0587102 if edad == 102
-replace Salud = .0397433 if edad == 103
-replace Salud = .0259371 if edad == 104
-replace Salud = .0162861 if edad == 105
-replace Salud = .0092489 if edad == 106
-replace Salud = .0049595 if edad == 107
-replace Salud = .0004021 if edad == 108
-replace Salud = .0030159 if edad >= 109
+replace Salud = 0.025686798 if edad == 0 & sexo == 1
+replace Salud = 0.020031615 if edad == 0 & sexo == 2
+replace Salud = 0.002411970 if edad == 1 & sexo == 1
+replace Salud = 0.001866892 if edad == 1 & sexo == 2
+replace Salud = 0.001267306 if edad == 2 & sexo == 1
+replace Salud = 0.001185545 if edad == 2 & sexo == 2
+replace Salud = 0.000872125 if edad == 3 & sexo == 1
+replace Salud = 0.000681347 if edad == 3 & sexo == 2
+replace Salud = 0.000872125 if edad == 4 & sexo == 1
+replace Salud = 0.000613213 if edad == 4 & sexo == 2
+replace Salud = 0.002984302/5 if (edad >= 5 & edad <= 9) & sexo == 1
+replace Salud = 0.002248447/5 if (edad >= 5 & edad <= 9) & sexo == 2
+replace Salud = 0.003529380/5 if (edad >= 10 & edad <= 14) & sexo == 1
+replace Salud = 0.002793524/5 if (edad >= 10 & edad <= 14) & sexo == 2
+replace Salud = 0.010029434/5 if (edad >= 15 & edad <= 19) & sexo == 1
+replace Salud = 0.004524147/5 if (edad >= 15 & edad <= 19) & sexo == 2
+replace Salud = 0.016965551/5 if (edad >= 20 & edad <= 24) & sexo == 1
+replace Salud = 0.005587049/5 if (edad >= 20 & edad <= 24) & sexo == 2
+replace Salud = 0.018341873/5 if (edad >= 25 & edad <= 29) & sexo == 1
+replace Salud = 0.005409899/5 if (edad >= 25 & edad <= 29) & sexo == 2
+replace Salud = 0.017524256/5 if (edad >= 30 & edad <= 34) & sexo == 1
+replace Salud = 0.006513681/5 if (edad >= 30 & edad <= 34) & sexo == 2
+replace Salud = 0.016652131/5 if (edad >= 35 & edad <= 39) & sexo == 1
+replace Salud = 0.008121661/5 if (edad >= 35 & edad <= 39) & sexo == 2
+replace Salud = 0.017524256/5 if (edad >= 40 & edad <= 44) & sexo == 1
+replace Salud = 0.009552491/5 if (edad >= 40 & edad <= 44) & sexo == 2
+replace Salud = 0.019527417/5 if (edad >= 45 & edad <= 49) & sexo == 1
+replace Salud = 0.012386896/5 if (edad >= 45 & edad <= 49) & sexo == 2
+replace Salud = 0.022988662/5 if (edad >= 50 & edad <= 54) & sexo == 1
+replace Salud = 0.015861768/5 if (edad >= 50 & edad <= 54) & sexo == 2
+replace Salud = 0.029475090/5 if (edad >= 55 & edad <= 59) & sexo == 1
+replace Salud = 0.022034776/5 if (edad >= 55 & edad <= 59) & sexo == 2
+replace Salud = 0.035920637/5 if (edad >= 60 & edad <= 64) & sexo == 1
+replace Salud = 0.026736073/5 if (edad >= 60 & edad <= 64) & sexo == 2
+replace Salud = 0.042161779/5 if (edad >= 65 & edad <= 69) & sexo == 1
+replace Salud = 0.032486646/5 if (edad >= 65 & edad <= 69) & sexo == 2
+replace Salud = 0.047244631/5 if (edad >= 70 & edad <= 74) & sexo == 1
+replace Salud = 0.036942658/5 if (edad >= 70 & edad <= 74) & sexo == 2
+replace Salud = 0.050814892/5 if (edad >= 75 & edad <= 79) & sexo == 1
+replace Salud = 0.041861986/5 if (edad >= 75 & edad <= 79) & sexo == 2
+replace Salud = 0.057396708/5 if (edad >= 80 & edad <= 84) & sexo == 1
+replace Salud = 0.052068571/5 if (edad >= 80 & edad <= 84) & sexo == 2
+replace Salud = 0.112667611/15 if edad >= 85 & sexo == 1
+replace Salud = 0.137632181/15 if edad >= 85 & sexo == 2
+
 label var Salud "Salud"
 Distribucion Salud, macro(`salud')
 noisily Simulador Salud [fw=factor], base("ENIGHUR 2011-2012") boot(1) reboot anio(`1') folio(Identif_hog)
@@ -434,7 +369,7 @@ g OtrosGas = 1
 replace OtrosGas = 0 if OtrosGas == .
 label var OtrosGas "Otros gastos"
 Distribucion OtrosGas, macro(`otrosgas')
-Simulador OtrosGas [fw=factor], base("ENIGHUR 2011-2012") boot(1) reboot anio(`1') folio(Identif_hog)
+noisily Simulador OtrosGas [fw=factor], base("ENIGHUR 2011-2012") boot(1) reboot anio(`1') folio(Identif_hog)
 
 
 
