@@ -763,12 +763,12 @@ quietly {
 		tabstat IngBasico PenBienestar [fw=factor], stat(sum) f(%20.0fc) save
 		matrix `TRANSFSIM' = r(StatTotal)
 
-		keep folio* numren factor* Laboral Consumo OtrosC ISR__PM ing_cap_fmp ///
+		keep folio* numren factor* Laboral Consumo OtrosC ISR__PM ing_cap_fmp Petroleo CuotasSS ///
 			Pension Educacion Salud IngBasico PenBienestar Salarios OtrosGas Infra ///
 			sexo grupoedad decil escol edad ing_bruto_tax prop_formal ///
 			deduc_isr ISR categF ISR__asalariados ISR__PF cuotas* ingbrutotot htrab ///
 			tipo_contribuyente exen_tot formal* *_tpm *_t2_* *_t4_* ing_mixto* isrE ing_subor IVA* IEPS* ///
-			gasto_anualDepreciacion prop_* SE ImpNet* infonavit fovissste Petroleo
+			gasto_anualDepreciacion prop_* SE ImpNet* infonavit fovissste
 	}
 
 	else if "$pais" != "" {
@@ -831,8 +831,10 @@ quietly {
 		tabstat estimacion if anio == `anio', stat(sum) f(%20.0fc) save
 		matrix `GASBase' = r(StatTotal)
 
-		replace estimacion = estimacion*`GASTOSSIM'[1,`j']/`GASBase'[1,1] if anio >= `anio'
-		
+		if "`k'" != "OtrosGas" {
+			replace estimacion = estimacion*`GASTOSSIM'[1,`j']/`GASBase'[1,1] if anio >= `anio'
+		}
+
 		if "`k'" == "OtrosGas" {
 			replace estimacion = estimacion*`GASTOSSIM'[1,`j']/`GASBase'[1,1]*`otros' if anio >= `anio'
 		}

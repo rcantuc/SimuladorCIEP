@@ -44,38 +44,8 @@ quietly {
 	******************************
 	*** 3 Fiscal Gap: Ingresos ***
 	******************************
-	/*if "$pais" == "" {
-		capture confirm file "`c(sysdir_personal)'/SIM/XNA0120_m.dta"
-		if _rc != 0 | "`update'" == "update" {
-			DatosAbiertos XNA0120_m, pibvp(3.714)
-			if `c(version)' > 13.1 {
-				saveold "`c(sysdir_personal)'/SIM/XNA0120_m.dta", replace version(13)
-			}
-			else {
-				save "`c(sysdir_personal)'/SIM/XNA0120_m.dta", replace
-			}
-		}
-		use "`c(sysdir_personal)'/SIM/XNA0120_m.dta", clear
-		g divGA = 3
-		tempfile pm_ingreso
-		save `pm_ingreso'
-		
-		replace divGA = 4
-		tempfile pm_capital
-		save `pm_capital'
-	}*/
-
-
 	LIF, anio(`anio') nographs by(divGA) //eofp
 	collapse (sum) recaudacion if divLIF != 10, by(anio divGA) fast
-
-	/*if "$pais" == "" {
-		merge 1:1 (anio divGA) using `pm_ingreso', nogen keepus(monto)
-		merge 1:1 (anio divGA) using `pm_capital', nogen keepus(monto) update
-		replace recaudacion = recaudacion - monto if divGA == 3 & monto != .
-		replace recaudacion = recaudacion + monto if divGA == 4 & monto != .
-	}*/
-
 
 	g modulo = ""
 	levelsof divGA, local(divGA)
@@ -143,7 +113,7 @@ quietly {
 
 			capture use `"`c(sysdir_personal)'/users/$pais/$id/CuotasSSREC"', clear
 			if _rc != 0 {
-				use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/CuotasSSREC.dta"', clear			
+				use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/CuotasSSREC.dta"', clear
 			}
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
@@ -162,7 +132,7 @@ quietly {
 
 			capture use `"`c(sysdir_personal)'/users/$pais/$id/PetroleoREC"', clear
 			if _rc != 0 {
-				use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PetroleoREC.dta"', clear			
+				use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PetroleoREC.dta"', clear
 			}
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
@@ -172,6 +142,20 @@ quietly {
 
 			tempfile petroleo
 			save `petroleo'
+
+			/*if "$pais" == "Ecuador" {
+				import excel `"`c(sysdir_site)'../basesCIEP/Otros/Ecuador/ingresospetroleros.xlsx"', sheet("Sheet1") firstrow clear
+				rename ingresos_petroleros estimacion
+				drop if anio == .
+
+				g divGA = `k'
+				g modulo = "petroleo"
+
+				merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
+				collapse estimacion, by(anio modulo divGA)
+
+				save `petroleo', replace
+			}*/
 
 			restore
 			merge 1:1 (anio divGA) using `petroleo', nogen update replace
@@ -183,7 +167,7 @@ quietly {
 
 	* Actualizaciones *
 	replace estimacion = 0 if estimacion == .
-	replace estimacion = estimacion*lambda
+	replace estimacion = estimacion*lambda if modulo != "petroleo"
 	replace recaudacion = 0 if recaudacion == .
 	replace recaudacion = recaudacion/deflator
 
@@ -197,7 +181,7 @@ quietly {
 	replace otrospib = L.otrospib if anio > `anio'
 	replace estimacionotros = L.otrospib/100*pibYR if anio > `anio'
 
-	* Ingresos petroleros (como % PIB) *
+	/* Ingresos petroleros (como % PIB) *
 	g petroleopib = recaudacionpetroleo/pibYR*100
 	replace petroleopib = L.petroleopib if anio > `anio'
 	replace estimacionpetroleo = L.petroleopib/100*pibYR if anio > `anio'
@@ -277,7 +261,7 @@ quietly {
 		noisily di in w "PROYOTRING: [`=substr("`proy_otrosing'",1,`=`length_otrosing'-1')']"
 		capture log off output
 	}
-	
+
 
 	*********************
 	** 3.2 Al infinito **
@@ -401,7 +385,7 @@ quietly {
 
 			capture use `"`c(sysdir_personal)'/users/$pais/$id/PenBienestarREC.dta"', clear
 			if _rc != 0 {
-				use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PenBienestarREC.dta"', clear			
+				use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PenBienestarREC.dta"', clear
 			}
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
@@ -420,7 +404,7 @@ quietly {
 
 			capture use `"`c(sysdir_personal)'/users/$pais/$id/OtrosGasREC.dta"', clear
 			if _rc != 0 {
-				use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/OtrosGasREC.dta"', clear			
+				use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/OtrosGasREC.dta"', clear
 			}
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
@@ -441,7 +425,7 @@ quietly {
 
 	capture use `"`c(sysdir_personal)'/users/$pais/$id/IngBasicoREC"', clear
 	if _rc != 0 {
-		use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/IngBasicoREC.dta"', clear			
+		use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/IngBasicoREC.dta"', clear
 	}
 	merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 	collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
@@ -458,8 +442,7 @@ quietly {
 	* PIB *
 	merge m:1 (anio) using `PIB', nogen keep(matched) update replace
 	collapse (sum) gasto estimacion (max) pibYR deflator lambda Poblacion, by(anio modulo) fast
-	
-	*replace estimacion = pibYR*.04 if modulo == "pensiones"
+
 
 
 	*********************
@@ -485,22 +468,60 @@ quietly {
 	replace amortizacionpib = amortizacionprom if amortizacionpib == .
 
 	replace gastoamortizacion = amortizacionpib/100*pibYR if gastoamortizacion == .
-	
 	replace estimacionamortizacion = amortizacionpib/100*pibYR if estimacionamortizacion == .
-	replace estimacionamortizacion = gastoamortizacion if anio >= `anio' //& estimacionamortizacion == 0
+	replace estimacionamortizacion = gastoamortizacion if anio >= `anio'
 
 
 
-	***********
-	** DEUDA **
-	merge 1:1 (anio) using `shrfsp', nogen keepus(shrfsp* rfsp* /*nopresupuestario*/ tipoDeCambio) keep(matched)
+	*******************************
+	** DEUDA Y COSTO DE LA DEUDA **
+	merge 1:1 (anio) using `shrfsp', nogen keep(matched) keepus(shrfsp* rfsp* /*nopresupuestario*/ tipoDeCambio)
 	merge 1:1 (anio) using `baseingresos', nogen
 
-	g difshrfsp = shrfsp-L.shrfsp
-	g shrfspExternoUSD = shrfspExterno/tipoDeCambio
-	g shrfspExternoDep = shrfspExternoUSD*(tipoDeCambio-L.tipoDeCambio)
 
-	tabstat shrfspExternoDep rfsp, stat(sum) f(%20.0fc) save
+	* Costo de la deuda *
+	g tasaEfectiva = gastocostodeuda/shrfsp*100
+	capture confirm existence $tasaEfectiva
+	if _rc == 0 {
+		replace tasaEfectiva = $tasaEfectiva if anio >= `anio'
+	}
+
+	tempvar tasaEfectiva_ari
+	egen `tasaEfectiva_ari' = mean(tasaEfectiva)
+	replace tasaEfectiva = `tasaEfectiva_ari' if tasaEfectiva == . & anio >= `anio'
+
+	* Simulacion *
+	capture confirm scalar costodeu
+	if _rc == 0 & "$pais" == "" {
+		replace gastocostodeuda = scalar(costodeu)*Poblacion if anio == `anio'
+		replace tasaEfectiva = gastocostodeuda/shrfsp*100 if anio == `anio'
+		replace tasaEfectiva = L.tasaEfectiva if tasaEfectiva == .
+	}
+
+	replace estimacioncostodeuda = tasaEfectiva/100*shrfsp if estimacioncostodeuda == . //anio == `anio'
+
+
+	* Depreciacion *
+	g depreciacion = tipoDeCambio-L.tipoDeCambio
+	replace depreciacion = L.depreciacion if depreciacion == .
+	capture confirm existence $depreciacion
+	if _rc == 0 {
+		replace depreciacion = $depreciacion if anio >= `anio'
+	}
+
+	g shrfspExternoUSD = shrfspExterno/tipoDeCambio
+	capture confirm existence $tipoDeCambio
+	if _rc == 0 {
+		replace tipoDeCambio = $tipoDeCambio if anio == `anio'
+	}
+	replace tipoDeCambio = L.tipoDeCambio + depreciacion if anio > `anio'
+	replace shrfspExternoUSD = shrfspExterno/tipoDeCambio
+
+	g efectoTipoDeCambio = shrfspExternoUSD*(tipoDeCambio-L.tipoDeCambio)
+	g difshrfsp = shrfsp - L.shrfsp - efectoTipoDeCambio
+	format shrfspExternoUSD efectoTipoDeCambio difshrfsp %20.0fc
+
+	tabstat efectoTipoDeCambio rfsp, stat(sum) f(%20.0fc) save
 	tempname ACT
 	matrix `ACT' = r(StatTotal)
 
@@ -520,29 +541,14 @@ quietly {
 	local shrfspobslast = shrfsp[`obslast']/pibY[`obslast']*100
 
 	* Actualizacion de los saldos *
-	*g actualizacion = `actualizacion_geo'
 	local actualizacion_geo = (((shrfsp[`obslast']-shrfsp[`obsfirs'])/(`ACT'[1,1]+`ACT'[1,2]))^(1/(`obslast'-`obsfirs'))-1)*100
+	g actualizacion = `actualizacion_geo'
 
 	* MXN Reales *
 	replace rfsp = rfsp/deflator
 	replace shrfsp = shrfsp/deflator
 
-	* Costo de la deuda *
-	g costodeudashrfsp = gastocostodeuda/shrfsp*100 if anio <= `anio'
-	egen costodeudashrfsp_ari = mean(costodeudashrfsp)
-	replace costodeudashrfsp = costodeudashrfsp_ari if costodeudashrfsp == .
-
-	*capture confirm scalar costodeu
-	*if _rc == 0 {
-	*	replace gastocostodeuda = scalar(costodeu)*Poblacion if anio == `anio'
-	*	replace costodeudashrfsp = gastocostodeuda/shrfsp*100 if anio == `anio'
-	*	replace costodeudashrfsp = L.costodeudashrfsp if costodeudashrfsp == .
-	*}
-
-	replace estimacioncostodeuda = costodeudashrfsp/100*shrfsp if estimacioncostodeuda == . //anio == `anio'
-
-
-	* Iteraciones *
+	* Variables simulador *
 	capture confirm variable estimacionpenbienestar
 	if _rc != 0 {
 		g estimacionpenbienestar = 0
@@ -554,10 +560,11 @@ quietly {
 		g gastoingbasico = 0
 	}
 
-	forvalues k = `=`anio''(1)`=anio[_N]' {
-		replace estimacioncostodeuda = costodeudashrfsp/100*L.shrfsp if anio == `k'
-		*replace estimacioncostodeuda = 0 if estimacioncostodeuda < 0
+	* Iteraciones *
+	forvalues k = `=`anio'+1'(1)`=anio[_N]' {
+		replace estimacioncostodeuda = tasaEfectiva/100*L.shrfsp if anio == `k'
 
+		* RFSP *
 		capture confirm variable rfspBalance
 		if _rc != 0 {
 			g rfspBalance = estimacionamortizacion + estimacioncostodeuda + estimacioneducacion ///
@@ -573,7 +580,18 @@ quietly {
 		}
 		replace rfsp = rfspBalance if anio == `k'
 
-		replace shrfsp = L.shrfsp*(1+`actualizacion_geo'/100*0) + rfspBalance if anio == `k' //& shrfsp == .
+		* SHRFSP *
+		replace shrfspExterno = L.shrfspExterno*(1+`actualizacion_geo'/100) ///
+			+ (rfspBalance - estimacionamortizacion)*L.shrfspExterno/L.shrfsp if anio == `k'
+		replace shrfspExternoUSD = shrfspExterno/tipoDeCambio if anio == `k'
+
+		replace efectoTipoDeCambio = shrfspExternoUSD*(tipoDeCambio-L.tipoDeCambio)
+
+		replace shrfspInterno = L.shrfspInterno*(1+`actualizacion_geo'/100) ///
+			+ (rfspBalance - estimacionamortizacion)*L.shrfspInterno/L.shrfsp if anio == `k'
+
+		replace shrfsp = L.shrfsp*(1+`actualizacion_geo'/100) ///
+			+ efectoTipoDeCambio + rfspBalance - estimacionamortizacion if anio == `k'
 	}
 
 	g rfsp_pib = rfsp/pibYR*100
@@ -582,6 +600,7 @@ quietly {
 			estimacionsalud estimacionpensiones estimacionotrosgas estimacioningbasico ///
 			estimacionpenbienestar)
 	format estimaciongastos %20.0fc
+
 
 
 	****************

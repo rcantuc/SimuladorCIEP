@@ -122,7 +122,6 @@ egen laboral = rsum(ISR__asalariados ISR__PF) if formal != 0
 replace laboral = 0 if laboral == .
 Distribucion Laboral, relativo(laboral) macro(`=`ISRSalarios'+`ISRFisicas'')
 label var Laboral "los impuestos al ingreso laboral"
-label var Laboral "Labor-based income tax"
 Simulador Laboral [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1') $nographs nooutput
 
 ** (+) Cuotas a la SS **
@@ -130,7 +129,6 @@ egen cuotasss = rsum(cuotasTPF) if formal != 0
 replace cuotasss = 0 if laboral == .
 Distribucion CuotasSS, relativo(cuotasss) macro(`=`CuotasIMSS'')
 label var CuotasSS "las contribuciones a la seguridad social"
-label var CuotasSS "Social Security"
 Simulador CuotasSS [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1') $nographs nooutput
 
 ** (+) Impuestos al consumo **
@@ -138,13 +136,11 @@ egen consumo = rsum(TOTIVA TOTIEPS)
 replace consumo = 0 if consumo == .
 Distribucion Consumo, relativo(consumo) macro(`alconsumo')
 label var Consumo "los impuestos al consumo"
-label var Consumo "Consumption tax"
 Simulador Consumo [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1') $nographs nooutput
 
 ** (+) Impuestos e ingresos de capital **
 Distribucion OtrosC, relativo(ISR__PM) macro(`=`otrosing'+`ISRMorales'')
 label var OtrosC "los ingresos de capital"
-label var OtrosC "Capital income"
 Simulador OtrosC [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1') $nographs nooutput
 
 ** (+) ISR Personas Morales **/
@@ -164,7 +160,7 @@ Simulador IEPSAlcohol [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1') $
 
 ** (+) IEPS Tabaco **
 Distribucion IEPSTabaco, relativo(IEPS4) macro(`IEPSTabaco')
-label var IEPSTabaco "IEPS (tabacp)"
+label var IEPSTabaco "IEPS (tabaco)"
 Simulador IEPSTabaco [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1') $nographs nooutput
 
 ** (+) IVA **
@@ -175,17 +171,14 @@ Simulador IVA [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1') $nographs
 ** (+) Petroleo **
 g pob = 1
 Distribucion Petroleo, relativo(pob) macro(`FMP')
-label var Petroleo "IVA (total)"
+label var Petroleo "ingresos petroleros"
 Simulador Petroleo [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1') $nographs nooutput
-
-
 
 ** (-) Pensiones **
 g ing_jubila_pub = ing_jubila if (formal == 1 | formal == 2 | formal == 3) & ing_jubila != 0
 replace ing_jubila_pub = 0 if ing_jubila_pub == .
 Distribucion Pension, relativo(ing_jubila_pub) macro(`Pensiones')
 label var Pension "pensiones"
-label var Pension "Pensions"
 Simulador Pension [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1') $nographs nooutput
 
 ** (-) Pension Bienestar **
@@ -195,7 +188,6 @@ matrix POBLACION68 = r(StatTotal)
 g PenBienestar = `PenBienestar'/POBLACION68[1,1] if edad >= 68 | (edad >= 65 & rural == 1)
 replace PenBienestar = 0 if PenBienestar == .
 label var PenBienestar "pensi{c o'}n Bienestar"
-label var PenBienestar "Bienestar pension"
 Simulador PenBienestar if edad >= 68 [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1') $nographs nooutput
 
 ** (-) Educacion **
@@ -212,7 +204,6 @@ replace educacion = 0 if educacion == .
 
 Distribucion Educacion, relativo(educacion) macro(`Educacion')
 label var Educacion "educaci{c o'}n"
-label var Educacion "Education"
 Simulador Educacion [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1') $nographs nooutput
 
 ** (-) Salud **
@@ -408,19 +399,16 @@ replace salud = .0030159 if edad >= 109
 
 Distribucion Salud, relativo(salud) macro(`Salud')
 label var Salud "salud"
-label var Salud "Health"
 Simulador Salud [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1') $nographs nooutput //poblacion(defunciones)
 
 ** (-) Otros gastos **
 Distribucion OtrosGas, relativo(factor_cola) macro(`OtrosGas')
 label var OtrosGas "otros gastos"
-label var OtrosGas "Other expenditures"
 Simulador OtrosGas [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1') $nographs nooutput
 
 ** (-) Ingreso B{c a'}sico **
 g IngBasico = 0.1
 label var IngBasico "ingreso b{c a'}sico"
-label var IngBasico "Basic universal income"
 Simulador IngBasico [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1') $nographs nooutput
 
 ** (*) Infraestructura **
@@ -446,22 +434,37 @@ Simulador Infra [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1') $nograp
 ****************
 
 ** (+) Ingresos de PM **
-label var ing_bruto_tpm "Ingresos brutos (personas morales)"
+label var ing_bruto_tpm "ingresos brutos (personas morales)"
 noisily Simulador ing_bruto_tpm [fw=factor], base("ENIGH 2018") boot(1) reboot $nographs nooutput
 
 ** (+) Impuestos y aportaciones **
 egen ImpuestosAportaciones = rsum(Laboral Consumo ISR__PM)
+label var ImpuestosAportaciones "impuestos y aportaciones"
 Simulador ImpuestosAportaciones [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1') $nographs nooutput
-label var ImpuestosAportaciones "Impuestos y aportaciones"
 
 ** (+) Ingresos Publicos **
 egen IngresosPublicos = rsum(Laboral Consumo OtrosC)
-label var IngresosPublicos "Ingresos P{c u'}blicos"
+label var IngresosPublicos "ingresos p{c u'}blicos"
 Simulador IngresosPublicos [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1') $nographs nooutput
 
 
 
-************
+******************
+*** 6. ENGLISH ***
+/******************
+label var Laboral "Labor-based income tax"
+label var CuotasSS "Social Security"
+label var Consumo "Consumption tax"
+label var OtrosC "Capital income"
+label var Pension "Pensions"
+label var PenBienestar "Bienestar pension"
+label var Educacion "Education"
+label var Salud "Health"
+label var OtrosGas "Other expenditures"
+label var IngBasico "Basic universal income"
+
+
+***********/
 *** SAVE ***
 ************
 compress

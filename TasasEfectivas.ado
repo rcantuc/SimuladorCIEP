@@ -233,20 +233,23 @@ quietly {
 		use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
 
 		* ISR *
-		tabstat Laboral Consumo OtrosC ISR__PM ing_cap_fmp [fw=factor], stat(sum) f(%20.0fc) save
+		tabstat Laboral Consumo OtrosC ISR__PM Petroleo CuotasSS [fw=factor], stat(sum) f(%20.0fc) save
 		matrix INGRESOS = r(StatTotal)
 
-		replace Laboral = Laboral*((scalar(ISRAS)+scalar(ISRPF)+scalar(CuotasT))/100*scalar(PIB))/INGRESOS[1,1]
+		replace Laboral = Laboral*((scalar(ISRAS)+scalar(ISRPF))/100*scalar(PIB))/INGRESOS[1,1]
 		replace Consumo = Consumo*((scalar(IVA)+scalar(ISAN)+scalar(IEPS)+scalar(Importa))/100*scalar(PIB))/INGRESOS[1,2]
-		replace OtrosC = OtrosC*((scalar(ISRPM)+scalar(FMP)+scalar(OYE)+scalar(OtrosC))/100*scalar(PIB))/INGRESOS[1,3]
+		replace OtrosC = OtrosC*((scalar(ISRPM)+scalar(OYE)+scalar(OtrosC))/100*scalar(PIB))/INGRESOS[1,3]
 
 		replace ISR__PM = ISR__PM*((scalar(ISRPM))/100*scalar(PIB))/INGRESOS[1,4]
 		replace ISR__PM = 0 if ISR__PM == .
 
-		replace ing_cap_fmp = ing_cap_fmp*((scalar(FMP))/100*scalar(PIB))/INGRESOS[1,5]
-		replace ing_cap_fmp = 0 if ing_cap_fmp == .
+		replace Petroleo = Petroleo*((scalar(FMP))/100*scalar(PIB))/INGRESOS[1,5]
+		replace Petroleo = 0 if Petroleo == .
 
-		tabstat Laboral Consumo OtrosC [fw=factor], stat(sum) f(%20.0fc) save
+		replace CuotasSS = CuotasSS*((scalar(CuotasT))/100*scalar(PIB))/INGRESOS[1,6]
+		replace CuotasSS = 0 if CuotasSS == .
+
+		tabstat Laboral Consumo OtrosC CuotasSS Petroleo [fw=factor], stat(sum) f(%20.0fc) save
 		tempname INGRESOSSIM
 		matrix `INGRESOSSIM' = r(StatTotal)
 	}
@@ -299,6 +302,7 @@ quietly {
 	tempname RECBase
 	local j = 1
 	foreach k in Laboral Consumo OtrosC CuotasSS Petroleo {
+		di "`k'"
 		use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/`k'REC"', clear
 		merge 1:1 (anio) using "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", nogen keepus(lambda)
 		tabstat estimacion if anio == `anio', stat(sum) f(%20.0fc) save
