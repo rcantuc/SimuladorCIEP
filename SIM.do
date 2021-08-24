@@ -363,7 +363,7 @@ save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace
 ************************************
 **       5.1 REDISTRIBUCION       **
 ************************************
-noisily Simulador AportacionesNetas [fw=factor], base("ENIGH 2018") reboot anio(`aniovp') folio(`folio')
+noisily Simulador AportacionesNetas [fw=factor], base("ENIGH 2020") reboot anio(`aniovp') folio(`folio')
 
 
 
