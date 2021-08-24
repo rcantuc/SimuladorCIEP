@@ -529,7 +529,7 @@ g double ing_benef = ing_anual if clave == "P037" | clave == "P038" | (clave >= 
 g double ing_heren = ing_anual if clave == "P057" | (clave == "P032" & edad < 18)
 
 * aj. PAM *
-g double ing_PAM = ing_anual if clave == "P044"
+g double ing_PAM = ing_anual if clave == "P004" | clave == "P104" | clave == "P105"
 
 
 

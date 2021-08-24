@@ -127,7 +127,7 @@ quietly {
 			ylabel(0(1)4, format("%3.0f")) ///
 			///text(`crec_deflactor', place(c)) ///
 			legend(label(1 "Reportado") label(2 "Proyectado") label(3 "Estimado") order(1 3 2)) ///
-			caption("{it:Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, BIE.}") ///
+			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.") ///
 			note("{bf:{c U'}ltimo dato reportado}: `anio_last' mes `mes_last'.") ///
 			name(inflacionH, replace)
 			
@@ -152,7 +152,7 @@ quietly {
 			ytitle("Variaci{c o'}n (%)") xtitle("") yline(0, lcolor(black)) ///
 			text(`crec_infl') ///
 			legend(label(1 "Reportado") label(2 "Proyectado") label(3 "Estimado") order(1 3 2)) ///
-			caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5 e informaci{c o'}n del INEGI, BIE.") ///
+			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.") ///
 			note("{bf:{c U'}ltimo dato reportado}: `anio_last' mes `mes_last'.") ///
 			name(var_inflYH, replace)
 		capture confirm existence $export
