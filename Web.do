@@ -14,13 +14,13 @@ capture log close _all
 ********************************/
 **    GITHUB (PROGRAMACION)    **
 **         (comentar)          **
-/*********************************
+*********************************
 if"`c(os)'" == "MacOSX" & "`c(username)'" == "ricardo" {                        // Ricardo
 	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/SimuladorCIEP/5.1/simuladorCIEP/"
 }
 
 if "`c(os)'" == "Unix" & "`c(username)'" == "ciepmx" {                          // ServidorCIEP
-	*sysdir set PERSONAL "/SIM/OUT/5/5.1/"
+	sysdir set PERSONAL "/SIM/OUT/5/5.1/"
 }
 adopath ++ PERSONAL
 
