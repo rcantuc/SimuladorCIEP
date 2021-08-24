@@ -144,24 +144,24 @@ if _rc != 0 | "$export" != "" {
 ***    2. PARTE III: GASTOS    ***
 ***                            ***
 /**********************************
-scalar basica      =   21325 //    Educaci{c o'}n b{c a'}sica
-scalar medsup      =   21056 //    Educaci{c o'}n media superior
-scalar superi      =   38111 //    Educaci{c o'}n superior
-scalar posgra      =   45788 //    Posgrado
-scalar eduadu      =   19451 //    Educaci{c o'}n para adultos
-scalar otrose      =    1476 //    Otros gastos educativos
+scalar basica      =   23113 //    Educaci{c o'}n b{c a'}sica
+scalar medsup      =   21871 //    Educaci{c o'}n media superior
+scalar superi      =   34743 //    Educaci{c o'}n superior
+scalar posgra      =   54764 //    Posgrado
+scalar eduadu      =  113600 //    Educaci{c o'}n para adultos
+scalar otrose      =    1567 //    Otros gastos educativos
 
 scalar ssa         =     519 //    SSalud
 scalar prospe      =    1081 //    IMSS-Prospera
-scalar segpop      =    2406 //    Seguro Popular
-scalar imss        =    6385 //    IMSS (salud)
-scalar issste      =    8589 //    ISSSTE (salud)
-scalar pemex       =   24178 //    Pemex (salud) + ISSFAM (salud)
+scalar segpop      =    2443 //    Seguro Popular
+scalar imss        =    6250 //    IMSS (salud)
+scalar issste      =    8410 //    ISSSTE (salud)
+scalar pemex       =   23536 //    Pemex (salud) + ISSFAM (salud)
 
-scalar bienestar   =   36664 //    Pensi{c o'}n Bienestar
-scalar penims      =  148107 //    Pensi{c o'}n IMSS
-scalar peniss      =  237863 //    Pensi{c o'}n ISSSTE
-scalar penotr      = 1497535 //    Pensi{c o'}n Pemex, CFE, Pensi{c o'}n LFC, ISSFAM, Otros
+scalar bienestar   =   16799 //    Pensi{c o'}n Bienestar
+scalar penims      =  128233 //    Pensi{c o'}n IMSS
+scalar peniss      =  215747 //    Pensi{c o'}n ISSSTE
+scalar penotr      = 1359427 //    Pensi{c o'}n Pemex, CFE, Pensi{c o'}n LFC, ISSFAM, Otros
 
 scalar servpers    =    3380 //    Servicios personales
 scalar matesumi    =    1692 //    Materiales y suministros
