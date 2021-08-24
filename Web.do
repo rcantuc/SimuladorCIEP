@@ -33,6 +33,8 @@ adopath ++ PERSONAL
 ***    0. ARRANQUE    ***
 ***                   ***
 *************************
+global id = "`c(username)'"                                                     // ID DEL USUARIO
+
 local noisily "noisily"                                                         // "NOISILY" OUTPUTS
 global nographs "nographs"                                                      // SUPRIMIR GRAFICAS
 global output "output"                                                          // IMPRIMIR OUTPUTS (WEB)
