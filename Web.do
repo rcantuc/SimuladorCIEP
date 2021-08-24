@@ -120,18 +120,14 @@ if _rc != 0 | "$export" != "" {
 	global id = ""
 
 	** 1.2.1 HOUSEHOLDS: EXPENDITURES **
-	if "$pais" == "" {
-		noisily run "`c(sysdir_personal)'/Expenditure.do" `aniovp'
-	}
+	*noisily run "`c(sysdir_personal)'/Expenditure.do" `aniovp'
 
 	** 1.2.2 HOUSEHOLDS: INCOMES **
-	noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' `aniovp'
-	if "$pais" == "" {
-		noisily run `"`c(sysdir_personal)'/PerfilesSim.do"' `aniovp'
-	}
+	*noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' `aniovp'
+	noisily run `"`c(sysdir_personal)'/PerfilesSim.do"' `aniovp'
 
 	** 1.2.3 SANKEY **
-	if "$pais" == "" & `c(version)' > 13.1 {
+	if `c(version)' > 13.1 {
 		foreach k in grupoedad decil escol sexo {
 			noisily run "`c(sysdir_personal)'/Sankey.do" `k' `aniovp'
 		}
