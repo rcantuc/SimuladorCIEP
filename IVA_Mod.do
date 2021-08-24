@@ -14,6 +14,7 @@ noisily di _newline(2) in g "   MODULO: " in y "IVA"
 ** Microsimulacion **
 *********************
 use if anio == `anio' | anio == 2018 using "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", clear
+sort anio
 local lambda = lambda[1]
 local deflator = deflator[1]
 scalar PIB = pibY[_N]
@@ -26,7 +27,7 @@ use "`c(sysdir_personal)'/SIM/2018/expenditure_categ_iva.dta", clear
 ** Re C{c a'}lculo del IVA **
 local j = 2
 foreach k in alim alquiler cb educacion fuera mascotas med mujer otros trans transf {
-	replace gasto_anual`k' = gasto_anual`k'*66.041/62.007
+	replace gasto_anual`k' = gasto_anual`k'*66.012/62.137
 	
 	if IVAT[`j',1] == 1 {
 		replace IVA`k' = 0

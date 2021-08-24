@@ -182,10 +182,10 @@ label var Pension "pensiones"
 Simulador Pension [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1') $nographs nooutput
 
 ** (-) Pension Bienestar **
-tabstat factor if edad >= 65, stat(sum) f(%20.0fc) save
+tabstat factor if ing_PAM > 0 & ing_PAM != ., stat(sum) f(%20.0fc) save
 matrix POBLACION68 = r(StatTotal)
 
-g PenBienestar = `PenBienestar'/POBLACION68[1,1] if edad >= 68 | (edad >= 65 & rural == 1)
+g PenBienestar = `PenBienestar'/POBLACION68[1,1] if ing_PAM > 0 & ing_PAM != .
 replace PenBienestar = 0 if PenBienestar == .
 label var PenBienestar "pensi{c o'}n Bienestar"
 Simulador PenBienestar if edad >= 68 [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1') $nographs nooutput
@@ -435,7 +435,7 @@ Simulador Infra [fw=factor], base("ENIGH 2018") boot(1) reboot anio(`1') $nograp
 
 ** (+) Ingresos de PM **
 label var ing_bruto_tpm "ingresos brutos (personas morales)"
-noisily Simulador ing_bruto_tpm [fw=factor], base("ENIGH 2018") boot(1) reboot $nographs nooutput
+Simulador ing_bruto_tpm [fw=factor], base("ENIGH 2018") boot(1) reboot $nographs nooutput
 
 ** (+) Impuestos y aportaciones **
 egen ImpuestosAportaciones = rsum(Laboral Consumo ISR__PM)

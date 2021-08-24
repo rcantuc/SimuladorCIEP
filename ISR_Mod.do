@@ -13,9 +13,10 @@ noisily di _newline(2) in g "   MODULO: " in y "ISR"
 *********************
 ** Microsimulacion **
 *********************
-use if anio == 2018 using "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", clear
+use if anio == 2018 | anio == `anio' using "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", clear
 local lambda = lambda[1]
 local deflator = deflator[1]
+local pibY = pibY[_N]
 
 * Verificar limites *
 forvalues k=2(1)`=rowsof(ISR)' {
@@ -48,11 +49,11 @@ tabstat ing_subor ing_bruto_tax ing_bruto_tpm cuotasTPF `ImpNet' infonavit fovis
 tempname BRUT
 matrix `BRUT' = r(StatTotal)
 
-noisily di _newline in g "    Ing. Bruto Salarios: " _col(33) in y %10.3fc (`BRUT'[1,1]/*-`BRUT'[1,4]*/)/scalar(PIB)*100
-noisily di in g "    Cuotas a la Seg. Soc.:  " _col(33) in y %10.3fc (`BRUT'[1,4]+`BRUT'[1,6]+`BRUT'[1,7])/scalar(PIB)*100
-noisily di in g "    Ing. Bruto Tax PF:  " _col(33) in y %10.3fc (`BRUT'[1,2]-`BRUT'[1,1])/scalar(PIB)*100
-noisily di in g "    Ing. Bruto Tax (Sal + PF):  " _col(33) in y %10.3fc (`BRUT'[1,2])/scalar(PIB)*100
-noisily di in g "    Ing. Bruto Tax PM:  " _col(33) in y %10.3fc `BRUT'[1,3]/scalar(PIB)*100
+noisily di _newline in g "    Ing. Bruto Salarios: " _col(33) in y %10.3fc (`BRUT'[1,1]/*-`BRUT'[1,4]*/)/`pibY'*100
+noisily di in g "    Cuotas a la Seg. Soc.:  " _col(33) in y %10.3fc (`BRUT'[1,4]+`BRUT'[1,6]+`BRUT'[1,7])/`pibY'*100
+noisily di in g "    Ing. Bruto Tax PF:  " _col(33) in y %10.3fc (`BRUT'[1,2]-`BRUT'[1,1])/`pibY'*100
+noisily di in g "    Ing. Bruto Tax (Sal + PF):  " _col(33) in y %10.3fc (`BRUT'[1,2])/`pibY'*100
+noisily di in g "    Ing. Bruto Tax PM:  " _col(33) in y %10.3fc `BRUT'[1,3]/`pibY'*100
 
 
 /************************
@@ -76,7 +77,7 @@ tabstat cuotasTP [fw=factor_cola] if formal2 == 1, stat(sum) f(%25.0fc) save
 tempname cuotasTP
 matrix `cuotasTP' = r(StatTotal)
 
-replace cuotasTP = cuotasTP*(scalar(CuotasT)/100*scalar(PIB))/`cuotasTP'[1,1] if formal2 == 1
+replace cuotasTP = cuotasTP*(scalar(CuotasT)/100*`pibY')/`cuotasTP'[1,1] if formal2 == 1
 replace cuotasTPF = cuotasF + cuotasTP
 
 
@@ -112,7 +113,7 @@ replace deduc_isr = `=DED[1,2]'/100*ing_bruto_tax ///
 	if `=DED[1,1]'*`smdf'*360 >= `=DED[1,2]'/100*ing_bruto_tax & deduc_isr >= `=DED[1,2]'/100*ing_bruto_tax
 
 replace categF = ""
-g categISR = ""
+capture g categISR = ""
 forvalues j=`=rowsof(ISR)'(-1)1 {
 	forvalues k=`=rowsof(SE)'(-1)1 {
 		replace categF = "J`j'K`k'" ///
@@ -180,9 +181,9 @@ tabstat ISR__PM [fw=factor_cola] if formal_morales == 1, stat(sum) f(%25.2fc) sa
 tempname SIMTAXM
 matrix `SIMTAXM' = r(StatTotal)
 
-scalar ISR_AS_Mod = `SIMTAXS'[1,1]/scalar(PIB)*100 								// ISR (asalariados)
-scalar ISR_PF_Mod = `SIMTAX'[1,1]/scalar(PIB)*100 								// ISR (personas f{c i'}sicas)
-scalar ISR_PM_Mod = `SIMTAXM'[1,1]/scalar(PIB)*100 								// ISR (personas morales)
+scalar ISR_AS_Mod = `SIMTAXS'[1,1]/`pibY'*100 								// ISR (asalariados)
+scalar ISR_PF_Mod = `SIMTAX'[1,1]/`pibY'*100 								// ISR (personas f{c i'}sicas)
+scalar ISR_PM_Mod = `SIMTAXM'[1,1]/`pibY'*100 								// ISR (personas morales)
 
 noisily di _newline in g "    RESULTADOS ISR (salarios): " _col(33) in y %10.3fc ISR_AS_Mod
 noisily di in g "    RESULTADOS ISR (f{c i'}sicas):  " _col(33) in y %10.3fc ISR_PF_Mod
@@ -191,7 +192,7 @@ noisily di in g "    RESULTADOS ISR (morales):  " _col(33) in y %10.3fc ISR_PM_M
 tabstat cuotasTP [fw=factor_cola] if formal2 == 1, stat(sum) f(%25.2fc) save
 tempname SIMCSS
 matrix `SIMCSS' = r(StatTotal)
-scalar CuotasT = `SIMCSS'[1,1]/scalar(PIB)*100 //								Cuotas IMSS
+scalar CuotasT = `SIMCSS'[1,1]/`pibY'*100 //								Cuotas IMSS
 
 
 /* SIMULACION EQUIDAD DE GENERO *

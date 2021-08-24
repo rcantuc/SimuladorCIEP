@@ -35,7 +35,7 @@ quietly {
 	****************
 	*** 2 SHRFSP ***
 	****************
-	SHRFSP, anio(`anio') `nographs' //update
+	SHRFSP, anio(`anio') nographs //update
 	tempfile shrfsp
 	save `shrfsp'
 
@@ -189,7 +189,7 @@ quietly {
 
 	***************/
 	** 3.1 Graphs **
-	if "`nographs'" != "nographs" {
+	if "`nographs'" != "nographs" & "$nographs" != "nographs" {
 		tempvar consumo ingreso otros petroleo cuotasss
 		g `consumo' = (recaudacionalconsumo)/1000000000
 		g `ingreso' = (recaudacionalingreso + recaudacionalconsumo)/1000000000
@@ -561,7 +561,7 @@ quietly {
 	}
 
 	* Iteraciones *
-	forvalues k = `=`anio'+1'(1)`=anio[_N]' {
+	forvalues k = `=`anio''(1)`=anio[_N]' {
 		replace estimacioncostodeuda = tasaEfectiva/100*L.shrfsp if anio == `k'
 
 		* RFSP *
@@ -578,19 +578,19 @@ quietly {
 				+ estimacionpenbienestar ///
 				- estimacioningresos if anio == `k'
 		}
-		replace rfsp = rfspBalance if anio == `k'
+		replace rfsp = rfspBalance - estimacionamortizacion if anio == `k'
 
 		* SHRFSP *
-		replace shrfspExterno = L.shrfspExterno*(1+`actualizacion_geo'/100) ///
+		replace shrfspExterno = L.shrfspExterno*(1+`actualizacion_geo'/100*0) ///
 			+ (rfspBalance - estimacionamortizacion)*L.shrfspExterno/L.shrfsp if anio == `k'
 		replace shrfspExternoUSD = shrfspExterno/tipoDeCambio if anio == `k'
 
 		replace efectoTipoDeCambio = shrfspExternoUSD*(tipoDeCambio-L.tipoDeCambio)
 
-		replace shrfspInterno = L.shrfspInterno*(1+`actualizacion_geo'/100) ///
+		replace shrfspInterno = L.shrfspInterno*(1+`actualizacion_geo'/100*0) ///
 			+ (rfspBalance - estimacionamortizacion)*L.shrfspInterno/L.shrfsp if anio == `k'
 
-		replace shrfsp = L.shrfsp*(1+`actualizacion_geo'/100) ///
+		replace shrfsp = L.shrfsp*(1+`actualizacion_geo'/100*0) ///
 			+ efectoTipoDeCambio + rfspBalance - estimacionamortizacion if anio == `k'
 	}
 
@@ -625,7 +625,7 @@ quietly {
 	g `bienestarg2' = (estimacionpenbienestar + estimacionotros + estimacionamortizacion + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000
 	g `ingbasg2' = (estimacioningbasico + estimacionpenbienestar + estimacionotros + estimacionamortizacion + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000
 
-	if "`nographs'" != "nographs" {
+	if "`nographs'" != "nographs" & "$nographs" != "nographs" {
 		twoway (area `ingbasg' `bienestarg' `otrosg' `amortg' `costog' `saludg' `pensionesg' `educaciong' anio if anio <= `anio' & anio > `aniomin') ///
 			(area `ingbasg2' anio if anio > `anio', color("255 129 0")) ///
 			(area `bienestarg2' anio if anio > `anio', color("255 189 0")) ///
@@ -798,7 +798,7 @@ quietly {
 		in g " %"
 
 	g shrfspPIB = shrfsp/pibY*100
-	if "`nographs'" != "nographs" {
+	if "`nographs'" != "nographs" & "$nographs" != "nographs" {
 		twoway (area shrfspPIB anio if shrfspPIB != . & anio <= `anio' & anio >= 2000) ///
 			(area shrfspPIB anio if anio > `anio' & anio <= `end'), ///
 			title({bf:Proyecci{c o'}n} del SHRFSP) ///
