@@ -38,6 +38,8 @@ adopath ++ PERSONAL
 *global pais "El Salvador"                                                      // OTROS PAISES (si aplica)
 *global pais "Ecuador"                                                           // OTROS PAISES (si aplica)
 
+global id = "`c(username)'"                                                     // ID DEL USUARIO
+
 local noisily "noisily"                                                         // "NOISILY" OUTPUTS
 *global nographs "nographs"                                                      // SUPRIMIR GRAFICAS
 *global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
