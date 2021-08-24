@@ -120,10 +120,10 @@ if _rc != 0 | "$export" != "" {
 	global id = ""
 
 	** 1.2.1 HOUSEHOLDS: EXPENDITURES **
-	*noisily run "`c(sysdir_personal)'/Expenditure.do" `aniovp'
+	noisily run "`c(sysdir_personal)'/Expenditure.do" `aniovp'
 
 	** 1.2.2 HOUSEHOLDS: INCOMES **
-	*noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' `aniovp'
+	noisily run `"`c(sysdir_personal)'/Households.do"' `aniovp'
 	noisily run `"`c(sysdir_personal)'/PerfilesSim.do"' `aniovp'
 
 	** 1.2.3 SANKEY **
