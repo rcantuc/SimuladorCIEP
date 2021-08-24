@@ -25,7 +25,7 @@ quietly {
 		use if anio == `anio' using `"`c(sysdir_personal)'/SIM/Poblaciontot.dta"', clear
 		local ajustepob = poblacion
 		
-		use "`c(sysdir_personal)'/SIM/2018/households`anio'.dta", clear
+		use "`c(sysdir_personal)'/SIM/2020/households`anio'.dta", clear
 		tabstat factor, stat(sum) f(%20.0fc) save
 		tempname pobenigh
 		matrix `pobenigh' = r(StatTotal)
@@ -785,7 +785,7 @@ quietly {
 		local Salud = r(Salud)
 		local OtrosGas = r(Otros)
 
-		use "`c(sysdir_personal)'/SIM/$pais/2018/households.dta", clear
+		use "`c(sysdir_personal)'/SIM/$pais/2020/households.dta", clear
 	
 		tabstat Pension Educacion Salud OtrosGas Infra [fw=factor], stat(sum) f(%20.0fc) save
 		tempname GASTOS TRANSF
