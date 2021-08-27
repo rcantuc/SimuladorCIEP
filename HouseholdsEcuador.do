@@ -5,7 +5,7 @@
 **********************************
 if "`1'" == "" {
 	clear all
-	local 1 = 2020
+	local 1 = 2021
 }
 
 
@@ -183,8 +183,6 @@ append using `parteb'
 *append using `parted'
 append using `partee'
 append using `partef'
-
-
 
 keep if /*PERCEP == "Impuesto a la renta" |*/ PERCEP == "Aportaciones al seguro social" ///
 	| PERCEP == "Pensión x jubilación, cesantia" | PERCEP == "Remuneración mensual unificada" 
@@ -380,10 +378,10 @@ noisily Simulador OtrosGas [fw=factor], base("ENIGHUR 2011-2012") boot(1) reboot
 capture drop __*
 compress
 capture mkdir "`c(sysdir_personal)'/SIM/$pais/"
-capture mkdir "`c(sysdir_personal)'/SIM/$pais/2018/"
+capture mkdir "`c(sysdir_personal)'/SIM/$pais/2020/"
 if `c(version)' > 13.1 {
-	saveold "`c(sysdir_personal)'/SIM/$pais/2018/households.dta", replace version(13)
+	saveold "`c(sysdir_personal)'/SIM/$pais/2020/households.dta", replace version(13)
 }
 else {
-	save "`c(sysdir_personal)'/SIM/$pais/2018/households.dta", replace
+	save "`c(sysdir_personal)'/SIM/$pais/2020/households.dta", replace
 }

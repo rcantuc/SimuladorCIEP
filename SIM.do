@@ -17,12 +17,12 @@ capture log close _all
 *********************************
 if"`c(os)'" == "MacOSX" & "`c(username)'" == "ricardo" {                        // Ricardo
 	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/SimuladorCIEP/5.1/simuladorCIEP/"
-	*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"
+	*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"             // EXPORTAR IMAGENES EN...
+	*global latex = "latex"                                                     // IMPRIMIR OUTPUTS (LATEX)
 }
 
 if "`c(os)'" == "Unix" & "`c(username)'" == "ciepmx" {                          // ServidorCIEP
 	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/SimuladorCIEP/5.1/simuladorCIEP/"
-	*global export "/home/ciepmx/Dropbox (CIEP)/Textbook/images/"
 }
 adopath ++ PERSONAL
 
@@ -43,7 +43,6 @@ global id = "`c(username)'"                                                     
 local noisily "noisily"                                                         // "NOISILY" OUTPUTS
 *global nographs "nographs"                                                      // SUPRIMIR GRAFICAS
 *global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
-*global latex = "latex"                                                         // IMPRIMIR OUTPUTS (LATEX)
 
 local aniovp = substr(`"`c(current_date)'"',-4,4)                               // A{c N~}O VALOR PRESENTE
 noisily run "`c(sysdir_personal)'/Arranque.do" `aniovp'
@@ -101,7 +100,7 @@ if "$pais" == "Ecuador" {
 	global pib2025 = 2.3                                                        // ¿Banco Mundial o FMI?
 	global pib2026 = 2.5                                                        // ¿Banco Mundial o FMI?
 
-	local aniovp = 2020															// A{c N~}O VALOR PRESENTE
+	*local aniovp = 2020                                                         // A{c N~}O VALOR PRESENTE
 	local folio "Identif_hog"                                                   // Folio del hogar
 }
 ***    FIN: PARAMETROS PIB    ***
@@ -111,14 +110,14 @@ if "$pais" == "Ecuador" {
 
 *******************************
 **       1.1 POBLACION       **
-/*forvalues k=1950(1)2100 {
+*forvalues k=1950(1)2100 {
 foreach k in `aniovp' {
 	`noisily' Poblacion, $nographs anio(`k') //update //tf(`=64.333315/2.1*1.8') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040) 
 }
 
 
 
-****************************************************/
+****************************************************
 **       1.2 PIB + Deflactor, Inflacion, SCN       **
 `noisily' PIBDeflactor, anio(`aniovp') $nographs save geopib(2000) geodef(2010) //update //discount(3.0)
 if "$pais" == "" {
@@ -129,14 +128,14 @@ if "$pais" == "" {
 
 
 **********************************************
-/**       1.3 Ingresos, Gastos y Deuda       **
+**       1.3 Ingresos, Gastos y Deuda       **
 `noisily' LIF, anio(`aniovp') $nographs by(divGA) rows(1) //update
 `noisily' PEF, anio(`aniovp') $nographs rows(2) //update
 `noisily' SHRFSP, anio(`aniovp') $nographs //update
 
 
 
-*******************************/
+*******************************
 **       1.4 HOUSEHOLDS       **
 capture use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PensionREC.dta"', clear
 if _rc != 0 | "$export" != "" {
@@ -167,7 +166,7 @@ if _rc != 0 | "$export" != "" {
 
 
 
-*********************************/
+*********************************
 ***                            ***
 ***    2. PARTE III: GASTOS    ***
 ***                            ***
@@ -203,7 +202,7 @@ scalar costodeu    =    5862 //    Costo de la deuda
 
 scalar IngBas      =       0 //    Ingreso b{c a'}sico
 scalar ingbasico18 =       1 //    1: Incluye menores de 18 anios, 0: no
-scalar ingbasico65 =       1 //    1: Incluye mayores de 65 anios, 0: no*/
+scalar ingbasico65 =       1 //    1: Incluye mayores de 65 anios, 0: no
 
 `noisily' GastoPC, anio(`aniovp') `nographs'
 ***    FIN: SIMULADOR GASTOS    ***
@@ -213,7 +212,7 @@ scalar ingbasico65 =       1 //    1: Incluye mayores de 65 anios, 0: no*/
 
 
 
-**********************************/
+**********************************
 ***                             ***
 ***    3. PARTE II: INGRESOS    ***
 ***                             ***
@@ -242,34 +241,34 @@ scalar OtrosC  = 1.069 //    Productos, derechos, aprovechamientos, contribucion
 ***                                                ***
 ******************************************************
 *             Inferior		Superior	CF		Tasa
-matrix ISR =  (0.01,		7735.00,	0.0,		1.92	\	/// 1
-              7735.01,		65651.07,	148.51,		6.40	\	/// 2
-              65651.08,		115375.90,	3855.14,	10.88	\	/// 3
-              115375.91,	134119.41,	9265.20,	16.00	\	/// 4
-              134119.42,	160577.65,	12264.16,	17.92	\	/// 5
-              160577.66,	323862.00,	17005.47,	21.36	\	/// 6
-              323862.01,	510451.00,	51883.01,	23.52	\	/// 7
-              510451.01,	974535.03,	95768.74,	30.00	\	/// 8
-              974535.04,	1299380.04,	234993.95,	32.00	\	/// 9
-              1299380.05,	3898140.12,	338944.34,	34.00	\	/// 10
-              3898140.13,	1E+14,		1222522.76,	35.00)		//  11
+matrix ISR =  (0.01,		7735.00,	0.0,		1.92	\    /// 1
+              7735.01,		65651.07,	148.51,		6.40	\    /// 2
+              65651.08,		115375.90,	3855.14,	10.88	\    /// 3
+              115375.91,	134119.41,	9265.20,	16.00	\    /// 4
+              134119.42,	160577.65,	12264.16,	17.92	\    /// 5
+              160577.66,	323862.00,	17005.47,	21.36	\    /// 6
+              323862.01,	510451.00,	51883.01,	23.52	\    /// 7
+              510451.01,	974535.03,	95768.74,	30.00	\    /// 8
+              974535.04,	1299380.04,	234993.95,	32.00	\    /// 9
+              1299380.05,	3898140.12,	338944.34,	34.00	\    /// 10
+              3898140.13,	1E+14,		1222522.76,	35.00)	     //  11
 			  
 *             Inferior		Superior	Subsidio
-matrix	SE =  (0.01,		21227.52,	4884.24		\	/// 1
-              21227.53,		23744.40,	4881.96		\	/// 2
-              23744.41,		31840.56,	4879.44		\	/// 3
-              31840.57,		41674.08,	4879.44		\	/// 4
-              41674.09,		42454.44,	4713.24		\	/// 5
-              42454.45,		53353.80,	4589.52		\	/// 6
-              53353.81,		56606.16,	4250.76		\	/// 7
-              56606.17,		64025.04,	3898.44		\	/// 8
-              64025.05,		74696.04,	3535.56		\	/// 9
-              74696.05,		85366.80,	3042.48		\	/// 10
-              85366.81,		88587.96,	2611.32		\	/// 11
-              88587.97, 	1E+14,		0)			//  12
+matrix	SE =  (0.01,		21227.52,	4884.24		\    /// 1
+              21227.53,		23744.40,	4881.96		\    /// 2
+              23744.41,		31840.56,	4879.44		\    /// 3
+              31840.57,		41674.08,	4879.44		\    /// 4
+              41674.09,		42454.44,	4713.24		\    /// 5
+              42454.45,		53353.80,	4589.52		\    /// 6
+              53353.81,		56606.16,	4250.76		\    /// 7
+              56606.17,		64025.04,	3898.44		\    /// 8
+              64025.05,		74696.04,	3535.56		\    /// 9
+              74696.05,		85366.80,	3042.48		\    /// 10
+              85366.81,		88587.96,	2611.32		\    /// 11
+              88587.97, 	1E+14,		0)		     //  12
 
-*            Ex. SS.MM.	Ex. % ing. gravable		% Informalidad PF	% Informalidad Salarios
-matrix DED = (5,			15,					46.28, 				0)
+*            Ex. SS.MM.	Ex. 	% ing. gravable		% Informalidad PF	% Informalidad Salarios
+matrix DED = (5,				15,					46.28, 				0)
 
 *           Tasa ISR PM.	% Informalidad PM
 matrix PM = (30,			10.82)
@@ -331,7 +330,7 @@ if "`cambioiva'" == "1" & "$pais" == "" {
 	scalar IVA = IVA_Mod
 }
 ***       FIN: SIMULADOR IVA       ***
-*************************************/
+*************************************
 
 
 
@@ -363,14 +362,14 @@ save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace
 ************************************
 **       5.1 REDISTRIBUCION       **
 ************************************
-noisily Simulador AportacionesNetas [fw=factor], base("ENIGH 2020") reboot anio(`aniovp') folio(`folio')
+noisily Simulador AportacionesNetas [fw=factor], base("ENIGHUR 2011-2012") reboot anio(`aniovp') folio(`folio')
 
 
 
 ****************************************
 **       5.2 CUENTA GENERACIONAL      **
 ****************************************
-*noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) 	//	<-- OPTIONAL!!! Toma mucho tiempo.
+*noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) 	//    <-- OPTIONAL!!! Toma mucho tiempo.
 
 
 
@@ -448,7 +447,7 @@ if "$output" == "output" {
 
 ****************************
 **       6.1 SANKEY       **
-/****************************
+****************************
 if "$pais" == "" {
 	foreach k in decil sexo grupoedad escol {
 		noisily run "`c(sysdir_personal)'/SankeySF.do" `k' `aniovp'
@@ -460,7 +459,7 @@ if "$pais" == "" {
 *******************************/
 **       6.2 FISCAL GAP       **
 ********************************
-noisily FiscalGap, anio(`aniovp') end(2030) aniomin(2015) //boot(250) //update
+noisily FiscalGap, anio(`aniovp') end(2050) aniomin(2015) //boot(250) //update
 
 
 

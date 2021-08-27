@@ -43,6 +43,7 @@ foreach k of varlist div* {
 	drop `k's
 }
 order div* concepto
+destring LIF*, replace
 reshape long LIF ILIF, i(div* concepto serie) j(anio)
 format div* LIF* ILIF* %20.0fc
 format concepto %30s
