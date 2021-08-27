@@ -1,5 +1,5 @@
 if "`1'" == "" {
-	local 1 = 2020
+	local 1 = 2021
 }
 
 
@@ -89,7 +89,7 @@ tsset anio
 
 g tipoDeCambio = 1
 
-keep if anio <= 2020
+keep if anio <= `1'
 
 compress
 if `c(version)' == 15.1 {

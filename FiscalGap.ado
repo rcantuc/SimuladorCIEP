@@ -143,7 +143,7 @@ quietly {
 			tempfile petroleo
 			save `petroleo'
 
-			/*if "$pais" == "Ecuador" {
+			if "$pais" == "Ecuador" {
 				import excel `"`c(sysdir_site)'../basesCIEP/Otros/Ecuador/ingresospetroleros.xlsx"', sheet("Sheet1") firstrow clear
 				rename ingresos_petroleros estimacion
 				drop if anio == .
@@ -155,7 +155,7 @@ quietly {
 				collapse estimacion, by(anio modulo divGA)
 
 				save `petroleo', replace
-			}*/
+			}
 
 			restore
 			merge 1:1 (anio divGA) using `petroleo', nogen update replace

@@ -333,13 +333,12 @@ quietly {
 		tempname gasanio
 		matrix `gasanio' = r(StatTotal)
 
-		*graph pie gastonetoPIB if anio == `anio' & `by' != -1 & transf_gf == 0, over(`resumido') ///
+		graph pie gastonetoPIB if anio == `anio' & `by' != -1 & transf_gf == 0, over(`resumido') ///
 			plabel(_all percent, format(%5.1fc)) ///
 			title(`"Gastos `=upper("`pef'`ppef'")' `anio'"') /// subtitle($pais) ///
 			name(gastospie, replace) ///
 			legend(on position(6) rows(`rows') cols(`cols')) ///
 			ptext(0 0 `"{bf:`=string(`gasanio'[1,1],"%6.1fc")' % PIB}"', color(white) size(small))
-
 
 		levelsof `resumido' if `by' != -1, local(lev_resumido)
 		local totlev = 0
@@ -359,8 +358,7 @@ quietly {
 			else {
 				g `lev_res`countlev'' = gastoneto`k'/1000000000 + `lev_res`=`countlev'-1''
 			}
-			replace `lev_res`countlev'' = 0 if `lev_res`countlev'' == .
-			
+			replace `lev_res`countlev'' = 0 if `lev_res`countlev'' == .			
 			local graphvars = "`lev_res`countlev'' `graphvars' "
 			local legend = `"`legend' label(`=`totlev'-`countlev'+1' "`legend`k''")"'
 			local ++countlev
@@ -373,12 +371,15 @@ quietly {
 				local text `"`text' `=`TOTPIB'[`k']' `=anio[`k']' "{bf:`=string(`TOTPIB'[`k'],"%5.1fc")'}""'
 			}
 		}
+
 		twoway (area `graphvars' anio if anio >= 2014) ///
 			(connected `TOTPIB' anio if anio >= 2014, yaxis(2) mlcolor("255 129 0") lcolor("255 129 0")), ///
 			title("{bf:Gasto} p{c u'}blico") ///
 			subtitle($pais) ///
 			text(`text', yaxis(2)) ///
-			ytitle(mil millones `currency') ytitle(% PIB, axis(2)) xtitle("") ///
+			ytitle(mil millones `currency') ///
+			ytitle(% PIB, axis(2)) ///
+			xtitle("") ///
 			ylabel(/*0(5)30*/, format(%15.0fc) labsize(small)) ///
 			ylabel(/*0(5)30*/, axis(2) noticks format(%5.0fc) labsize(small)) ///
 			yscale(range(0)) yscale(range(0) axis(2) noline) ///
@@ -386,7 +387,7 @@ quietly {
 			legend(on position(6) rows(`rows') cols(`cols') `legend' label(`=`totlev'+1' "= Total % PIB")) ///
 			name(gastos, replace) ///
 			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.")
-		
+			
 		restore
 	}
 
