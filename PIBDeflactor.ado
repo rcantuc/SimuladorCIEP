@@ -140,7 +140,7 @@ quietly {
 	g double var_indiceY = (indiceY/L.indiceY-1)*100
 	label var var_indiceY "Anual"
 
-	g double var_indiceG = ((indiceY/L`=`difdef''.indiceY)^(1/`difdef')-1)*100
+	g double var_indiceG = ((indiceY/L`=`difdef''.indiceY)^(1/(`difdef'))-1)*100
 	label var var_indiceG "Promedio geom{c e'}trico (`difpib' a{c n~}os)"
 
 
@@ -156,7 +156,7 @@ quietly {
 		capture confirm existence ${def`k'}
 		if _rc == 0 {
 			replace var_indiceY = ${def`k'} if anio == `k' & trimestre != 4
-			local exceptI "`exceptI'`k' (${def`k'}%), "
+			local exceptI "`exceptI'${def`k'}% (`k'), "
 			local anio_def = `k'
 			local ++exo_def
 		}
@@ -164,8 +164,12 @@ quietly {
 			replace var_indiceY = L.var_indiceG if anio == `k' & trimestre != 4 & var_indiceY == .
 		}
 		replace indiceY = L.indiceY*(1+var_indiceY/100) if anio == `k' & trimestre != 4
-		replace var_indiceG = ((indiceY/L`=`difdef''.indiceY)^(1/`difdef')-1)*100 if anio == `k' & trimestre != 4
+		replace var_indiceG = ((indiceY/L`=`difdef''.indiceY)^(1/(`difdef'))-1)*100 if anio == `k' & trimestre != 4
 	}
+	if "`exceptI'" != "" {
+		local exceptI "`=substr("`exceptI'",1,`=strlen("`exceptI'")-2')'"
+	}
+	*noisily di in g "  {bf:Excepciones Deflactor}: " in y "`exceptI'"
 
 	* Valor presente *
 	if `aniovp' == -1 {
@@ -217,7 +221,7 @@ quietly {
 	g double var_pibY = (pibYR/L.pibYR-1)*100
 	label var var_pibY "Anual"
 
-	g double var_pibG = ((pibYR/L`=`difpib''.pibYR)^(1/`difpib')-1)*100
+	g double var_pibG = ((pibYR/L`=`difpib''.pibYR)^(1/(`difpib'))-1)*100
 	label var var_pibG "Geometric mean (`difpib' years)"
 
 
@@ -232,7 +236,7 @@ quietly {
 		capture confirm existence ${pib`k'}
 		if _rc == 0 {
 			replace var_pibY = ${pib`k'} if anio == `k' & trimestre != 4
-			local except "`except'${pib`k'}% en `k'; "
+			local except "`except'${pib`k'}% (`k'); "
 			local anio_exo = `k'
 			local ++exo_count
 
@@ -241,9 +245,10 @@ quietly {
 		}
 	}
 
-	if "`except'" == "" {
-		local except " {bf:Crecimientos}: `=substr("`except'",1,`=strlen("`except'")-2')'."
+	if "`except'" != "" {
+		local except "`=substr("`except'",1,`=strlen("`except'")-2')'"
 	}
+	*noisily di in g "  {bf:Excepciones PIB}: " in y "`except'"
 
 	* Valor presentes `aniovp' *
 	replace deflator = indiceY/indiceY[`obsvp']
@@ -262,8 +267,8 @@ quietly {
 	}
 	return scalar anio_exo = `anio_exo'
 
-	scalar llambda = ((OutputPerWorker[`obs_exo']/OutputPerWorker[`obsPIB'])^(1/`difpib')-1)*100
-	scalar LLambda = ((OutputPerWorker[`obs_exo']/OutputPerWorker[1])^(1/(`obs_exo'-1))-1)*100
+	scalar llambda = ((OutputPerWorker[`obs_exo']/OutputPerWorker[`obsPIB'])^(1/(`obs_exo'-`obsPIB'))-1)*100
+	scalar LLambda = ((OutputPerWorker[`obs_exo']/OutputPerWorker[1])^(1/(`obs_exo'))-1)*100
 	capture confirm existence $lambda
 	if _rc == 0 {
 		scalar llambda = $lambda
@@ -276,7 +281,7 @@ quietly {
 	replace pibY = pibYR*deflator if pibY == .
 
 	* Crecimientos *
-	replace var_pibG = ((pibYR/L`=`difpib''.pibYR)^(1/`difpib')-1)*100
+	replace var_pibG = ((pibYR/L`=`difpib''.pibYR)^(1/(`difpib'))-1)*100
 	replace var_pibY = (pibYR/L.pibYR-1)*100
 
 	g double pibYVP = pibYR/(1+`discount'/100)^(anio-`=anio[`obsvp']')
@@ -291,7 +296,7 @@ quietly {
 	noisily di in g " PIB " in y "`anio_last'`trim_last'" _col(25) %20.0fc `pib_last' in g " `=currency[`obsvp']' ({c u'}ltimo reportado)"
 	noisily di _newline in g " PIB " in y anio[`obsvp'] in g " per c{c a'}pita " in y _col(35) %10.1fc pibY[`obsvp']/Poblacion[`obsvp'] in g " `=currency[`obs_exo']'"
 	noisily di in g " PIB " in y anio[`obs_exo'] in g " por trabajador " in y _col(35) %10.1fc OutputPerWorker[`obs_exo'] in g " `=currency[`obs_exo']'"
-	noisily di in g " Crecimiento promedio " in y anio[`obsPIB'] "-" anio[`obs_exo'] _col(35) %10.4f ((pibYR[`obs_exo']/pibYR[`obsPIB'])^(1/(`difpib'+`exo_count'))-1)*100 in g " %" 
+	noisily di in g " Crecimiento promedio " in y anio[`obsPIB'] "-" anio[`obs_exo'] _col(35) %10.4f ((pibYR[`obs_exo']/pibYR[`obsPIB'])^(1/(`obs_exo'-`obsPIB'))-1)*100 in g " %" 
 	noisily di in g " Lambda por trabajador " in y anio[`obsPIB'] "-" anio[`obs_exo'] _col(35) %10.4f scalar(llambda) in g " %" 
 	*noisily di in g " Lambda por trabajador " in y anio[1] "-" anio[`obs_exo'] _col(35) %10.4f scalar(LLambda) in g " %" 
 
@@ -313,8 +318,8 @@ quietly {
 	scalar anioPWI = anio[`obsPIB']
 	scalar anioPWF = anio[`obs_exo']
 	scalar outputPW = string(OutputPerWorker[`obsvp'],"%10.0fc")
-	scalar lambdaNW = ((pibYR[`obs_exo']/pibYR[`=`obs_exo'-`difpib'-1'])^(1/`difpib')-1)*100
-	scalar LambdaNW = ((pibYR[`obs_exo']/pibYR[1])^(1/(anio[`obs_exo']-anio[1]))-1)*100
+	scalar lambdaNW = ((pibYR[`obs_exo']/pibYR[`=`obs_exo'-`difpib''])^(1/(`difpib'))-1)*100
+	scalar LambdaNW = ((pibYR[`obs_exo']/pibYR[1])^(1/(`obs_exo'))-1)*100
 
 
 	noisily di _newline in g " PIB " in y "al infinito" in y _col(22) %23.0fc `pibYVP'[1,1] + pibINF in g " `=currency[`obsvp']'"
@@ -340,7 +345,7 @@ quietly {
 			local graphtype "area"
 		}
 		
-		if `exo_def' <= 1 {
+		if `exo_def'-1 <= 0 {
 			local graphtype2 "bar"
 		}
 		else {
@@ -349,8 +354,8 @@ quietly {
 
 		* Deflactor var_indiceY *
 		twoway (area deflator anio if (anio < `anio_last' & anio >= `anio_first') | (anio == `anio_last' & trimestre == 4)) ///
-			(area deflator anio if anio >= `anio_last' & anio > `anio_last'+`exo_def') ///
-			(`graphtype2' deflator anio if anio <= `anio_last'+`exo_def' & anio >= `anio_last', lwidth(none)), ///
+			(area deflator anio if anio >= `anio_last'+`exo_def') ///
+			(`graphtype2' deflator anio if anio < `anio_last'+`exo_def' & anio >= `anio_last', lwidth(none)), ///
 			title("{bf:{c I'}ndice} de precios impl{c i'}citos") ///
 			subtitle(${pais}) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
@@ -359,7 +364,7 @@ quietly {
 			ytitle("`aniovp' = 1.000") xtitle("") ///
 			legend(label(1 "Reportado") label(2 "Proyectado") label(3 "Estimado") order(1 3 2)) ///
 			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.") ///
-			note("{bf:Crecimiento de precios}: `=string(`=((indiceY[`obsDEF']/indice[`obs_def'])^(1/(`=anio[[`obsDEF']]'-`=anio[`obs_def']'))-1)*100',"%6.3f")'% (`=anio[[`obsDEF']]'-`=anio[`obs_def']'). {bf:{c U'}ltimo dato reportado}: `anio_last'`trim_last'.") ///
+			note("{bf:Crecimiento de precios}: `=string(`=((indiceY[`obsDEF']/indice[`obs_def'])^(1/(`=`obsDEF'-`obs_def''))-1)*100',"%6.3f")'% (`=anio[[`obsDEF']]'-`=anio[`obs_def']'). {bf:{c U'}ltimo dato reportado}: `anio_last'`trim_last'.") ///
 			name(deflactorH, replace)
 
 		capture confirm existence $export
@@ -375,9 +380,9 @@ quietly {
 		}
 
 		* Crecimiento var_indiceY *
-		twoway (connected var_indiceY anio if anio < `anio_last' | (anio == `anio_last' & trimestre == 4)) ///
-			(connected var_indiceY anio if anio >= `anio_last' & anio > `anio_last'+`exo_def') ///
-			(connected var_indiceY anio if anio <= `anio_last'+`exo_def' & anio >= `anio_last'), ///
+		twoway (connected var_indiceY anio if (anio < `anio_last' & anio >= `anio_first') | (anio == `anio_last' & trimestre == 4)) ///
+			(connected var_indiceY anio if anio >= `anio_last'+`exo_def') ///
+			(connected var_indiceY anio if anio < `anio_last'+`exo_def' & anio >= `anio_last'), ///
 			title({bf:Crecimientos} del {c i'}ndice de precios impl{c i'}citos) subtitle(${pais}) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
 			ylabel(, format(%3.0f)) ///
@@ -386,7 +391,7 @@ quietly {
 			text(`crec_deflactor') ///
 			legend(label(1 "Reportado") label(2 "Proyectado") label(3 "Estimado") order(1 3 2)) ///
 			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.") ///
-			note("{bf:{c U'}ltimo dato reportado}: `anio_last'`trim_last'.") ///
+			note("{bf:Estimaciones}: `exceptI'." "{bf:{c U'}ltimo dato reportado}: `anio_last'`trim_last'.") ///
 			name(var_indiceYH, replace)
 		capture confirm existence $export
 		if _rc == 0 {
@@ -394,9 +399,9 @@ quietly {
 		}
 
 		* Crecimiento var_pibY *
-		twoway (connected var_pibY anio if anio < `anio_last' | (anio == `anio_last' & trimestre == 4)) ///
-			(connected var_pibY anio if anio >= `anio_last' & anio > anio[`obs_exo']) ///
-			(connected var_pibY anio if anio <= anio[`obs_exo'] & anio >= `anio_last'), ///
+		twoway (connected var_pibY anio if (anio < `anio_last' & anio >= `anio_first') | (anio == `anio_last' & trimestre == 4)) ///
+			(connected var_pibY anio if anio >= `anio_last'+`exo_count') ///
+			(connected var_pibY anio if anio < `anio_last'+`exo_count' & anio >= `anio_last'), ///
 			title({bf:Crecimientos} del Producto Interno Bruto) subtitle(${pais}) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
 			ylabel(/*-6(3)6*/, format(%3.0fc)) ///
@@ -405,7 +410,7 @@ quietly {
 			text(`crec_PIB') ///
 			legend(label(1 "Reportado") label(2 "Proyectado") label(3 "Estimado") order(1 3 2)) ///
 			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.") ///
-			note("{bf:{c U'}ltimo dato reportado}: `anio_last'`trim_last'.") ///
+			note("{bf:Estimaciones}: `except'." "{bf:{c U'}ltimo dato reportado}: `anio_last'`trim_last'.") ///
 			name(PIBH, replace)
 		capture confirm existence $export
 		if _rc == 0 {
@@ -417,8 +422,8 @@ quietly {
 		g `pibYRmil' = pibYR/1000000000
 
 		twoway (area `pibYRmil' anio if (anio < `anio_last' & anio >= `anio_first') | (anio == `anio_last' & trimestre == 4)) ///
-			(area `pibYRmil' anio if anio >= `anio_last' & anio > anio[`obs_exo']) ///
-			(`graphtype' `pibYRmil' anio if anio <= anio[`obs_exo'] & anio >= `anio_last', lwidth(none)), ///
+			(area `pibYRmil' anio if anio >= `anio_last'+`exo_count') ///
+			(`graphtype' `pibYRmil' anio if anio < `anio_last'+`exo_count' & anio >= `anio_last', lwidth(none)), ///
 			title({bf:Flujo} del Producto Interno Bruto) subtitle(${pais}) ///
 			ytitle(mil millones `=currency[`obsvp']' `aniovp') xtitle("") ///
 			///ytitle(billions `=currency[`obsvp']' `aniovp') xtitle("") ///
