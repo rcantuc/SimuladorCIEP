@@ -61,5 +61,5 @@ global depreciacion = 0.0000                                                // D
 *************************/
 *** 4 Informaci{c o'}n ***
 **************************
-noisily PIBDeflactor, nographs nooutput anio(2021) //update
+noisily PIBDeflactor, nographs nooutput anio(2022) update
 clear
