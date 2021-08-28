@@ -298,7 +298,8 @@ matrix BasAlum = r(Stat1)+r(Stat2)+r(Stat3)
 matrix MedAlum = r(Stat4)+r(Stat5)
 matrix SupAlum = r(Stat6)+r(Stat7)+r(Stat8)
 
-g Educacion = 157.2*1000000/TotAlum[1,1] + 638.5*1000000/BasAlum[1,1] if (P14A == 2 | P14A == 3 | P14A == 4 | P14A == 5) & P18 == 1
+g Educacion = 722.6 if edad < 5
+replace Educacion = 157.2*1000000/TotAlum[1,1] + 638.5*1000000/BasAlum[1,1] if (P14A == 2 | P14A == 3 | P14A == 4 | P14A == 5) & P18 == 1
 replace Educacion = 157.2*1000000/TotAlum[1,1] + 102.5*1000000/MedAlum[1,1] if (P14A == 6 | P14A == 7) & P18 == 1
 replace Educacion = 157.2*1000000/TotAlum[1,1] + 84.3*1000000/SupAlum[1,1] if (P14A == 8 | P14A == 9 | P14A == 10) & P18 == 1
 replace Educacion = 0 if Educacion == .
