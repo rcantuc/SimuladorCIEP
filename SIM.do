@@ -459,7 +459,7 @@ if "$pais" == "" {
 *******************************/
 **       6.2 FISCAL GAP       **
 ********************************
-noisily FiscalGap, anio(`aniovp') end(2050) aniomin(2015) //boot(250) //update
+noisily FiscalGap, anio(`aniovp') end(2030) aniomin(2015) //boot(250) //update
 
 
 
