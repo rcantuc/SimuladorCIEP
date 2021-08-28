@@ -320,7 +320,7 @@ quietly {
 		tempname recanio
 		matrix `recanio' = r(StatTotal)
 		
-		*graph pie recaudacionPIB if anio == `anio' & divLIF != 10, over(`resumido') ///
+		graph pie recaudacionPIB if anio == `anio' & divLIF != 10, over(`resumido') ///
 			plabel(_all percent, format(%5.1fc)) ///
 			title(`"Ingresos `=upper("`lif'`ilif'")'"') /// subtitle($pais) ///
 			name(ingresospie, replace) ///

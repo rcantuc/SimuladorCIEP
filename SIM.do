@@ -36,7 +36,7 @@ adopath ++ PERSONAL
 ***                   ***
 *************************
 *global pais "El Salvador"                                                      // OTROS PAISES (si aplica)
-*global pais "Ecuador"                                                           // OTROS PAISES (si aplica)
+global pais "Ecuador"                                                           // OTROS PAISES (si aplica)
 
 global id = "`c(username)'"                                                     // ID DEL USUARIO
 
@@ -66,7 +66,7 @@ if "$pais" == "" {
 	global pib2025 = 2.5                                                        // Supuesto: 2.5
 	global pib2026 = 2.5                                                        // Supuesto: 2.5
 
-	* 2026-2030 *
+	* 2027-2030 *
 	forvalues k=2027(1)2030 {
 		global pib`k' = $pib2026                                                // SUPUESTO DE LARGO PLAZO
 	}
@@ -83,10 +83,10 @@ if "$pais" == "" {
 	global def2021 = 3.7393                                                     // Pre-CGPE 2022: 3.7
 	global def2022 = 3.2820                                                     // Pre-CGPE 2022: 3.2
 
-	global tasaEfectiva = 6.7445                                                // Tasa de inter{c e'}s EFECTIVA
+	global tasaEfectiva = 6.3413                                                // Tasa de inter{c e'}s EFECTIVA
 	global tipoDeCambio = 19.9487                                               // Tipo de cambio
 	global depreciacion = 0.0000                                                // Depreciaci{c o'}n
-	
+
 	local folio "folioviv foliohog"                                             // Folio del hogar
 }
 
@@ -100,7 +100,12 @@ if "$pais" == "Ecuador" {
 	global pib2025 = 2.3                                                        // ¿Banco Mundial o FMI?
 	global pib2026 = 2.5                                                        // ¿Banco Mundial o FMI?
 
-	*local aniovp = 2020                                                         // A{c N~}O VALOR PRESENTE
+	/* 2031-2050 *
+	forvalues k=2031(1)2050 {
+		global pib`k' = $pib2025                                                // SUPUESTO DE LARGO PLAZO
+	}
+
+	* OTROS */
 	local folio "Identif_hog"                                                   // Folio del hogar
 }
 ***    FIN: PARAMETROS PIB    ***
@@ -108,7 +113,7 @@ if "$pais" == "Ecuador" {
 
 
 
-*******************************
+/*******************************
 **       1.1 POBLACION       **
 *forvalues k=1950(1)2100 {
 foreach k in `aniovp' {
@@ -117,7 +122,7 @@ foreach k in `aniovp' {
 
 
 
-****************************************************
+****************************************************/
 **       1.2 PIB + Deflactor, Inflacion, SCN       **
 `noisily' PIBDeflactor, anio(`aniovp') $nographs save geopib(2000) geodef(2010) //update //discount(3.0)
 if "$pais" == "" {
@@ -127,7 +132,7 @@ if "$pais" == "" {
 
 
 
-**********************************************
+/**********************************************
 **       1.3 Ingresos, Gastos y Deuda       **
 `noisily' LIF, anio(`aniovp') $nographs by(divGA) rows(1) //update
 `noisily' PEF, anio(`aniovp') $nographs rows(2) //update
@@ -369,7 +374,7 @@ noisily Simulador AportacionesNetas [fw=factor], base("ENIGHUR 2011-2012") reboo
 ****************************************
 **       5.2 CUENTA GENERACIONAL      **
 ****************************************
-*noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) 	//    <-- OPTIONAL!!! Toma mucho tiempo.
+noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) 	//    <-- OPTIONAL!!! Toma mucho tiempo.
 
 
 
@@ -437,7 +442,7 @@ if "$output" == "output" {
 
 
 
-************************************************/
+************************************************
 ***                                           ***
 ***    6. PARTE IV: DEUDA + REDISTRIBUCION    ***
 ***                                           ***

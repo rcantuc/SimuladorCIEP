@@ -462,21 +462,22 @@ quietly {
 	replace otrospib = L.otrospib if otrospib == .
 	replace estimacionotros = L.otrospib/100*pibYR if estimacionotros == .
 
-	* Amortizacion */
-	g amortizacionpib = gastoamortizacion/pibYR*100 if anio <= `anio'
-	egen amortizacionprom = mean(amortizacionpib)
-	replace amortizacionpib = amortizacionprom if amortizacionpib == .
-
-	replace gastoamortizacion = amortizacionpib/100*pibYR if gastoamortizacion == .
-	replace estimacionamortizacion = amortizacionpib/100*pibYR if estimacionamortizacion == .
-	replace estimacionamortizacion = gastoamortizacion if anio >= `anio'
-
-
 
 	*******************************
 	** DEUDA Y COSTO DE LA DEUDA **
 	merge 1:1 (anio) using `shrfsp', nogen keep(matched) keepus(shrfsp* rfsp* /*nopresupuestario*/ tipoDeCambio)
 	merge 1:1 (anio) using `baseingresos', nogen
+
+
+	* Amortizacion *
+	replace gastoamortizacion = 0 if gastoamortizacion == .
+	g amortizacionshrfsp = gastoamortizacion/shrfsp*100 if anio <= `anio'
+	
+	tabstat amortizacionshrfsp if anio <= `anio' & anio >= `anio'-1, save
+	tempname amortizacionshrfsp_ari
+	matrix `amortizacionshrfsp_ari' = r(StatTotal)
+
+	replace amortizacionshrfsp = `amortizacionshrfsp_ari'[1,1] if amortizacionshrfsp == .
 
 
 	* Costo de la deuda *
@@ -486,19 +487,19 @@ quietly {
 		replace tasaEfectiva = $tasaEfectiva if anio >= `anio'
 	}
 
-	tempvar tasaEfectiva_ari
-	egen `tasaEfectiva_ari' = mean(tasaEfectiva)
-	replace tasaEfectiva = `tasaEfectiva_ari' if tasaEfectiva == . & anio >= `anio'
+	tabstat tasaEfectiva if anio <= `anio' & anio >= `anio'-1, save
+	tempname tasaEfectiva_ari
+	matrix `tasaEfectiva_ari' = r(StatTotal)
+	
+	replace tasaEfectiva = `tasaEfectiva_ari'[1,1] if tasaEfectiva == . & anio >= `anio'
+
 
 	* Simulacion *
 	capture confirm scalar costodeu
 	if _rc == 0 & "$pais" == "" {
 		replace gastocostodeuda = scalar(costodeu)*Poblacion if anio == `anio'
 		replace tasaEfectiva = gastocostodeuda/shrfsp*100 if anio == `anio'
-		replace tasaEfectiva = L.tasaEfectiva if tasaEfectiva == .
 	}
-
-	replace estimacioncostodeuda = tasaEfectiva/100*shrfsp if estimacioncostodeuda == . //anio == `anio'
 
 
 	* Depreciacion *
@@ -562,6 +563,11 @@ quietly {
 
 	* Iteraciones *
 	forvalues k = `=`anio''(1)`=anio[_N]' {
+
+		* Amortizaciones *
+		replace estimacionamortizacion = amortizacionshrfsp/100*L.shrfsp if anio == `k'
+
+		* Costo de la deuda *
 		replace estimacioncostodeuda = tasaEfectiva/100*L.shrfsp if anio == `k'
 
 		* RFSP *
@@ -591,7 +597,7 @@ quietly {
 			+ (rfspBalance - estimacionamortizacion)*L.shrfspInterno/L.shrfsp if anio == `k'
 
 		replace shrfsp = L.shrfsp*(1+`actualizacion_geo'/100*0) ///
-			+ efectoTipoDeCambio + rfspBalance - estimacionamortizacion if anio == `k'
+			+ efectoTipoDeCambio + rfsp if anio == `k'
 	}
 
 	g rfsp_pib = rfsp/pibYR*100
@@ -626,7 +632,7 @@ quietly {
 	g `ingbasg2' = (estimacioningbasico + estimacionpenbienestar + estimacionotros + estimacionamortizacion + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000
 
 	if "`nographs'" != "nographs" & "$nographs" != "nographs" {
-		twoway (area `ingbasg' `bienestarg' `otrosg' `amortg' `costog' `saludg' `pensionesg' `educaciong' anio if anio <= `anio' & anio > `aniomin') ///
+		twoway (area `ingbasg' `bienestarg' `otrosg' `amortg' `costog' `saludg' `pensionesg' `educaciong' anio if anio <= `anio' & anio >= `aniomin') ///
 			(area `ingbasg2' anio if anio > `anio', color("255 129 0")) ///
 			(area `bienestarg2' anio if anio > `anio', color("255 189 0")) ///
 			(area `otrosg2' anio if anio > `anio', color("39 97 47")) ///
@@ -882,6 +888,15 @@ quietly {
 			in y _col(35) %25.0fc ((-(-`shrfsp'[1,1] + `estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1])/(`poblacionVP'[1,1]+`poblacionINF'))/GA[1,3]-1)*100 ///
 			in g " %"
 	}
+
+	*** TASA EFECTIVA ***
+	noisily di in g "  " _dup(61) "-"
+	capture confirm existence $tasaEfectiva
+	if _rc == 0 {
+		noisily di in g "  (*) Tasa Efectiva: " in y _col(35) %25.4fc $tasaEfectiva in g " %"
+	}
+	noisily di in g "  (*) Tasa Efectiva: " in y _col(35) %25.4fc `tasaEfectiva_ari'[1,1] in g " %"
+
 	restore
 
 
