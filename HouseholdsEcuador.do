@@ -292,16 +292,13 @@ noisily Simulador Pension if P05A >= 1 & P05A <= 4 [fw=factor], base("ENIGHUR 20
 
 
 ** (-) Educación **
-tabstat factor if P18 == 1, stat(sum) by(P14A) f(%10.0fc) save
-matrix TotAlum = r(StatTotal)
-matrix BasAlum = r(Stat1)+r(Stat2)+r(Stat3)
-matrix MedAlum = r(Stat4)+r(Stat5)
-matrix SupAlum = r(Stat6)+r(Stat7)+r(Stat8)
+tabstat factor if edad <= 4, stat(sum) save
+matrix ini = r(StatTotal)
 
-g Educacion = 722.6 if edad < 5
-replace Educacion = 157.2*1000000/TotAlum[1,1] + 638.5*1000000/BasAlum[1,1] if (P14A == 2 | P14A == 3 | P14A == 4 | P14A == 5) & P18 == 1
-replace Educacion = 157.2*1000000/TotAlum[1,1] + 102.5*1000000/MedAlum[1,1] if (P14A == 6 | P14A == 7) & P18 == 1
-replace Educacion = 157.2*1000000/TotAlum[1,1] + 84.3*1000000/SupAlum[1,1] if (P14A == 8 | P14A == 9 | P14A == 10) & P18 == 1
+g Educacion = (79071950.2+77847865.8)/ini[1,1] if edad <= 4
+replace Educacion = 591.3 if (P14A == 2 | P14A == 3 | P14A == 4 | P14A == 5) & P18 == 1
+replace Educacion = 580.3 if (P14A == 6 | P14A == 7) & P18 == 1
+replace Educacion = 1181.5 if (P14A == 8 | P14A == 9 | P14A == 10) & P18 == 1
 replace Educacion = 0 if Educacion == .
 label var Educacion "Educación"
 
