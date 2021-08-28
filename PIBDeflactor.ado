@@ -104,7 +104,7 @@ quietly {
 	***************************
 	** 0.3 Anios geometricos **
 	if `geodef' < `anio_first' {
-		local geodef = `anio_first'
+		local geodef = 2010 // `anio_first'
 	}
 	local difdef = `anio_last'-`geodef'
 
@@ -112,7 +112,7 @@ quietly {
 		local geopib = `anio_first'
 	}
 	local difpib = `anio_last'-`geopib'
-	scalar aniogeo = `geopib'
+	scalar aniogeo = 2010 // `geopib'
 
 
 
