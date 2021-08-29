@@ -181,7 +181,7 @@ quietly {
 	replace otrospib = L.otrospib if anio > `anio'
 	replace estimacionotros = L.otrospib/100*pibYR if anio > `anio'
 
-	/* Ingresos petroleros (como % PIB) *
+	* Ingresos petroleros (como % PIB) *
 	g petroleopib = recaudacionpetroleo/pibYR*100
 	replace petroleopib = L.petroleopib if anio > `anio'
 	replace estimacionpetroleo = L.petroleopib/100*pibYR if anio > `anio'

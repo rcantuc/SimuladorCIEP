@@ -113,7 +113,7 @@ if "$pais" == "Ecuador" {
 
 
 
-/*******************************
+*******************************
 **       1.1 POBLACION       **
 *forvalues k=1950(1)2100 {
 foreach k in `aniovp' {
@@ -132,7 +132,7 @@ if "$pais" == "" {
 
 
 
-/**********************************************
+**********************************************
 **       1.3 Ingresos, Gastos y Deuda       **
 `noisily' LIF, anio(`aniovp') $nographs by(divGA) rows(1) //update
 `noisily' PEF, anio(`aniovp') $nographs rows(2) //update
@@ -143,7 +143,7 @@ if "$pais" == "" {
 *******************************
 **       1.4 HOUSEHOLDS       **
 capture use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PensionREC.dta"', clear
-if _rc != 0 | "$export" != "" {
+if _rc != 0 | "$export" != "" | "$pais" == "Ecuador" {
 	local id = "$id"
 	global id = ""
 
@@ -464,7 +464,7 @@ if "$pais" == "" {
 *******************************/
 **       6.2 FISCAL GAP       **
 ********************************
-noisily FiscalGap, anio(`aniovp') end(2030) aniomin(2015) //boot(250) //update
+noisily FiscalGap, anio(`aniovp') end(2050) aniomin(2015) //boot(250) //update
 
 
 
