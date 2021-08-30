@@ -42,6 +42,11 @@ global output "output"                                                          
 local aniovp = substr(`"`c(current_date)'"',-4,4)                               // A{c N~}O VALOR PRESENTE
 noisily run "`c(sysdir_personal)'/Arranque.do" `aniovp'
 
+** OUTPUT SIMULADOR **
+if "$output" == "output" {
+	quietly log using "`c(sysdir_personal)'/users/$pais/$id/outputcorto.txt", replace text name(output)
+	quietly log off output
+}
 
 
 
