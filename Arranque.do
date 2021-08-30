@@ -1,5 +1,5 @@
 ** SUPERUSER(S) **
-if "`c(username)'" == "ricardo" | ("`c(username)'" == "ciepmx" & "`c(console)'" != "") {
+if ("`c(username)'" == "ricardo" | "`c(username)'" == "ciepmx") & "`c(console)'" != "") {
 	global id = ""
 }
 
