@@ -11,13 +11,6 @@ capture mkdir `"`c(sysdir_personal)'/users/$id/"'
 capture mkdir `"`c(sysdir_personal)'/users/$pais/"'
 
 
-** OUTPUT SIMULADOR **
-if "$output" == "output" {
-	quietly log using "`c(sysdir_personal)'/users/$pais/$id/output.txt", replace text name(output)
-	quietly log off output
-}
-
-
 ** PAIS **
 if "$pais" == "" {
 	local pais = "M{c e'}xico"
