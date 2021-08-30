@@ -319,10 +319,10 @@ if "$output" == "output" {
 	quietly log close output
 	tempfile output11 output22 output33
 	if "`=c(os)'" == "Windows" {
-		filefilter "`c(sysdir_personal)'/users/$pais/$id/outputcorto.txt" `output1', from(\r\n>) to("") replace // Windows
+		filefilter "`c(sysdir_personal)'/users/$pais/$id/outputcorto.txt" `output11', from(\r\n>) to("") replace // Windows
 	}
 	else {
-		filefilter "`c(sysdir_personal)'/users/$pais/$id/outputcorto.txt" `output1', from(\n>) to("") replace // Mac & Linux
+		filefilter "`c(sysdir_personal)'/users/$pais/$id/outputcorto.txt" `output11', from(\n>) to("") replace // Mac & Linux
 	}
 	filefilter `output11' `output22', from(" ") to("") replace
 	filefilter `output22' `output33', from("_") to(" ") replace
