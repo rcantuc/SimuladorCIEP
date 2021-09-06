@@ -366,7 +366,7 @@ quietly {
 
 
 	** DATOS ABIERTOS **
-	if "$export" != "" & "$nographs" != "nograhs" {
+	if "$export" != "" & "$nographs" != "nograhs" & "$pais" == "" {
 		DatosAbiertos XNA0120_s, g pibvp(`=ISRAS')   	//    ISR salarios
 		DatosAbiertos XNA0120_f, g pibvp(`=ISRPF')    	//    ISR PF
 		DatosAbiertos XNA0120_m, g pibvp(`=ISRPM')    	//    ISR PM

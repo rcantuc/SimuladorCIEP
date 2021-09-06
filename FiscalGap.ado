@@ -167,7 +167,7 @@ quietly {
 
 	* Actualizaciones *
 	replace estimacion = 0 if estimacion == .
-	replace estimacion = estimacion*lambda if modulo != "petroleo"
+	replace estimacion = estimacion*lambda // if modulo != "petroleo"
 	replace recaudacion = 0 if recaudacion == .
 	replace recaudacion = recaudacion/deflator
 
@@ -471,13 +471,13 @@ quietly {
 
 	* Amortizacion *
 	replace gastoamortizacion = 0 if gastoamortizacion == .
-	g amortizacionshrfsp = gastoamortizacion/shrfsp*100 if anio <= `anio'
+	g amortizacionpib = gastoamortizacion/pibY*100 if anio <= `anio'
 	
-	tabstat amortizacionshrfsp if anio <= `anio' & anio >= `anio'-1, save
-	tempname amortizacionshrfsp_ari
-	matrix `amortizacionshrfsp_ari' = r(StatTotal)
+	tabstat amortizacionpib if anio <= `anio' & anio >= `anio'-1, save
+	tempname amortizacionpib_ari
+	matrix `amortizacionpib_ari' = r(StatTotal)
 
-	replace amortizacionshrfsp = `amortizacionshrfsp_ari'[1,1] if amortizacionshrfsp == .
+	replace amortizacionpib = `amortizacionpib_ari'[1,1] if amortizacionpib == .
 
 
 	* Costo de la deuda *
@@ -565,7 +565,7 @@ quietly {
 	forvalues k = `=`anio''(1)`=anio[_N]' {
 
 		* Amortizaciones *
-		replace estimacionamortizacion = amortizacionshrfsp/100*L.shrfsp if anio == `k'
+		replace estimacionamortizacion = L.amortizacionpib/100*pibY if anio == `k'
 
 		* Costo de la deuda *
 		replace estimacioncostodeuda = tasaEfectiva/100*L.shrfsp if anio == `k'
@@ -584,20 +584,18 @@ quietly {
 				+ estimacionpenbienestar ///
 				- estimacioningresos if anio == `k'
 		}
-		replace rfsp = rfspBalance - estimacionamortizacion if anio == `k'
+		replace rfsp = rfspBalance - estimacionamortizacion*0 if anio == `k'
 
 		* SHRFSP *
-		replace shrfspExterno = L.shrfspExterno*(1+`actualizacion_geo'/100*0) ///
-			+ (rfspBalance - estimacionamortizacion)*L.shrfspExterno/L.shrfsp if anio == `k'
-		replace shrfspExternoUSD = shrfspExterno/tipoDeCambio if anio == `k'
-
+		replace shrfspExternoUSD = L.shrfspExterno/L.tipoDeCambio if anio == `k'
 		replace efectoTipoDeCambio = shrfspExternoUSD*(tipoDeCambio-L.tipoDeCambio)
+		replace shrfspExterno = L.shrfspExterno*(1+`actualizacion_geo'/100*0) + efectoTipoDeCambio ///
+			+ rfsp*L.shrfspExterno/L.shrfsp if anio == `k'
 
 		replace shrfspInterno = L.shrfspInterno*(1+`actualizacion_geo'/100*0) ///
-			+ (rfspBalance - estimacionamortizacion)*L.shrfspInterno/L.shrfsp if anio == `k'
+			+ rfsp*L.shrfspInterno/L.shrfsp if anio == `k'
 
-		replace shrfsp = L.shrfsp*(1+`actualizacion_geo'/100*0) ///
-			+ efectoTipoDeCambio + rfsp if anio == `k'
+		replace shrfsp = shrfspExterno + shrfspInterno if anio == `k'
 	}
 
 	g rfsp_pib = rfsp/pibYR*100

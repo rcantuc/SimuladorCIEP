@@ -36,7 +36,7 @@ adopath ++ PERSONAL
 ***                   ***
 *************************
 *global pais "El Salvador"                                                      // OTROS PAISES (si aplica)
-global pais "Ecuador"                                                           // OTROS PAISES (si aplica)
+*global pais "Ecuador"                                                           // OTROS PAISES (si aplica)
 
 global id = "`c(username)'"                                                     // ID DEL USUARIO
 
@@ -83,11 +83,12 @@ if "$pais" == "" {
 	global def2021 = 3.7393                                                     // Pre-CGPE 2022: 3.7
 	global def2022 = 3.2820                                                     // Pre-CGPE 2022: 3.2
 
-	global tasaEfectiva = 6.3413                                                // Tasa de inter{c e'}s EFECTIVA
+	global tasaEfectiva = 6.2741                                                // Tasa de inter{c e'}s EFECTIVA
 	global tipoDeCambio = 19.9487                                               // Tipo de cambio
 	global depreciacion = 0.0000                                                // Depreciaci{c o'}n
 
 	local folio "folioviv foliohog"                                             // Folio del hogar
+	local anioend = 2030
 }
 
 if "$pais" == "Ecuador" {
@@ -107,6 +108,7 @@ if "$pais" == "Ecuador" {
 
 	* OTROS */
 	local folio "Identif_hog"                                                   // Folio del hogar
+	local anioend = 2050
 }
 ***    FIN: PARAMETROS PIB    ***
 ********************************/
@@ -122,7 +124,7 @@ foreach k in `aniovp' {
 
 
 
-****************************************************/
+****************************************************
 **       1.2 PIB + Deflactor, Inflacion, SCN       **
 `noisily' PIBDeflactor, anio(`aniovp') $nographs save geopib(2000) geodef(2010) //update //discount(3.0)
 if "$pais" == "" {
@@ -143,7 +145,7 @@ if "$pais" == "" {
 *******************************
 **       1.4 HOUSEHOLDS       **
 capture use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PensionREC.dta"', clear
-if _rc != 0 | "$export" != "" | "$pais" == "Ecuador" {
+if _rc != 0 {
 	local id = "$id"
 	global id = ""
 
@@ -464,7 +466,7 @@ if "$pais" == "" {
 *******************************/
 **       6.2 FISCAL GAP       **
 ********************************
-noisily FiscalGap, anio(`aniovp') end(2050) aniomin(2015) //boot(250) //update
+noisily FiscalGap, anio(`aniovp') end(`anioend') aniomin(2015) //boot(250) //update
 
 
 
