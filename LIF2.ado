@@ -128,6 +128,75 @@ quietly {
 			name(ingresospie, replace) ///
 			legend(on position(6) rows(1)) ///
 			ptext(0 0 `"{bf:`=string(`recanio'[1,1],"%6.1fc")' % PIB}"', color(white) size(small))
+			
+	*****INGRESOS TOTALES***********		
+			graph bar (sum) recaudacionPIB if (divOrigen == 2 | divOrigen == 3 | divOrigen == 4 | divOrigen == 5) & anio >=2014, ///
+			over(divOrigen, /*relabel(1 "LIF" 2 "SHCP")*/) ///
+			over(anio, label(labgap(vsmall))) ///
+			bargap(-30) stack asyvars ///
+			title("{bf:Ingresos presupuestarios}") ///
+			subtitle($pais) ///
+			ytitle(% PIB) ylabel(0(1)5, labsize(small)) ///
+			legend(on position(6) cols(4)) ///
+			name(ingresos, replace) ///
+			blabel(bar, format(%7.1fc)) ///
+			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}")
+			
+			
+	********EMPRESAS DEL ESTADO**************		
+			graph bar (sum) recaudacionPIB if (divCIEP2 == 2 | divCIEP2 == 3 | divCIEP2 == 4 | divCIEP2 == 12 | divCIEP2 == 14) & anio >=2014, ///
+			over(divCIEP2, /*relabel(1 "LIF" 2 "SHCP")*/) ///
+			over(anio, label(labgap(vsmall))) ///
+			bargap(-30) stack asyvars ///
+			title("{bf:Empresas del estado}") ///
+			subtitle($pais) ///
+			ytitle(% PIB) ylabel(0(1)5, labsize(small)) ///
+			legend(on position(6) cols(4)) ///
+			name(ingresos, replace) ///
+			blabel(bar, format(%7.1fc)) ///
+			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}")
+			
+	***********TRIBUTARIOS******************		
+			graph bar (sum) recaudacionPIB if (divCIEP2 == 10 | divCIEP2 == 11 | divCIEP2 == 13 | divCIEP2 == 15 | divCIEP2 == 18) & anio >=2014, ///
+			over(divCIEP2, /*relabel(1 "LIF" 2 "SHCP")*/) ///
+			over(anio, label(labgap(vsmall))) ///
+			bargap(-30) stack asyvars ///
+			title("{bf:Ingresos tributarios}") ///
+			subtitle($pais) ///
+			ytitle(% PIB) ylabel(0(3)15, labsize(small)) ///
+			legend(on position(6) cols(4)) ///
+			name(ingresos, replace) ///
+			blabel(bar, format(%7.1fc)) ///
+			caption("{it:Fuente: Elaborado por el CIEP con información de SHCP}")
+			
+**************NO TRIBUTARIOS********************			
+			graph bar (sum) recaudacionPIB if (divCIEP2 == 1 | divCIEP2 == 4 | divCIEP2 == 17) & anio >=2014, ///
+			over(divCIEP2, /*relabel(1 "LIF" 2 "SHCP")*/) ///
+			over(anio, label(labgap(vsmall))) ///
+			bargap(-30) stack asyvars ///
+			title("{bf:Ingresos no tributarios no petroleros}") ///
+			subtitle($pais) ///
+			ytitle(% PIB) ylabel(0(1)3, labsize(small)) ///
+			legend(on position(6) cols(4)) ///
+			name(ingresos, replace) ///
+			blabel(bar, format(%7.1fc)) ///
+			caption("{it:Fuente: Elaborado por el CIEP con información de SHCP}")
+			
+			
+*************PETROLEROS********************
+			graph bar (sum) recaudacionPIB if (divCIEP2 == 9 | divCIEP2 == 19) & anio >=2014, ///
+			over(divCIEP2, /*relabel(1 "LIF" 2 "SHCP")*/) ///
+			over(anio, label(labgap(vsmall))) ///
+			bargap(-30) stack asyvars ///
+			title("{bf:Ingresos petroleros}") ///
+			subtitle($pais) ///
+			ytitle(% PIB) ylabel(0(2)8, labsize(small)) ///
+			legend(on position(6) cols(4)) ///
+			name(ingresos, replace) ///
+			blabel(bar, format(%7.1fc)) ///
+			caption("{it:Fuente: Elaborado por el CIEP con información de SHCP}")
+			
+			
 
 		graph bar (sum) recaudacionPIB if divLIF != 10, ///
 			over(`by', /*relabel(1 "LIF" 2 "SHCP")*/) ///
