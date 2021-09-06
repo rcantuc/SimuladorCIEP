@@ -85,7 +85,7 @@ quietly {
 		g efectoTipoDeCambio = ((porExterno*Depreciacion*(1+tasaExterno))/(1+var_pibY/100)*(1+var_indiceY/100))*L.shrfsp/L.pibY*100
 
 		if "`nographs'" != "nographs" {
-			graph bar efectoIntereses efectoInflacion efectoCrecimiento balprimario efectoTipoDeCambio if anio < `anio' & Depreciacion != ., ///
+			graph bar efectoIntereses efectoInflacion efectoCrecimiento balprimario efectoTipoDeCambio if anio <= `anio' & Depreciacion != ., ///
 				over(anio) stack blabel(, format(%5.1fc)) ///
 				legend(on position(6) rows(1) label(1 "Tasas de inter{c e'}s") label(2 "Inflaci{c o'}n") label(3 "Crec. Econ{c o'}mico") ///
 				label(4 "Balance Primario") label(5 "Tipo de cambio")) ///

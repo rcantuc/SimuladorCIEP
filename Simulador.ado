@@ -774,7 +774,7 @@ program graphpiramide
 			relabel(`relabel') ///
 			label(labsize(vsmall) labcolor("122 122 122"))) ///
 			stack asyvars ///
-			yscale(noextend noline /*range(-7(1)7)*/) /// |
+			yscale(noextend noline /*range(1.8)*/) /// |
 			blabel(none, format(%5.1fc)) ///
 			t2title({bf:Mujeres} (`women'%), size(medsmall)) ///
 			ytitle(% PIB) ///

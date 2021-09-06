@@ -51,14 +51,14 @@ quietly {
 	collapse (sum) Poblacion=poblacion, by(anio)
 	format Poblacion %15.0fc
 	tempfile poblacion
-	save `poblacion'
+	save "`poblacion'"
 	restore
 
 	* Working Ages *
 	collapse (sum) WorkingAge=poblacion if edad >= 16 & edad <= 65, by(anio)
 	format WorkingAge %15.0fc
 	tempfile workingage
-	save `workingage'
+	save "`workingage'"
 
 
 
@@ -118,8 +118,8 @@ quietly {
 
 	************************
 	** 0.4 Merge datasets **
-	merge 1:1 (anio) using `workingage', nogen
-	merge 1:1 (anio) using `poblacion', nogen
+	merge 1:1 (anio) using "`workingage'", nogen
+	merge 1:1 (anio) using "`poblacion'", nogen
 	drop if anio < `anio_first'
 	if `fin' == -1 {
 		local fin = anio[_N]
