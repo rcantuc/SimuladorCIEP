@@ -85,7 +85,7 @@ if "$pais" == "" {
 
 	global tasaEfectiva = 6.0725                                                // Tasa de inter{c e'}s EFECTIVA
 	global tipoDeCambio = 19.9487                                               // Tipo de cambio
-	global depreciacion = 0.0000                                                // Depreciaci{c o'}n
+	global depreciacion = 0.00                                                // Depreciaci{c o'}n
 
 	local folio "folioviv foliohog"                                             // Folio del hogar
 	local anioend = 2030
@@ -135,14 +135,14 @@ if "$pais" == "" {
 
 
 **********************************************
-**       1.3 Ingresos, Gastos y Deuda       **
+/**       1.3 Ingresos, Gastos y Deuda       **
 `noisily' LIF, anio(`aniovp') $nographs by(divGA) rows(1) //update
 `noisily' PEF, anio(`aniovp') $nographs rows(2) //update
 `noisily' SHRFSP, anio(`aniovp') $nographs //update
 
 
 
-*******************************
+*******************************/
 **       1.4 HOUSEHOLDS       **
 capture use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PensionREC.dta"', clear
 if _rc != 0 {
@@ -272,13 +272,13 @@ matrix	SE =  (0.01,		21227.52,	4884.24		\    /// 1
               64025.05,		74696.04,	3535.56		\    /// 9
               74696.05,		85366.80,	3042.48		\    /// 10
               85366.81,		88587.96,	2611.32		\    /// 11
-              88587.97, 	1E+14,		0)		     //  12
+              88587.97, 	1E+14,		0)		     	//  12
 
 *            Ex. SS.MM.	Ex. 	% ing. gravable		% Informalidad PF	% Informalidad Salarios
 matrix DED = (5,				15,					46.28, 				0)
 
-*           Tasa ISR PM.	% Informalidad PM
-matrix PM = (30,			10.82)
+*           Tasa ISR PM.		% Informalidad PM
+matrix PM = (30,				11.88)
 
 * OUTPUTS (WEB) *
 if "$output" == "output" {
@@ -322,7 +322,7 @@ matrix IVAT = (16 \     ///  1  Tasa general
                3  \     /// 10  Otros, idem
                2  \     /// 11  Transporte local, idem
                3  \     /// 12  Transporte foraneo, idem
-               33.34)   //  13  Evasion e informalidad IVA, input[0-100]
+               30.91)   //  13  Evasion e informalidad IVA, input[0-100]
 
 * OUTPUTS (WEB) *
 if "$output" == "output" {

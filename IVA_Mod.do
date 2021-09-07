@@ -13,7 +13,7 @@ noisily di _newline(2) in g "   MODULO: " in y "IVA"
 *********************
 ** Microsimulacion **
 *********************
-use if anio == `anio' | anio == 2018 using "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", clear
+use if anio == `anio' | anio == 2020 using "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", clear
 sort anio
 local lambda = lambda[1]
 local deflator = deflator[1]
@@ -21,7 +21,7 @@ scalar PIB = pibY[_N]
 
 
 * Households *
-use "`c(sysdir_personal)'/SIM/2018/expenditure_categ_iva.dta", clear
+use "`c(sysdir_personal)'/SIM/2020/expenditure_categ_iva.dta", clear
 
 
 ** Re C{c a'}lculo del IVA **
