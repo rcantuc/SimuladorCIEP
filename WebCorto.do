@@ -251,7 +251,7 @@ matrix	SE =  (0.01,		21227.52,	4884.24		\	/// 1
 matrix DED = (5,			15,					46.28, 				0)
 
 *           Tasa ISR PM.	% Informalidad PM
-matrix PM = (30,			10.82)
+matrix PM = (30,			11.88)
 
 * OUTPUTS (WEB) *
 if "$output" == "output" {
@@ -295,7 +295,7 @@ matrix IVAT = (16 \     ///  1  Tasa general
                3  \     /// 10  Otros, idem
                2  \     /// 11  Transporte local, idem
                3  \     /// 12  Transporte foraneo, idem
-               33.34)   //  13  Evasion e informalidad IVA, input[0-100]
+               30.91)   //  13  Evasion e informalidad IVA, input[0-100]
 
 * OUTPUTS (WEB) *
 if "$output" == "output" {
