@@ -484,14 +484,15 @@ quietly {
 	g tasaEfectiva = gastocostodeuda/shrfsp*100
 	capture confirm existence $tasaEfectiva
 	if _rc == 0 {
-		replace tasaEfectiva = $tasaEfectiva if anio >= `anio'
+		replace tasaEfectiva = $tasaEfectiva if anio >= `anio' & tasaEfectiva == .
 	}
-
-	tabstat tasaEfectiva if anio <= `anio' & anio >= `anio'-1, save
-	tempname tasaEfectiva_ari
-	matrix `tasaEfectiva_ari' = r(StatTotal)
+	*else {
+		tabstat tasaEfectiva if anio <= `anio' & anio >= `anio'-1, save
+		tempname tasaEfectiva_ari
+		matrix `tasaEfectiva_ari' = r(StatTotal)
 	
-	replace tasaEfectiva = `tasaEfectiva_ari'[1,1] if tasaEfectiva == . & anio >= `anio'
+		replace tasaEfectiva = `tasaEfectiva_ari'[1,1] if anio >= `anio' & tasaEfectiva == .
+	*}
 
 
 	* Simulacion *
@@ -891,9 +892,11 @@ quietly {
 	noisily di in g "  " _dup(61) "-"
 	capture confirm existence $tasaEfectiva
 	if _rc == 0 {
-		noisily di in g "  (*) Tasa Efectiva: " in y _col(35) %25.4fc $tasaEfectiva in g " %"
+		noisily di in g "  (*) Tasa Efectiva Futura: " in y _col(35) %25.4fc $tasaEfectiva in g " %"
 	}
-	noisily di in g "  (*) Tasa Efectiva: " in y _col(35) %25.4fc `tasaEfectiva_ari'[1,1] in g " %"
+	*else {
+		noisily di in g "  (*) Tasa Efectiva Promedio: " in y _col(35) %25.4fc `tasaEfectiva_ari'[1,1] in g " %"
+	*}
 
 	restore
 

@@ -41,7 +41,7 @@ adopath ++ PERSONAL
 global id = "`c(username)'"                                                     // ID DEL USUARIO
 
 local noisily "noisily"                                                         // "NOISILY" OUTPUTS
-*global nographs "nographs"                                                      // SUPRIMIR GRAFICAS
+global nographs "nographs"                                                      // SUPRIMIR GRAFICAS
 *global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
 
 local aniovp = substr(`"`c(current_date)'"',-4,4)                               // A{c N~}O VALOR PRESENTE
@@ -83,7 +83,7 @@ if "$pais" == "" {
 	global def2021 = 3.7393                                                     // Pre-CGPE 2022: 3.7
 	global def2022 = 3.2820                                                     // Pre-CGPE 2022: 3.2
 
-	global tasaEfectiva = 6.2405                                                // Tasa de inter{c e'}s EFECTIVA
+	global tasaEfectiva = 6.0725                                                // Tasa de inter{c e'}s EFECTIVA
 	global tipoDeCambio = 19.9487                                               // Tipo de cambio
 	global depreciacion = 0.0000                                                // Depreciaci{c o'}n
 
@@ -376,7 +376,7 @@ noisily Simulador AportacionesNetas [fw=factor], base("ENIGHUR 2011-2012") reboo
 ****************************************
 **       5.2 CUENTA GENERACIONAL      **
 ****************************************
-noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) 	//    <-- OPTIONAL!!! Toma mucho tiempo.
+*noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) 	//    <-- OPTIONAL!!! Toma mucho tiempo.
 
 
 
@@ -457,7 +457,7 @@ if "$output" == "output" {
 ****************************
 if "$pais" == "" {
 	foreach k in decil sexo grupoedad escol {
-		noisily run "`c(sysdir_personal)'/SankeySF.do" `k' `aniovp'
+		*noisily run "`c(sysdir_personal)'/SankeySF.do" `k' `aniovp'
 	}
 }
 

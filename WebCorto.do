@@ -82,7 +82,7 @@ global inf2022 = 3.0                                                        // P
 global def2021 = 3.7393                                                     // Pre-CGPE 2022: 3.7
 global def2022 = 3.2820                                                     // Pre-CGPE 2022: 3.2
 
-global tasaEfectiva = 6.2405                                                // Tasa de inter{c e'}s EFECTIVA
+global tasaEfectiva = 6.0725                                                // Tasa de inter{c e'}s EFECTIVA
 global tipoDeCambio = 19.9487                                               // Tipo de cambio
 global depreciacion = 0.0000                                                // Depreciaci{c o'}n
 
