@@ -24,7 +24,7 @@ program define UpdateDatosAbiertos, return
 			exit
 		}
 	}
-	noisily di _newline in g "Datos Abiertos: " in y "ACTUALIZANDO. Favor de esperar. Descargando bases de SHCP (10 mins. aprox.)."
+	noisily di _newline in g "Datos Abiertos: " in y "ACTUALIZANDO. Favor de esperar..."
 
 	*****************************************
 	** 1.1 Ingreso, gasto y financiamiento **

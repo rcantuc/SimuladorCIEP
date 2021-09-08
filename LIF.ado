@@ -10,7 +10,7 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
-	** 1.2 Datos Abiertos (MÃˆxico) **
+	** 1.2 Datos Abiertos (MÈxico) **
 	if "`c(username)'" == "ricardo" & "$pais" == "" {
 		capture confirm file "`c(sysdir_personal)'/SIM/DatosAbiertos.dta"
 		if _rc != 0 {
@@ -97,9 +97,7 @@ quietly {
 	}
 
 	** 3.1 Utilizar LIF o ILIF **
-	if "`lif'" == "" {
-		replace recaudacion = LIF if anio == `anio'
-	}
+	replace recaudacion = LIF if anio < `anio' & mes < 12
 
 	if "`ilif'" == "ilif" {
 		replace recaudacion = ILIF if anio == `anio'

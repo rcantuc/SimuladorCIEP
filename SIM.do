@@ -83,9 +83,9 @@ if "$pais" == "" {
 	global def2021 = 6.2295                                                 // CGPE 2022: 3.7
 	global def2022 = 3.708                                                  // CGPE 2022: 3.2
 
-	global tasaEfectiva = 6.0725                                            // Tasa de inter{c e'}s EFECTIVA
-	global tipoDeCambio = 19.9487                                           // Tipo de cambio
-	global depreciacion = 1.00                                              // Depreciaci{c o'}n
+	*global tasaEfectiva = 6.0725                                            // Tasa de inter{c e'}s EFECTIVA
+	*global tipoDeCambio = 19.9487                                           // Tipo de cambio
+	*global depreciacion = 0.00                                              // Depreciaci{c o'}n
 
 	local folio "folioviv foliohog"                                         // Folio del hogar
 	local anioend = 2030
@@ -135,13 +135,13 @@ if "$pais" == "" {
 
 
 **********************************************
-/**       1.3 Ingresos, Gastos y Deuda       **
-`noisily' LIF, anio(`aniovp') $nographs by(divGA) rows(1) //update
-`noisily' PEF, anio(`aniovp') $nographs rows(2) //update
-`noisily' SHRFSP, anio(`aniovp') $nographs //update
+**       1.3 Ingresos, Gastos y Deuda       **
+`noisily' LIF, anio(`aniovp') $nographs by(divGA) rows(1) update
+`noisily' PEF, anio(`aniovp') $nographs rows(2) update
+`noisily' SHRFSP, anio(`aniovp') $nographs update
 
 
-
+exit
 *******************************/
 **       1.4 HOUSEHOLDS       **
 capture use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PensionREC.dta"', clear
