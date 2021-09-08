@@ -59,47 +59,47 @@ noisily run "`c(sysdir_personal)'/Arranque.do" `aniovp'
 if "$pais" == "" {
 
 	* 2021-2026 *
-	global pib2021 = 5.3                                                        // Pre-CGPE 2022: 5.3
-	global pib2022 = 3.6                                                        // Pre-CGPE 2022: 3.6
-	global pib2023 = 2.5                                                        // Supuesto: 2.5
-	global pib2024 = 2.5                                                        // Supuesto: 2.5
-	global pib2025 = 2.5                                                        // Supuesto: 2.5
-	global pib2026 = 2.5                                                        // Supuesto: 2.5
+	global pib2021 = 6.3                                                    // CGPE 2022: 6.3
+	global pib2022 = 4.1                                                    // CGPE 2022: 4.1
+	global pib2023 = 2.5                                                    // Supuesto: 2.5
+	global pib2024 = 2.5                                                    // Supuesto: 2.5
+	global pib2025 = 2.5                                                    // Supuesto: 2.5
+	global pib2026 = 2.5                                                    // Supuesto: 2.5
 
 	* 2027-2030 *
 	forvalues k=2027(1)2030 {
-		global pib`k' = $pib2026                                                // SUPUESTO DE LARGO PLAZO
+		global pib`k' = $pib2026                                        // SUPUESTO DE LARGO PLAZO
 	}
 
 	/* 2031-2050 *
 	forvalues k=2031(1)2050 {
-		global pib`k' = $pib2025                                                // SUPUESTO DE LARGO PLAZO
+		global pib`k' = $pib2025                                        // SUPUESTO DE LARGO PLAZO
 	}
 
 	* OTROS */
-	global inf2021 = 3.8                                                        // Pre-CGPE 2022: 3.8
-	global inf2022 = 3.0                                                        // Pre-CGPE 2022: 3.0
+	global inf2021 = 5.7                                                    // Pre-CGPE 2022: 3.8
+	global inf2022 = 3.4                                                    // Pre-CGPE 2022: 3.0
 
-	global def2021 = 3.7393                                                     // Pre-CGPE 2022: 3.7
-	global def2022 = 3.2820                                                     // Pre-CGPE 2022: 3.2
+	global def2021 = 6.2295                                                 // CGPE 2022: 3.7
+	global def2022 = 3.708                                                  // CGPE 2022: 3.2
 
-	global tasaEfectiva = 6.0725                                                // Tasa de inter{c e'}s EFECTIVA
-	global tipoDeCambio = 19.9487                                               // Tipo de cambio
-	global depreciacion = 0.00                                                // Depreciaci{c o'}n
+	global tasaEfectiva = 6.0725                                            // Tasa de inter{c e'}s EFECTIVA
+	global tipoDeCambio = 19.9487                                           // Tipo de cambio
+	global depreciacion = 1.00                                              // Depreciaci{c o'}n
 
-	local folio "folioviv foliohog"                                             // Folio del hogar
+	local folio "folioviv foliohog"                                         // Folio del hogar
 	local anioend = 2030
 }
 
 if "$pais" == "Ecuador" {
 
 	* 2021-2026 *
-	global pib2021 = 2.5                                                        // Â¿Banco Mundial o FMI?
-	global pib2022 = 1.3                                                        // Â¿Banco Mundial o FMI?
-	global pib2023 = 1.7                                                        // Â¿Banco Mundial o FMI?
-	global pib2024 = 2.0                                                        // Â¿Banco Mundial o FMI?
-	global pib2025 = 2.3                                                        // Â¿Banco Mundial o FMI?
-	global pib2026 = 2.5                                                        // Â¿Banco Mundial o FMI?
+	global pib2021 = 2.5                                                        // ¿Banco Mundial o FMI?
+	global pib2022 = 1.3                                                        // ¿Banco Mundial o FMI?
+	global pib2023 = 1.7                                                        // ¿Banco Mundial o FMI?
+	global pib2024 = 2.0                                                        // ¿Banco Mundial o FMI?
+	global pib2025 = 2.3                                                        // ¿Banco Mundial o FMI?
+	global pib2026 = 2.5                                                        // ¿Banco Mundial o FMI?
 
 	/* 2031-2050 *
 	forvalues k=2031(1)2050 {
