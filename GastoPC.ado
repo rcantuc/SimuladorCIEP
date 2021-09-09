@@ -384,7 +384,7 @@ quietly {
 		tempname mpenotr
 		matrix `mpenotr' = r(StatTotal)
 
-		tabstat factor if ing_PAM > 0 & ing_PAM != ., stat(sum) f(%20.0fc) save
+		tabstat factor if edad >= 65, stat(sum) f(%20.0fc) save
 		tempname mbienestar
 		matrix `mbienestar' = r(StatTotal)
 
@@ -469,7 +469,7 @@ quietly {
 		replace Pension = `penims'/`mpenims'[1,1] if formal == 1 & ing_jubila != 0
 		replace Pension = `peniss'/`mpeniss'[1,1] if formal == 2 & ing_jubila != 0 
 		replace Pension = `penotr'/`mpenotr'[1,1] if formal == 3 & ing_jubila != 0
-		replace PenBienestar = `bienestar'/`mbienestar'[1,1] if ing_PAM > 0 & ing_PAM != .
+		replace PenBienestar = `bienestar'/`mbienestar'[1,1] if edad >= 65
 
 		scalar bienestarPIB = `bienestar'/PIB*100
 		scalar penimsPIB = `penims'/PIB*100

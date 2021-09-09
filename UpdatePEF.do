@@ -19,16 +19,16 @@ else {
 
 * Loop para todos los archivos .csv *
 foreach k of local archivos {
-*foreach k in "PEF 2021" {
+*foreach k in "PPEF 2022" {
 
 	* Importar archivo de la Cuenta Publica *
-	noisily di in g "Importando: " in y "`k'", _cont
+	noisily di in g "Importando: " in y "`k'"
 	if "$pais" == "" {
 		if `c(version)' > 13.1 {
 			import delimited "`dir'/`k'", clear case(lower) stripquotes(yes) stringcols(_all) encoding("utf8")
 		}
 		else {
-			import delimited "`dir'/`k'", clear case(lower) stripquotes(yes) stringcols(_all) //encoding("utf8")
+			import delimited "`dir'/`k'", clear case(lower) stripquotes(yes) stringcols(_all)
 		}
 	}
 	else {
@@ -88,13 +88,12 @@ foreach k of local archivos {
 			replace `j' = trim(`j')
 			replace `j' = subinstr(`j',`"""',"",.)
 			replace `j' = subinstr(`j',"  "," ",.)
-			replace `j' = subinstr(`j',"ÃŠ"," ",.)			// Algunas bases tienen este caracter "raro".
-			replace `j' = subinstr(`j',"Ã‚","",.)
+			replace `j' = subinstr(`j',"Ê"," ",.)			// Algunas bases tienen este caracter "raro".
+			replace `j' = subinstr(`j',"Â","",.)
 			format `j' %30s
 		}
 		destring `j', replace
 	}
-	noisily di
 
 	* Destring all variables *
 	foreach j in aprobado modificado devengado pagado adefas ejercido proyecto {
@@ -104,7 +103,7 @@ foreach k of local archivos {
 		}
 	}
 
-	** Anio y Ramo (BÃ¡sicos) **
+	** Anio y Ramo (Básicos) **
 	capture rename ciclo anio
 	capture tostring ramo, replace
 
@@ -116,7 +115,7 @@ foreach k of local archivos {
 * Loop para unir los archivos (limpios y en Stata) *
 local j = 0
 foreach k of local archivos {
-*foreach k in "PEF 2021" {
+*foreach k in "PPEF 2022" {
 	noisily di in g "Appending: " in y "`k'"
 	if `j' == 0 {
 		use ``=strtoname("`k'")'', clear
@@ -178,7 +177,7 @@ if "$pais" == "" {
 
 	** Encode y agregar Cuotas ISSSTE **
 	foreach k of varlist desc_ur desc_funcion desc_subfuncion desc_ai desc_modalidad desc_pp ///
-		desc_objeto desc_tipogasto {
+		desc_objeto desc_tipogasto desc_partida_generica {
 
 		rename `k' `k'2
 		encode `k'2, g(`k')

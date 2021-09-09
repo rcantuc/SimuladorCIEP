@@ -10,7 +10,7 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
-	** 1.2 Datos Abiertos (MÈxico) **
+	** 1.2 Datos Abiertos (MÃˆxico) **
 	if "`c(username)'" == "ricardo" & "$pais" == "" {
 		capture confirm file "`c(sysdir_personal)'/SIM/DatosAbiertos.dta"
 		if _rc != 0 {
@@ -97,11 +97,11 @@ quietly {
 	}
 
 	** 3.1 Utilizar LIF o ILIF **
-	replace recaudacion = LIF if anio < `anio' & mes < 12
+	capture replace recaudacion = LIF if anio < `anio' & mes < 12
 
-	if "`ilif'" == "ilif" {
-		replace recaudacion = ILIF if anio == `anio'
-	}
+	*if "`ilif'" == "ilif" {
+		replace recaudacion = ILIF if anio == `anio' & LIF == 0 & mes == .
+	*}
 
 	** 3.2 Valores como % del PIB **
 	foreach k of varlist recaudacion monto LIF ILIF {
@@ -320,7 +320,7 @@ quietly {
 		
 		graph pie recaudacionPIB if anio == `anio' & divLIF != 10, over(`resumido') ///
 			plabel(_all percent, format(%5.1fc)) ///
-			title(`"Ingresos `=upper("`lif'`ilif'")'"') /// subtitle($pais) ///
+			title(`"Ingresos ILIF 2022"') /// subtitle($pais) ///
 			name(ingresospie, replace) ///
 			legend(on position(6) rows(`rows') cols(`cols')) ///
 			ptext(0 0 `"{bf:`=string(`recanio'[1,1],"%6.1fc")' % PIB}"', color(white) size(small))
@@ -362,15 +362,17 @@ quietly {
 			title("{bf:Ingresos} p{c u'}blicos") ///
 			subtitle($pais) ///
 			text(`text', yaxis(2)) ///
-			ytitle(mil millones `currency') ytitle(% PIB, axis(2)) xtitle("") ///
+			ytitle(mil millones `currency') ///
+			ytitle(% PIB, axis(2)) ///
+			xtitle("") ///
 			ylabel(, format(%15.0fc) labsize(small)) ///
 			ylabel(, axis(2) noticks format(%5.0fc) labsize(small)) ///
-			yscale(range(0) axis(2) noline) ///
-			note("{bf:{c U'}ltimo dato}: `aniolast'`meslast'") ///
+			yscale(range(0)) yscale(range(0) axis(2) noline) ///
 			xlabel(`aniofirst'(1)`aniolast', noticks) ///
 			legend(on position(6) rows(`rows') cols(`cols') `legend' label(`=`totlev'+1' "= Total (% PIB)")) ///
 			name(ingresos, replace) ///
-			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.")
+			note("{bf:{c U'}ltimo dos datos}: LIF 2021 e ILIF 2022.") ///
+			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos).")
 		restore
 	}
 

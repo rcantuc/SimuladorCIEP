@@ -1,5 +1,5 @@
 ****************************************************
-***               ACTUALIZACIÃ“N                  *** 
+***               ACTUALIZACIÓN                  *** 
 *** 1) abrir archivos .iqy en Excel de Windows   ***
 *** 2) guardar y reemplazar .xls dentro de       ***
 ***      ./TemplateCIEP/basesCIEP/INEGI/SCN/     ***
@@ -42,6 +42,7 @@ quietly {
 
 	collapse (sum) exporta importa FOB fletes (last) mes, by(anio)
 	tsset anio
+	local aniolast = anio[_N]
 
 	replace importaciones = importaciones*12/mes
 	
@@ -65,7 +66,7 @@ quietly {
 	
 
 	forvalues k=1(1)`=_N' {
-		if anio[`k'] == `anio'{
+		if anio[`k'] == `aniolast' {
 			local last = `k'
 			continue, break
 		}
