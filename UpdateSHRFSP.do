@@ -2,8 +2,8 @@
 ** 0 MUNDIAL **
 ***************
 if "$pais" != "" {
-		run UpdateSHRFSPMundial.do `1'
-		exit
+	run UpdateSHRFSPMundial.do `1'
+	exit
 }
 
 
@@ -131,22 +131,31 @@ save `nopresupuestario'
 *************************
 ** 5 Costo de la deuda **
 *************************
-*PEF if divGA == 2, anio(2020) nographs
-*collapse (sum) costodeuda=gastoneto, by(anio)
+PEF if desc_partida_generica == 33 | desc_partida_generica == 68 | desc_partida_generica == 88 ///
+	| desc_partida_generica == 89 | desc_partida_generica == 90 | desc_partida_generica == 93, anio(2022) nographs
+collapse (sum) costodeudaExterno=gastoneto, by(anio)
+tempfile costodeudaE
+save `costodeudaE'
+
+PEF if desc_partida_generica == 34 | desc_partida_generica == 69 | desc_partida_generica == 91 ///
+	| desc_partida_generica == 92, anio(2022) nographs
+collapse (sum) costodeudaInterno=gastoneto, by(anio)
+tempfile costodeudaI
+save `costodeudaI'
 
 noisily DatosAbiertos XOA0155			// costo deuda interna
 keep anio mes monto
 rename monto costodeudaInterno
-tempfile costodeudaI
-save `costodeudaI'
+tempfile costodeudaII
+save `costodeudaII'
 
 noisily DatosAbiertos XOA0156			// costo deuda externa
 keep anio mes monto
 rename monto costodeudaExterno
-tempfile costodeudaE
-save `costodeudaE'
+tempfile costodeudaEE
+save `costodeudaEE'
 
-PEF if divGA == 1, anio(2018) nographs
+PEF if divGA == 1, nographs
 collapse (sum) amortizacion=gastoneto, by(anio)
 tempfile amortizacion
 save `amortizacion'
@@ -172,6 +181,8 @@ merge 1:1 (anio) using `USD', nogen
 merge 1:1 (anio) using `nopresupuestario', nogen
 merge 1:1 (anio) using `costodeudaI', nogen
 merge 1:1 (anio) using `costodeudaE', nogen
+merge 1:1 (anio) using `costodeudaII', nogen update
+merge 1:1 (anio) using `costodeudaEE', nogen update
 merge 1:1 (anio) using `amortizacion', nogen
 tsset anio
 

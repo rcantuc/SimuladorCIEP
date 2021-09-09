@@ -5,7 +5,7 @@
 ****                                    ****
 ********************************************
 if "`1'" == "" {
-	local 1 = 2021
+	local 1 = 2022
 }
 
 
@@ -73,7 +73,7 @@ local InfraT = r(StatTotal)
 **********************
 *** 2. Macros: LIF ***
 **********************
-noisily LIF, anio(`1') nographs min(0)
+noisily LIF, anio(`1') nographs min(0) ilif
 local ISRSalarios = r(ISR_Asa_)
 local ISRFisicas = r(ISR_PF)
 local ISRMorales = r(ISR_PM)
@@ -93,12 +93,12 @@ local Aprovechamientos = r(Aprovechamientos)
 local OtrosTributarios = r(Otros_tributarios)
 local OtrasEmpresas = r(Otras_empresas)
 
-LIF, anio(`1') by(divGA) nographs min(0)
+LIF, anio(`1') by(divGA) nographs min(0) ilif
 local alingreso = r(Impuestos_al_ingreso)-`ISRMorales'
 local alconsumo = r(Impuestos_al_consumo)
 local otrosing = r(Ingresos_de_capital)+`ISRMorales'
 
-LIF, anio(`1') nographs min(0) by(serie)
+LIF, anio(`1') nographs min(0) by(serie) ilif
 local IEPSAlcohol = r(XNA0203)
 local IEPSTabaco = r(XNA0125)
 
@@ -182,13 +182,13 @@ label var Pension "pensiones"
 noisily Simulador Pension [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
 
 ** (-) Pension Bienestar **
-tabstat factor if ing_PAM > 0 & ing_PAM != ., stat(sum) f(%20.0fc) save
+tabstat factor if edad >= 65, stat(sum) f(%20.0fc) save
 matrix POBLACION68 = r(StatTotal)
 
-g PenBienestar = `PenBienestar'/POBLACION68[1,1] if ing_PAM > 0 & ing_PAM != .
+g PenBienestar = `PenBienestar'/POBLACION68[1,1] if edad >= 65
 replace PenBienestar = 0 if PenBienestar == .
 label var PenBienestar "pensi{c o'}n Bienestar"
-noisily Simulador PenBienestar if edad >= 68 [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
+noisily Simulador PenBienestar if edad >= 65 [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
 
 ** (-) Educacion **
 tabstat factor if asis_esc == "1" & tipoesc == "1", stat(sum) by(escol) f(%15.0fc) save

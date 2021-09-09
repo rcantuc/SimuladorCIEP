@@ -44,7 +44,7 @@ quietly {
 	******************************
 	*** 3 Fiscal Gap: Ingresos ***
 	******************************
-	LIF, anio(`anio') nographs by(divGA) //eofp
+	LIF, anio(`anio') nographs by(divGA) ilif //eofp
 	collapse (sum) recaudacion if divLIF != 10, by(anio divGA) fast
 
 	g modulo = ""
@@ -270,16 +270,18 @@ quietly {
 	reshape long recaudacion estimacion, i(anio) j(modulo) string
 	collapse (sum) recaudacion estimacion (mean) pibYR deflator, by(anio) fast
 
-	local grow_rate_LR = (pibYR[_N]/pibYR[_N-10])^(1/10)-1
+	local grow_rate_LR = ((pibYR[_N]/pibYR[_N-10])^(1/10)-1)*100
 	g estimacionVP = estimacion/(1+`discount'/100)^(anio-`anio')
 	format estimacionVP %20.0fc
-	local estimacionINF = estimacionVP[_N] /*(1+`grow_rate_LR')*(1+`discount'/100)^(`anio'-`=anio[_N]')*/ /(1-((1+`grow_rate_LR')/(1+`discount'/100)))
+	local estimacionINF = estimacionVP[_N] /*(1+`grow_rate_LR')*(1+`discount'/100)^(`anio'-`=anio[_N]')*/ /(1-((1+`grow_rate_LR'/100)/(1+`discount'/100)))
 
 	tabstat estimacionVP if anio >= `anio', stat(sum) f(%20.0fc) save
 	tempname estimacionVP
 	matrix `estimacionVP' = r(StatTotal)
 
-	noisily di in g "  (+) Ingresos INF en VP:" in y _col(35) %25.0fc `estimacionINF'+`estimacionVP'[1,1] in g " `currency'"	
+	noisily di in g "  (+) Ingresos INF + VP:" in y _col(35) %25.0fc `estimacionINF'+`estimacionVP'[1,1] in g " `currency'"
+	*noisily di in g "  (*) Estimacion INF:" in y _col(35) %25.0fc `estimacionINF' in g " `currency'"
+	*noisily di in g "  (*) Estimacion VP:" in y _col(35) %25.0fc `estimacionVP'[1,1] in g " `currency'"
 	
 	* Save *
 	rename estimacion estimacioningresos
@@ -754,16 +756,15 @@ quietly {
 	collapse (sum) gasto estimacion (mean) pibYR deflator shrfsp rfsp ///
 		if modulo != "ingresos" & modulo != "VP" & anio <= `end', by(anio) fast
 
-	local grow_rate_LR = (pibYR[_N]/pibYR[_N-10])^(1/10)-1
 	g gastoVP = estimacion/(1+`discount'/100)^(anio-`anio')
 	format gastoVP %20.0fc
-	local gastoINF = gastoVP[_N] /*(1+`grow_rate_LR')*(1+`discount'/100)^(`anio'-`=anio[_N]')*/ /(1-((1+`grow_rate_LR')/(1+`discount'/100)))
+	local gastoINF = gastoVP[_N] /*(1+`grow_rate_LR')*(1+`discount'/100)^(`anio'-`=anio[_N]')*/ /(1-((1+`grow_rate_LR'/100)/(1+`discount'/100)))
 
 	tabstat gastoVP if anio >= `anio', stat(sum) f(%20.0fc) save
 	tempname gastoVP
 	matrix `gastoVP' = r(StatTotal)
 
-	noisily di in g "  (-) Gastos INF en VP:" in y _col(35) %25.0fc `gastoINF'+`gastoVP'[1,1] in g " `currency'"	
+	noisily di in g "  (-) Gastos INF + VP:" in y _col(35) %25.0fc `gastoINF'+`gastoVP'[1,1] in g " `currency'"	
 	
 	* Save *
 	rename estimacion estimaciongastos
@@ -874,7 +875,7 @@ quietly {
 	
 	noisily di in g "  (*) Poblaci{c o'}n futura VP: " in y _col(35) %25.0fc `poblacionVP'[1,1] in g " personas"
 
-	local poblacionINF = poblacionVP[_N] /*(1+`grow_rate_LR')*(1+`discount'/100)^(`anio'-`=anio[_N]')*/ /(1-((1+`grow_rate_LR')/(1+`discount'/100)))
+	local poblacionINF = poblacionVP[_N] /*(1+`grow_rate_LR')*(1+`discount'/100)^(`anio'-`=anio[_N]')*/ /(1-((1+`grow_rate_LR'/100)/(1+`discount'/100)))
 
 	noisily di in g "  (*) Poblaci{c o'}n futura INF: " in y _col(35) %25.0fc `poblacionINF' in g " personas"
 
@@ -894,9 +895,9 @@ quietly {
 	if _rc == 0 {
 		noisily di in g "  (*) Tasa Efectiva Futura: " in y _col(35) %25.4fc $tasaEfectiva in g " %"
 	}
-	*else {
-		noisily di in g "  (*) Tasa Efectiva Promedio: " in y _col(35) %25.4fc `tasaEfectiva_ari'[1,1] in g " %"
-	*}
+	noisily di in g "  (*) Tasa Efectiva Promedio: " in y _col(35) %25.4fc `tasaEfectiva_ari'[1,1] in g " %"
+	noisily di in g "  (*) Growth rate LP:" in y _col(35) %25.4fc `grow_rate_LR' in g " %"
+	noisily di in g "  (*) Discount rate:" in y _col(35) %25.4fc `discount' in g " %"
 
 	restore
 

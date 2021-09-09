@@ -24,7 +24,7 @@ quietly {
 		****************************
 		*** 2 Ingresos iniciales ***
 		****************************
-		LIF, anio(`anio') min(1) nographs //ilif
+		LIF, anio(`anio') min(1) nographs ilif
 		local recursos = r(divCIEP)
 		foreach k of local recursos {
 			local rec`=substr("`k'",1,7)' = r(`k')
@@ -123,7 +123,7 @@ quietly {
 		*** 3 Resultados ***
 		********************
 
-		noisily di _newline(2) in y "{bf: A. " in y "Impuestos al ingreso" "}"
+		noisily di _newline(2) in y "{bf: A. " in y "Impuestos al trabajo laboral" "}"
 		noisily di _newline in g "{bf:  Cuentas Nacionales" ///
 			_col(44) %7s in g "% PIB" ///
 			_col(55) "Recaudaci{c o'}n" ///

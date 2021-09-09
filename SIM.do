@@ -17,8 +17,8 @@ capture log close _all
 *********************************
 if"`c(os)'" == "MacOSX" & "`c(username)'" == "ricardo" {                        // Ricardo
 	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/SimuladorCIEP/5.1/simuladorCIEP/"
-	*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"             // EXPORTAR IMAGENES EN...
-	*global latex = "latex"                                                     // IMPRIMIR OUTPUTS (LATEX)
+	*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"         // EXPORTAR IMAGENES EN...
+	*global latex = "latex"                                                 // IMPRIMIR OUTPUTS (LATEX)
 }
 
 if "`c(os)'" == "Unix" & "`c(username)'" == "ciepmx" {                          // ServidorCIEP
@@ -35,17 +35,13 @@ adopath ++ PERSONAL
 ***    0. ARRANQUE    ***
 ***                   ***
 *************************
-*global pais "El Salvador"                                                      // OTROS PAISES (si aplica)
-*global pais "Ecuador"                                                           // OTROS PAISES (si aplica)
-
 global id = "`c(username)'"                                                     // ID DEL USUARIO
+*global pais "El Salvador"                                                      // OTROS PAISES (si aplica)
+*global pais "Ecuador"                                                          // OTROS PAISES (si aplica)
 
-local noisily "noisily"                                                         // "NOISILY" OUTPUTS
-global nographs "nographs"                                                      // SUPRIMIR GRAFICAS
 *global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
-
-local aniovp = substr(`"`c(current_date)'"',-4,4)                               // A{c N~}O VALOR PRESENTE
-noisily run "`c(sysdir_personal)'/Arranque.do" `aniovp'
+local noisily "noisily"                                                         // "NOISILY" OUTPUTS
+*local nographs "nographs"                                                      // SUPRIMIR GRAFICAS
 
 
 
@@ -61,32 +57,44 @@ if "$pais" == "" {
 	* 2021-2026 *
 	global pib2021 = 6.3                                                    // CGPE 2022: 6.3
 	global pib2022 = 4.1                                                    // CGPE 2022: 4.1
-	global pib2023 = 2.5                                                    // Supuesto: 2.5
-	global pib2024 = 2.5                                                    // Supuesto: 2.5
+	global pib2023 = 3.4                                                    // Supuesto: 2.5
+	global pib2024 = 2.8                                                    // Supuesto: 2.5
 	global pib2025 = 2.5                                                    // Supuesto: 2.5
 	global pib2026 = 2.5                                                    // Supuesto: 2.5
+	global pib2027 = 2.5                                                    // Supuesto: 2.5
 
-	* 2027-2030 *
-	forvalues k=2027(1)2030 {
-		global pib`k' = $pib2026                                        // SUPUESTO DE LARGO PLAZO
+	* 2026-2030 *
+	forvalues k=2028(1)2030 {
+		global pib`k' = $pib2027                                        // SUPUESTO DE LARGO PLAZO
 	}
 
 	/* 2031-2050 *
 	forvalues k=2031(1)2050 {
-		global pib`k' = $pib2025                                        // SUPUESTO DE LARGO PLAZO
+		global pib`k' = $pib2027                                        // SUPUESTO DE LARGO PLAZO
 	}
 
 	* OTROS */
-	global inf2021 = 5.7                                                    // Pre-CGPE 2022: 3.8
-	global inf2022 = 3.4                                                    // Pre-CGPE 2022: 3.0
+	global inf2021 = 5.7                                                    // CGPE 2022: 5.7
+	global inf2022 = 3.4                                                    // CGPE 2022: 3.4
+	global inf2023 = 3.0                                                    // CGPE 2022: 3.0
+	global inf2024 = 3.0                                                    // CGPE 2022: 3.0
+	global inf2025 = 3.0                                                    // CGPE 2022: 3.0
+	global inf2026 = 3.0                                                    // CGPE 2022: 3.0
+	global inf2027 = 3.0                                                    // CGPE 2022: 3.0
 
-	global def2021 = 6.2295                                                 // CGPE 2022: 3.7
-	global def2022 = 3.708                                                  // CGPE 2022: 3.2
+	global def2021 = 6.2295                                                 // CGPE 2022: 6.2
+	global def2022 = 3.7080                                                 // CGPE 2022: 3.7
+	global def2023 = 3.5000                                                 // CGPE 2022: 3.5
+	global def2024 = 3.5000                                                 // CGPE 2022: 3.5
+	global def2025 = 3.5000                                                 // CGPE 2022: 3.5
+	global def2026 = 3.5000                                                 // CGPE 2022: 3.5
+	global def2027 = 3.5000                                                 // CGPE 2022: 3.5
 
-	*global tasaEfectiva = 6.0725                                            // Tasa de inter{c e'}s EFECTIVA
-	*global tipoDeCambio = 19.9487                                           // Tipo de cambio
-	*global depreciacion = 0.00                                              // Depreciaci{c o'}n
+	global tasaEfectiva = 5.8131                                           // Tasa de inter{c e'}s EFECTIVA
+	global tipoDeCambio = 20.200                                           // Tipo de cambio
+	global depreciacion = 0.2000                                           // Depreciaci{c o'}n
 
+	local aniovp = 2022
 	local folio "folioviv foliohog"                                         // Folio del hogar
 	local anioend = 2030
 }
@@ -94,24 +102,27 @@ if "$pais" == "" {
 if "$pais" == "Ecuador" {
 
 	* 2021-2026 *
-	global pib2021 = 2.5                                                        // ¿Banco Mundial o FMI?
-	global pib2022 = 1.3                                                        // ¿Banco Mundial o FMI?
-	global pib2023 = 1.7                                                        // ¿Banco Mundial o FMI?
-	global pib2024 = 2.0                                                        // ¿Banco Mundial o FMI?
-	global pib2025 = 2.3                                                        // ¿Banco Mundial o FMI?
-	global pib2026 = 2.5                                                        // ¿Banco Mundial o FMI?
+	global pib2021 = 2.5                                                        // Â¿Banco Mundial o FMI?
+	global pib2022 = 1.3                                                        // Â¿Banco Mundial o FMI?
+	global pib2023 = 1.7                                                        // Â¿Banco Mundial o FMI?
+	global pib2024 = 2.0                                                        // Â¿Banco Mundial o FMI?
+	global pib2025 = 2.3                                                        // Â¿Banco Mundial o FMI?
+	global pib2026 = 2.5                                                        // Â¿Banco Mundial o FMI?
 
 	/* 2031-2050 *
-	forvalues k=2031(1)2050 {
-		global pib`k' = $pib2025                                                // SUPUESTO DE LARGO PLAZO
+	forvalues k=2027(1)2050 {
+		global pib`k' = $pib2026                                                // SUPUESTO DE LARGO PLAZO
 	}
 
 	* OTROS */
+	local aniovp = 2021
 	local folio "Identif_hog"                                                   // Folio del hogar
 	local anioend = 2050
 }
+noisily run "`c(sysdir_personal)'/Arranque.do" `aniovp'
 ***    FIN: PARAMETROS PIB    ***
 ********************************/
+
 
 
 
@@ -119,30 +130,30 @@ if "$pais" == "Ecuador" {
 **       1.1 POBLACION       **
 *forvalues k=1950(1)2100 {
 foreach k in `aniovp' {
-	`noisily' Poblacion, $nographs anio(`k') //update //tf(`=64.333315/2.1*1.8') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040) 
+	`noisily' Poblacion, `nographs' anio(`k') //update //tf(`=64.333315/2.1*1.8') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040) 
 }
 
 
 
 ****************************************************
 **       1.2 PIB + Deflactor, Inflacion, SCN       **
-`noisily' PIBDeflactor, anio(`aniovp') $nographs save geopib(2000) geodef(2010) //update //discount(3.0)
+`noisily' PIBDeflactor, anio(`aniovp') `nographs' save geopib(2000) geodef(2010) discount(5.0) //update
 if "$pais" == "" {
-	`noisily' Inflacion, anio(`aniovp') $nographs //update
-	`noisily' SCN, anio(`aniovp') $nographs //update
+	`noisily' Inflacion, anio(`aniovp') `nographs' //update
+	`noisily' SCN, anio(`aniovp') `nographs' //update
 }
 
 
 
 **********************************************
-**       1.3 Ingresos, Gastos y Deuda       **
-`noisily' LIF, anio(`aniovp') $nographs by(divGA) rows(1) update
-`noisily' PEF, anio(`aniovp') $nographs rows(2) update
-`noisily' SHRFSP, anio(`aniovp') $nographs update
+/**       1.3 Ingresos, Gastos y Deuda       **
+`noisily' LIF, anio(`aniovp') `nographs' by(divCIEP) rows(2) ilif min(1) //update
+`noisily' PEF, anio(`aniovp') `nographs' by(desc_funcion) rows(4) min(1) //update
+`noisily' SHRFSP, anio(`aniovp') `nographs' //update
 
 
-exit
-*******************************/
+
+*******************************
 **       1.4 HOUSEHOLDS       **
 capture use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PensionREC.dta"', clear
 if _rc != 0 {
@@ -178,38 +189,42 @@ if _rc != 0 {
 ***    2. PARTE III: GASTOS    ***
 ***                            ***
 **********************************
-scalar basica      =   23113 //    Educaci{c o'}n b{c a'}sica
-scalar medsup      =   21871 //    Educaci{c o'}n media superior
-scalar superi      =   34743 //    Educaci{c o'}n superior
-scalar posgra      =   54764 //    Posgrado
-scalar eduadu      =  113600 //    Educaci{c o'}n para adultos
-scalar otrose      =    1567 //    Otros gastos educativos
+scalar basica      =   24025 //    Educaci{c o'}n b{c a'}sica
+scalar medsup      =   23668 //    Educaci{c o'}n media superior
+scalar superi      =   35994 //    Educaci{c o'}n superior
+scalar posgra      =   57104 //    Posgrado
+scalar eduadu      =  118083 //    Educaci{c o'}n para adultos
+scalar otrose      =    1725 //    Otros gastos educativos
 
-scalar ssa         =     519 //    SSalud
-scalar prospe      =    1081 //    IMSS-Prospera
-scalar segpop      =    2443 //    Seguro Popular
-scalar imss        =    6250 //    IMSS (salud)
-scalar issste      =    8410 //    ISSSTE (salud)
-scalar pemex       =   23536 //    Pemex (salud) + ISSFAM (salud)
+scalar ssa         =     842 //    SSalud
+scalar prospe      =    1882 //    IMSS-Prospera
+scalar segpop      =    2564 //    Seguro Popular
+scalar imss        =    6818 //    IMSS (salud)
+scalar issste      =    8985 //    ISSSTE (salud)
+scalar pemex       =   23595 //    Pemex (salud) + ISSFAM (salud)
 
-scalar bienestar   =   16799 //    Pensi{c o'}n Bienestar
-scalar penims      =  128233 //    Pensi{c o'}n IMSS
-scalar peniss      =  215747 //    Pensi{c o'}n ISSSTE
-scalar penotr      = 1359427 //    Pensi{c o'}n Pemex, CFE, Pensi{c o'}n LFC, ISSFAM, Otros
+scalar bienestar   =   27999 //    Pensi{c o'}n Bienestar
+scalar penims      =  144799 //    Pensi{c o'}n IMSS
+scalar peniss      =  226030 //    Pensi{c o'}n ISSSTE
+scalar penotr      = 1433420 //    Pensi{c o'}n Pemex, CFE, Pensi{c o'}n LFC, ISSFAM, Otros
 
-scalar servpers    =    3380 //    Servicios personales
-scalar matesumi    =    1692 //    Materiales y suministros
-scalar gastgene    =    1786 //    Gastos generales
-scalar substran    =    1897 //    Subsidios y transferencias
-scalar bienmueb    =     300 //    Bienes muebles e inmuebles
-scalar obrapubl    =    3337 //    Obras p{c u'}blicas
-scalar invefina    =     784 //    Inversi{c o'}n financiera
-scalar partapor    =    8988 //    Participaciones y aportaciones
-scalar costodeu    =    5862 //    Costo de la deuda
+scalar servpers    =    3587 //    Servicios personales
+scalar matesumi    =    1821 //    Materiales y suministros
+scalar gastgene    =    2013 //    Gastos generales
+scalar substran    =    1836 //    Subsidios y transferencias
+scalar bienmueb    =     284 //    Bienes muebles e inmuebles
+scalar obrapubl    =    4002 //    Obras p{c u'}blicas
+scalar invefina    =    1189 //    Inversi{c o'}n financiera
+scalar partapor    =    9864 //    Participaciones y aportaciones
+scalar costodeu    =    6313 //    Costo de la deuda
 
 scalar IngBas      =       0 //    Ingreso b{c a'}sico
 scalar ingbasico18 =       1 //    1: Incluye menores de 18 anios, 0: no
 scalar ingbasico65 =       1 //    1: Incluye mayores de 65 anios, 0: no
+***    FIN: SIMULADOR GASTOS    ***
+**********************************
+
+
 
 `noisily' GastoPC, anio(`aniovp') `nographs'
 ***    FIN: SIMULADOR GASTOS    ***
@@ -224,19 +239,19 @@ scalar ingbasico65 =       1 //    1: Incluye mayores de 65 anios, 0: no
 ***    3. PARTE II: INGRESOS    ***
 ***                             ***
 ***********************************
-scalar ISRAS   = 3.499 //    ISR (asalariados): 3.453
-scalar ISRPF   = 0.227 //    ISR (personas f{c i'}sicas): 0.441
-scalar CuotasT = 1.515 //    Cuotas (IMSS): 1.515
+scalar ISRAS   = 3.406 //    ISR (asalariados): 3.453
+scalar ISRPF   = 0.221 //    ISR (personas f{c i'}sicas): 0.441
+scalar CuotasT = 1.464 //    Cuotas (IMSS): 1.515
 
-scalar IVA     = 3.884 //    IVA: 3.885
-scalar ISAN    = 0.030 //    ISAN: 0.030
-scalar IEPS    = 2.026 //    IEPS (no petrolero + petrolero): 2.027
-scalar Importa = 0.245 //    Importaciones: 0.245
+scalar IVA     = 4.315 //    IVA: 3.885
+scalar ISAN    = 0.043 //    ISAN: 0.030
+scalar IEPS    = 1.796 //    IEPS (no petrolero + petrolero): 2.027
+scalar Importa = 0.259 //    Importaciones: 0.245
 
-scalar ISRPM   = 3.847 //    ISR (personas morales): 3.710
-scalar FMP     = 1.361 //    Fondo Mexicano del Petr{c o'}leo: 1.362
-scalar OYE     = 4.273 //    Organismos y empresas (IMSS + ISSSTE + Pemex + CFE): 4.274
-scalar OtrosC  = 1.069 //    Productos, derechos, aprovechamientos, contribuciones: 1.070
+scalar ISRPM   = 3.745 //    ISR (personas morales): 3.710
+scalar FMP     = 1.319 //    Fondo Mexicano del Petr{c o'}leo: 1.362
+scalar OYE     = 4.285 //    Organismos y empresas (IMSS + ISSSTE + Pemex + CFE): 4.274
+scalar OtrosC  = 1.091 //    Productos, derechos, aprovechamientos, contribuciones: 1.070
 
 
 
@@ -369,14 +384,14 @@ save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace
 ************************************
 **       5.1 REDISTRIBUCION       **
 ************************************
-noisily Simulador AportacionesNetas [fw=factor], base("ENIGHUR 2011-2012") reboot anio(`aniovp') folio(`folio')
+noisily Simulador AportacionesNetas [fw=factor], base("ENIGH 2020") reboot anio(`aniovp') folio(`folio')
 
 
 
 ****************************************
 **       5.2 CUENTA GENERACIONAL      **
 ****************************************
-*noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) 	//    <-- OPTIONAL!!! Toma mucho tiempo.
+noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) 	//    <-- OPTIONAL!!! Toma mucho tiempo.
 
 
 
@@ -402,7 +417,7 @@ forvalues aniohoy = `aniovp'(1)`aniovp' {
 		}
 	}
 
-	if "$nographs" == "" {
+	if "`nographs'" == "" {
 		twoway (connected estimacion anio) ///
 		(connected estimacion anio if anio == `aniohoy') ///
 		if anio > 1990, ///

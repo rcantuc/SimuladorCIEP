@@ -34,7 +34,7 @@ quietly {
 	****************
 	use in 1 using "`c(sysdir_personal)'/SIM/$pais/PEF.dta", clear
 	syntax [if] [, ANIO(int `aniovp') NOGraphs Update Base ID(string) ///
-		BY(varname) ROWS(int 1) COLS(int 5) MINimum(real 1) PEF PPEF APROBado]
+		BY(varname) ROWS(int 4) COLS(int 5) MINimum(real 1) PEF PPEF APROBado]
 
 	if "`ppef'" == "ppef" {
 		local textintro = "PPEF"
@@ -107,15 +107,18 @@ quietly {
 	***************
 	*** 4 Graph ***
 	***************
-	tempvar resumido gastonetoPIB
+	tempvar resumido resumidopie gastonetoPIB
 	g `resumido' = `by'
+	g `resumidopie' = `by'
 
 	tempname label
 	label copy `by' `label'
 	label values `resumido' `label'
+	label values `resumidopie' `label'
 
-	egen `gastonetoPIB' = max(gastonetoPIB), by(`by')	
+	egen `gastonetoPIB' = max(gastonetoPIB), by(`by')
 	replace `resumido' = 999 if abs(`gastonetoPIB') < `minimum'
+	replace `resumidopie' = 999 if gastonetoPIB < `minimum'
 	label define `label' 999 "< `minimum'% PIB", add modify
 
 	/*levelsof `by', local(levelsof)
@@ -269,11 +272,12 @@ quietly {
 	matrix `Resumido_total' = r(StatTotal)
 	return scalar Resumido_total = `Resumido_total'[1,1]
 
-	/** 4.3 Crecimientos **
-	noisily di _newline in g "{bf: C. Mayores cambios:" in y " `=`anio'-4' - `anio'" in g ///
-		_col(55) %7s "`=`anio'-4'" ///
+	** 4.3 Crecimientos **
+	noisily di _newline in g "{bf: C. Cambios:" in y " `=`anio'-1' - `anio'" in g ///
+		_col(55) %7s "`=`anio'-1'" ///
 		_col(66) %7s "`anio'" ///
-		_col(77) %7s "Cambio PIB" "}"
+		_col(77) %7s "D. % PIB" ///
+		_col(88) %7s "D. %" "}"
 
 	preserve
 	collapse (sum) gastoneto* if `by' != -1 & transf_gf == 0, by(anio `by')
@@ -291,7 +295,7 @@ quietly {
 		local ++k
 	}
 
-	capture tabstat gastoneto gastonetoPIB if anio == `anio'-4, by(`by') stat(sum) f(%20.1fc) missing save
+	tabstat gastoneto gastonetoPIB if anio == `anio'-1, by(`by') stat(sum) f(%20.1fc) missing save
 	if _rc == 0 {
 		tempname mattot5
 		matrix `mattot5' = r(StatTotal)
@@ -308,22 +312,24 @@ quietly {
 				local disptext = substr(`"`=r(name`k')'"',1,25)
 			}
 			
-			if abs(`mat`k''[1,2]-`mat5`k''[1,2]) > .4 {
+			*if abs(`mat`k''[1,2]-`mat5`k''[1,2]) > .4 {
 				noisily di in g `"  (+) `disptext'"' ///
 					_col(55) in y %7.3fc `mat5`k''[1,2] ///
 					_col(66) in y %7.3fc `mat`k''[1,2] ///
-					_col(77) in y %7.3fc `mat`k''[1,2]-`mat5`k''[1,2]
-			}
+					_col(77) in y %7.3fc `mat`k''[1,2]-`mat5`k''[1,2] ///
+					_col(88) in y %7.3fc (`mat`k''[1,2]-`mat5`k''[1,2])/`mat5`k''[1,2]*100
+			*}
 			local ++k
 		}
 
-		noisily di in g _dup(83) "-"
+		noisily di in g _dup(95) "-"
 		noisily di in g "{bf:  (=) Total" ///
 			_col(55) in y %7.3fc `mattot5'[1,2] ///
 			_col(66) in y %7.3fc `mattot'[1,2] ///
-			_col(77) in y %7.3fc `mattot'[1,2]-`mattot5'[1,2] "}"
+			_col(77) in y %7.3fc `mattot'[1,2]-`mattot5'[1,2] ///
+			_col(88) in y %7.3fc (`mattot'[1,2]-`mattot5'[1,2])/`mattot5'[1,2]*100 "}"
 	}
-	restore*/
+	restore
 
 
 
@@ -333,12 +339,15 @@ quietly {
 		tempname gasanio
 		matrix `gasanio' = r(StatTotal)
 
-		graph pie gastonetoPIB if anio == `anio' & `by' != -1 & transf_gf == 0, over(`resumido') ///
+		graph pie gastonetoPIB if anio == `anio' & `by' != -1 & transf_gf == 0, over(`resumidopie') ///
 			plabel(_all percent, format(%5.1fc)) ///
-			title(`"Gastos `=upper("`pef'`ppef'")' `anio'"') /// subtitle($pais) ///
+			title(`"{bf:Gastos} PPEF `anio'"') ///
+			subtitle($pais) ///
 			name(gastospie, replace) ///
 			legend(on position(6) rows(`rows') cols(`cols')) ///
-			ptext(0 0 `"{bf:`=string(`gasanio'[1,1],"%6.1fc")' % PIB}"', color(white) size(small))
+			ptext(0 0 `"{bf:`=string(`gasanio'[1,1],"%6.1fc")' % PIB}"', color(white) size(small)) ///
+			caption("{bf:Fuente}: Elaborado por el CIEP.")
+		
 
 		levelsof `resumido' if `by' != -1, local(lev_resumido)
 		local totlev = 0
@@ -358,6 +367,7 @@ quietly {
 			else {
 				g `lev_res`countlev'' = gastoneto`k'/1000000000 + `lev_res`=`countlev'-1''
 			}
+			label var `lev_res`countlev'' "`legend`k''"
 			replace `lev_res`countlev'' = 0 if `lev_res`countlev'' == .			
 			local graphvars = "`lev_res`countlev'' `graphvars' "
 			local legend = `"`legend' label(`=`totlev'-`countlev'+1' "`legend`k''")"'
@@ -383,10 +393,11 @@ quietly {
 			ylabel(/*0(5)30*/, format(%15.0fc) labsize(small)) ///
 			ylabel(/*0(5)30*/, axis(2) noticks format(%5.0fc) labsize(small)) ///
 			yscale(range(0)) yscale(range(0) axis(2) noline) ///
-			xlabel(2014(1)`aniolast') ///
-			legend(on position(6) rows(`rows') cols(`cols') `legend' label(`=`totlev'+1' "= Total % PIB")) ///
+			xlabel(2014(1)`aniolast', noticks) ///
+			legend(on position(6) rows(`rows') cols(`cols') label(`=`totlev'+1' "= Total % PIB")) ///
 			name(gastos, replace) ///
-			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.")
+			note("{bf:{c U'}ltimos dos datos}: PEF 2021 y PPEF 2022.") ///
+			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de las respectivas Cuentas P{c u'}blicas.")
 			
 		restore
 	}
