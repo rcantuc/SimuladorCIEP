@@ -274,10 +274,10 @@ quietly {
 
 	** 4.3 Crecimientos **
 	noisily di _newline in g "{bf: C. Cambios:" in y " `=`anio'-1' - `anio'" in g ///
-		_col(55) %7s "`=`anio'-1'" ///
-		_col(66) %7s "`anio'" ///
-		_col(77) %7s "D. % PIB" ///
-		_col(88) %7s "D. %" "}"
+		_col(44) %7s "`=`anio'-1'" ///
+		_col(55) %7s "`anio'" ///
+		_col(66) %7s "D. % PIB" ///
+		_col(77) %7s "D. %" "}"
 
 	preserve
 	collapse (sum) gastoneto* if `by' != -1 & transf_gf == 0, by(anio `by')
@@ -314,20 +314,20 @@ quietly {
 			
 			*if abs(`mat`k''[1,2]-`mat5`k''[1,2]) > .4 {
 				noisily di in g `"  (+) `disptext'"' ///
-					_col(55) in y %7.3fc `mat5`k''[1,2] ///
-					_col(66) in y %7.3fc `mat`k''[1,2] ///
-					_col(77) in y %7.3fc `mat`k''[1,2]-`mat5`k''[1,2] ///
-					_col(88) in y %7.3fc (`mat`k''[1,2]-`mat5`k''[1,2])/`mat5`k''[1,2]*100
+					_col(44) in y %7.3fc `mat5`k''[1,2] ///
+					_col(55) in y %7.3fc `mat`k''[1,2] ///
+					_col(66) in y %7.3fc `mat`k''[1,2]-`mat5`k''[1,2] ///
+					_col(77) in y %7.3fc (`mat`k''[1,2]-`mat5`k''[1,2])/`mat5`k''[1,2]*100
 			*}
 			local ++k
 		}
 
-		noisily di in g _dup(95) "-"
+		noisily di in g _dup(83) "-"
 		noisily di in g "{bf:  (=) Total" ///
-			_col(55) in y %7.3fc `mattot5'[1,2] ///
-			_col(66) in y %7.3fc `mattot'[1,2] ///
-			_col(77) in y %7.3fc `mattot'[1,2]-`mattot5'[1,2] ///
-			_col(88) in y %7.3fc (`mattot'[1,2]-`mattot5'[1,2])/`mattot5'[1,2]*100 "}"
+			_col(44) in y %7.3fc `mattot5'[1,2] ///
+			_col(55) in y %7.3fc `mattot'[1,2] ///
+			_col(66) in y %7.3fc `mattot'[1,2]-`mattot5'[1,2] ///
+			_col(77) in y %7.3fc (`mattot'[1,2]-`mattot5'[1,2])/`mattot5'[1,2]*100 "}"
 	}
 	restore
 
