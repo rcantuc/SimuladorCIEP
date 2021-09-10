@@ -102,12 +102,12 @@ if "$pais" == "" {
 if "$pais" == "Ecuador" {
 
 	* 2021-2026 *
-	global pib2021 = 2.5                                                        // Â¿Banco Mundial o FMI?
-	global pib2022 = 1.3                                                        // Â¿Banco Mundial o FMI?
-	global pib2023 = 1.7                                                        // Â¿Banco Mundial o FMI?
-	global pib2024 = 2.0                                                        // Â¿Banco Mundial o FMI?
-	global pib2025 = 2.3                                                        // Â¿Banco Mundial o FMI?
-	global pib2026 = 2.5                                                        // Â¿Banco Mundial o FMI?
+	global pib2021 = 2.5                                                        // ¿Banco Mundial o FMI?
+	global pib2022 = 1.3                                                        // ¿Banco Mundial o FMI?
+	global pib2023 = 1.7                                                        // ¿Banco Mundial o FMI?
+	global pib2024 = 2.0                                                        // ¿Banco Mundial o FMI?
+	global pib2025 = 2.3                                                        // ¿Banco Mundial o FMI?
+	global pib2026 = 2.5                                                        // ¿Banco Mundial o FMI?
 
 	/* 2031-2050 *
 	forvalues k=2027(1)2050 {
@@ -128,7 +128,7 @@ noisily run "`c(sysdir_personal)'/Arranque.do" `aniovp'
 
 *******************************
 **       1.1 POBLACION       **
-*forvalues k=1950(1)2100 {
+/*forvalues k=1950(1)2100 {
 foreach k in `aniovp' {
 	`noisily' Poblacion, `nographs' anio(`k') //update //tf(`=64.333315/2.1*1.8') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040) 
 }
@@ -145,8 +145,8 @@ if "$pais" == "" {
 
 
 
-**********************************************
-/**       1.3 Ingresos, Gastos y Deuda       **
+*********************************************
+**       1.3 Ingresos, Gastos y Deuda       **
 `noisily' LIF, anio(`aniovp') `nographs' by(divCIEP) rows(2) ilif min(1) //update
 `noisily' PEF, anio(`aniovp') `nographs' by(desc_funcion) rows(4) min(1) //update
 `noisily' SHRFSP, anio(`aniovp') `nographs' //update
@@ -184,45 +184,45 @@ if _rc != 0 {
 
 
 
-*********************************
+*********************************/
 ***                            ***
 ***    2. PARTE III: GASTOS    ***
 ***                            ***
-**********************************
-scalar basica      =   24025 //    Educaci{c o'}n b{c a'}sica
-scalar medsup      =   23668 //    Educaci{c o'}n media superior
-scalar superi      =   35994 //    Educaci{c o'}n superior
-scalar posgra      =   57104 //    Posgrado
-scalar eduadu      =  118083 //    Educaci{c o'}n para adultos
-scalar otrose      =    1725 //    Otros gastos educativos
+/**********************************
+scalar basica      =   21599 //    Educaci{c o'}n b{c a'}sica
+scalar medsup      =   23354 //    Educaci{c o'}n media superior
+scalar superi      =   30464 //    Educaci{c o'}n superior
+scalar posgra      =   21122 //    Posgrado
+scalar eduadu      =    2392 //    Educaci{c o'}n para adultos
+scalar otrose      =    1473 //    Otros gastos educativos
 
-scalar ssa         =     842 //    SSalud
-scalar prospe      =    1882 //    IMSS-Prospera
-scalar segpop      =    2564 //    Seguro Popular
-scalar imss        =    6818 //    IMSS (salud)
-scalar issste      =    8985 //    ISSSTE (salud)
-scalar pemex       =   23595 //    Pemex (salud) + ISSFAM (salud)
+scalar ssa         =     855 //    SSalud
+scalar prospe      =    2013 //    IMSS-Prospera
+scalar segpop      =    2866 //    Seguro Popular
+scalar imss        =    4672 //    IMSS (salud)
+scalar issste      =    4686 //    ISSSTE (salud)
+scalar pemex       =   41686 //    Pemex (salud) + ISSFAM (salud)
 
-scalar bienestar   =   27999 //    Pensi{c o'}n Bienestar
-scalar penims      =  144799 //    Pensi{c o'}n IMSS
-scalar peniss      =  226030 //    Pensi{c o'}n ISSSTE
-scalar penotr      = 1433420 //    Pensi{c o'}n Pemex, CFE, Pensi{c o'}n LFC, ISSFAM, Otros
+scalar bienestar   =   21542 //    Pensi{c o'}n Bienestar
+scalar penims      =  148544 //    Pensi{c o'}n IMSS
+scalar peniss      =  231871 //    Pensi{c o'}n ISSSTE
+scalar penotr      = 1470558 //    Pensi{c o'}n Pemex, CFE, Pensi{c o'}n LFC, ISSFAM, Otros
 
-scalar servpers    =    3587 //    Servicios personales
-scalar matesumi    =    1821 //    Materiales y suministros
-scalar gastgene    =    2013 //    Gastos generales
-scalar substran    =    1836 //    Subsidios y transferencias
-scalar bienmueb    =     284 //    Bienes muebles e inmuebles
-scalar obrapubl    =    4002 //    Obras p{c u'}blicas
-scalar invefina    =    1189 //    Inversi{c o'}n financiera
-scalar partapor    =    9864 //    Participaciones y aportaciones
-scalar costodeu    =    6313 //    Costo de la deuda
+scalar servpers    =    3643 //    Servicios personales
+scalar matesumi    =    1850 //    Materiales y suministros
+scalar gastgene    =    2045 //    Gastos generales
+scalar substran    =    1865 //    Subsidios y transferencias
+scalar bienmueb    =     288 //    Bienes muebles e inmuebles
+scalar obrapubl    =    4065 //    Obras p{c u'}blicas
+scalar invefina    =    1208 //    Inversi{c o'}n financiera
+scalar partapor    =   10019 //    Participaciones y aportaciones
+scalar costodeu    =    6412 //    Costo de la deuda
 
 scalar IngBas      =       0 //    Ingreso b{c a'}sico
 scalar ingbasico18 =       1 //    1: Incluye menores de 18 anios, 0: no
 scalar ingbasico65 =       1 //    1: Incluye mayores de 65 anios, 0: no
 ***    FIN: SIMULADOR GASTOS    ***
-**********************************
+**********************************/
 
 
 
@@ -234,7 +234,7 @@ scalar ingbasico65 =       1 //    1: Incluye mayores de 65 anios, 0: no
 
 
 
-**********************************
+**********************************/
 ***                             ***
 ***    3. PARTE II: INGRESOS    ***
 ***                             ***
@@ -352,7 +352,7 @@ if "`cambioiva'" == "1" & "$pais" == "" {
 	scalar IVA = IVA_Mod
 }
 ***       FIN: SIMULADOR IVA       ***
-*************************************
+*************************************/
 
 
 
@@ -384,14 +384,14 @@ save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace
 ************************************
 **       5.1 REDISTRIBUCION       **
 ************************************
-noisily Simulador AportacionesNetas [fw=factor], base("ENIGH 2020") reboot anio(`aniovp') folio(`folio')
+noisily Simulador AportacionesNetas [fw=factor], base("ENIGH 2020") reboot anio(`aniovp') folio(`folio') `nographs'
 
 
 
 ****************************************
 **       5.2 CUENTA GENERACIONAL      **
 ****************************************
-noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) 	//    <-- OPTIONAL!!! Toma mucho tiempo.
+*noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) 	//    <-- OPTIONAL!!! Toma mucho tiempo.
 
 
 
@@ -459,7 +459,7 @@ if "$output" == "output" {
 
 
 
-************************************************
+************************************************/
 ***                                           ***
 ***    6. PARTE IV: DEUDA + REDISTRIBUCION    ***
 ***                                           ***
@@ -472,7 +472,7 @@ if "$output" == "output" {
 ****************************
 if "$pais" == "" {
 	foreach k in decil sexo grupoedad escol {
-		*noisily run "`c(sysdir_personal)'/SankeySF.do" `k' `aniovp'
+		noisily run "`c(sysdir_personal)'/SankeySF.do" `k' `aniovp'
 	}
 }
 

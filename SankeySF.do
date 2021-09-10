@@ -63,15 +63,21 @@ save `eje1'
 
 ********************
 ** Eje 4: Consumo **
-use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
+use if anio == `2' using `"`c(sysdir_personal)'/SIM/Poblaciontot.dta"', clear
+local ajustepob = poblacion
 
-tabstat factor if edad >= 68, stat(sum) f(%20.0fc) save
+use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
+tabstat factor, stat(sum) f(%20.0fc) save
+tempname pobenigh
+matrix `pobenigh' = r(StatTotal)
+
+tabstat factor if edad >= 65, stat(sum) f(%20.0fc) save
 tempname pobpenbien
 matrix `pobpenbien' = r(StatTotal)
 
 tabstat factor, stat(sum) f(%20.0fc) save
 tempname pobtot
-matrix `pobtot' = r(StatTotal)
+matrix `pobtot' = r(StatTotal)*`ajustepob'/`pobenigh'[1,1]
 
 replace OtrosGas = OtrosGas - Infra
 

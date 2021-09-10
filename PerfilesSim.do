@@ -25,6 +25,7 @@ local Basica = r(Educaci_c_o__n_B_c_a__sica)
 local Media = r(Educaci_c_o__n_Media_Superior)
 local Superior = r(Educaci_c_o__n_Superior)
 local Adultos = r(Educaci_c_o__n_para_Adultos)
+local Posgrado = r(Posgrado)
 
 PEF, anio(`1') by(divGA) min(0) nographs
 local OtrosGas = r(Otros)
@@ -122,64 +123,53 @@ egen laboral = rsum(ISR__asalariados ISR__PF) if formal != 0
 replace laboral = 0 if laboral == .
 Distribucion Laboral, relativo(laboral) macro(`=`ISRSalarios'+`ISRFisicas'')
 label var Laboral "los impuestos al ingreso laboral"
-noisily Simulador Laboral [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
 
 ** (+) Cuotas a la SS **
 egen cuotasss = rsum(cuotasTPF) if formal != 0
 replace cuotasss = 0 if laboral == .
 Distribucion CuotasSS, relativo(cuotasss) macro(`=`CuotasIMSS'')
 label var CuotasSS "las contribuciones a la seguridad social"
-noisily Simulador CuotasSS [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
 
 ** (+) Impuestos al consumo **
 egen consumo = rsum(TOTIVA TOTIEPS)
 replace consumo = 0 if consumo == .
 Distribucion Consumo, relativo(consumo) macro(`alconsumo')
 label var Consumo "los impuestos al consumo"
-noisily Simulador Consumo [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
 
 ** (+) Impuestos e ingresos de capital **
 Distribucion OtrosC, relativo(ISR__PM) macro(`=`otrosing'+`ISRMorales'')
 label var OtrosC "los ingresos de capital"
-noisily Simulador OtrosC [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
 
 ** (+) ISR Personas Morales **
 Distribucion ISRPM, relativo(ISR__PM) macro(`ISRMorales')
 label var ISRPM "ISR (personas morales)"
-noisily Simulador ISRPM [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
 
 ** (+) IEPS **
 Distribucion IEPS, relativo(TOTIEPS) macro(`IEPSTOT')
 label var IEPS "IEPS (total)"
-noisily Simulador IEPS [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
 
 ** (+) IEPS Alcohol **
 Distribucion IEPSAlcohol, relativo(IEPS3) macro(`IEPSAlcohol')
 label var IEPSAlcohol "IEPS (alcohol)"
-noisily Simulador IEPSAlcohol [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
 
 ** (+) IEPS Tabaco **
 Distribucion IEPSTabaco, relativo(IEPS4) macro(`IEPSTabaco')
 label var IEPSTabaco "IEPS (tabaco)"
-noisily Simulador IEPSTabaco [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
 
 ** (+) IVA **
 Distribucion IVA, relativo(TOTIVA) macro(`IVATOT')
 label var IVA "IVA (total)"
-noisily Simulador IVA [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
 
 ** (+) Petroleo **
 g pob = 1
 Distribucion Petroleo, relativo(pob) macro(`FMP')
 label var Petroleo "ingresos petroleros"
-noisily Simulador Petroleo [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
 
 ** (-) Pensiones **
 g ing_jubila_pub = ing_jubila if (formal == 1 | formal == 2 | formal == 3) & ing_jubila != 0
 replace ing_jubila_pub = 0 if ing_jubila_pub == .
 Distribucion Pension, relativo(ing_jubila_pub) macro(`Pensiones')
 label var Pension "pensiones"
-noisily Simulador Pension [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
 
 ** (-) Pension Bienestar **
 tabstat factor if edad >= 65, stat(sum) f(%20.0fc) save
@@ -188,32 +178,48 @@ matrix POBLACION68 = r(StatTotal)
 g PenBienestar = `PenBienestar'/POBLACION68[1,1] if edad >= 65
 replace PenBienestar = 0 if PenBienestar == .
 label var PenBienestar "pensi{c o'}n Bienestar"
-noisily Simulador PenBienestar if edad >= 65 [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
 
 ** (-) Educacion **
-tabstat factor if asis_esc == "1" & tipoesc == "1", stat(sum) by(escol) f(%15.0fc) save
-matrix TotAlum = r(StatTotal)
-matrix BasAlum = r(Stat2)
-matrix MedAlum = r(Stat3)
-matrix SupAlum = r(Stat4)+r(Stat5)
+tabstat factor if asis_esc == "1" & tipoesc == "1" & (nivel >= "01" & nivel <= "07") & edad <= 18, stat(sum) f(%15.0fc) save
+matrix BasAlum = r(StatTotal)
 
-g educacion = `Basica'/BasAlum[1,1] if escol == 1 & asis_esc == "1" & tipoesc == "1"
-replace educacion = `Media'/MedAlum[1,1] if escol == 2 & asis_esc == "1" & tipoesc == "1"
-replace educacion = `Superior'/SupAlum[1,1] if (escol == 3 | escol == 4) & asis_esc == "1" & tipoesc == "1"
+tabstat factor if asis_esc == "1" & tipoesc == "1" & (nivel >= "08" & nivel <= "10"), stat(sum) f(%15.0fc) save
+matrix MedAlum = r(StatTotal)
+
+tabstat factor if asis_esc == "1" & tipoesc == "1" & (nivel >= "11" & nivel <= "12"), stat(sum) f(%15.0fc) save
+matrix SupAlum = r(StatTotal)
+
+tabstat factor if asis_esc == "1" & tipoesc == "1" & nivel == "13", stat(sum) f(%15.0fc) save
+matrix PosAlum = r(StatTotal)
+
+tabstat factor if asis_esc == "1" & tipoesc == "1" & (nivel >= "01" & nivel <= "07") & edad > 18, stat(sum) f(%15.0fc) save
+matrix AduAlum = r(StatTotal)
+
+g educacion = `Basica'/BasAlum[1,1] if asis_esc == "1" & tipoesc == "1" & (nivel >= "01" & nivel <= "07") & edad <= 18
+replace educacion = `Media'/MedAlum[1,1] if asis_esc == "1" & tipoesc == "1" & (nivel >= "08" & nivel <= "10")
+replace educacion = `Superior'/SupAlum[1,1] if asis_esc == "1" & tipoesc == "1" & (nivel >= "11" & nivel <= "12")
+replace educacion = `Posgrado'/PosAlum[1,1] if asis_esc == "1" & tipoesc == "1" & nivel == "13"
+replace educacion = `Adultos'/AduAlum[1,1] if asis_esc == "1" & tipoesc == "1" & (nivel >= "01" & nivel <= "07") & edad > 18
 replace educacion = 0 if educacion == .
 
 Distribucion Educacion, relativo(educacion) macro(`Educacion')
 label var Educacion "educaci{c o'}n"
-noisily Simulador Educacion [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
 
 ** (-) Salud **
-g benef_imss = inst_1 == "1"
-g benef_issste = inst_2 == "2"
-g benef_isssteest = inst_3 == "3"
+tempvar benef_imss
+g `benef_imss' = inst_1 == "1"
+egen benef_imss = max(`benef_imss'), by(folioviv foliohog)
+
+tempvar benef_issste benef_isssteest
+g `benef_issste' = inst_2 == "2"
+egen benef_issste = max(`benef_issste'), by(folioviv foliohog)
+
 g benef_pemex = inst_4 == "4"
 
+g benef_isssteest = inst_3 == "3"
+
 tempvar benef_imssprospera
-g `benef_imssprospera' = inst_5 == "5"
+g `benef_imssprospera' = inst_5 == "5" | inst_3 == "3" // Incluye ISSSTE Estatal
 egen benef_imssprospera = max(`benef_imssprospera'), by(folioviv foliohog)
 
 tempvar benef_otro
@@ -222,7 +228,11 @@ if _rc != 0 {
 	g `benef_otro' = 0
 }
 egen benef_otro = max(`benef_otro'), by(folioviv foliohog)
-g benef_seg_pop = benef_imss == 0 & benef_issste == 0 & benef_pemex == 0
+
+tempvar benef_seg_pop
+g `benef_seg_pop' = pop_insabi == "1" | (benef_imss == 0 & benef_issste == 0 & benef_pemex == 0)
+egen benef_seg_pop = max(`benef_seg_pop'), by(folioviv foliohog)
+
 g benef_ssa = 1
 
 tabstat benef_imss benef_issste benef_pemex benef_imssprospera benef_seg_pop ///
@@ -399,17 +409,14 @@ replace salud = .0030159 if edad >= 109
 
 Distribucion Salud, relativo(salud) macro(`Salud')
 label var Salud "salud"
-noisily Simulador Salud [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput //poblacion(defunciones)
 
 ** (-) Otros gastos **
 Distribucion OtrosGas, relativo(factor_cola) macro(`OtrosGas')
 label var OtrosGas "otros gastos"
-noisily Simulador OtrosGas [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
 
 ** (-) Ingreso B{c a'}sico **
 g IngBasico = 0.1
 label var IngBasico "ingreso b{c a'}sico"
-noisily Simulador IngBasico [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
 
 ** (*) Infraestructura **
 g entidad = substr(folio,1,2)
@@ -426,7 +433,6 @@ foreach k in Aguas BajaN BajaS Campe Coahu Colim Chiap Chihu Ciuda Duran Guana /
 }
 egen Infra = rsum(Infra_*)
 label var Infra "infraestructura"
-noisily Simulador Infra [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
 
 
 
@@ -436,17 +442,14 @@ noisily Simulador Infra [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1')
 
 ** (+) Ingresos de PM **
 label var ing_bruto_tpm "ingresos brutos (personas morales)"
-noisily Simulador ing_bruto_tpm [fw=factor], base("ENIGH 2020") boot(1) reboot $nographs nooutput
 
 ** (+) Impuestos y aportaciones **
 egen ImpuestosAportaciones = rsum(Laboral Consumo ISR__PM)
 label var ImpuestosAportaciones "impuestos y aportaciones"
-noisily Simulador ImpuestosAportaciones [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
 
 ** (+) Ingresos Publicos **
 egen IngresosPublicos = rsum(Laboral Consumo OtrosC)
 label var IngresosPublicos "ingresos p{c u'}blicos"
-noisily Simulador IngresosPublicos [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
 
 
 
@@ -463,6 +466,33 @@ label var Educacion "Education"
 label var Salud "Health"
 label var OtrosGas "Other expenditures"
 label var IngBasico "Basic universal income"
+
+
+
+******************/
+*** 7. SIMULADOR **
+noisily Simulador Laboral [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
+noisily Simulador CuotasSS [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
+noisily Simulador Consumo [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
+noisily Simulador OtrosC [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
+noisily Simulador ISRPM [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
+noisily Simulador IEPS [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
+noisily Simulador IEPSAlcohol [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
+noisily Simulador IEPSTabaco [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
+noisily Simulador IVA [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
+noisily Simulador Petroleo [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
+noisily Simulador Pension [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
+noisily Simulador PenBienestar if edad >= 65 [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
+noisily Simulador Educacion [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
+noisily Simulador Salud [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput //poblacion(defunciones)
+noisily Simulador OtrosGas [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
+noisily Simulador IngBasico [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
+noisily Simulador Infra [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
+noisily Simulador ing_bruto_tpm [fw=factor], base("ENIGH 2020") boot(1) reboot $nographs nooutput
+noisily Simulador ImpuestosAportaciones [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
+noisily Simulador IngresosPublicos [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
+
+
 
 
 ***********/

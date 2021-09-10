@@ -17,8 +17,6 @@ quietly {
 		scalar PIB = pibY[1]
 
 
-
-
 		**************************
 		*** 2 Gastos iniciales ***
 		**************************
@@ -30,7 +28,7 @@ quietly {
 		tempname pobenigh
 		matrix `pobenigh' = r(StatTotal)
 		
-		replace factor = round(factor*`ajustepob'/`pobenigh'[1,1],1)
+		*replace factor = round(factor*`ajustepob'/`pobenigh'[1,1],1)
 		
 		tabstat Pension Educacion Salud OtrosGas Infra [fw=factor], stat(sum) f(%20.0fc) save
 		matrix GASTOS = r(StatTotal)
@@ -58,9 +56,18 @@ quietly {
 		}
 
 		tabstat alum_basica alum_medsup alum_superi alum_posgra alum_adulto [fw=factor], stat(sum) f(%15.0fc) save
-		tempname Educacion 
-		matrix `Educacion' = r(StatTotal)
+		tempname EducacionI
+		matrix `EducacionI' = r(StatTotal)
+		
+		replace alum_basica = alum_basica*24597234/`EducacionI'[1,1]
+		replace alum_medsup = alum_medsup*5353499/`EducacionI'[1,2]
+		replace alum_superi = alum_superi*4579894/`EducacionI'[1,3]
+		replace alum_posgra = alum_posgra*403312/`EducacionI'[1,4]
+		replace alum_adulto = alum_adulto*1905180/`EducacionI'[1,5]
 
+		tabstat alum_basica alum_medsup alum_superi alum_posgra alum_adulto [fw=factor], stat(sum) f(%15.0fc) save
+		tempname Educacion
+		matrix `Educacion' = r(StatTotal)
 
 		* Inputs *
 		capture confirm scalar basica
@@ -174,14 +181,13 @@ quietly {
 			_col(50) %7.3fc in y (`basica'+`medsup'+`superi'+`posgra'+`eduadu'+`otrose')/PIB*100 ///
 			_col(60) %15.0fc in y (`basica'+`medsup'+`superi'+`posgra'+`eduadu'+`otrose')/(`Educacion'[1,1]+`Educacion'[1,2]+`Educacion'[1,3]+`Educacion'[1,4]+`Educacion'[1,5])
 
-
-		replace Educacion = `basica'/`Educacion'[1,1] if alum_basica == 1
-		replace Educacion = `medsup'/`Educacion'[1,2] if alum_medsup == 1
-		replace Educacion = `superi'/`Educacion'[1,3] if alum_superi == 1
-		replace Educacion = `posgra'/`Educacion'[1,4] if alum_posgra == 1
-		replace Educacion = `eduadu'/`Educacion'[1,5] if alum_adulto == 1
-		replace Educacion = Educacion + `otrose'/(`Educacion'[1,1]+`Educacion'[1,2]+`Educacion'[1,3]+`Educacion'[1,4]+`Educacion'[1,5]) ///
-			if alum_basica == 1 | alum_medsup == 1 | alum_superi == 1 | alum_posgra == 1 | alum_adulto == 1
+		replace Educacion = `basica'/`EducacionI'[1,1] if alum_basica > 0
+		replace Educacion = `medsup'/`EducacionI'[1,2] if alum_medsup > 0
+		replace Educacion = `superi'/`EducacionI'[1,3] if alum_superi > 0
+		replace Educacion = `posgra'/`EducacionI'[1,4] if alum_posgra > 0
+		replace Educacion = `eduadu'/`EducacionI'[1,5] if alum_adulto > 0
+		replace Educacion = Educacion + `otrose'/(`EducacionI'[1,1]+`EducacionI'[1,2]+`EducacionI'[1,3] ///
+			+`EducacionI'[1,4]+`EducacionI'[1,5]) if Educacion > 0
 
 		scalar basicaPIB = (`basica')/PIB*100
 		scalar medsupPIB = (`medsup')/PIB*100
@@ -190,7 +196,8 @@ quietly {
 		scalar eduaduPIB = (`eduadu')/PIB*100
 		scalar otrosePIB = (`otrose')/PIB*100
 		scalar educacPIB = (`basica'+`medsup'+`superi'+`posgra'+`eduadu'+`otrose')/PIB*100
-		scalar educacion = (`basica'+`medsup'+`superi'+`posgra'+`eduadu'+`otrose')/(`Educacion'[1,1]+`Educacion'[1,2]+`Educacion'[1,3]+`Educacion'[1,4]+`Educacion'[1,5])
+		scalar educacion = (`basica'+`medsup'+`superi'+`posgra'+`eduadu'+`otrose')/(`EducacionI'[1,1] ///
+			+`EducacionI'[1,2]+`EducacionI'[1,3]+`EducacionI'[1,4]+`EducacionI'[1,5])
 
 
 
@@ -198,23 +205,16 @@ quietly {
 		***************
 		*** 4 Salud ***
 		***************
-		*g benef_imss = inst_1 == "1"
-		*g benef_issste = inst_2 == "2"
-		*g benef_isssteest = inst_3 == "3"
-		*g benef_pemex = inst_4 == "4"
-		
-		*tempvar benef_imssprospera
-		*g `benef_imssprospera' = inst_5 == "5"
-		*egen benef_imssprospera = max(`benef_imssprospera'), by(folioviv foliohog)
+		tabstat benef_imss benef_issste benef_pemex benef_imssprospera benef_seg_pop ///
+			benef_ssa benef_isssteest benef_otro [fw=factor], stat(sum) f(%15.0fc) save
+		tempname MSalud
+		matrix `MSalud' = r(StatTotal)
 
-		*tempvar benef_otro
-		*capture g `benef_otro' = inst_6 == "6"
-		*if _rc != 0 {
-		*	g `benef_otro' = 0
-		*}
-		*egen benef_otro = max(`benef_otro'), by(folioviv foliohog)
-		*g benef_seg_pop = benef_imss == 0 & benef_issste == 0 & benef_pemex == 0
-		*g benef_ssa = 1
+		replace benef_imss = benef_imss*70519556/`MSalud'[1,1]
+		replace benef_issste = benef_issste*13881797/`MSalud'[1,2]
+		replace benef_pemex = benef_pemex*588049/`MSalud'[1,3]
+		replace benef_imssprospera = benef_imssprospera*11768906/`MSalud'[1,4]
+		replace benef_seg_pop = benef_seg_pop*68069755/`MSalud'[1,5]
 
 		tabstat benef_imss benef_issste benef_pemex benef_imssprospera benef_seg_pop ///
 			benef_ssa benef_isssteest benef_otro [fw=factor], stat(sum) f(%15.0fc) save
@@ -223,13 +223,12 @@ quietly {
 
 		tabstat factor, stat(sum) f(%20.0fc) save
 		tempname pobtot
-		matrix `pobtot' = r(StatTotal)
-
+		matrix `pobtot' = r(StatTotal)*`ajustepob'/`pobenigh'[1,1]
 
 		* Inputs *
 		capture confirm scalar segpop
 		if _rc == 0 {
-			local segpop = scalar(segpop)*(`Salud'[1,5]+`Salud'[1,7])
+			local segpop = scalar(segpop)*(`Salud'[1,5])
 		}
 		else {
 			preserve
@@ -238,14 +237,20 @@ quietly {
 			local segpop = r(Seguro_Popular)
 			if `segpop0' == . {
 				local segpop0 = r(Atenci_c_o__n_a_la_Salud_y_Medi)
-				local segpop = r(Atenci_c_o__n_a_la_Salud_y_Medi)
+				local segpop  = `segpop0'
 			}
 			local caneros = r(Seguridad_Social_Ca_c_n__eros)
 			local incorpo = r(R_c_e__gimen_de_Incorporaci_c_o)
 
 			PEF if divGA == 7, anio(`anio') by(ramo) min(0) nographs
-			local segpop = `segpop'+r(Aportaciones_Federales_para_Ent)
-			scalar segpop = `segpop'/(`Salud'[1,5]+`Salud'[1,7])
+			local fassa = r(Aportaciones_Federales_para_Ent)
+			
+			PEF if desc_ur == 1238, anio(`anio') by(desc_pp) min(0) nographs
+			local fortaINSABI = r(Fortalecimiento_a_la_atenci_c_o)
+			local atencINSABI = r(Atenci_c_o__n_a_la_Salud)
+			
+			local segpop = `segpop'+`fassa'+`fortaINSABI'+`atencINSABI'
+			scalar segpop = `segpop'/(`Salud'[1,5])
 			restore
 		}
 		capture confirm scalar ssa
@@ -267,7 +272,11 @@ quietly {
 			preserve
 			PEF if divGA == 7, anio(`anio') by(ramo) min(0) nographs
 			local imss = r(Instituto_Mexicano_del_Seguro_S)
-			scalar imss = `imss'/`Salud'[1,1]
+			
+			PEF if ramo == 50 & pp == 4 & funcion == 8, anio(`anio') by(ramo) min(0) nographs			
+			local saludciencia = r(Investigaci_c_o__n_y_desarrollo)
+			
+			scalar imss = (`imss'+`saludciencia')/`Salud'[1,1]
 			restore
 		}
 		capture confirm scalar issste
@@ -278,18 +287,26 @@ quietly {
 			preserve
 			PEF if divGA == 7, anio(`anio') by(ramo) min(0) nographs
 			local issste = r(Instituto_de_Seguridad_y_Servic)
-			scalar issste = `issste'/`Salud'[1,2]
+			
+			capture PEF if ramo == 51 & pp == 15 & funcion == 8, anio(`anio') by(ramo) min(0) nographs	
+			if _rc == 0 {
+				local saludciencia2 = r(Investigaci_c_o__n_y_Desarrollo)
+			}
+			else {
+				local saludciencia2 = 0
+			}
+			scalar issste = (`issste'+`saludciencia2')/`Salud'[1,2]
 			restore
 		}
 		capture confirm scalar prospe
 		if _rc == 0 {
-			local prospe = scalar(prospe)*12587429 //`Salud'[1,4]
+			local prospe = scalar(prospe)*(`Salud'[1,4])
 		}
 		else {
 			preserve
 			PEF if divGA == 7, anio(`anio') by(desc_pp) min(0) nographs
 			local prospe = r(Programa_IMSS_BIENESTAR)
-			scalar prospe = `prospe'/12587429 //`Salud'[1,4]
+			scalar prospe = `prospe'/(`Salud'[1,4])
 			restore
 		}
 		capture confirm scalar pemex
@@ -321,13 +338,13 @@ quietly {
 			_col(50) %7.3fc in y `ssa'/PIB*100 ///
 			_col(60) %15.0fc in y `ssa'/`pobtot'[1,1]
 		noisily di in g "  IMSS-Bienestar" ///
-			_col(33) %15.0fc in y 12587429 /// `Salud'[1,4] ///
+			_col(33) %15.0fc in y (`Salud'[1,4]) ///
 			_col(50) %7.3fc in y `prospe'/PIB*100 ///
-			_col(60) %15.0fc in y `prospe'/12587429 //`Salud'[1,4]
+			_col(60) %15.0fc in y `prospe'/(`Salud'[1,4])
 		noisily di in g "  INSABI" ///
-			_col(33) %15.0fc in y `Salud'[1,5]+`Salud'[1,7] ///
+			_col(33) %15.0fc in y `Salud'[1,5] ///
 			_col(50) %7.3fc in y (`segpop')/PIB*100 ///
-			_col(60) %15.0fc in y (`segpop')/(`Salud'[1,5]+`Salud'[1,7])
+			_col(60) %15.0fc in y (`segpop')/(`Salud'[1,5])
 		noisily di in g "  IMSS" ///
 			_col(33) %15.0fc in y `Salud'[1,1] ///
 			_col(50) %7.3fc in y `imss'/PIB*100 ///
@@ -348,13 +365,12 @@ quietly {
 
 
 		replace Salud = 0
-		replace Salud = Salud + `segpop'/(`Salud'[1,5]+`Salud'[1,7]) if benef_seg_pop == 1 
-		replace Salud = Salud + `segpop'/(`Salud'[1,5]+`Salud'[1,7]) if benef_isssteest == 1
-		replace Salud = Salud + `imss'/`Salud'[1,1] if benef_imss == 1
-		replace Salud = Salud + `issste'/`Salud'[1,2] if benef_issste == 1
-		replace Salud = Salud + `prospe'/`Salud'[1,4] if benef_imssprospera == 1
-		replace Salud = Salud + `pemex'/`Salud'[1,3] if benef_pemex == 1
-		replace Salud = Salud + `ssa'/`pobtot'[1,1] if benef_ssa == 1
+		replace Salud = Salud + `segpop'/(`MSalud'[1,5]) if benef_seg_pop > 0 
+		replace Salud = Salud + `imss'/`MSalud'[1,1] if benef_imss > 0
+		replace Salud = Salud + `issste'/`MSalud'[1,2] if benef_issste > 0
+		replace Salud = Salud + `prospe'/(`MSalud'[1,4]) if benef_imssprospera > 0
+		replace Salud = Salud + `pemex'/`MSalud'[1,3] if benef_pemex  > 0
+		replace Salud = Salud + `ssa'/`pobtot'[1,1] if benef_ssa > 0
 
 		scalar ssaPIB = `ssa'/PIB*100
 		scalar segpopPIB = `segpop'/PIB*100
@@ -370,9 +386,26 @@ quietly {
 		*******************
 		*** 5 Pensiones ***
 		*******************
+		g pens_pam = edad >= 65
+		g pens_imss = ing_jubila != 0 & formal == 1
+		g pens_issste = ing_jubila != 0 & formal == 2
+		g pens_pemex = ing_jubila != 0 & formal == 3
+
+		tabstat pens_pam pens_imss pens_issste pens_pemex [fw=factor], stat(sum) f(%15.0fc) save
+		tempname PENSH
+		matrix `PENSH' = r(StatTotal)
+
+		replace pens_pam = pens_pam*10320548/`PENSH'[1,1]
+		replace pens_imss = pens_imss*4723530/`PENSH'[1,2]
+		replace pens_issste = pens_issste*1230999/`PENSH'[1,3]
+
+		tabstat pens_pam pens_imss pens_issste pens_pemex [fw=factor], stat(sum) f(%15.0fc) save
+		tempname PENS
+		matrix `PENS' = r(StatTotal)
+
 		label values formal formalidad
 
-		tabstat factor if formal == 1 & ing_jubila != 0, stat(sum) f(%20.0fc) save
+		/*tabstat factor if formal == 1 & ing_jubila != 0, stat(sum) f(%20.0fc) save
 		tempname mpenims
 		matrix `mpenims' = r(StatTotal)
 
@@ -386,52 +419,51 @@ quietly {
 
 		tabstat factor if edad >= 65, stat(sum) f(%20.0fc) save
 		tempname mbienestar
-		matrix `mbienestar' = r(StatTotal)
-
+		matrix `mbienestar' = r(StatTotal)*/
 
 		* Inputs *
 		capture confirm scalar bienestar
 		if _rc == 0 {
-			local bienestar = scalar(bienestar)*`mbienestar'[1,1]
+			local bienestar = scalar(bienestar)*`PENS'[1,1]
 		}
 		else {
 			preserve
 			PEF if divGA == 6, anio(`anio') by(divGA) min(0) nographs
 			local bienestar = r(Pensi_c_o__n_Bienestar)
-			scalar bienestar = `bienestar'/`mbienestar'[1,1]
+			scalar bienestar = `bienestar'/`PENS'[1,1]
 			restore
 		}
 		capture confirm scalar penims
 		if _rc == 0 {
-			local penims = scalar(penims)*`mpenims'[1,1]
+			local penims = scalar(penims)*`PENS'[1,2]
 		}
 		else {
 			preserve
 			PEF if divGA == 5, anio(`anio') by(ramo) min(0) nographs
 			local penims = r(Instituto_Mexicano_del_Seguro_S)
-			scalar penims = `penims'/`mpenims'[1,1]
+			scalar penims = `penims'/`PENS'[1,2]
 			restore
 		}
 		capture confirm scalar peniss
 		if _rc == 0 {
-			local peniss = scalar(peniss)*`mpeniss'[1,1]
+			local peniss = scalar(peniss)*`PENS'[1,3]
 		}
 		else {
 			preserve
 			PEF if divGA == 5, anio(`anio') by(ramo) min(0) nographs
 			local peniss = r(Instituto_de_Seguridad_y_Servic)
-			scalar peniss = `peniss'/`mpeniss'[1,1]
+			scalar peniss = `peniss'/`PENS'[1,3]
 			restore
 		}
 		capture confirm scalar penotr
 		if _rc == 0 {
-			local penotr = scalar(penotr)*`mpenotr'[1,1]
+			local penotr = scalar(penotr)*`PENS'[1,4]
 		}
 		else {
 			preserve
 			PEF if divGA == 5, anio(`anio') by(ramo) min(0) nographs
 			local penotr = r(Petr_c_o__leos_Mexicanos)+r(Aportaciones_a_Seguridad_Social)+r(Comisi_c_o__n_Federal_de_Electr)
-			scalar penotr = `penotr'/`mpenotr'[1,1]
+			scalar penotr = `penotr'/`PENS'[1,4]
 			restore
 		}
 
@@ -444,39 +476,38 @@ quietly {
 			_col(60) %10s in g "Per c{c a'}pita (MXN `anio')" "}"
 		noisily di in g _dup(80) "-"
 		noisily di in g "  Pensi{c o'}n para el bienestar" ///
-			_col(33) %15.0fc in y `mbienestar'[1,1] ///
+			_col(33) %15.0fc in y `PENS'[1,1] ///
 			_col(50) %7.3fc in y `bienestar'/PIB*100 ///
-			_col(60) %15.0fc in y `bienestar'/`mbienestar'[1,1]
+			_col(60) %15.0fc in y `bienestar'/`PENS'[1,1]
 		noisily di in g "  IMSS" ///
-			_col(33) %15.0fc in y `mpenims'[1,1] ///
+			_col(33) %15.0fc in y `PENS'[1,2] ///
 			_col(50) %7.3fc in y `penims'/PIB*100 ///
-			_col(60) %15.0fc in y `penims'/`mpenims'[1,1]
+			_col(60) %15.0fc in y `penims'/`PENS'[1,2]
 		noisily di in g "  ISSSTE" ///
-			_col(33) %15.0fc in y `mpeniss'[1,1] ///
+			_col(33) %15.0fc in y `PENS'[1,3] ///
 			_col(50) %7.3fc in y `peniss'/PIB*100 ///
-			_col(60) %15.0fc in y `peniss'/`mpeniss'[1,1]
+			_col(60) %15.0fc in y `peniss'/`PENS'[1,3]
 		noisily di in g "  Pemex, CFE, LFC, Ferro, ISSFAM" ///
-			_col(33) %15.0fc in y `mpenotr'[1,1] ///
+			_col(33) %15.0fc in y `PENS'[1,4] ///
 			_col(50) %7.3fc in y `penotr'/PIB*100 ///
-			_col(60) %15.0fc in y `penotr'/`mpenotr'[1,1]
+			_col(60) %15.0fc in y `penotr'/`PENS'[1,4]
 		noisily di in g _dup(75) "-"
 		noisily di in g "  Pensiones" ///
-			_col(33) %15.0fc in y (`mbienestar'[1,1]+`mpenims'[1,1]+`mpeniss'[1,1]+`mpenotr'[1,1]) ///
+			_col(33) %15.0fc in y (`PENS'[1,1]+`PENS'[1,2]+`PENS'[1,3]+`PENS'[1,4]) ///
 			_col(50) %7.3fc in y (`bienestar'+`penims'+`peniss'+`penotr')/PIB*100 ///
-			_col(60) %15.0fc in y (`bienestar'+`penims'+`peniss'+`penotr')/(`mbienestar'[1,1]+`mpenims'[1,1]+`mpeniss'[1,1]+`mpenotr'[1,1])
+			_col(60) %15.0fc in y (`bienestar'+`penims'+`peniss'+`penotr')/(`PENS'[1,1]+`PENS'[1,2]+`PENS'[1,3]+`PENS'[1,4])
 
-
-		replace Pension = `penims'/`mpenims'[1,1] if formal == 1 & ing_jubila != 0
-		replace Pension = `peniss'/`mpeniss'[1,1] if formal == 2 & ing_jubila != 0 
-		replace Pension = `penotr'/`mpenotr'[1,1] if formal == 3 & ing_jubila != 0
-		replace PenBienestar = `bienestar'/`mbienestar'[1,1] if edad >= 65
+		replace PenBienestar = `bienestar'/`PENSH'[1,1] if edad >= 65
+		replace Pension = `penims'/`PENSH'[1,2] if formal == 1 & ing_jubila != 0
+		replace Pension = `peniss'/`PENSH'[1,3] if formal == 2 & ing_jubila != 0 
+		replace Pension = `penotr'/`PENSH'[1,4] if formal == 3 & ing_jubila != 0
 
 		scalar bienestarPIB = `bienestar'/PIB*100
 		scalar penimsPIB = `penims'/PIB*100
 		scalar penissPIB = `peniss'/PIB*100
 		scalar penotrPIB = `penotr'/PIB*100
 		scalar pensionPIB = (`bienestar'+`penims'+`peniss'+`penotr')/PIB*100
-		scalar pensiones = (`bienestar'+`penims'+`peniss'+`penotr')/(`mbienestar'[1,1]+`mpenims'[1,1]+`mpeniss'[1,1]+`mpenotr'[1,1])
+		scalar pensiones = (`bienestar'+`penims'+`peniss'+`penotr')/(`PENS'[1,1]+`PENS'[1,2]+`PENS'[1,3]+`PENS'[1,4])
 
 
 
@@ -497,25 +528,25 @@ quietly {
 		if ingbasico18 == 0 & ingbasico65 == 1 {
 			tabstat factor if edad >= 18, stat(sum) f(%20.0fc) save
 			tempname pobIngBas
-			matrix `pobIngBas' = r(StatTotal)
+			matrix `pobIngBas' = r(StatTotal)*`ajustepob'/`pobenigh'[1,1]
 			local bititle = "Mayores de 18"
 		}
 		else if ingbasico18 == 1 & ingbasico65 == 0 {
 			tabstat factor if edad < 65, stat(sum) f(%20.0fc) save
 			tempname pobIngBas
-			matrix `pobIngBas' = r(StatTotal)
+			matrix `pobIngBas' = r(StatTotal)*`ajustepob'/`pobenigh'[1,1]
 			local bititle = "Menores de 65"
 		}
 		else if ingbasico18 == 0 & ingbasico65 == 0 {
 			tabstat factor if edad < 65 & edad >= 18, stat(sum) f(%20.0fc) save
 			tempname pobIngBas
-			matrix `pobIngBas' = r(StatTotal)
+			matrix `pobIngBas' = r(StatTotal)*`ajustepob'/`pobenigh'[1,1]
 			local bititle = "Entre 18 y 65"
 		}
 		else {
 			tabstat factor, stat(sum) f(%20.0fc) save
 			tempname pobIngBas
-			matrix `pobIngBas' = r(StatTotal)
+			matrix `pobIngBas' = r(StatTotal)*`ajustepob'/`pobenigh'[1,1]
 			local bititle = "Poblaci{c o'}n general"		
 		}
 
