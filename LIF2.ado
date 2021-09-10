@@ -136,11 +136,11 @@ quietly {
 			bargap(-30) stack asyvars ///
 			title("{bf:Ingresos presupuestarios}") ///
 			subtitle($pais) ///
-			ytitle(% PIB) ylabel(0(1)5, labsize(small)) ///
+			ytitle(% PIB) ylabel(0(3)24, labsize(small)) ///
 			legend(on position(6) cols(4)) ///
 			name(ingresos, replace) ///
 			blabel(bar, format(%7.1fc)) ///
-			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.}")
+			caption("{it:Fuente: Elaborado por el CIEP con información de ILIF 2022, LIF 2021 y SHCP}")
 			
 			
 	********EMPRESAS DEL ESTADO**************		
@@ -167,7 +167,7 @@ quietly {
 			legend(on position(6) cols(4)) ///
 			name(ingresos, replace) ///
 			blabel(bar, format(%7.1fc)) ///
-			caption("{it:Fuente: Elaborado por el CIEP con información de SHCP}")
+			caption("{it:Fuente: Elaborado por el CIEP con información de ILIF 2022, LIF 2021 y SHCP}")
 			
 **************NO TRIBUTARIOS********************			
 			graph bar (sum) recaudacionPIB if (divCIEP2 == 1 | divCIEP2 == 4 | divCIEP2 == 17) & anio >=2014, ///
