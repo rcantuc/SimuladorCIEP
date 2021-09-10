@@ -2597,10 +2597,12 @@ label values sexo sexo
 label define rural 1 "Rural" 0 "Urbano"
 label values rural rural
 
-g grupoedad = 1 if edad < 18
-replace grupoedad = 2 if edad >= 18 & edad < 65
-replace grupoedad = 3 if edad >= 65
-label define grupoedad 1 "De 0 a 17" 2 "De 18 a 64" 3 "De 65 y mas"
+g grupoedad = 1 if edad < 5
+replace grupoedad = 2 if edad >= 5 & edad < 18
+replace grupoedad = 3 if edad >= 18 & edad < 25
+replace grupoedad = 4 if edad >= 25 & edad < 65
+replace grupoedad = 5 if edad >= 65
+label define grupoedad 1 "De 0 a 4" 2 "De 5 a 17" 3 "De 18 a 24" 4 "De 25 a 64" 5 "De 65 y mas"
 label values grupoedad grupoedad
 
 replace formalmax = 3 if formalmax == 4

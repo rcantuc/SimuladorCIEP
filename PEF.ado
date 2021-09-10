@@ -10,7 +10,7 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
-	** 1.2 Datos Abiertos (MÃˆxico) **
+	** 1.2 Datos Abiertos (MÈxico) **
 	if "`c(username)'" == "ricardo" & "$pais" == "" {
 		*UpdateDatosAbiertos
 		local updated = "yes" //r(updated)
@@ -33,7 +33,7 @@ quietly {
 	*** 2 SYNTAX ***
 	****************
 	use in 1 using "`c(sysdir_personal)'/SIM/$pais/PEF.dta", clear
-	syntax [if] [, ANIO(int `aniovp') NOGraphs Update Base ID(string) ///
+	syntax [if] [, ANIO(int `aniovp') NOGraphs Update Base ///
 		BY(varname) ROWS(int 4) COLS(int 5) MINimum(real 1) PEF PPEF APROBado]
 
 	if "`ppef'" == "ppef" {
@@ -398,7 +398,7 @@ quietly {
 			name(gastos, replace) ///
 			note("{bf:{c U'}ltimos dos datos}: PEF 2021 y PPEF 2022.") ///
 			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de las respectivas Cuentas P{c u'}blicas.")
-			
+
 		restore
 	}
 

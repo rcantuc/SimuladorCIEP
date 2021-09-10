@@ -11,7 +11,7 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
-	** 1.2 Datos Abiertos (MÃ©xico) **
+	** 1.2 Datos Abiertos (México) **
 	if "`c(username)'" == "ciepmx" & "$pais" == "" {
 		*UpdateDatosAbiertos
 		local updated = "yes" //r(updated)
@@ -68,106 +68,120 @@ quietly {
 		replace shrfspInterno = 33.8/100*pibY if anio == 2021
 		replace shrfspExterno = 17.2/100*pibY if anio == 2021
 		replace rfsp = 4.2/100*pibY if anio == 2021
-		replace rfspBalance = 3.2/100*pibY if anio == 2021
-		replace rfspPIDIREGAS = 0.0/100*pibY if anio == 2021
-		replace rfspIPAB = 0.1/100*pibY if anio == 2021
-		replace rfspFONADIN = 0.1/100*pibY if anio == 2021
-		replace rfspDeudores = 0.0/100*pibY if anio == 2021
-		replace rfspBanca = 0.0/100*pibY if anio == 2021
-		replace rfspAdecuacion = 0.9/100*pibY if anio == 2021
-		replace tipoDeCambio = 20.2 if anio == 2021
+		replace rfspBalance = -3.2/100*pibY if anio == 2021
+		replace rfspPIDIREGAS = -0.0/100*pibY if anio == 2021
+		replace rfspIPAB = -0.1/100*pibY if anio == 2021
+		replace rfspFONADIN = -0.1/100*pibY if anio == 2021
+		replace rfspDeudores = -0.0/100*pibY if anio == 2021
+		replace rfspBanca = -0.0/100*pibY if anio == 2021
+		replace rfspAdecuacion = -0.9/100*pibY if anio == 2021
+		*replace tipoDeCambio = 20.2 if anio == 2021
 
 		replace shrfsp = 51/100*pibY if anio == 2022
 		replace shrfspInterno = 34.5/100*pibY if anio == 2022
 		replace shrfspExterno = 16.5/100*pibY if anio == 2022
 		replace rfsp = 3.5/100*pibY if anio == 2022
-		replace rfspBalance = 3.1/100*pibY if anio == 2022
-		replace rfspPIDIREGAS = 0.0/100*pibY if anio == 2022
-		replace rfspIPAB = 0.1/100*pibY if anio == 2022
-		replace rfspFONADIN = 0.0/100*pibY if anio == 2022
-		replace rfspDeudores = -0.1/100*pibY if anio == 2022
-		replace rfspBanca = 0.0/100*pibY if anio == 2022
-		replace rfspAdecuacion = 0.4/100*pibY if anio == 2022
+		replace rfspBalance = -3.1/100*pibY if anio == 2022
+		replace rfspPIDIREGAS = -0.0/100*pibY if anio == 2022
+		replace rfspIPAB = -0.1/100*pibY if anio == 2022
+		replace rfspFONADIN = -0.0/100*pibY if anio == 2022
+		replace rfspDeudores = 0.1/100*pibY if anio == 2022
+		replace rfspBanca = -0.0/100*pibY if anio == 2022
+		replace rfspAdecuacion = -0.4/100*pibY if anio == 2022
 		replace tipoDeCambio = 20.4 if anio == 2022
 
 		replace shrfsp = 51/100*pibY if anio == 2023
-		replace shrfspInterno = 35.0/100*pibY if anio == 2023
+		replace shrfspInterno = 35.1/100*pibY if anio == 2023
 		replace shrfspExterno = 15.9/100*pibY if anio == 2023
 		replace rfsp = 3.2/100*pibY if anio == 2023
-		replace rfspBalance = 2.7/100*pibY if anio == 2023
-		replace rfspPIDIREGAS = 0.0/100*pibY if anio == 2023
-		replace rfspIPAB = 0.1/100*pibY if anio == 2023
-		replace rfspFONADIN = 0.0/100*pibY if anio == 2023
-		replace rfspDeudores = -0.1/100*pibY if anio == 2023
-		replace rfspBanca = 0.0/100*pibY if anio == 2023
-		replace rfspAdecuacion = 0.4/100*pibY if anio == 2023
+		replace rfspBalance = -2.7/100*pibY if anio == 2023
+		replace rfspPIDIREGAS = -0.0/100*pibY if anio == 2023
+		replace rfspIPAB = -0.1/100*pibY if anio == 2023
+		replace rfspFONADIN = -0.0/100*pibY if anio == 2023
+		replace rfspDeudores = 0.1/100*pibY if anio == 2023
+		replace rfspBanca = -0.0/100*pibY if anio == 2023
+		replace rfspAdecuacion = -0.4/100*pibY if anio == 2023
 		replace tipoDeCambio = 20.6 if anio == 2023
 
 		replace shrfsp = 51/100*pibY if anio == 2024
 		replace shrfspInterno = 35.5/100*pibY if anio == 2024
-		replace shrfspExterno = 15.4/100*pibY if anio == 2024
+		replace shrfspExterno = 15.5/100*pibY if anio == 2024
 		replace rfsp = 2.9/100*pibY if anio == 2024
-		replace rfspBalance = 2.4/100*pibY if anio == 2024
-		replace rfspPIDIREGAS = 0.0/100*pibY if anio == 2024
-		replace rfspIPAB = 0.1/100*pibY if anio == 2024
-		replace rfspFONADIN = 0.0/100*pibY if anio == 2024
-		replace rfspDeudores = -0.1/100*pibY if anio == 2024
-		replace rfspBanca = 0.0/100*pibY if anio == 2024
-		replace rfspAdecuacion = 0.4/100*pibY if anio == 2024
+		replace rfspBalance = -2.4/100*pibY if anio == 2024
+		replace rfspPIDIREGAS = -0.0/100*pibY if anio == 2024
+		replace rfspIPAB = -0.1/100*pibY if anio == 2024
+		replace rfspFONADIN = -0.0/100*pibY if anio == 2024
+		replace rfspDeudores = 0.1/100*pibY if anio == 2024
+		replace rfspBanca = -0.0/100*pibY if anio == 2024
+		replace rfspAdecuacion = -0.4/100*pibY if anio == 2024
 		replace tipoDeCambio = 20.8 if anio == 2024
 
 		replace shrfsp = 51/100*pibY if anio == 2025
 		replace shrfspInterno = 36.0/100*pibY if anio == 2025
 		replace shrfspExterno = 15.0/100*pibY if anio == 2025
 		replace rfsp = 2.5/100*pibY if anio == 2025
-		replace rfspBalance = 2.3/100*pibY if anio == 2025
-		replace rfspPIDIREGAS = 0.0/100*pibY if anio == 2025
-		replace rfspIPAB = 0.1/100*pibY if anio == 2025
-		replace rfspFONADIN = 0.0/100*pibY if anio == 2025
-		replace rfspDeudores = -0.1/100*pibY if anio == 2025
-		replace rfspBanca = 0.0/100*pibY if anio == 2025
-		replace rfspAdecuacion = 0.4/100*pibY if anio == 2025
+		replace rfspBalance = -2.3/100*pibY if anio == 2025
+		replace rfspPIDIREGAS = -0.0/100*pibY if anio == 2025
+		replace rfspIPAB = -0.1/100*pibY if anio == 2025
+		replace rfspFONADIN = -0.0/100*pibY if anio == 2025
+		replace rfspDeudores = 0.1/100*pibY if anio == 2025
+		replace rfspBanca = -0.0/100*pibY if anio == 2025
+		replace rfspAdecuacion = -0.4/100*pibY if anio == 2025
 		replace tipoDeCambio = 20.9 if anio == 2025
 
 		replace shrfsp = 51/100*pibY if anio == 2026
-		replace shrfspInterno = 36.4/100*pibY if anio == 2026
+		replace shrfspInterno = 36.5/100*pibY if anio == 2026
 		replace shrfspExterno = 14.5/100*pibY if anio == 2026
 		replace rfsp = 2.8/100*pibY if anio == 2026
-		replace rfspBalance = 2.3/100*pibY if anio == 2026
-		replace rfspPIDIREGAS = 0.0/100*pibY if anio == 2026
-		replace rfspIPAB = 0.1/100*pibY if anio == 2026
-		replace rfspFONADIN = 0.0/100*pibY if anio == 2026
-		replace rfspDeudores = -0.1/100*pibY if anio == 2026
-		replace rfspBanca = 0.0/100*pibY if anio == 2026
-		replace rfspAdecuacion = 0.4/100*pibY if anio == 2026
+		replace rfspBalance = -2.3/100*pibY if anio == 2026
+		replace rfspPIDIREGAS = -0.0/100*pibY if anio == 2026
+		replace rfspIPAB = -0.1/100*pibY if anio == 2026
+		replace rfspFONADIN = -0.0/100*pibY if anio == 2026
+		replace rfspDeudores = 0.1/100*pibY if anio == 2026
+		replace rfspBanca = -0.0/100*pibY if anio == 2026
+		replace rfspAdecuacion = -0.4/100*pibY if anio == 2026
 		replace tipoDeCambio = 21.0 if anio == 2026
 
 		replace shrfsp = 51/100*pibY if anio == 2027
 		replace shrfspInterno = 36.9/100*pibY if anio == 2027
 		replace shrfspExterno = 14.1/100*pibY if anio == 2027
 		replace rfsp = 2.8/100*pibY if anio == 2027
-		replace rfspBalance = 2.3/100*pibY if anio == 2027
-		replace rfspPIDIREGAS = 0.0/100*pibY if anio == 2027
-		replace rfspIPAB = 0.1/100*pibY if anio == 2027
-		replace rfspFONADIN = 0.0/100*pibY if anio == 2027
-		replace rfspDeudores = -0.1/100*pibY if anio == 2027
-		replace rfspBanca = 0.0/100*pibY if anio == 2027
-		replace rfspAdecuacion = 0.5/100*pibY if anio == 2027
+		replace rfspBalance = -2.3/100*pibY if anio == 2027
+		replace rfspPIDIREGAS = -0.0/100*pibY if anio == 2027
+		replace rfspIPAB = -0.1/100*pibY if anio == 2027
+		replace rfspFONADIN = -0.0/100*pibY if anio == 2027
+		replace rfspDeudores = 0.1/100*pibY if anio == 2027
+		replace rfspBanca = -0.0/100*pibY if anio == 2027
+		replace rfspAdecuacion = -0.5/100*pibY if anio == 2027
 		replace tipoDeCambio = 21.3 if anio == 2027
-
-		g tasaInterno = costodeudaInterno/shrfspInterno
-		replace tasaInterno = L.tasaInterno if tasaInterno == . & anio <= 2027
-
-		g tasaExterno = costodeudaExterno/shrfspExterno
-		replace tasaExterno = L.tasaExterno if tasaExterno == . & anio <= 2027
 
 		g porInterno = shrfspInterno/shrfsp
 		g porExterno = shrfspExterno/shrfsp
 
-		g balprimario = (rfspBalance-costodeudaInterno-costodeudaExterno)/pibY*100
+		replace costodeudaInterno = 2.7/100*porInterno*pibY if anio == 2021
+		replace costodeudaExterno = 2.7/100*porExterno*pibY if anio == 2021
+		replace costodeudaInterno = 2.8/100*porInterno*pibY if anio == 2022
+		replace costodeudaExterno = 2.8/100*porExterno*pibY if anio == 2022
+		replace costodeudaInterno = 3.0/100*porInterno*pibY if anio == 2023
+		replace costodeudaExterno = 3.0/100*porExterno*pibY if anio == 2023
+		replace costodeudaInterno = 3.0/100*porInterno*pibY if anio == 2024
+		replace costodeudaExterno = 3.0/100*porExterno*pibY if anio == 2024
+		replace costodeudaInterno = 3.0/100*porInterno*pibY if anio == 2025
+		replace costodeudaExterno = 3.0/100*porExterno*pibY if anio == 2025
+		replace costodeudaInterno = 3.0/100*porInterno*pibY if anio == 2026
+		replace costodeudaExterno = 3.0/100*porExterno*pibY if anio == 2026
+		replace costodeudaInterno = 3.1/100*porInterno*pibY if anio == 2027
+		replace costodeudaExterno = 3.1/100*porExterno*pibY if anio == 2027
+
+		g tasaInterno = costodeudaInterno/shrfspInterno
+		*replace tasaInterno = L.tasaInterno if tasaInterno == .
+		g tasaExterno = costodeudaExterno/shrfspExterno
+		*replace tasaExterno = L.tasaExterno if tasaExterno == .
+
+		g balprimario = (-rfspBalance-costodeudaInterno-costodeudaExterno)/pibY*100
 		g depreciacion = tipoDeCambio-L.tipoDeCambio
 		g Depreciacion = tipoDeCambio/L.tipoDeCambio-1
-		g tasaEfectiva = porInterno*tasaInterno + porExterno*tasaExterno
+		g tasaEfectiva = L.porInterno*tasaInterno + L.porExterno*tasaExterno
 
 		replace balprimario = 0.4 if anio == 2021
 		replace balprimario = 0.3 if anio == 2022
@@ -178,16 +192,18 @@ quietly {
 		replace balprimario = -0.8 if anio == 2027
 
 		g efectoIntereses = (tasaEfectiva/((1+var_pibY/100)*(1+var_indiceY/100)))*L.shrfsp/L.pibY*100 
-		g efectoInflacion = ((-(var_indiceY/100*(1+var_pibY/100)))/(1+var_pibY/100)*(1+var_indiceY/100))*L.shrfsp/L.pibY*100
-		g efectoCrecimiento = -((var_pibY/100)/((1+var_pibY/100)*(1+var_indiceY/100)))*L.shrfsp/L.pibY*100
-		g efectoTipoDeCambio = ((porExterno*Depreciacion*(1+tasaExterno))/(1+var_pibY/100)*(1+var_indiceY/100))*L.shrfsp/L.pibY*100
+		g efectoInflacion = (-(var_indiceY/100*(1+var_pibY/100))/((1+var_pibY/100)*(1+var_indiceY/100)))*L.shrfsp/L.pibY*100
+		g efectoCrecimiento = (-(var_pibY/100)/((1+var_pibY/100)*(1+var_indiceY/100)))*L.shrfsp/L.pibY*100
+		g efectoTipoDeCambio = ((L.porExterno*Depreciacion*(1+tasaExterno))/((1+var_pibY/100)*(1+var_indiceY/100)))*L.shrfsp/L.pibY*100
+		g efectoOtros = -(rfspPIDIREGAS+rfspIPAB+rfspFONADIN+rfspDeudores+rfspBanca+rfspAdecuacion+nopresupuestario)/pibY*100
 
 		if "`nographs'" != "nographs" {
-			graph bar efectoIntereses efectoInflacion efectoCrecimiento balprimario efectoTipoDeCambio if anio <= `anio' & Depreciacion != ., ///
+			graph bar efectoIntereses efectoInflacion efectoCrecimiento balprimario efectoTipoDeCambio efectoOtros ///
+				if anio <= `anio' & Depreciacion != ., ///
 				over(anio) stack blabel(, format(%5.1fc)) ///
 				legend(on position(6) rows(1) label(1 "Tasas de inter{c e'}s") label(2 "Inflaci{c o'}n") label(3 "Crec. Econ{c o'}mico") ///
-				label(4 "Balance Primario") label(5 "Tipo de cambio")) ///
-				title("Componentes del {bf:Indicador de la Deuda}") ///
+				label(4 "Balance Primario") label(5 "Tipo de cambio") label(6 "Otros")) ///
+				title("Efectos sobre el {bf:Indicador de la Deuda}") ///
 				name(efectoDeuda, replace) ///
 				note("{bf:{c U'}ltimo dato}: `aniolast'`meslast'") ///
 				caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.")
