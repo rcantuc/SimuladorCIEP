@@ -10,7 +10,7 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
-	** 1.2 Datos Abiertos (MÈxico) **
+	** 1.2 Datos Abiertos (MÃˆxico) **
 	if "`c(username)'" == "ricardo" & "$pais" == "" {
 		capture confirm file "`c(sysdir_personal)'/SIM/DatosAbiertos.dta"
 		if _rc != 0 {
@@ -183,7 +183,7 @@ quietly {
 	return scalar `=strtoname("Ingresos totales")' = `mattot'[1,1]
 
 	** 4.2 Division Resumido **
-	di _newline in g "{bf: B. Ingresos presupuestarios (divResumido) " ///
+	noisily di _newline in g "{bf: B. Ingresos presupuestarios (divResumido) " ///
 		_col(44) in g %20s "`currency'" ///
 		_col(66) %7s "% PIB" ///
 		_col(77) %7s "% Total" "}"
@@ -210,7 +210,7 @@ quietly {
 		return scalar `=strtoname("`=r(name`k')'")' = `mat`k''[1,1]
 		local divResumido `"`divResumido' `=strtoname(abbrev("`=r(name`k')'",7))'"'
 
-		di in g "  (+) `=r(name`k')'" ///
+		noisily di in g "  (+) `=r(name`k')'" ///
 			_col(44) in y %20.0fc `mat`k''[1,1] ///
 			_col(66) in y %7.3fc `mat`k''[1,2] ///
 			_col(77) in y %7.1fc `mat`k''[1,1]/`mattot'[1,1]*100
@@ -228,23 +228,68 @@ quietly {
 
 
 	** 4.3 Crecimientos **
+	noisily di _newline in g "{bf: C. Cambios:" in y " `=`anio'-1' - `anio'" in g ///
+		_col(44) %7s "`=`anio'-1'" ///
+		_col(55) %7s "`anio'" ///
+		_col(66) %7s "D. % PIB" ///
+		_col(77) %7s "D. %" "}"
+
+	tabstat recaudacion recaudacionPIB if anio == `anio', by(`by') stat(sum) f(%20.0fc) save
+	tempname mattot
+	matrix `mattot' = r(StatTotal)
+
+	local k = 1
+	while "`=r(name`k')'" != "." {
+		tempname mat`k'
+		matrix `mat`k'' = r(Stat`k')
+		local ++k
+	}
+
+	capture tabstat recaudacion recaudacionPIB if anio == `anio'-1, by(`by') stat(sum) f(%20.1fc) save
+	if _rc == 0 {
+		tempname mattot5
+		matrix `mattot5' = r(StatTotal)
+
+		local k = 1
+		while "`=r(name`k')'" != "." {
+			tempname mat5`k'
+			matrix `mat5`k'' = r(Stat`k')
+
+			if substr(`"`=r(name`k')'"',1,25) == "'" {
+				local disptext = substr(`"`=r(name`k')'"',1,24)
+			}
+			else {
+				local disptext = substr(`"`=r(name`k')'"',1,25)
+			}
+
+			if `mat`k''[1,1] != . & `mat5`k''[1,1] != . {
+				noisily di in g `"  (+) `disptext'"' ///
+					_col(44) in y %7.3fc `mat5`k''[1,2] ///
+					_col(55) in y %7.3fc `mat`k''[1,2] ///
+					_col(66) in y %7.3fc `mat`k''[1,2]-`mat5`k''[1,2] ///
+					_col(77) in y %7.3fc (`mat`k''[1,2]-`mat5`k''[1,2])/`mat5`k''[1,2]*100
+			}
+			local ++k
+		}
+
+		noisily di in g _dup(83) "-"
+		noisily di in g "{bf:  (=) Ingresos" ///
+			_col(44) in y %7.3fc `mattot5'[1,2] ///
+			_col(55) in y %7.3fc `mattot'[1,2] ///
+			_col(66) in y %7.3fc `mattot'[1,2]-`mattot5'[1,2] ///
+			_col(77) in y %7.3fc (`mattot'[1,2]-`mattot5'[1,2])/`mattot5'[1,2]*100 "}"
+	}
+		
+		
+		
+	/** 4.3 Elasticidades **
 	if "`by'" == "divGA" {
-		noisily di _newline in g "{bf: B. Crecimientos geom{c e'}tricos:" in y " `=`anio'-10' - `anio'" in g ///
+		noisily di _newline in g "{bf: C. Crecimientos geom{c e'}tricos:" in y " `=`anio'-10' - `anio'" in g ///
 			_col(55) %7s "Ingreso" ///
 			_col(66) %7s "PIB" ///
 			_col(77) %7s "Elasticidad" "}"
 
 
-		tabstat recaudacion recaudacionPIB if anio == `anio' & divLIF != 10, by(`by') stat(sum) f(%20.0fc) save
-		tempname mattot
-		matrix `mattot' = r(StatTotal)
-
-		local k = 1
-		while "`=r(name`k')'" != "." {
-			tempname mat`k'
-			matrix `mat`k'' = r(Stat`k')
-			local ++k
-		}
 
 		capture tabstat recaudacion recaudacionPIB if anio == `anio'-10 & divLIF != 10, by(`by') stat(sum) f(%20.1fc) save
 		if _rc == 0 {
@@ -256,12 +301,13 @@ quietly {
 				tempname mat5`k'
 				matrix `mat5`k'' = r(Stat`k')
 
-				noisily di in g "  (+) `=r(name`k')'" ///
-					_col(55) in y %7.3fc (((`mat`k''[1,1]/`mat5`k''[1,1])^(1/10)-1)*100) ///
-					_col(66) in y %7.3fc (((`pibYR`anio''/`pibYR`=`anio'-10'')^(1/10)-1)*100) ///
-					_col(77) in y %7.3fc (((`mat`k''[1,1]/`mat5`k''[1,1])^(1/10)-1)*100)/ ///
-					(((`pibYR`anio''/`pibYR`=`anio'-10'')^(1/10)-1)*100)
-
+				if `mat`k''[1,1] != . & `mat5`k''[1,1] != . {
+					noisily di in g "  (+) `=r(name`k')'" ///
+						_col(55) in y %7.3fc (((`mat`k''[1,1]/`mat5`k''[1,1])^(1/10)-1)*100) ///
+						_col(66) in y %7.3fc (((`pibYR`anio''/`pibYR`=`anio'-10'')^(1/10)-1)*100) ///
+						_col(77) in y %7.3fc (((`mat`k''[1,1]/`mat5`k''[1,1])^(1/10)-1)*100)/ ///
+						(((`pibYR`anio''/`pibYR`=`anio'-10'')^(1/10)-1)*100)
+				}
 				local ++k
 			}
 
@@ -272,7 +318,7 @@ quietly {
 					_col(77) in y %7.3fc (((`mattot'[1,1]/`mattot5'[1,1])^(1/10)-1)*100)/ ///
 					(((`pibYR`anio''/`pibYR`=`anio'-10'')^(1/10)-1)*100) "}"
 		}
-	}
+	}*/
 
 
 

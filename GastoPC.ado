@@ -38,7 +38,7 @@ quietly {
 
 		*******************
 		*** 3 Educacion ***
-		*******************
+		/*******************
 		if `anio' >= 2016 {
 			g alum_basica = asis_esc == "1" & tipoesc == "1" & (nivel >= "01" & nivel <= "07") & edad <= 18
 			g alum_medsup = asis_esc == "1" & tipoesc == "1" & (nivel >= "08" & nivel <= "10")
@@ -202,7 +202,7 @@ quietly {
 
 
 
-		***************
+		***************/
 		*** 4 Salud ***
 		***************
 		tabstat benef_imss benef_issste benef_pemex benef_imssprospera benef_seg_pop ///
@@ -225,7 +225,7 @@ quietly {
 		tempname pobtot
 		matrix `pobtot' = r(StatTotal)*`ajustepob'/`pobenigh'[1,1]
 
-		* Inputs *
+		* Inputs INSABI *
 		capture confirm scalar segpop
 		if _rc == 0 {
 			local segpop = scalar(segpop)*(`Salud'[1,5])
@@ -233,23 +233,21 @@ quietly {
 		else {
 			preserve
 			PEF if divGA == 7, anio(`anio') by(desc_pp) min(0) nographs
-			local segpop0 = r(Seguro_Popular)
-			local segpop = r(Seguro_Popular)
+			local segpop0 = r(Seguro_Popular) //+r(Seguro_PopularC)
 			if `segpop0' == . {
-				local segpop0 = r(Atenci_c_o__n_a_la_Salud_y_Medi)
-				local segpop  = `segpop0'
+				local segpop0 = r(Atenci_c_o__n_a_la_Salud_y_Medi) //+r(Atenci_c_o__n_a_la_Salud_y_MediC)
 			}
-			local caneros = r(Seguridad_Social_Ca_c_n__eros)
-			local incorpo = r(R_c_e__gimen_de_Incorporaci_c_o)
+			local caneros = r(Seguridad_Social_Ca_c_n__eros) //+r(Seguridad_Social_Ca_c_n__erosC)
+			local incorpo = r(R_c_e__gimen_de_Incorporaci_c_o) //+r(R_c_e__gimen_de_Incorporaci_c_oC)
 
 			PEF if divGA == 7, anio(`anio') by(ramo) min(0) nographs
-			local fassa = r(Aportaciones_Federales_para_Ent)
+			local fassa = r(Aportaciones_Federales_para_Ent) //+ r(Aportaciones_Federales_para_EntC)
 			
 			PEF if desc_ur == 1238, anio(`anio') by(desc_pp) min(0) nographs
-			local fortaINSABI = r(Fortalecimiento_a_la_atenci_c_o)
-			local atencINSABI = r(Atenci_c_o__n_a_la_Salud)
+			local fortaINSABI = r(Fortalecimiento_a_la_atenci_c_o) //+r(Fortalecimiento_a_la_atenci_c_oC)
+			local atencINSABI = r(Atenci_c_o__n_a_la_Salud) //+r(Atenci_c_o__n_a_la_SaludC)
 			
-			local segpop = `segpop'+`fassa'+`fortaINSABI'+`atencINSABI'
+			local segpop = `segpop0'+`fassa'+`fortaINSABI'+`atencINSABI'
 			scalar segpop = `segpop'/(`Salud'[1,5])
 			restore
 		}
@@ -260,7 +258,7 @@ quietly {
 		else {
 			preserve
 			PEF if divGA == 7, anio(`anio') by(ramo) min(0) nographs
-			local ssa = r(Salud)-`segpop0'+`caneros'+`incorpo'
+			local ssa = r(Salud)-`segpop0'+`caneros'+`incorpo' //-`fortaINSABI'-`atencINSABI'  //+r(SaludC)
 			scalar ssa = `ssa'/`pobtot'[1,1]
 			restore
 		}
@@ -271,11 +269,12 @@ quietly {
 		else {
 			preserve
 			PEF if divGA == 7, anio(`anio') by(ramo) min(0) nographs
-			local imss = r(Instituto_Mexicano_del_Seguro_S)
+			local imss = r(Instituto_Mexicano_del_Seguro_S) //+r(Instituto_Mexicano_del_Seguro_SC)
 			
-			PEF if ramo == 50 & pp == 4 & funcion == 8, anio(`anio') by(ramo) min(0) nographs			
-			local saludciencia = r(Investigaci_c_o__n_y_desarrollo)
+			PEF if ramo == 50 & pp == 4 & funcion == 8, anio(`anio') by(desc_pp) min(0) nographs			
+			local saludciencia = r(Investigaci_c_o__n_y_desarrollo) //+ r(Investigaci_c_o__n_y_desarrolloC)
 			
+			local imss = `imss'+`saludciencia'
 			scalar imss = (`imss'+`saludciencia')/`Salud'[1,1]
 			restore
 		}
@@ -286,18 +285,21 @@ quietly {
 		else {
 			preserve
 			PEF if divGA == 7, anio(`anio') by(ramo) min(0) nographs
-			local issste = r(Instituto_de_Seguridad_y_Servic)
+			local issste = r(Instituto_de_Seguridad_y_Servic) //+r(Instituto_de_Seguridad_y_ServicC)
 			
-			capture PEF if ramo == 51 & pp == 15 & funcion == 8, anio(`anio') by(ramo) min(0) nographs	
+			capture PEF if ramo == 51 & pp == 15 & funcion == 8, anio(`anio') by(desc_pp) min(0) nographs	
 			if _rc == 0 {
-				local saludciencia2 = r(Investigaci_c_o__n_y_Desarrollo)
+				local saludciencia2 = r(Investigaci_c_o__n_y_Desarrollo) //+ r(Investigaci_c_o__n_y_DesarrolloC)
 			}
 			else {
 				local saludciencia2 = 0
 			}
+			
+			local issste = `issste'+`saludciencia2'
 			scalar issste = (`issste'+`saludciencia2')/`Salud'[1,2]
 			restore
 		}
+
 		capture confirm scalar prospe
 		if _rc == 0 {
 			local prospe = scalar(prospe)*(`Salud'[1,4])
@@ -305,10 +307,11 @@ quietly {
 		else {
 			preserve
 			PEF if divGA == 7, anio(`anio') by(desc_pp) min(0) nographs
-			local prospe = r(Programa_IMSS_BIENESTAR)
+			local prospe = r(Programa_IMSS_BIENESTAR) //+r(Programa_IMSS_BIENESTARC)
 			scalar prospe = `prospe'/(`Salud'[1,4])
 			restore
 		}
+
 		capture confirm scalar pemex
 		if _rc == 0 {
 			local pemex = scalar(pemex)*`Salud'[1,3]
@@ -316,11 +319,10 @@ quietly {
 		else {
 			preserve
 			PEF if divGA == 7 & modalidad == "E" & pp == 13 & ramo == 52, anio(`anio') by(ramo) min(0) nographs
-			local pemex = r(Petr_c_o__leos_Mexicanos)
-			
-			PEF if divGA == 7, anio(`anio') by(ramo) min(0) nographs
-			local pemex = `pemex' + r(Defensa_Nacional) + r(Marina)
+			local pemex = r(Petr_c_o__leos_Mexicanos) //+r(Petr_c_o__leos_MexicanosC)
 
+			PEF if divGA == 7, anio(`anio') by(ramo) min(0) nographs
+			local pemex = `pemex' + r(Defensa_Nacional) + r(Marina) //+ r(Defensa_NacionalC) + r(MarinaC)
 			scalar pemex = (`pemex')/`Salud'[1,3]
 			restore
 		}
@@ -381,7 +383,7 @@ quietly {
 		scalar saludPIB = (`ssa'+`segpop'+`imss'+`issste'+`prospe'+`pemex')/PIB*100
 		scalar salud = (`ssa'+`segpop'+`imss'+`issste'+`prospe'+`pemex')/(`pobtot'[1,1])
 
-
+xxx
 
 		*******************
 		*** 5 Pensiones ***
