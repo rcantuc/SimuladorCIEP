@@ -41,7 +41,7 @@ global id = "`c(username)'"                                                     
 
 *global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
 local noisily "noisily"                                                         // "NOISILY" OUTPUTS
-*local nographs "nographs"                                                      // SUPRIMIR GRAFICAS
+local nographs "nographs"                                                      // SUPRIMIR GRAFICAS
 
 
 
@@ -145,12 +145,12 @@ if "$pais" == "" {
 
 
 
-*********************************************
+*********************************************/
 **       1.3 Ingresos, Gastos y Deuda       **
-`noisily' LIF, anio(`aniovp') `nographs' by(divCIEP) rows(2) ilif min(1) //update
-`noisily' PEF, anio(`aniovp') `nographs' by(desc_funcion) rows(4) min(1) //update
-`noisily' SHRFSP, anio(`aniovp') `nographs' //update
-
+*`noisily' LIF, anio(`aniovp') `nographs' by(divCIEP) rows(2) ilif min(1) //update
+`noisily' PEF, anio(`aniovp') `nographs' by(desc_funcion) rows(4) min(1) update
+*`noisily' SHRFSP, anio(`aniovp') `nographs' //update
+exit
 
 
 *******************************
@@ -198,24 +198,24 @@ scalar otrose      =    1473 //    Otros gastos educativos
 
 scalar ssa         =     855 //    SSalud
 scalar prospe      =    2013 //    IMSS-Prospera
-scalar segpop      =    2866 //    Seguro Popular
-scalar imss        =    4672 //    IMSS (salud)
-scalar issste      =    4686 //    ISSSTE (salud)
+scalar segpop      =    3131 //    Seguro Popular
+scalar imss        =    4681 //    IMSS (salud)
+scalar issste      =    4697 //    ISSSTE (salud)
 scalar pemex       =   41686 //    Pemex (salud) + ISSFAM (salud)
 
-scalar bienestar   =   21542 //    Pensi{c o'}n Bienestar
-scalar penims      =  148544 //    Pensi{c o'}n IMSS
-scalar peniss      =  231871 //    Pensi{c o'}n ISSSTE
+scalar bienestar   =   24810 //    Pensi{c o'}n Bienestar
+scalar penims      =  134743 //    Pensi{c o'}n IMSS
+scalar peniss      =  225979 //    Pensi{c o'}n ISSSTE
 scalar penotr      = 1470558 //    Pensi{c o'}n Pemex, CFE, Pensi{c o'}n LFC, ISSFAM, Otros
 
-scalar servpers    =    3643 //    Servicios personales
-scalar matesumi    =    1850 //    Materiales y suministros
-scalar gastgene    =    2045 //    Gastos generales
+scalar servpers    =    3638 //    Servicios personales
+scalar matesumi    =    1849 //    Materiales y suministros
+scalar gastgene    =    2044 //    Gastos generales
 scalar substran    =    1865 //    Subsidios y transferencias
 scalar bienmueb    =     288 //    Bienes muebles e inmuebles
 scalar obrapubl    =    4065 //    Obras p{c u'}blicas
 scalar invefina    =    1208 //    Inversi{c o'}n financiera
-scalar partapor    =   10019 //    Participaciones y aportaciones
+scalar partapor    =   10018 //    Participaciones y aportaciones
 scalar costodeu    =    6412 //    Costo de la deuda
 
 scalar IngBas      =       0 //    Ingreso b{c a'}sico
@@ -238,7 +238,7 @@ scalar ingbasico65 =       1 //    1: Incluye mayores de 65 anios, 0: no
 ***                             ***
 ***    3. PARTE II: INGRESOS    ***
 ***                             ***
-***********************************
+/***********************************
 scalar ISRAS   = 3.406 //    ISR (asalariados): 3.453
 scalar ISRPF   = 0.221 //    ISR (personas f{c i'}sicas): 0.441
 scalar CuotasT = 1.464 //    Cuotas (IMSS): 1.515
