@@ -19,7 +19,7 @@ else {
 
 * Loop para todos los archivos .csv *
 foreach k of local archivos {
-*foreach k in "PPEF 2022" {
+*foreach k in "CP 2020" {
 
 	* Importar archivo de la Cuenta Publica *
 	noisily di in g "Importando: " in y "`k'"
@@ -88,10 +88,10 @@ foreach k of local archivos {
 			replace `j' = trim(`j')
 			replace `j' = subinstr(`j',`"""',"",.)
 			replace `j' = subinstr(`j',"  "," ",.)
-			replace `j' = subinstr(`j',"Ê"," ",.)			// Algunas bases tienen este caracter "raro".
-			replace `j' = subinstr(`j',"Â","",.)
-			replace `j' = subinstr(`j'," "," ",.)
-			replace `j' = subinstr(`j'," "," ",.)
+			replace `j' = subinstr(`j',"ÃŠ"," ",.)			// Algunas bases tienen este caracter "raro".
+			replace `j' = subinstr(`j',"Ã‚","",.)
+			replace `j' = subinstr(`j',"Â "," ",.)
+			replace `j' = subinstr(`j',"Â "," ",.)
 			format `j' %30s
 		}
 		destring `j', replace
@@ -105,7 +105,7 @@ foreach k of local archivos {
 		}
 	}
 
-	** Anio y Ramo (Básicos) **
+	** Anio y Ramo (BÃ¡sicos) **
 	capture rename ciclo anio
 	capture tostring ramo, replace
 
@@ -117,7 +117,7 @@ foreach k of local archivos {
 * Loop para unir los archivos (limpios y en Stata) *
 local j = 0
 foreach k of local archivos {
-*foreach k in "PPEF 2022" {
+*foreach k in "CP 2020" {
 	noisily di in g "Appending: " in y "`k'"
 	if `j' == 0 {
 		use ``=strtoname("`k'")'', clear
@@ -179,7 +179,7 @@ if "$pais" == "" {
 
 	** Encode y agregar Cuotas ISSSTE **
 	foreach k of varlist desc_ur desc_funcion desc_subfuncion desc_ai desc_modalidad desc_pp ///
-		desc_objeto desc_tipogasto desc_partida_generica {
+		desc_objeto desc_tipogasto /*desc_partida_generica*/ {
 
 		rename `k' `k'2
 		encode `k'2, g(`k')
@@ -395,12 +395,12 @@ else {
 ********************/
 *** 4. Gasto Neto ***
 *********************
-capture g double gasto = ejercido if ejercido != .
+capture g double gasto = ejercido
 if _rc != 0 {
-	g double gasto = devengado if devengado != .
+	g double gasto = devengado
 }
-capture replace gasto = aprobado if aprobado != . & gasto == .
-capture replace gasto = proyecto if proyecto != . & gasto == .
+replace gasto = aprobado if anio == 2021
+replace gasto = proyecto if anio == 2022
 
 if "$pais" == "" {
 	** Cuotas ISSSTE **
@@ -420,7 +420,6 @@ if "$pais" == "" {
 	format *CUOTAS *neto %20.0fc
 }
 else {
-	** Transferencias del gobierno federal **
 	g byte transf_gf = 0
 	g double gastoneto = gasto
 	format gastoneto %20.0fc

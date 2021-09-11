@@ -10,7 +10,7 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
-	** 1.2 Datos Abiertos (MÈxico) **
+	** 1.2 Datos Abiertos (MÃˆxico) **
 	if "`c(username)'" == "ricardo" & "$pais" == "" {
 		*UpdateDatosAbiertos
 		local updated = "yes" //r(updated)
@@ -74,27 +74,26 @@ quietly {
 	***************
 	*** 3 Merge ***
 	***************
-	collapse (sum) gasto* aprobado, by(anio `by' transf_gf) 
+	collapse (sum) gasto*, by(anio `by' transf_gf) 
 	merge m:1 (anio) using `PIB', nogen keepus(pibY indiceY deflator var_pibY) ///
 		update replace keep(matched) sorted
 	local aniofirst = anio[1]
 	local aniolast = anio[_N]
 
-	** 3.1 Utilizar PPEF **
-	if "`ppef'" == "ppef" {
-		replace gasto = proyecto if anio == `anio'
-		replace gastoneto = proyectoneto if anio == `anio'
+	/*replace gasto = aprobado if gasto == . & aprobado != .
+	capture confirm variable aprobadoneto
+	if _rc == 0 {
+		replace gastoneto = aprobadoneto if gasto == . & aprobadoneto != .
 	}
-	if "`aprobado'" == "aprobado" {
-		replace gasto = aprobado if anio == `anio'
-		capture confirm variable aprobadoneto
-		if _rc == 0 {
-			replace gastoneto = aprobadoneto if anio == `anio'
-		}
-		else {
-			replace gastoneto = aprobado if anio == `anio'
-		}
+	else {
+		replace gastoneto = aprobado if gasto == . & aprobado != .
 	}
+
+	capture confirm variable proyecto
+	if _rc == 0 {
+		replace gasto = proyecto if gasto == . & proyecto != .
+		replace gastoneto = proyectoneto if gasto == . & proyectoneto != .
+	}*/
 
 	** 3.2 Valores como % del PIB **
 	foreach k of varlist gasto* {
