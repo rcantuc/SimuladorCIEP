@@ -359,6 +359,7 @@ if "$pais" == "" {
 	replace desc_divGA = "Salud" if transf_gf == 0 & ramo == 51 & pp == 15 & funcion == 8 ///
 		& desc_divGA == ""
 
+
 	* Costo de la deuda *
 	replace desc_divGA = "Costo de la deuda" if transf_gf == 0 & ramo != -1 ///
 		& capitulo == 9 & substr(string(objeto),1,2) != "91" 
