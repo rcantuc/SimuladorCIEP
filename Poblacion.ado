@@ -1,4 +1,4 @@
-*! Poblacion.ado: 4 de diciembre de 2019. Autor: Ricardo Cantú
+*! Poblacion.ado: 4 de diciembre de 2019. Autor: Ricardo CantÃº
 program define Poblacion
 quietly {
 
@@ -10,7 +10,7 @@ quietly {
 	syntax [, ANIOinicial(int `aniovp') ANIOFinal(int -1) NOGraphs UPDATE ///
 		TF(real -1) TM2044(real -1) TM4564(real -1) TM65(real -1)]
 
-	* Si no hay año inicial, utiliza la fecha de hoy *
+	* Si no hay aÃ±o inicial, utiliza la fecha de hoy *
 	if `anioinicial' == -1 {
 		local anioinicial : di %td_CY-N-D  date("$S_DATE", "DMY")
 		local anioinicial = substr(`"`=trim("`aniovp'")'"',1,4)
@@ -19,7 +19,7 @@ quietly {
 	* Revisa si se puede usar la base de datos *
 	capture use `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
 
-	* Si hay un error o la opción "update" es llamada, limpia la base de datos y la usa *
+	* Si hay un error o la opciÃ³n "update" es llamada, limpia la base de datos y la usa *
 	if _rc != 0 | "`update'" == "update" {
 		if "$pais" == "" {
 			run `"`c(sysdir_personal)'/Poblacion.do"'
@@ -30,7 +30,7 @@ quietly {
 		use `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
 	}
 
-	* Si no hay año final, utiliza el último elemento del vector "anio" *
+	* Si no hay aÃ±o final, utiliza el Ãºltimo elemento del vector "anio" *
 	if `aniofinal' == -1 {
 		local aniofinal = anio in -1
 	}
@@ -40,7 +40,7 @@ quietly {
 	************************
 	*** 0. Base de datos ***
 	************************
-	noisily di _newline(2) in g _dup(20) "·" "{bf:  Poblaci{c o'}n $pais} " in g _dup(20) "·" _newline
+	noisily di _newline(2) in g _dup(20) "." "{bf:  Poblaci{c o'}n $pais} " in g _dup(20) "." _newline
 
 	tabstat poblacion if anio == `anioinicial', f(%20.0fc) stat(sum) save
 	tempname POBTOT
@@ -214,7 +214,7 @@ quietly {
 
 		****************
 		* Estadisticos *
-		* Calcula las estadísticas descriptivas y las guarda en matrices *
+		* Calcula las estadÃ­sticas descriptivas y las guarda en matrices *
 		* Mediana *
 		tabstat edad [fw=round(abs(poblacion),1)] if anio == `anioinicial', ///
 			stat(median) by(sexo) save
@@ -307,10 +307,10 @@ quietly {
 		g zero = 0
 
 		* Grafica sexo = 1 como negativos y sexo = 2 como positivos por grupos etarios, en el presente y futuro *
-		* 1. Vivios en el año inicial y con una edad menor a 109  para el año final *
-		* 2. Vivos en el año final; nacidos durante o después del año inicial *
-		* 3. Vivos en el año final;  nacidos antes del año inicial *
-		* 4. Vivios en el año inicial y  mayores a 109 en el año final *
+		* 1. Vivios en el aÃ±o inicial y con una edad menor a 109  para el aÃ±o final *
+		* 2. Vivos en el aÃ±o final; nacidos durante o despuÃ©s del aÃ±o inicial *
+		* 3. Vivos en el aÃ±o final;  nacidos antes del aÃ±o inicial *
+		* 4. Vivios en el aÃ±o inicial y  mayores a 109 en el aÃ±o final *
 		twoway (bar `pob2' edad if sexo == 1 & anio == `anioinicial' ///
 			& edad+`aniofinal'-`anioinicial' <= 109, horizontal lwidth(none)) ///
 			(bar `pob2' edad if sexo == 2 & anio == `anioinicial' ///
@@ -423,7 +423,7 @@ quietly {
 
 		forvalues k = 1(1)`=_N' {
 			* Maximos *
-			* Busca la población máxima y guarda el año y el número *
+			* Busca la poblaciÃ³n mÃ¡xima y guarda el aÃ±o y el nÃºmero *
 			if pob18_2[`k'] == `MAX'[1,1] {
 				local x1 = anio[`k']
 				local y1 = (pob18[`k'])/1000000
@@ -446,7 +446,7 @@ quietly {
 			}
 			
 			* Minimos *
-			* Busca la población mínima y guarda el año y el número *
+			* Busca la poblaciÃ³n mÃ­nima y guarda el aÃ±o y el nÃºmero *
 			if pob18_2[`k'] == `MAX'[2,1] {
 				local m1 = anio[`k']
 				local z1 = (pob18[`k'])/1000000
@@ -518,6 +518,6 @@ quietly {
 	** END **
 	timer off 14
 	timer list 14
-	noisily di _newline in g _dup(20) "·" "   " in y round(`=r(t14)/r(nt14)',.1) in g " segs  " _dup(20) "·" 
+	noisily di _newline in g _dup(20) "Â·" "   " in y round(`=r(t14)/r(nt14)',.1) in g " segs  " _dup(20) "Â·" 
 }
 end

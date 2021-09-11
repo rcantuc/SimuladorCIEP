@@ -102,12 +102,12 @@ if "$pais" == "" {
 if "$pais" == "Ecuador" {
 
 	* 2021-2026 *
-	global pib2021 = 2.5                                                        // ¿Banco Mundial o FMI?
-	global pib2022 = 1.3                                                        // ¿Banco Mundial o FMI?
-	global pib2023 = 1.7                                                        // ¿Banco Mundial o FMI?
-	global pib2024 = 2.0                                                        // ¿Banco Mundial o FMI?
-	global pib2025 = 2.3                                                        // ¿Banco Mundial o FMI?
-	global pib2026 = 2.5                                                        // ¿Banco Mundial o FMI?
+	global pib2021 = 2.5                                                        // Â¿Banco Mundial o FMI?
+	global pib2022 = 1.3                                                        // Â¿Banco Mundial o FMI?
+	global pib2023 = 1.7                                                        // Â¿Banco Mundial o FMI?
+	global pib2024 = 2.0                                                        // Â¿Banco Mundial o FMI?
+	global pib2025 = 2.3                                                        // Â¿Banco Mundial o FMI?
+	global pib2026 = 2.5                                                        // Â¿Banco Mundial o FMI?
 
 	/* 2031-2050 *
 	forvalues k=2027(1)2050 {
@@ -128,7 +128,7 @@ noisily run "`c(sysdir_personal)'/Arranque.do" `aniovp'
 
 *******************************
 **       1.1 POBLACION       **
-/*forvalues k=1950(1)2100 {
+*forvalues k=1950(1)2100 {
 foreach k in `aniovp' {
 	`noisily' Poblacion, `nographs' anio(`k') //update //tf(`=64.333315/2.1*1.8') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040) 
 }
@@ -145,12 +145,12 @@ if "$pais" == "" {
 
 
 
-*********************************************/
+*********************************************
 **       1.3 Ingresos, Gastos y Deuda       **
-*`noisily' LIF, anio(`aniovp') `nographs' by(divCIEP) rows(2) ilif min(1) //update
-`noisily' PEF, anio(`aniovp') `nographs' by(desc_funcion) rows(4) min(1) update
-*`noisily' SHRFSP, anio(`aniovp') `nographs' //update
-exit
+`noisily' LIF, anio(`aniovp') `nographs' by(divCIEP) rows(2) ilif min(1) //update
+`noisily' PEF, anio(`aniovp') `nographs' by(desc_funcion) rows(4) min(1) //update
+`noisily' SHRFSP, anio(`aniovp') `nographs' //update
+
 
 
 *******************************
@@ -231,7 +231,7 @@ scalar ingbasico65 =       1 //    1: Incluye mayores de 65 anios, 0: no
 ***********************************
 
 
-
+exit
 
 
 **********************************/
@@ -391,7 +391,7 @@ noisily Simulador AportacionesNetas [fw=factor], base("ENIGH 2020") reboot anio(
 ****************************************
 **       5.2 CUENTA GENERACIONAL      **
 ****************************************
-*noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) 	//    <-- OPTIONAL!!! Toma mucho tiempo.
+noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) 	//    <-- OPTIONAL!!! Toma mucho tiempo.
 
 
 
@@ -459,7 +459,7 @@ if "$output" == "output" {
 
 
 
-************************************************/
+************************************************
 ***                                           ***
 ***    6. PARTE IV: DEUDA + REDISTRIBUCION    ***
 ***                                           ***

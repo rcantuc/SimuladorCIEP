@@ -230,7 +230,7 @@ quietly {
 		_col(66) %7s "% PIB" ///
 		_col(77) %7s "% Total" "}"
 
-	tabstat gastoneto gastonetoPIB if anio == `anio' & `by' != -1 & transf_gf == 0, by(`resumido') stat(sum) f(%20.1fc) save
+	tabstat gastoneto gastonetoPIB gastoCUOTAS if anio == `anio' & `by' != -1 & transf_gf == 0, by(`resumido') stat(sum) f(%20.1fc) save
 	tempname mattot
 	matrix `mattot' = r(StatTotal)
 
@@ -250,6 +250,7 @@ quietly {
 
 		* Display *
 		return scalar `name' = `mat`k''[1,1]
+		return scalar `name'C = `mat`k''[1,3]
 		local divResumido `"`divResumido' neto_`name'"'
 
 		noisily di in g `"  (+) `disptext'"' ///
@@ -294,7 +295,7 @@ quietly {
 		local ++k
 	}
 
-	tabstat gastoneto gastonetoPIB if anio == `anio'-1, by(`by') stat(sum) f(%20.1fc) missing save
+	capture tabstat gastoneto gastonetoPIB if anio == `anio'-1, by(`by') stat(sum) f(%20.1fc) missing save
 	if _rc == 0 {
 		tempname mattot5
 		matrix `mattot5' = r(StatTotal)
