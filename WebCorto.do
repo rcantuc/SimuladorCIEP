@@ -57,36 +57,44 @@ if "$output" == "output" {
 ***                          ***
 ********************************
 
-* 2021-2026 *
-global pib2021 = 5.3                                                        // Pre-CGPE 2022: 5.3
-global pib2022 = 3.6                                                        // Pre-CGPE 2022: 3.6
-global pib2023 = 2.5                                                        // Supuesto: 2.5
-global pib2024 = 2.5                                                        // Supuesto: 2.5
-global pib2025 = 2.5                                                        // Supuesto: 2.5
-global pib2026 = 2.5                                                        // Supuesto: 2.5
+* 2021-2027 *
+global pib2021 = 6.3                                                    // CGPE 2022: 6.3
+global pib2022 = 4.1                                                    // CGPE 2022: 4.1
+global pib2023 = 3.4                                                    // Supuesto: 2.5
+global pib2024 = 2.8                                                    // Supuesto: 2.5
+global pib2025 = 2.5                                                    // Supuesto: 2.5
+global pib2026 = 2.5                                                    // Supuesto: 2.5
+global pib2027 = 2.5                                                    // Supuesto: 2.5
 
 * 2026-2030 *
 forvalues k=2027(1)2030 {
 	global pib`k' = $pib2026                                                // SUPUESTO DE LARGO PLAZO
 }
 
-/* 2031-2050 *
-forvalues k=2031(1)2050 {
-	global pib`k' = $pib2025                                                // SUPUESTO DE LARGO PLAZO
-}
-
 * OTROS */
-global inf2021 = 3.8                                                        // Pre-CGPE 2022: 3.8
-global inf2022 = 3.0                                                        // Pre-CGPE 2022: 3.0
+global inf2021 = 5.7                                                    // CGPE 2022: 5.7
+global inf2022 = 3.4                                                    // CGPE 2022: 3.4
+global inf2023 = 3.0                                                    // CGPE 2022: 3.0
+global inf2024 = 3.0                                                    // CGPE 2022: 3.0
+global inf2025 = 3.0                                                    // CGPE 2022: 3.0
+global inf2026 = 3.0                                                    // CGPE 2022: 3.0
+global inf2027 = 3.0                                                    // CGPE 2022: 3.0
 
-global def2021 = 3.7393                                                     // Pre-CGPE 2022: 3.7
-global def2022 = 3.2820                                                     // Pre-CGPE 2022: 3.2
+global def2021 = 6.2295                                                 // CGPE 2022: 6.2
+global def2022 = 3.7080                                                 // CGPE 2022: 3.7
+global def2023 = 3.5000                                                 // CGPE 2022: 3.5
+global def2024 = 3.5000                                                 // CGPE 2022: 3.5
+global def2025 = 3.5000                                                 // CGPE 2022: 3.5
+global def2026 = 3.5000                                                 // CGPE 2022: 3.5
+global def2027 = 3.5000                                                 // CGPE 2022: 3.5
 
-global tasaEfectiva = 6.0725                                                // Tasa de inter{c e'}s EFECTIVA
-global tipoDeCambio = 19.9487                                               // Tipo de cambio
-global depreciacion = 0.0000                                                // Depreciaci{c o'}n
+global tasaEfectiva = 5.8131                                           // Tasa de inter{c e'}s EFECTIVA
+global tipoDeCambio = 20.200                                           // Tipo de cambio
+global depreciacion = 0.2000                                           // Depreciaci{c o'}n
 
-local folio "folioviv foliohog"                                             // Folio del hogar
+local aniovp = 2022
+local folio "folioviv foliohog"                                         // Folio del hogar
+local anioend = 2030
 ***    FIN: PARAMETROS PIB    ***
 ********************************/
 
@@ -96,26 +104,26 @@ local folio "folioviv foliohog"                                             // F
 **       1.1 POBLACION       **
 /*forvalues k=1950(1)2100 {
 foreach k in `aniovp' {
-	`noisily' Poblacion, $nographs anio(`k') //update //tf(`=64.333315/2.1*1.8') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040) 
+	`noisily' Poblacion, `nographs' anio(`k') //update //tf(`=64.333315/2.1*1.8') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040) 
 }
 
 
 
 ****************************************************/
 **       1.2 PIB + Deflactor, Inflacion, SCN       **
-`noisily' PIBDeflactor, anio(`aniovp') $nographs save geopib(2000) geodef(2010) //update //discount(3.0)
+`noisily' PIBDeflactor, anio(`aniovp') `nographs' save geopib(2000) geodef(2010) //update //discount(3.0)
 if "$pais" == "" {
-	`noisily' Inflacion, anio(`aniovp') $nographs //update
-	`noisily' SCN, anio(`aniovp') $nographs //update
+	`noisily' Inflacion, anio(`aniovp') `nographs' //update
+	`noisily' SCN, anio(`aniovp') `nographs' //update
 }
 
 
 
 **********************************************
 /**       1.3 Ingresos, Gastos y Deuda       **
-`noisily' LIF, anio(`aniovp') $nographs by(divGA) rows(1) //update
-`noisily' PEF, anio(`aniovp') $nographs rows(2) //update
-`noisily' SHRFSP, anio(`aniovp') $nographs //update
+`noisily' LIF, anio(`aniovp') `nographs' by(divGA) rows(1) //update
+`noisily' PEF, anio(`aniovp') `nographs' rows(2) //update
+`noisily' SHRFSP, anio(`aniovp') `nographs' //update
 
 
 
@@ -295,7 +303,7 @@ matrix IVAT = (16 \     ///  1  Tasa general
                3  \     /// 10  Otros, idem
                2  \     /// 11  Transporte local, idem
                3  \     /// 12  Transporte foraneo, idem
-               30.91)   //  13  Evasion e informalidad IVA, input[0-100]
+               19.06)   //  13  Evasion e informalidad IVA, input[0-100]
 
 * OUTPUTS (WEB) *
 if "$output" == "output" {
