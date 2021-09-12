@@ -38,7 +38,7 @@ quietly {
 
 		*******************
 		*** 3 Educacion ***
-		/*******************
+		*******************
 		if `anio' >= 2016 {
 			g alum_basica = asis_esc == "1" & tipoesc == "1" & (nivel >= "01" & nivel <= "07") & edad <= 18
 			g alum_medsup = asis_esc == "1" & tipoesc == "1" & (nivel >= "08" & nivel <= "10")
@@ -239,6 +239,7 @@ quietly {
 			}
 			local caneros = r(Seguridad_Social_Ca_c_n__eros) //+r(Seguridad_Social_Ca_c_n__erosC)
 			local incorpo = r(R_c_e__gimen_de_Incorporaci_c_o) //+r(R_c_e__gimen_de_Incorporaci_c_oC)
+			local adeusal = r(Adeudos_con_el_IMSS_e_ISSSTE_y_)
 
 			PEF if divGA == 7, anio(`anio') by(ramo) min(0) nographs
 			local fassa = r(Aportaciones_Federales_para_Ent) //+ r(Aportaciones_Federales_para_EntC)
@@ -258,7 +259,7 @@ quietly {
 		else {
 			preserve
 			PEF if divGA == 7, anio(`anio') by(ramo) min(0) nographs
-			local ssa = r(Salud)-`segpop0'+`caneros'+`incorpo' //-`fortaINSABI'-`atencINSABI'  //+r(SaludC)
+			local ssa = r(Salud)-`segpop0'+`caneros'+`incorpo'+`adeusal'-`fortaINSABI'-`atencINSABI'  //+r(SaludC)
 			scalar ssa = `ssa'/`pobtot'[1,1]
 			restore
 		}
@@ -383,7 +384,7 @@ quietly {
 		scalar saludPIB = (`ssa'+`segpop'+`imss'+`issste'+`prospe'+`pemex')/PIB*100
 		scalar salud = (`ssa'+`segpop'+`imss'+`issste'+`prospe'+`pemex')/(`pobtot'[1,1])
 
-xxx
+
 
 		*******************
 		*** 5 Pensiones ***

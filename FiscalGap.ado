@@ -564,7 +564,10 @@ quietly {
 		g gastoingbasico = 0
 	}
 
+
+	***************
 	* Iteraciones *
+	***************
 	forvalues k = `=`anio''(1)`=anio[_N]' {
 
 		* Amortizaciones *
@@ -678,6 +681,7 @@ quietly {
 			title({bf: Proyecci{c o'}n} de los RFSP) subtitle($pais) ///
 			name(Proy_rfsp, replace)
 	}
+
 	if "$output" == "output" {
 		forvalues k=1(1)`=_N' {
 			if anio[`k'] >= 2013 & anio[`k'] < `anio' {
@@ -748,6 +752,7 @@ quietly {
 		noisily di in w "PROYINGBAS: [`=substr("`proy_ingbas'",1,`=`length_ingbas'-1')']"
 		capture log off output	
 	}
+
 
 	*********************
 	** 4.2 Al infinito **

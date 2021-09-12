@@ -354,9 +354,9 @@ if "$pais" == "" {
 	replace desc_divGA = "Salud" if transf_gf == 0 & ramo != -1 & capitulo != 9  ///
 		& desc_divGA == "" ///
 		& (modalidad == "E" & pp == 13 & ramo == 52)
-	replace desc_divGA = "Salud" if transf_gf == 0 & ramo == 50 & pp == 4 & funcion == 8 ///
+	replace desc_divGA = "Salud" if ramo == 50 & pp == 4 & funcion == 8 ///
 		& desc_divGA == ""
-	replace desc_divGA = "Salud" if transf_gf == 0 & ramo == 51 & pp == 15 & funcion == 8 ///
+	replace desc_divGA = "Salud" if ramo == 51 & pp == 15 & funcion == 8 ///
 		& desc_divGA == ""
 
 

@@ -54,7 +54,7 @@ local nographs "nographs"                                                      /
 ********************************
 if "$pais" == "" {
 
-	* 2021-2026 *
+	* 2021-2027 *
 	global pib2021 = 6.3                                                    // CGPE 2022: 6.3
 	global pib2022 = 4.1                                                    // CGPE 2022: 4.1
 	global pib2023 = 3.4                                                    // Supuesto: 2.5
@@ -128,14 +128,14 @@ noisily run "`c(sysdir_personal)'/Arranque.do" `aniovp'
 
 *******************************
 **       1.1 POBLACION       **
-*forvalues k=1950(1)2100 {
+/*forvalues k=1950(1)2100 {
 foreach k in `aniovp' {
 	`noisily' Poblacion, `nographs' anio(`k') //update //tf(`=64.333315/2.1*1.8') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040) 
 }
 
 
 
-****************************************************
+****************************************************/
 **       1.2 PIB + Deflactor, Inflacion, SCN       **
 `noisily' PIBDeflactor, anio(`aniovp') `nographs' save geopib(2000) geodef(2010) discount(5.0) //update
 if "$pais" == "" {
@@ -146,14 +146,14 @@ if "$pais" == "" {
 
 
 *********************************************
-**       1.3 Ingresos, Gastos y Deuda       **
+/**       1.3 Ingresos, Gastos y Deuda       **
 `noisily' LIF, anio(`aniovp') `nographs' by(divCIEP) rows(2) ilif min(1) //update
 `noisily' PEF, anio(`aniovp') `nographs' by(desc_funcion) rows(4) min(1) //update
 `noisily' SHRFSP, anio(`aniovp') `nographs' //update
 
 
 
-*******************************
+*******************************/
 **       1.4 HOUSEHOLDS       **
 capture use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PensionREC.dta"', clear
 if _rc != 0 {
@@ -188,7 +188,7 @@ if _rc != 0 {
 ***                            ***
 ***    2. PARTE III: GASTOS    ***
 ***                            ***
-/**********************************
+**********************************
 scalar basica      =   21599 //    Educaci{c o'}n b{c a'}sica
 scalar medsup      =   23354 //    Educaci{c o'}n media superior
 scalar superi      =   30464 //    Educaci{c o'}n superior
@@ -196,11 +196,11 @@ scalar posgra      =   21122 //    Posgrado
 scalar eduadu      =    2392 //    Educaci{c o'}n para adultos
 scalar otrose      =    1473 //    Otros gastos educativos
 
-scalar ssa         =     855 //    SSalud
+scalar ssa         =     928 //    SSalud
 scalar prospe      =    2013 //    IMSS-Prospera
 scalar segpop      =    3131 //    Seguro Popular
-scalar imss        =    4681 //    IMSS (salud)
-scalar issste      =    4697 //    ISSSTE (salud)
+scalar imss        =    4691 //    IMSS (salud)
+scalar issste      =    4709 //    ISSSTE (salud)
 scalar pemex       =   41686 //    Pemex (salud) + ISSFAM (salud)
 
 scalar bienestar   =   24810 //    Pensi{c o'}n Bienestar
@@ -231,14 +231,14 @@ scalar ingbasico65 =       1 //    1: Incluye mayores de 65 anios, 0: no
 ***********************************
 
 
-exit
+
 
 
 **********************************/
 ***                             ***
 ***    3. PARTE II: INGRESOS    ***
 ***                             ***
-/***********************************
+***********************************
 scalar ISRAS   = 3.406 //    ISR (asalariados): 3.453
 scalar ISRPF   = 0.221 //    ISR (personas f{c i'}sicas): 0.441
 scalar CuotasT = 1.464 //    Cuotas (IMSS): 1.515
@@ -274,7 +274,7 @@ matrix ISR =  (0.01,		7735.00,	0.0,		1.92	\    /// 1
               974535.04,	1299380.04,	234993.95,	32.00	\    /// 9
               1299380.05,	3898140.12,	338944.34,	34.00	\    /// 10
               3898140.13,	1E+14,		1222522.76,	35.00)	     //  11
-			  
+
 *             Inferior		Superior	Subsidio
 matrix	SE =  (0.01,		21227.52,	4884.24		\    /// 1
               21227.53,		23744.40,	4881.96		\    /// 2
@@ -333,11 +333,11 @@ matrix IVAT = (16 \     ///  1  Tasa general
                3  \     ///  6  Consumo fuera del hogar, idem
                3  \     ///  7  Mascotas, idem
                1  \     ///  8  Medicinas, idem
-               3  \     ///  9  Toallas sanitarias, idem
+               1  \     ///  9  Toallas sanitarias, idem
                3  \     /// 10  Otros, idem
                2  \     /// 11  Transporte local, idem
                3  \     /// 12  Transporte foraneo, idem
-               30.91)   //  13  Evasion e informalidad IVA, input[0-100]
+               19.06)   //  13  Evasion e informalidad IVA, input[0-100]
 
 * OUTPUTS (WEB) *
 if "$output" == "output" {
@@ -482,8 +482,6 @@ if "$pais" == "" {
 **       6.2 FISCAL GAP       **
 ********************************
 noisily FiscalGap, anio(`aniovp') end(`anioend') aniomin(2015) //boot(250) //update
-
-
 
 
 
