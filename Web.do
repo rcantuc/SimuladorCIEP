@@ -36,7 +36,7 @@ adopath ++ PERSONAL
 global id = "`c(username)'"                                                     // ID DEL USUARIO
 
 local noisily "noisily"                                                         // "NOISILY" OUTPUTS
-global nographs "nographs"                                                      // SUPRIMIR GRAFICAS
+local nographs "nographs"                                                      // SUPRIMIR GRAFICAS
 global output "output"                                                          // IMPRIMIR OUTPUTS (WEB)
 
 local aniovp = substr(`"`c(current_date)'"',-4,4)                               // A{c N~}O VALOR PRESENTE
@@ -121,8 +121,8 @@ if "$pais" == "" {
 
 **********************************************
 **       1.3 Ingresos, Gastos y Deuda       **
-`noisily' LIF, anio(`aniovp') `nographs' by(divGA) rows(1) update
-`noisily' PEF, anio(`aniovp') `nographs' rows(2) update
+`noisily' LIF, anio(`aniovp') `nographs' by(divCIEP) rows(2) ilif min(1) update
+`noisily' PEF, anio(`aniovp') `nographs' by(desc_funcion) rows(4) min(1) update
 `noisily' SHRFSP, anio(`aniovp') `nographs' update
 
 

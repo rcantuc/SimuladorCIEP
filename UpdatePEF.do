@@ -179,7 +179,7 @@ if "$pais" == "" {
 
 	** Encode y agregar Cuotas ISSSTE **
 	foreach k of varlist desc_ur desc_funcion desc_subfuncion desc_ai desc_modalidad desc_pp ///
-		desc_objeto desc_tipogasto /*desc_partida_generica*/ {
+		desc_objeto desc_tipogasto desc_partida_generica {
 
 		rename `k' `k'2
 		encode `k'2, g(`k')
