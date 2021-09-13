@@ -41,7 +41,7 @@ global id = "`c(username)'"                                                     
 
 *global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
 local noisily "noisily"                                                         // "NOISILY" OUTPUTS
-local nographs "nographs"                                                      // SUPRIMIR GRAFICAS
+*local nographs "nographs"                                                      // SUPRIMIR GRAFICAS
 
 
 
@@ -92,7 +92,7 @@ if "$pais" == "" {
 
 	global tasaEfectiva = 5.8131                                           // Tasa de inter{c e'}s EFECTIVA
 	global tipoDeCambio = 20.200                                           // Tipo de cambio
-	global depreciacion = 0.2000                                           // Depreciaci{c o'}n
+	global depreciacion = 0.4000                                           // Depreciaci{c o'}n
 
 	local aniovp = 2022
 	local folio "folioviv foliohog"                                         // Folio del hogar
