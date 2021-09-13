@@ -376,7 +376,7 @@ replace estimacion = estimacion/1000000000
 
 forvalues aniohoy = `aniovp'(1)`aniovp' {
 *forvalues aniohoy = 1990(1)2050 {
-	tabstat estimacion, stat(max) save
+	tabstat estimacion if anio > `aniovp', stat(max) save
 	tempname MAX
 	matrix `MAX' = r(StatTotal)
 	forvalues k=1(1)`=_N' {
