@@ -828,16 +828,16 @@ quietly {
 	}
 	if "$output" == "output" {
 		forvalues k=1(1)`=_N' {
-			if anio[`k'] < `anio' & anio[`k'] >= 2010 {
+			if anio[`k'] < `anio'-1 & anio[`k'] >= 2010 {
 				local proy_shrfsp = "`proy_shrfsp' `=string(`=shrfspPIB[`k']',"%10.3f")',"
 				local proy_shrfsp2 = "`proy_shrfsp2' null,"
 			}
-			if anio[`k'] == `anio' {
+			if anio[`k'] == `anio'-1 {
 				local proy_shrfsp = "`proy_shrfsp' `=string(`shrfspobslast',"%10.3f")',"
 				*local proy_shrfsp = "`proy_shrfsp' `=string(52.348,"%10.3f")',"
 				local proy_shrfsp2 = "`proy_shrfsp2' `=string(`=shrfspPIB[`k']',"%10.3f")',"
 			}
-			if anio[`k'] > `anio' & anio[`k'] <= 2030 {
+			if anio[`k'] > `anio'-1 & anio[`k'] <= 2030 {
 				local proy_shrfsp = "`proy_shrfsp' null,"
 				local proy_shrfsp2 = "`proy_shrfsp2' `=string(`=shrfspPIB[`k']',"%10.3f")',"
 			}
