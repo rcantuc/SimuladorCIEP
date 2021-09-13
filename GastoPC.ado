@@ -222,8 +222,9 @@ quietly {
 		matrix `Salud' = r(StatTotal)
 
 		tabstat factor, stat(sum) f(%20.0fc) save
-		tempname pobtot
+		tempname pobtot pobtot0
 		matrix `pobtot' = r(StatTotal)*`ajustepob'/`pobenigh'[1,1]
+		matrix `pobtot0' = r(StatTotal)
 
 		* Inputs INSABI *
 		capture confirm scalar segpop
@@ -373,7 +374,7 @@ quietly {
 		replace Salud = Salud + `issste'/`MSalud'[1,2] if benef_issste > 0
 		replace Salud = Salud + `prospe'/(`MSalud'[1,4]) if benef_imssprospera > 0
 		replace Salud = Salud + `pemex'/`MSalud'[1,3] if benef_pemex > 0
-		replace Salud = Salud + `ssa'/(`MSalud'[1,1]+`MSalud'[1,2]+`MSalud'[1,3]+`MSalud'[1,4]+`MSalud'[1,5]) if benef_ssa > 0
+		replace Salud = Salud + `ssa'/`pobtot0'[1,1] if benef_ssa > 0
 
 		scalar ssaPIB = `ssa'/PIB*100
 		scalar segpopPIB = `segpop'/PIB*100
