@@ -144,7 +144,7 @@ quietly {
 			
 			
 	********EMPRESAS DEL ESTADO**************		
-			graph bar (sum) recaudacionPIB if (divCIEP2 == 2 | divCIEP2 == 3 | divCIEP2 == 4 | divCIEP2 == 12 | divCIEP2 == 14) & anio >=2014, ///
+			graph bar (sum) recaudacionPIB if (divCIEP2 == 2 | divCIEP2 == 3 | divCIEP2 == 12 | divCIEP2 == 14) & anio >=2014, ///
 			over(divCIEP2, /*relabel(1 "LIF" 2 "SHCP")*/) ///
 			over(anio, label(labgap(vsmall))) ///
 			bargap(-30) stack asyvars ///
@@ -181,6 +181,43 @@ quietly {
 			name(ingresos, replace) ///
 			blabel(bar, format(%7.1fc)) ///
 			caption("{it:Fuente: Elaborado por el CIEP con información de SHCP}")
+			
+			**************NO TRIBUTARIOS y EMPRESAS DEL ESTADO********************			
+			graph bar (sum) recaudacionPIB if (divCIEP2 == 1 | divCIEP2 == 4 | divCIEP2 == 17 | divCIEP2 == 3 | divCIEP2 == 12 | divCIEP2 == 14) & anio >=2014, ///
+			over(divCIEP2, /*relabel(1 "LIF" 2 "SHCP")*/) ///
+			over(anio, label(labgap(vsmall))) ///
+			bargap(-30) stack asyvars ///
+			title("{bf:Ingresos no tributarios no petroleros}") ///
+			subtitle($pais) ///
+			ytitle(% PIB) ylabel(0(2)5, labsize(small)) ///
+			legend(on position(6) cols(4)) ///
+			name(ingresos, replace) ///
+			blabel(bar, format(%7.1fc)) ///
+			caption("{it:Fuente: Elaborado por el CIEP con información de ILIF 2022, LIF 2021 y SHCP}")
+			
+			**************Energeticos********************			
+			graph bar (sum) recaudacionPIB if (divCIEP2 == 2 | divCIEP2 == 9 | divCIEP2 == 19) & anio >=2014, ///
+			over(divCIEP2, /*relabel(1 "LIF" 2 "SHCP")*/) ///
+			over(anio, label(labgap(vsmall))) ///
+			bargap(-30) stack asyvars ///
+			title("{bf:Ingresos del sector energético}") ///
+			subtitle($pais) ///
+			ytitle(% PIB) ylabel(0(2)9, labsize(small)) ///
+			legend(on position(6) cols(4)) ///
+			name(ingresos, replace) ///
+			blabel(bar, format(%7.1fc)) ///
+			caption("{it:Fuente: Elaborado por el CIEP con información de ILIF 2022, LIF 2021 y SHCP}")
+			
+			**************Gasto energia********************			
+			graph bar PIB2, over(Año) 
+			bargap(-30) stack asyvars ///
+			title("{bf:Ingresos del sector energético}") ///
+			subtitle($pais) ///
+			ytitle(% PIB) ylabel(0(2)9, labsize(small)) ///
+			legend(on position(6) cols(4)) ///
+			name(ingresos, replace) ///
+			blabel(bar, format(%7.1fc)) ///
+			caption("{it:Fuente: Elaborado por el CIEP con información de ILIF 2022, LIF 2021 y SHCP}")
 			
 			
 *************PETROLEROS********************
