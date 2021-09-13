@@ -247,21 +247,26 @@ matrix `pobtot' = r(StatTotal)
 preserve
 PEF if divGA == 7, anio(`1') by(desc_pp) min(0) nographs
 local segpop0 = r(Seguro_Popular)
-local segpop = r(Seguro_Popular)
 if `segpop0' == . {
 	local segpop0 = r(Atenci_c_o__n_a_la_Salud_y_Medi)
-	local segpop = r(Atenci_c_o__n_a_la_Salud_y_Medi)
 }
 local caneros = r(Seguridad_Social_Ca_c_n__eros)
 local incorpo = r(R_c_e__gimen_de_Incorporaci_c_o)
+local adeusal = r(Adeudos_con_el_IMSS_e_ISSSTE_y_)
 
 PEF if divGA == 7, anio(`1') by(ramo) min(0) nographs
-local segpop = `segpop'+r(Aportaciones_Federales_para_Ent)
+local fassa = r(Aportaciones_Federales_para_Ent) //+ r(Aportaciones_Federales_para_EntC)
+
+PEF if divGA == 7 & desc_ur == 1238, anio(`1') by(desc_pp) min(0) nographs
+local fortaINSABI = r(Fortalecimiento_a_la_atenci_c_o) //+r(Fortalecimiento_a_la_atenci_c_oC)
+local atencINSABI = r(Atenci_c_o__n_a_la_Salud) //+r(Atenci_c_o__n_a_la_SaludC)
+
+local segpop = `segpop0'+`fassa'+`fortaINSABI'+`atencINSABI'
 restore
 
 preserve
 PEF if divGA == 7, anio(`1') by(ramo) min(0) nographs
-local ssa = r(Salud)-`segpop0'+`caneros'+`incorpo'
+local ssa = r(Salud)-`segpop0'+`caneros'+`incorpo'+`adeusal'-`fortaINSABI'-`atencINSABI'  //+r(SaludC)
 restore
 
 preserve
