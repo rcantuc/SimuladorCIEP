@@ -352,7 +352,7 @@ quietly {
 			%8.3f `recIEPS'/ConHog*100 ", " ///
 			%8.3f (`recImporta'/scalar(PIB)*100)/scalar(importacionesBCPIB)*100 ", " ///
 			%8.3f (`recIEPS'+`recIVA'+`recISAN'+`recImporta')/ConHog*100 ", " ///
-			%8.3f `recISR_PM'/(ExNOpSoc)*100 ", " ///
+			%8.3f `recISR_PM'/(ExNOpSoc+ImpNetProduccionK+ImpNetProductos)*100 ", " ///
 			%8.3f `recFMP__De'/(CapIncImp-ExNOpHog)*100 ", " ///
 			%8.3f `recOYE'/(CapIncImp-ExNOpHog)*100 ", " ///
 			%8.3f `recOtrosC'/(CapIncImp-ExNOpHog)*100 ", " ///
