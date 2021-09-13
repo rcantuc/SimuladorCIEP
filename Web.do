@@ -51,6 +51,7 @@ if "$output" == "output" {
 
 
 
+
 ********************************
 ***                          ***
 ***    1. CRECIMIENTO PIB    ***
@@ -111,7 +112,7 @@ foreach k in `aniovp' {
 
 ****************************************************/
 **       1.2 PIB + Deflactor, Inflacion, SCN       **
-`noisily' PIBDeflactor, anio(`aniovp') `nographs' save geopib(2000) geodef(2010) update //discount(3.0)
+`noisily' PIBDeflactor, anio(`aniovp') `nographs' save geopib(2000) geodef(2010) discount(5.0) update
 if "$pais" == "" {
 	`noisily' Inflacion, anio(`aniovp') `nographs' update
 	`noisily' SCN, anio(`aniovp') `nographs' update

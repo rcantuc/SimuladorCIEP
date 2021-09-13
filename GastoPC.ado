@@ -244,7 +244,7 @@ quietly {
 			PEF if divGA == 7, anio(`anio') by(ramo) min(0) nographs
 			local fassa = r(Aportaciones_Federales_para_Ent) //+ r(Aportaciones_Federales_para_EntC)
 			
-			PEF if desc_ur == 1238, anio(`anio') by(desc_pp) min(0) nographs
+			PEF if divGA == 7 & desc_ur == 1238, anio(`anio') by(desc_pp) min(0) nographs
 			local fortaINSABI = r(Fortalecimiento_a_la_atenci_c_o) //+r(Fortalecimiento_a_la_atenci_c_oC)
 			local atencINSABI = r(Atenci_c_o__n_a_la_Salud) //+r(Atenci_c_o__n_a_la_SaludC)
 			
@@ -276,7 +276,7 @@ quietly {
 			local saludciencia = r(Investigaci_c_o__n_y_desarrollo) //+ r(Investigaci_c_o__n_y_desarrolloC)
 			
 			local imss = `imss'+`saludciencia'
-			scalar imss = (`imss'+`saludciencia')/`Salud'[1,1]
+			scalar imss = (`imss')/`Salud'[1,1]
 			restore
 		}
 		capture confirm scalar issste
@@ -297,7 +297,7 @@ quietly {
 			}
 			
 			local issste = `issste'+`saludciencia2'
-			scalar issste = (`issste'+`saludciencia2')/`Salud'[1,2]
+			scalar issste = (`issste')/`Salud'[1,2]
 			restore
 		}
 
