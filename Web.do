@@ -105,26 +105,26 @@ local anioend = 2030
 **       1.1 POBLACION       **
 *forvalues k=1950(1)2100 {
 foreach k in `aniovp' {
-	`noisily' Poblacion, `nographs' anio(`k') update //tf(`=64.333315/2.1*1.8') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040) 
+	`noisily' Poblacion, `nographs' anio(`k') //update //tf(`=64.333315/2.1*1.8') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040) 
 }
 
 
 
 ****************************************************/
 **       1.2 PIB + Deflactor, Inflacion, SCN       **
-`noisily' PIBDeflactor, anio(`aniovp') `nographs' save geopib(2000) geodef(2010) discount(5.0) update
+`noisily' PIBDeflactor, anio(`aniovp') `nographs' save geopib(2000) geodef(2010) discount(5.0) //update
 if "$pais" == "" {
-	`noisily' Inflacion, anio(`aniovp') `nographs' update
-	`noisily' SCN, anio(`aniovp') `nographs' update
+	`noisily' Inflacion, anio(`aniovp') `nographs' //update
+	`noisily' SCN, anio(`aniovp') `nographs' //update
 }
 
 
 
 **********************************************
 **       1.3 Ingresos, Gastos y Deuda       **
-`noisily' LIF, anio(`aniovp') `nographs' by(divCIEP) rows(2) ilif min(1) update
-`noisily' PEF, anio(`aniovp') `nographs' by(desc_funcion) rows(4) min(1) update
-`noisily' SHRFSP, anio(`aniovp') `nographs' update
+`noisily' LIF, anio(`aniovp') `nographs' by(divCIEP) rows(2) ilif min(1) //update
+`noisily' PEF, anio(`aniovp') `nographs' by(desc_funcion) rows(4) min(1) //update
+`noisily' SHRFSP, anio(`aniovp') `nographs' //update
 
 
 

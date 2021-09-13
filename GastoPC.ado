@@ -275,8 +275,8 @@ quietly {
 			PEF if ramo == 50 & pp == 4 & funcion == 8, anio(`anio') by(desc_pp) min(0) nographs			
 			local saludciencia = r(Investigaci_c_o__n_y_desarrollo) //+ r(Investigaci_c_o__n_y_desarrolloC)
 			
-			local imss = `imss'+`saludciencia'
-			scalar imss = (`imss')/`Salud'[1,1]
+			local imss = `imss' //+`saludciencia'
+			scalar imss = `imss'/`Salud'[1,1]
 			restore
 		}
 		capture confirm scalar issste
@@ -296,8 +296,8 @@ quietly {
 				local saludciencia2 = 0
 			}
 			
-			local issste = `issste'+`saludciencia2'
-			scalar issste = (`issste')/`Salud'[1,2]
+			local issste = `issste' //+`saludciencia2'
+			scalar issste = `issste'/`Salud'[1,2]
 			restore
 		}
 
