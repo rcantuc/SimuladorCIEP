@@ -833,8 +833,8 @@ quietly {
 				local proy_shrfsp2 = "`proy_shrfsp2' null,"
 			}
 			if anio[`k'] == `anio' {
-				local proy_shrfsp = "`proy_shrfsp' `=string(`shrfspobslast',"%10.3f")',"
-				*local proy_shrfsp = "`proy_shrfsp' `=string(52.348,"%10.3f")',"
+				*local proy_shrfsp = "`proy_shrfsp' `=string(`shrfspobslast',"%10.3f")',"
+				local proy_shrfsp = "`proy_shrfsp' `=string(51.000,"%10.3f")',"
 				local proy_shrfsp2 = "`proy_shrfsp2' `=string(`=shrfspPIB[`k']',"%10.3f")',"
 			}
 			if anio[`k'] > `anio'-1 & anio[`k'] <= 2030 {
