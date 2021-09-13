@@ -80,7 +80,7 @@ quietly {
 			
 			PEF if divGA == 3, anio(`anio') by(desc_subfuncion) min(0) rows(3) nographs
 			local basica = r(Educaci_c_o__n_B_c_a__sica)
-			scalar basica = `basica'/`Educacion'[1,1]*alum_basica
+			scalar basica = `basica'/`Educacion'[1,1]*24597234/`EducacionI'[1,1]
 			restore
 		}
 		capture confirm scalar medsup
@@ -91,7 +91,7 @@ quietly {
 			preserve
 			PEF if divGA == 3, anio(`anio') by(desc_subfuncion) min(0) nographs
 			local medsup = r(Educaci_c_o__n_Media_Superior)
-			scalar medsup = `medsup'/`Educacion'[1,2]*alum_medsup
+			scalar medsup = `medsup'/`Educacion'[1,2]*5353499/`EducacionI'[1,2]
 			restore
 		}
 		capture confirm scalar superi
@@ -102,7 +102,7 @@ quietly {
 			preserve
 			PEF if divGA == 3, anio(`anio') by(desc_subfuncion) min(0) nographs
 			local superi = r(Educaci_c_o__n_Superior)
-			scalar superi = `superi'/`Educacion'[1,3]*alum_superi
+			scalar superi = `superi'/`Educacion'[1,3]*4579894/`EducacionI'[1,3]
 			restore
 		}
 		capture confirm scalar posgra
@@ -113,7 +113,7 @@ quietly {
 			preserve
 			PEF if divGA == 3, anio(`anio') by(desc_subfuncion) min(0) nographs
 			local posgra = r(Posgrado)
-			scalar posgra = `posgra'/`Educacion'[1,4]*alum_posgra
+			scalar posgra = `posgra'/`Educacion'[1,4]*403312/`EducacionI'[1,4]
 			restore
 		}
 		capture confirm scalar eduadu
@@ -125,12 +125,13 @@ quietly {
 			PEF if divGA == 3, anio(`anio') by(desc_subfuncion) min(0) nographs
 			local eduadu = r(Educaci_c_o__n_para_Adultos)
 
-			scalar eduadu = `eduadu'/`Educacion'[1,5]*alum_adulto
+			scalar eduadu = `eduadu'/`Educacion'[1,5]*1905180/`EducacionI'[1,5]
 			restore
 		}
 		capture confirm scalar otrose
 		if _rc == 0 {
-			local otrose = scalar(otrose)*(`Educacion'[1,1]+`Educacion'[1,2]+`Educacion'[1,3]+`Educacion'[1,4]+`Educacion'[1,5])
+			local otrose = scalar(otrose)*(`Educacion'[1,1]*24597234/`EducacionI'[1,1]+`Educacion'[1,2]*5353499/`EducacionI'[1,2] ///
+				+`Educacion'[1,3]*4579894/`EducacionI'[1,3]+`Educacion'[1,4]*403312/`EducacionI'[1,4]+`Educacion'[1,5]*1905180/`EducacionI'[1,5])
 		}
 		else {
 			preserve
@@ -139,8 +140,8 @@ quietly {
 				+r(Desarrollo_Tecnol_c_o__gico)+r(Funci_c_o__n_P_c_u__blica) ///
 				+r(Investigaci_c_o__n_Cient_c_i__f)+r(Servicios_Cient_c_i__ficos_y_Te)
 
-			scalar otrose = `otrose'/(`Educacion'[1,1]*alum_basica+`Educacion'[1,2]*alum_medsup ///
-				+`Educacion'[1,3]*alum_superi+`Educacion'[1,4]*alum_posgra+`Educacion'[1,5]*alum_adulto)
+			scalar otrose = `otrose'/(`Educacion'[1,1]*24597234/`EducacionI'[1,1]+`Educacion'[1,2]*5353499/`EducacionI'[1,2] ///
+				+`Educacion'[1,3]*4579894/`EducacionI'[1,3]+`Educacion'[1,4]*403312/`EducacionI'[1,4]+`Educacion'[1,5]*1905180/`EducacionI'[1,5])
 			restore
 		}
 
