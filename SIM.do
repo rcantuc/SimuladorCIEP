@@ -92,7 +92,7 @@ if "$pais" == "" {
 
 	global tasaEfectiva = 5.8131                                           // Tasa de inter{c e'}s EFECTIVA
 	global tipoDeCambio = 20.200                                           // Tipo de cambio
-	global depreciacion = 0.4000                                           // Depreciaci{c o'}n
+	global depreciacion = 0.2000*0+1                                           // Depreciaci{c o'}n
 
 	local aniovp = 2022
 	local folio "folioviv foliohog"                                         // Folio del hogar
@@ -199,8 +199,8 @@ scalar otrose      =    1473 //    Otros gastos educativos
 scalar ssa         =     928 //    SSalud
 scalar prospe      =    2013 //    IMSS-Prospera
 scalar segpop      =    3131 //    Seguro Popular
-scalar imss        =    4691 //    IMSS (salud)
-scalar issste      =    4709 //    ISSSTE (salud)
+scalar imss        =    4681 //    IMSS (salud)
+scalar issste      =    4697 //    ISSSTE (salud)
 scalar pemex       =   41686 //    Pemex (salud) + ISSFAM (salud)
 
 scalar bienestar   =   24810 //    Pensi{c o'}n Bienestar
