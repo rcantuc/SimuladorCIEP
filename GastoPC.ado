@@ -34,8 +34,6 @@ quietly {
 		matrix GASTOS = r(StatTotal)
 
 
-
-
 		*******************
 		*** 3 Educacion ***
 		*******************
