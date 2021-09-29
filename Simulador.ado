@@ -739,11 +739,6 @@ program graphpiramide
 			local rect ""
 		}
 
-		* Base *
-		if "`base'" != "" {
-			local base " `base'"
-		}
-
 		* Boottext *
 		if "`boottext'" != "" {
 			local boottext " `boottext'"

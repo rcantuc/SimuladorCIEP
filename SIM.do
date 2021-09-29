@@ -36,8 +36,8 @@ adopath ++ PERSONAL
 ***                   ***
 *************************
 global id = "`c(username)'"                                                     // ID DEL USUARIO
+global pais "Ecuador"                                                          // OTROS PAISES (si aplica)
 *global pais "El Salvador"                                                      // OTROS PAISES (si aplica)
-*global pais "Ecuador"                                                          // OTROS PAISES (si aplica)
 
 *global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
 local noisily "noisily"                                                         // "NOISILY" OUTPUTS
@@ -92,7 +92,7 @@ if "$pais" == "" {
 
 	global tasaEfectiva = 5.8131                                           // Tasa de inter{c e'}s EFECTIVA
 	global tipoDeCambio = 20.200                                           // Tipo de cambio
-	global depreciacion = 0.2000*0+1                                           // Depreciaci{c o'}n
+	global depreciacion = 0.2000                                           // Depreciaci{c o'}n
 
 	local aniovp = 2022
 	local folio "folioviv foliohog"                                         // Folio del hogar
@@ -125,17 +125,16 @@ noisily run "`c(sysdir_personal)'/Arranque.do" `aniovp'
 
 
 
-
 *******************************
 **       1.1 POBLACION       **
-/*forvalues k=1950(1)2100 {
+*forvalues k=1950(1)2100 {
 foreach k in `aniovp' {
 	`noisily' Poblacion, `nographs' anio(`k') //update //tf(`=64.333315/2.1*1.8') //tm2044(18.9) tm4564(63.9) tm65(35.0) //aniofinal(2040) 
 }
 
 
 
-****************************************************/
+****************************************************
 **       1.2 PIB + Deflactor, Inflacion, SCN       **
 `noisily' PIBDeflactor, anio(`aniovp') `nographs' save geopib(2000) geodef(2010) discount(5.0) //update
 if "$pais" == "" {
@@ -145,10 +144,10 @@ if "$pais" == "" {
 
 
 
-*********************************************
-/**       1.3 Ingresos, Gastos y Deuda       **
+*********************************************/
+**       1.3 Ingresos, Gastos y Deuda       **
 `noisily' LIF, anio(`aniovp') `nographs' by(divCIEP) rows(2) ilif min(1) //update
-`noisily' PEF, anio(`aniovp') `nographs' by(desc_funcion) rows(4) min(1) //update
+`noisily' PEF, anio(`aniovp') `nographs' by(desc_funcion) rows(2) min(1) //update
 `noisily' SHRFSP, anio(`aniovp') `nographs' //update
 
 
@@ -156,7 +155,7 @@ if "$pais" == "" {
 *******************************/
 **       1.4 HOUSEHOLDS       **
 capture use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PensionREC.dta"', clear
-if _rc != 0 {
+if _rc != 0 | "$pais" != "" {
 	local id = "$id"
 	global id = ""
 
@@ -222,7 +221,7 @@ scalar IngBas      =       0 //    Ingreso b{c a'}sico
 scalar ingbasico18 =       1 //    1: Incluye menores de 18 anios, 0: no
 scalar ingbasico65 =       1 //    1: Incluye mayores de 65 anios, 0: no
 ***    FIN: SIMULADOR GASTOS    ***
-**********************************/
+**********************************
 
 
 
@@ -364,7 +363,7 @@ if "`cambioiva'" == "1" & "$pais" == "" {
 
 
 
-****************************************
+****************************************/
 ***                                   ***
 ***    5. PARTE IV: REDISTRIBUCION    ***
 ***                                   ***
@@ -395,7 +394,7 @@ noisily CuentasGeneracionales AportacionesNetas, anio(`aniovp') //boot(250) 	// 
 
 
 
-***************************************************
+***************************************************/
 **       5.3 PROYECCION DE LAS APORTACIONES       **
 ****************************************************
 use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/AportacionesNetasREC.dta"', clear
@@ -459,7 +458,7 @@ if "$output" == "output" {
 
 
 
-************************************************
+************************************************/
 ***                                           ***
 ***    6. PARTE IV: DEUDA + REDISTRIBUCION    ***
 ***                                           ***

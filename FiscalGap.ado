@@ -182,9 +182,11 @@ quietly {
 	replace estimacionotros = L.otrospib/100*pibYR if anio > `anio'
 
 	* Ingresos petroleros (como % PIB) *
-	g petroleopib = recaudacionpetroleo/pibYR*100
-	replace petroleopib = L.petroleopib if anio > `anio'
-	replace estimacionpetroleo = L.petroleopib/100*pibYR if anio > `anio'
+	if "$pais" != "Ecuador" {
+		g petroleopib = recaudacionpetroleo/pibYR*100
+		replace petroleopib = L.petroleopib if anio > `anio'
+		replace estimacionpetroleo = L.petroleopib/100*pibYR if anio > `anio'
+	}
 
 
 	***************/
@@ -568,7 +570,7 @@ quietly {
 	***************
 	* Iteraciones *
 	***************
-	forvalues k = `=`anio''(1)`=anio[_N]' {
+	forvalues k = `=`anio'+1'(1)`=anio[_N]' {
 
 		* Amortizaciones *
 		replace estimacionamortizacion = L.amortizacionpib/100*pibY if anio == `k'
@@ -786,11 +788,11 @@ quietly {
 		in g " `currency'"	
 
 	* Saldo de la deuda *
-	tabstat shrfsp if anio == `=`anio'-1', stat(sum) f(%20.0fc) save
+	tabstat shrfsp if anio == `=`anio'', stat(sum) f(%20.0fc) save
 	tempname shrfsp
 	matrix `shrfsp' = r(StatTotal)
 
-	noisily di in g "  (+) Deuda (" in y `=`anio'-1' in g "):" ///
+	noisily di in g "  (+) Deuda (" in y `=`anio'' in g "):" ///
 		in y _col(35) %25.0fc -`shrfsp'[1,1] ///
 		in g " `currency'"	
 	noisily di in g "  " _dup(61) "-"
@@ -808,7 +810,7 @@ quietly {
 		in y _col(35) %25.1fc (-`shrfsp'[1,1] + `estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1])/scalar(pibVPINF)*100 ///
 		in g " %"
 
-	g shrfspPIB = shrfsp/pibY*100
+	g shrfspPIB = shrfsp/pibYR*100
 	if "`nographs'" != "nographs" & "$nographs" != "nographs" {
 		twoway (area shrfspPIB anio if shrfspPIB != . & anio <= `anio' & anio >= 2000) ///
 			(area shrfspPIB anio if anio > `anio' & anio <= `end'), ///
