@@ -400,8 +400,11 @@ capture g double gasto = ejercido
 if _rc != 0 {
 	g double gasto = devengado
 }
-replace gasto = aprobado if anio == 2021
-replace gasto = proyecto if anio == 2022
+
+if "$pais" == "" {
+	replace gasto = aprobado if anio == 2021
+	replace gasto = proyecto if anio == 2022
+}
 
 if "$pais" == "" {
 	** Cuotas ISSSTE **
@@ -423,6 +426,7 @@ if "$pais" == "" {
 else {
 	g byte transf_gf = 0
 	g double gastoneto = gasto
+	g double gastoCUOTAS = 0
 	format gastoneto %20.0fc
 }
 
