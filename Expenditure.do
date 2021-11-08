@@ -7,7 +7,7 @@ if "`1'" == "" {
 	clear all
 	local enighanio = 2020
 }
-if `1' >= 2020  {
+if "`1'" >= "2020"  {
 	local enighanio = 2020
 }
 

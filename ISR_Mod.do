@@ -169,6 +169,7 @@ replace ISR = ISR__asalariados + ISR__PF + ISR__PM
 tabstat ISR__asalariados [fw=factor_cola] if formal_asalariados == 1, stat(sum) f(%25.2fc) save
 tempname SIMTAXS
 matrix `SIMTAXS' = r(StatTotal)
+*noisily Simulador ISR__asalariados [fw=factor_cola], base("ENIGH 2020") boot(1) reboot nooutput
 
 tabstat ISR__PF [fw=factor_cola] if formal_fisicas == 1, stat(sum) f(%25.2fc) save
 tempname SIMTAX
@@ -190,6 +191,7 @@ tabstat cuotasTP [fw=factor_cola] if formal2 == 1, stat(sum) f(%25.2fc) save
 tempname SIMCSS
 matrix `SIMCSS' = r(StatTotal)
 scalar CuotasT = `SIMCSS'[1,1]/`pibY'*100 //								Cuotas IMSS
+
 
 
 /* SIMULACION EQUIDAD DE GENERO *

@@ -10,7 +10,7 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
-	** 1.2 Datos Abiertos (MÃˆxico) **
+	** 1.2 Datos Abiertos (MÈxico) **
 	if "`c(username)'" == "ricardo" & "$pais" == "" {
 		capture confirm file "`c(sysdir_personal)'/SIM/DatosAbiertos.dta"
 		if _rc != 0 {
@@ -45,14 +45,15 @@ quietly {
 	noisily di _newline(2) in g _dup(20) "." "{bf:  Sistema Fiscal: INGRESOS $pais " in y `anio' "  }" in g _dup(20) "."
 
 	** 2.1 PIB + Deflactor **
-	PIBDeflactor, anio(`anio') nographs nooutput
+	*PIBDeflactor, anio(`anio') nographs nooutput
+	use "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", clear
 	local currency = currency[1]
 	forvalues k=1(1)`=_N' {
 		if anio[`k'] == `anio' {
 			local pibYR`anio' = pibYR[`k']
 		}
-		if anio[`k'] == `anio'-10 {
-			local pibYR`=`anio'-10' = pibYR[`k']
+		if anio[`k'] == `anio'-8 {
+			local pibYR`=`anio'-8' = pibYR[`k']
 		}
 	}
 	tempfile PIB
@@ -231,8 +232,8 @@ quietly {
 	noisily di _newline in g "{bf: C. Cambios:" in y " `=`anio'-1' - `anio'" in g ///
 		_col(44) %7s "`=`anio'-1'" ///
 		_col(55) %7s "`anio'" ///
-		_col(66) %7s "D. % PIB" ///
-		_col(77) %7s "D. %" "}"
+		_col(66) %7s "Dif % PIB" ///
+		_col(77) %7s "Dif %" "}"
 
 	tabstat recaudacion recaudacionPIB if anio == `anio', by(`by') stat(sum) f(%20.0fc) save
 	tempname mattot
@@ -279,19 +280,16 @@ quietly {
 			_col(66) in y %7.3fc `mattot'[1,2]-`mattot5'[1,2] ///
 			_col(77) in y %7.3fc (`mattot'[1,2]-`mattot5'[1,2])/`mattot5'[1,2]*100 "}"
 	}
-		
-		
-		
-	/** 4.3 Elasticidades **
+
+
+	** 4.4 Elasticidades **
 	if "`by'" == "divGA" {
-		noisily di _newline in g "{bf: C. Crecimientos geom{c e'}tricos:" in y " `=`anio'-10' - `anio'" in g ///
-			_col(55) %7s "Ingreso" ///
-			_col(66) %7s "PIB" ///
+		noisily di _newline in g "{bf: D. Elasticidades:" in y " `=`anio'-8' - `anio'" in g ///
+			_col(55) %7s "Cam. % Ing" ///
+			_col(66) %7s "Cam. % PIB" ///
 			_col(77) %7s "Elasticidad" "}"
 
-
-
-		capture tabstat recaudacion recaudacionPIB if anio == `anio'-10 & divLIF != 10, by(`by') stat(sum) f(%20.1fc) save
+		capture tabstat recaudacion recaudacionPIB if anio == `anio'-8 & divLIF != 10, by(`by') stat(sum) f(%20.1fc) save
 		if _rc == 0 {
 			tempname mattot5
 			matrix `mattot5' = r(StatTotal)
@@ -303,26 +301,26 @@ quietly {
 
 				if `mat`k''[1,1] != . & `mat5`k''[1,1] != . {
 					noisily di in g "  (+) `=r(name`k')'" ///
-						_col(55) in y %7.3fc (((`mat`k''[1,1]/`mat5`k''[1,1])^(1/10)-1)*100) ///
-						_col(66) in y %7.3fc (((`pibYR`anio''/`pibYR`=`anio'-10'')^(1/10)-1)*100) ///
-						_col(77) in y %7.3fc (((`mat`k''[1,1]/`mat5`k''[1,1])^(1/10)-1)*100)/ ///
-						(((`pibYR`anio''/`pibYR`=`anio'-10'')^(1/10)-1)*100)
+						_col(55) in y %7.3fc (((`mat`k''[1,1]/`mat5`k''[1,1])^(1/8)-1)*100) ///
+						_col(66) in y %7.3fc (((`pibYR`anio''/`pibYR`=`anio'-8'')^(1/8)-1)*100) ///
+						_col(77) in y %7.3fc (((`mat`k''[1,1]/`mat5`k''[1,1])^(1/8)))/ ///
+						(((`pibYR`anio''/`pibYR`=`anio'-8'')^(1/8)))
 				}
 				local ++k
 			}
 
 			noisily di in g _dup(83) "-"
 			noisily di in g "{bf:  (=) Ingresos (sin deuda)" ///
-					_col(55) in y %7.3fc (((`mattot'[1,1]/`mattot5'[1,1])^(1/10)-1)*100) ///
-					_col(66) in y %7.3fc (((`pibYR`anio''/`pibYR`=`anio'-10'')^(1/10)-1)*100) ///
-					_col(77) in y %7.3fc (((`mattot'[1,1]/`mattot5'[1,1])^(1/10)-1)*100)/ ///
-					(((`pibYR`anio''/`pibYR`=`anio'-10'')^(1/10)-1)*100) "}"
+					_col(55) in y %7.3fc (((`mattot'[1,1]/`mattot5'[1,1])^(1/8)-1)*100) ///
+					_col(66) in y %7.3fc (((`pibYR`anio''/`pibYR`=`anio'-8'')^(1/8)-1)*100) ///
+					_col(77) in y %7.3fc (((`mattot'[1,1]/`mattot5'[1,1])^(1/8))*100)/ ///
+					(((`pibYR`anio''/`pibYR`=`anio'-8'')^(1/8))*100) "}"
 		}
-	}*/
+	}
 
 
 
-	*****************/
+	******************
 	* Returns Extras *
 	if "$pais" == "" {
 		capture tabstat recaudacion recaudacionPIB if anio == `anio' & nombre == "Cuotas a la seguridad social (IMSS)", stat(sum) f(%20.1fc) save
@@ -355,7 +353,7 @@ quietly {
 
 
 
-	if "`nographs'" != "nographs" {
+	if "`nographs'" != "nographs" & "$nographs" == "" {
 		preserve
 		tabstat recaudacionPIB if anio == `anio' & divLIF != 10, stat(sum) f(%20.0fc) save
 		tempname recanio

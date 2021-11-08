@@ -636,7 +636,7 @@ quietly {
 	scalar ImpNetProduccionKPIB = ImpNetProduccionK[`obs']/PIB[`obs']*100
 
 	** R.3. Graph **
-	if "`nographs'" != "nographs" {
+	if "`nographs'" != "nographs" & "$nographs" == "" {
 		tempvar Laboral Capital Depreciacion
 		g `Laboral' = (Yl)/deflator/1000000000000
 		label var `Laboral' "Ingresos laborales"
@@ -763,7 +763,7 @@ quietly {
 	scalar AhorroNPC = AhorroN[`obs']/poblacion[`obs']
 
 	** R.3. Graph **
-	if "`nographs'" != "nographs" {
+	if "`nographs'" != "nographs" & "$nographs" == "" {
 		tempvar ConHog ConGob ComprasN AhorroN
 		g `ComprasN' = (ComprasN)/deflator/1000000000000
 		label var `ComprasN' "Compras netas"

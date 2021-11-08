@@ -107,7 +107,7 @@ quietly {
 	label var deflatorpp "Poder adquisitivo"
 
 
-	if "`nographs'" != "nographs" {
+	if "`nographs'" != "nographs" & "$nographs" == "" {
 
 		* Graph type *
 		if `exo_count'-1 <= 0 {

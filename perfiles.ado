@@ -42,7 +42,7 @@ quietly {
 	******************
 	*** 2 Collapse ***
 	******************
-	replace edad = `edadmax' if edad > `edadmax' & edad != . 					// Por si hay observaciones mayores a `edadmax' (PoblacionBase.ado).
+	replace edad = `edadmax' if edad > `edadmax' & edad != . 		// Por si hay observaciones mayores a `edadmax' (PoblacionBase.ado).
 	collapse (sum) `rec' `pob' `for' [`weight' = `exp'], by(sexo edad)
 
 
@@ -73,7 +73,7 @@ quietly {
 
 	* Observaciones no encontradas *
 	sort sexo edad
-	forvalues k=0(1)`edadmax' {									// Edades segun PoblacionBase.ado
+	forvalues k=0(1)`edadmax' {						// Edades segun PoblacionBase.ado
 		forvalues j=1(1)2 {
 			count if edad == `k' & sexo == `j'
 			if r(N) == 0 {

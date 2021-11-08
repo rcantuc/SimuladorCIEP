@@ -4,7 +4,7 @@
 ****                          ****
 **********************************
 if "`1'" == "" {
-	clear all
+	clear
 	local 1 = 2021
 }
 
@@ -184,13 +184,14 @@ append using `parteb'
 append using `partee'
 append using `partef'
 
-keep if /*PERCEP == "Impuesto a la renta" |*/ PERCEP == "Aportaciones al seguro social" ///
-	| PERCEP == "Pensión x jubilación, cesantia" | PERCEP == "Remuneración mensual unificada" 
+keep if PERCEP == "Impuesto a la renta" | PERCEP == "Aportaciones al seguro social" ///
+	| PERCEP == "Pensión x jubilación, cesantia" | PERCEP == "Remuneración mensual unificada"
 collapse (sum) VALOR, by(Identif* PERCEP)
 
 g ingresos = 1 if PERCEP == "Aportaciones al seguro social"
-replace ingresos = 2 if PERCEP == "Remuneración mensual unificada"
+replace ingresos = 2 if PERCEP == "Impuesto a la renta" //
 replace ingresos = 3 if PERCEP == "Pensión x jubilación, cesantia"
+replace ingresos = 4 if PERCEP == "Remuneración mensual unificada"
 
 drop PERCEP
 reshape wide VALOR, i(Identif_perna) j(ingresos)
@@ -211,7 +212,8 @@ g numren = substr(Identif_per,-2,2)
 *******************************
 *** Variables Simulador.ado ***
 *******************************
-
+g IngTotal = VALOR4
+label var IngTotal "remuneraciones mensuales unificadas"
 
 ** (+) Consumo **
 g Consumo = gas_gru_cor*alfa/`alfatot'
@@ -221,13 +223,12 @@ noisily Simulador Consumo [fw=factor], base("ENIGHUR 2011-2012") boot(1) reboot 
 
 
 
-** (+) Ingreso **
+** (+) Ingreso **/
 g Laboral = VALOR2
 replace Laboral = 0 if Laboral == .
 label var Laboral "impuestos al ingreso"
 Distribucion Laboral, macro(`alingreso')
 noisily Simulador Laboral [fw=factor], base("ENIGHUR 2011-2012") boot(1) reboot anio(`1') folio(Identif_hog)
-
 
 
 ** (+) Otros ingresos **
@@ -261,28 +262,28 @@ label var ISR__PM "ISR personas morales"
 
 
 
-** (-) IngBasico **
+** (-) IngBasico **/
 g IngBasico = 0
-label var IngBasico "IngBasico"
+label var IngBasico "ingreso b{c a'}sico"
 Simulador IngBasico [fw=factor], base("ENIGHUR 2011-2012") boot(1) reboot anio(`1') folio(Identif_hog)
 
 
 
 ** (-) PenBienestar **
 g PenBienestar = 0
-label var PenBienestar "PenBienestar"
+label var PenBienestar "pensi{c o'}n Bienestar"
 Simulador PenBienestar if edad >= 68 [fw=factor], base("ENIGHUR 2011-2012") boot(1) reboot anio(`1') folio(Identif_hog)
 
 
 
-** (-) Infra **/
+** (-) Infra **
 g Infra = 0
-label var Infra "Infra"
+label var Infra "infraestructura"
 
 
 
 ** (-) Pensiones **
-g Pension = VALOR3 if P05A != 5 | P05A != 6 | P05A != 9
+g Pension = VALOR3 if P05A != 5 & P05A != 6 & P05A != 9
 replace Pension = 0 if Pension == .
 label var Pension "pensiones p{c u'}blicas"
 Distribucion Pension, macro(`pensiones')
@@ -310,7 +311,7 @@ replace Educacion = 0 if Educacion == .
 label var Educacion "Educación"
 
 Distribucion Educacion, macro(`educacion')
-Simulador Educacion [fw=factor], base("ENIGHUR 2011-2012") boot(1) reboot anio(`1') folio(Identif_hog)
+noisily Simulador Educacion if Educacion != 0 [fw=factor], base("ENIGHUR 2011-2012") boot(1) reboot anio(`1') folio(Identif_hog)
 
 
 
@@ -567,7 +568,6 @@ replace Salud = 279 if edad == 97 & sexo == 2
 replace Salud = 1268 if edad >= 98 & sexo == 2
 
 
-*/
 label var Salud "Salud"
 Distribucion Salud, macro(`salud')
 noisily Simulador Salud [fw=factor], base("ENIGHUR 2011-2012") boot(1) reboot anio(`1') folio(Identif_hog)
@@ -593,7 +593,9 @@ capture mkdir "`c(sysdir_personal)'/SIM/$pais/"
 capture mkdir "`c(sysdir_personal)'/SIM/$pais/2020/"
 if `c(version)' > 13.1 {
 	saveold "`c(sysdir_personal)'/SIM/$pais/2020/households.dta", replace version(13)
+	*saveold "`c(sysdir_personal)'/users/$pais/households.dta", replace version(13)
 }
 else {
 	save "`c(sysdir_personal)'/SIM/$pais/2020/households.dta", replace
+	*save "`c(sysdir_personal)'/users/$pais/households.dta", replace
 }

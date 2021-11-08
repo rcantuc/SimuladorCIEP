@@ -474,8 +474,9 @@ label var IngBasico "Basic universal income"
 
 
 
-******************/
-*** 7. SIMULADOR **
+*******************/
+*** 7. SIMULADOR ***
+********************
 noisily Simulador Laboral [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
 noisily Simulador CuotasSS [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
 noisily Simulador Consumo [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
@@ -497,6 +498,16 @@ noisily Simulador ing_bruto_tpm [fw=factor], base("ENIGH 2020") boot(1) reboot $
 noisily Simulador ImpuestosAportaciones [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
 noisily Simulador IngresosPublicos [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
 
+
+
+****************/
+*** 8. SANKEY ***
+*****************
+if `c(version)' > 13.1 {
+	foreach k in grupoedad decil escol sexo {
+		noisily run "`c(sysdir_personal)'/Sankey.do" `k' `1'
+	}
+}
 
 
 

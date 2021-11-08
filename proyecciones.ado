@@ -1,7 +1,7 @@
 program define proyecciones
 quietly {
 	version 13.1
-	syntax varname, POBlacion(string) ANIObase(int) [BOOTstrap(int 1) POST]
+	syntax varname, POBlacion(string) ANIObase(int) [BOOTstrap(int 1) POST title(string)]
 
 	noisily di _newline in y "  proyecciones.ado"
 
@@ -37,25 +37,24 @@ quietly {
 	******************************
 	*** 2. Proyecciones Modulo ***
 	******************************
-
 	** 2.1 Recaudacion **
-	*mata: `=upper("`varlist'")' = (PC * (colsum(HOM :* PERFIL[.,1] :* CONTBEN[.,1]/100) ///
-		+ colsum(MUJ :* PERFIL[.,2] :* CONTBEN[.,2]/100)))
-	mata: `=upper("`varlist'")' = PC * ((PERFIL[.,1]' :* CONTBEN[.,1]'/100) * HOM ///
-		+ (PERFIL[.,2]' :* CONTBEN[.,2]'/100) * MUJ)
+	*mata: `=upper("`varlist'")' = (PC * (colsum(HOM :* PERFIL[.,1] :* CONTBEN[.,1]/100) + colsum(MUJ :* PERFIL[.,2] :* CONTBEN[.,2]/100)))
+	mata: `=upper("`varlist'")' = PC * ((PERFIL[.,1]' :* CONTBEN[.,1]'/100) * HOM + (PERFIL[.,2]' :* CONTBEN[.,2]'/100) * MUJ)
 
 
 	** 2.2 Contribuyentes/Beneficiarios **
-	*mata: CONT = (colsum(HOM :* PERFIL[.,1] :* CONTBEN[.,1]/100) ///
-		+ colsum(MUJ :* PERFIL[.,2] :* CONTBEN[.,2]/100))
-	mata: CONT = ((PERFIL[.,1]' :* CONTBEN[.,1]'/100) * HOM ///
-		+ (PERFIL[.,2]' :* CONTBEN[.,2]'/100) * MUJ)
+	*mata: CONT = (colsum(HOM :* PERFIL[.,1] :* CONTBEN[.,1]/100) + colsum(MUJ :* PERFIL[.,2] :* CONTBEN[.,2]/100)) // Equivalentes
+	*mata: CONT = ((PERFIL[.,1]' :* CONTBEN[.,1]'/100) * HOM + (PERFIL[.,2]' :* CONTBEN[.,2]'/100) * MUJ) // Equivalentes 2
+	mata: CONT = ((CONTBEN[.,1]'/100) * HOM + (CONTBEN[.,2]'/100) * MUJ) // Nominal
 
 	* Por Sexo *
-	*mata: CONT_Hom = (colsum(HOM :* PERFIL[.,1] :* CONTBEN[.,1]/100))
-	mata: CONT_Hom = (PERFIL[.,1]' :* CONTBEN[.,1]'/100) * HOM
-	*mata: CONT_Muj = (colsum(MUJ :* PERFIL[.,2] :* CONTBEN[.,2]/100))
-	mata: CONT_Muj = (PERFIL[.,2]' :* CONTBEN[.,2]'/100) * MUJ
+	*mata: CONT_Hom = (colsum(HOM :* PERFIL[.,1] :* CONTBEN[.,1]/100)) // Equivalentes
+	*mata: CONT_Hom = (PERFIL[.,1]' :* CONTBEN[.,1]'/100) * HOM // Equivalentes 2
+	mata: CONT_Hom = (CONTBEN[.,1]'/100) * HOM // Nominal
+	*mata: CONT_Muj = (colsum(MUJ :* PERFIL[.,2] :* CONTBEN[.,2]/100)) // Equivalentes
+	*mata: CONT_Muj = (PERFIL[.,2]' :* CONTBEN[.,2]'/100) * MUJ // Equivalentes 2
+	mata: CONT_Muj = (CONTBEN[.,2]'/100) * MUJ // Nominal
+
 
 	* Por Edades *
 	local last = rowsof(MUJ)
@@ -82,13 +81,19 @@ quietly {
 	tempname `=upper("`varlist'")'
 	mata: st_matrix(`"``=upper("`varlist'")''"',`=upper("`varlist'")'')
 	
+	* Per capita *
+	tempname PC
+	mata: st_matrix(`"`PC'"',PC)
+
 	* Contribuyentes/Beneficiarios *
 	tempname CONT
 	mata: st_matrix(`"`CONT'"',CONT')
+
 	* Por Sexo *
 	tempname CONT_Hom CONT_Muj
 	mata: st_matrix(`"`CONT_Hom'"',CONT_Hom')
 	mata: st_matrix(`"`CONT_Muj'"',CONT_Muj')
+
 	* Por Edades *
 	tempname CONT_0_24 CONT_25_49 ///
 		CONT_50_74 CONT_75_mas
@@ -107,9 +112,9 @@ quietly {
 	* 3. Guardar resultados POST *
 	if "`post'" == "post" {
 		forvalues k=1(1)`=rowsof(``=upper("`varlist'")'')' {
-			post REC ("`varlist'") (`bootstrap') (`anio') (`aniobase') ///
+			post REC ("`title'") (`bootstrap') (`anio') (`aniobase') ///
 				(``=upper("`varlist'")''[`k',1]) ///
-				(`CONT'[`k',1]) (`POB'[`k',1]) ///
+				(`CONT'[`k',1]) (`POB'[`k',1]) (`PC'[1,1]) ///
 				(`CONT_Hom'[`k',1]) (`CONT_Muj'[`k',1]) ///
 				(`CONT_0_24'[`k',1]) (`CONT_25_49'[`k',1]) ///
 				(`CONT_50_74'[`k',1]) (`CONT_75_mas'[`k',1]) 

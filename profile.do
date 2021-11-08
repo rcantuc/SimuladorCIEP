@@ -25,7 +25,7 @@ noisily di _newline(3) in w "{bf:Centro de Investigaci{c o'}n Econ{c o'}mica y P
 ********************
 *** 3 Parametros ***
 ********************
-noisily di in g "Fuente:" in y " INEGI, BIE + {bf:Pre-CGPE 2022}"
+noisily di in g "Fuente:" in y " INEGI, BIE + {bf:CGPE 2022}"
 
 * 2021-2026 *
 global pib2021 = 6.3                                                            // CGPE 2022: 5.3

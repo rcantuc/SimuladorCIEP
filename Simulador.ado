@@ -6,8 +6,8 @@ quietly {
 		[BOOTstrap(int 1) ///
 		NOGraphs NOOutput REboot Noisily ///
 		REESCalar(real 1) BANDwidth(int 5) ///
-		BASE(string) GA ///
-		MACro(string) BIE ///
+		BASE(string) ///
+		MACro(string) ///
 		POBlacion(string) FOLIO(string) ///
 		NOKernel POBGraph ANIO(int -1)]
 
@@ -21,10 +21,10 @@ quietly {
 		local base = "ENIGH 2018"
 	}
 
-	** Anio de la BASE **
+	** Anio de la ENCUESTA DE HOGARES **
 	tokenize `base'
 	local aniobase = `2'
-	
+
 	if `anio' == -1 {
 		local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 		local anio = substr(`"`=trim("`fecha'")'"',1,4)
@@ -32,7 +32,8 @@ quietly {
 
 	** Macros: PIB **
 	preserve
-	PIBDeflactor, anio(`anio') nographs nooutput
+	*PIBDeflactor, anio(`anio') nographs nooutput
+	use "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", clear
 	tempfile PIBBASE
 	save `PIBBASE'
 
@@ -105,7 +106,7 @@ quietly {
 		******************
 		** 1.2 Archivos **
 		capture mkdir `"`c(sysdir_personal)'/users/$pais/"'
-		*capture mkdir `"`c(sysdir_personal)'/users/$pais/$id/"'
+		capture mkdir `"`c(sysdir_personal)'/users/$pais/$id/"'
 		capture mkdir `"`c(sysdir_personal)'/users/$pais/$id/graphs/"'
 		capture mkdir `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/"'
 		capture mkdir `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'"'
@@ -134,7 +135,7 @@ quietly {
 
 		** Proyecciones **
 		postfile REC str30 (modulo) int (bootstrap anio aniobase) ///
-			double (estimacion contribuyentes poblacion ///
+			double (estimacion contribuyentes poblacion montopc ///
 			contribuyentes_Hom contribuyentes_Muj ///
 			contribuyentes_0_24 contribuyentes_25_49 ///
 			contribuyentes_50_74 contribuyentes_75_mas) ///
@@ -158,7 +159,7 @@ quietly {
 
 			** 1.3.1. Monto per capita **
 			** Recaudacion **
-			tempname REC REC39
+			tempname REC
 			capture tabstat `varlist' [`weight' = `exp'*`boot'] `if', stat(sum) f(%20.2fc) save
 			if _rc == 0 {
 				matrix `REC' = r(StatTotal)
@@ -166,13 +167,14 @@ quietly {
 			else {
 				matrix `REC' = J(1,1,0)
 			}
-			
-			* Recaudacion, Edad 39, Hombres *
+
+			** Recaudacion, Edad 39, Hombres **
+			tempname REC39
 			if "`if'" != "" {
 				local if39 = "`if' & edad == 39 & sexo == 1"
 			}
 			else {
-				local if39 = "if edad == 39 & sexo == 1"			
+				local if39 = "if edad == 39 & sexo == 1"
 			}
 			capture tabstat `varlist' [`weight' = `exp'*`boot'] `if39', stat(sum) f(%20.2fc) save
 			if _rc == 0 {
@@ -193,7 +195,7 @@ quietly {
 			}
 
 			** Poblacion **
-			tempname POB POB39
+			tempname POB
 			capture tabstat `cont' [`weight' = `exp'*`boot'], stat(sum) f(%12.0fc) save
 			if _rc == 0 {
 				matrix `POB' = r(StatTotal)
@@ -201,8 +203,9 @@ quietly {
 			else {
 				matrix `POB' = J(1,1,0)
 			}
-			
-			* Poblacion, Edad 39, Hombres *
+
+			** Poblacion, Edad 39, Hombres **
+			tempname POB39
 			capture tabstat `cont' [`weight' = `exp'*`boot'] `if39', stat(sum) f(%12.0fc) save
 			if _rc == 0 {
 				matrix `POB39' = r(StatTotal)
@@ -210,7 +213,6 @@ quietly {
 			else {
 				matrix `POB39' = J(1,1,0)
 			}
-
 
 			** Monto per capita promedio **
 			if `FOR'[1,1] != 0 {
@@ -220,7 +222,6 @@ quietly {
 				local montopc = 0
 			}
 
-
 			** Mata: PC **
 			local edad39 = `REC39'[1,1]/`POB39'[1,1]
 			if `edad39' == . | `edad39' == 0 {
@@ -229,7 +230,6 @@ quietly {
 			else {
 				local pc = `edad39'
 			}
-
 			mata: PC = `pc'
 
 			* Desplegar estadisticos *
@@ -249,8 +249,8 @@ quietly {
 
 
 			*** 1.3.3. Incidencia por hogar **/
-			capture confirm variable decil
 			tempvar decil
+			capture confirm variable decil
 			if _rc != 0 {
 				noisily di _newline in g "{bf:  No hay variable: " in y "decil" in g ". Se cre{c o'} con: " in y "`varlist'" in g ".}"
 				xtile `decil' = `varlist' [`weight' = `exp'*`boot'], n(10)
@@ -280,8 +280,7 @@ quietly {
 
 
 			*** 1.3.5. Proyecciones ***
-			`noisily' proyecciones `varlist', post ///
-				pob(`poblacion') boot(`k') aniobase(`aniobase')
+			`noisily' proyecciones `varlist', post pob(`poblacion') boot(`k') aniobase(`anio') title(`title')
 		}
 
 
@@ -347,7 +346,7 @@ quietly {
 
 	******************
 	*** 3 Perfiles ***
-	/******************
+	******************
 	use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'PERF"', clear
 
 
@@ -368,7 +367,8 @@ quietly {
 	}
 
 	* Sin kernel *
-	if "`nokernel'" == "nokernel" & "`nographs'" != "nographs" {
+	if "`nokernel'" == "nokernel" & "$nographs" != "nographs" & "`nographs'" != "nographs" {
+
 		twoway line perfil1 edad, ///
 			name(PerfilH`varlist', replace) ///
 			title("{bf:`title'}") ///
@@ -376,7 +376,7 @@ quietly {
 			ytitle(`ylabelpc' equivalente) ///
 			ylabel(0(.5)1.5) ///
 			subtitle(Perfil de hombres`pais') ///
-			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.`boottext'}")
+			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.`boottext'")
 
 		twoway line perfil2 edad, ///
 			name(PerfilM`varlist', replace) ///
@@ -385,7 +385,7 @@ quietly {
 			ytitle(`ylabelpc' equivalente) ///
 			ylabel(0(.5)1.5) ///
 			subtitle(Perfil de mujeres`pais') ///
-			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.`boottext'}")
+			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.`boottext'")
 
 		twoway line contribuyentes1 edad, ///
 			name(ContH`varlist', replace) ///
@@ -394,7 +394,7 @@ quietly {
 			ytitle(porcentaje) yscale(range(0 100)) ///
 			ylabel(0(20)100) ///
 			subtitle(Participaci{c o'}n de hombres`pais') ///
-			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.`boottext'}")
+			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.`boottext'")
 
 		twoway line contribuyentes2 edad, ///
 			name(ContM`varlist', replace) ///
@@ -403,33 +403,31 @@ quietly {
 			ytitle(porcentaje) yscale(range(0 100)) ///
 			ylabel(0(20)100) ///
 			subtitle(Participaci{c o'}n de mujeres`pais') ///
-			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.`boottext'}")
+			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.`boottext'")
 	}
 
 	* Con kernel *
-	else if "`nographs'" != "nographs" {
+	else if "$nographs" != "nographs" & "`nographs'" != "nographs" {
 		lpoly perfil1 edad, bwidth(`bandwidth') ci kernel(gaussian) degree(2) ///
 			name(PerfilH`varlist', replace) generate(perfilH) at(edad) noscatter ///
-			///title("{bf:`title'}") ///
-			title("") ///
+			title("{bf:`title'}") ///
 			xtitle(age) ///
-			///xtitle(edad) ///
+			xtitle(edad) ///
 			ytitle(`ylabelpc' equivalent) ///
 			///ylabel(0(.5)1.5) ///
-			///subtitle(Perfil de hombres`pais') ///
-			///caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.`boottext'}") ///
+			subtitle(Perfil de hombres`pais') ///
+			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.`boottext'")
 			//nograph
 
 		lpoly perfil2 edad, bwidth(`bandwidth') ci kernel(gaussian) degree(2) ///
 			name(PerfilM`varlist', replace) generate(perfilM) at(edad) noscatter ///
-			///title("{bf:`title'}") ///
-			title("") ///
+			title("{bf:`title'}") ///
 			xtitle(age) ///
-			///xtitle(edad) ///
+			xtitle(edad) ///
 			ytitle(`ylabelpc' equivalent) ///
 			///ylabel(0(.5)1.5) ///
-			///subtitle(Perfil de mujeres`pais') ///
-			///caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.`boottext'}") ///
+			subtitle(Perfil de mujeres`pais') ///
+			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.`boottext'")
 			//nograph
 
 		lpoly contribuyentes1 edad, bwidth(`bandwidth') ci kernel(gaussian) degree(2) ///
@@ -439,7 +437,7 @@ quietly {
 			ytitle(porcentaje) yscale(range(0 100)) ///
 			ylabel(0(20)100) ///
 			subtitle(Participaci{c o'}n de hombres`pais') ///
-			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.`boottext'}") ///
+			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.`boottext'")
 			//nograph
 
 		lpoly contribuyentes2 edad, bwidth(`bandwidth') ci kernel(gaussian) degree(2) ///
@@ -449,11 +447,11 @@ quietly {
 			ytitle(porcentaje) yscale(range(0 100)) ///
 			ylabel(0(20)100) ///
 			subtitle(Participaci{c o'}n de mujeres`pais') ///
-			caption("{it:Fuente: Elaborado por el CIEP con el Simulador v5.`boottext'}") ///
+			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.`boottext'")
 			//nograph
 	}
 
-	if "`nographs'" != "nographs" {
+	if "$nographs" != "nographs" & "`nographs'" != "nographs" {
 		graph save PerfilH`varlist' `"`c(sysdir_personal)'/users/$pais/$id/graphs/PerfilH`varlist'"', replace
 		graph save PerfilM`varlist' `"`c(sysdir_personal)'/users/$pais/$id/graphs/PerfilM`varlist'"', replace
 		graph save ContH`varlist' `"`c(sysdir_personal)'/users/$pais/$id/graphs/ContH`varlist'"', replace
@@ -468,7 +466,7 @@ quietly {
 	format xhogar %15.1fc
 	format distribucion %6.1fc
 	format incidencia %6.1fc
-	
+
 	label define deciles 1 "I" 2 "II" 3 "III" 4 "IV" 5 "V" 6 "VI" 7 "VII" 8 "VIII" 9 "IX" 10 "X" 11 "Nacional"
 	label values decil deciles
 
@@ -542,7 +540,7 @@ quietly {
 	*** 5. CICLO DE VIDA ***
 	************************
 	use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'CICLO"', clear
-	
+
 	* Labels *
 	label define deciles 1 "I" 2 "II" 3 "III" 4 "IV" 5 "V" 6 "VI" 7 "VII" 8 "VIII" 9 "IX" 10 "X" 11 "Nacional"
 	label values decil deciles
@@ -550,7 +548,7 @@ quietly {
 	replace escol = 3 if escol == 4
 	label define escol 0 "Ninguna" 1 "B{c a'}sica" 2 "Media superior" 3 "Superior o posgrado"
 	label values escol escol
-	
+
 	label define sexo 1 "Hombres" 2 "Mujeres"
 	label values sexo sexo
 
@@ -559,7 +557,26 @@ quietly {
 	***********************************
 	*** 5.1 Piramide de la variable ***
 	poblaciongini `varlist', title("`title'") nombre(`nombre') ///
-		boottext(`boottext') rect(`RECT') base(`base') graphs id($id) pib(`PIB') `nooutput'
+		boottext(`boottext') rect(`RECT') base(`base') graphs id($id) pib(`PIB') `nooutput' `nographs'
+
+
+
+	**********************
+	*** 6. RECAUDACION ***
+	**********************
+	use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'REC"', clear
+	forvalues k=1(1)`=_N' {
+		if anio[`k'] == aniobase[`k'] {
+			g ajuste = `REC'[1,1]/estimacion[`k']
+			continue, break
+		}
+	}
+	replace estimacion = estimacion*ajuste
+	save `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'REC"', replace
+
+	ProyGraph `varlist' `nographs'
+	
+
 
 
 
@@ -582,7 +599,7 @@ end
 program poblaciongini
 	version 13.1
 	syntax varname, NOMbre(string) PIB(real) ///
-		[TITle(string) Rect(real 100) BOOTtext(string) BASE(string) Graphs ID(string) NOOutput]
+		[TITle(string) Rect(real 100) BOOTtext(string) BASE(string) Graphs ID(string) NOOutput NOGraphs]
 
 
 	*************************
@@ -660,10 +677,10 @@ program poblaciongini
 	*** 5. Graphs ***
 	graphpiramide `varlist', over(`grupo') title("`title'") rect(`rect') ///
 		men(`=string(`gsexlab1',"%7.0fc")') women(`=string(`gsexlab2',"%7.0fc")') ///
-		boot(`boottext') base(`base') pib(`pib') `nooutput'
+		boot(`boottext') base(`base') pib(`pib') `nooutput' `nographs'
 	*graphpiramide `varlist', over(`grupoesc') title("`title'") rect(`rect') ///
 		men(`=string(`gsexlab1',"%7.0fc")') women(`=string(`gsexlab2',"%7.0fc")') ///
-		boot(`boottext') base(`base') pib(`pib') `nooutput'
+		boot(`boottext') base(`base') pib(`pib') `nooutput' `nographs'
 end
 
 
@@ -674,7 +691,7 @@ program graphpiramide
 	version 13.1
 
 	syntax varname, Over(varname) Men(string) Women(string) PIB(real) ///
-		[Title(string) BOOTtext(string) Rect(real 100) BASE(string) ID(string) NOOutput]
+		[Title(string) BOOTtext(string) Rect(real 100) BASE(string) ID(string) NOOutput NOGraphs]
 
 	* Title *
 	local titleover : variable label `over'
@@ -873,6 +890,78 @@ program graphpiramide
 		noisily di in w "APORTMVIIX: [`=substr("`aportMVIIX'",1,`=`lengthMVIIX'-1')']"
 		local lengthMX = strlen("`aportMX'")
 		noisily di in w "APORTMX: [`=substr("`aportMX'",1,`=`lengthMX'-1')']"
+		quietly log off output
+	}
+end
+
+program define ProyGraph
+
+	args varlist nographs
+
+	use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/`varlist'REC.dta"', clear
+	merge 1:1 (anio) using "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", nogen
+
+	local title = modulo[1]
+	
+	replace estimacion = estimacion/1000000000
+	*replace estimacion = estimacion/pibYR*100
+
+	forvalues aniohoy = `=aniovp'(1)`=aniovp' {
+	*forvalues aniohoy = 1990(1)2050 {
+		tabstat estimacion if anio > `=aniovp', stat(max) save
+		tempname MAX
+		matrix `MAX' = r(StatTotal)
+		forvalues k=1(1)`=_N' {
+			if estimacion[`k'] == `MAX'[1,1] {
+				local aniomax = anio[`k']
+			}
+			if anio[`k'] == `aniohoy' {
+				local estimacionvp = estimacion[`k']
+			}
+		}
+
+		if `estimacionvp' == . {
+				local estimacionvp = 0
+		}
+		
+		if `MAX'[1,1] == . {
+			matrix `MAX' = J(1,1,0)
+		}
+
+		if "$nographs" != "nographs" & "`nographs'" != "nographs" {
+			twoway (connected estimacion anio) ///
+				(connected estimacion anio if anio == `aniohoy') ///
+				if anio > 1990, ///
+				ytitle("mil millones USD `=aniovp'") ///
+				///ytitle("% PIB") ///
+				yscale(range(0)) /*ylabel(0(1)4)*/ ///
+				ylabel(#5, format(%5.1fc) labsize(small)) ///
+				xlabel(1990(10)`=anio[_N]', labsize(small) labgap(2)) ///
+				xtitle("") ///
+				legend(off) ///
+				text(`=`MAX'[1,1]' `aniomax' "{bf:M{c a'}ximo:} `aniomax'", place(c)) ///
+				text(`estimacionvp' `aniohoy' "{bf:Hoy:} `aniohoy'", place(c)) ///
+				title("Proyecci{c o'}n de {bf:`title'}") subtitle("$pais") ///
+				caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.") ///
+				name(`varlist'Proj, replace)
+
+			capture confirm existence $export
+			if _rc == 0 {
+				graph export "$export/`varlist'Proj`aniohoy'.png", replace name(`varlist'Proj)
+			}
+		}
+	}
+
+	if "$output" == "output" {
+		forvalues k=1(5)`=_N' {
+			if anio[`k'] >= 2010 {
+				local out_proy = "`out_proy' `=string(estimacion[`k'],"%8.3f")',"
+			}
+		}
+		local lengthproy = strlen("`out_proy'")
+		quietly log on output
+		noisily di in w "PROY: [`=substr("`out_proy'",1,`=`lengthproy'-1')']"
+		noisily di in w "PROYMAX: [`aniomax']"
 		quietly log off output
 	}
 end

@@ -58,6 +58,11 @@ quietly {
 			if _rc != 0 {
 				 use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/LaboralREC.dta"', clear
 			}
+			if "$pais" == "Ecuador" {
+				rename estimacion estimacionorig
+				merge 1:1 (anio) using `"`c(sysdir_personal)'/users/$pais/bootstraps/1/LaboralEcuREC.dta"'
+				replace estimacion = estimacionorig if anio <= 2033
+			}
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
 
@@ -76,6 +81,11 @@ quietly {
 			capture use `"`c(sysdir_personal)'/users/$pais/$id/ConsumoREC.dta"', clear
 			if _rc != 0 {
 				use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/ConsumoREC.dta"', clear			
+			}
+			if "$pais" == "Ecuador" {
+				rename estimacion estimacionorig
+				merge 1:1 (anio) using `"`c(sysdir_personal)'/users/$pais/bootstraps/1/ConsumoEcuREC.dta"'
+				replace estimacion = estimacionorig if anio <= 2033
 			}
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
@@ -96,6 +106,11 @@ quietly {
 			if _rc != 0 {
 				use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/OtrosCREC.dta"', clear			
 			}
+			if "$pais" == "Ecuador" {
+				rename estimacion estimacionorig
+				merge 1:1 (anio) using `"`c(sysdir_personal)'/users/$pais/bootstraps/1/OtrosCEcuREC.dta"'
+				replace estimacion = estimacionorig if anio <= 2033
+			}
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
 
@@ -114,6 +129,11 @@ quietly {
 			capture use `"`c(sysdir_personal)'/users/$pais/$id/CuotasSSREC"', clear
 			if _rc != 0 {
 				use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/CuotasSSREC.dta"', clear
+			}
+			if "$pais" == "Ecuador" {
+				rename estimacion estimacionorig
+				merge 1:1 (anio) using `"`c(sysdir_personal)'/users/$pais/bootstraps/1/CuotasSSEcuREC.dta"'
+				replace estimacion = estimacionorig if anio <= 2033
 			}
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
@@ -177,13 +197,13 @@ quietly {
 	tsset anio
 
 	* Otros ingresos (como % PIB) *
-	g otrospib = recaudacionotros/pibYR*100
+	g otrospib = estimacionotros/pibYR*100
 	replace otrospib = L.otrospib if anio > `anio'
 	replace estimacionotros = L.otrospib/100*pibYR if anio > `anio'
 
 	* Ingresos petroleros (como % PIB) *
 	if "$pais" != "Ecuador" {
-		g petroleopib = recaudacionpetroleo/pibYR*100
+		g petroleopib = estimacionpetroleo/pibYR*100
 		replace petroleopib = L.petroleopib if anio > `anio'
 		replace estimacionpetroleo = L.petroleopib/100*pibYR if anio > `anio'
 	}
@@ -868,6 +888,10 @@ quietly {
 	*****************************************
 	preserve
 	use `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
+	
+	tabstat poblacion if anio == `anio', stat(sum) save f(%20.0fc)
+	tempname poblacionACT
+	matrix `poblacionACT' = r(StatTotal)
 
 	collapse (sum) poblacion if edad == 0, by(anio) fast
 	merge 1:1 (anio) using `PIB', nogen keepus(lambda)
@@ -886,8 +910,12 @@ quietly {
 
 	noisily di in g "  (*) Poblaci{c o'}n futura INF: " in y _col(35) %25.0fc `poblacionINF' in g " personas"
 
-	noisily di in g "  (*) Cuenta generaciones futuras:" ///
+	noisily di in g "  (*) Deuda generaci{c o'}n futura:" ///
 		in y _col(35) %25.0fc -(-`shrfsp'[1,1] + `estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1])/(`poblacionVP'[1,1]+`poblacionINF') ///
+		in g " `currency' por persona"
+
+	noisily di in g "  (*) Deuda generaci{c o'}n actual:" ///
+		in y _col(35) %25.0fc -(-`shrfsp'[1,1])/(`poblacionACT'[1,1]) ///
 		in g " `currency' por persona"
 	capture confirm matrix GA
 	if _rc == 0 {

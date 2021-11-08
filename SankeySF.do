@@ -25,7 +25,7 @@ SCN, anio(`2') nographs
 **********************************/
 ** Eje 1: Generación del ingreso **
 use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
-replace Laboral = Laboral + CuotasSS
+replace Laboral = ISR__asalariados + ISR__PF + cuotasTP
 collapse (sum) ing_Imp_Laborales=Laboral ing__Imp_Consumo=Consumo ing__FMP=Petroleo ing___Imp_al_capital=ISR__PM [fw=factor], by(`1')
 
 * to *
