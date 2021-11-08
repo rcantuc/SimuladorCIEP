@@ -518,6 +518,6 @@ quietly {
 	** END **
 	timer off 14
 	timer list 14
-	noisily di _newline in g _dup(20) "·" "   " in y round(`=r(t14)/r(nt14)',.1) in g " segs  " _dup(20) "·" 
+	noisily di _newline in g _dup(20) "." "   " in y round(`=r(t14)/r(nt14)',.1) in g " segs  " _dup(20) "." 
 }
 end
