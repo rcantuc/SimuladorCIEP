@@ -51,7 +51,7 @@ keep if entidad == "Nacional"
 
 ** 5. Guardar **
 tempfile poblacion
-save `poblacion'
+save "`poblacion'"
 
 
 
@@ -101,7 +101,7 @@ keep if entidad == "Nacional"
 
 ** 5. Guardar **
 tempfile defunciones
-save `defunciones'
+save "`defunciones'"
 
 
 
@@ -166,7 +166,7 @@ keep if entidad == "Nacional"
 
 ** 5. Guardar **
 tempfile migracion
-save `migracion'
+save "`migracion'"
 
 
 
@@ -174,9 +174,9 @@ save `migracion'
 ***************/
 *** D. Union ***
 ****************
-use `poblacion', clear
-merge 1:1 (anio edad sexo entidad) using `defunciones', nogen
-merge 1:1 (anio edad sexo entidad) using `migracion', nogen
+use "`poblacion'", clear
+merge 1:1 (anio edad sexo entidad) using "`defunciones'", nogen
+merge 1:1 (anio edad sexo entidad) using "`migracion'", nogen
 drop cve_geo
 order anio sexo edad entidad poblacion defunciones
 
