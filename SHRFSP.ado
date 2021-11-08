@@ -40,7 +40,8 @@ quietly {
 	}
 
 	** 2.2 PIB + Deflactor **
-	PIBDeflactor, anio(`anio') nographs nooutput
+	*PIBDeflactor, anio(`anio') nographs nooutput
+	use "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", clear
 	local currency = currency[1]
 	tempfile PIB
 	save `PIB'
@@ -197,7 +198,7 @@ quietly {
 		g efectoTipoDeCambio = ((L.porExterno*Depreciacion*(1+tasaExterno))/((1+var_pibY/100)*(1+var_indiceY/100)))*L.shrfsp/L.pibY*100
 		g efectoOtros = -(rfspPIDIREGAS+rfspIPAB+rfspFONADIN+rfspDeudores+rfspBanca+rfspAdecuacion+nopresupuestario)/pibY*100
 
-		if "`nographs'" != "nographs" {
+		if "`nographs'" != "nographs" & "$nographs" == "" {
 			graph bar efectoIntereses efectoInflacion efectoCrecimiento balprimario efectoTipoDeCambio efectoOtros ///
 				if anio <= `anio' & Depreciacion != ., ///
 				over(anio) stack blabel(, format(%5.1fc)) ///
@@ -207,6 +208,11 @@ quietly {
 				name(efectoDeuda, replace) ///
 				note("{bf:{c U'}ltimo dato}: `aniolast'`meslast'") ///
 				caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.")
+
+			capture confirm existence $export
+			if _rc == 0 {
+				graph export "$export/efectoDeuda.png", replace name(efectoDeuda)
+			}			
 		}
 
 		tabstat depreciacion if anio <= `anio' & anio >= `=`anio'-`depreciacion'+1', stat(sum) save
@@ -260,7 +266,7 @@ quietly {
 	***************
 	*** 4 Graph ***
 	***************	
-	if "`nographs'" != "nographs" {
+	if "`nographs'" != "nographs" & "$nographs" == "" {
 		tempvar interno externo rfsp rfsppib
 		g `externo' = shrfspExterno/1000000000
 		g `interno' = `externo' + shrfspInterno/1000000000

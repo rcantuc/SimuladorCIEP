@@ -1,9 +1,9 @@
 **********************************************************
-***                  ACTUALIZACIÃ“N                     ***
+***                  ACTUALIZACIÓN                     ***
 ***   1) abrir archivos .iqy en Excel de Windows       ***
 ***   2) guardar y reemplazar .xls dentro de           ***
 ***      ./TemplateCIEP/basesCIEP/INEGI/SCN/           ***
-***   3) correr PIBDeflactor[.ado] con opciÃ³n "update" ***
+***   3) correr PIBDeflactor[.ado] con opción "update" ***
 **********************************************************
 
 
@@ -147,9 +147,9 @@ quietly {
 
 	***********************************************
 	** 1.1 Imputar Par{c a'}metros ex{c o'}genos **
-	/* Para todos los aÃ±os, si existe informaciÃ³n sobre el crecimiento del deflactor 
-	utilizarla, si no existe, tomar el rezago del Ã­ndice geomÃ©trico. Posteriormente
-	ajustar los valores del Ã­ndice con sus rezagos. */
+	/* Para todos los años, si existe información sobre el crecimiento del deflactor 
+	utilizarla, si no existe, tomar el rezago del índice geométrico. Posteriormente
+	ajustar los valores del índice con sus rezagos. */
 	local exo_def = 0
 	local anio_def = `aniovp'
 	forvalues k=`anio_last'(1)`fin' {
@@ -276,7 +276,7 @@ quietly {
 	g lambda = (1+scalar(llambda)/100)^(anio-`aniovp')
 
 
-	* ProyecciÃ³n de crecimiento PIB *
+	* Proyección de crecimiento PIB *
 	replace pibYR = `=pibYR[`obs_exo']'/`=WorkingAge[`obs_exo']'*WorkingAge*(1+scalar(llambda)/100)^(anio-`anio_exo') if pibYR == .
 	replace pibY = pibYR*deflator if pibY == .
 
@@ -294,8 +294,8 @@ quietly {
 	** 3 Simulador **
 	*****************
 	noisily di in g " PIB " in y "`anio_last'`trim_last'" _col(25) %20.0fc `pib_last' in g " `=currency[`obsvp']' ({c u'}ltimo reportado)"
-	noisily di _newline in g " PIB " in y anio[`obsvp'] in g " per c{c a'}pita " in y _col(35) %10.1fc pibY[`obsvp']/Poblacion[`obsvp'] in g " `=currency[`obs_exo']'"
-	noisily di in g " PIB " in y anio[`obs_exo'] in g " por trabajador " in y _col(35) %10.1fc OutputPerWorker[`obs_exo'] in g " `=currency[`obs_exo']'"
+	noisily di _newline in g " PIB " in y anio[`obsvp'] in g " per c{c a'}pita " in y _col(35) %10.1fc pibY[`obsvp']/Poblacion[`obsvp'] in g " `=currency[`obsvp']'"
+	noisily di in g " PIB " in y anio[`obsvp'] in g " por trabajador " in y _col(35) %10.1fc OutputPerWorker[`obsvp'] in g " `=currency[`obsvp']'"
 	noisily di in g " Crecimiento promedio " in y anio[`obsPIB'] "-" anio[`obs_exo'] _col(35) %10.4f ((pibYR[`obs_exo']/pibYR[`obsPIB'])^(1/(`obs_exo'-`obsPIB'))-1)*100 in g " %" 
 	noisily di in g " Lambda por trabajador " in y anio[`obsPIB'] "-" anio[`obs_exo'] _col(35) %10.4f scalar(llambda) in g " %" 
 	*noisily di in g " Lambda por trabajador " in y anio[1] "-" anio[`obs_exo'] _col(35) %10.4f scalar(LLambda) in g " %" 
@@ -328,7 +328,7 @@ quietly {
 	noisily di in g " Defl. al infinito: " in y _col(25) %20.1fc var_indiceY[_N] in g " %"
 
 
-	if "`nographs'" != "nographs" {
+	if "`nographs'" != "nographs" & "$nographs" == "" {
 
 		* Texto sobre lineas *
 		forvalues k=1(2)`=_N' {

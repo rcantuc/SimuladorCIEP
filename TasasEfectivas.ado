@@ -6,7 +6,6 @@ quietly {
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
 	syntax [, ANIO(int `aniovp') NOGraphs CRECSIM(real 1)]
-
 	noisily di _newline(2) in g _dup(20) "." "{bf:   Tasas Efectivas de los INGRESOS " in y `anio' "   }" in g _dup(20) "."
 
 	if "$pais" == "" {
@@ -16,7 +15,7 @@ quietly {
 		SCN, anio(`anio') nographs
 		use if anio == `anio' using "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", clear
 		scalar PIB = pibY[1]
-		
+
 		balanzacomercial, anio(`anio')
 
 
@@ -254,30 +253,59 @@ quietly {
 		matrix `INGRESOSSIM' = r(StatTotal)
 	}
 
-	if "$pais" != "" {
-		if `aniovp' > `anio' {
-			noisily LIF, anio(`anio') by(divGA) nographs //ilif
-		}
-		else {
-			noisily LIF, anio(`anio') by(divGA) nographs
-		}
-		local Laboral = r(Impuestos_al_ingreso)
-		local Consumo = r(Impuestos_al_consumo)
-		local OtrosC = r(Otros_ingresos)
-		local CuotasSS = r(Seguridad_Social)
-		local Petroleo = r(Petroleros)
+	if "$pais" == "Ecuador" {
+		use "`c(sysdir_personal)'/users/$pais/$id/households.dta", clear
+		g formalidad = Laboral != 0 | CuotasSS != 0
+		replace formalidad = . if IngTotal == 0 | IngTotal == . //| CuotasSS == 0 | CuotasSS == .
 
-		use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
+		g pob = 1 if formalidad != .
+		tabstat pob [fw=factor], stat(sum) by(formalidad) f(%20.0fc) save
+		tempname form total
+		matrix `form' = r(Stat2)
+		matrix `total' = r(StatTotal)
 
-		tabstat Laboral Consumo OtrosC CuotasSS Petroleo [fw=factor], stat(sum) f(%20.0fc) save
+		local formalidad = `form'[1,1]/`total'[1,1]
+		noisily di `formalidad'
+
+		tabstat Laboral if Laboral != 0 [fw=factor], stat(mean) by(P14A) f(%20.0fc) save
+		tempname alfa prim basi secu medi noun univ post
+		matrix `alfa' = r(Stat1)
+		matrix `prim' = r(Stat2)
+		matrix `basi' = r(Stat3)
+		matrix `secu' = r(Stat4)
+		matrix `medi' = r(Stat5)
+		matrix `noun' = r(Stat6)
+		matrix `univ' = r(Stat7)
+		matrix `post' = r(Stat8)
+
+		/*replace Laboral = `alfa'[1,1]*.15 if P14A == 2 & formalidad == 0
+		replace Laboral = `prim'[1,1]*.15 if P14A == 4 & formalidad == 0
+		replace Laboral = `basi'[1,1]*.15 if P14A == 5 & formalidad == 0
+		replace Laboral = `secu'[1,1]*.15 if P14A == 6 & formalidad == 0
+		replace Laboral = `medi'[1,1]*.15 if P14A == 7 & formalidad == 0
+		replace Laboral = `noun'[1,1]*.15 if P14A == 8 & formalidad == 0
+		replace Laboral = `univ'[1,1]*.15 if P14A == 9 & formalidad == 0
+		replace Laboral = `post'[1,1]*.15 if P14A == 10 & formalidad == 0*/
+
+		g LaboralEcu = Laboral // *1.0051157402*1.005
+		g ConsumoEcu = Consumo // *1.004*0.990
+		g CuotasSSEcu = CuotasSS // *1.0051157402*1.027
+		g OtrosCEcu = OtrosC // *1.004*0.989
+
+		Simulador LaboralEcu [fw=factor], base("ENIGH 2020") reboot anio(`=aniovp') folio(`=foliohogar') nographs
+		Simulador ConsumoEcu [fw=factor], base("ENIGH 2020") reboot anio(`=aniovp') folio(`=foliohogar') nographs
+		Simulador CuotasSSEcu [fw=factor], base("ENIGH 2020") reboot anio(`=aniovp') folio(`=foliohogar') nographs
+		Simulador OtrosCEcu [fw=factor], base("ENIGH 2020") reboot anio(`=aniovp') folio(`=foliohogar') nographs
+
+		/*tabstat Laboral Consumo OtrosC CuotasSS Petroleo [fw=factor], stat(sum) f(%20.0fc) save
 		tempname INGRESOS
 		matrix `INGRESOS' = r(StatTotal)
-		
+
 		replace Laboral = Laboral*`Laboral'/`INGRESOS'[1,1]*`crecsim'
 		replace Consumo = Consumo*`Consumo'/`INGRESOS'[1,2]*`crecsim'
 		replace OtrosC = OtrosC*`OtrosC'/`INGRESOS'[1,3]*`crecsim'
 		replace CuotasSS = CuotasSS*`CuotasSS'/`INGRESOS'[1,4]*`crecsim'
-		replace Petroleo = Petroleo*`Petroleo'/`INGRESOS'[1,5]*`crecsim'
+		replace Petroleo = Petroleo*`Petroleo'/`INGRESOS'[1,5]*`crecsim'*/
 
 		tabstat Laboral Consumo OtrosC CuotasSS Petroleo [fw=factor], stat(sum) f(%20.0fc) save
 		tempname INGRESOSSIM

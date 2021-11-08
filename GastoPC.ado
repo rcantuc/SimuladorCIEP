@@ -804,33 +804,27 @@ quietly {
 			gasto_anualDepreciacion prop_* SE ImpNet* infonavit fovissste
 	}
 
-	else if "$pais" != "" {
-
-		if `aniovp' > `anio' {
-			noisily PEF, anio(`anio') by(divGA) nographs //aprobado
-		}
-		else {
-			noisily PEF, anio(`anio') by(divGA) nographs
-		}
-		
-		local Pension = r(Pensiones)
-		local Educacion = r(Educaci_c_o__n)
-		local Salud = r(Salud)
-		local OtrosGas = r(Otros)
+	else if "$pais" == "Ecuador" {
 
 		use "`c(sysdir_personal)'/SIM/$pais/2020/households.dta", clear
-	
 		tabstat Pension Educacion Salud OtrosGas Infra [fw=factor], stat(sum) f(%20.0fc) save
 		tempname GASTOS TRANSF
 		matrix `GASTOS' = r(StatTotal)
 
 		tabstat IngBasico PenBienestar [fw=factor], stat(sum) f(%20.0fc) save
 		matrix `TRANSF' = r(StatTotal)
-		
-		replace Pension = Pension*`Pension'/`GASTOS'[1,1]
-		replace Educacion = Educacion*`Educacion'/`GASTOS'[1,2]
-		replace Salud = Salud*`Salud'/`GASTOS'[1,3]
-		replace OtrosGas = OtrosGas*`OtrosGas'/`GASTOS'[1,4]*`otros'
+
+		/*replace Educacion = Educacion*1.2055498
+		Simulador Educacion [fw=factor], base("ENIGH 2020") reboot anio(`=aniovp') folio(`=foliohogar') nographs
+		tempvar EduSimvar
+		g `EduSimvar' = Educacion*.2055498
+
+		tabstat `EduSimvar' if Educacion != 0 [fw=factor], stat(sum count) f(%20.0fc) save
+		tempname EduSim
+		matrix `EduSim' = r(StatTotal)
+
+		replace OtrosGas = OtrosGas*((`GASTOS'[1,4]-`EduSim'[1,1])/`GASTOS'[1,4])
+		Simulador OtrosGas [fw=factor], base("ENIGH 2020") reboot anio(`=aniovp') folio(`=foliohogar') nographs*/
 
 		tabstat Pension Educacion Salud OtrosGas Infra [fw=factor], stat(sum) f(%20.0fc) save
 		tempname GASTOSSIM TRANSFSIM

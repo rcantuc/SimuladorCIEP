@@ -9,7 +9,7 @@ quietly {
 
 	syntax varname [, ANIObase(int `aniovp') BOOTstrap(int 1) Graphs POST]
 
-	noisily di _newline in g "{bf:Cuentas Generacionales: " in y "$pais `aniobase'}"
+	noisily di _newline(2) in g _dup(20) "." "{bf:   Cuentas Generacionales " in y "$pais " `anio' "   }" in g _dup(20) "."
 	local title : variable label `varlist'
 
 
@@ -114,7 +114,7 @@ quietly {
 	mata GA[.,2] = GA[.,2] :/ MUJ[.,1]
 
 
-	** 2.4 A Stata **
+	** a Stata **
 	mata: st_matrix("GA",GA)
 
 	levelsof edad, local(edades)

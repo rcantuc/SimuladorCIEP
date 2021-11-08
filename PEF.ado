@@ -10,7 +10,7 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
-	** 1.2 Datos Abiertos (MÈxico) **
+	** 1.2 Datos Abiertos (Mexico) **
 	if "`c(username)'" == "ricardo" & "$pais" == "" {
 		*UpdateDatosAbiertos
 		local updated = "yes" //r(updated)
@@ -48,7 +48,8 @@ quietly {
 	noisily di _newline(2) in g _dup(20) "." "{bf:  Sistema Fiscal: GASTOS $pais " in y `anio' "  }" in g _dup(20) "."
 	
 	** 2.1 PIB + Deflactor **
-	PIBDeflactor, anio(`anio') nographs nooutput
+	*PIBDeflactor, anio(`anio') nographs nooutput
+	use "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", clear
 	local currency = currency[1]
 	tempfile PIB
 	save `PIB'
@@ -333,7 +334,7 @@ quietly {
 
 
 
-	if "$graphs" == "on" | "`nographs'" != "nographs" {
+	if "`nographs'" != "nographs" & "$nographs" == "" {
 		preserve
 		tabstat gastonetoPIB if anio == `anio' & `by' != -1 & transf_gf == 0, stat(sum) f(%20.0fc) save
 		tempname gasanio
