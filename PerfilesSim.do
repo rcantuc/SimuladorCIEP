@@ -515,5 +515,6 @@ if `c(version)' > 13.1 {
 *** SAVE ***
 ************
 compress
-drop __* *_accum
+capture drop __* 
+capture drop *_accum
 save "`c(sysdir_personal)'/SIM/2020/households`1'.dta", replace
