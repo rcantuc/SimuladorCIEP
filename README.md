@@ -20,6 +20,16 @@ Los pasos para empezar a **colaborar** (actualmente, sólo bajo invitación):
 4. **Definir** el directorio PERSONAL: ahí es desde donde se programará. Agregar el número de computadoras alternativas o secundarias desde donde se programará.
 5. **Definir** el (los) superuser(s): estos son los que generarán las bases datos y outputs de default.
 
+---
+## Capítulo_0: Opciones
+###Comandos para limpiar el ambiente 
+Los primeros tres comandos permiten al programa limpiar en su totalidad el ambiente de trabajo. Primero eliminamos cualquier **variable** guardada en el programa. Segundo, utilizamos el comando macro para **manipular todas las macros** tanto globales como locales.  Por último, se cierran todos **los archivos tipo log** que puedan estar ejecutándose en el momento de iniciar a correr el simulador fiscal.  
+![limpiador](/Images/Cap_0/Limpiador.PNG)
+
+### Pendiente_ programación
+
+
+
 
 
 
