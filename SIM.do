@@ -22,7 +22,7 @@ global pais "Ecuador"                                                          /
 
 *global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
 local noisily "noisily"                                                         // "NOISILY" OUTPUTS
-global nographs "nographs"                                                      // SUPRIMIR GRAFICAS
+*global nographs "nographs"                                                      // SUPRIMIR GRAFICAS
 local household "household"
 *local update "update"
 
