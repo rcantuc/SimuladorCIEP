@@ -28,7 +28,7 @@ local household "household"
 
 
 *************************************
-**    0.1 GITHUB (PROGRAMACION)    **
+**    0.1 GITHUB (PROGRAMACION)    ** 
 sysdir set PERSONAL "C:\Users\Juan Pablo\Documents\GitHub\simuladorCIEP"	
 adopath ++ PERSONAL
 
