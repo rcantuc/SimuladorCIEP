@@ -22,11 +22,43 @@ Los pasos para empezar a **colaborar** (actualmente, sólo bajo invitación):
 
 ---
 ## Capítulo_0: Opciones
-###Comandos para limpiar el ambiente 
+### Comandos para limpiar el ambiente 
 Los primeros tres comandos permiten al programa limpiar en su totalidad el ambiente de trabajo. Primero eliminamos cualquier **variable** guardada en el programa. Segundo, utilizamos el comando macro para **manipular todas las macros** tanto globales como locales.  Por último, se cierran todos **los archivos tipo log** que puedan estar ejecutándose en el momento de iniciar a correr el simulador fiscal.  
 ![limpiador](/Images/Cap_0/Limpiador.PNG)
 
 ### Pendiente_ programación
+
+
+
+## Capítulo_1: Población
+
+### A. Población
+Primero, importamos las bases de datos que utilizaremos en el modulo de población. 
+En la sección de **población** la base es la “Base de datos de México: Población, defunciones y migración internacional” disponible en “../basesCIEP/CONAPO/ censo2020.dta”. Esta nos dará a conocer los valores de la población separada por año, sexo y edad.  
+Recordemos que el directorio fue definido en el inicio del código, los “..” al inicio de la dirección es para regresar un directorio de donde nos encontrábamos antes. Regresamos de la dirección “/TemplatesCIEP/simuladorCIEP” a la dirección “/Templates” para después ingresar a “../basesCIEP/CONAPO/”.
+
+Se realiza la limpieza de variables y los problemas derivados de los caracteres especiales. En este caso se corrigen las variables Año y sexo. Además, le ponemos label en STATA a las variables Población, Entidad Federativa y Año.
+La variable población se convierte a string separada por comas y sin decimales, para facilitar su interpretación. 
+
+Posteriormente se ordena y guardamos de manera temporal la base de datos, ya que procederemos a trabajar con otra base. 
+
+![poblacion](/Images/Cap_1/poblacion.PNG)
+
+
+### B. Defunciones
+
+Primero, cargamos la base de datos para esta sección. En este caso el programa contempla las versiones posteriores de STATA 13.1 para realizar una codificación, caso contrario la carga de manera normal. 
+En este caso la base de datos se encuentra disponible en la siguiente dirección: 
+"`c(sysdir_site)'../basesCIEP/CONAPO/def_edad_proyecciones_n.csv"
+
+Recordando que `c(sysdir_site)' contiene la dirección del directorio base. 
+
+Posteriormente se limpian las variables sexo, año y defunciones. Las primeras dos nos servirán para unir esta base con la base población, mientras que defunciones es una variable nueva y escrita en formato separada por comas sin decimales. 
+
+El archivo se guarda de manera temporal para utilizarla posteriormente. 
+
+![poblacion](/Images/Cap_1/defunciones.PNG)
+
 
 
 
