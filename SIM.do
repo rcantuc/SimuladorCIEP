@@ -16,32 +16,13 @@ capture log close _all
 ***    0. OPCIONES    ***
 ***                   ***
 *************************
-global id = "`c(username)'"                                                     // ID DEL USUARIO
-*global pais "Ecuador"                                                          // OTROS PAISES (si aplica)
-*global pais "El Salvador"                                                      // OTROS PAISES (si aplica)
 *global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
 *global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
-
 local noisily "noisily"                                                         // "NOISILY" OUTPUTS
-local household "household"                                                    // RUN HOUSEHOLDS.DO
 *local update "update"                                                          // UPDATE DATASETS
 
 
-*************************************
-**    0.1 GITHUB (PROGRAMACION)    **
-if"`c(os)'" == "MacOSX" & "`c(username)'" == "ricardo" & `c(version)' > 13.1 {                        // Ricardo
-	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/SimuladorCIEP/5.1/simuladorCIEP/"
-	*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"             // EXPORTAR IMAGENES EN...
-	*global latex = "latex"                                                     // IMPRIMIR OUTPUTS (LATEX)
-}
-if "`c(os)'" == "Unix" & "`c(username)'" == "ciepmx" {                          // ServidorCIEP
-	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/SimuladorCIEP/5.1/simuladorCIEP/"
-}
-adopath ++ PERSONAL
-
-
-************************/
-**    0.2 LIFT-OFF!    **
+** 0.1 LIFT-OFF! **
 noisily run "`c(sysdir_personal)'/Arranque.do"
 
 
@@ -70,8 +51,7 @@ foreach k in `=aniovp' {
 `noisily' PIBDeflactor, anio(`=aniovp') save geopib(2000) geodef(2010) `update' discount(5.0)
 
 
-******************************
-**    2.1 Inflacion, SCN    **
+** 2.1 Inflacion, SCN **
 if "$pais" == "" {
 	`noisily' Inflacion, anio(`=aniovp') `update'
 	`noisily' SCN, anio(`=aniovp') `update'
@@ -99,7 +79,8 @@ if "$pais" == "" {
 ***    4. HOUSEHOLDS    ***
 ***                     ***
 ***************************
-if "`household'" == "household" {
+capture confirm file `"`c(sysdir_personal)'/users/$pais/$id/ConsumoREC.dta"'
+if _rc != 0 | "`update'" == "update" {
 	noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' `=aniovp'
 	noisily run `"`c(sysdir_personal)'/PerfilesSim.do"' `=aniovp'
 }
