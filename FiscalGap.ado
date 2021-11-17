@@ -1,8 +1,10 @@
 program define FiscalGap
+timer on 11
 quietly {
 
-	timer on 11
-	** Anio valor presente **
+	*****************
+	*** 0 ANIO VP ***
+	*****************
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
@@ -13,20 +15,16 @@ quietly {
 	*************
 	*** 1 PIB ***
 	*************
-	use "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", clear
+	use if anio <= `end' using "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", clear
 	local currency = currency[1]
 	local discount = discount[1]
-	local anio_last = 2020
-	
+	local anio_last = `anio'
 	forvalues k = 1(1)`=_N' {
 		if anio[`k'] == `anio_last' {
 			local obs`anio_last' = `k'
 			continue, break
 		}
 	}
-	
-	keep if anio <= `end'
-	
 	tempfile PIB
 	save `PIB'
 
@@ -196,12 +194,12 @@ quietly {
 	format recaudacion* estimacion* %20.0fc
 	tsset anio
 
-	* Otros ingresos (como % PIB) *
+	/* Otros ingresos (como % PIB) *
 	g otrospib = estimacionotros/pibYR*100
 	replace otrospib = L.otrospib if anio > `anio'
 	replace estimacionotros = L.otrospib/100*pibYR if anio > `anio'
 
-	* Ingresos petroleros (como % PIB) *
+	* Ingresos petroleros (como % PIB) */
 	if "$pais" != "Ecuador" {
 		g petroleopib = estimacionpetroleo/pibYR*100
 		replace petroleopib = L.petroleopib if anio > `anio'
@@ -481,13 +479,13 @@ quietly {
 	format gasto* estimacion* %20.0fc
 	tsset anio
 
-	* Otros gastos (como % PIB) *
+	/* Otros gastos (como % PIB) *
 	g otrospib = gastootros/pibYR*100
 	replace otrospib = L.otrospib if otrospib == .
 	replace estimacionotros = L.otrospib/100*pibYR if estimacionotros == .
 
 
-	*******************************
+	******************************/
 	** DEUDA Y COSTO DE LA DEUDA **
 	merge 1:1 (anio) using `shrfsp', nogen keep(matched) keepus(shrfsp* rfsp* /*nopresupuestario*/ tipoDeCambio)
 	merge 1:1 (anio) using `baseingresos', nogen

@@ -1,5 +1,5 @@
 ****************************************************
-***               ACTUALIZACIÓN                  *** 
+***               ACTUALIZACIÃ“N                  *** 
 *** 1) abrir archivos .iqy en Excel de Windows   ***
 *** 2) guardar y reemplazar .xls dentro de       ***
 ***      ./TemplateCIEP/basesCIEP/INEGI/SCN/     ***
@@ -54,7 +54,7 @@ quietly {
 	save `balanza'
 	
 	
-	PIBDeflactor, nographs nooutput
+	PIBDeflactor, anio(`anio') nographs nooutput
 	merge 1:1 (anio) using `balanza', keep(matched) nogen
 	capture merge 1:1 (anio) using `"`c(sysdir_personal)'/SIM/SHRFSP.dta"', keep(matched) keepus(tipoDeCambio) nogen
 	if _rc != 0 {

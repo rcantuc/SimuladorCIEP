@@ -19,16 +19,11 @@ quietly {
 
 		**************************
 		*** 2 Gastos iniciales ***
-		**************************
-		use if anio == `anio' using `"`c(sysdir_personal)'/SIM/Poblaciontot.dta"', clear
-		local ajustepob = poblacion
-		
+		**************************		
 		use "`c(sysdir_personal)'/SIM/2020/households`anio'.dta", clear
 		tabstat factor, stat(sum) f(%20.0fc) save
 		tempname pobenigh
 		matrix `pobenigh' = r(StatTotal)
-		
-		*replace factor = round(factor*`ajustepob'/`pobenigh'[1,1],1)
 		
 		tabstat Pension Educacion Salud OtrosGas Infra [fw=factor], stat(sum) f(%20.0fc) save
 		matrix GASTOS = r(StatTotal)
@@ -53,21 +48,23 @@ quietly {
 			g alum_adulto = asis_esc == "1" & tipoesc == "1" & (nivel >= "1" & nivel <= "3") & edad > 18
 		}
 
+		/* 3.1 Ajuste con las estadisticas oficiales *
 		tabstat alum_basica alum_medsup alum_superi alum_posgra alum_adulto [fw=factor], stat(sum) f(%15.0fc) save
 		tempname EducacionI
 		matrix `EducacionI' = r(StatTotal)
-		
+
 		replace alum_basica = alum_basica*24597234/`EducacionI'[1,1]
 		replace alum_medsup = alum_medsup*5353499/`EducacionI'[1,2]
 		replace alum_superi = alum_superi*4579894/`EducacionI'[1,3]
 		replace alum_posgra = alum_posgra*403312/`EducacionI'[1,4]
 		replace alum_adulto = alum_adulto*1905180/`EducacionI'[1,5]
 
+		* 3.2 Cifras finales de alumnos */
 		tabstat alum_basica alum_medsup alum_superi alum_posgra alum_adulto [fw=factor], stat(sum) f(%15.0fc) save
 		tempname Educacion
 		matrix `Educacion' = r(StatTotal)
 
-		* Inputs *
+		* Inputs */
 		capture confirm scalar basica
 		if _rc == 0 {
 			local basica = scalar(basica)*`Educacion'[1,1]
@@ -179,13 +176,13 @@ quietly {
 			_col(50) %7.3fc in y (`basica'+`medsup'+`superi'+`posgra'+`eduadu'+`otrose')/PIB*100 ///
 			_col(60) %15.0fc in y (`basica'+`medsup'+`superi'+`posgra'+`eduadu'+`otrose')/(`Educacion'[1,1]+`Educacion'[1,2]+`Educacion'[1,3]+`Educacion'[1,4]+`Educacion'[1,5])
 
-		replace Educacion = `basica'/`EducacionI'[1,1] if alum_basica > 0
-		replace Educacion = `medsup'/`EducacionI'[1,2] if alum_medsup > 0
-		replace Educacion = `superi'/`EducacionI'[1,3] if alum_superi > 0
-		replace Educacion = `posgra'/`EducacionI'[1,4] if alum_posgra > 0
-		replace Educacion = `eduadu'/`EducacionI'[1,5] if alum_adulto > 0
-		replace Educacion = Educacion + `otrose'/(`EducacionI'[1,1]+`EducacionI'[1,2]+`EducacionI'[1,3] ///
-			+`EducacionI'[1,4]+`EducacionI'[1,5]) if Educacion > 0
+		replace Educacion = `basica'/`Educacion'[1,1] if alum_basica > 0
+		replace Educacion = `medsup'/`Educacion'[1,2] if alum_medsup > 0
+		replace Educacion = `superi'/`Educacion'[1,3] if alum_superi > 0
+		replace Educacion = `posgra'/`Educacion'[1,4] if alum_posgra > 0
+		replace Educacion = `eduadu'/`Educacion'[1,5] if alum_adulto > 0
+		replace Educacion = Educacion + `otrose'/(`Educacion'[1,1]+`Educacion'[1,2]+`Educacion'[1,3] ///
+			+`Educacion'[1,4]+`Educacion'[1,5]) if Educacion > 0
 
 		scalar basicaPIB = (`basica')/PIB*100
 		scalar medsupPIB = (`medsup')/PIB*100
@@ -194,8 +191,8 @@ quietly {
 		scalar eduaduPIB = (`eduadu')/PIB*100
 		scalar otrosePIB = (`otrose')/PIB*100
 		scalar educacPIB = (`basica'+`medsup'+`superi'+`posgra'+`eduadu'+`otrose')/PIB*100
-		scalar educacion = (`basica'+`medsup'+`superi'+`posgra'+`eduadu'+`otrose')/(`EducacionI'[1,1] ///
-			+`EducacionI'[1,2]+`EducacionI'[1,3]+`EducacionI'[1,4]+`EducacionI'[1,5])
+		scalar educacion = (`basica'+`medsup'+`superi'+`posgra'+`eduadu'+`otrose')/(`Educacion'[1,1] ///
+			+`Educacion'[1,2]+`Educacion'[1,3]+`Educacion'[1,4]+`Educacion'[1,5])
 
 
 
@@ -220,9 +217,8 @@ quietly {
 		matrix `Salud' = r(StatTotal)
 
 		tabstat factor, stat(sum) f(%20.0fc) save
-		tempname pobtot pobtot0
-		matrix `pobtot' = r(StatTotal)*`ajustepob'/`pobenigh'[1,1]
-		matrix `pobtot0' = r(StatTotal)
+		tempname pobtot
+		matrix `pobtot' = r(StatTotal)
 
 		* Inputs INSABI *
 		capture confirm scalar segpop
@@ -372,7 +368,7 @@ quietly {
 		replace Salud = Salud + `issste'/`MSalud'[1,2] if benef_issste > 0
 		replace Salud = Salud + `prospe'/(`MSalud'[1,4]) if benef_imssprospera > 0
 		replace Salud = Salud + `pemex'/`MSalud'[1,3] if benef_pemex > 0
-		replace Salud = Salud + `ssa'/`pobtot0'[1,1] if benef_ssa > 0
+		replace Salud = Salud + `ssa'/`pobtot'[1,1] if benef_ssa > 0
 
 		scalar ssaPIB = `ssa'/PIB*100
 		scalar segpopPIB = `segpop'/PIB*100
@@ -530,25 +526,25 @@ quietly {
 		if ingbasico18 == 0 & ingbasico65 == 1 {
 			tabstat factor if edad >= 18, stat(sum) f(%20.0fc) save
 			tempname pobIngBas
-			matrix `pobIngBas' = r(StatTotal)*`ajustepob'/`pobenigh'[1,1]
+			matrix `pobIngBas' = r(StatTotal)
 			local bititle = "Mayores de 18"
 		}
 		else if ingbasico18 == 1 & ingbasico65 == 0 {
 			tabstat factor if edad < 65, stat(sum) f(%20.0fc) save
 			tempname pobIngBas
-			matrix `pobIngBas' = r(StatTotal)*`ajustepob'/`pobenigh'[1,1]
+			matrix `pobIngBas' = r(StatTotal)
 			local bititle = "Menores de 65"
 		}
 		else if ingbasico18 == 0 & ingbasico65 == 0 {
 			tabstat factor if edad < 65 & edad >= 18, stat(sum) f(%20.0fc) save
 			tempname pobIngBas
-			matrix `pobIngBas' = r(StatTotal)*`ajustepob'/`pobenigh'[1,1]
+			matrix `pobIngBas' = r(StatTotal)
 			local bititle = "Entre 18 y 65"
 		}
 		else {
 			tabstat factor, stat(sum) f(%20.0fc) save
 			tempname pobIngBas
-			matrix `pobIngBas' = r(StatTotal)*`ajustepob'/`pobenigh'[1,1]
+			matrix `pobIngBas' = r(StatTotal)
 			local bititle = "Poblaci{c o'}n general"		
 		}
 

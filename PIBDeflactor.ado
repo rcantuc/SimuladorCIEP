@@ -1,9 +1,9 @@
 **********************************************************
-***                  ACTUALIZACIÓN                     ***
+***                  ACTUALIZACIÃ“N                     ***
 ***   1) abrir archivos .iqy en Excel de Windows       ***
 ***   2) guardar y reemplazar .xls dentro de           ***
 ***      ./TemplateCIEP/basesCIEP/INEGI/SCN/           ***
-***   3) correr PIBDeflactor[.ado] con opción "update" ***
+***   3) correr PIBDeflactor[.ado] con opciÃ³n "update" ***
 **********************************************************
 
 
@@ -73,7 +73,7 @@ quietly {
 	* Anio first *
 	local anio_first = anio[1]
 	scalar aniofirst = anio[1]
-	scalar aniovp = `aniovp'
+	*scalar aniovp = `aniovp'
 
 	* Anio last *
 	local anio_last = anio[_N]
@@ -147,9 +147,9 @@ quietly {
 
 	***********************************************
 	** 1.1 Imputar Par{c a'}metros ex{c o'}genos **
-	/* Para todos los años, si existe información sobre el crecimiento del deflactor 
-	utilizarla, si no existe, tomar el rezago del índice geométrico. Posteriormente
-	ajustar los valores del índice con sus rezagos. */
+	/* Para todos los aÃ±os, si existe informaciÃ³n sobre el crecimiento del deflactor 
+	utilizarla, si no existe, tomar el rezago del Ã­ndice geomÃ©trico. Posteriormente
+	ajustar los valores del Ã­ndice con sus rezagos. */
 	local exo_def = 0
 	local anio_def = `aniovp'
 	forvalues k=`anio_last'(1)`fin' {
@@ -276,7 +276,7 @@ quietly {
 	g lambda = (1+scalar(llambda)/100)^(anio-`aniovp')
 
 
-	* Proyección de crecimiento PIB *
+	* ProyecciÃ³n de crecimiento PIB *
 	replace pibYR = `=pibYR[`obs_exo']'/`=WorkingAge[`obs_exo']'*WorkingAge*(1+scalar(llambda)/100)^(anio-`anio_exo') if pibYR == .
 	replace pibY = pibYR*deflator if pibY == .
 
