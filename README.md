@@ -123,7 +123,7 @@ Para calcular la **tasa de fecundidad** se filtra la base de datos de tal manera
 [^2]: Recordemos que el directorio fue definido en el inicio del código, los “..” al inicio de la dirección es para regresar un directorio de donde nos encontrábamos antes. Regresamos de la dirección “/TemplatesCIEP/simuladorCIEP” a la dirección “/Templates” para después ingresar a “../basesCIEP/CONAPO/”. 
 
 [^3]: Recordando que `c(sysdir_site)' contiene la dirección del directorio base.  
-[^4]: Se debe asumir una distribución uniforme tanto en edad como en año. 
+[^4]: Se debe asumir una distribución uniforme de las variable de migración tanto en edad como en año. 
 
 [Github]:https://github.com/
 
