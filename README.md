@@ -16,11 +16,12 @@ Los pasos para empezar a **colaborar** (actualmente, sólo bajo invitación):
 
 0. **Instalar** descargar la versión de Github para escritorio y contar con la invitación para colaborar. Descarga disponible en: https://desktop.github.com/
 1. **Clonar** el repositorio del Simulador Fiscal CIEP disponible desde [Github][]: [rcantuc/simuladorCIEP][simuladorCIEP]
-	Ubicar el buscador de archivos al que tenga acceso el ususario
+	Ubicar en el buscador de archivos dentro de la aplicación de escritorio de Github.
 	
 	![add](/Images/Cap_0/add.PNG) 
 	
 	Guardar una copia dentro del equipo del usuario. **Recordar la dirección donde se va a copiar el directorio**
+	
 	![copia](/Images/Cap_0/copia.PNG)
 
 2. **Abrir** el archivo *simulador.stpr*. Es el *Stata project* que concentra todos los *do-files* y *ado-files* para su fácil acceso.
@@ -40,7 +41,11 @@ Los pasos para empezar a **colaborar** (actualmente, sólo bajo invitación):
 
 ---
 ## Capítulo_0: Opciones
+
+
+
 ### Comandos para limpiar el ambiente 
+
 Los primeros tres comandos nos permiten al programa limpiar en su totalidad el ambiente de trabajo. Primero eliminamos cualquier **variable** guardada en el programa. Segundo, utilizamos el comando macro para **manipular todas las macros** tanto globales como locales.  Por último, se cierran todos **los archivos tipo log** que puedan estar ejecutándose en el momento de iniciar a correr el simulador fiscal.  
 	![limpiador](/Images/Cap_0/Limpiador.PNG)
 
@@ -92,15 +97,19 @@ Misma donde se encontra la base de población y también utilizando  la ubicaci�
 Al igual que población y defunciones se debe cambiar el nombre de las variables para arreglar los caracteres especiales. En este caso las variables son Año, sexo inmigrantes y emigrantes.
 Esta base de datos tiene valores entre rangos de edad y años; por lo que se debe ajustar al formato de las otras dos bases del módulo. Utilizando STATA se crean promedios para asignar valores uniformes entre los rangos de edad y año[^4].
 
+![promedios_mig](/Images/Cap_1/promedios_mig.PNG)
+
 Posteriormente de agregan las labels necesarias para emigrantes, inmigrantes, entidad y año. Guardamos la base con el nombre de migración y ya es posible **unir nuestras bases.**
 
 ### D.Unión
 
 Recordemos que la última base utilizada fue *migración*, por lo que es la base de datos que el programa está usando actualmente, considerada como la base de datos en la memoria. Usando los comandos **“use” y “merge”** vamos a unir estás tablas por medio de las variables **“año” ,”edad”, “sexo” y “entidad”**. También limpiamos los valores nulos “.” , reemplazándolos por ceros.
 
-Para calcular la **tasa de fecundidad** se filtra la base de datos de tal manera que tengamos el total de mujeres fértiles y nacimientos por año.  Posteriormente se calculan las medias por año y con la siguiente formulas obtenemos la tasa de fecundidad por año. 
+Para calcular la **tasa de fecundidad** se filtra la base de datos de tal manera que tengamos el total de mujeres en edades fértiles y nacimientos por año.  Posteriormente se calculan las medias por año y con la siguiente formulas obtenemos la tasa de fecundidad por año (nacimientos cada 1000 mujeres en edades fértiles). 
 
 <img src="https://render.githubusercontent.com/render/math?math=Tasa de fecundidad =\frac{Nacimientos}{Mujeres Fertiles}*1000">
+
+![tasa_fecundidad](/Images/Cap_1/tasa_fecundidad.PNG)
 
 
 
