@@ -54,12 +54,10 @@ El *Do.file llamado SIM* inicia otro *Do.file* llamado *Arranque.do*. Este archi
 
 ## Capítulo_1: Población
 
-## poblacion.do
-OBJETIVO DE ESTE DO.FILE
+El objetivo de **Poblacion.do** es cargar las variables relacionadas a la población del país. En este caso nos permite utilizar las bases de datos de CONAPO para conocer las siguientes variables: **Año, sexo, edad, entidad, población, defunciones, emigrantes, inmigrantes, mujeres en edad fértil y tasa de fecundidad**. 
 
 ### A. Población
-Primero, importamos las bases de datos que utilizaremos en el modulo de población. 
-En la sección de **población** la base es la “Base de datos de México: Población, defunciones y migración internacional” disponible en:
+Primero, importamos las bases de datos que utilizaremos en el modulo de población disponible en:
 
 “../basesCIEP/CONAPO/ censo2020.dta” [^2]
 
