@@ -358,7 +358,7 @@ quietly {
 
 
 	***********************************
-	** 3.2 Variables de los perfiles **
+	/** 3.2 Variables de los perfiles **
 	if "$pais" != "" {
 		local pais = ". ${pais}."
 	}

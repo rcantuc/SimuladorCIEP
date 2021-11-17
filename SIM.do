@@ -17,19 +17,19 @@ capture log close _all
 ***                   ***
 *************************
 global id = "`c(username)'"                                                     // ID DEL USUARIO
-global pais "Ecuador"                                                          // OTROS PAISES (si aplica)
+*global pais "Ecuador"                                                          // OTROS PAISES (si aplica)
 *global pais "El Salvador"                                                      // OTROS PAISES (si aplica)
-
 *global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
+*global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
+
 local noisily "noisily"                                                         // "NOISILY" OUTPUTS
-*global nographs "nographs"                                                      // SUPRIMIR GRAFICAS
-local household "household"
-*local update "update"
+local household "household"                                                    // RUN HOUSEHOLDS.DO
+*local update "update"                                                          // UPDATE DATASETS
 
 
 *************************************
 **    0.1 GITHUB (PROGRAMACION)    **
-if"`c(os)'" == "MacOSX" & "`c(username)'" == "ricardo" {                        // Ricardo
+if"`c(os)'" == "MacOSX" & "`c(username)'" == "ricardo" & `c(version)' > 13.1 {                        // Ricardo
 	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/SimuladorCIEP/5.1/simuladorCIEP/"
 	*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"             // EXPORTAR IMAGENES EN...
 	*global latex = "latex"                                                     // IMPRIMIR OUTPUTS (LATEX)
@@ -67,7 +67,7 @@ foreach k in `=aniovp' {
 ***    2. CRECIMIENTO PIB    ***
 ***                          ***
 ********************************
-`noisily' PIBDeflactor, anio(`=aniovp') save geopib(2000) geodef(2010) `update' //discount(5.0)
+`noisily' PIBDeflactor, anio(`=aniovp') save geopib(2000) geodef(2010) `update' discount(5.0)
 
 
 ******************************
@@ -101,9 +101,7 @@ if "$pais" == "" {
 ***************************
 if "`household'" == "household" {
 	noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' `=aniovp'
-	if "$pais" == "" {
-		noisily run `"`c(sysdir_personal)'/PerfilesSim.do"' `=aniovp'
-	}
+	noisily run `"`c(sysdir_personal)'/PerfilesSim.do"' `=aniovp'
 }
 
 
@@ -138,12 +136,10 @@ if "`household'" == "household" {
 ***                                   ***
 *****************************************
 use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
-capture replace Laboral = ISR__asalariados + ISR__PF + cuotasTP
+capture replace Laboral = ISR__asalariados + ISR__PF + CuotasSS
 capture drop AportacionesNetas
 
-
-*********************************
-**    7.1 APORTACIONES NETAS   **
+** 7.1 APORTACIONES NETAS **
 g AportacionesNetas = Laboral + Consumo + ISR__PM + Petroleo ///
 	- Pension - Educacion - Salud - IngBasico - PenBienestar - Infra
 label var AportacionesNetas "aportaciones netas"
@@ -155,9 +151,7 @@ else {
 	save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace	
 }
 
-
-**********************************
-**    7.2 CUENTA GENERACIONAL   **
+** 7.2 CUENTA GENERACIONAL **
 noisily CuentasGeneracionales AportacionesNetas, anio(`=aniovp')
 
 
@@ -170,18 +164,12 @@ noisily CuentasGeneracionales AportacionesNetas, anio(`=aniovp')
 ***                                           ***
 *************************************************
 
-
-**********************
-**    8.1 SANKEY    **
-if "$pais" == "" {
-	foreach k in decil sexo grupoedad escol {
-		noisily run "`c(sysdir_personal)'/SankeySF.do" `k' `=aniovp'
-	}
+/** 8.1 SANKEY **
+foreach k in decil sexo grupoedad escol {
+	noisily run "`c(sysdir_personal)'/SankeySF.do" `k' `=aniovp'
 }
 
-
-*************************/
-**    8.2 FISCAL GAP    **
+** 8.2 FISCAL GAP **/
 noisily FiscalGap, anio(`=aniovp') end(`=anioend') aniomin(2015) $nographs `update'
 
 

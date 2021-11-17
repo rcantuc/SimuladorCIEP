@@ -8,6 +8,11 @@ if "`1'" == "" {
 	local 1 = 2022
 }
 
+if "$pais" != "" {
+	exit
+}
+
+
 
 
 **********************
@@ -112,11 +117,22 @@ local lambda = lambda[1]
 local deflator = deflator[1]
 
 
+***************************
+*** 4. Ajuste Poblacion *** 
+***************************
+use if anio == `1' using `"`c(sysdir_personal)'/SIM/Poblaciontot.dta"', clear
+local ajustepob = poblacion
+
+
 
 **********************************
 *** 4. Variables Simulador.ado ***
 **********************************
 use "`c(sysdir_personal)'/SIM/2020/households.dta", clear
+tabstat factor, stat(sum) f(%20.0fc) save
+tempname pobenigh
+matrix `pobenigh' = r(StatTotal)
+replace factor = round(factor*`ajustepob'/`pobenigh'[1,1],1)
 
 ** (+) Impuestos al ingreso laboral **
 egen laboral = rsum(ISR__asalariados ISR__PF) if formal != 0
@@ -477,26 +493,38 @@ label var IngBasico "Basic universal income"
 *******************/
 *** 7. SIMULADOR ***
 ********************
-noisily Simulador Laboral [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
-noisily Simulador CuotasSS [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
-noisily Simulador Consumo [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
-noisily Simulador OtrosC [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
-noisily Simulador ISRPM [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
-noisily Simulador IEPS [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
-noisily Simulador IEPSAlcohol [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
-noisily Simulador IEPSTabaco [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
-noisily Simulador IVA [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
-noisily Simulador Petroleo [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
-noisily Simulador Pension [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
-noisily Simulador PenBienestar if edad >= 65 [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
-noisily Simulador Educacion [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
-noisily Simulador Salud [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput //poblacion(defunciones)
-noisily Simulador OtrosGas [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
-noisily Simulador IngBasico [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
-noisily Simulador Infra [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
-noisily Simulador ing_bruto_tpm [fw=factor], base("ENIGH 2020") boot(1) reboot $nographs nooutput
-noisily Simulador ImpuestosAportaciones [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
-noisily Simulador IngresosPublicos [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') $nographs nooutput
+noisily Simulador Laboral [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
+noisily Simulador CuotasSS [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
+noisily Simulador Consumo [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
+noisily Simulador OtrosC [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
+noisily Simulador ISRPM [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
+noisily Simulador IEPS [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
+noisily Simulador IEPSAlcohol [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
+noisily Simulador IEPSTabaco [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
+noisily Simulador IVA [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
+noisily Simulador Petroleo [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
+noisily Simulador Pension [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
+noisily Simulador PenBienestar if edad >= 65 [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
+noisily Simulador Educacion [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
+noisily Simulador Salud [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput //poblacion(defunciones)
+noisily Simulador OtrosGas [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
+noisily Simulador IngBasico [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
+noisily Simulador Infra [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
+noisily Simulador ing_bruto_tpm [fw=factor], base("ENIGH 2020") boot(1) reboot nooutput
+noisily Simulador ImpuestosAportaciones [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
+noisily Simulador IngresosPublicos [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
+
+
+
+
+***********/
+*** SAVE ***
+************
+compress
+capture drop __* 
+capture drop *_accum
+save "`c(sysdir_personal)'/SIM/2020/households`1'.dta", replace
+
 
 
 
@@ -508,13 +536,3 @@ if `c(version)' > 13.1 {
 		noisily run "`c(sysdir_personal)'/Sankey.do" `k' `1'
 	}
 }
-
-
-
-***********/
-*** SAVE ***
-************
-compress
-capture drop __* 
-capture drop *_accum
-save "`c(sysdir_personal)'/SIM/2020/households`1'.dta", replace
