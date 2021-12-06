@@ -5,51 +5,51 @@
 ********************************
 
 * 2021-2027 *
-global pib2021 = 6.3                                                    // CGPE 2022: 6.3
-global pib2022 = 4.1                                                    // CGPE 2022: 4.1
-global pib2023 = 3.4                                                    // Supuesto: 2.5
-global pib2024 = 2.8                                                    // Supuesto: 2.5
-global pib2025 = 2.5                                                    // Supuesto: 2.5
-global pib2026 = 2.5                                                    // Supuesto: 2.5
-global pib2027 = 2.5                                                    // Supuesto: 2.5
+global pib2021 = 6.3                                           // CGPE 2022: 6.3
+global pib2022 = 4.1                                           // CGPE 2022: 4.1
+global pib2023 = 3.4                                           // Supuesto: 2.5
+global pib2024 = 2.8                                           // Supuesto: 2.5
+global pib2025 = 2.5                                           // Supuesto: 2.5
+global pib2026 = 2.5                                           // Supuesto: 2.5
+global pib2027 = 2.5                                           // Supuesto: 2.5
 
 * 2026-2030 *
 forvalues k=2028(1)2030 {
-	global pib`k' = $pib2027                                        // SUPUESTO DE LARGO PLAZO
+	global pib`k' = $pib2027                               // SUPUESTO DE LARGO PLAZO
 }
 
 /* 2031-2050 *
 forvalues k=2031(1)2050 {
-	global pib`k' = $pib2027                                        // SUPUESTO DE LARGO PLAZO
+	global pib`k' = $pib2027                               // SUPUESTO DE LARGO PLAZO
 }
 
 * OTROS */
-global inf2021 = 5.7                                                    // CGPE 2022: 5.7
-global inf2022 = 3.4                                                    // CGPE 2022: 3.4
-global inf2023 = 3.0                                                    // CGPE 2022: 3.0
-global inf2024 = 3.0                                                    // CGPE 2022: 3.0
-global inf2025 = 3.0                                                    // CGPE 2022: 3.0
-global inf2026 = 3.0                                                    // CGPE 2022: 3.0
-global inf2027 = 3.0                                                    // CGPE 2022: 3.0
+global inf2021 = 5.7                                           // CGPE 2022: 5.7
+global inf2022 = 3.4                                           // CGPE 2022: 3.4
+global inf2023 = 3.0                                           // CGPE 2022: 3.0
+global inf2024 = 3.0                                           // CGPE 2022: 3.0
+global inf2025 = 3.0                                           // CGPE 2022: 3.0
+global inf2026 = 3.0                                           // CGPE 2022: 3.0
+global inf2027 = 3.0                                           // CGPE 2022: 3.0
 
-global def2021 = 6.2295                                                 // CGPE 2022: 6.2
-global def2022 = 3.7080                                                 // CGPE 2022: 3.7
-global def2023 = 3.5000                                                 // CGPE 2022: 3.5
-global def2024 = 3.5000                                                 // CGPE 2022: 3.5
-global def2025 = 3.5000                                                 // CGPE 2022: 3.5
-global def2026 = 3.5000                                                 // CGPE 2022: 3.5
-global def2027 = 3.5000                                                 // CGPE 2022: 3.5
+global def2021 = 6.2295                                        // CGPE 2022: 6.2
+global def2022 = 3.7080                                        // CGPE 2022: 3.7
+global def2023 = 3.5000                                        // CGPE 2022: 3.5
+global def2024 = 3.5000                                        // CGPE 2022: 3.5
+global def2025 = 3.5000                                        // CGPE 2022: 3.5
+global def2026 = 3.5000                                        // CGPE 2022: 3.5
+global def2027 = 3.5000                                        // CGPE 2022: 3.5
 
-*global tasaEfectiva = 5.8131                                           // Tasa de inter{c e'}s EFECTIVA
-*global tipoDeCambio = 20.200                                           // Tipo de cambio
-*global depreciacion = 0.2000                                           // Depreciaci{c o'}n
+*global tasaEfectiva = 5.8131                                  // Tasa de inter{c e'}s EFECTIVA
+*global tipoDeCambio = 20.200                                  // Tipo de cambio
+*global depreciacion = 0.2000                                  // Depreciaci{c o'}n
 
 scalar aniovp = 2022
-scalar foliohogar = "folioviv foliohog"                                         // Folio del hogar
+scalar foliohogar = "folioviv foliohog"                        // Folio del hogar
 scalar anioend = 2030
 
 
-log using /Users/ricardo/Desktop/`=aniovp'.smcl, replace
+*log using /Users/ricardo/Desktop/`=aniovp'.smcl, replace
 
 
 
