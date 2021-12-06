@@ -1,10 +1,10 @@
-# Simulador Fiscal CIEP v5.0
+# Simulador Fiscal CIEP v5.x
 
-	Versión: 4/marzo/2021
+	Versión: 18/noviembre/2021
 
 ¡Bienvenidxs al equipo!
 
-El Simulador Fiscal CIEP está (actualmente) programado en **Stata** (versiones 13+). Sin embargo, se pudieran incorporar otros programas como **R** u otros lenguajes como **PHP**.
+El Simulador Fiscal CIEP está actualmente programado en **Stata** (versiones 13+). Sin embargo, se espera incorporar otros programas, como **R**, para hacerlo más flexible para todo tipo de usuarios.
 
 
 **La misión**:  

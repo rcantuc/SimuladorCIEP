@@ -235,12 +235,18 @@ quietly {
 			local caneros = r(Seguridad_Social_Ca_c_n__eros) //+r(Seguridad_Social_Ca_c_n__erosC)
 			local incorpo = r(R_c_e__gimen_de_Incorporaci_c_o) //+r(R_c_e__gimen_de_Incorporaci_c_oC)
 			local adeusal = r(Adeudos_con_el_IMSS_e_ISSSTE_y_)
+			if `adeusal' == . {
+				local adeusal = 0
+			}
 
 			PEF if divGA == 7, anio(`anio') by(ramo) min(0) nographs
 			local fassa = r(Aportaciones_Federales_para_Ent) //+ r(Aportaciones_Federales_para_EntC)
 			
 			PEF if divGA == 7 & desc_ur == 1238, anio(`anio') by(desc_pp) min(0) nographs
 			local fortaINSABI = r(Fortalecimiento_a_la_atenci_c_o) //+r(Fortalecimiento_a_la_atenci_c_oC)
+			if `fortaINSABI' == . {
+				local fortaINSABI = 0
+			}
 			local atencINSABI = r(Atenci_c_o__n_a_la_Salud) //+r(Atenci_c_o__n_a_la_SaludC)
 			
 			local segpop = `segpop0'+`fassa'+`fortaINSABI'+`atencINSABI'
