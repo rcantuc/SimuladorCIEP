@@ -40,15 +40,16 @@ global def2025 = 3.5000                                                 // CGPE 
 global def2026 = 3.5000                                                 // CGPE 2022: 3.5
 global def2027 = 3.5000                                                 // CGPE 2022: 3.5
 
-global tasaEfectiva = 5.8131                                           // Tasa de inter{c e'}s EFECTIVA
-global tipoDeCambio = 20.200                                           // Tipo de cambio
-global depreciacion = 0.2000                                           // Depreciaci{c o'}n
+*global tasaEfectiva = 5.8131                                           // Tasa de inter{c e'}s EFECTIVA
+*global tipoDeCambio = 20.200                                           // Tipo de cambio
+*global depreciacion = 0.2000                                           // Depreciaci{c o'}n
 
 scalar aniovp = 2022
 scalar foliohogar = "folioviv foliohog"                                         // Folio del hogar
 scalar anioend = 2030
 
 
+log using /Users/ricardo/Desktop/`=aniovp'.smcl, replace
 
 
 
@@ -56,7 +57,7 @@ scalar anioend = 2030
 ***                            ***
 ***    2. PARTE III: GASTOS    ***
 ***                            ***
-**********************************
+/**********************************
 scalar basica      =   21599 //    Educaci{c o'}n b{c a'}sica
 scalar medsup      =   23354 //    Educaci{c o'}n media superior
 scalar superi      =   30464 //    Educaci{c o'}n superior
@@ -94,11 +95,11 @@ scalar ingbasico65 =       1 //    1: Incluye mayores de 65 anios, 0: no
 
 
 
-**********************************
+**********************************/
 ***                             ***
 ***    3. PARTE II: INGRESOS    ***
 ***                             ***
-***********************************
+/***********************************
 scalar ISRAS   = 3.406 //    ISR (asalariados): 3.453
 scalar ISRPF   = 0.221 //    ISR (personas f{c i'}sicas): 0.441
 scalar CuotasT = 1.464 //    Cuotas (IMSS): 1.515
@@ -117,7 +118,7 @@ scalar OtrosC  = 1.091 //    Productos, derechos, aprovechamientos, contribucion
 
 
 
-******************************************************
+*****************************************************/
 ***                                                ***
 ***       3.1. Impuesto Sobre la Renta (ISR)       ***
 ***                                                ***
