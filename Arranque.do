@@ -3,21 +3,6 @@ timer on 1
 
 
 
-**************************************
-***    1. GITHUB (PROGRAMACION)    ***
-**************************************
-if"`c(os)'" == "MacOSX" & "`c(username)'" == "ricardo" & `c(version)' > 13.1 {  // Computadora Ricardo
-	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/SimuladorCIEP/5.1/simuladorCIEP/"
-	*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"         // EXPORTAR IMAGENES EN...
-	*global latex = "latex"                                                 // IMPRIMIR OUTPUTS (LATEX)
-}
-if "`c(os)'" == "Unix" & "`c(username)'" == "ciepmx" {                          // Computdora ServidorCIEP
-	*sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/SimuladorCIEP/5.1/simuladorCIEP/"
-}
-adopath ++ PERSONAL
-
-
-
 
 ***************************************
 ***    2. USERS AND SUPERUSER(S)    ***
