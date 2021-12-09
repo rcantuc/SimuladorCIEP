@@ -40,9 +40,9 @@ global def2025 = 3.5000                                        // CGPE 2022: 3.5
 global def2026 = 3.5000                                        // CGPE 2022: 3.5
 global def2027 = 3.5000                                        // CGPE 2022: 3.5
 
-*global tasaEfectiva = 5.8131                                  // Tasa de inter{c e'}s EFECTIVA
-*global tipoDeCambio = 20.200                                  // Tipo de cambio
-*global depreciacion = 0.2000                                  // Depreciaci{c o'}n
+global tasaEfectiva = 5.7425                                  // Tasa de inter{c e'}s EFECTIVA
+global tipoDeCambio = 20.200                                  // Tipo de cambio
+global depreciacion = 0.2000                                  // Depreciaci{c o'}n
 
 scalar aniovp = 2022
 scalar foliohogar = "folioviv foliohog"                        // Folio del hogar
@@ -57,13 +57,13 @@ scalar anioend = 2030
 ***                            ***
 ***    2. PARTE III: GASTOS    ***
 ***                            ***
-/**********************************
-scalar basica      =   21599 //    Educaci{c o'}n b{c a'}sica
-scalar medsup      =   23354 //    Educaci{c o'}n media superior
-scalar superi      =   30464 //    Educaci{c o'}n superior
-scalar posgra      =   21122 //    Posgrado
-scalar eduadu      =    2392 //    Educaci{c o'}n para adultos
-scalar otrose      =    1473 //    Otros gastos educativos
+**********************************
+scalar basica      =   24402 //    Educaci{c o'}n b{c a'}sica
+scalar medsup      =   24039 //    Educaci{c o'}n media superior
+scalar superi      =   36559 //    Educaci{c o'}n superior
+scalar posgra      =   57996 //    Posgrado
+scalar eduadu      =  119929 //    Educaci{c o'}n para adultos
+scalar otrose      =    1752 //    Otros gastos educativos
 
 scalar ssa         =     928 //    SSalud
 scalar prospe      =    2013 //    IMSS-Prospera
@@ -99,20 +99,20 @@ scalar ingbasico65 =       1 //    1: Incluye mayores de 65 anios, 0: no
 ***                             ***
 ***    3. PARTE II: INGRESOS    ***
 ***                             ***
-/***********************************
-scalar ISRAS   = 3.406 //    ISR (asalariados): 3.453
-scalar ISRPF   = 0.221 //    ISR (personas f{c i'}sicas): 0.441
-scalar CuotasT = 1.464 //    Cuotas (IMSS): 1.515
+***********************************
+scalar ISRAS   = 3.364 //    ISR (asalariados): 3.453
+scalar ISRPF   = 0.218 //    ISR (personas f{c i'}sicas): 0.441
+scalar CuotasT = 1.446 //    Cuotas (IMSS): 1.515
 
-scalar IVA     = 4.315 //    IVA: 3.885
+scalar IVA     = 4.263 //    IVA: 3.885
 scalar ISAN    = 0.043 //    ISAN: 0.030
-scalar IEPS    = 1.796 //    IEPS (no petrolero + petrolero): 2.027
-scalar Importa = 0.259 //    Importaciones: 0.245
+scalar IEPS    = 1.774 //    IEPS (no petrolero + petrolero): 2.027
+scalar Importa = 0.256 //    Importaciones: 0.245
 
-scalar ISRPM   = 3.745 //    ISR (personas morales): 3.710
-scalar FMP     = 1.319 //    Fondo Mexicano del Petr{c o'}leo: 1.362
-scalar OYE     = 4.285 //    Organismos y empresas (IMSS + ISSSTE + Pemex + CFE): 4.274
-scalar OtrosC  = 1.091 //    Productos, derechos, aprovechamientos, contribuciones: 1.070
+scalar ISRPM   = 3.699 //    ISR (personas morales): 3.710
+scalar FMP     = 1.303 //    Fondo Mexicano del Petr{c o'}leo: 1.362
+scalar OYE     = 4.233 //    Organismos y empresas (IMSS + ISSSTE + Pemex + CFE): 4.274
+scalar OtrosC  = 1.078 //    Productos, derechos, aprovechamientos, contribuciones: 1.070
 
 
 
@@ -151,18 +151,25 @@ matrix	SE =  (0.01,		21227.52,	4884.24		\    /// 1
               88587.97, 	1E+14,		0)		     	//  12
 
 *            Ex. SS.MM.	Ex. 	% ing. gravable		% Informalidad PF	% Informalidad Salarios
-matrix DED = (5,		15,			46.28, 			0)
+matrix DED = (5,		15,			45.10, 			22.69)
 
 *           Tasa ISR PM.	% Informalidad PM
-matrix PM = (30,		11.88)
+matrix PM = (30,		17.72)
 
-* Cambios ISR *
+* Modulo ISR *
 if "`cambioisr'" == "1" {
 	noisily run "`c(sysdir_personal)'/ISR_Mod.do"
 	scalar ISRAS = ISR_AS_Mod
 	scalar ISRPF = ISR_PF_Mod
 	scalar ISRPM = ISR_PM_Mod
 }
+
+* Modulo IVA *
+if "`cambioiva'" == "1" {
+	noisily run "`c(sysdir_personal)'/IVA_Mod.do"
+	scalar IVA = IVA_Mod
+}
+
 ***       FIN: SIMULADOR ISR       ***
 **************************************
 
@@ -187,12 +194,6 @@ matrix IVAT = (16 \     ///  1  Tasa general
                3  \     /// 10  Otros, idem
                2  \     /// 11  Transporte local, idem
                3  \     /// 12  Transporte foraneo, idem
-               25.13)   //  13  Evasion e informalidad IVA, input[0-100]
-
-* Cambios IVA *
-if "`cambioiva'" == "1" {
-	noisily run "`c(sysdir_personal)'/IVA_Mod.do"
-	scalar IVA = IVA_Mod
-}
+               21.59)   //  13  Evasion e informalidad IVA, input[0-100]
 ***       FIN: SIMULADOR IVA       ***
 *************************************

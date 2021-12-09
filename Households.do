@@ -322,9 +322,9 @@ if `enighanio' > 2020 {
 *** B.1 Micro 1. ENIGH. Gastos ***
 **********************************
 capture confirm file "`c(sysdir_personal)'/SIM/`enighanio'/deducciones.dta"
-if _rc != 0 {
+*if _rc != 0 {
 	noisily run "`c(sysdir_site)'/Expenditure.do" `enighanio'
-}
+*}
 
 
 ************************************
@@ -1471,7 +1471,7 @@ replace sbc = 10 if sbc > 10 & (formal == 2 | formal == 5) & ing_ss > 0 & ing_ss
 * Ajustes *
 replace sbc = 1 if sbc > 0 & sbc < 1 & (formal == 1 | formal == 6)
 *replace sbc = floor(sbc) if formal != 1
-*replace sbc = ceil(sbc) if formal == 1
+replace sbc = ceil(sbc) if formal == 1
 replace sbc = sbc*`smdf'
 
 * IMSS *
