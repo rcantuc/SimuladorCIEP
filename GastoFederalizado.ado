@@ -4,14 +4,15 @@
 program define GastoFederalizado
 quietly {
 
-
+	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
+	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
 	************************
 	*** 1. BASE DE DATOS ***
 	************************
-	capture use "`c(sysdir_site)'/bases/SIM/GastoFederalizado.dta", clear
+	capture use "`c(sysdir_site)'../basesCIEP/SIM/GastoFederalizado.dta", clear
 	local rc = _rc
-	syntax [if] [, ANIO(int $anioVP) Graphs Update Base ID(string) ///
+	syntax [if] [, ANIO(int `aniovp') Graphs Update Base ID(string) ///
 		BY(varname) Datosabiertos Fast ROWS(int 4) COLS(int 4) ///
 		MINimum(real 1)]
 
@@ -92,7 +93,7 @@ quietly {
 
 		drop sector-difusion pos*
 		compress
-		save "`c(sysdir_site)'/bases/SIM/GastoFederalizado.dta", replace
+		save "`c(sysdir_site)'../basesCIEP/SIM/GastoFederalizado.dta", replace
 	}
 
 
@@ -101,7 +102,7 @@ quietly {
 	*****************
 	*** 2. Limpia ***
 	*****************
-	use "`c(sysdir_site)'/bases/SIM/GastoFederalizado.dta", clear
+	use "`c(sysdir_site)'../basesCIEP/SIM/GastoFederalizado.dta", clear
 	drop if entidad == "Total" | clave_de_concepto == "XAC2817" ///
 		| nombre2 == "Convenios de Descentralizaci{c o'}n" ///
 		| nombre2 == "Participaciones a Entidades Federativas y Municipios (R28)"
@@ -116,9 +117,9 @@ quietly {
 	*** 3. PIB ***
 	**************
 	preserve
-	PIBDeflactor
+	PIBDeflactor, nog
 	tempfile PIB
-	save `PIB'
+	save "`PIB'"
 	restore
 
 
