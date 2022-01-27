@@ -15,12 +15,12 @@ capture log close _all
 ***    GITHUB (PROGRAMACION)    ***
 ***********************************
 if"`c(os)'" == "MacOSX" & "`c(username)'" == "ricardo" & `c(version)' > 13.1 {  // Computadora Ricardo
-	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/SimuladorCIEP/5.1/simuladorCIEP/"
-	*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"         // EXPORTAR IMAGENES EN...
-	*global latex = "latex"                                                 // IMPRIMIR OUTPUTS (LATEX)
+	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/SimuladorCIEP/5.2/simuladorCIEP/"
+	global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"         // EXPORTAR IMAGENES EN...
+	global latex = "latex"                                                 // IMPRIMIR OUTPUTS (LATEX)
 }
 if "`c(os)'" == "Unix" & "`c(username)'" == "ciepmx" {                          // Computdora ServidorCIEP
-	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/SimuladorCIEP/5.1/simuladorCIEP/"
+	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/SimuladorCIEP/5.2/simuladorCIEP/"
 }
 adopath ++ PERSONAL
 
@@ -97,7 +97,7 @@ if "$pais" == "" {
 ***                     ***
 ***************************
 capture confirm file `"`c(sysdir_personal)'/users/$pais/$id/ConsumoREC.dta"'
-if _rc != 0 | "`update'" == "update" {
+if _rc != 0 | "`update'" == "update" | "$latex" == "latex" {
 	noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' `=aniovp'
 	noisily run `"`c(sysdir_personal)'/PerfilesSim.do"' `=aniovp'
 }
@@ -111,7 +111,7 @@ if _rc != 0 | "`update'" == "update" {
 ***    5. PARTE III: GASTOS    ***
 ***                            ***
 **********************************
-*`noisily' GastoPC, anio(`=aniovp')
+`noisily' GastoPC, anio(`=aniovp')
 
 
 
@@ -141,7 +141,7 @@ capture drop AportacionesNetas
 g AportacionesNetas = Laboral + Consumo + ISR__PM + Petroleo ///
 	- Pension - Educacion - Salud - IngBasico - PenBienestar - Infra
 label var AportacionesNetas "aportaciones netas"
-noisily Simulador AportacionesNetas [fw=factor], base("ENIGH 2020") reboot anio(`=aniovp') folio(`=foliohogar') $nographs
+noisily Simulador AportacionesNetas [fw=factor], base("ENIGH 2020") reboot anio(`=aniovp') folio("folioviv foliohog") $nographs
 if `c(version)' > 13.1 {
 	saveold `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace version(13)
 }

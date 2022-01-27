@@ -26,7 +26,6 @@ if `enighanio' == 2012 {
 }
 timer on 15
 
-
 capture mkdir "`c(sysdir_personal)'/SIM/`enighanio'/"
 capture log close expenditures
 log using "`c(sysdir_personal)'/SIM/`enighanio'/expenditures.smcl", replace name(expenditures)
@@ -102,7 +101,7 @@ if _rc != 0 {
 	** MI.2. Variables sociodemograficas **
 	merge m:1 (folioviv foliohog numren) using "`c(sysdir_site)'../basesCIEP/INEGI/`enigh'/`enighanio'/poblacion.dta", keepus(tipoesc sexo edad) nogen
 	merge m:1 (folioviv) using "`c(sysdir_site)'../basesCIEP/INEGI/`enigh'/`enighanio'/vivienda.dta", keepus(ubica_geo tenencia) nogen
-	merge m:1 (folioviv foliohog) using "`c(sysdir_site)'../basesCIEP/INEGI/`enigh'/`enighanio'/concentrado.dta", nogen keepus(factor)
+	merge m:1 (folioviv foliohog) using "`c(sysdir_site)'../basesCIEP/INEGI/`enigh'/`enighanio'/concentrado.dta", nogen keepus(factor tot_integ)
 	capture rename factor_hog factor
 
 	** MI.3. Quitar gastos "no necesarios" **
@@ -130,6 +129,28 @@ if _rc != 0 {
 	save `pre_iva'
 
 	use "`c(sysdir_site)'../basesCIEP/INEGI/Censo Economico/2019/censo_eco.dta", clear
+	/* a218a: Participación de la prestación de servicios profesionales, científicos y 
+	técnicos en el total de ingresos por suministro de bienes y servicios: Porcentaje 
+	de los ingresos a valor de venta que obtuvo la unidad económica por la prestación 
+	de servicios profesionales, científicos y técnicos a terceros, en el total de los 
+	ingresos que tuvo la unidad económica en 2018. Resulta de dividir el total de los 
+	ingresos por la prestación de servicios profesionales, científicos y técnicos, entre 
+	el total de ingresos por suministro de bienes y servicios, multiplicado por 100.*/
+	/* a201a: Valor agregado censal bruto a producción bruta total : Porcentaje del 
+	valor de la producción que se añade durante el proceso de trabajo por la actividad 
+	creadora y de transformación realizada por el personal ocupado, el capital y la 
+	organización (factores de la producción), ejercida sobre los materiales que se 
+	consumen en la realización de la actividad económica, respecto del valor de todos 
+	los bienes y servicios producidos o comercializados por la unidad económica como 
+	resultado del ejercicio de sus actividades.*/
+	/* a111a: Producción bruta total (millones de pesos): Es el valor de todos los bienes 
+	y servicios producidos o comercializados por la unidad económica como resultado del 
+	ejercicio de sus actividades, comprendiendo el valor de los productos elaborados; el 
+	margen bruto de comercialización; las obras ejecutadas; los ingresos por la prestación 
+	de servicios, así como el alquiler de maquinaria y equipo, y otros bienes muebles e 
+	inmuebles; el valor de los activos fijos producidos para uso propio, entre otros. 
+	Incluye la variación de existencias de productos en proceso. Los bienes y servicios 
+	se valoran a precios productor.*/
 	tabstat a218a a201a [aw=a111a] if length(codigo) == 2, save by(codigo)
 	tempname PR11 PR21 PR22 PR23 PR43 PR46 PR51 PR52 PR53 PR54 PR55 PR56 PR61 PR62 PR71 PR72 PR81 PR
 	matrix `PR11' = r(Stat1)
@@ -169,6 +190,7 @@ if _rc != 0 {
 	}
 
 	order folioviv-porcentaje_ieps2018 *1 *2 *3 *4 *5 *6
+	/* Valor agregado diferente a servicios profesionales de la actividad económica */
 	replace proporcion = (1-`PR11'[1,1]/100)*`PR11'[1,2]/100 if substr(clase_de_actividad1,1,2) == "11" | proporcion == . | proporcion < 0
 	replace proporcion = (1-`PR21'[1,1]/100)*`PR21'[1,2]/100 if substr(clase_de_actividad1,1,2) == "21" | proporcion == . | proporcion < 0
 	replace proporcion = (1-`PR22'[1,1]/100)*`PR22'[1,2]/100 if substr(clase_de_actividad1,1,2) == "22" | proporcion == . | proporcion < 0
@@ -187,7 +209,7 @@ if _rc != 0 {
 	replace proporcion = (1-`PR72'[1,1]/100)*`PR72'[1,2]/100 if substr(clase_de_actividad1,1,2) == "72" | proporcion == . | proporcion < 0
 	replace proporcion = (1-`PR81'[1,1]/100)*`PR81'[1,2]/100 if substr(clase_de_actividad1,1,2) == "81" | proporcion == . | proporcion < 0
 	replace proporcion = (1-`PR'[1,1]/100)*`PR'[1,2]/100 if clase_de_actividad1 == "000000" | proporcion == . | proporcion < 0
-	noisily di in g "Proporcion: " in y (1-`PR'[1,1])*`PR'[1,2]/100 "%"
+	noisily di in g "Proporcion: " in y (1-`PR'[1,1]/100)*`PR'[1,2]/100*100 "%"
 
 	** MI.9. Estado y ubicaci{c o'}n geogr{c a'}fica ***
 	g estado = substr(folioviv,1,2)
@@ -339,7 +361,7 @@ if _rc != 0 {
 	replace alfa = .4 if edad <= 4
 
 	** MI.15. Supuestos **
-	g informal = lugar_comp == "02" | lugar_comp == "03" | lugar_comp == "17"	// Informalidad
+	g informal = lugar_comp == "01" | lugar_comp == "02" | lugar_comp == "03" | lugar_comp == "17"	// Informalidad
 	*replace numren = "01" if clave >= "M007" & clave <= "M009"			// Adquisicion de vehiculos (jefe del hogar)
 
 	** MI.16. Sexo **
@@ -367,8 +389,9 @@ if _rc != 0 {
 *** 3. Precio, IVA, IEPS (P) ***
 ********************************
 use "`c(sysdir_personal)'/SIM/`enighanio'/preconsumption.dta", clear
+replace informal = lugar_comp == "01" | lugar_comp == "02" | lugar_comp == "03" | lugar_comp == "17"	// Informalidad
 
-** P.1 Cantidad **
+** P.1 Cantidad anual **
 replace cantidad = cantidad*365 if frecuencia == "1"
 replace cantidad = cantidad*52 if frecuencia == "2"
 replace cantidad = cantidad*12 if frecuencia == "3"
@@ -384,16 +407,16 @@ replace cantidad = gasto/14.63*52 if clave == "F009"
 g double precio = gasto_anual/cantidad
 
 ** P.3 C{c a'}lculo del IVA **
-g double IVA = precio*(`tasagener'/100)/(1+(`tasagener'/100))*cantidad*(proporcion) if tiva == 1		// Exento
-replace IVA = precio*(`tasagener'/100)/(1+(`tasagener'/100))*cantidad if tiva == 2                   	// General gravado
-replace IVA = 0 if /*informal == 1 |*/ tiva == 3 														// Tasa cero
-format IVA %10.2fc
+g double IVA = precio*(`tasagener'/100)/(1+(`tasagener'/100))*cantidad*proporcion if tiva == 1		// Exento
+replace IVA = precio*(`tasagener'/100)/(1+(`tasagener'/100))*cantidad if tiva == 2                  // General gravado
+replace IVA = 0 if informal == 1 | tiva == 3 														// Tasa cero
 
 ** P.4 C{c a'}lculo del IEPS **
 replace porcentaje_ieps = 0 if porcentaje_ieps == .
-g double precio_p = precio*(proporcion)/(1+porcentaje_ieps2018/100)-cuota_ieps2018 if tipoieps != .
-g double IEPS = (precio - precio_p)*cantidad if tipoieps != .
-format IEPS %10.2fc
+*g double precio_p = ((precio - IVA)*proporcion - cuota_ieps2018)/(1 + porcentaje_ieps2018/100) if tipoieps != .
+g double IEPS = ((gasto_anual)/(1+(`tasagener'/100))-cuota_ieps2018*cantidad)*proporcion*porcentaje_ieps2018/100/(1 + porcentaje_ieps2018/100) + cuota_ieps2018*cantidad if tipoieps != .
+*g double IEPS = ((precio-IVA)*proporcion*(1 + porcentaje_ieps2018/100) + cuota_ieps2018) if tipoieps != .
+replace IEPS = 0 if informal == 1
 
 tabstat precio [aw=factor], by(tipoieps) f(%20.0fc)
 replace tipoieps = 13 if tipoieps == 1 | tipoieps == 2 | tipoieps == 3
@@ -448,107 +471,141 @@ forvalues k=1(1)19 {
 tempname MTot
 matrix `MTot' = r(StatTotal)
 
+local j = 1
+foreach k in Food NBev ABev Toba Clot Foot Hous Wate Elec Furn Heal Vehi Oper Tran Comm Recr Educ Rest Misc {
+	tempname gasto_anual`k'
+	g `gasto_anual`k'' = gasto_anual if categ == `j'
+	Gini `gasto_anual`k'', hogar(folioviv foliohog) individuo(numren) factor(factor)
+	local gini_GA`k' = r(gini_`gasto_anual`k'')
+	scalar giniGA`k' = string(`gini_GA`k'',"%5.3f")
+	local ++j
+}
+
 noisily di _newline in g "{bf: A. Gasto inicial" ///
-	_col(44) in g %20s "`enigh'" ///
-	_col(66) %6s "Macro" in g ///
-	_col(77) %6s  "Diff. %}"
+	_col(44) in g "(Gini)" ///
+	_col(57) in g %7s "`enigh'" ///
+	_col(66) %7s "SCN" in g ///
+	_col(77) %7s "Diferencia" "}"
 noisily di in g "  (+) Alimentos " ///
-	_col(44) in y %20.3fc `M1'[1,1]/`PIBSCN'*100 ///
+	_col(44) in y "(" %5.3fc `gini_GAFood' ")" ///
+	_col(57) in y %7.3fc `M1'[1,1]/`PIBSCN'*100 ///
 	_col(66) %6.3fc `Food'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`M1'[1,1]/`Food'-1)*100 "%"
 noisily di in g "  (+) Bebidas no alcoh{c o'}licas " ///
-	_col(44) in y %20.3fc `M2'[1,1]/`PIBSCN'*100 ///
+	_col(44) in y "(" %5.3fc `gini_GANBev' ")" ///
+	_col(57) in y %7.3fc `M2'[1,1]/`PIBSCN'*100 ///
 	_col(66) %6.3fc `NBev'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`M2'[1,1]/`NBev'-1)*100 "%"
 noisily di in g "  (+) Bebidas alcoh{c o'}licas " ///
-	_col(44) in y %20.3fc `M3'[1,1]/`PIBSCN'*100 ///
+	_col(44) in y "(" %5.3fc `gini_GAABev' ")" ///
+	_col(57) in y %7.3fc `M3'[1,1]/`PIBSCN'*100 ///
 	_col(66) %6.3fc `ABev'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`M3'[1,1]/`ABev'-1)*100 "%"
 noisily di in g "  (+) Tabaco " ///
-	_col(44) in y %20.3fc `M4'[1,1]/`PIBSCN'*100 ///
+	_col(44) in y "(" %5.3fc `gini_GAToba' ")" ///
+	_col(57) in y %7.3fc `M4'[1,1]/`PIBSCN'*100 ///
 	_col(66) %6.3fc `Toba'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`M4'[1,1]/`Toba'-1)*100 "%"
 noisily di in g "  (+) Prendas de vestir " ///
-	_col(44) in y %20.3fc `M5'[1,1]/`PIBSCN'*100 ///
+	_col(44) in y "(" %5.3fc `gini_GAClot' ")" ///
+	_col(57) in y %7.3fc `M5'[1,1]/`PIBSCN'*100 ///
 	_col(66) %6.3fc `Clot'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`M5'[1,1]/`Clot'-1)*100 "%"
 noisily di in g "  (+) Calzado " ///
-	_col(44) in y %20.3fc `M6'[1,1]/`PIBSCN'*100 ///
+	_col(44) in y "(" %5.3fc `gini_GAFoot' ")" ///
+	_col(57) in y %7.3fc `M6'[1,1]/`PIBSCN'*100 ///
 	_col(66) %6.3fc `Foot'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`M6'[1,1]/`Foot'-1)*100 "%"
 noisily di in g "  (+) Vivienda " ///
-	_col(44) in y %20.3fc `M7'[1,1]/`PIBSCN'*100 ///
+	_col(44) in y "(" %5.3fc `gini_GAHous' ")" ///
+	_col(57) in y %7.3fc `M7'[1,1]/`PIBSCN'*100 ///
 	_col(66) %6.3fc `Hous'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`M7'[1,1]/`Hous'-1)*100 "%"
 noisily di in g "  (+) Agua " ///
-	_col(44) in y %20.3fc `M8'[1,1]/`PIBSCN'*100 ///
+	_col(44) in y "(" %5.3fc `gini_GAWate' ")" ///
+	_col(57) in y %7.3fc `M8'[1,1]/`PIBSCN'*100 ///
 	_col(66) %6.3fc `Wate'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`M8'[1,1]/`Wate'-1)*100 "%"
 noisily di in g "  (+) Electricidad " ///
-	_col(44) in y %20.3fc `M9'[1,1]/`PIBSCN'*100 ///
+	_col(44) in y "(" %5.3fc `gini_GAElec' ")" ///
+	_col(57) in y %7.3fc `M9'[1,1]/`PIBSCN'*100 ///
 	_col(66) %6.3fc `Elec'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`M9'[1,1]/`Elec'-1)*100 "%"
 noisily di in g "  (+) Art{c i'}culos para el hogar " ///
-	_col(44) in y %20.3fc `M10'[1,1]/`PIBSCN'*100 ///
+	_col(44) in y "(" %5.3fc `gini_GAFurn' ")" ///
+	_col(57) in y %7.3fc `M10'[1,1]/`PIBSCN'*100 ///
 	_col(66) %6.3fc `Furn'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`M10'[1,1]/`Furn'-1)*100 "%"
 noisily di in g "  (+) Salud " ///
-	_col(44) in y %20.3fc `M11'[1,1]/`PIBSCN'*100 ///
+	_col(44) in y "(" %5.3fc `gini_GAHeal' ")" ///
+	_col(57) in y %7.3fc `M11'[1,1]/`PIBSCN'*100 ///
 	_col(66) %6.3fc `Heal'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`M11'[1,1]/`Heal'-1)*100 "%"
 noisily di in g "  (+) Aquisici{c o'}n de veh{c i'}culos " ///
-	_col(44) in y %20.3fc `M12'[1,1]/`PIBSCN'*100 ///
+	_col(44) in y "(" %5.3fc `gini_GAVehi' ")" ///
+	_col(57) in y %7.3fc `M12'[1,1]/`PIBSCN'*100 ///
 	_col(66) %6.3fc `Vehi'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`M12'[1,1]/`Vehi'-1)*100 "%"
 noisily di in g "  (+) Funcionamiento de transporte " ///
-	_col(44) in y %20.3fc `M13'[1,1]/`PIBSCN'*100 ///
+	_col(44) in y "(" %5.3fc `gini_GAOper' ")" ///
+	_col(57) in y %7.3fc `M13'[1,1]/`PIBSCN'*100 ///
 	_col(66) %6.3fc `Oper'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`M13'[1,1]/`Oper'-1)*100 "%"
 noisily di in g "  (+) Servicios de transporte " ///
-	_col(44) in y %20.3fc `M14'[1,1]/`PIBSCN'*100 ///
+	_col(44) in y "(" %5.3fc `gini_GATran' ")" ///
+	_col(57) in y %7.3fc `M14'[1,1]/`PIBSCN'*100 ///
 	_col(66) %6.3fc `Tran'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`M14'[1,1]/`Tran'-1)*100 "%"
 noisily di in g "  (+) Comunicaciones " ///
-	_col(44) in y %20.3fc `M15'[1,1]/`PIBSCN'*100 ///
+	_col(44) in y "(" %5.3fc `gini_GAComm' ")" ///
+	_col(57) in y %7.3fc `M15'[1,1]/`PIBSCN'*100 ///
 	_col(66) %6.3fc `Comm'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`M15'[1,1]/`Comm'-1)*100 "%"
 noisily di in g "  (+) Recreaci{c o'}n y cultura " ///
-	_col(44) in y %20.3fc `M16'[1,1]/`PIBSCN'*100 ///
+	_col(44) in y "(" %5.3fc `gini_GARecr' ")" ///
+	_col(57) in y %7.3fc `M16'[1,1]/`PIBSCN'*100 ///
 	_col(66) %6.3fc `Recr'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`M16'[1,1]/`Recr'-1)*100 "%"
 noisily di in g "  (+) Educaci{c o'}n " ///
-	_col(44) in y %20.3fc `M17'[1,1]/`PIBSCN'*100 ///
+	_col(44) in y "(" %5.3fc `gini_GAEduc' ")" ///
+	_col(57) in y %7.3fc `M17'[1,1]/`PIBSCN'*100 ///
 	_col(66) %6.3fc `Educ'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`M17'[1,1]/`Educ'-1)*100 "%"
 noisily di in g "  (+) Restaurantes y hoteles" ///
-	_col(44) in y %20.3fc `M18'[1,1]/`PIBSCN'*100 ///
+	_col(44) in y "(" %5.3fc `gini_GARest' ")" ///
+	_col(57) in y %7.3fc `M18'[1,1]/`PIBSCN'*100 ///
 	_col(66) %6.3fc `Rest'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`M18'[1,1]/`Rest'-1)*100 "%"
 noisily di in g "  (+) Bienes y servicios diveresos " ///
-	_col(44) in y %20.3fc `M19'[1,1]/`PIBSCN'*100 ///
+	_col(44) in y "(" %5.3fc `gini_GAMisc' ")" ///
+	_col(57) in y %7.3fc `M19'[1,1]/`PIBSCN'*100 ///
 	_col(66) %6.3fc `Misc'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`M19'[1,1]/`Misc'-1)*100 "%"
 noisily di in g _dup(84) "-"
 noisily di in g "{bf:  (=) Total " ///
-	_col(44) in y %20.3fc `MTot'[1,1]/`PIBSCN'*100 ///
+	_col(44) in y "(" %5.3fc `gini_gasto_anual' ")" ///
+	_col(57) in y %7.3fc `MTot'[1,1]/`PIBSCN'*100 ///
 	_col(66) %6.3fc `ExpHog'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`MTot'[1,1]/`ExpHog'-1)*100 "}" "%"
 scalar GastoTotPIB = `MTot'[1,1]/`PIBSCN'*100
 
 
 noisily di _newline in g "{bf: B. IVA" ///
-	_col(44) in g %20s "`enigh'" ///
+	_col(44) in g "(Gini)" ///
+	_col(57) in g %7s "`enigh'" ///
 	_col(66) %6s "Macro" in g ///
 	_col(77) %6s  "Diff. %}"
 noisily di in g "  Total " ///
-	_col(44) in y %20.3fc `MTot'[1,3]/`PIBSCN'*100 ///
+	_col(44) in y "(" %5.3fc `gini_IVA' ")" ///
+	_col(57) in y %7.3fc `MTot'[1,3]/`PIBSCN'*100 ///
 	_col(66) %6.3fc `IVA'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`MTot'[1,3]/`IVA'-1)*100 "%"
 
 
 ** IEPS **
 noisily di _newline in g "{bf: C. IEPS" ///
-	_col(44) in g %20s "`enigh'" ///
+	_col(44) in g "(Gini)" ///
+	_col(57) in g %7s "`enigh'" ///
 	_col(66) %6s "Macro" in g ///
 	_col(77) %6s  "Diff. %}"
 tabstat IEPS [aw=factor], by(tipoieps) stat(sum) f(%20.0fc) save
@@ -561,7 +618,7 @@ while "`=r(name`k')'" != "." {
 	matrix `ieps`k'' = r(Stat`k')
 
 	noisily di in g "  (+) `=r(name`k')'" ///
-		_col(44) in y %20.3fc `ieps`k''[1,1]/`PIBSCN'*100 ///
+		_col(57) in y %7.3fc `ieps`k''[1,1]/`PIBSCN'*100 ///
 		_col(66) in y %6.3fc `Ieps`k''/`PIBSCN'*100 ///
 		_col(77) in y %6.1fc (`ieps`k''[1,1]/`Ieps`k''-1)*100 "%"
 	local ++k
@@ -569,7 +626,8 @@ while "`=r(name`k')'" != "." {
 
 noisily di in g _dup(84) "-"
 noisily di in g "  IEPS " ///
-	_col(44) in y %20.3fc `MTot'[1,4]/`PIBSCN'*100 ///
+	_col(44) in y "(" %5.3fc `gini_IEPS' ")" ///
+	_col(57) in y %7.3fc `MTot'[1,4]/`PIBSCN'*100 ///
 	_col(66) %6.3fc `IEPS'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`MTot'[1,4]/`IEPS'-1)*100 "%"
 
@@ -650,9 +708,7 @@ if "`altimir'" == "yes" {
 		local ++j
 		replace gasto_anual = gasto_anual*scalar(TT`k') if categ == `j'
 		replace precio = precio*scalar(TT`k') if categ == `j'
-		replace precio_p = precio_p*scalar(TT`k') if categ == `j'
-		replace IVA = IVA*scalar(TT`k') if categ == `j' //& tiva == 2
-		*replace IVA = IVA*(1-proporcion)*scalar(TT`k') if categ == `j' & tiva == 1
+		replace IVA = IVA*scalar(TT`k') if categ == `j'
 		replace IEPS = IEPS*scalar(TT`k') if categ == `j'
 	}
 	format IVA %10.2fc
@@ -765,7 +821,7 @@ noisily di in g "  Total " ///
 	_col(44) in y %20.3fc `MTot'[1,3]/`PIBSCN'*100 ///
 	_col(66) %6.3fc `IVA'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`MTot'[1,3]/`IVA'-1)*100
-
+	
 noisily di _newline in g "{bf: F. IEPS ajustado" ///
 	_col(44) in g %20s "`enigh'" ///
 	_col(66) %6s "Macro" in g ///
@@ -793,10 +849,32 @@ noisily di in g "  IEPS " ///
 	_col(66) %6.3fc `IEPS'/`PIBSCN'*100 ///
 	_col(77) %6.1fc (`MTot'[1,4]/`IEPS'-1)*100 "%"
 
-
 ** Ajuste IVA y IEPS **
 replace IVA = IVA*`IVA'/`MTot'[1,3]
 replace IEPS = IEPS*`IEPS'/`MTot'[1,4]
+
+** Scalar **
+scalar EAlimPIB = `M1'[1,1]/`PIBSCN'*100
+scalar EBebNPIB = `M2'[1,1]/`PIBSCN'*100
+scalar EBebAPIB = `M3'[1,1]/`PIBSCN'*100
+scalar ETabaPIB = `M4'[1,1]/`PIBSCN'*100
+scalar EVestPIB = `M5'[1,1]/`PIBSCN'*100
+scalar ECalzPIB = `M6'[1,1]/`PIBSCN'*100
+scalar EAlquPIB = `M7'[1,1]/`PIBSCN'*100
+scalar EAguaPIB = `M8'[1,1]/`PIBSCN'*100
+scalar EElecPIB = `M9'[1,1]/`PIBSCN'*100
+scalar EHogaPIB = `M10'[1,1]/`PIBSCN'*100
+scalar ESaluPIB = `M11'[1,1]/`PIBSCN'*100
+scalar EVehiPIB = `M12'[1,1]/`PIBSCN'*100
+scalar EFTraPIB = `M13'[1,1]/`PIBSCN'*100
+scalar ESTraPIB = `M14'[1,1]/`PIBSCN'*100
+scalar EComuPIB = `M15'[1,1]/`PIBSCN'*100
+scalar ERecrPIB = `M16'[1,1]/`PIBSCN'*100
+scalar EEducPIB = `M17'[1,1]/`PIBSCN'*100
+scalar ERestPIB = `M18'[1,1]/`PIBSCN'*100
+scalar EDivePIB = `M19'[1,1]/`PIBSCN'*100
+
+scalar GastoAnualHHSPIB = `MTot'[1,1]/`PIBSCN'*100
 
 
 
@@ -810,7 +888,7 @@ foreach categ of varlist categ categ_iva {
 	preserve
 	levelsof `categ', l(levelscateg)
 
-	collapse (sum) gasto_anual IVA IEPS (max) factor sexo edad alfa (mean) proporcion, by(folioviv foliohog numren `categ')
+	collapse (sum) gasto_anual IVA IEPS (max) factor sexo edad alfa tot_integ (mean) proporcion, by(folioviv foliohog numren `categ')
 	capture reshape wide gasto_anual IVA IEPS proporcion, i(folioviv foliohog numren) j(`categ') string
 	if _rc != 0 {
 		reshape wide gasto_anual IVA IEPS proporcion, i(folioviv foliohog numren) j(`categ')
@@ -848,9 +926,24 @@ foreach categ of varlist categ categ_iva {
 	** 7.2 Totales **
 	egen TOTgasto_anual = rsum(gasto_anual*)
 	label var TOTgasto_anual "gasto total"
+	
+	Gini TOTgasto_anual, hogar(folioviv foliohog) individuo(numren) factor(factor)
+	local gini_gasto_anual = r(gini_TOTgasto_anual)
+	scalar giniGAGastoAnual = string(`gini_gasto_anual',"%5.3f")
 
 	egen TOTIVA = rsum(IVA*)
+	Gini TOTIVA, hogar(folioviv foliohog) individuo(numren) factor(factor)
+	local gini_IVA = r(gini_TOTIVA)
+	scalar giniIVA = string(`gini_IVA',"%5.3f")
+	scalar IVAHHSPIB = `MTot'[1,3]/`PIBSCN'*100
+	scalar IVASCNPIB = `IVA'/`PIBSCN'*100
+
 	egen TOTIEPS = rsum(IEPS*)
+	Gini TOTIEPS, hogar(folioviv foliohog) individuo(numren) factor(factor)
+	local gini_IEPS = r(gini_TOTIEPS)
+	scalar giniIEPS = string(`gini_IEPS',"%5.3f")
+	scalar IEPSHHSPIB = `MTot'[1,4]/`PIBSCN'*100
+	scalar IEPSSCNPIB = `IEPS'/`PIBSCN'*100
 
 
 	***********

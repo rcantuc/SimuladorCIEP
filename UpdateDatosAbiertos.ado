@@ -28,8 +28,8 @@ program define UpdateDatosAbiertos, return
 
 	*****************************************
 	** 1.1 Ingreso, gasto y financiamiento **
-	*import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/ingreso_gasto_finan.csv", clear
-	import delimited "`c(sysdir_site)'../basesCIEP/SHCP/Datos Abiertos/ingreso_gasto_finan.csv", clear
+	import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/ingreso_gasto_finan.csv", clear
+	*import delimited "`c(sysdir_site)'../basesCIEP/SHCP/Datos Abiertos/ingreso_gasto_finan.csv", clear
 	tempfile ing
 	save `ing'
 
@@ -41,8 +41,8 @@ program define UpdateDatosAbiertos, return
 
 	***************
 	** 1.2 Deuda **
-	*import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/deuda_publica.csv", clear
-	import delimited "`c(sysdir_site)'../basesCIEP/SHCP/Datos Abiertos/deuda_publica.csv", clear
+	import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/deuda_publica.csv", clear
+	*import delimited "`c(sysdir_site)'../basesCIEP/SHCP/Datos Abiertos/deuda_publica.csv", clear
 	tempfile deuda
 	save `deuda'
 
@@ -54,8 +54,8 @@ program define UpdateDatosAbiertos, return
 
 	****************
 	** 1.3 SHRFSP **
-	*import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/shrfsp_deuda_amplia_actual.csv", clear
-	import delimited "`c(sysdir_site)'../basesCIEP/SHCP/Datos Abiertos/shrfsp_deuda_amplia_actual.csv", clear
+	import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/shrfsp_deuda_amplia_actual.csv", clear
+	*import delimited "`c(sysdir_site)'../basesCIEP/SHCP/Datos Abiertos/shrfsp_deuda_amplia_actual.csv", clear
 	tempfile shrf
 	save `shrf'
 
@@ -67,8 +67,8 @@ program define UpdateDatosAbiertos, return
 
 	**************
 	** 1.4 RFSP **
-	*import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/rfsp.csv", clear
-	import delimited "`c(sysdir_site)'../basesCIEP/SHCP/Datos Abiertos/rfsp.csv", clear
+	import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/rfsp.csv", clear
+	*import delimited "`c(sysdir_site)'../basesCIEP/SHCP/Datos Abiertos/rfsp.csv", clear
 	tempfile rf
 	save `rf'
 
@@ -80,8 +80,8 @@ program define UpdateDatosAbiertos, return
 
 	*************************************************
 	** 1.5 Transferencias a Entidades y Municipios **
-	*import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/transferencias_entidades_fed.csv", clear
-	import delimited "`c(sysdir_site)'../basesCIEP/SHCP/Datos Abiertos/transferencias_entidades_fed.csv", clear
+	import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/transferencias_entidades_fed.csv", clear
+	*import delimited "`c(sysdir_site)'../basesCIEP/SHCP/Datos Abiertos/transferencias_entidades_fed.csv", clear
 	tempfile gf
 	save `gf'
 
