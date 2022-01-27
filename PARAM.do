@@ -45,74 +45,73 @@ global tipoDeCambio = 20.200                                  // Tipo de cambio
 global depreciacion = 0.2000                                  // Depreciaci{c o'}n
 
 scalar aniovp = 2022
-scalar foliohogar = "folioviv foliohog"                        // Folio del hogar
 scalar anioend = 2030
 
 
-*log using /Users/ricardo/Desktop/`=aniovp'.smcl, replace
+
+if "$output" != "output" {
+	*********************************/
+	***                            ***
+	***    2. PARTE III: GASTOS    ***
+	***                            ***
+	**********************************
+	scalar basica      =   24402 //    Educaci{c o'}n b{c a'}sica
+	scalar medsup      =   24039 //    Educaci{c o'}n media superior
+	scalar superi      =   36559 //    Educaci{c o'}n superior
+	scalar posgra      =   57996 //    Posgrado
+	scalar eduadu      =  119929 //    Educaci{c o'}n para adultos
+	scalar otrose      =    1752 //    Otros gastos educativos
+
+	scalar ssa         =     928 //    SSalud
+	scalar prospe      =    2013 //    IMSS-Prospera
+	scalar segpop      =    3131 //    Seguro Popular
+	scalar imss        =    4681 //    IMSS (salud)
+	scalar issste      =    4697 //    ISSSTE (salud)
+	scalar pemex       =   41686 //    Pemex (salud) + ISSFAM (salud)
+
+	scalar bienestar   =   24810 //    Pensi{c o'}n Bienestar
+	scalar penims      =  134743 //    Pensi{c o'}n IMSS
+	scalar peniss      =  225979 //    Pensi{c o'}n ISSSTE
+	scalar penotr      = 1470558 //    Pensi{c o'}n Pemex, CFE, Pensi{c o'}n LFC, ISSFAM, Otros
+
+	scalar servpers    =    3638 //    Servicios personales
+	scalar matesumi    =    1849 //    Materiales y suministros
+	scalar gastgene    =    2044 //    Gastos generales
+	scalar substran    =    1865 //    Subsidios y transferencias
+	scalar bienmueb    =     288 //    Bienes muebles e inmuebles
+	scalar obrapubl    =    4065 //    Obras p{c u'}blicas
+	scalar invefina    =    1208 //    Inversi{c o'}n financiera
+	scalar partapor    =   10018 //    Participaciones y aportaciones
+	scalar costodeu    =    6412 //    Costo de la deuda
+
+	scalar IngBas      =       0 //    Ingreso b{c a'}sico
+	scalar ingbasico18 =       1 //    1: Incluye menores de 18 anios, 0: no
+	scalar ingbasico65 =       1 //    1: Incluye mayores de 65 anios, 0: no
 
 
 
-*********************************/
-***                            ***
-***    2. PARTE III: GASTOS    ***
-***                            ***
-**********************************
-scalar basica      =   24402 //    Educaci{c o'}n b{c a'}sica
-scalar medsup      =   24039 //    Educaci{c o'}n media superior
-scalar superi      =   36559 //    Educaci{c o'}n superior
-scalar posgra      =   57996 //    Posgrado
-scalar eduadu      =  119929 //    Educaci{c o'}n para adultos
-scalar otrose      =    1752 //    Otros gastos educativos
-
-scalar ssa         =     928 //    SSalud
-scalar prospe      =    2013 //    IMSS-Prospera
-scalar segpop      =    3131 //    Seguro Popular
-scalar imss        =    4681 //    IMSS (salud)
-scalar issste      =    4697 //    ISSSTE (salud)
-scalar pemex       =   41686 //    Pemex (salud) + ISSFAM (salud)
-
-scalar bienestar   =   24810 //    Pensi{c o'}n Bienestar
-scalar penims      =  134743 //    Pensi{c o'}n IMSS
-scalar peniss      =  225979 //    Pensi{c o'}n ISSSTE
-scalar penotr      = 1470558 //    Pensi{c o'}n Pemex, CFE, Pensi{c o'}n LFC, ISSFAM, Otros
-
-scalar servpers    =    3638 //    Servicios personales
-scalar matesumi    =    1849 //    Materiales y suministros
-scalar gastgene    =    2044 //    Gastos generales
-scalar substran    =    1865 //    Subsidios y transferencias
-scalar bienmueb    =     288 //    Bienes muebles e inmuebles
-scalar obrapubl    =    4065 //    Obras p{c u'}blicas
-scalar invefina    =    1208 //    Inversi{c o'}n financiera
-scalar partapor    =   10018 //    Participaciones y aportaciones
-scalar costodeu    =    6412 //    Costo de la deuda
-
-scalar IngBas      =       0 //    Ingreso b{c a'}sico
-scalar ingbasico18 =       1 //    1: Incluye menores de 18 anios, 0: no
-scalar ingbasico65 =       1 //    1: Incluye mayores de 65 anios, 0: no
 
 
 
+	**********************************/
+	***                             ***
+	***    3. PARTE II: INGRESOS    ***
+	***                             ***
+	***********************************
+	scalar ISRAS   = 3.364 //    ISR (asalariados): 3.453
+	scalar ISRPF   = 0.218 //    ISR (personas f{c i'}sicas): 0.441
+	scalar CuotasT = 1.446 //    Cuotas (IMSS): 1.515
 
+	scalar IVA     = 4.263 //    IVA: 3.885
+	scalar ISAN    = 0.043 //    ISAN: 0.030
+	scalar IEPS    = 1.774 //    IEPS (no petrolero + petrolero): 2.027
+	scalar Importa = 0.256 //    Importaciones: 0.245
 
-**********************************/
-***                             ***
-***    3. PARTE II: INGRESOS    ***
-***                             ***
-***********************************
-scalar ISRAS   = 3.364 //    ISR (asalariados): 3.453
-scalar ISRPF   = 0.218 //    ISR (personas f{c i'}sicas): 0.441
-scalar CuotasT = 1.446 //    Cuotas (IMSS): 1.515
-
-scalar IVA     = 4.263 //    IVA: 3.885
-scalar ISAN    = 0.043 //    ISAN: 0.030
-scalar IEPS    = 1.774 //    IEPS (no petrolero + petrolero): 2.027
-scalar Importa = 0.256 //    Importaciones: 0.245
-
-scalar ISRPM   = 3.699 //    ISR (personas morales): 3.710
-scalar FMP     = 1.303 //    Fondo Mexicano del Petr{c o'}leo: 1.362
-scalar OYE     = 4.233 //    Organismos y empresas (IMSS + ISSSTE + Pemex + CFE): 4.274
-scalar OtrosC  = 1.078 //    Productos, derechos, aprovechamientos, contribuciones: 1.070
+	scalar ISRPM   = 3.699 //    ISR (personas morales): 3.710
+	scalar FMP     = 1.303 //    Fondo Mexicano del Petr{c o'}leo: 1.362
+	scalar OYE     = 4.233 //    Organismos y empresas (IMSS + ISSSTE + Pemex + CFE): 4.274
+	scalar OtrosC  = 1.078 //    Productos, derechos, aprovechamientos, contribuciones: 1.070
+}
 
 
 

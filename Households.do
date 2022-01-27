@@ -195,6 +195,10 @@ local Productos = r(Productos)
 local Aprovechamientos = r(Aprovechamientos)
 local OtrosTributarios = r(Otros_tributarios)
 local OtrasEmpresas = r(Otras_empresas)
+local ISAN = r(ISAN)
+local Importaciones = r(Importaciones)
+local IVA = r(IVA)
+local IEPS = r(IEPS)
 
 LIF, anio(`enighanio') by(divGA) nographs min(0)
 local alingreso = r(Impuestos_al_ingreso)-`ISRMorales'
@@ -322,9 +326,9 @@ if `enighanio' > 2020 {
 *** B.1 Micro 1. ENIGH. Gastos ***
 **********************************
 capture confirm file "`c(sysdir_personal)'/SIM/`enighanio'/deducciones.dta"
-*if _rc != 0 {
-	noisily run "`c(sysdir_site)'/Expenditure.do" `enighanio'
-*}
+if _rc != 0 | "$latex" == "latex" {
+	noisily run "`c(sysdir_personal)'/Expenditure.do" `enighanio'
+}
 
 
 ************************************
@@ -1149,10 +1153,10 @@ label values formal_dummy formalidad_dummy
 * Segun el SAT, habia 41,255,409 de asalariados en Agosto de 2018 *
 di _newline(2) _col(04) in g "{bf:Paso 0: Informaci{c o'}n inicial}"
 di _newline _col(04) in g "{bf:0.1. Trabajos asalariados formales}"
-table formal2 [fw=factor] if formal2 != 0, format(%12.0fc) row
+table formal2 [fw=factor] if formal2 != 0, nformat(%12.0fc)
 
 di _newline _col(04) in g "{bf:0.2. Personas formales}"
-table formal [fw=factor] if formal != 0, format(%12.0fc) row
+table formal [fw=factor] if formal != 0, nformat(%12.0fc)
 
 
 *************
@@ -2627,6 +2631,35 @@ Distribucion ing_cap_aprovecha, relativo(factor) macro(`Aprovechamientos')
 Distribucion ing_cap_otrostrib, relativo(factor) macro(`OtrosTributarios')
 Distribucion ing_cap_otrasempr, relativo(factor) macro(`OtrasEmpresas')
 
+* Impuestos al consumo *
+Distribucion ISAN, relativo(gasto_anual12) macro(`ISAN')
+Distribucion Importaciones, relativo(TOTgasto_anual) macro(`Importaciones')
+egen TOTImpuestosConsumo = rsum(TOTIVA TOTIEPS ISAN Importaciones) 
+
+tabstat TOTIVA TOTIEPS ISAN Importaciones [aw=factor_cola], stat(sum) f(%20.0fc) save
+tempname TOTConsumo
+matrix `TOTConsumo' = r(StatTotal)
+
+Gini ISAN, hogar(folioviv foliohog) individuo(numren) factor(factor)
+local giniISAN = r(gini_ISAN)
+scalar giniISAN = string(`giniISAN',"%5.3f")
+scalar ISANSCNPIB = `ISAN'/`PIBSCN'*100
+scalar ISANHHSPIB = `TOTConsumo'[1,3]/`PIBSCN'*100
+
+Gini Importaciones, hogar(folioviv foliohog) individuo(numren) factor(factor)
+local giniImportaciones = r(gini_Importaciones)
+scalar giniImportaciones = string(`giniImportaciones',"%5.3f")
+scalar ImportacionesSCNPIB = `Importaciones'/`PIBSCN'*100
+scalar ImportacionesHHSPIB = `TOTConsumo'[1,4]/`PIBSCN'*100
+
+Gini TOTImpuestosConsumo, hogar(folioviv foliohog) individuo(numren) factor(factor)
+local giniTOTImpuestosConsumo = r(gini_TOTImpuestosConsumo)
+scalar giniTOTImpuestosConsumo = string(`giniTOTImpuestosConsumo',"%5.3f")
+scalar TOTImpuestosConsumoSCNPIB = (`IVA'+`IEPS'+`ISAN'+`Importaciones')/`PIBSCN'*100
+scalar TOTImpuestosConsumoHHSPIB = (`TOTConsumo'[1,1]+`TOTConsumo'[1,2]+`TOTConsumo'[1,3]+`TOTConsumo'[1,4])/`PIBSCN'*100
+
+
+
 
 
 ***********************************
@@ -2636,7 +2669,6 @@ noisily Simulador ingbrutotot [fw=factor_cola], base("ENIGH 2018") boot(1) reboo
 
 rename TOTgasto_anual TOTgastoanual
 noisily Simulador TOTgastoanual [fw=factor_cola], base("ENIGH 2018") boot(1) reboot anio(`enighanio') $nographs nooutput
-
 Gini TOTgastoanual, hogar(folioviv foliohog) individuo(numren) factor(factor)
 local giniTOTgastoanual = r(gini_TOTgastoanual)
 scalar giniTOTgastoanual = string(`giniTOTgastoanual',"%5.3f")
@@ -2655,6 +2687,8 @@ replace Yk = Yk + gasto_anualDepreciacion - (ing_cap_imss + ing_cap_issste + ing
 	ing_cap_pemex + ing_cap_fmp + ing_cap_mejoras + ing_cap_derechos + ///
 	ing_cap_productos + ing_cap_aprovecha + ///
 	ing_cap_otrostrib + ing_cap_otrasempr)
+
+
 
 
 
