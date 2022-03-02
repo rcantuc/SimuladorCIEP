@@ -391,6 +391,8 @@ if _rc != 0 {
 use "`c(sysdir_personal)'/SIM/`enighanio'/preconsumption.dta", clear
 replace informal = lugar_comp == "01" | lugar_comp == "02" | lugar_comp == "03" | lugar_comp == "17"	// Informalidad
 
+
+
 ** P.1 Cantidad anual **
 replace cantidad = cantidad*365 if frecuencia == "1"
 replace cantidad = cantidad*52 if frecuencia == "2"
@@ -480,6 +482,17 @@ foreach k in Food NBev ABev Toba Clot Foot Hous Wate Elec Furn Heal Vehi Oper Tr
 	scalar giniGA`k' = string(`gini_GA`k'',"%5.3f")
 	local ++j
 }
+
+Gini gasto_anual, hogar(folioviv foliohog) individuo(numren) factor(factor)
+local gini_gasto_anual = r(gini_gasto_anual)
+scalar gini_gasto_anual = string(`gini_gasto_anual',"%5.3f")
+Gini IVA, hogar(folioviv foliohog) individuo(numren) factor(factor)
+local gini_IVA = r(gini_IVA)
+scalar gini_IVA = string(`gini_IVA',"%5.3f")
+Gini IEPS, hogar(folioviv foliohog) individuo(numren) factor(factor)
+local gini_IEPS = r(gini_IEPS)
+scalar gini_IEPS = string(`gini_IEPS',"%5.3f")
+
 
 noisily di _newline in g "{bf: A. Gasto inicial" ///
 	_col(44) in g "(Gini)" ///
@@ -608,6 +621,7 @@ noisily di _newline in g "{bf: C. IEPS" ///
 	_col(57) in g %7s "`enigh'" ///
 	_col(66) %6s "Macro" in g ///
 	_col(77) %6s  "Diff. %}"
+
 tabstat IEPS [aw=factor], by(tipoieps) stat(sum) f(%20.0fc) save
 tempname iepstot
 matrix `iepstot' = r(StatTotal)
@@ -616,8 +630,17 @@ local k = 1
 while "`=r(name`k')'" != "." {
 	tempname ieps`k'
 	matrix `ieps`k'' = r(Stat`k')
+	local name`k' = "`=r(name`k')'"
+	local ++k
+}
 
-	noisily di in g "  (+) `=r(name`k')'" ///
+local k = 1
+while "`name`k''" != "" {
+	g `ieps`k'' = IEPS if tipoieps == `k'
+	Gini `ieps`k'', hogar(folioviv foliohog) individuo(numren) factor(factor)
+	local gini_ieps`k' = r(gini_`ieps`k'')
+	noisily di in g "  (+) `name`k''" ///
+		_col(44) in y "(" %5.3fc `gini_ieps`k'' ")" ///
 		_col(57) in y %7.3fc `ieps`k''[1,1]/`PIBSCN'*100 ///
 		_col(66) in y %6.3fc `Ieps`k''/`PIBSCN'*100 ///
 		_col(77) in y %6.1fc (`ieps`k''[1,1]/`Ieps`k''-1)*100 "%"
@@ -698,8 +721,8 @@ scalar EEducPIB = `M17'[1,1]/`PIBSCN'*100
 scalar ERestPIB = `M18'[1,1]/`PIBSCN'*100
 scalar EDivePIB = `M19'[1,1]/`PIBSCN'*100
 
-noisily di _newline in g "  IVA" in y " ANTES " in g "del factor de expansi{c o'}n."
-noisily tabstat IVA [fw=factor], stat(sum) by(tiva) f(%20.0fc)
+di _newline in g "  IVA" in y " ANTES " in g "del factor de expansi{c o'}n."
+tabstat IVA [fw=factor], stat(sum) by(tiva) f(%20.0fc)
 
 if "`altimir'" == "yes" {
 	local j = 0
@@ -715,8 +738,8 @@ if "`altimir'" == "yes" {
 	format IEPS %10.2fc
 }
 
-noisily di _newline in g "  IVA" in y " DESPU{c E'}S " in g "del factor de expansi{c o'}n."
-noisily tabstat IVA [fw=factor], stat(sum) by(tiva) f(%20.0fc)
+di _newline in g "  IVA" in y " DESPU{c E'}S " in g "del factor de expansi{c o'}n."
+tabstat IVA [fw=factor], stat(sum) by(tiva) f(%20.0fc)
 
 tabstat gasto_anual precio IVA IEPS [aw=factor], by(categ) stat(sum) f(%20.0fc) save
 forvalues k=1(1)19 {
@@ -833,7 +856,7 @@ matrix `iepstot' = r(StatTotal)
 
 local k = 1
 while "`=r(name`k')'" != "." {
-	tempname ieps`k'
+	tempname ieps`k' 
 	matrix `ieps`k'' = r(Stat`k')
 
 	noisily di in g "  (+) `=r(name`k')'" ///

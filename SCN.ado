@@ -81,6 +81,12 @@ quietly {
 		tempfile produccion
 		save `produccion'
 
+		** D.9. Cuenta de produccion **
+		import excel "`c(sysdir_site)'../basesCIEP/INEGI/SCN/sector externo.xlsx", clear
+		LimpiaBIE ex
+		tempfile sectorexterno
+		save `sectorexterno'
+
 		** Merge bases **
 		use `generacion', clear
 		merge 1:1 (A) using `sectores', nogen
@@ -91,6 +97,7 @@ quietly {
 		merge 1:1 (A) using `actividad', nogen
 		merge 1:1 (A) using `consumoprivado', nogen
 		merge 1:1 (A) using `produccion', nogen
+		merge 1:1 (A) using `sectorexterno', nogen
 
 
 		*******************************
@@ -656,25 +663,27 @@ quietly {
 		tempname DEPMAX
 		matrix `DEPMAX' = r(StatTotal)
 
-		twoway (area `Depreciacion' `Capital' `Laboral' anio if anio <= `anio_last') ///
-			(`graphtype' `Depreciacion' anio if anio <= `anio_exo' & anio > `anio_last', color("255 129 0") lwidth(none)) ///
-			(`graphtype' `Capital' anio if anio <= `anio_exo' & anio > `anio_last', color("255 189 0") lwidth(none)) ///
-			(`graphtype' `Laboral' anio if anio <= `anio_exo' & anio > `anio_last', color("39 97 47") lwidth(none)) ///
-			(area `Depreciacion' anio if anio > `anio_last' & anio > `anio_exo', color("255 129 0")) ///
-			(area `Capital' anio if anio > `anio_last' & anio > `anio_exo', color("255 189 0")) ///
-			(area `Laboral' anio if anio > `anio_last' & anio > `anio_exo', color("39 97 47")), ///
+		twoway (area `Depreciacion' anio if anio <= `anio_last', pstyle(p1) lwidth(none)) ///
+			(area `Capital' anio if anio <= `anio_last', pstyle(p2) lwidth(none)) ///
+			(area `Laboral' anio if anio <= `anio_last', pstyle(p3) lwidth(none)) ///
+			(`graphtype' `Depreciacion' anio if anio <= `anio_exo' & anio > `anio_last', pstyle(p1) lwidth(none)) ///
+			(`graphtype' `Capital' anio if anio <= `anio_exo' & anio > `anio_last', pstyle(p2) lwidth(none)) ///
+			(`graphtype' `Laboral' anio if anio <= `anio_exo' & anio > `anio_last', pstyle(p3) lwidth(none)) ///
+			(area `Depreciacion' anio if anio > `anio_last' & anio > `anio_exo', pstyle(p1) lwidth(none)) ///
+			(area `Capital' anio if anio > `anio_last' & anio > `anio_exo', pstyle(p2) lwidth(none)) ///
+			(area `Laboral' anio if anio > `anio_last' & anio > `anio_exo', pstyle(p3) lwidth(none)), ///
 			title("{bf:Distribuci{c o'}n} del ingreso") ///
-			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.") ///
-			legend(cols(3) order(1 2 3)) ///
+			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
+			legend(cols(3) order(1 2 3) region(margin(zero))) ///
 			xtitle("") ///
-			text(`=`Depreciacion'[1]*.05' `=`latest'+(`anio_exo'-`latest')/2+.5' "{bf:Estimado}", place(n) color(white)) ///
+			text(`=`Depreciacion'[1]*.05' `=`latest'+(`anio_exo'-`latest')/2+.5' "{bf:Estimado ($paqueteEconomico)}", place(n) color(white)) ///
 			text(`=`Depreciacion'[1]*.05' `=anio[1]+.5' "{bf:Reportado}", place(ne) color(white)) ///
-			text(`=`Depreciacion'[1]*.05' `=anio[_N]-6.5' "{bf:Proyectado}", place(ne) color(white)) ///
+			text(`=`Depreciacion'[1]*.05' `=anio[_N]-5.5' "{bf:Proyectado}", place(ne) color(white)) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
 			ylabel(0(5)`=ceil(`DEPMAX'[1,1])+2.5', format(%20.0fc)) ///
 			ytitle(billones MXN `anio') ///
 			yscale(range(0)) xscale(range(1993)) ///
-			note("{bf:{c U'}ltimo dato reportado}: `anio_last'.") ///
+			note("{bf:{c U'}ltimo dato utilizado}: `anio_last'.") ///
 			name(gdp_generacion, replace)
 
 		capture confirm existence $export
@@ -774,36 +783,147 @@ quietly {
 		g `AhorroN' = (AhorroN + ConGob + ConHog + ComprasN)/deflator/1000000000000
 		label var `AhorroN' "Ahorro neto"
 
-		twoway (area `AhorroN' anio if anio <= `anio_last', color("0 78 198")) ///
-			(area `ConGob' anio if anio <= `anio_last', color("0 151 201")) ///
-			(area `ConHog' anio if anio <= `anio_last', color("186 34 64")) ///
-			(area `ComprasN' anio if anio <= `anio_last', color("53 200 71")) ///
-			(`graphtype' `AhorroN' anio if anio <= `anio_exo' & anio > `anio_last', color("0 78 198") lwidth(none)) ///
-			(`graphtype' `ConGob' anio if anio <= `anio_exo' & anio > `anio_last', color("0 151 201") lwidth(none)) ///
-			(`graphtype' `ConHog' anio if anio <= `anio_exo' & anio > `anio_last', color("186 34 64") lwidth(none)) ///
-			(`graphtype' `ComprasN' anio if anio <= `anio_exo' & anio > `anio_last', color("53 200 71") lwidth(none)) ///
-			(area `AhorroN' anio if anio > `anio_last' & anio > `anio_exo', color("0 78 198")) ///
-			(area `ConGob' anio if anio > `anio_last' & anio > `anio_exo', color("0 151 201")) ///
-			(area `ConHog' anio if anio > `anio_last' & anio > `anio_exo', color("186 34 64")) ///
-			(area `ComprasN' anio if anio > `anio_last' & anio > `anio_exo', color("53 200 71")), ///
+		twoway (area `AhorroN' anio if anio <= `anio_last', pstyle(p5) lwidth(none)) ///
+			(area `ConGob' anio if anio <= `anio_last', pstyle(p6) lwidth(none)) ///
+			(area `ConHog' anio if anio <= `anio_last', pstyle(p7) lwidth(none)) ///
+			(area `ComprasN' anio if anio <= `anio_last', pstyle(p8) lwidth(none)) ///
+			(`graphtype' `AhorroN' anio if anio <= `anio_exo' & anio > `anio_last', pstyle(p5) lwidth(none)) ///
+			(`graphtype' `ConGob' anio if anio <= `anio_exo' & anio > `anio_last', pstyle(p6) lwidth(none)) ///
+			(`graphtype' `ConHog' anio if anio <= `anio_exo' & anio > `anio_last', pstyle(p7) lwidth(none)) ///
+			(`graphtype' `ComprasN' anio if anio <= `anio_exo' & anio > `anio_last', pstyle(p8) lwidth(none)) ///
+			(area `AhorroN' anio if anio > `anio_last' & anio > `anio_exo', pstyle(p5) lwidth(none)) ///
+			(area `ConGob' anio if anio > `anio_last' & anio > `anio_exo', pstyle(p6) lwidth(none)) ///
+			(area `ConHog' anio if anio > `anio_last' & anio > `anio_exo', pstyle(p7) lwidth(none)) ///
+			(area `ComprasN' anio if anio > `anio_last' & anio > `anio_exo', pstyle(p8) lwidth(none)), ///
 			title("{bf:Utilizaci{c o'}n} del ingreso disponible") ///
-			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.") ///
-			legend(cols(4) order(1 2 3 4)) ///
+			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
+			legend(cols(4) order(1 2 3 4) region(margin(zero))) ///
 			xtitle("") ///
-			text(`=`AhorroN'[1]*.05' `=`latest'+(`anio_exo'-`latest')/2+.5' "{bf:Estimado}", place(n) color(white)) ///
+			text(`=`AhorroN'[1]*.05' `=`latest'+(`anio_exo'-`latest')/2+.5' "{bf:Estimado ($paqueteEconomico)}", place(n) color(white)) ///
 			text(`=`AhorroN'[1]*.05' `=anio[1]+.5' "{bf:Reportado}", place(ne) color(white)) ///
-			text(`=`AhorroN'[1]*.05' `=anio[_N]-6.5' "{bf:Proyectado}", place(ne) color(white)) ///
+			text(`=`AhorroN'[1]*.05' `=anio[_N]-5.5' "{bf:Proyectado}", place(ne) color(white)) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
 			ylabel(0(5)`=ceil(`DEPMAX'[1,1])+2.5', format(%20.0fc)) ///
 			ytitle(billones MXN `anio') ///
 			yscale(range(0)) xscale(range(1993)) ///
-			note("{bf:{c U'}ltimo dato reportado}: `anio_last'.") ///
+			note("{bf:{c U'}ltimo dato utilizado}: `anio_last'.") ///
 			name(gdp_utilizacion, replace)
 
 		capture confirm existence $export
 		if _rc == 0 {
 			graph export "$export/PIB_UtilizacionIngreso.png", replace name(gdp_utilizacion)
 		}
+
+		tempvar FFFG OTRAE TOTAE HUae
+		egen `TOTAE' = rsum(Eae ADae AKae APae BDae FFae FGae FHae HFae HUae GOae ServProf IQae IRae JCae JLae KIae KUae LDae LTae)
+		egen `FFFG' = rsum(FFae FGae)
+		egen `HUae' = rsum(HUae)
+		egen `OTRAE' = rsum(GOae ServProf IQae IRae JCae JLae KIae KUae LDae LTae)
+
+		foreach k of varlist Eae ADae AKae APae BDae `FFFG' FHae HFae `HUae' `OTRAE' {
+			tempvar `k'
+			g ``k'' = `k'/`TOTAE'*100
+		}
+
+		graph hbar `Eae' `ADae' `AKae' `APae' `BDae' ///
+			``FFFG'' `FHae' ``HUae'' `HFae' ``OTRAE'' ///
+			if anio >= 2010 & anio <= 2020, over(anio) stack ///
+			blabel(bar, format(%7.1fc)) ///
+			legend(rows(2) label(1 "Agricultura") label(2 "Minería") label(3 "Energía eléctrica") ///
+			label(4 "Construcción") label(5 "Manufactura") label(6 "Comercio") label(7 "Transportes") ///
+			label(8 "Servicios inmobiliarios") label(9 "Servicios financieros") label(10 "Otros servicios")) ///
+			title({bf:Estructura} econ{c o'}mica) ///
+			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
+			note("{bf:{c U'}ltimo dato utilizado}: `anio_last'.") ///
+			name(estructuraEco, replace)
+
+		tempvar primario secundario terciario
+		egen `primario' = rsum(Eae)
+		egen `secundario' = rsum(ADae AKae APae BDae)
+		egen `terciario' = rsum(FFae FGae FHae HFae HUae GOae ServProf IQae IRae JCae JLae KIae KUae LDae LTae)
+
+		foreach k of varlist `primario' `secundario' `terciario' {
+			tempvar `k'
+			replace `k' = `k'/deflator
+			g ``k'' = (`k'/L.`k'-1)*100
+		}
+
+		forvalues k=1(1)`=_N' {
+			if `TOTPIB'[`k'] != . & anio[`k'] >= 2010 & anio[`k'] <= 2020 {
+				local text `"`text' `=``primario''[`k']' `=anio[`k']' "{bf:`=string(``primario''[`k'],"%7.1fc")'}""'
+				local text `"`text' `=``secundario''[`k']' `=anio[`k']' "{bf:`=string(``secundario''[`k'],"%7.1fc")'}""'
+				local text `"`text' `=``terciario''[`k']' `=anio[`k']' "{bf:`=string(``terciario''[`k'],"%7.1fc")'}""'
+			}
+		}
+
+		twoway (connect ``primario'' anio, msize(large) mlwidth(vvthick)) ///
+			(connect ``secundario'' anio, msize(large) mlwidth(vvthick)) ///
+			(connect ``terciario'' anio, msize(large) mlwidth(vvthick)) ///
+			if anio >= 2010 & anio <= 2020, ///
+			legend(label(1 "Primario") label(2 "Secundario") label(3 "Terciario")) ///
+			xlabel(2010(1)2020) ///
+			ytitle(Crecimiento anual (%)) ///
+			text(`text', color(white) size(vsmall)) ///
+			xtitle("") name(primsecter, replace)
+
+
+		* Exportaciones e imporrtaciones *
+		tempvar export import 
+		egen `export' = rsum(Tpb)
+		egen `import' = rsum(Jpb)
+
+		foreach k of varlist `export' `import' {
+			tempvar `k'
+			replace `k' = `k'/deflator
+			g ``k'' = (`k'/L.`k'-1)*100
+		}
+
+		forvalues k=1(1)`=_N' {
+			if `TOTPIB'[`k'] != . & anio[`k'] >= 2010 & anio[`k'] <= 2020 {
+				local texto `"`texto' `=``export''[`k']' `=anio[`k']' "{bf:`=string(``export''[`k'],"%7.1fc")'}""'
+				local texto `"`texto' `=``import''[`k']' `=anio[`k']' "{bf:`=string(``import''[`k'],"%7.1fc")'}""'
+			}
+		}
+
+		twoway (connect ``export'' anio, msize(large) mlwidth(vvthick)) ///
+			(connect ``import'' anio, msize(large) mlwidth(vvthick)) ///
+			if anio >= 2010 & anio <= 2020, ///
+			legend(label(1 "Exportaciones") label(2 "Importaciones")) ///
+			xlabel(2010(1)2020) ///
+			ytitle(Crecimiento anual (%)) ///
+			text(`texto', color(white) size(vsmall)) ///
+			xtitle("") name(impexp, replace)
+
+
+		* Exportaciones por actividad económica *
+		foreach k of varlist Cex Dex Eex Gex {
+			tempvar `k'
+			replace `k' = `k'/deflator
+			g ``k'' = (`k'/L.`k'-1)*100
+		}
+
+		forvalues k=1(1)`=_N' {
+			if ``Cex''[`k'] != . & anio[`k'] >= 2010 & anio[`k'] <= 2020 {
+				local texta `"`texta' `=`Cex'[`k']' `=anio[`k']' "{bf:`=string(`Cex'[`k'],"%7.1fc")'}""'
+				local texta `"`texta' `=`Dex'[`k']' `=anio[`k']' "{bf:`=string(`Dex'[`k'],"%7.1fc")'}""'
+				local texta `"`texta' `=`Eex'[`k']' `=anio[`k']' "{bf:`=string(`Eex'[`k'],"%7.1fc")'}""'
+				local texta `"`texta' `=`Gex'[`k']' `=anio[`k']' "{bf:`=string(`Gex'[`k'],"%7.1fc")'}""'
+			}
+		}
+
+		twoway (connect `Cex' anio, msize(large) mlwidth(vvthick)) ///
+			(connect `Dex' anio, msize(large) mlwidth(vvthick)) ///
+			(connect `Eex' anio, msize(large) mlwidth(vvthick)) ///
+			(connect `Gex' anio, msize(large) mlwidth(vvthick)) ///
+			if anio >= 2010 & anio <= 2020,  ///
+			legend(rows(1) label(1 "Agricultura") label(2 "Minería") label(3 "Energía eléctrica") ///
+			label(4 "Manufactura")) ///
+			title("{bf:Exportaciones} por actividad econ{c o'}mica") ///
+			text(`texta', color(white) size(vsmall)) ///
+			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
+			note("{bf:{c U'}ltimo dato utilizado}: `anio_last'.") ///
+			xtitle("") ytitle(Crecimiento anual (%)) ///
+			name(sectorext, replace)
 	}
 	
 
@@ -1153,6 +1273,7 @@ quietly {
 	noisily di in g "{bf:  (=) Producto Interno Bruto" ///
 		_col(44) in y %20.0fc PIB[`obs'] ///
 		_col(66) in y %7.3fc PIB[`obs']/PIB[`obs']*100 "}"
+
 
 	timer off 3
 	timer list 3

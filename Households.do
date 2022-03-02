@@ -15,7 +15,7 @@ if "`1'" == "" {
 }
 if `1' >= 2020 {
 	local enigh = "ENIGH"
-	local betamin = 1							// ENIGH: 2.25
+	local betamin = 1							// ENIGH: 2.436
 	local altimir = "yes"
 	local SubsidioEmpleo = 49997000000 					// Presupuesto de gastos fiscales (2018)
 	local udis = 6.496487003						// Promedio de valor de UDIS de enero a diciembre 2018
@@ -327,7 +327,7 @@ if `enighanio' > 2020 {
 **********************************
 capture confirm file "`c(sysdir_personal)'/SIM/`enighanio'/deducciones.dta"
 if _rc != 0 | "$latex" == "latex" {
-	noisily run "`c(sysdir_personal)'/Expenditure.do" `enighanio'
+	*noisily run "`c(sysdir_personal)'/Expenditure.do" `enighanio'
 }
 
 
@@ -1791,9 +1791,10 @@ else {
 **********************/
 *** 6. COLA DERECHA ***
 ***********************
-egen double ing_cola = rsum(ing_subor ing_mixto ing_capital)
 if `betamin' > 1 {
 	use "`c(sysdir_personal)'/SIM/`enighanio'/prehouseholds.dta", clear
+	*egen double ing_cola = rsum(ing_subor ing_mixto ing_capital)
+	egen double ing_cola = rsum(ing_subor)
 	local ingreso "ing_cola"
 	*local sort "folioviv foliohog numren"
 	local sort "folioviv foliohog"
@@ -1933,8 +1934,8 @@ di in g "  Informal " ///
 **********************************************
 ** 7.1 Imputar resultados a la Cola Derecha **
 if `betamin' > 1 {
-	*merge 1:1 (`sort') using `isr_cola', nogen keepus(factor_cola)
-	merge m:1 (`sort') using `isr_cola', nogen keepus(factor_cola)
+	*merge 1:1 (`sort') using `isr_cola', nogen keepus(factor_cola ing_cola)
+	merge m:1 (`sort') using `isr_cola', nogen keepus(factor_cola ing_cola)
 
 	replace `ingreso' = `ingreso_cola' in `=_N'
 	replace factor_cola = factor if factor_cola == .

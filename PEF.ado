@@ -336,19 +336,11 @@ quietly {
 
 	if "`nographs'" != "nographs" & "$nographs" == "" {
 		preserve
+		*drop if `by' == -1 & transf_gf == 1
+
 		tabstat gastonetoPIB if anio == `anio' & `by' != -1 & transf_gf == 0, stat(sum) f(%20.0fc) save
 		tempname gasanio
-		matrix `gasanio' = r(StatTotal)
-
-		graph pie gastonetoPIB if anio == `anio' & `by' != -1 & transf_gf == 0, over(`resumidopie') ///
-			plabel(_all percent, format(%5.1fc)) ///
-			title(`"{bf:Gastos} PPEF `anio'"') ///
-			subtitle($pais) ///
-			name(gastospie, replace) ///
-			legend(on position(6) rows(`rows') cols(`cols')) ///
-			ptext(0 0 `"{bf:`=string(`gasanio'[1,1],"%6.1fc")' % PIB}"', color(white) size(small)) ///
-			caption("{bf:Fuente}: Elaborado por el CIEP.")
-		
+		matrix `gasanio' = r(StatTotal)		
 
 		levelsof `resumido' if `by' != -1, local(lev_resumido)
 		local totlev = 0
@@ -357,16 +349,17 @@ quietly {
 			local ++totlev
 		}
 
+		replace gastoneto = gastoneto/deflator/1000000000
 		collapse (sum) gastoneto* if `by' != -1 & transf_gf == 0, by(anio `resumido')
 		reshape wide gastoneto gastonetoPIB, i(anio) j(`resumido')
 		local countlev = 1
 		foreach k of local lev_resumido {
 			tempvar lev_res`countlev'
 			if `countlev' == 1 {
-				g `lev_res`countlev'' = gastoneto`k'/1000000000
+				g `lev_res`countlev'' = gastonetoPIB`k'
 			}
 			else {
-				g `lev_res`countlev'' = gastoneto`k'/1000000000 + `lev_res`=`countlev'-1''
+				g `lev_res`countlev'' = gastonetoPIB`k' //+ `lev_res`=`countlev'-1''
 			}
 			label var `lev_res`countlev'' "`legend`k''"
 			replace `lev_res`countlev'' = 0 if `lev_res`countlev'' == .			
@@ -375,30 +368,28 @@ quietly {
 			local ++countlev
 		}
 
-		tempvar TOTPIB
+		tempvar TOTPIB TOT
 		egen `TOTPIB' = rsum(gastonetoPIB*)
+		egen `TOT' = rsum(gastoneto*)
+		local j = 100/(2022-2014+1)/2
 		forvalues k=1(1)`=_N' {
 			if `TOTPIB'[`k'] != . & anio[`k'] >= 2014 {
-				local text `"`text' `=`TOTPIB'[`k']' `=anio[`k']' "{bf:`=string(`TOTPIB'[`k'],"%5.1fc")'}""'
+				local text `"`text' `=`TOTPIB'[`k']*1.005' `=anio[`k']*0+`j'' "{bf:`=string(`TOTPIB'[`k'],"%7.1fc")'}""'
+				local j = `j' + 100/(2022-2014+1)
 			}
 		}
 
-		twoway (area `graphvars' anio if anio >= 2014) ///
-			(connected `TOTPIB' anio if anio >= 2014, yaxis(2) mlcolor("255 129 0") lcolor("255 129 0")), ///
+		graph bar `graphvars' if anio >= 2014, ///
+			over(anio, gap(0)) stack blabel(, format(%7.1fc)) outergap(0) ///
 			title("{bf:Gasto} p{c u'}blico") ///
 			subtitle($pais) ///
-			text(`text', yaxis(2)) ///
-			ytitle(mil millones `currency') ///
-			ytitle(% PIB, axis(2)) ///
-			xtitle("") ///
-			ylabel(/*0(5)30*/, format(%15.0fc) labsize(small)) ///
-			ylabel(/*0(5)30*/, axis(2) noticks format(%5.0fc) labsize(small)) ///
-			yscale(range(0)) yscale(range(0) axis(2) noline) ///
-			xlabel(2014(1)`aniolast', noticks) ///
-			legend(on position(6) rows(`rows') cols(`cols') label(`=`totlev'+1' "= Total % PIB")) ///
+			text(`text', color(black) placement(n)) ///
+			ytitle(% PIB) ///
+			ylabel(, format(%15.0fc) labsize(small)) ///
+			yscale(range(0)) ///
+			legend(on position(6) rows(`rows') cols(`cols') `legend' region(margin(zero))) ///
 			name(gastos, replace) ///
-			note("{bf:{c U'}ltimos dos datos}: PEF 2021 y PPEF 2022.") ///
-			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de las respectivas Cuentas P{c u'}blicas.")
+			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/Cuenta Pública y $paqueteEconomico.")
 
 		restore
 	}

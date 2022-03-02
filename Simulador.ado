@@ -574,7 +574,8 @@ quietly {
 	replace estimacion = estimacion*ajuste
 	save `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'REC"', replace
 
-	ProyGraph `varlist' `nographs'
+	
+	*ProyGraph `varlist' `nographs' `anio'
 	
 
 
@@ -896,7 +897,7 @@ end
 
 program define ProyGraph
 
-	args varlist nographs
+	args varlist nographs anio
 
 	use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/1/`varlist'REC.dta"', clear
 	merge 1:1 (anio) using "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", nogen
@@ -906,9 +907,9 @@ program define ProyGraph
 	replace estimacion = estimacion/1000000000
 	*replace estimacion = estimacion/pibYR*100
 
-	forvalues aniohoy = `=aniovp'(1)`=aniovp' {
+	forvalues aniohoy = `anio'(1)`anio' {
 	*forvalues aniohoy = 1990(1)2050 {
-		tabstat estimacion if anio > `=aniovp', stat(max) save
+		tabstat estimacion if anio > `anio', stat(max) save
 		tempname MAX
 		matrix `MAX' = r(StatTotal)
 		forvalues k=1(1)`=_N' {
@@ -932,14 +933,14 @@ program define ProyGraph
 			twoway (connected estimacion anio) ///
 				(connected estimacion anio if anio == `aniohoy') ///
 				if anio > 1990, ///
-				ytitle("mil millones USD `=aniovp'") ///
+				ytitle("mil millones USD `anio'") ///
 				///ytitle("% PIB") ///
 				yscale(range(0)) /*ylabel(0(1)4)*/ ///
 				ylabel(#5, format(%5.1fc) labsize(small)) ///
 				xlabel(1990(10)`=anio[_N]', labsize(small) labgap(2)) ///
 				xtitle("") ///
 				legend(off) ///
-				text(`=`MAX'[1,1]' `aniomax' "{bf:M{c a'}ximo:} `aniomax'", place(c)) ///
+				text(`=`MAX'[1,1]' `aniomax' "{bf:M{c a'}ximo:} `aniomax'", place(n)) ///
 				text(`estimacionvp' `aniohoy' "{bf:Hoy:} `aniohoy'", place(c)) ///
 				title("Proyecci{c o'}n de {bf:`title'}") subtitle("$pais") ///
 				caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.") ///

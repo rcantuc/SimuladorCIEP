@@ -10,7 +10,7 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
-	** 1.2 Datos Abiertos (MÈxico) **
+	** 1.2 Datos Abiertos (MÃˆxico) **
 	if "`c(username)'" == "ricardo" & "$pais" == "" {
 		capture confirm file "`c(sysdir_personal)'/SIM/DatosAbiertos.dta"
 		if _rc != 0 {
@@ -355,16 +355,10 @@ quietly {
 
 	if "`nographs'" != "nographs" & "$nographs" == "" {
 		preserve
+		drop if divLIF == 10
 		tabstat recaudacionPIB if anio == `anio' & divLIF != 10, stat(sum) f(%20.0fc) save
 		tempname recanio
 		matrix `recanio' = r(StatTotal)
-		
-		graph pie recaudacionPIB if anio == `anio' & divLIF != 10, over(`resumido') ///
-			plabel(_all percent, format(%5.1fc)) ///
-			title(`"Ingresos ILIF 2022"') /// subtitle($pais) ///
-			name(ingresospie, replace) ///
-			legend(on position(6) rows(`rows') cols(`cols')) ///
-			ptext(0 0 `"{bf:`=string(`recanio'[1,1],"%6.1fc")' % PIB}"', color(white) size(small))
 
 		levelsof `resumido' if divLIF != 10, local(lev_resumido)
 		local totlev = 0
@@ -372,17 +366,18 @@ quietly {
 			local legend`k' : label `label' `k'
 			local ++totlev
 		}
-		collapse (sum) recaudacion* ///
-			if divLIF != 10 | recaudacion != 0 | recaudacion == ., by(anio `resumido')
+		
+		replace recaudacion=recaudacion/deflator/1000000000
+		collapse (sum) recaudacion* if divLIF != 10 | recaudacion != 0 | recaudacion == ., by(anio `resumido')
 		reshape wide recaudacion recaudacionPIB, i(anio) j(`resumido')
 		local countlev = 1
 		foreach k of local lev_resumido {
 			tempvar lev_res`countlev'
 			if `countlev' == 1 {
-				g `lev_res`countlev'' = recaudacion`k'/1000000000
+				g `lev_res`countlev'' = recaudacionPIB`k'
 			}
 			else {
-				g `lev_res`countlev'' = recaudacion`k'/1000000000 + `lev_res`=`countlev'-1''
+				g `lev_res`countlev'' = recaudacionPIB`k' //+ `lev_res`=`countlev'-1''
 			}
 			replace `lev_res`countlev'' = 0 if `lev_res`countlev'' == .
 			
@@ -391,29 +386,28 @@ quietly {
 			local ++countlev
 		}
 
-		tempvar TOTPIB
+		tempvar TOTPIB TOT
 		egen `TOTPIB' = rsum(recaudacionPIB*)
+		egen `TOT' = rsum(recaudacion*)
+		
+		local j = 100/(2022-`aniofirst'+1)/2
 		forvalues k=1(1)`=_N' {
 			if `TOTPIB'[`k'] != . & anio[`k'] >= 2003 {
-				local text `"`text' `=`TOTPIB'[`k']' `=anio[`k']' "{bf:`=string(`TOTPIB'[`k'],"%5.1fc")'}""'
+				local text `"`text' `=`TOTPIB'[`k']*1.005' `=anio[`k']*0+`j'' "{bf:`=string(`TOTPIB'[`k'],"%7.1fc")'}""'
+				local j = `j' + 100/(2022-`aniofirst'+1)
 			}
 		}
-		twoway (area `graphvars' anio if anio >= `aniofirst') ///
-			(connected `TOTPIB' anio if anio >= `aniofirst', yaxis(2) mlcolor("255 129 0") lcolor("255 129 0")), ///
+		graph bar `graphvars' if anio >= `aniofirst', ///
+			over(anio, gap(0)) stack blabel(bar, format(%7.1fc)) outergap(0) ///
 			title("{bf:Ingresos} p{c u'}blicos") ///
 			subtitle($pais) ///
-			text(`text', yaxis(2)) ///
-			ytitle(mil millones `currency') ///
-			ytitle(% PIB, axis(2)) ///
-			xtitle("") ///
+			text(`text', color(black) placement(n)) ///
+			ytitle("% PIB") ///
 			ylabel(, format(%15.0fc) labsize(small)) ///
-			ylabel(, axis(2) noticks format(%5.0fc) labsize(small)) ///
-			yscale(range(0)) yscale(range(0) axis(2) noline) ///
-			xlabel(`aniofirst'(1)`aniolast', noticks) ///
-			legend(on position(6) rows(`rows') cols(`cols') `legend' label(`=`totlev'+1' "= Total (% PIB)")) ///
+			yscale(range(0)) ///
+			legend(on position(6) rows(`rows') cols(`cols') `legend' region(margin(zero))) ///
 			name(ingresos, replace) ///
-			note("{bf:{c U'}ltimo dos datos}: LIF 2021 e ILIF 2022.") ///
-			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Datos Abiertos).")
+			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP y $paqueteEconomico.")
 		restore
 	}
 

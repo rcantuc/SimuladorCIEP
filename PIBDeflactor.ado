@@ -24,7 +24,7 @@ quietly {
 	** Sintaxis **
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
-	syntax [, ANIOvp(int `aniovp') GEOPIB(int -1) GEODEF(int -1) FIN(int -1) NOGraphs NOOutput UPDATE DIScount(real 3) SAVE]
+	syntax [if] [, ANIOvp(int `aniovp') GEOPIB(int -1) GEODEF(int -1) FIN(int -1) NOGraphs NOOutput UPDATE DIScount(real 3) SAVE]
 	noisily di _newline(2) in g _dup(20) "." "{bf:   Producto Interno Bruto " in y `aniovp' "   }" in g _dup(20) "."
 
 
@@ -290,6 +290,7 @@ quietly {
 	replace OutputPerWorker = pibYR/WorkingAge if OutputPerWorker == .
 
 
+
 	*****************
 	** 3 Simulador **
 	*****************
@@ -329,9 +330,9 @@ quietly {
 
 
 	if "`nographs'" != "nographs" & "$nographs" == "" {
-
+	
 		* Texto sobre lineas *
-		forvalues k=1(2)`=_N' {
+		forvalues k=1(1)`=_N' {
 			if var_indiceY[`k'] != . {
 				local crec_deflactor `"`crec_deflactor' `=var_indiceY[`k']' `=anio[`k']' "{bf:`=string(var_indiceY[`k'],"%5.1fc")'}" "'
 			}
@@ -355,16 +356,16 @@ quietly {
 		* Deflactor var_indiceY *
 		twoway (area deflator anio if (anio < `anio_last' & anio >= `anio_first') | (anio == `anio_last' & trimestre == 4)) ///
 			(area deflator anio if anio >= `anio_last'+`exo_def') ///
-			(`graphtype2' deflator anio if anio < `anio_last'+`exo_def' & anio >= `anio_last', lwidth(none)), ///
+			(`graphtype2' deflator anio if anio < `anio_last'+`exo_def' & anio >= `anio_last', lwidth(none) pstyle(p4)), ///
 			title("{bf:{c I'}ndice} de precios impl{c i'}citos") ///
 			subtitle(${pais}) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
 			yscale(range(0)) ///
 			ylabel(0(1)4, format("%3.0f")) ///
 			ytitle("`aniovp' = 1.000") xtitle("") ///
-			legend(label(1 "Reportado") label(2 "Proyectado") label(3 "Estimado") order(1 3 2)) ///
-			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.") ///
-			note("{bf:Crecimiento de precios}: `=string(`=((indiceY[`obsDEF']/indice[`obs_def'])^(1/(`=`obsDEF'-`obs_def''))-1)*100',"%6.3f")'% (`=anio[[`obsDEF']]'-`=anio[`obs_def']'). {bf:{c U'}ltimo dato reportado}: `anio_last'`trim_last'.") ///
+			legend(label(1 "Reportado") label(2 "Proyecci{c o'}n") label(3 "Estimaci{c o'}n ($paqueteEconomico)") order(1 3 2) region(margin(zero))) ///
+			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
+			note("{bf:Crecimiento de precios}: `=string(`=((indiceY[`obsDEF']/indice[`obs_def'])^(1/(`=`obsDEF'-`obs_def''))-1)*100',"%6.3f")'% (`=anio[[`obsDEF']]'-`=anio[`obs_def']'). {bf:{c U'}ltimo dato utilizado}: `anio_last'`trim_last'.") ///
 			name(deflactorH, replace)
 
 		capture confirm existence $export
@@ -373,25 +374,25 @@ quietly {
 		}
 
 		* Texto sobre lineas *
-		forvalues k=1(2)`=_N' {
+		forvalues k=1(1)`=_N' {
 			if var_pibY[`k'] != . {
 				local crec_PIB `"`crec_PIB' `=var_pibY[`k']' `=anio[`k']' "{bf:`=string(var_pibY[`k'],"%5.1fc")'}" "'
 			}
 		}
 
 		* Crecimiento var_indiceY *
-		twoway (connected var_indiceY anio if (anio < `anio_last' & anio >= `anio_first') | (anio == `anio_last' & trimestre == 4)) ///
-			(connected var_indiceY anio if anio >= `anio_last'+`exo_def') ///
-			(connected var_indiceY anio if anio < `anio_last'+`exo_def' & anio >= `anio_last'), ///
+		twoway (connected var_indiceY anio if (anio < `anio_last' & anio >= `anio_first') | (anio == `anio_last' & trimestre == 4), msize(large) mlwidth(vvthick)) ///
+			(connected var_indiceY anio if anio >= `anio_last'+`exo_def', msize(large) mlwidth(vvthick)) ///
+			(connected var_indiceY anio if anio < `anio_last'+`exo_def' & anio >= `anio_last', pstyle(p4) msize(large) mlwidth(vvthick)), ///
 			title({bf:Crecimientos} del {c i'}ndice de precios impl{c i'}citos) subtitle(${pais}) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
 			ylabel(, format(%3.0f)) ///
-			ytitle("Variaci{c o'}n (%)") xtitle("") ///
-			yline(0, lcolor(black)) ///
-			text(`crec_deflactor') ///
-			legend(label(1 "Reportado") label(2 "Proyectado") label(3 "Estimado") order(1 3 2)) ///
-			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.") ///
-			note("{bf:Estimaciones}: `exceptI'." "{bf:{c U'}ltimo dato reportado}: `anio_last'`trim_last'.") ///
+			ytitle("Crecimiento anual (%)") xtitle("") ///
+			///yline(0, lcolor(black)) ///
+			text(`crec_deflactor', color(white) size(tiny)) ///
+			legend(label(1 "Reportado") label(2 "Proyecci{c o'}n") label(3 "Estimaci{c o'}n ($paqueteEconomico)") order(1 3 2) region(margin(zero))) ///
+			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
+			note("{bf:{c U'}ltimo dato utilizado}: `anio_last'`trim_last'.") ///
 			name(var_indiceYH, replace)
 		capture confirm existence $export
 		if _rc == 0 {
@@ -399,18 +400,18 @@ quietly {
 		}
 
 		* Crecimiento var_pibY *
-		twoway (connected var_pibY anio if (anio < `anio_last' & anio >= `anio_first') | (anio == `anio_last' & trimestre == 4)) ///
-			(connected var_pibY anio if anio >= `anio_last'+`exo_count') ///
-			(connected var_pibY anio if anio < `anio_last'+`exo_count' & anio >= `anio_last'), ///
+		twoway (connected var_pibY anio if (anio < `anio_last' & anio >= `anio_first') | (anio == `anio_last' & trimestre == 4), msize(large) mlwidth(vvthick)) ///
+			(connected var_pibY anio if anio >= `anio_last'+`exo_count', msize(large) mlwidth(vvthick)) ///
+			(connected var_pibY anio if anio < `anio_last'+`exo_count' & anio >= `anio_last', pstyle(p4) msize(large) mlwidth(vvthick)), ///
 			title({bf:Crecimientos} del Producto Interno Bruto) subtitle(${pais}) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
 			ylabel(/*-6(3)6*/, format(%3.0fc)) ///
-			ytitle("Variaci{c o'}n (%)") xtitle("") ///
-			yline(0, lcolor(black)) ///
-			text(`crec_PIB') ///
-			legend(label(1 "Reportado") label(2 "Proyectado") label(3 "Estimado") order(1 3 2)) ///
-			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.") ///
-			note("{bf:Estimaciones}: `except'." "{bf:{c U'}ltimo dato reportado}: `anio_last'`trim_last'.") ///
+			ytitle("Crecimiento anual (%)") xtitle("") ///
+			///yline(0, lcolor(white)) ///
+			text(`crec_PIB', color(white) size(tiny)) ///
+			legend(label(1 "Reportado") label(2 "Proyecci{c o'}n") label(3 "Estimaci{c o'}n ($paqueteEconomico)") order(1 3 2) region(margin(zero))) ///
+			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
+			note("{bf:{c U'}ltimo dato utilizado}: `anio_last'`trim_last'.") ///
 			name(PIBH, replace)
 		capture confirm existence $export
 		if _rc == 0 {
@@ -423,22 +424,22 @@ quietly {
 
 		twoway (area `pibYRmil' anio if (anio < `anio_last' & anio >= `anio_first') | (anio == `anio_last' & trimestre == 4)) ///
 			(area `pibYRmil' anio if anio >= `anio_last'+`exo_count') ///
-			(`graphtype' `pibYRmil' anio if anio < `anio_last'+`exo_count' & anio >= `anio_last', lwidth(none)), ///
+			(`graphtype' `pibYRmil' anio if anio < `anio_last'+`exo_count' & anio >= `anio_last', lwidth(none) pstyle(p4)), ///
 			title({bf:Flujo} del Producto Interno Bruto) subtitle(${pais}) ///
 			ytitle(mil millones `=currency[`obsvp']' `aniovp') xtitle("") ///
 			///ytitle(billions `=currency[`obsvp']' `aniovp') xtitle("") ///
 			///text(`=`pibYRmil'[1]*.05' `=`anio_last'-.5' "`anio_last'", place(nw) color(white)) ///
 			///text(`=`pibYRmil'[1]*.05' `=anio[1]+.5' "Reportado" ///
-			///`=`pibYRmil'[1]*.05' `=`anio_last'+1.5' "Proyectado", place(ne) color(white) size(small)) ///
+			///`=`pibYRmil'[1]*.05' `=`anio_last'+1.5' "Proyecci{c o'}n", place(ne) color(white) size(small)) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
 			ylabel(/*0(5)`=ceil(`pibYRmil'[_N])'*/, format(%20.0fc)) ///
 			///xline(`anio_last'.5) ///
 			yscale(range(0)) /*xscale(range(1993))*/ ///
-			legend(label(1 "Reportado") label(2 "Proyectado") label(3 "Estimado") order(1 3 2)) ///
+			legend(label(1 "Reportado") label(2 "Proyecci{c o'}n") label(3 "Estimaci{c o'}n ($paqueteEconomico)") order(1 3 2) region(margin(zero))) ///
 			///legend(label(1 "Observed") label(2 "Projected") label(3 "Estimated") order(1 3 2)) ///
-			note("{bf:Productividad laboral}: `=string(scalar(llambda),"%6.3f")'% (`=anio[[`obsPIB']]'-`=anio[`obs_exo']'). {bf:{c U'}ltimo dato reportado}: `anio_last'`trim_last'.") ///
+			note("{bf:Productividad laboral}: `=string(scalar(llambda),"%6.3f")'% (`=anio[[`obsPIB']]'-`=anio[`obs_exo']'). {bf:{c U'}ltimo dato utilizado}: `anio_last'`trim_last'.") ///
 			///note("{bf:Note}: Annual Labor Productivity Growth: `=string(scalar(llambda),"%6.3f")'% (`=anio[[`obsPIB']]'-`=anio[`obs_exo']').") ///
-			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.") ///
+			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
 			name(PIBP, replace)
 
 		capture confirm existence $export
@@ -466,14 +467,14 @@ quietly {
 		}
 		if (anio[`k'] == `anio_last' & trimestre[`k'] < 4) | anio[`k'] <= anio[`obs_exo'] & anio[`k'] > `anio_last' {
 			if "`estimado'" == "" {
-				noisily di in g %~72s "ESTIMADO"
+				noisily di in g %~72s "Estimaci{c o'}n"
 				local estimado = "done"
 			}
 			noisily di in g "{bf: `=anio[`k']' " _col(10) %8.1fc in y var_pibY[`k'] " %" _col(25) %20.0fc pibY[`k'] _col(50) %8.1fc in y var_indiceY[`k'] " %" _col(65) %12.10fc deflator[`k'] "}"
 		}
 		if (anio[`k'] > `anio_last') & anio[`k'] > anio[`obs_exo'] {
 			if "`proyectado'" == "" {
-				noisily di in g %~72s "PROYECTADO"
+				noisily di in g %~72s "Proyecci{c o'}n"
 				local proyectado = "done"
 			}
 			noisily di in g " `=anio[`k']' " _col(10) %8.1fc in y var_pibY[`k'] " %" _col(25) %20.0fc pibY[`k'] _col(50) %8.1fc in y var_indiceY[`k'] " %" _col(65) %12.10fc deflator[`k']
@@ -523,8 +524,8 @@ quietly {
 
 		capture log on output
 		noisily di in w "Reportado: " in w "[`=substr("`out_report'",1,`length_report'-1)']"
-		noisily di in w "Estimado: " in w "[`=substr("`out_estima'",1,`length_estima'-1)']"
-		noisily di in w "Proyectado: " in w "[`=substr("`out_proyec'",1,`length_proyec'-1)']"
+		noisily di in w "Estimaci{c o'}n: " in w "[`=substr("`out_estima'",1,`length_estima'-1)']"
+		noisily di in w "Proyecci{c o'}n: " in w "[`=substr("`out_proyec'",1,`length_proyec'-1)']"
 		noisily di in w "CRECPIB: [$pib2021,$pib2022,$pib2023,$pib2024,$pib2025]"
 		noisily di in w "DEUDA: [$tasaEfectiva,$tipoDeCambio,$depreciacion]"
 		capture log off output

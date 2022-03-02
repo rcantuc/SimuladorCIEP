@@ -117,17 +117,17 @@ quietly {
 			local graphtype "area"
 		}
 
-		twoway (area deflatorpp anio if (anio < `anio_last' & anio >= 1993) | (anio == `anio_last' & mes == 12)) ///
+		twoway (area deflatorpp anio if (anio < `anio_last' & anio >= 1993) /*| (anio == `anio_last' & mes == 12)*/) ///
 			(area deflatorpp anio if anio >= `anio_last' & anio >= anio[`obslast'+`exo_count']) ///
-			(`graphtype' deflatorpp anio if anio < anio[`obslast'+`exo_count'] & anio >= `anio_last', lwidth(none)), ///
+			(`graphtype' deflatorpp anio if anio < anio[`obslast'+`exo_count'] & anio >= `anio_last', lwidth(none) pstyle(p4)), ///
 			title("{bf:{c I'}ndice} nacional de precios al consumidor") ///
 			subtitle(${pais}) ///
-			xlabel(1995(5)`=round(anio[_N],5)') ///
+			xlabel(2010(5)`=round(anio[_N],5)') ///
 			ytitle("`aniovp' = 1.000") xtitle("") yline(0) ///
 			ylabel(0(1)4, format("%3.0f")) ///
 			///text(`crec_deflactor', place(c)) ///
-			legend(label(1 "Reportado") label(2 "Proyectado") label(3 "Estimado") order(1 3 2)) ///
-			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.") ///
+			legend(label(1 "Reportado") label(2 "Proyectado") label(3 "Estimado ($paqueteEconomico)") order(1 3 2) regio(margin(zero))) ///
+			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
 			note("{bf:{c U'}ltimo dato reportado}: `anio_last' mes `mes_last'.") ///
 			name(inflacionH, replace)
 			
@@ -137,22 +137,22 @@ quietly {
 		}
 
 		* Texto sobre lineas *
-		forvalues k=1(3)`=_N' {
+		forvalues k=1(1)`=_N' {
 			if var_inflY[`k'] != . & anio[`k'] >= 1993 {
-				local crec_infl `"`crec_infl' `=var_inflY[`k']' `=anio[`k']' "`=string(var_inflY[`k'],"%5.1fc")'" "'
+				local crec_infl `"`crec_infl' `=var_inflY[`k']' `=anio[`k']' "{bf:`=string(var_inflY[`k'],"%5.1fc")'}""'
 			}
 		}
-		twoway (connected var_inflY anio if (anio < `anio_last' & anio >= 1993) | (anio == `anio_last' & mes == 12)) ///
-			(connected var_inflY anio if anio >= `anio_last' & anio >= anio[`obslast'+`exo_count']) ///
-			(connected var_inflY anio if anio < anio[`obslast'+`exo_count'] & anio >= `anio_last', lwidth(none)), ///
+		twoway (connected var_inflY anio if (anio < `anio_last' & anio >= 1993) | (anio == `anio_last' & mes == 12), msize(large) mlwidth(vvthick)) ///
+			(connected var_inflY anio if anio > `anio_last' & anio >= anio[`obslast'+`exo_count'], msize(large) mlwidth(vvthick)) ///
+			(connected var_inflY anio if anio < anio[`obslast'+`exo_count'] & anio > `anio_last', pstyle(p4) msize(large) mlwidth(vvthick)), ///
 			title({bf:Crecimientos} del {c i'}ndice nacional de precios al consumidor) ///
 			subtitle(${pais}) ///
 			xlabel(1995(5)`=round(anio[_N],5)') ///
 			ylabel(, format(%3.0f)) ///
-			ytitle("Variaci{c o'}n (%)") xtitle("") yline(0, lcolor(black)) ///
-			text(`crec_infl') ///
-			legend(label(1 "Reportado") label(2 "Proyectado") label(3 "Estimado") order(1 3 2)) ///
-			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.") ///
+			ytitle("Crecimiento anual (%)") xtitle("") yline(0, lcolor(black)) ///
+			text(`crec_infl', color(white)) ///
+			legend(label(1 "Reportado") label(2 "Proyectado") label(3 "Estimado ($paqueteEconomico)") order(1 3 2) region(margin(zero))) ///
+			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
 			note("{bf:{c U'}ltimo dato reportado}: `anio_last' mes `mes_last'.") ///
 			name(var_inflYH, replace)
 		capture confirm existence $export
