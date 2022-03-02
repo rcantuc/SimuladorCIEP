@@ -9,11 +9,11 @@
 *** A. Poblacion ***
 ********************
 
-/** 1. Base de datos (online) **
+/** 1. Base de datos (online) **/
 import delimited "http://www.conapo.gob.mx/work/models/CONAPO/Datos_Abiertos/Proyecciones2018/pob_mit_proyecciones.csv", clear
 
 
-** 1.Bis Base de datos (TemplateCIEP) **
+/** 1.Bis Base de datos (TemplateCIEP) **
 if `c(version)' > 13.1 {
 	import delimited "`c(sysdir_site)'../basesCIEP/CONAPO/pob_mit_proyecciones.csv", clear encoding("windows-1252")
 }
@@ -22,7 +22,7 @@ else {
 }
 
 
-** 1.Tris Base de datos (CIEP). Responsable: Ale Macias **/
+** 1.Tris Base de datos (CIEP). Responsable: Ale Macias **
 use "`c(sysdir_site)'../basesCIEP/CONAPO/censo2020.dta", clear
 tostring sexo, replace
 

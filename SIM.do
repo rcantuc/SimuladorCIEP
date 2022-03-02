@@ -16,8 +16,8 @@ capture log close _all
 ***********************************
 if"`c(os)'" == "MacOSX" & "`c(username)'" == "ricardo" & `c(version)' > 13.1 {  // Computadora Ricardo
 	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/SimuladorCIEP/5.2/simuladorCIEP/"
-	global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"         // EXPORTAR IMAGENES EN...
-	global latex = "latex"                                                 // IMPRIMIR OUTPUTS (LATEX)
+	*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"         // EXPORTAR IMAGENES EN...
+	*global latex = "latex"                                                 // IMPRIMIR OUTPUTS (LATEX)
 }
 if "`c(os)'" == "Unix" & "`c(username)'" == "ciepmx" {                          // Computdora ServidorCIEP
 	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/SimuladorCIEP/5.2/simuladorCIEP/"
@@ -53,19 +53,19 @@ noisily run "`c(sysdir_personal)'/Arranque.do"
 **************************
 *forvalues k=1950(1)2100 {
 foreach k in `=aniovp' {
-	`noisily' Poblacion, anio(`k') `update' //aniofinal(2040) 
+	`noisily' Poblacion, anio(`k') `update' //aniofinal(2030) 
 }
 
 
 
 
 
-********************************
+*******************************/
 ***                          ***
 ***    2. CRECIMIENTO PIB    ***
 ***                          ***
 ********************************
-`noisily' PIBDeflactor, anio(`=aniovp') save geopib(2000) geodef(2010) `update' discount(5.0)
+`noisily' PIBDeflactor, aniovp(2021) save geopib(2000) geodef(2010) `update' discount(5.0)
 
 
 ** 2.1 Inflacion, SCN **
@@ -82,8 +82,8 @@ if "$pais" == "" {
 ***                         ***
 ***    3. SISTEMA FISCAL    ***
 ***                         ***
-/*******************************
-`noisily' LIF, anio(`=aniovp') by(divGA) rows(2) ilif min(1) `update'
+*******************************
+`noisily' LIF, anio(`=aniovp') by(divGA) rows(1) ilif min(1) `update'
 `noisily' PEF, anio(`=aniovp') by(desc_funcion) rows(2) min(1) `update'
 `noisily' SHRFSP, anio(`=aniovp') `update'
 
@@ -142,15 +142,11 @@ g AportacionesNetas = Laboral + Consumo + ISR__PM + Petroleo ///
 	- Pension - Educacion - Salud - IngBasico - PenBienestar - Infra
 label var AportacionesNetas "aportaciones netas"
 noisily Simulador AportacionesNetas [fw=factor], base("ENIGH 2020") reboot anio(`=aniovp') folio("folioviv foliohog") $nographs
-if `c(version)' > 13.1 {
-	saveold `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace version(13)
-}
-else {
-	save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace	
-}
+save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace	
+
 
 ** 7.2 CUENTA GENERACIONAL **
-noisily CuentasGeneracionales AportacionesNetas, anio(`=aniovp')
+*noisily CuentasGeneracionales AportacionesNetas, anio(`=aniovp')
 
 
 

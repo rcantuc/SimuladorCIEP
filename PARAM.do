@@ -5,7 +5,7 @@
 ********************************
 
 * 2021-2027 *
-global pib2021 = 6.3                                           // CGPE 2022: 6.3
+global pib2021 = 5.4                                           // CGPE 2022: 6.3
 global pib2022 = 4.1                                           // CGPE 2022: 4.1
 global pib2023 = 3.4                                           // Supuesto: 2.5
 global pib2024 = 2.8                                           // Supuesto: 2.5
@@ -46,6 +46,8 @@ global depreciacion = 0.2000                                  // Depreciaci{c o'
 
 scalar aniovp = 2022
 scalar anioend = 2030
+
+global paqueteEconomico = "PE 2022"
 
 
 

@@ -12,18 +12,18 @@ program define UpdateDatosAbiertos, return
 	local mesvp = substr(`"`=trim("`fecha'")'"',6,2)
 
 	capture use "`c(sysdir_personal)'/SIM/DatosAbiertos.dta", clear
+	sort anio mes
+	return local ultanio = anio[_N]
+	return local ultmes = mes[_N]
 
 	if _rc == 0 & "`update'" != "update" {	
-		sort anio mes
-		return local ultanio = anio[_N]
-		return local ultmes = mes[_N]
-
 		if (`aniovp' == anio[_N] & `mesvp' <= mes[_N]+2) | (`aniovp' == anio[_N]+1 & mes[_N] > 10) {
 			noisily di _newline in g "Datos Abiertos: " in y "base actualizada." in g " {c U'}ltimo dato: " in y "`=anio[_N]'m`=mes[_N]'."
 			return local updated = "yes"
 			exit
 		}
 	}
+
 	noisily di _newline in g "Datos Abiertos: " in y "ACTUALIZANDO. Favor de esperar..."
 
 	*****************************************

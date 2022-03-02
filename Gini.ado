@@ -6,6 +6,14 @@ quietly {
 
 	collapse (sum) ingreso = `varlist' (mean) tot_integ `factor' `if', by(`hogar')
 	keep if ingreso > 0
+	
+	count if ingreso > 0
+	if r(N) == 0 {
+		noisily di in g "Gini de " in y "`varlist'" in g ": " in y "No hay observaciones"
+		return local gini_`varlist' = 0
+		restore
+		exit
+	}
 
 	replace factor = round(factor)
 	replace tot_integ = round(tot_integ)

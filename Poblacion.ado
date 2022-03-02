@@ -160,7 +160,7 @@ quietly {
 			(sc `edad2' `zero' if anio == `aniofinal', msymbol(i) mlabel(`edad2') mlabsize(vsmall) mlabcolor("114 113 118")), ///
 			legend(label(1 "Hombres CONAPO") label(2 "Mujeres CONAPO") ///
 			label(3 "Hombres Simulado") ///
-			label(4 "Mujeres Simulado") order(1 2 3 4)) ///
+			label(4 "Mujeres Simulado") order(1 2 3 4) region(margin(zero))) ///
 			yscale(noline) ylabel(none) xscale(noline) ///
 			name(PiramideSIM, replace) ///
 			xlabel(`=-`MaxHS'[1,1]' `"`=string(`MaxHS'[1,1],"%15.0fc")'"' ///
@@ -342,7 +342,7 @@ quietly {
 			///label(6 "M. `aniofinal'") ///
 			label(7 "H. fallecidos para `aniofinal'") ///
 			label(8 "M. fallecidas para `aniofinal'")) ///
-			legend(order(1 2 3 4 7 8) holes(1 2 5 6) rows(2) on) ///
+			legend(order(1 2 3 4 7 8) holes(1 2 5 6) rows(2) on region(margin(zero))) ///
 			yscale(noline) ylabel(none) xscale(noline) ///
 			text(105 `=-`MaxH'[1,1]*.618' "{bf:Edad mediana `anioinicial'}") ///
 			text(100 `=-`MaxH'[1,1]*.618' "Hombres: `=`H`anioinicial''[1,1]'") ///
@@ -370,7 +370,7 @@ quietly {
 			`=`MaxM'[1,1]/2' `"`=string(`MaxM'[1,1]/2,"%15.0fc")'"' ///
 			`=`MaxM'[1,1]' `"`=string(`MaxM'[1,1],"%15.0fc")'"', angle(horizontal)) ///
 			///caption("Elaborado por el CIEP con informaci{c o'}n de: CONAPO (2018).") ///
-			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.") ///
+			caption("{bf:Fuente}: Elaborado por el CIEP, con información de CONAPO.") ///
 			title("{bf:Pir{c a'}mide} demogr{c a'}fica") subtitle("$pais") ///
 			///title("{bf:Population} pyramid")
 
@@ -480,7 +480,7 @@ quietly {
 			(area `pob3560' anio if anio > `anioinicial', color("255 189 0")) ///
 			(area `pob1934' anio if anio > `anioinicial', color("39 97 47")) ///
 			(area `pob18' anio if anio > `anioinicial', color("53 200 71")), ///
-			legend(label(1 "61+") label(2 "35 - 60") label(3 "19 - 34") label(4 "-18") order(4 3 2 1)) ///
+			legend(label(1 "61+") label(2 "35 - 60") label(3 "19 - 34") label(4 "-18") order(4 3 2 1) region(margin(zero))) ///
 			text(`y1' `x1' `"{bf:Max:} `=string(`MAX'[1,1],"%5.1fc")' % (`x1')"', place(s)) ///
 			text(`y1' `x1' `"{bf:-18:} `=string(pob18[`p1'],"%12.0fc")'"', place(n)) ///
 			text(`y2' `x2' `"{bf:Max:} `=string(`MAX'[1,2],"%5.1fc")' % (`x2')"', place(s)) ///
@@ -502,7 +502,7 @@ quietly {
 			ytitle("millones de personas") ///
 			xline(`=`anioinicial'+.5') ///
 			///caption("Elaborado por el CIEP con informaci{c o'}n de: CONAPO (2018).") ///
-			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.") ///
+			caption("{bf:Fuente}: Elaborado por el CIEP, con información de CONAPO.") ///
 			name(Estructura_`anioinicial'_`aniofinal', replace) ///
 			title("{bf:Transici{c o'}n} demogr{c a'}fica") subtitle(${pais}) ///
 			ylabel(, format(%20.0fc)) xlabel(1950(10)`aniofinal')
@@ -510,7 +510,7 @@ quietly {
 			if "$export" != "" {
 				graph export "$export/Estructura_poblacion_`anioinicial'_`aniofinal'.png", replace name(Estructura_`anioinicial'_`aniofinal')
 			}
-			
+
 			restore
 	}
 
