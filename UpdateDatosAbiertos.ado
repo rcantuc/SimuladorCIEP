@@ -17,7 +17,7 @@ program define UpdateDatosAbiertos, return
 	return local ultmes = mes[_N]
 
 	if _rc == 0 & "`update'" != "update" {	
-		if (`aniovp' == anio[_N] & `mesvp' <= mes[_N]+2) | (`aniovp' == anio[_N]+1 & mes[_N] > 10) {
+		if (`aniovp' == anio[_N] & `mesvp'-2 <= mes[_N]) | (`aniovp'-1 == anio[_N] & `mesvp'-2 < 0) {
 			noisily di _newline in g "Datos Abiertos: " in y "base actualizada." in g " {c U'}ltimo dato: " in y "`=anio[_N]'m`=mes[_N]'."
 			return local updated = "yes"
 			exit
