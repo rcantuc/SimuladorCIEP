@@ -38,20 +38,61 @@ quietly {
 	}
 
 	* Informacion de la serie *
-	noisily di _newline(2) in g "Serie: " in y "`anything'" in g ". Nombre: " in y "`=nombre[1]'" in g "."	
+	noisily di _newline(2) in g "Serie: " in y "`anything'" in g ". Nombre: " in y "`=nombre[1]'" in g "."
+
+	tsset aniomes
+	sort aniomes
+	local last_anio = anio[_N]
+	local last_mes = mes[_N]
+	merge m:1 (anio) using `PIB', nogen keep(matched) keepus(pibY deflator currency)
 
 
 
+	****************************
+	*** 2 Proyeccion mensual ***
+	/****************************
+	if tipo_de_informacion == "Flujo" {
+		tempvar montomill
+		g `montomill' = monto/1000000000/deflator
 
-	**************************
+		label define mes 1 "Enero" 2 "Febrero" 3 "Marzo" 4 "Abril" 5 "Mayo" 6 "Junio" 7 "Julio" 8 "Agosto" 9 "Septiembre" 10 "Octubre" 11 "Noviembre" 12 "Diciembre"
+		label values mes mes
+
+		local mesname : label mes `=mes[_N]'
+
+		tabstat `montomill' if mes == `=mes[_N]' & (anio == `=anio[_N]'. | anio == `=anio[_N]-1'), by(anio) format(%7.0fc) save
+		if _rc == 0 {
+			tempname meshoy mesant
+			matrix `meshoy' = r(Stat2)
+			matrix `mesant' = r(Stat1)
+
+			graph bar `montomill' if anio >= 2017, over(anio) over(mes) stack asyvar ///
+				legend(rows(1)) name(`anything'xmeses, replace) blabel(none) ///
+				ytitle("mil millones de `=currency[1]' `=aniovp'") ///
+				title("{bf:`=nombre[1]'}") ///
+				subtitle("por mes calendario") ylabel(, format(%10.1fc)) ///
+				note("{bf:{c U'}ltimo dato:} `last_anio'm`last_mes'.") ///
+				caption("{bf:Fuente:} Elaborado por el CIEP, con información de la SHCP (Estadísticas Oportunas).")
+
+			graph bar `montomill' if mes == `=mes[_N]' & anio >= 2017, over(anio) asyvar ///
+				name(`anything'`mesname', replace) ///
+				ytitle("mil millones de `=currency[1]' `=aniovp'") ///
+				ylabel(, format(%10.1fc)) ///
+				title("{bf:`=nombre[1]'}") ///
+				yline(0, lcolor(black) lpattern(solid)) ///
+				subtitle("`mesname'") blabel(name) legend(off) ///
+				note("{bf:{c U'}ltimo dato:} `last_anio'm`last_mes'.") ///
+				caption("{bf:Fuente:} Elaborado por el CIEP, con información de la SHCP (Estadísticas Oportunas)")
+			
+			noisily di _newline in g " Crecimiento " in y "`mesname' `=anio[_N]'" in g " vs. " in y "`mesname' `=anio[_N]-1'" in g ": " in y %7.3fc `meshoy'[1,1]/`mesant'[1,1]*100 in g "%"
+		}
+	}
+	
+
+	*************************/
 	*** 2 Proyeccion anual ***
 	**************************
 	if tipo_de_informacion == "Flujo" {
-		sort anio mes
-
-		local last_anio = anio[_N]
-		local last_mes = mes[_N]
-
 		tempvar montoanual propmensual
 		egen `montoanual' = sum(monto) if anio < `last_anio' & anio >= `desde', by(anio)
 		g `propmensual' = monto/`montoanual' if anio < `last_anio' & anio >= `desde'

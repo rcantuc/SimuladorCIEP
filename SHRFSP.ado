@@ -240,16 +240,6 @@ quietly {
 		g ``k'' = `k'/pibY*100
 	}
 
-	noisily di _newline in g _col(3) "A{c N~}O" _col(15) %10s "Interna" _col(25) %10s "Externa" _col(35) %10s "Total"
-	forvalues k=1(1)`=_N' {
-		if `shrfsp'[`k'] != . {
-			noisily di in y _col(3) anio[`k'] ///
-			%10.1fc _col(15) `shrfspInterno'[`k'] ///
-			%10.1fc _col(25) `shrfspExterno'[`k'] ///
-			%10.1fc _col(35) `shrfsp'[`k']
-		}
-	}
-
 
 
 	***************
@@ -276,6 +266,14 @@ quietly {
 		replace `rfspBalance' = `rfspAdecuacion' - `rfspOtros' - rfspBalance/pibY*100 if rfspAdecuacion <= 0 & `rfspOtros' < 0
 
 		g `rfsppib' = rfsp/pibY*100
+		
+		* Informes mensuales texto *
+		noisily tabstat rfsp if anio == `anio' | anio == `anio'-1, by(anio) f(%20.0fc) stat(sum) save
+		tempname stathoy statayer
+		matrix `stathoy' = r(Stat2)
+		matrix `statayer' = r(Stat1)
+		noisily di _newline in g "RFSP" in y " `ultanio'm`ultmes'" in g ": " in y %7.3fc `stathoy'[1,1]/`statayer'[1,1]*100 in g "% de `=`anio'-1'."
+		
 
 		local j = 100/(`anio'-2008+1)/2
 		forvalues k=1(1)`=_N' {

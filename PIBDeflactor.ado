@@ -355,8 +355,8 @@ quietly {
 
 		* Deflactor var_indiceY *
 		twoway (area deflator anio if (anio < `anio_last' & anio >= `anio_first') | (anio == `anio_last' & trimestre == 4)) ///
-			(area deflator anio if anio >= `anio_last'+`exo_def') ///
-			(`graphtype2' deflator anio if anio < `anio_last'+`exo_def' & anio >= `anio_last', lwidth(none) pstyle(p4)), ///
+			(area deflator anio if anio > `anio_last'+`exo_def') ///
+			(`graphtype2' deflator anio if anio <= `anio_last'+`exo_def' & anio > `anio_last', lwidth(none) pstyle(p4)), ///
 			title("{bf:{c I'}ndice} de precios impl{c i'}citos") ///
 			subtitle(${pais}) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
@@ -382,8 +382,8 @@ quietly {
 
 		* Crecimiento var_indiceY *
 		twoway (connected var_indiceY anio if (anio < `anio_last' & anio >= `anio_first') | (anio == `anio_last' & trimestre == 4), msize(large) mlwidth(vvthick)) ///
-			(connected var_indiceY anio if anio >= `anio_last'+`exo_def', msize(large) mlwidth(vvthick)) ///
-			(connected var_indiceY anio if anio < `anio_last'+`exo_def' & anio >= `anio_last', pstyle(p4) msize(large) mlwidth(vvthick)), ///
+			(connected var_indiceY anio if anio > `anio_last'+`exo_def', msize(large) mlwidth(vvthick)) ///
+			(connected var_indiceY anio if anio <= `anio_last'+`exo_def' & anio > `anio_last', pstyle(p4) msize(large) mlwidth(vvthick)), ///
 			title({bf:Crecimientos} del {c i'}ndice de precios impl{c i'}citos) subtitle(${pais}) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
 			ylabel(, format(%3.0f)) ///
@@ -401,8 +401,8 @@ quietly {
 
 		* Crecimiento var_pibY *
 		twoway (connected var_pibY anio if (anio < `anio_last' & anio >= `anio_first') | (anio == `anio_last' & trimestre == 4), msize(large) mlwidth(vvthick)) ///
-			(connected var_pibY anio if anio >= `anio_last'+`exo_count', msize(large) mlwidth(vvthick)) ///
-			(connected var_pibY anio if anio < `anio_last'+`exo_count' & anio >= `anio_last', pstyle(p4) msize(large) mlwidth(vvthick)), ///
+			(connected var_pibY anio if anio > `anio_last'+`exo_count', msize(large) mlwidth(vvthick)) ///
+			(connected var_pibY anio if anio <= `anio_last'+`exo_count' & anio > `anio_last', pstyle(p4) msize(large) mlwidth(vvthick)), ///
 			title({bf:Crecimientos} del Producto Interno Bruto) subtitle(${pais}) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
 			ylabel(/*-6(3)6*/, format(%3.0fc)) ///
@@ -423,8 +423,8 @@ quietly {
 		g `pibYRmil' = pibYR/1000000000
 
 		twoway (area `pibYRmil' anio if (anio < `anio_last' & anio >= `anio_first') | (anio == `anio_last' & trimestre == 4)) ///
-			(area `pibYRmil' anio if anio >= `anio_last'+`exo_count') ///
-			(`graphtype' `pibYRmil' anio if anio < `anio_last'+`exo_count' & anio >= `anio_last', lwidth(none) pstyle(p4)), ///
+			(area `pibYRmil' anio if anio > `anio_last'+`exo_count') ///
+			(`graphtype' `pibYRmil' anio if anio <= `anio_last'+`exo_count' & anio > `anio_last', lwidth(none) pstyle(p4)), ///
 			title({bf:Flujo} del Producto Interno Bruto) subtitle(${pais}) ///
 			ytitle(mil millones `=currency[`obsvp']' `aniovp') xtitle("") ///
 			///ytitle(billions `=currency[`obsvp']' `aniovp') xtitle("") ///
