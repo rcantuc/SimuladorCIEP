@@ -365,7 +365,7 @@ quietly {
 			ytitle("`aniovp' = 1.000") xtitle("") ///
 			legend(label(1 "Reportado") label(2 "Proyecci{c o'}n") label(3 "Estimaci{c o'}n ($paqueteEconomico)") order(1 3 2) region(margin(zero))) ///
 			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
-			note("{bf:Crecimiento de precios}: `=string(`=((indiceY[`obsDEF']/indice[`obs_def'])^(1/(`=`obsDEF'-`obs_def''))-1)*100',"%6.3f")'% (`=anio[[`obsDEF']]'-`=anio[`obs_def']'). {bf:{c U'}ltimo dato utilizado}: `anio_last'`trim_last'.") ///
+			note("{bf:Crecimiento de precios}: `=string(`=((indiceY[`obsDEF']/indice[`obs_def'])^(1/(`=`obsDEF'-`obs_def''))-1)*100',"%6.3f")'% (`=anio[[`obsDEF']]'-`=anio[`obs_def']'). {bf:{c U'}ltimo dato reportado}: `anio_last'`trim_last'.") ///
 			name(deflactorH, replace)
 
 		capture confirm existence $export
@@ -392,7 +392,7 @@ quietly {
 			text(`crec_deflactor', color(white) size(tiny)) ///
 			legend(label(1 "Reportado") label(2 "Proyecci{c o'}n") label(3 "Estimaci{c o'}n ($paqueteEconomico)") order(1 3 2) region(margin(zero))) ///
 			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
-			note("{bf:{c U'}ltimo dato utilizado}: `anio_last'`trim_last'.") ///
+			note("{bf:{c U'}ltimo dato reportado}: `anio_last'`trim_last'.") ///
 			name(var_indiceYH, replace)
 		capture confirm existence $export
 		if _rc == 0 {
@@ -411,7 +411,7 @@ quietly {
 			text(`crec_PIB', color(white) size(tiny)) ///
 			legend(label(1 "Reportado") label(2 "Proyecci{c o'}n") label(3 "Estimaci{c o'}n ($paqueteEconomico)") order(1 3 2) region(margin(zero))) ///
 			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
-			note("{bf:{c U'}ltimo dato utilizado}: `anio_last'`trim_last'.") ///
+			note("{bf:{c U'}ltimo dato reportado}: `anio_last'`trim_last'.") ///
 			name(PIBH, replace)
 		capture confirm existence $export
 		if _rc == 0 {
@@ -437,7 +437,7 @@ quietly {
 			yscale(range(0)) /*xscale(range(1993))*/ ///
 			legend(label(1 "Reportado") label(2 "Proyecci{c o'}n") label(3 "Estimaci{c o'}n ($paqueteEconomico)") order(1 3 2) region(margin(zero))) ///
 			///legend(label(1 "Observed") label(2 "Projected") label(3 "Estimated") order(1 3 2)) ///
-			note("{bf:Productividad laboral}: `=string(scalar(llambda),"%6.3f")'% (`=anio[[`obsPIB']]'-`=anio[`obs_exo']'). {bf:{c U'}ltimo dato utilizado}: `anio_last'`trim_last'.") ///
+			note("{bf:Productividad laboral}: `=string(scalar(llambda),"%6.3f")'% (`=anio[[`obsPIB']]'-`=anio[`obs_exo']'). {bf:{c U'}ltimo dato reportado}: `anio_last'`trim_last'.") ///
 			///note("{bf:Note}: Annual Labor Productivity Growth: `=string(scalar(llambda),"%6.3f")'% (`=anio[[`obsPIB']]'-`=anio[`obs_exo']').") ///
 			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
 			name(PIBP, replace)
@@ -524,8 +524,8 @@ quietly {
 
 		capture log on output
 		noisily di in w "Reportado: " in w "[`=substr("`out_report'",1,`length_report'-1)']"
-		noisily di in w "Estimaci{c o'}n: " in w "[`=substr("`out_estima'",1,`length_estima'-1)']"
-		noisily di in w "Proyecci{c o'}n: " in w "[`=substr("`out_proyec'",1,`length_proyec'-1)']"
+		noisily di in w "Estimado: " in w "[`=substr("`out_estima'",1,`length_estima'-1)']"
+		noisily di in w "Proyectado: " in w "[`=substr("`out_proyec'",1,`length_proyec'-1)']"
 		noisily di in w "CRECPIB: [$pib2021,$pib2022,$pib2023,$pib2024,$pib2025]"
 		noisily di in w "DEUDA: [$tasaEfectiva,$tipoDeCambio,$depreciacion]"
 		capture log off output

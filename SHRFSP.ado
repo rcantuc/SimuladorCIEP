@@ -40,26 +40,23 @@ quietly {
 	}
 
 	** 2.2 PIB + Deflactor **
-	*PIBDeflactor, anio(`anio') nographs nooutput
 	use "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", clear
 	local currency = currency[1]
 	tempfile PIB
 	save `PIB'
 
-	** 2.3 Base SHRFSP **
+
+
+	***************
+	*** 3 MERGE ***
+	***************
 	use `"`c(sysdir_personal)'/SIM/$pais/SHRFSP.dta"', clear
-
-
-
-	***************
-	*** 3 Merge ***
-	***************
 	merge 1:1 (anio) using `PIB', nogen keepus(pibY pibYR var_*) update replace
 	tsset anio
 
-	** 3.1 NUEVOS par{c a'}metros ** 
+	** 3.1 CGPE 2022 ** 
 	if "$pais" == "" {
-		replace shrfsp = 51/100*pibY if anio == 2022
+		/*replace shrfsp = 51/100*pibY if anio == 2022
 		replace shrfspInterno = 34.5/100*pibY if anio == 2022
 		replace shrfspExterno = 16.5/100*pibY if anio == 2022
 		replace rfsp = 3.5/100*pibY if anio == 2022
@@ -135,12 +132,9 @@ quietly {
 		replace rfspDeudores = 0.1/100*pibY if anio == 2027
 		replace rfspBanca = -0.0/100*pibY if anio == 2027
 		replace rfspAdecuacion = -0.5/100*pibY if anio == 2027
-		replace tipoDeCambio = 21.3 if anio == 2027
+		replace tipoDeCambio = 21.3 if anio == 2027*/
 
-		g porInterno = shrfspInterno/shrfsp
-		g porExterno = shrfspExterno/shrfsp
-
-		replace costodeudaInterno = 2.8/100*porInterno*pibY if anio == 2022
+		/*replace costodeudaInterno = 2.8/100*porInterno*pibY if anio == 2022
 		replace costodeudaExterno = 2.8/100*porExterno*pibY if anio == 2022
 		replace costodeudaInterno = 3.0/100*porInterno*pibY if anio == 2023
 		replace costodeudaExterno = 3.0/100*porExterno*pibY if anio == 2023
@@ -151,53 +145,58 @@ quietly {
 		replace costodeudaInterno = 3.0/100*porInterno*pibY if anio == 2026
 		replace costodeudaExterno = 3.0/100*porExterno*pibY if anio == 2026
 		replace costodeudaInterno = 3.1/100*porInterno*pibY if anio == 2027
-		replace costodeudaExterno = 3.1/100*porExterno*pibY if anio == 2027
+		replace costodeudaExterno = 3.1/100*porExterno*pibY if anio == 2027*/
 		
-		replace nopresupuestario = 0 if anio >= 2022
+		g porInterno = shrfspInterno/shrfsp
+		g porExterno = shrfspExterno/shrfsp
+		g tasaInterno = costodeudaInterno/shrfspInterno*100
+		g tasaExterno = costodeudaExterno/shrfspExterno*100
+		g tasaEfectiva = porInterno*tasaInterno + porExterno*tasaExterno
 
-		g tasaInterno = costodeudaInterno/shrfspInterno
 		*replace tasaInterno = L.tasaInterno if tasaInterno == .
-		g tasaExterno = costodeudaExterno/shrfspExterno
 		*replace tasaExterno = L.tasaExterno if tasaExterno == .
 
-		g balprimario = (-rfspBalance-costodeudaInterno-costodeudaExterno)/pibY*100
 		g depreciacion = tipoDeCambio-L.tipoDeCambio
-		g Depreciacion = tipoDeCambio/L.tipoDeCambio-1
-		g tasaEfectiva = L.porInterno*tasaInterno + L.porExterno*tasaExterno
+		g Depreciacion = (tipoDeCambio/L.tipoDeCambio-1)*100
 
-		replace balprimario = 0.3 if anio == 2022
+		/*replace balprimario = 0.3 if anio == 2022
 		replace balprimario = -0.3 if anio == 2023
 		replace balprimario = -0.6 if anio == 2024
 		replace balprimario = -0.6 if anio == 2025
 		replace balprimario = -0.7 if anio == 2026
-		replace balprimario = -0.8 if anio == 2027
+		replace balprimario = -0.8 if anio == 2027*/
 
-		g efectoIntereses = (tasaEfectiva/((1+var_pibY/100)*(1+var_indiceY/100)))*L.shrfsp/L.pibY*100 
-		g efectoInflacion = (-(var_indiceY/100*(1+var_pibY/100))/((1+var_pibY/100)*(1+var_indiceY/100)))*L.shrfsp/L.pibY*100
-		g efectoCrecimiento = (-(var_pibY/100)/((1+var_pibY/100)*(1+var_indiceY/100)))*L.shrfsp/L.pibY*100
-		g efectoTipoDeCambio = ((L.porExterno*Depreciacion*(1+tasaExterno))/((1+var_pibY/100)*(1+var_indiceY/100)))*L.shrfsp/L.pibY*100
-		g efectoOtros = -(rfspPIDIREGAS+rfspIPAB+rfspFONADIN+rfspDeudores+rfspBanca+rfspAdecuacion+nopresupuestario)/pibY*100
-		g efectoTotal = efectoIntereses+efectoInflacion+efectoCrecimiento+efectoTipoDeCambio+efectoOtros+balprimario
+		g nopresupuestario   = -(rfspPIDIREGAS+rfspIPAB+rfspFONADIN+rfspDeudores+rfspBanca+rfspAdecuacion)/pibY*100
+		g balprimario        = -(rfspBala+costodeudaInt+costodeudaExt)/pibY*100
+
+		g efectoCrecimiento  = -(var_pibY/100)*L.shrfsp/pibY*100
+		g efectoInflacion    = -(var_indiceY/100+var_indiceY/100*var_pibY/100)*L.shrfsp/pibY*100 
+
+		g efectoIntereses    = ((1+tasaInterno/100)*L.shrfspInterno+(1+tasaExterno/100)*L.shrfspExterno)/pibY*100 - L.shrfsp/pibY*100
+
+		g efectoTipoDeCambio = (Depreciacion/100 + tasaExterno/100*Depreciacion/100)*L.shrfspExterno/pibY*100
+
+		g efectoTotal = balprimario + nopresupuestario + efectoCrecimiento + efectoInflacion + efectoIntereses + efectoTipoDeCambio
 
 		if "`nographs'" != "nographs" & "$nographs" == "" {
-			local j = 100/(2027-2008+1)/2
+			local j = 100/(`anio'-2008+1)/2
 			forvalues k=1(1)`=_N' {
 				if efectoTotal[`k'] != . {
 					local textDeuda `"`textDeuda' `=efectoTotal[`k']*0+.1' `j' "{bf:`=string(efectoTotal[`k'],"%5.1fc")'}""'
-					local j = `j' + 100/(2027-2008+1)
+					local j = `j' + 100/(`anio'-2008+1)
 				}
 			}
-			graph bar efectoIntereses efectoInflacion efectoCrecimiento balprimario efectoTipoDeCambio efectoOtros ///
+			graph bar balprimario nopresupuestario efectoCrecimiento efectoInflacion efectoIntereses efectoTipoDeCambio ///
 				if Depreciacion != . & anio >= 2008, ///
 				over(anio, gap(0)) stack blabel(, format(%5.1fc)) outergap(0) ///
 				text(`textDeuda', color(black)) ///
 				ytitle("% PIB") ///
-				legend(on position(6) rows(1) label(1 "Tasas de inter{c e'}s") label(2 "Inflaci{c o'}n") label(3 "Crec. Econ{c o'}mico") ///
-				label(4 "Balance Primario") label(5 "Tipo de cambio") label(6 "Otros") region(margin(zero))) ///
-				title("Efectos sobre el {bf:Indicador de la Deuda}") ///
+				legend(on position(6) rows(1) label(5 "Tasas de inter{c e'}s") label(4 "Inflaci{c o'}n") label(3 "Crec. Econ{c o'}mico") ///
+				label(1 "Balance Primario") label(6 "Tipo de cambio") label(2 "No presupuestario") region(margin(zero))) ///
+				title("Efectos sobre el {bf:indicador de la deuda}") ///
 				name(efectoDeuda, replace) ///
 				note("{bf:{c U'}ltimo dato}: `ultanio'm`ultmes'") ///
-				caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.")
+				caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Estadísticas Oportunas).")
 
 			capture confirm existence $export
 			if _rc == 0 {
@@ -278,7 +277,7 @@ quietly {
 
 		g `rfsppib' = rfsp/pibY*100
 
-		local j = 100/(2027-2008+1)/2
+		local j = 100/(`anio'-2008+1)/2
 		forvalues k=1(1)`=_N' {
 			if `shrfsp'[`k'] != . & anio[`k'] >= 2003 {
 				if "`anioshrfsp'" == "" {
@@ -303,13 +302,13 @@ quietly {
 			}
 		}
 
-		twoway (bar `rfspBalance' `rfspAdecuacion' `rfspOtros' anio if anio < `anio', bstyle(p1bar p2bar p3bar)) ///
-			(bar `rfspBalance' `rfspAdecuacion' `rfspOtros' anio if anio >= `anio', bstyle(p5bar p6bar p7bar)) if rfsp != ., ///
+		twoway (bar `rfspBalance' `rfspAdecuacion' `rfspOtros' anio if anio <= `anio', bstyle(p1bar p2bar p3bar)) ///
+			/*(bar `rfspBalance' `rfspAdecuacion' `rfspOtros' anio if anio > `anio', bstyle(p5bar p6bar p7bar))*/ if rfsp != ., ///
 			title("{bf:Requerimientos financieros} del sector p{c u'}blico") ///
 			subtitle($pais) xtitle("") ///
 			name(rfsp, replace) ///
 			ylabel(, format(%15.0fc) labsize(small)) ///
-			xlabel(2008(1)2027, noticks) ///	
+			xlabel(2008(1)`ultanio', noticks) ///	
 			yscale(range(0) axis(1) noline) ///
 			text(`textRFSP', placement(n)) ///
 			text(`textRFBa', color(white)) ///
@@ -317,16 +316,16 @@ quietly {
 			text(`textRFOt', color(white)) ///
 			ytitle("% PIB") ///
 			legend(on position(6) rows(1) label(3 "Otros") label(2 "Adecuaciones") label(1 "Balance presupuestario") ///
-			label(6 "Proy. Otros") label(5 "Proy. Adecuaciones") label(4 "Proy. Balance presupuestario") region(margin(zero))) ///
+			/*label(6 "Proy. Otros") label(5 "Proy. Adecuaciones") label(4 "Proy. Balance presupuestario")*/ region(margin(zero))) ///
 			note("{bf:{c U'}ltimo dato}: `ultanio'm`ultmes'") ///
-			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Estadísticas Oportunas y Paquete Econ{c o'}mico 2022).")
+			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Estadísticas Oportunas).")
 
-		twoway (bar `interno' `externo' anio if anio < `anio') ///
-			(bar `interno' `externo' anio if anio >= `anio') if `externo' != ., ///
+		twoway (bar `interno' `externo' anio if anio <= `anio') ///
+			/*(bar `interno' `externo' anio if anio > `anio')*/ if `externo' != ., ///
 			title("{bf:Saldo hist{c o'}rico} de RFSP") ///
 			subtitle($pais) ///
 			ylabel(, format(%15.0fc) labsize(small)) ///
-			xlabel(`anioshrfsp'(1)2027, noticks) ///	
+			xlabel(`anioshrfsp'(1)`ultanio', noticks) ///	
 			text(`textE' `textI', color(white)) ///
 			text(`text', placement(n)) ///
 			///text(2 `=`anio'+1.45' "{bf:Proyecci{c o'}n PE 2022}", color(white)) ///
@@ -335,10 +334,10 @@ quietly {
 			yscale(range(0) axis(1) noline) ///
 			ytitle("% PIB") xtitle("") ///
 			legend(on position(6) rows(1) order(1 2 3 4) label(1 "Interno") label(2 "Externo") ///
-			label(3 "Proy. Interno") label(4 "Proy. Externo") region(margin(zero))) ///
+			/*label(3 "Proy. Interno") label(4 "Proy. Externo")*/ region(margin(zero))) ///
 			name(shrfsp, replace) ///
 			note("{bf:{c U'}ltimo dato}: `ultanio'm`ultmes'") ///
-			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Estadísticas Oportunas y PE 2022).")
+			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Estadísticas Oportunas).")
 
 		capture confirm existence $export
 		if _rc == 0 {
