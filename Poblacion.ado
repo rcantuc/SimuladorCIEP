@@ -22,10 +22,10 @@ quietly {
 	* Si hay un error o la opción "update" es llamada, limpia la base de datos y la usa *
 	if _rc != 0 | "`update'" == "update" {
 		if "$pais" == "" {
-			run `"`c(sysdir_personal)'/Poblacion.do"'
+			run `"`c(sysdir_personal)'/UpdatePoblacion.do"'
 		}
 		else {
-			run `"`c(sysdir_personal)'/PoblacionMundial.do"'
+			run `"`c(sysdir_personal)'/UpdatePoblacionMundial.do"'
 		}
 		use `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
 	}
