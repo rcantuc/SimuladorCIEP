@@ -683,7 +683,7 @@ quietly {
 			ylabel(0(5)`=ceil(`DEPMAX'[1,1])+2.5', format(%20.0fc)) ///
 			ytitle(billones MXN `anio') ///
 			yscale(range(0)) xscale(range(1993)) ///
-			note("{bf:{c U'}ltimo dato utilizado}: `anio_last'.") ///
+			note("{bf:{c U'}ltimo dato reportado}: `anio_last'.") ///
 			name(gdp_generacion, replace)
 
 		capture confirm existence $export
@@ -806,7 +806,7 @@ quietly {
 			ylabel(0(5)`=ceil(`DEPMAX'[1,1])+2.5', format(%20.0fc)) ///
 			ytitle(billones MXN `anio') ///
 			yscale(range(0)) xscale(range(1993)) ///
-			note("{bf:{c U'}ltimo dato utilizado}: `anio_last'.") ///
+			note("{bf:{c U'}ltimo dato reportado}: `anio_last'.") ///
 			name(gdp_utilizacion, replace)
 
 		capture confirm existence $export
@@ -834,7 +834,7 @@ quietly {
 			label(8 "Servicios inmobiliarios") label(9 "Servicios financieros") label(10 "Otros servicios")) ///
 			title({bf:Estructura} econ{c o'}mica) ///
 			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
-			note("{bf:{c U'}ltimo dato utilizado}: `anio_last'.") ///
+			note("{bf:{c U'}ltimo dato reportado}: `anio_last'.") ///
 			name(estructuraEco, replace)
 
 		tempvar primario secundario terciario
@@ -921,7 +921,7 @@ quietly {
 			title("{bf:Exportaciones} por actividad econ{c o'}mica") ///
 			text(`texta', color(white) size(vsmall)) ///
 			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
-			note("{bf:{c U'}ltimo dato utilizado}: `anio_last'.") ///
+			note("{bf:{c U'}ltimo dato reportado}: `anio_last'.") ///
 			xtitle("") ytitle(Crecimiento anual (%)) ///
 			name(sectorext, replace)
 	}

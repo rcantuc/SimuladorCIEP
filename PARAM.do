@@ -5,7 +5,6 @@
 ********************************
 
 * 2021-2027 *
-global pib2021 = 5.4                                           // CGPE 2022: 6.3
 global pib2022 = 4.1                                           // CGPE 2022: 4.1
 global pib2023 = 3.4                                           // Supuesto: 2.5
 global pib2024 = 2.8                                           // Supuesto: 2.5
@@ -24,7 +23,6 @@ forvalues k=2031(1)2050 {
 }
 
 * OTROS */
-global inf2021 = 5.7                                           // CGPE 2022: 5.7
 global inf2022 = 3.4                                           // CGPE 2022: 3.4
 global inf2023 = 3.0                                           // CGPE 2022: 3.0
 global inf2024 = 3.0                                           // CGPE 2022: 3.0
@@ -32,17 +30,16 @@ global inf2025 = 3.0                                           // CGPE 2022: 3.0
 global inf2026 = 3.0                                           // CGPE 2022: 3.0
 global inf2027 = 3.0                                           // CGPE 2022: 3.0
 
-global def2021 = 6.2295                                        // CGPE 2022: 6.2
-global def2022 = 3.7080                                        // CGPE 2022: 3.7
-global def2023 = 3.5000                                        // CGPE 2022: 3.5
-global def2024 = 3.5000                                        // CGPE 2022: 3.5
-global def2025 = 3.5000                                        // CGPE 2022: 3.5
-global def2026 = 3.5000                                        // CGPE 2022: 3.5
-global def2027 = 3.5000                                        // CGPE 2022: 3.5
+global def2022 = 3.7                                           // CGPE 2022: 3.7
+global def2023 = 3.5                                           // CGPE 2022: 3.5
+global def2024 = 3.5                                           // CGPE 2022: 3.5
+global def2025 = 3.5                                           // CGPE 2022: 3.5
+global def2026 = 3.5                                           // CGPE 2022: 3.5
+global def2027 = 3.5                                           // CGPE 2022: 3.5
 
-global tasaEfectiva = 5.7425                                  // Tasa de inter{c e'}s EFECTIVA
-global tipoDeCambio = 20.200                                  // Tipo de cambio
-global depreciacion = 0.2000                                  // Depreciaci{c o'}n
+global tasaEfectiva = 5.7425                                   // Tasa de inter{c e'}s EFECTIVA
+global tipoDeCambio = 20.200                                   // Tipo de cambio
+global depreciacion = 0.2000                                   // Depreciaci{c o'}n
 
 scalar aniovp = 2022
 scalar anioend = 2030

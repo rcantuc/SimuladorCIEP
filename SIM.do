@@ -50,7 +50,7 @@ noisily run "`c(sysdir_personal)'/Arranque.do"
 ***                    ***
 ***    1. POBLACION    ***
 ***                    ***
-**************************
+/**************************
 *forvalues k=1950(1)2100 {
 foreach k in `=aniovp' {
 	`noisily' Poblacion, anio(`k') `update' //aniofinal(2030) 
@@ -65,7 +65,7 @@ foreach k in `=aniovp' {
 ***    2. CRECIMIENTO PIB    ***
 ***                          ***
 ********************************
-`noisily' PIBDeflactor, aniovp(2021) save geopib(2000) geodef(2010) `update' discount(5.0)
+`noisily' PIBDeflactor, aniovp(2021) geopib(2000) geodef(2010) discount(5.0) save `update'
 
 
 ** 2.1 Inflacion, SCN **
@@ -90,7 +90,7 @@ if "$pais" == "" {
 
 
 
-
+exit
 **************************/
 ***                     ***
 ***    4. HOUSEHOLDS    ***

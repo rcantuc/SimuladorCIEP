@@ -68,9 +68,9 @@ noisily DatosAbiertos SHRF5000				// Total
 keep anio mes monto mes
 rename monto shrfsp
 
-tsset anio
-replace shrfsp = L.shrfsp+D.shrfsp*12/mes if mes != 12
-drop mes
+*tsset anio
+*replace shrfsp = L.shrfsp+D.shrfsp*12/mes if mes != 12
+*drop mes
 
 tempfile shrfsp
 save `shrfsp'
@@ -79,9 +79,9 @@ noisily DatosAbiertos SHRF5100				// Interno
 keep anio mes monto mes
 rename monto shrfspInterno
 
-tsset anio
-replace shrfspInterno = L.shrfspInterno+D.shrfspInterno*12/mes if mes != 12
-drop mes
+*tsset anio
+*replace shrfspInterno = L.shrfspInterno+D.shrfspInterno*12/mes if mes != 12
+*drop mes
 
 tempfile interno
 save `interno'
@@ -90,9 +90,9 @@ noisily DatosAbiertos SHRF5200				// Externo
 keep anio mes monto mes
 rename monto shrfspExterno
 
-tsset anio
-replace shrfspExterno = L.shrfspExterno+D.shrfspExterno*12/mes if mes != 12
-drop mes
+*tsset anio
+*replace shrfspExterno = L.shrfspExterno+D.shrfspExterno*12/mes if mes != 12
+*drop mes
 
 tempfile externo
 save `externo'
@@ -119,7 +119,7 @@ save `USD'
 
 *********************************
 ** 4 Balance no presupuestario **
-*********************************
+/*********************************
 noisily DatosAbiertos XAA20					// Balance no presupuestario
 keep anio mes monto
 rename monto nopresupuestario
@@ -128,10 +128,10 @@ save `nopresupuestario'
 
 
 
-*************************
+*************************/
 ** 5 Costo de la deuda **
 *************************
-PEF if desc_partida_generica == 33 | desc_partida_generica == 68 | desc_partida_generica == 88 ///
+/*PEF if desc_partida_generica == 33 | desc_partida_generica == 68 | desc_partida_generica == 88 ///
 	| desc_partida_generica == 89 | desc_partida_generica == 90 | desc_partida_generica == 93, anio(2022) nographs
 collapse (sum) costodeudaExterno=gastoneto, by(anio)
 tempfile costodeudaE
@@ -141,7 +141,7 @@ PEF if desc_partida_generica == 34 | desc_partida_generica == 69 | desc_partida_
 	| desc_partida_generica == 92, anio(2022) nographs
 collapse (sum) costodeudaInterno=gastoneto, by(anio)
 tempfile costodeudaI
-save `costodeudaI'
+save `costodeudaI'*/
 
 noisily DatosAbiertos XOA0155			// costo deuda interna
 keep anio mes monto
@@ -178,9 +178,9 @@ merge 1:1 (anio) using `interno', nogen
 merge 1:1 (anio) using `externo', nogen
 merge 1:1 (anio) using `MXN', nogen
 merge 1:1 (anio) using `USD', nogen
-merge 1:1 (anio) using `nopresupuestario', nogen
-merge 1:1 (anio) using `costodeudaI', nogen
-merge 1:1 (anio) using `costodeudaE', nogen
+*merge 1:1 (anio) using `nopresupuestario', nogen
+*merge 1:1 (anio) using `costodeudaI', nogen
+*merge 1:1 (anio) using `costodeudaE', nogen
 merge 1:1 (anio) using `costodeudaII', nogen update
 merge 1:1 (anio) using `costodeudaEE', nogen update
 merge 1:1 (anio) using `amortizacion', nogen

@@ -11,10 +11,10 @@ quietly {
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
 	** 1.2 Datos Abiertos (MÈxico) **
-	if "`c(username)'" == "ricardo" & "$pais" == "" {
+	if "$pais" == "" {
 		capture confirm file "`c(sysdir_personal)'/SIM/DatosAbiertos.dta"
 		if _rc != 0 {
-			UpdateDatosAbiertos, update
+			UpdateDatosAbiertos
 			local updated = r(updated)
 			local ultanio = r(ultanio)
 			local ultmes = r(ultmes)
@@ -30,7 +30,7 @@ quietly {
 	** 1.3 Base LIF **
 	capture confirm file "`c(sysdir_personal)'/SIM/$pais/LIF.dta"
 	if _rc != 0 {
-		noisily run "`c(sysdir_personal)'/UpdateLIF.do"			// Genera a partir de la base ./basesCIEP/LIFs/LIF.xlsx
+		noisily run "`c(sysdir_personal)'/UpdateLIF.do"  // Genera a partir de la base ./basesCIEP/LIFs/LIF.xlsx
 	}
 	
 
