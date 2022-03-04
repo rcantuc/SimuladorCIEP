@@ -36,7 +36,7 @@ adopath ++ PERSONAL
 *global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
 *global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
 local noisily "noisily"                                                         // "NOISILY" OUTPUTS
-*local update "update"                                                          // UPDATE DATASETS
+local update "update"                                                          // UPDATE DATASETS
 
 
 ** 0.1 LIFT-OFF! **
@@ -64,7 +64,7 @@ foreach k in `=aniovp' {
 ***                          ***
 ***    2. CRECIMIENTO PIB    ***
 ***                          ***
-********************************
+/********************************
 `noisily' PIBDeflactor, aniovp(2021) geopib(2000) geodef(2010) discount(5.0) save `update'
 
 
@@ -78,14 +78,14 @@ if "$pais" == "" {
 
 
 
-*******************************
+******************************/
 ***                         ***
 ***    3. SISTEMA FISCAL    ***
 ***                         ***
 *******************************
 `noisily' LIF, anio(`=aniovp') by(divGA) rows(1) ilif min(1) `update'
-`noisily' PEF, anio(`=aniovp') by(desc_funcion) rows(2) min(1) `update'
-`noisily' SHRFSP, anio(`=aniovp') `update'
+*`noisily' PEF, anio(`=aniovp') by(desc_funcion) rows(2) min(1) `update'
+*`noisily' SHRFSP, anio(`=aniovp') `update'
 
 
 

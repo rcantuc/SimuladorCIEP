@@ -104,14 +104,16 @@ if "$pais" == "" {
 ** Recaudacion observada y estimada **
 capture confirm variable monto
 if _rc == 0 {
-	g recaudacion = monto if mes <= 12									// Se reemplazan con lo observado
+	g recaudacion = monto if mes == 12									// Se reemplazan con lo observado
 	g concepto = nombre
 }
 else {
-	g recaudacion = .
 	g monto = .
+	g recaudacion = .
+	g concepto = ""
 }
-replace recaudacion = LIF if recaudacion == .
+
+replace recaudacion = LIF if mes != 12
 replace recaudacion = ILIF if recaudacion == . & LIF == . & ILIF != .			// De lo contrario, es ILIF
 format recaudacion %20.0fc
 
