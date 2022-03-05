@@ -26,35 +26,7 @@ noisily di _newline(5) in w "{bf:Centro de Investigaci{c o'}n Econ{c o'}mica y P
 *** 3 Parametros ***
 ********************
 global paqueteEconomico "CGPE 2022"
-
-* 2021-2026 *
-global pib2022 = 4.1                                                            // CGPE 2022
-global pib2023 = 3.4                                                            // CGPE 2022
-global pib2024 = 2.8                                                            // CGPE 2022
-global pib2025 = 2.5                                                            // CGPE 2022
-global pib2026 = 2.5                                                            // CGPE 2022
-global pib2027 = 2.5                                                            // CGPE 2022
-
-global def2022 = 3.7                                                            // CGPE 2022
-
-
-* 2026-2030 *
-forvalues k=2028(1)2030 {
-	global pib`k' = $pib2027                                                    // SUPUESTO DE LARGO PLAZO
-}
-
-/* 2031-2050 *
-forvalues k=2031(1)2050 {
-	global pib`k' = $pib2027                                                    // SUPUESTO DE LARGO PLAZO
-}
-
-* OTROS */
-global inf2022 = 3.4                                                            // CGPE 2022
-global inf2023 = 3.0                                                            // CGPE 2022
-global inf2024 = 3.0                                                            // CGPE 2022
-global inf2025 = 3.0                                                            // CGPE 2022
-global inf2026 = 3.0                                                            // CGPE 2022
-global inf2027 = 3.0                                                            // CGPE 2022
+run "`c(sysdir_personal)'/PARAM${pais}.do"
 
 
 
