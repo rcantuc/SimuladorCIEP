@@ -5,17 +5,15 @@
 ********************************
 
 * 2021-2027 *
-global pib2022 = 4.1                                           // CGPE 2022: 4.1
-global pib2023 = 3.4                                           // Supuesto: 2.5
-global pib2024 = 2.8                                           // Supuesto: 2.5
-global pib2025 = 2.5                                           // Supuesto: 2.5
-global pib2026 = 2.5                                           // Supuesto: 2.5
-global pib2027 = 2.5                                           // Supuesto: 2.5
-
-* 2026-2030 *
-forvalues k=2028(1)2030 {
-	global pib`k' = $pib2027                               // SUPUESTO DE LARGO PLAZO
-}
+global pib2022 = 4.1                                           // CGPE 2022
+global pib2023 = 3.4                                           // CGPE 2022
+global pib2024 = 2.8                                           // CGPE 2022
+global pib2025 = 2.5                                           // CGPE 2022
+global pib2026 = 2.5                                           // CGPE 2022
+global pib2027 = 2.5                                           // CGPE 2022
+global pib2028 = 2.5                                           // CGPE 2022
+global pib2029 = 2.5                                           // CGPE 2022
+global pib2030 = 2.5                                           // CGPE 2022
 
 /* 2031-2050 *
 forvalues k=2031(1)2050 {
@@ -36,6 +34,9 @@ global def2024 = 3.5                                           // CGPE 2022: 3.5
 global def2025 = 3.5                                           // CGPE 2022: 3.5
 global def2026 = 3.5                                           // CGPE 2022: 3.5
 global def2027 = 3.5                                           // CGPE 2022: 3.5
+global def2028 = 3.5                                           // CGPE 2022: 3.5
+global def2029 = 3.5                                           // CGPE 2022: 3.5
+global def2030 = 3.5                                           // CGPE 2022: 3.5
 
 global tasaEfectiva = 5.7425                                   // Tasa de inter{c e'}s EFECTIVA
 global tipoDeCambio = 20.200                                   // Tipo de cambio
@@ -44,8 +45,7 @@ global depreciacion = 0.2000                                   // Depreciaci{c o
 scalar aniovp = 2022
 scalar anioend = 2030
 
-global paqueteEconomico = "PE 2022"
-
+global paqueteEconomico = "CGPE 2022"
 
 
 if "$output" != "output" {

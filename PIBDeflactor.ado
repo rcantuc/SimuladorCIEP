@@ -294,11 +294,11 @@ quietly {
 	*****************
 	** 3 Simulador **
 	*****************
-	noisily di in g " PIB " in y "`anio_last'`trim_last'" _col(25) %20.0fc `pib_last' in g " `=currency[`obsvp']' ({c u'}ltimo reportado)"
-	noisily di _newline in g " PIB " in y anio[`obsvp'] in g " per c{c a'}pita " in y _col(35) %10.1fc pibY[`obsvp']/Poblacion[`obsvp'] in g " `=currency[`obsvp']'"
-	noisily di in g " PIB " in y anio[`obsvp'] in g " por trabajador " in y _col(35) %10.1fc OutputPerWorker[`obsvp'] in g " `=currency[`obsvp']'"
-	noisily di in g " Crecimiento promedio " in y anio[`obsPIB'] "-" anio[`obs_exo'] _col(35) %10.4f ((pibYR[`obs_exo']/pibYR[`obsPIB'])^(1/(`obs_exo'-`obsPIB'))-1)*100 in g " %" 
-	noisily di in g " Lambda por trabajador " in y anio[`obsPIB'] "-" anio[`obs_exo'] _col(35) %10.4f scalar(llambda) in g " %" 
+	noisily di _newline in g " PIB " in y "`anio_last'`trim_last'" _col(30) %20.0fc `pib_last' in g " `=currency[`obsvp']' ({c u'}ltimo reportado)"
+	noisily di in g " PIB " in y anio[`obsvp'] in g " per c{c a'}pita " in y _col(40) %10.1fc pibY[`obsvp']/Poblacion[`obsvp'] in g " `=currency[`obsvp']'"
+	noisily di in g " PIB " in y anio[`obsvp'] in g " por trabajador (16-65 a{c n~}os) " in y _col(40) %10.1fc OutputPerWorker[`obsvp'] in g " `=currency[`obsvp']'"
+	noisily di in g " Crecimiento geom{c e'}trico " in y anio[`obsPIB'] "-" anio[`obs_exo'] _col(40) %10.4f ((pibYR[`obs_exo']/pibYR[`obsPIB'])^(1/(`obs_exo'-`obsPIB'))-1)*100 in g " %" 
+	noisily di in g " Lambda por trabajador " in y anio[`obsPIB'] "-" anio[`obs_exo'] _col(40) %10.4f scalar(llambda) in g " %" 
 	*noisily di in g " Lambda por trabajador " in y anio[1] "-" anio[`obs_exo'] _col(35) %10.4f scalar(LLambda) in g " %" 
 
 	local grow_rate_LR = (pibYR[_N]/pibYR[_N-10])^(1/10)-1
@@ -323,10 +323,10 @@ quietly {
 	scalar LambdaNW = ((pibYR[`obs_exo']/pibYR[1])^(1/(`obs_exo'))-1)*100
 
 
-	noisily di _newline in g " PIB " in y "al infinito" in y _col(22) %23.0fc `pibYVP'[1,1] + pibINF in g " `=currency[`obsvp']'"
-	noisily di in g " Tasa de descuento: " in y _col(25) %20.1fc `discount' in g " %"
-	noisily di in g " Crec. al infinito: " in y _col(25) %20.1fc var_pibY[_N] in g " %"
-	noisily di in g " Defl. al infinito: " in y _col(25) %20.1fc var_indiceY[_N] in g " %"
+	di _newline in g " PIB " in y "al infinito" in y _col(22) %23.0fc `pibYVP'[1,1] + pibINF in g " `=currency[`obsvp']'"
+	di in g " Tasa de descuento: " in y _col(25) %20.1fc `discount' in g " %"
+	di in g " Crec. al infinito: " in y _col(25) %20.1fc var_pibY[_N] in g " %"
+	di in g " Defl. al infinito: " in y _col(25) %20.1fc var_indiceY[_N] in g " %"
 
 
 	if "`nographs'" != "nographs" & "$nographs" == "" {
@@ -457,7 +457,7 @@ quietly {
 	*** 4 Texto ***
 	***************
 	noisily di _newline in g _col(11) %~14s "Crec. PIB" _col(25) %~23s "PIB nominal" _col(50) %~14s "Crec. {c I'}ndice" _col(64) %~14s "Deflactor"
-	forvalues k=`=`obsvp'-5'(1)`=`obsvp'+5' {
+	forvalues k=`=`obsvp'-10'(1)`=`obsvp'+10' {
 		if anio[`k'] < `anio_last' | (anio[`k'] == `anio_last' & trimestre[`k'] == 4) {
 			if "`reportado'" == "" {
 				noisily di in g %~72s "REPORTADO"
@@ -467,14 +467,14 @@ quietly {
 		}
 		if (anio[`k'] == `anio_last' & trimestre[`k'] < 4) | anio[`k'] <= anio[`obs_exo'] & anio[`k'] > `anio_last' {
 			if "`estimado'" == "" {
-				noisily di in g %~72s "Estimaci{c o'}n"
+				noisily di in g %~72s "$paqueteEconomico"
 				local estimado = "done"
 			}
 			noisily di in g "{bf: `=anio[`k']' " _col(10) %8.1fc in y var_pibY[`k'] " %" _col(25) %20.0fc pibY[`k'] _col(50) %8.1fc in y var_indiceY[`k'] " %" _col(65) %12.10fc deflator[`k'] "}"
 		}
 		if (anio[`k'] > `anio_last') & anio[`k'] > anio[`obs_exo'] {
 			if "`proyectado'" == "" {
-				noisily di in g %~72s "Proyecci{c o'}n"
+				noisily di in g %~72s "PROYECTADO"
 				local proyectado = "done"
 			}
 			noisily di in g " `=anio[`k']' " _col(10) %8.1fc in y var_pibY[`k'] " %" _col(25) %20.0fc pibY[`k'] _col(50) %8.1fc in y var_indiceY[`k'] " %" _col(65) %12.10fc deflator[`k']
