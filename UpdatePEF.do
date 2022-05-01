@@ -173,7 +173,9 @@ if "$pais" == "" {
 	replace desc_ramo = "Instituto Nacional de Transparencia, Acceso a la Informaci{c o'}n y Protecci{c o'}n de Datos Personales" if ramo == 44
 	replace desc_ramo = "Petr{c o'}leos Mexicanos" if ramo == 52
 	replace desc_ramo = "Comisi{c o'}n Federal de Electricidad" if ramo == 53
-
+	replace desc_ramo = "Comisi{c o'}n Federal de Electricidad" if ramo == 53
+	replace desc_ramo = "Infraestructura, Comunicaciones y Transportes" if ramo == 9
+	
 	labmask ramo, values(desc_ramo)
 	drop desc_ramo
 
@@ -403,7 +405,7 @@ if _rc != 0 {
 
 if "$pais" == "" {
 	replace gasto = aprobado if anio == 2021
-	replace gasto = proyecto if anio == 2022
+	replace gasto = aprobado if anio == 2022
 }
 
 if "$pais" == "" {
