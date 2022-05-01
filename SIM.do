@@ -17,7 +17,6 @@ capture log close _all
 if"`c(os)'" == "MacOSX" & "`c(username)'" == "ricardo" & `c(version)' > 13.1 {  // Computadora Ricardo
 	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/SimuladorCIEP/5.2/simuladorCIEP/"
 	*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"         // EXPORTAR IMAGENES EN...
-	*global latex = "latex"                                                 // IMPRIMIR OUTPUTS (LATEX)
 }
 if "`c(os)'" == "Unix" & "`c(username)'" == "ciepmx" {                          // Computdora ServidorCIEP
 	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/SimuladorCIEP/5.2/simuladorCIEP/"
@@ -36,7 +35,8 @@ adopath ++ PERSONAL
 *global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
 *global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
 local noisily "noisily"                                                         // "NOISILY" OUTPUTS
-local update "update"                                                          // UPDATE DATASETS
+*local update "update"                                                          // UPDATE DATASETS
+*global pais = "Ecuador"
 
 
 ** 0.1 LIFT-OFF! **
@@ -50,7 +50,7 @@ noisily run "`c(sysdir_personal)'/Arranque.do"
 ***                    ***
 ***    1. POBLACION    ***
 ***                    ***
-/**************************
+**************************
 *forvalues k=1950(1)2100 {
 foreach k in `=aniovp' {
 	`noisily' Poblacion, anio(`k') `update' //aniofinal(2030) 
@@ -64,8 +64,8 @@ foreach k in `=aniovp' {
 ***                          ***
 ***    2. CRECIMIENTO PIB    ***
 ***                          ***
-/********************************
-`noisily' PIBDeflactor, aniovp(2021) geopib(2000) geodef(2010) discount(5.0) save `update'
+********************************
+`noisily' PIBDeflactor, aniovp(`=aniovp') geopib(2000) geodef(2010) discount(3.0) save `update'
 
 
 ** 2.1 Inflacion, SCN **
@@ -84,8 +84,8 @@ if "$pais" == "" {
 ***                         ***
 *******************************
 `noisily' LIF, anio(`=aniovp') by(divGA) rows(1) ilif min(1) `update'
-*`noisily' PEF, anio(`=aniovp') by(desc_funcion) rows(2) min(1) `update'
-*`noisily' SHRFSP, anio(`=aniovp') `update'
+`noisily' PEF, anio(`=aniovp') by(desc_funcion) rows(2) min(1) `update'
+`noisily' SHRFSP, anio(`=aniovp') `update'
 
 
 
@@ -97,7 +97,7 @@ exit
 ***                     ***
 ***************************
 capture confirm file `"`c(sysdir_personal)'/users/$pais/$id/ConsumoREC.dta"'
-if _rc != 0 | "`update'" == "update" | "$latex" == "latex" {
+if _rc != 0 | "`update'" == "update" | "$export" != "" {
 	noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' `=aniovp'
 	noisily run `"`c(sysdir_personal)'/PerfilesSim.do"' `=aniovp'
 }
@@ -141,7 +141,7 @@ capture drop AportacionesNetas
 g AportacionesNetas = Laboral + Consumo + ISR__PM + Petroleo ///
 	- Pension - Educacion - Salud - IngBasico - PenBienestar - Infra
 label var AportacionesNetas "aportaciones netas"
-noisily Simulador AportacionesNetas [fw=factor], base("ENIGH 2020") reboot anio(`=aniovp') folio("folioviv foliohog") $nographs
+noisily Simulador AportacionesNetas [fw=factor], base("ENIGH 2020") reboot anio(`=aniovp') folio("Identif_hog") $nographs
 save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace	
 
 
@@ -197,7 +197,7 @@ if "$output" == "output" {
 	filefilter `output2' `output3', from("_") to(" ") replace
 	filefilter `output3' "`c(sysdir_personal)'/users/$pais/$id/output.txt", from(".,") to("0") replace
 }
-if "$latex" != "" {
+if "$export" != "" {
 	noisily scalarlatex
 }
 timer off 1

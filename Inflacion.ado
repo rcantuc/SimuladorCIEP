@@ -16,8 +16,7 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 	
-	syntax [, ANIOvp(int `aniovp') GEO(int 20) FIN(int 2050) NOGraphs UPDATE DIScount(real 3) ///
-		OUTPUT]
+	syntax [, ANIOvp(int `aniovp') GEO(int 20) FIN(int 2050) NOGraphs UPDATE OUTPUT]
 
 	noisily di _newline(2) in g _dup(20) "." "{bf:   Inflacion " in y `aniovp' "   }" in g _dup(20) "."
 

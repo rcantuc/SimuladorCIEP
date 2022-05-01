@@ -46,7 +46,7 @@ label var anio "A{c n~}o"
 
 ** 4. Orden **
 replace entidad = "Nacional" if substr(entidad,1,3) == "Rep"
-keep if entidad == "Nacional"
+*keep if entidad == "Nacional"
 
 
 ** 5. Guardar **
@@ -96,7 +96,7 @@ label var anio "A{c n~}o"
 
 ** 4. Orden **
 replace entidad = "Nacional" if substr(entidad,1,3) == "Rep"
-keep if entidad == "Nacional"
+*keep if entidad == "Nacional"
 
 
 ** 5. Guardar **
@@ -161,7 +161,7 @@ label var anio "A{c n~}o"
 
 ** 4. Orden **
 replace entidad = "Nacional" if substr(entidad,1,3) == "Rep"
-keep if entidad == "Nacional"
+*keep if entidad == "Nacional"
 
 
 ** 5. Guardar **
@@ -209,6 +209,7 @@ else {
 }
 
 collapse (sum) poblacion, by(anio entidad)
+keep if entidad == "Nacional"
 if `c(version)' > 13.1 {
 	saveold `"`c(sysdir_personal)'/SIM/Poblaciontot.dta"', replace version(13)
 }

@@ -24,7 +24,8 @@ quietly {
 	** Sintaxis **
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
-	syntax [if] [, ANIOvp(int `aniovp') GEOPIB(int -1) GEODEF(int -1) FIN(int -1) NOGraphs NOOutput UPDATE DIScount(real 3) SAVE]
+	syntax [if] [, ANIOvp(int `aniovp') GEOPIB(int -1) GEODEF(int -1) ///
+		FIN(int -1) NOGraphs NOOutput UPDATE DIScount(real 3) SAVE]
 	noisily di _newline(2) in g _dup(20) "." "{bf:   Producto Interno Bruto " in y `aniovp' "   }" in g _dup(20) "."
 
 
@@ -35,10 +36,10 @@ quietly {
 	capture use `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
 	if _rc != 0 | "`update'" == "update" {
 		if "$pais" == "" {
-			run "`c(sysdir_personal)'/Poblacion.do"
+			run "`c(sysdir_personal)'/UpdatePoblacion.do"
 		}
 		else if "$pais" == "El Salvador" {
-			run "`c(sysdir_personal)'/PoblacionMundial.do"
+			run "`c(sysdir_personal)'/UpdatePoblacionMundial.do"
 		}
 		use `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
 	}
@@ -66,7 +67,7 @@ quietly {
 	** 0.2 USER previous PIB **
 	capture use "`c(sysdir_personal)'/SIM/$pais/PIBDeflactor.dta", clear
 	if _rc != 0 | "`update'" == "update" {
-		run `"`c(sysdir_personal)'/PIBDeflactorBase`=subinstr("${pais}"," ","",.)'.do"'
+		run `"`c(sysdir_personal)'/UpdatePIBDeflactor`=subinstr("${pais}"," ","",.)'.do"'
 		use "`c(sysdir_personal)'/SIM/$pais/PIBDeflactor.dta", clear
 	}
 

@@ -335,7 +335,7 @@ quietly {
 
 
 	if "`nographs'" != "nographs" & "$nographs" == "" {
-		preserve
+		*preserve
 		*drop if `by' == -1 & transf_gf == 1
 
 		tabstat gastonetoPIB if anio == `anio' & `by' != -1 & transf_gf == 0, stat(sum) f(%20.0fc) save
@@ -350,16 +350,17 @@ quietly {
 		}
 
 		replace gastoneto = gastoneto/deflator/1000000000
-		collapse (sum) gastoneto* if `by' != -1 & transf_gf == 0, by(anio `resumido')
-		reshape wide gastoneto gastonetoPIB, i(anio) j(`resumido')
+		g resumido = `resumido'
+		collapse (sum) gastoneto* if `by' != -1 & transf_gf == 0, by(anio resumido)
+		reshape wide gastoneto gastonetoPIB, i(anio) j(resumido)
 		local countlev = 1
 		foreach k of local lev_resumido {
 			tempvar lev_res`countlev'
 			if `countlev' == 1 {
-				g `lev_res`countlev'' = gastonetoPIB`k'
+				g `lev_res`countlev'' = gastoneto`k'
 			}
 			else {
-				g `lev_res`countlev'' = gastonetoPIB`k' //+ `lev_res`=`countlev'-1''
+				g `lev_res`countlev'' = gastoneto`k' //+ `lev_res`=`countlev'-1''
 			}
 			label var `lev_res`countlev'' "`legend`k''"
 			replace `lev_res`countlev'' = 0 if `lev_res`countlev'' == .			
@@ -371,27 +372,27 @@ quietly {
 		tempvar TOTPIB TOT
 		egen `TOTPIB' = rsum(gastonetoPIB*)
 		egen `TOT' = rsum(gastoneto*)
-		local j = 100/(2022-2014+1)/2
+		local j = 100/(2022-2016+1)/2
 		forvalues k=1(1)`=_N' {
 			if `TOTPIB'[`k'] != . & anio[`k'] >= 2014 {
-				local text `"`text' `=`TOTPIB'[`k']*1.005' `=anio[`k']*0+`j'' "{bf:`=string(`TOTPIB'[`k'],"%7.1fc")'}""'
-				local j = `j' + 100/(2022-2014+1)
+				local text `"`text' `=`TOT'[`k']*1.005' `=anio[`k']*0+`j'' "{bf:`=string(`TOTPIB'[`k'],"%7.1fc")'% PIB}""'
+				local j = `j' + 100/(2022-2016+1)
 			}
 		}
 
-		graph bar `graphvars' if anio >= 2014, ///
+		graph bar `graphvars' if anio >= 2016, ///
 			over(anio, gap(0)) stack blabel(, format(%7.1fc)) outergap(0) ///
 			title("{bf:Gasto} p{c u'}blico") ///
 			subtitle($pais) ///
 			text(`text', color(black) placement(n)) ///
-			ytitle(% PIB) ///
+			ytitle(mil millones MXN `=aniovp') ///
 			ylabel(, format(%15.0fc) labsize(small)) ///
 			yscale(range(0)) ///
 			legend(on position(6) rows(`rows') cols(`cols') `legend' region(margin(zero))) ///
 			name(gastos, replace) ///
 			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/Cuenta Pública y $paqueteEconomico.")
 
-		restore
+		*restore
 	}
 
 

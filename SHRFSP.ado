@@ -20,6 +20,7 @@ quietly {
 	}
 	else {
 		local updated = "yes"
+		local ultanio = 2021
 	}
 
 
@@ -27,7 +28,7 @@ quietly {
 	****************
 	*** 2 SYNTAX ***
 	****************
-	syntax [if/] [, ANIO(int `aniovp' ) DEPreciacion(int 5) NOGraphs Update Base ID(string)]
+	syntax [if/] [, ANIO(int `aniovp' ) DEPreciacion(int 5) NOGraphs UPDATE Base ID(string)]
 	noisily di _newline(2) in g _dup(20) "." "{bf:  Sistema Fiscal: DEUDA $pais " in y `anio' "  }" in g _dup(20) "."
 
 	** 2.1 Update SHRFSP **
@@ -249,7 +250,43 @@ quietly {
 		tempvar interno externo rfspBalance rfspAdecuacion rfspOtros rfspBalance0 rfspAdecuacion0 rfspOtros0 rfsppib
 		g `externo' = shrfspExterno/pibY*100
 		g `interno' = `externo' + shrfspInterno/pibY*100
+
+		local j = 100/(`ultanio'-`anioshrfsp'+1)/2
+		forvalues k=1(1)`=_N' {
+			if `shrfsp'[`k'] != . & anio[`k'] >= 2003 {
+				if "`anioshrfsp'" == "" {
+					local anioshrfsp = anio[`k']
+				}
+				local text `"`text' `=`shrfsp'[`k']*1.005' `=anio[`k']' "{bf:`=string(`shrfsp'[`k'],"%5.1fc")'}""'
+				local textI `"`textI' `=`interno'[`k']/2+`externo'[`k']/2' `=anio[`k']' "`=string(shrfspInterno[`k']/pibY[`k']*100,"%5.1fc")'""'
+				local textE `"`textE' `=`externo'[`k']/2' `=anio[`k']' "`=string(shrfspExterno[`k']/pibY[`k']*100,"%5.1fc")'""'
+				local j = `j' + 100/(`ultanio'-`anioshrfsp'+1)
+			}
+		}
 		
+		twoway (bar `interno' `externo' anio if anio <= `anio') ///
+			/*(bar `interno' `externo' anio if anio > `anio')*/ if `externo' != ., ///
+			title("{bf:Saldo hist{c o'}rico} de RFSP") ///
+			subtitle($pais) ///
+			ylabel(, format(%15.0fc) labsize(small)) ///
+			xlabel(`anioshrfsp'(1)`ultanio', noticks) ///	
+			text(`textE' `textI', color(white)) ///
+			text(`text', placement(n)) ///
+			///text(2 `=`anio'+1.45' "{bf:Proyecci{c o'}n PE 2022}", color(white)) ///
+			///text(2 `=2003+.45' "{bf:Externo}", color(white)) ///
+			///text(`=2+`externosize2003'' `=2003+.45' "{bf:Interno}", color(white)) ///
+			yscale(range(0) axis(1) noline) ///
+			ytitle("% PIB") xtitle("") ///
+			legend(on position(6) rows(1) order(1 2 3 4) label(1 "Interno") label(2 "Externo") ///
+			/*label(3 "Proy. Interno") label(4 "Proy. Externo")*/ region(margin(zero))) ///
+			name(shrfsp, replace) ///
+			note("{bf:{c U'}ltimo dato}: `ultanio'm`ultmes'") ///
+			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Estadísticas Oportunas).")
+
+		if "$pais" != "" {
+			exit
+		}
+
 		g `rfspOtros0' = - rfspPIDIREGAS/pibY*100 - rfspIPAB/pibY*100 - rfspFONADIN/pibY*100 - rfspDeudores/pibY*100 - rfspBanca/pibY*100
 		g `rfspAdecuacion0' = - rfspAdecuacion/pibY*100		
 		g `rfspBalance0' = - rfspBalance/pibY*100
@@ -268,7 +305,7 @@ quietly {
 		g `rfsppib' = rfsp/pibY*100
 		
 		* Informes mensuales texto *
-		noisily tabstat rfsp if anio == `anio' | anio == `anio'-1, by(anio) f(%20.0fc) stat(sum) save
+		noisily tabstat rfsp if anio == `anio' | anio == `anio'-1, by(anio) f(%20.0fc) stat(sum) c(v) save
 		tempname stathoy statayer
 		matrix `stathoy' = r(Stat2)
 		matrix `statayer' = r(Stat1)
@@ -318,25 +355,19 @@ quietly {
 			note("{bf:{c U'}ltimo dato}: `ultanio'm`ultmes'") ///
 			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Estadísticas Oportunas).")
 
-		twoway (bar `interno' `externo' anio if anio <= `anio') ///
-			/*(bar `interno' `externo' anio if anio > `anio')*/ if `externo' != ., ///
-			title("{bf:Saldo hist{c o'}rico} de RFSP") ///
+
+		graph bar tasaInterno tasaExterno if anio >= 2003 & anio <= `anio', ///
+			over(anio) blabel(bar, format(%5.1fc)) ///
+			title("Tasas de interés {bf:efectivas}") ///
 			subtitle($pais) ///
 			ylabel(, format(%15.0fc) labsize(small)) ///
-			xlabel(`anioshrfsp'(1)`ultanio', noticks) ///	
-			text(`textE' `textI', color(white)) ///
-			text(`text', placement(n)) ///
-			///text(2 `=`anio'+1.45' "{bf:Proyecci{c o'}n PE 2022}", color(white)) ///
-			///text(2 `=2003+.45' "{bf:Externo}", color(white)) ///
-			///text(`=2+`externosize2003'' `=2003+.45' "{bf:Interno}", color(white)) ///
-			yscale(range(0) axis(1) noline) ///
-			ytitle("% PIB") xtitle("") ///
+			ytitle("% PIB") ///
 			legend(on position(6) rows(1) order(1 2 3 4) label(1 "Interno") label(2 "Externo") ///
-			/*label(3 "Proy. Interno") label(4 "Proy. Externo")*/ region(margin(zero))) ///
-			name(shrfsp, replace) ///
+			region(margin(zero))) ///
+			name(tasasdeinteres, replace) ///
 			note("{bf:{c U'}ltimo dato}: `ultanio'm`ultmes'") ///
 			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Estadísticas Oportunas).")
-
+			
 		capture confirm existence $export
 		if _rc == 0 {
 			graph export "$export/RFSP.png", replace name(rfsp)

@@ -24,7 +24,7 @@ program define UpdateDatosAbiertos, return
 		}
 	}
 
-	noisily di _newline in g "Datos Abiertos: " in y "ACTUALIZANDO. Favor de esperar..."
+	noisily di _newline in g "Datos Abiertos: " in y "ACTUALIZANDO. Favor de esperar... (5 min. aprox.)"
 
 	*****************************************
 	** 1.1 Ingreso, gasto y financiamiento **
@@ -166,7 +166,7 @@ program define UpdateDatosAbiertos, return
 
 	***************************************************
 	** 4.1 ISR fisicas, morales, asalariados y otros **
-	import excel "`c(sysdir_site)'../basesCIEP/SHCP/Informes trimestrales/ISRInformesTrimestrales.xls", ///
+	import excel "`c(sysdir_site)'../basesCIEP/SHCP/Informes trimestrales/ISRInformesTrimestrales.xlsx", ///
 		clear sheet("TipoDeContribuyente") firstrow case(lower)
 	tsset anio trimestre
 	drop total
@@ -350,7 +350,7 @@ program define UpdateDatosAbiertos, return
 		save "`c(sysdir_personal)'/SIM/DatosAbiertos.dta", replace
 	}
 
-	noisily LIF, update rows(2)
-	noisily SHRFSP, update
+	noisily LIF, anio(`aniovp') update rows(2)
+	noisily SHRFSP, anio(`aniovp') update
 
 end
