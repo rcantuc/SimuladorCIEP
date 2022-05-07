@@ -1,17 +1,10 @@
 program define DatosAbiertos, return
 quietly {
 
-	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
-	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
-
-	syntax anything [if/] [, NOGraphs PIBVP(real -999) PIBVF(real -999) UPDATE DESDE(real 1993) MES]
-
-	PIBDeflactor, nographs nooutput
-	tempfile PIB
-	save `PIB'
+	syntax anything [if] [, NOGraphs PIBVP(real -999) PIBVF(real -999) UPDATE DESDE(real 1993) MES]
 
 	if "`c(username)'" == "ricardo" | "`c(username)'" == "ciepmx" {
-		noisily UpdateDatosAbiertos
+		UpdateDatosAbiertos
 	}
 
 
@@ -19,117 +12,139 @@ quietly {
 	****************************
 	*** 1 Base de datos SHCP ***
 	****************************
+	PIBDeflactor, nographs nooutput
+	local aniovp = r(aniovp)
+	local currency = currency[1]
+	tempfile PIB
+	save "`PIB'"
+
 	capture use if clave_de_concepto == "`anything'" using "`c(sysdir_personal)'/SIM/DatosAbiertos.dta", clear
 	if _rc != 0 {
 		UpdateDatosAbiertos
 		use if clave_de_concepto == "`anything'" using "`c(sysdir_personal)'/SIM/DatosAbiertos.dta", clear
 	}
-	
-	drop if monto == 0 | monto == .
-	drop if anio < 2003
+
+	*drop if monto == 0 | monto == .
+	*drop if anio < 2003
+
 	if `=_N' == 0 {
 		noisily di in r "No se encontr{c o'} la serie {bf:`anything'}."
 		return scalar error = 2000
 		exit
 	}
 
-	if "`if'" != "" {
-		keep if `if'
-	}
 
-	* Informacion de la serie *
-	noisily di _newline(2) in g " Serie: " in y "`anything'" in g ". Nombre: " in y "`=nombre[1]'" in g "."
 
+	*********************************
+	** 1.1 Informacion de la serie **
+	noisily di _newline in g " Serie: " in y "`anything'" in g ". Nombre: " in y "`=nombre[1]'" in g "."
 	tsset aniomes
 	sort aniomes
 	local last_anio = anio[_N]
 	local last_mes = mes[_N]
-	merge m:1 (anio) using `PIB', nogen keep(matched) keepus(pibY deflator currency)
+	merge m:1 (anio) using "`PIB'", nogen keep(matched) keepus(pibY deflator currency)
+	keep if anio >= 2013 & anio <= `last_anio'
+
+	tempvar montomill
+	g `montomill' = monto/1000000/deflator
+
+	label define mes 1 "Enero" 2 "Febrero" 3 "Marzo" 4 "Abril" 5 "Mayo" 6 "Junio" 7 "Julio" 8 "Agosto" 9 "Septiembre" 10 "Octubre" 11 "Noviembre" 12 "Diciembre"
+	label values mes mes
+	local mesname : label mes `=mes[_N]'
+
+	if tipo_de_informacion == "Flujo" {
+		tabstat `montomill' if mes == `=mes[_N]' & (anio == `=anio[_N]'. | anio == `=anio[_N]-1'), stat(sum) by(anio) format(%7.0fc) save
+		tempname meshoy mesant
+		matrix `meshoy' = r(Stat2)
+		matrix `mesant' = r(Stat1)
+
+		noisily di _newline in g "  Mes " in y "`mesname' `=anio[_N]'" in g ": " _col(40) in y %20.0fc `meshoy'[1,1] in g " millones `currency'"
+		noisily di in g "  Mes " in y "`mesname' `=anio[_N]-1'" in g ": " _col(40) in y %20.0fc `mesant'[1,1] in g " millones `currency' `aniovp'"
+		noisily di in g "  Crecimiento: " _col(44) in y %16.1fc (`meshoy'[1,1]/`mesant'[1,1]-1)*100 in g " %"
+
+		tabstat `montomill' if mes <= `=mes[_N]' & (anio == `=anio[_N]'. | anio == `=anio[_N]-1'), stat(sum) by(anio) format(%7.0fc) save
+	}
+	if tipo_de_informacion == "Saldo" {
+		tabstat `montomill' if mes == `=mes[_N]' & (anio == `=anio[_N]'. | anio == `=anio[_N]-1'), stat(sum) by(anio) format(%7.0fc) save
+	}
+	tempname meshoy mesant
+	matrix `meshoy' = r(Stat2)
+	matrix `mesant' = r(Stat1)
+
+	noisily di _newline in g "  Acumulado " in y "`mesname' `=anio[_N]'" in g ": " _col(40) in y %20.0fc `meshoy'[1,1] in g " millones `currency'"
+	noisily di in g "  Acumulado " in y "`mesname' `=anio[_N]-1'" in g ": " _col(40) in y %20.0fc `mesant'[1,1] in g " millones `currency' `aniovp'"
+	noisily di in g "  Crecimiento: " _col(44) in y %16.1fc (`meshoy'[1,1]/`mesant'[1,1]-1)*100 in g " %"
 
 
 
 	****************************
 	*** 2 Proyeccion mensual ***
 	****************************
-	if "`nographs'" != "nographs" {
-		if tipo_de_informacion == "Flujo" {
+	if "`nographs'" != "nographs" & tipo_de_informacion == "Flujo" {
+		local length = length("`=nombre[1]'")
+		if `length' > 60 {
+			local textsize ", size(medium)"
+		}
+		if `length' > 90 {
+			local textsize ", size(vsmall)"
+		}
+		if `length' > 110 {
+			local textsize ", size(vvsmall)"
+		}
 
-			local length = length("`=nombre[1]'")
-			if `length' > 60 {
-				local textsize ", size(medium)"
+		tabstat `montomill' `if', stat(sum) by(mes) f(%20.0fc) save
+		local j = 100/12/2
+		forvalues k=1(1)12 {
+			tempname monto`k'
+			matrix `monto`k'' = r(Stat`k')
+			*local valorserie `"`valorserie' `=`monto`k''[1,1]*0' `j' "{bf:`=string(`monto`k''[1,1],"%5.1fc")'}""'
+			local j = `j' + 100/12
+		}
+
+		graph bar (sum) `montomill' `if', over(anio) over(mes) stack asyvar ///
+			legend(rows(2)) name(M`anything', replace) blabel(none) ///
+			ytitle("millones de `=currency[1]' `aniovp'") ///
+			yline(0, lcolor(black) lpattern(solid)) ///
+			title("{bf:`=nombre[1]'}"`textsize') ///
+			text(`valorserie', color(black) place(n)) ///
+			subtitle("por mes calendario") ylabel(, format(%10.1fc)) ///
+			note("{bf:{c U'}ltimo dato:} `last_anio'm`last_mes'.") ///
+			caption("{bf:Fuente:} Elaborado por el CIEP, con información de la SHCP (Estadísticas Oportunas).")
+
+		preserve
+		collapse (sum) `montomill', by(aniotrimestre anio trimestre nombre currency)
+		forvalues k=1(1)`=_N' {
+			local relab `" `relab' `k' "`=trimestre[`k']'" "'
+			if anio[`k'] == `aniovp' & trimestre[`k'] == trimestre[_N] {
+				local montoTrimActual = `montomill'[`k']
 			}
-			if `length' > 90 {
-				local textsize ", size(vsmall)"
-			}
-			if `length' > 110 {
-				local textsize ", size(vvsmall)"
-			}
-
-			tempvar montomill
-			g `montomill' = monto/1000000000/deflator
-
-			label define mes 1 "Enero" 2 "Febrero" 3 "Marzo" 4 "Abril" 5 "Mayo" 6 "Junio" 7 "Julio" 8 "Agosto" 9 "Septiembre" 10 "Octubre" 11 "Noviembre" 12 "Diciembre"
-			label values mes mes
-
-			local mesname : label mes `=mes[_N]'
-
-			tabstat `montomill' if mes == `=mes[_N]' & (anio == `=anio[_N]'. | anio == `=anio[_N]-1'), stat(sum) by(anio) format(%7.0fc) save
-			if _rc == 0 {
-				tempname meshoy mesant
-				matrix `meshoy' = r(Stat2)
-				matrix `mesant' = r(Stat1)
-
-				
-				tabstat `montomill' /*if anio >= 2012*/, stat(sum) by(mes) f(%20.0fc) save
-				local j = 100/12/2
-				forvalues k=1(1)12 {
-					tempname monto`k'
-					matrix `monto`k'' = r(Stat`k')
-					*local valorserie `"`valorserie' `=`monto`k''[1,1]*0' `j' "{bf:`=string(`monto`k''[1,1],"%5.1fc")'}""'
-					local j = `j' + 100/12
-				}
-	
-				graph bar (sum) `montomill' /*if anio >= 2012*/, over(anio) over(mes) stack asyvar ///
-					legend(rows(2)) name(M`anything', replace) blabel(none) ///
-					ytitle("mil millones de `=currency[1]' `aniovp'") ///
-					yline(0, lcolor(black) lpattern(solid)) ///
-					title("{bf:`=nombre[1]'}"`textsize') ///
-					text(`valorserie', color(black) place(n)) ///
-					subtitle("por mes calendario") ylabel(, format(%10.1fc)) ///
-					note("{bf:{c U'}ltimo dato:} `last_anio'm`last_mes'.") ///
-					caption("{bf:Fuente:} Elaborado por el CIEP, con información de la SHCP (Estadísticas Oportunas).")
-
-				preserve
-				collapse (sum) `montomill', by(aniotrimestre anio trimestre nombre currency)
-				forvalues k=1(1)`=_N' {
-					local relab `" `relab' `k' "`=trimestre[`k']'" "'
-				}
-				graph bar (sum) `montomill' /*if anio >= 2012*/, over(anio) ///
-					over(aniotrimestre, relabel(`relab') axis(on)) ///
-					stack asyvar ///
-					legend(rows(2)) name(T`anything', replace) blabel(none) ///
-					ytitle("mil millones de `=currency[1]' `aniovp'") ///
-					yline(0, lcolor(black) lpattern(solid)) ///
-					title("{bf:`=nombre[1]'}"`textsize') ///
-					text(`valorserie', color(black) place(n)) ///
-					subtitle("por trimestre") ylabel(, format(%10.1fc)) ///
-					note("{bf:{c U'}ltimo dato:} `last_anio'm`last_mes'.") ///
-					caption("{bf:Fuente:} Elaborado por el CIEP, con información de la SHCP (Estadísticas Oportunas).")
-				restore
-
-				graph bar (sum) `montomill' if mes == `=mes[_N]' /*& anio >= 2012*/, over(anio) asyvar ///
-					name(`mesname'`anything', replace) ///
-					ytitle("mil millones de `=currency[1]' `aniovp'") ///
-					ylabel(, format(%10.1fc)) ///
-					title("{bf:`=nombre[1]'}"`textsize') ///
-					yline(0, lcolor(black) lpattern(solid)) ///
-					subtitle("`mesname'") blabel(name) legend(off) ///
-					note("{bf:{c U'}ltimo dato:} `last_anio'm`last_mes'.") ///
-					caption("{bf:Fuente:} Elaborado por el CIEP, con información de la SHCP (Estadísticas Oportunas)")
-				
-				noisily di _newline in g "   Crecimiento " in y "`mesname' `=anio[_N]'" in g " vs. " in y "`mesname' `=anio[_N]-1'" in g ": " in y %7.3fc `meshoy'[1,1]/`mesant'[1,1]*100 in g "%"
+			if anio[`k'] == `aniovp'-1 & trimestre[`k'] == trimestre[_N] {
+				local montoTrimAnteri = `montomill'[`k']
 			}
 		}
+		graph bar (sum) `montomill' `if', over(anio) ///
+			over(aniotrimestre, relabel(`relab') axis(on)) ///
+			stack asyvar ///
+			legend(rows(2)) name(T`anything', replace) blabel(none) ///
+			ytitle("millones de `=currency[1]' `aniovp'") ///
+			yline(0, lcolor(black) lpattern(solid)) ///
+			title("{bf:`=nombre[1]'}"`textsize') ///
+			text(`valorserie', color(black) place(n)) ///
+			subtitle("por trimestre") ylabel(, format(%10.1fc)) ///
+			b1title(`" `=string((`montoTrimActual'/`montoTrimAnteri'-1)*100,"%10.1fc")' "') ///
+			note("{bf:{c U'}ltimo dato:} `last_anio'm`last_mes'.") ///
+			caption("{bf:Fuente:} Elaborado por el CIEP, con información de la SHCP (Estadísticas Oportunas).")
+		restore
+
+		graph bar (sum) `montomill' if mes == `=mes[_N]' /*& anio >= 2012*/, over(anio) asyvar ///
+			name(`mesname'`anything', replace) ///
+			ytitle("millones de `=currency[1]' `aniovp'") ///
+			ylabel(, format(%10.1fc)) ///
+			title("{bf:`=nombre[1]'}"`textsize') ///
+			yline(0, lcolor(black) lpattern(solid)) ///
+			subtitle("`mesname'") blabel(name) legend(off) ///
+			note("{bf:{c U'}ltimo dato:} `last_anio'm`last_mes'.") ///
+			caption("{bf:Fuente:} Elaborado por el CIEP, con información de la SHCP (Estadísticas Oportunas)")
 	}
 	
 	if "`mes'" == "mes" {
@@ -247,7 +262,7 @@ quietly {
 			/*subtitle(Montos observados)*/ ///
 			b1title(`"{bf:Acumulado `last_anio'm`last_mes'}: `=string((monto[_N]/monto[_N-1])*100,"%5.1fc")'% de `=anio[_N-1]'."', size(small)) ///
 			///b2title(`"`textovp'"', size(small)) ///
-			ytitle(mil millones MXN `aniovp') ///
+			ytitle(millones MXN `aniovp') ///
 			ytitle(% PIB, axis(2)) xtitle("") ///
 			///xlabel(`prianio' `=round(`prianio',5)'(5)`ultanio') ///
 			xlabel(`prianio'(1)`ultanio') ///
@@ -265,6 +280,6 @@ quietly {
 			graph export "$export/`anything'.png", replace name(H`anything')
 		}
 	}
-	noisily list anio monto acum_prom mes monto_pib, separator(30) string(30)
+	list anio monto acum_prom mes monto_pib, separator(30) string(30)
 }
 end

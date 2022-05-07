@@ -52,7 +52,7 @@ quietly {
 	*** 3 MERGE ***
 	***************
 	use `"`c(sysdir_personal)'/SIM/$pais/SHRFSP.dta"', clear
-	merge 1:1 (anio) using `PIB', nogen keepus(pibY pibYR var_*) update replace
+	merge 1:1 (anio) using `PIB', nogen keepus(pibY pibYR var_* Poblacion deflator) update replace
 	tsset anio
 
 	** 3.1 CGPE 2022 ** 
@@ -227,7 +227,7 @@ quietly {
 		tempname depred
 		matrix `depred' = r(StatTotal)
 
-		noisily di _newline(2) in g "  {bf:Depreciaci{c o'}n acumulada}: " 
+		noisily di _newline in g "  {bf:Depreciaci{c o'}n acumulada}: " 
 		noisily di in g "   `anio'-`=`anio'-`depreciacion'': " in y %7.3fc `depre'[1,1] in g " `currency'"
 		noisily di in g "   `anio'-`=`anio'-`depreciacion'+1': " in y %7.3fc `deprea'[1,1] in g " `currency'"
 		noisily di in g "   `anio'-`=`anio'-`depreciacion'+2': " in y %7.3fc `depreb'[1,1] in g " `currency'"
@@ -262,6 +262,9 @@ quietly {
 				local textE `"`textE' `=`externo'[`k']/2' `=anio[`k']' "`=string(shrfspExterno[`k']/pibY[`k']*100,"%5.1fc")'""'
 				local j = `j' + 100/(`ultanio'-`anioshrfsp'+1)
 			}
+			if anio[`k'] == `anio' {
+				local obsvp = `k'
+			}
 		}
 		
 		twoway (bar `interno' `externo' anio if anio <= `anio') ///
@@ -283,6 +286,11 @@ quietly {
 			note("{bf:{c U'}ltimo dato}: `ultanio'm`ultmes'") ///
 			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Estadísticas Oportunas).")
 
+		noisily di _newline in g "  {bf:Tipo de cambio " in y anio[`obsvp'] in g ": }" _col(30) in y %15.1fc tipoDeCambio[`obsvp'] in g " `currency'/USD"
+		noisily di _newline in g "  {bf:SHRFSP a" in y " `ultanio'm`ultmes'" in g ": }" _col(30) in y %15.0fc shrfsp[`obsvp']/Poblacion[`obsvp'] in g " `currency' por persona."
+		noisily di in g "  {bf:SHRFSP interna a" in y " `ultanio'm`ultmes'" in g ": }" _col(30) in y %15.0fc shrfspInterno[`obsvp']/Poblacion[`obsvp'] in g " `currency' por persona."
+		noisily di in g "  {bf:SHRFSP externa a" in y " `ultanio'm`ultmes'" in g ": }" _col(30) in y %15.0fc shrfspExterno[`obsvp']/Poblacion[`obsvp']/tipoDeCambio[`obsvp'] in g " USD por persona."
+
 		if "$pais" != "" {
 			exit
 		}
@@ -292,24 +300,25 @@ quietly {
 		g `rfspBalance0' = - rfspBalance/pibY*100
 
 		g `rfspOtros' = - rfspPIDIREGAS/pibY*100 - rfspIPAB/pibY*100 - rfspFONADIN/pibY*100 - rfspDeudores/pibY*100 - rfspBanca/pibY*100
-		
+
 		g `rfspAdecuacion' = `rfspOtros' - rfspAdecuacion/pibY*100 if rfspAdecuacion <= 0
 		replace `rfspAdecuacion' = - rfspAdecuacion/pibY*100 if rfspAdecuacion > 0
 		replace `rfspAdecuacion' = 0 if `rfspAdecuacion' == .
-		
+
 		g `rfspBalance' = `rfspAdecuacion' - rfspBalance/pibY*100 if rfspAdecuacion <= 0 & `rfspOtros' >= 0
 		replace `rfspBalance' = - rfspBalance/pibY*100 if rfspAdecuacion > 0 & `rfspOtros' < 0
 		replace `rfspBalance' = `rfspOtros' - rfspBalance/pibY*100 if rfspAdecuacion > 0 & `rfspOtros' >= 0
 		replace `rfspBalance' = `rfspAdecuacion' - `rfspOtros' - rfspBalance/pibY*100 if rfspAdecuacion <= 0 & `rfspOtros' < 0
 
 		g `rfsppib' = rfsp/pibY*100
-		
+
 		* Informes mensuales texto *
-		noisily tabstat rfsp if anio == `anio' | anio == `anio'-1, by(anio) f(%20.0fc) stat(sum) c(v) save
+		tabstat rfsp if anio == `anio' | anio == `anio'-1, by(anio) f(%20.0fc) stat(sum) c(v) save nototal
 		tempname stathoy statayer
 		matrix `stathoy' = r(Stat2)
 		matrix `statayer' = r(Stat1)
-		noisily di _newline in g "RFSP" in y " `ultanio'm`ultmes'" in g ": " in y %7.3fc `stathoy'[1,1]/`statayer'[1,1]*100 in g "% de `=`anio'-1'."
+		noisily di _newline in g "  {bf:RFSP a" in y " `ultanio'm`ultmes'" in g ": }" _col(30) in y %15.1fc `stathoy'[1,1]/(`statayer'[1,1]/deflator[`=`obsvp'-1'])*100 in g " % de `=`anio'-1'."
+		noisily di in g "  {bf:RFSP a" in y " `ultanio'm`ultmes'" in g ": }" _col(30) in y %15.1fc `stathoy'[1,1]/1000000 in g " millones `currency'."
 		
 
 		local j = 100/(`anio'-2008+1)/2
@@ -354,7 +363,6 @@ quietly {
 			/*label(6 "Proy. Otros") label(5 "Proy. Adecuaciones") label(4 "Proy. Balance presupuestario")*/ region(margin(zero))) ///
 			note("{bf:{c U'}ltimo dato}: `ultanio'm`ultmes'") ///
 			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (Estadísticas Oportunas).")
-
 
 		graph bar tasaInterno tasaExterno if anio >= 2003 & anio <= `anio', ///
 			over(anio) blabel(bar, format(%5.1fc)) ///

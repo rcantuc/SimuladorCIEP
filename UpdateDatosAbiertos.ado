@@ -31,12 +31,12 @@ program define UpdateDatosAbiertos, return
 	import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/ingreso_gasto_finan.csv", clear
 	*import delimited "`c(sysdir_site)'../basesCIEP/SHCP/Datos Abiertos/ingreso_gasto_finan.csv", clear
 	tempfile ing
-	save `ing'
+	save "`ing'"
 
 	*import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/ingreso_gasto_finan_hist.csv", clear
 	import delimited "`c(sysdir_site)'../basesCIEP/SHCP/Datos Abiertos/ingreso_gasto_finan_hist.csv", clear
 	tempfile ingH
-	save `ingH'
+	save "`ingH'"
 
 
 	***************
@@ -44,12 +44,12 @@ program define UpdateDatosAbiertos, return
 	import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/deuda_publica.csv", clear
 	*import delimited "`c(sysdir_site)'../basesCIEP/SHCP/Datos Abiertos/deuda_publica.csv", clear
 	tempfile deuda
-	save `deuda'
+	save "`deuda'"
 
 	*import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/deuda_publica_hist.csv", clear
 	import delimited "`c(sysdir_site)'../basesCIEP/SHCP/Datos Abiertos/deuda_publica_hist.csv", clear
 	tempfile deudaH
-	save `deudaH'
+	save "`deudaH'"
 
 
 	****************
@@ -57,12 +57,12 @@ program define UpdateDatosAbiertos, return
 	import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/shrfsp_deuda_amplia_actual.csv", clear
 	*import delimited "`c(sysdir_site)'../basesCIEP/SHCP/Datos Abiertos/shrfsp_deuda_amplia_actual.csv", clear
 	tempfile shrf
-	save `shrf'
+	save "`shrf'"
 
 	*import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/shrfsp_deuda_amplia_antes_2014.csv", clear
 	import delimited "`c(sysdir_site)'../basesCIEP/SHCP/Datos Abiertos/shrfsp_deuda_amplia_antes_2014.csv", clear
 	tempfile shrfH
-	save `shrfH'
+	save "`shrfH'"
 
 
 	**************
@@ -70,12 +70,12 @@ program define UpdateDatosAbiertos, return
 	import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/rfsp.csv", clear
 	*import delimited "`c(sysdir_site)'../basesCIEP/SHCP/Datos Abiertos/rfsp.csv", clear
 	tempfile rf
-	save `rf'
+	save "`rf'"
 
 	*import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/rfsp_metodologia_anterior.csv", clear
 	import delimited "`c(sysdir_site)'../basesCIEP/SHCP/Datos Abiertos/rfsp_metodologia_anterior.csv", clear
 	tempfile rfH
-	save `rfH'
+	save "`rfH'"
 
 
 	*************************************************
@@ -83,12 +83,12 @@ program define UpdateDatosAbiertos, return
 	import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/transferencias_entidades_fed.csv", clear
 	*import delimited "`c(sysdir_site)'../basesCIEP/SHCP/Datos Abiertos/transferencias_entidades_fed.csv", clear
 	tempfile gf
-	save `gf'
+	save "`gf'"
 
 	*import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/transferencias_entidades_fed_hist.csv", clear
 	import delimited "`c(sysdir_site)'../basesCIEP/SHCP/Datos Abiertos/transferencias_entidades_fed_hist.csv", clear
 	tempfile gfH
-	save `gfH'
+	save "`gfH'"
 
 
 
@@ -97,15 +97,15 @@ program define UpdateDatosAbiertos, return
 	** 2 Append **
 	**************
 	use `ing', clear
-	append using `ingH'
-	append using `deuda'
-	append using `deudaH'
-	append using `shrf'
-	append using `shrfH'
-	append using `rf'
-	append using `rfH'
-	append using `gf'
-	append using `gfH'
+	append using "`ingH'"
+	append using "`deuda'"
+	append using "`deudaH'"
+	append using "`shrf'"
+	append using "`shrfH'"
+	append using "`rf'"
+	append using "`rfH'"
+	append using "`gf'"
+	append using "`gfH'"
 
 
 
@@ -153,7 +153,7 @@ program define UpdateDatosAbiertos, return
 	label var monto "Monto nominal (pesos)"	
 
 	tempfile datosabiertos
-	save `datosabiertos'
+	save "`datosabiertos'"
 
 
 
@@ -178,10 +178,10 @@ program define UpdateDatosAbiertos, return
 	}
 
 	tempfile isrinftrim
-	save `isrinftrim'
+	save "`isrinftrim'"
 
-	use if clave_de_concepto == "XNA0120" using `datosabiertos', clear
-	merge m:1 (anio trimestre) using `isrinftrim', nogen
+	use if clave_de_concepto == "XNA0120" using "`datosabiertos'", clear
+	merge m:1 (anio trimestre) using "`isrinftrim'", nogen
 
 	tempvar prop_m prop_f prop_s
 	g `prop_m' = (pm+aux)/(pm+pfae+pfsae+ret_ss_pm+ret_ss_pf+aux)
@@ -218,7 +218,7 @@ program define UpdateDatosAbiertos, return
 	drop if mes == .
 
 	tempfile isr
-	save `isr'
+	save "`isr'"
 
 
 
@@ -227,7 +227,7 @@ program define UpdateDatosAbiertos, return
 	use if clave_de_concepto == "XOA0825" using `datosabiertos', clear
 	rename monto monto_isrpet
 	tempfile isrpet
-	save `isrpet'
+	save "`isrpet'"
 
 	use if clave == "XNA0120_m" using `isr', clear
 	merge 1:1 (anio mes) using `isrpet', nogen
@@ -240,7 +240,7 @@ program define UpdateDatosAbiertos, return
 	replace nombre = "Impuesto Sobre la Renta (Morales, no petroleros)"
 
 	tempfile isrpmnopet
-	save `isrpmnopet'
+	save "`isrpmnopet'"
 
 
 	***********************************
@@ -253,7 +253,7 @@ program define UpdateDatosAbiertos, return
 	g tipo_de_informacion = "Flujo"
 
 	tempfile fmp
-	save `fmp'
+	save "`fmp'"
 
 
 	*************************************************
@@ -267,7 +267,7 @@ program define UpdateDatosAbiertos, return
 	g tipo_de_informacion = "Flujo"
 
 	tempfile deficit_epe
-	save `deficit_epe'
+	save "`deficit_epe'"
 
 
 	**********************************************************
@@ -282,7 +282,7 @@ program define UpdateDatosAbiertos, return
 	g tipo_de_informacion = "Flujo"
 
 	tempfile deficit_oye
-	save `deficit_oye'
+	save "`deficit_oye'"
 
 
 	***************************************************
@@ -294,7 +294,7 @@ program define UpdateDatosAbiertos, return
 	replace tipo_de_informacion = "Flujo"
 
 	tempfile diferencias
-	save `diferencias'
+	save "`diferencias'"
 
 
 	****************************
@@ -307,7 +307,7 @@ program define UpdateDatosAbiertos, return
 	g tipo_de_informacion = "Flujo"
 
 	tempfile gastofed
-	save `gastofed'
+	save "`gastofed'"
 
 
 	************************
@@ -322,25 +322,26 @@ program define UpdateDatosAbiertos, return
 	g tipo_de_informacion = "Flujo"
 
 	tempfile gastofed
-	save `gastofed'
+	save "`gastofed'"
 
 
 
 	*****************
 	*** 5 Guardar ***
 	*****************
-	use `datosabiertos', clear
-	append using `isr'
-	append using `fmp'
-	append using `isrpmnopet'
-	append using `deficit_epe'
-	append using `deficit_oye'
-	append using `diferencias'
-	append using `gastofed'
+	use "`datosabiertos'", clear
+	append using "`isr'"
+	append using "`fmp'"
+	append using "`isrpmnopet'"
+	append using "`deficit_epe'"
+	append using "`deficit_oye'"
+	append using "`diferencias'"
+	append using "`gastofed'"
 
 	*drop if monto == .
 	*drop tema subtema sector ambito base unidad periodo* frecuencia
 	replace nombre = subinstr(nombre,"  "," ",.)
+	replace nombre = trim(nombre)
 	compress
 
 	if `c(version)' > 13.1 {
@@ -350,7 +351,7 @@ program define UpdateDatosAbiertos, return
 		save "`c(sysdir_personal)'/SIM/DatosAbiertos.dta", replace
 	}
 
-	noisily LIF, anio(`aniovp') update rows(2)
-	noisily SHRFSP, anio(`aniovp') update
+	*noisily LIF, anio(`aniovp') update rows(2)
+	*noisily SHRFSP, anio(`aniovp') update
 
 end

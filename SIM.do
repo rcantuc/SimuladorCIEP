@@ -35,7 +35,7 @@ adopath ++ PERSONAL
 *global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
 *global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
 local noisily "noisily"                                                         // "NOISILY" OUTPUTS
-*local update "update"                                                          // UPDATE DATASETS
+local update "update"                                                          // UPDATE DATASETS
 *global pais = "Ecuador"
 
 
@@ -51,7 +51,7 @@ noisily run "`c(sysdir_personal)'/Arranque.do"
 ***    1. POBLACION    ***
 ***                    ***
 **************************
-*forvalues k=1950(1)2100 {
+/*forvalues k=1950(1)2100 {
 foreach k in `=aniovp' {
 	`noisily' Poblacion, anio(`k') `update' //aniofinal(2030) 
 }
@@ -60,7 +60,7 @@ foreach k in `=aniovp' {
 
 
 
-*******************************/
+*******************************
 ***                          ***
 ***    2. CRECIMIENTO PIB    ***
 ***                          ***
@@ -83,8 +83,8 @@ if "$pais" == "" {
 ***    3. SISTEMA FISCAL    ***
 ***                         ***
 *******************************
-`noisily' LIF, anio(`=aniovp') by(divGA) rows(1) ilif min(1) `update'
-`noisily' PEF, anio(`=aniovp') by(desc_funcion) rows(2) min(1) `update'
+*`noisily' LIF, anio(`=aniovp') by(divGA) rows(1) ilif min(1) `update'
+*`noisily' PEF, anio(`=aniovp') by(desc_funcion) rows(2) min(1) `update'
 `noisily' SHRFSP, anio(`=aniovp') `update'
 
 
