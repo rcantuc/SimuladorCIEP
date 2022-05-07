@@ -24,8 +24,7 @@ quietly {
 	** Sintaxis **
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
-	syntax [if] [, ANIOvp(int `aniovp') GEOPIB(int -1) GEODEF(int -1) ///
-		FIN(int -1) NOGraphs NOOutput UPDATE DIScount(real 3) SAVE]
+	syntax [if] [, ANIOvp(int `aniovp') GEOPIB(int -1) GEODEF(int -1) FIN(int -1) NOGraphs NOOutput UPDATE DIScount(real 3) SAVE]
 	noisily di _newline(2) in g _dup(20) "." "{bf:   Producto Interno Bruto " in y `aniovp' "   }" in g _dup(20) "."
 
 
@@ -49,14 +48,14 @@ quietly {
 	*******************
 	** 0.1 Poblacion **
 	preserve
-	collapse (sum) Poblacion=poblacion, by(anio)
+	collapse (sum) Poblacion=poblacion if entidad == "Nacional", by(anio)
 	format Poblacion %15.0fc
 	tempfile poblacion
 	save "`poblacion'"
 	restore
 
 	* Working Ages *
-	collapse (sum) WorkingAge=poblacion if edad >= 16 & edad <= 65, by(anio)
+	collapse (sum) WorkingAge=poblacion if edad >= 16 & edad <= 65 & entidad == "Nacional", by(anio)
 	format WorkingAge %15.0fc
 	tempfile workingage
 	save "`workingage'"
@@ -74,7 +73,7 @@ quietly {
 	* Anio first *
 	local anio_first = anio[1]
 	scalar aniofirst = anio[1]
-	*scalar aniovp = `aniovp'
+	return scalar aniovp = `aniovp'
 
 	* Anio last *
 	local anio_last = anio[_N]

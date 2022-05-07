@@ -38,9 +38,9 @@ global inf2025 = 3.0                                           // CGPE 2022: 3.0
 global inf2026 = 3.0                                           // CGPE 2022: 3.0
 global inf2027 = 3.0                                           // CGPE 2022: 3.0
 
-global tasaEfectiva = 5.7425                                   // Tasa de inter{c e'}s EFECTIVA
-global tipoDeCambio = 20.200                                   // Tipo de cambio
-global depreciacion = 0.2000                                   // Depreciaci{c o'}n
+*global tasaEfectiva = 5.7425                                   // Tasa de inter{c e'}s EFECTIVA
+*global tipoDeCambio = 20.200                                   // Tipo de cambio
+*global depreciacion = 0.2000                                   // Depreciaci{c o'}n
 
 scalar aniovp = 2022
 scalar anioend = 2030
