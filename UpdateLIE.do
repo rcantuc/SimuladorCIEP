@@ -5,12 +5,42 @@ capture log close _all
 *global export "/home/ciepmx/Dropbox (CIEP)/Hewlett Subnacional/Documento LaTeX/images"
 global export "/Users/ricardo/Dropbox (CIEP)/Hewlett Subnacional/Documento LaTeX/images"
 
+local entidadesN `"  "Aguascalientes" "Baja California" "Baja California Sur" "Campeche" "Coahuila" "Colima" "Chiapas" "Chihuahua" "Ciudad de México" "Durango" "Guanajuato" "Guerrero" "Hidalgo" "Jalisco" "México" "Michoacán" "Morelos" "Nayarit" "Nuevo León" "Oaxaca" "Puebla" "Querétaro" "Quintana Roo" "San Luis Potosí" "Sinaloa" "Sonora" "Tabasco" "Tamaulipas" "Tlaxcala" "Veracruz" "Yucatán" "Zacatecas" "Nacional"    "'
+local entidades "Ags BC BCS Camp Coah Col Chis Chih CDMX Dgo Gto Gro Hgo Jal EdoMex Mich Mor Nay NL Oax Pue Qro QRoo SLP Sin Son Tab Tamps Tlax Ver Yuc Zac"
+tokenize `entidades'
+
+
+
 
 
 /*******
 * LIEs *
 ********
-import excel "/Users/ricardo/Dropbox (CIEP)/Hewlett Subnacional/Base de datos/LIE/LIE.xlsx", sheet("Data") clear firstrow
+import excel "/Users/ricardo/Dropbox (CIEP)/Hewlett Subnacional/Base de datos/LIE/LIE.xlsx", sheet("Data") firstrow clear
+
+
+foreach k of varlist desc_* {
+	* Limpiar los espacios dobles, inciales o finales *
+	replace `k' = trim(`k')
+	* Limpia de acentos en minúsculas *
+	replace `k' = subinstr(`k',"á","{c a'}",.)
+	replace `k' = subinstr(`k',"é","{c e'}",.)
+	replace `k' = subinstr(`k',"í","{c i'}",.)
+	replace `k' = subinstr(`k',"ó","{c o'}",.)
+	replace `k' = subinstr(`k',"ú","{c u'}",.)
+	* Limpia de acentos en mayúsculas *
+	replace `k' = subinstr(`k',"Á","{c A'}",.)
+	replace `k' = subinstr(`k',"É","{c E'}",.)
+	replace `k' = subinstr(`k',"Í","{c I'}",.)
+	replace `k' = subinstr(`k',"Ó","{c O'}",.)
+	replace `k' = subinstr(`k',"Ú","{c U'}",.)
+	* Limpia de la ñ *
+	replace `k' = subinstr(`k',"ñ","{c n~}",.)
+	replace `k' = subinstr(`k',"Ñ","{c N~}",.)
+
+	*table `k'
+}
+
 levelsof desc_concepto, local(desc_concepto)
 foreach k of local desc_concepto {
 	bysort desc_entidad: tabstat monto if desc_concepto == "`k'", stat(sum) by(ciclo) format(%20.0fc)
@@ -23,14 +53,9 @@ replace entidad1 = "Quer{c e'}taro" if entidad1 == "Quer?taro" | entidad1 == "Qu
 replace entidad1 = "San Luis Potos{c i'}" if entidad1 == "San Luis Potos?" | entidad1 == "San Luis Potosí"
 replace entidad1 = "Yucat{c a'}n" if entidad1 == "Yucat?n" | entidad1 == "Yucatán"
 
-
-		
 ****************/
 * PIB Entidades *
 *****************
-local entidadesN `""Aguascalientes" "Baja California" "Baja California Sur" "Campeche" "Coahuila" "Colima" "Chiapas" "Chihuahua" "Ciudad de México" "Durango" "Guanajuato" "Guerrero" "Hidalgo" "Jalisco" "México" "Michoacán" "Morelos" "Nayarit" "Nuevo León" "Oaxaca" "Puebla" "Querétaro" "Quintana Roo" "San Luis Potosí" "Sinaloa" "Sonora" "Tabasco" "Tamaulipas" "Tlaxcala" "Veracruz" "Yucatán" "Zacatecas" "Nacional""'
-local entidades "Agua BC BCS Camp Coah Col Chia Chih CDMX Dur Gua Gue Hid Jal EdoMex Mich Mor Nay NL Oax Pue Que QRoo SLP Sin Son Tab Tam Tlax Ver Yuc Zac"
-tokenize `entidades'
 
 
 /* Poblacion *
@@ -138,7 +163,7 @@ foreach gastofed in 28 33 PSS 23 CD CR {
 
 		local j = 1
 		forvalues k=1(1)32 {
-			DatosAbiertos `serie'`=string(`k',"%02.0f")', nographs
+			noisily DatosAbiertos `serie'`=string(`k',"%02.0f")', nographs
 			if r(error) != 2000 {
 				* Limpiar base intermedia *
 				split nombre, gen(entidad) parse(":")

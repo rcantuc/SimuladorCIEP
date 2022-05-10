@@ -52,7 +52,7 @@ quietly {
 	use "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", clear
 	local currency = currency[1]
 	tempfile PIB
-	save `PIB'
+	save "`PIB'"
 
 	** 2.2 Update PEF **
 	if "`update'" == "update" /*| "`updated'" != "yes"*/ {
@@ -76,7 +76,7 @@ quietly {
 	*** 3 Merge ***
 	***************
 	collapse (sum) gasto*, by(anio `by' transf_gf) 
-	merge m:1 (anio) using `PIB', nogen keepus(pibY indiceY deflator var_pibY) ///
+	merge m:1 (anio) using "`PIB'", nogen keepus(pibY indiceY deflator var_pibY) ///
 		update replace keep(matched) sorted
 	local aniofirst = anio[1]
 	local aniolast = anio[_N]
