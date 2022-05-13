@@ -10,7 +10,12 @@ quietly {
 	* Revisa si se puede usar la base de datos *
 	capture use `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
 	if _rc != 0 {
-		local update = "update"
+		if "$pais" == "" {
+			run `"`c(sysdir_personal)'/UpdatePoblacion.do"'
+		}
+		else {
+			run `"`c(sysdir_personal)'/UpdatePoblacionMundial.do"'
+		}
 	}
 	
 	syntax [if] [, ANIOhoy(int `aniovp') ANIOFinal(int -1) NOGraphs UPDATE ///
