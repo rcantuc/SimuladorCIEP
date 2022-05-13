@@ -2,8 +2,8 @@ clear all
 macro drop _all
 capture log close _all
 
-*global export "/home/ciepmx/Dropbox (CIEP)/Hewlett Subnacional/Documento LaTeX/images"
-global export "/Users/ricardo/Dropbox (CIEP)/Hewlett Subnacional/Documento LaTeX/images"
+global export "/home/ciepmx/Dropbox (CIEP)/Hewlett Subnacional/Documento LaTeX/images"
+*global export "/Users/ricardo/Dropbox (CIEP)/Hewlett Subnacional/Documento LaTeX/images"
 
 local entidadesN `"  "Aguascalientes" "Baja California" "Baja California Sur" "Campeche" "Coahuila" "Colima" "Chiapas" "Chihuahua" "Ciudad de México" "Durango" "Guanajuato" "Guerrero" "Hidalgo" "Jalisco" "México" "Michoacán" "Morelos" "Nayarit" "Nuevo León" "Oaxaca" "Puebla" "Querétaro" "Quintana Roo" "San Luis Potosí" "Sinaloa" "Sonora" "Tabasco" "Tamaulipas" "Tlaxcala" "Veracruz" "Yucatán" "Zacatecas" "Nacional"    "'
 local entidades "Ags BC BCS Camp Coah Col Chis Chih CDMX Dgo Gto Gro Hgo Jal EdoMex Mich Mor Nay NL Oax Pue Qro QRoo SLP Sin Son Tab Tamps Tlax Ver Yuc Zac"
@@ -58,7 +58,7 @@ replace entidad1 = "Yucat{c a'}n" if entidad1 == "Yucat?n" | entidad1 == "Yucat�
 *****************
 
 
-/* Poblacion *
+* Poblacion *
 local j = 1
 foreach k of local entidadesN {
 	Poblacion if entidad == "`k'", nographs
