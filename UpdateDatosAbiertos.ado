@@ -11,7 +11,7 @@ program define UpdateDatosAbiertos, return
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 	local mesvp = substr(`"`=trim("`fecha'")'"',6,2)
 
-	capture use "`c(sysdir_personal)'/SIM/DatosAbiertos.dta", clear
+	capture use "`c(sysdir_site)'/SIM/DatosAbiertos.dta", clear
 	sort anio mes
 	return local ultanio = anio[_N]
 	return local ultmes = mes[_N]
