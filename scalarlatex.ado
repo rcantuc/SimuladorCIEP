@@ -57,7 +57,7 @@ program define scalarlatex
 			else if "`name'" == "ISRAS" | "`name'" == "ISRPF" | "`name'" == "CuotasT" ///
 				| "`name'" == "IVA" | "`name'" == "ISAN" | "`name'" == "IEPS" ///
 				| "`name'" == "Importa" | "`name'" == "ISRPM" | "`name'" == "FMP" ///
-				| "`name'" == "OYE" | "`name'" == "OtrosI"  {
+				| "`name'" == "OYE" | "`name'" == "OtrosI" | `"`=substr("`name'",1,9)'"' == "GasFedPIB" {
 				local value = scalar(`name')
 				di in w "\def\d`name'#1{\gdef\\`name'{#1}}"
 				di in w `"\d`name'{`=string(`value',"%12.3fc")'}"'
