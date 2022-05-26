@@ -261,7 +261,7 @@ keep if ((substr(clave,1,5) == "XAC28" | substr(clave,1,5) == "XAC33" | substr(c
 
 preserve
 collapse (sum) monto (mean) poblacion deflator, by(entidad anio conceptograph concepto2)
-tempvar montograph
+tempvar montograph montopibYE
 g `montograph' = monto/poblacion/deflator
 graph bar (mean) `montograph' if anio <= 2021 & concepto2 == "Participaciones" [fw=poblacion], ///
 	over(conceptograph, sort(1) descending) ///
@@ -345,6 +345,23 @@ graph bar (mean) `montograph' if anio <= 2021 [fw=poblacion], ///
 	name(GasFed, replace)
 graph export "$export/GasFed.png", replace name(GasFed)
 
+levelsof entidad, local(entidades)
+foreach k of local entidades {
+	graph bar (mean) `montograph' if anio <= 2021 & entidad == "`k'" [fw=poblacion], ///
+		over(concepto2, sort(1) descending) ///
+		over(anio) ///
+		asyvar stack ///
+		///title(Gasto {bf:federalizado}) ///
+		///subtitle(Por entidad federativa) ///
+		ytitle("per c{c a'}pita (MXN 2022)") ///
+		ylabel(, format(%7.0fc)) ///
+		blabel(bar, format(%7.0fc)) ///
+		legend(rows(1)) ///
+		name(GasFed`k', replace)
+	graph export "$export/GasFed_`k'.png", replace name(GasFed`k')
+
+}
+
 forvalues k=1(1)`=_N' {
 	if anio[`k'] == 2021 {
 		scalar `=substr(concepto2[`k'],1,4)'`=entidad[`k']' = `montograph'[`k']
@@ -360,10 +377,14 @@ scalar GasFedGasFed = GasFedApor + GasFedConv + GasFedPart + GasFedProt + GasFed
 
 restore
 preserve 
-collapse (sum) monto (mean) poblacion deflator if anio == 2021, by(entidad)
+collapse (sum) monto (mean) poblacion deflator pibYEnt, by(entidad anio)
 g `montograph' = monto/poblacion/deflator
+g `montopibYE' = monto/pibYEnt*100
 forvalues k=1(1)`=_N' {
-	scalar GasFed`=entidad[`k']' = `montograph'[`k']
+	if anio[`k'] == 2021 {
+		scalar GasFed`=entidad[`k']' = `montograph'[`k']
+		scalar GasFedPIB`=entidad[`k']' = `montopibYE'[`k']
+	}
 }
 
 restore
@@ -401,6 +422,24 @@ graph bar (mean) `montograph' if `montograph' != . [fw=poblacion], ///
 	legend(rows(1)) ///
 	name(LIEs, replace)
 graph export "$export/LIEs.png", replace name(LIEs)
+
+
+levelsof entidad, local(entidades)
+foreach k of local entidades {
+	graph bar (mean) `montograph' if `montograph' != . & entidad == "`k'" [fw=poblacion], ///
+		over(tipo_ingreso, sort(1) descending) ///
+		over(anio) ///
+		stack asyvars ///
+		///title(Gasto {bf:federalizado}) ///
+		///subtitle(Por entidad federativa) ///
+		ytitle("per c{c a'}pita (MXN 2022)") ///
+		ylabel(, format(%7.0fc)) ///
+		blabel(bar, format(%7.0fc)) ///
+		legend(rows(1)) ///
+		name(LIEs_`k', replace)
+	graph export "$export/LIEs_`k'.png", replace name(LIEs_`k')
+}
+
 
 drop `montograph'
 reshape wide monto poblacion, i(anio tipo_ingreso) j(entidad) string
