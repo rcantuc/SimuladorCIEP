@@ -75,7 +75,8 @@ program define scalarlatex
 			| "`name'" == "pensiones" | "`name'" == "otrosgastos" | `"`=substr("`name'",1,3)'"' == "jer" ///
 			| `"`=substr("`name'",1,4)'"' == "Part" | `"`=substr("`name'",1,4)'"' == "Apor" ///
 			| `"`=substr("`name'",1,4)'"' == "Conv"| `"`=substr("`name'",1,4)'"' == "Prov" ///
-			| `"`=substr("`name'",1,4)'"' == "Prot" | `"`=substr("`name'",1,6)'"' == "GasFed" {
+			| `"`=substr("`name'",1,4)'"' == "Prot" | `"`=substr("`name'",1,6)'"' == "GasFed" ///
+			| `"`=substr("`name'",1,3)'"' == "LIE" {
 				local value = scalar(`name')
 				di in w "\def\d`name'#1{\gdef\\`name'{#1}}"
 				di in w `"\d`name'{`=string(`value',"%12.0fc")'}"'			
