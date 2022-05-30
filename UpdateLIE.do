@@ -1,4 +1,5 @@
 clear all
+clear programs
 macro drop _all
 capture log close _all
 
@@ -174,7 +175,7 @@ save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFedBase.dta",
 
 *****************/
 *** LIEs INEGI ***
-/******************
+******************
 use "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIE/INEGI/LIEs.dta"
 
 capture replace entidad1 = "México" if entidad1 == "Mexico"
@@ -209,8 +210,9 @@ foreach k of local entidadesN {
 	replace entidad = "``j''" if Entidades == `"`=subinstr("`=lower("`k'")'"," ","",.)'"'
 	local ++j
 }
-collapse (sum) monto, by(anio entidad tipo_ingreso)
 save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIE/INEGI/LIEs.dta", replace
+collapse (sum) monto, by(anio entidad tipo_ingreso)
+save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIE/INEGI/LIEs_colapsada.dta", replace
 
 
 
@@ -226,6 +228,7 @@ keep if anio >= 2013 & anio <= 2022
 
 
 * Gasto federalizado *
+
 g concepto2 = "Participaciones" if substr(clave,1,5) == "XAC28" & strlen(clave) == 8
 replace concepto2 = "Aportaciones" if substr(clave,1,5) == "XAC33" & strlen(clave) == 8
 replace concepto2 = "Provisiones salariales" if substr(clave,1,5) == "XAC23" & strlen(clave) == 8
@@ -344,7 +347,7 @@ graph bar (mean) `montograph' if anio <= 2021 [fw=poblacion], ///
 	legend(rows(1)) ///
 	name(GasFed, replace)
 graph export "$export/GasFed.png", replace name(GasFed)
-
+save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIEs_GF_total.dta"
 levelsof entidad, local(entidades)
 foreach k of local entidades {
 	graph bar (mean) `montograph' if anio <= 2021 & entidad == "`k'" [fw=poblacion], ///
@@ -356,11 +359,12 @@ foreach k of local entidades {
 		ytitle("per c{c a'}pita (MXN 2022)") ///
 		ylabel(, format(%7.0fc)) ///
 		blabel(bar, format(%7.0fc)) ///
-		legend(rows(1)) ///
+		legend(off) ///
 		name(GasFed`k', replace)
 	graph export "$export/GasFed_`k'.png", replace name(GasFed`k')
 
 }
+save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIEs_GF.dta", replace
 
 forvalues k=1(1)`=_N' {
 	if anio[`k'] == 2021 {
@@ -393,17 +397,22 @@ g tipo_ingreso = "Federalizado"
 drop if anio == 2022
 save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFedSum.dta", replace
 
-
+*/
 
 * LIEs */
-use "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIE/INEGI/LIEs.dta", clear
+*
+use "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIE/INEGI/LIEs_colapsada.dta", clear
 merge 1:1 (anio entidad tipo_ingreso) using "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFedSum.dta", nogen update replace
 merge m:1 (anio entidad) using "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/PIBEntidades.dta", nogen
 merge m:1 (anio entidad) using "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/PobTot.dta", nogen
 keep if anio >= 2018 & anio <= 2022
+********************************************
+**Estimar Impuestos faltante 2021
 
+
+
+****************************************
 save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/IngresosEntidades.dta", replace
-
 
 
 preserve
@@ -422,7 +431,7 @@ graph bar (mean) `montograph' if `montograph' != . [fw=poblacion], ///
 	legend(rows(1)) ///
 	name(LIEs, replace)
 graph export "$export/LIEs.png", replace name(LIEs)
-
+save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIEs_TipoIngreso_Total.dta"
 
 levelsof entidad, local(entidades)
 foreach k of local entidades {
@@ -435,13 +444,14 @@ foreach k of local entidades {
 		ytitle("per c{c a'}pita (MXN 2022)") ///
 		ylabel(, format(%7.0fc)) ///
 		blabel(bar, format(%7.0fc)) ///
-		legend(rows(1)) ///
+		legend(off) ///
 		name(LIEs_`k', replace)
 	graph export "$export/LIEs_`k'.png", replace name(LIEs_`k')
 }
 
 
 drop `montograph'
+save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIEs_tipoingreso.dta", replace
 reshape wide monto poblacion, i(anio tipo_ingreso) j(entidad) string
 reshape long
 g `montograph' = monto/poblacion/deflator
@@ -504,3 +514,284 @@ forvalues k=1(1)`=_N' {
 }
 
 noisily scalarlatex, logname(gastofed)
+*/
+*****************************************
+**Recursos Propios
+****************************************
+use "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIE/INEGI/LIEs.dta", replace
+
+merge m:1 (anio entidad) using "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/PIBEntidades.dta", nogen
+merge m:1 (anio entidad) using "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/PobTot.dta", nogen
+keep if anio >= 2018 & anio <= 2022
+keep if tipo_ingreso=="Recursos Propios"
+replace concepto="Contribuciones De Mejoras" if concepto=="Contribuciones de mejoras"
+replace concepto="Otros Recursos Propios" if concepto=="Disponibilidad inicial" ///
+	|concepto=="Otros Ingresos" ///
+	|concepto=="Otros Recursos Fiscales" 
+
+preserve
+collapse (sum) monto (mean) poblacion deflator pibYEnt, by(entidad anio tipo_ingreso concepto)
+keep if tipo_ingreso=="Recursos Propios"
+tempvar montograph montopibYE
+g `montograph' = monto/poblacion/deflator
+graph bar (mean) `montograph' if `montograph' != . [fw=poblacion], ///
+	over(concepto, sort(1) descending) ///
+	over(anio) ///
+	stack asyvars ///
+	///title(Gasto {bf:federalizado}) ///
+	///subtitle(Por entidad federativa) ///
+	ytitle("per c{c a'}pita (MXN 2022)") ///
+	ylabel(, format(%7.0fc)) ///
+	blabel(bar, format(%7.0fc)) ///
+	legend(rows(2)) ///
+	name(Recursos_prop, replace)
+graph export  "$export/`=strtoname("RP_desag")'.png", as(png) replace 
+save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIES_RP.dta", replace
+*******Checkpoint************
+levelsof entidad, local(entidades)
+*
+foreach k of local entidades {
+	graph bar (mean) `montograph' if `montograph' != . & entidad == "`k'" [fw=poblacion], ///
+		over(concepto, sort(1) descending) ///
+		over(anio) ///
+		stack asyvars ///
+		///title(Gasto {bf:federalizado}) ///
+		///subtitle(Por entidad federativa) ///
+		ytitle("per c{c a'}pita (MXN 2022)") ///
+		ylabel(, format(%7.0fc)) ///
+		blabel(bar, format(%7.0fc)) ///
+		legend(off) ///
+		name(RPdesag_`k', replace)
+	graph export  "$export/`=strtoname("RP_desag_`k'")'.png", as(png) replace 
+}
+*/
+
+drop `montograph'
+
+collapse (sum) monto (mean) poblacion deflator pibYEnt, by(entidad anio concepto)
+
+reshape wide monto poblacion, i(anio concepto deflator pibYEnt) j(entidad) string
+reshape long
+g `montograph' = monto/poblacion/deflator
+
+
+
+forvalues k=1(1)`=_N' {
+	if anio[`k'] == 2022 & concepto[`k'] == "Aprovechamientos" {
+		scalar RPaprov`=entidad[`k']' = `montograph'[`k']
+	}
+	if anio[`k'] == 2022 & concepto[`k'] == "Contribuciones De Mejoras" {
+		scalar RPcontri`=entidad[`k']' = `montograph'[`k']
+	}
+	if anio[`k'] == 2022 & concepto[`k'] == "Derechos" {
+		scalar RPder`=entidad[`k']' = `montograph'[`k']
+	}
+	if anio[`k'] == 2022 & concepto[`k'] == "Impuestos" {
+		scalar RPimp`=entidad[`k']' = `montograph'[`k']
+	}
+	if anio[`k'] == 2022 & concepto[`k'] == "Otros Recursos Propios" {
+		scalar RPotros`=entidad[`k']' = `montograph'[`k']
+	}
+	if anio[`k'] == 2022 & concepto[`k'] == "Productos" {
+		scalar RPprod`=entidad[`k']' = `montograph'[`k']
+	}
+}
+restore
+preserve
+collapse (sum) monto (mean) poblacion deflator pibYEnt, by(entidad anio)
+tempvar montograph montopibYE
+g `montograph' = monto/poblacion/deflator
+g `montopibYE' = monto/pibYEnt*100
+
+forvalues k=1(1)`=_N' {
+	if anio[`k'] == 2022 {
+		scalar RPTot`=entidad[`k']' = `montograph'[`k']
+		scalar RePrPIB`=entidad[`k']' = `montopibYE'[`k']
+	}
+}
+restore
+preserve
+collapse (sum) monto poblacion (mean) deflator, by(anio concepto)
+tempvar montograph
+g `montograph' = monto/poblacion/deflator
+forvalues k=1(1)`=_N' {
+	if anio[`k'] == 2022 & concepto[`k'] == "Aprovechamientos" {
+		scalar RPaprovNac= `montograph'[`k']
+	}
+	if anio[`k'] == 2022 & concepto[`k'] == "Contribuciones De Mejoras" {
+		scalar RPcontriNac= `montograph'[`k']
+	}
+	if anio[`k'] == 2022 & concepto[`k'] == "Derechos" {
+		scalar RPderNac= `montograph'[`k']
+	}
+	if anio[`k'] == 2022 & concepto[`k'] == "Impuestos" {
+		scalar RPimpNac = `montograph'[`k']
+	}
+	if anio[`k'] == 2022 & concepto[`k'] == "Otros Recursos Propios" {
+		scalar RPotrosNac = `montograph'[`k']
+	}
+	if anio[`k'] == 2022 & concepto[`k'] == "Productos" {
+		scalar RPprodNac= `montograph'[`k']
+	}
+}
+
+
+restore
+collapse (sum) monto poblacion (mean) deflator, by(anio)
+tempvar montograph
+g `montograph' = monto/poblacion/deflator
+forvalues k=1(1)`=_N' {
+	if anio[`k'] == 2022 {
+		scalar RPTotNac = `montograph'[`k']
+	}
+}
+
+noisily scalarlatex, logname(Recursos_propios)
+
+
+
+*************************************************************************************
+*IMPUESTOS
+***********************************************************************************
+use "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIE/INEGI/LIEs.dta", replace
+
+merge m:1 (anio entidad) using "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/PIBEntidades.dta", nogen
+merge m:1 (anio entidad) using "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/PobTot.dta", nogen
+keep if anio >= 2018 & anio <= 2022
+keep if tipo_ingreso=="Recursos Propios"
+
+replace concepto_desagregado="Impuesto Sobre La Producci{c o'}n, Consumo Y Las Transacciones" if concepto_desagregado=="Impuesto sobre la producci{c o'}n, el consumo y las transacciones"
+replace concepto_desagregado="Impuestos Sobre Ingresos" if concepto_desagregado=="Impuesto sobre los Ingresos" 
+replace concepto_desagregado="Otros Impuestos" if concepto_desagregado=="Otros impuestos"
+replace concepto_desagregado="ISN" if concepto_tipo=="ISN"
+*preserve
+keep if concepto=="Impuestos"
+collapse (sum) monto (mean) poblacion deflator pibYEnt, by(entidad anio tipo_ingreso concepto_desagregado)
+
+tempvar montograph montopibYE
+g `montograph' = monto/poblacion/deflator
+graph bar (mean) `montograph' if `montograph' != . [fw=poblacion], ///
+	over(concepto_desagregado, sort(1) descending) ///
+	over(anio) ///
+	stack asyvars ///
+	///title(Gasto {bf:federalizado}) ///
+	///subtitle(Por entidad federativa) ///
+	ytitle("per c{c a'}pita (MXN 2022)") ///
+	ylabel(, format(%7.0fc)) ///
+	blabel(bar, format(%7.0fc)) ///
+	legend(rows(2) label(4 "Impuesto Sobre La Producción," "Consumo Y Las Transacciones")) ///
+	name(Impuestos, replace)
+graph export  "$export/`=strtoname("Impuestos")'.png", as(png) replace 
+save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIEs_Impuestos.dta", replace
+*******Checkpoint************
+levelsof entidad, local(entidades)
+
+foreach k of local entidades {
+	graph bar (mean) `montograph' if `montograph' != . & entidad == "`k'" [fw=poblacion], ///
+		over(concepto_desagregado, sort(1) descending) ///
+		over(anio) ///
+		stack asyvars ///
+		///title(Gasto {bf:federalizado}) ///
+		///subtitle(Por entidad federativa) ///
+		ytitle("per c{c a'}pita (MXN 2022)") ///
+		ylabel(, format(%7.0fc)) ///
+		blabel(bar, format(%7.0fc)) ///
+		legend(off) name(Impuestos_`k', replace)
+	graph export  "$export/`=strtoname("Impuestos_`k'")'.png", as(png) replace 
+}
+
+
+drop `montograph'
+
+****************************
+
+*Checkponit*
+
+***************************
+collapse (sum) monto (mean) poblacion deflator pibYEnt, by(entidad anio concepto)
+
+*reshape wide monto poblacion, i(anio concepto deflator pibYEnt) j(entidad) string
+*reshape long
+g `montograph' = monto/poblacion/deflator
+preserve
+
+forvalues k=1(1)`=_N' {
+	if anio[`k'] == 2022 & concepto[`k'] == "Accesorios" {
+		scalar ImpAcc`=entidad[`k']' = `montograph'[`k']
+	}
+	if anio[`k'] == 2022 & concepto[`k'] == "Adicionales" {
+		scalar ImpAdi`=entidad[`k']' = `montograph'[`k']
+	}
+	if anio[`k'] == 2022 & concepto[`k'] == "ISN" {
+		scalar ImpISN`=entidad[`k']' = `montograph'[`k']
+	}
+	if anio[`k'] == 2022 & concepto[`k'] == "Impuesto Sobre La Producci{c o'}n, Consumo Y Las Transacciones" {
+		scalar ImpConsu`=entidad[`k']' = `montograph'[`k']
+	}
+	if anio[`k'] == 2022 & concepto[`k'] == "Impuestos Sobre Ingresos" {
+		scalar ImpIng`=entidad[`k']' = `montograph'[`k']
+	}
+	if anio[`k'] == 2022 & concepto[`k'] == "Impuestos Sobre Patrimonio" {
+		scalar ImpPatri`=entidad[`k']' = `montograph'[`k']
+	}
+	if anio[`k'] == 2022 & concepto[`k'] == "Otros Impuestos" {
+		scalar ImpOtros`=entidad[`k']' = `montograph'[`k']
+	}
+	
+}
+restore
+preserve
+collapse (sum) monto (mean) poblacion deflator pibYEnt, by(entidad anio)
+tempvar montograph montopibYE
+g `montograph' = monto/poblacion/deflator
+g `montopibYE' = monto/pibYEnt*100
+
+forvalues k=1(1)`=_N' {
+	if anio[`k'] == 2022 {
+		scalar ImpTot`=entidad[`k']' = `montograph'[`k']
+		scalar ImpPIB`=entidad[`k']' = `montopibYE'[`k']
+	}
+}
+restore
+preserve
+collapse (sum) monto poblacion (mean) deflator, by(anio concepto)
+tempvar montograph
+g `montograph' = monto/poblacion/deflator
+forvalues k=1(1)`=_N' {
+	if anio[`k'] == 2022 & concepto[`k'] == "Accesorios" {
+		scalar ImpAccNac = `montograph'[`k']
+	}
+	if anio[`k'] == 2022 & concepto[`k'] == "Adicionales" {
+		scalar ImpAdiNac = `montograph'[`k']
+	}
+	if anio[`k'] == 2022 & concepto[`k'] == "ISN" {
+		scalar ImpISNNac = `montograph'[`k']
+	}
+	if anio[`k'] == 2022 & concepto[`k'] == "Impuesto Sobre La Producci{c o'}n, Consumo Y Las Transacciones" {
+		scalar ImpConsuNac = `montograph'[`k']
+	}
+	if anio[`k'] == 2022 & concepto[`k'] == "Impuestos Sobre Ingresos" {
+		scalar ImpIngNac = `montograph'[`k']
+	}
+	if anio[`k'] == 2022 & concepto[`k'] == "Impuestos Sobre Patrimonio" {
+		scalar ImpPatriNac = `montograph'[`k']
+	}
+	if anio[`k'] == 2022 & concepto[`k'] == "Otros Impuestos" {
+		scalar ImpOtrosNac = `montograph'[`k']
+	}
+}
+
+
+restore
+collapse (sum) monto poblacion (mean) deflator, by(anio)
+tempvar montograph
+g `montograph' = monto/poblacion/deflator
+forvalues k=1(1)`=_N' {
+	if anio[`k'] == 2022 {
+		scalar ImpTotNac = `montograph'[`k']
+	}
+}
+
+noisily scalarlatex, logname(Impuestos)
+
+

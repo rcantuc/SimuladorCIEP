@@ -57,7 +57,8 @@ program define scalarlatex
 			else if "`name'" == "ISRAS" | "`name'" == "ISRPF" | "`name'" == "CuotasT" ///
 				| "`name'" == "IVA" | "`name'" == "ISAN" | "`name'" == "IEPS" ///
 				| "`name'" == "Importa" | "`name'" == "ISRPM" | "`name'" == "FMP" ///
-				| "`name'" == "OYE" | "`name'" == "OtrosI" | `"`=substr("`name'",1,9)'"' == "GasFedPIB" {
+				| "`name'" == "OYE" | "`name'" == "OtrosI" | `"`=substr("`name'",1,9)'"' == "GasFedPIB" ///
+				| `"`=substr("`name'",1,7)'"' == "RePrPIB"| `"`=substr("`name'",1,6)'"' == "ImpPIB"{
 				local value = scalar(`name')
 				di in w "\def\d`name'#1{\gdef\\`name'{#1}}"
 				di in w `"\d`name'{`=string(`value',"%12.3fc")'}"'
@@ -76,7 +77,7 @@ program define scalarlatex
 			| `"`=substr("`name'",1,4)'"' == "Part" | `"`=substr("`name'",1,4)'"' == "Apor" ///
 			| `"`=substr("`name'",1,4)'"' == "Conv"| `"`=substr("`name'",1,4)'"' == "Prov" ///
 			| `"`=substr("`name'",1,4)'"' == "Prot" | `"`=substr("`name'",1,6)'"' == "GasFed" ///
-			| `"`=substr("`name'",1,3)'"' == "LIE" {
+			| `"`=substr("`name'",1,3)'"' == "LIE" | `"`=substr("`name'",1,2)'"' == "RP" | `"`=substr("`name'",1,3)'"' == "Imp" {
 				local value = scalar(`name')
 				di in w "\def\d`name'#1{\gdef\\`name'{#1}}"
 				di in w `"\d`name'{`=string(`value',"%12.0fc")'}"'			
