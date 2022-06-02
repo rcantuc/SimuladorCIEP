@@ -163,7 +163,7 @@ quietly {
 
 		collapse (sum) monto acum_prom (last) mes if monto != ., by(anio nombre clave_de_concepto)
 		*replace monto = monto/acum_prom if mes < 12 //& acum_prom > 0 & acum_prom < 1
-
+		*local textografica `"{bf:Promedio a `mesname'}: `=string(acum_prom[_N]*100,"%5.1fc")'% del total anual."'
 		local palabra "Proyectado"
 	}
 	else if tipo_de_informacion == "Saldo" {
@@ -260,7 +260,7 @@ quietly {
 			(connected monto_pib anio if anio >= `aniovp', yaxis(2) msize(large) mlwidth(vvthick) pstyle(p2)), ///
 			title("{bf:`=nombre[1]'}"`textsize') ///
 			/*subtitle(Montos observados)*/ ///
-			b1title(`"{bf:Acumulado `last_anio'm`last_mes'}: `=string((monto[_N]/monto[_N-1])*100,"%5.1fc")'% de `=anio[_N-1]'."', size(small)) ///
+			b1title(`"`textografica'"', size(small)) ///
 			///b2title(`"`textovp'"', size(small)) ///
 			ytitle(millones MXN `aniovp') ///
 			ytitle(% PIB, axis(2)) xtitle("") ///
@@ -272,7 +272,7 @@ quietly {
 			legend(off label(1 "Reportado") label(2 "LIF") order(1 2)) ///
 			text(`text1', yaxis(2) color(white) size(tiny)) ///
 			caption("{bf:Fuente:} Elaborado por el CIEP, con información de la SHCP (Estadísticas Oportunas).") ///
-			///note("{bf:{c U'}ltimo dato:} `ultanio'm`ultmes'.") ///
+			note("{bf:{c U'}ltimo dato:} `ultanio'm`ultmes'.") ///
 			name(H`anything', replace)
 		
 		capture confirm existence $export
@@ -280,6 +280,6 @@ quietly {
 			graph export "$export/`anything'.png", replace name(H`anything')
 		}
 	}
-	list anio monto acum_prom mes monto_pib, separator(30) string(30)
+	noisily list anio monto acum_prom mes monto_pib, separator(30) string(30)
 }
 end
