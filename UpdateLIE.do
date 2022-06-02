@@ -2,7 +2,7 @@ clear all
 clear programs
 macro drop _all
 capture log close _all
-
+*do ""`c(sysdir_site)'../../Hewlett Subnacional\Base de datos\LIE\Limpiador_INEGI_18a20.do"
 local entidadesN `" "Aguascalientes" "Baja California" "Baja California Sur" "Campeche" "Coahuila" "Colima" "Chiapas" "Chihuahua" "Ciudad de México" "Durango" "Guanajuato" "Guerrero" "Hidalgo" "Jalisco" "México" "Michoacán" "Morelos" "Nayarit" "Nuevo León" "Oaxaca" "Puebla" "Querétaro" "Quintana Roo" "San Luis Potosí" "Sinaloa" "Sonora" "Tabasco" "Tamaulipas" "Tlaxcala" "Veracruz" "Yucatán" "Zacatecas" "Nacional" "'
 local entidades "Ags BC BCS Camp Coah Col Chis Chih CDMX Dgo Gto Gro Hgo Jal EdoMex Mich Mor Nay NL Oax Pue Qro QRoo SLP Sin Son Tab Tamps Tlax Ver Yuc Zac"
 tokenize `entidades'
@@ -347,7 +347,7 @@ graph bar (mean) `montograph' if anio <= 2021 [fw=poblacion], ///
 	legend(rows(1)) ///
 	name(GasFed, replace)
 graph export "$export/GasFed.png", replace name(GasFed)
-save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIEs_GF_total.dta"
+save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIEs_GF_total.dta", replace
 levelsof entidad, local(entidades)
 foreach k of local entidades {
 	graph bar (mean) `montograph' if anio <= 2021 & entidad == "`k'" [fw=poblacion], ///
@@ -406,15 +406,133 @@ merge 1:1 (anio entidad tipo_ingreso) using "`c(sysdir_site)'../../Hewlett Subna
 merge m:1 (anio entidad) using "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/PIBEntidades.dta", nogen
 merge m:1 (anio entidad) using "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/PobTot.dta", nogen
 keep if anio >= 2018 & anio <= 2022
+tempfile ajustador
+save "`ajustador'"
+clear
 ********************************************
 **Estimar Impuestos faltante 2021
+/*use "C:\Users\Admin\Dropbox (CIEP)\Hewlett Subnacional\Base de datos\LIE\INEGI\LIEs.dta" , clear
+drop id_entidad
+merge m:1 entidad using "C:\Users\Admin\Dropbox (CIEP)\Hewlett Subnacional\Base de datos\ID_entidad.dta" 
+drop _merge
+egen OK=anymatch(id_entidad), values(10 32 14 31 28 3 2 5 29 22 27 18 26 12 17)
+tempfile original
+save "`original'"
+
+drop if anio==2021
+tempfile original_sin2021
+save "`original_sin2021'"
+clear
+use "`original'", replace
+
+*Base a cambiar
+keep if OK & concepto=="Impuestos" & anio==2021
+drop OK concepto_desagregado concepto_tipo 
+tempfile 2021_cambio
+save "`2021_cambio'"
+*Bases con estimacion
+use "`original'", clear
+drop if OK & concepto=="Impuestos" & anio==2021
+drop OK
+tempfile 2021_sin
+save "`2021_sin'"
+clear
+*base filtrada 2018-2020
+use "`original'"
+keep if anio <2021
+keep if OK & concepto=="Impuestos"
+*collapse
+collapse (sum) monto, by(anio entidad concepto concepto_desagregado concepto_tipo)
+egen total=total(monto), by(anio entidad )
+g perc=monto/total
+*Porcentaje promedio
+collapse (mean) perc, by(entidad concepto_desagregado concepto_tipo)
+tempfile percen
+save "`percen'"
+merge m:1 entidad using "`2021_cambio'"
+drop _merge
+*Calculamos
+g monto_estimado=monto*perc
+replace monto=monto_estimado
+drop perc monto_estimado
+tempfile 2021_cambiada
+save "`2021_cambiada'"
+append using "`2021_sin'"
+*replace concepto_desagregado="Impuestos" if anio==2022 & id_entidad==17 & concepto=="Impuestos"
+save "C:\Users\Admin\Dropbox (CIEP)\Hewlett Subnacional\Base de datos\LIE\INEGI\LIEs.dta" , replace
+
+
+*********************************************
+
+****Ahora 2022
+
+*******************************************
+use "C:\Users\Admin\Dropbox (CIEP)\Hewlett Subnacional\Base de datos\LIE\INEGI\LIEs.dta" , clear
+drop id_entidad
+merge m:1 entidad using "C:\Users\Admin\Dropbox (CIEP)\Hewlett Subnacional\Base de datos\ID_entidad.dta" 
+drop _merge
+egen OK=anymatch(id_entidad), values(17)
+tempfile original
+save "`original'"
+
+drop if anio==2022
+tempfile original_sin2022
+save "`original_sin2022'"
+clear
+use "`original'", replace
+
+*Base a cambiar
+keep if OK & concepto=="Impuestos" & anio==2022
+drop OK concepto_desagregado concepto_tipo 
+tempfile 2022_cambio
+save "`2022_cambio'"
+*Bases con estimacion
+use "`original'", clear
+drop if OK & concepto=="Impuestos" & anio==2022
+drop OK
+tempfile 2022_sin
+save "`2022_sin'"
+clear
+*base filtrada 2018-2020
+use "`original'"
+keep if anio <2021
+keep if OK & concepto=="Impuestos"
+*collapse
+collapse (sum) monto, by(anio entidad concepto concepto_desagregado concepto_tipo)
+egen total=total(monto), by(anio entidad )
+g perc=monto/total
+*Porcentaje promedio
+collapse (mean) perc, by(entidad concepto_desagregado concepto_tipo)
+tempfile percen
+save "`percen'"
+merge m:1 entidad using "`2022_cambio'"
+drop _merge
+*Calculamos
+g monto_estimado=monto*perc
+replace monto=monto_estimado
+drop perc monto_estimado
+tempfile 2022_cambiada
+save "`2022_cambiada'"
+append using "`2022_sin'"
+*replace concepto_desagregado="Impuestos" if anio==2022 & id_entidad==17 & concepto=="Impuestos"
+save "C:\Users\Admin\Dropbox (CIEP)\Hewlett Subnacional\Base de datos\LIE\INEGI\LIEs.dta" , replace
+
+*/
+
+
+
+
+
+
 
 
 
 ****************************************
+use "`ajustador'", replace
+
 save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/IngresosEntidades.dta", replace
-
-
+use "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/IngresosEntidades.dta", replace
+drop if entidad=="Nacional"
 preserve
 collapse (sum) monto (mean) poblacion deflator, by(entidad anio tipo_ingreso)
 tempvar montograph
@@ -431,7 +549,7 @@ graph bar (mean) `montograph' if `montograph' != . [fw=poblacion], ///
 	legend(rows(1)) ///
 	name(LIEs, replace)
 graph export "$export/LIEs.png", replace name(LIEs)
-save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIEs_TipoIngreso_Total.dta"
+save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIEs_TipoIngreso_Total.dta",replace
 
 levelsof entidad, local(entidades)
 foreach k of local entidades {
@@ -664,6 +782,7 @@ replace concepto_desagregado="Impuesto Sobre La Producci{c o'}n, Consumo Y Las T
 replace concepto_desagregado="Impuestos Sobre Ingresos" if concepto_desagregado=="Impuesto sobre los Ingresos" 
 replace concepto_desagregado="Otros Impuestos" if concepto_desagregado=="Otros impuestos"
 replace concepto_desagregado="ISN" if concepto_tipo=="ISN"
+replace concepto_desagregado="Otros Impuestos" if concepto_desagregado=="Adicionales"
 *preserve
 keep if concepto=="Impuestos"
 collapse (sum) monto (mean) poblacion deflator pibYEnt, by(entidad anio tipo_ingreso concepto_desagregado)
@@ -679,7 +798,7 @@ graph bar (mean) `montograph' if `montograph' != . [fw=poblacion], ///
 	ytitle("per c{c a'}pita (MXN 2022)") ///
 	ylabel(, format(%7.0fc)) ///
 	blabel(bar, format(%7.0fc)) ///
-	legend(rows(2) label(4 "Impuesto Sobre La Producción," "Consumo Y Las Transacciones")) ///
+	legend(rows(2) label(3 "Impuesto Sobre La Producción," "Consumo Y Las Transacciones")) ///
 	name(Impuestos, replace)
 graph export  "$export/`=strtoname("Impuestos")'.png", as(png) replace 
 save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIEs_Impuestos.dta", replace
@@ -710,17 +829,14 @@ drop `montograph'
 ***************************
 collapse (sum) monto (mean) poblacion deflator pibYEnt, by(entidad anio concepto)
 
-*reshape wide monto poblacion, i(anio concepto deflator pibYEnt) j(entidad) string
-*reshape long
+reshape wide monto poblacion, i(anio concepto deflator pibYEnt) j(entidad) string
+reshape long
 g `montograph' = monto/poblacion/deflator
 preserve
 
 forvalues k=1(1)`=_N' {
 	if anio[`k'] == 2022 & concepto[`k'] == "Accesorios" {
 		scalar ImpAcc`=entidad[`k']' = `montograph'[`k']
-	}
-	if anio[`k'] == 2022 & concepto[`k'] == "Adicionales" {
-		scalar ImpAdi`=entidad[`k']' = `montograph'[`k']
 	}
 	if anio[`k'] == 2022 & concepto[`k'] == "ISN" {
 		scalar ImpISN`=entidad[`k']' = `montograph'[`k']
@@ -742,6 +858,7 @@ forvalues k=1(1)`=_N' {
 restore
 preserve
 collapse (sum) monto (mean) poblacion deflator pibYEnt, by(entidad anio)
+
 tempvar montograph montopibYE
 g `montograph' = monto/poblacion/deflator
 g `montopibYE' = monto/pibYEnt*100
@@ -755,14 +872,12 @@ forvalues k=1(1)`=_N' {
 restore
 preserve
 collapse (sum) monto poblacion (mean) deflator, by(anio concepto)
+save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIEs_Impuestos.dta", replace
 tempvar montograph
 g `montograph' = monto/poblacion/deflator
 forvalues k=1(1)`=_N' {
 	if anio[`k'] == 2022 & concepto[`k'] == "Accesorios" {
 		scalar ImpAccNac = `montograph'[`k']
-	}
-	if anio[`k'] == 2022 & concepto[`k'] == "Adicionales" {
-		scalar ImpAdiNac = `montograph'[`k']
 	}
 	if anio[`k'] == 2022 & concepto[`k'] == "ISN" {
 		scalar ImpISNNac = `montograph'[`k']
