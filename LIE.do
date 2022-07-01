@@ -188,7 +188,7 @@ save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFedBase.dta",
 
 *************************************************/
 *** Graficas 1 Gasto Federalizado (Capitulo 1) ***
-/*************************************************
+*************************************************
 use "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFedBase.dta", clear
 merge m:1 (anio entidad) using "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/PIBEntidades.dta", nogen
 merge m:1 (anio entidad) using "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/PobTot.dta", nogen
@@ -264,8 +264,9 @@ forvalues k=1(1)`=_N' {
 }
 scalar GasFedGasFed = GasFedApor + GasFedConv + GasFedPart + GasFedSubs
 
+
 restore
-preserve 
+preserve
 collapse (sum) monto (mean) poblacion deflator pibYEnt, by(entidad anio)
 g montograph = monto/poblacion/deflator
 g montopibYE = monto/pibYEnt*100
@@ -289,7 +290,7 @@ noisily scalarlatex, logname(gastofed)
 
 
 
-*************************************************
+*************************************************/
 *** Graficas 2 Gasto Federalizado (Capitulo 1) ***
 **************************************************
 use "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFedBase.dta", clear
@@ -391,7 +392,6 @@ graph export "$export/XACC.png", replace name(XACC)
 
 * 37. Subsidios *
 restore
-
 replace conceptograph = substr(concepto,inicial+1,final-inicial-1) if concepto2 == 4 & inicial != 0 & final != 0
 replace conceptograph = "Protecci{c o'}n Social en Salud" if concepto == " Recursos para Protecci?n Social en Salud"
 replace conceptograph = "Otros subsidios" if concepto == " Resto del Gasto Federalizado del Ramo Provisiones Salariales y Economicas y Otros Subsidios"
@@ -413,7 +413,7 @@ graph export "$export/XACSubsidios.png", replace name(XACSubsidios)
 
 
 
-
+exit
 *****************/
 *** LIEs INEGI ***
 ******************
@@ -456,7 +456,7 @@ save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIE/INEGI/LIEs_col
 
 **********************************************/
 *** Grafica 3 Recursos totales (Capitulo 2) ***
-/***********************************************
+***********************************************
 use "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIE/INEGI/LIEs_colapsada.dta", clear
 merge 1:1 (anio entidad tipo_ingreso) using "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFedSum.dta", nogen
 merge m:1 (anio entidad) using "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/PIBEntidades.dta", nogen
@@ -473,7 +473,7 @@ save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/IngresosEntidades.
 * 38. Recursos totales *
 collapse (sum) monto (mean) poblacion deflator pibYEnt, by(entidad anio tipo_ingreso)
 g `montograph' = monto/poblacion/deflator
-graph bar (mean) `montograph' if `montograph' != . [fw=poblacion], ///
+graph bar (mean) `montograph' if `montograph' != . & tipo_ingreso != "Financiamiento" [fw=poblacion], ///
 	over(tipo_ingreso, sort(1) descending) ///
 	over(anio) ///
 	stack asyvars ///
@@ -490,7 +490,7 @@ save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIEs_TipoIngreso_T
 * 39.-71. Recursos totales *
 levelsof entidad, local(entidades)
 foreach k of local entidades {
-	graph bar (mean) `montograph' if `montograph' != . & entidad == "`k'" [fw=poblacion], ///
+	graph bar (mean) `montograph' if `montograph' != . & entidad == "`k'" & tipo_ingreso != "Financiamiento" [fw=poblacion], ///
 		over(tipo_ingreso, sort(1) descending) ///
 		over(anio) ///
 		stack asyvars ///

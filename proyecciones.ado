@@ -19,7 +19,7 @@ quietly {
 	********************
 	*** 1. Poblacion ***
 	********************
-	use `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
+	use if entidad == "Nacional" using `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
 	sort anio
 	local anio = anio in 1
 
