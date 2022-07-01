@@ -4,7 +4,7 @@
 set more off, permanently
 set type double, permanently
 set charset latin1, permanently
-set scheme ciepnew
+set scheme ciep
 graph set window fontface "Ubuntu"
 
 * Directorios principales *
