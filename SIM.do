@@ -1,6 +1,7 @@
 ******************************
 ***                        ***
 ***    SIMULADOR FISCAL    ***
+***       version 5.x      ***
 ***                        ***
 ******************************
 clear all
@@ -9,29 +10,23 @@ capture log close _all
 
 
 
-
-
-***********************************
-***    GITHUB (PROGRAMACION)    ***
-***********************************
-if"`c(os)'" == "MacOSX" & "`c(username)'" == "ricardo" & `c(version)' > 13.1 {  // Computadora Ricardo
+**************************************
+***    0. GITHUB (PROGRAMACION)    ***
+**************************************
+if"`c(os)'" == "MacOSX" & "`c(username)'" == "ricardo" {  			// Ricardo
 	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/SimuladorCIEP/5.2/simuladorCIEP/"
-	*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"         // EXPORTAR IMAGENES EN...
 }
-if "`c(os)'" == "Unix" & "`c(username)'" == "ciepmx" {                          // Computdora ServidorCIEP
+if "`c(os)'" == "Unix" & "`c(username)'" == "ciepmx" {                          // ServidorCIEP
 	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/SimuladorCIEP/5.2/simuladorCIEP/"
 }
 adopath ++ PERSONAL
 
 
 
-
-
 *************************
-***                   ***
-***    0. OPCIONES    ***
-***                   ***
+***    1. OPCIONES    ***
 *************************
+*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"        		// EXPORTAR IMAGENES EN...
 *global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
 *global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
 local noisily "noisily"                                                         // "NOISILY" OUTPUTS
