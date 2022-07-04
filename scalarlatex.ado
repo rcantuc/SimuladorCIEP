@@ -58,7 +58,8 @@ program define scalarlatex
 				| "`name'" == "IVA" | "`name'" == "ISAN" | "`name'" == "IEPS" ///
 				| "`name'" == "Importa" | "`name'" == "ISRPM" | "`name'" == "FMP" ///
 				| "`name'" == "OYE" | "`name'" == "OtrosI" | `"`=substr("`name'",1,9)'"' == "GasFedPIB" ///
-				| `"`=substr("`name'",1,9)'"' == "LIETotPIB"| `"`=substr("`name'",1,6)'"' == "ImpPIB" {
+				| `"`=substr("`name'",1,9)'"' == "LIETotPIB"| `"`=substr("`name'",1,6)'"' == "ImpPIB" ///
+				| `"`=substr("`name'",1,7)'"' == "RePrPIB"{
 				local value = scalar(`name')
 				di in w "\def\d`name'#1{\gdef\\`name'{#1}}"
 				di in w `"\d`name'{`=string(`value',"%12.1fc")'}"'

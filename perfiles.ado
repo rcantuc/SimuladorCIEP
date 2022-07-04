@@ -11,7 +11,7 @@ quietly {
 	*** 0. Guardar base original ***
 	********************************
 	preserve
-	use if entidad == "Nacional" using `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
+	use`"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
 	local edadmax = edad[_N]
 	restore
 	preserve
