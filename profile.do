@@ -19,14 +19,11 @@ noisily di _newline(5) in w "{bf:Centro de Investigaci{c o'}n Econ{c o'}mica y P
 
 
 
-
 ********************
 *** 3 Parametros ***
 ********************
 global paqueteEconomico "CGPE 2022"
-run "`c(sysdir_personal)'/PARAM${pais}.do"
-
-
+run "`c(sysdir_site)'/PARAM.do"
 
 
 
