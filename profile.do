@@ -9,8 +9,6 @@ graph set window fontface "Ubuntu"
 
 * Directorios principales *
 adopath ++ SITE
-sysdir set PERSONAL "`c(sysdir_site)'"
-cd "`c(sysdir_site)'"
 
 
 
