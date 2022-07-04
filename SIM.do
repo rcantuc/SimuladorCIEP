@@ -14,12 +14,11 @@ capture log close _all
 ***********************************
 ***    GITHUB (PROGRAMACION)    ***
 ***********************************
-if"`c(os)'" == "MacOSX" & "`c(username)'" == "ricardo" & `c(version)' > 13.1 {  // Computadora Ricardo
-	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/SimuladorCIEP/5.2/simuladorCIEP/"
-	*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"         // EXPORTAR IMAGENES EN...
+if"`c(os)'" == "MacOSX" & "`c(username)'" == "ricardo" {  						// Computadora Ricardo
+	sysdir set PERSONAL "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladorCIEP/5.2/simuladorCIEP/"
 }
 if "`c(os)'" == "Unix" & "`c(username)'" == "ciepmx" {                          // Computdora ServidorCIEP
-	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/SimuladorCIEP/5.2/simuladorCIEP/"
+	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Ricardo Cantú/SimuladorCIEP/5.2/simuladorCIEP/"
 }
 adopath ++ PERSONAL
 
@@ -32,6 +31,7 @@ adopath ++ PERSONAL
 ***    0. OPCIONES    ***
 ***                   ***
 *************************
+*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"         // EXPORTAR IMAGENES EN...
 *global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
 *global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
 local noisily "noisily"                                                         // "NOISILY" OUTPUTS
