@@ -208,7 +208,7 @@ label define concepto2 5 "Resto RFP", modify
 
 
 * 1.-32. Gasto Federalizado total por tipo y por estados *
-collapse (sum) monto (mean) poblacion deflator pibYEnt, by(anio entidad concepto2 `concepto2')
+collapse (sum) monto (mean) poblacion deflator pibYEnt if concepto2 != ., by(anio entidad concepto2 `concepto2')
 g montograph = monto/poblacion/deflator
 levelsof entidad, local(entidades)
 foreach k of local entidades {
@@ -226,6 +226,7 @@ foreach k of local entidades {
 	graph export "$export/GasFed_`k'.png", replace name(GasFed`k')
 
 }
+save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFed_basedegraph_porEF_RFP_JP.dta", replace
 
 * Scalares *
 forvalues k=1(1)`=_N' {
@@ -257,6 +258,7 @@ graph bar (mean) montograph [fw=poblacion], ///
 	legend(rows(1) label(5 "Resto RFP (Federaci{c o'}n)")) ///
 	name(RFP, replace)
 graph export "$export/RFP.png", replace name(RFP)
+save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFed_basedegraph_RFP_JP.dta", replace
 
 * Scalars *
 forvalues k=1(1)`=_N' {
@@ -264,9 +266,8 @@ forvalues k=1(1)`=_N' {
 }
 scalar GasFedGasFed = GasFedApor + GasFedConv + GasFedPart + GasFedSubs
 
-
 restore
-preserve
+preserve 
 collapse (sum) monto (mean) poblacion deflator pibYEnt, by(entidad anio)
 g montograph = monto/poblacion/deflator
 g montopibYE = monto/pibYEnt*100
@@ -280,6 +281,7 @@ forvalues k=1(1)`=_N' {
 }
 
 restore
+save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFed_desagregada_JP.dta", replace
 collapse (sum) monto, by(entidad anio)
 g tipo_ingreso = "Federalizado"
 drop if anio == 2022
@@ -290,7 +292,7 @@ noisily scalarlatex, logname(gastofed)
 
 
 
-*************************************************/
+*************************************************
 *** Graficas 2 Gasto Federalizado (Capitulo 1) ***
 **************************************************
 use "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFedBase.dta", clear
@@ -347,7 +349,7 @@ graph bar (mean) montograph if anio <= 2021 & concepto2 == 3 [fw=poblacion], ///
 	legend(rows(2)) ///
 	name(XAC28, replace)
 graph export "$export/XAC28.png", replace name(XAC28)
-
+save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFedSum_participaciones_JP.dta", replace
 
 * 35. Aportaciones *
 restore
@@ -367,6 +369,7 @@ graph bar (mean) montograph if anio <= 2021 & concepto2 == 1 [fw=poblacion], ///
 	legend(rows(2)) ///
 	name(XAC33, replace)
 graph export "$export/XAC33.png", replace name(XAC33)
+save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFedSum_aportaciones_JP.dta", replace
 
 
 * 36. Convenios *
@@ -388,10 +391,12 @@ graph bar (mean) montograph if anio <= 2021 & concepto2 == 2 [fw=poblacion], ///
 	legend(rows(1)) ///
 	name(XACC, replace)
 graph export "$export/XACC.png", replace name(XACC)
+save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFedSum_convenios_jp.dta", replace
 
 
 * 37. Subsidios *
 restore
+
 replace conceptograph = substr(concepto,inicial+1,final-inicial-1) if concepto2 == 4 & inicial != 0 & final != 0
 replace conceptograph = "Protecci{c o'}n Social en Salud" if concepto == " Recursos para Protecci?n Social en Salud"
 replace conceptograph = "Otros subsidios" if concepto == " Resto del Gasto Federalizado del Ramo Provisiones Salariales y Economicas y Otros Subsidios"
@@ -409,11 +414,12 @@ graph bar (mean) montograph if concepto2 == 4 [fw=poblacion], ///
 	legend(rows(1)) ///
 	name(XACSubsidios, replace)
 graph export "$export/XACSubsidios.png", replace name(XACSubsidios)
+save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFedSum_subsidios_jp.dta", replace
 
 
 
 
-exit
+
 *****************/
 *** LIEs INEGI ***
 ******************
@@ -458,7 +464,11 @@ save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIE/INEGI/LIEs_col
 *** Grafica 3 Recursos totales (Capitulo 2) ***
 ***********************************************
 use "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIE/INEGI/LIEs_colapsada.dta", clear
-merge 1:1 (anio entidad tipo_ingreso) using "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFedSum.dta", nogen
+*merge 1:1 (anio entidad tipo_ingreso) using "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFedSum.dta", nogen update replace
+reshape wide monto, i(anio tipo_ingreso) j(entidad) string
+reshape long
+replace monto = 0 if monto == .
+
 merge m:1 (anio entidad) using "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/PIBEntidades.dta", nogen
 merge m:1 (anio entidad) using "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/PobTot.dta", nogen
 keep if anio >= 2018 & anio <= 2022
@@ -473,7 +483,9 @@ save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/IngresosEntidades.
 * 38. Recursos totales *
 collapse (sum) monto (mean) poblacion deflator pibYEnt, by(entidad anio tipo_ingreso)
 g `montograph' = monto/poblacion/deflator
-graph bar (mean) `montograph' if `montograph' != . & tipo_ingreso != "Financiamiento" [fw=poblacion], ///
+preserve
+keep if tipo_ingreso!="Financiamiento"
+graph bar (mean) `montograph' if `montograph' != . [fw=poblacion] , ///
 	over(tipo_ingreso, sort(1) descending) ///
 	over(anio) ///
 	stack asyvars ///
@@ -485,12 +497,14 @@ graph bar (mean) `montograph' if `montograph' != . & tipo_ingreso != "Financiami
 	legend(rows(1)) ///
 	name(LIEs, replace)
 graph export "$export/LIEs.png", replace name(LIEs)
+restore
 save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIEs_TipoIngreso_Total.dta", replace
 
 * 39.-71. Recursos totales *
 levelsof entidad, local(entidades)
+
 foreach k of local entidades {
-	graph bar (mean) `montograph' if `montograph' != . & entidad == "`k'" & tipo_ingreso != "Financiamiento" [fw=poblacion], ///
+	graph bar (mean) `montograph' if `montograph' != . & entidad == "`k'" [fw=poblacion], ///
 		over(tipo_ingreso, sort(1) descending) ///
 		over(anio) ///
 		stack asyvars ///
@@ -503,16 +517,16 @@ foreach k of local entidades {
 		name(LIEs_`k', replace)
 	graph export "$export/LIEs_`k'.png", replace name(LIEs_`k')
 }
+*/
 drop `montograph'
 save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIEs_tipoingreso.dta", replace
 
-
+restore
 * Scalars *
-reshape wide monto poblacion pibYEnt, i(anio tipo_ingreso) j(entidad) string
-reshape long
+drop `montograph'
 g `montograph' = monto/poblacion/deflator
-replace `montograph' = . if round(`montograph') == 0
 
+replace `montograph' = . if round(`montograph') == 0
 forvalues k=1(1)`=_N' {
 	if anio[`k'] == 2022 & tipo_ingreso[`k'] == "Federalizado" {
 		scalar LIEFed`=entidad[`k']' = `montograph'[`k']
@@ -537,7 +551,6 @@ forvalues k=1(1)`=_N' {
 		scalar LIETotPIB`=entidad[`k']' = monto[`k']/pibYEnt[`k']*100
 
 }
-
 
 restore
 collapse (sum) monto poblacion (mean) deflator, by(anio tipo_ingreso)
@@ -573,7 +586,7 @@ merge m:1 (anio entidad) using "`c(sysdir_site)'../../Hewlett Subnacional/Base d
 merge m:1 (anio entidad) using "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/PobTot.dta", nogen
 keep if anio >= 2018 & anio <= 2022
 keep if tipo_ingreso=="Propios"
-
+*replace concepto_propio = "Otros" if concepto_propio == ""
 *preserve
 collapse (sum) monto (mean) poblacion deflator pibYEnt if tipo_ingreso == "Propios", by(entidad anio concepto_propio)
 tempvar montograph montopibYE
@@ -593,6 +606,7 @@ graph export  "$export/Recursos_prop.png", as(png) replace name(Recursos_prop)
 save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIES_RP.dta", replace
 
 *******Checkpoint************
+
 levelsof entidad, local(entidades)
 foreach k of local entidades {
 	noisily di "*`k'*"
@@ -609,15 +623,15 @@ foreach k of local entidades {
 		name(RPdesag_`k', replace)
 	graph export  "$export/RPdesag_`k'.png", as(png) replace name(RPdesag_`k')
 }
-
-
+*/
+*drop if concepto_propio == ""
 replace concepto_propio = "Otros" if concepto_propio == ""
-preserve
+
 collapse (sum) monto `montograph' (mean) poblacion deflator pibYEnt, by(entidad anio concepto_propio)
 reshape wide monto `montograph' deflator pibYEnt, i(anio entidad) j(concepto) string
 reshape long
 replace `montograph' = . if `montograph' == 0
-
+preserve
 forvalues k=1(1)`=_N' {
 	if anio[`k'] == 2022 & concepto[`k'] == "Aprovechamientos" {
 		scalar RPaprov`=entidad[`k']' = `montograph'[`k']
@@ -648,8 +662,17 @@ forvalues k=1(1)`=_N' {
 }
 
 restore
+
 collapse (sum) monto poblacion (mean) deflator, by(anio concepto)
+
+*tempfile aux_final
+*save "`aux_final'"
+*use "C:\Users\Admin\Dropbox (CIEP)\Hewlett Subnacional\Base de datos\PobTot.dta" , replace
+*keep if anio==2022
+*merge 1:m entidad using "`aux_final'"
+*exit
 g montograph = monto/poblacion/deflator
+
 forvalues k=1(1)`=_N' {
 	if anio[`k'] == 2022 & concepto[`k'] == "Aprovechamientos" {
 		scalar RPaprovNac= montograph[`k']
@@ -670,14 +693,15 @@ forvalues k=1(1)`=_N' {
 		scalar RPprodNac= montograph[`k']
 	}
 }
-collapse (sum) monto poblacion (mean) deflator, by(anio)
+scalar RPTotNac = RPaprovNac + RPderNac + RPimpNac+ RPotrosNac + RPprodNac
+/*collapse (sum) monto poblacion (mean) deflator, by(anio)
 g montograph = monto/poblacion/deflator
 forvalues k=1(1)`=_N' {
 	if anio[`k'] == 2022 {
 		scalar RPTotNac = montograph[`k']
 	}
 }
-
+*/
 noisily scalarlatex, logname(Recursos_propios)
 
 

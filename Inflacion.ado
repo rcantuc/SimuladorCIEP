@@ -27,7 +27,7 @@ quietly {
 	***********************
 	capture use `"`c(sysdir_site)'../basesCIEP/SIM/inflacion.dta"', clear
 	if _rc != 0 | "`update'" == "update" {
-		run `"`c(sysdir_personal)'/UpdateInflacion`=subinstr("${pais}"," ","",.)'.do"'
+		run `"`c(sysdir_personal)'/Inflacion`=subinstr("${pais}"," ","",.)'.do"'
 		use `"`c(sysdir_site)'../basesCIEP/SIM/inflacion.dta"', clear
 	}
 

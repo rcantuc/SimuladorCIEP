@@ -1,7 +1,6 @@
 ******************************
 ***                        ***
 ***    SIMULADOR FISCAL    ***
-***       version 5.x      ***
 ***                        ***
 ******************************
 clear all
@@ -10,27 +9,33 @@ capture log close _all
 
 
 
-**************************************
-***    0. GITHUB (PROGRAMACION)    ***
-**************************************
-if"`c(os)'" == "MacOSX" & "`c(username)'" == "ricardo" {  			// Ricardo
+
+
+***********************************
+***    GITHUB (PROGRAMACION)    ***
+***********************************
+if"`c(os)'" == "MacOSX" & "`c(username)'" == "ricardo" & `c(version)' > 13.1 {  // Computadora Ricardo
 	sysdir set PERSONAL "/Users/ricardo/Dropbox (CIEP)/SimuladorCIEP/5.2/simuladorCIEP/"
+	*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"         // EXPORTAR IMAGENES EN...
 }
-if "`c(os)'" == "Unix" & "`c(username)'" == "ciepmx" {                          // ServidorCIEP
+if "`c(os)'" == "Unix" & "`c(username)'" == "ciepmx" {                          // Computdora ServidorCIEP
 	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/SimuladorCIEP/5.2/simuladorCIEP/"
 }
 adopath ++ PERSONAL
 
 
 
+
+
 *************************
-***    1. OPCIONES    ***
+***                   ***
+***    0. OPCIONES    ***
+***                   ***
 *************************
-*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"        		// EXPORTAR IMAGENES EN...
 *global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
 *global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
 local noisily "noisily"                                                         // "NOISILY" OUTPUTS
-*local update "update"                                                          // UPDATE DATASETS
+local update "update"                                                          // UPDATE DATASETS
 *global pais = "Ecuador"
 
 
@@ -46,7 +51,7 @@ noisily run "`c(sysdir_personal)'/Arranque.do"
 ***    1. POBLACION    ***
 ***                    ***
 **************************
-*forvalues k=1950(1)2100 {
+/*forvalues k=1950(1)2100 {
 foreach k in `=aniovp' {
 	`noisily' Poblacion, anio(`k') `update' //aniofinal(2030) 
 }
@@ -78,14 +83,14 @@ if "$pais" == "" {
 ***    3. SISTEMA FISCAL    ***
 ***                         ***
 *******************************
-`noisily' LIF, anio(`=aniovp') by(divGA) rows(1) ilif min(1) `update'
-`noisily' PEF, anio(`=aniovp') by(desc_funcion) rows(2) min(1) `update'
+*`noisily' LIF, anio(`=aniovp') by(divGA) rows(1) ilif min(1) `update'
+*`noisily' PEF, anio(`=aniovp') by(desc_funcion) rows(2) min(1) `update'
 `noisily' SHRFSP, anio(`=aniovp') `update'
 
 
 
 
-
+exit
 **************************/
 ***                     ***
 ***    4. HOUSEHOLDS    ***
@@ -136,8 +141,7 @@ capture drop AportacionesNetas
 g AportacionesNetas = Laboral + Consumo + ISR__PM + Petroleo ///
 	- Pension - Educacion - Salud - IngBasico - PenBienestar - Infra
 label var AportacionesNetas "aportaciones netas"
-noisily Simulador AportacionesNetas [fw=factor], base("ENIGH 2020") reboot anio(`=aniovp') ///
-	folio("folioviv foliohog") $nographs // Identif_hog
+noisily Simulador AportacionesNetas [fw=factor], base("ENIGH 2020") reboot anio(`=aniovp') folio("Identif_hog") $nographs
 save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace	
 
 

@@ -632,7 +632,7 @@ forvalues k=1(1)`=_N' {
 }
 
 noisily scalarlatex, logname(gastofed)
-*/
+
 *****************************************
 **Recursos Propios
 ****************************************
