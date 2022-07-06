@@ -8,7 +8,7 @@
 ***************
 
 * 0.1.1. PIB *
-import excel "`=c(sysdir_site)'../basesCIEP/INEGI/SCN/PIB.xlsx", clear
+import excel "`=c(sysdir_site)'/bases/UPDATE/SCN/PIB.xlsx", clear
 
 * 0.1.2. Limpia *
 LimpiaBIE
@@ -39,7 +39,7 @@ save `PIB'
 
 
 * 0.2.1. Deflactor *
-import excel "`=c(sysdir_site)'../basesCIEP/INEGI/SCN/deflactor.xlsx", clear
+import excel "`=c(sysdir_site)'/bases/UPDATE/SCN/deflactor.xlsx", clear
 
 * 0.2.2. Limpia *
 LimpiaBIE, nomult
@@ -87,8 +87,8 @@ g pibQR = pibQ/(indiceQ/100)
 g currency = "MXN"
 
 if `c(version)' > 13.1 {
-	saveold "`c(sysdir_personal)'/SIM/PIBDeflactor.dta", replace version(13)
+	saveold "`c(sysdir_site)'/SIM/PIBDeflactor.dta", replace version(13)
 }
 else {
-	save "`c(sysdir_personal)'/SIM/PIBDeflactor.dta", replace
+	save "`c(sysdir_site)'/SIM/PIBDeflactor.dta", replace
 }

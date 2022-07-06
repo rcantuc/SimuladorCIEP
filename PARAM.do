@@ -1,12 +1,48 @@
-********************************
-***                          ***
-***    1. CRECIMIENTO PIB    ***
-***                          ***
-********************************
+*************************
+***                   ***
+***    1. USERNAME    ***
+***                   ***
+*************************
+global id = "`c(username)'"                                                     // ID DEL USUARIO
+if ("`c(username)'" == "ricardo" | "`c(username)'" == "ciepmx") & "`c(console)'" == "" {
+	*global id = ""
+}
 
-* 2021-2027 *
-global pib2022 = 3.4                                           // CGPE 2022
-global pib2023 = 3.5                                           // CGPE 2022
+
+
+*********************
+***               ***
+***    2. PAÍS    ***
+***               ***
+*********************
+if "$pais" == "" {
+	local pais = "M{c e'}xico"
+}
+else {
+	local pais = "$pais"
+}
+
+
+
+****************************
+***                      ***
+***    3. DIRECTORIOS    ***
+***                      ***
+****************************
+capture mkdir `"`c(sysdir_site)'/SIM/"'
+capture mkdir `"`c(sysdir_site)'/users/"'
+capture mkdir `"`c(sysdir_site)'/users/$pais/"'
+capture mkdir `"`c(sysdir_site)'/users/$pais/$id/"'
+
+
+
+********************************
+***                          ***
+***    4. CRECIMIENTO PIB    ***
+***                          ***
+********************************
+global pib2022 = 3.4                                           // Pre-CGPE 2023
+global pib2023 = 3.5                                           // Pre-CGPE 2023
 global pib2024 = 2.8                                           // CGPE 2022
 global pib2025 = 2.5                                           // CGPE 2022
 global pib2026 = 2.5                                           // CGPE 2022
@@ -15,14 +51,8 @@ global pib2028 = 2.5                                           // CGPE 2022
 global pib2029 = 2.5                                           // CGPE 2022
 global pib2030 = 2.5                                           // CGPE 2022
 
-/* 2031-2050 *
-forvalues k=2031(1)2050 {
-	global pib`k' = $pib2027                               // SUPUESTO DE LARGO PLAZO
-}
-
-* OTROS */
-global def2022 = 6.6853                                           // Pre-CGPE 2023
-global def2023 = 3.9258                                           // Pre-CGPE 2023
+global def2022 = 6.6853                                        // Pre-CGPE 2023
+global def2023 = 3.9258                                        // Pre-CGPE 2023
 global def2024 = 3.5                                           // CGPE 2022: 3.5
 global def2025 = 3.5                                           // CGPE 2022: 3.5
 global def2026 = 3.5                                           // CGPE 2022: 3.5
@@ -45,15 +75,14 @@ global inf2027 = 3.0                                           // CGPE 2022: 3.0
 scalar aniovp = 2022
 scalar anioend = 2030
 
-global paqueteEconomico = "CGPE 2022"
 
 
+*********************************/
+***                            ***
+***    5. PARTE III: GASTOS    ***
+***                            ***
+**********************************
 if "$output" != "output" {
-	*********************************/
-	***                            ***
-	***    2. PARTE III: GASTOS    ***
-	***                            ***
-	**********************************
 	scalar basica      =   24402 //    Educaci{c o'}n b{c a'}sica
 	scalar medsup      =   24039 //    Educaci{c o'}n media superior
 	scalar superi      =   36559 //    Educaci{c o'}n superior
@@ -86,17 +115,16 @@ if "$output" != "output" {
 	scalar IngBas      =       0 //    Ingreso b{c a'}sico
 	scalar ingbasico18 =       1 //    1: Incluye menores de 18 anios, 0: no
 	scalar ingbasico65 =       1 //    1: Incluye mayores de 65 anios, 0: no
+}
 
 
 
-
-
-
-	**********************************/
-	***                             ***
-	***    3. PARTE II: INGRESOS    ***
-	***                             ***
-	***********************************
+**********************************/
+***                             ***
+***    6. PARTE II: INGRESOS    ***
+***                             ***
+***********************************
+if "$output" != "output" {
 	scalar ISRAS   = 3.364 //    ISR (asalariados): 3.453
 	scalar ISRPF   = 0.218 //    ISR (personas f{c i'}sicas): 0.441
 	scalar CuotasT = 1.446 //    Cuotas (IMSS): 1.515
@@ -114,11 +142,9 @@ if "$output" != "output" {
 
 
 
-
-
 *****************************************************/
 ***                                                ***
-***       3.1. Impuesto Sobre la Renta (ISR)       ***
+***       6.1. Impuesto Sobre la Renta (ISR)       ***
 ***                                                ***
 ******************************************************
 *             Inferior		Superior	CF		Tasa
@@ -156,7 +182,7 @@ matrix PM = (30,		17.72)
 
 * Modulo ISR *
 if "`cambioisr'" == "1" {
-	noisily run "`c(sysdir_personal)'/ISR_Mod.do"
+	noisily run "`c(sysdir_site)'/ISR_Mod.do"
 	scalar ISRAS = ISR_AS_Mod
 	scalar ISRPF = ISR_PF_Mod
 	scalar ISRPM = ISR_PM_Mod
@@ -164,7 +190,7 @@ if "`cambioisr'" == "1" {
 
 * Modulo IVA *
 if "`cambioiva'" == "1" {
-	noisily run "`c(sysdir_personal)'/IVA_Mod.do"
+	noisily run "`c(sysdir_site)'/IVA_Mod.do"
 	scalar IVA = IVA_Mod
 }
 
@@ -177,7 +203,7 @@ if "`cambioiva'" == "1" {
 
 *********************************************************
 ***                                                   ***
-***       3.2. Impuesto al Valor Agregado (IVA)       ***
+***       6.2. Impuesto al Valor Agregado (IVA)       ***
 ***                                                   ***
 *********************************************************
 matrix IVAT = (16 \     ///  1  Tasa general 
@@ -195,3 +221,18 @@ matrix IVAT = (16 \     ///  1  Tasa general
                21.59)   //  13  Evasion e informalidad IVA, input[0-100]
 ***       FIN: SIMULADOR IVA       ***
 *************************************
+
+
+
+************************
+***                  ***
+***    7. DISPLAY    ***
+***                  ***
+************************
+noisily di _newline(10) in g _dup(23) "*" ///
+	_newline in w " Simulador Fiscal CIEP" ///
+	_newline in g _dup(23) "*" ///
+	_newline in g "  A{c N~}O:  " in y "`=aniovp'" ///
+	_newline in g "  USER: " in y "$id" ///
+	_newline in g "  PA{c I'}S: " in y "`pais'" ///
+	_newline in g _dup(23) "*"

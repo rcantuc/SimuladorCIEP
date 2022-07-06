@@ -60,23 +60,23 @@ save "`poblacion'"
 *** B. Defunciones ***
 **********************
 
-/** 1. Base de datos (online) **
+** 1. Base de datos (online) **
 capture import delimited "http://www.conapo.gob.mx/work/models/CONAPO/Datos_Abiertos/Proyecciones2018/def_edad_proyecciones_n.csv", clear encoding("utf-8")
 if _rc != 0 {
 	import delimited "http://www.conapo.gob.mx/work/models/CONAPO/Datos_Abiertos/Proyecciones2018/def_edad_proyecciones_n.csv", clear
 }
 
 
-** 1.Bis Base de datos (TemplateCIEP) **/
+/** 1.Bis Base de datos (TemplateCIEP) **
 if `c(version)' > 13.1 {
-	import delimited "`c(sysdir_site)'../basesCIEP/CONAPO/def_edad_proyecciones_n.csv", clear encoding("utf-8")
+	import delimited "`c(sysdir_site)'/bases/CONAPO/def_edad_proyecciones_n.csv", clear encoding("utf-8")
 }
 else {
-	import delimited "`c(sysdir_site)'../basesCIEP/CONAPO/def_edad_proyecciones_n.csv", clear
+	import delimited "`c(sysdir_site)'/bases/CONAPO/def_edad_proyecciones_n.csv", clear
 }
 
 
-** 2. Limpia **
+** 2. Limpia **/
 capture rename año anio
 if _rc != 0 {
 	rename ao anio
@@ -110,15 +110,15 @@ save "`defunciones'"
 *** C. Migracion Internacional ***
 **********************************
 
-/** 1. Base de datos (online) **
+** 1. Base de datos (online) **
 import delimited "http://www.conapo.gob.mx/work/models/CONAPO/Datos_Abiertos/Proyecciones2018/mig_inter_quin_proyecciones.csv", clear
 
 
-** 1.Bis Base de datos (TemplateCIEP) **/
-import delimited "`c(sysdir_site)'../basesCIEP/CONAPO/mig_inter_quin_proyecciones.csv", clear
+/** 1.Bis Base de datos (TemplateCIEP) **
+import delimited "`c(sysdir_site)'/bases/CONAPO/mig_inter_quin_proyecciones.csv", clear
 
 
-** 2. Limpia **
+** 2. Limpia **/
 capture rename año anio
 if _rc != 0 {
 	rename ao anio
@@ -200,19 +200,18 @@ noisily tabstat tasafecundidad, stat(mean) by(anio) f(%10.1fc) save
 ** Guardar **
 drop mujeresf nacimien nacimientos
 compress
-capture mkdir "`c(sysdir_personal)'/SIM/"
 if `c(version)' > 13.1 {
-	saveold "`c(sysdir_personal)'/SIM/Poblacion.dta", replace version(13)
+	saveold "`c(sysdir_site)'/SIM/Poblacion.dta", replace version(13)
 }
 else {
-	save "`c(sysdir_personal)'/SIM/Poblacion.dta", replace
+	save "`c(sysdir_site)'/SIM/Poblacion.dta", replace
 }
 
 collapse (sum) poblacion, by(anio entidad)
 keep if entidad == "Nacional"
 if `c(version)' > 13.1 {
-	saveold `"`c(sysdir_personal)'/SIM/Poblaciontot.dta"', replace version(13)
+	saveold `"`c(sysdir_site)'/SIM/Poblaciontot.dta"', replace version(13)
 }
 else {
-	save `"`c(sysdir_personal)'/SIM/Poblaciontot.dta"', replace
+	save `"`c(sysdir_site)'/SIM/Poblaciontot.dta"', replace
 }

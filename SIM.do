@@ -6,73 +6,86 @@
 clear all
 macro drop _all
 capture log close _all
+timer on 1
 
 
 
-
-
-***********************************
-***    GITHUB (PROGRAMACION)    ***
-***********************************
-if"`c(os)'" == "MacOSX" & "`c(username)'" == "ricardo" {  						// Computadora Ricardo
-	sysdir set PERSONAL "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladorCIEP/5.2/simuladorCIEP/"
+**************************************
+***                                ***
+***    0. GITHUB (PROGRAMACION)    ***
+***                                ***
+**************************************
+*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"                 // EXPORTAR IMAGENES EN...
+*global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
+*local update "update"                                                          // UPDATE DATASETS
+if "`c(os)'" == "MacOSX" & "`c(username)'" == "ricardo" {                       // Computadora Ricardo
+	sysdir set SITE "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladorCIEP/5.2/SimuladorCIEP/"
 }
 if "`c(os)'" == "Unix" & "`c(username)'" == "ciepmx" {                          // Computdora ServidorCIEP
-	sysdir set PERSONAL "/home/ciepmx/Dropbox (CIEP)/Ricardo Cantú/SimuladorCIEP/5.2/simuladorCIEP/"
+	sysdir set SITE "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/SimuladorCIEP/5.2/SimuladorCIEP/"
 }
-adopath ++ PERSONAL
 
 
 
-
-
-*************************
+************************/
 ***                   ***
-***    0. OPCIONES    ***
+***    1. OPCIONES    ***
 ***                   ***
 *************************
-*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"         // EXPORTAR IMAGENES EN...
-*global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
 *global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
-local noisily "noisily"                                                         // "NOISILY" OUTPUTS
-local update "update"                                                          // UPDATE DATASETS
 *global pais = "Ecuador"
-
-
-** 0.1 LIFT-OFF! **
-noisily run "`c(sysdir_personal)'/Arranque.do"
-
-
+*global pais = "El Salvador"
+noisily run "`c(sysdir_site)'/PARAM${pais}.do"
 
 
 
 **************************
 ***                    ***
-***    1. POBLACION    ***
+***    2. POBLACION    ***
 ***                    ***
 **************************
-/*forvalues k=1950(1)2100 {
+*forvalues k=1950(1)`=anioend' {
 foreach k in `=aniovp' {
-	`noisily' Poblacion, anio(`k') `update' //aniofinal(2030) 
+	noisily Poblacion, anio(`k') aniofinal(2030) `update'
 }
-
-
 
 
 
 *******************************
 ***                          ***
-***    2. CRECIMIENTO PIB    ***
+***    3. CRECIMIENTO PIB    ***
 ***                          ***
 ********************************
-`noisily' PIBDeflactor, aniovp(`=aniovp') geopib(2000) geodef(2010) discount(3.0) save `update'
-
-
-** 2.1 Inflacion, SCN **
+noisily PIBDeflactor, aniovp(`=aniovp') geopib(2000) geodef(2010) discount(3.0) save `update'
 if "$pais" == "" {
-	`noisily' Inflacion, anio(`=aniovp') `update'
-	`noisily' SCN, anio(`=aniovp') `update'
+	noisily SCN, anio(`=aniovp') `update'
+	noisily Inflacion, anio(`=aniovp') `update'
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+timer off 1
+timer list 1
+noisily di _newline(2) in g _dup(20) ":" "  " in y "TOUCH-DOWN!!!  " round(`=r(t1)/r(nt1)',.1) in g " segs  " _dup(20) ":"
+exit
+
+
+
+
+
+
+
 
 
 
@@ -80,7 +93,7 @@ if "$pais" == "" {
 
 ******************************/
 ***                         ***
-***    3. SISTEMA FISCAL    ***
+***    4. SISTEMA FISCAL    ***
 ***                         ***
 *******************************
 *`noisily' LIF, anio(`=aniovp') by(divGA) rows(1) ilif min(1) `update'
@@ -90,7 +103,12 @@ if "$pais" == "" {
 
 
 
-exit
+
+
+
+
+
+
 **************************/
 ***                     ***
 ***    4. HOUSEHOLDS    ***
@@ -200,6 +218,3 @@ if "$output" == "output" {
 if "$export" != "" {
 	noisily scalarlatex
 }
-timer off 1
-timer list 1
-noisily di _newline(2) in g _dup(20) ":" "  " in y round(`=r(t1)/r(nt1)',.1) in g " segs  " _dup(20) ":"

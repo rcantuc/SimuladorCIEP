@@ -8,13 +8,13 @@ quietly {
 	local aniovp = substr(`"`=trim("`aniovp'")'"',1,4)
 
 	* Revisa si se puede usar la base de datos *
-	capture use `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
+	capture use `"`c(sysdir_site)'/SIM/$pais/Poblacion.dta"', clear
 	if _rc != 0 {
 		if "$pais" == "" {
-			run `"`c(sysdir_personal)'/UpdatePoblacion.do"'
+			run `"`c(sysdir_site)'/UpdatePoblacion.do"'
 		}
 		else {
-			run `"`c(sysdir_personal)'/UpdatePoblacionMundial.do"'
+			run `"`c(sysdir_site)'/UpdatePoblacionMundial.do"'
 		}
 	}
 	
@@ -30,10 +30,10 @@ quietly {
 	* Si hay un error o la opción "update" es llamada, limpia la base de datos y la usa *
 	if "`update'" == "update" {
 		if "$pais" == "" {
-			run `"`c(sysdir_personal)'/UpdatePoblacion.do"'
+			run `"`c(sysdir_site)'/UpdatePoblacion.do"'
 		}
 		else {
-			run `"`c(sysdir_personal)'/UpdatePoblacionMundial.do"'
+			run `"`c(sysdir_site)'/UpdatePoblacionMundial.do"'
 		}
 	}
 
@@ -42,7 +42,7 @@ quietly {
 		local if = `"if entidad == "Nacional""'
 	}
 
-	use `if' using `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
+	use `if' using `"`c(sysdir_site)'/SIM/$pais/Poblacion.dta"', clear
 	* Si no hay año final, utiliza el último elemento del vector "anio" *
 	if `aniofinal' == -1 {
 		local aniofinal = anio in -1
@@ -192,16 +192,16 @@ quietly {
 		rename poblacionSIM poblacion
 		if `c(version)' > 13.1 {
 			preserve
-			saveold "`c(sysdir_personal)'/SIM//Poblacion.dta", replace version(13)
+			saveold "`c(sysdir_site)'/SIM//Poblacion.dta", replace version(13)
 			collapse (sum) poblacion, by(anio)
-			saveold "`c(sysdir_personal)'/SIM//Poblaciontot.dta", replace version(13)
+			saveold "`c(sysdir_site)'/SIM//Poblaciontot.dta", replace version(13)
 			restore
 		}
 		else {
 			preserve
-			save "`c(sysdir_personal)'/SIM//Poblacion.dta", replace
+			save "`c(sysdir_site)'/SIM//Poblacion.dta", replace
 			collapse (sum) poblacion, by(anio)
-			save "`c(sysdir_personal)'/SIM//Poblaciontot.dta", replace
+			save "`c(sysdir_site)'/SIM//Poblaciontot.dta", replace
 			restore
 		}
 	}
@@ -389,8 +389,8 @@ quietly {
 			`=`MaxM'[1,1]/2' `"`=string(`MaxM'[1,1]/2,"%15.0fc")'"' ///
 			`=`MaxM'[1,1]' `"`=string(`MaxM'[1,1],"%15.0fc")'"', angle(horizontal)) ///
 			///caption("Elaborado por el CIEP con informaci{c o'}n de: CONAPO (2018).") ///
-			caption("{bf:Fuente}: Elaborado por el CIEP, con información de CONAPO.") ///
-			title("{bf:Pir{c a'}mide} demogr{c a'}fica") subtitle($pais `=entidad[1]') ///
+			///caption("{bf:Fuente}: Elaborado por el CIEP, con información de CONAPO.") ///
+			///title("{bf:Pir{c a'}mide} demogr{c a'}fica") subtitle($pais `=entidad[1]') ///
 			///title("{bf:Population} pyramid")
 
 
@@ -506,10 +506,10 @@ quietly {
 			(area `pob3560' anio if anio > `aniohoy', color("255 189 0")) ///
 			(area `pob1934' anio if anio > `aniohoy', color("39 97 47")) ///
 			(area `pob18' anio if anio > `aniohoy', color("53 200 71")), ///
-			///text(`y1' `x1' `"{bf:Max:} `=string(`MAX'[1,1],"%5.1fc")' % (`x1')"', place(s)) ///
-			///text(`y1' `x1' `"{bf:-18:} `=string(pob18[`p1'],"%12.0fc")'"', place(n)) ///
-			///text(`y2' `x2' `"{bf:Max:} `=string(`MAX'[1,2],"%5.1fc")' % (`x2')"', place(s)) ///
-			///text(`y2' `x2' `"{bf:19-34:} `=string(pob1934[`p2'],"%12.0fc")'"', place(n)) ///
+			text(`y1' `x1' `"{bf:Max:} `=string(`MAX'[1,1],"%5.1fc")' % (`x1')"', place(s)) ///
+			text(`y1' `x1' `"{bf:-18:} `=string(pob18[`p1'],"%12.0fc")'"', place(n)) ///
+			text(`y2' `x2' `"{bf:Max:} `=string(`MAX'[1,2],"%5.1fc")' % (`x2')"', place(s)) ///
+			text(`y2' `x2' `"{bf:19-34:} `=string(pob1934[`p2'],"%12.0fc")'"', place(n)) ///
 			text(`y3' `x3' `"{bf:Max:} `=string(`MAX'[1,3],"%5.1fc")' % (`x3')"', place(sw)) ///
 			text(`y3' `x3' `"{bf:35-60:} `=string(pob3560[`p3'],"%12.0fc")'"', place(nw)) ///
 			text(`y4' `x4' `"{bf:Max:} `=string(`MAX'[1,4],"%5.1fc")' % (`x4')"', place(sw)) ///
@@ -518,18 +518,17 @@ quietly {
 			text(`z1' `m1' `"{bf:-18:} `=string(pob18[`q1'],"%12.0fc")'"', place(nw)) ///
 			text(`z2' `m2' `"{bf:Min:} `=string(`MAX'[2,2],"%5.1fc")' % (`m2')"', place(`place21')) ///
 			text(`z2' `m2' `"{bf:19-34:} `=string(pob1934[`q2'],"%12.0fc")'"', place(`place22')) ///
-			///text(`z3' `m3' `"{bf:Min:} `=string(`MAX'[2,3],"%5.1fc")' % (`m3')"', place(s)) ///
-			///text(`z3' `m3' `"{bf:35-60:} `=string(pob3560[`q3'],"%12.0fc")'"', place(n)) ///
-			///text(`z4' `m4' `"{bf:Min:} `=string(`MAX'[2,4],"%5.1fc")' % (`m4')"', place(s)) ///
-			///text(`z4' `m4' `"{bf:61+:} `=string(pob61[`q4'],"%12.0fc")'"', place(n)) ///
+			text(`z3' `m3' `"{bf:Min:} `=string(`MAX'[2,3],"%5.1fc")' % (`m3')"', place(s)) ///
+			text(`z3' `m3' `"{bf:35-60:} `=string(pob3560[`q3'],"%12.0fc")'"', place(n)) ///
+			text(`z4' `m4' `"{bf:Min:} `=string(`MAX'[2,4],"%5.1fc")' % (`m4')"', place(s)) ///
+			text(`z4' `m4' `"{bf:61+:} `=string(pob61[`q4'],"%12.0fc")'"', place(n)) ///
 			text(`=`POBTOT'[1,1]/1000000*.01' `=`aniohoy'-.5' "{bf:`aniohoy'}", place(nw)) ///
 			xtitle("") ///
 			ytitle("millones de personas") ///
 			xline(`=`aniohoy'+.5') ///
-			///caption("Elaborado por el CIEP con informaci{c o'}n de: CONAPO (2018).") ///
 			///caption("{bf:Fuente}: Elaborado por el CIEP, con información de CONAPO.") ///
 			legend(on label(1 "61+") label(2 "35 - 60") label(3 "19 - 34") label(4 "-18") order(4 3 2 1) region(margin(zero))) ///
-			title("{bf:Transici{c o'}n} demogr{c a'}fica") subtitle(${pais} `=entidad[1]') ///
+			///title("{bf:Transici{c o'}n} demogr{c a'}fica") subtitle(${pais} `=entidad[1]') ///
 			ylabel(, format(%20.1fc)) yscale(range(0)) ///
 			xlabel(`anioinicial'(10)`aniofinal') ///
 			name(E_`entidadGName', replace)

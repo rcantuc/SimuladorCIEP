@@ -25,14 +25,14 @@ quietly {
 	***********************
 	*** 0 Base de datos ***
 	***********************
-	capture use `"`c(sysdir_site)'../basesCIEP/SIM/inflacion.dta"', clear
+	capture use `"`c(sysdir_site)'/SIM/inflacion.dta"', clear
 	if _rc != 0 | "`update'" == "update" {
-		run `"`c(sysdir_personal)'/Inflacion`=subinstr("${pais}"," ","",.)'.do"'
-		use `"`c(sysdir_site)'../basesCIEP/SIM/inflacion.dta"', clear
+		run `"`c(sysdir_site)'/UpdateInflacion.do"'
+		use `"`c(sysdir_site)'/SIM/inflacion.dta"', clear
 	}
 
-	collapse (last) inflacion (last) mes, by(anio)
-	replace inflacion = inflacion/100
+	collapse (last) inpc (last) mes, by(anio)
+	replace inpc = inpc/100
 	
 	local anio_first = anio[1]
 	local anio_last = anio[_N]
@@ -51,10 +51,10 @@ quietly {
 	tsset anio
 	tsappend, add(`=`fin'-`anio_last'')
 
-	g double var_inflY = (inflacion/L.inflacion-1)*100
+	g double var_inflY = (inpc/L.inpc-1)*100
 	label var var_inflY "Anual"
 
-	g double var_inflG = ((inflacion/L`=`geo''.inflacion)^(1/`geo')-1)*100
+	g double var_inflG = ((inpc/L`=`geo''.inpc)^(1/`geo')-1)*100
 	label var var_inflG "Promedio geom{c e'}trico (`geo' a{c n~}os)"
 
 
@@ -74,8 +74,8 @@ quietly {
 		else {
 			replace var_inflY = L.var_inflG if anio == `k' & mes != 12
 		}
-		replace inflacion = L.inflacion*(1+var_inflY/100) if anio == `k' & mes != 12
-		replace var_inflG = ((inflacion/L`=`geo''.inflacion)^(1/`geo')-1)*100 if anio == `k' & mes != 12
+		replace inpc = L.inpc*(1+var_inflY/100) if anio == `k' & mes != 12
+		replace var_inflG = ((inpc/L`=`geo''.inpc)^(1/`geo')-1)*100 if anio == `k' & mes != 12
 	}
 
 	* Valor presente *
@@ -102,7 +102,7 @@ quietly {
 		}
 	}
 
-	g double deflatorpp = inflacion/inflacion[`obsvp']
+	g double deflatorpp = inpc/inpc[`obsvp']
 	label var deflatorpp "Poder adquisitivo"
 
 
@@ -144,7 +144,7 @@ quietly {
 		twoway (connected var_inflY anio if (anio < `anio_last' & anio >= 1993) | (anio == `anio_last' & mes == 12), msize(large) mlwidth(vvthick)) ///
 			(connected var_inflY anio if anio > `anio_last' & anio >= anio[`obslast'+`exo_count'], msize(large) mlwidth(vvthick)) ///
 			(connected var_inflY anio if anio < anio[`obslast'+`exo_count'] & anio > `anio_last', pstyle(p4) msize(large) mlwidth(vvthick)), ///
-			title({bf:Crecimientos} del {c i'}ndice nacional de precios al consumidor) ///
+			title({bf:Crecimientos} del INPC) ///
 			subtitle(${pais}) ///
 			xlabel(1995(5)`=round(anio[_N],5)') ///
 			ylabel(, format(%3.0f)) ///
@@ -166,6 +166,7 @@ quietly {
 
 	timer off 12
 	timer list 12
+	noisily list if anio >= 2000 & anio <= 2030
 	noisily di _newline in g "Tiempo: " in y round(`=r(t12)/r(nt12)',.1) in g " segs."
 }
 end
