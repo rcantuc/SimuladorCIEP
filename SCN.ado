@@ -26,63 +26,63 @@ quietly {
 	*** 1. Databases (D) and variable definitions (V) ***
 	*****************************************************
 	** D.1. Cuenta de generaci{c o'}n del ingreso **
-	capture confirm file "`c(sysdir_personal)'/SIM/baseSCN.dta"
+	capture confirm file "`c(sysdir_site)'/SIM/baseSCN.dta"
 	if _rc != 0 | "`update'" == "update" {
-		import excel "`c(sysdir_site)'../basesCIEP/INEGI/SCN/Cuenta de generacion del ingreso.xlsx", clear
+		import excel "`c(sysdir_site)'/bases/UPDATE/SCN/Cuenta de generacion del ingreso.xlsx", clear
 		LimpiaBIE g
 		tempfile generacion
 		save `generacion'
 
 		** D.2. Cuenta por sectores institucionales **
-		import excel "`c(sysdir_site)'../basesCIEP/INEGI/SCN/Cuentas por sectores institucionales.xlsx", clear
+		import excel "`c(sysdir_site)'/bases/UPDATE/SCN/Cuentas por sectores institucionales.xlsx", clear
 		LimpiaBIE s
 		tempfile sectores
 		save `sectores'
 
 		** D.3. Cuenta de ingreso nacional disponbile **
-		import excel "`c(sysdir_site)'../basesCIEP/INEGI/SCN/Cuenta del ingreso nacional disponible.xlsx", clear
+		import excel "`c(sysdir_site)'/bases/UPDATE/SCN/Cuenta del ingreso nacional disponible.xlsx", clear
 		LimpiaBIE d
 		tempfile disponible
 		save `disponible'
 
 		** D.4. Cuenta de consumo **
-		import excel "`c(sysdir_site)'../basesCIEP/INEGI/SCN/Consumo de los hogares.xlsx", clear
+		import excel "`c(sysdir_site)'/bases/UPDATE/SCN/Consumo de los hogares.xlsx", clear
 		LimpiaBIE c
 		tempfile consumo
 		save `consumo'
 
 		** D.5. Cuenta de consumo privado **
-		import excel "`c(sysdir_site)'../basesCIEP/INEGI/SCN/Gasto de consumo privado.xlsx", clear
+		import excel "`c(sysdir_site)'/bases/UPDATE/SCN/Gasto de consumo privado.xlsx", clear
 		LimpiaBIE gc
 		tempfile gasto
 		save `gasto'
 
 		** D.6. Cuenta de consumo de gobierno **
-		import excel "`c(sysdir_site)'../basesCIEP/INEGI/SCN/Gasto de consumo de gobierno general.xlsx", clear
+		import excel "`c(sysdir_site)'/bases/UPDATE/SCN/Gasto de consumo de gobierno general.xlsx", clear
 		LimpiaBIE cg
 		tempfile gobierno
 		save `gobierno'
 
 		** D.7. PIB actividad economica **
-		import excel "`c(sysdir_site)'../basesCIEP/INEGI/SCN/PIB actividad economica.xlsx", clear
+		import excel "`c(sysdir_site)'/bases/UPDATE/SCN/PIB actividad economica.xlsx", clear
 		LimpiaBIE ae
 		tempfile actividad
 		save `actividad'
 
 		** D.8. Cuenta de consumo privado por actividad economica **
-		import excel "`c(sysdir_site)'../basesCIEP/INEGI/SCN/Gasto de consumo privado por actividad economica.xlsx", clear
+		import excel "`c(sysdir_site)'/bases/UPDATE/SCN/Gasto de consumo privado por actividad economica.xlsx", clear
 		LimpiaBIE cp
 		tempfile consumoprivado
 		save `consumoprivado'
 
 		** D.9. Cuenta de produccion **
-		import excel "`c(sysdir_site)'../basesCIEP/INEGI/SCN/Produccion bruta.xlsx", clear
+		import excel "`c(sysdir_site)'/bases/UPDATE/SCN/Produccion bruta.xlsx", clear
 		LimpiaBIE pb
 		tempfile produccion
 		save `produccion'
 
 		** D.9. Cuenta de produccion **
-		import excel "`c(sysdir_site)'../basesCIEP/INEGI/SCN/sector externo.xlsx", clear
+		import excel "`c(sysdir_site)'/bases/UPDATE/SCN/sector externo.xlsx", clear
 		LimpiaBIE ex
 		tempfile sectorexterno
 		save `sectorexterno'
@@ -184,7 +184,7 @@ quietly {
 		* Importa los datos para cada año, si hay un error, el loop termina *
 		forvalues k = 2003(1)`aniovp' {
 			preserve
-			capture import excel using "`c(sysdir_site)'../basesCIEP/INEGI/SCN/Tabulados/Base 2013/`k'-E_43_186_`k'.xlsx", sheet("`k'-E") cellrange(BD63:BD63) clear
+			capture import excel using "`c(sysdir_site)'/bases/UPDATE/SCN/Tabulados/Base 2013/`k'-E_43_186_`k'.xlsx", sheet("`k'-E") cellrange(BD63:BD63) clear
 			if _rc == 0 {
 				local IngMixto = BD in 1
 				restore
@@ -203,7 +203,7 @@ quietly {
 		
 		forvalues k = 2003(1)`aniovp' {
 			preserve
-			capture import excel using "`c(sysdir_site)'../basesCIEP/INEGI/SCN/Tabulados/Base 2013/`k'-E_43_186_`k'.xlsx", sheet("`k'-E") cellrange(BD44:BD44) clear
+			capture import excel using "`c(sysdir_site)'/bases/UPDATE/SCN/Tabulados/Base 2013/`k'-E_43_186_`k'.xlsx", sheet("`k'-E") cellrange(BD44:BD44) clear
 			if _rc == 0 {
 				local SSImputada = BD in 1
 				restore
@@ -222,7 +222,7 @@ quietly {
 
 		forvalues k = 2003(1)`aniovp' {
 			preserve
-			capture import excel using "`c(sysdir_site)'../basesCIEP/INEGI/SCN/Tabulados/Base 2013/`k'-E_43_186_`k'.xlsx", sheet("`k'-E") cellrange(BD57:BD57) clear
+			capture import excel using "`c(sysdir_site)'/bases/UPDATE/SCN/Tabulados/Base 2013/`k'-E_43_186_`k'.xlsx", sheet("`k'-E") cellrange(BD57:BD57) clear
 			if _rc == 0 {
 				local SubProductos = BD in 1
 				restore
@@ -240,7 +240,7 @@ quietly {
 
 		forvalues k = 2003(1)`aniovp' {
 			preserve
-			capture import excel using "`c(sysdir_site)'../basesCIEP/INEGI/SCN/Tabulados/Base 2013/`k'-E_43_186_`k'.xlsx", sheet("`k'-E") cellrange(BD61:BD61) clear
+			capture import excel using "`c(sysdir_site)'/bases/UPDATE/SCN/Tabulados/Base 2013/`k'-E_43_186_`k'.xlsx", sheet("`k'-E") cellrange(BD61:BD61) clear
 			if _rc == 0 {
 				local SubProduccion = BD in 1
 				restore
@@ -259,7 +259,7 @@ quietly {
 
 		forvalues k = 2003(1)`aniovp' {
 			preserve
-			capture import excel using "`c(sysdir_site)'../basesCIEP/INEGI/SCN/Tabulados/Base 2013/`k'-E_43_186_`k'.xlsx", sheet("`k'-E") cellrange(BD65:BD65) clear
+			capture import excel using "`c(sysdir_site)'/bases/UPDATE/SCN/Tabulados/Base 2013/`k'-E_43_186_`k'.xlsx", sheet("`k'-E") cellrange(BD65:BD65) clear
 			if _rc == 0 {
 				local DepMix = BD in 1
 				restore
@@ -276,16 +276,16 @@ quietly {
 			label var `k' "`label'"
 		}
 		if `c(version)' > 13.1 {
-			saveold "`c(sysdir_personal)'/SIM/baseSCN.dta", replace version(13)
+			saveold "`c(sysdir_site)'/SIM/baseSCN.dta", replace version(13)
 		}
 		else {
-			save "`c(sysdir_personal)'/SIM/baseSCN.dta", replace		
+			save "`c(sysdir_site)'/SIM/baseSCN.dta", replace		
 		}
 	}
 
 	** D.8. PIBDeflactor **
-	*capture use "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", clear
-	PIBDeflactor, anio(`anio') `update' discount(`discount') nographs nooutput
+	*capture use "`c(sysdir_site)'/users/$pais/$id/PIB.dta", clear
+	PIBDeflactor, anio(`anio') discount(`discount') nographs nooutput
 	tempfile basepib
 	save `basepib'
 
@@ -311,10 +311,10 @@ quietly {
 
 	**************************
 	** 1.1. Merge databases **
-	use "`c(sysdir_personal)'/SIM/baseSCN.dta", clear
+	use "`c(sysdir_site)'/SIM/baseSCN.dta", clear
 	local anio_last = anio[_N]
 	merge 1:1 (anio) using `basepib', nogen
-	merge 1:1 (anio) using "`c(sysdir_personal)'/SIM/Poblaciontot.dta", nogen keep(matched)
+	merge 1:1 (anio) using "`c(sysdir_site)'/SIM/Poblaciontot.dta", nogen keep(matched)
 	tsset anio
 
 

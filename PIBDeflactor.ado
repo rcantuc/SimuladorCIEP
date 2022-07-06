@@ -32,15 +32,15 @@ quietly {
 	***********************
 	*** 0 Base de datos ***
 	***********************
-	capture use `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
-	if _rc != 0 | "`update'" == "update" {
+	capture use `"`c(sysdir_site)'/SIM/$pais/Poblacion.dta"', clear
+	if _rc != 0 {
 		if "$pais" == "" {
-			run "`c(sysdir_personal)'/UpdatePoblacion.do"
+			run "`c(sysdir_site)'/UpdatePoblacion.do"
 		}
 		else if "$pais" == "El Salvador" {
-			run "`c(sysdir_personal)'/UpdatePoblacionMundial.do"
+			run "`c(sysdir_site)'/UpdatePoblacionMundial.do"
 		}
-		use `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
+		use `"`c(sysdir_site)'/SIM/$pais/Poblacion.dta"', clear
 	}
 
 
@@ -64,10 +64,10 @@ quietly {
 
 	***************************
 	** 0.2 USER previous PIB **
-	capture use "`c(sysdir_personal)'/SIM/$pais/PIBDeflactor.dta", clear
+	capture use "`c(sysdir_site)'/SIM/$pais/PIBDeflactor.dta", clear
 	if _rc != 0 | "`update'" == "update" {
-		run `"`c(sysdir_personal)'/UpdatePIBDeflactor`=subinstr("${pais}"," ","",.)'.do"'
-		use "`c(sysdir_personal)'/SIM/$pais/PIBDeflactor.dta", clear
+		run `"`c(sysdir_site)'/UpdatePIBDeflactor`=subinstr("${pais}"," ","",.)'.do"'
+		use "`c(sysdir_site)'/SIM/$pais/PIBDeflactor.dta", clear
 	}
 
 	* Anio first *
@@ -294,11 +294,11 @@ quietly {
 	*****************
 	** 3 Simulador **
 	*****************
-	noisily di _newline in g " PIB " in y "`anio_last'`trim_last'" _col(30) %20.0fc `pib_last' in g " `=currency[`obsvp']' ({c u'}ltimo reportado)"
-	noisily di in g " PIB " in y anio[`obsvp'] in g " per c{c a'}pita " in y _col(40) %10.1fc pibY[`obsvp']/Poblacion[`obsvp'] in g " `=currency[`obsvp']'"
-	noisily di in g " PIB " in y anio[`obsvp'] in g " por trabajador (16-65 a{c n~}os) " in y _col(40) %10.1fc OutputPerWorker[`obsvp'] in g " `=currency[`obsvp']'"
-	noisily di in g " Crecimiento geom{c e'}trico " in y anio[`obsPIB'] "-" anio[`obs_exo'] _col(40) %10.4f ((pibYR[`obs_exo']/pibYR[`obsPIB'])^(1/(`obs_exo'-`obsPIB'))-1)*100 in g " %" 
-	noisily di in g " Lambda por trabajador " in y anio[`obsPIB'] "-" anio[`obs_exo'] _col(40) %10.4f scalar(llambda) in g " %" 
+	noisily di _newline in g " PIB " in y "`anio_last'`trim_last'" _col(33) %20.0fc `pib_last' in g " `=currency[`obsvp']' ({c u'}ltimo reportado)"
+	noisily di in g " PIB " in y anio[`obsvp'] in g " per c{c a'}pita " in y _col(43) %10.1fc pibY[`obsvp']/Poblacion[`obsvp'] in g " `=currency[`obsvp']'"
+	noisily di in g " PIB " in y anio[`obsvp'] in g " por persona en edad de trabajar " in y _col(43) %10.1fc OutputPerWorker[`obsvp'] in g " `=currency[`obsvp']' (16-65 a{c n~}os)"
+	noisily di _newline in g " Crecimiento promedio " in y anio[`obsPIB'] "-" anio[`obs_exo'] _col(43) %10.4f ((pibYR[`obs_exo']/pibYR[`obsPIB'])^(1/(`obs_exo'-`obsPIB'))-1)*100 in g " %" 
+	noisily di in g " Lambda por trabajador " in y anio[`obsPIB'] "-" anio[`obs_exo'] _col(43) %10.4f scalar(llambda) in g " %" 
 	*noisily di in g " Lambda por trabajador " in y anio[1] "-" anio[`obs_exo'] _col(35) %10.4f scalar(LLambda) in g " %" 
 
 	local grow_rate_LR = (pibYR[_N]/pibYR[_N-10])^(1/10)-1
@@ -467,7 +467,7 @@ quietly {
 		}
 		if (anio[`k'] == `anio_last' & trimestre[`k'] < 4) | anio[`k'] <= anio[`obs_exo'] & anio[`k'] > `anio_last' {
 			if "`estimado'" == "" {
-				noisily di in g %~72s "$paqueteEconomico"
+				noisily di in g %~72s "ESTIMADO"
 				local estimado = "done"
 			}
 			noisily di in g "{bf: `=anio[`k']' " _col(10) %8.1fc in y var_pibY[`k'] " %" _col(25) %20.0fc pibY[`k'] _col(50) %8.1fc in y var_indiceY[`k'] " %" _col(65) %12.10fc deflator[`k'] "}"
@@ -535,10 +535,10 @@ quietly {
 	capture drop __*
 	if "`save'" == "save" {
 		if `c(version)' > 13.1 {
-			saveold "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", replace version(13)
+			saveold "`c(sysdir_site)'/users/$pais/$id/PIB.dta", replace version(13)
 		}
 		else {
-			save "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", replace
+			save "`c(sysdir_site)'/users/$pais/$id/PIB.dta", replace
 		}
 	}
 
