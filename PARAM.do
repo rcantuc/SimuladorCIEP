@@ -50,8 +50,8 @@ global pib2027 = 2.5                                           // CGPE 2022
 global pib2028 = 2.5                                           // CGPE 2022
 global pib2029 = 2.5                                           // CGPE 2022
 global pib2030 = 2.5                                           // CGPE 2022
-
 global def2022 = 6.6853                                        // Pre-CGPE 2023
+
 global def2023 = 3.9258                                        // Pre-CGPE 2023
 global def2024 = 3.5                                           // CGPE 2022: 3.5
 global def2025 = 3.5                                           // CGPE 2022: 3.5
@@ -75,7 +75,7 @@ global inf2027 = 3.0                                           // CGPE 2022: 3.0
 scalar aniovp = 2022
 scalar anioend = 2030
 
-
+exit
 
 *********************************/
 ***                            ***

@@ -55,7 +55,7 @@ quietly {
 	*** 0. Base de datos ***
 	************************
 	replace entidad = "Estado de México" if entidad == "M?xico" | entidad == "México"
-	noisily di _newline(2) in g _dup(20) "." "{bf:  Poblaci{c o'}n}: " in y "$pais `=entidad[1]'  " in g _dup(20) "." _newline
+	noisily di _newline(2) in g _dup(20) "." "{bf:   Poblaci{c o'}n: " in y "`=entidad[1]'   }" in g _dup(20) "." _newline
 
 	tabstat poblacion if anio == `aniohoy', f(%20.0fc) stat(sum) save
 	tempname POBTOT

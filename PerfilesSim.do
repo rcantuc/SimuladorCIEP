@@ -18,7 +18,7 @@ if "$pais" != "" {
 **********************
 *** 1. Macros: PEF ***
 **********************
-noisily PEF, anio(`1') by(desc_funcion) min(0) nographs
+PEF, anio(`1') by(desc_funcion) min(0) nographs
 local Cuotas_ISSSTE = r(Cuotas_ISSSTE)
 
 PEF if transf_gf == 0 & ramo != -1 & (substr(string(objeto),1,2) == "45" ///
@@ -79,7 +79,7 @@ local InfraT = r(StatTotal)
 **********************
 *** 2. Macros: LIF ***
 **********************
-noisily LIF, anio(`1') nographs min(0) ilif
+LIF, anio(`1') nographs min(0)
 local ISRSalarios = r(ISR_Asa_)
 local ISRFisicas = r(ISR_PF)
 local ISRMorales = r(ISR_PM)
@@ -98,13 +98,15 @@ local Productos = r(Productos)
 local Aprovechamientos = r(Aprovechamientos)
 local OtrosTributarios = r(Otros_tributarios)
 local OtrasEmpresas = r(Otras_empresas)
+local Importaciones = r(Importaciones)
+local ISAN = r(ISAN)
 
-LIF, anio(`1') by(divGA) nographs min(0) ilif
+LIF, anio(`1') by(divGA) nographs min(0)
 local alingreso = r(Impuestos_al_ingreso)-`ISRMorales'
 local alconsumo = r(Impuestos_al_consumo)
 local otrosing = r(Ingresos_de_capital)+`ISRMorales'
 
-LIF, anio(`1') nographs min(0) by(serie) ilif
+LIF, anio(`1') nographs min(0) by(serie)
 local IEPSAlcohol = r(XNA0203)
 local IEPSTabaco = r(XNA0125)
 
@@ -112,7 +114,7 @@ local IEPSTabaco = r(XNA0125)
 **********************
 *** 3. Macros: PIB ***
 **********************
-use if anio == `1' | anio == 2020 using "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", clear
+use if anio == `1' | anio == 2020 using "`c(sysdir_site)'/users/$pais/$id/PIB.dta", clear
 local lambda = lambda[1]
 local deflator = deflator[1]
 
@@ -120,7 +122,7 @@ local deflator = deflator[1]
 ***************************
 *** 4. Ajuste Poblacion *** 
 ***************************
-use if anio == `1' using `"`c(sysdir_personal)'/SIM/Poblaciontot.dta"', clear
+use if anio == `1' using `"`c(sysdir_site)'/SIM/Poblaciontot.dta"', clear
 local ajustepob = poblacion
 
 
@@ -128,58 +130,156 @@ local ajustepob = poblacion
 **********************************
 *** 4. Variables Simulador.ado ***
 **********************************
-use "`c(sysdir_personal)'/SIM/2020/households.dta", clear
+use "`c(sysdir_site)'/SIM/2020/households.dta", clear
+
 tabstat factor, stat(sum) f(%20.0fc) save
 tempname pobenigh
 matrix `pobenigh' = r(StatTotal)
 replace factor = round(factor*`ajustepob'/`pobenigh'[1,1],1)
 
+
+
+**************************************
 ** (+) Impuestos al ingreso laboral **
-egen laboral = rsum(ISR__asalariados ISR__PF) if formal != 0
+
+** (+) ISR Asalariados **
+Distribucion ISRAS, relativo(ISR__asalariados) macro(`ISRSalarios')
+label var ISRAS "ISR (Salarios)"
+noisily Simulador ISRAS [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
+noisily Gini ISRAS, hogar(folioviv foliohog) individuo(numren) factor(factor)
+
+** (+) ISR Personas Físicas **
+Distribucion ISRPF, relativo(ISR__PF) macro(`ISRFisicas')
+label var ISRPF "ISR (personas f{c i'}sicas)"
+noisily Simulador ISRPF [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
+noisily Gini ISRPF, hogar(folioviv foliohog) individuo(numren) factor(factor)
+
+** (+) Cuotas obrero-patronal IMSS **
+Distribucion CuotasSS if formal == 1, relativo(cuotasTP) macro(`=`CuotasIMSS'')
+label var CuotasSS "cuotas IMSS"
+noisily Simulador CuotasSS [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
+noisily Gini CuotasSS, hogar(folioviv foliohog) individuo(numren) factor(factor)
+
+
+** (+) Impuestos laborales **
+egen laboral = rsum(ISRAS ISRPF CuotasSS)
 replace laboral = 0 if laboral == .
+
 Distribucion Laboral, relativo(laboral) macro(`=`ISRSalarios'+`ISRFisicas'')
 label var Laboral "los impuestos al ingreso laboral"
+noisily Simulador Laboral [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
+noisily Gini Laboral, hogar(folioviv foliohog) individuo(numren) factor(factor)
 
-** (+) Cuotas a la SS **
-egen cuotasss = rsum(cuotasTPF) if formal != 0
-replace cuotasss = 0 if laboral == .
-Distribucion CuotasSS, relativo(cuotasss) macro(`=`CuotasIMSS'')
-label var CuotasSS "las contribuciones a la seguridad social"
 
-** (+) Impuestos al consumo **
-egen consumo = rsum(TOTIVA TOTIEPS)
-replace consumo = 0 if consumo == .
-Distribucion Consumo, relativo(consumo) macro(`alconsumo')
-label var Consumo "los impuestos al consumo"
 
+****************************************
 ** (+) Impuestos e ingresos de capital **
-Distribucion OtrosC, relativo(ISR__PM) macro(`=`otrosing'+`ISRMorales'')
-label var OtrosC "los ingresos de capital"
 
 ** (+) ISR Personas Morales **
 Distribucion ISRPM, relativo(ISR__PM) macro(`ISRMorales')
 label var ISRPM "ISR (personas morales)"
+noisily Simulador ISRPM [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
+noisily Gini ISRPM, hogar(folioviv foliohog) individuo(numren) factor(factor)
+
+** (+) Otros de capital **
+Distribucion OtrosC, relativo(ISR__PM) macro(`=`otrosing'+`ISRMorales'')
+label var OtrosC "los ingresos de capital"
+noisily Gini OtrosC, hogar(folioviv foliohog) individuo(numren) factor(factor)
+
+
+
+
+*****************************
+** (+) Impuestos al consumo **
 
 ** (+) IEPS **
 Distribucion IEPS, relativo(TOTIEPS) macro(`IEPSTOT')
 label var IEPS "IEPS (total)"
+noisily Simulador IEPS [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
+noisily Gini IEPS, hogar(folioviv foliohog) individuo(numren) factor(factor)
+
 
 ** (+) IEPS Alcohol **
 Distribucion IEPSAlcohol, relativo(IEPS3) macro(`IEPSAlcohol')
 label var IEPSAlcohol "IEPS (alcohol)"
+noisily Gini IEPSAlcohol, hogar(folioviv foliohog) individuo(numren) factor(factor)
+
 
 ** (+) IEPS Tabaco **
 Distribucion IEPSTabaco, relativo(IEPS4) macro(`IEPSTabaco')
 label var IEPSTabaco "IEPS (tabaco)"
 
+noisily Gini IEPSTabaco if IEPSTabaco != 0, hogar(folioviv foliohog) individuo(numren) factor(factor)
+
+
+** (+) ISAN **
+Distribucion ISANTOT, relativo(ISAN) macro(`ISAN')
+label var ISANTOT "ISAN"
+noisily Simulador ISANTOT [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
+noisily Gini ISANTOT, hogar(folioviv foliohog) individuo(numren) factor(factor)
+
+
 ** (+) IVA **
 Distribucion IVA, relativo(TOTIVA) macro(`IVATOT')
-label var IVA "IVA (total)"
+label var IVA "IVA"
+noisily Simulador IVA [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
+noisily Gini IVA, hogar(folioviv foliohog) individuo(numren) factor(factor)
+
+
+** (+) Importaciones **
+Distribucion IMPORT, relativo(Importaciones) macro(`Importaciones')
+label var IMPORT "Importaciones"
+noisily Simulador IMPORT [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
+noisily Gini IMPORT, hogar(folioviv foliohog) individuo(numren) factor(factor)
+
+
+** (+) TOTAL **
+egen consumo = rsum(IVA ISANTOT IEPS IMPORT)
+replace consumo = 0 if consumo == .
+
+Distribucion Consumo, relativo(consumo) macro(`alconsumo')
+label var Consumo "los impuestos al consumo"
+
 
 ** (+) Petroleo **
 g pob = 1
 Distribucion Petroleo, relativo(pob) macro(`FMP')
 label var Petroleo "ingresos petroleros"
+noisily Gini Petroleo, hogar(folioviv foliohog) individuo(numren) factor(factor)
+
+
+** (=) Impuestos y aportaciones **
+egen ImpuestosAportaciones = rsum(ISRAS ISRPF ISRPM CuotasSS IVA IEPS ISANTOT IMPORT)
+label var ImpuestosAportaciones "impuestos y aportaciones"
+noisily Simulador ImpuestosAportaciones [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
+noisily Gini ImpuestosAportaciones, hogar(folioviv foliohog) individuo(numren) factor(factor)
+
+
+** (=) Ingresos Publicos **
+egen IngresosPublicos = rsum(Laboral Consumo OtrosC)
+label var IngresosPublicos "ingresos p{c u'}blicos"
+noisily Gini IngresosPublicos, hogar(folioviv foliohog) individuo(numren) factor(factor)
+
+
+
+
+
+
+
+
+exit
+
+
+
+
+
+
+
+
+
+
+
+
 
 ** (-) Pensiones **
 g ing_jubila_pub = ing_jubila if (formal == 1 | formal == 2 | formal == 3) & ing_jubila != 0
@@ -273,9 +373,20 @@ local adeusal = r(Adeudos_con_el_IMSS_e_ISSSTE_y_)
 PEF if divGA == 7, anio(`1') by(ramo) min(0) nographs
 local fassa = r(Aportaciones_Federales_para_Ent) //+ r(Aportaciones_Federales_para_EntC)
 
-PEF if divGA == 7 & desc_ur == 1238, anio(`1') by(desc_pp) min(0) nographs
+
+
+
+
+
+PEF if divGA == 7 /*& desc_ur == 1238*/, anio(`1') by(desc_pp) min(0) nographs		// <--- HAY QUE ARREGLARLO!!!!!
 local fortaINSABI = r(Fortalecimiento_a_la_atenci_c_o) //+r(Fortalecimiento_a_la_atenci_c_oC)
 local atencINSABI = r(Atenci_c_o__n_a_la_Salud) //+r(Atenci_c_o__n_a_la_SaludC)
+
+
+
+
+
+
 
 local segpop = `segpop0'+`fassa'+`fortaINSABI'+`atencINSABI'
 restore
@@ -457,22 +568,6 @@ label var Infra "infraestructura"
 
 
 
-****************
-*** 5. LIBRO ***
-****************
-
-** (+) Ingresos de PM **
-label var ing_bruto_tpm "ingresos brutos (personas morales)"
-
-** (+) Impuestos y aportaciones **
-egen ImpuestosAportaciones = rsum(Laboral Consumo ISR__PM)
-label var ImpuestosAportaciones "impuestos y aportaciones"
-
-** (+) Ingresos Publicos **
-egen IngresosPublicos = rsum(Laboral Consumo OtrosC)
-label var IngresosPublicos "ingresos p{c u'}blicos"
-
-
 
 ******************
 *** 6. ENGLISH ***
@@ -490,18 +585,36 @@ label var IngBasico "Basic universal income"
 
 
 
+
+
+***********/
+*** SAVE ***
+************
+compress
+capture drop __* 
+capture drop *_accum
+save "`c(sysdir_site)'/SIM/2020/households`1'.dta", replace
+
+
+
+
+
+
+
 *******************/
 *** 7. SIMULADOR ***
 ********************
-noisily Simulador Laboral [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
-noisily Simulador CuotasSS [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
+use "`c(sysdir_site)'/SIM/2020/households`1'.dta", clear
+
+
+
+
+
+exit
 noisily Simulador Consumo [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
 noisily Simulador OtrosC [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
-noisily Simulador ISRPM [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
-noisily Simulador IEPS [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
 noisily Simulador IEPSAlcohol [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
 noisily Simulador IEPSTabaco [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
-noisily Simulador IVA [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
 noisily Simulador Petroleo [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
 noisily Simulador Pension [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
 noisily Simulador PenBienestar if edad >= 65 [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
@@ -511,19 +624,22 @@ noisily Simulador OtrosGas [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`
 noisily Simulador IngBasico [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
 noisily Simulador Infra [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
 noisily Simulador ing_bruto_tpm [fw=factor], base("ENIGH 2020") boot(1) reboot nooutput
-noisily Simulador ImpuestosAportaciones [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
 noisily Simulador IngresosPublicos [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
 
+noisily Simulador ingbrutotot [fw=factor_cola], base("ENIGH 2018") boot(1) reboot anio(2020) $nographs nooutput
+noisily Simulador TOTgastoanual [fw=factor_cola], base("ENIGH 2018") boot(1) reboot anio(2020) $nographs nooutput
+noisily Simulador Yl [fw=factor_cola], base("ENIGH 2018") boot(1) reboot anio(2020) $nographs nooutput
+noisily Simulador Yk [fw=factor_cola], base("ENIGH 2018") boot(1) reboot anio(2020) $nographs nooutput
+
+replace Yk = Yk + gasto_anualDepreciacion - (ing_cap_imss + ing_cap_issste + ing_cap_cfe + ///
+	ing_cap_pemex + ing_cap_fmp + ing_cap_mejoras + ing_cap_derechos + ///
+	ing_cap_productos + ing_cap_aprovecha + ///
+	ing_cap_otrostrib + ing_cap_otrasempr)
+
+noisily Simulador Ciclodevida [fw=factor_cola], base("ENIGH 2018") boot(1) reboot anio(2020) $nographs nooutput
+noisily Simulador Ahorro [fw=factor_cola], base("ENIGH 2018") boot(1) reboot anio(2020) $nographs nooutput
 
 
-
-***********/
-*** SAVE ***
-************
-compress
-capture drop __* 
-capture drop *_accum
-save "`c(sysdir_personal)'/SIM/2020/households`1'.dta", replace
 
 
 
@@ -533,6 +649,6 @@ save "`c(sysdir_personal)'/SIM/2020/households`1'.dta", replace
 *****************
 if `c(version)' > 13.1 {
 	foreach k in grupoedad decil escol sexo {
-		noisily run "`c(sysdir_personal)'/Sankey.do" `k' `1'
+		noisily run "`c(sysdir_site)'/Sankey.do" `k' `1'
 	}
 }

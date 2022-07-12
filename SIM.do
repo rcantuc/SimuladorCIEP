@@ -15,15 +15,15 @@ timer on 1
 ***    0. GITHUB (PROGRAMACION)    ***
 ***                                ***
 **************************************
-*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"                 // EXPORTAR IMAGENES EN...
-*global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
-*local update "update"                                                          // UPDATE DATASETS
 if "`c(os)'" == "MacOSX" & "`c(username)'" == "ricardo" {                       // Computadora Ricardo
 	sysdir set SITE "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladorCIEP/5.2/SimuladorCIEP/"
 }
 if "`c(os)'" == "Unix" & "`c(username)'" == "ciepmx" {                          // Computdora ServidorCIEP
 	sysdir set SITE "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/SimuladorCIEP/5.2/SimuladorCIEP/"
 }
+*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"                 // EXPORTAR IMAGENES EN...
+*global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
+*local update "update"                                                          // UPDATE DATASETS
 
 
 
@@ -32,7 +32,8 @@ if "`c(os)'" == "Unix" & "`c(username)'" == "ciepmx" {                          
 ***    1. OPCIONES    ***
 ***                   ***
 *************************
-*global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
+global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
+scalar aniovp = 2022
 *global pais = "Ecuador"
 *global pais = "El Salvador"
 noisily run "`c(sysdir_site)'/PARAM${pais}.do"
@@ -44,7 +45,7 @@ noisily run "`c(sysdir_site)'/PARAM${pais}.do"
 ***    2. POBLACION    ***
 ***                    ***
 **************************
-*forvalues k=1950(1)`=anioend' {
+/*forvalues k=1950(1)`=anioend' {
 foreach k in `=aniovp' {
 	noisily Poblacion, anio(`k') aniofinal(2030) `update'
 }
@@ -56,7 +57,7 @@ foreach k in `=aniovp' {
 ***    3. CRECIMIENTO PIB    ***
 ***                          ***
 ********************************
-noisily PIBDeflactor, aniovp(`=aniovp') geopib(2000) geodef(2010) discount(3.0) save `update'
+noisily PIBDeflactor, aniovp(`=aniovp') geopib(2014) geodef(2014) discount(3.0) save `update'
 if "$pais" == "" {
 	noisily SCN, anio(`=aniovp') `update'
 	noisily Inflacion, anio(`=aniovp') `update'
@@ -64,15 +65,29 @@ if "$pais" == "" {
 
 
 
+******************************
+***                         ***
+***    4. SISTEMA FISCAL    ***
+***                         ***
+*******************************
+noisily LIF, anio(`=aniovp') by(divGA) rows(1) min(1) `update'
+noisily PEF, anio(`=aniovp') by(desc_funcion) rows(2) min(1) `update'			<--- ¡¡CORREGIR 2021 Y 2022!!
+noisily SHRFSP, anio(`=aniovp') `update'
 
 
 
 
-
-
-
-
-
+**************************/
+***                     ***
+***    5. HOUSEHOLDS    ***
+***                     ***
+***************************
+capture confirm file `"`c(sysdir_site)'/users/$pais/$id/ConsumoREC.dta"'
+if _rc != 0 | "$export" != "" {
+	*noisily run "`c(sysdir_site)'/Expenditure.do" `=aniovp'
+	noisily run `"`c(sysdir_site)'/Households`=subinstr("${pais}"," ","",.)'.do"' `=aniovp'
+	noisily run `"`c(sysdir_site)'/PerfilesSim.do"' `=aniovp'
+}
 
 
 timer off 1
@@ -80,45 +95,6 @@ timer list 1
 noisily di _newline(2) in g _dup(20) ":" "  " in y "TOUCH-DOWN!!!  " round(`=r(t1)/r(nt1)',.1) in g " segs  " _dup(20) ":"
 exit
 
-
-
-
-
-
-
-
-
-
-
-
-******************************/
-***                         ***
-***    4. SISTEMA FISCAL    ***
-***                         ***
-*******************************
-*`noisily' LIF, anio(`=aniovp') by(divGA) rows(1) ilif min(1) `update'
-*`noisily' PEF, anio(`=aniovp') by(desc_funcion) rows(2) min(1) `update'
-`noisily' SHRFSP, anio(`=aniovp') `update'
-
-
-
-
-
-
-
-
-
-
-**************************/
-***                     ***
-***    4. HOUSEHOLDS    ***
-***                     ***
-***************************
-capture confirm file `"`c(sysdir_personal)'/users/$pais/$id/ConsumoREC.dta"'
-if _rc != 0 | "`update'" == "update" | "$export" != "" {
-	noisily run `"`c(sysdir_personal)'/Households`=subinstr("${pais}"," ","",.)'.do"' `=aniovp'
-	noisily run `"`c(sysdir_personal)'/PerfilesSim.do"' `=aniovp'
-}
 
 
 
@@ -151,7 +127,7 @@ if _rc != 0 | "`update'" == "update" | "$export" != "" {
 ***    7. PARTE IV: REDISTRIBUCION    ***
 ***                                   ***
 *****************************************
-use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
+use `"`c(sysdir_site)'/users/$pais/$id/households.dta"', clear
 capture replace Laboral = ISR__asalariados + ISR__PF + CuotasSS
 capture drop AportacionesNetas
 
@@ -160,7 +136,7 @@ g AportacionesNetas = Laboral + Consumo + ISR__PM + Petroleo ///
 	- Pension - Educacion - Salud - IngBasico - PenBienestar - Infra
 label var AportacionesNetas "aportaciones netas"
 noisily Simulador AportacionesNetas [fw=factor], base("ENIGH 2020") reboot anio(`=aniovp') folio("Identif_hog") $nographs
-save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace	
+save `"`c(sysdir_site)'/users/$pais/$id/households.dta"', replace	
 
 
 ** 7.2 CUENTA GENERACIONAL **
@@ -178,7 +154,7 @@ save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace
 
 /** 8.1 SANKEY **
 foreach k in decil sexo grupoedad escol {
-	noisily run "`c(sysdir_personal)'/SankeySF.do" `k' `=aniovp'
+	noisily run "`c(sysdir_site)'/SankeySF.do" `k' `=aniovp'
 }
 
 ** 8.2 FISCAL GAP **/
@@ -206,14 +182,14 @@ if "$output" == "output" {
 	quietly log close output
 	tempfile output1 output2 output3
 	if "`=c(os)'" == "Windows" {
-		filefilter "`c(sysdir_personal)'/users/$pais/$id/output.txt" `output1', from(\r\n>) to("") replace // Windows
+		filefilter "`c(sysdir_site)'/users/$pais/$id/output.txt" `output1', from(\r\n>) to("") replace // Windows
 	}
 	else {
-		filefilter "`c(sysdir_personal)'/users/$pais/$id/output.txt" `output1', from(\n>) to("") replace // Mac & Linux
+		filefilter "`c(sysdir_site)'/users/$pais/$id/output.txt" `output1', from(\n>) to("") replace // Mac & Linux
 	}
 	filefilter `output1' `output2', from(" ") to("") replace
 	filefilter `output2' `output3', from("_") to(" ") replace
-	filefilter `output3' "`c(sysdir_personal)'/users/$pais/$id/output.txt", from(".,") to("0") replace
+	filefilter `output3' "`c(sysdir_site)'/users/$pais/$id/output.txt", from(".,") to("0") replace
 }
 if "$export" != "" {
 	noisily scalarlatex

@@ -9,12 +9,12 @@
 *** 1. BASE DE DATOS ***
 ************************
 if "$pais" == "" {
-	local archivos: dir "`c(sysdir_site)'../basesCIEP/PEFs/$pais" files "*.csv"	// Busca todos los archivos .csv en /basesCIEP/PEFs/
-	local dir "`c(sysdir_site)'../basesCIEP/PEFs/$pais"
+	local archivos: dir "`c(sysdir_site)'/bases/PEFs/$pais" files "*.csv"	// Busca todos los archivos .csv en /basesCIEP/PEFs/
+	local dir "`c(sysdir_site)'/bases/PEFs/$pais"
 }
 else {
-	local archivos: dir "`c(sysdir_site)'../basesCIEP/Otros/$pais/PEFs" files "*.xlsx"	// Busca todos los archivos .csv en /basesCIEP/PEFs/
-	local dir "`c(sysdir_site)'../basesCIEP/Otros/$pais/PEFs"
+	local archivos: dir "`c(sysdir_site)'/bases/Otros/$pais/PEFs" files "*.xlsx"	// Busca todos los archivos .csv en /basesCIEP/PEFs/
+	local dir "`c(sysdir_site)'/bases/Otros/$pais/PEFs"
 }
 
 * Loop para todos los archivos .csv *
@@ -137,7 +137,7 @@ if "$pais" == "" {
 
 	** 2.1 Cuotas ISSSTE **
 	preserve
-	import excel "`c(sysdir_site)'../basesCIEP/PEFs/CuotasISSSTE.xlsx", clear firstrow
+	import excel "`c(sysdir_site)'/bases/PEFs/CuotasISSSTE.xlsx", clear firstrow
 
 	** Anio y Ramo **
 	capture rename ciclo anio
@@ -444,8 +444,8 @@ capture drop __*
 compress
 
 if `c(version)' > 13.1 {
-	saveold "`c(sysdir_personal)'/SIM/$pais/PEF.dta", replace version(13)
+	saveold "`c(sysdir_site)'/SIM/$pais/PEF.dta", replace version(13)
 }
 else {
-	save "`c(sysdir_personal)'/SIM/$pais/PEF.dta", replace
+	save "`c(sysdir_site)'/SIM/$pais/PEF.dta", replace
 }

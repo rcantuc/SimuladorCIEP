@@ -18,7 +18,7 @@ quietly {
 	
 	syntax [, ANIOvp(int `aniovp') GEO(int 20) FIN(int 2050) NOGraphs UPDATE OUTPUT]
 
-	noisily di _newline(2) in g _dup(20) "." "{bf:   Inflacion " in y `aniovp' "   }" in g _dup(20) "."
+	noisily di _newline(2) in g _dup(20) "." "{bf:   Econom{c i'}a:" in y " Inflacion `aniovp'   }" in g _dup(20) "."
 
 
 
@@ -166,7 +166,9 @@ quietly {
 
 	timer off 12
 	timer list 12
-	noisily list if anio >= 2000 & anio <= 2030
+	format var_inflY %7.3fc	
+	format deflatorpp %7.4fc
+	noisily list anio inpc var_inflY deflatorpp if anio > 2000 & anio <= 2030
 	noisily di _newline in g "Tiempo: " in y round(`=r(t12)/r(nt12)',.1) in g " segs."
 }
 end

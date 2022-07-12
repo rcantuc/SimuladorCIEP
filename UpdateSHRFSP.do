@@ -288,8 +288,8 @@ drop deuda*
 
 compress
 if `c(version)' > 13.1 {
-	saveold `"`c(sysdir_personal)'/SIM/SHRFSP.dta"', replace version(13)
+	saveold `"`c(sysdir_site)'/SIM/SHRFSP.dta"', replace version(13)
 }
 else {
-	save `"`c(sysdir_personal)'/SIM/SHRFSP.dta"', replace
+	save `"`c(sysdir_site)'/SIM/SHRFSP.dta"', replace
 }

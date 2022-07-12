@@ -1,7 +1,9 @@
 program Distribucion, return
-	syntax anything, RELativo(varname) MACro(real)
+	syntax anything [if], RELativo(varname) MACro(real)
 
-	tempvar TOT
-	egen double `TOT' = sum(`relativo') if factor_cola != 0
-	g double `anything' = `relativo'/`TOT'*`macro'/factor_cola if factor_cola != 0
+	tabstat `relativo' `if' [fw=factor], stat(sum) save
+	tempname SumaVar
+	matrix `SumaVar' = r(StatTotal)
+
+	g double `anything' = `relativo'*`macro'/`SumaVar'[1,1] `if'
 end
