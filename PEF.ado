@@ -22,9 +22,9 @@ quietly {
 	}
 
 	** 1.3 Base PEF **
-	capture confirm file "`c(sysdir_personal)'/SIM/$pais/PEF.dta"
+	capture confirm file "`c(sysdir_site)'/SIM/$pais/PEF.dta"
 	if _rc != 0 {
-		noisily run "`c(sysdir_personal)'/UpdatePEF.do"
+		noisily run "`c(sysdir_site)'/UpdatePEF.do"
 	}
 
 
@@ -32,7 +32,7 @@ quietly {
 	****************
 	*** 2 SYNTAX ***
 	****************
-	use in 1 using "`c(sysdir_personal)'/SIM/$pais/PEF.dta", clear
+	use in 1 using "`c(sysdir_site)'/SIM/$pais/PEF.dta", clear
 	syntax [if] [, ANIO(int `aniovp') NOGraphs Update Base ///
 		BY(varname) ROWS(int 4) COLS(int 5) MINimum(real 1) PEF PPEF APROBado]
 
@@ -49,18 +49,18 @@ quietly {
 	
 	** 2.1 PIB + Deflactor **
 	*PIBDeflactor, anio(`anio') nographs nooutput
-	use "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", clear
+	use "`c(sysdir_site)'/users/$pais/$id/PIB.dta", clear
 	local currency = currency[1]
 	tempfile PIB
 	save "`PIB'"
 
 	** 2.2 Update PEF **
 	if "`update'" == "update" /*| "`updated'" != "yes"*/ {
-		noisily run "`c(sysdir_personal)'/UpdatePEF.do"
+		noisily run "`c(sysdir_site)'/UpdatePEF.do"
 	}
 
 	** 2.2 Base RAW **
-	use `if' using "`c(sysdir_personal)'/SIM/$pais/PEF.dta", clear
+	use `if' using "`c(sysdir_site)'/SIM/$pais/PEF.dta", clear
 	if "`base'" == "base" {
 		exit
 	}

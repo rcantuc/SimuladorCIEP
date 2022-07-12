@@ -18,7 +18,7 @@ quietly {
 
 	syntax [, ANIO(int `aniovp') NOGraphs UPDATE Discount(int 3)]
 	
-	noisily di _newline(2) in g _dup(20) "." "{bf:  Sistema de Cuentas Nacionales " in y `anio' "  }" in g _dup(20) "."
+	noisily di _newline(2) in g _dup(20) "." "{bf:   Econom{c i'}a:" in y " SCN `anio'   }" in g _dup(20) "."
 
 
 
@@ -286,12 +286,10 @@ quietly {
 	** D.8. PIBDeflactor **
 	*capture use "`c(sysdir_site)'/users/$pais/$id/PIB.dta", clear
 	PIBDeflactor, anio(`anio') discount(`discount') nographs nooutput
-	tempfile basepib
-	save `basepib'
-
 	local anio_exo = r(anio_exo)
 	local except = r(except)
 	local exceptI = r(exceptI)
+
 	if "`except'" != "." {
 		local except `"{bf:Excepto}: `=substr("`except'",1,`=strlen("`except'")-2')'. "'
 	}
@@ -306,6 +304,9 @@ quietly {
 		local exceptI ""
 	}
 	local geo = r(geo)
+
+	tempfile basepib
+	save `basepib'
 
 
 
@@ -323,7 +324,7 @@ quietly {
 	** 1.2. Forecast & Pastcast **
 	order indiceY-lambda, last
 
-	* guarda el primer año para el que hay un valor de PIB *
+	* guarda el {c u'}ltimo año para el que hay un valor de PIB *
 	forvalues k = `=_N'(-1)1 {
 		if PIB[`k'] != . {
 			local latest = anio[`k']
@@ -333,27 +334,24 @@ quietly {
 
 	/* Calcula los valores futuros de las variables a partir de la {c u'}ltima 
 	observaci{c o'}n y los valores anteriores de 2002 a 1993 (utiliza la tasa de 
-	crecimiento del PIB en t{c e'}rminos reales */
+	crecimiento del PIB en t{c e'}rminos nominales */
 	foreach k of varlist RemSalSS-DepMix {
-		replace `k' = L.`k'*pibY/L.pibY if `k' == .
+		replace `k' = L.`k'*pibYR/L.pibYR*indiceY/L.indiceY if `k' == .
 		forvalues j = 2002(-1)1993 {
-			replace `k' = F.`k'*L.pibY/pibY if anio == `j'
+			replace `k' = F.`k'*L.pibYR/pibYR*L.indiceY/indiceY if anio == `j'
 		}
 	}
 
-	/* Ajuste *
+	* Ajuste SCN vs. PIB trimestral *
 	forvalues k = `=_N'(-1)1 {
-		if anio[`k'] == `anio' {
-			local pibAjuste = pibY[`k']/PIB[`k']
-			noisily di in g " Ajuste SCN vs. PIB: " in y %5.3fc (`pibAjuste'-1)*100 " %"
-			continue, break
+		local pibAjuste`=anio[`k']' = pibY[`k']/PIB[`k']
+		foreach j of varlist RemSalSS-DepMix {
+			replace `j' = `j'*`pibAjuste`=anio[`k']'' if anio == anio[`k']
 		}
 	}
-	foreach k of varlist RemSalSS-DepMix {
-		replace `k' = `k'*`pibAjuste'
-	}
+	noisily di in g " Ajuste SCN vs. PIB trimestral (" in y `anio' in g "): " in y %5.3fc (`pibAjuste`anio''-1)*100 " %"
 
-
+	
 
 	*******************************/
 	** 1.3. Construir cuentas (C) **
@@ -1227,7 +1225,7 @@ quietly {
 	scalar CompGob = Wcg[`obs']
 	scalar CompGobPIB = Wcg[`obs']/PIB[`obs']*100
 
-	noisily di _newline in g "{bf: G. Cuenta: " in y "Actividad Econ{c o'}mica" in g ///
+	noisily di _newline in g "{bf: G. Cuenta: " in y "actividad econ{c o'}mica" in g ///
 		_col(44) in g %20s "MXN" ///
 		_col(66) %7s "% PIB" "}" 
 	noisily di in g "  (+) Agricultura, cr{c i'}a, etc." ///

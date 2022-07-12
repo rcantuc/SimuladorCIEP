@@ -32,16 +32,16 @@ quietly {
 	noisily di _newline(2) in g _dup(20) "." "{bf:  Sistema Fiscal: DEUDA $pais " in y `anio' "  }" in g _dup(20) "."
 
 	** 2.1 Update SHRFSP **
-	capture confirm file `"`c(sysdir_personal)'/SIM/$pais/SHRFSP.dta"'
+	capture confirm file `"`c(sysdir_site)'/SIM/$pais/SHRFSP.dta"'
 	if ("`update'" == "update" | _rc != 0) & "$pais" != "" {
-		noisily run `"`c(sysdir_personal)'/UpdateSHRFSPMundial.do"' `anio'
+		noisily run `"`c(sysdir_site)'/UpdateSHRFSPMundial.do"' `anio'
 	}
 	if ("`update'" == "update" | _rc != 0) & "$pais" == "" {
-		noisily run `"`c(sysdir_personal)'/UpdateSHRFSP.do"'
+		noisily run `"`c(sysdir_site)'/UpdateSHRFSP.do"'
 	}
 
 	** 2.2 PIB + Deflactor **
-	use "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", clear
+	use "`c(sysdir_site)'/users/$pais/$id/PIB.dta", clear
 	local currency = currency[1]
 	tempfile PIB
 	save `PIB'
@@ -51,7 +51,7 @@ quietly {
 	***************
 	*** 3 MERGE ***
 	***************
-	use `"`c(sysdir_personal)'/SIM/$pais/SHRFSP.dta"', clear
+	use `"`c(sysdir_site)'/SIM/$pais/SHRFSP.dta"', clear
 	merge 1:1 (anio) using `PIB', nogen keepus(pibY pibYR var_* Poblacion deflator) update replace
 	tsset anio
 

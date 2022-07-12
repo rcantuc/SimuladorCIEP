@@ -18,10 +18,10 @@ quietly {
 	tempfile PIB
 	save "`PIB'"
 
-	capture use if clave_de_concepto == "`anything'" using "`c(sysdir_personal)'/SIM/DatosAbiertos.dta", clear
+	capture use if clave_de_concepto == "`anything'" using "`c(sysdir_site)'/SIM/DatosAbiertos.dta", clear
 	if _rc != 0 {
 		UpdateDatosAbiertos
-		use if clave_de_concepto == "`anything'" using "`c(sysdir_personal)'/SIM/DatosAbiertos.dta", clear
+		use if clave_de_concepto == "`anything'" using "`c(sysdir_site)'/SIM/DatosAbiertos.dta", clear
 	}
 
 	*drop if monto == 0 | monto == .
