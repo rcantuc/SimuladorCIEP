@@ -1,41 +1,38 @@
 # Simulador Fiscal CIEP v5.3
 
-	Versión: 18/noviembre/2021
+	Versión: 12 julio 2022. Último programador: Ricardo
 
 ¡Bienvenidxs al equipo!
 
-El Simulador Fiscal CIEP está actualmente programado en **Stata** (versiones 13+). Sin embargo, se espera incorporar otros programas, como **R**, para hacerlo más flexible para todo tipo de usuarios.
+El **Simulador Fiscal CIEP** está actualmente programado en `Stata` (versiones 13+). Sin embargo, se espera incorporar otros programas, como `R`, para hacerlo más flexible. Es una herramienta que pretende ser eventualmente comunitaria y participativa para que sea utilizada para fines didácticos y analíticos.
 
+**Objetivo**: Explicar el uso, estudio, actualización y automatización de las necesidades del Simulador Fiscal CIEP. 
 
-**La misión**:  
-Construir una red de programadores que use, estudie, mejore, facilite, actualice y automatice las necesidades del Simulador Fiscal CIEP en su versiones consecuentes. Es una herramienta comunitaria y participativa que puede ser utilizada para fines didácticos y analíticos.
+-
+### Empezar a **colaborar** 
 
----
-
-Los pasos para empezar a **colaborar** (actualmente, sólo bajo invitación):
-
-0. **Instalar** descargar la versión de Github para escritorio y contar con la invitación para colaborar. Descarga disponible en: https://desktop.github.com/
-1. **Clonar** el repositorio del Simulador Fiscal CIEP disponible desde [Github][]: [rcantuc/simuladorCIEP][simuladorCIEP]
-	Ubicar en el buscador de archivos dentro de la aplicación de escritorio de Github.
+1. **Instalar** `Github` para escritorio (https://desktop.github.com/)
+2. **Clonar** el repositorio [`SimuladorCIEP`](https://github.com/rcantuc/simuladorCIEP).
+	1. 	Ubicar en el buscador de archivos dentro de la aplicación de escritorio de Github.
+	![add](images/Cap_0/add.PNG) 
 	
-	![add](/Images/Cap_0/add.PNG) 
+	2. Guardar una copia dentro del equipo del usuario. **Recordar la dirección donde se va a copiar el directorio**
+	![copia](images/Cap_0/copia.PNG)
 	
-	Guardar una copia dentro del equipo del usuario. **Recordar la dirección donde se va a copiar el directorio**
+	2. **Abrir** el archivo *simulador.stpr*. Es el *Stata project* que concentra todos los *do-files* y *ado-files* para su fácil acceso.
 	
-	![copia](/Images/Cap_0/copia.PNG)
-
-2. **Abrir** el archivo *simulador.stpr*. Es el *Stata project* que concentra todos los *do-files* y *ado-files* para su fácil acceso.
-	
-	![open_project](/Images/Cap_0/open_project.PNG)
+	![open_project](images/Cap_0/open_project.PNG)
 	
 3. **Abrir** el archivo *SIM5.do*. Es el *do-file* que arranca, genera, controla y modifica los parámetros de cada **simulación**[^1]. 
 	
-	![open_SIM](/Images/Cap_0/open_SIM.PNG)
+	![open_SIM](images/Cap_0/open_SIM.PNG)
 	
-4. **Definir** el directorio PERSONAL: ahí es desde donde se programará. Agregar el número de computadoras alternativas o secundarias desde donde se programará.
-	Recordar que la dirección debe ser la misma donde se clonó el repositorio. 
-	
-	![sysdir](/Images/Cap_0/sysdir.PNG)
+4. **Definir** el directorio SITE. Ahí es desde donde se programará. 
+
+Agregar el número de computadoras alternativas o secundarias desde donde se programará.
+Recordar que la dirección debe ser la misma donde se clonó el repositorio.
+
+![sysdir](images/Cap_0/sysdir.PNG)
 	
 5. **Definir** el (los) superuser(s): estos son los que generarán las bases datos y outputs de default.
 
