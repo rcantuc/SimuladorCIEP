@@ -15,15 +15,12 @@ timer on 1
 ***    0. GITHUB (PROGRAMACION)    ***
 ***                                ***
 **************************************
-if "`c(os)'" == "MacOSX" & "`c(username)'" == "ricardo" {                       // Computadora Ricardo
-	sysdir set SITE "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladorCIEP/5.2/SimuladorCIEP/"
+if "`c(os)'" == "MacOSX" & "`c(username)'" == "ricardo" {                       // Computadora Mac Ricardo
+	sysdir set SITE "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladorCIEP/5.3/SimuladorCIEP/"
 }
-if "`c(os)'" == "Unix" & "`c(username)'" == "ciepmx" {                          // Computdora ServidorCIEP
-	sysdir set SITE "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/SimuladorCIEP/5.2/SimuladorCIEP/"
+if "`c(os)'" == "Unix" & "`c(username)'" == "ciepmx" {                          // Computdora Linux ServidorCIEP
+	sysdir set SITE "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/SimuladorCIEP/5.3/SimuladorCIEP/"
 }
-*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"                 // EXPORTAR IMAGENES EN...
-*global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
-*local update "update"                                                          // UPDATE DATASETS
 
 
 
@@ -32,23 +29,21 @@ if "`c(os)'" == "Unix" & "`c(username)'" == "ciepmx" {                          
 ***    1. OPCIONES    ***
 ***                   ***
 *************************
-global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
-scalar aniovp = 2022
-*global pais = "Ecuador"
-*global pais = "El Salvador"
-noisily run "`c(sysdir_site)'/PARAM${pais}.do"
+*global nographs "nographs"                                                      // SUPRIMIR GRAFICAS
+*local update "update"                                                          // UPDATE DATASETS
+*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"                 // EXPORTAR IMAGENES EN...
+*global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
+*global pais = "Ecuador" // "El Salvador"
+*noisily run "`c(sysdir_site)'/PARAM${pais}.do"
 
-
+*scalar aniovp = 2021
 
 **************************
 ***                    ***
 ***    2. POBLACION    ***
 ***                    ***
-**************************
-/*forvalues k=1950(1)`=anioend' {
-foreach k in `=aniovp' {
-	noisily Poblacion, anio(`k') aniofinal(2030) `update'
-}
+/*************************
+noisily Poblacion, `update'
 
 
 
@@ -57,26 +52,24 @@ foreach k in `=aniovp' {
 ***    3. CRECIMIENTO PIB    ***
 ***                          ***
 ********************************
-noisily PIBDeflactor, aniovp(`=aniovp') geopib(2014) geodef(2014) discount(3.0) save `update'
-if "$pais" == "" {
-	noisily SCN, anio(`=aniovp') `update'
-	noisily Inflacion, anio(`=aniovp') `update'
-}
+noisily PIBDeflactor, save `update'
+noisily SCN, `update'
+noisily Inflacion, `update'
 
 
 
-******************************
+******************************/
 ***                         ***
 ***    4. SISTEMA FISCAL    ***
 ***                         ***
 *******************************
-noisily LIF, anio(`=aniovp') by(divGA) rows(1) min(1) `update'
-noisily PEF, anio(`=aniovp') by(desc_funcion) rows(2) min(1) `update'			<--- ¡¡CORREGIR 2021 Y 2022!!
-noisily SHRFSP, anio(`=aniovp') `update'
+noisily LIF, `update'                                                           //by(divGA)
+noisily PEF, by(desc_funcion) rows(2) min(1) `update'			// <--- ¡¡CORREGIR 2021 Y 2022!!
+noisily SHRFSP, `update'
 
 
 
-
+exit
 **************************/
 ***                     ***
 ***    5. HOUSEHOLDS    ***

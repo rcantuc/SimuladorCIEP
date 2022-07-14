@@ -13,16 +13,7 @@
 import delimited "http://www.conapo.gob.mx/work/models/CONAPO/Datos_Abiertos/Proyecciones2018/pob_mit_proyecciones.csv", clear
 
 
-/** 1.Bis Base de datos (TemplateCIEP) **
-if `c(version)' > 13.1 {
-	import delimited "`c(sysdir_site)'../basesCIEP/CONAPO/pob_mit_proyecciones.csv", clear encoding("windows-1252")
-}
-else {
-	import delimited "`c(sysdir_site)'../basesCIEP/CONAPO/pob_mit_proyecciones.csv", clear
-}
-
-
-** 1.Tris Base de datos (CIEP). Responsable: Ale Macias **
+/** 1.Bis Base de datos (CIEP). Responsable: Ale Macias **
 use "`c(sysdir_site)'../basesCIEP/CONAPO/censo2020.dta", clear
 tostring sexo, replace
 
@@ -46,7 +37,6 @@ label var anio "A{c n~}o"
 
 ** 4. Orden **
 replace entidad = "Nacional" if substr(entidad,1,3) == "Rep"
-*keep if entidad == "Nacional"
 
 
 ** 5. Guardar **
@@ -66,14 +56,6 @@ if _rc != 0 {
 	import delimited "http://www.conapo.gob.mx/work/models/CONAPO/Datos_Abiertos/Proyecciones2018/def_edad_proyecciones_n.csv", clear
 }
 
-
-/** 1.Bis Base de datos (TemplateCIEP) **
-if `c(version)' > 13.1 {
-	import delimited "`c(sysdir_site)'/bases/CONAPO/def_edad_proyecciones_n.csv", clear encoding("utf-8")
-}
-else {
-	import delimited "`c(sysdir_site)'/bases/CONAPO/def_edad_proyecciones_n.csv", clear
-}
 
 
 ** 2. Limpia **/
@@ -96,7 +78,6 @@ label var anio "A{c n~}o"
 
 ** 4. Orden **
 replace entidad = "Nacional" if substr(entidad,1,3) == "Rep"
-*keep if entidad == "Nacional"
 
 
 ** 5. Guardar **
@@ -114,11 +95,7 @@ save "`defunciones'"
 import delimited "http://www.conapo.gob.mx/work/models/CONAPO/Datos_Abiertos/Proyecciones2018/mig_inter_quin_proyecciones.csv", clear
 
 
-/** 1.Bis Base de datos (TemplateCIEP) **
-import delimited "`c(sysdir_site)'/bases/CONAPO/mig_inter_quin_proyecciones.csv", clear
-
-
-** 2. Limpia **/
+** 2. Limpia **
 capture rename año anio
 if _rc != 0 {
 	rename ao anio
@@ -206,7 +183,6 @@ if `c(version)' > 13.1 {
 else {
 	save "`c(sysdir_site)'/SIM/Poblacion.dta", replace
 }
-
 collapse (sum) poblacion, by(anio entidad)
 keep if entidad == "Nacional"
 if `c(version)' > 13.1 {

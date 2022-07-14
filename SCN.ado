@@ -16,6 +16,11 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
+	capture confirm scalar aniovp
+	if _rc == 0 {
+			local aniovp = scalar(aniovp)
+	}	
+
 	syntax [, ANIO(int `aniovp') NOGraphs UPDATE Discount(int 3)]
 	
 	noisily di _newline(2) in g _dup(20) "." "{bf:   Econom{c i'}a:" in y " SCN `anio'   }" in g _dup(20) "."

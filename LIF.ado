@@ -33,6 +33,10 @@ quietly {
 		noisily run "`c(sysdir_site)'/UpdateLIF.do"  // Genera a partir de la base ./basesCIEP/LIFs/LIF.xlsx
 	}
 	
+	capture confirm scalar aniovp
+	if _rc == 0 {
+			local aniovp = scalar(aniovp)
+	}	
 
 
 	***************
@@ -40,7 +44,7 @@ quietly {
 	***************
 	use in 1 using "`c(sysdir_site)'/SIM/$pais/LIF.dta", clear
 	syntax [if] [, ANIO(int `aniovp' ) UPDATE NOGraphs Base ID(string) ///
-		MINimum(real 0.5) DESDE(int 2013) ILIF LIF BY(varname) ROWS(int 2) COLS(int 5)]
+		MINimum(real 0.5) DESDE(int 2013) ILIF LIF BY(varname) ROWS(int 1) COLS(int 5)]
 
 	noisily di _newline(2) in g _dup(20) "." "{bf:   Sistema Fiscal:" in y " INGRESOS $pais `anio'   }" in g _dup(20) "."
 
@@ -52,8 +56,8 @@ quietly {
 		if anio[`k'] == `anio' {
 			local pibYR`anio' = pibYR[`k']
 		}
-		if anio[`k'] == `anio'-8 {
-			local pibYR`=`anio'-8' = pibYR[`k']
+		if anio[`k'] == `anio'-9 {
+			local pibYR`=`anio'-9' = pibYR[`k']
 		}
 	}
 	tempfile PIB
@@ -268,7 +272,7 @@ quietly {
 					_col(44) in y %7.3fc `mat5`k''[1,2] ///
 					_col(55) in y %7.3fc `mat`k''[1,2] ///
 					_col(66) in y %7.3fc `mat`k''[1,2]-`mat5`k''[1,2] ///
-					_col(77) in y %7.3fc (`mat`k''[1,2]-`mat5`k''[1,2])/`mat5`k''[1,2]*100 in g "%"
+					_col(77) in y %7.1fc (`mat`k''[1,2]-`mat5`k''[1,2])/`mat5`k''[1,2]*100 in g "%"
 			}
 			local ++k
 		}
@@ -278,13 +282,13 @@ quietly {
 			_col(44) in y %7.3fc `mattot5'[1,2] ///
 			_col(55) in y %7.3fc `mattot'[1,2] ///
 			_col(66) in y %7.3fc `mattot'[1,2]-`mattot5'[1,2] ///
-			_col(77) in y %7.3fc (`mattot'[1,2]-`mattot5'[1,2])/`mattot5'[1,2]*100 in g "%}"
+			_col(77) in y %7.1fc (`mattot'[1,2]-`mattot5'[1,2])/`mattot5'[1,2]*100 in g "%}"
 	}
 
 
 	** 4.4 Elasticidades **
-	if "`by'" == "divGA" {
-		noisily di _newline in g "{bf: D. Elasticidades:" in y " `=`anio'-8' - `anio'" in g ///
+	if "`by'" == "divGA" | "`by'" == "divCIEP" {
+		noisily di _newline in g "{bf: D. Elasticidades:" in y " `=`anio'-9' - `anio'" in g ///
 			_col(44) %7s "Crec %G IngR" ///
 			_col(66) %7s "Crec %G pibYR" ///
 			_col(88) %7s "Elasticidad" "}"
@@ -302,7 +306,7 @@ quietly {
 			local ++k
 		}
 
-		capture tabstat recaudacionR recaudacionPIB if anio == `anio'-8 & divLIF != 10, by(`resumido') stat(sum) f(%20.1fc) save
+		capture tabstat recaudacionR recaudacionPIB if anio == `anio'-9 & divLIF != 10, by(`resumido') stat(sum) f(%20.1fc) save
 		if _rc == 0 {
 			tempname mattot5
 			matrix `mattot5' = r(StatTotal)
@@ -314,20 +318,20 @@ quietly {
 
 				if `mat`k''[1,1] != . & `mat5`k''[1,1] != . {
 					noisily di in g "  (+) `=r(name`k')'" ///
-						_col(44) in y %7.3fc (((`mat`k''[1,1]/`mat5`k''[1,1])^(1/8)-1)*100) in g "%" ///
-						_col(66) in y %7.3fc (((`pibYR`anio''/`pibYR`=`anio'-8'')^(1/8)-1)*100) in g "%" ///
-						_col(88) in y %7.3fc (((`mat`k''[1,1]/`mat5`k''[1,1])^(1/8)-1)*100)/ ///
-						(((`pibYR`anio''/`pibYR`=`anio'-8'')^(1/8)-1)*100)
+						_col(44) in y %7.3fc (((`mat`k''[1,1]/`mat5`k''[1,1])^(1/9)-1)*100) in g "%" ///
+						_col(66) in y %7.3fc (((`pibYR`anio''/`pibYR`=`anio'-9'')^(1/9)-1)*100) in g "%" ///
+						_col(88) in y %7.3fc (((`mat`k''[1,1]/`mat5`k''[1,1])^(1/9)-1)*100)/ ///
+						(((`pibYR`anio''/`pibYR`=`anio'-9'')^(1/9)-1)*100)
 				}
 				local ++k
 			}
 
 			noisily di in g _dup(95) "-"
 			noisily di in g "{bf:  (=) Ingresos (sin deuda)" ///
-					_col(44) in y %7.3fc (((`mattot'[1,1]/`mattot5'[1,1])^(1/8)-1)*100) in g "%" ///
-					_col(66) in y %7.3fc (((`pibYR`anio''/`pibYR`=`anio'-8'')^(1/8)-1)*100) in g "%" ///
-					_col(88) in y %7.3fc (((`mattot'[1,1]/`mattot5'[1,1])^(1/8))*100)/ ///
-					(((`pibYR`anio''/`pibYR`=`anio'-8'')^(1/8))*100) "}"
+					_col(44) in y %7.3fc (((`mattot'[1,1]/`mattot5'[1,1])^(1/9)-1)*100) in g "%" ///
+					_col(66) in y %7.3fc (((`pibYR`anio''/`pibYR`=`anio'-9'')^(1/9)-1)*100) in g "%" ///
+					_col(88) in y %7.3fc (((`mattot'[1,1]/`mattot5'[1,1])^(1/9))*100)/ ///
+					(((`pibYR`anio''/`pibYR`=`anio'-9'')^(1/9))*100) "}"
 		}
 		drop recaudacionR
 	}
