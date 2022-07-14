@@ -44,7 +44,7 @@ quietly {
 	***************
 	use in 1 using "`c(sysdir_site)'/SIM/$pais/LIF.dta", clear
 	syntax [if] [, ANIO(int `aniovp' ) UPDATE NOGraphs Base ID(string) ///
-		MINimum(real 0.5) DESDE(int 2013) ILIF LIF BY(varname) ROWS(int 1) COLS(int 5)]
+		MINimum(real 0.5) DESDE(int 2013) ILIF LIF EOFP BY(varname) ROWS(int 1) COLS(int 5)]
 
 	noisily di _newline(2) in g _dup(20) "." "{bf:   Sistema Fiscal:" in y " INGRESOS $pais `anio'   }" in g _dup(20) "."
 
@@ -104,6 +104,9 @@ quietly {
 	** 3.1 Utilizar LIF o ILIF **
 	capture replace recaudacion = LIF if mes < 12
 	capture replace recaudacion = ILIF if mes == .
+	if "`eofp'" != "" {
+		replace recaudacion = monto
+	}
 
 	** 3.2 Valores como % del PIB **
 	foreach k of varlist recaudacion monto LIF ILIF {
@@ -416,7 +419,7 @@ quietly {
 				local j = `j' + 100/(2022-2012)
 			}
 		}
-		graph bar `graphvars' if anio >= 2012, ///
+		graph bar `graphvars' if anio >= 2012 & anio < `anio'-1, ///
 			over(anio, gap(0)) stack blabel(bar, format(%7.1fc)) outergap(0) ///
 			title("{bf:Ingresos} p{c u'}blicos") ///
 			subtitle($pais) ///
@@ -425,8 +428,23 @@ quietly {
 			ylabel(, format(%15.0fc) labsize(small)) ///
 			yscale(range(0)) ///
 			legend(on position(6) rows(`rows') cols(`cols') `legend' region(margin(zero))) ///
-			name(ingresos, replace) ///
+			name(ingresosA, replace) ///
 			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (EOFP, Paquete Econ{c o'}mico).")
+
+		graph bar `graphvars' if anio == `anio', aspect(`=`anio'-2012+1')  ///
+			over(anio, gap(0)) stack blabel(bar, format(%7.1fc)) outergap(0) ///
+			title("{bf:Ingresos} p{c u'}blicos") ///
+			subtitle($pais) ///
+			text(`text', color(black) placement(n)) ///
+			ytitle("mil millones `currency' `anio'") ///
+			ylabel(, format(%15.0fc) labsize(small)) ///
+			yscale(range(0)) ///
+			legend(on position(6) rows(`rows') cols(`cols') `legend' region(margin(zero))) ///
+			name(ingresosB, replace) ///
+			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (EOFP, Paquete Econ{c o'}mico).")
+
+		graph combine ingresosA ingresosB	
+			
 		restore
 	}
 
