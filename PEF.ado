@@ -27,6 +27,10 @@ quietly {
 		noisily run "`c(sysdir_site)'/UpdatePEF.do"
 	}
 
+	capture confirm scalar aniovp
+	if _rc == 0 {
+			local aniovp = scalar(aniovp)
+	}	
 
 
 	****************
@@ -385,7 +389,7 @@ quietly {
 			title("{bf:Gasto} p{c u'}blico") ///
 			subtitle($pais) ///
 			text(`text', color(black) placement(n)) ///
-			ytitle(mil millones MXN `=aniovp') ///
+			ytitle(mil millones MXN `anio') ///
 			ylabel(, format(%15.0fc) labsize(small)) ///
 			yscale(range(0)) ///
 			legend(on position(6) rows(`rows') cols(`cols') `legend' region(margin(zero))) ///

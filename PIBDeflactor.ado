@@ -1,5 +1,5 @@
 **********************************************************
-***                  ACTUALIZACIÓN                     ***
+***        ACTUALIZACIÓN BASE DE DATOS                 ***
 ***   1) abrir archivos .iqy en Excel de Windows       ***
 ***   2) guardar y reemplazar .xls dentro de           ***
 ***      ./TemplateCIEP/basesCIEP/INEGI/SCN/           ***
@@ -24,6 +24,12 @@ quietly {
 	** Sintaxis **
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
+
+	capture confirm scalar aniovp
+	if _rc == 0 {
+			local aniovp = scalar(aniovp)
+	}	
+
 	syntax [if] [, ANIOvp(int `aniovp') GEOPIB(int -1) GEODEF(int -1) FIN(int -1) NOGraphs NOOutput UPDATE DIScount(real 3) SAVE]
 	noisily di _newline(2) in g _dup(20) "." "{bf:   Econom{c i'}a:" in y " PIB `aniovp'   }" in g _dup(20) "."
 
@@ -467,7 +473,7 @@ quietly {
 		}
 		if (anio[`k'] == `anio_last' & trimestre[`k'] < 4) | anio[`k'] <= anio[`obs_exo'] & anio[`k'] > `anio_last' {
 			if "`estimado'" == "" {
-				noisily di in g %~72s "ESTIMADO SHCP"
+				noisily di in g %~72s "ESTIMADO (BIE)"
 				local estimado = "done"
 			}
 			noisily di in g "{bf: `=anio[`k']' " _col(10) %8.1fc in y var_pibY[`k'] " %" _col(25) %20.0fc pibY[`k'] _col(50) %8.1fc in y var_indiceY[`k'] " %" _col(65) %12.10fc deflator[`k'] "}"

@@ -17,6 +17,11 @@ quietly {
 			run `"`c(sysdir_site)'/UpdatePoblacionMundial.do"'
 		}
 	}
+
+	capture confirm scalar aniovp
+	if _rc == 0 {
+			local aniovp = scalar(aniovp)
+	}
 	
 	syntax [if] [, ANIOhoy(int `aniovp') ANIOFinal(int -1) NOGraphs UPDATE ///
 		TF(real -1) TM2044(real -1) TM4564(real -1) TM65(real -1)]
