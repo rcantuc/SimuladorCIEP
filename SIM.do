@@ -64,6 +64,9 @@ noisily Inflacion, `update'
 ***                         ***
 *******************************
 noisily LIF, `update'                                                           //by(divGA)
+
+
+exit
 noisily PEF, by(desc_funcion) rows(2) min(1) `update'			// <--- ¡¡CORREGIR 2021 Y 2022!!
 noisily SHRFSP, `update'
 
