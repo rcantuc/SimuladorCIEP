@@ -30,11 +30,11 @@ if "`c(os)'" == "Unix" & "`c(username)'" == "ciepmx" {                          
 ***                   ***
 *************************
 *global nographs "nographs"                                                      // SUPRIMIR GRAFICAS
-*local update "update"                                                          // UPDATE DATASETS
+local update "update"                                                          // UPDATE DATASETS
 *global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"                 // EXPORTAR IMAGENES EN...
 *global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
 *global pais = "Ecuador" // "El Salvador"
-*noisily run "`c(sysdir_site)'/PARAM${pais}.do"
+noisily run "`c(sysdir_site)'/PARAM${pais}.do"
 
 *scalar aniovp = 2021
 
@@ -47,13 +47,19 @@ noisily Poblacion, `update'
 
 
 
-*******************************
+*******************************/
 ***                          ***
 ***    3. CRECIMIENTO PIB    ***
 ***                          ***
 ********************************
 noisily PIBDeflactor, save `update'
+
+
+exit
 noisily SCN, `update'
+
+
+exit
 noisily Inflacion, `update'
 
 
@@ -64,15 +70,12 @@ noisily Inflacion, `update'
 ***                         ***
 *******************************
 noisily LIF, `update'                                                           //by(divGA)
-
-
-exit
 noisily PEF, by(desc_funcion) rows(2) min(1) `update'			// <--- ¡¡CORREGIR 2021 Y 2022!!
 noisily SHRFSP, `update'
 
 
 
-exit
+
 **************************/
 ***                     ***
 ***    5. HOUSEHOLDS    ***
