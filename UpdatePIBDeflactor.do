@@ -4,20 +4,18 @@
 
 
 ***************
-*** 0 BASES ***
+*** 1 BASES ***
 ***************
 
-* 0.1.1. PIB *
+* 1.1.1. Importar y limpiar la base de datos INEGI/BIE: PIB *
 import excel "`=c(sysdir_site)'/bases/UPDATE/SCN/PIB.xlsx", clear
-
-* 0.1.2. Limpia *
 LimpiaBIE
 
-* 0.1.3. Rename *
+* 1.1.2. Renombrar variables *
 rename A periodo
 rename B pibQ
 
-* 0.1.4. Time Series *
+* 1.1.3. Time Series *
 split periodo, destring p("/") ignore("r p")
 
 rename periodo1 anio
@@ -27,28 +25,26 @@ rename periodo2 trimestre
 label var trimestre "trimestre"
 
 destring pibQ, replace
-label var pibQ "Producto Interno Bruto"
+label var pibQ "Producto Interno Bruto (trimestral)"
 
 drop periodo
 order anio trimestre pibQ
 
-* 0.1.5. Guardar *
+* 1.1.4. Guardar *
 compress
 tempfile PIB
 save `PIB'
 
 
-* 0.2.1. Deflactor *
+* 1.2.1. Importar y limpiar la base de datos INEGI/BIE: Índice de precios (deflactor) *
 import excel "`=c(sysdir_site)'/bases/UPDATE/SCN/deflactor.xlsx", clear
-
-* 0.2.2. Limpia *
 LimpiaBIE, nomult
 
-* 0.2.3. Rename *
+* 1.2.2. Renombrar variables *
 rename A periodo
 rename B indiceQ
 
-* 0.2.4. Time Series *
+* 1.2.3. Time Series *
 split periodo, destring p("/") ignore("r p")
 
 rename periodo1 anio
@@ -58,12 +54,12 @@ rename periodo2 trimestre
 label var trimestre "trimestre"
 
 destring indiceQ, replace
-label var indiceQ "${I}ndice de Precios Impl${i}citos"
+label var indiceQ "${I}ndice de Precios Impl${i}citos (trimestral)"
 
 drop periodo
 order anio trimestre indiceQ
 
-* 0.2.5. Guardar *
+* 1.2.4. Guardar *
 compress
 tempfile Deflactor
 save `Deflactor', replace
@@ -72,7 +68,7 @@ save `Deflactor', replace
 
 
 *************************
-*** 1 PIB + Deflactor ***
+*** 2 PIB + Deflactor ***
 *************************
 use (anio trimestre pibQ) using `PIB', clear
 merge 1:1 (anio trimestre) using `Deflactor', nogen keepus(indiceQ)
@@ -83,7 +79,7 @@ format aniotrimestre %tq
 label var aniotrimestre "YearQuarter"
 tsset aniotrimestre
 
-g pibQR = pibQ/(indiceQ/100)
+* Moneda *
 g currency = "MXN"
 
 if `c(version)' > 13.1 {
@@ -91,4 +87,40 @@ if `c(version)' > 13.1 {
 }
 else {
 	save "`c(sysdir_site)'/SIM/PIBDeflactor.dta", replace
+}
+
+
+
+
+*****************************
+*** 3 Gráfica informativa ***
+*****************************
+if "`nographs'" != "nographs" & "$nographs" == "" {
+
+	* Variable de la gráfica *
+	tempvar pibQR crec_pibQR
+	g `pibQR' = pibQ/(indiceQ/100)
+	g `crec_pibQR' = (`pibQR'/L4.`pibQR'-1)*100
+
+	* Texto sobre lineas *
+	forvalues k=1(1)`=_N' {
+		if `crec_pibQR'[`k'] != . {
+			local text_pibQR `"`text_pibQR' `=`crec_pibQR'[`k']' `=aniotrimestre[`k']' "{bf:`=string(`crec_pibQR'[`k'],"%5.1fc")'}" "'
+		}
+	}
+
+	* Gráfica *
+	twoway connected `crec_pibQR' aniotrimestre, ///
+		title(Crecimiento del {bf:PIB trimestral}) ///
+		ytitle("Crecimiento trimestral (%)") xtitle("") ///
+		text(`text_pibQR') msize(large) ///
+		note("{bf:{c U'}ltimo dato reportado}: `=anio[_N]' trim. `=trimestre[_N]'.") ///
+		caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
+		name(UpdatePIBDeflactor, replace)
+
+	* Exportar gráfica *
+	capture confirm existence $export
+	if _rc == 0 {
+		graph export "$export/var_indiceYH.png", replace name(var_indiceYH)
+	}
 }
