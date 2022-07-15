@@ -8,7 +8,7 @@ El **Simulador Fiscal CIEP** está actualmente programado en `Stata` (versiones 
 
 ---
 
-## 0. Empezar a colaborar
+## Empezar a colaborar
 
 1. **Instalar** el programa `Github Desktop` desde [Github.com](https://desktop.github.com/).
 2. **Clonar** el repositorio del Simulador Fiscal CIEP.
@@ -35,7 +35,7 @@ El **Simulador Fiscal CIEP** está actualmente programado en `Stata` (versiones 
 
 
 ---
-## 1. Opciones globales de `SIM.do`
+## Opciones globales de `SIM.do`
 
 ### Comandos para limpiar el ambiente 
 
