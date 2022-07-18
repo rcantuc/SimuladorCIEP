@@ -95,7 +95,7 @@ else {
 *****************************
 *** 3 Gráfica informativa ***
 *****************************
-if "`nographs'" != "nographs" & "$nographs" == "" {
+if "$nographs" == "" {
 
 	* Variable de la gráfica *
 	tempvar pibQR crec_pibQR

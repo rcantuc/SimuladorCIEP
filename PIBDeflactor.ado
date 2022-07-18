@@ -12,7 +12,7 @@
 *!*******************************************
 *!***                                    ****
 *!***    Producto Interno Bruto          ****
-*!***    Indice de Precios Implicitos    ****
+*!***    Indice de Precios Implícitos    ****
 *!***    Autor: Ricardo                  ****
 *!***    Fecha: 21/Jul/21                ****
 *!***                                    ****
@@ -28,15 +28,17 @@ quietly {
 	capture confirm scalar aniovp
 	if _rc == 0 {
 		local aniovp = scalar(aniovp)
-	}	
-	syntax [if] [, ANIOvp(int `aniovp') GEOPIB(int -1) GEODEF(int -1) FIN(int -1) NOGraphs NOOutput UPDATE DIScount(real 3) SAVE]
+	}
+
+	syntax [if] [, ANIOvp(int `aniovp') GEOPIB(int -1) GEODEF(int -1) ///
+		FIN(int -1) NOGraphs NOOutput DIScount(real 3) UPDATE SAVE]
 	noisily di _newline(2) in g _dup(20) "." "{bf:   Econom{c i'}a:" in y " PIB `aniovp'   }" in g _dup(20) "."
 
 
 
-	***********************
-	*** 1 Base de datos ***
-	***********************
+	************************
+	*** 1 Bases de datos ***
+	************************
 	capture use `"`c(sysdir_site)'/SIM/$pais/Poblacion.dta"', clear
 	if _rc != 0 {
 		if "$pais" == "" {
@@ -54,6 +56,7 @@ quietly {
 	** 1.1 Poblacion **
 	preserve
 	collapse (sum) Poblacion=poblacion if entidad == "Nacional", by(anio)
+	local aniomax = anio[_N]
 	format Poblacion %15.0fc
 	tempfile poblacion
 	save "`poblacion'"
@@ -78,9 +81,12 @@ quietly {
 	* Observaciones *
 	scalar aniofirst = anio[1]
 	scalar aniolast = anio[_N]
-
 	local pib_last = pibQ[_N]
-
+	if `aniovp' < `=scalar(aniofirst)' | `aniovp' > `=scalar(aniolast)' {
+		noisily di in r "A{c n~}o para valor presente (`aniovp') inferior a `=scalar(aniofirst)' o superior a `aniomax'."
+		exit
+	}
+	
 	* Trimestres last *
 	capture local trim_last = trimestre[_N]
 	if _rc == 0 {
