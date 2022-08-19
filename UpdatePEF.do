@@ -153,7 +153,11 @@ if "$pais" == "" {
 
 	** Finalidad **
 	replace desc_finalidad = "Otras" if finalidad == 4
-	labmask finalidad, values(desc_finalidad)
+	capture labmask finalidad, values(desc_finalidad)
+	if _rc == 199 {
+		net install labutil.pkg
+		labmask finalidad, values(desc_finalidad)
+	}
 	drop desc_finalidad
 
 	** Ramo **

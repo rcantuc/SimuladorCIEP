@@ -4,6 +4,7 @@
 ****                                                                                ****
 ****************************************************************************************
 
+noisily di in g "  Updating Poblacion.dta..." _newline
 
 ********************
 *** A. Poblacion ***
@@ -171,10 +172,10 @@ format nacimientos mujeresfert %10.0fc
 
 g tasafecundidad = nacimientos/mujeresfert*1000
 label var tasafecundidad "Nacimientos por cada mil mujeres"
-noisily tabstat tasafecundidad, stat(mean) by(anio) f(%10.1fc) save
+tabstat tasafecundidad, stat(mean) by(anio) f(%10.1fc) save
 
 
-** Guardar **
+** Guardar bases SIM **
 drop mujeresf nacimien nacimientos
 compress
 if `c(version)' > 13.1 {

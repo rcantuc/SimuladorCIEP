@@ -23,7 +23,7 @@ quietly {
 
 	syntax [, ANIO(int `aniovp') NOGraphs UPDATE Discount(int 3)]
 	
-	noisily di _newline(2) in g _dup(20) "." "{bf:   Econom{c i'}a:" in y " SCN `anio'   }" in g _dup(20) "."
+	noisily di _newline(2) in g _dup(20) "." "{bf:   Econom{c i'}a:" in y " SCN `anio'   }" in g _dup(20) "." _newline
 
 
 
@@ -33,6 +33,9 @@ quietly {
 	** D.1. Cuenta de generaci{c o'}n del ingreso **
 	capture confirm file "`c(sysdir_site)'/SIM/baseSCN.dta"
 	if _rc != 0 | "`update'" == "update" {
+		
+		noisily di in g "  Updating baseSCN.dta..." _newline
+
 		import excel "`c(sysdir_site)'/bases/UPDATE/SCN/Cuenta de generacion del ingreso.xlsx", clear
 		LimpiaBIE g
 		tempfile generacion

@@ -36,7 +36,7 @@ if "`c(os)'" == "Unix" & "`c(username)'" == "ciepmx" {                          
 *global pais = "Ecuador" // "El Salvador"
 noisily run "`c(sysdir_site)'/PARAM${pais}.do"
 
-*scalar aniovp = 2021
+
 
 **************************
 ***                    ***
@@ -51,15 +51,9 @@ noisily Poblacion, `update'
 ***                          ***
 ***    3. CRECIMIENTO PIB    ***
 ***                          ***
-********************************
+/********************************
 noisily PIBDeflactor, save `update'
-
-
-exit
 noisily SCN, `update'
-
-
-exit
 noisily Inflacion, `update'
 
 
@@ -70,10 +64,12 @@ noisily Inflacion, `update'
 ***                         ***
 *******************************
 noisily LIF, `update'                                                           //by(divGA)
-noisily PEF, by(desc_funcion) rows(2) min(1) `update'			// <--- ¡¡CORREGIR 2021 Y 2022!!
+
+exit
 noisily SHRFSP, `update'
+exit
 
-
+noisily PEF, by(desc_funcion) rows(2) min(1) `update'			// <--- ¡¡CORREGIR 2021 Y 2022!!
 
 
 **************************/
@@ -83,7 +79,7 @@ noisily SHRFSP, `update'
 ***************************
 capture confirm file `"`c(sysdir_site)'/users/$pais/$id/ConsumoREC.dta"'
 if _rc != 0 | "$export" != "" {
-	*noisily run "`c(sysdir_site)'/Expenditure.do" `=aniovp'
+	noisily run "`c(sysdir_site)'/Expenditure.do" `=aniovp'
 	noisily run `"`c(sysdir_site)'/Households`=subinstr("${pais}"," ","",.)'.do"' `=aniovp'
 	noisily run `"`c(sysdir_site)'/PerfilesSim.do"' `=aniovp'
 }

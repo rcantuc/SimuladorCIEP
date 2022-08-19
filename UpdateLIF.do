@@ -33,7 +33,11 @@ drop if numdivLIF == .
 foreach k of varlist div* {
 	capture confirm variable num`k'
 	if _rc == 0 {
-		labmask num`k', values(`k')
+		capture labmask num`k', values(`k')
+		if _rc == 199 {
+			net install labutil.pkg
+			labmask num`k', values(`k')
+		}
 		drop `k'
 		rename num`k' `k'
 		continue
@@ -58,10 +62,10 @@ if "$pais" == "" {
 	preserve
 	levelsof serie, local(serie)
 	foreach k of local serie {
-		noisily DatosAbiertos `k' //, g
+		noisily DatosAbiertos `k', nog
 
 		rename clave_de_concepto serie
-		keep anio serie nombre monto mes
+		keep anio serie nombre monto mes acum_prom
 
 		tempfile `k'
 		quietly save ``k''

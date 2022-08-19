@@ -30,30 +30,29 @@ quietly {
 		local aniovp = scalar(aniovp)
 	}
 
-	syntax [if] [, ANIOvp(int `aniovp') GEOPIB(int -1) GEODEF(int -1) ///
-		FIN(int -1) NOGraphs NOOutput DIScount(real 3) UPDATE SAVE]
-	noisily di _newline(2) in g _dup(20) "." "{bf:   Econom{c i'}a:" in y " PIB `aniovp'   }" in g _dup(20) "."
+	syntax [if] [, UPDATE ANIOvp(int `aniovp') NOGraphs GEOPIB(int -1) GEODEF(int -1) ///
+		FIN(int -1) SAVE NOOutput DIScount(real 3)]
+	noisily di _newline(2) in g _dup(20) "." "{bf:   PIB + Deflactor:" in y " PIB `aniovp'   }" in g _dup(20) "." _newline
 
 
 
 	************************
 	*** 1 Bases de datos ***
 	************************
-	capture use `"`c(sysdir_site)'/SIM/$pais/Poblacion.dta"', clear
-	if _rc != 0 {
-		if "$pais" == "" {
-			run "`c(sysdir_site)'/UpdatePoblacion.do"
-		}
-		else if "$pais" == "El Salvador" {
-			run "`c(sysdir_site)'/UpdatePoblacionMundial.do"
-		}
-		use `"`c(sysdir_site)'/SIM/$pais/Poblacion.dta"', clear
-	}
-
 
 
 	*******************
 	** 1.1 Poblacion **
+	capture use `"`c(sysdir_site)'/SIM/$pais/Poblacion.dta"', clear
+	if _rc != 0 {
+		if "$pais" == "" {
+			noisily run "`c(sysdir_site)'/UpdatePoblacion.do"
+		}
+		else if "$pais" == "El Salvador" {
+			noisily run "`c(sysdir_site)'/UpdatePoblacionMundial.do"
+		}
+		use `"`c(sysdir_site)'/SIM/$pais/Poblacion.dta"', clear
+	}
 	preserve
 	collapse (sum) Poblacion=poblacion if entidad == "Nacional", by(anio)
 	local aniomax = anio[_N]
@@ -69,38 +68,35 @@ quietly {
 	save "`workingage'"
 
 
-
-	***************************
-	** 1.2 USER previous PIB **
+	***************************************
+	** 1.2 SIM/$pais/PIBDeflactorPIB.dta **
 	capture use "`c(sysdir_site)'/SIM/$pais/PIBDeflactor.dta", clear
 	if _rc != 0 | "`update'" == "update" {
-		run `"`c(sysdir_site)'/UpdatePIBDeflactor`=subinstr("${pais}"," ","",.)'.do"'
+		noisily run `"`c(sysdir_site)'/UpdatePIBDeflactor`=subinstr("${pais}"," ","",.)'.do"'
 		use "`c(sysdir_site)'/SIM/$pais/PIBDeflactor.dta", clear
 	}
 
-	* Observaciones *
+	* Observaciones (máximo y mínimo) *
 	scalar aniofirst = anio[1]
 	scalar aniolast = anio[_N]
-	local pib_last = pibQ[_N]
 	if `aniovp' < `=scalar(aniofirst)' | `aniovp' > `=scalar(aniolast)' {
 		noisily di in r "A{c n~}o para valor presente (`aniovp') inferior a `=scalar(aniofirst)' o superior a `aniomax'."
 		exit
 	}
-	
-	* Trimestres last *
+
+	* PIB Trimestral Real *
 	capture local trim_last = trimestre[_N]
 	if _rc == 0 {
 		scalar trimlast = `trim_last'
-		local trim_last = "T`trim_last'"
+		local trim_last = " t`trim_last'"
 	}
-
-	* PIB Trimestral Real *
 	g pibQR = pibQ/(indiceQ/100)
-	format pibQR %20.0fc
-	g crec_PIBQ = (pibQR/L4.pibQR-1)*100
-	local crec_PIBQ = crec_PIBQ[_N]
+	g var_pibQ = (pibQR/L4.pibQR-1)*100
 
-	* Collapse *
+	noisily di in g " PIB " in y "`=scalar(aniolast)'`trim_last'" _col(33) %20.0fc pibQ[_N] in g " `=currency[_N]' ({c u'}ltimo reportado)"
+	noisily di in g " Crec. " in y "`=scalar(aniolast)'`trim_last' - `=scalar(aniolast)-1'`trim_last'" _col(33) %20.1fc var_pibQ[_N] in g " %"
+
+	* Anuazliar el PIB *
 	if "$pais" == "Ecuador" {
 		collapse (sum) pibY=pibQ pibYR=pibQR (last) trimestre, by(anio currency)
 		replace pibY = pibY*4/trimestre
@@ -112,9 +108,15 @@ quietly {
 	format pib* %25.0fc
 
 
+	************************
+	** 1.4 Merge datasets **
+	merge 1:1 (anio) using "`workingage'", nogen
+	merge 1:1 (anio) using "`poblacion'", nogen
+	drop if anio < scalar(aniofirst)
+
 
 	***************************
-	** 0.3 Anios geometricos **
+	** 1.3 Anios geometricos **
 	if `geodef' < scalar(aniofirst) {
 		local geodef = 2010 // scalar(aniofirst)
 	}
@@ -126,19 +128,9 @@ quietly {
 	local difpib = scalar(aniolast)-`geopib'
 	scalar aniogeo = 2010 // `geopib'
 
-
-
-	************************
-	** 0.4 Merge datasets **
-	merge 1:1 (anio) using "`workingage'", nogen
-	merge 1:1 (anio) using "`poblacion'", nogen
-	drop if anio < scalar(aniofirst)
 	if `fin' == -1 {
 		local fin = anio[_N]
 	}
-	global discount = `discount'
-	g discount = $discount
-
 
 
 
@@ -306,8 +298,6 @@ quietly {
 	*****************
 	** 3 Simulador **
 	*****************
-	noisily di _newline in g " PIB " in y "`=scalar(aniolast)'`trim_last'" _col(33) %20.0fc `pib_last' in g " `=currency[`obsvp']' ({c u'}ltimo reportado)"
-	noisily di in g " Crec. " in y "`=scalar(aniolast)'`trim_last' - `=scalar(aniolast)-1'`trim_last'" _col(33) %20.1fc `crec_PIBQ' in g " %"
 	noisily di _newline in g " PIB " in y anio[`obsvp'] in g " per c{c a'}pita " in y _col(43) %10.1fc pibY[`obsvp']/Poblacion[`obsvp'] in g " `=currency[`obsvp']'"
 	noisily di in g " PIB " in y anio[`obsvp'] in g " por persona en edad de trabajar " in y _col(43) %10.1fc OutputPerWorker[`obsvp'] in g " `=currency[`obsvp']' (16-65 a{c n~}os)"
 	noisily di _newline in g " Crecimiento promedio " in y anio[`obsPIB'] "-" anio[`obs_exo'] _col(43) %10.4f ((pibYR[`obs_exo']/pibYR[`obsPIB'])^(1/(`obs_exo'-`obsPIB'))-1)*100 in g " %" 
@@ -369,14 +359,14 @@ quietly {
 		* Deflactor var_indiceY *
 		twoway (area deflator anio if (anio < scalar(aniolast) & anio >= scalar(aniofirst)) | (anio == scalar(aniolast) & trimestre == 4)) ///
 			(area deflator anio if anio > scalar(aniolast)+`exo_def') ///
-			(`graphtype2' deflator anio if anio <= scalar(aniolast)+`exo_def' & anio > scalar(aniolast), lwidth(none) pstyle(p4)), ///
+			(`graphtype2' deflator anio if anio <= scalar(aniolast)+`exo_def' & anio >= scalar(aniolast), lwidth(none) pstyle(p4)), ///
 			title("{bf:{c I'}ndice} de precios impl{c i'}citos") ///
 			subtitle(${pais}) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
 			yscale(range(0)) ///
 			ylabel(0(1)4, format("%3.0f")) ///
 			ytitle("`aniovp' = 1.000") xtitle("") ///
-			legend(label(1 "Reportado") label(2 "Proyecci{c o'}n") label(3 "Estimaci{c o'}n ($paqueteEconomico)") order(1 3 2) region(margin(zero))) ///
+			legend(label(1 "Reportado") label(2 "Proyecci{c o'}n") label(3 "Estimaci{c o'}n (SHCP)") order(1 3 2) region(margin(zero))) ///
 			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
 			note("{bf:Crecimiento de precios}: `=string(`=((indiceY[`obsDEF']/indice[`obs_def'])^(1/(`=`obsDEF'-`obs_def''))-1)*100',"%6.3f")'% (`=anio[[`obsDEF']]'-`=anio[`obs_def']'). {bf:{c U'}ltimo dato reportado}: `=scalar(aniolast)'`trim_last'.") ///
 			name(deflactorH, replace)
@@ -396,14 +386,14 @@ quietly {
 		* Crecimiento var_indiceY *
 		twoway (connected var_indiceY anio if (anio < scalar(aniolast) & anio >= scalar(aniofirst)) | (anio == scalar(aniolast) & trimestre == 4), msize(large) mlwidth(vvthick)) ///
 			(connected var_indiceY anio if anio > scalar(aniolast)+`exo_def', msize(large) mlwidth(vvthick)) ///
-			(connected var_indiceY anio if anio <= scalar(aniolast)+`exo_def' & anio > scalar(aniolast), pstyle(p4) msize(large) mlwidth(vvthick)), ///
+			(connected var_indiceY anio if anio <= scalar(aniolast)+`exo_def' & anio >= scalar(aniolast), pstyle(p4) msize(large) mlwidth(vvthick)), ///
 			title({bf:Crecimientos} del {c i'}ndice de precios impl{c i'}citos) subtitle(${pais}) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
 			ylabel(, format(%3.0f)) ///
 			ytitle("Crecimiento anual (%)") xtitle("") ///
 			///yline(0, lcolor(black)) ///
 			text(`crec_deflactor', color(white) size(tiny)) ///
-			legend(label(1 "Reportado") label(2 "Proyecci{c o'}n") label(3 "Estimaci{c o'}n ($paqueteEconomico)") order(1 3 2) region(margin(zero))) ///
+			legend(label(1 "Reportado") label(2 "Proyecci{c o'}n") label(3 "Estimaci{c o'}n (SHCP)") order(1 3 2) region(margin(zero))) ///
 			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
 			note("{bf:{c U'}ltimo dato reportado}: `=scalar(aniolast)'`trim_last'.") ///
 			name(var_indiceYH, replace)
@@ -415,14 +405,14 @@ quietly {
 		* Crecimiento var_pibY *
 		twoway (connected var_pibY anio if (anio < scalar(aniolast) & anio >= scalar(aniofirst)) | (anio == scalar(aniolast) & trimestre == 4), msize(large) mlwidth(vvthick)) ///
 			(connected var_pibY anio if anio > scalar(aniolast)+`exo_count', msize(large) mlwidth(vvthick)) ///
-			(connected var_pibY anio if anio <= scalar(aniolast)+`exo_count' & anio > scalar(aniolast), pstyle(p4) msize(large) mlwidth(vvthick)), ///
+			(connected var_pibY anio if anio <= scalar(aniolast)+`exo_count' & anio >= scalar(aniolast), pstyle(p4) msize(large) mlwidth(vvthick)), ///
 			title({bf:Crecimientos} del Producto Interno Bruto) subtitle(${pais}) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
 			ylabel(/*-6(3)6*/, format(%3.0fc)) ///
 			ytitle("Crecimiento anual (%)") xtitle("") ///
 			///yline(0, lcolor(white)) ///
 			text(`crec_PIB', color(white) size(tiny)) ///
-			legend(label(1 "Reportado") label(2 "Proyecci{c o'}n") label(3 "Estimaci{c o'}n ($paqueteEconomico)") order(1 3 2) region(margin(zero))) ///
+			legend(label(1 "Reportado") label(2 "Proyecci{c o'}n") label(3 "Estimaci{c o'}n (SHCP)") order(1 3 2) region(margin(zero))) ///
 			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
 			note("{bf:{c U'}ltimo dato reportado}: `=scalar(aniolast)'`trim_last'.") ///
 			name(PIBH, replace)
@@ -437,7 +427,7 @@ quietly {
 
 		twoway (area `pibYRmil' anio if (anio < scalar(aniolast) & anio >= scalar(aniofirst)) | (anio == scalar(aniolast) & trimestre == 4)) ///
 			(area `pibYRmil' anio if anio > scalar(aniolast)+`exo_count') ///
-			(`graphtype' `pibYRmil' anio if anio <= scalar(aniolast)+`exo_count' & anio > scalar(aniolast), lwidth(none) pstyle(p4)), ///
+			(`graphtype' `pibYRmil' anio if anio <= scalar(aniolast)+`exo_count' & anio >= scalar(aniolast), lwidth(none) pstyle(p4)), ///
 			title({bf:Flujo} del Producto Interno Bruto) subtitle(${pais}) ///
 			ytitle(mil millones `=currency[`obsvp']' `aniovp') xtitle("") ///
 			///ytitle(billions `=currency[`obsvp']' `aniovp') xtitle("") ///
@@ -448,7 +438,7 @@ quietly {
 			ylabel(/*0(5)`=ceil(`pibYRmil'[_N])'*/, format(%20.0fc)) ///
 			///xline(scalar(aniolast).5) ///
 			yscale(range(0)) /*xscale(range(1993))*/ ///
-			legend(label(1 "Reportado") label(2 "Proyecci{c o'}n") label(3 "Estimaci{c o'}n ($paqueteEconomico)") order(1 3 2) region(margin(zero))) ///
+			legend(label(1 "Reportado") label(2 "Proyecci{c o'}n") label(3 "Estimaci{c o'}n (SHCP)") order(1 3 2) region(margin(zero))) ///
 			///legend(label(1 "Observed") label(2 "Projected") label(3 "Estimated") order(1 3 2)) ///
 			note("{bf:Productividad laboral}: `=string(scalar(llambda),"%6.3f")'% (`=anio[[`obsPIB']]'-`=anio[`obs_exo']'). {bf:{c U'}ltimo dato reportado}: `=scalar(aniolast)'`trim_last'.") ///
 			///note("{bf:Note}: Annual Labor Productivity Growth: `=string(scalar(llambda),"%6.3f")'% (`=anio[[`obsPIB']]'-`=anio[`obs_exo']').") ///
@@ -464,6 +454,7 @@ quietly {
 	return local exceptI "`exceptI'"
 	return scalar geo = `difpib'
 	return scalar discount = `discount'
+	return scalar aniovp = `aniovp'
 
 
 	***************
@@ -477,7 +468,7 @@ quietly {
 			}
 			noisily di in g " `=anio[`k']' " _col(10) %8.1fc in y var_pibY[`k'] " %" _col(25) %20.0fc pibY[`k'] _col(50) %8.1fc in y var_indiceY[`k'] " %" _col(65) %12.10fc deflator[`k']
 		}
-		if (anio[`k'] == scalar(aniolast) & trimestre[`k'] < 4) | anio[`k'] <= anio[`obs_exo'] & anio[`k'] > scalar(aniolast) {
+		if (anio[`k'] == scalar(aniolast) & trimestre[`k'] < 4) | (anio[`k'] <= anio[`obs_exo'] & anio[`k'] >= scalar(aniolast)) {
 			if "`estimado'" == "" {
 				noisily di in g %~72s "ESTIMADO"
 				local estimado = "done"
@@ -511,7 +502,6 @@ quietly {
 		tempvar reportado estimado proyectado
 		g reportado = pibY/1000000000000/deflator if (anio <= scalar(aniolast) & anio >= 2010) ///
 			| (anio == scalar(aniolast) & trimestre == 4)
-		*replace reportado = `pib_last'/1000000000000/deflator if anio == scalar(aniolast)
 		g estimado = pibY/1000000000000/deflator if (anio <= anio[`obs_exo'] & anio >= scalar(aniolast))
 		g proyectado = pibY/1000000000000/deflator if anio >= scalar(aniolast) & anio > anio[`obs_exo'] & anio <= 2030
 		replace proyectado = pibY/1000000000000/deflator if anio == anio[`obs_exo']

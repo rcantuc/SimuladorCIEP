@@ -137,7 +137,9 @@ tempname pobenigh
 matrix `pobenigh' = r(StatTotal)
 replace factor = round(factor*`ajustepob'/`pobenigh'[1,1],1)
 
-
+noisily Simulador ing_subor [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
+noisily Gini ing_subor, hogar(folioviv foliohog) individuo(numren) factor(factor)
+exit
 
 **************************************
 ** (+) Impuestos al ingreso laboral **

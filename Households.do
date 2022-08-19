@@ -15,7 +15,7 @@ if "`1'" == "" {
 }
 if `1' >= 2020 {
 	local enigh = "ENIGH"
-	local betamin = 2.5							// ENIGH: 2.436
+	local betamin = 1 // 2.5							// ENIGH: 2.436
 	local altimir = "yes"
 	local SubsidioEmpleo = 49997000000 					// Presupuesto de gastos fiscales (2018)
 	local udis = 6.496487003						// Promedio de valor de UDIS de enero a diciembre 2018
@@ -2014,7 +2014,7 @@ if `betamin' > 1 {
 	replace factor = factor_cola
 }
 
-exit
+
 *********************
 ** 7.2 Escolaridad **
 destring gradoaprob, replace
