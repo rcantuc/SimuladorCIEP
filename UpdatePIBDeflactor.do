@@ -1,7 +1,8 @@
-************************************************
-**** Base de datos: PIB e índice de precios ****
-************************************************
+*****************************************
+**** Base de datos: PIBDeflactor.dta ****
+*****************************************
 
+noisily di in g "  Updating PIBDeflactor.dta..." _newline
 
 ***************
 *** 1 BASES ***
@@ -82,6 +83,7 @@ tsset aniotrimestre
 * Moneda *
 g currency = "MXN"
 
+* Guardar base SIM *
 if `c(version)' > 13.1 {
 	saveold "`c(sysdir_site)'/SIM/PIBDeflactor.dta", replace version(13)
 }

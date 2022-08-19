@@ -4,14 +4,12 @@
 ---
 
 ## UpdatePIBDeflactor.do
-Este *do-file* **actualiza** la base de datos del simulador, `c(sysdir_site)/SIM/PIBDeflactor.dta`, con la información presente en los archivos:
+**Actualiza** la base de datos del simulador [`c(sysdir_site)/SIM/PIBDeflactor.dta`] con la información presente en los archivos[^1]:
 
 - `c(sysdir_site)/bases/UPDATE/SCN/PIB.xlsx`
 - `c(sysdir_site)/bases/UPDATE/SCN/deflactor.xlsx`
 
-Para actualizar los valores del **PIB trimestral** (`PIB.xlsx`) y del **Índice precios implícitos trimestral** (`deflactor.xlsx`), ir a:
-
-[Cómo actualizar el SCN](Actualizar el SCN.md)
+[^1]: Para saber cómo actualizar los valores presentes en los archivos `PIB.xlsx` y `deflactor.xlsx` con los más recientes publicados por el INEGI, ir a: [Actualizar el SCN](Actualizar el SCN.md).
 
 
 ### 1. Base de datos INEGI/BIE: PIB
@@ -26,8 +24,8 @@ Para actualizar los valores del **PIB trimestral** (`PIB.xlsx`) y del **Índice 
 ![DeflactorBIE](images/Cap_0/DeflactorBIE.png)
 
 
-### 3. Unión de datos y guardar base `c(sysdir_site)/SIM/PIBDeflactor.dta`
-**Unir** las bases de datos limpias del *PIB* y el *Deflactor*. Adicionalmente, se **genera** la variable `aniotrimestre`, el cual será utilizado para definir la serie de tiempo.
+### 3. Unión de datos y guardar base final
+**Unir** las bases de datos limpias del *PIB* y el *Deflactor*. Adicionalmente, se **genera** la variable `aniotrimestre`, el cual será utilizado para definir la serie de tiempo. El archivo final, en formato `Stata 13`, se guarda en `c(sysdir_site)/SIM/PIBDeflactor.dta`.
 
 ![UnionPIBDeflactor](images/Cap_0/UnionPIBDeflactor.png)
 
@@ -43,30 +41,32 @@ FIN de `UpdatePIBDeflactor.do`
 
 ## PIBDeflactor.ado
 
-### 1. Actualizar la base de datos
-El *do-file* `UpdatePIBDeflactor.do` puede ejecutarse desde el comando (*ado-file*) `PIBDeflactor`, con la siguiente sintaxis desde la consola de `Stata`:
 
-`PIBDeflactor, update`
-
-Este paso se tiene que realizar **solamente una vez**, hasta la próxima actualización (próximo trimestre).
-
-### 2. Sintaxis
-
-`PIBDeflactor` [*if*] [*ANIOvp(int) GEOPIB(int) GEODEF(int) NOGraphs NOOutput DIScount(real) UPDATE SAVE*]
+### Sintaxis
+`PIBDeflactor` [*if*] [*, UPDATE ANIOvp(int) NOGraphs GEOPIB(int) GEODEF(int) NOOutput SAVE*]
 
 **Opciones**
 
-- **aniovp**: cambia el año de referencia para el *valor presente*. Tiene que ser un íntegro (i.e. no número fraccionado) entre 1993 (mínimo reportado por el INEGI/BIE) y 2050 (máximo proyectado por el CONAPO, en su base de población).
-- **geopib**: 
+- **update**: ejecuta el *do-file* `UpdatePIBDeflactor.do`[^2].
+- **aniovp**: cambia el año de referencia para calcular el *valor presente*. Tiene que ser un íntegro (i.e. no número fraccionado) entre 1993 (mínimo reportado por el INEGI/BIE) y 2050 (máximo proyectado por el CONAPO, en su base de población). El *default* es el año corriente.
+- **nographs**: evita que se despliguen las gráficas generadas por el comando (para mayor velocidad de ejecución).
+- **geopib**:
 - **geodef**:
-- **fin**: 
-- **nographs**:
+- **fin**:
 - **nooutput**:
-- **discount**:
-- **update**:
 - **save**:
 
-### 3. Bases de datos
+[^2]: Este comando/opción se debe realizar *solamente una vez*, hasta la próxima actualización (próximo trimestre).
+
+
+### 1. Bases de datos
+
+**Poblacion.dta**
+
+
+**PIBDeflactor.dta**
+
+
 
 
 ### 4. Variables en términos reales

@@ -18,12 +18,12 @@ quietly {
 	
 	capture confirm scalar aniovp
 	if _rc == 0 {
-			local aniovp = scalar(aniovp)
+		local aniovp = scalar(aniovp)
 	}	
 
 	syntax [, ANIOvp(int `aniovp') GEO(int 20) FIN(int 2050) NOGraphs UPDATE OUTPUT]
 
-	noisily di _newline(2) in g _dup(20) "." "{bf:   Econom{c i'}a:" in y " Inflacion `aniovp'   }" in g _dup(20) "."
+	noisily di _newline(2) in g _dup(20) "." "{bf:   Inflaci{c o'}n:" in y " `aniovp'   }" in g _dup(20) "." _newline
 
 
 
@@ -32,7 +32,7 @@ quietly {
 	***********************
 	capture use `"`c(sysdir_site)'/SIM/inflacion.dta"', clear
 	if _rc != 0 | "`update'" == "update" {
-		run `"`c(sysdir_site)'/UpdateInflacion.do"'
+		noisily run `"`c(sysdir_site)'/UpdateInflacion.do"'
 		use `"`c(sysdir_site)'/SIM/inflacion.dta"', clear
 	}
 
@@ -173,7 +173,7 @@ quietly {
 	timer list 12
 	format var_inflY %7.3fc	
 	format deflatorpp %7.4fc
-	noisily list anio inpc var_inflY deflatorpp if anio > 2000 & anio <= 2030
+	noisily list anio mes inpc var_inflY deflatorpp if anio > 2000 & anio <= 2030
 	noisily di _newline in g "Tiempo: " in y round(`=r(t12)/r(nt12)',.1) in g " segs."
 }
 end

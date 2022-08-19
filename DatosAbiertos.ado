@@ -24,12 +24,8 @@ quietly {
 		use if clave_de_concepto == "`anything'" using "`c(sysdir_site)'/SIM/DatosAbiertos.dta", clear
 	}
 
-	*drop if monto == 0 | monto == .
-	*drop if anio < 2003
-
 	if `=_N' == 0 {
 		noisily di in r "No se encontr{c o'} la serie {bf:`anything'}."
-		return scalar error = 2000
 		exit
 	}
 
@@ -86,10 +82,10 @@ quietly {
 			local textsize ", size(medium)"
 		}
 		if `length' > 90 {
-			local textsize ", size(vsmall)"
+			local textsize ", size(small)"
 		}
 		if `length' > 110 {
-			local textsize ", size(vvsmall)"
+			local textsize ", size(vsmall)"
 		}
 
 		tabstat `montomill' `if', stat(sum) by(mes) f(%20.0fc) save
@@ -162,7 +158,7 @@ quietly {
 		egen acum_prom = mean(`propmensual'), by(mes)
 
 		collapse (sum) monto acum_prom (last) mes if monto != ., by(anio nombre clave_de_concepto)
-		replace monto = monto/acum_prom if mes < 12 & acum_prom > 0 & acum_prom < 1
+		*replace monto = monto/acum_prom if mes < 12 & acum_prom > 0 & acum_prom < 1
 		local textografica `"{bf:Promedio a `mesname'}: `=string(acum_prom[_N]*100,"%5.1fc")'% del total anual."'
 		local palabra "Proyectado"
 	}

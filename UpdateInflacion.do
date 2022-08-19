@@ -2,6 +2,8 @@
 **** Base de datos: INPC ****
 *****************************
 
+noisily di in g "  Updating inflacion.dta..." _newline
+
 
 ***************
 *** 0 BASES ***

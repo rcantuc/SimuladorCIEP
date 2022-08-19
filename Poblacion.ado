@@ -11,7 +11,7 @@ quietly {
 	capture use `"`c(sysdir_site)'/SIM/$pais/Poblacion.dta"', clear
 	if _rc != 0 {
 		if "$pais" == "" {
-			run `"`c(sysdir_site)'/UpdatePoblacion.do"'
+			noisily run `"`c(sysdir_site)'/UpdatePoblacion.do"'
 		}
 		else {
 			run `"`c(sysdir_site)'/UpdatePoblacionMundial.do"'
@@ -20,9 +20,9 @@ quietly {
 
 	capture confirm scalar aniovp
 	if _rc == 0 {
-			local aniovp = scalar(aniovp)
+		local aniovp = scalar(aniovp)
 	}
-	
+
 	syntax [if] [, ANIOhoy(int `aniovp') ANIOFinal(int -1) NOGraphs UPDATE ///
 		TF(real -1) TM2044(real -1) TM4564(real -1) TM65(real -1)]
 
@@ -32,22 +32,25 @@ quietly {
 		local aniohoy = substr(`"`=trim("`aniovp'")'"',1,4)
 	}
 
-	* Si hay un error o la opción "update" es llamada, limpia la base de datos y la usa *
-	if "`update'" == "update" {
-		if "$pais" == "" {
-			run `"`c(sysdir_site)'/UpdatePoblacion.do"'
-		}
-		else {
-			run `"`c(sysdir_site)'/UpdatePoblacionMundial.do"'
-		}
-	}
-
 	* If default *
 	if `"`if'"' == "" {
 		local if = `"if entidad == "Nacional""'
 	}
 
 	use `if' using `"`c(sysdir_site)'/SIM/$pais/Poblacion.dta"', clear
+	noisily di _newline(2) in g _dup(20) "." "{bf:   Poblaci{c o'}n: " in y "`=entidad[1]'   }" in g _dup(20) "." _newline
+
+	* Si hay un error o la opción "update" es llamada, limpia la base de datos y la usa *
+	if "`update'" == "update" {
+		if "$pais" == "" {
+			noisily run `"`c(sysdir_site)'/UpdatePoblacion.do"'
+		}
+		else {
+			run `"`c(sysdir_site)'/UpdatePoblacionMundial.do"'
+		}
+		use `if' using `"`c(sysdir_site)'/SIM/$pais/Poblacion.dta"', clear
+	}
+
 	* Si no hay año final, utiliza el último elemento del vector "anio" *
 	if `aniofinal' == -1 {
 		local aniofinal = anio in -1
@@ -60,7 +63,6 @@ quietly {
 	*** 0. Base de datos ***
 	************************
 	replace entidad = "Estado de México" if entidad == "M?xico" | entidad == "México"
-	noisily di _newline(2) in g _dup(20) "." "{bf:   Poblaci{c o'}n: " in y "`=entidad[1]'   }" in g _dup(20) "." _newline
 
 	tabstat poblacion if anio == `aniohoy', f(%20.0fc) stat(sum) save
 	tempname POBTOT

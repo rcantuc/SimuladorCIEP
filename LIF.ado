@@ -49,8 +49,8 @@ quietly {
 	noisily di _newline(2) in g _dup(20) "." "{bf:   Sistema Fiscal:" in y " INGRESOS $pais `anio'   }" in g _dup(20) "."
 
 	** 2.1 PIB + Deflactor **
-	*PIBDeflactor, anio(`anio') nographs nooutput
-	use "`c(sysdir_site)'/users/$pais/$id/PIB.dta", clear
+	PIBDeflactor, anio(`anio') nographs nooutput
+	*use "`c(sysdir_site)'/users/$pais/$id/PIB.dta", clear
 	local currency = currency[1]
 	forvalues k=1(1)`=_N' {
 		if anio[`k'] == `anio' {
@@ -375,7 +375,7 @@ quietly {
 
 
 	if "`nographs'" != "nographs" & "$nographs" == "" {
-		preserve
+		*preserve
 		drop if divLIF == 10
 		drop if anio <= 2012
 		tabstat recaudacionPIB if anio == `anio' & divLIF != 10, stat(sum) f(%20.0fc) save
@@ -390,20 +390,31 @@ quietly {
 		}
 		
 		replace recaudacion=recaudacion/deflator/1000000000
-		collapse (sum) recaudacion* if divLIF != 10 | recaudacion != 0 | recaudacion == ., by(anio `resumido')
-		reshape wide recaudacion recaudacionPIB, i(anio) j(`resumido')
+		replace monto=monto/deflator/1000000000
+		replace LIF=LIF/deflator/1000000000
+		collapse (sum) recaudacion* LIF* monto* if divLIF != 10 | recaudacion != 0 | recaudacion == ., by(anio `resumido')
+		reshape wide recaudacion* LIF* monto*, i(anio) j(`resumido')
 		local countlev = 1
 		foreach k of local lev_resumido {
-			tempvar lev_res`countlev'
+			tempvar lev_res`countlev' lev_lif`countlev' lev_mon`countlev'
 			if `countlev' == 1 {
 				g `lev_res`countlev'' = recaudacion`k'
+				g `lev_lif`countlev'' = LIF`k'
+				g `lev_mon`countlev'' = monto`k'
 			}
 			else {
 				g `lev_res`countlev'' = recaudacion`k' //+ `lev_res`=`countlev'-1''
+				g `lev_lif`countlev'' = LIF`k' //+ `lev_res`=`countlev'-1''
+				g `lev_mon`countlev'' = monto`k' //+ `lev_res`=`countlev'-1''
 			}
 			replace `lev_res`countlev'' = 0 if `lev_res`countlev'' == .
+			replace `lev_lif`countlev'' = 0 if `lev_lif`countlev'' == .
+			replace `lev_mon`countlev'' = 0 if `lev_mon`countlev'' == .
 			
 			local graphvars = "`lev_res`countlev'' `graphvars' "
+			local graphvars2 = "`lev_lif`countlev'' `graphvars' "
+			local graphvars3 = "`lev_mon`countlev'' `graphvars' "
+
 			local legend = `"`legend' label(`=`totlev'-`countlev'+1' "`legend`k''")"'
 			local ++countlev
 		}
@@ -412,14 +423,15 @@ quietly {
 		egen `TOTPIB' = rsum(recaudacionPIB*)
 		egen `TOT' = rsum(recaudacion*)
 		
-		local j = 100/(2022-2012)/2
+		local j = 100/(`anio'-1-2012)/2
 		forvalues k=1(1)`=_N' {
-			if `TOTPIB'[`k'] != . & anio[`k'] >= 2003 {
+			if `TOTPIB'[`k'] != . & anio[`k'] >= 2003 & anio[`k'] < `anio' {
 				local text `"`text' `=`TOT'[`k']*1.005' `=anio[`k']*0+`j'' "{bf:`=string(`TOT'[`k'],"%7.1fc")'}""'
-				local j = `j' + 100/(2022-2012)
+				local j = `j' + 100/(`anio'-1-2012)
 			}
 		}
-		graph bar `graphvars' if anio >= 2012 & anio < `anio'-1, ///
+
+		graph bar `graphvars' if anio >= 2012 & anio < `anio', ///
 			over(anio, gap(0)) stack blabel(bar, format(%7.1fc)) outergap(0) ///
 			title("{bf:Ingresos} p{c u'}blicos") ///
 			subtitle($pais) ///
@@ -427,25 +439,26 @@ quietly {
 			ytitle("mil millones `currency' `anio'") ///
 			ylabel(, format(%15.0fc) labsize(small)) ///
 			yscale(range(0)) ///
-			legend(on position(6) rows(`rows') cols(`cols') `legend' region(margin(zero))) ///
+			legend(on position(6) rows(2) cols(`cols') `legend' region(margin(zero))) ///
 			name(ingresosA, replace) ///
 			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (EOFP, Paquete Econ{c o'}mico).")
 
-		graph bar `graphvars' if anio == `anio', aspect(`=`anio'-2012+1')  ///
-			over(anio, gap(0)) stack blabel(bar, format(%7.1fc)) outergap(0) ///
+		reshape long
+		g resumido = `resumido'
+		graph bar LIF* monto* if anio == `anio', aspect(`=`anio'-2012+1')  ///
+			over(anio, gap(0)) stack asyvar blabel(bar, format(%7.1fc)) outergap(0) ///
 			title("{bf:Ingresos} p{c u'}blicos") ///
 			subtitle($pais) ///
 			text(`text', color(black) placement(n)) ///
 			ytitle("mil millones `currency' `anio'") ///
 			ylabel(, format(%15.0fc) labsize(small)) ///
 			yscale(range(0)) ///
-			legend(on position(6) rows(`rows') cols(`cols') `legend' region(margin(zero))) ///
+			legend(on position(6) rows(2) cols(`cols') label(1 "") region(margin(zero)) symxsize(0)) ///
 			name(ingresosB, replace) ///
 			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (EOFP, Paquete Econ{c o'}mico).")
 
 		graph combine ingresosA ingresosB	
-			
-		restore
+		*restore
 	}
 
 

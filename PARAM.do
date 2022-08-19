@@ -4,9 +4,6 @@
 ***                   ***
 *************************
 global id = "`c(username)'"                                                     // ID DEL USUARIO
-if ("`c(username)'" == "ricardo" | "`c(username)'" == "ciepmx") & "`c(console)'" == "" {
-	*global id = ""
-}
 
 
 
@@ -41,6 +38,9 @@ capture mkdir `"`c(sysdir_site)'/users/$pais/$id/"'
 ***    4. CRECIMIENTO PIB    ***
 ***                          ***
 ********************************
+scalar aniovp = 2022
+scalar anioend = 2030
+
 global pib2022 = 3.4                                           // Pre-CGPE 2023
 global pib2023 = 3.5                                           // Pre-CGPE 2023
 global pib2024 = 2.8                                           // CGPE 2022
@@ -71,9 +71,6 @@ global inf2027 = 3.0                                           // CGPE 2022: 3.0
 *global tasaEfectiva = 5.7425                                   // Tasa de inter{c e'}s EFECTIVA
 *global tipoDeCambio = 20.200                                   // Tipo de cambio
 *global depreciacion = 0.2000                                   // Depreciaci{c o'}n
-
-scalar aniovp = 2022
-scalar anioend = 2030
 
 exit
 
