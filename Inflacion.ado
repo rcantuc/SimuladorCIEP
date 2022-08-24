@@ -30,10 +30,10 @@ quietly {
 	***********************
 	*** 0 Base de datos ***
 	***********************
-	capture use `"`c(sysdir_site)'/SIM/inflacion.dta"', clear
+	capture use `"`c(sysdir_site)'/SIM/Inflacion.dta"', clear
 	if _rc != 0 | "`update'" == "update" {
 		noisily run `"`c(sysdir_site)'/UpdateInflacion.do"'
-		use `"`c(sysdir_site)'/SIM/inflacion.dta"', clear
+		use `"`c(sysdir_site)'/SIM/Inflacion.dta"', clear
 	}
 
 	collapse (last) inpc (last) mes, by(anio)

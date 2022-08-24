@@ -38,7 +38,8 @@ capture mkdir `"`c(sysdir_site)'/users/$pais/$id/"'
 ***    4. CRECIMIENTO PIB    ***
 ***                          ***
 ********************************
-scalar aniovp = 2022
+global paqueteEconomico "PE 2023"
+scalar aniovp = 2023
 scalar anioend = 2030
 
 global pib2022 = 3.4                                           // Pre-CGPE 2023

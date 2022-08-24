@@ -23,7 +23,7 @@ quietly {
 		local aniovp = scalar(aniovp)
 	}
 
-	syntax [if] [, ANIOhoy(int `aniovp') ANIOFinal(int -1) NOGraphs UPDATE ///
+	syntax [if] [, ANIOhoy(int `aniovp') ANIOEnd(int -1) NOGraphs UPDATE ///
 		TF(real -1) TM2044(real -1) TM4564(real -1) TM65(real -1)]
 
 	* Si no hay año inicial, utiliza la fecha de hoy *
@@ -52,8 +52,8 @@ quietly {
 	}
 
 	* Si no hay año final, utiliza el último elemento del vector "anio" *
-	if `aniofinal' == -1 {
-		local aniofinal = anio in -1
+	if `anioend' == -1 {
+		local anioend = anio in -1
 	}
 	local anioinicial = anio in 1
 	capture drop __*
@@ -70,10 +70,10 @@ quietly {
 	noisily di in g " POBLACI{c O'}N " in y `aniohoy' in g ": " in y %15.0fc `POBTOT'[1,1] in g " personas"
 	scalar poblaciontotal = string(`POBTOT'[1,1],"%20.0fc")
 
-	tabstat poblacion if anio == `aniofinal', f(%20.0fc) stat(sum) save
+	tabstat poblacion if anio == `anioend', f(%20.0fc) stat(sum) save
 	tempname POBFIN
 	matrix `POBFIN' = r(StatTotal)
-	noisily di in g " POBLACI{c O'}N " in y `aniofinal' in g ": " in y %15.0fc `POBFIN'[1,1] in g " personas"
+	noisily di in g " POBLACI{c O'}N " in y `anioend' in g ": " in y %15.0fc `POBFIN'[1,1] in g " personas"
 	scalar poblacionfinal = string(`POBFIN'[1,1],"%20.0fc")
 
 
@@ -149,10 +149,10 @@ quietly {
 		label values sexo sexo
 
 		* Texto *
-		tabstat poblacionSIM if anio == `aniofinal', f(%20.0fc) stat(sum) save
+		tabstat poblacionSIM if anio == `anioend', f(%20.0fc) stat(sum) save
 		tempname POBFINS
 		matrix `POBFINS' = r(StatTotal)
-		noisily di in g "  Simulaci{c o'}n " in y `aniofinal' in g ": " in y %14.0fc `POBFINS'[1,1]
+		noisily di in g "  Simulaci{c o'}n " in y `anioend' in g ": " in y %14.0fc `POBFINS'[1,1]
 
 		tempvar edad2 zero poblacionTF poblacionTFSIM
 		g `edad2' = edad
@@ -169,17 +169,17 @@ quietly {
 		replace `poblacionTFSIM' = poblacionSIM if sexo == 2
 
 		* X label *
-		tabstat poblacion if (anio == `aniohoy' | anio == `aniofinal'), ///
+		tabstat poblacion if (anio == `aniohoy' | anio == `anioend'), ///
 			stat(max) f(%15.0fc) by(sexo) save
 		tempname MaxHS MaxMS
 		matrix `MaxHS' = r(Stat1)
 		matrix `MaxMS' = r(Stat2)
 
-		twoway (bar `poblacionTF' edad if sexo == 1 & anio == `aniofinal', horizontal lwidth(none)) ///
-			(bar `poblacionTF' edad if sexo == 2 & anio == `aniofinal', horizontal lwidth(none)) ///
-			(bar `poblacionTFSIM' edad if sexo == 1 & anio == `aniofinal', horizontal lwidth(none) barwidth(.33)) ///
-			(bar `poblacionTFSIM' edad if sexo == 2 & anio == `aniofinal', horizontal lwidth(none) barwidth(.33)) ///
-			(sc `edad2' `zero' if anio == `aniofinal', msymbol(i) mlabel(`edad2') mlabsize(vsmall) mlabcolor("114 113 118")), ///
+		twoway (bar `poblacionTF' edad if sexo == 1 & anio == `anioend', horizontal lwidth(none)) ///
+			(bar `poblacionTF' edad if sexo == 2 & anio == `anioend', horizontal lwidth(none)) ///
+			(bar `poblacionTFSIM' edad if sexo == 1 & anio == `anioend', horizontal lwidth(none) barwidth(.33)) ///
+			(bar `poblacionTFSIM' edad if sexo == 2 & anio == `anioend', horizontal lwidth(none) barwidth(.33)) ///
+			(sc `edad2' `zero' if anio == `anioend', msymbol(i) mlabel(`edad2') mlabsize(vsmall) mlabcolor("114 113 118")), ///
 			legend(label(1 "Hombres CONAPO") label(2 "Mujeres CONAPO") ///
 			label(3 "Hombres Simulado") ///
 			label(4 "Mujeres Simulado") order(1 2 3 4) region(margin(zero))) ///
@@ -191,7 +191,8 @@ quietly {
 			`=`MaxMS'[1,1]' `"`=string(`MaxMS'[1,1],"%15.0fc")'"', angle(horizontal)) ///
 			///caption("Fuente: Elaborado con el Simulador Fiscal CIEP v5, utilizando informaci{c o'}n de CONAPO.") ///
 			///xtitle("Personas") ///
-			title("Pir{c a'}mide {bf:demogr{c a'}fica}: CONAPO vs. simulado") subtitle("$pais `aniofinal'")
+			title("Pir{c a'}mide {bf:demogr{c a'}fica}: CONAPO vs. simulado") ///
+			subtitle("$pais `anioend'")
 
 		capture drop __*
 		drop tasamortalidad
@@ -248,11 +249,11 @@ quietly {
 		matrix `H`aniohoy'' = r(Stat1)
 		matrix `M`aniohoy'' = r(Stat2)
 
-		tabstat edad [fw=round(abs(poblacion),1)] if anio == `aniofinal', ///
+		tabstat edad [fw=round(abs(poblacion),1)] if anio == `anioend', ///
 			stat(median) by(sexo) save
-		tempname H`aniofinal' M`aniofinal'
-		matrix `H`aniofinal'' = r(Stat1)
-		matrix `M`aniofinal'' = r(Stat2)
+		tempname H`anioend' M`anioend'
+		matrix `H`anioend'' = r(Stat1)
+		matrix `M`anioend'' = r(Stat2)
 
 		* Distribucion inicial *
 		tabstat poblacion if anio == `aniohoy' & edad < 18, ///
@@ -275,28 +276,28 @@ quietly {
 		matrix `P`aniohoy'' = r(StatTotal)
 
 		* Distribucion final *
-		tabstat poblacion if anio == `aniofinal' & edad < 18, ///
+		tabstat poblacion if anio == `anioend' & edad < 18, ///
 			stat(sum) f(%15.0fc) save
-		tempname P18_`aniofinal'
-		matrix `P18_`aniofinal'' = r(StatTotal)
+		tempname P18_`anioend'
+		matrix `P18_`anioend'' = r(StatTotal)
 
-		tabstat poblacion if anio == `aniofinal' & edad >= 18 & edad < 65, ///
+		tabstat poblacion if anio == `anioend' & edad >= 18 & edad < 65, ///
 			stat(sum) f(%15.0fc) save
-		tempname P1865_`aniofinal'
-		matrix `P1865_`aniofinal'' = r(StatTotal)
+		tempname P1865_`anioend'
+		matrix `P1865_`anioend'' = r(StatTotal)
 
-		tabstat poblacion if anio == `aniofinal' & edad >= 65, ///
+		tabstat poblacion if anio == `anioend' & edad >= 65, ///
 			stat(sum) f(%15.0fc) save
-		tempname P65_`aniofinal'
-		matrix `P65_`aniofinal'' = r(StatTotal)
+		tempname P65_`anioend'
+		matrix `P65_`anioend'' = r(StatTotal)
 
-		tabstat poblacion if anio == `aniofinal', stat(sum) f(%15.0fc) save
-		tempname P`aniofinal'
-		matrix `P`aniofinal'' = r(StatTotal)
+		tabstat poblacion if anio == `anioend', stat(sum) f(%15.0fc) save
+		tempname P`anioend'
+		matrix `P`anioend'' = r(StatTotal)
 
 		* Poblacion viva *
 		tempname Pviva
-		capture tabstat poblacion if anio == `aniofinal' & edad > `aniofinal'-`aniohoy', ///
+		capture tabstat poblacion if anio == `anioend' & edad > `anioend'-`aniohoy', ///
 			stat(sum) f(%15.0fc) save
 		if _rc != 0 {
 			matrix `Pviva' = J(1,1,0)
@@ -307,7 +308,7 @@ quietly {
 		}
 
 		tempname Pnacida
-		capture tabstat poblacion if anio == `aniofinal' & edad <= `aniofinal'-`aniohoy', ///
+		capture tabstat poblacion if anio == `anioend' & edad <= `anioend'-`aniohoy', ///
 			stat(sum) f(%15.0fc) save
 		if _rc != 0 {
 			matrix `Pnacida' = J(1,1,0)
@@ -318,7 +319,7 @@ quietly {
 		}
 
 		* X label *
-		tabstat poblacion if (anio == `aniohoy' | anio == `aniofinal'), ///
+		tabstat poblacion if (anio == `aniohoy' | anio == `anioend'), ///
 			stat(max) f(%15.0fc) by(sexo) save
 		tempname MaxH MaxM
 		matrix `MaxH' = r(Stat1)
@@ -338,71 +339,72 @@ quietly {
 		* 3. Vivos en el año final;  nacidos antes del año inicial *
 		* 4. Vivios en el año inicial y  mayores a 109 en el año final *
 		twoway (bar `pob2' edad if sexo == 1 & anio == `aniohoy' ///
-			& edad+`aniofinal'-`aniohoy' <= 109, horizontal lwidth(none)) ///
+			& edad+`anioend'-`aniohoy' <= 109, horizontal lwidth(none)) ///
 			(bar `pob2' edad if sexo == 2 & anio == `aniohoy' ///
-			& edad+`aniofinal'-`aniohoy' <= 109, horizontal lwidth(none)) ///
-			(bar `pob2' edad if sexo == 1 & anio == `aniofinal' ///
-			& edad <= `aniofinal'-`aniohoy', horizontal barwidth(.15) ///
+			& edad+`anioend'-`aniohoy' <= 109, horizontal lwidth(none)) ///
+			(bar `pob2' edad if sexo == 1 & anio == `anioend' ///
+			& edad <= `anioend'-`aniohoy', horizontal barwidth(.15) ///
 			lwidth(none) /*color("83 144 0")*/) ///
-			(bar `pob2' edad if sexo == 2 & anio == `aniofinal' ///
-			& edad <= `aniofinal'-`aniohoy', horizontal barwidth(.15) ///
+			(bar `pob2' edad if sexo == 2 & anio == `anioend' ///
+			& edad <= `anioend'-`aniohoy', horizontal barwidth(.15) ///
 			lwidth(none) /*color("149 191 75")*/) ///
-			(bar `pob2' edad if sexo == 1 & anio == `aniofinal' ///
-			& edad > `aniofinal'-`aniohoy', horizontal barwidth(.66) ///
+			(bar `pob2' edad if sexo == 1 & anio == `anioend' ///
+			& edad > `anioend'-`aniohoy', horizontal barwidth(.66) ///
 			lwidth(none) color("255 107 24")) ///
-			(bar `pob2' edad if sexo == 2 & anio == `aniofinal' ///
-			& edad > `aniofinal'-`aniohoy', horizontal barwidth(.66) ///
+			(bar `pob2' edad if sexo == 2 & anio == `anioend' ///
+			& edad > `anioend'-`aniohoy', horizontal barwidth(.66) ///
 			lwidth(none) color("255 189 0")) ///
 			(bar `pob2' edad if sexo == 1 & anio == `aniohoy' ///
-			& edad+`aniofinal'-`aniohoy' > 109, horizontal barwidth(.5) ///
+			& edad+`anioend'-`aniohoy' > 109, horizontal barwidth(.5) ///
 			lwidth(none) /*color("255 129 0")*/) ///
 			(bar `pob2' edad if sexo == 2 & anio == `aniohoy' ///
-			& edad+`aniofinal'-`aniohoy' > 109, horizontal barwidth(.5) ///
+			& edad+`anioend'-`aniohoy' > 109, horizontal barwidth(.5) ///
 			lwidth(none) /*color("255 189 0")*/) ///
 			(sc edad2 zero if anio == `aniohoy', msymbol(i) mlabel(edad2) ///
 			mlabsize(vsmall) mlabcolor("114 113 118")), ///
 			legend(label(1 "Hombres") label(2 "Mujeres")) ///
 			legend(label(3 "H. nacidos post `aniohoy'") ///
 			label(4 "M. nacidas post `aniohoy'") ///
-			///label(5 "H. `aniofinal'") ///
-			///label(6 "M. `aniofinal'") ///
-			label(7 "H. fallecidos para `aniofinal'") ///
-			label(8 "M. fallecidas para `aniofinal'")) ///
+			///label(5 "H. `anioend'") ///
+			///label(6 "M. `anioend'") ///
+			label(7 "H. fallecidos para `anioend'") ///
+			label(8 "M. fallecidas para `anioend'")) ///
 			legend(order(1 2 3 4 7 8) holes(1 2 5 6) rows(2) on region(margin(zero))) ///
 			yscale(noline) ylabel(none) xscale(noline) ///
 			text(105 `=-`MaxH'[1,1]*.618' "{bf:Edad mediana `aniohoy'}") ///
 			text(100 `=-`MaxH'[1,1]*.618' "Hombres: `=`H`aniohoy''[1,1]'") ///
 			text(95 `=-`MaxH'[1,1]*.618' "Mujeres: `=`M`aniohoy''[1,1]'") ///
-			text(105 `=`MaxH'[1,1]*.618' "{bf:Edad mediana `aniofinal'}") ///
-			text(100 `=`MaxH'[1,1]*.618' "Hombres: `=`H`aniofinal''[1,1]'") ///
-			text(95 `=`MaxH'[1,1]*.618' "Mujeres: `=`M`aniofinal''[1,1]'") ///
+			text(105 `=`MaxH'[1,1]*.618' "{bf:Edad mediana `anioend'}") ///
+			text(100 `=`MaxH'[1,1]*.618' "Hombres: `=`H`anioend''[1,1]'") ///
+			text(95 `=`MaxH'[1,1]*.618' "Mujeres: `=`M`anioend''[1,1]'") ///
 			text(90 `=-`MaxH'[1,1]*.618' "{bf:Poblaci{c o'}n `aniohoy'}") ///
 			text(85 `=-`MaxH'[1,1]*.618' `"`=string(`P`aniohoy''[1,1],"%20.0fc")'"') ///
-			text(80 `=-`MaxH'[1,1]*.618' "{bf: Personas de `aniohoy' vivas en `aniofinal'} ") ///
+			text(80 `=-`MaxH'[1,1]*.618' "{bf: Personas de `aniohoy' vivas en `anioend'} ") ///
 			text(75 `=-`MaxH'[1,1]*.618' `"`=string(`Pviva'[1,1],"%20.0fc")' (`=string(`Pviva'[1,1]/`P`aniohoy''[1,1]*100,"%7.1fc")'%)"') ///
-			text(90 `=`MaxH'[1,1]*.618' "{bf:Poblaci{c o'}n `aniofinal'}") ///
-			text(85 `=`MaxH'[1,1]*.618' `"`=string(`P`aniofinal''[1,1],"%20.0fc")'"') ///
-			text(80 `=`MaxH'[1,1]*.618' "{bf:Personas post `aniohoy' vivas en `aniofinal'} ") ///
-			text(75 `=`MaxH'[1,1]*.618' `"`=string(`Pnacida'[1,1],"%20.0fc")' (`=string(`Pnacida'[1,1]/`P`aniofinal''[1,1]*100,"%7.1fc")'%)"') ///
+			text(90 `=`MaxH'[1,1]*.618' "{bf:Poblaci{c o'}n `anioend'}") ///
+			text(85 `=`MaxH'[1,1]*.618' `"`=string(`P`anioend''[1,1],"%20.0fc")'"') ///
+			text(80 `=`MaxH'[1,1]*.618' "{bf:Personas post `aniohoy' vivas en `anioend'} ") ///
+			text(75 `=`MaxH'[1,1]*.618' `"`=string(`Pnacida'[1,1],"%20.0fc")' (`=string(`Pnacida'[1,1]/`P`anioend''[1,1]*100,"%7.1fc")'%)"') ///
 			///legend(label(1 "Men") label(2 "Women")) ///
 			/*text(105 `=`MaxH'[1,1]*.618' "{bf:Population}") ///
 			text(100 `=`MaxH'[1,1]*.618' `"`=string(`P`aniohoy''[1,1],"%20.0fc")'"') ///
 			text(105 `=-`MaxH'[1,1]*.618' "{bf:Median age}") ///
 			text(100 `=-`MaxH'[1,1]*.618' "Men: `=`H`aniohoy''[1,1]'") ///
 			text(95 `=-`MaxH'[1,1]*.618' "Women: `=`M`aniohoy''[1,1]'")*/ ///
-			name(P_`aniohoy'_`aniofinal'_`entidadGName', replace) ///
+			name(P_`aniohoy'_`anioend'_`entidadGName', replace) ///
 			xlabel(`=-`MaxH'[1,1]' `"`=string(`MaxH'[1,1],"%15.0fc")'"' ///
 			`=-`MaxH'[1,1]/2' `"`=string(`MaxH'[1,1]/2,"%15.0fc")'"' 0 ///
 			`=`MaxM'[1,1]/2' `"`=string(`MaxM'[1,1]/2,"%15.0fc")'"' ///
 			`=`MaxM'[1,1]' `"`=string(`MaxM'[1,1],"%15.0fc")'"', angle(horizontal)) ///
 			///caption("Elaborado por el CIEP con informaci{c o'}n de: CONAPO (2018).") ///
-			///caption("{bf:Fuente}: Elaborado por el CIEP, con información de CONAPO.") ///
-			///title("{bf:Pir{c a'}mide} demogr{c a'}fica") subtitle($pais `=entidad[1]') ///
+			caption("{bf:Fuente}: Elaborado por el CIEP, con información de CONAPO.") ///
+			title("{bf:Pir{c a'}mide} demogr{c a'}fica") ///
+			///subtitle($pais `=entidad[1]') ///
 			///title("{bf:Population} pyramid")
 
 
 		if "$export" != "" {
-			graph export "$export/P_`entidadGName'.png", replace name(P_`aniohoy'_`aniofinal'_`entidadGName')
+			graph export "$export/P_`entidadGName'.png", replace name(P_`aniohoy'_`anioend'_`entidadGName')
 		}
 
 		**************************************
@@ -514,7 +516,7 @@ quietly {
 			(area `pob1934' anio if anio > `aniohoy', color("39 97 47")) ///
 			(area `pob18' anio if anio > `aniohoy', color("53 200 71")), ///
 			text(`y1' `x1' `"{bf:Max:} `=string(`MAX'[1,1],"%5.1fc")' % (`x1')"', place(s)) ///
-			text(`y1' `x1' `"{bf:-18:} `=string(pob18[`p1'],"%12.0fc")'"', place(n)) ///
+			text(`y1' `x1' `"{bf:<18:} `=string(pob18[`p1'],"%12.0fc")'"', place(n)) ///
 			text(`y2' `x2' `"{bf:Max:} `=string(`MAX'[1,2],"%5.1fc")' % (`x2')"', place(s)) ///
 			text(`y2' `x2' `"{bf:19-34:} `=string(pob1934[`p2'],"%12.0fc")'"', place(n)) ///
 			text(`y3' `x3' `"{bf:Max:} `=string(`MAX'[1,3],"%5.1fc")' % (`x3')"', place(sw)) ///
@@ -522,7 +524,7 @@ quietly {
 			text(`y4' `x4' `"{bf:Max:} `=string(`MAX'[1,4],"%5.1fc")' % (`x4')"', place(sw)) ///
 			text(`y4' `x4' `"{bf:61+:} `=string(pob61[`p4'],"%12.0fc")'"', place(nw)) ///
 			text(`z1' `m1' `"{bf:Min:} `=string(`MAX'[2,1],"%5.1fc")' % (`m1')"', place(sw)) ///
-			text(`z1' `m1' `"{bf:-18:} `=string(pob18[`q1'],"%12.0fc")'"', place(nw)) ///
+			text(`z1' `m1' `"{bf:<18:} `=string(pob18[`q1'],"%12.0fc")'"', place(nw)) ///
 			text(`z2' `m2' `"{bf:Min:} `=string(`MAX'[2,2],"%5.1fc")' % (`m2')"', place(`place21')) ///
 			text(`z2' `m2' `"{bf:19-34:} `=string(pob1934[`q2'],"%12.0fc")'"', place(`place22')) ///
 			text(`z3' `m3' `"{bf:Min:} `=string(`MAX'[2,3],"%5.1fc")' % (`m3')"', place(s)) ///
@@ -533,11 +535,12 @@ quietly {
 			xtitle("") ///
 			ytitle("millones de personas") ///
 			xline(`=`aniohoy'+.5') ///
-			///caption("{bf:Fuente}: Elaborado por el CIEP, con información de CONAPO.") ///
-			legend(on label(1 "61+") label(2 "35 - 60") label(3 "19 - 34") label(4 "-18") order(4 3 2 1) region(margin(zero))) ///
-			///title("{bf:Transici{c o'}n} demogr{c a'}fica") subtitle(${pais} `=entidad[1]') ///
+			caption("{bf:Fuente}: Elaborado por el CIEP, con información de CONAPO.") ///
+			legend(on label(1 "61+") label(2 "35 - 60") label(3 "19 - 34") label(4 "<18") order(4 3 2 1) region(margin(zero))) ///
+			title("{bf:Transici{c o'}n} demogr{c a'}fica") ///
+			///subtitle(${pais} `=entidad[1]') ///
 			ylabel(, format(%20.1fc)) yscale(range(0)) ///
-			xlabel(`anioinicial'(10)`aniofinal') ///
+			xlabel(`anioinicial'(10)`=anio[_N]') ///
 			name(E_`entidadGName', replace)
 			
 			if "$export" != "" {

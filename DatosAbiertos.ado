@@ -3,9 +3,9 @@ quietly {
 
 	syntax anything [if] [, NOGraphs PIBVP(real -999) PIBVF(real -999) UPDATE DESDE(real 1993) MES]
 
-	if "`c(username)'" == "ricardo" | "`c(username)'" == "ciepmx" {
-		UpdateDatosAbiertos
-	}
+	*if "`c(username)'" == "ricardo" | "`c(username)'" == "ciepmx" {
+	*	UpdateDatosAbiertos
+	*}
 
 
 
@@ -93,7 +93,7 @@ quietly {
 		forvalues k=1(1)12 {
 			tempname monto`k'
 			matrix `monto`k'' = r(Stat`k')
-			*local valorserie `"`valorserie' `=`monto`k''[1,1]*0' `j' "{bf:`=string(`monto`k''[1,1],"%5.1fc")'}""'
+			local valorserie `"`valorserie' `=`monto`k''[1,1]*0' `j' "{bf:`=string(`monto`k''[1,1],"%5.1fc")'}""'
 			local j = `j' + 100/12
 		}
 
@@ -102,10 +102,10 @@ quietly {
 			ytitle("millones de `=currency[1]' `aniovp'") ///
 			yline(0, lcolor(black) lpattern(solid)) ///
 			title("{bf:`=nombre[1]'}"`textsize') ///
-			text(`valorserie', color(black) place(n)) ///
+			///text(`valorserie', color(black) place(n)) ///
 			subtitle("por mes calendario") ylabel(, format(%10.1fc)) ///
 			note("{bf:{c U'}ltimo dato:} `last_anio'm`last_mes'.") ///
-			caption("{bf:Fuente:} Elaborado por el CIEP, con información de la SHCP (Estadísticas Oportunas).")
+			caption("{bf:Fuente:} Elaborado por el CIEP, con información de la SHCP (Estadísticas Oportunas de Finanzas P{c u'}blicas).")
 
 		preserve
 		collapse (sum) `montomill', by(aniotrimestre anio trimestre nombre currency)
@@ -125,11 +125,11 @@ quietly {
 			ytitle("millones de `=currency[1]' `aniovp'") ///
 			yline(0, lcolor(black) lpattern(solid)) ///
 			title("{bf:`=nombre[1]'}"`textsize') ///
-			text(`valorserie', color(black) place(n)) ///
+			///text(`valorserie', color(black) place(n)) ///
 			subtitle("por trimestre") ylabel(, format(%10.1fc)) ///
 			b1title(`" `=string((`montoTrimActual'/`montoTrimAnteri'-1)*100,"%10.1fc")' "') ///
 			note("{bf:{c U'}ltimo dato:} `last_anio'm`last_mes'.") ///
-			caption("{bf:Fuente:} Elaborado por el CIEP, con información de la SHCP (Estadísticas Oportunas).")
+			caption("{bf:Fuente:} Elaborado por el CIEP, con información de la SHCP (Estadísticas Oportunas de Finanzas P{c u'}blicas).")
 		restore
 
 		graph bar (sum) `montomill' if mes == `=mes[_N]' /*& anio >= 2012*/, over(anio) asyvar ///
@@ -140,7 +140,7 @@ quietly {
 			yline(0, lcolor(black) lpattern(solid)) ///
 			subtitle("`mesname'") blabel(name) legend(off) ///
 			note("{bf:{c U'}ltimo dato:} `last_anio'm`last_mes'.") ///
-			caption("{bf:Fuente:} Elaborado por el CIEP, con información de la SHCP (Estadísticas Oportunas)")
+			caption("{bf:Fuente:} Elaborado por el CIEP, con información de la SHCP (Estadísticas Oportunas de Finanzas P{c u'}blicas).")
 	}
 	
 	if "`mes'" == "mes" {
@@ -267,7 +267,7 @@ quietly {
 			yscale(range(0) noline axis(2)) ///
 			legend(off label(1 "Reportado") label(2 "LIF") order(1 2)) ///
 			text(`text1', yaxis(2) color(white) size(tiny)) ///
-			caption("{bf:Fuente:} Elaborado por el CIEP, con información de la SHCP (Estadísticas Oportunas).") ///
+			caption("{bf:Fuente:} Elaborado por el CIEP, con información de la SHCP (Estadísticas Oportunas de Finanzas P{c u'}blicas).")
 			note("{bf:{c U'}ltimo dato:} `ultanio'm`ultmes'.") ///
 			name(H`anything', replace)
 		

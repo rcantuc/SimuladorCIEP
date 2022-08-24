@@ -52,8 +52,8 @@ quietly {
 	noisily di _newline(2) in g _dup(20) "." "{bf:  Sistema Fiscal: GASTOS $pais " in y `anio' "  }" in g _dup(20) "."
 	
 	** 2.1 PIB + Deflactor **
-	*PIBDeflactor, anio(`anio') nographs nooutput
-	use "`c(sysdir_site)'/users/$pais/$id/PIB.dta", clear
+	PIBDeflactor, anio(`anio') nographs nooutput
+	*use "`c(sysdir_site)'/users/$pais/$id/PIB.dta", clear
 	local currency = currency[1]
 	tempfile PIB
 	save "`PIB'"
@@ -339,8 +339,9 @@ quietly {
 
 
 	if "`nographs'" != "nographs" & "$nographs" == "" {
-		*preserve
+		preserve
 		*drop if `by' == -1 & transf_gf == 1
+		drop if anio <= 2015
 
 		tabstat gastonetoPIB if anio == `anio' & `by' != -1 & transf_gf == 0, stat(sum) f(%20.0fc) save
 		tempname gasanio
@@ -376,11 +377,11 @@ quietly {
 		tempvar TOTPIB TOT
 		egen `TOTPIB' = rsum(gastonetoPIB*)
 		egen `TOT' = rsum(gastoneto*)
-		local j = 100/(2022-2016+1)/2
+		local j = 100/(`anio'-2015)/2
 		forvalues k=1(1)`=_N' {
-			if `TOTPIB'[`k'] != . & anio[`k'] >= 2014 {
+			if `TOTPIB'[`k'] != . & anio[`k'] >= 2015 {
 				local text `"`text' `=`TOT'[`k']*1.005' `=anio[`k']*0+`j'' "{bf:`=string(`TOTPIB'[`k'],"%7.1fc")'% PIB}""'
-				local j = `j' + 100/(2022-2016+1)
+				local j = `j' + 100/(`anio'-2015)
 			}
 		}
 
@@ -396,7 +397,7 @@ quietly {
 			name(gastos, replace) ///
 			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/Cuenta Pública y $paqueteEconomico.")
 
-		*restore
+		restore
 	}
 
 

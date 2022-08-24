@@ -2,7 +2,7 @@
 **** Base de datos: INPC ****
 *****************************
 
-noisily di in g "  Updating inflacion.dta..." _newline
+noisily di in g "  Updating Inflacion.dta..." _newline
 
 
 ***************
@@ -39,8 +39,8 @@ order anio mes inpc
 compress
 
 if `c(version)' > 13.1 {
-	saveold `"`c(sysdir_site)'/SIM/inflacion.dta"', replace version(13)
+	saveold `"`c(sysdir_site)'/SIM/Inflacion.dta"', replace version(13)
 }
 else {
-	save `"`c(sysdir_site)'/SIM/inflacion.dta"', replace
+	save `"`c(sysdir_site)'/SIM/Inflacion.dta"', replace
 }

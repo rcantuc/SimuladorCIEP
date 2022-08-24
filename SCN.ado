@@ -31,10 +31,10 @@ quietly {
 	*** 1. Databases (D) and variable definitions (V) ***
 	*****************************************************
 	** D.1. Cuenta de generaci{c o'}n del ingreso **
-	capture confirm file "`c(sysdir_site)'/SIM/baseSCN.dta"
+	capture confirm file "`c(sysdir_site)'/SIM/SCN.dta"
 	if _rc != 0 | "`update'" == "update" {
 		
-		noisily di in g "  Updating baseSCN.dta..." _newline
+		noisily di in g "  Updating SCN.dta..." _newline
 
 		import excel "`c(sysdir_site)'/bases/UPDATE/SCN/Cuenta de generacion del ingreso.xlsx", clear
 		LimpiaBIE g
@@ -284,10 +284,10 @@ quietly {
 			label var `k' "`label'"
 		}
 		if `c(version)' > 13.1 {
-			saveold "`c(sysdir_site)'/SIM/baseSCN.dta", replace version(13)
+			saveold "`c(sysdir_site)'/SIM/SCN.dta", replace version(13)
 		}
 		else {
-			save "`c(sysdir_site)'/SIM/baseSCN.dta", replace		
+			save "`c(sysdir_site)'/SIM/SCN.dta", replace		
 		}
 	}
 
@@ -320,7 +320,7 @@ quietly {
 
 	**************************
 	** 1.1. Merge databases **
-	use "`c(sysdir_site)'/SIM/baseSCN.dta", clear
+	use "`c(sysdir_site)'/SIM/SCN.dta", clear
 	local anio_last = anio[_N]
 	merge 1:1 (anio) using `basepib', nogen
 	merge 1:1 (anio) using "`c(sysdir_site)'/SIM/Poblaciontot.dta", nogen keep(matched)
@@ -679,12 +679,12 @@ quietly {
 			(area `Capital' anio if anio > `anio_last' & anio > `anio_exo', pstyle(p2) lwidth(none)) ///
 			(area `Laboral' anio if anio > `anio_last' & anio > `anio_exo', pstyle(p3) lwidth(none)), ///
 			title("{bf:Distribuci{c o'}n} del ingreso") ///
-			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI (Banco de Informaci{c o'}n Econ{c o'}mica).") ///
+			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
 			legend(cols(3) order(1 2 3) region(margin(zero))) ///
 			xtitle("") ///
 			text(`=`Depreciacion'[1]*.05' `=`latest'+(`anio_exo'-`latest')/2+.5' "{bf:$paqueteEconomico}", place(n) color(white)) ///
 			text(`=`Depreciacion'[1]*.05' `=anio[1]+.5' "{bf:Reportado}", place(ne) color(white)) ///
-			text(`=`Depreciacion'[1]*.05' `=anio[_N]-5.5' "{bf:Proyectado}", place(ne) color(white)) ///
+			text(`=`Depreciacion'[1]*.05' `=anio[_N]-7.5' "{bf:Proyecci{c o'}n CIEP}", place(ne) color(white)) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
 			ylabel(0(5)`=ceil(`DEPMAX'[1,1])+2.5', format(%20.0fc)) ///
 			ytitle(billones MXN `anio') ///
@@ -802,12 +802,12 @@ quietly {
 			(area `ConHog' anio if anio > `anio_last' & anio > `anio_exo', pstyle(p3) lwidth(none)) ///
 			(area `ComprasN' anio if anio > `anio_last' & anio > `anio_exo', pstyle(p4) lwidth(none)), ///
 			title("{bf:Utilizaci{c o'}n} del ingreso disponible") ///
-			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI (Banco de Informaci{c o'}n Econ{c o'}mica).") ///
+			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
 			legend(cols(4) order(1 2 3 4) region(margin(zero))) ///
 			xtitle("") ///
 			text(`=`AhorroN'[1]*.05' `=`latest'+(`anio_exo'-`latest')/2+.5' "{bf:$paqueteEconomico}", place(n) color(white)) ///
 			text(`=`AhorroN'[1]*.05' `=anio[1]+.5' "{bf:Reportado}", place(ne) color(white)) ///
-			text(`=`AhorroN'[1]*.05' `=anio[_N]-5.5' "{bf:Proyectado}", place(ne) color(white)) ///
+			text(`=`AhorroN'[1]*.05' `=anio[_N]-7.5' "{bf:Proyecci{c o'}n CIEP}", place(ne) color(white)) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
 			ylabel(0(5)`=ceil(`DEPMAX'[1,1])+2.5', format(%20.0fc)) ///
 			ytitle(billones MXN `anio') ///
@@ -839,7 +839,7 @@ quietly {
 			label(4 "Construcción") label(5 "Manufactura") label(6 "Comercio") label(7 "Transportes") ///
 			label(8 "Servicios inmobiliarios") label(9 "Servicios financieros") label(10 "Otros servicios")) ///
 			title("{bf:Estructura} econ{c o'}mica") ///
-			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI (Banco de Informaci{c o'}n Econ{c o'}mica).") ///
+			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
 			note("{bf:{c U'}ltimo dato reportado}: `anio_last'.") ///
 			name(estructuraEco, replace)
 
@@ -853,7 +853,9 @@ quietly {
 		g EInmobiliarios = `HUae'
 		g EFinancieros = `HFae'
 		g EOtros = ``OTRAE''*/
-			
+
+
+		/* Sector económico *
 		tempvar primario secundario terciario
 		egen `primario' = rsum(Eae)
 		egen `secundario' = rsum(ADae AKae APae BDae)
@@ -886,11 +888,12 @@ quietly {
 			text(`text', color(white) size(vsmall)) ///
 			xtitle("") name(primsecter, replace)
 		
-		/*g CPrimario = ``primario''
+		g CPrimario = ``primario''
 		g CSecundario = ``secundario''
 		g CTerciario = ``terciario''*/
 
-		* Exportaciones e importaciones *
+		
+		/* Exportaciones e importaciones *
 		tempvar export import 
 		egen `export' = rsum(Tpb)
 		egen `import' = rsum(Jpb)
@@ -912,7 +915,7 @@ quietly {
 			(connect ``import'' anio, msize(large) mlwidth(vvthick)) ///
 			if anio >= 2010 & anio <= `anio_last', ///
 			legend(label(1 "Exportaciones") label(2 "Importaciones")) ///
-			title("Sector {bf:externo}") ///
+			title("Crecimiento del sector {bf:externo}") ///
 			xlabel(2010(1)`anio_last') ///
 			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
 			note("{bf:{c U'}ltimo dato reportado}: `anio_last'.") ///
@@ -920,10 +923,11 @@ quietly {
 			text(`texto', color(white) size(vsmall)) ///
 			xtitle("") name(impexp, replace)
 
-		/*g CExport = ``export''
+		g CExport = ``export''
 		g CImport = ``import''*/
 
-		* Exportaciones por actividad económica *
+
+		/* Exportaciones por actividad económica *
 		foreach k of varlist Cex Dex Eex Gex {
 			tempvar `k'
 			replace `k' = `k'/deflator
@@ -953,12 +957,14 @@ quietly {
 			note("{bf:{c U'}ltimo dato reportado}: `anio_last'.") ///
 			xtitle("") ytitle(Crecimiento anual (%)) ///
 			name(sectorext, replace)
+
+		g ExAgricultura = `Cex'
+		g ExMineria = `Dex'
+		g ExElectrica = `Eex'
+		g ExManufactura = `Gex'*/
+
 	}
 	
-	/*g ExAgricultura = `Cex'
-	g ExMineria = `Dex'
-	g ExElectrica = `Eex'
-	g ExManufactura = `Gex'*/
 
 
 	noisily di _newline in g "{bf: E. Cuenta: " in y "consumo (hogares e ISFLSH)" in g ///
