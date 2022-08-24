@@ -125,12 +125,7 @@ program define UpdateDatosAbiertos, return
 	append using "`gf'"
 	append using "`gfH'"
 
-	g pos = strpos(nombre,"?")
-	egen minpos = min(pos), by(clave)
-	forvalues k=1(1)`=_N' {
-		
-	}
-xxx
+
 
 
 	****************

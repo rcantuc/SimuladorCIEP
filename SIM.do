@@ -29,12 +29,15 @@ if "`c(os)'" == "Unix" & "`c(username)'" == "ciepmx" {                          
 ***    1. OPCIONES    ***
 ***                   ***
 *************************
-*global nographs "nographs"                                                      // SUPRIMIR GRAFICAS
+*global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
 *local update "update"                                                          // UPDATE DATASETS
+*global pais = "Ecuador" // "El Salvador"					// PAIS SELECCIONADOS
+
+
+** PARÁMETROS **
+noisily run "`c(sysdir_site)'/PARAM${pais}.do"
 *global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"                 // EXPORTAR IMAGENES EN...
 *global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
-*global pais = "Ecuador" // "El Salvador"
-noisily run "`c(sysdir_site)'/PARAM${pais}.do"
 
 
 
@@ -42,8 +45,8 @@ noisily run "`c(sysdir_site)'/PARAM${pais}.do"
 ***                    ***
 ***    2. POBLACION    ***
 ***                    ***
-/*************************
-noisily Poblacion, `update'
+/**************************
+noisily Poblacion, `update' anioend(`=scalar(anioend)')
 
 
 
@@ -52,7 +55,7 @@ noisily Poblacion, `update'
 ***    3. CRECIMIENTO PIB    ***
 ***                          ***
 /********************************
-noisily PIBDeflactor, save `update'
+noisily PIBDeflactor, save `update' geodef(2013) geopib(2013)
 noisily SCN, `update'
 noisily Inflacion, `update'
 
@@ -63,13 +66,11 @@ noisily Inflacion, `update'
 ***    4. SISTEMA FISCAL    ***
 ***                         ***
 *******************************
-noisily LIF, `update'                                                           //by(divGA)
-
-exit
-noisily SHRFSP, `update'
-exit
-
+*noisily LIF, `update'                  		                                     //by(divGA)
 noisily PEF, by(desc_funcion) rows(2) min(1) `update'			// <--- ¡¡CORREGIR 2021 Y 2022!!
+*noisily SHRFSP, `update'
+exit
+
 
 
 **************************/
