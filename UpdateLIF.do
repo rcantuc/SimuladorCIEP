@@ -58,50 +58,49 @@ format concepto %30s
 *******************************
 *** 2. SHCP: Datos Abiertos ***
 *******************************
-if "$pais" == "" {
-	preserve
-	levelsof serie, local(serie)
-	foreach k of local serie {
-		noisily DatosAbiertos `k', nog
+preserve
+levelsof serie, local(serie)
+foreach k of local serie {
+	noisily DatosAbiertos `k', nog
 
-		rename clave_de_concepto serie
-		keep anio serie nombre monto mes acum_prom
+	rename clave_de_concepto serie
+	keep anio serie nombre monto mes acum_prom
 
-		tempfile `k'
-		quietly save ``k''
-	}
-	restore
-
-
-	** 2.1.1 Append **
-	collapse (sum) LIF ILIF, by(div* serie anio)
-	foreach k of local serie {
-		joinby (anio serie) using ``k'', unmatched(both) update
-		drop _merge
-	}
-
-	rename serie series
-	encode series, generate(serie)
-	drop series
+	tempfile `k'
+	quietly save ``k''
+}
+restore
 
 
-	** 2.1.2 Fill the blanks **
-	forvalues j=1(1)`=_N' {
-		foreach k of varlist div* nombre serie {
-			capture confirm numeric variable `k'
-			if _rc == 0 {
-				if `k'[`j'] != . {
-					quietly replace `k' = `k'[`j'] if `k' == . & serie == serie[`j'] & serie[`j'] != .
-				}
+** 2.1.1 Append **
+collapse (sum) LIF ILIF, by(div* serie anio)
+foreach k of local serie {
+	joinby (anio serie) using ``k'', unmatched(both) update
+	drop _merge
+}
+
+rename serie series
+encode series, generate(serie)
+drop series
+
+
+** 2.1.2 Fill the blanks **
+forvalues j=1(1)`=_N' {
+	foreach k of varlist div* nombre serie {
+		capture confirm numeric variable `k'
+		if _rc == 0 {
+			if `k'[`j'] != . {
+				quietly replace `k' = `k'[`j'] if `k' == . & serie == serie[`j'] & serie[`j'] != .
 			}
-			else {
-				if `k'[`j'] != "" {
-					quietly replace `k' = `k'[`j'] if `k' == "" & serie == serie[`j'] & serie[`j'] != .
-				}
+		}
+		else {
+			if `k'[`j'] != "" {
+				quietly replace `k' = `k'[`j'] if `k' == "" & serie == serie[`j'] & serie[`j'] != .
 			}
 		}
 	}
 }
+
 
 
 **************************************
