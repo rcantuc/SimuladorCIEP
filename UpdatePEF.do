@@ -1,32 +1,33 @@
-*****************************
-****                     ****
-**** BASE DE DATOS: PEFs ****
-****                     ****
-*****************************
+*************************
+****                 ****
+**** UpdatePEF.do    ****
+**** De .xlsx a .dta ****
+****                 ****
+*************************
 
 
-************************
-*** 1. BASE DE DATOS ***
-************************
-local archivos: dir "`c(sysdir_site)'/bases/PEFs/$pais" files "*.xlsx"			// Busca todos los archivos .csv en /basesCIEP/PEFs/
-local dir "`c(sysdir_site)'/bases/PEFs/$pais"
 
+*************************
+***                   ***
+*** 1. BASES DE DATOS ***
+***                   ***
+*************************
+local archivos: dir "`c(sysdir_site)'/bases/PEFs/$pais" files "*.xlsx"			// Busca todos los archivos .xlsx en /bases/PEFs/
+foreach k of local archivos {													// Loop para todos los archivos .csv
+*foreach k in "CP 2019" {														// <-- Dejar para hacer pruebas
 
-* Loop para todos los archivos .csv *
-foreach k of local archivos {
-*foreach k in "CP 2019" {
-
-	* Importar archivo de la Cuenta Publica *
+	* 1.1 Importar el archivo `k'.xlsx (Cuenta Pública) *
 	noisily di in g "Importando: " in y "`k'"
-	import excel "`dir'/`k'", clear firstrow case(lower)
+	import excel "`c(sysdir_site)'/bases/PEFs/$pais/`k'", clear firstrow case(lower)
 
-	* Limpiar *
+	* 1.2 Limpiar observaciones *
 	capture drop if ciclo == ""
 	capture drop if ciclo == .
-	capture drop v*
+	capture rename ciclo anio
+
+	* 1.3 Limpiar nombres *
 	capture rename ejercicio ejercido
 	foreach j of varlist _all {
-
 		if `"`=substr("`j'",1,3)'"' == "id_" {
 			local newname = `"`=substr("`j'",4,.)'"'
 			capture rename `j' `newname'
@@ -65,43 +66,44 @@ foreach k of local archivos {
 			rename `j' desc_fuente
 			local j = "desc_fuente"
 		}
+	}
 
-		tostring `j', replace
-		capture confirm string variable `k'
-		if _rc == 0 {
+	* 1.4 Limpiar valores *
+	capture drop v*
+	foreach j of varlist _all {
+		tostring `j', replace													// Primero, que todos sean strings (facilidad)
+		capture confirm string variable `k'										// Segundo, comprobar que la variable sea string (no siempre el tostring funciona)
+		if _rc == 0 {															// Tercero, si es string, quitar espacios y caracteres especiales
 			replace `j' = trim(`j')
 			replace `j' = subinstr(`j',`"""',"",.)
 			replace `j' = subinstr(`j',"  "," ",.)
-			replace `j' = subinstr(`j',"Ê"," ",.)			// Algunas bases tienen este caracter "raro".
+			replace `j' = subinstr(`j',"Ê"," ",.)								// <--Algunas CPs tienen este caracter "raro".
 			replace `j' = subinstr(`j',"Â","",.)
 			replace `j' = subinstr(`j'," "," ",.)
 			replace `j' = subinstr(`j'," "," ",.)
 			format `j' %30s
 		}
-		destring `j', replace
+		destring `j', replace													// Cuarto, hacer numéricas las variables posibles
 	}
 
-	* Destring all variables *
+	* Quinto, asegurar que las variables de gasto sean numéricas. 
 	foreach j in aprobado modificado devengado pagado adefas ejercido proyecto {
-		capture destring `j', replace ignore(",") 			// Ignorar coma.
+		capture destring `j', replace ignore(",") 								// Ignorar las comas
 		if _rc == 0 {
 			format `j' %20.0fc
 		}
 	}
-
-	** Anio y Ramo (Básicos) **
-	capture rename ciclo anio
 	capture tostring ramo, replace
 
-	* Save *
-	tempfile `=strtoname("`k'")'							// strtoname convierte el texto en Stata var_type_name
+	* 1.5 Save *
+	tempfile `=strtoname("`k'")'												// strtoname convierte el texto en Stata var_type_name
 	save ``=strtoname("`k'")''
 }
 
-* Loop para unir los archivos (limpios y en Stata) *
+* Sexto, loop para unir los archivos ya limpios y en formato Stata *
 local j = 0
 foreach k of local archivos {
-*foreach k in "CP 2020" {
+*foreach k in "CP 2019" {														// <-- Dejar para hacer pruebas
 	noisily di in g "Appending: " in y "`k'"
 	if `j' == 0 {
 		use ``=strtoname("`k'")'', clear
@@ -111,30 +113,19 @@ foreach k of local archivos {
 		append using ``=strtoname("`k'")'', force
 	}
 }
-compress
+compress																		// <-- Para hacer "más eficiente" la base (menor tamaño).
 
 
-**********************/
-*** 2. HOMOLOGACION ***
-***********************
 
-** 2.1 Cuotas ISSSTE **
-preserve
-import excel "`c(sysdir_site)'/bases/PEFs/CuotasISSSTE.xlsx", clear firstrow
 
-** Anio y Ramo **
-capture rename ciclo anio
-capture tostring ramo, replace
 
-** Guardar Cuotas **
-tempfile coutasissste
-save `coutasissste'
-restore
+**********************************/
+***                             ***
+*** 2. HOMOLOGACION DE TÉRMINOS ***
+***                             ***
+***********************************
 
-** Append Cuotas **
-append using `coutasissste'
-
-** Finalidad **
+** 2.1 Finalidad **
 replace desc_finalidad = "Otras" if finalidad == 4
 capture labmask finalidad, values(desc_finalidad)
 if _rc == 199 {
@@ -143,7 +134,7 @@ if _rc == 199 {
 }
 drop desc_finalidad
 
-** Ramo **
+** 2.2 Ramo **
 replace ramo = "50" if ramo == "GYR"
 replace ramo = "51" if ramo == "GYN"
 replace ramo = "52" if ramo == "TZZ" | ur == "TZZ"
@@ -166,30 +157,13 @@ replace desc_ramo = "Infraestructura, Comunicaciones y Transportes" if ramo == 9
 labmask ramo, values(desc_ramo)
 drop desc_ramo
 
-** Encode y agregar Cuotas ISSSTE **
-foreach k of varlist desc_ur desc_funcion desc_subfuncion desc_ai desc_modalidad desc_pp ///
-	desc_objeto desc_tipogasto desc_partida_generica {
-
-	rename `k' `k'2
-	encode `k'2, g(`k')
-	format %30.0fc `k'
-	drop `k'2	
-
-	replace `k' = -1 if `k' == .
-	label define `k' -1 "Cuotas ISSSTE", add
-}
-
-/** Descripción Fuente **
-labmask fuente, values(desc_fuente)
-drop desc_fuente
-
-** Descripción Entidad Federativa **/
+** 2.3 Descripción Entidad Federativa **
 replace desc_entidad = trim(desc_entidad)
 replace desc_entidad = "Ciudad de México" if entidad == 9
 labmask entidad, values(desc_entidad)
 drop desc_entidad
 
-** Capítulo **
+** 2.4 Capítulo de gasto **
 capture drop capitulo
 g capitulo = substr(string(objeto),1,1) if objeto != -1
 destring capitulo, replace
@@ -201,7 +175,7 @@ label define capitulo 1 "Servicios personales" 2 "Materiales y suministros" ///
 	8 "Participaciones y aportaciones" 9 "Deuda pública" -1 "Cuotas ISSSTE"
 label values capitulo capitulo
 
-** Tipo de ramo **
+** 2.5 Tipo de ramo **
 g ramo_tipo = .
 replace ramo_tipo = -1 if ramo == -1
 replace ramo_tipo = 1 if ramo == 1 | ramo == 3 | ramo == 22 | ramo == 32 | ramo == 35 ///
@@ -223,7 +197,30 @@ label define tipos_ramo -1 "Cuotas al ISSSTE" 1 "Ramos autónomos" 2 "Ramos gene
 	6 "Gasto no programable del gobierno federal"
 label values ramo_tipo tipos_ramo
 
-** Funcion **
+** 2.6 Encode y agregar Cuotas ISSSTE **
+foreach k of varlist desc_ur desc_funcion desc_subfuncion desc_ai desc_modalidad desc_pp ///
+	desc_objeto desc_tipogasto desc_partida_generica {
+
+	rename `k' `k'2
+	encode `k'2, g(`k')
+	format %30.0fc `k'
+	drop `k'2	
+
+	replace `k' = -1 if `k' == .
+	label define `k' -1 "Cuotas ISSSTE", add
+}
+
+
+
+
+
+*********************************
+***                           ***
+*** 3. ESTADÍSTICAS OPORTUNAS ***
+***                           ***
+*********************************
+
+** 3.1 Función **
 g serie_desc_funcion = "XKG0116" if desc_funcion == -1
 replace serie_desc_funcion = "XAC23" if desc_funcion == 1
 replace serie_desc_funcion = "XOA0424" if desc_funcion == 2
@@ -254,7 +251,7 @@ replace serie_desc_funcion = "XOA0427" if desc_funcion == 26
 replace serie_desc_funcion = "XOA0429" if desc_funcion == 27
 replace serie_desc_funcion = "XOA0416" if desc_funcion == 28
 
-** Ramo **
+** 3.2 Ramo **
 g serie_ramo = "XKG0116" if ramo == -1
 replace serie_ramo = "XDB54" if ramo ==1
 replace serie_ramo = "XAC4210" if ramo == 2
@@ -306,75 +303,128 @@ replace serie_ramo = "XOA0146" if ramo == 51
 replace serie_ramo = "XKC0131" if ramo == 52
 replace serie_ramo = "XOA0141" if ramo == 53
 
-** Transferencias del gobierno federal **
-g byte transf_gf = (ramo == 19 & ur == "GYN") | (ramo == 19 & ur == "GYR")
+tempfile prePEF
+save `prePEF'
 
-** Modulos **
-* Pensiones *
+
+* 3.3 Datos Abiertos: PEFEstOpor.dta *
+levelsof serie_desc_funcion, local(serie)
+foreach k of local serie {
+	noisily DatosAbiertos `k', nog
+
+	rename clave_de_concepto serie
+	keep anio serie nombre monto mes acum_prom
+
+	tempfile `k'
+	quietly save ``k''
+}
+
+
+** 2.1.1 Append **
+local j = 0
+foreach k of local serie {
+	if `j' == 0 {
+		use ``k'', clear
+		local ++j
+	}
+	else {
+		append using ``k''
+	}
+}
+
+rename serie series
+encode series, generate(serie)
+drop series
+
+capture drop __*
+compress
+if `c(version)' > 13.1 {
+	saveold "`c(sysdir_site)'/SIM/$pais/GastoEstOpor.dta", replace version(13)
+}
+else {
+	save "`c(sysdir_site)'/SIM/$pais/GastoEstOpor.dta", replace
+}
+
+
+
+
+
+***************************************/
+***                                  ***
+*** 4. Modulos SIMULADOR FISCAL CIEP ***
+***                                  ***
+****************************************
+use `prePEF', clear
+
+* 4.1 Costo de la deuda *
+g desc_divGA = "Costo de la deuda" if capitulo == 9 & substr(string(objeto),1,2) != "91" 
+replace desc_divGA = "Amortización" if capitulo == 9 & substr(string(objeto),1,2) == "91" 
+
+* 4.2 Pensiones *
 levelsof desc_pp, local(levelsof)
 local ifpp "("
-local ifpp2 "("
 foreach k of local levelsof {
 	local label : label desc_pp `k'
 	if `"`label'"' == "Pensión para Adultos Mayores" | ///
 		`"`label'"' == "Pensión para el Bienestar de las Personas Adultas Mayores" | ///
 		`"`label'"' == "Pensión para el Bienestar de las Personas con Discapacidad Permanente" {
 		local ifpp `"`ifpp'desc_pp == `k' | "'
-		local ifpp2 `"`ifpp2'desc_pp != `k' & "'
 	}
 }
 local ifpp `"`=substr("`ifpp'",1,`=strlen("`ifpp'")-3')')"'
-local ifpp2 `"`=substr("`ifpp2'",1,`=strlen("`ifpp2'")-3')')"'
-
-g desc_divGA = "Pensiones" if transf_gf == 0 & ramo != -1 & capitulo != 9 ///
+replace desc_divGA = "Pensiones" if desc_divGA == "" ///
 	& (substr(string(objeto),1,2) == "45" | substr(string(objeto),1,2) == "47")
-replace desc_divGA = "Pensión Bienestar" if transf_gf == 0 & ramo != -1 & capitulo != 9 ///
-		& `ifpp'
+replace desc_divGA = "Pensión Bienestar" if desc_divGA == "" & `ifpp'
 
-* Educacion *
-replace desc_divGA = "Educación" if transf_gf == 0 & ramo != -1 & capitulo != 9  ///
-	& desc_divGA == "" ///
+* 4.3 Educacion *
+replace desc_divGA = "Educación" if desc_divGA == "" ///
 	& (desc_funcion == 10 | ramo == 11)
 
-* Salud *
-replace desc_divGA = "Salud" if transf_gf == 0 & ramo != -1 & capitulo != 9  ///
-	& desc_divGA == "" ///
+* 4.4 Salud *
+replace desc_divGA = "Salud" if desc_divGA == "" ///
 	& (desc_funcion == 21 | ramo == 12)
-replace desc_divGA = "Salud" if transf_gf == 0 & ramo != -1 & capitulo != 9  ///
-	& desc_divGA == "" ///
+replace desc_divGA = "Salud" if desc_divGA == "" ///
 	& (modalidad == "E" & pp == 13 & ramo == 52)
-replace desc_divGA = "Salud" if ramo == 50 & pp == 4 & funcion == 8 ///
-	& desc_divGA == ""
-replace desc_divGA = "Salud" if ramo == 51 & pp == 15 & funcion == 8 ///
-	& desc_divGA == ""
+replace desc_divGA = "Salud" if desc_divGA == "" ///
+	& ramo == 50 & pp == 4 & funcion == 8
+replace desc_divGA = "Salud" if desc_divGA == "" ///
+	& ramo == 51 & pp == 15 & funcion == 8
 
+* 4.5 Infraestructura *
+replace desc_divGA = "Infraestructura" if desc_divGA == "" & capitulo == 6
 
-* Costo de la deuda *
-replace desc_divGA = "Costo de la deuda" if transf_gf == 0 & ramo != -1 ///
-	& capitulo == 9 & substr(string(objeto),1,2) != "91" 
+* 4.6 Federalizado *
+replace desc_divGA = "Federalizado" if desc_divGA == "" & capitulo == 8
 
-replace desc_divGA = "Amortización" if transf_gf == 0 & ramo != -1 ///
-	& capitulo == 9 & substr(string(objeto),1,2) == "91" 
+* 4.7 Energía *
+replace desc_divGA = "Energía" if desc_divGA == "" & desc_funcion == 7
 
+* 4.8 Otros *
 replace desc_divGA = "Otros" if desc_divGA == ""
 
+* 4.9 Cuotas ISSSTE *
 replace desc_divGA = "zCuotas ISSSTE" if ramo == -1
-
 encode desc_divGA, generate(divGA)
+replace desc_divGA = "Cuotas ISSSTE" if ramo == -1
 replace divGA = -1 if ramo == -1
 label define divGA -1 "Cuotas ISSSTE", add
 
 
 
 
-********************/
-*** 4. Gasto Neto ***
-*********************
+
+**************************
+***                    ***
+*** 5. NETEO DEL GASTO ***
+***                    ***
+**************************
 capture g double gasto = ejercido
 if _rc != 0 {
 	g double gasto = devengado
 }
 replace gasto = aprobado if gasto == .
+
+g byte transf_gf = (ramo == 19 & ur == "GYN") | (ramo == 19 & ur == "GYR")
 
 ** Cuotas ISSSTE **
 foreach k of varlist gasto aprobado ejercido proyecto {
@@ -396,15 +446,16 @@ format *CUOTAS *neto %20.0fc
 
 
 
-**************/
-** 5. Saving **
-***************
+****************/
+***           ***
+*** 6. SAVING ***
+***           ***
+*****************
 capture order ejercido, last
 capture order aprobado modificado devengado pagado, last
 capture order proyecto, last
 capture drop __*
 compress
-
 if `c(version)' > 13.1 {
 	saveold "`c(sysdir_site)'/SIM/$pais/PEF.dta", replace version(13)
 }
