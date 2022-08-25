@@ -341,7 +341,7 @@ quietly {
 	if "`nographs'" != "nographs" & "$nographs" == "" {
 		preserve
 		*drop if `by' == -1 & transf_gf == 1
-		drop if anio <= 2015
+		drop if anio <= 2013
 
 		tabstat gastonetoPIB if anio == `anio' & `by' != -1 & transf_gf == 0, stat(sum) f(%20.0fc) save
 		tempname gasanio
@@ -374,20 +374,20 @@ quietly {
 			local ++countlev
 		}
 
-		tempvar TOTPIB TOT
-		egen `TOTPIB' = rsum(gastonetoPIB*)
+		tempvar TOT
 		egen `TOT' = rsum(gastoneto*)
-		local j = 100/(`anio'-2015)/2
+		local j = 100/(`anio'-2013)/2
 		forvalues k=1(1)`=_N' {
-			if `TOTPIB'[`k'] != . & anio[`k'] >= 2015 {
-				local text `"`text' `=`TOT'[`k']*1.005' `=anio[`k']*0+`j'' "{bf:`=string(`TOTPIB'[`k'],"%7.1fc")'% PIB}""'
-				local j = `j' + 100/(`anio'-2015)
+			if `TOT'[`k'] != . & anio[`k'] >= 2003 & anio[`k'] <= `anio' {
+				local text `"`text' `=`TOT'[`k']*1.005' `=anio[`k']*0+`j'' "{bf:`=string(`TOT'[`k'],"%7.1fc")'}""'
+				local j = `j' + 100/(`anio'-2013)
 			}
 		}
 
-		graph bar `graphvars' if anio >= 2016, ///
-			over(anio, gap(0)) stack blabel(, format(%7.1fc)) outergap(0) ///
-			title("{bf:Gasto} p{c u'}blico") ///
+		graph bar (sum) `graphvars' if anio >= 2013 & anio <= `anio', ///
+			over(anio, gap(0)) stack ///
+			blabel(, format(%7.1fc)) outergap(0) ///
+			title("{bf:Gasto} p{c u'}blico presupuestario") ///
 			subtitle($pais) ///
 			text(`text', color(black) placement(n)) ///
 			ytitle(mil millones MXN `anio') ///
@@ -395,7 +395,7 @@ quietly {
 			yscale(range(0)) ///
 			legend(on position(6) rows(`rows') cols(`cols') `legend' region(margin(zero))) ///
 			name(gastos, replace) ///
-			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/Cuenta Pública y $paqueteEconomico.")
+			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/Cuentas Públicas y $paqueteEconomico.")
 
 		restore
 	}
