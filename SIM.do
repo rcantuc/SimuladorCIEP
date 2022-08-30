@@ -31,8 +31,6 @@ if "`c(os)'" == "Unix" & "`c(username)'" == "ciepmx" {                          
 *************************
 *global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
 *local update "update"                                                          // UPDATE DATASETS
-*global pais = "Ecuador" // "El Salvador"					// PAIS SELECCIONADOS
-
 
 ** PARÁMETROS **
 noisily run "`c(sysdir_site)'/PARAM${pais}.do"
@@ -65,11 +63,10 @@ noisily Inflacion, `update'
 ***                         ***
 ***    4. SISTEMA FISCAL    ***
 ***                         ***
-*******************************
-*noisily LIF, `update'                  		                                     //by(divGA)
-noisily PEF, by(desc_funcion) rows(2) min(1) `update'			// <--- ¡¡CORREGIR 2021 Y 2022!!
+/*******************************
+noisily LIF, by(divPE) rows(1) `update' 	                                //by(divGA)
+noisily PEF, by(divGA) rows(2) min(0) `update'
 *noisily SHRFSP, `update'
-exit
 
 
 
@@ -77,7 +74,7 @@ exit
 ***                     ***
 ***    5. HOUSEHOLDS    ***
 ***                     ***
-***************************
+/***************************
 capture confirm file `"`c(sysdir_site)'/users/$pais/$id/ConsumoREC.dta"'
 if _rc != 0 | "$export" != "" {
 	noisily run "`c(sysdir_site)'/Expenditure.do" `=aniovp'
@@ -86,34 +83,31 @@ if _rc != 0 | "$export" != "" {
 }
 
 
-timer off 1
-timer list 1
-noisily di _newline(2) in g _dup(20) ":" "  " in y "TOUCH-DOWN!!!  " round(`=r(t1)/r(nt1)',.1) in g " segs  " _dup(20) ":"
-exit
-
-
-
-
-
-
-*********************************/
-***                            ***
-***    5. PARTE III: GASTOS    ***
-***                            ***
-**********************************
-`noisily' GastoPC, anio(`=aniovp')
-
-
-
-
 
 **********************************/
 ***                             ***
 ***    6. PARTE II: INGRESOS    ***
 ***                             ***
-***********************************
-`noisily' TasasEfectivas, anio(`=aniovp')
+/***********************************
+noisily TasasEfectivas
 
+
+
+*********************************/
+***                            ***
+***    7. PARTE III: GASTOS    ***
+***                            ***
+**********************************
+noisily GastoPC
+
+
+
+
+
+timer off 1
+timer list 1
+noisily di _newline(2) in g _dup(20) ":" "  " in y "TOUCH-DOWN!!!  " round(`=r(t1)/r(nt1)',.1) in g " segs  " _dup(20) ":"
+exit
 
 
 

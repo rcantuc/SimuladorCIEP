@@ -69,11 +69,48 @@ global inf2025 = 3.0                                           // CGPE 2022: 3.0
 global inf2026 = 3.0                                           // CGPE 2022: 3.0
 global inf2027 = 3.0                                           // CGPE 2022: 3.0
 
-*global tasaEfectiva = 5.7425                                   // Tasa de inter{c e'}s EFECTIVA
-*global tipoDeCambio = 20.200                                   // Tipo de cambio
-*global depreciacion = 0.2000                                   // Depreciaci{c o'}n
+
+
+
+************************/
+***                   ***
+***    5. INGRESOS    ***
+***                   ***
+/*************************
+if "$output" != "output" {
+	scalar ISRAS   =  //    ISR (asalariados): 
+	scalar ISRPF   =  //    ISR (personas f{c i'}sicas): 
+	scalar CUOTAS  =  //    Cuotas (IMSS): 
+
+	scalar ISRPM   =  //    ISR (personas morales): 
+
+	scalar IVA     =  //    IVA: 
+	scalar ISAN    =  //    ISAN: 
+	scalar IEPSP   =  //    IEPS (petrolero): 
+	scalar IEPSNP  =  //    IEPS (no petrolero): 
+	scalar IMPORT  =  //    Importaciones: 
+
+	scalar FMP     =  //    Fondo Mexicano del Petr{c o'}leo: 
+	scalar CFE     =  //    Organismos y empresas (IMSS + ISSSTE + Pemex + CFE): 
+	scalar PEMEX   =  //    Organismos y empresas (IMSS + ISSSTE + Pemex + CFE): 
+	scalar IMSS    =  //    Organismos y empresas (IMSS + ISSSTE + Pemex + CFE): 
+	scalar ISSSTE  =  //    Organismos y empresas (IMSS + ISSSTE + Pemex + CFE): 
+	
+	scalar OTROSK  =  //    Productos, derechos, aprovechamientos, contribuciones: 
+}
 
 exit
+
+
+
+
+
+
+
+
+
+
+
 
 *********************************/
 ***                            ***
@@ -115,29 +152,9 @@ if "$output" != "output" {
 	scalar ingbasico65 =       1 //    1: Incluye mayores de 65 anios, 0: no
 }
 
-
-
-**********************************/
-***                             ***
-***    6. PARTE II: INGRESOS    ***
-***                             ***
-***********************************
-if "$output" != "output" {
-	scalar ISRAS   = 3.364 //    ISR (asalariados): 3.453
-	scalar ISRPF   = 0.218 //    ISR (personas f{c i'}sicas): 0.441
-	scalar CuotasT = 1.446 //    Cuotas (IMSS): 1.515
-
-	scalar IVA     = 4.263 //    IVA: 3.885
-	scalar ISAN    = 0.043 //    ISAN: 0.030
-	scalar IEPS    = 1.774 //    IEPS (no petrolero + petrolero): 2.027
-	scalar Importa = 0.256 //    Importaciones: 0.245
-
-	scalar ISRPM   = 3.699 //    ISR (personas morales): 3.710
-	scalar FMP     = 1.303 //    Fondo Mexicano del Petr{c o'}leo: 1.362
-	scalar OYE     = 4.233 //    Organismos y empresas (IMSS + ISSSTE + Pemex + CFE): 4.274
-	scalar OtrosC  = 1.078 //    Productos, derechos, aprovechamientos, contribuciones: 1.070
-}
-
+*global tasaEfectiva = 5.7425                                   // Tasa de inter{c e'}s EFECTIVA
+*global tipoDeCambio = 20.200                                   // Tipo de cambio
+*global depreciacion = 0.2000                                   // Depreciaci{c o'}n
 
 
 *****************************************************/

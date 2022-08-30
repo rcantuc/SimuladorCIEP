@@ -23,7 +23,7 @@ quietly {
 	*****************************************************
 	*** 1. Databases (D) and variable definitions (V) ***
 	*****************************************************
-	import excel "`c(sysdir_site)'../basesCIEP/INEGI/SCN/balanza comercial.xlsx", clear
+	import excel "`c(sysdir_site)'/bases/UPDATE/SCN/balanza comercial.xlsx", clear
 	LimpiaBIE
 	split A, parse("/")
 	drop A
@@ -56,12 +56,12 @@ quietly {
 	
 	PIBDeflactor, anio(`anio') nographs nooutput
 	merge 1:1 (anio) using `balanza', keep(matched) nogen
-	capture merge 1:1 (anio) using `"`c(sysdir_personal)'/SIM/SHRFSP.dta"', keep(matched) keepus(tipoDeCambio) nogen
+	capture merge 1:1 (anio) using `"`c(sysdir_site)'/SIM/SHRFSP.dta"', keep(matched) keepus(tipoDeCambio) nogen
 	if _rc != 0 {
 		preserve
 		run UpdateSHRFSP.do
 		restore
-		merge 1:1 (anio) using `"`c(sysdir_personal)'/SIM/SHRFSP.dta"', keep(matched) keepus(tipoDeCambio) nogen
+		merge 1:1 (anio) using `"`c(sysdir_site)'/SIM/SHRFSP.dta"', keep(matched) keepus(tipoDeCambio) nogen
 	}
 	
 

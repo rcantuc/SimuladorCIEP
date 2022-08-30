@@ -3,10 +3,6 @@ quietly {
 
 	syntax anything [if] [, NOGraphs PIBVP(real -999) PIBVF(real -999) UPDATE DESDE(real 1993) MES]
 
-	*if "`c(username)'" == "ricardo" | "`c(username)'" == "ciepmx" {
-	*	UpdateDatosAbiertos
-	*}
-
 
 
 	****************************
@@ -111,10 +107,10 @@ quietly {
 		collapse (sum) `montomill', by(aniotrimestre anio trimestre nombre currency)
 		forvalues k=1(1)`=_N' {
 			local relab `" `relab' `k' "`=trimestre[`k']'" "'
-			if anio[`k'] == `aniovp' & trimestre[`k'] == trimestre[_N] {
+			if anio[`k'] == `last_anio' & trimestre[`k'] == trimestre[_N] {
 				local montoTrimActual = `montomill'[`k']
 			}
-			if anio[`k'] == `aniovp'-1 & trimestre[`k'] == trimestre[_N] {
+			if anio[`k'] == `last_anio'-1 & trimestre[`k'] == trimestre[_N] {
 				local montoTrimAnteri = `montomill'[`k']
 			}
 		}
@@ -267,7 +263,7 @@ quietly {
 			yscale(range(0) noline axis(2)) ///
 			legend(off label(1 "Reportado") label(2 "LIF") order(1 2)) ///
 			text(`text1', yaxis(2) color(white) size(tiny)) ///
-			caption("{bf:Fuente:} Elaborado por el CIEP, con información de la SHCP (Estadísticas Oportunas de Finanzas P{c u'}blicas).")
+			caption("{bf:Fuente:} Elaborado por el CIEP, con información de la SHCP/EOFP.") ///
 			note("{bf:{c U'}ltimo dato:} `ultanio'm`ultmes'.") ///
 			name(H`anything', replace)
 		

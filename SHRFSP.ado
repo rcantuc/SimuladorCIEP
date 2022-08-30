@@ -25,7 +25,7 @@ quietly {
 
 	capture confirm scalar aniovp
 	if _rc == 0 {
-			local aniovp = scalar(aniovp)
+		local aniovp = scalar(aniovp)
 	}	
 
 
@@ -266,7 +266,7 @@ quietly {
 				local textE `"`textE' `=`externo'[`k']/2' `=anio[`k']' "`=string(shrfspExterno[`k']/pibY[`k']*100,"%5.1fc")'""'
 				local j = `j' + 100/(`ultanio'-`anioshrfsp'+1)
 			}
-			if anio[`k'] == `anio' {
+			if anio[`k'] == `ultanio' {
 				local obsvp = `k'
 			}
 		}

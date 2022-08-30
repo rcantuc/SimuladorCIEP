@@ -71,7 +71,7 @@ quietly {
 
 	** 2.3 Default `by' **
 	if "`by'" == "" {
-		local by = "desc_funcion"
+		local by = "divGA"
 	}
 
 
@@ -121,9 +121,9 @@ quietly {
 	label values `resumidopie' `label'
 
 	egen `gastonetoPIB' = max(gastonetoPIB), by(`by')
-	replace `resumido' = 999 if abs(`gastonetoPIB') < `minimum'
-	replace `resumidopie' = 999 if gastonetoPIB < `minimum'
-	label define `label' 999 "< `minimum'% PIB", add modify
+	replace `resumido' = 99999 if abs(`gastonetoPIB') < `minimum'
+	replace `resumidopie' = 99999 if gastonetoPIB < `minimum'
+	label define `label' 99999 "< `minimum'% PIB", add modify
 
 	/*levelsof `by', local(levelsof)
 	foreach k of local levelsof {
@@ -154,7 +154,7 @@ quietly {
 	matrix `mattot' = r(StatTotal)
 
 	local k = 1
-	while "`=r(name`k')'" != "." {
+	while `"`=r(name`k')'"' != "." {
 		tempname mat`k'
 		matrix `mat`k'' = r(Stat`k')
 
@@ -240,7 +240,7 @@ quietly {
 	matrix `mattot' = r(StatTotal)
 
 	local k = 1
-	while "`=r(name`k')'" != "." {
+	while `"`=r(name`k')'"' != "." {
 		tempname mat`k'
 		matrix `mat`k'' = r(Stat`k')
 
@@ -285,28 +285,28 @@ quietly {
 		_col(77) %7s "D. %" "}"
 
 	preserve
-	collapse (sum) gastoneto* if `by' != -1 & transf_gf == 0, by(anio `by')
-	xtset `by' anio
+	collapse (sum) gastoneto* if `resumido' != -1 & transf_gf == 0, by(anio `resumido')
+	xtset `resumido' anio
 	tsfill, full
 
-	tabstat gastoneto gastonetoPIB if anio == `anio', by(`by') stat(sum) f(%20.1fc) missing save
+	tabstat gastoneto gastonetoPIB if anio == `anio', by(`resumido') stat(sum) f(%20.1fc) missing save
 	tempname mattot
 	matrix `mattot' = r(StatTotal)
 
 	local k = 1
-	while "`=r(name`k')'" != "." {
+	while `"`=r(name`k')'"' != "." {
 		tempname mat`k'
 		matrix `mat`k'' = r(Stat`k')
 		local ++k
 	}
 
-	capture tabstat gastoneto gastonetoPIB if anio == `anio'-1, by(`by') stat(sum) f(%20.1fc) missing save
+	capture tabstat gastoneto gastonetoPIB if anio == `anio'-1, by(`resumido') stat(sum) f(%20.1fc) missing save
 	if _rc == 0 {
 		tempname mattot5
 		matrix `mattot5' = r(StatTotal)
 
 		local k = 1
-		while "`=r(name`k')'" != "." {
+		while `"`=r(name`k')'"' != "." {
 			tempname mat5`k'
 			matrix `mat5`k'' = r(Stat`k')
 
@@ -340,61 +340,64 @@ quietly {
 
 	if "`nographs'" != "nographs" & "$nographs" == "" {
 		preserve
-		*drop if `by' == -1 & transf_gf == 1
-		drop if anio <= 2013
+		replace gastoneto = gastoneto/deflator/1000000000
 
-		tabstat gastonetoPIB if anio == `anio' & `by' != -1 & transf_gf == 0, stat(sum) f(%20.0fc) save
-		tempname gasanio
-		matrix `gasanio' = r(StatTotal)		
+		collapse (sum) gastoneto* if `by' != -1 & transf_gf == 0 & anio >= 2013, by(anio `resumido')
 
-		levelsof `resumido' if `by' != -1, local(lev_resumido)
+		levelsof `resumido' if `resumido' != -1, local(lev_resumido)
+
+		tabstat gastoneto if anio == `anio', by(`resumido') stat(sum) f(%20.0fc) save
+		tempname SUM
+		matrix `SUM' = r(StatTotal)
+
+		* Ciclo para poner los paréntesis (% del total) en el legend *
 		local totlev = 0
 		foreach k of local lev_resumido {
-			local legend`k' : label `label' `k'
 			local ++totlev
+			tempname SUM`totlev'
+			matrix `SUM`totlev'' = r(Stat`totlev')
+			local legend`k' : label `label' `k'
+			local legend`k' = substr("`legend`k''",1,20)
+			local legend = `"`legend' label(`totlev' "`legend`k'' (`=string(`SUM`totlev''[1,1]/`SUM'[1,1]*100,"%7.1fc")'%)")"'
 		}
 
-		replace gastoneto = gastoneto/deflator/1000000000
-		g resumido = `resumido'
-		collapse (sum) gastoneto* if `by' != -1 & transf_gf == 0, by(anio resumido)
-		reshape wide gastoneto gastonetoPIB, i(anio) j(resumido)
-		local countlev = 1
-		foreach k of local lev_resumido {
-			tempvar lev_res`countlev'
-			if `countlev' == 1 {
-				g `lev_res`countlev'' = gastoneto`k'
-			}
-			else {
-				g `lev_res`countlev'' = gastoneto`k' //+ `lev_res`=`countlev'-1''
-			}
-			label var `lev_res`countlev'' "`legend`k''"
-			replace `lev_res`countlev'' = 0 if `lev_res`countlev'' == .			
-			local graphvars = "`lev_res`countlev'' `graphvars' "
-			local legend = `"`legend' label(`=`totlev'-`countlev'+1' "`legend`k''")"'
-			local ++countlev
-		}
-
-		tempvar TOT
-		egen `TOT' = rsum(gastoneto*)
-		local j = 100/(`anio'-2013)/2
-		forvalues k=1(1)`=_N' {
-			if `TOT'[`k'] != . & anio[`k'] >= 2003 & anio[`k'] <= `anio' {
-				local text `"`text' `=`TOT'[`k']*1.005' `=anio[`k']*0+`j'' "{bf:`=string(`TOT'[`k'],"%7.1fc")'}""'
-				local j = `j' + 100/(`anio'-2013)
+		* Ciclo para determinar el orden de mayor a menor, según gastoneto *
+		tempvar ordervar
+		bysort anio: g `ordervar' = _n
+		gsort -anio -gastoneto
+		forvalues k=1(1)`=_N'{
+			if anio[`k'] == `anio' {
+				local order "`order' `=`ordervar'[`k']'"
 			}
 		}
 
-		graph bar (sum) `graphvars' if anio >= 2013 & anio <= `anio', ///
-			over(anio, gap(0)) stack ///
+		* Ciclo para los texto totales *
+		tabstat gastoneto gastonetoPIB, stat(sum) by(anio) save
+		local j = 100/(`anio'-2013+1)/2
+		forvalues k=1(1)`=`anio'-2013+1' {
+			tempname TOT`k'
+			matrix `TOT`k'' = r(Stat`k')
+			local text `"`text' `=`TOT`k''[1,1]*1.005' `j' "{bf:`=string(`TOT`k''[1,2],"%7.1fc")'% PIB}""'
+			local j = `j' + 100/(`anio'-2013+1)
+		}
+
+		graph bar (sum) gastoneto if anio >= 2013 & anio <= `anio', ///
+			over(`resumido', sort(1) descending) over(anio, gap(0)) stack asyvar ///
 			blabel(, format(%7.1fc)) outergap(0) ///
+			bar(9, color(150 6 92)) bar(8, color(53 200 71)) ///
+			bar(7, color(255 129 0)) bar(6, color(224 97 83)) ///
+			bar(5, color(255 189 0)) bar(4, color(0 151 201)) ///
+			bar(3, color(255 55 0)) bar(2, color(57 198 184)) ///
+			bar(1, color(210 213 32)) ///
 			title("{bf:Gasto} p{c u'}blico presupuestario") ///
 			subtitle($pais) ///
 			text(`text', color(black) placement(n)) ///
 			ytitle(mil millones MXN `anio') ///
 			ylabel(, format(%15.0fc) labsize(small)) ///
 			yscale(range(0)) ///
-			legend(on position(6) rows(`rows') cols(`cols') `legend' region(margin(zero))) ///
+			legend(on position(6) rows(`rows') cols(`cols') `legend' region(margin(zero)) order(`order')) /// 
 			name(gastos, replace) ///
+			note("{bf:Nota}: Porcentajes entre par{c e'}ntesis son con respecto al total de `anio'.") ///
 			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/Cuentas Públicas y $paqueteEconomico.")
 
 		restore

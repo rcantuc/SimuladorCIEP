@@ -5,334 +5,357 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
+	capture confirm scalar aniovp
+	if _rc == 0 {
+		local aniovp = scalar(aniovp)
+	}
+
 	syntax [, ANIO(int `aniovp') NOGraphs CRECSIM(real 1)]
-	noisily di _newline(2) in g _dup(20) "." "{bf:   Tasas Efectivas de los INGRESOS " in y `anio' "   }" in g _dup(20) "."
-
-	if "$pais" == "" {
-		***************************************
-		*** 1 Sistema de Cuentas Nacionales ***
-		***************************************
-		SCN, anio(`anio') nographs
-		use if anio == `anio' using "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", clear
-		scalar PIB = pibY[1]
-
-		balanzacomercial, anio(`anio')
+	noisily di _newline(2) in g _dup(35) "." "{bf:   Tasas Efectivas de los INGRESOS " in y `anio' "   }" in g _dup(35) "."
 
 
 
-		****************************
-		*** 2 Ingresos iniciales ***
-		****************************
-		LIF, anio(`anio') min(1) nographs //ilif
-		local recursos = r(divCIEP)
-		foreach k of local recursos {
-			local rec`=substr("`k'",1,7)' = r(`k')
-		}
+	***************************************************************
+	*** 1 Cuentas macroeconómicas (SCN, PIB, Balanza Comercial) ***
+	***************************************************************
+	*use if anio == `anio' using "`c(sysdir_site)'/users/$pais/$id/PIB.dta", clear
+	PIBDeflactor, aniovp(`anio') nographs
+	keep if anio == `anio'
+	local PIB = pibY[1]
 
-		* Al ingreso *
-		capture confirm scalar ISRAS
-		if _rc == 0 {
-			local recISR_Asa = scalar(ISRAS)/100*scalar(PIB)
-		}
-		else {
-			scalar ISRAS  = (`recISR_Asa')/scalar(PIB)*100 // ISR (asalariados)
-		}
-		capture confirm scalar ISRPF
-		if _rc == 0 {
-			local recISR_PF = scalar(ISRPF)/100*scalar(PIB)
-		}
-		else {
-			scalar ISRPF  = (`recISR_PF')/scalar(PIB)*100 // ISR (personas f{c i'}sicas)
-		}
-		capture confirm scalar CuotasT
-		if _rc == 0 {
-			local recCuotas_ = scalar(CuotasT)/100*scalar(PIB)
-		}
-		else {
-			scalar CuotasT = (`recCuotas_')/scalar(PIB)*100 // Cuotas (IMSS)
-		}
+	balanzacomercial, anio(`anio')
 
-		* Al consumo *
-		capture confirm scalar IVA
-		if _rc == 0 {
-			local recIVA = scalar(IVA)/100*scalar(PIB)
-		}
-		else {
-			scalar IVA     = `recIVA'/scalar(PIB)*100 // IVA 
-		}
-
-		capture confirm scalar ISAN
-		if _rc == 0 {
-			local recISAN = scalar(ISAN)/100*scalar(PIB)
-		}
-		else {
-			scalar ISAN    = `recISAN'/scalar(PIB)*100 // ISAN
-		}
-		capture confirm scalar IEPS
-		if _rc == 0 {
-			local recIEPS = scalar(IEPS)/100*scalar(PIB)
-		}
-		else {
-			local recIEPS = `recIEPS'
-			scalar IEPS    = `recIEPS'/scalar(PIB)*100 // IEPS (no petrolero + petrolero)
-		}
-		capture confirm scalar Importa
-		if _rc == 0 {
-			local recImporta = scalar(Importa)/100*scalar(PIB)
-		}
-		else {
-			scalar Importa = `recImporta'/scalar(PIB)*100 // Importaciones
-		}
-
-		* Al capital *
-		capture confirm scalar ISRPM
-		if _rc == 0 {
-			local recISR_PM = scalar(ISRPM)/100*scalar(PIB)
-		}
-		else {
-			scalar ISRPM  = (`recISR_PM')/scalar(PIB)*100 // ISR (personas morales)
-		}
-		capture confirm scalar FMP
-		if _rc == 0 {
-			local recFMP__De = scalar(FMP)/100*scalar(PIB)
-		}
-		else {
-			scalar FMP     = (`recFMP__De')/scalar(PIB)*100 // Fondo Mexicano del Petr{c o'}leo
-		}
-		capture confirm scalar OYE
-		if _rc == 0 {
-			local recOYE = scalar(OYE)/100*scalar(PIB)
-		}
-		else {
-			local recOYE = `recCFE'+`recPemex'+`recIMSS'+`recISSSTE'
-			scalar OYE     = (`recOYE')/scalar(PIB)*100 // Organismos y empresas (IMSS + ISSSTE + Pemex + CFE)
-		}
-		capture confirm scalar OtrosC
-		if _rc == 0 {
-			local recOtrosC = scalar(OtrosC)/100*scalar(PIB)
-		}
-		else {
-			local recOtrosC = `recOtros_t'+`recDerecho'+`recProduct'+`recAprovec'+`recContrib'
-			scalar OtrosC  = (`recOtrosC')/scalar(PIB)*100 // Productos, derechos, aprovechamientos, contribuciones
-		}
+	noisily SCN, anio(`anio') nographs
 
 
 
-		********************
-		*** 3 Resultados ***
-		********************
-
-		noisily di _newline(2) in y "{bf: A. " in y "Impuestos al trabajo laboral" "}"
-		noisily di _newline in g "{bf:  Cuentas Nacionales" ///
-			_col(44) %7s in g "% PIB" ///
-			_col(55) "Recaudaci{c o'}n" ///
-			_col(88) %7s in g "% PIB" ///
-			_col(99) in g "Tasa efectiva" "}"
-		noisily di in g _dup(111) "-"
-		noisily di in g "  Compensaci{c o'}n de asalariados (sin CSS)" ///
-			_col(44) %7.3fc in y RemSal/scalar(PIB)*100 ///
-			_col(55) in g "ISR (salarios)" ///
-			_col(88) %7.3fc in y (`recISR_Asa')/scalar(PIB)*100 ///
-			_col(99) %7.3fc in y (`recISR_Asa')/RemSal*100 " %"
-		noisily di in g "  Ingreso mixto laboral" ///
-			_col(44) %7.3fc in y MixL/scalar(PIB)*100 ///
-			_col(55) in g "ISR (f{c i'}sicas)" ///
-			_col(88) %7.3fc in y (`recISR_PF')/scalar(PIB)*100 ///
-			_col(99) %7.3fc in y (`recISR_PF')/MixL*100 " %"
-		noisily di in g "  Compensaci{c o'}n de asalariados (con CSS)" ///
-			_col(44) %7.3fc in y (RemSal+SSImputada+SSEmpleadores)/scalar(PIB)*100 ///
-			_col(55) in g "Cuotas IMSS" ///
-			_col(88) %7.3fc in y (`recCuotas_')/scalar(PIB)*100 ///
-			_col(99) %7.3fc in y (`recCuotas_')/(RemSal+SSImputada+SSEmpleadores)*100 " %"
-		noisily di in g _dup(111) "-"
-		noisily di in g "{bf:  Ingresos laborales" ///
-			_col(44) %7.3fc in y (Yl)/scalar(PIB)*100 ///
-			_col(55) in g "Impuestos al ingreso" ///
-			_col(88) %7.3fc in y (`recISR_Asa'+`recISR_PF'+`recCuotas_')/scalar(PIB)*100 ///
-			_col(99) %7.3fc in y (`recISR_Asa'+`recISR_PF'+`recCuotas_')/(Yl)*100 " %" "}"
-		scalar inglaboralPIB = (`recISR_Asa'+`recISR_PF'+`recCuotas_')/scalar(PIB)*100
-
-
-		noisily di _newline(2) in y "{bf: B. " in y "Impuestos al consumo" "}"
-		noisily di _newline in g "{bf:  Cuentas Nacionales" ///
-			_col(44) %7s in g "% PIB" ///
-			_col(55) "Recaudaci{c o'}n" ///
-			_col(88) %7s in g "% PIB" ///
-			_col(99) in g "Tasa efectiva" "}"
-		noisily di in g _dup(111) "-"
-		noisily di in g "  Consumo hogares e ISFLSH" ///
-			_col(44) %7.3fc in y (ConHog /*- Alim - BebN - Salu*/)/scalar(PIB)*100 ///
-			_col(55) in g "IVA" ///
-			_col(88) %7.3fc in y `recIVA'/scalar(PIB)*100 ///
-			_col(99) %7.3fc in y `recIVA'/(ConHog /*- Alim - BebN - Salu*/)*100 " %"
-		noisily di in g "  Compra de veh{c i'}culos" ///
-			_col(44) %7.3fc in y Vehi/scalar(PIB)*100 ///
-			_col(55) in g "ISAN" ///
-			_col(88) %7.3fc in y `recISAN'/scalar(PIB)*100 ///
-			_col(99) %7.3fc in y `recISAN'/Vehi*100 " %"
-		noisily di in g "  Consumo hogares e ISFLSH" ///
-			_col(44) %7.3fc in y ConHog/scalar(PIB)*100 ///
-			_col(55) in g "IEPS" ///
-			_col(88) %7.3fc in y `recIEPS'/scalar(PIB)*100 ///
-			_col(99) %7.3fc in y `recIEPS'/ConHog*100 " %"
-		noisily di in g "  Importaciones (balanza comercial)" ///
-			_col(44) %7.3fc in y scalar(importacionesBCPIB) ///
-			_col(55) in g "Importaciones" ///
-			_col(88) %7.3fc in y `recImporta'/scalar(PIB)*100 ///
-			_col(99) %7.3fc in y (`recImporta'/scalar(PIB)*100)/scalar(importacionesBCPIB)*100 " %"
-		noisily di in g _dup(111) "-"
-		noisily di in g "{bf:  Consumo hogares e ISFLSH" ///
-			_col(44) %7.3fc in y ConHog/scalar(PIB)*100 ///
-			_col(55) in g "Impuestos al consumo" ///
-			_col(88) %7.3fc in y (`recIEPS'+`recIVA'+`recISAN'+`recImporta')/scalar(PIB)*100 ///
-			_col(99) %7.3fc in y (`recIEPS'+`recIVA'+`recISAN'+`recImporta')/ConHog*100 " %" "}"
-		scalar ingconsumoPIB = (`recIEPS'+`recIVA'+`recISAN'+`recImporta')/scalar(PIB)*100
-
-
-		noisily di _newline(2) in y "{bf: C. " in y "Impuestos e ingresos de capital" "}"
-		noisily di _newline in g "{bf:  Cuentas Nacionales" ///
-			_col(44) %7s in g "% PIB" ///
-			_col(55) "Recaudaci{c o'}n" ///
-			_col(88) %7s in g "% PIB" ///
-			_col(99) in g "Tasa efectiva" "}"
-		noisily di in g _dup(111) "-"
-		noisily di in g "  Sociedades e ISFLSH" ///
-			_col(44) %7.3fc in y (ExNOpSoc+ImpNetProduccionK+ImpNetProductos)/scalar(PIB)*100 ///
-			_col(55) in g "ISR (morales)" ///
-			_col(88) %7.3fc in y (`recISR_PM')/scalar(PIB)*100 ///
-			_col(99) %7.3fc in y (`recISR_PM')/(ExNOpSoc+ImpNetProduccionK+ImpNetProductos)*100 " %"
-		noisily di in g "  Ingreso de capital (- alq. imp.)" ///
-			_col(44) %7.3fc in y (CapIncImp-ExNOpHog)/scalar(PIB)*100 ///
-			_col(55) in g "FMP (petr{c o'}leo)" ///
-			_col(88) %7.3fc in y (`recFMP__De')/scalar(PIB)*100 ///
-			_col(99) %7.3fc in y (`recFMP__De')/(CapIncImp-ExNOpHog)*100 " %"
-		noisily di in g "  Ingreso de capital (- alq. imp.)" ///
-			_col(44) %7.3fc in y (CapIncImp-ExNOpHog)/scalar(PIB)*100 ///
-			_col(55) in g "CFE, Pemex, IMSS, ISSSTE" ///
-			_col(88) %7.3fc in y (`recOYE')/scalar(PIB)*100 ///
-			_col(99) %7.3fc in y (`recOYE')/(CapIncImp-ExNOpHog)*100 " %"
-		noisily di in g "  Ingreso de capital (- alq. imp.)" ///
-			_col(44) %7.3fc in y (CapIncImp-ExNOpHog)/scalar(PIB)*100 ///
-			_col(55) in g "Productos, derechos, aprovech..." ///
-			_col(88) %7.3fc in y (`recOtrosC')/scalar(PIB)*100 ///
-			_col(99) %7.3fc in y (`recOtrosC')/(CapIncImp-ExNOpHog)*100 " %"
-		noisily di in g _dup(111) "-"
-		noisily di in g "  {bf:Ingreso de capital" ///
-			_col(44) %7.3fc in y (CapIncImp)/scalar(PIB)*100 ///
-			_col(55) in g "Impuestos e ingresos de capital" ///
-			_col(88) %7.3fc in y (`recISR_PM'+`recFMP__De'+`recOYE'+`recOtrosC')/scalar(PIB)*100 ///
-			_col(99) %7.3fc in y (`recISR_PM'+`recFMP__De'+`recOYE'+`recOtrosC')/(CapIncImp)*100 " %" "}"
-		scalar ingcapitalPIB = (`recISR_PM'+`recFMP__De'+`recOYE'+`recOtrosC')/scalar(PIB)*100
-
-
-
-		****************
-		*** Base SIM ***
-		****************
-		use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
-
-		* ISR *
-		tabstat Laboral Consumo OtrosC ISR__PM Petroleo CuotasSS [fw=factor], stat(sum) f(%20.0fc) save
-		matrix INGRESOS = r(StatTotal)
-
-		replace Laboral = Laboral*((scalar(ISRAS)+scalar(ISRPF))/100*scalar(PIB))/INGRESOS[1,1]
-		replace Consumo = Consumo*((scalar(IVA)+scalar(ISAN)+scalar(IEPS)+scalar(Importa))/100*scalar(PIB))/INGRESOS[1,2]
-		replace OtrosC = OtrosC*((scalar(ISRPM)+scalar(OYE)+scalar(OtrosC))/100*scalar(PIB))/INGRESOS[1,3]
-
-		replace ISR__PM = ISR__PM*((scalar(ISRPM))/100*scalar(PIB))/INGRESOS[1,4]
-		replace ISR__PM = 0 if ISR__PM == .
-
-		replace Petroleo = Petroleo*((scalar(FMP))/100*scalar(PIB))/INGRESOS[1,5]
-		replace Petroleo = 0 if Petroleo == .
-
-		replace CuotasSS = CuotasSS*((scalar(CuotasT))/100*scalar(PIB))/INGRESOS[1,6]
-		replace CuotasSS = 0 if CuotasSS == .
-
-		tabstat Laboral Consumo OtrosC CuotasSS Petroleo [fw=factor], stat(sum) f(%20.0fc) save
-		tempname INGRESOSSIM
-		matrix `INGRESOSSIM' = r(StatTotal)
+	*********************
+	*** 2 RECAUDACIÓN ***
+	*********************
+	noisily LIF, anio(`anio') by(divSIM) rows(2) nographs
+	local recursos = r(divSIM)
+	foreach k of local recursos {
+		local `=substr("`k'",1,7)' = r(`k')
+		local `=substr("`k'",1,7)' = ``=substr("`k'",1,7)''/`PIB'*100
 	}
 
-	if "$pais" == "Ecuador" {
-		use "`c(sysdir_personal)'/users/$pais/$id/households.dta", clear
-		g formalidad = Laboral != 0 | CuotasSS != 0
-		replace formalidad = . if IngTotal == 0 | IngTotal == . //| CuotasSS == 0 | CuotasSS == .
 
-		g pob = 1 if formalidad != .
-		tabstat pob [fw=factor], stat(sum) by(formalidad) f(%20.0fc) save
-		tempname form total
-		matrix `form' = r(Stat2)
-		matrix `total' = r(StatTotal)
+	noisily di _newline(2) in y "{bf: A. " in y "Impuestos a los ingresos laborales" "}"
+	noisily di _newline in g "{bf:  Cuentas Nacionales" ///
+		_col(44) %7s in g "% PIB" ///
+		_col(55) "Impuestos a las personas f{c i'}sicas" ///
+		_col(88) %7s in g "% PIB" ///
+		_col(99) in g "Tasa efectiva" "}"
+	noisily di in g _dup(111) "-"
 
-		local formalidad = `form'[1,1]/`total'[1,1]
-		noisily di `formalidad'
-
-		tabstat Laboral if Laboral != 0 [fw=factor], stat(mean) by(P14A) f(%20.0fc) save
-		tempname alfa prim basi secu medi noun univ post
-		matrix `alfa' = r(Stat1)
-		matrix `prim' = r(Stat2)
-		matrix `basi' = r(Stat3)
-		matrix `secu' = r(Stat4)
-		matrix `medi' = r(Stat5)
-		matrix `noun' = r(Stat6)
-		matrix `univ' = r(Stat7)
-		matrix `post' = r(Stat8)
-
-		/*replace Laboral = `alfa'[1,1]*.15 if P14A == 2 & formalidad == 0
-		replace Laboral = `prim'[1,1]*.15 if P14A == 4 & formalidad == 0
-		replace Laboral = `basi'[1,1]*.15 if P14A == 5 & formalidad == 0
-		replace Laboral = `secu'[1,1]*.15 if P14A == 6 & formalidad == 0
-		replace Laboral = `medi'[1,1]*.15 if P14A == 7 & formalidad == 0
-		replace Laboral = `noun'[1,1]*.15 if P14A == 8 & formalidad == 0
-		replace Laboral = `univ'[1,1]*.15 if P14A == 9 & formalidad == 0
-		replace Laboral = `post'[1,1]*.15 if P14A == 10 & formalidad == 0*/
-
-		g LaboralEcu = Laboral // *1.0051157402*1.005
-		g ConsumoEcu = Consumo // *1.004*0.990
-		g CuotasSSEcu = CuotasSS // *1.0051157402*1.027
-		g OtrosCEcu = OtrosC // *1.004*0.989
-
-		Simulador LaboralEcu [fw=factor], base("ENIGH 2020") reboot anio(`=aniovp') folio(`=foliohogar') nographs
-		Simulador ConsumoEcu [fw=factor], base("ENIGH 2020") reboot anio(`=aniovp') folio(`=foliohogar') nographs
-		Simulador CuotasSSEcu [fw=factor], base("ENIGH 2020") reboot anio(`=aniovp') folio(`=foliohogar') nographs
-		Simulador OtrosCEcu [fw=factor], base("ENIGH 2020") reboot anio(`=aniovp') folio(`=foliohogar') nographs
-
-		/*tabstat Laboral Consumo OtrosC CuotasSS Petroleo [fw=factor], stat(sum) f(%20.0fc) save
-		tempname INGRESOS
-		matrix `INGRESOS' = r(StatTotal)
-
-		replace Laboral = Laboral*`Laboral'/`INGRESOS'[1,1]*`crecsim'
-		replace Consumo = Consumo*`Consumo'/`INGRESOS'[1,2]*`crecsim'
-		replace OtrosC = OtrosC*`OtrosC'/`INGRESOS'[1,3]*`crecsim'
-		replace CuotasSS = CuotasSS*`CuotasSS'/`INGRESOS'[1,4]*`crecsim'
-		replace Petroleo = Petroleo*`Petroleo'/`INGRESOS'[1,5]*`crecsim'*/
-
-		tabstat Laboral Consumo OtrosC CuotasSS Petroleo [fw=factor], stat(sum) f(%20.0fc) save
-		tempname INGRESOSSIM
-		matrix `INGRESOSSIM' = r(StatTotal)
+	// ISR (asalariados)
+	capture confirm scalar ISRAS
+	if _rc == 0 {
+		local ISRAS = scalar(ISRAS)					// <-- Para el display
 	}
+	else {
+		scalar ISRAS = `ISRAS'						// <-- Para el simulador (Sankey, FiscalGap)
+	}
+	noisily di in g "  Compensaci{c o'}n de asalariados (sin CSS)" ///
+		_col(44) %7.3fc in y RemSalPIB ///
+		_col(55) in g "ISR (salarios)" ///
+		_col(88) %7.3fc in y (`ISRAS') ///
+		_col(99) %7.3fc in y (`ISRAS')/RemSalPIB*100 " %"
+
+	// ISR (personas f{c i'}sicas)
+	capture confirm scalar ISRPF
+	if _rc == 0 {
+		local ISRPF = scalar(ISRPF)
+	}
+	else {
+		scalar ISRPF = `ISRPF'
+	}
+	noisily di in g "  Ingreso mixto laboral" ///
+		_col(44) %7.3fc in y MixLPIB ///
+		_col(55) in g "ISR (f{c i'}sicas)" ///
+		_col(88) %7.3fc in y (`ISRPF') ///
+		_col(99) %7.3fc in y (`ISRPF')/MixLPIB*100 " %"
+
+	// Cuotas (IMSS)
+	capture confirm scalar CUOTAS
+	if _rc == 0 {
+		local CUOTAS = scalar(CUOTAS)
+	}
+	else {
+		scalar CUOTAS = `CUOTAS'
+	}
+
+	noisily di in g "  Compensaci{c o'}n de asalariados" ///
+		_col(44) %7.3fc in y (RemSalPIB+SSImputadaPIB+SSEmpleadoresPIB) ///
+		_col(55) in g "Cuotas IMSS" ///
+		_col(88) %7.3fc in y (`CUOTAS') ///
+		_col(99) %7.3fc in y (`CUOTAS')/(RemSalPIB+SSImputadaPIB+SSEmpleadoresPIB)*100 " %"
+
+	// TOTAL LABORALES
+	noisily di in g _dup(111) "-"
+	noisily di in g "{bf:  Ingresos laborales" ///
+		_col(44) %7.3fc in y (YlPIB) ///
+		_col(55) in g "Recaudaci{c o'}n total" ///
+		_col(88) %7.3fc in y (`ISRAS'+`ISRPF'+`CUOTAS') ///
+		_col(99) %7.3fc in y (`ISRAS'+`ISRPF'+`CUOTAS')/(YlPIB)*100 " %" "}"
+	scalar inglaboralPIB = (`ISRAS'+`ISRPF'+`CUOTAS')
+
+
+
+	noisily di _newline(2) in y "{bf: B. " in y "Impuestos a los ingresos de capital privado" "}"
+	noisily di _newline in g "{bf:  Cuentas Nacionales" ///
+		_col(44) %7s in g "% PIB" ///
+		_col(55) "Impuestos a las personas morales" ///
+		_col(88) %7s in g "% PIB" ///
+		_col(99) in g "Tasa efectiva" "}"
+	noisily di in g _dup(111) "-"
+
+	// ISR (personas morales)
+	capture confirm scalar ISRPM
+	if _rc == 0 {
+		local ISRPM = scalar(ISRPM)
+	}
+	else {
+		scalar ISRPM = (`ISRPM')
+	}
+	noisily di in g "  Sociedades e ISFLSH (netos)" ///
+		_col(44) %7.3fc in y (ExNOpSocPIB+ImpNetProduccionKPIB+ImpNetProductosPIB) ///
+		_col(55) in g "ISR (morales)" ///
+		_col(88) %7.3fc in y (`ISRPM') ///
+		_col(99) %7.3fc in y (`ISRPM')/(ExNOpSocPIB+ImpNetProduccionKPIB+ImpNetProductosPIB)*100 " %"
+
+	// TOTAL CAPITAL PRIVADO
+	noisily di in g _dup(111) "-"
+	noisily di in g "{bf:  Ingresos (netos) al capital" ///
+		_col(44) %7.3fc in y (CapIncImpPIB) ///
+		_col(55) in g "Recaudaci{c o'}n total" ///
+		_col(88) %7.3fc in y (`ISRPM') ///
+		_col(99) %7.3fc in y (`ISRPM')/(CapIncImpPIB)*100 " %" "}"
+
+
+
+	noisily di _newline(2) in y "{bf: C. " in y "Impuestos al consumo" "}"
+	noisily di _newline in g "{bf:  Cuentas Nacionales" ///
+		_col(44) %7s in g "% PIB" ///
+		_col(55) "Impuestos al consumo" ///
+		_col(88) %7s in g "% PIB" ///
+		_col(99) in g "Tasa efectiva" "}"
+	noisily di in g _dup(111) "-"
+
+	// IVA
+	capture confirm scalar IVA
+	if _rc == 0 {
+		local IVA = scalar(IVA)
+	}
+	else {
+		scalar IVA = `IVA'
+	}
+	noisily di in g "  Consumo hogares e ISFLSH" ///
+		_col(44) %7.3fc in y (ConHogPIB - AlimPIB - BebNPIB - SaluPIB) ///
+		_col(55) in g "IVA" ///
+		_col(88) %7.3fc in y `IVA' ///
+		_col(99) %7.3fc in y `IVA'/(ConHogPIB - AlimPIB - BebNPIB - SaluPIB)*100 " %"
+
+	// ISAN
+	capture confirm scalar ISAN
+	if _rc == 0 {
+		local ISAN = scalar(ISAN)
+	}
+	else {
+		scalar ISAN = `ISAN' 
+	}
+	noisily di in g "  Compra de veh{c i'}culos" ///
+		_col(44) %7.3fc in y VehiPIB ///
+		_col(55) in g "ISAN" ///
+		_col(88) %7.3fc in y `ISAN' ///
+		_col(99) %7.3fc in y `ISAN'/VehiPIB*100 " %"
+
+	// IEPS (no petrolero)
+	capture confirm scalar IEPSNP
+	if _rc == 0 {
+		local IEPSNP = scalar(IEPSNP)
+	}
+	else {
+		scalar IEPSNP = `IEPSNP'
+	}
+	noisily di in g "  Consumo hogares e ISFLSH" ///
+		_col(44) %7.3fc in y ConHogPIB ///
+		_col(55) in g "IEPS (no petrolero)" ///
+		_col(88) %7.3fc in y `IEPSNP' ///
+		_col(99) %7.3fc in y `IEPSNP'/ConHogPIB*100 " %"
+
+	// IEPS (petrolero)
+	capture confirm scalar IEPSP
+	if _rc == 0 {
+		local IEPSP = scalar(IEPSP)
+	}
+	else {
+		scalar IEPSP = `IEPSP'
+	}
+	noisily di in g "  Consumo hogares e ISFLSH" ///
+		_col(44) %7.3fc in y ConHogPIB ///
+		_col(55) in g "IEPS (petrolero)" ///
+		_col(88) %7.3fc in y `IEPSP' ///
+		_col(99) %7.3fc in y `IEPSP'/ConHogPIB*100 " %"
+
+	// Importaciones
+	capture confirm scalar IMPORT
+	if _rc == 0 {
+		local IMPORT = scalar(IMPORT)
+	}
+	else {
+		scalar IMPORT = `IMPORT' 
+	}
+	noisily di in g "  Importaciones (balanza comercial)" ///
+		_col(44) %7.3fc in y scalar(importacionesBCPIB) ///
+		_col(55) in g "Importaciones" ///
+		_col(88) %7.3fc in y `IMPORT' ///
+		_col(99) %7.3fc in y (`IMPORT')/scalar(importacionesBCPIB)*100 " %"
+
+	// TOTAL CONSUMO
+	noisily di in g _dup(111) "-"
+	noisily di in g "{bf:  Consumo hogares e ISFLSH" ///
+		_col(44) %7.3fc in y ConHogPIB ///
+		_col(55) in g "Recaudaci{c o'}n total" ///
+		_col(88) %7.3fc in y (`IEPSP'+`IEPSNP'+`IVA'+`ISAN'+`IMPORT') ///
+		_col(99) %7.3fc in y (`IEPSP'+`IEPSNP'+`IVA'+`ISAN'+`IMPORT')/ConHogPIB*100 " %" "}"
+	scalar ingconsumoPIB = (`IEPSP'+`IEPSNP'+`IVA'+`ISAN'+`IMPORT')
+
+
+
+	noisily di _newline(2) in y "{bf: D. " in y "Ingresos de capital p{c u'}blico" "}"
+	noisily di _newline in g "{bf:  Cuentas Nacionales" ///
+		_col(44) %7s in g "% PIB" ///
+		_col(55) "Ingresos propios" ///
+		_col(88) %7s in g "% PIB" ///
+		_col(99) in g "Tasa efectiva" "}"
+	noisily di in g _dup(111) "-"
+
+	// Energía
+	capture confirm scalar FMP
+	if _rc == 0 {
+		local FMP = scalar(FMP)
+	}
+	else {
+		scalar FMP = (`FMP') 
+	}
+	capture confirm scalar PEMEX
+	if _rc == 0 {
+		local PEMEX = scalar(PEMEX)
+	}
+	else {
+		scalar PEMEX = (`PEMEX') 
+	}
+	capture confirm scalar CFE
+	if _rc == 0 {
+		local CFE = scalar(CFE)
+	}
+	else {
+		scalar CFE = (`CFE') 
+	}
+
+	// IMSS + ISSSTE
+	capture confirm scalar IMSS
+	if _rc == 0 {
+		local IMSS = scalar(IMSS)
+	}
+	else {
+		scalar IMSS = (`IMSS') 
+	}
+	capture confirm scalar ISSSTE
+	if _rc == 0 {
+		local ISSSTE = scalar(ISSSTE)
+	}
+	else {
+		scalar ISSSTE = (`ISSSTE') 
+	}
+
+	// Productos, derechos, aprovechamientos, contribuciones
+	capture confirm scalar OTROSK
+	if _rc == 0 {
+		local OTROSK = scalar(OTROSK)
+	}
+	else {
+		scalar OTROSK  = (`OTROSK') 
+	}
+
+	noisily di in g "  Ingresos (netos) de capital p{c u'}blico" ///
+		_col(44) %7.3fc in y (`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE'+`OTROSK') ///
+		_col(55) in g "IMSS, ISSSTE" ///
+		_col(88) %7.3fc in y (`IMSS'+`ISSSTE') ///
+		_col(99) %7.3fc in y (`IMSS'+`ISSSTE')/(`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE'+`OTROSK')*100 " %"
+
+	noisily di in g "  Ingresos (netos) de capital p{c u'}blico" ///
+		_col(44) %7.3fc in y (`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE'+`OTROSK') ///
+		_col(55) in g "FMP, CFE, Pemex (energ{c i'}a)" ///
+		_col(88) %7.3fc in y (`FMP'+`PEMEX'+`CFE') ///
+		_col(99) %7.3fc in y (`FMP'+`PEMEX'+`CFE')/(`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE'+`OTROSK')*100 " %"
+
+	noisily di in g "  Ingresos (netos) de capital p{c u'}blico" ///
+		_col(44) %7.3fc in y (`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE'+`OTROSK') ///
+		_col(55) in g "Productos, derechos, aprovech..." ///
+		_col(88) %7.3fc in y (`OTROSK') ///
+		_col(99) %7.3fc in y (`OTROSK')/(`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE'+`OTROSK')*100 " %"
+
+	// TOTAL INGRESOS DE CAPITAL PUBLICOS
+	noisily di in g _dup(111) "-"
+	noisily di in g "{bf:  Ingresos (netos) de capital" ///
+		_col(44) %7.3fc in y (CapIncImpPIB) ///
+		_col(55) in g "Recaudaci{c o'}n total" ///
+		_col(88) %7.3fc in y (`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE'+`OTROSK') ///
+		_col(99) %7.3fc in y (`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE'+`OTROSK')/(CapIncImpPIB)*100 " %" "}"
+	scalar ingcapitalPIB = (`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE'+`OTROSK')
+
+
+
+	****************
+	*** Base SIM ***
+	/****************
+	use `"`c(sysdir_site)'/users/$pais/$id/households.dta"', clear
+
+	* ISR *
+	tabstat Laboral Consumo OtrosC ISR__PM Petroleo CuotasSS [fw=factor], stat(sum) f(%20.0fc) save
+	matrix INGRESOS = r(StatTotal)
+
+	replace Laboral = Laboral*((scalar(ISRAS)+scalar(ISRPF))/100*`PIB')/INGRESOS[1,1]
+	replace Consumo = Consumo*((scalar(IVA)+scalar(ISAN)+scalar(IEPS)+scalar(Importa))/100*`PIB')/INGRESOS[1,2]
+	replace OtrosC = OtrosC*((scalar(ISRPM)+scalar(OYE)+scalar(OtrosC))/100*`PIB')/INGRESOS[1,3]
+
+	replace ISR__PM = ISR__PM*((scalar(ISRPM))/100*`PIB')/INGRESOS[1,4]
+	replace ISR__PM = 0 if ISR__PM == .
+
+	replace Petroleo = Petroleo*((scalar(FMP))/100*`PIB')/INGRESOS[1,5]
+	replace Petroleo = 0 if Petroleo == .
+
+	replace CuotasSS = CuotasSS*((scalar(CuotasT))/100*`PIB')/INGRESOS[1,6]
+	replace CuotasSS = 0 if CuotasSS == .
+
+	tabstat Laboral Consumo OtrosC CuotasSS Petroleo [fw=factor], stat(sum) f(%20.0fc) save
+	tempname INGRESOSSIM
+	matrix `INGRESOSSIM' = r(StatTotal)
+	
 
 
 	** Guardar **
 	if `c(version)' > 13.1 {
-		saveold `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace version(13)
+		saveold `"`c(sysdir_site)'/users/$pais/$id/households.dta"', replace version(13)
 	}
 	else {
-		save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace	
+		save `"`c(sysdir_site)'/users/$pais/$id/households.dta"', replace	
 	}
 
 
 
 
-	***************************/
+	***************************
 	*** 6 Estimaciones de LP ***
 	****************************
 	tempname RECBase
 	local j = 1
 	foreach k in Laboral Consumo OtrosC CuotasSS Petroleo {
 		di "`k'"
-		use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/`k'REC"', clear
-		merge 1:1 (anio) using "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", nogen keepus(lambda)
+		use `"`c(sysdir_site)'/users/$pais/bootstraps/1/`k'REC"', clear
+		merge 1:1 (anio) using "`c(sysdir_site)'/users/$pais/$id/PIB.dta", nogen keepus(lambda)
 		tabstat estimacion if anio == `anio', stat(sum) f(%20.0fc) save
 		matrix `RECBase' = r(StatTotal)
 
@@ -340,16 +363,16 @@ quietly {
 
 		local ++j
 		if `c(version)' > 13.1 {
-			saveold `"`c(sysdir_personal)'/users/$pais/$id/`k'REC.dta"', replace version(13)
+			saveold `"`c(sysdir_site)'/users/$pais/$id/`k'REC.dta"', replace version(13)
 		}
 		else {
-			save `"`c(sysdir_personal)'/users/$pais/$id/`k'REC.dta"', replace		
+			save `"`c(sysdir_site)'/users/$pais/$id/`k'REC.dta"', replace		
 		}
 	}
 
 
 
-	**************
+	*************/
 	*** OUTPUT ***
 	**************
 	if "$output" == "output" & "$pais" == "" {
@@ -378,7 +401,7 @@ quietly {
 			%8.3f `recIVA'/(ConHog)*100 ", " ///
 			%8.3f `recISAN'/Vehi*100 ", " ///
 			%8.3f `recIEPS'/ConHog*100 ", " ///
-			%8.3f (`recImporta'/scalar(PIB)*100)/scalar(importacionesBCPIB)*100 ", " ///
+			%8.3f (`recImporta')/scalar(importacionesBCPIB)*100 ", " ///
 			%8.3f (`recIEPS'+`recIVA'+`recISAN'+`recImporta')/ConHog*100 ", " ///
 			%8.3f `recISR_PM'/(ExNOpSoc+ImpNetProduccionK+ImpNetProductos)*100 ", " ///
 			%8.3f `recFMP__De'/(CapIncImp-ExNOpHog)*100 ", " ///
@@ -404,10 +427,10 @@ quietly {
 		DatosAbiertos XAB1130, g pibvp(`=IEPS')      	//    IEPS
 		DatosAbiertos XNA0136, g pibvp(`=Importa')      //    Importaciones
 		DatosAbiertos FMP_Derechos, g pibvp(`=FMP') 	//    FMP_Derechos
-		DatosAbiertos XAB2110, g pibvp(`=`recPemex'/scalar(PIB)*100')	//    Ingresos propios Pemex
-		DatosAbiertos XOA0115, g pibvp(`=`recCFE'/scalar(PIB)*100')		//    Ingresos propios CFE
-		DatosAbiertos XKF0179, g pibvp(`=`recIMSS'/scalar(PIB)*100')	//    Ingresos propios IMSS
-		DatosAbiertos XOA0120, g pibvp(`=`recISSSTE'/scalar(PIB)*100')	//    Ingresos propios ISSSTE
+		DatosAbiertos XAB2110, g pibvp(`=`recPemex'')	//    Ingresos propios Pemex
+		DatosAbiertos XOA0115, g pibvp(`=`recCFE'')		//    Ingresos propios CFE
+		DatosAbiertos XKF0179, g pibvp(`=`recIMSS'')	//    Ingresos propios IMSS
+		DatosAbiertos XOA0120, g pibvp(`=`recISSSTE'')	//    Ingresos propios ISSSTE
 		DatosAbiertos OtrosIngresosC, g pibvp(`=OtrosC')	//    Ingresos propios ISSSTE
 	}
 
