@@ -280,7 +280,7 @@ quietly {
 			local ++k
 		}
 
-		noisily di in g _dup(88) "-"
+		noisily di in g _dup(83) "-"
 		noisily di in g "{bf:  (=) Ingresos" ///
 			_col(44) in y %7.3fc `mattot5'[1,2] ///
 			_col(55) in y %7.3fc `mattot'[1,2] ///
@@ -290,7 +290,7 @@ quietly {
 
 
 	** 4.4 Elasticidades **
-	if "`by'" == "divGA" | "`by'" == "divCIEP" {
+	if "`by'" == "divGA" | "`by'" == "divCIEP" | "`by'" == "divSIM" {
 		noisily di _newline in g "{bf: D. Elasticidades:" in y " `=`anio'-9' - `anio'" in g ///
 			_col(44) %7s "Crec %G IngR" ///
 			_col(66) %7s "Crec %G pibYR" ///
@@ -375,72 +375,69 @@ quietly {
 
 
 	if "`nographs'" != "nographs" & "$nographs" == "" {
-		*preserve
-		drop if divLIF == 10
-		drop if anio <= 2012
-		tabstat recaudacionPIB if anio == `anio' & divLIF != 10, stat(sum) f(%20.0fc) save
-		tempname recanio
-		matrix `recanio' = r(StatTotal)
-
-		levelsof `resumido' if divLIF != 10, local(lev_resumido)
-		local totlev = 0
-		foreach k of local lev_resumido {
-			local legend`k' : label `label' `k'
-			local ++totlev
-		}
-		
+		preserve
 		replace recaudacion=recaudacion/deflator/1000000000
 		replace monto=monto/deflator/1000000000
 		replace LIF=LIF/deflator/1000000000
-		collapse (sum) recaudacion LIF monto if divLIF != 10 | recaudacion != 0 | recaudacion == ., by(anio `resumido')
-		reshape wide recaudacion LIF monto, i(anio) j(`resumido')
-		local countlev = 1
-		foreach k of local lev_resumido {
-			tempvar lev_res`countlev' lev_lif`countlev' lev_mon`countlev'
-			if `countlev' == 1 {
-				g `lev_res`countlev'' = recaudacion`k'
-				g `lev_lif`countlev'' = LIF`k'
-				g `lev_mon`countlev'' = monto`k'
-			}
-			else {
-				g `lev_res`countlev'' = recaudacion`k' //+ `lev_res`=`countlev'-1''
-				g `lev_lif`countlev'' = LIF`k' //+ `lev_res`=`countlev'-1''
-				g `lev_mon`countlev'' = monto`k' //+ `lev_res`=`countlev'-1''
-			}
-			replace `lev_res`countlev'' = 0 if `lev_res`countlev'' == .
-			replace `lev_lif`countlev'' = 0 if `lev_lif`countlev'' == .
-			replace `lev_mon`countlev'' = 0 if `lev_mon`countlev'' == .
-			
-			local graphvars = "`lev_res`countlev'' `graphvars' "
-			local graphvars2 = "`lev_lif`countlev'' `graphvars' "
-			local graphvars3 = "`lev_mon`countlev'' `graphvars' "
 
-			local legend = `"`legend' label(`=`totlev'-`countlev'+1' "`legend`k''")"'
-			local ++countlev
-		}
+		collapse (sum) recaudacion* if divLIF != 10 & anio >= 2013, by(anio `resumido')
 
-		tempvar TOT
-		egen `TOT' = rsum(recaudacion*)
+		levelsof `resumido', local(lev_resumido)
 		
-		local j = 100/(`anio'-2012)/2
-		forvalues k=1(1)`=_N' {
-			if `TOT'[`k'] != . & anio[`k'] >= 2003 & anio[`k'] <= `anio' {
-				local text `"`text' `=`TOT'[`k']*1.005' `=anio[`k']*0+`j'' "{bf:`=string(`TOT'[`k'],"%7.1fc")'}""'
-				local j = `j' + 100/(`anio'-2012)
+		tabstat recaudacionPIB if anio == `anio', by(`resumido') stat(sum) f(%20.0fc) save
+		tempname SUM
+		matrix `SUM' = r(StatTotal)
+
+		* Ciclo para poner los paréntesis (% del total) en el legend *
+		local totlev = 0
+		foreach k of local lev_resumido {
+			local ++totlev
+			tempname SUM`totlev'
+			matrix `SUM`totlev'' = r(Stat`totlev')
+			local legend`k' : label `label' `k'
+			*local legend`k' = substr("`legend`k''",1,20)
+			local legend = `"`legend' label(`totlev' "`legend`k'' (`=string(`SUM`totlev''[1,1]/`SUM'[1,1]*100,"%7.1fc")'%)")"'
+		}
+		
+		* Ciclo para determinar el orden de mayor a menor, según gastoneto *
+		tempvar ordervar
+		bysort anio: g `ordervar' = _n
+		gsort -anio -recaudacion
+		forvalues k=1(1)`=_N'{
+			if anio[`k'] == `anio' {
+				local order "`order' `=`ordervar'[`k']'"
 			}
 		}
 
-		graph bar `graphvars' if anio >= 2012 & anio <= `anio', ///
-			over(anio, gap(0)) stack blabel(bar, format(%7.1fc)) outergap(0) ///
-			title("{bf:Ingresos} p{c u'}blicos") ///
+		* Ciclo para los texto totales *
+		tabstat recaudacion recaudacionPIB, stat(sum) by(anio) save
+		local j = 100/(`anio'-2013+1)/2
+		forvalues k=1(1)`=`anio'-2013+1' {
+			if anio[`k'] >= 2013 & anio[`k'] <= `anio' {
+				tempname TOT`k'
+				matrix `TOT`k'' = r(Stat`k')
+				local text `"`text' `=`TOT`k''[1,1]*1.005' `j' "{bf:`=string(`TOT`k''[1,2],"%7.1fc")'% PIB}""'
+				local j = `j' + 100/(`anio'-2013+1)
+			}
+		}
+
+		graph bar recaudacion if anio >= 2012 & anio <= `anio', ///
+			over(`resumido', sort(1) descending) over(anio, gap(0)) ///
+			stack asyvars blabel(bar, format(%7.1fc)) outergap(0) ///
+			title("{bf:Ingresos} p{c u'}blicos presupuestarios") ///
 			subtitle($pais) ///
+			bar(4, color(40 173 58)) bar(1, color(255 55 0)) ///
+			bar(2, color(255 129 0)) ///
 			text(`text', color(black) placement(n)) ///
 			ytitle("mil millones `currency' `anio'") ///
 			ylabel(, format(%15.0fc) labsize(small)) ///
 			yscale(range(0)) ///
-			legend(on position(6) rows(2) cols(`cols') `legend' region(margin(zero))) ///
-			name(ingresosA, replace) ///
-			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP (EOFP, $paqueteEconomico).")
+			legend(on position(6) rows(`rows') cols(`cols') `legend' region(margin(zero)) order(`order')) ///
+			name(ingresos, replace) ///
+			note("{bf:Nota}: Porcentajes entre par{c e'}ntesis son con respecto al total de `anio'.") ///
+			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP y $paqueteEconomico.")
+		
+		restore
 	}
 
 

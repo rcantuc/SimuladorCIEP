@@ -18,7 +18,7 @@ quietly {
 
 	capture confirm scalar aniovp
 	if _rc == 0 {
-			local aniovp = scalar(aniovp)
+		local aniovp = scalar(aniovp)
 	}	
 
 	syntax [, ANIO(int `aniovp') NOGraphs UPDATE Discount(int 3)]
@@ -30,12 +30,12 @@ quietly {
 	*****************************************************
 	*** 1. Databases (D) and variable definitions (V) ***
 	*****************************************************
-	** D.1. Cuenta de generaci{c o'}n del ingreso **
 	capture confirm file "`c(sysdir_site)'/SIM/SCN.dta"
 	if _rc != 0 | "`update'" == "update" {
 		
 		noisily di in g "  Updating SCN.dta..." _newline
 
+		** D.1. Cuenta de generaci{c o'}n del ingreso **
 		import excel "`c(sysdir_site)'/bases/UPDATE/SCN/Cuenta de generacion del ingreso.xlsx", clear
 		LimpiaBIE g
 		tempfile generacion
@@ -120,13 +120,13 @@ quietly {
 		** V.3. Remuneraciones a asalariados **
 		rename Bg RemSalSS			// Remuneraciones a asalariados (total)
 		rename Cg RemSal			// Remuneraciones a asalariados (sin contribuciones efectivas, con contribuciones imputadas)
-		rename Dg SSEmpleadores			// Contribuciones a la seguridad social, efectivas
+		rename Dg SSEmpleadores		// Contribuciones a la seguridad social, efectivas
 
 		** V.4. Impuesto sobre los productos, producci{c o'}n e importaciones **
 		rename Eg Imp				// Impuesto sobre los productos, producci{c o'}n e importaciones (total)
-		rename Fg ImpProductos			// Impuestos sobre los productos
-		rename Gpb ImpNetProductos		// Impuestos sobre los productos netos
-		rename Jg ImpProduccion			// Impuestos sobre la producci{c o'}n e importaciones
+		rename Fg ImpProductos		// Impuestos sobre los productos
+		rename Gpb ImpNetProductos	// Impuestos sobre los productos netos
+		rename Jg ImpProduccion		// Impuestos sobre la producci{c o'}n e importaciones
 		
 
 		** V.5. Subsidios **
@@ -134,19 +134,19 @@ quietly {
 
 		** V.6. Excedente bruto de operaci{c o'}n **
 		rename Lg ExBOp				// Excedente bruto de operaci{c o'}n (con mixto)
-		rename Us ExBOpSinMix			// Excedente bruto de operaci{c o'}n (sin mixto)
+		rename Us ExBOpSinMix		// Excedente bruto de operaci{c o'}n (sin mixto)
 
 		** V.7. Excedente bruto de operaci{c o'}n, por sectores institucionales ** 
-		rename Vs ExBOpNoFin			// Excedente bruto de operaci{c o'}n sociedades no financieras
+		rename Vs ExBOpNoFin		// Excedente bruto de operaci{c o'}n sociedades no financieras
 		rename Ws ExBOpFin			// Excedente bruto de operaci{c o'}n sociedades financieras
-		rename Zs ExBOpISFLSH			// Excedente bruto de operaci{c o'}n ISFLSH
+		rename Zs ExBOpISFLSH		// Excedente bruto de operaci{c o'}n ISFLSH
 		rename Ys ExBOpHog			// Excedente bruto de operaci{c o'}n de los hogares
 		rename Xs ExBOpGob			// Excedente bruto de operaci{c o'}n del gobierno
 
 		** V.8. Excedente neto de operaci{c o'}n, por sectores institucionales ** 
-		rename ABs ExNOpNoFin			// Excedente neto de operaci{c o'}n sociedades no financieras
+		rename ABs ExNOpNoFin		// Excedente neto de operaci{c o'}n sociedades no financieras
 		rename ACs ExNOpFin			// Excedente neto de operaci{c o'}n sociedades financieras
-		rename AFs ExNOpISFLSH			// Excedente neto de operaci{c o'}n ISFLSH
+		rename AFs ExNOpISFLSH		// Excedente neto de operaci{c o'}n ISFLSH
 		rename AEs ExNOpHog			// Excedente neto de operaci{c o'}n de los hogares (owner-occupied)
 		rename ADs ExNOpGob			// Excedente neto de operaci{c o'}n del gobierno
 
@@ -155,7 +155,7 @@ quietly {
 
 		** V.10. Resto del mundo **
 		rename Ed PIN				// Producto Interno Neto
-		rename Fd ROWRemRecibidas		// ROW, Compensation of Employees, recibidas
+		rename Fd ROWRemRecibidas	// ROW, Compensation of Employees, recibidas
 		rename Gd ROWRemPagadas			// ROW, Compensation of Employees, pagadas
 		rename Hd ROWPropRecibidas		// ROW, Ingresos a la propiedad, recibidas
 		rename Id ROWPropPagadas		// ROW, Ingresos a la propiedad, pagadas
@@ -591,7 +591,10 @@ quietly {
 	scalar crecpibfGEO = geoPIB[`=`obs'+5']
 
 	scalar SSEmpleadores = SSEmpleadores[`obs']
+	scalar SSEmpleadoresPIB = SSEmpleadores[`obs']/PIB[`obs']*100
+	
 	scalar SSImputada = SSImputada[`obs']
+	scalar SSImputadaPIB = SSImputada[`obs']/PIB[`obs']*100
 
 
 	* Cuenta de capital *

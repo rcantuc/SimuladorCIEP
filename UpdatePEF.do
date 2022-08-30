@@ -357,8 +357,8 @@ else {
 use `prePEF', clear
 
 * 4.1 Costo de la deuda *
-g desc_divGA = "Costo de la deuda" if capitulo == 9 & substr(string(objeto),1,2) != "91" 
-replace desc_divGA = "Amortización" if capitulo == 9 & substr(string(objeto),1,2) == "91" 
+g desc_divGA = "Costo de la deuda" if capitulo == 9 //& substr(string(objeto),1,2) != "91" 
+*replace desc_divGA = "Amortización" if capitulo == 9 & substr(string(objeto),1,2) == "91" 
 
 * 4.2 Pensiones *
 levelsof desc_pp, local(levelsof)
@@ -390,14 +390,20 @@ replace desc_divGA = "Salud" if desc_divGA == "" ///
 replace desc_divGA = "Salud" if desc_divGA == "" ///
 	& ramo == 51 & pp == 15 & funcion == 8
 
-* 4.5 Infraestructura *
-replace desc_divGA = "Infraestructura" if desc_divGA == "" & capitulo == 6
-
-* 4.6 Federalizado *
+* 4.5 Federalizado *
 replace desc_divGA = "Federalizado" if desc_divGA == "" & capitulo == 8
 
-* 4.7 Energía *
-replace desc_divGA = "Energía" if desc_divGA == "" & desc_funcion == 7
+* 4.6 Energía *
+replace desc_divGA = "Energía" if desc_divGA == "" & (ramo == 18 | ramo == 45 ///
+	| ramo == 46 | ramo == 52 | ramo == 53 | (ramo == 23 & ///
+	(desc_pp == 74 | desc_pp == 75 | desc_pp == 209 | desc_pp == 346 ///
+	| desc_pp == 349 | desc_pp == 350 | desc_pp == 352 | desc_pp == 353 ///
+	| desc_pp == 354 | desc_pp == 476 | desc_pp == 477 | desc_pp == 484 ///
+	| desc_pp == 485 | desc_pp == 486 | desc_pp == 487 | desc_pp == 566 ///
+	| desc_pp == 680 | desc_pp == 570 | desc_pp == 1580)))
+
+* 4.7 Infraestructura *
+replace desc_divGA = "Infraestructura" if desc_divGA == "" & capitulo == 6
 
 * 4.8 Otros *
 replace desc_divGA = "Otros" if desc_divGA == ""
