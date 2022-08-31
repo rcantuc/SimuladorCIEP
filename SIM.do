@@ -30,14 +30,14 @@ if "`c(os)'" == "Unix" & "`c(username)'" == "ciepmx" {                          
 ***                   ***
 *************************
 *global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
-*local update "update"                                                          // UPDATE DATASETS
+local update "update"                                                          // UPDATE DATASETS
 
 ** PARÁMETROS **
 noisily run "`c(sysdir_site)'/PARAM${pais}.do"
 *global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"                 // EXPORTAR IMAGENES EN...
 *global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
 
-
+*scalar aniovp = 2022
 
 **************************
 ***                    ***
@@ -63,11 +63,15 @@ noisily Inflacion, `update'
 ***                         ***
 ***    4. SISTEMA FISCAL    ***
 ***                         ***
-/*******************************
-noisily LIF, by(divPE) rows(1) `update' 	                                //by(divGA)
-noisily PEF, by(divGA) rows(2) min(0) `update'
-*noisily SHRFSP, `update'
+*******************************
+*noisily LIF, by(divPE) rows(1) `update' 	                                //by(divGA)
+*noisily PEF, by(divGA) rows(2) min(0) `update'
+noisily SHRFSP, `update'
 
+timer off 1
+timer list 1
+noisily di _newline(2) in g _dup(20) ":" "  " in y "TOUCH-DOWN!!!  " round(`=r(t1)/r(nt1)',.1) in g " segs  " _dup(20) ":"
+exit
 
 
 **************************/
@@ -88,7 +92,7 @@ if _rc != 0 | "$export" != "" {
 ***                             ***
 ***    6. PARTE II: INGRESOS    ***
 ***                             ***
-/***********************************
+***********************************
 noisily TasasEfectivas
 
 
@@ -104,10 +108,6 @@ noisily GastoPC
 
 
 
-timer off 1
-timer list 1
-noisily di _newline(2) in g _dup(20) ":" "  " in y "TOUCH-DOWN!!!  " round(`=r(t1)/r(nt1)',.1) in g " segs  " _dup(20) ":"
-exit
 
 
 
