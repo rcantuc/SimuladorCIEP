@@ -4,12 +4,9 @@
 timer on 9
 if "`1'" == "" {
 	local 1 = "decil"
-	local 2 = 2020
+	local 2 = 2023
 }
 
-if "$pais" != "" {
-	exit
-}
 
 
 
@@ -24,9 +21,14 @@ SCN, anio(`2') nographs
 
 **********************************/
 ** Eje 1: Generación del ingreso **
-use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
-replace Laboral = ISR__asalariados + ISR__PF + cuotasTP
-collapse (sum) ing_Imp_Laborales=Laboral ing__Imp_Consumo=Consumo ing__FMP=Petroleo ing___Imp_al_capital=ISR__PM [fw=factor], by(`1')
+use `"`c(sysdir_site)'/SIM/2020/households`2'.dta"', clear
+tempvar Laboral Consumo Capital Petroleo
+egen `Laboral' = rsum(ISRAS ISRPF CUOTAS)
+g `Consumo' = IVA + IEPSP + IEPSNP + ISAN + IMPORT 
+g `Capital' = ISRPM + OTROSK
+g `Petroleo' = Petroleo
+collapse (sum) ing_Imp_Laborales=`Laboral' ing__Imp_Consumo=`Consumo' ing__FMP=`Petroleo' ///
+	ing___Ing_de_capital=`Capital' [fw=factor], by(`1')
 
 * to *
 tempvar to
@@ -40,15 +42,15 @@ rename `1' from
 * Otros ingresos *
 set obs `=_N+1'
 replace from = 99 in -1
-replace profile = scalar(OYE)/100*scalar(PIB) in -1
+replace profile = (scalar(CFE)+scalar(IMSS)+scalar(ISSSTE)+scalar(PEMEX))/100*scalar(PIB) in -1
 replace to = 4 in -1
-label define `1' 99 "OyE estatales", add
+label define `1' 99 "Org y Emp", add
 
-set obs `=_N+1'
-replace from = 98 in -1
-replace profile = scalar(OtrosC)/100*scalar(PIB) in -1
-replace to = 4 in -1
-label define `1' 98 "Otros ingresos", add
+*set obs `=_N+1'
+*replace from = 98 in -1
+*replace profile = scalar(OTROSK)/100*scalar(PIB) in -1
+*replace to = 4 in -1
+*label define `1' 98 "Otros ingresos", add
 
 * Gasto total *
 tabstat profile, stat(sum) f(%20.0fc) save
@@ -63,10 +65,10 @@ save `eje1'
 
 ********************
 ** Eje 4: Consumo **
-use if anio == `2' using `"`c(sysdir_personal)'/SIM/Poblaciontot.dta"', clear
+use if anio == `2' using `"`c(sysdir_site)'/SIM/Poblaciontot.dta"', clear
 local ajustepob = poblacion
 
-use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
+use "`c(sysdir_site)'/SIM/2020/households`2'.dta", clear
 tabstat factor, stat(sum) f(%20.0fc) save
 tempname pobenigh
 matrix `pobenigh' = r(StatTotal)
@@ -85,7 +87,7 @@ tabstat Pension Educacion Salud PenBienestar OtrosGas [fw=factor], stat(sum) f(%
 tempname GAST 
 matrix `GAST' = r(StatTotal)
 
-collapse (sum) gas_Educacion=Educacion gas_Salud=Salud gas__Salarios_de_gobierno=Salarios ///
+collapse (sum) gas_Educacion=Educacion gas_Salud=Salud /*gas__Salarios_de_gobierno=Salarios*/ ///
 	gas___Pensiones=Pension gas___Pension_Bienestar=PenBienestar gas____Ingreso_Basico=IngBasico ///
 	gas____Infraestructura=Infra [fw=factor], by(`1')
 
@@ -186,7 +188,7 @@ collapse (sum) profile, by(to)
 rename to from
 
 g to = 999
-label define PIB 999 "Sistema Fiscal"
+label define PIB 999 "PE 2023"
 label values to PIB
 
 tempfile eje2
@@ -202,7 +204,7 @@ collapse (sum) profile, by(from)
 rename from to
 
 g from = 999
-label define PIB 999 "Sistema Fiscal"
+label define PIB 999 "PE 2023"
 label values from PIB
 
 tempfile eje3

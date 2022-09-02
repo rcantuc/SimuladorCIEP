@@ -71,7 +71,7 @@ quietly {
 
 	** 2.3 Default `by' **
 	if "`by'" == "" {
-		local by = "divGA"
+		local by = "divPE"
 	}
 
 

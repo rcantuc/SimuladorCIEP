@@ -29,22 +29,23 @@ if "`c(os)'" == "Unix" & "`c(username)'" == "ciepmx" {                          
 ***    1. OPCIONES    ***
 ***                   ***
 *************************
-*global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
-local update "update"                                                          // UPDATE DATASETS
-
-** PARÁMETROS **
-noisily run "`c(sysdir_site)'/PARAM${pais}.do"
+*local update "update"                                                          // UPDATE DATASETS
 *global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"                 // EXPORTAR IMAGENES EN...
 *global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
+global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
 
-*scalar aniovp = 2022
+
+** PARÁMETROS PE 2023 **
+noisily run "`c(sysdir_site)'/PARAM.do"
+
+
 
 **************************
 ***                    ***
 ***    2. POBLACION    ***
 ***                    ***
 /**************************
-noisily Poblacion, `update' anioend(`=scalar(anioend)')
+noisily Poblacion, `update' aniofinal(`=scalar(anioend)')
 
 
 
@@ -53,55 +54,46 @@ noisily Poblacion, `update' anioend(`=scalar(anioend)')
 ***    3. CRECIMIENTO PIB    ***
 ***                          ***
 /********************************
-noisily PIBDeflactor, save `update' geodef(2013) geopib(2013)
+noisily PIBDeflactor, `update' geodef(2013) geopib(2013)
 noisily SCN, `update'
-noisily Inflacion, `update'
-
-
-
-******************************/
-***                         ***
-***    4. SISTEMA FISCAL    ***
-***                         ***
-*******************************
-*noisily LIF, by(divPE) rows(1) `update' 	                                //by(divGA)
-*noisily PEF, by(divGA) rows(2) min(0) `update'
-noisily SHRFSP, `update'
-
-timer off 1
-timer list 1
-noisily di _newline(2) in g _dup(20) ":" "  " in y "TOUCH-DOWN!!!  " round(`=r(t1)/r(nt1)',.1) in g " segs  " _dup(20) ":"
-exit
-
-
-**************************/
-***                     ***
-***    5. HOUSEHOLDS    ***
-***                     ***
-/***************************
-capture confirm file `"`c(sysdir_site)'/users/$pais/$id/ConsumoREC.dta"'
-if _rc != 0 | "$export" != "" {
-	noisily run "`c(sysdir_site)'/Expenditure.do" `=aniovp'
-	noisily run `"`c(sysdir_site)'/Households`=subinstr("${pais}"," ","",.)'.do"' `=aniovp'
-	noisily run `"`c(sysdir_site)'/PerfilesSim.do"' `=aniovp'
-}
+*noisily Inflacion, `update'
 
 
 
 **********************************/
 ***                             ***
-***    6. PARTE II: INGRESOS    ***
+***    4. PARTE II: INGRESOS    ***
 ***                             ***
 ***********************************
+noisily LIF, by(divPE) rows(1) `update'
 noisily TasasEfectivas
 
 
 
 *********************************/
 ***                            ***
-***    7. PARTE III: GASTOS    ***
+***    5. PARTE III: GASTOS    ***
 ***                            ***
-**********************************
+/**********************************
+noisily PEF, by(divPE) rows(2) min(0) `update'
+
+
+
+**************************/
+***                     ***
+***    6. HOUSEHOLDS    ***
+***                     ***
+***************************
+*noisily run "`c(sysdir_site)'/Expenditure.do" `=aniovp'
+*noisily run `"`c(sysdir_site)'/Households`=subinstr("${pais}"," ","",.)'.do"' `=aniovp'
+
+if "`update'" == "update" {
+	noisily run `"`c(sysdir_site)'/PerfilesSim.do"' `=aniovp'
+	foreach k in grupoedad decil escol sexo {
+		noisily run "`c(sysdir_site)'/SankeySF.do" `k' `=aniovp'
+	}
+}
+
 noisily GastoPC
 
 
@@ -109,6 +101,15 @@ noisily GastoPC
 
 
 
+
+timer off 1
+timer list 1
+noisily di _newline(2) in g _dup(20) ":" "  " in y "TOUCH-DOWN!!!  " round(`=r(t1)/r(nt1)',.1) in g " segs  " _dup(20) ":"
+exit
+
+
+
+noisily SHRFSP, `update'
 
 
 

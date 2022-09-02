@@ -32,8 +32,8 @@ quietly {
 
 	** Macros: PIB **
 	preserve
-	*PIBDeflactor, anio(`anio') nographs nooutput
-	use "`c(sysdir_site)'/users/$pais/$id/PIB.dta", clear
+	PIBDeflactor, anio(`anio') nographs nooutput
+	*use "`c(sysdir_site)'/users/$pais/$id/PIB.dta", clear
 	tempfile PIBBASE
 	save `PIBBASE'
 
