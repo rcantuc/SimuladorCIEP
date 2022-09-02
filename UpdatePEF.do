@@ -13,8 +13,9 @@
 ***                   ***
 *************************
 local archivos: dir "`c(sysdir_site)'/bases/PEFs/$pais" files "*.xlsx"			// Busca todos los archivos .xlsx en /bases/PEFs/
+*local archivos `""CuotasISSSTE.xlsx" "PPEF 2023.xlsx""'
+
 foreach k of local archivos {													// Loop para todos los archivos .csv
-*foreach k in "CP 2019" {														// <-- Dejar para hacer pruebas
 
 	* 1.1 Importar el archivo `k'.xlsx (Cuenta Pública) *
 	noisily di in g "Importando: " in y "`k'"
@@ -65,6 +66,13 @@ foreach k of local archivos {													// Loop para todos los archivos .csv
 		if "`j'" == "desc_ff" {
 			rename `j' desc_fuente
 			local j = "desc_fuente"
+		}
+		if "`j'" == "desc_entidad_federativa" {
+			rename `j' desc_entidad
+			local j = "desc_entidad"
+		}
+		if "`j'" == "entidad_federativa" {
+			capture rename `j' entidad
 		}
 	}
 
@@ -159,7 +167,41 @@ drop desc_ramo
 
 ** 2.3 Descripción Entidad Federativa **
 replace desc_entidad = trim(desc_entidad)
-replace desc_entidad = "Ciudad de México" if entidad == 9
+replace entidad = 34 if entidad == .
+replace desc_entidad = "Aguascalientes" if entidad == 1
+replace desc_entidad = "Baja California" if entidad == 2
+replace desc_entidad = "Baja California Sur" if entidad == 3
+replace desc_entidad = "Campeche" if entidad == 4
+replace desc_entidad = "Coahuila" if entidad == 5
+replace desc_entidad = "Colima" if entidad == 6
+replace desc_entidad = "Chiapas" if entidad == 7
+replace desc_entidad = "Chihuahua" if entidad == 8
+replace desc_entidad = "Durango" if entidad == 9
+replace desc_entidad = "Ciudad de México" if entidad == 10
+replace desc_entidad = "Guanajuato" if entidad == 11
+replace desc_entidad = "Guerrero" if entidad == 12
+replace desc_entidad = "Hidalgo" if entidad == 13
+replace desc_entidad = "Jalisco" if entidad == 14
+replace desc_entidad = "Estado de México" if entidad == 15
+replace desc_entidad = "Michoacán" if entidad == 16
+replace desc_entidad = "Morelos" if entidad == 17
+replace desc_entidad = "Nayarit" if entidad == 18
+replace desc_entidad = "Nuevo León" if entidad == 19
+replace desc_entidad = "Oaxaca" if entidad == 20
+replace desc_entidad = "Puebla" if entidad == 21
+replace desc_entidad = "Querétaro" if entidad == 22
+replace desc_entidad = "Quintana Roo" if entidad == 23
+replace desc_entidad = "San Luis Potosí" if entidad == 24
+replace desc_entidad = "Sinaloa" if entidad == 25
+replace desc_entidad = "Sonora" if entidad == 26
+replace desc_entidad = "Tabasco" if entidad == 27
+replace desc_entidad = "Tamaulipas" if entidad == 28
+replace desc_entidad = "Tlaxcala" if entidad == 29
+replace desc_entidad = "Veracruz" if entidad == 30
+replace desc_entidad = "Yucatán" if entidad == 31
+replace desc_entidad = "Zacatecas" if entidad == 32
+replace desc_entidad = "En El Extranjero" if entidad == 33
+replace desc_entidad = "No Distribuible Geográficamente" if entidad == 34
 labmask entidad, values(desc_entidad)
 drop desc_entidad
 
@@ -357,8 +399,8 @@ else {
 use `prePEF', clear
 
 * 4.1 Costo de la deuda *
-g desc_divGA = "Costo de la deuda" if capitulo == 9 //& substr(string(objeto),1,2) != "91" 
-*replace desc_divGA = "Amortización" if capitulo == 9 & substr(string(objeto),1,2) == "91" 
+g desc_divPE = "Costo de la deuda" if capitulo == 9 //& substr(string(objeto),1,2) != "91"
+*replace desc_divPE = "Amortización" if capitulo == 9 & substr(string(objeto),1,2) == "91"
 
 * 4.2 Pensiones *
 levelsof desc_pp, local(levelsof)
@@ -372,29 +414,29 @@ foreach k of local levelsof {
 	}
 }
 local ifpp `"`=substr("`ifpp'",1,`=strlen("`ifpp'")-3')')"'
-replace desc_divGA = "Pensiones" if desc_divGA == "" ///
+replace desc_divPE = "Pensiones" if desc_divPE == "" ///
 	& (substr(string(objeto),1,2) == "45" | substr(string(objeto),1,2) == "47")
-replace desc_divGA = "Pensión Bienestar" if desc_divGA == "" & `ifpp'
+replace desc_divPE = "Pensión Bienestar" if desc_divPE == "" & `ifpp'
 
 * 4.3 Educacion *
-replace desc_divGA = "Educación" if desc_divGA == "" ///
-	& (desc_funcion == 10 | ramo == 11)
+replace desc_divPE = "Educación" if desc_divPE == "" ///
+	& (desc_funcion == 10 | ramo == 11 | ramo == 48 | ramo == 38)
 
 * 4.4 Salud *
-replace desc_divGA = "Salud" if desc_divGA == "" ///
+replace desc_divPE = "Salud" if desc_divPE == "" ///
 	& (desc_funcion == 21 | ramo == 12)
-replace desc_divGA = "Salud" if desc_divGA == "" ///
-	& (modalidad == "E" & pp == 13 & ramo == 52)
-replace desc_divGA = "Salud" if desc_divGA == "" ///
+replace desc_divPE = "Salud" if desc_divPE == "" ///
 	& ramo == 50 & pp == 4 & funcion == 8
-replace desc_divGA = "Salud" if desc_divGA == "" ///
+replace desc_divPE = "Salud" if desc_divPE == "" ///
 	& ramo == 51 & pp == 15 & funcion == 8
+replace desc_divPE = "Salud" if desc_divPE == "" ///
+	& ramo == 52 & ai == 231
 
 * 4.5 Federalizado *
-replace desc_divGA = "Federalizado" if desc_divGA == "" & capitulo == 8
+replace desc_divPE = "Federalizado" if desc_divPE == "" & capitulo == 8
 
 * 4.6 Energía *
-replace desc_divGA = "Energía" if desc_divGA == "" & (ramo == 18 | ramo == 45 ///
+replace desc_divPE = "Energía" if desc_divPE == "" & (ramo == 18 | ramo == 45 ///
 	| ramo == 46 | ramo == 52 | ramo == 53 | (ramo == 23 & ///
 	(desc_pp == 74 | desc_pp == 75 | desc_pp == 209 | desc_pp == 346 ///
 	| desc_pp == 349 | desc_pp == 350 | desc_pp == 352 | desc_pp == 353 ///
@@ -403,18 +445,18 @@ replace desc_divGA = "Energía" if desc_divGA == "" & (ramo == 18 | ramo == 45 /
 	| desc_pp == 680 | desc_pp == 570 | desc_pp == 1580)))
 
 * 4.7 Infraestructura *
-replace desc_divGA = "Infraestructura" if desc_divGA == "" & capitulo == 6
+replace desc_divPE = "Infraestructura" if desc_divPE == "" & capitulo == 6
 
 * 4.8 Otros *
-replace desc_divGA = "Otros" if desc_divGA == ""
+replace desc_divPE = "Otros" if desc_divPE == ""
 
 * 4.9 Cuotas ISSSTE *
-replace desc_divGA = "zCuotas ISSSTE" if ramo == -1
-encode desc_divGA, generate(divGA)
-replace desc_divGA = "Cuotas ISSSTE" if ramo == -1
-replace divGA = -1 if ramo == -1
-label define divGA -1 "Cuotas ISSSTE", add
-
+replace desc_divPE = "zCuotas ISSSTE" if ramo == -1
+encode desc_divPE, generate(divPE)
+replace desc_divPE = "Cuotas ISSSTE" if ramo == -1
+replace divPE = -1 if ramo == -1
+label define divPE -1 "Cuotas ISSSTE", add
+label define divPE 10 "", modify
 
 
 
@@ -426,7 +468,10 @@ label define divGA -1 "Cuotas ISSSTE", add
 **************************
 capture g double gasto = ejercido
 if _rc != 0 {
-	g double gasto = devengado
+	capture g double gasto = devengado
+}
+if _rc != 0 {
+	g double gasto = aprobado
 }
 replace gasto = aprobado if gasto == .
 

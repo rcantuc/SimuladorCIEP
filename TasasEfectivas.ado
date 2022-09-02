@@ -25,7 +25,7 @@ quietly {
 
 	balanzacomercial, anio(`anio')
 
-	noisily SCN, anio(`anio') nographs
+	SCN, anio(`anio') nographs
 
 
 
@@ -124,13 +124,19 @@ quietly {
 		_col(88) %7.3fc in y (`ISRPM') ///
 		_col(99) %7.3fc in y (`ISRPM')/(ExNOpSocPIB+ImpNetProduccionKPIB+ImpNetProductosPIB)*100 " %"
 
+	noisily di in g "  Sociedades e ISFLSH (netos)" ///
+		_col(44) %7.3fc in y (ExNOpSocPIB+ImpNetProduccionKPIB+ImpNetProductosPIB) ///
+		_col(55) in g "Productos, derechos, aprovech..." ///
+		_col(88) %7.3fc in y (`OTROSK') ///
+		_col(99) %7.3fc in y (`OTROSK')/(ExNOpSocPIB+ImpNetProduccionKPIB+ImpNetProductosPIB)*100 " %"
+
 	// TOTAL CAPITAL PRIVADO
 	noisily di in g _dup(111) "-"
 	noisily di in g "{bf:  Ingresos (netos) al capital" ///
 		_col(44) %7.3fc in y (CapIncImpPIB) ///
 		_col(55) in g "Recaudaci{c o'}n total" ///
-		_col(88) %7.3fc in y (`ISRPM') ///
-		_col(99) %7.3fc in y (`ISRPM')/(CapIncImpPIB)*100 " %" "}"
+		_col(88) %7.3fc in y (`ISRPM'+`OTROSK') ///
+		_col(99) %7.3fc in y (`ISRPM'+`OTROSK')/(CapIncImpPIB)*100 " %" "}"
 
 
 
@@ -226,7 +232,7 @@ quietly {
 	noisily di _newline(2) in y "{bf: D. " in y "Ingresos de capital p{c u'}blico" "}"
 	noisily di _newline in g "{bf:  Cuentas Nacionales" ///
 		_col(44) %7s in g "% PIB" ///
-		_col(55) "Ingresos propios" ///
+		_col(55) "Organismos y empresas" ///
 		_col(88) %7s in g "% PIB" ///
 		_col(99) in g "Tasa efectiva" "}"
 	noisily di in g _dup(111) "-"
@@ -279,32 +285,44 @@ quietly {
 		scalar OTROSK  = (`OTROSK') 
 	}
 
-	noisily di in g "  Ingresos (netos) de capital p{c u'}blico" ///
-		_col(44) %7.3fc in y (`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE'+`OTROSK') ///
-		_col(55) in g "IMSS, ISSSTE" ///
-		_col(88) %7.3fc in y (`IMSS'+`ISSSTE') ///
-		_col(99) %7.3fc in y (`IMSS'+`ISSSTE')/(`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE'+`OTROSK')*100 " %"
+	noisily di in g "  Ingresos de capital p{c u'}blico" ///
+		_col(44) %7.3fc in y (`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE') ///
+		_col(55) in g "IMSS" ///
+		_col(88) %7.3fc in y (`IMSS') ///
+		_col(99) %7.3fc in y (`IMSS')/(`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE')*100 " %"
 
-	noisily di in g "  Ingresos (netos) de capital p{c u'}blico" ///
-		_col(44) %7.3fc in y (`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE'+`OTROSK') ///
-		_col(55) in g "FMP, CFE, Pemex (energ{c i'}a)" ///
-		_col(88) %7.3fc in y (`FMP'+`PEMEX'+`CFE') ///
-		_col(99) %7.3fc in y (`FMP'+`PEMEX'+`CFE')/(`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE'+`OTROSK')*100 " %"
+	noisily di in g "  Ingresos de capital p{c u'}blico" ///
+		_col(44) %7.3fc in y (`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE') ///
+		_col(55) in g "ISSSTE" ///
+		_col(88) %7.3fc in y (`ISSSTE') ///
+		_col(99) %7.3fc in y (`ISSSTE')/(`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE')*100 " %"
 
-	noisily di in g "  Ingresos (netos) de capital p{c u'}blico" ///
-		_col(44) %7.3fc in y (`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE'+`OTROSK') ///
-		_col(55) in g "Productos, derechos, aprovech..." ///
-		_col(88) %7.3fc in y (`OTROSK') ///
-		_col(99) %7.3fc in y (`OTROSK')/(`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE'+`OTROSK')*100 " %"
+	noisily di in g "  Ingresos de capital p{c u'}blico" ///
+		_col(44) %7.3fc in y (`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE') ///
+		_col(55) in g "FMP" ///
+		_col(88) %7.3fc in y (`FMP') ///
+		_col(99) %7.3fc in y (`FMP')/(`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE')*100 " %"
+
+	noisily di in g "  Ingresos de capital p{c u'}blico" ///
+		_col(44) %7.3fc in y (`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE') ///
+		_col(55) in g "Pemex" ///
+		_col(88) %7.3fc in y (`PEMEX') ///
+		_col(99) %7.3fc in y (`PEMEX')/(`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE')*100 " %"
+
+	noisily di in g "  Ingresos de capital p{c u'}blico" ///
+		_col(44) %7.3fc in y (`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE') ///
+		_col(55) in g "CFE" ///
+		_col(88) %7.3fc in y (`CFE') ///
+		_col(99) %7.3fc in y (`CFE')/(`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE')*100 " %"
 
 	// TOTAL INGRESOS DE CAPITAL PUBLICOS
 	noisily di in g _dup(111) "-"
 	noisily di in g "{bf:  Ingresos (netos) de capital" ///
 		_col(44) %7.3fc in y (CapIncImpPIB) ///
-		_col(55) in g "Recaudaci{c o'}n total" ///
-		_col(88) %7.3fc in y (`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE'+`OTROSK') ///
-		_col(99) %7.3fc in y (`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE'+`OTROSK')/(CapIncImpPIB)*100 " %" "}"
-	scalar ingcapitalPIB = (`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE'+`OTROSK')
+		_col(55) in g "Ingresos propios totales" ///
+		_col(88) %7.3fc in y (`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE') ///
+		_col(99) %7.3fc in y (`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE')/(CapIncImpPIB)*100 " %" "}"
+	scalar ingcapitalPIB = (`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE')
 
 
 
