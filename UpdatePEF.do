@@ -13,7 +13,7 @@
 ***                   ***
 *************************
 local archivos: dir "`c(sysdir_site)'/bases/PEFs/$pais" files "*.xlsx"			// Busca todos los archivos .xlsx en /bases/PEFs/
-*local archivos `""CuotasISSSTE.xlsx" "PPEF 2023.xlsx""'
+*local archivos `""CuotasISSSTE.xlsx" "CP 2020.xlsx""'
 
 foreach k of local archivos {													// Loop para todos los archivos .csv
 
@@ -176,8 +176,8 @@ replace desc_entidad = "Coahuila" if entidad == 5
 replace desc_entidad = "Colima" if entidad == 6
 replace desc_entidad = "Chiapas" if entidad == 7
 replace desc_entidad = "Chihuahua" if entidad == 8
-replace desc_entidad = "Durango" if entidad == 9
-replace desc_entidad = "Ciudad de México" if entidad == 10
+replace desc_entidad = "Ciudad de México" if entidad == 9
+replace desc_entidad = "Durango" if entidad == 10
 replace desc_entidad = "Guanajuato" if entidad == 11
 replace desc_entidad = "Guerrero" if entidad == 12
 replace desc_entidad = "Hidalgo" if entidad == 13
@@ -241,7 +241,7 @@ label values ramo_tipo tipos_ramo
 
 ** 2.6 Encode y agregar Cuotas ISSSTE **
 foreach k of varlist desc_ur desc_funcion desc_subfuncion desc_ai desc_modalidad desc_pp ///
-	desc_objeto desc_tipogasto desc_partida_generica {
+	desc_objeto desc_tipogasto /*desc_partida_generica*/ {
 
 	rename `k' `k'2
 	encode `k'2, g(`k')
@@ -415,8 +415,8 @@ foreach k of local levelsof {
 }
 local ifpp `"`=substr("`ifpp'",1,`=strlen("`ifpp'")-3')')"'
 replace desc_divPE = "Pensiones" if desc_divPE == "" ///
-	& (substr(string(objeto),1,2) == "45" | substr(string(objeto),1,2) == "47")
-replace desc_divPE = "Pensión Bienestar" if desc_divPE == "" & `ifpp'
+	& (substr(string(objeto),1,2) == "45" | substr(string(objeto),1,2) == "47")	// Pensiones contributivas
+replace desc_divPE = "Pensiones" if desc_divPE == "" & `ifpp'				// Pensión Bienestar
 
 * 4.3 Educacion *
 replace desc_divPE = "Educación" if desc_divPE == "" ///
@@ -433,19 +433,30 @@ replace desc_divPE = "Salud" if desc_divPE == "" ///
 	& ramo == 52 & ai == 231
 
 * 4.5 Federalizado *
-replace desc_divPE = "Federalizado" if desc_divPE == "" & capitulo == 8
+replace desc_divPE = "Federalizado" if desc_divPE == "" ///
+	& (ramo == 28 | ramo == 33 | ramo == 25) 				// Part + Aport
+replace desc_divPE = "Federalizado" if desc_divPE == "" ///
+	& partida_generica == 438													// Convenios y Subsidios
+replace desc_divPE = "Federalizado" if desc_divPE == "" ///
+	& (objeto == 43801 | (objeto == 46101 & ramo == 23 & pp == 80))		// Convenios y Subsidios
+replace desc_divPE = "Federalizado" if desc_divPE == "" ///
+	& (partida_generica == 461 & ramo == 23 & pp == 80) 			// FEIEF
+replace desc_divPE = "Federalizado" if desc_divPE == "" ///
+	& (ramo == 23 & pp == 4) 						// FEIEF 2
+replace desc_divPE = "Federalizado" if desc_divPE == "" ///
+	& (ramo == 23 & pp == 141) 						// FIES
+replace desc_divPE = "Federalizado" if desc_divPE == "" ///
+	& (pp == 13 & ramo == 12 & modalidad == "U") 				// INSABI
 
 * 4.6 Energía *
-replace desc_divPE = "Energía" if desc_divPE == "" & (ramo == 18 | ramo == 45 ///
-	| ramo == 46 | ramo == 52 | ramo == 53 | (ramo == 23 & ///
-	(desc_pp == 74 | desc_pp == 75 | desc_pp == 209 | desc_pp == 346 ///
-	| desc_pp == 349 | desc_pp == 350 | desc_pp == 352 | desc_pp == 353 ///
-	| desc_pp == 354 | desc_pp == 476 | desc_pp == 477 | desc_pp == 484 ///
-	| desc_pp == 485 | desc_pp == 486 | desc_pp == 487 | desc_pp == 566 ///
-	| desc_pp == 680 | desc_pp == 570 | desc_pp == 1580)))
+replace desc_divPE = "Energía" if desc_divPE == "" & ///
+	(ramo == 18 | ramo == 45 | ramo == 46 | ramo == 52 | ramo == 53)
+replace desc_divPE = "Energía" if desc_divPE == "" & ///
+	(ramo == 23 & desc_funcion == 7)
 
 * 4.7 Infraestructura *
-replace desc_divPE = "Infraestructura" if desc_divPE == "" & capitulo == 6
+replace desc_divPE = "Inversión" if desc_divPE == "" ///
+	& (desc_tipogasto == 4 | desc_tipogasto == 5 | desc_tipogasto == 6 | desc_tipogasto == 8)
 
 * 4.8 Otros *
 replace desc_divPE = "Otros" if desc_divPE == ""
@@ -456,7 +467,7 @@ encode desc_divPE, generate(divPE)
 replace desc_divPE = "Cuotas ISSSTE" if ramo == -1
 replace divPE = -1 if ramo == -1
 label define divPE -1 "Cuotas ISSSTE", add
-label define divPE 10 "", modify
+label define divPE 9 "", modify
 
 
 

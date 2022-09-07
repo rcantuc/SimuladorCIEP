@@ -5,7 +5,6 @@
 ****                                    ****
 ********************************************
 if "`1'" == "" {
-	clear all
 	local 1 = 2023
 }
 
@@ -25,12 +24,13 @@ local Cuotas_ISSSTE = r(Cuotas_ISSSTE)
 local SSFederacion = r(Aportaciones_a_Seguridad_Social) + `Cuotas_ISSSTE'
 
 * Educación *
-PEF if divPE == 3, anio(`1') by(desc_subfuncion) min(0) nographs
-local Basica = r(Educaci_c_o__n_B_c_a__sica)
-local Media = r(Educaci_c_o__n_Media_Superior)
-local Superior = r(Educaci_c_o__n_Superior)
-local Adultos = r(Educaci_c_o__n_para_Adultos)
+PEF if divPE == 2, anio(`1') by(desc_subfuncion) min(0) nographs
+local Basica = r(Educación_Básica)
+local Media = r(Educación_Media_Superior)
+local Superior = r(Educación_Superior)
+local Adultos = r(Educación_para_Adultos)
 local Posgrado = r(Posgrado)
+local Otros = r(Gasto_neto) - `Basica' - `Media' - `Superior' - `Adultos' - `Posgrado'
 
 * Totales *
 PEF, anio(`1') by(divPE) min(0) nographs
@@ -74,7 +74,7 @@ local Tlaxc = r(Tlaxcala)
 local Verac = r(Veracruz)
 local Yucat = r(Yucatán)
 local Zacat = r(Zacatecas)
-local InfraT = r(StatTotal)
+local InfraT = r(Gasto_neto)
 
 
 
@@ -246,6 +246,7 @@ replace educacion = `Media'/MedAlum[1,1] if asis_esc == "1" & tipoesc == "1" & (
 replace educacion = `Superior'/SupAlum[1,1] if asis_esc == "1" & tipoesc == "1" & (nivel >= "11" & nivel <= "12")
 replace educacion = `Posgrado'/PosAlum[1,1] if asis_esc == "1" & tipoesc == "1" & nivel == "13"
 replace educacion = `Adultos'/AduAlum[1,1] if asis_esc == "1" & tipoesc == "1" & (nivel >= "01" & nivel <= "07") & edad > 18
+replace educacion = educacion + `Otros'/(BasAlum[1,1]+MedAlum[1,1]+SupAlum[1,1]+PosAlum[1,1]+AduAlum[1,1])
 replace educacion = 0 if educacion == .
 
 Distribucion Educacion, relativo(educacion) macro(`Educacion')
@@ -393,7 +394,8 @@ foreach k in Aguas BajaN BajaS Campe Coahu Colim Chiap Chihu Ciuda Duran Guana /
 	Distribucion Infra_`k', relativo(`factor_`k'') macro(``k'')
 	local ++j
 }
-egen Infra = rsum(Infra_*)
+egen infra_entidad = rsum(Infra_*)
+Distribucion Infra, relativo(infra_entidad) macro(`InfraT')
 label var Infra "infraestructura"
 noisily Simulador Infra [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
 

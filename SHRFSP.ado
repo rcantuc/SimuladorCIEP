@@ -45,7 +45,8 @@ quietly {
 	}
 
 	** 2.2 PIB + Deflactor **
-	use "`c(sysdir_site)'/users/$pais/$id/PIB.dta", clear
+	*use "`c(sysdir_site)'/users/$pais/$id/PIB.dta", clear
+	PIBDeflactor, nog
 	local currency = currency[1]
 	tempfile PIB
 	save `PIB'

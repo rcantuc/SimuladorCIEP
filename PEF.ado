@@ -226,14 +226,28 @@ quietly {
 			_col(66) in y %7.3fc  `mattot'[1,2]-`Cuotas_ISSSTE'[1,2]-`Aportaciones_Federacion'[1,2] ///
 			_col(77) in y %7.1fc (`mattot'[1,1]-`Cuotas_ISSSTE'[1,1]-`Aportaciones_Federacion'[1,1])/`mattot'[1,1]*100 "}"
 		
-		return scalar Gasto_neto = `mattot'[1,1]-`Cuotas_ISSSTE'[1,1]-`Aportaciones_Federacion'[1,1]
 	}
 
 	** 4.2. Division Resumido **
 	noisily di _newline in g "{bf: B. Gasto neto (Resumido) " ///
 		_col(44) in g %20s "`currency'" ///
 		_col(66) %7s "% PIB" ///
-		_col(77) %7s "% Total" "}"
+		_col(77) %7s "Dif% Real" "}"
+
+	tempvar gasreal
+	g `gasreal' = gastoneto/deflator
+	capture tabstat `gasreal' if anio == `anio'-1 & `by' != -1 & transf_gf == 0, by(`resumido') stat(sum) f(%20.1fc) save
+	if _rc == 0 {
+		tempname pregastot
+		matrix `pregastot' = r(StatTotal)
+		local k = 1
+		while `"`=r(name`k')'"' != "." {
+			tempname pre`k'
+			matrix `pre`k'' = r(Stat`k')
+			local ++k
+		}
+	}
+	
 
 	tabstat gastoneto gastonetoPIB gastoCUOTAS if anio == `anio' & `by' != -1 & transf_gf == 0, by(`resumido') stat(sum) f(%20.1fc) save
 	tempname mattot
@@ -243,6 +257,18 @@ quietly {
 	while `"`=r(name`k')'"' != "." {
 		tempname mat`k'
 		matrix `mat`k'' = r(Stat`k')
+		
+		capture confirm matrix `pre`k''
+		if _rc != 0 {
+			tempname pre`k'
+			matrix `pre`k'' = J(1,1,0)
+		}
+		
+		capture confirm matrix `pregastot'
+		if _rc != 0 {
+			tempname pregastot
+			matrix `pregastot' = J(1,1,0)
+		}
 
 		* Display text *
 		if substr(`"`=r(name`k')'"',1,31) == "'" {
@@ -261,7 +287,7 @@ quietly {
 		noisily di in g `"  (+) `disptext'"' ///
 			_col(44) in y %20.0fc `mat`k''[1,1] ///
 			_col(66) in y %7.3fc `mat`k''[1,2] ///
-			_col(77) in y %7.1fc `mat`k''[1,1]/`mattot'[1,1]*100
+			_col(77) in y %7.1fc (`mat`k''[1,1]/`pre`k''[1,1]-1)*100
 		local ++k
 	}
 	return local divResumido `"`divResumido'"'
@@ -270,7 +296,9 @@ quietly {
 	noisily di in g "{bf:  (=) Gasto neto" ///
 		_col(44) in y %20.0fc `mattot'[1,1] ///
 		_col(66) in y %7.3fc `mattot'[1,2] ///
-		_col(77) in y %7.1fc `mattot'[1,1]/`mattot'[1,1]*100 "}"
+		_col(77) in y %7.1fc (`mattot'[1,1]/`pregastot'[1,1]-1)*100 "}"
+	
+	return scalar Gasto_neto = `mattot'[1,1]
 
 
 	tempname Resumido_total
@@ -281,8 +309,8 @@ quietly {
 	noisily di _newline in g "{bf: C. Cambios:" in y " `=`anio'-1' - `anio'" in g ///
 		_col(44) %7s "`=`anio'-1'" ///
 		_col(55) %7s "`anio'" ///
-		_col(66) %7s "D. % PIB" ///
-		_col(77) %7s "D. %" "}"
+		_col(66) %7s "Dif% PIB" ///
+		_col(77) %7s "Dif% Real" "}"
 
 	preserve
 	collapse (sum) gastoneto* if `resumido' != -1 & transf_gf == 0, by(anio `resumido')
@@ -322,7 +350,7 @@ quietly {
 					_col(44) in y %7.3fc `mat5`k''[1,2] ///
 					_col(55) in y %7.3fc `mat`k''[1,2] ///
 					_col(66) in y %7.3fc `mat`k''[1,2]-`mat5`k''[1,2] ///
-					_col(77) in y %7.3fc (`mat`k''[1,2]-`mat5`k''[1,2])/`mat5`k''[1,2]*100
+					_col(77) in y %7.1fc (`mat`k''[1,2]-`mat5`k''[1,2])/`mat5`k''[1,2]*100
 			*}
 			local ++k
 		}
