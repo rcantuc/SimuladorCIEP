@@ -29,7 +29,7 @@ if "`c(os)'" == "Unix" & "`c(username)'" == "ciepmx" {                          
 ***    1. OPCIONES    ***
 ***                   ***
 *************************
-local update "update"                                                          // UPDATE DATASETS
+*local update "update"                                                          // UPDATE DATASETS
 *global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"                 // EXPORTAR IMAGENES EN...
 *global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
 *global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
