@@ -89,6 +89,8 @@ quietly {
 	merge m:1 (anio) using `PIB', nogen keepus(pibY indiceY deflator lambda var_pibY) ///
 		update replace keep(matched) sorted
 	capture sort anio mes
+	
+	capture keep `if'
 
 	*keep if anio >= 2002
 	local aniofirst = anio[1]
@@ -130,7 +132,7 @@ quietly {
 	label values `resumido' `label'
 
 	egen `recaudacionPIB' = max(recaudacionPIB) /*if anio >= 2010*/, by(`by')
-	replace `resumido' = 999 if abs(`recaudacionPIB') < `minimum' & divCIEP != 15 // | recaudacionPIB == . | recaudacionPIB == 0
+	replace `resumido' = 999 if abs(`recaudacionPIB') < `minimum' //& divCIEP != 15 | recaudacionPIB == . | recaudacionPIB == 0
 	label define `label' 999 `"< `=string(`minimum',"%5.1fc")'% PIB"', add modify
 
 	capture replace nombre = subinstr(nombre,"Impuesto especial sobre producci{c o'}n y servicios de ","",.)
@@ -194,7 +196,22 @@ quietly {
 	noisily di _newline in g "{bf: B. Ingresos presupuestarios (divResumido) " ///
 		_col(44) in g %20s "`currency'" ///
 		_col(66) %7s "% PIB" ///
-		_col(77) %7s "% Total" "}"
+		_col(77) %7s "% Real" "}"
+
+	
+	tempvar recreal
+	g `recreal' = recaudacion/deflator
+	capture tabstat `recreal' if anio == `anio'-1 & divLIF != 10, by(`resumido') stat(sum) f(%20.1fc) save
+	if _rc == 0 {
+		tempname sindeudatotpre
+		matrix `sindeudatotpre' = r(StatTotal)
+		local k = 1
+		while "`=r(name`k')'" != "." {
+			tempname pre`k'
+			matrix `pre`k'' = r(Stat`k')
+			local ++k
+		}
+	}
 
 	tabstat recaudacion recaudacionPIB if anio == `anio' & divLIF != 10, by(`resumido') stat(sum) f(%20.1fc) save
 	tempname sindeudatot
@@ -221,7 +238,7 @@ quietly {
 		noisily di in g "  (+) `=r(name`k')'" ///
 			_col(44) in y %20.0fc `mat`k''[1,1] ///
 			_col(66) in y %7.3fc `mat`k''[1,2] ///
-			_col(77) in y %7.1fc `mat`k''[1,1]/`mattot'[1,1]*100
+			_col(77) in y %7.1fc (`mat`k''[1,1]/`pre`k''[1,1]-1)*100
 		local ++k
 	}
 	return local divResumido `"`divResumido'"'
@@ -230,7 +247,7 @@ quietly {
 	noisily di in g "{bf:  (=) Ingresos (sin deuda)" ///
 		_col(44) in y %20.0fc `sindeudatot'[1,1] ///
 		_col(66) in y %7.3fc `sindeudatot'[1,2] ///
-		_col(77) in y %7.1fc `sindeudatot'[1,1]/`mattot'[1,1]*100 "}"
+		_col(77) in y %7.1fc (`sindeudatot'[1,1]/`sindeudatotpre'[1,1]-1)*100 "}"
 	
 	return scalar Ingresos_sin_deuda = `sindeudatot'[1,1]
 

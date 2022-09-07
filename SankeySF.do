@@ -3,7 +3,7 @@
 **************
 timer on 9
 if "`1'" == "" {
-	local 1 = "decil"
+	local 1 = "sexo"
 	local 2 = 2023
 }
 
@@ -27,8 +27,8 @@ egen `Laboral' = rsum(ISRAS ISRPF CUOTAS)
 g `Consumo' = IVA + IEPSP + IEPSNP + ISAN + IMPORT 
 g `Capital' = ISRPM + OTROSK
 g `Petroleo' = Petroleo
-collapse (sum) ing_Imp_Laborales=`Laboral' ing__Imp_Consumo=`Consumo' ing__FMP=`Petroleo' ///
-	ing___Ing_de_capital=`Capital' [fw=factor], by(`1')
+collapse (sum) ing_Imp_Laborales=`Laboral' ing__Imp_Consumo=`Consumo' ///
+	ing___Ing_de_capital=`Capital' ing____FMP=`Petroleo' [fw=factor], by(`1')
 
 * to *
 tempvar to
@@ -43,7 +43,7 @@ rename `1' from
 set obs `=_N+1'
 replace from = 99 in -1
 replace profile = (scalar(CFE)+scalar(IMSS)+scalar(ISSSTE)+scalar(PEMEX))/100*scalar(PIB) in -1
-replace to = 4 in -1
+replace to = 3 in -1
 label define `1' 99 "Org y Emp", add
 
 *set obs `=_N+1'
@@ -83,12 +83,13 @@ matrix `pobtot' = r(StatTotal)*`ajustepob'/`pobenigh'[1,1]
 
 replace OtrosGas = OtrosGas - Infra
 
-tabstat Pension Educacion Salud PenBienestar OtrosGas [fw=factor], stat(sum) f(%20.0fc) save
+replace Pension = Pension + PenBienestar
+tabstat Pension Educacion Salud OtrosGas [fw=factor], stat(sum) f(%20.0fc) save
 tempname GAST 
 matrix `GAST' = r(StatTotal)
 
-collapse (sum) gas_Educacion=Educacion gas_Salud=Salud /*gas__Salarios_de_gobierno=Salarios*/ ///
-	gas___Pensiones=Pension gas___Pension_Bienestar=PenBienestar gas____Ingreso_Basico=IngBasico ///
+collapse (sum) gas_Educación=Educacion gas_Salud=Salud /*gas__Salarios_de_gobierno=Salarios*/ ///
+	gas___Pensiones=Pension /*gas____Ingreso_Basico=IngBasico*/ ///
 	gas____Infraestructura=Infra [fw=factor], by(`1')
 
 levelsof `1', local(`1')
@@ -107,12 +108,12 @@ encode `from', g(from)
 rename `1' to
 
 * Costo de la deuda *
-set obs `=_N+3'
+set obs `=_N+4'
 
 replace from = 97 in -1
 label define from 97 "Costo de la deuda", add
 
-replace profile = scalar(costodeu)*`pobtot'[1,1] in -1
+replace profile = scalar(gascosto)*`pobtot'[1,1] in -1
 
 replace to = 11 in -1
 label define `1' 11 "Sistema financiero", add
@@ -121,19 +122,29 @@ label define `1' 11 "Sistema financiero", add
 replace from = 96 in -2
 label define from 96 "Otras Part y Aport", add
 
-replace profile = scalar(partapor)*`pobtot'[1,1] in -2
+replace profile = scalar(gasfeder)*`pobtot'[1,1] in -2
 
 replace to = 12 in -2
 label define `1' 12 "Estados y municipios", add
 
-* Aportaciones y participaciones *
+* Otros *
 replace from = 95 in -3
 label define from 95 "Otros gastos", add
 
-replace profile = (scalar(matesumi)+scalar(gastgene)+scalar(substran)+scalar(bienmueb)+scalar(invefina))*`pobtot'[1,1] in -3
+replace profile = scalar(gasotros)*`pobtot'[1,1] in -3
 
 replace to = 13 in -3
 label define `1' 13 "No distribuibles", add
+
+* Energía *
+replace from = 94 in -4
+label define from 94 "Energía", add
+
+replace profile = (scalar(gaspemex)+scalar(gascfe)+scalar(gassener))*`pobtot'[1,1] in -4
+
+replace to = 14 in -4
+label define `1' 14 "CFE Pemex SENER", add
+
 
 * Gasto total *
 tabstat profile, stat(sum) f(%20.0fc) save

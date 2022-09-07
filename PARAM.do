@@ -71,7 +71,6 @@ global inf2027 = 3.0                                           // CGPE 2022: 3.0
 
 
 
-
 ************************/
 ***                   ***
 ***    5. INGRESOS    ***
@@ -90,56 +89,48 @@ scalar IEPSP   = 0.600 //    IEPS (petrolero):
 scalar IEPSNP  = 1.020 //    IEPS (no petrolero): 
 scalar IMPORT  = 0.234 //    Importaciones: 
 
-scalar IMSS    = 0.101 //    Organismos y empresas (IMSS + ISSSTE + Pemex + CFE): 
-scalar ISSSTE  = 0.164 //    Organismos y empresas (IMSS + ISSSTE + Pemex + CFE): 
-scalar FMP     = 1.190 //    Fondo Mexicano del Petr{c o'}leo: 
-scalar PEMEX   = 2.297 //    Organismos y empresas (IMSS + ISSSTE + Pemex + CFE): 
-scalar CFE     = 1.304 //    Organismos y empresas (IMSS + ISSSTE + Pemex + CFE): 
+scalar IMSS    = 0.101 //    Organismos y empresas (IMSS)
+scalar ISSSTE  = 0.164 //    Organismos y empresas (ISSSTE)
+scalar FMP     = 1.190 //    Fondo Mexicano del Petr{c o'}leo
+scalar PEMEX   = 2.297 //    Organismos y empresas (Pemex)
+scalar CFE     = 1.304 //    Organismos y empresas (CFE)
 
 
 
+**********************/
+***                 ***
+***    6. GASTOS    ***
+***                 ***
+***********************
+scalar basica      =   23925 //    Educaci{c o'}n b{c a'}sica
+scalar medsup      =   23465 //    Educaci{c o'}n media superior
+scalar superi      =   35716 //    Educaci{c o'}n superior
+scalar posgra      =   56609 //    Posgrado
+scalar eduadu      =   33747 //    Educaci{c o'}n para adultos
+scalar otrose      =    3065 //    Otros gastos educativos
 
+scalar ssa         =     680 //    SSalud
+scalar imssbien    =    3574 //    IMSS-Bienestar
+scalar imss        =    6882 //    IMSS (salud)
+scalar issste      =    8994 //    ISSSTE (salud)
+scalar pemex       =   23433 //    Pemex (salud) + ISSFAM (salud)*/
 
+scalar bienestar   =   20984 //    Pensi{c o'}n Bienestar
+scalar penims      =  143573 //    Pensi{c o'}n IMSS
+scalar peniss      =  224115 //    Pensi{c o'}n ISSSTE
+scalar penotr      = 1421385 //    Pensi{c o'}n Pemex, CFE, Pensi{c o'}n LFC, ISSFAM, Otros
 
-exit
-*********************************/
-***                            ***
-***    5. PARTE III: GASTOS    ***
-***                            ***
-**********************************
-scalar basica      =   24402 //    Educaci{c o'}n b{c a'}sica
-scalar medsup      =   24039 //    Educaci{c o'}n media superior
-scalar superi      =   36559 //    Educaci{c o'}n superior
-scalar posgra      =   57996 //    Posgrado
-scalar eduadu      =  119929 //    Educaci{c o'}n para adultos
-scalar otrose      =    1752 //    Otros gastos educativos
-
-scalar ssa         =     928 //    SSalud
-scalar prospe      =    2013 //    IMSS-Prospera
-scalar segpop      =    3131 //    Seguro Popular
-scalar imss        =    4681 //    IMSS (salud)
-scalar issste      =    4697 //    ISSSTE (salud)
-scalar pemex       =   41686 //    Pemex (salud) + ISSFAM (salud)
-
-scalar bienestar   =   24810 //    Pensi{c o'}n Bienestar
-scalar penims      =  134743 //    Pensi{c o'}n IMSS
-scalar peniss      =  225979 //    Pensi{c o'}n ISSSTE
-scalar penotr      = 1470558 //    Pensi{c o'}n Pemex, CFE, Pensi{c o'}n LFC, ISSFAM, Otros
-
-scalar servpers    =    3638 //    Servicios personales
-scalar matesumi    =    1849 //    Materiales y suministros
-scalar gastgene    =    2044 //    Gastos generales
-scalar substran    =    1865 //    Subsidios y transferencias
-scalar bienmueb    =     288 //    Bienes muebles e inmuebles
-scalar obrapubl    =    4065 //    Obras p{c u'}blicas
-scalar invefina    =    1208 //    Inversi{c o'}n financiera
-scalar partapor    =   10018 //    Participaciones y aportaciones
-scalar costodeu    =    6412 //    Costo de la deuda
+scalar gaspemex    =    4115 //    Servicios personales
+scalar gascfe      =    2998 //    Materiales y suministros
+scalar gassener    =    1054 //    Gastos generales
+scalar gasfeder    =    9781 //    Subsidios y transferencias
+scalar gascosto    =    6260 //    Bienes muebles e inmuebles
+scalar gasinfra    =     884 //    Obras p{c u'}blicas
+scalar gasotros    =    5196 //    Inversi{c o'}n financiera
 
 scalar IngBas      =       0 //    Ingreso b{c a'}sico
 scalar ingbasico18 =       1 //    1: Incluye menores de 18 anios, 0: no
 scalar ingbasico65 =       1 //    1: Incluye mayores de 65 anios, 0: no
-
 
 *global tasaEfectiva = 5.7425                                   // Tasa de inter{c e'}s EFECTIVA
 *global tipoDeCambio = 20.200                                   // Tipo de cambio

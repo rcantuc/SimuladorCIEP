@@ -1142,7 +1142,7 @@ replace formal = `formal_max'
 g formal_dummy = formal != 0
 
 * Labels *
-label define formalidad 1 "IMSS" 2 "ISSSTE" 3 "Pemex" 4 "Otro" 5 "ISSSTE estatal" 6 "Independiente" 0 "Sin acceso"
+label define formalidad 1 "IMSS" 2 "ISSSTE" 3 "Pemex" 4 "IMSS-Bienestar" 5 "ISSSTE estatal" 6 "Independiente" 0 "Sin acceso"
 label values formal formalidad
 label values formal2 formalidad
 
