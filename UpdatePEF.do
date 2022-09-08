@@ -11,9 +11,9 @@
 ***                   ***
 *** 1. BASES DE DATOS ***
 ***                   ***
-*************************
+/*************************
 local archivos: dir "`c(sysdir_site)'/bases/PEFs/$pais" files "*.xlsx"			// Busca todos los archivos .xlsx en /bases/PEFs/
-*local archivos `""CuotasISSSTE.xlsx" "CP 2020.xlsx""'
+*local archivos `""CuotasISSSTE.xlsx" "CP 2021.xlsx""'
 
 foreach k of local archivos {													// Loop para todos los archivos .csv
 
@@ -131,7 +131,7 @@ compress																		// <-- Para hacer "más eficiente" la base (menor tama
 ***                             ***
 *** 2. HOMOLOGACION DE TÉRMINOS ***
 ***                             ***
-***********************************
+/***********************************
 
 ** 2.1 Finalidad **
 replace desc_finalidad = "Otras" if finalidad == 4
@@ -345,9 +345,12 @@ replace serie_ramo = "XOA0146" if ramo == 51
 replace serie_ramo = "XKC0131" if ramo == 52
 replace serie_ramo = "XOA0141" if ramo == 53
 
-tempfile prePEF
-save `prePEF'
-
+if `c(version)' > 13.1 {
+	saveold "`c(sysdir_site)'/SIM/$pais/prePEF.dta", replace version(13)
+}
+else {
+	save "`c(sysdir_site)'/SIM/$pais/prePEF.dta", replace
+}
 
 * 3.3 Datos Abiertos: PEFEstOpor.dta *
 levelsof serie_desc_funcion, local(serie)
@@ -396,7 +399,7 @@ else {
 *** 4. Modulos SIMULADOR FISCAL CIEP ***
 ***                                  ***
 ****************************************
-use `prePEF', clear
+use "`c(sysdir_site)'/SIM/$pais/prePEF.dta", clear
 
 * 4.1 Costo de la deuda *
 g desc_divPE = "Costo de la deuda" if capitulo == 9 //& substr(string(objeto),1,2) != "91"
@@ -432,22 +435,6 @@ replace desc_divPE = "Salud" if desc_divPE == "" ///
 replace desc_divPE = "Salud" if desc_divPE == "" ///
 	& ramo == 52 & ai == 231
 
-* 4.5 Federalizado *
-replace desc_divPE = "Federalizado" if desc_divPE == "" ///
-	& (ramo == 28 | ramo == 33 | ramo == 25) 				// Part + Aport
-replace desc_divPE = "Federalizado" if desc_divPE == "" ///
-	& partida_generica == 438													// Convenios y Subsidios
-replace desc_divPE = "Federalizado" if desc_divPE == "" ///
-	& (objeto == 43801 | (objeto == 46101 & ramo == 23 & pp == 80))		// Convenios y Subsidios
-replace desc_divPE = "Federalizado" if desc_divPE == "" ///
-	& (partida_generica == 461 & ramo == 23 & pp == 80) 			// FEIEF
-replace desc_divPE = "Federalizado" if desc_divPE == "" ///
-	& (ramo == 23 & pp == 4) 						// FEIEF 2
-replace desc_divPE = "Federalizado" if desc_divPE == "" ///
-	& (ramo == 23 & pp == 141) 						// FIES
-replace desc_divPE = "Federalizado" if desc_divPE == "" ///
-	& (pp == 13 & ramo == 12 & modalidad == "U") 				// INSABI
-
 * 4.6 Energía *
 replace desc_divPE = "Energía" if desc_divPE == "" & ///
 	(ramo == 18 | ramo == 45 | ramo == 46 | ramo == 52 | ramo == 53)
@@ -457,9 +444,58 @@ replace desc_divPE = "Energía" if desc_divPE == "" & ///
 * 4.7 Infraestructura *
 replace desc_divPE = "Inversión" if desc_divPE == "" ///
 	& (desc_tipogasto == 4 | desc_tipogasto == 5 | desc_tipogasto == 6 | desc_tipogasto == 8)
+	
+* 4.5 Federalizado *
+g desc_divCIEP = desc_divPE
+
+replace desc_divPE = "Otras Part y Apor" if desc_divPE == "" ///
+	& (ramo == 28 | ramo == 33 | ramo == 25)                                    // Part + Aport
+replace desc_divCIEP = "Federalizado" if ///
+	(ramo == 28 | ramo == 33 | ramo == 25)                                     // Part + Aport
+
+replace desc_divPE = "Otras Part y Apor" if desc_divPE == "" ///
+	& partida_generica == 438                                                   // Convenios descentralizados
+replace desc_divPE = "Otras Part y Apor" if desc_divPE == "" ///
+	& (objeto == 43801)                                                         // Convenios descentralizados
+replace desc_divCIEP = "Federalizado" if ///
+	partida_generica == 438                                                     // Convenios descentralizados
+replace desc_divCIEP = "Federalizado" if ///
+	(objeto == 43801)                                                           // Convenios descentralizados
+
+replace desc_divPE = "Otras Part y Apor" if desc_divPE == "" ///
+	& (objeto == 85101)                                                         // Convenios de reasignación
+replace desc_divCIEP = "Federalizado" if ///
+	(objeto == 85101)                                                           // Convenios de reasignación
+
+replace desc_divPE = "Otras Part y Apor" if desc_divPE == "" ///
+	& (objeto == 46101 & ramo == 23 & pp == 80)                                 // FEIEF
+replace desc_divPE = "Otras Part y Apor" if desc_divPE == "" ///
+	& (partida_generica == 461 & ramo == 23 & pp == 80)                         // FEIEF
+replace desc_divPE = "Otras Part y Apor" if desc_divPE == "" ///
+	& (ramo == 23 & pp == 4 & modalidad == "Y")                                 // FEIEF
+replace desc_divPE = "Otras Part y Apor" if desc_divPE == "" ///
+	& (ramo == 23 & pp == 141)                                                  // FIES
+replace desc_divCIEP = "Federalizado" if ///
+	(objeto == 46101 & ramo == 23 & pp == 80)                                 // FEIEF
+replace desc_divCIEP = "Federalizado" if ///
+	(partida_generica == 461 & ramo == 23 & pp == 80)                         // FEIEF
+replace desc_divCIEP = "Federalizado" if ///
+	(ramo == 23 & pp == 4 & modalidad == "Y")                                 // FEIEF
+replace desc_divCIEP = "Federalizado" if ///
+	(ramo == 23 & pp == 141)                                                  // FIES
+
+replace desc_divPE = "Otras Part y Apor" if desc_divPE == "" ///
+	& (pp == 13 & ramo == 12 & modalidad == "U")                                // INSABI/Seguro Popular
+replace desc_divPE = "Otras Part y Apor" if desc_divPE == "" ///
+	& (objeto == 43101 & ramo == 8 & pp == 263 & entidad != 34)                 // Convenios de reasignación
+replace desc_divCIEP = "Federalizado" if ///
+	(pp == 13 & ramo == 12 & modalidad == "U")                                // INSABI/Seguro Popular
+replace desc_divCIEP = "Federalizado" if ///
+	(objeto == 43101 & ramo == 8 & pp == 263 & entidad != 34)                 // Convenios de reasignación
 
 * 4.8 Otros *
 replace desc_divPE = "Otros" if desc_divPE == ""
+replace desc_divCIEP = "Otros" if desc_divCIEP == ""
 
 * 4.9 Cuotas ISSSTE *
 replace desc_divPE = "zCuotas ISSSTE" if ramo == -1
@@ -469,7 +505,15 @@ replace divPE = -1 if ramo == -1
 label define divPE -1 "Cuotas ISSSTE", add
 label define divPE 9 "", modify
 
+replace desc_divCIEP = "zCuotas ISSSTE" if ramo == -1
+encode desc_divCIEP, generate(divCIEP)
+replace desc_divCIEP = "Cuotas ISSSTE" if ramo == -1
+replace divCIEP = -1 if ramo == -1
+label define divCIEP -1 "Cuotas ISSSTE", add
+label define divCIEP 9 "", modify
 
+
+ 
 
 
 **************************

@@ -38,7 +38,7 @@ quietly {
 	****************
 	use in 1 using "`c(sysdir_site)'/SIM/$pais/PEF.dta", clear
 	syntax [if] [, ANIO(int `aniovp') NOGraphs Update Base ///
-		BY(varname) ROWS(int 4) COLS(int 5) MINimum(real 1) PEF PPEF APROBado]
+		BY(varname) ROWS(int 2) COLS(int 5) MINimum(real 1) PEF PPEF APROBado]
 
 	if "`ppef'" == "ppef" {
 		local textintro = "PPEF"
@@ -234,9 +234,15 @@ quietly {
 		_col(66) %7s "% PIB" ///
 		_col(77) %7s "Dif% Real" "}"
 
+	preserve
+	collapse (sum) gasto* if `by' != -1 & transf_gf == 0, by(anio pibY deflator `resumido')
+	reshape wide gasto*, i(anio) j(`resumido')
+	reshape long
+
 	tempvar gasreal
 	g `gasreal' = gastoneto/deflator
-	capture tabstat `gasreal' if anio == `anio'-1 & `by' != -1 & transf_gf == 0, by(`resumido') stat(sum) f(%20.1fc) save
+
+	capture tabstat `gasreal' if anio == `anio'-1, by(`resumido') stat(sum) f(%20.1fc) save missing
 	if _rc == 0 {
 		tempname pregastot
 		matrix `pregastot' = r(StatTotal)
@@ -247,9 +253,8 @@ quietly {
 			local ++k
 		}
 	}
-	
 
-	tabstat gastoneto gastonetoPIB gastoCUOTAS if anio == `anio' & `by' != -1 & transf_gf == 0, by(`resumido') stat(sum) f(%20.1fc) save
+	tabstat gastoneto gastonetoPIB gastoCUOTAS if anio == `anio', by(`resumido') stat(sum) f(%20.1fc) save missing
 	tempname mattot
 	matrix `mattot' = r(StatTotal)
 
@@ -304,18 +309,20 @@ quietly {
 	tempname Resumido_total
 	matrix `Resumido_total' = r(StatTotal)
 	return scalar Resumido_total = `Resumido_total'[1,1]
+	*restore
+
 
 	** 4.3 Crecimientos **
 	noisily di _newline in g "{bf: C. Cambios:" in y " `=`anio'-1' - `anio'" in g ///
-		_col(44) %7s "`=`anio'-1'" ///
-		_col(55) %7s "`anio'" ///
-		_col(66) %7s "Dif% PIB" ///
-		_col(77) %7s "Dif% Real" "}"
+		_col(44) %7s "% PIB `=`anio'-1'" ///
+		_col(55) %7s "% PIB `anio'" ///
+		_col(66) %7s "Dif pts" ///
+		_col(77) %7s "Dif %" "}"
 
-	preserve
-	collapse (sum) gastoneto* if `resumido' != -1 & transf_gf == 0, by(anio `resumido')
-	xtset `resumido' anio
-	tsfill, full
+	*preserve
+	*collapse (sum) gastoneto* (mean) pibY deflator if `by' != -1 & transf_gf == 0, by(anio `resumido')
+	*reshape wide gastoneto*, i(anio) j(`resumido')
+	*reshape long
 
 	tabstat gastoneto gastonetoPIB if anio == `anio', by(`resumido') stat(sum) f(%20.1fc) missing save
 	tempname mattot
@@ -360,7 +367,7 @@ quietly {
 			_col(44) in y %7.3fc `mattot5'[1,2] ///
 			_col(55) in y %7.3fc `mattot'[1,2] ///
 			_col(66) in y %7.3fc `mattot'[1,2]-`mattot5'[1,2] ///
-			_col(77) in y %7.3fc (`mattot'[1,2]-`mattot5'[1,2])/`mattot5'[1,2]*100 "}"
+			_col(77) in y %7.1fc (`mattot'[1,2]-`mattot5'[1,2])/`mattot5'[1,2]*100 "}"
 	}
 	restore
 
@@ -371,9 +378,10 @@ quietly {
 		replace gastoneto = gastoneto/deflator/1000000000
 
 		collapse (sum) gastoneto* if `by' != -1 & transf_gf == 0 & anio >= 2013, by(anio `resumido')
-
-		levelsof `resumido' if `resumido' != -1, local(lev_resumido)
-
+		reshape wide gastoneto*, i(anio) j(`resumido')
+		reshape long
+		
+		levelsof `resumido' if anio == `anio', local(lev_resumido)
 		tabstat gastoneto if anio == `anio', by(`resumido') stat(sum) f(%20.0fc) save
 		tempname SUM
 		matrix `SUM' = r(StatTotal)
@@ -424,7 +432,7 @@ quietly {
 			ylabel(, format(%15.0fc) labsize(small)) ///
 			yscale(range(0)) ///
 			legend(on position(6) rows(`rows') cols(`cols') `legend' region(margin(zero)) order(`order')) /// 
-			name(gastos, replace) ///
+			name(gastos`by', replace) ///
 			note("{bf:Nota}: Porcentajes entre par{c e'}ntesis son con respecto al total de `anio'.") ///
 			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/Cuentas Públicas y $paqueteEconomico.")
 
