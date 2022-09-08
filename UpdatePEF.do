@@ -11,9 +11,9 @@
 ***                   ***
 *** 1. BASES DE DATOS ***
 ***                   ***
-/*************************
+*************************
 local archivos: dir "`c(sysdir_site)'/bases/PEFs/$pais" files "*.xlsx"			// Busca todos los archivos .xlsx en /bases/PEFs/
-*local archivos `""CuotasISSSTE.xlsx" "CP 2021.xlsx""'
+*local archivos `""CuotasISSSTE.xlsx" "CP 2020.xlsx""'
 
 foreach k of local archivos {													// Loop para todos los archivos .csv
 
@@ -127,11 +127,11 @@ compress																		// <-- Para hacer "más eficiente" la base (menor tama
 
 
 
-**********************************/
+**********************************
 ***                             ***
 *** 2. HOMOLOGACION DE TÉRMINOS ***
 ***                             ***
-/***********************************
+***********************************
 
 ** 2.1 Finalidad **
 replace desc_finalidad = "Otras" if finalidad == 4
@@ -488,6 +488,8 @@ replace desc_divPE = "Otras Part y Apor" if desc_divPE == "" ///
 	& (pp == 13 & ramo == 12 & modalidad == "U")                                // INSABI/Seguro Popular
 replace desc_divPE = "Otras Part y Apor" if desc_divPE == "" ///
 	& (objeto == 43101 & ramo == 8 & pp == 263 & entidad != 34)                 // Convenios de reasignación
+replace desc_divPE = "Otras Part y Apor" if desc_divPE == "" ///
+	& (objeto == 43701 & ramo == 8 & pp == 263 & entidad != 34)                 // Convenios de reasignación
 replace desc_divCIEP = "Federalizado" if ///
 	(pp == 13 & ramo == 12 & modalidad == "U")                                // INSABI/Seguro Popular
 replace desc_divCIEP = "Federalizado" if ///
@@ -521,14 +523,13 @@ label define divCIEP 9 "", modify
 *** 5. NETEO DEL GASTO ***
 ***                    ***
 **************************
-capture g double gasto = ejercido
+g double gasto = ejercido if anio <= 2021
 if _rc != 0 {
-	capture g double gasto = devengado
+	capture g double gasto = devengado if anio <= 2021
 }
-if _rc != 0 {
-	g double gasto = aprobado
-}
-replace gasto = aprobado if gasto == .
+replace gasto = aprobado if anio == 2022 | anio == 2023
+replace gasto = proyecto if anio == 2023
+
 
 g byte transf_gf = (ramo == 19 & ur == "GYN") | (ramo == 19 & ur == "GYR")
 
