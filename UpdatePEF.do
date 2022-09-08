@@ -11,7 +11,7 @@
 ***                   ***
 *** 1. BASES DE DATOS ***
 ***                   ***
-*************************
+/*************************
 local archivos: dir "`c(sysdir_site)'/bases/PEFs/$pais" files "*.xlsx"			// Busca todos los archivos .xlsx en /bases/PEFs/
 *local archivos `""CuotasISSSTE.xlsx" "CP 2020.xlsx""'
 
@@ -488,8 +488,6 @@ replace desc_divPE = "Otras Part y Apor" if desc_divPE == "" ///
 	& (pp == 13 & ramo == 12 & modalidad == "U")                                // INSABI/Seguro Popular
 replace desc_divPE = "Otras Part y Apor" if desc_divPE == "" ///
 	& (objeto == 43101 & ramo == 8 & pp == 263 & entidad != 34)                 // Convenios de reasignación
-replace desc_divPE = "Otras Part y Apor" if desc_divPE == "" ///
-	& (objeto == 43701 & ramo == 8 & pp == 263 & entidad != 34)                 // Convenios de reasignación
 replace desc_divCIEP = "Federalizado" if ///
 	(pp == 13 & ramo == 12 & modalidad == "U")                                // INSABI/Seguro Popular
 replace desc_divCIEP = "Federalizado" if ///
@@ -498,6 +496,7 @@ replace desc_divCIEP = "Federalizado" if ///
 * 4.8 Otros *
 replace desc_divPE = "Otros" if desc_divPE == ""
 replace desc_divCIEP = "Otros" if desc_divCIEP == ""
+*replace desc_divCIEP = "SEMAR, SEDENA" if ramo == 13 | ramo == 7
 
 * 4.9 Cuotas ISSSTE *
 replace desc_divPE = "zCuotas ISSSTE" if ramo == -1
@@ -527,7 +526,7 @@ g double gasto = ejercido if anio <= 2021
 if _rc != 0 {
 	capture g double gasto = devengado if anio <= 2021
 }
-replace gasto = aprobado if anio == 2022 | anio == 2023
+replace gasto = aprobado if anio == 2022
 replace gasto = proyecto if anio == 2023
 
 
