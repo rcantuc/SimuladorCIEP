@@ -41,7 +41,7 @@ noisily run "`c(sysdir_site)'/PARAM.do"                                         
 ***                    ***
 ***    2. POBLACION    ***
 ***                    ***
-**************************
+/**************************
 noisily Poblacion, aniofinal(`=scalar(anioend)') //`update'
 
 
@@ -52,11 +52,14 @@ noisily Poblacion, aniofinal(`=scalar(anioend)') //`update'
 ***                          ***
 ********************************
 noisily PIBDeflactor, `update' geodef(2013) geopib(2013)
+
+
+exit
 noisily SCN, `update'
 noisily Inflacion, `update'
 
 
-
+exit
 ******************************/
 ***                         ***
 ***    4. SISTEMA FISCAL    ***
