@@ -44,7 +44,7 @@ quietly {
 	***************
 	use in 1 using "`c(sysdir_site)'/SIM/$pais/LIF.dta", clear
 	syntax [if] [, ANIO(int `aniovp' ) UPDATE NOGraphs Base ID(string) ///
-		MINimum(real 0.5) DESDE(int 2013) ILIF LIF EOFP BY(varname) ROWS(int 1) COLS(int 5)]
+		MINimum(real 0.5) DESDE(int 2013) ILIF LIF EOFP BY(varname) ROWS(int 2) COLS(int 5)]
 
 	noisily di _newline(2) in g _dup(20) "." "{bf:   Sistema Fiscal:" in y " INGRESOS $pais `anio'   }" in g _dup(20) "."
 
@@ -138,7 +138,7 @@ quietly {
 	capture replace nombre = subinstr(nombre,"Impuesto especial sobre producci{c o'}n y servicios de ","",.)
 	capture replace nombre = subinstr(nombre,"alimentos no b{c a'}sicos con alta densidad cal{c o'}rica","comida chatarra",.)
 	capture replace nombre = subinstr(nombre,"/","_",.)
-
+	
 
 
 	********************
@@ -198,10 +198,16 @@ quietly {
 		_col(66) %7s "% PIB" ///
 		_col(77) %7s "% Real" "}"
 
-	
+	preserve
+	g by = `by'
+	g resumido = `resumido'
+	collapse (sum) recaudacion* if divLIF != 10, by(anio pibY deflator `resumido')
+	reshape wide recaudacion*, i(anio) j(`resumido')
+	reshape long
+
 	tempvar recreal
 	g `recreal' = recaudacion/deflator
-	capture tabstat `recreal' if anio == `anio'-1 & divLIF != 10, by(`resumido') stat(sum) f(%20.1fc) save
+	capture tabstat `recreal' if anio == `anio'-1, by(`resumido') stat(sum) f(%20.1fc) save
 	if _rc == 0 {
 		tempname sindeudatotpre
 		matrix `sindeudatotpre' = r(StatTotal)
@@ -213,7 +219,7 @@ quietly {
 		}
 	}
 
-	tabstat recaudacion recaudacionPIB if anio == `anio' & divLIF != 10, by(`resumido') stat(sum) f(%20.1fc) save
+	tabstat recaudacion recaudacionPIB if anio == `anio', by(`resumido') stat(sum) f(%20.1fc) save
 	tempname sindeudatot
 	matrix `sindeudatot' = r(StatTotal)
 
@@ -304,7 +310,7 @@ quietly {
 			_col(66) in y %7.3fc `mattot'[1,2]-`mattot5'[1,2] ///
 			_col(77) in y %7.1fc (`mattot'[1,2]-`mattot5'[1,2])/`mattot5'[1,2]*100 in g "%}"
 	}
-
+	restore
 
 	** 4.4 Elasticidades **
 	if "`by'" == "divGA" | "`by'" == "divCIEP" | "`by'" == "divSIM" {
