@@ -42,33 +42,30 @@ global paqueteEconomico "PE 2023"
 scalar aniovp = 2023
 scalar anioend = 2030
 
-global pib2022 = 3.4                                           // Pre-CGPE 2023
-global pib2023 = 3.5                                           // Pre-CGPE 2023
-global pib2024 = 2.8                                           // CGPE 2022
-global pib2025 = 2.5                                           // CGPE 2022
-global pib2026 = 2.5                                           // CGPE 2022
-global pib2027 = 2.5                                           // CGPE 2022
-global pib2028 = 2.5                                           // CGPE 2022
-global pib2029 = 2.5                                           // CGPE 2022
-global pib2030 = 2.5                                           // CGPE 2022
-global def2022 = 6.6853                                        // Pre-CGPE 2023
+global pib2022 = 2.4 //    CGPE 2023 (página 134)
+global pib2023 = 3.0 //    CGPE 2023 (página 134)
+global pib2024 = 2.4 //    CGPE 2023 (página 134)
+global pib2025 = 2.4 //    CGPE 2023 (página 134)
+global pib2026 = 2.4 //    CGPE 2023 (página 134)
+global pib2027 = 2.4 //    CGPE 2023 (página 134)
+global pib2028 = 2.4 //    CGPE 2023 (página 134)
 
-global def2023 = 3.9258                                        // Pre-CGPE 2023
-global def2024 = 3.5                                           // CGPE 2022: 3.5
-global def2025 = 3.5                                           // CGPE 2022: 3.5
-global def2026 = 3.5                                           // CGPE 2022: 3.5
-global def2027 = 3.5                                           // CGPE 2022: 3.5
-global def2028 = 3.5                                           // CGPE 2022: 3.5
-global def2029 = 3.5                                           // CGPE 2022: 3.5
-global def2030 = 3.5                                           // CGPE 2022: 3.5
+global def2022 = 8.00695 //    CGPE 2023 (página 134)
+global def2023 = 4.91697 //    CGPE 2023 (página 134)
+global def2024 = 3.5 //    CGPE 2023 (página 134)
+global def2025 = 3.5 //    CGPE 2023 (página 134)
+global def2026 = 3.5 //    CGPE 2023 (página 134)
+global def2027 = 3.5 //    CGPE 2023 (página 134)
+global def2028 = 3.5 //    CGPE 2023 (página 134)
+global def2029 = 3.5 //    CGPE 2023 (página 134)
+global def2030 = 3.5 //    CGPE 2023 (página 134)
 
-global inf2022 = 5.5                                           // Pre-CGPE 2023
-global inf2023 = 3.3                                           // Pre-CGPE 2023
-global inf2024 = 3.0                                           // CGPE 2022: 3.0
-global inf2025 = 3.0                                           // CGPE 2022: 3.0
-global inf2026 = 3.0                                           // CGPE 2022: 3.0
-global inf2027 = 3.0                                           // CGPE 2022: 3.0
-
+global inf2022 = 7.7 //    CGPE 2023 (página 134)
+global inf2023 = 3.2 //    CGPE 2023 (página 134)
+global inf2024 = 3.0 //    CGPE 2023 (página 134)
+global inf2025 = 3.0 //    CGPE 2023 (página 134)
+global inf2026 = 3.0 //    CGPE 2023 (página 134)
+global inf2027 = 3.0 //    CGPE 2023 (página 134)
 
 
 ************************/
