@@ -61,13 +61,15 @@ format concepto %30s
 preserve
 levelsof serie, local(serie)
 foreach k of local serie {
-	noisily DatosAbiertos `k', nog
+	if "`k'" != "NA" {
+		noisily DatosAbiertos `k', nog
 
-	rename clave_de_concepto serie
-	keep anio serie nombre monto mes acum_prom
+		rename clave_de_concepto serie
+		keep anio serie nombre monto mes acum_prom
 
-	tempfile `k'
-	quietly save ``k''
+		tempfile `k'
+		quietly save ``k''
+	}
 }
 restore
 
@@ -75,8 +77,10 @@ restore
 ** 2.1.1 Append **
 collapse (sum) LIF ILIF, by(div* serie anio)
 foreach k of local serie {
-	joinby (anio serie) using ``k'', unmatched(both) update
-	drop _merge
+	if "`k'" != "NA" {
+		joinby (anio serie) using ``k'', unmatched(both) update
+		drop _merge
+	}
 }
 
 rename serie series

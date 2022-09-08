@@ -43,7 +43,7 @@ scalar aniovp = 2023
 scalar anioend = 2030
 
 global pib2022 = 2.4 //    CGPE 2023 (página 134)
-global pib2023 = 3.0 //    CGPE 2023 (página 134)
+global pib2023 = 2.95 //    CGPE 2023 (página 134)
 global pib2024 = 2.4 //    CGPE 2023 (página 134)
 global pib2025 = 2.4 //    CGPE 2023 (página 134)
 global pib2026 = 2.4 //    CGPE 2023 (página 134)
@@ -51,14 +51,12 @@ global pib2027 = 2.4 //    CGPE 2023 (página 134)
 global pib2028 = 2.4 //    CGPE 2023 (página 134)
 
 global def2022 = 8.00695 //    CGPE 2023 (página 134)
-global def2023 = 4.91697 //    CGPE 2023 (página 134)
-global def2024 = 3.5 //    CGPE 2023 (página 134)
-global def2025 = 3.5 //    CGPE 2023 (página 134)
-global def2026 = 3.5 //    CGPE 2023 (página 134)
-global def2027 = 3.5 //    CGPE 2023 (página 134)
-global def2028 = 3.5 //    CGPE 2023 (página 134)
-global def2029 = 3.5 //    CGPE 2023 (página 134)
-global def2030 = 3.5 //    CGPE 2023 (página 134)
+global def2023 = 4.96793 //    CGPE 2023 (página 134) 4.91697
+global def2024 = 3.46555 //    CGPE 2023 (página 134)
+global def2025 = 3.49807 //    CGPE 2023 (página 134)
+global def2026 = 3.49211 //    CGPE 2023 (página 134)
+global def2027 = 3.5153 //    CGPE 2023 (página 134)
+global def2028 = 3.5015 //    CGPE 2023 (página 134)
 
 global inf2022 = 7.7 //    CGPE 2023 (página 134)
 global inf2023 = 3.2 //    CGPE 2023 (página 134)
@@ -66,7 +64,9 @@ global inf2024 = 3.0 //    CGPE 2023 (página 134)
 global inf2025 = 3.0 //    CGPE 2023 (página 134)
 global inf2026 = 3.0 //    CGPE 2023 (página 134)
 global inf2027 = 3.0 //    CGPE 2023 (página 134)
+global inf2028 = 3.0 //    CGPE 2023 (página 134)
 
+noisily PIBDeflactor, nog
 
 exit
 ************************/
