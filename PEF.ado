@@ -375,8 +375,6 @@ quietly {
 	}
 	restore
 
-
-
 	if "`nographs'" != "nographs" & "$nographs" == "" {
 		preserve
 		replace gasto = gasto/deflator/1000000000
@@ -386,7 +384,7 @@ quietly {
 		collapse (sum) gasto* if transf_gf == 0 & anio >= 2013, by(anio `resumido')
 		reshape wide gasto*, i(anio) j(`resumido')
 		reshape long
-		
+
 		levelsof `resumido' if anio == `anio', local(lev_resumido)
 		tabstat gasto if anio == `anio', by(`resumido') stat(sum) f(%20.0fc) save
 		tempname SUM
@@ -422,7 +420,6 @@ quietly {
 			local text `"`text' `=`TOT`k''[1,1]+`TOT`k''[1,3]' `j' "{bf:`=string(`TOT`k''[1,2],"%7.1fc")'% PIB}""'
 			local j = `j' + 100/(`anio'-2013+1)
 		}
-
 
 		graph bar (sum) gasto if anio >= 2013 & anio <= `anio', ///
 			over(`resumido', sort(1) descending) over(anio, gap(0)) stack asyvar ///
