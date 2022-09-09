@@ -11,7 +11,7 @@
 ***                   ***
 *** 1. BASES DE DATOS ***
 ***                   ***
-*************************
+/*************************
 local archivos: dir "`c(sysdir_site)'/bases/PEFs/$pais" files "*.xlsx"			// Busca todos los archivos .xlsx en /bases/PEFs/
 *local archivos `""CuotasISSSTE.xlsx" "PPEF 2023.xlsx" "CP 2013.xlsx""'
 
@@ -418,6 +418,8 @@ foreach k of local levelsof {
 local ifpp `"`=substr("`ifpp'",1,`=strlen("`ifpp'")-3')')"'
 replace desc_divPE = "Pensiones" if desc_divPE == "" ///
 	& (substr(string(objeto),1,2) == "45" | substr(string(objeto),1,2) == "47")	// Pensiones contributivas
+replace desc_divPE = "Pensiones" if desc_divPE == "" ///
+	& (substr(string(partida_generica),1,2) == "45" | substr(string(partida_generica),1,2) == "47")	// Pensiones contributivas
 replace desc_divPE = "Pensiones" if desc_divPE == "" & `ifpp'				// Pensión Bienestar
 
 * 4.3 Educacion *
@@ -443,7 +445,7 @@ replace desc_divPE = "Energía" if desc_divPE == "" & ///
 * 4.7 Infraestructura *
 replace desc_divPE = "Inversión" if desc_divPE == "" ///
 	& (desc_tipogasto == 4 | desc_tipogasto == 5 | desc_tipogasto == 6 | desc_tipogasto == 8)
-	
+
 * 4.5 Federalizado *
 g desc_divCIEP = desc_divPE
 
