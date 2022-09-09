@@ -2036,7 +2036,7 @@ replace escol = 3 if nivelaprob == "5" | nivelaprob == "7"
 replace escol = 4 if nivelaprob == "8" | nivelaprob == "9"
 
 * Labels *
-label define escol 0 "Sin escolaridad" 1 "Basica" 2 "Media Superior" 3 "Superior" 4 "Posgrado"
+label define escol 0 "Sin escolaridad" 1 "Básica" 2 "Media Superior" 3 "Superior" 4 "Posgrado"
 label values escol escol
 label var escol "Nivel de escolaridad"
 
@@ -2616,7 +2616,7 @@ replace grupoedad = 2 if edad >= 5 & edad < 18
 replace grupoedad = 3 if edad >= 18 & edad < 25
 replace grupoedad = 4 if edad >= 25 & edad < 65
 replace grupoedad = 5 if edad >= 65
-label define grupoedad 1 "De 0 a 4" 2 "De 5 a 17" 3 "De 18 a 24" 4 "De 25 a 64" 5 "De 65 y mas"
+label define grupoedad 1 "De 0 a 4" 2 "De 5 a 17" 3 "De 18 a 24" 4 "De 25 a 64" 5 "De 65 y más"
 label values grupoedad grupoedad
 
 replace formalmax = 3 if formalmax == 4
