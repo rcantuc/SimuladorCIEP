@@ -416,7 +416,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if divPE == 7, anio(`anio') by(divPE) min(0) nographs
+		PEF if divCIEP == 8, anio(`anio') by(divCIEP) min(0) nographs
 		local bienestar = r(Pensión_Bienestar)
 		scalar bienestar = `bienestar'/`PENS'[1,1]
 		restore
@@ -501,8 +501,6 @@ quietly {
 
 
 
-
-
 	***********************
 	*** 6 Comprometidos ***
 	***********************
@@ -551,7 +549,7 @@ quietly {
 	else {
 		preserve
 		PEF, by(divPE) anio(`anio') min(0) nographs
-		local gasfeder = r(Federalizado)
+		local gasfeder = r(Otras_Part_y_Apor)
 		scalar gasfeder = `gasfeder'/`Salud'[1,6]
 		restore
 	}
@@ -575,7 +573,7 @@ quietly {
 	else {
 		preserve
 		PEF, by(divPE) anio(`anio') min(0) nographs
-		local gasinfra = r(Infraestructura)
+		local gasinfra = r(Inversión)
 		scalar gasinfra = `gasinfra'/`Salud'[1,6]
 		restore
 	}
@@ -587,7 +585,7 @@ quietly {
 	else {
 		preserve
 		PEF, by(divPE) anio(`anio') min(0) nographs
-		local gasotros = r(Otros)
+		local gasotros = r(Otros)+r(Cuotas_ISSSTE)
 		scalar gasotros = `gasotros'/`Salud'[1,6]
 		restore
 	}
@@ -599,11 +597,19 @@ quietly {
 		_col(50) %7s "% PIB" ///
 		_col(60) %10s in g "Per c{c a'}pita (MXN `anio')" "}"
 	noisily di in g _dup(80) "-"
-	noisily di in g "  Energía" ///
+	noisily di in g "  Pemex" ///
 		_col(33) %15.0fc in y `Salud'[1,6] ///
-		_col(50) %7.3fc in y (`gaspemex'+`gascfe'+`gassener')/`PIB'*100 ///
-		_col(60) %15.0fc in y (`gaspemex'+`gascfe'+`gassener')/`Salud'[1,6]
-	noisily di in g "  Gasto federalizado" ///
+		_col(50) %7.3fc in y (`gaspemex')/`PIB'*100 ///
+		_col(60) %15.0fc in y (`gaspemex')/`Salud'[1,6]
+	noisily di in g "  CFE" ///
+		_col(33) %15.0fc in y `Salud'[1,6] ///
+		_col(50) %7.3fc in y (`gascfe')/`PIB'*100 ///
+		_col(60) %15.0fc in y (`gascfe')/`Salud'[1,6]
+	noisily di in g "  SENER y otros" ///
+		_col(33) %15.0fc in y `Salud'[1,6] ///
+		_col(50) %7.3fc in y (`gassener')/`PIB'*100 ///
+		_col(60) %15.0fc in y (`gassener')/`Salud'[1,6]
+	noisily di in g "  Otras Part y Aport" ///
 		_col(33) %15.0fc in y `Salud'[1,6] ///
 		_col(50) %7.3fc in y `gasfeder'/`PIB'*100 ///
 		_col(60) %15.0fc in y `gasfeder'/`Salud'[1,6]

@@ -66,30 +66,30 @@ global inf2026 = 3.0 //    CGPE 2023 (página 134)
 global inf2027 = 3.0 //    CGPE 2023 (página 134)
 global inf2028 = 3.0 //    CGPE 2023 (página 134)
 
-exit
+
 ************************/
 ***                   ***
 ***    5. INGRESOS    ***
 ***                   ***
 *************************
-scalar ISRAS   = 3.073 //    ISR (asalariados): 
-scalar ISRPF   = 0.200 //    ISR (personas f{c i'}sicas): 
-scalar CUOTAS  = 1.321 //    Cuotas (IMSS): 
+scalar ISRAS   = 3.696 //    ISR (asalariados): 
+scalar ISRPF   = 0.240 //    ISR (personas f{c i'}sicas): 
+scalar CUOTAS  = 1.499 //    Cuotas (IMSS): 
 
-scalar ISRPM   = 3.379 //    ISR (personas morales): 
-scalar OTROSK  = 0.985 //    Productos, derechos, aprovechamientos, contribuciones: 
+scalar ISRPM   = 4.064 //    ISR (personas morales): 
+scalar OTROSK  = 1.049 //    Productos, derechos, aprovechamientos, contribuciones: 
 
-scalar IVA     = 3.893 //    IVA: 
-scalar ISAN    = 0.039 //    ISAN: 
-scalar IEPSP   = 0.600 //    IEPS (petrolero): 
-scalar IEPSNP  = 1.020 //    IEPS (no petrolero): 
-scalar IMPORT  = 0.234 //    Importaciones: 
+scalar IVA     = 4.520 //    IVA: 
+scalar ISAN    = 0.049 //    ISAN: 
+scalar IEPSP   = 0.662 //    IEPS (petrolero): 
+scalar IEPSNP  = 0.887 //    IEPS (no petrolero): 
+scalar IMPORT  = 0.313 //    Importaciones: 
 
-scalar IMSS    = 0.101 //    Organismos y empresas (IMSS)
-scalar ISSSTE  = 0.164 //    Organismos y empresas (ISSSTE)
-scalar FMP     = 1.190 //    Fondo Mexicano del Petr{c o'}leo
-scalar PEMEX   = 2.297 //    Organismos y empresas (Pemex)
-scalar CFE     = 1.304 //    Organismos y empresas (CFE)
+scalar IMSS    = 0.091 //    Organismos y empresas (IMSS)
+scalar ISSSTE  = 0.159 //    Organismos y empresas (ISSSTE)
+scalar FMP     = 1.553 //    Fondo Mexicano del Petr{c o'}leo
+scalar PEMEX   = 2.632 //    Organismos y empresas (Pemex)
+scalar CFE     = 1.271 //    Organismos y empresas (CFE)
 
 
 
@@ -98,31 +98,31 @@ scalar CFE     = 1.304 //    Organismos y empresas (CFE)
 ***    6. GASTOS    ***
 ***                 ***
 ***********************
-scalar basica      =   23925 //    Educaci{c o'}n b{c a'}sica
-scalar medsup      =   23465 //    Educaci{c o'}n media superior
-scalar superi      =   35716 //    Educaci{c o'}n superior
-scalar posgra      =   56609 //    Posgrado
-scalar eduadu      =   33747 //    Educaci{c o'}n para adultos
-scalar otrose      =    3065 //    Otros gastos educativos
+scalar basica      =   26537 //    Educaci{c o'}n b{c a'}sica
+scalar medsup      =   26439 //    Educaci{c o'}n media superior
+scalar superi      =   39157 //    Educaci{c o'}n superior
+scalar posgra      =   64239 //    Posgrado
+scalar eduadu      =   37573 //    Educaci{c o'}n para adultos
+scalar otrose      =    3802 //    Otros gastos educativos
 
-scalar ssa         =     680 //    SSalud
-scalar imssbien    =    3574 //    IMSS-Bienestar
-scalar imss        =    6882 //    IMSS (salud)
-scalar issste      =    8994 //    ISSSTE (salud)
-scalar pemex       =   23433 //    Pemex (salud) + ISSFAM (salud)*/
+scalar ssa         =     600 //    SSalud
+scalar imssbien    =    4113 //    IMSS-Bienestar
+scalar imss        =    8273 //    IMSS (salud)
+scalar issste      =   11072 //    ISSSTE (salud)
+scalar pemex       =   27368 //    Pemex (salud) + ISSFAM (salud)
 
-scalar bienestar   =   20984 //    Pensi{c o'}n Bienestar
-scalar penims      =  143573 //    Pensi{c o'}n IMSS
-scalar peniss      =  224115 //    Pensi{c o'}n ISSSTE
-scalar penotr      = 1421385 //    Pensi{c o'}n Pemex, CFE, Pensi{c o'}n LFC, ISSFAM, Otros
+scalar bienestar   =   29239 //    Pensi{c o'}n Bienestar
+scalar penims      =  169241 //    Pensi{c o'}n IMSS
+scalar peniss      =  249560 //    Pensi{c o'}n ISSSTE
+scalar penotr      = 1507687 //    Pensi{c o'}n Pemex, CFE, Pensi{c o'}n LFC, ISSFAM, Otros
 
-scalar gaspemex    =    4115 //    Servicios personales
-scalar gascfe      =    2998 //    Materiales y suministros
-scalar gassener    =    1054 //    Gastos generales
-scalar gasfeder    =    9781 //    Subsidios y transferencias
-scalar gascosto    =    6260 //    Bienes muebles e inmuebles
-scalar gasinfra    =     884 //    Obras p{c u'}blicas
-scalar gasotros    =    5196 //    Inversi{c o'}n financiera
+scalar gaspemex    =    4466 //    Servicios personales
+scalar gascfe      =    2958 //    Materiales y suministros
+scalar gassener    =    1128 //    Gastos generales
+scalar gasfeder    =    9918 //    Subsidios y transferencias
+scalar gascosto    =    8543 //    Bienes muebles e inmuebles
+scalar gasinfra    =    4318 //    Obras p{c u'}blicas
+scalar gasotros    =    4449 //    Inversi{c o'}n financiera
 
 scalar IngBas      =       0 //    Ingreso b{c a'}sico
 scalar ingbasico18 =       1 //    1: Incluye menores de 18 anios, 0: no

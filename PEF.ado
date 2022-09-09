@@ -238,12 +238,15 @@ quietly {
 
 	preserve
 	collapse (sum) gasto* if transf_gf == 0, by(anio pibY deflator `resumido')
-	reshape wide gasto*, i(anio) j(`resumido')
+	g resumido = `resumido'
+	reshape wide gasto* `resumido', i(anio) j(resumido)
 	reshape long
 
 	tempvar gasreal
-	replace gasto = -gasto if `resumido' == 99998
-	replace gastoPIB = -gastoPIB if `resumido' == 99998
+	replace gasto = 0 if gasto == .
+	replace gastoPIB = 0 if gastoPIB == .
+	replace gasto = -gasto if resumido == 99998
+	replace gastoPIB = -gastoPIB if resumido == 99998
 	g `gasreal' = gasto/deflator
 
 	capture tabstat `gasreal' if anio == `anio'-1, by(`resumido') stat(sum) f(%20.1fc) save missing
@@ -313,22 +316,16 @@ quietly {
 	tempname Resumido_total
 	matrix `Resumido_total' = r(StatTotal)
 	return scalar Resumido_total = `Resumido_total'[1,1]
-	*restore
 
 
 	** 4.3 Crecimientos **
 	noisily di _newline in g "{bf: C. Cambios:" in y " `=`anio'-1' - `anio'" in g ///
-		_col(44) %7s "% PIB `=`anio'-1'" ///
-		_col(55) %7s "% PIB `anio'" ///
+		_col(44) %7s "% PIB `anio'" ///
+		_col(55) %7s "% PIB `=`anio'-1'" ///
 		_col(66) %7s "Dif pts" ///
 		_col(77) %7s "Dif %" "}"
 
-	*preserve
-	*collapse (sum) gastoneto* (mean) pibY deflator if `by' != -1 & transf_gf == 0, by(anio `resumido')
-	*reshape wide gastoneto*, i(anio) j(`resumido')
-	*reshape long
-
-	tabstat gasto gastoPIB if anio == `anio', by(`resumido') stat(sum) f(%20.1fc) missing save
+	tabstat gasto gastoPIB if anio == `anio'-1, by(`resumido') stat(sum) f(%20.1fc) missing save
 	tempname mattot
 	matrix `mattot' = r(StatTotal)
 
@@ -339,7 +336,7 @@ quietly {
 		local ++k
 	}
 
-	capture tabstat gasto gastoPIB if anio == `anio'-1, by(`resumido') stat(sum) f(%20.1fc) missing save
+	capture tabstat gasto gastoPIB if anio == `anio', by(`resumido') stat(sum) f(%20.1fc) missing save
 	if _rc == 0 {
 		tempname mattot5
 		matrix `mattot5' = r(StatTotal)
@@ -356,13 +353,12 @@ quietly {
 				local disptext = substr(`"`=r(name`k')'"',1,25)
 			}
 			
-			*if abs(`mat`k''[1,2]-`mat5`k''[1,2]) > .4 {
-				noisily di in g `"  (+) `disptext'"' ///
-					_col(44) in y %7.3fc `mat5`k''[1,2] ///
-					_col(55) in y %7.3fc `mat`k''[1,2] ///
-					_col(66) in y %7.3fc `mat`k''[1,2]-`mat5`k''[1,2] ///
-					_col(77) in y %7.1fc (`mat`k''[1,2]-`mat5`k''[1,2])/`mat5`k''[1,2]*100
-			*}
+			noisily di in g `"  (+) `disptext'"' ///
+				_col(44) in y %7.3fc `mat5`k''[1,2] ///
+				_col(55) in y %7.3fc `mat`k''[1,2] ///
+				_col(66) in y %7.3fc `mat5`k''[1,2]-`mat`k''[1,2] ///
+				_col(77) in y %7.1fc (`mat5`k''[1,2]-`mat`k''[1,2])/`mat`k''[1,2]*100
+
 			local ++k
 		}
 
@@ -370,8 +366,8 @@ quietly {
 		noisily di in g "{bf:  (=) Total" ///
 			_col(44) in y %7.3fc `mattot5'[1,2] ///
 			_col(55) in y %7.3fc `mattot'[1,2] ///
-			_col(66) in y %7.3fc `mattot'[1,2]-`mattot5'[1,2] ///
-			_col(77) in y %7.1fc (`mattot'[1,2]-`mattot5'[1,2])/`mattot5'[1,2]*100 "}"
+			_col(66) in y %7.3fc `mattot5'[1,2]-`mattot'[1,2] ///
+			_col(77) in y %7.1fc (`mattot5'[1,2]-`mattot'[1,2])/`mattot'[1,2]*100 "}"
 	}
 	restore
 
@@ -382,7 +378,8 @@ quietly {
 		replace gasto = -gasto if `resumido' == 99998
 
 		collapse (sum) gasto* if transf_gf == 0 & anio >= 2013, by(anio `resumido')
-		reshape wide gasto*, i(anio) j(`resumido')
+		g resumido = `resumido'
+		reshape wide gasto* `resumido', i(anio) j(resumido)
 		reshape long
 
 		levelsof `resumido' if anio == `anio', local(lev_resumido)
