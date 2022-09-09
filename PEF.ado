@@ -412,12 +412,12 @@ quietly {
 		}
 
 		* Ciclo para los texto totales *
-		tabstat gasto gastoPIB gastoCUOTAS, stat(sum) by(anio) save
+		tabstat gasto gastonetoPIB gastoCUOTAS gastoCUOTASPIB, stat(sum) by(anio) save
 		local j = 100/(`anio'-2013+1)/2
 		forvalues k=1(1)`=`anio'-2013+1' {
 			tempname TOT`k'
 			matrix `TOT`k'' = r(Stat`k')
-			local text `"`text' `=`TOT`k''[1,1]+`TOT`k''[1,3]' `j' "{bf:`=string(`TOT`k''[1,2],"%7.1fc")'% PIB}""'
+			local text `"`text' `=(`TOT`k''[1,1]+`TOT`k''[1,3])*1.005' `j' "{bf:`=string(`TOT`k''[1,2]-`TOT`k''[1,4],"%7.1fc")'% PIB}""'
 			local j = `j' + 100/(`anio'-2013+1)
 		}
 
