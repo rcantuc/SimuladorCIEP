@@ -154,7 +154,7 @@ quietly {
 		egen acum_prom = mean(`propmensual'), by(mes)
 
 		collapse (sum) monto acum_prom (last) mes if monto != ., by(anio nombre clave_de_concepto)
-		*replace monto = monto/acum_prom if mes < 12
+		replace monto = monto/acum_prom if mes < 12
 		local textografica `"{bf:Promedio a `mesname'}: `=string(acum_prom[_N]*100,"%5.1fc")'% del total anual."'
 		local palabra "Proyectado"
 	}
