@@ -111,7 +111,7 @@ quietly {
 	***************
 	*** 4 Graph ***
 	***************
-	tempvar resumido resumidopie gastonetoPIB
+	tempvar resumido resumidopie gastoPIB
 	g `resumido' = `by'
 	g `resumidopie' = `by'
 
@@ -120,9 +120,11 @@ quietly {
 	label values `resumido' `label'
 	label values `resumidopie' `label'
 
-	egen `gastonetoPIB' = max(gastonetoPIB), by(`by')
-	replace `resumido' = 99999 if abs(`gastonetoPIB') < `minimum'
-	replace `resumidopie' = 99999 if gastonetoPIB < `minimum'
+	egen `gastoPIB' = max(gastoPIB), by(`by')
+	replace `resumido' = 99999 if abs(`gastoPIB') < `minimum' & `by' != -1
+	replace `resumido' = 99998 if `by' == -1
+	replace `resumidopie' = 99999 if gastoPIB < `minimum'
+	label define `label' 99998 "Cuotas ISSSTE", add modify
 	label define `label' 99999 "< `minimum'% PIB", add modify
 
 	/*levelsof `by', local(levelsof)
@@ -229,18 +231,20 @@ quietly {
 	}
 
 	** 4.2. Division Resumido **
-	noisily di _newline in g "{bf: B. Gasto neto (Resumido) " ///
+	noisily di _newline in g "{bf: B. Gasto bruto (Resumido) " ///
 		_col(44) in g %20s "`currency'" ///
 		_col(66) %7s "% PIB" ///
 		_col(77) %7s "Dif% Real" "}"
 
 	preserve
-	collapse (sum) gasto* if `by' != -1 & transf_gf == 0, by(anio pibY deflator `resumido')
+	collapse (sum) gasto* if transf_gf == 0, by(anio pibY deflator `resumido')
 	reshape wide gasto*, i(anio) j(`resumido')
 	reshape long
 
 	tempvar gasreal
-	g `gasreal' = gastoneto/deflator
+	replace gasto = -gasto if `resumido' == 99998
+	replace gastoPIB = -gastoPIB if `resumido' == 99998
+	g `gasreal' = gasto/deflator
 
 	capture tabstat `gasreal' if anio == `anio'-1, by(`resumido') stat(sum) f(%20.1fc) save missing
 	if _rc == 0 {
@@ -254,7 +258,7 @@ quietly {
 		}
 	}
 
-	tabstat gastoneto gastonetoPIB gastoCUOTAS if anio == `anio', by(`resumido') stat(sum) f(%20.1fc) save missing
+	tabstat gasto gastoPIB gastoCUOTAS if anio == `anio', by(`resumido') stat(sum) f(%20.1fc) save missing
 	tempname mattot
 	matrix `mattot' = r(StatTotal)
 
@@ -324,7 +328,7 @@ quietly {
 	*reshape wide gastoneto*, i(anio) j(`resumido')
 	*reshape long
 
-	tabstat gastoneto gastonetoPIB if anio == `anio', by(`resumido') stat(sum) f(%20.1fc) missing save
+	tabstat gasto gastoPIB if anio == `anio', by(`resumido') stat(sum) f(%20.1fc) missing save
 	tempname mattot
 	matrix `mattot' = r(StatTotal)
 
@@ -335,7 +339,7 @@ quietly {
 		local ++k
 	}
 
-	capture tabstat gastoneto gastonetoPIB if anio == `anio'-1, by(`resumido') stat(sum) f(%20.1fc) missing save
+	capture tabstat gasto gastoPIB if anio == `anio'-1, by(`resumido') stat(sum) f(%20.1fc) missing save
 	if _rc == 0 {
 		tempname mattot5
 		matrix `mattot5' = r(StatTotal)
@@ -375,14 +379,16 @@ quietly {
 
 	if "`nographs'" != "nographs" & "$nographs" == "" {
 		preserve
-		replace gastoneto = gastoneto/deflator/1000000000
+		replace gasto = gasto/deflator/1000000000
+		replace gastoCUOTAS = gastoCUOTAS/deflator/1000000000
+		replace gasto = -gasto if `resumido' == 99998
 
-		collapse (sum) gastoneto* if `by' != -1 & transf_gf == 0 & anio >= 2013, by(anio `resumido')
-		reshape wide gastoneto*, i(anio) j(`resumido')
+		collapse (sum) gasto* if transf_gf == 0 & anio >= 2013, by(anio `resumido')
+		reshape wide gasto*, i(anio) j(`resumido')
 		reshape long
 		
 		levelsof `resumido' if anio == `anio', local(lev_resumido)
-		tabstat gastoneto if anio == `anio', by(`resumido') stat(sum) f(%20.0fc) save
+		tabstat gasto if anio == `anio', by(`resumido') stat(sum) f(%20.0fc) save
 		tempname SUM
 		matrix `SUM' = r(StatTotal)
 
@@ -400,7 +406,7 @@ quietly {
 		* Ciclo para determinar el orden de mayor a menor, según gastoneto *
 		tempvar ordervar
 		bysort anio: g `ordervar' = _n
-		gsort -anio -gastoneto
+		gsort -anio -gasto
 		forvalues k=1(1)`=_N'{
 			if anio[`k'] == `anio' {
 				local order "`order' `=`ordervar'[`k']'"
@@ -408,16 +414,17 @@ quietly {
 		}
 
 		* Ciclo para los texto totales *
-		tabstat gastoneto gastonetoPIB, stat(sum) by(anio) save
+		tabstat gasto gastoPIB gastoCUOTAS, stat(sum) by(anio) save
 		local j = 100/(`anio'-2013+1)/2
 		forvalues k=1(1)`=`anio'-2013+1' {
 			tempname TOT`k'
 			matrix `TOT`k'' = r(Stat`k')
-			local text `"`text' `=`TOT`k''[1,1]*1.005' `j' "{bf:`=string(`TOT`k''[1,2],"%7.1fc")'% PIB}""'
+			local text `"`text' `=`TOT`k''[1,1]+`TOT`k''[1,3]' `j' "{bf:`=string(`TOT`k''[1,2],"%7.1fc")'% PIB}""'
 			local j = `j' + 100/(`anio'-2013+1)
 		}
 
-		graph bar (sum) gastoneto if anio >= 2013 & anio <= `anio', ///
+
+		graph bar (sum) gasto if anio >= 2013 & anio <= `anio', ///
 			over(`resumido', sort(1) descending) over(anio, gap(0)) stack asyvar ///
 			blabel(, format(%7.1fc)) outergap(0) ///
 			bar(9, color(150 6 92)) bar(8, color(53 200 71)) ///
