@@ -32,16 +32,18 @@ local Adultos = r(Educación_para_Adultos)
 local Posgrado = r(Posgrado)
 local Otros = r(Gasto_neto) - `Basica' - `Media' - `Superior' - `Adultos' - `Posgrado'
 
-* Totales *
-PEF, anio(`1') by(divPE) min(0) nographs
-local OtrosGas = r(Otros)
-local Pensiones = r(Pensiones)
-local Educacion = r(Educación)
-local Salud = r(Salud)
+* Pensiones *
+PEF, anio(`1') by(divCIEP) min(0) nographs
 local PenBienestar = r(Pensión_Bienestar)
 
+PEF, anio(`1') by(divPE) min(0) nographs
+local OtrosGas = r(Otros)
+local Pensiones = r(Pensiones)-`PenBienestar'
+local Educacion = r(Educación)
+local Salud = r(Salud)
+
 * Infraestructura *
-PEF if divPE == 5, anio(`1') by(entidad) min(0) nographs
+PEF if divPE == 4, anio(`1') by(entidad) min(0) nographs
 local Aguas = r(Aguascalientes)
 local BajaN = r(Baja_California)
 local BajaS = r(Baja_California_Sur)

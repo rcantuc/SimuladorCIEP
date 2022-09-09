@@ -400,9 +400,11 @@ else {
 ****************************************
 use "`c(sysdir_site)'/SIM/$pais/prePEF.dta", clear
 
+
 * 4.1 Costo de la deuda *
 g desc_divPE = "Costo de la deuda" if capitulo == 9 //& substr(string(objeto),1,2) != "91"
 *replace desc_divPE = "Amortización" if capitulo == 9 & substr(string(objeto),1,2) == "91"
+
 
 * 4.2 Pensiones *
 levelsof desc_pp, local(levelsof)
@@ -420,12 +422,20 @@ replace desc_divPE = "Pensiones" if desc_divPE == "" ///
 	& (substr(string(objeto),1,2) == "45" | substr(string(objeto),1,2) == "47")	// Pensiones contributivas
 replace desc_divPE = "Pensiones" if desc_divPE == "" ///
 	& (substr(string(partida_generica),1,2) == "45" | substr(string(partida_generica),1,2) == "47")	// Pensiones contributivas
+
+g desc_divCIEP = desc_divPE
+
 replace desc_divPE = "Pensiones" if desc_divPE == "" & `ifpp'				// Pensión Bienestar
+replace desc_divCIEP = "Pensión Bienestar" if desc_divCIEP == "" & `ifpp'			// Pensión Bienestar
+
 
 * 4.3 Educacion *
 replace desc_divPE = "Educación" if desc_divPE == "" ///
 	& (desc_funcion == 10 | ramo == 11 | ramo == 48 | ramo == 38)
+replace desc_divCIEP = "Educación" if desc_divCIEP == "" ///
+	& (desc_funcion == 10 | ramo == 11 | ramo == 48 | ramo == 38)
 
+	
 * 4.4 Salud *
 replace desc_divPE = "Salud" if desc_divPE == "" ///
 	& (desc_funcion == 21 | ramo == 12)
@@ -436,24 +446,41 @@ replace desc_divPE = "Salud" if desc_divPE == "" ///
 replace desc_divPE = "Salud" if desc_divPE == "" ///
 	& ramo == 52 & ai == 231
 
+replace desc_divCIEP = "Salud" if desc_divCIEP == "" ///
+	& (desc_funcion == 21 | ramo == 12)
+replace desc_divCIEP = "Salud" if desc_divCIEP == "" ///
+	& ramo == 50 & pp == 4 & funcion == 8
+replace desc_divCIEP = "Salud" if desc_divCIEP == "" ///
+	& ramo == 51 & pp == 15 & funcion == 8
+replace desc_divCIEP = "Salud" if desc_divCIEP == "" ///
+	& ramo == 52 & ai == 231
+
+
 * 4.6 Energía *
 replace desc_divPE = "Energía" if desc_divPE == "" & ///
 	(ramo == 18 | ramo == 45 | ramo == 46 | ramo == 52 | ramo == 53)
 replace desc_divPE = "Energía" if desc_divPE == "" & ///
 	(ramo == 23 & desc_funcion == 7)
 
+replace desc_divCIEP = "Energía" if desc_divCIEP == "" & ///
+	(ramo == 18 | ramo == 45 | ramo == 46 | ramo == 52 | ramo == 53)
+replace desc_divCIEP = "Energía" if desc_divCIEP == "" & ///
+	(ramo == 23 & desc_funcion == 7)
+
 * 4.7 Infraestructura *
 replace desc_divPE = "Inversión" if desc_divPE == "" ///
 	& (desc_tipogasto == 4 | desc_tipogasto == 5 | desc_tipogasto == 6 | desc_tipogasto == 8)
+replace desc_divCIEP = "Inversión" if desc_divCIEP == "" ///
+	& (desc_tipogasto == 4 | desc_tipogasto == 5 | desc_tipogasto == 6 | desc_tipogasto == 8)
 
+	
 * 4.5 Federalizado *
-g desc_divCIEP = desc_divPE
-
 replace desc_divPE = "Otras Part y Apor" if desc_divPE == "" ///
 	& (ramo == 28 | ramo == 33 | ramo == 25)                                    // Part + Aport
 replace desc_divCIEP = "Federalizado" if ///
 	(ramo == 28 | ramo == 33 | ramo == 25)                                     // Part + Aport
 
+	
 replace desc_divPE = "Otras Part y Apor" if desc_divPE == "" ///
 	& partida_generica == 438                                                   // Convenios descentralizados
 replace desc_divPE = "Otras Part y Apor" if desc_divPE == "" ///
@@ -494,10 +521,12 @@ replace desc_divCIEP = "Federalizado" if ///
 replace desc_divCIEP = "Federalizado" if ///
 	(objeto == 43101 & ramo == 8 & pp == 263 & entidad != 34)                 // Convenios de reasignación
 
+
 * 4.8 Otros *
 replace desc_divPE = "Otros" if desc_divPE == ""
 replace desc_divCIEP = "Otros" if desc_divCIEP == ""
 *replace desc_divCIEP = "SEMAR, SEDENA" if ramo == 13 | ramo == 7
+
 
 * 4.9 Cuotas ISSSTE *
 replace desc_divPE = "zCuotas ISSSTE" if ramo == -1
@@ -512,7 +541,7 @@ encode desc_divCIEP, generate(divCIEP)
 replace desc_divCIEP = "Cuotas ISSSTE" if ramo == -1
 replace divCIEP = -1 if ramo == -1
 label define divCIEP -1 "Cuotas ISSSTE", add
-label define divCIEP 9 "", modify
+label define divCIEP 10 "", modify
 
 
  
@@ -529,7 +558,6 @@ if _rc != 0 {
 }
 replace gasto = aprobado if anio == 2022
 replace gasto = proyecto if anio == 2023
-
 
 g byte transf_gf = (ramo == 19 & ur == "GYN") | (ramo == 19 & ur == "GYR")
 

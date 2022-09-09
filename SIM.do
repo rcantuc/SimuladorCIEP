@@ -50,7 +50,7 @@ noisily Poblacion, aniofinal(`=scalar(anioend)') //`update'
 ***                          ***
 ***    3. CRECIMIENTO PIB    ***
 ***                          ***
-********************************
+/********************************
 noisily PIBDeflactor, `update' geodef(2013) geopib(2013)
 noisily SCN, `update'
 noisily Inflacion, `update'
@@ -64,7 +64,6 @@ noisily Inflacion, `update'
 /***************************
 *noisily run "`c(sysdir_site)'/Expenditure.do" `=aniovp'
 *noisily run `"`c(sysdir_site)'/Households`=subinstr("${pais}"," ","",.)'.do"' `=aniovp'
-noisily run `"`c(sysdir_site)'/PerfilesSim.do"' `=aniovp'
 
 
 
@@ -73,15 +72,16 @@ noisily run `"`c(sysdir_site)'/PerfilesSim.do"' `=aniovp'
 ***    4. SISTEMA FISCAL    ***
 ***                         ***
 *******************************
-noisily LIF, by(divPE) rows(1) eofp `update'
-noisily TasasEfectivas
+*noisily LIF, by(divPE) rows(1) eofp `update'
+*noisily TasasEfectivas
 
-noisily PEF, by(divPE) rows(2) min(0) `update'
-noisily GastoPC
+*noisily PEF, by(divPE) rows(2) min(0) `update'
+*noisily GastoPC
 
 *noisily SHRFSP, `update'
 
 * Sankey *
+*noisily run `"`c(sysdir_site)'/PerfilesSim.do"' `=aniovp'
 foreach k in grupoedad decil escol sexo {
 	noisily run "`c(sysdir_site)'/SankeySF.do" `k' `=aniovp'
 }
@@ -92,7 +92,7 @@ foreach k in grupoedad decil escol sexo {
 ***                        ***
 ***    7. CICLO DE VIDA    ***
 ***                        ***
-******************************
+/******************************
 *use `"`c(sysdir_site)'/users/$pais/$id/households.dta"', clear
 use "`c(sysdir_site)'/SIM/2020/households`=aniovp'.dta", clear
 capture drop AportacionesNetas
