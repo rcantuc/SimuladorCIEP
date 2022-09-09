@@ -90,7 +90,7 @@ matrix `GAST' = r(StatTotal)
 
 collapse (sum) gas_Educación=Educacion gas_Salud=Salud /*gas__Salarios_de_gobierno=Salarios*/ ///
 	gas___Pensiones=Pension /*gas____Ingreso_Basico=IngBasico*/ ///
-	gas____Infraestructura=Infra [fw=factor], by(`1')
+	gas____Inversión=Infra [fw=factor], by(`1')
 
 levelsof `1', local(`1')
 foreach k of local `1' {
@@ -146,7 +146,7 @@ replace to = 14 in -4
 label define `1' 14 "CFE Pemex SENER", add
 
 
-* Gasto total *
+* Gasto total */
 tabstat profile, stat(sum) f(%20.0fc) save
 tempname gastot
 matrix `gastot' = r(StatTotal)
