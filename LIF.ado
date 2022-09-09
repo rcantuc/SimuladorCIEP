@@ -105,10 +105,10 @@ quietly {
 
 	** 3.1 Utilizar LIF o ILIF **
 	capture replace recaudacion = LIF if mes < 12
-	capture replace recaudacion = ILIF if mes == .
 	if "`eofp'" == "eofp" {
-		replace recaudacion = monto
+		replace recaudacion = monto if mes < 12
 	}
+	replace recaudacion = ILIF if mes == .
 
 	** 3.2 Valores como % del PIB **
 	foreach k of varlist recaudacion monto LIF ILIF {
