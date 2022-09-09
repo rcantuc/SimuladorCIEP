@@ -42,16 +42,16 @@ global paqueteEconomico "PE 2023"
 scalar aniovp = 2023
 scalar anioend = 2030
 
-global pib2022 = 2.4 //    CGPE 2023 (página 134)
-global pib2023 = 2.95 //    CGPE 2023 (página 134)
+global pib2022 = 2.445 //    CGPE 2023 (página 134)
+global pib2023 = 2.975 //    CGPE 2023 (página 134)
 global pib2024 = 2.4 //    CGPE 2023 (página 134)
 global pib2025 = 2.4 //    CGPE 2023 (página 134)
 global pib2026 = 2.4 //    CGPE 2023 (página 134)
 global pib2027 = 2.4 //    CGPE 2023 (página 134)
 global pib2028 = 2.4 //    CGPE 2023 (página 134)
 
-global def2022 = 8.00695 //    CGPE 2023 (página 134)
-global def2023 = 4.96793 //    CGPE 2023 (página 134) 4.91697
+global def2022 = 7.95954 //    CGPE 2023 (página 134)
+global def2023 = 4.94243 //    CGPE 2023 (página 134) 4.91697
 global def2024 = 3.46555 //    CGPE 2023 (página 134)
 global def2025 = 3.49807 //    CGPE 2023 (página 134)
 global def2026 = 3.49211 //    CGPE 2023 (página 134)
