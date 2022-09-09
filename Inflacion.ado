@@ -148,7 +148,7 @@ quietly {
 		}
 		twoway (connected var_inflY anio if (anio < `anio_last' & anio >= 1993) | (anio == `anio_last' & mes == 12), msize(large) mlwidth(vvthick)) ///
 			(connected var_inflY anio if anio > `anio_last' & anio >= anio[`obslast'+`exo_count'], msize(large) mlwidth(vvthick)) ///
-			(connected var_inflY anio if anio < anio[`obslast'+`exo_count'] & anio > `anio_last', pstyle(p4) msize(large) mlwidth(vvthick)), ///
+			(connected var_inflY anio if anio < anio[`obslast'+`exo_count'] & anio >= `anio_last', pstyle(p4) msize(large) mlwidth(vvthick)), ///
 			title({bf:Crecimientos} del INPC) ///
 			subtitle(${pais}) ///
 			xlabel(1995(5)`=round(anio[_N],5)') ///
