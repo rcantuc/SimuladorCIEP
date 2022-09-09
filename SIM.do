@@ -54,17 +54,6 @@ noisily Poblacion, aniofinal(`=scalar(anioend)') //`update'
 noisily PIBDeflactor, `update' geodef(2013) geopib(2013)
 noisily SCN, `update'
 noisily Inflacion, `update'
-exit
-
-
-******************************/
-***                         ***
-***    4. SISTEMA FISCAL    ***
-***                         ***
-*******************************
-noisily LIF, by(divPE) rows(1) `update'
-noisily PEF, by(divPE) rows(2) min(0) `update'
-*noisily SHRFSP, `update'
 
 
 
@@ -72,14 +61,25 @@ noisily PEF, by(divPE) rows(2) min(0) `update'
 ***                     ***
 ***    6. HOUSEHOLDS    ***
 ***                     ***
-***************************
-noisily TasasEfectivas
-
+/***************************
 *noisily run "`c(sysdir_site)'/Expenditure.do" `=aniovp'
 *noisily run `"`c(sysdir_site)'/Households`=subinstr("${pais}"," ","",.)'.do"' `=aniovp'
 noisily run `"`c(sysdir_site)'/PerfilesSim.do"' `=aniovp'
 
+
+
+******************************/
+***                         ***
+***    4. SISTEMA FISCAL    ***
+***                         ***
+*******************************
+noisily LIF, by(divPE) rows(1) eofp `update'
+noisily TasasEfectivas
+
+noisily PEF, by(divPE) rows(2) min(0) `update'
 noisily GastoPC
+
+*noisily SHRFSP, `update'
 
 * Sankey *
 foreach k in grupoedad decil escol sexo {
