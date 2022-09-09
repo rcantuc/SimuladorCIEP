@@ -11,9 +11,9 @@
 ***                   ***
 *** 1. BASES DE DATOS ***
 ***                   ***
-/*************************
+*************************
 local archivos: dir "`c(sysdir_site)'/bases/PEFs/$pais" files "*.xlsx"			// Busca todos los archivos .xlsx en /bases/PEFs/
-*local archivos `""CuotasISSSTE.xlsx" "CP 2020.xlsx""'
+*local archivos `""CuotasISSSTE.xlsx" "PPEF 2023.xlsx" "CP 2013.xlsx""'
 
 foreach k of local archivos {													// Loop para todos los archivos .csv
 
@@ -151,6 +151,7 @@ destring ramo, replace
 
 replace desc_ramo = "Oficina de la Presidencia de la República" if ramo == 2
 replace desc_ramo = "Agricultura y Desarrollo Rural" if ramo == 8
+replace desc_ramo = "Infraestructura, Comunicaciones y Transportes" if ramo == 9
 replace desc_ramo = "Desarrollo Agrario, Territorial y Urbano" if ramo == 15
 replace desc_ramo = "Bienestar" if ramo == 20
 replace desc_ramo = "Instituto Nacional Electoral" if ramo == 22
@@ -159,8 +160,6 @@ replace desc_ramo = "Seguridad y Protección Ciudadana" if ramo == 36
 replace desc_ramo = "Instituto Nacional de Transparencia, Acceso a la Información y Protección de Datos Personales" if ramo == 44
 replace desc_ramo = "Petróleos Mexicanos" if ramo == 52
 replace desc_ramo = "Comisión Federal de Electricidad" if ramo == 53
-replace desc_ramo = "Comisión Federal de Electricidad" if ramo == 53
-replace desc_ramo = "Infraestructura, Comunicaciones y Transportes" if ramo == 9
 
 labmask ramo, values(desc_ramo)
 drop desc_ramo
