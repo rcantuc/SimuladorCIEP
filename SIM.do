@@ -78,10 +78,10 @@ noisily Inflacion, `update'
 *noisily PEF, by(divPE) rows(2) min(0) `update'
 *noisily GastoPC
 
-*noisily SHRFSP, `update'
+noisily SHRFSP, `update'
 
-* Sankey *
-*noisily run `"`c(sysdir_site)'/PerfilesSim.do"' `=aniovp'
+/* Sankey *
+noisily run `"`c(sysdir_site)'/PerfilesSim.do"' `=aniovp'
 foreach k in grupoedad decil escol sexo {
 	noisily run "`c(sysdir_site)'/SankeySF.do" `k' `=aniovp'
 }

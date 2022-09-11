@@ -249,7 +249,7 @@ rename monto costodeudaExterno
 tempfile costodeudaEE
 save "`costodeudaEE'"
 
-PEF if divGA == 1, nographs
+/*PEF if divGA == 1, nographs
 collapse (sum) amortizacion=gastoneto, by(anio)
 tempfile amortizacion
 save "`amortizacion'"
@@ -277,7 +277,7 @@ merge 1:1 (anio) using "`USD'", nogen
 *merge 1:1 (anio) using "`costodeudaE'", nogen
 merge 1:1 (anio) using "`costodeudaII'", nogen update
 merge 1:1 (anio) using "`costodeudaEE'", nogen update
-merge 1:1 (anio) using "`amortizacion'", nogen
+*merge 1:1 (anio) using "`amortizacion'", nogen
 tsset anio
 
 ** Tipo de cambio **

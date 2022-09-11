@@ -3,7 +3,7 @@
 **************
 timer on 9
 if "`1'" == "" {
-	local 1 = "sexo"
+	local 1 = "escol"
 	local 2 = 2023
 }
 

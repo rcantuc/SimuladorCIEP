@@ -126,20 +126,22 @@ PEF if transf_gf == 0 & ramo != -1 & (substr(string(objeto),1,2) == "45" ///
 	| substr(string(objeto),1,2) == "47" | desc_pp == 779), anio(`enighanio') by(ramo) min(0) nographs
 local SSFederacion = r(Aportaciones_a_Seguridad_Social) + `Cuotas_ISSSTE'
 
-PEF if divGA == 3, anio(`enighanio') by(desc_subfuncion) min(0) nographs
-local Basica = r(Educaci_c_o__n_B_c_a__sica)
-local Media = r(Educaci_c_o__n_Media_Superior)
-local Superior = r(Educaci_c_o__n_Superior)
-local Adultos = r(Educaci_c_o__n_para_Adultos)
+PEF if divPE == 2, anio(`enighanio') by(desc_subfuncion) min(0) nographs
+local Basica = r(Educación_Básica)
+local Media = r(Educación_Media_Superior)
+local Superior = r(Educación_Superior)
+local Adultos = r(Educación_para_Adultos)
 
-PEF, anio(`enighanio') by(divGA) min(0) nographs
+PEF, anio(`enighanio') by(divCIEP) min(0) nographs
+local PenBienestar = r(Pensión_Bienestar)
+
+PEF, anio(`enighanio') by(divPE) min(0) nographs
 local OtrosGas = r(Otros)
-local Pensiones = r(Pensiones)
-local Educacion = r(Educaci_c_o__n)
+local Pensiones = r(Pensiones)-`PenBienestar'
+local Educacion = r(Educación)
 local Salud = r(Salud)
-local PenBienestar = r(Pensi_c_o__n_Bienestar)
 
-PEF if capitulo == 6 & divGA != 3 & divGA != 7, anio(`enighanio') by(entidad) min(0) nographs
+PEF if divPE == 4, anio(`enighanio') by(entidad) min(0) nographs
 local Aguas = r(Aguascalientes)
 local BajaN = r(Baja_California)
 local BajaS = r(Baja_California_Sur)
@@ -148,29 +150,29 @@ local Coahu = r(Coahuila)
 local Colim = r(Colima)
 local Chiap = r(Chiapas)
 local Chihu = r(Chihuahua)
-local Ciuda = r(Ciudad_de_M_c_e__xico)
+local Ciuda = r(Ciudad_de_México)
 local Duran = r(Durango)
 local Guana = r(Guanajuato)
 local Guerr = r(Guerrero)
 local Hidal = r(Hidalgo)
 local Jalis = r(Jalisco)
-local Estad = r(Estado_de_M_c_e__xico)
-local Micho = r(Michoac_c_a__n)
+local Estad = r(Estado_de_México)
+local Micho = r(Michoacán)
 local Morel = r(Morelos)
 local Nayar = r(Nayarit)
-local Nuevo = r(Nuevo_Le_c_o__n)
+local Nuevo = r(Nuevo_León)
 local Oaxac = r(Oaxaca)
 local Puebl = r(Puebla)
-local Quere = r(Quer_c_e__taro)
+local Quere = r(Querétaro)
 local Quint = r(Quintana_Roo)
-local SanLu = r(San_Luis_Potos_c_i__)
+local SanLu = r(San_Luis_Potosí)
 local Sinal = r(Sinaloa)
 local Sonor = r(Sonora)
 local Tabas = r(Tabasco)
 local Tamau = r(Tamaulipas)
 local Tlaxc = r(Tlaxcala)
 local Verac = r(Veracruz)
-local Yucat = r(Yucat_c_a__n)
+local Yucat = r(Yucatán)
 local Zacat = r(Zacatecas)
 local InfraT = r(StatTotal)
 
@@ -187,7 +189,7 @@ local IMSSpropio = r(IMSS)-`CuotasIMSS'
 local ISSSTEpropio = r(ISSSTE)
 local CFEpropio = r(CFE)
 local Pemexpropio = r(Pemex)
-local FMP = r(FMP__Der__petroleros)
+local FMP = r(FMP__der__petroleros_)
 local Deuda = r(Deuda)
 local Mejoras = r(Contribuciones_de_mejoras)
 local Derechos = r(Derechos)
