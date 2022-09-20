@@ -8,16 +8,18 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
-	syntax [, NOGraphs Anio(int `aniovp') BOOTstrap(int 1) Update END(int 2100) ANIOMIN(int 2000)]
+	syntax [, NOGraphs Anio(int `aniovp') BOOTstrap(int 1) Update END(int 2100) ///
+		ANIOMIN(int 2000) DIScount(real 3)]
 
 
 
 	*************
 	*** 1 PIB ***
 	*************
-	use if anio <= `end' using "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", clear
+	*use if anio <= `end' using "`c(sysdir_site)'/users/$pais/$id/PIB.dta", clear
+	PIBDeflactor, nographs nooutput
+	keep if anio <= `end'
 	local currency = currency[1]
-	local discount = discount[1]
 	local anio_last = `anio'
 	forvalues k = 1(1)`=_N' {
 		if anio[`k'] == `anio_last' {
@@ -42,142 +44,30 @@ quietly {
 	******************************
 	*** 3 Fiscal Gap: Ingresos ***
 	******************************
-	LIF, anio(`anio') nographs by(divGA) ilif //eofp
-	collapse (sum) recaudacion if divLIF != 10, by(anio divGA) fast
+	LIF, anio(`anio') nographs by(divSIM2) //ilif //eofp
+	collapse (sum) recaudacion if divLIF != 10, by(anio divSIM2) fast
 
 	g modulo = ""
-	levelsof divGA, local(divGA)
-	foreach k of local divGA {
-		local divGA`k' : label divGA `k'
-		if "`divGA`k''" == "Impuestos al ingreso" {
-			preserve
+	levelsof divSIM2, local(divSIM2)
+	foreach k of local divSIM2 {
+		local divSIM2`k' : label divSIM2 `k'
+		preserve
 
-			capture use `"`c(sysdir_personal)'/users/$pais/$id/LaboralREC.dta"', clear
-			if _rc != 0 {
-				 use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/LaboralREC.dta"', clear
-			}
-			if "$pais" == "Ecuador" {
-				rename estimacion estimacionorig
-				merge 1:1 (anio) using `"`c(sysdir_personal)'/users/$pais/bootstraps/1/LaboralEcuREC.dta"'
-				replace estimacion = estimacionorig if anio <= 2033
-			}
-			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
-			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
-
-			g divGA = `k'
-			replace modulo = "alingreso"
-
-			tempfile alingreso
-			save `alingreso'
-
-			restore
-			merge 1:1 (anio divGA) using `alingreso', nogen update replace
+		capture use `"`c(sysdir_site)'/users/$pais/$id/`divSIM2`k''REC.dta"', clear
+		if _rc != 0 {
+			 use `"`c(sysdir_site)'/users/$pais/$id/bootstraps/1/`divSIM2`k''REC.dta"', clear
 		}
-		if "`divGA`k''" == "Impuestos al consumo" {
-			preserve
+		merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
+		collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
 
-			capture use `"`c(sysdir_personal)'/users/$pais/$id/ConsumoREC.dta"', clear
-			if _rc != 0 {
-				use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/ConsumoREC.dta"', clear			
-			}
-			if "$pais" == "Ecuador" {
-				rename estimacion estimacionorig
-				merge 1:1 (anio) using `"`c(sysdir_personal)'/users/$pais/bootstraps/1/ConsumoEcuREC.dta"'
-				replace estimacion = estimacionorig if anio <= 2033
-			}
-			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
-			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
+		g divSIM2 = `k'
+		replace modulo = "`divSIM2`k''"
 
-			g divGA = `k'
-			replace modulo = "alconsumo"
+		tempfile `divSIM2`k''
+		save ``divSIM2`k'''
 
-			tempfile alconsumo
-			save `alconsumo'
-
-			restore
-			merge 1:1 (anio divGA) using `alconsumo', nogen update replace
-		}
-		if "`divGA`k''" == "Ingresos de capital" | "`divGA`k''" == "Otros ingresos" {
-			preserve
-
-			capture use `"`c(sysdir_personal)'/users/$pais/$id/OtrosCREC"', clear
-			if _rc != 0 {
-				use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/OtrosCREC.dta"', clear			
-			}
-			if "$pais" == "Ecuador" {
-				rename estimacion estimacionorig
-				merge 1:1 (anio) using `"`c(sysdir_personal)'/users/$pais/bootstraps/1/OtrosCEcuREC.dta"'
-				replace estimacion = estimacionorig if anio <= 2033
-			}
-			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
-			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
-
-			g divGA = `k'
-			replace modulo = "otrosing"
-
-			tempfile otros
-			save `otros'
-
-			restore
-			merge 1:1 (anio divGA) using `otros', nogen update replace
-		}
-		if "`divGA`k''" == "Seguridad Social" {
-			preserve
-
-			capture use `"`c(sysdir_personal)'/users/$pais/$id/CuotasSSREC"', clear
-			if _rc != 0 {
-				use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/CuotasSSREC.dta"', clear
-			}
-			if "$pais" == "Ecuador" {
-				rename estimacion estimacionorig
-				merge 1:1 (anio) using `"`c(sysdir_personal)'/users/$pais/bootstraps/1/CuotasSSEcuREC.dta"'
-				replace estimacion = estimacionorig if anio <= 2033
-			}
-			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
-			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
-
-			g divGA = `k'
-			replace modulo = "seguridadsocial"
-
-			tempfile seguridadsocial
-			save `seguridadsocial'
-
-			restore
-			merge 1:1 (anio divGA) using `seguridadsocial', nogen update replace
-		}
-		if "`divGA`k''" == "Petroleros" {
-			preserve
-
-			capture use `"`c(sysdir_personal)'/users/$pais/$id/PetroleoREC"', clear
-			if _rc != 0 {
-				use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PetroleoREC.dta"', clear
-			}
-			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
-			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
-
-			g divGA = `k'
-			replace modulo = "petroleo"
-
-			tempfile petroleo
-			save `petroleo'
-
-			if "$pais" == "Ecuador" {
-				import excel `"`c(sysdir_site)'../basesCIEP/Otros/Ecuador/ingresospetroleros.xlsx"', sheet("Sheet1") firstrow clear
-				rename ingresos_petroleros estimacion
-				drop if anio == .
-
-				g divGA = `k'
-				g modulo = "petroleo"
-
-				merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
-				collapse estimacion, by(anio modulo divGA)
-
-				save `petroleo', replace
-			}
-
-			restore
-			merge 1:1 (anio divGA) using `petroleo', nogen update replace
-		}
+		restore
+		merge 1:1 (anio divSIM2) using  ``divSIM2`k''', nogen update replace
 	}
 
 	merge m:1 (anio) using `PIB', nogen keep(matched) update replace
@@ -185,7 +75,7 @@ quietly {
 
 	* Actualizaciones *
 	replace estimacion = 0 if estimacion == .
-	replace estimacion = estimacion*lambda // if modulo != "petroleo"
+	replace estimacion = estimacion*lambda
 	replace recaudacion = 0 if recaudacion == .
 	replace recaudacion = recaudacion/deflator
 
@@ -194,53 +84,42 @@ quietly {
 	format recaudacion* estimacion* %20.0fc
 	tsset anio
 
-	/* Otros ingresos (como % PIB) *
-	g otrospib = estimacionotros/pibYR*100
-	replace otrospib = L.otrospib if anio > `anio'
-	replace estimacionotros = L.otrospib/100*pibYR if anio > `anio'
-
-	* Ingresos petroleros (como % PIB) */
-	if "$pais" != "Ecuador" {
-		g petroleopib = estimacionpetroleo/pibYR*100
-		replace petroleopib = L.petroleopib if anio > `anio'
-		replace estimacionpetroleo = L.petroleopib/100*pibYR if anio > `anio'
-	}
 
 
 	***************/
 	** 3.1 Graphs **
 	if "`nographs'" != "nographs" & "$nographs" != "nographs" {
-		tempvar consumo ingreso otros petroleo cuotasss
-		g `consumo' = (recaudacionalconsumo)/1000000000
-		g `ingreso' = (recaudacionalingreso + recaudacionalconsumo)/1000000000
-		g `otros' = (recaudacionotros + recaudacionalingreso + recaudacionalconsumo)/1000000000
-		g `petroleo' = (recaudacionpetroleo + recaudacionotros + recaudacionalingreso + recaudacionalconsumo)/1000000000
-		g `cuotasss' = (recaudacionseguridadsocial + recaudacionpetroleo + recaudacionotros + recaudacionalingreso + recaudacionalconsumo)/1000000000
+		tempvar consumo laboral kprivado kpublico
+		g `consumo'  = (recaudacionConsumo)/1000000000000
+		g `laboral'  = (recaudacionConsumo + recaudacionLaboral)/1000000000000
+		g `kprivado' = (recaudacionConsumo + recaudacionLaboral + recaudacionKPrivado)/1000000000000
+		g `kpublico' = (recaudacionConsumo + recaudacionLaboral + recaudacionKPrivado + recaudacionKPublico)/1000000000000
+	
+		tempvar consumo2 laboral2 kprivado2 kpublico2
+		g `consumo2'  = (estimacionConsumo)/1000000000000
+		g `laboral2'  = (estimacionConsumo + estimacionLaboral)/1000000000000
+		g `kprivado2' = (estimacionConsumo + estimacionLaboral + estimacionKPrivado)/1000000000000
+		g `kpublico2' = (estimacionConsumo + estimacionLaboral + estimacionKPrivado + estimacionKPublico)/1000000000000
 
-		tempvar consumo2 ingreso2 otros2 petroleo2 cuotasss2
-		g `consumo2' = (estimacionalconsumo)/1000000000
-		g `ingreso2' = (estimacionalingreso + estimacionalconsumo)/1000000000
-		g `otros2' = (estimacionotros + estimacionalingreso + estimacionalconsumo)/1000000000
-		g `petroleo2' = (estimacionpetroleo + estimacionotros + estimacionalingreso + estimacionalconsumo)/1000000000
-		g `cuotasss2' = (estimacionseguridadsocial + estimacionpetroleo + estimacionotros + estimacionalingreso + estimacionalconsumo)/1000000000
-
-		twoway (area `cuotasss' `petroleo' `otros' `ingreso' `consumo' anio if anio <= `anio' & anio >= `aniomin') ///
-			(area `cuotasss2' anio if anio > `anio', color("255 129 0")) ///
-			(area `petroleo2' anio if anio > `anio', color("255 189 0")) ///
-			(area `otros2' anio if anio > `anio', color("39 97 47")) ///
-			(area `ingreso2' anio if anio > `anio', color("53 200 71")) ///
-			(area `consumo2' anio if anio > `anio', color("0 78 198")), ///
-			legend(rows(1) order(1 2 3 4 5) ///
-			label(1 "Aport. Seguridad Social") label(2 "Petroleros") label(3 "Otros ingresos") ///
-			label(4 "Impuestos laborales") label(5 "Impuestos al consumo")) ///
+		twoway (area `kpublico' `kprivado' `laboral' `consumo' anio if anio <= `anio' & anio >= `aniomin') ///
+			(area `kpublico2' anio if anio > `anio', color("255 129 0")) ///
+			(area `kprivado2' anio if anio > `anio', color("255 189 0")) ///
+			(area `laboral2' anio if anio > `anio', color("39 97 47")) ///
+			(area `consumo2' anio if anio > `anio', color("53 200 71")), ///
+			legend(rows(1) order(1 2 3 4) ///
+			label(1 "Organismos y Empresas") ///
+			label(2 "Impuestos al capital") ///
+			label(3 "Impuestos laborales") ///
+			label(4 "Impuestos al consumo")) ///
 			xlabel(`aniomin'(5)`=round(anio[_N],10)') ///
 			ylabel(, format(%20.0fc)) ///
 			xline(`=`anio'+.5') ///
-			text(`=`otros'[`obs`anio_last'']*.0618' `=`anio'+1.5' "{bf:Proyecci{c o'}n}", place(ne) color(white)) ///
+			text(`=`kpublico2'[`obs`anio_last'']*.0618' `=`anio'+1.5' "{bf:Proyecci{c o'}n}", ///
+			place(ne) color(white)) ///
 			yscale(range(0)) ///
 			title({bf:Proyecci{c o'}n} de los ingresos p{c u'}blicos) ///
 			subtitle($pais) ///
-			xtitle("") ytitle(mil millones `currency' `anio') ///
+			xtitle("") ytitle(billones `currency' `anio') ///
 			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.") ///
 			name(Proy_ingresos, replace)
 		if "$export" != "" {
@@ -248,37 +127,31 @@ quietly {
 		}
 	}
 
-
-
 	if "$output" == "output" {
-		keep if anio >= 2010
+		keep if anio >= 2013
 		forvalues k=1(1)`=_N' {
 			if anio[`k'] >= 2010 & anio[`k'] < `anio' {
-				local proy_consumo = "`proy_consumo' `=string(`=recaudacionalconsumo[`k']/1000000000000',"%10.3f")',"
+				local proy_consumo = "`proy_consumo' `=string(`=`consumo'[`k']',"%10.3f")',"
+				local proy_ingreso = "`proy_ingreso' `=string(`=`laboral'[`k']',"%10.3f")',"
+				local proy_kprivado = "`proy_kprivado' `=string(`=`kprivado'[`k']',"%10.3f")',"
+				local proy_kpublico = "`proy_kpublico' `=string(`=`kpublico'[`k']',"%10.3f")',"
 			}
 			if anio[`k'] >= `anio' & anio[`k'] <= 2030 {
-				local proy_consumo = "`proy_consumo' `=string(`=estimacionalconsumo[`k']/1000000000000',"%10.3f")',"
-			}
-			if anio[`k'] >= 2010 & anio[`k'] < `anio' {
-				local proy_ingreso = "`proy_ingreso' `=string(`=recaudacionalingreso[`k']/1000000000000',"%10.3f")',"
-			}
-			if anio[`k'] >= `anio' & anio[`k'] <= 2030 {
-				local proy_ingreso = "`proy_ingreso' `=string(`=estimacionalingreso[`k']/1000000000000',"%10.3f")',"
-			}
-			if anio[`k'] >= 2010 & anio[`k'] < `anio' {
-				local proy_otrosing = "`proy_otrosing' `=string(`=recaudacionotrosing[`k']/1000000000000',"%10.3f")',"
-			}
-			if anio[`k'] >= `anio' & anio[`k'] <= 2030 {
-				local proy_otrosing = "`proy_otrosing' `=string(`=estimacionotrosing[`k']/1000000000000',"%10.3f")',"
+				local proy_consumo = "`proy_consumo' `=string(`=`consumo2'[`k']',"%10.3f")',"
+				local proy_ingreso = "`proy_ingreso' `=string(`=`laboral2'[`k']',"%10.3f")',"
+				local proy_kprivado = "`proy_kprivado' `=string(`=`kprivado2'[`k']',"%10.3f")',"
+				local proy_kpublico = "`proy_kpublico' `=string(`=`kpublico2'[`k']',"%10.3f")',"
 			}
 		}
 		local length_consumo = strlen("`proy_consumo'")
 		local length_ingreso = strlen("`proy_ingreso'")
-		local length_otrosing = strlen("`proy_otrosing'")
+		local length_kprivado = strlen("`proy_kprivado'")
+		local length_kpublico = strlen("`proy_kpublico'")
 		capture log on output
-		noisily di in w "PROYCON: [`=substr("`proy_consumo'",1,`=`length_consumo'-1')']"
-		noisily di in w "PROYING: [`=substr("`proy_ingreso'",1,`=`length_ingreso'-1')']"
-		noisily di in w "PROYOTRING: [`=substr("`proy_otrosing'",1,`=`length_otrosing'-1')']"
+		noisily di in w "PROYCONSU: [`=substr("`proy_consumo'",1,`=`length_consumo'-1')']"
+		noisily di in w "PROYINGRE: [`=substr("`proy_ingreso'",1,`=`length_ingreso'-1')']"
+		noisily di in w "PROYKPUBL: [`=substr("`proy_kprivado'",1,`=`length_kprivado'-1')']"
+		noisily di in w "PROYKPRIV: [`=substr("`proy_kpublico'",1,`=`length_kpublico'-1')']"
 		capture log off output
 	}
 
@@ -293,7 +166,7 @@ quietly {
 	local grow_rate_LR = ((pibYR[_N]/pibYR[_N-10])^(1/10)-1)*100
 	g estimacionVP = estimacion/(1+`discount'/100)^(anio-`anio')
 	format estimacionVP %20.0fc
-	local estimacionINF = estimacionVP[_N] /*(1+`grow_rate_LR')*(1+`discount'/100)^(`anio'-`=anio[_N]')*/ /(1-((1+`grow_rate_LR'/100)/(1+`discount'/100)))
+	local estimacionINF = estimacionVP[_N]/(1-((1+`grow_rate_LR'/100)/(1+`discount'/100)))
 
 	tabstat estimacionVP if anio >= `anio', stat(sum) f(%20.0fc) save
 	tempname estimacionVP
@@ -313,153 +186,131 @@ quietly {
 	****************************
 	*** 4 Fiscal Gap: Gastos ***
 	****************************
-	PEF if divGA != -1, anio(`anio') by(divGA) nographs
-	capture confirm variable transf_gf
-	if _rc != 0 {
-		g transf_gf = 0
-	}
-	collapse (sum) gasto if transf_gf == 0, by(anio divGA) fast
+	PEF if transf_gf == 0, anio(`anio') by(divPE) nographs
+	replace divPE = 6 if divPE == 5 | divPE == 3 | divPE == -1 | divPE == 4
+	collapse (sum) gasto, by(anio divPE) fast
 	g modulo = ""
 
-	levelsof divGA, local(divGA)
-	foreach k of local divGA {
-		local divGA`k' : label divGA `k'
-		if "`divGA`k''" == "Educaci{c o'}n" {
+	levelsof divPE, local(divPE)
+	foreach k of local divPE {
+		local divPE`k' : label divPE `k'
+		if "`divPE`k''" == "Educación" {
 			preserve
 
-			capture use `"`c(sysdir_personal)'/users/$pais/$id/EducacionREC.dta"', clear
+			capture use `"`c(sysdir_site)'/users/$pais/$id/EducacionREC.dta"', clear
 			if _rc != 0 {
-				use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/EducacionREC.dta"', clear			
+				use `"`c(sysdir_site)'/users/$pais/$id/bootstraps/1/EducacionREC.dta"', clear			
 			}
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
 
-			g divGA = `k'
+			g divPE = `k'
 			replace modulo = "educacion"
 
 			tempfile educacion
 			save `educacion'
 
 			restore
-			merge 1:1 (anio divGA) using `educacion', nogen update replace
+			merge 1:1 (anio divPE) using `educacion', nogen update replace
 		}
-		if "`divGA`k''" == "Pensiones" {
+		if "`divPE`k''" == "Pensiones" {
 			preserve
 
-			capture use `"`c(sysdir_personal)'/users/$pais/$id/PensionREC.dta"', clear
+			capture use `"`c(sysdir_site)'/users/$pais/$id/PensionREC.dta"', clear
 			if _rc != 0 {
-				use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PensionREC.dta"', clear			
+				use `"`c(sysdir_site)'/users/$pais/$id/bootstraps/1/PensionREC.dta"', clear			
 			}
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
 
-			if "$pais" == "El Salvador" {
-				tempfile proypensiones
-				save `proypensiones'
-				
-				import excel `"`c(sysdir_site)'/../basesCIEP/SIM/$pais/Pensiones.xlsx"', clear firstrow
-				drop if anio == .
-				capture drop PIB
-				rename estimacion estimacionSIM
-				format estimacion* %20.0fc
-
-				merge 1:1 (anio) using `proypensiones', nogen
-				replace estimacion = estimacionSIM
-				drop estimacionSIM
-			}
-
-			g divGA = `k'
+			g divPE = `k'
 			replace modulo = "pensiones"
 
 			tempfile pensiones
 			save `pensiones'
 
 			restore
-			merge 1:1 (anio divGA) using `pensiones', nogen update replace
+			merge 1:1 (anio divPE) using `pensiones', nogen update replace
 		}
-		if "`divGA`k''" == "Salud" {
+		if "`divPE`k''" == "Salud" {
 			preserve
 
-			capture use `"`c(sysdir_personal)'/users/$pais/$id/SaludREC.dta"', clear
+			capture use `"`c(sysdir_site)'/users/$pais/$id/SaludREC.dta"', clear
 			if _rc != 0 {
-				use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/SaludREC.dta"', clear			
+				use `"`c(sysdir_site)'/users/$pais/$id/bootstraps/1/SaludREC.dta"', clear			
 			}
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
 
-			g divGA = `k'
+			g divPE = `k'
 			replace modulo = "salud"
 
 			tempfile salud
 			save `salud'
 
 			restore
-			merge 1:1 (anio divGA) using `salud', nogen update replace
+			merge 1:1 (anio divPE) using `salud', nogen update replace
 		}
-		if "`divGA`k''" == "Costo de la deuda" {
-			replace modulo = "costodeuda" if divGA == `k'
+		if "`divPE`k''" == "Costo de la deuda" {
+			replace modulo = "costodeuda" if divPE == `k'
 		}
-		if "`divGA`k''" == "Amortizaci{c o'}n" {
-			replace modulo = "amortizacion" if divGA == `k'
-		}
-		if "`divGA`k''" == "Pensi{c o'}n Bienestar" {
+		if "`divPE`k''" == "Pensión Bienestar" {
 			preserve
 
-			capture use `"`c(sysdir_personal)'/users/$pais/$id/PenBienestarREC.dta"', clear
+			capture use `"`c(sysdir_site)'/users/$pais/$id/PenBienestarREC.dta"', clear
 			if _rc != 0 {
-				use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/PenBienestarREC.dta"', clear
+				use `"`c(sysdir_site)'/users/$pais/$id/bootstraps/1/PenBienestarREC.dta"', clear
 			}
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
 
-			g divGA = `k'
+			g divPE = `k'
 			replace modulo = "penbienestar"
 
 			tempfile penbienestar
 			save `penbienestar'
 
 			restore
-			merge 1:1 (anio divGA) using `penbienestar', nogen update replace
+			merge 1:1 (anio divPE) using `penbienestar', nogen update replace
 		}
-		if "`divGA`k''" == "Otros" {
+		if "`divPE`k''" == "Otros" {
 			preserve
 
-			capture use `"`c(sysdir_personal)'/users/$pais/$id/OtrosGasREC.dta"', clear
+			capture use `"`c(sysdir_site)'/users/$pais/$id/OtrosGasREC.dta"', clear
 			if _rc != 0 {
-				use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/OtrosGasREC.dta"', clear
+				use `"`c(sysdir_site)'/users/$pais/$id/bootstraps/1/OtrosGasREC.dta"', clear
 			}
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
 
-			g divGA = `k'
+			g divPE = `k'
 			replace modulo = "otrosgas"
 
 			tempfile otrosgas
 			save `otrosgas'
 
 			restore
-			merge 1:1 (anio divGA) using `otrosgas', nogen update replace
+			merge 1:1 (anio divPE) using `otrosgas', nogen update replace
 		}
 	}
 
 	** Ingreso basico **
 	preserve
-
-	capture use `"`c(sysdir_personal)'/users/$pais/$id/IngBasicoREC"', clear
+	capture use `"`c(sysdir_site)'/users/$pais/$id/IngBasicoREC"', clear
 	if _rc != 0 {
-		use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/IngBasicoREC.dta"', clear
+		use `"`c(sysdir_site)'/users/$pais/$id/bootstraps/1/IngBasicoREC.dta"', clear
 	}
 	merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 	collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
 
-	g divGA = 99
+	g divPE = 99
 	replace modulo = "ingbasico"
-	
+
 	tempfile ingbasico
 	save `ingbasico'
 
 	restore
-	merge 1:1 (anio divGA) using `ingbasico', nogen update replace
+	merge 1:1 (anio divPE) using `ingbasico', nogen update replace
 
 	* PIB *
 	merge m:1 (anio) using `PIB', nogen keep(matched) update replace
@@ -491,30 +342,17 @@ quietly {
 	merge 1:1 (anio) using `baseingresos', nogen
 
 
-	* Amortizacion *
-	replace gastoamortizacion = 0 if gastoamortizacion == .
-	g amortizacionpib = gastoamortizacion/pibY*100 if anio <= `anio'
-	
-	tabstat amortizacionpib if anio <= `anio' & anio >= `anio'-1, save
-	tempname amortizacionpib_ari
-	matrix `amortizacionpib_ari' = r(StatTotal)
-
-	replace amortizacionpib = `amortizacionpib_ari'[1,1] if amortizacionpib == .
-
-
 	* Costo de la deuda *
 	g tasaEfectiva = gastocostodeuda/shrfsp*100
 	capture confirm existence $tasaEfectiva
 	if _rc == 0 {
 		replace tasaEfectiva = $tasaEfectiva if anio >= `anio' & tasaEfectiva == .
 	}
-	*else {
-		tabstat tasaEfectiva if anio <= `anio' & anio >= `anio'-1, save
-		tempname tasaEfectiva_ari
-		matrix `tasaEfectiva_ari' = r(StatTotal)
-	
-		replace tasaEfectiva = `tasaEfectiva_ari'[1,1] if anio >= `anio' & tasaEfectiva == .
-	*}
+	tabstat tasaEfectiva if anio <= `anio' & anio >= `anio'-1, save
+	tempname tasaEfectiva_ari
+	matrix `tasaEfectiva_ari' = r(StatTotal)
+
+	replace tasaEfectiva = `tasaEfectiva_ari'[1,1] if anio >= `anio' & tasaEfectiva == .
 
 
 	* Simulacion *
@@ -590,27 +428,24 @@ quietly {
 	***************
 	forvalues k = `=`anio'+1'(1)`=anio[_N]' {
 
-		* Amortizaciones *
-		replace estimacionamortizacion = L.amortizacionpib/100*pibY if anio == `k'
-
 		* Costo de la deuda *
 		replace estimacioncostodeuda = tasaEfectiva/100*L.shrfsp if anio == `k'
 
 		* RFSP *
 		capture confirm variable rfspBalance
 		if _rc != 0 {
-			g rfspBalance = estimacionamortizacion + estimacioncostodeuda + estimacioneducacion ///
+			g rfspBalance = estimacioncostodeuda + estimacioneducacion ///
 				+ estimacionsalud + estimacionpensiones + estimacionotrosgas + estimacioningbasico ///
 				+ estimacionpenbienestar ///
 				- estimacioningresos if anio == `k'
 		}
 		else {
-			replace rfspBalance = estimacionamortizacion + estimacioncostodeuda + estimacioneducacion ///
+			replace rfspBalance = estimacioncostodeuda + estimacioneducacion ///
 				+ estimacionsalud + estimacionpensiones + estimacionotrosgas + estimacioningbasico ///
 				+ estimacionpenbienestar ///
 				- estimacioningresos if anio == `k'
 		}
-		replace rfsp = rfspBalance - estimacionamortizacion*0 if anio == `k'
+		replace rfsp = rfspBalance if anio == `k'
 
 		* SHRFSP *
 		replace shrfspExternoUSD = L.shrfspExterno/L.tipoDeCambio if anio == `k'
@@ -626,7 +461,7 @@ quietly {
 
 	g rfsp_pib = rfsp/pibYR*100
 
-	egen estimaciongastos = rsum(estimacionamortizacion estimacioncostodeuda estimacioneducacion ///
+	egen estimaciongastos = rsum(estimacioncostodeuda estimacioneducacion ///
 			estimacionsalud estimacionpensiones estimacionotrosgas estimacioningbasico ///
 			estimacionpenbienestar)
 	format estimaciongastos %20.0fc
@@ -635,45 +470,41 @@ quietly {
 
 	****************
 	** 4.1 Graphs **
-	tempvar educaciong pensionesg saludg costog amortg otrosg ingbasg bienestarg
+	tempvar educaciong pensionesg saludg costog otrosg ingbasg bienestarg
 	g `educaciong' = (gastoeducacion)/1000000000
 	g `pensionesg' = (gastopensiones + gastoeducacion)/1000000000
 	g `saludg' = (gastosalud + gastopensiones + gastoeducacion)/1000000000
 	g `costog' = (gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000
-	g `amortg' = (gastoamortizacion + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000
-	g `otrosg' = (gastootros + gastoamortizacion + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000
-	g `bienestarg' = (gastopenbienestar + gastootros + gastoamortizacion + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000
-	g `ingbasg' = (gastoingbasico + gastopenbienestar + gastootros + gastoamortizacion + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000
+	g `otrosg' = (gastootros + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000
+	g `bienestarg' = (gastopenbienestar + gastootros + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000
+	g `ingbasg' = (gastoingbasico + gastopenbienestar + gastootros + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000
 	
-	tempvar educaciong2 pensionesg2 saludg2 costog2 amortg2 otrosg2 ingbasg2 bienestarg2
+	tempvar educaciong2 pensionesg2 saludg2 costog2 otrosg2 ingbasg2 bienestarg2
 	g `educaciong2' = (estimacioneducacion)/1000000000
 	g `pensionesg2' = (estimacionpensiones + estimacioneducacion)/1000000000
 	g `saludg2' = (estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000
 	g `costog2' = (estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000
-	g `amortg2' = (estimacionamortizacion + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000
-	g `otrosg2' = (estimacionotros + estimacionamortizacion + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000
-	g `bienestarg2' = (estimacionpenbienestar + estimacionotros + estimacionamortizacion + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000
-	g `ingbasg2' = (estimacioningbasico + estimacionpenbienestar + estimacionotros + estimacionamortizacion + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000
+	g `otrosg2' = (estimacionotros + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000
+	g `bienestarg2' = (estimacionpenbienestar + estimacionotros + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000
+	g `ingbasg2' = (estimacioningbasico + estimacionpenbienestar + estimacionotros + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000
 
 	if "`nographs'" != "nographs" & "$nographs" != "nographs" {
-		twoway (area `ingbasg' `bienestarg' `otrosg' `amortg' `costog' `saludg' `pensionesg' `educaciong' anio if anio <= `anio' & anio >= `aniomin') ///
+		twoway (area `ingbasg' `bienestarg' `otrosg' `costog' `saludg' `pensionesg' `educaciong' anio if anio <= `anio' & anio >= `aniomin') ///
 			(area `ingbasg2' anio if anio > `anio', color("255 129 0")) ///
 			(area `bienestarg2' anio if anio > `anio', color("255 189 0")) ///
 			(area `otrosg2' anio if anio > `anio', color("39 97 47")) ///
-			(area `amortg2' anio if anio > `anio', color("53 200 71")) ///
-			(area `costog2' anio if anio > `anio', color("0 78 198")) ///
-			(area `saludg2' anio if anio > `anio', color("0 151 201")) ///
-			(area `pensionesg2' anio if anio > `anio', color("186 34 64")) ///
-			(area `educaciong2' anio if anio > `anio', color("254 118 109")) if anio >= `aniomin', ///
-			legend(cols(8) order(3 4 5 6 7 8) ///
+			(area `costog2' anio if anio > `anio', color("53 200 71")) ///
+			(area `saludg2' anio if anio > `anio', color("0 78 198")) ///
+			(area `pensionesg2' anio if anio > `anio', color("0 151 201")) ///
+			(area `educaciong2' anio if anio > `anio', color("186 34 64")) if anio >= `aniomin', ///
+			legend(cols(8) order(2 3 4 5 6 7 1) ///
 			label(1 "Renta b{c a'}sica") ///
 			label(2 "Pensi{c o'}n Bienestar") ///
 			label(3 "Otros gastos") ///
-			label(4 "Amortizaci{c o'}n") ///
-			label(5 "Costo de la deuda") ///
-			label(6 "Salud") ///
-			label(7 "Pensiones") ///
-			label(8 "Educaci{c o'}n")) ///
+			label(4 "Costo de la deuda") ///
+			label(5 "Salud") ///
+			label(6 "Pensiones") ///
+			label(7 "Educaci{c o'}n")) ///
 			xlabel(`aniomin'(5)`=round(anio[_N],10)') ///
 			ylabel(, format(%20.0fc)) ///
 			xline(`=`anio'+.5') ///
@@ -705,52 +536,22 @@ quietly {
 	if "$output" == "output" {
 		forvalues k=1(1)`=_N' {
 			if anio[`k'] >= 2013 & anio[`k'] < `anio' {
-				local proy_educa = "`proy_educa' `=string(`=gastoeducacion[`k']/1000000000000',"%10.3f")',"
+				local proy_educa = "`proy_educa' `=string(`=`educaciong'[`k']',"%10.3f")',"
+				local proy_pension = "`proy_pension' `=string(`=`pensionesg'[`k']',"%10.3f")',"
+				local proy_salud = "`proy_salud' `=string(`=`saludg'[`k']',"%10.3f")',"
+				local proy_costo = "`proy_costo' `=string(`=`costo'[`k']',"%10.3f")',"
+				local proy_otrosg = "`proy_otrosg' `=string(`=`otrosg'[`k']',"%10.3f")',"
+				local proy_bienestar = "`proy_bienestar' `=string(`=`bienestarg'[`k']',"%10.3f")',"
+				local proy_ingbas = "`proy_ingbas' `=string(`=`ingbasg'[`k']',"%10.3f")',"
 			}
 			if anio[`k'] >= `anio' & anio[`k'] <= 2030 {
-				local proy_educa = "`proy_educa' `=string(`=estimacioneducacion[`k']/1000000000000',"%10.3f")',"
-			}
-			if anio[`k'] >= 2013 & anio[`k'] < `anio' {
-				local proy_pension = "`proy_pension' `=string(`=gastopensiones[`k']/1000000000000',"%10.3f")',"
-			}
-			if anio[`k'] >= `anio' & anio[`k'] <= 2030 {
-				local proy_pension = "`proy_pension' `=string(`=estimacionpensiones[`k']/1000000000000',"%10.3f")',"
-			}
-			if anio[`k'] >= 2013 & anio[`k'] < `anio' {
-				local proy_salud = "`proy_salud' `=string(`=gastosalud[`k']/1000000000000',"%10.3f")',"
-			}
-			if anio[`k'] >= `anio' & anio[`k'] <= 2030 {
-				local proy_salud = "`proy_salud' `=string(`=estimacionsalud[`k']/1000000000000',"%10.3f")',"
-			}
-			if anio[`k'] >= 2013 & anio[`k'] < `anio' {
-				local proy_costo = "`proy_costo' `=string(`=gastocostodeuda[`k']/1000000000000',"%10.3f")',"
-			}
-			if anio[`k'] >= `anio' & anio[`k'] <= 2030 {
-				local proy_costo = "`proy_costo' `=string(`=estimacioncostodeuda[`k']/1000000000000',"%10.3f")',"
-			}				
-			if anio[`k'] >= 2013 & anio[`k'] < `anio' {
-				local proy_amort = "`proy_amort' `=string(`=gastoamortizacion[`k']/1000000000000',"%10.3f")',"
-			}
-			if anio[`k'] >= `anio' & anio[`k'] <= 2030 {
-				local proy_amort = "`proy_amort' `=string(`=estimacionamortizacion[`k']/1000000000000',"%10.3f")',"
-			}				
-			if anio[`k'] >= 2013 & anio[`k'] < `anio' {
-				local proy_otrosg = "`proy_otrosg' `=string(`=gastootros[`k']/1000000000000',"%10.3f")',"
-			}
-			if anio[`k'] >= `anio' & anio[`k'] <= 2030 {
-				local proy_otrosg = "`proy_otrosg' `=string(`=estimacionotros[`k']/1000000000000',"%10.3f")',"
-			}				
-			if anio[`k'] >= 2013 & anio[`k'] < `anio' {
-				local proy_bienestar = "`proy_bienestar' `=string(`=gastopenbienestar[`k']/1000000000000',"%10.3f")',"
-			}
-			if anio[`k'] >= `anio' & anio[`k'] <= 2030 {
-				local proy_bienestar = "`proy_bienestar' `=string(`=estimacionpenbienestar[`k']/1000000000000',"%10.3f")',"
-			}				
-			if anio[`k'] >= 2013 & anio[`k'] < `anio' {
-				local proy_ingbas = "`proy_ingbas' `=string(`=gastoingbasico[`k']/1000000000000',"%10.3f")',"
-			}
-			if anio[`k'] >= `anio' & anio[`k'] <= 2030 {
-				local proy_ingbas = "`proy_ingbas' `=string(`=estimacioningbasico[`k']/1000000000000',"%10.3f")',"
+				local proy_educa = "`proy_educa' `=string(`=`educaciong2'[`k']',"%10.3f")',"
+				local proy_pension = "`proy_pension' `=string(`=`pensionesg2'[`k']',"%10.3f")',"
+				local proy_salud = "`proy_salud' `=string(`=`saludg2'[`k']',"%10.3f")',"
+				local proy_costo = "`proy_costo' `=string(`=`costo2'[`k']',"%10.3f")',"
+				local proy_otrosg = "`proy_otrosg' `=string(`=`otrosg2'[`k']',"%10.3f")',"
+				local proy_bienestar = "`proy_bienestar' `=string(`=`bienestarg2'[`k']',"%10.3f")',"
+				local proy_ingbas = "`proy_ingbas' `=string(`=`ingbasg2'[`k']',"%10.3f")',"
 			}
 		}
 		local length_educa = strlen("`proy_educa'")
@@ -766,7 +567,6 @@ quietly {
 		noisily di in w "PROYPENSION: [`=substr("`proy_pension'",1,`=`length_pension'-1')']"
 		noisily di in w "PROYSALUD: [`=substr("`proy_salud'",1,`=`length_salud'-1')']"
 		noisily di in w "PROYCOSTO: [`=substr("`proy_costo'",1,`=`length_costo'-1')']"
-		noisily di in w "PROYAMORT: [`=substr("`proy_amort'",1,`=`length_amort'-1')']"
 		noisily di in w "PROYOTROSG: [`=substr("`proy_otrosg'",1,`=`length_otrosg'-1')']"
 		noisily di in w "PROYBIENESTAR: [`=substr("`proy_bienestar'",1,`=`length_bienestar'-1')']"
 		noisily di in w "PROYINGBAS: [`=substr("`proy_ingbas'",1,`=`length_ingbas'-1')']"
@@ -783,7 +583,7 @@ quietly {
 
 	g gastoVP = estimacion/(1+`discount'/100)^(anio-`anio')
 	format gastoVP %20.0fc
-	local gastoINF = gastoVP[_N] /*(1+`grow_rate_LR')*(1+`discount'/100)^(`anio'-`=anio[_N]')*/ /(1-((1+`grow_rate_LR'/100)/(1+`discount'/100)))
+	local gastoINF = gastoVP[_N]/(1-((1+`grow_rate_LR'/100)/(1+`discount'/100)))
 
 	tabstat gastoVP if anio >= `anio', stat(sum) f(%20.0fc) save
 	tempname gastoVP
@@ -848,13 +648,13 @@ quietly {
 	}
 	if "$output" == "output" {
 		forvalues k=1(1)`=_N' {
-			if anio[`k'] < `anio'-1 & anio[`k'] >= 2010 {
+			if anio[`k'] < `anio'-1 & anio[`k'] >= 2013 {
 				local proy_shrfsp = "`proy_shrfsp' `=string(`=shrfspPIB[`k']',"%10.3f")',"
 				local proy_shrfsp2 = "`proy_shrfsp2' null,"
 			}
 			if anio[`k'] == `anio' {
-				*local proy_shrfsp = "`proy_shrfsp' `=string(`shrfspobslast',"%10.3f")',"
-				local proy_shrfsp = "`proy_shrfsp' `=string(51.000,"%10.3f")',"
+				local proy_shrfsp = "`proy_shrfsp' `=string(`shrfspobslast',"%10.3f")',"
+				*local proy_shrfsp = "`proy_shrfsp' `=string(51.000,"%10.3f")',"
 				local proy_shrfsp2 = "`proy_shrfsp2' `=string(`=shrfspPIB[`k']',"%10.3f")',"
 			}
 			if anio[`k'] > `anio'-1 & anio[`k'] <= 2030 {
@@ -884,8 +684,8 @@ quietly {
 	*****************************************
 	*** 5 Fiscal Gap: Cuenta Generacional ***
 	*****************************************
-	preserve
-	use `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
+	*preserve
+	use if entidad == "Nacional" using `"`c(sysdir_site)'/SIM/$pais/Poblacion.dta"', clear
 	
 	tabstat poblacion if anio == `anio', stat(sum) save f(%20.0fc)
 	tempname poblacionACT
@@ -904,7 +704,7 @@ quietly {
 	
 	noisily di in g "  (*) Poblaci{c o'}n futura VP: " in y _col(35) %25.0fc `poblacionVP'[1,1] in g " personas"
 
-	local poblacionINF = poblacionVP[_N] /*(1+`grow_rate_LR')*(1+`discount'/100)^(`anio'-`=anio[_N]')*/ /(1-((1+`grow_rate_LR'/100)/(1+`discount'/100)))
+	local poblacionINF = poblacionVP[_N]/(1-((1+`grow_rate_LR'/100)/(1+`discount'/100)))
 
 	noisily di in g "  (*) Poblaci{c o'}n futura INF: " in y _col(35) %25.0fc `poblacionINF' in g " personas"
 
@@ -932,7 +732,7 @@ quietly {
 	noisily di in g "  (*) Growth rate LP:" in y _col(35) %25.4fc `grow_rate_LR' in g " %"
 	noisily di in g "  (*) Discount rate:" in y _col(35) %25.4fc `discount' in g " %"
 
-	restore
+	*restore
 
 
 

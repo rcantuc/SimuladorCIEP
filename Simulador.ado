@@ -575,9 +575,7 @@ quietly {
 	save `"`c(sysdir_site)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'REC"', replace
 
 	
-	*ProyGraph `varlist' `nographs' `anio'
-	
-
+	ProyGraph `varlist' `nographs'
 
 
 
@@ -897,10 +895,17 @@ end
 
 program define ProyGraph
 
-	args varlist nographs anio
+	args varlist nographs
+
+	PIBDeflactor, nographs nooutput
+	tempfile PIB
+	save `PIB'
+	
+	local currency = currency[1]
+	local anio = r(aniovp)
 
 	use `"`c(sysdir_site)'/users/$pais/$id/bootstraps/1/`varlist'REC.dta"', clear
-	merge 1:1 (anio) using "`c(sysdir_site)'/users/$pais/$id/PIB.dta", nogen
+	merge 1:1 (anio) using `PIB', nogen
 
 	local title = modulo[1]
 	
@@ -909,7 +914,7 @@ program define ProyGraph
 
 	forvalues aniohoy = `anio'(1)`anio' {
 	*forvalues aniohoy = 1990(1)2050 {
-		tabstat estimacion if anio > `anio', stat(max) save
+		tabstat estimacion /*if anio >= `anio'*/, stat(max) save
 		tempname MAX
 		matrix `MAX' = r(StatTotal)
 		forvalues k=1(1)`=_N' {
@@ -933,7 +938,7 @@ program define ProyGraph
 			twoway (connected estimacion anio) ///
 				(connected estimacion anio if anio == `aniohoy') ///
 				if anio > 1990, ///
-				ytitle("mil millones USD `anio'") ///
+				ytitle("mil millones `currency' `anio'") ///
 				///ytitle("% PIB") ///
 				yscale(range(0)) /*ylabel(0(1)4)*/ ///
 				ylabel(#5, format(%5.1fc) labsize(small)) ///
@@ -942,7 +947,7 @@ program define ProyGraph
 				legend(off) ///
 				text(`=`MAX'[1,1]' `aniomax' "{bf:M{c a'}ximo:} `aniomax'", place(n)) ///
 				text(`estimacionvp' `aniohoy' "{bf:Hoy:} `aniohoy'", place(c)) ///
-				title("Proyecci{c o'}n de {bf:`title'}") subtitle("$pais") ///
+				title("{bf:Proyecci{c o'}n} de `title'") subtitle("$pais") ///
 				caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.") ///
 				name(`varlist'Proj, replace)
 
@@ -960,9 +965,9 @@ program define ProyGraph
 			}
 		}
 		local lengthproy = strlen("`out_proy'")
-		quietly log on output
+		capture log on output
 		noisily di in w "PROY: [`=substr("`out_proy'",1,`=`lengthproy'-1')']"
 		noisily di in w "PROYMAX: [`aniomax']"
-		quietly log off output
+		capture log off output
 	}
 end
