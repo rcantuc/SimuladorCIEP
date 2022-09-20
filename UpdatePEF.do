@@ -127,7 +127,7 @@ compress																		// <-- Para hacer "más eficiente" la base (menor tama
 
 
 
-**********************************
+***********************************
 ***                             ***
 *** 2. HOMOLOGACION DE TÉRMINOS ***
 ***                             ***
@@ -425,7 +425,7 @@ replace desc_divPE = "Pensiones" if desc_divPE == "" ///
 
 g desc_divCIEP = desc_divPE
 
-replace desc_divPE = "Pensiones" if desc_divPE == "" & `ifpp'				// Pensión Bienestar
+replace desc_divPE = "Pensión Bienestar" if desc_divPE == "" & `ifpp'				// Pensión Bienestar
 replace desc_divCIEP = "Pensión Bienestar" if desc_divCIEP == "" & `ifpp'			// Pensión Bienestar
 
 
@@ -534,7 +534,7 @@ encode desc_divPE, generate(divPE)
 replace desc_divPE = "Cuotas ISSSTE" if ramo == -1
 replace divPE = -1 if ramo == -1
 label define divPE -1 "Cuotas ISSSTE", add
-label define divPE 9 "", modify
+label define divPE 10 "", modify
 
 replace desc_divCIEP = "zCuotas ISSSTE" if ramo == -1
 encode desc_divCIEP, generate(divCIEP)

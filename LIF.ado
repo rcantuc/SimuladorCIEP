@@ -150,7 +150,7 @@ quietly {
 		_col(66) %7s "% PIB" ///
 		_col(77) %7s "% Total" "}"
 
-	capture tabstat recaudacion recaudacionPIB if anio == `anio' & divLIF != 10, by(`by') stat(sum) f(%20.0fc) save
+	capture tabstat recaudacion recaudacionPIB if anio == `anio', by(`by') stat(sum) f(%20.0fc) save
 	if _rc != 0 {
 		noisily di in r "No hay informaci{c o'}n para el a{c n~}o `anio'."
 		exit
@@ -313,7 +313,7 @@ quietly {
 	restore
 
 	** 4.4 Elasticidades **
-	if "`by'" == "divGA" | "`by'" == "divCIEP" | "`by'" == "divSIM" {
+	*if "`by'" == "divGA" | "`by'" == "divCIEP" | "`by'" == "divSIM" {
 		noisily di _newline in g "{bf: D. Elasticidades:" in y " `=`anio'-9' - `anio'" in g ///
 			_col(44) %7s "Crec %G IngR" ///
 			_col(66) %7s "Crec %G pibYR" ///
@@ -321,10 +321,9 @@ quietly {
 
 		g recaudacionR = recaudacion/deflator
 
-		tabstat recaudacionR recaudacionPIB if anio == `anio' & divLIF != 10, by(`resumido') stat(sum) f(%20.0fc) save
+		tabstat recaudacionR recaudacionPIB if anio == `anio' & divLIF != 10, by(`resumido') stat(sum) f(%20.3fc) save missing
 		tempname mattot
 		matrix `mattot' = r(StatTotal)
-
 		local k = 1
 		while "`=r(name`k')'" != "." {
 			tempname mat`k'
@@ -332,16 +331,15 @@ quietly {
 			local ++k
 		}
 
-		capture tabstat recaudacionR recaudacionPIB if anio == `anio'-9 & divLIF != 10, by(`resumido') stat(sum) f(%20.1fc) save
+		capture tabstat recaudacionR recaudacionPIB if anio == `anio'-9 & divLIF != 10, by(`resumido') stat(sum) f(%20.3fc) save missing
 		if _rc == 0 {
 			tempname mattot5
 			matrix `mattot5' = r(StatTotal)
-
 			local k = 1
 			while "`=r(name`k')'" != "." {
 				tempname mat5`k'
 				matrix `mat5`k'' = r(Stat`k')
-
+				
 				if `mat`k''[1,1] != . & `mat5`k''[1,1] != . {
 					noisily di in g "  (+) `=r(name`k')'" ///
 						_col(44) in y %7.3fc (((`mat`k''[1,1]/`mat5`k''[1,1])^(1/9)-1)*100) in g "%" ///
@@ -353,47 +351,45 @@ quietly {
 			}
 
 			noisily di in g _dup(95) "-"
-			noisily di in g "{bf:  (=) Ingresos (sin deuda)" ///
+			noisily di in g "{bf:  (=) Ingresos totales" ///
 					_col(44) in y %7.3fc (((`mattot'[1,1]/`mattot5'[1,1])^(1/9)-1)*100) in g "%" ///
 					_col(66) in y %7.3fc (((`pibYR`anio''/`pibYR`=`anio'-9'')^(1/9)-1)*100) in g "%" ///
 					_col(88) in y %7.3fc (((`mattot'[1,1]/`mattot5'[1,1])^(1/9))*100)/ ///
 					(((`pibYR`anio''/`pibYR`=`anio'-9'')^(1/9))*100) "}"
 		}
 		drop recaudacionR
-	}
+	*}
 
 
 
 	******************
 	* Returns Extras *
-	if "$pais" == "" {
-		capture tabstat recaudacion recaudacionPIB if anio == `anio' & nombre == "Cuotas a la seguridad social (IMSS)", stat(sum) f(%20.1fc) save
-		tempname cuotas
-		matrix `cuotas' = r(StatTotal)
-		return scalar Cuotas_IMSS = `cuotas'[1,1]
-		
-		capture tabstat recaudacion recaudacionPIB if anio == `anio' & divCIEP == 11, stat(sum) by(nombre) f(%20.1fc) save
-		tempname ieps
-		matrix `ieps'7 = r(Stat7)
-		matrix `ieps'10 = r(Stat10)
-		matrix `ieps'8 = r(Stat8)
-		matrix `ieps'11 = r(Stat11)
-		matrix `ieps'4 = r(Stat4)
-		matrix `ieps'5 = r(Stat5)
-		matrix `ieps'3 = r(Stat3)
-		matrix `ieps'6 = r(Stat6)
-		matrix `ieps'1 = r(Stat1)
-		
-		return scalar Cervezas = `ieps'7[1,1]
-		return scalar Tabacos = `ieps'10[1,1]
-		return scalar Juegos = `ieps'8[1,1]
-		return scalar Telecom = `ieps'11[1,1]
-		return scalar Energiza = `ieps'4[1,1]
-		return scalar Saboriza = `ieps'5[1,1]
-		return scalar AlimNoBa = `ieps'3[1,1]
-		return scalar Fosiles = `ieps'6[1,1]
-		return scalar Alcohol = `ieps'1[1,1]
-	}
+	capture tabstat recaudacion recaudacionPIB if anio == `anio' & nombre == "Cuotas a la seguridad social (IMSS)", stat(sum) f(%20.1fc) save
+	tempname cuotas
+	matrix `cuotas' = r(StatTotal)
+	return scalar Cuotas_IMSS = `cuotas'[1,1]
+
+	capture tabstat recaudacion recaudacionPIB if anio == `anio' & divCIEP == 11, stat(sum) by(nombre) f(%20.1fc) save
+	tempname ieps
+	matrix `ieps'7 = r(Stat7)
+	matrix `ieps'10 = r(Stat10)
+	matrix `ieps'8 = r(Stat8)
+	matrix `ieps'11 = r(Stat11)
+	matrix `ieps'4 = r(Stat4)
+	matrix `ieps'5 = r(Stat5)
+	matrix `ieps'3 = r(Stat3)
+	matrix `ieps'6 = r(Stat6)
+	matrix `ieps'1 = r(Stat1)
+
+	return scalar Cervezas = `ieps'7[1,1]
+	return scalar Tabacos = `ieps'10[1,1]
+	return scalar Juegos = `ieps'8[1,1]
+	return scalar Telecom = `ieps'11[1,1]
+	return scalar Energiza = `ieps'4[1,1]
+	return scalar Saboriza = `ieps'5[1,1]
+	return scalar AlimNoBa = `ieps'3[1,1]
+	return scalar Fosiles = `ieps'6[1,1]
+	return scalar Alcohol = `ieps'1[1,1]
 
 
 
@@ -456,7 +452,7 @@ quietly {
 			ylabel(, format(%15.0fc) labsize(small)) ///
 			yscale(range(0)) ///
 			legend(on position(6) rows(`rows') cols(`cols') `legend' region(margin(zero)) order(`order')) ///
-			name(ingresos, replace) ///
+			name(ingresos`by', replace) ///
 			note("{bf:Nota}: Porcentajes entre par{c e'}ntesis son con respecto al total de `anio'.") ///
 			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP y $paqueteEconomico.")
 		

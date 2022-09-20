@@ -7,7 +7,7 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
-	syntax varname [, ANIObase(int `aniovp') BOOTstrap(int 1) Graphs POST]
+	syntax varname [, ANIObase(int `aniovp') BOOTstrap(int 1) Graphs POST DIScount(real 3)]
 
 	noisily di _newline(2) in g _dup(20) "." "{bf:   Cuentas Generacionales " in y "$pais " `anio' "   }" in g _dup(20) "."
 	local title : variable label `varlist'
@@ -24,15 +24,16 @@ quietly {
 	*******************
 	*** 1 Poblacion ***
 	*******************
-	use `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
+	use `"`c(sysdir_site)'/SIM/$pais/Poblacion.dta"', clear
 
 	sort anio
 	local anio = anio[1]
 	local aniofin = anio[_N]
 	local edadmax = edad[_N]+1
-	keep if anio >= `aniobase'
 
+	keep if anio >= `aniobase' & entidad == "Nacional"
 	keep poblacion edad sexo anio
+	
 	reshape wide poblacion, i(edad sexo) j(anio)
 
 	mkmat poblacion* if sexo == 1, matrix(HOM)
@@ -47,7 +48,7 @@ quietly {
 	****************
 	** 2 Perfiles **
 	****************
-	use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'PERF"', clear
+	use `"`c(sysdir_site)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'PERF"', clear
 	collapse perfil1 perfil2 contribuyentes1 contribuyentes2, by(edad)
 
 	sort edad
@@ -62,7 +63,7 @@ quietly {
 	**************************
 	*** 3 Monto per capita ***
 	**************************
-	use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'PC"', clear
+	use `"`c(sysdir_site)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'PC"', clear
 
 	ci montopc
 	local montopc = r(mean)
@@ -92,18 +93,18 @@ quietly {
 					if `col' <= `aniofin'-`aniobase'+1 {
 						mata GA[`edad',1] = GA[`edad',1] + ///
 							PERFIL[`row',1] :* HOM[`row',`col'] * PC * ///
-							(1 + lambda[1,1]/100)^(`col'-1) / (1 + ${discount}/100)^(`col'-1)
+							(1 + lambda[1,1]/100)^(`col'-1) / (1 + `discount'/100)^(`col'-1)
 						mata GA[`edad',2] = GA[`edad',2] + ///
 							PERFIL[`row',2] :* MUJ[`row',`col'] * PC * ///
-							(1 + lambda[1,1]/100)^(`col'-1) / (1 + ${discount}/100)^(`col'-1)
+							(1 + lambda[1,1]/100)^(`col'-1) / (1 + `discount'/100)^(`col'-1)
 					}
 					else {
 						mata GA[`edad',1] = GA[`edad',1] + ///
 							PERFIL[`row',1] :* HOM[`row',`=`aniofin'-`aniobase'+1'] * PC * ///
-							(1 + lambda[1,1]/100)^(`col'-1) / (1 + ${discount}/100)^(`col'-1)
+							(1 + lambda[1,1]/100)^(`col'-1) / (1 + `discount'/100)^(`col'-1)
 						mata GA[`edad',2] = GA[`edad',2] + ///
 							PERFIL[`row',2] :* MUJ[`row',`=`aniofin'-`aniobase'+1'] * PC * ///
-							(1 + lambda[1,1]/100)^(`col'-1) / (1 + ${discount}/100)^(`col'-1)
+							(1 + lambda[1,1]/100)^(`col'-1) / (1 + `discount'/100)^(`col'-1)
 					}
 				}
 			}

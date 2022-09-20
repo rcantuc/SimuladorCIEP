@@ -19,7 +19,7 @@ quietly {
 	*** 1 Cuentas macroeconómicas (SCN, PIB, Balanza Comercial) ***
 	***************************************************************
 	*use if anio == `anio' using "`c(sysdir_site)'/users/$pais/$id/PIB.dta", clear
-	PIBDeflactor, aniovp(`anio') nographs
+	PIBDeflactor, aniovp(`anio') nographs nooutput
 	keep if anio == `anio'
 	local PIB = pibY[1]
 
@@ -98,9 +98,6 @@ quietly {
 		_col(55) in g "Recaudaci{c o'}n total" ///
 		_col(88) %7.3fc in y (`ISRAS'+`ISRPF'+`CUOTAS') ///
 		_col(99) %7.3fc in y (`ISRAS'+`ISRPF'+`CUOTAS')/(YlPIB)*100 " %" "}"
-	scalar inglaboralPIB = (`ISRAS'+`ISRPF'+`CUOTAS')
-
-
 
 	noisily di _newline(2) in y "{bf: B. " in y "Impuestos a los ingresos de capital privado" "}"
 	noisily di _newline in g "{bf:  Cuentas Nacionales" ///
@@ -122,17 +119,17 @@ quietly {
 		_col(44) %7.3fc in y (ExNOpSocPIB+ImpNetProduccionKPIB+ImpNetProductosPIB) ///
 		_col(55) in g "ISR (morales)" ///
 		_col(88) %7.3fc in y (`ISRPM') ///
-		_col(99) %7.3fc in y (`ISRPM')/(ExNOpSocPIB+ImpNetProduccionKPIB+ImpNetProductosPIB)*100 " %"
+		_col(99) %7.3fc in y (`ISRPM')/(ExNOpSocPIB)*100 " %"
 
 	noisily di in g "  Sociedades e ISFLSH (netos)" ///
 		_col(44) %7.3fc in y (ExNOpSocPIB+ImpNetProduccionKPIB+ImpNetProductosPIB) ///
 		_col(55) in g "Productos, derechos, aprovech..." ///
 		_col(88) %7.3fc in y (`OTROSK') ///
-		_col(99) %7.3fc in y (`OTROSK')/(ExNOpSocPIB+ImpNetProduccionKPIB+ImpNetProductosPIB)*100 " %"
+		_col(99) %7.3fc in y (`OTROSK')/(ExNOpSocPIB)*100 " %"
 
 	// TOTAL CAPITAL PRIVADO
 	noisily di in g _dup(111) "-"
-	noisily di in g "{bf:  Ingresos (netos) al capital" ///
+	noisily di in g "{bf:  Ingresos de capital (netos)" ///
 		_col(44) %7.3fc in y (CapIncImpPIB) ///
 		_col(55) in g "Recaudaci{c o'}n total" ///
 		_col(88) %7.3fc in y (`ISRPM'+`OTROSK') ///
@@ -156,7 +153,7 @@ quietly {
 	else {
 		scalar IVA = `IVA'
 	}
-	noisily di in g "  Consumo hogares e ISFLSH" ///
+	noisily di in g "  Consumo hogares e ISFLSH*" ///
 		_col(44) %7.3fc in y (ConHogPIB - AlimPIB - BebNPIB - SaluPIB) ///
 		_col(55) in g "IVA" ///
 		_col(88) %7.3fc in y `IVA' ///
@@ -212,11 +209,11 @@ quietly {
 	else {
 		scalar IMPORT = `IMPORT' 
 	}
-	noisily di in g "  Importaciones (balanza comercial)" ///
-		_col(44) %7.3fc in y scalar(importacionesBCPIB) ///
+	noisily di in g "  Consumo hogares e ISFLSH" ///
+		_col(44) %7.3fc in y ConHogPIB ///
 		_col(55) in g "Importaciones" ///
 		_col(88) %7.3fc in y `IMPORT' ///
-		_col(99) %7.3fc in y (`IMPORT')/scalar(importacionesBCPIB)*100 " %"
+		_col(99) %7.3fc in y `IMPORT'/ConHogPIB*100 " %"
 
 	// TOTAL CONSUMO
 	noisily di in g _dup(111) "-"
@@ -317,7 +314,7 @@ quietly {
 
 	// TOTAL INGRESOS DE CAPITAL PUBLICOS
 	noisily di in g _dup(111) "-"
-	noisily di in g "{bf:  Ingresos (netos) de capital" ///
+	noisily di in g "{bf:  Ingresos de capital (netos)" ///
 		_col(44) %7.3fc in y (CapIncImpPIB) ///
 		_col(55) in g "Ingresos propios totales" ///
 		_col(88) %7.3fc in y (`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE') ///
@@ -393,42 +390,50 @@ quietly {
 	*************/
 	*** OUTPUT ***
 	**************
-	if "$output" == "output" & "$pais" == "" {
+	if "$output" == "output" {
 		quietly log on output
-		noisily di in w "INGRESOS: " in w "["  ///
+		noisily di in w "INGRESOSPIB: " in w "["  ///
 			%8.3f ISRAS ", " ///
 			%8.3f ISRPF ", " ///
-			%8.3f CuotasT ", " ///
-			%8.3f inglaboralPIB ", " ///
+			%8.3f CUOTAS ", " ///
+			%8.3f ISRAS+ISRPF+CUOTAS ", " ///
+			%8.3f ISRPM ", " ///
+			%8.3f OTROSK ", " ///
+			%8.3f ISRPM+OTROSK ", " ///
 			%8.3f IVA ", " ///
 			%8.3f ISAN ", " ///
-			%8.3f IEPS ", " ///
-			%8.3f Importa ", " ///
-			%8.3f ingconsumoPIB ", " ///
-			%8.3f ISRPM ", " ///
+			%8.3f IEPSNP ", " ///
+			%8.3f IEPSP ", " ///
+			%8.3f IMPORT ", " ///
+			%8.3f IVA+ISAN+IEPSNP+IEPSP+IMPORT ", " ///
+			%8.3f IMSS ", " ///
+			%8.3f ISSSTE ", " ///
 			%8.3f FMP ", " ///
-			%8.3f OYE ", " ///
-			%8.3f OtrosC ", " ///
-			%8.3f ingcapitalPIB ///
-		"]"			
-		noisily di in w "INPUTSI: " in w "["  ///
-			%8.3f `recISR_Asa'/(RemSal)*100 ", " ///
-			%8.3f `recISR_PF'/MixL*100 ", " ///
-			%8.3f `recCuotas_'/(RemSal+SSImputada+SSEmpleadores)*100 ", " ///
-			%8.3f (`recISR_Asa'+`recISR_PF'+`recCuotas_')/(Yl)*100 ", " ///
-			%8.3f `recIVA'/(ConHog)*100 ", " ///
-			%8.3f `recISAN'/Vehi*100 ", " ///
-			%8.3f `recIEPS'/ConHog*100 ", " ///
-			%8.3f (`recImporta')/scalar(importacionesBCPIB)*100 ", " ///
-			%8.3f (`recIEPS'+`recIVA'+`recISAN'+`recImporta')/ConHog*100 ", " ///
-			%8.3f `recISR_PM'/(ExNOpSoc+ImpNetProduccionK+ImpNetProductos)*100 ", " ///
-			%8.3f `recFMP__De'/(CapIncImp-ExNOpHog)*100 ", " ///
-			%8.3f `recOYE'/(CapIncImp-ExNOpHog)*100 ", " ///
-			%8.3f `recOtrosC'/(CapIncImp-ExNOpHog)*100 ", " ///
-			%8.3f (`recISR_PM'+`recFMP__De'+`recOYE'+`recOtrosC')/(CapIncImp)*100 ///
-		"]"	
-		noisily di in w "INGRESOSTOTAL: " in w "["  ///
-			%8.3f inglaboralPIB+ingconsumoPIB+ingcapitalPIB ///
+			%8.3f PEMEX ", " ///
+			%8.3f CFE ", " ///
+			%8.3f IMSS+ISSSTE+FMP+PEMEX+CFE ", " ///
+			%8.3f ISRAS+ISRPF+CUOTAS+ISRPM+OTROSK+IVA+ISAN+IEPSNP+IEPSP+IMPORT+IMSS+ISSSTE+FMP+PEMEX+CFE ///
+		"]"
+		noisily di in w "INGRESOSTEF: " in w "["  ///
+			%8.3f ISRAS/RemSalPIB*100 ", " ///
+			%8.3f ISRPF/MixLPIB*100 ", " ///
+			%8.3f CUOTAS/(RemSalPIB+SSImputadaPIB+SSEmpleadoresPIB)*100 ", " ///
+			%8.3f (ISRAS+ISRPF+CUOTAS)/YlPIB*100 ", " ///
+			%8.3f ISRPM/ExNOpSocPIB*100 ", " ///
+			%8.3f OTROSK/ExNOpSocPIB*100 ", " ///
+			%8.3f (ISRPM+OTROSK)/CapIncImpPIB*100 ", " ///
+			%8.3f IVA/(ConHogPIB-AlimPIB-BebNPIB-SaluPIB)*100 ", " ///
+			%8.3f ISAN/VehiPIB*100 ", " ///
+			%8.3f IEPSNP/ConHogPIB*100 ", " ///
+			%8.3f IEPSP/ConHogPIB*100 ", " ///
+			%8.3f IMPORT/ConHogPIB*100 ", " ///
+			%8.3f (IVA+ISAN+IEPSNP+IEPSP+IMPORT)/ConHogPIB*100 ", " ///
+			%8.3f IMSS/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 ", " ///
+			%8.3f ISSSTE/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 ", " ///
+			%8.3f FMP/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 ", " ///
+			%8.3f PEMEX/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 ", " ///
+			%8.3f CFE/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 ", " ///
+			%8.3f (IMSS+ISSSTE+FMP+PEMEX+CFE)/CapIncImpPIB*100 ///
 		"]"
 		quietly log off output
 	}

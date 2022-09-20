@@ -21,7 +21,7 @@ quietly {
 	*** 1 Cuentas macroeconómicas (SCN, PIB, Balanza Comercial) ***
 	***************************************************************
 	*use if anio == `anio' using "`c(sysdir_site)'/users/$pais/$id/PIB.dta", clear
-	PIBDeflactor, aniovp(`anio') nographs
+	PIBDeflactor, aniovp(`anio') nographs nooutput
 	keep if anio == `anio'
 	local PIB = pibY[1]
 
@@ -91,6 +91,8 @@ quietly {
 		scalar basica = `basica'/`Educacion'[1,1]
 		restore
 	}
+	scalar basicaPIB = (`basica')/`PIB'*100
+
 	capture confirm scalar medsup
 	if _rc == 0 {
 		local medsup = scalar(medsup)*`Educacion'[1,2]
@@ -102,6 +104,8 @@ quietly {
 		scalar medsup = `medsup'/`Educacion'[1,2]
 		restore
 	}
+	scalar medsupPIB = (`medsup')/`PIB'*100
+
 	capture confirm scalar superi
 	if _rc == 0 {
 		local superi = scalar(superi)*`Educacion'[1,3]
@@ -113,6 +117,8 @@ quietly {
 		scalar superi = `superi'/`Educacion'[1,3]
 		restore
 	}
+	scalar superiPIB = (`superi')/`PIB'*100
+
 	capture confirm scalar posgra
 	if _rc == 0 {
 		local posgra = scalar(posgra)*`Educacion'[1,4]
@@ -124,6 +130,8 @@ quietly {
 		scalar posgra = `posgra'/`Educacion'[1,4]
 		restore
 	}
+	scalar posgraPIB = (`posgra')/`PIB'*100
+
 	capture confirm scalar eduadu
 	if _rc == 0 {
 		local eduadu = scalar(eduadu)*`Educacion'[1,5]
@@ -136,6 +144,8 @@ quietly {
 		scalar eduadu = `eduadu'/`Educacion'[1,5]
 		restore
 	}
+	scalar eduaduPIB = (`eduadu')/`PIB'*100
+
 	capture confirm scalar otrose
 	if _rc == 0 {
 		local otrose = scalar(otrose)*(`Educacion'[1,1]+`Educacion'[1,2]+`Educacion'[1,3]+`Educacion'[1,4]+`Educacion'[1,5])
@@ -150,6 +160,10 @@ quietly {
 		scalar otrose = `otrose'/(`Educacion'[1,1]+`Educacion'[1,2]+`Educacion'[1,3]+`Educacion'[1,4]+`Educacion'[1,5])
 		restore
 	}
+	scalar otrosePIB = (`otrose')/`PIB'*100
+	scalar educacPIB = (`basica'+`medsup'+`superi'+`posgra'+`eduadu'+`otrose')/`PIB'*100
+	scalar educacion = (`basica'+`medsup'+`superi'+`posgra'+`eduadu'+`otrose')/ ///
+		(`Educacion'[1,1]+`Educacion'[1,2]+`Educacion'[1,3]+`Educacion'[1,4]+`Educacion'[1,5])
 
 	* Resultados *
 	noisily di _newline in y "{bf: A. Educaci{c o'}n p{c u'}blica" "}"
@@ -196,15 +210,6 @@ quietly {
 	replace Educacion = Educacion + `otrose'/(`Educacion'[1,1]+`Educacion'[1,2]+`Educacion'[1,3] ///
 		+`Educacion'[1,4]+`Educacion'[1,5]) if Educacion > 0
 
-	scalar basicaPIB = (`basica')/`PIB'*100
-	scalar medsupPIB = (`medsup')/`PIB'*100
-	scalar superiPIB = (`superi')/`PIB'*100
-	scalar posgraPIB = (`posgra')/`PIB'*100
-	scalar eduaduPIB = (`eduadu')/`PIB'*100
-	scalar otrosePIB = (`otrose')/`PIB'*100
-	scalar educacPIB = (`basica'+`medsup'+`superi'+`posgra'+`eduadu'+`otrose')/`PIB'*100
-	scalar educacion = (`basica'+`medsup'+`superi'+`posgra'+`eduadu'+`otrose')/(`Educacion'[1,1] ///
-		+`Educacion'[1,2]+`Educacion'[1,3]+`Educacion'[1,4]+`Educacion'[1,5])
 
 
 
@@ -219,7 +224,6 @@ quietly {
 	g benef_imssprospera = formal == 4
 	g benef_seg_pop = pop_insabi == "1"
 	g benef_ssa = 1
-
 
 	/* 4.1 Ajuste con las estadisticas oficiales *
 	tabstat benef_imss benef_issste benef_pemex benef_imssprospera benef_seg_pop ///
@@ -267,6 +271,7 @@ quietly {
 		scalar imssbien = `imssbien'/(`Salud'[1,6]-`Salud'[1,1]-`Salud'[1,2]-`Salud'[1,3])
 		restore
 	}
+	scalar imssbienPIB = `imssbien'/`PIB'*100
 
 	capture confirm scalar ssa
 	if _rc == 0 {
@@ -287,6 +292,7 @@ quietly {
 		scalar ssa = `ssa'/`Salud'[1,6]
 		restore
 	}
+	scalar ssaPIB = `ssa'/`PIB'*100
 
 	capture confirm scalar imss
 	if _rc == 0 {
@@ -304,6 +310,7 @@ quietly {
 		scalar imss = `imss'/`Salud'[1,1]
 		restore
 	}
+	scalar imssPIB = `imss'/`PIB'*100
 
 	capture confirm scalar issste
 	if _rc == 0 {
@@ -321,6 +328,7 @@ quietly {
 		scalar issste = `issste'/`Salud'[1,2]
 		restore
 	}
+	scalar issstePIB = `issste'/`PIB'*100
 
 	capture confirm scalar pemex
 	if _rc == 0 {
@@ -333,6 +341,9 @@ quietly {
 		scalar pemex = (`pemex')/`Salud'[1,3]
 		restore
 	}
+	scalar pemexPIB = `pemex'/`PIB'*100
+	scalar saludPIB = (`ssa'+`imssbien'+`imss'+`issste'+`pemex')/`PIB'*100
+	scalar salud = (`ssa'+`imssbien'+`imss'+`issste'+`pemex')/(`Salud'[1,6])
 
 	* Resultados *
 	noisily di _newline in y "{bf: B. " in y "Salud" "}"
@@ -375,14 +386,6 @@ quietly {
 	replace Salud = Salud + `pemex'/`Salud'[1,3] if benef_pemex > 0
 	replace Salud = Salud + `ssa'/`Salud'[1,6] if benef_ssa > 0
 
-	scalar ssaPIB = `ssa'/`PIB'*100
-	scalar segpopPIB = `imssbien'/`PIB'*100
-	scalar imssPIB = `imss'/`PIB'*100
-	scalar issstePIB = `issste'/`PIB'*100
-	scalar pemexPIB = `pemex'/`PIB'*100
-	scalar saludPIB = (`ssa'+`imssbien'+`imss'+`issste'+`pemex')/`PIB'*100
-	scalar salud = (`ssa'+`imssbien'+`imss'+`issste'+`pemex')/(`Salud'[1,6])
-
 
 
 
@@ -421,40 +424,48 @@ quietly {
 		scalar bienestar = `bienestar'/`PENS'[1,1]
 		restore
 	}
-	capture confirm scalar penims
-	if _rc == 0 {
-		local penims = scalar(penims)*`PENS'[1,2]
-	}
-	else {
-		preserve
-		PEF if divPE == 7, anio(`anio') by(ramo) min(0) nographs
-		local penims = r(Instituto_Mexicano_del_Seguro_S)
-		scalar penims = `penims'/`PENS'[1,2]
-		restore
-	}
-	capture confirm scalar peniss
-	if _rc == 0 {
-		local peniss = scalar(peniss)*`PENS'[1,3]
-	}
-	else {
-		preserve
-		PEF if divPE == 7, anio(`anio') by(ramo) min(0) nographs
-		local peniss = r(Instituto_de_Seguridad_y_Servic)
-		scalar peniss = `peniss'/`PENS'[1,3]
-		restore
-	}
-	capture confirm scalar penotr
-	if _rc == 0 {
-		local penotr = scalar(penotr)*`PENS'[1,4]
-	}
-	else {
-		preserve
-		PEF if divPE == 7, anio(`anio') by(ramo) min(0) nographs
-		local penotr = r(Petróleos_Mexicanos)+r(Aportaciones_a_Seguridad_Social)+r(Comisión_Federal_de_Electricid)
-		scalar penotr = `penotr'/`PENS'[1,4]
-		restore
-	}
+	scalar bienestarPIB = `bienestar'/`PIB'*100
 
+	capture confirm scalar penimss
+	if _rc == 0 {
+		local penimss = scalar(penimss)*`PENS'[1,2]
+	}
+	else {
+		preserve
+		PEF if divPE == 7, anio(`anio') by(ramo) min(0) nographs
+		local penimss = r(Instituto_Mexicano_del_Seguro_S)
+		scalar penimss = `penimss'/`PENS'[1,2]
+		restore
+	}
+	scalar penimssPIB = `penimss'/`PIB'*100
+	
+	capture confirm scalar penisss
+	if _rc == 0 {
+		local penisss = scalar(penisss)*`PENS'[1,3]
+	}
+	else {
+		preserve
+		PEF if divPE == 7, anio(`anio') by(ramo) min(0) nographs
+		local penisss = r(Instituto_de_Seguridad_y_Servic)
+		scalar penisss = `penisss'/`PENS'[1,3]
+		restore
+	}
+	scalar penisssPIB = `penisss'/`PIB'*100
+
+	capture confirm scalar penotro
+	if _rc == 0 {
+		local penotro = scalar(penotro)*`PENS'[1,4]
+	}
+	else {
+		preserve
+		PEF if divPE == 7, anio(`anio') by(ramo) min(0) nographs
+		local penotro = r(Petróleos_Mexicanos)+r(Aportaciones_a_Seguridad_Social)+r(Comisión_Federal_de_Electricid)
+		scalar penotro = `penotro'/`PENS'[1,4]
+		restore
+	}
+	scalar penotroPIB = `penotro'/`PIB'*100
+	scalar pensionPIB = (`bienestar'+`penimss'+`penisss'+`penotro')/`PIB'*100
+	scalar pensiones = (`bienestar'+`penimss'+`penisss'+`penotro')/(`PENS'[1,1]+`PENS'[1,2]+`PENS'[1,3]+`PENS'[1,4])
 
 	* Resultados *
 	noisily di _newline in y "{bf: C. Pensiones}"
@@ -469,34 +480,26 @@ quietly {
 		_col(60) %15.0fc in y `bienestar'/`PENS'[1,1]
 	noisily di in g "  IMSS" ///
 		_col(33) %15.0fc in y `PENS'[1,2] ///
-		_col(50) %7.3fc in y `penims'/`PIB'*100 ///
-		_col(60) %15.0fc in y `penims'/`PENS'[1,2]
+		_col(50) %7.3fc in y `penimss'/`PIB'*100 ///
+		_col(60) %15.0fc in y `penimss'/`PENS'[1,2]
 	noisily di in g "  ISSSTE" ///
 		_col(33) %15.0fc in y `PENS'[1,3] ///
-		_col(50) %7.3fc in y `peniss'/`PIB'*100 ///
-		_col(60) %15.0fc in y `peniss'/`PENS'[1,3]
+		_col(50) %7.3fc in y `penisss'/`PIB'*100 ///
+		_col(60) %15.0fc in y `penisss'/`PENS'[1,3]
 	noisily di in g "  Pemex, CFE, LFC, Ferro, ISSFAM" ///
 		_col(33) %15.0fc in y `PENS'[1,4] ///
-		_col(50) %7.3fc in y `penotr'/`PIB'*100 ///
-		_col(60) %15.0fc in y `penotr'/`PENS'[1,4]
+		_col(50) %7.3fc in y `penotro'/`PIB'*100 ///
+		_col(60) %15.0fc in y `penotro'/`PENS'[1,4]
 	noisily di in g _dup(80) "-"
 	noisily di in g "  Pensiones" ///
 		_col(33) %15.0fc in y (`PENS'[1,1]+`PENS'[1,2]+`PENS'[1,3]+`PENS'[1,4]) ///
-		_col(50) %7.3fc in y (`bienestar'+`penims'+`peniss'+`penotr')/`PIB'*100 ///
-		_col(60) %15.0fc in y (`bienestar'+`penims'+`peniss'+`penotr')/(`PENS'[1,1]+`PENS'[1,2]+`PENS'[1,3]+`PENS'[1,4])
+		_col(50) %7.3fc in y (`bienestar'+`penimss'+`penisss'+`penotro')/`PIB'*100 ///
+		_col(60) %15.0fc in y (`bienestar'+`penimss'+`penisss'+`penotro')/(`PENS'[1,1]+`PENS'[1,2]+`PENS'[1,3]+`PENS'[1,4])
 
 	replace PenBienestar = `bienestar'/`PENS'[1,1] if edad >= 65
-	replace Pension = `penims'/`PENS'[1,2] if formal == 1 & ing_jubila != 0
-	replace Pension = `peniss'/`PENS'[1,3] if formal == 2 & ing_jubila != 0 
-	replace Pension = `penotr'/`PENS'[1,4] if formal == 3 & ing_jubila != 0
-
-	scalar bienestarPIB = `bienestar'/`PIB'*100
-	scalar penimsPIB = `penims'/`PIB'*100
-	scalar penissPIB = `peniss'/`PIB'*100
-	scalar penotrPIB = `penotr'/`PIB'*100
-	scalar pensionPIB = (`bienestar'+`penims'+`peniss'+`penotr')/`PIB'*100
-	scalar pensiones = (`bienestar'+`penims'+`peniss'+`penotr')/(`PENS'[1,1]+`PENS'[1,2]+`PENS'[1,3]+`PENS'[1,4])
-
+	replace Pension = `penimss'/`PENS'[1,2] if formal == 1 & ing_jubila != 0
+	replace Pension = `penisss'/`PENS'[1,3] if formal == 2 & ing_jubila != 0 
+	replace Pension = `penotro'/`PENS'[1,4] if formal == 3 & ing_jubila != 0
 
 
 
@@ -517,6 +520,7 @@ quietly {
 		scalar gaspemex = `gaspemex'/`Salud'[1,6]
 		restore
 	}
+	scalar gaspemexPIB = `gaspemex'/`PIB'*100
 
 	capture confirm scalar gascfe
 	if _rc == 0 {
@@ -529,6 +533,7 @@ quietly {
 		scalar gascfe = `gascfe'/`Salud'[1,6]
 		restore
 	}
+	scalar gascfePIB = `gascfe'/`PIB'*100
 
 	capture confirm scalar gassener
 	if _rc == 0 {
@@ -541,6 +546,7 @@ quietly {
 		scalar gassener = `gassener'/`Salud'[1,6]
 		restore
 	}
+	scalar gassenerPIB = `gassener'/`PIB'*100
 
 	capture confirm scalar gasfeder
 	if _rc == 0 {
@@ -553,6 +559,7 @@ quietly {
 		scalar gasfeder = `gasfeder'/`Salud'[1,6]
 		restore
 	}
+	scalar gasfederPIB = `gasfeder'/`PIB'*100
 
 	capture confirm scalar gascosto
 	if _rc == 0 {
@@ -565,6 +572,7 @@ quietly {
 		scalar gascosto = `gascosto'/`Salud'[1,6]
 		restore
 	}
+	scalar gascostoPIB = `gascosto'/`PIB'*100
 
 	capture confirm scalar gasinfra
 	if _rc == 0 {
@@ -577,6 +585,7 @@ quietly {
 		scalar gasinfra = `gasinfra'/`Salud'[1,6]
 		restore
 	}
+	scalar gasinfraPIB = `gasinfra'/`PIB'*100
 
 	capture confirm scalar gasotros
 	if _rc == 0 {
@@ -589,6 +598,7 @@ quietly {
 		scalar gasotros = `gasotros'/`Salud'[1,6]
 		restore
 	}
+	scalar gasotrosPIB = `gasotros'/`PIB'*100
 
 	* Resultados *
 	noisily di _newline in y "{bf: D. Otros gastos}"
@@ -597,30 +607,30 @@ quietly {
 		_col(50) %7s "% PIB" ///
 		_col(60) %10s in g "Per c{c a'}pita (MXN `anio')" "}"
 	noisily di in g _dup(80) "-"
-	noisily di in g "  Pemex" ///
-		_col(33) %15.0fc in y `Salud'[1,6] ///
-		_col(50) %7.3fc in y (`gaspemex')/`PIB'*100 ///
-		_col(60) %15.0fc in y (`gaspemex')/`Salud'[1,6]
 	noisily di in g "  CFE" ///
 		_col(33) %15.0fc in y `Salud'[1,6] ///
 		_col(50) %7.3fc in y (`gascfe')/`PIB'*100 ///
 		_col(60) %15.0fc in y (`gascfe')/`Salud'[1,6]
+	noisily di in g "  Pemex" ///
+		_col(33) %15.0fc in y `Salud'[1,6] ///
+		_col(50) %7.3fc in y (`gaspemex')/`PIB'*100 ///
+		_col(60) %15.0fc in y (`gaspemex')/`Salud'[1,6]
 	noisily di in g "  SENER y otros" ///
 		_col(33) %15.0fc in y `Salud'[1,6] ///
 		_col(50) %7.3fc in y (`gassener')/`PIB'*100 ///
 		_col(60) %15.0fc in y (`gassener')/`Salud'[1,6]
-	noisily di in g "  Otras Part y Aport" ///
-		_col(33) %15.0fc in y `Salud'[1,6] ///
-		_col(50) %7.3fc in y `gasfeder'/`PIB'*100 ///
-		_col(60) %15.0fc in y `gasfeder'/`Salud'[1,6]
-	noisily di in g "  Costo de la deuda" ///
-		_col(33) %15.0fc in y `Salud'[1,6] ///
-		_col(50) %7.3fc in y `gascosto'/`PIB'*100 ///
-		_col(60) %15.0fc in y `gascosto'/`Salud'[1,6]
 	noisily di in g "  Infraestructura" ///
 		_col(33) %15.0fc in y `Salud'[1,6] ///
 		_col(50) %7.3fc in y `gasinfra'/`PIB'*100 ///
 		_col(60) %15.0fc in y `gasinfra'/`Salud'[1,6]
+	noisily di in g "  Costo de la deuda" ///
+		_col(33) %15.0fc in y `Salud'[1,6] ///
+		_col(50) %7.3fc in y `gascosto'/`PIB'*100 ///
+		_col(60) %15.0fc in y `gascosto'/`Salud'[1,6]
+	noisily di in g "  Otras Part y Aport" ///
+		_col(33) %15.0fc in y `Salud'[1,6] ///
+		_col(50) %7.3fc in y `gasfeder'/`PIB'*100 ///
+		_col(60) %15.0fc in y `gasfeder'/`Salud'[1,6]
 	noisily di in g "  Resto de los gastos" ///
 		_col(33) %15.0fc in y `Salud'[1,6] ///
 		_col(50) %7.3fc in y `gasotros'/`PIB'*100 ///
@@ -634,17 +644,6 @@ quietly {
 	replace OtrosGas = OtrosGas*(`gaspemex'+`gascfe'+`gassener'+`gasfeder'+`gascosto'+`gasinfra'+`gasotros')/`Salud'[1,6]
 	replace Infra = Infra*`gasinfra'/`Salud'[1,6]
 
-	/*scalar servpersPIB = `servpers'/`PIB'*100
-	scalar matesumiPIB = `matesumi'/`PIB'*100
-	scalar gastgenePIB = `gastgene'/`PIB'*100
-	scalar substranPIB = `substran'/`PIB'*100
-	scalar bienmuebPIB = `bienmueb'/`PIB'*100
-	scalar obrapublPIB = `obrapubl'/`PIB'*100
-	scalar invefinaPIB = `invefina'/`PIB'*100
-	scalar partaporPIB = `partapor'/`PIB'*100
-	scalar costodeuPIB = `costodeu'/`PIB'*100
-	scalar otrosgasPIB = (`servpers'+`matesumi'+`gastgene'+`substran'+`bienmueb'+`obrapubl'+`invefina'+`partapor'+`costodeu')/`PIB'*100
-	scalar otrosgastos = (`servpers'+`matesumi'+`gastgene'+`substran'+`bienmueb'+`obrapubl'+`invefina'+`partapor'+`costodeu')/`Salud'[1,6]
 
 
 
@@ -699,6 +698,10 @@ quietly {
 		local IngBas = 0
 		scalar IngBas = `IngBas'/`pobIngBas'[1,1]
 	}
+	scalar IngBasPIB = `IngBas'/`PIB'*100
+	scalar ingbasico = `IngBas'/`pobIngBas'[1,1]
+	scalar otrosgasPIB = (`gaspemex'+`gascfe'+`gassener'+`gasfeder'+`gascosto'+`gasinfra'+`gasotros'+`IngBas')/`PIB'*100
+	scalar otrosgastos = (`gaspemex'+`gascfe'+`gassener'+`gasfeder'+`gascosto'+`gasinfra'+`gasotros'+`IngBas')/`Salud'[1,6]
 
 	* Resultados *
 	noisily di _newline in y "{bf: E. Ingreso b{c a'}sico}" 
@@ -727,8 +730,6 @@ quietly {
 		replace IngBasico = `IngBas'/`pobIngBas'[1,1]
 	}
 
-	scalar ingbasPIB = `IngBas'/`PIB'*100
-	scalar ingbasico = `IngBas'/`pobIngBas'[1,1]
 
 	
 	
@@ -834,74 +835,66 @@ quietly {
 	if "$output" == "output" & "$pais" == "" {
 		quietly log on output
 		noisily di in w "GASTOS: " in w "["  ///
-			/*"basicaPIB "*/ %8.3f basicaPIB ", " ///
-			/*"medsupPIB "*/ %8.3f medsupPIB ", " ///
-			/*"superiPIB "*/ %8.3f superiPIB ", " ///
-			/*"posgraPIB "*/ %8.3f posgraPIB ", " ///
-			/*"eduaduPIB "*/ %8.3f eduaduPIB ", " ///
-			/*"otrosePIB "*/ %8.3f otrosePIB ", " ///
-			/*"educacPIB "*/ %8.3f educacPIB ", " ///
-			/*"ssaPIB "*/ %8.3f ssaPIB ", " ///
-			/*"prospePIB "*/ %8.3f prospePIB ", " ///
-			/*"segpopPIB "*/ %8.3f segpopPIB ", " ///
-			/*"imssPIB "*/ %8.3f imssPIB ", " ///
-			/*"issstePIB "*/ %8.3f issstePIB ", " ///
-			/*"pemexPIB "*/ %8.3f pemexPIB ", " ///
-			/*"saludPIB "*/ %8.3f saludPIB ", " ///
-			/*"bienestarPIB "*/ %8.3f bienestarPIB ", " ///
-			/*"penimsPIB "*/ %8.3f penimsPIB ", " ///
-			/*"penissPIB "*/ %8.3f penissPIB ", " ///
-			/*"penotrPIB "*/ %8.3f penotrPIB ", " ///
-			/*"pensionPIB "*/ %8.3f pensionPIB ", " ///
-			/*"servpersPIB "*/ %8.3f servpersPIB ", " ///
-			/*"matesumiPIB "*/ %8.3f matesumiPIB ", " ///
-			/*"gastgenePIB "*/ %8.3f gastgenePIB ", " ///
-			/*"substranPIB "*/ %8.3f substranPIB ", " ///
-			/*"bienmuebPIB "*/ %8.3f bienmuebPIB ", " ///
-			/*"obrapublPIB "*/ %8.3f obrapublPIB ", " ///
-			/*"invefinaPIB "*/ %8.3f invefinaPIB ", " ///
-			/*"partaporPIB "*/ %8.3f partaporPIB ", " ///
-			/*"costodeuPIB "*/ %8.3f costodeuPIB ", " ///
-			/*"otrosgasPIB "*/ %8.3f otrosgasPIB ", " ///
-			/*"ingbasPIB "*/ %8.3f ingbasPIB ///
+			%8.3f basicaPIB ", " ///
+			%8.3f medsupPIB ", " ///
+			%8.3f superiPIB ", " ///
+			%8.3f posgraPIB ", " ///
+			%8.3f eduaduPIB ", " ///
+			%8.3f otrosePIB ", " ///
+			%8.3f basicaPIB+medsupPIB+superiPIB+posgraPIB+eduaduPIB+otrosePIB ", " ///
+			%8.3f ssaPIB ", " ///
+			%8.3f imssbienPIB ", " ///
+			%8.3f imssPIB ", " ///
+			%8.3f issstePIB ", " ///
+			%8.3f pemexPIB ", " ///
+			%8.3f ssaPIB+imssbienPIB+imssPIB+issstePIB+pemexPIB ", " ///
+			%8.3f bienestarPIB ", " ///
+			%8.3f penimssPIB ", " ///
+			%8.3f penisssPIB ", " ///
+			%8.3f penotroPIB ", " ///
+			%8.3f bienestarPIB+penimssPIB+penisssPIB+penotroPIB ", " ///
+			%8.3f gascfePIB ", " ///
+			%8.3f gaspemexPIB ", " ///
+			%8.3f gassenerPIB ", " ///
+			%8.3f gasinfraPIB ", " ///
+			%8.3f gascostoPIB ", " ///
+			%8.3f gasfederPIB ", " ///
+			%8.3f gasotrosPIB ", " ///
+			%8.3f gascfePIB+gaspemexPIB+gassenerPIB+gasinfraPIB+gascostoPIB+gasfederPIB+gasotrosPIB ", " ///
+			%8.3f IngBasPIB ", " ///
+			%8.3f basicaPIB+medsupPIB+superiPIB+posgraPIB+eduaduPIB+otrosePIB+ssaPIB+imssbienPIB+imssPIB+issstePIB+pemexPIB+bienestarPIB+penimssPIB+penisssPIB+penotroPIB+gascfePIB+gaspemexPIB+gassenerPIB+gasinfraPIB+gascostoPIB+gasfederPIB+gasotrosPIB+IngBasPIB ///
 			"]"		
-		noisily di in w "INPUTSG: " in w "["  ///
-			/*"basicaPIB "*/ %8.0f basica ", " ///
-			/*"medsupPIB "*/ %8.0f medsup ", " ///
-			/*"superiPIB "*/ %8.0f superi ", " ///
-			/*"posgraPIB "*/ %8.0f posgra ", " ///
-			/*"eduaduPIB "*/ %8.0f eduadu ", " ///
-			/*"otrosePIB "*/ %8.0f otrose ", " ///
-			/*"educacPIB "*/ %8.0f educacion ", " ///
-			/*"ssaPIB "*/ %8.0f ssa ", " ///
-			/*"prospePIB "*/ %8.0f prospe ", " ///
-			/*"segpopPIB "*/ %8.0f segpop ", " ///
-			/*"imssPIB "*/ %8.0f imss ", " ///
-			/*"issstePIB "*/ %8.0f issste ", " ///
-			/*"pemexPIB "*/ %8.0f pemex ", " ///
-			/*"saludPIB "*/ %8.0f salud ", " ///
-			/*"bienestarPIB "*/ %8.0f bienestar ", " ///
-			/*"penimsPIB "*/ %8.0f penims ", " ///
-			/*"penissPIB "*/ %8.0f peniss ", " ///
-			/*"penotrPIB "*/ %8.0f penotr ", " ///
-			/*"pensionPIB "*/ %8.0f pensiones ", " ///
-			/*"servpersPIB "*/ %8.0f servpers ", " ///
-			/*"matesumiPIB "*/ %8.0f matesumi ", " ///
-			/*"gastgenePIB "*/ %8.0f gastgene ", " ///
-			/*"substranPIB "*/ %8.0f substran ", " ///
-			/*"bienmuebPIB "*/ %8.0f bienmueb ", " ///
-			/*"obrapublPIB "*/ %8.0f obrapubl ", " ///
-			/*"invefinaPIB "*/ %8.0f invefina ", " ///
-			/*"partaporPIB "*/ %8.0f partapor ", " ///
-			/*"costodeuPIB "*/ %8.0f costodeu ", " ///
-			/*"otrosgasPIB "*/ %8.0f otrosgastos ", " ///
-			/*"costodeuPIB "*/ %8.0f ingbasico ", " ///
-			/*"otrosgasPIB "*/ %8.0f ingbasico18 ", " ///
-			/*"ingbasPIB "*/ %8.0f ingbasico65 ///
+		noisily di in w "GASTOSPC: " in w "["  ///
+			%8.0f basica ", " ///
+			%8.0f medsup ", " ///
+			%8.0f superi ", " ///
+			%8.0f posgra ", " ///
+			%8.0f eduadu ", " ///
+			%8.0f otrose ", " ///
+			%8.0f scalar(educacion) ", " ///
+			%8.0f ssa ", " ///
+			%8.0f imssbien ", " ///
+			%8.0f imss ", " ///
+			%8.0f issste ", " ///
+			%8.0f pemex ", " ///
+			%8.0f scalar(salud) ", " ///
+			%8.0f bienestar ", " ///
+			%8.0f penimss ", " ///
+			%8.0f penisss ", " ///
+			%8.0f penotro ", " ///
+			%8.0f pensiones ", " ///
+			%8.0f gascfe ", " ///
+			%8.0f gaspemex ", " ///
+			%8.0f gassener ", " ///
+			%8.0f gasinfra ", " ///
+			%8.0f gascosto ", " ///
+			%8.0f gasfeder ", " ///
+			%8.0f gasotros ", " ///
+			%8.0f otrosgastos ", " ///
+			%8.0f ingbasico ", " ///
+			%8.0f ingbasico18 ", " ///
+			%8.0f ingbasico65 ///
 			"]"
-		noisily di in w "GASTOSTOTAL: " in w "["  ///
-			%8.3f educacPIB +saludPIB+pensionPIB+otrosgasPIB+ingbasPIB ///
-		"]"
 		quietly log off output
 	}
 

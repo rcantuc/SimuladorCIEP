@@ -30,6 +30,7 @@ capture mkdir `"`c(sysdir_site)'/SIM/"'
 capture mkdir `"`c(sysdir_site)'/users/"'
 capture mkdir `"`c(sysdir_site)'/users/$pais/"'
 capture mkdir `"`c(sysdir_site)'/users/$pais/$id/"'
+quietly log using `"`c(sysdir_site)'/users/$pais/$id/output.txt"', replace text name(output)
 
 
 
@@ -43,7 +44,7 @@ scalar aniovp = 2023
 scalar anioend = 2030
 
 global pib2022 = 2.4 //    CGPE 2023 (página 134)
-global pib2023 = 3.0 //    CGPE 2023 (página 134)
+global pib2023 = 2.9676 //    CGPE 2023 (página 134)
 global pib2024 = 2.4 //    CGPE 2023 (página 134)
 global pib2025 = 2.4 //    CGPE 2023 (página 134)
 global pib2026 = 2.4 //    CGPE 2023 (página 134)
@@ -51,12 +52,12 @@ global pib2027 = 2.4 //    CGPE 2023 (página 134)
 global pib2028 = 2.4 //    CGPE 2023 (página 134)
 
 global def2022 = 8.00695 //    CGPE 2023 (página 134)
-global def2023 = 4.91697 //    CGPE 2023 (página 134)
+global def2023 = 4.95 //    CGPE 2023 (página 134)
 global def2024 = 3.46555 //    CGPE 2023 (página 134)
 global def2025 = 3.49807 //    CGPE 2023 (página 134)
 global def2026 = 3.49211 //    CGPE 2023 (página 134)
-global def2027 = 3.5153 //    CGPE 2023 (página 134)
-global def2028 = 3.5015 //    CGPE 2023 (página 134)
+global def2027 = 3.51530 //    CGPE 2023 (página 134)
+global def2028 = 3.50150 //    CGPE 2023 (página 134)
 
 global inf2022 = 7.7 //    CGPE 2023 (página 134)
 global inf2023 = 3.2 //    CGPE 2023 (página 134)
@@ -66,30 +67,37 @@ global inf2026 = 3.0 //    CGPE 2023 (página 134)
 global inf2027 = 3.0 //    CGPE 2023 (página 134)
 global inf2028 = 3.0 //    CGPE 2023 (página 134)
 
+global tasaEfectiva = 6.6472                                   // Tasa de inter{c e'}s EFECTIVA
+global tipoDeCambio = 20.4                                     // Tipo de cambio
+global depreciacion = 0.2000                                   // Depreciación
+
+PIBDeflactor, nog
+
+
 
 ************************/
 ***                   ***
 ***    5. INGRESOS    ***
 ***                   ***
 *************************
-scalar ISRAS   = 3.696 //    ISR (asalariados): 
-scalar ISRPF   = 0.240 //    ISR (personas f{c i'}sicas): 
-scalar CUOTAS  = 1.499 //    Cuotas (IMSS): 
+scalar ISRAS   = (3.696/100*31401701274538*(1+ 3.782*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISR (asalariados): 3.696
+scalar ISRPF   = (0.240/100*31401701274538*(1+ 1.199*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISR (personas f{c i'}sicas): 0.240
+scalar CUOTAS  = (1.499/100*31401701274538*(1+ 2.197*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Cuotas (IMSS): 1.499
 
-scalar ISRPM   = 4.064 //    ISR (personas morales): 
-scalar OTROSK  = 1.049 //    Productos, derechos, aprovechamientos, contribuciones: 
+scalar ISRPM   = (4.064/100*31401701274538*(1+ 4.664*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISR (personas morales): 4.064
+scalar OTROSK  = (1.049/100*31401701274538*(1+-3.269*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Productos, derechos, aprovech.: 1.049
 
-scalar IVA     = 4.520 //    IVA: 
-scalar ISAN    = 0.049 //    ISAN: 
-scalar IEPSP   = 0.662 //    IEPS (petrolero): 
-scalar IEPSNP  = 0.887 //    IEPS (no petrolero): 
-scalar IMPORT  = 0.313 //    Importaciones: 
+scalar IVA     = (4.520/100*31401701274538*(1+ 2.498*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // IVA: 4.520
+scalar ISAN    = (0.049/100*31401701274538*(1+ 3.565*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISAN: 0.049
+scalar IEPSNP  = (0.662/100*31401701274538*(1+ 0.362*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // IEPS (no petrolero): 0.887
+scalar IEPSP   =  0.887 								     // IEPS (petrolero): 0.662
+scalar IMPORT  = (0.313/100*31401701274538*(1+ 5.303*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Importaciones: 0.313
 
-scalar IMSS    = 0.091 //    Organismos y empresas (IMSS)
-scalar ISSSTE  = 0.159 //    Organismos y empresas (ISSSTE)
-scalar FMP     = 1.553 //    Fondo Mexicano del Petr{c o'}leo
-scalar PEMEX   = 2.632 //    Organismos y empresas (Pemex)
-scalar CFE     = 1.271 //    Organismos y empresas (CFE)
+scalar IMSS    = (0.091/100*31401701274538*(1+-2.685*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (IMSS): 0.091
+scalar ISSSTE  = (0.159/100*31401701274538*(1+-3.058*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (ISSSTE): 0.159
+scalar FMP     = (1.553/100*31401701274538*(1+-7.718*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Fondo Mexicano del Petróleo: 1.553
+scalar PEMEX   = (2.632/100*31401701274538*(1+ 1.379*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (Pemex): 2.632
+scalar CFE     = (1.271/100*31401701274538*(1+-3.024*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (CFE): 1.271
 
 
 
@@ -98,11 +106,11 @@ scalar CFE     = 1.271 //    Organismos y empresas (CFE)
 ***    6. GASTOS    ***
 ***                 ***
 ***********************
-scalar basica      =   26537 //    Educaci{c o'}n b{c a'}sica
-scalar medsup      =   26439 //    Educaci{c o'}n media superior
-scalar superi      =   39157 //    Educaci{c o'}n superior
+scalar basica      =   26537 //    Educación b{c a'}sica
+scalar medsup      =   26439 //    Educación media superior
+scalar superi      =   39157 //    Educación superior
 scalar posgra      =   64239 //    Posgrado
-scalar eduadu      =   37573 //    Educaci{c o'}n para adultos
+scalar eduadu      =   37573 //    Educación para adultos
 scalar otrose      =    3802 //    Otros gastos educativos
 
 scalar ssa         =     600 //    SSalud
@@ -111,26 +119,23 @@ scalar imss        =    8273 //    IMSS (salud)
 scalar issste      =   11072 //    ISSSTE (salud)
 scalar pemex       =   27368 //    Pemex (salud) + ISSFAM (salud)
 
-scalar bienestar   =   29239 //    Pensi{c o'}n Bienestar
-scalar penims      =  169241 //    Pensi{c o'}n IMSS
-scalar peniss      =  249560 //    Pensi{c o'}n ISSSTE
-scalar penotr      = 1507687 //    Pensi{c o'}n Pemex, CFE, Pensi{c o'}n LFC, ISSFAM, Otros
+scalar bienestar   =   29239 //    Pensión Bienestar
+scalar penimss     =  169241 //    Pensión IMSS
+scalar penisss     =  249560 //    Pensión ISSSTE
+scalar penotro     = 1507687 //    Pensión Pemex, CFE, Pensión LFC, ISSFAM, Otros
 
-scalar gaspemex    =    4466 //    Servicios personales
-scalar gascfe      =    2958 //    Materiales y suministros
-scalar gassener    =    1128 //    Gastos generales
-scalar gasfeder    =    9918 //    Subsidios y transferencias
-scalar gascosto    =    8543 //    Bienes muebles e inmuebles
-scalar gasinfra    =    4318 //    Obras p{c u'}blicas
-scalar gasotros    =    4449 //    Inversi{c o'}n financiera
+scalar gascfe      =    2958 //    Gasto en CFE
+scalar gaspemex    =    4466 //    Gasto en Pemex
+scalar gassener    =    1128 //    Gasto en SENER
+scalar gasinfra    =    4318 //    Gasto en Inversión
+scalar gascosto    =    8543 //    Gasto en Costo de la deuda
+scalar gasfeder    =    9918 //    Participaciones y Otras aportaciones
+scalar gasotros    =    4449 //    Otros gastos
 
 scalar IngBas      =       0 //    Ingreso b{c a'}sico
 scalar ingbasico18 =       1 //    1: Incluye menores de 18 anios, 0: no
 scalar ingbasico65 =       1 //    1: Incluye mayores de 65 anios, 0: no
 
-*global tasaEfectiva = 5.7425                                   // Tasa de inter{c e'}s EFECTIVA
-*global tipoDeCambio = 20.200                                   // Tipo de cambio
-*global depreciacion = 0.2000                                   // Depreciaci{c o'}n
 
 
 *****************************************************/
@@ -138,7 +143,7 @@ scalar ingbasico65 =       1 //    1: Incluye mayores de 65 anios, 0: no
 ***       6.1. Impuesto Sobre la Renta (ISR)       ***
 ***                                                ***
 ******************************************************
-/*             Inferior		Superior	CF		Tasa
+*             Inferior		Superior	CF		Tasa
 matrix ISR =  (0.01,		7735.00,	0.0,		1.92	\    /// 1
               7735.01,		65651.07,	148.51,		6.40	\    /// 2
               65651.08,		115375.90,	3855.14,	10.88	\    /// 3
@@ -166,10 +171,11 @@ matrix	SE =  (0.01,		21227.52,	4884.24		\    /// 1
               88587.97, 	1E+14,		0)		     	//  12
 
 *            Ex. SS.MM.	Ex. 	% ing. gravable		% Informalidad PF	% Informalidad Salarios
-matrix DED = (5,		15,			45.10, 			22.69)
+matrix DED = (5,		15,			45.27, 			24.04)
 
 *           Tasa ISR PM.	% Informalidad PM
-matrix PM = (30,		17.72)
+matrix PM = (30,		18.14)
+
 
 * Modulo ISR *
 if "`cambioisr'" == "1" {

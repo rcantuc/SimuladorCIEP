@@ -499,47 +499,26 @@ quietly {
 	*** 5 Output SIM ***
 	********************
 	if "$output" == "output" & "`nooutput'" == "" {
-		tempvar reportado estimado proyectado
-		g reportado = pibY/1000000000000/deflator if (anio <= scalar(aniolast) & anio >= 2010) ///
-			| (anio == scalar(aniolast) & trimestre == 4)
-		g estimado = pibY/1000000000000/deflator if (anio <= anio[`obs_exo'] & anio >= scalar(aniolast))
-		g proyectado = pibY/1000000000000/deflator if anio >= scalar(aniolast) & anio > anio[`obs_exo'] & anio <= 2030
-		replace proyectado = pibY/1000000000000/deflator if anio == anio[`obs_exo']
-
-		forvalues k = 1(1)`=_N' {
-			if anio[`k'] >= 2010 & anio[`k'] <= 2030 {
-				if reportado[`k'] == . {
-					local out_report "`out_report' null,"
-				}
-				else {
-					local out_report "`out_report' `=string(`=reportado[`k']',"%8.3f")',"
-				}
-				if estimado[`k'] == . {
-					local out_estima "`out_estima' null,"
-				}
-				else {
-					local out_estima "`out_estima' `=string(`=estimado[`k']',"%8.3f")',"
-				}
-				if proyectado[`k'] == . {
-					local out_proyec "`out_proyec' null,"
-				}
-				else {
-					local out_proyec "`out_proyec' `=string(`=proyectado[`k']',"%8.3f")',"
-				}
-			}
-		}
-
-		local length_report = strlen("`out_report'")
-		local length_estima = strlen("`out_estima'")
-		local length_proyec = strlen("`out_proyec'")
-
-		capture log on output
-		noisily di in w "Reportado: " in w "[`=substr("`out_report'",1,`length_report'-1)']"
-		noisily di in w "Estimado: " in w "[`=substr("`out_estima'",1,`length_estima'-1)']"
-		noisily di in w "Proyectado: " in w "[`=substr("`out_proyec'",1,`length_proyec'-1)']"
-		noisily di in w "CRECPIB: [$pib2021,$pib2022,$pib2023,$pib2024,$pib2025]"
-		noisily di in w "DEUDA: [$tasaEfectiva,$tipoDeCambio,$depreciacion]"
-		capture log off output
+		quietly log on output
+		noisily di in w "CRECPIB: ["  ///
+			%8.1f $pib2022 ", " ///
+			%8.1f $pib2023 ", " ///
+			%8.1f $pib2024 ", " ///
+			%8.1f $pib2025 ", " ///
+			%8.1f $pib2026 ", " ///
+			%8.1f $pib2027 ", " ///
+			%8.1f $pib2028 ///
+		"]"
+		noisily di in w "CRECDEF: ["  ///
+			%8.1f $def2022 ", " ///
+			%8.1f $def2023 ", " ///
+			%8.1f $def2024 ", " ///
+			%8.1f $def2025 ", " ///
+			%8.1f $def2026 ", " ///
+			%8.1f $def2027 ", " ///
+			%8.1f $def2028 ///
+		"]"
+		quietly log off output
 	}
 
 	return scalar aniolast = scalar(aniolast)
