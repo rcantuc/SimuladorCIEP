@@ -1,0 +1,153 @@
+﻿Índice de nombres y contenido de archivos
+
+2003-S-E_198_29_3_2003 / Cuentas institucionales de la economía, por sector / Precios corrientes / Millones de pesos / 2003
+2004-S-E_198_29_3_2004 / Cuentas institucionales de la economía, por sector / Precios corrientes / Millones de pesos / 2004
+2005-S-E_198_29_3_2005 / Cuentas institucionales de la economía, por sector / Precios corrientes / Millones de pesos / 2005
+2006-S-E_198_29_3_2006 / Cuentas institucionales de la economía, por sector / Precios corrientes / Millones de pesos / 2006
+2007-S-E_198_29_3_2007 / Cuentas institucionales de la economía, por sector / Precios corrientes / Millones de pesos / 2007
+2008-S-E_198_29_3_2008 / Cuentas institucionales de la economía, por sector / Precios corrientes / Millones de pesos / 2008
+2009-S-E_198_29_3_2009 / Cuentas institucionales de la economía, por sector / Precios corrientes / Millones de pesos / 2009
+2010-S-E_198_29_3_2010 / Cuentas institucionales de la economía, por sector / Precios corrientes / Millones de pesos / 2010
+2011-S-E_198_29_3_2011 / Cuentas institucionales de la economía, por sector / Precios corrientes / Millones de pesos / 2011
+2012-S-E_198_29_3_2012 / Cuentas institucionales de la economía, por sector / Precios corrientes / Millones de pesos / 2012
+2013-S-E_198_29_3_2013 / Cuentas institucionales de la economía, por sector / Precios corrientes / Millones de pesos / 2013
+2014-S-E_198_29_3_2014 / Cuentas institucionales de la economía, por sector / Precios corrientes / Millones de pesos / 2014
+2015-S-E_198_29_3_2015 / Cuentas institucionales de la economía, por sector / Precios corrientes / Millones de pesos / 2015
+2003-PIB-S-E_198_23_2_2003 / Cuentas institucionales de la economía, por sector / Relación de cada variable entre el PIB / Porcentual / 2003
+2004-PIB-S-E_198_23_2_2004 / Cuentas institucionales de la economía, por sector / Relación de cada variable entre el PIB / Porcentual / 2004
+2005-PIB-S-E_198_23_2_2005 / Cuentas institucionales de la economía, por sector / Relación de cada variable entre el PIB / Porcentual / 2005
+2006-PIB-S-E_198_23_2_2006 / Cuentas institucionales de la economía, por sector / Relación de cada variable entre el PIB / Porcentual / 2006
+2007-PIB-S-E_198_23_2_2007 / Cuentas institucionales de la economía, por sector / Relación de cada variable entre el PIB / Porcentual / 2007
+2008-PIB-S-E_198_23_2_2008 / Cuentas institucionales de la economía, por sector / Relación de cada variable entre el PIB / Porcentual / 2008
+2009-PIB-S-E_198_23_2_2009 / Cuentas institucionales de la economía, por sector / Relación de cada variable entre el PIB / Porcentual / 2009
+2010-PIB-S-E_198_23_2_2010 / Cuentas institucionales de la economía, por sector / Relación de cada variable entre el PIB / Porcentual / 2010
+2011-PIB-S-E_198_23_2_2011 / Cuentas institucionales de la economía, por sector / Relación de cada variable entre el PIB / Porcentual / 2011
+2012-PIB-S-E_198_23_2_2012 / Cuentas institucionales de la economía, por sector / Relación de cada variable entre el PIB / Porcentual / 2012
+2013-PIB-S-E_198_23_2_2013 / Cuentas institucionales de la economía, por sector / Relación de cada variable entre el PIB / Porcentual / 2013
+2014-PIB-S-E_198_23_2_2014 / Cuentas institucionales de la economía, por sector / Relación de cada variable entre el PIB / Porcentual / 2014
+2015-PIB-S-E_198_23_2_2015 / Cuentas institucionales de la economía, por sector / Relación de cada variable entre el PIB / Porcentual / 2015
+2003-E_32_29_3_2003 / Precios corrientes / Millones de pesos / 2003 / Cuentas institucionales de la economía, por sector y subsector
+2004-E_32_29_3_2004 / Precios corrientes / Millones de pesos / 2004 / Cuentas institucionales de la economía, por sector y subsector
+2005-E_32_29_3_2005 / Precios corrientes / Millones de pesos / 2005 / Cuentas institucionales de la economía, por sector y subsector
+2006-E_32_29_3_2006 / Precios corrientes / Millones de pesos / 2006 / Cuentas institucionales de la economía, por sector y subsector
+2007-E_32_29_3_2007 / Precios corrientes / Millones de pesos / 2007 / Cuentas institucionales de la economía, por sector y subsector
+2008-E_32_29_3_2008 / Precios corrientes / Millones de pesos / 2008 / Cuentas institucionales de la economía, por sector y subsector
+2009-E_32_29_3_2009 / Precios corrientes / Millones de pesos / 2009 / Cuentas institucionales de la economía, por sector y subsector
+2010-E_32_29_3_2010 / Precios corrientes / Millones de pesos / 2010 / Cuentas institucionales de la economía, por sector y subsector
+2011-E_32_29_3_2011 / Precios corrientes / Millones de pesos / 2011 / Cuentas institucionales de la economía, por sector y subsector
+2012-E_32_29_3_2012 / Precios corrientes / Millones de pesos / 2012 / Cuentas institucionales de la economía, por sector y subsector
+2013-E_32_29_3_2013 / Precios corrientes / Millones de pesos / 2013 / Cuentas institucionales de la economía, por sector y subsector
+2014-E_32_29_3_2014 / Precios corrientes / Millones de pesos / 2014 / Cuentas institucionales de la economía, por sector y subsector
+2015-E_32_29_3_2015 / Precios corrientes / Millones de pesos / 2015 / Cuentas institucionales de la economía, por sector y subsector
+2003-PIB-E_32_23_2_2003 / Relación de cada variable entre el PIB / Porcentual / 2003 / Cuentas institucionales de la economía, por sector y subsector
+2004-PIB-E_32_23_2_2004 / Relación de cada variable entre el PIB / Porcentual / 2004 / Cuentas institucionales de la economía, por sector y subsector
+2005-PIB-E_32_23_2_2005 / Relación de cada variable entre el PIB / Porcentual / 2005 / Cuentas institucionales de la economía, por sector y subsector
+2006-PIB-E_32_23_2_2006 / Relación de cada variable entre el PIB / Porcentual / 2006 / Cuentas institucionales de la economía, por sector y subsector
+2007-PIB-E_32_23_2_2007 / Relación de cada variable entre el PIB / Porcentual / 2007 / Cuentas institucionales de la economía, por sector y subsector
+2008-PIB-E_32_23_2_2008 / Relación de cada variable entre el PIB / Porcentual / 2008 / Cuentas institucionales de la economía, por sector y subsector
+2009-PIB-E_32_23_2_2009 / Relación de cada variable entre el PIB / Porcentual / 2009 / Cuentas institucionales de la economía, por sector y subsector
+2010-PIB-E_32_23_2_2010 / Relación de cada variable entre el PIB / Porcentual / 2010 / Cuentas institucionales de la economía, por sector y subsector
+2011-PIB-E_32_23_2_2011 / Relación de cada variable entre el PIB / Porcentual / 2011 / Cuentas institucionales de la economía, por sector y subsector
+2012-PIB-E_32_23_2_2012 / Relación de cada variable entre el PIB / Porcentual / 2012 / Cuentas institucionales de la economía, por sector y subsector
+2013-PIB-E_32_23_2_2013 / Relación de cada variable entre el PIB / Porcentual / 2013 / Cuentas institucionales de la economía, por sector y subsector
+2014-PIB-E_32_23_2_2014 / Relación de cada variable entre el PIB / Porcentual / 2014 / Cuentas institucionales de la economía, por sector y subsector
+2015-PIB-E _32_23_2_2015 / Relación de cada variable entre el PIB / Porcentual / 2015 / Cuentas institucionales de la economía, por sector y subsector
+S0-E_199_1_29_3_86 / Serie por sector institucional / Bienes y servicios / Precios corrientes / Millones de pesos / 2003-2015
+S1-E_199_2_29_3_86 / Serie por sector institucional / Economía total / Precios corrientes / Millones de pesos / 2003-2015
+S11-E_199_2_1_29_3_86 / Serie por sector institucional / Economía total / Sociedades no financieras / Precios corrientes / Millones de pesos / 2003-2015
+S12-E_199_2_2_29_3_86 / Serie por sector institucional / Economía total / Sociedades Financieras / Precios corrientes / Millones de pesos / 2003-2015
+S13-E_199_2_3_29_3_86 / Serie por sector institucional / Economía total / Gobierno General / Precios corrientes / Millones de pesos / 2003-2015
+S14-E_199_2_4_29_3_86 / Serie por sector institucional / Economía total / Hogares / Precios corrientes / Millones de pesos / 2003-2015
+S15-E_199_2_5_29_3_86 / Serie por sector institucional / Economía total / Instituciones sin fines de lucro al servicio de los hogares (ISFLSH) / Precios corrientes / Millones de pesos / 2003-2015
+S2-E_199_3_29_3_86 / Serie por sector institucional / Resto del Mundo / Precios corrientes / Millones de pesos / 2003-2015
+2003-S11A-E_200_1_29_3_86_2003 / Cuentas por subsector institucional / Sociedades no financieras / Precios corrientes / Millones de pesos / 2003-2015 / 2003
+2004-S11A-E_200_1_29_3_86_2004 / Cuentas por subsector institucional / Sociedades no financieras / Precios corrientes / Millones de pesos / 2003-2015 / 2004
+2005-S11A-E_200_1_29_3_86_2005 / Cuentas por subsector institucional / Sociedades no financieras / Precios corrientes / Millones de pesos / 2003-2015 / 2005
+2006-S11A-E_200_1_29_3_86_2006 / Cuentas por subsector institucional / Sociedades no financieras / Precios corrientes / Millones de pesos / 2003-2015 / 2006
+2007-S11A-E_200_1_29_3_86_2007 / Cuentas por subsector institucional / Sociedades no financieras / Precios corrientes / Millones de pesos / 2003-2015 / 2007
+2008-S11A-E_200_1_29_3_86_2008 / Cuentas por subsector institucional / Sociedades no financieras / Precios corrientes / Millones de pesos / 2003-2015 / 2008
+2009-S11A-E_200_1_29_3_86_2009 / Cuentas por subsector institucional / Sociedades no financieras / Precios corrientes / Millones de pesos / 2003-2015 / 2009
+2010-S11A-E_200_1_29_3_86_2010 / Cuentas por subsector institucional / Sociedades no financieras / Precios corrientes / Millones de pesos / 2003-2015 / 2010
+2011-S11A-E_200_1_29_3_86_2011 / Cuentas por subsector institucional / Sociedades no financieras / Precios corrientes / Millones de pesos / 2003-2015 / 2011
+2012-S11A-E_200_1_29_3_86_2012 / Cuentas por subsector institucional / Sociedades no financieras / Precios corrientes / Millones de pesos / 2003-2015 / 2012
+2013-S11A-E_200_1_29_3_86_2013 / Cuentas por subsector institucional / Sociedades no financieras / Precios corrientes / Millones de pesos / 2003-2015 / 2013
+2014-S11A-E_200_1_29_3_86_2014 / Cuentas por subsector institucional / Sociedades no financieras / Precios corrientes / Millones de pesos / 2003-2015 / 2014
+2015-S11A-E_200_1_29_3_86_2015 / Cuentas por subsector institucional / Sociedades no financieras / Precios corrientes / Millones de pesos / 2003-2015 / 2015
+2003-S12A-E_200_2_29_3_2003 / Cuentas por subsector institucional / Sociedades Financieras / Precios corrientes / Millones de pesos / 2003
+2004-S12A-E_200_2_29_3_2004 / Cuentas por subsector institucional / Sociedades Financieras / Precios corrientes / Millones de pesos / 2004
+2005-S12A-E_200_2_29_3_2005 / Cuentas por subsector institucional / Sociedades Financieras / Precios corrientes / Millones de pesos / 2005
+2006-S12A-E_200_2_29_3_2006 / Cuentas por subsector institucional / Sociedades Financieras / Precios corrientes / Millones de pesos / 2006
+2007-S12A-E_200_2_29_3_2007 / Cuentas por subsector institucional / Sociedades Financieras / Precios corrientes / Millones de pesos / 2007
+2008-S12A-E_200_2_29_3_2008 / Cuentas por subsector institucional / Sociedades Financieras / Precios corrientes / Millones de pesos / 2008
+2009-S12A-E_200_2_29_3_2009 / Cuentas por subsector institucional / Sociedades Financieras / Precios corrientes / Millones de pesos / 2009
+2010-S12A-E_200_2_29_3_2010 / Cuentas por subsector institucional / Sociedades Financieras / Precios corrientes / Millones de pesos / 2010
+2011-S12A-E_200_2_29_3_2011 / Cuentas por subsector institucional / Sociedades Financieras / Precios corrientes / Millones de pesos / 2011
+2012-S12A-E_200_2_29_3_2012 / Cuentas por subsector institucional / Sociedades Financieras / Precios corrientes / Millones de pesos / 2012
+2013-S12A-E_200_2_29_3_2013 / Cuentas por subsector institucional / Sociedades Financieras / Precios corrientes / Millones de pesos / 2013
+2014-S12A-E_200_2_29_3_2014 / Cuentas por subsector institucional / Sociedades Financieras / Precios corrientes / Millones de pesos / 2014
+2015-S12A-E_200_2_29_3_2015 / Cuentas por subsector institucional / Sociedades Financieras / Precios corrientes / Millones de pesos / 2015
+2003-S13A-E_200_3_29_3_2003 / Cuentas por subsector institucional / Gobierno General / Precios corrientes / Millones de pesos / 2003
+2004-S13A-E_200_3_29_3_2004 / Cuentas por subsector institucional / Gobierno General / Precios corrientes / Millones de pesos / 2004
+2005-S13A-E_200_3_29_3_2005 / Cuentas por subsector institucional / Gobierno General / Precios corrientes / Millones de pesos / 2005
+2006-S13A-E_200_3_29_3_2006 / Cuentas por subsector institucional / Gobierno General / Precios corrientes / Millones de pesos / 2006
+2007-S13A-E_200_3_29_3_2007 / Cuentas por subsector institucional / Gobierno General / Precios corrientes / Millones de pesos / 2007
+2008-S13A-E_200_3_29_3_2008 / Cuentas por subsector institucional / Gobierno General / Precios corrientes / Millones de pesos / 2008
+2009-S13A-E_200_3_29_3_2009 / Cuentas por subsector institucional / Gobierno General / Precios corrientes / Millones de pesos / 2009
+2010-S13A-E_200_3_29_3_2010 / Cuentas por subsector institucional / Gobierno General / Precios corrientes / Millones de pesos / 2010
+2011-S13A-E_200_3_29_3_2011 / Cuentas por subsector institucional / Gobierno General / Precios corrientes / Millones de pesos / 2011
+2012-S13A-E_200_3_29_3_2012 / Cuentas por subsector institucional / Gobierno General / Precios corrientes / Millones de pesos / 2012
+2013-S13A-E_200_3_29_3_2013 / Cuentas por subsector institucional / Gobierno General / Precios corrientes / Millones de pesos / 2013
+2014-S13A-E_200_3_29_3_2014 / Cuentas por subsector institucional / Gobierno General / Precios corrientes / Millones de pesos / 2014
+2015-S13A-E_200_3_29_3_2015 / Cuentas por subsector institucional / Gobierno General / Precios corrientes / Millones de pesos / 2015
+2003-FA-E_33_29_3_2003 / Flujo de fondos detallados de activos / Precios corrientes / Millones de pesos / 2003
+2004-FA-E_33_29_3_2004 / Flujo de fondos detallados de activos / Precios corrientes / Millones de pesos / 2004
+2005-FA-E_33_29_3_2005 / Flujo de fondos detallados de activos / Precios corrientes / Millones de pesos / 2005
+2006-FA-E_33_29_3_2006 / Flujo de fondos detallados de activos / Precios corrientes / Millones de pesos / 2006
+2007-FA-E_33_29_3_2007 / Flujo de fondos detallados de activos / Precios corrientes / Millones de pesos / 2007
+2008-FA-E_33_29_3_2008 / Flujo de fondos detallados de activos / Precios corrientes / Millones de pesos / 2008
+2009-FA-E_33_29_3_2009 / Flujo de fondos detallados de activos / Precios corrientes / Millones de pesos / 2009
+2010-FA-E_33_29_3_2010 / Flujo de fondos detallados de activos / Precios corrientes / Millones de pesos / 2010
+2011-FA-E_33_29_3_2011 / Flujo de fondos detallados de activos / Precios corrientes / Millones de pesos / 2011
+2012-FA-E_33_29_3_2012 / Flujo de fondos detallados de activos / Precios corrientes / Millones de pesos / 2012
+2013-FA-E_33_29_3_2013 / Flujo de fondos detallados de activos / Precios corrientes / Millones de pesos / 2013
+2014-FA-E_33_29_3_2014 / Flujo de fondos detallados de activos / Precios corrientes / Millones de pesos / 2014
+2015-FA-E_33_29_3_2015 / Flujo de fondos detallados de activos / Precios corrientes / Millones de pesos / 2015
+2003-FA-%-E_33_23_2_2003 / Flujo de fondos detallados de activos / Relación de cada variable entre el PIB / Porcentual / 2003
+2004-FA-%-E_33_23_2_2004 / Flujo de fondos detallados de activos / Relación de cada variable entre el PIB / Porcentual / 2004
+2005-FA-%-E_33_23_2_2005 / Flujo de fondos detallados de activos / Relación de cada variable entre el PIB / Porcentual / 2005
+2006-FA-%-E_33_23_2_2006 / Flujo de fondos detallados de activos / Relación de cada variable entre el PIB / Porcentual / 2006
+2007-FA-%-E_33_23_2_2007 / Flujo de fondos detallados de activos / Relación de cada variable entre el PIB / Porcentual / 2007
+2008-FA-%-E_33_23_2_2008 / Flujo de fondos detallados de activos / Relación de cada variable entre el PIB / Porcentual / 2008
+2009-FA-%-E_33_23_2_2009 / Flujo de fondos detallados de activos / Relación de cada variable entre el PIB / Porcentual / 2009
+2010-FA-%-E_33_23_2_2010 / Flujo de fondos detallados de activos / Relación de cada variable entre el PIB / Porcentual / 2010
+2011-FA-%-E_33_23_2_2011 / Flujo de fondos detallados de activos / Relación de cada variable entre el PIB / Porcentual / 2011
+2012-FA-%-E_33_23_2_2012 / Flujo de fondos detallados de activos / Relación de cada variable entre el PIB / Porcentual / 2012
+2013-FA-%-E_33_23_2_2013 / Flujo de fondos detallados de activos / Relación de cada variable entre el PIB / Porcentual / 2013
+2014-FA-%-E_33_23_2_2014 / Flujo de fondos detallados de activos / Relación de cada variable entre el PIB / Porcentual / 2014
+2015-FA-%-E_33_23_2_2015 / Flujo de fondos detallados de activos / Relación de cada variable entre el PIB / Porcentual / 2015
+2003-FP-E_34_29_3_2003 / Flujo de fondos detallados de pasivos / Precios corrientes / Millones de pesos / 2003
+2004-FP-E_34_29_3_2004 / Flujo de fondos detallados de pasivos / Precios corrientes / Millones de pesos / 2004
+2005-FP-E_34_29_3_2005 / Flujo de fondos detallados de pasivos / Precios corrientes / Millones de pesos / 2005
+2006-FP-E_34_29_3_2006 / Flujo de fondos detallados de pasivos / Precios corrientes / Millones de pesos / 2006
+2007-FP-E_34_29_3_2007 / Flujo de fondos detallados de pasivos / Precios corrientes / Millones de pesos / 2007
+2008-FP-E_34_29_3_2008 / Flujo de fondos detallados de pasivos / Precios corrientes / Millones de pesos / 2008
+2009-FP-E_34_29_3_2009 / Flujo de fondos detallados de pasivos / Precios corrientes / Millones de pesos / 2009
+2010-FP-E_34_29_3_2010 / Flujo de fondos detallados de pasivos / Precios corrientes / Millones de pesos / 2010
+2011-FP-E_34_29_3_2011 / Flujo de fondos detallados de pasivos / Precios corrientes / Millones de pesos / 2011
+2012-FP-E_34_29_3_2012 / Flujo de fondos detallados de pasivos / Precios corrientes / Millones de pesos / 2012
+2013-FP-E_34_29_3_2013 / Flujo de fondos detallados de pasivos / Precios corrientes / Millones de pesos / 2013
+2014-FP-E_34_29_3_2014 / Flujo de fondos detallados de pasivos / Precios corrientes / Millones de pesos / 2014
+2015-FP-E_34_29_3_2015 / Flujo de fondos detallados de pasivos / Precios corrientes / Millones de pesos / 2015
+2003-FP-%-E_34_23_2_2003 / Flujo de fondos detallados de pasivos / Relación de cada variable entre el PIB / Porcentual / 2003
+2004-FP-%-E_34_23_2_2004 / Flujo de fondos detallados de pasivos / Relación de cada variable entre el PIB / Porcentual / 2004
+2005-FP-%-E_34_23_2_2005 / Flujo de fondos detallados de pasivos / Relación de cada variable entre el PIB / Porcentual / 2005
+2006-FP-%-E_34_23_2_2006 / Flujo de fondos detallados de pasivos / Relación de cada variable entre el PIB / Porcentual / 2006
+2007-FP-%-E_34_23_2_2007 / Flujo de fondos detallados de pasivos / Relación de cada variable entre el PIB / Porcentual / 2007
+2008-FP-%-E_34_23_2_2008 / Flujo de fondos detallados de pasivos / Relación de cada variable entre el PIB / Porcentual / 2008
+2009-FP-%-E_34_23_2_2009 / Flujo de fondos detallados de pasivos / Relación de cada variable entre el PIB / Porcentual / 2009
+2010-FP-%-E_34_23_2_2010 / Flujo de fondos detallados de pasivos / Relación de cada variable entre el PIB / Porcentual / 2010
+2011-FP-%-E_34_23_2_2011 / Flujo de fondos detallados de pasivos / Relación de cada variable entre el PIB / Porcentual / 2011
+2012-FP-%-E_34_23_2_2012 / Flujo de fondos detallados de pasivos / Relación de cada variable entre el PIB / Porcentual / 2012
+2013-FP-%-E_34_23_2_2013 / Flujo de fondos detallados de pasivos / Relación de cada variable entre el PIB / Porcentual / 2013
+2014-FP-%-E_34_23_2_2014 / Flujo de fondos detallados de pasivos / Relación de cada variable entre el PIB / Porcentual / 2014
+2015-FP-%-E_34_23_2_2015 / Flujo de fondos detallados de pasivos / Relación de cada variable entre el PIB / Porcentual / 2015
