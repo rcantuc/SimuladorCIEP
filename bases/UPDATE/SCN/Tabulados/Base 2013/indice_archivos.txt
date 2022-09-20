@@ -1,0 +1,204 @@
+﻿Índice de nombres y contenido de archivos
+
+2003-S-E_42_186_2003 / Cuentas institucionales de la economía, por sector / Precios corrientes en millones de pesos / 2003
+2004-S-E_42_186_2004 / Cuentas institucionales de la economía, por sector / Precios corrientes en millones de pesos / 2004
+2005-S-E_42_186_2005 / Cuentas institucionales de la economía, por sector / Precios corrientes en millones de pesos / 2005
+2006-S-E_42_186_2006 / Cuentas institucionales de la economía, por sector / Precios corrientes en millones de pesos / 2006
+2007-S-E_42_186_2007 / Cuentas institucionales de la economía, por sector / Precios corrientes en millones de pesos / 2007
+2008-S-E_42_186_2008 / Cuentas institucionales de la economía, por sector / Precios corrientes en millones de pesos / 2008
+2009-S-E_42_186_2009 / Cuentas institucionales de la economía, por sector / Precios corrientes en millones de pesos / 2009
+2010-S-E_42_186_2010 / Cuentas institucionales de la economía, por sector / Precios corrientes en millones de pesos / 2010
+2011-S-E_42_186_2011 / Cuentas institucionales de la economía, por sector / Precios corrientes en millones de pesos / 2011
+2012-S-E_42_186_2012 / Cuentas institucionales de la economía, por sector / Precios corrientes en millones de pesos / 2012
+2013-S-E_42_186_2013 / Cuentas institucionales de la economía, por sector / Precios corrientes en millones de pesos / 2013
+2014-S-E_42_186_2014 / Cuentas institucionales de la economía, por sector / Precios corrientes en millones de pesos / 2014
+2015-S-E_42_186_2015 / Cuentas institucionales de la economía, por sector / Precios corrientes en millones de pesos / 2015
+2016-S-E_42_186_2016 / Cuentas institucionales de la economía, por sector / Precios corrientes en millones de pesos / 2016
+2017-S-E_42_186_2017 / Cuentas institucionales de la economía, por sector / Precios corrientes en millones de pesos / 2017
+2018-S-E_42_186_2018 / Cuentas institucionales de la economía, por sector / Precios corrientes en millones de pesos / 2018
+2003-PIB-S-E_42_86_183_2003 / Cuentas institucionales de la economía, por sector / Relación de cada variable entre el PIB / Porcentaje / 2003
+2004-PIB-S-E_42_86_183_2004 / Cuentas institucionales de la economía, por sector / Relación de cada variable entre el PIB / Porcentaje / 2004
+2005-PIB-S-E_42_86_183_2005 / Cuentas institucionales de la economía, por sector / Relación de cada variable entre el PIB / Porcentaje / 2005
+2006-PIB-S-E_42_86_183_2006 / Cuentas institucionales de la economía, por sector / Relación de cada variable entre el PIB / Porcentaje / 2006
+2007-PIB-S-E_42_86_183_2007 / Cuentas institucionales de la economía, por sector / Relación de cada variable entre el PIB / Porcentaje / 2007
+2008-PIB-S-E_42_86_183_2008 / Cuentas institucionales de la economía, por sector / Relación de cada variable entre el PIB / Porcentaje / 2008
+2009-PIB-S-E_42_86_183_2009 / Cuentas institucionales de la economía, por sector / Relación de cada variable entre el PIB / Porcentaje / 2009
+2010-PIB-S-E_42_86_183_2010 / Cuentas institucionales de la economía, por sector / Relación de cada variable entre el PIB / Porcentaje / 2010
+2011-PIB-S-E_42_86_183_2011 / Cuentas institucionales de la economía, por sector / Relación de cada variable entre el PIB / Porcentaje / 2011
+2012-PIB-S-E_42_86_183_2012 / Cuentas institucionales de la economía, por sector / Relación de cada variable entre el PIB / Porcentaje / 2012
+2013-PIB-S-E_42_86_183_2013 / Cuentas institucionales de la economía, por sector / Relación de cada variable entre el PIB / Porcentaje / 2013
+2014-PIB-S-E_42_86_183_2014 / Cuentas institucionales de la economía, por sector / Relación de cada variable entre el PIB / Porcentaje / 2014
+2015-PIB-S-E_42_86_183_2015 / Cuentas institucionales de la economía, por sector / Relación de cada variable entre el PIB / Porcentaje / 2015
+2016-PIB-S-E_42_86_183_2016 / Cuentas institucionales de la economía, por sector / Relación de cada variable entre el PIB / Porcentaje / 2016
+2017-PIB-S-E_42_86_183_2017 / Cuentas institucionales de la economía, por sector / Relación de cada variable entre el PIB / Porcentaje / 2017
+2018-PIB-S-E_42_86_183_2018 / Cuentas institucionales de la economía, por sector / Relación de cada variable entre el PIB / Porcentaje / 2018
+2003-E_43_186_2003 / Cuentas institucionales de la economía, por sector y subsector / Precios corrientes en millones de pesos / 2003
+2004-E_43_186_2004 / Cuentas institucionales de la economía, por sector y subsector / Precios corrientes en millones de pesos / 2004
+2005-E_43_186_2005 / Cuentas institucionales de la economía, por sector y subsector / Precios corrientes en millones de pesos / 2005
+2006-E_43_186_2006 / Cuentas institucionales de la economía, por sector y subsector / Precios corrientes en millones de pesos / 2006
+2007-E_43_186_2007 / Cuentas institucionales de la economía, por sector y subsector / Precios corrientes en millones de pesos / 2007
+2008-E_43_186_2008 / Cuentas institucionales de la economía, por sector y subsector / Precios corrientes en millones de pesos / 2008
+2009-E_43_186_2009 / Cuentas institucionales de la economía, por sector y subsector / Precios corrientes en millones de pesos / 2009
+2010-E_43_186_2010 / Cuentas institucionales de la economía, por sector y subsector / Precios corrientes en millones de pesos / 2010
+2011-E_43_186_2011 / Cuentas institucionales de la economía, por sector y subsector / Precios corrientes en millones de pesos / 2011
+2012-E_43_186_2012 / Cuentas institucionales de la economía, por sector y subsector / Precios corrientes en millones de pesos / 2012
+2013-E_43_186_2013 / Cuentas institucionales de la economía, por sector y subsector / Precios corrientes en millones de pesos / 2013
+2014-E_43_186_2014 / Cuentas institucionales de la economía, por sector y subsector / Precios corrientes en millones de pesos / 2014
+2015-E_43_186_2015 / Cuentas institucionales de la economía, por sector y subsector / Precios corrientes en millones de pesos / 2015
+2016-E_43_186_2016 / Cuentas institucionales de la economía, por sector y subsector / Precios corrientes en millones de pesos / 2016
+2017-E_43_186_2017 / Cuentas institucionales de la economía, por sector y subsector / Precios corrientes en millones de pesos / 2017
+2018-E_43_186_2018 / Cuentas institucionales de la economía, por sector y subsector / Precios corrientes en millones de pesos / 2018
+2003-PIB-E_43_86_183_2003 / Cuentas institucionales de la economía, por sector y subsector / Relación de cada variable entre el PIB / Porcentaje / 2003
+2004-PIB-E_43_86_183_2004 / Cuentas institucionales de la economía, por sector y subsector / Relación de cada variable entre el PIB / Porcentaje / 2004
+2005-PIB-E_43_86_183_2005 / Cuentas institucionales de la economía, por sector y subsector / Relación de cada variable entre el PIB / Porcentaje / 2005
+2006-PIB-E_43_86_183_2006 / Cuentas institucionales de la economía, por sector y subsector / Relación de cada variable entre el PIB / Porcentaje / 2006
+2007-PIB-E_43_86_183_2007 / Cuentas institucionales de la economía, por sector y subsector / Relación de cada variable entre el PIB / Porcentaje / 2007
+2008-PIB-E_43_86_183_2008 / Cuentas institucionales de la economía, por sector y subsector / Relación de cada variable entre el PIB / Porcentaje / 2008
+2009-PIB-E_43_86_183_2009 / Cuentas institucionales de la economía, por sector y subsector / Relación de cada variable entre el PIB / Porcentaje / 2009
+2010-PIB-E_43_86_183_2010 / Cuentas institucionales de la economía, por sector y subsector / Relación de cada variable entre el PIB / Porcentaje / 2010
+2011-PIB-E_43_86_183_2011 / Cuentas institucionales de la economía, por sector y subsector / Relación de cada variable entre el PIB / Porcentaje / 2011
+2012-PIB-E_43_86_183_2012 / Cuentas institucionales de la economía, por sector y subsector / Relación de cada variable entre el PIB / Porcentaje / 2012
+2013-PIB-E_43_86_183_2013 / Cuentas institucionales de la economía, por sector y subsector / Relación de cada variable entre el PIB / Porcentaje / 2013
+2014-PIB-E_43_86_183_2014 / Cuentas institucionales de la economía, por sector y subsector / Relación de cada variable entre el PIB / Porcentaje / 2014
+2015-PIB-E_43_86_183_2015 / Cuentas institucionales de la economía, por sector y subsector / Relación de cada variable entre el PIB / Porcentaje / 2015
+2016-PIB-E_43_86_183_2016 / Cuentas institucionales de la economía, por sector y subsector / Relación de cada variable entre el PIB / Porcentaje / 2016
+2017-PIB-E_43_86_183_2017 / Cuentas institucionales de la economía, por sector y subsector / Relación de cada variable entre el PIB / Porcentaje / 2017
+2018-PIB-E_43_86_183_2018 / Cuentas institucionales de la economía, por sector y subsector / Relación de cada variable entre el PIB / Porcentaje / 2018
+S0-E_44_1_186_101 / Serie por sector institucional / Bienes y servicios / Precios corrientes en millones de pesos / 2003-2018
+S1-E_44_2_186_101 / Serie por sector institucional / Economía interna / Precios corrientes en millones de pesos / 2003-2018
+S11-E_44_2_1_186_101 / Serie por sector institucional / Economía interna / Sociedades no financieras / Precios corrientes en millones de pesos / 2003-2018
+S12-E_44_2_2_186_101 / Serie por sector institucional / Economía interna / Sociedades financieras / Precios corrientes en millones de pesos / 2003-2018
+S13-E_44_2_3_186_101 / Serie por sector institucional / Economía interna / Gobierno general / Precios corrientes en millones de pesos / 2003-2018
+S14-E_44_2_4_186_101 / Serie por sector institucional / Economía interna / Hogares / Precios corrientes en millones de pesos / 2003-2018
+S15-E_44_2_5_186_101 / Serie por sector institucional / Economía interna / Instituciones sin fines de lucro al servicio de los hogares (ISFLSH) / Precios corrientes en millones de pesos / 2003-2018
+S2-E_44_3_186_101 / Serie por sector institucional / Resto del mundo / Precios corrientes en millones de pesos / 2003-2018
+2003-S11A-E_45_1_186_2003 / Cuentas por subsector institucional / Sociedades no financieras / Precios corrientes en millones de pesos / 2003
+2004-S11A-E_45_1_186_2004 / Cuentas por subsector institucional / Sociedades no financieras / Precios corrientes en millones de pesos / 2004
+2005-S11A-E_45_1_186_2005 / Cuentas por subsector institucional / Sociedades no financieras / Precios corrientes en millones de pesos / 2005
+2006-S11A-E_45_1_186_2006 / Cuentas por subsector institucional / Sociedades no financieras / Precios corrientes en millones de pesos / 2006
+2007-S11A-E_45_1_186_2007 / Cuentas por subsector institucional / Sociedades no financieras / Precios corrientes en millones de pesos / 2007
+2008-S11A-E_45_1_186_2008 / Cuentas por subsector institucional / Sociedades no financieras / Precios corrientes en millones de pesos / 2008
+2009-S11A-E_45_1_186_2009 / Cuentas por subsector institucional / Sociedades no financieras / Precios corrientes en millones de pesos / 2009
+2010-S11A-E_45_1_186_2010 / Cuentas por subsector institucional / Sociedades no financieras / Precios corrientes en millones de pesos / 2010
+2011-S11A-E_45_1_186_2011 / Cuentas por subsector institucional / Sociedades no financieras / Precios corrientes en millones de pesos / 2011
+2012-S11A-E_45_1_186_2012 / Cuentas por subsector institucional / Sociedades no financieras / Precios corrientes en millones de pesos / 2012
+2013-S11A-E_45_1_186_2013 / Cuentas por subsector institucional / Sociedades no financieras / Precios corrientes en millones de pesos / 2013
+2014-S11A-E_45_1_186_2014 / Cuentas por subsector institucional / Sociedades no financieras / Precios corrientes en millones de pesos / 2014
+2015-S11A-E_45_1_186_2015 / Cuentas por subsector institucional / Sociedades no financieras / Precios corrientes en millones de pesos / 2015
+2016-S11A-E_45_1_186_2016 / Cuentas por subsector institucional / Sociedades no financieras / Precios corrientes en millones de pesos / 2016
+2017-S11A-E_45_1_186_2017 / Cuentas por subsector institucional / Sociedades no financieras / Precios corrientes en millones de pesos / 2017
+2018-S11A-E_45_1_186_2018 / Cuentas por subsector institucional / Sociedades no financieras / Precios corrientes en millones de pesos / 2018
+2003-S12A-E_45_2_186_2003 / Cuentas por subsector institucional / Sociedades financieras / Precios corrientes en millones de pesos / 2003
+2004-S12A-E_45_2_186_2004 / Cuentas por subsector institucional / Sociedades financieras / Precios corrientes en millones de pesos / 2004
+2005-S12A-E_45_2_186_2005 / Cuentas por subsector institucional / Sociedades financieras / Precios corrientes en millones de pesos / 2005
+2006-S12A-E_45_2_186_2006 / Cuentas por subsector institucional / Sociedades financieras / Precios corrientes en millones de pesos / 2006
+2007-S12A-E_45_2_186_2007 / Cuentas por subsector institucional / Sociedades financieras / Precios corrientes en millones de pesos / 2007
+2008-S12A-E_45_2_186_2008 / Cuentas por subsector institucional / Sociedades financieras / Precios corrientes en millones de pesos / 2008
+2009-S12A-E_45_2_186_2009 / Cuentas por subsector institucional / Sociedades financieras / Precios corrientes en millones de pesos / 2009
+2010-S12A-E_45_2_186_2010 / Cuentas por subsector institucional / Sociedades financieras / Precios corrientes en millones de pesos / 2010
+2011-S12A-E_45_2_186_2011 / Cuentas por subsector institucional / Sociedades financieras / Precios corrientes en millones de pesos / 2011
+2012-S12A-E_45_2_186_2012 / Cuentas por subsector institucional / Sociedades financieras / Precios corrientes en millones de pesos / 2012
+2013-S12A-E_45_2_186_2013 / Cuentas por subsector institucional / Sociedades financieras / Precios corrientes en millones de pesos / 2013
+2014-S12A-E_45_2_186_2014 / Cuentas por subsector institucional / Sociedades financieras / Precios corrientes en millones de pesos / 2014
+2015-S12A-E_45_2_186_2015 / Cuentas por subsector institucional / Sociedades financieras / Precios corrientes en millones de pesos / 2015
+2016-S12A-E_45_2_186_2016 / Cuentas por subsector institucional / Sociedades financieras / Precios corrientes en millones de pesos / 2016
+2017-S12A-E_45_2_186_2017 / Cuentas por subsector institucional / Sociedades financieras / Precios corrientes en millones de pesos / 2017
+2018-S12A-E_45_2_186_2018 / Cuentas por subsector institucional / Sociedades financieras / Precios corrientes en millones de pesos / 2018
+2003-S13A-E_45_3_186_2003 / Cuentas por subsector institucional / Gobierno general / Precios corrientes en millones de pesos / 2003
+2004-S13A-E_45_3_186_2004 / Cuentas por subsector institucional / Gobierno general / Precios corrientes en millones de pesos / 2004
+2005-S13A-E_45_3_186_2005 / Cuentas por subsector institucional / Gobierno general / Precios corrientes en millones de pesos / 2005
+2006-S13A-E_45_3_186_2006 / Cuentas por subsector institucional / Gobierno general / Precios corrientes en millones de pesos / 2006
+2007-S13A-E_45_3_186_2007 / Cuentas por subsector institucional / Gobierno general / Precios corrientes en millones de pesos / 2007
+2008-S13A-E_45_3_186_2008 / Cuentas por subsector institucional / Gobierno general / Precios corrientes en millones de pesos / 2008
+2009-S13A-E_45_3_186_2009 / Cuentas por subsector institucional / Gobierno general / Precios corrientes en millones de pesos / 2009
+2010-S13A-E_45_3_186_2010 / Cuentas por subsector institucional / Gobierno general / Precios corrientes en millones de pesos / 2010
+2011-S13A-E_45_3_186_2011 / Cuentas por subsector institucional / Gobierno general / Precios corrientes en millones de pesos / 2011
+2012-S13A-E_45_3_186_2012 / Cuentas por subsector institucional / Gobierno general / Precios corrientes en millones de pesos / 2012
+2013-S13A-E_45_3_186_2013 / Cuentas por subsector institucional / Gobierno general / Precios corrientes en millones de pesos / 2013
+2014-S13A-E_45_3_186_2014 / Cuentas por subsector institucional / Gobierno general / Precios corrientes en millones de pesos / 2014
+2015-S13A-E_45_3_186_2015 / Cuentas por subsector institucional / Gobierno general / Precios corrientes en millones de pesos / 2015
+2016-S13A-E_45_3_186_2016 / Cuentas por subsector institucional / Gobierno general / Precios corrientes en millones de pesos / 2016
+2017-S13A-E_45_3_186_2017 / Cuentas por subsector institucional / Gobierno general / Precios corrientes en millones de pesos / 2017
+2018-S13A-E_45_3_186_2018 / Cuentas por subsector institucional / Gobierno general / Precios corrientes en millones de pesos / 2018
+2003-FA-E_46_186_2003 / Flujo de fondos detallados de activos / Precios corrientes en millones de pesos / 2003
+2004-FA-E_46_186_2004 / Flujo de fondos detallados de activos / Precios corrientes en millones de pesos / 2004
+2005-FA-E_46_186_2005 / Flujo de fondos detallados de activos / Precios corrientes en millones de pesos / 2005
+2006-FA-E_46_186_2006 / Flujo de fondos detallados de activos / Precios corrientes en millones de pesos / 2006
+2007-FA-E_46_186_2007 / Flujo de fondos detallados de activos / Precios corrientes en millones de pesos / 2007
+2008-FA-E_46_186_2008 / Flujo de fondos detallados de activos / Precios corrientes en millones de pesos / 2008
+2009-FA-E_46_186_2009 / Flujo de fondos detallados de activos / Precios corrientes en millones de pesos / 2009
+2010-FA-E_46_186_2010 / Flujo de fondos detallados de activos / Precios corrientes en millones de pesos / 2010
+2011-FA-E_46_186_2011 / Flujo de fondos detallados de activos / Precios corrientes en millones de pesos / 2011
+2012-FA-E_46_186_2012 / Flujo de fondos detallados de activos / Precios corrientes en millones de pesos / 2012
+2013-FA-E_46_186_2013 / Flujo de fondos detallados de activos / Precios corrientes en millones de pesos / 2013
+2014-FA-E_46_186_2014 / Flujo de fondos detallados de activos / Precios corrientes en millones de pesos / 2014
+2015-FA-E_46_186_2015 / Flujo de fondos detallados de activos / Precios corrientes en millones de pesos / 2015
+2016-FA-E_46_186_2016 / Flujo de fondos detallados de activos / Precios corrientes en millones de pesos / 2016
+2017-FA-E_46_186_2017 / Flujo de fondos detallados de activos / Precios corrientes en millones de pesos / 2017
+2018-FA-E_46_186_2018 / Flujo de fondos detallados de activos / Precios corrientes en millones de pesos / 2018
+2003-FA-%-E_46_86_183_2003 / Flujo de fondos detallados de activos / Relación de cada variable entre el PIB / Porcentaje / 2003
+2004-FA-%-E_46_86_183_2004 / Flujo de fondos detallados de activos / Relación de cada variable entre el PIB / Porcentaje / 2004
+2005-FA-%-E_46_86_183_2005 / Flujo de fondos detallados de activos / Relación de cada variable entre el PIB / Porcentaje / 2005
+2006-FA-%-E_46_86_183_2006 / Flujo de fondos detallados de activos / Relación de cada variable entre el PIB / Porcentaje / 2006
+2007-FA-%-E_46_86_183_2007 / Flujo de fondos detallados de activos / Relación de cada variable entre el PIB / Porcentaje / 2007
+2008-FA-%-E_46_86_183_2008 / Flujo de fondos detallados de activos / Relación de cada variable entre el PIB / Porcentaje / 2008
+2009-FA-%-E_46_86_183_2009 / Flujo de fondos detallados de activos / Relación de cada variable entre el PIB / Porcentaje / 2009
+2010-FA-%-E_46_86_183_2010 / Flujo de fondos detallados de activos / Relación de cada variable entre el PIB / Porcentaje / 2010
+2011-FA-%-E_46_86_183_2011 / Flujo de fondos detallados de activos / Relación de cada variable entre el PIB / Porcentaje / 2011
+2012-FA-%-E_46_86_183_2012 / Flujo de fondos detallados de activos / Relación de cada variable entre el PIB / Porcentaje / 2012
+2013-FA-%-E_46_86_183_2013 / Flujo de fondos detallados de activos / Relación de cada variable entre el PIB / Porcentaje / 2013
+2014-FA-%-E_46_86_183_2014 / Flujo de fondos detallados de activos / Relación de cada variable entre el PIB / Porcentaje / 2014
+2015-FA-%-E_46_86_183_2015 / Flujo de fondos detallados de activos / Relación de cada variable entre el PIB / Porcentaje / 2015
+2016-FA-%-E_46_86_183_2016 / Flujo de fondos detallados de activos / Relación de cada variable entre el PIB / Porcentaje / 2016
+2017-FA-%-E_46_86_183_2017 / Flujo de fondos detallados de activos / Relación de cada variable entre el PIB / Porcentaje / 2017
+2018-FA-%-E_46_86_183_2018 / Flujo de fondos detallados de activos / Relación de cada variable entre el PIB / Porcentaje / 2018
+2003-FP-E_47_186_2003 / Flujo de fondos detallados de pasivos / Precios corrientes en millones de pesos / 2003
+2004-FP-E_47_186_2004 / Flujo de fondos detallados de pasivos / Precios corrientes en millones de pesos / 2004
+2005-FP-E_47_186_2005 / Flujo de fondos detallados de pasivos / Precios corrientes en millones de pesos / 2005
+2006-FP-E_47_186_2006 / Flujo de fondos detallados de pasivos / Precios corrientes en millones de pesos / 2006
+2007-FP-E_47_186_2007 / Flujo de fondos detallados de pasivos / Precios corrientes en millones de pesos / 2007
+2008-FP-E_47_186_2008 / Flujo de fondos detallados de pasivos / Precios corrientes en millones de pesos / 2008
+2009-FP-E_47_186_2009 / Flujo de fondos detallados de pasivos / Precios corrientes en millones de pesos / 2009
+2010-FP-E_47_186_2010 / Flujo de fondos detallados de pasivos / Precios corrientes en millones de pesos / 2010
+2011-FP-E_47_186_2011 / Flujo de fondos detallados de pasivos / Precios corrientes en millones de pesos / 2011
+2012-FP-E_47_186_2012 / Flujo de fondos detallados de pasivos / Precios corrientes en millones de pesos / 2012
+2013-FP-E_47_186_2013 / Flujo de fondos detallados de pasivos / Precios corrientes en millones de pesos / 2013
+2014-FP-E_47_186_2014 / Flujo de fondos detallados de pasivos / Precios corrientes en millones de pesos / 2014
+2015-FP-E_47_186_2015 / Flujo de fondos detallados de pasivos / Precios corrientes en millones de pesos / 2015
+2016-FP-E_47_186_2016 / Flujo de fondos detallados de pasivos / Precios corrientes en millones de pesos / 2016
+2017-FP-E_47_186_2017 / Flujo de fondos detallados de pasivos / Precios corrientes en millones de pesos / 2017
+2018-FP-E_47_186_2018 / Flujo de fondos detallados de pasivos / Precios corrientes en millones de pesos / 2018
+2003-FP-%-E_47_86_183_2003 / Flujo de fondos detallados de pasivos / Relación de cada variable entre el PIB / Porcentaje / 2003
+2004-FP-%-E_47_86_183_2004 / Flujo de fondos detallados de pasivos / Relación de cada variable entre el PIB / Porcentaje / 2004
+2005-FP-%-E_47_86_183_2005 / Flujo de fondos detallados de pasivos / Relación de cada variable entre el PIB / Porcentaje / 2005
+2006-FP-%-E_47_86_183_2006 / Flujo de fondos detallados de pasivos / Relación de cada variable entre el PIB / Porcentaje / 2006
+2007-FP-%-E_47_86_183_2007 / Flujo de fondos detallados de pasivos / Relación de cada variable entre el PIB / Porcentaje / 2007
+2008-FP-%-E_47_86_183_2008 / Flujo de fondos detallados de pasivos / Relación de cada variable entre el PIB / Porcentaje / 2008
+2009-FP-%-E_47_86_183_2009 / Flujo de fondos detallados de pasivos / Relación de cada variable entre el PIB / Porcentaje / 2009
+2010-FP-%-E_47_86_183_2010 / Flujo de fondos detallados de pasivos / Relación de cada variable entre el PIB / Porcentaje / 2010
+2011-FP-%-E_47_86_183_2011 / Flujo de fondos detallados de pasivos / Relación de cada variable entre el PIB / Porcentaje / 2011
+2012-FP-%-E_47_86_183_2012 / Flujo de fondos detallados de pasivos / Relación de cada variable entre el PIB / Porcentaje / 2012
+2013-FP-%-E_47_86_183_2013 / Flujo de fondos detallados de pasivos / Relación de cada variable entre el PIB / Porcentaje / 2013
+2014-FP-%-E_47_86_183_2014 / Flujo de fondos detallados de pasivos / Relación de cada variable entre el PIB / Porcentaje / 2014
+2015-FP-%-E_47_86_183_2015 / Flujo de fondos detallados de pasivos / Relación de cada variable entre el PIB / Porcentaje / 2015
+2016-FP-%-E_47_86_183_2016 / Flujo de fondos detallados de pasivos / Relación de cada variable entre el PIB / Porcentaje / 2016
+2017-FP-%-E_47_86_183_2017 / Flujo de fondos detallados de pasivos / Relación de cada variable entre el PIB / Porcentaje / 2017
+2018-FP-%-E_47_86_183_2018 / Flujo de fondos detallados de pasivos / Relación de cada variable entre el PIB / Porcentaje / 2018
+MT_83_179_390 / Madurez residual / Millones de pesos y porcentajes del PIB / Madurez Títulos
+MP_83_179_391 / Madurez residual / Millones de pesos y porcentajes del PIB / Madurez Préstamos
+BC-2003_185_186_186_2003 / Balance de activos y pasivos / Por sector y subsector / Precios corrientes en millones de pesos / 2003
+BC-2004_185_186_186_2004 / Balance de activos y pasivos / Por sector y subsector / Precios corrientes en millones de pesos / 2004
+BC-2005_185_186_186_2005 / Balance de activos y pasivos / Por sector y subsector / Precios corrientes en millones de pesos / 2005
+BC-2006_185_186_186_2006 / Balance de activos y pasivos / Por sector y subsector / Precios corrientes en millones de pesos / 2006
+BC-2007_185_186_186_2007 / Balance de activos y pasivos / Por sector y subsector / Precios corrientes en millones de pesos / 2007
+BC-2008_185_186_186_2008 / Balance de activos y pasivos / Por sector y subsector / Precios corrientes en millones de pesos / 2008
+BC-2009_185_186_186_2009 / Balance de activos y pasivos / Por sector y subsector / Precios corrientes en millones de pesos / 2009
+BC-2010_185_186_186_2010 / Balance de activos y pasivos / Por sector y subsector / Precios corrientes en millones de pesos / 2010
+BC-2011_185_186_186_2011 / Balance de activos y pasivos / Por sector y subsector / Precios corrientes en millones de pesos / 2011
+BC-2012_185_186_186_2012 / Balance de activos y pasivos / Por sector y subsector / Precios corrientes en millones de pesos / 2012
+BC-2013_185_186_186_2013 / Balance de activos y pasivos / Por sector y subsector / Precios corrientes en millones de pesos / 2013
+BC-2014_185_186_186_2014 / Balance de activos y pasivos / Por sector y subsector / Precios corrientes en millones de pesos / 2014
+BC-2015_185_186_186_2015 / Balance de activos y pasivos / Por sector y subsector / Precios corrientes en millones de pesos / 2015
+BC-2016_185_186_186_2016 / Balance de activos y pasivos / Por sector y subsector / Precios corrientes en millones de pesos / 2016
+BC-2017_185_186_186_2017 / Balance de activos y pasivos / Por sector y subsector / Precios corrientes en millones de pesos / 2017
+BC-2018_185_186_186_2018 / Balance de activos y pasivos / Por sector y subsector / Precios corrientes en millones de pesos / 2018
