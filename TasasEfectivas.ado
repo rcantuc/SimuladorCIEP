@@ -40,7 +40,7 @@ quietly {
 	}
 
 
-	noisily di _newline(2) in y "{bf: A. " in y "Impuestos a los ingresos laborales" "}"
+	noisily di _newline(2) in y "{bf: A. " in y "Impuestos laborales" "}"
 	noisily di _newline in g "{bf:  Cuentas Nacionales" ///
 		_col(44) %7s in g "% PIB" ///
 		_col(55) "Impuestos a las personas f{c i'}sicas" ///
@@ -99,7 +99,7 @@ quietly {
 		_col(88) %7.3fc in y (`ISRAS'+`ISRPF'+`CUOTAS') ///
 		_col(99) %7.3fc in y (`ISRAS'+`ISRPF'+`CUOTAS')/(YlPIB)*100 " %" "}"
 
-	noisily di _newline(2) in y "{bf: B. " in y "Impuestos a los ingresos de capital privado" "}"
+	noisily di _newline(2) in y "{bf: B. " in y "Impuestos al capital" "}"
 	noisily di _newline in g "{bf:  Cuentas Nacionales" ///
 		_col(44) %7s in g "% PIB" ///
 		_col(55) "Impuestos a las personas morales" ///
@@ -226,7 +226,7 @@ quietly {
 
 
 
-	noisily di _newline(2) in y "{bf: D. " in y "Ingresos de capital p{c u'}blico" "}"
+	noisily di _newline(2) in y "{bf: D. " in y "Organismos y empresas" "}"
 	noisily di _newline in g "{bf:  Cuentas Nacionales" ///
 		_col(44) %7s in g "% PIB" ///
 		_col(55) "Organismos y empresas" ///

@@ -67,7 +67,7 @@ local ExpHog = scalar(ConHog)
 
 
 ** MA.2. SHCP: Datos Abiertos **
-noisily LIF, anio(`enighanio') by(divCIEP2) nographs
+noisily LIF, anio(`enighanio') by(divCIEP) nographs
 local IVA = r(IVA)
 local IEPS = r(IEPS__no_petrolero_)
 local Ieps1 = r(Cervezas)
