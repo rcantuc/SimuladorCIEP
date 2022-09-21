@@ -234,4 +234,6 @@ noisily di _newline(10) in g _dup(23) "*" ///
 	_newline in g "  A{c N~}O:  " in y "`=aniovp'" ///
 	_newline in g "  USER: " in y "$id" ///
 	_newline in g "  PA{c I'}S: " in y "`pais'" ///
+	_newline in g "  D{c I'}A:  " in y "`c(current_date)'" ///
+	_newline in g "  HORA: " in y "`c(current_time)'" ///
 	_newline in g _dup(23) "*"
