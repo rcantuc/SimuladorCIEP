@@ -471,22 +471,22 @@ quietly {
 	****************
 	** 4.1 Graphs **
 	tempvar educaciong pensionesg saludg costog otrosg ingbasg bienestarg
-	g `educaciong' = (gastoeducacion)/1000000000
-	g `pensionesg' = (gastopensiones + gastoeducacion)/1000000000
-	g `saludg' = (gastosalud + gastopensiones + gastoeducacion)/1000000000
-	g `costog' = (gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000
-	g `otrosg' = (gastootros + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000
-	g `bienestarg' = (gastopenbienestar + gastootros + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000
-	g `ingbasg' = (gastoingbasico + gastopenbienestar + gastootros + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000
+	g `educaciong' = (gastoeducacion)/1000000000000
+	g `pensionesg' = (gastopensiones + gastoeducacion)/1000000000000
+	g `saludg' = (gastosalud + gastopensiones + gastoeducacion)/1000000000000
+	g `costog' = (gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000000
+	g `otrosg' = (gastootros + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000000
+	g `bienestarg' = (gastopenbienestar + gastootros + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000000
+	g `ingbasg' = (gastoingbasico + gastopenbienestar + gastootros + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000000
 	
 	tempvar educaciong2 pensionesg2 saludg2 costog2 otrosg2 ingbasg2 bienestarg2
-	g `educaciong2' = (estimacioneducacion)/1000000000
-	g `pensionesg2' = (estimacionpensiones + estimacioneducacion)/1000000000
-	g `saludg2' = (estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000
-	g `costog2' = (estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000
-	g `otrosg2' = (estimacionotros + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000
-	g `bienestarg2' = (estimacionpenbienestar + estimacionotros + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000
-	g `ingbasg2' = (estimacioningbasico + estimacionpenbienestar + estimacionotros + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000
+	g `educaciong2' = (estimacioneducacion)/1000000000000
+	g `pensionesg2' = (estimacionpensiones + estimacioneducacion)/1000000000000
+	g `saludg2' = (estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000000
+	g `costog2' = (estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000000
+	g `otrosg2' = (estimacionotros + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000000
+	g `bienestarg2' = (estimacionpenbienestar + estimacionotros + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000000
+	g `ingbasg2' = (estimacioningbasico + estimacionpenbienestar + estimacionotros + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000000
 
 	if "`nographs'" != "nographs" & "$nographs" != "nographs" {
 		twoway (area `ingbasg' `bienestarg' `otrosg' `costog' `saludg' `pensionesg' `educaciong' anio if anio <= `anio' & anio >= `aniomin') ///
@@ -513,7 +513,7 @@ quietly {
 			title({bf:Proyecci{c o'}n} del gasto p{c u'}blico) ///
 			subtitle($pais) ///
 			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.") ///
-			xtitle("") ytitle(mil millones `currency' `anio') ///
+			xtitle("") ytitle(billones `currency' `anio') ///
 			name(Proy_gastos, replace)
 		if "$export" != "" {
 			graph export `"$export/Proy_gastos.png"', replace name(Proy_gastos)

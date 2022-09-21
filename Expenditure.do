@@ -362,7 +362,7 @@ if _rc != 0 {
 
 	** MI.15. Supuestos **
 	g informal = lugar_comp == "01" | lugar_comp == "02" | lugar_comp == "03" | lugar_comp == "17"	// Informalidad
-	*replace numren = "01" if clave >= "M007" & clave <= "M009"			// Adquisicion de vehiculos (jefe del hogar)
+	replace numren = "01" if clave >= "M007" & clave <= "M009"			// Adquisicion de vehiculos (jefe del hogar)
 
 	** MI.16. Sexo **
 	destring sexo, replace
@@ -417,6 +417,7 @@ replace IVA = 0 if informal == 1 | tiva == 3 														// Tasa cero
 replace porcentaje_ieps = 0 if porcentaje_ieps == .
 *g double precio_p = ((precio - IVA)*proporcion - cuota_ieps2018)/(1 + porcentaje_ieps2018/100) if tipoieps != .
 g double IEPS = ((gasto_anual)/(1+(`tasagener'/100))-cuota_ieps2018*cantidad)*proporcion*porcentaje_ieps2018/100/(1 + porcentaje_ieps2018/100) + cuota_ieps2018*cantidad if tipoieps != .
+replace IEPS = gasto_anual*.63 if tipoieps == 12
 *g double IEPS = ((precio-IVA)*proporcion*(1 + porcentaje_ieps2018/100) + cuota_ieps2018) if tipoieps != .
 replace IEPS = 0 if informal == 1
 
