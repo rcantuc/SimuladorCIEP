@@ -3,5 +3,7 @@
 **/bases/INEGI/**
 **/bases/SHCP/**
 **/bases/SAT/**
+**/bases/PEFs/**
+**/bases/CONAPO/**
 .DS_Store
 Icon?
