@@ -31,8 +31,8 @@ if "`c(os)'" == "Unix" & "`c(username)'" == "ciepmx" {                          
 *************************
 *local update "update"                                                          // UPDATE DATASETS
 *global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"                 // EXPORTAR IMAGENES EN...
-*global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
-*global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
+global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
+global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
 noisily run "`c(sysdir_site)'/PARAM.do"                                         // PARÁMETROS PE 2023
 
 
@@ -91,12 +91,10 @@ foreach k in grupoedad sexo /*decil escol*/ {
 ***    6. CICLO DE VIDA    ***
 ***                        ***
 ******************************
-*use `"`c(sysdir_site)'/users/$pais/$id/households.dta"', clear
 use "`c(sysdir_site)'/SIM/2020/households`=aniovp'.dta", clear
-*capture drop AportacionesNetas
 
 ** 6.1 APORTACIONES NETAS **
-g AportacionesNetas = ISRAS + ISRPF + CUOTAS + ISRPM + OTROSK ///
+g AportacionesNetas = ISRAS + ISRPF + CUOTAS + ISRPM /// + OTROSK ///
 	+ IVA + IEPSNP + IEPSP + ISAN + IMPORT + Petroleo ///
 	- Pension - Educacion - Salud - IngBasico - Infra
 label var AportacionesNetas "aportaciones netas"
