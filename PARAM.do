@@ -30,7 +30,9 @@ capture mkdir `"`c(sysdir_site)'/SIM/"'
 capture mkdir `"`c(sysdir_site)'/users/"'
 capture mkdir `"`c(sysdir_site)'/users/$pais/"'
 capture mkdir `"`c(sysdir_site)'/users/$pais/$id/"'
-quietly log using `"`c(sysdir_site)'/users/$pais/$id/output.txt"', replace text name(output)
+if "$output" == "output" {
+	quietly log using `"`c(sysdir_site)'/users/$pais/$id/output.txt"', replace text name(output)
+}
 
 
 

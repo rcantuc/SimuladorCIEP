@@ -369,7 +369,7 @@ quietly {
 	matrix `cuotas' = r(StatTotal)
 	return scalar Cuotas_IMSS = `cuotas'[1,1]
 
-	capture tabstat recaudacion recaudacionPIB if anio == `anio' & divCIEP == 11, stat(sum) by(nombre) f(%20.1fc) save
+	capture tabstat recaudacion recaudacionPIB if anio == `anio' & divCIEP == 12, stat(sum) by(nombre) f(%20.1fc) save
 	tempname ieps
 	matrix `ieps'7 = r(Stat7)
 	matrix `ieps'10 = r(Stat10)

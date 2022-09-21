@@ -129,6 +129,7 @@ noisily Gini ISRPF, hogar(folioviv foliohog) individuo(numren) factor(factor)
 
 ** (+) Cuotas obrero-patronal IMSS **
 Distribucion CUOTAS if formal == 1, relativo(cuotasTP) macro(`CUOTAS')
+replace CUOTAS = 0 if CUOTAS == .
 label var CUOTAS "cuotas IMSS"
 noisily Simulador CUOTAS [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
 noisily Gini CUOTAS, hogar(folioviv foliohog) individuo(numren) factor(factor)
