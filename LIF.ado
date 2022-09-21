@@ -370,28 +370,34 @@ quietly {
 	return scalar Cuotas_IMSS = `cuotas'[1,1]
 
 	capture tabstat recaudacion recaudacionPIB if anio == `anio' & divCIEP == 12, stat(sum) by(nombre) f(%20.1fc) save
+	
 	tempname ieps
-	matrix `ieps'7 = r(Stat7)
-	matrix `ieps'10 = r(Stat10)
-	matrix `ieps'8 = r(Stat8)
-	matrix `ieps'11 = r(Stat11)
-	matrix `ieps'4 = r(Stat4)
-	matrix `ieps'5 = r(Stat5)
-	matrix `ieps'3 = r(Stat3)
-	matrix `ieps'6 = r(Stat6)
 	matrix `ieps'1 = r(Stat1)
-
-	return scalar Cervezas = `ieps'7[1,1]
-	return scalar Tabacos = `ieps'10[1,1]
-	return scalar Juegos = `ieps'8[1,1]
-	return scalar Telecom = `ieps'11[1,1]
-	return scalar Energiza = `ieps'4[1,1]
-	return scalar Saboriza = `ieps'5[1,1]
-	return scalar AlimNoBa = `ieps'3[1,1]
-	return scalar Fosiles = `ieps'6[1,1]
 	return scalar Alcohol = `ieps'1[1,1]
 
+	matrix `ieps'2 = r(Stat2)
+	return scalar AlimNoBa = `ieps'2[1,1]
 
+	matrix `ieps'7 = r(Stat7)
+	return scalar Juegos = `ieps'7[1,1]
+	
+	matrix `ieps'6 = r(Stat6)
+	return scalar Cervezas = `ieps'6[1,1]
+	
+	matrix `ieps'9 = r(Stat9)
+	return scalar Tabacos = `ieps'9[1,1]
+	
+	matrix `ieps'10 = r(Stat10)
+	return scalar Telecom = `ieps'10[1,1]
+	
+	matrix `ieps'3 = r(Stat3)
+	return scalar Energiza = `ieps'3[1,1]
+
+	matrix `ieps'4 = r(Stat4)
+	return scalar Saboriza = `ieps'4[1,1]
+
+	matrix `ieps'5 = r(Stat5)
+	return scalar Fosiles = `ieps'5[1,1]
 
 	if "`nographs'" != "nographs" & "$nographs" == "" {
 		preserve
