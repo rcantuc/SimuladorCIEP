@@ -21,14 +21,15 @@ SCN, anio(`2') nographs
 
 **********************************/
 ** Eje 1: Generación del ingreso **
-use `"`c(sysdir_site)'/SIM/2020/households`2'.dta"', clear
-tempvar Laboral Consumo Capital Petroleo
-egen `Laboral' = rsum(ISRAS ISRPF CUOTAS)
-g `Consumo' = IVA + IEPSP + IEPSNP + ISAN + IMPORT 
-g `Capital' = ISRPM + OTROSK
-g `Petroleo' = Petroleo
+use `"`c(sysdir_site)'/users/$pais/$id/households.dta"', clear
+tempvar Laboral Consumo Capital FMP
+egen `Laboral'  = rsum(ISRASSIM ISRPFSIM CUOTASSIM)
+egen `Consumo'  = rsum(IVASIM IEPSPSIM IEPSNPSIM ISANSIM IMPORTSIM)
+egen `Capital'  = rsum(ISRPMSIM OTROSKSIM)
+egen `FMP' = rsum(FMPSIM)
+
 collapse (sum) ing_Imp_Laborales=`Laboral' ing__Imp_Consumo=`Consumo' ///
-	ing___Ing_de_capital=`Capital' ing____FMP=`Petroleo' [fw=factor], by(`1')
+	ing___Imp_al_capital=`Capital' ing____FMP=`FMP' [fw=factor], by(`1')
 
 * to *
 tempvar to
@@ -39,20 +40,14 @@ encode `to', g(to)
 * from *
 rename `1' from
 
-* Otros ingresos *
+* ORGANISMOS Y EMPRESAS *
 set obs `=_N+1'
 replace from = 99 in -1
 replace profile = (scalar(CFE)+scalar(IMSS)+scalar(ISSSTE)+scalar(PEMEX))/100*scalar(PIB) in -1
 replace to = 3 in -1
 label define `1' 99 "Org y Emp", add
 
-*set obs `=_N+1'
-*replace from = 98 in -1
-*replace profile = scalar(OTROSK)/100*scalar(PIB) in -1
-*replace to = 4 in -1
-*label define `1' 98 "Otros ingresos", add
-
-* Gasto total *
+* TOTAL *
 tabstat profile, stat(sum) f(%20.0fc) save
 tempname ingtot
 matrix `ingtot' = r(StatTotal)
@@ -68,7 +63,7 @@ save `eje1'
 use if anio == `2' using `"`c(sysdir_site)'/SIM/Poblaciontot.dta"', clear
 local ajustepob = poblacion
 
-use "`c(sysdir_site)'/SIM/2020/households`2'.dta", clear
+use `"`c(sysdir_site)'/users/$pais/$id/households.dta"', clear
 tabstat factor, stat(sum) f(%20.0fc) save
 tempname pobenigh
 matrix `pobenigh' = r(StatTotal)
@@ -90,7 +85,7 @@ matrix `GAST' = r(StatTotal)
 
 collapse (sum) gas_Educación=Educacion gas_Salud=Salud /*gas__Salarios_de_gobierno=Salarios*/ ///
 	gas___Pensiones=Pension /*gas____Ingreso_Basico=IngBasico*/ ///
-	gas____Inversión=Infra [fw=factor], by(`1')
+	gas____Inversión=_Infra [fw=factor], by(`1')
 
 levelsof `1', local(`1')
 foreach k of local `1' {
@@ -181,9 +176,9 @@ else {
 
 	replace from = 101 in -1
 	replace profile = (`ingtot'[1,1]-`gastot'[1,1]) in -1
-	replace to = 14 in -1
+	replace to = 15 in -1
 
-	label define `1' 14 "Futuro", add
+	label define `1' 15 "Futuro", add
 	label define from 101 "Ahorro", add
 
 	save `eje4', replace

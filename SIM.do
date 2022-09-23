@@ -29,19 +29,20 @@ if "`c(os)'" == "Unix" & "`c(username)'" == "ciepmx" {                          
 ***    1. OPCIONES    ***
 ***                   ***
 *************************
+global id "`c(username)'"
+
+global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
+*global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
 *local update "update"                                                          // UPDATE DATASETS
 *global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"                 // EXPORTAR IMAGENES EN...
-global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
-global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
+
 noisily run "`c(sysdir_site)'/PARAM.do"                                         // PARÁMETROS PE 2023
-
-
 
 **************************
 ***                    ***
 ***    2. POBLACION    ***
 ***                    ***
-**************************
+/**************************
 noisily Poblacion, aniofinal(`=scalar(anioend)') //`update'
 
 
@@ -50,7 +51,7 @@ noisily Poblacion, aniofinal(`=scalar(anioend)') //`update'
 ***                          ***
 ***    3. CRECIMIENTO PIB    ***
 ***                          ***
-********************************
+/********************************
 noisily PIBDeflactor, `update' geodef(2013) geopib(2013)
 noisily SCN, `update'
 noisily Inflacion, `update'
@@ -62,8 +63,9 @@ noisily Inflacion, `update'
 ***    4. HOUSEHOLDS    ***
 ***                     ***
 ***************************
-noisily run "`c(sysdir_site)'/Expenditure.do" `=aniovp'
-noisily run `"`c(sysdir_site)'/Households`=subinstr("${pais}"," ","",.)'.do"' `=aniovp'
+*noisily run "`c(sysdir_site)'/Expenditure.do" `=aniovp'
+*noisily run `"`c(sysdir_site)'/Households`=subinstr("${pais}"," ","",.)'.do"' `=aniovp'
+*noisily run `"`c(sysdir_site)'/PerfilesSim.do"' `=aniovp'
 
 
 
@@ -72,17 +74,11 @@ noisily run `"`c(sysdir_site)'/Households`=subinstr("${pais}"," ","",.)'.do"' `=
 ***    5. SISTEMA FISCAL    ***
 ***                         ***
 *******************************
-noisily LIF, by(divSIM) rows(2) min(0) eofp `update'
+*noisily LIF, by(divSIM) rows(2) min(0) eofp `update'
 noisily TasasEfectivas
 
-noisily PEF, by(divPE) rows(2) min(0) `update'
+*noisily PEF, by(divPE) rows(2) min(0) `update'
 noisily GastoPC
-
-* 5.1 Sankey *
-noisily run `"`c(sysdir_site)'/PerfilesSim.do"' `=aniovp'
-foreach k in grupoedad sexo /*decil escol*/ {
-	noisily run "`c(sysdir_site)'/SankeySF.do" `k' `=aniovp'
-}
 
 
 
@@ -91,26 +87,33 @@ foreach k in grupoedad sexo /*decil escol*/ {
 ***    6. CICLO DE VIDA    ***
 ***                        ***
 ******************************
-use "`c(sysdir_site)'/SIM/2020/households`=aniovp'.dta", clear
-
-** 6.1 APORTACIONES NETAS **
-g AportacionesNetas = ISRAS + ISRPF + CUOTAS + ISRPM /// + OTROSK ///
-	+ IVA + IEPSNP + IEPSP + ISAN + IMPORT + Petroleo ///
-	- Pension - Educacion - Salud - IngBasico - Infra
+use `"`c(sysdir_site)'/users/$pais/$id/households.dta"', clear
+capture drop AportacionesNetas
+g AportacionesNetas = ISRASSIM + ISRPFSIM + CUOTASSIM + ISRPMSIM /// + OTROSKSIM ///
+	+ IVASIM + IEPSNPSIM + IEPSPSIM + ISANSIM + IMPORTSIM + FMPSIM ///
+	- Pension - Educacion - Salud - IngBasico - _Infra
 label var AportacionesNetas "aportaciones netas"
 noisily Simulador AportacionesNetas [fw=factor], base("ENIGH 2020") reboot anio(`=aniovp') folio("folioviv foliohog") $nographs
+save "`c(sysdir_site)'/users/$id/households.dta", replace
+
 
 ** 6.2 CUENTA GENERACIONAL **
 *noisily CuentasGeneracionales AportacionesNetas, anio(`=aniovp')
 
 
+** 6.3 Sankey **
+foreach k in /*grupoedad sexo*/ decil escol {
+	noisily run "`c(sysdir_site)'/SankeySF.do" `k' `=aniovp'
+}
 
-********************************************/
+
+
+********************************************
 ***                                       ***
 ***    7. PARTE IV: DEUDA + FISCAL GAP    ***
 ***                                       ***
 *********************************************
-noisily SHRFSP, `update'
+*noisily SHRFSP, `update'
 noisily FiscalGap, anio(`=aniovp') end(`=anioend') aniomin(2015) $nographs `update'
 
 

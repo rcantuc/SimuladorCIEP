@@ -32,7 +32,10 @@ quietly {
 	************************
 	*** 2 TRANSFERENCIAS ***
 	************************
-	use "`c(sysdir_site)'/SIM/2020/households`anio'.dta", clear
+	capture use `"`c(sysdir_site)'/users/$pais/$id/households.dta"', clear
+	if _rc != 0 {
+		use "`c(sysdir_site)'/SIM/2020/households`=aniovp'.dta", clear
+	}
 	tabstat factor, stat(sum) f(%20.0fc) save
 	tempname pobenigh
 	matrix `pobenigh' = r(StatTotal)
@@ -47,6 +50,7 @@ quietly {
 	*******************
 	*** 3 Educacion ***
 	*******************
+	capture drop alum_*
 	if `anio' >= 2016 {
 		g alum_basica = asis_esc == "1" & tipoesc == "1" & (nivel >= "01" & nivel <= "07") & edad <= 15
 		g alum_medsup = asis_esc == "1" & tipoesc == "1" & (nivel >= "08" & nivel <= "10")
@@ -218,6 +222,7 @@ quietly {
 	***************/
 	*** 4 Salud ***
 	***************
+	capture drop benef_*
 	g benef_imss = formal == 1
 	g benef_issste = formal == 2
 	g benef_pemex = formal == 3
@@ -380,7 +385,8 @@ quietly {
 
 
 	replace Salud = 0
-	replace Salud = Salud + `imssbien'/(`Salud'[1,5]) if benef_imss == 0 & benef_issste == 0 & benef_pemex == 0
+	replace Salud = Salud + `imssbien'/(`Salud'[1,6]-`Salud'[1,1]-`Salud'[1,2]-`Salud'[1,3]) ///
+		if benef_imss == 0 & benef_issste == 0 & benef_pemex == 0
 	replace Salud = Salud + `imss'/`Salud'[1,1] if benef_imss > 0
 	replace Salud = Salud + `issste'/`Salud'[1,2] if benef_issste > 0
 	replace Salud = Salud + `pemex'/`Salud'[1,3] if benef_pemex > 0
@@ -393,6 +399,7 @@ quietly {
 	*******************
 	*** 5 Pensiones ***
 	*******************
+	capture drop pens_*
 	g pens_pam = edad >= 65
 	g pens_imss = ing_jubila != 0 & formal == 1
 	g pens_issste = ing_jubila != 0 & formal == 2
@@ -619,7 +626,7 @@ quietly {
 		_col(33) %15.0fc in y `Salud'[1,6] ///
 		_col(50) %7.3fc in y (`gassener')/`PIB'*100 ///
 		_col(60) %15.0fc in y (`gassener')/`Salud'[1,6]
-	noisily di in g "  Infraestructura" ///
+	noisily di in g "  Inversión" ///
 		_col(33) %15.0fc in y `Salud'[1,6] ///
 		_col(50) %7.3fc in y `gasinfra'/`PIB'*100 ///
 		_col(60) %15.0fc in y `gasinfra'/`Salud'[1,6]
@@ -641,9 +648,12 @@ quietly {
 		_col(50) %7.3fc in y (`gaspemex'+`gascfe'+`gassener'+`gasfeder'+`gascosto'+`gasinfra'+`gasotros')/`PIB'*100 ///
 		_col(60) %15.0fc in y (`gaspemex'+`gascfe'+`gassener'+`gasfeder'+`gascosto'+`gasinfra'+`gasotros')/`Salud'[1,6]
 
-	replace OtrosGas = OtrosGas*(`gaspemex'+`gascfe'+`gassener'+`gasfeder'+`gascosto'+`gasinfra'+`gasotros')/`Salud'[1,6]
-	replace Infra = Infra*`gasinfra'/`Salud'[1,6]
 
+	capture drop _OtrosGas
+	Distribucion _OtrosGas, relativo(OtrosGas) macro(`=`gaspemex'+`gascfe'+`gassener'+`gasfeder'+`gasinfra'+`gasotros'')
+
+	capture drop _Infra
+	Distribucion _Infra, relativo(infra_entidad) macro(`gasinfra')
 
 
 
@@ -715,8 +725,6 @@ quietly {
 		_col(50) %7.3fc in y `IngBas'/`PIB'*100 ///
 		_col(60) %15.0fc in y `IngBas'/`pobIngBas'[1,1]
 
-
-
 	if ingbasico18 == 0 & ingbasico65 == 1 {
 		replace IngBasico = `IngBas'/`pobIngBas'[1,1] if edad >= 18
 	}
@@ -731,10 +739,6 @@ quietly {
 	}
 
 
-	
-	
-	
-	
 
 	******************************
 	*** 8 Salarios de gobierno ***
@@ -749,83 +753,17 @@ quietly {
 
 
 
-	*****************
+
+	*****************/
 	*** 9 Base SIM ***
 	******************
-	tabstat Pension Educacion Salud OtrosGas Infra [fw=factor], stat(sum) f(%20.0fc) save
-	tempname GASTOSSIM TRANSFSIM
-	matrix `GASTOSSIM' = r(StatTotal)
-
-	tabstat IngBasico PenBienestar [fw=factor], stat(sum) f(%20.0fc) save
-	matrix `TRANSFSIM' = r(StatTotal)
-
-	keep folio* numren factor* Laboral Consumo OtrosC ISR__PM ing_cap_fmp Petroleo CuotasSS ///
-		Pension Educacion Salud IngBasico PenBienestar Salarios OtrosGas Infra ///
-		sexo grupoedad decil escol edad ing_bruto_tax prop_formal ///
-		deduc_isr ISR categF ISR__asalariados ISR__PF cuotas* ingbrutotot htrab ///
-		tipo_contribuyente exen_tot formal* *_tpm *_t2_* *_t4_* ing_mixto* isrE ing_subor IVA* IEPS* ///
-		gasto_anualDepreciacion prop_* SE ImpNet* infonavit fovissste
-	}
-
-	** Guardar **
 	capture drop __*
 	if `c(version)' > 13.1 {
-	*saveold `"`c(sysdir_site)'/users/$pais/$id/households.dta"', replace version(13)
+		saveold `"`c(sysdir_site)'/users/$pais/$id/households.dta"', replace version(13)
 	}
 	else {
-	*save `"`c(sysdir_site)'/users/$pais/$id/households.dta"', replace	
+		save `"`c(sysdir_site)'/users/$pais/$id/households.dta"', replace	
 	}
-
-
-
-
-	**************************/
-	** 10 Estimaciones de LP **
-	/***************************
-	tempname GASBase
-	local j = 1
-	foreach k in Pension Educacion Salud OtrosGas {
-	use `"`c(sysdir_site)'/users/$pais/bootstraps/1/`k'REC"', clear
-	merge 1:1 (anio) using "`c(sysdir_site)'/users/$pais/$id/PIB.dta", nogen keepus(lambda)
-	tabstat estimacion if anio == `anio', stat(sum) f(%20.0fc) save
-	matrix `GASBase' = r(StatTotal)
-
-	if "`k'" != "OtrosGas" {
-		replace estimacion = estimacion*`GASTOSSIM'[1,`j']/`GASBase'[1,1] if anio >= `anio'
-	}
-
-	if "`k'" == "OtrosGas" {
-		replace estimacion = estimacion*`GASTOSSIM'[1,`j']/`GASBase'[1,1]*`otros' if anio >= `anio'
-	}
-
-	local ++j
-	if `c(version)' > 13.1 {
-		saveold `"`c(sysdir_site)'/users/$pais/$id/`k'REC.dta"', replace version(13)
-	}
-	else {
-		save `"`c(sysdir_site)'/users/$pais/$id/`k'REC.dta"', replace		
-	}
-	}
-
-	tempname TRABase
-	local j = 1
-	foreach k in IngBasico PenBienestar {
-	use `"`c(sysdir_site)'/users/$pais/bootstraps/1/`k'REC"', clear
-	merge 1:1 (anio) using "`c(sysdir_site)'/users/$pais/$id/PIB.dta", nogen keepus(lambda)
-	tabstat estimacion if anio == `anio', stat(sum) f(%20.0fc) save
-	matrix `TRABase' = r(StatTotal)
-
-	replace estimacion = estimacion*`TRANSFSIM'[1,`j']/`TRABase'[1,1] if anio >= `anio'
-
-	local ++j
-	if `c(version)' > 13.1 {
-		saveold `"`c(sysdir_site)'/users/$pais/$id/`k'REC.dta"', replace version(13)
-	}
-	else {
-		save `"`c(sysdir_site)'/users/$pais/$id/`k'REC.dta"', replace		
-	}
-	}
-
 
 
 

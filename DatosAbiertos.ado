@@ -35,7 +35,7 @@ quietly {
 	local last_anio = anio[_N]
 	local last_mes = mes[_N]
 	merge m:1 (anio) using "`PIB'", nogen keep(matched) keepus(pibY deflator currency)
-	keep if anio >= 2013 & anio <= `last_anio'
+	*keep if anio >= 2013 & anio <= `last_anio'
 
 	tempvar montomill
 	g `montomill' = monto/1000000/deflator
@@ -154,7 +154,7 @@ quietly {
 		egen acum_prom = mean(`propmensual'), by(mes)
 
 		collapse (sum) monto acum_prom (last) mes if monto != ., by(anio nombre clave_de_concepto)
-		replace monto = monto/acum_prom if mes < 12
+		*replace monto = monto/acum_prom if mes < 12
 		local textografica `"{bf:Promedio a `mesname'}: `=string(acum_prom[_N]*100,"%5.1fc")'% del total anual."'
 		local palabra "Proyectado"
 	}

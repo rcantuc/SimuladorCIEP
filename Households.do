@@ -120,7 +120,7 @@ local SNAAlojamiento = scalar(Alojamiento)
 *** A.2 Macros: PEF ***
 ***********************
 noisily PEF, anio(`enighanio') by(desc_funcion) min(0) nographs
-local Cuotas_ISSSTE = r(Cuotas_ISSSTE)
+local Cuotas_ISSSTE = -r(Cuotas_ISSSTE)
 
 PEF if transf_gf == 0 & ramo != -1 & (substr(string(objeto),1,2) == "45" ///
 	| substr(string(objeto),1,2) == "47" | desc_pp == 779), anio(`enighanio') by(ramo) min(0) nographs

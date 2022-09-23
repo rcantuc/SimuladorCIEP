@@ -323,33 +323,21 @@ quietly {
 
 
 
+
+
 	****************
 	*** Base SIM ***
-	/****************
-	use `"`c(sysdir_site)'/users/$pais/$id/households.dta"', clear
+	****************
+	capture use `"`c(sysdir_site)'/users/$pais/$id/households.dta"', clear
+	if _rc != 0 {
+		use "`c(sysdir_site)'/SIM/2020/households`=aniovp'.dta", clear
+	}
 
-	* ISR *
-	tabstat Laboral Consumo OtrosC ISR__PM Petroleo CuotasSS [fw=factor], stat(sum) f(%20.0fc) save
-	matrix INGRESOS = r(StatTotal)
-
-	replace Laboral = Laboral*((scalar(ISRAS)+scalar(ISRPF))/100*`PIB')/INGRESOS[1,1]
-	replace Consumo = Consumo*((scalar(IVA)+scalar(ISAN)+scalar(IEPS)+scalar(Importa))/100*`PIB')/INGRESOS[1,2]
-	replace OtrosC = OtrosC*((scalar(ISRPM)+scalar(OYE)+scalar(OtrosC))/100*`PIB')/INGRESOS[1,3]
-
-	replace ISR__PM = ISR__PM*((scalar(ISRPM))/100*`PIB')/INGRESOS[1,4]
-	replace ISR__PM = 0 if ISR__PM == .
-
-	replace Petroleo = Petroleo*((scalar(FMP))/100*`PIB')/INGRESOS[1,5]
-	replace Petroleo = 0 if Petroleo == .
-
-	replace CuotasSS = CuotasSS*((scalar(CuotasT))/100*`PIB')/INGRESOS[1,6]
-	replace CuotasSS = 0 if CuotasSS == .
-
-	tabstat Laboral Consumo OtrosC CuotasSS Petroleo [fw=factor], stat(sum) f(%20.0fc) save
-	tempname INGRESOSSIM
-	matrix `INGRESOSSIM' = r(StatTotal)
-	
-
+	* Distribuir los ingresos entre las observaciones *
+	foreach k of varlist ISRAS ISRPF CUOTAS ISRPM OTROSK IVA IEPSNP IEPSP ISAN IMPORT FMP {
+		capture drop `k'SIM
+		Distribucion `k'SIM, relativo(`k') macro(`=scalar(`k')/100*scalar(pibY)')
+	}
 
 	** Guardar **
 	if `c(version)' > 13.1 {
@@ -362,9 +350,13 @@ quietly {
 
 
 
+
 	***************************
 	*** 6 Estimaciones de LP ***
-	****************************
+	/****************************
+	*tabstat Laboral Consumo OtrosC CuotasSS Petroleo [fw=factor], stat(sum) f(%20.0fc) save
+	*tempname INGRESOSSIM
+	*matrix `INGRESOSSIM' = r(StatTotal)
 	tempname RECBase
 	local j = 1
 	foreach k in Laboral Consumo OtrosC CuotasSS Petroleo {
@@ -393,53 +385,52 @@ quietly {
 	if "$output" == "output" {
 		quietly log on output
 		noisily di in w "INGRESOSPIB: " in w "["  ///
-			%8.3f ISRAS ", " ///
-			%8.3f ISRPF ", " ///
-			%8.3f CUOTAS ", " ///
-			%8.3f ISRAS+ISRPF+CUOTAS ", " ///
-			%8.3f ISRPM ", " ///
-			%8.3f OTROSK ", " ///
-			%8.3f ISRPM+OTROSK ", " ///
-			%8.3f IVA ", " ///
-			%8.3f ISAN ", " ///
-			%8.3f IEPSNP ", " ///
-			%8.3f IEPSP ", " ///
-			%8.3f IMPORT ", " ///
-			%8.3f IVA+ISAN+IEPSNP+IEPSP+IMPORT ", " ///
-			%8.3f IMSS ", " ///
-			%8.3f ISSSTE ", " ///
-			%8.3f FMP ", " ///
-			%8.3f PEMEX ", " ///
-			%8.3f CFE ", " ///
-			%8.3f IMSS+ISSSTE+FMP+PEMEX+CFE ", " ///
-			%8.3f ISRAS+ISRPF+CUOTAS+ISRPM+OTROSK+IVA+ISAN+IEPSNP+IEPSP+IMPORT+IMSS+ISSSTE+FMP+PEMEX+CFE ///
+			%8.3f scalar(ISRAS) ", " ///
+			%8.3f scalar(ISRPF) ", " ///
+			%8.3f scalar(CUOTAS) ", " ///
+			%8.3f scalar(ISRAS)+scalar(ISRPF)+scalar(CUOTAS) ", " ///
+			%8.3f scalar(ISRPM) ", " ///
+			%8.3f scalar(OTROSK) ", " ///
+			%8.3f scalar(ISRPM)+scalar(OTROSK) ", " ///
+			%8.3f scalar(IVA) ", " ///
+			%8.3f scalar(ISAN) ", " ///
+			%8.3f scalar(IEPSNP) ", " ///
+			%8.3f scalar(IEPSP) ", " ///
+			%8.3f scalar(IMPORT) ", " ///
+			%8.3f scalar(IVA)+scalar(ISAN)+scalar(IEPSNP)+scalar(IEPSP)+scalar(IMPORT) ", " ///
+			%8.3f scalar(IMSS) ", " ///
+			%8.3f scalar(ISSSTE) ", " ///
+			%8.3f scalar(FMP) ", " ///
+			%8.3f scalar(PEMEX) ", " ///
+			%8.3f scalar(CFE) ", " ///
+			%8.3f scalar(IMSS)+scalar(ISSSTE)+scalar(FMP)+scalar(PEMEX)+scalar(CFE) ", " ///
+			%8.3f scalar(ISRAS)+scalar(ISRPF)+scalar(CUOTAS)+scalar(ISRPM)+scalar(OTROSK)+scalar(IVA)+scalar(ISAN)+scalar(IEPSNP)+scalar(IEPSP)+scalar(IMPORT)+scalar(IMSS)+scalar(ISSSTE)+scalar(FMP)+scalar(PEMEX)+scalar(CFE) ///
 		"]"
 		noisily di in w "INGRESOSTEF: " in w "["  ///
-			%8.3f ISRAS/RemSalPIB*100 ", " ///
-			%8.3f ISRPF/MixLPIB*100 ", " ///
-			%8.3f CUOTAS/(RemSalPIB+SSImputadaPIB+SSEmpleadoresPIB)*100 ", " ///
-			%8.3f (ISRAS+ISRPF+CUOTAS)/YlPIB*100 ", " ///
-			%8.3f ISRPM/ExNOpSocPIB*100 ", " ///
-			%8.3f OTROSK/ExNOpSocPIB*100 ", " ///
-			%8.3f (ISRPM+OTROSK)/CapIncImpPIB*100 ", " ///
-			%8.3f IVA/(ConHogPIB-AlimPIB-BebNPIB-SaluPIB)*100 ", " ///
-			%8.3f ISAN/VehiPIB*100 ", " ///
-			%8.3f IEPSNP/ConHogPIB*100 ", " ///
-			%8.3f IEPSP/ConHogPIB*100 ", " ///
-			%8.3f IMPORT/ConHogPIB*100 ", " ///
-			%8.3f (IVA+ISAN+IEPSNP+IEPSP+IMPORT)/ConHogPIB*100 ", " ///
-			%8.3f IMSS/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 ", " ///
-			%8.3f ISSSTE/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 ", " ///
-			%8.3f FMP/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 ", " ///
-			%8.3f PEMEX/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 ", " ///
-			%8.3f CFE/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 ", " ///
-			%8.3f (IMSS+ISSSTE+FMP+PEMEX+CFE)/CapIncImpPIB*100 ///
+			%8.3f scalar(ISRAS)/RemSalPIB*100 ", " ///
+			%8.3f scalar(ISRPF)/MixLPIB*100 ", " ///
+			%8.3f scalar(CUOTAS)/(RemSalPIB+SSImputadaPIB+SSEmpleadoresPIB)*100 ", " ///
+			%8.3f (scalar(ISRPM)+scalar(OTROSK))/YlPIB*100 ", " ///
+			%8.3f scalar(ISRPM)/ExNOpSocPIB*100 ", " ///
+			%8.3f scalar(OTROSK)/ExNOpSocPIB*100 ", " ///
+			%8.3f (scalar(ISRPM)+scalar(OTROSK))/CapIncImpPIB*100 ", " ///
+			%8.3f scalar(IVA)/(ConHogPIB-AlimPIB-BebNPIB-SaluPIB)*100 ", " ///
+			%8.3f scalar(ISAN)/VehiPIB*100 ", " ///
+			%8.3f scalar(IEPSNP)/ConHogPIB*100 ", " ///
+			%8.3f scalar(IEPSP)/ConHogPIB*100 ", " ///
+			%8.3f scalar(IMPORT)/ConHogPIB*100 ", " ///
+			%8.3f ((IVA)+scalar(ISAN)+scalar(IEPSNP)+scalar(IEPSP)+scalar(IMPORT))/ConHogPIB*100 ", " ///
+			%8.3f scalar(IMSS)/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 ", " ///
+			%8.3f scalar(ISSSTE)/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 ", " ///
+			%8.3f scalar(FMP)/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 ", " ///
+			%8.3f scalar(PEMEX)/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 ", " ///
+			%8.3f scalar(CFE)/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 ", " ///
+			%8.3f (scalar(IMSS)+scalar(ISSSTE)+scalar(FMP)+scalar(PEMEX)+scalar(CFE))/CapIncImpPIB*100 ///
 		"]"
 		quietly log off output
 	}
 
-
-	** DATOS ABIERTOS **
+	/** DATOS ABIERTOS **
 	if "$export" != "" & "$nographs" != "nograhs" & "$pais" == "" {
 		DatosAbiertos XNA0120_s, g pibvp(`=ISRAS')   	//    ISR salarios
 		DatosAbiertos XNA0120_f, g pibvp(`=ISRPF')    	//    ISR PF
@@ -455,7 +446,7 @@ quietly {
 		DatosAbiertos XKF0179, g pibvp(`=`recIMSS'')	//    Ingresos propios IMSS
 		DatosAbiertos XOA0120, g pibvp(`=`recISSSTE'')	//    Ingresos propios ISSSTE
 		DatosAbiertos OtrosIngresosC, g pibvp(`=OtrosC')	//    Ingresos propios ISSSTE
-	}
+	}*/
 
 
 
