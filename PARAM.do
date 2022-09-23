@@ -33,6 +33,9 @@ capture mkdir `"`c(sysdir_site)'/users/$pais/$id/"'
 if "$output" == "output" {
 	quietly log using `"`c(sysdir_site)'/users/$pais/$id/output.txt"', replace text name(output)
 }
+if "$output" == "outputcorto" {
+	quietly log using `"`c(sysdir_site)'/users/$pais/$id/outputcorto.txt"', replace text name(output)
+}
 
 
 
@@ -54,7 +57,7 @@ global pib2027 = 2.4 //    CGPE 2023 (página 134)
 global pib2028 = 2.4 //    CGPE 2023 (página 134)
 
 global def2022 = 8.00695 //    CGPE 2023 (página 134)
-global def2023 = 4.95 //    CGPE 2023 (página 134)
+global def2023 = 4.95000 //    CGPE 2023 (página 134)
 global def2024 = 3.46555 //    CGPE 2023 (página 134)
 global def2025 = 3.49807 //    CGPE 2023 (página 134)
 global def2026 = 3.49211 //    CGPE 2023 (página 134)
@@ -69,11 +72,7 @@ global inf2026 = 3.0 //    CGPE 2023 (página 134)
 global inf2027 = 3.0 //    CGPE 2023 (página 134)
 global inf2028 = 3.0 //    CGPE 2023 (página 134)
 
-global tasaEfectiva = 6.6472                                   // Tasa de inter{c e'}s EFECTIVA
-global tipoDeCambio = 20.4                                     // Tipo de cambio
-global depreciacion = 0.2000                                   // Depreciación
-
-PIBDeflactor, nog
+PIBDeflactor, nographs
 
 
 
@@ -95,9 +94,10 @@ scalar IEPSNP  = (0.662/100*31401701274538*(1+ 0.362*(${pib2023}-2.9676)/100))/s
 scalar IEPSP   =  0.887 								     // IEPS (petrolero): 0.662
 scalar IMPORT  = (0.313/100*31401701274538*(1+ 5.303*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Importaciones: 0.313
 
+scalar FMP     = (1.553/100*31401701274538*(1+-7.718*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Fondo Mexicano del Petróleo: 1.553
+
 scalar IMSS    = (0.091/100*31401701274538*(1+-2.685*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (IMSS): 0.091
 scalar ISSSTE  = (0.159/100*31401701274538*(1+-3.058*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (ISSSTE): 0.159
-scalar FMP     = (1.553/100*31401701274538*(1+-7.718*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Fondo Mexicano del Petróleo: 1.553
 scalar PEMEX   = (2.632/100*31401701274538*(1+ 1.379*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (Pemex): 2.632
 scalar CFE     = (1.271/100*31401701274538*(1+-3.024*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (CFE): 1.271
 

@@ -195,10 +195,10 @@ noisily Gini IMPORT, hogar(folioviv foliohog) individuo(numren) factor(factor)
 ** (+) Ingresos petroleros **
 ** (+) FMP **
 g pob = 1
-Distribucion Petroleo, relativo(pob) macro(`=`FMP'')
-label var Petroleo "FMP"
-noisily Gini Petroleo, hogar(folioviv foliohog) individuo(numren) factor(factor)
-noisily Simulador Petroleo [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
+Distribucion FMP, relativo(pob) macro(`=`FMP'')
+label var FMP "FMP"
+noisily Simulador FMP [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
+noisily Gini FMP, hogar(folioviv foliohog) individuo(numren) factor(factor)
 
 
 
@@ -211,6 +211,7 @@ replace ing_jubila_pub = 0 if ing_jubila_pub == .
 Distribucion Pension, relativo(ing_jubila_pub) macro(`Pensiones')
 label var Pension "Pensiones"
 noisily Simulador Pension [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
+noisily Gini Pension, hogar(folioviv foliohog) individuo(numren) factor(factor)
 
 ** (-) Pension Bienestar **
 tabstat factor if edad >= 65, stat(sum) f(%20.0fc) save
@@ -219,6 +220,7 @@ g PenBienestar = `PenBienestar'/POBLACION68[1,1] if edad >= 65
 replace PenBienestar = 0 if PenBienestar == .
 label var PenBienestar "pensi{c o'}n Bienestar"
 noisily Simulador PenBienestar if edad >= 65 [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
+noisily Gini PenBienestar, hogar(folioviv foliohog) individuo(numren) factor(factor)
 
 ** (-) Educacion **
 tabstat factor if asis_esc == "1" & tipoesc == "1" & (nivel >= "01" & nivel <= "07") & edad <= 18, stat(sum) f(%15.0fc) save
@@ -247,6 +249,7 @@ replace educacion = 0 if educacion == .
 Distribucion Educacion, relativo(educacion) macro(`Educacion')
 label var Educacion "Educación"
 noisily Simulador Educacion [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
+noisily Gini Educacion, hogar(folioviv foliohog) individuo(numren) factor(factor)
 
 ** (-) Salud **
 g salud = 0
@@ -365,11 +368,13 @@ replace salud = .0030159 if edad >= 109
 Distribucion Salud, relativo(salud) macro(`Salud')
 label var Salud "salud"
 noisily Simulador Salud [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput //poblacion(defunciones)
+noisily Gini Salud, hogar(folioviv foliohog) individuo(numren) factor(factor)
 
 ** (-) Ingreso B{c a'}sico **
 g IngBasico = 0.0001
 label var IngBasico "ingreso b{c a'}sico"
 noisily Simulador IngBasico [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
+noisily Gini IngBasico, hogar(folioviv foliohog) individuo(numren) factor(factor)
 
 ** (*) Infraestructura **
 g entidad = substr(folio,1,2)
@@ -388,6 +393,7 @@ egen infra_entidad = rsum(Infra_*)
 Distribucion Infra, relativo(infra_entidad) macro(`InfraT')
 label var Infra "infraestructura"
 noisily Simulador Infra [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
+noisily Gini Infra, hogar(folioviv foliohog) individuo(numren) factor(factor)
 
 
 
@@ -400,6 +406,7 @@ replace consumo = 0 if consumo == .
 Distribucion Consumo, relativo(consumo) macro(`=`IEPSP'+`IEPSNP'+`IMPORT'+`ISAN'+`IVA'')
 label var Consumo "los impuestos al consumo"
 noisily Simulador Consumo [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
+noisily Gini Consumo, hogar(folioviv foliohog) individuo(numren) factor(factor)
 
 ** (+) Impuestos laborales **
 egen laboral = rsum(ISRAS ISRPF CUOTAS)
@@ -407,6 +414,7 @@ replace laboral = 0 if laboral == .
 Distribucion Laboral, relativo(laboral) macro(`=`ISRAS'+`ISRPF'+`CUOTAS'')
 label var Laboral "los impuestos al ingreso laboral"
 noisily Simulador Laboral [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
+noisily Gini Laboral, hogar(folioviv foliohog) individuo(numren) factor(factor)
 
 ** (+) Impuestos de capital privado **
 Distribucion KPrivado, relativo(ISRPM) macro(`=`OTROSK'+`ISRPM'')
@@ -424,6 +432,7 @@ noisily Gini KPublico, hogar(folioviv foliohog) individuo(numren) factor(factor)
 Distribucion OtrosGas, relativo(pob) macro(`=`OtrosGas'')
 label var OtrosGas "otros gastos"
 noisily Simulador OtrosGas [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
+noisily Gini OtrosGas, hogar(folioviv foliohog) individuo(numren) factor(factor)
 
 
 
@@ -446,16 +455,46 @@ label var IngBasico "Basic universal income"
 ***********/
 *** SAVE ***
 ************
+keep folio* numren factor* ///
+	ISRAS ISRPF CUOTAS ISRPM OTROSK IVA IEPSNP IEPSP ISAN IMPORT FMP ///
+	Pension Educacion Salud IngBasico PenBienestar OtrosGas Infra ///
+	sexo grupoedad decil escol edad ing_bruto_tax prop_formal ///
+	deduc_isr ISR categF ISR__asalariados ISR__PF cuotas* ingbrutotot htrab ///
+	tipo_contribuyente exen_tot formal* *_tpm *_t2_* *_t4_* ing_mixto* isrE ing_subor IVA* IEPS* ///
+	gasto_anualDepreciacion prop_* SE ImpNet* infonavit fovissste
 compress
-capture drop __* 
-capture drop *_accum
 save "`c(sysdir_site)'/SIM/2020/households`1'.dta", replace
-
-
-
-
-
 exit
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
