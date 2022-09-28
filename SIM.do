@@ -30,13 +30,13 @@ if "`c(os)'" == "Unix" & "`c(username)'" == "ciepmx" {                          
 ***                   ***
 *************************
 global id "`c(username)'"
-
 global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
-*global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
+global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
 *local update "update"                                                          // UPDATE DATASETS
 *global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"                 // EXPORTAR IMAGENES EN...
-
 noisily run "`c(sysdir_site)'/PARAM.do"                                         // PARÁMETROS PE 2023
+
+
 
 **************************
 ***                    ***
@@ -64,7 +64,7 @@ noisily Inflacion, `update'
 ***                     ***
 ***************************
 *noisily run "`c(sysdir_site)'/Expenditure.do" `=aniovp'
-*noisily run `"`c(sysdir_site)'/Households`=subinstr("${pais}"," ","",.)'.do"' `=aniovp'
+*noisily run `"`c(sysdir_site)'/Households.do"' `=aniovp'
 *noisily run `"`c(sysdir_site)'/PerfilesSim.do"' `=aniovp'
 
 
@@ -74,11 +74,33 @@ noisily Inflacion, `update'
 ***    5. SISTEMA FISCAL    ***
 ***                         ***
 *******************************
-*noisily LIF, by(divSIM) rows(2) min(0) eofp `update'
-noisily TasasEfectivas
 
 *noisily PEF, by(divPE) rows(2) min(0) `update'
 noisily GastoPC
+
+
+** 5.1 Módulos **
+if "`cambioisr'" == "1" {
+	noisily run "`c(sysdir_site)'/ISR_Mod.do"
+	scalar ISRAS = ISR_AS_Mod
+	scalar ISRPF = ISR_PF_Mod
+	scalar ISRPM = ISR_PM_Mod
+}
+
+
+
+if "`cambioiva'" == "1" {
+	noisily run "`c(sysdir_site)'/IVA_Mod.do"
+	scalar IVA = IVA_Mod
+}
+
+
+
+** 5.2 Integración **
+*noisily LIF, by(divSIM) rows(2) min(0) eofp `update'
+noisily TasasEfectivas
+
+
 
 
 
@@ -102,7 +124,7 @@ save "`c(sysdir_site)'/users/$id/households.dta", replace
 
 
 ** 6.3 Sankey **
-foreach k in /*grupoedad sexo*/ decil escol {
+foreach k in /*grupoedad sexo decil*/ escol rural {
 	noisily run "`c(sysdir_site)'/SankeySF.do" `k' `=aniovp'
 }
 

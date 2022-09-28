@@ -32,10 +32,7 @@ quietly {
 	************************
 	*** 2 TRANSFERENCIAS ***
 	************************
-	capture use `"`c(sysdir_site)'/users/$pais/$id/households.dta"', clear
-	if _rc != 0 {
-		use "`c(sysdir_site)'/SIM/2020/households`=aniovp'.dta", clear
-	}
+	use "`c(sysdir_site)'/SIM/2020/households`=aniovp'.dta", clear
 	tabstat factor, stat(sum) f(%20.0fc) save
 	tempname pobenigh
 	matrix `pobenigh' = r(StatTotal)
@@ -255,21 +252,21 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if divPE == 8, anio(`anio') by(desc_pp) min(0) nographs
+		PEF if divPE == 9, anio(`anio') by(desc_pp) min(0) nographs
 		local imssbien0 = r(Programa_IMSS_BIENESTAR) //+r(Programa_IMSS_BIENESTARC)
 		local segpop0 = r(Seguro_Popular) //+r(Seguro_PopularC)
 		if `segpop0' == . {
 			local segpop0 = r(Atención_a_la_Salud_y_Medicame) //+r(Atenci_c_o__n_a_la_Salud_y_MediC)
 		}
 
-		PEF if divPE == 8 & ramo == 12, anio(`anio') by(desc_pp) min(0) nographs
+		PEF if divPE == 9 & ramo == 12, anio(`anio') by(desc_pp) min(0) nographs
 		local atencINSABI = r(Atención_a_la_Salud) //+r(Atenci_c_o__n_a_la_SaludC)
 		local fortaINSABI = r(Fortalecimiento_a_la_atención_) //+r(Fortalecimiento_a_la_atenci_c_oC)
 		if `fortaINSABI' == . {
 			local fortaINSABI = 0
 		}
 
-		PEF if divPE == 8, anio(`anio') by(ramo) min(0) nographs
+		PEF if divPE == 9, anio(`anio') by(ramo) min(0) nographs
 		local fassa = r(Aportaciones_Federales_para_Ent) //+ r(Aportaciones_Federales_para_EntC)
 
 		local imssbien = `segpop0'+`imssbien0'+`fassa'+`fortaINSABI'+`atencINSABI'
@@ -284,7 +281,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if divPE == 8, anio(`anio') by(desc_pp) min(0) nographs
+		PEF if divPE == 9, anio(`anio') by(desc_pp) min(0) nographs
 		local caneros = r(Seguridad_Social_Cañeros) //+r(Seguridad_Social_Ca_c_n__erosC)
 		local incorpo = r(Régimen_de_Incorporación) //+r(R_c_e__gimen_de_Incorporaci_c_oC)
 		local adeusal = r(Adeudos_con_el_IMSS_e_ISSSTE_y_)
@@ -292,7 +289,7 @@ quietly {
 			local adeusal = 0
 		}
 
-		PEF if divPE == 8, anio(`anio') by(ramo) min(0) nographs
+		PEF if divPE == 9, anio(`anio') by(ramo) min(0) nographs
 		local ssa = r(Salud)+`incorpo'+`adeusal'+`caneros'-`segpop0'-`fortaINSABI'-`atencINSABI'  //+r(SaludC)
 		scalar ssa = `ssa'/`Salud'[1,6]
 		restore
@@ -305,10 +302,10 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if divPE == 8, anio(`anio') by(ramo) min(0) nographs
+		PEF if divPE == 9, anio(`anio') by(ramo) min(0) nographs
 		local imss = r(Instituto_Mexicano_del_Seguro_S) //+r(Instituto_Mexicano_del_Seguro_SC)
 
-		PEF if divPE == 8 & ramo == 50, anio(`anio') by(desc_pp) min(0) nographs			
+		PEF if divPE == 9 & ramo == 50, anio(`anio') by(desc_pp) min(0) nographs			
 		local saludciencia = r(Investigación_y_desarrollo_tec) //+ r(Investigaci_c_o__n_y_desarrolloC)
 
 		local imss = `imss' //+ `saludciencia'
@@ -323,10 +320,10 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if divPE == 8, anio(`anio') by(ramo) min(0) nographs
+		PEF if divPE == 9, anio(`anio') by(ramo) min(0) nographs
 		local issste = r(Instituto_de_Seguridad_y_Servic) //+r(Instituto_de_Seguridad_y_ServicC)
 		
-		PEF if divPE == 8 & ramo == 51, anio(`anio') by(desc_pp) min(0) nographs	
+		PEF if divPE == 9 & ramo == 51, anio(`anio') by(desc_pp) min(0) nographs	
 		local saludciencia2 = r(Investigación_y_Desarrollo_Tec) //+ r(Investigaci_c_o__n_y_DesarrolloC)
 		
 		local issste = `issste' //+ `saludciencia2'
@@ -341,7 +338,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if divPE == 8, anio(`anio') by(ramo) min(0) nographs
+		PEF if divPE == 9, anio(`anio') by(ramo) min(0) nographs
 		local pemex = r(Petróleos_Mexicanos) + r(Defensa_Nacional) + r(Marina) //+ r(Petr_c_o__leos_MexicanosC) + r(Defensa_NacionalC) + r(MarinaC)
 		scalar pemex = (`pemex')/`Salud'[1,3]
 		restore

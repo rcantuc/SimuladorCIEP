@@ -56,7 +56,7 @@ quietly {
 	else {
 		scalar ISRAS = `ISRAS'						// <-- Para el simulador (Sankey, FiscalGap)
 	}
-	noisily di in g "  Compensaci{c o'}n de asalariados (sin CSS)" ///
+	noisily di in g "  Compensaci{c o'}n de asalariados*" ///
 		_col(44) %7.3fc in y RemSalPIB ///
 		_col(55) in g "ISR (salarios)" ///
 		_col(88) %7.3fc in y (`ISRAS') ///
@@ -99,6 +99,11 @@ quietly {
 		_col(88) %7.3fc in y (`ISRAS'+`ISRPF'+`CUOTAS') ///
 		_col(99) %7.3fc in y (`ISRAS'+`ISRPF'+`CUOTAS')/(YlPIB)*100 " %" "}"
 
+
+
+	************************************
+	*** IMPUESTOS AL CAPITAL PRIVADO ***
+	************************************
 	noisily di _newline(2) in y "{bf: B. " in y "Impuestos al capital" "}"
 	noisily di _newline in g "{bf:  Cuentas Nacionales" ///
 		_col(44) %7s in g "% PIB" ///
@@ -115,17 +120,67 @@ quietly {
 	else {
 		scalar ISRPM = (`ISRPM')
 	}
-	noisily di in g "  Sociedades e ISFLSH (netos)" ///
-		_col(44) %7.3fc in y (ExNOpSocPIB+ImpNetProduccionKPIB+ImpNetProductosPIB) ///
+
+	// Productos, derechos, aprovechamientos, contribuciones
+	capture confirm scalar OTROSK
+	if _rc == 0 {
+		local OTROSK = scalar(OTROSK)
+	}
+	else {
+		scalar OTROSK  = (`OTROSK') 
+	}
+
+	// FMP + CFE + Pemex (energía)
+	capture confirm scalar FMP
+	if _rc == 0 {
+		local FMP = scalar(FMP)
+	}
+	else {
+		scalar FMP = (`FMP') 
+	}
+	capture confirm scalar PEMEX
+	if _rc == 0 {
+		local PEMEX = scalar(PEMEX)
+	}
+	else {
+		scalar PEMEX = (`PEMEX') 
+	}
+	capture confirm scalar CFE
+	if _rc == 0 {
+		local CFE = scalar(CFE)
+	}
+	else {
+		scalar CFE = (`CFE') 
+	}
+
+	// IMSS + ISSSTE
+	capture confirm scalar IMSS
+	if _rc == 0 {
+		local IMSS = scalar(IMSS)
+	}
+	else {
+		scalar IMSS = (`IMSS') 
+	}
+	capture confirm scalar ISSSTE
+	if _rc == 0 {
+		local ISSSTE = scalar(ISSSTE)
+	}
+	else {
+		scalar ISSSTE = (`ISSSTE') 
+	}
+	tempvar IngKPublicos 
+	g `IngKPublicos' = `FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE'
+	
+	noisily di in g "  Ingresos de capital privado*" ///
+		_col(44) %7.3fc in y (ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-`IngKPublicos') ///
 		_col(55) in g "ISR (morales)" ///
 		_col(88) %7.3fc in y (`ISRPM') ///
-		_col(99) %7.3fc in y (`ISRPM')/(ExNOpSocPIB)*100 " %"
-
-	noisily di in g "  Sociedades e ISFLSH (netos)" ///
-		_col(44) %7.3fc in y (ExNOpSocPIB+ImpNetProduccionKPIB+ImpNetProductosPIB) ///
+		_col(99) %7.3fc in y (`ISRPM')/(ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-`IngKPublicos')*100 " %"
+	noisily di in g "  Ingresos de capital privado*" ///
+		_col(44) %7.3fc in y (ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-`IngKPublicos') ///
 		_col(55) in g "Productos, derechos, aprovech..." ///
 		_col(88) %7.3fc in y (`OTROSK') ///
-		_col(99) %7.3fc in y (`OTROSK')/(ExNOpSocPIB)*100 " %"
+		_col(99) %7.3fc in y (`OTROSK')/(ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-`IngKPublicos')*100 " %"
 
 	// TOTAL CAPITAL PRIVADO
 	noisily di in g _dup(111) "-"
@@ -133,9 +188,7 @@ quietly {
 		_col(44) %7.3fc in y (CapIncImpPIB) ///
 		_col(55) in g "Recaudaci{c o'}n total" ///
 		_col(88) %7.3fc in y (`ISRPM'+`OTROSK') ///
-		_col(99) %7.3fc in y (`ISRPM'+`OTROSK')/(CapIncImpPIB)*100 " %" "}"
-
-
+		_col(99) %7.3fc in y (`ISRPM'+`OTROSK')/(CapIncImpPIB-`IngKPublicos')*100 " %" "}"
 
 	noisily di _newline(2) in y "{bf: C. " in y "Impuestos al consumo" "}"
 	noisily di _newline in g "{bf:  Cuentas Nacionales" ///
@@ -233,54 +286,6 @@ quietly {
 		_col(88) %7s in g "% PIB" ///
 		_col(99) in g "Tasa efectiva" "}"
 	noisily di in g _dup(111) "-"
-
-	// Energía
-	capture confirm scalar FMP
-	if _rc == 0 {
-		local FMP = scalar(FMP)
-	}
-	else {
-		scalar FMP = (`FMP') 
-	}
-	capture confirm scalar PEMEX
-	if _rc == 0 {
-		local PEMEX = scalar(PEMEX)
-	}
-	else {
-		scalar PEMEX = (`PEMEX') 
-	}
-	capture confirm scalar CFE
-	if _rc == 0 {
-		local CFE = scalar(CFE)
-	}
-	else {
-		scalar CFE = (`CFE') 
-	}
-
-	// IMSS + ISSSTE
-	capture confirm scalar IMSS
-	if _rc == 0 {
-		local IMSS = scalar(IMSS)
-	}
-	else {
-		scalar IMSS = (`IMSS') 
-	}
-	capture confirm scalar ISSSTE
-	if _rc == 0 {
-		local ISSSTE = scalar(ISSSTE)
-	}
-	else {
-		scalar ISSSTE = (`ISSSTE') 
-	}
-
-	// Productos, derechos, aprovechamientos, contribuciones
-	capture confirm scalar OTROSK
-	if _rc == 0 {
-		local OTROSK = scalar(OTROSK)
-	}
-	else {
-		scalar OTROSK  = (`OTROSK') 
-	}
 
 	noisily di in g "  Ingresos de capital p{c u'}blico" ///
 		_col(44) %7.3fc in y (`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE') ///
