@@ -62,10 +62,10 @@ noisily Inflacion, `update'
 ***                     ***
 ***    4. HOUSEHOLDS    ***
 ***                     ***
-***************************
-*noisily run "`c(sysdir_site)'/Expenditure.do" `=aniovp'
-*noisily run `"`c(sysdir_site)'/Households.do"' `=aniovp'
-*noisily run `"`c(sysdir_site)'/PerfilesSim.do"' `=aniovp'
+/***************************
+noisily run "`c(sysdir_site)'/Expenditure.do" `=aniovp'
+noisily run `"`c(sysdir_site)'/Households.do"' `=aniovp'
+noisily run `"`c(sysdir_site)'/PerfilesSim.do"' `=aniovp'
 
 
 
@@ -87,13 +87,10 @@ if "`cambioisr'" == "1" {
 	scalar ISRPM = ISR_PM_Mod
 }
 
-
-
 if "`cambioiva'" == "1" {
 	noisily run "`c(sysdir_site)'/IVA_Mod.do"
 	scalar IVA = IVA_Mod
 }
-
 
 
 ** 5.2 Integración **

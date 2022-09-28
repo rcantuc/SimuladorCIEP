@@ -78,7 +78,7 @@ PIBDeflactor, nographs
 
 **********************/
 ***                 ***
-***    6. GASTOS    ***
+***    5. GASTOS    ***
 ***                 ***
 ***********************
 scalar basica      =   26537 //    Educación b{c a'}sica
@@ -115,7 +115,7 @@ scalar ingbasico65 =       1 //    1: Incluye mayores de 65 anios, 0: no
 
 ************************/
 ***                   ***
-***    5. INGRESOS    ***
+***    6. INGRESOS    ***
 ***                   ***
 *************************
 scalar ISRAS   = (3.696/100*31401701274538*(1+ 3.782*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISR (asalariados): 3.696
@@ -177,26 +177,8 @@ matrix DED = (5,		15,			46.78, 			9.43)
 
 *           Tasa ISR PM.	% Informalidad PM
 matrix PM = (30,		21.45)
-
-
-* Modulo ISR *
-if "`cambioisr'" == "1" {
-	noisily run "`c(sysdir_site)'/ISR_Mod.do"
-	scalar ISRAS = ISR_AS_Mod
-	scalar ISRPF = ISR_PF_Mod
-	scalar ISRPM = ISR_PM_Mod
-}
-
-* Modulo IVA *
-if "`cambioiva'" == "1" {
-	noisily run "`c(sysdir_site)'/IVA_Mod.do"
-	scalar IVA = IVA_Mod
-}
-
 ***       FIN: SIMULADOR ISR       ***
 **************************************
-
-
 
 
 
@@ -217,7 +199,7 @@ matrix IVAT = (16 \     ///  1  Tasa general
                3  \     /// 10  Otros, idem
                2  \     /// 11  Transporte local, idem
                3  \     /// 12  Transporte foraneo, idem
-               21.59)   //  13  Evasion e informalidad IVA, input[0-100]
+               19.03)   //  13  Evasion e informalidad IVA, input[0-100]
 ***       FIN: SIMULADOR IVA       ***
 *************************************/
 

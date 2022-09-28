@@ -13,21 +13,23 @@ noisily di _newline(2) in g "   MODULO: " in y "IVA"
 *********************
 ** Microsimulacion **
 *********************
-use if anio == `anio' | anio == 2020 using "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", clear
-sort anio
+*use if anio == 2018 | anio == `anio' using "`c(sysdir_site)'/users/$pais/$id/PIB.dta", clear
+PIBDeflactor, nog nooutput
+keep if anio == 2020 | anio == aniovp
 local lambda = lambda[1]
 local deflator = deflator[1]
-scalar PIB = pibY[_N]
+local pibY = pibY[_N]
+
 
 
 * Households *
-use "`c(sysdir_personal)'/SIM/2020/expenditure_categ_iva.dta", clear
+use "`c(sysdir_site)'/SIM/2020/expenditure_categ_iva.dta", clear
 
 
 ** Re C{c a'}lculo del IVA **
 local j = 2
 foreach k in alim alquiler cb educacion fuera mascotas med mujer otros trans transf {
-	replace gasto_anual`k' = gasto_anual`k'*66.012/57.477
+	replace gasto_anual`k' = gasto_anual`k'/`deflator'*66.012/58.609
 	
 	if IVAT[`j',1] == 1 {
 		replace IVA`k' = 0
@@ -83,7 +85,7 @@ save `ivamod'
 
 
 * Households *
-use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
+use `"`c(sysdir_site)'/users/$pais/$id/households.dta"', clear
 merge 1:1 (folioviv foliohog numren) using `ivamod', nogen update replace ///
 	keepus(Consumo gasto_anual* IVA* GastoTOT*)
 replace Consumo = 0 if Consumo == .
@@ -97,7 +99,7 @@ label var Consumo "los impuestos al consumo"
 tabstat IVATotal Consumo [fw=factor], stat(sum) f(%20.0fc) save
 tempname IVA
 matrix `IVA' = r(StatTotal)
-scalar IVA_Mod = `IVA'[1,1]/scalar(PIB)*100
+scalar IVA_Mod = `IVA'[1,1]/`pibY'*100
 
 noisily di _newline in g " RESULTADOS IVA: " _col(29) in y %10.3fc IVA_Mod
 
@@ -107,13 +109,13 @@ tabstat GastoTOT GastoTOTC GastoTOTE GastoTOTG GastoTOTEG [fw=factor], stat(sum)
 tempname IVA2
 matrix `IVA2' = r(StatTotal)
 
-noisily di _newline in g " GASTO ANUAL: " _col(29) in y %10.3fc `IVA2'[1,1]/scalar(PIB)*100
-noisily di in g " GASTO 0%: " _col(29)  in y %10.3fc `IVA2'[1,2]/scalar(PIB)*100
-noisily di in g " GASTO EXENTO: " _col(29)  in y %10.3fc `IVA2'[1,3]/scalar(PIB)*100
-noisily di in g " GASTO EXENTO GRAVADO: " _col(29)  in y %10.3fc `IVA2'[1,5]/scalar(PIB)*100
-noisily di in g " GASTO GRAVADO: " _col(29)  in y %10.3fc `IVA2'[1,4]/scalar(PIB)*100
+noisily di _newline in g " GASTO ANUAL: " _col(29) in y %10.3fc `IVA2'[1,1]/`pibY'*100
+noisily di in g " GASTO 0%: " _col(29)  in y %10.3fc `IVA2'[1,2]/`pibY'*100
+noisily di in g " GASTO EXENTO: " _col(29)  in y %10.3fc `IVA2'[1,3]/`pibY'*100
+noisily di in g " GASTO EXENTO GRAVADO: " _col(29)  in y %10.3fc `IVA2'[1,5]/`pibY'*100
+noisily di in g " GASTO GRAVADO: " _col(29)  in y %10.3fc `IVA2'[1,4]/`pibY'*100
 
-save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace
+save `"`c(sysdir_site)'/users/$pais/$id/households.dta"', replace
 
 
 
