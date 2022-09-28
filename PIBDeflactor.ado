@@ -488,10 +488,10 @@ quietly {
 	capture drop __*
 	if "`save'" == "save" {
 		if `c(version)' > 13.1 {
-			saveold "`c(sysdir_site)'/users/$pais/$id/PIB.dta", replace version(13)
+			saveold "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", replace version(13)
 		}
 		else {
-			save "`c(sysdir_site)'/users/$pais/$id/PIB.dta", replace
+			save "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", replace
 		}
 	}
 

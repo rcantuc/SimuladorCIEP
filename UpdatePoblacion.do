@@ -20,13 +20,15 @@ tostring sexo, replace
 
 
 ** 2. Limpia **/
+capture drop renglon
 capture rename año anio
 capture rename ao anio
+
 rename sexo sexo0
 encode sexo0, generate(sexo)
 drop sexo0
 
-capture drop renglon
+replace entidad = "Nacional" if substr(entidad,1,3) == "Rep"
 
 
 ** 3. Labels **
@@ -36,13 +38,10 @@ label var entidad "Entidad federativa"
 label var anio "A{c n~}o"
 
 
-** 4. Orden **
-replace entidad = "Nacional" if substr(entidad,1,3) == "Rep"
-
-
-** 5. Guardar **
+** 4. Guardar **
 tempfile poblacion
 save "`poblacion'"
+
 
 
 
@@ -66,7 +65,6 @@ if _rc != 0 {
 }
 rename sexo sexo0
 encode sexo0, generate(sexo)
-
 drop *renglon sexo0
 format defunciones %10.0fc
 
