@@ -9,7 +9,7 @@ quietly {
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
 	syntax [, NOGraphs Anio(int `aniovp') BOOTstrap(int 1) Update END(int 2100) ///
-		ANIOMIN(int 2000) DIScount(real 3)]
+		ANIOMIN(int 2000) DIScount(real 5)]
 
 
 
