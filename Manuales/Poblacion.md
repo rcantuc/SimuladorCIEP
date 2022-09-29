@@ -1,80 +1,111 @@
-# Población y sus proyecciones
+# Simulador Fiscal CIEP v5.3: Población y proyecciones
 
-## UpdatePoblacion.do
-El objetivo de `UpdatePoblacion.do` es **descargar las bases de datos** de CONAPO desde su página web y se convierten a formato Stata para los propósito del Simulador. Es un *do file* para que se tenga la libertad de modificarlo, en caso de ser necesarias modificaciones por estructuras/formatos de nuevas bases de datos. Sin embargo, se deber respetar la estructura/formato de salida.
-
-En este caso, estructuramos las bases para conocer la composición demográfica por: *año, sexo, edad, entidad, población, defunciones, emigrantes, inmigrantes, mujeres en edad fértil y tasa de fecundidad*.
+Versión: 28 de septiembre de 2022
 
 
 
 
 
+## 1. UpdatePoblacion.do
+Es un *do-file* (`.do`) para que se tenga la libertad de modificarlo, en caso de ser necesario, por cambios en las nuevas bases. Sin embargo, se debe respetar la *estructura/formato de salida*[^1] para no generar conflictos posteriores en el Simulador. Son de interés las siguientes variables: 
 
-### Población
-Primero, importamos las bases de datos que utilizaremos en el modulo de población disponible en:
+* población,
+* defunciones, 
+* emigrantes, 
+* inmigrantes y 
+* tasa de fecundidad.
 
-“../basesCIEP/CONAPO/ censo2020.dta” [^2]
+[^1]: Se deben estructurar las bases, de tal forma, que podamos conocer la composición demográfica por **año, sexo, edad y entidad federativa**.
 
-Esta base nos dará a conocer los valores de la población separada por año, sexo y edad.  
 
-Se realiza la limpieza de variables y los problemas derivados de los caracteres especiales. En este caso se corrigen las variables Año y sexo. Además, le ponemos label en STATA a las variables Población, Entidad Federativa y Año.
-La variable población se convierte a string separada por comas y sin decimales, para facilitar su interpretación. 
 
-Posteriormente se ordena y guardamos de manera temporal la base de datos, ya que procederemos a trabajar con otra base. 
+### Objetivos 
 
-![poblacion](images/Cap_1/poblacion.PNG)
+1. **Descargar** las bases de datos de CONAPO desde su página web.
+2. **Limpiar y convertir** las bases en formato Stata para los propósitos del Simulador. 
+
+
+
+### A. Población
+1. **Importamos** las bases de datos.
+2. **Limpiamos** las variables.
+3. **Guardamos** (de manera temporal) la base de datos. 
+
+![poblacion](images/Poblacion/poblacion.png)
+
 
 
 ### B. Defunciones
 
-Primero, cargamos la base de datos para esta sección. En este caso el programa contempla las versiones posteriores de STATA 13.1 para realizar una codificación, caso contrario la carga de manera normal. 
-En este caso la base de datos se encuentra disponible en la siguiente dirección: 
+1. **Importamos** las bases de datos.
+2. **Limpiamos** las variables.
+3. **Guardamos** (de manera temporal) la base de datos. 
 
-"`c(sysdir_site)'../basesCIEP/CONAPO/def_edad_proyecciones_n.csv" [^3]
+![defunciones](images/Poblacion/defunciones.png)
 
-Posteriormente se limpian las variables sexo, año y defunciones. Las primeras dos nos servirán para unir esta base con la base población, mientras que defunciones es una variable nueva y escrita en formato separada por comas sin decimales. 
-
-El archivo se guarda de manera temporal para utilizarla posteriormente. 
-
-![poblacion](images/Cap_1/defunciones.PNG)
 
 
 ### C. Migración internacional
-Para cargar la base se debe usar la dirección: 
+1. **Importamos** las bases de datos.
+2. **Limpiamos** las variables. Esta base contiene los valores en rangos de edad; por lo tanto, se deben ajustar al formato de las otras dos bases del módulo. Se distribuyen los valores de manera uniforme entre los rangos de edad y año[^2].
+3. **Guardamos** (de manera temporal) la base de datos.
 
-"`c(sysdir_site)'../basesCIEP/CONAPO/” 
+[^2]: Se asume una distribución uniforme de las variable de migración, tanto en edad como en año. 
 
-Misma donde se encontra la base de población y también utilizando  la ubicación de nuestro directorio “c(sysdir_site)”.
-
-Al igual que población y defunciones se debe cambiar el nombre de las variables para arreglar los caracteres especiales. En este caso las variables son Año, sexo inmigrantes y emigrantes.
-Esta base de datos tiene valores entre rangos de edad y años; por lo que se debe ajustar al formato de las otras dos bases del módulo. Utilizando STATA se crean promedios para asignar valores uniformes entre los rangos de edad y año[^4].
-
-![promedios_mig](images/Cap_1/promedios_mig.PNG)
-
-Posteriormente de agregan las labels necesarias para emigrantes, inmigrantes, entidad y año. Guardamos la base con el nombre de migración y ya es posible **unir nuestras bases.**
-
-### D.Unión
-
-Recordemos que la última base utilizada fue *migración*, por lo que es la base de datos que el programa está usando actualmente, considerada como la base de datos en la memoria. Usando los comandos **“use” y “merge”** vamos a unir estás tablas por medio de las variables **“año” ,”edad”, “sexo” y “entidad”**. También limpiamos los valores nulos “.” , reemplazándolos por ceros.
-
-Para calcular la **tasa de fecundidad** se filtra la base de datos de tal manera que tengamos el total de mujeres en edades fértiles y nacimientos por año.  Posteriormente se calculan las medias por año y con la siguiente formulas obtenemos la tasa de fecundidad por año (nacimientos cada 1000 mujeres en edades fértiles). 
-
-<img src="https://render.githubusercontent.com/render/math?math=Tasa de fecundidad =\frac{Nacimientos}{Mujeres Fertiles}*1000">
-
-![tasa_fecundidad](images/Cap_1/tasa_fecundidad.PNG)
+![migracion](images/Poblacion/migracion.png)
 
 
 
-[^2]: Recordemos que el directorio fue definido en el inicio del código, los “..” al inicio de la dirección es para regresar un directorio de donde nos encontrábamos antes. Regresamos de la dirección “/TemplatesCIEP/simuladorCIEP” a la dirección “/Templates” para después ingresar a “../basesCIEP/CONAPO/”. 
-[^3]: Recordando que `c(sysdir_site)' contiene la dirección del directorio base.  
-[^4]: Se debe asumir una distribución uniforme de las variable de migración tanto en edad como en año. 
+### D. Unión
+1. Usando los comandos `use` y `merge`, **unimos las bases (temporales)** por medio de las variables año, edad, sexo y entidad. 
+2. **Limpiamos** los valores nulos (“.”) reemplazándolos por ceros y **renombramos** "República Mexicana" por "Nacional"
+3. **Agregamos**  los labels a las variables.
+4. **Calculamos la tasa de fecundidad** filtrando la base para tener el total de mujeres en edades fértiles y de los nacimientos por año (edad 0). Posteriormente, se calculan las medias por año y la tasa de fecundidad por año (nacimientos cada 1000 mujeres en edades fértiles).
+5. Finalmente, **guardamos la base final** en "c(sysdir_site)/SIM/Poblacion.dta" y en  "c(sysdir_site)/SIM/Poblaciontot.dta"[^3]
 
-[Github]:https://github.com/
-[simuladorCIEP]:https://github.com/rcantuc/simuladorCIEP
+[^3]: Por la diversidad de versiones disponibles de Stata, se guardan las bases en versión 13.
+
+![union](images/Poblacion/union.png)
 
 
 
 
 
-## Poblacion.ado
-asdf
+## 2. Poblacion.ado
+Es un *ado-file* (`.ado`) para automatizar el procesamiento de resultados. Antes de iniciar, el comando verifica la existencia de la base `Poblacion.dta`. Si no existe, se ejecuta el do-file `UpdatePoblacion.do`. También revisa la existencia del scalar `aniovp`.
+
+![paso0](images/Poblacion/Paso 0.png)
+
+
+
+### Objetivos
+1. **Graficar la pirámide demográfica** por edades y para el año inicial y final.
+2. **Graficar la transición demográfica** por grupo de edades y años.
+
+
+
+### 1. Sintaxis
+`Poblacion [if] [, ANIOhoy(int) ANIOFINal(int) NOGraphs UPDATE]`
+
+* **aniohoy**: año base para los resultados. El *año actual* es el valor por default.
+* **aniofinal**: año final para las proyecciones. El último año de la serie es el valor por default.
+* **nographs**: evita la generación de las gráficas (para mayor rapidez).
+* **update**: ejecuta el do-file `UpdatePoblacion.do`.
+
+![paso1](images/Poblacion/Paso 1.png)
+
+
+
+### 2. Base de datos y display inicial
+Abre la base de datos `Poblacion.dta` y despliega la población del año inicial y del año final.
+
+![paso2](images/Poblacion/Paso 2.png)
+
+
+
+### 3. Resultado: Gráficas demográficas
+Estos son ejemplos de los resultados que arroja el comando `Poblacion.ado`.
+
+![paso3a](images/Poblacion/P_2022_2050_Nacional.png)
+![paso3b](images/Poblacion/E_Nacional.png)
+
