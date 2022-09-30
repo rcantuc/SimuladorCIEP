@@ -1,18 +1,19 @@
-*! Poblacion.ado: 4 de diciembre de 2019. Autor: Ricardo Cantú
+*!*******************************************
+*!***                                    ****
+*!***    Poblacion y defunciones         ****
+*!***    CONAPO                          ****
+*!***    Autor: Ricardo                  ****
+*!***    Fecha: 29/Sept/22               ****
+*!***                                    ****
+*!*******************************************
 program define Poblacion
 quietly {
-
 	timer on 14
 
 	** 0.1 Revisa si se puede usar la base de datos **
 	capture use `"`c(sysdir_site)'/SIM/$pais/Poblacion.dta"', clear
 	if _rc != 0 {
-		if "$pais" == "" {
-			noisily run `"`c(sysdir_site)'/UpdatePoblacion.do"'
-		}
-		else {
-			run `"`c(sysdir_site)'/UpdatePoblacionMundial.do"'
-		}
+		noisily run `"`c(sysdir_site)'/UpdatePoblacion`=subinstr("${pais}"," ","",.)'.do"'
 	}
 
 	** 0.2 Revisa si existe el scalar aniovp **
@@ -34,12 +35,7 @@ quietly {
 
 	* Si la opción "update" es llamada, ejecuta el do-file UpdatePoblacion.do *
 	if "`update'" == "update" {
-		if "$pais" == "" {
-			noisily run `"`c(sysdir_site)'/UpdatePoblacion.do"'
-		}
-		else {
-			run `"`c(sysdir_site)'/UpdatePoblacionMundial.do"'
-		}
+		noisily run `"`c(sysdir_site)'/UpdatePoblacion`=subinstr("${pais}"," ","",.)'.do"'
 	}
 
 	* if default *
@@ -83,6 +79,7 @@ quietly {
 	*** 3. Gráfica Pirámide ***
 	***************************
 	if "`nographs'" != "nographs" & "$nographs" == "" {
+		preserve
 		local poblacion : variable label poblacion
 		local entidadGName = "`=entidad[1]'"
 		local entidadGName = strtoname("`entidadGName'")
@@ -267,7 +264,6 @@ quietly {
 			g pob61 = poblacionSIM if edad >= 61
 		}
 
-		preserve
 		collapse (sum) pob18 pob1934 pob3560 pob61 poblacion*, by(anio entidad)
 		format poblacion pob* %15.0fc
 
