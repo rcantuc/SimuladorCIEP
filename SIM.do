@@ -30,8 +30,8 @@ if "`c(os)'" == "Unix" & "`c(username)'" == "ciepmx" {                          
 ***                   ***
 *************************
 global id "`c(username)'"
-global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
-global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
+*global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
+*global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
 *local update "update"                                                          // UPDATE DATASETS
 *global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"                 // EXPORTAR IMAGENES EN...
 noisily run "`c(sysdir_site)'/PARAM.do"                                         // PARÁMETROS PE 2023
@@ -51,7 +51,7 @@ noisily Poblacion, aniofinal(`=scalar(anioend)') //`update'
 ***                          ***
 ***    3. CRECIMIENTO PIB    ***
 ***                          ***
-/********************************
+********************************
 noisily PIBDeflactor, `update' geodef(2013) geopib(2013)
 noisily SCN, `update'
 noisily Inflacion, `update'
@@ -73,7 +73,7 @@ noisily run `"`c(sysdir_site)'/PerfilesSim.do"' `=aniovp'
 ***                         ***
 ***    5. SISTEMA FISCAL    ***
 ***                         ***
-*******************************
+/*******************************
 
 *noisily PEF, by(divPE) rows(2) min(0) `update'
 noisily GastoPC
@@ -105,7 +105,7 @@ noisily TasasEfectivas
 ***                        ***
 ***    6. CICLO DE VIDA    ***
 ***                        ***
-******************************
+/******************************
 use `"`c(sysdir_site)'/users/$pais/$id/households.dta"', clear
 capture drop AportacionesNetas
 g AportacionesNetas = ISRASSIM + ISRPFSIM + CUOTASSIM + ISRPMSIM /// + OTROSKSIM ///

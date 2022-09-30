@@ -8,7 +8,8 @@ noisily di in g "  Updating PIBDeflactor.dta..." _newline
 *** 1 BASES ***
 ***************
 
-* 1.1.1. Importar y limpiar la base de datos INEGI/BIE: PIB *
+** 1.1 PIB **
+* 1.1.1. Importar y limpiar la base de datos *
 import excel "`=c(sysdir_site)'/bases/UPDATE/SCN/PIB.xlsx", clear
 LimpiaBIE
 
@@ -37,7 +38,9 @@ tempfile PIB
 save `PIB'
 
 
-* 1.2.1. Importar y limpiar la base de datos INEGI/BIE: Índice de precios (deflactor) *
+
+** 1.2 Índice de precios y su deflactor *
+* 1.2.1. Importar y limpiar la base de datos *
 import excel "`=c(sysdir_site)'/bases/UPDATE/SCN/deflactor.xlsx", clear
 LimpiaBIE, nomult
 
@@ -55,7 +58,7 @@ rename periodo2 trimestre
 label var trimestre "trimestre"
 
 destring indiceQ, replace
-label var indiceQ "${I}ndice de Precios Impl${i}citos (trimestral)"
+label var indiceQ "Índice de Precios Implícitos (trimestral)"
 
 drop periodo
 order anio trimestre indiceQ
@@ -68,9 +71,10 @@ save `Deflactor', replace
 
 
 
-*************************
-*** 2 PIB + Deflactor ***
-*************************
+
+****************
+*** 2. Unión ***
+****************
 use (anio trimestre pibQ) using `PIB', clear
 merge 1:1 (anio trimestre) using `Deflactor', nogen keepus(indiceQ)
 
@@ -90,6 +94,7 @@ if `c(version)' > 13.1 {
 else {
 	save "`c(sysdir_site)'/SIM/PIBDeflactor.dta", replace
 }
+
 
 
 
@@ -119,10 +124,4 @@ if "$nographs" == "" {
 		note("{bf:{c U'}ltimo dato reportado}: `=anio[_N]' trim. `=trimestre[_N]'.") ///
 		caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
 		name(UpdatePIBDeflactor, replace)
-
-	* Exportar gráfica *
-	capture confirm existence $export
-	if _rc == 0 {
-		graph export "$export/var_indiceYH.png", replace name(var_indiceYH)
-	}
 }
