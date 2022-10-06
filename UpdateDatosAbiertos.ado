@@ -23,6 +23,7 @@ program define UpdateDatosAbiertos, return
 		}
 	}
 	noisily di _newline in g "Datos Abiertos: " in y "ACTUALIZANDO. Favor de esperar... (5 min. aprox.)"
+	noisily di in g "{c U'}ltimo dato: " in y "`=anio[_N]'m`=mes[_N]'."
 
 	*****************************************
 	** 1.1 Ingreso, gasto y financiamiento **
@@ -169,6 +170,8 @@ program define UpdateDatosAbiertos, return
 
 	label var anio "a{c n~}o"
 	label var monto "Monto nominal (pesos)"	
+	
+	collapse (mean) monto, by(anio* mes trimestre nombre clave_de_concepto tipo_de_informacion)
 
 	tempfile datosabiertos
 	save "`datosabiertos'"
@@ -199,6 +202,7 @@ program define UpdateDatosAbiertos, return
 	save "`isrinftrim'"
 
 	use if clave_de_concepto == "XNA0120" using "`datosabiertos'", clear
+	collapse (mean) monto, by(anio* mes trimestre nombre clave_de_concepto)
 	merge m:1 (anio trimestre) using "`isrinftrim'", nogen
 
 	tempvar prop_m prop_f prop_s

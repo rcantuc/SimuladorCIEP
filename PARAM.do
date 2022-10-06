@@ -72,6 +72,7 @@ global inf2026 = 3.0 //    CGPE 2023 (página 134)
 global inf2027 = 3.0 //    CGPE 2023 (página 134)
 global inf2028 = 3.0 //    CGPE 2023 (página 134)
 
+
 PIBDeflactor, nographs
 
 
