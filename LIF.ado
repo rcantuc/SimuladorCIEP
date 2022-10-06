@@ -86,10 +86,9 @@ quietly {
 	*** 3 Merge ***
 	***************
 	sort anio
-	merge m:1 (anio) using `PIB', nogen keepus(pibY indiceY deflator lambda var_pibY) ///
-		update replace keep(matched) sorted
-	capture sort anio mes
+	merge m:1 (anio) using `PIB', nogen keepus(pibY indiceY deflator lambda var_pibY) update replace keep(matched) sorted
 	
+	capture sort anio mes
 	capture keep `if'
 
 	*keep if anio >= 2002
@@ -313,52 +312,50 @@ quietly {
 	restore
 
 	** 4.4 Elasticidades **
-	*if "`by'" == "divGA" | "`by'" == "divCIEP" | "`by'" == "divSIM" {
-		noisily di _newline in g "{bf: D. Elasticidades:" in y " `=`anio'-9' - `anio'" in g ///
-			_col(44) %7s "Crec %G IngR" ///
-			_col(66) %7s "Crec %G pibYR" ///
-			_col(88) %7s "Elasticidad" "}"
+	noisily di _newline in g "{bf: D. Elasticidades:" in y " `=`anio'-9' - `anio'" in g ///
+		_col(44) %7s "Crec %G IngR" ///
+		_col(66) %7s "Crec %G pibYR" ///
+		_col(88) %7s "Elasticidad" "}"
 
-		g recaudacionR = recaudacion/deflator
+	g recaudacionR = recaudacion/deflator
 
-		tabstat recaudacionR recaudacionPIB if anio == `anio' & divLIF != 10, by(`resumido') stat(sum) f(%20.3fc) save missing
-		tempname mattot
-		matrix `mattot' = r(StatTotal)
+	tabstat recaudacionR recaudacionPIB if anio == `anio' & divLIF != 10, by(`resumido') stat(sum) f(%20.3fc) save missing
+	tempname mattot
+	matrix `mattot' = r(StatTotal)
+	local k = 1
+	while "`=r(name`k')'" != "." {
+		tempname mat`k'
+		matrix `mat`k'' = r(Stat`k')
+		local ++k
+	}
+
+	capture tabstat recaudacionR recaudacionPIB if anio == `anio'-9 & divLIF != 10, by(`resumido') stat(sum) f(%20.3fc) save missing
+	if _rc == 0 {
+		tempname mattot5
+		matrix `mattot5' = r(StatTotal)
 		local k = 1
 		while "`=r(name`k')'" != "." {
-			tempname mat`k'
-			matrix `mat`k'' = r(Stat`k')
+			tempname mat5`k'
+			matrix `mat5`k'' = r(Stat`k')
+			
+			if `mat`k''[1,1] != . & `mat5`k''[1,1] != . {
+				noisily di in g "  (+) `=r(name`k')'" ///
+					_col(44) in y %7.3fc (((`mat`k''[1,1]/`mat5`k''[1,1])^(1/9)-1)*100) in g "%" ///
+					_col(66) in y %7.3fc (((`pibYR`anio''/`pibYR`=`anio'-9'')^(1/9)-1)*100) in g "%" ///
+					_col(88) in y %7.3fc (((`mat`k''[1,1]/`mat5`k''[1,1])^(1/9)-1)*100)/ ///
+					(((`pibYR`anio''/`pibYR`=`anio'-9'')^(1/9)-1)*100)
+			}
 			local ++k
 		}
 
-		capture tabstat recaudacionR recaudacionPIB if anio == `anio'-9 & divLIF != 10, by(`resumido') stat(sum) f(%20.3fc) save missing
-		if _rc == 0 {
-			tempname mattot5
-			matrix `mattot5' = r(StatTotal)
-			local k = 1
-			while "`=r(name`k')'" != "." {
-				tempname mat5`k'
-				matrix `mat5`k'' = r(Stat`k')
-				
-				if `mat`k''[1,1] != . & `mat5`k''[1,1] != . {
-					noisily di in g "  (+) `=r(name`k')'" ///
-						_col(44) in y %7.3fc (((`mat`k''[1,1]/`mat5`k''[1,1])^(1/9)-1)*100) in g "%" ///
-						_col(66) in y %7.3fc (((`pibYR`anio''/`pibYR`=`anio'-9'')^(1/9)-1)*100) in g "%" ///
-						_col(88) in y %7.3fc (((`mat`k''[1,1]/`mat5`k''[1,1])^(1/9)-1)*100)/ ///
-						(((`pibYR`anio''/`pibYR`=`anio'-9'')^(1/9)-1)*100)
-				}
-				local ++k
-			}
-
-			noisily di in g _dup(95) "-"
-			noisily di in g "{bf:  (=) Ingresos totales" ///
-					_col(44) in y %7.3fc (((`mattot'[1,1]/`mattot5'[1,1])^(1/9)-1)*100) in g "%" ///
-					_col(66) in y %7.3fc (((`pibYR`anio''/`pibYR`=`anio'-9'')^(1/9)-1)*100) in g "%" ///
-					_col(88) in y %7.3fc (((`mattot'[1,1]/`mattot5'[1,1])^(1/9))*100)/ ///
-					(((`pibYR`anio''/`pibYR`=`anio'-9'')^(1/9))*100) "}"
-		}
-		drop recaudacionR
-	*}
+		noisily di in g _dup(95) "-"
+		noisily di in g "{bf:  (=) Ingresos totales" ///
+				_col(44) in y %7.3fc (((`mattot'[1,1]/`mattot5'[1,1])^(1/9)-1)*100) in g "%" ///
+				_col(66) in y %7.3fc (((`pibYR`anio''/`pibYR`=`anio'-9'')^(1/9)-1)*100) in g "%" ///
+				_col(88) in y %7.3fc (((`mattot'[1,1]/`mattot5'[1,1])^(1/9))*100)/ ///
+				(((`pibYR`anio''/`pibYR`=`anio'-9'')^(1/9))*100) "}"
+	}
+	drop recaudacionR
 
 
 
