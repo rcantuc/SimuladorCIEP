@@ -55,7 +55,7 @@ quietly {
 	merge 1:1 (anio) using `PIB', nogen keepus(pibY pibYR var_* Poblacion deflator) update replace
 	tsset anio
 
-	** 3.1 CGPE 2023 ** 
+	/** 3.1 CGPE 2023 ** 
 	replace shrfsp = 48.9/100*pibY if anio == 2022
 	replace shrfspInterno = 33.4/100*pibY if anio == 2022
 	replace shrfspExterno = 15.5/100*pibY if anio == 2022
@@ -147,10 +147,10 @@ quietly {
 	replace rfspAdecuacion = -0.3/100*pibY if anio == 2028
 	replace tipoDeCambio = 21.5 if anio == 2028
 
-	* Costo financiero *
+	* Costo financiero */
 	g porInterno = shrfspInterno/shrfsp
 	g porExterno = shrfspExterno/shrfsp
-	replace costodeudaInterno = 3.1/100*porInterno*pibY if anio == 2022
+	/*replace costodeudaInterno = 3.1/100*porInterno*pibY if anio == 2022
 	replace costodeudaExterno = 3.1/100*porExterno*pibY if anio == 2022
 	replace costodeudaInterno = 3.4/100*porInterno*pibY if anio == 2023
 	replace costodeudaExterno = 3.4/100*porExterno*pibY if anio == 2023
@@ -163,7 +163,7 @@ quietly {
 	replace costodeudaInterno = 2.8/100*porInterno*pibY if anio == 2027
 	replace costodeudaExterno = 2.8/100*porExterno*pibY if anio == 2027
 	replace costodeudaInterno = 2.7/100*porInterno*pibY if anio == 2028
-	replace costodeudaExterno = 2.7/100*porExterno*pibY if anio == 2028
+	replace costodeudaExterno = 2.7/100*porExterno*pibY if anio == 2028*/
 	
 	g tasaInterno = costodeudaInterno/shrfspInterno*100
 	g tasaExterno = costodeudaExterno/shrfspExterno*100
