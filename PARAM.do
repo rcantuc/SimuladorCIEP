@@ -73,7 +73,7 @@ global inf2027 = 3.0 //    CGPE 2023 (página 134)
 global inf2028 = 3.0 //    CGPE 2023 (página 134)
 
 
-PIBDeflactor, nographs
+*PIBDeflactor, nographs
 
 
 
@@ -129,7 +129,7 @@ scalar OTROSK  = (1.049/100*31401701274538*(1+-3.269*(${pib2023}-2.9676)/100))/s
 scalar IVA     = (4.520/100*31401701274538*(1+ 2.498*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // IVA: 4.520
 scalar ISAN    = (0.049/100*31401701274538*(1+ 3.565*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISAN: 0.049
 scalar IEPSNP  = (0.662/100*31401701274538*(1+ 0.362*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // IEPS (no petrolero): 0.887
-scalar IEPSP   =  0.887 								     // IEPS (petrolero): 0.662
+scalar IEPSP   =  0.887     // IEPS (petrolero): 0.662
 scalar IMPORT  = (0.313/100*31401701274538*(1+ 5.303*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Importaciones: 0.313
 
 scalar FMP     = (1.553/100*31401701274538*(1+-7.718*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Fondo Mexicano del Petróleo: 1.553

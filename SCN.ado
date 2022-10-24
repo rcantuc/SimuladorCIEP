@@ -1,14 +1,11 @@
-****************************************************
-***               ACTUALIZACIÓN                  *** 
-*** 1) abrir archivos .iqy en Excel de Windows   ***
-*** 2) guardar y reemplazar .xls dentro de       ***
-***      ./TemplateCIEP/basesCIEP/INEGI/SCN/     ***
-*** 3) correr SCN[.ado] con opci{c o'}n "update" ***
-****************************************************
-
-
-
-**** Sistema de Cuentas Nacionales ****
+*!*******************************************
+*!***                                    ****
+*!***    Sistema de Cuentas Nacionales   ****
+*!***    BIE/INEGI                       ****
+*!***    Autor: Ricardo                  ****
+*!***    Fecha: 17/Oct/22                ****
+*!***                                    ****
+*!*******************************************
 program define SCN, return
 quietly {
 	timer on 3
@@ -21,8 +18,8 @@ quietly {
 		local aniovp = scalar(aniovp)
 	}	
 
-	syntax [, ANIO(int `aniovp') NOGraphs UPDATE Discount(int 3)]
-	
+	syntax [, ANIO(int `aniovp') NOGraphs UPDATE]
+
 	noisily di _newline(2) in g _dup(20) "." "{bf:   Econom{c i'}a:" in y " SCN `anio'   }" in g _dup(20) "." _newline
 
 
@@ -32,7 +29,7 @@ quietly {
 	*****************************************************
 	capture confirm file "`c(sysdir_site)'/SIM/SCN.dta"
 	if _rc != 0 | "`update'" == "update" {
-		
+
 		noisily di in g "  Updating SCN.dta..." _newline
 
 		** D.1. Cuenta de generaci{c o'}n del ingreso **
@@ -293,7 +290,7 @@ quietly {
 
 	** D.8. PIBDeflactor **
 	*capture use "`c(sysdir_site)'/users/$pais/$id/PIB.dta", clear
-	PIBDeflactor, anio(`anio') discount(`discount') nographs nooutput
+	PIBDeflactor, anio(`anio') nographs nooutput
 	local anio_exo = r(anio_exo)
 	local except = r(except)
 	local exceptI = r(exceptI)
@@ -688,7 +685,7 @@ quietly {
 			text(`=`Depreciacion'[1]*.05' `=`latest'+(`anio_exo'-`latest')/2+.5' "{bf:$paqueteEconomico}", place(n) color(white)) ///
 			text(`=`Depreciacion'[1]*.05' `=anio[1]+.5' "{bf:Reportado}", place(ne) color(white)) ///
 			text(`=`Depreciacion'[1]*.05' `=anio[_N]-7.5' "{bf:Proyecci{c o'}n CIEP}", place(ne) color(white)) ///
-			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
+			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)' `anio') ///
 			ylabel(0(5)`=ceil(`DEPMAX'[1,1])+2.5', format(%20.0fc)) ///
 			ytitle(billones MXN `anio') ///
 			yscale(range(0)) xscale(range(1993)) ///
@@ -811,7 +808,7 @@ quietly {
 			text(`=`AhorroN'[1]*.05' `=`latest'+(`anio_exo'-`latest')/2+.5' "{bf:$paqueteEconomico}", place(n) color(white)) ///
 			text(`=`AhorroN'[1]*.05' `=anio[1]+.5' "{bf:Reportado}", place(ne) color(white)) ///
 			text(`=`AhorroN'[1]*.05' `=anio[_N]-7.5' "{bf:Proyecci{c o'}n CIEP}", place(ne) color(white)) ///
-			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)') ///
+			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)' `anio') ///
 			ylabel(0(5)`=ceil(`DEPMAX'[1,1])+2.5', format(%20.0fc)) ///
 			ytitle(billones MXN `anio') ///
 			yscale(range(0)) xscale(range(1993)) ///
@@ -823,6 +820,8 @@ quietly {
 			graph export "$export/PIB_UtilizacionIngreso.png", replace name(gdp_utilizacion)
 		}
 
+
+		/* Estructura económca *
 		tempvar FFFG OTRAE TOTAE HUae
 		egen `TOTAE' = rsum(Eae ADae AKae APae BDae FFae FGae FHae HFae HUae GOae ServProf IQae IRae JCae JLae KIae KUae LDae LTae)
 		egen `FFFG' = rsum(FFae FGae)
@@ -846,7 +845,7 @@ quietly {
 			note("{bf:{c U'}ltimo dato reportado}: `anio_last'.") ///
 			name(estructuraEco, replace)
 
-		/*g EAgricultura = `Eae'
+		g EAgricultura = `Eae'
 		g EMineria = `ADae'
 		g EEnergiaElectrica = `AKae'
 		g EConstruccion = `APae'
@@ -855,10 +854,10 @@ quietly {
 		g ETransportes = `FHae'
 		g EInmobiliarios = `HUae'
 		g EFinancieros = `HFae'
-		g EOtros = ``OTRAE''*/
+		g EOtros = ``OTRAE''
 
 
-		/* Sector económico *
+		* Sector económico *
 		tempvar primario secundario terciario
 		egen `primario' = rsum(Eae)
 		egen `secundario' = rsum(ADae AKae APae BDae)
@@ -893,10 +892,10 @@ quietly {
 		
 		g CPrimario = ``primario''
 		g CSecundario = ``secundario''
-		g CTerciario = ``terciario''*/
+		g CTerciario = ``terciario''
 
 		
-		/* Exportaciones e importaciones *
+		* Exportaciones e importaciones *
 		tempvar export import 
 		egen `export' = rsum(Tpb)
 		egen `import' = rsum(Jpb)
@@ -927,10 +926,10 @@ quietly {
 			xtitle("") name(impexp, replace)
 
 		g CExport = ``export''
-		g CImport = ``import''*/
+		g CImport = ``import''
 
 
-		/* Exportaciones por actividad económica *
+		* Exportaciones por actividad económica *
 		foreach k of varlist Cex Dex Eex Gex {
 			tempvar `k'
 			replace `k' = `k'/deflator
@@ -969,7 +968,7 @@ quietly {
 	}
 	
 
-
+	* Cuenta de consumo *
 	noisily di _newline in g "{bf: E. Cuenta: " in y "consumo (hogares e ISFLSH)" in g ///
 		_col(44) in g %20s "MXN" ///
 		_col(66) %7s "% PIB" "}" 
@@ -1316,7 +1315,6 @@ quietly {
 	noisily di in g "{bf:  (=) Producto Interno Bruto" ///
 		_col(44) in y %20.0fc PIB[`obs'] ///
 		_col(66) in y %7.3fc PIB[`obs']/PIB[`obs']*100 "}"
-
 
 	timer off 3
 	timer list 3
