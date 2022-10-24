@@ -11,7 +11,7 @@ Es un *do-file* (`.do`) para que se tenga la libertad de modificarlo, en caso de
 
 
 
-### Objetivos
+### Objetivo
 1. **Actualizar** la base de datos [`c(sysdir_site)/SIM/PIBDeflactor.dta`] con la información presente en los archivos[^1]:
     - `c(sysdir_site)/bases/UPDATE/SCN/PIB.xlsx`
     - `c(sysdir_site)/bases/UPDATE/SCN/deflactor.xlsx`

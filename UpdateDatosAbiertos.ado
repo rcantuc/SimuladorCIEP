@@ -10,9 +10,13 @@ program define UpdateDatosAbiertos, return
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 	local mesvp = substr(`"`=trim("`fecha'")'"',6,2)
+	
+	*if "`c(console)'" != "" {
+	*	exit
+	*}
 
 	capture use "`c(sysdir_site)'/SIM/DatosAbiertos.dta", clear
-	if _rc == 0 & "`update'" != "update" {	
+	if (_rc == 0 & "`update'" != "update") {	
 		sort anio mes
 		return local ultanio = anio[_N]
 		return local ultmes = mes[_N]

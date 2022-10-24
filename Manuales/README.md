@@ -1,17 +1,19 @@
-# Simulador Fiscal CIEP v5.3.x
+# Simulador Fiscal CIEP
 
-	Versión: 12 julio 2022. Último programador: Ricardo
+Versión: 12 julio 2022.
+
 
 **¡Bienvenidxs al equipo!**
 
-El **Simulador Fiscal CIEP** está actualmente programado en `Stata` (versiones 13+). Sin embargo, se espera incorporar otros programas, como `R`, para hacerlo más flexible. Es una herramienta que pretende ser eventualmente comunitaria y participativa para que sea utilizada para fines didácticos y analíticos.
+El **Simulador Fiscal CIEP** está actualmente programado en `Stata` (versiones 13+). Sin embargo, se espera incorporar otros programas (e.g. `R`, `Python`) para hacerlo más flexible y rápido. Es una herramienta que pretende ser comunitaria y participativa para que sea utilizada para fines pedagógicos y analíticos.
+
 
 ---
 
 ## Empezar a colaborar
 
 1. **Instalar** el programa `Github Desktop` desde [Github.com](https://desktop.github.com/).
-2. **Clonar** el repositorio del Simulador Fiscal CIEP.
+2. **Clonar** el repositorio del `Simulador Fiscal CIEP`.
 
     1. **Buscar** el repositorio [SimuladorCIEP](https://github.com/rcantuc/simuladorCIEP) dentro de la aplicación de escritorio de Github.
 
@@ -27,14 +29,15 @@ El **Simulador Fiscal CIEP** está actualmente programado en `Stata` (versiones 
 
 4. **Abrir** el archivo `SIM.do`. Es el *do-file* que arranca, genera, controla y modifica los parámetros de cada **simulación**[^1].
 
-    ![open_SIM](images/Cap_0/open_SIM.png)
+    ![open_SIM](images/Cap_0/open_SIM.PNG)
 
 5. **Definir** el directorio `SITE` (donde se programará) dentro de `SIM.do`. Agregar el número de computadoras alternativas o secundarias desde donde se programará. Recordar que la dirección debe ser la misma donde se clonó el repositorio.
 
-    ![sysdir](images/Cap_0/sysdir.png)
+    ![sysdir](images/Cap_0/sysdir.PNG)
 
 
 ---
+
 ## Opciones globales de `SIM.do`
 
 ### Comandos para limpiar el ambiente 
