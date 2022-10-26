@@ -40,7 +40,6 @@ if "`c(username)'" == "ciepmx" & "`c(console)'" == "console" {                  
 *global update "update"                                                         // UPDATE DATASETS/OUTPUTS
 global output "output"                                                          // IMPRIMIR OUTPUTS (WEB)
 global nographs "nographs"                                                      // SUPRIMIR GRAFICAS
-noisily run "`c(sysdir_site)'/PARAM.do".                                       // PARÁMETROS (PE 2023)
 
 
 
@@ -58,6 +57,7 @@ if "$output" == "output" {
 	quietly log using `"`c(sysdir_site)'/users/$id/output.txt"', replace text name(output)
 	quietly log off output
 }
+noisily run "`c(sysdir_site)'/PARAM.do".                                       // PARÁMETROS (PE 2023)
 
 
 
