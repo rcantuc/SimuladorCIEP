@@ -45,19 +45,16 @@ global nographs "nographs"                                                      
 
 
 
-****************************************
-***                                  ***
-***    2. DIRECTORIOS DEL USUARIO    ***
-***                                  ***
-****************************************
-capture mkdir `"`c(sysdir_site)'/SIM/"'
-capture mkdir `"`c(sysdir_site)'/users/"'
-capture mkdir `"`c(sysdir_site)'/users/$id/"'
+*****************************************************
+***                                               ***
+***    2. DIRECTORIOS Y PARÁMETROS DEL USUARIO    ***
+***                                               ***
+*****************************************************
+noisily run "`c(sysdir_site)'/PARAM.do".                                       // PARÁMETROS (PE 2023)
 if "$output" == "output" {
 	quietly log using `"`c(sysdir_site)'/users/$id/output.txt"', replace text name(output)
 	quietly log off output
 }
-noisily run "`c(sysdir_site)'/PARAM.do".                                       // PARÁMETROS (PE 2023)
 
 
 
