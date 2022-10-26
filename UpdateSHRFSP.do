@@ -12,7 +12,7 @@ if "$pais" != "" {
 ** 1 SHRFSP **
 **************
 noisily di _newline(2) in g "{bf: Saldo de la deuda} en millones de pesos"
-noisily DatosAbiertos SHRF5000
+noisily DatosAbiertos SHRF5000, nog
 keep anio mes monto mes
 rename monto shrfsp
 tempfile shrfsp
@@ -20,7 +20,7 @@ save "`shrfsp'"
 
 
 ** Interno **
-noisily DatosAbiertos SHRF5100
+noisily DatosAbiertos SHRF5100, nog
 keep anio mes monto mes
 rename monto shrfspInterno
 tempfile interno
@@ -28,7 +28,7 @@ save "`interno'"
 
 
 ** Externo **
-noisily DatosAbiertos SHRF5200
+noisily DatosAbiertos SHRF5200, nog
 keep anio mes monto mes
 rename monto shrfspExterno
 tempfile externo
@@ -40,7 +40,7 @@ save "`externo'"
 ** 2 Balance público (Endeudamiento) **
 ***************************************
 noisily di _newline(2) in g "{bf: Endeudamiento público} en millones de pesos"
-noisily DatosAbiertos XAA
+noisily DatosAbiertos XAA, nog
 keep anio mes monto
 rename monto balancepublico
 tempfile balancepublico
@@ -48,7 +48,7 @@ save "`balancepublico'"
 
 
 ** Endeudamiento presupuestario **
-noisily DatosAbiertos XAA10
+noisily DatosAbiertos XAA10, nog
 keep anio mes monto
 rename monto presupuestario
 tempfile presupuestario
@@ -56,7 +56,7 @@ save "`presupuestario'"
 
 
 ** Endeudamiento no presupuestario **
-noisily DatosAbiertos XAA20
+noisily DatosAbiertos XAA20, nog
 keep anio mes monto
 rename monto nopresupuestario
 tempfile nopresupuestario
@@ -69,7 +69,7 @@ save "`nopresupuestario'"
 ******************************************
 noisily di _newline(2) in g "{bf: Endeudamiento presupuestario} en millones de pesos"
 ** Gobierno Federal **
-noisily DatosAbiertos XAA11
+noisily DatosAbiertos XAA11, nog
 keep anio mes monto
 rename monto gobiernofederal
 tempfile gobiernofederal
@@ -77,7 +77,7 @@ save "`gobiernofederal'"
 
 
 ** Pemex **
-noisily DatosAbiertos XAA1210
+noisily DatosAbiertos XAA1210, nog
 keep anio mes monto
 rename monto pemex
 tempfile pemex
@@ -85,7 +85,7 @@ save "`pemex'"
 
 
 ** CFE **
-noisily DatosAbiertos XOA0101
+noisily DatosAbiertos XOA0101, nog
 keep anio mes monto
 rename monto cfe
 tempfile cfe
@@ -93,7 +93,7 @@ save "`cfe'"
 
 
 ** IMSS **
-noisily DatosAbiertos XOA0105
+noisily DatosAbiertos XOA0105, nog
 keep anio mes monto
 rename monto imss
 tempfile imss
@@ -101,7 +101,7 @@ save "`imss'"
 
 
 ** ISSSTE **
-noisily DatosAbiertos XOA0106
+noisily DatosAbiertos XOA0106, nog
 keep anio mes monto
 rename monto issste
 tempfile issste
@@ -113,7 +113,7 @@ save "`issste'"
 ** 3 Costo financiero de la deuda **
 ************************************
 noisily di _newline(2) in g "{bf: Costo financiero de la deuda} en millones de pesos"
-noisily DatosAbiertos XAC21
+noisily DatosAbiertos XAC21, nog
 keep anio mes monto
 rename monto costofinanciero
 tempfile costofinanciero
@@ -121,7 +121,7 @@ save "`costofinanciero'"
 
 
 ** Gobierno Federal **
-noisily DatosAbiertos XBC21
+noisily DatosAbiertos XBC21, nog
 keep anio mes monto
 rename monto costogobiernofederal
 tempfile costogobiernofederal
@@ -129,7 +129,7 @@ save "`costogobiernofederal'"
 
 
 ** Pemex **
-noisily DatosAbiertos XOA0160
+noisily DatosAbiertos XOA0160, nog
 keep anio mes monto
 rename monto costopemex
 tempfile costopemex
@@ -137,7 +137,7 @@ save "`costopemex'"
 
 
 ** CFE **
-noisily DatosAbiertos XOA0162
+noisily DatosAbiertos XOA0162, nog
 keep anio mes monto
 rename monto costocfe
 tempfile costocfe
@@ -149,7 +149,7 @@ save "`costocfe'"
 ****************************
 ** 2 RFSP (Endeudamiento) **
 ****************************
-noisily DatosAbiertos RF000000SPFCS
+noisily DatosAbiertos RF000000SPFCS, nog
 keep anio mes monto
 rename monto rfsp
 replace rfsp = -rfsp
@@ -158,44 +158,44 @@ save "`rfsp'"
 
 
 ** Endeudamiento presupuestario **
-noisily DatosAbiertos RF000001SPFCS
+noisily DatosAbiertos RF000001SPFCS, nog
 keep anio mes monto
 rename monto rfspBalance
 tempfile Balance
 save "`Balance'"
 
 
-noisily DatosAbiertos RF000002SPFCS			// PIDIREGAS
+noisily DatosAbiertos RF000002SPFCS, nog			// PIDIREGAS
 keep anio mes monto
 rename monto rfspPIDIREGAS
 tempfile PIDIREGAS
 save "`PIDIREGAS'"
 
-noisily DatosAbiertos RF000003SPFCS			// IPAB
+noisily DatosAbiertos RF000003SPFCS, nog			// IPAB
 keep anio mes monto
 rename monto rfspIPAB
 tempfile IPAB
 save "`IPAB'"
 
-noisily DatosAbiertos RF000004SPFCS			// FONADIN
+noisily DatosAbiertos RF000004SPFCS, nog			// FONADIN
 keep anio mes monto
 rename monto rfspFONADIN
 tempfile FONADIN
 save "`FONADIN'"
 
-noisily DatosAbiertos RF000005SPFCS			// Programa de deudores
+noisily DatosAbiertos RF000005SPFCS, nog			// Programa de deudores
 keep anio mes monto
 rename monto rfspDeudores
 tempfile Deudores
 save "`Deudores'"
 
-noisily DatosAbiertos RF000006SPFCS			// Banca de desarrollo
+noisily DatosAbiertos RF000006SPFCS, nog			// Banca de desarrollo
 keep anio mes monto
 rename monto rfspBanca
 tempfile Banca
 save "`Banca'"
 
-noisily DatosAbiertos RF000007SPFCS			// Adecuaciones presupuestarias
+noisily DatosAbiertos RF000007SPFCS, nog			// Adecuaciones presupuestarias
 keep anio mes monto
 rename monto rfspAdecuaciones
 tempfile Adecuaciones
@@ -207,13 +207,13 @@ save "`Adecuaciones'"
 **********************
 ** 3 Tipo de cambio **
 **********************
-noisily DatosAbiertos XET30				// pesos
+noisily DatosAbiertos XET30, nog				// pesos
 keep anio mes monto
 rename monto deudaMXN		
 tempfile MXN
 save "`MXN'"
 
-noisily DatosAbiertos XET40				// d{c o'}lares
+noisily DatosAbiertos XET40, nog				// d{c o'}lares
 keep anio mes monto
 rename monto deudaUSD
 tempfile USD
@@ -237,13 +237,13 @@ collapse (sum) costodeudaInterno=gastoneto, by(anio)
 tempfile costodeudaI
 save "`costodeudaI'"*/
 
-noisily DatosAbiertos XOA0155			// costo deuda interna
+noisily DatosAbiertos XOA0155, nog			// costo deuda interna
 keep anio mes monto
 rename monto costodeudaInterno
 tempfile costodeudaII
 save "`costodeudaII'"
 
-noisily DatosAbiertos XOA0156			// costo deuda externa
+noisily DatosAbiertos XOA0156, nog			// costo deuda externa
 keep anio mes monto
 rename monto costodeudaExterno
 tempfile costodeudaEE

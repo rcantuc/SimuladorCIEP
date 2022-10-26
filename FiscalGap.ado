@@ -66,7 +66,7 @@ quietly {
 
 			capture use `"`c(sysdir_site)'/users/$pais/$id/`divSIM2`k''REC.dta"', clear
 			if _rc != 0 {
-				 use `"`c(sysdir_site)'/users/$pais/$id/bootstraps/1/`divSIM2`k''REC.dta"', clear
+				 use `"`c(sysdir_site)'/users/$pais/ciepmx/bootstraps/1/`divSIM2`k''REC.dta"', clear
 			}
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion, by(anio modulo aniobase)
@@ -89,7 +89,7 @@ quietly {
 
 			capture use `"`c(sysdir_site)'/users/$pais/$id/`divSIM2`k''REC.dta"', clear
 			if _rc != 0 {
-				 use `"`c(sysdir_site)'/users/$pais/$id/bootstraps/1/`divSIM2`k''REC.dta"', clear
+				 use `"`c(sysdir_site)'/users/$pais/ciepmx/bootstraps/1/`divSIM2`k''REC.dta"', clear
 			}
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion, by(anio modulo aniobase)
@@ -112,7 +112,7 @@ quietly {
 
 			capture use `"`c(sysdir_site)'/users/$pais/$id/`divSIM2`k''REC.dta"', clear
 			if _rc != 0 {
-				 use `"`c(sysdir_site)'/users/$pais/$id/bootstraps/1/`divSIM2`k''REC.dta"', clear
+				 use `"`c(sysdir_site)'/users/$pais/ciepmx/bootstraps/1/`divSIM2`k''REC.dta"', clear
 			}
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion, by(anio modulo aniobase)
@@ -135,7 +135,7 @@ quietly {
 
 			capture use `"`c(sysdir_site)'/users/$pais/$id/`divSIM2`k''REC.dta"', clear
 			if _rc != 0 {
-				 use `"`c(sysdir_site)'/users/$pais/$id/bootstraps/1/`divSIM2`k''REC.dta"', clear
+				 use `"`c(sysdir_site)'/users/$pais/ciepmx/bootstraps/1/`divSIM2`k''REC.dta"', clear
 			}
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion, by(anio modulo aniobase)
@@ -289,7 +289,7 @@ quietly {
 
 			capture use `"`c(sysdir_site)'/users/$pais/$id/EducacionREC.dta"', clear
 			if _rc != 0 {
-				use `"`c(sysdir_site)'/users/$pais/$id/bootstraps/1/EducacionREC.dta"', clear			
+				use `"`c(sysdir_site)'/users/$pais/ciepmx/bootstraps/1/EducacionREC.dta"', clear			
 			}
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
@@ -318,7 +318,7 @@ quietly {
 
 			capture use `"`c(sysdir_site)'/users/$pais/$id/PensionREC.dta"', clear
 			if _rc != 0 {
-				use `"`c(sysdir_site)'/users/$pais/$id/bootstraps/1/PensionREC.dta"', clear			
+				use `"`c(sysdir_site)'/users/$pais/ciepmx/bootstraps/1/PensionREC.dta"', clear			
 			}
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
@@ -347,7 +347,7 @@ quietly {
 
 			capture use `"`c(sysdir_site)'/users/$pais/$id/PenBienestarREC.dta"', clear
 			if _rc != 0 {
-				use `"`c(sysdir_site)'/users/$pais/$id/bootstraps/1/PenBienestarREC.dta"', clear
+				use `"`c(sysdir_site)'/users/$pais/ciepmx/bootstraps/1/PenBienestarREC.dta"', clear
 			}
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
@@ -376,7 +376,7 @@ quietly {
 
 			capture use `"`c(sysdir_site)'/users/$pais/$id/SaludREC.dta"', clear
 			if _rc != 0 {
-				use `"`c(sysdir_site)'/users/$pais/$id/bootstraps/1/SaludREC.dta"', clear			
+				use `"`c(sysdir_site)'/users/$pais/ciepmx/bootstraps/1/SaludREC.dta"', clear			
 			}
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
@@ -405,7 +405,7 @@ quietly {
 
 			capture use `"`c(sysdir_site)'/users/$pais/$id/OtrosGasREC.dta"', clear
 			if _rc != 0 {
-				use `"`c(sysdir_site)'/users/$pais/$id/bootstraps/1/OtrosGasREC.dta"', clear
+				use `"`c(sysdir_site)'/users/$pais/ciepmx/bootstraps/1/OtrosGasREC.dta"', clear
 			}
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
@@ -438,7 +438,7 @@ quietly {
 	preserve
 	capture use `"`c(sysdir_site)'/users/$pais/$id/IngBasicoREC"', clear
 	if _rc != 0 {
-		use `"`c(sysdir_site)'/users/$pais/$id/bootstraps/1/IngBasicoREC.dta"', clear
+		use `"`c(sysdir_site)'/users/$pais/ciepmx/bootstraps/1/IngBasicoREC.dta"', clear
 	}
 	merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 	collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)

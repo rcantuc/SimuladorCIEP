@@ -6,6 +6,14 @@
 ***   3) correr PIBDeflactor[.ado] con opción "update" ***
 **********************************************************
 
+global inf2022 = 7.7 //    CGPE 2023 (página 134)
+global inf2023 = 3.2 //    CGPE 2023 (página 134)
+global inf2024 = 3.0 //    CGPE 2023 (página 134)
+global inf2025 = 3.0 //    CGPE 2023 (página 134)
+global inf2026 = 3.0 //    CGPE 2023 (página 134)
+global inf2027 = 3.0 //    CGPE 2023 (página 134)
+global inf2028 = 3.0 //    CGPE 2023 (página 134)
+
 **** Inflacion ****
 program define Inflacion, return
 quietly {

@@ -97,6 +97,7 @@ if _rc != 0 {
 	append using "`c(sysdir_site)'/bases/INEGI/`enigh'/`enighanio'/gastohogar.dta"
 	append using "`c(sysdir_site)'/bases/INEGI/`enigh'/`enighanio'/gastotarjetas.dta"
 	append using "`c(sysdir_site)'/bases/INEGI/`enigh'/`enighanio'/erogaciones.dta"
+	replace numren = "01" if clave >= "M007" & clave <= "M009"		// Adquisicion de vehiculos (jefe del hogar)
 
 	** MI.2. Variables sociodemograficas **
 	merge m:1 (folioviv foliohog numren) using "`c(sysdir_site)'/bases/INEGI/`enigh'/`enighanio'/poblacion.dta", keepus(tipoesc sexo edad) nogen
@@ -362,7 +363,6 @@ if _rc != 0 {
 
 	** MI.15. Supuestos **
 	g informal = lugar_comp == "01" | lugar_comp == "02" | lugar_comp == "03" | lugar_comp == "17"	// Informalidad
-	replace numren = "01" if clave >= "M007" & clave <= "M009"			// Adquisicion de vehiculos (jefe del hogar)
 
 	** MI.16. Sexo **
 	destring sexo, replace
@@ -389,6 +389,7 @@ if _rc != 0 {
 *** 3. Precio, IVA, IEPS (P) ***
 ********************************
 use "`c(sysdir_site)'/SIM/`enighanio'/preconsumption.dta", clear
+sample 5
 replace informal = lugar_comp == "01" | lugar_comp == "02" | lugar_comp == "03" | lugar_comp == "17"	// Informalidad
 
 
@@ -912,7 +913,7 @@ foreach categ of varlist categ categ_iva {
 	preserve
 	levelsof `categ', l(levelscateg)
 
-	collapse (sum) gasto_anual IVA IEPS (max) factor sexo edad alfa tot_integ (mean) proporcion, by(folioviv foliohog numren `categ')
+	collapse (sum) gasto_anual IVA IEPS (max) factor tot_integ sexo edad alfa (mean) proporcion, by(folioviv foliohog numren `categ')
 	capture reshape wide gasto_anual IVA IEPS proporcion, i(folioviv foliohog numren) j(`categ') string
 	if _rc != 0 {
 		reshape wide gasto_anual IVA IEPS proporcion, i(folioviv foliohog numren) j(`categ')

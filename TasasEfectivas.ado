@@ -384,58 +384,7 @@ quietly {
 
 
 
-	*************/
-	*** OUTPUT ***
-	**************
-	if "$output" == "output" {
-		quietly log on output
-		noisily di in w "INGRESOSPIB: " in w "["  ///
-			%8.3f scalar(ISRAS) ", " ///
-			%8.3f scalar(ISRPF) ", " ///
-			%8.3f scalar(CUOTAS) ", " ///
-			%8.3f scalar(ISRAS)+scalar(ISRPF)+scalar(CUOTAS) ", " ///
-			%8.3f scalar(ISRPM) ", " ///
-			%8.3f scalar(OTROSK) ", " ///
-			%8.3f scalar(ISRPM)+scalar(OTROSK) ", " ///
-			%8.3f scalar(IVA) ", " ///
-			%8.3f scalar(ISAN) ", " ///
-			%8.3f scalar(IEPSNP) ", " ///
-			%8.3f scalar(IEPSP) ", " ///
-			%8.3f scalar(IMPORT) ", " ///
-			%8.3f scalar(IVA)+scalar(ISAN)+scalar(IEPSNP)+scalar(IEPSP)+scalar(IMPORT) ", " ///
-			%8.3f scalar(IMSS) ", " ///
-			%8.3f scalar(ISSSTE) ", " ///
-			%8.3f scalar(FMP) ", " ///
-			%8.3f scalar(PEMEX) ", " ///
-			%8.3f scalar(CFE) ", " ///
-			%8.3f scalar(IMSS)+scalar(ISSSTE)+scalar(FMP)+scalar(PEMEX)+scalar(CFE) ", " ///
-			%8.3f scalar(ISRAS)+scalar(ISRPF)+scalar(CUOTAS)+scalar(ISRPM)+scalar(OTROSK)+scalar(IVA)+scalar(ISAN)+scalar(IEPSNP)+scalar(IEPSP)+scalar(IMPORT)+scalar(IMSS)+scalar(ISSSTE)+scalar(FMP)+scalar(PEMEX)+scalar(CFE) ///
-		"]"
-		noisily di in w "INGRESOSTEF: " in w "["  ///
-			%8.3f scalar(ISRAS)/RemSalPIB*100 ", " ///
-			%8.3f scalar(ISRPF)/MixLPIB*100 ", " ///
-			%8.3f scalar(CUOTAS)/(RemSalPIB+SSImputadaPIB+SSEmpleadoresPIB)*100 ", " ///
-			%8.3f (scalar(ISRPM)+scalar(OTROSK))/YlPIB*100 ", " ///
-			%8.3f scalar(ISRPM)/ExNOpSocPIB*100 ", " ///
-			%8.3f scalar(OTROSK)/ExNOpSocPIB*100 ", " ///
-			%8.3f (scalar(ISRPM)+scalar(OTROSK))/CapIncImpPIB*100 ", " ///
-			%8.3f scalar(IVA)/(ConHogPIB-AlimPIB-BebNPIB-SaluPIB)*100 ", " ///
-			%8.3f scalar(ISAN)/VehiPIB*100 ", " ///
-			%8.3f scalar(IEPSNP)/ConHogPIB*100 ", " ///
-			%8.3f scalar(IEPSP)/ConHogPIB*100 ", " ///
-			%8.3f scalar(IMPORT)/ConHogPIB*100 ", " ///
-			%8.3f ((IVA)+scalar(ISAN)+scalar(IEPSNP)+scalar(IEPSP)+scalar(IMPORT))/ConHogPIB*100 ", " ///
-			%8.3f scalar(IMSS)/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 ", " ///
-			%8.3f scalar(ISSSTE)/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 ", " ///
-			%8.3f scalar(FMP)/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 ", " ///
-			%8.3f scalar(PEMEX)/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 ", " ///
-			%8.3f scalar(CFE)/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 ", " ///
-			%8.3f (scalar(IMSS)+scalar(ISSSTE)+scalar(FMP)+scalar(PEMEX)+scalar(CFE))/CapIncImpPIB*100 ///
-		"]"
-		quietly log off output
-	}
-
-	/** DATOS ABIERTOS **
+	** DATOS ABIERTOS **
 	if "$export" != "" & "$nographs" != "nograhs" & "$pais" == "" {
 		DatosAbiertos XNA0120_s, g pibvp(`=ISRAS')   	//    ISR salarios
 		DatosAbiertos XNA0120_f, g pibvp(`=ISRPF')    	//    ISR PF

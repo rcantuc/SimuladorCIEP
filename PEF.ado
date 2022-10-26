@@ -29,7 +29,7 @@ quietly {
 
 	capture confirm scalar aniovp
 	if _rc == 0 {
-			local aniovp = scalar(aniovp)
+		local aniovp = scalar(aniovp)
 	}	
 
 
@@ -325,7 +325,7 @@ quietly {
 		_col(66) %7s "Dif pts" ///
 		_col(77) %7s "Dif %" "}"
 
-	tabstat gasto gastoPIB if anio == `anio'-1, by(`resumido') stat(sum) f(%20.1fc) missing save
+	capture tabstat gasto gastoPIB if anio == `anio'-1, by(`resumido') stat(sum) f(%20.1fc) missing save
 	tempname mattot
 	matrix `mattot' = r(StatTotal)
 
