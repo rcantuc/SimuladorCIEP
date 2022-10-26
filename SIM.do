@@ -36,12 +36,11 @@ if "`c(username)'" == "ciepmx" & "`c(console)'" == "console" {                  
 ***    1. OPCIONES    ***
 ***                   ***
 *************************
-global id = "`c(username)'"                                                     // ID DEL USUARIO
 *global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"                 // EXPORTAR IMAGENES EN...
 *global update "update"                                                         // UPDATE DATASETS/OUTPUTS
 global output "output"                                                          // IMPRIMIR OUTPUTS (WEB)
 global nographs "nographs"                                                      // SUPRIMIR GRAFICAS
-noisily run "`c(sysdir_site)'/PE2023.do".                                       // PARÁMETROS (PE 2023)
+noisily run "`c(sysdir_site)'/PARAM.do".                                       // PARÁMETROS (PE 2023)
 
 
 
