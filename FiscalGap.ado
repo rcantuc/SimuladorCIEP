@@ -852,6 +852,12 @@ quietly {
 	noisily di in g "  (*) Tasa Efectiva Promedio: " in y _col(35) %25.4fc `tasaEfectiva_ari'[1,1] in g " %"
 	noisily di in g "  (*) Growth rate LP:" in y _col(35) %25.4fc `grow_rate_LR' in g " %"
 	noisily di in g "  (*) Discount rate:" in y _col(35) %25.4fc `discount' in g " %"
+	capture log on output
+	noisily di in w "PROYSHRFSP3: [" ///
+		%10.0f -(-`shrfsp'[1,1])/(`poblacionACT'[1,1]) "," ///
+		%10.0f -(-`shrfsp'[1,1] + `estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1])/(`poblacionVP'[1,1]+`poblacionINF') ///
+		"]"
+	capture log off output
 
 	*restore
 

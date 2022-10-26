@@ -19,13 +19,13 @@ quietly {
 	*** 1 Cuentas macroeconómicas (SCN, PIB, Balanza Comercial) ***
 	***************************************************************
 	*use if anio == `anio' using "`c(sysdir_site)'/users/$pais/$id/PIB.dta", clear
-	PIBDeflactor, aniovp(`anio') nographs nooutput
+	noisily PIBDeflactor, aniovp(`anio') nographs nooutput
 	keep if anio == `anio'
 	local PIB = pibY[1]
 
-	balanzacomercial, anio(`anio')
+	*balanzacomercial, anio(`anio')
 
-	SCN, anio(`anio') nographs
+	noisily SCN, anio(`anio') nographs
 
 
 
