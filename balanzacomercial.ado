@@ -59,7 +59,7 @@ quietly {
 	capture merge 1:1 (anio) using `"`c(sysdir_site)'/SIM/SHRFSP.dta"', keep(matched) keepus(tipoDeCambio) nogen
 	if _rc != 0 {
 		preserve
-		run UpdateSHRFSP.do
+		run `"`c(sysdir_site)'/UpdateSHRFSP.do"'
 		restore
 		merge 1:1 (anio) using `"`c(sysdir_site)'/SIM/SHRFSP.dta"', keep(matched) keepus(tipoDeCambio) nogen
 	}

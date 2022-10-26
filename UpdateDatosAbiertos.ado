@@ -1,7 +1,6 @@
 program define UpdateDatosAbiertos, return
 
 	syntax [, UPDATE LOCAL]
-	
 
 
 	************************
@@ -10,10 +9,6 @@ program define UpdateDatosAbiertos, return
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 	local mesvp = substr(`"`=trim("`fecha'")'"',6,2)
-	
-	*if "`c(console)'" != "" {
-	*	exit
-	*}
 
 	capture use "`c(sysdir_site)'/SIM/DatosAbiertos.dta", clear
 	if (_rc == 0 & "`update'" != "update") {	
@@ -29,6 +24,13 @@ program define UpdateDatosAbiertos, return
 	noisily di _newline in g "Datos Abiertos: " in y "ACTUALIZANDO. Favor de esperar... (5 min. aprox.)"
 	noisily di in g "{c U'}ltimo dato: " in y "`=anio[_N]'m`=mes[_N]'."
 
+
+	if "`c(console)'" == "console" {
+		exit
+	}
+
+
+	
 	*****************************************
 	** 1.1 Ingreso, gasto y financiamiento **
 	if "`local'" == "" {

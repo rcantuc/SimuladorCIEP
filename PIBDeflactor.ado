@@ -408,6 +408,7 @@ quietly {
 	return scalar aniovp = `aniovp'
 
 
+
 	***************
 	*** 4 Texto ***
 	***************
@@ -433,34 +434,6 @@ quietly {
 			}
 			noisily di in g " `=anio[`k']' " _col(10) %8.1fc in y var_pibY[`k'] " %" _col(25) %20.0fc pibY[`k'] _col(50) %8.1fc in y var_indiceY[`k'] " %" _col(65) %12.10fc deflator[`k']
 		}
-	}
-
-
-
-	********************
-	*** 5 Output SIM ***
-	********************
-	if "$output" == "output" & "`nooutput'" == "" {
-		quietly log on output
-		noisily di in w "CRECPIB: ["  ///
-			%8.1f $pib2022 ", " ///
-			%8.1f $pib2023 ", " ///
-			%8.1f $pib2024 ", " ///
-			%8.1f $pib2025 ", " ///
-			%8.1f $pib2026 ", " ///
-			%8.1f $pib2027 ", " ///
-			%8.1f $pib2028 ///
-		"]"
-		noisily di in w "CRECDEF: ["  ///
-			%8.1f $def2022 ", " ///
-			%8.1f $def2023 ", " ///
-			%8.1f $def2024 ", " ///
-			%8.1f $def2025 ", " ///
-			%8.1f $def2026 ", " ///
-			%8.1f $def2027 ", " ///
-			%8.1f $def2028 ///
-		"]"
-		quietly log off output
 	}
 
 	return scalar aniolast = `aniofinal'

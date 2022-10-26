@@ -737,6 +737,8 @@ quietly {
 
 
 
+
+
 	******************************
 	*** 8 Salarios de gobierno ***
 	/*****************************
@@ -762,76 +764,6 @@ quietly {
 		save `"`c(sysdir_site)'/users/$pais/$id/households.dta"', replace	
 	}
 
-
-
-	****************/
-	*** 11 OUTPUT ***
-	*****************
-	if "$output" == "output" & "$pais" == "" {
-		quietly log on output
-		noisily di in w "GASTOS: " in w "["  ///
-			%8.3f basicaPIB ", " ///
-			%8.3f medsupPIB ", " ///
-			%8.3f superiPIB ", " ///
-			%8.3f posgraPIB ", " ///
-			%8.3f eduaduPIB ", " ///
-			%8.3f otrosePIB ", " ///
-			%8.3f basicaPIB+medsupPIB+superiPIB+posgraPIB+eduaduPIB+otrosePIB ", " ///
-			%8.3f ssaPIB ", " ///
-			%8.3f imssbienPIB ", " ///
-			%8.3f imssPIB ", " ///
-			%8.3f issstePIB ", " ///
-			%8.3f pemexPIB ", " ///
-			%8.3f ssaPIB+imssbienPIB+imssPIB+issstePIB+pemexPIB ", " ///
-			%8.3f bienestarPIB ", " ///
-			%8.3f penimssPIB ", " ///
-			%8.3f penisssPIB ", " ///
-			%8.3f penotroPIB ", " ///
-			%8.3f bienestarPIB+penimssPIB+penisssPIB+penotroPIB ", " ///
-			%8.3f gascfePIB ", " ///
-			%8.3f gaspemexPIB ", " ///
-			%8.3f gassenerPIB ", " ///
-			%8.3f gasinfraPIB ", " ///
-			%8.3f gascostoPIB ", " ///
-			%8.3f gasfederPIB ", " ///
-			%8.3f gasotrosPIB ", " ///
-			%8.3f gascfePIB+gaspemexPIB+gassenerPIB+gasinfraPIB+gascostoPIB+gasfederPIB+gasotrosPIB ", " ///
-			%8.3f IngBasPIB ", " ///
-			%8.3f basicaPIB+medsupPIB+superiPIB+posgraPIB+eduaduPIB+otrosePIB+ssaPIB+imssbienPIB+imssPIB+issstePIB+pemexPIB+bienestarPIB+penimssPIB+penisssPIB+penotroPIB+gascfePIB+gaspemexPIB+gassenerPIB+gasinfraPIB+gascostoPIB+gasfederPIB+gasotrosPIB+IngBasPIB ///
-			"]"		
-		noisily di in w "GASTOSPC: " in w "["  ///
-			%8.0f basica ", " ///
-			%8.0f medsup ", " ///
-			%8.0f superi ", " ///
-			%8.0f posgra ", " ///
-			%8.0f eduadu ", " ///
-			%8.0f otrose ", " ///
-			%8.0f scalar(educacion) ", " ///
-			%8.0f ssa ", " ///
-			%8.0f imssbien ", " ///
-			%8.0f imss ", " ///
-			%8.0f issste ", " ///
-			%8.0f pemex ", " ///
-			%8.0f scalar(salud) ", " ///
-			%8.0f bienestar ", " ///
-			%8.0f penimss ", " ///
-			%8.0f penisss ", " ///
-			%8.0f penotro ", " ///
-			%8.0f pensiones ", " ///
-			%8.0f gascfe ", " ///
-			%8.0f gaspemex ", " ///
-			%8.0f gassener ", " ///
-			%8.0f gasinfra ", " ///
-			%8.0f gascosto ", " ///
-			%8.0f gasfeder ", " ///
-			%8.0f gasotros ", " ///
-			%8.0f otrosgastos ", " ///
-			%8.0f ingbasico ", " ///
-			%8.0f ingbasico18 ", " ///
-			%8.0f ingbasico65 ///
-			"]"
-		quietly log off output
-	}
 
 
 

@@ -342,8 +342,8 @@ quietly {
 				noisily di in g "  (+) `=r(name`k')'" ///
 					_col(44) in y %7.3fc (((`mat`k''[1,1]/`mat5`k''[1,1])^(1/9)-1)*100) in g "%" ///
 					_col(66) in y %7.3fc (((`pibYR`anio''/`pibYR`=`anio'-9'')^(1/9)-1)*100) in g "%" ///
-					_col(88) in y %7.3fc (((`mat`k''[1,1]/`mat5`k''[1,1])^(1/9)))/ ///
-					(((`pibYR`anio''/`pibYR`=`anio'-9'')^(1/9)))
+					_col(88) in y %7.3fc (((`mat`k''[1,1]/`mat5`k''[1,1])^(1/9)-1))/ ///
+					(((`pibYR`anio''/`pibYR`=`anio'-9'')^(1/9)-1))
 			}
 			local ++k
 		}
@@ -352,8 +352,8 @@ quietly {
 		noisily di in g "{bf:  (=) Ingresos totales" ///
 				_col(44) in y %7.3fc (((`mattot'[1,1]/`mattot5'[1,1])^(1/9)-1)*100) in g "%" ///
 				_col(66) in y %7.3fc (((`pibYR`anio''/`pibYR`=`anio'-9'')^(1/9)-1)*100) in g "%" ///
-				_col(88) in y %7.3fc (((`mattot'[1,1]/`mattot5'[1,1])^(1/9))*100)/ ///
-				(((`pibYR`anio''/`pibYR`=`anio'-9'')^(1/9))*100) "}"
+				_col(88) in y %7.3fc (((`mattot'[1,1]/`mattot5'[1,1])^(1/9)-1)*100)/ ///
+				(((`pibYR`anio''/`pibYR`=`anio'-9'')^(1/9)-1)*100) "}"
 	}
 	drop recaudacionR
 
