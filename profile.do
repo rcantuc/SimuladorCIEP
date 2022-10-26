@@ -20,7 +20,7 @@ noisily di _newline(5) in w "{bf:Centro de Investigaci{c o'}n Econ{c o'}mica y P
 *** 3 Parametros ***
 ********************
 global paqueteEconomico "PE 2023"
-run "`c(sysdir_site)'/paramPE2023.do"
+run "`c(sysdir_site)'/PARAM.do"
 clear
 
 
