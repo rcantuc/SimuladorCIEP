@@ -5,6 +5,10 @@ global id = "`c(username)'"                                                     
 capture mkdir `"`c(sysdir_site)'/SIM/"'
 capture mkdir `"`c(sysdir_site)'/users/"'
 capture mkdir `"`c(sysdir_site)'/users/$id/"'
+if "$output" != "" {
+	quietly log using `"`c(sysdir_site)'/users/$id/${output}.txt"', replace text name(output)
+	quietly log off output
+}
 
 
 

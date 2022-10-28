@@ -389,7 +389,6 @@ if _rc != 0 {
 *** 3. Precio, IVA, IEPS (P) ***
 ********************************
 use "`c(sysdir_site)'/SIM/`enighanio'/preconsumption.dta", clear
-sample 5
 replace informal = lugar_comp == "01" | lugar_comp == "02" | lugar_comp == "03" | lugar_comp == "17"	// Informalidad
 
 

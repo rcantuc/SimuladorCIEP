@@ -523,7 +523,7 @@ quietly {
 	}
 
 
-	if "$output" == "output" & "`nooutput'" == "" {
+	if "$output" != "" & "`nooutput'" == "" {
 		local lengthINCD = strlen("`incd'")
 		local lengthINCD2 = strlen("`incd2'")
 		local lengthINCD3 = strlen("`incd3'")
@@ -815,7 +815,7 @@ program graphpiramide
 		capture window manage close graph H`varlist'
 		capture window manage close graph M`varlist'
 	}
-	if "$output" == "output" & "`nooutput'" != "nooutput" {
+	if "$output" != "" & "`nooutput'" != "nooutput" {
 		g grupo_edad = 1
 		replace grupo_edad = 2 if edad > 4
 		replace grupo_edad = 3 if edad > 9
@@ -958,16 +958,16 @@ program define ProyGraph
 		}
 	}
 
-	if "$output" == "output" {
+	if "$output" != "" {
 		forvalues k=1(5)`=_N' {
 			if anio[`k'] >= 2010 {
 				local out_proy = "`out_proy' `=string(estimacion[`k'],"%8.3f")',"
 			}
 		}
 		local lengthproy = strlen("`out_proy'")
-		capture log on output
+		log on output
 		noisily di in w "PROY: [`=substr("`out_proy'",1,`=`lengthproy'-1')']"
 		noisily di in w "PROYMAX: [`aniomax']"
-		capture log off output
+		log off output
 	}
 end
