@@ -38,7 +38,7 @@ if "`c(username)'" == "ciepmx" & "`c(console)'" == "console" {                  
 *************************
 *global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"                 // EXPORTAR IMAGENES EN...
 *global update "update"                                                         // UPDATE DATASETS/OUTPUTS
-global output "output"                                                          // IMPRIMIR OUTPUTS (WEB)
+*global output "output"                                                          // IMPRIMIR OUTPUTS (WEB)
 global nographs "nographs"                                                      // SUPRIMIR GRAFICAS
 
 
@@ -51,10 +51,6 @@ global nographs "nographs"                                                      
 ***                                               ***
 *****************************************************
 noisily run "`c(sysdir_site)'/PARAM.do".                                       // PARÁMETROS (PE 2023)
-if "$output" == "output" {
-	quietly log using `"`c(sysdir_site)'/users/$id/output.txt"', replace text name(output)
-	quietly log off output
-}
 
 
 
@@ -64,7 +60,7 @@ if "$output" == "output" {
 ***                              ***
 ***    3. POBLACION + ECONOMÍA   ***
 ***                              ***
-***********************************
+/***********************************
 noisily Poblacion, aniofinal(`=scalar(anioend)') //$update
 noisily PIBDeflactor, $update geodef(2013) geopib(2013)
 noisily SCN, $update
@@ -139,7 +135,7 @@ save "`c(sysdir_site)'/users/$id/households.dta", replace
 
 
 ** 6.2 CUENTA GENERACIONAL **
-*noisily CuentasGeneracionales AportacionesNetas, anio(`=aniovp')
+noisily CuentasGeneracionales AportacionesNetas, anio(`=aniovp')
 
 
 ** 6.3 Sankey **
@@ -151,7 +147,7 @@ foreach k in /*grupoedad sexo decil*/ escol rural {
 
 
 
-********************************************
+********************************************/
 ***                                       ***
 ***    7. PARTE IV: DEUDA + FISCAL GAP    ***
 ***                                       ***

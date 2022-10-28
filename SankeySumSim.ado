@@ -109,8 +109,11 @@ quietly {
 		filefilter `sankey3' "/Applications/XAMPP/xamppfiles/htdocs/`folder'/sankey-`name'.json", from(".,") to("0") replace
 	}
 	if "`c(os)'" == "Unix" {
-		*filefilter `sankey3' `"`c(sysdir_site)'/users/$pais/$id/sankey-`name'.json"', from(".,") to("0") replace
-		filefilter `sankey3' `"/var/www/html/SankeySF5/sankey-`name'.json"', from(".,") to("0") replace
+		filefilter `sankey3' `"/var/www/html/`folder'/sankey-`name'.json"', from(".,") to("0") replace
 	}
+	if "`c(os)'" == "Unix" & "`c(console)'" == "console" {
+		filefilter `sankey3' `"`c(sysdir_site)'/users/$pais/$id/sankey-`name'.json"', from(".,") to("0") replace
+	}
+
 }
 end

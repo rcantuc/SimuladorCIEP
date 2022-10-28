@@ -19,13 +19,13 @@ quietly {
 	*** 1 Cuentas macroeconómicas (SCN, PIB, Balanza Comercial) ***
 	***************************************************************
 	*use if anio == `anio' using "`c(sysdir_site)'/users/$pais/$id/PIB.dta", clear
-	noisily PIBDeflactor, aniovp(`anio') nographs nooutput
+	PIBDeflactor, aniovp(`anio') nographs nooutput
 	keep if anio == `anio'
 	local PIB = pibY[1]
 
 	*balanzacomercial, anio(`anio')
 
-	noisily SCN, anio(`anio') nographs
+	SCN, anio(`anio') nographs
 
 
 
@@ -342,6 +342,7 @@ quietly {
 	foreach k of varlist ISRAS ISRPF CUOTAS ISRPM OTROSK IVA IEPSNP IEPSP ISAN IMPORT FMP {
 		capture drop `k'SIM
 		Distribucion `k'SIM, relativo(`k') macro(`=scalar(`k')/100*scalar(pibY)')
+		replace `k'SIM = 0 if `k'SIM == .
 	}
 
 	** Guardar **

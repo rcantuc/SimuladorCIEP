@@ -38,7 +38,7 @@ if "`c(username)'" == "ciepmx" & "`c(console)'" == "console" {                  
 *************************
 *global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"                 // EXPORTAR IMAGENES EN...
 *global update "update"                                                         // UPDATE DATASETS/OUTPUTS
-global output "output"                                                          // IMPRIMIR OUTPUTS (WEB)
+global output "outputcorto"                                                          // IMPRIMIR OUTPUTS (WEB)
 global nographs "nographs"                                                      // SUPRIMIR GRAFICAS
 
 
@@ -60,6 +60,10 @@ global id = "`c(username)'"                                                     
 capture mkdir `"`c(sysdir_site)'/SIM/"'
 capture mkdir `"`c(sysdir_site)'/users/"'
 capture mkdir `"`c(sysdir_site)'/users/$id/"'
+if "$output" != "" {
+	quietly log using `"`c(sysdir_site)'/users/$id/$output.txt"', replace text name(output)
+	quietly log off output
+}
 
 
 
@@ -235,10 +239,6 @@ noisily di _newline(10) in g _dup(23) "*" ///
 	_newline in g "  D{c I'}A:  " in y "`c(current_date)'" ///
 	_newline in g "  HORA: " in y "`c(current_time)'" ///
 	_newline in g _dup(23) "*"
-if "$output" == "output" {
-	quietly log using `"`c(sysdir_site)'/users/$id/output.txt"', replace text name(output)
-	quietly log off output
-}
 
 
 
@@ -252,7 +252,7 @@ if "$output" == "output" {
 noisily Poblacion, aniofinal(`=scalar(anioend)') //$update
 noisily PIBDeflactor, $update geodef(2013) geopib(2013)
 noisily SCN, $update
-*noisily Inflacion, $update
+noisily Inflacion, $update
 
 
 
@@ -262,7 +262,7 @@ noisily SCN, $update
 ***                     ***
 ***    4. HOUSEHOLDS    ***
 ***                     ***
-/***************************
+***************************
 capture confirm file "`c(sysdir_site)'/SIM/2020/households.dta"
 if _rc != 0 {
 	noisily run "`c(sysdir_site)'/Expenditure.do" `=aniovp'

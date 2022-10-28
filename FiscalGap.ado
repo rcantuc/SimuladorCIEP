@@ -212,7 +212,7 @@ quietly {
 		}
 	}
 
-	if "$output" == "output" {
+	if "$output" != "" {
 		forvalues k=1(1)`=_N' {
 			if anio[`k'] >= 2013 & anio[`k'] < `anio' {
 				local proy_consumo  = "`proy_consumo' `=string(`=recaudacionConsumo[`k']/1000000000000',"%10.3f")',"
@@ -256,7 +256,7 @@ quietly {
 	tempname estimacionVP
 	matrix `estimacionVP' = r(StatTotal)
 
-	noisily di in g "  (+) Ingresos INF + VP:" in y _col(35) %25.0fc `estimacionINF'+`estimacionVP'[1,1] in g " `currency'"
+	noisily di in g "  (+) Ingresos futuros en VP:" in y _col(35) %25.0fc `estimacionINF'+`estimacionVP'[1,1] in g " `currency'"
 	*noisily di in g "  (*) Estimacion INF:" in y _col(35) %25.0fc `estimacionINF' in g " `currency'"
 	*noisily di in g "  (*) Estimacion VP:" in y _col(35) %25.0fc `estimacionVP'[1,1] in g " `currency'"
 	
@@ -658,7 +658,7 @@ quietly {
 			name(Proy_rfsp, replace)
 	}
 
-	if "$output" == "output" {
+	if "$output" != "" {
 		forvalues k=1(1)`=_N' {
 			if anio[`k'] >= 2013 & anio[`k'] < `anio' {
 				local proy_educa = "`proy_educa' `=string(`=gastoeducacion[`k']/1000000000000',"%10.3f")',"
@@ -714,7 +714,7 @@ quietly {
 	tempname gastoVP
 	matrix `gastoVP' = r(StatTotal)
 
-	noisily di in g "  (-) Gastos INF + VP:" in y _col(35) %25.0fc `gastoINF'+`gastoVP'[1,1] in g " `currency'"	
+	noisily di in g "  (-) Gastos futuros en VP:" in y _col(35) %25.0fc `gastoINF'+`gastoVP'[1,1] in g " `currency'"	
 	
 	* Save *
 	rename estimacion estimaciongastos
@@ -726,7 +726,7 @@ quietly {
 	*** 5 Fiscal Gap: Balance ***
 	*****************************
 	noisily di in g "  " _dup(61) "-"
-	noisily di in g "  (=) Balance INF en VP:" ///
+	noisily di in g "  (=) Balance futuro en VP:" ///
 		in y _col(35) %25.0fc `estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1] ///
 		in g " `currency'"	
 
@@ -739,17 +739,17 @@ quietly {
 		in y _col(35) %25.0fc -`shrfsp'[1,1] ///
 		in g " `currency'"	
 	noisily di in g "  " _dup(61) "-"
-	noisily di in g "  (=) Financial wealth INF en VP:" ///
+	noisily di in g "  (=) Finan. wealth futuro en VP:" ///
 		in y _col(35) %25.0fc -`shrfsp'[1,1] + `estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1] ///
 		in g " `currency'"	
 	noisily di in g "  " _dup(61) "-"
-	noisily di in g "  (/) Ingresos INF en VP:" ///
+	noisily di in g "  (=) Wealth/Ingresos futuros:" ///
 		in y _col(35) %25.1fc -(-`shrfsp'[1,1] + `estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1])/(`estimacionINF'+`estimacionVP'[1,1])*100 ///
 		in g " %"	
-	noisily di in g "  (/) Gastos INF en VP:" ///
+	noisily di in g "  (=) Wealth/Gastos futuros:" ///
 		in y _col(35) %25.1fc (-`shrfsp'[1,1] + `estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1])/(`gastoINF'+`gastoVP'[1,1])*100 ///
 		in g " %"	
-	noisily di in g "  (/) PIB INF en VP:" ///
+	noisily di in g "  (=) Wealth/PIB futuro:" ///
 		in y _col(35) %25.1fc (-`shrfsp'[1,1] + `estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1])/scalar(pibVPINF)*100 ///
 		in g " %"
 
@@ -771,7 +771,7 @@ quietly {
 			graph export `"$export/Proy_shrfsp.png"', replace name(Proy_shrfsp)
 		}
 	}
-	if "$output" == "output" {
+	if "$output" != "" {
 		forvalues k=1(1)`=_N' {
 			if anio[`k'] < `anio'-1 & anio[`k'] >= 2013 {
 				local proy_shrfsp = "`proy_shrfsp' `=string(`=shrfspPIB[`k']',"%10.3f")',"
@@ -797,13 +797,18 @@ quietly {
 	forvalues k=1(1)`=_N' {
 		if anio[`k'] == `end' {
 			local shrfsp_end = shrfspPIB[`k']
+			local shrfsp_end_MX = shrfsp[`k']
 			continue, break
 		}
 	}
 	noisily di in g "  " _dup(61) "-"
-	noisily di in g "  (*) Deuda (" in y `end' in g ") :" ///
+	noisily di in g "  (=) Deuda (" in y `end' in g ") :" ///
 		in y _col(35) %25.0fc `shrfsp_end' ///
 		in g " % PIB"	
+	noisily di in g "  " _dup(61) "-"
+	noisily di in g "  (*) Tasa Efectiva Promedio: " in y _col(35) %25.4fc `tasaEfectiva_ari'[1,1] in g " %"
+	noisily di in g "  (*) Growth rate LP:" in y _col(35) %25.4fc `grow_rate_LR' in g " %"
+	noisily di in g "  (*) Discount rate:" in y _col(35) %25.4fc `discount' in g " %"
 
 
 	*****************************************
@@ -812,9 +817,10 @@ quietly {
 	*preserve
 	use if entidad == "Nacional" using `"`c(sysdir_site)'/SIM/$pais/Poblacion.dta"', clear
 	
-	tabstat poblacion if anio == `anio', stat(sum) save f(%20.0fc)
-	tempname poblacionACT
-	matrix `poblacionACT' = r(StatTotal)
+	tabstat poblacion if anio == `anio' | anio == `end', stat(sum) save f(%20.0fc) by(anio)
+	tempname poblacionACT poblacionEND
+	matrix `poblacionACT' = r(Stat1)
+	matrix `poblacionEND' = r(Stat2)
 
 	collapse (sum) poblacion if edad == 0, by(anio) fast
 	merge 1:1 (anio) using `PIB', nogen keepus(lambda)
@@ -827,37 +833,36 @@ quietly {
 	tempname poblacionVP
 	matrix `poblacionVP' = r(StatTotal)
 	
+	noisily di _newline(2) in g "{bf: INEQUIDAD INTERGENERACIONAL:" in y " $pais `anio' }"
 	noisily di in g "  (*) Poblaci{c o'}n futura VP: " in y _col(35) %25.0fc `poblacionVP'[1,1] in g " personas"
-
 	local poblacionINF = poblacionVP[_N]/(1-((1+`grow_rate_LR'/100)/(1+`discount'/100)))
-
 	noisily di in g "  (*) Poblaci{c o'}n futura INF: " in y _col(35) %25.0fc `poblacionINF' in g " personas"
-
+	noisily di in g "  " _dup(61) "-"
+	noisily di in g "  (*) Deuda generaciones `anio':" ///
+		in y _col(35) %25.0fc -(-`shrfsp'[1,1])/(`poblacionACT'[1,1]) ///
+		in g " `currency' por persona"
+	noisily di in g "  (*) Deuda generaciones `end':" ///
+		in y _col(35) %25.0fc -(-`shrfsp_end_MX')/(`poblacionEND'[1,1]) ///
+		in g " `currency' por persona"
+	noisily di in g "  " _dup(61) "-"
 	noisily di in g "  (*) Deuda generaci{c o'}n futura:" ///
 		in y _col(35) %25.0fc -(-`shrfsp'[1,1] + `estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1])/(`poblacionVP'[1,1]+`poblacionINF') ///
 		in g " `currency' por persona"
-
-	noisily di in g "  (*) Deuda generaci{c o'}n actual:" ///
-		in y _col(35) %25.0fc -(-`shrfsp'[1,1])/(`poblacionACT'[1,1]) ///
-		in g " `currency' por persona"
 	capture confirm matrix GA
 	if _rc == 0 {
-		noisily di in g "  (*) Inequidad generacional:" ///
+		noisily di in g "  (*) Inequidad GA:" ///
 			in y _col(35) %25.0fc ((-(-`shrfsp'[1,1] + `estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1])/(`poblacionVP'[1,1]+`poblacionINF'))/GA[1,3]-1)*100 ///
 			in g " %"
 	}
 
-	*** TASA EFECTIVA ***
-	noisily di in g "  " _dup(61) "-"
-	noisily di in g "  (*) Tasa Efectiva Promedio: " in y _col(35) %25.4fc `tasaEfectiva_ari'[1,1] in g " %"
-	noisily di in g "  (*) Growth rate LP:" in y _col(35) %25.4fc `grow_rate_LR' in g " %"
-	noisily di in g "  (*) Discount rate:" in y _col(35) %25.4fc `discount' in g " %"
-	capture log on output
-	noisily di in w "PROYSHRFSP3: [" ///
-		%10.0f -(-`shrfsp'[1,1])/(`poblacionACT'[1,1]) "," ///
-		%10.0f -(-`shrfsp'[1,1] + `estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1])/(`poblacionVP'[1,1]+`poblacionINF') ///
-		"]"
-	capture log off output
+	if "$output" != "" {
+		quietly log on output
+		noisily di in w "PROYSHRFSP3: [" ///
+			%10.0f -(-`shrfsp'[1,1])/(`poblacionACT'[1,1]) "," ///
+			%10.0f -(-`shrfsp'[1,1] + `estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1])/(`poblacionVP'[1,1]+`poblacionINF') ///
+			"]"
+		quietly log off output
+	}
 
 	*restore
 
