@@ -1,6 +1,7 @@
 program define DatosAbiertos, return
 quietly {
 
+	capture use "`c(sysdir_site)'/SIM/DatosAbiertos.dta", clear
 	syntax anything [if] [, NOGraphs PIBVP(real -999) PIBVF(real -999) UPDATE DESDE(real 1993) MES]
 
 
@@ -36,6 +37,10 @@ quietly {
 	local last_mes = mes[_N]
 	merge m:1 (anio) using "`PIB'", nogen keep(matched) keepus(pibY deflator currency)
 	*keep if anio >= 2013 & anio <= `last_anio'
+	
+	if "`if'" != "" {
+		keep `if'
+	}
 
 	tempvar montomill
 	g `montomill' = monto/1000000/deflator
@@ -93,13 +98,14 @@ quietly {
 			local j = `j' + 100/12
 		}
 
-		graph bar (sum) `montomill' `if', over(anio) over(mes) stack asyvar ///
+		graph bar (sum) `montomill', over(anio) over(mes) stack asyvar ///
 			legend(rows(2)) name(M`anything', replace) blabel(none) ///
 			ytitle("millones de `=currency[1]' `aniovp'") ///
 			yline(0, lcolor(black) lpattern(solid)) ///
 			title("{bf:`=nombre[1]'}"`textsize') ///
 			///text(`valorserie', color(black) place(n)) ///
-			subtitle("por mes calendario") ylabel(, format(%10.1fc)) ///
+			subtitle("por mes calendario") ///
+			ylabel(, format(%15.0fc)) ///
 			note("{bf:{c U'}ltimo dato:} `last_anio'm`last_mes'.") ///
 			caption("{bf:Fuente:} Elaborado por el CIEP, con información de la SHCP (Estadísticas Oportunas de Finanzas P{c u'}blicas).")
 
@@ -114,7 +120,7 @@ quietly {
 				local montoTrimAnteri = `montomill'[`k']
 			}
 		}
-		graph bar (sum) `montomill' `if', over(anio) ///
+		graph bar (sum) `montomill', over(anio) ///
 			over(aniotrimestre, relabel(`relab') axis(on)) ///
 			stack asyvar ///
 			legend(rows(2)) name(T`anything', replace) blabel(none) ///
@@ -122,7 +128,8 @@ quietly {
 			yline(0, lcolor(black) lpattern(solid)) ///
 			title("{bf:`=nombre[1]'}"`textsize') ///
 			///text(`valorserie', color(black) place(n)) ///
-			subtitle("por trimestre") ylabel(, format(%10.1fc)) ///
+			subtitle("por trimestre") ///
+			ylabel(, format(%15.0fc)) ///
 			b1title(`" `=string((`montoTrimActual'/`montoTrimAnteri'-1)*100,"%10.1fc")' "') ///
 			note("{bf:{c U'}ltimo dato:} `last_anio'm`last_mes'.") ///
 			caption("{bf:Fuente:} Elaborado por el CIEP, con información de la SHCP (Estadísticas Oportunas de Finanzas P{c u'}blicas).")
@@ -131,7 +138,7 @@ quietly {
 		graph bar (sum) `montomill' if mes == `=mes[_N]' /*& anio >= 2012*/, over(anio) asyvar ///
 			name(`mesname'`anything', replace) ///
 			ytitle("millones de `=currency[1]' `aniovp'") ///
-			ylabel(, format(%10.1fc)) ///
+			ylabel(, format(%15.0fc)) ///
 			title("{bf:`=nombre[1]'}"`textsize') ///
 			yline(0, lcolor(black) lpattern(solid)) ///
 			subtitle("`mesname'") blabel(name) legend(off) ///
@@ -258,7 +265,7 @@ quietly {
 			ytitle(% PIB, axis(2)) xtitle("") ///
 			///xlabel(`prianio' `=round(`prianio',5)'(5)`ultanio') ///
 			xlabel(`prianio'(1)`ultanio') ///
-			ylabel(, format(%10.0fc)) yscale(range(0)) ///
+			ylabel(, format(%15.0fc)) yscale(range(0)) ///
 			ylabel(, axis(2) format(%5.1fc) noticks) ///
 			yscale(range(0) noline axis(2)) ///
 			legend(off label(1 "Reportado") label(2 "LIF") order(1 2)) ///

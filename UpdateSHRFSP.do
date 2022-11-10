@@ -63,6 +63,22 @@ tempfile nopresupuestario
 save "`nopresupuestario'"
 
 
+** Activos financieros **
+noisily DatosAbiertos XEA10, nog
+keep anio mes monto
+rename monto activos
+tempfile activos
+save "`activos'"
+
+
+** Diferimientos **
+noisily DatosAbiertos XOA0108, nog
+keep anio mes monto
+rename monto diferimientos
+tempfile diferimientos
+save "`diferimientos'"
+
+
 
 ******************************************
 ** 2.1 Balance presupuestario (detalle) **
@@ -249,8 +265,9 @@ rename monto costodeudaExterno
 tempfile costodeudaEE
 save "`costodeudaEE'"
 
-/*PEF if divGA == 1, nographs
-collapse (sum) amortizacion=gastoneto, by(anio)
+noisily DatosAbiertos IF03230, nog			// amortizacion
+keep anio mes monto
+rename monto amortizacion
 tempfile amortizacion
 save "`amortizacion'"
 
@@ -277,7 +294,9 @@ merge 1:1 (anio) using "`USD'", nogen
 *merge 1:1 (anio) using "`costodeudaE'", nogen
 merge 1:1 (anio) using "`costodeudaII'", nogen update
 merge 1:1 (anio) using "`costodeudaEE'", nogen update
-*merge 1:1 (anio) using "`amortizacion'", nogen
+merge 1:1 (anio) using "`amortizacion'", nogen
+merge 1:1 (anio) using "`activos'", nogen
+merge 1:1 (anio) using "`diferimientos'", nogen
 tsset anio
 
 ** Tipo de cambio **

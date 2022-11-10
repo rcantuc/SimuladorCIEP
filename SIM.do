@@ -39,17 +39,17 @@ if "`c(username)'" == "ciepmx" & "`c(console)'" == "console" {                  
 *global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"                 // EXPORTAR IMAGENES EN...
 *global update "update"                                                         // UPDATE DATASETS/OUTPUTS
 *global output "output"                                                          // IMPRIMIR OUTPUTS (WEB)
-global nographs "nographs"                                                      // SUPRIMIR GRAFICAS
+*global nographs "nographs"                                                      // SUPRIMIR GRAFICAS
 
 
 
 
 
-*****************************************************
-***                                               ***
-***    2. DIRECTORIOS Y PARÁMETROS DEL USUARIO    ***
-***                                               ***
-*****************************************************
+***************************************
+***                                 ***
+***    2. PARÁMETROS DEL USUARIO    ***
+***                                 ***
+***************************************
 noisily run "`c(sysdir_site)'/PARAM.do".                                       // PARÁMETROS (PE 2023)
 
 

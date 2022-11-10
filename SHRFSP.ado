@@ -165,8 +165,8 @@ quietly {
 	replace costodeudaInterno = 2.7/100*porInterno*pibY if anio == 2028
 	replace costodeudaExterno = 2.7/100*porExterno*pibY if anio == 2028
 	
-	g tasaInterno = costodeudaInterno/shrfspInterno*100
-	g tasaExterno = costodeudaExterno/shrfspExterno*100
+	g tasaInterno = costodeudaInterno/L.shrfspInterno*100
+	g tasaExterno = costodeudaExterno/L.shrfspExterno*100
 	replace tasaInterno = L.tasaInterno if tasaInterno == .
 	replace tasaExterno = L.tasaExterno if tasaExterno == .
 	g tasaEfectiva = porInterno*tasaInterno + porExterno*tasaExterno
@@ -176,41 +176,52 @@ quietly {
 
 	* Balance primario *
 	g balprimario = -(rfspBala+costodeudaInt+costodeudaExt)/pibY*100
-	/*replace balprimario = 0.1 if anio == 2022
+	replace balprimario = 0.1 if anio == 2022
 	replace balprimario = -0.2 if anio == 2023
 	replace balprimario = 1.0 if anio == 2024
 	replace balprimario = 1.0 if anio == 2025
 	replace balprimario = 0.7 if anio == 2026
 	replace balprimario = 0.6 if anio == 2027
-	replace balprimario = 0.5 if anio == 2028*/
+	replace balprimario = 0.5 if anio == 2028
 
 	g nopresupuestario   = -(rfspPIDIREGAS+rfspIPAB+rfspFONADIN+rfspDeudores+rfspBanca+rfspAdecuacion)/pibY*100
-
 	g efectoCrecimiento  = -(var_pibY/100)*L.shrfsp/pibY*100
-
 	g efectoInflacion    = -(var_indiceY/100+var_indiceY/100*var_pibY/100)*L.shrfsp/pibY*100 
-
-	g efectoIntereses    = ((1+tasaInterno/100)*L.shrfspInterno+(1+tasaExterno/100)*L.shrfspExterno)/pibY*100 - L.shrfsp/pibY*100
-
+	g efectoIntereses    = ((tasaInterno/100)*L.shrfspInterno+(tasaExterno/100)*L.shrfspExterno)/pibY*100
 	g efectoTipoDeCambio = (Depreciacion/100 + tasaExterno/100*Depreciacion/100)*L.shrfspExterno/pibY*100
+	g efectoActivos      = -(D.activos*0-amortizacion)/pibY*100
+	g efectoTotal = balprimario + nopresupuestario + efectoCrecimiento + efectoInflacion ///
+		+ efectoIntereses + efectoTipoDeCambio + efectoActivos
 
-	g efectoTotal = balprimario + nopresupuestario + efectoCrecimiento + efectoInflacion + efectoIntereses + efectoTipoDeCambio
-	
 	g efectoPositivo = 0
-	foreach k of varlist balprimario nopresupuestario efectoCrecimiento efectoInflacion efectoIntereses efectoTipoDeCambio {
+	foreach k of varlist balprimario nopresupuestario efectoCrecimiento efectoInflacion ///
+		efectoIntereses efectoTipoDeCambio efectoActivos {
 			replace efectoPositivo = efectoPositivo + `k' if `k' > 0
 	}
 
+	forvalues k=1(1)`=_N' {
+		if rfsp[`k'] != . & "`anioini'" == "" {
+			local anioini = anio[`k']
+		}
+		if rfsp[`k'] == . & "`anioini'" != "" & "`aniofin'" == "" {
+			local aniofin = anio[`=`k'-1']
+		}
+		if anio[`k'] == `anio' {
+			local obsvp = `k'
+		}
+	}
+
 	if "`nographs'" != "nographs" & "$nographs" == "" {
-		local j = 100/(2028-2014+1)/2
+		local j = 100/(`aniofin'-2008+1)/2
 		forvalues k=1(1)`=_N' {
-			if efectoTotal[`k'] != . & anio[`k'] >= 2014 {
+			if balprimario[`k'] != . {
 				local textDeuda `"`textDeuda' `=efectoPositivo[`k']+.3' `j' "{bf:`=string(efectoTotal[`k'],"%5.1fc")'% PIB}""'
-				local j = `j' + 100/(2028-2014+1)
+				local j = `j' + 100/(`aniofin'-2008+1)
 			}
 		}
-		graph bar balprimario nopresupuestario efectoCrecimiento efectoInflacion efectoIntereses efectoTipoDeCambio ///
-			if Depreciacion != . & anio >= 2008, ///
+		graph bar balprimario nopresupuestario efectoCrecimiento efectoInflacion ///
+			efectoIntereses efectoTipoDeCambio efectoActivos ///
+			if anio <= `aniofin' & anio >= 2008, ///
 			over(anio, gap(0)) stack blabel(, format(%5.1fc)) outergap(0) ///
 			text(`textDeuda', color(black) size(tiny)) ///
 			ytitle("% PIB") ///
@@ -232,11 +243,6 @@ quietly {
 		*g ``k'' = `k' //pibY*100
 	}
 
-	forvalues k=1(1)`=_N' {
-		if anio[`k'] == `ultanio' {
-			local obsvp = `k'
-		}
-	}
 
 	noisily di _newline in g "  {bf:Tipo de cambio " in y anio[`obsvp'] in g ": }" _col(30) in y %15.1fc tipoDeCambio[`obsvp'] in g " `currency'/USD"
 	noisily di _newline in g "  {bf:SHRFSP a" in y " `ultanio'm`ultmes'" in g ": }" _col(30) in y %15.0fc shrfsp[`obsvp']/Poblacion[`obsvp'] in g " `currency' por persona."
@@ -260,20 +266,20 @@ quietly {
 
 		local j = 100/(`ultanio'-`anioshrfsp'+1)/2
 		forvalues k=1(1)`=_N' {
-			if `shrfsp'[`k'] != . & anio[`k'] >= 2003 {
+			if `shrfsp'[`k'] != . & anio[`k'] >= 2000 {
 				if "`anioshrfsp'" == "" {
 					local anioshrfsp = anio[`k']
 				}
 				local text `"`text' `=shrfsp[`k']/1000000000/deflator[`k']*1.005' `=anio[`k']' "{bf:`=string(shrfsp[`k']/pibY[`k']*100,"%5.1fc")'% PIB}""'
 				local textI `"`textI' `=`interno'[`k']/2+`externo'[`k']/2' `=anio[`k']' "`=string(shrfspInterno[`k']/1000000000,"%10.0fc")'""'
 				local textE `"`textE' `=`externo'[`k']/2' `=anio[`k']' "`=string(shrfspExterno[`k']/1000000000,"%10.0fc")'""'
-				local textPC `"`textPC' `=`shrfsp'[`k']/2' `=anio[`k']' "{bf:`=string(`shrfsp'[`k'],"%10.0fc")'}""'
+				local textPC `"`textPC' `=`shrfsp'[`k']/2' `=anio[`k']' "`=string(`shrfsp'[`k'],"%10.0fc")'""'
 				local j = `j' + 100/(`ultanio'-`anioshrfsp'+1)
 			}
 		}
 		
-		twoway (bar `interno' `externo' anio if anio >= 2013 & anio < 2022) ///
-			(bar `interno' `externo' anio if anio >= 2022 & anio <= 2028) if `externo' != ., ///
+		twoway (bar `interno' `externo' anio if anio >= 2003 & anio < `anio') ///
+			(bar `interno' `externo' anio if anio >= `anio' & anio <= `aniofin') if `externo' != ., ///
 			title("{bf:Saldo hist{c o'}rico} de RFSP") ///
 			subtitle($pais) ///
 			ylabel(, format(%15.0fc) labsize(small)) ///
@@ -293,12 +299,12 @@ quietly {
 			note("{bf:Nota}: Porcentajes entre par{c e'}ntesis son con respecto al total de `=anio[`obsvp']'. {bf:{c U'}ltimo dato}: `ultanio'm`ultmes'") ///
 			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP y $paqueteEconomico.")
 
-		twoway (bar `shrfsp' anio if anio >= 2013 & anio < 2022) ///
-			(bar `shrfsp' anio if anio >= 2022 & anio <= 2028), ///
+		twoway (bar `shrfsp' anio if anio < `anio') ///
+			(bar `shrfsp' anio if anio >= `anio') if `shrfsp' != ., ///
 			title("{bf:Saldo hist{c o'}rico} por persona")  ///
 			subtitle($pais) ///
 			ylabel(#5, format(%15.0fc) labsize(small)) ///
-			xlabel(`anioshrfsp'(1)2028, noticks) ///	
+			xlabel(2000(1)`anio', noticks) ///	
 			text(`textPC', placement(n) color(white)) ///
 			yscale(range(0) axis(1) noline) ///
 			ytitle("`currency' `aniovp'") xtitle("") ///
@@ -370,13 +376,13 @@ quietly {
 			}
 		}
 
-		twoway (bar `rfspBalance' `rfspAdecuacion' `rfspOtros' anio if anio < `anio'-1, bstyle(p1bar p2bar p3bar)) ///
-			(bar `rfspBalance' `rfspAdecuacion' `rfspOtros' anio if anio >= `anio'-1, bstyle(p5bar p6bar p7bar)) if rfsp != ., ///
+		twoway (bar `rfspBalance' `rfspAdecuacion' `rfspOtros' anio if anio < `anio', bstyle(p1bar p2bar p3bar)) ///
+			(bar `rfspBalance' `rfspAdecuacion' `rfspOtros' anio if anio >= `anio', bstyle(p5bar p6bar p7bar)) if rfsp != ., ///
 			title("{bf:Requerimientos financieros} del sector p{c u'}blico") ///
 			subtitle($pais) xtitle("") ///
 			name(rfsp, replace) ///
 			ylabel(, format(%15.0fc) labsize(small)) ///
-			xlabel(2013(1)2028, noticks) ///	
+			xlabel(2008(1)`anio', noticks) ///	
 			yscale(range(0) axis(1) noline) ///
 			text(`textRFSP', placement(n)) ///
 			text(`textRFBa', color(white)) ///
