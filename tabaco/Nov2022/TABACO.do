@@ -24,7 +24,7 @@ if "`c(username)'" == "maaci" {                                                 
 	sysdir set SITE "C:\Users\maaci\Dropbox (CIEP)\Bloomberg Tabaco\2020\Simulador impuestos tabaco\"
 }
 if "`c(username)'" == "Admin" {                                                 // Leslie
-	sysdir set SITE "C:\Users\maaci\Dropbox (CIEP)\Bloomberg Tabaco\2020\Simulador impuestos tabaco\"
+	sysdir set SITE "C:\Users\Admin\Documents\GitHub\SimuladorCIEP"
 }
 if "`c(username)'" == "ciepmx" & "`c(console)'" == "" {                         // Linux ServidorCIEP
 	sysdir set SITE "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/SimuladorCIEP/5.3/SimuladorCIEP/"
