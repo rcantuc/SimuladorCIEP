@@ -57,6 +57,29 @@ quietly {
 	tempfile poblacion
 	save "`poblacion'"
 
+	import excel "`c(sysdir_site)'/bases/INEGI/ENOE/PoblacionENOE.xlsx", sheet("PoblacionLong") clear
+	rename A anio
+	rename B trimestre
+	rename C PoblacionENOE
+	rename D PoblacionOcupada
+	rename E PoblacionDesocupada
+	drop in 1
+	drop if anio == ""
+	
+	g entidad = "Nacional"
+	
+	replace trimestre = "1" if trimestre == "Primer trimestre"
+	replace trimestre = "2" if trimestre == "Segundo trimestre"
+	replace trimestre = "3" if trimestre == "Tercer trimestre"
+	replace trimestre = "4" if trimestre == "Cuarto trimestre"
+	destring _all, replace
+
+	collapse (mean) Poblacion*, by(anio)
+	format PoblacionENOE %15.0fc
+	tempfile poblacionenoe
+	save "`poblacionenoe'"
+
+
 	** 2.2 Working Ages **
 	use `"`c(sysdir_site)'/SIM/$pais/Poblacion.dta"', clear
 	collapse (sum) WorkingAge=poblacion if edad >= 16 & edad <= 65 & entidad == "Nacional", by(anio)
@@ -105,6 +128,7 @@ quietly {
 	** 2.6 Merge datasets **
 	merge 1:1 (anio) using "`workingage'", nogen
 	merge 1:1 (anio) using "`poblacion'", nogen
+	merge 1:1 (anio) using "`poblacionenoe'", nogen
 	if `aniovp' < `=`anioinicial'' | `aniovp' > `aniomax' {
 		noisily di in r "A{c n~}o para valor presente (`aniovp') inferior a `=`anioinicial'' o superior a `aniomax'."
 		exit
@@ -354,7 +378,8 @@ quietly {
 		}
 
 		* Crecimiento var_pibY *
-		twoway (connected var_pibY anio if (anio < `aniofinal' & anio >= `anioinicial') | (anio == `aniofinal' & trimestre == 4), msize(large) mlwidth(vvthick)) ///
+		twoway (connected var_pibY anio if (anio < `aniofinal' & anio >= `anioinicial') | ///
+			(anio == `aniofinal' & trimestre == 4), msize(large) mlwidth(vvthick)) ///
 			(connected var_pibY anio if anio >= `aniofinal'+`exo_count', msize(large) mlwidth(vvthick)) ///
 			(connected var_pibY anio if anio < `aniofinal'+`exo_count' & anio >= `aniofinal', pstyle(p4) msize(large) mlwidth(vvthick)), ///
 			title({bf:Crecimientos} del Producto Interno Bruto) subtitle(${pais}) ///
@@ -400,6 +425,29 @@ quietly {
 		if _rc == 0 {
 			graph export "$export/PIB.png", replace name(PIBP)
 		}
+		
+		
+		* PIB per cápita *
+		g pibPC =  pibYR/PoblacionOcupada
+
+		* Texto sobre lineas *
+		forvalues k=1(1)`=_N' {
+			if pibPC[`k'] != . {
+				local crec_PIBPC `"`crec_PIBPC' `=pibPC[`k']' `=anio[`k']' "`=string(pibPC[`k'],"%10.0fc")'" "'
+			}
+		}
+
+		twoway (connected pibPC anio, msize(large)) if pibPC != ., ///
+			title(Producto Interno Bruto {bf:por población ocupada}) subtitle(${pais}) ///
+			ytitle(`=currency[`obsvp']' `aniovp') xtitle("") ///
+			xlabel(2005(1)2022 `aniovp') ///
+			text(`crec_PIBPC', color(black) size(vsmall)) ///
+			ylabel(/*0(5)`=ceil(`pibYRmil'[_N])'*/, format(%20.0fc)) ///
+			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE/ENOE.") ///
+			name(PIBPC, replace)
+
+		
+		
 	}
 	return local except "`except'"
 	return local exceptI "`exceptI'"

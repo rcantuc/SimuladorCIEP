@@ -120,7 +120,7 @@ else {
 	scalar bienestar   =   29239 //    Pensión Bienestar
 	scalar penimss     =  169241 //    Pensión IMSS
 	scalar penisss     =  249560 //    Pensión ISSSTE
-	scalar penotro     = 1507687 //    Pensión Pemex, CFE, Pensión LFC, ISSFAM, Otros
+	scalar penotro     = 1507687 //    Pensión Pemex, CFE, LFC, ISSFAM, Otros
 
 	scalar gascfe      =    2958 //    Gasto en CFE
 	scalar gaspemex    =    4466 //    Gasto en Pemex
