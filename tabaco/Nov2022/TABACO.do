@@ -24,7 +24,7 @@ if "`c(username)'" == "maaci" {                                                 
 	sysdir set SITE "C:\Users\maaci\Dropbox (CIEP)\Bloomberg Tabaco\2020\Simulador impuestos tabaco\"
 }
 if "`c(username)'" == "Admin" {                                                 // Leslie
-	sysdir set SITE "C:\Users\Admin\Documents\GitHub\SimuladorCIEP"
+	sysdir set SITE "C:\Users\Admin\Dropbox (CIEP)\Bloomberg Tabaco\2020\Simulador impuestos tabaco\"
 }
 if "`c(username)'" == "ciepmx" & "`c(console)'" == "" {                         // Linux ServidorCIEP
 	sysdir set SITE "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/SimuladorCIEP/5.3/SimuladorCIEP/"
@@ -43,7 +43,7 @@ if "`c(username)'" == "ciepmx" & "`c(console)'" == "console" {                  
 ***                   ***
 *************************
 *global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
-*global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
+global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
 
 
 
@@ -111,12 +111,6 @@ g pindustry = precio-vatxpack-minmargen-stxpack-avxpack
 ** Cambio en el precio **
 g camb_precio = vatxpack+minmargen+stxpack+avxpack+pindustry
 
-
-
-****************************
-** Resultados estatus quo **
-****************************
-
 ** Proporcion de impuesto sobre el precio **
 g taxshare = ((vatxpack+stxpack+avxpack)/precio)*100
 
@@ -171,12 +165,6 @@ g vatxpack_1 = (pindustry_1+stxpack_1+avxpack_1+minmargen_1)*`vat'
 
 ** Cambio en el precio **
 g precio_1 = vatxpack_1+minmargen_1+stxpack_1+avxpack_1+pindustry_1
-
-
-
-******************
-*** Resultados ***
-******************
 
 ** Cambio en ventas **
 g sales_1=(sales*(((precio_1-precio)/precio)*`elasticidad'))+sales
@@ -234,10 +222,9 @@ if "$nographs" == "" {
 
 
 
-***************************/
+****************************
 *** Outputs INFOGRAFÍA 1 ***
 ****************************
-capture scalar drop pibY pibVPINF pibINF lambda
 scalar aa_stax_1 = `stax_1'
 scalar ab_advala_1 = `advala_1'*100
 scalar ba_strev = strev[_N] + advrev[_N]
@@ -253,6 +240,9 @@ scalar fa_precio = precio[_N]
 scalar fb_precio_1 = precio_1[_N]
 
 
+tempfile info1
+save `info1'
+
 
 
 
@@ -261,7 +251,7 @@ scalar fb_precio_1 = precio_1[_N]
 ***    5. ENTIDADES FEDERATIVAS    ***
 ***                                ***
 **************************************
-*if "$update" != "" {
+if "$update" != "" {
 
 	* Coeficientes de 2020 y 2021 *
 	import excel "`c(sysdir_site)'/tabaco/Nov2022/bases/coeficientes.xlsx", sheet("Stata") firstrow clear
@@ -294,10 +284,9 @@ scalar fb_precio_1 = precio_1[_N]
 	sort cve_ent
 	compress
 	save "`c(sysdir_site)'/tabaco/Nov2022/bases/entidades.dta", replace
-	preserve
 	
 	** Recaudación IEPS Tabaco anual **
-	LIF, anio(2022)
+	LIF, anio(2022) nog
 	local recaudacion = r(Tabacos)
 
 	** 8% directo **
@@ -310,11 +299,11 @@ scalar fb_precio_1 = precio_1[_N]
 	local litoral = `ieps92'*0.00136
 	local ffm     = `ieps92'*0.01
 	local ffr     = `ieps92'*0.0125
-	*g fgp2        = recaudacion*0.184   	//servirá para la comprobación
-	*g litoral2    = recaudacion*0.001256   // servirá para la comprobación
+	*local fgp2     = recaudacion*0.184   	//servirá para la comprobación
+	*local litoral2 = recaudacion*0.001256   // servirá para la comprobación
 
 	* Distribucion estatal del 8% directo *
-	restore
+	use "`c(sysdir_site)'/tabaco/Nov2022/bases/entidades.dta", clear
 	g directo_estatal_21 = `directo8'*directo_estatal_1
 
 	* Distribucion estatal del FGP *
@@ -343,259 +332,164 @@ scalar fb_precio_1 = precio_1[_N]
 	* Guardar los datos que no son actualizables *
 	compress
 	save "`c(sysdir_site)'/tabaco/Nov2022/bases/entidades.dta", replace
-*}
+}
 
+
+
+******************
+*** Simulación ***
+******************
 use "`c(sysdir_site)'/tabaco/Nov2022/bases/entidades.dta", clear
 
+** 8% directo **
+local recaudacion_sim = scalar(bb_strev_1)
+local directo8_sim = `recaudacion_sim'*0.08
 
+** 92% restante de IEPS Tabaco se distribuye según los porcentajes de la LCF **
+** En la nota metodológica se ponen los porcentajes sobre el total de IEPS a tabaco **
+local ieps92_sim  = `recaudacion_sim'*0.92
+local fgp_sim     = `ieps92_sim'*0.2
+local litoral_sim = `ieps92_sim'*0.00136
+local ffm_sim     = `ieps92_sim'*0.01
+local ffr_sim     = `ieps92_sim'*0.0125
+*local fgp2_sim   = recaudacion_sim*0.184
+*local litoral2_sim = recaudacion_sim*0.001256
 
+* Distribucion estatal del 8% directo *
+g directo_estatal_sim = `directo8_sim'*directo_estatal_1
 
+* Distribucion estatal del FGP *
+g fgp_estatal_sim = `fgp_sim'*fgp_estatal_1
 
+* Distribucion estatal del litoral *
+g litoral_estatal_sim = `litoral_sim'*litoral_estatal_1
 
+* Distribucion estatal del FFM *
+g ffm_estatal_sim = `ffm_sim'*ffm_estatal_1
 
+* Distribucion estatal del FFR *
+g ffr_estatal_sim = `ffr_sim'*ffr_estatal_1
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-ex
-gen stax_1=stax*20
-local advalb_1 = advala/(1+advala)
-*gen vata=0.16
-*gen vatb=vata/(1+vata)
-*gen vat_1= vata/(1+vata)
-*gen elasticidad=-0.4240
-*gen elasticidad_1=elasticidad*(1.2)
-
-
-***********************************
-*Esto es 2021 (hasta septiembre)
-***********************************
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-*********************************
-***SimulaciÃ³n***
-*********************************
-
-**8% directo**
-gen recaudacion_sim=59220.1   // <-- ¿DE DÓNDE VIENE ESTE DATO?
-*gen recaudacion_sim=scalar(bb_strev_sim)
-gen directo8_sim=recaudacion_sim*0.08
-
-*el 92% restante de IEPS a tabaco se distribuye segun los porcentajes de la LCF; en la nota metodologica se ponen los porcentajes sobre el total de IEPS a tabaco
-gen ieps92_sim=recaudacion_sim*0.92
-gen fgp_sim=ieps92_sim*0.2
-gen fgp2_sim=recaudacion_sim*0.184
-gen litoral_sim=ieps92_sim*0.00136
-gen litoral2_sim=recaudacion_sim*0.001256
-gen ffm_sim=ieps92_sim*0.01
-gen ffr_sim=ieps92_sim*0.0125
-
-
-***********************************
-*Esto es 2020 (anual)
-***********************************
-*Distribucion estatal del FGP*
-gen fgp_estatal_20 = fgp_sim*fgp_estatal_0
-
-*Distribucion estatal del litoral*
-gen litoral_estatal_20 = litoral_sim*litoral_estatal_0
-
-*Distribucion estatal del FFM*
-gen ffm_estatal_20 = ffm_sim*ffm_estatal_0
-
-*Distribucion estatal del FFR*
-gen ffr_estatal_20 = ffr_sim*ffr_estatal_0
-
-*Distribucion estatal del 8% directo*
-gen directo_estatal_20 = directo8_sim*directo_estatal_0
-
-	
-	
 /*IEPS de tabaco total por Estado. El total de IEPS a tabaco por estado da mÃ¡s
  en stata que en excel, creo que es por el nÃºmero de decimales usados en cada 
  programa*/
  
-*Total de IEPs a tabaco en estatus quo*
-gen iepst_estatal_20=fgp_estatal_20+litoral_estatal_20+ffm_estatal_20+ffr_estatal_20+directo_estatal_20
+* Total de IEPs a tabaco en Simulacion *
+egen iepst_estatal_sim = rsum(fgp_estatal_sim litoral_estatal_sim ffm_estatal_sim ///
+	ffr_estatal_sim directo_estatal_sim)
 
-*distribucion porcuental deÃ± IEPS de tabaco estatal*
-gen piepst_estatal_20=iepst_estatal_20/16875.96 
-
-
-********************************************************************************
-***************************DIFERENCIA ENTRE ESCENARIOS**************************
-********************************************************************************
-
-gen diferencia=iepst_estatal_20-iepst_estatal_21
-
-****Crecimeinto recursos a estados ieps tabaco**
-
-gen crecimiento = (diferencia/iepst_estatal_21)
+* Distribucion porcuental de IEPS de tabaco estatal *
+*g piepst_estatal_20=iepst_estatal_20/16875.96  // <-- ¿DE DÓNDE VIENE ESTE DATO?
 
 
-********************************************************************************
-***comprobación de que da igual aplicando porcentajes sobre el 100% del ieps***
-*****************a tabaco o sobre el 92% del IEPS a tabaco*********************
-********************************************************************************
+
+***********************************
+*** DIFERENCIA ENTRE ESCENARIOS ***
+***********************************
+g diferencia = iepst_estatal_sim - iepst_estatal_21
+
+** Crecimeinto recursos a estados IEPS tabaco **
+g crecimiento = (diferencia/iepst_estatal_21)
 
 
-gen fgp_estatal_3 = fgp2 * fgp_estatal_0
-gen dif = fgp_estatal_3 - fgp_estatal_21
-tab dif
-	
-	
-gen litoral_estatal_3=litoral2 * litoral_estatal_0
-gen dif_lit=litoral_estatal_3-litoral_estatal_21
-tab dif_lit
 
-
-**************/
-*** Outputs ***
-***************
+****************************
+*** Outputs INFOGRAFÍA 2 ***
+****************************
 forvalues k=1(1)32 {
-	scalar DIF`k' = diferencia[`k']
-	scalar IEPS`k' = iepst_estatal_20[`k']
-	scalar orig`k' = iepst_estatal_20[`k']/scalar(bb_strev_sim)
-	scalar dif`k' = diferencia[`k']/iepst_estatal_20[`k']
+	scalar DIF`k'  = diferencia[`k']
+	scalar IEPS`k' = iepst_estatal_sim[`k']
+	scalar orig`k' = iepst_estatal_sim[`k']/scalar(bb_strev_1)
+	scalar dif`k'  = diferencia[`k']/iepst_estatal_sim[`k']
 }
 scalar crecimiento = crecimiento[_N]
 
 
-noisily di _newline(3) in g "{bf:Tabaco} output de Entidades Federativas"
-quietly log using "{{ruta}}/output.txt", name(scalar) replace text
-*quietly log using "outputEstados.txt", name(scalar) replace text
-noisily scalar list
-quietly log close scalar
 
 
 
-
-********************************************************************************
-*********** InfografÃ­a 3 - Beneficios del aumento del IEPS al tabaco **********
-********************************************************************************
+*********************************************************
+***                                                   ***
+***    6. GANANCIAS DEL AUMENTO DEL IEPS AL TABACO    ***
+***                                                   ***
+*********************************************************
+use `info1', clear
 *gen deltaprecio=0.43
 *local deltaprecio=0.43
 *gen elasticidad=-0.424
 *local elaticidad=-0.424
 
-** InformaciÃ³n de ENIGH 2020** Todos los valores son trimestrales
-gen exp_tot=28228.96
-la var exp_tot "Gasto total del hogar" 
-gen hh_smoke=.0485 //cambie por enigh 2020 nota: en 2018 el porcentaje de hogares es 5.34%, pero aqui estaba puesto el valor de .00534 en 2020 el porcentaje es 4.85%, voy a poner el valor como .0485 que creo es el correcto
-la var hh_smoke "ProporciÃ³n de hogares que reportan fumar"
-gen exp_cig=.0025293 //secambio por lo de la enigh 2020
-la var exp_cig "ProporciÃ³n de gasto en tabaco respecto al gasto total"
-gen exp_salud=.093 //se actualizo con el que se utilizo en el reporte de 2021. Es de un estudio de Reynales, en el reporte esta la fuente completa
-la var exp_salud "ProporciÃ³n de gasto en salud respecto al gasto total"
-gen ilwy=.0019
-la var ilwy "Income loss: working years	%"
-gen exp_tab_p= 1263.159 //se actualizo con ENIGH 2020. Es el gasto en tabaco trimestral promedio de los hogares fumadores
-la var exp_tab_p "Gasto en tabaco"
+** Información de ENIGH 2020 ** 
+** Todos los valores son trimestrales **
+
+* Gasto total del hogar *
+local exp_tot = 28228.96
+
+* Proporción de hogares que reportan fumar *
+local hh_smoke = 0.0485 
+// cambie por enigh 2020 
+// nota: en 2018 el porcentaje de hogares es 5.34%, 
+// pero aqui estaba puesto el valor de .00534 en 2020 el porcentaje es 4.85%, 
+// voy a poner el valor como .0485 que creo es el correcto
+
+* Proporción de gasto en tabaco respecto al gasto total *
+local exp_cig = 0.0025293 
+// se cambio por lo de la enigh 2020
+
+* Proporción de gasto en salud respecto al gasto total *
+local exp_salud = 0.093 
+// se actualizo con el que se utilizo en el reporte de 2021. 
+// Es de un estudio de Reynales, en el reporte esta la fuente completa
+
+* Income loss: working years % *
+local ilwy = .0019
+
+* Gasto en tabaco *
+local exp_tab_p = 1263.159
+// se actualizo con ENIGH 2020. Es el gasto en tabaco trimestral promedio de los hogares fumadores
+
+** Ganancias en ingresos: gasto en tabaco - % **
+local gi_gt = (((1+deltaprecio[_N])*(1+`elasticidad'*deltaprecio[_N])-1)*`exp_cig')*-100
+
+** Ganancias en ingresos: gasto en tabaco - $$ **
+local gi_gt_p = (`gi_gt'*`exp_tot')/100
+
+** Ganancias en ingresos: gasto en salud - % **
+local gi_gs = (((1+`elasticidad'*deltaprecio[_N])-1)*`exp_salud')*-100
+
+** Ganancias en ingresos: gasto en salud - $$ **
+local gi_gs_p = (`gi_gs'*`exp_tot')/100
+
+** Ganancias en ingreso: dias de vida perdidos - % **
+local gi_yll = (((1+`elasticidad'*deltaprecio[_N])-1)*`ilwy')*-100
+
+** Ganancias en ingreso: dias de vida perdidos - % **
+local gi_yll_p = (`gi_yll'*`exp_tot')/100
 
 
-**Ganancias en ingresos: gasto en tabaco - %**
-gen gi_gt=(((1+deltaprecio)*(1+elasticidad*deltaprecio)-1)*exp_cig)*-100
 
-**Ganancias en ingresos: gasto en tabaco - $$**
-gen gi_gt_p=(gi_gt*exp_tot)/100
-
-**Ganancias en ingresos: gasto en salud - %**
-gen gi_gs=(((1+elasticidad*deltaprecio)-1)*exp_salud)*-100
-
-**Ganancias en ingresos: gasto en salud - $$**
-gen gi_gs_p=(gi_gs*exp_tot)/100
-
-**Ganancias en ingreso: dias de vida perdidos - %**
-gen gi_yll=(((1+elasticidad*deltaprecio)-1)*ilwy)*-100
-
-**Ganancias en ingreso: dias de vida perdidos - %**
-gen gi_yll_p=(gi_yll*exp_tot)/100
-
-
-****************/
-*** Outputs 3 ***
-*****************
+****************************
+*** Outputs INFOGRAFÍA 3 ***
+****************************
 capture scalar drop pibY pibVPINF pibINF lambda
-scalar gi_gt = string(gi_gt[_N],"%10.1f")
-scalar gi_gs = string(gi_gs[_N],"%10.1f")
-scalar gi_yll = string(gi_yll[_N],"%10.1f")
-scalar gi_gt_p = string(gi_gt_p[_N],"%10.1f")
-scalar gi_gs_p = string(gi_gs_p[_N],"%10.1f")
-scalar gi_yll_p = string(gi_yll_p[_N],"%10.1f")
-
-noisily di _newline(3) in g "{bf:Tabaco} output"
-quietly log using "{{ruta}}/output.txt", name(scalar) replace text
-*quietly log using "output.txt", name(scalar) replace text
-noisily scalar list
-quietly log close scalar
-
-
-noisily run "ccr_entidades_new.do"
+scalar gi_gt = string(`gi_gt',"%10.1f")
+scalar gi_gs = string(`gi_gs',"%10.1f")
+scalar gi_yll = string(`gi_yll',"%10.1f")
+scalar gi_gt_p = string(`gi_gt_p',"%10.1f")
+scalar gi_gs_p = string(`gi_gs_p',"%10.1f")
+scalar gi_yll_p = string(`gi_yll_p',"%10.1f")
+scalar gi_tot = string(`gi_gt'+`gi_gs'+`gi_yll',"%10.1f")
 
 
 
-** exit, clear STATA **
-** 5 valores de resultados **
-** ejecutar con  /usr/local/stata15/stata-se -q do_tobaccotaxes.do **
-
-********************************************************************************
-********************** Infografía 3 - Efecto empobrecedor **********************
-********************************************************************************
-
-clear
-version 13
-set mem 1000m
-set more off
 
 
-
-capture log close
-
-cd "D:\Dropbox (CIEP)\Bloomberg Tabaco\2021\STATA"
-
-log using "./empobrecedor.smcl", replace 
-
-use Datos.dta
-
+************************************
+***                              ***
+***    6. EFECTO EMPOBRECEDOR    ***
+***                              ***
+************************************
+use "`c(sysdir_site)'/tabaco/Nov2022/bases/DatosHH.dta"
 gen exptotal = gasto_mon*4 //gasto monetario del hogar al aÃ±o
 gen exptobac = tabaco*4 //gasto anual en tabaco del hogar
 gen exphealth = salud*4 //gasto anual en salud del hogar
@@ -615,54 +509,70 @@ gen asexratio = hombres/mujeres //ratio de hombres a mujeres en el hogar. Es tot
 gen hweight = factor //es el factor de expansion
 gen npl = 19043.52
 
-*following loop generate per capita expendituers and label them
-foreach X in total tobac health{
-gen pce`X'=exp`X'/hsize
-label var pce`X' "percapita expenditure of `X'"
+* Following loop generate per capita expendituers and label them
+foreach X in total tobac health {
+	gen pce`X'=exp`X'/hsize
+	label var pce`X' "percapita expenditure of `X'"
 }
-*SAF is Smoking (tobacco use) attributable fraction estimated externally
-scalar SAF=0.54
-replace pcehealth=pcehealth*SAF
-*If SAF for SHS exposure is available, instead multiply the pcehealth
-*variable with the sum of both SAFs
+
+* SAF is Smoking (tobacco use) attributable fraction estimated externally
+scalar SAF = 0.54
+replace pcehealth = pcehealth*SAF
+* If SAF for SHS exposure is available, instead multiply the pcehealth variable with the sum of both SAFs
 
 ren pcetotal pce //gasto total per capita
 gen pcet=pce-pcetobac // gasto total per capita sin contar tabaco
 label var pcet "pce-expenditure on tobacco"
+
 gen pceh=pcet-pcehealth //gasto total per capita sin contar el gasto total en tabaco y en gastos medidcos relacionados al tabaco
 label var pceh "pct-tobacco attributable health care exp."
+
 gen pcehh=pce-pcehealth //gasto total per capita sin contar el gasto total en gastos medidcos relacionados al tabaco
 gen pweight=hweight*hsize
-*generating an indicator variable for poverty
+
+* Generating an indicator variable for poverty
 gen povdum = 0
 replace povdum = 1 if pce <= npl
 proportion povdum [fw = pweight]
-*the following user written module also gives identical result for HCR
-*along with other poverty measures. To use this, first apply the following
-*command without the star.
+
+* The following user written module also gives identical result for HCR
+* along with other poverty measures. To use this, first apply the following
+* command without the star.
 *ssc install povdeco, replace
 povdeco pce [fw=pweight], varpline(npl)
+
 *Code for computing changes in HCR and number of poor in one shot
 local subtr pce pcet pcehh pceh
 local nvar: word count `subtr'
 matrix M = J(`nvar', 2, .)
 forvalues i = 1/`nvar' {
-local X: word `i' of `subtr'
-qui gen ind = (`X'<=npl)
-qui sum ind [fw=pweight]
-matrix M[`i', 1] = r(mean)
-matrix M[`i', 2] = r(sum)
-drop ind
+	local X: word `i' of `subtr'
+	qui gen ind = (`X'<=npl)
+	qui sum ind [fw=pweight]
+	matrix M[`i', 1] = r(mean)
+	matrix M[`i', 2] = r(sum)
+	drop ind
 } 
 matrix rownames M = `subtr'
 matrix colnames M = HCR Poor
+
 *the following lists the results with special formating options
-matlist M, cspec(& %12s | %5.4f & %9.0f &) rspec(--&&&-)
-log close
+matlist M, cspec(& %12s | %5.4f & %12.0fc &) rspec(--&&&-)
 
 
 
 
+
+*************
+*** FINAL ***
+*************
+if "$output"  != "" {
+	noisily di _newline(3) in g "{bf:Tabaco} output"
+	*quietly log using "{{ruta}}/output.txt", name(scalar) replace text
+	quietly log using "output.txt", name(scalar) replace text
+	noisily scalar list
+	quietly log close scalar
+}
 timer off 1
 timer list 1
 noisily di _newline(2) in g _dup(20) ":" "  " in y "TOUCH-DOWN!!!  " round(`=r(t1)/r(nt1)',.1) in g " segs  " _dup(20) ":"
