@@ -24,7 +24,7 @@ if "`c(username)'" == "maaci" {                                                 
 	sysdir set SITE "C:\Users\maaci\Dropbox (CIEP)\Bloomberg Tabaco\2020\Simulador impuestos tabaco\"
 }
 if "`c(username)'" == "Admin" {                                                 // Leslie
-	sysdir set SITE "C:\Users\Admin\Dropbox (CIEP)\Bloomberg Tabaco\2020\Simulador impuestos tabaco\"
+	sysdir set SITE "C:\Users\Admin\Documents\GitHub\SimuladorCIEP\"
 }
 if "`c(username)'" == "ciepmx" & "`c(console)'" == "" {                         // Linux ServidorCIEP
 	sysdir set SITE "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/SimuladorCIEP/5.3/SimuladorCIEP/"
@@ -299,8 +299,6 @@ if "$update" != "" {
 	local litoral = `ieps92'*0.00136
 	local ffm     = `ieps92'*0.01
 	local ffr     = `ieps92'*0.0125
-	*local fgp2     = recaudacion*0.184   	//servirá para la comprobación
-	*local litoral2 = recaudacion*0.001256   // servirá para la comprobación
 
 	* Distribucion estatal del 8% directo *
 	use "`c(sysdir_site)'/tabaco/Nov2022/bases/entidades.dta", clear
@@ -352,8 +350,6 @@ local fgp_sim     = `ieps92_sim'*0.2
 local litoral_sim = `ieps92_sim'*0.00136
 local ffm_sim     = `ieps92_sim'*0.01
 local ffr_sim     = `ieps92_sim'*0.0125
-*local fgp2_sim   = recaudacion_sim*0.184
-*local litoral2_sim = recaudacion_sim*0.001256
 
 * Distribucion estatal del 8% directo *
 g directo_estatal_sim = `directo8_sim'*directo_estatal_1
