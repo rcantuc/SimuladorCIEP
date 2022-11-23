@@ -47,9 +47,8 @@ import delimited "http://www.conapo.gob.mx/work/models/CONAPO/Datos_Abiertos/Pro
 
 ** 2. Limpia **/
 capture rename año anio
-if _rc != 0 {
-	rename ao anio
-}
+capture rename ao anio
+capture rename aão anio
 
 rename sexo sexo0
 encode sexo0, generate(sexo)
