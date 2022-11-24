@@ -134,7 +134,7 @@ forvalues j=`=rowsof(ISR)'(-1)1 {
 replace formal_asalariados = prop_salarios <= (1-DED[1,4]/100)
 replace ISR__asalariados = ISR if ing_t4_cap1 != 0
 replace ISR__asalariados = 0 if formal_asalariados == 0 | ISR__asalariados == .
-replace ISR__asalariados = ISR__asalariados*3.696/3.542
+replace ISR__asalariados = ISR__asalariados*3.696/3.587
 
 replace SE = 0 if formal_asalariados == 0
 replace SE = SE*.1492/.1780
@@ -145,7 +145,7 @@ replace SE = SE*.1492/.1780
 replace formal_fisicas = prop_formal <= (1-DED[1,3]/100)
 replace ISR__PF = (ISR - ISR__asalariados) if ISR - ISR__asalariados > 0 & formal_fisicas == 1
 replace ISR__PF = 0 if formal_fisicas == 0 | ISR__PF == .
-replace ISR__PF = ISR__PF*0.240/0.407
+replace ISR__PF = ISR__PF*0.240/0.411
 
 
 **************************
@@ -160,7 +160,7 @@ Distribucion SE_empresas, relativo(ing_bruto_tpm) macro(`=`SE'[1,1]')
 
 replace ISRPM = (ing_bruto_tpm-exen_tpm)*PM[1,1]/100 - SE_empresas if formal_morales == 1
 replace ISRPM = 0 if ISRPM == .
-replace ISRPM = ISRPM*4.064/3.954
+replace ISRPM = ISRPM*4.064/3.956
 
 
 ***************

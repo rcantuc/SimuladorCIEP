@@ -99,13 +99,13 @@ noisily GastoPC
 
 
 ** 5.1 Módulos **
-if "`cambioisr'" == "1" {
+if "`cambioisr'" == "" {
 	noisily run "`c(sysdir_site)'/ISR_Mod.do"
 	scalar ISRAS = ISR_AS_Mod
 	scalar ISRPF = ISR_PF_Mod
 	scalar ISRPM = ISR_PM_Mod
 }
-if "`cambioiva'" == "1" {
+if "`cambioiva'" == "" {
 	noisily run "`c(sysdir_site)'/IVA_Mod.do"
 	scalar IVA = IVA_Mod
 }
@@ -135,7 +135,7 @@ save "`c(sysdir_site)'/users/$id/households.dta", replace
 
 
 ** 6.2 CUENTA GENERACIONAL **
-noisily CuentasGeneracionales AportacionesNetas, anio(`=aniovp')
+*noisily CuentasGeneracionales AportacionesNetas, anio(`=aniovp')
 
 
 ** 6.3 Sankey **
@@ -153,7 +153,7 @@ foreach k in /*grupoedad sexo decil*/ escol rural {
 ***                                       ***
 *********************************************
 *noisily SHRFSP, $update
-noisily FiscalGap, anio(`=aniovp') end(`=anioend') aniomin(2015) $nographs $update
+noisily FiscalGap, anio(`=aniovp') end(`=anioend') aniomin(2015) $nographs $update discount(7)
 
 
 
