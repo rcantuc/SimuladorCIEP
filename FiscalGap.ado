@@ -45,7 +45,7 @@ quietly {
 	*** 3 HOUSEHOLDS **
 	*******************
 	use `"`c(sysdir_site)'/users/$pais/$id/households.dta"', clear
-	tabstat Educacion Pension PenBienestar Salud _OtrosGas [fw=factor], stat(sum) f(%20.0fc) save
+	tabstat Educacion Pension PenBienestar Salud _OtrosGas IngBasico [fw=factor], stat(sum) f(%20.0fc) save
 	tempname GASTOHH
 	matrix `GASTOHH' = r(StatTotal)
 
@@ -271,11 +271,11 @@ quietly {
 	*** 4 Fiscal Gap: Gastos ***
 	****************************
 	PEF if transf_gf == 0, anio(`anio') by(divPE) nographs
-	local Educacion = r(Educación)
-	local Pensiones = r(Pensiones)
-	local PenBienestar = r(Pensión_Bienestar)
-	local Salud = r(Salud)
-	local OtrosGas = r(Otras_Part_y_Apor) + r(Energía) + r(Cuotas_ISSSTE) + r(Inversión) + r(Otros)
+	*local Educacion = r(Educación)
+	*local Pensiones = r(Pensiones)
+	*local PenBienestar = r(Pensión_Bienestar)
+	*local Salud = r(Salud)
+	*local OtrosGas = r(Otras_Part_y_Apor) + r(Energía) + r(Cuotas_ISSSTE) + r(Inversión) + r(Otros)
 	replace divPE = 6 if divPE == 5 | divPE == 3 | divPE == -1 | divPE == 4
 
 	collapse (sum) gasto, by(anio divPE) fast
@@ -442,6 +442,13 @@ quietly {
 	}
 	merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 	collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
+
+	tempvar estimacion
+	g `estimacion' = estimacion
+	capture confirm matrix `GASTOHH'
+	if _rc == 0 {
+		replace estimacion = `estimacion'/L.`estimacion'*`GASTOHH'[1,6] if anio >= `anio'				
+	}
 
 	g divPE = 99
 	replace modulo = "ingbasico"
@@ -860,7 +867,7 @@ quietly {
 		quietly log on output
 		noisily di in w "PROYSHRFSP3: [" ///
 			%10.0f -(-`shrfsp'[1,1])/(`poblacionACT'[1,1]) "," ///
-			%10.0f -(-`shrfsp'[1,1] + `estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1])/(`poblacionVP'[1,1]+`poblacionINF') ///
+			%10.0f -(-`shrfsp_end_MX')/(`poblacionEND'[1,1]) ///
 			"]"
 		quietly log off output
 	}

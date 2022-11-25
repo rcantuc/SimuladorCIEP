@@ -108,25 +108,25 @@ if "$output" != "" {
 		%8.3f scalar(ISRAS)+scalar(ISRPF)+scalar(CUOTAS)+scalar(ISRPM)+scalar(OTROSK)+scalar(IVA)+scalar(ISAN)+scalar(IEPSNP)+scalar(IEPSP)+scalar(IMPORT)+scalar(IMSS)+scalar(ISSSTE)+scalar(FMP)+scalar(PEMEX)+scalar(CFE) /// Total INGRESOS
 		"]"
 	noisily di in w "INGRESOSTEF: " in w "["  ///
-		%8.3f scalar(ISRAS)/RemSalPIB*100 "," /// ISR (salarios)
-		%8.3f scalar(ISRPF)/MixLPIB*100 "," /// ISR (físicas)
-		%8.3f scalar(CUOTAS)/(RemSalPIB+SSImputadaPIB+SSEmpleadoresPIB)*100 "," /// Cuotas IMSS
-		%8.3f (scalar(ISRAS)+scalar(ISRPF)+scalar(CUOTAS))/YlPIB*100 "," /// Total Impuestos laborales
-		%8.3f scalar(ISRPM)/ExNOpSocPIB*100 "," /// ISR (morales)
-		%8.3f scalar(OTROSK)/ExNOpSocPIB*100 "," /// Productos, derechos y aprovechamientos
-		%8.3f (scalar(ISRPM)+scalar(OTROSK))/CapIncImpPIB*100 "," /// Total Impuestos al capital
-		%8.3f scalar(IVA)/(ConHogPIB-AlimPIB-BebNPIB-SaluPIB)*100 "," /// IVA
-		%8.3f scalar(ISAN)/VehiPIB*100 "," /// ISAN
-		%8.3f scalar(IEPSNP)/ConHogPIB*100 "," /// IEPS (no petrolero)
-		%8.3f scalar(IEPSP)/ConHogPIB*100 "," /// IEPS (petrolero)
-		%8.3f scalar(IMPORT)/ConHogPIB*100 "," /// Importaciones
-		%8.3f ((IVA)+scalar(ISAN)+scalar(IEPSNP)+scalar(IEPSP)+scalar(IMPORT))/ConHogPIB*100 "," /// Total Impuestos al consumo
-		%8.3f scalar(IMSS)/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 "," /// IMSS
-		%8.3f scalar(ISSSTE)/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 "," /// ISSSTE
-		%8.3f scalar(FMP)/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 "," /// FMP
-		%8.3f scalar(PEMEX)/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 "," /// Pemex
-		%8.3f scalar(CFE)/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 "," /// CFE
-		%8.3f (scalar(IMSS)+scalar(ISSSTE)+scalar(FMP)+scalar(PEMEX)+scalar(CFE))/CapIncImpPIB*100 /// Total Organismos y Empresas
+		%8.1f scalar(ISRAS)/RemSalPIB*100 "," /// ISR (salarios)
+		%8.1f scalar(ISRPF)/MixLPIB*100 "," /// ISR (físicas)
+		%8.1f scalar(CUOTAS)/(RemSalPIB+SSImputadaPIB+SSEmpleadoresPIB)*100 "," /// Cuotas IMSS
+		%8.1f (scalar(ISRAS)+scalar(ISRPF)+scalar(CUOTAS))/YlPIB*100 "," /// Total Impuestos laborales
+		%8.1f scalar(ISRPM)/(ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-IngKPublicosPIB)*100 "," /// ISR (morales)
+		%8.1f scalar(OTROSK)/(ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-IngKPublicosPIB)*100 "," /// Productos, derechos y aprovechamientos
+		%8.1f (scalar(ISRPM)+scalar(OTROSK))/(CapIncImpPIB-IngKPublicosPIB)*100 "," /// Total Impuestos al capital
+		%8.1f scalar(IVA)/(ConHogPIB-AlimPIB-BebNPIB-SaluPIB)*100 "," /// IVA
+		%8.1f scalar(ISAN)/VehiPIB*100 "," /// ISAN
+		%8.1f scalar(IEPSNP)/ConHogPIB*100 "," /// IEPS (no petrolero)
+		%8.1f scalar(IEPSP)/ConHogPIB*100 "," /// IEPS (petrolero)
+		%8.1f scalar(IMPORT)/ConHogPIB*100 "," /// Importaciones
+		%8.1f ((IVA)+scalar(ISAN)+scalar(IEPSNP)+scalar(IEPSP)+scalar(IMPORT))/ConHogPIB*100 "," /// Total Impuestos al consumo
+		%8.1f scalar(IMSS)/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 "," /// IMSS
+		%8.1f scalar(ISSSTE)/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 "," /// ISSSTE
+		%8.1f scalar(FMP)/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 "," /// FMP
+		%8.1f scalar(PEMEX)/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 "," /// Pemex
+		%8.1f scalar(CFE)/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 "," /// CFE
+		%8.1f (scalar(IMSS)+scalar(ISSSTE)+scalar(FMP)+scalar(PEMEX)+scalar(CFE))/CapIncImpPIB*100 /// Total Organismos y Empresas
 		"]"
 	noisily di in w "ISRTASA: [" ///
 		%10.2f ISR[1,4] "," ///

@@ -38,7 +38,7 @@ if "`c(username)'" == "ciepmx" & "`c(console)'" == "console" {                  
 *************************
 *global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"                 // EXPORTAR IMAGENES EN...
 *global update "update"                                                         // UPDATE DATASETS/OUTPUTS
-*global output "output"                                                          // IMPRIMIR OUTPUTS (WEB)
+global output "output"                                                          // IMPRIMIR OUTPUTS (WEB)
 *global nographs "nographs"                                                      // SUPRIMIR GRAFICAS
 
 
@@ -99,13 +99,13 @@ noisily GastoPC
 
 
 ** 5.1 Módulos **
-if "`cambioisr'" == "" {
+if "`cambioisr'" == "1" {
 	noisily run "`c(sysdir_site)'/ISR_Mod.do"
 	scalar ISRAS = ISR_AS_Mod
 	scalar ISRPF = ISR_PF_Mod
 	scalar ISRPM = ISR_PM_Mod
 }
-if "`cambioiva'" == "" {
+if "`cambioiva'" == "1" {
 	noisily run "`c(sysdir_site)'/IVA_Mod.do"
 	scalar IVA = IVA_Mod
 }
@@ -128,7 +128,7 @@ use `"`c(sysdir_site)'/users/$id/households.dta"', clear
 capture drop AportacionesNetas
 g AportacionesNetas = ISRASSIM + ISRPFSIM + CUOTASSIM + ISRPMSIM /// + OTROSKSIM ///
 	+ IVASIM + IEPSNPSIM + IEPSPSIM + ISANSIM + IMPORTSIM + FMPSIM ///
-	- Pension - Educacion - Salud - IngBasico - _Infra
+	- Pension - Educacion - Salud - IngBasico - _Infra - PenBienestar
 label var AportacionesNetas "aportaciones netas"
 noisily Simulador AportacionesNetas [fw=factor], base("ENIGH 2020") reboot anio(`=aniovp') folio("folioviv foliohog") $nographs
 save "`c(sysdir_site)'/users/$id/households.dta", replace
