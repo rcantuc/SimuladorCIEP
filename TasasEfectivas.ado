@@ -168,19 +168,18 @@ quietly {
 	else {
 		scalar ISSSTE = (`ISSSTE') 
 	}
-	tempvar IngKPublicos 
-	g `IngKPublicos' = `FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE'
+	scalar IngKPublicosPIB = `FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE'
 	
 	noisily di in g "  Ingresos de capital privado*" ///
-		_col(44) %7.3fc in y (ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-`IngKPublicos') ///
+		_col(44) %7.3fc in y (ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-IngKPublicosPIB) ///
 		_col(55) in g "ISR (morales)" ///
 		_col(88) %7.3fc in y (`ISRPM') ///
-		_col(99) %7.3fc in y (`ISRPM')/(ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-`IngKPublicos')*100 " %"
+		_col(99) %7.3fc in y (`ISRPM')/(ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-IngKPublicosPIB)*100 " %"
 	noisily di in g "  Ingresos de capital privado*" ///
-		_col(44) %7.3fc in y (ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-`IngKPublicos') ///
+		_col(44) %7.3fc in y (ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-IngKPublicosPIB) ///
 		_col(55) in g "Productos, derechos, aprovech..." ///
 		_col(88) %7.3fc in y (`OTROSK') ///
-		_col(99) %7.3fc in y (`OTROSK')/(ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-`IngKPublicos')*100 " %"
+		_col(99) %7.3fc in y (`OTROSK')/(ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-IngKPublicosPIB)*100 " %"
 
 	// TOTAL CAPITAL PRIVADO
 	noisily di in g _dup(111) "-"
@@ -188,7 +187,7 @@ quietly {
 		_col(44) %7.3fc in y (CapIncImpPIB) ///
 		_col(55) in g "Recaudaci{c o'}n total" ///
 		_col(88) %7.3fc in y (`ISRPM'+`OTROSK') ///
-		_col(99) %7.3fc in y (`ISRPM'+`OTROSK')/(CapIncImpPIB-`IngKPublicos')*100 " %" "}"
+		_col(99) %7.3fc in y (`ISRPM'+`OTROSK')/(CapIncImpPIB-IngKPublicosPIB)*100 " %" "}"
 
 	noisily di _newline(2) in y "{bf: C. " in y "Impuestos al consumo" "}"
 	noisily di _newline in g "{bf:  Cuentas Nacionales" ///

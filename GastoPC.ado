@@ -645,7 +645,6 @@ quietly {
 		_col(50) %7.3fc in y (`gaspemex'+`gascfe'+`gassener'+`gasfeder'+`gascosto'+`gasinfra'+`gasotros')/`PIB'*100 ///
 		_col(60) %15.0fc in y (`gaspemex'+`gascfe'+`gassener'+`gasfeder'+`gascosto'+`gasinfra'+`gasotros')/`Salud'[1,6]
 
-
 	capture drop _OtrosGas
 	Distribucion _OtrosGas, relativo(OtrosGas) macro(`=`gaspemex'+`gascfe'+`gassener'+`gasfeder'+`gasinfra'+`gasotros'')
 

@@ -244,20 +244,6 @@ noisily di _newline(10) in g _dup(23) "*" ///
 
 
 
-************************************
-***                              ***
-***    3. POBLACION + ECONOMÍA   ***
-***                              ***
-/***********************************
-noisily Poblacion, aniofinal(`=scalar(anioend)') //$update
-noisily PIBDeflactor, $update geodef(2013) geopib(2013)
-noisily SCN, $update
-noisily Inflacion, $update
-
-
-
-
-
 **************************/
 ***                     ***
 ***    4. HOUSEHOLDS    ***
@@ -316,7 +302,7 @@ use `"`c(sysdir_site)'/users/$id/households.dta"', clear
 capture drop AportacionesNetas
 g AportacionesNetas = ISRASSIM + ISRPFSIM + CUOTASSIM + ISRPMSIM /// + OTROSKSIM ///
 	+ IVASIM + IEPSNPSIM + IEPSPSIM + ISANSIM + IMPORTSIM + FMPSIM ///
-	- Pension - Educacion - Salud - IngBasico - _Infra
+	- Pension - Educacion - Salud - IngBasico - _Infra - PenBienestar
 label var AportacionesNetas "aportaciones netas"
 noisily Simulador AportacionesNetas [fw=factor], base("ENIGH 2020") reboot anio(`=aniovp') folio("folioviv foliohog") $nographs
 save "`c(sysdir_site)'/users/$id/households.dta", replace
@@ -335,13 +321,13 @@ foreach k in /*grupoedad sexo decil*/ escol rural {
 
 
 
-********************************************
+********************************************/
 ***                                       ***
 ***    7. PARTE IV: DEUDA + FISCAL GAP    ***
 ***                                       ***
 *********************************************
 *noisily SHRFSP, $update
-noisily FiscalGap, anio(`=aniovp') end(`=anioend') aniomin(2015) $nographs $update
+noisily FiscalGap, anio(`=aniovp') end(`=anioend') aniomin(2015) $nographs $update discount(7)
 
 
 

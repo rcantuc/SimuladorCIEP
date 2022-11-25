@@ -846,12 +846,17 @@ program graphpiramide
 			16 "75-79" 17 "80-84" 18 "85-89" 19 "90-94" 20 "95-99" ///
 			21 "100-104" 22 "105-109" 23 "109+"
 		label values grupo_edad grupo_edad
-
+		
 		g over = `over'
 		label define over 1 "I-V" 2 "VI-IX" 3 "X"
 		label values over over
 		collapse (sum) porcentaje=`POR', by(sexo grupo_edad over)
-		
+		reshape wide porcentaje, i(sexo grupo_edad) j(over)
+		reshape wide porcentaje*, i(sexo) j(grupo_edad)
+		reshape long porcentaje1 porcentaje2 porcentaje3, i(sexo) j(grupo_edad)
+		reshape long porcentaje, i(sexo grupo_edad) j(over)
+		replace porcentaje = 0 if porcentaje == .
+
 		forvalues k=`=_N'(-1)1 {
 			if sexo[`k'] == 1 {
 				if over[`k'] == 1 {

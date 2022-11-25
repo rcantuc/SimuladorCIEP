@@ -84,7 +84,7 @@ tempname GAST
 matrix `GAST' = r(StatTotal)
 
 collapse (sum) gas_Educación=Educacion gas_Salud=Salud /*gas__Salarios_de_gobierno=Salarios*/ ///
-	gas___Pensiones=Pension /*gas____Ingreso_Basico=IngBasico*/ ///
+	gas___Pensiones=Pension gas____Ingreso_Básico=IngBasico ///
 	gas____Inversión=_Infra [fw=factor], by(`1')
 
 levelsof `1', local(`1')
