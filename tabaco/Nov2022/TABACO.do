@@ -565,21 +565,21 @@ use `info1', clear
 **Ganancias, se multiplica x4 para hacerlo anual y se deflacta a `aniovp'
 *******************
 ** Ganancias en ingresos: gasto en tabaco - % **
-local gi_gt = ((((1+deltaprecio[_N])*(1+`elasticidad'*deltaprecio[_N])-1)*exp_cig)*-100)*(4*`deflactor')
+local gi_gt = ((((1+deltaprecio[_N])*(1+`elasticidad'*deltaprecio[_N])-1)*exp_cig)*-100)
 
 ** Ganancias en ingresos: gasto en tabaco - $$ **
 local gi_gt_p = ((`gi_gt'*exp_tot)/100)*(4*`deflactor')
 
 ** Ganancias en ingresos: gasto en salud - % **
-local gi_gs = ((((1+`elasticidad'*deltaprecio[_N])-1)*exp_salud)*-100)*(4*`deflactor')
+local gi_gs = (((1+`elasticidad'*deltaprecio[_N])-1)*(exp_salud))*(-100)
 
 ** Ganancias en ingresos: gasto en salud - $$ **
 local gi_gs_p = ((`gi_gs'*exp_tot)/100)*(4*`deflactor')
 
 ** Ganancias en ingreso: dias de vida perdidos - % **
-local gi_yll = ((((1+`elasticidad'*deltaprecio[_N])-1)*ilwy)*-100)*(4*`deflactor')
+local gi_yll = ((((1+`elasticidad'*deltaprecio[_N])-1)*ilwy)*-100)
 
-** Ganancias en ingreso: dias de vida perdidos - % **
+** Ganancias en ingreso: dias de vida perdidos - $$ **
 local gi_yll_p = ((`gi_yll'*exp_tot)/100)*(4*`deflactor')
 
 
@@ -590,11 +590,11 @@ local gi_yll_p = ((`gi_yll'*exp_tot)/100)*(4*`deflactor')
 capture scalar drop pibY pibVPINF pibINF lambda
 scalar gi_gt = string(`gi_gt',"%10.1f")
 scalar gi_gs = string(`gi_gs',"%10.1f")
-scalar gi_yll = string(`gi_yll',"%10.1f")
+scalar gi_yll = string(`gi_yll',"%10.1f") 	
 scalar gi_gt_p = string(`gi_gt_p',"%10.1f")
 scalar gi_gs_p = string(`gi_gs_p',"%10.1f")
 scalar gi_yll_p = string(`gi_yll_p',"%10.1f")
-scalar gi_tot = string(`gi_gt'+`gi_gs'+`gi_yll',"%10.1f")
+scalar gi_tot = string(`gi_gt_p'+`gi_gs_p'+`gi_yll_p',"%10.1f")
 
 
 
