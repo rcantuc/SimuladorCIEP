@@ -16,7 +16,6 @@ quietly {
 	*************
 	*** 1 PIB ***
 	*************
-	*use if anio <= `end' using "`c(sysdir_site)'/users/$pais/$id/PIB.dta", clear
 	PIBDeflactor, nographs nooutput
 	keep if anio <= `end'
 	local currency = currency[1]
@@ -48,6 +47,7 @@ quietly {
 	tabstat Educacion Pension PenBienestar Salud _OtrosGas IngBasico [fw=factor], stat(sum) f(%20.0fc) save
 	tempname GASTOHH
 	matrix `GASTOHH' = r(StatTotal)
+
 
 
 	******************************
@@ -496,9 +496,10 @@ quietly {
 	replace tasaEfectiva = `tasaEfectiva_ari'[1,1] if anio >= `anio' & tasaEfectiva == .
 
 	* Simulacion *
-	capture confirm scalar costodeu
-	if _rc == 0 & "$pais" == "" {
-		replace gastocostodeuda = scalar(costodeu)*Poblacion if anio == `anio'
+	capture confirm scalar gascosto
+	if _rc == 0 {
+		replace estimacioncostodeuda = scalar(gascosto)*Poblacion if anio == `anio'
+		replace gastocostodeuda = scalar(gascosto)*Poblacion if anio == `anio'
 		replace tasaEfectiva = gastocostodeuda/shrfsp*100 if anio == `anio'
 	}
 

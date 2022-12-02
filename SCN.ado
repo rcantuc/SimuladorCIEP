@@ -280,6 +280,7 @@ quietly {
 			local label = substr("`label'",1,31)
 			label var `k' "`label'"
 		}
+		merge 1:1 (anio) using "`c(sysdir_site)'/SIM/Poblaciontot.dta", nogen keep(matched)
 		if `c(version)' > 13.1 {
 			saveold "`c(sysdir_site)'/SIM/SCN.dta", replace version(13)
 		}
@@ -320,7 +321,6 @@ quietly {
 	use "`c(sysdir_site)'/SIM/SCN.dta", clear
 	local anio_last = anio[_N]
 	merge 1:1 (anio) using `basepib', nogen
-	merge 1:1 (anio) using "`c(sysdir_site)'/SIM/Poblaciontot.dta", nogen keep(matched)
 	tsset anio
 
 

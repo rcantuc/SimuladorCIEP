@@ -10,8 +10,6 @@ timer on 1
 
 
 
-
-
 ******************************************************
 ***                                                ***
 ***    0. DIRECTORIOS DE TRABAJO (PROGRAMACION)    ***
@@ -29,8 +27,6 @@ if "`c(username)'" == "ciepmx" & "`c(console)'" == "console" {                  
 
 
 
-
-
 ************************/
 ***                   ***
 ***    1. OPCIONES    ***
@@ -38,33 +34,27 @@ if "`c(username)'" == "ciepmx" & "`c(console)'" == "console" {                  
 *************************
 *global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"                 // EXPORTAR IMAGENES EN...
 *global update "update"                                                         // UPDATE DATASETS/OUTPUTS
-global output "output"                                                          // IMPRIMIR OUTPUTS (WEB)
+*global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
 *global nographs "nographs"                                                      // SUPRIMIR GRAFICAS
 
-
-
-
-
-***************************************
-***                                 ***
-***    2. PARÁMETROS DEL USUARIO    ***
-***                                 ***
-***************************************
-noisily run "`c(sysdir_site)'/PARAM.do".                                       // PARÁMETROS (PE 2023)
-
-
-
+scalar aniovp = 2023
+scalar anioend = 2030
+noisily run "`c(sysdir_site)'/PARAM.do"                                         // PARÁMETROS (PE 2023)
 
 
 ************************************
 ***                              ***
-***    3. POBLACION + ECONOMÍA   ***
+***    2. POBLACION + ECONOMÍA   ***
 ***                              ***
-/***********************************
-noisily Poblacion, aniofinal(`=scalar(anioend)') //$update
-noisily PIBDeflactor, $update geodef(2013) geopib(2013)
-noisily SCN, $update
+***********************************
+*noisily Poblacion, aniofinal(`=scalar(anioend)') //$update
+*noisily PIBDeflactor, $update geodef(2013) geopib(2013)
+*noisily SCN, $update
 *noisily Inflacion, $update
+
+*noisily PEF, by(divPE) rows(2) min(0) $update
+*noisily LIF, by(divSIM) rows(2) min(0) eofp $update
+*noisily SHRFSP, $update
 
 
 
@@ -72,7 +62,7 @@ noisily SCN, $update
 
 **************************/
 ***                     ***
-***    4. HOUSEHOLDS    ***
+***    3. HOUSEHOLDS    ***
 ***                     ***
 ***************************
 capture confirm file "`c(sysdir_site)'/SIM/2020/households.dta"
@@ -87,18 +77,17 @@ if _rc != 0 {
 
 
 
-
-
 ******************************/
 ***                         ***
-***    5. SISTEMA FISCAL    ***
+***    4. SISTEMA FISCAL    ***
 ***                         ***
 *******************************
-*noisily PEF, by(divPE) rows(2) min(0) $update
+
+** 4.1 Gasto per cápita **
 noisily GastoPC
 
 
-** 5.1 Módulos **
+** 4.2 Módulos **
 if "`cambioisr'" == "1" {
 	noisily run "`c(sysdir_site)'/ISR_Mod.do"
 	scalar ISRAS = ISR_AS_Mod
@@ -111,17 +100,14 @@ if "`cambioiva'" == "1" {
 }
 
 
-** 5.2 Integración **
-*noisily LIF, by(divSIM) rows(2) min(0) eofp $update
+** 4.3 Integración **
 noisily TasasEfectivas
-
-
 
 
 
 *****************************/
 ***                        ***
-***    6. CICLO DE VIDA    ***
+***    5. CICLO DE VIDA    ***
 ***                        ***
 ******************************
 use `"`c(sysdir_site)'/users/$id/households.dta"', clear
@@ -134,28 +120,23 @@ noisily Simulador AportacionesNetas [fw=factor], base("ENIGH 2020") reboot anio(
 save "`c(sysdir_site)'/users/$id/households.dta", replace
 
 
-** 6.2 CUENTA GENERACIONAL **
+** 5.2 CUENTA GENERACIONAL **
 *noisily CuentasGeneracionales AportacionesNetas, anio(`=aniovp')
 
 
-** 6.3 Sankey **
-foreach k in /*grupoedad sexo decil*/ escol rural {
+** 5.3 Sankey **
+foreach k in /*grupoedad sexo decil rural*/ escol {
 	noisily run "`c(sysdir_site)'/SankeySF.do" `k' `=aniovp'
 }
 
 
 
-
-
 ********************************************/
 ***                                       ***
-***    7. PARTE IV: DEUDA + FISCAL GAP    ***
+***    6. PARTE IV: DEUDA + FISCAL GAP    ***
 ***                                       ***
 *********************************************
-*noisily SHRFSP, $update
 noisily FiscalGap, anio(`=aniovp') end(`=anioend') aniomin(2015) $nographs $update discount(7)
-
-
 
 
 

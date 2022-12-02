@@ -56,7 +56,7 @@ gsize 		heading			large
 yesno 		title_span		no
 
 gsize 		subheading 		small
-yesno 		subtitle_span		yes
+yesno 		subtitle_span		no
 
 gsize 		body			tiny
 yesno 		caption_span		yes

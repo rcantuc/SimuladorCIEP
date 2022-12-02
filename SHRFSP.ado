@@ -1,8 +1,7 @@
 program define SHRFSP
+timer on 5
 quietly {
 
-
-	timer on 5
 	***********************
 	*** 1 BASE DE DATOS ***
 	***********************
@@ -10,12 +9,6 @@ quietly {
 	** 1.1 Anio valor presente **
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
-
-	** 1.2 Datos Abiertos (México) **
-	UpdateDatosAbiertos
-	local updated = r(updated)
-	local ultanio = r(ultanio)
-	local ultmes = r(ultmes)
 
 	capture confirm scalar aniovp
 	if _rc == 0 {
@@ -40,7 +33,6 @@ quietly {
 	}
 
 	** 2.2 PIB + Deflactor **
-	*use "`c(sysdir_site)'/users/$pais/$id/PIB.dta", clear
 	PIBDeflactor, nographs nooutput
 	local currency = currency[1]
 	tempfile PIB
@@ -52,8 +44,32 @@ quietly {
 	*** 3 MERGE ***
 	***************
 	use `"`c(sysdir_site)'/SIM/$pais/SHRFSP.dta"', clear
-	merge 1:1 (anio) using `PIB', nogen keepus(pibY pibYR var_* Poblacion deflator) update replace
+	merge 1:1 (anio) using `PIB', nogen keepus(pibY pibYR var_* Poblacion* deflator) update replace
 	tsset anio
+
+	forvalues k=1(1)`=_N' {
+		if rfsp[`k'] != . & "`anioini'" == "" {
+			local anioini = anio[`k']
+		}
+		if rfsp[`k'] == . & "`anioini'" != "" & "`aniofin'" == "" {
+			local aniofin = anio[`=`k'-1']
+			local mesfin = mes[`=`k'-1']
+			local obsfin = `k'-1
+		}
+		if anio[`k'] == `anio' {
+			local obsvp = `k'
+		}
+	}
+
+	noisily di _newline in g "  {bf:Tipo de cambio " in y anio[`obsfin'] in g ": }" _col(30) in y %15.1fc tipoDeCambio[`obsfin'] in g " `currency'/USD"
+	noisily di _newline in g "  {bf:SHRFSP a" in y " `aniofin'm`mesfin'" in g ": }" _col(30) in y %15.0fc shrfsp[`obsfin']/Poblacion[`obsfin'] in g " `currency' por persona."
+	noisily di in g "  {bf:SHRFSP interna a" in y " `aniofin'm`mesfin'" in g ": }" _col(30) in y %15.0fc shrfspInterno[`obsfin']/Poblacion[`obsfin'] in g " `currency' por persona."
+	noisily di in g "  {bf:SHRFSP externa a" in y " `aniofin'm`mesfin'" in g ": }" _col(30) in y %15.0fc shrfspExterno[`obsfin']/Poblacion[`obsfin']/tipoDeCambio[`obsfin'] in g " USD por persona."
+
+	noisily di _newline in g "  {bf:SHRFSP a" in y " `=`aniofin'-1'm`mesfin'" in g ": }" _col(30) in y %15.0fc shrfsp[`obsfin'-1]/Poblacion[`obsfin'-1] in g " `currency' por persona."
+	noisily di in g "  {bf:SHRFSP interna a" in y " `=`aniofin'-1'm`mesfin'" in g ": }" _col(30) in y %15.0fc shrfspInterno[`obsfin'-1]/Poblacion[`obsfin'-1] in g " `currency' por persona."
+	noisily di in g "  {bf:SHRFSP externa a" in y " `=`aniofin'-1'm`mesfin'" in g ": }" _col(30) in y %15.0fc shrfspExterno[`obsfin'-1]/Poblacion[`obsfin'-1]/tipoDeCambio[`obsfin'-1] in g " USD por persona."
+
 
 	** 3.1 CGPE 2023 ** 
 	replace shrfsp = 48.9/100*pibY if anio == 2022
@@ -147,9 +163,7 @@ quietly {
 	replace rfspAdecuacion = -0.3/100*pibY if anio == 2028
 	replace tipoDeCambio = 21.5 if anio == 2028
 
-	* Costo financiero */
-	g porInterno = shrfspInterno/shrfsp
-	g porExterno = shrfspExterno/shrfsp
+	* Costo financiero *
 	replace costodeudaInterno = 3.1/100*porInterno*pibY if anio == 2022
 	replace costodeudaExterno = 3.1/100*porExterno*pibY if anio == 2022
 	replace costodeudaInterno = 3.4/100*porInterno*pibY if anio == 2023
@@ -164,7 +178,8 @@ quietly {
 	replace costodeudaExterno = 2.8/100*porExterno*pibY if anio == 2027
 	replace costodeudaInterno = 2.7/100*porInterno*pibY if anio == 2028
 	replace costodeudaExterno = 2.7/100*porExterno*pibY if anio == 2028
-	
+
+	* Tasas Efectivas */
 	g tasaInterno = costodeudaInterno/L.shrfspInterno*100
 	g tasaExterno = costodeudaExterno/L.shrfspExterno*100
 	replace tasaInterno = L.tasaInterno if tasaInterno == .
@@ -199,23 +214,12 @@ quietly {
 			replace efectoPositivo = efectoPositivo + `k' if `k' > 0
 	}
 
-	forvalues k=1(1)`=_N' {
-		if rfsp[`k'] != . & "`anioini'" == "" {
-			local anioini = anio[`k']
-		}
-		if rfsp[`k'] == . & "`anioini'" != "" & "`aniofin'" == "" {
-			local aniofin = anio[`=`k'-1']
-		}
-		if anio[`k'] == `anio' {
-			local obsvp = `k'
-		}
-	}
 
 	if "`nographs'" != "nographs" & "$nographs" == "" {
 		local j = 100/(`aniofin'-2008+1)/2
 		forvalues k=1(1)`=_N' {
 			if balprimario[`k'] != . {
-				local textDeuda `"`textDeuda' `=efectoPositivo[`k']+.3' `j' "{bf:`=string(efectoTotal[`k'],"%5.1fc")'% PIB}""'
+				*local textDeuda `"`textDeuda' `=efectoPositivo[`k']+.3' `j' "{bf:`=string(efectoTotal[`k'],"%5.1fc")'% PIB}""'
 				local j = `j' + 100/(`aniofin'-2008+1)
 			}
 		}
@@ -244,14 +248,6 @@ quietly {
 	}
 
 
-	noisily di _newline in g "  {bf:Tipo de cambio " in y anio[`obsvp'] in g ": }" _col(30) in y %15.1fc tipoDeCambio[`obsvp'] in g " `currency'/USD"
-	noisily di _newline in g "  {bf:SHRFSP a" in y " `ultanio'm`ultmes'" in g ": }" _col(30) in y %15.0fc shrfsp[`obsvp']/Poblacion[`obsvp'] in g " `currency' por persona."
-	noisily di in g "  {bf:SHRFSP interna a" in y " `ultanio'm`ultmes'" in g ": }" _col(30) in y %15.0fc shrfspInterno[`obsvp']/Poblacion[`obsvp'] in g " `currency' por persona."
-	noisily di in g "  {bf:SHRFSP externa a" in y " `ultanio'm`ultmes'" in g ": }" _col(30) in y %15.0fc shrfspExterno[`obsvp']/Poblacion[`obsvp']/tipoDeCambio[`obsvp'] in g " USD por persona."
-
-	noisily di _newline in g "  {bf:SHRFSP a" in y " `=`ultanio'-1'm`ultmes'" in g ": }" _col(30) in y %15.0fc shrfsp[`obsvp'-1]/Poblacion[`obsvp'-1] in g " `currency' por persona."
-	noisily di in g "  {bf:SHRFSP interna a" in y " `=`ultanio'-1'm`ultmes'" in g ": }" _col(30) in y %15.0fc shrfspInterno[`obsvp'-1]/Poblacion[`obsvp'-1] in g " `currency' por persona."
-	noisily di in g "  {bf:SHRFSP externa a" in y " `=`ultanio'-1'm`ultmes'" in g ": }" _col(30) in y %15.0fc shrfspExterno[`obsvp'-1]/Poblacion[`obsvp'-1]/tipoDeCambio[`obsvp'-1] in g " USD por persona."
 
 
 

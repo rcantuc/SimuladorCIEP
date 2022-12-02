@@ -10,24 +10,14 @@ timer on 1
 
 
 
-
-
 ******************************************************
 ***                                                ***
 ***    0. DIRECTORIOS DE TRABAJO (PROGRAMACION)    ***
 ***                                                ***
 ******************************************************
-if "`c(username)'" == "ricardo" {                                               // Mac Ricardo
-	sysdir set SITE "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladorCIEP/5.3/SimuladorCIEP/"
-}
-if "`c(username)'" == "ciepmx" & "`c(console)'" == "" {                         // Linux ServidorCIEP
-	sysdir set SITE "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/SimuladorCIEP/5.3/SimuladorCIEP/"
-}
-if "`c(username)'" == "ciepmx" & "`c(console)'" == "console" {                  // Linux ServidorCIEP (WEB)
+if "`c(username)'" == "ciepmx" {                  // Linux ServidorCIEP (WEB)
 	sysdir set SITE "/SIM/OUT/5/5.3/"
 }
-
-
 
 
 
@@ -43,19 +33,11 @@ global nographs "nographs"                                                      
 
 
 
-
-
 *****************************************************
 ***                                               ***
 ***    2. DIRECTORIOS Y PARÁMETROS DEL USUARIO    ***
 ***                                               ***
 *****************************************************
-
-
-
-***************************
-***    2.1. USERNAME    ***
-***************************
 global id = "`c(username)'"                                                     // ID DEL USUARIO
 capture mkdir `"`c(sysdir_site)'/SIM/"'
 capture mkdir `"`c(sysdir_site)'/users/"'
@@ -68,7 +50,7 @@ if "$output" != "" {
 
 
 **************************************************
-***    2.2. CRECIMIENTO Y DEFLACTOR DEL PIB    ***
+***    2.1. CRECIMIENTO Y DEFLACTOR DEL PIB    ***
 **************************************************
 scalar aniovp = 2023
 scalar anioend = 2030
@@ -93,82 +75,9 @@ global tasaEfectiva = 6.6041 // Tasa de inter{c e'}s EFECTIVA
 global tipoDeCambio = 20.4   // Tipo de cambio
 global depreciacion = 0.2    // Depreciaci{c o'}n
 
-PIBDeflactor, nographs
-
-
-
-*************************
-***    2.3. GASTOS    ***
-*************************
-if "$update" == "update" {
-	noisily GastoPC
-}
-else {
-	scalar basica      =   26537 //    Educación b{c a'}sica
-	scalar medsup      =   26439 //    Educación media superior
-	scalar superi      =   39157 //    Educación superior
-	scalar posgra      =   64239 //    Posgrado
-	scalar eduadu      =   37573 //    Educación para adultos
-	scalar otrose      =    3802 //    Otros gastos educativos
-
-	scalar ssa         =     600 //    SSalud
-	scalar imssbien    =    4113 //    IMSS-Bienestar
-	scalar imss        =    8273 //    IMSS (salud)
-	scalar issste      =   11072 //    ISSSTE (salud)
-	scalar pemex       =   27368 //    Pemex (salud) + ISSFAM (salud)
-
-	scalar bienestar   =   29239 //    Pensión Bienestar
-	scalar penimss     =  169241 //    Pensión IMSS
-	scalar penisss     =  249560 //    Pensión ISSSTE
-	scalar penotro     = 1507687 //    Pensión Pemex, CFE, LFC, ISSFAM, Otros
-
-	scalar gascfe      =    2958 //    Gasto en CFE
-	scalar gaspemex    =    4466 //    Gasto en Pemex
-	scalar gassener    =    1128 //    Gasto en SENER
-	scalar gasinfra    =    4318 //    Gasto en Inversión
-	scalar gascosto    =    8543 //    Gasto en Costo de la deuda
-	scalar gasfeder    =    9918 //    Participaciones y Otras aportaciones
-	scalar gasotros    =    4449 //    Otros gastos
-
-	scalar IngBas      =       0 //    Ingreso b{c a'}sico
-	scalar ingbasico18 =       1 //    1: Incluye menores de 18 anios, 0: no
-	scalar ingbasico65 =       1 //    1: Incluye mayores de 65 anios, 0: no
-}
-
-
-
-**************************/
-***    2.4. INGRESOS    ***
-***************************
-if "$update" == "update" {
-	noisily TasasEfectivas
-}
-else {
-	scalar ISRAS   = (3.696/100*scalar(pibY)*(1+ 3.782*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISR (asalariados): 3.696
-	scalar ISRPF   = (0.240/100*scalar(pibY)*(1+ 1.199*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISR (personas f{c i'}sicas): 0.240
-	scalar CUOTAS  = (1.499/100*scalar(pibY)*(1+ 2.197*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Cuotas (IMSS): 1.499
-
-	scalar ISRPM   = (4.064/100*scalar(pibY)*(1+ 4.664*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISR (personas morales): 4.064
-	scalar OTROSK  = (1.049/100*scalar(pibY)*(1+-3.269*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Productos, derechos, aprovech.: 1.049
-
-	scalar IVA     = (4.520/100*scalar(pibY)*(1+ 2.498*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // IVA: 4.520
-	scalar ISAN    = (0.049/100*scalar(pibY)*(1+ 3.565*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISAN: 0.049
-	scalar IEPSNP  = (0.662/100*scalar(pibY)*(1+ 0.362*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // IEPS (no petrolero): 0.887
-	scalar IEPSP   =  0.887     // IEPS (petrolero): 0.662
-	scalar IMPORT  = (0.313/100*scalar(pibY)*(1+ 5.303*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Importaciones: 0.313
-
-	scalar FMP     = (1.553/100*scalar(pibY)*(1+-7.718*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Fondo Mexicano del Petróleo: 1.553
-
-	scalar IMSS    = (0.091/100*scalar(pibY)*(1+-2.685*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (IMSS): 0.091
-	scalar ISSSTE  = (0.159/100*scalar(pibY)*(1+-3.058*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (ISSSTE): 0.159
-	scalar PEMEX   = (2.632/100*scalar(pibY)*(1+ 1.379*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (Pemex): 2.632
-	scalar CFE     = (1.271/100*scalar(pibY)*(1+-3.024*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (CFE): 1.271
-}
-
-
 
 ********************************************************
-***       2.4.1. Impuesto Sobre la Renta (ISR)       ***
+***       2.3.1. Impuesto Sobre la Renta (ISR)       ***
 ********************************************************
 *             Inferior		Superior	CF		Tasa
 matrix ISR =  (0.01,		7735.00,	0.0,		1.92	\    /// 1
@@ -206,9 +115,8 @@ matrix PM = (30,		21.45)
 **************************************
 
 
-
 ***********************************************************
-***       2.4.2. Impuesto al Valor Agregado (IVA)       ***
+***       2.3.2. Impuesto al Valor Agregado (IVA)       ***
 ***********************************************************
 matrix IVAT = (16 \     ///  1  Tasa general 
                1  \     ///  2  Alimentos, input[1]: Tasa Cero, [2]: Exento, [3]: Gravado
@@ -227,7 +135,6 @@ matrix IVAT = (16 \     ///  1  Tasa general
 *************************************/
 
 
-
 ****************************
 ***    2.4.5. DISPLAY    ***
 ****************************
@@ -239,8 +146,6 @@ noisily di _newline(10) in g _dup(23) "*" ///
 	_newline in g "  D{c I'}A:  " in y "`c(current_date)'" ///
 	_newline in g "  HORA: " in y "`c(current_time)'" ///
 	_newline in g _dup(23) "*"
-
-
 
 
 
@@ -261,14 +166,12 @@ if _rc != 0 {
 
 
 
-
-
 ******************************/
 ***                         ***
 ***    5. SISTEMA FISCAL    ***
 ***                         ***
 *******************************
-*noisily PEF, by(divPE) rows(2) min(0) $update
+noisily PEF, by(divPE) rows(2) min(0) $update
 noisily GastoPC
 
 
@@ -286,7 +189,7 @@ if "`cambioiva'" == "1" {
 
 
 ** 5.2 Integración **
-*noisily LIF, by(divSIM) rows(2) min(0) eofp $update
+noisily LIF, by(divSIM) rows(2) min(0) eofp $update
 noisily TasasEfectivas
 
 
@@ -313,7 +216,7 @@ save "`c(sysdir_site)'/users/$id/households.dta", replace
 
 
 ** 6.3 Sankey **
-foreach k in /*grupoedad sexo decil*/ escol rural {
+foreach k in /*grupoedad sexo decil rural*/ escol {
 	noisily run "`c(sysdir_site)'/SankeySF.do" `k' `=aniovp'
 }
 
@@ -326,7 +229,7 @@ foreach k in /*grupoedad sexo decil*/ escol rural {
 ***    7. PARTE IV: DEUDA + FISCAL GAP    ***
 ***                                       ***
 *********************************************
-*noisily SHRFSP, $update
+noisily SHRFSP, $update
 noisily FiscalGap, anio(`=aniovp') end(`=anioend') aniomin(2015) $nographs $update discount(7)
 
 

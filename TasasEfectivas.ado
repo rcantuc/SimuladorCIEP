@@ -15,17 +15,10 @@ quietly {
 
 
 
-	***************************************************************
-	*** 1 Cuentas macroeconómicas (SCN, PIB, Balanza Comercial) ***
-	***************************************************************
-	*use if anio == `anio' using "`c(sysdir_site)'/users/$pais/$id/PIB.dta", clear
-	PIBDeflactor, aniovp(`anio') nographs nooutput
-	keep if anio == `anio'
-	local PIB = pibY[1]
-
-	*balanzacomercial, anio(`anio')
-
-	SCN, anio(`anio') nographs
+	*********************************
+	*** 1 Cuentas macroeconómicas ***
+	*********************************
+	SCN, anio(`=aniovp') nographs
 
 
 
@@ -36,9 +29,8 @@ quietly {
 	local recursos = r(divSIM)
 	foreach k of local recursos {
 		local `=substr("`k'",1,7)' = r(`k')
-		local `=substr("`k'",1,7)' = ``=substr("`k'",1,7)''/`PIB'*100
+		local `=substr("`k'",1,7)' = ``=substr("`k'",1,7)''/scalar(PIB)*100
 	}
-
 
 	noisily di _newline(2) in y "{bf: A. " in y "Impuestos laborales" "}"
 	noisily di _newline in g "{bf:  Cuentas Nacionales" ///

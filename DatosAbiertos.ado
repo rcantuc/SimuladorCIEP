@@ -1,56 +1,71 @@
 program define DatosAbiertos, return
 quietly {
 
+	** 0.1 Revisa si se puede usar la base de datos **
 	capture use "`c(sysdir_site)'/SIM/DatosAbiertos.dta", clear
+	if _rc != 0 {
+		UpdateDatosAbiertos
+	}
+
+	** 0.2 Revisa si existe el scalar aniovp **
+	capture confirm scalar aniovp
+	if _rc == 0 {
+		local aniovp = scalar(aniovp)
+	}
+	else {
+		local aniovp : di %td_CY-N-D  date("$S_DATE", "DMY")
+		local aniovp = substr(`"`=trim("`aniovp'")'"',1,4)	
+	}
+
 	syntax anything [if] [, NOGraphs PIBVP(real -999) PIBVF(real -999) UPDATE DESDE(real 1993) MES]
 
 
 
-	****************************
-	*** 1 Base de datos SHCP ***
-	****************************
-	PIBDeflactor, nographs nooutput
-	local aniovp = r(aniovp)
+	***********************
+	*** 1 Base de datos ***
+	***********************
+	
+	** 1.1 PIB + Deflactor **
+	PIBDeflactor, nographs nooutput aniovp(`aniovp')
 	local currency = currency[1]
 	tempfile PIB
 	save "`PIB'"
 
-	capture use if clave_de_concepto == "`anything'" using "`c(sysdir_site)'/SIM/DatosAbiertos.dta", clear
-	if _rc != 0 {
-		UpdateDatosAbiertos
-		use if clave_de_concepto == "`anything'" using "`c(sysdir_site)'/SIM/DatosAbiertos.dta", clear
-	}
-
+	** 1.2 Datos Abiertos (Estadísticas Oportunas) **
+	use if clave_de_concepto == "`anything'" using "`c(sysdir_site)'/SIM/DatosAbiertos.dta", clear
 	if `=_N' == 0 {
 		noisily di in r "No se encontr{c o'} la serie {bf:`anything'}."
 		exit
 	}
-
-
-
-	*********************************
-	** 1.1 Informacion de la serie **
-	noisily di _newline in g " Serie: " in y "`anything'" in g ". Nombre: " in y "`=nombre[1]'" in g "."
 	tsset aniomes
 	sort aniomes
 	local last_anio = anio[_N]
 	local last_mes = mes[_N]
-	merge m:1 (anio) using "`PIB'", nogen keep(matched) keepus(pibY deflator currency)
+
+	* Acentos *
+	replace nombre = "Saldo histórico de los RFSP" if nombre == "Saldo hist?rico de los RFSP"
+
+
+	*********************************
+	** 1.1 Informacion de la serie **
+	merge m:1 (anio) using "`PIB'", nogen keep(matched) keepus(pibY deflator currency Poblacion*)
+	noisily di _newline in g " Serie: " in y "`anything'" in g ". Nombre: " in y "`=nombre[1]'" in g "."
 	*keep if anio >= 2013 & anio <= `last_anio'
 	
 	if "`if'" != "" {
 		keep `if'
 	}
 
-	tempvar montomill
+	tempvar montomill montopc
 	g `montomill' = monto/1000000/deflator
+	g `montopc' = monto/Poblacion/deflator
 
 	label define mes 1 "Enero" 2 "Febrero" 3 "Marzo" 4 "Abril" 5 "Mayo" 6 "Junio" 7 "Julio" 8 "Agosto" 9 "Septiembre" 10 "Octubre" 11 "Noviembre" 12 "Diciembre"
 	label values mes mes
 	local mesname : label mes `=mes[_N]'
 
 	if tipo_de_informacion == "Flujo" {
-		tabstat `montomill' if mes == `=mes[_N]' & (anio == `=anio[_N]'. | anio == `=anio[_N]-1'), stat(sum) by(anio) format(%7.0fc) save
+		tabstat `montomill' if mes == `=mes[_N]' & (anio == `=anio[_N]' | anio == `=anio[_N]-1'), stat(sum) by(anio) format(%7.0fc) save
 		tempname meshoy mesant
 		matrix `meshoy' = r(Stat2)
 		matrix `mesant' = r(Stat1)
@@ -59,10 +74,10 @@ quietly {
 		noisily di in g "  Mes " in y "`mesname' `=anio[_N]-1'" in g ": " _col(40) in y %20.0fc `mesant'[1,1] in g " millones `currency' `aniovp'"
 		noisily di in g "  Crecimiento: " _col(44) in y %16.1fc (`meshoy'[1,1]/`mesant'[1,1]-1)*100 in g " %"
 
-		tabstat `montomill' if mes <= `=mes[_N]' & (anio == `=anio[_N]'. | anio == `=anio[_N]-1'), stat(sum) by(anio) format(%7.0fc) save
+		tabstat `montomill' if mes <= `=mes[_N]' & (anio == `=anio[_N]' | anio == `=anio[_N]-1'), stat(sum) by(anio) format(%7.0fc) save
 	}
 	if tipo_de_informacion == "Saldo" {
-		tabstat `montomill' if mes == `=mes[_N]' & (anio == `=anio[_N]'. | anio == `=anio[_N]-1'), stat(sum) by(anio) format(%7.0fc) save
+		tabstat `montomill' if mes == `=mes[_N]' & (anio == `=anio[_N]' | anio == `=anio[_N]-1'), stat(sum) by(anio) format(%7.0fc) save
 	}
 	tempname meshoy mesant
 	matrix `meshoy' = r(Stat2)
@@ -135,21 +150,38 @@ quietly {
 			caption("{bf:Fuente:} Elaborado por el CIEP, con información de la SHCP (Estadísticas Oportunas de Finanzas P{c u'}blicas).")
 		restore
 
-		graph bar (sum) `montomill' if mes == `=mes[_N]' /*& anio >= 2012*/, over(anio) asyvar ///
+		graph bar (sum) `montomill' if mes == `=mes[_N]' & anio >= 2012, over(anio) ///
 			name(`mesname'`anything', replace) ///
 			ytitle("millones de `=currency[1]' `aniovp'") ///
 			ylabel(, format(%15.0fc)) ///
 			title("{bf:`=nombre[1]'}"`textsize') ///
 			yline(0, lcolor(black) lpattern(solid)) ///
-			subtitle("`mesname'") blabel(name) legend(off) ///
-			note("{bf:{c U'}ltimo dato:} `last_anio'm`last_mes'.") ///
+			subtitle("`mesname'") blabel(, format(%10.0fc)) legend(off) ///
+			///note("{bf:{c U'}ltimo dato:} `last_anio'm`last_mes'.") ///
 			caption("{bf:Fuente:} Elaborado por el CIEP, con información de la SHCP (Estadísticas Oportunas de Finanzas P{c u'}blicas).")
 	}
-	
-	if "`mes'" == "mes" {
-		exit
+
+	if "`nographs'" != "nographs" & tipo_de_informacion == "Saldo" {
+		forvalues k=1(1)`=_N' {
+			if `montopc'[`k'] != . & anio[`k'] >= 2014 & mes[`k'] == `last_mes' {
+				local textmontopc `"`textmontopc' `=`montopc'[`k']' `=aniomes[`k']' "{bf:`=string(`montopc'[`k'],"%10.0fc")'}" "'
+			}
+		}
+		twoway (connect `montopc' aniomes if anio >= 2014 & mes == `last_mes', msize(large)), ///
+			ytitle("`=currency[1]' `aniovp'") ///
+			tlabel(2014m`last_mes'(12)`last_anio'm`last_mes') ///
+			ylabel(, format(%15.0fc)) ///
+			title("{bf:`=nombre[1]'}"`textsize') ///
+			subtitle(Por persona a `mesname') ///
+			xtitle("") ///
+			text(`textmontopc') ///
+			caption("{bf:Fuente:} Elaborado por el CIEP, con información de la SHCP (Estadísticas Oportunas de Finanzas P{c u'}blicas).") ///
+			name(`anything'PC, replace)
+
+
 	}
-	
+
+
 
 	*************************/
 	*** 2 Proyeccion anual ***
