@@ -10,7 +10,7 @@ if "$output" != "" {
 	quietly log off output
 }
 
-set trace on
+
 
 **************************************************
 ***    2.2. CRECIMIENTO Y DEFLACTOR DEL PIB    ***
@@ -36,8 +36,8 @@ global def2027 = 3.51530 //    CGPE 2023 (página 134)
 global def2028 = 3.50150 //    CGPE 2023 (página 134)
 
 global tasaEfectiva = 6.7724 // Tasa de inter{c e'}s EFECTIVA
-*global tipoDeCambio = 19.8   // Tipo de cambio
-*global depreciacion = 0.2    // Depreciaci{c o'}n
+global tipoDeCambio = 19.8   // Tipo de cambio
+global depreciacion = 0.2    // Depreciaci{c o'}n
 
 PIBDeflactor, nographs
 

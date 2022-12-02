@@ -46,7 +46,7 @@ quietly {
 	*** 2 Bases de datos ***
 	************************
 	use "`c(sysdir_site)'/SIM/$pais/PIBDeflactor.dta", clear
-	
+
 	** 2.1 Obtiene el año inicial y final de la base **
 	forvalues k=1(1)`=_N' {
 		if anio[`k'] == `aniovp' {
