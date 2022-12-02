@@ -32,7 +32,11 @@ label var pibQ "Producto Interno Bruto (trimestral)"
 drop periodo
 order anio trimestre pibQ
 
-* 1.1.4. Guardar *
+* 1.1.4. Texto *
+local ultanio = anio[_N]
+local ulttrim = trimestre[_N]
+
+* 1.1.5. Guardar *
 compress
 tempfile PIB
 save `PIB'
@@ -69,6 +73,50 @@ tempfile Deflactor
 save `Deflactor', replace
 
 
+** 1.3 Poblacion CONAPO **
+capture use `"`c(sysdir_site)'/SIM/$pais/Poblacion.dta"', clear
+if _rc != 0 {
+	noisily run `"`c(sysdir_site)'/UpdatePoblacion`=subinstr("${pais}"," ","",.)'.do"'
+}
+collapse (sum) Poblacion=poblacion if entidad == "Nacional", by(anio)
+local aniomax = anio[_N]
+format Poblacion %15.0fc
+tempfile poblacion
+save "`poblacion'"
+
+
+** 1.4 Poblacion ENOE **
+import excel "`c(sysdir_site)'/bases/INEGI/ENOE/PoblacionENOE.xlsx", sheet("PoblacionLong") clear
+rename A anio
+rename B trimestre
+rename C PoblacionENOE
+rename D PoblacionOcupada
+rename E PoblacionDesocupada
+drop in 1
+drop if anio == ""
+
+g entidad = "Nacional"
+
+replace trimestre = "1" if trimestre == "Primer trimestre"
+replace trimestre = "2" if trimestre == "Segundo trimestre"
+replace trimestre = "3" if trimestre == "Tercer trimestre"
+replace trimestre = "4" if trimestre == "Cuarto trimestre"
+destring _all, replace
+
+collapse (mean) Poblacion*, by(anio)
+format PoblacionENOE %15.0fc
+tempfile poblacionenoe
+save "`poblacionenoe'"
+
+
+** 2.2 Working Ages **
+use `"`c(sysdir_site)'/SIM/$pais/Poblacion.dta"', clear
+collapse (sum) WorkingAge=poblacion if edad >= 16 & edad <= 65 & entidad == "Nacional", by(anio)
+format WorkingAge %15.0fc
+tempfile workingage
+save "`workingage'"
+
+
 
 
 
@@ -77,6 +125,9 @@ save `Deflactor', replace
 ****************
 use (anio trimestre pibQ) using `PIB', clear
 merge 1:1 (anio trimestre) using `Deflactor', nogen keepus(indiceQ)
+merge m:1 (anio) using "`workingage'", nogen
+merge m:1 (anio) using "`poblacion'", nogen
+merge m:1 (anio) using "`poblacionenoe'", nogen
 
 * Anio + Trimestre *
 g aniotrimestre = yq(anio,trimestre)
@@ -87,7 +138,19 @@ tsset aniotrimestre
 * Moneda *
 g currency = "MXN"
 
+* Variables de interés *
+forvalues k=1(1)`=_N' {
+	if anio[`k'] == `ultanio' & trimestre[`k'] == `ulttrim' {
+		local obsvp = `k'
+	}
+}
+tempvar deflator
+g double `deflator' = indiceQ/indiceQ[`obsvp']
+g pibQR = pibQ/`deflator'
+g pibPO =  pibQR/PoblacionOcupada
+
 * Guardar base SIM *
+format pib* %25.0fc
 if `c(version)' > 13.1 {
 	saveold "`c(sysdir_site)'/SIM/PIBDeflactor.dta", replace version(13)
 }
@@ -100,28 +163,40 @@ else {
 
 
 *****************************
-*** 3 Gráfica informativa ***
+*** 3 Gráficas informativas ***
 *****************************
 if "$nographs" == "" {
 
-	* Variable de la gráfica *
-	tempvar pibQR crec_pibQR
-	g `pibQR' = pibQ/(indiceQ/100)
-	g `crec_pibQR' = (`pibQR'/L4.`pibQR'-1)*100
+	g crec_pibQR = (pibQR/L4.pibQR-1)*100
 
 	* Texto sobre lineas *
 	forvalues k=1(1)`=_N' {
-		if `crec_pibQR'[`k'] != . {
-			local text_pibQR `"`text_pibQR' `=`crec_pibQR'[`k']' `=aniotrimestre[`k']' "{bf:`=string(`crec_pibQR'[`k'],"%5.1fc")'}" "'
+		if crec_pibQR[`k'] != . {
+			local text_pibQR `"`text_pibQR' `=crec_pibQR[`k']' `=aniotrimestre[`k']' "{bf:`=string(crec_pibQR[`k'],"%5.1fc")'}" "'
+		}
+		if pibPO[`k'] != . & trimestre[`k'] == `ulttrim' {
+			local crec_PIBPC `"`crec_PIBPC' `=pibPO[`k']' `=aniotrimestre[`k']' "{bf:`=string(pibPO[`k'],"%10.0fc")'}" "'
 		}
 	}
 
 	* Gráfica *
-	twoway connected `crec_pibQR' aniotrimestre, ///
-		title(Crecimiento del {bf:PIB trimestral}) ///
+	twoway connected crec_pibQR aniotrimestre, ///
+		title({bf:Producto Interno Bruto}) ///
 		ytitle("Crecimiento trimestral (%)") xtitle("") ///
 		text(`text_pibQR') msize(large) ///
-		note("{bf:{c U'}ltimo dato reportado}: `=anio[_N]' trim. `=trimestre[_N]'.") ///
+		note("{bf:{c U'}ltimo dato reportado}: `ultanio' trim. `ulttrim'.") ///
 		caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
 		name(UpdatePIBDeflactor, replace)
+		* Texto sobre lineas *
+		forvalues k=1(1)`=_N' {
+		}
+
+	twoway (connected pibPO aniotrimestre, msize(large)) if pibPO != . & trimestre == `ulttrim', ///
+		title(Producto Interno Bruto por {bf:población ocupada}) subtitle(${pais}) ///
+		ytitle(`=currency[`obsvp']' `ultanio') xtitle("") ///
+		tlabel(2005q`ulttrim'(4)`ultanio'q`ulttrim') ///
+		text(`crec_PIBPC', color(black) size(vsmall)) ///
+		ylabel(/*0(5)`=ceil(`pibYRmil'[_N])'*/, format(%20.0fc)) ///
+		caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE/ENOE.") ///
+		name(PIBPC, replace)
 }

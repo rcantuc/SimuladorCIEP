@@ -86,47 +86,47 @@ if "$output" != "" {
 		%8.0f ingbasico65 /// Checkbox "mayores de 65 años"
 		"]"
 	noisily di in w "INGRESOS: " in w "["  ///
-		%8.3f scalar(ISRAS) "," /// ISR (salarios)
-		%8.3f scalar(ISRPF) "," /// ISR (físicas)
-		%8.3f scalar(CUOTAS) "," /// Cuotas IMSS
-		%8.3f scalar(ISRAS)+scalar(ISRPF)+scalar(CUOTAS) "," /// Total Impuestos laborales
-		%8.3f scalar(ISRPM) "," /// ISR (morales)
-		%8.3f scalar(OTROSK) "," /// Productos, derechos y aprovechamientos 
-		%8.3f scalar(ISRPM)+scalar(OTROSK) "," /// Total Impuestos al capital
-		%8.3f scalar(IVA) "," /// IVA
-		%8.3f scalar(ISAN) "," /// ISAN
-		%8.3f scalar(IEPSNP) "," /// IEPS (no petrolero)
-		%8.3f scalar(IEPSP) "," /// IEPS (petrolero)
-		%8.3f scalar(IMPORT) "," /// Importaciones
-		%8.3f scalar(IVA)+scalar(ISAN)+scalar(IEPSNP)+scalar(IEPSP)+scalar(IMPORT) "," /// Total Impuestos al consumo
-		%8.3f scalar(IMSS) "," /// IMSS 
-		%8.3f scalar(ISSSTE) "," /// ISSSTE 
-		%8.3f scalar(FMP) "," /// FMP
-		%8.3f scalar(PEMEX) "," /// Pemex
-		%8.3f scalar(CFE) "," /// CFE
-		%8.3f scalar(IMSS)+scalar(ISSSTE)+scalar(FMP)+scalar(PEMEX)+scalar(CFE) "," /// Total Organismos y Empresas
-		%8.3f scalar(ISRAS)+scalar(ISRPF)+scalar(CUOTAS)+scalar(ISRPM)+scalar(OTROSK)+scalar(IVA)+scalar(ISAN)+scalar(IEPSNP)+scalar(IEPSP)+scalar(IMPORT)+scalar(IMSS)+scalar(ISSSTE)+scalar(FMP)+scalar(PEMEX)+scalar(CFE) /// Total INGRESOS
+		%8.3f scalar(ISRAS) "," /// ISR (salarios) - 0
+		%8.3f scalar(ISRPF) "," /// ISR (físicas) - 1
+		%8.3f scalar(CUOTAS) "," /// Cuotas IMSS - 2
+		%8.3f scalar(ISRAS)+scalar(ISRPF)+scalar(CUOTAS) "," /// Total Impuestos laborales - 3
+		%8.3f scalar(ISRPM) "," /// ISR (morales) - 4
+		%8.3f scalar(OTROSK) "," /// Productos, derechos y aprovechamientos - 5
+		%8.3f scalar(ISRPM)+scalar(OTROSK) "," /// Total Impuestos al capital - 6
+		%8.3f scalar(IVA) "," /// IVA - 7
+		%8.3f scalar(ISAN) "," /// ISAN - 8
+		%8.3f scalar(IEPSNP) "," /// IEPS (no petrolero)- 9
+		%8.3f scalar(IEPSP) "," /// IEPS (petrolero) - 10
+		%8.3f scalar(IMPORT) "," /// Importaciones - 11
+		%8.3f scalar(IVA)+scalar(ISAN)+scalar(IEPSNP)+scalar(IEPSP)+scalar(IMPORT) "," /// Total Impuestos al consumo - 12
+		%8.3f scalar(IMSS) "," /// IMSS - 13
+		%8.3f scalar(ISSSTE) "," /// ISSSTE - 14
+		%8.3f scalar(FMP) "," /// FMP - 15
+		%8.3f scalar(PEMEX) "," /// Pemex - 16
+		%8.3f scalar(CFE) "," /// CFE - 17
+		%8.3f scalar(IMSS)+scalar(ISSSTE)+scalar(FMP)+scalar(PEMEX)+scalar(CFE) "," /// Total Organismos y Empresas - 18
+		%8.3f scalar(ISRAS)+scalar(ISRPF)+scalar(CUOTAS)+scalar(ISRPM)+scalar(OTROSK)+scalar(IVA)+scalar(ISAN)+scalar(IEPSNP)+scalar(IEPSP)+scalar(IMPORT)+scalar(IMSS)+scalar(ISSSTE)+scalar(FMP)+scalar(PEMEX)+scalar(CFE) /// Total INGRESOS - 19
 		"]"
 	noisily di in w "INGRESOSTEF: " in w "["  ///
-		%8.1f scalar(ISRAS)/RemSalPIB*100 "," /// ISR (salarios)
-		%8.1f scalar(ISRPF)/MixLPIB*100 "," /// ISR (físicas)
-		%8.1f scalar(CUOTAS)/(RemSalPIB+SSImputadaPIB+SSEmpleadoresPIB)*100 "," /// Cuotas IMSS
-		%8.1f (scalar(ISRAS)+scalar(ISRPF)+scalar(CUOTAS))/YlPIB*100 "," /// Total Impuestos laborales
-		%8.1f scalar(ISRPM)/(ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-IngKPublicosPIB)*100 "," /// ISR (morales)
-		%8.1f scalar(OTROSK)/(ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-IngKPublicosPIB)*100 "," /// Productos, derechos y aprovechamientos
-		%8.1f (scalar(ISRPM)+scalar(OTROSK))/(CapIncImpPIB-IngKPublicosPIB)*100 "," /// Total Impuestos al capital
-		%8.1f scalar(IVA)/(ConHogPIB-AlimPIB-BebNPIB-SaluPIB)*100 "," /// IVA
-		%8.1f scalar(ISAN)/VehiPIB*100 "," /// ISAN
-		%8.1f scalar(IEPSNP)/ConHogPIB*100 "," /// IEPS (no petrolero)
-		%8.1f scalar(IEPSP)/ConHogPIB*100 "," /// IEPS (petrolero)
-		%8.1f scalar(IMPORT)/ConHogPIB*100 "," /// Importaciones
-		%8.1f ((IVA)+scalar(ISAN)+scalar(IEPSNP)+scalar(IEPSP)+scalar(IMPORT))/ConHogPIB*100 "," /// Total Impuestos al consumo
-		%8.1f scalar(IMSS)/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 "," /// IMSS
-		%8.1f scalar(ISSSTE)/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 "," /// ISSSTE
-		%8.1f scalar(FMP)/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 "," /// FMP
-		%8.1f scalar(PEMEX)/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 "," /// Pemex
-		%8.1f scalar(CFE)/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 "," /// CFE
-		%8.1f (scalar(IMSS)+scalar(ISSSTE)+scalar(FMP)+scalar(PEMEX)+scalar(CFE))/CapIncImpPIB*100 /// Total Organismos y Empresas
+		%8.1f scalar(ISRAS)/RemSalPIB*100 "," /// ISR (salarios) - 0
+		%8.1f scalar(ISRPF)/MixLPIB*100 "," /// ISR (físicas) - 1
+		%8.1f scalar(CUOTAS)/(RemSalPIB+SSImputadaPIB+SSEmpleadoresPIB)*100 "," /// Cuotas IMSS - 2
+		%8.1f (scalar(ISRAS)+scalar(ISRPF)+scalar(CUOTAS))/YlPIB*100 "," /// Total Impuestos laborales - 3
+		%8.1f scalar(ISRPM)/(ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-IngKPublicosPIB)*100 "," /// ISR (morales) - 4
+		%8.1f scalar(OTROSK)/(ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-IngKPublicosPIB)*100 "," /// Productos, derechos y aprovechamientos - 5
+		%8.1f (scalar(ISRPM)+scalar(OTROSK))/(CapIncImpPIB-IngKPublicosPIB)*100 "," /// Total Impuestos al capital - 6
+		%8.1f scalar(IVA)/(ConHogPIB-AlimPIB-BebNPIB-SaluPIB)*100 "," /// IVA - 7
+		%8.1f scalar(ISAN)/VehiPIB*100 "," /// ISAN - 8
+		%8.1f scalar(IEPSNP)/ConHogPIB*100 "," /// IEPS (no petrolero) - 9
+		%8.1f scalar(IEPSP)/ConHogPIB*100 "," /// IEPS (petrolero) - 10
+		%8.1f scalar(IMPORT)/ConHogPIB*100 "," /// Importaciones - 11
+		%8.1f ((IVA)+scalar(ISAN)+scalar(IEPSNP)+scalar(IEPSP)+scalar(IMPORT))/ConHogPIB*100 "," /// Total Impuestos al consumo - 12
+		%8.1f scalar(IMSS)/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 "," /// IMSS - 13
+		%8.1f scalar(ISSSTE)/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 "," /// ISSSTE - 14
+		%8.1f scalar(FMP)/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 "," /// FMP - 15
+		%8.1f scalar(PEMEX)/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 "," /// Pemex - 16
+		%8.1f scalar(CFE)/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 "," /// CFE - 17
+		%8.1f (scalar(IMSS)+scalar(ISSSTE)+scalar(FMP)+scalar(PEMEX)+scalar(CFE))/CapIncImpPIB*100 /// Total Organismos y Empresas - 18
 		"]"
 	noisily di in w "ISRTASA: [" ///
 		%10.2f ISR[1,4] "," ///

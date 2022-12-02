@@ -15,8 +15,7 @@ if "$output" != "" {
 **************************************************
 ***    2.2. CRECIMIENTO Y DEFLACTOR DEL PIB    ***
 **************************************************
-scalar aniovp = 2023
-scalar anioend = 2030
+global paqueteEconomico = "PE2023"
 
 global pib2022 = 2.4 //       CGPE 2023 (página 134)
 global pib2023 = 2.9676 //    CGPE 2023 (página 134)
@@ -34,9 +33,9 @@ global def2026 = 3.49211 //    CGPE 2023 (página 134)
 global def2027 = 3.51530 //    CGPE 2023 (página 134)
 global def2028 = 3.50150 //    CGPE 2023 (página 134)
 
-global tasaEfectiva = 6.6041 // Tasa de inter{c e'}s EFECTIVA
-global tipoDeCambio = 20.4   // Tipo de cambio
-global depreciacion = 0.2    // Depreciaci{c o'}n
+global tasaEfectiva = 6.7724 // Tasa de inter{c e'}s EFECTIVA
+*global tipoDeCambio = 19.8   // Tipo de cambio
+*global depreciacion = 0.2    // Depreciaci{c o'}n
 
 PIBDeflactor, nographs
 

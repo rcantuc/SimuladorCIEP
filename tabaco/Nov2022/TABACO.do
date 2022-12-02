@@ -42,7 +42,7 @@ if "`c(username)'" == "ciepmx" & "`c(console)'" == "console" {                  
 ***    1. OPCIONES    ***
 ***                   ***
 *************************
-*global update "update"
+global update "update"
 global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
 global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
 
@@ -62,7 +62,7 @@ local aniovp = 2023
 ** En 2021 0.51   pesos por cigarro. Cajetilla de 20 = 10.2 pesos   **
 ** En 2022 0.5484 pesos por cigarro. Cajetilla de 20 = 10.968 pesos **
 local stax   = 0.5484                                                           // PARAMETRO 1 Estatus Quo
-local stax_1 = 0.5484*0   +1.85                                                        // PARAMETRO 1 A MODIFICAR
+local stax_1 = 0.5484                                                           // PARAMETRO 1 A MODIFICAR
 *local stax_1 = {{ieps_pesos}}                                                  // PARAMETRO 1 A MODIFICAR (WEB)
 
 ** Impuesto Ad Valorem **
@@ -529,7 +529,7 @@ egen iepst_estatal_sim = rsum(fgp_estatal_sim litoral_estatal_sim ffm_estatal_si
 ***********************************
 *** DIFERENCIA ENTRE ESCENARIOS ***
 ***********************************
-collapse (sum) iepst_estatal_21 iepst_estatal_sim, by(entidad)
+collapse (sum) iepst_estatal_21 iepst_estatal_sim, by(entidad cve_ent)
 g diferencia = iepst_estatal_sim - iepst_estatal_21
 
 ** Crecimeinto recursos a estados IEPS tabaco **
@@ -540,6 +540,7 @@ g crecimiento = (diferencia/iepst_estatal_21)
 ****************************
 *** Outputs INFOGRAFÍA 2 ***
 ****************************
+sort cve_ent
 forvalues k=1(1)32 {
 	scalar IEPS`k' = string(iepst_estatal_sim[`k'],"%10.1f")
 	scalar DIF`k'  = string(diferencia[`k'],"%10.1f")

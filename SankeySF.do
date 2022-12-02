@@ -14,7 +14,7 @@ if "`1'" == "" {
 ***************************************
 *** 1 Sistema de Cuentas Nacionales ***
 ***************************************
-SCN, anio(`2') nographs
+*SCN, anio(`2') nographs
 
 
 
@@ -79,6 +79,7 @@ matrix `pobtot' = r(StatTotal)*`ajustepob'/`pobenigh'[1,1]
 replace OtrosGas = OtrosGas - Infra
 
 replace Pension = Pension + PenBienestar
+
 tabstat Pension Educacion Salud OtrosGas [fw=factor], stat(sum) f(%20.0fc) save
 tempname GAST 
 matrix `GAST' = r(StatTotal)

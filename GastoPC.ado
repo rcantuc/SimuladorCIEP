@@ -32,7 +32,7 @@ quietly {
 	************************
 	*** 2 TRANSFERENCIAS ***
 	************************
-	use "`c(sysdir_site)'/SIM/2020/households`=aniovp'.dta", clear
+	use "`c(sysdir_site)'/SIM/2020/households`anio'.dta", clear
 	tabstat factor, stat(sum) f(%20.0fc) save
 	tempname pobenigh
 	matrix `pobenigh' = r(StatTotal)

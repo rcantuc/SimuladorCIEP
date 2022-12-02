@@ -303,8 +303,11 @@ tsset anio
 g double tipoDeCambio = deudaMXN/deudaUSD/1000
 format tipoDeCambio %7.2fc
 
-drop deuda*
+** Porcentaje interna y externa *
+g porInterno = shrfspInterno/shrfsp
+g porExterno = shrfspExterno/shrfsp
 
+drop deuda*
 compress
 if `c(version)' > 13.1 {
 	saveold `"`c(sysdir_site)'/SIM/SHRFSP.dta"', replace version(13)

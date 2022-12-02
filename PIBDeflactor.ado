@@ -7,8 +7,8 @@
 *!***                                    ****
 *!*******************************************
 program define PIBDeflactor, return
+timer on 2
 quietly {
-	timer on 2
 
 	** 0.1 Revisa si se puede usar la base de datos **
 	capture use "`c(sysdir_site)'/SIM/$pais/PIBDeflactor.dta", clear
@@ -35,7 +35,7 @@ quietly {
 		GEOPIB(int -1) GEODEF(int -1) DIScount(real 5) ///
 		NOOutput]
 
-	* Si la opción "update" es llamada, ejecuta el do-file UpdatePIBDeflactor.do *
+	** 1.1 Si la opción "update" es llamada, ejecuta el do-file UpdatePIBDeflactor.do **
 	if "`update'" == "update" {
 		noisily run `"`c(sysdir_site)'/UpdatePIBDeflactor`=subinstr("${pais}"," ","",.)'.do"'
 	}
@@ -45,59 +45,33 @@ quietly {
 	************************
 	*** 2 Bases de datos ***
 	************************
-
-	** 2.1 Poblacion **
-	capture use `"`c(sysdir_site)'/SIM/$pais/Poblacion.dta"', clear
-	if _rc != 0 {
-		noisily run `"`c(sysdir_site)'/UpdatePoblacion`=subinstr("${pais}"," ","",.)'.do"'
-	}
-	collapse (sum) Poblacion=poblacion if entidad == "Nacional", by(anio)
-	local aniomax = anio[_N]
-	format Poblacion %15.0fc
-	tempfile poblacion
-	save "`poblacion'"
-
-	import excel "`c(sysdir_site)'/bases/INEGI/ENOE/PoblacionENOE.xlsx", sheet("PoblacionLong") clear
-	rename A anio
-	rename B trimestre
-	rename C PoblacionENOE
-	rename D PoblacionOcupada
-	rename E PoblacionDesocupada
-	drop in 1
-	drop if anio == ""
-	
-	g entidad = "Nacional"
-	
-	replace trimestre = "1" if trimestre == "Primer trimestre"
-	replace trimestre = "2" if trimestre == "Segundo trimestre"
-	replace trimestre = "3" if trimestre == "Tercer trimestre"
-	replace trimestre = "4" if trimestre == "Cuarto trimestre"
-	destring _all, replace
-
-	collapse (mean) Poblacion*, by(anio)
-	format PoblacionENOE %15.0fc
-	tempfile poblacionenoe
-	save "`poblacionenoe'"
-
-
-	** 2.2 Working Ages **
-	use `"`c(sysdir_site)'/SIM/$pais/Poblacion.dta"', clear
-	collapse (sum) WorkingAge=poblacion if edad >= 16 & edad <= 65 & entidad == "Nacional", by(anio)
-	format WorkingAge %15.0fc
-	tempfile workingage
-	save "`workingage'"
-
-	** 2.3 PIBDeflactor.dta **
 	use "`c(sysdir_site)'/SIM/$pais/PIBDeflactor.dta", clear
-	noisily di _newline(2) in g _dup(20) "." "{bf:   PIB + Deflactor:" in y " PIB `aniovp'   }" in g _dup(20) "." _newline
-
-	* Obtiene el año inicial de la base *
-	local anioinicial = anio[1]
-
-	* Si no hay opción aniofinal, utiliza el último año del vector "anio" *
-	if `aniofinal' == -1 {
-		local aniofinal = anio in -1
+	
+	** 2.1 Obtiene el año inicial y final de la base **
+	forvalues k=1(1)`=_N' {
+		if anio[`k'] == `aniovp' {
+			local obsvp = `k'
+		}
+		if pibQ[`k'] != . & "`anioi'" != "found" {
+			local anioinicial = anio[`k']
+			local anioi "found"
+		}
+		if pibQ[`k'] == . & "`anioi'" == "found" & `aniofinal' == -1 {
+			local aniofinal = anio[`=`k'-1']
+			local trim_last = trimestre[`=`k'-1']
+			scalar trimlast = trimestre[`=`k'-1']
+			local obsfinal = `k'-1
+			continue, break
+		}
 	}
+	local trim_last = " t`trim_last'"
+
+	noisily di _newline(2) in g _dup(20) "." "{bf:   PIB + Deflactor:" in y " PIB `aniovp'   }" in g _dup(20) "." _newline
+	noisily di in g " PIB " in y "`=`aniofinal''`trim_last'" _col(33) %20.0fc pibQ[`obsfinal'] in g " `=currency' ({c u'}ltimo reportado)"
+
+	collapse (mean) pibY=pibQ pibYR=pibQR WorkingAge Poblacion* pibPO (last) trimestre, by(anio currency)
+	tsset anio
+
 
 	* Locales para los cálculos geométricos *
 	if `geodef' < `anioinicial' {
@@ -109,28 +83,20 @@ quietly {
 	}
 	local difpib = `aniofinal'-`geopib'
 	scalar aniogeo = `geopib'
+	forvalues k=1(1)`=_N' {
+		if anio[`k'] == `geodef' {
+			local obsDEF = `k'
+		}
+		if anio[`k'] == `geopib' {
+			local obsPIB = `k'
+		}
+	}
 
-	** 2.4 Display inicial **
-	local trim_last = trimestre[_N]
-	scalar trimlast = trimestre[_N]
-	local trim_last = " t`trim_last'"
 
-	g pibQR = pibQ/(indiceQ/100)
-	g var_pibQ = (pibQR/L4.pibQR-1)*100
-
-	noisily di in g " PIB " in y "`=`aniofinal''`trim_last'" _col(33) %20.0fc pibQ[_N] in g " `=currency[_N]' ({c u'}ltimo reportado)"
-	noisily di in g " Crec. " in y "`=`aniofinal''`trim_last' - `=`aniofinal'-1'`trim_last'" _col(33) %20.1fc var_pibQ[_N] in g " %"
-
-	** 2.5 Anuazliar el PIB **
-	collapse (mean) pibY=pibQ pibYR=pibQR (last) trimestre, by(anio currency)
-	format pib* %25.0fc
 
 	** 2.6 Merge datasets **
-	merge 1:1 (anio) using "`workingage'", nogen
-	merge 1:1 (anio) using "`poblacion'", nogen
-	merge 1:1 (anio) using "`poblacionenoe'", nogen
-	if `aniovp' < `=`anioinicial'' | `aniovp' > `aniomax' {
-		noisily di in r "A{c n~}o para valor presente (`aniovp') inferior a `=`anioinicial'' o superior a `aniomax'."
+	if `aniovp' < `=`anioinicial'' | `aniovp' > anio[_N] {
+		noisily di in r "A{c n~}o para valor presente (`aniovp') inferior a `=`anioinicial'' o superior a `aniofinal'."
 		exit
 	}
 	drop if anio < `anioinicial'
@@ -205,7 +171,7 @@ quietly {
 	label var pibYR "PIB Real (`=anio[`obsvp']')"
 	format pibYR* %25.0fc
 
-	g double var_pibY = (pibYR/L.pibYR-1)*100
+	g var_pibY = (pibYR/L.pibYR-1)*100
 	label var var_pibY "Anual"
 
 	g double var_pibG = ((pibYR/L`=`difpib''.pibYR)^(1/(`difpib'))-1)*100
@@ -251,6 +217,7 @@ quietly {
 		scalar llambda = $lambda
 	}
 	g lambda = (1+scalar(llambda)/100)^(anio-`aniovp')
+	
 
 
 
@@ -269,14 +236,16 @@ quietly {
 	format pibYVP %20.0fc
 
 	replace OutputPerWorker = pibYR/WorkingAge if OutputPerWorker == .
+	
 
 
 
 	*****************
 	** 6 Simulador **
 	*****************
-	noisily di _newline in g " PIB " in y anio[`obsvp'] in g " per c{c a'}pita " in y _col(43) %10.1fc pibY[`obsvp']/Poblacion[`obsvp'] in g " `=currency[`obsvp']'"
+	noisily di in g " PIB " in y anio[`obsvp'] in g " per c{c a'}pita " in y _col(43) %10.1fc pibY[`obsvp']/Poblacion[`obsvp'] in g " `=currency[`obsvp']'"
 	noisily di in g " PIB " in y anio[`obsvp'] in g " por persona en edad de trabajar " in y _col(43) %10.1fc OutputPerWorker[`obsvp'] in g " `=currency[`obsvp']' (16-65 a{c n~}os)"
+
 	noisily di _newline in g " Crecimiento promedio " in y anio[`obsPIB'] "-" anio[`obs_exo'] _col(43) %10.4f ((pibYR[`obs_exo']/pibYR[`obsPIB'])^(1/(`obs_exo'-`obsPIB'))-1)*100 in g " %" 
 	noisily di in g " Lambda por trabajador " in y anio[`obsPIB'] "-" anio[`obs_exo'] _col(43) %10.4f scalar(llambda) in g " %" 
 	*noisily di in g " Lambda por trabajador " in y anio[1] "-" anio[`obs_exo'] _col(35) %10.4f scalar(LLambda) in g " %" 
@@ -425,19 +394,15 @@ quietly {
 		if _rc == 0 {
 			graph export "$export/PIB.png", replace name(PIBP)
 		}
-		
-		
-		* PIB per cápita *
-		g pibPC =  pibYR/PoblacionOcupada
 
 		* Texto sobre lineas *
 		forvalues k=1(1)`=_N' {
-			if pibPC[`k'] != . {
-				local crec_PIBPC `"`crec_PIBPC' `=pibPC[`k']' `=anio[`k']' "`=string(pibPC[`k'],"%10.0fc")'" "'
+			if pibPO[`k'] != . {
+				local crec_PIBPC `"`crec_PIBPC' `=pibPO[`k']' `=anio[`k']' "`=string(pibPO[`k'],"%10.0fc")'" "'
 			}
 		}
 
-		twoway (connected pibPC anio, msize(large)) if pibPC != ., ///
+		twoway (connected pibPO anio, msize(large)) if pibPO != ., ///
 			title(Producto Interno Bruto {bf:por población ocupada}) subtitle(${pais}) ///
 			ytitle(`=currency[`obsvp']' `aniovp') xtitle("") ///
 			xlabel(2005(1)2022 `aniovp') ///
