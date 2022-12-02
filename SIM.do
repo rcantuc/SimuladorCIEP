@@ -37,9 +37,8 @@ if "`c(username)'" == "ciepmx" & "`c(console)'" == "console" {                  
 *global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
 *global nographs "nographs"                                                      // SUPRIMIR GRAFICAS
 
-scalar aniovp = 2023
-scalar anioend = 2030
 noisily run "`c(sysdir_site)'/PARAM.do"                                         // PARÁMETROS (PE 2023)
+scalar aniovp = 2023
 
 
 ************************************
