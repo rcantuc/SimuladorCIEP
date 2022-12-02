@@ -16,6 +16,8 @@ if "$output" != "" {
 ***    2.2. CRECIMIENTO Y DEFLACTOR DEL PIB    ***
 **************************************************
 global paqueteEconomico = "PE2023"
+scalar aniovp = 2023
+scalar anioend = 2030
 
 global pib2022 = 2.4 //       CGPE 2023 (página 134)
 global pib2023 = 2.9676 //    CGPE 2023 (página 134)
