@@ -151,6 +151,7 @@ g pibPO =  pibQR/PoblacionOcupada
 
 * Guardar base SIM *
 format pib* %25.0fc
+capture drop __*
 if `c(version)' > 13.1 {
 	saveold "`c(sysdir_site)'/SIM/PIBDeflactor.dta", replace version(13)
 }
