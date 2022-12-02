@@ -10,7 +10,7 @@ if "$output" != "" {
 	quietly log off output
 }
 
-
+set trace on
 
 **************************************************
 ***    2.2. CRECIMIENTO Y DEFLACTOR DEL PIB    ***
