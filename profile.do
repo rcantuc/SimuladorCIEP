@@ -27,7 +27,7 @@ clear
 *************************/
 *** 4 Informaci{c o'}n ***
 **************************
-noisily di _newline in g "{bf:Bienvenidxs al Simulador Fiscal CIEP v5.3.}" ///
+noisily di _newline in g `"{bf:Bienvenidxs al {stata run "`c(sysdir_site)'/SIM.do":Simulador Fiscal CIEP v5.3}}"' ///
 	_newline(2) _col(3) "CLICK para ejecutar los siguientes comandos disponibles." ///
 	_newline _col(3) "O usar la siguiente sintaxis: " ///
 	_newline(2) _col(3) "{it:Comando} [OPCIONES DISPONIBLES]"
@@ -39,7 +39,6 @@ noisily di `"{stata "LIF":LIF} [, ANIO(int) NOGraphs MINimum(real) BY(varname) R
 noisily di `"{stata "PEF":PEF} [, ANIO(int) NOGraphs MINimum(real) BY(varname) ROWS(int) COLS(int) UPDATE]"'
 noisily di `"{stata "SHRFSP":SHRFSP} [, ANIO(int) DEPreciacion(int) NOGraphs UPDATE]"' 
 noisily di `"{stata "DatosAbiertos XAB":DatosAbiertos {it:serie}} [, NOGraphs DESDE(real) MES UPDATE]"' 
-noisily di `"{stata run "`c(sysdir_site)'/SIM.do":SimuladorFiscalCIEP v5.3}"'
 
 
 
