@@ -123,8 +123,10 @@ save "`c(sysdir_site)'/users/$id/households.dta", replace
 
 
 ** 5.3 Sankey **
-foreach k in /*grupoedad sexo decil rural*/ escol {
-	noisily run "`c(sysdir_site)'/SankeySF.do" `k' `=aniovp'
+if "$output" == "output" {
+	foreach k in /*grupoedad sexo decil rural*/ escol {
+		noisily run "`c(sysdir_site)'/SankeySF.do" `k' `=aniovp'
+	}
 }
 
 
