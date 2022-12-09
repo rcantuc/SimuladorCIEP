@@ -39,6 +39,7 @@ noisily di `"{stata "LIF":LIF} [, ANIO(int) NOGraphs MINimum(real) BY(varname) R
 noisily di `"{stata "PEF":PEF} [, ANIO(int) NOGraphs MINimum(real) BY(varname) ROWS(int) COLS(int) UPDATE]"'
 noisily di `"{stata "SHRFSP":SHRFSP} [, ANIO(int) DEPreciacion(int) NOGraphs UPDATE]"' 
 noisily di `"{stata "DatosAbiertos XAB":DatosAbiertos {it:serie}} [, NOGraphs DESDE(real) MES UPDATE]"' 
+noisily di `"{stata run "`c(sysdir_site)'/SIM.do":SimuladorFiscalCIEP v5.3}"'
 
 
 
