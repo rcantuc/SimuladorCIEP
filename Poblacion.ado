@@ -61,17 +61,19 @@ quietly {
 
 
 	** 2.1 Display inicial **
-	tabstat poblacion if anio == `aniohoy', f(%20.0fc) stat(sum) save
-	tempname POBTOT
-	matrix `POBTOT' = r(StatTotal)
-	noisily di in g " POBLACI{c O'}N " in y `aniohoy' in g ": " in y %15.0fc `POBTOT'[1,1] in g " personas"
-	scalar poblaciontotal = string(`POBTOT'[1,1],"%20.0fc")
+	forvalues k=`aniohoy'(1)`aniofinal' {
+		tabstat poblacion if anio == `k', f(%20.0fc) stat(sum) save
+		tempname POBTOT
+		matrix `POBTOT' = r(StatTotal)
+		noisily di in g " Personas " in y `k' in g ": " in y %15.0fc `POBTOT'[1,1]
+		if `k' == `aniohoy' {
+			scalar poblaciontotal = string(`POBTOT'[1,1],"%20.0fc")
+		}
+		if `k' == `aniofinal' {
+			scalar poblacionfinal = string(`POBTOT'[1,1],"%20.0fc")
+		}
 
-	tabstat poblacion if anio == `aniofinal', f(%20.0fc) stat(sum) save
-	tempname POBFIN
-	matrix `POBFIN' = r(StatTotal)
-	noisily di in g " POBLACI{c O'}N " in y `aniofinal' in g ": " in y %15.0fc `POBFIN'[1,1] in g " personas"
-	scalar poblacionfinal = string(`POBFIN'[1,1],"%20.0fc")
+	}
 
 
 
