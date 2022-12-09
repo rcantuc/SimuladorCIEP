@@ -62,6 +62,8 @@ global pib2025 = 2.4 //       CGPE 2023 (página 134)
 global pib2026 = 2.4 //       CGPE 2023 (página 134)
 global pib2027 = 2.4 //       CGPE 2023 (página 134)
 global pib2028 = 2.4 //       CGPE 2023 (página 134)
+global pib2029 = $pib2028
+global pib2030 = $pib2029
 
 global def2022 = 8.00695 //    CGPE 2023 (página 134)
 global def2023 = 4.95000 //    CGPE 2023 (página 134)
@@ -70,6 +72,8 @@ global def2025 = 3.49807 //    CGPE 2023 (página 134)
 global def2026 = 3.49211 //    CGPE 2023 (página 134)
 global def2027 = 3.51530 //    CGPE 2023 (página 134)
 global def2028 = 3.50150 //    CGPE 2023 (página 134)
+global def2029 = $def2028
+global def2030 = $def2029
 
 global tasaEfectiva = 6.7724 // Tasa de inter{c e'}s EFECTIVA
 global tipoDeCambio = 19.8   // Tipo de cambio
@@ -269,7 +273,7 @@ if "`cambioisr'" == "1" {
 	scalar ISRPF = ISR_PF_Mod
 	scalar ISRPM = ISR_PM_Mod
 }
-if "`cambioiva'" == "" {
+if "`cambioiva'" == "1" {
 	noisily run "`c(sysdir_site)'/IVA_Mod.do"
 	scalar IVA = IVA_Mod
 }
