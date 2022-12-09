@@ -38,24 +38,21 @@ if "`c(username)'" == "ciepmx" & "`c(console)'" == "console" {                  
 *global nographs "nographs"                                                      // SUPRIMIR GRAFICAS
 
 noisily run "`c(sysdir_site)'/PARAM.do"                                         // PARÁMETROS (PE 2023)
-scalar aniovp = 2023
 
 
 ************************************
 ***                              ***
 ***    2. POBLACION + ECONOMÍA   ***
 ***                              ***
-***********************************
-*noisily Poblacion, aniofinal(`=scalar(anioend)') //$update
-*noisily PIBDeflactor, $update geodef(2013) geopib(2013)
-*noisily SCN, $update
-*noisily Inflacion, $update
+/***********************************
+noisily Poblacion, aniofinal(`=scalar(anioend)') //$update
+noisily PIBDeflactor, geodef(2013) geopib(2013) //$update
+noisily SCN, //$update
+noisily Inflacion, //$update
 
-*noisily PEF, by(divPE) rows(2) min(0) $update
-*noisily LIF, by(divSIM) rows(2) min(0) eofp $update
-*noisily SHRFSP, $update
-
-
+noisily PEF, by(divPE) rows(2) min(0) //$update
+noisily LIF, by(divSIM) rows(2) min(0) eofp //$update
+noisily SHRFSP, //$update
 
 
 
@@ -69,10 +66,6 @@ if _rc != 0 {
 	noisily run "`c(sysdir_site)'/Expenditure.do" `=aniovp'
 	noisily run `"`c(sysdir_site)'/Households.do"' `=aniovp'
 }
-capture confirm file "`c(sysdir_site)'/users/ciepmx/bootstraps/1/ConsumoREC.dta"
-if _rc != 0 {
-	noisily run `"`c(sysdir_site)'/PerfilesSim.do"' `=aniovp'
-}
 
 
 
@@ -82,11 +75,16 @@ if _rc != 0 {
 ***                         ***
 *******************************
 
-** 4.1 Gasto per cápita **
-noisily GastoPC
+** 4.1 Perfiles fiscales **
+capture confirm file "`c(sysdir_site)'/SIM/2020/households`=aniovp'.dta"
+if _rc != 0 | "$update" == "update" {
+	noisily run `"`c(sysdir_site)'/PerfilesSim.do"' `=aniovp'
+}
 
+** 4.2 Gasto per cápita **
+noisily GastoPC, anio(`=aniovp')
 
-** 4.2 Módulos **
+** 4.3 Módulos **
 if "`cambioisr'" == "1" {
 	noisily run "`c(sysdir_site)'/ISR_Mod.do"
 	scalar ISRAS = ISR_AS_Mod
@@ -98,9 +96,10 @@ if "`cambioiva'" == "1" {
 	scalar IVA = IVA_Mod
 }
 
+** 4.4 Integración **
+noisily TasasEfectivas, anio(`=aniovp')
 
-** 4.3 Integración **
-noisily TasasEfectivas
+
 
 
 
@@ -115,7 +114,7 @@ g AportacionesNetas = ISRASSIM + ISRPFSIM + CUOTASSIM + ISRPMSIM /// + OTROSKSIM
 	+ IVASIM + IEPSNPSIM + IEPSPSIM + ISANSIM + IMPORTSIM + FMPSIM ///
 	- Pension - Educacion - Salud - IngBasico - _Infra - PenBienestar
 label var AportacionesNetas "aportaciones netas"
-noisily Simulador AportacionesNetas [fw=factor], base("ENIGH 2020") reboot anio(`=aniovp') folio("folioviv foliohog") $nographs
+noisily Simulador AportacionesNetas [fw=factor], base("ENIGH 2020") reboot anio(`=aniovp') folio("folioviv foliohog") $nographs //boot(20)
 save "`c(sysdir_site)'/users/$id/households.dta", replace
 
 

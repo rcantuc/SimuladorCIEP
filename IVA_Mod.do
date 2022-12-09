@@ -29,7 +29,7 @@ use "`c(sysdir_site)'/SIM/2020/expenditure_categ_iva.dta", clear
 ** Re C{c a'}lculo del IVA **
 local j = 2
 foreach k in alim alquiler cb educacion fuera mascotas med mujer otros trans transf {
-	replace gasto_anual`k' = gasto_anual`k'/`deflator'*66.012/58.609
+	replace gasto_anual`k' = gasto_anual`k'/`deflator'*63.763/58.609
 	
 	if IVAT[`j',1] == 1 {
 		replace IVA`k' = 0

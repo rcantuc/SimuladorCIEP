@@ -270,7 +270,12 @@ quietly {
 	****************************
 	*** 4 Fiscal Gap: Gastos ***
 	****************************
-	PEF if transf_gf == 0, anio(`anio') by(divPE) nographs
+	capture confirm file `"`c(sysdir_site)'/SIM/PEF`anio'.dta"'
+	if _rc != 0 {
+		PEF if transf_gf == 0, anio(`anio') by(divPE) nographs
+		save `"`c(sysdir_site)'/SIM/PEF`anio'.dta"', replace
+	}
+	use `"`c(sysdir_site)'/SIM/PEF`anio'.dta"', clear
 	*local Educacion = r(Educación)
 	*local Pensiones = r(Pensiones)
 	*local PenBienestar = r(Pensión_Bienestar)
@@ -501,6 +506,11 @@ quietly {
 		replace estimacioncostodeuda = scalar(gascosto)*Poblacion if anio == `anio'
 		replace gastocostodeuda = scalar(gascosto)*Poblacion if anio == `anio'
 		replace tasaEfectiva = gastocostodeuda/shrfsp*100 if anio == `anio'
+	}
+
+	capture confirm existence $tasaEfectiva
+	if _rc == 0 {
+		replace tasaEfectiva = $tasaEfectiva if anio >= `anio'
 	}
 
 

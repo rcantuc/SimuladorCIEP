@@ -26,6 +26,8 @@ global pib2025 = 2.4 //       CGPE 2023 (página 134)
 global pib2026 = 2.4 //       CGPE 2023 (página 134)
 global pib2027 = 2.4 //       CGPE 2023 (página 134)
 global pib2028 = 2.4 //       CGPE 2023 (página 134)
+global pib2029 = $pib2028
+global pib2030 = $pib2029
 
 global def2022 = 8.00695 //    CGPE 2023 (página 134)
 global def2023 = 4.95000 //    CGPE 2023 (página 134)
@@ -34,6 +36,8 @@ global def2025 = 3.49807 //    CGPE 2023 (página 134)
 global def2026 = 3.49211 //    CGPE 2023 (página 134)
 global def2027 = 3.51530 //    CGPE 2023 (página 134)
 global def2028 = 3.50150 //    CGPE 2023 (página 134)
+global def2029 = $def2028
+global def2030 = $def2029
 
 global tasaEfectiva = 6.7724 // Tasa de inter{c e'}s EFECTIVA
 global tipoDeCambio = 19.8   // Tipo de cambio
@@ -47,7 +51,7 @@ PIBDeflactor, nographs
 ***    2.3. GASTOS    ***
 *************************
 if "$update" == "update" {
-	noisily GastoPC
+	noisily GastoPC, anio(`=aniovp')
 }
 else {
 	scalar basica      =   26537 //    Educación b{c a'}sica
@@ -87,28 +91,28 @@ else {
 ***    2.4. INGRESOS    ***
 ***************************
 if "$update" == "update" {
-	noisily TasasEfectivas
+	noisily TasasEfectivas, anio(`=aniovp')
 }
 else {
-	scalar ISRAS   = (3.696/100*scalar(pibY)*(1+ 3.782*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISR (asalariados): 3.696
-	scalar ISRPF   = (0.240/100*scalar(pibY)*(1+ 1.199*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISR (personas f{c i'}sicas): 0.240
-	scalar CUOTAS  = (1.499/100*scalar(pibY)*(1+ 2.197*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Cuotas (IMSS): 1.499
+	scalar ISRAS   = (3.763/100*scalar(pibY)*(1+ 3.782*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISR (asalariados): 3.696
+	scalar ISRPF   = (0.244/100*scalar(pibY)*(1+ 1.199*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISR (personas f{c i'}sicas): 0.240
+	scalar CUOTAS  = (1.527/100*scalar(pibY)*(1+ 2.197*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Cuotas (IMSS): 1.499
 
-	scalar ISRPM   = (4.064/100*scalar(pibY)*(1+ 4.664*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISR (personas morales): 4.064
-	scalar OTROSK  = (1.049/100*scalar(pibY)*(1+-3.269*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Productos, derechos, aprovech.: 1.049
+	scalar ISRPM   = (4.138/100*scalar(pibY)*(1+ 4.664*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISR (personas morales): 4.064
+	scalar OTROSK  = (1.068/100*scalar(pibY)*(1+-3.269*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Productos, derechos, aprovech.: 1.049
 
-	scalar IVA     = (4.520/100*scalar(pibY)*(1+ 2.498*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // IVA: 4.520
-	scalar ISAN    = (0.049/100*scalar(pibY)*(1+ 3.565*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISAN: 0.049
-	scalar IEPSNP  = (0.662/100*scalar(pibY)*(1+ 0.362*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // IEPS (no petrolero): 0.887
-	scalar IEPSP   =  0.887     // IEPS (petrolero): 0.662
-	scalar IMPORT  = (0.313/100*scalar(pibY)*(1+ 5.303*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Importaciones: 0.313
+	scalar IVA     = (4.603/100*scalar(pibY)*(1+ 2.498*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // IVA: 4.520
+	scalar ISAN    = (0.050/100*scalar(pibY)*(1+ 3.565*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISAN: 0.049
+	scalar IEPSNP  = (0.674/100*scalar(pibY)*(1+ 0.362*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // IEPS (no petrolero): 0.887
+	scalar IEPSP   =  0.903     // IEPS (petrolero): 0.662
+	scalar IMPORT  = (0.319/100*scalar(pibY)*(1+ 5.303*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Importaciones: 0.313
 
-	scalar FMP     = (1.553/100*scalar(pibY)*(1+-7.718*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Fondo Mexicano del Petróleo: 1.553
+	scalar FMP     = (1.582/100*scalar(pibY)*(1+-7.718*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Fondo Mexicano del Petróleo: 1.553
 
-	scalar IMSS    = (0.091/100*scalar(pibY)*(1+-2.685*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (IMSS): 0.091
-	scalar ISSSTE  = (0.159/100*scalar(pibY)*(1+-3.058*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (ISSSTE): 0.159
-	scalar PEMEX   = (2.632/100*scalar(pibY)*(1+ 1.379*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (Pemex): 2.632
-	scalar CFE     = (1.271/100*scalar(pibY)*(1+-3.024*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (CFE): 1.271
+	scalar IMSS    = (0.092/100*scalar(pibY)*(1+-2.685*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (IMSS): 0.091
+	scalar ISSSTE  = (0.162/100*scalar(pibY)*(1+-3.058*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (ISSSTE): 0.159
+	scalar PEMEX   = (2.680/100*scalar(pibY)*(1+ 1.379*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (Pemex): 2.632
+	scalar CFE     = (1.294/100*scalar(pibY)*(1+-3.024*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (CFE): 1.271
 }
 
 
@@ -168,7 +172,7 @@ matrix IVAT = (16 \     ///  1  Tasa general
                3  \     /// 10  Otros, idem
                2  \     /// 11  Transporte local, idem
                3  \     /// 12  Transporte foraneo, idem
-               19.03)   //  13  Evasion e informalidad IVA, input[0-100]
+               14.63)   //  13  Evasion e informalidad IVA, input[0-100]
 ***       FIN: SIMULADOR IVA       ***
 *************************************/
 

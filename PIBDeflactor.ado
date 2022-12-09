@@ -244,7 +244,7 @@ quietly {
 	** 6 Simulador **
 	*****************
 	noisily di in g " PIB " in y anio[`obsvp'] in g " per c{c a'}pita " in y _col(43) %10.1fc pibY[`obsvp']/Poblacion[`obsvp'] in g " `=currency[`obsvp']'"
-	noisily di in g " PIB " in y anio[`obsvp'] in g " por persona en edad de trabajar " in y _col(43) %10.1fc OutputPerWorker[`obsvp'] in g " `=currency[`obsvp']' (16-65 a{c n~}os)"
+	noisily di in g " PIB " in y anio[`obsvp'] in g " por poblaci{c o'}n productiva " in y _col(43) %10.1fc OutputPerWorker[`obsvp'] in g " `=currency[`obsvp']' (16-65 a{c n~}os)"
 
 	noisily di _newline in g " Crecimiento promedio " in y anio[`obsPIB'] "-" anio[`obs_exo'] _col(43) %10.4f ((pibYR[`obs_exo']/pibYR[`obsPIB'])^(1/(`obs_exo'-`obsPIB'))-1)*100 in g " %" 
 	noisily di in g " Lambda por trabajador " in y anio[`obsPIB'] "-" anio[`obs_exo'] _col(43) %10.4f scalar(llambda) in g " %" 
@@ -396,17 +396,31 @@ quietly {
 		}
 
 		* Texto sobre lineas *
-		forvalues k=1(1)`=_N' {
-			if pibPO[`k'] != . {
-				local crec_PIBPC `"`crec_PIBPC' `=pibPO[`k']' `=anio[`k']' "`=string(pibPO[`k'],"%10.0fc")'" "'
+		forvalues k=1(3)`=_N' {
+			if OutputPerWorker[`k'] != . {
+				local crec_PIBPC `"`crec_PIBPC' `=OutputPerWorker[`k']' `=anio[`k']' "`=string(OutputPerWorker[`k'],"%10.0fc")'" "'
+			}
+		}
+		forvalues k=2(3)`=_N' {
+			if OutputPerWorker[`k'] != . {
+				local crec_PIBPC2 `"`crec_PIBPC2' `=OutputPerWorker[`k']' `=anio[`k']' "`=string(OutputPerWorker[`k'],"%10.0fc")'" "'
+			}
+		}
+		forvalues k=3(3)`=_N' {
+			if OutputPerWorker[`k'] != . {
+				local crec_PIBPC3 `"`crec_PIBPC3' `=OutputPerWorker[`k']' `=anio[`k']' "`=string(OutputPerWorker[`k'],"%10.0fc")'" "'
 			}
 		}
 
-		twoway (connected pibPO anio, msize(large)) if pibPO != ., ///
-			title(Producto Interno Bruto {bf:por población ocupada}) subtitle(${pais}) ///
-			ytitle(`=currency[`obsvp']' `aniovp') xtitle("") ///
-			xlabel(2005(1)2022 `aniovp') ///
-			text(`crec_PIBPC', color(black) size(vsmall)) ///
+
+		twoway (connected OutputPerWorker anio, msize(large)) if OutputPerWorker != ., ///
+			title(Producto Interno Bruto {bf:por población productiva}) subtitle(${pais}) ///
+			ytitle(`=currency[`obsvp']' `aniovp') ///
+			xtitle("") ///
+			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)' `aniovp') ///
+			text(`crec_PIBPC', color(black) size(vsmall) placement(n)) ///
+			text(`crec_PIBPC2', color(black) size(vsmall) placement(c)) ///
+			text(`crec_PIBPC3', color(black) size(vsmall) placement(s)) ///
 			ylabel(/*0(5)`=ceil(`pibYRmil'[_N])'*/, format(%20.0fc)) ///
 			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE/ENOE.") ///
 			name(PIBPC, replace)
