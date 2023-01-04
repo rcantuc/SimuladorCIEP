@@ -437,6 +437,10 @@ quietly {
 			note("{bf:Nota}: Porcentajes entre par{c e'}ntesis son con respecto al total de `anio'.") ///
 			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/Cuentas Públicas y $paqueteEconomico.")
 
+		if "$export" != "" {
+			graph export "$export/gastos`by'.png", as(png) name("gastos`by'") replace
+		}
+
 		restore
 	}
 

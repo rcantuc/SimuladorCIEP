@@ -24,7 +24,6 @@ program define UpdateDatosAbiertos, return
 	noisily di _newline in g "Datos Abiertos: " in y "ACTUALIZANDO. Favor de esperar... (5 min. aprox.)"
 	noisily di in g "{c U'}ltimo dato: " in y "`=anio[_N]'m`=mes[_N]'."
 
-
 	if "`c(console)'" == "console" {
 		exit
 	}

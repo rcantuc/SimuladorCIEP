@@ -63,12 +63,21 @@ tempfile nopresupuestario
 save "`nopresupuestario'"
 
 
-** Activos financieros **
-noisily DatosAbiertos XEA10, nog
+** Activos financieros internos del SP **
+noisily DatosAbiertos XED20, nog
 keep anio mes monto
 rename monto activos
-tempfile activos
-save "`activos'"
+tempfile activosInt
+save "`activosInt'"
+
+
+** Activos financieros externos del SP **
+noisily DatosAbiertos XEB10, nog
+keep anio mes monto
+rename monto activos
+tempfile activosExt
+save "`activosExt'"
+
 
 
 ** Diferimientos **
@@ -295,7 +304,8 @@ merge 1:1 (anio) using "`USD'", nogen
 merge 1:1 (anio) using "`costodeudaII'", nogen update
 merge 1:1 (anio) using "`costodeudaEE'", nogen update
 merge 1:1 (anio) using "`amortizacion'", nogen
-merge 1:1 (anio) using "`activos'", nogen
+merge 1:1 (anio) using "`activosInt'", nogen
+merge 1:1 (anio) using "`activosExt'", nogen
 merge 1:1 (anio) using "`diferimientos'", nogen
 tsset anio
 

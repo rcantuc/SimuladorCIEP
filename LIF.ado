@@ -402,7 +402,8 @@ quietly {
 		replace monto=monto/deflator/1000000000
 		replace LIF=LIF/deflator/1000000000
 
-		collapse (sum) recaudacion* if divLIF != 10 & anio >= 2013, by(anio `resumido')
+		local aniofirstg = 2004
+		collapse (sum) recaudacion* if divLIF != 10 & anio >= `aniofirstg', by(anio `resumido')
 
 		levelsof `resumido', local(lev_resumido)
 		
@@ -433,32 +434,43 @@ quietly {
 
 		* Ciclo para los texto totales *
 		tabstat recaudacion recaudacionPIB, stat(sum) by(anio) save
-		local j = 100/(`anio'-2013+1)/2
-		forvalues k=1(1)`=`anio'-2013+1' {
-			if anio[`k'] >= 2013 & anio[`k'] <= `anio' {
+		local j = 100/(`anio'-`aniofirstg'+1)/2
+		forvalues k=1(1)`=`anio'-`aniofirstg'+1' {
+			if anio[`k'] >= `aniofirstg' & anio[`k'] <= `anio' {
 				tempname TOT`k'
 				matrix `TOT`k'' = r(Stat`k')
 				local text `"`text' `=`TOT`k''[1,1]*1.005' `j' "{bf:`=string(`TOT`k''[1,2],"%7.1fc")'% PIB}""'
-				local j = `j' + 100/(`anio'-2013+1)
+				local j = `j' + 100/(`anio'-`aniofirstg'+1)
 			}
 		}
 
-		graph bar recaudacion if anio >= 2012 & anio <= `anio', ///
+		if "$export" == "" {
+			local graphtitle "{bf:Ingresos} p{c u'}blicos presupuestarios"
+			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP y $paqueteEconomico."
+		}
+		else {
+			local graphtitle ""
+			local graphfuente ""
+		}
+
+		graph bar recaudacion if anio <= `anio', ///
 			over(`resumido', sort(1) descending) over(anio, gap(0)) ///
-			stack asyvars blabel(bar, format(%7.1fc)) outergap(0) ///
-			title("{bf:Ingresos} p{c u'}blicos presupuestarios") ///
+			stack asyvars blabel(bar, format(%7.0fc)) outergap(0) ///
+			title("`graphtitle'") ///
 			subtitle($pais) ///
+			caption("`graphfuente'") ///
 			bar(4, color(40 173 58)) bar(1, color(255 55 0)) ///
 			bar(2, color(255 129 0)) ///
-			text(`text', color(black) placement(n)) ///
+			text(`text', color(black) placement(n) size(tiny)) ///
 			ytitle("mil millones `currency' `anio'") ///
 			ylabel(, format(%15.0fc) labsize(small)) ///
 			yscale(range(0)) ///
 			legend(on position(6) rows(`rows') cols(`cols') `legend' region(margin(zero)) order(`order')) ///
-			name(ingresos`by', replace) ///
-			note("{bf:Nota}: Porcentajes entre par{c e'}ntesis son con respecto al total de `anio'.") ///
-			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP y $paqueteEconomico.")
-		
+			name(ingresos`by', replace)
+
+		if "$export" != "" {
+			graph export "$export/ingresos`by'.png", as(png) name("ingresos`by'") replace
+		}
 		restore
 	}
 

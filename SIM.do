@@ -21,9 +21,8 @@ if "`c(username)'" == "ricardo" {                                               
 if "`c(username)'" == "ciepmx" & "`c(console)'" == "" {                         // Linux ServidorCIEP
 	sysdir set SITE "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/SimuladorCIEP/5.3/SimuladorCIEP/"
 }
-if "`c(username)'" == "ciepmx" & "`c(console)'" == "console" {                  // Linux ServidorCIEP (WEB)
-	sysdir set SITE "/SIM/OUT/5/5.3/"
-}
+*global export "`c(sysdir_site)'/../../../LINGO/Pemex post-petróleo/images/"    // EXPORTAR IMAGENES EN...
+*global export "`c(sysdir_site)'/../../../Boletines/Sostenibilidad 2023/images/" // EXPORTAR IMAGENES EN...
 
 
 
@@ -32,27 +31,28 @@ if "`c(username)'" == "ciepmx" & "`c(console)'" == "console" {                  
 ***    1. OPCIONES    ***
 ***                   ***
 *************************
-*global export "/Users/ricardo/Dropbox (CIEP)/Textbook/images/"                 // EXPORTAR IMAGENES EN...
-*global update "update"                                                         // UPDATE DATASETS/OUTPUTS
 *global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
-*global nographs "nographs"                                                      // SUPRIMIR GRAFICAS
-
+*global update "update"                                                         // UPDATE DATASETS/OUTPUTS
+*global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
 noisily run "`c(sysdir_site)'/PARAM.do"                                         // PARÁMETROS (PE 2023)
+
 
 
 ************************************
 ***                              ***
 ***    2. POBLACION + ECONOMÍA   ***
 ***                              ***
-/***********************************
+************************************
 noisily Poblacion, aniofinal(`=scalar(anioend)') //$update
-noisily PIBDeflactor, geodef(2013) geopib(2013) //$update
-noisily SCN, //$update
-noisily Inflacion, //$update
+noisily PIBDeflactor, geodef(2013) geopib(2013) $update
+noisily SCN, $update
+noisily Inflacion, $update
 
+noisily SHRFSP, $update
+noisily LIF, by(divPE) rows(1) min(0) eofp $update
 noisily PEF, by(divPE) rows(2) min(0) //$update
-noisily LIF, by(divSIM) rows(2) min(0) eofp //$update
-noisily SHRFSP, //$update
+
+
 
 
 
@@ -131,12 +131,17 @@ if "$output" == "output" {
 
 
 
+
+
 ********************************************/
 ***                                       ***
 ***    6. PARTE IV: DEUDA + FISCAL GAP    ***
 ***                                       ***
 *********************************************
 noisily FiscalGap, anio(`=aniovp') end(`=anioend') aniomin(2015) $nographs $update discount(7)
+run "`c(sysdir_site)'/output.do"
+
+
 
 
 
@@ -145,7 +150,6 @@ noisily FiscalGap, anio(`=aniovp') end(`=anioend') aniomin(2015) $nographs $upda
 ****    Touchdown!!!    ****
 ****                    ****
 ****************************
-run "`c(sysdir_site)'/output.do"
 timer off 1
 timer list 1
 noisily di _newline(2) in g _dup(20) ":" "  " in y "TOUCH-DOWN!!!  " round(`=r(t1)/r(nt1)',.1) in g " segs  " _dup(20) ":"

@@ -10,15 +10,18 @@
 // Graph Size
 // graphsize 	x 			5.5
 // graphsize 	y 			4
-graphsize 	x 			13
-graphsize 	y 			8
+graphsize 	x 			16
+graphsize 	y 			7
 
 
 
 // Margins
-margin 		graph			medium
-margin 		combinegraph		large
-margin 		piegraph		large
+margin 		graph			large
+margin 		combinegraph		medlarge
+margin 		piegraph		medlarge
+margin		plotregion		medlarge
+margin		axis_title		medsmall
+margin		legend			medium
 
 
 
@@ -33,8 +36,8 @@ color 		legend			white
 
 
 // Added text and lines
-gsize 		text_option 		vsmall
-color 		text_option		"52,70,78"
+gsize 		text_option 		medlarge
+color 		text_option		black
 clockdir 	text_option		12
 
 color		xyline			"200,200,200"
@@ -52,17 +55,17 @@ color		body			black
 clockdir 	note_position		6
 color		small_body		black
 
-gsize 		heading			large
+gsize 		heading			vlarge
 yesno 		title_span		no
 
-gsize 		subheading 		small
+gsize 		subheading 		medlarge
 yesno 		subtitle_span		no
 
-gsize 		body			tiny
-yesno 		caption_span		yes
+gsize 		small_body		small
+yesno 		note_span		no
 
-gsize 		small_body		vsmall
-yesno 		note_span		yes
+gsize 		body			vsmall
+yesno 		caption_span		no
 
 textboxstyle	t1title			body
 textboxstyle	t2title			small_body
@@ -81,14 +84,12 @@ yesno 		draw_major_nlt_vgrid 	yes
 
 // Axis
 color		tick			"52,70,78"
-
 color      	tick_label		"114,113,118"
-gsize      	tick_label		vsmall
+gsize      	tick_label		small
 color 		tick_biglabel 		"114,113,118"
 gsize		tick_biglabel		small
 color 		axis_title 		"114,113,118"
 gsize		axis_title		small
-margin		axis_title		medsmall
 
 axisstyle 	vertical_default 	vertical_nolinetick
 axisstyle 	bar_scale_vert		vertical_nolinetick
@@ -108,13 +109,12 @@ gsize 		legend_key_xsize	medlarge
 gsize 		legend_key_ysize	medlarge
 numstyle 	legend_cols		4
 gsize 		key_label		vsmall
-margin		legend			medium
 
 
 
 // Labels
 color 		label 			white
-gsize 		small_label		vsmall
+gsize 		small_label		small
 
 
 
@@ -128,29 +128,29 @@ relsize 	bar_subgroupgap		0
 
 
 // Símbolos
-// symbol 	p 			square
-// symbolsize 	p			small
-
-
+symbol 		p 			circle
+symbolsize 	p			vhuge
+color      	refmarker		red
+linewidth  	refmarker		vvvthick
 
 // Grosor
-linewidth 	p1mark			thick
-linewidth 	p2mark			thick
-linewidth 	p3mark			thick
-linewidth 	p4mark			thick
-linewidth 	p5mark			thick
-linewidth 	p6mark			thick
-linewidth 	p7mark			thick
-linewidth 	p8mark			thick
-linewidth 	p9mark			thick
-linewidth 	p10mark			thick
-linewidth 	p11mark			thick
-linewidth 	p12mark			thick
-linewidth 	p13mark			thick
-linewidth 	p14mark			thick
-linewidth 	p15mark			thick
-linewidth 	p16mark			thick
-linewidth 	p17mark			thick
+linewidth 	p1mark			vvvthick
+linewidth 	p2mark			vvvthick
+linewidth 	p3mark			vvvthick
+linewidth 	p4mark			vvvthick
+linewidth 	p5mark			vvvthick
+linewidth 	p6mark			vvvthick
+linewidth 	p7mark			vvvthick
+linewidth 	p8mark			vvvthick
+linewidth 	p9mark			vvvthick
+linewidth 	p10mark			vvvthick
+linewidth 	p11mark			vvvthick
+linewidth 	p12mark			vvvthick
+linewidth 	p13mark			vvvthick
+linewidth 	p14mark			vvvthick
+linewidth 	p15mark			vvvthick
+linewidth 	p16mark			vvvthick
+linewidth 	p17mark			vvvthick
 
 linewidth 	p1			thick
 linewidth 	p2			thick
@@ -228,23 +228,23 @@ linewidth	p17area			none
 
 // Colores
 
-color 		p1markfill		white
-color 		p2markfill		white
-color 		p3markfill		white
-color 		p4markfill		white
-color 		p5markfill		white
-color 		p6markfill		white
-color 		p7markfill		white
-color 		p8markfill		white
-color 		p9markfill		white
-color 		p10markfill		white
-color 		p11markfill		white
-color 		p12markfill		white
-color 		p13markfill		white
-color 		p14markfill		white
-color 		p15markfill		white
-color 		p16markfill		white
-color 		p17markfill		white
+color 		p1markfill		"255,129,0"
+color 		p2markfill		"255,189,0"
+color 		p3markfill		"39,97,47"
+color 		p4markfill		"53,200,71"
+color 		p5markfill		"0,78,198"
+color 		p6markfill		"0,151,201"
+color 		p7markfill		"186,34,64"
+color 		p8markfill		"254,118,109"
+color 		p9markfill		"150,6,92"
+color 		p10markfill		"213,155,190"
+color 		p11markfill		"23,105,114"
+color 		p12markfill		"57,198,184"
+color 		p13markfill		"133,88,14"
+color 		p14markfill		"227,229,99"
+color 		p15markfill		"102,62,76"
+color 		p16markfill		"0,151,125"
+color 		p17markfill		"181,185,27"
 
 color 		p1			"255,129,0"
 color 		p2			"255,189,0"
