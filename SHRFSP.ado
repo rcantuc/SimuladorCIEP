@@ -62,122 +62,13 @@ quietly {
 	}
 
 	noisily di _newline in g "  {bf:Tipo de cambio " in y anio[`obsfin'] in g ": }" _col(30) in y %15.1fc tipoDeCambio[`obsfin'] in g " `currency'/USD"
-	noisily di _newline in g "  {bf:SHRFSP a" in y " `aniofin'm`mesfin'" in g ": }" _col(30) in y %15.0fc shrfsp[`obsfin']/Poblacion[`obsfin'] in g " `currency' por persona."
-	noisily di in g "  {bf:SHRFSP interna a" in y " `aniofin'm`mesfin'" in g ": }" _col(30) in y %15.0fc shrfspInterno[`obsfin']/Poblacion[`obsfin'] in g " `currency' por persona."
-	noisily di in g "  {bf:SHRFSP externa a" in y " `aniofin'm`mesfin'" in g ": }" _col(30) in y %15.0fc shrfspExterno[`obsfin']/Poblacion[`obsfin']/tipoDeCambio[`obsfin'] in g " USD por persona."
+	noisily di _newline in g "  {bf:SHRFSP a" in y " `aniofin'm`mesfin'" in g ": }" _col(30) in y %15.0fc shrfsp[`obsfin']/Poblacion[`obsfin']/deflator[`obsfin'] in g " `currency' por persona."
+	noisily di in g "  {bf:SHRFSP interna a" in y " `aniofin'm`mesfin'" in g ": }" _col(30) in y %15.0fc shrfspInterno[`obsfin']/Poblacion[`obsfin']/deflator[`obsfin'] in g " `currency' por persona."
+	noisily di in g "  {bf:SHRFSP externa a" in y " `aniofin'm`mesfin'" in g ": }" _col(30) in y %15.0fc shrfspExterno[`obsfin']/Poblacion[`obsfin']/deflator[`obsfin']/tipoDeCambio[`obsfin'] in g " USD por persona."
 
-	noisily di _newline in g "  {bf:SHRFSP a" in y " `=`aniofin'-1'm`mesfin'" in g ": }" _col(30) in y %15.0fc shrfsp[`obsfin'-1]/Poblacion[`obsfin'-1] in g " `currency' por persona."
-	noisily di in g "  {bf:SHRFSP interna a" in y " `=`aniofin'-1'm`mesfin'" in g ": }" _col(30) in y %15.0fc shrfspInterno[`obsfin'-1]/Poblacion[`obsfin'-1] in g " `currency' por persona."
-	noisily di in g "  {bf:SHRFSP externa a" in y " `=`aniofin'-1'm`mesfin'" in g ": }" _col(30) in y %15.0fc shrfspExterno[`obsfin'-1]/Poblacion[`obsfin'-1]/tipoDeCambio[`obsfin'-1] in g " USD por persona."
-
-
-	** 3.1 CGPE 2023 ** 
-	replace shrfsp = 48.9/100*pibY if anio == 2022
-	replace shrfspInterno = 33.4/100*pibY if anio == 2022
-	replace shrfspExterno = 15.5/100*pibY if anio == 2022
-	replace rfsp = 3.8/100*pibY if anio == 2022
-	replace rfspBalance = -3.0/100*pibY if anio == 2022
-	replace rfspPIDIREGAS = 0.0/100*pibY if anio == 2022
-	replace rfspIPAB = -0.1/100*pibY if anio == 2022
-	replace rfspFONADIN = -0.2/100*pibY if anio == 2022
-	replace rfspDeudores = 0.1/100*pibY if anio == 2022
-	replace rfspBanca = 0.0/100*pibY if anio == 2022
-	replace rfspAdecuacion = -0.5/100*pibY if anio == 2022
-	replace tipoDeCambio = 20.4 if anio == 2022
-
-	replace shrfsp = 49.4/100*pibY if anio == 2023
-	replace shrfspInterno = 34.7/100*pibY if anio == 2023
-	replace shrfspExterno = 14.6/100*pibY if anio == 2023
-	replace rfsp = 4.1/100*pibY if anio == 2023
-	replace rfspBalance = -3.6/100*pibY if anio == 2023
-	replace rfspPIDIREGAS = -0.1/100*pibY if anio == 2023
-	replace rfspIPAB = -0.1/100*pibY if anio == 2023
-	replace rfspFONADIN = 0.0/100*pibY if anio == 2023
-	replace rfspDeudores = 0.0/100*pibY if anio == 2023
-	replace rfspBanca = 0.0/100*pibY if anio == 2023
-	replace rfspAdecuacion = -0.2/100*pibY if anio == 2023
-	replace tipoDeCambio = 20.6 if anio == 2023
-
-	replace shrfsp = 49.4/100*pibY if anio == 2024
-	replace shrfspInterno = 35.2/100*pibY if anio == 2024
-	replace shrfspExterno = 14.2/100*pibY if anio == 2024
-	replace rfsp = 2.7/100*pibY if anio == 2024
-	replace rfspBalance = -2.2/100*pibY if anio == 2024
-	replace rfspPIDIREGAS = -0.1/100*pibY if anio == 2024
-	replace rfspIPAB = -0.1/100*pibY if anio == 2024
-	replace rfspFONADIN = 0.0/100*pibY if anio == 2024
-	replace rfspDeudores = 0.0/100*pibY if anio == 2024
-	replace rfspBanca = 0.0/100*pibY if anio == 2024
-	replace rfspAdecuacion = -0.3/100*pibY if anio == 2024
-	replace tipoDeCambio = 20.7 if anio == 2024
-
-	replace shrfsp = 49.4/100*pibY if anio == 2025
-	replace shrfspInterno = 35.5/100*pibY if anio == 2025
-	replace shrfspExterno = 13.8/100*pibY if anio == 2025
-	replace rfsp = 2.7/100*pibY if anio == 2025
-	replace rfspBalance = -2.2/100*pibY if anio == 2025
-	replace rfspPIDIREGAS = -0.1/100*pibY if anio == 2025
-	replace rfspIPAB = -0.1/100*pibY if anio == 2025
-	replace rfspFONADIN = 0.0/100*pibY if anio == 2025
-	replace rfspDeudores = 0.0/100*pibY if anio == 2025
-	replace rfspBanca = 0.0/100*pibY if anio == 2025
-	replace rfspAdecuacion = -0.3/100*pibY if anio == 2025
-	replace tipoDeCambio = 20.8 if anio == 2025
-
-	replace shrfsp = 49.4/100*pibY if anio == 2026
-	replace shrfspInterno = 35.9/100*pibY if anio == 2026
-	replace shrfspExterno = 13.5/100*pibY if anio == 2026
-	replace rfsp = 2.7/100*pibY if anio == 2026
-	replace rfspBalance = -2.2/100*pibY if anio == 2026
-	replace rfspPIDIREGAS = -0.1/100*pibY if anio == 2026
-	replace rfspIPAB = -0.1/100*pibY if anio == 2026
-	replace rfspFONADIN = 0.0/100*pibY if anio == 2026
-	replace rfspDeudores = 0.0/100*pibY if anio == 2026
-	replace rfspBanca = 0.0/100*pibY if anio == 2026
-	replace rfspAdecuacion = -0.3/100*pibY if anio == 2026
-	replace tipoDeCambio = 21.0 if anio == 2026
-
-	replace shrfsp = 49.4/100*pibY if anio == 2027
-	replace shrfspInterno = 36.3/100*pibY if anio == 2027
-	replace shrfspExterno = 13.1/100*pibY if anio == 2027
-	replace rfsp = 2.7/100*pibY if anio == 2027
-	replace rfspBalance = -2.2/100*pibY if anio == 2027
-	replace rfspPIDIREGAS = -0.1/100*pibY if anio == 2027
-	replace rfspIPAB = -0.1/100*pibY if anio == 2027
-	replace rfspFONADIN = 0.0/100*pibY if anio == 2027
-	replace rfspDeudores = 0.1/100*pibY if anio == 2027
-	replace rfspBanca = 0.0/100*pibY if anio == 2027
-	replace rfspAdecuacion = -0.4/100*pibY if anio == 2027
-	replace tipoDeCambio = 21.3 if anio == 2027
-
-	replace shrfsp = 49.4/100*pibY if anio == 2028
-	replace shrfspInterno = 36.6/100*pibY if anio == 2028
-	replace shrfspExterno = 12.7/100*pibY if anio == 2028
-	replace rfsp = 2.7/100*pibY if anio == 2028
-	replace rfspBalance = -2.2/100*pibY if anio == 2028
-	replace rfspPIDIREGAS = -0.1/100*pibY if anio == 2028
-	replace rfspIPAB = -0.1/100*pibY if anio == 2028
-	replace rfspFONADIN = 0.0/100*pibY if anio == 2028
-	replace rfspDeudores = 0.0/100*pibY if anio == 2028
-	replace rfspBanca = 0.0/100*pibY if anio == 2028
-	replace rfspAdecuacion = -0.3/100*pibY if anio == 2028
-	replace tipoDeCambio = 21.5 if anio == 2028
-
-	* Costo financiero *
-	replace costodeudaInterno = 3.1/100*porInterno*pibY if anio == 2022
-	replace costodeudaExterno = 3.1/100*porExterno*pibY if anio == 2022
-	replace costodeudaInterno = 3.4/100*porInterno*pibY if anio == 2023
-	replace costodeudaExterno = 3.4/100*porExterno*pibY if anio == 2023
-	replace costodeudaInterno = 3.2/100*porInterno*pibY if anio == 2024
-	replace costodeudaExterno = 3.2/100*porExterno*pibY if anio == 2024
-	replace costodeudaInterno = 3.2/100*porInterno*pibY if anio == 2025
-	replace costodeudaExterno = 3.2/100*porExterno*pibY if anio == 2025
-	replace costodeudaInterno = 2.9/100*porInterno*pibY if anio == 2026
-	replace costodeudaExterno = 2.9/100*porExterno*pibY if anio == 2026
-	replace costodeudaInterno = 2.8/100*porInterno*pibY if anio == 2027
-	replace costodeudaExterno = 2.8/100*porExterno*pibY if anio == 2027
-	replace costodeudaInterno = 2.7/100*porInterno*pibY if anio == 2028
-	replace costodeudaExterno = 2.7/100*porExterno*pibY if anio == 2028
+	noisily di _newline in g "  {bf:SHRFSP a" in y " `=`aniofin'-1'm`mesfin'" in g ": }" _col(30) in y %15.0fc shrfsp[`obsfin'-1]/Poblacion[`obsfin'-1]/deflator[`obsfin'] in g " `currency' por persona."
+	noisily di in g "  {bf:SHRFSP interna a" in y " `=`aniofin'-1'm`mesfin'" in g ": }" _col(30) in y %15.0fc shrfspInterno[`obsfin'-1]/Poblacion[`obsfin'-1]/deflator[`obsfin'] in g " `currency' por persona."
+	noisily di in g "  {bf:SHRFSP externa a" in y " `=`aniofin'-1'm`mesfin'" in g ": }" _col(30) in y %15.0fc shrfspExterno[`obsfin'-1]/Poblacion[`obsfin'-1]/deflator[`obsfin']/tipoDeCambio[`obsfin'-1] in g " USD por persona."
 
 	* Tasas Efectivas */
 	g tasaInterno = costodeudaInterno/L.shrfspInterno*100
@@ -191,14 +82,6 @@ quietly {
 
 	* Balance primario *
 	g balprimario = -(rfspBala+costodeudaInt+costodeudaExt)/pibY*100
-	replace balprimario = 0.1 if anio == 2022
-	replace balprimario = -0.2 if anio == 2023
-	replace balprimario = 1.0 if anio == 2024
-	replace balprimario = 1.0 if anio == 2025
-	replace balprimario = 0.7 if anio == 2026
-	replace balprimario = 0.6 if anio == 2027
-	replace balprimario = 0.5 if anio == 2028
-
 	g nopresupuestario   = -(rfspPIDIREGAS+rfspIPAB+rfspFONADIN+rfspDeudores+rfspBanca+rfspAdecuacion)/pibY*100
 	g efectoCrecimiento  = -(var_pibY/100)*L.shrfsp/pibY*100
 	g efectoInflacion    = -(var_indiceY/100+var_indiceY/100*var_pibY/100)*L.shrfsp/pibY*100 
@@ -233,7 +116,7 @@ quietly {
 			label(1 "Balance Primario") label(6 "Tipo de cambio") label(2 "No presupuestario") region(margin(zero))) ///
 			title("Efectos sobre el {bf:indicador de la deuda}") ///
 			name(efectoDeuda, replace) ///
-			note("{bf:{c U'}ltimo dato}: `ultanio'm`ultmes'") ///
+			note("{bf:{c U'}ltimo dato}: `aniofin'm`mesfin'") ///
 			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP.")
 
 		capture confirm existence $export
@@ -274,12 +157,21 @@ quietly {
 			}
 		}
 		
+		if `"$export"' == "" {
+			local graphtitle "{bf:Saldo hist{c o'}rico} de RFSP"
+			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP y $paqueteEconomico."
+		}
+		else {
+			local graphtitle ""
+			local graphfuente ""
+		}
 		twoway (bar `interno' `externo' anio if anio >= 2003 & anio < `anio') ///
-			(bar `interno' `externo' anio if anio >= `anio' & anio <= `aniofin') if `externo' != ., ///
-			title("{bf:Saldo hist{c o'}rico} de RFSP") ///
+			(bar `interno' `externo' anio if anio >= `anio') if `externo' != . & anio >= 2005, ///
+			title(`graphtitle') ///
 			subtitle($pais) ///
+			caption("`graphfuente'") ///
 			ylabel(, format(%15.0fc) labsize(small)) ///
-			xlabel(`anioshrfsp'(1)2028, noticks) ///	
+			xlabel(2005(1)`anio', noticks) ///	
 			text(`textE' `textI', color(white)) ///
 			text(`text', placement(n) size(tiny)) ///
 			///text(2 `=`anio'+1.45' "{bf:Proyecci{c o'}n PE 2022}", color(white)) ///
@@ -292,22 +184,36 @@ quietly {
 			label(2 `"Externo (`=string(shrfspExterno[`obsvp']/shrfsp[`obsvp']*100,"%7.1fc")'%)"') ///
 			label(3 "Proy. Interno") label(4 "Proy. Externo") region(margin(zero))) ///
 			name(shrfsp, replace) ///
-			note("{bf:Nota}: Porcentajes entre par{c e'}ntesis son con respecto al total de `=anio[`obsvp']'. {bf:{c U'}ltimo dato}: `ultanio'm`ultmes'") ///
-			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP y $paqueteEconomico.")
+			note("{bf:Nota}: Porcentajes entre par{c e'}ntesis son con respecto al total de `=anio[`obsvp']'. {bf:{c U'}ltimo dato}: `aniofin'm`mesfin'")
 
+		if "$export" == "" {
+			local graphtitle "{bf:Saldo hist{c o'}rico} por persona"
+			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP y $paqueteEconomico."
+		}
+		else {
+			local graphtitle ""
+			local graphfuente ""
+		}
 		twoway (bar `shrfsp' anio if anio < `anio') ///
-			(bar `shrfsp' anio if anio >= `anio') if `shrfsp' != ., ///
-			title("{bf:Saldo hist{c o'}rico} por persona")  ///
+			(bar `shrfsp' anio if anio >= `anio') if `shrfsp' != . & anio >= 2005, ///
+			title(`graphtitle') ///
 			subtitle($pais) ///
+			caption("`graphfuente'") ///
 			ylabel(#5, format(%15.0fc) labsize(small)) ///
-			xlabel(2000(1)`anio', noticks) ///	
+			xlabel(2005(1)`anio', noticks) ///	
 			text(`textPC', placement(n) color(white)) ///
 			yscale(range(0) axis(1) noline) ///
 			ytitle("`currency' `aniovp'") xtitle("") ///
-			note("{bf:{c U'}ltimo dato}: `ultanio'm`ultmes'") ///
-			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP y $paqueteEconomico.") ///
+			note("{bf:{c U'}ltimo dato}: `aniofin'm`mesfin'") ///
 			legend(label(1 "Reportado") label(2 "Proyección $paqueteEconomico")) ///
 			name(shrfsppc, replace)
+
+		capture confirm existence $export
+		if _rc == 0 {
+			graph export "$export/shrfsppc.png", replace name(shrfsppc)
+		}			
+			
+			
 
 		if "$pais" != "" {
 			exit
@@ -335,8 +241,8 @@ quietly {
 		tempname stathoy statayer
 		matrix `stathoy' = r(Stat2)
 		matrix `statayer' = r(Stat1)
-		noisily di _newline in g "  {bf:RFSP a" in y " `ultanio'm`ultmes'" in g ": }" _col(30) in y %15.1fc `stathoy'[1,1]/(`statayer'[1,1]/deflator[`=`obsvp'-1'])*100 in g " % de `=`anio'-1'."
-		noisily di in g "  {bf:RFSP a" in y " `ultanio'm`ultmes'" in g ": }" _col(30) in y %15.1fc `stathoy'[1,1]/1000000 in g " millones `currency'."
+		noisily di _newline in g "  {bf:RFSP a" in y " `aniofin'm`mesfin'" in g ": }" _col(30) in y %15.1fc `stathoy'[1,1]/(`statayer'[1,1]/deflator[`=`obsvp'-1'])*100 in g " % de `=`anio'-1'."
+		noisily di in g "  {bf:RFSP a" in y " `aniofin'm`mesfin'" in g ": }" _col(30) in y %15.1fc `stathoy'[1,1]/1000000 in g " millones `currency'."
 
 		g efectoPositivoRFSP = 0
 		foreach k of varlist `rfspBalance0' `rfspAdecuacion0' `rfspOtros0' {
@@ -355,7 +261,7 @@ quietly {
 			}
 
 			if `rfsppib'[`k'] != . {
-				local textRFSP `"`textRFSP' `=efectoPositivoRFSP[`k']+.025' `=anio[`k']' "{bf:`=string(`rfsppib'[`k'],"%5.1fc")'% PIB}""'
+				local textRFSP `"`textRFSP' `=efectoPositivoRFSP[`k']+.025' `=anio[`k']' "{bf:`=string(`rfsppib'[`k'],"%5.1fc")'%}""'
 				local textRFBa `"`textRFBa' `=`rfspBalance'[`k']/2+max(`rfspAdecuacion'[`k']/2,0)+max(`rfspOtros'[`k']/2,0)' `=anio[`k']' "{bf:`=string(`rfspBalance0'[`k'],"%5.1fc")'}""'
 				if `rfspAdecuacion'[`k'] < 0 {
 					local textRFAd `"`textRFAd' `=`rfspAdecuacion'[`k']/2+min(`rfspOtros'[`k']/2,0)' `=anio[`k']' "{bf:`=string(`rfspAdecuacion0'[`k'],"%5.1fc")'}""'
@@ -378,7 +284,7 @@ quietly {
 			subtitle($pais) xtitle("") ///
 			name(rfsp, replace) ///
 			ylabel(, format(%15.0fc) labsize(small)) ///
-			xlabel(2008(1)`anio', noticks) ///	
+			xlabel(2008(1)2028, noticks) ///	
 			yscale(range(0) axis(1) noline) ///
 			text(`textRFSP', placement(n)) ///
 			text(`textRFBa', color(white)) ///
@@ -387,7 +293,7 @@ quietly {
 			ytitle("% PIB") ///
 			legend(on position(6) rows(1) label(3 "Otros") label(2 "Adecuaciones") label(1 "Balance presupuestario") ///
 			label(6 "Proy. Otros") label(5 "Proy. Adecuaciones") label(4 "Proy. Balance") region(margin(zero))) ///
-			note("{bf:{c U'}ltimo dato}: `ultanio'm`ultmes'") ///
+			note("{bf:{c U'}ltimo dato}: `aniofin'm`mesfin'") ///
 			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP y $paqueteEconomico.")
 
 		twoway (connected tasaInterno tasaExterno anio if anio >= 2013 & anio <= 2028, ///
@@ -402,7 +308,7 @@ quietly {
 			text(`textTEE', placement(c) color(white)) ///
 			text(`textTEI', placement(c) color(white)) ///
 			name(tasasdeinteres, replace) ///
-			note("{bf:{c U'}ltimo dato}: `ultanio'm`ultmes'") ///
+			note("{bf:{c U'}ltimo dato}: `aniofin'm`mesfin'") ///
 			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP y $paqueteEconomico.")
 			
 		capture confirm existence $export

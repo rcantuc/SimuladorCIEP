@@ -173,6 +173,16 @@ quietly {
 			& edad != 100 & edad != 105
 		g zero = 0
 
+		if "$export" == "" {
+			local graphtitle "{bf:Pir{c a'}mide} demogr{c a'}fica"
+			///local graphtitle "{bf:Population} pyramid"
+			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de CONAPO."
+		}
+		else {
+			local graphtitle ""
+			local graphfuente ""
+		}
+
 		* Grafica sexo = 1 como negativos y sexo = 2 como positivos por grupos etarios, en el presente y futuro *
 		* 1. Vivios en el año inicial y con una edad menor a 109  para el año final *
 		* 2. Vivos en el año final; nacidos durante o después del año inicial *
@@ -236,12 +246,9 @@ quietly {
 			`=-`MaxH'[1,1]/2' `"`=string(`MaxH'[1,1]/2,"%15.0fc")'"' 0 ///
 			`=`MaxM'[1,1]/2' `"`=string(`MaxM'[1,1]/2,"%15.0fc")'"' ///
 			`=`MaxM'[1,1]' `"`=string(`MaxM'[1,1],"%15.0fc")'"', angle(horizontal)) ///
-			///caption("Elaborado por el CIEP con informaci{c o'}n de: CONAPO (2018).") ///
-			caption("{bf:Fuente}: Elaborado por el CIEP, con información de CONAPO.") ///
-			title("{bf:Pir{c a'}mide} demogr{c a'}fica") ///
-			///subtitle($pais `=entidad[1]') ///
-			///title("{bf:Population} pyramid")
-
+			title("`graphtitle'") ///
+			///subtitle(${pais} `=entidad[1]') ///
+			caption("`graphfuente'") ///
 
 		if "$export" != "" {
 			graph export "$export/P_`entidadGName'.png", replace name(P_`aniohoy'_`aniofinal'_`entidadGName')
@@ -351,6 +358,15 @@ quietly {
 		g `pob3560' = (pob3560 + pob1934 + pob18)/1000000
 		g `pob61' = (pob61 + pob3560 + pob1934 + pob18)/1000000
 
+		if "$export" == "" {
+			local graphtitle "{bf:Transici{c o'}n} demogr{c a'}fica"
+			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de CONAPO."
+		}
+		else {
+			local graphtitle ""
+			local graphfuente ""
+		}
+
 		twoway (area `pob61' `pob3560' `pob1934' `pob18' anio if anio <= `aniohoy') ///
 			(area `pob61' anio if anio > `aniohoy', color("255 129 0")) ///
 			(area `pob3560' anio if anio > `aniohoy', color("255 189 0")) ///
@@ -376,19 +392,19 @@ quietly {
 			xtitle("") ///
 			ytitle("millones de personas") ///
 			xline(`=`aniohoy'+.5') ///
-			caption("{bf:Fuente}: Elaborado por el CIEP, con información de CONAPO.") ///
-			legend(on label(1 "61+") label(2 "35 - 60") label(3 "19 - 34") label(4 "<18") order(4 3 2 1) region(margin(zero))) ///
-			title("{bf:Transici{c o'}n} demogr{c a'}fica") ///
+			title("`graphtitle'") ///
 			///subtitle(${pais} `=entidad[1]') ///
+			caption("`graphfuente'") ///
+			legend(on label(1 "61+") label(2 "35 - 60") label(3 "19 - 34") label(4 "<18") order(4 3 2 1) region(margin(zero))) ///
 			ylabel(, format(%20.1fc)) yscale(range(0)) ///
 			xlabel(`anioinicial'(10)`=anio[_N]') ///
 			name(E_`entidadGName', replace)
 			
-			if "$export" != "" {
-				graph export "$export/E_`entidadGName'.png", replace name(E_`entidadGName')
-			}
+		if "$export" != "" {
+			graph export "$export/E_`entidadGName'.png", replace name(E_`entidadGName')
+		}
 
-			restore
+		restore
 	}
 
 

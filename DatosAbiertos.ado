@@ -51,14 +51,16 @@ quietly {
 	merge m:1 (anio) using "`PIB'", nogen keep(matched) keepus(pibY deflator currency Poblacion*)
 	noisily di _newline in g " Serie: " in y "`anything'" in g ". Nombre: " in y "`=nombre[1]'" in g "."
 	*keep if anio >= 2013 & anio <= `last_anio'
+	tsset aniomes
 	
 	if "`if'" != "" {
 		keep `if'
 	}
 
-	tempvar montomill montopc
+	tempvar montomill montopc crecreal
 	g `montomill' = monto/1000000/deflator
 	g `montopc' = monto/Poblacion/deflator
+	g `crecreal' = (`montomill'/L12.`montomill'-1)*100
 
 	label define mes 1 "Enero" 2 "Febrero" 3 "Marzo" 4 "Abril" 5 "Mayo" 6 "Junio" 7 "Julio" 8 "Agosto" 9 "Septiembre" 10 "Octubre" 11 "Noviembre" 12 "Diciembre"
 	label values mes mes
@@ -95,13 +97,13 @@ quietly {
 	if "`nographs'" != "nographs" & tipo_de_informacion == "Flujo" {
 		local length = length("`=nombre[1]'")
 		if `length' > 60 {
-			local textsize ", size(medium)"
+			*local textsize ", size(medium)"
 		}
 		if `length' > 90 {
-			local textsize ", size(small)"
+			*local textsize ", size(small)"
 		}
 		if `length' > 110 {
-			local textsize ", size(vsmall)"
+			*local textsize ", size(vsmall)"
 		}
 
 		tabstat `montomill' `if', stat(sum) by(mes) f(%20.0fc) save
@@ -114,7 +116,8 @@ quietly {
 		}
 
 		graph bar (sum) `montomill', over(anio) over(mes) stack asyvar ///
-			legend(rows(2)) name(M`anything', replace) blabel(none) ///
+			legend(rows(2)) ///
+			name(M`anything', replace) blabel(none) ///
 			ytitle("millones de `=currency[1]' `aniovp'") ///
 			yline(0, lcolor(black) lpattern(solid)) ///
 			title("{bf:`=nombre[1]'}"`textsize') ///
@@ -138,7 +141,8 @@ quietly {
 		graph bar (sum) `montomill', over(anio) ///
 			over(aniotrimestre, relabel(`relab') axis(on)) ///
 			stack asyvar ///
-			legend(rows(2)) name(T`anything', replace) blabel(none) ///
+			legend(rows(2)) ///
+			name(T`anything', replace) blabel(none) ///
 			ytitle("millones de `=currency[1]' `aniovp'") ///
 			yline(0, lcolor(black) lpattern(solid)) ///
 			title("{bf:`=nombre[1]'}"`textsize') ///
@@ -150,13 +154,33 @@ quietly {
 			caption("{bf:Fuente:} Elaborado por el CIEP, con información de la SHCP (Estadísticas Oportunas de Finanzas P{c u'}blicas).")
 		restore
 
-		graph bar (sum) `montomill' if mes == `=mes[_N]' & anio >= 2012, over(anio) ///
+		graph bar (sum) `montomill' if mes == `=mes[_N]' & anio >= 2014, over(anio) ///
 			name(`mesname'`anything', replace) ///
 			ytitle("millones de `=currency[1]' `aniovp'") ///
 			ylabel(, format(%15.0fc)) ///
 			title("{bf:`=nombre[1]'}"`textsize') ///
+			subtitle("`mesname'") ///
+			blabel(, format(%10.0fc) position(outside) color(black) size(medlarge)) legend(off) ///
 			yline(0, lcolor(black) lpattern(solid)) ///
-			subtitle("`mesname'") blabel(, format(%10.0fc)) legend(off) ///
+			///note("{bf:{c U'}ltimo dato:} `last_anio'm`last_mes'.") ///
+			caption("{bf:Fuente:} Elaborado por el CIEP, con información de la SHCP (Estadísticas Oportunas de Finanzas P{c u'}blicas).")
+
+		forvalues k=1(1)`=_N' {
+			if `crecreal'[`k'] != . & mes[`k'] == `=mes[_N]' {
+				local textcrecreal `"`textcrecreal' `=`crecreal'[`k']' `=aniomes[`k']' "{bf:`=string(`crecreal'[`k'],"%7.1fc")'}" "'
+			}
+		}
+
+		twoway (connected `crecreal' aniomes, msize(large)) if mes == `=mes[_N]', ///
+			name(Crec_`mesname'`anything', replace) ///
+			ytitle("%") ///
+			ylabel(, format(%7.0fc)) ///
+			tlabel(1994m`last_mes'(24)`last_anio'm`last_mes') ///
+			ttitle("") ///
+			title("{bf:`=nombre[1]'}"`textsize') ///
+			yline(0, lcolor(black) lpattern(solid)) ///
+			subtitle("`mesname'") legend(off) ///
+			text(`textcrecreal') ///
 			///note("{bf:{c U'}ltimo dato:} `last_anio'm`last_mes'.") ///
 			caption("{bf:Fuente:} Elaborado por el CIEP, con información de la SHCP (Estadísticas Oportunas de Finanzas P{c u'}blicas).")
 	}
@@ -167,7 +191,7 @@ quietly {
 				local textmontopc `"`textmontopc' `=`montopc'[`k']' `=aniomes[`k']' "{bf:`=string(`montopc'[`k'],"%10.0fc")'}" "'
 			}
 		}
-		twoway (connect `montopc' aniomes if anio >= 2014 & mes == `last_mes', msize(large)), ///
+		twoway (connect `montopc' aniomes if anio >= 2014 & mes == `last_mes'), ///
 			ytitle("`=currency[1]' `aniovp'") ///
 			tlabel(2014m`last_mes'(12)`last_anio'm`last_mes') ///
 			ylabel(, format(%15.0fc)) ///
@@ -175,7 +199,7 @@ quietly {
 			subtitle(Por persona a `mesname') ///
 			xtitle("") ///
 			text(`textmontopc') ///
-			caption("{bf:Fuente:} Elaborado por el CIEP, con información de la SHCP (Estadísticas Oportunas de Finanzas P{c u'}blicas).") ///
+			caption("{bf:Fuente:} Elaborado por el CIEP, con información de la SHCP/EOFP y CONAPO.") ///
 			name(`anything'PC, replace)
 
 
@@ -193,7 +217,7 @@ quietly {
 		egen acum_prom = mean(`propmensual'), by(mes)
 
 		collapse (sum) monto acum_prom (last) mes if monto != ., by(anio nombre clave_de_concepto)
-		replace monto = monto/acum_prom if mes < 12
+		*replace monto = monto/acum_prom if mes < 12
 		local textografica `"{bf:Promedio a `mesname'}: `=string(acum_prom[_N]*100,"%5.1fc")'% del total anual."'
 		local palabra "Proyectado"
 	}
@@ -250,7 +274,6 @@ quietly {
 
 	** 2.1. Grafica **
 	if "`nographs'" != "nographs" {
-		*drop if anio < 2007
 		local serie_anio = anio[_N]
 		local serie_monto = monto[_N]
 		forvalues k = 1(1)`=_N' {
@@ -287,8 +310,8 @@ quietly {
 		g `monto' = monto/1000000000/deflator
 		twoway (area `monto' anio if anio < `aniovp') ///
 			(bar `monto' anio if anio >= `aniovp') ///
-			(connected monto_pib anio if anio < `aniovp', yaxis(2) msize(large) mlwidth(vvthick) pstyle(p1)) ///
-			(connected monto_pib anio if anio >= `aniovp', yaxis(2) msize(large) mlwidth(vvthick) pstyle(p2)), ///
+			(connected monto_pib anio if anio < `aniovp', yaxis(2) pstyle(p1)) ///
+			(connected monto_pib anio if anio >= `aniovp', yaxis(2) pstyle(p2)), ///
 			title("{bf:`=nombre[1]'}"`textsize') ///
 			/*subtitle(Montos observados)*/ ///
 			b1title(`"`textografica'"', size(small)) ///
@@ -301,7 +324,7 @@ quietly {
 			ylabel(, axis(2) format(%5.1fc) noticks) ///
 			yscale(range(0) noline axis(2)) ///
 			legend(off label(1 "Reportado") label(2 "LIF") order(1 2)) ///
-			text(`text1', yaxis(2) color(white) size(tiny)) ///
+			text(`text1', yaxis(2) color(white)) ///
 			caption("{bf:Fuente:} Elaborado por el CIEP, con información de la SHCP/EOFP.") ///
 			note("{bf:{c U'}ltimo dato:} `ultanio'm`ultmes'.") ///
 			name(H`anything', replace)

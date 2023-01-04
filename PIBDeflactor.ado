@@ -32,8 +32,7 @@ quietly {
 	*** 1. Sintaxis ***
 	*******************
 	syntax [if] [, ANIOvp(int `aniovp') ANIOFINal(int -1) NOGraphs UPDATE ///
-		GEOPIB(int -1) GEODEF(int -1) DIScount(real 5) ///
-		NOOutput]
+		GEOPIB(int -1) GEODEF(int -1) DIScount(real 5) NOOutput]
 
 	** 1.1 Si la opción "update" es llamada, ejecuta el do-file UpdatePIBDeflactor.do **
 	if "`update'" == "update" {
@@ -71,7 +70,6 @@ quietly {
 
 	collapse (mean) pibY=pibQ pibYR=pibQR WorkingAge Poblacion* pibPO (last) trimestre, by(anio currency)
 	tsset anio
-
 
 	* Locales para los cálculos geométricos *
 	if `geodef' < `anioinicial' {
@@ -301,17 +299,25 @@ quietly {
 		}
 
 		* Deflactor var_indiceY *
+		if "$export" == "" {
+			local graphtitle "{bf:{c I'}ndice} de precios impl{c i'}citos"
+			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE."
+		}
+		else {
+			local graphtitle ""
+			local graphfuente ""
+		}
 		twoway (area deflator anio if (anio < `aniofinal' & anio >= `anioinicial') | (anio == `aniofinal' & trimestre == 4)) ///
 			(area deflator anio if anio >= `aniofinal'+`exo_def') ///
 			(`graphtype2' deflator anio if anio < `aniofinal'+`exo_def' & anio >= `aniofinal', lwidth(none) pstyle(p4)), ///
-			title("{bf:{c I'}ndice} de precios impl{c i'}citos") ///
+			title("`graphtitle'") ///
 			subtitle(${pais}) ///
+			caption("`graphfuente'") ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)' `aniovp') ///
 			yscale(range(0)) ///
 			ylabel(0(1)4, format("%3.0f")) ///
 			ytitle("{c I'}ndice `aniovp' = 1.000") xtitle("") ///
 			legend(label(1 "Reportado") label(2 "Proyecci{c o'}n CIEP") label(3 "Estimaci{c o'}n ($paqueteEconomico)") order(1 3 2) region(margin(zero))) ///
-			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
 			note("{bf:Crecimiento de precios}: `=string(`=((indiceY[`obsDEF']/indice[`obs_def'])^(1/(`=`obsDEF'-`obs_def''))-1)*100',"%6.3f")'% (`=anio[[`obsDEF']]'-`=anio[`obs_def']'). {bf:{c U'}ltimo dato reportado}: `=`aniofinal''`trim_last'.") ///
 			name(deflactorH, replace)
 
@@ -328,17 +334,26 @@ quietly {
 		}
 
 		* Crecimiento var_indiceY *
-		twoway (connected var_indiceY anio if (anio < `aniofinal' & anio >= `anioinicial') | (anio == `aniofinal' & trimestre == 4), msize(large) mlwidth(vvthick)) ///
-			(connected var_indiceY anio if anio >= `aniofinal'+`exo_def', msize(large) mlwidth(vvthick)) ///
-			(connected var_indiceY anio if anio < `aniofinal'+`exo_def' & anio >= `aniofinal', pstyle(p4) msize(large) mlwidth(vvthick)), ///
-			title({bf:Crecimientos} del {c i'}ndice de precios impl{c i'}citos) subtitle(${pais}) ///
+		if "$export" == "" {
+			local graphtitle "{bf:Crecimientos} del {c i'}ndice de precios impl{c i'}citos"
+			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE."
+		}
+		else {
+			local graphtitle ""
+			local graphfuente ""
+		}
+		twoway (connected var_indiceY anio if (anio < `aniofinal' & anio >= `anioinicial') | (anio == `aniofinal' & trimestre == 4)) ///
+			(connected var_indiceY anio if anio >= `aniofinal'+`exo_def') ///
+			(connected var_indiceY anio if anio < `aniofinal'+`exo_def' & anio >= `aniofinal', pstyle(p4)), ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)' `aniovp') ///
 			ylabel(, format(%3.0f)) ///
 			ytitle("Crecimiento anual (%)") xtitle("") ///
 			///yline(0, lcolor(black)) ///
-			text(`crec_deflactor', color(white) size(tiny)) ///
+			text(`crec_deflactor', color(white)) ///
 			legend(label(1 "Reportado") label(2 "Proyecci{c o'}n CIEP") label(3 "Estimaci{c o'}n ($paqueteEconomico)") order(1 3 2) region(margin(zero))) ///
-			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
+			title("`graphtitle'") ///
+			subtitle(${pais}) ///
+			caption("`graphfuente'") ///
 			note("{bf:{c U'}ltimo dato reportado}: `=`aniofinal''`trim_last'.") ///
 			name(var_indiceYH, replace)
 		capture confirm existence $export
@@ -347,18 +362,27 @@ quietly {
 		}
 
 		* Crecimiento var_pibY *
+		if "$export" == "" {
+			local graphtitle "{bf:Crecimientos} del Producto Interno Bruto"
+			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE."
+		}
+		else {
+			local graphtitle ""
+			local graphfuente ""
+		}
 		twoway (connected var_pibY anio if (anio < `aniofinal' & anio >= `anioinicial') | ///
 			(anio == `aniofinal' & trimestre == 4), msize(large) mlwidth(vvthick)) ///
 			(connected var_pibY anio if anio >= `aniofinal'+`exo_count', msize(large) mlwidth(vvthick)) ///
 			(connected var_pibY anio if anio < `aniofinal'+`exo_count' & anio >= `aniofinal', pstyle(p4) msize(large) mlwidth(vvthick)), ///
-			title({bf:Crecimientos} del Producto Interno Bruto) subtitle(${pais}) ///
+			title("`graphtitle'") ///
+			subtitle(${pais}) ///
+			caption("`graphfuente'") ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)' `aniovp') ///
 			ylabel(/*-6(3)6*/, format(%3.0fc)) ///
 			ytitle("Crecimiento anual (%)") xtitle("") ///
 			///yline(0, lcolor(white)) ///
 			text(`crec_PIB', color(white) size(tiny)) ///
 			legend(label(1 "Reportado") label(2 "Proyecci{c o'}n CIEP") label(3 "Estimaci{c o'}n ($paqueteEconomico)") order(1 3 2) region(margin(zero))) ///
-			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
 			note("{bf:Crecimiento econ{c o'}mico}: `=string(`=((pibYR[`obsPIB']/pibYR[`obs_exo'])^(1/(`=`obsPIB'-`obs_exo''))-1)*100',"%6.3f")'% (`=anio[[`obsPIB']]'-`=anio[`obs_exo']'). {bf:{c U'}ltimo dato reportado}: `=`aniofinal''`trim_last'.") ///
 			name(PIBH, replace)
 		capture confirm existence $export
@@ -370,10 +394,20 @@ quietly {
 		tempvar pibYRmil
 		g `pibYRmil' = pibYR/1000000000
 
+		if "$export" == "" {
+			local graphtitle "{bf:Flujo} del Producto Interno Bruto"
+			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE."
+		}
+		else {
+			local graphtitle ""
+			local graphfuente ""
+		}
 		twoway (area `pibYRmil' anio if (anio < `aniofinal' & anio >= `anioinicial') | (anio == `aniofinal' & trimestre == 4)) ///
 			(area `pibYRmil' anio if anio >= `aniofinal'+`exo_count') ///
 			(`graphtype' `pibYRmil' anio if anio < `aniofinal'+`exo_count' & anio >= `aniofinal', lwidth(none) pstyle(p4)), ///
-			title({bf:Flujo} del Producto Interno Bruto) subtitle(${pais}) ///
+			title("`graphtitle'") ///
+			subtitle(${pais}) ///
+			caption("`graphfuente'") ///
 			ytitle(mil millones `=currency[`obsvp']' `aniovp') xtitle("") ///
 			///ytitle(billions `=currency[`obsvp']' `aniovp') xtitle("") ///
 			///text(`=`pibYRmil'[1]*.05' `=`aniofinal'-.5' "`aniofinal'", place(nw) color(white)) ///
@@ -387,7 +421,6 @@ quietly {
 			///legend(label(1 "Observed") label(2 "Projected") label(3 "Estimated") order(1 3 2)) ///
 			note("{bf:Productividad laboral}: `=string(scalar(llambda),"%6.3f")'% (`=anio[[`obsPIB']]'-`=anio[`obs_exo']'). {bf:{c U'}ltimo dato reportado}: `=`aniofinal''`trim_last'.") ///
 			///note("{bf:Note}: Annual Labor Productivity Growth: `=string(scalar(llambda),"%6.3f")'% (`=anio[[`obsPIB']]'-`=anio[`obs_exo']').") ///
-			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
 			name(PIBP, replace)
 
 		capture confirm existence $export
@@ -395,36 +428,39 @@ quietly {
 			graph export "$export/PIB.png", replace name(PIBP)
 		}
 
+
+		* PIB por población ocupada *
+		if "$export" == "" {
+			local graphtitle "Producto Interno Bruto {bf:por población productiva}"
+			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE/ENOE."
+		}
+		else {
+			local graphtitle ""
+			local graphfuente ""
+		}
+		g PIBPobOcup = pibYR/PoblacionENOE
+
 		* Texto sobre lineas *
-		forvalues k=1(3)`=_N' {
-			if OutputPerWorker[`k'] != . {
-				local crec_PIBPC `"`crec_PIBPC' `=OutputPerWorker[`k']' `=anio[`k']' "`=string(OutputPerWorker[`k'],"%10.0fc")'" "'
+		forvalues k=1(1)`=_N' {
+			if PIBPobOcup[`k'] != . {
+				local crec_PIBPC `"`crec_PIBPC' `=PIBPobOcup[`k']' `=anio[`k']' "{bf:`=string(PIBPobOcup[`k'],"%10.0fc")'}" "'
 			}
 		}
-		forvalues k=2(3)`=_N' {
-			if OutputPerWorker[`k'] != . {
-				local crec_PIBPC2 `"`crec_PIBPC2' `=OutputPerWorker[`k']' `=anio[`k']' "`=string(OutputPerWorker[`k'],"%10.0fc")'" "'
-			}
-		}
-		forvalues k=3(3)`=_N' {
-			if OutputPerWorker[`k'] != . {
-				local crec_PIBPC3 `"`crec_PIBPC3' `=OutputPerWorker[`k']' `=anio[`k']' "`=string(OutputPerWorker[`k'],"%10.0fc")'" "'
-			}
-		}
-
-
-		twoway (connected OutputPerWorker anio, msize(large)) if OutputPerWorker != ., ///
-			title(Producto Interno Bruto {bf:por población productiva}) subtitle(${pais}) ///
+		twoway (connected PIBPobOcup anio, msize(large)) if PIBPobOcup != ., ///
+			title("`graphtitle'") ///
+			subtitle(${pais}) ///
+			caption("`graphfuente'") ///
 			ytitle(`=currency[`obsvp']' `aniovp') ///
 			xtitle("") ///
-			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)' `aniovp') ///
-			text(`crec_PIBPC', color(black) size(vsmall) placement(n)) ///
-			text(`crec_PIBPC2', color(black) size(vsmall) placement(c)) ///
-			text(`crec_PIBPC3', color(black) size(vsmall) placement(s)) ///
+			xlabel(2005(1)`=`aniovp'-1') ///
+			text(`crec_PIBPC', color(black) size(small) placement(c)) ///
 			ylabel(/*0(5)`=ceil(`pibYRmil'[_N])'*/, format(%20.0fc)) ///
-			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE/ENOE.") ///
 			name(PIBPC, replace)
 
+		capture confirm existence $export
+		if _rc == 0 {
+			graph export "$export/PIBPC.png", replace name(PIBPC)
+		}
 		
 		
 	}
