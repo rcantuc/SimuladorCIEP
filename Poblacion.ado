@@ -222,19 +222,19 @@ quietly {
 			legend(order(1 2 3 4 7 8) holes(1 2 5 6) rows(2) on region(margin(zero))) ///
 			yscale(noline) ylabel(none) xscale(noline) ///
 			text(105 `=-`MaxH'[1,1]*.618' "{bf:Edad mediana `aniohoy'}") ///
-			text(100 `=-`MaxH'[1,1]*.618' "Hombres: `=`H`aniohoy''[1,1]'") ///
-			text(95 `=-`MaxH'[1,1]*.618' "Mujeres: `=`M`aniohoy''[1,1]'") ///
+			text(97.5 `=-`MaxH'[1,1]*.618' "Hombres: `=`H`aniohoy''[1,1]'") ///
+			text(90 `=-`MaxH'[1,1]*.618' "Mujeres: `=`M`aniohoy''[1,1]'") ///
 			text(105 `=`MaxH'[1,1]*.618' "{bf:Edad mediana `aniofinal'}") ///
-			text(100 `=`MaxH'[1,1]*.618' "Hombres: `=`H`aniofinal''[1,1]'") ///
-			text(95 `=`MaxH'[1,1]*.618' "Mujeres: `=`M`aniofinal''[1,1]'") ///
-			text(90 `=-`MaxH'[1,1]*.618' "{bf:Poblaci{c o'}n `aniohoy'}") ///
-			text(85 `=-`MaxH'[1,1]*.618' `"`=string(`P`aniohoy''[1,1],"%20.0fc")'"') ///
-			text(80 `=-`MaxH'[1,1]*.618' "{bf: Personas de `aniohoy' vivas en `aniofinal'} ") ///
-			text(75 `=-`MaxH'[1,1]*.618' `"`=string(`Pviva'[1,1],"%20.0fc")' (`=string(`Pviva'[1,1]/`P`aniohoy''[1,1]*100,"%7.1fc")'%)"') ///
-			text(90 `=`MaxH'[1,1]*.618' "{bf:Poblaci{c o'}n `aniofinal'}") ///
-			text(85 `=`MaxH'[1,1]*.618' `"`=string(`P`aniofinal''[1,1],"%20.0fc")'"') ///
-			text(80 `=`MaxH'[1,1]*.618' "{bf:Personas post `aniohoy' vivas en `aniofinal'} ") ///
-			text(75 `=`MaxH'[1,1]*.618' `"`=string(`Pnacida'[1,1],"%20.0fc")' (`=string(`Pnacida'[1,1]/`P`aniofinal''[1,1]*100,"%7.1fc")'%)"') ///
+			text(97.5 `=`MaxH'[1,1]*.618' "Hombres: `=`H`aniofinal''[1,1]'") ///
+			text(90 `=`MaxH'[1,1]*.618' "Mujeres: `=`M`aniofinal''[1,1]'") ///
+			text(80 `=-`MaxH'[1,1]*.618' "{bf:Poblaci{c o'}n `aniohoy'}") ///
+			text(72.5 `=-`MaxH'[1,1]*.618' `"`=string(`P`aniohoy''[1,1],"%20.0fc")'"') ///
+			text(62.5 `=-`MaxH'[1,1]*.618' "{bf: Personas de `aniohoy' vivas en `aniofinal'} ") ///
+			text(55 `=-`MaxH'[1,1]*.618' `"`=string(`Pviva'[1,1],"%20.0fc")' (`=string(`Pviva'[1,1]/`P`aniohoy''[1,1]*100,"%7.1fc")'%)"') ///
+			text(80 `=`MaxH'[1,1]*.618' "{bf:Poblaci{c o'}n `aniofinal'}") ///
+			text(72.5 `=`MaxH'[1,1]*.618' `"`=string(`P`aniofinal''[1,1],"%20.0fc")'"') ///
+			text(62.5 `=`MaxH'[1,1]*.618' "{bf:Personas post `aniohoy' vivas en `aniofinal'} ") ///
+			text(55 `=`MaxH'[1,1]*.618' `"`=string(`Pnacida'[1,1],"%20.0fc")' (`=string(`Pnacida'[1,1]/`P`aniofinal''[1,1]*100,"%7.1fc")'%)"') ///
 			///legend(label(1 "Men") label(2 "Women")) ///
 			/*text(105 `=`MaxH'[1,1]*.618' "{bf:Population}") ///
 			text(100 `=`MaxH'[1,1]*.618' `"`=string(`P`aniohoy''[1,1],"%20.0fc")'"') ///

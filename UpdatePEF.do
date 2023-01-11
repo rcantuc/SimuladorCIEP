@@ -13,7 +13,7 @@
 ***                   ***
 *************************
 capture confirm file "`c(sysdir_site)'/SIM/$pais/prePEF.dta"
-if _rc != 0 | "$update" == "update" {
+if _rc != 0 | "$update" == "update" | "`1'" == "update" {
 	local archivos: dir "`c(sysdir_site)'/bases/PEFs/$pais" files "*.xlsx"			// Busca todos los archivos .xlsx en /bases/PEFs/
 	*local archivos `""CuotasISSSTE.xlsx" "PPEF 2023.xlsx" "CP 2013.xlsx""'
 
@@ -558,26 +558,10 @@ g double gasto = ejercido if anio <= 2021
 if _rc != 0 {
 	capture g double gasto = devengado if anio <= 2021
 }
-replace gasto = aprobado if anio == 2022
-replace gasto = proyecto if anio == 2023
+*replace gasto = proyecto if anio == 2023
+replace gasto = aprobado if anio == 2022 | anio == 2023
 
 g byte transf_gf = (ramo == 19 & ur == "GYN") | (ramo == 19 & ur == "GYR")
-
-** Cuotas ISSSTE **
-foreach k of varlist gasto aprobado ejercido proyecto {
-	tempvar `k' `k'Tot `k'cuotas `k'cuotasTot
-
-	g ``k'' = `k' if ramo != -1 & transf_gf == 0 & (substr(string(objeto),1,1) == "1")	// Identificar salarios
-	replace ``k'' = 0 if ``k'' == .
-	egen ``k'Tot' = sum(``k''), by(anio)										// Salarios Totales por anio
-
-	g ``k'cuotas' = `k' if ramo == -1											// Identificar cuotas
-	egen ``k'cuotasTot' = sum(``k'cuotas'), by(anio)							// Cuotas Totales por anio
-
-	g double `k'neto = `k' - ``k''/``k'Tot'*``k'cuotasTot'						// Netear de cuotas ISSSTE
-	g double `k'CUOTAS = ``k''/``k'Tot'*``k'cuotasTot'							// Cuotas ISSSTE
-}
-format *CUOTAS *neto %20.0fc
 
 
 
@@ -588,6 +572,7 @@ format *CUOTAS *neto %20.0fc
 *** 6. SAVING ***
 ***           ***
 *****************
+format gasto ejercido aprobado %20.0fc
 capture order ejercido, last
 capture order aprobado modificado devengado pagado, last
 capture order proyecto, last

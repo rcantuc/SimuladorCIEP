@@ -493,7 +493,6 @@ quietly {
 	merge 1:1 (anio) using `shrfsp', nogen keep(matched) keepus(shrfsp* rfsp* /*nopresupuestario*/ tipoDeCambio tasaEfectiva costodeuda*)
 	merge 1:1 (anio) using `baseingresos', nogen
 
-
 	* Costo de la deuda *
 	tabstat tasaEfectiva if anio <= `anio' & anio >= `anio'-1, save
 	tempname tasaEfectiva_ari
@@ -512,7 +511,6 @@ quietly {
 	if _rc == 0 {
 		replace tasaEfectiva = $tasaEfectiva if anio >= `anio'
 	}
-
 
 	* Depreciacion *
 	g depreciacion = tipoDeCambio-L.tipoDeCambio
@@ -721,7 +719,7 @@ quietly {
 	** 4.2 Al infinito **
 	drop estimaciongasto
 	reshape long gasto estimacion, i(anio) j(modulo) string
-	collapse (sum) gasto estimacion (mean) pibYR deflator shrfsp rfsp ///
+	collapse (sum) gasto estimacion (mean) pibYR deflator shrfsp rfsp Poblacion ///
 		if modulo != "ingresos" & modulo != "VP" & anio <= `end', by(anio) fast
 
 	g gastoVP = estimacion/(1+`discount'/100)^(anio-`anio')
@@ -772,8 +770,9 @@ quietly {
 		in g " %"
 
 	g shrfspPIB = shrfsp/pibYR*100
+	g shrfspPC = shrfsp/Poblacion
 	if "`nographs'" != "nographs" & "$nographs" != "nographs" {
-		twoway (area shrfspPIB anio if shrfspPIB != . & anio <= `anio' & anio >= 2000) ///
+		twoway (area shrfspPIB anio if shrfspPIB != . & anio <= `anio' & anio >= 2005) ///
 			(area shrfspPIB anio if anio > `anio' & anio <= `end'), ///
 			title({bf:Proyecci{c o'}n} del SHRFSP) ///
 			subtitle($pais) ///
@@ -787,6 +786,35 @@ quietly {
 			name(Proy_shrfsp, replace)
 		if "$export" != "" {
 			graph export `"$export/Proy_shrfsp.png"', replace name(Proy_shrfsp)
+		}
+
+		forvalues k=1(1)`=_N' {
+			if shrfspPC[`k'] != . & anio[`k'] >= 2005 {
+				local textPC2 `"`textPC2' `=shrfspPC[`k']' `=anio[`k']' "{bf:`=string(shrfspPC[`k'],"%10.0fc")'}""'
+			}
+		}
+		if "$export" == "" {
+			local graphtitle "{bf:Saldo hist{c o'}rico} por persona"
+			local graphfuente "{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5."
+		}
+		else {
+			local graphtitle ""
+			local graphfuente ""
+		}
+		twoway (connected shrfspPC anio if shrfspPIB != . & anio < `anio'-1 & anio >= 2005) ///
+			(connected shrfspPC anio if anio >= `anio'-1 & anio <= `end'), ///
+			title(`graphtitle') ///
+			subtitle($pais) ///
+			caption("`graphfuente'") ///
+			xtitle("") ///
+			ytitle("`currency' `aniovp' por persona") ///
+			ylabel(, format(%10.0fc)) ///
+			xlabel(2005(1)`end') ///
+			legend(off) ///
+			text(`textPC2', color(black) placement(c) size(small)) ///
+			name(Proy_shrfsppc, replace)
+		if "$export" != "" {
+			graph export `"$export/Proy_shrfsppc.png"', replace name(Proy_shrfsppc)
 		}
 	}
 	if "$output" != "" {
@@ -833,7 +861,7 @@ quietly {
 	*****************************************
 	*** 5 Fiscal Gap: Cuenta Generacional ***
 	*****************************************
-	*preserve
+	preserve
 	use if entidad == "Nacional" using `"`c(sysdir_site)'/SIM/$pais/Poblacion.dta"', clear
 	
 	tabstat poblacion if anio == `anio' | anio == `end', stat(sum) save f(%20.0fc) by(anio)
@@ -882,8 +910,7 @@ quietly {
 			"]"
 		quietly log off output
 	}
-
-	*restore
+	restore
 
 
 

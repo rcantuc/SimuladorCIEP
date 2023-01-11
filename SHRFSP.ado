@@ -2,11 +2,9 @@ program define SHRFSP
 timer on 5
 quietly {
 
-	***********************
-	*** 1 BASE DE DATOS ***
-	***********************
-
-	** 1.1 Anio valor presente **
+	************************
+	*** 1 VALOR PRESENTE ***
+	************************
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
@@ -70,67 +68,109 @@ quietly {
 	noisily di in g "  {bf:SHRFSP interna a" in y " `=`aniofin'-1'm`mesfin'" in g ": }" _col(30) in y %15.0fc shrfspInterno[`obsfin'-1]/Poblacion[`obsfin'-1]/deflator[`obsfin'] in g " `currency' por persona."
 	noisily di in g "  {bf:SHRFSP externa a" in y " `=`aniofin'-1'm`mesfin'" in g ": }" _col(30) in y %15.0fc shrfspExterno[`obsfin'-1]/Poblacion[`obsfin'-1]/deflator[`obsfin']/tipoDeCambio[`obsfin'-1] in g " USD por persona."
 
-	* Tasas Efectivas */
+	* Parámetros *
+	replace porInterno = L.porInterno if porInterno == .
+	replace porExterno = L.porExterno if porExterno == .
+	forvalues j = 1(1)`=_N' { 
+		foreach k of varlist shrfsp shrfspInterno shrfspExterno rfsp rfspBalance rfspPIDIREGAS rfspIPAB rfspFONADIN ///
+			rfspDeudores rfspBanca rfspAdecuaciones {
+			capture confirm scalar `k'`=anio[`j']'
+			if _rc == 0 {
+				replace `k' = scalar(`k'`=anio[`j']')/100*pibY if anio == `=anio[`j']'
+			}
+		}
+
+		capture confirm scalar costodeudaInterno`=anio[`j']'
+		if _rc == 0 {
+			replace costodeudaInterno = scalar(costodeudaInterno`=anio[`j']')/100*porInterno*pibY if anio == `=anio[`j']'
+		}		
+		capture confirm scalar costodeudaExterno`=anio[`j']'
+		if _rc == 0 {
+			replace costodeudaExterno = scalar(costodeudaExterno`=anio[`j']')/100*porExterno*pibY if anio == `=anio[`j']'
+		}
+		capture confirm scalar tipoDeCambio`=anio[`j']'
+		if _rc == 0 {
+			replace tipoDeCambio = scalar(tipoDeCambio`=anio[`j']') if anio == `=anio[`j']'
+		}
+	}
+	
+	* Tasas Efectivas *
 	g tasaInterno = costodeudaInterno/L.shrfspInterno*100
 	g tasaExterno = costodeudaExterno/L.shrfspExterno*100
-	replace tasaInterno = L.tasaInterno if tasaInterno == .
-	replace tasaExterno = L.tasaExterno if tasaExterno == .
 	g tasaEfectiva = porInterno*tasaInterno + porExterno*tasaExterno
 
 	g depreciacion = tipoDeCambio-L.tipoDeCambio
 	g Depreciacion = (tipoDeCambio/L.tipoDeCambio-1)*100
 
-	* Balance primario *
+	* Efectos indicador deuda *
+	foreach k of varlist shrfsp* {
+		*tempvar `k'
+		g `k'_pib = `k'/pibY*100
+	}
+	g dif_shrfsp_pib = D.shrfsp_pib
+
 	g balprimario = -(rfspBala+costodeudaInt+costodeudaExt)/pibY*100
+	forvalues j = 1(1)`=_N' { 
+		foreach k of varlist balprimario {
+				capture confirm scalar `k'`=anio[`j']'
+				if _rc == 0 {
+					replace `k' = scalar(`k'`=anio[`j']') if anio == `=anio[`j']'
+				}		
+		}
+	}
 	g nopresupuestario   = -(rfspPIDIREGAS+rfspIPAB+rfspFONADIN+rfspDeudores+rfspBanca+rfspAdecuacion)/pibY*100
 	g efectoCrecimiento  = -(var_pibY/100)*L.shrfsp/pibY*100
 	g efectoInflacion    = -(var_indiceY/100+var_indiceY/100*var_pibY/100)*L.shrfsp/pibY*100 
 	g efectoIntereses    = ((tasaInterno/100)*L.shrfspInterno+(tasaExterno/100)*L.shrfspExterno)/pibY*100
 	g efectoTipoDeCambio = (Depreciacion/100 + tasaExterno/100*Depreciacion/100)*L.shrfspExterno/pibY*100
-	g efectoActivos      = -(D.activos*0-amortizacion)/pibY*100
+	*g efectoActivos      = -(D.activosInt+D.activosExt*tipoDeCambio*1000-amortizacion)/pibY*100
 	g efectoTotal = balprimario + nopresupuestario + efectoCrecimiento + efectoInflacion ///
-		+ efectoIntereses + efectoTipoDeCambio + efectoActivos
+		+ efectoIntereses + efectoTipoDeCambio
+	g efectoOtros        = dif_shrfsp_pib - efectoTotal
 
 	g efectoPositivo = 0
 	foreach k of varlist balprimario nopresupuestario efectoCrecimiento efectoInflacion ///
-		efectoIntereses efectoTipoDeCambio efectoActivos {
+		efectoIntereses efectoTipoDeCambio efectoOtros {
 			replace efectoPositivo = efectoPositivo + `k' if `k' > 0
 	}
 
-
 	if "`nographs'" != "nographs" & "$nographs" == "" {
-		local j = 100/(`aniofin'-2008+1)/2
+		local j = 100/(`anio'-2008+1)/2
 		forvalues k=1(1)`=_N' {
-			if balprimario[`k'] != . {
-				*local textDeuda `"`textDeuda' `=efectoPositivo[`k']+.3' `j' "{bf:`=string(efectoTotal[`k'],"%5.1fc")'% PIB}""'
-				local j = `j' + 100/(`aniofin'-2008+1)
+			if efectoPositivo[`k'] != . {
+				local textDeuda `"`textDeuda' `=efectoPositivo[`k']+.3' `j' "{bf:`=string(shrfsp_pib[`k'],"%5.1fc")'% PIB}""'
+				local j = `j' + 100/(`anio'-2008+1)
 			}
 		}
+		if `"$export"' == "" {
+			local graphtitle "Efectos sobre el {bf:indicador de la deuda}"
+			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP y $paqueteEconomico."
+		}
+		else {
+			local graphtitle ""
+			local graphfuente ""
+		}
 		graph bar balprimario nopresupuestario efectoCrecimiento efectoInflacion ///
-			efectoIntereses efectoTipoDeCambio efectoActivos ///
-			if anio <= `aniofin' & anio >= 2008, ///
-			over(anio, gap(0)) stack blabel(, format(%5.1fc)) outergap(0) ///
-			text(`textDeuda', color(black) size(tiny)) ///
+			efectoIntereses efectoTipoDeCambio efectoOtros ///
+			if anio <= `anio' & anio >= 2008, ///
+			over(anio, gap(0)) stack ///
+			blabel(, format(%5.1fc)) outergap(0) ///
+			text(`textDeuda', color(black) size(small)) ///
 			ytitle("% PIB") ///
 			legend(on position(6) rows(1) label(5 "Tasas de inter{c e'}s") label(4 "Inflaci{c o'}n") label(3 "Crec. Econ{c o'}mico") ///
-			label(1 "Balance Primario") label(6 "Tipo de cambio") label(2 "No presupuestario") region(margin(zero))) ///
-			title("Efectos sobre el {bf:indicador de la deuda}") ///
+			label(1 "Balance Primario") label(6 "Tipo de cambio") label(2 "No presupuestario") ///
+			label(7 "Otros") region(margin(zero))) ///
+			title(`graphtitle') ///
+			subtitle($pais) ///
+			caption("`graphfuente'") ///
 			name(efectoDeuda, replace) ///
 			note("{bf:{c U'}ltimo dato}: `aniofin'm`mesfin'") ///
-			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP.")
 
 		capture confirm existence $export
 		if _rc == 0 {
 			graph export "$export/efectoDeuda.png", replace name(efectoDeuda)
 		}			
 	}
-
-	foreach k of varlist shrfsp* {
-		*tempvar `k'
-		*g ``k'' = `k' //pibY*100
-	}
-
-
 
 
 
@@ -143,16 +183,18 @@ quietly {
 		g `externo' = shrfspExterno/1000000000/deflator
 		g `interno' = `externo' + shrfspInterno/1000000000/deflator
 
+		local ultanio = 2005
 		local j = 100/(`ultanio'-`anioshrfsp'+1)/2
 		forvalues k=1(1)`=_N' {
-			if `shrfsp'[`k'] != . & anio[`k'] >= 2000 {
+			if `shrfsp'[`k'] != . & anio[`k'] >= `ultanio' {
 				if "`anioshrfsp'" == "" {
 					local anioshrfsp = anio[`k']
 				}
 				local text `"`text' `=shrfsp[`k']/1000000000/deflator[`k']*1.005' `=anio[`k']' "{bf:`=string(shrfsp[`k']/pibY[`k']*100,"%5.1fc")'% PIB}""'
 				local textI `"`textI' `=`interno'[`k']/2+`externo'[`k']/2' `=anio[`k']' "`=string(shrfspInterno[`k']/1000000000,"%10.0fc")'""'
 				local textE `"`textE' `=`externo'[`k']/2' `=anio[`k']' "`=string(shrfspExterno[`k']/1000000000,"%10.0fc")'""'
-				local textPC `"`textPC' `=`shrfsp'[`k']/2' `=anio[`k']' "`=string(`shrfsp'[`k'],"%10.0fc")'""'
+				local textPC `"`textPC' `=`shrfsp'[`k']/2' `=anio[`k']' "{bf:`=string(`shrfsp'[`k']/1000,"%10.1fc")'}""'
+				local textPC2 `"`textPC2' `=`shrfsp'[`k']' `=anio[`k']' "{bf:`=string(`shrfsp'[`k'],"%10.0fc")'}""'
 				local j = `j' + 100/(`ultanio'-`anioshrfsp'+1)
 			}
 		}
@@ -165,15 +207,15 @@ quietly {
 			local graphtitle ""
 			local graphfuente ""
 		}
-		twoway (bar `interno' `externo' anio if anio >= 2003 & anio < `anio') ///
-			(bar `interno' `externo' anio if anio >= `anio') if `externo' != . & anio >= 2005, ///
+		twoway (bar `interno' `externo' anio if anio >= `ultanio' & anio < `anio') ///
+			(bar `interno' `externo' anio if anio >= `anio') if `externo' != . & anio >= `ultanio', ///
 			title(`graphtitle') ///
 			subtitle($pais) ///
 			caption("`graphfuente'") ///
 			ylabel(, format(%15.0fc) labsize(small)) ///
-			xlabel(2005(1)`anio', noticks) ///	
+			xlabel(`ultanio'(1)`anio', noticks) ///	
 			text(`textE' `textI', color(white)) ///
-			text(`text', placement(n) size(tiny)) ///
+			text(`text', placement(n) size(small)) ///
 			///text(2 `=`anio'+1.45' "{bf:Proyecci{c o'}n PE 2022}", color(white)) ///
 			///text(2 `=2003+.45' "{bf:Externo}", color(white)) ///
 			///text(`=2+`externosize2003'' `=2003+.45' "{bf:Interno}", color(white)) ///
@@ -182,9 +224,14 @@ quietly {
 			legend(on position(6) rows(1) order(1 2 3 4) ///
 			label(1 `"Interno (`=string(shrfspInterno[`obsvp']/shrfsp[`obsvp']*100,"%7.1fc")'%)"') ///
 			label(2 `"Externo (`=string(shrfspExterno[`obsvp']/shrfsp[`obsvp']*100,"%7.1fc")'%)"') ///
-			label(3 "Proy. Interno") label(4 "Proy. Externo") region(margin(zero))) ///
+			label(3 "Interno ($paqueteEconomico)") label(4 "Externo ($paqueteEconomico)") region(margin(zero))) ///
 			name(shrfsp, replace) ///
 			note("{bf:Nota}: Porcentajes entre par{c e'}ntesis son con respecto al total de `=anio[`obsvp']'. {bf:{c U'}ltimo dato}: `aniofin'm`mesfin'")
+
+		capture confirm existence $export
+		if _rc == 0 {
+			graph export "$export/shrfsp.png", replace name(shrfsp)
+		}			
 
 		if "$export" == "" {
 			local graphtitle "{bf:Saldo hist{c o'}rico} por persona"
@@ -194,18 +241,18 @@ quietly {
 			local graphtitle ""
 			local graphfuente ""
 		}
-		twoway (bar `shrfsp' anio if anio < `anio') ///
-			(bar `shrfsp' anio if anio >= `anio') if `shrfsp' != . & anio >= 2005, ///
+		twoway (connected `shrfsp' anio if anio < `anio'-1) ///
+			(connected `shrfsp' anio if anio >= `anio'-1) if `shrfsp' != . & anio >= 2005, ///
 			title(`graphtitle') ///
 			subtitle($pais) ///
 			caption("`graphfuente'") ///
 			ylabel(#5, format(%15.0fc) labsize(small)) ///
 			xlabel(2005(1)`anio', noticks) ///	
-			text(`textPC', placement(n) color(white)) ///
-			yscale(range(0) axis(1) noline) ///
-			ytitle("`currency' `aniovp'") xtitle("") ///
+			text(`textPC2', placement(c) color(black) size(small)) ///
+			yscale(axis(1) noline) ///
+			ytitle("`currency' `aniovp' por persona") xtitle("") ///
 			note("{bf:{c U'}ltimo dato}: `aniofin'm`mesfin'") ///
-			legend(label(1 "Reportado") label(2 "Proyección $paqueteEconomico")) ///
+			legend(label(1 "  Reportado") label(2 "  Proyección $paqueteEconomico")) ///
 			name(shrfsppc, replace)
 
 		capture confirm existence $export
@@ -284,19 +331,19 @@ quietly {
 			subtitle($pais) xtitle("") ///
 			name(rfsp, replace) ///
 			ylabel(, format(%15.0fc) labsize(small)) ///
-			xlabel(2008(1)2028, noticks) ///	
+			xlabel(2008(1)`anio', noticks) ///	
 			yscale(range(0) axis(1) noline) ///
-			text(`textRFSP', placement(n)) ///
-			text(`textRFBa', color(white)) ///
-			text(`textRFAd', color(white)) ///
-			text(`textRFOt', color(white)) ///
+			///text(`textRFSP', placement(n)) ///
+			///text(`textRFBa', color(white)) ///
+			///text(`textRFAd', color(white)) ///
+			///text(`textRFOt', color(white)) ///
 			ytitle("% PIB") ///
 			legend(on position(6) rows(1) label(3 "Otros") label(2 "Adecuaciones") label(1 "Balance presupuestario") ///
 			label(6 "Proy. Otros") label(5 "Proy. Adecuaciones") label(4 "Proy. Balance") region(margin(zero))) ///
 			note("{bf:{c U'}ltimo dato}: `aniofin'm`mesfin'") ///
 			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP y $paqueteEconomico.")
 
-		twoway (connected tasaInterno tasaExterno anio if anio >= 2013 & anio <= 2028, ///
+		twoway (connected tasaInterno tasaExterno anio if anio >= 2013 & anio <= `anio', ///
 			msize(large large) mlwidth(vvthick vvthick)), ///
 			title("Tasas de interés {bf:efectivas}") ///
 			subtitle($pais) /**/ ///
@@ -304,13 +351,13 @@ quietly {
 			ytitle("Costo Fin./Saldo Fin. * 100") ///
 			legend(on position(6) rows(1) order(1 2 3 4) label(1 "Interno") label(2 "Externo") ///
 			region(margin(zero))) ///
-			xlabel(2013(1)2028) xtitle("") ///
-			text(`textTEE', placement(c) color(white)) ///
-			text(`textTEI', placement(c) color(white)) ///
+			xlabel(2013(1)`anio') xtitle("") ///
+			///text(`textTEE', placement(c) color(white)) ///
+			///text(`textTEI', placement(c) color(white)) ///
 			name(tasasdeinteres, replace) ///
 			note("{bf:{c U'}ltimo dato}: `aniofin'm`mesfin'") ///
 			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP y $paqueteEconomico.")
-			
+
 		capture confirm existence $export
 		if _rc == 0 {
 			graph export "$export/RFSP.png", replace name(rfsp)

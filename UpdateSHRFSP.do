@@ -66,7 +66,7 @@ save "`nopresupuestario'"
 ** Activos financieros internos del SP **
 noisily DatosAbiertos XED20, nog
 keep anio mes monto
-rename monto activos
+rename monto activosInt
 tempfile activosInt
 save "`activosInt'"
 
@@ -74,7 +74,7 @@ save "`activosInt'"
 ** Activos financieros externos del SP **
 noisily DatosAbiertos XEB10, nog
 keep anio mes monto
-rename monto activos
+rename monto activosExt
 tempfile activosExt
 save "`activosExt'"
 

@@ -1,7 +1,15 @@
-***************************
-***    2.1. USERNAME    ***
-***************************
+*************************
+***    1. USERNAME    ***
+*************************
 global id = "`c(username)'"                                                     // ID DEL USUARIO
+scalar aniovp = 2023
+scalar anioend = 2030
+
+
+
+****************************
+***    2. DIRECTORIOS    ***
+****************************
 capture mkdir `"`c(sysdir_site)'/SIM/"'
 capture mkdir `"`c(sysdir_site)'/users/"'
 capture mkdir `"`c(sysdir_site)'/users/$id/"'
@@ -12,12 +20,10 @@ if "$output" != "" {
 
 
 
-**************************************************
-***    2.2. CRECIMIENTO Y DEFLACTOR DEL PIB    ***
-**************************************************
-global paqueteEconomico = "PE2023"
-scalar aniovp = 2023
-scalar anioend = 2030
+************************************************
+***    3. CRECIMIENTO Y DEFLACTOR DEL PIB    ***
+************************************************
+global paqueteEconomico = "CGPE 2023"
 
 global pib2022 = 2.4 //       CGPE 2023 (página 134)
 global pib2023 = 2.9676 //    CGPE 2023 (página 134)
@@ -39,17 +45,52 @@ global def2028 = 3.50150 //    CGPE 2023 (página 134)
 global def2029 = $def2028
 global def2030 = $def2029
 
-global tasaEfectiva = 6.7724 // Tasa de inter{c e'}s EFECTIVA
-global tipoDeCambio = 19.8   // Tipo de cambio
-global depreciacion = 0.2    // Depreciaci{c o'}n
-
 PIBDeflactor, nographs
 
 
 
-*************************
-***    2.3. GASTOS    ***
-*************************
+******************************
+***    4. DEUDA PÚBLICA    ***
+******************************
+global tasaEfectiva = 7.1527 // Tasa de inter{c e'}s EFECTIVA
+
+scalar shrfsp2022 = 48.9
+scalar shrfspInterno2022 = 33.4
+scalar shrfspExterno2022 = 15.5
+scalar rfsp2022 = 3.8
+scalar rfspBalance2022 = -3.0
+scalar rfspPIDIREGAS2022 = 0.0
+scalar rfspIPAB2022 = -0.1
+scalar rfspFONADIN2022 = -0.2
+scalar rfspDeudores2022 = 0.1
+scalar rfspBanca2022 = 0.0
+scalar rfspAdecuaciones2022 = -0.5
+scalar balprimario2022 = 0.1
+scalar tipoDeCambio2022 = 20.4
+scalar costodeudaInterno2022 = 3.1
+scalar costodeudaExterno2022 = 3.1
+
+scalar shrfsp2023 = 49.4
+scalar shrfspInterno2023 = 34.7
+scalar shrfspExterno2023 = 14.6
+scalar rfsp2023 = 4.1
+scalar rfspBalance2023 = -3.6
+scalar rfspPIDIREGAS2023 = -0.1
+scalar rfspIPAB2023 = -0.1
+scalar rfspFONADIN2023 = 0.0
+scalar rfspDeudores2023 = 0.0
+scalar rfspBanca2023 = 0.0
+scalar rfspAdecuaciones2023 = -0.2
+scalar balprimario2023 = -0.2
+scalar tipoDeCambio2023 = 20.6
+scalar costodeudaInterno2023 = 3.4
+scalar costodeudaExterno2023 = 3.4
+
+
+
+***********************
+***    5. GASTOS    ***
+***********************
 if "$update" == "update" {
 	noisily GastoPC, anio(`=aniovp')
 }
@@ -87,9 +128,9 @@ else {
 
 
 
-**************************/
-***    2.4. INGRESOS    ***
-***************************
+************************/
+***    6. INGRESOS    ***
+*************************
 if "$update" == "update" {
 	noisily TasasEfectivas, anio(`=aniovp')
 }
@@ -117,9 +158,9 @@ else {
 
 
 
-********************************************************
-***       2.4.1. Impuesto Sobre la Renta (ISR)       ***
-********************************************************
+******************************************************
+***       6.1. Impuesto Sobre la Renta (ISR)       ***
+******************************************************
 *             Inferior		Superior	CF		Tasa
 matrix ISR =  (0.01,		7735.00,	0.0,		1.92	\    /// 1
               7735.01,		65651.07,	148.51,		6.40	\    /// 2
@@ -157,9 +198,9 @@ matrix PM = (30,		21.45)
 
 
 
-***********************************************************
-***       2.4.2. Impuesto al Valor Agregado (IVA)       ***
-***********************************************************
+*********************************************************
+***       6.2. Impuesto al Valor Agregado (IVA)       ***
+*********************************************************
 matrix IVAT = (16 \     ///  1  Tasa general 
                1  \     ///  2  Alimentos, input[1]: Tasa Cero, [2]: Exento, [3]: Gravado
                2  \     ///  3  Alquiler, idem
@@ -181,31 +222,6 @@ matrix IVAT = (16 \     ///  1  Tasa general
 
 
 /** 3.1 CGPE 2023 ** 
-	replace shrfsp = 48.9/100*pibY if anio == 2022
-	replace shrfspInterno = 33.4/100*pibY if anio == 2022
-	replace shrfspExterno = 15.5/100*pibY if anio == 2022
-	replace rfsp = 3.8/100*pibY if anio == 2022
-	replace rfspBalance = -3.0/100*pibY if anio == 2022
-	replace rfspPIDIREGAS = 0.0/100*pibY if anio == 2022
-	replace rfspIPAB = -0.1/100*pibY if anio == 2022
-	replace rfspFONADIN = -0.2/100*pibY if anio == 2022
-	replace rfspDeudores = 0.1/100*pibY if anio == 2022
-	replace rfspBanca = 0.0/100*pibY if anio == 2022
-	replace rfspAdecuacion = -0.5/100*pibY if anio == 2022
-	replace tipoDeCambio = 20.4 if anio == 2022
-
-	replace shrfsp = 49.4/100*pibY if anio == 2023
-	replace shrfspInterno = 34.7/100*pibY if anio == 2023
-	replace shrfspExterno = 14.6/100*pibY if anio == 2023
-	replace rfsp = 4.1/100*pibY if anio == 2023
-	replace rfspBalance = -3.6/100*pibY if anio == 2023
-	replace rfspPIDIREGAS = -0.1/100*pibY if anio == 2023
-	replace rfspIPAB = -0.1/100*pibY if anio == 2023
-	replace rfspFONADIN = 0.0/100*pibY if anio == 2023
-	replace rfspDeudores = 0.0/100*pibY if anio == 2023
-	replace rfspBanca = 0.0/100*pibY if anio == 2023
-	replace rfspAdecuacion = -0.2/100*pibY if anio == 2023
-	replace tipoDeCambio = 20.6 if anio == 2023
 
 	replace shrfsp = 49.4/100*pibY if anio == 2024
 	replace shrfspInterno = 35.2/100*pibY if anio == 2024
@@ -273,8 +289,6 @@ matrix IVAT = (16 \     ///  1  Tasa general
 	replace tipoDeCambio = 21.5 if anio == 2028
 
 	* Costo financiero *
-	replace costodeudaInterno = 3.1/100*porInterno*pibY if anio == 2022
-	replace costodeudaExterno = 3.1/100*porExterno*pibY if anio == 2022
 	replace costodeudaInterno = 3.4/100*porInterno*pibY if anio == 2023
 	replace costodeudaExterno = 3.4/100*porExterno*pibY if anio == 2023
 	replace costodeudaInterno = 3.2/100*porInterno*pibY if anio == 2024
@@ -288,8 +302,6 @@ matrix IVAT = (16 \     ///  1  Tasa general
 	replace costodeudaInterno = 2.7/100*porInterno*pibY if anio == 2028
 	replace costodeudaExterno = 2.7/100*porExterno*pibY if anio == 2028
 
-	replace balprimario = 0.1 if anio == 2022
-	replace balprimario = -0.2 if anio == 2023
 	replace balprimario = 1.0 if anio == 2024
 	replace balprimario = 1.0 if anio == 2025
 	replace balprimario = 0.7 if anio == 2026
