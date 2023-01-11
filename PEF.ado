@@ -60,7 +60,7 @@ quietly {
 
 	** 2.2 Update PEF **
 	if "`update'" == "update" /*| "`updated'" != "yes"*/ {
-		noisily run "`c(sysdir_site)'/UpdatePEF.do"
+		noisily run "`c(sysdir_site)'/UpdatePEF.do" `update'
 	}
 
 	** 2.2 Base RAW **
@@ -85,22 +85,7 @@ quietly {
 	local aniofirst = anio[1]
 	local aniolast = anio[_N]
 
-	/*replace gasto = aprobado if gasto == . & aprobado != .
-	capture confirm variable aprobadoneto
-	if _rc == 0 {
-		replace gastoneto = aprobadoneto if gasto == . & aprobadoneto != .
-	}
-	else {
-		replace gastoneto = aprobado if gasto == . & aprobado != .
-	}
-
-	capture confirm variable proyecto
-	if _rc == 0 {
-		replace gasto = proyecto if gasto == . & proyecto != .
-		replace gastoneto = proyectoneto if gasto == . & proyectoneto != .
-	}*/
-
-	** 3.2 Valores como % del PIB **
+	** 3.1 Valores como % del PIB **
 	foreach k of varlist gasto* {
 		g double `k'PIB = `k'/pibY*100
 	}
@@ -261,7 +246,7 @@ quietly {
 		}
 	}
 
-	tabstat gasto gastoPIB gastoCUOTAS if anio == `anio', by(`resumido') stat(sum) f(%20.1fc) save missing
+	tabstat gasto gastoPIB if anio == `anio', by(`resumido') stat(sum) f(%20.1fc) save missing
 	tempname mattot
 	matrix `mattot' = r(StatTotal)
 
@@ -374,7 +359,6 @@ quietly {
 	if "`nographs'" != "nographs" & "$nographs" == "" {
 		preserve
 		replace gasto = gasto/deflator/1000000000
-		replace gastoCUOTAS = gastoCUOTAS/deflator/1000000000
 		replace gasto = -gasto if `resumido' == 99998
 
 		collapse (sum) gasto* if transf_gf == 0 & anio >= 2013, by(anio `resumido')
@@ -409,12 +393,18 @@ quietly {
 		}
 
 		* Ciclo para los texto totales *
-		tabstat gasto gastonetoPIB gastoCUOTAS gastoCUOTASPIB, stat(sum) by(anio) save
+		tabstat gasto if `resumido' == 99998, stat(sum) by(anio) save
+		forvalues k=1(1)`=`anio'-2013+1' {
+			tempname CUOTAS`k'
+			matrix `CUOTAS`k'' = r(Stat`k')
+		}
+
+		tabstat gasto gastoPIB, stat(sum) by(anio) save
 		local j = 100/(`anio'-2013+1)/2
 		forvalues k=1(1)`=`anio'-2013+1' {
 			tempname TOT`k'
 			matrix `TOT`k'' = r(Stat`k')
-			local text `"`text' `=(`TOT`k''[1,1]+`TOT`k''[1,3])*1.005' `j' "{bf:`=string(`TOT`k''[1,2]-`TOT`k''[1,4],"%7.1fc")'% PIB}""'
+			local text `"`text' `=`TOT`k''[1,1]-`CUOTAS`k''[1,1]' `j' "{bf:`=string(`TOT`k''[1,2],"%7.1fc")'% PIB}""'
 			local j = `j' + 100/(`anio'-2013+1)
 		}
 

@@ -16,13 +16,14 @@ graphsize 	y 			7
 
 
 // Margins
-margin 		graph			large
-margin 		combinegraph		medlarge
-margin 		piegraph		medlarge
-margin		plotregion		medlarge
-margin		axis_title		medsmall
-margin		legend			medium
-
+margin 		graph			medlarge
+// margin 		combinegraph		none
+// margin 		piegraph		none
+// margin		plotregion		none
+// margin		axis_title		none
+// margin		legend			none
+// margin		label 			none
+// margin     textbox			none
 
 
 // Background
@@ -36,7 +37,7 @@ color 		legend			white
 
 
 // Added text and lines
-gsize 		text_option 		medlarge
+gsize 		text_option 		medium
 color 		text_option		black
 clockdir 	text_option		12
 
@@ -108,7 +109,7 @@ linestyle 	legend			none
 gsize 		legend_key_xsize	medlarge
 gsize 		legend_key_ysize	medlarge
 numstyle 	legend_cols		4
-gsize 		key_label		vsmall
+gsize 		key_label		small
 
 
 

@@ -43,14 +43,14 @@ noisily run "`c(sysdir_site)'/PARAM.do"                                         
 ***    2. POBLACION + ECONOMÍA   ***
 ***                              ***
 ************************************
-noisily Poblacion, aniofinal(`=scalar(anioend)') //$update
-noisily PIBDeflactor, geodef(2013) geopib(2013) $update
-noisily SCN, $update
-noisily Inflacion, $update
+*noisily Poblacion, aniofinal(`=scalar(anioend)') //$update
+*noisily PIBDeflactor, geodef(2005) geopib(2005) $update
+*noisily SCN, $update
+*noisily Inflacion, $update
 
-noisily SHRFSP, $update
-noisily LIF, by(divPE) rows(1) min(0) eofp $update
-noisily PEF, by(divPE) rows(2) min(0) //$update
+*noisily SHRFSP, $update
+*noisily LIF, by(divPE) rows(1) min(0) eofp $update
+*noisily PEF, by(divPE) rows(2) min(0) //$update
 
 
 
@@ -107,7 +107,7 @@ noisily TasasEfectivas, anio(`=aniovp')
 ***                        ***
 ***    5. CICLO DE VIDA    ***
 ***                        ***
-******************************
+/******************************
 use `"`c(sysdir_site)'/users/$id/households.dta"', clear
 capture drop AportacionesNetas
 g AportacionesNetas = ISRASSIM + ISRPFSIM + CUOTASSIM + ISRPMSIM /// + OTROSKSIM ///
@@ -119,7 +119,7 @@ save "`c(sysdir_site)'/users/$id/households.dta", replace
 
 
 ** 5.2 CUENTA GENERACIONAL **
-*noisily CuentasGeneracionales AportacionesNetas, anio(`=aniovp')
+noisily CuentasGeneracionales AportacionesNetas, anio(`=aniovp')
 
 
 ** 5.3 Sankey **

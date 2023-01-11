@@ -275,6 +275,10 @@ quietly {
 	di in g " Defl. al infinito: " in y _col(25) %20.1fc var_indiceY[_N] in g " %"
 
 	if "`nographs'" != "nographs" & "$nographs" == "" {
+
+		if "`if'" != "" {
+			keep `if'
+		}
 	
 		* Texto sobre lineas *
 		forvalues k=1(1)`=_N' {
@@ -315,7 +319,7 @@ quietly {
 			caption("`graphfuente'") ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)' `aniovp') ///
 			yscale(range(0)) ///
-			ylabel(0(1)4, format("%3.0f")) ///
+			ylabel(, format("%3.0f")) ///
 			ytitle("{c I'}ndice `aniovp' = 1.000") xtitle("") ///
 			legend(label(1 "Reportado") label(2 "Proyecci{c o'}n CIEP") label(3 "Estimaci{c o'}n ($paqueteEconomico)") order(1 3 2) region(margin(zero))) ///
 			note("{bf:Crecimiento de precios}: `=string(`=((indiceY[`obsDEF']/indice[`obs_def'])^(1/(`=`obsDEF'-`obs_def''))-1)*100',"%6.3f")'% (`=anio[[`obsDEF']]'-`=anio[`obs_def']'). {bf:{c U'}ltimo dato reportado}: `=`aniofinal''`trim_last'.") ///
@@ -350,7 +354,7 @@ quietly {
 			ytitle("Crecimiento anual (%)") xtitle("") ///
 			///yline(0, lcolor(black)) ///
 			text(`crec_deflactor', color(white)) ///
-			legend(label(1 "Reportado") label(2 "Proyecci{c o'}n CIEP") label(3 "Estimaci{c o'}n ($paqueteEconomico)") order(1 3 2) region(margin(zero))) ///
+			legend(label(1 "  Reportado") label(2 "  Proyecci{c o'}n CIEP") label(3 "  Estimaci{c o'}n ($paqueteEconomico)") order(1 3 2)) ///
 			title("`graphtitle'") ///
 			subtitle(${pais}) ///
 			caption("`graphfuente'") ///
@@ -371,9 +375,9 @@ quietly {
 			local graphfuente ""
 		}
 		twoway (connected var_pibY anio if (anio < `aniofinal' & anio >= `anioinicial') | ///
-			(anio == `aniofinal' & trimestre == 4), msize(large) mlwidth(vvthick)) ///
-			(connected var_pibY anio if anio >= `aniofinal'+`exo_count', msize(large) mlwidth(vvthick)) ///
-			(connected var_pibY anio if anio < `aniofinal'+`exo_count' & anio >= `aniofinal', pstyle(p4) msize(large) mlwidth(vvthick)), ///
+			(anio == `aniofinal' & trimestre == 4)) ///
+			(connected var_pibY anio if anio >= `aniofinal'+`exo_count') ///
+			(connected var_pibY anio if anio < `aniofinal'+`exo_count' & anio >= `aniofinal', pstyle(p4)), ///
 			title("`graphtitle'") ///
 			subtitle(${pais}) ///
 			caption("`graphfuente'") ///
@@ -381,7 +385,7 @@ quietly {
 			ylabel(/*-6(3)6*/, format(%3.0fc)) ///
 			ytitle("Crecimiento anual (%)") xtitle("") ///
 			///yline(0, lcolor(white)) ///
-			text(`crec_PIB', color(white) size(tiny)) ///
+			text(`crec_PIB', color(white)) ///
 			legend(label(1 "Reportado") label(2 "Proyecci{c o'}n CIEP") label(3 "Estimaci{c o'}n ($paqueteEconomico)") order(1 3 2) region(margin(zero))) ///
 			note("{bf:Crecimiento econ{c o'}mico}: `=string(`=((pibYR[`obsPIB']/pibYR[`obs_exo'])^(1/(`=`obsPIB'-`obs_exo''))-1)*100',"%6.3f")'% (`=anio[[`obsPIB']]'-`=anio[`obs_exo']'). {bf:{c U'}ltimo dato reportado}: `=`aniofinal''`trim_last'.") ///
 			name(PIBH, replace)
@@ -438,7 +442,7 @@ quietly {
 			local graphtitle ""
 			local graphfuente ""
 		}
-		g PIBPobOcup = pibYR/PoblacionENOE
+		g PIBPobOcup = pibYR/PoblacionOcupada
 
 		* Texto sobre lineas *
 		forvalues k=1(1)`=_N' {
@@ -446,11 +450,11 @@ quietly {
 				local crec_PIBPC `"`crec_PIBPC' `=PIBPobOcup[`k']' `=anio[`k']' "{bf:`=string(PIBPobOcup[`k'],"%10.0fc")'}" "'
 			}
 		}
-		twoway (connected PIBPobOcup anio, msize(large)) if PIBPobOcup != ., ///
+		twoway (connected PIBPobOcup anio) if PIBPobOcup != ., ///
 			title("`graphtitle'") ///
 			subtitle(${pais}) ///
 			caption("`graphfuente'") ///
-			ytitle(`=currency[`obsvp']' `aniovp') ///
+			ytitle(`=currency[`obsvp']' `aniovp' por persona ocupada) ///
 			xtitle("") ///
 			xlabel(2005(1)`=`aniovp'-1') ///
 			text(`crec_PIBPC', color(black) size(small) placement(c)) ///
