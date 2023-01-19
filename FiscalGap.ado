@@ -43,7 +43,7 @@ quietly {
 	*******************
 	*** 3 HOUSEHOLDS **
 	*******************
-	use `"`c(sysdir_site)'/users/$pais/$id/households.dta"', clear
+	use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
 	tabstat Educacion Pension PenBienestar Salud OtrosGas IngBasico Infra [fw=factor], stat(sum) f(%20.0fc) save
 	tempname GASTOHH
 	matrix `GASTOHH' = r(StatTotal)
@@ -64,7 +64,7 @@ quietly {
 		if "`divSIM2`k''" == "Laboral" {
 			preserve
 
-			use `"`c(sysdir_site)'/users/$pais/ciepmx/bootstraps/1/`divSIM2`k''REC.dta"', clear
+			use `"`c(sysdir_personal)'/users/$pais/ciepmx/bootstraps/1/`divSIM2`k''REC.dta"', clear
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion, by(anio modulo aniobase)
 
@@ -84,7 +84,7 @@ quietly {
 		if "`divSIM2`k''" == "Consumo" {
 			preserve
 
-			use `"`c(sysdir_site)'/users/$pais/ciepmx/bootstraps/1/`divSIM2`k''REC.dta"', clear
+			use `"`c(sysdir_personal)'/users/$pais/ciepmx/bootstraps/1/`divSIM2`k''REC.dta"', clear
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion, by(anio modulo aniobase)
 
@@ -104,7 +104,7 @@ quietly {
 		if "`divSIM2`k''" == "KPrivado" {
 			preserve
 
-			use `"`c(sysdir_site)'/users/$pais/ciepmx/bootstraps/1/`divSIM2`k''REC.dta"', clear
+			use `"`c(sysdir_personal)'/users/$pais/ciepmx/bootstraps/1/`divSIM2`k''REC.dta"', clear
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion, by(anio modulo aniobase)
 
@@ -124,7 +124,7 @@ quietly {
 		if "`divSIM2`k''" == "KPublico" {
 			preserve
 
-			use `"`c(sysdir_site)'/users/$pais/ciepmx/bootstraps/1/`divSIM2`k''REC.dta"', clear
+			use `"`c(sysdir_personal)'/users/$pais/ciepmx/bootstraps/1/`divSIM2`k''REC.dta"', clear
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion, by(anio modulo aniobase)
 
@@ -258,12 +258,12 @@ quietly {
 	****************************
 	*** 4 Fiscal Gap: Gastos ***
 	****************************
-	capture confirm file `"`c(sysdir_site)'/SIM/PEF`anio'.dta"'
+	capture confirm file `"`c(sysdir_personal)'/SIM/PEF`anio'.dta"'
 	if _rc != 0 {
 		PEF if transf_gf == 0, anio(`anio') by(divPE) nographs
-		save `"`c(sysdir_site)'/SIM/PEF`anio'.dta"', replace
+		save `"`c(sysdir_personal)'/SIM/PEF`anio'.dta"', replace
 	}
-	use `"`c(sysdir_site)'/SIM/PEF`anio'.dta"', clear
+	use `"`c(sysdir_personal)'/SIM/PEF`anio'.dta"', clear
 	replace divPE = 6 if divPE == 3 | divPE == 5 | divPE == -1
 
 	collapse (sum) gasto, by(anio divPE) fast
@@ -275,7 +275,7 @@ quietly {
 		if "`divPE`k''" == "Educación" {
 			preserve
 
-			use `"`c(sysdir_site)'/users/$pais/ciepmx/bootstraps/1/EducacionREC.dta"', clear
+			use `"`c(sysdir_personal)'/users/$pais/ciepmx/bootstraps/1/EducacionREC.dta"', clear
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
 
@@ -301,7 +301,7 @@ quietly {
 		if "`divPE`k''" == "Pensiones" {
 			preserve
 
-			use `"`c(sysdir_site)'/users/$pais/ciepmx/bootstraps/1/PensionREC.dta"', clear
+			use `"`c(sysdir_personal)'/users/$pais/ciepmx/bootstraps/1/PensionREC.dta"', clear
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
 
@@ -327,7 +327,7 @@ quietly {
 		if "`divPE`k''" == "Pensión Bienestar" {
 			preserve
 
-			use `"`c(sysdir_site)'/users/$pais/ciepmx/bootstraps/1/PenBienestarREC.dta"', clear
+			use `"`c(sysdir_personal)'/users/$pais/ciepmx/bootstraps/1/PenBienestarREC.dta"', clear
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
 
@@ -353,7 +353,7 @@ quietly {
 		if "`divPE`k''" == "Salud" {
 			preserve
 
-			use `"`c(sysdir_site)'/users/$pais/ciepmx/bootstraps/1/SaludREC.dta"', clear
+			use `"`c(sysdir_personal)'/users/$pais/ciepmx/bootstraps/1/SaludREC.dta"', clear
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
 
@@ -379,7 +379,7 @@ quietly {
 		if "`divPE`k''" == "Otros" {
 			preserve
 
-			use `"`c(sysdir_site)'/users/$pais/ciepmx/bootstraps/1/OtrosGasREC.dta"', clear
+			use `"`c(sysdir_personal)'/users/$pais/ciepmx/bootstraps/1/OtrosGasREC.dta"', clear
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
 
@@ -405,7 +405,7 @@ quietly {
 		if "`divPE`k''" == "Inversión" {
 			preserve
 
-			use `"`c(sysdir_site)'/users/$pais/ciepmx/bootstraps/1/InfraREC.dta"', clear
+			use `"`c(sysdir_personal)'/users/$pais/ciepmx/bootstraps/1/InfraREC.dta"', clear
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
 
@@ -436,7 +436,7 @@ quietly {
 
 	** Ingreso basico **
 	preserve
-	use `"`c(sysdir_site)'/users/$pais/ciepmx/bootstraps/1/IngBasicoREC.dta"', clear
+	use `"`c(sysdir_personal)'/users/$pais/ciepmx/bootstraps/1/IngBasicoREC.dta"', clear
 	merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 	collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
 
@@ -597,14 +597,14 @@ quietly {
 
 	egen estimaciongastos = rsum(estimacioncostodeuda estimacioneducacion ///
 			estimacionsalud estimacionpensiones estimacionotrosgas estimacioningbasico ///
-			estimacionpenbienestar)
+			estimacionpenbienestar estimacioninfraestructura)
 	format estimaciongastos %20.0fc
 
 
 
 	****************
 	** 4.1 Graphs **
-	tempvar educaciong pensionesg saludg costog otrosg ingbasg bienestarg
+	tempvar educaciong pensionesg saludg costog otrosg ingbasg bienestarg infrag
 	g `educaciong' = (gastoeducacion)/1000000000000
 	g `pensionesg' = (gastopensiones + gastoeducacion)/1000000000000
 	g `saludg' = (gastosalud + gastopensiones + gastoeducacion)/1000000000000
@@ -612,8 +612,9 @@ quietly {
 	g `otrosg' = (gastootros + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000000
 	g `bienestarg' = (gastopenbienestar + gastootros + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000000
 	g `ingbasg' = (gastoingbasico + gastopenbienestar + gastootros + gastocostodeuda + gastosalud + gastopensiones + gastoeducacion)/1000000000000
+	g `infrag' = gastoinfraestructura/1000000000000 + `ingbasg'
 	
-	tempvar educaciong2 pensionesg2 saludg2 costog2 otrosg2 ingbasg2 bienestarg2
+	tempvar educaciong2 pensionesg2 saludg2 costog2 otrosg2 ingbasg2 bienestarg2 infrag2
 	g `educaciong2' = (estimacioneducacion)/1000000000000
 	g `pensionesg2' = (estimacionpensiones + estimacioneducacion)/1000000000000
 	g `saludg2' = (estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000000
@@ -621,24 +622,27 @@ quietly {
 	g `otrosg2' = (estimacionotros + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000000
 	g `bienestarg2' = (estimacionpenbienestar + estimacionotros + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000000
 	g `ingbasg2' = (estimacioningbasico + estimacionpenbienestar + estimacionotros + estimacioncostodeuda + estimacionsalud + estimacionpensiones + estimacioneducacion)/1000000000000
+	g `infrag2' = estimacioninfraestructura/1000000000000 + `ingbasg2'
 
 	if "`nographs'" != "nographs" & "$nographs" != "nographs" {
-		twoway (area `ingbasg' `bienestarg' `otrosg' `costog' `saludg' `pensionesg' `educaciong' anio if anio <= `anio' & anio >= `aniomin') ///
-			(area `ingbasg2' anio if anio > `anio', color("255 129 0")) ///
-			(area `bienestarg2' anio if anio > `anio', color("255 189 0")) ///
-			(area `otrosg2' anio if anio > `anio', color("39 97 47")) ///
-			(area `costog2' anio if anio > `anio', color("53 200 71")) ///
-			(area `saludg2' anio if anio > `anio', color("0 78 198")) ///
-			(area `pensionesg2' anio if anio > `anio', color("0 151 201")) ///
-			(area `educaciong2' anio if anio > `anio', color("186 34 64")) if anio >= `aniomin', ///
+		twoway (area `infrag' `ingbasg' `bienestarg' `otrosg' `costog' `saludg' `pensionesg' `educaciong' anio if anio <= `anio' & anio >= `aniomin') ///
+			(area `infrag2' anio if anio > `anio', astyle(p1)) ///
+			(area `ingbasg2' anio if anio > `anio', astyle(p2)) ///
+			(area `bienestarg2' anio if anio > `anio', astyle(p3)) ///
+			(area `otrosg2' anio if anio > `anio', astyle(p4)) ///
+			(area `costog2' anio if anio > `anio', astyle(p5)) ///
+			(area `saludg2' anio if anio > `anio', astyle(p6)) ///
+			(area `pensionesg2' anio if anio > `anio', astyle(p7)) ///
+			(area `educaciong2' anio if anio > `anio', astyle(p8)) if anio >= `aniomin', ///
 			legend(cols(8) order(2 3 4 5 6 7 1) ///
-			label(1 "Renta b{c a'}sica") ///
-			label(2 "Pensi{c o'}n Bienestar") ///
-			label(3 "Otros gastos") ///
-			label(4 "Costo de la deuda") ///
-			label(5 "Salud") ///
-			label(6 "Pensiones") ///
-			label(7 "Educaci{c o'}n")) ///
+			label(1 "Infraestructura") ///
+			label(2 "Renta b{c a'}sica") ///
+			label(3 "Pensi{c o'}n Bienestar") ///
+			label(4 "Otros gastos") ///
+			label(5 "Costo de la deuda") ///
+			label(6 "Salud") ///
+			label(7 "Pensiones") ///
+			label(8 "Educaci{c o'}n")) ///
 			xlabel(`aniomin'(5)`=round(anio[_N],10)') ///
 			ylabel(, format(%20.0fc)) ///
 			xline(`=`anio'+.5') ///
@@ -854,7 +858,7 @@ quietly {
 	*** 5 Fiscal Gap: Cuenta Generacional ***
 	*****************************************
 	preserve
-	use if entidad == "Nacional" using `"`c(sysdir_site)'/SIM/$pais/Poblacion.dta"', clear
+	use if entidad == "Nacional" using `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
 	
 	tabstat poblacion if anio == `anio' | anio == `end', stat(sum) save f(%20.0fc) by(anio)
 	tempname poblacionACT poblacionEND

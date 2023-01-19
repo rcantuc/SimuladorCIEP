@@ -207,23 +207,23 @@ linewidth 	p15bar			none
 linewidth 	p16bar			none
 linewidth 	p17bar			none
 
-linewidth	p1area			none
-linewidth	p2area			none
-linewidth	p3area			none
-linewidth	p4area			none
-linewidth	p5area			none
-linewidth	p6area			none
-linewidth	p7area			none
-linewidth	p8area			none
-linewidth	p9area			none
-linewidth	p10area			none
-linewidth	p11area			none
-linewidth	p12area			none
-linewidth	p13area			none
-linewidth	p14area			none
-linewidth	p15area			none
-linewidth	p16area			none
-linewidth	p17area			none
+linewidth	p1area			thick
+linewidth	p2area			thick
+linewidth	p3area			thick
+linewidth	p4area			thick
+linewidth	p5area			thick
+linewidth	p6area			thick
+linewidth	p7area			thick
+linewidth	p8area			thick
+linewidth	p9area			thick
+linewidth	p10area			thick
+linewidth	p11area			thick
+linewidth	p12area			thick
+linewidth	p13area			thick
+linewidth	p14area			thick
+linewidth	p15area			thick
+linewidth	p16area			thick
+linewidth	p17area			thick
 
 
 

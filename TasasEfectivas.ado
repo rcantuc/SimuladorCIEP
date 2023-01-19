@@ -324,9 +324,9 @@ quietly {
 	****************
 	*** Base SIM ***
 	****************
-	capture use `"`c(sysdir_site)'/users/$pais/$id/households.dta"', clear
+	capture use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
 	if _rc != 0 {
-		use "`c(sysdir_site)'/SIM/2020/households`=aniovp'.dta", clear
+		use "`c(sysdir_personal)'/SIM/2020/households`=aniovp'.dta", clear
 	}
 
 	* Distribuir los ingresos entre las observaciones *
@@ -340,10 +340,10 @@ quietly {
 	** Guardar **
 	capture drop __*
 	if `c(version)' > 13.1 {
-		saveold `"`c(sysdir_site)'/users/$pais/$id/households.dta"', replace version(13)
+		saveold `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace version(13)
 	}
 	else {
-		save `"`c(sysdir_site)'/users/$pais/$id/households.dta"', replace	
+		save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace	
 	}
 
 
@@ -360,8 +360,8 @@ quietly {
 	local j = 1
 	foreach k in Laboral Consumo OtrosC CuotasSS Petroleo {
 		di "`k'"
-		use `"`c(sysdir_site)'/users/$pais/bootstraps/1/`k'REC"', clear
-		merge 1:1 (anio) using "`c(sysdir_site)'/users/$pais/$id/PIB.dta", nogen keepus(lambda)
+		use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/`k'REC"', clear
+		merge 1:1 (anio) using "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", nogen keepus(lambda)
 		tabstat estimacion if anio == `anio', stat(sum) f(%20.0fc) save
 		matrix `RECBase' = r(StatTotal)
 
@@ -369,10 +369,10 @@ quietly {
 
 		local ++j
 		if `c(version)' > 13.1 {
-			saveold `"`c(sysdir_site)'/users/$pais/$id/`k'REC.dta"', replace version(13)
+			saveold `"`c(sysdir_personal)'/users/$pais/$id/`k'REC.dta"', replace version(13)
 		}
 		else {
-			save `"`c(sysdir_site)'/users/$pais/$id/`k'REC.dta"', replace		
+			save `"`c(sysdir_personal)'/users/$pais/$id/`k'REC.dta"', replace		
 		}
 	}
 
