@@ -9,7 +9,7 @@ noisily di in g "  Updating Inflacion.dta..." _newline
 *** 0 BASES ***
 ***************
 * 0.1.1. PIB *
-import excel "`=c(sysdir_site)'/bases/UPDATE/SCN/inflacion.xlsx", clear
+import excel "`c(sysdir_site)'../BasesCIEP/UPDATE/SCN/inflacion.xlsx", clear
 
 * 0.1.2. Limpia *
 LimpiaBIE
@@ -39,8 +39,8 @@ order anio mes inpc
 compress
 
 if `c(version)' > 13.1 {
-	saveold `"`c(sysdir_site)'/SIM/Inflacion.dta"', replace version(13)
+	saveold `"`c(sysdir_personal)'/SIM/Inflacion.dta"', replace version(13)
 }
 else {
-	save `"`c(sysdir_site)'/SIM/Inflacion.dta"', replace
+	save `"`c(sysdir_personal)'/SIM/Inflacion.dta"', replace
 }

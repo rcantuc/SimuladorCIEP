@@ -10,7 +10,7 @@ noisily di in g "  Updating PIBDeflactor.dta..." _newline
 
 ** 1.1 PIB **
 * 1.1.1. Importar y limpiar la base de datos *
-import excel "`=c(sysdir_site)'/bases/UPDATE/SCN/PIB.xlsx", clear
+import excel "`=c(sysdir_site)'../BasesCIEP/UPDATE/SCN/PIB.xlsx", clear
 LimpiaBIE
 
 * 1.1.2. Renombrar variables *
@@ -45,7 +45,7 @@ save `PIB'
 
 ** 1.2 Índice de precios y su deflactor *
 * 1.2.1. Importar y limpiar la base de datos *
-import excel "`=c(sysdir_site)'/bases/UPDATE/SCN/deflactor.xlsx", clear
+import excel "`=c(sysdir_site)'../BasesCIEP/UPDATE/SCN/deflactor.xlsx", clear
 LimpiaBIE, nomult
 
 * 1.2.2. Renombrar variables *
@@ -74,9 +74,9 @@ save `Deflactor', replace
 
 
 ** 1.3 Poblacion CONAPO **
-capture use `"`c(sysdir_site)'/SIM/$pais/Poblacion.dta"', clear
+capture use `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
 if _rc != 0 {
-	noisily run `"`c(sysdir_site)'/UpdatePoblacion`=subinstr("${pais}"," ","",.)'.do"'
+	noisily run `"`c(sysdir_personal)'/UpdatePoblacion`=subinstr("${pais}"," ","",.)'.do"'
 }
 collapse (sum) Poblacion=poblacion if entidad == "Nacional", by(anio)
 local aniomax = anio[_N]
@@ -86,7 +86,7 @@ save "`poblacion'"
 
 
 ** 1.4 Poblacion ENOE **
-import excel "`c(sysdir_site)'/bases/INEGI/ENOE/PoblacionENOE.xlsx", sheet("PoblacionLong") clear
+import excel "`c(sysdir_site)'../BasesCIEP/INEGI/ENOE/PoblacionENOE.xlsx", sheet("PoblacionLong") clear
 rename A anio
 rename B trimestre
 rename C PoblacionENOE
@@ -110,7 +110,7 @@ save "`poblacionenoe'"
 
 
 ** 2.2 Working Ages **
-use `"`c(sysdir_site)'/SIM/$pais/Poblacion.dta"', clear
+use `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
 collapse (sum) WorkingAge=poblacion if edad >= 16 & edad <= 65 & entidad == "Nacional", by(anio)
 format WorkingAge %15.0fc
 tempfile workingage
@@ -153,10 +153,10 @@ g pibPO =  pibQR/PoblacionOcupada
 format pib* %25.0fc
 capture drop __*
 if `c(version)' > 13.1 {
-	saveold "`c(sysdir_site)'/SIM/PIBDeflactor.dta", replace version(13)
+	saveold "`c(sysdir_personal)'/SIM/PIBDeflactor.dta", replace version(13)
 }
 else {
-	save "`c(sysdir_site)'/SIM/PIBDeflactor.dta", replace
+	save "`c(sysdir_personal)'/SIM/PIBDeflactor.dta", replace
 }
 
 

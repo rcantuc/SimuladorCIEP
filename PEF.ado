@@ -22,9 +22,9 @@ quietly {
 	}
 
 	** 1.3 Base PEF **
-	capture confirm file "`c(sysdir_site)'/SIM/$pais/PEF.dta"
+	capture confirm file "`c(sysdir_personal)'/SIM/$pais/PEF.dta"
 	if _rc != 0 {
-		noisily run "`c(sysdir_site)'/UpdatePEF.do"
+		noisily run "`c(sysdir_personal)'/UpdatePEF.do"
 	}
 
 	capture confirm scalar aniovp
@@ -36,7 +36,7 @@ quietly {
 	****************
 	*** 2 SYNTAX ***
 	****************
-	use in 1 using "`c(sysdir_site)'/SIM/$pais/PEF.dta", clear
+	use in 1 using "`c(sysdir_personal)'/SIM/$pais/PEF.dta", clear
 	syntax [if] [, ANIO(int `aniovp') NOGraphs Update Base ///
 		BY(varname) ROWS(int 2) COLS(int 5) MINimum(real 1) PEF PPEF APROBado]
 
@@ -53,18 +53,18 @@ quietly {
 	
 	** 2.1 PIB + Deflactor **
 	PIBDeflactor, anio(`anio') nographs nooutput
-	*use "`c(sysdir_site)'/users/$pais/$id/PIB.dta", clear
+	*use "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", clear
 	local currency = currency[1]
 	tempfile PIB
 	save "`PIB'"
 
 	** 2.2 Update PEF **
 	if "`update'" == "update" /*| "`updated'" != "yes"*/ {
-		noisily run "`c(sysdir_site)'/UpdatePEF.do" `update'
+		noisily run "`c(sysdir_personal)'/UpdatePEF.do" `update'
 	}
 
 	** 2.2 Base RAW **
-	use `if' using "`c(sysdir_site)'/SIM/$pais/PEF.dta", clear
+	use `if' using "`c(sysdir_personal)'/SIM/$pais/PEF.dta", clear
 	if "`base'" == "base" {
 		exit
 	}
@@ -106,11 +106,11 @@ quietly {
 	label values `resumidopie' `label'
 
 	egen `gastoPIB' = max(gastoPIB), by(`by')
-	replace `resumido' = 99999 if abs(`gastoPIB') < `minimum' & `by' != -1
-	replace `resumido' = 99998 if `by' == -1
-	replace `resumidopie' = 99999 if gastoPIB < `minimum'
-	label define `label' 99998 "Cuotas ISSSTE", add modify
-	label define `label' 99999 "< `minimum'% PIB", add modify
+	replace `resumido' = 99999999 if abs(`gastoPIB') < `minimum' & `by' != -1
+	replace `resumido' = 99999998 if `by' == -1
+	replace `resumidopie' = 99999999 if gastoPIB < `minimum'
+	label define `label' 99999998 "Cuotas ISSSTE", add modify
+	label define `label' 99999999 "< `minimum'% PIB", add modify
 
 	/*levelsof `by', local(levelsof)
 	foreach k of local levelsof {
@@ -184,7 +184,7 @@ quietly {
 			matrix `Aportaciones_Federacion' = r(StatTotal)
 		}
 		else {
-			matrix `Aportaciones_Federacion' = J(1,1,0)
+			matrix `Aportaciones_Federacion' = J(1,2,0)
 		}
 		return scalar Aportaciones_a_Seguridad_Social = `Aportaciones_Federacion'[1,1]
 
@@ -195,7 +195,7 @@ quietly {
 			return scalar Cuotas_ISSSTE = `Cuotas_ISSSTE'[1,1]
 		}
 		else {
-			matrix `Cuotas_ISSSTE' = J(1,1,0)		
+			matrix `Cuotas_ISSSTE' = J(1,2,0)		
 		}
 
 		* Display *
@@ -224,14 +224,15 @@ quietly {
 	preserve
 	collapse (sum) gasto* if transf_gf == 0, by(anio pibY deflator `resumido')
 	g resumido = `resumido'
+	*label values `resumido' `label'
 	reshape wide gasto* `resumido', i(anio) j(resumido)
 	reshape long
 
 	tempvar gasreal
 	replace gasto = 0 if gasto == .
 	replace gastoPIB = 0 if gastoPIB == .
-	replace gasto = -gasto if resumido == 99998
-	replace gastoPIB = -gastoPIB if resumido == 99998
+	replace gasto = -gasto if resumido == 99999999
+	replace gastoPIB = -gastoPIB if resumido == 99999998
 	g `gasreal' = gasto/deflator
 
 	capture tabstat `gasreal' if anio == `anio'-1, by(`resumido') stat(sum) f(%20.1fc) save missing
@@ -332,10 +333,10 @@ quietly {
 			matrix `mat5`k'' = r(Stat`k')
 
 			if substr(`"`=r(name`k')'"',1,25) == "'" {
-				local disptext = substr(`"`=r(name`k')'"',1,24)
+				local disptext = substr(`"`=r(name`k')'"',1,25)
 			}
 			else {
-				local disptext = substr(`"`=r(name`k')'"',1,25)
+				local disptext = substr(`"`=r(name`k')'"',1,26)
 			}
 			
 			noisily di in g `"  (+) `disptext'"' ///
@@ -358,8 +359,12 @@ quietly {
 
 	if "`nographs'" != "nographs" & "$nographs" == "" {
 		preserve
+		
+		*replace `resumido' = 914 if `resumido' == 913
+		*replace `resumido' = 72 if `resumido' == 71
+		
 		replace gasto = gasto/deflator/1000000000
-		replace gasto = -gasto if `resumido' == 99998
+		replace gasto = -gasto if `resumido' == 99999998
 
 		collapse (sum) gasto* if transf_gf == 0 & anio >= 2013, by(anio `resumido')
 		g resumido = `resumido'
@@ -378,7 +383,7 @@ quietly {
 			tempname SUM`totlev'
 			matrix `SUM`totlev'' = r(Stat`totlev')
 			local legend`k' : label `label' `k'
-			local legend`k' = substr("`legend`k''",1,20)
+			local legend`k' = substr("`legend`k''",1,22)
 			local legend = `"`legend' label(`totlev' "`legend`k'' (`=string(`SUM`totlev''[1,1]/`SUM'[1,1]*100,"%7.1fc")'%)")"'
 		}
 
@@ -393,10 +398,18 @@ quietly {
 		}
 
 		* Ciclo para los texto totales *
-		tabstat gasto if `resumido' == 99998, stat(sum) by(anio) save
-		forvalues k=1(1)`=`anio'-2013+1' {
-			tempname CUOTAS`k'
-			matrix `CUOTAS`k'' = r(Stat`k')
+		capture tabstat gasto if `resumido' == 99999998, stat(sum) by(anio) save
+		if _rc == 0 {
+			forvalues k=1(1)`=`anio'-2013+1' {
+				tempname CUOTAS`k'
+				matrix `CUOTAS`k'' = r(Stat`k')
+			}
+		}
+		else {
+			forvalues k=1(1)`=`anio'-2013+1' {
+				tempname CUOTAS`k'
+				matrix `CUOTAS`k'' = J(1,1,0)
+			}
 		}
 
 		tabstat gasto gastoPIB, stat(sum) by(anio) save
@@ -408,6 +421,15 @@ quietly {
 			local j = `j' + 100/(`anio'-2013+1)
 		}
 
+		if "$export" == "" {
+			local graphtitle "{bf:Gasto p{c u'}blico} presupuestario"
+			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP y $paqueteEconomico."
+		}
+		else {
+			local graphtitle ""
+			local graphfuente ""
+		}
+
 		graph bar (sum) gasto if anio >= 2013 & anio <= `anio', ///
 			over(`resumido', sort(1) descending) over(anio, gap(0)) stack asyvar ///
 			blabel(, format(%7.1fc)) outergap(0) ///
@@ -416,21 +438,20 @@ quietly {
 			bar(5, color(255 189 0)) bar(4, color(0 151 201)) ///
 			bar(3, color(255 55 0)) bar(2, color(57 198 184)) ///
 			bar(1, color(210 213 32)) ///
-			title("{bf:Gasto} p{c u'}blico presupuestario") ///
+			title("`graphtitle'") ///
 			subtitle($pais) ///
+			caption("`graphfuente'") ///
 			text(`text', color(black) placement(n)) ///
 			ytitle(mil millones MXN `anio') ///
 			ylabel(, format(%15.0fc) labsize(small)) ///
 			yscale(range(0)) ///
 			legend(on position(6) rows(`rows') cols(`cols') `legend' region(margin(zero)) order(`order')) /// 
 			name(gastos`by', replace) ///
-			note("{bf:Nota}: Porcentajes entre par{c e'}ntesis son con respecto al total de `anio'.") ///
-			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/Cuentas Públicas y $paqueteEconomico.")
+			note("{bf:Nota}: Porcentajes entre par{c e'}ntesis son con respecto al total de `anio'.")
 
 		if "$export" != "" {
 			graph export "$export/gastos`by'.png", as(png) name("gastos`by'") replace
 		}
-
 		restore
 	}
 

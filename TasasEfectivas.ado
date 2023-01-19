@@ -331,12 +331,14 @@ quietly {
 
 	* Distribuir los ingresos entre las observaciones *
 	foreach k of varlist ISRAS ISRPF CUOTAS ISRPM OTROSK IVA IEPSNP IEPSP ISAN IMPORT FMP {
-		capture drop `k'SIM
-		Distribucion `k'SIM, relativo(`k') macro(`=scalar(`k')/100*scalar(pibY)')
-		replace `k'SIM = 0 if `k'SIM == .
+		tempvar `k'
+		g ``k'' = `k'
+		drop `k'
+		Distribucion `k', relativo(``k'') macro(`=scalar(`k')/100*scalar(pibY)')
 	}
 
 	** Guardar **
+	capture drop __*
 	if `c(version)' > 13.1 {
 		saveold `"`c(sysdir_site)'/users/$pais/$id/households.dta"', replace version(13)
 	}

@@ -17,7 +17,7 @@ quietly {
 		local aniovp = substr(`"`=trim("`aniovp'")'"',1,4)	
 	}
 
-	syntax anything [if] [, NOGraphs PIBVP(real -999) PIBVF(real -999) UPDATE DESDE(real 1993) MES]
+	syntax [anything] [if] [, NOGraphs PIBVP(real -999) PIBVF(real -999) UPDATE DESDE(real 1993) MES]
 
 
 
@@ -33,6 +33,10 @@ quietly {
 
 	** 1.2 Datos Abiertos (Estadísticas Oportunas) **
 	use if clave_de_concepto == "`anything'" using "`c(sysdir_site)'/SIM/DatosAbiertos.dta", clear
+	if "`anything'" == "" {
+		use "`c(sysdir_site)'/SIM/DatosAbiertos.dta", clear
+		exit
+	}
 	if `=_N' == 0 {
 		noisily di in r "No se encontr{c o'} la serie {bf:`anything'}."
 		exit
@@ -306,13 +310,22 @@ quietly {
 		}
 
 		* Grafica *
+		if "$export" == "" {
+			local graphtitle "{bf:`=nombre[1]'}"
+			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP."
+		}
+		else {
+			local graphtitle ""
+			local graphfuente ""
+		}
+
 		tempvar monto
-		g `monto' = monto/1000000000/deflator
+		g `monto' = monto/1000000/deflator
 		twoway (area `monto' anio if anio < `aniovp') ///
 			(bar `monto' anio if anio >= `aniovp') ///
 			(connected monto_pib anio if anio < `aniovp', yaxis(2) pstyle(p1)) ///
 			(connected monto_pib anio if anio >= `aniovp', yaxis(2) pstyle(p2)), ///
-			title("{bf:`=nombre[1]'}"`textsize') ///
+			title("`graphtitle'"`textsize') ///
 			/*subtitle(Montos observados)*/ ///
 			b1title(`"`textografica'"', size(small)) ///
 			///b2title(`"`textovp'"', size(small)) ///
@@ -325,13 +338,13 @@ quietly {
 			yscale(range(0) noline axis(2)) ///
 			legend(off label(1 "Reportado") label(2 "LIF") order(1 2)) ///
 			text(`text1', yaxis(2) color(white)) ///
-			caption("{bf:Fuente:} Elaborado por el CIEP, con información de la SHCP/EOFP.") ///
+			caption("`graphfuente'") ///
 			note("{bf:{c U'}ltimo dato:} `ultanio'm`ultmes'.") ///
 			name(H`anything', replace)
 		
 		capture confirm existence $export
 		if _rc == 0 {
-			graph export "$export/`anything'.png", replace name(H`anything')
+			graph export "$export/H`anything'.png", replace name(H`anything')
 		}
 	}
 	noisily list anio monto acum_prom mes monto_pib, separator(30) string(30)

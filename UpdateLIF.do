@@ -9,10 +9,10 @@
 *** 1. BASE DE DATOS ***
 ************************
 if "$pais" == "" {
-	import excel `"`c(sysdir_site)'/bases/LIFs/LIFs.xlsx"', clear firstrow
+	import excel `"`c(sysdir_site)'../BasesCIEP/LIFs/LIFs.xlsx"', clear firstrow
 }
 else {
-	import excel `"`c(sysdir_site)'/bases/Otros/$pais/LIFs.xlsx"', clear firstrow
+	import excel `"`c(sysdir_site)'../BasesCIEP/Otros/$pais/LIFs.xlsx"', clear firstrow
 }
 foreach k of varlist _all {
 	capture confirm string variable `k'
@@ -127,8 +127,8 @@ format recaudacion %20.0fc
 capture order div* nombre serie anio LIF ILIF monto
 compress
 if `c(version)' > 13.1 {
-	saveold "`c(sysdir_site)'/SIM/$pais/LIF.dta", replace version(13)
+	saveold "`c(sysdir_personal)'/SIM/$pais/LIF.dta", replace version(13)
 }
 else {
-	save "`c(sysdir_site)'/SIM/$pais/LIF.dta", replace
+	save "`c(sysdir_personal)'/SIM/$pais/LIF.dta", replace
 }
