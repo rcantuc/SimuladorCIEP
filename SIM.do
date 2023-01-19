@@ -16,13 +16,12 @@ timer on 1
 ***                                                ***
 ******************************************************
 if "`c(username)'" == "ricardo" {                                               // Mac Ricardo
-	sysdir set SITE "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladorCIEP/5.3/SimuladorCIEP/"
+	sysdir set PERSONAL "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladorCIEP/5.3/SimuladorCIEP/"
 }
 if "`c(username)'" == "ciepmx" & "`c(console)'" == "" {                         // Linux ServidorCIEP
-	sysdir set SITE "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/SimuladorCIEP/5.3/SimuladorCIEP/"
+	sysdir set PERSONAL "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/SimuladorCIEP/5.3/SimuladorCIEP/"
 }
-*global export "`c(sysdir_site)'/../../../LINGO/Pemex post-petróleo/images/"    // EXPORTAR IMAGENES EN...
-*global export "`c(sysdir_site)'/../../../Boletines/Sostenibilidad 2023/images/" // EXPORTAR IMAGENES EN...
+adopath ++ PERSONAL
 
 
 
@@ -31,10 +30,15 @@ if "`c(username)'" == "ciepmx" & "`c(console)'" == "" {                         
 ***    1. OPCIONES    ***
 ***                   ***
 *************************
+local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
+scalar aniovp = substr(`"`=trim("`fecha'")'"',1,4)
+scalar anioend = 2030
+
 *global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
-*global update "update"                                                         // UPDATE DATASETS/OUTPUTS
+global update "update"                                                         // UPDATE DATASETS/OUTPUTS
 *global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
-noisily run "`c(sysdir_site)'/PARAM.do"                                         // PARÁMETROS (PE 2023)
+global export "`c(sysdir_personal)'/../../../LINGO/Pemex post-petróleo/images/" // EXPORTAR IMAGENES EN...
+*noisily run "`c(sysdir_personal)'/PARAM.do"                                     // PARÁMETROS (PE 2023)
 
 
 
@@ -43,15 +47,16 @@ noisily run "`c(sysdir_site)'/PARAM.do"                                         
 ***    2. POBLACION + ECONOMÍA   ***
 ***                              ***
 ************************************
-*noisily Poblacion, aniofinal(`=scalar(anioend)') //$update
+*noisily Poblacion, aniofinal(`=scalar(anioend)') $update
 *noisily PIBDeflactor, geodef(2005) geopib(2005) $update
 *noisily SCN, $update
 *noisily Inflacion, $update
 
-*noisily SHRFSP, $update
 *noisily LIF, by(divPE) rows(1) min(0) eofp $update
-*noisily PEF, by(divPE) rows(2) min(0) //$update
-
+*noisily LIF if (divPE == 2) & divCIEP != 2, by(divCIEP) rows(1) min(0) eofp
+*noisily PEF, by(divPE) rows(2) min(0) $update
+*noisily PEF if ramo == 52, by(divPE) rows(1) min(0)
+*noisily SHRFSP, $update
 
 
 
@@ -60,11 +65,11 @@ noisily run "`c(sysdir_site)'/PARAM.do"                                         
 ***                     ***
 ***    3. HOUSEHOLDS    ***
 ***                     ***
-***************************
-capture confirm file "`c(sysdir_site)'/SIM/2020/households.dta"
+/***************************
+capture confirm file "`c(sysdir_personal)'/SIM/2020/households.dta"
 if _rc != 0 {
-	noisily run "`c(sysdir_site)'/Expenditure.do" `=aniovp'
-	noisily run `"`c(sysdir_site)'/Households.do"' `=aniovp'
+	noisily run "`c(sysdir_personal)'/Expenditure.do" `=aniovp'
+	noisily run `"`c(sysdir_personal)'/Households.do"' `=aniovp'
 }
 
 
@@ -76,27 +81,30 @@ if _rc != 0 {
 *******************************
 
 ** 4.1 Perfiles fiscales **
-capture confirm file "`c(sysdir_site)'/SIM/2020/households`=aniovp'.dta"
+capture confirm file "`c(sysdir_personal)'/SIM/2020/households`=aniovp'.dta"
 if _rc != 0 | "$update" == "update" {
-	noisily run `"`c(sysdir_site)'/PerfilesSim.do"' `=aniovp'
+	noisily run `"`c(sysdir_personal)'/PerfilesSim.do"' `=aniovp'
 }
 
-** 4.2 Gasto per cápita **
+
+** 4.2 GASTOS: per cápita **
 noisily GastoPC, anio(`=aniovp')
 
-** 4.3 Módulos **
+
+** 4.3 INGRESOS: Módulos **
 if "`cambioisr'" == "1" {
-	noisily run "`c(sysdir_site)'/ISR_Mod.do"
+	noisily run "`c(sysdir_personal)'/ISR_Mod.do"
 	scalar ISRAS = ISR_AS_Mod
 	scalar ISRPF = ISR_PF_Mod
 	scalar ISRPM = ISR_PM_Mod
 }
 if "`cambioiva'" == "1" {
-	noisily run "`c(sysdir_site)'/IVA_Mod.do"
+	noisily run "`c(sysdir_personal)'/IVA_Mod.do"
 	scalar IVA = IVA_Mod
 }
 
-** 4.4 Integración **
+
+** 4.4 INGRESOS: Tasas Efectivas **
 noisily TasasEfectivas, anio(`=aniovp')
 
 
@@ -108,24 +116,24 @@ noisily TasasEfectivas, anio(`=aniovp')
 ***    5. CICLO DE VIDA    ***
 ***                        ***
 /******************************
-use `"`c(sysdir_site)'/users/$id/households.dta"', clear
+use `"`c(sysdir_personal)'/users/$id/households.dta"', clear
 capture drop AportacionesNetas
 g AportacionesNetas = ISRASSIM + ISRPFSIM + CUOTASSIM + ISRPMSIM /// + OTROSKSIM ///
 	+ IVASIM + IEPSNPSIM + IEPSPSIM + ISANSIM + IMPORTSIM + FMPSIM ///
 	- Pension - Educacion - Salud - IngBasico - _Infra - PenBienestar
 label var AportacionesNetas "aportaciones netas"
 noisily Simulador AportacionesNetas [fw=factor], base("ENIGH 2020") reboot anio(`=aniovp') folio("folioviv foliohog") $nographs //boot(20)
-save "`c(sysdir_site)'/users/$id/households.dta", replace
+save "`c(sysdir_personal)'/users/$id/households.dta", replace
 
 
-** 5.2 CUENTA GENERACIONAL **
+/** 5.2 CUENTA GENERACIONAL **
 noisily CuentasGeneracionales AportacionesNetas, anio(`=aniovp')
 
 
-** 5.3 Sankey **
+** 5.3 Sankey **/
 if "$output" == "output" {
 	foreach k in /*grupoedad sexo decil rural*/ escol {
-		noisily run "`c(sysdir_site)'/SankeySF.do" `k' `=aniovp'
+		noisily run "`c(sysdir_personal)'/SankeySF.do" `k' `=aniovp'
 	}
 }
 
@@ -139,7 +147,7 @@ if "$output" == "output" {
 ***                                       ***
 *********************************************
 noisily FiscalGap, anio(`=aniovp') end(`=anioend') aniomin(2015) $nographs $update discount(7)
-run "`c(sysdir_site)'/output.do"
+run "`c(sysdir_personal)'/output.do"
 
 
 

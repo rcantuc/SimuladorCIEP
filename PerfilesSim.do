@@ -209,7 +209,7 @@ noisily Simulador FMP [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') n
 g ing_jubila_pub = ing_jubila if (formal == 1 | formal == 2 | formal == 3) & ing_jubila != 0
 replace ing_jubila_pub = 0 if ing_jubila_pub == .
 Distribucion Pension, relativo(ing_jubila_pub) macro(`Pensiones')
-label var Pension "Pensiones"
+label var Pension "pensiones"
 noisily Simulador Pension [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
 *noisily Gini Pension, hogar(folioviv foliohog) individuo(numren) factor(factor)
 
@@ -247,7 +247,7 @@ replace educacion = educacion + `Otros'/(BasAlum[1,1]+MedAlum[1,1]+SupAlum[1,1]+
 replace educacion = 0 if educacion == .
 
 Distribucion Educacion, relativo(educacion) macro(`Educacion')
-label var Educacion "Educación"
+label var Educacion "educación"
 noisily Simulador Educacion [fw=factor], base("ENIGH 2020") boot(1) reboot anio(`1') nooutput
 *noisily Gini Educacion, hogar(folioviv foliohog) individuo(numren) factor(factor)
 
@@ -456,15 +456,17 @@ label var IngBasico "Basic universal income"
 *** SAVE ***
 ************
 keep folio* numren factor* ///
-	ISRAS ISRPF CUOTAS ISRPM OTROSK IVA IEPSNP IEPSP ISAN IMPORT FMP ///
-	Pension Educacion Salud IngBasico PenBienestar OtrosGas Infra ///
-	sexo grupoedad decil escol edad ing_bruto_tax prop_formal ///
+	ISRAS ISRPF CUOTAS ISRPM OTROSK IVA IEPSNP IEPSP ISAN IMPORT FMP /// 	INGRESOS
+	Pension Educacion Salud IngBasico PenBienestar OtrosGas Infra /// 	GASTOS
+	sexo grupoedad decil escol edad pob ///					DEMOGRÁFICOS
+	ing_bruto_tax prop_formal ///
 	deduc_isr ISR categF ISR__asalariados ISR__PF cuotas* ingbrutotot htrab ///
-	tipo_contribuyente exen_tot formal* *_tpm *_t2_* *_t4_* ing_mixto* isrE ing_subor IVA* IEPS* ///
+	tipo_contribuyente exen_tot formal* *_tpm *_t2_* *_t4_* ing_mixto* isrE ing_subor ///
+	IVA* IEPS* ///
 	gasto_anualDepreciacion prop_* SE ImpNet* infonavit fovissste asis_esc tipoesc nivel pop_insabi ///
-	ing_jubila infra_entidad rural
+	ing_jubila infra_entidad rural inst_*
 compress
-save "`c(sysdir_site)'/SIM/2020/households`1'.dta", replace
+save "`c(sysdir_personal)'/SIM/2020/households`1'.dta", replace
 exit
 
 

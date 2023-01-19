@@ -14,14 +14,14 @@
 *************************
 capture confirm file "`c(sysdir_site)'/SIM/$pais/prePEF.dta"
 if _rc != 0 | "$update" == "update" | "`1'" == "update" {
-	local archivos: dir "`c(sysdir_site)'/bases/PEFs/$pais" files "*.xlsx"			// Busca todos los archivos .xlsx en /bases/PEFs/
+	local archivos: dir "`c(sysdir_site)'../BasesCIEP/PEFs/$pais" files "*.xlsx"			// Busca todos los archivos .xlsx en /bases/PEFs/
 	*local archivos `""CuotasISSSTE.xlsx" "PPEF 2023.xlsx" "CP 2013.xlsx""'
 
 	foreach k of local archivos {													// Loop para todos los archivos .csv
 
 		* 1.1 Importar el archivo `k'.xlsx (Cuenta Pública) *
 		noisily di in g "Importando: " in y "`k'"
-		import excel "`c(sysdir_site)'/bases/PEFs/$pais/`k'", clear firstrow case(lower)
+		import excel "`c(sysdir_site)'../BasesCIEP/PEFs/$pais/`k'", clear firstrow case(lower)
 
 		* 1.2 Limpiar observaciones *
 		capture drop if ciclo == ""

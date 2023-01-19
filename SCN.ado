@@ -27,67 +27,67 @@ quietly {
 	*****************************************************
 	*** 1. Databases (D) and variable definitions (V) ***
 	*****************************************************
-	capture confirm file "`c(sysdir_site)'/SIM/SCN.dta"
+	capture confirm file "`c(sysdir_personal)'/SIM/SCN.dta"
 	if _rc != 0 | "`update'" == "update" {
 
 		noisily di in g "  Updating SCN.dta..." _newline
 
 		** D.1. Cuenta de generaci{c o'}n del ingreso **
-		import excel "`c(sysdir_site)'/bases/UPDATE/SCN/Cuenta de generacion del ingreso.xlsx", clear
+		import excel "`c(sysdir_site)'../BasesCIEP/UPDATE/SCN/Cuenta de generacion del ingreso.xlsx", clear
 		LimpiaBIE g
 		tempfile generacion
 		save `generacion'
 
 		** D.2. Cuenta por sectores institucionales **
-		import excel "`c(sysdir_site)'/bases/UPDATE/SCN/Cuentas por sectores institucionales.xlsx", clear
+		import excel "`c(sysdir_site)'../BasesCIEP/UPDATE/SCN/Cuentas por sectores institucionales.xlsx", clear
 		LimpiaBIE s
 		tempfile sectores
 		save `sectores'
 
 		** D.3. Cuenta de ingreso nacional disponbile **
-		import excel "`c(sysdir_site)'/bases/UPDATE/SCN/Cuenta del ingreso nacional disponible.xlsx", clear
+		import excel "`c(sysdir_site)'../BasesCIEP/UPDATE/SCN/Cuenta del ingreso nacional disponible.xlsx", clear
 		LimpiaBIE d
 		tempfile disponible
 		save `disponible'
 
 		** D.4. Cuenta de consumo **
-		import excel "`c(sysdir_site)'/bases/UPDATE/SCN/Consumo de los hogares.xlsx", clear
+		import excel "`c(sysdir_site)'../BasesCIEP/UPDATE/SCN/Consumo de los hogares.xlsx", clear
 		LimpiaBIE c
 		tempfile consumo
 		save `consumo'
 
 		** D.5. Cuenta de consumo privado **
-		import excel "`c(sysdir_site)'/bases/UPDATE/SCN/Gasto de consumo privado.xlsx", clear
+		import excel "`c(sysdir_site)'../BasesCIEP/UPDATE/SCN/Gasto de consumo privado.xlsx", clear
 		LimpiaBIE gc
 		tempfile gasto
 		save `gasto'
 
 		** D.6. Cuenta de consumo de gobierno **
-		import excel "`c(sysdir_site)'/bases/UPDATE/SCN/Gasto de consumo de gobierno general.xlsx", clear
+		import excel "`c(sysdir_site)'../BasesCIEP/UPDATE/SCN/Gasto de consumo de gobierno general.xlsx", clear
 		LimpiaBIE cg
 		tempfile gobierno
 		save `gobierno'
 
 		** D.7. PIB actividad economica **
-		import excel "`c(sysdir_site)'/bases/UPDATE/SCN/PIB actividad economica.xlsx", clear
+		import excel "`c(sysdir_site)'../BasesCIEP/UPDATE/SCN/PIB actividad economica.xlsx", clear
 		LimpiaBIE ae
 		tempfile actividad
 		save `actividad'
 
 		** D.8. Cuenta de consumo privado por actividad economica **
-		import excel "`c(sysdir_site)'/bases/UPDATE/SCN/Gasto de consumo privado por actividad economica.xlsx", clear
+		import excel "`c(sysdir_site)'../BasesCIEP/UPDATE/SCN/Gasto de consumo privado por actividad economica.xlsx", clear
 		LimpiaBIE cp
 		tempfile consumoprivado
 		save `consumoprivado'
 
 		** D.9. Cuenta de produccion **
-		import excel "`c(sysdir_site)'/bases/UPDATE/SCN/Produccion bruta.xlsx", clear
+		import excel "`c(sysdir_site)'../BasesCIEP/UPDATE/SCN/Produccion bruta.xlsx", clear
 		LimpiaBIE pb
 		tempfile produccion
 		save `produccion'
 
 		** D.9. Cuenta de produccion **
-		import excel "`c(sysdir_site)'/bases/UPDATE/SCN/sector externo.xlsx", clear
+		import excel "`c(sysdir_site)'../BasesCIEP/UPDATE/SCN/sector externo.xlsx", clear
 		LimpiaBIE ex
 		tempfile sectorexterno
 		save `sectorexterno'
@@ -189,7 +189,7 @@ quietly {
 		* Importa los datos para cada año, si hay un error, el loop termina *
 		forvalues k = 2003(1)`aniovp' {
 			preserve
-			capture import excel using "`c(sysdir_site)'/bases/UPDATE/SCN/Tabulados/Base 2013/`k'-E_43_186_`k'.xlsx", sheet("`k'-E") cellrange(BD63:BD63) clear
+			capture import excel using "`c(sysdir_site)'../BasesCIEP/UPDATE/SCN/Tabulados/Base 2013/`k'-E_43_186_`k'.xlsx", sheet("`k'-E") cellrange(BD63:BD63) clear
 			if _rc == 0 {
 				local IngMixto = BD in 1
 				restore
@@ -208,7 +208,7 @@ quietly {
 		
 		forvalues k = 2003(1)`aniovp' {
 			preserve
-			capture import excel using "`c(sysdir_site)'/bases/UPDATE/SCN/Tabulados/Base 2013/`k'-E_43_186_`k'.xlsx", sheet("`k'-E") cellrange(BD44:BD44) clear
+			capture import excel using "`c(sysdir_site)'../BasesCIEP/UPDATE/SCN/Tabulados/Base 2013/`k'-E_43_186_`k'.xlsx", sheet("`k'-E") cellrange(BD44:BD44) clear
 			if _rc == 0 {
 				local SSImputada = BD in 1
 				restore
@@ -227,7 +227,7 @@ quietly {
 
 		forvalues k = 2003(1)`aniovp' {
 			preserve
-			capture import excel using "`c(sysdir_site)'/bases/UPDATE/SCN/Tabulados/Base 2013/`k'-E_43_186_`k'.xlsx", sheet("`k'-E") cellrange(BD57:BD57) clear
+			capture import excel using "`c(sysdir_site)'../BasesCIEP/UPDATE/SCN/Tabulados/Base 2013/`k'-E_43_186_`k'.xlsx", sheet("`k'-E") cellrange(BD57:BD57) clear
 			if _rc == 0 {
 				local SubProductos = BD in 1
 				restore
@@ -245,7 +245,7 @@ quietly {
 
 		forvalues k = 2003(1)`aniovp' {
 			preserve
-			capture import excel using "`c(sysdir_site)'/bases/UPDATE/SCN/Tabulados/Base 2013/`k'-E_43_186_`k'.xlsx", sheet("`k'-E") cellrange(BD61:BD61) clear
+			capture import excel using "`c(sysdir_site)'../BasesCIEP/UPDATE/SCN/Tabulados/Base 2013/`k'-E_43_186_`k'.xlsx", sheet("`k'-E") cellrange(BD61:BD61) clear
 			if _rc == 0 {
 				local SubProduccion = BD in 1
 				restore
@@ -264,7 +264,7 @@ quietly {
 
 		forvalues k = 2003(1)`aniovp' {
 			preserve
-			capture import excel using "`c(sysdir_site)'/bases/UPDATE/SCN/Tabulados/Base 2013/`k'-E_43_186_`k'.xlsx", sheet("`k'-E") cellrange(BD65:BD65) clear
+			capture import excel using "`c(sysdir_site)'../BasesCIEP/UPDATE/SCN/Tabulados/Base 2013/`k'-E_43_186_`k'.xlsx", sheet("`k'-E") cellrange(BD65:BD65) clear
 			if _rc == 0 {
 				local DepMix = BD in 1
 				restore

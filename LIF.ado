@@ -12,7 +12,7 @@ quietly {
 
 	** 1.2 Datos Abiertos (Mexico) **
 	if "$pais" == "" {
-		capture confirm file "`c(sysdir_site)'/SIM/DatosAbiertos.dta"
+		capture confirm file "`c(sysdir_personal)'/SIM/DatosAbiertos.dta"
 		if _rc != 0 {
 			UpdateDatosAbiertos
 			local updated = r(updated)
@@ -28,9 +28,9 @@ quietly {
 	}
 
 	** 1.3 Base LIF **
-	capture confirm file "`c(sysdir_site)'/SIM/$pais/LIF.dta"
+	capture confirm file "`c(sysdir_personal)'/SIM/$pais/LIF.dta"
 	if _rc != 0 {
-		noisily run "`c(sysdir_site)'/UpdateLIF.do"  // Genera a partir de la base ./basesCIEP/LIFs/LIF.xlsx
+		noisily run "`c(sysdir_personal)'/UpdateLIF.do"  // Genera a partir de la base ./basesCIEP/LIFs/LIF.xlsx
 	}
 	
 	capture confirm scalar aniovp
@@ -42,7 +42,7 @@ quietly {
 	***************
 	*** 2 SYNTAX **
 	***************
-	use in 1 using "`c(sysdir_site)'/SIM/$pais/LIF.dta", clear
+	use in 1 using "`c(sysdir_personal)'/SIM/$pais/LIF.dta", clear
 	syntax [if] [, ANIO(int `aniovp' ) UPDATE NOGraphs Base ID(string) ///
 		MINimum(real 0.5) DESDE(int 2013) ILIF LIF EOFP BY(varname) ROWS(int 2) COLS(int 5)]
 
@@ -65,11 +65,11 @@ quietly {
 
 	** 2.2 Update LIF **
 	if "`update'" == "update" | "`updated'" != "yes" {
-		noisily run "`c(sysdir_site)'/UpdateLIF.do"			// Actualiza a partir de la base ./basesCIEP/LIFs/LIF.xlsx
+		noisily run "`c(sysdir_personal)'/UpdateLIF.do"			// Actualiza a partir de la base ./basesCIEP/LIFs/LIF.xlsx
 	}
 
 	** 2.4 Base RAW **
-	use `if' using "`c(sysdir_site)'/SIM/$pais/LIF.dta", clear
+	use `if' using "`c(sysdir_personal)'/SIM/$pais/LIF.dta", clear
 	if "`base'" == "base" {
 		exit
 	}
@@ -461,7 +461,7 @@ quietly {
 			caption("`graphfuente'") ///
 			bar(4, color(40 173 58)) bar(1, color(255 55 0)) ///
 			bar(2, color(255 129 0)) ///
-			text(`text', color(black) placement(n) size(tiny)) ///
+			text(`text', color(black) placement(n) size(vsmall)) ///
 			ytitle("mil millones `currency' `anio'") ///
 			ylabel(, format(%15.0fc) labsize(small)) ///
 			yscale(range(0)) ///

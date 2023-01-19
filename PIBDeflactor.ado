@@ -11,9 +11,9 @@ timer on 2
 quietly {
 
 	** 0.1 Revisa si se puede usar la base de datos **
-	capture use "`c(sysdir_site)'/SIM/$pais/PIBDeflactor.dta", clear
+	capture use "`c(sysdir_personal)'/SIM/$pais/PIBDeflactor.dta", clear
 	if _rc != 0 {
-		noisily run `"`c(sysdir_site)'/UpdatePIBDeflactor`=subinstr("${pais}"," ","",.)'.do"'
+		noisily run `"`c(sysdir_personal)'/UpdatePIBDeflactor`=subinstr("${pais}"," ","",.)'.do"'
 	}
 
 	** 0.2 Revisa si existe el scalar aniovp **
@@ -36,7 +36,7 @@ quietly {
 
 	** 1.1 Si la opción "update" es llamada, ejecuta el do-file UpdatePIBDeflactor.do **
 	if "`update'" == "update" {
-		noisily run `"`c(sysdir_site)'/UpdatePIBDeflactor`=subinstr("${pais}"," ","",.)'.do"'
+		noisily run `"`c(sysdir_personal)'/UpdatePIBDeflactor`=subinstr("${pais}"," ","",.)'.do"'
 	}
 
 
@@ -44,7 +44,7 @@ quietly {
 	************************
 	*** 2 Bases de datos ***
 	************************
-	use "`c(sysdir_site)'/SIM/$pais/PIBDeflactor.dta", clear
+	use "`c(sysdir_personal)'/SIM/$pais/PIBDeflactor.dta", clear
 
 	** 2.1 Obtiene el año inicial y final de la base **
 	forvalues k=1(1)`=_N' {
