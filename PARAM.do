@@ -2,6 +2,7 @@
 ***    1. USERNAME    ***
 *************************
 global id = "`c(username)'"                                                     // ID DEL USUARIO
+scalar aniovp = 2023
 
 
 
