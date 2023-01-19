@@ -31,7 +31,7 @@ clear
 noisily di _newline in g `"{bf:Bienvenidxs al {stata `"projmanager "`c(sysdir_site)'/simulador.stpr""':Simulador Fiscal CIEP v5.3}}"' ///
 	_newline(2) _col(3) "CLICK para ejecutar los siguientes comandos disponibles." ///
 	_newline _col(3) "O usar la siguiente sintaxis: " ///
-	_newline(2) _col(3) "{it:Comando} [OPCIONES DISPONIBLES]"
+	_newline(2) _col(3) "{bf:Comando} {it:argumendos} [, OPCIONES]"
 noisily di _newline `"{stata "Poblacion":Poblacion} [, ANIOhoy(int) ANIOFINal(int) NOGraphs UPDATE]"'
 noisily di `"{stata "PIBDeflactor, geopib(2010) geodef(2010)":PIBDeflactor} [, ANIOvp(int) DIScount(real) NOGraphs UPDATE]"'
 noisily di `"{stata "Inflacion":Inflacion} [, ANIOvp(int) NOGraphs UPDATE]"'

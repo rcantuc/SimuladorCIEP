@@ -49,12 +49,12 @@ noisily run "`c(sysdir_personal)'/PARAM.do"                                     
 *noisily Inflacion, $update
 
 *noisily LIF, by(divPE) rows(1) min(0) eofp $update
-*noisily LIF if (divPE == 2) & divCIEP != 2, by(divCIEP) rows(1) min(0) eofp
+noisily LIF, by(divOrigen) rows(1) min(0)
 *noisily PEF, by(divPE) rows(2) min(0) $update
-*noisily PEF if ramo == 52, by(divPE) rows(1) min(0)
-*noisily SHRFSP, $update
+noisily PEF if ramo == 52, by(divPE) rows(1) min(0)
+noisily SHRFSP, $update
 
-
+exit
 
 
 **************************/
