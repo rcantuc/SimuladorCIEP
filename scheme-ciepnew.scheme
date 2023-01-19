@@ -228,7 +228,6 @@ linewidth	p17area			thick
 
 
 // Colores
-
 color 		p1markfill		"255,129,0"
 color 		p2markfill		"255,189,0"
 color 		p3markfill		"39,97,47"
