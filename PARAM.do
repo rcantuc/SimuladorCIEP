@@ -1,8 +1,10 @@
 *************************
 ***    1. USERNAME    ***
 *************************
+local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 global id = "`c(username)'"                                                     // ID DEL USUARIO
-scalar aniovp = 2023
+scalar aniovp = substr(`"`=trim("`fecha'")'"',1,4)
+scalar anioend = 2030
 
 
 
@@ -105,22 +107,22 @@ else {
 	scalar imssbien    =    4163 //    IMSS-Bienestar
 	scalar imss        =    8141 //    IMSS (salud)
 	scalar issste      =   10992 //    ISSSTE (salud)
-	scalar pemex       =   30858*0 //    Pemex (salud)
+	scalar pemex       =   30858 //    Pemex (salud)
 	scalar issfam      =   22721 //    ISSFAM (salud)
 
 	scalar pam         =   29239 //    Pensión Bienestar
 	scalar penimss     =  169241 //    Pensión IMSS
 	scalar penisss     =  249560 //    Pensión ISSSTE
-	scalar penpeme     =  671899*0 //    Pensión Pemex
+	scalar penpeme     =  671899 //    Pensión Pemex
 	scalar penotro     = 2797302 //    Pensión CFE, LFC, ISSFAM, Ferronales
 
 	scalar gascfe      =    2958 //    Gasto en CFE
-	scalar gaspemex    =    4466*0 //    Gasto en Pemex
+	scalar gaspemex    =    4466 //    Gasto en Pemex
 	scalar gassener    =    1128 //    Gasto en SENER
 	scalar gasinfra    =    4315 //    Gasto en Inversión
 	scalar gascosto    =    8543 //    Gasto en Costo de la deuda
 	scalar gasfeder    =    9925 //    Participaciones y Otras aportaciones
-	scalar gasotros    =    4395 //    Otros gastos
+	scalar gasotros    =    6377 //    Otros gastos
 
 	scalar IngBas      =       0 //    Ingreso b{c a'}sico
 	scalar ingbasico18 =       1 //    1: Incluye menores de 18 anios, 0: no
@@ -149,11 +151,11 @@ else {
 	scalar IEPSP   =  0.903     // IEPS (petrolero): 0.662
 	scalar IMPORT  = (0.319/100*scalar(pibY)*(1+ 5.303*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Importaciones: 0.313
 
-	scalar FMP     = 0*(1.582/100*scalar(pibY)*(1+-7.718*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Fondo Mexicano del Petróleo: 1.553
+	scalar FMP     = (1.582/100*scalar(pibY)*(1+-7.718*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Fondo Mexicano del Petróleo: 1.553
 
 	scalar IMSS    = (0.092/100*scalar(pibY)*(1+-2.685*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (IMSS): 0.091
 	scalar ISSSTE  = (0.162/100*scalar(pibY)*(1+-3.058*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (ISSSTE): 0.159
-	scalar PEMEX   = 0*(2.680/100*scalar(pibY)*(1+ 1.379*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (Pemex): 2.632
+	scalar PEMEX   = (2.680/100*scalar(pibY)*(1+ 1.379*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (Pemex): 2.632
 	scalar CFE     = (1.294/100*scalar(pibY)*(1+-3.024*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (CFE): 1.271
 }
 

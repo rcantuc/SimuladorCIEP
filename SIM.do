@@ -30,15 +30,11 @@ adopath ++ PERSONAL
 ***    1. OPCIONES    ***
 ***                   ***
 *************************
-local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
-scalar aniovp = substr(`"`=trim("`fecha'")'"',1,4)
-scalar anioend = 2030
-
 *global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
-global update "update"                                                         // UPDATE DATASETS/OUTPUTS
+*global update "update"                                                         // UPDATE DATASETS/OUTPUTS
 *global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
 global export "`c(sysdir_personal)'/../../../LINGO/Pemex post-petróleo/images/" // EXPORTAR IMAGENES EN...
-*noisily run "`c(sysdir_personal)'/PARAM.do"                                     // PARÁMETROS (PE 2023)
+noisily run "`c(sysdir_personal)'/PARAM.do"                                     // PARÁMETROS (PE 2023)
 
 
 
@@ -88,7 +84,7 @@ if _rc != 0 | "$update" == "update" {
 
 
 ** 4.2 GASTOS: per cápita **
-noisily GastoPC, anio(`=aniovp')
+*noisily GastoPC, anio(`=aniovp')
 
 
 ** 4.3 INGRESOS: Módulos **
@@ -105,7 +101,7 @@ if "`cambioiva'" == "1" {
 
 
 ** 4.4 INGRESOS: Tasas Efectivas **
-noisily TasasEfectivas, anio(`=aniovp')
+*noisily TasasEfectivas, anio(`=aniovp')
 
 
 
@@ -147,7 +143,6 @@ if "$output" == "output" {
 ***                                       ***
 *********************************************
 noisily FiscalGap, anio(`=aniovp') end(`=anioend') aniomin(2015) $nographs $update discount(7)
-run "`c(sysdir_personal)'/output.do"
 
 
 
@@ -158,6 +153,7 @@ run "`c(sysdir_personal)'/output.do"
 ****    Touchdown!!!    ****
 ****                    ****
 ****************************
+*run "`c(sysdir_personal)'/output.do"
 timer off 1
 timer list 1
 noisily di _newline(2) in g _dup(20) ":" "  " in y "TOUCH-DOWN!!!  " round(`=r(t1)/r(nt1)',.1) in g " segs  " _dup(20) ":"

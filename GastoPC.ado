@@ -20,7 +20,7 @@ quietly {
 	***************************************************************
 	*** 1 Cuentas macroeconómicas (SCN, PIB, Balanza Comercial) ***
 	***************************************************************
-	*use if anio == `anio' using "`c(sysdir_site)'/users/$pais/$id/PIB.dta", clear
+	*use if anio == `anio' using "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", clear
 	PIBDeflactor, aniovp(`anio') nographs nooutput
 	keep if anio == `anio'
 	local PIB = pibY[1]
@@ -32,7 +32,7 @@ quietly {
 	************************
 	*** 2 TRANSFERENCIAS ***
 	************************
-	use "`c(sysdir_site)'/SIM/2020/households`anio'.dta", clear
+	use "`c(sysdir_personal)'/SIM/2020/households`anio'.dta", clear
 	tabstat factor, stat(sum) f(%20.0fc) save
 	tempname pobenigh
 	matrix `pobenigh' = r(StatTotal)
@@ -860,10 +860,10 @@ quietly {
 	******************
 	capture drop __*
 	if `c(version)' > 13.1 {
-		saveold `"`c(sysdir_site)'/users/$pais/$id/households.dta"', replace version(13)
+		saveold `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace version(13)
 	}
 	else {
-		save `"`c(sysdir_site)'/users/$pais/$id/households.dta"', replace	
+		save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace	
 	}
 
 
