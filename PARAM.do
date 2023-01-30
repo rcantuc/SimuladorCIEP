@@ -226,90 +226,90 @@ matrix IVAT = (16 \     ///  1  Tasa general
 
 /** 3.1 CGPE 2023 ** 
 
-	replace shrfsp = 49.4/100*pibY if anio == 2024
-	replace shrfspInterno = 35.2/100*pibY if anio == 2024
-	replace shrfspExterno = 14.2/100*pibY if anio == 2024
-	replace rfsp = 2.7/100*pibY if anio == 2024
-	replace rfspBalance = -2.2/100*pibY if anio == 2024
-	replace rfspPIDIREGAS = -0.1/100*pibY if anio == 2024
-	replace rfspIPAB = -0.1/100*pibY if anio == 2024
-	replace rfspFONADIN = 0.0/100*pibY if anio == 2024
-	replace rfspDeudores = 0.0/100*pibY if anio == 2024
-	replace rfspBanca = 0.0/100*pibY if anio == 2024
-	replace rfspAdecuacion = -0.3/100*pibY if anio == 2024
-	replace tipoDeCambio = 20.7 if anio == 2024
+replace shrfsp = 49.4/100*pibY if anio == 2024
+replace shrfspInterno = 35.2/100*pibY if anio == 2024
+replace shrfspExterno = 14.2/100*pibY if anio == 2024
+replace rfsp = 2.7/100*pibY if anio == 2024
+replace rfspBalance = -2.2/100*pibY if anio == 2024
+replace rfspPIDIREGAS = -0.1/100*pibY if anio == 2024
+replace rfspIPAB = -0.1/100*pibY if anio == 2024
+replace rfspFONADIN = 0.0/100*pibY if anio == 2024
+replace rfspDeudores = 0.0/100*pibY if anio == 2024
+replace rfspBanca = 0.0/100*pibY if anio == 2024
+replace rfspAdecuacion = -0.3/100*pibY if anio == 2024
+replace tipoDeCambio = 20.7 if anio == 2024
 
-	replace shrfsp = 49.4/100*pibY if anio == 2025
-	replace shrfspInterno = 35.5/100*pibY if anio == 2025
-	replace shrfspExterno = 13.8/100*pibY if anio == 2025
-	replace rfsp = 2.7/100*pibY if anio == 2025
-	replace rfspBalance = -2.2/100*pibY if anio == 2025
-	replace rfspPIDIREGAS = -0.1/100*pibY if anio == 2025
-	replace rfspIPAB = -0.1/100*pibY if anio == 2025
-	replace rfspFONADIN = 0.0/100*pibY if anio == 2025
-	replace rfspDeudores = 0.0/100*pibY if anio == 2025
-	replace rfspBanca = 0.0/100*pibY if anio == 2025
-	replace rfspAdecuacion = -0.3/100*pibY if anio == 2025
-	replace tipoDeCambio = 20.8 if anio == 2025
+replace shrfsp = 49.4/100*pibY if anio == 2025
+replace shrfspInterno = 35.5/100*pibY if anio == 2025
+replace shrfspExterno = 13.8/100*pibY if anio == 2025
+replace rfsp = 2.7/100*pibY if anio == 2025
+replace rfspBalance = -2.2/100*pibY if anio == 2025
+replace rfspPIDIREGAS = -0.1/100*pibY if anio == 2025
+replace rfspIPAB = -0.1/100*pibY if anio == 2025
+replace rfspFONADIN = 0.0/100*pibY if anio == 2025
+replace rfspDeudores = 0.0/100*pibY if anio == 2025
+replace rfspBanca = 0.0/100*pibY if anio == 2025
+replace rfspAdecuacion = -0.3/100*pibY if anio == 2025
+replace tipoDeCambio = 20.8 if anio == 2025
 
-	replace shrfsp = 49.4/100*pibY if anio == 2026
-	replace shrfspInterno = 35.9/100*pibY if anio == 2026
-	replace shrfspExterno = 13.5/100*pibY if anio == 2026
-	replace rfsp = 2.7/100*pibY if anio == 2026
-	replace rfspBalance = -2.2/100*pibY if anio == 2026
-	replace rfspPIDIREGAS = -0.1/100*pibY if anio == 2026
-	replace rfspIPAB = -0.1/100*pibY if anio == 2026
-	replace rfspFONADIN = 0.0/100*pibY if anio == 2026
-	replace rfspDeudores = 0.0/100*pibY if anio == 2026
-	replace rfspBanca = 0.0/100*pibY if anio == 2026
-	replace rfspAdecuacion = -0.3/100*pibY if anio == 2026
-	replace tipoDeCambio = 21.0 if anio == 2026
+replace shrfsp = 49.4/100*pibY if anio == 2026
+replace shrfspInterno = 35.9/100*pibY if anio == 2026
+replace shrfspExterno = 13.5/100*pibY if anio == 2026
+replace rfsp = 2.7/100*pibY if anio == 2026
+replace rfspBalance = -2.2/100*pibY if anio == 2026
+replace rfspPIDIREGAS = -0.1/100*pibY if anio == 2026
+replace rfspIPAB = -0.1/100*pibY if anio == 2026
+replace rfspFONADIN = 0.0/100*pibY if anio == 2026
+replace rfspDeudores = 0.0/100*pibY if anio == 2026
+replace rfspBanca = 0.0/100*pibY if anio == 2026
+replace rfspAdecuacion = -0.3/100*pibY if anio == 2026
+replace tipoDeCambio = 21.0 if anio == 2026
 
-	replace shrfsp = 49.4/100*pibY if anio == 2027
-	replace shrfspInterno = 36.3/100*pibY if anio == 2027
-	replace shrfspExterno = 13.1/100*pibY if anio == 2027
-	replace rfsp = 2.7/100*pibY if anio == 2027
-	replace rfspBalance = -2.2/100*pibY if anio == 2027
-	replace rfspPIDIREGAS = -0.1/100*pibY if anio == 2027
-	replace rfspIPAB = -0.1/100*pibY if anio == 2027
-	replace rfspFONADIN = 0.0/100*pibY if anio == 2027
-	replace rfspDeudores = 0.1/100*pibY if anio == 2027
-	replace rfspBanca = 0.0/100*pibY if anio == 2027
-	replace rfspAdecuacion = -0.4/100*pibY if anio == 2027
-	replace tipoDeCambio = 21.3 if anio == 2027
+replace shrfsp = 49.4/100*pibY if anio == 2027
+replace shrfspInterno = 36.3/100*pibY if anio == 2027
+replace shrfspExterno = 13.1/100*pibY if anio == 2027
+replace rfsp = 2.7/100*pibY if anio == 2027
+replace rfspBalance = -2.2/100*pibY if anio == 2027
+replace rfspPIDIREGAS = -0.1/100*pibY if anio == 2027
+replace rfspIPAB = -0.1/100*pibY if anio == 2027
+replace rfspFONADIN = 0.0/100*pibY if anio == 2027
+replace rfspDeudores = 0.1/100*pibY if anio == 2027
+replace rfspBanca = 0.0/100*pibY if anio == 2027
+replace rfspAdecuacion = -0.4/100*pibY if anio == 2027
+replace tipoDeCambio = 21.3 if anio == 2027
 
-	replace shrfsp = 49.4/100*pibY if anio == 2028
-	replace shrfspInterno = 36.6/100*pibY if anio == 2028
-	replace shrfspExterno = 12.7/100*pibY if anio == 2028
-	replace rfsp = 2.7/100*pibY if anio == 2028
-	replace rfspBalance = -2.2/100*pibY if anio == 2028
-	replace rfspPIDIREGAS = -0.1/100*pibY if anio == 2028
-	replace rfspIPAB = -0.1/100*pibY if anio == 2028
-	replace rfspFONADIN = 0.0/100*pibY if anio == 2028
-	replace rfspDeudores = 0.0/100*pibY if anio == 2028
-	replace rfspBanca = 0.0/100*pibY if anio == 2028
-	replace rfspAdecuacion = -0.3/100*pibY if anio == 2028
-	replace tipoDeCambio = 21.5 if anio == 2028
+replace shrfsp = 49.4/100*pibY if anio == 2028
+replace shrfspInterno = 36.6/100*pibY if anio == 2028
+replace shrfspExterno = 12.7/100*pibY if anio == 2028
+replace rfsp = 2.7/100*pibY if anio == 2028
+replace rfspBalance = -2.2/100*pibY if anio == 2028
+replace rfspPIDIREGAS = -0.1/100*pibY if anio == 2028
+replace rfspIPAB = -0.1/100*pibY if anio == 2028
+replace rfspFONADIN = 0.0/100*pibY if anio == 2028
+replace rfspDeudores = 0.0/100*pibY if anio == 2028
+replace rfspBanca = 0.0/100*pibY if anio == 2028
+replace rfspAdecuacion = -0.3/100*pibY if anio == 2028
+replace tipoDeCambio = 21.5 if anio == 2028
 
-	* Costo financiero *
-	replace costodeudaInterno = 3.4/100*porInterno*pibY if anio == 2023
-	replace costodeudaExterno = 3.4/100*porExterno*pibY if anio == 2023
-	replace costodeudaInterno = 3.2/100*porInterno*pibY if anio == 2024
-	replace costodeudaExterno = 3.2/100*porExterno*pibY if anio == 2024
-	replace costodeudaInterno = 3.2/100*porInterno*pibY if anio == 2025
-	replace costodeudaExterno = 3.2/100*porExterno*pibY if anio == 2025
-	replace costodeudaInterno = 2.9/100*porInterno*pibY if anio == 2026
-	replace costodeudaExterno = 2.9/100*porExterno*pibY if anio == 2026
-	replace costodeudaInterno = 2.8/100*porInterno*pibY if anio == 2027
-	replace costodeudaExterno = 2.8/100*porExterno*pibY if anio == 2027
-	replace costodeudaInterno = 2.7/100*porInterno*pibY if anio == 2028
-	replace costodeudaExterno = 2.7/100*porExterno*pibY if anio == 2028
+* Costo financiero *
+replace costodeudaInterno = 3.4/100*porInterno*pibY if anio == 2023
+replace costodeudaExterno = 3.4/100*porExterno*pibY if anio == 2023
+replace costodeudaInterno = 3.2/100*porInterno*pibY if anio == 2024
+replace costodeudaExterno = 3.2/100*porExterno*pibY if anio == 2024
+replace costodeudaInterno = 3.2/100*porInterno*pibY if anio == 2025
+replace costodeudaExterno = 3.2/100*porExterno*pibY if anio == 2025
+replace costodeudaInterno = 2.9/100*porInterno*pibY if anio == 2026
+replace costodeudaExterno = 2.9/100*porExterno*pibY if anio == 2026
+replace costodeudaInterno = 2.8/100*porInterno*pibY if anio == 2027
+replace costodeudaExterno = 2.8/100*porExterno*pibY if anio == 2027
+replace costodeudaInterno = 2.7/100*porInterno*pibY if anio == 2028
+replace costodeudaExterno = 2.7/100*porExterno*pibY if anio == 2028
 
-	replace balprimario = 1.0 if anio == 2024
-	replace balprimario = 1.0 if anio == 2025
-	replace balprimario = 0.7 if anio == 2026
-	replace balprimario = 0.6 if anio == 2027
-	replace balprimario = 0.5 if anio == 2028
+replace balprimario = 1.0 if anio == 2024
+replace balprimario = 1.0 if anio == 2025
+replace balprimario = 0.7 if anio == 2026
+replace balprimario = 0.6 if anio == 2027
+replace balprimario = 0.5 if anio == 2028
 */
 
 

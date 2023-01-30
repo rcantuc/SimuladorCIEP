@@ -118,18 +118,18 @@ quietly {
 				}		
 		}
 	}
-	g nopresupuestario   = -(rfspPIDIREGAS+rfspIPAB+rfspFONADIN+rfspDeudores+rfspBanca+rfspAdecuacion)/pibY*100
+	g nopresupuestario_pib   = -(rfspPIDIREGAS+rfspIPAB+rfspFONADIN+rfspDeudores+rfspBanca+rfspAdecuacion)/pibY*100
 	g efectoCrecimiento  = -(var_pibY/100)*L.shrfsp/pibY*100
 	g efectoInflacion    = -(var_indiceY/100+var_indiceY/100*var_pibY/100)*L.shrfsp/pibY*100 
 	g efectoIntereses    = ((tasaInterno/100)*L.shrfspInterno+(tasaExterno/100)*L.shrfspExterno)/pibY*100
 	g efectoTipoDeCambio = (Depreciacion/100 + tasaExterno/100*Depreciacion/100)*L.shrfspExterno/pibY*100
 	*g efectoActivos      = -(D.activosInt+D.activosExt*tipoDeCambio*1000-amortizacion)/pibY*100
-	g efectoTotal = balprimario + nopresupuestario + efectoCrecimiento + efectoInflacion ///
+	g efectoTotal = balprimario + nopresupuestario_pib + efectoCrecimiento + efectoInflacion ///
 		+ efectoIntereses + efectoTipoDeCambio
 	g efectoOtros        = dif_shrfsp_pib - efectoTotal
 
 	g efectoPositivo = 0
-	foreach k of varlist balprimario nopresupuestario efectoCrecimiento efectoInflacion ///
+	foreach k of varlist balprimario nopresupuestario_pib efectoCrecimiento efectoInflacion ///
 		efectoIntereses efectoTipoDeCambio efectoOtros {
 			replace efectoPositivo = efectoPositivo + `k' if `k' > 0
 	}
@@ -150,7 +150,7 @@ quietly {
 			local graphtitle ""
 			local graphfuente ""
 		}
-		graph bar balprimario nopresupuestario efectoCrecimiento efectoInflacion ///
+		graph bar balprimario nopresupuestario_pib efectoCrecimiento efectoInflacion ///
 			efectoIntereses efectoTipoDeCambio efectoOtros ///
 			if anio <= `anio' & anio >= 2008, ///
 			over(anio, gap(0)) stack ///
@@ -182,18 +182,28 @@ quietly {
 		g `shrfsp' = shrfsp/Poblacion/deflator
 		g `externo' = shrfspExterno/1000000000/deflator
 		g `interno' = `externo' + shrfspInterno/1000000000/deflator
+		
+		tempvar shrfspsinPemex shrfspPemex
+		g `shrfspPemex' = deudaPemex/1000000000/deflator
+		replace `shrfspPemex' = 0 if `shrfspPemex' == .
+		g `shrfspsinPemex' = (shrfsp)/1000000000/deflator
+		replace `shrfspsinPemex' = 0 if `shrfspsinPemex' == .
 
-		local ultanio = 2005
+		local ultanio = 2008
 		local j = 100/(`ultanio'-`anioshrfsp'+1)/2
 		forvalues k=1(1)`=_N' {
 			if `shrfsp'[`k'] != . & anio[`k'] >= `ultanio' {
 				if "`anioshrfsp'" == "" {
 					local anioshrfsp = anio[`k']
 				}
-				local text `"`text' `=shrfsp[`k']/1000000000/deflator[`k']*1.005' `=anio[`k']' "{bf:`=string(shrfsp[`k']/pibY[`k']*100,"%5.1fc")'% PIB}""'
+				local text `"`text' `=shrfsp[`k']/1000000000/deflator[`k']' `=anio[`k']' "{bf:`=string(shrfsp[`k']/pibY[`k']*100,"%5.1fc")'% PIB}""'
 				local textI `"`textI' `=`interno'[`k']/2+`externo'[`k']/2' `=anio[`k']' "`=string(shrfspInterno[`k']/1000000000,"%10.0fc")'""'
 				local textE `"`textE' `=`externo'[`k']/2' `=anio[`k']' "`=string(shrfspExterno[`k']/1000000000,"%10.0fc")'""'
 				local textPC `"`textPC' `=`shrfsp'[`k']/2' `=anio[`k']' "{bf:`=string(`shrfsp'[`k']/1000,"%10.1fc")'}""'
+				if `shrfspsinPemex'[`k'] != . {
+					local textPemex `"`textPemex' `=`shrfspPemex'[`k']/2' `=anio[`k']' "{bf:`=string(`shrfspPemex'[`k'],"%10.1fc")'}""'
+					local textSPemex `"`textSPemex' `=`shrfspsinPemex'[`k']/2+`shrfspPemex'[`k']/2' `=anio[`k']' "{bf:`=string(`shrfspsinPemex'[`k']-`shrfspPemex'[`k'],"%10.1fc")'}""'
+				}
 				local textPC2 `"`textPC2' `=`shrfsp'[`k']' `=anio[`k']' "{bf:`=string(`shrfsp'[`k'],"%10.0fc")'}""'
 				local j = `j' + 100/(`ultanio'-`anioshrfsp'+1)
 			}
@@ -214,8 +224,8 @@ quietly {
 			caption("`graphfuente'") ///
 			ylabel(, format(%15.0fc) labsize(small)) ///
 			xlabel(`ultanio'(1)`anio', noticks) ///	
-			text(`textE' `textI', color(white)) ///
-			text(`text', placement(n) size(small)) ///
+			text(`textE' `textI', color(white) size(small)) ///
+			text(`text', placement(n) size(vsmall)) ///
 			///text(2 `=`anio'+1.45' "{bf:Proyecci{c o'}n PE 2022}", color(white)) ///
 			///text(2 `=2003+.45' "{bf:Externo}", color(white)) ///
 			///text(`=2+`externosize2003'' `=2003+.45' "{bf:Interno}", color(white)) ///
@@ -233,6 +243,41 @@ quietly {
 			graph export "$export/shrfsp.png", replace name(shrfsp)
 		}			
 
+		if `"$export"' == "" {
+			local graphtitle "{bf:Saldo hist{c o'}rico} de RFSP"
+			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP y $paqueteEconomico."
+		}
+		else {
+			local graphtitle ""
+			local graphfuente ""
+		}
+		
+		
+		twoway (bar `shrfspsinPemex' `shrfspPemex' anio if anio >= `ultanio' & anio < `anio') ///
+			(bar `shrfspsinPemex' `shrfspPemex' anio if anio >= `anio') if `externo' != . & anio >= `ultanio', ///
+			title(`graphtitle') ///
+			subtitle($pais) ///
+			caption("`graphfuente'") ///
+			ylabel(, format(%15.0fc) labsize(small)) ///
+			xlabel(`ultanio'(1)`anio', noticks) ///	
+			text(`textPemex' `textSPemex', color(white) size(small)) ///
+			text(`text', placement(n) size(vsmall)) ///
+			///text(2 `=`anio'+1.45' "{bf:Proyecci{c o'}n PE 2022}", color(white)) ///
+			///text(2 `=2003+.45' "{bf:Externo}", color(white)) ///
+			///text(`=2+`externosize2003'' `=2003+.45' "{bf:Interno}", color(white)) ///
+			yscale(range(0) axis(1) noline) ///
+			ytitle("mil millones `currency' `aniovp'") xtitle("") ///
+			legend(on position(6) rows(1) order(1 2) ///
+			label(1 `"Resto del SP"') ///
+			label(2 `"Pemex"')) ///
+			name(shrfspPemex, replace)
+
+		capture confirm existence $export
+		if _rc == 0 {
+			graph export "$export/shrfspPemex.png", replace name(shrfspPemex)
+		}			
+		
+		
 		if "$export" == "" {
 			local graphtitle "{bf:Saldo hist{c o'}rico} por persona"
 			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP y $paqueteEconomico."
