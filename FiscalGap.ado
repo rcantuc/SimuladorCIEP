@@ -486,7 +486,7 @@ quietly {
 	merge 1:1 (anio) using `baseingresos', nogen
 
 	* Costo de la deuda *
-	noisily tabstat tasaEfectiva if anio <= `anio' & anio >= `anio'-1, save
+	tabstat tasaEfectiva if anio <= `anio' & anio >= `anio'-1, save
 	tempname tasaEfectiva_ari
 	matrix `tasaEfectiva_ari' = r(StatTotal)
 	replace tasaEfectiva = `tasaEfectiva_ari'[1,1] if anio >= `anio' & tasaEfectiva == .

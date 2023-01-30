@@ -247,10 +247,10 @@ replace deudaPemex = 1384012.95509301 if anio == 2015
 replace deudaPemex = 1025261.97573126 if anio == 2014
 replace deudaPemex = 760494.694310920 if anio == 2013
 replace deudaPemex = 667623.708531536 if anio == 2012
-replace deudaPemex = 667623.708531536 if anio == 2011
-replace deudaPemex = 667623.708531536 if anio == 2010
-replace deudaPemex = 667623.708531536 if anio == 2009
-replace deudaPemex = 667623.708531536 if anio == 2008
+replace deudaPemex = 668178.069289112  if anio == 2011
+replace deudaPemex = 531138.3347399 if anio == 2010
+replace deudaPemex = 472098.44249911 if anio == 2009
+replace deudaPemex = 472486.10948318 if anio == 2008
 
 replace deudaPemex = deudaPemex*1000000
 format deudaPemex %20.0fc
