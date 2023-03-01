@@ -14,14 +14,14 @@ quietly {
 	if "$pais" == "" {
 		capture confirm file "`c(sysdir_personal)'/SIM/DatosAbiertos.dta"
 		if _rc != 0 {
-			UpdateDatosAbiertos
+			*UpdateDatosAbiertos
 			local updated = r(updated)
 			local ultanio = r(ultanio)
 			local ultmes = r(ultmes)
 		}
-		else {
+		*else {
 			local updated = "yes" // r(updated)
-		}
+		*}
 	}
 	else {
 		local updated = "yes"
@@ -35,7 +35,7 @@ quietly {
 	
 	capture confirm scalar aniovp
 	if _rc == 0 {
-		local aniovp = scalar(aniovp)
+			local aniovp = scalar(aniovp)
 	}	
 
 

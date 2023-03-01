@@ -67,9 +67,9 @@ timer on 6
 
 ** A.0.1 Log-file **
 capture log close households
-capture mkdir "`c(sysdir_site)'/SIM/"
-capture mkdir "`c(sysdir_site)'/SIM/`enighanio'/"
-log using "`c(sysdir_site)'/SIM/`enighanio'/households.smcl", replace name(households)
+capture mkdir "`c(sysdir_personal)'/SIM/"
+capture mkdir "`c(sysdir_personal)'/SIM/`enighanio'/"
+log using "`c(sysdir_personal)'/SIM/`enighanio'/households.smcl", replace name(households)
 
 ** A.0.2 Bienvenida **
 noisily di _newline(2) in g _dup(20) "." "{bf:   Hogares: " in y "INGRESOS `enigh' `enighanio'  }" in g _dup(20) "."
@@ -218,7 +218,7 @@ if `enighanio' >= 2015 {
 			local deflactor = deflator[`k']
 		}
 	}
-	use "`c(sysdir_site)'/bases/SAT/Personas fisicas/Stata/2015_labels.dta", clear
+	use "`c(sysdir_site)'../BasesCIEP/SAT/Personas fisicas/Stata/2015_labels.dta", clear
 	tabstat iaarrendamiento utgravacumap utgravacumriap, stat(sum) f(%20.0fc) save
 	tempname SATAbierto
 	matrix `SATAbierto' = r(StatTotal)  
@@ -226,7 +226,7 @@ if `enighanio' >= 2015 {
 	local util_serprof = `SATAbierto'[1,2]/`deflactor'
 }
 else {
-	use "`c(sysdir_site)'/bases/SAT/Personas fisicas/Stata/`enighanio'_labels.dta", clear
+	use "`c(sysdir_site)'../BasesCIEP/SAT/Personas fisicas/Stata/`enighanio'_labels.dta", clear
 	tabstat iaarrendamiento utgravacumap utgravacumriap, stat(sum) f(%20.0fc) save
 	tempname SATAbierto
 	matrix `SATAbierto' = r(StatTotal)  
@@ -326,7 +326,7 @@ if `enighanio' > 2020 {
 **********************************
 *** B.1 Micro 1. ENIGH. Gastos ***
 **********************************
-capture confirm file "`c(sysdir_site)'/SIM/`enighanio'/deducciones.dta"
+capture confirm file "`c(sysdir_personal)'/SIM/`enighanio'/deducciones.dta"
 if _rc != 0 | "$latex" == "latex" {
 	noisily run "`c(sysdir_site)'/Expenditure.do" `enighanio'
 }
@@ -335,13 +335,13 @@ if _rc != 0 | "$latex" == "latex" {
 ************************************
 *** B.2 Micro 2. ENIGH. Ingresos ***
 ************************************
-use "`c(sysdir_site)'/bases/INEGI/`enigh'/`enighanio'/ingresos.dta", clear
-merge m:1 (folioviv foliohog) using "`c(sysdir_site)'/bases/INEGI/`enigh'/`enighanio'/concentrado.dta", ///
+use "`c(sysdir_site)'../BasesCIEP/INEGI/`enigh'/`enighanio'/ingresos.dta", clear
+merge m:1 (folioviv foliohog) using "`c(sysdir_site)'../BasesCIEP/INEGI/`enigh'/`enighanio'/concentrado.dta", ///
 	keepusing(factor tot_integ) keep(matched) nogen
 capture rename factor_hog factor
-merge m:1 (folioviv foliohog) using "`c(sysdir_site)'/bases/INEGI/`enigh'/`enighanio'/concentrado.dta", ///
+merge m:1 (folioviv foliohog) using "`c(sysdir_site)'../BasesCIEP/INEGI/`enigh'/`enighanio'/concentrado.dta", ///
 	keepusing(smg) keep(matched) nogen
-merge m:1 (folioviv foliohog numren) using "`c(sysdir_site)'/bases/INEGI/`enigh'/`enighanio'/poblacion.dta", ///
+merge m:1 (folioviv foliohog numren) using "`c(sysdir_site)'../BasesCIEP/INEGI/`enigh'/`enighanio'/poblacion.dta", ///
 	keepusing(edad) keep(matched) nogen
 
 * Salario minimo o Unidad de Medida y Actualizacion *
@@ -1067,16 +1067,16 @@ egen double exen_t4_cap9 = rsum(exen_autor /*exen_remesas*/ exen_prest exen_otro
 ************************************
 *** 4. IDENTIFICAR LA FORMALIDAD ***
 ************************************
-merge m:1 (folioviv foliohog numren id_trabajo) using "`c(sysdir_site)'/bases/INEGI/`enigh'/`enighanio'/trabajos.dta", ///
+merge m:1 (folioviv foliohog numren id_trabajo) using "`c(sysdir_site)'../BasesCIEP/INEGI/`enigh'/`enighanio'/trabajos.dta", ///
 	nogen keepusing(htrab pres_* pago scian sinco subor)
 g trabajos = 1 if id_trabajo != ""
-merge m:1 (folioviv foliohog numren) using "`c(sysdir_site)'/bases/INEGI/`enigh'/`enighanio'/poblacion.dta", ///
+merge m:1 (folioviv foliohog numren) using "`c(sysdir_site)'../BasesCIEP/INEGI/`enigh'/`enighanio'/poblacion.dta", ///
 	nogen keepusing(sexo edad trabajo_mp inscr_* inst_* atemed `segpop' hablaind)
-merge m:1 (folioviv foliohog) using "`c(sysdir_site)'/bases/INEGI/`enigh'/`enighanio'/concentrado.dta", ///
+merge m:1 (folioviv foliohog) using "`c(sysdir_site)'../BasesCIEP/INEGI/`enigh'/`enighanio'/concentrado.dta", ///
 	nogen update replace keepusing(factor tot_integ ubica_geo estim_alqu)
-merge m:1 (folioviv) using "`c(sysdir_site)'/bases/INEGI/`enigh'/`enighanio'/vivienda.dta", ///
+merge m:1 (folioviv) using "`c(sysdir_site)'../BasesCIEP/INEGI/`enigh'/`enighanio'/vivienda.dta", ///
 	nogen keepusing(tenencia renta)
-merge m:1 (folioviv foliohog numren) using "`c(sysdir_site)'/SIM/`enighanio'/deducciones.dta", ///
+merge m:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/`enighanio'/deducciones.dta", ///
 	nogen keepus(deduc_isr)
 
 capture replace factor = factor_hog
@@ -1775,10 +1775,10 @@ scalar giniSE = string(`gini_SE',"%5.3f")
 
 compress
 if `c(version)' > 13.1 {
-	saveold "`c(sysdir_site)'/SIM/`enighanio'/prehouseholds.dta", replace version(13)
+	saveold "`c(sysdir_personal)'/SIM/`enighanio'/prehouseholds.dta", replace version(13)
 }
 else {
-	save "`c(sysdir_site)'/SIM/`enighanio'/prehouseholds.dta", replace
+	save "`c(sysdir_personal)'/SIM/`enighanio'/prehouseholds.dta", replace
 }
 
 
@@ -1786,7 +1786,7 @@ else {
 *** 6. COLA DERECHA ***
 ***********************
 if `betamin' > 1 {
-	use "`c(sysdir_site)'/SIM/`enighanio'/prehouseholds.dta", clear
+	use "`c(sysdir_personal)'/SIM/`enighanio'/prehouseholds.dta", clear
 	*egen double ing_cola = rsum(ing_subor ing_mixto ing_capital)
 	egen double ing_cola = rsum(ing_subor)
 	local ingreso "ing_cola"
@@ -1875,7 +1875,7 @@ if `betamin' > 1 {
 ************************/
 *** 7. FINALIZAR BASE ***
 *************************
-use "`c(sysdir_site)'/SIM/`enighanio'/prehouseholds.dta", clear
+use "`c(sysdir_personal)'/SIM/`enighanio'/prehouseholds.dta", clear
 
 capture drop __*
 replace scian = substr(scian,1,2)
@@ -1893,7 +1893,7 @@ collapse (sum) ing_* exen_* cuotas* infonavit fovissste htrab isrE renta deduc_i
 	(mean) factor* sm sbc tot_integ ///
 	(max) scian formal* tipo_contribuyente sinco hablaind ///
 	(min) subor, by(folioviv foliohog numren)
-merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/bases/INEGI/`enigh'/`enighanio'/poblacion.dta", nogen ///
+merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'../BasesCIEP/INEGI/`enigh'/`enighanio'/poblacion.dta", nogen ///
 	keepusing(sexo edad nivelaprob gradoaprob asis_esc tipoesc nivel grado inst_* `segpop')
 
 * Formalidad *
@@ -2623,8 +2623,8 @@ label define formalidad 3 "Pemex y otros", modify
 label values formalmax formalidad
 
 * Compas netas fuera del pais *
-merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/SIM/`enighanio'/expenditure_categ.dta", nogen
-merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/SIM/`enighanio'/expenditure_categ_iva.dta", nogen
+merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/`enighanio'/expenditure_categ.dta", nogen
+merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/`enighanio'/expenditure_categ_iva.dta", nogen
 Distribucion gasto_anualComprasN, relativo(TOTgasto_anual) macro(`ComprasN')
 
 * Sector p{c u'}blico *
@@ -2696,10 +2696,10 @@ capture drop __*
 format ing_* exen_* renta %10.0fc
 compress
 if `c(version)' > 13.1 {
-	saveold "`c(sysdir_site)'/SIM/`enighanio'/households.dta", replace version(13)
+	saveold "`c(sysdir_personal)'/SIM/`enighanio'/households.dta", replace version(13)
 }
 else {
-	save "`c(sysdir_site)'/SIM/`enighanio'/households.dta", replace
+	save "`c(sysdir_personal)'/SIM/`enighanio'/households.dta", replace
 }
 
 timer off 6

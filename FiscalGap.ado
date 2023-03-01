@@ -64,7 +64,7 @@ quietly {
 		if "`divSIM2`k''" == "Laboral" {
 			preserve
 
-			use `"`c(sysdir_personal)'/users/$pais/ciepmx/bootstraps/1/`divSIM2`k''REC.dta"', clear
+			use `"`c(sysdir_personal)'/users/$pais/ricardo/bootstraps/1/`divSIM2`k''REC.dta"', clear
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion, by(anio modulo aniobase)
 
@@ -84,7 +84,7 @@ quietly {
 		if "`divSIM2`k''" == "Consumo" {
 			preserve
 
-			use `"`c(sysdir_personal)'/users/$pais/ciepmx/bootstraps/1/`divSIM2`k''REC.dta"', clear
+			use `"`c(sysdir_personal)'/users/$pais/ricardo/bootstraps/1/`divSIM2`k''REC.dta"', clear
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion, by(anio modulo aniobase)
 
@@ -104,7 +104,7 @@ quietly {
 		if "`divSIM2`k''" == "KPrivado" {
 			preserve
 
-			use `"`c(sysdir_personal)'/users/$pais/ciepmx/bootstraps/1/`divSIM2`k''REC.dta"', clear
+			use `"`c(sysdir_personal)'/users/$pais/ricardo/bootstraps/1/`divSIM2`k''REC.dta"', clear
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion, by(anio modulo aniobase)
 
@@ -124,13 +124,13 @@ quietly {
 		if "`divSIM2`k''" == "KPublico" {
 			preserve
 
-			use `"`c(sysdir_personal)'/users/$pais/ciepmx/bootstraps/1/`divSIM2`k''REC.dta"', clear
+			use `"`c(sysdir_personal)'/users/$pais/ricardo/bootstraps/1/`divSIM2`k''REC.dta"', clear
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion, by(anio modulo aniobase)
 
 			tempvar estimacion
 			g `estimacion' = estimacion
-			replace estimacion = `estimacion'/L.`estimacion'*(scalar(FMP)+scalar(CFE)+scalar(PEMEX)+scalar(IMSS)+scalar(ISSSTE))/100*scalar(pibY) if anio >= `anio'
+			replace estimacion = `estimacion'/L.`estimacion'*((scalar(FMP)+scalar(PEMEX))*(1-depletionrate)^(anio-`anio')+scalar(CFE)+scalar(IMSS)+scalar(ISSSTE))/100*scalar(pibY) if anio >= `anio'
 
 			g divSIM2 = `k'
 			replace modulo = "`divSIM2`k''"
@@ -275,7 +275,7 @@ quietly {
 		if "`divPE`k''" == "Educación" {
 			preserve
 
-			use `"`c(sysdir_personal)'/users/$pais/ciepmx/bootstraps/1/EducacionREC.dta"', clear
+			use `"`c(sysdir_personal)'/users/$pais/ricardo/bootstraps/1/EducacionREC.dta"', clear
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
 
@@ -301,7 +301,7 @@ quietly {
 		if "`divPE`k''" == "Pensiones" {
 			preserve
 
-			use `"`c(sysdir_personal)'/users/$pais/ciepmx/bootstraps/1/PensionREC.dta"', clear
+			use `"`c(sysdir_personal)'/users/$pais/ricardo/bootstraps/1/PensionREC.dta"', clear
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
 
@@ -327,7 +327,7 @@ quietly {
 		if "`divPE`k''" == "Pensión Bienestar" {
 			preserve
 
-			use `"`c(sysdir_personal)'/users/$pais/ciepmx/bootstraps/1/PenBienestarREC.dta"', clear
+			use `"`c(sysdir_personal)'/users/$pais/ricardo/bootstraps/1/PenBienestarREC.dta"', clear
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
 
@@ -353,7 +353,7 @@ quietly {
 		if "`divPE`k''" == "Salud" {
 			preserve
 
-			use `"`c(sysdir_personal)'/users/$pais/ciepmx/bootstraps/1/SaludREC.dta"', clear
+			use `"`c(sysdir_personal)'/users/$pais/ricardo/bootstraps/1/SaludREC.dta"', clear
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
 
@@ -379,7 +379,7 @@ quietly {
 		if "`divPE`k''" == "Otros" {
 			preserve
 
-			use `"`c(sysdir_personal)'/users/$pais/ciepmx/bootstraps/1/OtrosGasREC.dta"', clear
+			use `"`c(sysdir_personal)'/users/$pais/ricardo/bootstraps/1/OtrosGasREC.dta"', clear
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
 
@@ -405,7 +405,7 @@ quietly {
 		if "`divPE`k''" == "Inversión" {
 			preserve
 
-			use `"`c(sysdir_personal)'/users/$pais/ciepmx/bootstraps/1/InfraREC.dta"', clear
+			use `"`c(sysdir_personal)'/users/$pais/ricardo/bootstraps/1/InfraREC.dta"', clear
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
 
@@ -436,7 +436,7 @@ quietly {
 
 	** Ingreso basico **
 	preserve
-	use `"`c(sysdir_personal)'/users/$pais/ciepmx/bootstraps/1/IngBasicoREC.dta"', clear
+	use `"`c(sysdir_personal)'/users/$pais/ricardo/bootstraps/1/IngBasicoREC.dta"', clear
 	merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 	collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
 
@@ -774,7 +774,7 @@ quietly {
 			subtitle($pais) ///
 			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.") ///
 			xtitle("") ytitle(% PIB) ///
-			xlabel(`aniomin'(5)`end') ///
+			xlabel(2005(1)`end') ///
 			yscale(range(0)) ///
 			legend(off) ///
 			text(`=shrfsp_pib[`obs`anio_last'']*.1' `=`anio'+1.5' "{bf:Proyecci{c o'}n}", color(white) placement(e)) ///

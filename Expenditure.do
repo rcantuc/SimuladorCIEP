@@ -10,6 +10,12 @@ if "`1'" == "" {
 if "`1'" >= "2020"  {
 	local enighanio = 2020
 }
+if "`1'" == "2018"  {
+	local enighanio = 2018
+}
+if "`1'" == "2016"  {
+	local enighanio = 2018
+}
 
 ** 0.1 Otros Parametros **
 if `enighanio' >= 2014 {
@@ -26,9 +32,9 @@ if `enighanio' == 2012 {
 }
 timer on 15
 
-capture mkdir "`c(sysdir_site)'/SIM/`enighanio'/"
+capture mkdir "`c(sysdir_personal)'/SIM/`enighanio'/"
 capture log close expenditures
-log using "`c(sysdir_site)'/SIM/`enighanio'/expenditures.smcl", replace name(expenditures)
+log using "`c(sysdir_personal)'/SIM/`enighanio'/expenditures.smcl", replace name(expenditures)
 
 
 ** 0.2 Texto introductorio **
@@ -88,21 +94,21 @@ local Ieps10 = r(Alcohol)
 ******************************************
 *** 2. DATOS MICROECONóMICOS (MI) ***
 ******************************************
-capture confirm file "`c(sysdir_site)'/SIM/`enighanio'/preconsumption.dta"
+capture confirm file "`c(sysdir_personal)'/SIM/`enighanio'/preconsumption.dta"
 if _rc != 0 {
 *if _rc == 0 {
 
 	** MI.1. Base de datos de gastos de los hogares **
-	use "`c(sysdir_site)'/bases/INEGI/`enigh'/`enighanio'/gastospersona.dta", clear
-	append using "`c(sysdir_site)'/bases/INEGI/`enigh'/`enighanio'/gastohogar.dta"
-	append using "`c(sysdir_site)'/bases/INEGI/`enigh'/`enighanio'/gastotarjetas.dta"
-	append using "`c(sysdir_site)'/bases/INEGI/`enigh'/`enighanio'/erogaciones.dta"
+	use "`c(sysdir_site)'../BasesCIEP/INEGI/`enigh'/`enighanio'/gastospersona.dta", clear
+	append using "`c(sysdir_site)'../BasesCIEP/INEGI/`enigh'/`enighanio'/gastohogar.dta"
+	append using "`c(sysdir_site)'../BasesCIEP/INEGI/`enigh'/`enighanio'/gastotarjetas.dta"
+	append using "`c(sysdir_site)'../BasesCIEP/INEGI/`enigh'/`enighanio'/erogaciones.dta"
 	replace numren = "01" if clave >= "M007" & clave <= "M009"		// Adquisicion de vehiculos (jefe del hogar)
 
 	** MI.2. Variables sociodemograficas **
-	merge m:1 (folioviv foliohog numren) using "`c(sysdir_site)'/bases/INEGI/`enigh'/`enighanio'/poblacion.dta", keepus(tipoesc sexo edad) nogen
-	merge m:1 (folioviv) using "`c(sysdir_site)'/bases/INEGI/`enigh'/`enighanio'/vivienda.dta", keepus(ubica_geo tenencia) nogen
-	merge m:1 (folioviv foliohog) using "`c(sysdir_site)'/bases/INEGI/`enigh'/`enighanio'/concentrado.dta", nogen keepus(factor tot_integ)
+	merge m:1 (folioviv foliohog numren) using "`c(sysdir_site)'../BasesCIEP/INEGI/`enigh'/`enighanio'/poblacion.dta", keepus(tipoesc sexo edad) nogen
+	merge m:1 (folioviv) using "`c(sysdir_site)'../BasesCIEP/INEGI/`enigh'/`enighanio'/vivienda.dta", keepus(ubica_geo tenencia) nogen
+	merge m:1 (folioviv foliohog) using "`c(sysdir_site)'../BasesCIEP/INEGI/`enigh'/`enighanio'/concentrado.dta", nogen keepus(factor tot_integ)
 	capture rename factor_hog factor
 
 	** MI.3. Quitar gastos "no necesarios" **
@@ -122,14 +128,14 @@ if _rc != 0 {
 	replace gasto_anual = inscrip + colegia*12 + material if clave >= "E001" & clave <= "E007"
 
 	** MI.6. Unión de claves de IVA y IEPS **
-	merge m:1 (clave) using "`c(sysdir_site)'/bases/INEGI/`enigh'/`enighanio'/clave_iva.dta", ///
+	merge m:1 (clave) using "`c(sysdir_site)'../BasesCIEP/INEGI/`enigh'/`enighanio'/clave_iva.dta", ///
 		nogen keepus(descripcion *2018 clase_de_actividad*) keep(matched master)
 	encode iva2018, gen(tiva)
 	compress
 	tempfile pre_iva
 	save `pre_iva'
 
-	use "`c(sysdir_site)'/bases/INEGI/Censo Economico/2019/censo_eco.dta", clear
+	use "`c(sysdir_site)'../BasesCIEP/INEGI/Censo Economico/2019/censo_eco.dta", clear
 	/* a218a: Participación de la prestación de servicios profesionales, científicos y 
 	técnicos en el total de ingresos por suministro de bienes y servicios: Porcentaje 
 	de los ingresos a valor de venta que obtuvo la unidad económica por la prestación 
@@ -175,7 +181,7 @@ if _rc != 0 {
 
 	** MI.7. Unión de censo económico **
 	forvalues k=1(1)6 {
-		use "`c(sysdir_site)'/bases/INEGI/Censo Economico/2019/censo_eco.dta", clear
+		use "`c(sysdir_site)'../BasesCIEP/INEGI/Censo Economico/2019/censo_eco.dta", clear
 		g num = length(codigo)
 		drop if num != 6
 		keep if id_estrato == .
@@ -375,10 +381,10 @@ if _rc != 0 {
 	sort folioviv foliohog numren clave
 
 	if `c(version)' > 13.1 {
-		saveold "`c(sysdir_site)'/SIM/`enighanio'/preconsumption.dta", replace version(13)
+		saveold "`c(sysdir_personal)'/SIM/`enighanio'/preconsumption.dta", replace version(13)
 	}
 	else {
-		save "`c(sysdir_site)'/SIM/`enighanio'/preconsumption.dta", replace
+		save "`c(sysdir_personal)'/SIM/`enighanio'/preconsumption.dta", replace
 	}
 }
 
@@ -388,7 +394,7 @@ if _rc != 0 {
 ********************************
 *** 3. Precio, IVA, IEPS (P) ***
 ********************************
-use "`c(sysdir_site)'/SIM/`enighanio'/preconsumption.dta", clear
+use "`c(sysdir_personal)'/SIM/`enighanio'/preconsumption.dta", clear
 replace informal = lugar_comp == "01" | lugar_comp == "02" | lugar_comp == "03" | lugar_comp == "17"	// Informalidad
 
 
@@ -452,10 +458,10 @@ g proyecto = "2"
 g numren = "01"
 egen deduc_isr = rsum(deduc_*)
 if `c(version)' > 13.1 {
-	saveold "`c(sysdir_site)'/SIM/`enighanio'/deducciones.dta", replace version(13)
+	saveold "`c(sysdir_personal)'/SIM/`enighanio'/deducciones.dta", replace version(13)
 }
 else {
-	save "`c(sysdir_site)'/SIM/`enighanio'/deducciones.dta", replace
+	save "`c(sysdir_personal)'/SIM/`enighanio'/deducciones.dta", replace
 }
 restore
 
@@ -977,10 +983,10 @@ foreach categ of varlist categ categ_iva {
 	compress
 
 	if `c(version)' > 13.1 {
-		saveold "`c(sysdir_site)'/SIM/`enighanio'/expenditure_`categ'.dta", replace version(13)
+		saveold "`c(sysdir_personal)'/SIM/`enighanio'/expenditure_`categ'.dta", replace version(13)
 	}
 	else {
-		save "`c(sysdir_site)'/SIM/`enighanio'/expenditure_`categ'.dta", replace
+		save "`c(sysdir_personal)'/SIM/`enighanio'/expenditure_`categ'.dta", replace
 	}
 	restore
 }

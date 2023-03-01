@@ -16,10 +16,10 @@ timer on 1
 ***                                                ***
 ******************************************************
 if "`c(username)'" == "ricardo" {                                               // Mac Ricardo
-	sysdir set PERSONAL "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladorCIEP/5.3/SimuladorCIEP/"
+	sysdir set PERSONAL "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
 }
 if "`c(username)'" == "ciepmx" & "`c(console)'" == "" {                         // Linux ServidorCIEP
-	sysdir set PERSONAL "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/SimuladorCIEP/5.3/SimuladorCIEP/"
+	sysdir set PERSONAL "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
 }
 adopath ++ PERSONAL
 
@@ -33,8 +33,8 @@ adopath ++ PERSONAL
 *global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
 *global update "update"                                                         // UPDATE DATASETS/OUTPUTS
 *global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
-global export "`c(sysdir_personal)'/../../../LINGO/Pemex post-petróleo/images/" // EXPORTAR IMAGENES EN...
-noisily run "`c(sysdir_personal)'/PARAM.do"                                     // PARÁMETROS (PE 2023)
+*global export "`c(sysdir_personal)'/../../../LINGO/Pemex post-petróleo/images/" // EXPORTAR IMAGENES EN...
+*noisily run "`c(sysdir_personal)'/PARAM.do"                                     // PARÁMETROS (PE 2023)
 
 
 
@@ -43,7 +43,7 @@ noisily run "`c(sysdir_personal)'/PARAM.do"                                     
 ***    2. POBLACION + ECONOMÍA   ***
 ***                              ***
 ************************************
-*noisily Poblacion, aniofinal(`=scalar(anioend)') $update
+*noisily Poblacion, aniofinal(2030) $update
 *noisily PIBDeflactor, geodef(2005) geopib(2005) $update
 *noisily SCN, $update
 *noisily Inflacion, $update
@@ -52,7 +52,7 @@ noisily run "`c(sysdir_personal)'/PARAM.do"                                     
 *noisily LIF, by(divOrigen) rows(1) min(0)
 *noisily PEF, by(divPE) rows(2) min(0) $update
 *noisily PEF if ramo == 52, by(divPE) rows(1) min(0)
-noisily SHRFSP, $update
+*noisily SHRFSP, $update
 
 
 
@@ -61,8 +61,9 @@ noisily SHRFSP, $update
 ***                     ***
 ***    3. HOUSEHOLDS    ***
 ***                     ***
-/***************************
-capture confirm file "`c(sysdir_personal)'/SIM/2020/households.dta"
+***************************
+scalar aniovp = 2018
+capture confirm file "`c(sysdir_personal)'/SIM/`=aniovp'/households.dta"
 if _rc != 0 {
 	noisily run "`c(sysdir_personal)'/Expenditure.do" `=aniovp'
 	noisily run `"`c(sysdir_personal)'/Households.do"' `=aniovp'
@@ -77,14 +78,14 @@ if _rc != 0 {
 *******************************
 
 ** 4.1 Perfiles fiscales **
-capture confirm file "`c(sysdir_personal)'/SIM/2020/households`=aniovp'.dta"
+capture confirm file "`c(sysdir_personal)'/SIM/`=aniovp'/households`=aniovp'.dta"
 if _rc != 0 | "$update" == "update" {
 	noisily run `"`c(sysdir_personal)'/PerfilesSim.do"' `=aniovp'
 }
 
 
 ** 4.2 GASTOS: per cápita **
-*noisily GastoPC, anio(`=aniovp')
+noisily GastoPC, anio(`=aniovp')
 
 
 ** 4.3 INGRESOS: Módulos **
@@ -101,7 +102,7 @@ if "`cambioiva'" == "1" {
 
 
 ** 4.4 INGRESOS: Tasas Efectivas **
-*noisily TasasEfectivas, anio(`=aniovp')
+noisily TasasEfectivas, anio(`=aniovp')
 
 
 
@@ -111,16 +112,16 @@ if "`cambioiva'" == "1" {
 ***                        ***
 ***    5. CICLO DE VIDA    ***
 ***                        ***
-/******************************
+******************************
 use `"`c(sysdir_personal)'/users/$id/households.dta"', clear
 capture drop AportacionesNetas
-g AportacionesNetas = ISRASSIM + ISRPFSIM + CUOTASSIM + ISRPMSIM /// + OTROSKSIM ///
-	+ IVASIM + IEPSNPSIM + IEPSPSIM + ISANSIM + IMPORTSIM + FMPSIM ///
-	- Pension - Educacion - Salud - IngBasico - _Infra - PenBienestar
+g AportacionesNetas = ISRAS + ISRPF + CUOTAS + ISRPM /// + OTROSK ///
+	+ IVA + IEPSNP + IEPSP + ISAN + IMPORT + FMP ///
+	- Pension - Educacion - Salud - IngBasico - Infra - PenBienestar
 label var AportacionesNetas "aportaciones netas"
 noisily Simulador AportacionesNetas [fw=factor], base("ENIGH 2020") reboot anio(`=aniovp') folio("folioviv foliohog") $nographs //boot(20)
 save "`c(sysdir_personal)'/users/$id/households.dta", replace
-
+exit
 
 /** 5.2 CUENTA GENERACIONAL **
 noisily CuentasGeneracionales AportacionesNetas, anio(`=aniovp')

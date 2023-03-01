@@ -859,6 +859,9 @@ quietly {
 	*** 9 Base SIM ***
 	******************
 	capture drop __*
+	capture mkdir `"`c(sysdir_personal)'/users/"'
+	capture mkdir `"`c(sysdir_personal)'/users/$pais/"'
+	capture mkdir `"`c(sysdir_personal)'/users/$pais/$id/"'
 	if `c(version)' > 13.1 {
 		saveold `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace version(13)
 	}
