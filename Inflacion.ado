@@ -154,9 +154,9 @@ quietly {
 				local crec_infl `"`crec_infl' `=var_inflY[`k']' `=anio[`k']' "{bf:`=string(var_inflY[`k'],"%5.1fc")'}""'
 			}
 		}
-		twoway (connected var_inflY anio if (anio < `anio_last' & anio >= 1993) | (anio == `anio_last' & mes == 12), msize(large) mlwidth(vvthick)) ///
-			(connected var_inflY anio if anio > `anio_last' & anio >= anio[`obslast'+`exo_count'], msize(large) mlwidth(vvthick)) ///
-			(connected var_inflY anio if anio < anio[`obslast'+`exo_count'] & anio >= `anio_last', pstyle(p4) msize(large) mlwidth(vvthick)), ///
+		twoway (connected var_inflY anio if (anio < `anio_last' & anio >= 1993) | (anio == `anio_last' & mes == 12)) ///
+			(connected var_inflY anio if anio > `anio_last' & anio >= anio[`obslast'+`exo_count']) ///
+			(connected var_inflY anio if anio < anio[`obslast'+`exo_count'] & anio >= `anio_last'), ///
 			title({bf:Crecimientos} del INPC) ///
 			subtitle(${pais}) ///
 			xlabel(1995(5)`=round(anio[_N],5)') ///

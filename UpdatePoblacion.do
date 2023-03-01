@@ -15,7 +15,7 @@ import delimited "http://www.conapo.gob.mx/work/models/CONAPO/Datos_Abiertos/Pro
 
 
 /** 1.Bis Base de datos (Censo 2020). Responsable: Ale Macias **
-use "`c(sysdir_site)'../basesCIEP/CONAPO/censo2020.dta", clear
+use "`c(sysdir_personal)'../basesCIEP/CONAPO/censo2020.dta", clear
 tostring sexo, replace
 
 
@@ -160,18 +160,20 @@ order anio sexo edad entidad poblacion defunciones
 drop cve_geo 
 capture drop __*
 compress
+capture mkdir "`c(sysdir_personal)'/SIM/"
+
 if `c(version)' > 13.1 {
-	saveold "`c(sysdir_site)'/SIM/Poblacion.dta", replace version(13)
+	saveold "`c(sysdir_personal)'/SIM/Poblacion.dta", replace version(13)
 }
 else {
-	save "`c(sysdir_site)'/SIM/Poblacion.dta", replace
+	save "`c(sysdir_personal)'/SIM/Poblacion.dta", replace
 }
 
 collapse (sum) poblacion, by(anio entidad)
 keep if entidad == "Nacional"
 if `c(version)' > 13.1 {
-	saveold `"`c(sysdir_site)'/SIM/Poblaciontot.dta"', replace version(13)
+	saveold `"`c(sysdir_personal)'/SIM/Poblaciontot.dta"', replace version(13)
 }
 else {
-	save `"`c(sysdir_site)'/SIM/Poblaciontot.dta"', replace
+	save `"`c(sysdir_personal)'/SIM/Poblaciontot.dta"', replace
 }

@@ -12,7 +12,7 @@
 *** 1. BASES DE DATOS ***
 ***                   ***
 *************************
-capture confirm file "`c(sysdir_site)'/SIM/$pais/prePEF.dta"
+capture confirm file "`c(sysdir_personal)'/SIM/$pais/prePEF.dta"
 if _rc != 0 | "$update" == "update" | "`1'" == "update" {
 	local archivos: dir "`c(sysdir_site)'../BasesCIEP/PEFs/$pais" files "*.xlsx"			// Busca todos los archivos .xlsx en /bases/PEFs/
 	*local archivos `""CuotasISSSTE.xlsx" "PPEF 2023.xlsx" "CP 2013.xlsx""'
@@ -385,10 +385,10 @@ if _rc != 0 | "$update" == "update" | "`1'" == "update" {
 	capture drop __*
 	compress
 	if `c(version)' > 13.1 {
-		saveold "`c(sysdir_site)'/SIM/$pais/GastoEstOpor.dta", replace version(13)
+		saveold "`c(sysdir_personal)'/SIM/$pais/GastoEstOpor.dta", replace version(13)
 	}
 	else {
-		save "`c(sysdir_site)'/SIM/$pais/GastoEstOpor.dta", replace
+		save "`c(sysdir_personal)'/SIM/$pais/GastoEstOpor.dta", replace
 	}
 }
 
@@ -400,7 +400,7 @@ if _rc != 0 | "$update" == "update" | "`1'" == "update" {
 *** 4. Modulos SIMULADOR FISCAL CIEP ***
 ***                                  ***
 ****************************************
-use "`c(sysdir_site)'/SIM/$pais/prePEF.dta", clear
+use "`c(sysdir_personal)'/SIM/$pais/prePEF.dta", clear
 
 
 * 4.1 Costo de la deuda *
@@ -579,8 +579,8 @@ capture order proyecto, last
 capture drop __*
 compress
 if `c(version)' > 13.1 {
-	saveold "`c(sysdir_site)'/SIM/$pais/PEF.dta", replace version(13)
+	saveold "`c(sysdir_personal)'/SIM/$pais/PEF.dta", replace version(13)
 }
 else {
-	save "`c(sysdir_site)'/SIM/$pais/PEF.dta", replace
+	save "`c(sysdir_personal)'/SIM/$pais/PEF.dta", replace
 }

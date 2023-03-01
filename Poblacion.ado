@@ -11,9 +11,9 @@ quietly {
 	timer on 14
 
 	** 0.1 Revisa si se puede usar la base de datos **
-	capture use `"`c(sysdir_site)'/SIM/$pais/Poblacion.dta"', clear
+	capture use `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
 	if _rc != 0 {
-		noisily run `"`c(sysdir_site)'/UpdatePoblacion`=subinstr("${pais}"," ","",.)'.do"'
+		noisily run `"`c(sysdir_personal)'/UpdatePoblacion`=subinstr("${pais}"," ","",.)'.do"'
 	}
 
 	** 0.2 Revisa si existe el scalar aniovp **
@@ -35,7 +35,7 @@ quietly {
 
 	* Si la opción "update" es llamada, ejecuta el do-file UpdatePoblacion.do *
 	if "`update'" == "update" {
-		noisily run `"`c(sysdir_site)'/UpdatePoblacion`=subinstr("${pais}"," ","",.)'.do"'
+		noisily run `"`c(sysdir_personal)'/UpdatePoblacion`=subinstr("${pais}"," ","",.)'.do"'
 	}
 
 	* if default *
@@ -48,7 +48,7 @@ quietly {
 	************************
 	*** 2. Base de datos ***
 	************************
-	use `if' using `"`c(sysdir_site)'/SIM/$pais/Poblacion.dta"', clear
+	use `if' using `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
 	noisily di _newline(2) in g _dup(20) "." "{bf:   Poblaci{c o'}n: " in y "`=entidad[1]'   }" in g _dup(20) "." _newline
 
 	* Obtiene el año inicial de la base *

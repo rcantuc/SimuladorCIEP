@@ -135,23 +135,23 @@ color      	refmarker		red
 linewidth  	refmarker		vvvthick
 
 // Grosor
-linewidth 	p1mark			vvvthick
-linewidth 	p2mark			vvvthick
-linewidth 	p3mark			vvvthick
-linewidth 	p4mark			vvvthick
-linewidth 	p5mark			vvvthick
-linewidth 	p6mark			vvvthick
-linewidth 	p7mark			vvvthick
-linewidth 	p8mark			vvvthick
-linewidth 	p9mark			vvvthick
-linewidth 	p10mark			vvvthick
-linewidth 	p11mark			vvvthick
-linewidth 	p12mark			vvvthick
-linewidth 	p13mark			vvvthick
-linewidth 	p14mark			vvvthick
-linewidth 	p15mark			vvvthick
-linewidth 	p16mark			vvvthick
-linewidth 	p17mark			vvvthick
+linewidth 	p1mark			none
+linewidth 	p2mark			none
+linewidth 	p3mark			none
+linewidth 	p4mark			none
+linewidth 	p5mark			none
+linewidth 	p6mark			none
+linewidth 	p7mark			none
+linewidth 	p8mark			none
+linewidth 	p9mark			none
+linewidth 	p10mark			none
+linewidth 	p11mark			none
+linewidth 	p12mark			none
+linewidth 	p13mark			none
+linewidth 	p14mark			none
+linewidth 	p15mark			none
+linewidth 	p16mark			none
+linewidth 	p17mark			none
 
 linewidth 	p1			thick
 linewidth 	p2			thick
@@ -207,23 +207,23 @@ linewidth 	p15bar			none
 linewidth 	p16bar			none
 linewidth 	p17bar			none
 
-linewidth	p1area			thick
-linewidth	p2area			thick
-linewidth	p3area			thick
-linewidth	p4area			thick
-linewidth	p5area			thick
-linewidth	p6area			thick
-linewidth	p7area			thick
-linewidth	p8area			thick
-linewidth	p9area			thick
-linewidth	p10area			thick
-linewidth	p11area			thick
-linewidth	p12area			thick
-linewidth	p13area			thick
-linewidth	p14area			thick
-linewidth	p15area			thick
-linewidth	p16area			thick
-linewidth	p17area			thick
+linewidth	p1area			none
+linewidth	p2area			none
+linewidth	p3area			none
+linewidth	p4area			none
+linewidth	p5area			none
+linewidth	p6area			none
+linewidth	p7area			none
+linewidth	p8area			none
+linewidth	p9area			none
+linewidth	p10area			none
+linewidth	p11area			none
+linewidth	p12area			none
+linewidth	p13area			none
+linewidth	p14area			none
+linewidth	p15area			none
+linewidth	p16area			none
+linewidth	p17area			none
 
 
 

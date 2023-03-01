@@ -35,7 +35,7 @@ quietly {
 	
 	capture confirm scalar aniovp
 	if _rc == 0 {
-			local aniovp = scalar(aniovp)
+		local aniovp = scalar(aniovp)
 	}	
 
 
