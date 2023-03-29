@@ -7,14 +7,14 @@ if "`1'" == "" {
 	clear all
 	local enighanio = 2020
 }
-if "`1'" >= "2020"  {
+if `1' >= 2020 {
 	local enighanio = 2020
 }
-if "`1'" == "2018"  {
+if `1' >= 2018 & `1' < 2020 {
 	local enighanio = 2018
 }
-if "`1'" == "2016"  {
-	local enighanio = 2018
+if `1' >= 2016 & `1' < 2018 {
+	local enighanio = 2016
 }
 
 ** 0.1 Otros Parametros **

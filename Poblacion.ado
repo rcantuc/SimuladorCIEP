@@ -235,6 +235,10 @@ quietly {
 			text(72.5 `=`MaxH'[1,1]*.618' `"`=string(`P`aniofinal''[1,1],"%20.0fc")'"') ///
 			text(62.5 `=`MaxH'[1,1]*.618' "{bf:Personas post `aniohoy' vivas en `aniofinal'} ") ///
 			text(55 `=`MaxH'[1,1]*.618' `"`=string(`Pnacida'[1,1],"%20.0fc")' (`=string(`Pnacida'[1,1]/`P`aniofinal''[1,1]*100,"%7.1fc")'%)"') ///
+			text(45 `=-`MaxH'[1,1]*.618' "{bf:Tasa de dependencia `aniohoy'}") ///
+			text(37.5 `=-`MaxH'[1,1]*.618' `"`=string(`P1865_`aniohoy''[1,1]/(`P18_`aniohoy''[1,1]+`P65_`aniohoy''[1,1]),"%8.2fc")'"') ///
+			text(45 `=`MaxH'[1,1]*.618' "{bf:Tasa de dependencia `aniofinal'}") ///
+			text(37.5 `=`MaxH'[1,1]*.618' `"`=string(`P1865_`aniofinal''[1,1]/(`P18_`aniofinal''[1,1]+`P65_`aniofinal''[1,1]),"%8.2fc")'"') ///
 			///legend(label(1 "Men") label(2 "Women")) ///
 			/*text(105 `=`MaxH'[1,1]*.618' "{bf:Population}") ///
 			text(100 `=`MaxH'[1,1]*.618' `"`=string(`P`aniohoy''[1,1],"%20.0fc")'"') ///
@@ -251,7 +255,7 @@ quietly {
 			caption("`graphfuente'") ///
 
 		if "$export" != "" {
-			graph export "$export/P_`entidadGName'.png", replace name(P_`aniohoy'_`aniofinal'_`entidadGName')
+			graph export "$export/P_`aniohoy'_`aniofinal'_`entidadGName'.png", replace name(P_`aniohoy'_`aniofinal'_`entidadGName')
 		}
 
 
@@ -398,10 +402,10 @@ quietly {
 			legend(on label(1 "61+") label(2 "35 - 60") label(3 "19 - 34") label(4 "<18") order(4 3 2 1) region(margin(zero))) ///
 			ylabel(, format(%20.1fc)) yscale(range(0)) ///
 			xlabel(`anioinicial'(10)`=anio[_N]') ///
-			name(E_`entidadGName', replace)
+			name(E_`aniohoy'_`aniofinal'_`entidadGName', replace)
 			
 		if "$export" != "" {
-			graph export "$export/E_`entidadGName'.png", replace name(E_`entidadGName')
+			graph export "$export/E_`aniohoy'_`aniofinal'_`entidadGName'.png", replace name(E_`aniohoy'_`aniofinal'_`entidadGName')
 		}
 
 		restore

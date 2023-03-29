@@ -5,7 +5,7 @@ quietly {
 	syntax varname [if] [fweight/], ///
 		[BOOTstrap(int 1) ///
 		NOGraphs NOOutput REboot Noisily ///
-		REESCalar(real 1) BANDwidth(int 5) ///
+		BANDwidth(int 5) ///
 		BASE(string) ///
 		MACro(string) ///
 		POBlacion(string) FOLIO(string) ///
@@ -17,36 +17,38 @@ quietly {
 	*******************
 	*** 0. Defaults ***
 	*******************
-	if "`base'" == "" {
-		local base = "ENIGH 2018"
-	}
-
-	** Anio de la ENCUESTA DE HOGARES **
-	tokenize `base'
-	local aniobase = `2'
-
 	if `anio' == -1 {
 		local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 		local anio = substr(`"`=trim("`fecha'")'"',1,4)
 	}
 
+	if "`base'" == "" {
+		if `anio' >= 2020 {
+			local base = "ENIGH 2020"
+		}
+		if `anio' >= 2018 & anio < 2020 {
+			local base = "ENIGH 2018"
+		}
+		if `anio' >= 2016 & anio < 2018 {
+			local base = "ENIGH 2016"
+		}
+		tokenize `base'
+		local aniobase = `2'
+	}
+
 	** Macros: PIB **
 	preserve
-	PIBDeflactor, anio(`anio') nographs nooutput
-	*use "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", clear
+	PIBDeflactor, anio(`=aniovp') nographs nooutput
 	tempfile PIBBASE
 	save `PIBBASE'
 
 	forvalues k=1(1)`=_N' {
-		if deflator[`k'] == 1 {
+		if anio[`k'] == `anio' {
 			local PIB = pibY[`k']
-			local aniovp = anio[`k']
+			local deflator = deflator[`k']
 			continue, break
 		}
 	}
-
-	*SCN, anio(`aniobase') nographs
-	*local PIB = scalar(PIB)
 	restore
 
 	** Poblacion **
@@ -75,17 +77,24 @@ quietly {
 	noisily di in g "  {bf:Bootstraps: " in y `bootstrap' "}" _newline
 
 	** Base original **
+	replace `varlist' = `varlist'/`deflator'
+
+	capture confirm variable ingbrutotot
+	tempvar ingreso
+	if _rc != 0 {
+		g double `ingreso' = `varlist'
+		local rellabel "[Sin variable de ingreso total]"
+		label var `ingreso' "[Sin variable de ingreso total]"
+	}
+	else {
+		g double `ingreso' = ingbrutotot
+		local rellabel : variable label ingbrutotot
+		label var `ingreso' "`rellabel'"
+	}
+	replace `ingreso' = `ingreso'/`deflator'
+
 	tempfile original
 	save `original', replace
-
-	** Reescalar **
-	if `reescalar' != 1 {
-		tempvar vartotal proporcion
-		egen `vartotal' = sum(`varlist')
-		g `proporcion' = `varlist'/`vartotal'
-		replace `varlist' = `proporcion'*`reescalar'/`exp'
-	}
-
 
 
 
@@ -259,20 +268,9 @@ quietly {
 				g `decil' = decil
 			}
 
-			capture confirm variable ingbrutotot
-			tempvar ingreso
-			if _rc != 0 {
-				g double `ingreso' = `varlist'
-				local rellabel "[Sin variable de ingreso total]"
-				label var `ingreso' "[Sin variable de ingreso total]"
-			}
-			else {
-				g double `ingreso' = ingbrutotot
-				local rellabel : variable label ingbrutotot
-				label var `ingreso' "`rellabel'"
-			}
-
+			preserve
 			`noisily' incidencia `varlist' `if' [`weight' = `exp'*`boot'], folio(`folio') n(`decil') relativo(`ingreso') post
+			restore
 
 
 			*** 1.3.4. Ciclo de Vida ***/
@@ -346,7 +344,7 @@ quietly {
 
 	******************
 	*** 3 Perfiles ***
-	******************
+	/******************
 	use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'PERF"', clear
 
 
@@ -358,7 +356,7 @@ quietly {
 
 
 	***********************************
-	/** 3.2 Variables de los perfiles **
+	** 3.2 Variables de los perfiles **
 	if "$pais" != "" {
 		local pais = ". ${pais}."
 	}

@@ -1,187 +1,7 @@
-clear all
-macro drop _all
-capture log close _all
-
-local entidadesN `" "Aguascalientes" "Baja California" "Baja California Sur" "Campeche" "Coahuila" "Colima" "Chiapas" "Chihuahua" "Ciudad de México" "Durango" "Guanajuato" "Guerrero" "Hidalgo" "Jalisco" "México" "Michoacán" "Morelos" "Nayarit" "Nuevo León" "Oaxaca" "Puebla" "Querétaro" "Quintana Roo" "San Luis Potosí" "Sinaloa" "Sonora" "Tabasco" "Tamaulipas" "Tlaxcala" "Veracruz" "Yucatán" "Zacatecas" "Nacional" "'
-local entidades "Ags BC BCS Camp Coah Col Chis Chih CDMX Dgo Gto Gro Hgo Jal EdoMex Mich Mor Nay NL Oax Pue Qro QRoo SLP Sin Son Tab Tamps Tlax Ver Yuc Zac Nacional"
-tokenize `entidades'
-
-global export "`c(sysdir_site)'../../Hewlett Subnacional/Documento LaTeX/images"
-
-
-
-
-
-*********************
-*** PIB Entidades ***
-/*********************
-import excel "`c(sysdir_site)'../basesCIEP/INEGI/SCN/PIB entidades federativas.xlsx", clear
-LimpiaBIE
-rename A anio
-local j = 1
-foreach k of varlist B-AG {
-	rename `k' pibYEnt``j''
-	local ++j
-}
-reshape long pibYEnt, i(anio) j(entidad) string
-tempfile PIBEntidades
-save `PIBEntidades'
-
-
-
-*** PIB Deflactor ***
-PIBDeflactor, nographs
-tempfile PIBDeflactor
-save `PIBDeflactor'
-
-
-
-*** ITAEE ***
-import excel "`c(sysdir_site)'../basesCIEP/INEGI/SCN/ITAEE.xlsx", clear
-LimpiaBIE, nomultiply
-split A, parse("/")
-drop A
-rename A1 anio
-rename A2 trimestre
-destring anio trimestre, replace
-order anio trimestre
-
-collapse (mean) B-AG, by(anio)
-set obs `=_N+1'
-replace anio = anio[_N-1]+1 in -1
-
-local j = 1
-foreach k of varlist B-AG {
-	replace `k' = 3.4 in -1
-	rename `k' ITAEE``j''
-	local ++j
-}
-reshape long ITAEE, i(anio) j(entidad) string
-
-merge 1:1 (anio entidad) using `PIBEntidades', nogen
-merge m:1 (anio) using `PIBDeflactor', nogen keepus(deflator)
-
-encode entidad, gen(entidadx)
-xtset entidadx anio
-replace pibYEnt = L.pibYEnt*(1+ITAEE/100)*deflator if pibYEnt == .
-
-keep if anio >= 2003 & anio <= 2022
-save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/PIBEntidades.dta", replace
-
-
-
-
-
-***************************************/
-*** Poblacion por Entidad Federativa ***
-/****************************************
-local j = 1
-foreach k of local entidadesN {
-	Poblacion if entidad == "`k'", nographs
-	collapse (sum) pob*, by(entidad anio)
-	format pob* %15.0fc
-	rename entidad entidad1
-	g entidad = "``j''"
-	scalar poblacion``j'' = poblaciontotal
-	tempfile Pob``j''
-	save `Pob``j'''
-	local ++j
-}
-local j = 1
-forvalues k=1(1)33 {
-	if `k' == 1 {
-		use `Pob``j''', clear
-	}
-	else {
-		append using `Pob``j'''
-	}
-	local ++j
-}
-drop entidad1
-noisily scalarlatex, logname(pob)
-save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/PobTot.dta", replace
-
-
-
-
-
-**************************************/
-*** Gasto Federalizado y sus Fondos ***
-/***************************************
-DatosAbiertos XFA0000, nographs
-split nombre, gen(entidad) parse(":")
-drop nombre
-replace entidad1 = "Nacional"
-rename entidad2 concepto
-tempfile XFA0000
-save `XFA0000'
-
-local series28 `""" A B C D E F G H I J K L M"'
-*local series28 `""""'
-
-local series33 `""" A B C D E F G H I J K L M N O"'
-*local series33 `""""'
-
-local series23 `""" A B C"'
-*local series23 `""""'
-
-local seriesCD `""" A D E"'
-*local seriesCD `""""'
-
-local seriesCR `""""'
-
-local seriesPSS `""""'
-
-* Obtener las bases de Datos Abiertos *
-foreach gastofed in 28 33 PSS 23 CD CR {
-	foreach fondo of local series`gastofed' {
-
-		local serie "XAC`gastofed'`fondo'"
-		local j = 1
-
-		forvalues k=1(1)32 {
-			noisily DatosAbiertos `serie'`=string(`k',"%02.0f")', nographs
-			if r(error) != 2000 {
-				* Limpiar base intermedia *
-				split nombre, gen(entidad) parse(":")
-				drop nombre
-				rename entidad2 concepto
-				g entidad = "``j''"
-			}
-
-			* Guardar bases estados *
-			tempfile `serie'`=string(`k',"%02.0f")'
-			save ``serie'`=string(`k',"%02.0f")''
-			local ++j
-		}
-
-		* Unir bases estados *
-		use ``serie'01', clear
-		forvalues k=2(1)32 {
-			append using ``serie'`=string(`k',"%02.0f")''
-		}
-		tempfile XAC`gastofed'`fondo'
-		save `XAC`gastofed'`fondo''
-	}
-}
-
-* Unir todas las bases obtenidas *
-local j = 0
-foreach gastofed in 28 33 PSS 23 CD CR {
-	foreach fondo of local series`gastofed' {
-		if `j' == 0 {
-			use `XAC`gastofed'', clear
-			local ++j
-		}
-		else {
-			append using `XAC`gastofed'`fondo''
-		}
-	}
-}
-append using `XFA0000'
-replace entidad = "Nacional" if entidad == ""
-save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFedBase.dta", replace
-
+*************************************************/
+*** Graficas 1 Gasto Federalizado (Capitulo 1) ***
+*************************************************
+use "`c(sysdir_personal)'/SIM/EstadosBase.dta", clear
 
 
 
@@ -189,10 +9,9 @@ save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFedBase.dta",
 *************************************************/
 *** Graficas 1 Gasto Federalizado (Capitulo 1) ***
 *************************************************
-use "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFedBase.dta", clear
-merge m:1 (anio entidad) using "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/PIBEntidades.dta", nogen
-merge m:1 (anio entidad) using "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/PobTot.dta", nogen
-keep if anio >= 2013 & anio <= 2022
+use "`c(sysdir_personal)'/SIM/EstadosBase.dta", clear
+
+keep if anio >= 2003 & anio <= 2022
 
 tempvar concepto2 montograph montopibYE
 g `concepto2' = "Participaciones" if substr(clave,1,5) == "XAC28" & strlen(clave) == 8
@@ -226,7 +45,7 @@ foreach k of local entidades {
 	graph export "$export/GasFed_`k'.png", replace name(GasFed`k')
 
 }
-save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFed_basedegraph_porEF_RFP_JP.dta", replace
+*save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFed_basedegraph_porEF_RFP_JP.dta", replace
 
 * Scalares *
 forvalues k=1(1)`=_N' {
@@ -258,7 +77,7 @@ graph bar (mean) montograph [fw=poblacion], ///
 	legend(rows(1) label(5 "Resto RFP (Federaci{c o'}n)")) ///
 	name(RFP, replace)
 graph export "$export/RFP.png", replace name(RFP)
-save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFed_basedegraph_RFP_JP.dta", replace
+*save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFed_basedegraph_RFP_JP.dta", replace
 
 * Scalars *
 forvalues k=1(1)`=_N' {
@@ -280,13 +99,12 @@ forvalues k=1(1)`=_N' {
 	}
 }
 
-restore
-save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFed_desagregada_JP.dta", replace
-collapse (sum) monto, by(entidad anio)
-g tipo_ingreso = "Federalizado"
-drop if anio == 2022
-save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFedSum.dta", replace
-noisily scalarlatex, logname(gastofed)
+*restore
+*save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFed_desagregada_JP.dta", replace
+*collapse (sum) monto, by(entidad anio)
+*g tipo_ingreso = "Federalizado"
+*save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFedSum.dta", replace
+*noisily scalarlatex, logname(gastofed)
 
 
 
@@ -295,10 +113,8 @@ noisily scalarlatex, logname(gastofed)
 *************************************************
 *** Graficas 2 Gasto Federalizado (Capitulo 1) ***
 **************************************************
-use "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFedBase.dta", clear
-merge m:1 (anio entidad) using "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/PIBEntidades.dta", nogen
-merge m:1 (anio entidad) using "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/PobTot.dta", nogen
-keep if anio >= 2013 & anio <= 2022
+use "`c(sysdir_personal)'/SIM/EstadosBase.dta", clear
+keep if anio >= 2003 & anio <= 2022
 
 tempvar concepto2 montograph montopibYE
 g `concepto2' = "Participaciones" if substr(clave,1,5) == "XAC28" & strlen(clave) == 8
@@ -349,7 +165,7 @@ graph bar (mean) montograph if anio <= 2021 & concepto2 == 3 [fw=poblacion], ///
 	legend(rows(2)) ///
 	name(XAC28, replace)
 graph export "$export/XAC28.png", replace name(XAC28)
-save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFedSum_participaciones_JP.dta", replace
+*save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFedSum_participaciones_JP.dta", replace
 
 * 35. Aportaciones *
 restore
@@ -369,7 +185,7 @@ graph bar (mean) montograph if anio <= 2021 & concepto2 == 1 [fw=poblacion], ///
 	legend(rows(2)) ///
 	name(XAC33, replace)
 graph export "$export/XAC33.png", replace name(XAC33)
-save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFedSum_aportaciones_JP.dta", replace
+*save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFedSum_aportaciones_JP.dta", replace
 
 
 * 36. Convenios *
@@ -391,7 +207,7 @@ graph bar (mean) montograph if anio <= 2021 & concepto2 == 2 [fw=poblacion], ///
 	legend(rows(1)) ///
 	name(XACC, replace)
 graph export "$export/XACC.png", replace name(XACC)
-save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFedSum_convenios_jp.dta", replace
+*save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFedSum_convenios_jp.dta", replace
 
 
 * 37. Subsidios *
@@ -414,12 +230,12 @@ graph bar (mean) montograph if concepto2 == 4 [fw=poblacion], ///
 	legend(rows(1)) ///
 	name(XACSubsidios, replace)
 graph export "$export/XACSubsidios.png", replace name(XACSubsidios)
-save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFedSum_subsidios_jp.dta", replace
+*save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFedSum_subsidios_jp.dta", replace
 
 
 
 
-
+exit
 *****************/
 *** LIEs INEGI ***
 ******************
@@ -451,10 +267,10 @@ foreach k of local entidadesN {
 	replace entidad = "``j''" if Entidades == `"`=subinstr("`=lower("`k'")'"," ","",.)'"'
 	local ++j
 }
-save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIE/INEGI/LIEs.dta", replace*/
+*save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIE/INEGI/LIEs.dta", replace*/
 
 collapse (sum) monto, by(anio entidad tipo_ingreso)
-save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIE/INEGI/LIEs_colapsada.dta", replace
+*save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIE/INEGI/LIEs_colapsada.dta", replace
 
 
 
@@ -477,7 +293,7 @@ drop if entidad == "Nacional"
 **Estimar Impuestos faltante 2021
 ********************************************
 tempvar montograph
-save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/IngresosEntidades.dta", replace
+*save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/IngresosEntidades.dta", replace
 
 
 * 38. Recursos totales *
@@ -498,7 +314,7 @@ graph bar (mean) `montograph' if `montograph' != . [fw=poblacion] , ///
 	name(LIEs, replace)
 graph export "$export/LIEs.png", replace name(LIEs)
 restore
-save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIEs_TipoIngreso_Total.dta", replace
+*save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIEs_TipoIngreso_Total.dta", replace
 
 * 39.-71. Recursos totales *
 levelsof entidad, local(entidades)
@@ -517,9 +333,9 @@ foreach k of local entidades {
 		name(LIEs_`k', replace)
 	graph export "$export/LIEs_`k'.png", replace name(LIEs_`k')
 }
-*/
+
 drop `montograph'
-save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIEs_tipoingreso.dta", replace
+*save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIEs_tipoingreso.dta", replace
 
 restore
 * Scalars *
@@ -603,7 +419,7 @@ graph bar (mean) `montograph' if `montograph' != . [fw=poblacion], ///
 	legend(rows(1)) ///
 	name(Recursos_prop, replace)
 graph export  "$export/Recursos_prop.png", as(png) replace name(Recursos_prop)
-save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIES_RP.dta", replace
+*save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIES_RP.dta", replace
 
 *******Checkpoint************
 
@@ -781,7 +597,7 @@ graph bar (mean) `montograph' if `montograph' != . [fw=poblacion], ///
 	legend(rows(2) label(4 "Impuesto Sobre La Producción," "Consumo Y Las Transacciones")) ///
 	name(Impuestos, replace)
 graph export  "$export/`=strtoname("Impuestos")'.png", as(png) replace 
-save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIEs_Impuestos.dta", replace
+*save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIEs_Impuestos.dta", replace
 *******Checkpoint************
 levelsof entidad, local(entidades)
 

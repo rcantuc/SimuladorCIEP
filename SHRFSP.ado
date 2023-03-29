@@ -200,7 +200,7 @@ quietly {
 				local textI `"`textI' `=`interno'[`k']/2+`externo'[`k']/2' `=anio[`k']' "`=string(shrfspInterno[`k']/1000000000,"%10.0fc")'""'
 				local textE `"`textE' `=`externo'[`k']/2' `=anio[`k']' "`=string(shrfspExterno[`k']/1000000000,"%10.0fc")'""'
 				local textPC `"`textPC' `=`shrfsp'[`k']/2' `=anio[`k']' "{bf:`=string(`shrfsp'[`k']/1000,"%10.1fc")'}""'
-				if `shrfspsinPemex'[`k'] != . {
+				if `shrfspsinPemex'[`k'] != . & anio[`k'] < `anio' {
 					local textPemex `"`textPemex' `=`shrfspPemex'[`k']/2' `=anio[`k']' "{bf:`=string(`shrfspPemex'[`k'],"%10.1fc")'}""'
 					local textSPemex `"`textSPemex' `=`shrfspsinPemex'[`k']/2+`shrfspPemex'[`k']/2' `=anio[`k']' "{bf:`=string(`shrfspsinPemex'[`k']-`shrfspPemex'[`k'],"%10.1fc")'}""'
 				}
@@ -254,12 +254,12 @@ quietly {
 		
 		
 		twoway (bar `shrfspsinPemex' `shrfspPemex' anio if anio >= `ultanio' & anio < `anio') ///
-			(bar `shrfspsinPemex' `shrfspPemex' anio if anio >= `anio') if `externo' != . & anio >= `ultanio', ///
-			title(`graphtitle') ///
+			///(bar `shrfspsinPemex' `shrfspPemex' anio if anio >= `anio') if `externo' != . & anio >= `ultanio' ///
+			, title(`graphtitle') ///
 			subtitle($pais) ///
 			caption("`graphfuente'") ///
 			ylabel(, format(%15.0fc) labsize(small)) ///
-			xlabel(`ultanio'(1)`anio', noticks) ///	
+			xlabel(`ultanio'(1)`=`anio'-1', noticks) ///	
 			text(`textPemex' `textSPemex', color(white) size(small)) ///
 			text(`text', placement(n) size(vsmall)) ///
 			///text(2 `=`anio'+1.45' "{bf:Proyecci{c o'}n PE 2022}", color(white)) ///
@@ -286,8 +286,8 @@ quietly {
 			local graphtitle ""
 			local graphfuente ""
 		}
-		twoway (connected `shrfsp' anio if anio < `anio'-1) ///
-			(connected `shrfsp' anio if anio >= `anio'-1) if `shrfsp' != . & anio >= 2005, ///
+		twoway (connected `shrfsp' anio if anio < `anio') ///
+			(connected `shrfsp' anio if anio >= `anio') if `shrfsp' != . & anio >= 2005, ///
 			title(`graphtitle') ///
 			subtitle($pais) ///
 			caption("`graphfuente'") ///
@@ -388,8 +388,7 @@ quietly {
 			note("{bf:{c U'}ltimo dato}: `aniofin'm`mesfin'") ///
 			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP y $paqueteEconomico.")
 
-		twoway (connected tasaInterno tasaExterno anio if anio >= 2013 & anio <= `anio', ///
-			msize(large large) mlwidth(vvthick vvthick)), ///
+		twoway (connected tasaInterno tasaExterno anio if anio >= 2013 & anio <= `anio'), ///
 			title("Tasas de interés {bf:efectivas}") ///
 			subtitle($pais) /**/ ///
 			ylabel(0(2)8, format(%15.0fc) labsize(small)) ///
@@ -397,8 +396,8 @@ quietly {
 			legend(on position(6) rows(1) order(1 2 3 4) label(1 "Interno") label(2 "Externo") ///
 			region(margin(zero))) ///
 			xlabel(2013(1)`anio') xtitle("") ///
-			///text(`textTEE', placement(c) color(white)) ///
-			///text(`textTEI', placement(c) color(white)) ///
+			text(`textTEE', placement(c) color(white)) ///
+			text(`textTEI', placement(c) color(white)) ///
 			name(tasasdeinteres, replace) ///
 			note("{bf:{c U'}ltimo dato}: `aniofin'm`mesfin'") ///
 			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP y $paqueteEconomico.")

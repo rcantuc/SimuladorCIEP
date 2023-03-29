@@ -7,36 +7,21 @@ quietly {
 	***********************
 
 	** 1.1 Anio valor presente **
-	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
-	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
-
-	** 1.2 Datos Abiertos (Mexico) **
-	if "$pais" == "" {
-		capture confirm file "`c(sysdir_personal)'/SIM/DatosAbiertos.dta"
-		if _rc != 0 {
-			UpdateDatosAbiertos
-			local updated = r(updated)
-			local ultanio = r(ultanio)
-			local ultmes = r(ultmes)
-		}
-		else {
-			local updated = "yes" // r(updated)
-		}
+	capture confirm scalar aniovp
+	if _rc == 0 {
+		local aniovp = scalar(aniovp)
 	}
 	else {
-		local updated = "yes"
+		local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
+		local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 	}
 
-	** 1.3 Base LIF **
+	** 1.2 Base LIF **
 	capture confirm file "`c(sysdir_personal)'/SIM/$pais/LIF.dta"
 	if _rc != 0 {
 		noisily run "`c(sysdir_personal)'/UpdateLIF.do"  // Genera a partir de la base ./basesCIEP/LIFs/LIF.xlsx
 	}
-	
-	capture confirm scalar aniovp
-	if _rc == 0 {
-		local aniovp = scalar(aniovp)
-	}	
+
 
 
 	***************
@@ -49,7 +34,7 @@ quietly {
 	noisily di _newline(2) in g _dup(20) "." "{bf:   Sistema Fiscal:" in y " INGRESOS $pais `anio'   }" in g _dup(20) "."
 
 	** 2.1 PIB + Deflactor **
-	PIBDeflactor, anio(`anio') nographs nooutput
+	PIBDeflactor, anio(`anio') nographs nooutput `update'
 	*use "`c(sysdir_site)'/users/$pais/$id/PIB.dta", clear
 	local currency = currency[1]
 	forvalues k=1(1)`=_N' {
@@ -63,7 +48,24 @@ quietly {
 	tempfile PIB
 	save `PIB'
 
-	** 2.2 Update LIF **
+	** 2.2 Datos Abiertos (Mexico) **
+	if "$pais" == "" & "`update'" == "update" {
+		capture confirm file "`c(sysdir_personal)'/SIM/DatosAbiertos.dta"
+		if _rc != 0 | "`update'" == "update" {
+			UpdateDatosAbiertos
+			local updated = r(updated)
+			local ultanio = r(ultanio)
+			local ultmes = r(ultmes)
+		}
+		else {
+			local updated = "yes" // r(updated)
+		}
+	}
+	else {
+		local updated = "yes"
+	}
+
+	** 2.3 Update LIF **
 	if "`update'" == "update" | "`updated'" != "yes" {
 		noisily run "`c(sysdir_personal)'/UpdateLIF.do"			// Actualiza a partir de la base ./basesCIEP/LIFs/LIF.xlsx
 	}

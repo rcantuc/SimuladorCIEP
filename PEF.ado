@@ -52,17 +52,19 @@ quietly {
 	if "`by'" == "" {
 		local by = "divPE"
 	}
+	replace desc_pp = 914 if desc_pp == 915
+	replace desc_pp = 71 if desc_pp == 72
 
 
 
 	***************
 	*** 3 Merge ***
 	***************
-	collapse (sum) gasto*, by(anio `by' transf_gf) 
+	collapse (sum) gasto*, by(anio `by' transf_gf) fast
 	merge m:1 (anio) using "`PIB'", nogen keepus(pibY indiceY deflator var_pibY) keep(matched) sorted
 	forvalues k=1(1)`=_N' {
 		if gasto[`k'] != . & "`first'" != "first" { 
-			local aniofirst = anio[`k']
+			local aniofirst = 2013 //anio[`k']
 			local first "first"
 		}
 	}
@@ -121,11 +123,11 @@ quietly {
 		matrix `mat`k'' = r(Stat`k')
 
 		* Display text *
-		if substr(`"`=r(name`k')'"',1,31) == "'" {
-			local disptext = substr(`"`=r(name`k')'"',1,30)
+		if substr(`"`=r(name`k')'"',1,35) == "'" {
+			local disptext = substr(`"`=r(name`k')'"',1,34)
 		}
 		else {
-			local disptext = substr(`"`=r(name`k')'"',1,31)
+			local disptext = substr(`"`=r(name`k')'"',1,35)
 		}
 		local name = strtoname(`"`disptext'"')
 
@@ -249,8 +251,7 @@ quietly {
 
 		* Display *
 		return scalar `name' = `mat`k''[1,1]
-		return scalar `name'C = `mat`k''[1,3]
-		local divResumido `"`divResumido' neto_`name'"'
+		local divResumido `"`divResumido' `name'"'
 
 		noisily di in g `"  (+) `disptext'"' ///
 			_col(44) in y %20.0fc `mat`k''[1,1] ///
@@ -327,7 +328,7 @@ quietly {
 
 	if "`nographs'" != "nographs" & "$nographs" == "" {
 		replace gastoreal = gastoreal/1000000000
-
+		
 		levelsof resumido if anio == `anio', local(lev_resumido)
 		tabstat gastoreal if anio == `anio', by(resumido) stat(sum) f(%20.0fc) save
 		tempname SUM

@@ -23,9 +23,9 @@ if "`1'" == "" {
 ** Eje 1: Generación del ingreso **
 use `"`c(sysdir_site)'/users/$pais/$id/households.dta"', clear
 tempvar Laboral Consumo Capital FMP
-egen `Laboral'  = rsum(ISRASSIM ISRPFSIM CUOTASSIM)
-egen `Consumo'  = rsum(IVASIM IEPSPSIM IEPSNPSIM ISANSIM IMPORTSIM)
-egen `Capital'  = rsum(ISRPMSIM OTROSKSIM)
+egen `Laboral'  = rsum(ISRAS ISRPF CUOTAS)
+egen `Consumo'  = rsum(IVA IEPSP IEPSNP ISAN IMPORT)
+egen `Capital'  = rsum(ISRPM OTROSK)
 egen `FMP' = rsum(FMPSIM)
 
 collapse (sum) ing_Imp_Laborales=`Laboral' ing__Imp_Consumo=`Consumo' ///
@@ -222,7 +222,6 @@ save `eje3'
 
 ************
 ** Sankey **
-*noisily SankeySum, anio(`2') name(`1') folder(SankeySF) a(`eje1') b(`eje2') c(`eje3') d(`eje4') 
 noisily SankeySumSim, anio(`2') name(`1') folder(SankeySF5) a(`eje1') b(`eje2') c(`eje3') d(`eje4') 
 
 timer off 9
