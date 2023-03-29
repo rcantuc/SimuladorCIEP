@@ -1,16 +1,36 @@
-*************************************************/
-*** Graficas 1 Gasto Federalizado (Capitulo 1) ***
-*************************************************
+****************************/
+*** Productividad laboral ***
+/*****************************
 use "`c(sysdir_personal)'/SIM/EstadosBase.dta", clear
+collapse (mean) pob* deflator pibYEnt, by(anio entidad)
+
+g montograph = pibYEnt/pob1664/deflator
+levelsof entidad, local(entidades)
+
+foreach k of local entidades {
+
+	forvalues j=1(1)`=_N' {
+		if entidad[`j'] == "`k'" & montograph[`j'] != . {
+			local textgraph`k' `"`textgraph`k'' `=montograph[`j']' `=anio[`j']' "`=string(montograph[`j'],"%10.0fc")'" "'
+		}
+	}
+
+	twoway connect montograph anio if entidad == "`k'" & montograph != ., ///
+		ytitle("PIB estatal por {bf:persona en edad laboral}") ///
+		ylabel(0(100000)500001, format(%10.0fc)) yscale(range(0)) ///
+		xlabel(2003(1)2022) xtitle("") ///
+		text(`textgraph`k'', size(vsmall)) ///
+		name(Productividad_`k', replace)
+	graph export "$export/Productividad_`k'.png", replace name(Productividad_`k')
+}
 
 
 
 
-*************************************************/
-*** Graficas 1 Gasto Federalizado (Capitulo 1) ***
-*************************************************
+**************************************/
+*** Gasto Federalizado (Capitulo 1) ***
+/***************************************
 use "`c(sysdir_personal)'/SIM/EstadosBase.dta", clear
-
 keep if anio >= 2003 & anio <= 2022
 
 tempvar concepto2 montograph montopibYE
@@ -26,7 +46,7 @@ replace concepto2 = 5 if clave == "XFA0000"
 label define concepto2 5 "Resto RFP", modify
 
 
-* 1.-32. Gasto Federalizado total por tipo y por estados *
+** 1.-32. Gasto Federalizado total por tipo y por estados **
 collapse (sum) monto (mean) poblacion deflator pibYEnt if concepto2 != ., by(anio entidad concepto2 `concepto2')
 g montograph = monto/poblacion/deflator
 levelsof entidad, local(entidades)
@@ -38,14 +58,13 @@ foreach k of local entidades {
 		///title(Gasto {bf:federalizado}) ///
 		///subtitle(Por entidad federativa) ///
 		ytitle("per c{c a'}pita (MXN 2022)") ///
-		ylabel(, format(%7.0fc)) ///
+		ylabel(0(10000)30000, format(%7.0fc)) ///
 		blabel(bar, format(%7.0fc)) ///
 		legend(on) ///
 		name(GasFed`k', replace)
 	graph export "$export/GasFed_`k'.png", replace name(GasFed`k')
 
 }
-*save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFed_basedegraph_porEF_RFP_JP.dta", replace
 
 * Scalares *
 forvalues k=1(1)`=_N' {
@@ -74,43 +93,15 @@ graph bar (mean) montograph [fw=poblacion], ///
 	ytitle("per c{c a'}pita (MXN 2022)") ///
 	ylabel(, format(%7.0fc)) ///
 	blabel(bar, format(%7.0fc)) ///
-	legend(rows(1) label(5 "Resto RFP (Federaci{c o'}n)")) ///
+	legend(rows(1) label(5 "Federaci{c o'}n")) ///
 	name(RFP, replace)
 graph export "$export/RFP.png", replace name(RFP)
-*save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFed_basedegraph_RFP_JP.dta", replace
-
-* Scalars *
-forvalues k=1(1)`=_N' {
-	scalar GasFed`=substr(`concepto2'[`k'],1,4)' = montograph[`k']
-}
-scalar GasFedGasFed = GasFedApor + GasFedConv + GasFedPart + GasFedSubs
-
-restore
-preserve 
-collapse (sum) monto (mean) poblacion deflator pibYEnt, by(entidad anio)
-g montograph = monto/poblacion/deflator
-g montopibYE = monto/pibYEnt*100
-
-* Scalars *
-forvalues k=1(1)`=_N' {
-	if anio[`k'] == 2021 {
-		scalar GasFed`=entidad[`k']' = montograph[`k']
-		scalar GasFedPIB`=entidad[`k']' = montopibYE[`k']
-	}
-}
-
-*restore
-*save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFed_desagregada_JP.dta", replace
-*collapse (sum) monto, by(entidad anio)
-*g tipo_ingreso = "Federalizado"
-*save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFedSum.dta", replace
-*noisily scalarlatex, logname(gastofed)
 
 
 
 
 
-*************************************************
+*************************************************/
 *** Graficas 2 Gasto Federalizado (Capitulo 1) ***
 **************************************************
 use "`c(sysdir_personal)'/SIM/EstadosBase.dta", clear
