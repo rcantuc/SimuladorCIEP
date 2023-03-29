@@ -1,14 +1,16 @@
 *****************************************
 **** Base de datos: PIBDeflactor.dta ****
 *****************************************
-
 noisily di in g "  Updating PIBDeflactor.dta..." _newline
+
+
 
 ***************
 *** 1 BASES ***
 ***************
 
 ** 1.1 PIB **
+
 * 1.1.1. Importar y limpiar la base de datos *
 import excel "`=c(sysdir_site)'../BasesCIEP/UPDATE/SCN/PIB.xlsx", clear
 LimpiaBIE
@@ -85,31 +87,7 @@ tempfile poblacion
 save "`poblacion'"
 
 
-** 1.4 Poblacion ENOE **
-import excel "`c(sysdir_site)'../BasesCIEP/INEGI/ENOE/PoblacionENOE.xlsx", sheet("PoblacionLong") clear
-rename A anio
-rename B trimestre
-rename C PoblacionENOE
-rename D PoblacionOcupada
-rename E PoblacionDesocupada
-drop in 1
-drop if anio == ""
-
-g entidad = "Nacional"
-
-replace trimestre = "1" if trimestre == "Primer trimestre"
-replace trimestre = "2" if trimestre == "Segundo trimestre"
-replace trimestre = "3" if trimestre == "Tercer trimestre"
-replace trimestre = "4" if trimestre == "Cuarto trimestre"
-destring _all, replace
-
-collapse (mean) Poblacion*, by(anio)
-format PoblacionENOE %15.0fc
-tempfile poblacionenoe
-save "`poblacionenoe'"
-
-
-** 2.2 Working Ages **
+** 1.4 Working Ages **
 use `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
 collapse (sum) WorkingAge=poblacion if edad >= 16 & edad <= 65 & entidad == "Nacional", by(anio)
 format WorkingAge %15.0fc
@@ -118,16 +96,34 @@ save "`workingage'"
 
 
 
+** 1.4 Poblacion ENOE **
+import excel "`c(sysdir_site)'../BasesCIEP/UPDATE/SCN/Poblacion.xlsx", sheet("Poblacion") clear
+LimpiaBIE, nomult
+
+* 1.4.1. Renombrar variables *
+rename A periodo
+split periodo, destring p("/") ignore("r p")
+rename periodo1 anio
+rename periodo2 trimestre
+rename B PoblacionENOE
+rename E PoblacionOcupada
+rename F PoblacionDesocupada
+g entidad = "Nacional"
+
+format Poblacion* %15.0fc
+tempfile poblacionenoe
+save "`poblacionenoe'"
 
 
-****************
-*** 2. Unión ***
-****************
+
+***************
+*** 2 Unión ***
+***************
 use (anio trimestre pibQ) using `PIB', clear
 merge 1:1 (anio trimestre) using `Deflactor', nogen keepus(indiceQ)
-merge m:1 (anio) using "`workingage'", nogen
-merge m:1 (anio) using "`poblacion'", nogen
-merge m:1 (anio) using "`poblacionenoe'", nogen
+merge m:1 (anio) using "`workingage'", nogen //keep(matched)
+merge m:1 (anio) using "`poblacion'", nogen //keep(matched)
+merge 1:1 (anio trimestre) using "`poblacionenoe'", nogen keepus(Poblacion*)
 
 * Anio + Trimestre *
 g aniotrimestre = yq(anio,trimestre)
@@ -147,9 +143,15 @@ forvalues k=1(1)`=_N' {
 tempvar deflator
 g double `deflator' = indiceQ/indiceQ[`obsvp']
 g pibQR = pibQ/`deflator'
-g pibPO =  pibQR/PoblacionOcupada
+g pibPO = pibQR/PoblacionOcupada
 
-* Guardar base SIM *
+
+
+
+
+********************
+* 3 Guardar base SIM *
+********************
 format pib* %25.0fc
 capture drop __*
 if `c(version)' > 13.1 {
@@ -163,16 +165,16 @@ else {
 
 
 
-*****************************
-*** 3 Gráficas informativas ***
-*****************************
+*******************************
+*** 4 Gráficas informativas ***
+*******************************
 if "$nographs" == "" {
 
 	g crec_pibQR = (pibQR/L4.pibQR-1)*100
 
 	* Texto sobre lineas *
 	forvalues k=1(1)`=_N' {
-		if crec_pibQR[`k'] != . {
+		if pibPO[`k'] != . & trimestre[`k'] == `ulttrim' {
 			local text_pibQR `"`text_pibQR' `=crec_pibQR[`k']' `=aniotrimestre[`k']' "{bf:`=string(crec_pibQR[`k'],"%5.1fc")'}" "'
 		}
 		if pibPO[`k'] != . & trimestre[`k'] == `ulttrim' {
@@ -181,10 +183,11 @@ if "$nographs" == "" {
 	}
 
 	* Gráfica *
-	twoway connected crec_pibQR aniotrimestre, ///
+	twoway connected crec_pibQR aniotrimestre if pibPO != . & trimestre == `ulttrim', ///
 		title({bf:Producto Interno Bruto}) ///
-		ytitle("Crecimiento trimestral (%)") xtitle("") ///
-		text(`text_pibQR') msize(large) ///
+		ytitle("Crecimiento trimestre vs. trimestre (%)") xtitle("") ///
+		tlabel(2005q`ulttrim'(4)`ultanio'q`ulttrim') ///
+		text(`text_pibQR', size(small)) ///
 		note("{bf:{c U'}ltimo dato reportado}: `ultanio' trim. `ulttrim'.") ///
 		caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
 		name(UpdatePIBDeflactor, replace)
@@ -192,12 +195,13 @@ if "$nographs" == "" {
 		forvalues k=1(1)`=_N' {
 		}
 
-	twoway (connected pibPO aniotrimestre, msize(large)) if pibPO != . & trimestre == `ulttrim', ///
+	twoway (connected pibPO aniotrimestre) if pibPO != . & trimestre == `ulttrim', ///
 		title(Producto Interno Bruto por {bf:población ocupada}) subtitle(${pais}) ///
 		ytitle(`=currency[`obsvp']' `ultanio') xtitle("") ///
 		tlabel(2005q`ulttrim'(4)`ultanio'q`ulttrim') ///
-		text(`crec_PIBPC', color(black) size(vsmall)) ///
+		text(`crec_PIBPC', size(small)) ///
 		ylabel(/*0(5)`=ceil(`pibYRmil'[_N])'*/, format(%20.0fc)) ///
+		note("{bf:{c U'}ltimo dato reportado}: `ultanio' trim. `ulttrim'.") ///
 		caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE/ENOE.") ///
 		name(PIBPC, replace)
 }

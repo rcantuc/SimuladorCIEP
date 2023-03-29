@@ -1,19 +1,30 @@
-*************************
-***    1. USERNAME    ***
-*************************
+***********************
+***    1. SET UP    ***
+***********************
 local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
-global id = "`c(username)'"                                                     // ID DEL USUARIO
 scalar aniovp = substr(`"`=trim("`fecha'")'"',1,4)
-scalar anioend = 2030
 
+global id = "`c(username)'"
 
-
-****************************
-***    2. DIRECTORIOS    ***
-****************************
 capture mkdir `"`c(sysdir_site)'/SIM/"'
 capture mkdir `"`c(sysdir_site)'/users/"'
 capture mkdir `"`c(sysdir_site)'/users/$id/"'
+
+tokenize $paqueteEconomico
+scalar anioPE = `2'
+if `2' >= 2020 {
+	scalar enighanio = 2020
+}
+if `2' >= 2018 & `2' < 2020 {
+	scalar enighanio = 2018
+}
+if `2' >= 2016 & `2' < 2018 {
+	scalar enighanio = 2016
+}
+
+global entidadesL `" "Aguascalientes" "Baja California" "Baja California Sur" "Campeche" "Coahuila" "Colima" "Chiapas" "Chihuahua" "Ciudad de México" "Durango" "Guanajuato" "Guerrero" "Hidalgo" "Jalisco" "Estado de México" "Michoacán" "Morelos" "Nayarit" "Nuevo León" "Oaxaca" "Puebla" "Querétaro" "Quintana Roo" "San Luis Potosí" "Sinaloa" "Sonora" "Tabasco" "Tamaulipas" "Tlaxcala" "Veracruz" "Yucatán" "Zacatecas" "Nacional" "'
+global entidadesC "Ags BC BCS Camp Coah Col Chis Chih CDMX Dgo Gto Gro Hgo Jal EdoMex Mich Mor Nay NL Oax Pue Qro QRoo SLP Sin Son Tab Tamps Tlax Ver Yuc Zac Nacional"
+
 if "$output" != "" {
 	quietly log using `"`c(sysdir_site)'/users/$id/${output}.txt"', replace text name(output)
 	quietly log off output
@@ -24,8 +35,6 @@ if "$output" != "" {
 ************************************************
 ***    3. CRECIMIENTO Y DEFLACTOR DEL PIB    ***
 ************************************************
-global paqueteEconomico = "CGPE 2023"
-
 global pib2023 = 2.9676 //    CGPE 2023 (página 134)
 global pib2024 = 2.4 //       CGPE 2023 (página 134)
 global pib2025 = 2.4 //       CGPE 2023 (página 134)
@@ -44,15 +53,13 @@ global def2028 = 3.50150 //    CGPE 2023 (página 134)
 global def2029 = $def2028
 global def2030 = $def2029
 
-PIBDeflactor, nographs
+PIBDeflactor, anio(`=aniovp') nographs
 
 
 
 ******************************
 ***    4. DEUDA PÚBLICA    ***
 ******************************
-*global tasaEfectiva = 6.8767 // Tasa de inter{c e'}s EFECTIVA
-
 scalar shrfsp2023 = 49.4
 scalar shrfspInterno2023 = 34.7
 scalar shrfspExterno2023 = 14.6
@@ -69,13 +76,16 @@ scalar tipoDeCambio2023 = 20.6
 scalar costodeudaInterno2023 = 3.4
 scalar costodeudaExterno2023 = 3.4
 
+*global tasaEfectiva = 6.8677 // Tasa de inter{c e'}s EFECTIVA
 
 
-***********************
+
+
+**********************/
 ***    5. GASTOS    ***
 ***********************
 if "$update" == "update" {
-	noisily GastoPC, anio(`=aniovp')
+	noisily GastoPC, anio(`=anioPE')
 }
 else {
 	scalar basica      =   26537 //    Educación b{c a'}sica
@@ -99,7 +109,7 @@ else {
 	scalar penotro     = 2797302 //    Pensión CFE, LFC, ISSFAM, Ferronales
 
 	scalar gascfe      =    2958 //    Gasto en CFE
-	scalar gaspemex    =    4466*.30470771 //    Gasto en Pemex
+	scalar gaspemex    =    4466 // *.30470771 //    Gasto en Pemex
 	scalar gassener    =    1128 //    Gasto en SENER
 	scalar gasinfra    =    4315 //    Gasto en Inversión
 	scalar gascosto    =    8543 //    Gasto en Costo de la deuda
@@ -120,27 +130,27 @@ if "$update" == "update" {
 	noisily TasasEfectivas, anio(`=aniovp')
 }
 else {
-	scalar ISRAS   = (3.828/100*scalar(pibY)*(1+ 3.782*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISR (asalariados): 3.696
-	scalar ISRPF   = (0.249/100*scalar(pibY)*(1+ 1.199*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISR (personas f{c i'}sicas): 0.240
-	scalar CUOTAS  = (1.553/100*scalar(pibY)*(1+ 2.197*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Cuotas (IMSS): 1.499
+	scalar ISRAS   = 3.773 //100*scalar(pibY) *(1+ 3.782*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISR (asalariados): 3.696
+	scalar ISRPF   = 0.245 //100*scalar(pibY) *(1+ 1.199*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISR (personas f{c i'}sicas): 0.240
+	scalar CUOTAS  = 1.531 //100*scalar(pibY) *(1+ 2.197*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Cuotas (IMSS): 1.499
 
-	scalar ISRPM   = (4.210/100*scalar(pibY)*(1+ 4.664*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISR (personas morales): 4.064
-	scalar OTROSK  = (1.086/100*scalar(pibY)*(1+-3.269*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Productos, derechos, aprovech.: 1.049
+	scalar ISRPM   = 4.149 //100*scalar(pibY) *(1+ 4.664*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISR (personas morales): 4.064
+	scalar OTROSK  = 1.070 //100*scalar(pibY) *(1+-3.269*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Productos, derechos, aprovech.: 1.049
 
-	scalar IVA     = (4.682/100*scalar(pibY)*(1+ 2.498*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // IVA: 4.520
-	scalar ISAN    = (0.051/100*scalar(pibY)*(1+ 3.565*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISAN: 0.049
-	scalar IEPSNP  = (0.685/100*scalar(pibY)*(1+ 0.362*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // IEPS (no petrolero): 0.887
-	scalar IEPSP   =  0.918     // IEPS (petrolero): 0.662
-	scalar IMPORT  = (0.324/100*scalar(pibY)*(1+ 5.303*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Importaciones: 0.313
+	scalar IVA     = 4.615 //100*scalar(pibY) *(1+ 2.498*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // IVA: 4.520
+	scalar ISAN    = 0.050 //100*scalar(pibY) *(1+ 3.565*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISAN: 0.049
+	scalar IEPSNP  = 0.676 //100*scalar(pibY) *(1+ 0.362*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // IEPS (no petrolero): 0.887
+	scalar IEPSP   = 0.905 // IEPS (petrolero): 0.662
+	scalar IMPORT  = 0.320 //100*scalar(pibY) *(1+ 5.303*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Importaciones: 0.313
 
-	scalar FMP     = (1.609/100*scalar(pibY)*(1+-7.718*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Fondo Mexicano del Petróleo: 1.553
+	scalar FMP     = 1.586 //100*scalar(pibY) *(1+-7.718*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Fondo Mexicano del Petróleo: 1.553
 
-	scalar IMSS    = (0.094/100*scalar(pibY)*(1+-2.685*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (IMSS): 0.091
-	scalar ISSSTE  = (0.165/100*scalar(pibY)*(1+-3.058*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (ISSSTE): 0.159
-	scalar PEMEX   = (2.726/100*scalar(pibY)*(1+ 1.379*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (Pemex): 2.632
-	scalar CFE     = (1.316/100*scalar(pibY)*(1+-3.024*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (CFE): 1.271
-}
-scalar depletionrate = .04
+	scalar IMSS    = 0.093 //100*scalar(pibY) *(1+-2.685*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (IMSS): 0.091
+	scalar ISSSTE  = 0.162 //100*scalar(pibY) *(1+-3.058*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (ISSSTE): 0.159
+	scalar PEMEX   = 2.687 //100*scalar(pibY) *(1+ 1.379*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (Pemex): 2.632
+	scalar CFE     = 1.297 //100*scalar(pibY) *(1+-3.024*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (CFE): 1.271
+ }
+scalar depletionrate = 0.08*0
 
 
 ******************************************************

@@ -18,7 +18,7 @@ quietly {
 	*********************************
 	*** 1 Cuentas macroeconómicas ***
 	*********************************
-	SCN, anio(`=aniovp') nographs
+	SCN, anio(`=anioPE') nographs
 
 
 
@@ -326,7 +326,7 @@ quietly {
 	****************
 	capture use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
 	if _rc != 0 {
-		use "`c(sysdir_personal)'/SIM/2020/households`=aniovp'.dta", clear
+		use "`c(sysdir_personal)'/SIM/households`=aniovp'.dta", clear
 	}
 
 	* Distribuir los ingresos entre las observaciones *

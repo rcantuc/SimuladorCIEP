@@ -13,7 +13,7 @@
 ***                   ***
 *************************
 capture confirm file "`c(sysdir_personal)'/SIM/$pais/prePEF.dta"
-if _rc != 0 | "$update" == "update" | "`1'" == "update" {
+if _rc != 0 | "`1'" == "update" {
 	local archivos: dir "`c(sysdir_site)'../BasesCIEP/PEFs/$pais" files "*.xlsx"			// Busca todos los archivos .xlsx en /bases/PEFs/
 	*local archivos `""CuotasISSSTE.xlsx" "PPEF 2023.xlsx" "CP 2013.xlsx""'
 
@@ -347,10 +347,10 @@ if _rc != 0 | "$update" == "update" | "`1'" == "update" {
 	replace serie_ramo = "XOA0141" if ramo == 53
 
 	if `c(version)' > 13.1 {
-		saveold "`c(sysdir_site)'/SIM/$pais/prePEF.dta", replace version(13)
+		saveold "`c(sysdir_personal)'/SIM/$pais/prePEF.dta", replace version(13)
 	}
 	else {
-		save "`c(sysdir_site)'/SIM/$pais/prePEF.dta", replace
+		save "`c(sysdir_personal)'/SIM/$pais/prePEF.dta", replace
 	}
 
 	* 3.3 Datos Abiertos: PEFEstOpor.dta *

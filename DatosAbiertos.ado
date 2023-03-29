@@ -2,7 +2,7 @@ program define DatosAbiertos, return
 quietly {
 
 	** 0.1 Revisa si se puede usar la base de datos **
-	capture use "`c(sysdir_site)'/SIM/DatosAbiertos.dta", clear
+	capture use "`c(sysdir_personal)'/SIM/DatosAbiertos.dta", clear
 	if _rc != 0 {
 		UpdateDatosAbiertos
 	}
@@ -32,9 +32,9 @@ quietly {
 	save "`PIB'"
 
 	** 1.2 Datos Abiertos (Estadísticas Oportunas) **
-	use if clave_de_concepto == "`anything'" using "`c(sysdir_site)'/SIM/DatosAbiertos.dta", clear
+	use if clave_de_concepto == "`anything'" using "`c(sysdir_personal)'/SIM/DatosAbiertos.dta", clear
 	if "`anything'" == "" {
-		use "`c(sysdir_site)'/SIM/DatosAbiertos.dta", clear
+		use "`c(sysdir_personal)'/SIM/DatosAbiertos.dta", clear
 		exit
 	}
 	if `=_N' == 0 {
