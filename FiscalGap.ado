@@ -43,106 +43,80 @@ quietly {
 	*******************
 	*** 3 HOUSEHOLDS **
 	*******************
-	*use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
-	*tabstat Educacion Pension PenBienestar Salud OtrosGas IngBasico Infra [fw=factor], stat(sum) f(%20.0fc) save
-	*tempname GASTOHH
-	*matrix `GASTOHH' = r(StatTotal)
+	use "`c(sysdir_personal)'/users/$pais/$id/households.dta", clear
+	capture drop _*
+	foreach k in Educación Pension Pensión_Bienestar Salud Otros IngBasico Inversión Otras_Part_y_Apor Energía {
+		tabstat `k' [fw=factor], stat(sum) f(%20.0fc) save
+		tempname HH`k'
+		matrix `HH`k'' = r(StatTotal)
+	}
 
 
 
 	******************************
 	*** 4 Fiscal Gap: Ingresos ***
 	******************************
-	LIF, anio(`anio') nographs by(divSIM2) //ilif //eofp
-	collapse (sum) recaudacion if divLIF != 10, by(anio divSIM2) fast
-
-	g modulo = ""
-	levelsof divSIM2, local(divSIM2)
-
-	foreach k of local divSIM2 {
-		local divSIM2`k' : label divSIM2 `k'
-		if "`divSIM2`k''" == "Laboral" {
-			preserve
-
-			use `"`c(sysdir_personal)'/users/$pais/ricardo/bootstraps/1/`divSIM2`k''REC.dta"', clear
-			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
-			collapse estimacion contribuyentes poblacion, by(anio modulo aniobase)
-
-			tempvar estimacion
-			g `estimacion' = estimacion
-			replace estimacion = `estimacion'/L.`estimacion'*(scalar(ISRAS)+scalar(ISRPF)+scalar(CUOTAS))/100*scalar(pibY) if anio >= `anio'
-
-			g divSIM2 = `k'
-			replace modulo = "`divSIM2`k''"
-
-			tempfile `divSIM2`k''
-			save ``divSIM2`k'''
-
-			restore
-			merge 1:1 (anio divSIM2) using  ``divSIM2`k''', nogen update replace
+	LIF if divLIF != 10, base
+	levelsof divSIM, local(divSIM)
+	
+	LIF if divLIF != 10, anio(`anio') nographs by(divSIM) min(0) //ilif //eofp
+	local j = 0
+	foreach k of local divSIM {
+		local label`k' : label divSIM `k'
+		local `label`k''C = r(`label`k''C)
+		
+		capture confirm scalar `k'
+		if _rc != 0 {
+			scalar `label`k'' = r(`label`k'')/scalar(pibY)*100
 		}
-		if "`divSIM2`k''" == "Consumo" {
-			preserve
-
-			use `"`c(sysdir_personal)'/users/$pais/ricardo/bootstraps/1/`divSIM2`k''REC.dta"', clear
-			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
-			collapse estimacion contribuyentes poblacion, by(anio modulo aniobase)
-
-			tempvar estimacion
-			g `estimacion' = estimacion
-			replace estimacion = `estimacion'/L.`estimacion'*(scalar(IVA)+scalar(ISAN)+scalar(IEPSNP)+scalar(IEPSP)+scalar(IMPORT))/100*scalar(pibY) if anio >= `anio'
-
-			g divSIM2 = `k'
-			replace modulo = "`divSIM2`k''"
-
-			tempfile `divSIM2`k''
-			save ``divSIM2`k'''
-
-			restore
-			merge 1:1 (anio divSIM2) using  ``divSIM2`k''', nogen update replace
-		}
-		if "`divSIM2`k''" == "KPrivado" {
-			preserve
-
-			use `"`c(sysdir_personal)'/users/$pais/ricardo/bootstraps/1/`divSIM2`k''REC.dta"', clear
-			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
-			collapse estimacion contribuyentes poblacion, by(anio modulo aniobase)
-
-			tempvar estimacion
-			g `estimacion' = estimacion
-			replace estimacion = `estimacion'/L.`estimacion'*(scalar(ISRPM)+scalar(OTROSK))/100*scalar(pibY) if anio >= `anio'
-
-			g divSIM2 = `k'
-			replace modulo = "`divSIM2`k''"
-
-			tempfile `divSIM2`k''
-			save ``divSIM2`k'''
-
-			restore
-			merge 1:1 (anio divSIM2) using  ``divSIM2`k''', nogen update replace
-		}
-		if "`divSIM2`k''" == "KPublico" {
-			preserve
-
-			use `"`c(sysdir_personal)'/users/$pais/ricardo/bootstraps/1/`divSIM2`k''REC.dta"', clear
-			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
-			collapse estimacion contribuyentes poblacion, by(anio modulo aniobase)
-
-			tempvar estimacion
-			g `estimacion' = estimacion
-			replace estimacion = `estimacion'/L.`estimacion'*((scalar(FMP)+scalar(PEMEX))*(1-depletionrate)^(anio-`anio')+scalar(CFE)+scalar(IMSS)+scalar(ISSSTE))/100*scalar(pibY) if anio >= `anio'
-
-			g divSIM2 = `k'
-			replace modulo = "`divSIM2`k''"
-
-			tempfile `divSIM2`k''
-			save ``divSIM2`k'''
-
-			restore
-			merge 1:1 (anio divSIM2) using  ``divSIM2`k''', nogen update replace
-		}
+		local ++j
 	}
 
+	collapse (sum) recaudacion, by(anio divSIM) fast
+	g modulo = ""
+	foreach k of local divSIM {
+		local divSIM`k' : label divSIM `k'
+		if "`divSIM`k''" != "FMP" & "`divSIM`k''" != "PEMEX" {
+			preserve
+
+			use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/`divSIM`k''REC.dta"', clear
+			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
+			collapse estimacion contribuyentes poblacion, by(anio modulo aniobase)
+
+			tempvar estimacion
+			g `estimacion' = estimacion
+			replace estimacion = `estimacion'/L.`estimacion'*(scalar(`divSIM`k''))/100*scalar(pibY)*(1+``divSIM`k''C'/100)^(anio-`anio') if anio >= `anio' & abs(``divSIM`k''C'/100) < .4
+
+			g divSIM = `k'
+			replace modulo = "`divSIM`k''"
+
+			tempfile `divSIM`k''
+			save ``divSIM`k'''
+
+			restore
+			merge 1:1 (anio divSIM) using  ``divSIM`k''', nogen update replace
+		}
+		else {
+			preserve
+
+			use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/`divSIM`k''REC.dta"', clear
+			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
+			collapse estimacion contribuyentes poblacion, by(anio modulo aniobase)
+
+			tempvar estimacion
+			g `estimacion' = estimacion
+			replace estimacion = `estimacion'/L.`estimacion'*(scalar(`divSIM`k''))/100*scalar(pibY)*(1+``divSIM`k''C'/100)^(anio-`anio')*(1-depletionrate)^(anio-`anio') if anio >= `anio' & abs(``divSIM`k''C'/100) < .4
+
+			g divSIM = `k'
+			replace modulo = "`divSIM`k''"
+
+			tempfile `divSIM`k''
+			save ``divSIM`k'''
+
+			restore
+			merge 1:1 (anio divSIM) using  ``divSIM`k''', nogen update replace			
+		}
+	}
 	merge m:1 (anio) using `PIB', nogen keep(matched) update replace
 	collapse (sum) recaudacion estimacion (max) pibYR deflator lambda Poblacion, by(anio modulo)
 
@@ -162,31 +136,30 @@ quietly {
 	***************/
 	** 3.1 Graphs **
 	if "`nographs'" != "nographs" & "$nographs" != "nographs" {
-		tempvar consumo laboral kprivado kpublico
-		g `consumo'  = (recaudacionConsumo)/1000000000000
-		g `laboral'  = (recaudacionConsumo + recaudacionLaboral)/1000000000000
-		g `kprivado' = (recaudacionConsumo + recaudacionLaboral + recaudacionKPrivado)/1000000000000
-		g `kpublico' = (recaudacionConsumo + recaudacionLaboral + recaudacionKPrivado + recaudacionKPublico)/1000000000000
-	
-		tempvar consumo2 laboral2 kprivado2 kpublico2
-		g `consumo2'  = (estimacionConsumo)/1000000000000
-		g `laboral2'  = (estimacionConsumo + estimacionLaboral)/1000000000000
-		g `kprivado2' = (estimacionConsumo + estimacionLaboral + estimacionKPrivado)/1000000000000
-		g `kpublico2' = (estimacionConsumo + estimacionLaboral + estimacionKPrivado + estimacionKPublico)/1000000000000
+		tempvar recaccum estaccum
+		g `recaccum' = 0
+		g `estaccum' = 0
+		foreach k of local divSIM {
+			tempvar rec`divSIM`k'' est`divSIM`k''
+			g `rec`divSIM`k''' = recaudacion`divSIM`k''/1000000000000 + `recaccum'
+			replace `recaccum' = recaudacion`divSIM`k''/1000000000000 + `recaccum'
+			local varrec "`rec`divSIM`k''' `varrec'"
 
-		twoway (area `kpublico' `kprivado' `laboral' `consumo' anio if anio <= `anio' & anio >= `aniomin') ///
-			(area `kpublico2' anio if anio > `anio', color("255 129 0")) ///
-			(area `kprivado2' anio if anio > `anio', color("255 189 0")) ///
-			(area `laboral2' anio if anio > `anio', color("39 97 47")) ///
-			(area `consumo2' anio if anio > `anio', color("53 200 71")), ///
-			legend(rows(1) order(1 2 3 4) ///
-			label(1 "Organismos y empresas") ///
-			label(2 "Impuestos al capital") ///
-			label(3 "Impuestos laborales") ///
-			label(4 "Impuestos al consumo")) ///
-			xlabel(`aniomin'(5)`=round(anio[_N],10)') ///
+			g `est`divSIM`k''' = estimacion`divSIM`k''/1000000000000 + `estaccum'
+			replace `estaccum' = estimacion`divSIM`k''/1000000000000 + `estaccum'
+			local varest "`est`divSIM`k''' `varest'"
+			local legend `"label(`j' "`divSIM`k''") `legend'"'
+			local --j
+		}
+
+		twoway (area `varrec' anio if anio <= `anio' & anio >= `aniomin') ///
+			(area `varest' anio if anio > `anio'), ///
+			legend(rows(1) `legend') ///
+			xlabel(`aniomin'(1)`=round(anio[_N],10)') ///
 			ylabel(, format(%20.0fc)) ///
 			xline(`=`anio'+.5') ///
+			text(`=`kpublico2'[`obs`anio_last'']*.0618' `=`anio'-1.5' "{bf:Observado}", ///
+			place(n) color(white)) ///
 			text(`=`kpublico2'[`obs`anio_last'']*.0618' `=`anio'+1.5' "{bf:Proyecci{c o'}n}", ///
 			place(ne) color(white)) ///
 			yscale(range(0)) ///
@@ -200,30 +173,20 @@ quietly {
 		}
 	}
 
+	*****************************
+	** Actualizar con un ciclo **
 	if "$output" != "" {
 		forvalues k=1(1)`=_N' {
 			if anio[`k'] >= 2013 & anio[`k'] < `anio' {
 				local proy_consumo  = "`proy_consumo' `=string(`=recaudacionConsumo[`k']/1000000000000',"%10.3f")',"
-				local proy_ingreso  = "`proy_ingreso' `=string(`=recaudacionLaboral[`k']/1000000000000',"%10.3f")',"
-				local proy_kprivado = "`proy_kprivado' `=string(`=recaudacionKPrivado[`k']/1000000000000',"%10.3f")',"
-				local proy_kpublico = "`proy_kpublico' `=string(`=recaudacionKPublico[`k']/1000000000000',"%10.3f")',"
 			}
 			if anio[`k'] >= `anio' & anio[`k'] <= 2030 {
 				local proy_consumo  = "`proy_consumo' `=string(`=estimacionConsumo[`k']/1000000000000',"%10.3f")',"
-				local proy_ingreso  = "`proy_ingreso' `=string(`=estimacionLaboral[`k']/1000000000000',"%10.3f")',"
-				local proy_kprivado = "`proy_kprivado' `=string(`=estimacionKPrivado[`k']/1000000000000',"%10.3f")',"
-				local proy_kpublico = "`proy_kpublico' `=string(`=estimacionKPublico[`k']/1000000000000',"%10.3f")',"
 			}
 		}
 		local length_consumo = strlen("`proy_consumo'")
-		local length_ingreso = strlen("`proy_ingreso'")
-		local length_kprivado = strlen("`proy_kprivado'")
-		local length_kpublico = strlen("`proy_kpublico'")
 		capture log on output
 		noisily di in w "PROYCONSU: [`=substr("`proy_consumo'",1,`=`length_consumo'-1')']"
-		noisily di in w "PROYINGRE: [`=substr("`proy_ingreso'",1,`=`length_ingreso'-1')']"
-		noisily di in w "PROYKPUBL: [`=substr("`proy_kprivado'",1,`=`length_kprivado'-1')']"
-		noisily di in w "PROYKPRIV: [`=substr("`proy_kpublico'",1,`=`length_kpublico'-1')']"
 		capture log off output
 	}
 
@@ -262,10 +225,12 @@ quietly {
 	local divPE "`=r(divPE)'"
 	foreach k of local divPE {
 		local `k' = r(`k')
+		local `k'C = r(`k'C)
 	}
 
 	g divPE = resumido
 	label values divPE labelresumido
+
 	collapse (sum) gasto, by(anio divPE) fast
 	g modulo = ""
 
@@ -274,24 +239,24 @@ quietly {
 	foreach k of local divPE {
 		local ++totlabels
 		local divPE`k' : label labelresumido `k'
-		if "`divPE`k''" != "Costo de la deuda" & "`divPE`k''" != "Energía" /// 
-			& "`divPE`k''" != "Otras Part y Apor" & "`divPE`k''" != "Otros" {
+		if "`divPE`k''" != "Costo de la deuda" & "`divPE`k''" != "Inversión" /// 
+			& "`divPE`k''" != "Otras Part y Apor" & "`divPE`k''" != "Otros" & "`divPE`k''" != "Pensión Bienestar" {
 
 			preserve
 
-			use `"`c(sysdir_personal)'/users/$pais/ricardo/bootstraps/1/`=strtoname("`divPE`k''")'REC.dta"', clear
+			use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/`=strtoname("`divPE`k''")'REC.dta"', clear
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
 
 			tempvar estimacion
 			g `estimacion' = estimacion
-			*capture confirm matrix `GASTOHH'
-			*if _rc == 0 {
-				*replace estimacion = `estimacion'/L.`estimacion'*`GASTOHH'[1,1] if anio >= `anio'				
-			*}
-			*else {
-				replace estimacion = `estimacion'/L.`estimacion'*``=strtoname("`divPE`k''")'' if anio >= `anio'
-			*}
+			capture confirm matrix `HH`=strtoname("`divPE`k''")''
+			if _rc == 0 {
+				replace estimacion = `estimacion'/L.`estimacion'*`HH`=strtoname("`divPE`k''")''[1,1]*(1+``=strtoname("`divPE`k''")'C'/100)^(anio-`anio') if anio >= `anio'				
+			}
+			else {
+				replace estimacion = `estimacion'/L.`estimacion'*``=strtoname("`divPE`k''")''*(1+``=strtoname("`divPE`k''")'C'/100)^(anio-`anio') if anio >= `anio'
+			}
 
 			g divPE = `k'
 			replace modulo = "`divPE`k''"
@@ -302,22 +267,23 @@ quietly {
 			restore
 			merge 1:1 (anio divPE) using ``divPE`k''', nogen update replace
 		}
-		else if "`divPE`k''" == "Otras Part y Apor" | "`divPE`k''" == "Otros" {
+		else if "`divPE`k''" == "Inversión" | "`divPE`k''" == "Otros" ///
+			| "`divPE`k''" == "Otras Part y Apor" | "`divPE`k''" == "Pensión Bienestar" {
 			preserve
 
-			use `"`c(sysdir_personal)'/users/$pais/ricardo/bootstraps/1/OtrosGasREC.dta"', clear
+			use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/`=strtoname("`divPE`k''")'REC.dta"', clear
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
 
 			tempvar estimacion
 			g `estimacion' = estimacion
-			*capture confirm matrix `GASTOHH'
-			*if _rc == 0 {
-				*replace estimacion = `estimacion'/L.`estimacion'*`GASTOHH'[1,1] if anio >= `anio'				
-			*}
-			*else {
+			capture confirm matrix `HH`=strtoname("`divPE`k''")''
+			if _rc == 0 {
+				replace estimacion = `estimacion'/L.`estimacion'*`HH`=strtoname("`divPE`k''")''[1,1] if anio >= `anio'				
+			}
+			else {
 				replace estimacion = `estimacion'/L.`estimacion'*``=strtoname("`divPE`k''")'' if anio >= `anio'
-			*}
+			}
 
 			g divPE = `k'
 			replace modulo = "`divPE`k''"
@@ -335,15 +301,15 @@ quietly {
 
 	** Ingreso basico **
 	preserve
-	use `"`c(sysdir_personal)'/users/$pais/ricardo/bootstraps/1/IngBasicoREC.dta"', clear
+	use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/IngBasicoREC.dta"', clear
 	merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 	collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
 
 	tempvar estimacion
 	g `estimacion' = estimacion
-	capture confirm matrix `GASTOHH'
+	capture confirm matrix `HH`=strtoname("`divPE`k''")''
 	if _rc == 0 {
-		replace estimacion = `estimacion'/L.`estimacion'*`GASTOHH'[1,6] if anio >= `anio'				
+		replace estimacion = `estimacion'/L.`estimacion'*`HH`=strtoname("`divPE`k''")''[1,1] if anio >= `anio'				
 	}
 
 	g divPE = 99
@@ -375,10 +341,10 @@ quietly {
 	tsset anio
 
 	* Energía (supuesto: como % PIB) *
-	replace estimacionEnergía = (gascfe+gaspemex+gassener)*Poblacion if anio == `anio'
-	g EnergíaPIB = estimacionEnergía/pibYR*100
-	replace EnergíaPIB = L.EnergíaPIB if EnergíaPIB == .
-	replace estimacionEnergía = EnergíaPIB/100*pibYR if estimacionEnergía == .
+	*capture replace estimacionEnergía = (gascfe+gaspemex+gassener)*Poblacion if anio == `anio'
+	*g EnergíaPIB = estimacionEnergía/pibYR*100
+	*replace EnergíaPIB = L.EnergíaPIB if EnergíaPIB == .
+	*replace estimacionEnergía = EnergíaPIB/100*pibYR if estimacionEnergía == .
 
 
 	******************************/
@@ -387,10 +353,10 @@ quietly {
 	merge 1:1 (anio) using `baseingresos', nogen
 
 	* Costo de la deuda *
-	tabstat tasaEfectiva if anio <= `anio' & anio >= `anio'-1, save
+	noisily tabstat tasaEfectiva if anio <= `anio'-1 & anio >= `anio'-2, save
 	tempname tasaEfectiva_ari
 	matrix `tasaEfectiva_ari' = r(StatTotal)
-	replace tasaEfectiva = `tasaEfectiva_ari'[1,1] if anio >= `anio' & tasaEfectiva == .
+	replace tasaEfectiva = `tasaEfectiva_ari'[1,1] if anio >= `anio' //& tasaEfectiva == .
 
 	* Simulacion *
 	capture confirm scalar gascosto
@@ -510,7 +476,7 @@ quietly {
 		twoway (area `gastovar' anio if anio <= `anio' & anio >= `aniomin') ///
 			(area `estimvar' anio if anio > `anio', astyle(`estimsty')) if anio >= `aniomin', ///
 			legend(cols(9) `gastolab' order(`order')) ///
-			xlabel(`aniomin'(5)`=round(anio[_N],10)') ///
+			xlabel(`aniomin'(1)`=round(anio[_N],10)') ///
 			ylabel(, format(%20.0fc)) ///
 			xline(`=`anio'+.5') ///
 			text(`=`otrosg'[`obs`anio_last'']*.0618' `=`anio'+1.5' "{bf:Proyecci{c o'}n}", place(ne) color(white)) ///
@@ -530,7 +496,7 @@ quietly {
 			yscale(range(0)) ///
 			ytitle(% PIB) ///
 			xtitle("") ///
-			xlabel(`aniomin'(5)`=round(anio[_N],10)') ///
+			xlabel(`aniomin'(1)`=round(anio[_N],10)') ///
 			xline(`=`anio'+.5') ///
 			legend(off) ///
 			text(`=rfsp_pib[`obs`anio_last'']*.1' `=`anio'+1.5' "{bf:Proyecci{c o'}n}", color(white) placement(e)) ///

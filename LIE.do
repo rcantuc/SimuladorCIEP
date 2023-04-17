@@ -1,10 +1,10 @@
 ****************************/
 *** Productividad laboral ***
-/*****************************
+*****************************
 use "`c(sysdir_personal)'/SIM/EstadosBase.dta", clear
 collapse (mean) pob* deflator pibYEnt, by(anio entidad)
 
-g montograph = pibYEnt/pob1664/deflator
+g montograph = pibYEnt/poblacionOcupada/deflator
 levelsof entidad, local(entidades)
 
 foreach k of local entidades {
@@ -16,20 +16,23 @@ foreach k of local entidades {
 	}
 
 	twoway connect montograph anio if entidad == "`k'" & montograph != ., ///
-		ytitle("PIB estatal por {bf:persona en edad laboral}") ///
-		ylabel(0(100000)500001, format(%10.0fc)) yscale(range(0)) ///
+		ytitle("PIB estatal por {bf:persona ocupada}") ///
+		ylabel(0(100000)820000, format(%10.0fc)) yscale(range(0)) ///
 		xlabel(2003(1)2022) xtitle("") ///
 		text(`textgraph`k'', size(vsmall)) ///
 		name(Productividad_`k', replace)
-	graph export "$export/Productividad_`k'.png", replace name(Productividad_`k')
+	if "$export" != "" {
+		graph export "$export/Productividad_`k'.png", replace name(Productividad_`k')
+	}
 }
+
 
 
 
 
 **************************************/
 *** Gasto Federalizado (Capitulo 1) ***
-/***************************************
+***************************************
 use "`c(sysdir_personal)'/SIM/EstadosBase.dta", clear
 keep if anio >= 2003 & anio <= 2022
 
@@ -57,12 +60,14 @@ foreach k of local entidades {
 		asyvar stack ///
 		///title(Gasto {bf:federalizado}) ///
 		///subtitle(Por entidad federativa) ///
-		ytitle("per c{c a'}pita (MXN 2022)") ///
+		ytitle("por residente (MXN 2022)") ///
 		ylabel(0(10000)30000, format(%7.0fc)) ///
 		blabel(bar, format(%7.0fc)) ///
 		legend(on) ///
 		name(GasFed`k', replace)
-	graph export "$export/GasFed_`k'.png", replace name(GasFed`k')
+	if "$export" != "" {
+		graph export "$export/GasFed_`k'.png", replace name(GasFed`k')
+	}
 
 }
 
@@ -75,7 +80,6 @@ forvalues k=1(1)`=_N' {
 
 
 * 33. Distribución de la RFP *
-preserve
 collapse (sum) monto poblacion (mean) deflator if concepto2 != ., by(anio concepto2 `concepto2')
 tempvar rfpResto rfpRestoSum
 
@@ -90,13 +94,15 @@ graph bar (mean) montograph [fw=poblacion], ///
 	asyvar stack ///
 	///title(Gasto {bf:federalizado}) ///
 	///subtitle(Por entidad federativa) ///
-	ytitle("per c{c a'}pita (MXN 2022)") ///
+	ytitle("por residente (MXN 2022)") ///
 	ylabel(, format(%7.0fc)) ///
 	blabel(bar, format(%7.0fc)) ///
 	legend(rows(1) label(5 "Federaci{c o'}n")) ///
 	name(RFP, replace)
-graph export "$export/RFP.png", replace name(RFP)
 
+if "$export" != "" {
+	graph export "$export/RFP.png", replace name(RFP)
+}
 
 
 
@@ -150,7 +156,7 @@ graph bar (mean) montograph if anio <= 2021 & concepto2 == 3 [fw=poblacion], ///
 	asyvar stack ///
 	///title(Gasto {bf:federalizado}) ///
 	///subtitle(Por entidad federativa) ///
-	ytitle("per c{c a'}pita (MXN 2022)") ///
+	ytitle("por residente (MXN 2022)") ///
 	ylabel(, format(%7.0fc)) ///
 	blabel(bar, format(%7.0fc)) ///
 	legend(rows(2)) ///
@@ -170,7 +176,7 @@ graph bar (mean) montograph if anio <= 2021 & concepto2 == 1 [fw=poblacion], ///
 	asyvar stack ///
 	///title(Gasto {bf:federalizado}) ///
 	///subtitle(Por entidad federativa) ///
-	ytitle("per c{c a'}pita (MXN 2022)") ///
+	ytitle("por residente (MXN 2022)") ///
 	ylabel(, format(%7.0fc)) ///
 	blabel(bar, format(%7.0fc)) ///
 	legend(rows(2)) ///
@@ -192,7 +198,7 @@ graph bar (mean) montograph if anio <= 2021 & concepto2 == 2 [fw=poblacion], ///
 	asyvar stack ///
 	///title(Gasto {bf:federalizado}) ///
 	///subtitle(Por entidad federativa) ///
-	ytitle("per c{c a'}pita (MXN 2022)") ///
+	ytitle("por residente (MXN 2022)") ///
 	ylabel(, format(%7.0fc)) ///
 	blabel(bar, format(%7.0fc)) ///
 	legend(rows(1)) ///
@@ -215,13 +221,43 @@ graph bar (mean) montograph if concepto2 == 4 [fw=poblacion], ///
 	asyvar stack ///
 	///title(Gasto {bf:federalizado}) ///
 	///subtitle(Por entidad federativa) ///
-	ytitle("per c{c a'}pita (MXN 2022)") ///
+	ytitle("por residente (MXN 2022)") ///
 	ylabel(, format(%7.0fc)) ///
 	blabel(bar, format(%7.0fc)) ///
 	legend(rows(1)) ///
 	name(XACSubsidios, replace)
 graph export "$export/XACSubsidios.png", replace name(XACSubsidios)
 *save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFedSum_subsidios_jp.dta", replace
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -298,7 +334,7 @@ graph bar (mean) `montograph' if `montograph' != . [fw=poblacion] , ///
 	stack asyvars ///
 	///title(Gasto {bf:federalizado}) ///
 	///subtitle(Por entidad federativa) ///
-	ytitle("per c{c a'}pita (MXN 2022)") ///
+	ytitle("por residente (MXN 2022)") ///
 	ylabel(, format(%7.0fc)) ///
 	blabel(bar, format(%7.0fc)) ///
 	legend(rows(1)) ///
@@ -317,7 +353,7 @@ foreach k of local entidades {
 		stack asyvars ///
 		///title(Gasto {bf:federalizado}) ///
 		///subtitle(Por entidad federativa) ///
-		ytitle("per c{c a'}pita (MXN 2022)") ///
+		ytitle("por residente (MXN 2022)") ///
 		ylabel(, format(%7.0fc)) ///
 		blabel(bar, format(%7.0fc)) ///
 		legend(off) ///
@@ -404,7 +440,7 @@ graph bar (mean) `montograph' if `montograph' != . [fw=poblacion], ///
 	stack asyvars ///
 	///title(Gasto {bf:federalizado}) ///
 	///subtitle(Por entidad federativa) ///
-	ytitle("per c{c a'}pita (MXN 2022)") ///
+	ytitle("por residente (MXN 2022)") ///
 	ylabel(, format(%7.0fc)) ///
 	blabel(bar, format(%7.0fc)) ///
 	legend(rows(1)) ///
@@ -423,7 +459,7 @@ foreach k of local entidades {
 		stack asyvars ///
 		///title(Gasto {bf:federalizado}) ///
 		///subtitle(Por entidad federativa) ///
-		ytitle("per c{c a'}pita (MXN 2022)") ///
+		ytitle("por residente (MXN 2022)") ///
 		ylabel(, format(%7.0fc)) ///
 		blabel(bar, format(%7.0fc)) ///
 		legend(off) ///
@@ -582,7 +618,7 @@ graph bar (mean) `montograph' if `montograph' != . [fw=poblacion], ///
 	stack asyvars ///
 	///title(Gasto {bf:federalizado}) ///
 	///subtitle(Por entidad federativa) ///
-	ytitle("per c{c a'}pita (MXN 2022)") ///
+	ytitle("por residente (MXN 2022)") ///
 	ylabel(, format(%7.0fc)) ///
 	blabel(bar, format(%7.0fc)) ///
 	legend(rows(2) label(4 "Impuesto Sobre La Producción," "Consumo Y Las Transacciones")) ///
@@ -599,7 +635,7 @@ foreach k of local entidades {
 		stack asyvars ///
 		///title(Gasto {bf:federalizado}) ///
 		///subtitle(Por entidad federativa) ///
-		ytitle("per c{c a'}pita (MXN 2022)") ///
+		ytitle("por residente (MXN 2022)") ///
 		ylabel(, format(%7.0fc)) ///
 		blabel(bar, format(%7.0fc)) ///
 		legend(off) name(Impuestos_`k', replace)

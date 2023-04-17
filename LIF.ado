@@ -240,6 +240,7 @@ quietly {
 
 		* Display *
 		return scalar `=strtoname("`=r(name`k')'")' = `mat`k''[1,1]
+		return scalar `=strtoname("`=r(name`k')'")'C = (`mat`k''[1,1]/`pre`k''[1,1]-1)*100
 		local divResumido `"`divResumido' `=strtoname(abbrev("`=r(name`k')'",7))'"'
 
 		noisily di in g "  (+) `=r(name`k')'" ///
@@ -257,6 +258,7 @@ quietly {
 		_col(77) in y %7.1fc (`sindeudatot'[1,1]/`sindeudatotpre'[1,1]-1)*100 "}"
 	
 	return scalar Ingresos_sin_deuda = `sindeudatot'[1,1]
+	return scalar Ingresos_sin_deudaC = (`sindeudatot'[1,1]/`sindeudatotpre'[1,1]-1)*100
 
 
 	** 4.3 Crecimientos **
@@ -460,6 +462,7 @@ quietly {
 			stack asyvars blabel(bar, format(%7.0fc)) outergap(0) ///
 			title("`graphtitle'") ///
 			subtitle($pais) ///
+			note("{bf:Nota}: Porcentajes entre par{c e'}ntesis son con respecto al total de `anio'.") ///
 			caption("`graphfuente'") ///
 			bar(4, color(40 173 58)) bar(1, color(255 55 0)) ///
 			bar(2, color(255 129 0)) ///
