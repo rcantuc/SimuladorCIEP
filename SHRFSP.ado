@@ -254,12 +254,12 @@ quietly {
 		
 		
 		twoway (bar `shrfspsinPemex' `shrfspPemex' anio if anio >= `ultanio' & anio < `anio') ///
-			///(bar `shrfspsinPemex' `shrfspPemex' anio if anio >= `anio') if `externo' != . & anio >= `ultanio' ///
+			(bar `shrfspsinPemex' `shrfspPemex' anio if anio >= `anio') if `externo' != . & anio >= `ultanio' ///
 			, title(`graphtitle') ///
 			subtitle($pais) ///
 			caption("`graphfuente'") ///
 			ylabel(, format(%15.0fc) labsize(small)) ///
-			xlabel(`ultanio'(1)`=`anio'-1', noticks) ///	
+			xlabel(`ultanio'(1)`anio', noticks) ///	
 			text(`textPemex' `textSPemex', color(white) size(small)) ///
 			text(`text', placement(n) size(vsmall)) ///
 			///text(2 `=`anio'+1.45' "{bf:Proyecci{c o'}n PE 2022}", color(white)) ///

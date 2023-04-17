@@ -38,7 +38,7 @@ quietly {
 
 	** Macros: PIB **
 	preserve
-	PIBDeflactor, anio(`=aniovp') nographs nooutput
+	PIBDeflactor, anio(`anio') nographs nooutput
 	tempfile PIBBASE
 	save `PIBBASE'
 

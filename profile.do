@@ -32,16 +32,13 @@ noisily di _newline in g `"{bf:Bienvenidxs al {stata `"projmanager "`c(sysdir_si
 	_newline(2) _col(3) "CLICK para ejecutar los siguientes comandos disponibles." ///
 	_newline _col(3) "O usar la siguiente sintaxis: " ///
 	_newline(2) _col(3) "{bf:Comando} {it:argumentos} [, OPCIONES]"
-noisily di _newline `"{stata "Poblacion":Poblacion} [, ANIOhoy(int) ANIOFINal(int) NOGraphs UPDATE]"'
+noisily di _newline `"{stata "Poblacion":Poblacion} [if entidad == "{it:Nombre con acentos}"] [, ANIOhoy(int) ANIOFINal(int) NOGraphs UPDATE]"'
 noisily di `"{stata "PIBDeflactor, geopib(2010) geodef(2010)":PIBDeflactor} [, ANIOvp(int) DIScount(real) NOGraphs UPDATE]"'
 noisily di `"{stata "Inflacion":Inflacion} [, ANIOvp(int) NOGraphs UPDATE]"'
 noisily di `"{stata "SCN":SCN} [, ANIO(int) NOGraphs UPDATE]"'
-noisily di `"{stata "LIF":LIF} [, ANIO(int) NOGraphs MINimum(real) BY(varname) ROWS(int) COLS(int) UPDATE]"'
-noisily di `"{stata "PEF":PEF} [, ANIO(int) NOGraphs MINimum(real) BY(varname) ROWS(int) COLS(int) UPDATE]"'
+noisily di `"{stata "LIF":LIF} [, ANIO(int) NOGraphs MINimum(real) BY(varname) ROWS(int) COLS(int) UPDATE BASE]"'
+noisily di `"{stata "PEF":PEF} [if] [, ANIO(int) NOGraphs MINimum(real) BY(varname) ROWS(int) COLS(int) UPDATE BASE]"'
 noisily di `"{stata "SHRFSP":SHRFSP} [, ANIO(int) DEPreciacion(int) NOGraphs UPDATE]"' 
 noisily di `"{stata "DatosAbiertos XAB":DatosAbiertos {it:serie}} [, NOGraphs DESDE(real) MES UPDATE]"' 
-
-
-
-
-
+noisily di `"{stata "TasasEfectivas":TasasEfectivas} [, ANIO(int)]"' 
+noisily di `"{stata "GastoPC":GastoPC} [, ANIO(int)]"'

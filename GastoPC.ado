@@ -221,13 +221,13 @@ quietly {
 		_col(50) %7.3fc in y scalar(educacPIB) ///
 		_col(60) %15.0fc in y scalar(educacion)
 
-	replace Educacion = 0
-	replace Educacion = Educacion + scalar(basica)*alum_basica
-	replace Educacion = Educacion + scalar(medsup)*alum_medsup
-	replace Educacion = Educacion + scalar(superi)*alum_superi
-	replace Educacion = Educacion + scalar(posgra)*alum_posgra
-	replace Educacion = Educacion + scalar(eduadu)*alum_adulto
-	replace Educacion = Educacion + scalar(otrose) if Educacion > 0
+	replace Educación = 0
+	replace Educación = Educación + scalar(basica)*alum_basica
+	replace Educación = Educación + scalar(medsup)*alum_medsup
+	replace Educación = Educación + scalar(superi)*alum_superi
+	replace Educación = Educación + scalar(posgra)*alum_posgra
+	replace Educación = Educación + scalar(eduadu)*alum_adulto
+	replace Educación = Educación + scalar(otrose) if Educación > 0
 
 	*noisily tabstat Educacion [fw=factor], stat(sum) f(%20.0fc)
 
@@ -590,8 +590,8 @@ quietly {
 		_col(50) %7.3fc in y (pamPIB+penimssPIB+penisssPIB+penpemePIB+penotroPIB) ///
 		_col(60) %15.0fc in y (`pam'+`penimss'+`penisss'+`penpeme'+`penotro')/(`pens_pam'+`pens_imss'+`pens_issste'+`pens_pemex'+`pens_otro')
 
-	replace PenBienestar = 0
-	replace PenBienestar = scalar(pam)*pens_pam
+	replace Pensión_Bienestar = 0
+	replace Pensión_Bienestar = scalar(pam)*pens_pam
 
 	replace Pension = 0
 	replace Pension = Pension + scalar(penimss)*pens_imss
@@ -599,7 +599,7 @@ quietly {
 	replace Pension = Pension + scalar(penpeme)*pens_pemex
 	replace Pension = Pension + scalar(penotro)*pens_otro
 
-	*noisily tabstat Pension PenBienestar [fw=factor], stat(sum) f(%20.0fc)
+	*noisily tabstat Pension Pensión_Bienestar [fw=factor], stat(sum) f(%20.0fc)
 
 
 
@@ -748,13 +748,14 @@ quietly {
 		_col(50) %7.3fc in y gaspemexPIB+gascfePIB+gassenerPIB+gasfederPIB+gascostoPIB+gasinfraPIB+gasotrosPIB ///
 		_col(60) %15.0fc in y (`gaspemex'+`gascfe'+`gassener'+`gasfeder'+`gascosto'+`gasinfra'+`gasotros')/`Inelud'[1,1]
 
-	drop OtrosGas
-	Distribucion OtrosGas, relativo(pob) macro(`=`gaspemex'+`gascfe'+`gassener'+`gasfeder'+`gasotros'')
+	capture drop Otros
+	Distribucion Otros, relativo(pob) macro(`gasotros')
+	capture drop Inversión
+	Distribucion Inversión, relativo(infra_entidad) macro(`gasinfra')
+	capture drop Energía
+	Distribucion Energía, relativo(pob) macro(`=`gaspemex'+`gascfe'+`gassener'')
 
-	drop Infra
-	Distribucion Infra, relativo(infra_entidad) macro(`gasinfra')
-
-	*noisily tabstat OtrosGas Infra [fw=factor], stat(sum) f(%20.0fc)
+	*tabstat Otros Energía Inversión [fw=factor], stat(sum) f(%20.0fc)
 
 
 

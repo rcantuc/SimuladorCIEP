@@ -35,21 +35,21 @@ if "$output" != "" {
 ************************************************
 ***    3. CRECIMIENTO Y DEFLACTOR DEL PIB    ***
 ************************************************
-global pib2023 = 2.9676 //    CGPE 2023 (página 134)
-global pib2024 = 2.4 //       CGPE 2023 (página 134)
-global pib2025 = 2.4 //       CGPE 2023 (página 134)
-global pib2026 = 2.4 //       CGPE 2023 (página 134)
-global pib2027 = 2.4 //       CGPE 2023 (página 134)
-global pib2028 = 2.4 //       CGPE 2023 (página 134)
+global pib2023 = 2.6 //     Pre-CGPE 2024 (punto medio)
+global pib2024 = 2.3 //     Pre-CGPE 2024 (punto medio)
+global pib2025 = 2.4 //     CGPE 2023 (página 134)
+global pib2026 = 2.4 //     CGPE 2023 (página 134)
+global pib2027 = 2.4 //     CGPE 2023 (página 134)
+global pib2028 = 2.4 //     CGPE 2023 (página 134)
 global pib2029 = $pib2028
 global pib2030 = $pib2029
 
-global def2023 = 4.95000 //    CGPE 2023 (página 134)
-global def2024 = 3.46555 //    CGPE 2023 (página 134)
-global def2025 = 3.49807 //    CGPE 2023 (página 134)
-global def2026 = 3.49211 //    CGPE 2023 (página 134)
-global def2027 = 3.51530 //    CGPE 2023 (página 134)
-global def2028 = 3.50150 //    CGPE 2023 (página 134)
+global def2023 = 5.2 //     CGPE 2023 (página 134)
+global def2024 = 4.792 //   CGPE 2023 (página 134)
+global def2025 = 3.49807 // CGPE 2023 (página 134)
+global def2026 = 3.49211 // CGPE 2023 (página 134)
+global def2027 = 3.51530 // CGPE 2023 (página 134)
+global def2028 = 3.50150 // CGPE 2023 (página 134)
 global def2029 = $def2028
 global def2030 = $def2029
 
@@ -59,8 +59,8 @@ PIBDeflactor, anio(`=aniovp') nographs
 
 ******************************
 ***    4. DEUDA PÚBLICA    ***
-******************************
-scalar shrfsp2023 = 49.4
+/******************************
+scalar shrfsp2023 = 49.9
 scalar shrfspInterno2023 = 34.7
 scalar shrfspExterno2023 = 14.6
 scalar rfsp2023 = 4.1
@@ -76,7 +76,7 @@ scalar tipoDeCambio2023 = 20.6
 scalar costodeudaInterno2023 = 3.4
 scalar costodeudaExterno2023 = 3.4
 
-*global tasaEfectiva = 6.8677 // Tasa de inter{c e'}s EFECTIVA
+*global tasaEfectiva = 6.005578 // Tasa de inter{c e'}s EFECTIVA
 
 
 
@@ -109,7 +109,7 @@ else {
 	scalar penotro     = 2797302 //    Pensión CFE, LFC, ISSFAM, Ferronales
 
 	scalar gascfe      =    2958 //    Gasto en CFE
-	scalar gaspemex    =    4466 // *.30470771 //    Gasto en Pemex
+	scalar gaspemex    =    4466 //*.30470771 //    Gasto en Pemex
 	scalar gassener    =    1128 //    Gasto en SENER
 	scalar gasinfra    =    4315 //    Gasto en Inversión
 	scalar gascosto    =    8543 //    Gasto en Costo de la deuda

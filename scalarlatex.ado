@@ -54,15 +54,16 @@ program define scalarlatex
 				di in w `"\d`name'{`=string(`value',"%6.3fc")'}"'
 			}
 
-			else if "`name'" == "ISRAS" | "`name'" == "ISRPF" | "`name'" == "CuotasT" ///
-				| "`name'" == "IVA" | "`name'" == "ISAN" | "`name'" == "IEPS" ///
-				| "`name'" == "Importa" | "`name'" == "ISRPM" | "`name'" == "FMP" ///
-				| "`name'" == "OYE" | "`name'" == "OtrosI" | `"`=substr("`name'",1,9)'"' == "GasFedPIB" ///
+			else if "`name'" == "ISRAS" | "`name'" == "ISRPF" | "`name'" == "CUOTAS" ///
+				| "`name'" == "IVA" | "`name'" == "ISAN" | "`name'" == "IEPSNP" | "`name'" == "IEPSP" ///
+				| "`name'" == "IMPORT" | "`name'" == "ISRPM" | "`name'" == "FMP" ///
+				| "`name'" == "CFE" | "`name'" == "PEMEX" | "`name'" == "IMSS" | "`name'" == "ISSSTE" ///
+				| "`name'" == "OTROSK" | `"`=substr("`name'",1,9)'"' == "GasFedPIB" ///
 				| `"`=substr("`name'",1,9)'"' == "LIETotPIB"| `"`=substr("`name'",1,6)'"' == "ImpPIB" ///
-				| `"`=substr("`name'",1,7)'"' == "RePrPIB"{
+				| `"`=substr("`name'",1,7)'"' == "RePrPIB" {
 				local value = scalar(`name')
 				di in w "\def\d`name'#1{\gdef\\`name'{#1}}"
-				di in w `"\d`name'{`=string(`value',"%12.1fc")'}"'
+				di in w `"\d`name'{`=string(`value',"%7.3fc")'}"'
 			}
 			
 			else if "`name'" == "basica" | "`name'" == "medsup" | "`name'" == "superi" ///

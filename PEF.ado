@@ -251,6 +251,7 @@ quietly {
 
 		* Display *
 		return scalar `name' = `mat`k''[1,1]
+		return scalar `name'C = (`mat`k''[1,1]/`pre`k''[1,1]-1)*100
 		local divResumido `"`divResumido' `name'"'
 
 		noisily di in g `"  (+) `disptext'"' ///

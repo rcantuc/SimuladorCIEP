@@ -18,7 +18,7 @@ quietly {
 	*********************************
 	*** 1 Cuentas macroeconómicas ***
 	*********************************
-	SCN, anio(`=anioPE') nographs
+	SCN, anio(`anio') nographs
 
 
 
@@ -32,6 +32,10 @@ quietly {
 		local `=substr("`k'",1,7)' = ``=substr("`k'",1,7)''/scalar(PIB)*100
 	}
 
+	
+	**************************************
+	** 2.1 Impuestos al ingreso laboral **
+	**************************************
 	noisily di _newline(2) in y "{bf: A. " in y "Impuestos laborales" "}"
 	noisily di _newline in g "{bf:  Cuentas Nacionales" ///
 		_col(44) %7s in g "% PIB" ///
@@ -53,7 +57,8 @@ quietly {
 		_col(55) in g "ISR (salarios)" ///
 		_col(88) %7.3fc in y (`ISRAS') ///
 		_col(99) %7.3fc in y (`ISRAS')/RemSalPIB*100 " %"
-
+	scalar ISRASPor = (`ISRAS')/RemSalPIB*100
+		
 	// ISR (personas f{c i'}sicas)
 	capture confirm scalar ISRPF
 	if _rc == 0 {
@@ -67,6 +72,7 @@ quietly {
 		_col(55) in g "ISR (f{c i'}sicas)" ///
 		_col(88) %7.3fc in y (`ISRPF') ///
 		_col(99) %7.3fc in y (`ISRPF')/MixLPIB*100 " %"
+	scalar ISRPFPor = (`ISRPF')/MixLPIB*100
 
 	// Cuotas (IMSS)
 	capture confirm scalar CUOTAS
@@ -82,7 +88,9 @@ quietly {
 		_col(55) in g "Cuotas IMSS" ///
 		_col(88) %7.3fc in y (`CUOTAS') ///
 		_col(99) %7.3fc in y (`CUOTAS')/(RemSalPIB+SSImputadaPIB+SSEmpleadoresPIB)*100 " %"
-
+	scalar RemSalCSSPIB = RemSalPIB+SSImputadaPIB+SSEmpleadoresPIB
+	scalar CUOTASPor = (`CUOTAS')/(RemSalPIB+SSImputadaPIB+SSEmpleadoresPIB)*100
+		
 	// TOTAL LABORALES
 	noisily di in g _dup(111) "-"
 	noisily di in g "{bf:  Ingresos laborales" ///
@@ -90,12 +98,13 @@ quietly {
 		_col(55) in g "Recaudaci{c o'}n total" ///
 		_col(88) %7.3fc in y (`ISRAS'+`ISRPF'+`CUOTAS') ///
 		_col(99) %7.3fc in y (`ISRAS'+`ISRPF'+`CUOTAS')/(YlPIB)*100 " %" "}"
+	scalar YlImpPIB = (`ISRAS'+`ISRPF'+`CUOTAS')
+	scalar YlImpPor = (`ISRAS'+`ISRPF'+`CUOTAS')/(YlPIB)*100
 
 
-
-	************************************
-	*** IMPUESTOS AL CAPITAL PRIVADO ***
-	************************************
+	**************************************
+	** 2.2 Impuestos al capital privado **
+	**************************************
 	noisily di _newline(2) in y "{bf: B. " in y "Impuestos al capital" "}"
 	noisily di _newline in g "{bf:  Cuentas Nacionales" ///
 		_col(44) %7s in g "% PIB" ///
@@ -161,7 +170,7 @@ quietly {
 		scalar ISSSTE = (`ISSSTE') 
 	}
 	scalar IngKPublicosPIB = `FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE'
-	
+
 	noisily di in g "  Ingresos de capital privado*" ///
 		_col(44) %7.3fc in y (ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-IngKPublicosPIB) ///
 		_col(55) in g "ISR (morales)" ///
@@ -172,15 +181,25 @@ quietly {
 		_col(55) in g "Productos, derechos, aprovech..." ///
 		_col(88) %7.3fc in y (`OTROSK') ///
 		_col(99) %7.3fc in y (`OTROSK')/(ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-IngKPublicosPIB)*100 " %"
+	scalar IngKPrivadoPIB = ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-IngKPublicosPIB
+	scalar ISRPMPor = (`ISRPM')/(ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-IngKPublicosPIB)*100
+	scalar OTROSKPor = (`OTROSK')/(ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-IngKPublicosPIB)*100
 
 	// TOTAL CAPITAL PRIVADO
 	noisily di in g _dup(111) "-"
-	noisily di in g "{bf:  Ingresos de capital (netos)" ///
-		_col(44) %7.3fc in y (CapIncImpPIB) ///
+	noisily di in g "{bf:  Ingresos de capital privados" ///
+		_col(44) %7.3fc in y (CapIncImpPIB-IngKPublicosPIB) ///
 		_col(55) in g "Recaudaci{c o'}n total" ///
 		_col(88) %7.3fc in y (`ISRPM'+`OTROSK') ///
 		_col(99) %7.3fc in y (`ISRPM'+`OTROSK')/(CapIncImpPIB-IngKPublicosPIB)*100 " %" "}"
+	scalar IngKPrivadoTotPIB = CapIncImpPIB-IngKPublicosPIB
+	scalar IngKPrivadoTotPor = (`ISRPM'+`OTROSK')/(CapIncImpPIB-IngKPublicosPIB)*100
+	scalar ImpKPrivadoPIB = `ISRPM'+`OTROSK'
 
+
+	******************************
+	** 2.3 Impuestos al consumo **
+	******************************
 	noisily di _newline(2) in y "{bf: C. " in y "Impuestos al consumo" "}"
 	noisily di _newline in g "{bf:  Cuentas Nacionales" ///
 		_col(44) %7s in g "% PIB" ///
@@ -202,6 +221,8 @@ quietly {
 		_col(55) in g "IVA" ///
 		_col(88) %7.3fc in y `IVA' ///
 		_col(99) %7.3fc in y `IVA'/(ConHogPIB - AlimPIB - BebNPIB - SaluPIB)*100 " %"
+	scalar ConHogNBPIB = ConHogPIB - AlimPIB - BebNPIB - SaluPIB
+	scalar IVAPor = `IVA'/(ConHogPIB - AlimPIB - BebNPIB - SaluPIB)*100
 
 	// ISAN
 	capture confirm scalar ISAN
@@ -216,6 +237,7 @@ quietly {
 		_col(55) in g "ISAN" ///
 		_col(88) %7.3fc in y `ISAN' ///
 		_col(99) %7.3fc in y `ISAN'/VehiPIB*100 " %"
+	scalar ISANPor = `ISAN'/VehiPIB*100
 
 	// IEPS (no petrolero)
 	capture confirm scalar IEPSNP
@@ -230,6 +252,7 @@ quietly {
 		_col(55) in g "IEPS (no petrolero)" ///
 		_col(88) %7.3fc in y `IEPSNP' ///
 		_col(99) %7.3fc in y `IEPSNP'/ConHogPIB*100 " %"
+	scalar IEPSNPPor = `IEPSNP'/ConHogPIB*100
 
 	// IEPS (petrolero)
 	capture confirm scalar IEPSP
@@ -244,6 +267,7 @@ quietly {
 		_col(55) in g "IEPS (petrolero)" ///
 		_col(88) %7.3fc in y `IEPSP' ///
 		_col(99) %7.3fc in y `IEPSP'/ConHogPIB*100 " %"
+	scalar IEPSPPor = `IEPSP'/ConHogPIB*100
 
 	// Importaciones
 	capture confirm scalar IMPORT
@@ -258,6 +282,7 @@ quietly {
 		_col(55) in g "Importaciones" ///
 		_col(88) %7.3fc in y `IMPORT' ///
 		_col(99) %7.3fc in y `IMPORT'/ConHogPIB*100 " %"
+	scalar IMPORTPor = `IMPORT'/ConHogPIB*100
 
 	// TOTAL CONSUMO
 	noisily di in g _dup(111) "-"
@@ -267,9 +292,12 @@ quietly {
 		_col(88) %7.3fc in y (`IEPSP'+`IEPSNP'+`IVA'+`ISAN'+`IMPORT') ///
 		_col(99) %7.3fc in y (`IEPSP'+`IEPSNP'+`IVA'+`ISAN'+`IMPORT')/ConHogPIB*100 " %" "}"
 	scalar ingconsumoPIB = (`IEPSP'+`IEPSNP'+`IVA'+`ISAN'+`IMPORT')
+	scalar ingconsumoPor = (`IEPSP'+`IEPSNP'+`IVA'+`ISAN'+`IMPORT')/ConHogPIB*100
 
 
-
+	*******************************
+	** 2.4 Organismos y empresas **
+	*******************************
 	noisily di _newline(2) in y "{bf: D. " in y "Organismos y empresas" "}"
 	noisily di _newline in g "{bf:  Cuentas Nacionales" ///
 		_col(44) %7s in g "% PIB" ///
@@ -279,34 +307,34 @@ quietly {
 	noisily di in g _dup(111) "-"
 
 	noisily di in g "  Ingresos de capital p{c u'}blico" ///
-		_col(44) %7.3fc in y (`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE') ///
+		_col(44) %7.3fc in y (CapIncImpPIB) ///
 		_col(55) in g "IMSS" ///
 		_col(88) %7.3fc in y (`IMSS') ///
-		_col(99) %7.3fc in y (`IMSS')/(`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE')*100 " %"
+		_col(99) %7.3fc in y (`IMSS')/(CapIncImpPIB)*100 " %"
 
 	noisily di in g "  Ingresos de capital p{c u'}blico" ///
-		_col(44) %7.3fc in y (`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE') ///
+		_col(44) %7.3fc in y (CapIncImpPIB) ///
 		_col(55) in g "ISSSTE" ///
 		_col(88) %7.3fc in y (`ISSSTE') ///
-		_col(99) %7.3fc in y (`ISSSTE')/(`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE')*100 " %"
+		_col(99) %7.3fc in y (`ISSSTE')/(CapIncImpPIB)*100 " %"
 
 	noisily di in g "  Ingresos de capital p{c u'}blico" ///
-		_col(44) %7.3fc in y (`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE') ///
+		_col(44) %7.3fc in y (CapIncImpPIB) ///
 		_col(55) in g "FMP" ///
 		_col(88) %7.3fc in y (`FMP') ///
-		_col(99) %7.3fc in y (`FMP')/(`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE')*100 " %"
+		_col(99) %7.3fc in y (`FMP')/(CapIncImpPIB)*100 " %"
 
 	noisily di in g "  Ingresos de capital p{c u'}blico" ///
-		_col(44) %7.3fc in y (`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE') ///
+		_col(44) %7.3fc in y (CapIncImpPIB) ///
 		_col(55) in g "Pemex" ///
 		_col(88) %7.3fc in y (`PEMEX') ///
-		_col(99) %7.3fc in y (`PEMEX')/(`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE')*100 " %"
+		_col(99) %7.3fc in y (`PEMEX')/(CapIncImpPIB)*100 " %"
 
 	noisily di in g "  Ingresos de capital p{c u'}blico" ///
-		_col(44) %7.3fc in y (`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE') ///
+		_col(44) %7.3fc in y (CapIncImpPIB) ///
 		_col(55) in g "CFE" ///
 		_col(88) %7.3fc in y (`CFE') ///
-		_col(99) %7.3fc in y (`CFE')/(`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE')*100 " %"
+		_col(99) %7.3fc in y (`CFE')/(CapIncImpPIB)*100 " %"
 
 	// TOTAL INGRESOS DE CAPITAL PUBLICOS
 	noisily di in g _dup(111) "-"
@@ -315,7 +343,12 @@ quietly {
 		_col(55) in g "Ingresos propios totales" ///
 		_col(88) %7.3fc in y (`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE') ///
 		_col(99) %7.3fc in y (`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE')/(CapIncImpPIB)*100 " %" "}"
-	scalar ingcapitalPIB = (`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE')
+	scalar FMPPor = (`FMP')/(CapIncImpPIB)*100
+	scalar CFEPor = (`CFE')/(CapIncImpPIB)*100
+	scalar IMSSPor = (`IMSS')/(CapIncImpPIB)*100
+	scalar ISSSTEPor = (`ISSSTE')/(CapIncImpPIB)*100
+	scalar PEMEXPor = (`PEMEX')/(CapIncImpPIB)*100
+	scalar IngKPublicosPor = (`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE')/(CapIncImpPIB)*100
 
 
 
