@@ -6,10 +6,11 @@ scalar aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
 global id = "`c(username)'"
 
-capture mkdir `"`c(sysdir_site)'/SIM/"'
-capture mkdir `"`c(sysdir_site)'/users/"'
-capture mkdir `"`c(sysdir_site)'/users/$id/"'
+capture mkdir `"`c(sysdir_personal)'/SIM/"'
+capture mkdir `"`c(sysdir_personal)'/users/"'
+capture mkdir `"`c(sysdir_personal)'/users/$id/"'
 
+global paqueteEconomico "Pre-CGPE 2024"
 tokenize $paqueteEconomico
 scalar anioPE = `2'
 if `2' >= 2020 {
@@ -26,7 +27,7 @@ global entidadesL `" "Aguascalientes" "Baja California" "Baja California Sur" "C
 global entidadesC "Ags BC BCS Camp Coah Col Chis Chih CDMX Dgo Gto Gro Hgo Jal EdoMex Mich Mor Nay NL Oax Pue Qro QRoo SLP Sin Son Tab Tamps Tlax Ver Yuc Zac Nacional"
 
 if "$output" != "" {
-	quietly log using `"`c(sysdir_site)'/users/$id/${output}.txt"', replace text name(output)
+	quietly log using `"`c(sysdir_site)'/users/$id/output.txt"', replace text name(output)
 	quietly log off output
 }
 
@@ -52,8 +53,6 @@ global def2027 = 3.51530 // CGPE 2023 (página 134)
 global def2028 = 3.50150 // CGPE 2023 (página 134)
 global def2029 = $def2028
 global def2030 = $def2029
-
-PIBDeflactor, anio(`=aniovp') nographs
 
 
 

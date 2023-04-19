@@ -3,10 +3,8 @@
 ***    SIMULADOR FISCAL    ***
 ***                        ***
 ******************************
-clear all
-macro drop _all
-capture log close _all
 timer on 1
+noisily run "`c(sysdir_personal)'/profile.do"
 
 
 
@@ -15,15 +13,13 @@ timer on 1
 ***    0. DIRECTORIOS DE TRABAJO (PROGRAMACION)    ***
 ***                                                ***
 ******************************************************
+adopath ++ PERSONAL
 if "`c(username)'" == "ricardo" {                                               // Mac Ricardo
 	sysdir set PERSONAL "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
 }
 if "`c(username)'" == "ciepmx" & "`c(console)'" == "" {                         // Linux ServidorCIEP
 	sysdir set PERSONAL "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
 }
-adopath ++ PERSONAL
-global export "`c(sysdir_personal)'../../LINGO/Pemex post-petróleo/images/"
-*global export "`c(sysdir_personal)'../../EU/LaTeX/images/"
 
 
 
@@ -32,11 +28,11 @@ global export "`c(sysdir_personal)'../../LINGO/Pemex post-petróleo/images/"
 ***    1. OPCIONES    ***
 ***                   ***
 *************************
-global paqueteEconomico = "CGPE 2023"
-noisily run "`c(sysdir_personal)'/PARAM.do"                                     // PARÁMETROS (CGPE 2023)
 *global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
 *global update "update"                                                         // UPDATE DATASETS/OUTPUTS
 *global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
+*global export "`c(sysdir_personal)'../../LINGO/Pemex post-petróleo/images/"
+*global export "`c(sysdir_personal)'../../EU/LaTeX/images/"
 
 
 
@@ -46,9 +42,9 @@ noisily run "`c(sysdir_personal)'/PARAM.do"                                     
 ***                                               ***
 *****************************************************
 ** 2.1 Demografía **
-*forvalues aniopiramide=1950(1)2050 {
+*forvalues piramide=1950(1)2050 {
 	*foreach entidad of global entidadesL {
-		noisily Poblacion /*if entidad == "`entidad'"*/, aniofinal(2050) $update //anio(`aniopiramide')
+		noisily Poblacion /*if entidad == "`entidad'"*/, aniofinal(2050) $update //anio(`piramide')
 	*}
 *}
 

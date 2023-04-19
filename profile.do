@@ -1,6 +1,9 @@
 **************
 *** 1 CIEP ***
 **************
+clear all
+macro drop _all
+capture log close _all
 set more off, permanently
 set type double, permanently
 set charset latin1, permanently
@@ -20,15 +23,14 @@ noisily di _newline(5) in w "{bf:Centro de Investigaci{c o'}n Econ{c o'}mica y P
 ********************
 *** 3 Parametros ***
 ********************
-global paqueteEconomico "PE 2023"
 run "`c(sysdir_site)'/PARAM.do"
-clear
+
 
 
 *************************/
 *** 4 Informaci{c o'}n ***
 **************************
-noisily di _newline in g `"{bf:Bienvenidxs al {stata `"projmanager "`c(sysdir_site)'/simulador.stpr""':Simulador Fiscal CIEP v5.3}}"' ///
+noisily di _newline in g `"{bf:{stata `"projmanager "`c(sysdir_site)'/simulador.stpr""':Simulador Fiscal CIEP v5.5 (Subnacional)}}"' ///
 	_newline(2) _col(3) "CLICK para ejecutar los siguientes comandos disponibles." ///
 	_newline _col(3) "O usar la siguiente sintaxis: " ///
 	_newline(2) _col(3) "{bf:Comando} {it:argumentos} [, OPCIONES]"
