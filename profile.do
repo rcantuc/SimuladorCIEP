@@ -23,7 +23,7 @@ noisily di _newline(5) in w "{bf:Centro de Investigaci{c o'}n Econ{c o'}mica y P
 ********************
 *** 3 Parametros ***
 ********************
-run "`c(sysdir_site)'/PARAM.do"
+run "`c(sysdir_personal)'/PARAM.do"
 
 
 
