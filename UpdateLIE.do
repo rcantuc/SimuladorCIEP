@@ -41,7 +41,7 @@ replace anio = anio[_N-1]+1 in -1
 
 local j = 1
 foreach k of varlist B-AG {
-	replace `k' = 3.4 in -1
+	replace `k' = $pib2023 in -1
 	rename `k' ITAEE``j''
 	local ++j
 }
@@ -55,8 +55,6 @@ encode entidad, gen(entidadx)
 xtset entidadx anio
 replace pibYEnt = L.pibYEnt*(1+ITAEE/100)*deflator if pibYEnt == .
 
-keep if anio >= 2003 & anio <= 2022
-
 tempfile PIBEntidades
 save `PIBEntidades'
 
@@ -65,6 +63,45 @@ save `PIBEntidades'
 ******************************************/
 *** 2. Poblacion por Entidad Federativa ***
 *******************************************
+import excel "`c(sysdir_site)'../BasesCIEP/UPDATE/ENOE/Población ocupada.xls", clear
+drop if B == ""
+drop AI
+
+rename A periodo
+split periodo, g(periodo)
+drop periodo2 periodo3
+rename periodo4 anio
+drop periodo
+
+rename periodo1 trimestre
+replace trimestre = "1" if trimestre == "Primer"
+replace trimestre = "2" if trimestre == "Segundo"
+replace trimestre = "3" if trimestre == "Tercer"
+replace trimestre = "4" if trimestre == "Cuarto"
+
+order anio trimestre
+foreach k of varlist B-AH {
+	local name = strtoname(`k'[1])
+	rename `k' `name'
+}
+drop in 1
+drop Total
+rename Coahuila Coahuila
+rename Michoacán Michoacán
+rename Veracruz Veracruz
+
+local j = 1
+foreach k of varlist Aguascalientes-Zacatecas {
+	rename `k' poblacionOcupada``j''
+	local ++j
+}
+reshape long poblacionOcupada, i(anio trimestre) j(entidad) string
+destring poblacionOcupada anio, replace
+collapse (mean) poblacionOcupada, by(anio entidad)
+
+tempfile poblacionOcupada
+save `poblacionOcupada'
+
 local j = 1
 foreach k of global entidadesL {
 	Poblacion if entidad == "`k'", nographs
@@ -94,7 +131,6 @@ forvalues k=1(1)33 {
 	local ++j
 }
 drop entidad1
-*noisily scalarlatex, logname(pob)
 tempfile PobTot
 save `PobTot'
 
@@ -127,7 +163,7 @@ local seriesCR `""""'
 
 local seriesPSS `""""'
 
-* Obtener las bases de Datos Abiertos *
+** Obtener las bases de Datos Abiertos **
 foreach gastofed in 28 33 PSS 23 CD CR {
 	foreach fondo of local series`gastofed' {
 
@@ -160,7 +196,7 @@ foreach gastofed in 28 33 PSS 23 CD CR {
 	}
 }
 
-* Unir todas las bases obtenidas *
+** Unir todas las bases obtenidas **
 local j = 0
 foreach gastofed in 28 33 PSS 23 CD CR {
 	foreach fondo of local series`gastofed' {
@@ -180,53 +216,66 @@ save `GastoFedBase'
 
 
 
-***********************************
+**********************************/
 *** 4. INGRESOS LOCALES / INEGI ***
 ***********************************
+*capture mkdir "`c(sysdir_site)'../BasesCIEP/UPDATE/Subnacional/estatal"
 *cd "`c(sysdir_site)'../BasesCIEP/UPDATE/Subnacional/estatal"
 *unzipfile "https://www.inegi.org.mx/contenidos/programas/finanzas/datosabiertos/efipem_estatal_csv.zip", replace
 
+*capture mkdir "`c(sysdir_site)'../BasesCIEP/UPDATE/Subnacional/CDMX"
 *cd "`c(sysdir_site)'../BasesCIEP/UPDATE/Subnacional/CDMX"
 *unzipfile "https://www.inegi.org.mx/contenidos/programas/finanzas/datosabiertos/efipem_cdmx_csv.zip", replace
 
-*import delimited "`c(sysdir_site)'../BasesCIEP/UPDATE/Subnacional/conjunto_de_datos/efipem_estatal_anual_tr_cifra_2021.csv", clear varnames(1) case(lower)
+forvalues anio=2013(1)2021 {
 
-cd "`c(sysdir_site)'../BasesCIEP/UPDATE/Subnacional"
+	***************
+	** 4.1 Bases **
+	***************
 
-forvalues anio=2018(1)2021 {
-	
+	** Bases de estados **
 	import delimited "`c(sysdir_site)'../BasesCIEP/UPDATE/Subnacional/estatal/conjunto_de_datos/efipem_estatal_anual_tr_cifra_`anio'.csv", encoding(UTF-8) clear
 	tempfile estados
 	save "`estados'"
 
+	** Bases de la CDMX **
 	import delimited "`c(sysdir_site)'../BasesCIEP/UPDATE/Subnacional/CDMX/conjunto_de_datos/efipem_cdmx_anual_tr_cifra_`anio'.csv", encoding(UTF-8) clear
 	append using "`estados'"
-	replace descripcion_categoria="Aportaciones Federales" if descripcion_categoria=="Aportaciones federales"
-	foreach k of varlist descripcion_categoria {
-			replace `k'= subinstr(`k', "á","{c a'}",.)
-			replace `k'= subinstr(`k', "é","{c e'}",.)
-			replace `k'= subinstr(`k', "í","{c i'}",.)
-			replace `k'= subinstr(`k', "ó","{c o'}",.)
-			replace `k'= subinstr(`k', "ú","{c u'}",.)
-			replace `k'= subinstr(`k', "ñ","{c n~}",.)
+	sort id_entidad
 
-			replace `k'= subinstr(`k', "Á","{c A'}",.)
-			replace `k'= subinstr(`k', "É","{c E'}",.)
-			replace `k'= subinstr(`k', "Í","{c I'}",.)
-			replace `k'= subinstr(`k', "Ó","{c O'}",.)
-			replace `k'= subinstr(`k', "Ú","{c U'}",.)
-			replace `k'= subinstr(`k', "Ñ","{c N~}",.)
-			*limpia espacios dobles o triples
-			replace `k' = trim(`k')
-		}
-	gen aux=.
+
+	************************************
+	** 4.2 Creación de bases INGRESOS **
+	************************************
 	keep if tema == "Ingresos"
-	*sort categoria
+	replace descripcion_categoria = "Aportaciones Federales" if descripcion_categoria == "Aportaciones federales"
+
+	** Acentos **
+	foreach k of varlist descripcion_categoria {
+		replace `k' = trim(`k')
+
+		replace `k'= subinstr(`k', "á","{c a'}",.)
+		replace `k'= subinstr(`k', "é","{c e'}",.)
+		replace `k'= subinstr(`k', "í","{c i'}",.)
+		replace `k'= subinstr(`k', "ó","{c o'}",.)
+		replace `k'= subinstr(`k', "ú","{c u'}",.)
+		replace `k'= subinstr(`k', "ñ","{c n~}",.)
+
+		replace `k'= subinstr(`k', "Á","{c A'}",.)
+		replace `k'= subinstr(`k', "É","{c E'}",.)
+		replace `k'= subinstr(`k', "Í","{c I'}",.)
+		replace `k'= subinstr(`k', "Ó","{c O'}",.)
+		replace `k'= subinstr(`k', "Ú","{c U'}",.)
+		replace `k'= subinstr(`k', "Ñ","{c N~}",.)
+	}
+
+	** Variables auxiliares **
+	g aux = .
 	levelsof categoria, local(cates)
-	g capitulo="JP"
-	g concepto="JP"
-	g partida="JP"
-	g subpartida="JP"
+	g capitulo   = "JP"
+	g concepto   = "JP"
+	g partida    = "JP"
+	g subpartida = "JP"
 
 	local i = 1
 	foreach cate of local cates {
@@ -234,32 +283,31 @@ forvalues anio=2018(1)2021 {
 		replace aux = `i' if categoria=="`cate'"
 		local i = `i' + 1
 	}
+	replace capitulo   = descripcion_categoria if aux == 1
+	replace concepto   = descripcion_categoria if aux == 2
+	replace partida    = descripcion_categoria if aux == 3
+	replace subpartida = descripcion_categoria if aux == 4
 
-	replace capitulo=descripcion_categoria if aux==1
-	replace concepto=descripcion_categoria if aux==2
-	replace partida=descripcion_categoria if aux==3
-	replace subpartida=descripcion_categoria if aux==4
-
-	*para corroborar despues
+	** Para corroborar después **
 	preserve 
 	keep if aux==5
 	keep id_entidad valor
 	tempfile totales
 	save "`totales'"
 	restore
-
+	
+	** Expandimos capitulo **
 	drop if aux==5
-
-	*expandimos capitulo
 	local mis_vars capitulo
 	foreach var of local mis_vars {
 		forvalues k=2(1)`=_N'{
-			if `var'[`k']=="JP"{
+			if `var'[`k']=="JP" {
 				replace `var'=`var'[`=`k'-1'] in `k'
 			}
 		}
 	}
-	*expandimos concepto
+
+	** Expandimos concepto **
 	local mis_vars concepto
 	foreach var of local mis_vars {
 		local conceptoAnterior = capitulo[1]
@@ -271,7 +319,7 @@ forvalues anio=2018(1)2021 {
 		}
 	}
 
-	*expandimos partida
+	** Expandimos partida **
 	local mis_vars partida
 	foreach var of local mis_vars {
 		local conceptoAnterior = concepto[1]
@@ -282,130 +330,133 @@ forvalues anio=2018(1)2021 {
 			local conceptoAnterior = concepto[`k']
 		}
 	}
-	********************************************************************************
-	*limpiar 
-	********************************************************************************
+
+
+	***************************
+	** 4.3 Limpia de la base ** 
+	***************************
 	g borrador=0
 
-	local limpia capitulo
-	foreach var of local limpia {
-		local nombreDespues = capitulo[1]
-		forvalues k=1(1)`=_N'{
-			local nombreDespues = capitulo[`k']	
-			if "`nombreDespues'" != "JP"{
-				if capitulo[`=`k'+1']== "`nombreDespues'" & concepto[`k']=="JP"{
-				replace borrador=1 in `k'	
-				display "`k'"	
-				}
+	** Limpiamos capitulo **
+	local nombreDespues = capitulo[1]
+	forvalues k=1(1)`=_N'{
+		local nombreDespues = capitulo[`k']	
+		if "`nombreDespues'" != "JP"{
+			if capitulo[`=`k'+1']== "`nombreDespues'" & concepto[`k']=="JP"{
+				replace borrador = 1 in `k'	
 			}
 		}
 	}
+	keep if borrador == 0
 
-	keep if borrador==0
-
-	*limpiamos concepto
-	local limpia concepto
-	foreach var of local limpia {
-		local nombreDespues = concepto[1]
-		forvalues k=1(1)`=_N'{
-			local nombreDespues = concepto[`k']	
-			if "`nombreDespues'" != "JP"{
-				if concepto[`=`k'+1']== "`nombreDespues'" & partida[`k']=="JP"{
-					replace borrador=1 in `k'	
-					display "`k'"	
-				}
+	** Limpiamos concepto **
+	local nombreDespues = concepto[1]
+	forvalues k=1(1)`=_N'{
+		local nombreDespues = concepto[`k']	
+		if "`nombreDespues'" != "JP"{
+			if concepto[`=`k'+1']== "`nombreDespues'" & partida[`k']=="JP"{
+				replace borrador = 1 in `k'	
 			}
 		}
 	}
-	keep if borrador==0
+	keep if borrador == 0
 
-	*limpiamos partida
-	local limpia partida
-	foreach var of local limpia {
-		local nombreDespues = partida[1]
-		forvalues k=1(1)`=_N'{
-			local nombreDespues = partida[`k']
-			if "`nombreDespues'" != "JP"{
-				if partida[`=`k'+1']== "`nombreDespues'" & subpartida[`k']=="JP"{
-					replace borrador=1 in `k'	
-					display "`k'"	
-				}
+	** Limpiamos partida **
+	local nombreDespues = partida[1]
+	forvalues k=1(1)`=_N'{
+		local nombreDespues = partida[`k']
+		if "`nombreDespues'" != "JP"{
+			if partida[`=`k'+1']== "`nombreDespues'" & subpartida[`k']=="JP"{
+				replace borrador = 1 in `k'	
 			}
 		}
 	}
+	keep if borrador == 0
 
-	*keep if id_entidad==2
-	format valor %20.1fc
-	 
-	keep if borrador==0
-	keep anio id_entidad valor capitulo concepto partida subpartida
 
-	*Lo que sigue es para corroborar
+	**********************************************
+	** 4.4 Comprobar que los valores están bien **
+	/**********************************************
+	collapse(sum) valor ,by(id_entidad)
+	rename valor valor_colapsado
+	merge 1:1 id_entidad using "`totales'"
+	g cuadrador=valor_colapsado-valor
+	format cuadrador %20.1fc
+
+
+	*************************/
+	** 4.5 Bases temporales **
+	**************************
 	tempfile `anio'
+	if "`baseuse'" == "" {
+		local baseuse `"``anio''"'
+	}
+	else {
+		local basesappend `"`basesappend' ``anio''"'
+	}
+	keep anio id_entidad valor capitulo concepto partida subpartida
+	format valor %20.1fc
 	save "``anio''", replace
-/*collapse(sum) valor ,by(id_entidad)
-rename valor valor_colapsado
-merge 1:1 id_entidad using "`totales'"
-g cuadrador=valor_colapsado-valor
-format cuadrador %20.1fc
-*/
 }
-append using "`2018'" "`2019'" "`2020'" 
-*Generamos nuestra división CIEP
-g DivCIEP=""
-replace DivCIEP="Recursos Propios" if capitulo=="Aprovechamientos" | ///
-		capitulo=="Contribuciones de Mejoras" | capitulo=="Derechos" | ///
-		capitulo=="Disponibilidad inicial" | capitulo=="Impuestos" | ///
-		capitulo=="Productos"
-replace DivCIEP="Federalizado aportaciones" if capitulo=="Aportaciones Federales" 
-
-replace DivCIEP="Federalizado partcipaciones" if capitulo== "Participaciones federales"
-replace DivCIEP="Organismos y empresas" if capitulo=="Cuotas y Aportaciones de Seguridad Social" | ///
-	capitulo=="Otros ingresos"
-replace DivCIEP="Financiamiento" if capitulo=="Financiamiento"
-replace DivCIEP="Federalizado convenios" if concepto=="Recursos federales reasignados" & capitulo=="Aportaciones Federales" 
-
-*Limpiamos los últimos auxiliares
-replace concepto=capitulo if concepto=="JP"
-replace partida=concepto if partida=="JP"
-replace subpartida=partida if subpartida=="JP"
-
-tempfile temporal_INEGI
-save "`temporal_INEGI'"
 
 
-import delimited "`c(sysdir_site)'../BasesCIEP/UPDATE/Subnacional/estatal/catalogos/tc_entidad.csv", encoding(UTF-8) clear
-
-merge 1:m id_entidad using "`temporal_INEGI'", nogen
-order anio id_entidad nom_ent capitulo concepto partida subpartida DivCIEP valor
-sort anio id_entidad nom_ent capitulo concepto partida subpartida
-
-save "`c(sysdir_personal)'/SIM/LIEs_INEGI.dta", replace
-*Le ponemos nombre a las entidades
+*******************************
+** 4.6 Base final LIEs_INEGI **
+*******************************
+use `baseuse', clear
+append using `basesappend'
 
 
+** División CIEP **
+g divCIEP = ""
+replace divCIEP = "Recursos Propios" if capitulo == "Aprovechamientos" | ///
+	capitulo == "Contribuciones de Mejoras" | capitulo == "Derechos" | ///
+	capitulo == "Disponibilidad inicial" | capitulo == "Impuestos" | ///
+	capitulo == "Productos"
 
+replace divCIEP = "Federalizado aportaciones" if capitulo == "Aportaciones Federales" 
+replace divCIEP = "Federalizado partcipaciones" if capitulo == "Participaciones federales"
+replace divCIEP = "Organismos y empresas" if capitulo == "Cuotas y Aportaciones de Seguridad Social" | capitulo == "Otros ingresos"
+replace divCIEP = "Financiamiento" if capitulo == "Financiamiento"
+replace divCIEP = "Federalizado convenios" if concepto == "Recursos federales reasignados" & capitulo == "Aportaciones Federales" 
 
+** Limpiamos los últimos auxiliares **
+replace concepto   = capitulo if concepto == "JP"
+replace partida    = concepto if partida == "JP"
+replace subpartida = partida  if subpartida == "JP"
 
+** Le ponemos nombre a las entidades **
+*tempfile temporal_INEGI
+*save "`temporal_INEGI'"
+*import delimited "`c(sysdir_site)'../BasesCIEP/UPDATE/Subnacional/estatal/catalogos/tc_entidad.csv", encoding(UTF-8) clear
+*merge 1:m (id_entidad) using "`temporal_INEGI'", nogen
 
+g entidad = ""
+forvalues k=1(1)32 {
+	replace entidad = "``k''" if id_entidad == `k'
+}
 
+** Guardar **
+drop id_entidad
+order anio entidad capitulo concepto partida subpartida divCIEP valor
+sort entidad anio capitulo concepto partida subpartida
 
-
-
-
-
-
-
-
+tempfile LIEs_INEGI
+save `LIEs_INEGI'
 
 
 
+*********************
+*** 5. BASE FINAL ***
+*********************
+use `PIBEntidades', clear
+merge 1:m (anio entidad) using `LIEs_INEGI', nogen keep(matched)
+merge m:1 (anio entidad) using `PobTot', nogen keep(matched)
+merge m:1 (anio entidad) using `poblacionOcupada', nogen
+save "`c(sysdir_personal)'/SIM/EstadosBaseINEGI.dta", replace
 
-
-******************
-*** BASE FINAL ***
-******************
-use `GastoFedBase', clear
-merge m:1 (anio entidad) using `PIBEntidades', nogen
-merge m:1 (anio entidad) using `PobTot', nogen
-save "`c(sysdir_personal)'/SIM/EstadosBase.dta", replace
+use `PIBEntidades', clear
+merge 1:m (anio entidad) using `GastoFedBase', nogen keep(matched)
+merge m:1 (anio entidad) using `PobTot', nogen keep(matched)
+merge m:1 (anio entidad) using `poblacionOcupada', nogen
+save "`c(sysdir_personal)'/SIM/EstadosBaseEstOpor.dta", replace

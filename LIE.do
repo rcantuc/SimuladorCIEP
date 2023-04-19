@@ -1,7 +1,7 @@
 ****************************/
 *** Productividad laboral ***
 *****************************
-use "`c(sysdir_personal)'/SIM/EstadosBase.dta", clear
+use "`c(sysdir_personal)'/SIM/EstadosBaseEstOpor.dta", clear
 collapse (mean) pob* deflator pibYEnt, by(anio entidad)
 
 g montograph = pibYEnt/poblacionOcupada/deflator
@@ -21,19 +21,20 @@ foreach k of local entidades {
 		xlabel(2003(1)2022) xtitle("") ///
 		text(`textgraph`k'', size(vsmall)) ///
 		name(Productividad_`k', replace)
+
 	if "$export" != "" {
 		graph export "$export/Productividad_`k'.png", replace name(Productividad_`k')
 	}
 }
 
 
-
+exit
 
 
 **************************************/
 *** Gasto Federalizado (Capitulo 1) ***
 ***************************************
-use "`c(sysdir_personal)'/SIM/EstadosBase.dta", clear
+use "`c(sysdir_personal)'/SIM/EstadosBaseEstOpor.dta", clear
 keep if anio >= 2003 & anio <= 2022
 
 tempvar concepto2 montograph montopibYE
@@ -110,7 +111,7 @@ if "$export" != "" {
 *************************************************/
 *** Graficas 2 Gasto Federalizado (Capitulo 1) ***
 **************************************************
-use "`c(sysdir_personal)'/SIM/EstadosBase.dta", clear
+use "`c(sysdir_personal)'/SIM/EstadosBaseEstOpor.dta", clear
 keep if anio >= 2003 & anio <= 2022
 
 tempvar concepto2 montograph montopibYE
