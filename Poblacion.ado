@@ -39,7 +39,7 @@ quietly {
 	}
 
 	* if default *
-	if `"`if'"' == "" {
+	if `"`if'"' == `"if entidad == """' | `"`if'"' == "" {
 		local if = `"if entidad == "Nacional""'
 	}
 
@@ -53,6 +53,8 @@ quietly {
 
 	* Obtiene el año inicial de la base *
 	local anioinicial = anio in 1
+	local entidadGName = "`=entidad[1]'"
+	local entidadGName = strtoname("`entidadGName'")
 
 	* Si no hay opción aniofinal, utiliza el último año del vector "anio" *
 	if `aniofinal' == -1 {
@@ -67,12 +69,11 @@ quietly {
 		matrix `POBTOT' = r(StatTotal)
 		noisily di in g " Personas " in y `k' in g ": " in y %15.0fc `POBTOT'[1,1]
 		if `k' == `aniohoy' {
-			scalar poblaciontotal = string(`POBTOT'[1,1],"%20.0fc")
+			scalar pobtot`entidadGName' = string(`POBTOT'[1,1],"%20.0fc")
 		}
 		if `k' == `aniofinal' {
-			scalar poblacionfinal = string(`POBTOT'[1,1],"%20.0fc")
+			scalar pobfin`entidadGName' = string(`POBTOT'[1,1],"%20.0fc")
 		}
-
 	}
 
 
@@ -83,8 +84,6 @@ quietly {
 	if "`nographs'" != "nographs" & "$nographs" == "" {
 		preserve
 		local poblacion : variable label poblacion
-		local entidadGName = "`=entidad[1]'"
-		local entidadGName = strtoname("`entidadGName'")
 		
 		tempvar pob2
 		g `pob2' = -poblacion if sexo == 1
@@ -173,15 +172,15 @@ quietly {
 			& edad != 100 & edad != 105
 		g zero = 0
 
-		if "$export" == "" {
+		*if "$export" == "" {
 			local graphtitle "{bf:Pir{c a'}mide} demogr{c a'}fica"
 			///local graphtitle "{bf:Population} pyramid"
 			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de CONAPO."
-		}
-		else {
-			local graphtitle ""
-			local graphfuente ""
-		}
+		*}
+		*else {
+		*	local graphtitle ""
+		*	local graphfuente ""
+		*}
 
 		* Grafica sexo = 1 como negativos y sexo = 2 como positivos por grupos etarios, en el presente y futuro *
 		* 1. Vivios en el año inicial y con una edad menor a 109  para el año final *
@@ -212,7 +211,7 @@ quietly {
 			lwidth(none) /*color("255 189 0")*/) ///
 			(sc edad2 zero if anio == `aniohoy', msymbol(i) mlabel(edad2) ///
 			mlabsize(vsmall) mlabcolor("114 113 118")), ///
-			legend(label(1 "Hombres") label(2 "Mujeres")) ///
+			legend(label(1 "Hombres vivos") label(2 "Mujeres vivas")) ///
 			legend(label(3 "H. nacidos post `aniohoy'") ///
 			label(4 "M. nacidas post `aniohoy'") ///
 			///label(5 "H. `aniofinal'") ///
@@ -251,7 +250,7 @@ quietly {
 			`=`MaxM'[1,1]/2' `"`=string(`MaxM'[1,1]/2,"%15.0fc")'"' ///
 			`=`MaxM'[1,1]' `"`=string(`MaxM'[1,1],"%15.0fc")'"', angle(horizontal)) ///
 			title("`graphtitle'") ///
-			///subtitle(${pais} `=entidad[1]') ///
+			subtitle(${pais} `=entidad[1]') ///
 			caption("`graphfuente'") ///
 
 		if "$export" != "" {
@@ -362,20 +361,20 @@ quietly {
 		g `pob3560' = (pob3560 + pob1934 + pob18)/1000000
 		g `pob61' = (pob61 + pob3560 + pob1934 + pob18)/1000000
 
-		if "$export" == "" {
+		*if "$export" == "" {
 			local graphtitle "{bf:Transici{c o'}n} demogr{c a'}fica"
 			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de CONAPO."
-		}
-		else {
-			local graphtitle ""
-			local graphfuente ""
-		}
+		*}
+		*else {
+		*	local graphtitle ""
+		*	local graphfuente ""
+		*}
 
 		twoway (area `pob61' `pob3560' `pob1934' `pob18' anio if anio <= `aniohoy') ///
-			(area `pob61' anio if anio > `aniohoy', color("255 129 0")) ///
-			(area `pob3560' anio if anio > `aniohoy', color("255 189 0")) ///
-			(area `pob1934' anio if anio > `aniohoy', color("39 97 47")) ///
-			(area `pob18' anio if anio > `aniohoy', color("53 200 71")), ///
+			(area `pob61' anio if anio > `aniohoy', astyle(p1area)) ///
+			(area `pob3560' anio if anio > `aniohoy', astyle(p2area)) ///
+			(area `pob1934' anio if anio > `aniohoy', astyle(p3area)) ///
+			(area `pob18' anio if anio > `aniohoy', astyle(p4area)), ///
 			text(`y1' `x1' `"{bf:Max:} `=string(`MAX'[1,1],"%5.1fc")' % (`x1')"', place(s)) ///
 			text(`y1' `x1' `"{bf:<18:} `=string(pob18[`p1'],"%12.0fc")'"', place(n)) ///
 			text(`y2' `x2' `"{bf:Max:} `=string(`MAX'[1,2],"%5.1fc")' % (`x2')"', place(s)) ///
@@ -397,7 +396,7 @@ quietly {
 			ytitle("millones de personas") ///
 			xline(`=`aniohoy'+.5') ///
 			title("`graphtitle'") ///
-			///subtitle(${pais} `=entidad[1]') ///
+			subtitle(${pais} `=entidad[1]') ///
 			caption("`graphfuente'") ///
 			legend(on label(1 "61+") label(2 "35 - 60") label(3 "19 - 34") label(4 "<18") order(4 3 2 1) region(margin(zero))) ///
 			ylabel(, format(%20.1fc)) yscale(range(0)) ///

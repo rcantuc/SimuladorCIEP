@@ -16,6 +16,7 @@ sysdir set PERSONAL "`c(sysdir_site)'"
 ********************
 *** 2 Bienvenida ***
 ********************
+timer on 1
 noisily di _newline(5) in w "{bf:Centro de Investigaci{c o'}n Econ{c o'}mica y Presupuestaria, A.C.}"
 
 
