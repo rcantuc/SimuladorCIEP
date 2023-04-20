@@ -21,13 +21,14 @@ tempfile PIBEntidades
 save `PIBEntidades'
 
 ** PIB Deflactor **
-PIBDeflactor, nographs
+PIBDeflactor, nographs aniovp(`=aniovp')
 tempfile PIBDeflactor
 save `PIBDeflactor'
 
 ** ITAEE **
 import excel "`c(sysdir_site)'../BasesCIEP/UPDATE/SCN/ITAEE.xlsx", clear
 LimpiaBIE, nomultiply
+
 split A, parse("/")
 drop A
 rename A1 anio
@@ -80,30 +81,29 @@ replace trimestre = "3" if trimestre == "Tercer"
 replace trimestre = "4" if trimestre == "Cuarto"
 
 order anio trimestre
-foreach k of varlist B-AH {
-	local name = strtoname(`k'[1])
-	rename `k' `name'
+order B, last
+local j = 1
+foreach k of varlist C-AH B {
+	rename `k' ``j''
+	local ++j
 }
 drop in 1
-drop Total
-rename Coahuila Coahuila
-rename Michoacán Michoacán
-rename Veracruz Veracruz
+destring _all, replace
 
 local j = 1
-foreach k of varlist Aguascalientes-Zacatecas {
+foreach k of global entidadesC {
 	rename `k' poblacionOcupada``j''
 	local ++j
 }
 reshape long poblacionOcupada, i(anio trimestre) j(entidad) string
 destring poblacionOcupada anio, replace
 collapse (mean) poblacionOcupada, by(anio entidad)
-
+format poblacionOcupada %15.0fc
 tempfile poblacionOcupada
 save `poblacionOcupada'
 
 local j = 1
-foreach k of global entidadesL {
+foreach k in $entidadesL {
 	Poblacion if entidad == "`k'", nographs
 	
 	g pob1664 = poblacion if edad >= 16 & edad <= 64
@@ -115,22 +115,17 @@ foreach k of global entidadesL {
 	g entidad = "``j''"
 
 	tempfile Pob``j''
-	save `Pob``j'''
-	local ++j
-
-	scalar poblacion``j'' = poblaciontotal
-}
-local j = 1
-forvalues k=1(1)33 {
-	if `k' == 1 {
-		use `Pob``j''', clear
+	if "`basepobuse'" == "" {
+		local basepobuse `"`Pob``j'''"'
 	}
 	else {
-		append using `Pob``j'''
+		local basespobappend `"`basespobappend' `Pob``j'''"'
 	}
+	save `Pob``j'''
 	local ++j
 }
-drop entidad1
+use `basepobuse', clear
+append using `basespobappend'
 tempfile PobTot
 save `PobTot'
 
@@ -138,8 +133,8 @@ save `PobTot'
 
 *****************************************/
 *** 3. Gasto Federalizado y sus Fondos ***
-******************************************
-DatosAbiertos XFA0000, nographs
+/******************************************
+DatosAbiertos XFA0000
 split nombre, gen(entidad) parse(":")
 drop nombre
 replace entidad1 = "Nacional"
@@ -192,25 +187,15 @@ foreach gastofed in 28 33 PSS 23 CD CR {
 			append using ``serie'`=string(`k',"%02.0f")''
 		}
 		tempfile XAC`gastofed'`fondo'
+		local basesEstOporappend `"`basesEstOporappend' `XAC`gastofed'`fondo''"'
 		save `XAC`gastofed'`fondo''
 	}
 }
 
 ** Unir todas las bases obtenidas **
-local j = 0
-foreach gastofed in 28 33 PSS 23 CD CR {
-	foreach fondo of local series`gastofed' {
-		if `j' == 0 {
-			use `XAC`gastofed'', clear
-			local ++j
-		}
-		else {
-			append using `XAC`gastofed'`fondo''
-		}
-	}
-}
-append using `XFA0000'
-replace entidad = "Nacional" if entidad == ""
+use `XFA0000', clear
+append using `basesEstOporappend'
+replace entidad = "Nac" if entidad == ""
 tempfile GastoFedBase
 save `GastoFedBase'
 
@@ -241,7 +226,7 @@ forvalues anio=2013(1)2021 {
 	** Bases de la CDMX **
 	import delimited "`c(sysdir_site)'../BasesCIEP/UPDATE/Subnacional/CDMX/conjunto_de_datos/efipem_cdmx_anual_tr_cifra_`anio'.csv", encoding(UTF-8) clear
 	append using "`estados'"
-	sort id_entidad
+	*sort id_entidad
 
 
 	************************************
@@ -301,7 +286,7 @@ forvalues anio=2013(1)2021 {
 	local mis_vars capitulo
 	foreach var of local mis_vars {
 		forvalues k=2(1)`=_N'{
-			if `var'[`k']=="JP" {
+			if `var'[`k'] == "JP" {
 				replace `var'=`var'[`=`k'-1'] in `k'
 			}
 		}
@@ -312,7 +297,7 @@ forvalues anio=2013(1)2021 {
 	foreach var of local mis_vars {
 		local conceptoAnterior = capitulo[1]
 		forvalues k=2(1)`=_N'{
-			if `var'[`k']=="JP" & capitulo[`k'] == "`conceptoAnterior'" {
+			if `var'[`k'] == "JP" & capitulo[`k'] == "`conceptoAnterior'" {
 				replace `var'=`var'[`=`k'-1'] in `k'
 			}
 			local conceptoAnterior = capitulo[`k']
@@ -324,7 +309,7 @@ forvalues anio=2013(1)2021 {
 	foreach var of local mis_vars {
 		local conceptoAnterior = concepto[1]
 		forvalues k=2(1)`=_N'{
-			if `var'[`k']=="JP" & concepto[`k'] == "`conceptoAnterior'" {
+			if `var'[`k'] == "JP" & concepto[`k'] == "`conceptoAnterior'" {
 				replace `var'=`var'[`=`k'-1'] in `k'
 			}
 			local conceptoAnterior = concepto[`k']
@@ -341,8 +326,8 @@ forvalues anio=2013(1)2021 {
 	local nombreDespues = capitulo[1]
 	forvalues k=1(1)`=_N'{
 		local nombreDespues = capitulo[`k']	
-		if "`nombreDespues'" != "JP"{
-			if capitulo[`=`k'+1']== "`nombreDespues'" & concepto[`k']=="JP"{
+		if "`nombreDespues'" != "JP" {
+			if capitulo[`=`k'+1'] == "`nombreDespues'" & concepto[`k'] == "JP" {
 				replace borrador = 1 in `k'	
 			}
 		}
@@ -353,8 +338,8 @@ forvalues anio=2013(1)2021 {
 	local nombreDespues = concepto[1]
 	forvalues k=1(1)`=_N'{
 		local nombreDespues = concepto[`k']	
-		if "`nombreDespues'" != "JP"{
-			if concepto[`=`k'+1']== "`nombreDespues'" & partida[`k']=="JP"{
+		if "`nombreDespues'" != "JP" {
+			if concepto[`=`k'+1'] == "`nombreDespues'" & partida[`k'] == "JP" {
 				replace borrador = 1 in `k'	
 			}
 		}
@@ -365,8 +350,8 @@ forvalues anio=2013(1)2021 {
 	local nombreDespues = partida[1]
 	forvalues k=1(1)`=_N'{
 		local nombreDespues = partida[`k']
-		if "`nombreDespues'" != "JP"{
-			if partida[`=`k'+1']== "`nombreDespues'" & subpartida[`k']=="JP"{
+		if "`nombreDespues'" != "JP" {
+			if partida[`=`k'+1'] == "`nombreDespues'" & subpartida[`k'] == "JP" {
 				replace borrador = 1 in `k'	
 			}
 		}
@@ -406,6 +391,10 @@ forvalues anio=2013(1)2021 {
 use `baseuse', clear
 append using `basesappend'
 
+** Limpiamos los últimos auxiliares **
+replace concepto   = capitulo if concepto == "JP"
+replace partida    = concepto if partida == "JP"
+replace subpartida = partida  if subpartida == "JP"
 
 ** División CIEP **
 g divCIEP = ""
@@ -414,16 +403,12 @@ replace divCIEP = "Recursos Propios" if capitulo == "Aprovechamientos" | ///
 	capitulo == "Disponibilidad inicial" | capitulo == "Impuestos" | ///
 	capitulo == "Productos"
 
-replace divCIEP = "Federalizado aportaciones" if capitulo == "Aportaciones Federales" 
-replace divCIEP = "Federalizado partcipaciones" if capitulo == "Participaciones federales"
+replace divCIEP = "Federalizado" if capitulo == "Aportaciones Federales" 
+replace divCIEP = "Federalizado" if capitulo == "Participaciones federales"
 replace divCIEP = "Organismos y empresas" if capitulo == "Cuotas y Aportaciones de Seguridad Social" | capitulo == "Otros ingresos"
 replace divCIEP = "Financiamiento" if capitulo == "Financiamiento"
-replace divCIEP = "Federalizado convenios" if concepto == "Recursos federales reasignados" & capitulo == "Aportaciones Federales" 
+replace divCIEP = "Federalizado" if concepto == "Recursos federales reasignados" //& capitulo == "Aportaciones Federales" 
 
-** Limpiamos los últimos auxiliares **
-replace concepto   = capitulo if concepto == "JP"
-replace partida    = concepto if partida == "JP"
-replace subpartida = partida  if subpartida == "JP"
 
 ** Le ponemos nombre a las entidades **
 *tempfile temporal_INEGI
@@ -450,13 +435,15 @@ save `LIEs_INEGI'
 *** 5. BASE FINAL ***
 *********************
 use `PIBEntidades', clear
-merge 1:m (anio entidad) using `LIEs_INEGI', nogen keep(matched)
-merge m:1 (anio entidad) using `PobTot', nogen keep(matched)
+merge 1:m (anio entidad) using `LIEs_INEGI', nogen
+merge m:1 (anio entidad) using `PobTot', nogen update replace
 merge m:1 (anio entidad) using `poblacionOcupada', nogen
+keep if anio >= 2003 & anio <= 2022
 save "`c(sysdir_personal)'/SIM/EstadosBaseINEGI.dta", replace
 
-use `PIBEntidades', clear
-merge 1:m (anio entidad) using `GastoFedBase', nogen keep(matched)
-merge m:1 (anio entidad) using `PobTot', nogen keep(matched)
+/*use `PIBEntidades', clear
+merge 1:m (anio entidad) using `GastoFedBase', nogen
+merge m:1 (anio entidad) using `PobTot', nogen
 merge m:1 (anio entidad) using `poblacionOcupada', nogen
+keep if anio >= 2003 & anio <= 2022
 save "`c(sysdir_personal)'/SIM/EstadosBaseEstOpor.dta", replace

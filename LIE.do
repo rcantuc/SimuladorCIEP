@@ -1,43 +1,89 @@
+global export "`c(sysdir_personal)'../../EU/LaTeX/images/"
+
+
+
+*************************
+*** Población estatal ***
+/*************************
+foreach entidad of global entidadesL {
+	noisily Poblacion if entidad == "`entidad'", aniofinal(2050) $update //anio(`piramide')
+}
+noisily scalarlatex, log(poblacion)
+
+
+
 ****************************/
 *** Productividad laboral ***
-*****************************
+/*****************************
 use "`c(sysdir_personal)'/SIM/EstadosBaseEstOpor.dta", clear
-collapse (mean) pob* deflator pibYEnt, by(anio entidad)
+collapse (mean) pob* deflator pibYEnt, by(anio entidad entidadx)
+sort entidadx anio
 
 g montograph = pibYEnt/poblacionOcupada/deflator
-levelsof entidad, local(entidades)
+g montograph2 = ((pibYEnt/deflator)/(L.pibYEnt/L.deflator)-1)*100
 
-foreach k of local entidades {
+local h = 1
+tokenize `"$entidadesL"'
+foreach k of global entidadesC {
+	if "`k'" == "Nac" {
+		continue
+	}
 
+	* Texto sobre gráficas *
 	forvalues j=1(1)`=_N' {
 		if entidad[`j'] == "`k'" & montograph[`j'] != . {
-			local textgraph`k' `"`textgraph`k'' `=montograph[`j']' `=anio[`j']' "`=string(montograph[`j'],"%10.0fc")'" "'
+			local textgraph`k' `"`textgraph`k'' `=montograph[`j']' `=anio[`j']' "{bf:`=string(montograph[`j'],"%10.0fc")'}" "'
+			local textgraph2`k' `"`textgraph2`k'' `=montograph2[`j']' `=anio[`j']' "{bf:`=string(montograph2[`j'],"%7.1fc")'%}" "'
+		}
+		if entidad[`j'] == "`k'" & montograph[`j'] != . & anio[`j'] == 2022 {
+			scalar pibYEnt`k' = string(pibYEnt[`j']/deflator[`j']/1000000,"%15.0fc")
+			scalar pibYEnt`k'pc = string(montograph[`j'],"%15.0fc")
 		}
 	}
 
+	* Gráfica crecimiento *
+	twoway connect montograph2 anio if entidad == "`k'" & montograph != ., ///
+		title("{bf:Crecimiento} económico") ///
+		subtitle("``h''") ///
+		ytitle("PIB estatal por {bf:persona ocupada}") ///
+		ylabel(, format(%7.1fc)) yscale(range(0)) ///
+		xlabel(2005(1)2022) xtitle("") ///
+		text(`textgraph2`k'', size(vsmall)) ///
+		caption("{bf:Fuente}: Elaboración propia, con información del INEGI/BIE.") ///
+		name(Crecimiento_`k', replace)
+
+	if "$export" != "" {
+		graph export "$export/Crecimiento_`k'.png", replace name(Crecimiento_`k')
+	}
+
+	* Gráfica productividad *
 	twoway connect montograph anio if entidad == "`k'" & montograph != ., ///
+		title("{bf:Productividad} laboral") ///
+		subtitle("``h''") ///
 		ytitle("PIB estatal por {bf:persona ocupada}") ///
 		ylabel(0(100000)820000, format(%10.0fc)) yscale(range(0)) ///
-		xlabel(2003(1)2022) xtitle("") ///
+		xlabel(2005(1)2022) xtitle("") ///
 		text(`textgraph`k'', size(vsmall)) ///
+		caption("{bf:Fuente}: Elaboración propia, con información del INEGI/BIE e INEGI/ENOE.") ///
 		name(Productividad_`k', replace)
 
 	if "$export" != "" {
 		graph export "$export/Productividad_`k'.png", replace name(Productividad_`k')
 	}
+	local ++h
 }
+noisily scalarlatex, log(pibYEnt)
 
 
-exit
 
 
-**************************************/
-*** Gasto Federalizado (Capitulo 1) ***
-***************************************
+*************************/
+*** Gasto Federalizado ***
+/**************************
 use "`c(sysdir_personal)'/SIM/EstadosBaseEstOpor.dta", clear
 keep if anio >= 2003 & anio <= 2022
 
-tempvar concepto2 montograph montopibYE
+tempvar concepto2
 g `concepto2' = "Participaciones" if substr(clave,1,5) == "XAC28" & strlen(clave) == 8
 replace `concepto2' = "Aportaciones" if substr(clave,1,5) == "XAC33" & strlen(clave) == 8
 replace `concepto2' = "Subsidios" if substr(clave,1,5) == "XAC23" & strlen(clave) == 8
@@ -45,31 +91,34 @@ replace `concepto2' = "Convenios" if (substr(clave,1,5) == "XACCD" & strlen(clav
 	| (substr(clave,1,5) == "XACCR" & strlen(clave) == 7)
 replace `concepto2' = "Subsidios" if substr(clave,1,6) == "XACPSS"
 encode `concepto2', g(concepto2)
-
 replace concepto2 = 5 if clave == "XFA0000"
 label define concepto2 5 "Resto RFP", modify
 
 
-** 1.-32. Gasto Federalizado total por tipo y por estados **
+** 1-32 Gasto Federalizado total por tipo y por estados **
 collapse (sum) monto (mean) poblacion deflator pibYEnt if concepto2 != ., by(anio entidad concepto2 `concepto2')
+
+local h = 1
+tokenize `"$entidadesL"'
 g montograph = monto/poblacion/deflator
-levelsof entidad, local(entidades)
-foreach k of local entidades {
+foreach k of global entidadesC {
 	graph bar (mean) montograph if entidad == "`k'" [fw=poblacion], ///
 		over(concepto2, sort(1) descending) ///
 		over(anio) ///
 		asyvar stack ///
-		///title(Gasto {bf:federalizado}) ///
-		///subtitle(Por entidad federativa) ///
-		ytitle("por residente (MXN 2022)") ///
+		title(Gasto {bf:federalizado}) ///
+		subtitle(``h'') ///
+		ytitle("por residente (MXN `=aniovp')") ///
 		ylabel(0(10000)30000, format(%7.0fc)) ///
 		blabel(bar, format(%7.0fc)) ///
 		legend(on) ///
+		caption("{bf:Fuente}: Elaboración propia, con información del SHCP/Estadísticas Oportunas y CONAPO.") ///
 		name(GasFed`k', replace)
+
 	if "$export" != "" {
 		graph export "$export/GasFed_`k'.png", replace name(GasFed`k')
 	}
-
+	local ++h
 }
 
 * Scalares *
@@ -79,23 +128,21 @@ forvalues k=1(1)`=_N' {
 	}
 }
 
-
 * 33. Distribución de la RFP *
 collapse (sum) monto poblacion (mean) deflator if concepto2 != ., by(anio concepto2 `concepto2')
-tempvar rfpResto rfpRestoSum
 
 g rfpResto = monto if concepto2 != 5
 egen rfpRestoSum = sum(rfpResto), by(anio)
 replace monto = monto - rfpRestoSum if concepto2 == 5
-g montograph = monto/poblacion/deflator
 
+g montograph = monto/poblacion/deflator
 graph bar (mean) montograph [fw=poblacion], ///
 	over(concepto2, sort(1) descending) ///
 	over(anio) ///
 	asyvar stack ///
-	///title(Gasto {bf:federalizado}) ///
+	title(Gasto {bf:federalizado}) ///
 	///subtitle(Por entidad federativa) ///
-	ytitle("por residente (MXN 2022)") ///
+	ytitle("por residente (MXN `=aniovp')") ///
 	ylabel(, format(%7.0fc)) ///
 	blabel(bar, format(%7.0fc)) ///
 	legend(rows(1) label(5 "Federaci{c o'}n")) ///
@@ -108,9 +155,10 @@ if "$export" != "" {
 
 
 
-*************************************************/
-*** Graficas 2 Gasto Federalizado (Capitulo 1) ***
-**************************************************
+
+************************************/
+*** Graficas 2 Gasto Federalizado ***
+/************************************
 use "`c(sysdir_personal)'/SIM/EstadosBaseEstOpor.dta", clear
 keep if anio >= 2003 & anio <= 2022
 
@@ -133,37 +181,50 @@ g final = strpos(concepto,")")
 
 
 * Participaciones *
-replace conceptograph = "0.136% de la RFP" if conceptograph == "0.136% de la Recaudaci?n Federal Participable"
+replace conceptograph = "0.136% de la RFP" if conceptograph == "0.136% de la Recaudaci?n Federal Participable" ///
+	| conceptograph == "0.136% de la Recaudación Federal Participable"
 replace conceptograph = "FGP" if conceptograph == "Fondo General de Participaciones"
 replace conceptograph = "FFM" if conceptograph == "Fondo de Fomento Municipal"
-replace conceptograph = "Repecos" if conceptograph == "Fondo de Compensaci?n de Repecos Intermedios"
-replace conceptograph = "Fiscalización" if conceptograph == "Fondo de Fiscalizaci?n a Entidades Federativas"
-replace conceptograph = "FExHi" if conceptograph == "Fondo de Extracci?n de Hidrocarburos"
-replace conceptograph = "FExHi" if conceptograph == "Participaciones por el Derecho Adicional sobre la Extracci?n de Petr?leo"
-replace conceptograph = "IEPS" if conceptograph == "Participaciones por el Impuesto Especial sobre Producci?n y Servicios (IEPS)"
-replace conceptograph = "IEPS" if conceptograph == "Participaciones por el Impuesto Especial sobre Producci?n y Servicios de Gasolinas y Diesel (IEPS Gasolinas) Art?culo 2?.-A Fracci?n II Ley del IEPS"
-replace conceptograph = "ISAN" if conceptograph == "Participaciones por el Impuesto sobre Autom?viles Nuevos (ISAN)"
-replace conceptograph = "Tenencia" if conceptograph == "Participaciones por el Impuesto sobre Tenencia y Uso de Autom?viles"
-replace conceptograph = "Incentivos económicos" if conceptograph == "Incentivos Econ?micos"
+replace conceptograph = "Repecos" if conceptograph == "Fondo de Compensaci?n de Repecos Intermedios" ///
+	| conceptograph == "Fondo de Compensación de Repecos Intermedios"
+replace conceptograph = "Fiscalización" if conceptograph == "Fondo de Fiscalizaci?n a Entidades Federativas" ///
+	| conceptograph == "Fondo de Fiscalización a Entidades Federativas"
+replace conceptograph = "FExHi" if conceptograph == "Fondo de Extracci?n de Hidrocarburos" ///
+	| conceptograph == "Fondo de Extracción de Hidrocarburos"
+replace conceptograph = "FExHi" if conceptograph == "Participaciones por el Derecho Adicional sobre la Extracci?n de Petr?leo" ///
+	| conceptograph == "Participaciones por el Derecho Adicional sobre la Extracción de Petróleo"
+replace conceptograph = "IEPS" if conceptograph == "Participaciones por el Impuesto Especial sobre Producci?n y Servicios (IEPS)" ///
+	| conceptograph == "Participaciones por el Impuesto Especial sobre Producción y Servicios (IEPS)"
+replace conceptograph = "IEPS" if conceptograph == "Participaciones por el Impuesto Especial sobre Producci?n y Servicios de Gasolinas y Diesel (IEPS Gasolinas) Art?culo 2?.-A Fracci?n II Ley del IEPS" ///
+	| conceptograph == "Participaciones por el Impuesto Especial sobre Producción y Servicios de Gasolinas y Diesel (IEPS Gasolinas) Artículo 2º.-A Fracción II Ley del IEPS"
+replace conceptograph = "ISAN" if conceptograph == "Participaciones por el Impuesto sobre Autom?viles Nuevos (ISAN)" ///
+	| conceptograph == "Participaciones por el Impuesto sobre Automóviles Nuevos (ISAN)"
+replace conceptograph = "Tenencia" if conceptograph == "Participaciones por el Impuesto sobre Tenencia y Uso de Autom?viles" ///
+	| conceptograph == "Participaciones por el Impuesto sobre Tenencia y Uso de Automóviles"
+replace conceptograph = "Incentivos" if conceptograph == "Incentivos Econ?micos" ///
+	| conceptograph == "Incentivos Económicos"
 
 
 * 34. Participaciones *
 preserve
 collapse (sum) monto (mean) poblacion deflator, by(entidad anio conceptograph concepto2)
 g montograph = monto/poblacion/deflator
-graph bar (mean) montograph if anio <= 2021 & concepto2 == 3 [fw=poblacion], ///
+graph bar (mean) montograph if concepto2 == 3 [fw=poblacion], ///
 	over(conceptograph, sort(1) descending) ///
 	over(anio) ///
 	asyvar stack ///
-	///title(Gasto {bf:federalizado}) ///
+	title({bf:Participaciones}) ///
 	///subtitle(Por entidad federativa) ///
-	ytitle("por residente (MXN 2022)") ///
+	ytitle("por residente (MXN `=aniovp')") ///
 	ylabel(, format(%7.0fc)) ///
 	blabel(bar, format(%7.0fc)) ///
-	legend(rows(2)) ///
+	legend(rows(1)) ///
 	name(XAC28, replace)
-graph export "$export/XAC28.png", replace name(XAC28)
-*save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFedSum_participaciones_JP.dta", replace
+
+if "$export" != "" {
+	graph export "$export/XAC28.png", replace name(XAC28)
+}
+
 
 * 35. Aportaciones *
 restore
@@ -171,48 +232,52 @@ preserve
 replace conceptograph = substr(concepto,inicial+1,final-inicial-1) if concepto2 == 1
 collapse (sum) monto (mean) poblacion deflator, by(entidad anio conceptograph concepto2)
 g montograph = monto/poblacion/deflator
-graph bar (mean) montograph if anio <= 2021 & concepto2 == 1 [fw=poblacion], ///
+graph bar (mean) montograph if concepto2 == 1 [fw=poblacion], ///
 	over(conceptograph, sort(1) descending) ///
 	over(anio) ///
 	asyvar stack ///
-	///title(Gasto {bf:federalizado}) ///
+	title({bf:Aportaciones}) ///
 	///subtitle(Por entidad federativa) ///
-	ytitle("por residente (MXN 2022)") ///
+	ytitle("por residente (MXN `=aniovp')") ///
 	ylabel(, format(%7.0fc)) ///
 	blabel(bar, format(%7.0fc)) ///
-	legend(rows(2)) ///
+	legend(rows(1)) ///
 	name(XAC33, replace)
-graph export "$export/XAC33.png", replace name(XAC33)
-*save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFedSum_aportaciones_JP.dta", replace
+
+if "$export" != "" {
+	graph export "$export/XAC33.png", replace name(XAC33)
+}
 
 
 * 36. Convenios *
 restore
 preserve
 replace conceptograph = substr(concepto,inicial+1,final-inicial-1) if concepto2 == 2
-replace conceptograph = "Reasignación" if conceptograph == "Convenios de Reasignaci?n"
+replace conceptograph = "Reasignación" if conceptograph == "Convenios de Reasignaci?n" ///
+	| conceptograph == "Convenios de Reasignación"
 collapse (sum) monto (mean) poblacion deflator, by(entidad anio conceptograph concepto2)
 g montograph = monto/poblacion/deflator
-graph bar (mean) montograph if anio <= 2021 & concepto2 == 2 [fw=poblacion], ///
+graph bar (mean) montograph if concepto2 == 2 [fw=poblacion], ///
 	over(conceptograph, sort(1) descending) ///
 	over(anio) ///
 	asyvar stack ///
-	///title(Gasto {bf:federalizado}) ///
+	title({bf:Convenios}) ///
 	///subtitle(Por entidad federativa) ///
-	ytitle("por residente (MXN 2022)") ///
+	ytitle("por residente (MXN `=aniovp')") ///
 	ylabel(, format(%7.0fc)) ///
 	blabel(bar, format(%7.0fc)) ///
 	legend(rows(1)) ///
 	name(XACC, replace)
-graph export "$export/XACC.png", replace name(XACC)
-*save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFedSum_convenios_jp.dta", replace
-
+	
+if "$export" != "" {
+	graph export "$export/XACC.png", replace name(XACC)
+}
 
 * 37. Subsidios *
 restore
-
 replace conceptograph = substr(concepto,inicial+1,final-inicial-1) if concepto2 == 4 & inicial != 0 & final != 0
-replace conceptograph = "Protecci{c o'}n Social en Salud" if concepto == " Recursos para Protecci?n Social en Salud"
+replace conceptograph = "Protección Social en Salud" if concepto == " Recursos para Protecci?n Social en Salud" ///
+	| concepto == " Recursos para Protección Social en Salud"
 replace conceptograph = "Otros subsidios" if concepto == " Resto del Gasto Federalizado del Ramo Provisiones Salariales y Economicas y Otros Subsidios"
 collapse (sum) monto (mean) poblacion deflator, by(entidad anio conceptograph concepto2)
 g montograph = monto/poblacion/deflator
@@ -220,39 +285,79 @@ graph bar (mean) montograph if concepto2 == 4 [fw=poblacion], ///
 	over(conceptograph, sort(1) descending) ///
 	over(anio) ///
 	asyvar stack ///
-	///title(Gasto {bf:federalizado}) ///
+	title({bf:Subsidios}) ///
 	///subtitle(Por entidad federativa) ///
-	ytitle("por residente (MXN 2022)") ///
+	ytitle("por residente (MXN `=aniovp')") ///
 	ylabel(, format(%7.0fc)) ///
 	blabel(bar, format(%7.0fc)) ///
 	legend(rows(1)) ///
 	name(XACSubsidios, replace)
-graph export "$export/XACSubsidios.png", replace name(XACSubsidios)
-*save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFedSum_subsidios_jp.dta", replace
+
+if "$export" != "" {
+	graph export "$export/XACSubsidios.png", replace name(XACSubsidios)
+}
 
 
 
+*****************/
+*** LIEs INEGI ***
+******************
+use "`c(sysdir_personal)'/SIM/EstadosBaseINEGI.dta", clear
+keep if valor != .
+rename valor monto
+
+* 38. Recursos totales *
+collapse (sum) monto (mean) poblacion deflator pibYEnt /*if divCIEP != "Financiamiento"*/, by(entidad anio divCIEP)
+
+replace divCIEP = strtoname(divCIEP)
+reshape wide monto, i(anio entidad poblacion pibYEnt deflator) j(divCIEP) string
+collapse (sum) monto* (mean) poblacion deflator pibYEnt /*if divCIEP != "Financiamiento"*/, by(entidad anio)
+reshape long
+replace divCIEP = subinstr(divCIEP,"_"," ",.)
+
+tempvar montograph
+g `montograph' = monto/poblacion/deflator
+
+preserve
+graph bar (mean) `montograph' if `montograph' != . [fw=poblacion] , ///
+	over(divCIEP, sort(1) descending) ///
+	over(anio) ///
+	stack asyvars ///
+	title(Gasto {bf:federalizado}) ///
+	///subtitle(Por entidad federativa) ///
+	ytitle("por residente (MXN `=aniovp')") ///
+	ylabel(, format(%7.0fc)) ///
+	blabel(bar, format(%7.0fc)) ///
+	legend(rows(1)) ///
+	name(LIEs, replace)
+if "$export" != "" {
+	graph export "$export/LIEs.png", replace name(LIEs)
+}
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+* 1-32 Recursos totales *
+restore
+tokenize `"$entidadesL"'
+local j = 1
+foreach k of global entidadesC {
+	if "`k'" == "Nac" {
+		continue
+	}
+	graph bar (mean) `montograph' if `montograph' != . & entidad == "`k'" [fw=poblacion], ///
+		over(divCIEP, sort(1) descending) ///
+		over(anio) ///
+		stack asyvars ///
+		title(Recursos {bf:estatales}) ///
+		subtitle(``j'') ///
+		ytitle("por residente (MXN `=aniovp')") ///
+		ylabel(, format(%7.0fc)) ///
+		blabel(bar, format(%7.0fc)) ///
+		name(LIEs_`k', replace)
+	if "$export" != "" {
+		graph export "$export/LIEs_`k'.png", replace name(LIEs_`k')
+	}
+	local ++j
+}
 
 
 
@@ -264,106 +369,94 @@ graph export "$export/XACSubsidios.png", replace name(XACSubsidios)
 
 
 exit
-*****************/
-*** LIEs INEGI ***
-******************
-use "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIE/INEGI/LIEs.dta", clear
-replace entidad = trim(entidad)
-/*capture replace entidad1 = "México" if entidad1 == "Mexico"
-capture replace entidad1 = "Ciudad de México" if entidad1 == "CDMX"
-capture replace entidad1 = "San Luis Potosí" if entidad1 == "San Luis Potosi"
-capture replace Entidades = lower(entidad1) if entidad1 != "" & Entidades == ""
-foreach k of varlist Entidades /*entidad1 desc_entidad*/ {
-	capture replace `k'= subinstr(`k', "{c a'}","á",.)
-	capture replace `k'= subinstr(`k', "{c e'}","é",.)
-	capture replace `k'= subinstr(`k', "{c i'}","í",.)
-	capture replace `k'= subinstr(`k', "{c o'}","ó",.)
-	capture replace `k'= subinstr(`k', "{c u'}","ú",.)
-}
-
-replace Entidades = subinstr(Entidades," ","",.)
-local j = 1
-drop entidad
-g entidad = trim(desc_entidad)
-if _rc != 0 {
-	g entidad = ""
-}
-replace entidad = "EdoMex" if entidad == "Edomex"
-replace entidad = "QRoo" if entidad == "Qroo"
-
-foreach k of local entidadesN {
-	replace entidad = "``j''" if Entidades == `"`=subinstr("`=lower("`k'")'"," ","",.)'"'
-	local ++j
-}
-*save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIE/INEGI/LIEs.dta", replace*/
-
-collapse (sum) monto, by(anio entidad tipo_ingreso)
-*save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIE/INEGI/LIEs_colapsada.dta", replace
-
-
-
-
-
-**********************************************/
-*** Grafica 3 Recursos totales (Capitulo 2) ***
-***********************************************
-use "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIE/INEGI/LIEs_colapsada.dta", clear
-*merge 1:1 (anio entidad tipo_ingreso) using "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/GastoFedSum.dta", nogen update replace
-reshape wide monto, i(anio tipo_ingreso) j(entidad) string
-reshape long
-replace monto = 0 if monto == .
-
+***************************************/
+**Recursos Propios
+****************************************
+use "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIE/INEGI/LIEs.dta", replace
 merge m:1 (anio entidad) using "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/PIBEntidades.dta", nogen
 merge m:1 (anio entidad) using "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/PobTot.dta", nogen
 keep if anio >= 2018 & anio <= 2022
-drop if entidad == "Nacional"
-********************************************
-**Estimar Impuestos faltante 2021
-********************************************
-tempvar montograph
-*save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/IngresosEntidades.dta", replace
-
-
-* 38. Recursos totales *
-collapse (sum) monto (mean) poblacion deflator pibYEnt, by(entidad anio tipo_ingreso)
+keep if tipo_ingreso=="Propios"
+*replace concepto_propio = "Otros" if concepto_propio == ""
+*preserve
+collapse (sum) monto (mean) poblacion deflator pibYEnt if tipo_ingreso == "Propios", by(entidad anio concepto_propio)
+tempvar montograph montopibYE
 g `montograph' = monto/poblacion/deflator
-preserve
-keep if tipo_ingreso!="Financiamiento"
-graph bar (mean) `montograph' if `montograph' != . [fw=poblacion] , ///
-	over(tipo_ingreso, sort(1) descending) ///
+graph bar (mean) `montograph' if `montograph' != . [fw=poblacion], ///
+	over(concepto, sort(1) descending) ///
 	over(anio) ///
 	stack asyvars ///
 	///title(Gasto {bf:federalizado}) ///
 	///subtitle(Por entidad federativa) ///
-	ytitle("por residente (MXN 2022)") ///
+	ytitle("por residente (MXN `=aniovp')") ///
 	ylabel(, format(%7.0fc)) ///
 	blabel(bar, format(%7.0fc)) ///
 	legend(rows(1)) ///
-	name(LIEs, replace)
-graph export "$export/LIEs.png", replace name(LIEs)
-restore
-*save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIEs_TipoIngreso_Total.dta", replace
+	name(Recursos_prop, replace)
+graph export  "$export/Recursos_prop.png", as(png) replace name(Recursos_prop)
+*save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIES_RP.dta", replace
 
-* 39.-71. Recursos totales *
+*******Checkpoint************
+
 levelsof entidad, local(entidades)
-
 foreach k of local entidades {
+	noisily di "*`k'*"
 	graph bar (mean) `montograph' if `montograph' != . & entidad == "`k'" [fw=poblacion], ///
-		over(tipo_ingreso, sort(1) descending) ///
+		over(concepto, sort(1) descending) ///
 		over(anio) ///
 		stack asyvars ///
 		///title(Gasto {bf:federalizado}) ///
 		///subtitle(Por entidad federativa) ///
-		ytitle("por residente (MXN 2022)") ///
+		ytitle("por residente (MXN `=aniovp')") ///
 		ylabel(, format(%7.0fc)) ///
 		blabel(bar, format(%7.0fc)) ///
 		legend(off) ///
-		name(LIEs_`k', replace)
-	graph export "$export/LIEs_`k'.png", replace name(LIEs_`k')
+		name(RPdesag_`k', replace)
+	graph export  "$export/RPdesag_`k'.png", as(png) replace name(RPdesag_`k')
 }
+*/
+*drop if concepto_propio == ""
+replace concepto_propio = "Otros" if concepto_propio == ""
 
-drop `montograph'
-*save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIEs_tipoingreso.dta", replace
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 restore
 * Scalars *
@@ -422,54 +515,14 @@ noisily scalarlatex, logname(gastotot)
 
 
 
-***************************************/
-**Recursos Propios
-****************************************
-use "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIE/INEGI/LIEs.dta", replace
-merge m:1 (anio entidad) using "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/PIBEntidades.dta", nogen
-merge m:1 (anio entidad) using "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/PobTot.dta", nogen
-keep if anio >= 2018 & anio <= 2022
-keep if tipo_ingreso=="Propios"
-*replace concepto_propio = "Otros" if concepto_propio == ""
-*preserve
-collapse (sum) monto (mean) poblacion deflator pibYEnt if tipo_ingreso == "Propios", by(entidad anio concepto_propio)
-tempvar montograph montopibYE
-g `montograph' = monto/poblacion/deflator
-graph bar (mean) `montograph' if `montograph' != . [fw=poblacion], ///
-	over(concepto, sort(1) descending) ///
-	over(anio) ///
-	stack asyvars ///
-	///title(Gasto {bf:federalizado}) ///
-	///subtitle(Por entidad federativa) ///
-	ytitle("por residente (MXN 2022)") ///
-	ylabel(, format(%7.0fc)) ///
-	blabel(bar, format(%7.0fc)) ///
-	legend(rows(1)) ///
-	name(Recursos_prop, replace)
-graph export  "$export/Recursos_prop.png", as(png) replace name(Recursos_prop)
-*save "`c(sysdir_site)'../../Hewlett Subnacional/Base de datos/LIES_RP.dta", replace
 
-*******Checkpoint************
 
-levelsof entidad, local(entidades)
-foreach k of local entidades {
-	noisily di "*`k'*"
-	graph bar (mean) `montograph' if `montograph' != . & entidad == "`k'" [fw=poblacion], ///
-		over(concepto, sort(1) descending) ///
-		over(anio) ///
-		stack asyvars ///
-		///title(Gasto {bf:federalizado}) ///
-		///subtitle(Por entidad federativa) ///
-		ytitle("por residente (MXN 2022)") ///
-		ylabel(, format(%7.0fc)) ///
-		blabel(bar, format(%7.0fc)) ///
-		legend(off) ///
-		name(RPdesag_`k', replace)
-	graph export  "$export/RPdesag_`k'.png", as(png) replace name(RPdesag_`k')
-}
-*/
-*drop if concepto_propio == ""
-replace concepto_propio = "Otros" if concepto_propio == ""
+
+
+
+
+
+
 
 collapse (sum) monto `montograph' (mean) poblacion deflator pibYEnt, by(entidad anio concepto_propio)
 reshape wide monto `montograph' deflator pibYEnt, i(anio entidad) j(concepto) string
@@ -619,7 +672,7 @@ graph bar (mean) `montograph' if `montograph' != . [fw=poblacion], ///
 	stack asyvars ///
 	///title(Gasto {bf:federalizado}) ///
 	///subtitle(Por entidad federativa) ///
-	ytitle("por residente (MXN 2022)") ///
+	ytitle("por residente (MXN `=aniovp')") ///
 	ylabel(, format(%7.0fc)) ///
 	blabel(bar, format(%7.0fc)) ///
 	legend(rows(2) label(4 "Impuesto Sobre La Producción," "Consumo Y Las Transacciones")) ///
@@ -636,7 +689,7 @@ foreach k of local entidades {
 		stack asyvars ///
 		///title(Gasto {bf:federalizado}) ///
 		///subtitle(Por entidad federativa) ///
-		ytitle("por residente (MXN 2022)") ///
+		ytitle("por residente (MXN `=aniovp')") ///
 		ylabel(, format(%7.0fc)) ///
 		blabel(bar, format(%7.0fc)) ///
 		legend(off) name(Impuestos_`k', replace)

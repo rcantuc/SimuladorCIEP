@@ -3,8 +3,6 @@
 ***    SIMULADOR FISCAL    ***
 ***                        ***
 ******************************
-timer on 1
-noisily run "`c(sysdir_personal)'/profile.do"
 
 
 
@@ -13,6 +11,7 @@ noisily run "`c(sysdir_personal)'/profile.do"
 ***    0. DIRECTORIOS DE TRABAJO (PROGRAMACION)    ***
 ***                                                ***
 ******************************************************
+noisily run "`c(sysdir_personal)'/profile.do"
 adopath ++ PERSONAL
 if "`c(username)'" == "ricardo" {                                               // Mac Ricardo
 	sysdir set PERSONAL "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
@@ -20,6 +19,7 @@ if "`c(username)'" == "ricardo" {                                               
 if "`c(username)'" == "ciepmx" & "`c(console)'" == "" {                         // Linux ServidorCIEP
 	sysdir set PERSONAL "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
 }
+noisily run "`c(sysdir_personal)'/PARAM.do"
 
 
 
@@ -32,7 +32,7 @@ if "`c(username)'" == "ciepmx" & "`c(console)'" == "" {                         
 *global update "update"                                                         // UPDATE DATASETS/OUTPUTS
 *global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
 *global export "`c(sysdir_personal)'../../LINGO/Pemex post-petróleo/images/"
-*global export "`c(sysdir_personal)'../../EU/LaTeX/images/"
+global export "`c(sysdir_personal)'../../EU/LaTeX/images/"
 
 
 
@@ -43,27 +43,26 @@ if "`c(username)'" == "ciepmx" & "`c(console)'" == "" {                         
 *****************************************************
 ** 2.1 Demografía **
 *forvalues piramide=1950(1)2050 {
-	*foreach entidad of global entidadesL {
-		noisily Poblacion /*if entidad == "`entidad'"*/, aniofinal(2050) $update //anio(`piramide')
-	*}
+	noisily Poblacion /*if entidad == "`entidad'"*/, aniofinal(2050) $update //anio(`piramide')
 *}
 
 
 ** 2.2 Economía **
 noisily PIBDeflactor, geodef(2005) geopib(2005) $update
+noisily SCN, $update
 noisily Inflacion, $update
 
 
 ** 2.3 Sistema fiscal **
 noisily LIF, by(divPE) rows(1) min(0) $update
-noisily SCN, $update
 noisily TasasEfectivas
+
 noisily PEF, by(divPE) rows(2) min(0) $update 
+
 noisily SHRFSP, $update
 
 
-
-
+exit
 
 **************************/
 ***                     ***
@@ -74,14 +73,14 @@ noisily SHRFSP, $update
 ** 3.1 Households information **
 capture confirm file "`c(sysdir_personal)'/SIM/`=enighanio'/households.dta"
 if _rc != 0 {
-	noisily run "`c(sysdir_personal)'/Expenditure.do" `=anioPE'
-	noisily run `"`c(sysdir_personal)'/Households.do"' `=anioPE'
+	noisily run "`c(sysdir_personal)'/Expenditure.do" `=aniovp'
+	noisily run `"`c(sysdir_personal)'/Households.do"' `=aniovp'
 }
 
 ** 3.2 Households fiscal information **
-capture confirm file "`c(sysdir_personal)'/SIM/households`=anioPE'.dta"
+capture confirm file "`c(sysdir_personal)'/SIM/households`=aniovp'.dta"
 if _rc != 0 | "$update" == "update" {
-	noisily run `"`c(sysdir_personal)'/PerfilesSim.do"' `=anioPE'
+	noisily run `"`c(sysdir_personal)'/PerfilesSim.do"' `=aniovp'
 }
 
 
@@ -93,7 +92,7 @@ if _rc != 0 | "$update" == "update" {
 *******************************
 
 ** 4.1 GASTOS: per cápita **
-noisily GastoPC //, anio(`=anioPE')
+noisily GastoPC, anio(`=aniovp')
 
 ** 4.2 INGRESOS: Módulos **
 if "`cambioisr'" == "1" {
@@ -106,7 +105,7 @@ if "`cambioiva'" == "1" {
 	noisily run "`c(sysdir_personal)'/IVA_Mod.do"
 	scalar IVA = IVA_Mod
 }
-noisily TasasEfectivas //, anio(`=anioPE')
+noisily TasasEfectivas, anio(`=aniovp')
 
 
 
@@ -114,7 +113,7 @@ noisily TasasEfectivas //, anio(`=anioPE')
 ***                        ***
 ***    5. CICLO DE VIDA    ***
 ***                        ***
-******************************
+/******************************
 use `"`c(sysdir_personal)'/users/$id/households.dta"', clear
 capture drop AportacionesNetas
 g AportacionesNetas = ISRAS + ISRPF + CUOTAS + ISRPM + OTROSK ///
@@ -127,7 +126,7 @@ save "`c(sysdir_personal)'/users/$id/households.dta", replace
 
 
 ** 5.2 CUENTA GENERACIONAL **
-noisily CuentasGeneracionales AportacionesNetas, anio(`=anioPE') discount(7)
+*noisily CuentasGeneracionales AportacionesNetas, anio(`=anioPE') discount(7)
 
 
 
@@ -144,7 +143,7 @@ foreach k in grupoedad sexo decil rural escol {
 ***                                       ***
 ***    6. PARTE IV: DEUDA + FISCAL GAP    ***
 ***                                       ***
-*********************************************
+/*********************************************
 noisily FiscalGap, end(2030) aniomin(2015) $nographs $update discount(7) //anio(`=aniovp')
 
 

@@ -34,8 +34,9 @@ program define scalarlatex
 
 			if `"`=substr("`name'",1,4)'"' == "anio" | `"`=substr("`name'",1,4)'"' == "defl" ///
 				| `"`=substr("`name'",1,4)'"' == "trim" | `"`=substr("`name'",1,4)'"' == "infl" ///
-				| `"`=substr("`name'",1,9)'"' == "poblacion" | `"`=substr("`name'",1,4)'"' == "gini" ///
-				| `"`=substr("`name'",1,6)'"' == "output" | `"`=substr("`name'",1,4)'"' == "asis" {
+				| `"`=substr("`name'",1,3)'"' == "pob" | `"`=substr("`name'",1,4)'"' == "gini" ///
+				| `"`=substr("`name'",1,6)'"' == "output" | `"`=substr("`name'",1,4)'"' == "asis" ///
+				| `"`=substr("`name'",1,7)'"' == "pibYEnt" {
 				local value = scalar(`name')
 				di in w "\def\d`name'#1{\gdef\\`name'{#1}}"
 				di in w `"\d`name'{`value'}"'		
