@@ -4,7 +4,7 @@ global export "`c(sysdir_personal)'../../EU/LaTeX/images/"
 
 *************************
 *** Población estatal ***
-/*************************
+*************************
 foreach entidad of global entidadesL {
 	noisily Poblacion if entidad == "`entidad'", aniofinal(2050) $update //anio(`piramide')
 }
@@ -14,7 +14,7 @@ noisily scalarlatex, log(poblacion)
 
 ****************************/
 *** Productividad laboral ***
-/*****************************
+*****************************
 use "`c(sysdir_personal)'/SIM/EstadosBaseEstOpor.dta", clear
 collapse (mean) pob* deflator pibYEnt, by(anio entidad entidadx)
 sort entidadx anio
@@ -79,7 +79,7 @@ noisily scalarlatex, log(pibYEnt)
 
 *************************/
 *** Gasto Federalizado ***
-/**************************
+**************************
 use "`c(sysdir_personal)'/SIM/EstadosBaseEstOpor.dta", clear
 keep if anio >= 2003 & anio <= 2022
 
@@ -158,7 +158,7 @@ if "$export" != "" {
 
 ************************************/
 *** Graficas 2 Gasto Federalizado ***
-/************************************
+************************************
 use "`c(sysdir_personal)'/SIM/EstadosBaseEstOpor.dta", clear
 keep if anio >= 2003 & anio <= 2022
 
@@ -301,7 +301,7 @@ if "$export" != "" {
 
 *****************/
 *** LIEs INEGI ***
-/******************
+******************
 use "`c(sysdir_personal)'/SIM/EstadosBaseINEGI.dta", clear
 keep if valor != .
 rename valor monto
@@ -460,7 +460,7 @@ foreach k of global entidadesC {
 		ytitle("por residente (MXN `=aniovp')") ///
 		ylabel(, format(%7.0fc)) ///
 		blabel(bar, format(%7.0fc)) ///
-		legend(off) name(Impuestos_`k', replace)
+		name(Impuestos_`k', replace)
 
 	if "$export" != "" {
 		graph export  "$export/Impuestos_`k'.png", as(png) replace 
