@@ -452,7 +452,7 @@ foreach k of global entidadesC {
 		continue
 	}
 	graph bar (mean) `montograph' if `montograph' != . & entidad == "`k'" [fw=poblacion], ///
-		over(concepto_desagregado, sort(1) descending) ///
+		over(concepto, sort(1) descending) ///
 		over(anio) ///
 		stack asyvars ///
 		title({bf:Impuestos} locales) ///
