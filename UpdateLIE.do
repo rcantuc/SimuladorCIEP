@@ -50,7 +50,7 @@ reshape long ITAEE, i(anio) j(entidad) string
 
 ** Merge **
 merge 1:1 (anio entidad) using `PIBEntidades', nogen
-merge m:1 (anio) using `PIBDeflactor', nogen keepus(deflator)
+merge m:1 (anio) using `PIBDeflactor', nogen keepus(deflator pibY)
 
 encode entidad, gen(entidadx)
 xtset entidadx anio
@@ -134,13 +134,19 @@ save `PobTot'
 *****************************************/
 *** 3. Gasto Federalizado y sus Fondos ***
 /******************************************
-DatosAbiertos XFA0000
+DatosAbiertos XFA0000, nographs
 split nombre, gen(entidad) parse(":")
 drop nombre
-replace entidad1 = "Nacional"
 rename entidad2 concepto
+g entidad = "Nacional"
 tempfile XFA0000
 save `XFA0000'
+
+DatosAbiertos XAC4330, nographs
+rename nombre concepto
+g entidad = "Ciudad de México"
+tempfile XAC4330
+save `XAC4330'
 
 local series28 `""" A B C D E F G H I J K L M"'
 *local series28 `""""'
@@ -194,6 +200,7 @@ foreach gastofed in 28 33 PSS 23 CD CR {
 
 ** Unir todas las bases obtenidas **
 use `XFA0000', clear
+append using `XAC4330'
 append using `basesEstOporappend'
 replace entidad = "Nac" if entidad == ""
 tempfile GastoFedBase
@@ -235,7 +242,7 @@ forvalues anio=2013(1)2021 {
 	keep if tema == "Ingresos"
 	replace descripcion_categoria = "Aportaciones Federales" if descripcion_categoria == "Aportaciones federales"
 
-	** Acentos **
+	/** Acentos **
 	foreach k of varlist descripcion_categoria {
 		replace `k' = trim(`k')
 
@@ -254,7 +261,7 @@ forvalues anio=2013(1)2021 {
 		replace `k'= subinstr(`k', "Ñ","{c N~}",.)
 	}
 
-	** Variables auxiliares **
+	** Variables auxiliares **/
 	g aux = .
 	levelsof categoria, local(cates)
 	g capitulo   = "JP"
@@ -441,7 +448,7 @@ merge m:1 (anio entidad) using `poblacionOcupada', nogen
 keep if anio >= 2003 & anio <= 2022
 save "`c(sysdir_personal)'/SIM/EstadosBaseINEGI.dta", replace
 
-/*use `PIBEntidades', clear
+use `PIBEntidades', clear
 merge 1:m (anio entidad) using `GastoFedBase', nogen
 merge m:1 (anio entidad) using `PobTot', nogen
 merge m:1 (anio entidad) using `poblacionOcupada', nogen

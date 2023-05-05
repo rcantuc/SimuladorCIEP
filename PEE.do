@@ -9,9 +9,9 @@ capture log close all
 use "`c(sysdir_personal)'/SIM/EstadosBaseINEGI.dta" , replace
 keep if anio>2012
 sort capitulo
-drop if entidad=="Nac"
+drop if entidad == "Nac"
 *cambiar aquí si se quiere usar el financiamiento
-drop if capitulo=="Financiamiento"
+drop if capitulo == "Financiamiento"
 *preserve
 collapse (sum) valor (mean) deflator pob* pib* , by(anio entidad1) 
 rename valor ingresos
@@ -38,13 +38,13 @@ forvalues anio=2013(1)2021 {
 	keep anio id_entidad tema categoria descrip* valor
 	*keep if id_entidad==9
 	
-	keep if (tema=="Egresos" & categoria=="Capítulo" & descripcion_categoria=="Deuda pública") ///
-	| (tema=="Egresos" & categoria=="Capítulo" & descripcion_categoria=="Servicios personales") ///
-	| (tema=="Egresos" & categoria=="Capítulo" & (descripcion_categoria=="Recursos asignados a municipios"| descripcion_categoria=="Recursos asignados a alcaldías de la Ciudad de México y sector paraestatal")) ///
-	| (tema=="Egresos"& descripcion_categoria=="Pensiones y jubilaciones") ///
-	| (tema=="Ingresos" & categoria=="Subpartida Genérica" & descripcion_categoria=="FA para Nómina Educativa y Gasto Operativo") ///
-	| (tema=="Ingresos" & categoria=="Subpartida Genérica" & descripcion_categoria=="FA para Infraestructura Social Estatal") ///
-	| (tema=="Ingresos" & categoria=="Subpartida Genérica" & descripcion_categoria=="FA Múltiples") 
+	keep if (tema == "Egresos" & categoria == "Capítulo" & descripcion_categoria == "Deuda pública") ///
+	| (tema == "Egresos" & categoria == "Capítulo" & descripcion_categoria == "Servicios personales") ///
+	| (tema == "Egresos" & categoria == "Capítulo" & (descripcion_categoria == "Recursos asignados a municipios" | descripcion_categoria == "Recursos asignados a alcaldías de la Ciudad de México y sector paraestatal")) ///
+	| (tema == "Egresos" & descripcion_categoria == "Pensiones y jubilaciones") ///
+	| (tema == "Ingresos" & categoria == "Subpartida Genérica" & descripcion_categoria == "FA para Nómina Educativa y Gasto Operativo") ///
+	| (tema == "Ingresos" & categoria == "Subpartida Genérica" & descripcion_categoria == "FA para Infraestructura Social Estatal") ///
+	| (tema == "Ingresos" & categoria == "Subpartida Genérica" & descripcion_categoria == "FA Múltiples") 
 	
 	
 	
@@ -53,13 +53,13 @@ forvalues anio=2013(1)2021 {
 	
 	*encode descripcion_categoria, generate(GI_) label(mylabel)
 	drop tema anio categoria
-	replace GI_="Servicio_Deuda" if GI_=="Deuda pública"
-	replace GI_="Servicio_Personales" if GI_=="Servicios personales"
-	replace GI_="Servicio_GF" if GI_=="Recursos asignados a municipios" |GI_=="Recursos asignados a alcaldías de la Ciudad de México y sector paraestatal"
-	replace GI_="FONE_O" if GI_=="FA para Nómina Educativa y Gasto Operativo"
-	replace GI_="FAIS" if GI_=="FA para Infraestructura Social Estatal"
-	replace GI_="FAM" if GI_=="FA Múltiples"
-	replace GI_="Servicio_Pensiones" if GI_=="Pensiones y jubilaciones"
+	replace GI_="Servicio_Deuda" if GI_ == "Deuda pública"
+	replace GI_="Servicio_Personales" if GI_ == "Servicios personales"
+	replace GI_="Servicio_GF" if GI_ == "Recursos asignados a municipios" |GI_ == "Recursos asignados a alcaldías de la Ciudad de México y sector paraestatal"
+	replace GI_="FONE_O" if GI_ == "FA para Nómina Educativa y Gasto Operativo"
+	replace GI_="FAIS" if GI_ == "FA para Infraestructura Social Estatal"
+	replace GI_="FAM" if GI_ == "FA Múltiples"
+	replace GI_="Servicio_Pensiones" if GI_ == "Pensiones y jubilaciones"
 
 	*Hacemos reshape 
 	reshape wide valor, i(id_entidad) j(GI_) string
@@ -76,10 +76,10 @@ forvalues anio=2013(1)2021 {
 	*drop anio_
 	*Arreglamos nombres distintos
 	tostring id_entidad, replace
-	replace entidad="Coahuila" if entidad=="Coahuila de Zaragoza"
-	replace entidad="Michoacán" if entidad=="Michoacán de Ocampo"
-	replace entidad="Estado de México" if entidad=="México"
-	replace entidad="Veracruz" if entidad=="Veracruz de Ignacio de la Llave"
+	replace entidad="Coahuila" if entidad == "Coahuila de Zaragoza"
+	replace entidad="Michoacán" if entidad == "Michoacán de Ocampo"
+	replace entidad="Estado de México" if entidad == "México"
+	replace entidad="Veracruz" if entidad == "Veracruz de Ignacio de la Llave"
 	*Guardamos por año
 	tempfile `anio'
 	if "`baseuse'" == "" {

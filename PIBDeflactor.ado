@@ -374,10 +374,10 @@ quietly {
 			local graphtitle ""
 			local graphfuente ""
 		}
-		twoway (connected var_pibY anio if (anio < `aniofinal' & anio >= `anioinicial') | ///
+		twoway (connected var_pibY anio if (anio <= `aniofinal' & anio >= `anioinicial') | ///
 			(anio == `aniofinal' & trimestre == 4)) ///
 			/*(connected var_pibY anio if anio >= `aniofinal'+`exo_count')*/ ///
-			(connected var_pibY anio if anio < `aniofinal'+`exo_count' & anio >= `aniofinal', pstyle(p4)), ///
+			(connected var_pibY anio if anio < `aniofinal'+`exo_count' & anio > `aniofinal', pstyle(p4)), ///
 			title("`graphtitle'") ///
 			subtitle(${pais}) ///
 			caption("`graphfuente'") ///
@@ -433,9 +433,43 @@ quietly {
 		}
 
 
+		* PIB por persona *
+		if "$export" == "" {
+			local graphtitle "Producto Interno Bruto {bf:por persona}"
+			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE/CONAPO."
+		}
+		else {
+			local graphtitle ""
+			local graphfuente ""
+		}
+		g PIBPob = pibYR/Poblacion
+
+		* Texto sobre lineas *
+		forvalues k=1(1)`=_N' {
+			if PIBPob[`k'] != . & anio[`k'] <= 2022 & anio[`k'] >= 1993 {
+				local crec_PIBPC `"`crec_PIBPC' `=PIBPob[`k']' `=anio[`k']' "{bf:`=string(PIBPob[`k'],"%10.0fc")'}" "'
+			}
+		}
+		twoway (connected PIBPob anio) if PIBPob != . & anio <= 2022 & anio >= 1993, ///
+			title("`graphtitle'") ///
+			subtitle(${pais}) ///
+			caption("`graphfuente'") ///
+			ytitle(`=currency[`obsvp']' `aniovp') ///
+			xtitle("") ///
+			xlabel(1993(1)2022) ///
+			text(`crec_PIBPC', color(black) size(small) placement(c)) ///
+			ylabel(/*0(5)`=ceil(`pibYRmil'[_N])'*/, format(%20.0fc)) ///
+			name(PIBPC, replace)
+
+		capture confirm existence $export
+		if _rc == 0 {
+			graph export "$export/PIBPC.png", replace name(PIBPC)
+		}
+
+
 		* PIB por población ocupada *
 		if "$export" == "" {
-			local graphtitle "Producto Interno Bruto {bf:por población productiva}"
+			local graphtitle "Producto Interno Bruto {bf:por población ocupada}"
 			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE/ENOE."
 		}
 		else {
@@ -447,26 +481,24 @@ quietly {
 		* Texto sobre lineas *
 		forvalues k=1(1)`=_N' {
 			if PIBPobOcup[`k'] != . {
-				local crec_PIBPC `"`crec_PIBPC' `=PIBPobOcup[`k']' `=anio[`k']' "{bf:`=string(PIBPobOcup[`k'],"%10.0fc")'}" "'
+				local crec_PIBPO `"`crec_PIBPO' `=PIBPobOcup[`k']' `=anio[`k']' "{bf:`=string(PIBPobOcup[`k'],"%10.0fc")'}" "'
 			}
 		}
 		twoway (connected PIBPobOcup anio) if PIBPobOcup != ., ///
 			title("`graphtitle'") ///
 			subtitle(${pais}) ///
 			caption("`graphfuente'") ///
-			ytitle(`=currency[`obsvp']' `aniovp' por persona ocupada) ///
+			ytitle(`=currency[`obsvp']' `aniovp') ///
 			xtitle("") ///
 			xlabel(2005(1)`=`aniovp'-1') ///
-			text(`crec_PIBPC', color(black) size(small) placement(c)) ///
+			text(`crec_PIBPO', color(black) size(small) placement(c)) ///
 			ylabel(/*0(5)`=ceil(`pibYRmil'[_N])'*/, format(%20.0fc)) ///
-			name(PIBPC, replace)
+			name(PIBPO, replace)
 
 		capture confirm existence $export
 		if _rc == 0 {
-			graph export "$export/PIBPC.png", replace name(PIBPC)
+			graph export "$export/PIBPO.png", replace name(PIBPO)
 		}
-		
-		
 	}
 	return local except "`except'"
 	return local exceptI "`exceptI'"
