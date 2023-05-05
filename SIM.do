@@ -3,23 +3,16 @@
 ***    SIMULADOR FISCAL    ***
 ***                        ***
 ******************************
-
-
-
-******************************************************
-***                                                ***
-***    0. DIRECTORIOS DE TRABAJO (PROGRAMACION)    ***
-***                                                ***
-******************************************************
 noisily run "`c(sysdir_personal)'/profile.do"
 adopath ++ PERSONAL
-if "`c(username)'" == "ricardo" {                                               // Mac Ricardo
+
+* iMac Ricardo *
+if "`c(username)'" == "ricardo" ///
 	sysdir set PERSONAL "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
-}
-if "`c(username)'" == "ciepmx" & "`c(console)'" == "" {                         // Linux ServidorCIEP
+
+* Servidor CIEP *
+if "`c(username)'" == "ciepmx" & "`c(console)'" == "" ///
 	sysdir set PERSONAL "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
-}
-noisily run "`c(sysdir_personal)'/PARAM.do"
 
 
 
@@ -28,22 +21,23 @@ noisily run "`c(sysdir_personal)'/PARAM.do"
 ***    1. OPCIONES    ***
 ***                   ***
 *************************
+noisily run "`c(sysdir_personal)'/PARAM.do"
+global export "`c(sysdir_personal)'../../EU/LaTeX/images/"
 *global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
 *global update "update"                                                         // UPDATE DATASETS/OUTPUTS
 *global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
-*global export "`c(sysdir_personal)'../../LINGO/Pemex post-petróleo/images/"
-global export "`c(sysdir_personal)'../../EU/LaTeX/images/"
 
 
-
+exit
 *****************************************************
 ***                                               ***
 ***    2. POBLACION + ECONOMÍA + SISTEMA FISCAL   ***
 ***                                               ***
 *****************************************************
-** 2.1 Demografía **
-*forvalues piramide=1950(1)2050 {
-	noisily Poblacion /*if entidad == "`entidad'"*/, aniofinal(2050) $update //anio(`piramide')
+
+** 2.1 Población **
+*forvalues piramide=1970(1)2050 {
+	noisily Poblacion /*if entidad == "`entidad'"*/, $update //anio(`piramide') //aniofinal(2050)
 *}
 
 
@@ -57,7 +51,8 @@ noisily Inflacion, $update
 noisily LIF, by(divPE) rows(1) min(0) $update
 noisily TasasEfectivas
 
-noisily PEF, by(divPE) rows(2) min(0) $update 
+*noisily PEF, by(divPE) rows(2) min(0) $update 
+*noisily GastoPC
 
 noisily SHRFSP, $update
 
@@ -91,8 +86,6 @@ if _rc != 0 | "$update" == "update" {
 ***                         ***
 *******************************
 
-** 4.1 GASTOS: per cápita **
-noisily GastoPC, anio(`=aniovp')
 
 ** 4.2 INGRESOS: Módulos **
 if "`cambioisr'" == "1" {

@@ -372,10 +372,10 @@ program define UpdateDatosAbiertos, return
 	compress
 
 	if `c(version)' > 13.1 {
-		saveold "`c(sysdir_personal)'/SIM/DatosAbiertos.dta", replace version(13)
+		saveold "`c(sysdir_site)'/SIM/DatosAbiertos.dta", replace version(13)
 	}
 	else {
-		save "`c(sysdir_personal)'/SIM/DatosAbiertos.dta", replace
+		save "`c(sysdir_site)'/SIM/DatosAbiertos.dta", replace
 	}
 
 	*noisily LIF, anio(`aniovp') update rows(2)

@@ -24,7 +24,7 @@ noisily di _newline(5) in w "{bf:Centro de Investigaci{c o'}n Econ{c o'}mica y P
 ********************
 *** 3 Parametros ***
 ********************
-run "`c(sysdir_personal)'/PARAM.do"
+*run "`c(sysdir_personal)'/PARAM.do"
 
 
 
@@ -35,7 +35,7 @@ noisily di _newline in g `"{bf:{stata `"projmanager "`c(sysdir_site)'/simulador.
 	_newline(2) _col(3) "CLICK para ejecutar los siguientes comandos disponibles." ///
 	_newline _col(3) "O usar la siguiente sintaxis: " ///
 	_newline(2) _col(3) "{bf:Comando} {it:argumentos} [, OPCIONES]"
-noisily di _newline `"{stata "Poblacion":Poblacion} [if entidad == "{it:Nombre con acentos}"] [, ANIOhoy(int) ANIOFINal(int) NOGraphs UPDATE]"'
+noisily di _newline `"{stata "Poblacion":Poblacion} [if entidad == "{it:Nombre con espacios y acentos}"] [, ANIOhoy(int) ANIOFINal(int) NOGraphs UPDATE]"'
 noisily di `"{stata "PIBDeflactor, geopib(2010) geodef(2010)":PIBDeflactor} [, ANIOvp(int) DIScount(real) NOGraphs UPDATE]"'
 noisily di `"{stata "Inflacion":Inflacion} [, ANIOvp(int) NOGraphs UPDATE]"'
 noisily di `"{stata "SCN":SCN} [, ANIO(int) NOGraphs UPDATE]"'

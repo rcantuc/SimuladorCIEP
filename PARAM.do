@@ -12,14 +12,14 @@ capture mkdir `"`c(sysdir_personal)'/users/$id/"'
 
 global paqueteEconomico "Pre-CGPE 2024"
 tokenize $paqueteEconomico
-scalar anioPE = `2'
-if `2' >= 2020 {
+scalar anioPE = 2023
+if anioPE >= 2020 {
 	scalar enighanio = 2020
 }
-if `2' >= 2018 & `2' < 2020 {
+if anioPE >= 2018 & anioPE < 2020 {
 	scalar enighanio = 2018
 }
-if `2' >= 2016 & `2' < 2018 {
+if anioPE >= 2016 & anioPE < 2018 {
 	scalar enighanio = 2016
 }
 
@@ -55,10 +55,10 @@ global def2029 = $def2028
 global def2030 = $def2029
 
 
-
+exit
 ******************************
 ***    4. DEUDA PÚBLICA    ***
-/******************************
+******************************
 scalar shrfsp2023 = 49.9
 scalar shrfspInterno2023 = 34.7
 scalar shrfspExterno2023 = 14.6
@@ -76,7 +76,6 @@ scalar costodeudaInterno2023 = 3.4
 scalar costodeudaExterno2023 = 3.4
 
 *global tasaEfectiva = 6.005578 // Tasa de inter{c e'}s EFECTIVA
-
 
 
 

@@ -6,7 +6,7 @@
 *!***    Fecha: 29/Sept/22               ****
 *!***                                    ****
 *!*******************************************
-program define Poblacion
+program define Poblacion, return
 quietly {
 	timer on 14
 
@@ -69,10 +69,10 @@ quietly {
 		matrix `POBTOT' = r(StatTotal)
 		noisily di in g " Personas " in y `k' in g ": " in y %15.0fc `POBTOT'[1,1]
 		if `k' == `aniohoy' {
-			scalar pobtot`entidadGName' = string(`POBTOT'[1,1],"%20.0fc")
+			return local pobtot`entidadGName' = string(`POBTOT'[1,1],"%20.0fc")
 		}
 		if `k' == `aniofinal' {
-			scalar pobfin`entidadGName' = string(`POBTOT'[1,1],"%20.0fc")
+			return local pobfin`entidadGName' = string(`POBTOT'[1,1],"%20.0fc")
 		}
 	}
 
