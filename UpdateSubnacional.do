@@ -61,9 +61,9 @@ save `PIBEntidades'
 
 
 
-******************************************/
-*** 2. Poblacion por Entidad Federativa ***
-*******************************************
+**************************************************/
+*** 2. Poblacion ocupada por Entidad Federativa ***
+***************************************************
 import excel "`c(sysdir_site)'../BasesCIEP/UPDATE/ENOE/Población ocupada.xls", clear
 drop if B == ""
 drop AI
@@ -438,6 +438,33 @@ save `LIEs_INEGI'
 
 
 
+***************/
+*** 6. Deuda ***
+****************
+import excel "`c(sysdir_site)'../BasesCIEP/UPDATE/Subnacional/01_01_4_trim_2022.xlsx", clear
+drop in 1/5
+drop in 33/-1
+drop D-G I-IV
+rename A entidad
+rename B deudaTotal
+rename C gobiernoEstatal
+rename H entidadesPublicas
+destring _all, replace
+compress
+
+local j = 1
+foreach k of global entidadesL {
+	replace entidad = "``j''" if entidad == "`k'"
+	local ++j
+}
+
+g anio = 2022
+
+tempfile deuda
+save `deuda'
+
+
+
 *********************
 *** 5. BASE FINAL ***
 *********************
@@ -445,6 +472,7 @@ use `PIBEntidades', clear
 merge 1:m (anio entidad) using `LIEs_INEGI', nogen
 merge m:1 (anio entidad) using `PobTot', nogen update replace
 merge m:1 (anio entidad) using `poblacionOcupada', nogen
+merge m:1 (anio entidad) using `deuda', nogen
 keep if anio >= 2003 & anio <= 2022
 save "`c(sysdir_personal)'/SIM/EstadosBaseINEGI.dta", replace
 

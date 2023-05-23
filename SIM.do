@@ -21,14 +21,14 @@ if "`c(username)'" == "ciepmx" & "`c(console)'" == "" ///
 ***    1. OPCIONES    ***
 ***                   ***
 *************************
-noisily run "`c(sysdir_personal)'/PARAM.do"
 global export "`c(sysdir_personal)'../../EU/LaTeX/images/"
+noisily run "`c(sysdir_personal)'/PARAM.do"
 *global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
 *global update "update"                                                         // UPDATE DATASETS/OUTPUTS
 *global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
 
-
 exit
+
 *****************************************************
 ***                                               ***
 ***    2. POBLACION + ECONOMÍA + SISTEMA FISCAL   ***

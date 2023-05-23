@@ -15,7 +15,7 @@
 capture confirm file "`c(sysdir_personal)'/SIM/$pais/prePEF.dta"
 if _rc != 0 | "`1'" == "update" {
 	local archivos: dir "`c(sysdir_site)'../BasesCIEP/PEFs/$pais" files "*.xlsx"			// Busca todos los archivos .xlsx en /bases/PEFs/
-	*local archivos `""CuotasISSSTE.xlsx" "PPEF 2023.xlsx" "CP 2013.xlsx""'
+	*local archivos `""CuotasISSSTE.xlsx" "PEF 2023.xlsx" "CP 2022.xlsx""'
 
 	foreach k of local archivos {													// Loop para todos los archivos .csv
 
@@ -45,11 +45,11 @@ if _rc != 0 | "`1'" == "update" {
 				rename `j' `newname'	
 				local j = "`newname'"
 			}
-			if "`j'" == "objeto_del_gasto" | "`j'" == "concepto" {
+			if "`j'" == "objeto_del_gasto" | "`j'" == "partida_especifica" {
 				rename `j' objeto
 				local j = "objeto"
 			}
-			if "`j'" == "desc_objeto_del_gasto" | "`j'" == "desc_concepto" {
+			if "`j'" == "desc_objeto_del_gasto" | "`j'" == "desc_partida_especifica" {
 				rename `j' desc_objeto
 				local j = "desc_objeto"
 			}
@@ -422,13 +422,11 @@ foreach k of local levelsof {
 local ifpp `"`=substr("`ifpp'",1,`=strlen("`ifpp'")-3')')"'
 replace desc_divPE = "Pensiones" if desc_divPE == "" ///
 	& (substr(string(objeto),1,2) == "45" | substr(string(objeto),1,2) == "47")	// Pensiones contributivas
-replace desc_divPE = "Pensiones" if desc_divPE == "" ///
-	& (substr(string(partida_generica),1,2) == "45" | substr(string(partida_generica),1,2) == "47")	// Pensiones contributivas
 
 g desc_divCIEP = desc_divPE
 
-replace desc_divPE = "Pensión Bienestar" if desc_divPE == "" & `ifpp'				// Pensión Bienestar
-replace desc_divCIEP = "Pensión Bienestar" if desc_divCIEP == "" & `ifpp'			// Pensión Bienestar
+replace desc_divPE = "Pensión Bienestar" if desc_divPE == "" & `ifpp'			// Pensión Bienestar
+replace desc_divCIEP = "Pensión Bienestar" if desc_divCIEP == "" & `ifpp'		// Pensión Bienestar
 
 
 * 4.3 Educacion *
@@ -478,17 +476,13 @@ replace desc_divCIEP = "Inversión" if desc_divCIEP == "" ///
 	
 * 4.5 Federalizado *
 replace desc_divPE = "Otras Part y Apor" if desc_divPE == "" ///
-	& (ramo == 28 | ramo == 33 | ramo == 25)                                    // Part + Aport
+	& (ramo == 28 | ramo == 33 | ramo == 25)                                   // Part + Aport
 replace desc_divCIEP = "Federalizado" if ///
-	(ramo == 28 | ramo == 33 | ramo == 25)                                     // Part + Aport
+	(ramo == 28 | ramo == 33 | ramo == 25)                                    // Part + Aport
 
 	
 replace desc_divPE = "Otras Part y Apor" if desc_divPE == "" ///
-	& partida_generica == 438                                                   // Convenios descentralizados
-replace desc_divPE = "Otras Part y Apor" if desc_divPE == "" ///
 	& (objeto == 43801)                                                         // Convenios descentralizados
-replace desc_divCIEP = "Federalizado" if ///
-	partida_generica == 438                                                     // Convenios descentralizados
 replace desc_divCIEP = "Federalizado" if ///
 	(objeto == 43801)                                                           // Convenios descentralizados
 
@@ -500,15 +494,11 @@ replace desc_divCIEP = "Federalizado" if ///
 replace desc_divPE = "Otras Part y Apor" if desc_divPE == "" ///
 	& (objeto == 46101 & ramo == 23 & pp == 80)                                 // FEIEF
 replace desc_divPE = "Otras Part y Apor" if desc_divPE == "" ///
-	& (partida_generica == 461 & ramo == 23 & pp == 80)                         // FEIEF
-replace desc_divPE = "Otras Part y Apor" if desc_divPE == "" ///
 	& (ramo == 23 & pp == 4 & modalidad == "Y")                                 // FEIEF
 replace desc_divPE = "Otras Part y Apor" if desc_divPE == "" ///
 	& (ramo == 23 & pp == 141)                                                  // FIES
 replace desc_divCIEP = "Federalizado" if ///
 	(objeto == 46101 & ramo == 23 & pp == 80)                                 // FEIEF
-replace desc_divCIEP = "Federalizado" if ///
-	(partida_generica == 461 & ramo == 23 & pp == 80)                         // FEIEF
 replace desc_divCIEP = "Federalizado" if ///
 	(ramo == 23 & pp == 4 & modalidad == "Y")                                 // FEIEF
 replace desc_divCIEP = "Federalizado" if ///
@@ -554,12 +544,9 @@ label define divCIEP 10 "", modify
 *** 5. NETEO DEL GASTO ***
 ***                    ***
 **************************
-g double gasto = ejercido if anio <= 2021
-if _rc != 0 {
-	capture g double gasto = devengado if anio <= 2021
-}
-*replace gasto = proyecto if anio == 2023
-replace gasto = aprobado if anio == 2022 | anio == 2023
+g double gasto = ejercido if ejercido != .
+replace gasto = aprobado if ejercido == . & aprobado != .
+replace gasto = proyecto if ejercido == . & aprobado == . & proyecto != .
 
 g byte transf_gf = (ramo == 19 & ur == "GYN") | (ramo == 19 & ur == "GYR")
 
