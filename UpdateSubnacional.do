@@ -439,7 +439,7 @@ save `LIEs_INEGI'
 
 
 ***************/
-*** 6. Deuda ***
+*** 5. Deuda ***
 ****************
 import excel "`c(sysdir_site)'../BasesCIEP/UPDATE/Subnacional/01_01_4_trim_2022.xlsx", clear
 drop in 1/5
@@ -463,10 +463,61 @@ g anio = 2022
 tempfile deuda
 save `deuda'
 
+*******************************/
+*** 6. Gasto en áreas INEGI (BORRADOR) ***
+*******************************
 
+
+forvalues anio=2013(1)2021 {
+	
+    import delimited "`c(sysdir_site)'../BasesCIEP/UPDATE/Subnacional/estatal/conjunto_de_datos/efipem_estatal_anual_tr_cifra_`anio'.csv", encoding(UTF-8) clear
+	tempfile estados
+	save "`estados'"
+
+	** Bases de la CDMX **
+	import delimited "`c(sysdir_site)'../BasesCIEP/UPDATE/Subnacional/CDMX/conjunto_de_datos/efipem_cdmx_anual_tr_cifra_`anio'.csv", encoding(UTF-8) clear
+	append using "`estados'"
+	
+	
+	keep if tema=="Egresos"
+	
+	rename valor monto
+	
+	gen divAREAS=""
+
+    replace divAREAS="Inversion" if descripcion_categoria=="Inversión pública" 
+
+    replace divAREAS="Pensiones" if descripcion_categoria=="Pensiones y jubilaciones"
+
+    replace divAREAS="Deuda" if descripcion_categoria=="Deuda pública"
+	
+	
+	tempfile `anio'
+	save ``anio''
+	
+
+}
+
+
+forvalues anio=2013(1)2021 {
+	
+	if `anio'==2013 {
+		
+		use ``anio'' 
+	}
+
+else { 
+	
+	append using ``anio''
+}
+
+
+}
+
+collapse (sum) monto, by
 
 *********************
-*** 5. BASE FINAL ***
+*** 7. BASE FINAL ***
 *********************
 use `PIBEntidades', clear
 merge 1:m (anio entidad) using `LIEs_INEGI', nogen
