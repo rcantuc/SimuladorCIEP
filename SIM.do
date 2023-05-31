@@ -27,7 +27,7 @@ noisily run "`c(sysdir_personal)'/PARAM.do"
 *global update "update"                                                         // UPDATE DATASETS/OUTPUTS
 *global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
 
-exit
+
 
 *****************************************************
 ***                                               ***
@@ -35,21 +35,21 @@ exit
 ***                                               ***
 *****************************************************
 
-** 2.1 Población **
-*forvalues piramide=1970(1)2050 {
-	noisily Poblacion /*if entidad == "`entidad'"*/, $update //anio(`piramide') //aniofinal(2050)
+/** 2.1 Población **
+*forvalues piramide=1950(1)2050 {
+	noisily Poblacion /*if entidad == "`entidad'"*/, $update //anio(`piramide') //aniofinal(2030)
 *}
 
 
-** 2.2 Economía **
-noisily PIBDeflactor, geodef(2005) geopib(2005) $update
-noisily SCN, $update
-noisily Inflacion, $update
+** 2.2 Economía **/
+*noisily PIBDeflactor, geodef(2005) geopib(2005) $update
+*noisily SCN, $update
+*noisily Inflacion, $update
 
 
 ** 2.3 Sistema fiscal **
-noisily LIF, by(divPE) rows(1) min(0) $update
-noisily TasasEfectivas
+*noisily LIF, by(divPE) rows(1) min(0) $update
+*noisily TasasEfectivas
 
 *noisily PEF, by(divPE) rows(2) min(0) $update 
 *noisily GastoPC

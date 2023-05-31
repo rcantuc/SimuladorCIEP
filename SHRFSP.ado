@@ -60,13 +60,13 @@ quietly {
 	}
 
 	noisily di _newline in g "  {bf:Tipo de cambio " in y anio[`obsfin'] in g ": }" _col(30) in y %15.1fc tipoDeCambio[`obsfin'] in g " `currency'/USD"
-	noisily di _newline in g "  {bf:SHRFSP a" in y " `aniofin'm`mesfin'" in g ": }" _col(30) in y %15.0fc shrfsp[`obsfin']/Poblacion[`obsfin']/deflator[`obsfin'] in g " `currency' por persona."
-	noisily di in g "  {bf:SHRFSP interna a" in y " `aniofin'm`mesfin'" in g ": }" _col(30) in y %15.0fc shrfspInterno[`obsfin']/Poblacion[`obsfin']/deflator[`obsfin'] in g " `currency' por persona."
-	noisily di in g "  {bf:SHRFSP externa a" in y " `aniofin'm`mesfin'" in g ": }" _col(30) in y %15.0fc shrfspExterno[`obsfin']/Poblacion[`obsfin']/deflator[`obsfin']/tipoDeCambio[`obsfin'] in g " USD por persona."
+	noisily di _newline in g "  {bf:SHRFSP a" in y " `=anio[`obsfin']'m`=mes[`obsfin']'" in g ": }" _col(30) in y %15.0fc shrfsp[`obsfin']/Poblacion[`obsfin']/deflator[`obsfin'] in g " `currency' por persona."
+	noisily di in g "  {bf:SHRFSP interna a" in y " `=anio[`obsfin']'m`=mes[`obsfin']'" in g ": }" _col(30) in y %15.0fc shrfspInterno[`obsfin']/Poblacion[`obsfin']/deflator[`obsfin'] in g " `currency' por persona."
+	noisily di in g "  {bf:SHRFSP externa a" in y " `=anio[`obsfin']'m`=mes[`obsfin']'" in g ": }" _col(30) in y %15.0fc shrfspExterno[`obsfin']/Poblacion[`obsfin']/deflator[`obsfin']/tipoDeCambio[`obsfin'] in g " USD por persona."
 
-	noisily di _newline in g "  {bf:SHRFSP a" in y " `=`aniofin'-1'm`mesfin'" in g ": }" _col(30) in y %15.0fc shrfsp[`obsfin'-1]/Poblacion[`obsfin'-1]/deflator[`obsfin'] in g " `currency' por persona."
-	noisily di in g "  {bf:SHRFSP interna a" in y " `=`aniofin'-1'm`mesfin'" in g ": }" _col(30) in y %15.0fc shrfspInterno[`obsfin'-1]/Poblacion[`obsfin'-1]/deflator[`obsfin'] in g " `currency' por persona."
-	noisily di in g "  {bf:SHRFSP externa a" in y " `=`aniofin'-1'm`mesfin'" in g ": }" _col(30) in y %15.0fc shrfspExterno[`obsfin'-1]/Poblacion[`obsfin'-1]/deflator[`obsfin']/tipoDeCambio[`obsfin'-1] in g " USD por persona."
+	noisily di _newline in g "  {bf:SHRFSP a" in y " `=anio[`obsfin'-1]'m`=mes[`obsfin'-1]'" in g ": }" _col(30) in y %15.0fc shrfsp[`obsfin'-1]/Poblacion[`obsfin'-1]/deflator[`obsfin'] in g " `currency' por persona."
+	noisily di in g "  {bf:SHRFSP interna a" in y " `=anio[`obsfin'-1]'m`=mes[`obsfin'-1]'" in g ": }" _col(30) in y %15.0fc shrfspInterno[`obsfin'-1]/Poblacion[`obsfin'-1]/deflator[`obsfin'] in g " `currency' por persona."
+	noisily di in g "  {bf:SHRFSP externa a" in y " `=anio[`obsfin'-1]'m`=mes[`obsfin'-1]'" in g ": }" _col(30) in y %15.0fc shrfspExterno[`obsfin'-1]/Poblacion[`obsfin'-1]/deflator[`obsfin']/tipoDeCambio[`obsfin'-1] in g " USD por persona."
 
 	* Parámetros *
 	replace porInterno = L.porInterno if porInterno == .
