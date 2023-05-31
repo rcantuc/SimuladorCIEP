@@ -24,7 +24,8 @@ if "`c(username)'" == "maaci" {                                                 
 	sysdir set SITE "C:\Users\maaci\Dropbox (CIEP)\Bloomberg Tabaco\2020\Simulador impuestos tabaco\"
 }
 if "`c(username)'" == "Admin" {                                                 // Leslie
-	sysdir set SITE "C:\Users\Admin\CIEP Dropbox\Leslie Badillo\SimuladorCIEP"
+	sysdir set PERSONAL "C:\Users\Admin\CIEP Dropbox\Leslie Badillo\SimuladorCIEP\"
+	sysdir set SITE "C:\Users\Admin\CIEP Dropbox\SimuladorCIEP\"
 }
 if "`c(username)'" == "ciepmx" & "`c(console)'" == "" {                         // Linux ServidorCIEP
 	sysdir set SITE "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/SimuladorCIEP/5.3/SimuladorCIEP/"
@@ -61,8 +62,8 @@ local aniovp = 2023
 ** En 2020 0.49   pesos por cigarro. Cajetilla de 20 = 9.8 pesos    **
 ** En 2021 0.51   pesos por cigarro. Cajetilla de 20 = 10.2 pesos   **
 ** En 2022 0.5484 pesos por cigarro. Cajetilla de 20 = 10.968 pesos **
-local stax   = 0.5484                                                           // PARAMETRO 1 Estatus Quo
-local stax_1 = 0.5484                                                           // PARAMETRO 1 A MODIFICAR
+local stax   = 0.5911                                                           // PARAMETRO 1 Estatus Quo
+local stax_1 = 0.5911                                                           // PARAMETRO 1 A MODIFICAR
 *local stax_1 = {{ieps_pesos}}                                                  // PARAMETRO 1 A MODIFICAR (WEB)
 
 ** Impuesto Ad Valorem **
