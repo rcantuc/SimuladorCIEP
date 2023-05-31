@@ -203,5 +203,5 @@ if "$nographs" == "" {
 		ylabel(/*0(5)`=ceil(`pibYRmil'[_N])'*/, format(%20.0fc)) ///
 		note("{bf:{c U'}ltimo dato reportado}: `ultanio' trim. `ulttrim'.") ///
 		caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE/ENOE.") ///
-		name(PIBPC, replace)
+		name(PIBPCupdate, replace)
 }

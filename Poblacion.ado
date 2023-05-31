@@ -235,9 +235,9 @@ quietly {
 			text(62.5 `=`MaxH'[1,1]*.618' "{bf:Personas post `aniohoy' vivas en `aniofinal'} ") ///
 			text(55 `=`MaxH'[1,1]*.618' `"`=string(`Pnacida'[1,1],"%20.0fc")' (`=string(`Pnacida'[1,1]/`P`aniofinal''[1,1]*100,"%7.1fc")'%)"') ///
 			text(45 `=-`MaxH'[1,1]*.618' "{bf:Tasa de dependencia `aniohoy'}") ///
-			text(37.5 `=-`MaxH'[1,1]*.618' `"`=string(`P1865_`aniohoy''[1,1]/(`P18_`aniohoy''[1,1]+`P65_`aniohoy''[1,1]),"%8.2fc")'"') ///
+			text(37.5 `=-`MaxH'[1,1]*.618' `"`=string((`P18_`aniohoy''[1,1]+`P65_`aniohoy''[1,1])/`P1865_`aniohoy''[1,1],"%8.2fc")'"') ///
 			text(45 `=`MaxH'[1,1]*.618' "{bf:Tasa de dependencia `aniofinal'}") ///
-			text(37.5 `=`MaxH'[1,1]*.618' `"`=string(`P1865_`aniofinal''[1,1]/(`P18_`aniofinal''[1,1]+`P65_`aniofinal''[1,1]),"%8.2fc")'"') ///
+			text(37.5 `=`MaxH'[1,1]*.618' `"`=string((`P18_`aniofinal''[1,1]+`P65_`aniofinal''[1,1])/`P1865_`aniofinal''[1,1],"%8.2fc")'"') ///
 			///legend(label(1 "Men") label(2 "Women")) ///
 			/*text(105 `=`MaxH'[1,1]*.618' "{bf:Population}") ///
 			text(100 `=`MaxH'[1,1]*.618' `"`=string(`P`aniohoy''[1,1],"%20.0fc")'"') ///
