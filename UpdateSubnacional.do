@@ -133,7 +133,7 @@ save `PobTot'
 
 *****************************************/
 *** 3. Gasto Federalizado y sus Fondos ***
-/******************************************
+******************************************
 DatosAbiertos XFA0000, nographs
 split nombre, gen(entidad) parse(":")
 drop nombre
@@ -223,8 +223,6 @@ forvalues anio=2013(1)2021 {
 
 	***************
 	** 4.1 Bases **
-	***************
-
 	** Bases de estados **
 	import delimited "`c(sysdir_site)'../BasesCIEP/UPDATE/Subnacional/estatal/conjunto_de_datos/efipem_estatal_anual_tr_cifra_`anio'.csv", encoding(UTF-8) clear
 	tempfile estados
@@ -233,13 +231,11 @@ forvalues anio=2013(1)2021 {
 	** Bases de la CDMX **
 	import delimited "`c(sysdir_site)'../BasesCIEP/UPDATE/Subnacional/CDMX/conjunto_de_datos/efipem_cdmx_anual_tr_cifra_`anio'.csv", encoding(UTF-8) clear
 	append using "`estados'"
-	*sort id_entidad
 
 
-	************************************
-	** 4.2 Creación de bases INGRESOS **
-	************************************
-	keep if tema == "Ingresos"
+	***************************
+	** 4.2 Creación de bases **
+	*keep if tema == "Ingresos"
 	replace descripcion_categoria = "Aportaciones Federales" if descripcion_categoria == "Aportaciones federales"
 
 	/** Acentos **
@@ -326,9 +322,7 @@ forvalues anio=2013(1)2021 {
 
 	***************************
 	** 4.3 Limpia de la base ** 
-	***************************
 	g borrador=0
-
 	** Limpiamos capitulo **
 	local nombreDespues = capitulo[1]
 	forvalues k=1(1)`=_N'{
@@ -367,8 +361,7 @@ forvalues anio=2013(1)2021 {
 
 
 	**********************************************
-	** 4.4 Comprobar que los valores están bien **
-	/**********************************************
+	/** 4.4 Comprobar que los valores están bien **
 	collapse(sum) valor ,by(id_entidad)
 	rename valor valor_colapsado
 	merge 1:1 id_entidad using "`totales'"
@@ -378,7 +371,6 @@ forvalues anio=2013(1)2021 {
 
 	*************************/
 	** 4.5 Bases temporales **
-	**************************
 	tempfile `anio'
 	if "`baseuse'" == "" {
 		local baseuse `"``anio''"'
@@ -386,7 +378,7 @@ forvalues anio=2013(1)2021 {
 	else {
 		local basesappend `"`basesappend' ``anio''"'
 	}
-	keep anio id_entidad valor capitulo concepto partida subpartida
+	*keep anio id_entidad valor capitulo concepto partida subpartida
 	format valor %20.1fc
 	save "``anio''", replace
 }
@@ -394,7 +386,6 @@ forvalues anio=2013(1)2021 {
 
 *******************************
 ** 4.6 Base final LIEs_INEGI **
-*******************************
 use `baseuse', clear
 append using `basesappend'
 
@@ -415,13 +406,6 @@ replace divCIEP = "Federalizado" if capitulo == "Participaciones federales"
 replace divCIEP = "Organismos y empresas" if capitulo == "Cuotas y Aportaciones de Seguridad Social" | capitulo == "Otros ingresos"
 replace divCIEP = "Financiamiento" if capitulo == "Financiamiento"
 replace divCIEP = "Federalizado" if concepto == "Recursos federales reasignados" //& capitulo == "Aportaciones Federales" 
-
-
-** Le ponemos nombre a las entidades **
-*tempfile temporal_INEGI
-*save "`temporal_INEGI'"
-*import delimited "`c(sysdir_site)'../BasesCIEP/UPDATE/Subnacional/estatal/catalogos/tc_entidad.csv", encoding(UTF-8) clear
-*merge 1:m (id_entidad) using "`temporal_INEGI'", nogen
 
 g entidad = ""
 forvalues k=1(1)32 {
@@ -463,61 +447,10 @@ g anio = 2022
 tempfile deuda
 save `deuda'
 
-*******************************/
-*** 6. Gasto en áreas INEGI (BORRADOR) ***
-*******************************
 
 
-forvalues anio=2013(1)2021 {
-	
-    import delimited "`c(sysdir_site)'../BasesCIEP/UPDATE/Subnacional/estatal/conjunto_de_datos/efipem_estatal_anual_tr_cifra_`anio'.csv", encoding(UTF-8) clear
-	tempfile estados
-	save "`estados'"
-
-	** Bases de la CDMX **
-	import delimited "`c(sysdir_site)'../BasesCIEP/UPDATE/Subnacional/CDMX/conjunto_de_datos/efipem_cdmx_anual_tr_cifra_`anio'.csv", encoding(UTF-8) clear
-	append using "`estados'"
-	
-	
-	keep if tema=="Egresos"
-	
-	rename valor monto
-	
-	gen divAREAS=""
-
-    replace divAREAS="Inversion" if descripcion_categoria=="Inversión pública" 
-
-    replace divAREAS="Pensiones" if descripcion_categoria=="Pensiones y jubilaciones"
-
-    replace divAREAS="Deuda" if descripcion_categoria=="Deuda pública"
-	
-	
-	tempfile `anio'
-	save ``anio''
-	
-
-}
-
-
-forvalues anio=2013(1)2021 {
-	
-	if `anio'==2013 {
-		
-		use ``anio'' 
-	}
-
-else { 
-	
-	append using ``anio''
-}
-
-
-}
-
-collapse (sum) monto, by
-
-*********************
-*** 7. BASE FINAL ***
+********************/
+*** 6. BASE FINAL ***
 *********************
 use `PIBEntidades', clear
 merge 1:m (anio entidad) using `LIEs_INEGI', nogen
@@ -526,6 +459,7 @@ merge m:1 (anio entidad) using `poblacionOcupada', nogen
 merge m:1 (anio entidad) using `deuda', nogen
 keep if anio >= 2003 & anio <= 2022
 save "`c(sysdir_personal)'/SIM/EstadosBaseINEGI.dta", replace
+
 
 use `PIBEntidades', clear
 merge 1:m (anio entidad) using `GastoFedBase', nogen

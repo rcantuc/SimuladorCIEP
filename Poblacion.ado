@@ -54,6 +54,17 @@ quietly {
 	* Obtiene el año inicial de la base *
 	local anioinicial = anio in 1
 	local entidadGName = "`=entidad[1]'"
+	
+	tokenize $entidadesC
+	local j = 1
+	foreach k of global entidadesL {
+		if "`entidadGName'" == "`k'" {
+			local entidadGName = "``j''"
+			continue, break
+		}
+		local ++j
+	}
+	
 	local entidadGName = strtoname("`entidadGName'")
 
 	* Si no hay opción aniofinal, utiliza el último año del vector "anio" *
@@ -69,10 +80,10 @@ quietly {
 		matrix `POBTOT' = r(StatTotal)
 		noisily di in g " Personas " in y `k' in g ": " in y %15.0fc `POBTOT'[1,1]
 		if `k' == `aniohoy' {
-			return local pobtot`entidadGName' = string(`POBTOT'[1,1],"%20.0fc")
+			scalar pobtot`entidadGName' = string(`POBTOT'[1,1],"%20.0fc")
 		}
 		if `k' == `aniofinal' {
-			return local pobfin`entidadGName' = string(`POBTOT'[1,1],"%20.0fc")
+			scalar pobfin`entidadGName' = string(`POBTOT'[1,1],"%20.0fc")
 		}
 	}
 

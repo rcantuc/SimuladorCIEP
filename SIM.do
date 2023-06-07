@@ -35,27 +35,34 @@ noisily run "`c(sysdir_personal)'/PARAM.do"
 ***                                               ***
 *****************************************************
 
-/** 2.1 Población **
-*forvalues piramide=1950(1)2050 {
-	noisily Poblacion /*if entidad == "`entidad'"*/, $update //anio(`piramide') //aniofinal(2030)
+** 2.1 Población **
+*forvalues anio=1950(1)2050 {
+	foreach entidad in $entidadesL {
+		noisily Poblacion if entidad == "`entidad'", $update //anio(`anio') //aniofinal(2030)
+	}
 *}
+scalarlatex, logname(poblacion)
 
-
+exit
 ** 2.2 Economía **/
-*noisily PIBDeflactor, geodef(2005) geopib(2005) $update
+noisily PIBDeflactor, //geodef(2005) geopib(2005) $update
 *noisily SCN, $update
 *noisily Inflacion, $update
 
 
 ** 2.3 Sistema fiscal **
-*noisily LIF, by(divPE) rows(1) min(0) $update
-*noisily TasasEfectivas
+noisily LIF, by(divPE) rows(1) min(0) $update
+noisily TasasEfectivas
+scalarlatex, logname(tasasEfectivas)
 
-*noisily PEF, by(divPE) rows(2) min(0) $update 
+noisily PEF, by(divPE) rows(2) min(0) $update 
 *noisily GastoPC
 
-noisily SHRFSP, $update
+*noisily SHRFSP, $update
 
+
+** 2.4 Subnacionales **
+noisily run "`c(sysdir_personal)'/Subnacional.do" $update
 
 exit
 
@@ -63,7 +70,7 @@ exit
 ***                     ***
 ***    3. HOUSEHOLDS    ***
 ***                     ***
-***************************
+/***************************
 
 ** 3.1 Households information **
 capture confirm file "`c(sysdir_personal)'/SIM/`=enighanio'/households.dta"
@@ -84,7 +91,7 @@ if _rc != 0 | "$update" == "update" {
 ***                         ***
 ***    4. SISTEMA FISCAL    ***
 ***                         ***
-*******************************
+/*******************************
 
 
 ** 4.2 INGRESOS: Módulos **

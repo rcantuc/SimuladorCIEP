@@ -46,9 +46,6 @@ forvalues anio=2013(1)2021 {
 	| (tema == "Ingresos" & categoria == "Subpartida Genérica" & descripcion_categoria == "FA para Infraestructura Social Estatal") ///
 	| (tema == "Ingresos" & categoria == "Subpartida Genérica" & descripcion_categoria == "FA Múltiples") 
 	
-	
-	
-	
 	rename descripcion_categoria GI_
 	
 	*encode descripcion_categoria, generate(GI_) label(mylabel)
