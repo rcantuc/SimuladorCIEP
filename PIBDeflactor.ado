@@ -374,14 +374,13 @@ quietly {
 			local graphtitle ""
 			local graphfuente ""
 		}
-		twoway (connected var_pibY anio if (anio <= `aniofinal' & anio >= `anioinicial') | ///
-			(anio == `aniofinal' & trimestre == 4)) ///
+		twoway (connected var_pibY anio if (anio < `aniofinal' & anio >= `anioinicial') | (anio == `aniofinal' & trimestre == 4)) ///
 			/*(connected var_pibY anio if anio >= `aniofinal'+`exo_count')*/ ///
-			(connected var_pibY anio if anio < `aniofinal'+`exo_count' & anio > `aniofinal', pstyle(p4)), ///
+			(connected var_pibY anio if anio < `aniofinal'+`exo_count' & anio >= `aniofinal', pstyle(p4)), ///
 			title("`graphtitle'") ///
 			subtitle(${pais}) ///
 			caption("`graphfuente'") ///
-			xlabel(`=round(anio[1],5)'(5)`=`aniofinal'+`exo_count'' `aniovp' `=`aniofinal'+`exo_count'') ///
+			xlabel(`=round(anio[1],5)'(5)`=`aniofinal'+`exo_count'' `aniovp' `=`aniofinal'+`exo_count'-1') ///
 			ylabel(/*-6(3)6*/, format(%3.0fc)) ///
 			ytitle("Crecimiento anual (%)") xtitle("") ///
 			///yline(0, lcolor(white)) ///
@@ -446,18 +445,20 @@ quietly {
 
 		* Texto sobre lineas *
 		forvalues k=1(1)`=_N' {
-			if PIBPob[`k'] != . & anio[`k'] <= 2022 & anio[`k'] >= 1993 {
+			if PIBPob[`k'] != . & anio[`k'] < `aniofinal'+`exo_count' & anio[`k'] >= `anioinicial' {
 				local crec_PIBPC `"`crec_PIBPC' `=PIBPob[`k']' `=anio[`k']' "{bf:`=string(PIBPob[`k'],"%10.0fc")'}" "'
 			}
 		}
-		twoway (connected PIBPob anio) if PIBPob != . & anio <= 2022 & anio >= 1993, ///
+		twoway (connected PIBPob anio if (anio < `aniofinal' & anio >= `anioinicial') | (anio == `aniofinal' & trimestre == 4)) ///
+			(connected PIBPob anio if anio < `aniofinal'+`exo_count' & anio >= `aniofinal', pstyle(p4)), ///
 			title("`graphtitle'") ///
 			subtitle(${pais}) ///
 			caption("`graphfuente'") ///
 			ytitle(`=currency[`obsvp']' `aniovp') ///
 			xtitle("") ///
-			xlabel(1993(1)2022) ///
+			xlabel(`=round(anio[1],5)'(5)`=`aniofinal'+`exo_count'' `aniovp' `=`aniofinal'+`exo_count'-1') ///
 			text(`crec_PIBPC', color(black) size(small) placement(c)) ///
+			legend(label(1 "Reportado") label(2 "$paqueteEconomico")) ///
 			ylabel(/*0(5)`=ceil(`pibYRmil'[_N])'*/, format(%20.0fc)) ///
 			name(PIBPC, replace)
 
@@ -490,7 +491,7 @@ quietly {
 			caption("`graphfuente'") ///
 			ytitle(`=currency[`obsvp']' `aniovp') ///
 			xtitle("") ///
-			xlabel(2005(1)`=`aniovp'-1') ///
+			xlabel(2005(1)`=`aniovp'') ///
 			text(`crec_PIBPO', color(black) size(small) placement(c)) ///
 			ylabel(/*0(5)`=ceil(`pibYRmil'[_N])'*/, format(%20.0fc)) ///
 			name(PIBPO, replace)

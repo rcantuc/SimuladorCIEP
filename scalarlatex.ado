@@ -91,7 +91,7 @@ program define scalarlatex
 				| `"`=substr("`name'",-1,1)'"' == "X" | `"`=substr("`name'",-1,1)'"' == "H" ///
 				| `"`=substr("`name'",-1,1)'"' == "M" | `"`=substr("`name'",-8,8)'"' == "Nacional" ///
 				| `"`=substr("`name'",-2,2)'"' == "PC" | `"`=substr("`name'",-3,3)'"' == "GEO" ///
-				| `"`=substr("`name'",-3,3)'"' == "Por" {
+				| `"`=substr("`name'",-3,3)'"' == "Por" | `"`=substr("`name'",1,5)'"' == "Depen" {
 				local value = scalar(`name')
 				di in w "\def\d`name'#1{\gdef\\`name'{#1}}"
 				di in w `"\d`name'{`=string(`value',"%12.1fc")'}"'				

@@ -14,17 +14,18 @@ global paqueteEconomico "Pre-CGPE 2024"
 tokenize $paqueteEconomico
 scalar anioPE = 2023
 if anioPE >= 2020 {
-	scalar enighanio = 2020
+	scalar anioenigh = 2020
 }
 if anioPE >= 2018 & anioPE < 2020 {
-	scalar enighanio = 2018
+	scalar anioenigh = 2018
 }
 if anioPE >= 2016 & anioPE < 2018 {
-	scalar enighanio = 2016
+	scalar anioenigh = 2016
 }
 
 global entidadesL `" "Aguascalientes" "Baja California" "Baja California Sur" "Campeche" "Coahuila" "Colima" "Chiapas" "Chihuahua" "Ciudad de México" "Durango" "Guanajuato" "Guerrero" "Hidalgo" "Jalisco" "Estado de México" "Michoacán" "Morelos" "Nayarit" "Nuevo León" "Oaxaca" "Puebla" "Querétaro" "Quintana Roo" "San Luis Potosí" "Sinaloa" "Sonora" "Tabasco" "Tamaulipas" "Tlaxcala" "Veracruz" "Yucatán" "Zacatecas" "Nacional" "'
 global entidadesC "Ags BC BCS Camp Coah Col Chis Chih CDMX Dgo Gto Gro Hgo Jal EdoMex Mich Mor Nay NL Oax Pue Qro QRoo SLP Sin Son Tab Tamps Tlax Ver Yuc Zac Nac"
+
 
 if "$output" != "" {
 	quietly log using `"`c(sysdir_site)'/users/$id/output.txt"', replace text name(output)
@@ -42,8 +43,6 @@ global pib2025 = 2.4 //     CGPE 2023 (página 134)
 global pib2026 = 2.4 //     CGPE 2023 (página 134)
 global pib2027 = 2.4 //     CGPE 2023 (página 134)
 global pib2028 = 2.4 //     CGPE 2023 (página 134)
-global pib2029 = $pib2028
-global pib2030 = $pib2029
 
 global def2023 = 5.2 //     CGPE 2023 (página 134)
 global def2024 = 4.792 //   CGPE 2023 (página 134)
@@ -51,8 +50,6 @@ global def2025 = 3.49807 // CGPE 2023 (página 134)
 global def2026 = 3.49211 // CGPE 2023 (página 134)
 global def2027 = 3.51530 // CGPE 2023 (página 134)
 global def2028 = 3.50150 // CGPE 2023 (página 134)
-global def2029 = $def2028
-global def2030 = $def2029
 
 
 exit
