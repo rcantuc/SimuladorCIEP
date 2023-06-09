@@ -11,7 +11,7 @@
 
 
 *******************************/
-*** 1. Productividad laboral ***
+*** 2. Productividad laboral ***
 /*******************************
 use "`c(sysdir_personal)'/SIM/EstadosBaseEstOpor.dta", clear
 collapse (mean) pob* deflator pibYEnt, by(anio entidad entidadx)
@@ -73,7 +73,7 @@ noisily scalarlatex, log(pibYEnt)
 
 
 ****************************/
-*** 2. Gasto Federalizado ***
+*** 3. Gasto Federalizado ***
 /*****************************
 use "`c(sysdir_personal)'/SIM/EstadosBaseEstOpor.dta", clear
 
@@ -232,23 +232,23 @@ noisily scalarlatex, log(GasFed)
 
 
 ****************************/
-*** 3. Recursos estatales ***
-*****************************
+*** 4. Recursos estatales ***
+/*****************************
 use "`c(sysdir_personal)'/SIM/EstadosBaseINEGI.dta", clear
 keep if valor != .
 rename valor monto
 
 
-* 3.1 Homolgar información *
+* 4.1 Homolgar información *
 
-* 3.2 Resultados *
+* 4.2 Resultados *
 encode divCIEP, g(concept) label(concept)
 collapse (sum) monto* (max) poblacion deflator pibYEnt if concept != ., by(entidad anio concept)
 reshape wide monto, i(anio entidad) j(concept)
 reshape long
 
 
-* 3.2 Gráfica *
+* 4.2 Gráfica *
 local aniolast = anio[_N]
 g montograph = monto/poblacion/deflator
 replace montograph = 0 if montograph == .
@@ -294,7 +294,7 @@ noisily scalarlatex, logname(IngLocales)
 
 **************************/
 *** 5. Recursos propios ***
-***************************
+/***************************
 use "`c(sysdir_personal)'/SIM/EstadosBaseINEGI.dta", clear
 rename valor monto
 
@@ -358,7 +358,7 @@ foreach k of global entidadesC {
 
 *******************/
 *** 6. Impuestos ***
-********************
+/********************
 use "`c(sysdir_personal)'/SIM/EstadosBaseINEGI.dta", clear
 keep if capitulo == "Impuestos"
 rename valor monto
@@ -505,7 +505,7 @@ foreach k of global entidadesC {
 
 ************************/
 *** 8. Espacio fiscal ***
-*************************
+/*************************
 use "`c(sysdir_personal)'/SIM/EstadosBaseINEGI.dta", clear
 rename valor monto
 
@@ -572,344 +572,3 @@ foreach k of global entidadesC {
 
 
 
-
-*************************/
-*** 8. Infraestructura ***
-**************************
-use "`c(sysdir_personal)'/SIM/EstadosBaseINEGI.dta", clear
-rename valor monto
-
-
-* 8.1 Homolgar y simplificar información *
-g conceptograph = "Inversión" if concepto == "Obra pública en bienes de dominio público" ///
-	| concepto == "Obra pública en bienes propios"
-/*replace conceptograph = "Pensiones" if concepto == "Pensiones y jubilaciones"
-replace conceptograph = "Deuda" if capitulo == "Deuda pública"
-replace conceptograph = "Seguridad" if partida == "Seguridad pública" | partida == "Seguridad pública y tránsito"
-replace conceptograph = "Salud" if subpartida == "Salud"
-replace conceptograph = "Salud" if subpartida == "Convenios para salud"
-replace conceptograph = "Salud" if subpartida == "FA para los Servicios de Salud"
-replace conceptograph = "Educación" if subpartida == "Educación pública" | subpartida == "Educación básica" ///
-	| subpartida == "Educación media superior" | subpartida == "Educación superior"*/
-
-
-* 8.2 Resultados *
-encode conceptograph, g(concept) label(concept)
-collapse (sum) monto (max) poblacion deflator pibYEnt if monto != . & conceptograph != "", by(entidad anio concept)
-reshape wide monto, i(anio entidad) j(concept)
-reshape long
-
-
-* 8.2 Gráfica *
-local aniolast = anio[_N]
-g montograph = monto/poblacion/deflator
-tokenize `"$entidadesL"'
-local j = 1
-foreach k of global entidadesC {
-	
-	noisily di _newline(2) in g "Entidad: " in y "``j'' `aniolast'"
-
-	local ifentidad ""
-	if "`k'" != "Nac" {
-		local ifentidad `"if entidad == "`k'""'
-	}
-
-	tabstat montograph `ifentidad' [fw=poblacion], stat(sum) f(%20.0fc) save
-
-	graph bar (mean) montograph `ifentidad' [fw=poblacion], ///
-		over(concept, sort(1)) over(anio) ///
-		asyvars stack ///
-		title({bf:Obra pública}) ///
-		subtitle(``j'') ///
-		ytitle("por residente (MXN `=aniovp')") ///
-		ylabel(0(1000)1000, format(%7.0fc)) ///
-		blabel(bar, format(%7.0fc)) ///
-		legend(rows(1)) ///
-		name(Infra_`k', replace)
-	
-	if "$export" != "" {
-		graph export  "$export/Infra_`k'.png", as(png) replace name(Infra_`k')
-	}
-	local ++j
-}
-
-
-
-
-
-*******************/
-*** 9. Pensiones ***
-********************
-use "`c(sysdir_personal)'/SIM/EstadosBaseINEGI.dta", clear
-rename valor monto
-
-
-* 9.1 Homolgar y simplificar información *
-g conceptograph = "Pensiones" if concepto == "Pensiones y jubilaciones"
-replace conceptograph = "zOtros" if capitulo == "Impuestos" 
-
-
-* 9.2 Resultados *
-encode conceptograph, g(concept) label(concept)
-collapse (sum) monto (max) poblacion deflator pibYEnt if conceptograph != "", by(entidad anio concept)
-reshape wide monto, i(anio entidad) j(concept)
-reshape long
-drop if concept == 2
-
-* 9.3 Gráfica *
-local aniolast = anio[_N]
-g montograph = monto/poblacion/deflator
-
-tokenize `"$entidadesL"'
-local j = 1
-foreach k of global entidadesC {
-	
-	noisily di _newline(2) in g "Entidad: " in y "``j'' `aniolast'"
-
-	local ifentidad ""
-	if "`k'" != "Nac" {
-		local ifentidad `"if entidad == "`k'""'
-	}
-
-	capture noisily tabstat montograph `ifentidad' [fw=poblacion], stat(mean) by(anio) f(%20.0fc)
-	if _rc == 0 {
-		graph bar (mean) montograph `ifentidad' [fw=poblacion], ///
-			over(anio) ///
-			title({bf:Pensiones} y jubilaciones) ///
-			subtitle(``j'') ///
-			ytitle("por residente (MXN `=aniovp')") ///
-			ylabel(0(100)300, format(%7.0fc)) ///
-			blabel(bar, format(%7.0fc)) ///
-			legend(rows(1)) ///
-			name(Pensiones_`k', replace)
-		
-		if "$export" != "" {
-			graph export  "$export/Pensiones_`k'.png", as(png) replace name(Pensiones_`k')
-		}
-	}
-	local ++j
-}
-
-
-
-
-***********************/
-*** 9. Deuda pública ***
-************************
-use "`c(sysdir_personal)'/SIM/EstadosBaseINEGI.dta", clear
-rename valor monto
-
-
-* 9.1 Homolgar y simplificar información *
-g conceptograph = "Deuda" if capitulo == "Deuda pública"
-
-
-* 9.2 Resultados *
-encode conceptograph, g(concept) label(concept)
-collapse (sum) monto (max) poblacion deflator pibYEnt if monto != . & conceptograph != "", by(entidad anio concept)
-reshape wide monto, i(anio entidad) j(concept)
-
-* 9.3 Gráfica *
-local aniolast = anio[_N]
-g montograph = monto/poblacion/deflator
-
-tokenize `"$entidadesL"'
-local j = 1
-foreach k of global entidadesC {
-	
-	noisily di _newline(2) in g "Entidad: " in y "``j'' `aniolast'"
-
-	local ifentidad ""
-	if "`k'" != "Nac" {
-		local ifentidad `"& entidad == "`k'""'
-	}
-
-	capture noisily tabstat montograph if montograph != . `ifentidad' [fw=poblacion], stat(sum) by(anio) f(%20.0fc)
-	if _rc == 0 {
-		graph bar (mean) montograph if montograph != . `ifentidad' [fw=poblacion], ///
-			over(anio) ///
-			title({bf:Costo} de la deuda) ///
-			subtitle(``j'') ///
-			ytitle("por residente (MXN `=aniovp')") ///
-			ylabel(0(500)2000, format(%7.0fc)) ///
-			blabel(bar, format(%7.0fc)) ///
-			legend(rows(1)) ///
-			name(CostoDeuda_`k', replace)
-
-		if "$export" != "" {
-			graph export  "$export/CostoDeuda_`k'.png", as(png) replace name(CostoDeuda_`k')
-		}
-	}
-	local ++j
-}
-
-
-
-
-
-********************/
-*** 10. Seguridad ***
-*********************
-use "`c(sysdir_personal)'/SIM/EstadosBaseINEGI.dta", clear
-rename valor monto
-
-
-* 10.1 Homolgar y simplificar información *
-g conceptograph = "Seguridad" if partida == "Seguridad pública" | partida == "Seguridad pública y tránsito"
-
-
-* 10.2 Resultados *
-encode conceptograph, g(concept) label(concept)
-collapse (sum) monto (max) poblacion deflator pibYEnt if monto != . & conceptograph != "", by(entidad anio concept)
-reshape wide monto, i(anio entidad) j(concept)
-
-* 10.3 Gráfica *
-local aniolast = anio[_N]
-g montograph = monto/poblacion/deflator
-
-tokenize `"$entidadesL"'
-local j = 1
-foreach k of global entidadesC {
-	
-	noisily di _newline(2) in g "Entidad: " in y "``j'' `aniolast'"
-
-	local ifentidad ""
-	if "`k'" != "Nac" {
-		local ifentidad `"& entidad == "`k'""'
-	}
-
-	capture noisily tabstat montograph if montograph != . `ifentidad' [fw=poblacion], stat(sum) by(anio) f(%20.0fc)
-	if _rc == 0 {
-		graph bar (mean) montograph if montograph != . `ifentidad' [fw=poblacion], ///
-			over(anio) ///
-			title({bf:Seguridad} pública) ///
-			subtitle(``j'') ///
-			ytitle("por residente (MXN `=aniovp')") ///
-			ylabel(0(50)350, format(%7.0fc)) ///
-			blabel(bar, format(%7.0fc)) ///
-			legend(rows(1)) ///
-			name(Seguridad_`k', replace)
-
-		if "$export" != "" {
-			graph export  "$export/Seguridad_`k'.png", as(png) replace name(Seguridad_`k')
-		}
-	}
-	local ++j
-}
-
-
-
-
-
-****************/
-*** 11. Salud ***
-*****************
-use "`c(sysdir_personal)'/SIM/EstadosBaseINEGI.dta", clear
-rename valor monto
-
-
-* 11.1 Homolgar y simplificar información *
-g conceptograph = "Salud" if subpartida == "Instituciones y programas de salud" | subpartida == "Servicios de Salud Pública de la Ciudad de México"
-*replace conceptograph = "Convenios" if subpartida == "Convenios para salud"
-*replace conceptograph = "Aportaciones" if subpartida == "FA para los Servicios de Salud"
-/*subpartida == "Salud" |*/
-
-
-* 11.2 Resultados *
-encode conceptograph, g(concept) label(concept)
-collapse (sum) monto (max) poblacion deflator pibYEnt if monto != . & conceptograph != "", by(entidad anio concept)
-reshape wide monto, i(anio entidad) j(concept)
-reshape long
-
-* 11.3 Gráfica *
-local aniolast = anio[_N]
-g montograph = monto/poblacion/deflator
-
-tokenize `"$entidadesL"'
-local j = 1
-foreach k of global entidadesC {
-	
-	noisily di _newline(2) in g "Entidad: " in y "``j'' `aniolast'"
-
-	local ifentidad ""
-	if "`k'" != "Nac" {
-		local ifentidad `"& entidad == "`k'""'
-	}
-
-	capture noisily tabstat montograph if montograph != . `ifentidad' [fw=poblacion], stat(mean) by(anio) f(%20.0fc)
-	if _rc == 0 {
-		graph bar (mean) montograph if montograph != . `ifentidad' [fw=poblacion], ///
-			over(concept) over(anio) ///
-			stack asyvar ///
-			title({bf:Salud} pública) ///
-			subtitle(``j'') ///
-			ytitle("por residente (MXN `=aniovp')") ///
-			ylabel(0(500)2500, format(%7.0fc)) ///
-			blabel(bar, format(%7.0fc)) ///
-			legend(rows(1)) ///
-			name(Salud_`k', replace)
-
-		if "$export" != "" {
-			graph export  "$export/Salud_`k'.png", as(png) replace name(Salud_`k')
-		}
-	}
-	local ++j
-}
-
-
-
-
-
-********************/
-*** 12. Educación ***
-*********************
-use "`c(sysdir_personal)'/SIM/EstadosBaseINEGI.dta", clear
-rename valor monto
-
-
-* 12.1 Homolgar y simplificar información *
-g conceptograph = "Básica" if subpartida == "Educación básica" 
-replace conceptograph = "Media superior" if subpartida == "Educación media superior" 
-replace conceptograph = "Superior" if subpartida == "Educación superior"
-*subpartida == "Educación pública"
-
-* 12.2 Resultados *
-encode conceptograph, g(concept) label(concept)
-collapse (sum) monto (max) poblacion deflator pibYEnt if monto != . & conceptograph != "", by(entidad anio concept)
-reshape wide monto, i(anio entidad) j(concept)
-reshape long
-
-
-* 12.3 Gráfica *
-local aniolast = anio[_N]
-g montograph = monto/poblacion/deflator
-tokenize `"$entidadesL"'
-local j = 1
-foreach k of global entidadesC {
-	
-	noisily di _newline(2) in g "Entidad: " in y "``j'' `aniolast'"
-
-	local ifentidad ""
-	if "`k'" != "Nac" {
-		local ifentidad `"if entidad == "`k'""'
-	}
-
-	capture noisily tabstat montograph `ifentidad' [fw=poblacion], stat(mean) by(anio) f(%20.0fc)
-	if _rc == 0 {
-		graph bar (mean) montograph `ifentidad' [fw=poblacion], ///
-			over(concept) over(anio) ///
-			stack asyvar ///
-			title({bf:Educación} pública) ///
-			subtitle(``j'') ///
-			ytitle("por residente (MXN `=aniovp')") ///
-			ylabel(0(50)350, format(%7.0fc)) ///
-			blabel(bar, format(%7.0fc)) ///
-			legend(rows(1)) ///
-			name(Educa_`k', replace)
-
-		if "$export" != "" {
-			graph export  "$export/Educa_`k'.png", as(png) replace name(Educa_`k')
-		}
-	}
-	local ++j
-}
