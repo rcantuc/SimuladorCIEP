@@ -37,9 +37,7 @@ noisily run "`c(sysdir_personal)'/PARAM.do"
 
 ** 2.1 Población **
 *forvalues anio=1950(1)2050 {
-	foreach entidad in $entidadesL {
-		noisily Poblacion if entidad == "`entidad'", $update //anio(`anio') //aniofinal(2030)
-	}
+	noisily Poblacion, $update //anio(`anio') //aniofinal(2030)
 *}
 scalarlatex, logname(poblacion)
 
