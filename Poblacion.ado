@@ -184,7 +184,7 @@ quietly {
 		g zero = 0
 
 		*if "$export" == "" {
-			local graphtitle "{bf:Pir{c a'}mide} demogr{c a'}fica"
+			local graphtitle "{bf:Pir{c a'}mide demogr{c a'}fica}"
 			///local graphtitle "{bf:Population} pyramid"
 			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de CONAPO."
 		*}
@@ -373,7 +373,7 @@ quietly {
 		g `pob61' = (pob61 + pob3560 + pob1934 + pob18)/1000000
 
 		*if "$export" == "" {
-			local graphtitle "{bf:Transici{c o'}n} demogr{c a'}fica"
+			local graphtitle "{bf:Transici{c o'}n demogr{c a'}fica}"
 			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de CONAPO."
 		*}
 		*else {

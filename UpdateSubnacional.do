@@ -133,7 +133,7 @@ save `PobTot'
 
 *****************************************/
 *** 3. Gasto Federalizado y sus Fondos ***
-******************************************
+/******************************************
 DatosAbiertos XFA0000, nographs
 split nombre, gen(entidad) parse(":")
 drop nombre
@@ -210,7 +210,7 @@ save `GastoFedBase'
 
 **********************************/
 *** 4. INGRESOS LOCALES / INEGI ***
-***********************************
+/***********************************
 *capture mkdir "`c(sysdir_site)'../BasesCIEP/UPDATE/Subnacional/estatal"
 *cd "`c(sysdir_site)'../BasesCIEP/UPDATE/Subnacional/estatal"
 *unzipfile "https://www.inegi.org.mx/contenidos/programas/finanzas/datosabiertos/efipem_estatal_csv.zip", replace
@@ -424,7 +424,7 @@ save `LIEs_INEGI'
 
 ***************/
 *** 5. Deuda ***
-****************
+/****************
 import excel "`c(sysdir_site)'../BasesCIEP/UPDATE/Subnacional/01_01_4_trim_2022.xlsx", clear
 drop in 1/5
 drop in 33/-1
@@ -449,9 +449,11 @@ save `deuda'
 
 
 
-********************/
-*** 6. BASE FINAL ***
-*********************
+***********************/
+*** 6. BASES FINALES ***
+************************
+
+/** 6.1 Base INEGI **
 use `PIBEntidades', clear
 merge 1:m (anio entidad) using `LIEs_INEGI', nogen
 merge m:1 (anio entidad) using `PobTot', nogen update replace
@@ -461,9 +463,68 @@ keep if anio >= 2003 & anio <= 2022
 save "`c(sysdir_personal)'/SIM/EstadosBaseINEGI.dta", replace
 
 
+** 6.2 Base EstOpor **
 use `PIBEntidades', clear
 merge 1:m (anio entidad) using `GastoFedBase', nogen
 merge m:1 (anio entidad) using `PobTot', nogen
 merge m:1 (anio entidad) using `poblacionOcupada', nogen
 keep if anio >= 2003 & anio <= 2022
 save "`c(sysdir_personal)'/SIM/EstadosBaseEstOpor.dta", replace
+
+
+** 6.3 SICUENTAS **
+use "`c(sysdir_site)'../BasesCIEP/Otros/gasto_salud.dta", clear
+drop if CVE_ENT == .
+compress
+rename _all, lower
+
+keep anio cve_ent federal estatal entidadfederativa
+rename federal montoFederal
+rename estatal montoEstatal
+rename entidadfederativa entidadL
+
+g entidad = ""
+tokenize $entidadesC
+forvalues k = 1(1)32 {
+	replace entidad = "``k''" if cve_ent == `k'
+}
+keep if entidad != ""
+
+reshape long monto, i(anio entidad cve_ent) j(conceptograph) string
+replace monto = monto*1000
+
+tempfile SICUENTAS
+save `SICUENTAS'
+
+
+use `PIBEntidades', clear
+merge 1:m (anio entidad) using `SICUENTAS', nogen keep(matched)
+merge m:1 (anio entidad) using `PobTot', nogen update replace
+
+save "`c(sysdir_personal)'/SIM/GastoEstatalSalud.dta", replace
+
+
+** 6.4 Seguridad **/
+use "`c(sysdir_site)'../BasesCIEP/Otros/gasto_seguridad.dta", clear
+compress
+rename _all, lower
+rename totallocal monto
+rename entidad_federativa entidadL
+
+g entidad = ""
+tokenize $entidadesC
+forvalues k = 1(1)32 {
+	replace entidad = "``k''" if nom_ent == `k'
+}
+
+tempfile Seguridad
+save `Seguridad'
+
+use `PIBEntidades', clear
+merge 1:m (anio entidad) using `Seguridad', nogen keep(matched)
+merge m:1 (anio entidad) using `PobTot', nogen update replace keep(matched)
+
+g conceptograph = "Seguridad"
+save "`c(sysdir_personal)'/SIM/GastoEstatalSeguridad.dta", replace
+
+
