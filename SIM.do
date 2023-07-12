@@ -21,11 +21,10 @@ if "`c(username)'" == "ciepmx" & "`c(console)'" == "" ///
 ***    1. OPCIONES    ***
 ***                   ***
 *************************
-global export "`c(sysdir_personal)'../../EU/LaTeX/images/"
 noisily run "`c(sysdir_personal)'/PARAM.do"
-*global output "output"                                                         // IMPRIMIR OUTPUTS (WEB)
 *global update "update"                                                         // UPDATE DATASETS/OUTPUTS
 *global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
+*global export "`c(sysdir_personal)'../../EU/LaTeX/images/"
 
 
 
@@ -35,32 +34,31 @@ noisily run "`c(sysdir_personal)'/PARAM.do"
 ***                                               ***
 *****************************************************
 
-** 2.1 Población **
+/** 2.1 Población **
 *forvalues anio=1950(1)2050 {
 	noisily Poblacion, $update //anio(`anio') //aniofinal(2030)
 *}
-scalarlatex, logname(poblacion)
 
-exit
-** 2.2 Economía **/
+
+** 2.2 Economía **
 noisily PIBDeflactor, //geodef(2005) geopib(2005) $update
-*noisily SCN, $update
-*noisily Inflacion, $update
+noisily SCN, $update
+noisily Inflacion, $update
 
 
-** 2.3 Sistema fiscal **
-noisily LIF, by(divPE) rows(1) min(0) $update
-noisily TasasEfectivas
-scalarlatex, logname(tasasEfectivas)
+** 2.3 Sistema fiscal **/
+*noisily LIF, by(divPE) rows(1) min(0) $update
+*noisily TasasEfectivas
 
-noisily PEF, by(divPE) rows(2) min(0) $update 
+*noisily PEF, by(divPE) rows(2) min(0) $update 
 *noisily GastoPC
 
-*noisily SHRFSP, $update
+UpdateDatosAbiertos, $update
+noisily SHRFSP, $update
 
 
 ** 2.4 Subnacionales **
-noisily run "`c(sysdir_personal)'/Subnacional.do" $update
+*noisily run "`c(sysdir_personal)'/Subnacional.do" $update
 
 exit
 

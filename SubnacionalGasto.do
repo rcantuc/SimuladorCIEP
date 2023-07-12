@@ -51,9 +51,13 @@ rename valor monto
 
 
 * 1.8 Homolgar y simplificar información *
-g conceptograph = "Infraestructura" if concepto == "Obra pública en bienes de dominio público" | concepto == "Obra pública en bienes propios"
+g conceptograph = "Infraestructura" if concepto == "Obra pública en bienes de dominio público" ///
+	| concepto == "Obra pública en bienes propios" ///
+	| concepto == "Proyectos productivos y acciones de fomento" ///
+	| capitulo == "Inversiones financieras y otras provisiones"
 replace conceptograph = "Pensiones" if concepto == "Pensiones y jubilaciones"
-replace conceptograph = "CostoDeuda" if capitulo == "Deuda pública"
+replace conceptograph = "CostoDeuda" if concepto == "Comisiones de la deuda pública" ///
+	| concepto == "Intereses de la deuda pública" | concepto == "Gastos de la deuda pública"
 replace conceptograph = "Seguridad" if partida == "Seguridad pública" | partida == "Seguridad pública y tránsito" ///
 	| partida == "Servicios de protección y seguridad" | partida == "Secretaría de Seguridad Pública"
 replace conceptograph = "Salud" if subpartida == "Instituciones y programas de salud" | subpartida == "Servicios de Salud Pública de la Ciudad de México"
@@ -78,8 +82,8 @@ tempfile baseloop
 save `baseloop'
 
 levelsof conceptograph, l(conceptoloop)
-foreach conceptloop of local conceptoloop {
-*foreach conceptloop in Seguridad {
+*foreach conceptloop of local conceptoloop {
+foreach conceptloop in Infraestructura {
 
 	use `baseloop', clear
 	keep if conceptograph == "`conceptloop'" | capitulo == "Impuestos"

@@ -64,7 +64,7 @@ save `PIBEntidades'
 **************************************************/
 *** 2. Poblacion ocupada por Entidad Federativa ***
 ***************************************************
-import excel "`c(sysdir_site)'../BasesCIEP/UPDATE/ENOE/Población ocupada.xls", clear
+import excel "`c(sysdir_site)'../BasesCIEP/UPDATE/ENOE/Población ocupada.xlsx", clear
 drop if B == ""
 drop AI
 
@@ -133,7 +133,7 @@ save `PobTot'
 
 *****************************************/
 *** 3. Gasto Federalizado y sus Fondos ***
-/******************************************
+******************************************
 DatosAbiertos XFA0000, nographs
 split nombre, gen(entidad) parse(":")
 drop nombre
@@ -210,7 +210,7 @@ save `GastoFedBase'
 
 **********************************/
 *** 4. INGRESOS LOCALES / INEGI ***
-/***********************************
+***********************************
 *capture mkdir "`c(sysdir_site)'../BasesCIEP/UPDATE/Subnacional/estatal"
 *cd "`c(sysdir_site)'../BasesCIEP/UPDATE/Subnacional/estatal"
 *unzipfile "https://www.inegi.org.mx/contenidos/programas/finanzas/datosabiertos/efipem_estatal_csv.zip", replace
@@ -424,26 +424,45 @@ save `LIEs_INEGI'
 
 ***************/
 *** 5. Deuda ***
-/****************
-import excel "`c(sysdir_site)'../BasesCIEP/UPDATE/Subnacional/01_01_4_trim_2022.xlsx", clear
-drop in 1/5
-drop in 33/-1
-drop D-G I-IV
-rename A entidad
-rename B deudaTotal
-rename C gobiernoEstatal
-rename H entidadesPublicas
-destring _all, replace
-compress
+****************
+import excel "`c(sysdir_site)'../BasesCIEP/UPDATE/Subnacional/DEUDA SUBNACIONAL TOTAL.xlsx", clear cellrange(A2:BM42)
 
+split A, parse("/")
+drop A
+rename A1 trimestre
+rename A2 anio
+order anio trimestre
+destring anio trimestre, replace
+
+foreach k of varlist B-BM {
+	rename `k' deuda`=substr(`k'[1],7,4)'
+}
+drop in 1
+reshape long deuda, i(anio trimestre) j(clave) string
+g entidadx = substr(clave,1,2)
+
+destring entidadx deuda, replace
+replace deuda = deuda*1000000
 local j = 1
-foreach k of global entidadesL {
-	replace entidad = "``j''" if entidad == "`k'"
+g entidad = ""
+foreach k of global entidadesC {
+	replace entidad = "`k'" if entidadx == `j'
 	local ++j
 }
+drop entidadx
 
-g anio = 2022
+replace clave = substr(clave,3,2)
+replace clave = "gobiernoEstatal" if clave == "01"
+replace clave = "entidadesPublicas" if clave == "03"
+reshape wide deuda, i(anio trimestre entidad) j(clave) string
 
+sort entidad anio trimestre
+collapse (last) deuda*, by(anio entidad)
+compress
+
+g divCIEP = "Deuda estatal"
+
+format deuda* %20.0fc
 tempfile deuda
 save `deuda'
 
@@ -453,7 +472,7 @@ save `deuda'
 *** 6. BASES FINALES ***
 ************************
 
-/** 6.1 Base INEGI **
+** 6.1 Base INEGI **
 use `PIBEntidades', clear
 merge 1:m (anio entidad) using `LIEs_INEGI', nogen
 merge m:1 (anio entidad) using `PobTot', nogen update replace
@@ -472,7 +491,7 @@ keep if anio >= 2003 & anio <= 2022
 save "`c(sysdir_personal)'/SIM/EstadosBaseEstOpor.dta", replace
 
 
-** 6.3 SICUENTAS **
+/** 6.3 SICUENTAS **
 use "`c(sysdir_site)'../BasesCIEP/Otros/gasto_salud.dta", clear
 drop if CVE_ENT == .
 compress
@@ -504,7 +523,7 @@ merge m:1 (anio entidad) using `PobTot', nogen update replace
 save "`c(sysdir_personal)'/SIM/GastoEstatalSalud.dta", replace
 
 
-** 6.4 Seguridad **/
+** 6.4 Seguridad **
 use "`c(sysdir_site)'../BasesCIEP/Otros/gasto_seguridad.dta", clear
 compress
 rename _all, lower

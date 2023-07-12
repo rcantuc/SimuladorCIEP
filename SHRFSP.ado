@@ -60,14 +60,21 @@ quietly {
 	}
 
 	noisily di _newline in g "  {bf:Tipo de cambio " in y anio[`obsfin'] in g ": }" _col(30) in y %15.1fc tipoDeCambio[`obsfin'] in g " `currency'/USD"
-	noisily di _newline in g "  {bf:SHRFSP a" in y " `=anio[`obsfin']'m`=mes[`obsfin']'" in g ": }" _col(30) in y %15.0fc shrfsp[`obsfin']/Poblacion[`obsfin']/deflator[`obsfin'] in g " `currency' por persona."
-	noisily di in g "  {bf:SHRFSP interna a" in y " `=anio[`obsfin']'m`=mes[`obsfin']'" in g ": }" _col(30) in y %15.0fc shrfspInterno[`obsfin']/Poblacion[`obsfin']/deflator[`obsfin'] in g " `currency' por persona."
-	noisily di in g "  {bf:SHRFSP externa a" in y " `=anio[`obsfin']'m`=mes[`obsfin']'" in g ": }" _col(30) in y %15.0fc shrfspExterno[`obsfin']/Poblacion[`obsfin']/deflator[`obsfin']/tipoDeCambio[`obsfin'] in g " USD por persona."
+	noisily di in g "  {bf:Tipo de cambio " in y anio[`obsfin'-1] in g ": }" _col(30) in y %15.1fc tipoDeCambio[`obsfin'-1] in g " `currency'/USD"
+	noisily di in g "  {bf:Diferencia " in y "`=anio[`obsfin']'-`=anio[`obsfin'-1]'" in g ": }" _col(30) in y %15.1fc tipoDeCambio[`obsfin']-tipoDeCambio[`obsfin'-1] in g " `currency'/USD"
+	
+	noisily di _newline in g "  {bf:SHRFSP a" in y " `=anio[`obsfin']'m`=mes[`obsfin']'" in g ": }" _col(30) in y %15.0fc shrfsp[`obsfin']/Poblacion[`obsfin']/deflator[`obsfin'] in g " `currency' `=anio[`obsfin']' por persona"
+	noisily di in g "  {bf:SHRFSP interna a" in y " `=anio[`obsfin']'m`=mes[`obsfin']'" in g ": }" _col(30) in y %15.0fc shrfspInterno[`obsfin']/Poblacion[`obsfin']/deflator[`obsfin'] in g " `currency' `=anio[`obsfin']' por persona"
+	noisily di in g "  {bf:SHRFSP externa a" in y " `=anio[`obsfin']'m`=mes[`obsfin']'" in g ": }" _col(30) in y %15.0fc shrfspExterno[`obsfin']/Poblacion[`obsfin']/tipoDeCambio[`obsfin'] in g " USD por persona"
 
-	noisily di _newline in g "  {bf:SHRFSP a" in y " `=anio[`obsfin'-1]'m`=mes[`obsfin'-1]'" in g ": }" _col(30) in y %15.0fc shrfsp[`obsfin'-1]/Poblacion[`obsfin'-1]/deflator[`obsfin'] in g " `currency' por persona."
-	noisily di in g "  {bf:SHRFSP interna a" in y " `=anio[`obsfin'-1]'m`=mes[`obsfin'-1]'" in g ": }" _col(30) in y %15.0fc shrfspInterno[`obsfin'-1]/Poblacion[`obsfin'-1]/deflator[`obsfin'] in g " `currency' por persona."
-	noisily di in g "  {bf:SHRFSP externa a" in y " `=anio[`obsfin'-1]'m`=mes[`obsfin'-1]'" in g ": }" _col(30) in y %15.0fc shrfspExterno[`obsfin'-1]/Poblacion[`obsfin'-1]/deflator[`obsfin']/tipoDeCambio[`obsfin'-1] in g " USD por persona."
+	noisily di _newline in g "  {bf:SHRFSP a" in y " `=anio[`obsfin'-1]'m`=mes[`obsfin'-1]'" in g ": }" _col(30) in y %15.0fc shrfsp[`obsfin'-1]/Poblacion[`obsfin'-1]/deflator[`obsfin'-1] in g " `currency' `=anio[`obsfin']' por persona"
+	noisily di in g "  {bf:SHRFSP interna a" in y " `=anio[`obsfin'-1]'m`=mes[`obsfin'-1]'" in g ": }" _col(30) in y %15.0fc shrfspInterno[`obsfin'-1]/Poblacion[`obsfin'-1]/deflator[`obsfin'-1] in g " `currency' `=anio[`obsfin']' por persona"
+	noisily di in g "  {bf:SHRFSP externa a" in y " `=anio[`obsfin'-1]'m`=mes[`obsfin'-1]'" in g ": }" _col(30) in y %15.0fc shrfspExterno[`obsfin'-1]/Poblacion[`obsfin'-1]/tipoDeCambio[`obsfin'-1] in g " USD por persona"
 
+	noisily di _newline in g "  {bf:Diferencia" in y " `=anio[`obsfin']'m`=mes[`obsfin']'-`=anio[`obsfin'-1]'m`=mes[`obsfin'-1]'" in g ": }" _col(30) in y %15.0fc shrfsp[`obsfin']/Poblacion[`obsfin']/deflator[`obsfin']-shrfsp[`obsfin'-1]/Poblacion[`obsfin'-1]/deflator[`obsfin'-1] in g " `currency' `=anio[`obsfin']' por persona"
+	noisily di in g "  {bf:Diferencia interna" in g ": }" _col(30) in y %15.0fc shrfspInterno[`obsfin']/Poblacion[`obsfin']/deflator[`obsfin']-shrfspInterno[`obsfin'-1]/Poblacion[`obsfin'-1]/deflator[`obsfin'-1] in g " `currency' `=anio[`obsfin']' por persona"
+	noisily di in g "  {bf:Diferencia externa" in g ": }" _col(30) in y %15.0fc shrfspExterno[`obsfin']/Poblacion[`obsfin']/tipoDeCambio[`obsfin']-shrfspExterno[`obsfin'-1]/Poblacion[`obsfin'-1]/tipoDeCambio[`obsfin'-1] in g " USD por persona"
+	
 	* Parámetros *
 	replace porInterno = L.porInterno if porInterno == .
 	replace porExterno = L.porExterno if porExterno == .
@@ -135,11 +142,11 @@ quietly {
 	}
 
 	if "`nographs'" != "nographs" & "$nographs" == "" {
-		local j = 100/(`anio'-2008+1)/2
+		local j = 100/(`anio'-2012+1)/2
 		forvalues k=1(1)`=_N' {
-			if efectoPositivo[`k'] != . {
+			if efectoPositivo[`k'] != . & anio[`k'] >= 2012 {
 				local textDeuda `"`textDeuda' `=efectoPositivo[`k']+.3' `j' "{bf:`=string(shrfsp_pib[`k'],"%5.1fc")'% PIB}""'
-				local j = `j' + 100/(`anio'-2008+1)
+				local j = `j' + 100/(`anio'-2012+1)
 			}
 		}
 		if `"$export"' == "" {
@@ -152,7 +159,7 @@ quietly {
 		}
 		graph bar balprimario nopresupuestario_pib efectoCrecimiento efectoInflacion ///
 			efectoIntereses efectoTipoDeCambio efectoOtros ///
-			if anio <= `anio' & anio >= 2008, ///
+			if anio <= `anio' & anio >= 2012, ///
 			over(anio, gap(0)) stack ///
 			blabel(, format(%5.1fc)) outergap(0) ///
 			text(`textDeuda', color(black) size(small)) ///
@@ -287,17 +294,17 @@ quietly {
 			local graphfuente ""
 		}
 		twoway (connected `shrfsp' anio if anio < `anio') ///
-			(connected `shrfsp' anio if anio >= `anio') if `shrfsp' != . & anio >= 2005, ///
+			(connected `shrfsp' anio if anio >= `anio') if `shrfsp' != . & anio >= `ultanio', ///
 			title(`graphtitle') ///
 			subtitle($pais) ///
 			caption("`graphfuente'") ///
 			ylabel(#5, format(%15.0fc) labsize(small)) ///
-			xlabel(2005(1)`anio', noticks) ///	
+			xlabel(`ultanio'(1)`anio', noticks) ///	
 			text(`textPC2', placement(c) color(black) size(small)) ///
 			yscale(axis(1) noline) ///
-			ytitle("`currency' `aniovp' por persona") xtitle("") ///
+			ytitle("`currency' `aniovp'") xtitle("") ///
 			note("{bf:{c U'}ltimo dato}: `aniofin'm`mesfin'") ///
-			legend(label(1 "  Reportado") label(2 "  Proyección $paqueteEconomico")) ///
+			legend(label(1 "  Reportado") label(2 "  $paqueteEconomico")) ///
 			name(shrfsppc, replace)
 
 		capture confirm existence $export

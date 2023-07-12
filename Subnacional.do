@@ -90,7 +90,7 @@ noisily scalarlatex, log(pibYEnt)
 
 ****************************/
 *** 3. Recursos estatales ***
-*****************************
+/*****************************
 use "`c(sysdir_personal)'/SIM/EstadosBaseINEGI.dta", clear
 keep if valor != .
 rename valor monto
@@ -154,7 +154,7 @@ noisily scalarlatex, logname(IngLocales)
 
 ****************************/
 *** 4. Gasto Federalizado ***
-*****************************
+/*****************************
 use "`c(sysdir_personal)'/SIM/EstadosBaseEstOpor.dta", clear
 
 g concept = 1 if substr(clave,1,5) == "XAC28" & strlen(clave) == 8
@@ -325,7 +325,7 @@ noisily scalarlatex, log(GasFed)
 
 **************************/
 *** 5. Recursos propios ***
-***************************
+/***************************
 use "`c(sysdir_personal)'/SIM/EstadosBaseINEGI.dta", clear
 rename valor monto
 
@@ -391,7 +391,7 @@ foreach k of global entidadesC {
 
 *******************/
 *** 6. Impuestos ***
-********************
+/********************
 use "`c(sysdir_personal)'/SIM/EstadosBaseINEGI.dta", clear
 keep if capitulo == "Impuestos"
 rename valor monto
@@ -449,10 +449,10 @@ foreach k of global entidadesC {
 use "`c(sysdir_personal)'/SIM/EstadosBaseINEGI.dta", clear
 rename valor monto
 
-g montograph1 = gobiernoEstatal/poblacion/deflator*1000000
+g montograph1 = deudagobiernoEstatal/poblacion/deflator
 label var montograph1 "Gobierno estatal"
 
-g montograph2 =  entidadesPublicas/poblacion/deflator*1000000
+g montograph2 = deudaentidadesPublicas/poblacion/deflator
 label var montograph2 "Entidades públicas"
 
 tokenize `"$entidadesL"'
@@ -462,7 +462,7 @@ foreach k of global entidadesC {
 	if "`k'" != "Nac" {
 		local entidad `"& entidad == "`k'""'
 	}
-	graph bar (mean) montograph* if montograph1 != . `entidad' [fw=poblacion], ///
+	*graph bar (mean) montograph* if montograph1 != . `entidad' [pw=poblacion], ///
 		over(anio) ///
 		stack asyvars ///
 		title({bf:Deuda estatal}) ///
@@ -481,16 +481,15 @@ foreach k of global entidadesC {
 	local ++j
 }
 
-collapse (sum) monto (max) poblacion deflator pibYEnt deuda if divCIEP == "Recursos Propios" ///
-	| capitulo == "Participaciones federales" | deudaTotal != ., by(entidad* anio)
+collapse (sum) monto (max) poblacion deflator pibYEnt deuda* if divCIEP == "Recursos Propios" ///
+	| capitulo == "Participaciones federales", by(entidad* anio)
 sort entidadx anio
 
 g crec_pib = pibYEnt/L.pibYEnt/deflator
 replace monto = L.monto*crec_pib if anio == 2022
 
-g montograph1 = deuda*1000000/pibYEnt*100
-g montograph2 =  deuda*1000000/monto*100
-
+g montograph11 = deudagobiernoEstatal/pibYEnt*100
+g montograph12 = deudaentidadesPublicas/pibYEnt*100
 tokenize `"$entidadesL"'
 local j = 1
 foreach k of global entidadesC {
@@ -498,9 +497,9 @@ foreach k of global entidadesC {
 	if "`k'" != "Nac" {
 		local entidad `"& entidad == "`k'""'
 	}
-	graph bar (mean) montograph1 if montograph1 != . `entidad' [fw=poblacion], ///
+	*graph bar (mean) montograph1* if montograph11 != . `entidad' [pw=pibYEnt], ///
 		over(anio) ///
-		asyvars ///
+		asyvars stack ///
 		title({bf:Deuda estatal}) ///
 		subtitle(``j'') ///
 		ytitle("% PIB estatal") ///
@@ -515,6 +514,8 @@ foreach k of global entidadesC {
 	local ++j
 }
 
+g montograph21 = deudagobiernoEstatal/monto*100
+g montograph22 = deudaentidadesPublicas/monto*100
 tokenize `"$entidadesL"'
 local j = 1
 foreach k of global entidadesC {
@@ -522,9 +523,9 @@ foreach k of global entidadesC {
 	if "`k'" != "Nac" {
 		local entidad `"& entidad == "`k'""'
 	}
-	graph bar (mean) montograph2 if montograph2 != . `entidad' [fw=poblacion], ///
+	graph bar (mean) montograph2* if montograph21 != . `entidad', ///
 		over(anio) ///
-		asyvars ///
+		asyvars stack ///
 		title({bf:Deuda estatal}) ///
 		subtitle(``j'') ///
 		ytitle("% ingresos libres") ///
@@ -543,7 +544,7 @@ foreach k of global entidadesC {
 
 ************************/
 *** 8. Espacio fiscal ***
-*************************
+/*************************
 use "`c(sysdir_personal)'/SIM/EstadosBaseINEGI.dta", clear
 rename valor monto
 
@@ -555,7 +556,8 @@ g conceptograph = ""
 replace conceptograph = "Ingresos" if divCIEP != "" & divCIEP != "Financiamiento"
 
 * 8.1.2 Gastos ineludibles *
-replace conceptograph = "Servicio Deuda" if capitulo == "Deuda pública"
+replace conceptograph = "Servicio Deuda" if concepto == "Comisiones de la deuda pública" ///
+	| concepto == "Intereses de la deuda pública" | concepto == "Gastos de la deuda pública"
 replace conceptograph = "Servicio Personales" if capitulo == "Servicios personales"
 replace conceptograph = "Transferencias a municipios" if capitulo == "Recursos asignados a municipios" ///
 	| capitulo == "Recursos asignados a alcaldías de la Ciudad de México y sector paraestatal"

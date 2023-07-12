@@ -26,7 +26,7 @@ local SSFederacion = r(Aportaciones_a_Seguridad_Social) + `Cuotas_ISSSTE'
 PEF if divPE == 2, anio(`1') by(desc_subfuncion) min(0) nographs
 local Basica = r(Educación_Básica)
 local Media = r(Educación_Media_Superior)
-local Superior = r(Educación_Superior)
+local Superior = r(Educación_Superiorr)
 local Adultos = r(Educación_para_Adultos)
 local Posgrado = r(Posgrado)
 local OtrosEdu = r(Gasto_neto) - `Basica' - `Media' - `Superior' - `Adultos' - `Posgrado'
@@ -123,7 +123,7 @@ g pob = 1
 ** (+) ISR Asalariados **
 Distribucion ISRAS, relativo(ISR__asalariados) macro(`ISRAS')
 label var ISRAS "ISR (Salarios)"
-*noisily Simulador ISRAS [fw=factor], base("ENIGH `=enighanio'") boot(1) reboot anio(`1') nooutput
+noisily Simulador ISRAS [fw=factor], base("ENIGH `=enighanio'") boot(1) reboot anio(`1') nooutput
 *noisily Gini ISRAS, hogar(folioviv foliohog) individuo(numren) factor(factor)
 
 ** (+) ISR Personas Físicas **
