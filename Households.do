@@ -1408,7 +1408,7 @@ scalar giniPIN = string(`gini_ing_total',"%5.3f")
 ********************************************************************************
 *** 5. RECUPERAR LOS INGRESOS BRUTOS DE LOS INGRESOS POR TRABAJO SUBORDINADO ***
 ********************************************************************************
-/*IMSS, tasas efectivas (Informe al ejecutivo federal y al congreso de la union 
+/* IMSS, tasas efectivas (Informe al ejecutivo federal y al congreso de la union 
 	la situacion financiera y los riesgos del IMSS 2018-2019, Anexo A, Cuadro A.4)*/
 local TriesgoP = 1.884		// Riesgos de trabajo, patron
 

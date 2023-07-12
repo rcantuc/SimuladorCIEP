@@ -159,11 +159,11 @@ program define UpdateDatosAbiertos, return
 	replace trimestre = 4 if mes >= 10 & mes <= 12
 
 	replace monto = monto*1000 if unidad_de_medida == "Miles de Pesos"
-	replace monto = monto*1000 if unidad_de_medida == "Miles de D{c o'}lares"
+	replace monto = monto*1000 if unidad_de_medida == "Miles de Dólares" | unidad_de_medida == "Miles de D?lares"
 	format monto %20.0fc
 
 	replace unidad_de_medida = "Pesos" if unidad_de_medida == "Miles de Pesos"
-	replace unidad_de_medida = "D{c o'}lares" if unidad_de_medida == "Miles de D{c o'}lares"
+	replace unidad_de_medida = "Dólares" if unidad_de_medida == "Miles de Dólares" | unidad_de_medida == "Miles de D?lares"
 
 	format nombre %30s
 
@@ -176,7 +176,7 @@ program define UpdateDatosAbiertos, return
 	label var anio "a{c n~}o"
 	label var monto "Monto nominal (pesos)"	
 	
-	collapse (mean) monto, by(anio* mes trimestre nombre clave_de_concepto tipo_de_informacion)
+	collapse (mean) monto, by(anio* mes trimestre nombre clave_de_concepto tipo_de_informacion unidad_de_medida)
 
 	tempfile datosabiertos
 	save "`datosabiertos'"

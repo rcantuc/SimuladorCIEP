@@ -241,8 +241,8 @@ quietly {
 	*****************
 	** 6 Simulador **
 	*****************
-	noisily di in g " PIB " in y anio[`obsvp'] in g " per c{c a'}pita " in y _col(43) %10.1fc pibY[`obsvp']/Poblacion[`obsvp'] in g " `=currency[`obsvp']'"
-	noisily di in g " PIB " in y anio[`obsvp'] in g " por poblaci{c o'}n productiva " in y _col(43) %10.1fc OutputPerWorker[`obsvp'] in g " `=currency[`obsvp']' (16-65 a{c n~}os)"
+	noisily di in g " PIB " in y anio[`obsvp'] in g " per c{c a'}pita " in y _col(43) %10.0fc pibY[`obsvp']/Poblacion[`obsvp'] in g " `=currency[`obsvp']'"
+	noisily di in g " PIB " in y anio[`obsvp'] in g " por edades laborales " in y _col(43) %10.0fc OutputPerWorker[`obsvp'] in g " `=currency[`obsvp']' (16-65 a{c n~}os)"
 
 	noisily di _newline in g " Crecimiento promedio " in y anio[`obsPIB'] "-" anio[`obs_exo'] _col(43) %10.4f ((pibYR[`obs_exo']/pibYR[`obsPIB'])^(1/(`obs_exo'-`obsPIB'))-1)*100 in g " %" 
 	noisily di in g " Lambda por trabajador " in y anio[`obsPIB'] "-" anio[`obs_exo'] _col(43) %10.4f scalar(llambda) in g " %" 
@@ -461,44 +461,44 @@ quietly {
 			legend(label(1 "Reportado") label(2 "$paqueteEconomico")) ///
 			ylabel(/*0(5)`=ceil(`pibYRmil'[_N])'*/, format(%20.0fc)) ///
 			name(PIBPC, replace)
-
 		capture confirm existence $export
 		if _rc == 0 {
 			graph export "$export/PIBPC.png", replace name(PIBPC)
 		}
 
 
-		* PIB por población ocupada *
+		* PIB por en edad de trabajar *
 		if "$export" == "" {
-			local graphtitle "Producto Interno Bruto {bf:por población ocupada}"
+			local graphtitle "Producto Interno Bruto {bf:por población en edad laboral}"
 			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE/ENOE."
 		}
 		else {
 			local graphtitle ""
 			local graphfuente ""
 		}
-		g PIBPobOcup = pibYR/PoblacionOcupada
 
+		g PIBPobOcup = pibYR/PoblacionOcupada
 		* Texto sobre lineas *
 		forvalues k=1(1)`=_N' {
-			if PIBPobOcup[`k'] != . {
-				local crec_PIBPO `"`crec_PIBPO' `=PIBPobOcup[`k']' `=anio[`k']' "{bf:`=string(PIBPobOcup[`k'],"%10.0fc")'}" "'
+			if OutputPerWorker[`k'] != . {
+				local crec_PIBPO `"`crec_PIBPO' `=OutputPerWorker[`k']' `=anio[`k']' "{bf:`=string(OutputPerWorker[`k'],"%10.0fc")'}" "'
 			}
 		}
-		twoway (connected PIBPobOcup anio) if PIBPobOcup != ., ///
+		twoway (connected OutputPerWorker anio if (anio < `aniofinal' & anio >= `anioinicial') | (anio == `aniofinal' & trimestre == 4)) ///
+			(connected OutputPerWorker anio if anio < `aniofinal'+`exo_count' & anio >= `aniofinal', pstyle(p4)), ///
 			title("`graphtitle'") ///
 			subtitle(${pais}) ///
 			caption("`graphfuente'") ///
 			ytitle(`=currency[`obsvp']' `aniovp') ///
 			xtitle("") ///
-			xlabel(2005(1)`=`aniovp'') ///
+			xlabel(`=round(anio[1],5)'(5)`=`aniofinal'+`exo_count'' `aniovp' `=`aniofinal'+`exo_count'-1') ///
 			text(`crec_PIBPO', color(black) size(small) placement(c)) ///
 			ylabel(/*0(5)`=ceil(`pibYRmil'[_N])'*/, format(%20.0fc)) ///
-			name(PIBPO, replace)
+			name(PIBOutputPerWorker, replace)
 
 		capture confirm existence $export
 		if _rc == 0 {
-			graph export "$export/PIBPO.png", replace name(PIBPO)
+			graph export "$export/PIBOutputPerWorker.png", replace name(PIBOutputPerWorker)
 		}
 	}
 	return local except "`except'"

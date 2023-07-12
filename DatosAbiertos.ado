@@ -220,7 +220,7 @@ quietly {
 		g `propmensual' = monto/`montoanual' if anio < `last_anio' & anio >= `desde'
 		egen acum_prom = mean(`propmensual'), by(mes)
 
-		collapse (sum) monto acum_prom (last) mes if monto != ., by(anio nombre clave_de_concepto)
+		collapse (sum) monto acum_prom (last) mes if monto != ., by(anio nombre clave_de_concepto unidad_de_medida)
 		*replace monto = monto/acum_prom if mes < 12
 		local textografica `"{bf:Promedio a `mesname'}: `=string(acum_prom[_N]*100,"%5.1fc")'% del total anual."'
 		local palabra "Proyectado"
@@ -230,7 +230,7 @@ quietly {
 		egen `maxmes' = max(mes), by(anio)
 		drop if mes < `maxmes'
 		sort anio mes
-		collapse (last) monto mes if monto != ., by(anio nombre clave_de_concepto)
+		collapse (last) monto mes if monto != ., by(anio nombre clave_de_concepto unidad_de_medida)
 		g acum_prom = 1
 	}
 	tsset anio

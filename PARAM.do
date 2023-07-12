@@ -10,8 +10,7 @@ capture mkdir `"`c(sysdir_personal)'/SIM/"'
 capture mkdir `"`c(sysdir_personal)'/users/"'
 capture mkdir `"`c(sysdir_personal)'/users/$id/"'
 
-global paqueteEconomico "Pre-CGPE 2024"
-tokenize $paqueteEconomico
+global paqueteEconomico "Informe a mayo 2023"
 scalar anioPE = 2023
 if anioPE >= 2020 {
 	scalar anioenigh = 2020
@@ -26,7 +25,6 @@ if anioPE >= 2016 & anioPE < 2018 {
 global entidadesL `" "Aguascalientes" "Baja California" "Baja California Sur" "Campeche" "Coahuila" "Colima" "Chiapas" "Chihuahua" "Ciudad de México" "Durango" "Guanajuato" "Guerrero" "Hidalgo" "Jalisco" "Estado de México" "Michoacán" "Morelos" "Nayarit" "Nuevo León" "Oaxaca" "Puebla" "Querétaro" "Quintana Roo" "San Luis Potosí" "Sinaloa" "Sonora" "Tabasco" "Tamaulipas" "Tlaxcala" "Veracruz" "Yucatán" "Zacatecas" "Nacional" "'
 global entidadesC "Ags BC BCS Camp Coah Col Chis Chih CDMX Dgo Gto Gro Hgo Jal EdoMex Mich Mor Nay NL Oax Pue Qro QRoo SLP Sin Son Tab Tamps Tlax Ver Yuc Zac Nac"
 
-
 if "$output" != "" {
 	quietly log using `"`c(sysdir_site)'/users/$id/output.txt"', replace text name(output)
 	quietly log off output
@@ -35,7 +33,7 @@ if "$output" != "" {
 
 
 ************************************************
-***    3. CRECIMIENTO Y DEFLACTOR DEL PIB    ***
+***    2. CRECIMIENTO Y DEFLACTOR DEL PIB    ***
 ************************************************
 global pib2023 = 2.6 //     Pre-CGPE 2024 (punto medio)
 global pib2024 = 2.3 //     Pre-CGPE 2024 (punto medio)
@@ -148,41 +146,67 @@ else {
 scalar depletionrate = 0.08*0
 
 
-******************************************************
-***       6.1. Impuesto Sobre la Renta (ISR)       ***
-******************************************************
-*             Inferior		Superior	CF		Tasa
-matrix ISR =  (0.01,		7735.00,	0.0,		1.92	\    /// 1
-              7735.01,		65651.07,	148.51,		6.40	\    /// 2
-              65651.08,		115375.90,	3855.14,	10.88	\    /// 3
-              115375.91,	134119.41,	9265.20,	16.00	\    /// 4
-              134119.42,	160577.65,	12264.16,	17.92	\    /// 5
-              160577.66,	323862.00,	17005.47,	21.36	\    /// 6
-              323862.01,	510451.00,	51883.01,	23.52	\    /// 7
-              510451.01,	974535.03,	95768.74,	30.00	\    /// 8
-              974535.04,	1299380.04,	234993.95,	32.00	\    /// 9
-              1299380.05,	3898140.12,	338944.34,	34.00	\    /// 10
-              3898140.13,	1E+14,		1222522.76,	35.00)	     //  11
 
-*             Inferior		Superior	Subsidio
-matrix	SE =  (0.01,		21227.52,	4884.24		\    /// 1
-              21227.53,		23744.40,	4881.96		\    /// 2
-              23744.41,		31840.56,	4879.44		\    /// 3
-              31840.57,		41674.08,	4879.44		\    /// 4
-              41674.09,		42454.44,	4713.24		\    /// 5
-              42454.45,		53353.80,	4589.52		\    /// 6
-              53353.81,		56606.16,	4250.76		\    /// 7
-              56606.17,		64025.04,	3898.44		\    /// 8
-              64025.05,		74696.04,	3535.56		\    /// 9
-              74696.05,		85366.80,	3042.48		\    /// 10
-              85366.81,		88587.96,	2611.32		\    /// 11
-              88587.97, 	1E+14,		0)		     	//  12
+**********************************************************************
+***       6.1. ISR_Mod.do (Salarios + PF + PM + Cuotas IMSS)       ***
+**********************************************************************
+* Anexo 8 de la Resolución Miscelánea Fiscal para 2023 *
+* Tarifa para el cálculo del impuesto correspondiente al ejericio 2023 (página 782) *
+*             INFERIOR		SUPERIOR	CF		TASA
+matrix ISR =  (0.01,		8952.49,	0.0,		1.92	\    /// 1
+              8952.49    +.01,	75984.55,	171.88,		6.40	\    /// 2
+              75984.55   +.01,	133536.07,	4461.94,	10.88	\    /// 3
+              133536.07  +.01,	155229.80,	10723.55,	16.00	\    /// 4
+              155229.80  +.01,	185852.57,	14194.54,	17.92	\    /// 5
+              185852.57  +.01,	374837.88,	19682.13,	21.36	\    /// 6
+              374837.88  +.01,	590795.99,	60049.40,	23.52	\    /// 7
+              590795.99  +.01,	1127926.84,	110842.74,	30.00	\    /// 8
+              1127926.84 +.01,	1503902.46,	271981.99,	32.00	\    /// 9
+              1503902.46 +.01,	3511707.37,	392294.17,	34.00	\    /// 10
+              3511707.37 +.01,	1E+12,		1414947.85,	35.00)	     //  11
 
+* Tabla del subsidio para el empleo aplicable a la tarifa del numeral 5 del rubro B (página 773) *
+*             INFERIOR		SUPERIOR	SUBSIDIO
+matrix	SE =  (0.01,		1768.96,	407.02		\    /// 1
+              1768.96 +.01,	2653.38,	406.83		\    /// 2
+              2653.38 +.01,	3472.84,	406.62		\    /// 3
+              3472.84 +.01,	3537.87,	392.77		\    /// 4
+              3537.87 +.01,	4446.15,	382.46		\    /// 5
+              4446.15 +.01,	4717.18,	354.23		\    /// 6
+              4717.18 +.01,	5335.42,	324.87		\    /// 7
+              5335.42 +.01,	6224.67,	294.63		\    /// 8
+              6224.67 +.01,	7113.90,	253.54		\    /// 9
+              7113.90 +.01,	7382.33,	217.61		\    /// 10
+              7382.33 +.01, 	1E+12,		0)		     //  11
+
+* Artículo 151, último párrafo (LISR) *
 *            Ex. SS.MM.	Ex. 	% ing. gravable		% Informalidad PF	% Informalidad Salarios
-matrix DED = (5,				15,					46.78, 				9.43)
+matrix DED = (5,		15,			46.78, 			9.43)
 
+* Artículo 9, primer párrafo (LISR) * 
 *           Tasa ISR PM.	% Informalidad PM
 matrix PM = (30,		21.45)
+
+* Informe al Ejecutivo Federal y al Congreso de la Unión la situación financiera y los riesgos del IMSS 2021-2022 *
+* Anexo A, Cuadro A.4 *
+*                  PATRONES	TRABAJADORES	GOBIERNO FEDERAL
+matrix CSS_IMSS = (5.42,	0.44,		3.21	\   /// Enfermedad y maternidad, asegurados (Tgmasg*)
+		   1.05,	0.37,		0.08	\   /// Enfermedad y maternidad, pensionados (Tgmpen*)
+		   1.75,	0.63,		0.13	\   /// Invalidez y vida (Tinvyvida*)
+		   1.83,	0.00,		0.00	\   /// Riesgos de trabajo (Triesgo*)
+		   1.00,	0.00,		0.00	\   /// Guarderias y prestaciones sociales (Tguard*)
+		   5.15,	1.12,		1.49	\   /// Retiro, cesantia en edad avanzada y vejez (Tcestyvej*)
+		   0.00,	0.00,		6.55)	//  Cuota social -- hasta 25 UMA -- (TcuotaSocIMSS*)
+
+* Informe Financiero Actuarial ISSSTE 2021 *
+*                    PATRONES	TRABAJADORES	GOBIERNO FEDERAL
+matrix CSS_ISSSTE = (7.375	2.750		391.0	\   /// Seguro de salud, trabajadores en activo y familiares (Tfondomed* / TCuotaSocISSTEF)
+		     0.720	0.625		0.000	\   /// Seguro de salud, pensionados y familiares (Tpensjub*)
+		     0.750	0.000		0.000	\   /// Riesgo de trabajo
+		     0.625	0.625		0.000	\   /// Invalidez y vida
+		     0.500	0.500		0.000	\   /// Servicios sociales y culturales
+		     6.125	2+3.175		5.500	\   /// Retiro, cesantia en edad avanzada y vejez
+		     0.000	5.000		0.000)	    //  Vivienda
 ***       FIN: SIMULADOR ISR       ***
 **************************************
 
