@@ -10,9 +10,12 @@ capture mkdir `"`c(sysdir_personal)'/SIM/"'
 capture mkdir `"`c(sysdir_personal)'/users/"'
 capture mkdir `"`c(sysdir_personal)'/users/$id/"'
 
-global paqueteEconomico "Informe a mayo 2023"
+global paqueteEconomico "PreCGPE 2024"
 scalar anioPE = 2023
-if anioPE >= 2020 {
+if anioPE >= 2022 {
+	scalar anioenigh = 2020
+}
+if anioPE >= 2020 & anio < 2022 {
 	scalar anioenigh = 2020
 }
 if anioPE >= 2018 & anioPE < 2020 {

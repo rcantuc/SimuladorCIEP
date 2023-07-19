@@ -4,15 +4,7 @@
 ***                        ***
 ******************************
 noisily run "`c(sysdir_personal)'/profile.do"
-adopath ++ PERSONAL
-
-* iMac Ricardo *
-if "`c(username)'" == "ricardo" ///
-	sysdir set PERSONAL "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
-
-* Servidor CIEP *
-if "`c(username)'" == "ciepmx" & "`c(console)'" == "" ///
-	sysdir set PERSONAL "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
+adopath ++PERSONAL
 
 
 
@@ -21,10 +13,18 @@ if "`c(username)'" == "ciepmx" & "`c(console)'" == "" ///
 ***    1. OPCIONES    ***
 ***                   ***
 *************************
-noisily run "`c(sysdir_personal)'/PARAM.do"
+* iMac Ricardo *
+if "`c(username)'" == "ricardo" ///
+	sysdir set PERSONAL "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
+
+* Servidor CIEP *
+if "`c(username)'" == "ciepmx" & "`c(console)'" == "" ///
+	sysdir set PERSONAL "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
+
+*noisily run "`c(sysdir_site)'/PARAM.do"
 *global update "update"                                                         // UPDATE DATASETS/OUTPUTS
 *global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
-*global export "`c(sysdir_personal)'../../EU/LaTeX/images/"
+global export "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/ENIGH2022/images"
 
 
 
@@ -32,9 +32,9 @@ noisily run "`c(sysdir_personal)'/PARAM.do"
 ***                                               ***
 ***    2. POBLACION + ECONOMÍA + SISTEMA FISCAL   ***
 ***                                               ***
-*****************************************************
+/*****************************************************
 
-/** 2.1 Población **
+** 2.1 Población **
 *forvalues anio=1950(1)2050 {
 	noisily Poblacion, $update //anio(`anio') //aniofinal(2030)
 *}
@@ -46,43 +46,45 @@ noisily SCN, $update
 noisily Inflacion, $update
 
 
-** 2.3 Sistema fiscal **/
-*noisily LIF, by(divPE) rows(1) min(0) $update
-*noisily TasasEfectivas
-
-*noisily PEF, by(divPE) rows(2) min(0) $update 
-*noisily GastoPC
-
+** 2.3 Sistema fiscal **
 UpdateDatosAbiertos, $update
+noisily LIF, by(divPE) rows(1) min(0) $update
+noisily TasasEfectivas
+
+noisily PEF, by(divPE) rows(2) min(0) $update 
+noisily GastoPC
+
 noisily SHRFSP, $update
 
 
 ** 2.4 Subnacionales **
-*noisily run "`c(sysdir_personal)'/Subnacional.do" $update
+noisily run "`c(sysdir_personal)'/Subnacional.do" $update
 
-exit
+
 
 **************************/
 ***                     ***
 ***    3. HOUSEHOLDS    ***
 ***                     ***
-/***************************
+***************************
 
 ** 3.1 Households information **
-capture confirm file "`c(sysdir_personal)'/SIM/`=enighanio'/households.dta"
-if _rc != 0 {
-	noisily run "`c(sysdir_personal)'/Expenditure.do" `=aniovp'
-	noisily run `"`c(sysdir_personal)'/Households.do"' `=aniovp'
-}
-
+capture confirm file "`c(sysdir_personal)'/SIM/`=anioenigh'/households.dta"
+*if _rc != 0 {
+	noisily run "`c(sysdir_personal)'/Expenditure.do" 2020
+	noisily scalarlatex, logname(Expenditure2020) altname(B)
+	noisily run `"`c(sysdir_personal)'/Households.do"' 2020
+	noisily scalarlatex, logname(Households2020)
+*}
+exit
 ** 3.2 Households fiscal information **
 capture confirm file "`c(sysdir_personal)'/SIM/households`=aniovp'.dta"
-if _rc != 0 | "$update" == "update" {
+*if _rc != 0 | "$update" == "update" {
 	noisily run `"`c(sysdir_personal)'/PerfilesSim.do"' `=aniovp'
-}
+*}
 
 
-
+exit
 ******************************/
 ***                         ***
 ***    4. SISTEMA FISCAL    ***
