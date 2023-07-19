@@ -71,8 +71,11 @@ noisily run "`c(sysdir_personal)'/Subnacional.do" $update
 ** 3.1 Households information **
 capture confirm file "`c(sysdir_personal)'/SIM/`=anioenigh'/households.dta"
 *if _rc != 0 {
-	noisily run "`c(sysdir_personal)'/Expenditure.do" 2020
-	noisily scalarlatex, logname(Expenditure2020) altname(B)
+	*noisily run "`c(sysdir_personal)'/Expenditure.do" 2020
+	*noisily scalarlatex, logname(Expenditure2020) altname(B)
+
+	noisily run `"`c(sysdir_personal)'/Households.do"' 2018
+	noisily scalarlatex, logname(Households2018) altname(B)
 	noisily run `"`c(sysdir_personal)'/Households.do"' 2020
 	noisily scalarlatex, logname(Households2020)
 *}
