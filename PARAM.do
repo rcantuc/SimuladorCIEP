@@ -15,7 +15,7 @@ scalar anioPE = 2023
 if anioPE >= 2022 {
 	scalar anioenigh = 2020
 }
-if anioPE >= 2020 & anio < 2022 {
+if anioPE >= 2020 & anioPE < 2022 {
 	scalar anioenigh = 2020
 }
 if anioPE >= 2018 & anioPE < 2020 {
