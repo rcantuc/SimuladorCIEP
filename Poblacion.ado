@@ -80,10 +80,10 @@ quietly {
 		matrix `POBTOT' = r(StatTotal)
 		noisily di in g " Personas " in y `k' in g ": " in y %15.0fc `POBTOT'[1,1]
 		if `k' == `aniohoy' {
-			scalar pobtot`entidadGName' = string(`POBTOT'[1,1],"%20.0fc")
+			scalar pobtot`entidadGName' = `POBTOT'[1,1]
 		}
 		if `k' == `aniofinal' {
-			scalar pobfin`entidadGName' = string(`POBTOT'[1,1],"%20.0fc")
+			scalar pobfin`entidadGName' = `POBTOT'[1,1]
 		}
 	}
 

@@ -1,16 +1,12 @@
-********************************************
-****                                    ****
-**** ARMONIZACION ENIGH `=enighanio' + LIF, PEF ****
-****    INFORMACION DE HOGARES          ****
-****                                    ****
-********************************************
+***************************************
+****                               ****
+**** ARMONIZACION ENIGH + LIF, PEF ****
+****    INFORMACION DE HOGARES     ****
+****                               ****
+***************************************
 if "`1'" == "" {
 	local 1 = 2023
 	scalar enighanio = 2020
-}
-
-if "$pais" != "" {
-	exit
 }
 
 
@@ -108,7 +104,7 @@ local ajustepob = poblacion
 **********************************
 *** 4. Variables Simulador.ado ***
 **********************************
-use "`c(sysdir_personal)'/SIM/`=enighanio'/households.dta", clear
+use "`c(sysdir_personal)'/SIM/`=anioenigh'/households.dta", clear
 tabstat factor, stat(sum) f(%20.0fc) save
 tempname pobenigh
 matrix `pobenigh' = r(StatTotal)
