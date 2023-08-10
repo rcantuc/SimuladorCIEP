@@ -1,10 +1,10 @@
 * Gini program*
 program Gini, return
 quietly {
-	syntax varname [if], HOGar(varlist) INDividuo(varlist) factor(varlist)
+	syntax varname [if], HOGar(varlist) factor(varlist)
 	preserve
 
-	collapse (sum) ingreso = `varlist' (mean) tot_integ `factor' `if', by(`hogar' `individuo')
+	collapse (mean) ingreso = `varlist' (max) `factor' `if', by(`hogar')
 	keep if ingreso != 0 & ingreso != .
 	count if ingreso != 0 & ingreso != .
 	if r(N) == 0 {
@@ -13,10 +13,6 @@ quietly {
 		restore
 		exit
 	}
-
-	replace factor = round(factor)
-	*replace tot_integ = round(tot_integ)
-	*replace ingreso = ingreso/tot_integ			// Ingresos per capita
 
 	sort ingreso `hogar'
 

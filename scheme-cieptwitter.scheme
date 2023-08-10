@@ -10,16 +10,16 @@
 // Graph Size
 // graphsize 	x 			5.5
 // graphsize 	y 			4
-graphsize 	x 			16
-graphsize 	y 			7
+graphsize 	x 			10
+graphsize 	y 			10
 
 
 
 // Margins
-margin 		graph			large
+margin 		graph			medlarge
 // margin 		combinegraph		none
 // margin 		piegraph		none
-margin		plotregion		large
+// margin		plotregion		none
 // margin		axis_title		none
 // margin		legend			none
 // margin		label 			none

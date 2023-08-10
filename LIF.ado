@@ -29,7 +29,7 @@ quietly {
 	***************
 	use in 1 using "`c(sysdir_personal)'/SIM/$pais/LIF.dta", clear
 	syntax [if] [, ANIO(int `aniovp' ) UPDATE NOGraphs Base ID(string) ///
-		MINimum(real 0.5) DESDE(int 2013) ILIF LIF EOFP BY(varname) ROWS(int 2) COLS(int 5)]
+		MINimum(real 0.5) DESDE(int `=`aniovp'-1') ILIF LIF EOFP BY(varname) ROWS(int 2) COLS(int 5)]
 
 	noisily di _newline(2) in g _dup(20) "." "{bf:   Sistema Fiscal:" in y " INGRESOS $pais `anio'   }" in g _dup(20) "."
 
@@ -208,7 +208,7 @@ quietly {
 
 	tempvar recreal
 	g `recreal' = recaudacion/deflator
-	capture tabstat `recreal' if anio == `anio'-1, by(`resumido') stat(sum) f(%20.1fc) save
+	capture tabstat `recreal' if anio == `desde', by(`resumido') stat(sum) f(%20.1fc) save
 	if _rc == 0 {
 		tempname sindeudatotpre
 		matrix `sindeudatotpre' = r(StatTotal)
@@ -240,13 +240,13 @@ quietly {
 
 		* Display *
 		return scalar `=strtoname("`=r(name`k')'")' = `mat`k''[1,1]
-		return scalar `=strtoname("`=r(name`k')'")'C = (`mat`k''[1,1]/`pre`k''[1,1]-1)*100
+		return scalar `=strtoname("`=r(name`k')'")'C = ((`mat`k''[1,1]/`pre`k''[1,1])^(1/(`=`anio'-`desde''))-1)*100
 		local divResumido `"`divResumido' `=strtoname(abbrev("`=r(name`k')'",7))'"'
 
 		noisily di in g "  (+) `=r(name`k')'" ///
 			_col(44) in y %20.0fc `mat`k''[1,1] ///
 			_col(66) in y %7.3fc `mat`k''[1,2] ///
-			_col(77) in y %7.1fc (`mat`k''[1,1]/`pre`k''[1,1]-1)*100
+			_col(77) in y %7.1fc ((`mat`k''[1,1]/`pre`k''[1,1])^(1/(`=`anio'-`desde''))-1)*100
 		local ++k
 	}
 	return local divResumido `"`divResumido'"'
@@ -262,8 +262,8 @@ quietly {
 
 
 	** 4.3 Crecimientos **
-	noisily di _newline in g "{bf: C. Cambios:" in y " `=`anio'-1' - `anio'" in g " (% PIB)" ///
-		_col(44) %7s "`=`anio'-1'" ///
+	noisily di _newline in g "{bf: C. Cambios:" in y " `=`desde'' - `anio'" in g " (% PIB)" ///
+		_col(44) %7s "`=`desde''" ///
 		_col(55) %7s "`anio'" ///
 		_col(66) %7s "Dif" ///
 		_col(77) %7s "Dif %" "}"
@@ -279,7 +279,7 @@ quietly {
 		local ++k
 	}
 
-	capture tabstat recaudacion recaudacionPIB if anio == `anio'-1, by(`resumido') stat(sum) f(%20.1fc) save
+	capture tabstat recaudacion recaudacionPIB if anio == `desde', by(`resumido') stat(sum) f(%20.1fc) save
 	if _rc == 0 {
 		tempname mattot5
 		matrix `mattot5' = r(StatTotal)

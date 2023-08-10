@@ -185,8 +185,12 @@ quietly {
 	*** 4 Graph ***
 	***************	
 	if "`nographs'" != "nographs" & "$nographs" == "" {
-		tempvar shrfsp interno externo rfspBalance rfspAdecuacion rfspOtros rfspBalance0 rfspAdecuacion0 rfspOtros0 rfsppib
+		tempvar shrfsp shrfspexterno shrfspinterno interno externo ///
+		rfspBalance rfspAdecuacion rfspOtros rfspBalance0 rfspAdecuacion0 rfspOtros0 rfsppib
 		g `shrfsp' = shrfsp/Poblacion/deflator
+		g `shrfspexterno' = shrfspExterno/Poblacion/deflator
+		g `shrfspinterno' = shrfspInterno/Poblacion/deflator
+
 		g `externo' = shrfspExterno/1000000000/deflator
 		g `interno' = `externo' + shrfspInterno/1000000000/deflator
 		
@@ -206,12 +210,13 @@ quietly {
 				local text `"`text' `=shrfsp[`k']/1000000000/deflator[`k']' `=anio[`k']' "{bf:`=string(shrfsp[`k']/pibY[`k']*100,"%5.1fc")'% PIB}""'
 				local textI `"`textI' `=`interno'[`k']/2+`externo'[`k']/2' `=anio[`k']' "`=string(shrfspInterno[`k']/1000000000,"%10.0fc")'""'
 				local textE `"`textE' `=`externo'[`k']/2' `=anio[`k']' "`=string(shrfspExterno[`k']/1000000000,"%10.0fc")'""'
-				local textPC `"`textPC' `=`shrfsp'[`k']/2' `=anio[`k']' "{bf:`=string(`shrfsp'[`k']/1000,"%10.1fc")'}""'
 				if `shrfspsinPemex'[`k'] != . & anio[`k'] < `anio' {
 					local textPemex `"`textPemex' `=`shrfspPemex'[`k']/2' `=anio[`k']' "{bf:`=string(`shrfspPemex'[`k'],"%10.1fc")'}""'
 					local textSPemex `"`textSPemex' `=`shrfspsinPemex'[`k']/2+`shrfspPemex'[`k']/2' `=anio[`k']' "{bf:`=string(`shrfspsinPemex'[`k']-`shrfspPemex'[`k'],"%10.1fc")'}""'
 				}
-				local textPC2 `"`textPC2' `=`shrfsp'[`k']' `=anio[`k']' "{bf:`=string(`shrfsp'[`k'],"%10.0fc")'}""'
+				local textPC `"`textPC' `=`shrfsp'[`k']' `=anio[`k']' "{bf:`=string(`shrfsp'[`k'],"%10.0fc")'}""'
+				local textPC `"`textPC' `=`shrfspinterno'[`k']' `=anio[`k']' "{bf:`=string(`shrfspinterno'[`k'],"%10.0fc")'}""'
+				local textPC `"`textPC' `=`shrfspexterno'[`k']' `=anio[`k']' "{bf:`=string(`shrfspexterno'[`k'],"%10.0fc")'}""'
 				local j = `j' + 100/(`ultanio'-`anioshrfsp'+1)
 			}
 		}
@@ -287,37 +292,38 @@ quietly {
 		
 		if "$export" == "" {
 			local graphtitle "{bf:Saldo hist{c o'}rico} por persona"
-			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP y $paqueteEconomico."
+			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP."
 		}
 		else {
 			local graphtitle ""
 			local graphfuente ""
 		}
-		twoway (connected `shrfsp' anio if anio < `anio') ///
-			(connected `shrfsp' anio if anio >= `anio') if `shrfsp' != . & anio >= `ultanio', ///
+		twoway (connected `shrfsp' `shrfspinterno' `shrfspexterno' anio if anio <= `anio') ///
+			(connected `shrfsp' `shrfspinterno' `shrfspexterno' anio if anio > `anio') if `shrfsp' != . & anio >= `ultanio', ///
 			title(`graphtitle') ///
 			subtitle($pais) ///
 			caption("`graphfuente'") ///
 			ylabel(#5, format(%15.0fc) labsize(small)) ///
 			xlabel(`ultanio'(1)`anio', noticks) ///	
-			text(`textPC2', placement(c) color(black) size(small)) ///
+			text(`textPC', placement(c) color(black) size(small)) ///
 			yscale(axis(1) noline) ///
 			ytitle("`currency' `aniovp'") xtitle("") ///
 			note("{bf:{c U'}ltimo dato}: `aniofin'm`mesfin'") ///
-			legend(label(1 "  Reportado") label(2 "  $paqueteEconomico")) ///
+			legend(label(1 "  Total") label(2 "  Interno") label(3 "  Externo") order(1 2 3)) ///
 			name(shrfsppc, replace)
 
 		capture confirm existence $export
 		if _rc == 0 {
 			graph export "$export/shrfsppc.png", replace name(shrfsppc)
-		}			
-			
-			
+		}
 
 		if "$pais" != "" {
 			exit
 		}
 
+
+		**************************************************
+		** REQUERIMIENTOS FINANCIEROS DEL SECTOR PÚBLCO **
 		g `rfspOtros0' = - rfspPIDIREGAS/pibY*100 - rfspIPAB/pibY*100 - rfspFONADIN/pibY*100 - rfspDeudores/pibY*100 - rfspBanca/pibY*100
 		g `rfspAdecuacion0' = - rfspAdecuacion/pibY*100		
 		g `rfspBalance0' = - rfspBalance/pibY*100

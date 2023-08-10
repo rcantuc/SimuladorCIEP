@@ -90,10 +90,10 @@ quietly {
 	***************/
 	*** 5 OUTPUT ***
 	****************
-	*noisily di in g "$" `"(document).ready(function() {const dataSource = {chart: {caption: "El sistema fiscal mexicano por `name'",subcaption:"De la recaudación al gasto público",theme: "fusion",orientation: "horizontal",linkalpha: 30,linkhoveralpha: 60,nodelabelposition: "start"},"'
+	noisily di in w "$" `"(document).ready(function()_{const_dataSource={chart:{caption:"",subcaption:"",theme:"fusion",orientation:"horizontal",linkalpha:30,linkhoveralpha:60,nodelabelposition:"start",showLegend:0},"'
 	noisily di in w `"nodes: [ `=substr(`"`nodes'"',1,`=strlen(`"`nodes'"')'-1)'], "'
 	noisily di in w `"links: [ `=substr(`"`links'"',1,`=strlen(`"`links'"')'-1)']"' "};"
-	*noisily di in g `"FusionCharts.ready(function() {var myChart = new FusionCharts({type: "sankey",renderAt: "sankey-`name'",width: "100%",height: "100%",dataFormat: "json",dataSource}).render();});});"'
+	noisily di in w `"FusionCharts.ready(function()_{var_myChart=new_FusionCharts({type:"sankey",renderAt:"sankey-`name'",width:"100%",height:"100%",dataFormat:"json",dataSource}).render();});});"'
 	capture quietly log close sankey
 
 	tempfile sankey1 sankey2 sankey3
@@ -109,7 +109,8 @@ quietly {
 		filefilter `sankey3' "/Applications/XAMPP/xamppfiles/htdocs/`folder'/sankey-`name'.json", from(".,") to("0") replace
 	}
 	if "`c(os)'" == "Unix" {
-		filefilter `sankey3' `"`c(sysdir_site)'/users/$pais/$id/sankey-`name'.json"', from(".,") to("0") replace
+		*filefilter `sankey3' `"`c(sysdir_personal)'/users/$pais/$id/sankey-`name'.json"', from(".,") to("0") replace
+		filefilter `sankey3' `"/var/www/html/SankeyNTA/sankey-`name'.json"', from(".,") to("0") replace
 	}
 
 }

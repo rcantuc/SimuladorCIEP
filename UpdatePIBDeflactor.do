@@ -183,25 +183,24 @@ if "$nographs" == "" {
 	}
 
 	* Gráfica *
-	twoway connected crec_pibQR aniotrimestre if pibPO != . & trimestre == `ulttrim', ///
-		title({bf:Producto Interno Bruto}) ///
-		ytitle("Crecimiento trimestre vs. trimestre (%)") xtitle("") ///
-		tlabel(2005q`ulttrim'(4)`ultanio'q`ulttrim') ///
-		text(`text_pibQR', size(small)) ///
-		note("{bf:{c U'}ltimo dato reportado}: `ultanio' trim. `ulttrim'.") ///
-		caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
-		name(UpdatePIBDeflactor, replace)
-		* Texto sobre lineas *
-		forvalues k=1(1)`=_N' {
-		}
-
-	twoway (connected pibPO aniotrimestre) if pibPO != . & trimestre == `ulttrim', ///
-		title(Producto Interno Bruto por {bf:población ocupada}) subtitle(${pais}) ///
-		ytitle(`=currency[`obsvp']' `ultanio') xtitle("") ///
-		tlabel(2005q`ulttrim'(4)`ultanio'q`ulttrim') ///
-		text(`crec_PIBPC', size(small)) ///
-		ylabel(/*0(5)`=ceil(`pibYRmil'[_N])'*/, format(%20.0fc)) ///
-		note("{bf:{c U'}ltimo dato reportado}: `ultanio' trim. `ulttrim'.") ///
-		caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE/ENOE.") ///
-		name(PIBPCupdate, replace)
+	forvalues k=1(1)`ulttrim' {
+		twoway connected crec_pibQR aniotrimestre if pibPO != . & trimestre == `k', ///
+			title({bf:Producto Interno Bruto}) ///
+			ytitle("Crecimiento trimestre vs. trimestre (%)") xtitle("") ///
+			tlabel(2005q`k'(4)`ultanio'q`k') ///
+			text(`text_pibQR', size(small)) ///
+			note("{bf:{c U'}ltimo dato reportado}: `ultanio' trim. `ulttrim'.") ///
+			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
+			name(UpdatePIBDeflactor`k', replace)
+		
+		twoway (connected pibPO aniotrimestre) if pibPO != . & trimestre == `k', ///
+			title(Producto Interno Bruto por {bf:población ocupada}) subtitle(${pais}) ///
+			ytitle(`=currency[`obsvp']' `ultanio') xtitle("") ///
+			tlabel(2005q`k'(4)`ultanio'q`k') ///
+			text(`crec_PIBPC', size(small)) ///
+			ylabel(/*0(5)`=ceil(`pibYRmil'[_N])'*/, format(%20.0fc)) ///
+			note("{bf:{c U'}ltimo dato reportado}: `ultanio' trim. `ulttrim'.") ///
+			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE/ENOE.") ///
+			name(UpdatePIBDeflactorPO`k', replace)
+	}
 }

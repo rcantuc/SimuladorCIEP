@@ -3,17 +3,17 @@
 ***********************
 local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 scalar aniovp = substr(`"`=trim("`fecha'")'"',1,4)
+adopath ++PERSONAL
 
 global id = "`c(username)'"
-
 capture mkdir `"`c(sysdir_personal)'/SIM/"'
 capture mkdir `"`c(sysdir_personal)'/users/"'
 capture mkdir `"`c(sysdir_personal)'/users/$id/"'
 
-global paqueteEconomico "PreCGPE 2024"
+global paqueteEconomico "CGPE 2023"
 scalar anioPE = 2023
 if anioPE >= 2022 {
-	scalar anioenigh = 2020
+	scalar anioenigh = 2022
 }
 if anioPE >= 2020 & anioPE < 2022 {
 	scalar anioenigh = 2020
@@ -34,7 +34,7 @@ if "$output" != "" {
 }
 
 
-
+exit
 ************************************************
 ***    2. CRECIMIENTO Y DEFLACTOR DEL PIB    ***
 ************************************************
@@ -53,7 +53,7 @@ global def2027 = 3.51530 // CGPE 2023 (página 134)
 global def2028 = 3.50150 // CGPE 2023 (página 134)
 
 
-exit
+
 ******************************
 ***    4. DEUDA PÚBLICA    ***
 ******************************
