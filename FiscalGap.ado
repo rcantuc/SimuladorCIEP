@@ -9,7 +9,7 @@ quietly {
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
 	syntax [, NOGraphs Anio(int `aniovp') BOOTstrap(int 1) Update END(int 2100) ///
-		ANIOMIN(int 2000) DIScount(real 5)]
+		ANIOMIN(int 2000) DIScount(real 5) DESDE(int `=`aniovp'-1')]
 
 
 
@@ -43,7 +43,7 @@ quietly {
 	*******************
 	*** 3 HOUSEHOLDS **
 	*******************
-	use "`c(sysdir_personal)'/users/$pais/$id/households.dta", clear
+	use "`c(sysdir_personal)'/users/$id/households.dta", clear
 	capture drop _*
 	foreach k in Educación Pension Pensión_Bienestar Salud Otros IngBasico Inversión Otras_Part_y_Apor Energía {
 		tabstat `k' [fw=factor], stat(sum) f(%20.0fc) save
@@ -59,12 +59,18 @@ quietly {
 	LIF if divLIF != 10, base
 	levelsof divSIM, local(divSIM)
 	
-	LIF if divLIF != 10, anio(`anio') nographs by(divSIM) min(0) //ilif //eofp
+	LIF if divLIF != 10, anio(`anio') nographs by(divSIM) min(0) desde(`desde') //ilif //eofp
 	local j = 0
 	foreach k of local divSIM {
 		local label`k' : label divSIM `k'
 		local `label`k''C = r(`label`k''C)
-		
+		if ``label`k''C' > 15 {
+			local `label`k''C = 15
+		}
+		if ``label`k''C' < -15 {
+			local `label`k''C = -15
+		}
+
 		capture confirm scalar `k'
 		if _rc != 0 {
 			scalar `label`k'' = r(`label`k'')/scalar(pibY)*100
@@ -85,7 +91,7 @@ quietly {
 
 			tempvar estimacion
 			g `estimacion' = estimacion
-			replace estimacion = `estimacion'/L.`estimacion'*(scalar(`divSIM`k''))/100*scalar(pibY)*(1+``divSIM`k''C'/100)^(anio-`anio') if anio >= `anio' & abs(``divSIM`k''C'/100) < .4
+			replace estimacion = `estimacion'/L.`estimacion'*(scalar(`divSIM`k''))/100*scalar(pibY)*(1+``divSIM`k''C'/100)^(anio-`anio') if anio >= `anio' //& abs(``divSIM`k''C'/100) < .4
 
 			g divSIM = `k'
 			replace modulo = "`divSIM`k''"
@@ -105,7 +111,7 @@ quietly {
 
 			tempvar estimacion
 			g `estimacion' = estimacion
-			replace estimacion = `estimacion'/L.`estimacion'*(scalar(`divSIM`k''))/100*scalar(pibY)*(1+``divSIM`k''C'/100)^(anio-`anio')*(1-depletionrate)^(anio-`anio') if anio >= `anio' & abs(``divSIM`k''C'/100) < .4
+			replace estimacion = `estimacion'/L.`estimacion'*(scalar(`divSIM`k''))/100*scalar(pibY)*(1+``divSIM`k''C'/100)^(anio-`anio') if anio >= `anio' //& abs(``divSIM`k''C'/100) < .4
 
 			g divSIM = `k'
 			replace modulo = "`divSIM`k''"
@@ -221,11 +227,17 @@ quietly {
 	****************************
 	*** 4 Fiscal Gap: Gastos ***
 	****************************
-	PEF if transf_gf == 0 & anio >= 2013 & divPE != -1, anio(`anio') by(divPE) nographs
+	PEF if transf_gf == 0 & anio >= 2013 & divPE != -1, anio(`anio') by(divPE) nographs desde(`desde')
 	local divPE "`=r(divPE)'"
 	foreach k of local divPE {
 		local `k' = r(`k')
 		local `k'C = r(`k'C)
+		if ``k'C' > 15 {
+			local `k'C = 15
+		}
+		if ``k'C' < -15 {
+			local `k'C = -15
+		}
 	}
 
 	g divPE = resumido
@@ -239,8 +251,7 @@ quietly {
 	foreach k of local divPE {
 		local ++totlabels
 		local divPE`k' : label labelresumido `k'
-		if "`divPE`k''" != "Costo de la deuda" & "`divPE`k''" != "Inversión" /// 
-			& "`divPE`k''" != "Otras Part y Apor" & "`divPE`k''" != "Otros" & "`divPE`k''" != "Pensión Bienestar" {
+		if "`divPE`k''" != "Costo de la deuda" & "`divPE`k''" != "Otras Part y Apor" & "`divPE`k''" != "Energía" {
 
 			preserve
 
@@ -252,10 +263,10 @@ quietly {
 			g `estimacion' = estimacion
 			capture confirm matrix `HH`=strtoname("`divPE`k''")''
 			if _rc == 0 {
-				replace estimacion = `estimacion'/L.`estimacion'*`HH`=strtoname("`divPE`k''")''[1,1]*(1+``=strtoname("`divPE`k''")'C'/100)^(anio-`anio') if anio >= `anio'				
+				replace estimacion = `estimacion'/L.`estimacion'*`HH`=strtoname("`divPE`k''")''[1,1]*(1+``=strtoname("`divPE`k''")'C'/100)^(anio-`anio') if anio >= `anio' //& abs(``=strtoname("`divPE`k''")'C') < .4
 			}
 			else {
-				replace estimacion = `estimacion'/L.`estimacion'*``=strtoname("`divPE`k''")''*(1+``=strtoname("`divPE`k''")'C'/100)^(anio-`anio') if anio >= `anio'
+				replace estimacion = `estimacion'/L.`estimacion'*``=strtoname("`divPE`k''")''*(1+``=strtoname("`divPE`k''")'C'/100)^(anio-`anio') if anio >= `anio' //& abs(``=strtoname("`divPE`k''")'C') < .4
 			}
 
 			g divPE = `k'
@@ -267,8 +278,7 @@ quietly {
 			restore
 			merge 1:1 (anio divPE) using ``divPE`k''', nogen update replace
 		}
-		else if "`divPE`k''" == "Inversión" | "`divPE`k''" == "Otros" ///
-			| "`divPE`k''" == "Otras Part y Apor" | "`divPE`k''" == "Pensión Bienestar" {
+		else if "`divPE`k''" != "Costo de la deuda" {
 			preserve
 
 			use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/`=strtoname("`divPE`k''")'REC.dta"', clear
@@ -353,7 +363,7 @@ quietly {
 	merge 1:1 (anio) using `baseingresos', nogen
 
 	* Costo de la deuda *
-	noisily tabstat tasaEfectiva if anio <= `anio'-1 & anio >= `anio'-2, save
+	tabstat tasaEfectiva if anio <= `anio'-1 & anio >= `anio'-2, save
 	tempname tasaEfectiva_ari
 	matrix `tasaEfectiva_ari' = r(StatTotal)
 	replace tasaEfectiva = `tasaEfectiva_ari'[1,1] if anio >= `anio' //& tasaEfectiva == .

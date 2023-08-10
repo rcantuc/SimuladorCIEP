@@ -345,7 +345,7 @@ merge 1:1 (anio) using "`costopemex'", nogen
 tsset anio
 
 ** Tipo de cambio **
-g double tipoDeCambio = deudaMXN/deudaUSD/1000
+g double tipoDeCambio = deudaMXN/deudaUSD
 format tipoDeCambio %7.2fc
 
 ** Porcentaje interna y externa *

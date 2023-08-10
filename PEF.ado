@@ -27,7 +27,7 @@ quietly {
 	****************
 	use in 1 using "`c(sysdir_personal)'/SIM/$pais/PEF.dta", clear
 	syntax [if] [, ANIO(int `aniovp') NOGraphs Update Base ///
-		BY(varname) ROWS(int 2) COLS(int 5) MINimum(real 1) PEF PPEF APROBado]
+		BY(varname) ROWS(int 2) COLS(int 5) MINimum(real 1) PEF PPEF APROBado DESDE(int `=`aniovp'-1')]
 
 	noisily di _newline(2) in g _dup(20) "." "{bf:  Sistema Fiscal: GASTOS $pais " in y `anio' "  }" in g _dup(20) "."
 
@@ -207,7 +207,7 @@ quietly {
 	replace gastoPIB = -gastoPIB if resumido == 99999998
 	
 	g gastoreal = gasto/deflator
-	capture tabstat gastoreal if anio == `anio'-1, by(resumido) stat(sum) f(%20.1fc) save missing
+	capture tabstat gastoreal if anio == `desde', by(resumido) stat(sum) f(%20.1fc) save missing
 	if _rc == 0 {
 		tempname pregastot
 		matrix `pregastot' = r(StatTotal)
@@ -251,13 +251,13 @@ quietly {
 
 		* Display *
 		return scalar `name' = `mat`k''[1,1]
-		return scalar `name'C = (`mat`k''[1,1]/`pre`k''[1,1]-1)*100
+		return scalar `name'C = ((`mat`k''[1,1]/`pre`k''[1,1])^(1/(`=`aniovp'-`desde''))-1)*100
 		local divResumido `"`divResumido' `name'"'
 
 		noisily di in g `"  (+) `disptext'"' ///
 			_col(44) in y %20.0fc `mat`k''[1,1] ///
 			_col(66) in y %7.3fc `mat`k''[1,2] ///
-			_col(77) in y %7.1fc (`mat`k''[1,1]/`pre`k''[1,1]-1)*100
+			_col(77) in y %7.1fc ((`mat`k''[1,1]/`pre`k''[1,1])^(1/(`=`aniovp'-`desde''))-1)*100
 		local ++k
 	}
 	return local divResumido `"`divResumido'"'
@@ -276,13 +276,13 @@ quietly {
 
 
 	** 4.3 Crecimientos **
-	noisily di _newline in g "{bf: C. Cambios:" in y " `=`anio'-1' - `anio'" in g ///
+	noisily di _newline in g "{bf: C. Cambios:" in y " `=`desde'' - `anio'" in g ///
 		_col(44) %7s "% PIB `anio'" ///
-		_col(55) %7s "% PIB `=`anio'-1'" ///
+		_col(55) %7s "% PIB `=`desde''" ///
 		_col(66) %7s "Dif pts" ///
 		_col(77) %7s "Dif %" "}"
 
-	capture tabstat gasto gastoPIB if anio == `anio'-1, by(resumido) stat(sum) f(%20.1fc) missing save
+	capture tabstat gasto gastoPIB if anio == `desde', by(resumido) stat(sum) f(%20.1fc) missing save
 	tempname mattot
 	matrix `mattot' = r(StatTotal)
 

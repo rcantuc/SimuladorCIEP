@@ -138,7 +138,7 @@ quietly {
 
 
 		** Ciclo de vida **
-		postfile CICLO bootstrap sexo edad decil escol double(poblacion `varlist') ///
+		postfile CICLO bootstrap sexo edad decil double(poblacion `varlist') ///
 			using `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'CICLO"', replace
 
 
@@ -543,9 +543,9 @@ quietly {
 	label define deciles 1 "I" 2 "II" 3 "III" 4 "IV" 5 "V" 6 "VI" 7 "VII" 8 "VIII" 9 "IX" 10 "X" 11 "Nacional"
 	label values decil deciles
 
-	replace escol = 3 if escol == 4
-	label define escol 0 "Ninguna" 1 "B{c a'}sica" 2 "Media superior" 3 "Superior o posgrado"
-	label values escol escol
+	*replace escol = 3 if escol == 4
+	*label define escol 0 "Ninguna" 1 "B{c a'}sica" 2 "Media superior" 3 "Superior o posgrado"
+	*label values escol escol
 
 	label define sexo 1 "Hombres" 2 "Mujeres"
 	label values sexo sexo
@@ -647,7 +647,7 @@ program poblaciongini
 
 
 	*********************************
-	*** 4. Educational attainment ***
+	/*** 4. Educational attainment ***
 	levelsof escol, local(escol)
 	foreach k of local escol {
 		tabstat `varlist' if escol == `k', stat(sum) save
@@ -670,7 +670,7 @@ program poblaciongini
 	label var `grupoesc' "escolaridad"
 
 
-	*****************
+	****************/
 	*** 5. Graphs ***
 	graphpiramide `varlist', over(`grupo') title("`title'") rect(`rect') ///
 		men(`=string(`gsexlab1',"%7.0fc")') women(`=string(`gsexlab2',"%7.0fc")') ///
@@ -799,13 +799,12 @@ program graphpiramide
 			name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)', replace) ycommon xcommon ///
 			title("{bf:Perfil} de `title'") subtitle("$pais") ///
 			///title("`title' {bf:profile}") ///
-			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5 y la `base'.") ///
+			caption("{bf:Fuente}: Elaborado por el CIEP, con la `base'.") ///
 			///caption("Source: Prepared with the CIEP Tax Simulator v5 and information from INEGI, ENIGH 2018.") ///
-			note(`"{bf:Nota}: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n en cada grupo."') ///
+			///note(`"{bf:Nota}: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n en cada grupo."') ///
 			///note(`"{bf:Note}: The percentages in parentheses show the concentration in each group."')
 
 		graph save `=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)' `"`c(sysdir_personal)'/users/$pais/$id/graphs/`varlist'_`titleover'.gph"', replace
-
 		if "$export" != "" {
 			graph export `"$export/`varlist'_`titleover'.png"', replace name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)')
 		}

@@ -38,8 +38,8 @@ program define scalarlatex
 				| `"`=substr("`name'",1,6)'"' == "output" | `"`=substr("`name'",1,4)'"' == "asis" ///
 				| `"`=substr("`name'",1,7)'"' == "pibYEnt" {
 				local value = scalar(`name')
-				di in w "\def\d`name'#1{\gdef\\`name'{#1}}"
-				di in w `"\d`name'{`value'}"'		
+				di in w "\def\d`name'`altname'#1{\gdef\\`name'`altname'{#1}}"
+				di in w `"\d`name'`altname'{`value'}"'		
 			}
 
 			else if (`"`=substr("`name'",-3,3)'"' == "PIB" & `"`=substr("`name'",1,3)'"' != "PIB") ///

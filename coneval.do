@@ -30,10 +30,9 @@ están ubicados en las siguientes carpetas:
 3) Bitácoras: "C:\Pobreza 2020\log"
 
 Para cambiar estas ubicaciones, se modifican los siguientes globals (gl); 
-
-gl data="/home/ciepmx/CIEP Dropbox/Ricardo Cantú/ENIGH2022/Bases de datos";
-gl bases="/home/ciepmx/CIEP Dropbox/Ricardo Cantú/ENIGH2022/Bases";
-gl log="/home/ciepmx/CIEP Dropbox/Ricardo Cantú/ENIGH2022/Log";
+gl data="/home/ciepmx/CIEP Dropbox/Ricardo Cantú/ENIGH2022 - Conciliación con SCN/Bases de datos";
+gl bases="/home/ciepmx/CIEP Dropbox/Ricardo Cantú/ENIGH2022 - Conciliación con SCN/Bases";
+gl log="/home/ciepmx/CIEP Dropbox/Ricardo Cantú/ENIGH2022 - Conciliación con SCN/Log";
 
 
 log using "$log/Pobreza_20.txt", text replace;
@@ -2017,8 +2016,6 @@ drop _merge;
 gen double ictpc= ict/tamhogesc;
 
 label var ictpc "Ingreso corriente total per capita";
-
-
 
 
 *************************************************************************

@@ -1,16 +1,25 @@
 ******************************************************************
 ****                                                          ****
-**** A.2. MACRO + MICRO HARMONIZATION: AlquEHOLD EXPENDITURES ****
+**** A.2. MACRO + MICRO HARMONIZATION: HOUSEHOLD EXPENDITURES ****
 ****                                                          ****
 ******************************************************************
 
-** 0.0 Defaults **
+
+
+*********************
+***               ***
+***  0. Defaults  ***
+***               ***
+*********************
 timer on 15
 if "`1'" == "" {
-	local enighanio = 2020
+	local enighanio = 2022
 }
 else {
-	if `1' >= 2020 {
+	if `1' >= 2022 {
+		local enighanio = 2022
+	}
+	if `1' >= 2020 & `1' < 2022 {
 		local enighanio = 2020
 	}
 	if `1' >= 2018 & `1' < 2020 {
@@ -26,7 +35,7 @@ else {
 if `enighanio' >= 2014 {
 	local tasagener = 16
 	local tasafront = 16
-	local altimir = "no"
+	local altimir = "yes"
 }
 if `enighanio' == 2012 {
 	local tasagener = 16
@@ -48,9 +57,11 @@ noisily di _newline(2) in g _dup(20) "." "{bf:  Gastos de los hogares " in y "EN
 
 
 
-*************************************
-*** 1. DATOS MACROECONóMICOS (MA) ***
-*************************************
+**********************************
+***                            ***
+***  1. DATOS MACROECONóMICOS  ***
+***                            ***
+**********************************
 
 ** 1.1 Sistema de Cuentas Nacionales **
 SCN, anio(`enighanio') nographs
@@ -76,23 +87,17 @@ local Ieps10 = r(Alcohol)
 Poblacion, anio(`enighanio') nographs
 
 
-** 1.4 Deflactor **
-PIBDeflactor, aniovp(2023) nographs
-forvalues k=1(1)`=_N' {
-	if anio[`k'] == `enighanio' {
-		local deflactor = deflator[`k']
-		continue, break
-	}
-}
 
 
 
-******************************************
-*** 2. DATOS MICROECONóMICOS (MI) ***
-******************************************
+**********************************
+***                            ***
+***  2. DATOS MICROECONóMICOS  ***
+***                            ***
+**********************************
 capture confirm file "`c(sysdir_personal)'/SIM/`enighanio'/preconsumption.dta"
-if _rc != 0 {
-*if _rc == 0 {
+*if _rc != 0 {
+if _rc == 0 {
 
 	** MI.1. Base de datos de gastos de los hogares **
 	use "`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/`enighanio'/gastospersona.dta", clear
@@ -102,9 +107,9 @@ if _rc != 0 {
 	replace numren = "01" if clave >= "M007" & clave <= "M009"		// Adquisicion de vehiculos (jefe del hogar)
 
 	** MI.2. Variables sociodemograficas **
-	merge m:1 (folioviv foliohog numren) using "`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/`enighanio'/poblacion.dta", keepus(tipoesc sexo edad) nogen
-	merge m:1 (folioviv) using "`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/`enighanio'/vivienda.dta", keepus(ubica_geo tenencia) nogen
-	merge m:1 (folioviv foliohog) using "`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/`enighanio'/concentrado.dta", nogen keepus(factor tot_integ)
+	merge m:1 (folioviv foliohog numren) using "`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/`enighanio'/poblacion.dta", keepus(tipoesc sexo edad) nogen update replace
+	merge m:1 (folioviv foliohog) using "`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/`enighanio'/concentrado.dta", nogen keepus(factor tot_integ) update replace
+	merge m:1 (folioviv) using "`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/`enighanio'/vivienda.dta", keepus(ubica_geo tenencia) nogen update replace
 	capture rename factor_hog factor
 
 	** MI.3. Quitar gastos "no necesarios" **
@@ -313,8 +318,8 @@ if _rc != 0 {
 		5 "Prendas de vestir" 6 "Calzado" 7 "Vivienda" 8 "Agua" 9 "Electricidad" ///
 		10 "Artículos para el hogar" ///
 		11 "Salud" 12 "Adquisición de vehículos" ///
-		13 "Funcionamiento de STrasporte" ///
-		14 "Servicios de STrasporte" ///
+		13 "Funcionamiento de Trasporte" ///
+		14 "Servicios de Trasporte" ///
 		15 "Comunicaciones" 16 "Recreación y cultura" 17 "Educación" ///
 		18 "Restaurantes y hoteles" 19 "Bienes y servicios diversos"
 	label values categ categ
@@ -388,12 +393,15 @@ if _rc != 0 {
 
 
 
-********************************
-*** 3. Precio, IVA, IEPS (P) ***
-********************************
+******************************
+***                        ***
+***  3. Precio, IVA, IEPS  ***
+***                        ***
+******************************
 use "`c(sysdir_personal)'/SIM/`enighanio'/preconsumption.dta", clear
+*drop if categ == 99
 replace informal = lugar_comp == "01" | lugar_comp == "02" | lugar_comp == "03" | lugar_comp == "17"	// Informalidad
-sample 5
+*sample 5
 
 ** 3.1 Cantidad anual **
 replace cantidad = cantidad*365 if frecuencia == "1"
@@ -403,9 +411,9 @@ replace cantidad = cantidad*4 if frecuencia == "4" | frecuencia == "5" | frecuen
 replace cantidad = cantidad*52 if tipoieps != . & (frecuencia == "0" | frecuencia == "")	// Alcohol
 replace cantidad = 52 if cantidad == .
 
-replace cantidad = gasto/13.98*52 if clave == "F007"
-replace cantidad = gasto/14.81*52 if clave == "F008"
-replace cantidad = gasto/14.63*52 if clave == "F009"
+*replace cantidad = gasto/13.98*52 if clave == "F007"
+*replace cantidad = gasto/14.81*52 if clave == "F008"
+*replace cantidad = gasto/14.63*52 if clave == "F009"
 
 
 ** 3.2 Cálculo de precios **
@@ -414,7 +422,7 @@ g double precio = gasto_anual/cantidad
 
 ** 3.3 Cálculo del IVA **
 g double IVA = precio*(`tasagener'/100)/(1+(`tasagener'/100))*cantidad*proporcion if tiva == 1		// Exento
-replace IVA = precio*(`tasagener'/100)/(1+(`tasagener'/100))*cantidad if tiva == 2                  // General gravado
+replace IVA = precio*(`tasagener'/100)/(1+(`tasagener'/100))*cantidad if tiva == 2			// General gravado
 replace IVA = 0 if informal == 1 | tiva == 3 														// Tasa cero
 
 
@@ -434,9 +442,11 @@ tabstat IEPS cantidad [aw=factor], by(tipoieps) stat(sum) f(%20.0fc)
 
 
 
-****************************************/
-*** 4. Deducciones personales del ISR ***
-*****************************************
+******************************************/
+***                                     ***
+***  4. Deducciones personales del ISR  ***
+***                                     ***
+*******************************************
 local smdf = 88.36
 g deduc_STras_escolar = gasto_anual if clave == "E013"
 g deduc_honor_medicos = gasto_anual if (clave >= "J001" & clave <= "J003") ///
@@ -450,7 +460,6 @@ g deduc_gasto_colegi2 = min(gasto_anual,12900) if clave == "E002"
 g deduc_gasto_colegi3 = min(gasto_anual,19900) if clave == "E003"
 g deduc_gasto_colegi4 = min(gasto_anual,17100) if clave == "E007"
 g deduc_gasto_colegi5 = min(gasto_anual,24500) if clave == "E004"
-
 
 preserve
 collapse (sum) deduc_*, by(folioviv foliohog)
@@ -469,18 +478,20 @@ restore
 
 
 
-************************************/
-*** 5. Original aggregated values ***
-*************************************
-Gini gasto_anual, hogar(folioviv foliohog) individuo(numren) factor(factor)
+**************************************/
+***                                 ***
+***  5. Original aggregated values  ***
+***                                 ***
+***************************************
+Gini gasto_anual, hogar(folioviv foliohog) factor(factor)
 local gini_gasto_anual = r(gini_gasto_anual)
 scalar ginigastoanual = `gini_gasto_anual'
 
-Gini IVA, hogar(folioviv foliohog) individuo(numren) factor(factor)
+Gini IVA, hogar(folioviv foliohog) factor(factor)
 local gini_IVA = r(gini_IVA)
 scalar giniIVA = `gini_IVA'
 
-Gini IEPS, hogar(folioviv foliohog) individuo(numren) factor(factor)
+Gini IEPS, hogar(folioviv foliohog) factor(factor)
 local gini_IEPS = r(gini_IEPS)
 scalar giniIEPS = string(`gini_IEPS',"%5.3f")
 
@@ -491,7 +502,7 @@ foreach k in Alim BebN BebA Taba Vest Calz Alqu Agua Elec Hoga Salu Vehi FTra ST
 	tempname M`j'
 	matrix `M`j'' = r(Stat`j')
 	scalar E`k'PIB = `M`j''[1,1]/PIB*100
-	scalar E`k'PC = `M`j''[1,1]/pobtotNac/`deflactor'
+	scalar E`k'PC = `M`j''[1,1]/pobtotNac
 }
 tempname MTot
 matrix `MTot' = r(StatTotal)
@@ -500,9 +511,9 @@ local j = 1
 foreach k in Alim BebN BebA Taba Vest Calz Alqu Agua Elec Hoga Salu Vehi FTra STra Comu Recr Educ Rest Dive {
 	tempname gasto_anual`k'
 	g `gasto_anual`k'' = gasto_anual if categ == `j'
-	Gini `gasto_anual`k'', hogar(folioviv foliohog) individuo(numren) factor(factor)
-	local gini_GA`k' = r(gini_`gasto_anual`k'')
-	scalar giniGA`k' = string(`gini_GA`k'',"%5.3f")
+	*Gini `gasto_anual`k'', hogar(folioviv foliohog) factor(factor)
+	local gini`k' = r(gini_`gasto_anual`k'')
+	scalar gini`k' = `gini`k''
 	local ++j
 }
 
@@ -512,97 +523,97 @@ noisily di _newline in g "{bf: A. Gasto inicial" ///
 	_col(66) %7s "SCN" in g ///
 	_col(77) %7s "Diferencia" "}"
 noisily di in g "  (+) Alimentos " ///
-	_col(44) in y "(" %5.3fc `gini_GAAlim' ")" ///
+	_col(44) in y "(" %5.3fc `giniAlim' ")" ///
 	_col(57) in y %7.3fc `M1'[1,1]/PIB*100 ///
 	_col(66) %6.3fc Alim/PIB*100 ///
 	_col(77) %6.1fc (`M1'[1,1]/Alim-1)*100 "%"
 noisily di in g "  (+) Bebidas no alcohólicas " ///
-	_col(44) in y "(" %5.3fc `gini_GABebN' ")" ///
+	_col(44) in y "(" %5.3fc `giniBebN' ")" ///
 	_col(57) in y %7.3fc `M2'[1,1]/PIB*100 ///
 	_col(66) %6.3fc BebN/PIB*100 ///
 	_col(77) %6.1fc (`M2'[1,1]/BebN-1)*100 "%"
 noisily di in g "  (+) Bebidas alcohólicas " ///
-	_col(44) in y "(" %5.3fc `gini_GABebA' ")" ///
+	_col(44) in y "(" %5.3fc `giniBebA' ")" ///
 	_col(57) in y %7.3fc `M3'[1,1]/PIB*100 ///
 	_col(66) %6.3fc BebA/PIB*100 ///
 	_col(77) %6.1fc (`M3'[1,1]/BebA-1)*100 "%"
 noisily di in g "  (+) Tabaco " ///
-	_col(44) in y "(" %5.3fc `gini_GATaba' ")" ///
+	_col(44) in y "(" %5.3fc `giniTaba' ")" ///
 	_col(57) in y %7.3fc `M4'[1,1]/PIB*100 ///
 	_col(66) %6.3fc Taba/PIB*100 ///
 	_col(77) %6.1fc (`M4'[1,1]/Taba-1)*100 "%"
 noisily di in g "  (+) Prendas de vestir " ///
-	_col(44) in y "(" %5.3fc `gini_GAVest' ")" ///
+	_col(44) in y "(" %5.3fc `giniVest' ")" ///
 	_col(57) in y %7.3fc `M5'[1,1]/PIB*100 ///
 	_col(66) %6.3fc Vest/PIB*100 ///
 	_col(77) %6.1fc (`M5'[1,1]/Vest-1)*100 "%"
 noisily di in g "  (+) Calzado " ///
-	_col(44) in y "(" %5.3fc `gini_GACalz' ")" ///
+	_col(44) in y "(" %5.3fc `giniCalz' ")" ///
 	_col(57) in y %7.3fc `M6'[1,1]/PIB*100 ///
 	_col(66) %6.3fc Calz/PIB*100 ///
 	_col(77) %6.1fc (`M6'[1,1]/Calz-1)*100 "%"
 noisily di in g "  (+) Vivienda " ///
-	_col(44) in y "(" %5.3fc `gini_GAAlqu' ")" ///
+	_col(44) in y "(" %5.3fc `giniAlqu' ")" ///
 	_col(57) in y %7.3fc `M7'[1,1]/PIB*100 ///
 	_col(66) %6.3fc Alqu/PIB*100 ///
 	_col(77) %6.1fc (`M7'[1,1]/Alqu-1)*100 "%"
 noisily di in g "  (+) Agua " ///
-	_col(44) in y "(" %5.3fc `gini_GAAgua' ")" ///
+	_col(44) in y "(" %5.3fc `giniAgua' ")" ///
 	_col(57) in y %7.3fc `M8'[1,1]/PIB*100 ///
 	_col(66) %6.3fc Agua/PIB*100 ///
 	_col(77) %6.1fc (`M8'[1,1]/Agua-1)*100 "%"
 noisily di in g "  (+) Electricidad " ///
-	_col(44) in y "(" %5.3fc `gini_GAElec' ")" ///
+	_col(44) in y "(" %5.3fc `giniElec' ")" ///
 	_col(57) in y %7.3fc `M9'[1,1]/PIB*100 ///
 	_col(66) %6.3fc Elec/PIB*100 ///
 	_col(77) %6.1fc (`M9'[1,1]/Elec-1)*100 "%"
 noisily di in g "  (+) Artículos para el hogar " ///
-	_col(44) in y "(" %5.3fc `gini_GAHoga' ")" ///
+	_col(44) in y "(" %5.3fc `giniHoga' ")" ///
 	_col(57) in y %7.3fc `M10'[1,1]/PIB*100 ///
 	_col(66) %6.3fc Hoga/PIB*100 ///
 	_col(77) %6.1fc (`M10'[1,1]/Hoga-1)*100 "%"
 noisily di in g "  (+) Salud " ///
-	_col(44) in y "(" %5.3fc `gini_GASalu' ")" ///
+	_col(44) in y "(" %5.3fc `giniSalu' ")" ///
 	_col(57) in y %7.3fc `M11'[1,1]/PIB*100 ///
 	_col(66) %6.3fc Salu/PIB*100 ///
 	_col(77) %6.1fc (`M11'[1,1]/Salu-1)*100 "%"
 noisily di in g "  (+) Aquisición de vehículos " ///
-	_col(44) in y "(" %5.3fc `gini_GAVehi' ")" ///
+	_col(44) in y "(" %5.3fc `giniVehi' ")" ///
 	_col(57) in y %7.3fc `M12'[1,1]/PIB*100 ///
 	_col(66) %6.3fc Vehi/PIB*100 ///
 	_col(77) %6.1fc (`M12'[1,1]/Vehi-1)*100 "%"
 noisily di in g "  (+) Funcionamiento de STrasporte " ///
-	_col(44) in y "(" %5.3fc `gini_GAFTra' ")" ///
+	_col(44) in y "(" %5.3fc `giniFTra' ")" ///
 	_col(57) in y %7.3fc `M13'[1,1]/PIB*100 ///
 	_col(66) %6.3fc FTra/PIB*100 ///
 	_col(77) %6.1fc (`M13'[1,1]/FTra-1)*100 "%"
 noisily di in g "  (+) Servicios de STrasporte " ///
-	_col(44) in y "(" %5.3fc `gini_GASTra' ")" ///
+	_col(44) in y "(" %5.3fc `giniSTra' ")" ///
 	_col(57) in y %7.3fc `M14'[1,1]/PIB*100 ///
 	_col(66) %6.3fc STra/PIB*100 ///
 	_col(77) %6.1fc (`M14'[1,1]/STra-1)*100 "%"
 noisily di in g "  (+) Comunicaciones " ///
-	_col(44) in y "(" %5.3fc `gini_GAComu' ")" ///
+	_col(44) in y "(" %5.3fc `giniComu' ")" ///
 	_col(57) in y %7.3fc `M15'[1,1]/PIB*100 ///
 	_col(66) %6.3fc Comu/PIB*100 ///
 	_col(77) %6.1fc (`M15'[1,1]/Comu-1)*100 "%"
 noisily di in g "  (+) Recreación y cultura " ///
-	_col(44) in y "(" %5.3fc `gini_GARecr' ")" ///
+	_col(44) in y "(" %5.3fc `giniRecr' ")" ///
 	_col(57) in y %7.3fc `M16'[1,1]/PIB*100 ///
 	_col(66) %6.3fc Recr/PIB*100 ///
 	_col(77) %6.1fc (`M16'[1,1]/Recr-1)*100 "%"
 noisily di in g "  (+) Educación " ///
-	_col(44) in y "(" %5.3fc `gini_GAEduc' ")" ///
+	_col(44) in y "(" %5.3fc `giniEduc' ")" ///
 	_col(57) in y %7.3fc `M17'[1,1]/PIB*100 ///
 	_col(66) %6.3fc Educ/PIB*100 ///
 	_col(77) %6.1fc (`M17'[1,1]/Educ-1)*100 "%"
 noisily di in g "  (+) Restaurantes y hoteles" ///
-	_col(44) in y "(" %5.3fc `gini_GARest' ")" ///
+	_col(44) in y "(" %5.3fc `giniRest' ")" ///
 	_col(57) in y %7.3fc `M18'[1,1]/PIB*100 ///
 	_col(66) %6.3fc Rest/PIB*100 ///
 	_col(77) %6.1fc (`M18'[1,1]/Rest-1)*100 "%"
 noisily di in g "  (+) Bienes y servicios diveresos " ///
-	_col(44) in y "(" %5.3fc `gini_GADive' ")" ///
+	_col(44) in y "(" %5.3fc `giniDive' ")" ///
 	_col(57) in y %7.3fc `M19'[1,1]/PIB*100 ///
 	_col(66) %6.3fc Dive/PIB*100 ///
 	_col(77) %6.1fc (`M19'[1,1]/Dive-1)*100 "%"
@@ -625,9 +636,10 @@ noisily di in g "  Total " ///
 	_col(77) %6.1fc (`MTot'[1,3]/`IVA'-1)*100 "%"
 
 scalar GastoTotPIB = `MTot'[1,1]/PIB*100
-scalar GastoTotHHPIB = `MTot'[1,1]/PIB*100
 scalar GastoTotHHPC = `MTot'[1,1]/pobtotNac
 scalar DifGastoTot = (`MTot'[1,1]/ConHog-1)*100
+scalar TTGastoTot = (`MTot'[1,1]/ConHog)^(-1)
+
 
 
 *********
@@ -636,6 +648,7 @@ di _newline in g "  IVA" in y " ANTES " in g "del factor de expansión."
 tabstat IVA [fw=factor], stat(sum) by(tiva) f(%20.0fc)
 scalar IVAHHSPIB = `MTot'[1,3]/PIB*100
 scalar IVASCNPIB = `IVA'/PIB*100
+
 
 
 **********
@@ -663,7 +676,7 @@ while "`=r(name`k')'" != "." {
 local k = 1
 while "`name`k''" != "" {
 	g `ieps`k'' = IEPS if tipoieps == `k'
-	Gini `ieps`k'', hogar(folioviv foliohog) individuo(numren) factor(factor)
+	*Gini `ieps`k'', hogar(folioviv foliohog) factor(factor)
 	local gini_ieps`k' = r(gini_`ieps`k'')
 	noisily di in g "  (+) `name`k''" ///
 		_col(44) in y "(" %5.3fc `gini_ieps`k'' ")" ///
@@ -684,9 +697,11 @@ noisily di in g "  IEPS " ///
 
 
 
-*****************
-*** 6 Altimir ***
-*****************
+*******************
+***             ***
+*** 6. Altimir  ***
+***             ***
+*******************
 if "`altimir'" == "yes" {
 	local j = 0
 	foreach k in Alim BebN BebA Taba Vest Calz Alqu Agua Elec Hoga Salu Vehi FTra STra Comu Recr Educ Rest Dive {
@@ -836,10 +851,8 @@ if "`altimir'" == "yes" {
 	local k = 1
 	while "`name`k''" != "" {
 		g `ieps`k'' = IEPS if tipoieps == `k'
-		Gini `ieps`k'', hogar(folioviv foliohog) individuo(numren) factor(factor)
 		local gini_ieps`k' = r(gini_`ieps`k'')
 		noisily di in g "  (+) `name`k''" ///
-			_col(44) in y "(" %5.3fc `gini_ieps`k'' ")" ///
 			_col(57) in y %7.3fc `ieps`k''[1,1]/PIB*100 ///
 			_col(66) in y %6.3fc `Ieps`k''/PIB*100 ///
 			_col(77) in y %6.1fc (`ieps`k''[1,1]/`Ieps`k''-1)*100 "%"
@@ -848,7 +861,6 @@ if "`altimir'" == "yes" {
 
 	noisily di in g _dup(84) "-"
 	noisily di in g "  IEPS " ///
-		_col(44) in y "(" %5.3fc `gini_IEPS' ")" ///
 		_col(57) in y %7.3fc `MTot'[1,4]/PIB*100 ///
 		_col(66) %6.3fc `IEPS'/PIB*100 ///
 		_col(77) %6.1fc (`MTot'[1,4]/`IEPS'-1)*100 "%"
@@ -858,20 +870,28 @@ if "`altimir'" == "yes" {
 	replace IVA = IVA*`IVA'/`MTot'[1,3]
 	replace IEPS = IEPS*`IEPS'/`MTot'[1,4]
 }
-
-
-
-
-
-************************
-*** 7 Gasto por edad ***
-************************
 replace categ_iva = "sin_iva" if categ_iva == ""
+if `c(version)' > 13.1 {
+	saveold "`c(sysdir_personal)'/SIM/`enighanio'/expenditures.dta", replace version(13)
+}
+else {
+	save "`c(sysdir_personal)'/SIM/`enighanio'/expenditures.dta", replace
+}
+
+
+
+
+
+***************************
+***                     ***
+***  7. Gasto por edad  ***
+***                     ***
+***************************
 foreach categ of varlist categ categ_iva {
 	preserve
 	levelsof `categ', l(levelscateg)
 
-	collapse (sum) gasto_anual IVA IEPS (max) factor tot_integ sexo edad alfa (mean) proporcion, by(folioviv foliohog numren `categ')
+	collapse (sum) gasto_anual IVA IEPS (max) tot_integ sexo edad alfa (mean) proporcion, by(folioviv foliohog numren `categ')
 	capture reshape wide gasto_anual IVA IEPS proporcion, i(folioviv foliohog numren) j(`categ') string
 	if _rc != 0 {
 		reshape wide gasto_anual IVA IEPS proporcion, i(folioviv foliohog numren) j(`categ')
@@ -890,8 +910,8 @@ foreach categ of varlist categ categ_iva {
 
 	foreach k of varlist gasto_anual* IVA* IEPS* {
 		tempvar alfatot`k'
-		if (`"`=substr("`k'",-1,1)'"' == "3" & `"`=substr("`k'",-2,1)'"' != "1") ///
-			| (`"`=substr("`k'",-1,1)'"' == "4" & `"`=substr("`k'",-2,1)'"' != "1") {
+		if (`"`=substr("`k'",-1,1)'"' == "3" & `"`=substr("`k'",-1,1)'"' == "l") ///
+			| (`"`=substr("`k'",-1,1)'"' == "4" & `"`=substr("`k'",-1,1)'"' == "l") {
 			egen `alfatot`k'' = sum(alfa) if edad >= 18, by(folioviv foliohog)
 			replace `k' = 0 if `k' == .
 			replace `k' = `k' + T`k'*alfa/`alfatot`k'' if edad >= 18
@@ -907,19 +927,10 @@ foreach categ of varlist categ categ_iva {
 	capture drop *sin_iva proporcion*
 
 	** 7.2 Totales **
-	egen TOTgasto_anual = rsum(gasto_anual*)
-	label var TOTgasto_anual "gasto total"
-	
-	Gini TOTgasto_anual, hogar(folioviv foliohog) individuo(numren) factor(factor)
-	local gini_gasto_anual = r(gini_TOTgasto_anual)
+	egen gastoanualTOT = rsum(gasto_anual*)
+	egen IVATOT = rsum(IVA*)
+	egen IEPSTOT = rsum(IEPS*)
 
-	egen TOTIVA = rsum(IVA*)
-	Gini TOTIVA, hogar(folioviv foliohog) individuo(numren) factor(factor)
-	local gini_IVA = r(gini_TOTIVA)
-
-	egen TOTIEPS = rsum(IEPS*)
-	Gini TOTIEPS, hogar(folioviv foliohog) individuo(numren) factor(factor)
-	local gini_IEPS = r(gini_TOTIEPS)
 
 
 	***********
