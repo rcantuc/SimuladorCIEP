@@ -50,7 +50,7 @@ quietly {
 
 	** 2.3 Default `by' **
 	if "`by'" == "" {
-		local by = "divPE"
+		local by = "divCIEP"
 	}
 	replace desc_pp = 914 if desc_pp == 915
 	replace desc_pp = 71 if desc_pp == 72
