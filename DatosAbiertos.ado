@@ -48,6 +48,8 @@ quietly {
 
 	* Acentos *
 	replace nombre = "Saldo histórico de los RFSP" if nombre == "Saldo hist?rico de los RFSP"
+	replace nombre = "Saldo histórico de los RFSP internos" if nombre == "Saldo hist?rico de los RFSP internos"
+	replace nombre = "Saldo histórico de los RFSP externos" if nombre == "Saldo hist?rico de los RFSP externos"
 
 
 	*********************************
@@ -81,17 +83,25 @@ quietly {
 		noisily di in g "  Crecimiento: " _col(44) in y %16.1fc (`meshoy'[1,1]/`mesant'[1,1]-1)*100 in g " %"
 
 		tabstat `montomill' if mes <= `=mes[_N]' & (anio == `=anio[_N]' | anio == `=anio[_N]-1'), stat(sum) by(anio) format(%7.0fc) save
+		tempname meshoy mesant
+		matrix `meshoy' = r(Stat2)
+		matrix `mesant' = r(Stat1)
+
+		noisily di _newline in g "  Acumulado " in y "`mesname' `=anio[_N]'" in g ": " _col(40) in y %20.1fc `meshoy'[1,1] in g " millones `currency'"
+		noisily di in g "  Acumulado " in y "`mesname' `=anio[_N]-1'" in g ": " _col(40) in y %20.1fc `mesant'[1,1] in g " millones `currency' `aniovp'"
+		noisily di in g "  Crecimiento: " _col(44) in y %16.1fc (`meshoy'[1,1]/`mesant'[1,1]-1)*100 in g " %"
 	}
 	if tipo_de_informacion == "Saldo" {
-		tabstat `montomill' if mes == `=mes[_N]' & (anio == `=anio[_N]' | anio == `=anio[_N]-1'), stat(sum) by(anio) format(%7.0fc) save
-	}
-	tempname meshoy mesant
-	matrix `meshoy' = r(Stat2)
-	matrix `mesant' = r(Stat1)
+		tabstat `montomill' if ((anio == `last_anio'-1 & mes == 12) | (anio == `last_anio' & mes == `last_mes')), stat(sum) by(anio) format(%7.0fc) save
+		tempname meshoy mesant
+		matrix `meshoy' = r(Stat2)
+		matrix `mesant' = r(Stat1)
 
-	noisily di _newline in g "  Acumulado " in y "`mesname' `=anio[_N]'" in g ": " _col(40) in y %20.1fc `meshoy'[1,1] in g " millones `currency'"
-	noisily di in g "  Acumulado " in y "`mesname' `=anio[_N]-1'" in g ": " _col(40) in y %20.1fc `mesant'[1,1] in g " millones `currency' `aniovp'"
-	noisily di in g "  Crecimiento: " _col(44) in y %16.1fc (`meshoy'[1,1]/`mesant'[1,1]-1)*100 in g " %"
+		noisily di _newline in g "  Acumulado " in y "`mesname' `=anio[_N]'" in g ": " _col(40) in y %20.1fc `meshoy'[1,1] in g " millones `currency'"
+		noisily di in g "  Acumulado " in y "Diciembre `=anio[_N]-1'" in g ": " _col(40) in y %20.1fc `mesant'[1,1] in g " millones `currency' `aniovp'"
+		noisily di in g "  Crecimiento: " _col(44) in y %16.1fc (`meshoy'[1,1]/`mesant'[1,1]-1)*100 in g " %"
+
+	}
 
 
 
@@ -191,19 +201,20 @@ quietly {
 
 	if "`nographs'" != "nographs" & tipo_de_informacion == "Saldo" {
 		forvalues k=1(1)`=_N' {
-			if `montopc'[`k'] != . & anio[`k'] >= 2014 & mes[`k'] == `last_mes' {
+			if `montopc'[`k'] != . & ((anio[`k'] >= 2014 & mes[`k'] == 12) | (anio[`k'] == `last_anio' & mes[`k'] == `last_mes')) {
 				local textmontopc `"`textmontopc' `=`montopc'[`k']' `=aniomes[`k']' "{bf:`=string(`montopc'[`k'],"%10.0fc")'}" "'
 			}
 		}
-		twoway (connect `montopc' aniomes if anio >= 2014 & mes == `last_mes'), ///
-			ytitle("`=currency[1]' `aniovp'") ///
-			tlabel(2014m`last_mes'(12)`last_anio'm`last_mes') ///
+		twoway (connect `montopc' aniomes if (anio >= 2014 & mes == 12) | (anio == `last_anio' & mes == `last_mes')), ///
+			ytitle("`=currency[1]' `aniovp' por persona") ///
+			tlabel(2014m12(12)`last_anio'm12) ///
 			ylabel(, format(%15.0fc)) ///
 			title("{bf:`=nombre[1]'}"`textsize') ///
-			subtitle(Por persona a `mesname') ///
+			///subtitle(Por persona a `mesname') ///
 			xtitle("") ///
 			text(`textmontopc') ///
-			caption("{bf:Fuente:} Elaborado por el CIEP, con información de la SHCP/EOFP y CONAPO.") ///
+			note("{bf:{c U'}ltimo dato:} `last_anio'm`last_mes'.") ///			
+			caption("{bf:Fuente:} Elaborado por el CIEP, con información de la SHCP/EOFP y CONAPO (2023).") ///
 			name(`anything'PC, replace)
 
 

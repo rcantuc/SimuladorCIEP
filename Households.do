@@ -87,7 +87,7 @@ log using "`c(sysdir_personal)'/SIM/`enighanio'/households.smcl", replace name(h
 
 
 ** 0.2 Bienvenida **
-noisily di _newline(2) in g _dup(20) "." "{bf:   Hogares: " in y "INGRESOS `enigh' `enighanio'  }" in g _dup(20) "."
+noisily di _newline(2) in g _dup(20) "." "{bf:   Economía generacional: " in y "INGRESOS por individuos `enigh' `enighanio'  }" in g _dup(20) "."
 
 
 
@@ -146,7 +146,7 @@ local SNAExBOpHog = scalar(ExBOpHog)
 local SNAAlojamiento = scalar(Alojamiento)
 
 
-*** 1.2 Macros: PEF ***
+** 1.2 Macros: PEF **
 PEF, anio(`enighanio') by(desc_funcion) min(0) nographs
 local Cuotas_ISSSTE = -r(Cuotas_ISSSTE)
 
@@ -154,7 +154,7 @@ PEF if transf_gf == 0 & ramo != -1 & (substr(string(objeto),1,2) == "45" ///
 	| substr(string(objeto),1,2) == "47" | desc_pp == 779), anio(`enighanio') by(ramo) min(0) nographs
 local SSFederacion = r(Aportaciones_a_Seguridad_Social) + `Cuotas_ISSSTE'
 
-PEF if divPE == 2, anio(`enighanio') by(desc_subfuncion) min(0) nographs
+PEF if divCIEP == 2, anio(`enighanio') by(desc_subfuncion) min(0) nographs
 local Basica = r(Educación_Básica)
 local Media = r(Educación_Media_Superior)
 local Superior = r(Educación_Superior)
@@ -163,13 +163,13 @@ local Adultos = r(Educación_para_Adultos)
 PEF, anio(`enighanio') by(divCIEP) min(0) nographs
 local PenBienestar = r(Pensión_Bienestar)
 
-PEF, anio(`enighanio') by(divPE) min(0) nographs
+PEF, anio(`enighanio') by(divCIEP) min(0) nographs
 local OtrosGas = r(Otros)
 local Pensiones = r(Pensiones)-`PenBienestar'
 local Educacion = r(Educación)
 local Salud = r(Salud)
 
-PEF if divPE == 4, anio(`enighanio') by(entidad) min(0) nographs
+PEF if divCIEP == 5, anio(`enighanio') by(entidad) min(0) nographs
 local Aguas = r(Aguascalientes)
 local BajaN = r(Baja_California)
 local BajaS = r(Baja_California_Sur)
@@ -205,7 +205,7 @@ local Zacat = r(Zacatecas)
 local InfraT = r(StatTotal)
 
 
-*** 1.3 Macros: LIF ***
+** 1.3 Macros: LIF **
 LIF, anio(`enighanio') nographs min(0)
 local ISRSalarios = r(ISR_Asa_)
 local ISRFisicas = r(ISR_PF)
@@ -234,7 +234,7 @@ local alconsumo = r(Impuestos_al_consumo)
 local otrosing = r(Ingresos_de_capital)+`ISRMorales'
 
 
-/*** 1.4 Macros: SAT ***
+/** 1.4 Macros: SAT **
 if `enighanio' >= 2015 {
 	PIBDeflactor, aniovp(`enighanio') nographs nooutput
 	forvalues k=1(1)`=_N' {
@@ -259,7 +259,7 @@ else {
 }
 
 
-*** 1.5 Macros: ISR ***/
+** 1.5 Macros: ISR **/
 if `enighanio' < 2018 {
 	*			Inferior	Superior	CF		Tasa		
 	matrix	ISR	=	(0.00,		5952.84,	0.0,		1.92	\	///	1
@@ -373,6 +373,7 @@ if _rc != 0 {
 *	Capitulo IX. 	DE LOS DEMAS INGRESOS QUE OBTENGAN LAS PERSONAS FISICAS *
 
 use "`c(sysdir_site)'../BasesCIEP/INEGI/`enigh'/`enighanio'/ingresos.dta", clear
+merge m:1 (folioviv foliohog numren) using "`c(sysdir_site)'../BasesCIEP/INEGI/`enigh'/`enighanio'/poblacion.dta", nogen keep(matched)
 
 * Reemplazar missings por ceros *
 foreach k of varlist ing_*  {
@@ -435,13 +436,14 @@ g double ing_ganan = ing_anual if clave == "P012" | clave == "P019"
 g double ing_agui = ing_anual if clave == "P009" | clave == "P016"
 
 * k. Otros *
-g double ing_otros = ing_anual if clave == "P006" | clave == "P013" | clave == "P020" //| clave == "P033"
+g double ing_otros = ing_anual if clave == "P006" | clave == "P013" | clave == "P020" | clave == "P033"
 
 * l. Otros trabajos *
 g double ing_trabajos = ing_anual if clave == "P021" | clave == "P022" | clave == "P049"
 
 * m. Indemnizaciones *
-g double ing_indemn = ing_anual if clave == "P035"
+g jubilacion = act_pnea1 == "2"
+g double ing_indemn = ing_anual if clave == "P035" | (clave == "P032" & jubilacion == 0)
 
 * n. Indemnizaciones 2 *
 g double ing_indemn2 = ing_anual if clave == "P036"
@@ -450,7 +452,7 @@ g double ing_indemn2 = ing_anual if clave == "P036"
 g double ing_indemn3 = ing_anual if clave == "P034"
 
 * p. Jubilaciones y ahorros *
-g double ing_jubila = ing_anual if (clave == "P032" /*& edad >= 18*/)
+g double ing_jubila = ing_anual if clave == "P032" & jubilacion == 1
 
 * q. Seguros de Vida *
 g double ing_segvida = ing_anual if clave == "P065"
@@ -469,7 +471,7 @@ replace ing_empre = ing_anual if clave == "P068" | clave == "P069" | clave == "P
 
 ** 2.4 Capitulo III. DE LOS INGRESOS POR ARRENDAMIENTO Y EN GENERAL POR OTORGAR EL USO O GOCE TEMPORAL DE BIENES INMUEBLES **
 * t. Renta de bienes inmuebles *
-g double ing_rent = ing_anual if clave == "P023" | clave == "P024" | clave == "P025"
+g double ing_rent = ing_anual if clave == "P023" | clave == "P024" | clave == "P025" | clave == "P031"
 
 
 ** 2.5 Capitulo IV. DE LOS INGRESOS POR ENAJENACION DE BIENES **
@@ -490,7 +492,7 @@ g double ing_dona = ing_anual if clave == "P039" | clave == "P040"
 
 ** 2.7 Capitulo VI. DE LOS INGRESOS POR INTERESES **
 * y. Intereses *
-g double ing_intereses = ing_anual if clave == "P026" | clave == "P027" | clave == "P028" | clave == "P029" | clave == "P031"
+g double ing_intereses = ing_anual if clave == "P026" | clave == "P027" | clave == "P028" | clave == "P029"
 
 
 ** 2.8 Capitulo VII. DE LOS INGRESOS POR LA OBTENCION DE PREMIOS **
@@ -504,7 +506,7 @@ g double ing_acc = ing_anual if clave == "P050"
 
 
 ** 2.10 Capitulo IX. DE LOS DEMAS INGRESOS QUE OBTENGAN LAS PERSONAS FISICIAS **
-* ab. `Derechos' de autor *
+* ab. Derechos de autor *
 g double ing_autor = ing_anual if clave == "P030"
 
 * ac. Remesas *
@@ -517,7 +519,7 @@ g double ing_trabmenor = ing_anual if clave == "P067"
 g double ing_prest = ing_anual if clave == "P052" | clave == "P053" | clave == "P064"
 
 * af. Ingreso por otras percepciones de capital *
-g double ing_otrocap = ing_anual if clave == "P066" //| clave == "P033"
+g double ing_otrocap = ing_anual if clave == "P066"
 
 * ag. Retiros de ahorro *
 g double ing_ahorro = ing_anual if clave == "P051"
@@ -526,10 +528,10 @@ g double ing_ahorro = ing_anual if clave == "P051"
 g double ing_benef = ing_anual if clave == "P037" | clave == "P038" | (clave >= "P042" & clave <= "P048")
 
 * ai. Herencias o Legados *
-g double ing_heren = ing_anual if clave == "P057" | (clave == "P032" /*& edad < 18*/)
+g double ing_heren = ing_anual if clave == "P057"
 
 * aj. PAM *
-g double ing_PAM = ing_anual if clave == "P004" | clave == "P104" | clave == "P105"
+g double ing_PAM = ing_anual if clave == "P104" | clave == "P105"
 
 
 
@@ -538,7 +540,7 @@ g double ing_PAM = ing_anual if clave == "P004" | clave == "P104" | clave == "P1
 **# 3. IDENTIFY EXEMPTIONS ***
 ***                        ***
 ******************************
-collapse (sum) ing_* p0*, by(folioviv foliohog numren id_trabajo)
+collapse (sum) ing_* p0* (max) jubilado=jubilacion, by(folioviv foliohog numren id_trabajo)
 sort folioviv foliohog numren
 
 * Ingreso total *
@@ -727,7 +729,7 @@ de quien los pague. Sobre el excedente se debera efectuar la retencion en los te
 Reglamento de esta Ley.*/
 
 * p. Jubilaciones y ahorros *
-g double exen_jubila = min(9*`smdf',ing_jubila)
+g double exen_jubila = min(9*`smdf',ing_jubila) if jubilado == 1
 
 /* VIII. Los provenientes de cajas de ahorro de trabajadores y de fondos de ahorro establecidos por las empresas 
 para sus trabajadores cuando reunan los requisitos de deducibilidad del Titulo II de esta Ley o, en su caso, del 
@@ -1016,12 +1018,12 @@ egen double exen_t2_cap8 = rsum(exen_agri)
 
 ** 4.3 Titulo IV, Capitulo I **
 egen double ing_t4_cap1 = rsum(ing_ss ing_desta ing_prop ing_horas ing_grati ing_prima /// 16
-	ing_util ing_agui ing_otros ing_trabajos ing_jubila ing_trabmenor)
+	ing_util ing_agui ing_trabajos ing_jubila ing_trabmenor)
 egen double exen_t4_cap1 = rsum(exen_ss exen_desta exen_prop exen_horas exen_grati exen_prima ///
-	exen_util exen_agui exen_otros exen_trabajos exen_jubila exen_trabmenor)
+	exen_util exen_agui exen_trabajos exen_jubila exen_trabmenor)
 
 egen double ing_t4_cap1_nosubsidio = rsum(ing_desta ing_prop ing_horas ing_grati ing_prima ///
-	ing_util ing_agui ing_otros ing_trabajos ing_jubila ing_trabmenor)
+	ing_util ing_agui ing_trabajos ing_jubila ing_trabmenor)
 
 
 ** 4.4 Titulo IV, Capitulo II *
@@ -1060,9 +1062,9 @@ egen double exen_t4_cap8 = rsum(exen_acc ing_ganan)
 
 
 ** 4.11 Titulo IV, Capitulo IX *
-egen double ing_t4_cap9 = rsum(ing_autor /*ing_remesas*/ ing_prest ing_otrocap /// 6
+egen double ing_t4_cap9 = rsum(ing_autor ing_otros /*ing_remesas*/ ing_prest ing_otrocap /// 6
 	ing_ahorro ing_heren ing_benef ing_indemn ing_indemn2 ing_indemn3 ing_segvida)
-egen double exen_t4_cap9 = rsum(exen_autor /*exen_remesas*/ exen_prest exen_otrocap ///
+egen double exen_t4_cap9 = rsum(exen_autor exen_otros /*exen_remesas*/ exen_prest exen_otrocap ///
 	exen_ahorro exen_heren exen_benef exen_indemn exen_indemn2 exen_indemn3 exen_segvida)
 
 
@@ -1100,8 +1102,8 @@ egen double exen_laboral = rsum(exen_sueldos exen_mixtoL)
 
 
 ** 4.15 Capital **
-egen double ing_capital = rsum(ing_t2_cap1 ing_t2_cap8 ing_t4_cap2PM ing_t4_cap3PM )
-egen double exen_capital = rsum(exen_t2_cap1 exen_t2_cap8 exen_t4_cap2PM exen_t4_cap3PM )
+egen double ing_capital = rsum(ing_t2_cap1 ing_t2_cap8 ing_t4_cap2PM ing_t4_cap3PM)
+egen double exen_capital = rsum(exen_t2_cap1 exen_t2_cap8 exen_t4_cap2PM exen_t4_cap3PM)
 
 
 ** 4.17 Totales **
@@ -1281,7 +1283,7 @@ merge m:1 (folioviv foliohog numren id_trabajo) using "`c(sysdir_site)'../BasesC
 replace scian = substr(scian,1,2)
 replace sinco = substr(sinco,1,2)
 destring scian sinco subor pres_*, replace	
-collapse (sum) ing_* exen_* htrab (max) factor* pres_* scian sinco ///
+collapse (sum) ing_* exen_* htrab (max) factor* pres_* scian sinco jubilado ///
 	(min) subor, by(folioviv foliohog numren)
 
 merge m:1 (folioviv foliohog numren) using "`c(sysdir_site)'../BasesCIEP/INEGI/`enigh'/`enighanio'/poblacion.dta", ///
@@ -1665,33 +1667,31 @@ g categ = ""
 g SE = 0
 forvalues j=`=rowsof(ISR)'(-1)1 {
 	forvalues k=`=rowsof(SE)'(-1)1 {
-		replace ing_subor = (ing_t4_cap1 + ISR[`j',3] - SE[`k',3]*htrab/48 ///
-			- ISR[`j',4]/100*(ISR[`j',1] + exen_t4_cap1 + (cuotasTP + infonavit + fovissste)) ///
-			+ (cuotasTP + infonavit + fovissste) + exen_t4_cap1) / (1-ISR[`j',4]/100) ///
+		*replace ing_subor = (ing_t4_cap1 + ISR[`j',3] - SE[`k',3]*htrab/48 + (cuotasTPF + infonavit + fovissste) ///
+			- ISR[`j',4]/100*(ISR[`j',1] + exen_t4_cap1)) / (1-ISR[`j',4]/100) ///
 			if (ing_t4_cap1 != 0) & htrab < 48 & categ == ""
+			
+		replace ing_subor = (ing_t4_cap1 + ISR[`j',3] - SE[`k',3] + (cuotasTPF + infonavit + fovissste) ///
+			- ISR[`j',4]/100*(ISR[`j',1] + exen_t4_cap1)) / (1-ISR[`j',4]/100) ///
+			if (ing_t4_cap1 != 0) /*& htrab >= 48*/ & categ == ""
 
-		replace ing_subor = (ing_t4_cap1 + ISR[`j',3] - SE[`k',3] ///
-			- ISR[`j',4]/100*(ISR[`j',1] + exen_t4_cap1 + (cuotasTP + infonavit + fovissste)) ///
-			+ (cuotasTP + infonavit + fovissste) + exen_t4_cap1) / (1-ISR[`j',4]/100) ///
-			if (ing_t4_cap1 != 0) & htrab >= 48 & categ == ""
-
-		replace categ = "i`j's`k'" if ing_subor - exen_t4_cap1 - (cuotasTP + infonavit + fovissste) >= ISR[`j',1] ///
-			& ing_subor - exen_t4_cap1 - (cuotasTP + infonavit + fovissste) <= ISR[`j',2] ///
-			& ing_subor - exen_t4_cap1 - (cuotasTP + infonavit + fovissste) >= SE[`k',1] ///
-			& ing_subor - exen_t4_cap1 - (cuotasTP + infonavit + fovissste) <= SE[`k',2] ///
+		replace categ = "i`j's`k'" if ing_subor - exen_t4_cap1 >= ISR[`j',1] ///
+			& ing_subor - exen_t4_cap1 <= ISR[`j',2] ///
+			& ing_subor - exen_t4_cap1 >= SE[`k',1] ///
+			& ing_subor - exen_t4_cap1 <= SE[`k',2] ///
 			& categ == ""
 
-		replace SE = SE[`k',3]*htrab/48 if categ == "i`j's`k'" & htrab < 48 & formal != 0
-		replace SE = SE[`k',3] if categ == "i`j's`k'" & htrab >= 48 & formal != 0
+		*replace SE = SE[`k',3]*htrab/48 if categ == "i`j's`k'" & htrab < 48 & formal != 0
+		replace SE = SE[`k',3] if categ == "i`j's`k'" /*& htrab >= 48*/ & formal != 0
 	}
 }
 
 * Ingreso bruto informales *
-replace ing_subor = ing_t4_cap1 if formal == 0 | edad <= 16
+replace ing_subor = ing_t4_cap1 if formal == 0
 
 
 ** 6.3 ISR salarios **
-g double isrE = ing_subor - ing_t4_cap1 - (cuotasTP + infonavit + fovissste) if formal != 0
+g double isrE = ing_subor - ing_t4_cap1 - (cuotasTPF + infonavit + fovissste) if formal != 0
 replace isrE = 0 if isrE == .
 label var isrE "ISR retenciones a asalariados"
 
@@ -1870,7 +1870,7 @@ replace formalmax = `formalidadmax'
 
 collapse (mean) ing_* exen_* cuotas* infonavit fovissste htrab isrE renta deduc_isr SE ///
 	(mean) factor* sbc tot_integ corriente=ing_cor ///
-	(max) scian formal* tipo_contribuyente sinco hablaind ///
+	(max) scian formal* tipo_contribuyente sinco hablaind jubilado ///
 	(min) subor, by(folioviv foliohog numren)
 merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'../BasesCIEP/INEGI/`enigh'/`enighanio'/poblacion.dta", nogen ///
 	keepusing(sexo edad nivelaprob gradoaprob asis_esc tipoesc nivel grado inst_* `segpop')
@@ -2347,6 +2347,8 @@ Distribucion ImpNetProductos_hog, relativo(ing_estim_alqu) ///
 	macro(`=`ImpNetProductos'*(`ExNOpHog')/(`MixKN'+`ExNOpSoc'+`ExNOpHog')')
 
 Distribucion gasto_anualDepreciacion, relativo(ing_capital) macro(`ConCapFij')
+Gini gasto_anualDepreciacion, hogar(folioviv foliohog) factor(factor)
+local gini_gasto_anualDepreciacion = r(gini_gasto_anualDepreciac)
 
 Distribucion gasto_anualGobierno, relativo(factor) macro(`ConGob')
 
@@ -2385,10 +2387,6 @@ local gini_ing_capital = r(gini_ing_capital)
 replace ing_estim_alqu = ing_estim_alqu + ImpNetProduccionK_hog + ImpNetProductos_hog
 Gini ing_estim_alqu, hogar(folioviv foliohog) factor(factor)
 local gini_ing_estim_alqu = r(gini_ing_estim_alqu)
-
-Gini gasto_anualDepreciacion, hogar(folioviv foliohog) factor(factor)
-local gini_gasto_anualDepreciacion = r(gini_gasto_anualDepreciacion)
-
 
 * Totales *
 egen double ingbrutotot = rsum(ing_subor ing_mixto ing_capital ing_estim_alqu ing_remesas)
@@ -2575,11 +2573,14 @@ egen double Yl = rsum(ing_subor ing_mixtoL)
 label var Yl "Ingreso laboral"
 noisily Simulador Yl [fw=factor], base("ENIGH `=anioenigh'") boot(1) reboot anio(`1')
 
-egen double Yk = rsum(ing_capital ing_mixtoK ing_estim_alqu gasto_anualDepreciacion)
+egen double Yk = rsum(ing_capital ing_mixtoK ing_estim_alqu /*gasto_anualDepreciacion*/)
 label var Yk "Ingreso de capital"
 noisily Simulador Yk [fw=factor], base("ENIGH `=anioenigh'") boot(1) reboot anio(`1')
 
-g Ciclodevida = gastoanualTOT - Yl
+label var gastoanualTOT "Gasto anual total"
+noisily Simulador gastoanualTOT [fw=factor], base("ENIGH `=anioenigh'") boot(1) reboot anio(`1')
+
+g Ciclodevida = Yl + Yk + ing_remesas + ing_suborROW - gastoanualTOT
 label var Ciclodevida "ciclo de vida"
 noisily Simulador Ciclodevida [fw=factor], base("ENIGH `=anioenigh'") boot(1) reboot anio(`1')
 

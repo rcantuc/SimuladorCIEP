@@ -3,9 +3,10 @@
 /***************************
 *forvalues anio=1950(1)2050 {
 	foreach entidad in $entidadesL {
-		noisily Poblacion if entidad == "`entidad'", $update //anio(`anio') //aniofinal(2030)
+		noisily Poblacion if entidad == "`entidad'", $update anio(2022) //aniofinal(2030)
 	}
 *}
+noisily scalarlatex, logname(poblacion)
 
 
 
@@ -13,7 +14,7 @@
 
 *******************************/
 *** 2. Productividad laboral ***
-/*******************************
+*******************************
 use "`c(sysdir_personal)'/SIM/EstadosBaseEstOpor.dta", clear
 collapse (mean) pob* deflator pibYEnt, by(anio entidad entidadx)
 sort entidadx anio
@@ -38,7 +39,7 @@ foreach k of global entidadesC {
 		}
 		if entidad[`j'] == "`k'" & montograph[`j'] != . & anio[`j'] == 2022 {
 			scalar pibYEnt`k' = string(pibYEnt[`j']/deflator[`j']/1000000,"%15.0fc")
-			scalar pibYEnt`k'pc = string(montograph[`j'],"%15.0fc")
+			scalar pibYEnt`k'pc = string(montograph3[`j'],"%15.0fc")
 		}
 	}
 
@@ -50,7 +51,7 @@ foreach k of global entidadesC {
 		ylabel(, format(%7.1fc)) yscale(range(0)) ///
 		xlabel(2005(1)2022) xtitle("") ///
 		text(`textgraph2`k'', size(vsmall)) ///
-		caption("{bf:Fuente}: Elaboración propia, con información del INEGI/BIE.") ///
+		caption("{bf:Fuente}: Elaborado por el CIEP, con información del INEGI/BIE.") ///
 		name(Crecimiento_`k', replace)
 
 	* 2.2 Gráfica productividad *
@@ -61,7 +62,7 @@ foreach k of global entidadesC {
 		ylabel(0(100000)820000, format(%10.0fc)) yscale(range(0)) ///
 		xlabel(2005(1)2022) xtitle("") ///
 		text(`textgraph`k'', size(vsmall)) ///
-		caption("{bf:Fuente}: Elaboración propia, con información del INEGI/BIE e INEGI/ENOE.") ///
+		caption("{bf:Fuente}: Elaborado por el CIEP, con información del INEGI/BIE e INEGI/ENOE.") ///
 		name(Productividad_`k', replace)
 
 	* 2.3 Gráfica PIB per cápita *
@@ -69,10 +70,10 @@ foreach k of global entidadesC {
 		title("{bf:PIB por persona}") ///
 		subtitle("``h''") ///
 		ytitle("PIB estatal por habitante") ///
-		ylabel(, format(%7.1fc)) yscale(range(0)) ///
+		ylabel(, format(%10.0fc)) yscale(range(0)) ///
 		xlabel(2005(1)2022) xtitle("") ///
 		text(`textgraph3`k'', size(vsmall)) ///
-		caption("{bf:Fuente}: Elaboración propia, con información del INEGI/BIE y CONAPO.") ///
+		caption("{bf:Fuente}: Elaborado por el CIEP, con información del INEGI/BIE y CONAPO.") ///
 		name(PIBPC_`k', replace)
 
 	if "$export" != "" {
@@ -90,7 +91,7 @@ noisily scalarlatex, log(pibYEnt)
 
 ****************************/
 *** 3. Recursos estatales ***
-/*****************************
+*****************************
 use "`c(sysdir_personal)'/SIM/EstadosBaseINEGI.dta", clear
 keep if valor != .
 rename valor monto
@@ -138,6 +139,7 @@ foreach k of global entidadesC {
 		ytitle("por residente (MXN `=aniovp')") ///
 		///ytitle("% PIB estatal") ///
 		ylabel(, format(%7.0fc)) ///
+		caption("{bf:Fuente}: Elaborado por el CIEP, con información del INEGI.") ///
 		blabel(bar, format(%10.0fc)) ///
 		name(LIEs_`k', replace)
 
@@ -445,7 +447,7 @@ foreach k of global entidadesC {
 
 ***********************/
 *** 7. Deuda estatal ***
-************************
+/************************
 use "`c(sysdir_personal)'/SIM/EstadosBaseINEGI.dta", clear
 rename valor monto
 
@@ -462,7 +464,7 @@ foreach k of global entidadesC {
 	if "`k'" != "Nac" {
 		local entidad `"& entidad == "`k'""'
 	}
-	*graph bar (mean) montograph* if montograph1 != . `entidad' [pw=poblacion], ///
+	graph bar (mean) montograph* if montograph1 != . `entidad' [pw=poblacion], ///
 		over(anio) ///
 		stack asyvars ///
 		title({bf:Deuda estatal}) ///
@@ -472,6 +474,7 @@ foreach k of global entidadesC {
 		ylabel(, format(%7.0fc)) ///
 		blabel(bar, format(%10.0fc)) ///
 		legend(rows(1) label (1 "Gobierno estatal") label(2 "Entidades públicas")) ///
+		caption("{bf:Fuente}: Elaborado por el CIEP, con información del INEGI.") ///
 		blabel(bar, format(%7.0fc)) ///
 		name(Deuda_`k', replace)
 
@@ -497,7 +500,7 @@ foreach k of global entidadesC {
 	if "`k'" != "Nac" {
 		local entidad `"& entidad == "`k'""'
 	}
-	*graph bar (mean) montograph1* if montograph11 != . `entidad' [pw=pibYEnt], ///
+	graph bar (mean) montograph1* if montograph11 != . `entidad' [pw=pibYEnt], ///
 		over(anio) ///
 		asyvars stack ///
 		title({bf:Deuda estatal}) ///
@@ -505,6 +508,7 @@ foreach k of global entidadesC {
 		ytitle("% PIB estatal") ///
 		ylabel(, format(%7.1fc)) ///
 		legend(rows(1) label (1 "Gobierno estatal") label(2 "Entidades públicas")) ///
+		caption("{bf:Fuente}: Elaborado por el CIEP, con información del INEGI.") ///
 		blabel(bar, format(%7.1fc)) ///
 		name(Deuda2_`k', replace)
 
@@ -531,6 +535,7 @@ foreach k of global entidadesC {
 		ytitle("% ingresos libres") ///
 		ylabel(, format(%7.1fc)) ///
 		legend(rows(1) label (1 "Gobierno estatal") label(2 "Entidades públicas")) ///
+		caption("{bf:Fuente}: Elaborado por el CIEP, con información del INEGI.") ///
 		blabel(bar, format(%7.1fc)) ///
 		name(Deuda3_`k', replace)
 
@@ -602,6 +607,7 @@ foreach k of global entidadesC {
 		ytitle("por residente (MXN `=aniovp')") ///
 		///ytitle("% PIB estatal") ///
 		ylabel(, format(%7.0fc)) ///
+		caption("{bf:Fuente}: Elaborado por el CIEP, con información del INEGI.") ///
 		blabel(bar, format(%10.0fc)) ///
 		legend(rows(1)) ///
 		name(Espacio`k', replace)

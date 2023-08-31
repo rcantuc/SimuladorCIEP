@@ -11,8 +11,8 @@ noisily di in g "  Updating Poblacion.dta..." _newline
 ********************
 
 ** 1. Base de datos (online) **
-import delimited "http://www.conapo.gob.mx/work/models/CONAPO/Datos_Abiertos/Proyecciones2018/pob_mit_proyecciones.csv", clear
-
+*import delimited "http://www.conapo.gob.mx/work/models/CONAPO/Datos_Abiertos/Proyecciones2018/pob_mit_proyecciones.csv", clear
+import excel "`c(sysdir_site)'../BasesCIEP/CONAPO/ConDem50a19_ProyPob20a70/0_Pob_Mitad_1950_2070.xlsx", sheet("Hoja1") firstrow case(lower) clear
 
 /** 1.Bis Base de datos (Censo 2020). Responsable: Ale Macias **
 use "`c(sysdir_personal)'../basesCIEP/CONAPO/censo2020.dta", clear
@@ -42,7 +42,8 @@ save "`poblacion'"
 **********************
 
 ** 1. Base de datos (online) **
-import delimited "http://www.conapo.gob.mx/work/models/CONAPO/Datos_Abiertos/Proyecciones2018/def_edad_proyecciones_n.csv", clear
+*import delimited "http://www.conapo.gob.mx/work/models/CONAPO/Datos_Abiertos/Proyecciones2018/def_edad_proyecciones_n.csv", clear
+import excel "`c(sysdir_site)'../BasesCIEP/CONAPO/ConDem50a19_ProyPob20a70/1_Defunciones_1950_2070.xlsx", sheet("Hoja1") firstrow case(lower) clear
 
 
 ** 2. Limpia **/
@@ -68,7 +69,8 @@ save "`defunciones'"
 **********************************
 
 ** 1. Base de datos (online) **
-import delimited "http://www.conapo.gob.mx/work/models/CONAPO/Datos_Abiertos/Proyecciones2018/mig_inter_quin_proyecciones.csv", clear
+*import delimited "http://www.conapo.gob.mx/work/models/CONAPO/Datos_Abiertos/Proyecciones2018/mig_inter_quin_proyecciones.csv", clear
+import excel "`c(sysdir_site)'../BasesCIEP/CONAPO/ConDem50a19_ProyPob20a70/2_mig_inter_quinquen_proyecciones.xlsx", sheet("Hoja1") firstrow case(lower) clear
 
 
 ** 2. Limpia **

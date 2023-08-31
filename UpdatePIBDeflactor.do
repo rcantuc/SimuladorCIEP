@@ -184,7 +184,7 @@ if "$nographs" == "" {
 
 	* Gráfica *
 	forvalues k=1(1)`ulttrim' {
-		twoway connected crec_pibQR aniotrimestre if pibPO != . & trimestre == `k', ///
+		twoway connected crec_pibQR aniotrimestre if pibPO != . /*& trimestre == `k'*/, ///
 			title({bf:Producto Interno Bruto}) ///
 			ytitle("Crecimiento trimestre vs. trimestre (%)") xtitle("") ///
 			tlabel(2005q`k'(4)`ultanio'q`k') ///
@@ -193,7 +193,7 @@ if "$nographs" == "" {
 			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
 			name(UpdatePIBDeflactor`k', replace)
 		
-		twoway (connected pibPO aniotrimestre) if pibPO != . & trimestre == `k', ///
+		twoway (connected pibPO aniotrimestre) if pibPO != . /*& trimestre == `k'*/, ///
 			title(Producto Interno Bruto por {bf:población ocupada}) subtitle(${pais}) ///
 			ytitle(`=currency[`obsvp']' `ultanio') xtitle("") ///
 			tlabel(2005q`k'(4)`ultanio'q`k') ///

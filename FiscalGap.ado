@@ -85,7 +85,7 @@ quietly {
 		if "`divSIM`k''" != "FMP" & "`divSIM`k''" != "PEMEX" {
 			preserve
 
-			use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/`divSIM`k''REC.dta"', clear
+			use `"`c(sysdir_personal)'/users/ciepmx/bootstraps/1/`divSIM`k''REC.dta"', clear
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion, by(anio modulo aniobase)
 
@@ -105,7 +105,7 @@ quietly {
 		else {
 			preserve
 
-			use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/`divSIM`k''REC.dta"', clear
+			use `"`c(sysdir_personal)'/users/ciepmx/bootstraps/1/`divSIM`k''REC.dta"', clear
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion, by(anio modulo aniobase)
 
@@ -227,9 +227,9 @@ quietly {
 	****************************
 	*** 4 Fiscal Gap: Gastos ***
 	****************************
-	PEF if transf_gf == 0 & anio >= 2013 & divPE != -1, anio(`anio') by(divPE) nographs desde(`desde')
-	local divPE "`=r(divPE)'"
-	foreach k of local divPE {
+	PEF if transf_gf == 0 & anio >= 2013 & divCIEP != -1, anio(`anio') by(divCIEP) nographs desde(`desde')
+	local divCIEP "`=r(divCIEP)'"
+	foreach k of local divCIEP {
 		local `k' = r(`k')
 		local `k'C = r(`k'C)
 		if ``k'C' > 15 {
@@ -240,89 +240,89 @@ quietly {
 		}
 	}
 
-	g divPE = resumido
-	label values divPE labelresumido
+	g divCIEP = resumido
+	label values divCIEP labelresumido
 
-	collapse (sum) gasto, by(anio divPE) fast
+	collapse (sum) gasto, by(anio divCIEP) fast
 	g modulo = ""
 
 	local totlabels = 0
-	levelsof divPE, local(divPE)
-	foreach k of local divPE {
+	levelsof divCIEP, local(divCIEP)
+	foreach k of local divCIEP {
 		local ++totlabels
-		local divPE`k' : label labelresumido `k'
-		if "`divPE`k''" != "Costo de la deuda" & "`divPE`k''" != "Otras Part y Apor" & "`divPE`k''" != "Energía" {
+		local divCIEP`k' : label labelresumido `k'
+		if "`divCIEP`k''" != "Costo de la deuda" & "`divCIEP`k''" != "Otras Part y Apor" & "`divCIEP`k''" != "Energía" {
 
 			preserve
 
-			use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/`=strtoname("`divPE`k''")'REC.dta"', clear
+			use `"`c(sysdir_personal)'/users/ciepmx/bootstraps/1/`=strtoname("`divCIEP`k''")'REC.dta"', clear
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
 
 			tempvar estimacion
 			g `estimacion' = estimacion
-			capture confirm matrix `HH`=strtoname("`divPE`k''")''
+			capture confirm matrix `HH`=strtoname("`divCIEP`k''")''
 			if _rc == 0 {
-				replace estimacion = `estimacion'/L.`estimacion'*`HH`=strtoname("`divPE`k''")''[1,1]*(1+``=strtoname("`divPE`k''")'C'/100)^(anio-`anio') if anio >= `anio' //& abs(``=strtoname("`divPE`k''")'C') < .4
+				replace estimacion = `estimacion'/L.`estimacion'*`HH`=strtoname("`divCIEP`k''")''[1,1]*(1+``=strtoname("`divCIEP`k''")'C'/100)^(anio-`anio') if anio >= `anio' //& abs(``=strtoname("`divCIEP`k''")'C') < .4
 			}
 			else {
-				replace estimacion = `estimacion'/L.`estimacion'*``=strtoname("`divPE`k''")''*(1+``=strtoname("`divPE`k''")'C'/100)^(anio-`anio') if anio >= `anio' //& abs(``=strtoname("`divPE`k''")'C') < .4
+				replace estimacion = `estimacion'/L.`estimacion'*``=strtoname("`divCIEP`k''")''*(1+``=strtoname("`divCIEP`k''")'C'/100)^(anio-`anio') if anio >= `anio' //& abs(``=strtoname("`divCIEP`k''")'C') < .4
 			}
 
-			g divPE = `k'
-			replace modulo = "`divPE`k''"
+			g divCIEP = `k'
+			replace modulo = "`divCIEP`k''"
 
-			tempfile `divPE`k''
-			save ``divPE`k'''
+			tempfile `divCIEP`k''
+			save ``divCIEP`k'''
 
 			restore
-			merge 1:1 (anio divPE) using ``divPE`k''', nogen update replace
+			merge 1:1 (anio divCIEP) using ``divCIEP`k''', nogen update replace
 		}
-		else if "`divPE`k''" != "Costo de la deuda" {
+		else if "`divCIEP`k''" != "Costo de la deuda" {
 			preserve
 
-			use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/`=strtoname("`divPE`k''")'REC.dta"', clear
+			use `"`c(sysdir_personal)'/users/ciepmx/bootstraps/1/`=strtoname("`divCIEP`k''")'REC.dta"', clear
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
 
 			tempvar estimacion
 			g `estimacion' = estimacion
-			capture confirm matrix `HH`=strtoname("`divPE`k''")''
+			capture confirm matrix `HH`=strtoname("`divCIEP`k''")''
 			if _rc == 0 {
-				replace estimacion = `estimacion'/L.`estimacion'*`HH`=strtoname("`divPE`k''")''[1,1] if anio >= `anio'				
+				replace estimacion = `estimacion'/L.`estimacion'*`HH`=strtoname("`divCIEP`k''")''[1,1] if anio >= `anio'				
 			}
 			else {
-				replace estimacion = `estimacion'/L.`estimacion'*``=strtoname("`divPE`k''")'' if anio >= `anio'
+				replace estimacion = `estimacion'/L.`estimacion'*``=strtoname("`divCIEP`k''")'' if anio >= `anio'
 			}
 
-			g divPE = `k'
-			replace modulo = "`divPE`k''"
+			g divCIEP = `k'
+			replace modulo = "`divCIEP`k''"
 
-			tempfile `divPE`k''
-			save ``divPE`k'''
+			tempfile `divCIEP`k''
+			save ``divCIEP`k'''
 
 			restore
-			merge 1:1 (anio divPE) using ``divPE`k''', nogen update replace
+			merge 1:1 (anio divCIEP) using ``divCIEP`k''', nogen update replace
 		}
 		else {
-			replace modulo = "`divPE`k''" if divPE == `k'
+			replace modulo = "`divCIEP`k''" if divCIEP == `k'
 		}
 	}
 
 	** Ingreso basico **
 	preserve
-	use `"`c(sysdir_personal)'/users/$pais/bootstraps/1/IngBasicoREC.dta"', clear
+	use `"`c(sysdir_personal)'/users/ciepmx/bootstraps/1/IngBasicoREC.dta"', clear
 	merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 	collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
 
 	tempvar estimacion
 	g `estimacion' = estimacion
-	capture confirm matrix `HH`=strtoname("`divPE`k''")''
+	capture confirm matrix `HH`=strtoname("`divCIEP`k''")''
 	if _rc == 0 {
-		replace estimacion = `estimacion'/L.`estimacion'*`HH`=strtoname("`divPE`k''")''[1,1] if anio >= `anio'				
+		replace estimacion = `estimacion'/L.`estimacion'*`HH`=strtoname("`divCIEP`k''")''[1,1] if anio >= `anio'				
 	}
 
-	g divPE = 99
+	g divCIEP = 99
 	replace modulo = "ingbasico"
 
 	tempfile ingbasico
@@ -331,7 +331,7 @@ quietly {
 
 	** We are back! **
 	restore
-	merge 1:1 (anio divPE) using `ingbasico', nogen update replace
+	merge 1:1 (anio divCIEP) using `ingbasico', nogen update replace
 	merge m:1 (anio) using `PIB', nogen keep(matched) update replace
 	collapse (sum) gasto estimacion (max) pibYR deflator lambda Poblacion, by(anio modulo) fast
 
@@ -438,7 +438,7 @@ quietly {
 		* RFSP *
 		replace rfspBalance = estimacionCosto_de_la_deuda + estimacionEducación  ///
 			+ estimacionEnergía + estimacionInversión + estimacionOtras_Part_y_Apor ///
-			+ estimacionOtros + estimacionPensiones + estimacionPensión_Bienestar ///
+			+ estimacionOtros + estimacionPensiones + estimacionPensión_AM ///
 			+ estimacionSalud + estimacioningbasico - estimacioningresos if anio == `k'
 		replace rfsp = rfspBalance + rfspPIDIREGAS + rfspIPAB + rfspFONADIN + rfspDeudores + rfspBanca + rfspAdecuaciones if anio == `k'
 
@@ -466,15 +466,15 @@ quietly {
 	g `prev_var2' = 0
 	local j = `totlabels'
 	local style = 1
-	foreach k of local divPE {
+	foreach k of local divCIEP {
 		tempvar `k'g `k'g2
-		g ``k'g' = `prev_var' + gasto`=strtoname("`divPE`k''")'/1000000000000
+		g ``k'g' = `prev_var' + gasto`=strtoname("`divCIEP`k''")'/1000000000000
 		replace `prev_var' = ``k'g'
 		local gastovar `"``k'g' `gastovar'"'
-		local gastolab `"`gastolab' label(`j' "`divPE`k''")"'
+		local gastolab `"`gastolab' label(`j' "`divCIEP`k''")"'
 		local --j
 
-		g ``k'g2' = `prev_var2' + estimacion`=strtoname("`divPE`k''")'/1000000000000
+		g ``k'g2' = `prev_var2' + estimacion`=strtoname("`divCIEP`k''")'/1000000000000
 		replace `prev_var2' = ``k'g2'
 		local estimvar `"``k'g2' `estimvar'"'
 		local estimsty "`estimsty' p`style'"

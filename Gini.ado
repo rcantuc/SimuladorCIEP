@@ -26,9 +26,9 @@ quietly {
 	tempname sumiy2
 	matrix `sumiy2' = r(StatTotal)
 
-	local gini_`varlist' = ((2*`sumiy2'[1,1])/(n[_N]*`sumiy2'[1,2])) - (n[_N]+1)/n[_N]
-	noisily di in g "Gini de " in y "`varlist'" in g ": " in y %5.3fc `gini_`varlist''
-	return local gini_`varlist' = `gini_`varlist''
+	local gini_`=substr("`varlist'",1,20)' = ((2*`sumiy2'[1,1])/(n[_N]*`sumiy2'[1,2])) - (n[_N]+1)/n[_N]
+	noisily di in g "Gini de " in y "`varlist'" in g ": " in y %5.3fc `gini_`=substr("`varlist'",1,20)''
+	return local gini_`=substr("`varlist'",1,20)' = `gini_`=substr("`varlist'",1,20)''
 	restore
 }
 end

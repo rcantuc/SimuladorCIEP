@@ -97,13 +97,6 @@ save "`Adecuaciones'"
 **************************************
 ** 3 Ajustes (RFSP vs. DIF. SHRFSP) **
 **************************************
-** Endeudamiento no presupuestario **/
-noisily DatosAbiertos XAA20, $nographs
-keep anio mes monto
-rename monto nopresupuestario
-tempfile nopresupuestario
-save "`nopresupuestario'"
-
 
 ** Activos financieros internos del SP **
 noisily DatosAbiertos XED20, $nographs
@@ -139,14 +132,11 @@ save "`amortizacion'"
 
 
 
-
-
-
-
-
 ***************************************
-** 2 Balance público (Endeudamiento) **
-/***************************************
+** 4 Balance público (Endeudamiento) **
+***************************************
+
+** Balance público **
 noisily di _newline(2) in g "{bf: Endeudamiento público} en millones de pesos"
 noisily DatosAbiertos XAA, $nographs
 keep anio mes monto
@@ -162,13 +152,18 @@ rename monto presupuestario
 tempfile presupuestario
 save "`presupuestario'"
 
-
+** Endeudamiento no presupuestario **
+noisily DatosAbiertos XAA20, $nographs
+keep anio mes monto
+rename monto nopresupuestario
+tempfile nopresupuestario
+save "`nopresupuestario'"
 
 
 
 
 ****************************************
-* 2.1 Balance presupuestario (detalle) *
+* 4.1 Balance presupuestario (detalle) *
 
 ** Gobierno Federal **
 noisily DatosAbiertos XAA11, $nographs
@@ -212,7 +207,7 @@ save "`issste'"
 
 
 ***********************************/
-** 3 Costo financiero de la deuda **
+** 5 Costo financiero de la deuda **
 ************************************
 noisily di _newline(2) in g "{bf: Costo financiero de la deuda} en millones de pesos"
 noisily DatosAbiertos XAC21, $nographs
@@ -281,22 +276,20 @@ save "`costodeudaEE'"
 
 
 
-
-
-
-
-
-
 **********************
-** 3 Tipo de cambio **
+** 6 Tipo de cambio **
 **********************
-noisily DatosAbiertos XET30, $nographs				// pesos
+
+* Deuda en pesos *
+noisily DatosAbiertos XET30, $nographs
 keep anio mes monto
 rename monto deudaMXN		
 tempfile MXN
 save "`MXN'"
 
-noisily DatosAbiertos XET40, $nographs				// dólares
+
+* Deuda en dólares *
+noisily DatosAbiertos XET40, $nographs
 keep anio mes monto
 rename monto deudaUSD
 tempfile USD
@@ -304,10 +297,8 @@ save "`USD'"
 
 
 
-
-
 ************/
-** 6 Merge **
+** 7 Merge **
 *************
 
 * Acervos *
