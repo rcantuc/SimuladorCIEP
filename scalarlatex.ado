@@ -34,7 +34,6 @@ program define scalarlatex
 
 			if `"`=substr("`name'",1,4)'"' == "anio" | `"`=substr("`name'",1,4)'"' == "defl" ///
 				| `"`=substr("`name'",1,4)'"' == "trim" | `"`=substr("`name'",1,4)'"' == "infl" ///
-				| `"`=substr("`name'",1,3)'"' == "pob" ///
 				| `"`=substr("`name'",1,6)'"' == "output" | `"`=substr("`name'",1,4)'"' == "asis" ///
 				| `"`=substr("`name'",1,7)'"' == "pibYEnt" {
 				local value = scalar(`name')
@@ -71,6 +70,7 @@ program define scalarlatex
 				| `"`=substr("`name'",-1,1)'"' == "X" | `"`=substr("`name'",-1,1)'"' == "H" ///
 				| `"`=substr("`name'",-1,1)'"' == "M" | `"`=substr("`name'",-8,8)'"' == "Nacional" ///
 				| `"`=substr("`name'",-2,2)'"' == "PC" | "`name'" == "basica" | "`name'" == "medsup" | "`name'" == "superi" ///
+				| `"`=substr("`name'",1,3)'"' == "pob" ///
 				| "`name'" == "posgra" | "`name'" == "eduadu" | "`name'" == "otrose" ///
 				| "`name'" == "ssa" | "`name'" == "segpop" | "`name'" == "imss" ///
 				| "`name'" == "issste" | "`name'" == "prospe" | "`name'" == "pemex" ///

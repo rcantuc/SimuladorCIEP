@@ -1,8 +1,6 @@
 ***********************
 ***    1. SET UP    ***
 ***********************
-local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
-scalar aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 adopath ++PERSONAL
 
 global id = "`c(username)'"
@@ -10,53 +8,35 @@ capture mkdir `"`c(sysdir_personal)'/SIM/"'
 capture mkdir `"`c(sysdir_personal)'/users/"'
 capture mkdir `"`c(sysdir_personal)'/users/$id/"'
 
-global paqueteEconomico "CGPE 2023"
-scalar anioPE = 2023
-if anioPE >= 2022 {
-	scalar anioenigh = 2022
-}
-if anioPE >= 2020 & anioPE < 2022 {
-	scalar anioenigh = 2020
-}
-if anioPE >= 2018 & anioPE < 2020 {
-	scalar anioenigh = 2018
-}
-if anioPE >= 2016 & anioPE < 2018 {
-	scalar anioenigh = 2016
-}
-
-global entidadesL `" "Aguascalientes" "Baja California" "Baja California Sur" "Campeche" "Coahuila" "Colima" "Chiapas" "Chihuahua" "Ciudad de México" "Durango" "Guanajuato" "Guerrero" "Hidalgo" "Jalisco" "Estado de México" "Michoacán" "Morelos" "Nayarit" "Nuevo León" "Oaxaca" "Puebla" "Querétaro" "Quintana Roo" "San Luis Potosí" "Sinaloa" "Sonora" "Tabasco" "Tamaulipas" "Tlaxcala" "Veracruz" "Yucatán" "Zacatecas" "Nacional" "'
-global entidadesC "Ags BC BCS Camp Coah Col Chis Chih CDMX Dgo Gto Gro Hgo Jal EdoMex Mich Mor Nay NL Oax Pue Qro QRoo SLP Sin Son Tab Tamps Tlax Ver Yuc Zac Nac"
-
 if "$output" != "" {
-	quietly log using `"`c(sysdir_site)'/users/$id/output.txt"', replace text name(output)
+	quietly log using `"`c(sysdir_personal)'/users/$id/output.txt"', replace text name(output)
 	quietly log off output
 }
 
 
-exit
+
 ************************************************
 ***    2. CRECIMIENTO Y DEFLACTOR DEL PIB    ***
 ************************************************
-global pib2023 = 2.6 //     Pre-CGPE 2024 (punto medio)
-global pib2024 = 2.3 //     Pre-CGPE 2024 (punto medio)
+global pib2023 = 3.0 //     Pre-CGPE 2024 (punto medio)
+global pib2024 = 3.0 //     Pre-CGPE 2024 (punto medio)
 global pib2025 = 2.4 //     CGPE 2023 (página 134)
 global pib2026 = 2.4 //     CGPE 2023 (página 134)
 global pib2027 = 2.4 //     CGPE 2023 (página 134)
 global pib2028 = 2.4 //     CGPE 2023 (página 134)
 
 global def2023 = 5.2 //     CGPE 2023 (página 134)
-global def2024 = 4.792 //   CGPE 2023 (página 134)
-global def2025 = 3.49807 // CGPE 2023 (página 134)
-global def2026 = 3.49211 // CGPE 2023 (página 134)
-global def2027 = 3.51530 // CGPE 2023 (página 134)
-global def2028 = 3.50150 // CGPE 2023 (página 134)
+global def2024 = 4.8 //     CGPE 2023 (página 134)
+global def2025 = 3.5 //     CGPE 2023 (página 134)
+global def2026 = 3.5 //     CGPE 2023 (página 134)
+global def2027 = 3.5 //     CGPE 2023 (página 134)
+global def2028 = 3.5 //     CGPE 2023 (página 134)
 
 
 
 ******************************
 ***    4. DEUDA PÚBLICA    ***
-******************************
+/******************************
 scalar shrfsp2023 = 49.9
 scalar shrfspInterno2023 = 34.7
 scalar shrfspExterno2023 = 14.6
@@ -80,42 +60,69 @@ scalar costodeudaExterno2023 = 3.4
 **********************/
 ***    5. GASTOS    ***
 ***********************
-if "$update" == "update" {
-	noisily GastoPC, anio(`=anioPE')
-}
-else {
-	scalar basica      =   26537 //    Educación b{c a'}sica
-	scalar medsup      =   26439 //    Educación media superior
-	scalar superi      =   39157 //    Educación superior
-	scalar posgra      =   64239 //    Posgrado
-	scalar eduadu      =   37573 //    Educación para adultos
-	scalar otrose      =    3802 //    Otros gastos educativos
+exit
+* Educación *
+scalar iniciaA     =     389 //    Inicial
+scalar iniciaB     =     156 //    Comunitaria (CONAFE)
 
-	scalar ssa         =     600 //    SSalud
-	scalar imssbien    =    4163 //    IMSS-Bienestar
-	scalar imss        =    8141 //    IMSS (salud)
-	scalar issste      =   10992 //    ISSSTE (salud)
-	scalar pemex       =   30858 //    Pemex (salud)
-	scalar issfam      =   22721 //    ISSFAM (salud)
+scalar basica      =   25962 //    Educación b{c a'}sica
+scalar medsup      =   27556 //    Educación media superior
+scalar superi      =   38085 //    Educación superior
+scalar posgra      =   62801 //    Posgrado
+scalar eduadu      =   37679 //    Educación para adultos
+scalar otrose      =    1523 //    Otros gastos educativos
 
-	scalar pam         =   29239 //    Pensión Bienestar
-	scalar penimss     =  169241 //    Pensión IMSS
-	scalar penisss     =  249560 //    Pensión ISSSTE
-	scalar penpeme     =  671899 //    Pensión Pemex
-	scalar penotro     = 2797302 //    Pensión CFE, LFC, ISSFAM, Ferronales
+scalar invere      =     800 //    Inversión en educación
 
-	scalar gascfe      =    2958 //    Gasto en CFE
-	scalar gaspemex    =    4466 //*.30470771 //    Gasto en Pemex
-	scalar gassener    =    1128 //    Gasto en SENER
-	scalar gasinfra    =    4315 //    Gasto en Inversión
-	scalar gascosto    =    8543 //    Gasto en Costo de la deuda
-	scalar gasfeder    =    9925 //    Participaciones y Otras aportaciones
-	scalar gasotros    =    6377 //    Otros gastos
+scalar cultur      =     150 //    Cultura, deportes y recreación
+scalar invest      =     383 //    Ciencia y tecnología
 
-	scalar IngBas      =       0 //    Ingreso b{c a'}sico
-	scalar ingbasico18 =       1 //    1: Incluye menores de 18 anios, 0: no
-	scalar ingbasico65 =       1 //    1: Incluye mayores de 65 anios, 0: no
-}
+exit
+* Salud *
+scalar salinf      =     124 //    Atención a NNA
+
+scalar ssa         =     586 //    SSalud
+scalar imssbien    =    4211 //    IMSS-Bienestar
+scalar imss        =    7749 //    IMSS (salud)
+scalar issste      =   10385 //    ISSSTE (salud)
+scalar pemex       =   27591 //    Pemex (salud)
+scalar issfam      =   20357 //    ISSFAM (salud)
+
+
+scalar invers      =     237 //    Inversión en salud
+
+
+* Pensiones *
+scalar pam         =   29057 //    Pensión Bienestar
+scalar penimss     =   39431 //    Pensión IMSS
+scalar penisss     =  112261 //    Pensión ISSSTE
+scalar penpeme     =  213834 //    Pensión Pemex
+scalar penotro     =  890250 //    Pensión CFE, LFC, ISSFAM, Ferronales
+
+
+* Energía *
+scalar gascfe      =    2556 //    Gasto en CFE
+scalar gaspemex    =    1126 //    Gasto en Pemex
+scalar gassener    =     615 //    Gasto en SENER
+
+scalar gasinverf   =    4404 //    Gasto en inversión (energía)
+
+scalar gascosdeue  =    1426 //    Gasto en costo de la deuda (energía)
+
+exit
+* Otros gastos *
+scalar gasinfra    =    4390 //    Gasto en Inversión
+*scalar gascuidados =     
+scalar gasotros    =    4471 //    Otros gastos
+scalar gasfeder    =    10097 //    Participaciones y Otras aportaciones
+scalar gascosto    =    7265 //    Gasto en Costo de la deuda
+
+
+* Transferencas *
+scalar IngBas      =       0 //    Ingreso b{c a'}sico
+scalar ingbasico18 =       1 //    1: Incluye menores de 18 anios, 0: no
+scalar ingbasico65 =       1 //    1: Incluye mayores de 65 anios, 0: no
+exit
 
 
 

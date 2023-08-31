@@ -464,8 +464,8 @@ quietly {
 			subtitle($pais) ///
 			note("{bf:Nota}: Porcentajes entre par{c e'}ntesis son con respecto al total de `anio'.") ///
 			caption("`graphfuente'") ///
-			bar(4, color(40 173 58)) bar(1, color(255 55 0)) ///
-			bar(2, color(255 129 0)) ///
+			///bar(4, color(40 173 58)) bar(1, color(255 55 0)) ///
+			///bar(2, color(255 129 0)) ///
 			text(`text', color(black) placement(n) size(vsmall)) ///
 			ytitle("mil millones `currency' `anio'") ///
 			ylabel(, format(%15.0fc) labsize(small)) ///

@@ -13,7 +13,7 @@ timer on 7
 
 ****************
 ** 0 Economia **
-noisily SCN, anio(`2') nographs
+SCN, anio(`2') nographs
 
 
 
