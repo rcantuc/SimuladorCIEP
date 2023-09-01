@@ -351,7 +351,7 @@ quietly {
 
 	****************
 	*** Base SIM ***
-	/****************
+	****************
 	capture use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
 	if _rc != 0 {
 		use "`c(sysdir_personal)'/SIM/households`=aniovp'.dta", clear

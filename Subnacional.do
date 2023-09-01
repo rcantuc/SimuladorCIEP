@@ -1,6 +1,6 @@
 ***************************/
 *** 1. Población estatal ***
-/***************************
+/****************************
 *forvalues anio=1950(1)2050 {
 	foreach entidad in $entidadesL {
 		noisily Poblacion if entidad == "`entidad'", $update anio(2022) //aniofinal(2030)
@@ -14,8 +14,13 @@ noisily scalarlatex, logname(poblacion)
 
 *******************************/
 *** 2. Productividad laboral ***
-*******************************
-use "`c(sysdir_personal)'/SIM/EstadosBaseEstOpor.dta", clear
+********************************
+capture use "`c(sysdir_personal)'/SIM/EstadosBaseEstOpor.dta", clear
+if _rc != 0 {
+	noisily run "`c(sysdir_personal)'/UpdateSubnacional.do"
+	use "`c(sysdir_personal)'/SIM/EstadosBaseEstOpor.dta", clear
+}
+
 collapse (mean) pob* deflator pibYEnt, by(anio entidad entidadx)
 sort entidadx anio
 

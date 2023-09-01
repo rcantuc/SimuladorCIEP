@@ -133,7 +133,7 @@ save `PobTot'
 
 *****************************************/
 *** 3. Gasto Federalizado y sus Fondos ***
-/******************************************
+******************************************
 DatosAbiertos XFA0000, nographs
 split nombre, gen(entidad) parse(":")
 drop nombre
@@ -482,7 +482,7 @@ keep if anio >= 2003 & anio <= 2022
 save "`c(sysdir_personal)'/SIM/EstadosBaseINEGI.dta", replace
 
 
-/** 6.2 Base EstOpor **
+** 6.2 Base EstOpor **
 use `PIBEntidades', clear
 merge 1:m (anio entidad) using `GastoFedBase', nogen
 merge m:1 (anio entidad) using `PobTot', nogen
@@ -491,7 +491,7 @@ keep if anio >= 2003 & anio <= 2022
 save "`c(sysdir_personal)'/SIM/EstadosBaseEstOpor.dta", replace
 
 
-** 6.3 SICUENTAS **
+/** 6.3 SICUENTAS **
 use "`c(sysdir_site)'../BasesCIEP/Otros/gasto_salud.dta", clear
 drop if CVE_ENT == .
 compress
