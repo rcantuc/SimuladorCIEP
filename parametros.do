@@ -1,9 +1,9 @@
 ***********************
 ***    1. SET UP    ***
 ***********************
-adopath ++PERSONAL
-
-global id = "`c(username)'"
+if "`c(username)'" != "ciepmx" & "`c(username)'" != "ricardo" {
+	global id = "`c(username)'"
+}
 capture mkdir `"`c(sysdir_personal)'/SIM/"'
 capture mkdir `"`c(sysdir_personal)'/users/"'
 capture mkdir `"`c(sysdir_personal)'/users/$id/"'
@@ -18,8 +18,8 @@ if "$output" != "" {
 ************************************************
 ***    2. CRECIMIENTO Y DEFLACTOR DEL PIB    ***
 ************************************************
-global pib2023 = 3.0 //     Pre-CGPE 2024 (punto medio)
-global pib2024 = 3.0 //     Pre-CGPE 2024 (punto medio)
+global pib2023 = 2.5287 //     Pre-CGPE 2024 (punto medio)
+global pib2024 = 2.2922 //     Pre-CGPE 2024 (punto medio)
 global pib2025 = 2.4 //     CGPE 2023 (página 134)
 global pib2026 = 2.4 //     CGPE 2023 (página 134)
 global pib2027 = 2.4 //     CGPE 2023 (página 134)
@@ -31,6 +31,101 @@ global def2025 = 3.5 //     CGPE 2023 (página 134)
 global def2026 = 3.5 //     CGPE 2023 (página 134)
 global def2027 = 3.5 //     CGPE 2023 (página 134)
 global def2028 = 3.5 //     CGPE 2023 (página 134)
+
+
+
+************************/
+***    3. INGRESOS    ***
+*************************
+scalar ISRAS   = 3.778 //100*scalar(pibY) *(1+ 3.782*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISR (asalariados)
+scalar ISRPF   = 0.245 //100*scalar(pibY) *(1+ 1.199*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISR (personas f{c i'}sicas)
+scalar CUOTAS  = 1.533 //100*scalar(pibY) *(1+ 2.197*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Cuotas (IMSS)
+
+scalar FMP     = 1.586 //100*scalar(pibY) *(1+-7.718*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Fondo Mexicano del Petróleo
+scalar PEMEX   = 2.690 //100*scalar(pibY) *(1+ 1.379*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (Pemex)
+scalar CFE     = 1.299 //100*scalar(pibY) *(1+-3.024*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (CFE)
+scalar IMSS    = 0.093 //100*scalar(pibY) *(1+-2.685*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (IMSS)
+scalar ISSSTE  = 0.163 //100*scalar(pibY) *(1+-3.058*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (ISSSTE)
+
+scalar ISRPM   = 4.154 //100*scalar(pibY) *(1+ 4.664*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISR (personas morales)
+scalar OTROSK  = 1.072 //100*scalar(pibY) *(1+-3.269*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Productos, derechos, aprovech.
+
+scalar IVA     = 4.620 //100*scalar(pibY) *(1+ 2.498*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // IVA
+scalar ISAN    = 0.050 //100*scalar(pibY) *(1+ 3.565*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISAN
+scalar IEPSNP  = 0.676 //100*scalar(pibY) *(1+ 0.362*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // IEPS (no petrolero)
+scalar IEPSP   = 0.906 // IEPS (petrolero): 0.662
+scalar IMPORT  = 0.320 //100*scalar(pibY) *(1+ 5.303*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Importaciones
+
+
+
+**********************/
+***    4. GASTOS    ***
+***********************
+
+** Educación **
+scalar iniciaA     =     389 //    Inicial
+scalar iniciaB     =     156 //    Comunitaria (CONAFE)
+
+scalar basica      =   25962 //    Educación b{c a'}sica
+scalar medsup      =   27556 //    Educación media superior
+scalar superi      =   38085 //    Educación superior
+scalar posgra      =   62801 //    Posgrado
+scalar eduadu      =   37679 //    Educación para adultos
+scalar otrose      =    1523 //    Otros gastos educativos
+
+scalar invere      =     800 //    Inversión en educación
+
+scalar cultur      =     150 //    Cultura, deportes y recreación
+scalar invest      =     383 //    Ciencia y tecnología
+
+
+** Salud **
+scalar salinf      =     56 //    Atención a NNA
+
+scalar ssa         =     599 //    SSalud
+scalar imssbien    =    4324 //    IMSS-Bienestar
+scalar imss        =    7749 //    IMSS (salud)
+scalar issste      =   10385 //    ISSSTE (salud)
+scalar pemex       =   30583 //    Pemex (salud)
+scalar issfam      =   18012 //    ISSFAM (salud)
+
+scalar invers      =     237 //    Inversión en salud
+
+
+** Pensiones **
+scalar pam         =   29057 //    Pensión Bienestar
+scalar penimss     =  246921 //    Pensión IMSS
+scalar penisss     =  336547 //    Pensión ISSSTE
+scalar penpeme     =  841446 //    Pensión Pemex
+scalar penotro     = 3503173 //    Pensión CFE, LFC, ISSFAM, Ferronales
+
+
+** Energía **
+scalar gascfe      =    2556 //    Gasto en CFE
+scalar gaspemex    =    1126 //    Gasto en Pemex
+scalar gassener    =     615 //    Gasto en SENER
+
+scalar gasinverf   =    4404 //    Gasto en inversión (energía)
+
+scalar gascosdeue  =    1426 //    Gasto en costo de la deuda (energía)
+
+
+** Otros gastos **
+scalar gasinfra    =    4390 //    Gasto en Otras Inversiones
+scalar gascuidados =     224 //    Gasto en cuidados
+scalar gasotros    =    4225 //    Otros gastos
+scalar gasfeder    =   10097 //    Participaciones y Otras aportaciones
+scalar gascosto    =    7265 //    Gasto en Costo de la deuda
+
+
+** Transferencas **
+scalar IngBas      =       0 //    Ingreso b{c a'}sico
+scalar ingbasico18 =       1 //    1: Incluye menores de 18 anios, 0: no
+scalar ingbasico65 =       1 //    1: Incluye mayores de 65 anios, 0: no
+
+scalar gasmadres   =     462 //    Apoyo a madres trabajadoras
+exit
+
 
 
 
@@ -57,103 +152,7 @@ scalar costodeudaExterno2023 = 3.4
 
 
 
-**********************/
-***    5. GASTOS    ***
-***********************
-exit
-* Educación *
-scalar iniciaA     =     389 //    Inicial
-scalar iniciaB     =     156 //    Comunitaria (CONAFE)
 
-scalar basica      =   25962 //    Educación b{c a'}sica
-scalar medsup      =   27556 //    Educación media superior
-scalar superi      =   38085 //    Educación superior
-scalar posgra      =   62801 //    Posgrado
-scalar eduadu      =   37679 //    Educación para adultos
-scalar otrose      =    1523 //    Otros gastos educativos
-
-scalar invere      =     800 //    Inversión en educación
-
-scalar cultur      =     150 //    Cultura, deportes y recreación
-scalar invest      =     383 //    Ciencia y tecnología
-
-exit
-* Salud *
-scalar salinf      =     124 //    Atención a NNA
-
-scalar ssa         =     586 //    SSalud
-scalar imssbien    =    4211 //    IMSS-Bienestar
-scalar imss        =    7749 //    IMSS (salud)
-scalar issste      =   10385 //    ISSSTE (salud)
-scalar pemex       =   27591 //    Pemex (salud)
-scalar issfam      =   20357 //    ISSFAM (salud)
-
-
-scalar invers      =     237 //    Inversión en salud
-
-
-* Pensiones *
-scalar pam         =   29057 //    Pensión Bienestar
-scalar penimss     =   39431 //    Pensión IMSS
-scalar penisss     =  112261 //    Pensión ISSSTE
-scalar penpeme     =  213834 //    Pensión Pemex
-scalar penotro     =  890250 //    Pensión CFE, LFC, ISSFAM, Ferronales
-
-
-* Energía *
-scalar gascfe      =    2556 //    Gasto en CFE
-scalar gaspemex    =    1126 //    Gasto en Pemex
-scalar gassener    =     615 //    Gasto en SENER
-
-scalar gasinverf   =    4404 //    Gasto en inversión (energía)
-
-scalar gascosdeue  =    1426 //    Gasto en costo de la deuda (energía)
-
-exit
-* Otros gastos *
-scalar gasinfra    =    4390 //    Gasto en Inversión
-*scalar gascuidados =     
-scalar gasotros    =    4471 //    Otros gastos
-scalar gasfeder    =    10097 //    Participaciones y Otras aportaciones
-scalar gascosto    =    7265 //    Gasto en Costo de la deuda
-
-
-* Transferencas *
-scalar IngBas      =       0 //    Ingreso b{c a'}sico
-scalar ingbasico18 =       1 //    1: Incluye menores de 18 anios, 0: no
-scalar ingbasico65 =       1 //    1: Incluye mayores de 65 anios, 0: no
-exit
-
-
-
-************************/
-***    6. INGRESOS    ***
-*************************
-if "$update" == "update" {
-	noisily TasasEfectivas, anio(`=aniovp')
-}
-else {
-	scalar ISRAS   = 3.773 //100*scalar(pibY) *(1+ 3.782*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISR (asalariados): 3.696
-	scalar ISRPF   = 0.245 //100*scalar(pibY) *(1+ 1.199*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISR (personas f{c i'}sicas): 0.240
-	scalar CUOTAS  = 1.531 //100*scalar(pibY) *(1+ 2.197*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Cuotas (IMSS): 1.499
-
-	scalar ISRPM   = 4.149 //100*scalar(pibY) *(1+ 4.664*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISR (personas morales): 4.064
-	scalar OTROSK  = 1.070 //100*scalar(pibY) *(1+-3.269*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Productos, derechos, aprovech.: 1.049
-
-	scalar IVA     = 4.615 //100*scalar(pibY) *(1+ 2.498*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // IVA: 4.520
-	scalar ISAN    = 0.050 //100*scalar(pibY) *(1+ 3.565*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISAN: 0.049
-	scalar IEPSNP  = 0.676 //100*scalar(pibY) *(1+ 0.362*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // IEPS (no petrolero): 0.887
-	scalar IEPSP   = 0.905 // IEPS (petrolero): 0.662
-	scalar IMPORT  = 0.320 //100*scalar(pibY) *(1+ 5.303*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Importaciones: 0.313
-
-	scalar FMP     = 1.586 //100*scalar(pibY) *(1+-7.718*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Fondo Mexicano del Petróleo: 1.553
-
-	scalar IMSS    = 0.093 //100*scalar(pibY) *(1+-2.685*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (IMSS): 0.091
-	scalar ISSSTE  = 0.162 //100*scalar(pibY) *(1+-3.058*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (ISSSTE): 0.159
-	scalar PEMEX   = 2.687 //100*scalar(pibY) *(1+ 1.379*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (Pemex): 2.632
-	scalar CFE     = 1.297 //100*scalar(pibY) *(1+-3.024*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (CFE): 1.271
- }
-scalar depletionrate = 0.08*0
 
 
 

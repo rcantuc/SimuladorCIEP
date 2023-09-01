@@ -45,7 +45,7 @@ quietly {
 	*******************
 	use "`c(sysdir_personal)'/users/$id/households.dta", clear
 	capture drop _*
-	foreach k in Educación Pension Pensión_Bienestar Salud Otros IngBasico Inversión Otras_Part_y_Apor Energía {
+	foreach k in Educación Pensiones Pensión_AM Salud Otros_gastos IngBasico Otras_inversiones Part_y_otras_Apor Energía {
 		tabstat `k' [fw=factor], stat(sum) f(%20.0fc) save
 		tempname HH`k'
 		matrix `HH`k'' = r(StatTotal)
@@ -71,7 +71,7 @@ quietly {
 			local `label`k''C = -15
 		}
 
-		capture confirm scalar `k'
+		capture confirm scalar `label`k''
 		if _rc != 0 {
 			scalar `label`k'' = r(`label`k'')/scalar(pibY)*100
 		}
@@ -82,46 +82,24 @@ quietly {
 	g modulo = ""
 	foreach k of local divSIM {
 		local divSIM`k' : label divSIM `k'
-		if "`divSIM`k''" != "FMP" & "`divSIM`k''" != "PEMEX" {
-			preserve
+		preserve
 
-			use `"`c(sysdir_personal)'/users/ciepmx/bootstraps/1/`divSIM`k''REC.dta"', clear
-			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
-			collapse estimacion contribuyentes poblacion, by(anio modulo aniobase)
+		use `"`c(sysdir_personal)'/users/bootstraps/1/`divSIM`k''REC.dta"', clear
+		merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
+		collapse estimacion contribuyentes poblacion, by(anio modulo aniobase)
 
-			tempvar estimacion
-			g `estimacion' = estimacion
-			replace estimacion = `estimacion'/L.`estimacion'*(scalar(`divSIM`k''))/100*scalar(pibY)*(1+``divSIM`k''C'/100)^(anio-`anio') if anio >= `anio' //& abs(``divSIM`k''C'/100) < .4
+		tempvar estimacion
+		g `estimacion' = estimacion
+		replace estimacion = `estimacion'/L.`estimacion'*(scalar(`divSIM`k''))/100*scalar(pibY)*(1+``divSIM`k''C'/100)^(anio-`anio') if anio >= `anio'
 
-			g divSIM = `k'
-			replace modulo = "`divSIM`k''"
+		g divSIM = `k'
+		replace modulo = "`divSIM`k''"
 
-			tempfile `divSIM`k''
-			save ``divSIM`k'''
+		tempfile `divSIM`k''
+		save ``divSIM`k'''
 
-			restore
-			merge 1:1 (anio divSIM) using  ``divSIM`k''', nogen update replace
-		}
-		else {
-			preserve
-
-			use `"`c(sysdir_personal)'/users/ciepmx/bootstraps/1/`divSIM`k''REC.dta"', clear
-			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
-			collapse estimacion contribuyentes poblacion, by(anio modulo aniobase)
-
-			tempvar estimacion
-			g `estimacion' = estimacion
-			replace estimacion = `estimacion'/L.`estimacion'*(scalar(`divSIM`k''))/100*scalar(pibY)*(1+``divSIM`k''C'/100)^(anio-`anio') if anio >= `anio' //& abs(``divSIM`k''C'/100) < .4
-
-			g divSIM = `k'
-			replace modulo = "`divSIM`k''"
-
-			tempfile `divSIM`k''
-			save ``divSIM`k'''
-
-			restore
-			merge 1:1 (anio divSIM) using  ``divSIM`k''', nogen update replace			
-		}
+		restore
+		merge 1:1 (anio divSIM) using  ``divSIM`k''', nogen update replace
 	}
 	merge m:1 (anio) using `PIB', nogen keep(matched) update replace
 	collapse (sum) recaudacion estimacion (max) pibYR deflator lambda Poblacion, by(anio modulo)
@@ -213,7 +191,8 @@ quietly {
 	tempname estimacionVP
 	matrix `estimacionVP' = r(StatTotal)
 
-	noisily di in g "  (+) Ingresos futuros en VP:" in y _col(35) %25.0fc `estimacionINF'+`estimacionVP'[1,1] in g " `currency'"
+	noisily di in g "  (+) Ingresos futuros en VP:" ///
+		in y _col(35) %25.0fc `estimacionINF'+`estimacionVP'[1,1] in g " `currency'"
 	*noisily di in g "  (*) Estimacion INF:" in y _col(35) %25.0fc `estimacionINF' in g " `currency'"
 	*noisily di in g "  (*) Estimacion VP:" in y _col(35) %25.0fc `estimacionVP'[1,1] in g " `currency'"
 	
@@ -251,49 +230,15 @@ quietly {
 	foreach k of local divCIEP {
 		local ++totlabels
 		local divCIEP`k' : label labelresumido `k'
-		if "`divCIEP`k''" != "Costo de la deuda" & "`divCIEP`k''" != "Otras Part y Apor" & "`divCIEP`k''" != "Energía" {
-
+		if "`divCIEP`k''" != "Costo de la deuda" {
 			preserve
-
-			use `"`c(sysdir_personal)'/users/ciepmx/bootstraps/1/`=strtoname("`divCIEP`k''")'REC.dta"', clear
+			use `"`c(sysdir_personal)'/users/bootstraps/1/`=strtoname("`divCIEP`k''")'REC.dta"', clear
 			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
 
 			tempvar estimacion
 			g `estimacion' = estimacion
-			capture confirm matrix `HH`=strtoname("`divCIEP`k''")''
-			if _rc == 0 {
-				replace estimacion = `estimacion'/L.`estimacion'*`HH`=strtoname("`divCIEP`k''")''[1,1]*(1+``=strtoname("`divCIEP`k''")'C'/100)^(anio-`anio') if anio >= `anio' //& abs(``=strtoname("`divCIEP`k''")'C') < .4
-			}
-			else {
-				replace estimacion = `estimacion'/L.`estimacion'*``=strtoname("`divCIEP`k''")''*(1+``=strtoname("`divCIEP`k''")'C'/100)^(anio-`anio') if anio >= `anio' //& abs(``=strtoname("`divCIEP`k''")'C') < .4
-			}
-
-			g divCIEP = `k'
-			replace modulo = "`divCIEP`k''"
-
-			tempfile `divCIEP`k''
-			save ``divCIEP`k'''
-
-			restore
-			merge 1:1 (anio divCIEP) using ``divCIEP`k''', nogen update replace
-		}
-		else if "`divCIEP`k''" != "Costo de la deuda" {
-			preserve
-
-			use `"`c(sysdir_personal)'/users/ciepmx/bootstraps/1/`=strtoname("`divCIEP`k''")'REC.dta"', clear
-			merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
-			collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
-
-			tempvar estimacion
-			g `estimacion' = estimacion
-			capture confirm matrix `HH`=strtoname("`divCIEP`k''")''
-			if _rc == 0 {
-				replace estimacion = `estimacion'/L.`estimacion'*`HH`=strtoname("`divCIEP`k''")''[1,1] if anio >= `anio'				
-			}
-			else {
-				replace estimacion = `estimacion'/L.`estimacion'*``=strtoname("`divCIEP`k''")'' if anio >= `anio'
-			}
+			replace estimacion = `estimacion'/L.`estimacion'*`HH`=strtoname("`divCIEP`k''")''[1,1]*(1+``=strtoname("`divCIEP`k''")'C'/100)^(anio-`anio') if anio >= `anio'
 
 			g divCIEP = `k'
 			replace modulo = "`divCIEP`k''"
@@ -311,7 +256,7 @@ quietly {
 
 	** Ingreso basico **
 	preserve
-	use `"`c(sysdir_personal)'/users/ciepmx/bootstraps/1/IngBasicoREC.dta"', clear
+	use `"`c(sysdir_personal)'/users/bootstraps/1/IngBasicoREC.dta"', clear
 	merge 1:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency)
 	collapse estimacion contribuyentes poblacion , by(anio modulo aniobase)
 
@@ -437,10 +382,11 @@ quietly {
 
 		* RFSP *
 		replace rfspBalance = estimacionCosto_de_la_deuda + estimacionEducación  ///
-			+ estimacionEnergía + estimacionInversión + estimacionOtras_Part_y_Apor ///
+			+ estimacionEnergía + estimacionOtras_inversiones + estimacionPart_y_otras_Apor ///
 			+ estimacionOtros + estimacionPensiones + estimacionPensión_AM ///
 			+ estimacionSalud + estimacioningbasico - estimacioningresos if anio == `k'
-		replace rfsp = rfspBalance + rfspPIDIREGAS + rfspIPAB + rfspFONADIN + rfspDeudores + rfspBanca + rfspAdecuaciones if anio == `k'
+		replace rfsp = rfspBalance + rfspPIDIREGAS + rfspIPAB + rfspFONADIN + rfspDeudores ///
+			+ rfspBanca + rfspAdecuaciones if anio == `k'
 
 		* SHRFSP *
 		replace shrfspExternoUSD = L.shrfspExterno/L.tipoDeCambio if anio == `k'

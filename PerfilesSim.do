@@ -32,18 +32,15 @@ local Adultos = r(Educación_para_Adultos)
 local Posgrado = r(Posgrado)
 local OtrosEdu = r(Gasto_neto) - `Basica' - `Media' - `Superior' - `Adultos' - `Posgrado'
 
-* Pensiones *
-PEF, anio(`1') by(divCIEP) min(0) nographs
-local PenBienestar = r(Pensión_AM)
-
 * Otros gastos *
 PEF, anio(`1') by(divCIEP) min(0) nographs
-local Otros = r(Otros)+r(Cuotas_ISSSTE)
-local Pensiones = r(Pensiones) //-`PenBienestar'
+local PenBienestar = r(Pensión_AM)
+local Otros_gastos = r(Otros_gastos)+r(Cuotas_ISSSTE)
+local Pensiones = r(Pensiones)
 local Educacion = r(Educación)
 local Salud = r(Salud)
 local Energía = r(Energía)
-local Otras_Part_y_Apor = r(Otras_Part_y_Apor)
+local Part_y_otras_Apor = r(Part_y_otras_Apor)
 
 * Infraestructura *
 PEF if divCIEP == 4, anio(`1') by(entidad) min(0) nographs
@@ -484,16 +481,16 @@ foreach k in Aguas BajaN BajaS Campe Coahu Colim Chiap Chihu Ciuda Duran Guana /
 	local ++j
 }
 egen infra_entidad = rsum(Infra_*)
-Distribucion Inversión, relativo(infra_entidad) macro(`InfraT')
-label var Inversión "infraestructura"
-noisily Simulador Inversión [fw=factor], base("ENIGH `=anioenigh'") boot(1) reboot anio(`1')
-noisily Gini Inversión, hogar(folioviv foliohog) factor(factor)
+Distribucion Otras_inversiones, relativo(infra_entidad) macro(`InfraT')
+label var Otras_inversiones "otras inversiones"
+noisily Simulador Otras_inversiones [fw=factor], base("ENIGH `=anioenigh'") boot(1) reboot anio(`1')
+noisily Gini Otras_inversiones, hogar(folioviv foliohog) factor(factor)
 
 ** (-) Otros gastos **
-Distribucion Otros, relativo(pob) macro(`=`Otros'')
-label var Otros "otros gastos"
-noisily Simulador Otros [fw=factor], base("ENIGH `=anioenigh'") boot(1) reboot anio(`1')
-noisily Gini Otros, hogar(folioviv foliohog) factor(factor)
+Distribucion Otros_gastos, relativo(pob) macro(`=`Otros_gastos'')
+label var Otros_gastos "otros gastos"
+noisily Simulador Otros_gastos [fw=factor], base("ENIGH `=anioenigh'") boot(1) reboot anio(`1')
+noisily Gini Otros_gastos, hogar(folioviv foliohog) factor(factor)
 
 ** (-) Energía **
 Distribucion Energía, relativo(pob) macro(`=`Energía'')
@@ -502,10 +499,10 @@ noisily Simulador Energía [fw=factor], base("ENIGH `=anioenigh'") boot(1) reboo
 noisily Gini Energía, hogar(folioviv foliohog) factor(factor)
 
 ** (-) Otras Participaciones y Aportaciones **
-Distribucion Otras_Part_y_Apor, relativo(pob) macro(`=`Otras_Part_y_Apor'')
-label var Otras_Part_y_Apor "Otras_Part_y_Apor"
-noisily Simulador Otras_Part_y_Apor [fw=factor], base("ENIGH `=anioenigh'") boot(1) reboot anio(`1')
-noisily Gini Otras_Part_y_Apor, hogar(folioviv foliohog) factor(factor)
+Distribucion Part_y_otras_Apor, relativo(pob) macro(`=`Part_y_otras_Apor'')
+label var Part_y_otras_Apor "Participaciones y otras aportaciones"
+noisily Simulador Part_y_otras_Apor [fw=factor], base("ENIGH `=anioenigh'") boot(1) reboot anio(`1')
+noisily Gini Part_y_otras_Apor, hogar(folioviv foliohog) factor(factor)
 
 
 *****************************

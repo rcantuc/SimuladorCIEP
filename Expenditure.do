@@ -96,8 +96,8 @@ Poblacion, anio(`enighanio') nographs
 ***                            ***
 **********************************
 capture confirm file "`c(sysdir_personal)'/SIM/`enighanio'/preconsumption.dta"
-*if _rc != 0 {
-if _rc == 0 {
+if _rc != 0 {
+*if _rc == 0 {
 
 	** MI.1. Base de datos de gastos de los hogares **
 	use "`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/`enighanio'/gastospersona.dta", clear

@@ -4,15 +4,16 @@
 ***                        ***
 ******************************
 noisily run "`c(sysdir_personal)'/profile.do"
+*global export "`c(sysdir_site)'../TextbookCIEP"
 *global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
 
 
 
-***************************
-***                     ***
-***    1. PARÁMETROS    ***
-***                     ***
-***************************
+*************************
+***                   ***
+***    1. OPCIONES    ***
+***                   ***
+*************************
 * iMac Ricardo *
 if "`c(username)'" == "ricardo" {
 	sysdir set PERSONAL "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
@@ -21,9 +22,9 @@ if "`c(username)'" == "ricardo" {
 if "`c(username)'" == "ciepmx" & "`c(console)'" == "" {
 	sysdir set PERSONAL "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
 }
+adopath ++PERSONAL
 noisily run "`c(sysdir_personal)'/parametros.do"
-*global export "`c(sysdir_site)'../TextbookCIEP"
-*global export "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/EU - Modelo Hacendario Estatal/LaTeX/images"
+
 
 
 
@@ -33,29 +34,29 @@ noisily run "`c(sysdir_personal)'/parametros.do"
 ***                                               ***
 ***    2. POBLACION + ECONOMÍA + SISTEMA FISCAL   ***
 ***                                               ***
-*****************************************************
+/*****************************************************
 
 ** 2.1 Población **
 *foreach estado of global entidadesL {
 	*forvalues anio = 1950(1)2070 {
-*		noisily Poblacion /*if entidad == "`estado'"*/, //anio(`anio') //aniofinal(2030)
+		noisily Poblacion /*if entidad == "`estado'"*/, //anio(`anio') //aniofinal(2030)
 	*}
 *}
 
 
 ** 2.2 Economía **
-*noisily PIBDeflactor, //geodef(2005) geopib(2005)
-*noisily SCN, //update 
-*noisily Inflacion, //update
+noisily PIBDeflactor, //geodef(2005) geopib(2005)
+noisily SCN, //update 
+noisily Inflacion, //update
 
-*noisily LIF, by(divPE) rows(1) min(0) //update desde(2018)
-*noisily PEF, by(divCIEP) rows(2) min(0) //update desde(2018)
+noisily LIF, by(divPE) rows(1) min(0) //update desde(2018)
+noisily PEF, by(divCIEP) rows(2) min(0) //update desde(2018)
 
-*noisily SHRFSP, //update
+noisily SHRFSP, //update
 
 
 ** 2.4 Subnacionales **
-*noisily run "`c(sysdir_personal)'/Subnacional.do" //update
+noisily run "`c(sysdir_personal)'/Subnacional.do" //update
 
 
 
@@ -69,8 +70,14 @@ noisily run "`c(sysdir_personal)'/parametros.do"
 
 ** 3.1 Households information **
 forvalues anio = `=anioenigh'(-2)`=anioenigh' {
-	noisily run "`c(sysdir_personal)'/Expenditure.do" `anio'
-	noisily run `"`c(sysdir_personal)'/Households.do"' `anio'
+	capture confirm file "`c(sysdir_personal)'/SIM/`=anioenigh'/expenditures.dta"
+	if _rc != 0 {
+		noisily run "`c(sysdir_personal)'/Expenditure.do" `anio'
+	}
+	capture confirm file "`c(sysdir_personal)'/SIM/`=anioenigh'/households.dta"
+	if _rc != 0 {
+		noisily run `"`c(sysdir_personal)'/Households.do"' `anio'
+	}
 }
 
 
@@ -80,17 +87,20 @@ foreach k in grupoedad sexo decil rural escol {
 }
 
 
+** 3.3 Fiscal profiles **
+forvalues anio = `=anioPE'(-1)`=anioPE' {
+	noisily run `"`c(sysdir_personal)'/PerfilesSim.do"' `anio'
+}
+
+
+
+
 
 ***********************/
 ***                  ***
 ***    4. MÓDULOS    ***
 ***                  ***
 ************************
-
-** 4.1 Fiscal profiles **
-forvalues anio = `=anioPE'(-1)`=anioPE-1' {
-	noisily run `"`c(sysdir_personal)'/PerfilesSim.do"' `anio'
-}
 
 if "`cambioisr'" == "1" {
 	noisily run "`c(sysdir_personal)'/ISR_Mod.do"
@@ -105,7 +115,6 @@ if "`cambioiva'" == "1" {
 }
 
 noisily TasasEfectivas, anio(`=aniovp') nog
-
 noisily GastoPC, anio(`=anioPE')
 
 
@@ -116,7 +125,7 @@ noisily GastoPC, anio(`=anioPE')
 ***                        ***
 ***    5. CICLO DE VIDA    ***
 ***                        ***
-******************************
+/******************************
 use "`c(sysdir_personal)'/SIM/households`=anioPE'.dta", clear
 
 
@@ -158,7 +167,6 @@ save "`c(sysdir_personal)'/users/$id/households.dta", replace
 ***    6. PARTE IV: DEUDA + FISCAL GAP    ***
 ***                                       ***
 *********************************************
-set scheme ciepingresos
 noisily FiscalGap, end(2030) aniomin(2015) $nographs //update discount(7) desde(2018) //anio(`=aniovp')
 
 
