@@ -382,7 +382,7 @@ quietly {
 			}
 		}
 		if "$export" == "" {
-			local graphtitle "{bf:Gasto p{c u'}blico} presupuestario"
+			local graphtitle "{bf:Gasto p{c u'}blico presupuestario}"
 			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP y $paqueteEconomico."
 		}
 		else {

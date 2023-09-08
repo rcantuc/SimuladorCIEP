@@ -124,15 +124,15 @@ scalar ingbasico18 =       1 //    1: Incluye menores de 18 anios, 0: no
 scalar ingbasico65 =       1 //    1: Incluye mayores de 65 anios, 0: no
 
 scalar gasmadres   =     462 //    Apoyo a madres trabajadoras
-exit
+
 
 
 
 
 ******************************
 ***    4. DEUDA PÚBLICA    ***
-/******************************
-scalar shrfsp2023 = 49.9
+******************************
+scalar shrfsp2023 = 49.4
 scalar shrfspInterno2023 = 34.7
 scalar shrfspExterno2023 = 14.6
 scalar rfsp2023 = 4.1
@@ -143,10 +143,98 @@ scalar rfspFONADIN2023 = 0.0
 scalar rfspDeudores2023 = 0.0
 scalar rfspBanca2023 = 0.0
 scalar rfspAdecuaciones2023 = -0.2
-scalar balprimario2023 = -0.2
+*scalar balprimario2023 = -0.2
 scalar tipoDeCambio2023 = 20.6
 scalar costodeudaInterno2023 = 3.4
 scalar costodeudaExterno2023 = 3.4
+
+
+
+scalar shrfsp2024 = 49.4
+scalar shrfspInterno2024 = 35.2
+scalar shrfspExterno2024 = 14.2
+scalar rfsp2024 = 2.7
+scalar rfspBalance2024 = -2.2
+scalar rfspPIDIREGAS2024 = -0.1
+scalar rfspIPAB2024 = -0.1
+scalar rfspFONADIN2024 = 0.0
+scalar rfspDeudores2024 = 0.0
+scalar rfspBanca2024 = 0.0
+scalar rfspAdecuaciones2024 = -0.3
+scalar tipoDeCambio2024 = 20.7
+scalar costodeudaInterno2024 = 3.4
+scalar costodeudaExterno2024 = 3.4
+
+
+
+scalar shrfsp2025 = 49.4
+scalar shrfspInterno2025 = 35.5
+scalar shrfspExterno2025 = 13.8
+scalar rfsp2025 = 2.7
+scalar rfspBalance2025 = -2.2
+scalar rfspPIDIREGAS2025 = -0.1
+scalar rfspIPAB2025 = -0.1
+scalar rfspFONADIN2025 = 0.0
+scalar rfspDeudores2025 = 0.0
+scalar rfspBanca2025 = 0.0
+scalar rfspAdecuaciones2025 = -0.3
+scalar tipoDeCambio2025 = 20.9
+
+scalar shrfsp2026 = 49.4
+scalar shrfspInterno2026 = 35.9
+scalar shrfspExterno2026 = 13.5
+scalar rfsp2026 = 2.7
+scalar rfspBalance2026 = -2.2
+scalar rfspPIDIREGAS2026 = -0.1
+scalar rfspIPAB2026 = -0.1
+scalar rfspFONADIN2026 = 0.0
+scalar rfspDeudores2026 = 0.0
+scalar rfspBanca2026 = 0.0
+scalar rfspAdecuaciones2026 = -0.3
+scalar tipoDeCambio2026 = 21.1
+
+scalar shrfsp2027 = 49.4
+scalar shrfspInterno2027 = 36.3
+scalar shrfspExterno2027 = 13.1
+scalar rfsp2027 = 2.7
+scalar rfspBalance2027 = -2.2
+scalar rfspPIDIREGAS2027 = -0.1
+scalar rfspIPAB2027 = -0.1
+scalar rfspFONADIN2027 = 0.0
+scalar rfspDeudores2027 = 0.1
+scalar rfspBanca2027 = 0.0
+scalar rfspAdecuaciones2027 = -0.4
+scalar tipoDeCambio2027 = 21.4
+
+scalar shrfsp2028 = 49.4
+scalar shrfspInterno2028 = 36.6
+scalar shrfspExterno2028 = 12.7
+scalar rfsp2028 = 2.7
+scalar rfspBalance2028 = -2.2
+scalar rfspPIDIREGAS2028 = -0.1
+scalar rfspIPAB2028 = -0.1
+scalar rfspFONADIN2028 = 0.0
+scalar rfspDeudores2028 = 0.0
+scalar rfspBanca2028 = 0.0
+scalar rfspAdecuaciones2028 = -0.3
+scalar tipoDeCambio2028 = 21.6
+
+scalar shrfsp2029 = 49.4
+scalar shrfspInterno2029 = 35.2
+scalar shrfspExterno2029 = 14.2
+scalar rfsp2029 = 2.7
+scalar rfspBalance2029 = -2.2
+scalar rfspPIDIREGAS2029 = -0.1
+scalar rfspIPAB2029 = -0.1
+scalar rfspFONADIN2029 = 0.0
+scalar rfspDeudores2029 = 0.0
+scalar rfspBanca2029 = 0.0
+scalar rfspAdecuaciones2029 = -0.3
+scalar tipoDeCambio2029 = 20.7
+
+
+
+
 
 *global tasaEfectiva = 6.005578 // Tasa de inter{c e'}s EFECTIVA
 
@@ -156,9 +244,9 @@ scalar costodeudaExterno2023 = 3.4
 
 
 
-**********************************************************************
+*********************************************************************/
 ***       6.1. ISR_Mod.do (Salarios + PF + PM + Cuotas IMSS)       ***
-**********************************************************************
+/**********************************************************************
 * Anexo 8 de la Resolución Miscelánea Fiscal para 2023 *
 * Tarifa para el cálculo del impuesto correspondiente al ejericio 2023 (página 782) *
 *             INFERIOR		SUPERIOR	CF		TASA
@@ -245,71 +333,6 @@ matrix IVAT = (16 \     ///  1  Tasa general
 
 
 /** 3.1 CGPE 2023 ** 
-
-replace shrfsp = 49.4/100*pibY if anio == 2024
-replace shrfspInterno = 35.2/100*pibY if anio == 2024
-replace shrfspExterno = 14.2/100*pibY if anio == 2024
-replace rfsp = 2.7/100*pibY if anio == 2024
-replace rfspBalance = -2.2/100*pibY if anio == 2024
-replace rfspPIDIREGAS = -0.1/100*pibY if anio == 2024
-replace rfspIPAB = -0.1/100*pibY if anio == 2024
-replace rfspFONADIN = 0.0/100*pibY if anio == 2024
-replace rfspDeudores = 0.0/100*pibY if anio == 2024
-replace rfspBanca = 0.0/100*pibY if anio == 2024
-replace rfspAdecuacion = -0.3/100*pibY if anio == 2024
-replace tipoDeCambio = 20.7 if anio == 2024
-
-replace shrfsp = 49.4/100*pibY if anio == 2025
-replace shrfspInterno = 35.5/100*pibY if anio == 2025
-replace shrfspExterno = 13.8/100*pibY if anio == 2025
-replace rfsp = 2.7/100*pibY if anio == 2025
-replace rfspBalance = -2.2/100*pibY if anio == 2025
-replace rfspPIDIREGAS = -0.1/100*pibY if anio == 2025
-replace rfspIPAB = -0.1/100*pibY if anio == 2025
-replace rfspFONADIN = 0.0/100*pibY if anio == 2025
-replace rfspDeudores = 0.0/100*pibY if anio == 2025
-replace rfspBanca = 0.0/100*pibY if anio == 2025
-replace rfspAdecuacion = -0.3/100*pibY if anio == 2025
-replace tipoDeCambio = 20.8 if anio == 2025
-
-replace shrfsp = 49.4/100*pibY if anio == 2026
-replace shrfspInterno = 35.9/100*pibY if anio == 2026
-replace shrfspExterno = 13.5/100*pibY if anio == 2026
-replace rfsp = 2.7/100*pibY if anio == 2026
-replace rfspBalance = -2.2/100*pibY if anio == 2026
-replace rfspPIDIREGAS = -0.1/100*pibY if anio == 2026
-replace rfspIPAB = -0.1/100*pibY if anio == 2026
-replace rfspFONADIN = 0.0/100*pibY if anio == 2026
-replace rfspDeudores = 0.0/100*pibY if anio == 2026
-replace rfspBanca = 0.0/100*pibY if anio == 2026
-replace rfspAdecuacion = -0.3/100*pibY if anio == 2026
-replace tipoDeCambio = 21.0 if anio == 2026
-
-replace shrfsp = 49.4/100*pibY if anio == 2027
-replace shrfspInterno = 36.3/100*pibY if anio == 2027
-replace shrfspExterno = 13.1/100*pibY if anio == 2027
-replace rfsp = 2.7/100*pibY if anio == 2027
-replace rfspBalance = -2.2/100*pibY if anio == 2027
-replace rfspPIDIREGAS = -0.1/100*pibY if anio == 2027
-replace rfspIPAB = -0.1/100*pibY if anio == 2027
-replace rfspFONADIN = 0.0/100*pibY if anio == 2027
-replace rfspDeudores = 0.1/100*pibY if anio == 2027
-replace rfspBanca = 0.0/100*pibY if anio == 2027
-replace rfspAdecuacion = -0.4/100*pibY if anio == 2027
-replace tipoDeCambio = 21.3 if anio == 2027
-
-replace shrfsp = 49.4/100*pibY if anio == 2028
-replace shrfspInterno = 36.6/100*pibY if anio == 2028
-replace shrfspExterno = 12.7/100*pibY if anio == 2028
-replace rfsp = 2.7/100*pibY if anio == 2028
-replace rfspBalance = -2.2/100*pibY if anio == 2028
-replace rfspPIDIREGAS = -0.1/100*pibY if anio == 2028
-replace rfspIPAB = -0.1/100*pibY if anio == 2028
-replace rfspFONADIN = 0.0/100*pibY if anio == 2028
-replace rfspDeudores = 0.0/100*pibY if anio == 2028
-replace rfspBanca = 0.0/100*pibY if anio == 2028
-replace rfspAdecuacion = -0.3/100*pibY if anio == 2028
-replace tipoDeCambio = 21.5 if anio == 2028
 
 * Costo financiero *
 replace costodeudaInterno = 3.4/100*porInterno*pibY if anio == 2023

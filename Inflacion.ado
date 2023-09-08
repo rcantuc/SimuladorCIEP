@@ -132,13 +132,13 @@ quietly {
 		twoway (area deflatorpp anio if (anio < `anio_last' & anio >= 1993) /*| (anio == `anio_last' & mes == 12)*/) ///
 			(area deflatorpp anio if anio >= `anio_last' & anio >= anio[`obslast'+`exo_count']) ///
 			(`graphtype' deflatorpp anio if anio < anio[`obslast'+`exo_count'] & anio >= `anio_last', lwidth(none) pstyle(p4)), ///
-			title("{bf:{c I'}ndice} nacional de precios al consumidor") ///
+			title("{bf:{c I'}ndice nacional de precios al consumidor}") ///
 			subtitle(${pais}) ///
 			xlabel(2010(5)`=round(anio[_N],5)') ///
 			ytitle("`aniovp' = 1.000") xtitle("") yline(0) ///
 			ylabel(0(1)4, format("%3.0f")) ///
 			///text(`crec_deflactor', place(c)) ///
-			legend(label(1 "Reportado") label(2 "Proyectado") label(3 "Estimado ($paqueteEconomico)") order(1 3 2) regio(margin(zero))) ///
+			legend(label(1 "INEGI, BIE") label(3 "Proyección CIEP") label(2 "Estimación $paqueteEconomico")) ///
 			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
 			note("{bf:{c U'}ltimo dato reportado}: `anio_last' mes `mes_last'.") ///
 			name(inflacionH, replace)
@@ -163,7 +163,7 @@ quietly {
 			ylabel(, format(%3.0f)) ///
 			ytitle("Crecimiento anual (%)") xtitle("") yline(0, lcolor(black)) ///
 			text(`crec_infl', color(white)) ///
-			legend(label(1 "Reportado") label(2 "Proyectado") label(3 "Estimado ($paqueteEconomico)") order(1 3 2) region(margin(zero))) ///
+			legend(label(1 "INEGI, BIE") label(3 "Proyección CIEP") label(2 "Estimación $paqueteEconomico")) ///
 			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
 			note("{bf:{c U'}ltimo dato reportado}: `anio_last' mes `mes_last'.") ///
 			name(var_inflYH, replace)
