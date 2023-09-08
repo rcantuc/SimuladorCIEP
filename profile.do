@@ -24,12 +24,13 @@ noisily di _newline(25) in w "{bf:Centro de Investigaci{c o'}n Econ{c o'}mica y 
 ********************
 *** 3 Parametros ***
 ********************
-*run "`c(sysdir_personal)'/parametros.do"
+run "`c(sysdir_personal)'/parametros.do"
 
 local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 scalar aniovp = substr(`"`=trim("`fecha'")'"',1,4)
+scalar aniovp = 2024
 
-global paqueteEconomico "Pre-CGPE 2024"
+global paqueteEconomico "CGPE 2024"
 scalar anioPE = 2023
 if anioPE >= 2022 {
 	scalar anioenigh = 2022
@@ -49,9 +50,9 @@ global entidadesC "Ags BC BCS Camp Coah Col Chis Chih CDMX Dgo Gto Gro Hgo Jal E
 
 
 
-*************************/
-*** 4 Informaci{c o'}n ***
-**************************
+*******************/
+*** 4 Bienvenida ***
+********************
 noisily di _newline(2) in g `"{bf:{stata `"projmanager "`c(sysdir_site)'/simulador.stpr""':Simulador Fiscal CIEP v6 ($paqueteEconomico)}}"' ///
 	_newline(2) "CLICK para ejecutar los comandos o usar la siguiente sintaxis: " ///
 	_newline(2) "{bf:Comando} {it:argumentos} [, OPCIONES]"

@@ -406,7 +406,7 @@ quietly {
 		replace monto=monto/deflator/1000000000
 		replace LIF=LIF/deflator/1000000000
 
-		local aniofirstg = 2004
+		local aniofirstg = 2016
 		collapse (sum) recaudacion* if divLIF != 10 & anio >= `aniofirstg', by(anio `resumido')
 
 		levelsof `resumido', local(lev_resumido)
