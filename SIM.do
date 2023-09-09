@@ -4,7 +4,7 @@
 ***                        ***
 ******************************
 noisily run "`c(sysdir_personal)'/profile.do"
-global export "`c(sysdir_site)'../Ricardo Cantú/Paquete Económico 2024/04. Documento CIEP/images"                                // DIRECTORIO DE ARCHIVOS
+*global export "`c(sysdir_site)'../Ricardo Cantú/Paquete Económico 2024/04. Documento CIEP/images"                                // DIRECTORIO DE ARCHIVOS
 *global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
 
 
@@ -37,23 +37,22 @@ noisily run "`c(sysdir_personal)'/parametros.do"
 ***                                               ***
 *****************************************************
 
-/** 2.1 Población **
+** 2.1 Población **
 *foreach estado of global entidadesL {
-	*forvalues anio = 1950(1)2070 {
-		noisily Poblacion /*if entidad == "`estado'"*/, aniofinal(2030) //anio(`anio')
-	*}
+*	forvalues anio = 1950(1)2070 {
+*		noisily Poblacion /*if entidad == "`estado'"*/, aniofinal(2030) //anio(`anio')
+*	}
 *}
 
 
 ** 2.2 Economía **
-noisily PIBDeflactor, //geodef(2013) geopib(2013)
-noisily SCN, //update
-*noisily Inflacion, update
-
-noisily LIF, by(divPE) rows(1) min(0) //update desde(2018)
-noisily PEF, by(divCIEP) rows(2) min(0) //update desde(2018)
-*/
-noisily SHRFSP, //ultanio(2016) //update
+noisily PIBDeflactor, geodef(2016) geopib(2016) //update
+*noisily SCN, //update
+*noisily Inflacion, //update
+exit
+*noisily LIF, by(divCIEP) rows(1) min(0) //update desde(2018)
+*noisily PEF, by(divCIEP) rows(2) min(0) //update desde(2018)
+noisily SHRFSP, ultanio(2016) //update
 
 
 ** 2.4 Subnacionales **

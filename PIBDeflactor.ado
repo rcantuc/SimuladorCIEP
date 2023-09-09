@@ -499,14 +499,14 @@ quietly {
 			}
 			noisily di in g " `=anio[`k']' " _col(10) %8.1fc in y var_pibY[`k'] " %" _col(25) %20.0fc pibY[`k'] _col(50) %8.1fc in y var_indiceY[`k'] " %" _col(65) %12.10fc deflator[`k']
 		}
-		if (anio[`k'] == `aniofinal' & trimestre[`k'] < 4) | (anio[`k'] < anio[`obs_exo'] & anio[`k'] > `aniofinal') {
+		if (anio[`k'] == `aniofinal' & trimestre[`k'] < 4) | (anio[`k'] <= anio[`obs_exo'] & anio[`k'] > `aniofinal') {
 			if "`estimado'" == "" {
 				noisily di in g %~72s "$paqueteEconomico"
 				local estimado = "done"
 			}
 			noisily di in g "{bf: `=anio[`k']' " _col(10) %8.1fc in y var_pibY[`k'] " %" _col(25) %20.0fc pibY[`k'] _col(50) %8.1fc in y var_indiceY[`k'] " %" _col(65) %12.10fc deflator[`k'] "}"
 		}
-		if (anio[`k'] > `aniofinal') & anio[`k'] >= anio[`obs_exo'] {
+		if (anio[`k'] > `aniofinal') & anio[`k'] > anio[`obs_exo'] {
 			if "`proyectado'" == "" {
 				noisily di in g %~72s "PROYECTADO"
 				local proyectado = "done"

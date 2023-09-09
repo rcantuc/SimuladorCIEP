@@ -400,7 +400,7 @@ quietly {
 			title("`graphtitle'") ///
 			subtitle($pais) ///
 			caption("`graphfuente'") ///
-			text(`text', color(black) placement(n)) ///
+			text(`text', color(black) placement(n) size(vsmall)) ///
 			ytitle(mil millones MXN `anio') ///
 			ylabel(, format(%15.0fc) labsize(small)) ///
 			yscale(range(0)) ///

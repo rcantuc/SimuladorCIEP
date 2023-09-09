@@ -532,6 +532,16 @@ replace gasto = proyecto if ejercido == . & aprobado == . & proyecto != .
 
 g byte transf_gf = (ramo == 19 & ur == "GYN") | (ramo == 19 & ur == "GYR")
 
+g byte noprogramable = ramo == 28 | capitulo == 9
+label define noprogramable 1 "No programable" 0 "Programable"
+label values noprogramable noprogramable
+
+g byte ineludible = divCIEP == 7 | divSUBN == 4 | ramo == 28 ///
+	| capitulo == 9 | (ramo >= 50 & ramo <= 53)
+replace ineludible = 2 if divCIEP == 8
+label define ineludible 2 "Programas prioritarios" 1 "Ineludible" 0 "Eludible"
+label values ineludible ineludible
+
 
 
 ****************/

@@ -185,7 +185,7 @@ twoway connected crec_pibQR aniotrimestre if pibPO != . /*& trimestre == `k'*/, 
 
 twoway (bar pibPO aniotrimestre, mlabel(pibPO) mlabposition(7) mlabangle(90) mlabcolor(white) mlabgap(0pt)) ///
 	if pibPO != . /*& trimestre == `k'*/, ///
-	title(Producto Interno Bruto por {bf:población ocupada}) subtitle(${pais}) ///
+	title({bf:Producto Interno Bruto por población ocupada}) subtitle(${pais}) ///
 	ytitle(`=currency[`obsvp']' `ultanio') xtitle("") ///
 	tlabel(2005q1(4)`ultanio'q`ulttrim') ///
 	///text(`crec_PIBPC', size(vsmall)) ///
