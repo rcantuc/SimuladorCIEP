@@ -163,11 +163,11 @@ quietly {
 	}
 
 	if "`nographs'" != "nographs" & "$nographs" == "" {
-		local j = 100/(`anio'-`ultanio'+1)/2
+		local j = 100/(`lastexo'-`ultanio'+1)/2
 		forvalues k=1(1)`=_N' {
 			if efectoPositivo[`k'] != . & anio[`k'] >= `ultanio' {
 				local textDeuda `"`textDeuda' `=efectoPositivo[`k']+.3' `j' "{bf:`=string(shrfsp_pib[`k'],"%5.1fc")'% PIB}""'
-				local j = `j' + 100/(`anio'-`ultanio'+1)
+				local j = `j' + 100/(`lastexo'-`ultanio'+1)
 			}
 		}
 		if `"$export"' == "" {
@@ -179,7 +179,7 @@ quietly {
 			local graphfuente ""
 		}
 		graph bar balprimario nopresupuestario_pib efectoCrecimiento efectoInflacion efectoIntereses efectoTipoDeCambio efectoOtros ///
-			if anio <= `anio' & anio >= `ultanio', ///
+			if anio <= `lastexo' & anio >= `ultanio', ///
 			over(anio, gap(0)) stack ///
 			blabel(, format(%5.1fc)) outergap(0) ///
 			text(`textDeuda', color(black) size(vsmall)) ///

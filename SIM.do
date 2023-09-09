@@ -49,8 +49,8 @@ noisily run "`c(sysdir_personal)'/parametros.do"
 noisily PIBDeflactor, geodef(2016) geopib(2016) //update
 *noisily SCN, //update
 *noisily Inflacion, //update
-exit
-*noisily LIF, by(divCIEP) rows(1) min(0) //update desde(2018)
+
+noisily LIF, by(divCIEP) rows(2) min(0) //update desde(2018)
 *noisily PEF, by(divCIEP) rows(2) min(0) //update desde(2018)
 noisily SHRFSP, ultanio(2016) //update
 
