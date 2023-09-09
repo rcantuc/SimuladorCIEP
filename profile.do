@@ -31,7 +31,7 @@ scalar aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 scalar aniovp = 2024
 
 global paqueteEconomico "CGPE 2024"
-scalar anioPE = 2023
+scalar anioPE = 2024
 if anioPE >= 2022 {
 	scalar anioenigh = 2022
 }

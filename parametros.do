@@ -18,21 +18,125 @@ if "$output" != "" {
 ************************************************
 ***    2. CRECIMIENTO Y DEFLACTOR DEL PIB    ***
 ************************************************
-global pib2023 = 2.5287 //     Pre-CGPE 2024 (punto medio)
-global pib2024 = 2.2922 //     Pre-CGPE 2024 (punto medio)
-global pib2025 = 2.4 //     CGPE 2023 (página 134)
-global pib2026 = 2.4 //     CGPE 2023 (página 134)
-global pib2027 = 2.4 //     CGPE 2023 (página 134)
-global pib2028 = 2.4 //     CGPE 2023 (página 134)
+global pib2023 = 3.1766 //     CGPE 2024 (punto medio)
+global pib2024 = 2.6189 //     CGPE 2024 (punto medio)
+global pib2025 = 2.5097 //     CGPE 2024 (página 121)
+global pib2026 = 2.4779 //     CGPE 2024 (página 121)
+global pib2027 = 2.5 //     CGPE 2024 (página 121)
+global pib2028 = 2.5 //     CGPE 2024 (página 121)
+global pib2029 = 2.5002 //     CGPE 2024 (página 121)
 
-global def2023 = 5.2 //     CGPE 2023 (página 134)
-global def2024 = 4.8 //     CGPE 2023 (página 134)
-global def2025 = 3.5 //     CGPE 2023 (página 134)
-global def2026 = 3.5 //     CGPE 2023 (página 134)
-global def2027 = 3.5 //     CGPE 2023 (página 134)
-global def2028 = 3.5 //     CGPE 2023 (página 134)
+global def2023 = 5.0 //     CGPE 2024 (página 121)
+global def2024 = 4.8 //     CGPE 2024 (página 121)
+global def2025 = 3.5 //     CGPE 2024 (página 121)
+global def2026 = 3.5 //     CGPE 2024 (página 121)
+global def2027 = 3.5 //     CGPE 2024 (página 121)
+global def2028 = 3.5 //     CGPE 2024 (página 121)
+global def2029 = 3.5 //     CGPE 2024 (página 121)
 
 
+
+******************************
+***    3. DEUDA PÚBLICA    ***
+******************************
+scalar shrfsp2023 = 46.5
+scalar shrfspInterno2023 = 34.7
+scalar shrfspExterno2023 = 11.8
+scalar rfsp2023 = 3.9
+scalar rfspPIDIREGAS2023 = 0.0
+scalar rfspIPAB2023 = 0.1
+scalar rfspFONADIN2023 = -0.2
+scalar rfspDeudores2023 = 0.0
+scalar rfspBanca2023 = 0.0
+scalar rfspAdecuaciones2023 = -0.4
+scalar rfspBalance2023 = -3.3
+scalar tipoDeCambio2023 = 17.5
+*scalar costodeudaInterno2023 = 3.4
+*scalar costodeudaExterno2023 = 3.4
+*scalar balprimario2023 = -0.2
+
+scalar shrfsp2024 = 48.8
+scalar shrfspInterno2024 = 37.4
+scalar shrfspExterno2024 = 11.4
+scalar rfsp2024 = 5.4
+scalar rfspPIDIREGAS2024 = 0.1
+scalar rfspIPAB2024 = 0.1
+scalar rfspFONADIN2024 = 0.1
+scalar rfspDeudores2024 = 0.0
+scalar rfspBanca2024 = 0.0
+scalar rfspAdecuaciones2024 = -0.2
+scalar rfspBalance2024 = -4.9
+scalar tipoDeCambio2024 = 17.6
+*scalar costodeudaInterno2024 = 3.4
+*scalar costodeudaExterno2024 = 3.4
+
+scalar shrfsp2025 = 48.8
+scalar shrfspInterno2025 = 37.7
+scalar shrfspExterno2025 = 11.2
+scalar rfsp2025 = 2.6
+scalar rfspPIDIREGAS2025 = -0.1
+scalar rfspIPAB2025 = -0.1
+scalar rfspFONADIN2025 = 0.0
+scalar rfspDeudores2025 = 0.0
+scalar rfspBanca2025 = 0.0
+scalar rfspAdecuaciones2025 = -0.2
+scalar rfspBalance2025 = -2.1
+scalar tipoDeCambio2025 = 17.9
+
+scalar shrfsp2026 = 49.4
+scalar shrfspInterno2026 = 38.0
+scalar shrfspExterno2026 = 10.9
+scalar rfsp2026 = 2.7
+scalar rfspPIDIREGAS2026 = -0.1
+scalar rfspIPAB2026 = -0.1
+scalar rfspFONADIN2026 = 0.0
+scalar rfspDeudores2026 = 0.0
+scalar rfspBanca2026 = 0.0
+scalar rfspAdecuaciones2026 = -0.3
+scalar rfspBalance2026 = -2.2
+scalar tipoDeCambio2026 = 18.1
+
+scalar shrfsp2027 = 48.8
+scalar shrfspInterno2027 = 38.3
+scalar shrfspExterno2027 = 10.6
+scalar rfsp2027 = 2.7
+scalar rfspPIDIREGAS2027 = -0.1
+scalar rfspIPAB2027 = -0.1
+scalar rfspFONADIN2027 = 0.0
+scalar rfspDeudores2027 = 0.1
+scalar rfspBanca2027 = 0.0
+scalar rfspAdecuaciones2027 = -0.4
+scalar rfspBalance2027 = -2.2
+scalar tipoDeCambio2027 = 18.2
+
+scalar shrfsp2028 = 48.8
+scalar shrfspInterno2028 = 38.6
+scalar shrfspExterno2028 = 10.3
+scalar rfsp2028 = 2.7
+scalar rfspPIDIREGAS2028 = -0.1
+scalar rfspIPAB2028 = -0.1
+scalar rfspFONADIN2028 = -0.1
+scalar rfspDeudores2028 = 0.0
+scalar rfspBanca2028 = 0.0
+scalar rfspAdecuaciones2028 = -0.3
+scalar rfspBalance2028 = -2.2
+scalar tipoDeCambio2028 = 18.4
+
+scalar shrfsp2029 = 48.8
+scalar shrfspInterno2029 = 38.9
+scalar shrfspExterno2029 = 10.0
+scalar rfsp2029 = 2.7
+scalar rfspPIDIREGAS2029 = -0.1
+scalar rfspIPAB2029 = -0.1
+scalar rfspFONADIN2029 = 0.0
+scalar rfspDeudores2029 = 0.0
+scalar rfspBanca2029 = 0.0
+scalar rfspAdecuaciones2029 = -0.3
+scalar rfspBalance2029 = -2.2
+scalar tipoDeCambio2029 = 18.6
+
+
+exit
 
 ************************/
 ***    3. INGRESOS    ***
@@ -129,108 +233,6 @@ scalar gasmadres   =     462 //    Apoyo a madres trabajadoras
 
 
 
-******************************
-***    4. DEUDA PÚBLICA    ***
-******************************
-scalar shrfsp2023 = 49.4
-scalar shrfspInterno2023 = 34.7
-scalar shrfspExterno2023 = 14.6
-scalar rfsp2023 = 4.1
-scalar rfspBalance2023 = -3.6
-scalar rfspPIDIREGAS2023 = -0.1
-scalar rfspIPAB2023 = -0.1
-scalar rfspFONADIN2023 = 0.0
-scalar rfspDeudores2023 = 0.0
-scalar rfspBanca2023 = 0.0
-scalar rfspAdecuaciones2023 = -0.2
-*scalar balprimario2023 = -0.2
-scalar tipoDeCambio2023 = 20.6
-scalar costodeudaInterno2023 = 3.4
-scalar costodeudaExterno2023 = 3.4
-
-
-
-scalar shrfsp2024 = 49.4
-scalar shrfspInterno2024 = 35.2
-scalar shrfspExterno2024 = 14.2
-scalar rfsp2024 = 2.7
-scalar rfspBalance2024 = -2.2
-scalar rfspPIDIREGAS2024 = -0.1
-scalar rfspIPAB2024 = -0.1
-scalar rfspFONADIN2024 = 0.0
-scalar rfspDeudores2024 = 0.0
-scalar rfspBanca2024 = 0.0
-scalar rfspAdecuaciones2024 = -0.3
-scalar tipoDeCambio2024 = 20.7
-scalar costodeudaInterno2024 = 3.4
-scalar costodeudaExterno2024 = 3.4
-
-
-
-scalar shrfsp2025 = 49.4
-scalar shrfspInterno2025 = 35.5
-scalar shrfspExterno2025 = 13.8
-scalar rfsp2025 = 2.7
-scalar rfspBalance2025 = -2.2
-scalar rfspPIDIREGAS2025 = -0.1
-scalar rfspIPAB2025 = -0.1
-scalar rfspFONADIN2025 = 0.0
-scalar rfspDeudores2025 = 0.0
-scalar rfspBanca2025 = 0.0
-scalar rfspAdecuaciones2025 = -0.3
-scalar tipoDeCambio2025 = 20.9
-
-scalar shrfsp2026 = 49.4
-scalar shrfspInterno2026 = 35.9
-scalar shrfspExterno2026 = 13.5
-scalar rfsp2026 = 2.7
-scalar rfspBalance2026 = -2.2
-scalar rfspPIDIREGAS2026 = -0.1
-scalar rfspIPAB2026 = -0.1
-scalar rfspFONADIN2026 = 0.0
-scalar rfspDeudores2026 = 0.0
-scalar rfspBanca2026 = 0.0
-scalar rfspAdecuaciones2026 = -0.3
-scalar tipoDeCambio2026 = 21.1
-
-scalar shrfsp2027 = 49.4
-scalar shrfspInterno2027 = 36.3
-scalar shrfspExterno2027 = 13.1
-scalar rfsp2027 = 2.7
-scalar rfspBalance2027 = -2.2
-scalar rfspPIDIREGAS2027 = -0.1
-scalar rfspIPAB2027 = -0.1
-scalar rfspFONADIN2027 = 0.0
-scalar rfspDeudores2027 = 0.1
-scalar rfspBanca2027 = 0.0
-scalar rfspAdecuaciones2027 = -0.4
-scalar tipoDeCambio2027 = 21.4
-
-scalar shrfsp2028 = 49.4
-scalar shrfspInterno2028 = 36.6
-scalar shrfspExterno2028 = 12.7
-scalar rfsp2028 = 2.7
-scalar rfspBalance2028 = -2.2
-scalar rfspPIDIREGAS2028 = -0.1
-scalar rfspIPAB2028 = -0.1
-scalar rfspFONADIN2028 = 0.0
-scalar rfspDeudores2028 = 0.0
-scalar rfspBanca2028 = 0.0
-scalar rfspAdecuaciones2028 = -0.3
-scalar tipoDeCambio2028 = 21.6
-
-scalar shrfsp2029 = 49.4
-scalar shrfspInterno2029 = 35.2
-scalar shrfspExterno2029 = 14.2
-scalar rfsp2029 = 2.7
-scalar rfspBalance2029 = -2.2
-scalar rfspPIDIREGAS2029 = -0.1
-scalar rfspIPAB2029 = -0.1
-scalar rfspFONADIN2029 = 0.0
-scalar rfspDeudores2029 = 0.0
-scalar rfspBanca2029 = 0.0
-scalar rfspAdecuaciones2029 = -0.3
-scalar tipoDeCambio2029 = 20.7
 
 
 
