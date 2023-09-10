@@ -24,7 +24,7 @@ noisily di _newline(25) in w "{bf:Centro de Investigaci{c o'}n Econ{c o'}mica y 
 ********************
 *** 3 Parametros ***
 ********************
-*run "`c(sysdir_personal)'/parametros.do"
+run "`c(sysdir_personal)'/parametros.do"
 
 local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 scalar aniovp = substr(`"`=trim("`fecha'")'"',1,4)
