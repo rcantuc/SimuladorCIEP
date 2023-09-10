@@ -84,8 +84,8 @@ scalar rfspAdecuaciones2025 = -0.2
 scalar rfspBalance2025 = -2.1
 scalar tipoDeCambio2025 = 17.9
 scalar balprimario2025 = -0.9
-scalar costodeudaInterno2025 = 3.7
-scalar costodeudaExterno2025 = 3.7
+scalar costodeudaInterno2025 = 3.1
+scalar costodeudaExterno2025 = 3.1
 
 scalar shrfsp2026 = 49.4
 scalar shrfspInterno2026 = 38.0
@@ -100,8 +100,8 @@ scalar rfspAdecuaciones2026 = -0.3
 scalar rfspBalance2026 = -2.2
 scalar tipoDeCambio2026 = 18.1
 scalar balprimario2026 = -0.5
-scalar costodeudaInterno2026 = 3.7
-scalar costodeudaExterno2026 = 3.7
+scalar costodeudaInterno2026 = 2.7
+scalar costodeudaExterno2026 = 2.7
 
 scalar shrfsp2027 = 48.8
 scalar shrfspInterno2027 = 38.3
@@ -116,8 +116,8 @@ scalar rfspAdecuaciones2027 = -0.4
 scalar rfspBalance2027 = -2.2
 scalar tipoDeCambio2027 = 18.2
 scalar balprimario2027 = -0.3
-scalar costodeudaInterno2027 = 3.7
-scalar costodeudaExterno2027 = 3.7
+scalar costodeudaInterno2027 = 2.5
+scalar costodeudaExterno2027 = 2.5
 
 scalar shrfsp2028 = 48.8
 scalar shrfspInterno2028 = 38.6
@@ -132,8 +132,8 @@ scalar rfspAdecuaciones2028 = -0.3
 scalar rfspBalance2028 = -2.2
 scalar tipoDeCambio2028 = 18.4
 scalar balprimario2028 = -0.3
-scalar costodeudaInterno2028 = 3.7
-scalar costodeudaExterno2028 = 3.7
+scalar costodeudaInterno2028 = 2.5
+scalar costodeudaExterno2028 = 2.5
 
 scalar shrfsp2029 = 48.8
 scalar shrfspInterno2029 = 38.9
@@ -148,8 +148,8 @@ scalar rfspAdecuaciones2029 = -0.3
 scalar rfspBalance2029 = -2.2
 scalar tipoDeCambio2029 = 18.6
 scalar balprimario2029 = -0.3
-scalar costodeudaInterno2029 = 3.7
-scalar costodeudaExterno2029 = 3.7
+scalar costodeudaInterno2029 = 2.5
+scalar costodeudaExterno2029 = 2.5
 
 
 exit
