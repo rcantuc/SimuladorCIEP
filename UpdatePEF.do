@@ -542,7 +542,7 @@ g byte ineludible = divCIEP == 7 | divSUBN == 4 | ramo == 28 ///
 	| capitulo == 9 | (ramo >= 50 & ramo <= 53) | divCIEP == 8
 replace ineludible = -1 if ramo == -1
 *replace ineludible = 2 if divCIEP == 8
-label define ineludible 2 "Programas prioritarios" 1 "Ineludible" 0 "Eludible" -1 "Cuotas ISSSTE"
+label define ineludible 2 "Programas prioritarios" 1 "Ineludible" 0 "No ineludible" -1 "Cuotas ISSSTE"
 label values ineludible ineludible
 
 
