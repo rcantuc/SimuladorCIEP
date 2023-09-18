@@ -391,7 +391,7 @@ quietly {
 		}
 		graph bar (sum) gastoreal if anio >= `aniofirst' & anio <= `anio', ///
 			over(resumido, sort(1) descending) over(anio, gap(0)) stack asyvar ///
-			blabel(, format(%7.1fc)) outergap(0) ///
+			blabel(, format(%10.0fc)) outergap(0) ///
 			bar(9, color(150 6 92)) bar(8, color(53 200 71)) ///
 			bar(7, color(255 129 0)) bar(6, color(0 151 201)) ///
 			bar(5, color(224 97 83)) bar(4, color(255 189 0)) ///
