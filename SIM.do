@@ -9,8 +9,6 @@ noisily run "`c(sysdir_personal)'/profile.do"
 
 
 
-
-
 *************************
 ***                   ***
 ***    1. OPCIONES    ***
@@ -37,7 +35,7 @@ noisily run "`c(sysdir_personal)'/parametros.do"
 ***                                               ***
 *****************************************************
 
-/** 2.1 Población **
+** 2.1 Población **
 *foreach estado of global entidadesL {
 *	forvalues anio = 1950(1)2070 {
 		noisily Poblacion /*if entidad == "`estado'"*/, aniofinal(2030) //anio(`anio')
@@ -46,13 +44,13 @@ noisily run "`c(sysdir_personal)'/parametros.do"
 
 
 ** 2.2 Economía **/
-*noisily PIBDeflactor, geodef(2016) geopib(2016) //update
+noisily PIBDeflactor, geodef(2016) geopib(2016) //update
 *noisily SCN, //update
 *noisily Inflacion, //update
 
 *forvalues anio=2013(1)2024 {
 	noisily LIF, by(divPE) rows(1) min(0) //anio(`anio') //update desde(2018)
-	*noisily PEF, by(divCIEP) rows(2) min(0) //update desde(2018)
+	noisily PEF, by(divCIEP) rows(2) min(0) //update desde(2018)
 *}
 noisily SHRFSP, ultanio(2016) //update
 
@@ -89,13 +87,13 @@ foreach k in grupoedad sexo decil rural escol {
 }
 
 
-** 3.3 Fiscal profiles **/
+** 3.3 Fiscal profiles **
 forvalues anio = `=anioPE'(-1)`=anioPE' {
 	noisily run `"`c(sysdir_personal)'/PerfilesSim.do"' `anio'
 }
 
 
-exit
+
 
 
 ***********************/

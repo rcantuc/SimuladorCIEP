@@ -161,7 +161,7 @@ noisily scalarlatex, logname(IngLocales)
 
 ****************************/
 *** 4. Gasto Federalizado ***
-/*****************************
+*****************************
 use "`c(sysdir_personal)'/SIM/EstadosBaseEstOpor.dta", clear
 
 g concept = 1 if substr(clave,1,5) == "XAC28" & strlen(clave) == 8
@@ -332,7 +332,7 @@ noisily scalarlatex, log(GasFed)
 
 **************************/
 *** 5. Recursos propios ***
-/***************************
+***************************
 use "`c(sysdir_personal)'/SIM/EstadosBaseINEGI.dta", clear
 rename valor monto
 
@@ -398,7 +398,7 @@ foreach k of global entidadesC {
 
 *******************/
 *** 6. Impuestos ***
-/********************
+********************
 use "`c(sysdir_personal)'/SIM/EstadosBaseINEGI.dta", clear
 keep if capitulo == "Impuestos"
 rename valor monto
@@ -452,7 +452,7 @@ foreach k of global entidadesC {
 
 ***********************/
 *** 7. Deuda estatal ***
-/************************
+************************
 use "`c(sysdir_personal)'/SIM/EstadosBaseINEGI.dta", clear
 rename valor monto
 
@@ -554,7 +554,7 @@ foreach k of global entidadesC {
 
 ************************/
 *** 8. Espacio fiscal ***
-/*************************
+*************************
 use "`c(sysdir_personal)'/SIM/EstadosBaseINEGI.dta", clear
 rename valor monto
 

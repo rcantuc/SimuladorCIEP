@@ -15,7 +15,7 @@
 capture confirm file "`c(sysdir_personal)'/SIM/$pais/prePEF.dta"
 if _rc != 0 | "`1'" == "update" {
 	local archivos: dir "`c(sysdir_site)'../BasesCIEP/PEFs/$pais" files "*.xlsx"			// Busca todos los archivos .xlsx en /bases/PEFs/
-	*local archivos `""CuotasISSSTE.xlsx" "PEF 2023.xlsx" "CP 2022.xlsx""'
+	*local archivos `""PEF 2023.xlsx" "CuotasISSSTE.xlsx" "'
 
 	foreach k of local archivos {													// Loop para todos los archivos .csv
 
@@ -159,6 +159,7 @@ if _rc != 0 | "`1'" == "update" {
 	replace desc_ramo = "Instituto Nacional Electoral" if ramo == 22
 	replace desc_ramo = "Tribunal Federal de Justicia Administrativa" if ramo == 32
 	replace desc_ramo = "Seguridad y Protección Ciudadana" if ramo == 36
+	replace desc_ramo = "Humanidades, Ciencias, Tecnologías e Innovación" if ramo == 38
 	replace desc_ramo = "Instituto Nacional de Transparencia, Acceso a la Información y Protección de Datos Personales" if ramo == 44
 	replace desc_ramo = "Petróleos Mexicanos" if ramo == 52
 	replace desc_ramo = "Comisión Federal de Electricidad" if ramo == 53
@@ -533,13 +534,15 @@ replace gasto = proyecto if ejercido == . & aprobado == . & proyecto != .
 g byte transf_gf = (ramo == 19 & ur == "GYN") | (ramo == 19 & ur == "GYR")
 
 g byte noprogramable = ramo == 28 | capitulo == 9
-label define noprogramable 1 "No programable" 0 "Programable"
+replace noprogramable = -1 if ramo == -1
+label define noprogramable 1 "No programable" 0 "Programable" -1 "Cuotas ISSSTE"
 label values noprogramable noprogramable
 
 g byte ineludible = divCIEP == 7 | divSUBN == 4 | ramo == 28 ///
 	| capitulo == 9 | (ramo >= 50 & ramo <= 53) | divCIEP == 8
+replace ineludible = -1 if ramo == -1
 *replace ineludible = 2 if divCIEP == 8
-label define ineludible 2 "Programas prioritarios" 1 "Ineludible" 0 "Eludible"
+label define ineludible 2 "Programas prioritarios" 1 "Ineludible" 0 "Eludible" -1 "Cuotas ISSSTE"
 label values ineludible ineludible
 
 
