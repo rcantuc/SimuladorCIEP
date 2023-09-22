@@ -15,15 +15,19 @@ quietly {
 
 
 
+
+
 	*********************************
-	*** 1 Cuentas macroeconómicas ***
+	**# 1 Cuentas macroeconómicas ***
 	*********************************
 	SCN, anio(`anio') nographs
 
 
 
+
+
 	*********************
-	*** 2 RECAUDACIÓN ***
+	**# 2 RECAUDACIÓN ***
 	*********************
 	LIF, anio(`anio') by(divSIM) nographs desde(2018)
 	local recursos = r(divSIM)
@@ -34,9 +38,11 @@ quietly {
 
 
 
-	************************************
-	** 3 Impuestos al ingreso laboral **
-	************************************
+
+
+	**************************************
+	**# 3 Impuestos al ingreso laboral ***
+	**************************************
 	noisily di _newline(2) in y "{bf: A. " in y "Impuestos laborales" "}"
 	noisily di _newline in g "{bf:  Cuentas Nacionales" ///
 		_col(44) %7s in g "% PIB" ///
@@ -51,6 +57,10 @@ quietly {
 	if _rc == 0 {
 		local ISRAS = scalar(ISRAS)
 	}
+	else {
+		scalar ISRAS = `ISRAS'
+	}
+	
 	noisily di in g "  Compensaci{c o'}n de asalariados*" ///
 		_col(44) %7.3fc in y RemSalPIB ///
 		_col(55) in g "ISR (salarios)" ///
@@ -64,6 +74,9 @@ quietly {
 	if _rc == 0 {
 		local ISRPF = scalar(ISRPF)
 	}
+	else {
+		scalar ISRPF = `ISRPF'
+	}
 	noisily di in g "  Ingreso mixto laboral" ///
 		_col(44) %7.3fc in y MixLPIB ///
 		_col(55) in g "ISR (f{c i'}sicas)" ///
@@ -76,6 +89,9 @@ quietly {
 	capture confirm scalar CUOTAS
 	if _rc == 0 {
 		local CUOTAS = scalar(CUOTAS)
+	}
+	else {
+		scalar CUOTAS = `CUOTAS'
 	}
 	noisily di in g "  Compensaci{c o'}n de asalariados" ///
 		_col(44) %7.3fc in y (RemSalPIB+SSImputadaPIB+SSEmpleadoresPIB) ///
@@ -97,9 +113,9 @@ quietly {
 
 
 
-	*****************************
-	** 4 Organismos y empresas **
-	*****************************
+	*******************************
+	**# 4 Organismos y empresas ***
+	*******************************
 	noisily di _newline(2) in y "{bf: B. " in y "Organismos y empresas" "}"
 	noisily di _newline in g "{bf:  Cuentas Nacionales" ///
 		_col(44) %7s in g "% PIB" ///
@@ -114,6 +130,9 @@ quietly {
 	if _rc == 0 {
 		local FMP = scalar(FMP)
 	}
+	else {
+		scalar FMP = `FMP'
+	}
 	noisily di in g "  Ingresos de capital p{c u'}blico" ///
 		_col(44) %7.3fc in y (CapIncImpPIB) ///
 		_col(55) in g "FMP" ///
@@ -126,6 +145,9 @@ quietly {
 	capture confirm scalar PEMEX
 	if _rc == 0 {
 		local PEMEX = scalar(PEMEX)
+	}
+	else {
+		scalar PEMEX = `PEMEX'
 	}
 	noisily di in g "  Ingresos de capital p{c u'}blico" ///
 		_col(44) %7.3fc in y (CapIncImpPIB) ///
@@ -140,6 +162,9 @@ quietly {
 	if _rc == 0 {
 		local CFE = scalar(CFE)
 	}
+	else {
+		scalar CFE = `CFE'
+	}
 	noisily di in g "  Ingresos de capital p{c u'}blico" ///
 		_col(44) %7.3fc in y (CapIncImpPIB) ///
 		_col(55) in g "CFE" ///
@@ -153,6 +178,9 @@ quietly {
 	if _rc == 0 {
 		local IMSS = scalar(IMSS)
 	}
+	else {
+		scalar IMSS = `IMSS'
+	}
 	noisily di in g "  Ingresos de capital p{c u'}blico" ///
 		_col(44) %7.3fc in y (CapIncImpPIB) ///
 		_col(55) in g "IMSS" ///
@@ -165,6 +193,9 @@ quietly {
 	capture confirm scalar ISSSTE
 	if _rc == 0 {
 		local ISSSTE = scalar(ISSSTE)
+	}
+	else {
+		scalar ISSSTE = `ISSSTE'
 	}
 	noisily di in g "  Ingresos de capital p{c u'}blico" ///
 		_col(44) %7.3fc in y (CapIncImpPIB) ///
@@ -186,9 +217,9 @@ quietly {
 
 
 
-	****************************
-	** 5 Impuestos al capital **
-	****************************
+	******************************
+	**# 5 Impuestos al capital ***
+	******************************
 	noisily di _newline(2) in y "{bf: C. " in y "Impuestos al capital" "}"
 	noisily di _newline in g "{bf:  Cuentas Nacionales" ///
 		_col(44) %7s in g "% PIB" ///
@@ -203,6 +234,9 @@ quietly {
 	if _rc == 0 {
 		local ISRPM = scalar(ISRPM)
 	}
+	else {
+		scalar ISRPM = `ISRPM'
+	}
 	noisily di in g "  Ingresos de capital privado*" ///
 		_col(44) %7.3fc in y (ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-IngKPublicosPIB) ///
 		_col(55) in g "ISR (morales)" ///
@@ -214,6 +248,9 @@ quietly {
 	capture confirm scalar OTROSK
 	if _rc == 0 {
 		local OTROSK = scalar(OTROSK)
+	}
+	else {
+		scalar OTROSK = `OTROSK'
 	}
 	noisily di in g "  Ingresos de capital privado*" ///
 		_col(44) %7.3fc in y (ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-IngKPublicosPIB) ///
@@ -238,9 +275,9 @@ quietly {
 
 
 
-	****************************
-	** 6 Impuestos al consumo **
-	****************************
+	******************************
+	**# 6 Impuestos al consumo ***
+	******************************
 	noisily di _newline(2) in y "{bf: D. " in y "Impuestos al consumo" "}"
 	noisily di _newline in g "{bf:  Cuentas Nacionales" ///
 		_col(44) %7s in g "% PIB" ///
@@ -254,6 +291,9 @@ quietly {
 	capture confirm scalar IVA
 	if _rc == 0 {
 		local IVA = scalar(IVA)
+	}
+	else {
+		scalar IVA = `IVA'
 	}
 	noisily di in g "  Consumo hogares e ISFLSH*" ///
 		_col(44) %7.3fc in y (ConHogPIB - AlimPIB - BebNPIB - SaluPIB) ///
@@ -269,6 +309,9 @@ quietly {
 	if _rc == 0 {
 		local ISAN = scalar(ISAN)
 	}
+	else {
+		scalar ISAN = `ISAN'
+	}
 	noisily di in g "  Compra de veh{c i'}culos" ///
 		_col(44) %7.3fc in y VehiPIB ///
 		_col(55) in g "ISAN" ///
@@ -276,10 +319,14 @@ quietly {
 		_col(99) %7.3fc in y `ISAN'/VehiPIB*100 " %"
 	scalar ISANPor = `ISAN'/VehiPIB*100
 
+
 	** 6.3 IEPS (no petrolero) **
 	capture confirm scalar IEPSNP
 	if _rc == 0 {
 		local IEPSNP = scalar(IEPSNP)
+	}
+	else {
+		scalar IEPSNP = `IEPSNP'
 	}
 	noisily di in g "  Consumo hogares e ISFLSH" ///
 		_col(44) %7.3fc in y ConHogPIB ///
@@ -294,6 +341,9 @@ quietly {
 	if _rc == 0 {
 		local IEPSP = scalar(IEPSP)
 	}
+	else {
+		scalar IEPSP = `IEPSP'
+	}
 	noisily di in g "  Consumo hogares e ISFLSH" ///
 		_col(44) %7.3fc in y ConHogPIB ///
 		_col(55) in g "IEPS (petrolero)" ///
@@ -306,6 +356,9 @@ quietly {
 	capture confirm scalar IMPORT
 	if _rc == 0 {
 		local IMPORT = scalar(IMPORT)
+	}
+	else {
+		scalar IMPORT = `IMPORT'
 	}
 	noisily di in g "  Consumo hogares e ISFLSH" ///
 		_col(44) %7.3fc in y ConHogPIB ///
@@ -327,9 +380,9 @@ quietly {
 
 
 
-	**********************
-	** 7 DATOS ABIERTOS **
-	**********************
+	************************
+	**# 7 DATOS ABIERTOS ***
+	************************
 	if "$nographs" == "" & "`nographs'" != "nographs" & `anio' == `aniovp' {
 		DatosAbiertos XNA0120_s, pibvp(`ISRAS')		//    ISR salarios
 		DatosAbiertos XNA0120_f, pibvp(`ISRPF')		//    ISR PF
@@ -354,7 +407,7 @@ quietly {
 	****************
 	capture use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
 	if _rc != 0 {
-		use "`c(sysdir_personal)'/SIM/households`=aniovp'.dta", clear
+		use "`c(sysdir_personal)'/SIM/`=anioenigh'/households.dta", clear
 	}
 
 	* Distribuir los ingresos entre las observaciones *
@@ -379,7 +432,7 @@ quietly {
 
 
 	***************************/
-	*** 6 Estimaciones de LP ***
+	**# 8 Estimaciones de LP ***
 	/****************************
 	*tabstat Laboral Consumo OtrosC CuotasSS Petroleo [fw=factor], stat(sum) f(%20.0fc) save
 	*tempname INGRESOSSIM

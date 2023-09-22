@@ -18,7 +18,9 @@ quietly {
 
 
 	***************************************************************
+	***                                                         ***
 	**# 1 Cuentas macroeconómicas (SCN, PIB, Balanza Comercial) ***
+	***                                                         ***
 	***************************************************************
 	*use if anio == `anio' using "`c(sysdir_personal)'/users/$id/PIB.dta", clear
 	PIBDeflactor, aniovp(`anio') nographs nooutput
@@ -30,8 +32,14 @@ quietly {
 
 
 	********************************
+	***                          ***
 	**# 2 Información de hogares ***
+	***                          ***
 	********************************
+	capture use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
+	if _rc != 0 {
+		use "`c(sysdir_personal)'/SIM/households`=aniovp'.dta", clear
+	}
 	use "`c(sysdir_personal)'/SIM/households`anio'.dta", clear
 	merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/`=anioenigh'/poblacion.dta", nogen keepus(disc*)
 	capture drop __*
@@ -44,7 +52,9 @@ quietly {
 
 
 	*******************
+	***             ***
 	**# 3 Educación ***
+	***             ***
 	*******************
 
 	** 3.1 Alumnos y beneficiarios **
@@ -326,7 +336,9 @@ quietly {
 
 
 	**************/
+	***         ***
 	**# 4 Salud ***
+	***         ***
 	***************
 
 	** 4.1 Asegurados y beneficiarios **
@@ -388,6 +400,10 @@ quietly {
 		if `segpop0' == . {
 			local segpop0 = r(Atención_a_la_Salud_y_Medicame)
 		}
+		if `segpop0' == . {
+			local segpop0 = r(Atención_a_la_salud_y_medicame)
+		}
+
 
 		PEF if anio == `anio' & divCIEP == 9 & divSIM != 2 & divSIM != 5 & ramo == 12, anio(`anio') by(desc_pp) min(0) nographs
 		local atencINSABI = r(Atención_a_la_Salud)
@@ -407,7 +423,12 @@ quietly {
 
 
 	** 4.3 Primera infancia y cuidados **
-	local porc_nna = 0.45
+	if `anio' == 2023 {
+		local porc_nna = 0.45
+	}
+	if `anio' == 2024 {
+		local porc_nna = 0.44		
+	}
 	capture confirm scalar salinf
 	if _rc == 0 {
 		local salinf = scalar(salinf)*`pobNNA'[1,1]
@@ -977,10 +998,15 @@ quietly {
 	** 7.4 Gastos en cuidados **
 	capture confirm scalar gasotros
 	if _rc == 0 {
-		local gascuidados = gascuidados*`Energia'[1,1]
+		local gascuidados = gascuidados*`Resto'[1,1]
 	}
 	else {
-		local FAM_cuidados = .65
+		if `anio' == 2023 {
+			local FAM_cuidados = .65
+		}
+		if `anio' == 2024 {
+			local FAM_cuidados = .81
+		}
 		preserve
 		PEF if anio == `anio' & divSIM == 2 & divCIEP != 2 & divCIEP != 9, by(desc_pp) anio(`anio') min(0) nographs
 		local FAM_gastocuidados = r(FAM_Asistencia_Social)*(1-`FAM_cuidados')

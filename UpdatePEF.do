@@ -418,18 +418,17 @@ local ifpp `"(`=substr("`ifpp'",1,`=strlen("`ifpp'")-3')')"'
 
 // Pensiones contributivas
 g desc_divCIEP = "Pensiones" if (substr(string(objeto),1,2) == "45" | substr(string(objeto),1,2) == "47")
+g desc_divSIM = desc_divCIEP
 
 // Pensión para adultos mayores
 replace desc_divCIEP = "Pensión AM" if desc_divCIEP == "" & `ifpp'
+replace desc_divSIM = "Pensiones" if desc_divSIM == "" & `ifpp'
 
 
 ** 4.2 Salud **
-replace desc_divCIEP = "Salud" if desc_divCIEP == "" ///
-	& (desc_funcion == 21 | ramo == 12)
-replace desc_divCIEP = "Salud" if desc_divCIEP == "" ///
-	& (ramo == 50 | ramo == 51) & (pp == 4 | pp == 15) & funcion == 8
-replace desc_divCIEP = "Salud" if desc_divCIEP == "" ///
-	& ramo == 52 & ai == 231
+replace desc_divCIEP = "Salud" if desc_divCIEP == "" & (desc_funcion == 21 | ramo == 12)
+replace desc_divCIEP = "Salud" if desc_divCIEP == "" & (ramo == 50 | ramo == 51) & (pp == 4 | pp == 15) & funcion == 8
+replace desc_divCIEP = "Salud" if desc_divCIEP == "" & ramo == 52 & ai == 231
 
 
 ** 4.3 Energía **
@@ -451,48 +450,37 @@ replace desc_divCIEP = "Educación" if desc_divCIEP == "" ///
 replace desc_divCIEP = "Otras inversiones" if desc_divCIEP == "" ///
 	& (desc_tipogasto == 4 | desc_tipogasto == 5 | desc_tipogasto == 6 | desc_tipogasto == 8)
 
-g desc_divSIM = desc_divCIEP
 replace desc_divSIM = "Inversión" if (desc_tipogasto == 4 | desc_tipogasto == 5 | desc_tipogasto == 6 | desc_tipogasto == 8)
 
 
 ** 4.7 Federalizado **
-g desc_divSUBN = desc_divCIEP
-replace desc_divCIEP = "Part y otras Apor" if desc_divCIEP == "" ///
-	& (ramo == 28 | ramo == 33 | ramo == 25)                                   // Part + Aport
-replace desc_divSUBN = "Federalizado" if ///
-	(ramo == 28 | ramo == 33 | ramo == 25)                                    // Part + Aport
-	
-replace desc_divCIEP = "Part y otras Apor" if desc_divCIEP == "" ///
-	& (objeto == 43801)                                                         // Convenios descentralizados
-replace desc_divSUBN = "Federalizado" if ///
-	(objeto == 43801)                                                           // Convenios descentralizados
+replace desc_divCIEP = "Part y otras Apor" if desc_divCIEP == "" & (ramo == 28)                                  // Part
+replace desc_divCIEP = "Part y otras Apor" if desc_divCIEP == "" & (ramo == 33 | ramo == 25)                     // Aport
 
-replace desc_divCIEP = "Part y otras Apor" if desc_divCIEP == "" ///
-	& (objeto == 85101)                                                         // Convenios de reasignación
-replace desc_divSUBN = "Federalizado" if ///
-	(objeto == 85101)                                                           // Convenios de reasignación
+g desc_divFEDE = "Participaciones" if (ramo == 28)                                                               // Part
+replace desc_divFEDE = "Aportaciones" if (ramo == 33 | ramo == 25)                                               // Aport
 
-replace desc_divCIEP = "Part y otras Apor" if desc_divCIEP == "" ///
-	& (objeto == 46101 & ramo == 23 & pp == 80)                                 // FEIEF
-replace desc_divCIEP = "Part y otras Apor" if desc_divCIEP == "" ///
-	& (ramo == 23 & pp == 4 & modalidad == "Y")                                 // FEIEF
-replace desc_divCIEP = "Part y otras Apor" if desc_divCIEP == "" ///
-	& (ramo == 23 & pp == 141)                                                  // FIES
-replace desc_divSUBN = "Federalizado" if ///
-	(objeto == 46101 & ramo == 23 & pp == 80)                                 // FEIEF
-replace desc_divSUBN = "Federalizado" if ///
-	(ramo == 23 & pp == 4 & modalidad == "Y")                                 // FEIEF
-replace desc_divSUBN = "Federalizado" if ///
-	(ramo == 23 & pp == 141)                                                  // FIES
+replace desc_divCIEP = "Part y otras Apor" if desc_divCIEP == "" & (objeto == 43801)                             // Convenios descentralizados
 
-replace desc_divCIEP = "Part y otras Apor" if desc_divCIEP == "" ///
-	& (pp == 13 & ramo == 12 & modalidad == "U")                                // INSABI/Seguro Popular
-replace desc_divCIEP = "Part y otras Apor" if desc_divCIEP == "" ///
-	& (objeto == 43101 & ramo == 8 & pp == 263 & entidad != 34)                 // Convenios de reasignación
-replace desc_divSUBN = "Federalizado" if ///
-	(pp == 13 & ramo == 12 & modalidad == "U")                                // INSABI/Seguro Popular
-replace desc_divSUBN = "Federalizado" if ///
-	(objeto == 43101 & ramo == 8 & pp == 263 & entidad != 34)                 // Convenios de reasignación
+replace desc_divFEDE = "Convenios" if (objeto == 43801 & ramo != 23)                                             // Convenios descentralizados
+
+replace desc_divCIEP = "Part y otras Apor" if desc_divCIEP == "" & (objeto == 85101)                             // Convenios de reasignación
+replace desc_divCIEP = "Part y otras Apor" if desc_divCIEP == "" & (objeto == 43101 & ramo == 8 & pp == 263 & entidad != 34) // Convenios de reasignación
+
+replace desc_divFEDE = "Convenios" if (objeto == 85101)                                                          // Convenios de reasignación
+replace desc_divFEDE = "Convenios" if (objeto == 43101 & ramo == 8 & pp == 263 & entidad != 34)                  // Convenios de reasignación
+
+replace desc_divCIEP = "Part y otras Apor" if desc_divCIEP == "" & (objeto == 46101 & ramo == 23 & pp == 80)     // FEIEF
+replace desc_divCIEP = "Part y otras Apor" if desc_divCIEP == "" & (ramo == 23 & pp == 4 & modalidad == "Y")     // FEIEF
+replace desc_divCIEP = "Part y otras Apor" if desc_divCIEP == "" & (ramo == 23 & pp == 141)                      // FIES
+
+replace desc_divFEDE = "Subsidios" if (objeto == 46101 & ramo == 23 & pp == 80)                                  // FEIEF
+replace desc_divFEDE = "Subsidios" if (ramo == 23 & pp == 4 & modalidad == "Y")                                  // FEIEF
+replace desc_divFEDE = "Subsidios" if (ramo == 23 & pp == 141)                                                   // FIES
+replace desc_divFEDE = "Subsidios" if (ramo == 23 & objeto == 43801)
+
+replace desc_divCIEP = "Part y otras Apor" if desc_divCIEP == "" & (pp == 13 & (ramo == 12 | ramo == 47) & modalidad == "U") // INSABI/Seguro Popular/IMSS-Bienestar
+replace desc_divFEDE = "Salud (federalizado)" if (pp == 13 & (ramo == 12 | ramo == 47) & modalidad == "U")         // INSABI/Seguro Popular/IMSS-Bienestar
 
 
 ** 4.7 Economía de los cuidados **
@@ -507,12 +495,12 @@ replace desc_divSIM = "Cuidados" if (ramo == 11 & pp == 312) | (ramo == 11 & pp 
 
 ** 4.8 Otros **
 replace desc_divCIEP = "Otros gastos" if desc_divCIEP == ""
-replace desc_divSUBN = desc_divCIEP if desc_divSUBN == ""
+replace desc_divFEDE = "No federalizado" if desc_divFEDE == ""
 replace desc_divSIM = desc_divCIEP if desc_divSIM == ""
 
 
 ** 4.9 Cuotas ISSSTE **
-foreach k in divCIEP divSUBN divSIM {
+foreach k in divCIEP divFEDE divSIM {
 	replace desc_`k' = "zCuotas ISSSTE" if ramo == -1
 	encode desc_`k', generate(`k')
 	replace desc_`k' = "Cuotas ISSSTE" if ramo == -1
@@ -538,7 +526,7 @@ replace noprogramable = -1 if ramo == -1
 label define noprogramable 1 "No programable" 0 "Programable" -1 "Cuotas ISSSTE"
 label values noprogramable noprogramable
 
-g byte ineludible = divCIEP == 7 | divSUBN == 4 | ramo == 28 ///
+g byte ineludible = divCIEP == 7 | divFEDE == 4 | ramo == 28 ///
 	| capitulo == 9 | (ramo >= 50 & ramo <= 53) | divCIEP == 8
 replace ineludible = -1 if ramo == -1
 *replace ineludible = 2 if divCIEP == 8
