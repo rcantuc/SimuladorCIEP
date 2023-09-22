@@ -1,12 +1,17 @@
 program define FiscalGap
-timer on 11
 quietly {
 
 	*****************
 	*** 0 ANIO VP ***
 	*****************
+	timer on 11
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
+
+	capture confirm scalar aniovp
+	if _rc == 0 {
+		local aniovp = scalar(aniovp)
+	}
 
 	syntax [, NOGraphs Anio(int `aniovp') BOOTstrap(int 1) Update END(int 2100) ///
 		ANIOMIN(int 2000) DIScount(real 5) DESDE(int `=`aniovp'-1')]
@@ -90,7 +95,11 @@ quietly {
 
 		tempvar estimacion
 		g `estimacion' = estimacion
-		replace estimacion = `estimacion'/L.`estimacion'*(scalar(`divSIM`k''))/100*scalar(pibY)*(1+``divSIM`k''C'/100)^(anio-`anio') if anio >= `anio'
+		replace estimacion = `estimacion'/L.`estimacion'* /// Cambio demográfico
+			(scalar(`divSIM`k''))/100* /// Estimación como % del PIB (TasasEfectivas.ado)
+			scalar(pibY)* /// Estimación del PIB
+			(1+``divSIM`k''C'/100)^(anio-`anio') /// Tendencia de largo plazo
+			if anio >= `anio'
 
 		g divSIM = `k'
 		replace modulo = "`divSIM`k''"
@@ -101,14 +110,15 @@ quietly {
 		restore
 		merge 1:1 (anio divSIM) using  ``divSIM`k''', nogen update replace
 	}
+	replace estimacion = 0 if estimacion == .
 	merge m:1 (anio) using `PIB', nogen keep(matched) update replace
 	collapse (sum) recaudacion estimacion (max) pibYR deflator lambda Poblacion, by(anio modulo)
+	replace estimacion = estimacion*lambda /// Crecimiento en la productividad laboral
+
 
 	* Actualizaciones *
-	replace estimacion = 0 if estimacion == .
-	replace estimacion = estimacion*lambda
 	replace recaudacion = 0 if recaudacion == .
-	replace recaudacion = recaudacion/deflator
+	replace recaudacion = recaudacion/deflator // La variable "estimacion" está en valores reales
 
 	* Reshape *
 	reshape wide recaudacion estimacion, i(anio) j(modulo) string
@@ -238,7 +248,10 @@ quietly {
 
 			tempvar estimacion
 			g `estimacion' = estimacion
-			replace estimacion = `estimacion'/L.`estimacion'*`HH`=strtoname("`divCIEP`k''")''[1,1]*(1+``=strtoname("`divCIEP`k''")'C'/100)^(anio-`anio') if anio >= `anio'
+			replace estimacion = `estimacion'/L.`estimacion'* /// Cambio demográfico
+				`HH`=strtoname("`divCIEP`k''")''[1,1]* /// Gasto total (GastoPC.ado)
+				(1+``=strtoname("`divCIEP`k''")'C'/100)^(anio-`anio') ///
+				if anio >= `anio'
 
 			g divCIEP = `k'
 			replace modulo = "`divCIEP`k''"
@@ -371,7 +384,7 @@ quietly {
 		replace `k'_pib = L.`k'_pib if `k'_pib == .
 		replace `k' = `k'_pib/100*pibYR if `k' == .
 	}
-
+Aquí me quedé
 	***************
 	* Iteraciones *
 	***************
