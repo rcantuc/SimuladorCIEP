@@ -4,7 +4,7 @@
 ***                        ***
 ******************************
 noisily run "`c(sysdir_personal)'/profile.do"
-//global export "`c(sysdir_site)'../Ricardo Cantú/Paquete Económico 2024/04. Documento CIEP/images"	// DIRECTORIO DE ARCHIVOS
+global export "`c(sysdir_site)'../Ricardo Cantú/DeudaPE2024/images"	// DIRECTORIO DE ARCHIVOS
 //global nographs "nographs"                                                     // SUPRIMIR GRAFICAS
 
 
@@ -47,15 +47,15 @@ foreach anio in `=anioPE' {
 //noisily SCN, //update
 //noisily Inflacion, //update
 
-//noisily LIF, by(divPE) rows(1) min(0) //anio(`anio') //update desde(2018)
-//noisily PEF, by(divCIEP) rows(2) min(0) //anio(`anio') //update desde(2018)
+noisily LIF, by(divPE) rows(1) min(0) //anio(`anio') //update desde(2018)
+noisily PEF, by(divCIEP) rows(2) min(0) //anio(`anio') //update desde(2018)
 noisily SHRFSP, ultanio(2008) //update
 
 
 ** 2.4 Subnacionales **
 //noisily run "`c(sysdir_personal)'/Subnacional.do" //update
 
-
+exit
 
 
 

@@ -24,8 +24,6 @@ noisily di _newline(25) in w "{bf:Centro de Investigaci{c o'}n Econ{c o'}mica y 
 ********************
 *** 3 Parametros ***
 ********************
-run "`c(sysdir_personal)'/parametros.do"
-
 local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 scalar aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 scalar aniovp = 2024
@@ -48,6 +46,7 @@ if anioPE >= 2016 & anioPE < 2018 {
 global entidadesL `""Aguascalientes" "Baja California" "Baja California Sur" "Campeche" "Coahuila" "Colima" "Chiapas" "Chihuahua" "Ciudad de México" "Durango" "Guanajuato" "Guerrero" "Hidalgo" "Jalisco" "Estado de México" "Michoacán" "Morelos" "Nayarit" "Nuevo León" "Oaxaca" "Puebla" "Querétaro" "Quintana Roo" "San Luis Potosí" "Sinaloa" "Sonora" "Tabasco" "Tamaulipas" "Tlaxcala" "Veracruz" "Yucatán" "Zacatecas" "Nacional" "'
 global entidadesC "Ags BC BCS Camp Coah Col Chis Chih CDMX Dgo Gto Gro Hgo Jal EdoMex Mich Mor Nay NL Oax Pue Qro QRoo SLP Sin Son Tab Tamps Tlax Ver Yuc Zac Nac"
 
+run "`c(sysdir_personal)'/parametros.do"
 
 
 *******************/
