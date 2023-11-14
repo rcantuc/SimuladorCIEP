@@ -38,7 +38,7 @@ scalar aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 global paqueteEconomico "CGPE 2024"
 scalar anioPE = 2024
 scalar aniovp = 2024
-run "`c(sysdir_personal)'/parametros.do"
+run "`c(sysdir_site)'/parametros.do"
 
 
 ** Incidencia ENIGH **
