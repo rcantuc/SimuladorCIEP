@@ -26,7 +26,7 @@ if `1' >= 2022 {
 	local enighanio = 2022
 	local segpop = "pop_insabi"
 }
-if `1' == 2020 {
+if `1' >= 2020 & `1' < 2022 {
 	local enigh = "ENIGH"
 	local betamin = 1							// ENIGH: 2.436
 	local altimir = "yes"
@@ -36,7 +36,7 @@ if `1' == 2020 {
 	local enighanio = 2020
 	local segpop = "pop_insabi"
 }
-if `1' == 2018 {
+if `1' >= 2018 & `1' < 2020 {
 	local enigh = "ENIGH"
 	local betamin = 1							// ENIGH: 2.25
 	local altimir = "yes"
@@ -46,7 +46,7 @@ if `1' == 2018 {
 	local enighanio = 2018
 	local segpop = "segpop"
 }
-if `1' == 2016 {
+if `1' >= 2016 & `1' < 2018 {
 	local enigh = "ENIGH"
 	local betamin = 1							// ENIGH: 2.38
 	local altimir = "yes"
@@ -56,7 +56,7 @@ if `1' == 2016 {
 	local enighanio = 2016
 	local segpop = "segpop"
 }
-if `1' == 2014 {
+if `1' >= 2014 & `1' < 2016 {
 	local enigh = "ENIGH"
 	local betamin = 1							// ENIGH: 2.95
 	local altimir = "yes"
@@ -66,7 +66,7 @@ if `1' == 2014 {
 	local enighanio = 2014
 	local segpop = "segpop"
 }
-if `1' == 2012 {
+if `1' >= 2012 & `1' < 2014 {
 	local enigh = "ENIGH"
 	local betamin = 1							// ENIGH: 2.95
 	local altimir = "yes"
@@ -1484,33 +1484,33 @@ g double infonavit = sbc*`Tinfonavit'/100*365 if (formal2 == 1 | formal2 == 5 | 
 replace infonavit = 0 if infonavit == .
 
 * ISSSTE *
-g double fondomedT = `TfondomedT'/100*sbc*365 if (formal2 == 2 | formal2 == 3)
-g double fondomedP = `TfondomedP'/100*sbc*365 if (formal2 == 2 | formal2 == 3)
-g double fondomedF = `TfondomedF'/100*sbc*365 if (formal2 == 2 | formal2 == 3)
+g double fondomedT = `TfondomedT'/100*sbc*360 if (formal2 == 2 | formal2 == 3)
+g double fondomedP = `TfondomedP'/100*sbc*360 if (formal2 == 2 | formal2 == 3)
+g double fondomedF = `TfondomedF'/100*sbc*360 if (formal2 == 2 | formal2 == 3)
 
-g double presperT = `TpresperT'/100*sbc*365 if (formal2 == 2 | formal2 == 3)
-g double presperP = `TpresperP'/100*sbc*365 if (formal2 == 2 | formal2 == 3)
+g double presperT = `TpresperT'/100*sbc*360 if (formal2 == 2 | formal2 == 3)
+g double presperP = `TpresperP'/100*sbc*360 if (formal2 == 2 | formal2 == 3)
 
-g double servsocculT = `TservsocculT'/100*sbc*365 if (formal2 == 2 | formal2 == 3)
-g double servsocculP = `TservsocculP'/100*sbc*365 if (formal2 == 2 | formal2 == 3)
+g double servsocculT = `TservsocculT'/100*sbc*360 if (formal2 == 2 | formal2 == 3)
+g double servsocculP = `TservsocculP'/100*sbc*360 if (formal2 == 2 | formal2 == 3)
 
 g double segriesgT = `TsegriesgT'/100*ing_ss if (formal2 == 2 | formal2 == 3)
 g double segriesgP = `TsegriesgP'/100*ing_ss if (formal2 == 2 | formal2 == 3)
 
-g double pensjubT = `TpensjubT'/100*sbc*365 if (formal2 == 2 | formal2 == 3)
-g double pensjubP = `TpensjubP'/100*sbc*365 if (formal2 == 2 | formal2 == 3)
+g double pensjubT = `TpensjubT'/100*sbc*360 if (formal2 == 2 | formal2 == 3)
+g double pensjubP = `TpensjubP'/100*sbc*360 if (formal2 == 2 | formal2 == 3)
 
-g double admingenT = `TadmingenT'/100*sbc*365 if (formal2 == 2 | formal2 == 3)
-g double admingenP = `TadmingenP'/100*sbc*365 if (formal2 == 2 | formal2 == 3)
-g double admingenF = `TadmingenF'/100*sbc*365 if (formal2 == 2 | formal2 == 3)
+g double admingenT = `TadmingenT'/100*sbc*360 if (formal2 == 2 | formal2 == 3)
+g double admingenP = `TadmingenP'/100*sbc*360 if (formal2 == 2 | formal2 == 3)
+g double admingenF = `TadmingenF'/100*sbc*360 if (formal2 == 2 | formal2 == 3)
 
-g double fvivT = `TfvivT'/100*sbc*365 if (formal2 == 2 | formal2 == 3)
-g double fvivP = `TfvivP'/100*sbc*365 if (formal2 == 2 | formal2 == 3)
+g double fvivT = `TfvivT'/100*sbc*360 if (formal2 == 2 | formal2 == 3)
+g double fvivP = `TfvivP'/100*sbc*360 if (formal2 == 2 | formal2 == 3)
 
-g double cuotasocisssteF = 2.1879*26.45*`TcuotaSocISSSTEF'/100*365 if (formal2 == 2 | formal2 == 3)
+g double cuotasocisssteF = 2.1879*26.45*`TcuotaSocISSSTEF'/100*360 if (formal2 == 2 | formal2 == 3)
 
 * FOVISSSTE *
-g double fovisssteP = sbc*`Tfovissste'/100*365 if (formal2 == 2 | formal2 == 3)
+g double fovisssteP = sbc*`Tfovissste'/100*360 if (formal2 == 2 | formal2 == 3)
 replace fovisssteP = 0 if fovisssteP == .
 
 * TOTALES *
@@ -2588,6 +2588,8 @@ g Ahorro = ingbrutotot + ing_capitalROW + ing_suborROW + ing_remesas ///
 	- gastoanualTOT - gasto_anualComprasN - gasto_anualGobierno
 label var Ahorro "ahorro"
 noisily Simulador Ahorro [fw=factor], base("ENIGH `=anioenigh'") boot(1) reboot anio(`1')
+
+
 
 
 

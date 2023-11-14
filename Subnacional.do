@@ -1,6 +1,6 @@
 ***************************/
 *** 1. Población estatal ***
-****************************
+/****************************
 *forvalues anio=1950(1)2050 {
 	foreach entidad in $entidadesL {
 		noisily Poblacion if entidad == "`entidad'", $update anio(2022) //aniofinal(2030)
@@ -90,7 +90,7 @@ foreach k of global entidadesC {
 }
 noisily scalarlatex, log(pibYEnt)
 
-
+exit
 
 
 

@@ -378,6 +378,8 @@ program define UpdateDatosAbiertos, return
 		save "`c(sysdir_site)'/SIM/DatosAbiertos.dta", replace
 	}
 
+	noisily di in g "{c U'}ltimo dato: " in y "`=anio[_N]'m`=mes[_N]'."
+	
 	*noisily LIF, anio(`aniovp') update rows(2)
 	*noisily SHRFSP, anio(`aniovp') update
 
