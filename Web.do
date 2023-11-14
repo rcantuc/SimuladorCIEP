@@ -17,6 +17,7 @@ timer on 1
 ******************************************************
 if "`c(username)'" == "ciepmx" {                  // Linux ServidorCIEP (WEB)
 	sysdir set SITE "/SIM/OUT/5/5.3/"
+	sysdir set PERSONAL "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
 }
 
 

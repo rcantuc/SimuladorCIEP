@@ -1,10 +1,15 @@
 ***********************
-**#    1. SET UP    ***
+***                 ***
+**#    0. SET UP    ***
+***                 ***
 ***********************
 if "`c(username)'" != "ciepmx" & "`c(username)'" != "ricardo" {
 	global id = "`c(username)'"
 }
+
 capture mkdir `"`c(sysdir_personal)'/SIM/"'
+capture mkdir `"`c(sysdir_personal)'/SIM/graphs"'
+
 capture mkdir `"`c(sysdir_personal)'/users/"'
 capture mkdir `"`c(sysdir_personal)'/users/$id/"'
 
@@ -18,7 +23,9 @@ if "$output" != "" {
 
 
 ************************************************
-**#    2. CRECIMIENTO Y DEFLACTOR DEL PIB    ***
+***                                          ***
+**#    1. CRECIMIENTO Y DEFLACTOR DEL PIB    ***
+***                                          ***
 ************************************************
 global pib2023 = 3.1766 //     CGPE 2024 (página 121)
 global pib2024 = 2.6189 //     CGPE 2024 (página 121)
@@ -28,20 +35,22 @@ global pib2027 = 2.5    //     CGPE 2024 (página 121)
 global pib2028 = 2.5    //     CGPE 2024 (página 121)
 global pib2029 = 2.5002 //     CGPE 2024 (página 121)
 
-global def2023 = 5.0 //     CGPE 2024 (página 121)
-global def2024 = 4.8 //     CGPE 2024 (página 121)
-global def2025 = 3.5 //     CGPE 2024 (página 121)
-global def2026 = 3.5 //     CGPE 2024 (página 121)
-global def2027 = 3.5 //     CGPE 2024 (página 121)
-global def2028 = 3.5 //     CGPE 2024 (página 121)
-global def2029 = 3.5 //     CGPE 2024 (página 121)
+global def2023 = 5.0    //     CGPE 2024 (página 121)
+global def2024 = 4.8    //     CGPE 2024 (página 121)
+global def2025 = 3.5    //     CGPE 2024 (página 121)
+global def2026 = 3.5    //     CGPE 2024 (página 121)
+global def2027 = 3.5    //     CGPE 2024 (página 121)
+global def2028 = 3.5    //     CGPE 2024 (página 121)
+global def2029 = 3.5    //     CGPE 2024 (página 121)
 
 
 
 
 
 ******************************
+***                        ***
 **#    3. DEUDA PÚBLICA    ***
+***                        ***
 ******************************
 scalar shrfsp2023 = 46.5
 scalar shrfspInterno2023 = 34.7
@@ -161,25 +170,25 @@ scalar costodeudaExterno2029 = 2.5
 
 ************************/
 **#    3. INGRESOS    ***
-/*************************
-scalar ISRAS   = 3.643 //100*scalar(pibY) *(1+ 3.782*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISR (asalariados)
-scalar ISRPF   = 0.231 //100*scalar(pibY) *(1+ 1.199*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISR (personas f{c i'}sicas)
-scalar CUOTAS  = 1.557 //100*scalar(pibY) *(1+ 2.197*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Cuotas (IMSS)
+*************************
+scalar ISRAS   = 3.694 //100*scalar(pibY) *(1+ 3.782*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISR (asalariados)
+scalar ISRPF   = 0.234 //100*scalar(pibY) *(1+ 1.199*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISR (personas f{c i'}sicas)
+scalar CUOTAS  = 1.579 //100*scalar(pibY) *(1+ 2.197*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Cuotas (IMSS)
 
-scalar FMP     = 0.882 //100*scalar(pibY) *(1+-7.718*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Fondo Mexicano del Petróleo
-scalar PEMEX   = 2.165 //100*scalar(pibY) *(1+ 1.379*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (Pemex)
-scalar CFE     = 1.300 //100*scalar(pibY) *(1+-3.024*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (CFE)
-scalar IMSS    = 0.123 //100*scalar(pibY) *(1+-2.685*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (IMSS)
-scalar ISSSTE  = 0.155 //100*scalar(pibY) *(1+-3.058*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (ISSSTE)
+scalar FMP     = 0.895 //100*scalar(pibY) *(1+-7.718*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Fondo Mexicano del Petróleo
+scalar PEMEX   = 2.196 //100*scalar(pibY) *(1+ 1.379*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (Pemex)
+scalar CFE     = 1.319 //100*scalar(pibY) *(1+-3.024*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (CFE)
+scalar IMSS    = 0.125 //100*scalar(pibY) *(1+-2.685*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (IMSS)
+scalar ISSSTE  = 0.157 //100*scalar(pibY) *(1+-3.058*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (ISSSTE)
 
-scalar ISRPM   = 4.010 //100*scalar(pibY) *(1+ 4.664*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISR (personas morales)
-scalar OTROSK  = 1.029 //100*scalar(pibY) *(1+-3.269*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Productos, derechos, aprovech.
+scalar ISRPM   = 4.067 //100*scalar(pibY) *(1+ 4.664*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISR (personas morales)
+scalar OTROSK  = 1.044 //100*scalar(pibY) *(1+-3.269*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Productos, derechos, aprovech.
 
-scalar IVA     = 3.870 //100*scalar(pibY) *(1+ 2.498*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // IVA
+scalar IVA     = 3.925 //100*scalar(pibY) *(1+ 2.498*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // IVA
 scalar ISAN    = 0.057 //100*scalar(pibY) *(1+ 3.565*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISAN
-scalar IEPSNP  = 0.674 //100*scalar(pibY) *(1+ 0.362*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // IEPS (no petrolero)
-scalar IEPSP   = 1.998 // IEPS (petrolero): 0.662
-scalar IMPORT  = 0.297 //100*scalar(pibY) *(1+ 5.303*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Importaciones
+scalar IEPSNP  = 0.684 //100*scalar(pibY) *(1+ 0.362*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // IEPS (no petrolero)
+scalar IEPSP   = 1.347 // IEPS (petrolero): 0.662
+scalar IMPORT  = 0.301 //100*scalar(pibY) *(1+ 5.303*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Importaciones
 
 
 
@@ -188,59 +197,59 @@ scalar IMPORT  = 0.297 //100*scalar(pibY) *(1+ 5.303*(${pib2023}-2.9676)/100))/s
 ***********************
 
 ** Educación **
-scalar iniciaA     =     408 //    Inicial
-scalar iniciaB     =     164 //    Comunitaria (CONAFE)
+scalar iniciaA     =     398 //    Inicial
+scalar iniciaB     =     160 //    Comunitaria (CONAFE)
 
-scalar basica      =   28125 //    Educación b{c a'}sica
-scalar medsup      =   28517 //    Educación media superior
-scalar superi      =   40942 //    Educación superior
-scalar posgra      =   67068 //    Posgrado
-scalar eduadu      =   40494 //    Educación para adultos
-scalar otrose      =    1781 //    Otros gastos educativos
+scalar basica      =   27429 //    Educación b{c a'}sica
+scalar medsup      =   27811 //    Educación media superior
+scalar superi      =   39927 //    Educación superior
+scalar posgra      =   65408 //    Posgrado
+scalar eduadu      =   39492 //    Educación para adultos
+scalar otrose      =    1737 //    Otros gastos educativos
 
-scalar invere      =     851 //    Inversión en educación
+scalar invere      =     830 //    Inversión en educación
 
-scalar cultur      =     157 //    Cultura, deportes y recreación
-scalar invest      =     403 //    Ciencia y tecnología
+scalar cultur      =     153 //    Cultura, deportes y recreación
+scalar invest      =     393 //    Ciencia y tecnología
 
 
 ** Salud **
-scalar salinf      =      72 //    Atención a NNA
+scalar salinf      =      69 //    Atención a NNA
 
-scalar ssa         =      47 //    SSalud
-scalar imssbien    =    4130 //    IMSS-Bienestar
-scalar imss        =    8790 //    IMSS (salud)
-scalar issste      =   10123 //    ISSSTE (salud)
-scalar pemex       =   31969 //    Pemex (salud)
-scalar issfam      =   20580 //    ISSFAM (salud)
+scalar ssa         =      46 //    SSalud
+scalar imssbien    =    4028 //    IMSS-Bienestar
+scalar imss        =    8573 //    IMSS (salud)
+scalar issste      =    9873 //    ISSSTE (salud)
+scalar pemex       =   31176 //    Pemex (salud)
+scalar issfam      =   20070 //    ISSFAM (salud)
 
-scalar invers      =     261 //    Inversión en salud
+scalar invers      =     255 //    Inversión en salud
 
 
 ** Pensiones **
-scalar pam         =   39142 //    Pensión Bienestar
-scalar penimss     =  286655 //    Pensión IMSS
-scalar penisss     =  371619 //    Pensión ISSSTE
-scalar penpeme     =  843855 //    Pensión Pemex
-scalar penotro     = 3722282 //    Pensión CFE, LFC, ISSFAM, Ferronales
+scalar pam         =   38172 //    Pensión Bienestar
+scalar penimss     =  279557 //    Pensión IMSS
+scalar penisss     =  362409 //    Pensión ISSSTE
+scalar penpeme     =  822902 //    Pensión Pemex
+scalar penotro     = 3629857 //    Pensión CFE, LFC, ISSFAM, Ferronales
 
 
 ** Energía **
-scalar gascfe      =    2957 //    Gasto en CFE
-scalar gaspemex    =    1061 //    Gasto en Pemex
-scalar gassener    =     654 //    Gasto en SENER
+scalar gascfe      =    2884 //    Gasto en CFE
+scalar gaspemex    =    1035 //    Gasto en Pemex
+scalar gassener    =     638 //    Gasto en SENER
 
-scalar gasinverf   =    3791 //    Gasto en inversión (energía)
+scalar gasinverf   =    3698 //    Gasto en inversión (energía)
 
-scalar gascosdeue  =    1384 //    Gasto en costo de la deuda (energía)
+scalar gascosdeue  =    1349 //    Gasto en costo de la deuda (energía)
 
 
 ** Otros gastos **
-scalar gasinfra    =    4334 //    Gasto en Otras Inversiones
-scalar gascuidados =    1622 //    Gasto en cuidados
-scalar gasotros    =    4984 //    Otros gastos
-scalar gasfeder    =   10484 //    Participaciones y Otras aportaciones
-scalar gascosto    =    8756 //    Gasto en Costo de la deuda
+scalar gasinfra    =    4227 //    Gasto en Otras Inversiones
+scalar gascuidados =    1726 //    Gasto en cuidados
+scalar gasotros    =    4840 //    Otros gastos
+scalar gasfeder    =   10224 //    Participaciones y Otras aportaciones
+scalar gascosto    =    8539 //    Gasto en Costo de la deuda
 
 
 ** Transferencas **
@@ -248,7 +257,7 @@ scalar IngBas      =       0 //    Ingreso b{c a'}sico
 scalar ingbasico18 =       1 //    1: Incluye menores de 18 anios, 0: no
 scalar ingbasico65 =       1 //    1: Incluye mayores de 65 anios, 0: no
 
-scalar gasmadres   =     484 //    Apoyo a madres trabajadoras
+scalar gasmadres   =     472 //    Apoyo a madres trabajadoras
 
 
 *global tasaEfectiva = 6.005578 // Tasa de inter{c e'}s EFECTIVA
@@ -257,11 +266,11 @@ scalar gasmadres   =     484 //    Apoyo a madres trabajadoras
 
 *********************************************************************/
 ***       6.1. ISR_Mod.do (Salarios + PF + PM + Cuotas IMSS)       ***
-/**********************************************************************
+**********************************************************************
 * Anexo 8 de la Resolución Miscelánea Fiscal para 2023 *
 * Tarifa para el cálculo del impuesto correspondiente al ejericio 2023 (página 782) *
-*             INFERIOR		SUPERIOR	CF		TASA
-matrix ISR =  (0.01,		8952.49,	0.0,		1.92	\    /// 1
+*             INFERIOR			SUPERIOR	CF		TASA
+matrix ISR =  (0.01,			8952.49,	0.0,		1.92	\    /// 1
               8952.49    +.01,	75984.55,	171.88,		6.40	\    /// 2
               75984.55   +.01,	133536.07,	4461.94,	10.88	\    /// 3
               133536.07  +.01,	155229.80,	10723.55,	16.00	\    /// 4
@@ -285,7 +294,7 @@ matrix	SE =  (0.01,		1768.96,	407.02		\    /// 1
               5335.42 +.01,	6224.67,	294.63		\    /// 8
               6224.67 +.01,	7113.90,	253.54		\    /// 9
               7113.90 +.01,	7382.33,	217.61		\    /// 10
-              7382.33 +.01, 	1E+12,		0)		     //  11
+              7382.33 +.01, 1E+12,		0)		 	     //  11
 
 * Artículo 151, último párrafo (LISR) *
 *            Ex. SS.MM.	Ex. 	% ing. gravable		% Informalidad PF	% Informalidad Salarios
@@ -297,24 +306,27 @@ matrix PM = (30,		21.45)
 
 * Informe al Ejecutivo Federal y al Congreso de la Unión la situación financiera y los riesgos del IMSS 2021-2022 *
 * Anexo A, Cuadro A.4 *
-*                  PATRONES	TRABAJADORES	GOBIERNO FEDERAL
-matrix CSS_IMSS = (5.42,	0.44,		3.21	\   /// Enfermedad y maternidad, asegurados (Tgmasg*)
-		   1.05,	0.37,		0.08	\   /// Enfermedad y maternidad, pensionados (Tgmpen*)
-		   1.75,	0.63,		0.13	\   /// Invalidez y vida (Tinvyvida*)
-		   1.83,	0.00,		0.00	\   /// Riesgos de trabajo (Triesgo*)
-		   1.00,	0.00,		0.00	\   /// Guarderias y prestaciones sociales (Tguard*)
-		   5.15,	1.12,		1.49	\   /// Retiro, cesantia en edad avanzada y vejez (Tcestyvej*)
-		   0.00,	0.00,		6.55)	//  Cuota social -- hasta 25 UMA -- (TcuotaSocIMSS*)
+matrix CSS_IMSS = ///
+///		PATRONES	TRABAJADORES	GOBIERNO FEDERAL
+		(5.42,		0.44,			3.21	\   /// Enfermedad y maternidad, asegurados (Tgmasg*)
+		1.05,		0.37,			0.08	\   /// Enfermedad y maternidad, pensionados (Tgmpen*)
+		1.75,		0.63,			0.13	\   /// Invalidez y vida (Tinvyvida*)
+		1.83,		0.00,			0.00	\   /// Riesgos de trabajo (Triesgo*)
+		1.00,		0.00,			0.00	\   /// Guarderias y prestaciones sociales (Tguard*)
+		5.15,		1.12,			1.49	\   /// Retiro, cesantia en edad avanzada y vejez (Tcestyvej*)
+		0.00,		0.00,			6.55)	    //  Cuota social -- hasta 25 UMA -- (TcuotaSocIMSS*)
 
 * Informe Financiero Actuarial ISSSTE 2021 *
-*                    PATRONES	TRABAJADORES	GOBIERNO FEDERAL
-matrix CSS_ISSSTE = (7.375	2.750		391.0	\   /// Seguro de salud, trabajadores en activo y familiares (Tfondomed* / TCuotaSocISSTEF)
-		     0.720	0.625		0.000	\   /// Seguro de salud, pensionados y familiares (Tpensjub*)
-		     0.750	0.000		0.000	\   /// Riesgo de trabajo
-		     0.625	0.625		0.000	\   /// Invalidez y vida
-		     0.500	0.500		0.000	\   /// Servicios sociales y culturales
-		     6.125	2+3.175		5.500	\   /// Retiro, cesantia en edad avanzada y vejez
-		     0.000	5.000		0.000)	    //  Vivienda
+matrix CSS_ISSSTE = ///
+///		PATRONES	TRABAJADORES	GOBIERNO FEDERAL
+		(7.375,		2.750,			391.0	\   /// Seguro de salud, trabajadores en activo y familiares (Tfondomed* / TCuotaSocISSTEF)
+		0.720,		0.625,			0.000	\   /// Seguro de salud, pensionados y familiares (Tpensjub*)
+		0.750,		0.000,			0.000	\   /// Riesgo de trabajo
+		0.625,		0.625,			0.000	\   /// Invalidez y vida
+		0.500,		0.500,			0.000	\   /// Servicios sociales y culturales
+		6.125,		2+3.175,		5.500	\   /// Retiro, cesantia en edad avanzada y vejez
+		0.000,		5.000,			0.000	\   /// Vivienda
+		0.000,		0.000,			13.9)		//  Cuota social
 ***       FIN: SIMULADOR ISR       ***
 **************************************
 
@@ -340,31 +352,6 @@ matrix IVAT = (16 \     ///  1  Tasa general
 *************************************/
 
 
-
-
-
-/** 3.1 CGPE 2023 ** 
-
-* Costo financiero *
-replace costodeudaInterno = 3.4/100*porInterno*pibY if anio == 2023
-replace costodeudaExterno = 3.4/100*porExterno*pibY if anio == 2023
-replace costodeudaInterno = 3.2/100*porInterno*pibY if anio == 2024
-replace costodeudaExterno = 3.2/100*porExterno*pibY if anio == 2024
-replace costodeudaInterno = 3.2/100*porInterno*pibY if anio == 2025
-replace costodeudaExterno = 3.2/100*porExterno*pibY if anio == 2025
-replace costodeudaInterno = 2.9/100*porInterno*pibY if anio == 2026
-replace costodeudaExterno = 2.9/100*porExterno*pibY if anio == 2026
-replace costodeudaInterno = 2.8/100*porInterno*pibY if anio == 2027
-replace costodeudaExterno = 2.8/100*porExterno*pibY if anio == 2027
-replace costodeudaInterno = 2.7/100*porInterno*pibY if anio == 2028
-replace costodeudaExterno = 2.7/100*porExterno*pibY if anio == 2028
-
-replace balprimario = 1.0 if anio == 2024
-replace balprimario = 1.0 if anio == 2025
-replace balprimario = 0.7 if anio == 2026
-replace balprimario = 0.6 if anio == 2027
-replace balprimario = 0.5 if anio == 2028
-*/
 
 
 

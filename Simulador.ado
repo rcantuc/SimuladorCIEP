@@ -23,13 +23,16 @@ quietly {
 	}
 
 	if "`base'" == "" {
-		if `anio' >= 2020 {
+		if `anio' >= 2022 {
+			local base = "ENIGH 2022"
+		}
+		if `anio' >= 2020 & `anio' < 2022 {
 			local base = "ENIGH 2020"
 		}
-		if `anio' >= 2018 & anio < 2020 {
+		if `anio' >= 2018 & `anio' < 2020 {
 			local base = "ENIGH 2018"
 		}
-		if `anio' >= 2016 & anio < 2018 {
+		if `anio' >= 2016 & `anio' < 2018 {
 			local base = "ENIGH 2016"
 		}
 		tokenize `base'
@@ -138,7 +141,7 @@ quietly {
 
 
 		** Ciclo de vida **
-		postfile CICLO bootstrap sexo edad decil double(poblacion `varlist') ///
+		postfile CICLO bootstrap sexo edad decil escol formal double(poblacion `varlist') ///
 			using `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'CICLO"', replace
 
 
@@ -275,6 +278,7 @@ quietly {
 
 			*** 1.3.4. Ciclo de Vida ***/
 			`noisily' CicloDeVida `varlist' `if' [`weight' = `exp'*`boot'], post boot(`k') decil(`decil')
+			`noisily' CicloDeVida `varlist' `if' [`weight' = `exp'*`boot'], post boot(`k') decil(escol)
 
 
 			*** 1.3.5. Proyecciones ***
@@ -543,9 +547,9 @@ quietly {
 	label define deciles 1 "I" 2 "II" 3 "III" 4 "IV" 5 "V" 6 "VI" 7 "VII" 8 "VIII" 9 "IX" 10 "X" 11 "Nacional"
 	label values decil deciles
 
-	*replace escol = 3 if escol == 4
-	*label define escol 0 "Ninguna" 1 "B{c a'}sica" 2 "Media superior" 3 "Superior o posgrado"
-	*label values escol escol
+	replace escol = 3 if escol == 4
+	label define escol 0 "Ninguna" 1 "B{c a'}sica" 2 "Media superior" 3 "Superior o posgrado"
+	label values escol escol
 
 	label define sexo 1 "Hombres" 2 "Mujeres"
 	label values sexo sexo
@@ -565,11 +569,11 @@ quietly {
 	use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'REC"', clear
 	forvalues k=1(1)`=_N' {
 		if anio[`k'] == aniobase[`k'] {
-			g ajuste = `REC'[1,1]/estimacion[`k']
+			local ajuste = `REC'[1,1]/estimacion[`k']
 			continue, break
 		}
 	}
-	replace estimacion = estimacion*ajuste
+	replace estimacion = estimacion*`ajuste'
 	save `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'REC"', replace
 
 	
@@ -647,7 +651,7 @@ program poblaciongini
 
 
 	*********************************
-	/*** 4. Educational attainment ***
+	*** 4. Educational attainment ***
 	levelsof escol, local(escol)
 	foreach k of local escol {
 		tabstat `varlist' if escol == `k', stat(sum) save
@@ -669,15 +673,26 @@ program poblaciongini
 	label values `grupoesc' `grupoescval'
 	label var `grupoesc' "escolaridad"
 
+	tempvar formalidad
+	g `formalidad' = formal != 0
+	
+	tempname formalidadval
+	label define `formalidadval' 1 "Con seguridad social" 0 "Sin seguridad social"
+	label values `formalidad' `formalidadval'
+	label var `formalidad' "formalidad"
 
 	****************/
 	*** 5. Graphs ***
 	graphpiramide `varlist', over(`grupo') title("`title'") rect(`rect') ///
 		men(`=string(`gsexlab1',"%7.0fc")') women(`=string(`gsexlab2',"%7.0fc")') ///
 		boot(`boottext') base(`base') pib(`pib') `nooutput' `nographs'
-	*graphpiramide `varlist', over(`grupoesc') title("`title'") rect(`rect') ///
+	graphpiramide `varlist', over(`grupoesc') title("`title'") rect(`rect') ///
 		men(`=string(`gsexlab1',"%7.0fc")') women(`=string(`gsexlab2',"%7.0fc")') ///
 		boot(`boottext') base(`base') pib(`pib') `nooutput' `nographs'
+	graphpiramide `varlist', over(`formalidad') title("`title'") rect(`rect') ///
+		men(`=string(`gsexlab1',"%7.0fc")') women(`=string(`gsexlab2',"%7.0fc")') ///
+		boot(`boottext') base(`base') pib(`pib') `nooutput' `nographs'
+
 end
 
 
@@ -911,8 +926,8 @@ program define ProyGraph
 
 	local title = modulo[1]
 	
-	replace estimacion = estimacion/1000000000
-	*replace estimacion = estimacion/pibYR*100
+	replace estimacion = estimacion*lambda/1000000000000
+	*replace estimacion = estimacion*lambda/pibYR*100
 
 	forvalues aniohoy = `anio'(1)`anio' {
 	*forvalues aniohoy = 1990(1)2050 {
@@ -939,16 +954,17 @@ program define ProyGraph
 		if "$nographs" != "nographs" & "`nographs'" != "nographs" {
 			twoway (connected estimacion anio) ///
 				(connected estimacion anio if anio == `aniohoy') ///
+				(connected estimacion anio if anio == `aniomax') ///
 				if anio > 1990, ///
-				ytitle("mil millones `currency' `anio'") ///
+				ytitle("billones `currency' `anio'") ///
 				///ytitle("% PIB") ///
 				yscale(range(0)) /*ylabel(0(1)4)*/ ///
-				ylabel(#5, format(%5.1fc) labsize(small)) ///
-				xlabel(1990(10)`=anio[_N]', labsize(small) labgap(2)) ///
+				ylabel(#5, format(%5.0fc) labsize(small)) ///
+				xlabel(1990(10)`=anio[_N]', labsize(small)) ///
 				xtitle("") ///
 				legend(off) ///
-				text(`=`MAX'[1,1]' `aniomax' "{bf:M{c a'}ximo:} `aniomax'", place(n)) ///
-				text(`estimacionvp' `aniohoy' "{bf:Hoy:} `aniohoy'", place(c)) ///
+				text(`=`MAX'[1,1]' `aniomax' "`aniomax'", place(c)) ///
+				text(`estimacionvp' `aniohoy' "`aniohoy'", place(c)) ///
 				title("{bf:Proyecci{c o'}n} de `title'") subtitle("$pais") ///
 				caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.") ///
 				name(`varlist'Proj, replace)

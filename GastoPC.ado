@@ -1,6 +1,5 @@
 program define GastoPC, return
 quietly {
-
 	timer on 9
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
@@ -9,9 +8,17 @@ quietly {
 	if _rc == 0 {
 		local aniovp = scalar(aniovp)
 	}
+	
+	capture confirm scalar anioPE
+	if _rc == 0 {
+		local aniope = scalar(anioPE)
+	}
+	else {
+		local aniope = `aniovp'
+	}
 
-	syntax [, ANIO(int `aniovp') OUTPUT NOGraphs OTROS(real 1)]
-	noisily di _newline(2) in g _dup(20) "." "{bf:   GASTO PÚBLICO per c{c a'}pita " in y `anio' "   }" in g _dup(20) "."
+	syntax [, ANIOvp(int `aniovp') ANIOPE(int `aniope') OUTPUT NOGraphs OTROS(real 1)]
+	noisily di _newline(2) in g _dup(20) "." "{bf:   GASTO PÚBLICO per c{c a'}pita}   " in g _dup(20) "."
 
 
 
@@ -22,9 +29,8 @@ quietly {
 	**# 1 Cuentas macroeconómicas (SCN, PIB, Balanza Comercial) ***
 	***                                                         ***
 	***************************************************************
-	*use if anio == `anio' using "`c(sysdir_personal)'/users/$id/PIB.dta", clear
-	PIBDeflactor, aniovp(`anio') nographs nooutput
-	keep if anio == `anio'
+	PIBDeflactor, aniovp(`aniovp') nographs nooutput
+	keep if anio == `aniovp'
 	local PIB = pibY[1]
 
 
@@ -38,9 +44,19 @@ quietly {
 	********************************
 	capture use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
 	if _rc != 0 {
-		use "`c(sysdir_personal)'/SIM/households`=aniovp'.dta", clear
+		if `aniope' >= 2022 scalar anioenigh = 2022
+		else if `aniope' >= 2020 & `aniope' < 2022 scalar anioenigh = 2020
+		else if `aniope' >= 2018 & `aniope' < 2020 scalar anioenigh = 2018
+		else if `aniope' >= 2016 & `aniope' < 2018 scalar anioenigh = 2016
+		capture use "`c(sysdir_personal)'/SIM/perfiles`aniope'.dta", clear
+		if _rc != 0 {
+			noisily di _newline in g "Creando base: " in y "/SIM/perfiles`aniope'.dta" ///
+				in g " con " in y "ENIGH " scalar(anioenigh)
+			noisily di in g "Tiempo aproximado de espera: " in y "10+ minutos"
+			noisily run `"`c(sysdir_personal)'/PerfilesSim.do"' `aniope'
+		}
 	}
-	use "`c(sysdir_personal)'/SIM/households`anio'.dta", clear
+	use "`c(sysdir_personal)'/SIM/households`aniope'.dta", clear
 	merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/`=anioenigh'/poblacion.dta", nogen keepus(disc*)
 	capture drop __*
 	tabstat factor, stat(sum) f(%20.0fc) save
@@ -59,7 +75,7 @@ quietly {
 
 	** 3.1 Alumnos y beneficiarios **
 	capture drop alum_*
-	if `anio' >= 2016 {
+	if `aniope' >= 2016 {
 		g alum_basica = asis_esc == "1" & tipoesc == "1" & (nivel >= "01" & nivel <= "07") & edad <= 15
 		g alum_medsup = asis_esc == "1" & tipoesc == "1" & (nivel >= "08" & nivel <= "09")
 		g alum_superi = asis_esc == "1" & tipoesc == "1" & (nivel >= "10" & nivel <= "12")
@@ -67,7 +83,7 @@ quietly {
 		g alum_adulto = asis_esc == "1" & tipoesc == "1" & (nivel >= "01" & nivel <= "07") & edad > 15
 	}
 
-	if `anio' < 2016 {
+	if `aniope' < 2016 {
 		g alum_basica = asis_esc == "1" & tipoesc == "1" & (nivel >= "1" & nivel <= "3") & edad <= 15
 		g alum_medsup = asis_esc == "1" & tipoesc == "1" & (nivel >= "4" & nivel <= "6")
 		g alum_superi = asis_esc == "1" & tipoesc == "1" & (nivel >= "7" & nivel <= "8")
@@ -117,7 +133,7 @@ quietly {
 	else {
 		local porc_inicial = .56
 		preserve
-		PEF if anio == `anio' & divSIM == 2 & divCIEP == 2, anio(`anio') by(desc_pp) min(0) nographs
+		PEF if anio == `aniope' & divSIM == 2 & divCIEP == 2, anio(`aniope') by(desc_pp) min(0) nographs
 		local iniciaA = r(Expansión_de_la_Educación_Ini)
 		local iniciaB = r(Educación_Inicial_y_Básica_Co)
 
@@ -136,7 +152,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if anio == `anio' & divCIEP == 2 & divSIM != 5 & divSIM != 2, anio(`anio') by(desc_subfuncion) min(0) rows(3) nographs
+		PEF if anio == `aniope' & divCIEP == 2 & divSIM != 5 & divSIM != 2, anio(`aniope') by(desc_subfuncion) min(0) rows(3) nographs
 		local basica = r(Educación_Básica)
 		scalar basica = `basica'/`alum_basica'
 		restore
@@ -151,7 +167,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if anio == `anio' & divCIEP == 2 & divSIM != 5 & divSIM != 2, anio(`anio') by(desc_subfuncion) min(0) nographs
+		PEF if anio == `aniope' & divCIEP == 2 & divSIM != 5 & divSIM != 2, anio(`aniope') by(desc_subfuncion) min(0) nographs
 		local medsup = r(Educación_Media_Superior)
 		scalar medsup = `medsup'/`alum_medsup'
 		restore
@@ -166,7 +182,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if anio == `anio' & divCIEP == 2 & divSIM != 5 & divSIM != 2, anio(`anio') by(desc_subfuncion) min(0) nographs
+		PEF if anio == `aniope' & divCIEP == 2 & divSIM != 5 & divSIM != 2, anio(`aniope') by(desc_subfuncion) min(0) nographs
 		local superi = r(Educación_Superior)
 		scalar superi = `superi'/`alum_superi'
 		restore
@@ -181,7 +197,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if anio == `anio' & divCIEP == 2 & divSIM != 5 & divSIM != 2, anio(`anio') by(desc_subfuncion) min(0) nographs
+		PEF if anio == `aniope' & divCIEP == 2 & divSIM != 5 & divSIM != 2, anio(`aniope') by(desc_subfuncion) min(0) nographs
 		local posgra = r(Posgrado)
 		scalar posgra = `posgra'/`alum_posgra'
 		restore
@@ -196,7 +212,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if anio == `anio' & divCIEP == 2 & divSIM != 5 & divSIM != 2, anio(`anio') by(desc_subfuncion) min(0) nographs
+		PEF if anio == `aniope' & divCIEP == 2 & divSIM != 5 & divSIM != 2, anio(`aniope') by(desc_subfuncion) min(0) nographs
 		local eduadu = r(Educación_para_Adultos)
 
 		scalar eduadu = `eduadu'/`alum_adulto'
@@ -212,7 +228,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if anio == `anio' & divCIEP == 2 & divSIM == 5 & divSIM != 2, anio(`anio') by(divCIEP) min(0) nographs
+		PEF if anio == `aniope' & divCIEP == 2 & divSIM == 5 & divSIM != 2, anio(`aniope') by(divCIEP) min(0) nographs
 		local invere = r(Gasto_neto)
 
 		scalar invere = `invere'/(`alum_basica'+`alum_medsup'+`alum_superi'+`alum_posgra'+`alum_adulto')
@@ -230,7 +246,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if anio == `anio' & divCIEP == 2 & divSIM != 5 & divSIM != 2, anio(`anio') by(desc_subfuncion) min(0) nographs
+		PEF if anio == `aniope' & divCIEP == 2 & divSIM != 5 & divSIM != 2, anio(`aniope') by(desc_subfuncion) min(0) nographs
 		local cultur = r(Cultura) + r(Deporte_y_Recreación)
 		local invest = r(Desarrollo_Tecnológico) + r(Investigación_Científica) + r(Servicios_Científicos_y_Tecnol)
 		local otrose = r(Otros_Servicios_Educativos_y_Ac) + r(Función_Pública)
@@ -256,11 +272,11 @@ quietly {
 
 
 	** 3.11 Resultados **
-	noisily di _newline(2) in y "{bf: A. Educaci{c o'}n CIEP" "}"
+	noisily di _newline(2) in g "{bf: A. Educaci{c o'}n CIEP: " in y "`aniope'}"
 	noisily di _newline in g "{bf:  Gasto por nivel" ///
 		_col(33) %15s in g "Alumnos" ///
 		_col(50) %7s "% PIB" ///
-		_col(60) %10s in g "Per c{c a'}pita (MXN `anio')" "}"
+		_col(60) %10s in g "Per c{c a'}pita (MXN `aniovp')" "}"
 	noisily di in g _dup(80) "-"
 	noisily di in g "  Inicial" ///
 		_col(33) %15.0fc in y (`pobPrimeraInfancia'[1,1]) ///
@@ -394,7 +410,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if anio == `anio' & divCIEP == 9 & divSIM != 2 & divSIM != 5, anio(`anio') by(desc_pp) min(0) nographs
+		PEF if anio == `aniope' & divCIEP == 9 & divSIM != 2 & divSIM != 5, anio(`aniope') by(desc_pp) min(0) nographs
 		local imssbien0 = r(Programa_IMSS_BIENESTAR)
 		local segpop0 = r(Seguro_Popular)
 		if `segpop0' == . {
@@ -405,14 +421,14 @@ quietly {
 		}
 
 
-		PEF if anio == `anio' & divCIEP == 9 & divSIM != 2 & divSIM != 5 & ramo == 12, anio(`anio') by(desc_pp) min(0) nographs
+		PEF if anio == `aniope' & divCIEP == 9 & divSIM != 2 & divSIM != 5 & ramo == 12, anio(`aniope') by(desc_pp) min(0) nographs
 		local atencINSABI = r(Atención_a_la_Salud)
 		local fortaINSABI = r(Fortalecimiento_a_la_atención_)
 		if `fortaINSABI' == . {
 			local fortaINSABI = 0
 		}
 
-		PEF if anio == `anio' & divCIEP == 9 & divSIM != 2 & divSIM != 5, anio(`anio') by(ramo) min(0) nographs
+		PEF if anio == `aniope' & divCIEP == 9 & divSIM != 2 & divSIM != 5, anio(`aniope') by(ramo) min(0) nographs
 		local fassa = r(Aportaciones_Federales_para_Ent)
 
 		local imssbien = `segpop0'+`imssbien0'+`fassa'+`fortaINSABI'+`atencINSABI'
@@ -423,10 +439,10 @@ quietly {
 
 
 	** 4.3 Primera infancia y cuidados **
-	if `anio' == 2023 {
+	if `aniope' <= 2023 {
 		local porc_nna = 0.45
 	}
-	if `anio' == 2024 {
+	if `aniope' >= 2024 {
 		local porc_nna = 0.44		
 	}
 	capture confirm scalar salinf
@@ -435,7 +451,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if anio == `anio' & divCIEP == 9 & divSIM == 2, anio(`anio') by(divCIEP) min(0) nographs
+		PEF if anio == `aniope' & divCIEP == 9 & divSIM == 2, anio(`aniope') by(divCIEP) min(0) nographs
 		local salinf = r(Salud)
 		scalar salinf = (`salinf'*`porc_nna')/`pobNNA'[1,1]
 		restore
@@ -450,7 +466,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if anio == `anio' & divCIEP == 9 & divSIM != 2 & divSIM != 5, anio(`anio') by(desc_pp) min(0) nographs
+		PEF if anio == `aniope' & divCIEP == 9 & divSIM != 2 & divSIM != 5, anio(`aniope') by(desc_pp) min(0) nographs
 		local caneros = r(Seguridad_Social_Cañeros)
 		local incorpo = r(Régimen_de_Incorporación)
 		local adeusal = r(Adeudos_con_el_IMSS_e_ISSSTE_y_)
@@ -458,7 +474,7 @@ quietly {
 			local adeusal = 0
 		}
 
-		PEF if anio == `anio' & divCIEP == 9 & divSIM != 2 & divSIM != 5, anio(`anio') by(ramo) min(0) nographs
+		PEF if anio == `aniope' & divCIEP == 9 & divSIM != 2 & divSIM != 5, anio(`aniope') by(ramo) min(0) nographs
 		local ssa = r(Salud)+`incorpo'+`adeusal'+`caneros'-`segpop0'-`fortaINSABI'-`atencINSABI'+`salinf'*(1-`porc_nna')
 		scalar ssa = `ssa'/`benef_ssa'
 		restore
@@ -473,7 +489,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if anio == `anio' & divCIEP == 9 & divSIM != 2 & divSIM != 5, anio(`anio') by(ramo) min(0) nographs
+		PEF if anio == `aniope' & divCIEP == 9 & divSIM != 2 & divSIM != 5, anio(`aniope') by(ramo) min(0) nographs
 		local imss = r(Instituto_Mexicano_del_Seguro_S)
 
 		local imss = `imss'
@@ -490,7 +506,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if anio == `anio' & divCIEP == 9 & divSIM != 2 & divSIM != 5, anio(`anio') by(ramo) min(0) nographs
+		PEF if anio == `aniope' & divCIEP == 9 & divSIM != 2 & divSIM != 5, anio(`aniope') by(ramo) min(0) nographs
 		local issste = r(Instituto_de_Seguridad_y_Servic)
 
 		local issste = `issste'
@@ -507,7 +523,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if anio == `anio' & divCIEP == 9 & divSIM != 2 & divSIM != 5, anio(`anio') by(ramo) min(0) nographs
+		PEF if anio == `aniope' & divCIEP == 9 & divSIM != 2 & divSIM != 5, anio(`aniope') by(ramo) min(0) nographs
 		local pemex = r(Petróleos_Mexicanos)
 		scalar pemex = (`pemex')/`benef_pemex'
 		restore
@@ -522,7 +538,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if anio == `anio' & divCIEP == 9 & divSIM != 2 & divSIM != 5, anio(`anio') by(ramo) min(0) nographs
+		PEF if anio == `aniope' & divCIEP == 9 & divSIM != 2 & divSIM != 5, anio(`aniope') by(ramo) min(0) nographs
 		local issfam = r(Defensa_Nacional) + r(Marina)
 		scalar issfam = (`issfam')/`benef_issfam'
 		restore
@@ -537,7 +553,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if anio == `anio' & divCIEP == 9 & divSIM == 5, anio(`anio') by(divCIEP) min(0) nographs
+		PEF if anio == `aniope' & divCIEP == 9 & divSIM == 5, anio(`aniope') by(divCIEP) min(0) nographs
 		local invers = r(Gasto_neto)
 		scalar invers = (`invers')/`benef_ssa'
 		restore
@@ -551,11 +567,11 @@ quietly {
 
 
 	** 4.11 Resultados **
-	noisily di _newline(2) in y "{bf: B. " in y "Salud CIEP" "}"
+	noisily di _newline(2) in g "{bf: B. Salud CIEP: " in y "`aniope'}"
 	noisily di _newline in g "{bf:  Gasto por instituci{c o'}n" ///
 		_col(33) %15s in g "Asegurados" ///
 		_col(50) %7s "% PIB" ///
-		_col(60) %10s in g "Per c{c a'}pita (MXN `anio')" "}"
+		_col(60) %10s in g "Per c{c a'}pita (MXN `aniovp')" "}"
 	noisily di in g _dup(80) "-"
 	noisily di in g "  Atención a NNA" ///
 		_col(33) %15.0fc in y (`pobNNA'[1,1]) ///
@@ -658,7 +674,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if anio == `anio' & divCIEP == 8, anio(`anio') by(divCIEP) min(0) nographs
+		PEF if anio == `aniope' & divCIEP == 8, anio(`aniope') by(divCIEP) min(0) nographs
 		local pam = r(Pensión_AM)
 		scalar pam = `pam'/`pens_pam'
 		restore
@@ -673,7 +689,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if anio == `anio' & divCIEP == 7, anio(`anio') by(ramo) min(0) nographs
+		PEF if anio == `aniope' & divCIEP == 7, anio(`aniope') by(ramo) min(0) nographs
 		local penimss = r(Instituto_Mexicano_del_Seguro_S)
 		scalar penimss = `penimss'/`pens_imss'
 		restore
@@ -688,7 +704,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if anio == `anio' & divCIEP == 7, anio(`anio') by(ramo) min(0) nographs
+		PEF if anio == `aniope' & divCIEP == 7, anio(`aniope') by(ramo) min(0) nographs
 		local penisss = r(Instituto_de_Seguridad_y_Servic)
 		scalar penisss = `penisss'/`pens_issste'
 		restore
@@ -703,7 +719,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if anio == `anio' & divCIEP == 7, anio(`anio') by(ramo) min(0) nographs
+		PEF if anio == `aniope' & divCIEP == 7, anio(`aniope') by(ramo) min(0) nographs
 		local penpeme = r(Petróleos_Mexicanos)
 		scalar penpeme = `penpeme'/`pens_pemex'
 		restore
@@ -718,7 +734,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if anio == `anio' & divCIEP == 7, anio(`anio') by(ramo) min(0) nographs
+		PEF if anio == `aniope' & divCIEP == 7, anio(`aniope') by(ramo) min(0) nographs
 		local penotro = r(Aportaciones_a_Seguridad_Social)+r(Comisión_Federal_de_Electricid)
 		scalar penotro = `penotro'/`Pension'[1,5]
 		restore
@@ -730,11 +746,11 @@ quietly {
 
 
 	** 5.7 Resultados **
-	noisily di _newline(2) in y "{bf: C. Pensiones CIEP}"
+	noisily di _newline(2) in g "{bf: C. Pensiones CIEP: " in y "`aniope'}"
 	noisily di _newline in g "{bf:  Gasto por instituci{c o'}n" ///
 		_col(33) %15s in g "Pensionados" ///
 		_col(50) %7s "% PIB" ///
-		_col(60) %10s in g "Per c{c a'}pita (MXN `anio')" "}"
+		_col(60) %10s in g "Per c{c a'}pita (MXN `aniovp')" "}"
 	noisily di in g _dup(80) "-"
 	noisily di in g "  Pensi{c o'}n Adultos Mayores" ///
 		_col(33) %15.0fc in y `pens_pam' ///
@@ -795,7 +811,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if anio == `anio' & divCIEP == 3 & divSIM != 5 & capitulo != 9, by(ramo) anio(`anio') min(0) nographs
+		PEF if anio == `aniope' & divCIEP == 3 & divSIM != 5 & capitulo != 9, by(ramo) anio(`aniope') min(0) nographs
 		local gaspemex = r(Petróleos_Mexicanos)
 		scalar gaspemex = `gaspemex'/`Energia'[1,1]
 		restore
@@ -810,7 +826,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if anio == `anio' & divCIEP == 3 & divSIM != 5 & capitulo != 9, by(ramo) anio(`anio') min(0) nographs
+		PEF if anio == `aniope' & divCIEP == 3 & divSIM != 5 & capitulo != 9, by(ramo) anio(`aniope') min(0) nographs
 		local gascfe = r(Comisión_Federal_de_Electricid)
 		scalar gascfe = `gascfe'/`Energia'[1,1]
 		restore
@@ -825,7 +841,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if anio == `anio' & divCIEP == 3 & divSIM != 5 & capitulo != 9, by(ramo) anio(`anio') min(0) nographs
+		PEF if anio == `aniope' & divCIEP == 3 & divSIM != 5 & capitulo != 9, by(ramo) anio(`aniope') min(0) nographs
 		local gassener = r(Gasto_neto)-r(Comisión_Federal_de_Electricid)-r(Petróleos_Mexicanos)
 		scalar gassener = `gassener'/`Energia'[1,1]
 		restore
@@ -840,7 +856,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if anio == `anio' & divCIEP == 3 & divSIM == 5 & capitulo != 9, by(ramo) anio(`anio') min(0) nographs
+		PEF if anio == `aniope' & divCIEP == 3 & divSIM == 5 & capitulo != 9, by(ramo) anio(`aniope') min(0) nographs
 		local gasinverf = r(Gasto_neto)
 		scalar gasinverf = `gasinverf'/`Energia'[1,1]
 		restore
@@ -855,7 +871,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if anio == `anio' & divCIEP == 3 & capitulo == 9, by(ramo) anio(`anio') min(0) nographs
+		PEF if anio == `aniope' & divCIEP == 3 & capitulo == 9, by(ramo) anio(`aniope') min(0) nographs
 		local gascosdeue = r(Gasto_neto)
 		scalar gascosdeue = `gascosdeue'/`Energia'[1,1]
 		restore
@@ -867,11 +883,11 @@ quietly {
 
 
 	** 6.6 Resultados **
-	noisily di _newline(2) in y "{bf: D. Energía CIEP}"
+	noisily di _newline(2) in g "{bf: D. Energía CIEP: " in y "`aniope'}"
 	noisily di _newline in g "{bf:  Gasto por organismo" ///
 		_col(33) %15s in g "Poblacion" ///
 		_col(50) %7s "% PIB" ///
-		_col(60) %10s in g "Per c{c a'}pita (MXN `anio')" "}"
+		_col(60) %10s in g "Per c{c a'}pita (MXN `aniovp')" "}"
 	noisily di in g _dup(80) "-"
 	noisily di in g "  CFE" ///
 		_col(33) %15.0fc in y `Energia'[1,1] ///
@@ -957,7 +973,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if anio == `anio', by(divCIEP) anio(`anio') min(0) nographs
+		PEF if anio == `aniope', by(divCIEP) anio(`aniope') min(0) nographs
 		local gasfeder = r(Part_y_otras_Apor)
 		scalar gasfeder = `gasfeder'/`Energia'[1,1]
 		restore
@@ -972,7 +988,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if anio == `anio', by(divCIEP) anio(`anio') min(0) nographs
+		PEF if anio == `aniope', by(divCIEP) anio(`aniope') min(0) nographs
 		local gascosto = r(Costo_de_la_deuda)
 		scalar gascosto = `gascosto'/`Energia'[1,1]
 		restore
@@ -987,7 +1003,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if anio == `anio' & divCIEP != 3, by(divCIEP) anio(`anio') min(0) nographs
+		PEF if anio == `aniope' & divCIEP != 3, by(divCIEP) anio(`aniope') min(0) nographs
 		local gasinfra = r(Otras_inversiones)
 		scalar gasinfra = `gasinfra'/`Energia'[1,1]
 		restore
@@ -1001,14 +1017,14 @@ quietly {
 		local gascuidados = gascuidados*`Resto'[1,1]
 	}
 	else {
-		if `anio' == 2023 {
+		if `aniope' <= 2023 {
 			local FAM_cuidados = .65
 		}
-		if `anio' == 2024 {
+		if `aniope' >= 2024 {
 			local FAM_cuidados = .81
 		}
 		preserve
-		PEF if anio == `anio' & divSIM == 2 & divCIEP != 2 & divCIEP != 9, by(desc_pp) anio(`anio') min(0) nographs
+		PEF if anio == `aniope' & divSIM == 2 & divCIEP != 2 & divCIEP != 9, by(desc_pp) anio(`aniope') min(0) nographs
 		local FAM_gastocuidados = r(FAM_Asistencia_Social)*(1-`FAM_cuidados')
 		local gasmadres = r(Programa_de_Apoyo_para_el_Biene)
 
@@ -1026,7 +1042,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if anio == `anio' & divSIM == 2 & divCIEP != 2 & divCIEP != 9, by(desc_pp) anio(`anio') min(0) nographs
+		PEF if anio == `aniope' & divSIM == 2 & divCIEP != 2 & divCIEP != 9, by(desc_pp) anio(`aniope') min(0) nographs
 		local gasmadres = r(Programa_de_Apoyo_para_el_Biene)
 		scalar gasmadres = `gasmadres'/`MADRES'[1,1]
 		restore
@@ -1041,7 +1057,7 @@ quietly {
 	}
 	else {
 		preserve
-		PEF if anio == `anio', by(divCIEP) anio(`anio') min(0) nographs
+		PEF if anio == `aniope', by(divCIEP) anio(`aniope') min(0) nographs
 		local gasotros = r(Otros_gastos)+r(Cuotas_ISSSTE)-`gascuidados'-`gasmadres'
 		scalar gasotros = `gasotros'/`Energia'[1,1]
 		restore
@@ -1052,11 +1068,11 @@ quietly {
 	scalar otrosgas = otrosgasPIB/100*`PIB'/`Energia'[1,1]
 
 	* Resultados *
-	noisily di _newline(2) in y "{bf: E. Otros gastos CIEP}"
+	noisily di _newline(2) in g "{bf: E. Otros gastos CIEP: " in y "`aniope'}"
 	noisily di _newline in g "{bf:  Gasto por concepto" ///
 		_col(33) %15s in g "Poblacion" ///
 		_col(50) %7s "% PIB" ///
-		_col(60) %10s in g "Per c{c a'}pita (MXN `anio')" "}"
+		_col(60) %10s in g "Per c{c a'}pita (MXN `aniovp')" "}"
 	noisily di in g _dup(80) "-"
 	noisily di in g "  Otras inversiones" ///
 		_col(33) %15.0fc in y `Energia'[1,1] ///
@@ -1150,11 +1166,11 @@ quietly {
 	scalar transf = transfPIB/100*`PIB'/`pobIngBas'[1,1]
 
 	* Resultados *
-	noisily di _newline(2) in y "{bf: F. Transferencias}" 
+	noisily di _newline(2) in g "{bf: F. Transferencias: " in y "`aniope'}" 
 	noisily di _newline in g "{bf:  Gasto por concepto" ///
 		_col(33) %15s in g "Población" ///
 		_col(50) %7s "% PIB" ///
-		_col(60) %10s in g "Per c{c a'}pita (MXN `anio')" "}"
+		_col(60) %10s in g "Per c{c a'}pita (MXN `aniovp')" "}"
 	noisily di in g _dup(80) "-"
 	noisily di in g "  `bititle'" ///
 		_col(33) %15.0fc in y `pobIngBas'[1,1] ///

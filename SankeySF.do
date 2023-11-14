@@ -26,7 +26,7 @@ tempvar Laboral Consumo Capital FMP
 egen `Laboral'  = rsum(ISRAS ISRPF CUOTAS)
 egen `Consumo'  = rsum(IVA IEPSP IEPSNP ISAN IMPORT)
 egen `Capital'  = rsum(ISRPM OTROSK)
-egen `FMP' = rsum(FMPSIM)
+egen `FMP' = rsum(FMP)
 
 collapse (sum) ing_Imp_Laborales=`Laboral' ing__Imp_Consumo=`Consumo' ///
 	ing___Imp_al_capital=`Capital' ing____FMP=`FMP' [fw=factor], by(`1')
@@ -76,17 +76,17 @@ tabstat factor, stat(sum) f(%20.0fc) save
 tempname pobtot
 matrix `pobtot' = r(StatTotal)*`ajustepob'/`pobenigh'[1,1]
 
-replace OtrosGas = OtrosGas - Infra
+replace Otros_gastos = Otros_gastos - infra_entidad
 
-replace Pension = Pension + PenBienestar
+replace Pension = Pension + Pensión_AM
 
-tabstat Pension Educacion Salud OtrosGas [fw=factor], stat(sum) f(%20.0fc) save
+tabstat Pension Educación Salud Otros_gastos [fw=factor], stat(sum) f(%20.0fc) save
 tempname GAST 
 matrix `GAST' = r(StatTotal)
 
-collapse (sum) gas_Educación=Educacion gas_Salud=Salud /*gas__Salarios_de_gobierno=Salarios*/ ///
+collapse (sum) gas_Educación=Educación gas_Salud=Salud /*gas__Salarios_de_gobierno=Salarios*/ ///
 	gas___Pensiones=Pension gas____Ingreso_Básico=IngBasico ///
-	gas____Inversión=_Infra [fw=factor], by(`1')
+	gas____Inversión=infra_entidad [fw=factor], by(`1')
 
 levelsof `1', local(`1')
 foreach k of local `1' {

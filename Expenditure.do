@@ -28,6 +28,12 @@ else {
 	if `1' >= 2016 & `1' < 2018 {
 		local enighanio = 2016
 	}
+	if `1' >= 2014 & `1' < 2016 {
+		local enighanio = 2014
+	}
+	if `1' >= 2012 & `1' < 2014 {
+		local enighanio = 2012
+	}
 }
 
 

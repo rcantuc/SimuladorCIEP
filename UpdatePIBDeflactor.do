@@ -2,6 +2,11 @@
 **** Base de datos: PIBDeflactor.dta ****
 *****************************************
 noisily di in g "  Updating PIBDeflactor.dta..." _newline
+capture mkdir "`c(sysdir_personal)'/SIM"
+capture mkdir "`c(sysdir_personal)'/SIM/BIE"
+cd "`c(sysdir_personal)'/SIM/BIE"
+
+
 
 
 
@@ -11,32 +16,47 @@ noisily di in g "  Updating PIBDeflactor.dta..." _newline
 ***        ***
 **************
 
-** 1.1 Importar y limpiar la base de datos **
-import excel "`=c(sysdir_site)'../BasesCIEP/UPDATE/SCN/01 - PIB.xlsx", clear
-LimpiaBIE
+** 1.1. Importar variables de interés desde el BIE **
+local series "734407 735143 446562 446565 446566"
+// 750454 750455 750456 750457 750458 750459 750460 750461 750462 750463 750464 750465 750466 750467 750468 750469 750470 750471 750472 750473 750474 750475 750476 750477 750478 750479 750480 750481 750482 750483 750484 750485
+run "`c(sysdir_personal)'/UpdateBIE.do" "`series'"
 
 
 ** 1.2 Renombrar variables **
-rename A periodo
-rename B pibQ
-rename GD indiceQ
-replace indiceQ = indiceQ/1000000
+rename periodos periodo
+
+rename productointernobrutof1millonesde pibQ
+label var pibQ "Producto Interno Bruto (trimestral)"
+
+rename productointernobrutof1índicebase indiceQ
+label var indiceQ "Índice de precios implícitos (trimestral)"
+
+rename poblacióntotalaf1númerodepersona PoblacionENOE
+label var PoblacionENOE "Población ENOE"
+
+rename ocupadaaf1númerodepersonastrimes PoblacionOcupada
+label var PoblacionOcupada "Población Ocupada (ENOE)"
+
+rename desocupadaaf1númerodepersonastri PoblacionDesocupada
+label var PoblacionDesocupada "Población Desocupada (ENOE)"
+
+
+** 1.3 Dar formato a variables **
+replace pibQ = pibQ*1000000
 format indice* %8.3f
+format pib %20.0fc
+format Poblacion* %12.0fc
 
 
-** 1.3 Time Series **
-split periodo, destring p("/") ignore("r p")
+** 1.4 Time Series **
+split periodo, destring p("/") //ignore("r p")
 rename periodo1 anio
 label var anio "anio"
 rename periodo2 trimestre
 label var trimestre "trimestre"
 
-destring pibQ indiceQ, replace
-label var pibQ "Producto Interno Bruto (trimestral)"
-label var indiceQ "Índice de precios implícitos (trimestral)"
 
-
-** 1.4 Guardar **
+** 1.5 Guardar **
 order anio trimestre pibQ
 drop periodo
 compress
@@ -72,32 +92,6 @@ tempfile workingage
 save "`workingage'"
 
 
-** 2.3 Población ocupada (ENOE) **
-import excel "`c(sysdir_site)'../BasesCIEP/UPDATE/SCN/02 - Poblacion.xlsx", clear
-LimpiaBIE, nomult
-
-
-** 2.4 Renombrar variables **
-rename A periodo
-rename B PoblacionENOE
-rename E PoblacionOcupada
-rename F PoblacionDesocupada
-
-
-** 2.5 Time Series **
-split periodo, destring p("/") ignore("r p")
-rename periodo1 anio
-rename periodo2 trimestre
-
-
-** 2.5 Guardar **
-g entidad = "Nacional"
-drop periodo
-format Poblacion* %15.0fc
-tempfile poblacionenoe
-save "`poblacionenoe'"
-
-
 
 
 
@@ -106,13 +100,14 @@ save "`poblacionenoe'"
 **# 3 Unión ***
 ***         ***
 ***************
-use (anio trimestre pibQ indiceQ) using `PIB', clear
+use `PIB', clear
 	local ultanio = anio[_N]
 	local ulttrim = trimestre[_N]
 merge m:1 (anio) using "`workingage'", nogen //keep(matched)
 merge m:1 (anio) using "`poblacion'", nogen //keep(matched)
-merge 1:1 (anio trimestre) using "`poblacionenoe'", nogen keepus(Poblacion*)
 
+** 1.4 Moneda **
+g currency = "MXN"
 
 ** 3.1 Anio + Trimestre **
 replace trimestre = 1 if trimestre == .
@@ -122,28 +117,14 @@ label var aniotrimestre "YearQuarter"
 tsset aniotrimestre
 
 
-** 3.2 Moneda **
-g currency = "MXN"
-
-
-** 3.3 Variables de interés **
-forvalues k=1(1)`=_N' {
-	if anio[`k'] == `ultanio' & trimestre[`k'] == `ulttrim' {
-		local obsvp = `k'
-	}
-}
-tempvar deflator
-g double `deflator' = indiceQ/indiceQ[`obsvp']
-g pibQR = pibQ/`deflator'
-g pibPO = pibQR/PoblacionOcupada
 
 
 
-
-
-********************
-* 3 Guardar base SIM *
-********************
+**************************
+***                    ***
+**# 4 Guardar base SIM ***
+***                    ***
+**************************
 format pib* %25.0fc
 capture drop __*
 sort aniotrimestre
@@ -153,44 +134,3 @@ if `c(version)' > 13.1 {
 else {
 	save "`c(sysdir_personal)'/SIM/PIBDeflactor.dta", replace
 }
-
-
-
-
-
-*******************************
-*** 4 Gráficas informativas ***
-*******************************
-use "`c(sysdir_personal)'/SIM/PIBDeflactor.dta", clear
-
-** 1.4 Texto **
-g crec_pibQR = (pibQR/L4.pibQR-1)*100
-
-* Texto sobre lineas *
-forvalues k=`=_N'(-1)1 {
-	if pibPO[`k'] != . /*& trimestre[`k'] == `ulttrim'*/ {
-		local text_pibQR `"`text_pibQR' `=crec_pibQR[`k']' `=aniotrimestre[`k']' "`=string(crec_pibQR[`k'],"%5.1fc")'%" "'
-	}
-}
-
-* Gráfica *
-twoway connected crec_pibQR aniotrimestre if pibPO != . /*& trimestre == `k'*/, ///
-	title({bf:Producto Interno Bruto}) subtitle(${pais}) ///
-	ytitle("Crecimiento trimestre vs. trimestre (%)") xtitle("") ///
-	tlabel(2005q1(4)`ultanio'q`ulttrim') ///
-	text(`text_pibQR', size(vsmall) color(white)) ///
-	note("{bf:{c U'}ltimo dato reportado}: `ultanio' trim. `ulttrim'.") ///
-	caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
-	name(UpdatePIBDeflactor, replace)
-
-twoway (bar pibPO aniotrimestre, mlabel(pibPO) mlabposition(7) mlabangle(90) mlabcolor(white) mlabgap(0pt)) ///
-	if pibPO != . /*& trimestre == `k'*/, ///
-	title({bf:Producto Interno Bruto por población ocupada}) subtitle(${pais}) ///
-	ytitle(`=currency[`obsvp']' `ultanio') xtitle("") ///
-	tlabel(2005q1(4)`ultanio'q`ulttrim') ///
-	///text(`crec_PIBPC', size(vsmall)) ///
-	ylabel(/*0(5)`=ceil(`pibYRmil'[_N])'*/, format(%20.0fc)) yscale(range(500000)) ///
-	note("{bf:{c U'}ltimo dato reportado}: `ultanio' trim. `ulttrim'.") ///
-	caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE/ENOE.") ///
-	name(UpdatePIBDeflactorPO, replace)
-

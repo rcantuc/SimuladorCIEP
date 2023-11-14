@@ -64,7 +64,7 @@ quietly {
 	merge m:1 (anio) using "`PIB'", nogen keepus(pibY indiceY deflator var_pibY) keep(matched) sorted
 	forvalues k=1(1)`=_N' {
 		if gasto[`k'] != . & "`first'" != "first" { 
-			local aniofirst = 2013 //anio[`k']
+			local aniofirst = 2016 //anio[`k']
 			local first "first"
 		}
 	}
@@ -377,30 +377,30 @@ quietly {
 			tempname TOT`k'
 			matrix `TOT`k'' = r(Stat`k')
 			if `TOT`k''[1,1]-`CUOTAS`k''[1,1] != . {
-				local text `"`text' `=`TOT`k''[1,1]-`CUOTAS`k''[1,1]' `j' "{bf:`=string(`TOT`k''[1,2],"%7.1fc")'% PIB}""'
+				local text `"`text' `=(`TOT`k''[1,1]-`CUOTAS`k''[1,1])*1.02' `j' "{bf:`=string(`TOT`k''[1,1],"%7.1fc")'}""'
 				local j = `j' + 100/(`anio'-`aniofirst'+1)
 			}
 		}
-		if "$export" == "" {
-			local graphtitle "{bf:Gasto p{c u'}blico presupuestario}"
-			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP y $paqueteEconomico."
-		}
-		else {
-			local graphtitle ""
-			local graphfuente ""
-		}
+		//if "$export" == "" {
+			local graphtitle "Gasto público"
+			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP."
+		//}
+		//else {
+		//	local graphtitle ""
+		//	local graphfuente ""
+		//}
 		graph bar (sum) gastoreal if anio >= `aniofirst' & anio <= `anio', ///
 			over(resumido, sort(1) descending) over(anio, gap(0)) stack asyvar ///
-			blabel(, format(%10.0fc)) outergap(0) ///
+			blabel(, format(%10.1fc)) outergap(0) ///
 			bar(9, color(150 6 92)) bar(8, color(53 200 71)) ///
 			bar(7, color(255 129 0)) bar(6, color(0 151 201)) ///
 			bar(5, color(224 97 83)) bar(4, color(255 189 0)) ///
 			bar(3, color(255 55 0)) bar(2, color(57 198 184)) ///
 			bar(1, color(211 199 225)) ///
 			title("`graphtitle'") ///
-			subtitle($pais) ///
+			subtitle("por `by'") ///
 			caption("`graphfuente'") ///
-			text(`text', color(black) placement(n) size(vsmall)) ///
+			text(`text', color(black) placement(n) size(small)) ///
 			ytitle(mil millones MXN `anio') ///
 			ylabel(, format(%15.0fc) labsize(small)) ///
 			yscale(range(0)) ///
@@ -409,7 +409,8 @@ quietly {
 			note("{bf:Nota}: Porcentajes entre par{c e'}ntesis son con respecto al total de `anio'.")
 
 		if "$export" != "" {
-			graph export "$export/gastos`by'.png", as(png) name("gastos`by'") replace
+			*graph export "$export/gastos`by'`if'.png", as(png) name("gastos`by'") replace
+			graph save gastos`by' "$export/gastos`by'`if'.gph", replace
 		}
 	}
 

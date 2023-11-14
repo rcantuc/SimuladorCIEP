@@ -25,7 +25,7 @@ quietly {
 	tempvar varlist2
 	g double `varlist2' = `varlist' `if'
 	
-	collapse (sum) `varlist2' `pob' [`weight' `exp'], by(sexo edad `decil')
+	collapse (sum) `varlist2' `pob' [`weight' `exp'], by(sexo edad `decil' escol formal)
 	format `varlist2' %20.0fc
 
 
@@ -47,8 +47,7 @@ quietly {
 	*********************************
 	if "`post'" == "post" {
 		forvalues k=1(1)`=_N' {
-			capture post CICLO (`bootstrap') (sexo[`k']) (edad[`k']) (`decil'[`k']) ///
-				(`pob'[`k']) (`varlist2'[`k'])
+			capture post CICLO (`bootstrap') (sexo[`k']) (edad[`k']) (`decil'[`k']) (escol[`k']) (formal[`k']) (`pob'[`k']) (`varlist2'[`k'])
 		}
 	}
 
