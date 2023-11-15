@@ -7,7 +7,7 @@ capture log close _all
 set more off, permanently
 set type double, permanently
 set charset latin1, permanently
-//sysdir set PERSONAL `"`c(sysdir_site)'"'
+sysdir set PERSONAL `"`c(sysdir_site)'"'
 
 
 

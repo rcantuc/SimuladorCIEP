@@ -67,57 +67,6 @@ quietly {
 
 	noisily di _newline(2) in g _dup(20) "." "{bf:   PIB + Deflactor:" in y " PIB `aniovp'   }" in g _dup(20) "." _newline
 	noisily di in g " PIB " in y "`aniofinal'q`trim_last'" _col(33) %20.0fc pibQ[`obsfinal'] in g " `=currency' ({c u'}ltimo reportado)"
-
-
-*tempvar deflator
-*g double `deflator' = indiceQ/indiceQ[1]
-g pibQR = pibQ // indiceQ/indiceQ[`obsvp']
-g pibPO = pibQR/PoblacionOcupada
-	
-	
-	** 1.4 Texto **
-g crec_pibQR = (pibQR/L4.pibQR-1)*100
-		if "`nographs'" != "nographs" & "$nographs" == "" {
-
-* Texto sobre lineas *
-forvalues k=`=_N'(-1)1 {
-	if pibPO[`k'] != . /*& trimestre[`k'] == `ulttrim'*/ {
-		local text_pibQR `"`text_pibQR' `=crec_pibQR[`k']' `=aniotrimestre[`k']' "`=string(crec_pibQR[`k'],"%5.1fc")'%" "'
-	}
-}
-
-* Gráfica *
-twoway connected crec_pibQR aniotrimestre if pibPO != . /*& trimestre == `k'*/, ///
-	title({bf:Producto Interno Bruto}) subtitle(${pais}) ///
-	ytitle("Crecimiento trimestre vs. trimestre (%)") xtitle("") ///
-	tlabel(2005q1(4)`aniofinal'q`trim_last') ///
-	text(`text_pibQR', size(vsmall) color(white)) ///
-	note("{bf:{c U'}ltimo dato reportado}: `ultanio' trim. `ulttrim'.") ///
-	caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
-	name(UpdatePIBDeflactor, replace)
-
-twoway (bar pibPO aniotrimestre, mlabel(pibPO) mlabposition(7) mlabangle(90) mlabcolor(white) mlabgap(0pt)) ///
-	if pibPO != . /*& trimestre == `k'*/, ///
-	title({bf:Producto Interno Bruto por población ocupada}) subtitle(${pais}) ///
-	ytitle(`=currency[`obsvp']' `ultanio') xtitle("") ///
-	tlabel(2005q1(4)`aniofinal'q`trim_last') ///
-	///text(`crec_PIBPC', size(vsmall)) ///
-	ylabel(/*0(5)`=ceil(`pibYRmil'[_N])'*/, format(%20.0fc)) yscale(range(500000)) ///
-	note("{bf:{c U'}ltimo dato reportado}: `ultanio' trim. `ulttrim'.") ///
-	caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE/ENOE.") ///
-	name(UpdatePIBDeflactorPO, replace)
-
-	
-		}
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	collapse (mean) indiceY=indiceQ pibY=pibQ pibYR=pibQR WorkingAge Poblacion* pibPO (last) trimestre, by(anio currency)
 	tsset anio
 
@@ -574,7 +523,7 @@ twoway (bar pibPO aniotrimestre, mlabel(pibPO) mlabposition(7) mlabangle(90) mla
 		}
 		if (anio[`k'] == `aniofinal' & trimestre[`k'] < 4) | (anio[`k'] <= anio[`obs_exo'] & anio[`k'] > `aniofinal') {
 			if "`estimado'" == "" {
-				noisily di in g %~72s "ESTIMACI{c O'}N ($paqueteEconomico)"
+				noisily di in g %~72s "$paqueteEconomico"
 				local estimado = "done"
 			}
 			noisily di in g "{bf: `=anio[`k']' " _col(10) %8.1fc in y var_pibY[`k'] " %" _col(25) %20.0fc pibY[`k'] _col(50) %8.1fc in y var_indiceY[`k'] " %" _col(65) %12.10fc deflator[`k'] "}"
