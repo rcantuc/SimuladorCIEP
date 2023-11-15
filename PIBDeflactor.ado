@@ -1,6 +1,6 @@
 *!*******************************************
 *!***                                    ****
-*!***    PIB y deflactor                 ****
+*!***    PIB, deflactor e inflación      ****
 *!***    BIE/INEGI                       ****
 *!***    Autor: Ricardo                  ****
 *!***    Fecha: 29/Sept/22               ****
@@ -67,7 +67,7 @@ quietly {
 
 	noisily di _newline(2) in g _dup(20) "." "{bf:   PIB + Deflactor:" in y " PIB `aniovp'   }" in g _dup(20) "." _newline
 	noisily di in g " PIB " in y "`aniofinal'q`trim_last'" _col(33) %20.0fc pibQ[`obsfinal'] in g " `=currency' ({c u'}ltimo reportado)"
-	collapse (mean) indiceY=indiceQ pibY=pibQ pibYR=pibQR WorkingAge Poblacion* pibPO (last) trimestre, by(anio currency)
+	collapse (mean) indiceY=indiceQ pibY=pibQ pibYR=pibQR WorkingAge Poblacion* pibPO inpc (last) trimestre, by(anio currency)
 	tsset anio
 
 	** 2.2 Locales para los cálculos geométricos **
@@ -93,9 +93,15 @@ quietly {
 	g double var_indiceY = (indiceY/L.indiceY-1)*100
 	label var var_indiceY "Crecimiento anual del índice de precios"
 
-	*g double var_indiceG = ((indiceY/L`=`difdef''.indiceY)^(1/(`difdef'))-1)*100
 	g double var_indiceG = ((indiceY/L`=`difdef''.indiceY)^(1/(`difdef'))-1)*100
-	label var var_indiceG "Promedio geométrico (`difpib' años)"
+	label var var_indiceG "Promedio geométrico (`difdef' años)"
+	
+	g double var_inflY = (inpc/L.inpc-1)*100
+	label var var_inflY "Anual"
+
+	g double var_inflG = ((inpc/L`=`difdef''.inpc)^(1/`difdef')-1)*100
+	label var var_inflG "Promedio geométrico (`difdef' años)"
+
 
 	** 2.3 Imputar Parámetros exógenos **
 	/* Para todos los años, si existe información sobre el crecimiento del deflactor 
@@ -120,6 +126,22 @@ quietly {
 	if "`exceptI'" != "" {
 		local exceptI "`=substr("`exceptI'",1,`=strlen("`exceptI'")-2')'"
 	}
+
+	local exo_count = 0
+	forvalues k=`aniofinal'(1)`=anio[_N]' {
+		capture confirm existence ${inf`k'}
+		if _rc == 0 {
+			replace var_inflY = ${inf`k'} if anio == `k' & trimestre != 4
+			local exceptI "`exceptI'`k' (${inf`k'}%), "
+			local ++exo_count
+		}
+		else {
+			replace var_inflY = L.var_inflG if anio == `k' & trimestre != 4 & var_inflY == .
+		}
+		replace inpc = L.inpc*(1+var_inflY/100) if anio == `k' & trimestre != 4
+		replace var_inflG = ((inpc/L`=`difdef''.inpc)^(1/`difdef')-1)*100 if anio == `k' & anio > `aniofinal'
+	}
+
 
 	** 2.4 Merge datasets **
 	if `aniovp' < `=`anioinicial'' | `aniovp' > anio[_N] {
@@ -160,6 +182,11 @@ quietly {
 	g double deflator = indiceY/indiceY[`obsvp']
 	label var deflator "Deflactor"
 	return scalar deflator = deflator[`obsvp']
+	
+	g double deflatorpp = inpc/inpc[`obsvp']
+	label var deflatorpp "Poder adquisitivo"
+	return scalar deflatorpp = deflatorpp[`obsvp']
+
 
 
 
@@ -501,6 +528,52 @@ quietly {
 		if _rc == 0 {
 			graph export "$export/PIBPC.png", replace name(PIBPC)
 		}
+		
+		
+		
+		twoway (area deflatorpp anio if (anio < `aniofinal' & anio >= 1993) /*| (anio == `aniofinal' & mes == 12)*/) ///
+			(area deflatorpp anio if anio >= `aniofinal' & anio >= anio[`obslast'+`exo_count']) ///
+			(`graphtype' deflatorpp anio if anio < anio[`obslast'+`exo_count'] & anio >= `aniofinal', lwidth(none) pstyle(p4)), ///
+			title("{bf:{c I'}ndice nacional de precios al consumidor}") ///
+			subtitle(${pais}) ///
+			xlabel(2010(5)`=round(anio[_N],5)') ///
+			ytitle("`aniovp' = 1.000") xtitle("") yline(0) ///
+			ylabel(0(1)4, format("%3.0f")) ///
+			///text(`crec_deflactor', place(c)) ///
+			legend(label(1 "INEGI, BIE") label(3 "Proyección CIEP") label(2 "Estimación $paqueteEconomico")) ///
+			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
+			note("{bf:{c U'}ltimo dato reportado}: `aniofinal' mes `mes_last'.") ///
+			name(inflacionH, replace)
+			
+		capture confirm existence $export
+		if _rc == 0 {
+			graph export "$export/inflacionH.png", replace name(inflacionH)
+		}
+
+		* Texto sobre lineas *
+		forvalues k=1(1)`=_N' {
+			if var_inflY[`k'] != . & anio[`k'] >= 1993 {
+				local crec_infl `"`crec_infl' `=var_inflY[`k']' `=anio[`k']' "{bf:`=string(var_inflY[`k'],"%5.1fc")'}""'
+			}
+		}
+		twoway (connected var_inflY anio if (anio < `aniofinal' & anio >= 1993) | (anio == `aniofinal' & trimestre == 4)) ///
+			(connected var_inflY anio if anio > `aniofinal' & anio >= anio[`obslast'+`exo_count']) ///
+			(connected var_inflY anio if anio < anio[`obslast'+`exo_count'] & anio >= `aniofinal'), ///
+			title({bf:Crecimientos} del INPC) ///
+			subtitle(${pais}) ///
+			xlabel(1995(5)`=round(anio[_N],5)') ///
+			ylabel(, format(%3.0f)) ///
+			ytitle("Crecimiento anual (%)") xtitle("") yline(0, lcolor(black)) ///
+			text(`crec_infl', color(white)) ///
+			legend(label(1 "INEGI, BIE") label(3 "Proyección CIEP") label(2 "Estimación $paqueteEconomico")) ///
+			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
+			note("{bf:{c U'}ltimo dato reportado}: `aniofinal' mes `mes_last'.") ///
+			name(var_inflYH, replace)
+		capture confirm existence $export
+		if _rc == 0 {
+			graph export "$export/var_inflYH.png", replace name(var_inflYH)
+		}
+
 	}
 	return local except "`except'"
 	return local exceptI "`exceptI'"
@@ -541,6 +614,6 @@ quietly {
 
 	timer off 2
 	timer list 2
-	noisily di _newline in g "Tiempo: " in y round(`=r(t2)/r(nt2)',.1) in g " segs."
+	noisily di _newline in g "Tiempo: " in y round(`=r(t2)/r(nt2)',.01) in g " segs."
 }
 end

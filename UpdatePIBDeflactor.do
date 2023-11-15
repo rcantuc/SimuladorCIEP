@@ -14,7 +14,7 @@ noisily di in g "  Updating PIBDeflactor.dta..." _newline
 **************
 
 ** 1.1. Importar variables de interés desde el BIE **
-run "`c(sysdir_personal)'/UpdateBIE.do" "734407 735143 446562 446565 446566 628194"
+run "`c(sysdir_personal)'/AccesoBIE.do" "734407 735143 446562 446565 446566 628194"
 
 
 ** 1.2 Renombrar variables **
