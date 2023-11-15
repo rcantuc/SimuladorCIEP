@@ -1,6 +1,12 @@
+********************************
 ** Importar datos desde INEGI **
+********************************
 local series "`1'"
 local series = subinstr("`series'"," ",",",.)
+capture mkdir "`c(sysdir_personal)'/SIM"
+capture mkdir "`c(sysdir_personal)'/SIM/BIE"
+cd "`c(sysdir_personal)'/SIM/BIE"
+
 
 python
 import requests
@@ -42,10 +48,8 @@ for item in cveser_items:
 	table = soup.find('table', {'id': 'tableContainerSinScroll'})
 
 	# Extract the headers and rows from the table
-	headers = [th.text.split(' > ')[-1] for th in table.find_all('th')]  # Keep only the last part of the header
+	headers = [th.text.split(' > ')[-2] if 'Total' in th.text.split(' > ')[-1] else th.text.split(' > ')[-1] for th in table.find_all('th')]
 	rows = [[td.text for td in tr.find_all('td')] for tr in table.find_all('tr')]
-
-	# Create a pandas DataFrame from the headers and rows
 	df = pd.DataFrame(rows, columns=headers)
 
 	# Remove the first row
@@ -56,11 +60,14 @@ for item in cveser_items:
 end
 
 
+
+******************************
 ** Ordenar datos para Stata **
+******************************
 local series = subinstr("`series'",","," ",.)
 foreach k of local series {
 	import delimited "`=c(sysdir_personal)'/SIM/BIE/`k'.csv", clear
-	replace periodo = subinstr(periodo,"/p1","",.)
+	capture replace periodo = subinstr(periodo,"/p1","",.)
 	tempfile `k'
 	save ``k''
 }
@@ -73,4 +80,23 @@ foreach k of local series {
 	else {
 		merge 1:1 (periodos) using ``k'', nogen
 	}
+}
+foreach k of varlist _all {
+	if "`k'" != "periodos" {
+		capture confirm string variable `k'
+		if _rc != 0 {
+			format `k' %20.0fc
+		}
+		else {
+			replace `k' = "" if `k' == "ND"
+			destring `k', replace
+		}
+	}
+}
+if "`2'" == "millones" {
+	foreach k of varlist _all {
+		if "`k'" != "periodos" {
+			replace `k' = `k'*1000000
+		}
+	}	
 }

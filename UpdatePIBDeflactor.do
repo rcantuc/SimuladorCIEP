@@ -2,9 +2,6 @@
 **** Base de datos: PIBDeflactor.dta ****
 *****************************************
 noisily di in g "  Updating PIBDeflactor.dta..." _newline
-capture mkdir "`c(sysdir_personal)'/SIM"
-capture mkdir "`c(sysdir_personal)'/SIM/BIE"
-cd "`c(sysdir_personal)'/SIM/BIE"
 
 
 
@@ -17,9 +14,7 @@ cd "`c(sysdir_personal)'/SIM/BIE"
 **************
 
 ** 1.1. Importar variables de interés desde el BIE **
-local series "734407 735143 446562 446565 446566"
-// 750454 750455 750456 750457 750458 750459 750460 750461 750462 750463 750464 750465 750466 750467 750468 750469 750470 750471 750472 750473 750474 750475 750476 750477 750478 750479 750480 750481 750482 750483 750484 750485
-run "`c(sysdir_personal)'/UpdateBIE.do" "`series'"
+run "`c(sysdir_personal)'/UpdateBIE.do" "734407 735143 446562 446565 446566 628194"
 
 
 ** 1.2 Renombrar variables **
@@ -40,10 +35,13 @@ label var PoblacionOcupada "Población Ocupada (ENOE)"
 rename desocupadaaf1númerodepersonastri PoblacionDesocupada
 label var PoblacionDesocupada "Población Desocupada (ENOE)"
 
+rename índicegeneralf1índicebasesegunda inpc
+label var inpc "Índice Nacional de Precios al Consumidor"
+
 
 ** 1.3 Dar formato a variables **
 replace pibQ = pibQ*1000000
-format indice* %8.3f
+format indice* inpc %8.3f
 format pib %20.0fc
 format Poblacion* %12.0fc
 
@@ -120,11 +118,29 @@ tsset aniotrimestre
 
 
 
-**************************
-***                    ***
-**# 4 Guardar base SIM ***
-***                    ***
-**************************
+******************************
+***                        ***
+**# 4 Variables de interés ***
+***                        ***
+******************************
+forvalues k=`=_N'(-1)1 {
+	if indiceQ[`k'] != . {
+		local obsvp = `k'
+		local trim_last = trim[`k']
+		local aniofinal = anio[`k']
+		continue, break
+	}
+}
+tempvar deflator
+g double `deflator' = indiceQ/indiceQ[`obsvp']
+g pibQR = pibQ/`deflator'
+
+g pibPO = pibQR/PoblacionOcupada
+format pibPO %20.0fc
+
+g crec_pibQR = (pibQR/L4.pibQR-1)*100
+format crec_pibQR %10.1fc
+
 format pib* %25.0fc
 capture drop __*
 sort aniotrimestre
@@ -133,4 +149,33 @@ if `c(version)' > 13.1 {
 }
 else {
 	save "`c(sysdir_personal)'/SIM/PIBDeflactor.dta", replace
+}
+
+
+
+
+******************
+***            ***
+**# 4 Gráficas ***
+***            ***
+******************
+if "$nographs" == "" {
+	twoway (connected crec_pibQR aniotrimestre, mlabel(crec_pibQR) mlabposition(0) mlabcolor(white) mlabgap(0pt)) if pibPO != ., ///
+		title({bf:Producto Interno Bruto}) subtitle(${pais}) ///
+		ytitle("Crecimiento trim. vs. trim. (%)") xtitle("") ///
+		tlabel(2005q1(4)`aniofinal'q`trim_last') ///
+		note("{bf:{c U'}ltimo dato reportado}: `ultanio' trim. `ulttrim'.") ///
+		caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
+		name(UpdatePIBDeflactor, replace)
+
+	twoway (bar pibPO aniotrimestre, mlabel(pibPO) mlabposition(7) mlabangle(90) mlabcolor(white) mlabgap(0pt)) ///
+		if pibPO != ., ///
+		title({bf:Productividad laboral}) subtitle(${pais}) ///
+		ytitle("PIB/Población ocupada (`=currency[`obsvp']' `ultanio')") xtitle("") ///
+		tlabel(2005q1(4)`aniofinal'q`trim_last') ///
+		///text(`crec_PIBPC', size(vsmall)) ///
+		ylabel(/*0(5)`=ceil(`pibYRmil'[_N])'*/, format(%20.0fc)) yscale(range(500000)) ///
+		note("{bf:{c U'}ltimo dato reportado}: `ultanio' trim. `ulttrim'.") ///
+		caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE/ENOE.") ///
+		name(UpdatePIBDeflactorPO, replace)
 }

@@ -7,6 +7,7 @@ noisily run "`c(sysdir_personal)'/sysprofile.do"
 noisily run "`c(sysdir_personal)'/profile.do"
 
 
+
 ** Opciones **
 //global export "`c(sysdir_site)'../Ricardo Cantú/CESOP/documentoCIEP/images"	// DIRECTORIO DE IMÁGENES
 global nographs "nographs"                                                    // SUPRIMIR GRAFICAS
@@ -36,7 +37,6 @@ adopath ++PERSONAL
 
 
 
-
 ******************************************************************
 ***                                                            ***
 **#    1. MARCO MACRO: POBLACION + ECONOMÍA + SISTEMA FISCAL   ***
@@ -50,31 +50,27 @@ noisily run "`c(sysdir_personal)'/parametros.do"
 ** Inputs: anio(s) de interés, entidad federativa
 ** Outputs: población por edad, sexo y entidad federativa
 forvalues anio = `=anioPE'(1)`=anioPE' {                                        // <-- Año(s) de interés
-*	foreach entidad of global entidadesL {                                      // <-- Nacional o por entidad
+*	foreach entidad of global entidadesL {                                  // <-- Nacional o por entidad
 *		noisily Poblacion if entidad == "`entidad'", anio(`anio') //$update
 *	}
 }
 
 
+******************
 ** 1.2 Economía **
 noisily PIBDeflactor, geodef(2003) geopib(2003) $update
-
-
-
-
-
-
-exit
-noisily SCN, //update
+//noisily SCN, //update
 //noisily Inflacion, //update
 
 
+************************
 ** 1.3 Sistema fiscal **
 noisily LIF, by(divPE) rows(1) min(0) //anio(`anio') //update desde(2018)
 noisily PEF, by(divCIEP) rows(2) min(0) //anio(`anio') //update desde(2018)
 noisily SHRFSP, ultanio(2008) //anio(2023) //update
 
 
+***********************
 ** 1.4 Subnacionales **
 //noisily run "`c(sysdir_personal)'/Subnacional.do" //update
 
