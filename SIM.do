@@ -48,7 +48,7 @@ noisily run "`c(sysdir_personal)'/parametros.do"
 *******************
 ** 1.1 Población **
 ** Inputs: anio(s) de interés, entidad federativa
-** Outputs: población por edad, sexo y entidad federativa
+/** Outputs: población por edad, sexo y entidad federativa
 forvalues anio = `=anioPE'(1)`=anioPE' {                                        // <-- Año(s) de interés
 *	foreach entidad of global entidadesL {                                  // <-- Nacional o por entidad
 *		noisily Poblacion if entidad == "`entidad'", anio(`anio') //$update
@@ -59,8 +59,7 @@ forvalues anio = `=anioPE'(1)`=anioPE' {                                        
 ******************
 ** 1.2 Economía **
 noisily PIBDeflactor, geodef(2003) geopib(2003) $update
-//noisily SCN, //update
-//noisily Inflacion, //update
+noisily SCN, //update
 
 
 ************************

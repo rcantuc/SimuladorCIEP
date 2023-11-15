@@ -5,7 +5,7 @@
 
 
 	** D.1. Cuenta de generaci{c o'}n del ingreso **
-	run "`c(sysdir_personal)'/UpdateBIE.do" "724025 724014 724015 724016 724017 724018 724019 724020 724021 724022 724023 724024" "millones"
+	run "`c(sysdir_personal)'/AccesoBIE.do" "724025 724014 724015 724016 724017 724018 724019 724020 724021 724022 724023 724024" "millones"
 	
 	* PIB *
 	rename valoragregadobrutoproductointern PIB				// Producto Interno Bruto
@@ -26,34 +26,40 @@
 
 	* Excedente bruto de operaci{c o'}n *
 	rename excedentebrutodeoperaciãnf1millo ExBOp				// Excedente bruto de operaci{c o'}n (con mixto)
+
 	tempfile generacion
 	save `generacion'
 
 
 	** D.2. Cuenta de ingreso nacional disponbile **
-	run "`c(sysdir_personal)'/UpdateBIE.do" "500353 500354 500355 500356 500357 500358 500359 500360 500361 500362 500363 500364" "millones"
+	run "`c(sysdir_personal)'/AccesoBIE.do" "500353 500354 500355 500356 500357 500358 500359 500360 500361 500362 500363 500364" "millones"
 	
 	* Consumo de capital fijo *
 	rename consumodecapitalfijof1millonesde ConCapFij			// Consumo de capital fijo
 
 	* Resto del mundo *
 	rename valoragregadonetoproductointerno PIN				// Producto Interno Neto
-	rename remuneracionesrecibidasf1millone ROWRemRecibidas	// ROW, Compensation of Employees, recibidas
+	rename remuneracionesrecibidasf1millone ROWRemRecibidas			// ROW, Compensation of Employees, recibidas
 	rename remuneracionespagadasf1millonesd ROWRemPagadas			// ROW, Compensation of Employees, pagadas
 	rename rentasdelapropiedadrecibidasf1mi ROWPropRecibidas		// ROW, Ingresos a la propiedad, recibidas
-	rename rentasdelapropiedadpagadasf1mill ROWPropPagadas		// ROW, Ingresos a la propiedad, pagadas
+	rename rentasdelapropiedadpagadasf1mill ROWPropPagadas			// ROW, Ingresos a la propiedad, pagadas
 	rename transferenciascorrientesrecibida ROWTransRecibidas		// ROW, Transferencias corrientes, recibidas
-	rename transferenciascorrientespagadasf ROWTransPagadas		// ROW, Transferencias corrientes, pagadas
+	rename transferenciascorrientespagadasf ROWTransPagadas			// ROW, Transferencias corrientes, pagadas
 	rename ingresodisponiblebrutof1millones IngNacDisp			// Ingreso nacional disponible
 
 	
 	tempfile disponible
 	save `disponible'
 
+
+	** D.3. Cuenta de consumo **
+	run "`c(sysdir_personal)'/AccesoBIE.do" "724600 724611" "millones"	
+	rename v2 Alojamiento			// Alquieres efectivos de alojamiento de los hogares
+	rename consumodeloshogaresydelasinstitu ConHog			// Consumo de los hogares
 	
-	
-	
-	
+	tempfile consumo
+	save `consumo'
+
 exit
 	
 
@@ -63,17 +69,6 @@ exit
 	tempfile sectores
 	save `sectores'
 
-	** D.3. Cuenta de ingreso nacional disponbile **
-	*import excel "`c(sysdir_site)'../BasesCIEP/UPDATE/SCN/Cuenta del ingreso nacional disponible.xlsx", clear
-	*LimpiaBIE d
-	*tempfile disponible
-	*save `disponible'
-
-	** D.4. Cuenta de consumo **
-	import excel "`c(sysdir_site)'../BasesCIEP/UPDATE/SCN/Consumo de los hogares.xlsx", clear
-	LimpiaBIE c
-	tempfile consumo
-	save `consumo'
 
 	** D.5. Cuenta de consumo privado **
 	import excel "`c(sysdir_site)'../BasesCIEP/UPDATE/SCN/Gasto de consumo privado.xlsx", clear
@@ -105,12 +100,29 @@ exit
 	tempfile produccion
 	save `produccion'
 
-	** D.9. Cuenta de produccion **
+	** D.9. Sector Externo **
 	import excel "`c(sysdir_site)'../BasesCIEP/UPDATE/SCN/sector externo.xlsx", clear
 	LimpiaBIE ex
 	tempfile sectorexterno
 	save `sectorexterno'
 
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	** Merge bases **
 	use `generacion', clear
 	merge 1:1 (A) using `sectores', nogen
@@ -181,13 +193,13 @@ exit
 
 	** V.11. Consumo, usos **
 	rename AMs AhorroB			// Ahorro bruto
-	rename Bc ConHog			// Consumo de los hogares
+	*rename Bc ConHog			// Consumo de los hogares
 	rename Hgc ComprasN			// Compras netas en el extranjero
 	rename Bcg ConGob			// Consumo del gobierno general
 	rename AGs IngDisp			// Ingreso disponible
 	rename HWae Alquileres			// Alquileres sin intermediaci{c o'}n de bienes ra{c i'}ces
 	rename HXae Inmobiliarias 		// Inmobiliarias y corredores de bienes ra{c i'}ces
-	rename Mc Alojamiento			// Alquieres efectivos de alojamiento de los hogares
+	*rename Mc Alojamiento			// Alquieres efectivos de alojamiento de los hogares
 
 	** V.12. Actividades econ{c o'}micas **
 	rename IFae ServProf			// Servicios profesionales, cient{c i'}ficos y t{c e'}cnicos
