@@ -5,6 +5,7 @@ if "`1'" == "" {
 	clear programs
 	local 1 = "decil"
 	local 2 = 2022
+	local 3 = "SankeyNTA"
 	scalar anioenigh = 2022
 }
 timer on 7
@@ -188,7 +189,7 @@ save `eje3'
 
 ************
 ** Sankey **
-noisily SankeySumSim, anio(`2') name(`1') folder(SankeyNTA) a(`eje1') b(`eje2') c(`eje3') d(`eje4') 
+noisily SankeySumSim, anio(`2') name(`1') folder(`3'') a(`eje1') b(`eje2') c(`eje3') d(`eje4') 
 
 timer off 7
 timer list 7
