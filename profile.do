@@ -32,6 +32,7 @@ capture mkdir `"`c(sysdir_personal)'/users/$id/"'
 
 
 ** Ruta PERSONAL **
+cd `"`c(sysdir_personal)'"'
 sysdir set PERSONAL `"`c(sysdir_site)'"'
 adopath ++PERSONAL
 

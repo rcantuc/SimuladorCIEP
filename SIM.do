@@ -13,6 +13,7 @@ if "`c(username)'" == "ricardo" ///                                             
 
 if "`c(username)'" == "ciepmx" & "`c(console)'" == "" ///                       // Servidor CIEP
 	sysdir set PERSONAL "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
+cd `"`c(sysdir_personal)'"'
 
 
 ****************************
@@ -230,7 +231,7 @@ scalar balprimario2029 = -0.3
 scalar costodeudaInterno2029 = 2.5
 scalar costodeudaExterno2029 = 2.5
 
-*global tasaEfectiva = 6.005578 // Tasa de inter{c e'}s EFECTIVA
+scalar tasaEfectiva = 6.005578 // Tasa de inter{c e'}s EFECTIVA
 
 noisily SHRFSP, ultanio(2008) anio(`=anioPE') $update
 
