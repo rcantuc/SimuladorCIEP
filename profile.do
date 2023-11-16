@@ -22,9 +22,9 @@ set charset latin1, permanently
 
 
 ** Ruta PERSONAL **
-cd `"`c(sysdir_personal)'"'
 sysdir set PERSONAL `"`c(sysdir_site)'"'
 adopath ++PERSONAL
+cd `"`c(sysdir_personal)'"'
 
 
 
