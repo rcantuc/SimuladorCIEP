@@ -42,21 +42,25 @@ quietly {
 	**# 2 Información de hogares ***
 	***                          ***
 	********************************
+	*capture confirm file `"`c(sysdir_personal)'/users/$pais/$id/households.dta"'
+	*if _rc != 0 {
+	*	if `aniope' >= 2022 scalar anioenigh = 2022
+	*	else if `aniope' >= 2020 & `aniope' < 2022 scalar anioenigh = 2020
+	*	else if `aniope' >= 2018 & `aniope' < 2020 scalar anioenigh = 2018
+	*	else if `aniope' >= 2016 & `aniope' < 2018 scalar anioenigh = 2016
+	*	capture use "`c(sysdir_personal)'/SIM/perfiles`aniope'.dta", clear
+	*	if _rc != 0 {
+	*		noisily di _newline in g "Creando base: " in y "/SIM/perfiles`aniope'.dta" ///
+	*			in g " con " in y "ENIGH " scalar(anioenigh)
+	*		noisily di in g "Tiempo aproximado de espera: " in y "10+ minutos"
+	*		noisily run `"`c(sysdir_personal)'/PerfilesSim.do"' `aniope'
+	*	}
+	*}
+
 	capture use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
-	if _rc != 0 {
-		if `aniope' >= 2022 scalar anioenigh = 2022
-		else if `aniope' >= 2020 & `aniope' < 2022 scalar anioenigh = 2020
-		else if `aniope' >= 2018 & `aniope' < 2020 scalar anioenigh = 2018
-		else if `aniope' >= 2016 & `aniope' < 2018 scalar anioenigh = 2016
-		capture use "`c(sysdir_personal)'/SIM/perfiles`aniope'.dta", clear
-		if _rc != 0 {
-			noisily di _newline in g "Creando base: " in y "/SIM/perfiles`aniope'.dta" ///
-				in g " con " in y "ENIGH " scalar(anioenigh)
-			noisily di in g "Tiempo aproximado de espera: " in y "10+ minutos"
-			noisily run `"`c(sysdir_personal)'/PerfilesSim.do"' `aniope'
-		}
+	if _rc != 0 | "$update" == "update" {
+		use "`c(sysdir_personal)'/SIM/perfiles`aniope'.dta", clear
 	}
-	use "`c(sysdir_personal)'/SIM/households`aniope'.dta", clear
 	merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/`=anioenigh'/poblacion.dta", nogen keepus(disc*)
 	capture drop __*
 	tabstat factor, stat(sum) f(%20.0fc) save

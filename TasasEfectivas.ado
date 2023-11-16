@@ -11,7 +11,7 @@ quietly {
 	}
 
 	syntax [, ANIO(int `aniovp') NOGraphs CRECSIM(real 1)]
-	noisily di _newline(2) in g _dup(35) "." "{bf:   Tasas Efectivas de los INGRESOS " in y `anio' "   }" in g _dup(35) "."
+	noisily di _newline(2) in g _dup(25) "." "{bf:   Tasas Efectivas de los INGRESOS " in y `anio' "   }" in g _dup(25) "."
 
 
 
@@ -391,7 +391,7 @@ quietly {
 	*** Base SIM ***
 	****************
 	capture use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
-	if _rc != 0 {
+	if _rc != 0 | "$update" == "update" {
 		use "`c(sysdir_personal)'/SIM/perfiles`anio'.dta", clear
 	}
 

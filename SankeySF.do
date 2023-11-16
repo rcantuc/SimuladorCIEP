@@ -21,7 +21,10 @@ if "`1'" == "" {
 
 **********************************/
 ** Eje 1: Generación del ingreso **
-use `"`c(sysdir_site)'/users/$pais/$id/households.dta"', clear
+*capture use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
+*if _rc != 0 {
+	use "`c(sysdir_personal)'/SIM/perfiles`=anioPE'.dta", clear
+*}
 tempvar Laboral Consumo Capital FMP
 egen `Laboral'  = rsum(ISRAS ISRPF CUOTAS)
 egen `Consumo'  = rsum(IVA IEPSP IEPSNP ISAN IMPORT)
@@ -63,7 +66,10 @@ save `eje1'
 use if anio == `2' using `"`c(sysdir_site)'/SIM/Poblaciontot.dta"', clear
 local ajustepob = poblacion
 
-use `"`c(sysdir_site)'/users/$pais/$id/households.dta"', clear
+*capture use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
+*if _rc != 0 {
+	use "`c(sysdir_personal)'/SIM/perfiles`=anioPE'.dta", clear
+*}
 tabstat factor, stat(sum) f(%20.0fc) save
 tempname pobenigh
 matrix `pobenigh' = r(StatTotal)
@@ -76,7 +82,7 @@ tabstat factor, stat(sum) f(%20.0fc) save
 tempname pobtot
 matrix `pobtot' = r(StatTotal)*`ajustepob'/`pobenigh'[1,1]
 
-replace Otros_gastos = Otros_gastos - infra_entidad
+replace Otros_gastos = Otros_gastos - Otras_inversiones
 
 replace Pension = Pension + Pensión_AM
 
@@ -86,7 +92,7 @@ matrix `GAST' = r(StatTotal)
 
 collapse (sum) gas_Educación=Educación gas_Salud=Salud /*gas__Salarios_de_gobierno=Salarios*/ ///
 	gas___Pensiones=Pension gas____Ingreso_Básico=IngBasico ///
-	gas____Inversión=infra_entidad [fw=factor], by(`1')
+	gas____Inversión=Otras_inversiones [fw=factor], by(`1')
 
 levelsof `1', local(`1')
 foreach k of local `1' {

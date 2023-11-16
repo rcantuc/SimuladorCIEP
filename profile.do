@@ -1,8 +1,12 @@
-********************
-***              ***
-***   1 SET UP   ***
-***		         ***
-********************
+***********************
+***                 ***
+***   ver: SIM.md   ***
+***                 ***
+***********************
+***                 ***
+***    1. SET UP    ***
+***		            ***
+***********************
 clear all
 macro drop _all
 capture log close _all
@@ -17,24 +21,11 @@ set type double, permanently
 set charset latin1, permanently
 
 
-** Ids **
-//if "`c(username)'" != "ciepmx" & "`c(username)'" != "ricardo" {
-	global id = "`c(username)'"
-//}
-
-
-** Rutas de archivos **
-capture mkdir `"`c(sysdir_personal)'/SIM/"'
-capture mkdir `"`c(sysdir_personal)'/SIM/graphs"'
-
-capture mkdir `"`c(sysdir_personal)'/users/"'
-capture mkdir `"`c(sysdir_personal)'/users/$id/"'
-
-
 ** Ruta PERSONAL **
 cd `"`c(sysdir_personal)'"'
 sysdir set PERSONAL `"`c(sysdir_site)'"'
 adopath ++PERSONAL
+
 
 
 
