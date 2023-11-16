@@ -28,17 +28,17 @@ global nographs "nographs"                                                      
 //global output "output"                                                        // OUTPUTS (WEB)
 //global update "update"                                                        // OUTPUTS (WEB)
 
-**  Archivo output.txt (web)  **
-if "$output" != "" {
-	quietly log using `"`c(sysdir_personal)'/users/$id/output.txt"', replace text name(output)
-	quietly log off output
-}
-
 **  Rutas de archivos  **
 capture mkdir `"`c(sysdir_personal)'/SIM/"'
 capture mkdir `"`c(sysdir_personal)'/SIM/graphs"'
 capture mkdir `"`c(sysdir_personal)'/users/"'
 capture mkdir `"`c(sysdir_personal)'/users/$id/"'
+
+**  Archivo output.txt (web)  **
+if "$output" != "" {
+	quietly log using `"`c(sysdir_personal)'/users/$id/output.txt"', replace text name(output)
+	quietly log off output
+}
 
 
 
@@ -271,7 +271,7 @@ scalar tasaEfectiva = 6.005578
 ** 1.7 Perfiles: ENIGH + $paqueteEconomico **
 ** Inputs: Archivo "`c(sysdir_personal)'/SIM/`enighanio'/households.dta".
 ** Outputs: Archivo "`c(sysdir_personal)'/SIM/perfiles`=anioPE'.dta".
-noisily run `"`c(sysdir_personal)'/PerfilesSim.do"' `=anioPE' 
+//noisily run `"`c(sysdir_personal)'/PerfilesSim.do"' `=anioPE' 
 
 
 
