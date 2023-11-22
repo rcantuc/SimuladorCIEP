@@ -61,7 +61,7 @@ quietly {
 	*** 3 Merge ***
 	***************
 	collapse (sum) gasto*, by(anio `by' transf_gf) fast
-	merge m:1 (anio) using "`PIB'", nogen keepus(pibY indiceY deflator var_pibY) keep(matched) sorted
+	merge m:1 (anio) using "`PIB'", nogen keepus(pibY indiceY deflator lambda Poblacion) keep(matched) sorted
 	forvalues k=1(1)`=_N' {
 		if gasto[`k'] != . & "`first'" != "first" { 
 			local aniofirst = 2016 //anio[`k']
@@ -189,13 +189,14 @@ quietly {
 		_col(77) in y %7.1fc (`mattot'[1,1]-`Cuotas_ISSSTE'[1,1]-`Aportaciones_Federacion'[1,1])/`mattot'[1,1]*100 "}"
 
 
+	****************************
 	** 4.2. Division Resumido **
 	noisily di _newline in g "{bf: B. Gasto bruto (Resumido) " ///
 		_col(44) in g %20s "`currency'" ///
 		_col(66) %7s "% PIB" ///
 		_col(77) %7s "Dif% Real" "}"
 
-	collapse (sum) gasto* if transf_gf == 0, by(anio pibY deflator `resumido')
+	collapse (sum) gasto* if transf_gf == 0, by(anio pibY deflator lambda Poblacion `resumido')
 	g resumido = `resumido'
 	reshape wide gasto* `resumido', i(anio) j(resumido)
 	reshape long

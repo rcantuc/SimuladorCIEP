@@ -296,39 +296,39 @@ save "`USD'"
 
 * Acervos *
 use `shrfsp', clear
-merge 1:1 (aniomes) using "`shrfspinterno'", nogen
-merge 1:1 (aniomes) using "`shrfspexterno'", nogen
+merge 1:1 (anio) using "`shrfspinterno'", nogen
+merge 1:1 (anio) using "`shrfspexterno'", nogen
 
 
 * Flujos *
-merge 1:1 (aniomes) using "`rfsp'", nogen
-merge 1:1 (aniomes) using "`Balance'", nogen
-merge 1:1 (aniomes) using "`PIDIREGAS'", nogen
-merge 1:1 (aniomes) using "`IPAB'", nogen
-merge 1:1 (aniomes) using "`FONADIN'", nogen
-merge 1:1 (aniomes) using "`Deudores'", nogen
-merge 1:1 (aniomes) using "`Banca'", nogen
-merge 1:1 (aniomes) using "`Adecuaciones'", nogen
+merge 1:1 (anio) using "`rfsp'", nogen
+merge 1:1 (anio) using "`Balance'", nogen
+merge 1:1 (anio) using "`PIDIREGAS'", nogen
+merge 1:1 (anio) using "`IPAB'", nogen
+merge 1:1 (anio) using "`FONADIN'", nogen
+merge 1:1 (anio) using "`Deudores'", nogen
+merge 1:1 (anio) using "`Banca'", nogen
+merge 1:1 (anio) using "`Adecuaciones'", nogen
 
 
 * Adecuaciones *
-merge 1:1 (aniomes) using "`nopresupuestario'", nogen
-merge 1:1 (aniomes) using "`activosInt'", nogen
-merge 1:1 (aniomes) using "`activosExt'", nogen
-merge 1:1 (aniomes) using "`diferimientos'", nogen
-merge 1:1 (aniomes) using "`amortizacion'", nogen
+merge 1:1 (anio) using "`nopresupuestario'", nogen
+merge 1:1 (anio) using "`activosInt'", nogen
+merge 1:1 (anio) using "`activosExt'", nogen
+merge 1:1 (anio) using "`diferimientos'", nogen
+merge 1:1 (anio) using "`amortizacion'", nogen
 
 
 * Tipo de cambio *
-merge 1:1 (aniomes) using "`MXN'", nogen
-merge 1:1 (aniomes) using "`USD'", nogen
+merge 1:1 (anio) using "`MXN'", nogen
+merge 1:1 (anio) using "`USD'", nogen
 
 
 * Costos financieros *
-merge 1:1 (aniomes) using "`costodeudaII'", nogen update
-merge 1:1 (aniomes) using "`costodeudaEE'", nogen update
-merge 1:1 (aniomes) using "`costopemex'", nogen
-tsset aniomes
+merge 1:1 (anio) using "`costodeudaII'", nogen update
+merge 1:1 (anio) using "`costodeudaEE'", nogen update
+merge 1:1 (anio) using "`costopemex'", nogen
+tsset anio
 
 
 * Tipo de cambio *
@@ -349,8 +349,8 @@ format balprimario %20.0fc
 * Guardar *
 compress
 if `c(version)' > 13.1 {
-	saveold `"`c(sysdir_site)'/SIM/SHRFSP.dta"', replace version(13)
+	saveold `"`c(sysdir_personal)'/SIM/SHRFSP.dta"', replace version(13)
 }
 else {
-	save `"`c(sysdir_site)'/SIM/SHRFSP.dta"', replace
+	save `"`c(sysdir_personal)'/SIM/SHRFSP.dta"', replace
 }

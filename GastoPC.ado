@@ -61,7 +61,8 @@ quietly {
 	if _rc != 0 | "$update" == "update" {
 		use "`c(sysdir_personal)'/SIM/perfiles`aniope'.dta", clear
 	}
-	merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/`=anioenigh'/poblacion.dta", nogen keepus(disc*)
+	//merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/`=anioenigh'/households.dta", nogen keepus(asis_esc tipoesc nivel inst_* ing_jubila jubilado) 
+	merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/`=anioenigh'/poblacion.dta", nogen keepus(disc*) 
 	capture drop __*
 	tabstat factor, stat(sum) f(%20.0fc) save
 	tempname pobenigh
@@ -424,7 +425,6 @@ quietly {
 			local segpop0 = r(Atención_a_la_salud_y_medicame)
 		}
 
-
 		PEF if anio == `aniope' & divCIEP == 9 & divSIM != 2 & divSIM != 5 & ramo == 12, anio(`aniope') by(desc_pp) min(0) nographs
 		local atencINSABI = r(Atención_a_la_Salud)
 		local fortaINSABI = r(Fortalecimiento_a_la_atención_)
@@ -434,8 +434,9 @@ quietly {
 
 		PEF if anio == `aniope' & divCIEP == 9 & divSIM != 2 & divSIM != 5, anio(`aniope') by(ramo) min(0) nographs
 		local fassa = r(Aportaciones_Federales_para_Ent)
+local nosec = r(Entidades_no_Sectorizadas)
 
-		local imssbien = `segpop0'+`imssbien0'+`fassa'+`fortaINSABI'+`atencINSABI'
+		local imssbien = `segpop0'+`imssbien0'+`fassa'+`fortaINSABI'+`atencINSABI'+`nosec'
 		scalar imssbien = `imssbien'/`benef_imssbien'
 		restore
 	}

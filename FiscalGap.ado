@@ -1,11 +1,6 @@
 program define FiscalGap
 quietly {
 
-	*****************
-	***           ***
-	**# 0 ANIO VP ***
-	***           ***
-	*****************
 	timer on 11
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
@@ -15,7 +10,7 @@ quietly {
 		local aniovp = scalar(aniovp)
 	}
 
-	syntax [, NOGraphs Anio(int `aniovp') BOOTstrap(int 1) Update END(int 2100) ///
+	syntax [, NOGraphs Anio(int `aniovp') Update END(int 2100) ///
 		ANIOMIN(int 2000) DIScount(real 5) DESDE(int `=`aniovp'-1')]
 
 
@@ -30,13 +25,6 @@ quietly {
 	PIBDeflactor, nographs nooutput
 	keep if anio <= `end'
 	local currency = currency[1]
-	local anio_last = `anio'
-	forvalues k = 1(1)`=_N' {
-		if anio[`k'] == `anio_last' {
-			local obs`anio_last' = `k'
-			continue, break
-		}
-	}
 	tempfile PIB
 	save `PIB'
 
@@ -79,72 +67,75 @@ quietly {
 	**# 4 Fiscal Gap: Ingresos ***
 	***                        ***
 	******************************
-	LIF if divLIF != 10, base
-	levelsof divSIM, local(divSIM)
-	
-	LIF if divLIF != 10, anio(`anio') nographs by(divSIM) min(0) desde(`desde') eofp //ilif
-	foreach k of local divSIM {
-		local label`k' : label divSIM `k'
-		local `label`k''C = r(`label`k''C)
-		if ``label`k''C' > 15 {
-			local `label`k''C = 15
-		}
-		if ``label`k''C' < -15 {
-			local `label`k''C = -15
-		}
 
-		capture confirm scalar `label`k''
+	***********************************************
+	** 4.1 Información histórica de los ingresos **
+	LIF if divLIF != 10, anio(`anio') nographs by(divSIM) min(0) desde(`desde') //eofp //ilif
+	local divSIM = r(divSIM)
+
+	foreach k of local divSIM {
+		local `k'C = r(`k'C)
+		if ``k'C' > 15 {
+			local `k'C = 15
+		}
+		if ``k'C' < -15 {
+			local `k'C = -15
+		}
+		capture confirm scalar `k'
 		if _rc != 0 {
-			scalar `label`k'' = r(`label`k'')/scalar(pibY)*100
+			scalar `k' = r(`k')/scalar(pibY)*100
 		}
 	}
-
 	collapse (sum) recaudacion, by(anio divSIM) fast
+	decode divSIM, g(divCIEP)
+	replace divCIEP = strtoname(divCIEP)
+
+
+	*******************************************
+	** 4.2 Proyección futura de los ingresos **
 	g modulo = ""
 	foreach k of local divSIM {
-		local divSIM`k' : label divSIM `k'
 		preserve
-
-		use `"`c(sysdir_personal)'/users/bootstraps/1/`divSIM`k''REC.dta"', clear
+		use `"`c(sysdir_personal)'/users/bootstraps/1/`k'REC.dta"', clear
 		collapse estimacion contribuyentes, by(anio modulo aniobase)
 		tsset anio
 
 		tempvar estimacion
 		g `estimacion' = estimacion
-		replace estimacion = `estimacion'/L.`estimacion'* 		/// Cambio demográfico
-			(scalar(`divSIM`k''))/100* 				/// Estimación como % del PIB (TasasEfectivas.ado)
-			scalar(pibY)* 						/// Estimación del PIB
-			(1+``divSIM`k''C'/100)^(anio-`anio') 			/// Tendencia de largo plazo
+		replace estimacion = `estimacion'/L.`estimacion'*       /// Cambio demográfico (PerfilesSim.do)
+			(scalar(`k'))/100*scalar(pibY)*                     /// Estimación como % del PIB (TasasEfectivas.ado)
+			(1+``k'C'/100)^(anio-`anio')                        /// Tendencia de largo plazo (LIF.ado)
 			if anio > `anio'
 
-		g divSIM = `k'
+		g divCIEP = `"`=strtoname("`k'")'"'
 
-		tempfile `divSIM`k''
-		save ``divSIM`k'''
+		tempfile `k'
+		save ``k''
 
 		restore
-		merge 1:1 (anio divSIM) using  ``divSIM`k''', nogen update replace
+		merge 1:1 (anio divCIEP) using  ``k'', nogen update replace
 	}
-	collapse (sum) recaudacion estimacion if anio <= `end', by(anio divSIM) fast
-	merge m:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda Poblacion) keep(matched) update
 
 
 	*************************
-	** 4.1 Actualizaciones **
+	** 4.3 Actualizaciones **
+	collapse (sum) recaudacion estimacionRecaudacion=estimacion if anio <= `end', by(anio divCIEP) fast
+	merge m:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda Poblacion*) update
+
+	replace estimacionRecaudacion = estimacionRecaudacion*deflator*lambda
 	replace recaudacion = 0 if recaudacion == .
-	replace estimacion = 0 if estimacion == .
-	replace estimacion = estimacion*lambda*deflator				// "estimacion" está en valores reales + productividad laboral
+	replace estimacionRecaudacion = 0 if estimacionRecaudacion == .
 
 	g recaudacion_pib = recaudacion/pibY*100 				
-	g estimacion_pib = estimacion/pibY*100 
+	g estimacionRecaudacion_pib = estimacionRecaudacion/pibY*100 
 
 
 	****************
-	** 4.2 Graphs **
+	** 4.4 Graphs **
 	if "`nographs'" != "nographs" & "$nographs" != "nographs" {
-		noisily tabstat recaudacion_pib estimacion_pib if anio >= `aniomin', stat(sum) by(anio) save
+		//noisily tabstat recaudacion_pib estimacionRecaudacion_pib if anio >= `aniomin', stat(sum) by(anio) save
 		graph bar (sum) recaudacion_pib if anio < `anio' & anio >= `aniomin', ///
-			over(divSIM) ///
+			over(divCIEP) ///
 			over(anio, gap(0)) ///
 			ytitle("% PIB") ///
 			stack asyvar ///
@@ -154,8 +145,8 @@ quietly {
 			name(Proy_ingresos1) ///
 			title(Observado)
 
-		graph bar (sum) estimacion_pib if anio >= `anio', ///
-			over(divSIM) ///
+		graph bar (sum) estimacionRecaudacion_pib if anio >= `anio', ///
+			over(divCIEP) ///
 			over(anio, gap(0)) ///
 			ytitle("") ///
 			stack asyvar ///
@@ -177,15 +168,16 @@ quietly {
 			graph export `"$export/Proy_ingresos.png"', replace name(Proy_ingresos)
 		}
 	}
-	collapse (sum) recaudacion estimacionRecaudacion=estimacion (mean) pibYR deflator, by(anio) fast
 
 
 	********************/
 	** 4.3 Al infinito **
+	collapse (sum) recaudacion* estimacionRecaudacion* (last) pibY deflator, by(anio) fast
 	noisily di _newline(2) in g "{bf: FISCAL GAP:" in y " $pais `anio' }"
 
-	local grow_rate_LR = ((pibYR[_N]/pibYR[_N-10])^(1/10)-1)*100
-	g estimacionVP = estimacion/(1+`discount'/100)^(anio-`anio')
+	local grow_rate_LR = (((estimacionRecaudacion[_N]/deflator[_N])/(estimacionRecaudacion[_N-10]/deflator[_N-10]))^(1/10)-1)*100
+
+	g estimacionVP = estimacionRecaudacion/(1+`discount'/100)^(anio-`anio')
 	format estimacionVP %20.0fc
 	local estimacionINF = estimacionVP[_N]/(1-((1+`grow_rate_LR'/100)/(1+`discount'/100)))
 
@@ -193,10 +185,13 @@ quietly {
 	tempname estimacionVP
 	matrix `estimacionVP' = r(StatTotal)
 
+	* Texto *
 	noisily di in g "  (+) Ingresos futuros en VP:" ///
 		in y _col(35) %25.0fc `estimacionINF'+`estimacionVP'[1,1] in g " `currency'"
-	noisily di in g "  (*) Estimación INF:" in y _col(35) %25.0fc `estimacionINF' in g " `currency'"
-	noisily di in g "  (*) Estimación VP:" in y _col(35) %25.0fc `estimacionVP'[1,1] in g " `currency'"
+	noisily di in g "      (*) Ingresos INF:" in y _col(35) %25.0fc `estimacionINF' in g " `currency'"
+	noisily di in g "      (*) Ingresos VP:" in y _col(35) %25.0fc `estimacionVP'[1,1] in g " `currency'"
+	noisily di in g "      (*) Growth rate LP:" in y _col(35) %25.4fc `grow_rate_LR' in g " %"
+
 
 	* Save *
 	tempfile baseingresos
@@ -211,8 +206,12 @@ quietly {
 	**# 5 Fiscal Gap: Gastos ***
 	***                      ***
 	****************************
+
+	*********************************************
+	** 5.1 Información histórica de los gastos **
 	PEF if transf_gf == 0 & anio >= 2013 & divCIEP != -1, anio(`anio') by(divCIEP) nographs desde(`desde')
 	local divCIEP "`=r(divCIEP)' IngBasico"
+
 	foreach k of local divCIEP {
 		local `k' = r(`k')
 		local `k'C = r(`k'C)
@@ -223,23 +222,25 @@ quietly {
 			local `k'C = -15
 		}
 	}
-
 	decode resumido, g(divCIEP)
-	g modulo = ""
 	replace divCIEP = strtoname(divCIEP)
+
+
+	*****************************************
+	** 5.2 Proyección futura de los gastos **
+	g modulo = ""
 	foreach k of local divCIEP {
 		if `"`=strtoname("`k'")'"' != "Costo_de_la_deuda" {
 			preserve
-
 			use `"`c(sysdir_personal)'/users/bootstraps/1/`=strtoname("`k'")'REC.dta"', clear
 			collapse estimacion contribuyentes, by(anio modulo aniobase)
 			tsset anio
 			
 			tempvar estimacion
 			g `estimacion' = estimacion
-			replace estimacion = `estimacion'/L.`estimacion'* 	/// Cambio demográfico
-				`HH`=strtoname("`k'")''[1,1]* 			/// Gasto total (GastoPC.ado)
-				(1+``=strtoname("`k'")'C'/100)^(anio-`anio') ///
+			replace estimacion = `estimacion'/L.`estimacion'*     /// Cambio demográfico
+				`HH`=strtoname("`k'")''[1,1]* 			          /// Gasto total (GastoPC.ado)
+				(1+``=strtoname("`k'")'C'/100)^(anio-`anio')      /// Tendencia de largo plazo (PEF.ado)
 				if anio > `anio'
 
 			g divCIEP = `"`=strtoname("`k'")'"'
@@ -251,132 +252,25 @@ quietly {
 			merge 1:1 (anio divCIEP) using ``k'', nogen update replace
 		}
 	}
-	collapse (sum) gasto estimacionGasto=estimacion if anio <= `end', by(anio divCIEP) fast
-	merge m:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency Poblacion) keep(matched) update
 
 
 	*************************
-	** 5.1 Actualizaciones **
+	** 5.3 Actualizaciones **
+	collapse (sum) gasto estimacionGasto=estimacion if anio <= `end', by(anio divCIEP) fast
+	merge m:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency Poblacion*) keep(matched) update
+
+	replace estimacionGasto = estimacionGasto*deflator*lambda
 	replace gasto = 0 if gasto == .
-	replace estimacion = 0 if estimacion == .
-	replace estimacion = estimacion*lambda*deflator 			// "estimacion" está en valores reales + productividad laboral
+	replace estimacionGasto = 0 if estimacionGasto == .
 
 	g gasto_pib = gasto/pibY*100
-	g estimacion_pib = estimacion*lambda/pibY*100
+	g estimacionGasto_pib = estimacionGasto/pibY*100
 
 
-
-
-
-	**********************************/
-	***                             ***
-	**# 6 DEUDA Y COSTO DE LA DEUDA ***
-	***                             ***
-	***********************************
-	collapse (sum) gasto* estimacion* (max) pibYR deflator lambda Poblacion if anio <= `end', by(anio) fast
-	merge 1:1 (anio) using `shrfsp', nogen keep(matched) keepus(shrfsp* rfsp* /*nopresupuestario*/ tipoDeCambio tasaEfectiva costodeuda*)
-	merge 1:1 (anio) using `baseingresos', nogen
-
-
-	***************************
-	** 6.1 Costo de la deuda **
-	tabstat tasaEfectiva if anio <= `anio'-1 & anio >= `anio'-2, save
-	tempname tasaEfectiva_ari
-	matrix `tasaEfectiva_ari' = r(StatTotal)
-	replace tasaEfectiva = `tasaEfectiva_ari'[1,1] if anio >= `anio' //& tasaEfectiva == .
-
-	* Simulacion *
-	capture confirm scalar gascosto
-	if _rc == 0 {
-		g estimacionCosto_de_la_deuda = scalar(gascosto)*Poblacion if anio == `anio'
-		g gastoCosto_de_la_deuda = estimacionCosto_de_la_deuda if anio == `anio'
-		replace tasaEfectiva = gastoCosto_de_la_deuda/L.shrfsp*100 if anio == `anio'
-		format %20.0fc *Costo_de_la_deuda
-	}
-
-	capture confirm existence $tasaEfectiva
-	if _rc == 0 {
-		replace tasaEfectiva = $tasaEfectiva if anio >= `anio'
-	}
-
-	* Tipo de cambio *
-	g depreciacion = tipoDeCambio-L.tipoDeCambio
-	replace depreciacion = L.depreciacion if depreciacion == .
-
-	g shrfspExternoUSD = shrfspExterno/tipoDeCambio
-	replace tipoDeCambio = L.tipoDeCambio + depreciacion if anio >= `anio'
-	replace shrfspExternoUSD = shrfspExterno/tipoDeCambio
-
-	g efectoTipoDeCambio = shrfspExternoUSD*(tipoDeCambio-L.tipoDeCambio)
-	g difshrfsp = shrfsp - L.shrfsp - efectoTipoDeCambio
-	format shrfspExternoUSD efectoTipoDeCambio difshrfsp %20.0fc
-
-	tabstat efectoTipoDeCambio rfsp, stat(sum) f(%20.0fc) save
-	tempname ACT
-	matrix `ACT' = r(StatTotal)
-
-	* Saldo final de la deuda *
-	forvalues k=`=_N'(-1)1 {
-		if shrfsp[`k'] != . & "`lastfound'" != "yes" {
-			local obslast = `k'
-			local lastfound = "yes"
-		}
-		if shrfsp[`k'] == . & "`lastfound'" == "yes" {
-			local obsfirs = `k'+1
-			continue, break
-		}
-	}
-	if "`lastfound'" == "yes" & "`obsfirs'" == "" {
-		local obsfirs = 1
-	}
-	local shrfspobslast = shrfsp[`obslast']/pibY[`obslast']*100
-
-	* Actualizacion de los saldos *
-	local actualizacion_geo = (((shrfsp[`obslast']-shrfsp[`obsfirs'])/(`ACT'[1,1]+`ACT'[1,2]))^(1/(`obslast'-`obsfirs'))-1)*100
-	g actualizacion = `actualizacion_geo'
-
-	* MXN Reales *
-	replace rfsp = rfsp/deflator
-	replace shrfsp = shrfsp/deflator
-
-	* Otros rfsp (% del PIB) *
-	foreach k of varlist rfspPIDIREGAS rfspIPAB rfspFONADIN rfspDeudores rfspBanca rfspAdecuaciones {
-		g `k'_pib = `k'/pibYR*100
-		replace `k'_pib = L.`k'_pib if `k'_pib == .
-		replace `k' = `k'_pib/100*pibYR if `k' == .
-	}
-
-
-	*********************
-	** 6.2 Iteraciones **
-	forvalues k = `=`anio''(1)`=anio[_N]' {
-
-		* Costo de la deuda *
-		replace estimacionCosto_de_la_deuda = tasaEfectiva/100*L.shrfsp if anio == `k'
-
-		* RFSP *
-		replace rfspBalance = estimacionGasto + estimacionCosto_de_la_deuda - estimacionRecaudacion if anio == `k'
-		replace rfsp = rfspBalance + rfspPIDIREGAS + rfspIPAB + rfspFONADIN + rfspDeudores ///
-			+ rfspBanca + rfspAdecuaciones if anio == `k'
-
-		* SHRFSP *
-		replace shrfspExternoUSD = L.shrfspExterno/L.tipoDeCambio if anio == `k'
-		replace efectoTipoDeCambio = shrfspExternoUSD*(tipoDeCambio-L.tipoDeCambio)
-
-		replace shrfspExterno = L.shrfspExterno*(1+`actualizacion_geo'/100*0) + efectoTipoDeCambio ///
-			+ rfsp*L.shrfspExterno/L.shrfsp if anio == `k'
-		replace shrfspInterno = L.shrfspInterno*(1+`actualizacion_geo'/100*0) ///
-			+ rfsp*L.shrfspInterno/L.shrfsp if anio == `k'
-
-		replace shrfsp = shrfspExterno + shrfspInterno if anio == `k'
-	}
-
-
-	
 	****************
-	/** 5.2 Graphs **
+	** 5.4 Graphs **
 	if "`nographs'" != "nographs" & "$nographs" != "nographs" {
-		noisily tabstat gasto_pib estimacion_pib if anio >= `aniomin', stat(sum) by(anio) save
+		//noisily tabstat gasto_pib estimacionGasto if anio >= `aniomin', stat(sum) by(anio) save
 		graph bar (sum) gasto_pib if anio < `anio' & anio >= `aniomin', ///
 			over(divCIEP) ///
 			over(anio, gap(0)) ///
@@ -388,7 +282,7 @@ quietly {
 			name(Proy_gastos1) ///
 			title(Observado)
 
-		graph bar (sum) estimacion_pib if anio >= `anio', ///
+		graph bar (sum) estimacionGasto_pib if anio >= `anio', ///
 			over(divCIEP) ///
 			over(anio, gap(0)) ///
 			ytitle("") ///
@@ -412,18 +306,125 @@ quietly {
 		}
 
 	}
-	
-	*/
-	
-	g rfsp_pib = rfsp/pibYR*100
-	replace shrfsp_pib = shrfsp/pibYR*100 //if anio >= `anio'
+
+
+	***************************
+	** 5.2 Costo de la deuda **
+	collapse (sum) gasto* estimacion* (max) pibY deflator lambda Poblacion* if anio <= `end', by(anio) fast
+	merge 1:1 (anio) using `shrfsp', nogen keep(matched) keepus(shrfsp* rfsp* /*nopresupuestario*/ tipoDeCambio tasaEfectiva costodeuda*)
+	merge 1:1 (anio) using `baseingresos', nogen
+	tsset anio
+
+	* Reemplazar tasaEfectiva con la media artimética desde el año `desde' *
+	tabstat tasaEfectiva if anio <= `anio' & anio >= `desde', save
+	tempname tasaEfectiva_ari
+	matrix `tasaEfectiva_ari' = r(StatTotal)
+	replace tasaEfectiva = r(StatTotal)[1,1] if anio >= `anio'
+
+	* Reemplazar Costo_de_la_deuda con el escalar gascosto si fue provisto desde los parámetros en SIM.do *
+	capture confirm scalar gascosto
+	if _rc == 0 {
+		g estimacionCosto_de_la_deuda = scalar(gascosto)*Poblacion if anio == `anio'
+		g gastoCosto_de_la_deuda = estimacionCosto_de_la_deuda if anio == `anio'
+
+		replace estimacionGasto = estimacionGasto + estimacionCosto_de_la_deuda if anio == `anio'
+		replace estimacionGasto_pib = estimacionGasto_pib + estimacionCosto_de_la_deuda/pibY*100 if anio == `anio'
+
+		* Reestimar la tasa efectiva para el año `anio' *
+		replace tasaEfectiva = gastoCosto_de_la_deuda/L.shrfsp*100 if anio == `anio'
+		format %20.0fc *Costo_de_la_deuda
+	}
+	//noisily tabstat gasto_pib estimacionGasto_pib if anio >= `aniomin', stat(sum) by(anio) save
+
+	* Reemplazar tasasEfectivas con el escalar tasasEfectiva si fue provisto desde los parámetros en SIM.do *
+	capture confirm scalar tasaEfectiva
+	if _rc == 0 {
+		replace tasaEfectiva = tasaEfectiva if anio >= `anio'
+	}
+
+
+	***********************
+	** 5.3 Tipo de cambio *
+	g depreciacion = tipoDeCambio-L.tipoDeCambio
+
+	* Reemplazar depreciacion por el último valor observado para los años futuros *
+	replace depreciacion = L.depreciacion if depreciacion == .
+
+	* SHRFSP externo en USD *
+	g shrfspExternoUSD = shrfspExterno/tipoDeCambio
+	replace tipoDeCambio = L.tipoDeCambio + depreciacion if anio >= `anio'
+	replace shrfspExternoUSD = shrfspExterno/tipoDeCambio
+
+	g efectoTipoDeCambio = shrfspExternoUSD*(tipoDeCambio-L.tipoDeCambio)
+	g difshrfsp = shrfsp - L.shrfsp - efectoTipoDeCambio + rfsp if anio >= 2009
+	format shrfspExternoUSD efectoTipoDeCambio difshrfsp %20.0fc
+
+	* Efecto acumulado del tipo de cambio y los rfsp *
+	replace rfsp = -rfsp
+	replace rfspBalance = -rfspBalance
+	tabstat efectoTipoDeCambio rfsp difshrfsp if anio >= 2009, stat(sum) f(%20.0fc) save
+	tempname ACT
+	matrix `ACT' = r(StatTotal)
+
+
+	*********************************
+	** 5.4 Saldo final de la deuda **
+	forvalues k=`=_N'(-1)1 {
+		if shrfsp[`k'] != . & "`lastfound'" != "yes" {
+			local obslast = `k'
+			local lastfound = "yes"
+		}
+		if anio[`k'] == 2009 & "`lastfound'" == "yes" {
+			local obsfirs = `k'
+			continue, break
+		}
+	}
+	if "`lastfound'" == "yes" & "`obsfirs'" == "" {
+		local obsfirs = 1
+	}
+	local shrfspobslast = shrfsp[`obslast']/pibY[`obslast']*100
+
+	* Actualizacion de los saldos *
+	local actualizacion_geo = (((shrfsp[`obslast']-shrfsp[`obsfirs'])/(`ACT'[1,1]+`ACT'[1,2]))^(1/(`obslast'-`obsfirs'))-1)*100
+	g actualizacion = `actualizacion_geo'
+
+	* Otros rfsp (% del PIB) *
+	foreach k of varlist rfspPIDIREGAS rfspIPAB rfspFONADIN rfspDeudores rfspBanca rfspAdecuaciones {
+		g `k'_pib = -`k'/pibY*100 //deflator
+		replace `k'_pib = L.`k'_pib if `k'_pib == .
+		replace `k' = -`k'_pib/100*pibY if `k' == . //deflator
+	}
+
+
+	**********************************************************
+	** 5.5 Iteraciones para el costo financiero de la deuda **
+	forvalues k = `=`anio'+1'(1)`=anio[_N]' {
+
+		* Costo de la deuda *
+		replace estimacionCosto_de_la_deuda = tasaEfectiva/100*L.shrfsp if anio == `k'
+		replace estimacionGasto = estimacionGasto + estimacionCosto_de_la_deuda if anio == `k'
+
+		* RFSP *
+		replace rfspBalance = estimacionGasto - estimacionRecaudacion if anio == `k'
+		replace rfsp = rfspBalance + rfspPIDIREGAS + rfspIPAB + rfspFONADIN + rfspDeudores + rfspBanca + rfspAdecuaciones if anio == `k'
+
+		* SHRFSP *
+		replace shrfspExternoUSD = L.shrfspExterno/L.tipoDeCambio if anio == `k'
+		replace efectoTipoDeCambio = shrfspExternoUSD*(tipoDeCambio-L.tipoDeCambio)
+
+		replace shrfspExterno = L.shrfspExterno*(1+`actualizacion_geo'/100*0) + efectoTipoDeCambio ///
+			+ rfsp*L.shrfspExterno/L.shrfsp if anio == `k'
+		replace shrfspInterno = L.shrfspInterno*(1+`actualizacion_geo'/100*0) ///
+			+ rfsp*L.shrfspInterno/L.shrfsp if anio == `k'
+
+		replace shrfsp = shrfspExterno + shrfspInterno if anio == `k'
+	}
+
+	g rfsp_pib = rfsp/pibY*100
+	replace shrfsp_pib = shrfsp/pibY*100 //if anio >= `anio'
+	replace estimacionGasto_pib = estimacionGasto/pibY*100 //if anio >= `anio'
 	g shrfspPC = shrfsp/Poblacion
 
-	
-	
-	
-	
-	
 	if "`nographs'" != "nographs" & "$nographs" != "nographs" {
 		twoway (area rfsp_pib anio if anio < `anio' & anio >= `aniomin') ///
 			(area rfsp_pib anio if anio >= `anio' & anio <= `end'), ///
@@ -433,7 +434,7 @@ quietly {
 			xlabel(`aniomin'(1)`=round(anio[_N],10)') ///
 			xline(`=`anio'+.5') ///
 			legend(off) ///
-			text(`=rfsp_pib[`obs`anio_last'']*.1' `=`anio'+1.5' "{bf:Proyecci{c o'}n}", color(white) placement(e)) ///
+			///text(`=rfsp_pib[`obs`anio_last'']*.1' `=`anio'+1.5' "{bf:Proyecci{c o'}n}", color(white) placement(e)) ///
 			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.") ///
 			title({bf: Proyecci{c o'}n} de los RFSP) subtitle($pais) ///
 			name(Proy_rfsp, replace)
@@ -444,7 +445,9 @@ quietly {
 	** 6.3 Al infinito **
 	*drop estimaciongasto
 	*reshape long gasto estimacion, i(anio) j(modulo) string
-	*collapse (sum) gasto estimacion (mean) pibYR deflator shrfsp* rfsp Poblacion if modulo != "ingresos" & modulo != "VP" & anio <= `end', by(anio) fast
+	*collapse (sum) gasto estimacion (mean) pibY deflator shrfsp* rfsp Poblacion if modulo != "ingresos" & modulo != "VP" & anio <= `end', by(anio) fast
+
+	local grow_rate_LR = (((estimacionGasto[_N]/deflator[_N])/(estimacionGasto[_N-10]/deflator[_N-10]))^(1/10)-1)*100
 
 	g gastoVP = estimacionGasto/(1+`discount'/100)^(anio-`anio')
 	format gastoVP %20.0fc
@@ -455,7 +458,10 @@ quietly {
 	matrix `gastoVP' = r(StatTotal)
 
 	noisily di in g "  (-) Gastos futuros en VP:" in y _col(35) %25.0fc `gastoINF'+`gastoVP'[1,1] in g " `currency'"	
-	
+	noisily di in g "      (*) Gasto INF:" in y _col(35) %25.0fc `gastoINF' in g " `currency'"
+	noisily di in g "      (*) Gasto VP:" in y _col(35) %25.0fc `gastoVP'[1,1] in g " `currency'"
+	noisily di in g "      (*) Growth rate LP:" in y _col(35) %25.4fc `grow_rate_LR' in g " %"
+
 	* Save *
 	*rename estimacion estimaciongastos
 	tempfile basegastos
@@ -508,7 +514,7 @@ quietly {
 			xlabel(2005(1)`end') ///
 			yscale(range(0)) ///
 			legend(off) ///
-			text(`=shrfsp_pib[`obs`anio_last'']*.1' `=`anio'+1.5' "{bf:Proyecci{c o'}n}", color(white) placement(e)) ///
+			///text(`=shrfsp_pib[`obs`anio_last'']*.1' `=`anio'+1.5' "{bf:Proyecci{c o'}n}", color(white) placement(e)) ///
 			xline(`=`anio'+.5') ///
 			name(Proy_shrfsp, replace)
 		if "$export" != "" {
@@ -558,46 +564,44 @@ quietly {
 		in g " % PIB"	
 	noisily di in g "  " _dup(61) "-"
 	noisily di in g "  (*) Tasa Efectiva Promedio: " in y _col(35) %25.4fc `tasaEfectiva_ari'[1,1] in g " %"
-	noisily di in g "  (*) Growth rate LP:" in y _col(35) %25.4fc `grow_rate_LR' in g " %"
 	noisily di in g "  (*) Discount rate:" in y _col(35) %25.4fc `discount' in g " %"
+	noisily di in g "  (*) Actualización deuda:" in y _col(35) %25.4fc `actualizacion_geo' in g " %"
+
 
 
 	*****************************************
 	*** 5 Fiscal Gap: Cuenta Generacional ***
 	*****************************************
-	*preserve
-	*use if entidad == "Nacional" using `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
-	
-	tabstat Poblacion if anio == `anio' | anio == `end', stat(sum) save f(%20.0fc) by(anio)
+	tabstat Poblacion0 Poblacion if (anio > `anio' | anio == `end'), stat(sum) save f(%20.0fc) by(anio)
 	tempname poblacionACT poblacionEND
 	matrix `poblacionACT' = r(Stat1)
 	matrix `poblacionEND' = r(Stat2)
 
-	*collapse (sum) poblacion if edad == 0, by(anio) fast
-	*merge 1:1 (anio) using `PIB', nogen keepus(lambda)
-	*drop if lambda == .
-
 
 	******************
 	** Poblacion VP **
-	g poblacionVP = Poblacion*lambda/(1+`discount'/100)^(anio-`anio')
+	g poblacionVP = Poblacion0/(1+`discount'/100)^(anio-`anio')
 	format poblacionVP %20.0fc
+
 	tabstat poblacionVP if anio > `anio', stat(sum) f(%20.0fc) save
 	tempname poblacionVP
 	matrix `poblacionVP' = r(StatTotal)
 
+	local poblacionINF = poblacionVP[_N]/(1-((1+`grow_rate_LR'/100)/(1+`discount'/100)))
+
 	noisily di _newline(2) in g "{bf: INEQUIDAD INTERGENERACIONAL:" in y " $pais `anio' }"
 	noisily di in g "  (*) Poblaci{c o'}n futura VP: " in y _col(35) %25.0fc `poblacionVP'[1,1] in g " personas"
-	local poblacionINF = poblacionVP[_N]/(1-((1+`grow_rate_LR'/100)/(1+`discount'/100)))
 	noisily di in g "  (*) Poblaci{c o'}n futura INF: " in y _col(35) %25.0fc `poblacionINF' in g " personas"
 	noisily di in g "  " _dup(61) "-"
 	noisily di in g "  (*) Deuda generaciones `anio':" ///
-		in y _col(35) %25.0fc -(-`shrfsp'[1,1])/(`poblacionACT'[1,1]) in g " `currency' por persona"
+		in y _col(35) %25.0fc -(-`shrfsp'[1,1])/(`poblacionACT'[1,2]) in g " `currency' por persona"
 	noisily di in g "  (*) Deuda generaciones `end':" ///
-		in y _col(35) %25.0fc -(-`shrfsp_end_MX')/(`poblacionEND'[1,1]) in g " `currency' por persona"
+		in y _col(35) %25.0fc -(-`shrfsp_end_MX')/(`poblacionEND'[1,2]) in g " `currency' por persona"
+
+	* Inequidad intergeneracional *
 	noisily di in g "  " _dup(61) "-"
 	noisily di in g "  (*) Deuda generaci{c o'}n futura:" ///
-		in y _col(35) %25.0fc -(-`shrfsp'[1,1] + `estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1])/(`poblacionVP'[1,1]+`poblacionINF') ///
+		in y _col(35) %25.0fc -(-`shrfsp'[1,1] + `estimacionINF' + `estimacionVP'[1,1] - `gastoINF' - `gastoVP'[1,1])/(`poblacionVP'[1,1]+`poblacionINF') ///
 		in g " `currency' por persona"
 	capture confirm matrix GA
 	if _rc == 0 {

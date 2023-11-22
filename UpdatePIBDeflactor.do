@@ -78,16 +78,25 @@ if _rc != 0 {
 }
 collapse (sum) Poblacion=poblacion if entidad == "Nacional", by(anio)
 format Poblacion %15.0fc
-tempfile poblacion
-save "`poblacion'"
+tempfile Poblacion
+save "`Poblacion'"
 
 
 ** 2.2 Working Ages (CONAPO) **
 use `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
 collapse (sum) WorkingAge=poblacion if edad >= 15 & edad <= 65 & entidad == "Nacional", by(anio)
 format WorkingAge %15.0fc
-tempfile workingage
-save "`workingage'"
+tempfile WorkingAge
+save "`WorkingAge'"
+
+
+** 2.3 Recién nacidos (CONAPO) **
+use `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
+collapse (sum) Poblacion0=poblacion if edad == 0 & entidad == "Nacional", by(anio)
+format Poblacion0 %15.0fc
+tempfile Poblacion0
+save "`Poblacion0'"
+
 
 
 
@@ -101,8 +110,9 @@ save "`workingage'"
 use `PIB', clear
 	local ultanio = anio[_N]
 	local ulttrim = trimestre[_N]
-merge m:1 (anio) using "`workingage'", nogen //keep(matched)
-merge m:1 (anio) using "`poblacion'", nogen //keep(matched)
+merge m:1 (anio) using "`Poblacion'", nogen //keep(matched)
+merge m:1 (anio) using "`WorkingAge'", nogen //keep(matched)
+merge m:1 (anio) using "`Poblacion0'", nogen //keep(matched)
 
 ** 1.4 Moneda **
 g currency = "MXN"

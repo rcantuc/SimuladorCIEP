@@ -58,14 +58,14 @@ if "$output" != "" {
 ** Fuente: CONAPO 2023. Ver archivo "UpdatePoblacion.do".
 //forvalues anio = `=anioPE'(1)`=anioPE' {                                        // <-- Año(s) de interés
 	//foreach entidad of global entidadesL {                                      // <-- Nacional o para todas las entidades
-		//noisily Poblacion if entidad == "`entidad'", anio(`=anioPE') $update
+		//noisily Poblacion if entidad == "`entidad'", anio(`=anioPE')
 	//}
 //}
 
 
 *****************/
 ** 1.2 Economía **
-** 1.2.1 Parámetros: Crecimiento anual del Producto Interno Bruto
+** 1.2.1 Parámetros: Crecimiento anual del Producto Interno Bruto **
 global pib2023 = 3.1766
 global pib2024 = 2.6189
 global pib2025 = 2.5097
@@ -74,7 +74,7 @@ global pib2027 = 2.5
 global pib2028 = 2.5
 global pib2029 = 2.5002
 
-** 1.2.2 Parámetros: Crecimiento anual del índice de precios implícitos
+** 1.2.2 Parámetros: Crecimiento anual del índice de precios implícitos **
 global def2023 = 5.0
 global def2024 = 4.8
 global def2025 = 3.5
@@ -83,7 +83,7 @@ global def2027 = 3.5
 global def2028 = 3.5
 global def2029 = 3.5
 
-** 1.2.3 Parámetros: Crecimiento anual del índice nacional de precios al consumidor
+** 1.2.3 Parámetros: Crecimiento anual del índice nacional de precios al consumidor **
 global inf2023 = 5.7
 global inf2024 = 4.5
 global inf2025 = 3.4
@@ -126,10 +126,12 @@ global inf2029 = 3.0
 ** Inputs: LIFs + Estadísticas Oportunas. Archivo: SHRFSP.dta.
 ** Outputs: Base de datos con SHRFSP para todos los años.
 ** Fuentes. SHCP, Estadísticas Oportunas. Ver archivo "UpdateSHRFSP.do".
+scalar tasaEfectiva = 6.7358
+
 scalar shrfsp2023 = 46.5
 scalar shrfspInterno2023 = 34.7
 scalar shrfspExterno2023 = 11.8
-scalar rfsp2023 = 3.9
+scalar rfsp2023 = -3.9
 scalar rfspPIDIREGAS2023 = 0.0
 scalar rfspIPAB2023 = -0.1
 scalar rfspFONADIN2023 = -0.2
@@ -145,7 +147,7 @@ scalar costodeudaExterno2023 = 3.4
 scalar shrfsp2024 = 48.8
 scalar shrfspInterno2024 = 37.4
 scalar shrfspExterno2024 = 11.4
-scalar rfsp2024 = 5.4
+scalar rfsp2024 = -5.4
 scalar rfspPIDIREGAS2024 = -0.1
 scalar rfspIPAB2024 = -0.1
 scalar rfspFONADIN2024 = -0.1
@@ -158,10 +160,10 @@ scalar balprimario2024 = 1.2
 scalar costodeudaInterno2024 = 3.7
 scalar costodeudaExterno2024 = 3.7
 
-scalar shrfsp2025 = 48.8
+/*scalar shrfsp2025 = 48.8
 scalar shrfspInterno2025 = 37.7
 scalar shrfspExterno2025 = 11.2
-scalar rfsp2025 = 2.6
+scalar rfsp2025 = -2.6
 scalar rfspPIDIREGAS2025 = -0.1
 scalar rfspIPAB2025 = -0.1
 scalar rfspFONADIN2025 = 0.0
@@ -177,7 +179,7 @@ scalar costodeudaExterno2025 = 3.1
 scalar shrfsp2026 = 49.4
 scalar shrfspInterno2026 = 38.0
 scalar shrfspExterno2026 = 10.9
-scalar rfsp2026 = 2.7
+scalar rfsp2026 = -2.7
 scalar rfspPIDIREGAS2026 = -0.1
 scalar rfspIPAB2026 = -0.1
 scalar rfspFONADIN2026 = 0.0
@@ -193,7 +195,7 @@ scalar costodeudaExterno2026 = 2.7
 scalar shrfsp2027 = 48.8
 scalar shrfspInterno2027 = 38.3
 scalar shrfspExterno2027 = 10.6
-scalar rfsp2027 = 2.7
+scalar rfsp2027 = -2.7
 scalar rfspPIDIREGAS2027 = -0.1
 scalar rfspIPAB2027 = -0.1
 scalar rfspFONADIN2027 = 0.0
@@ -209,7 +211,7 @@ scalar costodeudaExterno2027 = 2.5
 scalar shrfsp2028 = 48.8
 scalar shrfspInterno2028 = 38.6
 scalar shrfspExterno2028 = 10.3
-scalar rfsp2028 = 2.7
+scalar rfsp2028 = -2.7
 scalar rfspPIDIREGAS2028 = -0.1
 scalar rfspIPAB2028 = -0.1
 scalar rfspFONADIN2028 = 0.1
@@ -225,7 +227,7 @@ scalar costodeudaExterno2028 = 2.5
 scalar shrfsp2029 = 48.8
 scalar shrfspInterno2029 = 38.9
 scalar shrfspExterno2029 = 10.0
-scalar rfsp2029 = 2.7
+scalar rfsp2029 = -2.7
 scalar rfspPIDIREGAS2029 = -0.1
 scalar rfspIPAB2029 = -0.1
 scalar rfspFONADIN2029 = 0.0
@@ -238,9 +240,7 @@ scalar balprimario2029 = -0.3
 scalar costodeudaInterno2029 = 2.5
 scalar costodeudaExterno2029 = 2.5
 
-scalar tasaEfectiva = 6.005578
-
-** 1.2.5 Proyecciones: Saldo Histórico de los Requerimientos Financieros del Sector Público **
+** 1.2.5 Proyecciones: Saldo Histórico de los Requerimientos Financieros del Sector Público **/
 //noisily SHRFSP, ultanio(2008) anio(`=anioPE') $update
 
 
@@ -283,24 +283,24 @@ scalar tasaEfectiva = 6.005578
 ***                            ***
 **********************************
 ** 2.1 Parámetros: ISR, IVA, IEPS, ISAN, Importaciones, etc. **
-scalar ISRAS       =   3.694 // 100*scalar(pibY) *(1+ 3.782*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISR (asalariados)
-scalar ISRPF       =   0.234 // 100*scalar(pibY) *(1+ 1.199*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISR (personas f{c i'}sicas)
-scalar CUOTAS      =   1.579 // 100*scalar(pibY) *(1+ 2.197*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Cuotas (IMSS)
+scalar ISRAS       =   3.643 // 100*scalar(pibY) *(1+ 3.782*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISR (asalariados)
+scalar ISRPF       =   0.231 // 100*scalar(pibY) *(1+ 1.199*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISR (personas f{c i'}sicas)
+scalar CUOTAS      =   1.557 // 100*scalar(pibY) *(1+ 2.197*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Cuotas (IMSS)
 
-scalar FMP         =   0.895 // 100*scalar(pibY) *(1+-7.718*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Fondo Mexicano del Petróleo
-scalar PEMEX       =   2.196 // 100*scalar(pibY) *(1+ 1.379*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (Pemex)
-scalar CFE         =   1.319 // 100*scalar(pibY) *(1+-3.024*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (CFE)
-scalar IMSS        =   0.125 // 100*scalar(pibY) *(1+-2.685*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (IMSS)
-scalar ISSSTE      =   0.157 // 100*scalar(pibY) *(1+-3.058*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (ISSSTE)
+scalar ISRPM       =   4.010 // 100*scalar(pibY) *(1+ 4.664*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISR (personas morales)
+scalar OTROSK      =   1.029 // 100*scalar(pibY) *(1+-3.269*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Productos, derechos, aprovech.
 
-scalar ISRPM       =   4.067 // 100*scalar(pibY) *(1+ 4.664*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISR (personas morales)
-scalar OTROSK      =   1.044 // 100*scalar(pibY) *(1+-3.269*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Productos, derechos, aprovech.
+scalar FMP         =   0.882 // 100*scalar(pibY) *(1+-7.718*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Fondo Mexicano del Petróleo
+scalar PEMEX       =   2.165 // 100*scalar(pibY) *(1+ 1.379*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (Pemex)
+scalar CFE         =   1.300 // 100*scalar(pibY) *(1+-3.024*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (CFE)
+scalar IMSS        =   0.123 // 100*scalar(pibY) *(1+-2.685*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (IMSS)
+scalar ISSSTE      =   0.155 // 100*scalar(pibY) *(1+-3.058*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Organismos y empresas (ISSSTE)
 
-scalar IVA         =   3.925 // 100*scalar(pibY) *(1+ 2.498*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // IVA
+scalar IVA         =   3.870 // 100*scalar(pibY) *(1+ 2.498*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // IVA
 scalar ISAN        =   0.057 // 100*scalar(pibY) *(1+ 3.565*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // ISAN
-scalar IEPSNP      =   0.684 // 100*scalar(pibY) *(1+ 0.362*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // IEPS (no petrolero)
-scalar IEPSP       =   1.347 // IEPS (petrolero): 0.662
-scalar IMPORT      =   0.301 // 100*scalar(pibY) *(1+ 5.303*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Importaciones
+scalar IEPSNP      =   0.674 // 100*scalar(pibY) *(1+ 0.362*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // IEPS (no petrolero)
+scalar IEPSP       =   1.328 // IEPS (petrolero): 0.662
+scalar IMPORT      =   0.297 // 100*scalar(pibY) *(1+ 5.303*(${pib2023}-2.9676)/100))/scalar(pibY)*100 // Importaciones
 
 
 ** 2.2 Educación **
@@ -370,7 +370,7 @@ scalar gasmadres   =     472 //    Apoyo a madres trabajadoras
 ** 2.8 ISR **
 ** Inputs: Archivo "`c(sysdir_personal)'/SIM/perfiles`=anioPE'.dta" o "`c(sysdir_site)'/users/$pais/$id/households.dta"
 ** Outputs: Archivo "`c(sysdir_site)'/users/$pais/$id/households.dta" actualizado más scalars ISRAS, ISRPF, ISRPM y CUOTAS.
-if "`cambioisr'" == "1" {
+if "`cambioisr'" == "" {
 	* Anexo 8 de la Resolución Miscelánea Fiscal para 2023 *
 	* Tarifa para el cálculo del impuesto correspondiente al ejericio 2023 (página 782) *
 	*             INFERIOR			SUPERIOR	CF		TASA
@@ -506,7 +506,7 @@ save "`c(sysdir_personal)'/users/$id/households.dta", replace
 
 
 ** (*) Sankey **
-foreach k in /*grupoedad*/ decil sexo rural /*escol*/ {
+foreach k in grupoedad decil sexo rural {
 	noisily run "`c(sysdir_personal)'/SankeySF.do" `k' `=aniovp'
 }
 
@@ -521,7 +521,7 @@ foreach k in /*grupoedad*/ decil sexo rural /*escol*/ {
 *********************************************
 ** Inputs: Archivo "`c(sysdir_site)'/users/$pais/$id/households.dta", SHRFSP, PEFs y LIFs.
 ** Outputs: Sostenibilidad de la deuda y brecha fiscal hasta 2030.
-noisily FiscalGap, anio(`=anioPE') end(2030) aniomin(2015) $nographs desde(2015) discount(7) //update   //anio(`=aniovp')
+noisily FiscalGap, anio(`=anioPE') end(2030) aniomin(2015) $nographs desde(2018) discount(7) //update //anio(`=aniovp')
 
 
 
