@@ -259,7 +259,7 @@ quietly {
 		egen `montoanual' = sum(monto) if anio < `last_anio' & anio >= `desde', by(anio)
 		g `propmensual' = monto/`montoanual' if anio < `last_anio' & anio >= `desde'
 		egen acum_prom = mean(`propmensual'), by(mes)
-		*collapse (sum) monto acum_prom (last) mes Poblacion if monto != ., by(anio nombre clave_de_concepto unidad_de_medida)
+		collapse (sum) monto acum_prom (last) mes Poblacion if monto != ., by(anio nombre clave_de_concepto unidad_de_medida)
 		*replace monto = monto/acum_prom if mes < 12
 		local textografica `"{bf:Promedio a `mesname'}: `=string(acum_prom[_N]*100,"%5.1fc")'% del total anual."'
 		local palabra "Proyectado"
@@ -269,10 +269,10 @@ quietly {
 		egen `maxmes' = max(mes), by(anio)
 		*drop if mes < `maxmes'
 		sort anio mes
-		*collapse (last) monto mes Poblacion if monto != ., by(anio nombre clave_de_concepto unidad_de_medida)
+		collapse (last) monto mes Poblacion if monto != ., by(anio nombre clave_de_concepto unidad_de_medida)
 		g acum_prom = 1
 	}
-	tsset aniomes
+	*tsset aniomes
 	local prianio = anio in 1
 	local ultanio = anio in -1
 	local ultmes = mes in -1
@@ -362,10 +362,10 @@ quietly {
 
 		tempvar monto
 		g `monto' = monto/1000000/deflator
-		twoway (area `monto' aniomes if anio < `aniovp') ///
-			(bar `monto' aniomes if anio >= `aniovp') ///
-			(connected monto_pib aniomes if anio < `aniovp', yaxis(2) pstyle(p1)) ///
-			(connected monto_pib aniomes if anio >= `aniovp', yaxis(2) pstyle(p2)), ///
+		*twoway (area `monto' aniomes if anio < `aniovp') ///
+			(bar `monto' anio if anio >= `aniovp') ///
+			(connected monto_pib anio if anio < `aniovp', yaxis(2) pstyle(p1)) ///
+			(connected monto_pib anio if anio >= `aniovp', yaxis(2) pstyle(p2)), ///
 			title("`graphtitle'"`textsize') ///
 			/*subtitle(Montos observados)*/ ///
 			///b1title(`"`textografica'"', size(small)) ///

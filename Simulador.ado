@@ -686,10 +686,10 @@ program poblaciongini
 	graphpiramide `varlist', over(`grupo') title("`title'") rect(`rect') ///
 		men(`=string(`gsexlab1',"%7.0fc")') women(`=string(`gsexlab2',"%7.0fc")') ///
 		boot(`boottext') base(`base') pib(`pib') `nooutput' `nographs'
-	graphpiramide `varlist', over(`grupoesc') title("`title'") rect(`rect') ///
+	*graphpiramide `varlist', over(`grupoesc') title("`title'") rect(`rect') ///
 		men(`=string(`gsexlab1',"%7.0fc")') women(`=string(`gsexlab2',"%7.0fc")') ///
 		boot(`boottext') base(`base') pib(`pib') `nooutput' `nographs'
-	graphpiramide `varlist', over(`formalidad') title("`title'") rect(`rect') ///
+	*graphpiramide `varlist', over(`formalidad') title("`title'") rect(`rect') ///
 		men(`=string(`gsexlab1',"%7.0fc")') women(`=string(`gsexlab2',"%7.0fc")') ///
 		boot(`boottext') base(`base') pib(`pib') `nooutput' `nographs'
 

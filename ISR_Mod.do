@@ -46,10 +46,9 @@ local smdf = 172.87 			// SM 2022
 *if _rc != 0 {
 	use "`c(sysdir_personal)'/SIM/perfiles`=anioPE'.dta", clear
 *}
-else {
-	*drop gmasg* gmpen* invyvida* riesgo* guard* cestyvej* cuotasocimss* ///
-		fondomed* pensjub* segriesg* presper* servsoccul* admingen* fviv*
-}
+merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/`=anioenigh'/households.dta", ///
+	nogen keepus(ing_subor ing_bruto_tax ing_bruto_tpm cuotasTPF infonavit fovissste sbc formal* ///
+	ing_ss ISR* SE deduc_isr categ* exen_* prop_* ing_t4_cap1) 
 
 replace ing_subor = (ing_subor)/(`deflator'*`lambda')
 replace ing_bruto_tax = (ing_bruto_tax)/(`deflator'*`lambda')
@@ -158,8 +157,7 @@ g double cuotasocisssteT = 2.1879*26.45*CSS_ISSSTE[8,2]/100*360 if (formal2 == 2
 g double cuotasocisssteF = 2.1879*26.45*CSS_ISSSTE[8,3]/100*360 if (formal2 == 2 | formal2 == 3)
 
 * Agregación *
-capture rename cuotasTP cuotasTP0
-capture drop cuotasTP
+*capture rename cuotasTP cuotasTP0
 egen double cuotasTP = rsum(gmasgT gmpenT invyvidaT riesgoT guardT cestyvejT cuotasocimssT ///
 	gmasgP gmpenP invyvidaP riesgoP guardP cestyvejP cuotasocimssP ///
 	fondomedT pensjubT segriesgT presperT servsocculT admingenT fvivT ///

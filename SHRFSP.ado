@@ -30,12 +30,12 @@ quietly {
 
 
 	** 2.1 Update SHRFSP **
-	capture confirm file `"`c(sysdir_site)'/SIM/$pais/SHRFSP.dta"'
+	capture confirm file `"`c(sysdir_personal)'/SIM/SHRFSP.dta"'
 	if ("`update'" == "update" | _rc != 0) & "$pais" != "" {
-		noisily run `"`c(sysdir_site)'/UpdateSHRFSPMundial.do"' `anio'
+		noisily run `"`c(sysdir_personal)'/UpdateSHRFSPMundial.do"' `anio'
 	}
 	if ("`update'" == "update" | _rc != 0) & "$pais" == "" {
-		noisily run `"`c(sysdir_site)'/UpdateSHRFSP.do"'
+		noisily run `"`c(sysdir_personal)'/UpdateSHRFSP.do"'
 	}
 
 
@@ -54,7 +54,7 @@ quietly {
 	**# 3 MERGE ***
 	***         ***
 	***************
-	use `"`c(sysdir_site)'/SIM/$pais/SHRFSP.dta"', clear
+	use `"`c(sysdir_personal)'/SIM/SHRFSP.dta"', clear
 
 	* Anio, mes y observaciones iniciales y finales de la serie *
 	forvalues k=1(1)`=_N' {
@@ -67,7 +67,7 @@ quietly {
 			local obsfin = `k'-1
 		}
 		if anio[`k'] == `anio' {
-			local obsvp = `k'
+			local obsvp = `k'		
 		}
 	}
 	local lastexo = anio[_N]
@@ -106,8 +106,8 @@ quietly {
 	**# 5 PARÁMETROS EXÓGENOS ***
 	***                       ***
 	*****************************
-	collapse (sum) rfsp* costodeuda* balprimario nopresupuestario (last) shrfsp* mes por* tipo* currency, by(anio)
-	merge m:1 (anio) using `PIB', nogen keepus(pibY pibYR var_* Poblacion* deflator) update replace
+	collapse (sum) rfsp* costodeuda* balprimario nopresupuestario (last) shrfsp* mes por* tipo*, by(anio)
+	merge m:1 (anio) using `PIB', nogen keepus(pibY pibYR var_* Poblacion* deflator currency) update replace
 	tsset anio
 	forvalues j = 1(1)`=_N' {
 		* Política fiscal *
@@ -149,7 +149,6 @@ quietly {
 	**# 6 TASAS EFECTIVAS ***
 	***                   ***
 	*************************
-	tsset anio
 	replace shrfsp = shrfspInterno + shrfspExterno if mes != 12 
 	replace nopresupuestario = - (rfspPIDIREGAS + rfspIPAB + rfspFONADIN + rfspDeudores + rfspBanca + rfspAdecuacion) if nopresupuestario == .
 
@@ -503,7 +502,7 @@ quietly {
 		replace `rfspAdecuacion' = 0 if `rfspAdecuacion' == .
 
 		g `rfspBalance' = `rfspAdecuacion' - rfspBalance/pibY*100 if rfspAdecuacion <= 0 & `rfspOtros' >= 0
-		replace `rfspBalance' = - rfspBalance/pibY*100 if rfspAdecuacion > 0 & `rfspOtros' < 0
+		replace `rfspBalance' = rfspBalance/pibY*100 if rfspAdecuacion > 0 & `rfspOtros' < 0
 		replace `rfspBalance' = `rfspOtros' - rfspBalance/pibY*100 if rfspAdecuacion > 0 & `rfspOtros' >= 0
 		replace `rfspBalance' = `rfspAdecuacion' - `rfspOtros' - rfspBalance/pibY*100 if rfspAdecuacion <= 0 & `rfspOtros' < 0
 
@@ -594,6 +593,5 @@ quietly {
 	noisily di _newline in g "{bf:Tiempo:} " in y round(`=r(t5)/r(nt5)',.1) in g " segs."
 
 }
+
 end
-
-
