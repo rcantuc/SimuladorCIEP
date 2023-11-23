@@ -171,21 +171,22 @@ else {
 ******************
 if "$nographs" == "" {
 	twoway (connected crec_pibQR aniotrimestre, mlabel(crec_pibQR) mlabposition(0) mlabcolor(white) mlabgap(0pt)) if pibPO != ., ///
-		title({bf:Producto Interno Bruto}) subtitle(${pais}) ///
-		ytitle("Crecimiento trim. vs. trim. (%)") xtitle("") ///
+		title({bf:Producto Interno Bruto}) subtitle(Crecimiento trim. vs. trim.) ///
+		ytitle("Crecimiento anual (%)") xtitle("") ///
 		tlabel(2005q1(4)`aniofinal'q`trim_last') ///
-		note("{bf:{c U'}ltimo dato reportado}: `ultanio' trim. `ulttrim'.") ///
+		ylabel(none, format(%20.0fc)) ///
+		note("{bf:{c U'}ltimo dato reportado}: `ultanio't`ulttrim'.") ///
 		caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
 		name(UpdatePIBDeflactor, replace)
 
 	twoway (bar pibPO aniotrimestre, mlabel(pibPO) mlabposition(7) mlabangle(90) mlabcolor(white) mlabgap(0pt)) ///
 		if pibPO != ., ///
-		title({bf:Productividad laboral}) subtitle(${pais}) ///
-		ytitle("PIB/Población ocupada (`=currency[`obsvp']' `ultanio')") xtitle("") ///
+		title({bf:Productividad laboral}) subtitle(PIB/Población ocupada) ///
+		ytitle("`=currency[`obsvp']' `ultanio'") xtitle("") ///
 		tlabel(2005q1(4)`aniofinal'q`trim_last') ///
 		///text(`crec_PIBPC', size(vsmall)) ///
-		ylabel(/*0(5)`=ceil(`pibYRmil'[_N])'*/, format(%20.0fc)) yscale(range(500000)) ///
-		note("{bf:{c U'}ltimo dato reportado}: `ultanio' trim. `ulttrim'.") ///
+		ylabel(none, format(%20.0fc)) yscale(range(500000)) ///
+		note("{bf:{c U'}ltimo dato reportado}: `ultanio't`ulttrim'.") ///
 		caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE/ENOE.") ///
 		name(UpdatePIBDeflactorPO, replace)
 }
