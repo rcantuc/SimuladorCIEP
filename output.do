@@ -2,73 +2,90 @@ if "$output" != "" {
 	quietly log on output
 
 	noisily di in w "CRECPIB: ["  ///
-		%8.1f $pib2022 ", " ///
 		%8.1f $pib2023 ", " ///
 		%8.1f $pib2024 ", " ///
 		%8.1f $pib2025 ", " ///
 		%8.1f $pib2026 ", " ///
 		%8.1f $pib2027 ", " ///
-		%8.1f $pib2028 ///
+		%8.1f $pib2028 ", " ///
+		%8.1f $pib2029 ///
 	"]"
 	noisily di in w "CRECDEF: ["  ///
-		%8.1f $def2022 ", " ///
 		%8.1f $def2023 ", " ///
 		%8.1f $def2024 ", " ///
 		%8.1f $def2025 ", " ///
 		%8.1f $def2026 ", " ///
 		%8.1f $def2027 ", " ///
-		%8.1f $def2028 ///
+		%8.1f $def2028 ", " ///
+		%8.1f $def2029 ///
 	"]"
 	noisily di in w "DEUDAPARAM: [" ///
-		$tasaEfectiva ", " ///
-		$tipoDeCambio ", " ///
-		$depreciacion ///
+		%8.3f scalar(tasaEfectiva) /// Tasa de interés efectiva
 	"]"
 	noisily di in w "GASTOS: ["  ///
+		%8.3f iniciaAPIB "," /// Educación inicial
+		%8.3f iniciaBPIB "," /// Comunitaria (CONAFE)
 		%8.3f basicaPIB "," /// Educación básica
 		%8.3f medsupPIB "," /// Educación media superior
 		%8.3f superiPIB "," /// Educación superior
 		%8.3f posgraPIB "," /// Educación Posgrado
 		%8.3f eduaduPIB "," /// Educación para adultos
 		%8.3f otrosePIB "," /// Otros gastos educativos
-		%8.3f basicaPIB+medsupPIB+superiPIB+posgraPIB+eduaduPIB+otrosePIB "," /// Total Educación
+		%8.3f inverePIB "," /// Inversión educativa
+		%8.3f culturPIB "," /// Cultura
+		%8.3f investPIB "," /// Inversión en ciencia y tecnología
+		%8.3f iniciaAPIB+iniciaBPIB+basicaPIB+medsupPIB+superiPIB+posgraPIB+eduaduPIB+otrosePIB+inverePIB+culturPIB+investPIB "," /// Total Educación
+		%8.3f salinfPIB "," /// Atención a NNA
 		%8.3f ssaPIB "," /// Secretaría de Salud
 		%8.3f imssbienPIB "," /// IMSS-Bienestar
 		%8.3f imssPIB "," /// IMSS 
 		%8.3f issstePIB "," /// ISSSTE
 		%8.3f pemexPIB "," /// Pemex + ISSFAM
-		%8.3f ssaPIB+imssbienPIB+imssPIB+issstePIB+pemexPIB "," /// Total Salud
-		%8.3f bienestarPIB "," /// Pensión Bienestar
+		%8.3f inversPIB "," /// Inversión en salud
+		%8.3f salinfPIB+ssaPIB+imssbienPIB+imssPIB+issstePIB+pemexPIB+inversPIB "," /// Total Salud
+		%8.3f pamPIB "," /// Pensión Bienestar
 		%8.3f penimssPIB "," /// Pensión IMSS
 		%8.3f penisssPIB "," /// Pensión ISSSTE
+		%8.3f penpemePIB "," /// Pensión Pemex
 		%8.3f penotroPIB "," /// Pensión Pemex, CFE, LFC, ISSFAM, Otros
-		%8.3f bienestarPIB+penimssPIB+penisssPIB+penotroPIB "," /// Total Pensiones
+		%8.3f pamPIB+penimssPIB+penisssPIB+penpemePIB+penotroPIB "," /// Total Pensiones
 		%8.3f gascfePIB "," /// Gasto en CFE
 		%8.3f gaspemexPIB "," /// Gasto en Pemex
 		%8.3f gassenerPIB "," /// Gasto en SENER
+		%8.3f gasinverfPIB "," /// Gasto en Inversión (energía)
+		%8.3f gascosdeuePIB "," /// Gasto en Costo de la deuda (energía)
+		%8.3f gascfePIB+gaspemexPIB+gassenerPIB+gasinverfPIB+gascosdeuePIB "," /// Total Energía
 		%8.3f gasinfraPIB "," /// Gasto en Inversión
-		%8.3f gascostoPIB "," /// Gasto en Costo de la deuda
-		%8.3f gasfederPIB "," /// Participaciones y aportaciones
+		%8.3f gascuidadosPIB "," /// Gasto en cuidados
 		%8.3f gasotrosPIB "," /// Otros gastos
-		%8.3f gascfePIB+gaspemexPIB+gassenerPIB+gasinfraPIB+gascostoPIB+gasfederPIB+gasotrosPIB "," /// Total Otros gastos
+		%8.3f gasfederPIB "," /// Participaciones y aportaciones
+		%8.3f gascostoPIB "," /// Gasto en Costo de la deuda
+		%8.3f gasinfraPIB+gascuidadosPIB+gasotrosPIB+gasfederPIB+gascostoPIB "," /// Total Otros gastos
 		%8.3f IngBasPIB "," /// Ingreso Básico
-		%8.3f basicaPIB+medsupPIB+superiPIB+posgraPIB+eduaduPIB+otrosePIB+ssaPIB+imssbienPIB+imssPIB+issstePIB+pemexPIB+bienestarPIB+penimssPIB+penisssPIB+penotroPIB+gascfePIB+gaspemexPIB+gassenerPIB+gasinfraPIB+gascostoPIB+gasfederPIB+gasotrosPIB+IngBasPIB /// Total GASTO
+		%8.3f iniciaAPIB+iniciaBPIB+basicaPIB+medsupPIB+superiPIB+posgraPIB+eduaduPIB+otrosePIB+inverePIB+culturPIB+investPIB+salinfPIB+ssaPIB+imssbienPIB+imssPIB+issstePIB+pemexPIB+inversPIB+pamPIB+penimssPIB+penisssPIB+penpemePIB+penotroPIB+gascfePIB+gaspemexPIB+gassenerPIB+gasinverfPIB+gascosdeuePIB+gasinfraPIB+gascuidadosPIB+gasotrosPIB+gasfederPIB+gascostoPIB+IngBasPIB /// Total GASTO
 		"]"
 	noisily di in w "GASTOSPC: ["  ///
+		%8.0f iniciaA "," /// Educación inicial
+		%8.0f iniciaB "," /// Comunitaria (CONAFE)
 		%8.0f basica "," /// Educación básica
 		%8.0f medsup "," /// Educación media superior
 		%8.0f superi "," /// Educación superior
 		%8.0f posgra "," /// Educación Posgrado
 		%8.0f eduadu "," /// Educación para adultos
 		%8.0f otrose "," /// Otros gastos educativos
+		%8.0f invere "," /// Inversión educativa
+		%8.0f cultur "," /// Cultura
+		%8.0f invest "," /// Inversión en ciencia y tecnología
 		%8.0f scalar(educacion) "," /// Total Educación
+		%8.0f salinf "," /// Atención a NNA
 		%8.0f ssa "," /// Secretaría de Salud
 		%8.0f imssbien "," /// IMSS-Bienestar
 		%8.0f imss "," /// IMSS
 		%8.0f issste "," /// ISSSTE
 		%8.0f pemex "," /// Pemex + ISSFAM
+		%8.0f invers "," /// Inversión en salud
 		%8.0f scalar(salud) "," /// Total Salud
-		%8.0f bienestar "," /// Pensión Bienestar
+		%8.0f pam "," /// Pensión Bienestar
 		%8.0f penimss "," /// Pensión Pemex
 		%8.0f penisss "," /// Pensión SENER
 		%8.0f penotro "," /// Pensión Inversión
@@ -76,11 +93,15 @@ if "$output" != "" {
 		%8.0f gascfe "," /// Gasto en CFE
 		%8.0f gaspemex "," /// Gasto en Pemex
 		%8.0f gassener "," /// Gasto en SENER
+		%8.0f gasinverf "," /// Gasto en Inversión (energía)
+		%8.0f gascosdeue "," /// Gasto en Costo de la deuda (energía)
+		%8.0f scalar(gasenergia) "," /// Total Energía
 		%8.0f gasinfra "," /// Gasto en Inversión
-		%8.0f gascosto "," /// Gasto en costo de la deuda
-		%8.0f gasfeder "," /// Participaciones y aportaciones
+		%8.0f gascuidados "," /// Gasto en cuidados
 		%8.0f gasotros "," /// Otros gastos
-		%8.0f scalar(otrosgastos) "," /// Total Otros gastos
+		%8.0f gasfeder "," /// Participaciones y aportaciones
+		%8.0f gascosto "," /// Gasto en costo de la deuda
+		%8.0f scalar(otrosgas) "," /// Total Otros gastos
 		%8.0f ingbasico "," /// Ingreso Básico
 		%8.0f ingbasico18 "," /// Checkbox "menores de 18 años"
 		%8.0f ingbasico65 /// Checkbox "mayores de 65 años"
@@ -165,8 +186,7 @@ if "$output" != "" {
 		%10.2f SE[8,3] "," ///
 		%10.2f SE[9,3] "," ///
 		%10.2f SE[10,3] "," ///
-		%10.2f SE[11,3] "," ///
-		%10.2f SE[12,3] ///
+		%10.2f SE[11,3] ///
 		"]"
 	noisily di in w "ISRDEDU: [" ///
 		DED[1,1] "," /// Deducciones en salarios mínimos
@@ -198,16 +218,12 @@ if "$output" != "" {
 	quietly log close output
 	tempfile output1 output2 output3
 	if "`=c(os)'" == "Windows" {
-		capture filefilter "`c(sysdir_site)'/users/$pais/$id/${output}.txt" `output1', from(\r\n>) to("") replace // Windows
+		capture filefilter "`c(sysdir_personal)'/users/$pais/$id/${output}.txt" `output1', from(\r\n>) to("") replace // Windows
 	}
 	else {
-		filefilter "`c(sysdir_site)'/users/$pais/$id/${output}.txt" `output1', from(\n>) to("") replace // Mac & Linux
+		filefilter "`c(sysdir_personal)'/users/$pais/$id/${output}.txt" `output1', from(\n>) to("") replace // Mac & Linux
 	}
 	filefilter `output1' `output2', from(" ") to("") replace
 	filefilter `output2' `output3', from("_") to(" ") replace
-	filefilter `output3' "`c(sysdir_site)'/users/$pais/$id/${output}.txt", from(".,") to("0") replace
-}
-
-if "$export" != "" {
-	noisily scalarlatex
+	filefilter `output3' "`c(sysdir_personal)'/users/$pais/$id/${output}.txt", from(".,") to("0") replace
 }
