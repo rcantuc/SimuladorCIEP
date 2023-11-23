@@ -23,7 +23,7 @@ cd `"`c(sysdir_personal)'"'
 ** Comentar o descomentar según sea el caso. **
 //global id = "`c(username)'"                                                   // IDENTIFICADOR DEL USUARIO
 //global export "`c(sysdir_site)'../TextbookCIEP/images"                        // DIRECTORIO DE IMÁGENES
-global nographs "nographs"                                                      // SUPRIMIR GRAFICAS
+//global nographs "nographs"                                                      // SUPRIMIR GRAFICAS
 //global textbook "textbook"                                                    // GRÁFICOS FORMATO LaTeX
 //global output "output"                                                        // OUTPUTS (WEB)
 //global update "update"                                                        // OUTPUTS (WEB)
@@ -97,7 +97,9 @@ global inf2029 = 3.0
 ** Inputs: Parámetros CGPE 2024 (página 121).
 ** Outputs: Base de datos con su deflactor y productividad laboral para todos los años.
 ** Fuente: INEGI, BIE. Ver archivo "UpdatePIBDeflactor.do".
-//noisily PIBDeflactor, geodef(2003) geopib(2003) $update
+noisily PIBDeflactor, geodef(2005) geopib(2005) $update
+
+
 
 ** 1.2.5 Proyecciones: Sistema de Cuentas Nacionales **
 ** Inputs: PIB, índice de precios implícitos, inpc, población y población ocupada.

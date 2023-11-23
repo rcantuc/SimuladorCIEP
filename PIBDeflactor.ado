@@ -158,6 +158,7 @@ quietly {
 	*******************
 	*g double indiceY = pibY/pibYR
 	label var indiceY "Índice de Precios Implícitos"
+	format indiceY %7.1fc
 
 
 	** 3.2 Valor presente **
@@ -266,6 +267,7 @@ quietly {
 
 
 
+
 	*****************
 	** 6 Simulador **
 	*****************
@@ -302,278 +304,177 @@ quietly {
 	di in g " Crec. al infinito: " in y _col(25) %20.1fc var_pibY[_N] in g " %"
 	di in g " Defl. al infinito: " in y _col(25) %20.1fc var_indiceY[_N] in g " %"
 
+
+
+
+
+	****************
+	** 7 Gráficas **
+	****************
 	if "`nographs'" != "nographs" & "$nographs" == "" {
 
 		if "`if'" != "" {
 			keep `if'
 		}
 
-		* Graph type *
-		if `exo_count'-1 <= 0 {
-			local graphtype "bar"
-		}
-		else {
-			local graphtype "area"
-		}
-
-		if `exo_def'-1 <= 0 {
-			local graphtype2 "bar"
-		}
-		else {
-			local graphtype2 "area"
-		}
-
-
-
 		************************************
 		*** 1. Crecimiento del Deflactor ***
 		************************************
-
-		* Texto sobre lineas *
-		forvalues k=1(1)`=_N' {
-			if var_indiceY[`k'] != . {
-				local crec_deflactor `"`crec_deflactor' `=var_indiceY[`k']' `=anio[`k']' "`=string(var_indiceY[`k'],"%5.1fc")'" "'
-			}
-		}
-
+		
 		* Títulos y fuentes *
 		if "$export" == "" {
 			local graphtitle "{bf:Índice de precios implícitos}"
-			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE y SHCP."
+			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/SHCP."
 		}
 		else {
 			local graphtitle ""
 			local graphfuente ""
 		}
 
-		twoway (connected var_indiceY anio ///
-			if (anio < `aniofinal' & anio >= `anioinicial') | (anio == `aniofinal' & trimestre == 4)) ///
-			(connected var_indiceY anio if anio < `aniofinal'+`exo_def' & anio >= `aniofinal') ///
-			(connected var_indiceY anio if anio >= `aniofinal'+`exo_def'), ///
-			xlabel(1993 2000 2005 2010 2015 2020 2035 2040 2050 2060 2070 `aniovp' `=`aniofinal'+`exo_count'-1') ///
-			ylabel(, format(%3.0f)) ///
-			ytitle("Crecimiento anual (%)") xtitle("") ///
-			///yline(0, lcolor(black)) ///
-			text(`crec_deflactor', color(white) size(vsmall)) ///
-			legend(label(1 "INEGI, SCN 2018") label(2 "Estimación $paqueteEconomico") label(3 "Promedio (últimos `difdef' años)") ///
-			region(margin(zero))) ///
-			title("`graphtitle'") ///
-			subtitle(${pais}) ///
-			caption("`graphfuente'") ///
-			note("{bf:{c U'}ltimo dato reportado}: `=`aniofinal''`trim_last'.") ///
-			name(var_indiceYH, replace)
+		* Especificaciones *
+		local anioinicial = 2005
+		format deflator %7.2fc
+		format var_indiceY %7.1fc
+		twoway ///
+			(bar deflator anio if (anio < `aniofinal' & anio >= `anioinicial') | (anio == `aniofinal' & trimestre == 4), yaxis(2) mlabel(deflator) mlabposition(7) mlabangle(90) mlabcolor(white) mlabgap(0pt) mlabsize(vsmall)) ///
+			(bar deflator anio if anio < `aniofinal'+`exo_def' & anio >= `aniofinal', yaxis(2) mlabel(deflator) mlabposition(7) mlabangle(90) mlabcolor(white) mlabgap(0pt) mlabsize(vsmall)) ///
+			(bar deflator anio if anio >= `aniofinal'+`exo_def', yaxis(2) mlabel(deflator) mlabposition(7) mlabangle(90) mlabcolor(white) mlabgap(0pt) mlabsize(vsmall)) ///
+			(connected var_indiceY anio if (anio < `aniofinal' & anio >= `anioinicial') | (anio == `aniofinal' & trimestre == 4), yaxis(1) mlabel(var_indiceY) mlabpos(0) mlabcolor(white) mlabsize(vsmall) mstyle(p1) lstyle(p1)) ///
+			(connected var_indiceY anio if anio < `aniofinal'+`exo_def' & anio >= `aniofinal', yaxis(1) mlabel(var_indiceY) mlabpos(0) mlabcolor(white) mlabsize(vsmall) mstyle(p2) lstyle(p2)) ///
+			(connected var_indiceY anio if anio >= `aniofinal'+`exo_def', yaxis(1) mlabel(var_indiceY) mlabpos(0) mlabcolor(white) mlabsize(vsmall) mstyle(p3) lstyle(p3)) ///
+			, xlabel(2005 2010 2015 2020 2035 2040 2050 2060 2070 `aniovp' `=`aniofinal'+`exo_count'-1') ///
+			ylabel(none, format(%3.0f) axis(2) noticks) yscale(range(0) axis(2) noline) ///
+			ylabel(none, format(%3.0f) axis(1) noticks) yscale(range(0) axis(1) noline) ///
+			ytitle("Crecimiento anual (%)", axis(1)) ytitle("{c I'}ndice `aniovp' = 1.000", axis(2)) xtitle("") ///
+			legend(label(1 "INEGI, SCN 2018") label(2 "$paqueteEconomico") label(3 "Proyección") order(1 2 3)) ///
+			title("`graphtitle'") subtitle(${pais}) caption("`graphfuente'") ///
+			note("{bf:Nota}: La proyección representa el promedio geométrico de los últimos `difdef' años. {bf:{c U'}ltimo dato reportado}: `=`aniofinal''t`trim_last'.") ///
+			name(deflactor, replace)
 
 		capture confirm existence $export
 		if _rc == 0 {
-			graph export "$export/var_indiceYH.png", replace name(var_indiceYH)
-		}
-
-
-
-		***********************************
-		*** 2. Proyección del Deflactor ***
-		***********************************
-
-		* Títulos y fuentes *
-		if "$export" == "" {
-			local graphtitle "{bf:Evolución del índice de precios implícitos}"
-			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE y SHCP."
-		}
-		else {
-			local graphtitle ""
-			local graphfuente ""
-		}
-
-		twoway (area deflator anio if (anio < `aniofinal' & anio >= `anioinicial') | (anio == `aniofinal' & trimestre == 4)) ///
-			(`graphtype2' deflator anio if anio < `aniofinal'+`exo_def' & anio >= `aniofinal', lwidth(none)) ///
-			(area deflator anio if anio >= `aniofinal'+`exo_def') ///
-			, title("`graphtitle'") ///
-			subtitle(${pais}) ///
-			caption("`graphfuente'") ///
-			xlabel(1993 2000 2005 2010 2015 2020 2035 2040 2050 2060 2070 `aniovp' `=`aniofinal'+`exo_count'-1') ///
-			yscale(range(0)) ///
-			ylabel(, format("%3.0f")) ///
-			ytitle("{c I'}ndice `aniovp' = 1.000") xtitle("") ///
-			legend(label(1 "INEGI, SCN 2018") label(2 "Estimación $paqueteEconomico") label(3 "Proyección")) ///
-			note("{bf:Crecimiento de precios}: `=string(`=((indiceY[`obsDEF']/indice[`obs_def'])^(1/(`=`obsDEF'-`obs_def''))-1)*100',"%6.3f")'% (`=anio[[`obsDEF']]'-`=anio[`obs_def']'). {bf:{c U'}ltimo dato reportado}: `=`aniofinal''`trim_last'.") ///
-			name(deflactorH, replace)
-
-		capture confirm existence $export
-		if _rc == 0 {
-			graph export "$export/deflactorH.png", replace name(deflactorH)
+			graph export "$export/deflactor.png", replace name(deflactor)
 		}
 
 
 
 		******************************
-		*** 3. Crecimiento del PIB ***
+		*** 2. Crecimiento del PIB ***
 		******************************
-
-		* Texto sobre lineas *
-		forvalues k=1(1)`=_N' {
-			if var_pibY[`k'] != . {
-				local crec_PIB `"`crec_PIB' `=var_pibY[`k']' `=anio[`k']' "`=string(var_pibY[`k'],"%5.1fc")'" "'
-			}
-		}
+		tempvar pibYRmil
+		g `pibYRmil' = pibYR/1000000000000
+		format `pibYRmil' %7.1fc
 
 		* Títulos y fuentes *
 		if "$export" == "" {
 			local graphtitle "{bf:Producto Interno Bruto}"
-			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE."
+			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/SHCP."
 		}
 		else {
 			local graphtitle ""
 			local graphfuente ""
 		}
 
-		twoway (connected var_pibY anio if (anio < `aniofinal' & anio >= `anioinicial') | (anio == `aniofinal' & trimestre == 4)) ///
-			(connected var_pibY anio if anio < `aniofinal'+`exo_count' & anio >= `aniofinal') ///
-			(connected var_pibY anio if anio >= `aniofinal'+`exo_count') ///
-			, title("`graphtitle'") ///
-			subtitle(${pais}) ///
-			caption("`graphfuente'") ///
-			xlabel(1993 1995 2000 2005 2010 2015 2020 2035 2040 2050 2060 2070 `aniovp' `=`aniofinal'+`exo_count'-1') ///
-			ylabel(/*-6(3)6*/, format(%3.0fc)) ///
-			ytitle("Crecimiento anual (%)") xtitle("") ///
-			///yline(0, lcolor(white)) ///
-			text(`crec_PIB', color(white) size(vsmall)) ///
-			legend(label(1 "INEGI, SCN 2018") label(2 "Estimación $paqueteEconomico") label(3 "Promedio (últimos `difpib' años)")) ///
-			note("{bf:Crecimiento econ{c o'}mico}: `=string(`=((pibYR[`obsPIB']/pibYR[`obs_exo'])^(1/(`=`obsPIB'-`obs_exo''))-1)*100',"%6.3f")'% (`=anio[[`obsPIB']]'-`=anio[`obs_exo']'). {bf:{c U'}ltimo dato reportado}: `=`aniofinal''`trim_last'.") ///
-			name(PIBH, replace)
-
-		capture confirm existence $export
-		if _rc == 0 {
-			graph export "$export/PIBH.png", replace name(PIBH)
-		}
-
-
-
-		*****************************
-		*** 4. Proyección del PIB ***
-		*****************************
-		tempvar pibYRmil
-		g `pibYRmil' = pibYR/1000000000000
-
-		* Títulos y fuentes *
-		if "$export" == "" {
-			local graphtitle "{bf:Flujo del Producto Interno Bruto}"
-			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE."
-		}
-		else {
-			local graphtitle ""
-			local graphfuente ""
-		}
-
-		twoway (area `pibYRmil' anio if (anio < `aniofinal' & anio >= `anioinicial') | (anio == `aniofinal' & trimestre == 4)) ///
-			(`graphtype' `pibYRmil' anio if anio < `aniofinal'+`exo_count' & anio >= `aniofinal', lwidth(none)) ///
-			(area `pibYRmil' anio if anio >= `aniofinal'+`exo_count') ///
-			, title("`graphtitle'") ///
-			subtitle(${pais}) ///
-			caption("`graphfuente'") ///
-			ytitle(billones `=currency[`obsvp']' `aniovp') xtitle("") ///
-			///ytitle(billions `=currency[`obsvp']' `aniovp') xtitle("") ///
-			///text(`=`pibYRmil'[1]*.05' `=`aniofinal'-.5' "`aniofinal'", place(nw) color(white)) ///
-			///text(`=`pibYRmil'[1]*.05' `=anio[1]+.5' "Reportado" ///
-			///`=`pibYRmil'[1]*.05' `=`aniofinal'+1.5' "Proyecci{c o'}n CIEP", place(ne) color(white) size(small)) ///
-			xlabel(1993 2000 2005 2010 2015 2020 2035 2040 2050 2060 2070 `aniovp' `=`aniofinal'+`exo_count'-1') ///
-			ylabel(/*0(5)`=ceil(`pibYRmil'[_N])'*/, format(%20.0fc)) ///
-			///xline(`aniofinal'.5) ///
-			yscale(range(0)) /*xscale(range(1993))*/ ///
-			legend(label(1 "INEGI, SCN 2018") label(2 "Estimación $paqueteEconomico") label(3 "Proyección")) ///
-			///legend(label(1 "Observed") label(2 "Projected") label(3 "Estimated") order(1 3 2)) ///
-			note("{bf:Productividad laboral}: `=string(scalar(llambda),"%6.3f")'% (`=anio[[`obsPIB']]'-`=anio[`obs_exo']'). {bf:{c U'}ltimo dato reportado}: `=`aniofinal''`trim_last'.") ///
-			///note("{bf:Note}: Annual Labor Productivity Growth: `=string(scalar(llambda),"%6.3f")'% (`=anio[[`obsPIB']]'-`=anio[`obs_exo']').") ///
-			name(PIBP, replace)
-
-		capture confirm existence $export
-		if _rc == 0 {
-			graph export "$export/PIB.png", replace name(PIBP)
-		}
+		* Especificaciones *
+		format var_pibY %7.1fc
+		twoway ///
+			(bar `pibYRmil' anio if (anio < `aniofinal' & anio >= `anioinicial') | (anio == `aniofinal' & trimestre == 4), yaxis(2) mlabel(`pibYRmil') mlabposition(7) mlabangle(90) mlabcolor(white) mlabgap(0pt) mlabsize(vsmall)) ///
+			(bar `pibYRmil' anio if anio < `aniofinal'+`exo_def' & anio >= `aniofinal', yaxis(2) mlabel(`pibYRmil') mlabposition(7) mlabangle(90) mlabcolor(white) mlabgap(0pt) mlabsize(vsmall)) ///
+			(bar `pibYRmil' anio if anio >= `aniofinal'+`exo_def', yaxis(2) mlabel(`pibYRmil') mlabposition(7) mlabangle(90) mlabcolor(white) mlabgap(0pt) mlabsize(vsmall)) ///
+			(connected var_pibY anio if (anio < `aniofinal' & anio >= `anioinicial') | (anio == `aniofinal' & trimestre == 4), yaxis(1) mlabel(var_pibY) mlabpos(0) mlabcolor(white) mlabsize(vsmall) mstyle(p1) lstyle(p1)) ///
+			(connected var_pibY anio if anio < `aniofinal'+`exo_def' & anio >= `aniofinal', yaxis(1) mlabel(var_pibY) mlabpos(0) mlabcolor(white) mlabsize(vsmall) mstyle(p2) lstyle(p2)) ///
+			(connected var_pibY anio if anio >= `aniofinal'+`exo_def', yaxis(1) mlabel(var_pibY) mlabpos(0) mlabcolor(white) mlabsize(vsmall) mstyle(p3) lstyle(p3)) ///
+			, xlabel(2005 2010 2015 2020 2035 2040 2050 2060 2070 `aniovp' `=`aniofinal'+`exo_count'-1') ///
+			ylabel(none, format(%3.0f) axis(2) noticks) yscale(range(0) axis(2) noline) ///
+			ylabel(none, format(%3.0f) axis(1) noticks) yscale(range(0) axis(1) noline) ///
+			ytitle("Crecimiento anual (%)", axis(1)) ytitle("Billones `=currency[`obsvp']' `aniovp'", axis(2)) xtitle("") ///
+			legend(label(1 "INEGI, SCN 2018") label(2 "$paqueteEconomico") label(3 "Proyección") order(1 2 3)) ///
+			title("`graphtitle'") subtitle(${pais}) caption("`graphfuente'") ///
+			note("{bf:Nota}: La proyección incluye la transición de trabajadores y una productividad anual de `=string(llambda,"%5.2fc")'%. {bf:{c U'}ltimo dato reportado}: `=`aniofinal''t`trim_last'.") ///
+			name(pib, replace)
 
 
 
 		**************************
-		*** 5. PIB por persona ***
+		*** 3. PIB por persona ***
 		**************************
 		g PIBPob = pibYR/Poblacion
 		format PIBPob %20.0fc
 
+		g var_pibPob = (PIBPob/L.PIBPob-1)*100
+		format var_pibPob %7.1fc
+
 		* Títulos y fuentes *
 		if "$export" == "" {
 			local graphtitle "{bf:Producto Interno Bruto por persona}"
-			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE/CONAPO (2023)."
+			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/CONAPO."
 		}
 		else {
 			local graphtitle ""
 			local graphfuente ""
 		}
 
-		twoway (bar PIBPob anio if (anio < `aniofinal' & anio >= `anioinicial') | (anio == `aniofinal' & trimestre == 4), ///
-			mlabel(PIBPob) mlabposition(7) mlabangle(90) mlabcolor(white) mlabgap(0pt)) ///
-			(bar PIBPob anio if anio < `aniofinal'+`exo_count' & anio >= `aniofinal', ///
-			mlabel(PIBPob) mlabposition(7) mlabangle(90) mlabcolor(white) mlabgap(0pt)) ///
-			(bar PIBPob anio if anio >= `aniofinal'+`exo_def', ///
-			mlabel(PIBPob) mlabposition(7) mlabangle(90) mlabcolor(white) mlabgap(0pt)), ///
+		twoway (bar PIBPob anio if (anio < `aniofinal' & anio >= `anioinicial') | (anio == `aniofinal' & trimestre == 4), yaxis(2) mlabel(PIBPob) mlabposition(7) mlabangle(90) mlabcolor(white) mlabgap(0pt)) ///
+			(bar PIBPob anio if anio < `aniofinal'+`exo_count' & anio >= `aniofinal', yaxis(2) mlabel(PIBPob) mlabposition(7) mlabangle(90) mlabcolor(white) mlabgap(0pt)) ///
+			(bar PIBPob anio if anio >= `aniofinal'+`exo_def', yaxis(2) mlabel(PIBPob) mlabposition(7) mlabangle(90) mlabcolor(white) mlabgap(0pt)) ///			
+			(connected var_pibPob anio if (anio < `aniofinal' & anio >= `anioinicial') | (anio == `aniofinal' & trimestre == 4), yaxis(1) mlabel(var_pibPob) mlabpos(0) mlabcolor(white) mlabsize(vsmall) mstyle(p1) lstyle(p1)) ///
+			(connected var_pibPob anio if anio < `aniofinal'+`exo_def' & anio >= `aniofinal', yaxis(1) mlabel(var_pibPob) mlabpos(0) mlabcolor(white) mlabsize(vsmall) mstyle(p2) lstyle(p2)) ///
+			(connected var_pibPob anio if anio >= `aniofinal'+`exo_def', yaxis(1) mlabel(var_pibPob) mlabpos(0) mlabcolor(white) mlabsize(vsmall) mstyle(p3) lstyle(p3)), ///
 			title("`graphtitle'") ///
 			subtitle(${pais}) ///
 			caption("`graphfuente'") ///
-			ytitle(`=currency[`obsvp']' `aniovp') ///
-			xtitle("") ///
-			xlabel(1993 1995 2000 2005 2010 2015 2020 2035 2040 2050 2060 2070 `aniovp' `=`aniofinal'+`exo_count'-1') ///
-			legend(label(1 "Observado") label(2 "$paqueteEconomico") label(3 "Proyección")) ///
-			ylabel(/*0(5)`=ceil(`pibYRmil'[_N])'*/, format(%20.0fc)) yscale(range(160000)) ///
+			ytitle("Crecimiento anual (%)", axis(1)) ytitle("`=currency[`obsvp']' `aniovp'", axis(2)) xtitle("") ///
+			xlabel(2005 2010 2015 2020 2035 2040 2050 2060 2070 `aniovp' `=`aniofinal'+`exo_count'-1') ///
+			note("{bf:Nota}: La proyección incluye la transición de trabajadores y una productividad anual de `=string(llambda,"%5.2fc")'%. {bf:{c U'}ltimo dato reportado}: `=`aniofinal''t`trim_last'.") ///
+			legend(label(1 "Observado") label(2 "$paqueteEconomico") label(3 "Proyección") order(1 2 3)) ///
+			ylabel(none, format(%3.0f) axis(2) noticks) yscale(range(0) axis(2) noline) ///
+			ylabel(none, format(%3.0f) axis(1) noticks) yscale(range(0) axis(1) noline) ///
 			name(PIBPC, replace)
 
 		capture confirm existence $export
 		if _rc == 0 {
 			graph export "$export/PIBPC.png", replace name(PIBPC)
 		}
-		
-		
-		
-		twoway (area deflatorpp anio if (anio < `aniofinal' & anio >= 1993) /*| (anio == `aniofinal' & mes == 12)*/) ///
-			(area deflatorpp anio if anio >= `aniofinal' & anio >= anio[`obslast'+`exo_count']) ///
-			(`graphtype' deflatorpp anio if anio < anio[`obslast'+`exo_count'] & anio >= `aniofinal', lwidth(none) pstyle(p4)), ///
-			title("{bf:{c I'}ndice nacional de precios al consumidor}") ///
-			subtitle(${pais}) ///
-			xlabel(2010(5)`=round(anio[_N],5)') ///
-			ytitle("`aniovp' = 1.000") xtitle("") yline(0) ///
-			ylabel(0(1)4, format("%3.0f")) ///
-			///text(`crec_deflactor', place(c)) ///
-			legend(label(1 "INEGI, BIE") label(3 "Proyección CIEP") label(2 "Estimación $paqueteEconomico")) ///
-			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
-			note("{bf:{c U'}ltimo dato reportado}: `aniofinal' mes `mes_last'.") ///
-			name(inflacionH, replace)
-			
-		capture confirm existence $export
-		if _rc == 0 {
-			graph export "$export/inflacionH.png", replace name(inflacionH)
+
+
+
+		**************************
+		*** 4. Inflación anual ***
+		**************************
+
+		* Títulos y fuentes *
+		if "$export" == "" {
+			local graphtitle "{bf:Índice de precios al consumidor}"
+			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/SHCP."
+		}
+		else {
+			local graphtitle ""
+			local graphfuente ""
 		}
 
-		* Texto sobre lineas *
-		forvalues k=1(1)`=_N' {
-			if var_inflY[`k'] != . & anio[`k'] >= 1993 {
-				local crec_infl `"`crec_infl' `=var_inflY[`k']' `=anio[`k']' "{bf:`=string(var_inflY[`k'],"%5.1fc")'}""'
-			}
-		}
-		twoway (connected var_inflY anio if (anio < `aniofinal' & anio >= 1993) | (anio == `aniofinal' & trimestre == 4)) ///
-			(connected var_inflY anio if anio > `aniofinal' & anio >= anio[`obslast'+`exo_count']) ///
-			(connected var_inflY anio if anio < anio[`obslast'+`exo_count'] & anio >= `aniofinal'), ///
-			title({bf:Crecimientos} del INPC) ///
-			subtitle(${pais}) ///
-			xlabel(1995(5)`=round(anio[_N],5)') ///
-			ylabel(, format(%3.0f)) ///
-			ytitle("Crecimiento anual (%)") xtitle("") yline(0, lcolor(black)) ///
-			text(`crec_infl', color(white)) ///
-			legend(label(1 "INEGI, BIE") label(3 "Proyección CIEP") label(2 "Estimación $paqueteEconomico")) ///
-			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
-			note("{bf:{c U'}ltimo dato reportado}: `aniofinal' mes `mes_last'.") ///
-			name(var_inflYH, replace)
+		* Especificaciones *
+		format deflatorpp %7.2fc
+		format var_inflY %7.1fc
+		twoway ///
+			(bar deflatorpp anio if (anio < `aniofinal' & anio >= `anioinicial') | (anio == `aniofinal' & trimestre == 4), yaxis(2) mlabel(deflatorpp) mlabposition(7) mlabangle(90) mlabcolor(white) mlabgap(0pt) mlabsize(vsmall)) ///
+			(bar deflatorpp anio if anio < `aniofinal'+`exo_def' & anio >= `aniofinal', yaxis(2) mlabel(deflatorpp) mlabposition(7) mlabangle(90) mlabcolor(white) mlabgap(0pt) mlabsize(vsmall)) ///
+			(bar deflatorpp anio if anio >= `aniofinal'+`exo_def', yaxis(2) mlabel(deflatorpp) mlabposition(7) mlabangle(90) mlabcolor(white) mlabgap(0pt) mlabsize(vsmall)) ///
+			(connected var_inflY anio if (anio < `aniofinal' & anio >= `anioinicial') | (anio == `aniofinal' & trimestre == 4), yaxis(1) mlabel(var_inflY) mlabpos(0) mlabcolor(white) mlabsize(vsmall) mstyle(p1) lstyle(p1)) ///
+			(connected var_inflY anio if anio < `aniofinal'+`exo_def' & anio >= `aniofinal', yaxis(1) mlabel(var_inflY) mlabpos(0) mlabcolor(white) mlabsize(vsmall) mstyle(p2) lstyle(p2)) ///
+			(connected var_inflY anio if anio >= `aniofinal'+`exo_def', yaxis(1) mlabel(var_inflY) mlabpos(0) mlabcolor(white) mlabsize(vsmall) mstyle(p3) lstyle(p3)) ///
+			, xlabel(2005 2010 2015 2020 2035 2040 2050 2060 2070 `aniovp' `=`aniofinal'+`exo_count'-1') ///
+			ylabel(none, format(%3.0f) axis(2) noticks) yscale(range(0) axis(2) noline) ///
+			ylabel(none, format(%3.0f) axis(1) noticks) yscale(range(0) axis(1) noline) ///
+			ytitle("Crecimiento anual (%)", axis(1)) ytitle("{c I'}ndice `aniovp' = 1.000", axis(2)) xtitle("") ///
+			legend(label(1 "INEGI, SCN 2018") label(2 "$paqueteEconomico") label(3 "Proyección") order(1 2 3)) ///
+			title("`graphtitle'") subtitle(${pais}) caption("`graphfuente'") ///
+			note("{bf:Nota}: La proyección representa el promedio geométrico de los últimos `difdef' años. {bf:{c U'}ltimo dato reportado}: `=`aniofinal''t`trim_last'.") ///
+			name(inflacion, replace)
+
 		capture confirm existence $export
 		if _rc == 0 {
-			graph export "$export/var_inflYH.png", replace name(var_inflYH)
+			graph export "$export/inflacion.png", replace name(inflacion)
 		}
-
 	}
 	return local except "`except'"
 	return local exceptI "`exceptI'"
