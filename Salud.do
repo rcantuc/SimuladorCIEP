@@ -15,8 +15,17 @@ if "`c(username)'" == "ciepmx" & "`c(console)'" == "" ///                       
 	sysdir set PERSONAL "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
 cd `"`c(sysdir_personal)'"'
 
+global export "`c(sysdir_personal)'/SIM/2022/"
 
-postfile salud anio ssa imssbien imss issste pemex issfam using "`c(sysdir_personal)'/SIM/salud.dta", replace
+
+PEF, base
+levelsof ramo if divCIEP == 9, local(ramos)
+foreach k of local ramos {
+	PEF if divCIEP == 9 & ramo == `k', by(capitulo) min(0) rows(2) anio(`aniovp')
+}
+
+
+postfile salud anio ssa benef_ssa imssbien benef_imssbien imss benef_imss issste benef_issste pemex benef_pemex issfam benef_issfam using "`c(sysdir_personal)'/SIM/salud.dta", replace
 forvalues aniope=2020(1)2024 {
 
 
@@ -40,15 +49,13 @@ forvalues aniope=2020(1)2024 {
 	else if `aniope' >= 2020 & `aniope' < 2022 scalar anioenigh = 2020
 	else if `aniope' >= 2018 & `aniope' < 2020 scalar anioenigh = 2018
 	else if `aniope' >= 2016 & `aniope' < 2018 scalar anioenigh = 2016
-	capture use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
-	if _rc != 0 | "$update" == "update" {
-		capture use "`c(sysdir_personal)'/SIM/perfiles`aniope'.dta", clear
-		if _rc != 0 {
-			noisily di _newline in g "Creando base: " in y "/SIM/perfiles`aniope'.dta" ///
-				in g " con " in y "ENIGH " scalar(anioenigh)
-			noisily di in g "Tiempo aproximado de espera: " in y "10+ minutos"
-			noisily run `"`c(sysdir_personal)'/PerfilesSim.do"' `aniope'
-		}
+
+	capture use "`c(sysdir_personal)'/SIM/perfiles`aniope'.dta", clear
+	if _rc != 0 {
+		noisily di _newline in g "Creando base: " in y "/SIM/perfiles`aniope'.dta" ///
+			in g " con " in y "ENIGH " scalar(anioenigh)
+		noisily di in g "Tiempo aproximado de espera: " in y "10+ minutos"
+		noisily run `"`c(sysdir_personal)'/PerfilesSim.do"' `aniope'
 	}
 	merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/`=anioenigh'/poblacion.dta", nogen keepus(disc*)
 	capture drop __*
@@ -73,9 +80,9 @@ forvalues aniope=2020(1)2024 {
 	g benef_issste = inst_2 == "2"
 	g benef_isssteEst = inst_3 == "3"
 	g benef_pemex = inst_4 == "4"
-		*replace benef_pemex = benef_pemex*602513/1169476
+		replace benef_pemex = benef_pemex*602513/1169476
 	g benef_issfam = inst_4 == "4"
-		*replace benef_issfam = benef_issfam - benef_pemex
+		replace benef_issfam = benef_issfam - benef_pemex
 	g benef_otros = inst_6 == "6"
 	g benef_imssbien = 1 // inst_5 == "5"
 		replace benef_imssbien = 0 if inst_1 == "1" | inst_2 == "2" | inst_3 == "3" | inst_4 == "4" | inst_6 == "6"
@@ -142,7 +149,7 @@ forvalues aniope=2020(1)2024 {
 
 
 	* 4.2.3 Salud por ramo *
-	noisily PEF if anio == `aniope' & divCIEP == 9, anio(`aniope') by(ramo) min(0) nographs
+	PEF if anio == `aniope' & divCIEP == 9, anio(`aniope') by(ramo) min(0) nographs
 	local fassa = r(Aportaciones_Federales_para_Ent)
 
 	local nosec = r(Entidades_no_Sectorizadas)
@@ -276,13 +283,14 @@ forvalues aniope=2020(1)2024 {
 	replace Salud = Salud + scalar(issfam)*benef_issfam
 	*noisily tabstat Salud [fw=factor], stat(sum) f(%20.0fc)
 
-	post salud (`aniope') (ssa) (imssbien) (imss) (issste) (pemex) (issfam)
+	post salud (`aniope') (ssa) (`benef_ssa') (imssbien) (`benef_imssbien') (imss) (`benef_imss') (issste) (`benef_issste') (pemex) (`benef_pemex') (issfam) (`benef_issfam')
 }
 
 postclose salud
 
 use "`c(sysdir_personal)'/SIM/salud.dta", clear
 format ssa imssbien imss issste pemex issfam %10.0fc
+format benef_ssa benef_imssbien benef_imss benef_issste benef_pemex benef_issfam %15.0fc
 
 twoway ///
 	(connected ssa anio, mlabel(ssa) mlabpos(0) mlabcolor(black)) ///

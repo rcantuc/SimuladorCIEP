@@ -15,9 +15,9 @@
 capture confirm file "`c(sysdir_personal)'/SIM/$pais/prePEF.dta"
 if _rc != 0 | "`1'" == "update" {
 	local archivos: dir "`c(sysdir_site)'../BasesCIEP/PEFs/$pais" files "*.xlsx"			// Busca todos los archivos .xlsx en /bases/PEFs/
-	*local archivos `""PEF 2023.xlsx" "CuotasISSSTE.xlsx" "'
+	*local archivos `""CP 2020.xlsx" "CuotasISSSTE.xlsx" "'
 
-	foreach k of local archivos {													// Loop para todos los archivos .csv
+	foreach k of local archivos {															// Loop para todos los archivos .xlsx encontrados
 
 		* 1.1 Importar el archivo `k'.xlsx (Cuenta Pública) *
 		noisily di in g "Importando: " in y "`k'"
@@ -101,6 +101,7 @@ if _rc != 0 | "`1'" == "update" {
 			capture destring `j', replace ignore(",") 								// Ignorar las comas
 			if _rc == 0 {
 				format `j' %20.0fc
+				replace `j' = 0 if `j' == .
 			}
 		}
 		capture tostring ramo, replace
@@ -123,7 +124,7 @@ if _rc != 0 | "`1'" == "update" {
 			append using ``=strtoname("`k'")'', force
 		}
 	}
-	compress																		// <-- Para hacer "más eficiente" la base (menor tamaño).
+	compress
 
 
 
@@ -515,6 +516,10 @@ foreach k in divCIEP divFEDE divSIM {
 *** 5. NETEO DEL GASTO ***
 ***                    ***
 **************************
+replace ejercido = . if ramo == -1 & ejercido == 0
+replace aprobado = . if ramo == -1 & aprobado == 0
+replace proyecto = . if ramo == -1 & proyecto == 0
+
 g double gasto = ejercido if ejercido != .
 replace gasto = aprobado if ejercido == . & aprobado != .
 replace gasto = proyecto if ejercido == . & aprobado == . & proyecto != .

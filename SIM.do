@@ -367,71 +367,71 @@ scalar ingbasico65 =       1 //    1: Incluye mayores de 65 anios, 0: no
 scalar gasmadres   =     472 //    Apoyo a madres trabajadoras
 
 
-** 2.8 ISR **
+** 2.8 ISR **/
 ** Inputs: Archivo "`c(sysdir_personal)'/SIM/perfiles`=anioPE'.dta" o "`c(sysdir_site)'/users/$pais/$id/households.dta"
 ** Outputs: Archivo "`c(sysdir_site)'/users/$pais/$id/households.dta" actualizado más scalars ISRAS, ISRPF, ISRPM y CUOTAS.
-if "`cambioisr'" == "" {
-	* Anexo 8 de la Resolución Miscelánea Fiscal para 2023 *
-	* Tarifa para el cálculo del impuesto correspondiente al ejericio 2023 (página 782) *
-	*             INFERIOR			SUPERIOR	CF		TASA
-	matrix ISR =  (0.01,			8952.49,	0.0,		1.92	\    /// 1
-				8952.49    +.01,	75984.55,	171.88,		6.40	\    /// 2
-				75984.55   +.01,	133536.07,	4461.94,	10.88	\    /// 3
-				133536.07  +.01,	155229.80,	10723.55,	16.00	\    /// 4
-				155229.80  +.01,	185852.57,	14194.54,	17.92	\    /// 5
-				185852.57  +.01,	374837.88,	19682.13,	21.36	\    /// 6
-				374837.88  +.01,	590795.99,	60049.40,	23.52	\    /// 7
-				590795.99  +.01,	1127926.84,	110842.74,	30.00	\    /// 8
-				1127926.84 +.01,	1503902.46,	271981.99,	32.00	\    /// 9
-				1503902.46 +.01,	3511707.37,	392294.17,	34.00	\    /// 10
-				3511707.37 +.01,	1E+12,		1414947.85,	35.00)	     //  11
+* Anexo 8 de la Resolución Miscelánea Fiscal para 2023 *
+* Tarifa para el cálculo del impuesto correspondiente al ejericio 2023 (página 782) *
+*             INFERIOR			SUPERIOR	CF		TASA
+matrix ISR =  (0.01,			8952.49,	0.0,		1.92	\    /// 1
+			8952.49    +.01,	75984.55,	171.88,		6.40	\    /// 2
+			75984.55   +.01,	133536.07,	4461.94,	10.88	\    /// 3
+			133536.07  +.01,	155229.80,	10723.55,	16.00	\    /// 4
+			155229.80  +.01,	185852.57,	14194.54,	17.92	\    /// 5
+			185852.57  +.01,	374837.88,	19682.13,	21.36	\    /// 6
+			374837.88  +.01,	590795.99,	60049.40,	23.52	\    /// 7
+			590795.99  +.01,	1127926.84,	110842.74,	30.00	\    /// 8
+			1127926.84 +.01,	1503902.46,	271981.99,	32.00	\    /// 9
+			1503902.46 +.01,	3511707.37,	392294.17,	34.00	\    /// 10
+			3511707.37 +.01,	1E+12,		1414947.85,	35.00)	     //  11
 
-	* Tabla del subsidio para el empleo aplicable a la tarifa del numeral 5 del rubro B (página 773) *
-	*             INFERIOR		SUPERIOR	SUBSIDIO
-	matrix	SE =  (0.01,		1768.96,	407.02		\    /// 1
-				1768.96 +.01,	2653.38,	406.83		\    /// 2
-				2653.38 +.01,	3472.84,	406.62		\    /// 3
-				3472.84 +.01,	3537.87,	392.77		\    /// 4
-				3537.87 +.01,	4446.15,	382.46		\    /// 5
-				4446.15 +.01,	4717.18,	354.23		\    /// 6
-				4717.18 +.01,	5335.42,	324.87		\    /// 7
-				5335.42 +.01,	6224.67,	294.63		\    /// 8
-				6224.67 +.01,	7113.90,	253.54		\    /// 9
-				7113.90 +.01,	7382.33,	217.61		\    /// 10
-				7382.33 +.01,   1E+12,		0)		 	     //  11
+* Tabla del subsidio para el empleo aplicable a la tarifa del numeral 5 del rubro B (página 773) *
+*             INFERIOR		SUPERIOR	SUBSIDIO
+matrix	SE =  (0.01,		1768.96,	407.02		\    /// 1
+			1768.96 +.01,	2653.38,	406.83		\    /// 2
+			2653.38 +.01,	3472.84,	406.62		\    /// 3
+			3472.84 +.01,	3537.87,	392.77		\    /// 4
+			3537.87 +.01,	4446.15,	382.46		\    /// 5
+			4446.15 +.01,	4717.18,	354.23		\    /// 6
+			4717.18 +.01,	5335.42,	324.87		\    /// 7
+			5335.42 +.01,	6224.67,	294.63		\    /// 8
+			6224.67 +.01,	7113.90,	253.54		\    /// 9
+			7113.90 +.01,	7382.33,	217.61		\    /// 10
+			7382.33 +.01,   1E+12,		0)		 	     //  11
 
-	* Artículo 151, último párrafo (LISR) *
-	*            Ex. SS.MM.	Ex. 	% ing. gravable		% Informalidad PF	% Informalidad Salarios
-	matrix DED = (5,				15,					46.78, 				9.43)
+* Artículo 151, último párrafo (LISR) *
+*            Ex. SS.MM.	Ex. 	% ing. gravable		% Informalidad PF	% Informalidad Salarios
+matrix DED = (5,				15,					46.78, 				9.43)
 
-	* Artículo 9, primer párrafo (LISR) * 
-	*           Tasa ISR PM.	% Informalidad PM
-	matrix PM = (30,			21.45)
+* Artículo 9, primer párrafo (LISR) * 
+*           Tasa ISR PM.	% Informalidad PM
+matrix PM = (30,			21.45)
 
-	* Informe al Ejecutivo Federal y al Congreso de la Unión la situación financiera y los riesgos del IMSS 2021-2022 *
-	* Anexo A, Cuadro A.4 *
-	matrix CSS_IMSS = ///
-	///		PATRONES	TRABAJADORES	GOBIERNO FEDERAL
-			(5.42,		0.44,			3.21	\   /// Enfermedad y maternidad, asegurados (Tgmasg*)
-			1.05,		0.37,			0.08	\   /// Enfermedad y maternidad, pensionados (Tgmpen*)
-			1.75,		0.63,			0.13	\   /// Invalidez y vida (Tinvyvida*)
-			1.83,		0.00,			0.00	\   /// Riesgos de trabajo (Triesgo*)
-			1.00,		0.00,			0.00	\   /// Guarderias y prestaciones sociales (Tguard*)
-			5.15,		1.12,			1.49	\   /// Retiro, cesantia en edad avanzada y vejez (Tcestyvej*)
-			0.00,		0.00,			6.55)	    //  Cuota social -- hasta 25 UMA -- (TcuotaSocIMSS*)
+* Informe al Ejecutivo Federal y al Congreso de la Unión la situación financiera y los riesgos del IMSS 2021-2022 *
+* Anexo A, Cuadro A.4 *
+matrix CSS_IMSS = ///
+///		PATRONES	TRABAJADORES	GOBIERNO FEDERAL
+		(5.42,		0.44,			3.21	\   /// Enfermedad y maternidad, asegurados (Tgmasg*)
+		1.05,		0.37,			0.08	\   /// Enfermedad y maternidad, pensionados (Tgmpen*)
+		1.75,		0.63,			0.13	\   /// Invalidez y vida (Tinvyvida*)
+		1.83,		0.00,			0.00	\   /// Riesgos de trabajo (Triesgo*)
+		1.00,		0.00,			0.00	\   /// Guarderias y prestaciones sociales (Tguard*)
+		5.15,		1.12,			1.49	\   /// Retiro, cesantia en edad avanzada y vejez (Tcestyvej*)
+		0.00,		0.00,			6.55)	    //  Cuota social -- hasta 25 UMA -- (TcuotaSocIMSS*)
 
-	* Informe Financiero Actuarial ISSSTE 2021 *
-	matrix CSS_ISSSTE = ///
-	///		PATRONES	TRABAJADORES	GOBIERNO FEDERAL
-			(7.375,		2.750,			391.0	\   /// Seguro de salud, trabajadores en activo y familiares (Tfondomed* / TCuotaSocISSTEF)
-			0.720,		0.625,			0.000	\   /// Seguro de salud, pensionados y familiares (Tpensjub*)
-			0.750,		0.000,			0.000	\   /// Riesgo de trabajo
-			0.625,		0.625,			0.000	\   /// Invalidez y vida
-			0.500,		0.500,			0.000	\   /// Servicios sociales y culturales
-			6.125,		2+3.175,		5.500	\   /// Retiro, cesantia en edad avanzada y vejez
-			0.000,		5.000,			0.000	\   /// Vivienda
-			0.000,		0.000,			13.9)		//  Cuota social
+* Informe Financiero Actuarial ISSSTE 2021 *
+matrix CSS_ISSSTE = ///
+///		PATRONES	TRABAJADORES	GOBIERNO FEDERAL
+		(7.375,		2.750,			391.0	\   /// Seguro de salud, trabajadores en activo y familiares (Tfondomed* / TCuotaSocISSTEF)
+		0.720,		0.625,			0.000	\   /// Seguro de salud, pensionados y familiares (Tpensjub*)
+		0.750,		0.000,			0.000	\   /// Riesgo de trabajo
+		0.625,		0.625,			0.000	\   /// Invalidez y vida
+		0.500,		0.500,			0.000	\   /// Servicios sociales y culturales
+		6.125,		2+3.175,		5.500	\   /// Retiro, cesantia en edad avanzada y vejez
+		0.000,		5.000,			0.000	\   /// Vivienda
+		0.000,		0.000,			13.9)		//  Cuota social
 
+if "`cambioisr'" == "1" {
 	noisily run "`c(sysdir_personal)'/ISR_Mod.do"
 	scalar ISRAS  = ISR_AS_Mod
 	scalar ISRPF  = ISR_PF_Mod
@@ -443,20 +443,20 @@ if "`cambioisr'" == "" {
 ** 2.9 IVA **
 ** Inputs: Archivo "`c(sysdir_personal)'/SIM/perfiles`=anioPE'.dta" o "`c(sysdir_site)'/users/$pais/$id/households.dta"
 ** Outputs: Archivo "`c(sysdir_site)'/users/$pais/$id/households.dta" actualizado más scalar IVA.
+matrix IVAT = (16 \     ///  1  Tasa general 
+			1  \     ///  2  Alimentos, input[1]: Tasa Cero, [2]: Exento, [3]: Gravado
+			2  \     ///  3  Alquiler, idem
+			1  \     ///  4  Canasta basica, idem
+			2  \     ///  5  Educacion, idem
+			3  \     ///  6  Consumo fuera del hogar, idem
+			3  \     ///  7  Mascotas, idem
+			1  \     ///  8  Medicinas, idem
+			1  \     ///  9  Toallas sanitarias, idem
+			3  \     /// 10  Otros, idem
+			2  \     /// 11  Transporte local, idem
+			3  \     /// 12  Transporte foraneo, idem
+			14.63)   //  13  Evasion e informalidad IVA, input[0-100]
 if "`cambioiva'" == "1" {
-	matrix IVAT = (16 \     ///  1  Tasa general 
-               1  \     ///  2  Alimentos, input[1]: Tasa Cero, [2]: Exento, [3]: Gravado
-               2  \     ///  3  Alquiler, idem
-               1  \     ///  4  Canasta basica, idem
-               2  \     ///  5  Educacion, idem
-               3  \     ///  6  Consumo fuera del hogar, idem
-               3  \     ///  7  Mascotas, idem
-               1  \     ///  8  Medicinas, idem
-               1  \     ///  9  Toallas sanitarias, idem
-               3  \     /// 10  Otros, idem
-               2  \     /// 11  Transporte local, idem
-               3  \     /// 12  Transporte foraneo, idem
-               14.63)   //  13  Evasion e informalidad IVA, input[0-100]
 	noisily run "`c(sysdir_personal)'/IVA_Mod.do"
 	scalar IVA = IVA_Mod
 }
