@@ -7,9 +7,9 @@
 noisily run "`c(sysdir_personal)'/profile.do"                                   // PERFIL DE USUARIO
 
 
-************************************
-**  0.1 DIRECTORIO(S) DE TRABAJO  **
-** Versión del simulador (programación) **
+***************************************************
+**  0.1 DIRECTORIO(S) DE TRABAJO (programación)  **
+** Versión del simulador **
 if "`c(username)'" == "ricardo" ///                                             // iMac Ricardo
 	sysdir set PERSONAL "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
 
@@ -22,11 +22,11 @@ cd `"`c(sysdir_personal)'"'
 **  0.2 Opciones globales  **
 ** Comentar o descomentar según sea el caso. **
 //global id = "`c(username)'"                                                   // IDENTIFICADOR DEL USUARIO
-//global export "`c(sysdir_site)'../TextbookCIEP/images"                        // DIRECTORIO DE IMÁGENES
-//global nographs "nographs"                                                      // SUPRIMIR GRAFICAS
+//global export "`c(sysdir_personal)'../../Sostenibilidad 2024/images"          // DIRECTORIO DE IMÁGENES
+//global nographs "nographs"                                                    // SUPRIMIR GRAFICAS
 //global textbook "textbook"                                                    // GRÁFICOS FORMATO LaTeX
 //global output "output"                                                        // OUTPUTS (WEB)
-//global update "update"                                                        // OUTPUTS (WEB)
+//global update "update"                                                        // UPDATE BASES DE DATOS
 
 **  Rutas de archivos  **
 capture mkdir `"`c(sysdir_personal)'/SIM/"'
@@ -56,15 +56,16 @@ if "$output" != "" {
 ** Outputs: población por edad, sexo y entidad federativa para todos los años.
 ** Outputs: gráfico de la pirámide y transición demográfica para el año de interés.
 ** Fuente: CONAPO 2023. Ver archivo "UpdatePoblacion.do".
-//forvalues anio = `=anioPE'(1)`=anioPE' {                                        // <-- Año(s) de interés
-	//foreach entidad of global entidadesL {                                      // <-- Nacional o para todas las entidades
-		//noisily Poblacion if entidad == "`entidad'", anio(`=anioPE')
+//forvalues anio = 2016(1)`=anioPE' {                                            // <-- Año(s) de interés
+	//foreach entidad of global entidadesL {                                     // <-- Nacional o para todas las entidades
+		//noisily Poblacion if entidad == "`entidad'", anio(`=anioPE') $update
 	//}
 //}
 
 
-*****************/
+******************
 ** 1.2 Economía **
+** Fuente: CGPE 2024 (página 121)
 ** 1.2.1 Parámetros: Crecimiento anual del Producto Interno Bruto **
 global pib2023 = 3.1766
 global pib2024 = 2.6189
@@ -94,18 +95,15 @@ global inf2029 = 3.0
 
 ** 1.2.4 Proyecciones: PIB, Deflactor e Inflación **
 ** Inputs: PIB, índice de precios implícitos, inpc, población y población ocupada.
-** Inputs: Parámetros CGPE 2024 (página 121).
 ** Outputs: Base de datos con su deflactor y productividad laboral para todos los años.
 ** Fuente: INEGI, BIE. Ver archivo "UpdatePIBDeflactor.do".
 noisily PIBDeflactor, geodef(2005) geopib(2005) $update
-
-
 
 ** 1.2.5 Proyecciones: Sistema de Cuentas Nacionales **
 ** Inputs: PIB, índice de precios implícitos, inpc, población y población ocupada.
 ** Outputs: Base de datos con las cuentas macroeconómicas para todos los años.
 ** Fuente: INEGI, BIE. Ver archivo "UpdatePIBDeflactor.do".
-//noisily SCN, //$update
+noisily SCN, //$update
 
 
 ************************
@@ -114,15 +112,13 @@ noisily PIBDeflactor, geodef(2005) geopib(2005) $update
 ** Inputs: LIFs + Estadísticas Oportunas. Archivo: LIFs.xlsx.
 ** Outputs: Bases de datos con ingresos, gastos y deuda para todos los años.
 ** Fuentes. SHCP, Estadísticas Oportunas. Ver archivos "UpdateLIF.do".
-//noisily LIF, by(divPE) rows(1) min(0) anio(`=anioPE') $update desde(2018)
-
+noisily LIF, by(divPE) rows(1) min(0) anio(`=anioPE') $update desde(2018)
 
 ** 1.3.2 Presupuesto de Egresos de la Federación **
 ** Inputs: Cuentas Públicas y PEF/PPEF (varios años). Archivos: CPXXXX.xlsx, PEFXXXX.xlsx o PPEFXXXX.xlsx.
 ** Outputs: Bases de datos con gastos ejercidos/aprobados/proyectados para todos los años.
 ** Fuentes. SHCP, Cuentas Públicas. Ver archivo "UpdatePEF.do".
-//noisily PEF, by(divCIEP) rows(2) min(0) anio(`=anioPE') $update desde(2018)
-
+noisily PEF, by(divCIEP) rows(2) min(0) anio(`=anioPE') $update desde(2018)
 
 ** 1.3.3 Saldo Histórico de los Requerimientos Financieros del Sector Público **
 ** Inputs: LIFs + Estadísticas Oportunas. Archivo: SHRFSP.dta.
@@ -162,7 +158,7 @@ scalar balprimario2024 = 1.2
 scalar costodeudaInterno2024 = 3.7
 scalar costodeudaExterno2024 = 3.7
 
-/*scalar shrfsp2025 = 48.8
+scalar shrfsp2025 = 48.8
 scalar shrfspInterno2025 = 37.7
 scalar shrfspExterno2025 = 11.2
 scalar rfsp2025 = -2.6
@@ -242,8 +238,8 @@ scalar balprimario2029 = -0.3
 scalar costodeudaInterno2029 = 2.5
 scalar costodeudaExterno2029 = 2.5
 
-** 1.2.5 Proyecciones: Saldo Histórico de los Requerimientos Financieros del Sector Público **/
-//noisily SHRFSP, ultanio(2008) anio(`=anioPE') $update
+** 1.2.5 Proyecciones: Saldo Histórico de los Requerimientos Financieros del Sector Público **
+noisily SHRFSP, ultanio(2016) anio(`=anioPE') $update
 
 
 ***********************
@@ -269,11 +265,11 @@ scalar costodeudaExterno2029 = 2.5
 //}
 
 
-********************************************/
+*********************************************
 ** 1.7 Perfiles: ENIGH + $paqueteEconomico **
 ** Inputs: Archivo "`c(sysdir_personal)'/SIM/`enighanio'/households.dta".
 ** Outputs: Archivo "`c(sysdir_personal)'/SIM/perfiles`=anioPE'.dta".
-//noisily run `"`c(sysdir_personal)'/PerfilesSim.do"' `=anioPE' 
+noisily run `"`c(sysdir_personal)'/PerfilesSim.do"' `=anioPE' 
 
 
 
@@ -326,7 +322,7 @@ scalar invest      =     393 //    Ciencia y tecnología
 scalar salinf      =      69 //    Atención a NNA
 
 scalar ssa         =      46 //    SSalud
-scalar imssbien    =    4028 //    IMSS-Bienestar
+scalar imssbien    =    5796 //    IMSS-Bienestar
 scalar imss        =    8573 //    IMSS (salud)
 scalar issste      =    9873 //    ISSSTE (salud)
 scalar pemex       =   31176 //    Pemex (salud)
@@ -353,9 +349,8 @@ scalar gasinverf   =    3698 //    Gasto en inversión (energía)
 scalar gascosdeue  =    1349 //    Gasto en costo de la deuda (energía)
 
 
-** 2.6 Otros gastos **
+** 2.6 Otros gastos **/
 scalar gasinfra    =    4227 //    Gasto en Otras Inversiones
-scalar gascuidados =    1726 //    Gasto en cuidados
 scalar gasotros    =    4840 //    Otros gastos
 scalar gasfeder    =   10224 //    Participaciones y Otras aportaciones
 scalar gascosto    =    8539 //    Gasto en Costo de la deuda
@@ -367,6 +362,7 @@ scalar ingbasico18 =       1 //    1: Incluye menores de 18 anios, 0: no
 scalar ingbasico65 =       1 //    1: Incluye mayores de 65 anios, 0: no
 
 scalar gasmadres   =     472 //    Apoyo a madres trabajadoras
+scalar gascuidados =    1726 //    Gasto en cuidados
 
 
 ** 2.8 ISR **/
@@ -479,10 +475,10 @@ noisily GastoPC, aniope(`=anioPE')
 ******************************
 ** Inputs: Archivo "`c(sysdir_site)'/users/$pais/$id/households.dta".
 ** Outputs: Archivo "`c(sysdir_site)'/users/$pais/$id/households.dta".
-*capture use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
-*if _rc != 0 {
+capture use `"`c(sysdir_personal)'/users/$id/households.dta"', clear
+if _rc != 0 {
 	use "`c(sysdir_personal)'/SIM/perfiles`=anioPE'.dta", clear
-*}
+}
 
 ** (+) Impuestos y aportaciones **
 capture drop ImpuestosAportaciones
@@ -491,7 +487,7 @@ label var ImpuestosAportaciones "impuestos y aportaciones"
 
 ** (-) Impuestos y aportaciones **
 capture drop Transferencias
-egen Transferencias = rsum(Pension Educación Salud IngBasico Pensión_AM) //Inversión
+egen Transferencias = rsum(Pension Educación Salud IngBasico Pensión_AM Inversión)
 label var Transferencias "transferencias públicas"
 
 ** (=) Aportaciones netas **
@@ -499,16 +495,15 @@ capture drop AportacionesNetas
 g AportacionesNetas = ImpuestosAportaciones - Transferencias
 label var AportacionesNetas "aportaciones netas"
 noisily Simulador AportacionesNetas [fw=factor], base("ENIGH `=anioenigh'") reboot anio(`=anioPE') $nographs //boot(20)
-//noisily Gini AportacionesNetas, hogar(folioviv foliohog) factor(factor)
 save "`c(sysdir_personal)'/users/$id/households.dta", replace
 
 
-** (*) CUENTA GENERACIONAL **
+** (*) REDISTRIBUCIÓN **
 //noisily CuentasGeneracionales AportacionesNetas, anio(`=anioPE') discount(7)
 
 
 ** (*) Sankey **
-foreach k in grupoedad decil sexo rural {
+foreach k in decil grupoedad sexo rural /*escol*/ {
 	noisily run "`c(sysdir_personal)'/SankeySF.do" `k' `=aniovp'
 }
 
@@ -523,7 +518,7 @@ foreach k in grupoedad decil sexo rural {
 *********************************************
 ** Inputs: Archivo "`c(sysdir_site)'/users/$pais/$id/households.dta", SHRFSP, PEFs y LIFs.
 ** Outputs: Sostenibilidad de la deuda y brecha fiscal hasta 2030.
-noisily FiscalGap, anio(`=anioPE') end(2030) aniomin(2015) $nographs desde(2018) discount(7) //update //anio(`=aniovp')
+noisily FiscalGap, anio(`=anioPE') end(2030) aniomin(2016) $nographs desde(2016) discount(10) //update //anio(`=aniovp')
 
 
 

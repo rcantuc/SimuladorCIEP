@@ -27,6 +27,7 @@ quietly {
 	
 	** 1.1 PIB + Deflactor **
 	PIBDeflactor, nographs nooutput aniovp(`aniovp')
+	replace Poblacion = Poblacion*lambda
 	local currency = currency[1]
 	tempfile PIB
 	save "`PIB'"
@@ -237,15 +238,19 @@ quietly {
 			ytitle("`=currency[1]' `aniovp'") ///
 			tlabel(2000m12(24)`last_anio'm`last_mes') ///
 			ylabel(, format(%15.0fc)) ///
-			title("{bf:`=nombre[1]' por persona}"`textsize') ///
-			///subtitle(Por persona a `mesname') ///
+			title("{bf:`=nombre[1]'}"`textsize') ///
+			subtitle(Por persona ajustada) ///
 			xtitle("") ///
-			legend(label(1 "Diciembre") label(2 "`mesnameant'") label(3 "`mesname'")) ///
+			legend(label(1 "Diciembre") label(2 "`mesnameant' `last_anio'") label(3 "`mesname' `last_anio'")) ///
 			text(`textmontopc', size(vsmall) place(c)) ///
 			note("{bf:{c U'}ltimo dato:} `last_anio'm`last_mes'.") ///			
 			caption("{bf:Fuente:} Elaborado por el CIEP, con información de la SHCP/EOFP y CONAPO (2023).") ///
 			name(`anything'PC, replace)
 
+		capture confirm existence $export
+		if _rc == 0 {
+			graph export "$export/`anything'PC.png", replace name(`anything'PC)
+		}
 
 	}
 
@@ -362,7 +367,7 @@ quietly {
 
 		tempvar monto
 		g `monto' = monto/1000000/deflator
-		*twoway (area `monto' aniomes if anio < `aniovp') ///
+		twoway (area `monto' anio if anio < `aniovp') ///
 			(bar `monto' anio if anio >= `aniovp') ///
 			(connected monto_pib anio if anio < `aniovp', yaxis(2) pstyle(p1)) ///
 			(connected monto_pib anio if anio >= `aniovp', yaxis(2) pstyle(p2)), ///

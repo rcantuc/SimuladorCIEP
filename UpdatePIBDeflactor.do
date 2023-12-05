@@ -170,23 +170,46 @@ else {
 ***            ***
 ******************
 if "$nographs" == "" {
+	
+	* Títulos y fuentes *
+	if "$export" == "" {
+		local graphtitle "{bf:Índice de precios al consumidor}"
+		local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/SHCP."
+	}
+	else {
+		local graphtitle ""
+		local graphfuente ""
+	}
 	twoway (connected crec_pibQR aniotrimestre, mlabel(crec_pibQR) mlabposition(0) mlabcolor(white) mlabgap(0pt)) if pibPO != ., ///
 		title({bf:Producto Interno Bruto}) subtitle(Crecimiento trim. vs. trim.) ///
 		ytitle("Crecimiento anual (%)") xtitle("") ///
 		tlabel(2005q1(4)`aniofinal'q`trim_last') ///
 		ylabel(none, format(%20.0fc)) ///
-		note("{bf:{c U'}ltimo dato reportado}: `ultanio't`ulttrim'.") ///
 		caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
 		name(UpdatePIBDeflactor, replace)
 
+
+	* Títulos y fuentes *
+	if "$export" == "" {
+		local graphtitle "{bf:Productividad laboral}"
+		local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/SHCP/ENOE."
+	}
+	else {
+		local graphtitle ""
+		local graphfuente ""
+	}
 	twoway (bar pibPO aniotrimestre, mlabel(pibPO) mlabposition(7) mlabangle(90) mlabcolor(white) mlabgap(0pt)) ///
 		if pibPO != ., ///
-		title({bf:Productividad laboral}) subtitle(PIB/Población ocupada) ///
-		ytitle("`=currency[`obsvp']' `ultanio'") xtitle("") ///
+		title("`graphtitle'") ///
+		ytitle("PIB/Población ocupada (`=currency[`obsvp']' `aniofinal')") xtitle("") ///
 		tlabel(2005q1(4)`aniofinal'q`trim_last') ///
 		///text(`crec_PIBPC', size(vsmall)) ///
 		ylabel(none, format(%20.0fc)) yscale(range(500000)) ///
-		note("{bf:{c U'}ltimo dato reportado}: `ultanio't`ulttrim'.") ///
-		caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE/ENOE.") ///
-		name(UpdatePIBDeflactorPO, replace)
+		caption("`graphfuente'") ///
+		name(pib_po, replace)
+
+		capture confirm existence $export
+		if _rc == 0 {
+			graph export "$export/pib_po.png", replace name(pib_po)
+		}
 }

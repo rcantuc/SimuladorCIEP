@@ -393,6 +393,11 @@ quietly {
 			note("{bf:Nota}: La proyección incluye la transición de trabajadores y una productividad anual de `=string(llambda,"%5.2fc")'%. {bf:{c U'}ltimo dato reportado}: `=`aniofinal''t`trim_last'.") ///
 			name(pib, replace)
 
+		capture confirm existence $export
+		if _rc == 0 {
+			graph export "$export/pib.png", replace name(pib)
+		}
+
 
 
 		**************************
@@ -429,11 +434,11 @@ quietly {
 			legend(label(1 "Observado") label(2 "$paqueteEconomico") label(3 "Proyección") order(1 2 3)) ///
 			ylabel(none, format(%3.0f) axis(2) noticks) yscale(range(0) axis(2) noline) ///
 			ylabel(none, format(%3.0f) axis(1) noticks) yscale(range(0) axis(1) noline) ///
-			name(PIBPC, replace)
+			name(pib_pc, replace)
 
 		capture confirm existence $export
 		if _rc == 0 {
-			graph export "$export/PIBPC.png", replace name(PIBPC)
+			graph export "$export/pib_pc.png", replace name(pib_pc)
 		}
 
 

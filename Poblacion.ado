@@ -33,7 +33,7 @@ quietly {
 	*******************
 	syntax [if] [, ANIO(int `aniovp') ANIOFINal(int -1) NOGraphs UPDATE]
 
-	* Si la opción "update" es llamada, ejecuta el do-file UpdatePoblacion.do *
+	* 1.1 Si la opción "update" es llamada, ejecuta el do-file UpdatePoblacion.do *
 	if "`update'" == "update" {
 		noisily run `"`c(sysdir_personal)'/UpdatePoblacion`=subinstr("${pais}"," ","",.)'.do"'
 	}
