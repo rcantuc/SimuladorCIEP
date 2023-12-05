@@ -21,10 +21,10 @@ if "`1'" == "" {
 
 **********************************/
 ** Eje 1: Generación del ingreso **
-*capture use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
-*if _rc != 0 {
+capture use `"`c(sysdir_personal)'/users/$id/households.dta"', clear
+if _rc != 0 {
 	use "`c(sysdir_personal)'/SIM/perfiles`=anioPE'.dta", clear
-*}
+}
 tempvar Laboral Consumo Capital FMP
 egen `Laboral'  = rsum(ISRAS ISRPF CUOTAS)
 egen `Consumo'  = rsum(IVA IEPSP IEPSNP ISAN IMPORT)
@@ -43,12 +43,20 @@ encode `to', g(to)
 * from *
 rename `1' from
 
-* ORGANISMOS Y EMPRESAS *
+* IMSS e ISSSTE *
 set obs `=_N+1'
 replace from = 99 in -1
-replace profile = (scalar(CFE)+scalar(IMSS)+scalar(ISSSTE)+scalar(PEMEX))/100*scalar(PIB) in -1
+replace profile = (scalar(IMSS)+scalar(ISSSTE))/100*scalar(PIB) in -1
 replace to = 3 in -1
-label define `1' 99 "Org y Emp", add
+label define `1' 99 "IMSS e ISSSTE", add
+
+* Pemex y CFE *
+set obs `=_N+1'
+replace from = 98 in -1
+replace profile = (scalar(CFE)+scalar(PEMEX))/100*scalar(PIB) in -1
+replace to = 3 in -1
+label define `1' 98 "Pemex y CFE", add
+
 
 * TOTAL *
 tabstat profile, stat(sum) f(%20.0fc) save
@@ -66,10 +74,10 @@ save `eje1'
 use if anio == `2' using `"`c(sysdir_site)'/SIM/Poblaciontot.dta"', clear
 local ajustepob = poblacion
 
-*capture use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
-*if _rc != 0 {
+capture use `"`c(sysdir_personal)'/users/$id/households.dta"', clear
+if _rc != 0 {
 	use "`c(sysdir_personal)'/SIM/perfiles`=anioPE'.dta", clear
-*}
+}
 tabstat factor, stat(sum) f(%20.0fc) save
 tempname pobenigh
 matrix `pobenigh' = r(StatTotal)
@@ -82,8 +90,6 @@ tabstat factor, stat(sum) f(%20.0fc) save
 tempname pobtot
 matrix `pobtot' = r(StatTotal)*`ajustepob'/`pobenigh'[1,1]
 
-replace Otros_gastos = Otros_gastos - Otras_inversiones
-
 replace Pension = Pension + Pensión_AM
 
 tabstat Pension Educación Salud Otros_gastos [fw=factor], stat(sum) f(%20.0fc) save
@@ -91,7 +97,7 @@ tempname GAST
 matrix `GAST' = r(StatTotal)
 
 collapse (sum) gas_Educación=Educación gas_Salud=Salud /*gas__Salarios_de_gobierno=Salarios*/ ///
-	gas___Pensiones=Pension gas____Ingreso_Básico=IngBasico ///
+	gas___Pensiones=Pension gas____Transferencias=IngBasico ///
 	gas____Inversión=Otras_inversiones [fw=factor], by(`1')
 
 levelsof `1', local(`1')
@@ -142,7 +148,7 @@ label define `1' 13 "No distribuibles", add
 replace from = 94 in -4
 label define from 94 "Energía", add
 
-replace profile = (scalar(gaspemex)+scalar(gascfe)+scalar(gassener))*`pobtot'[1,1] in -4
+replace profile = (scalar(gaspemex)+scalar(gascfe)+scalar(gassener)+scalar(gasinverf)+scalar(gascosdeue))*`pobtot'[1,1] in -4
 
 replace to = 14 in -4
 label define `1' 14 "CFE Pemex SENER", add

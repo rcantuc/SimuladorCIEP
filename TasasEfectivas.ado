@@ -390,23 +390,26 @@ quietly {
 	******************/
 	**# 7. Base SIM ***
 	*******************
-	capture use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
-	if _rc != 0 | "$update" == "update" {
+	*capture use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
+	*if _rc != 0 | "$update" == "update" {
 		use "`c(sysdir_personal)'/SIM/perfiles`anio'.dta", clear
-	}
+	*}
 
 	* 7.1 Distribuir los ingresos entre las observaciones *
-	foreach k of varlist ISRAS ISRPF CUOTAS ISRPM OTROSK IVA IEPSNP IEPSP ISAN IMPORT FMP {
+	foreach k of varlist ISRAS ISRPF CUOTAS ///
+		ISRPM OTROSK ///
+		FMP /// PEMEX CFE IMSS ISSSTE ///
+		IVA IEPSNP IEPSP ISAN IMPORT {
 		Distribucion `k', relativo(`k') macro(`=scalar(`k')/100*scalar(pibY)')
 	}
 
 	* 7.2 Guardar *
 	capture drop __*
 	if `c(version)' > 13.1 {
-		saveold `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace version(13)
+		saveold `"`c(sysdir_personal)'/users/$id/households.dta"', replace version(13)
 	}
 	else {
-		save `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', replace	
+		save `"`c(sysdir_personal)'/users/$id/households.dta"', replace	
 	}
 
 

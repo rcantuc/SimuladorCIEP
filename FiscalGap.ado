@@ -23,6 +23,7 @@ quietly {
 	***       ***
 	*************
 	PIBDeflactor, nographs nooutput
+	replace Poblacion = Poblacion*lambda
 	keep if anio <= `end'
 	local currency = currency[1]
 	tempfile PIB
@@ -105,7 +106,7 @@ quietly {
 		replace estimacion = `estimacion'/L.`estimacion'*       /// Cambio demográfico (PerfilesSim.do)
 			(scalar(`k'))/100*scalar(pibY)*                     /// Estimación como % del PIB (TasasEfectivas.ado)
 			(1+``k'C'/100)^(anio-`anio')                        /// Tendencia de largo plazo (LIF.ado)
-			if anio > `anio'
+			if anio >= `anio'
 
 		g divCIEP = `"`=strtoname("`k'")'"'
 
@@ -134,8 +135,12 @@ quietly {
 	** 4.4 Graphs **
 	if "`nographs'" != "nographs" & "$nographs" != "nographs" {
 		//noisily tabstat recaudacion_pib estimacionRecaudacion_pib if anio >= `aniomin', stat(sum) by(anio) save
+		g divSIM = "Impuestos laborales" if divCIEP == "CUOTAS" | divCIEP == "ISRAS" | divCIEP == "ISRPF"
+		replace divSIM = "Impuestos al consumo" if divCIEP == "IEPSNP" | divCIEP == "IEPSP" | divCIEP == "IVA" | divCIEP == "ISAN" | divCIEP == "IMPORT"
+		replace divSIM = "Impuestos al capital" if divCIEP == "ISRPM" | divCIEP == "OTROSK"
+		replace divSIM = "Organismos y empresas" if divCIEP == "CFE" | divCIEP == "FMP" | divCIEP == "IMSS" | divCIEP == "ISSSTE" | divCIEP == "PEMEX"
 		graph bar (sum) recaudacion_pib if anio < `anio' & anio >= `aniomin', ///
-			over(divCIEP) ///
+			over(divSIM) ///
 			over(anio, gap(0)) ///
 			ytitle("% PIB") ///
 			stack asyvar ///
@@ -146,9 +151,9 @@ quietly {
 			title(Observado)
 
 		graph bar (sum) estimacionRecaudacion_pib if anio >= `anio', ///
-			over(divCIEP) ///
+			over(divSIM) ///
 			over(anio, gap(0)) ///
-			ytitle("") ///
+			ytitle("") ylabel(, labcolor(white)) ///
 			stack asyvar ///
 			blabel(, format(%5.1fc)) ///
 			legend(rows(1) `legend') ///
@@ -241,7 +246,7 @@ quietly {
 			replace estimacion = `estimacion'/L.`estimacion'*     /// Cambio demográfico
 				`HH`=strtoname("`k'")''[1,1]* 			          /// Gasto total (GastoPC.ado)
 				(1+``=strtoname("`k'")'C'/100)^(anio-`anio')      /// Tendencia de largo plazo (PEF.ado)
-				if anio > `anio'
+				if anio >= `anio'
 
 			g divCIEP = `"`=strtoname("`k'")'"'
 
@@ -271,8 +276,11 @@ quietly {
 	** 5.4 Graphs **
 	if "`nographs'" != "nographs" & "$nographs" != "nographs" {
 		//noisily tabstat gasto_pib estimacionGasto if anio >= `aniomin', stat(sum) by(anio) save
-		graph bar (sum) gasto_pib if anio < `anio' & anio >= `aniomin', ///
-			over(divCIEP) ///
+		g divSIM = subinstr(divCIEP,"_"," ",.)
+		replace divSIM = "Otros gastos" if divSIM == "IngBasico"
+		replace divSIM = "Pensiones" if divSIM == "Pensión AM"
+		graph bar (sum) gasto_pib if anio < `anio' & anio >= `aniomin' & divSIM != "Costo de la deuda", ///
+			over(divSIM) ///
 			over(anio, gap(0)) ///
 			ytitle("% PIB") ///
 			stack asyvar ///
@@ -282,10 +290,10 @@ quietly {
 			name(Proy_gastos1) ///
 			title(Observado)
 
-		graph bar (sum) estimacionGasto_pib if anio >= `anio', ///
-			over(divCIEP) ///
+		graph bar (sum) estimacionGasto_pib if anio >= `anio' & divSIM != "Costo de la deuda", ///
+			over(divSIM) ///
 			over(anio, gap(0)) ///
-			ytitle("") ///
+			ytitle("") ylabel(none) ///
 			stack asyvar ///
 			blabel(, format(%5.1fc)) ///
 			legend(rows(1) `legend') ///
@@ -293,7 +301,7 @@ quietly {
 			title(Proyectado)
 
 		grc1leg Proy_gastos1 Proy_gastos2, ycommon ///
-			title({bf:Gasto p{c u'}blico}) ///
+			title({bf:Gasto p{c u'}blico primario}) ///
 			subtitle($pais) ///
 			caption("`graphfuente'") ///
 			name(Proy_gastos, replace) ///
@@ -421,9 +429,15 @@ quietly {
 	}
 
 	g rfsp_pib = rfsp/pibY*100
+
 	replace shrfsp_pib = shrfsp/pibY*100 //if anio >= `anio'
+	format shrfsp_pib %7.1fc
+
 	replace estimacionGasto_pib = estimacionGasto/pibY*100 //if anio >= `anio'
-	g shrfspPC = shrfsp/Poblacion
+
+	g shrfspPC = shrfsp/Poblacion/deflator
+	format shrfspPC %10.0fc
+
 
 	if "`nographs'" != "nographs" & "$nographs" != "nographs" {
 		twoway (area rfsp_pib anio if anio < `anio' & anio >= `aniomin') ///
@@ -505,27 +519,35 @@ quietly {
 		in g " %"
 
 	if "`nographs'" != "nographs" & "$nographs" != "nographs" {
-		twoway (area shrfsp_pib anio if shrfsp_pib != . & anio < `anio' & anio >= 2005) ///
-			(area shrfsp_pib anio if anio >= `anio' & anio <= `end'), ///
-			title({bf:Proyecci{c o'}n} del SHRFSP) ///
-			subtitle($pais) ///
-			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.") ///
+
+		* Saldo de la deuda *
+		if "$export" == "" {
+			local graphtitle "{bf:Saldo hist{c o'}rico} de la deuda"
+			local graphfuente "{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5."
+		}
+		else {
+			local graphtitle ""
+			local graphfuente ""
+		}
+
+		twoway (connected shrfsp_pib anio if shrfsp_pib != . & anio < `anio' & anio >= `aniomin', mlabel(shrfsp_pib) mlabpos(0) mlabcolor(black) mlabgap(0pt)) ///
+			(connected shrfsp_pib anio if anio >= `anio' & anio <= `end', mlabel(shrfsp_pib) mlabpos(0) mlabcolor(black) mlabgap(0pt)), ///
+			title("`graphtitle'") ///
+			subtitle("{bf:Como % del PIB}") ///
+			caption("`graphfuente'") ///
 			xtitle("") ytitle(% PIB) ///
-			xlabel(2005(1)`end') ///
+			xlabel(`aniomin'(1)`end') ///
 			yscale(range(0)) ///
 			legend(off) ///
 			///text(`=shrfsp_pib[`obs`anio_last'']*.1' `=`anio'+1.5' "{bf:Proyecci{c o'}n}", color(white) placement(e)) ///
-			xline(`=`anio'+.5') ///
 			name(Proy_shrfsp, replace)
+
 		if "$export" != "" {
 			graph export `"$export/Proy_shrfsp.png"', replace name(Proy_shrfsp)
 		}
 
-		forvalues k=1(1)`=_N' {
-			if shrfspPC[`k'] != . & anio[`k'] >= 2005 {
-				local textPC2 `"`textPC2' `=shrfspPC[`k']' `=anio[`k']' "{bf:`=string(shrfspPC[`k'],"%10.0fc")'}""'
-			}
-		}
+
+		* Saldo de la deuda por persona *
 		if "$export" == "" {
 			local graphtitle "{bf:Saldo hist{c o'}rico} por persona"
 			local graphfuente "{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5."
@@ -534,20 +556,51 @@ quietly {
 			local graphtitle ""
 			local graphfuente ""
 		}
-		twoway (connected shrfspPC anio if shrfsp_pib != . & anio < `anio'-1 & anio >= 2005) ///
-			(connected shrfspPC anio if anio >= `anio'-1 & anio <= `end'), ///
+
+		twoway (connected shrfspPC anio if shrfsp_pib != . & anio < `anio'-1 & anio >= `aniomin', mlabel(shrfspPC) mlabpos(0) mlabcolor(black) mlabgap(0pt)) ///
+			(connected shrfspPC anio if anio >= `anio'-1 & anio <= `end', mlabel(shrfspPC) mlabpos(0) mlabcolor(black) mlabgap(0pt)), ///
 			title(`graphtitle') ///
-			subtitle($pais) ///
+			subtitle("{bf:Por persona ajustada}") ///
 			caption("`graphfuente'") ///
 			xtitle("") ///
 			ytitle("`currency' `aniovp' por persona") ///
-			ylabel(, format(%10.0fc)) ///
-			xlabel(2005(1)`end') ///
+			ylabel(0(50000)200000, format(%10.0fc)) ///
+			xlabel(`aniomin'(1)`end') ///
 			legend(off) ///
 			text(`textPC2', color(black) placement(c) size(small)) ///
 			name(Proy_shrfsppc, replace)
+
 		if "$export" != "" {
 			graph export `"$export/Proy_shrfsppc.png"', replace name(Proy_shrfsppc)
+		}
+
+		* Saldo de la deuda combinada *
+		if "$export" == "" {
+			local graphtitle "{bf:Saldo hist{c o'}rico de RFSP}"
+			local graphfuente "{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5."
+		}
+		else {
+			local graphtitle ""
+			local graphfuente ""
+		}
+
+		twoway (connected shrfsp_pib anio, mlabel(shrfsp_pib) mlabpos(0) mlabcolor(black) mlabgap(0)) ///
+			(connected shrfspPC anio, mlabel(shrfspPC) mlabpos(0) mlabcolor(black) mlabgap(0) yaxis(2)) if anio >= `desde', ///
+			title("`graphtitle'") ///
+			subtitle("{bf:Indicadores de la deuda}") ///
+			caption("`graphfuente'") ///
+			xtitle("") ///
+			yscale(range(75)) ///
+			yscale(range(175000) axis(2) lwidth(none)) ///
+			ylabel(, axis(2) noticks) ///
+			ytitle("Como % del PIB") ///
+			ytitle("`currency' `aniovp'", axis(2)) ///
+			xlabel(`desde'(1)`end') ///
+			legend(label(1 "Como % del PIB") label(2 "Por persona ajustada")) ///
+			name(Proy_combinado, replace)
+
+		if "$export" != "" {
+			graph export `"$export/Proy_combinado.png"', replace name(Proy_combinado)
 		}
 	}
 

@@ -24,6 +24,10 @@ foreach k of local ramos {
 	PEF if divCIEP == 9 & ramo == `k', by(capitulo) min(0) rows(2) anio(`aniovp')
 }
 
+PEF if divCIEP == 9, by(ramo) min(0) rows(2) anio(`aniovp')
+PEF if divCIEP == 9, by(capitulo) min(0) rows(2) anio(`aniovp')
+
+
 
 postfile salud anio ssa benef_ssa imssbien benef_imssbien imss benef_imss issste benef_issste pemex benef_pemex issfam benef_issfam using "`c(sysdir_personal)'/SIM/salud.dta", replace
 forvalues aniope=2020(1)2024 {
@@ -292,9 +296,14 @@ use "`c(sysdir_personal)'/SIM/salud.dta", clear
 format ssa imssbien imss issste pemex issfam %10.0fc
 format benef_ssa benef_imssbien benef_imss benef_issste benef_pemex benef_issfam %15.0fc
 
+g sinss = ssa+imssbien
+format sinss %15.0fc
+
+g benef_sinss = benef_ssa+benef_imssbien
+format benef_sinss %15.0fc
+
 twoway ///
-	(connected ssa anio, mlabel(ssa) mlabpos(0) mlabcolor(black)) ///
-	(connected imssbien anio, mlabel(imssbien) mlabpos(0) mlabcolor(black)) ///
+	(connected sinss anio, mlabel(sinss) mlabpos(0) mlabcolor(black)) ///
 	(connected imss anio, mlabel(imss) mlabpos(0) mlabcolor(black)) ///
 	(connected issste anio, mlabel(issste) mlabpos(0) mlabcolor(black)) ///
 	(connected pemex anio, mlabel(pemex) mlabpos(0) mlabcolor(black)) ///
@@ -302,5 +311,5 @@ twoway ///
 	title("Gasto en salud por institución") ///
 	ytitle("MXN 2024") ///
 	xtitle("") ///
-	legend(label(1 "SSA") label(2 "IMSS-Bienestar") label(3 "IMSS") label(4 "ISSSTE") label(5 "Pemex") label(6 "ISSFAM") rows(1)) ///
+	legend(label(1 "Sin Seguridad Social") label(2 "IMSS") label(3 "ISSSTE") label(4 "Pemex") label(5 "ISSFAM") rows(1)) ///
 	name(grafsalud, replace)

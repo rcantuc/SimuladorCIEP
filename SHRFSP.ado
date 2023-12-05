@@ -25,7 +25,7 @@ quietly {
 	**# 2 SYNTAX ***
 	***          ***
 	****************
-	syntax [if/] [, ANIO(int `aniovp' ) DEPreciacion(int 5) NOGraphs UPDATE Base ID(string) ULTAnio(int 2008)]
+	syntax [if/] [, ANIO(int `aniovp' ) DEPreciacion(int 5) NOGraphs UPDATE Base ID(string) ULTAnio(int 2013)]
 	noisily di _newline(2) in g _dup(20) "." "{bf:  Sistema Fiscal: DEUDA $pais " in y `anio' "  }" in g _dup(20) "."
 
 
@@ -42,6 +42,7 @@ quietly {
 	** 2.2 PIB + Deflactor **
 	PIBDeflactor, nographs nooutpu
 	local currency = currency[1]
+	replace Poblacion = Poblacion*lambda
 	tempfile PIB
 	save `PIB'
 
@@ -58,18 +59,15 @@ quietly {
 
 	* Anio, mes y observaciones iniciales y finales de la serie *
 	forvalues k=1(1)`=_N' {
-		if rfsp[`k'] != . & "`anioini'" == "" {
-			local anioini = anio[`k']
-		}
-		if rfsp[`k'] == . & "`anioini'" != "" & "`aniofin'" == "" {
-			local aniofin = anio[`=`k'-1']
-			local mesfin = mes[`=`k'-1']
-			local obsfin = `k'-1
-		}
 		if anio[`k'] == `anio' {
 			local obsvp = `k'		
 		}
 	}
+	local anioini = anio[1]
+	local aniofin = anio[_N]
+	local mesfin = mes[_N]
+	local obsfin = _N
+
 	local lastexo = anio[_N]
 	local obsfin = _N
 	local obsvp = `obsfin'
@@ -82,20 +80,20 @@ quietly {
 	**# 4 DISPLAY ***
 	***           ***
 	*****************
-	noisily di _newline in g "  {bf:SHRFSP a" in y " `=anio[_N-1]'m`=mes[_N-1]'" in g ": }" _col(30) in y %15.0fc shrfsp[_N-1]/Poblacion[_N-1]/deflator[_N-1] in g "   `currency' `=anio[_N]' por persona"
-	noisily di in g "  {bf:   Interna" in g ": }" _col(30) in y %15.0fc shrfspInterno[_N-1]/Poblacion[_N-1]/deflator[_N-1] in g "   `currency' `=anio[_N]' por persona"
-	noisily di in g "  {bf:   Externa" in g ": }" _col(30) in y %15.0fc shrfspExterno[_N-1]/Poblacion[_N-1]/tipoDeCambio[_N-1] in g "   USD por persona"
+	noisily di _newline in g "  {bf:SHRFSP a" in y " `=anio[_N-1]'m`=mes[_N-1]'" in g ": }" _col(30) in y %15.0fc shrfsp[_N-1]/Poblacion[_N-1]/deflator[_N-1] in g "   `currency' `=anio[_N]' por persona ajustada"
+	noisily di in g "  {bf:   Interna" in g ": }" _col(30) in y %15.0fc shrfspInterno[_N-1]/Poblacion[_N-1]/deflator[_N-1] in g "   `currency' `=anio[_N]' por persona ajustada"
+	noisily di in g "  {bf:   Externa" in g ": }" _col(30) in y %15.0fc shrfspExterno[_N-1]/Poblacion[_N-1]/tipoDeCambio[_N-1] in g "   USD por persona ajustada"
 	noisily di in g "  {bf:   Tipo de cambio" in g ": }" _col(30) in y %15.1fc tipoDeCambio[_N-1] in g "   `currency'/USD"
 
-	noisily di _newline in g "  {bf:SHRFSP a" in y " `=anio[_N]'m`=mes[_N]'" in g ": }" _col(30) in y %15.0fc shrfsp[_N]/Poblacion[_N]/deflator[_N] in g "   `currency' `=anio[_N]' por persona"
-	noisily di in g "  {bf:   Interna" in g ": }" _col(30) in y %15.0fc shrfspInterno[_N]/Poblacion[_N]/deflator[_N] in g "   `currency' `=anio[_N]' por persona"
-	noisily di in g "  {bf:   Externa" in g ": }" _col(30) in y %15.0fc shrfspExterno[_N]/Poblacion[_N]/tipoDeCambio[_N] in g "   USD por persona"
+	noisily di _newline in g "  {bf:SHRFSP a" in y " `=anio[_N]'m`=mes[_N]'" in g ": }" _col(30) in y %15.0fc shrfsp[_N]/Poblacion[_N]/deflator[_N] in g "   `currency' `=anio[_N]' por persona ajustada"
+	noisily di in g "  {bf:   Interna" in g ": }" _col(30) in y %15.0fc shrfspInterno[_N]/Poblacion[_N]/deflator[_N] in g "   `currency' `=anio[_N]' por persona ajustada"
+	noisily di in g "  {bf:   Externa" in g ": }" _col(30) in y %15.0fc shrfspExterno[_N]/Poblacion[_N]/tipoDeCambio[_N] in g "   USD por persona ajustada"
 	noisily di in g "  {bf:   Tipo de cambio" in g ": }" _col(30) in y %15.1fc tipoDeCambio[_N] in g "   `currency'/USD"
 
-	noisily di _newline in g "  {bf:Diferencia" in y " `=anio[_N]'m`=mes[_N]'-`=anio[_N-1]'m`=mes[_N-1]'" in g ": }" _col(30) in y %15.0fc shrfsp[_N]/Poblacion[_N]/deflator[_N]-shrfsp[_N-1]/Poblacion[_N-1]/deflator[_N-1] in g "   `currency' `=anio[_N]' por persona"
-	noisily di in g "  {bf:   Interna" in g ": }" _col(30) in y %15.0fc shrfspInterno[_N]/Poblacion[_N]/deflator[_N]-shrfspInterno[_N-1]/Poblacion[_N-1]/deflator[_N-1] in g "   `currency' `=anio[_N]' por persona"
-	noisily di in g "  {bf:   Externa" in g ": }" _col(30) in y %15.0fc shrfspExterno[_N]/Poblacion[_N]/tipoDeCambio[_N]-shrfspExterno[_N-1]/Poblacion[_N-1]/tipoDeCambio[_N-1] in g "   USD por persona"
-	noisily di in g "  {bf:   Diferencia" in g ": }" _col(30) in y %15.1fc tipoDeCambio[_N]-tipoDeCambio[_N-1] in g "   `currency'/USD"
+	noisily di _newline in g "  {bf:Dif." in y " `=anio[_N]'m`=mes[_N]'-`=anio[_N-1]'m`=mes[_N-1]'" in g ": }" _col(30) in y %15.0fc shrfsp[_N]/Poblacion[_N]/deflator[_N]-shrfsp[_N-1]/Poblacion[_N-1]/deflator[_N-1] in g "   `currency' `=anio[_N]' por persona ajustada"
+	noisily di in g "  {bf:   Interna" in g ": }" _col(30) in y %15.0fc shrfspInterno[_N]/Poblacion[_N]/deflator[_N]-shrfspInterno[_N-1]/Poblacion[_N-1]/deflator[_N-1] in g "   `currency' `=anio[_N]' por persona ajustada"
+	noisily di in g "  {bf:   Externa" in g ": }" _col(30) in y %15.0fc shrfspExterno[_N]/Poblacion[_N]/tipoDeCambio[_N]-shrfspExterno[_N-1]/Poblacion[_N-1]/tipoDeCambio[_N-1] in g "   USD por persona ajustada"
+	noisily di in g "  {bf:   Tipo de cambio" in g ": }" _col(30) in y %15.1fc tipoDeCambio[_N]-tipoDeCambio[_N-1] in g "   `currency'/USD"
 
 
 
@@ -107,7 +105,7 @@ quietly {
 	***                       ***
 	*****************************
 	collapse (sum) rfsp* costodeuda* balprimario nopresupuestario (last) shrfsp* mes por* tipo*, by(anio)
-	merge m:1 (anio) using `PIB', nogen keepus(pibY pibYR var_* Poblacion* deflator currency) update replace
+	merge m:1 (anio) using `PIB', nogen keepus(pibY pibYR var_* Poblacion* deflator lambda currency) update replace
 	tsset anio
 	forvalues j = 1(1)`=_N' {
 		* Política fiscal *
@@ -199,29 +197,49 @@ quietly {
 
 	g efectoPositivo = 0
 	g efectoPositivo_pc = 0
+	g efectoNegativo = 0
+	g efectoNegativo_pc = 0
 	foreach k of varlist balprimario_pib nopresupuestario_pib efectoCrecimiento efectoInflacion ///
 		efectoIntereses efectoTipoDeCambio efectoOtros {
 			replace efectoPositivo = efectoPositivo + `k' if `k' > 0
+			replace efectoNegativo = efectoNegativo + `k' if `k' < 0
 	}
 	foreach k of varlist balprimario_pc nopresupuestario_pc efectoCrecimiento_pc efectoInflacion_pc ///
 		efectoIntereses_pc efectoTipoDeCambio_pc efectoOtros_pc {
 			replace efectoPositivo_pc = efectoPositivo_pc + `k' if `k' > 0
+			replace efectoNegativo_pc = efectoNegativo_pc + `k' if `k' < 0
 	}
 
 	if "`nographs'" != "nographs" & "$nographs" == "" {
-		local j = 100/(`aniofin'-`ultanio'+1)/2
-		local i = 100/(`lastexo'-`aniofin'+1+1)/2
+
+		** Texto **
+		local j = 100/(`aniofin'-`ultanio')/2
+		local i = 100/(`lastexo'-`aniofin'+1)/2
 		forvalues k=1(1)`=_N' {
-			if efectoPositivo[`k'] != . & mes[`k'] == 12 & anio[`k'] >= `ultanio' {
-				local textDeuda1 `"`textDeuda1' `=efectoPositivo[`k']+.3' `j' "{bf:`=string(shrfsp_pib[`k'],"%5.1fc")'}""'
+			if abs(efectoPositivo[`k']) > abs(efectoNegativo[`k']) & mes[`k'] == 12 & anio[`k'] >= `ultanio' & efectoPositivo[`k'] != . & efectoNegativo[`k'] != . {
+				local textDeuda1 `"`textDeuda1' `=efectoPositivo[`k']+.25' `j' "{bf:`=string(shrfsp_pib[`k'],"%5.1fc")'% PIB}""'
+				local textDeuda11 `"`textDeuda11' `=efectoPositivo_pc[`k']+750' `j' "{bf:`=string(shrfsp_pc[`k'],"%10.0fc")' MXN}""'
 				local j = `j' + 100/(2022-`ultanio'+1)
 			}
-			if efectoPositivo[`k'] != . & mes[`k'] != 12 & anio[`k'] >= `ultanio' & anio[`k'] <= `lastexo' {
-				local textDeuda2 `"`textDeuda2' `=efectoPositivo[`k']+.3' `i' "{bf:`=string(shrfsp_pib[`k'],"%5.1fc")'}""'
-				local i = `i' + 100/(`lastexo'-2023+1)
+			if abs(efectoNegativo[`k']) >= abs(efectoPositivo[`k']) & mes[`k'] == 12 & anio[`k'] >= `ultanio' & efectoNegativo[`k'] != . & efectoPositivo[`k'] != . {
+				local textDeuda2 `"`textDeuda2' `=efectoNegativo[`k']-.25' `j' "{bf:`=string(shrfsp_pib[`k'],"%5.1fc")'% PIB}""'
+				local textDeuda22 `"`textDeuda22' `=efectoNegativo_pc[`k']-750' `j' "{bf:`=string(shrfsp_pc[`k'],"%10.0fc")' MXN}""'
+				local j = `j' + 100/(2022-`ultanio'+1)
 			}
 
+			if abs(efectoPositivo[`k']) > abs(efectoNegativo[`k']) & mes[`k'] != 12 & anio[`k'] >= `ultanio' & anio[`k'] <= `lastexo' & efectoPositivo[`k'] != . & efectoNegativo[`k'] != . {
+				local textDeuda3 `"`textDeuda3' `=efectoPositivo[`k']+.25' `i' "{bf:`=string(shrfsp_pib[`k'],"%5.1fc")'% PIB}""'
+				local textDeuda33 `"`textDeuda33' `=efectoPositivo_pc[`k']+750' `i' "{bf:`=string(shrfsp_pc[`k'],"%10.0fc")' MXN}""'
+				local i = `i' + 100/(`lastexo'-2023+1)
+			}
+			if abs(efectoNegativo[`k']) >= abs(efectoPositivo[`k']) & mes[`k'] != 12 & anio[`k'] >= `ultanio' & anio[`k'] <= `lastexo' & efectoNegativo[`k'] != . & efectoPositivo[`k'] != . {
+				local textDeuda4 `"`textDeuda4' `=efectoNegativo[`k']-.25' `i' "{bf:`=string(shrfsp_pib[`k'],"%5.1fc")'% PIB}""'
+				local textDeuda44 `"`textDeuda44' `=efectoNegativo_pc[`k']-750' `i' "{bf:`=string(shrfsp_pc[`k'],"%10.0fc")' MXN}""'
+				local i = `i' + 100/(`lastexo'-2023+1)
+			}
 		}
+
+		** Gráfica por PIB **
 		if `"$export"' == "" {
 			local graphtitle "{bf:Efectos sobre el indicador de la deuda}"
 			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP, INEGI/BIE y $paqueteEconomico."
@@ -234,7 +252,8 @@ quietly {
 			if mes == 12 & anio >= `ultanio', ///
 			over(anio, gap(0)) stack ///
 			blabel(, format(%5.1fc)) outergap(0) ///
-			text(`textDeuda1', color(black) size(vsmall)) ///
+			text(`textDeuda1', color(red) size(small)) ///
+			text(`textDeuda2', color(green) size(small)) ///
 			ytitle("% PIB") ///
 			legend(on position(6) rows(1) label(5 "Tasas de inter{c e'}s") label(4 "Inflaci{c o'}n") label(3 "Crec. Econ{c o'}mico") ///
 			label(1 "Déficit Primario") label(6 "Tipo de cambio") label(2 "No presupuestario") ///
@@ -247,7 +266,8 @@ quietly {
 			if mes != 12 & anio <= `lastexo' & anio >= `ultanio', ///
 			over(anio, gap(0)) stack ///
 			blabel(, format(%5.1fc)) outergap(0) ///
-			text(`textDeuda2', color(black) size(vsmall)) ///
+			text(`textDeuda3', color(red) size(small)) ///
+			text(`textDeuda4', color(green) size(small)) ///
 			ytitle("") ylabel(, labcolor(white)) ///
 			legend(on position(6) rows(1) label(5 "Tasas de inter{c e'}s") label(4 "Inflaci{c o'}n") label(3 "Crec. Econ{c o'}mico") ///
 			label(1 "Déficit Primario") label(6 "Tipo de cambio") label(2 "No presupuestario") ///
@@ -259,27 +279,20 @@ quietly {
 		*net install grc1leg.pkg
 		grc1leg efectoDeuda1 efectoDeuda2, ycommon ///
 			title(`graphtitle') ///
-			subtitle($pais) ///
+			subtitle("{bf:Como % del PIB}") ///
 			caption("`graphfuente'") ///
 			name(efectoDeuda, replace) ///
 		
 		capture window manage close graph efectoDeuda1
 		capture window manage close graph efectoDeuda2
-
-
-		local j = 100/(`aniofin'-`ultanio'+1)/2
-		local i = 100/(`lastexo'-`aniofin'+1+1)/2
-		forvalues k=1(1)`=_N' {
-			if efectoPositivo[`k'] != . & mes[`k'] == 12 & anio[`k'] >= `ultanio' {
-				local textDeuda11 `"`textDeuda11' `=efectoPositivo_pc[`k']*1.1' `j' "{bf:`=string(shrfsp_pc[`k'],"%10.0fc")'}""'
-				local j = `j' + 100/(2022-`ultanio'+1)
-			}
-			if efectoPositivo[`k'] != . & mes[`k'] != 12 & anio[`k'] >= `ultanio' & anio[`k'] <= `lastexo' {
-				local textDeuda22 `"`textDeuda22' `=efectoPositivo_pc[`k']*1.1' `i' "{bf:`=string(shrfsp_pc[`k'],"%10.0fc")'}""'
-				local i = `i' + 100/(`lastexo'-2023+1)
-			}
-
+		
+		capture confirm existence $export
+		if _rc == 0 {
+			graph export "$export/efectoDeuda.png", replace name(efectoDeuda)
 		}
+
+
+		** Gráfica por persona ajustada **	
 		if `"$export"' == "" {
 			local graphtitle "{bf:Efectos sobre el indicador de la deuda per cápita}"
 			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP, INEGI/BIE y $paqueteEconomico."
@@ -292,9 +305,10 @@ quietly {
 			if mes == 12 & anio >= `ultanio', ///
 			over(anio, gap(0)) stack ///
 			blabel(, format(%10.0fc)) outergap(0) ///
-			text(`textDeuda11', color(black) size(vsmall)) ///
-			ytitle("MXN") ///
-			legend(on position(6) rows(1) label(5 "Tasas de inter{c e'}s") label(4 "Inflaci{c o'}n") label(3 "Crec. Econ{c o'}mico") ///
+			text(`textDeuda11', color(red) size(small)) ///
+			text(`textDeuda22', color(green) size(small)) ///
+			ytitle("`currency' `aniovp'") ///
+			legend(on position(6) rows(1) label(5 "Tasas de inter{c e'}s") label(4 "Inflaci{c o'}n") label(3 "Crec. Demogr{c a'}fico") ///
 			label(1 "Déficit Primario") label(6 "Tipo de cambio") label(2 "No presupuestario") ///
 			label(7 "Otros") region(margin(zero))) ///
 			name(efectoDeuda1PC, replace) ///
@@ -305,9 +319,10 @@ quietly {
 			if mes != 12 & anio <= `lastexo' & anio >= `ultanio', ///
 			over(anio, gap(0)) stack ///
 			blabel(, format(%10.0fc)) outergap(0) ///
-			text(`textDeuda22', color(black) size(vsmall)) ///
+			text(`textDeuda33', color(red) size(small)) ///
+			text(`textDeuda44', color(green) size(small)) ///
 			ytitle("") ylabel(, labcolor(white)) ///
-			legend(on position(6) rows(1) label(5 "Tasas de inter{c e'}s") label(4 "Inflaci{c o'}n") label(3 "Crec. Econ{c o'}mico") ///
+			legend(on position(6) rows(1) label(5 "Tasas de inter{c e'}s") label(4 "Inflaci{c o'}n") label(3 "Crec. Demogr{c a'}fico") ///
 			label(1 "Déficit Primario") label(6 "Tipo de cambio") label(2 "No presupuestario") ///
 			label(7 "Otros") region(margin(zero))) ///
 			name(efectoDeuda2PC, replace) ///
@@ -317,7 +332,7 @@ quietly {
 		*net install grc1leg.pkg
 		grc1leg efectoDeuda1PC efectoDeuda2PC, ycommon ///
 			title(`graphtitle') ///
-			subtitle($pais) ///
+			subtitle("{bf:Por persona ajustada}") ///
 			caption("`graphfuente'") ///
 			name(efectoDeudaPC, replace) ///
 		
@@ -326,7 +341,7 @@ quietly {
 		
 		capture confirm existence $export
 		if _rc == 0 {
-			graph export "$export/efectoDeuda.png", replace name(efectoDeuda)
+			graph export "$export/efectoDeudaPC.png", replace name(efectoDeudaPC)
 		}			
 	}
 
@@ -341,20 +356,16 @@ quietly {
 		g `shrfsp' = shrfsp/Poblacion/deflator
 		g `shrfspinterno' = shrfspInterno/Poblacion/deflator
 		g `shrfspexterno' = shrfspExterno/Poblacion/deflator
+
 		g `shrfspinternoG' = shrfspInterno/Poblacion/deflator
 		g `shrfspexternoG' = `shrfspinternoG' + shrfspExterno/Poblacion/deflator
 
 		g `externo' = shrfspExterno/1000000000/deflator
 		g `interno' = `externo' + shrfspInterno/1000000000/deflator
 
-		format `shrfspexterno' `shrfspinterno' `shrfspexternoG' `shrfspinternoG' `externo' `interno' %10.0fc
-		
-		*tempvar shrfspsinPemex shrfspPemex
-		*g `shrfspPemex' = deudaPemex/1000000000/deflator
-		*replace `shrfspPemex' = 0 if `shrfspPemex' == .
-		*g `shrfspsinPemex' = (shrfsp)/1000000000/deflator
-		*replace `shrfspsinPemex' = 0 if `shrfspsinPemex' == .
+		format `shrfsp' `shrfspexterno' `shrfspinterno' `shrfspexternoG' `shrfspinternoG' `externo' `interno' %10.0fc
 
+		** Textos sobre las gráficas **
 		local j = 100/(`ultanio'-`anioshrfsp'+1)/2
 		forvalues k=1(1)`=_N' {
 			if `shrfsp'[`k'] != . & anio[`k'] >= `ultanio' {
@@ -366,11 +377,13 @@ quietly {
 					local textPemex `"`textPemex' `=`shrfspPemex'[`k']/2' `=anio[`k']' "{bf:`=string(`shrfspPemex'[`k'],"%10.1fc")'}""'
 					local textSPemex `"`textSPemex' `=`shrfspsinPemex'[`k']/2+`shrfspPemex'[`k']/2' `=anio[`k']' "{bf:`=string(`shrfspsinPemex'[`k']-`shrfspPemex'[`k'],"%10.1fc")'}""'
 				}
-				local textPC `"`textPC' `=`shrfsp'[`k']*1.0075' `=anio[`k']' "{bf:`=string(`shrfsp'[`k'],"%10.0fc")'}""'
+				*local textPC `"`textPC' `=`shrfsp'[`k']*1.0075' `=anio[`k']' "{bf:`=string(`shrfsp'[`k'],"%10.0fc")'}""'
 				local j = `j' + 100/(`ultanio'-`anioshrfsp'+1)
 			}
 		}
-		
+
+
+		** 4.2.1 Gráfica general **
 		if `"$export"' == "" {
 			local graphtitle "{bf:Saldo hist{c o'}rico de RFSP}"
 			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP, INEGI/BIE y $paqueteEconomico."
@@ -383,36 +396,107 @@ quietly {
 			(bar `externo' anio if mes == 12, mlabel(`externo') mlabposition(7) mlabangle(90) mlabcolor(white) mlabgap(0pt)) ///
 			(bar `interno' anio if mes != 12, mlabel(`interno') mlabposition(7) mlabangle(90) mlabcolor(white) mlabgap(0pt) pstyle(p1) fintensity(inten60) lwidth(none)) ///
 			(bar `externo' anio if mes != 12, mlabel(`externo') mlabposition(7) mlabangle(90) mlabcolor(white) mlabgap(0pt) pstyle(p2) fintensity(inten60) lwidth(none)) ///
-			(connected shrfsp_pib anio, mlabel(shrfsp_pib) mlabposition(0) mlabcolor(white) yaxis(2) yscale(lwidth(none) axis(2)) mlabgap(0pt) pstyle(p3)) ///
+			(connected shrfsp_pib anio, mlabel(shrfsp_pib) mlabposition(0) mlabcolor(black) yaxis(2) yscale(lwidth(none) axis(2)) mlabgap(0pt) pstyle(p3)) ///
 			if `externo' != . & anio >= `ultanio', ///
 			title(`graphtitle') ///
-			subtitle($pais) ///
+			subtitle("{bf:Como % del PIB}") ///
 			caption("`graphfuente'") ///
 			ylabel(, format(%15.0fc) labsize(small)) ///
 			ylabel(, format(%10.0fc) labsize(small) axis(2)) ///
 			xlabel(`ultanio'(1)`lastexo', noticks) ///	
-			///text(`text', placement(n) size(vsmall)) ///
-			///text(2 `=`anio'+1.45' "{bf:Proyecci{c o'}n PE 2022}", color(white)) ///
-			///text(2 `=2003+.45' "{bf:Externo}", color(white)) ///
-			///text(`=2+`externosize2003'' `=2003+.45' "{bf:Interno}", color(white)) ///
 			yscale(range(0) axis(1) noline) ///
 			yscale(range(0) axis(2) noline) ///
 			ytitle("mil millones `currency' `aniovp'") ///
 			ytitle("% del PIB", axis(2)) ///
 			xtitle("") ///
 			legend(on position(6) rows(1) order(1 2) ///
-			label(1 `"Interno (`=string(shrfspInterno[`obsvp']/shrfsp[`obsvp']*100,"%7.1fc")'%)"') ///
-			label(2 `"Externo (`=string(shrfspExterno[`obsvp']/shrfsp[`obsvp']*100,"%7.1fc")'%)"') ///
+			label(1 `"Interno (`=string(shrfspInterno[`obsvp']/shrfsp[`obsvp']*100,"%7.1fc")'% en `=anio[`obsvp']')"') ///
+			label(2 `"Externo (`=string(shrfspExterno[`obsvp']/shrfsp[`obsvp']*100,"%7.1fc")'% en `=anio[`obsvp']')"') ///
 			region(margin(zero))) ///
-			name(shrfsp, replace) ///
-			note("{bf:Nota}: Porcentajes entre par{c e'}ntesis son con respecto al total de `=anio[`obsvp']'.")
+			name(shrfsp, replace)
 
 		capture confirm existence $export
 		if _rc == 0 {
 			graph export "$export/shrfsp.png", replace name(shrfsp)
 		}			
 
-		/*if `"$export"' == "" {
+
+		** 4.2.2 Gráfica por persona ajustada **
+		if "$export" == "" {
+			local graphtitle "{bf:Saldo hist{c o'}rico por persona ajustada}"
+			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP, $paqueteEconomico y CONAPO (2023)."
+		}
+		else {
+			local graphtitle ""
+			local graphfuente ""
+		}
+		twoway (bar `interno' anio if mes == 12, mlabel(`interno') mlabposition(7) mlabangle(90) mlabcolor(white) mlabgap(0pt)) ///
+			(bar `externo' anio if mes == 12, mlabel(`externo') mlabposition(7) mlabangle(90) mlabcolor(white) mlabgap(0pt)) ///
+			(bar `interno' anio if mes != 12, mlabel(`interno') mlabposition(7) mlabangle(90) mlabcolor(white) mlabgap(0pt) pstyle(p1) fintensity(inten60) lwidth(none)) ///
+			(bar `externo' anio if mes != 12, mlabel(`externo') mlabposition(7) mlabangle(90) mlabcolor(white) mlabgap(0pt) pstyle(p2) fintensity(inten60) lwidth(none)) ///
+			(connected `shrfsp' anio, mlabel(`shrfsp') mlabposition(0) mlabcolor(black) yaxis(2) yscale(lwidth(none) axis(2)) mlabgap(0pt) pstyle(p3)) ///
+			if `shrfsp' != . & anio >= `ultanio', ///
+			title(`graphtitle') ///
+			subtitle("{bf:Por persona ajustada}") ///
+			caption("`graphfuente'") ///
+			ylabel(, format(%15.0fc) labsize(small)) ///
+			ylabel(, format(%10.0fc) labsize(small) axis(2)) ///
+			xlabel(`ultanio'(1)`lastexo', noticks) ///	
+			///text(`textPC', placement(n) color(black) size(vsmall)) ///
+			yscale(range(0) axis(1) noline) ///
+			yscale(range(40000) axis(2) noline) ///
+			ytitle("mil millones `currency' `aniovp'") xtitle("") ///
+			ytitle("`currency' `aniovp' por persona ajustada", axis(2)) ///
+			legend(on position(6) rows(1) order(1 2) ///
+			label(1 `"Interno (`=string(shrfspInterno[`obsvp']/shrfsp[`obsvp']*100,"%7.1fc")'% en `=anio[`obsvp']')"') ///
+			label(2 `"Externo (`=string(shrfspExterno[`obsvp']/shrfsp[`obsvp']*100,"%7.1fc")'% en `=anio[`obsvp']')"') ///
+			region(margin(zero))) ///
+			name(shrfsppc, replace)
+
+		capture confirm existence $export
+		if _rc == 0 {
+			graph export "$export/shrfsppc.png", replace name(shrfsppc)
+		}
+
+		** Gráfica combinada **
+		if `"$export"' == "" {
+			local graphtitle "{bf:Saldo hist{c o'}rico de RFSP}"
+			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP, INEGI/BIE y $paqueteEconomico."
+		}
+		else {
+			local graphtitle ""
+			local graphfuente ""
+		}
+		twoway (connected shrfsp_pib anio, mlabel(shrfsp_pib) mlabposition(0) mlabcolor(black) yscale(lwidth(none)) mlabgap(0pt)) ///
+			(connected `shrfsp' anio, mlabel(`shrfsp') mlabposition(0) mlabcolor(black) yaxis(2) yscale(lwidth(none) axis(2)) mlabgap(0pt)) ///
+			if `shrfsp' != . & anio >= `ultanio', ///
+			title(`graphtitle') ///
+			subtitle("{bf:Indicadores de la deuda pública}") ///
+			caption("`graphfuente'") ///
+			ylabel(, format(%15.0fc) labsize(small)) ///
+			ylabel(, format(%10.0fc) labsize(small) axis(2) noticks) ///
+			xlabel(`ultanio'(1)`lastexo', noticks) ///
+			///yscale(range(0) axis(1) noline) ///
+			///yscale(range(40000) axis(2) noline) ///
+			ytitle("% PIB'") xtitle("") ///
+			ytitle("`currency' `aniovp'", axis(2)) ///
+			legend(on position(6) rows(1) order(1 2) ///
+			label(1 "Como % del PIB") label(2 "Por persona ajustada")) ///
+			name(combinada, replace)
+
+		capture confirm existence $export
+		if _rc == 0 {
+			graph export "$export/combinada.png", replace name(combinada)
+		}
+
+		/** Gráfica para Pemex **
+		tempvar shrfspsinPemex shrfspPemex
+		g `shrfspPemex' = deudaPemex/1000000000/deflator
+		replace `shrfspPemex' = 0 if `shrfspPemex' == .
+		g `shrfspsinPemex' = (shrfsp)/1000000000/deflator
+		replace `shrfspsinPemex' = 0 if `shrfspsinPemex' == .
+
+		if `"$export"' == "" {
 			local graphtitle "{bf:Saldo hist{c o'}rico} de RFSP"
 			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP y $paqueteEconomico."
 		}
@@ -444,49 +528,6 @@ quietly {
 		if _rc == 0 {
 			graph export "$export/shrfspPemex.png", replace name(shrfspPemex)
 		}*/
-		
-		
-		if "$export" == "" {
-			local graphtitle "{bf:Saldo hist{c o'}rico por persona}"
-			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP, $paqueteEconomico y CONAPO (2023)."
-		}
-		else {
-			local graphtitle ""
-			local graphfuente ""
-		}
-		twoway (bar `shrfspexternoG' anio if mes == 12, mlabel(`shrfspexterno') mlabposition(7) mlabangle(90) mlabcolor(white) mlabgap(0pt)) ///
-			(bar `shrfspinternoG' anio if mes == 12, mlabel(`shrfspinterno') mlabposition(7) mlabangle(90) mlabcolor(white) mlabgap(0pt)) ///
-			(bar `shrfspexternoG' anio if mes != 12, mlabel(`shrfspexterno') mlabposition(7) mlabangle(90) mlabcolor(white) mlabgap(0pt) pstyle(p1) fintensity(inten60) lwidth(none)) ///
-			(bar `shrfspinternoG' anio if mes != 12, mlabel(`shrfspinterno') mlabposition(7) mlabangle(90) mlabcolor(white) mlabgap(0pt) pstyle(p2) fintensity(inten60) lwidth(none)) ///
-			if `shrfsp' != . & anio >= `ultanio', ///
-			title(`graphtitle') ///
-			subtitle($pais) ///
-			caption("`graphfuente'") ///
-			ylabel(#4, format(%15.0fc) labsize(small)) yscale(range(40000)) ///
-			xlabel(`ultanio'(1)`lastexo', noticks) ///	
-			text(`textPC', placement(n) color(black) size(vsmall)) ///
-			yscale(axis(1) noline) ///
-			ytitle("`currency' `aniovp'") xtitle("") ///
-			note("{bf:Nota:} Las barras opacas son proyecciones de $paqueteEconomico.") ///
-			legend(label(2 "Deuda Interna") label(1 "Deuda Externa") order(1 2)) ///
-			name(shrfsppc, replace)
-
-		/*gr_edit .xaxis1.edit_tick 16 2023 `"2023*"', tickset(major)
-		gr_edit .xaxis1.edit_tick 16 2024 `"2024*"', tickset(major)
-		gr_edit .xaxis1.edit_tick 16 2025 `"2025*"', tickset(major)
-		gr_edit .xaxis1.edit_tick 16 2026 `"2026*"', tickset(major)
-		gr_edit .xaxis1.edit_tick 16 2027 `"2027*"', tickset(major)
-		gr_edit .xaxis1.edit_tick 16 2028 `"2028*"', tickset(major)
-		gr_edit .xaxis1.edit_tick 16 2029 `"2029*"', tickset(major)*/
-
-		capture confirm existence $export
-		if _rc == 0 {
-			graph export "$export/shrfsppc.png", replace name(shrfsppc)
-		}
-
-		if "$pais" != "" {
-			exit
-		}
 
 
 		**************************************************
@@ -509,7 +550,7 @@ quietly {
 		format `rfspBalance' `rfspAdecuacion' `rfspOtros' `rfspBalance0' `rfspAdecuacion0' `rfspOtros0' %5.1f
 		
 		g `rfsppib' = rfsp/pibY*100
-		g rfsppc = rfsp/Poblacion/deflator
+		g rfsppc = rfsp/(Poblacion)/deflator
 		g `rfsp' = rfsp/deflator
 
 		* Informes mensuales texto *

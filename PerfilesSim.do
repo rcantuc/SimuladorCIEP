@@ -596,10 +596,10 @@ if "$nographs" == "" & "`nographs'" != "nographs" & `anio' == `aniovp' {
 ************
 compress
 capture drop _*
-keep ISRAS ISRPF CUOTAS ISRPM IVA IEPSNP IEPSP ISAN IMPORT OTROSK FMP /// Ingresos
+keep ISRAS ISRPF CUOTAS ISRPM OTROSK FMP PEMEX CFE IMSS ISSSTE IVA IEPSNP IEPSP ISAN IMPORT /// Ingresos
 	Pension Educación Salud IngBasico Pensión_AM Otros_gastos Otras_inversiones Part_y_otras_Apor Energía infra_entidad /// Gastos
 	folio* numren edad sexo factor decil escol formal ingbrutotot rural grupoedad /// Simulador.ado
-	asis_esc tipoesc nivel inst_* ing_jubila jubilado // GastoPC.ado
+	//asis_esc tipoesc nivel inst_* ing_jubila jubilado // GastoPC.ado
 if `c(version)' > 13.1 {
 	save "`c(sysdir_personal)'/SIM/perfiles`1'.dta", replace
 }
