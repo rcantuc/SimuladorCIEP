@@ -131,7 +131,7 @@ SCN, anio(`1') nographs
 **********************************
 
 * Base de datos ENIGH - Gastos *
-capture confirm file "`c(sysdir_personal)'/SIM/`=anioenigh'/expenditures.dta"
+capture confirm file "`c(sysdir_personal)'/SIM/`=anioenigh'/expenditure_categ.dta"
 if _rc != 0 {
 	noisily run "`c(sysdir_personal)'/Expenditure.do" `1'
 }
