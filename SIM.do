@@ -22,7 +22,7 @@ cd `"`c(sysdir_personal)'"'
 ** Comentar o descomentar según sea el caso. **
 //global id = "`c(username)'"                                                   // IDENTIFICADOR DEL USUARIO
 //global export "`c(sysdir_personal)'../../Sostenibilidad 2024/images"          // DIRECTORIO DE IMÁGENES
-//global nographs "nographs"                                                    // SUPRIMIR GRAFICAS
+global nographs "nographs"                                                    // SUPRIMIR GRAFICAS
 //global textbook "textbook"                                                    // GRÁFICOS FORMATO LaTeX
 //global output "output"                                                        // OUTPUTS (WEB)
 //global update "update"                                                        // UPDATE BASES DE DATOS
@@ -453,7 +453,7 @@ matrix IVAT = (16 \     ///  1  Tasa general
 			3  \     /// 10  Otros, idem
 			2  \     /// 11  Transporte local, idem
 			3  \     /// 12  Transporte foraneo, idem
-			14.63)   //  13  Evasion e informalidad IVA, input[0-100]
+			33.25)   //  13  Evasion e informalidad IVA, input[0-100]
 if "`cambioiva'" == "1" {
 	noisily run "`c(sysdir_personal)'/IVA_Mod.do"
 	scalar IVA = IVA_Mod
@@ -487,7 +487,7 @@ label var ImpuestosAportaciones "impuestos y aportaciones"
 
 ** (-) Impuestos y aportaciones **
 capture drop Transferencias
-egen Transferencias = rsum(Pension Educación Salud IngBasico Pensión_AM Inversión)
+egen Transferencias = rsum(Pension Educación Salud IngBasico Pensión_AM Otras_inversiones)
 label var Transferencias "transferencias públicas"
 
 ** (=) Aportaciones netas **

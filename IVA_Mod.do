@@ -28,7 +28,7 @@ use "`c(sysdir_personal)'/SIM/2022/expenditure_categ_iva.dta", clear
 ** Re C{c a'}lculo del IVA **
 local j = 2
 foreach k in alim alquiler cb educacion fuera mascotas med mujer otros trans transf {
-	replace gasto_anual`k' = gasto_anual`k'/`deflator' // *63.763/58.609 <-- OJO
+	replace gasto_anual`k' = gasto_anual`k'/`deflator'*66.437/70.410    // <-- Calibración con Cuentas Nacionales
 	
 	if IVAT[`j',1] == 1 {
 		replace IVA`k' = 0
@@ -48,11 +48,11 @@ foreach k in alim alquiler cb educacion fuera mascotas med mujer otros trans tra
 
 * SIMULACI{c O'}N: Impuesto al consumo *
 egen Consumo = rsum(IVAalim IVAalquiler IVAcb IVAeducacion IVAfuera ///
-	IVAmascotas IVAmed IVAmujer IVAotros IVAtrans IVAtransf TOTIEPS)
+	IVAmascotas IVAmed IVAmujer IVAotros IVAtrans IVAtransf IEPSTOT)
 
 egen GastoTOT = rsum(gasto_anualalim gasto_anualalquiler gasto_anualcb gasto_anualeducacion ///
 	gasto_anualfuera gasto_anualmascotas gasto_anualmed gasto_anualmujer gasto_anualotros ///
-	gasto_anualTrans gasto_anualTransf)
+	gasto_anualtrans gasto_anualtransf)
 
 capture egen GastoTOTC = rsum(cero*)
 if _rc != 0 {
@@ -75,22 +75,20 @@ capture egen IVATotal = rsum(IVAalim IVAalquiler IVAcb IVAeducacion IVAfuera ///
 if _rc != 0 {
 	drop IVATotal
 	egen IVATotal = rsum(IVAalim IVAalquiler IVAcb IVAeducacion IVAfuera ///
-	IVAmascotas IVAmed IVAmujer IVAotros IVATrans IVATransf)
+	IVAmascotas IVAmed IVAmujer IVAotros IVAtrans IVAtransf)
 }
 replace IVATotal = IVATotal
 tempfile ivamod
-save `ivamod'	
+save `ivamod'
 
 
 * Households *
 use `"`c(sysdir_site)'/users/$pais/$id/households.dta"', clear
-merge 1:1 (folioviv foliohog numren) using `ivamod', nogen update replace ///
-	keepus(Consumo gasto_anual* IVA* GastoTOT*)
+merge 1:1 (folioviv foliohog numren) using `ivamod', nogen update replace keepus(Consumo gasto_anual* IVA* GastoTOT*)
 replace Consumo = 0 if Consumo == .
 label var Consumo "los impuestos al consumo"
 
 *noisily Simulador Consumo [fw=factor], base("ENIGH 2018") boot(1) reboot $nographs nooutput
-
 
 
 * RESULTS IVA *
