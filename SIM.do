@@ -11,9 +11,9 @@ noisily run "`c(sysdir_personal)'/profile.do"                                   
 **  0.1 DIRECTORIO(S) DE TRABAJO (programación)  **
 ** Versión del simulador **
 if "`c(username)'" == "ricardo" ///                                             // iMac Ricardo
-	sysdir set PERSONAL "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
+	//sysdir set PERSONAL "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
 if "`c(username)'" == "ciepmx" & "`c(console)'" == "" ///                       // Servidor CIEP
-	sysdir set PERSONAL "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
+	//sysdir set PERSONAL "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
 cd `"`c(sysdir_personal)'"'
 
 
