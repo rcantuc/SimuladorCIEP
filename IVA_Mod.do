@@ -13,7 +13,6 @@ noisily di _newline(2) in g "   MODULO: " in y "IVA"
 *********************
 ** Microsimulacion **
 *********************
-*use if anio == 2018 | anio == `anio' using "`c(sysdir_site)'/users/$pais/$id/PIB.dta", clear
 PIBDeflactor, nog nooutput
 keep if anio == 2020 | anio == aniovp
 local lambda = lambda[1]
@@ -23,13 +22,13 @@ local pibY = pibY[_N]
 
 
 * Households *
-use "`c(sysdir_site)'/SIM/2020/expenditure_categ_iva.dta", clear
+use "`c(sysdir_personal)'/SIM/2022/expenditure_categ_iva.dta", clear
 
 
 ** Re C{c a'}lculo del IVA **
 local j = 2
 foreach k in alim alquiler cb educacion fuera mascotas med mujer otros trans transf {
-	replace gasto_anual`k' = gasto_anual`k'/`deflator'*63.763/58.609
+	replace gasto_anual`k' = gasto_anual`k'/`deflator' // *63.763/58.609 <-- OJO
 	
 	if IVAT[`j',1] == 1 {
 		replace IVA`k' = 0
@@ -47,14 +46,13 @@ foreach k in alim alquiler cb educacion fuera mascotas med mujer otros trans tra
 	local ++j
 }
 
-
 * SIMULACI{c O'}N: Impuesto al consumo *
 egen Consumo = rsum(IVAalim IVAalquiler IVAcb IVAeducacion IVAfuera ///
 	IVAmascotas IVAmed IVAmujer IVAotros IVAtrans IVAtransf TOTIEPS)
 
 egen GastoTOT = rsum(gasto_anualalim gasto_anualalquiler gasto_anualcb gasto_anualeducacion ///
 	gasto_anualfuera gasto_anualmascotas gasto_anualmed gasto_anualmujer gasto_anualotros ///
-	gasto_anualtrans gasto_anualtransf)
+	gasto_anualTrans gasto_anualTransf)
 
 capture egen GastoTOTC = rsum(cero*)
 if _rc != 0 {
@@ -77,7 +75,7 @@ capture egen IVATotal = rsum(IVAalim IVAalquiler IVAcb IVAeducacion IVAfuera ///
 if _rc != 0 {
 	drop IVATotal
 	egen IVATotal = rsum(IVAalim IVAalquiler IVAcb IVAeducacion IVAfuera ///
-	IVAmascotas IVAmed IVAmujer IVAotros IVAtrans IVAtransf)
+	IVAmascotas IVAmed IVAmujer IVAotros IVATrans IVATransf)
 }
 replace IVATotal = IVATotal
 tempfile ivamod

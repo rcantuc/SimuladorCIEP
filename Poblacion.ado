@@ -266,9 +266,9 @@ quietly {
 
 
 
-		**************************************
-		*** Gráfica transición demográfica ***
-		**************************************
+		*****************************************
+		*** 4. Gráfica transición demográfica ***
+		*****************************************
 		capture confirm variable poblacionSIM
 		if _rc != 0 {
 			g pob18 = poblacion if edad <= 18
@@ -414,6 +414,43 @@ quietly {
 		if "$export" != "" {
 			graph export "$export/E_`anio'_`aniofinal'_`entidadGName'.png", replace name(E_`anio'_`aniofinal'_`entidadGName')
 		}
+
+		*****************************************
+		*** 5. Gráfica de tasa de dependencia ***
+		*****************************************
+		g tasaDependencia = (pob18 + pob61)/(pob3560 + pob1934)*100
+		format tasaDependencia %10.1fc
+
+		tabstat tasaDependencia, stat(min) save
+		forvalues k = 1(1)`=_N' {
+			if tasaDependencia[`k'] == r(StatTotal)[1,1] {
+				local aniotdmin = anio[`k']
+			}
+		}
+
+		noisily di _newline in g " Año con menor tasa de dependencia: " in y `aniotdmin'
+
+		if "$textbook" == "" {
+			local graphtitle "{bf:Tasa de dependencia}"
+			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de CONAPO (2023)."
+		}
+		else {
+			local graphtitle ""
+			local graphfuente ""
+		}
+
+		twoway (connected tasaDependencia anio if anio <= `anio', mlabel(tasaDependencia) mlabpos(0) mlabcolor(black)) ///
+			(connected tasaDependencia anio if anio > `anio', mlabel(tasaDependencia) mlabpos(0) mlabcolor(black)), ///
+			title("`graphtitle'") ///
+			subtitle(${pais} `=entidad[1]') ///
+			caption("`graphfuente'") ///
+			xtitle("") ///
+			xlabel(`anioinicial'(10)`=anio[_N]') ///
+			ytitle("Dependientes por cada 100 personas no dependientes") ///
+			xline(`=`anio'+.5') ///
+			name(T_`anio'_`aniofinal'_`entidadGName', replace)
+
+
 		restore
 	}
 
