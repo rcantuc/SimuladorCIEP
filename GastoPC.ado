@@ -953,6 +953,7 @@ local nosec = r(Entidades_no_Sectorizadas)
 	**# 7 Resto de los gastos ***
 	*****************************
 	capture drop discap* mayores_depe primi* cuidados*
+	replace Otras_inversiones = 0
 
 	** Personas en discapacidad **
 	g discap = .
@@ -1035,6 +1036,7 @@ local nosec = r(Entidades_no_Sectorizadas)
 		restore
 	}
 	scalar gasinfraPIB = `gasinfra'/`PIB'*100
+	replace Otras_inversiones = scalar(gasinfra)
 
 
 	** 7.4 Gastos en cuidados **
@@ -1122,9 +1124,8 @@ local nosec = r(Entidades_no_Sectorizadas)
 		_col(50) %7.3fc in y otrosgasPIB ///
 		_col(60) %15.0fc in y otrosgas "}"
 
-	capture drop Inversión
-	Distribucion Inversión, relativo(infra_entidad) macro(`gasinfra')
-
+	*capture drop Inversión
+	*Distribucion Inversión, relativo(infra_entidad) macro(`gasinfra')
 	*tabstat Otros Energía Inversión [fw=factor], stat(sum) f(%20.0fc)
 
 
@@ -1185,6 +1186,19 @@ local nosec = r(Entidades_no_Sectorizadas)
 	scalar transfPIB = gasmadresPIB+IngBasPIB+gascuidadosPIB
 	scalar transf = transfPIB/100*`PIB'/`pobIngBas'[1,1]
 
+	if ingbasico18 == 0 & ingbasico65 == 1 {
+		replace IngBasico = `IngBas'/`pobIngBas'[1,1] if edad >= 18
+	}
+	else if ingbasico18 == 1 & ingbasico65 == 0 {
+		replace IngBasico = `IngBas'/`pobIngBas'[1,1] if edad < 65
+	}
+	else if ingbasico18 == 0 & ingbasico65 == 0 {
+		replace IngBasico = `IngBas'/`pobIngBas'[1,1] if edad >= 18 & edad < 65
+	}
+	else { 
+		replace IngBasico = `IngBas'/`pobIngBas'[1,1]
+	}
+
 	* Resultados *
 	noisily di _newline(2) in g "{bf: F. Transferencias: " in y "`aniope'}" 
 	noisily di _newline in g "{bf:  Gasto por concepto" ///
@@ -1210,19 +1224,6 @@ local nosec = r(Entidades_no_Sectorizadas)
 		_col(33) %15.0fc in y `pobIngBas'[1,1] ///
 		_col(50) %7.3fc in y scalar(transfPIB) ///
 		_col(60) %15.0fc in y scalar(transf)
-
-	if ingbasico18 == 0 & ingbasico65 == 1 {
-		replace IngBasico = `IngBas'/`pobIngBas'[1,1] if edad >= 18
-	}
-	else if ingbasico18 == 1 & ingbasico65 == 0 {
-		replace IngBasico = `IngBas'/`pobIngBas'[1,1] if edad < 65
-	}
-	else if ingbasico18 == 0 & ingbasico65 == 0 {
-		replace IngBasico = `IngBas'/`pobIngBas'[1,1] if edad >= 18 & edad < 65
-	}
-	else { 
-		replace IngBasico = `IngBas'/`pobIngBas'[1,1]
-	}
 
 	replace IngBasico = IngBasico + scalar(gasmadres) if primi2 == 1
 	replace IngBasico = IngBasico + scalar(gascuidados) if cuidados_pot == 1

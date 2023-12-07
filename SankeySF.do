@@ -31,8 +31,8 @@ egen `Consumo'  = rsum(IVA IEPSP IEPSNP ISAN IMPORT)
 egen `Capital'  = rsum(ISRPM OTROSK)
 egen `FMP' = rsum(FMP)
 
-collapse (sum) ing_Imp_Laborales=`Laboral' ing__Imp_Consumo=`Consumo' ///
-	ing___Imp_al_capital=`Capital' ing____FMP=`FMP' [fw=factor], by(`1')
+collapse (sum) ing_Imp_al_trabajo=`Laboral' ing__Imp_al_consumo=`Consumo' ///
+	ing___Imp_al_capital=`Capital' /*ing____FMP=`FMP'*/ [fw=factor], by(`1')
 
 * to *
 tempvar to
@@ -47,16 +47,30 @@ rename `1' from
 set obs `=_N+1'
 replace from = 99 in -1
 replace profile = (scalar(IMSS)+scalar(ISSSTE))/100*scalar(PIB) in -1
-replace to = 3 in -1
-label define `1' 99 "IMSS e ISSSTE", add
+replace to = 4 in -1
+label define `1' 99 "IMSS, ISSSTE", add
 
-* Pemex y CFE *
+* CFE *
 set obs `=_N+1'
 replace from = 98 in -1
-replace profile = (scalar(CFE)+scalar(PEMEX))/100*scalar(PIB) in -1
-replace to = 3 in -1
-label define `1' 98 "Pemex y CFE", add
+replace profile = scalar(CFE)/100*scalar(PIB) in -1
+replace to = 4 in -1
+label define `1' 98 "CFE", add
 
+* Pemex *
+set obs `=_N+1'
+replace from = 97 in -1
+replace profile = (scalar(PEMEX))/100*scalar(PIB) in -1
+replace to = 4 in -1
+label define `1' 97 "Pemex", add
+label define to 4 "OyE públicas", add
+
+* FMP *
+set obs `=_N+1'
+replace from = 97 in -1
+replace profile = scalar(FMP)/100*scalar(PIB) in -1
+replace to = 5 in -1
+label define to 5 "FMP", add
 
 * TOTAL *
 tabstat profile, stat(sum) f(%20.0fc) save
@@ -175,10 +189,10 @@ if `gastot'[1,1]-`ingtot'[1,1] > 0 {
 
 	replace from = 100 in -1
 	replace profile = (`gastot'[1,1]-`ingtot'[1,1]) in -1
-	replace to = 5 in -1
+	replace to = 6 in -1
 
 	label define `1' 100 "Futuro", add
-	label define to 5 "Endeudamiento", add
+	label define to 6 "Endeudamiento", add
 
 	save `eje1', replace
 }
