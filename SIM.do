@@ -12,7 +12,6 @@ noisily run "`c(sysdir_personal)'/profile.do"                                   
 ** Versión del simulador **
 if "`c(username)'" == "ricardo" ///                                             // iMac Ricardo
 	sysdir set PERSONAL "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
-
 if "`c(username)'" == "ciepmx" & "`c(console)'" == "" ///                       // Servidor CIEP
 	sysdir set PERSONAL "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
 cd `"`c(sysdir_personal)'"'
@@ -93,17 +92,17 @@ global inf2027 = 3.0
 global inf2028 = 3.0
 global inf2029 = 3.0
 
-** 1.2.4 Proyecciones: PIB, Deflactor e Inflación **
+** 1.2.4 Proyecciones: PIB, Deflactor e Inflación **/
 ** Inputs: PIB, índice de precios implícitos, inpc, población y población ocupada.
 ** Outputs: Base de datos con su deflactor y productividad laboral para todos los años.
 ** Fuente: INEGI, BIE. Ver archivo "UpdatePIBDeflactor.do".
-noisily PIBDeflactor, geodef(2005) geopib(2005) $update
+//noisily PIBDeflactor, geodef(2005) geopib(2005) $update
 
 ** 1.2.5 Proyecciones: Sistema de Cuentas Nacionales **
 ** Inputs: PIB, índice de precios implícitos, inpc, población y población ocupada.
 ** Outputs: Base de datos con las cuentas macroeconómicas para todos los años.
 ** Fuente: INEGI, BIE. Ver archivo "UpdatePIBDeflactor.do".
-noisily SCN, //$update
+//noisily SCN, //$update
 
 
 ************************
@@ -112,13 +111,13 @@ noisily SCN, //$update
 ** Inputs: LIFs + Estadísticas Oportunas. Archivo: LIFs.xlsx.
 ** Outputs: Bases de datos con ingresos, gastos y deuda para todos los años.
 ** Fuentes. SHCP, Estadísticas Oportunas. Ver archivos "UpdateLIF.do".
-noisily LIF, by(divPE) rows(1) min(0) anio(`=anioPE') $update desde(2018)
+//noisily LIF, by(divPE) rows(1) min(0) anio(`=anioPE') $update desde(2018)
 
 ** 1.3.2 Presupuesto de Egresos de la Federación **
 ** Inputs: Cuentas Públicas y PEF/PPEF (varios años). Archivos: CPXXXX.xlsx, PEFXXXX.xlsx o PPEFXXXX.xlsx.
 ** Outputs: Bases de datos con gastos ejercidos/aprobados/proyectados para todos los años.
 ** Fuentes. SHCP, Cuentas Públicas. Ver archivo "UpdatePEF.do".
-noisily PEF, by(divCIEP) rows(2) min(0) anio(`=anioPE') $update desde(2018)
+//noisily PEF, by(divCIEP) rows(2) min(0) anio(`=anioPE') $update desde(2018)
 
 ** 1.3.3 Saldo Histórico de los Requerimientos Financieros del Sector Público **
 ** Inputs: LIFs + Estadísticas Oportunas. Archivo: SHRFSP.dta.
@@ -239,7 +238,7 @@ scalar costodeudaInterno2029 = 2.5
 scalar costodeudaExterno2029 = 2.5
 
 ** 1.2.5 Proyecciones: Saldo Histórico de los Requerimientos Financieros del Sector Público **
-noisily SHRFSP, ultanio(2016) anio(`=anioPE') $update
+//noisily SHRFSP, ultanio(2016) anio(`=anioPE') $update
 
 
 ***********************
@@ -253,6 +252,7 @@ noisily SHRFSP, ultanio(2016) anio(`=anioPE') $update
 ** 1.5 Households information **
 ** Inputs: ENIGH `=anioenigh'. 
 ** Outputs: Archivo "`c(sysdir_personal)'/SIM/`=anioenigh'/households.dta".
+//noisily run `"`c(sysdir_personal)'/Expenditure.do"' `=anioPE'
 //noisily run `"`c(sysdir_personal)'/Households.do"' `=anioPE'
 
 
@@ -269,7 +269,7 @@ noisily SHRFSP, ultanio(2016) anio(`=anioPE') $update
 ** 1.7 Perfiles: ENIGH + $paqueteEconomico **
 ** Inputs: Archivo "`c(sysdir_personal)'/SIM/`enighanio'/households.dta".
 ** Outputs: Archivo "`c(sysdir_personal)'/SIM/perfiles`=anioPE'.dta".
-noisily run `"`c(sysdir_personal)'/PerfilesSim.do"' `=anioPE' 
+//noisily run `"`c(sysdir_personal)'/PerfilesSim.do"' `=anioPE' 
 
 
 

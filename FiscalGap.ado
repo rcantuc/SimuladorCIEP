@@ -587,7 +587,7 @@ quietly {
 		twoway (connected shrfsp_pib anio, mlabel(shrfsp_pib) mlabpos(0) mlabcolor(black) mlabgap(0)) ///
 			(connected shrfspPC anio, mlabel(shrfspPC) mlabpos(0) mlabcolor(black) mlabgap(0) yaxis(2)) if anio >= `desde', ///
 			title("`graphtitle'") ///
-			subtitle("{bf:Indicadores de la deuda}") ///
+			///subtitle("{bf:Indicadores de la deuda}") ///
 			caption("`graphfuente'") ///
 			xtitle("") ///
 			yscale(range(75)) ///

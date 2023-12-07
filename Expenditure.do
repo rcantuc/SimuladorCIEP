@@ -102,8 +102,8 @@ Poblacion, anio(`enighanio') nographs
 ***                            ***
 **********************************
 capture confirm file "`c(sysdir_personal)'/SIM/`enighanio'/preconsumption.dta"
-if _rc != 0 {
-*if _rc == 0 {
+*if _rc != 0 {
+if _rc == 0 {
 
 	** MI.1. Base de datos de gastos de los hogares **
 	use "`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/`enighanio'/gastospersona.dta", clear
@@ -152,7 +152,7 @@ if _rc != 0 {
 	el total de ingresos por suministro de bienes y servicios, multiplicado por 100.*/
 	/* a201a: Valor agregado censal bruto a producción bruta total : Porcentaje del 
 	valor de la producción que se añade durante el proceso de trabajo por la actividad 
-	creadora y de STrasformación realizada por el personal ocupado, el capital y la 
+	creadora y de STransformación realizada por el personal ocupado, el capital y la 
 	organización (factores de la producción), ejercida sobre los materiales que se 
 	consumen en la realización de la actividad económica, respecto del valor de todos 
 	los bienes y servicios producidos o comercializados por la unidad económica como 
@@ -324,8 +324,8 @@ if _rc != 0 {
 		5 "Prendas de vestir" 6 "Calzado" 7 "Vivienda" 8 "Agua" 9 "Electricidad" ///
 		10 "Artículos para el hogar" ///
 		11 "Salud" 12 "Adquisición de vehículos" ///
-		13 "Funcionamiento de Trasporte" ///
-		14 "Servicios de Trasporte" ///
+		13 "Funcionamiento de Transporte" ///
+		14 "Servicios de Transporte" ///
 		15 "Comunicaciones" 16 "Recreación y cultura" 17 "Educación" ///
 		18 "Restaurantes y hoteles" 19 "Bienes y servicios diversos"
 	label values categ categ
@@ -342,8 +342,8 @@ if _rc != 0 {
 		& (num == 9 | num == 10 | num == 14 | (num >= 20 & num <= 27) | num == 28 | num == 29 ///
 		| num == 30 | num == 31 | num == 34 | (num >= 36 & num <= 38) | num == 42 | (num >= 44 & num <= 51) ///
 		| num == 54 | (num >= 53 & num <= 56) | num == 64))
-	replace categ_iva = "STras" if letra == "B"
-	replace categ_iva = "STrasf" if (letra == "M" & num == 1) | (letra == "B" & num == 6)
+	replace categ_iva = "trans" if letra == "B"
+	replace categ_iva = "transf" if (letra == "M" & num == 1) | (letra == "B" & num == 6)
 	replace categ_iva = "educacion" if letra == "E" & ((num >= 1 & num <= 7) | num == 16 | num == 19) //& publica == 0
 	replace categ_iva = "alquiler" if letra == "G" & ((num >= 1 & num <= 3) | (num >= 101 & num <= 106))
 	replace categ_iva = "mujer" if letra == "D" & num == 15
@@ -454,7 +454,7 @@ tabstat IEPS cantidad [aw=factor], by(tipoieps) stat(sum) f(%20.0fc)
 ***                                     ***
 *******************************************
 local smdf = 88.36
-g deduc_STras_escolar = gasto_anual if clave == "E013"
+g deduc_STrans_escolar = gasto_anual if clave == "E013"
 g deduc_honor_medicos = gasto_anual if (clave >= "J001" & clave <= "J003") ///
 	| (clave >= "J007" & clave <= "J008") | (clave >= "J011" & clave <= "J012") ///
 	| (clave >= "J016" & clave <= "J019") | (clave >= "J039" & clave <= "J041")
@@ -517,7 +517,7 @@ local j = 1
 foreach k in Alim BebN BebA Taba Vest Calz Alqu Agua Elec Hoga Salu Vehi FTra STra Comu Recr Educ Rest Dive {
 	tempname gasto_anual`k'
 	g `gasto_anual`k'' = gasto_anual if categ == `j'
-	*Gini `gasto_anual`k'', hogar(folioviv foliohog) factor(factor)
+	Gini `gasto_anual`k'', hogar(folioviv foliohog) factor(factor)
 	local gini`k' = r(gini_`gasto_anual`k'')
 	scalar gini`k' = `gini`k''
 	local ++j
@@ -588,12 +588,12 @@ noisily di in g "  (+) Aquisición de vehículos " ///
 	_col(57) in y %7.3fc `M12'[1,1]/PIB*100 ///
 	_col(66) %6.3fc Vehi/PIB*100 ///
 	_col(77) %6.1fc (`M12'[1,1]/Vehi-1)*100 "%"
-noisily di in g "  (+) Funcionamiento de STrasporte " ///
+noisily di in g "  (+) Funcionamiento de STransporte " ///
 	_col(44) in y "(" %5.3fc `giniFTra' ")" ///
 	_col(57) in y %7.3fc `M13'[1,1]/PIB*100 ///
 	_col(66) %6.3fc FTra/PIB*100 ///
 	_col(77) %6.1fc (`M13'[1,1]/FTra-1)*100 "%"
-noisily di in g "  (+) Servicios de STrasporte " ///
+noisily di in g "  (+) Servicios de STransporte " ///
 	_col(44) in y "(" %5.3fc `giniSTra' ")" ///
 	_col(57) in y %7.3fc `M14'[1,1]/PIB*100 ///
 	_col(66) %6.3fc STra/PIB*100 ///
@@ -682,7 +682,7 @@ while "`=r(name`k')'" != "." {
 local k = 1
 while "`name`k''" != "" {
 	g `ieps`k'' = IEPS if tipoieps == `k'
-	*Gini `ieps`k'', hogar(folioviv foliohog) factor(factor)
+	Gini `ieps`k'', hogar(folioviv foliohog) factor(factor)
 	local gini_ieps`k' = r(gini_`ieps`k'')
 	noisily di in g "  (+) `name`k''" ///
 		_col(44) in y "(" %5.3fc `gini_ieps`k'' ")" ///
@@ -790,11 +790,11 @@ if "`altimir'" == "yes" {
 		_col(44) in y %20.3fc `M12'[1,1]/PIB*100 ///
 		_col(66) %6.3fc Vehi/PIB*100 ///
 		_col(77) %6.1fc (`M12'[1,1]/Vehi-1)*100
-	noisily di in g "  (+) Funcionamiento de STrasporte " ///
+	noisily di in g "  (+) Funcionamiento de STransporte " ///
 		_col(44) in y %20.3fc `M13'[1,1]/PIB*100 ///
 		_col(66) %6.3fc FTra/PIB*100 ///
 		_col(77) %6.1fc (`M13'[1,1]/FTra-1)*100
-	noisily di in g "  (+) Servicios de STrasporte " ///
+	noisily di in g "  (+) Servicios de STransporte " ///
 		_col(44) in y %20.3fc `M14'[1,1]/PIB*100 ///
 		_col(66) %6.3fc STra/PIB*100 ///
 		_col(77) %6.1fc (`M14'[1,1]/STra-1)*100
