@@ -269,7 +269,9 @@ scalar costodeudaExterno2029 = 2.5
 ** 1.7 Perfiles: ENIGH + $paqueteEconomico **
 ** Inputs: Archivo "`c(sysdir_personal)'/SIM/`enighanio'/households.dta".
 ** Outputs: Archivo "`c(sysdir_personal)'/SIM/perfiles`=anioPE'.dta".
-//noisily run `"`c(sysdir_personal)'/PerfilesSim.do"' `=anioPE' 
+capture confirm file "`c(sysdir_personal)'/SIM/perfiles`=anioPE'.dta"
+if _rc != 0 ///
+	noisily run `"`c(sysdir_personal)'/PerfilesSim.do"' `=anioPE'
 
 
 
