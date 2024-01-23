@@ -40,7 +40,7 @@ scalar aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
 
 ** Política Fiscal **
-global paqueteEconomico "CGPE 2024"
+global paqueteEconomico "PE 2024"
 scalar anioPE = 2024
 scalar aniovp = 2024
 run "`c(sysdir_personal)'/parametros.do"
@@ -77,7 +77,7 @@ global entidadesC "Ags BC BCS Camp Coah Col Chis Chih CDMX Dgo Gto Gro Hgo Jal E
 noisily di _newline(50) in w "{bf:Centro de Investigaci{c o'}n Econ{c o'}mica y Presupuestaria, A.C.}"
 
 noisily di _newline(2) in g `"{bf:{stata `"projmanager "`c(sysdir_site)'/simulador.stpr""': Simulador Fiscal CIEP v6}}"'
-noisily di in g " Paquete Económico:  " _col(30) in y "`=anioPE'" ///
+noisily di in g " Información Económica:  " _col(30) in y "$paqueteEconomico" ///
 	_newline in g " Año de Valor Presente:  " _col(30) in y "`=aniovp'" ///
 	_newline in g " Año de ENIGH:  " _col(30) in y "`=anioenigh'" ///
 	_newline in g " User: " _col(30) in y "$id" ///

@@ -27,7 +27,9 @@ quietly {
 	****************
 	use in 1 using "`c(sysdir_personal)'/SIM/$pais/PEF.dta", clear
 	syntax [if] [, ANIO(int `aniovp') NOGraphs Update Base ///
-		BY(varname) ROWS(int 2) COLS(int 5) MINimum(real 1) PEF PPEF APROBado DESDE(int `=`aniovp'-1')]
+		BY(varname) ROWS(int 2) COLS(int 5) MINimum(real 1) ///
+		PEF PPEF APROBado DESDE(int `=`aniovp'-1') ///
+		TITle(string) SUBTitle(string)]
 
 	noisily di _newline(2) in g _dup(20) "." "{bf:  Sistema Fiscal: GASTOS $pais " in y `anio' "  }" in g _dup(20) "."
 
@@ -54,6 +56,16 @@ quietly {
 	}
 	replace desc_pp = 914 if desc_pp == 915
 	replace desc_pp = 71 if desc_pp == 72
+
+	** 2.4 Etiquetas abreviadas **
+	label define ramo 7 "SEDENA", modify
+	label define ramo 19 "Aportaciones a Seg Soc", modify
+	label define ramo 33 "Aportaciones federales", modify
+	label define ramo 47 "No sectorizadas", modify
+	label define ramo 50 "IMSS", modify
+	label define ramo 51 "ISSSTE", modify
+	label define ramo 52 "Pemex", modify
+	label define ramo 53 "CFE", modify
 
 
 
@@ -123,7 +135,7 @@ quietly {
 		matrix `mat`k'' = r(Stat`k')
 
 		* Display text *
-		if substr(`"`=r(name`k')'"',1,35) == "'" {
+		if substr(`"`=r(name`k')'"',1,35) == `"'"' {
 			local disptext = substr(`"`=r(name`k')'"',1,34)
 		}
 		else {
@@ -242,7 +254,7 @@ quietly {
 		}
 
 		* Display text *
-		if substr(`"`=r(name`k')'"',1,31) == "'" {
+		if substr(`"`=r(name`k')'"',1,31) == `"'"' {
 			local disptext = substr(`"`=r(name`k')'"',1,30)
 		}
 		else {
@@ -251,8 +263,9 @@ quietly {
 		local name = strtoname(`"`disptext'"')
 
 		* Display *
-		return scalar `name' = `mat`k''[1,1]
-		return scalar `name'C = ((`mat`k''[1,1]/`pre`k''[1,1])^(1/(`=`aniovp'-`desde''))-1)*100
+		return scalar `=substr("`name'",1,25)' = `mat`k''[1,1]
+		return scalar `=substr("`name'",1,25)'PIB = `mat`k''[1,2]
+		return scalar `=substr("`name'",1,25)'C = ((`mat`k''[1,1]/`pre`k''[1,1])^(1/(`=`aniovp'-`desde''))-1)*100
 		local divResumido `"`divResumido' `name'"'
 
 		noisily di in g `"  (+) `disptext'"' ///
@@ -267,9 +280,11 @@ quietly {
 	noisily di in g "{bf:  (=) Gasto neto" ///
 		_col(44) in y %20.0fc `mattot'[1,1] ///
 		_col(66) in y %7.3fc `mattot'[1,2] ///
-		_col(77) in y %7.1fc (`mattot'[1,1]/`pregastot'[1,1]-1)*100 "}"
+		_col(77) in y %7.1fc ((`mattot'[1,1]/`pregastot'[1,1])^(1/(`=`aniovp'-`desde''))-1)*100 "}"
 	
 	return scalar Gasto_neto = `mattot'[1,1]
+	return scalar Gasto_netoPIB = `mattot'[1,2]
+	return scalar Gasto_netoC = ((`mattot'[1,1]/`pregastot'[1,1])^(1/(`=`aniovp'-`desde''))-1)*100
 
 	tempname Resumido_total
 	matrix `Resumido_total' = r(StatTotal)
@@ -304,7 +319,7 @@ quietly {
 			tempname mat5`k'
 			matrix `mat5`k'' = r(Stat`k')
 
-			if substr(`"`=r(name`k')'"',1,25) == "'" {
+			if substr(`"`=r(name`k')'"',1,25) == `"'"' {
 				local disptext = substr(`"`=r(name`k')'"',1,25)
 			}
 			else {
@@ -336,7 +351,7 @@ quietly {
 		tempname SUM
 		matrix `SUM' = r(StatTotal)
 
-		* Ciclo para poner los paréntesis (% del total) en el legend *
+		/* Ciclo para poner los paréntesis (% del total) en el legend *
 		local totlev = 0
 		foreach k of local lev_resumido {
 			local ++totlev
@@ -347,7 +362,7 @@ quietly {
 			local legend = `"`legend' label(`totlev' "`legend`k'' (`=string(`SUM`totlev''[1,1]/`SUM'[1,1]*100,"%7.1fc")'%)")"'
 		}
 
-		* Ciclo para determinar el orden de mayor a menor, según gastoneto *
+		* Ciclo para determinar el orden de mayor a menor, según gastoneto */
 		tempvar ordervar
 		bysort anio: g `ordervar' = _n
 		gsort -anio -gastoreal
@@ -382,24 +397,26 @@ quietly {
 				local j = `j' + 100/(`anio'-`aniofirst'+1)
 			}
 		}
-		//if "$export" == "" {
+		if "`title'" == "" {
 			local graphtitle "Gasto público"
 			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP."
-		//}
-		//else {
-		//	local graphtitle ""
-		//	local graphfuente ""
-		//}
+		}
+		else {
+			local graphtitle "`title'"
+			local graphsubtitle "`subtitle'"
+			local graphfuente ""
+		}
+
 		graph bar (sum) gastoreal if anio >= `aniofirst' & anio <= `anio', ///
 			over(resumido, sort(1) descending) over(anio, gap(0)) stack asyvar ///
-			blabel(, format(%10.1fc)) outergap(0) ///
+			blabel(none, format(%10.1fc)) outergap(0) ///
 			bar(9, color(150 6 92)) bar(8, color(53 200 71)) ///
 			bar(7, color(255 129 0)) bar(6, color(0 151 201)) ///
 			bar(5, color(224 97 83)) bar(4, color(255 189 0)) ///
 			bar(3, color(255 55 0)) bar(2, color(57 198 184)) ///
 			bar(1, color(211 199 225)) ///
 			title("`graphtitle'") ///
-			subtitle("por `by'") ///
+			subtitle("`graphsubtitle'") ///
 			caption("`graphfuente'") ///
 			text(`text', color(black) placement(n) size(small)) ///
 			ytitle(mil millones MXN `anio') ///
@@ -407,7 +424,7 @@ quietly {
 			yscale(range(0)) ///
 			legend(on position(6) rows(`rows') cols(`cols') `legend' order(`order')) /// 
 			name(gastos`by', replace) ///
-			note("{bf:Nota}: Porcentajes entre par{c e'}ntesis son con respecto al total de `anio'.")
+			//note("{bf:Nota}: Porcentajes entre par{c e'}ntesis son con respecto al total de `anio'.")
 
 		if "$export" != "" {
 			*graph export "$export/gastos`by'`if'.png", as(png) name("gastos`by'") replace

@@ -9,7 +9,7 @@ noisily run "`c(sysdir_personal)'/profile.do"                                   
 
 ***************************************************
 **  0.1 DIRECTORIO(S) DE TRABAJO (programación)  **
-/** Versión del simulador **
+** Versión del simulador **
 if "`c(username)'" == "ricardo" ///                                             // iMac Ricardo
 	sysdir set PERSONAL "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
 if "`c(username)'" == "ciepmx" & "`c(console)'" == "" ///                       // Servidor CIEP
@@ -19,10 +19,10 @@ cd `"`c(sysdir_personal)'"'
 
 ****************************/
 **  0.2 Opciones globales  **
-** Comentar o descomentar según sea el caso. **
+** Comentar o descomentar, según el caso. **
 //global id = "`c(username)'"                                                   // IDENTIFICADOR DEL USUARIO
 //global export "`c(sysdir_personal)'../../Sostenibilidad 2024/images"          // DIRECTORIO DE IMÁGENES
-global nographs "nographs"                                                    // SUPRIMIR GRAFICAS
+//global nographs "nographs"                                                    // SUPRIMIR GRAFICAS
 //global textbook "textbook"                                                    // GRÁFICOS FORMATO LaTeX
 //global output "output"                                                        // OUTPUTS (WEB)
 //global update "update"                                                        // UPDATE BASES DE DATOS
@@ -157,7 +157,7 @@ scalar balprimario2024 = 1.2
 scalar costodeudaInterno2024 = 3.7
 scalar costodeudaExterno2024 = 3.7
 
-scalar shrfsp2025 = 48.8
+/*scalar shrfsp2025 = 48.8
 scalar shrfspInterno2025 = 37.7
 scalar shrfspExterno2025 = 11.2
 scalar rfsp2025 = -2.6
@@ -235,11 +235,11 @@ scalar rfspBalance2029 = -2.2
 scalar tipoDeCambio2029 = 18.6
 scalar balprimario2029 = -0.3
 scalar costodeudaInterno2029 = 2.5
-scalar costodeudaExterno2029 = 2.5
+scalar costodeudaExterno2029 = 2.5*/
 
 ** 1.2.5 Proyecciones: Saldo Histórico de los Requerimientos Financieros del Sector Público **
-//noisily SHRFSP, ultanio(2016) anio(`=anioPE') $update
-
+noisily SHRFSP, ultanio(2016) anio(`=anioPE') $update
+exit
 
 ***********************
 ** 1.4 Subnacionales **
@@ -254,7 +254,7 @@ scalar costodeudaExterno2029 = 2.5
 ** Outputs: Archivo "`c(sysdir_personal)'/SIM/`=anioenigh'/households.dta".
 //noisily run `"`c(sysdir_personal)'/Expenditure.do"' `=anioPE'
 //noisily run `"`c(sysdir_personal)'/Households.do"' `=anioPE'
-
+//exit
 
 ****************
 ** 1.6 Sankey **

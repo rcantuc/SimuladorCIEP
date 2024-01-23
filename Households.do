@@ -87,7 +87,7 @@ log using "`c(sysdir_personal)'/SIM/`enighanio'/households.smcl", replace name(h
 
 
 ** 0.2 Bienvenida **
-noisily di _newline(2) in g _dup(20) "." "{bf:   Economía generacional: " in y "INGRESOS por individuos `enigh' `enighanio'  }" in g _dup(20) "."
+noisily di _newline(2) in g _dup(20) "." "{bf:   Economía generacional: " in y "INGRESOS - `enigh' `enighanio'  }" in g _dup(20) "."
 
 
 
@@ -98,13 +98,10 @@ noisily di _newline(2) in g _dup(20) "." "{bf:   Economía generacional: " in y 
 *****************
 
 ** 1.1 Cuentas Nacionales **
-PIBDeflactor, aniovp(2022) nog
+PIBDeflactor, aniovp(`enighanio') nog
 forvalues k=1(1)`=_N' {
 	if anio[`k'] == `enighanio' {
 		local deflator = deflator[`k']
-	}
-	if `enighanio' == 2020 {
-		local deflator = 0.876908144357
 	}
 }
 

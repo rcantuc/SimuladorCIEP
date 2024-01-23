@@ -1,101 +1,101 @@
-program define SHRFSP
-timer on 5
+program define SHRFSP, return
 quietly {
 
+	timer on 5
+	**********************
+	**# 1 BASE DE DATOS **
+	**********************
 
-	************************
-	***                  ***
-	**# 1 VALOR PRESENTE ***
-	***                  ***
-	************************
-	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
-	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
-
+	** 1.1 Anio valor presente **
 	capture confirm scalar aniovp
 	if _rc == 0 {
 		local aniovp = scalar(aniovp)
 	}	
-
-
-
-
-
-	****************
-	***          ***
-	**# 2 SYNTAX ***
-	***          ***
-	****************
-	syntax [if/] [, ANIO(int `aniovp' ) DEPreciacion(int 5) NOGraphs UPDATE Base ID(string) ULTAnio(int 2013)]
-	noisily di _newline(2) in g _dup(20) "." "{bf:  Sistema Fiscal: DEUDA $pais " in y `anio' "  }" in g _dup(20) "."
-
-
-	** 2.1 Update SHRFSP **
-	capture confirm file `"`c(sysdir_personal)'/SIM/SHRFSP.dta"'
-	if ("`update'" == "update" | _rc != 0) & "$pais" != "" {
-		noisily run `"`c(sysdir_personal)'/UpdateSHRFSPMundial.do"' `anio'
+	else {
+		local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
+		local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 	}
-	if ("`update'" == "update" | _rc != 0) & "$pais" == "" {
+
+	** 1.2 Base SHRFSP **
+	capture confirm file `"`c(sysdir_personal)'/SIM/SHRFSP.dta"'
+	if _rc != 0 {
 		noisily run `"`c(sysdir_personal)'/UpdateSHRFSP.do"'
 	}
 
 
-	** 2.2 PIB + Deflactor **
-	PIBDeflactor, nographs nooutpu
+
+	****************
+	**# 2 SYNTAX ***
+	****************
+	use in 1 using `"`c(sysdir_personal)'/SIM/SHRFSP.dta"', clear
+	syntax [if] [, ANIO(int `aniovp' ) DEPreciacion(int 5) NOGraphs UPDATE Base ///
+		 ULTAnio(int 2013)]
+	
+	noisily di _newline(2) in g _dup(20) "." "{bf:  Sistema Fiscal: DEUDA $pais " in y `anio' "  }" in g _dup(20) "."
+
+	** 2.1 PIB + Deflactor **
+	PIBDeflactor, anio(`anio') nographs nooutput `update'
 	local currency = currency[1]
-	replace Poblacion = Poblacion*lambda
+	g Poblacion_adj = Poblacion*lambda
 	tempfile PIB
 	save `PIB'
 
+	** 2.2 Datos Abiertos **
+	if "`update'" == "update" {
+		capture confirm file "`c(sysdir_personal)'/SIM/DatosAbiertos.dta"
+		if _rc != 0 | "`update'" == "update" {
+			UpdateDatosAbiertos
+			local updated = r(updated)
+			local ultanio = r(ultanio)
+			local ultmes = r(ultmes)
+		}
+		else {
+			local updated = "yes" // r(updated)
+		}
+	}
+	else {
+		local updated = "yes"
+	}
 
+	** 2.3 Update SHRFSP **
+	if "`update'" == "update" | "`updated'" != "yes" {
+		noisily run "`c(sysdir_personal)'/UpdateSHRFSP.do"
+	}
+
+	** 2.4 Bases RAW **
+	use `if' using `"`c(sysdir_personal)'/SIM/SHRFSP.dta"', clear
+	if "`base'" == "base" {
+		exit
+	}
 
 
 
 	***************
-	***         ***
 	**# 3 MERGE ***
-	***         ***
 	***************
-	use `"`c(sysdir_personal)'/SIM/SHRFSP.dta"', clear
+	sort anio
+	merge m:1 (anio) using `PIB', nogen keepus(pibY pibYR var_* Poblacion* deflator lambda currency) update replace
 
-	* Anio, mes y observaciones iniciales y finales de la serie *
+	capture sort anio mes
+	capture keep `if'
+
+	local aniofirst = anio[1]
+	local aniolast = anio[_N]
+	local meslast = mes[_N]
+
+	* 3.1 Anio, mes y observaciones iniciales y finales de la serie *
 	forvalues k=1(1)`=_N' {
 		if anio[`k'] == `anio' {
 			local obsvp = `k'		
 		}
 	}
-	local anioini = anio[1]
-	local aniofin = anio[_N]
-	local mesfin = mes[_N]
-	local obsfin = _N
+	//local anioini = anio[1]
+	//local aniofin = anio[_N]
+	//local mesfin = mes[_N]
 
 	local lastexo = anio[_N]
 	local obsfin = _N
 	local obsvp = `obsfin'
-
-
-
-
-	*****************
-	***           ***
-	**# 4 DISPLAY ***
-	***           ***
-	*****************
-	noisily di _newline in g "  {bf:SHRFSP a" in y " `=anio[_N-1]'m`=mes[_N-1]'" in g ": }" _col(30) in y %15.0fc shrfsp[_N-1]/Poblacion[_N-1]/deflator[_N-1] in g "   `currency' `=anio[_N]' por persona ajustada"
-	noisily di in g "  {bf:   Interna" in g ": }" _col(30) in y %15.0fc shrfspInterno[_N-1]/Poblacion[_N-1]/deflator[_N-1] in g "   `currency' `=anio[_N]' por persona ajustada"
-	noisily di in g "  {bf:   Externa" in g ": }" _col(30) in y %15.0fc shrfspExterno[_N-1]/Poblacion[_N-1]/tipoDeCambio[_N-1] in g "   USD por persona ajustada"
-	noisily di in g "  {bf:   Tipo de cambio" in g ": }" _col(30) in y %15.1fc tipoDeCambio[_N-1] in g "   `currency'/USD"
-
-	noisily di _newline in g "  {bf:SHRFSP a" in y " `=anio[_N]'m`=mes[_N]'" in g ": }" _col(30) in y %15.0fc shrfsp[_N]/Poblacion[_N]/deflator[_N] in g "   `currency' `=anio[_N]' por persona ajustada"
-	noisily di in g "  {bf:   Interna" in g ": }" _col(30) in y %15.0fc shrfspInterno[_N]/Poblacion[_N]/deflator[_N] in g "   `currency' `=anio[_N]' por persona ajustada"
-	noisily di in g "  {bf:   Externa" in g ": }" _col(30) in y %15.0fc shrfspExterno[_N]/Poblacion[_N]/tipoDeCambio[_N] in g "   USD por persona ajustada"
-	noisily di in g "  {bf:   Tipo de cambio" in g ": }" _col(30) in y %15.1fc tipoDeCambio[_N] in g "   `currency'/USD"
-
-	noisily di _newline in g "  {bf:Dif." in y " `=anio[_N]'m`=mes[_N]'-`=anio[_N-1]'m`=mes[_N-1]'" in g ": }" _col(30) in y %15.0fc shrfsp[_N]/Poblacion[_N]/deflator[_N]-shrfsp[_N-1]/Poblacion[_N-1]/deflator[_N-1] in g "   `currency' `=anio[_N]' por persona ajustada"
-	noisily di in g "  {bf:   Interna" in g ": }" _col(30) in y %15.0fc shrfspInterno[_N]/Poblacion[_N]/deflator[_N]-shrfspInterno[_N-1]/Poblacion[_N-1]/deflator[_N-1] in g "   `currency' `=anio[_N]' por persona ajustada"
-	noisily di in g "  {bf:   Externa" in g ": }" _col(30) in y %15.0fc shrfspExterno[_N]/Poblacion[_N]/tipoDeCambio[_N]-shrfspExterno[_N-1]/Poblacion[_N-1]/tipoDeCambio[_N-1] in g "   USD por persona ajustada"
-	noisily di in g "  {bf:   Tipo de cambio" in g ": }" _col(30) in y %15.1fc tipoDeCambio[_N]-tipoDeCambio[_N-1] in g "   `currency'/USD"
-
-
 
 
 
@@ -104,8 +104,6 @@ quietly {
 	**# 5 PARÁMETROS EXÓGENOS ***
 	***                       ***
 	*****************************
-	collapse (sum) rfsp* costodeuda* balprimario nopresupuestario (last) shrfsp* mes por* tipo*, by(anio)
-	merge m:1 (anio) using `PIB', nogen keepus(pibY pibYR var_* Poblacion* deflator lambda currency) update replace
 	tsset anio
 	forvalues j = 1(1)`=_N' {
 		* Política fiscal *
@@ -136,8 +134,85 @@ quietly {
 		if _rc == 0 {
 			replace tipoDeCambio = scalar(tipoDeCambio`=anio[`j']') if anio == `=anio[`j']'
 		}
+
+		replace shrfsp = shrfspInterno + shrfspExterno if anio == `=anio[`j']'
 	}
 
+
+
+	*****************
+	**# 4 DISPLAY ***
+	*****************
+	noisily di _newline in g "{bf: " ///
+		_col(44) in g %20s "`currency'" ///
+		_col(66) %7s "% PIB" ///
+		_col(77) %7s "Per cápita" "}"
+
+	tempvar rfspOtros
+	egen `rfspOtros' = rowtotal(rfspPIDIREGAS rfspIPAB rfspFONADIN rfspDeudores rfspBanca rfspAdecuaciones)
+	tabstat rfspBalance `rfspOtros' rfsp shrfspInterno shrfspExterno shrfsp if anio == `anio', stat(sum) format(%20.0fc) save
+	if _rc != 0 {
+		noisily di in r "No hay informaci{c o'}n para el a{c n~}o `anio'"
+		exit
+	}
+	tempname mattot
+	matrix `mattot' = r(StatTotal)
+
+	tabstat pibY Poblacion_adj if anio == `anio', stat(sum) format(%20.0fc) save
+	tempname mattot2
+	matrix `mattot2' = r(StatTotal)
+
+	noisily di in g "  {bf:(+) Balance presupuestario" ///
+		_col(44) in y %20.0fc `mattot'[1,1] ///
+		_col(66) in y %7.1fc `mattot'[1,1]/`mattot2'[1,1]*100 ///
+		_col(77) in y %7.0fc `mattot'[1,1]/`mattot2'[1,2] "}"
+	noisily di in g "  {bf:(+) Otros RFSP" ///
+		_col(44) in y %20.0fc `mattot'[1,2] ///
+		_col(66) in y %7.1fc `mattot'[1,2]/`mattot2'[1,1]*100 ///
+		_col(77) in y %7.0fc `mattot'[1,2]/`mattot2'[1,2] "}"
+	noisily di in g _dup(83) "-"
+	noisily di in g "  {bf:(=) RFSP" ///
+		_col(44) in y %20.0fc `mattot'[1,3] ///
+		_col(66) in y %7.1fc `mattot'[1,3]/`mattot2'[1,1]*100 ///
+		_col(77) in y %7.0fc `mattot'[1,3]/`mattot2'[1,2] "}"
+	noisily di in g _dup(83) "-"
+	noisily di in g "  {bf:(=) SHRFSP Interna" ///
+		_col(44) in y %20.0fc `mattot'[1,4] ///
+		_col(66) in y %7.1fc `mattot'[1,4]/`mattot2'[1,1]*100 ///
+		_col(77) in y %7.0fc `mattot'[1,4]/`mattot2'[1,2] "}"
+	noisily di in g "  {bf:(=) SHRFSP Externa" ///
+		_col(44) in y %20.0fc `mattot'[1,5] ///
+		_col(66) in y %7.1fc `mattot'[1,5]/`mattot2'[1,1]*100 ///
+		_col(77) in y %7.0fc `mattot'[1,5]/`mattot2'[1,2] "}"
+	noisily di in g _dup(83) "-"
+	noisily di in g "  {bf:(=) SHRFSP" ///
+		_col(44) in y %20.0fc `mattot'[1,6] ///
+		_col(66) in y %7.1fc `mattot'[1,6]/`mattot2'[1,1]*100 ///
+		_col(77) in y %7.0fc `mattot'[1,6]/`mattot2'[1,2] "}"
+
+	return scalar rfspBalance = `mattot'[1,1]
+	return scalar rfspBalancePIB = `mattot'[1,1]/`mattot2'[1,1]*100
+	return scalar rfspBalancePC = `mattot'[1,1]/`mattot2'[1,2]
+
+	return scalar rfspOtros = `mattot'[1,2]
+	return scalar rfspOtrosPIB = `mattot'[1,2]/`mattot2'[1,1]*100
+	return scalar rfspOtrosPC = `mattot'[1,2]/`mattot2'[1,2]
+
+	return scalar rfsp = `mattot'[1,3]
+	return scalar rfspPIB = `mattot'[1,3]/`mattot2'[1,1]*100
+	return scalar rfspPC = `mattot'[1,3]/`mattot2'[1,2]
+
+	return scalar shrfspInterno = `mattot'[1,4]
+	return scalar shrfspInternoPIB = `mattot'[1,4]/`mattot2'[1,1]*100
+	return scalar shrfspInternoPC = `mattot'[1,4]/`mattot2'[1,2]
+
+	return scalar shrfspExterno = `mattot'[1,5]
+	return scalar shrfspExternoPIB = `mattot'[1,5]/`mattot2'[1,1]*100
+	return scalar shrfspExternoPC = `mattot'[1,5]/`mattot2'[1,2]
+
+	return scalar shrfsp = `mattot'[1,6]
+	return scalar shrfspPIB = `mattot'[1,6]/`mattot2'[1,1]*100
+	return scalar shrfspPC = `mattot'[1,6]/`mattot2'[1,2]
 
 
 
@@ -147,9 +222,6 @@ quietly {
 	**# 6 TASAS EFECTIVAS ***
 	***                   ***
 	*************************
-	replace shrfsp = shrfspInterno + shrfspExterno if mes != 12 
-	replace nopresupuestario = - (rfspPIDIREGAS + rfspIPAB + rfspFONADIN + rfspDeudores + rfspBanca + rfspAdecuacion) if nopresupuestario == .
-
 	g tasaInterno = costodeudaInterno/L.shrfspInterno*100
 	g tasaExterno = costodeudaExterno/L.shrfspExterno*100
 	g tasaEfectiva = porInterno*tasaInterno + porExterno*tasaExterno
@@ -168,9 +240,9 @@ quietly {
 	**# 7 Efectos indicador deuda ***
 	***                           ***
 	*********************************
-	foreach k of varlist shrfsp* balprimario nopresupuestario {
+	foreach k of varlist shrfsp* balprimario `rfspOtros' {
 		g `k'_pib = `k'/pibY*100
-		g `k'_pc = `k'/Poblacion/deflator
+		g `k'_pc = `k'/Poblacion_adj/deflator
 		format `k'_pib `k'_pc %10.1fc
 	}
 
@@ -185,26 +257,26 @@ quietly {
 	g efectoInflacion    = -(var_indiceY/100+var_indiceY/100*var_pibY/100)*L.shrfsp/pibY*100 
 	g efectoIntereses    = ((tasaInterno/100)*L.shrfspInterno + (tasaExterno/100)*L.shrfspExterno)/pibY*100
 	g efectoTipoDeCambio = (Depreciacion/100 + tasaExterno/100*Depreciacion/100)*L.shrfspExterno/pibY*100
-	g efectoTotal = balprimario_pib + nopresupuestario_pib + efectoCrecimiento + efectoInflacion + efectoIntereses + efectoTipoDeCambio
+	g efectoTotal = balprimario_pib + `rfspOtros'_pib + efectoCrecimiento + efectoInflacion + efectoIntereses + efectoTipoDeCambio
 	g efectoOtros        = dif_shrfsp_pib - efectoTotal
 
-	g efectoCrecimiento_pc  = -((Poblacion-L.Poblacion)/L.Poblacion)*L.shrfsp/Poblacion/deflator
-	g efectoInflacion_pc= -(var_indiceY/100+var_indiceY/100*((Poblacion-L.Poblacion)/L.Poblacion))*L.shrfsp/Poblacion/deflator
-	g efectoIntereses_pc    = (tasaInterno/100)*L.shrfspInterno/Poblacion/deflator + (tasaExterno/100)*L.shrfspExterno/Poblacion/deflator
-	g efectoTipoDeCambio_pc = (Depreciacion/100 + tasaExterno/100*Depreciacion/100)*L.shrfspExterno/Poblacion/deflator
-	g efectoTotal_pc = balprimario_pc + nopresupuestario_pc + efectoCrecimiento_pc + efectoInflacion_pc + efectoIntereses_pc + efectoTipoDeCambio_pc
+	g efectoCrecimiento_pc  = -((Poblacion_adj-L.Poblacion_adj)/L.Poblacion_adj)*L.shrfsp/Poblacion_adj/deflator
+	g efectoInflacion_pc= -(var_indiceY/100+var_indiceY/100*((Poblacion_adj-L.Poblacion_adj)/L.Poblacion_adj))*L.shrfsp/Poblacion_adj/deflator
+	g efectoIntereses_pc    = (tasaInterno/100)*L.shrfspInterno/Poblacion_adj/deflator + (tasaExterno/100)*L.shrfspExterno/Poblacion_adj/deflator
+	g efectoTipoDeCambio_pc = (Depreciacion/100 + tasaExterno/100*Depreciacion/100)*L.shrfspExterno/Poblacion_adj/deflator
+	g efectoTotal_pc = balprimario_pc + `rfspOtros'_pc + efectoCrecimiento_pc + efectoInflacion_pc + efectoIntereses_pc + efectoTipoDeCambio_pc
 	g efectoOtros_pc        = dif_shrfsp_pc - efectoTotal_pc
 
 	g efectoPositivo = 0
 	g efectoPositivo_pc = 0
 	g efectoNegativo = 0
 	g efectoNegativo_pc = 0
-	foreach k of varlist balprimario_pib nopresupuestario_pib efectoCrecimiento efectoInflacion ///
+	foreach k of varlist balprimario_pib `rfspOtros'_pib efectoCrecimiento efectoInflacion ///
 		efectoIntereses efectoTipoDeCambio efectoOtros {
 			replace efectoPositivo = efectoPositivo + `k' if `k' > 0
 			replace efectoNegativo = efectoNegativo + `k' if `k' < 0
 	}
-	foreach k of varlist balprimario_pc nopresupuestario_pc efectoCrecimiento_pc efectoInflacion_pc ///
+	foreach k of varlist balprimario_pc `rfspOtros'_pc efectoCrecimiento_pc efectoInflacion_pc ///
 		efectoIntereses_pc efectoTipoDeCambio_pc efectoOtros_pc {
 			replace efectoPositivo_pc = efectoPositivo_pc + `k' if `k' > 0
 			replace efectoNegativo_pc = efectoNegativo_pc + `k' if `k' < 0
@@ -248,7 +320,7 @@ quietly {
 			local graphtitle ""
 			local graphfuente ""
 		}
-		graph bar balprimario_pib nopresupuestario_pib efectoCrecimiento efectoInflacion efectoIntereses efectoTipoDeCambio efectoOtros ///
+		graph bar balprimario_pib `rfspOtros'_pib efectoCrecimiento efectoInflacion efectoIntereses efectoTipoDeCambio efectoOtros ///
 			if mes == 12 & anio >= `ultanio', ///
 			over(anio, gap(0)) stack ///
 			blabel(, format(%5.1fc)) outergap(0) ///
@@ -262,7 +334,7 @@ quietly {
 			///note("{bf:{c U'}ltimo dato}: `aniofin'm`mesfin'") ///
 			title(Observado)
 
-		graph bar balprimario_pib nopresupuestario_pib efectoCrecimiento efectoInflacion efectoIntereses efectoTipoDeCambio efectoOtros ///
+		graph bar balprimario_pib `rfspOtros'_pib efectoCrecimiento efectoInflacion efectoIntereses efectoTipoDeCambio efectoOtros ///
 			if mes != 12 & anio <= `lastexo' & anio >= `ultanio', ///
 			over(anio, gap(0)) stack ///
 			blabel(, format(%5.1fc)) outergap(0) ///
@@ -301,7 +373,7 @@ quietly {
 			local graphtitle ""
 			local graphfuente ""
 		}
-		graph bar balprimario_pc nopresupuestario_pc efectoCrecimiento_pc efectoInflacion_pc efectoIntereses_pc efectoTipoDeCambio_pc efectoOtros_pc ///
+		graph bar balprimario_pc `rfspOtros'_pc efectoCrecimiento_pc efectoInflacion_pc efectoIntereses_pc efectoTipoDeCambio_pc efectoOtros_pc ///
 			if mes == 12 & anio >= `ultanio', ///
 			over(anio, gap(0)) stack ///
 			blabel(, format(%10.0fc)) outergap(0) ///
@@ -315,7 +387,7 @@ quietly {
 			///note("{bf:{c U'}ltimo dato}: `aniofin'm`mesfin'") ///
 			title(Observado)
 
-		graph bar balprimario_pc nopresupuestario_pc efectoCrecimiento_pc efectoInflacion_pc efectoIntereses_pc efectoTipoDeCambio_pc efectoOtros_pc ///
+		graph bar balprimario_pc `rfspOtros'_pc efectoCrecimiento_pc efectoInflacion_pc efectoIntereses_pc efectoTipoDeCambio_pc efectoOtros_pc ///
 			if mes != 12 & anio <= `lastexo' & anio >= `ultanio', ///
 			over(anio, gap(0)) stack ///
 			blabel(, format(%10.0fc)) outergap(0) ///
@@ -353,12 +425,12 @@ quietly {
 	if "`nographs'" != "nographs" & "$nographs" == "" {
 		tempvar shrfsp shrfspexterno shrfspinterno shrfspexternoG shrfspinternoG interno externo
 
-		g `shrfsp' = shrfsp/Poblacion/deflator
-		g `shrfspinterno' = shrfspInterno/Poblacion/deflator
-		g `shrfspexterno' = shrfspExterno/Poblacion/deflator
+		g `shrfsp' = shrfsp/Poblacion_adj/deflator
+		g `shrfspinterno' = shrfspInterno/Poblacion_adj/deflator
+		g `shrfspexterno' = shrfspExterno/Poblacion_adj/deflator
 
-		g `shrfspinternoG' = shrfspInterno/Poblacion/deflator
-		g `shrfspexternoG' = `shrfspinternoG' + shrfspExterno/Poblacion/deflator
+		g `shrfspinternoG' = shrfspInterno/Poblacion_adj/deflator
+		g `shrfspexternoG' = `shrfspinternoG' + shrfspExterno/Poblacion_adj/deflator
 
 		g `externo' = shrfspExterno/1000000000/deflator
 		g `interno' = `externo' + shrfspInterno/1000000000/deflator
@@ -410,8 +482,8 @@ quietly {
 			ytitle("% del PIB", axis(2)) ///
 			xtitle("") ///
 			legend(on position(6) rows(1) order(1 2) ///
-			label(1 `"Interno (`=string(shrfspInterno[`obsvp']/shrfsp[`obsvp']*100,"%7.1fc")'% en `=anio[`obsvp']')"') ///
-			label(2 `"Externo (`=string(shrfspExterno[`obsvp']/shrfsp[`obsvp']*100,"%7.1fc")'% en `=anio[`obsvp']')"') ///
+			label(1 `"Interno (`=string(`interno'[`obsvp']/(`interno'[`obsvp']+`externo'[`obsvp'])*100,"%7.1fc")'% en `=anio[`obsvp']')"') ///
+			label(2 `"Externo (`=string(`externo'[`obsvp']/(`interno'[`obsvp']+`externo'[`obsvp'])*100,"%7.1fc")'% en `=anio[`obsvp']')"') ///
 			region(margin(zero))) ///
 			name(shrfsp, replace)
 
@@ -448,8 +520,8 @@ quietly {
 			ytitle("mil millones `currency' `aniovp'") xtitle("") ///
 			ytitle("`currency' `aniovp' por persona ajustada", axis(2)) ///
 			legend(on position(6) rows(1) order(1 2) ///
-			label(1 `"Interno (`=string(shrfspInterno[`obsvp']/shrfsp[`obsvp']*100,"%7.1fc")'% en `=anio[`obsvp']')"') ///
-			label(2 `"Externo (`=string(shrfspExterno[`obsvp']/shrfsp[`obsvp']*100,"%7.1fc")'% en `=anio[`obsvp']')"') ///
+			label(1 `"Interno (`=string(`interno'[`obsvp']/(`interno'[`obsvp']+`externo'[`obsvp'])*100,"%7.1fc")'% en `=anio[`obsvp']')"') ///
+			label(2 `"Externo (`=string(`externo'[`obsvp']/(`interno'[`obsvp']+`externo'[`obsvp'])*100,"%7.1fc")'% en `=anio[`obsvp']')"') ///
 			region(margin(zero))) ///
 			name(shrfsppc, replace)
 
@@ -550,7 +622,7 @@ quietly {
 		format `rfspBalance' `rfspAdecuacion' `rfspOtros' `rfspBalance0' `rfspAdecuacion0' `rfspOtros0' %5.1f
 		
 		g `rfsppib' = rfsp/pibY*100
-		g rfsppc = rfsp/(Poblacion)/deflator
+		g rfsppc = rfsp/(Poblacion_adj)/deflator
 		g `rfsp' = rfsp/deflator
 
 		* Informes mensuales texto *
@@ -558,8 +630,6 @@ quietly {
 		tempname stathoy statayer
 		matrix `stathoy' = r(Stat2)
 		matrix `statayer' = r(Stat1)
-		noisily di _newline in g "  {bf:RFSP a" in y " `aniofin'm`mesfin'" in g ": }" _col(30) in y %15.1fc `stathoy'[1,1]/(`statayer'[1,1])*100 in g " % de `=`anio'-1'."
-		noisily di in g "  {bf:RFSP a" in y " `aniofin'm`mesfin'" in g ": }" _col(30) in y %15.1fc `stathoy'[1,1]/1000000 in g " millones `currency'."
 
 		g efectoPositivoRFSP = 0
 		foreach k of varlist `rfspBalance0' `rfspAdecuacion0' `rfspOtros0' {

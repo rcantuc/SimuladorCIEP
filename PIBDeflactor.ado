@@ -13,7 +13,7 @@ quietly {
 	** 0.1 Revisa si se puede usar la base de datos **
 	capture use "`c(sysdir_personal)'/SIM/PIBDeflactor.dta", clear
 	if _rc != 0 {
-		noisily run `"`c(sysdir_personal)'/UpdatePIBDeflactor`=subinstr("${pais}"," ","",.)'.do"'
+		noisily run `"`c(sysdir_personal)'/UpdatePIBDeflactor.do"'
 	}
 
 	** 0.2 Revisa si existe el scalar aniovp **
@@ -36,7 +36,7 @@ quietly {
 
 	** 1.1 Si la opción "update" es llamada, ejecuta el do-file UpdatePIBDeflactor.do **
 	if "`update'" == "update" {
-		noisily run `"`c(sysdir_personal)'/UpdatePIBDeflactor`=subinstr("${pais}"," ","",.)'.do"'
+		noisily run `"`c(sysdir_personal)'/UpdatePIBDeflactor.do"'
 	}
 
 
