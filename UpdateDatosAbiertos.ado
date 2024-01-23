@@ -34,6 +34,7 @@ program define UpdateDatosAbiertos, return
 	** 1.1 Ingreso, gasto y financiamiento **
 	if "`local'" == "" {
 		import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/ingreso_gasto_finan.csv", clear
+		export delimited "`c(sysdir_site)'../BasesCIEP/SHCP/Datos Abiertos/ingreso_gasto_finan.csv", replace
 	}
 	else {
 		import delimited "`c(sysdir_site)'../BasesCIEP/SHCP/Datos Abiertos/ingreso_gasto_finan.csv", clear
@@ -51,6 +52,7 @@ program define UpdateDatosAbiertos, return
 	** 1.2 Deuda **
 	if "`local'" == "" {
 		import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/deuda_publica.csv", clear
+		export delimited "`c(sysdir_site)'../BasesCIEP/SHCP/Datos Abiertos/deuda_publica.csv", replace
 	}
 	else {
 		import delimited "`c(sysdir_site)'../BasesCIEP/SHCP/Datos Abiertos/deuda_publica.csv", clear
@@ -68,6 +70,7 @@ program define UpdateDatosAbiertos, return
 	** 1.3 SHRFSP **
 	if "`local'" == "" {
 		import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/shrfsp_deuda_amplia_actual.csv", clear
+		export delimited "`c(sysdir_site)'../BasesCIEP/SHCP/Datos Abiertos/shrfsp_deuda_amplia_actual.csv", replace
 	}
 	else {
 		import delimited "`c(sysdir_site)'../BasesCIEP/SHCP/Datos Abiertos/shrfsp_deuda_amplia_actual.csv", clear
@@ -85,6 +88,7 @@ program define UpdateDatosAbiertos, return
 	** 1.4 RFSP **
 	if "`local'" == "" {
 		import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/rfsp.csv", clear
+		export delimited "`c(sysdir_site)'../BasesCIEP/SHCP/Datos Abiertos/rfsp.csv", replace
 	}
 	else {
 		import delimited "`c(sysdir_site)'../BasesCIEP/SHCP/Datos Abiertos/rfsp.csv", clear
@@ -102,6 +106,7 @@ program define UpdateDatosAbiertos, return
 	** 1.5 Transferencias a Entidades y Municipios **
 	if "`local'" == "" {
 		import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/transferencias_entidades_fed.csv", clear
+		export delimited "`c(sysdir_site)'../BasesCIEP/SHCP/Datos Abiertos/transferencias_entidades_fed.csv", replace
 	}
 	else {
 		import delimited "`c(sysdir_site)'../BasesCIEP/SHCP/Datos Abiertos/transferencias_entidades_fed.csv", clear

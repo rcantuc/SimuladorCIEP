@@ -7,25 +7,84 @@ clear all
 macro drop _all
 local aniovp = 2024
 
-
 if "`c(username)'" == "ricardo" ///                                             // iMac Ricardo
 	sysdir set PERSONAL "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
 
 if "`c(username)'" == "ciepmx" & "`c(console)'" == "" ///                       // Servidor CIEP
 	sysdir set PERSONAL "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
 cd `"`c(sysdir_personal)'"'
+global export "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/2023_J&J/Rumbo a 2024/I. Entregable 1. PE 2024/1. Investigacion/LaTex/images/"
 
-global export "`c(sysdir_personal)'/SIM/2022/"
+
+* Figura 3.2 *
+PEF if divCIEP == 9, by(ramo) min(0) rows(2) anio(`aniovp') ///
+	title("Gasto público en salud") subtitle("Distribución por ramo")
+graph export "$export/sns_ramos.png", as(png) name("gastosramo") replace
+
+* Figura 3.3 *
+PEF if divCIEP == 9, by(capitulo) min(0) rows(2) anio(`aniovp') ///
+	title("Gasto público en salud") subtitle("Distribución por capítulo de gasto")
+graph export "$export/sns_capgasto.png", as(png) name("gastoscapitulo") replace
+
+* Figuras 3.4 *
+PEF if divCIEP == 9 & ramo == 50, by(capitulo) min(0) rows(2) anio(`aniovp') ///
+	title("Instituto Mexicano del Seguro Social (IMSS)") subtitle("Gasto público en salud")
+graph export "$export/sns_imss.png", as(png) name("gastoscapitulo") replace
+
+* Figuras 3.5 *
+PEF if divCIEP == 9 & ramo == 51, by(capitulo) min(0) rows(2) anio(`aniovp') ///
+	title("Instituto de Seguridad y Servicios Sociales de los Trabajadores del Estado (ISSSTE)") subtitle("Gasto público en salud")
+graph export "$export/sns_issste.png", as(png) name("gastoscapitulo") replace
+
+* Figuras 3.6 *
+PEF if divCIEP == 9 & ramo == 52, by(capitulo) min(0) rows(2) anio(`aniovp') ///
+	title("Petróleos Mexicanos (PEMEX)") subtitle("Gasto público en salud")
+graph export "$export/sns_pemex.png", as(png) name("gastoscapitulo") replace
+
+* Figuras 3.7 *
+PEF if divCIEP == 9 & ramo == 13, by(capitulo) min(0) rows(2) anio(`aniovp') ///
+	title("Secretaría de Marina (SEMAR)") subtitle("Gasto público en salud")
+graph export "$export/sns_semar.png", as(png) name("gastoscapitulo") replace
+
+* Figuras 3.8 *
+PEF if divCIEP == 9 & ramo == 7, by(capitulo) min(0) rows(2) anio(`aniovp') ///
+	title("Secretaría de la Defensa Nacional (SEDENA)") subtitle("Gasto público en salud")
+graph export "$export/sns_sedena.png", as(png) name("gastoscapitulo") replace
+
+* Figuras 3.9 *
+PEF if divCIEP == 9 & ramo == 12, by(capitulo) min(0) rows(2) anio(`aniovp') ///
+	title("Secretaría de Salud (SSA)") subtitle("Gasto público en salud")
+graph export "$export/sns_ssa.png", as(png) name("gastoscapitulo") replace
+
+* Figuras 3.10 *
+PEF if divCIEP == 9 & ramo == 33, by(capitulo) min(0) rows(2) anio(`aniovp') ///
+	title("Aportaciones a Entidades Federativas y Municipios (FASSA)") subtitle("Gasto público en salud")
+graph export "$export/sns_fassa.png", as(png) name("gastoscapitulo") replace
+
+* Figuras 3.11 *
+PEF if divCIEP == 9 & ramo == 47, by(capitulo) min(0) rows(2) anio(`aniovp') ///
+	title("IMSS-Bienestar (OPD)") subtitle("Gasto público en salud")
+graph export "$export/sns_imssbienestar2.png", as(png) name("gastoscapitulo") replace
+
+* Figuras 3.12 *
+PEF if divCIEP == 9 & ramo == 19, by(capitulo) min(0) rows(2) anio(`aniovp') ///
+	title("Aportaciones a la Seguridad Social") subtitle("Gasto público en salud")
+graph export "$export/sns_r19.png", as(png) name("gastoscapitulo") replace
+
+exit
 
 
-PEF, base
-levelsof ramo if divCIEP == 9, local(ramos)
-foreach k of local ramos {
-	PEF if divCIEP == 9 & ramo == `k', by(capitulo) min(0) rows(2) anio(`aniovp')
-}
 
-PEF if divCIEP == 9, by(ramo) min(0) rows(2) anio(`aniovp')
-PEF if divCIEP == 9, by(capitulo) min(0) rows(2) anio(`aniovp')
+
+
+
+
+
+
+
+
+
+
 
 
 

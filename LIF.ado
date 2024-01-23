@@ -35,7 +35,6 @@ quietly {
 
 	** 2.1 PIB + Deflactor **
 	PIBDeflactor, anio(`anio') nographs nooutput `update'
-	*use "`c(sysdir_site)'/users/$pais/$id/PIB.dta", clear
 	local currency = currency[1]
 	forvalues k=1(1)`=_N' {
 		if anio[`k'] == `anio' {
@@ -48,8 +47,8 @@ quietly {
 	tempfile PIB
 	save `PIB'
 
-	** 2.2 Datos Abiertos (Mexico) **
-	if "$pais" == "" & "`update'" == "update" {
+	** 2.2 Datos Abiertos **
+	if "`update'" == "update" {
 		capture confirm file "`c(sysdir_personal)'/SIM/DatosAbiertos.dta"
 		if _rc != 0 | "`update'" == "update" {
 			UpdateDatosAbiertos
@@ -83,7 +82,6 @@ quietly {
 
 
 
-
 	***************
 	*** 3 Merge ***
 	***************
@@ -93,7 +91,7 @@ quietly {
 	capture sort anio mes
 	capture keep `if'
 
-	*keep if anio >= 2002
+
 	local aniofirst = anio[1]
 	local aniolast = anio[_N]
 
@@ -146,10 +144,11 @@ quietly {
 	** 4. Display LIF **
 
 	** 4.1 Division `by' **
-	noisily di _newline in g "{bf: A. Ingresos presupuestarios (`by') " ///
-		_col(44) in g %20s "`currency'" ///
-		_col(66) %7s "% PIB" ///
-		_col(77) %7s "% Total" "}"
+	noisily di _newline in g "{bf: A. Ingresos presupuestarios (`by')}" ///
+		_newline ///
+		_col(30) in g %20s "`currency'" ///
+		_col(52) %7s "% PIB" ///
+		_col(61) %7s "% Tot"
 
 	capture tabstat recaudacion recaudacionPIB if anio == `anio', by(`by') stat(sum) f(%20.0fc) save
 	if _rc != 0 {
@@ -165,7 +164,7 @@ quietly {
 		matrix `mat`k'' = r(Stat`k')
 
 		* Display text *
-		if substr(`"`=r(name`k')'"',1,31) == "'" {
+		if substr(`"`=r(name`k')'"',1,31) ==`"'"'' {
 			local disptext = substr(`"`=r(name`k')'"',1,30)
 		}
 		else {
@@ -174,30 +173,33 @@ quietly {
 		local name = strtoname(`"`disptext'"')
 
 		* Display *
-		return scalar `name' = `mat`k''[1,1]
+		//return scalar `name' = `mat`k''[1,1]
+		//return scalar `name'PIB = `mat`k''[1,2]
+		//return scalar `name'Tot = `mat`k''[1,1]/`mattot'[1,1]*100
 		local `by' `"``by'' `name'"'
 
 		noisily di in g `"  (+) `disptext'"' ///
-			_col(44) in y %20.0fc `mat`k''[1,1] ///
-			_col(66) in y %7.3fc `mat`k''[1,2] ///
-			_col(77) in y %7.1fc `mat`k''[1,1]/`mattot'[1,1]*100
+			_col(30) in y %20.0fc `mat`k''[1,1] ///
+			_col(52) in y %7.3fc `mat`k''[1,2] ///
+			_col(61) in y %7.1fc `mat`k''[1,1]/`mattot'[1,1]*100
 		local ++k
 	}
 	return local `by' `"``by''"'
 
-	noisily di in g _dup(83) "-"
+	noisily di in g _dup(68) "-"
 	noisily di in g "{bf:  (=) Ingresos totales" ///
-		_col(44) in y %20.0fc `mattot'[1,1] ///
-		_col(66) in y %7.3fc `mattot'[1,2] ///
-		_col(77) in y %7.1fc `mattot'[1,1]/`mattot'[1,1]*100 "}"
+		_col(30) in y %20.0fc `mattot'[1,1] ///
+		_col(52) in y %7.3fc `mattot'[1,2] ///
+		_col(61) in y %7.1fc `mattot'[1,1]/`mattot'[1,1]*100 "}"
 
 	return scalar `=strtoname("Ingresos totales")' = `mattot'[1,1]
 
 	** 4.2 Division Resumido **
-	noisily di _newline in g "{bf: B. Ingresos presupuestarios (divResumido) " ///
-		_col(44) in g %20s "`currency'" ///
-		_col(66) %7s "% PIB" ///
-		_col(77) %7s "% Real" "}"
+	noisily di _newline in g "{bf: B. Ingresos presupuestarios (divResumido)}" ///
+		_newline ///
+		_col(30) in g %20s "`currency'" ///
+		_col(52) %7s "% PIB" ///
+		_col(61) %7s "% Real"
 
 	preserve
 	g by = `by'
@@ -230,7 +232,7 @@ quietly {
 		matrix `mat`k'' = r(Stat`k')
 
 		* Display text *
-		if substr(`"`=r(name`k')'"',1,25) == "'" {
+		if substr(`"`=r(name`k')'"',1,25) == `"'"' {
 			local disptext = substr(`"`=r(name`k')'"',1,24)
 		}
 		else {
@@ -240,33 +242,36 @@ quietly {
 
 		* Display *
 		return scalar `=strtoname("`=r(name`k')'")' = `mat`k''[1,1]
+		return scalar `=strtoname("`=r(name`k')'")'PIB = `mat`k''[1,2]
 		return scalar `=strtoname("`=r(name`k')'")'C = ((`mat`k''[1,1]/`pre`k''[1,1])^(1/(`=`anio'-`desde''))-1)*100
 		local divResumido `"`divResumido' `=strtoname(abbrev("`=r(name`k')'",7))'"'
 
 		noisily di in g "  (+) `=r(name`k')'" ///
-			_col(44) in y %20.0fc `mat`k''[1,1] ///
-			_col(66) in y %7.3fc `mat`k''[1,2] ///
-			_col(77) in y %7.1fc ((`mat`k''[1,1]/`pre`k''[1,1])^(1/(`=`anio'-`desde''))-1)*100
+			_col(30) in y %20.0fc `mat`k''[1,1] ///
+			_col(52) in y %7.3fc `mat`k''[1,2] ///
+			_col(61) in y %7.1fc ((`mat`k''[1,1]/`pre`k''[1,1])^(1/(`=`anio'-`desde''))-1)*100
 		local ++k
 	}
 	return local divResumido `"`divResumido'"'
 
-	noisily di in g _dup(83) "-"
+	noisily di in g _dup(68) "-"
 	noisily di in g "{bf:  (=) Ingresos (sin deuda)" ///
-		_col(44) in y %20.0fc `sindeudatot'[1,1] ///
-		_col(66) in y %7.3fc `sindeudatot'[1,2] ///
-		_col(77) in y %7.1fc (`sindeudatot'[1,1]/`sindeudatotpre'[1,1]-1)*100 "}"
+		_col(30) in y %20.0fc `sindeudatot'[1,1] ///
+		_col(52) in y %7.3fc `sindeudatot'[1,2] ///
+		_col(61) in y %7.1fc (`sindeudatot'[1,1]/`sindeudatotpre'[1,1]-1)*100 "}"
 	
 	return scalar Ingresos_sin_deuda = `sindeudatot'[1,1]
+	return scalar Ingresos_sin_deudaPIB = `sindeudatot'[1,2]
 	return scalar Ingresos_sin_deudaC = (`sindeudatot'[1,1]/`sindeudatotpre'[1,1]-1)*100
 
 
 	** 4.3 Crecimientos **
-	noisily di _newline in g "{bf: C. Cambios:" in y " `=`desde'' - `anio'" in g " (% PIB)" ///
-		_col(44) %7s "`=`desde''" ///
-		_col(55) %7s "`anio'" ///
-		_col(66) %7s "Dif" ///
-		_col(77) %7s "Dif %" "}"
+	noisily di _newline in g "{bf: C. Cambios:" in y " `=`desde'' - `anio'" in g " (% PIB)}" ///
+		_newline ///
+		_col(33) %7s "`=`desde''" ///
+		_col(43) %7s "`anio'" ///
+		_col(52) %7s "Dif" ///
+		_col(61) %7s "Dif %"
 
 	tabstat recaudacion recaudacionPIB if anio == `anio', by(`resumido') stat(sum) f(%20.0fc) save
 	tempname mattot
@@ -289,7 +294,7 @@ quietly {
 			tempname mat5`k'
 			matrix `mat5`k'' = r(Stat`k')
 
-			if substr(`"`=r(name`k')'"',1,25) == "'" {
+			if substr(`"`=r(name`k')'"',1,25) == `"'"' {
 				local disptext = substr(`"`=r(name`k')'"',1,24)
 			}
 			else {
@@ -298,28 +303,29 @@ quietly {
 
 			if `mat`k''[1,1] != . & `mat5`k''[1,1] != . {
 				noisily di in g `"  (+) `disptext'"' ///
-					_col(44) in y %7.3fc `mat5`k''[1,2] ///
-					_col(55) in y %7.3fc `mat`k''[1,2] ///
-					_col(66) in y %7.3fc `mat`k''[1,2]-`mat5`k''[1,2] ///
-					_col(77) in y %7.1fc (`mat`k''[1,2]-`mat5`k''[1,2])/`mat5`k''[1,2]*100 in g "%"
+					_col(33) in y %7.3fc `mat5`k''[1,2] ///
+					_col(43) in y %7.3fc `mat`k''[1,2] ///
+					_col(52) in y %7.3fc `mat`k''[1,2]-`mat5`k''[1,2] ///
+					_col(61) in y %7.1fc (`mat`k''[1,2]-`mat5`k''[1,2])/`mat5`k''[1,2]*100
 			}
 			local ++k
 		}
 
-		noisily di in g _dup(83) "-"
+		noisily di in g _dup(68) "-"
 		noisily di in g "{bf:  (=) Ingresos" ///
-			_col(44) in y %7.3fc `mattot5'[1,2] ///
-			_col(55) in y %7.3fc `mattot'[1,2] ///
-			_col(66) in y %7.3fc `mattot'[1,2]-`mattot5'[1,2] ///
-			_col(77) in y %7.1fc (`mattot'[1,2]-`mattot5'[1,2])/`mattot5'[1,2]*100 in g "%}"
+			_col(33) in y %7.3fc `mattot5'[1,2] ///
+			_col(43) in y %7.3fc `mattot'[1,2] ///
+			_col(52) in y %7.3fc `mattot'[1,2]-`mattot5'[1,2] ///
+			_col(61) in y %7.1fc (`mattot'[1,2]-`mattot5'[1,2])/`mattot5'[1,2]*100 "}"
 	}
 	restore
 
-	** 4.4 Elasticidades **
-	noisily di _newline in g "{bf: D. Elasticidades:" in y " `=`anio'-9' - `anio'" in g ///
-		_col(44) %7s "Crec %G IngR" ///
-		_col(66) %7s "Crec %G pibYR" ///
-		_col(88) %7s "Elasticidad" "}"
+	** 4.4 Elasticidades **/
+	noisily di _newline in g "{bf: D. Elasticidades:" in y " `=`anio'-9' - `anio'}" in g ///
+		_newline ///
+		_col(33) %7s "%G" ///
+		_col(43) %7s "%G pibR" ///
+		_col(52) %7s "Elastic"
 
 	g recaudacionR = recaudacion/deflator
 
@@ -344,19 +350,19 @@ quietly {
 			
 			if `mat`k''[1,1] != . & `mat5`k''[1,1] != . {
 				noisily di in g "  (+) `=r(name`k')'" ///
-					_col(44) in y %7.3fc (((`mat`k''[1,1]/`mat5`k''[1,1])^(1/9)-1)*100) in g "%" ///
-					_col(66) in y %7.3fc (((`pibYR`anio''/`pibYR`=`anio'-9'')^(1/9)-1)*100) in g "%" ///
-					_col(88) in y %7.3fc (((`mat`k''[1,1]/`mat5`k''[1,1])^(1/9)-1))/ ///
+					_col(33) in y %7.3fc (((`mat`k''[1,1]/`mat5`k''[1,1])^(1/9)-1)*100) ///
+					_col(43) in y %7.3fc (((`pibYR`anio''/`pibYR`=`anio'-9'')^(1/9)-1)*100) ///
+					_col(52) in y %7.3fc (((`mat`k''[1,1]/`mat5`k''[1,1])^(1/9)-1))/ ///
 					(((`pibYR`anio''/`pibYR`=`anio'-9'')^(1/9)-1))
 			}
 			local ++k
 		}
 
-		noisily di in g _dup(95) "-"
+		noisily di in g _dup(59) "-"
 		noisily di in g "{bf:  (=) Ingresos totales" ///
-				_col(44) in y %7.3fc (((`mattot'[1,1]/`mattot5'[1,1])^(1/9)-1)*100) in g "%" ///
-				_col(66) in y %7.3fc (((`pibYR`anio''/`pibYR`=`anio'-9'')^(1/9)-1)*100) in g "%" ///
-				_col(88) in y %7.3fc (((`mattot'[1,1]/`mattot5'[1,1])^(1/9)-1)*100)/ ///
+				_col(33) in y %7.3fc (((`mattot'[1,1]/`mattot5'[1,1])^(1/9)-1)*100) ///
+				_col(43) in y %7.3fc (((`pibYR`anio''/`pibYR`=`anio'-9'')^(1/9)-1)*100) ///
+				_col(52) in y %7.3fc (((`mattot'[1,1]/`mattot5'[1,1])^(1/9)-1)*100)/ ///
 				(((`pibYR`anio''/`pibYR`=`anio'-9'')^(1/9)-1)*100) "}"
 	}
 	drop recaudacionR

@@ -398,7 +398,7 @@ quietly {
 	* 7.1 Distribuir los ingresos entre las observaciones *
 	foreach k of varlist ISRAS ISRPF CUOTAS ///
 		ISRPM OTROSK ///
-		FMP /// PEMEX CFE IMSS ISSSTE ///
+		/// FMP PEMEX CFE IMSS ISSSTE ///
 		IVA IEPSNP IEPSP ISAN IMPORT {
 		Distribucion `k', relativo(`k') macro(`=scalar(`k')/100*scalar(pibY)')
 	}

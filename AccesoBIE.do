@@ -3,6 +3,9 @@
 ********************************
 local series "`1'"
 local series = subinstr("`series'"," ",",",.)
+
+local names "`2'"
+
 capture mkdir "`c(sysdir_personal)'/SIM"
 capture mkdir "`c(sysdir_personal)'/SIM/BIE"
 cd "`c(sysdir_personal)'/SIM/BIE"
@@ -11,6 +14,7 @@ cd "`c(sysdir_personal)'/SIM/BIE"
 python
 import requests
 import pandas as pd
+import re
 from bs4 import BeautifulSoup
 from sfi import Macro
 
@@ -31,7 +35,7 @@ params_dict = dict(x.split('=') for x in params.split('&'))
 cveser_items = params_dict['cveser'].split(',')
 
 # Make a request for each item in 'cveser'
-for item in cveser_items:
+for i, item in enumerate(cveser_items):
 	# Update the 'cveser' parameter with the current item
 	params_dict['cveser'] = item
 
@@ -47,10 +51,12 @@ for item in cveser_items:
 	# Find the table with the data
 	table = soup.find('table', {'id': 'tableContainerSinScroll'})
 
-	# Extract the headers and rows from the table
-	headers = [th.text.split(' > ')[-2] if 'Total' in th.text.split(' > ')[-1] else th.text.split(' > ')[-1] for th in table.find_all('th')]
+	# Extract the headers from the table
+	# headers = [th.text for th in table.find_all('th')]
+	
+	# Extract the rows from the table
 	rows = [[td.text for td in tr.find_all('td')] for tr in table.find_all('tr')]
-	df = pd.DataFrame(rows, columns=headers)
+	df = pd.DataFrame(rows, columns=['periodo', 'variable'])
 
 	# Remove the first row
 	df = df.drop(df.index[0])
@@ -65,9 +71,14 @@ end
 ** Ordenar datos para Stata **
 ******************************
 local series = subinstr("`series'",","," ",.)
+tokenize `names'
+local j = 1
 foreach k of local series {
 	import delimited "`=c(sysdir_personal)'/SIM/BIE/`k'.csv", clear
 	capture replace periodo = subinstr(periodo,"/p1","",.)
+	capture replace periodo = subinstr(periodo,"/r1","",.)
+	rename variable ``j''
+	local ++j
 	tempfile `k'
 	save ``k''
 }
@@ -78,11 +89,11 @@ foreach k of local series {
 		local ++j
 	}
 	else {
-		merge 1:1 (periodos) using ``k'', nogen
+		merge 1:1 (periodo) using ``k'', nogen
 	}
 }
 foreach k of varlist _all {
-	if "`k'" != "periodos" {
+	if "`k'" != "periodo" {
 		capture confirm string variable `k'
 		if _rc != 0 {
 			format `k' %20.0fc
@@ -92,11 +103,4 @@ foreach k of varlist _all {
 			destring `k', replace
 		}
 	}
-}
-if "`2'" == "millones" {
-	foreach k of varlist _all {
-		if "`k'" != "periodos" {
-			replace `k' = `k'*1000000
-		}
-	}	
 }

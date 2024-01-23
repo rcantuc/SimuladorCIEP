@@ -14,28 +14,15 @@ noisily di in g "  Updating PIBDeflactor.dta..." _newline
 **************
 
 ** 1.1. Importar variables de interés desde el BIE **
-run "`c(sysdir_personal)'/AccesoBIE.do" "734407 735143 446562 446565 446566 628194"
+run "`c(sysdir_personal)'/AccesoBIE.do" "734407 735143 446562 446565 446566 628194" "pibQ indiceQ PoblacionENOE PoblacionOcupada PoblacionDesocupada inpc"
 
 
-** 1.2 Renombrar variables **
-rename periodos periodo
-
-rename productointernobrutof1millonesde pibQ
+** 1.2 Label variables **
 label var pibQ "Producto Interno Bruto (trimestral)"
-
-rename productointernobrutof1índicebase indiceQ
 label var indiceQ "Índice de precios implícitos (trimestral)"
-
-rename poblacióntotalaf1númerodepersona PoblacionENOE
 label var PoblacionENOE "Población ENOE"
-
-rename ocupadaaf1númerodepersonastrimes PoblacionOcupada
 label var PoblacionOcupada "Población Ocupada (ENOE)"
-
-rename desocupadaaf1númerodepersonastri PoblacionDesocupada
 label var PoblacionDesocupada "Población Desocupada (ENOE)"
-
-rename índicegeneralf1índicebasesegunda inpc
 label var inpc "Índice Nacional de Precios al Consumidor"
 
 

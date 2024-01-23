@@ -63,7 +63,7 @@ replace from = 97 in -1
 replace profile = (scalar(PEMEX))/100*scalar(PIB) in -1
 replace to = 4 in -1
 label define `1' 97 "Pemex", add
-label define to 4 "OyE públicas", add
+label define to 4 "Ingresos propios", add
 
 * FMP *
 set obs `=_N+1'
@@ -221,7 +221,7 @@ collapse (sum) profile, by(to)
 rename to from
 
 g to = 999
-label define PIB 999 "PE 2023"
+label define PIB 999 "$paqueteEconomico"
 label values to PIB
 
 tempfile eje2
@@ -237,7 +237,7 @@ collapse (sum) profile, by(from)
 rename from to
 
 g from = 999
-label define PIB 999 "PE 2023"
+label define PIB 999 "$paqueteEconomico"
 label values from PIB
 
 tempfile eje3
