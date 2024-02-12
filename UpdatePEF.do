@@ -14,8 +14,8 @@
 *************************
 capture confirm file "`c(sysdir_personal)'/SIM/$pais/prePEF.dta"
 if _rc != 0 | "`1'" == "update" {
-	local archivos: dir "`c(sysdir_site)'../BasesCIEP/PEFs/$pais" files "*.xlsx"			// Busca todos los archivos .xlsx en /bases/PEFs/
-	*local archivos `""PEF 2024.xlsx" "CuotasISSSTE.xlsx" "'
+	*local archivos: dir "`c(sysdir_site)'../BasesCIEP/PEFs/$pais" files "*.xlsx"			// Busca todos los archivos .xlsx en /bases/PEFs/
+	local archivos `""PEF 2024.xlsx" "CuotasISSSTE.xlsx" "'
 
 	foreach k of local archivos {															// Loop para todos los archivos .xlsx encontrados
 

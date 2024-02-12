@@ -1,7 +1,6 @@
 program define Simulador
 quietly {
 	timer on 7
-	version 13.1
 	syntax varname [if] [fweight/], ///
 		[BOOTstrap(int 1) ///
 		NOGraphs NOOutput REboot Noisily ///
@@ -72,7 +71,7 @@ quietly {
 	noisily di _newline(2) in g "  {bf:Variable label: " in y "`title'}"
 	noisily di in g "  {bf:Variable name: " in y "`varlist'}"
 	if "`if'" != "" {
-		noisily di in g "  {bf:If: " in y "`if'}"
+		noisily di in g "  {bf:If: " in y `"`if'}"'
 	}
 	else {
 		noisily di in g "  {bf:If: " in y "Sin restricci{c o'}n. Todas las observaciones utilizadas.}"	
@@ -307,7 +306,7 @@ quietly {
 
 	***********************************
 	*** 2.1. Intervalo de confianza ***
-	ci estimacion
+	ci means estimacion
 	noisily di _newline in g "  Monto:" _column(40) in y %20.0fc r(mean) ///
 		in g "  I.C. (95%): " in y "+/-" %7.2fc (r(ub)/r(mean)-1)*100 "%"
 
@@ -317,38 +316,38 @@ quietly {
 	local RECT = r(mean)/`PIB'*100
 	scalar `varlist'GPIB = `RECT'
 
-	ci contribuyentes
+	ci means contribuyentes
 	noisily di in g "  Contribuyentes/Beneficiarios:" _column(40) in y %20.0fc r(mean) ///
 		in g "  I.C. (95%): " in y "+/-" %7.2fc (r(ub)/r(mean)-1)*100 "%"
 	local POBCONTT = r(mean)*`bootstrap'
 
-	ci poblacion
+	ci means poblacion
 	noisily di in g "  Poblaci{c o'}n potencial:" _column(40) in y %20.0fc r(mean) ///
 		in g "  I.C. (95%): " in y "+/-" %7.2fc (r(ub)/r(mean)-1)*100 "%"
 
-	ci montopc
+	ci means montopc
 	noisily di in g "  Per c{c a'}pita:" _column(40) in y %20.0fc r(mean) ///
 		in g "  I.C. (95%): " in y "+/-" %7.2fc (r(ub)/r(mean)-1)*100 "%"
 
-	ci edad39
+	ci means edad39
 	noisily di in g "  Edad 39:" _column(40) in y %20.0fc r(mean) ///
 		in g "  I.C. (95%): " in y "+/-" %7.2fc (r(ub)/r(mean)-1)*100 "%"
 	local edad39_boot = r(mean)
 
 	* Y label *
 	if `edad39_boot' == . | `edad39_boot' == 0 {
-		*local ylabelpc = "Promedio"
-		local ylabelpc = "Average"
+		local ylabelpc = "Promedio"
+		*local ylabelpc = "Average"
 	}
 	else {
-		*local ylabelpc = "39 a{c n~}os hombre"
-		local ylabelpc = "39-year-old male"
+		local ylabelpc = "hombre de 39 a{c n~}os"
+		*local ylabelpc = "39-year-old male"
 	}
 
 
 	******************
 	*** 3 Perfiles ***
-	/******************
+	******************
 	use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'PERF"', clear
 
 
@@ -368,7 +367,7 @@ quietly {
 		local pais = ""
 	}
 
-	* Sin kernel *
+	/* Sin kernel *
 	if "`nokernel'" == "nokernel" & "$nographs" != "nographs" & "`nographs'" != "nographs" {
 
 		twoway line perfil1 edad, ///
@@ -376,7 +375,7 @@ quietly {
 			title("{bf:`title'}") ///
 			xtitle(edad) ///
 			ytitle(`ylabelpc' equivalente) ///
-			ylabel(0(.5)1.5) ///
+			///ylabel(0(.5)1.5) ///
 			subtitle(Perfil de hombres`pais') ///
 			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.`boottext'")
 
@@ -385,7 +384,7 @@ quietly {
 			title("{bf:`title'}") ///
 			xtitle(edad) ///
 			ytitle(`ylabelpc' equivalente) ///
-			ylabel(0(.5)1.5) ///
+			///ylabel(0(.5)1.5) ///
 			subtitle(Perfil de mujeres`pais') ///
 			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.`boottext'")
 
@@ -410,10 +409,9 @@ quietly {
 
 	* Con kernel *
 	else if "$nographs" != "nographs" & "`nographs'" != "nographs" {
-		lpoly perfil1 edad, bwidth(`bandwidth') ci kernel(gaussian) degree(2) ///
+		lpoly perfil1 edad, bwidth(`bandwidth') ci means kernel(gaussian) degree(2) ///
 			name(PerfilH`varlist', replace) generate(perfilH) at(edad) noscatter ///
 			title("{bf:`title'}") ///
-			xtitle(age) ///
 			xtitle(edad) ///
 			ytitle(`ylabelpc' equivalent) ///
 			///ylabel(0(.5)1.5) ///
@@ -421,10 +419,9 @@ quietly {
 			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.`boottext'")
 			//nograph
 
-		lpoly perfil2 edad, bwidth(`bandwidth') ci kernel(gaussian) degree(2) ///
+		lpoly perfil2 edad, bwidth(`bandwidth') ci means kernel(gaussian) degree(2) ///
 			name(PerfilM`varlist', replace) generate(perfilM) at(edad) noscatter ///
 			title("{bf:`title'}") ///
-			xtitle(age) ///
 			xtitle(edad) ///
 			ytitle(`ylabelpc' equivalent) ///
 			///ylabel(0(.5)1.5) ///
@@ -432,7 +429,7 @@ quietly {
 			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.`boottext'")
 			//nograph
 
-		lpoly contribuyentes1 edad, bwidth(`bandwidth') ci kernel(gaussian) degree(2) ///
+		lpoly contribuyentes1 edad, bwidth(`bandwidth') ci means kernel(gaussian) degree(2) ///
 			name(ContH`varlist', replace) generate(contH) at(edad) noscatter ///
 			title("{bf:`title'}") ///
 			xtitle(edad) ///
@@ -442,7 +439,7 @@ quietly {
 			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.`boottext'")
 			//nograph
 
-		lpoly contribuyentes2 edad, bwidth(`bandwidth') ci kernel(gaussian) degree(2) ///
+		lpoly contribuyentes2 edad, bwidth(`bandwidth') ci means kernel(gaussian) degree(2) ///
 			name(ContM`varlist', replace) generate(contM) at(edad) noscatter ///
 			title("{bf:`title'}") ///
 			xtitle(edad) ///
@@ -469,7 +466,7 @@ quietly {
 	format distribucion %6.1fc
 	format incidencia %6.1fc
 
-	label define deciles 1 "I" 2 "II" 3 "III" 4 "IV" 5 "V" 6 "VI" 7 "VII" 8 "VIII" 9 "IX" 10 "X" 11 "Nacional"
+	label define deciles 1 "I" 2 "II" 3 "III" 4 "IV" 5 "V" 6 "VI" 7 "VII" 8 "VIII" 9 "IX" 10 "X" 11 "Nac"
 	label values decil deciles
 
 
@@ -477,12 +474,35 @@ quietly {
 	*** 4.1. Por hogar ***
 	levelsof decil, local(deciles)
 	noisily di _newline in g "  Decil" _column(20) %20s "Por hogar"
+	local j = 2
 	foreach k of local deciles {
-		ci xhogar if decil == `k'
+		ci means xhogar if decil == `k'
 		local decil2 : label deciles `k'
 		noisily di in g "  `decil2'" _column(20) in y %20.0fc r(mean) ///
 			in g "  I.C. (95%): " in y "+/-" %7.2fc (r(ub)/r(mean)-1)*100 "%"
 		scalar `varlist'`decil2' = r(mean)
+
+		if "$export" != "" {
+			tokenize "`base'"
+			if `2' == 2014 {
+				local col = "B"
+			}
+			if `2' == 2016 {
+				local col = "C"
+			}
+			if `2' == 2018 {
+				local col = "D"
+			}
+			if `2' == 2020 {
+				local col = "E"
+			}
+			if `2' == 2022 {
+				local col = "F"
+			}
+			putexcel set "$export/Deciles.xlsx", modify sheet("`varlist'")
+			putexcel `col'`j' = `=scalar(`varlist'`decil2')', nformat(number_sep)
+			local ++j
+		}
 
 		if "$output" == "output" {
 			local incd = "`incd' `=string(`=`varlist'`decil2'',"%10.0f")',"
@@ -495,7 +515,7 @@ quietly {
 	*** 4.2. Distribucion ***
 	noisily di _newline in g "  Decil" _column(20) %20s "Distribuci{c o'}n"
 	foreach k of local deciles {
-		ci distribucion if decil == `k'
+		ci means distribucion if decil == `k'
 		local decil2 : label deciles `k'
 		noisily di in g "  `decil2'" _column(20) in y %20.1fc r(mean) ///
 			in g "  I.C. (95%): " in y "+/-" %7.2fc (r(ub)/r(mean)-1)*100 "%"
@@ -513,7 +533,7 @@ quietly {
 	*** 4.3. Incidencia ***
 	noisily di _newline in g "  Decil" _column(20) %20s "Incidencia (% `rellabel')"
 	foreach k of local deciles {
-		ci incidencia if decil == `k'
+		ci means incidencia if decil == `k'
 		local decil2 : label deciles `k'
 		noisily di in g "  `decil2'" _column(20) in y %20.1fc r(mean) ///
 			in g "  I.C. (95%): " in y "+/-" %7.2fc (r(ub)/r(mean)-1)*100 "%"
@@ -544,7 +564,7 @@ quietly {
 	use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'CICLO"', clear
 
 	* Labels *
-	label define deciles 1 "I" 2 "II" 3 "III" 4 "IV" 5 "V" 6 "VI" 7 "VII" 8 "VIII" 9 "IX" 10 "X" 11 "Nacional"
+	label define deciles 1 "I" 2 "II" 3 "III" 4 "IV" 5 "V" 6 "VI" 7 "VII" 8 "VIII" 9 "IX" 10 "X" 11 "Nac"
 	label values decil deciles
 
 	replace escol = 3 if escol == 4
@@ -577,7 +597,7 @@ quietly {
 	save `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'REC"', replace
 
 	
-	ProyGraph `varlist' `nographs'
+	*ProyGraph `varlist' `nographs'
 
 
 
@@ -780,11 +800,11 @@ program graphpiramide
 			stack asyvars xalternate ///
 			yscale(noextend noline /*range(-7(1)7)*/) ///
 			blabel(none, format(%5.1fc)) ///
-			t2title({bf:Hombres} (`men'%), size(medsmall)) ///
-			ytitle(% PIB) ///
-			///t2title({bf:Men} (`men'%), size(medsmall)) ///
-			///ytitle(% GDP) ///
-			ylabel(`=round(`PORmaxval'[2,1],.1)'(.2)`=`PORmaxval'[1,1]', format(%7.1fc) noticks) ///
+			///t2title({bf:Hombres} (`men'%), size(medsmall)) ///
+			///ytitle(% PIB) ///
+			t2title({bf:Men} (`men'%), size(medsmall)) ///
+			ytitle(% GDP) ///
+			ylabel(`=round(`PORmaxval'[2,1],.1)'(.025)`=`PORmaxval'[1,1]', format(%7.1fc) noticks) ///
 			name(H`varlist', replace) ///
 			legend(cols(4) pos(6) bmargin(zero) label(1 "") label(2 "") label(3 "`rect'") ///
 			label(4 "") label(5 "") label(6 "") label(7 "") label(8 "") label(9 "") ///
@@ -800,11 +820,11 @@ program graphpiramide
 			stack asyvars ///
 			yscale(noextend noline /*range(1.8)*/) /// |
 			blabel(none, format(%5.1fc)) ///
-			t2title({bf:Mujeres} (`women'%), size(medsmall)) ///
-			ytitle(% PIB) ///
-			///t2title({bf:Women} (`women'%), size(medsmall)) ///
-			///ytitle(% GDP) ///
-			ylabel(`=round(`PORmaxval'[2,1],.1)'(.2)`=`PORmaxval'[1,1]', format(%7.1fc) noticks) ///
+			///t2title({bf:Mujeres} (`women'%), size(medsmall)) ///
+			///ytitle(% PIB) ///
+			t2title({bf:Women} (`women'%), size(medsmall)) ///
+			ytitle(% GDP) ///
+			ylabel(`=round(`PORmaxval'[2,1],.1)'(.025)`=`PORmaxval'[1,1]', format(%7.1fc) noticks) ///
 			name(M`varlist', replace) ///
 			legend(cols(4) pos(5) bmargin(zero) size(vsmall) keygap(1) symxsize(3) textwidth(30) forcesize) ///
 			plotregion(margin(zero)) ///
@@ -812,21 +832,22 @@ program graphpiramide
 
 		graph combine H`varlist' M`varlist', ///
 			name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)', replace) ycommon xcommon ///
-			title("{bf:Perfil} de `title'") subtitle("$pais") ///
+			title("{bf:`title'}") subtitle("$pais") ///
 			///title("`title' {bf:profile}") ///
-			caption("{bf:Fuente}: Elaborado por el CIEP, con la `base'.") ///
-			///caption("Source: Prepared with the CIEP Tax Simulator v5 and information from INEGI, ENIGH 2018.") ///
+			///caption("{bf:Fuente}: Elaborado por el CIEP, con la `base'.") ///
+			caption("{bf:Source}: Prepared by CIEP, using data from `base'.") ///
 			///note(`"{bf:Nota}: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n en cada grupo."') ///
-			///note(`"{bf:Note}: The percentages in parentheses show the concentration in each group."')
-
-		graph save `=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)' `"`c(sysdir_personal)'/users/$pais/$id/graphs/`varlist'_`titleover'.gph"', replace
+			note(`"{bf:Note}: Percentages in parentheses show the concentration in each group."')
+		
+		tokenize `base'
+		graph save `=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)' `"`c(sysdir_personal)'/SIM/`2'/`varlist'_`titleover'.gph"', replace
 		if "$export" != "" {
 			graph export `"$export/`varlist'_`titleover'.png"', replace name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)')
 		}
-
 		capture window manage close graph H`varlist'
 		capture window manage close graph M`varlist'
 	}
+
 	if "$output" != "" & "`nooutput'" != "nooutput" {
 		g grupo_edad = 1
 		replace grupo_edad = 2 if edad > 4

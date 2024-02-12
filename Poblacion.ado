@@ -11,7 +11,7 @@ quietly {
 	timer on 14
 
 	** 0.1 Revisa si se puede usar la base de datos **
-	capture use `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
+	capture use `"`c(sysdir_personal)'/SIM/Poblacion.dta"', clear
 	if _rc != 0 {
 		noisily run `"`c(sysdir_personal)'/UpdatePoblacion`=subinstr("${pais}"," ","",.)'.do"'
 	}
@@ -48,7 +48,7 @@ quietly {
 	************************
 	*** 2. Base de datos ***
 	************************
-	use `if' using `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
+	use `if' using `"`c(sysdir_personal)'/SIM/Poblacion.dta"', clear
 	noisily di _newline(2) in g _dup(20) "." "{bf:   Poblaci{c o'}n: " in y "`=entidad[1]'   }" in g _dup(20) "." _newline
 
 	* Obtiene el año inicial de la base *
@@ -439,8 +439,8 @@ quietly {
 			local graphfuente ""
 		}
 
-		twoway (connected tasaDependencia anio if anio <= `anio', mlabel(tasaDependencia) mlabpos(0) mlabcolor(black)) ///
-			(connected tasaDependencia anio if anio > `anio', mlabel(tasaDependencia) mlabpos(0) mlabcolor(black)), ///
+		twoway (connected tasaDependencia anio if anio <= `anio', mlabel(tasaDependencia) mlabpos(0) mlabcolor(black) mlabsize(vsmall)) ///
+			(connected tasaDependencia anio if anio > `anio', mlabel(tasaDependencia) mlabpos(0) mlabcolor(black) mlabsize(vsmall)), ///
 			title("`graphtitle'") ///
 			subtitle(${pais} `=entidad[1]') ///
 			caption("`graphfuente'") ///
@@ -448,6 +448,7 @@ quietly {
 			xlabel(`anioinicial'(10)`=anio[_N]') ///
 			ytitle("Dependientes por cada 100 personas no dependientes") ///
 			xline(`=`anio'+.5') ///
+			legend(label(1 "Observado") label(2 "Proyectado") region(margin(zero)) rows(1)) ///
 			name(T_`anio'_`aniofinal'_`entidadGName', replace)
 
 

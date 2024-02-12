@@ -20,7 +20,7 @@ SCN, anio(`2') nographs
 
 ****************
 ** 1 Ingresos **
-LIF, anio(`2') nographs
+LIF, anio(`2') nographs min(0)
 local CuotasIMSS = r(Cuotas_IMSS)
 local IMSSpropio = r(IMSS) //-`CuotasIMSS'
 local ISSSTEpropio = r(ISSSTE)
@@ -40,7 +40,7 @@ local OtrasEmpresas = r(Otras_empresas)
 ** Eje 1: Generación del ingreso **
 use `"`c(sysdir_personal)'/SIM/`=anioenigh'/households.dta"', clear
 replace Yk = Yk - ing_estim_alqu
-collapse (sum) ing_Ing_Laboral=Yl ing_Ing_Capital=Yk ing_Alquiler_imputado=ing_estim_alqu [fw=factor], by(`1')
+collapse (sum) ing_Ing_Laboral=Yl ing_Ing_Capital=Yk ing_Alquiler_propio=ing_estim_alqu [fw=factor], by(`1')
 
 * to *
 tempvar to
@@ -55,7 +55,7 @@ rename `1' from
 set obs `=_N+1'
 replace from = -2 in -1
 replace profile = `IMSSpropio' + `ISSSTEpropio' + `CFEpropio' + `Pemexpropio' + `FMP' + `OtrasEmpresas' in -1
-label define `1' -2 "Sector_público", add
+label define `1' -2 "Empr_públicas", add
 replace to = 2 in -1
 
 * ROW *
@@ -87,16 +87,16 @@ save `eje1'
 ********************
 ** Eje 4: Consumo **
 use `"`c(sysdir_personal)'/SIM/`=anioenigh'/households.dta"', clear
-collapse (sum) gasto_anual* gasto_anualAhorro=Ahorro [fw=factor], by(`1')
-egen gasto_Alimentos = rsum(gasto_anual1-gasto_anual3)
-egen gasto_Vestido = rsum(gasto_anual5-gasto_anual6)
-egen gasto__Salud = rsum(gasto_anual11)
-egen gasto___Educación = rsum(gasto_anual16-gasto_anual17)
-egen gasto___Vivienda = rsum(gasto_anual7-gasto_anual10)
-egen gasto___Transporte = rsum(gasto_anual12-gasto_anual15)
-egen gasto____Otros_gastos = rsum(gasto_anual4 gasto_anual18 gasto_anual19)
-egen gasto_____Consumo_gobierno = rsum(gasto_anualGobierno)
-egen gasto_____Consumo_capital = rsum(gasto_anualDepreciacion)
+collapse (sum) gas_pc* gasto_anual* gasto_anualAhorro=Ahorro [fw=factor], by(`1')
+egen gasto_Alimentos = rsum(gas_pc_Agua gas_pc_Alim gas_pc_BebN)
+egen gasto_Vestido = rsum(gas_pc_Vest gas_pc_Calz)
+egen gasto__Salud = rsum(gas_pc_Salu)
+egen gasto___Educación = rsum(gas_pc_Educ gas_pc_Recr)
+egen gasto___Vivienda = rsum(gas_pc_Alqu gas_pc_Hoga gas_pc_Comu gas_pc_Elec)
+egen gasto___Transporte = rsum(gas_pc_Vehi gas_pc_STra gas_pc_FTra)
+egen gasto____Otros_gastos = rsum(gas_pc_Taba gas_pc_BebA gas_pc_Dive gas_pc_Rest)
+*egen gasto_____Consumo_gobierno = rsum(gasto_anualGobierno)
+egen gasto_____Depreciación_capital = rsum(gasto_anualDepreciacion)
 *egen gasto____Ahorro = rsum(gasto_anualAhorro)
 drop gasto_anual*
 
@@ -115,10 +115,10 @@ encode `from', g(from)
 * to *
 rename `1' to
 
-/* Sector Publico *
+* Sector Publico *
 set obs `=_N+3'
 replace to = -1 if from == .
-label define `1' -1 "Sector_publico", add
+label define `1' -1 "Bienes_públicos", add
 
 replace profile = scalar(SerEGob) in -1
 replace from = 4 in -1
@@ -127,7 +127,7 @@ replace profile = scalar(SaluGob) in -2
 replace from = 3 in -2
 
 replace profile = scalar(ConGob) - scalar(SerEGob) - scalar(SaluGob) in -3
-replace from = 7 in -3*/
+replace from = 7 in -3
 
 * Ahorro *
 set obs `=_N+1'
@@ -164,7 +164,7 @@ collapse (sum) profile, by(to)
 rename to from
 
 g to = 999
-label define PIB 999 "Ing nacional disponible"
+label define PIB 999 "Ing disponible"
 label values to PIB
 
 tempfile eje2
@@ -179,7 +179,7 @@ collapse (sum) profile, by(from)
 rename from to
 
 g from = 999
-label define PIB 999 "Ing nacional disponible"
+label define PIB 999 "Ing disponible"
 label values from PIB
 
 tempfile eje3
@@ -189,7 +189,7 @@ save `eje3'
 
 ************
 ** Sankey **
-noisily SankeySumSim, anio(`2') name(`1') folder(`3'') a(`eje1') b(`eje2') c(`eje3') d(`eje4') 
+noisily SankeySumSim, anio(`2') name(`1') folder(`3') a(`eje1') b(`eje2') c(`eje3') d(`eje4') 
 
 timer off 7
 timer list 7

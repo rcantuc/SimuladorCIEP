@@ -263,9 +263,9 @@ quietly {
 		local name = strtoname(`"`disptext'"')
 
 		* Display *
-		return scalar `=substr("`name'",1,25)' = `mat`k''[1,1]
-		return scalar `=substr("`name'",1,25)'PIB = `mat`k''[1,2]
-		return scalar `=substr("`name'",1,25)'C = ((`mat`k''[1,1]/`pre`k''[1,1])^(1/(`=`aniovp'-`desde''))-1)*100
+		return scalar `=substr("`name'",1,31)' = `mat`k''[1,1]
+		return scalar `=substr("`name'",1,28)'PIB = `mat`k''[1,2]
+		return scalar `=substr("`name'",1,31)'C = ((`mat`k''[1,1]/`pre`k''[1,1])^(1/(`=`aniovp'-`desde''))-1)*100
 		local divResumido `"`divResumido' `name'"'
 
 		noisily di in g `"  (+) `disptext'"' ///
