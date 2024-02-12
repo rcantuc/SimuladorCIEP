@@ -285,35 +285,35 @@ quietly {
 	if "`nographs'" != "nographs" & "$nographs" == "" {
 
 		** Texto **
-		local j = 100/(`aniofin'-`ultanio')/2
-		local i = 100/(`lastexo'-`aniofin'+1)/2
+		local j = 100/(2023-`ultanio'+1)/2
+		local i = 100/(`lastexo'-2023)/2
 		forvalues k=1(1)`=_N' {
 			if abs(efectoPositivo[`k']) > abs(efectoNegativo[`k']) & mes[`k'] == 12 & anio[`k'] >= `ultanio' & efectoPositivo[`k'] != . & efectoNegativo[`k'] != . {
-				local textDeuda1 `"`textDeuda1' `=efectoPositivo[`k']+.25' `j' "{bf:`=string(shrfsp_pib[`k'],"%5.1fc")'% PIB}""'
+				local textDeuda1 `"`textDeuda1' `=efectoPositivo[`k']+.5' `j' "{bf:`=string(shrfsp_pib[`k'],"%5.1fc")'% PIB}""'
 				local textDeuda11 `"`textDeuda11' `=efectoPositivo_pc[`k']+750' `j' "{bf:`=string(shrfsp_pc[`k'],"%10.0fc")' MXN}""'
-				local j = `j' + 100/(2022-`ultanio'+1)
+				local j = `j' + 100/(2023-`ultanio'+1)
 			}
 			if abs(efectoNegativo[`k']) >= abs(efectoPositivo[`k']) & mes[`k'] == 12 & anio[`k'] >= `ultanio' & efectoNegativo[`k'] != . & efectoPositivo[`k'] != . {
-				local textDeuda2 `"`textDeuda2' `=efectoNegativo[`k']-.25' `j' "{bf:`=string(shrfsp_pib[`k'],"%5.1fc")'% PIB}""'
+				local textDeuda2 `"`textDeuda2' `=efectoNegativo[`k']-.5' `j' "{bf:`=string(shrfsp_pib[`k'],"%5.1fc")'% PIB}""'
 				local textDeuda22 `"`textDeuda22' `=efectoNegativo_pc[`k']-750' `j' "{bf:`=string(shrfsp_pc[`k'],"%10.0fc")' MXN}""'
-				local j = `j' + 100/(2022-`ultanio'+1)
+				local j = `j' + 100/(2023-`ultanio'+1)
 			}
 
 			if abs(efectoPositivo[`k']) > abs(efectoNegativo[`k']) & mes[`k'] != 12 & anio[`k'] >= `ultanio' & anio[`k'] <= `lastexo' & efectoPositivo[`k'] != . & efectoNegativo[`k'] != . {
-				local textDeuda3 `"`textDeuda3' `=efectoPositivo[`k']+.25' `i' "{bf:`=string(shrfsp_pib[`k'],"%5.1fc")'% PIB}""'
+				local textDeuda3 `"`textDeuda3' `=efectoPositivo[`k']+.5' `i' "{bf:`=string(shrfsp_pib[`k'],"%5.1fc")'% PIB}""'
 				local textDeuda33 `"`textDeuda33' `=efectoPositivo_pc[`k']+750' `i' "{bf:`=string(shrfsp_pc[`k'],"%10.0fc")' MXN}""'
-				local i = `i' + 100/(`lastexo'-2023+1)
+				local i = `i' + 100/(`lastexo'-2023)
 			}
 			if abs(efectoNegativo[`k']) >= abs(efectoPositivo[`k']) & mes[`k'] != 12 & anio[`k'] >= `ultanio' & anio[`k'] <= `lastexo' & efectoNegativo[`k'] != . & efectoPositivo[`k'] != . {
-				local textDeuda4 `"`textDeuda4' `=efectoNegativo[`k']-.25' `i' "{bf:`=string(shrfsp_pib[`k'],"%5.1fc")'% PIB}""'
+				local textDeuda4 `"`textDeuda4' `=efectoNegativo[`k']-.5' `i' "{bf:`=string(shrfsp_pib[`k'],"%5.1fc")'% PIB}""'
 				local textDeuda44 `"`textDeuda44' `=efectoNegativo_pc[`k']-750' `i' "{bf:`=string(shrfsp_pc[`k'],"%10.0fc")' MXN}""'
-				local i = `i' + 100/(`lastexo'-2023+1)
+				local i = `i' + 100/(`lastexo'-2023)
 			}
 		}
 
 		** Gráfica por PIB **
 		if `"$export"' == "" {
-			local graphtitle "{bf:Efectos sobre el indicador de la deuda}"
+			local graphtitle "{bf:La deuda como % del PIB}"
 			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP, INEGI/BIE y $paqueteEconomico."
 		}
 		else {
@@ -332,7 +332,7 @@ quietly {
 			label(7 "Otros") region(margin(zero))) ///
 			name(efectoDeuda1, replace) ///
 			///note("{bf:{c U'}ltimo dato}: `aniofin'm`mesfin'") ///
-			title(Observado)
+			title({it:Observado})
 
 		graph bar balprimario_pib `rfspOtros'_pib efectoCrecimiento efectoInflacion efectoIntereses efectoTipoDeCambio efectoOtros ///
 			if mes != 12 & anio <= `lastexo' & anio >= `ultanio', ///
@@ -346,12 +346,11 @@ quietly {
 			label(7 "Otros") region(margin(zero))) ///
 			name(efectoDeuda2, replace) ///
 			///note("{bf:{c U'}ltimo dato}: `aniofin'm`mesfin'") ///
-			title(CGPE 2024)
+			title({it:CGPE 2024})
 
 		*net install grc1leg.pkg
 		grc1leg efectoDeuda1 efectoDeuda2, ycommon ///
 			title(`graphtitle') ///
-			subtitle("{bf:Como % del PIB}") ///
 			caption("`graphfuente'") ///
 			name(efectoDeuda, replace) ///
 		
@@ -404,7 +403,6 @@ quietly {
 		*net install grc1leg.pkg
 		grc1leg efectoDeuda1PC efectoDeuda2PC, ycommon ///
 			title(`graphtitle') ///
-			subtitle("{bf:Por persona ajustada}") ///
 			caption("`graphfuente'") ///
 			name(efectoDeudaPC, replace) ///
 		

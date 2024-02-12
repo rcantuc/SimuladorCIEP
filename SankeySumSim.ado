@@ -80,7 +80,7 @@ quietly {
 			}
 
 			if profile[`k'] != 0 {
-				local links `"`links'{to:"``node`taccountname'''",value:`=profile[`k']/`=scalar(pibY)'*100',from:"``node`faccountname'''"},"'
+				local links `"`links'{to:"``node`taccountname'''",value:"`=profile[`k']/`=scalar(pibY)'*100'",from:"``node`faccountname'''"},"'
 			}
 		}
 	}

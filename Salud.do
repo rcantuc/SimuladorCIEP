@@ -7,15 +7,21 @@ clear all
 macro drop _all
 local aniovp = 2024
 
-if "`c(username)'" == "ricardo" ///                                             // iMac Ricardo
+if "`c(username)'" == "ricardo" ///									// iMac Ricardo
 	sysdir set PERSONAL "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
-
-if "`c(username)'" == "ciepmx" & "`c(console)'" == "" ///                       // Servidor CIEP
+if "`c(username)'" == "ciepmx" ///									// Servidor CIEP
 	sysdir set PERSONAL "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
 cd `"`c(sysdir_personal)'"'
-global export "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/2023_J&J/Rumbo a 2024/I. Entregable 1. PE 2024/1. Investigacion/LaTex/images/"
+
+//global export "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/2023_J&J/Rumbo a 2024/I. Entregable 1. PE 2024/1. Investigacion/LaTex/images/"
 
 
+
+******************************************
+***                                    ***
+*** 1. Jansen & Jansen: Gasto por ramo ***
+***                                    ***
+/******************************************
 * Figura 3.2 *
 PEF if divCIEP == 9, by(ramo) min(0) rows(2) anio(`aniovp') ///
 	title("Gasto público en salud") subtitle("Distribución por ramo")
@@ -71,10 +77,372 @@ PEF if divCIEP == 9 & ramo == 19, by(capitulo) min(0) rows(2) anio(`aniovp') ///
 	title("Aportaciones a la Seguridad Social") subtitle("Gasto público en salud")
 graph export "$export/sns_r19.png", as(png) name("gastoscapitulo") replace
 
+
+
+
+
+*********************************/
+***                            ***
+*** 2. AMIF: Gasto de bolsillo ***
+***                            ***
+**********************************
+
+
+** PIBDeflactor **
+local pibY = 29452832077000					// PIB 2022
+
+
+
+************************
+** ENIGH: concentrado **
+use "`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/2022/concentrado.dta", clear
+replace salud = salud*4 					// Anualizar el gasto trimestral
+
+** Display **
+noisily tabstat salud [fw=factor], stat(sum) f(%20.0fc) save
+noisily di _newline(2) in g "{bf: A. Gasto en cuidados de la salud: " in y "ENIGH 2022}"
+noisily di _newline in g _col(5) "Gasto en " in y "concentrado" in g ": " _col(40) in y %20.0fc r(StatTotal)[1,1] in g " MXN"
+noisily di in g _col(5) "Gasto en " in y "concentrado" in g ": " _col(40) in y %20.2fc r(StatTotal)[1,1]/`pibY'*100 in g " % PIB"
+noisily di in g _dup(80) "-"
+
+
+
+***************************
+** ENIGH: gasto en salud **
+use if substr(clave,1,1) == "J" using "`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/2022/gastohogar.dta", clear
+tempfile hogar
+save "`hogar'"
+
+use if substr(clave,1,1) == "J" using "`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/2022/gastospersona.dta", clear
+tempfile individuo
+save "`individuo'"
+
+
+* Append *
+use "`hogar'", clear
+append using "`individuo'"
+replace gasto_tri = gasto_tri*4			// Anualizar el gasto trimestral
+replace gas_nm_tri = gas_nm_tri*4		// Anualizar el gasto no monetario trimestral
+
+
+* Gasto por conceptos *
+g concepto_salud = ""
+
+g parto_mon = gasto_tri if substr(clave,2,3) >= "001" & substr(clave,2,3) <= "006"
+g parto_nm = gas_nm_tri if substr(clave,2,3) >= "001" & substr(clave,2,3) <= "006"
+egen parto = rsum(parto_mon parto_nm)
+replace concepto_salud = "Parto y embarazo" if substr(clave,2,3) >= "001" & substr(clave,2,3) <= "006"
+
+g embarazo_mon = gasto_tri if substr(clave,2,3) >= "007" & substr(clave,2,3) <= "015"
+g embarazo_nm = gas_nm_tri if substr(clave,2,3) >= "007" & substr(clave,2,3) <= "015"
+egen embarazo = rsum(embarazo_mon embarazo_nm)
+replace concepto_salud = "Parto y embarazo" if substr(clave,2,3) >= "007" & substr(clave,2,3) <= "015"
+
+g servicios_mon = gasto_tri if substr(clave,2,3) >= "016" & substr(clave,2,3) <= "019"
+g servicios_nm = gas_nm_tri if substr(clave,2,3) >= "016" & substr(clave,2,3) <= "019"
+egen servicios = rsum(servicios_mon servicios_nm)
+replace concepto_salud = "Consultas" if substr(clave,2,3) >= "016" & substr(clave,2,3) <= "019"
+
+g medicamentos_mon = gasto_tri if substr(clave,2,3) >= "020" & substr(clave,2,3) <= "035"
+g medicamentos_nm = gas_nm_tri if substr(clave,2,3) >= "020" & substr(clave,2,3) <= "035"
+egen medicamentos = rsum(medicamentos_mon medicamentos_nm)
+replace concepto_salud = "Medicamentos y aparatos" if substr(clave,2,3) >= "020" & substr(clave,2,3) <= "035"
+
+g peso_mon = gasto_tri if substr(clave,2,3) >= "036" & substr(clave,2,3) <= "038"
+g peso_nm = gas_nm_tri if substr(clave,2,3) >= "036" & substr(clave,2,3) <= "038"
+egen peso = rsum(peso_mon peso_nm)
+replace concepto_salud = "Alternativa, peso y sin receta" if substr(clave,2,3) >= "036" & substr(clave,2,3) <= "038"
+
+g hospitalizacion_mon = gasto_tri if substr(clave,2,3) >= "039" & substr(clave,2,3) <= "043"
+g hospitalizacion_nm = gas_nm_tri if substr(clave,2,3) >= "039" & substr(clave,2,3) <= "043"
+egen hospitalizacion = rsum(hospitalizacion_mon hospitalizacion_nm)
+replace concepto_salud = "Hospitalización" if substr(clave,2,3) >= "039" & substr(clave,2,3) <= "043"
+
+g sinreceta_mon = gasto_tri if substr(clave,2,3) >= "044" & substr(clave,2,3) <= "061"
+g sinreceta_nm = gas_nm_tri if substr(clave,2,3) >= "044" & substr(clave,2,3) <= "061"
+egen sinreceta = rsum(sinreceta_mon sinreceta_nm)
+replace concepto_salud = "Alternativa, peso y sin receta" if substr(clave,2,3) >= "044" & substr(clave,2,3) <= "061"
+
+g alternativa_mon = gasto_tri if substr(clave,2,3) >= "062" & substr(clave,2,3) <= "064"
+g alternativa_nm = gas_nm_tri if substr(clave,2,3) >= "062" & substr(clave,2,3) <= "064"
+egen alternativa = rsum(alternativa_mon alternativa_nm)
+replace concepto_salud = "Alternativa, peso y sin receta" if substr(clave,2,3) >= "062" & substr(clave,2,3) <= "064"
+
+g aparatos_mon = gasto_tri if substr(clave,2,3) >= "065" & substr(clave,2,3) <= "069"
+g aparatos_nm = gas_nm_tri if substr(clave,2,3) >= "065" & substr(clave,2,3) <= "069"
+egen aparatos = rsum(aparatos_mon aparatos_nm)
+replace concepto_salud = "Medicamentos y aparatos" if substr(clave,2,3) >= "065" & substr(clave,2,3) <= "069"
+
+g seguro_mon = gasto_tri if substr(clave,2,3) >= "070" & substr(clave,2,3) <= "072"
+g seguro_nm = gas_nm_tri if substr(clave,2,3) >= "070" & substr(clave,2,3) <= "072"
+egen seguro = rsum(seguro_mon seguro_nm)
+replace concepto_salud = "Seguro" if substr(clave,2,3) >= "070" & substr(clave,2,3) <= "072"
+
+egen salud_mon = rsum(parto_mon embarazo_mon servicios_mon medicamentos_mon peso_mon hospitalizacion_mon sinreceta_mon alternativa_mon aparatos_mon seguro_mon)
+label var salud_mon "Monetario"
+
+egen salud_nm = rsum(parto_nm embarazo_nm servicios_nm medicamentos_nm peso_nm hospitalizacion_nm sinreceta_nm alternativa_nm aparatos_nm seguro_nm)
+label var salud_nm "No monetario"
+
+egen salud = rsum(salud_mon salud_nm)
+label var salud "Total"
+
+
+** Display **
+tabstat salud_mon salud_nm [fw=factor], stat(sum) f(%20.0fc) save
+noisily di _newline in g _col(5) "Gasto " in y "monetario" in g ": " _col(40) in y %20.0fc r(StatTotal)[1,1] in g " MXN"
+noisily di in g _col(5) "Gasto " in y "monetario" in g ": " _col(40) in y %20.2fc r(StatTotal)[1,1]/`pibY'*100 in g " % PIB"
+
+noisily di _newline in g _col(5) "Gasto " in y "no monetario" in g ": " _col(40) in y %20.0fc r(StatTotal)[1,2] in g " MXN"
+noisily di in g _col(5) "Gasto " in y "no monetario" in g ": " _col(40) in y %20.2fc r(StatTotal)[1,2]/`pibY'*100 in g " % PIB"
+noisily di in g _dup(80) "-"
+
+
+** Gráficas **
+graph pie salud_mon salud_nm [fw=factor], ///
+	title("{bf:Gasto de los hogares en salud}") ///
+	subtitle("Distribución por tipo de gasto") ///
+	plabel(_all percent, format(%9.1fc)) ///
+	name(saludHogar, replace)
+
+graph pie salud_mon [fw=factor], over(concepto_salud) ///
+	title("{bf:Gasto monetario de los hogares en salud}") ///
+	subtitle("Distribución por concepto de gasto") ///
+	plabel(_all percent, format(%9.1fc)) ///
+	legend(rows(2)) ///
+	name(saludHogar2, replace)
+
+graph pie salud_nm [fw=factor], over(concepto_salud) ///
+	title("{bf:Gasto no monetario de los hogares en salud}") ///
+	subtitle("Distribución por concepto de gasto") ///
+	plabel(_all percent, format(%9.1fc)) ///
+	legend(rows(2)) ///
+	name(saludHogar3, replace)
+
+
+*************************************************************
+** Proceso iterativo para obtener el perfil de los hogares **
+/*Iterative method. This approach is an alternative to standard regression approaches. The
+method works by initially allocating health expenditure equally to each household member.
+The per capita profile is tabulated determining average consumption at each age. The per
+capita profile is then used as a revised equivalence scale, providing the shares to allocate health
+expenditure to household members, thus producing a new per capita profile. The procedure
+is repeated each time using the newly generated profile to allocate household expenditure.
+Under some conditions, this approach will converge to the actual underlying profile. The
+robustness of this method has not been fully established, however. An attractive feature of
+this method is that negative values will not be generated.*/
+collapse (sum) *_mon *_nm salud (max) factor, by(folioviv foliohog numren)
+merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/perfiles2022.dta", nogen keepus(edad sexo escol formal decil factor)
+
+egen salud_mon_hog = sum(salud_mon), by(folioviv foliohog)
+egen salud_nm_hog = sum(salud_nm), by(folioviv foliohog)
+egen salud_hog = sum(salud), by(folioviv foliohog)
+drop if numren == ""
+
+* Primera iteración *
+egen integrantes = count(edad), by(folioviv foliohog)
+g salud_mon_pc = salud_mon_hog/integrantes
+label var salud_mon_pc "Gasto monetario en salud"
+
+g salud_nm_pc = salud_nm_hog/integrantes
+label var salud_nm_pc "Gasto no monetario en salud"
+
+g salud_pc = salud_hog/integrantes
+label var salud_pc "Gasto total en salud"
+
+*lpoly salud_mon_pc edad, bwidth(5) ci kernel(gaussian) degree(2) ///
+	name(Perfil1, replace) generate(salud_pc1) at(edad) noscatter ///
+	title("{bf:Gasto en salud}") ///
+	xtitle(edad) ///
+	ytitle(per cápita) ///
+	///ylabel(0(.5)1.5) ///
+	subtitle(Perfil de los hogares) ///
+	caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.`boottext'")
+	//nograph
+
+forvalues edades=0(1)109 {
+	//noisily di _newline in g _col(5) "Edad: " in y `edades' 
+	capture tabstat salud_mon_pc salud_nm_pc salud_pc [fw=factor] if edad == `edades', stat(mean) f(%20.0fc) save
+	if _rc != 0 {
+		local valor_mon = 0
+		local valor_nm = 0
+		local valor = 0
+	}
+	else {
+		local valor_mon = r(StatTotal)[1,1]
+		local valor_nm = r(StatTotal)[1,2]
+		local valor = r(StatTotal)[1,3]
+	}
+	replace salud_mon_pc = `valor_mon' if edad == `edades'
+	replace salud_nm_pc = `valor_nm' if edad == `edades'
+	replace salud_pc = `valor' if edad == `edades'
+}
+
+g salud_mon_pc0 = salud_mon_pc
+label var salud_mon_pc0 "Gasto monetario en salud (distribución inicial)"
+
+g salud_nm_pc0 = salud_nm_pc
+label var salud_nm_pc0 "Gasto no monetario en salud (distribución inicial)"
+
+g salud_pc0 = salud_pc
+label var salud_pc0 "Gasto total en salud (distribución inicial)"
+
+*noisily Simulador salud_mon_pc0 [fw=factor], base("ENIGH 2022") reboot anio(2022)
+*noisily Simulador salud_nm_pc0 [fw=factor], base("ENIGH 2022") reboot anio(2022)
+noisily Simulador salud_pc0 [fw=factor], base("ENIGH 2022") reboot anio(2022)
+
+
+* Iteraciones *
+forvalues iter=1(1)20 {
+	egen equivalencia_mon = sum(salud_mon_pc), by(folioviv foliohog)
+	egen equivalencia_nm = sum(salud_nm_pc), by(folioviv foliohog)
+	egen equivalencia = sum(salud_pc), by(folioviv foliohog)
+	replace salud_mon_pc = salud_mon_hog*salud_mon_pc/equivalencia_mon
+	replace salud_nm_pc = salud_nm_hog*salud_nm_pc/equivalencia_nm
+	replace salud_pc = salud_hog*salud_pc/equivalencia
+	drop equivalencia*
+
+	forvalues edades=0(1)109 {
+		//noisily di _newline in g _col(5) "Edad: " in y `edades' 
+		capture tabstat salud_mon_pc salud_nm_pc salud_pc [fw=factor] if edad == `edades', stat(mean) f(%20.0fc) save
+		if _rc != 0 {
+			local valor_mon = 0
+			local valor_nm = 0
+			local valor = 0
+		}
+		else {
+			local valor_mon = r(StatTotal)[1,1]
+			local valor_nm = r(StatTotal)[1,2]
+			local valor = r(StatTotal)[1,3]
+		}
+		replace salud_mon_pc = `valor_mon' if edad == `edades'
+		replace salud_nm_pc = `valor_nm' if edad == `edades'
+		replace salud_pc = `valor' if edad == `edades'
+	}
+
+	*noisily Simulador salud_mon_pc [fw=factor], base("ENIGH 2022") reboot anio(2022)
+	*noisily Simulador salud_nm_pc [fw=factor], base("ENIGH 2022") reboot anio(2022)
+	noisily Simulador salud_pc [fw=factor], base("ENIGH 2022") reboot anio(2022)
+}
 exit
 
 
 
+********************************
+** ENIGH: gasto de individuos **
+use if substr(clave,1,1) == "J" using "`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/2022/gastospersona.dta", clear
+replace gasto_tri = gasto_tri*4			// Anualizar el gasto trimestral
+replace gas_nm_tri = gas_nm_tri*4		// Anualizar el gasto no monetario trimestral
+
+
+* Conceptos *
+g concepto_salud = ""
+
+g parto_mon = gasto_tri if substr(clave,2,3) >= "001" & substr(clave,2,3) <= "006"
+g parto_nm = gas_nm_tri if substr(clave,2,3) >= "001" & substr(clave,2,3) <= "006"
+egen parto = rsum(parto_mon parto_nm)
+replace concepto_salud = "Parto y embarazo" if substr(clave,2,3) >= "001" & substr(clave,2,3) <= "006"
+
+g embarazo_mon = gasto_tri if substr(clave,2,3) >= "007" & substr(clave,2,3) <= "015"
+g embarazo_nm = gas_nm_tri if substr(clave,2,3) >= "007" & substr(clave,2,3) <= "015"
+egen embarazo = rsum(embarazo_mon embarazo_nm)
+replace concepto_salud = "Parto y embarazo" if substr(clave,2,3) >= "007" & substr(clave,2,3) <= "015"
+
+g servicios_mon = gasto_tri if substr(clave,2,3) >= "016" & substr(clave,2,3) <= "019"
+g servicios_nm = gas_nm_tri if substr(clave,2,3) >= "016" & substr(clave,2,3) <= "019"
+egen servicios = rsum(servicios_mon servicios_nm)
+replace concepto_salud = "Consultas" if substr(clave,2,3) >= "016" & substr(clave,2,3) <= "019"
+
+g medicamentos_mon = gasto_tri if substr(clave,2,3) >= "020" & substr(clave,2,3) <= "035"
+g medicamentos_nm = gas_nm_tri if substr(clave,2,3) >= "020" & substr(clave,2,3) <= "035"
+egen medicamentos = rsum(medicamentos_mon medicamentos_nm)
+replace concepto_salud = "Medicamentos y aparatos" if substr(clave,2,3) >= "020" & substr(clave,2,3) <= "035"
+
+g peso_mon = gasto_tri if substr(clave,2,3) >= "036" & substr(clave,2,3) <= "038"
+g peso_nm = gas_nm_tri if substr(clave,2,3) >= "036" & substr(clave,2,3) <= "038"
+egen peso = rsum(peso_mon peso_nm)
+replace concepto_salud = "Alternativa, peso y sin receta" if substr(clave,2,3) >= "036" & substr(clave,2,3) <= "038"
+
+g hospitalizacion_mon = gasto_tri if substr(clave,2,3) >= "039" & substr(clave,2,3) <= "043"
+g hospitalizacion_nm = gas_nm_tri if substr(clave,2,3) >= "039" & substr(clave,2,3) <= "043"
+egen hospitalizacion = rsum(hospitalizacion_mon hospitalizacion_nm)
+replace concepto_salud = "Hospitalización" if substr(clave,2,3) >= "039" & substr(clave,2,3) <= "043"
+
+g sinreceta_mon = gasto_tri if substr(clave,2,3) >= "044" & substr(clave,2,3) <= "061"
+g sinreceta_nm = gas_nm_tri if substr(clave,2,3) >= "044" & substr(clave,2,3) <= "061"
+egen sinreceta = rsum(sinreceta_mon sinreceta_nm)
+replace concepto_salud = "Alternativa, peso y sin receta" if substr(clave,2,3) >= "044" & substr(clave,2,3) <= "061"
+
+g alternativa_mon = gasto_tri if substr(clave,2,3) >= "062" & substr(clave,2,3) <= "064"
+g alternativa_nm = gas_nm_tri if substr(clave,2,3) >= "062" & substr(clave,2,3) <= "064"
+egen alternativa = rsum(alternativa_mon alternativa_nm)
+replace concepto_salud = "Alternativa, peso y sin receta" if substr(clave,2,3) >= "062" & substr(clave,2,3) <= "064"
+
+g aparatos_mon = gasto_tri if substr(clave,2,3) >= "065" & substr(clave,2,3) <= "069"
+g aparatos_nm = gas_nm_tri if substr(clave,2,3) >= "065" & substr(clave,2,3) <= "069"
+egen aparatos = rsum(aparatos_mon aparatos_nm)
+replace concepto_salud = "Medicamentos y aparatos" if substr(clave,2,3) >= "065" & substr(clave,2,3) <= "069"
+
+g seguro_mon = gasto_tri if substr(clave,2,3) >= "070" & substr(clave,2,3) <= "072"
+g seguro_nm = gas_nm_tri if substr(clave,2,3) >= "070" & substr(clave,2,3) <= "072"
+egen seguro = rsum(seguro_mon seguro_nm)
+replace concepto_salud = "Seguro" if substr(clave,2,3) >= "070" & substr(clave,2,3) <= "072"
+
+
+* Agregado *
+egen salud_mon = rsum(parto_mon embarazo_mon servicios_mon medicamentos_mon peso_mon hospitalizacion_mon sinreceta_mon alternativa_mon aparatos_mon seguro_mon)
+label var salud_mon "Monetario"
+
+egen salud_nm = rsum(parto_nm embarazo_nm servicios_nm medicamentos_nm peso_nm hospitalizacion_nm sinreceta_nm alternativa_nm aparatos_nm seguro_nm)
+label var salud_nm "No monetario"
+
+egen salud = rsum(salud_mon salud_nm)
+label var salud "Total"
+
+** Display **
+tabstat salud_mon salud_nm [fw=factor], stat(sum) f(%20.0fc) save
+noisily di _newline in g _col(5) "Gasto monetario en " in y "individuos" in g ": " _col(40) in y %20.0fc r(StatTotal)[1,1] in g " MXN"
+noisily di in g _col(5) "Gasto monetario en " in y "individuos" in g ": " _col(40) in y %20.2fc r(StatTotal)[1,1]/`pibY'*100 in g " % PIB"
+
+noisily di _newline in g _col(5) "Gasto no monetario en " in y "individuos" in g ": " _col(40) in y %20.0fc r(StatTotal)[1,2] in g " MXN"
+noisily di in g _col(5) "Gasto no monetario en " in y "individuos" in g ": " _col(40) in y %20.2fc r(StatTotal)[1,2]/`pibY'*100 in g " % PIB"
+noisily di in g _dup(80) "-"
+
+** Gráfica **
+graph pie salud_mon salud_nm [fw=factor], ///
+	title("{bf:Gasto de los individuos en salud}") ///
+	subtitle("Distribución por tipo de gasto") ///
+	plabel(_all percent, format(%9.1fc)) ///
+	name(saludIndividuos, replace)
+
+graph pie salud_mon [fw=factor], over(concepto_salud) ///
+	title("{bf:Gasto monetario de los individuos en salud}") ///
+	subtitle("Distribución por concepto de gasto") ///
+	plabel(_all percent, format(%9.1fc)) ///
+	legend(rows(2)) ///
+	name(saludIndividuos2, replace)
+
+graph pie salud_nm [fw=factor], over(concepto_salud) ///
+	title("{bf:Gasto no monetario de los individuos en salud}") ///
+	subtitle("Distribución por concepto de gasto") ///
+	plabel(_all percent, format(%9.1fc)) ///
+	legend(rows(2)) ///
+	name(saludIndividuos3, replace)
+
+
+** Collpase **
+collapse (sum) *_mon *_nm salud (max) factor, by(folioviv foliohog numren)
+merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/perfiles2022.dta", nogen keepus(edad sexo escol formal decil)
+
+
+** Perfiles **
+rename salud_mon salud_mon_ind
+label var salud_mon_ind "Gasto monetario del individuo en salud"
+noisily Simulador salud_mon_ind [fw=factor], base("ENIGH 2022") reboot anio(2022)
+
+rename salud_nm salud_nm_ind
+label var salud_nm_ind "Gasto no monetario del individuo en salud"
+noisily Simulador salud_nm_ind [fw=factor], base("ENIGH 2022") reboot anio(2022)
 
 
 
@@ -87,6 +455,9 @@ exit
 
 
 
+
+
+exit
 
 postfile salud anio ssa benef_ssa imssbien benef_imssbien imss benef_imss issste benef_issste pemex benef_pemex issfam benef_issfam using "`c(sysdir_personal)'/SIM/salud.dta", replace
 forvalues aniope=2020(1)2024 {
