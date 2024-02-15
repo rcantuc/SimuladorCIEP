@@ -76,7 +76,7 @@ quietly {
 	merge m:1 (anio) using "`PIB'", nogen keepus(pibY indiceY deflator lambda Poblacion) keep(matched) sorted
 	forvalues k=1(1)`=_N' {
 		if gasto[`k'] != . & "`first'" != "first" { 
-			local aniofirst = 2016 //anio[`k']
+			local aniofirst = 2014 //anio[`k']
 			local first "first"
 		}
 	}

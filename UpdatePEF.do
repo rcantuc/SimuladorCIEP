@@ -12,16 +12,16 @@
 *** 1. BASES DE DATOS ***
 ***                   ***
 *************************
-capture confirm file "`c(sysdir_personal)'/SIM/$pais/prePEF.dta"
+capture confirm file "`c(sysdir_personal)'/SIM/prePEF.dta"
 if _rc != 0 | "`1'" == "update" {
-	*local archivos: dir "`c(sysdir_site)'../BasesCIEP/PEFs/$pais" files "*.xlsx"			// Busca todos los archivos .xlsx en /bases/PEFs/
-	local archivos `""PEF 2024.xlsx" "CuotasISSSTE.xlsx" "'
+	local archivos: dir "`c(sysdir_site)'../BasesCIEP/PEFs" files "*.xlsx"			// Busca todos los archivos .xlsx en /bases/PEFs/
+	*local archivos `""PEF 2024.xlsx" "CuotasISSSTE.xlsx" "'
 
 	foreach k of local archivos {															// Loop para todos los archivos .xlsx encontrados
 
 		* 1.1 Importar el archivo `k'.xlsx (Cuenta Pública) *
 		noisily di in g "Importando: " in y "`k'"
-		import excel "`c(sysdir_site)'../BasesCIEP/PEFs/$pais/`k'", clear firstrow case(lower)
+		import excel "`c(sysdir_site)'../BasesCIEP/PEFs/`k'", clear firstrow case(lower)
 
 		* 1.2 Limpiar observaciones *
 		capture drop if ciclo == ""
@@ -349,10 +349,10 @@ if _rc != 0 | "`1'" == "update" {
 	replace serie_ramo = "XOA0141" if ramo == 53
 
 	if `c(version)' > 13.1 {
-		saveold "`c(sysdir_personal)'/SIM/$pais/prePEF.dta", replace version(13)
+		saveold "`c(sysdir_personal)'/SIM/prePEF.dta", replace version(13)
 	}
 	else {
-		save "`c(sysdir_personal)'/SIM/$pais/prePEF.dta", replace
+		save "`c(sysdir_personal)'/SIM/prePEF.dta", replace
 	}
 
 	* 3.3 Datos Abiertos: PEFEstOpor.dta *
@@ -387,10 +387,10 @@ if _rc != 0 | "`1'" == "update" {
 	capture drop __*
 	compress
 	if `c(version)' > 13.1 {
-		saveold "`c(sysdir_personal)'/SIM/$pais/GastoEstOpor.dta", replace version(13)
+		saveold "`c(sysdir_personal)'/SIM/GastoEstOpor.dta", replace version(13)
 	}
 	else {
-		save "`c(sysdir_personal)'/SIM/$pais/GastoEstOpor.dta", replace
+		save "`c(sysdir_personal)'/SIM/GastoEstOpor.dta", replace
 	}
 }
 
@@ -402,7 +402,7 @@ if _rc != 0 | "`1'" == "update" {
 *** 4. Modulos SIMULADOR FISCAL CIEP ***
 ***                                  ***
 ****************************************
-use "`c(sysdir_personal)'/SIM/$pais/prePEF.dta", clear
+use "`c(sysdir_personal)'/SIM/prePEF.dta", clear
 
 
 ** 4.1 Pensiones **
@@ -552,8 +552,8 @@ capture order proyecto, last
 capture drop __*
 compress
 if `c(version)' > 13.1 {
-	saveold "`c(sysdir_personal)'/SIM/$pais/PEF.dta", replace version(13)
+	saveold "`c(sysdir_personal)'/SIM/PEF.dta", replace version(13)
 }
 else {
-	save "`c(sysdir_personal)'/SIM/$pais/PEF.dta", replace
+	save "`c(sysdir_personal)'/SIM/PEF.dta", replace
 }

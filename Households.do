@@ -159,8 +159,6 @@ local Adultos = r(Educación_para_Adultos)
 
 PEF, anio(`enighanio') by(divCIEP) min(0) nographs
 local PenBienestar = r(Pensión_Bienestar)
-
-PEF, anio(`enighanio') by(divCIEP) min(0) nographs
 local OtrosGas = r(Otros)
 local Pensiones = r(Pensiones)-`PenBienestar'
 local Educacion = r(Educación)
@@ -1020,9 +1018,9 @@ egen double exen_t2_cap8 = rsum(exen_agri)
 
 ** 4.3 Titulo IV, Capitulo I **
 egen double ing_t4_cap1 = rsum(ing_ss ing_desta ing_prop ing_horas ing_grati ing_prima ing_agui ing_ganan ing_util ///
-	ing_trabajos ing_jubila ing_trabmenor)
+	ing_trabajos ing_indemn ing_indemn2 ing_jubila)
 egen double exen_t4_cap1 = rsum(exen_ss exen_desta exen_prop exen_horas exen_grati exen_prima exen_agui ing_ganan exen_util ///
-	exen_trabajos exen_jubila exen_trabmenor)
+	exen_trabajos exen_indemn exen_indemn2 exen_jubila)
 
 egen double ing_t4_cap1_nosubsidio = rsum(ing_desta ing_prop ing_horas ing_grati ing_prima ing_agui ing_ganan ing_util)
 
@@ -1064,9 +1062,9 @@ egen double exen_t4_cap8 = rsum(exen_acc)
 
 ** 4.11 Titulo IV, Capitulo IX *
 egen double ing_t4_cap9 = rsum(ing_autor ing_otros /*ing_remesas*/ ing_prest ing_otrocap /// 6
-	ing_ahorro ing_heren ing_benef ing_segvida ing_indemn ing_indemn2 ing_indemn3)
+	ing_ahorro ing_indemn3 ing_heren ing_benef ing_segvida ing_trabmenor)
 egen double exen_t4_cap9 = rsum(exen_autor exen_otros /*exen_remesas*/ exen_prest exen_otrocap ///
-	exen_ahorro exen_heren exen_benef exen_segvida exen_indemn exen_indemn2 exen_indemn3)
+	exen_ahorro exen_indemn3 exen_heren exen_benef exen_segvida exen_trabmenor)
 
 
 ** 4.12 Sueldos **
@@ -1699,7 +1697,7 @@ replace ing_subor = ing_t4_cap1 if formal == 0
 
 
 ** 6.3 ISR salarios **
-g double isrE = ing_subor - ing_t4_cap1 - (cuotasTPF + infonavit + fovissste) if formal != 0
+g double isrE = ing_subor - ing_t4_cap1 - (cuotasTP + infonavit + fovissste) if formal != 0
 replace isrE = 0 if isrE == .
 label var isrE "ISR retenciones a asalariados"
 
@@ -2149,7 +2147,7 @@ g prop_formal = formal_accum/formal_NAC
 ** 10.4 Probit formalidad (morales) **
 noisily di _newline _col(04) in g "{bf:3.3. Probit de formalidad: " in y "Personas morales.}"
 noisily xi: probit formal_probit prop_mixto ///
-	edad i.sexo aniosesc rural i.sinco2 i.scian2 ///
+	edad edad2 i.sexo aniosesc aniosesc2 rural i.sinco2 i.scian2 ///
 	if ing_bruto_tpm != 0 & edad >= 16 [pw=factor]
 predict double prob_moral if e(sample)
 
@@ -2587,22 +2585,22 @@ egen ImpuestosConsumoTOT = rsum(IVA IEPS ISAN Importaciones)
 *******************************
 egen double Yl = rsum(ing_subor ing_mixtoL)
 label var Yl "Ingreso laboral"
-noisily Simulador Yl [fw=factor], base("ENIGH `enighanio'") boot(1) reboot anio(`enighanio')
+noisily Simulador Yl [fw=factor], boot(1) reboot aniope(`enighanio') aniovp(`enighanio')
 
 egen double Yk = rsum(ing_capital ing_mixtoK ing_estim_alqu gasto_anualDepreciacion)
 label var Yk "Ingreso de capital"
-noisily Simulador Yk [fw=factor], base("ENIGH `enighanio'") boot(1) reboot anio(`enighanio')
+noisily Simulador Yk [fw=factor], boot(1) reboot aniope(`enighanio') aniovp(`enighanio')
 
-noisily Simulador gastoanualTOT [fw=factor], base("ENIGH `enighanio'") boot(1) reboot anio(`enighanio')
-noisily Simulador ing_suborROW [fw=factor], base("ENIGH `enighanio'") boot(1) reboot anio(`enighanio')
+noisily Simulador gastoanualTOT [fw=factor], boot(1) reboot aniope(`enighanio') aniovp(`enighanio')
+noisily Simulador ing_suborROW [fw=factor], boot(1) reboot aniope(`enighanio') aniovp(`enighanio')
 
 g Ciclodevida = Yl + Yk + ing_remesas + ing_suborROW - gastoanualTOT
 label var Ciclodevida "ciclo de vida"
-noisily Simulador Ciclodevida [fw=factor], base("ENIGH `enighanio'") boot(1) reboot anio(`enighanio')
+noisily Simulador Ciclodevida [fw=factor], boot(1) reboot aniope(`enighanio') aniovp(`enighanio')
 
 g Ahorro = ingbrutotot + ing_capitalROW + ing_suborROW + ing_remesas ///
 	- gastoanualTOT - gasto_anualComprasN - gasto_anualGobierno
-noisily Simulador Ahorro [fw=factor], base("ENIGH `enighanio'") boot(1) reboot anio(`enighanio')
+noisily Simulador Ahorro [fw=factor], boot(1) reboot aniope(`enighanio') aniovp(`enighanio')
 label var Ahorro "ahorro"
 
 
@@ -2621,6 +2619,20 @@ if `c(version)' > 13.1 {
 else {
 	save "`c(sysdir_personal)'/SIM/`enighanio'/households.dta", replace
 }
+
+
+
+
+
+*****************
+** Sankeys NTA **
+*****************
+** Inputs: Archivo "`c(sysdir_personal)'/SIM/`anio'/households.dta".
+** Outputs: Archivos .json en carpeta "/var/www/html/SankeyNTA/.
+foreach k in decil sexo grupoedad escol rural {
+	run "`c(sysdir_personal)'/Sankey.do" `k' `enighanio' SankeyNTA
+}
+
 
 timer off 6
 timer list 6
