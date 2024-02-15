@@ -4,8 +4,14 @@
 ***        ver: SIM.md          ***
 ***                             ***
 ***********************************
-noisily run "/SIM/OUT/6/profile.do"                                   // PERFIL DE USUARIO
-sysdir set PERSONAL "/SIM/OUT/6/"
+*noisily run "`c(sysdir_personal)'/profile.do"                                   // PERFIL DE USUARIO
+timer on 1
+if "`c(username)'" == "ricardo" ///                             // iMac Ricardo
+	sysdir set PERSONAL "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
+else if "`c(username)'" == "ciepmx" & "`c(console)'" == "" ///       // Servidor CIEP
+	sysdir set PERSONAL "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
+else ///														   // Web
+	sysdir set PERSONAL "/SIM/OUT/6/"
 cd `"`c(sysdir_personal)'"'
 
 
@@ -38,6 +44,8 @@ if "$output" != "" {
 **#    1. MARCO MACRO   ***
 ***                     ***
 ***************************
+scalar anioPE = 2024
+scalar aniovp = 2024
 
 ** 1.1 Población **
 * (omitido) *
@@ -75,7 +83,7 @@ scalar tasaEfectiva = 6.7358
 
 
 ** 1.3 Perfiles **
-capture confirm file "`c(sysdir_personal)'/SIM/`=anioenigh'/perfiles`=anioPE'.dta"
+capture confirm file "`c(sysdir_personal)'/SIM/perfiles`=anioPE'.dta"
 if _rc != 0 ///
 	noisily run `"`c(sysdir_personal)'/PerfilesSim.do"' `=anioPE'
 
@@ -86,6 +94,7 @@ if _rc != 0 ///
 **#    2. MÓDULOS SIMULADOR    ***
 ***                            ***
 **********************************
+
 ******************************
 ** 2.1 Parámetros: Ingresos **
 scalar ISRAS       =   3.666 // *(1+ r(EISRAS)*(${pib2023}-${pib2023_0})/100)) 		// ISR (asalariados)
@@ -332,7 +341,7 @@ if _rc != 0 {
 **************************************
 ** 3.1 (+) Impuestos y aportaciones **
 capture drop ImpuestosAportaciones
-egen ImpuestosAportaciones = rsum(ISRAS ISRPF CUOTAS ISRPM IVA IEPSNP IEPSP ISAN IMPORT) //OTROSK
+egen ImpuestosAportaciones = rsum(ISRAS ISRPF CUOTAS ISRPM OTROSK IVA IEPSNP IEPSP ISAN IMPORT)
 label var ImpuestosAportaciones "impuestos y aportaciones"
 
 
@@ -371,6 +380,104 @@ foreach k in decil grupoedad sexo /*rural escol*/ {
 **#    4. PARTE IV: DEUDA + FISCAL GAP    ***
 ***                                       ***
 *********************************************
+scalar tasaEfectiva = 6.4175
+
+scalar shrfsp2024 = 48.8
+scalar shrfspInterno2024 = 37.4
+scalar shrfspExterno2024 = 11.4
+scalar rfsp2024 = -5.4
+scalar rfspPIDIREGAS2024 = -0.1
+scalar rfspIPAB2024 = -0.1
+scalar rfspFONADIN2024 = -0.1
+scalar rfspDeudores2024 = 0.0
+scalar rfspBanca2024 = 0.0
+scalar rfspAdecuaciones2024 = -0.2
+scalar rfspBalance2024 = -4.9
+scalar tipoDeCambio2024 = 17.6
+scalar balprimario2024 = 1.2
+scalar costodeudaInterno2024 = 3.7
+scalar costodeudaExterno2024 = 3.7
+
+scalar shrfsp2025 = 48.8
+scalar shrfspInterno2025 = 37.7
+scalar shrfspExterno2025 = 11.2
+scalar rfsp2025 = -2.6
+scalar rfspPIDIREGAS2025 = -0.1
+scalar rfspIPAB2025 = -0.1
+scalar rfspFONADIN2025 = 0.0
+scalar rfspDeudores2025 = 0.0
+scalar rfspBanca2025 = 0.0
+scalar rfspAdecuaciones2025 = -0.2
+scalar rfspBalance2025 = -2.1
+scalar tipoDeCambio2025 = 17.9
+scalar balprimario2025 = -0.9
+scalar costodeudaInterno2025 = 3.1
+scalar costodeudaExterno2025 = 3.1
+
+scalar shrfsp2026 = 49.4
+scalar shrfspInterno2026 = 38.0
+scalar shrfspExterno2026 = 10.9
+scalar rfsp2026 = -2.7
+scalar rfspPIDIREGAS2026 = -0.1
+scalar rfspIPAB2026 = -0.1
+scalar rfspFONADIN2026 = 0.0
+scalar rfspDeudores2026 = 0.0
+scalar rfspBanca2026 = 0.0
+scalar rfspAdecuaciones2026 = -0.3
+scalar rfspBalance2026 = -2.2
+scalar tipoDeCambio2026 = 18.1
+scalar balprimario2026 = -0.5
+scalar costodeudaInterno2026 = 2.7
+scalar costodeudaExterno2026 = 2.7
+
+scalar shrfsp2027 = 48.8
+scalar shrfspInterno2027 = 38.3
+scalar shrfspExterno2027 = 10.6
+scalar rfsp2027 = -2.7
+scalar rfspPIDIREGAS2027 = -0.1
+scalar rfspIPAB2027 = -0.1
+scalar rfspFONADIN2027 = 0.0
+scalar rfspDeudores2027 = 0.1
+scalar rfspBanca2027 = 0.0
+scalar rfspAdecuaciones2027 = -0.4
+scalar rfspBalance2027 = -2.2
+scalar tipoDeCambio2027 = 18.2
+scalar balprimario2027 = -0.3
+scalar costodeudaInterno2027 = 2.5
+scalar costodeudaExterno2027 = 2.5
+
+scalar shrfsp2028 = 48.8
+scalar shrfspInterno2028 = 38.6
+scalar shrfspExterno2028 = 10.3
+scalar rfsp2028 = -2.7
+scalar rfspPIDIREGAS2028 = -0.1
+scalar rfspIPAB2028 = -0.1
+scalar rfspFONADIN2028 = 0.1
+scalar rfspDeudores2028 = 0.0
+scalar rfspBanca2028 = 0.0
+scalar rfspAdecuaciones2028 = -0.3
+scalar rfspBalance2028 = -2.2
+scalar tipoDeCambio2028 = 18.4
+scalar balprimario2028 = -0.3
+scalar costodeudaInterno2028 = 2.5
+scalar costodeudaExterno2028 = 2.5
+
+scalar shrfsp2029 = 48.8
+scalar shrfspInterno2029 = 38.9
+scalar shrfspExterno2029 = 10.0
+scalar rfsp2029 = -2.7
+scalar rfspPIDIREGAS2029 = -0.1
+scalar rfspIPAB2029 = -0.1
+scalar rfspFONADIN2029 = 0.0
+scalar rfspDeudores2029 = 0.0
+scalar rfspBanca2029 = 0.0
+scalar rfspAdecuaciones2029 = -0.3
+scalar rfspBalance2029 = -2.2
+scalar tipoDeCambio2029 = 18.6
+scalar balprimario2029 = -0.3
+scalar costodeudaInterno2029 = 2.5
+scalar costodeudaExterno2029 = 2.5
+
 ** Inputs: Archivo "`c(sysdir_site)'/users/$pais/$id/households.dta", SHRFSP, PEFs y LIFs.
 ** Outputs: Sostenibilidad de la deuda y brecha fiscal hasta 2030.
 noisily FiscalGap, anio(`=anioPE') end(2030) aniomin(2016) $nographs desde(2016) discount(10) //update //anio(`=aniovp')
