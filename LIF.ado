@@ -355,6 +355,8 @@ quietly {
 					_col(52) in y %7.3fc (((`mat`k''[1,1]/`mat5`k''[1,1])^(1/9)-1))/ ///
 					(((`pibYR`anio''/`pibYR`=`anio'-9'')^(1/9)-1))
 			}
+			return scalar E`=strtoname("`=r(name`k')'")' = (((`mat`k''[1,1]/`mat5`k''[1,1])^(1/9)-1))/ ///
+					(((`pibYR`anio''/`pibYR`=`anio'-9'')^(1/9)-1))
 			local ++k
 		}
 

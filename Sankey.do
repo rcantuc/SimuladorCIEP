@@ -8,7 +8,11 @@ if "`1'" == "" {
 	local 3 = "SankeyNTA"
 	scalar anioenigh = 2022
 }
+if "`2'" >= "2022" {
+	local 2 = 2022
+}
 timer on 7
+noisily di _newline(2) in g "{bf: Sankey}: " in y "`1' `2'"
 
 
 
@@ -38,7 +42,7 @@ local OtrasEmpresas = r(Otras_empresas)
 
 **********************************/
 ** Eje 1: Generación del ingreso **
-use `"`c(sysdir_personal)'/SIM/`=anioenigh'/households.dta"', clear
+use `"`c(sysdir_personal)'/SIM/`2'/households.dta"', clear
 replace Yk = Yk - ing_estim_alqu
 collapse (sum) ing_Ing_Laboral=Yl ing_Ing_Capital=Yk ing_Alquiler_propio=ing_estim_alqu [fw=factor], by(`1')
 
@@ -86,7 +90,7 @@ save `eje1'
 
 ********************
 ** Eje 4: Consumo **
-use `"`c(sysdir_personal)'/SIM/`=anioenigh'/households.dta"', clear
+use `"`c(sysdir_personal)'/SIM/`2'/households.dta"', clear
 collapse (sum) gas_pc* gasto_anual* gasto_anualAhorro=Ahorro [fw=factor], by(`1')
 egen gasto_Alimentos = rsum(gas_pc_Agua gas_pc_Alim gas_pc_BebN)
 egen gasto_Vestido = rsum(gas_pc_Vest gas_pc_Calz)
@@ -96,7 +100,7 @@ egen gasto___Vivienda = rsum(gas_pc_Alqu gas_pc_Hoga gas_pc_Comu gas_pc_Elec)
 egen gasto___Transporte = rsum(gas_pc_Vehi gas_pc_STra gas_pc_FTra)
 egen gasto____Otros_gastos = rsum(gas_pc_Taba gas_pc_BebA gas_pc_Dive gas_pc_Rest)
 *egen gasto_____Consumo_gobierno = rsum(gasto_anualGobierno)
-egen gasto_____Depreciación_capital = rsum(gasto_anualDepreciacion)
+egen gasto_____Depreciación = rsum(gasto_anualDepreciacion)
 *egen gasto____Ahorro = rsum(gasto_anualAhorro)
 drop gasto_anual*
 
@@ -164,7 +168,7 @@ collapse (sum) profile, by(to)
 rename to from
 
 g to = 999
-label define PIB 999 "Ing disponible"
+label define PIB 999 "Ing nacional"
 label values to PIB
 
 tempfile eje2
@@ -179,7 +183,7 @@ collapse (sum) profile, by(from)
 rename from to
 
 g from = 999
-label define PIB 999 "Ing disponible"
+label define PIB 999 "Ing nacional"
 label values from PIB
 
 tempfile eje3

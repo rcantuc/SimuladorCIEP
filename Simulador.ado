@@ -5,10 +5,10 @@ quietly {
 		[BOOTstrap(int 1) ///
 		NOGraphs NOOutput REboot Noisily ///
 		BANDwidth(int 5) ///
-		BASE(string) ///
 		MACro(string) ///
 		POBlacion(string) FOLIO(string) ///
-		NOKernel POBGraph ANIO(int -1)]
+		NOKernel POBGraph ANIOVP(int -1) ANIOPE(int -1)]
+
 
 
 
@@ -16,36 +16,23 @@ quietly {
 	*******************
 	*** 0. Defaults ***
 	*******************
-	if `anio' == -1 {
+	if `aniovp' == -1 {
 		local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
-		local anio = substr(`"`=trim("`fecha'")'"',1,4)
+		local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
+	}
+	if `aniope' == -1 {
+		local aniope = `aniovp'
 	}
 
-	if "`base'" == "" {
-		if `anio' >= 2022 {
-			local base = "ENIGH 2022"
-		}
-		if `anio' >= 2020 & `anio' < 2022 {
-			local base = "ENIGH 2020"
-		}
-		if `anio' >= 2018 & `anio' < 2020 {
-			local base = "ENIGH 2018"
-		}
-		if `anio' >= 2016 & `anio' < 2018 {
-			local base = "ENIGH 2016"
-		}
-		tokenize `base'
-		local aniobase = `2'
-	}
 
-	** Macros: PIB **
+	** 0.1 Macros: PIB **
 	preserve
-	PIBDeflactor, anio(`anio') nographs nooutput
+	PIBDeflactor, anio(`aniovp') nographs nooutput
 	tempfile PIBBASE
 	save `PIBBASE'
 
 	forvalues k=1(1)`=_N' {
-		if anio[`k'] == `anio' {
+		if anio[`k'] == `aniope' {
 			local PIB = pibY[`k']
 			local deflator = deflator[`k']
 			continue, break
@@ -53,21 +40,16 @@ quietly {
 	}
 	restore
 
-	** Poblacion **
+
+	** 0.2 Macros: Poblacion **
 	if "`poblacion'" == "" {
 		local poblacion = "poblacion"
 	}
 
-	** Folio **
-	if "`folio'" == "" {
-		local folio = "folioviv foliohog"
-	}
 
-	** T{c i'}tulo **
+	** 0.3 Texto introductorio **
 	local title : variable label `varlist'
 	local nombre `"`=subinstr("`varlist'","_","",.)'"'
-
-	** Texto introductorio **
 	noisily di _newline(2) in g "  {bf:Variable label: " in y "`title'}"
 	noisily di in g "  {bf:Variable name: " in y "`varlist'}"
 	if "`if'" != "" {
@@ -78,7 +60,8 @@ quietly {
 	}
 	noisily di in g "  {bf:Bootstraps: " in y `bootstrap' "}" _newline
 
-	** Base original **
+
+	** Variable en valor presente **
 	replace `varlist' = `varlist'/`deflator'
 
 	capture confirm variable ingbrutotot
@@ -140,7 +123,7 @@ quietly {
 
 
 		** Ciclo de vida **
-		postfile CICLO bootstrap sexo edad decil escol formal double(poblacion `varlist') ///
+		postfile CICLO bootstrap sexo edad decil double(poblacion `varlist') ///
 			using `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'CICLO"', replace
 
 
@@ -271,17 +254,16 @@ quietly {
 			}
 
 			preserve
-			`noisily' incidencia `varlist' `if' [`weight' = `exp'*`boot'], folio(`folio') n(`decil') relativo(`ingreso') post
+			`noisily' incidencia `varlist' `if' [`weight' = `exp'*`boot'], folio(folioviv foliohog) n(`decil') relativo(`ingreso') post
 			restore
 
 
 			*** 1.3.4. Ciclo de Vida ***/
 			`noisily' CicloDeVida `varlist' `if' [`weight' = `exp'*`boot'], post boot(`k') decil(`decil')
-			`noisily' CicloDeVida `varlist' `if' [`weight' = `exp'*`boot'], post boot(`k') decil(escol)
 
 
 			*** 1.3.5. Proyecciones ***
-			`noisily' proyecciones `varlist', post pob(`poblacion') boot(`k') aniobase(`anio') title(`title')
+			`noisily' proyecciones `varlist', post pob(`poblacion') boot(`k') aniobase(`aniope') title(`title')
 		}
 
 
@@ -483,23 +465,28 @@ quietly {
 		scalar `varlist'`decil2' = r(mean)
 
 		if "$export" != "" {
-			tokenize "`base'"
-			if `2' == 2014 {
+			if `aniope' == 2014 {
 				local col = "B"
 			}
-			if `2' == 2016 {
+			if `aniope' == 2016 {
 				local col = "C"
 			}
-			if `2' == 2018 {
+			if `aniope' == 2018 {
 				local col = "D"
 			}
-			if `2' == 2020 {
+			if `aniope' == 2020 {
 				local col = "E"
 			}
-			if `2' == 2022 {
+			if `aniope' == 2022 {
 				local col = "F"
 			}
+			if `aniope' == 2024 {
+				local col = "G"
+			}
 			putexcel set "$export/Deciles.xlsx", modify sheet("`varlist'")
+			putexcel A1 = "Decil"
+			putexcel A`j' = "`decil2'"
+			putexcel `col'1 = "`aniope'"
 			putexcel `col'`j' = `=scalar(`varlist'`decil2')', nformat(number_sep)
 			local ++j
 		}
@@ -534,6 +521,9 @@ quietly {
 	noisily di _newline in g "  Decil" _column(20) %20s "Incidencia (% `rellabel')"
 	foreach k of local deciles {
 		ci means incidencia if decil == `k'
+		if r(mean) == . {
+			continue
+		}
 		local decil2 : label deciles `k'
 		noisily di in g "  `decil2'" _column(20) in y %20.1fc r(mean) ///
 			in g "  I.C. (95%): " in y "+/-" %7.2fc (r(ub)/r(mean)-1)*100 "%"
@@ -566,10 +556,6 @@ quietly {
 	* Labels *
 	label define deciles 1 "I" 2 "II" 3 "III" 4 "IV" 5 "V" 6 "VI" 7 "VII" 8 "VIII" 9 "IX" 10 "X" 11 "Nac"
 	label values decil deciles
-
-	replace escol = 3 if escol == 4
-	label define escol 0 "Ninguna" 1 "B{c a'}sica" 2 "Media superior" 3 "Superior o posgrado"
-	label values escol escol
 
 	label define sexo 1 "Hombres" 2 "Mujeres"
 	label values sexo sexo
@@ -671,7 +657,7 @@ program poblaciongini
 
 
 	*********************************
-	*** 4. Educational attainment ***
+	/*** 4. Educational attainment ***
 	levelsof escol, local(escol)
 	foreach k of local escol {
 		tabstat `varlist' if escol == `k', stat(sum) save
@@ -706,13 +692,6 @@ program poblaciongini
 	graphpiramide `varlist', over(`grupo') title("`title'") rect(`rect') ///
 		men(`=string(`gsexlab1',"%7.0fc")') women(`=string(`gsexlab2',"%7.0fc")') ///
 		boot(`boottext') base(`base') pib(`pib') `nooutput' `nographs'
-	*graphpiramide `varlist', over(`grupoesc') title("`title'") rect(`rect') ///
-		men(`=string(`gsexlab1',"%7.0fc")') women(`=string(`gsexlab2',"%7.0fc")') ///
-		boot(`boottext') base(`base') pib(`pib') `nooutput' `nographs'
-	*graphpiramide `varlist', over(`formalidad') title("`title'") rect(`rect') ///
-		men(`=string(`gsexlab1',"%7.0fc")') women(`=string(`gsexlab2',"%7.0fc")') ///
-		boot(`boottext') base(`base') pib(`pib') `nooutput' `nographs'
-
 end
 
 
@@ -838,9 +817,8 @@ program graphpiramide
 			caption("{bf:Source}: Prepared by CIEP, using data from `base'.") ///
 			///note(`"{bf:Nota}: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n en cada grupo."') ///
 			note(`"{bf:Note}: Percentages in parentheses show the concentration in each group."')
-		
-		tokenize `base'
-		graph save `=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)' `"`c(sysdir_personal)'/SIM/`2'/`varlist'_`titleover'.gph"', replace
+	
+		graph save `=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)' `"`c(sysdir_personal)'/SIM/`aniope'/`varlist'_`titleover'.gph"', replace
 		if "$export" != "" {
 			graph export `"$export/`varlist'_`titleover'.png"', replace name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)')
 		}
@@ -950,9 +928,9 @@ program define ProyGraph
 	replace estimacion = estimacion*lambda/1000000000000
 	*replace estimacion = estimacion*lambda/pibYR*100
 
-	forvalues aniohoy = `anio'(1)`anio' {
+	forvalues aniohoy = `aniope'(1)`aniope' {
 	*forvalues aniohoy = 1990(1)2050 {
-		tabstat estimacion /*if anio >= `anio'*/, stat(max) save
+		tabstat estimacion /*if anio >= `aniope'*/, stat(max) save
 		tempname MAX
 		matrix `MAX' = r(StatTotal)
 		forvalues k=1(1)`=_N' {
@@ -977,7 +955,7 @@ program define ProyGraph
 				(connected estimacion anio if anio == `aniohoy') ///
 				(connected estimacion anio if anio == `aniomax') ///
 				if anio > 1990, ///
-				ytitle("billones `currency' `anio'") ///
+				ytitle("billones `currency' `aniovp'") ///
 				///ytitle("% PIB") ///
 				yscale(range(0)) /*ylabel(0(1)4)*/ ///
 				ylabel(#5, format(%5.0fc) labsize(small)) ///

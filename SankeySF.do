@@ -3,7 +3,7 @@
 **************
 timer on 9
 if "`1'" == "" {
-	local 1 = "escol"
+	local 1 = "decil"
 	local 2 = 2023
 }
 
@@ -21,9 +21,10 @@ if "`1'" == "" {
 
 **********************************/
 ** Eje 1: Generación del ingreso **
-capture use `"`c(sysdir_personal)'/users/$id/households.dta"', clear
+capture use `"`c(sysdir_personal)'/users/$id/ingresos.dta"', clear
+capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/users/$id/gastos.dta", nogen replace update
 if _rc != 0 {
-	use "`c(sysdir_personal)'/SIM/perfiles`=anioPE'.dta", clear
+	*use "`c(sysdir_personal)'/SIM/perfiles`=anioPE'.dta", clear
 }
 tempvar Laboral Consumo Capital FMP
 egen `Laboral'  = rsum(ISRAS ISRPF CUOTAS)
@@ -63,7 +64,7 @@ replace from = 97 in -1
 replace profile = (scalar(PEMEX))/100*scalar(PIB) in -1
 replace to = 4 in -1
 label define `1' 97 "Pemex", add
-label define to 4 "Ingresos propios", add
+label define to 4 "Empresas públicas", add
 
 * FMP *
 set obs `=_N+1'
@@ -88,9 +89,10 @@ save `eje1'
 use if anio == `2' using `"`c(sysdir_site)'/SIM/Poblaciontot.dta"', clear
 local ajustepob = poblacion
 
-capture use `"`c(sysdir_personal)'/users/$id/households.dta"', clear
+capture use `"`c(sysdir_personal)'/users/$id/ingresos.dta"', clear
+capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/users/$id/gastos.dta", nogen replace update
 if _rc != 0 {
-	use "`c(sysdir_personal)'/SIM/perfiles`=anioPE'.dta", clear
+	*use "`c(sysdir_personal)'/SIM/perfiles`=anioPE'.dta", clear
 }
 tabstat factor, stat(sum) f(%20.0fc) save
 tempname pobenigh
@@ -105,10 +107,9 @@ tempname pobtot
 matrix `pobtot' = r(StatTotal)*`ajustepob'/`pobenigh'[1,1]
 
 replace Pension = Pension + Pensión_AM
-
-tabstat Pension Educación Salud Otros_gastos [fw=factor], stat(sum) f(%20.0fc) save
-tempname GAST 
-matrix `GAST' = r(StatTotal)
+*tabstat Pension Educación Salud Otros_gastos [fw=factor], stat(sum) f(%20.0fc) save
+*tempname GAST 
+*matrix `GAST' = r(StatTotal)
 
 collapse (sum) gas_Educación=Educación gas_Salud=Salud /*gas__Salarios_de_gobierno=Salarios*/ ///
 	gas___Pensiones=Pension gas____Transferencias=IngBasico ///
@@ -130,19 +131,19 @@ encode `from', g(from)
 rename `1' to
 
 * Costo de la deuda *
-set obs `=_N+4'
+set obs `=_N+5'
 
 replace from = 97 in -1
 label define from 97 "Costo de la deuda", add
 
 replace profile = scalar(gascosto)*`pobtot'[1,1] in -1
 
-replace to = 11 in -1
-label define `1' 11 "Sistema financiero", add
+replace to = 14 in -1
+label define `1' 14 "Sistema financiero", add
 
 * Aportaciones y participaciones *
-replace from = 96 in -2
-label define from 96 "Otras Part y Aport", add
+replace from = 94 in -2
+label define from 94 "Otras Part y Aport", add
 
 replace profile = scalar(gasfeder)*`pobtot'[1,1] in -2
 
@@ -159,13 +160,20 @@ replace to = 13 in -3
 label define `1' 13 "No distribuibles", add
 
 * Energía *
-replace from = 94 in -4
-label define from 94 "Energía", add
+replace from = 96 in -4
+label define from 96 "Energía", add
 
-replace profile = (scalar(gaspemex)+scalar(gascfe)+scalar(gassener)+scalar(gasinverf)+scalar(gascosdeue))*`pobtot'[1,1] in -4
+replace profile = (scalar(gaspemex)+scalar(gascfe)+scalar(gassener)+scalar(gasinverf))*`pobtot'[1,1] in -4
 
-replace to = 14 in -4
-label define `1' 14 "CFE Pemex SENER", add
+replace to = 11 in -4
+label define `1' 11 "CFE Pemex SENER", add
+
+* Costo de la deuda energía *
+replace from = 96 in -5
+
+replace profile = scalar(gascosdeue)*`pobtot'[1,1] in -5
+
+replace to = 14 in -5
 
 
 * Gasto total */

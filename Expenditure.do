@@ -14,6 +14,7 @@
 timer on 15
 if "`1'" == "" {
 	local enighanio = 2022
+	local claveiva = "*2018"
 }
 else {
 	if `1' >= 2022 {
@@ -35,9 +36,6 @@ else {
 	if `1' >= 2014 & `1' < 2016 {
 		local enighanio = 2014
 		local claveiva = "*2014"
-	}
-	if `1' >= 2012 & `1' < 2014 {
-		local enighanio = 2012
 	}
 }
 
@@ -69,16 +67,15 @@ SCN, anio(`enighanio') nographs
 LIF, anio(`enighanio') by(divCIEP) nographs min(0)
 local IVA = r(IVA)
 local IEPSNP = r(IEPS__no_petrolero_) //+r(IEPS__petrolero_)
-local Ieps1 = r(Cervezas)
-local Ieps2 = r(Tabacos)
-local Ieps3 = r(Juegos)
-local Ieps4 = r(Telecom)
-local Ieps5 = r(Energiza)
-local Ieps6 = r(Saboriza)
-local Ieps7 = r(AlimNoBa)
-local Ieps8 = r(Fosiles)
-local Ieps9 = r(IEPS__petrolero_)
-local Ieps10 = r(Alcohol)
+local IepsTabaco = r(Tabacos)
+local IepsJuegos = r(Juegos)
+local IepsTelecom = r(Telecom)
+local IepsBebidasEner = r(Energiza)
+local IepsBebidasSabor = r(Saboriza)
+local IepsAltoContCal = r(AlimNoBa)
+local IepsCombustibles = r(Fosiles)
+local IepsGasolinas = r(IEPS__petrolero_)
+local IepsAlcohol = r(Alcohol)
 
 
 ** 1.3 Población **
@@ -421,15 +418,15 @@ if _rc != 0 {
 
 
 	** 2.16. Cálculo de la cantidad anual **
-	replace cantidad = cantidad*365 if frecuencia == "1" | categ_iva == 6
+	replace cantidad = cantidad*365 if frecuencia == "1"
 	replace cantidad = cantidad*52 if frecuencia == "2"
 	replace cantidad = cantidad*12 if frecuencia == "3"
-	replace cantidad = cantidad*4 if frecuencia == "4" 
-	replace cantidad = 4 if frecuencia == "5" | frecuencia == "6" 
-	replace cantidad = 52 if frecuencia == "0" | frecuencia == ""
+	replace cantidad = cantidad*4 if frecuencia == "4"
+	replace cantidad = 365 if frecuencia == "5" | frecuencia == "6" 
+	replace cantidad = 365 if frecuencia == "0" | frecuencia == ""
 
 	* Educación *
-	replace cantidad = 1 if letra == "E" & (num >= 1 & num <= 7) //& publica == 0
+	replace cantidad = 365 if letra == "E" & (num >= 1 & num <= 7) //& publica == 0
 
 	** 2.17. Cálculo de cantidad de gasolinas **
 	*replace cantidad = gasto/13.98*52 if clave == "F007"
@@ -479,7 +476,7 @@ foreach categ in categ categ_iva categ_ieps {
 
 		** 3.1 Consumo de los individuos **
 		use "`c(sysdir_personal)'/SIM/`enighanio'/preconsumption.dta", clear
-		drop if gasto_anual == 0 | numren == "" //| `categ' == 99
+		drop if gasto_anual == 0 | numren == ""
 		collapse (sum) gas_ind=gasto_anual cant_ind=cantidad (mean) proporcion, by(folioviv foliohog numren `categ')
 
 		decode `categ', gen(categs)
@@ -503,7 +500,7 @@ foreach categ in categ categ_iva categ_ieps {
 
 		** 3.2 Consumo de los hogares **
 		use "`c(sysdir_personal)'/SIM/`enighanio'/preconsumption.dta", clear
-		drop if gasto_anual == 0 | numren != "" //| `categ' == 99
+		drop if gasto_anual == 0 | numren != ""
 		collapse (sum) gas_hog=gasto_anual cant_hog=cantidad (mean) proporcion, by(folioviv foliohog `categ')
 
 		decode `categ', gen(categs)
@@ -526,6 +523,7 @@ foreach categ in categ categ_iva categ_ieps {
 		merge 1:m (folioviv foliohog) using "`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/`enighanio'/poblacion.dta", nogen keepus(numren edad sexo)
 		merge 1:1 (folioviv foliohog numren) using `gastoindividuos', nogen keepus(*_ind* proporcion*)
 		merge m:1 (folioviv foliohog) using "`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/`enighanio'/concentrado.dta", nogen keepus(factor)
+		merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/perfiles`enighanio'.dta", nogen keepus(decil ingbrutotot)
 		sort folioviv foliohog numren
 		egen tot_integ = count(edad), by(folioviv foliohog)
 
@@ -555,14 +553,14 @@ foreach categ in categ categ_iva categ_ieps {
 				local label = subinstr("`title' per cápita en `k'","_"," ",.)
 				label var `vars'pc_`k' "`label'"
 
-				//tempvar `vars'pc_`k'
-				//g ``vars'pc_`k'' = `vars'pc_`k' + `vars'ind`k'
-				//label var ``vars'pc_`k'' "`title' per cápita en `k' (original)"
-				//noisily Simulador ``vars'pc_`k'' [fw=factor], base("ENIGH `=anioenigh'") reboot anio(2022)
+				tempvar `vars'pc_`k'
+				g ``vars'pc_`k'' = `vars'pc_`k' + `vars'ind`k'
+				label var ``vars'pc_`k'' "`title' en `k' (original)"
+				noisily Simulador ``vars'pc_`k'' [fw=factor], reboot aniope(2022)
 
 				* Iteraciones *
 				noisily di in y "`k': " _cont
-				local salto = 3
+				local salto = 2
 				forvalues iter=1(1)25 {
 					noisily di in w "`iter' " _cont
 					forvalues edades=0(`salto')109 {
@@ -578,13 +576,12 @@ foreach categ in categ categ_iva categ_ieps {
 						}
 					}
 					egen equivalencia`k' = sum(`vars'pc_`k'), by(folioviv foliohog)
-					replace `vars'pc_`k' = `vars'hog`k'*`vars'pc_`k'/equivalencia`k' //+ `vars'ind`k'
+					replace `vars'pc_`k' = `vars'hog`k'*`vars'pc_`k'/equivalencia`k'
 					drop equivalencia`k'
 				}
-				//replace `vars'pc_`k' = 0 if `vars'pc_`k' == .
-				//replace `vars'pc_`k' = `vars'pc_`k' + `vars'ind`k'
-				//noisily Simulador `vars'pc_`k' [fw=factor], base("ENIGH `=anioenigh'") reboot anio(2022) nographs
-				//graph export "`c(sysdir_personal)'/SIM/`enighanio'/`vars'pc_`k'.png", replace
+				replace `vars'pc_`k' = 0 if `vars'pc_`k' == .
+				replace `vars'pc_`k' = `vars'pc_`k' + `vars'ind`k'
+				noisily Simulador `vars'pc_`k' [fw=factor], reboot aniope(2022)
 			}
 			noisily di
 		}
@@ -618,6 +615,7 @@ foreach categ in categ categ_iva categ_ieps {
 ******************************
 use "`c(sysdir_personal)'/SIM/`enighanio'/consumption_categ_pc.dta", replace
 merge m:1 (folioviv foliohog) using "`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/`enighanio'/concentrado.dta", nogen keepus(factor)
+merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/perfiles`enighanio'.dta", nogen keepus(decil ingbrutotot)
 capture rename factor_hog factor
 order folioviv foliohog numren
 drop *_hog* *_ind*
@@ -625,29 +623,73 @@ drop *_hog* *_ind*
 egen gasto_pc = rsum(gas_pc*)
 label var gasto_pc "Gasto total per cápita"
 
-//merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/`enighanio'/perfiles`=anioPE'.dta", nogen keepus(escol formal decil ingbrutotot)
-//noisily Simulador gasto_pc [fw=factor], base("ENIGH `=anioenigh'") reboot anio(2022)
-//graph export "`c(sysdir_personal)'/SIM/`enighanio'/gasto_pc.png", replace
-
 Gini gasto_pc, hogar(folioviv foliohog) factor(factor)
 local gini_gasto_pc = r(gini_gasto_pc)
 scalar ginigastopc = `gini_gasto_pc'
 
 scalar MTot = 0
 foreach k in Alim BebN BebA Taba Vest Calz Alqu Agua Elec Hoga Salu Vehi FTra STra Comu Recr Educ Rest Dive {
+	if "`k'" == "Alim" {
+		label var gas_pc_Alim "Alimentos"
+	}
+	if "`k'" == "BebN" {
+		label var gas_pc_BebN "Bebidas no alcohólicas"
+	}
+	if "`k'" == "BebA" {
+		label var gas_pc_BebA "Bebidas alcohólicas"
+	}
+	if "`k'" == "Taba" {
+		label var gas_pc_Taba "Tabaco"
+	}
+	if "`k'" == "Vest" {
+		label var gas_pc_Vest "Prendas de vestir"
+	}
+	if "`k'" == "Calz" {
+		label var gas_pc_Calz "Calzado"
+	}
+	if "`k'" == "Alqu" {
+		label var gas_pc_Alqu "Alquileres y vivienda"
+	}
+	if "`k'" == "Agua" {
+		label var gas_pc_Agua "Agua"
+	}
+	if "`k'" == "Elec" {
+		label var gas_pc_Elec "Electricidad"
+	}
+	if "`k'" == "Hoga" {
+		label var gas_pc_Hoga "Artículos para el hogar"
+	}
 	if "`k'" == "Salu" {
-		label var gas_pc_Salu "Health profile"
+		label var gas_pc_Salu "Salud"
+	}
+	if "`k'" == "Vehi" {
+		label var gas_pc_Vehi "Adquisición de vehículos"
+	}
+	if "`k'" == "FTra" {
+		label var gas_pc_FTra "Transporte personal"
+	}
+	if "`k'" == "STra" {
+		label var gas_pc_STra "Servicios de transporte"
+	}
+	if "`k'" == "Comu" {
+		label var gas_pc_Comu "Comunicaciones"
+	}
+	if "`k'" == "Recr" {
+		label var gas_pc_Recr "Recreación y cultura"
 	}
 	if "`k'" == "Educ" {
-		label var gas_pc_Educ "Education profile"
+		label var gas_pc_Educ "Educación"
+	}
+	if "`k'" == "Rest" {
+		label var gas_pc_Rest "Restaurantes y hoteles"
+	}
+	if "`k'" == "Dive" {
+		label var gas_pc_Dive "Otros diversos"
 	}
 	tabstat gas_pc_`k' [aw=factor], stat(sum) f(%20.0fc) save
 	scalar M`k' = r(StatTotal)[1,1]
 	scalar E`k'PIB = M`k'/PIB*100
 	scalar E`k'PC = M`k'/pobtotNac
-
-	//noisily Simulador gas_pc_`k' [fw=factor], base("ENIGH `=anioenigh'") reboot anio(2022)
-	//graph export "`c(sysdir_personal)'/SIM/`enighanio'/gas_pc_`k'.png", replace
 
 	Gini gas_pc_`k', hogar(folioviv foliohog) factor(factor)
 	local gini`k' = r(gini_gas_pc_`k')
@@ -662,108 +704,108 @@ scalar ETotPC = MTot/pobtotNac
 * Display de resultados *
 noisily di _newline in g "{bf: A. Gasto inicial" ///
 	_col(44) in g "(Gini)" ///
-	_col(57) in g %7s "ENIGH" ///
+	_col(55) in g %7s "ENIGH" ///
 	_col(66) %7s "SCN" in g ///
 	_col(77) %7s "Dif. %" "}"
 noisily di in g "  (+) Alimentos " ///
 	_col(44) in y "(" %5.3fc giniAlim ")" ///
-	_col(57) in y %7.3fc MAlim/PIB*100 ///
+	_col(55) in y %7.3fc MAlim/PIB*100 ///
 	_col(66) %7.3fc Alim/PIB*100 ///
 	_col(77) %6.1fc (MAlim/Alim-1)*100 "%"
 noisily di in g "  (+) Bebidas no alcohólicas " ///
 	_col(44) in y "(" %5.3fc giniBebN ")" ///
-	_col(57) in y %7.3fc MBebN/PIB*100 ///
+	_col(55) in y %7.3fc MBebN/PIB*100 ///
 	_col(66) %7.3fc BebN/PIB*100 ///
 	_col(77) %6.1fc (MBebN/BebN-1)*100 "%"
 noisily di in g "  (+) Bebidas alcohólicas " ///
 	_col(44) in y "(" %5.3fc giniBebA ")" ///
-	_col(57) in y %7.3fc MBebA/PIB*100 ///
+	_col(55) in y %7.3fc MBebA/PIB*100 ///
 	_col(66) %7.3fc BebA/PIB*100 ///
 	_col(77) %6.1fc (MBebA/BebA-1)*100 "%"
 noisily di in g "  (+) Tabaco " ///
 	_col(44) in y "(" %5.3fc giniTaba ")" ///
-	_col(57) in y %7.3fc MTaba/PIB*100 ///
+	_col(55) in y %7.3fc MTaba/PIB*100 ///
 	_col(66) %7.3fc Taba/PIB*100 ///
 	_col(77) %6.1fc (MTaba/Taba-1)*100 "%"
 noisily di in g "  (+) Prendas de vestir " ///
 	_col(44) in y "(" %5.3fc giniVest ")" ///
-	_col(57) in y %7.3fc MVest/PIB*100 ///
+	_col(55) in y %7.3fc MVest/PIB*100 ///
 	_col(66) %7.3fc Vest/PIB*100 ///
 	_col(77) %6.1fc (MVest/Vest-1)*100 "%"
 noisily di in g "  (+) Calzado " ///
 	_col(44) in y "(" %5.3fc giniCalz ")" ///
-	_col(57) in y %7.3fc MCalz/PIB*100 ///
+	_col(55) in y %7.3fc MCalz/PIB*100 ///
 	_col(66) %7.3fc Calz/PIB*100 ///
 	_col(77) %6.1fc (MCalz/Calz-1)*100 "%"
 noisily di in g "  (+) Vivienda " ///
 	_col(44) in y "(" %5.3fc giniAlqu ")" ///
-	_col(57) in y %7.3fc MAlqu/PIB*100 ///
+	_col(55) in y %7.3fc MAlqu/PIB*100 ///
 	_col(66) %7.3fc Alqu/PIB*100 ///
 	_col(77) %6.1fc (MAlqu/Alqu-1)*100 "%"
 noisily di in g "  (+) Agua " ///
 	_col(44) in y "(" %5.3fc giniAgua ")" ///
-	_col(57) in y %7.3fc MAgua/PIB*100 ///
+	_col(55) in y %7.3fc MAgua/PIB*100 ///
 	_col(66) %7.3fc Agua/PIB*100 ///
 	_col(77) %6.1fc (MAgua/Agua-1)*100 "%"
 noisily di in g "  (+) Electricidad " ///
 	_col(44) in y "(" %5.3fc giniElec ")" ///
-	_col(57) in y %7.3fc MElec/PIB*100 ///
+	_col(55) in y %7.3fc MElec/PIB*100 ///
 	_col(66) %7.3fc Elec/PIB*100 ///
 	_col(77) %6.1fc (MElec/Elec-1)*100 "%"
 noisily di in g "  (+) Artículos para el hogar " ///
 	_col(44) in y "(" %5.3fc giniHoga ")" ///
-	_col(57) in y %7.3fc MHoga/PIB*100 ///
+	_col(55) in y %7.3fc MHoga/PIB*100 ///
 	_col(66) %7.3fc Hoga/PIB*100 ///
 	_col(77) %6.1fc (MHoga/Hoga-1)*100 "%"
 noisily di in g "  (+) Salud " ///
 	_col(44) in y "(" %5.3fc giniSalu ")" ///
-	_col(57) in y %7.3fc MSalu/PIB*100 ///
+	_col(55) in y %7.3fc MSalu/PIB*100 ///
 	_col(66) %7.3fc Salu/PIB*100 ///
 	_col(77) %6.1fc (MSalu/Salu-1)*100 "%"
 noisily di in g "  (+) Aquisición de vehículos " ///
 	_col(44) in y "(" %5.3fc giniVehi ")" ///
-	_col(57) in y %7.3fc MVehi/PIB*100 ///
+	_col(55) in y %7.3fc MVehi/PIB*100 ///
 	_col(66) %7.3fc Vehi/PIB*100 ///
 	_col(77) %6.1fc (MVehi/Vehi-1)*100 "%"
 noisily di in g "  (+) Funcionamiento de STransporte " ///
 	_col(44) in y "(" %5.3fc giniFTra ")" ///
-	_col(57) in y %7.3fc MFTra/PIB*100 ///
+	_col(55) in y %7.3fc MFTra/PIB*100 ///
 	_col(66) %7.3fc FTra/PIB*100 ///
 	_col(77) %6.1fc (MFTra/FTra-1)*100 "%"
 noisily di in g "  (+) Servicios de STransporte " ///
 	_col(44) in y "(" %5.3fc giniSTra ")" ///
-	_col(57) in y %7.3fc MSTra/PIB*100 ///
+	_col(55) in y %7.3fc MSTra/PIB*100 ///
 	_col(66) %7.3fc STra/PIB*100 ///
 	_col(77) %6.1fc (MSTra/STra-1)*100 "%"
 noisily di in g "  (+) Comunicaciones " ///
 	_col(44) in y "(" %5.3fc giniComu ")" ///
-	_col(57) in y %7.3fc MComu/PIB*100 ///
+	_col(55) in y %7.3fc MComu/PIB*100 ///
 	_col(66) %7.3fc Comu/PIB*100 ///
 	_col(77) %6.1fc (MComu/Comu-1)*100 "%"
 noisily di in g "  (+) Recreación y cultura " ///
 	_col(44) in y "(" %5.3fc giniRecr ")" ///
-	_col(57) in y %7.3fc MRecr/PIB*100 ///
+	_col(55) in y %7.3fc MRecr/PIB*100 ///
 	_col(66) %7.3fc Recr/PIB*100 ///
 	_col(77) %6.1fc (MRecr/Recr-1)*100 "%"
 noisily di in g "  (+) Educación " ///
 	_col(44) in y "(" %5.3fc giniEduc ")" ///
-	_col(57) in y %7.3fc MEduc/PIB*100 ///
+	_col(55) in y %7.3fc MEduc/PIB*100 ///
 	_col(66) %7.3fc Educ/PIB*100 ///
 	_col(77) %6.1fc (MEduc/Educ-1)*100 "%"
 noisily di in g "  (+) Restaurantes y hoteles" ///
 	_col(44) in y "(" %5.3fc giniRest ")" ///
-	_col(57) in y %7.3fc MRest/PIB*100 ///
+	_col(55) in y %7.3fc MRest/PIB*100 ///
 	_col(66) %7.3fc Rest/PIB*100 ///
 	_col(77) %6.1fc (MRest/Rest-1)*100 "%"
 noisily di in g "  (+) Bienes y servicios diveresos " ///
 	_col(44) in y "(" %5.3fc giniDive ")" ///
-	_col(57) in y %7.3fc MDive/PIB*100 ///
+	_col(55) in y %7.3fc MDive/PIB*100 ///
 	_col(66) %7.3fc Dive/PIB*100 ///
 	_col(77) %6.1fc (MDive/Dive-1)*100 "%"
 noisily di in g _dup(84) "-"
 noisily di in g "{bf:  (=) Total " ///
 	_col(44) in y "(" %5.3fc ginigastopc ")" ///
-	_col(57) in y %7.3fc MTot/PIB*100 ///
+	_col(55) in y %7.3fc MTot/PIB*100 ///
 	_col(66) %7.3fc ConHog/PIB*100 ///
 	_col(77) %6.1fc (MTot/ConHog-1)*100 "}" "%"
 
@@ -912,20 +954,14 @@ capture rename factor_hog factor
 order folioviv foliohog numren
 drop *_hog* *_ind*
 
-//merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/`enighanio'/perfiles`=anioPE'.dta", nogen keepus(escol formal decil ingbrutotot)
+merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/perfiles`enighanio'.dta", nogen keepus(decil ingbrutotot)
 reshape long gas_pc_ cant_pc_ proporcion, i(folioviv foliohog numren) j(categs) string
-
-levelsof categs, local(categs)
-foreach k of local categs {
-	//noisily Simulador gas_pc_ if categs == "`k'" [fw=factor], base("ENIGH `=anioenigh'") reboot anio(2022)
-	//graph export "`c(sysdir_personal)'/SIM/`enighanio'/gas_pc_`k'.png", replace
-}
 
 
 ** 5.1. Cálculo de precios **
 replace gas_pc_ = gas_pc_*ConHog/MTot
 replace cant_pc_ = cant_pc_*ConHog/MTot
-capture g precio = gas_pc_/cant_pc_
+g precio = gas_pc_/cant_pc_
 noisily tabstat precio gas_pc_ cant_pc_ [aw=factor], f(%20.0fc) by(categs)
 
 
@@ -933,18 +969,15 @@ noisily tabstat precio gas_pc_ cant_pc_ [aw=factor], f(%20.0fc) by(categs)
 capture drop IVA
 g IVA = 0
 levelsof categs, local(categs)
-local j = 1
+local j = 2
 foreach k of local categs {
-	local ++j
-	if IVAT[`j',1] == 1 {
-		continue
-	}
 	if IVAT[`j',1] == 2 {
-		replace IVA = IVA + precio*IVAT[1,1]/100/(1+IVAT[1,1]/100)*cant_pc_*proporcion if categs == "`k'"
+		replace IVA = IVA + precio*cant_pc_*proporcion*IVAT[1,1]/100/(1+IVAT[1,1]/100) if categs == "`k'"
 	}
 	if IVAT[`j',1] == 3 {
-		replace IVA = IVA + precio*IVAT[1,1]/100/(1+IVAT[1,1]/100)*cant_pc_ if categs == "`k'"
+		replace IVA = IVA + precio*cant_pc_*IVAT[1,1]/100/(1+IVAT[1,1]/100) if categs == "`k'"
 	}
+	local ++j
 }
 tabstat IVA [aw=factor], stat(sum) f(%20.0fc) save
 scalar IVA = r(StatTotal)[1,1]
@@ -957,12 +990,12 @@ scalar giniIVA = `gini_IVA'
 ** 5.3. Display de resultados **
 noisily di _newline in g "{bf: C. IVA" ///
 	_col(44) in g "(Gini)" ///
-	_col(57) in g %7s "ENIGH" ///
+	_col(55) in g %7s "ENIGH" ///
 	_col(66) %6s "Macro" in g ///
 	_col(77) %6s  "Informalidad %}"
 noisily di in g "  Total " ///
 	_col(44) in y "(" %5.3fc giniIVA ")" ///
-	_col(57) in y %7.3fc scalar(IVA)/PIB*100 ///
+	_col(55) in y %7.3fc scalar(IVA)/PIB*100 ///
 	_col(66) %7.3fc `IVA'/PIB*100 ///
 	_col(77) %6.2fc -(`IVA'/scalar(IVA)-1)*100 "%"
 
@@ -973,27 +1006,11 @@ save "`c(sysdir_personal)'/SIM/`enighanio'/consumption_categ_iva.dta", replace
 
 
 
-
-
-
-
-
-
-***************
+**************/
 ***         ***
 *** 6. IEPS ***
 ***         ***
 ***************
-/*local Ieps1 = r(Cervezas)
-local Ieps10 = r(Alcohol)
-local Ieps2 = r(Tabacos)
-local Ieps3 = r(Juegos)
-local Ieps4 = r(Telecom)
-local Ieps5 = r(Energiza)
-local Ieps6 = r(Saboriza)
-local Ieps7 = r(AlimNoBa)
-local Ieps8 = r(Fosiles)
-local Ieps9 = r(IEPS__petrolero_)*/
 if `enighanio' >= 2014 {
 	matrix IEPST = (26.5	,		0 			\ /// Cervezas y licores
 				30.0	,		0 			\ /// Alcohol 14+ a 20
@@ -1004,20 +1021,19 @@ if `enighanio' >= 2014 {
 				0		,		19.8607		\ /// Combustibles (diesel)
 				30.0	,		0 			\ /// Juegos y sorteos
 				160.0	,		0.6166		\ /// Tabaco y cigarros
-				3.0		,		0 			) /// Telecomunicaciones
-//				0		,		6.1752		\ /// Gasolina: magna
-//				0		,		5.2146		\ /// Gasolina: premium
-//				0		,		6.7865		) // Gasolina: diésel
+				3.0		,		0 			) //  Telecomunicaciones
 }
 
 use "`c(sysdir_personal)'/SIM/`enighanio'/consumption_categ_ieps_pc.dta", clear
-capture drop gas_hog* cant_hog* gas_ind* cant_ind*
-capture reshape long gas_pc_ cant_pc_ proporcion, i(folioviv foliohog numren) j(categs) string
+drop gas_hog* cant_hog* gas_ind* cant_ind*
+
+merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/perfiles`enighanio'.dta", nogen keepus(decil ingbrutotot)
+reshape long gas_pc_ cant_pc_ proporcion, i(folioviv foliohog numren) j(categs) string
 
 
 ** 6.1. Cálculo de precios **
-capture g precio = gas_pc_/cant_pc_*ConHog/MTot
-tabstat precio [aw=factor], f(%20.0fc) by(categs)
+g precio = gas_pc_/cant_pc_*ConHog/MTot
+noisily tabstat precio gas_pc_ cant_pc_ [aw=factor], f(%20.0fc) by(categs)
 
 
 ** 6.2. Cálculo del IEPS **
@@ -1027,7 +1043,7 @@ levelsof categs, local(categs)
 local j = 0
 foreach k of local categs {
 	local ++j
-	if "`k'" == "Gasolinas" | "`k'" == "Sin IEPS" {
+	if "`k'" == "Gasolinas" | "`k'" == "Sin_IEPS" {
 		continue
 	}
 	else if "`k'" == "Alcohol" {
@@ -1039,23 +1055,47 @@ foreach k of local categs {
 		replace IEPS = IEPS + ((precio)*proporcion*(IEPST[`j',1]/100) + IEPST[`j',2])*cant_pc_ if categs == "`k'"
 	}
 }
+
 tabstat IEPS [aw=factor], stat(sum) f(%20.0fc) save by(categs)
 scalar IEPS = r(StatTotal)[1,1]
+foreach k of local categs {
+	local j = 1
+	while "`=r(name`j')'" != "`k'" {
+		local ++j
+	}
+	matrix IEPS`k' = r(Stat`j')
+	local name`k' = "`=r(name`j')'"
+}
+foreach k of local categs {
+	Gini IEPS if categs == "`k'", hogar(folioviv foliohog) factor(factor)
+	local gini_ieps`k' = r(gini_IEPS)
+	scalar gini_ieps`k' = `gini_ieps`k''
+}
 
 Gini IEPS, hogar(folioviv foliohog) factor(factor)
 local gini_IEPS = r(gini_IEPS)
-scalar giniIEPS = `gini_IEPS'
+scalar gini_IEPS = `gini_IEPS'
 
 
 ** 6.3. Display de resultados **
 noisily di _newline in g "{bf: D. IEPS" ///
 	_col(44) in g "(Gini)" ///
-	_col(57) in g %7s "ENIGH" ///
+	_col(55) in g %7s "ENIGH" ///
 	_col(66) %6s "Macro" in g ///
 	_col(77) %6s  "Informalidad %}"
+foreach k of local categs {
+	if "`k'" != "Sin_IEPS" {
+		noisily di in g "  (+) `name`k''" ///
+			_col(44) in y "(" %5.3fc gini_ieps`k' ")" ///
+			_col(55) in y %7.3fc IEPS`k'[1,1]/PIB*100 ///
+			_col(66) in y %7.3fc `Ieps`k''/PIB*100 ///
+			_col(77) in y %6.1fc (IEPS`k'[1,1]/`Ieps`k''-1)*100 "%"
+	}
+}
+noisily di in g _dup(84) "-"
 noisily di in g "  Total " ///
-	_col(44) in y "(" %5.3fc giniIEPS ")" ///
-	_col(57) in y %7.3fc scalar(IEPS)/PIB*100 ///
+	_col(44) in y "(" %5.3fc gini_IEPS ")" ///
+	_col(55) in y %7.3fc scalar(IEPS)/PIB*100 ///
 	_col(66) %7.3fc `IEPSNP'/PIB*100 ///
 	_col(77) %6.1fc -(`IEPSNP'/scalar(IEPS)-1)*100 "%"
 
@@ -1068,39 +1108,3 @@ timer off 15
 timer list 15
 noisily di _newline in g "{bf:Tiempo:} " in y round(`=r(t15)/r(nt15)',.1) in g " segs."
 log close expenditures
-exit
-
-
-** 6.3. Cálculo del IEPS **
-replace porcentaje_ieps = 0 if porcentaje_ieps == .
-*g precio_p = ((precio - IVA)*proporcion - cuota_ieps2018)/(1 + porcentaje_ieps2018/100) if categ_ieps != .
-g IEPS = ((gasto_anual)/(1+(`tasagener'/100))-cuota_ieps2018*cantidad)*proporcion*porcentaje_ieps2018/100/(1 + porcentaje_ieps2018/100) + cuota_ieps2018*cantidad if categ_ieps != .
-*replace IEPS = gasto_anual*.63 if categ_ieps == 12
-*g IEPS = ((precio-IVA)*proporcion*(1 + porcentaje_ieps2018/100) + cuota_ieps2018) if categ_ieps != .
-replace IEPS = 0 if informal == 1
-tabstat IEPS [aw=factor], by(categ_ieps) stat(sum) f(%20.0fc)
-
-local k = 1
-while "`=r(name`k')'" != "." {
-	tempname ieps`k'
-	matrix `ieps`k'' = r(Stat`k')
-	local name`k' = "`=r(name`k')'"
-	local ++k
-}
-
-local k = 1
-while "`name`k''" != "" {
-	g `ieps`k'' = IEPS if categ_ieps == `k'
-	Gini `ieps`k'', hogar(folioviv foliohog) factor(factor)
-	local gini_ieps`k' = r(gini_`ieps`k'')
-	noisily di in g "  (+) `name`k''" ///
-		_col(44) in y "(" %5.3fc `gini_ieps`k'' ")" ///
-		_col(57) in y %7.3fc `ieps`k''[1,1]/PIB*100 ///
-		_col(66) in y %7.3fc `Ieps`k''/PIB*100 ///
-		_col(77) in y %6.1fc (`ieps`k''[1,1]/`Ieps`k''-1)*100 "%"
-	local ++k
-}
-
-
-
-

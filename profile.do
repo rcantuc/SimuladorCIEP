@@ -41,7 +41,7 @@ scalar anioPE = 2024
 scalar aniovp = 2024
 
 
-/** 2.2 Economía **
+** 2.2 Economía **
 ** Fuente: CGPE 2024 (página 121)
 ** 2.2.1 Parámetros: Crecimiento anual del Producto Interno Bruto **
 global pib2023 = 3.1766
