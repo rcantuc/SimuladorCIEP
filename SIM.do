@@ -384,7 +384,7 @@ if _rc != 0 {
 **************************************
 ** 3.1 (+) Impuestos y aportaciones **
 capture drop ImpuestosAportaciones
-egen ImpuestosAportaciones = rsum(ISRAS ISRPF CUOTAS ISRPM IVA IEPSNP IEPSP ISAN IMPORT) //OTROSK
+egen ImpuestosAportaciones = rsum(ISRAS ISRPF CUOTAS ISRPM OTROSK IVA IEPSNP IEPSP ISAN IMPORT)
 label var ImpuestosAportaciones "impuestos y aportaciones"
 
 

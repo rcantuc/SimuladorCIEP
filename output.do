@@ -24,7 +24,6 @@ if "$output" != "" {
 	"]"
 	noisily di in w "GASTOS: ["  ///
 		%8.3f iniciaAPIB "," /// Educación inicial
-		%8.3f iniciaBPIB "," /// Comunitaria (CONAFE)
 		%8.3f basicaPIB "," /// Educación básica
 		%8.3f medsupPIB "," /// Educación media superior
 		%8.3f superiPIB "," /// Educación superior
@@ -34,15 +33,14 @@ if "$output" != "" {
 		%8.3f inverePIB "," /// Inversión educativa
 		%8.3f culturPIB "," /// Cultura
 		%8.3f investPIB "," /// Inversión en ciencia y tecnología
-		%8.3f iniciaAPIB+iniciaBPIB+basicaPIB+medsupPIB+superiPIB+posgraPIB+eduaduPIB+otrosePIB+inverePIB+culturPIB+investPIB "," /// Total Educación
-		%8.3f salinfPIB "," /// Atención a NNA
+		%8.3f iniciaAPIB+basicaPIB+medsupPIB+superiPIB+posgraPIB+eduaduPIB+otrosePIB+inverePIB+culturPIB+investPIB "," /// Total Educación
 		%8.3f ssaPIB "," /// Secretaría de Salud
 		%8.3f imssbienPIB "," /// IMSS-Bienestar
 		%8.3f imssPIB "," /// IMSS 
 		%8.3f issstePIB "," /// ISSSTE
 		%8.3f pemexPIB "," /// Pemex + ISSFAM
 		%8.3f inversPIB "," /// Inversión en salud
-		%8.3f salinfPIB+ssaPIB+imssbienPIB+imssPIB+issstePIB+pemexPIB+inversPIB "," /// Total Salud
+		%8.3f ssaPIB+imssbienPIB+imssPIB+issstePIB+pemexPIB+inversPIB "," /// Total Salud
 		%8.3f pamPIB "," /// Pensión Bienestar
 		%8.3f penimssPIB "," /// Pensión IMSS
 		%8.3f penisssPIB "," /// Pensión ISSSTE
@@ -62,11 +60,10 @@ if "$output" != "" {
 		%8.3f gascostoPIB "," /// Gasto en Costo de la deuda
 		%8.3f gasinfraPIB+gascuidadosPIB+gasotrosPIB+gasfederPIB+gascostoPIB "," /// Total Otros gastos
 		%8.3f IngBasPIB "," /// Ingreso Básico
-		%8.3f iniciaAPIB+iniciaBPIB+basicaPIB+medsupPIB+superiPIB+posgraPIB+eduaduPIB+otrosePIB+inverePIB+culturPIB+investPIB+salinfPIB+ssaPIB+imssbienPIB+imssPIB+issstePIB+pemexPIB+inversPIB+pamPIB+penimssPIB+penisssPIB+penpemePIB+penotroPIB+gascfePIB+gaspemexPIB+gassenerPIB+gasinverfPIB+gascosdeuePIB+gasinfraPIB+gascuidadosPIB+gasotrosPIB+gasfederPIB+gascostoPIB+IngBasPIB /// Total GASTO
+		%8.3f iniciaAPIB+basicaPIB+medsupPIB+superiPIB+posgraPIB+eduaduPIB+otrosePIB+inverePIB+culturPIB+investPIB+ssaPIB+imssbienPIB+imssPIB+issstePIB+pemexPIB+inversPIB+pamPIB+penimssPIB+penisssPIB+penpemePIB+penotroPIB+gascfePIB+gaspemexPIB+gassenerPIB+gasinverfPIB+gascosdeuePIB+gasinfraPIB+gascuidadosPIB+gasotrosPIB+gasfederPIB+gascostoPIB+IngBasPIB /// Total GASTO
 		"]"
 	noisily di in w "GASTOSPC: ["  ///
 		%8.0f iniciaA "," /// Educación inicial
-		%8.0f iniciaB "," /// Comunitaria (CONAFE)
 		%8.0f basica "," /// Educación básica
 		%8.0f medsup "," /// Educación media superior
 		%8.0f superi "," /// Educación superior
@@ -77,7 +74,6 @@ if "$output" != "" {
 		%8.0f cultur "," /// Cultura
 		%8.0f invest "," /// Inversión en ciencia y tecnología
 		%8.0f scalar(educacion) "," /// Total Educación
-		%8.0f salinf "," /// Atención a NNA
 		%8.0f ssa "," /// Secretaría de Salud
 		%8.0f imssbien "," /// IMSS-Bienestar
 		%8.0f imss "," /// IMSS
