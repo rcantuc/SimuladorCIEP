@@ -74,7 +74,6 @@ quietly {
 
 	use "`c(sysdir_personal)'/SIM/perfiles`aniope'.dta", clear
 	merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/`=anioenigh'/households.dta", nogen keepus(asis_esc tipoesc nivel inst_* ing_jubila jubilado ing_PAM) 
-	merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/`=anioenigh'/poblacion.dta", nogen keepus(disc*) 
 	capture drop __*
 	tabstat factor, stat(sum) f(%20.0fc) save
 	tempname pobenigh

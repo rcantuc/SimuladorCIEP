@@ -124,14 +124,14 @@ noisily PEF, by(divCIEP) rows(2) min(0) anio(`=anioPE') $update desde(2018)
 
 ***************************
 ** 1.5 Perfiles fiscales **
-forvalues anio = 2014(2)`=anioPE' {
+forvalues anio = `=anioPE'(2)`=anioPE' {
 	** Inputs: ENIGHs.
 	** Outputs: Archivo "`c(sysdir_personal)'/SIM/perfiles`anio'.dta".
 	capture confirm file "`c(sysdir_personal)'/SIM/perfiles`anio'.dta"
-	if _rc != 0 ///
+	//if _rc != 0 ///
 		noisily run "`c(sysdir_personal)'/PerfilesSim.do" `anio'
 }
-
+exit
 
 
 *********************************/

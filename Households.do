@@ -2552,13 +2552,14 @@ replace formalmax = 3 if formalmax == 4
 label define formalidad 3 "Pemex y otros", modify
 label values formalmax formalidad
 
-* Compras netas fuera del pais *
 merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/`enighanio'/expenditures.dta", nogen keepus(gas_pc_*)
 merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/`enighanio'/consumption_categ_iva.dta", nogen keepus(IVA)
 merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/`enighanio'/consumption_categ_ieps.dta", nogen keepus(IEPS)
-save "`c(sysdir_personal)'/SIM/`enighanio'/preconsumption_categ_iva_pc.dta", replace
+
 egen gastoanualTOT = rsum(gas_pc_*)
 label var gastoanualTOT "Gasto anual total"
+
+* Compras netas fuera del pais *
 Distribucion gasto_anualComprasN, relativo(gastoanualTOT) macro(`ComprasN')
 
 * Sector público *
