@@ -52,7 +52,8 @@ quietly {
 	**# 3 HOUSEHOLDS ***
 	***              ***
 	********************
-	use "`c(sysdir_personal)'/users/$id/households.dta", clear
+	use "`c(sysdir_personal)'/users/$id/ingresos.dta", clear
+	merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/users/$id/gastos.dta", nogen update
 	capture drop _*
 	foreach k in Educación Pensiones Pensión_AM Salud Otros_gastos IngBasico Otras_inversiones Part_y_otras_Apor Energía {
 		tabstat `k' [fw=factor], stat(sum) f(%20.0fc) save
