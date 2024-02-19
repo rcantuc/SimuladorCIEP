@@ -158,6 +158,7 @@ if _rc != 0 ///
 
 ** 5.3 Usar base de datos conciliada **
 use "`c(sysdir_personal)'/SIM/`enighanio'/households.dta", clear
+merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/`=anioenigh'/poblacion.dta", nogen keepus(disc*) 
 tabstat factor, stat(sum) f(%20.0fc) save
 tempname pobenigh
 matrix `pobenigh' = r(StatTotal)
@@ -544,7 +545,7 @@ capture drop _*
 keep ISRAS ISRPF CUOTAS ISRPM OTROSK FMP PEMEX CFE IMSS ISSSTE IVA IEPSNP IEPSP ISAN IMPORT /// Ingresos
 	Pension Educación Salud IngBasico Pensión_AM Otros_gastos Otras_inversiones Part_y_otras_Apor Energía infra_entidad /// Gastos
 	folio* numren edad sexo factor decil escol formal ingbrutotot rural grupoedad /// Simulador.ado
-	//asis_esc tipoesc nivel inst_* ing_jubila jubilado // GastoPC.ado
+	disc* //asis_esc tipoesc nivel inst_* ing_jubila jubilado // GastoPC.ado
 if `c(version)' > 13.1 {
 	save "`c(sysdir_personal)'/SIM/perfiles`1'.dta", replace
 }

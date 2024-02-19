@@ -89,31 +89,35 @@ graph export "$export/sns_r19.png", as(png) name("gastoscapitulo") replace
 
 
 ** PIBDeflactor **
-local pibY = 29452832077000					// PIB 2022
+local anio = 2022
+local pibY = 29452832077000					// PIB `anio'
 
 
 
 ************************
 ** ENIGH: concentrado **
-use "`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/2022/concentrado.dta", clear
+use "`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/`anio'/concentrado.dta", clear
 replace salud = salud*4 					// Anualizar el gasto trimestral
 
 ** Display **
 noisily tabstat salud [fw=factor], stat(sum) f(%20.0fc) save
-noisily di _newline(2) in g "{bf: A. Gasto en cuidados de la salud: " in y "ENIGH 2022}"
+noisily di _newline(2) in g "{bf: A. Gasto en cuidados de la salud: " in y "ENIGH `anio'}"
 noisily di _newline in g _col(5) "Gasto en " in y "concentrado" in g ": " _col(40) in y %20.0fc r(StatTotal)[1,1] in g " MXN"
 noisily di in g _col(5) "Gasto en " in y "concentrado" in g ": " _col(40) in y %20.2fc r(StatTotal)[1,1]/`pibY'*100 in g " % PIB"
 noisily di in g _dup(80) "-"
+
+tempfile concentrado
+save "`concentrado'"
 
 
 
 ***************************
 ** ENIGH: gasto en salud **
-use if substr(clave,1,1) == "J" using "`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/2022/gastohogar.dta", clear
+use if substr(clave,1,1) == "J" using "`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/`anio'/gastohogar.dta", clear
 tempfile hogar
 save "`hogar'"
 
-use if substr(clave,1,1) == "J" using "`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/2022/gastospersona.dta", clear
+use if substr(clave,1,1) == "J" using "`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/`anio'/gastospersona.dta", clear
 tempfile individuo
 save "`individuo'"
 
@@ -121,6 +125,7 @@ save "`individuo'"
 * Append *
 use "`hogar'", clear
 append using "`individuo'"
+merge m:1 (folioviv foliohog) using "`concentrado'", nogen keepus(factor)
 replace gasto_tri = gasto_tri*4			// Anualizar el gasto trimestral
 replace gas_nm_tri = gas_nm_tri*4		// Anualizar el gasto no monetario trimestral
 
@@ -220,6 +225,21 @@ graph pie salud_nm [fw=factor], over(concepto_salud) ///
 	name(saludHogar3, replace)
 
 
+collapse (sum) *_mon *_nm salud (max) factor, by(folioviv foliohog numren)
+egen hog_seguro_mon = count(seguro_mon) if seguro_mon != 0, by(folioviv foliohog)
+replace hog_seguro_mon = 0 if hog_seguro_mon == .
+egen hog_seguro_nm = count(seguro_nm) if seguro_nm != 0, by(folioviv foliohog)
+replace hog_seguro_nm = 0 if hog_seguro_nm == .
+
+noisily tabstat hog_seguro_mon [fw=factor], stat(count) f(%20.0fc)
+noisily tabstat hog_seguro_mon if hog_seguro_mon != 0 [fw=factor], stat(count) f(%20.0fc)
+noisily tabstat hog_seguro_nm if hog_seguro_nm != 0 [fw=factor], stat(count) f(%20.0fc)
+
+
+
+
+
+exit
 *************************************************************
 ** Proceso iterativo para obtener el perfil de los hogares **
 /*Iterative method. This approach is an alternative to standard regression approaches. The
@@ -231,8 +251,7 @@ is repeated each time using the newly generated profile to allocate household ex
 Under some conditions, this approach will converge to the actual underlying profile. The
 robustness of this method has not been fully established, however. An attractive feature of
 this method is that negative values will not be generated.*/
-collapse (sum) *_mon *_nm salud (max) factor, by(folioviv foliohog numren)
-merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/perfiles2022.dta", nogen keepus(edad sexo escol formal decil factor)
+merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/perfiles`anio'.dta", nogen keepus(edad sexo escol formal decil factor)
 
 egen salud_mon_hog = sum(salud_mon), by(folioviv foliohog)
 egen salud_nm_hog = sum(salud_nm), by(folioviv foliohog)
@@ -287,9 +306,9 @@ label var salud_nm_pc0 "Gasto no monetario en salud (distribución inicial)"
 g salud_pc0 = salud_pc
 label var salud_pc0 "Gasto total en salud (distribución inicial)"
 
-*noisily Simulador salud_mon_pc0 [fw=factor], base("ENIGH 2022") reboot anio(2022)
-*noisily Simulador salud_nm_pc0 [fw=factor], base("ENIGH 2022") reboot anio(2022)
-noisily Simulador salud_pc0 [fw=factor], base("ENIGH 2022") reboot anio(2022)
+*noisily Simulador salud_mon_pc0 [fw=factor], base("ENIGH `anio'") reboot anio(`anio')
+*noisily Simulador salud_nm_pc0 [fw=factor], base("ENIGH `anio'") reboot anio(`anio')
+noisily Simulador salud_pc0 [fw=factor], base("ENIGH `anio'") reboot anio(`anio')
 
 
 * Iteraciones *
@@ -320,9 +339,9 @@ forvalues iter=1(1)20 {
 		replace salud_pc = `valor' if edad == `edades'
 	}
 
-	*noisily Simulador salud_mon_pc [fw=factor], base("ENIGH 2022") reboot anio(2022)
-	*noisily Simulador salud_nm_pc [fw=factor], base("ENIGH 2022") reboot anio(2022)
-	noisily Simulador salud_pc [fw=factor], base("ENIGH 2022") reboot anio(2022)
+	*noisily Simulador salud_mon_pc [fw=factor], base("ENIGH `anio'") reboot anio(`anio')
+	*noisily Simulador salud_nm_pc [fw=factor], base("ENIGH `anio'") reboot anio(`anio')
+	noisily Simulador salud_pc [fw=factor], base("ENIGH `anio'") reboot anio(`anio')
 }
 exit
 
@@ -330,7 +349,7 @@ exit
 
 ********************************
 ** ENIGH: gasto de individuos **
-use if substr(clave,1,1) == "J" using "`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/2022/gastospersona.dta", clear
+use if substr(clave,1,1) == "J" using "`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/`anio'/gastospersona.dta", clear
 replace gasto_tri = gasto_tri*4			// Anualizar el gasto trimestral
 replace gas_nm_tri = gas_nm_tri*4		// Anualizar el gasto no monetario trimestral
 
@@ -432,17 +451,17 @@ graph pie salud_nm [fw=factor], over(concepto_salud) ///
 
 ** Collpase **
 collapse (sum) *_mon *_nm salud (max) factor, by(folioviv foliohog numren)
-merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/perfiles2022.dta", nogen keepus(edad sexo escol formal decil)
+merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/perfiles`anio'.dta", nogen keepus(edad sexo escol formal decil)
 
 
 ** Perfiles **
 rename salud_mon salud_mon_ind
 label var salud_mon_ind "Gasto monetario del individuo en salud"
-noisily Simulador salud_mon_ind [fw=factor], base("ENIGH 2022") reboot anio(2022)
+noisily Simulador salud_mon_ind [fw=factor], base("ENIGH `anio'") reboot anio(`anio')
 
 rename salud_nm salud_nm_ind
 label var salud_nm_ind "Gasto no monetario del individuo en salud"
-noisily Simulador salud_nm_ind [fw=factor], base("ENIGH 2022") reboot anio(2022)
+noisily Simulador salud_nm_ind [fw=factor], base("ENIGH `anio'") reboot anio(`anio')
 
 
 
@@ -460,7 +479,7 @@ noisily Simulador salud_nm_ind [fw=factor], base("ENIGH 2022") reboot anio(2022)
 exit
 
 postfile salud anio ssa benef_ssa imssbien benef_imssbien imss benef_imss issste benef_issste pemex benef_pemex issfam benef_issfam using "`c(sysdir_personal)'/SIM/salud.dta", replace
-forvalues aniope=2020(1)2024 {
+forvalues aniope=`anio'(1)2024 {
 
 
 	PIBDeflactor, aniovp(`aniope') nographs nooutput
@@ -479,10 +498,10 @@ forvalues aniope=2020(1)2024 {
 	**# 2 Información de hogares ***
 	***                          ***
 	********************************
-	if `aniope' >= 2022 scalar anioenigh = 2022
-	else if `aniope' >= 2020 & `aniope' < 2022 scalar anioenigh = 2020
-	else if `aniope' >= 2018 & `aniope' < 2020 scalar anioenigh = 2018
-	else if `aniope' >= 2016 & `aniope' < 2018 scalar anioenigh = 2016
+	if `aniope' >= `anio' scalar anioenigh = `anio'
+	else if `aniope' >= `anio' & `aniope' < `anio' scalar anioenigh = `anio'
+	else if `aniope' >= `anio' & `aniope' < `anio' scalar anioenigh = `anio'
+	else if `aniope' >= 2016 & `aniope' < `anio' scalar anioenigh = 2016
 
 	capture use "`c(sysdir_personal)'/SIM/perfiles`aniope'.dta", clear
 	if _rc != 0 {
