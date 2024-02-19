@@ -2117,7 +2117,7 @@ replace prop_capital = 0 if prop_capital == .
 
 ** 10.2 Probit formalidad (salarios) **
 noisily di _newline _col(04) in g "{bf:3.1. Probit de formalidad: " in y "Salarios.}"
-noisily xi: probit formal_probit prop_mixto ///
+noisily xi: probit formal_probit /// prop_mixto ///
 	edad edad2 i.sexo aniosesc aniosesc2 rural i.sinco2 i.scian2 ///
 	if ing_t4_cap1 != 0 & edad >= 16 [pw=factor]
 predict double prob_salarios if e(sample)
@@ -2131,7 +2131,7 @@ g prop_salarios = formal_accumSAL/formal_SAL
 
 ** 10.3 Probit formalidad (fisicas) **
 noisily di _newline _col(04) in g "{bf:3.2. Probit de formalidad: " in y "Personas f{c i'}sicas.}"
-noisily xi: probit formal_probit prop_capital ///
+noisily xi: probit formal_probit /// prop_capital ///
 	edad edad2 i.sexo aniosesc aniosesc2 rural i.sinco2 i.scian2 ///
 	if ing_t4_cap2 + ing_t4_cap3 + ing_t4_cap4 + ing_t4_cap5 ///
 	+ ing_t4_cap6 + ing_t4_cap7 + ing_t4_cap8 + ing_t4_cap9 != 0 & edad >= 16 [pw=factor]
@@ -2146,7 +2146,7 @@ g prop_formal = formal_accum/formal_NAC
 
 ** 10.4 Probit formalidad (morales) **
 noisily di _newline _col(04) in g "{bf:3.3. Probit de formalidad: " in y "Personas morales.}"
-noisily xi: probit formal_probit prop_mixto ///
+noisily xi: probit formal_probit /// prop_mixto ///
 	edad edad2 i.sexo aniosesc aniosesc2 rural i.sinco2 i.scian2 ///
 	if ing_bruto_tpm != 0 & edad >= 16 [pw=factor]
 predict double prob_moral if e(sample)

@@ -523,7 +523,7 @@ foreach categ in categ categ_iva categ_ieps {
 		merge 1:m (folioviv foliohog) using "`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/`enighanio'/poblacion.dta", nogen keepus(numren edad sexo)
 		merge 1:1 (folioviv foliohog numren) using `gastoindividuos', nogen keepus(*_ind* proporcion*)
 		merge m:1 (folioviv foliohog) using "`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/`enighanio'/concentrado.dta", nogen keepus(factor)
-		merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/perfiles`enighanio'.dta", nogen keepus(decil ingbrutotot)
+		*merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/perfiles`enighanio'.dta", nogen keepus(decil ingbrutotot)
 		sort folioviv foliohog numren
 		egen tot_integ = count(edad), by(folioviv foliohog)
 
@@ -553,10 +553,10 @@ foreach categ in categ categ_iva categ_ieps {
 				local label = subinstr("`title' per cápita en `k'","_"," ",.)
 				label var `vars'pc_`k' "`label'"
 
-				tempvar `vars'pc_`k'
-				g ``vars'pc_`k'' = `vars'pc_`k' + `vars'ind`k'
-				label var ``vars'pc_`k'' "`title' en `k' (original)"
-				noisily Simulador ``vars'pc_`k'' [fw=factor], reboot aniope(2022)
+				*tempvar `vars'pc_`k'
+				*g ``vars'pc_`k'' = `vars'pc_`k' + `vars'ind`k'
+				*label var ``vars'pc_`k'' "`title' en `k' (original)"
+				*noisily Simulador ``vars'pc_`k'' [fw=factor], reboot aniope(2022)
 
 				* Iteraciones *
 				noisily di in y "`k': " _cont
@@ -579,9 +579,9 @@ foreach categ in categ categ_iva categ_ieps {
 					replace `vars'pc_`k' = `vars'hog`k'*`vars'pc_`k'/equivalencia`k'
 					drop equivalencia`k'
 				}
-				replace `vars'pc_`k' = 0 if `vars'pc_`k' == .
-				replace `vars'pc_`k' = `vars'pc_`k' + `vars'ind`k'
-				noisily Simulador `vars'pc_`k' [fw=factor], reboot aniope(2022)
+				*replace `vars'pc_`k' = 0 if `vars'pc_`k' == .
+				*replace `vars'pc_`k' = `vars'pc_`k' + `vars'ind`k'
+				*noisily Simulador `vars'pc_`k' [fw=factor], reboot aniope(2022)
 			}
 			noisily di
 		}
@@ -615,7 +615,7 @@ foreach categ in categ categ_iva categ_ieps {
 ******************************
 use "`c(sysdir_personal)'/SIM/`enighanio'/consumption_categ_pc.dta", replace
 merge m:1 (folioviv foliohog) using "`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/`enighanio'/concentrado.dta", nogen keepus(factor)
-merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/perfiles`enighanio'.dta", nogen keepus(decil ingbrutotot)
+*merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/perfiles`enighanio'.dta", nogen keepus(decil ingbrutotot)
 capture rename factor_hog factor
 order folioviv foliohog numren
 drop *_hog* *_ind*
@@ -954,7 +954,7 @@ capture rename factor_hog factor
 order folioviv foliohog numren
 drop *_hog* *_ind*
 
-merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/perfiles`enighanio'.dta", nogen keepus(decil ingbrutotot)
+*merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/perfiles`enighanio'.dta", nogen keepus(decil ingbrutotot)
 reshape long gas_pc_ cant_pc_ proporcion, i(folioviv foliohog numren) j(categs) string
 
 
@@ -1027,7 +1027,7 @@ if `enighanio' >= 2014 {
 use "`c(sysdir_personal)'/SIM/`enighanio'/consumption_categ_ieps_pc.dta", clear
 drop gas_hog* cant_hog* gas_ind* cant_ind*
 
-merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/perfiles`enighanio'.dta", nogen keepus(decil ingbrutotot)
+*merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/perfiles`enighanio'.dta", nogen keepus(decil ingbrutotot)
 reshape long gas_pc_ cant_pc_ proporcion, i(folioviv foliohog numren) j(categs) string
 
 
