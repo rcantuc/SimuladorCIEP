@@ -86,7 +86,7 @@ save `eje1'
 
 ********************
 ** Eje 4: Consumo **
-use if anio == `2' using `"`c(sysdir_site)'/SIM/Poblaciontot.dta"', clear
+use if anio == `2' using `"`c(sysdir_personal)'/SIM/Poblaciontot.dta"', clear
 local ajustepob = poblacion
 
 capture use `"`c(sysdir_personal)'/users/$id/ingresos.dta"', clear
