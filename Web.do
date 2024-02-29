@@ -4,8 +4,13 @@
 ***        ver: SIM.md          ***
 ***                             ***
 ***********************************
-*noisily run "`c(sysdir_personal)'/profile.do"                                   // PERFIL DE USUARIO
+clear all
+macro drop _all
+capture log close _all
 timer on 1
+
+
+** 0.1 Rutas de archivos  **
 if "`c(username)'" == "ricardo" ///                             // iMac Ricardo
 	sysdir set PERSONAL "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
 else if "`c(username)'" == "ciepmx" & "`c(console)'" == "" ///       // Servidor CIEP
@@ -13,29 +18,17 @@ else if "`c(username)'" == "ciepmx" & "`c(console)'" == "" ///       // Servidor
 else ///														   // Web
 	sysdir set PERSONAL "/SIM/OUT/6/"
 cd `"`c(sysdir_personal)'"'
-
-
-****************************/
-**  0.2 Opciones globales  **
-** Comentar o descomentar, según el caso. **
-global id = "`c(username)'"                                                   // IDENTIFICADOR DEL USUARIO
-global nographs "nographs"                                                    // SUPRIMIR GRAFICAS
-global output "output"                                                        // OUTPUTS (WEB)
-
-**  Rutas de archivos  **
 capture mkdir `"`c(sysdir_personal)'/SIM/"'
 capture mkdir `"`c(sysdir_personal)'/SIM/graphs"'
 capture mkdir `"`c(sysdir_personal)'/users/"'
 capture mkdir `"`c(sysdir_personal)'/users/$id/"'
 
-**  Archivo output.txt (web)  **
-if "$output" != "" {
-	quietly log using `"`c(sysdir_personal)'/users/$id/output.txt"', replace text name(output)
-	quietly log off output
-}
 
-
-
+**  0.2 Opciones globales  **
+** Comentar o descomentar, según el caso. **
+global id = "`c(username)'"                                                   // IDENTIFICADOR DEL USUARIO
+global nographs "nographs"                                                    // SUPRIMIR GRAFICAS
+global output "output"                                                        // OUTPUTS (WEB)
 
 
 
@@ -47,8 +40,12 @@ if "$output" != "" {
 scalar anioPE = 2024
 scalar aniovp = 2024
 
-** 1.1 Población **
-* (omitido) *
+
+**  1.1 Archivo output.txt (web)  **
+if "$output" != "" {
+	quietly log using `"`c(sysdir_personal)'/users/$id/output.txt"', replace text name(output)
+	quietly log off output
+}
 
 
 ** 1.2 Economía **
@@ -95,7 +92,7 @@ if _rc != 0 ///
 ***                            ***
 **********************************
 
-******************************
+
 ** 2.1 Parámetros: Ingresos **
 scalar ISRAS       =   3.666 // *(1+ r(EISRAS)*(${pib2023}-${pib2023_0})/100)) 		// ISR (asalariados)
 scalar ISRPF       =   0.232 // *(1+ r(EISRPF)*(${pib2023}-${pib2023_0})/100)) 		// ISR (personas f{c i'}sicas)
@@ -117,24 +114,19 @@ scalar IEPSP       =   1.336 // IEPS (petrolero): 0.662
 scalar IMPORT      =   0.299 // *(1+ r(EIMPORT)*(${pib2023}-${pib2023_0})/100))		// Importaciones
 
 
-*******************************
 ** 2.2 Parámetros: Educación **
 scalar iniciaA     =     417 //    Inicial
-
 scalar basica      =   28107 //    Educación b{c a'}sica
 scalar medsup      =   27811 //    Educación media superior
 scalar superi      =   39927 //    Educación superior
 scalar posgra      =   65408 //    Posgrado
 scalar eduadu      =   39492 //    Educación para adultos
 scalar otrose      =    1737 //    Otros gastos educativos
-
 scalar invere      =     827 //    Inversión en educación
-
 scalar cultur      =     153 //    Cultura, deportes y recreación
 scalar invest      =     393 //    Ciencia y tecnología
 
 
-***************************
 ** 2.3 Parámetros: Salud **
 scalar ssa         =     107 //    SSalud
 scalar imssbien    =    5560 //    IMSS-Bienestar
@@ -142,11 +134,9 @@ scalar imss        =    8573 //    IMSS (salud)
 scalar issste      =    9873 //    ISSSTE (salud)
 scalar pemex       =   31176 //    Pemex (salud)
 scalar issfam      =   20070 //    ISSFAM (salud)
-
 scalar invers      =     255 //    Inversión en salud
 
 
-*******************************
 ** 2.4 Parámetros: Pensiones **
 scalar pam         =    9286 //    Pensión Bienestar
 scalar penimss     =  279557 //    Pensión IMSS
@@ -155,18 +145,14 @@ scalar penpeme     =  822902 //    Pensión Pemex
 scalar penotro     = 3629857 //    Pensión CFE, LFC, ISSFAM, Ferronales
 
 
-*****************************
 ** 2.5 Parámetros: Energía **
 scalar gascfe      =    2884 //    Gasto en CFE
 scalar gaspemex    =    1035 //    Gasto en Pemex
 scalar gassener    =     638 //    Gasto en SENER
-
 scalar gasinverf   =    3692 //    Gasto en inversión (energía)
-
 scalar gascosdeue  =    1349 //    Gasto en costo de la deuda (energía)
 
 
-**********************************
 ** 2.6 Parámetros: Otros gastos **
 scalar gasinfra    =    4263 //    Gasto en Otras Inversiones
 scalar gasotros    =    4750 //    Otros gastos
@@ -174,17 +160,14 @@ scalar gasfeder    =   10185 //    Participaciones y Otras aportaciones
 scalar gascosto    =    8539 //    Gasto en Costo de la deuda
 
 
-***********************************
 ** 2.7 Parámetros: Transferencas **
 scalar IngBas      =       0 //    Ingreso b{c a'}sico
 scalar ingbasico18 =       1 //    1: Incluye menores de 18 anios, 0: no
 scalar ingbasico65 =       1 //    1: Incluye mayores de 65 anios, 0: no
-
 scalar gasmadres   =     472 //    Apoyo a madres trabajadoras
 scalar gascuidados =    1722 //    Gasto en cuidados
 
 
-*************************
 ** 2.8 Parámetros: ISR **
 ** Inputs: Archivo "`c(sysdir_personal)'/SIM/perfiles`=anioPE'.dta" o "`c(sysdir_site)'/users/$pais/$id/households.dta"
 ** Outputs: Archivo "`c(sysdir_site)'/users/$pais/$id/households.dta" actualizado más scalars ISRAS, ISRPF, ISRPM y CUOTAS.
@@ -226,7 +209,6 @@ matrix DED = (5,				15,					70.62, 				89.07)
 matrix PM = (30,			28.08)
 
 
-***********************************
 ** 2.9 Parámetros: IMSS e ISSSTE **
 * Informe al Ejecutivo Federal y al Congreso de la Unión la situación financiera y los riesgos del IMSS 2021-2022 *
 * Anexo A, Cuadro A.4 *
@@ -269,7 +251,6 @@ if "`cambioisrpf'" == "1" {
 }
 
 
-**************************
 ** 2.10 Parámetros: IVA **
 * Inputs: Archivo "`c(sysdir_personal)'/SIM/perfiles`=anioPE'.dta" o "`c(sysdir_site)'/users/$pais/$id/households.dta"
 * Outputs: Archivo "`c(sysdir_site)'/users/$pais/$id/households.dta" actualizado más scalar IVA.
@@ -292,7 +273,6 @@ if "`cambioiva'" == "1" {
 }
 
 
-***************************
 ** 2.11 Parámetros: IEPS **
 * Inputs: Archivo "`c(sysdir_personal)'/SIM/perfiles`=anioPE'.dta" o "`c(sysdir_site)'/users/$pais/$id/households.dta"
 * Outputs: Archivo "`c(sysdir_site)'/users/$pais/$id/households.dta" actualizado más scalar IEPS.
@@ -317,12 +297,9 @@ matrix IEPST = (26.5	,		0 			\ /// Cerveza y alcohol 14
 				0		,		6.7865		) // Gasolina: diésel
 
 
-*********************************/
 ** 2.12 Integración de módulos ***
 noisily TasasEfectivas, anio(`=anioPE')
 noisily GastoPC, aniope(`=anioPE') aniovp(2024)
-
-
 
 
 
@@ -338,21 +315,18 @@ if _rc != 0 {
 }
 
 
-**************************************
 ** 3.1 (+) Impuestos y aportaciones **
 capture drop ImpuestosAportaciones
 egen ImpuestosAportaciones = rsum(ISRAS ISRPF CUOTAS ISRPM OTROSK IVA IEPSNP IEPSP ISAN IMPORT)
 label var ImpuestosAportaciones "impuestos y aportaciones"
 
 
-**************************************
 ** 3.2 (-) Impuestos y aportaciones **
 capture drop Transferencias
 egen Transferencias = rsum(Pension Educación Salud IngBasico Pensión_AM Otras_inversiones)
 label var Transferencias "transferencias públicas"
 
 
-********************************
 ** 3.3 (=) Aportaciones netas **
 capture drop AportacionesNetas
 g AportacionesNetas = ImpuestosAportaciones - Transferencias
@@ -360,18 +334,14 @@ label var AportacionesNetas "aportaciones netas"
 noisily Simulador AportacionesNetas [fw=factor], reboot aniovp(2024) aniope(`=anioPE') $nographs //boot(20)
 
 
-************************************
 ** 3.4 (*) Cuentas generacionales **
 //noisily CuentasGeneracionales AportacionesNetas, anio(`=anioPE') discount(7)
 
 
-
-** (*) Sankey **
-foreach k in decil grupoedad sexo /*rural escol*/ {
+** 3.5 (*) Sankey del sistema fiscal **
+foreach k in decil grupoedad /*sexo rural escol*/ {
 	noisily run "`c(sysdir_personal)'/SankeySF.do" `k' `=aniovp'
 }
-
-
 
 
 
@@ -484,16 +454,11 @@ noisily FiscalGap, anio(`=anioPE') end(2030) aniomin(2016) $nographs desde(2016)
 
 
 
-
-
 ***************************/
 ****                    ****
 ****    Touchdown!!!    ****
 ****                    ****
 ****************************
-if "$textbook" == "textbook" {
-	noisily scalarlatex, logname(tasasEfectivas)
-}
 if "$output" == "output" {
 	run "`c(sysdir_personal)'/output.do"
 }

@@ -23,6 +23,7 @@ quietly {
 	if `aniope' == -1 {
 		local aniope = `aniovp'
 	}
+	local base = "ENIGH 2022"
 
 
 	** 0.1 Macros: PIB **
@@ -779,10 +780,10 @@ program graphpiramide
 			stack asyvars xalternate ///
 			yscale(noextend noline /*range(-7(1)7)*/) ///
 			blabel(none, format(%5.1fc)) ///
-			///t2title({bf:Hombres} (`men'%), size(medsmall)) ///
-			///ytitle(% PIB) ///
-			t2title({bf:Men} (`men'%), size(medsmall)) ///
-			ytitle(% GDP) ///
+			t2title({bf:Hombres} (`men'%), size(medsmall)) ///
+			ytitle(% PIB) ///
+			///t2title({bf:Men} (`men'%), size(medsmall)) ///
+			///ytitle(% GDP) ///
 			ylabel(`=round(`PORmaxval'[2,1],.1)'(.025)`=`PORmaxval'[1,1]', format(%7.1fc) noticks) ///
 			name(H`varlist', replace) ///
 			legend(cols(4) pos(6) bmargin(zero) label(1 "") label(2 "") label(3 "`rect'") ///
@@ -799,10 +800,10 @@ program graphpiramide
 			stack asyvars ///
 			yscale(noextend noline /*range(1.8)*/) /// |
 			blabel(none, format(%5.1fc)) ///
-			///t2title({bf:Mujeres} (`women'%), size(medsmall)) ///
-			///ytitle(% PIB) ///
-			t2title({bf:Women} (`women'%), size(medsmall)) ///
-			ytitle(% GDP) ///
+			t2title({bf:Mujeres} (`women'%), size(medsmall)) ///
+			ytitle(% PIB) ///
+			///t2title({bf:Women} (`women'%), size(medsmall)) ///
+			///ytitle(% GDP) ///
 			ylabel(`=round(`PORmaxval'[2,1],.1)'(.025)`=`PORmaxval'[1,1]', format(%7.1fc) noticks) ///
 			name(M`varlist', replace) ///
 			legend(cols(4) pos(5) bmargin(zero) size(vsmall) keygap(1) symxsize(3) textwidth(30) forcesize) ///
@@ -813,12 +814,12 @@ program graphpiramide
 			name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)', replace) ycommon xcommon ///
 			title("{bf:`title'}") subtitle("$pais") ///
 			///title("`title' {bf:profile}") ///
-			///caption("{bf:Fuente}: Elaborado por el CIEP, con la `base'.") ///
-			caption("{bf:Source}: Prepared by CIEP, using data from `base'.") ///
-			///note(`"{bf:Nota}: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n en cada grupo."') ///
-			note(`"{bf:Note}: Percentages in parentheses show the concentration in each group."')
+			caption("{bf:Fuente}: Elaborado por el CIEP, con la `base'.") ///
+			note(`"{bf:Nota}: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n en cada grupo."') ///
+			///caption("{bf:Source}: Prepared by CIEP, using data from `base'.") ///
+			///note(`"{bf:Note}: Percentages in parentheses show the concentration in each group."')
 	
-		graph save `=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)' `"`c(sysdir_personal)'/SIM/`aniope'/`varlist'_`titleover'.gph"', replace
+		graph save `=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)' `"`c(sysdir_personal)'/SIM/graphs/`varlist'_`titleover'.gph"', replace
 		if "$export" != "" {
 			graph export `"$export/`varlist'_`titleover'.png"', replace name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)')
 		}

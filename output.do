@@ -60,6 +60,8 @@ if "$output" != "" {
 		%8.3f gascostoPIB "," /// Gasto en Costo de la deuda
 		%8.3f gasinfraPIB+gascuidadosPIB+gasotrosPIB+gasfederPIB+gascostoPIB "," /// Total Otros gastos
 		%8.3f IngBasPIB "," /// Ingreso Básico
+		%8.3f gasmadresPIB "," /// Apoyo a madres trabajadoras
+		%8.3f gascuidadosPIB "," /// Gasto en cuidados
 		%8.3f iniciaAPIB+basicaPIB+medsupPIB+superiPIB+posgraPIB+eduaduPIB+otrosePIB+inverePIB+culturPIB+investPIB+ssaPIB+imssbienPIB+imssPIB+issstePIB+pemexPIB+inversPIB+pamPIB+penimssPIB+penisssPIB+penpemePIB+penotroPIB+gascfePIB+gaspemexPIB+gassenerPIB+gasinverfPIB+gascosdeuePIB+gasinfraPIB+gascuidadosPIB+gasotrosPIB+gasfederPIB+gascostoPIB+IngBasPIB /// Total GASTO
 		"]"
 	noisily di in w "GASTOSPC: ["  ///
@@ -100,7 +102,9 @@ if "$output" != "" {
 		%8.0f scalar(otrosgas) "," /// Total Otros gastos
 		%8.0f ingbasico "," /// Ingreso Básico
 		%8.0f ingbasico18 "," /// Checkbox "menores de 18 años"
-		%8.0f ingbasico65 /// Checkbox "mayores de 65 años"
+		%8.0f ingbasico65 "," /// Checkbox "mayores de 65 años"
+		%8.0f gasmadres "," /// Apoyo a madres trabajadoras
+		%8.0f gascuidados /// Gasto en cuidados
 		"]"
 	noisily di in w "INGRESOS: " in w "["  ///
 		%8.3f scalar(ISRAS) "," /// ISR (salarios) - 0
