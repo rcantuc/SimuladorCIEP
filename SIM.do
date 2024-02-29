@@ -16,20 +16,20 @@ if "`c(username)'" == "ricardo" ///                             // iMac Ricardo
 if "`c(username)'" == "ciepmx" & "`c(console)'" == "" ///       // Servidor CIEP
 	sysdir set PERSONAL "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
 cd `"`c(sysdir_personal)'"'
-
-**  0.1 Rutas de archivos  **
 capture mkdir `"`c(sysdir_personal)'/SIM/"'
 capture mkdir `"`c(sysdir_personal)'/SIM/graphs"'
 capture mkdir `"`c(sysdir_personal)'/users/"'
 capture mkdir `"`c(sysdir_personal)'/users/$id/"'
 
+
 **  0.2 Opciones globales  **
 //global id = "`c(username)'"                                   // IDENTIFICADOR DEL USUARIO
-//global export "`c(sysdir_personal)'/SIM/"                       // DIRECTORIO DE IMÁGENES/TABLAS/BASES DE DATOS
-//global nographs "nographs"                                      // SUPRIMIR GRAFICAS
+//global export "`c(sysdir_personal)'/SIM/"                     // DIRECTORIO DE IMÁGENES/TABLAS/BASES DE DATOS
+//global nographs "nographs"                                    // SUPRIMIR GRAFICAS
 //global textbook "textbook"                                    // GRÁFICOS FORMATO LaTeX
-//global output "output"                                        // OUTPUTS (WEB)
+global output "output"                                        // OUTPUTS (WEB)
 //global update "update"                                        // UPDATE BASES DE DATOS
+
 
 **  0.3 Archivo output.txt **
 if "$output" != "" {
@@ -45,7 +45,6 @@ if "$output" != "" {
 ***                     ***
 ***************************
 
-*******************
 ** 1.1 Población **
 ** Parámetros: anio(s) de interés, entidad federativa.
 ** Outputs: población por edad, sexo y entidad federativa para todos los años.
@@ -61,7 +60,6 @@ if "$output" != "" {
 ** 1.2 Economía **
 * 1.2.1 Parámetros: Crecimiento anual del Producto Interno Bruto *
 * Fuente: CGPE 2024 (página 121)
-global pib2023 = 2.6893
 global pib2024 = 2.6189
 global pib2025 = 2.5097
 global pib2026 = 2.4779
@@ -70,7 +68,6 @@ global pib2028 = 2.5
 global pib2029 = 2.5002
 
 * 1.2.2 Parámetros: Crecimiento anual del índice de precios implícitos *
-global def2023 = 5.0
 global def2024 = 4.8
 global def2025 = 3.5
 global def2026 = 3.5
@@ -79,7 +76,6 @@ global def2028 = 3.5
 global def2029 = 3.5
 
 * 1.2.3 Parámetros: Crecimiento anual del índice nacional de precios al consumidor *
-global inf2023 = 5.7
 global inf2024 = 4.5
 global inf2025 = 3.4
 global inf2026 = 3.0
@@ -100,7 +96,6 @@ noisily PIBDeflactor, geodef(2005) geopib(2005) $update
 //noisily SCN, //$update
 
 
-************************
 ** 1.3 Sistema fiscal **
 * 1.3.1 Ley de Ingresos de la Federación *
 * Inputs: LIFs + Estadísticas Oportunas. Archivo: LIFs.xlsx.
@@ -115,23 +110,21 @@ noisily LIF, by(divPE) rows(1) min(0) anio(`=anioPE') $update desde(2018)
 noisily PEF, by(divCIEP) rows(2) min(0) anio(`=anioPE') $update desde(2018)
 
 
-***********************
 ** 1.4 Subnacionales **
 * Inputs: ingresos, gastos y deuda de los gobiernos subnacionales.
 * Outputs: Bases de datos con ingresos, gastos y deuda para todos los años y todas las entidades federativas.
 //noisily run "`c(sysdir_personal)'/Subnacional.do" //$update
 
 
-***************************
 ** 1.5 Perfiles fiscales **
-forvalues anio = `=anioPE'(2)`=anioPE' {
+forvalues anio = 2022(2)`=anioPE' {
 	** Inputs: ENIGHs.
 	** Outputs: Archivo "`c(sysdir_personal)'/SIM/perfiles`anio'.dta".
 	capture confirm file "`c(sysdir_personal)'/SIM/perfiles`anio'.dta"
-	//if _rc != 0 ///
+	if _rc != 0 ///
 		noisily run "`c(sysdir_personal)'/PerfilesSim.do" `anio'
 }
-exit
+
 
 
 *********************************/
