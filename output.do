@@ -216,6 +216,57 @@ if "$output" != "" {
 		IVAT[12,1] "," ///
 		IVAT[13,1] ///
 		"]"
+	noisily di in w "CSS_IMSS: [" ///
+		CSS_IMSS[1,1] "," ///
+		CSS_IMSS[1,2] "," ///
+		CSS_IMSS[1,3] "," ///
+		CSS_IMSS[2,1] "," ///
+		CSS_IMSS[2,2] "," ///
+		CSS_IMSS[2,3] "," ///
+		CSS_IMSS[3,1] "," ///
+		CSS_IMSS[3,2] "," ///
+		CSS_IMSS[3,3] "," ///
+		CSS_IMSS[4,1] "," ///
+		CSS_IMSS[4,2] "," ///
+		CSS_IMSS[4,3] "," ///
+		CSS_IMSS[5,1] "," ///
+		CSS_IMSS[5,2] "," ///
+		CSS_IMSS[5,3] "," ///
+		CSS_IMSS[6,1] "," ///
+		CSS_IMSS[6,2] "," ///
+		CSS_IMSS[6,3] "," ///
+		CSS_IMSS[7,1] "," ///
+		CSS_IMSS[7,2] "," ///
+		CSS_IMSS[7,3] ///
+		"]"
+	noisily di in w "CSS_ISSSTE: [" ///
+		CSS_ISSSTE[1,1] "," ///
+		CSS_ISSSTE[1,2] "," ///
+		CSS_ISSSTE[1,3] "," ///
+		CSS_ISSSTE[2,1] "," ///
+		CSS_ISSSTE[2,2] "," ///
+		CSS_ISSSTE[2,3] "," ///
+		CSS_ISSSTE[3,1] "," ///
+		CSS_ISSSTE[3,2] "," ///
+		CSS_ISSSTE[3,3] "," ///
+		CSS_ISSSTE[4,1] "," ///
+		CSS_ISSSTE[4,2] "," ///
+		CSS_ISSSTE[4,3] "," ///
+		CSS_ISSSTE[5,1] "," ///
+		CSS_ISSSTE[5,2] "," ///
+		CSS_ISSSTE[5,3] "," ///
+		CSS_ISSSTE[6,1] "," ///
+		CSS_ISSSTE[6,2] "," ///
+		CSS_ISSSTE[6,3] "," ///
+		CSS_ISSSTE[7,1] "," ///
+		CSS_ISSSTE[7,2] "," ///
+		CSS_ISSSTE[7,3] "," ///
+		CSS_ISSSTE[8,1] "," ///
+		CSS_ISSSTE[8,2] "," ///
+		CSS_ISSSTE[8,3] ///
+		"]"
+
+
 	quietly log off output
 
 	quietly log close output
