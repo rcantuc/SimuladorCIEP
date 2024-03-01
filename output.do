@@ -38,14 +38,15 @@ if "$output" != "" {
 		%8.3f imssbienPIB "," /// IMSS-Bienestar
 		%8.3f imssPIB "," /// IMSS 
 		%8.3f issstePIB "," /// ISSSTE
-		%8.3f pemexPIB "," /// Pemex + ISSFAM
+		%8.3f pemexPIB "," /// Pemex
+		%8.3f issfamPIB "," /// ISSFAM
 		%8.3f inversPIB "," /// Inversión en salud
-		%8.3f ssaPIB+imssbienPIB+imssPIB+issstePIB+pemexPIB+inversPIB "," /// Total Salud
+		%8.3f ssaPIB+imssbienPIB+imssPIB+issstePIB+pemexPIB+issfamPIB+inversPIB "," /// Total Salud
 		%8.3f pamPIB "," /// Pensión Bienestar
 		%8.3f penimssPIB "," /// Pensión IMSS
 		%8.3f penisssPIB "," /// Pensión ISSSTE
 		%8.3f penpemePIB "," /// Pensión Pemex
-		%8.3f penotroPIB "," /// Pensión Pemex, CFE, LFC, ISSFAM, Otros
+		%8.3f penotroPIB "," /// Pensión CFE, LFC, ISSFAM, Otros
 		%8.3f pamPIB+penimssPIB+penisssPIB+penpemePIB+penotroPIB "," /// Total Pensiones
 		%8.3f gascfePIB "," /// Gasto en CFE
 		%8.3f gaspemexPIB "," /// Gasto en Pemex
@@ -80,13 +81,15 @@ if "$output" != "" {
 		%8.0f imssbien "," /// IMSS-Bienestar
 		%8.0f imss "," /// IMSS
 		%8.0f issste "," /// ISSSTE
-		%8.0f pemex "," /// Pemex + ISSFAM
+		%8.0f pemex "," /// Pemex
+		%8.0f issfam "," /// ISSFAM
 		%8.0f invers "," /// Inversión en salud
 		%8.0f scalar(salud) "," /// Total Salud
 		%8.0f pam "," /// Pensión Bienestar
-		%8.0f penimss "," /// Pensión Pemex
-		%8.0f penisss "," /// Pensión SENER
-		%8.0f penotro "," /// Pensión Inversión
+		%8.0f penimss "," /// Pensión IMSS
+		%8.0f penisss "," /// Pensión ISSSTE
+		%8.0f penpeme "," /// Pensión Pemex
+		%8.0f penotro "," /// Pensión CFE, LFC, ISSFAM, Otros
 		%8.0f scalar(pensiones) "," /// Total Pensiones
 		%8.0f gascfe "," /// Gasto en CFE
 		%8.0f gaspemex "," /// Gasto en Pemex
