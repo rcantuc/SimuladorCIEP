@@ -1,4 +1,4 @@
-program define CicloDeVida, rclass
+program define CICLO, rclass
 quietly {
 	version 13.1
 	syntax varname [if] [fweight], DECIL(varname) [BOOTstrap(int 1) POST]

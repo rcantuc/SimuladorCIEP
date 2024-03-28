@@ -945,7 +945,7 @@ if `enighanio' >= 2014 {
 		3  \     /// 10  Otros, idem
 		2  \     /// 11  Transporte local, idem
 		3  \     /// 12  Transporte foraneo, idem
-		24.33)   //  13  Evasion e informalidad IVA, input[0-100]
+		28.37)   //  13  Evasion e informalidad IVA, input[0-100]
 }
 
 use "`c(sysdir_personal)'/SIM/`enighanio'/consumption_categ_iva_pc.dta", clear
@@ -999,7 +999,7 @@ noisily di in g "  Total " ///
 	_col(66) %7.3fc `IVA'/PIB*100 ///
 	_col(77) %6.2fc -(`IVA'/scalar(IVA)-1)*100 "%"
 
-collapse (sum) IVA, by(folioviv foliohog numren)
+*collapse (sum) IVA, by(folioviv foliohog numren)
 save "`c(sysdir_personal)'/SIM/`enighanio'/consumption_categ_iva.dta", replace
 
 

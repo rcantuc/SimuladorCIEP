@@ -216,7 +216,7 @@ if "$output" != "" {
 		IVAT[12,1] "," ///
 		IVAT[13,1] ///
 		"]"
-	noisily di in w "CSS_IMSS: [" ///
+	noisily di in w "CSSIMSS: [" ///
 		CSS_IMSS[1,1] "," ///
 		CSS_IMSS[1,2] "," ///
 		CSS_IMSS[1,3] "," ///
@@ -239,7 +239,7 @@ if "$output" != "" {
 		CSS_IMSS[7,2] "," ///
 		CSS_IMSS[7,3] ///
 		"]"
-	noisily di in w "CSS_ISSSTE: [" ///
+	noisily di in w "CSSISSSTE: [" ///
 		CSS_ISSSTE[1,1] "," ///
 		CSS_ISSSTE[1,2] "," ///
 		CSS_ISSSTE[1,3] "," ///

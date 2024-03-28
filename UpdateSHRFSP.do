@@ -32,56 +32,56 @@ save "`shrfspexterno'"
 ***     2 RFSP (flujos)     ***
 ***                         ***
 *******************************
-noisily DatosAbiertos RF000000SPFCS, $nographs
+noisily DatosAbiertos RF000000SPFCS, $nographs reverse
 rename monto rfsp
 tempfile rfsp
 save "`rfsp'"
 
 
 ** Endeudamiento presupuestario **
-noisily DatosAbiertos RF000001SPFCS, $nographs
+noisily DatosAbiertos RF000001SPFCS, $nographs reverse
 rename monto rfspBalance
 tempfile Balance
 save "`Balance'"
 
 
 ** PIDIREGAS **
-noisily DatosAbiertos RF000002SPFCS, $nographs
+noisily DatosAbiertos RF000002SPFCS, $nographs reverse
 rename monto rfspPIDIREGAS
 tempfile PIDIREGAS
 save "`PIDIREGAS'"
 
 
 ** IPAB **
-noisily DatosAbiertos RF000003SPFCS, $nographs
+noisily DatosAbiertos RF000003SPFCS, $nographs reverse
 rename monto rfspIPAB
 tempfile IPAB
 save "`IPAB'"
 
 
 ** FONADIN **
-noisily DatosAbiertos RF000004SPFCS, $nographs
+noisily DatosAbiertos RF000004SPFCS, $nographs reverse
 rename monto rfspFONADIN
 tempfile FONADIN
 save "`FONADIN'"
 
 
 ** PROGRAMA DE DEUDORES **
-noisily DatosAbiertos RF000005SPFCS, $nographs
+noisily DatosAbiertos RF000005SPFCS, $nographs reverse
 rename monto rfspDeudores
 tempfile Deudores
 save "`Deudores'"
 
 
 ** BANCA DE DESARROLLO **
-noisily DatosAbiertos RF000006SPFCS, $nographs
+noisily DatosAbiertos RF000006SPFCS, $nographs reverse
 rename monto rfspBanca
 tempfile Banca
 save "`Banca'"
 
 
 ** ADECUACIONES PRESUPUESTARIAS **
-noisily DatosAbiertos RF000007SPFCS, $nographs
+noisily DatosAbiertos RF000007SPFCS, $nographs reverse
 rename monto rfspAdecuaciones
 tempfile Adecuaciones
 save "`Adecuaciones'"
@@ -135,21 +135,21 @@ save "`amortizacion'"
 
 ** Balance público **
 noisily di _newline(2) in g "{bf: Endeudamiento público} en millones de pesos"
-noisily DatosAbiertos XAA, $nographs
+noisily DatosAbiertos XAA, $nographs reverse
 rename monto balancepublico
 tempfile balancepublico
 save "`balancepublico'"
 
 
 ** Endeudamiento presupuestario **
-noisily DatosAbiertos XAA10, $nographs
+noisily DatosAbiertos XAA10, $nographs reverse
 rename monto presupuestario
 tempfile presupuestario
 save "`presupuestario'"
 
 
 ** Endeudamiento no presupuestario **
-noisily DatosAbiertos XAA20, $nographs
+noisily DatosAbiertos XAA20, $nographs reverse
 rename monto nopresupuestario
 tempfile nopresupuestario
 save "`nopresupuestario'"

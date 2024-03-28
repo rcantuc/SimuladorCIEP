@@ -104,14 +104,14 @@ quietly {
 	}
 	filefilter `sankey1' `sankey2', from(" ") to("") replace
 	filefilter `sankey2' `sankey3', from("_") to(" ") replace
-	//if "`c(os)'" == "MacOSX" {
-	//	filefilter `sankey3' "/Applications/XAMPP/xamppfiles/htdocs/`folder'/sankey-`name'.json", from(".,") to("0") replace
-	//}
-	//if "`c(os)'" == "Unix" & "`c(username)'" != "root" {
-	//	filefilter `sankey3' `"/var/www/html/`folder'/sankey-`name'.json"', from(".,") to("0") replace
-	//}
-	//if "`c(os)'" == "Unix" & "`c(username)'" == "root" {
+	if "`c(os)'" == "MacOSX" {
+		filefilter `sankey3' "/Applications/XAMPP/xamppfiles/htdocs/`folder'/sankey-`name'.json", from(".,") to("0") replace
+	}
+	if "`c(os)'" == "Unix" & "`c(username)'" != "root" {
+		filefilter `sankey3' `"/var/www/html/`folder'/sankey-`name'.json"', from(".,") to("0") replace
+	}
+	if "`c(os)'" == "Unix" & "`c(username)'" == "root" {
 		filefilter `sankey3' `"`c(sysdir_personal)'/users/$id/sankey-`name'.json"', from(".,") to("0") replace
-	//}
+	}
 }
 end

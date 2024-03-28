@@ -2586,22 +2586,22 @@ egen ImpuestosConsumoTOT = rsum(IVA IEPS ISAN Importaciones)
 *******************************
 egen double Yl = rsum(ing_subor ing_mixtoL)
 label var Yl "Ingreso laboral"
-noisily Simulador Yl [fw=factor], boot(1) reboot aniope(`enighanio') aniovp(`enighanio')
+noisily Perfiles Yl [fw=factor], boot(1) reboot aniope(`enighanio') aniovp(`enighanio')
 
 egen double Yk = rsum(ing_capital ing_mixtoK ing_estim_alqu gasto_anualDepreciacion)
 label var Yk "Ingreso de capital"
-noisily Simulador Yk [fw=factor], boot(1) reboot aniope(`enighanio') aniovp(`enighanio')
+noisily Perfiles Yk [fw=factor], boot(1) reboot aniope(`enighanio') aniovp(`enighanio')
 
-noisily Simulador gastoanualTOT [fw=factor], boot(1) reboot aniope(`enighanio') aniovp(`enighanio')
-noisily Simulador ing_suborROW [fw=factor], boot(1) reboot aniope(`enighanio') aniovp(`enighanio')
+noisily Perfiles gastoanualTOT [fw=factor], boot(1) reboot aniope(`enighanio') aniovp(`enighanio')
+noisily Perfiles ing_suborROW [fw=factor], boot(1) reboot aniope(`enighanio') aniovp(`enighanio')
 
 g Ciclodevida = Yl + Yk + ing_remesas + ing_suborROW - gastoanualTOT
 label var Ciclodevida "ciclo de vida"
-noisily Simulador Ciclodevida [fw=factor], boot(1) reboot aniope(`enighanio') aniovp(`enighanio')
+noisily Perfiles Ciclodevida [fw=factor], boot(1) reboot aniope(`enighanio') aniovp(`enighanio')
 
 g Ahorro = ingbrutotot + ing_capitalROW + ing_suborROW + ing_remesas ///
 	- gastoanualTOT - gasto_anualComprasN - gasto_anualGobierno
-noisily Simulador Ahorro [fw=factor], boot(1) reboot aniope(`enighanio') aniovp(`enighanio')
+noisily Perfiles Ahorro [fw=factor], boot(1) reboot aniope(`enighanio') aniovp(`enighanio')
 label var Ahorro "ahorro"
 
 

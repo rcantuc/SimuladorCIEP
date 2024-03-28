@@ -1,72 +1,68 @@
 #include s2color
 // #include economist
 // #include s1rcolor
-
 // help scheme entries
 // help scheme files
 
 
-
 // Graph Size
-// graphsize 	x 			5.5
-// graphsize 	y 			4
-graphsize 	x 			16
-graphsize 	y 			7
+graphsize 	x                   16
+graphsize 	y                   7
 
 
 
 // Margins
-margin 		graph			medlarge
-// margin 		combinegraph		none
-// margin 		piegraph		none
-// margin		plotregion		none
-// margin		axis_title		none
-// margin		legend			none
-// margin		label 			none
-// margin     textbox			none
+margin 		graph               medlarge
+// margin   combinegraph    none
+// margin   piegraph		none
+// margin   plotregion		none
+// margin   axis_title		none
+// margin   legend			none
+// margin   label 			none
+// margin   textbox			none
 
 
 // Background
-color 		background 		white
-color 		plotregion 		white
-color 		plotregion_line		white
-color 		legend			white
+color 		background          white
+color 		plotregion          white
+color 		plotregion_line     white
+color 		legend              white
 // color 	bylabel_outline   	none
 // color 	textbox  		"236,236,236"
 
 
 
 // Added text and lines
-gsize 		text_option 		medium
-color 		text_option		black
-clockdir 	text_option		12
+gsize 		text_option 		small
+color 		text_option         "114,113,118"
+clockdir 	text_option         12
 
-color		xyline			"200,200,200"
-linepattern	xyline			dash
+color		xyline              "200,200,200"
+linepattern	xyline              dash
 
 
 
 // Title, subtitle, caption, notes
-clockdir 	title_position		12
-color 		heading			black
-clockdir 	subtitle_position	12
-color 		subheading		black
-clockdir 	caption_position	6
-color		body			black
-clockdir 	note_position		6
-color		small_body		black
+clockdir 	title_position      11
+color 		heading             black
+gsize 		heading             vlarge
+yesno 		title_span          no
 
-gsize 		heading			vlarge
-yesno 		title_span		no
+clockdir 	subtitle_position   11
+color 		subheading          "114,113,118"
+gsize 		subheading          medsmall
+yesno 		subtitle_span       no
 
-gsize 		subheading 		medlarge
-yesno 		subtitle_span		no
+clockdir 	caption_position    7
+color		body                "114,113,118"
+gsize 		body                vsmall
+yesno 		caption_span        no
 
-gsize 		small_body		small
-yesno 		note_span		no
+clockdir 	note_position       7
+color		small_body          "114,113,118"
+gsize 		small_body          vsmall
+yesno 		note_span           no
 
-gsize 		body			vsmall
-yesno 		caption_span		no
 
 textboxstyle	t1title			body
 textboxstyle	t2title			small_body
@@ -86,18 +82,18 @@ yesno 		draw_major_nlt_vgrid 	yes
 // Axis
 color		tick			"52,70,78"
 color      	tick_label		"114,113,118"
-gsize      	tick_label		small
+gsize      	tick_label		vsmall
 color 		tick_biglabel 		"114,113,118"
-gsize		tick_biglabel		small
+gsize		tick_biglabel		vsmall
 color 		axis_title 		"114,113,118"
-gsize		axis_title		small
+gsize		axis_title		vsmall
 
 axisstyle 	vertical_default 	vertical_nolinetick
 axisstyle 	bar_scale_vert		vertical_nolinetick
 anglestyle 	vertical_tick 		horizontal
 anglestyle 	horizontal_tick 	horizontal
 
-color		tickline		black
+color		tickline		"114,113,118"
 linewidth	axisline		medium
 tickposition	axis_tick		inside
 
@@ -108,6 +104,7 @@ clockdir 	legend_position		6
 linestyle 	legend			none
 gsize 		legend_key_xsize	medlarge
 gsize 		legend_key_ysize	medlarge
+color       key_label      "114,113,118"
 numstyle 	legend_cols		4
 gsize 		key_label		small
 
@@ -130,7 +127,7 @@ relsize 	bar_subgroupgap		0
 
 // Símbolos
 symbol 		p 			circle
-symbolsize 	p			vhuge
+symbolsize 	p			large
 color      	refmarker		red
 linewidth  	refmarker		vvvthick
 
@@ -230,12 +227,12 @@ linewidth	p17area			none
 // Colores
 color p1 "255,129,0"
 color p2 "210,213,32"
-color p3 "224,97,83"
+color p8 "224,97,83"
 color p4 "255,189,0"
 color p5 "57,198,184"
 color p6 "0,151,201"
 color p7 "53,200,71"
-color p8 "150,6,92"
+color p3 "150,6,92"
 color p9 "103,223,87"
 color p10 "213,155,190"
 color p11 "23,105,114"
