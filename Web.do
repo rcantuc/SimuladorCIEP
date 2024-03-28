@@ -26,9 +26,10 @@ capture mkdir `"`c(sysdir_personal)'/users/$id/"'
 
 **  0.2 Opciones globales  **
 ** Comentar o descomentar, según el caso. **
-global id = "`c(username)'"                                                   // IDENTIFICADOR DEL USUARIO
+//global id = "`c(username)'"                                                   // IDENTIFICADOR DEL USUARIO
 global nographs "nographs"                                                    // SUPRIMIR GRAFICAS
 global output "output"                                                        // OUTPUTS (WEB)
+global paqueteEconomico "PE 2024"
 
 
 
@@ -331,7 +332,7 @@ label var Transferencias "transferencias públicas"
 capture drop AportacionesNetas
 g AportacionesNetas = ImpuestosAportaciones - Transferencias
 label var AportacionesNetas "aportaciones netas"
-noisily Simulador AportacionesNetas [fw=factor], reboot aniovp(2024) aniope(`=anioPE') $nographs //boot(20)
+noisily Perfiles AportacionesNetas [fw=factor], reboot aniovp(2024) aniope(`=anioPE') $nographs //boot(20)
 
 
 ** 3.4 (*) Cuentas generacionales **

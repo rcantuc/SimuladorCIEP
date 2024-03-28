@@ -1,4 +1,4 @@
-program define proyecciones
+program define REC
 quietly {
 	version 13.1
 	syntax varname, POBlacion(string) ANIObase(int) [BOOTstrap(int 1) POST title(string)]

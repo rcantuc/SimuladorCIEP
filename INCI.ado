@@ -1,4 +1,4 @@
-program define incidencia, rclass
+program define INCI, rclass
 quietly {
 	version 13.1
 	syntax varname [if] [fweight/], Folio(varlist) Relativo(name) N(name) [POST]
@@ -9,6 +9,7 @@ quietly {
 
 	******************************
 	** 0. Guardar base original **
+	preserve
 	local rellabel : variable label `relativo'
 	levelsof `n', local(nn)
 
@@ -32,10 +33,10 @@ quietly {
 	noisily di in g "  Monto:" _column(40) in y %25.0fc `REC'[1,1]
 
 	* 1.2 Hogares *
-	tempname FOR
+	tempname HOG
 	tabstat hog, stat(sum) f(%12.0fc) save
-	matrix `FOR' = r(StatTotal)
-	noisily di in g "  Hogares:" _column(40) in y %25.0fc `FOR'[1,1]
+	matrix `HOG' = r(StatTotal)
+	noisily di in g "  Hogares:" _column(40) in y %25.0fc `HOG'[1,1]
 
 	* 1.3 Relativo *
 	tempname REL
@@ -95,5 +96,7 @@ quietly {
 			post INCI (`n'[`k']) (recxhog[`k']) (dis[`k']) (prop[`k']) (hog[`k'])
 		}
 	}
+
+	restore
 }
 end

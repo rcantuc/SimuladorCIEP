@@ -17,7 +17,7 @@ quietly {
 		local aniovp = substr(`"`=trim("`aniovp'")'"',1,4)	
 	}
 
-	syntax [anything] [if] [, NOGraphs PIBVP(real -999) PIBVF(real -999) UPDATE DESDE(real 1993) MES]
+	syntax [anything] [if] [, NOGraphs PIBVP(real -999) PIBVF(real -999) UPDATE DESDE(real 1993) REVERSE]
 
 
 
@@ -42,6 +42,10 @@ quietly {
 		noisily di in r "No se encontr{c o'} la serie {bf:`anything'}."
 		exit
 	}
+	if "`reverse'" == "reverse" {
+		replace monto = -monto
+	}
+
 	tsset aniomes
 	sort aniomes
 	local last_anio = anio[_N]
@@ -65,14 +69,21 @@ quietly {
 	}
 
 	tsset aniomes
-	tempvar dif_Poblacion dif2_Poblacion
-	g `dif_Poblacion' = D.Poblacion
-	egen `dif2_Poblacion' = max(`dif_Poblacion')
-	replace Poblacion = Poblacion + `dif2_Poblacion'*mes/12
+	//tempvar dif_Poblacion dif2_Poblacion
+	//g `dif_Poblacion' = D.Poblacion
+	//egen `dif2_Poblacion' = max(`dif_Poblacion')
+	//replace Poblacion = Poblacion + `dif2_Poblacion'*mes/12
 
-	tempvar montomill montopc crecreal
+	tempvar montomill crecreal
 	g `montomill' = monto/1000000/deflator
-	g `montopc' = monto/Poblacion/deflator
+	format `montomill' %20.0fc
+
+	g monto_pc = monto/Poblacion/deflator
+	format monto_pc %10.0fc
+
+	g monto_pib = monto/pibY*100
+	format monto_pib %7.1fc
+
 	g `crecreal' = (`montomill'/L12.`montomill'-1)*100
 
 	label define mes 1 "Enero" 2 "Febrero" 3 "Marzo" 4 "Abril" 5 "Mayo" 6 "Junio" 7 "Julio" 8 "Agosto" 9 "Septiembre" 10 "Octubre" 11 "Noviembre" 12 "Diciembre"
@@ -109,7 +120,7 @@ quietly {
 		noisily di in g "  Acumulado " in y "Diciembre `=anio[_N]-1'" in g ": " _col(40) in y %20.1fc `mesant'[1,1] in g " millones `currency' `aniovp'"
 		noisily di in g "  Crecimiento: " _col(44) in y %16.1fc (`meshoy'[1,1]/`mesant'[1,1]-1)*100 in g " %"
 
-		tabstat `montopc' if ((anio == `last_anio' & mes == `last_mes') | (anio == `last_anio' & mes == `=`last_mes'-1')), stat(sum) by(mes) format(%7.0fc) save
+		tabstat `montomill' if ((anio == `last_anio'-1 & mes == 12) | (anio == `last_anio' & mes == `last_mes')), stat(sum) by(anio) format(%7.0fc) save
 		tempname meshoy mesant
 		matrix `meshoy' = r(Stat2)
 		matrix `mesant' = r(Stat1)
@@ -119,12 +130,17 @@ quietly {
 		noisily di in g "  Crecimiento: " _col(44) in y %16.1fc (`meshoy'[1,1]/`mesant'[1,1]-1)*100 in g " %"
 	}
 
+	if "`reverse'" == "reverse" {
+		replace monto = -monto
+	}
 
 
 	****************************
 	*** 2 Proyeccion mensual ***
 	****************************
 	if "`nographs'" != "nographs" & tipo_de_informacion == "Flujo" {
+
+		** 2.1 Título de la gráfica **
 		local length = length("`=nombre[1]'")
 		if `length' > 60 {
 			*local textsize ", size(medium)"
@@ -136,122 +152,51 @@ quietly {
 			*local textsize ", size(vsmall)"
 		}
 
-		tabstat `montomill' `if', stat(sum) by(mes) f(%20.0fc) save
-		local j = 100/12/2
-		forvalues k=1(1)12 {
-			tempname monto`k'
-			matrix `monto`k'' = r(Stat`k')
-			local valorserie `"`valorserie' `=`monto`k''[1,1]*0' `j' "{bf:`=string(`monto`k''[1,1],"%5.1fc")'}""'
-			local j = `j' + 100/12
+		* Fuente *
+		if "$export" == "" {
+			local graphfuente "Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP."
+		}
+		else {
+			local graphfuente ""
 		}
 
-		graph bar (sum) `montomill', over(anio) over(mes) stack asyvar ///
-			legend(rows(2)) ///
+		** 2.2 Gráfica por mes calendario **
+		tabstat `montomill' /*if anio >= 2008*/, stat(sum) by(mes) f(%20.0fc) save
+		graph bar (sum) `montomill', over(mes) over(anio) stack asyvar ///
+			legend(rows(1) size(vsmall)) ///
 			name(M`anything', replace) blabel(none) ///
-			ytitle("millones de `=currency[1]' `aniovp'") ///
+			ytitle("") ///
 			yline(0, lcolor(black) lpattern(solid)) ///
 			title("{bf:`=nombre[1]'}"`textsize') ///
-			///text(`valorserie', color(black) place(n)) ///
-			subtitle("por mes calendario") ///
+			subtitle(" por mes calendario, millones de `=currency[1]' `aniovp'", margin(bottom)) ///
 			ylabel(, format(%15.0fc)) ///
-			note("{bf:{c U'}ltimo dato:} `last_anio'm`last_mes'.") ///
-			caption("{bf:Fuente:} Elaborado por el CIEP, con información de la SHCP (Estadísticas Oportunas de Finanzas P{c u'}blicas).")
+			caption("`graphfuente'") ///
 
-		/*preserve
-		collapse (sum) `montomill', by(aniotrimestre anio trimestre nombre currency)
-		forvalues k=1(1)`=_N' {
-			local relab `" `relab' `k' "`=trimestre[`k']'" "'
-			if anio[`k'] == `last_anio' & trimestre[`k'] == trimestre[_N] {
-				local montoTrimActual = `montomill'[`k']
-			}
-			if anio[`k'] == `last_anio'-1 & trimestre[`k'] == trimestre[_N] {
-				local montoTrimAnteri = `montomill'[`k']
-			}
-		}
-		graph bar (sum) `montomill', over(anio) ///
-			over(aniotrimestre, relabel(`relab') axis(on)) ///
-			stack asyvar ///
-			legend(rows(2)) ///
-			name(T`anything', replace) blabel(none) ///
-			ytitle("millones de `=currency[1]' `aniovp'") ///
-			yline(0, lcolor(black) lpattern(solid)) ///
-			title("{bf:`=nombre[1]'}"`textsize') ///
-			///text(`valorserie', color(black) place(n)) ///
-			subtitle("por trimestre") ///
-			ylabel(, format(%15.0fc)) ///
-			///b1title(`" `=string((`montoTrimActual'/`montoTrimAnteri'-1)*100,"%10.1fc")' "') ///
-			note("{bf:{c U'}ltimo dato:} `last_anio'm`last_mes'.") ///
-			caption("{bf:Fuente:} Elaborado por el CIEP, con información de la SHCP (Estadísticas Oportunas de Finanzas P{c u'}blicas).")
-		restore*/
 
-		graph bar (sum) `montomill' if mes == `=mes[_N]' & anio >= 2008, over(anio) ///
+		** 2.3 Gráfica por mes **
+		graph bar (sum) `montomill' if mes == `=mes[_N]' /*& anio >= 2008*/, over(anio) ///
 			name(`mesname'`anything', replace) ///
-			ytitle("millones de `=currency[1]' `aniovp'") ///
-			ylabel(, format(%15.0fc)) ///
 			title("{bf:`=nombre[1]'}"`textsize') ///
-			subtitle("`mesname'") ///
-			blabel(, format(%10.0fc) position(outside) color(black) size(small)) legend(off) ///
+			subtitle(" `mesname', millones de `=currency[1]' `aniovp'", margin(bottom)) ///
+			ytitle("") ///
+			ylabel(none, format(%15.0fc)) ///
+			blabel(, format(%10.0fc) position(outside) color("114 113 118") size(vsmall)) legend(off) ///
 			yline(0, lcolor(black) lpattern(solid)) ///
-			///note("{bf:{c U'}ltimo dato:} `last_anio'm`last_mes'.") ///
-			caption("{bf:Fuente:} Elaborado por el CIEP, con información de la SHCP (Estadísticas Oportunas de Finanzas P{c u'}blicas).")
+			note("{c U'}ltimo dato: `last_anio'm`last_mes'.") ///
+			caption("`graphfuente'") ///
 
-		graph bar (sum) `montomill' if mes <= `=mes[_N]' & anio >= 2008, over(anio) ///
+
+		** 2.4 Gráfica acumulado **
+		graph bar (sum) `montomill' if mes <= `=mes[_N]' /*& anio >= 2008*/, over(anio) ///
 			name(Acum`mesname'`anything', replace) ///
-			ytitle("millones de `=currency[1]' `aniovp'") ///
-			ylabel(, format(%15.0fc)) ///
+			ytitle("") ///
+			ylabel(none, format(%15.0fc)) ///
 			title("{bf:`=nombre[1]'}"`textsize') ///
-			subtitle(`"Acumulado a `=lower("`mesname'")'"') ///
-			blabel(, format(%10.0fc) position(outside) color(black) size(small)) legend(off) ///
+			subtitle(`"Acumulado a `=lower("`mesname'")', millones de `=currency[1]' `aniovp'"', margin(bottom)) ///
+			blabel(, format(%10.0fc) position(outside) color("114 113 118") size(vsmall)) legend(off) ///
 			yline(0, lcolor(black) lpattern(solid)) ///
-			///note("{bf:{c U'}ltimo dato:} `last_anio'm`last_mes'.") ///
-			caption("{bf:Fuente:} Elaborado por el CIEP, con información de la SHCP (Estadísticas Oportunas de Finanzas P{c u'}blicas).")
-
-		forvalues k=1(1)`=_N' {
-			if `crecreal'[`k'] != . & mes[`k'] == `=mes[_N]' {
-				local textcrecreal `"`textcrecreal' `=`crecreal'[`k']' `=aniomes[`k']' "{bf:`=string(`crecreal'[`k'],"%7.1fc")'}" "'
-			}
-		}
-
-		twoway (connected `crecreal' aniomes, msize(large)) if mes == `=mes[_N]', ///
-			name(Crec_`mesname'`anything', replace) ///
-			ytitle("%") ///
-			ylabel(, format(%7.0fc)) ///
-			tlabel(1994m`last_mes'(24)`last_anio'm`last_mes') ///
-			ttitle("") ///
-			title("{bf:`=nombre[1]'}"`textsize') ///
-			yline(0, lcolor(black) lpattern(solid)) ///
-			subtitle("`mesname'") legend(off) ///
-			text(`textcrecreal', size(vsmall)) ///
-			///note("{bf:{c U'}ltimo dato:} `last_anio'm`last_mes'.") ///
-			caption("{bf:Fuente:} Elaborado por el CIEP, con información de la SHCP (Estadísticas Oportunas de Finanzas P{c u'}blicas).")
-	}
-
-	if "`nographs'" != "nographs" & tipo_de_informacion == "Saldo" {
-		forvalues k=1(1)`=_N' {
-			if `montopc'[`k'] != . & ((anio[`k'] >= 2000 & mes[`k'] == 12) | (anio[`k'] == `last_anio' & (mes[`k'] == `last_mes' | mes[`k'] == `last_mes'-1))) {
-				local textmontopc `"`textmontopc' `=`montopc'[`k']' `=aniomes[`k']' "{bf:`=string(`montopc'[`k'],"%10.0fc")'}" "'
-			}
-		}
-		twoway (connect `montopc' aniomes if (anio >= 2000 & mes == 12)) ///
-			(connect `montopc' aniomes if (anio == `last_anio' & mes == `last_mes'-1)) ///
-			(connect `montopc' aniomes if (anio == `last_anio' & mes == `last_mes')), ///
-			ytitle("`=currency[1]' `aniovp'") ///
-			tlabel(2000m12(24)`last_anio'm`last_mes') ///
-			ylabel(, format(%15.0fc)) ///
-			title("{bf:`=nombre[1]'}"`textsize') ///
-			subtitle(Por persona ajustada) ///
-			xtitle("") ///
-			legend(label(1 "Diciembre") label(2 "`mesnameant' `last_anio'") label(3 "`mesname' `last_anio'")) ///
-			text(`textmontopc', size(vsmall) place(c)) ///
-			note("{bf:{c U'}ltimo dato:} `last_anio'm`last_mes'.") ///			
-			caption("{bf:Fuente:} Elaborado por el CIEP, con información de la SHCP/EOFP y CONAPO (2023).") ///
-			name(`anything'PC, replace)
-
-		capture confirm existence $export
-		if _rc == 0 {
-			graph export "$export/`anything'PC.png", replace name(`anything'PC)
-		}
-
+			note("{c U'}ltimo dato: `last_anio'm`last_mes'.") ///
+			caption("`graphfuente'")
 	}
 
 
@@ -264,7 +209,7 @@ quietly {
 		egen `montoanual' = sum(monto) if anio < `last_anio' & anio >= `desde', by(anio)
 		g `propmensual' = monto/`montoanual' if anio < `last_anio' & anio >= `desde'
 		egen acum_prom = mean(`propmensual'), by(mes)
-		collapse (sum) monto acum_prom (last) mes Poblacion if monto != ., by(anio nombre clave_de_concepto unidad_de_medida)
+		collapse (sum) `montomill' monto* acum_prom (last) mes Poblacion pibY deflator if monto != ., by(anio nombre clave_de_concepto unidad_de_medida)
 		*replace monto = monto/acum_prom if mes < 12
 		local textografica `"{bf:Promedio a `mesname'}: `=string(acum_prom[_N]*100,"%5.1fc")'% del total anual."'
 		local palabra "Proyectado"
@@ -274,7 +219,7 @@ quietly {
 		egen `maxmes' = max(mes), by(anio)
 		*drop if mes < `maxmes'
 		sort anio mes
-		collapse (last) monto mes Poblacion if monto != ., by(anio nombre clave_de_concepto unidad_de_medida)
+		collapse (last) `montomill' monto* mes Poblacion pibY deflator if monto != ., by(anio nombre clave_de_concepto unidad_de_medida)
 		g acum_prom = 1
 	}
 	*tsset aniomes
@@ -284,115 +229,79 @@ quietly {
 	return local ultimoAnio = `ultanio'
 	return local ultimoMes = `ultmes'
 
-	if `pibvf' != -999 {
-		tsappend, add(1)
-		local clave = clave_de_concepto[1]
-		replace clave_de_concepto = "`clave'" in -1
-		local nombre = nombre[1]
-		replace nombre = "`nombre'" in -1
-	}
-
-	if `pibvp' != -999 {
-		if `aniovp' == `last_anio'+1 {
-			tsappend, add(1)
-		}
-		local clave = clave_de_concepto[1]
-		replace clave_de_concepto = "`clave'" in -1
-		local nombre = nombre[1]
-		replace nombre = "`nombre'" in -1
-	}
-
-	merge m:1 (anio) using `PIB', nogen keep(matched) keepus(pibY deflator)			
-
-	if `pibvp' != -999 {
-		replace monto = `pibvp'/100*pibY if mes < 12 | mes == .
-		local palabra "Estimado"
-	}
-
-	if `pibvf' != -999 {
-		local textovp `"{superscript:*}{bf:`=anio[_N-1]':} `=string(monto[_N-1]/1000000,"%20.1fc")' millones de MXN"'
-		replace monto = `pibvf'/100*pibY in -1
-		local palabra "Estimado"
-	}
-
-	g double monto_pib = monto/pibY*100
-	g double monto_pc = monto/Poblacion/deflator
-	format monto_pib %7.3fc
-	format monto_pc %10.1fc
-	label var monto_pib "Observado (SHCP)"
-
-
 	** 2.1. Grafica **
 	if "`nographs'" != "nographs" {
-		local serie_anio = anio[_N]
-		local serie_monto = monto[_N]
-		forvalues k = 1(1)`=_N' {
-			if monto_pib[`k'] != . & monto_pib[`k'] != 0 {
-				if mes[`k'] != 12 {
-					local text1 = `"`text1' `=monto_pib[`k']' `=anio[`k']' "{bf:`=string(monto_pib[`k'],"%5.1fc")'{superscript:*}}" "'
-				}
-				else {
-					local text1 = `"`text1' `=monto_pib[`k']' `=anio[`k']' "{bf:`=string(monto_pib[`k'],"%5.1fc")'}" "'
-				}
-			}
-			if anio[`k'] == 2003 {
-				if "`anything'" == "FMP_Derechos" | "`anything'" == "OtrosIngresosC" {
-					local scalarname = subinstr("`anything'","_","",.)
-				}
-				else if substr("`anything'",-1,1) == "s" | substr("`anything'",-1,1) == "f" | substr("`anything'",-1,1) == "m" {
-					local numone = substr("`anything'",4,1)
-					local numtwo = substr("`anything'",5,1)
-					local numthr = substr("`anything'",6,1)
-					local numfou = substr("`anything'",7,1)
-					local scalarname = substr("`anything'",1,3) + char(`=65+`numone'') + char(`=65+`numtwo'') + char(`=65+`numthr'') + char(`=65+`numfou'') + substr("`anything'",-1,1)
 
-				}
-				else {
-					local scalarname = substr("`anything'",1,3) + substr("`anything'",4,1) + substr("`anything'",5,1) + substr("`anything'",6,1) + substr("`anything'",7,1)
-				}
-				scalar dif`scalarname'PIB = monto_pib[_N] - monto_pib[`k']
-				scalar `scalarname'GEO = ((monto[_N]/(monto[`k']/deflator[`k']))^(1/(anio[_N]-anio[`k']))-1)*100
-			}
-		}
-
-		* Grafica *
 		if "$export" == "" {
 			local graphtitle "{bf:`=nombre[1]'}"
-			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP."
 		}
 		else {
 			local graphtitle ""
-			local graphfuente ""
 		}
 
-		tempvar monto
-		g `monto' = monto/1000000/deflator
-		twoway (area `monto' anio if anio < `aniovp') ///
-			(bar `monto' anio if anio >= `aniovp') ///
-			(connected monto_pib anio if anio < `aniovp', yaxis(2) pstyle(p1)) ///
-			(connected monto_pib anio if anio >= `aniovp', yaxis(2) pstyle(p2)), ///
+		tabstat `montomill' monto_pc monto_pib, by(anio) stat(min max) save
+		return list
+		tempname rango
+		matrix `rango' = r(StatTotal)
+
+		twoway (bar `montomill' anio if anio < `aniovp', ///
+				mlabel(`montomill') mlabpos(7) mlabcolor(white) mlabsize(vsmall) msize(small) mlabangle(90)) ///
+			(bar `montomill' anio if anio >= `aniovp', mlabel(`montomill') mlabpos(7) mlabcolor(white) mlabsize(vsmall) msize(small) mlabangle(90)) ///
+			(connected monto_pc anio if anio < `aniovp', ///
+				yaxis(2) pstyle(p1) mlabel(monto_pc) mlabpos(12) mlabcolor("114 113 118") mlabsize(vsmall) lpattern(dot) msize(small)) ///
+			(connected monto_pc anio if anio >= `aniovp', ///
+				yaxis(2) pstyle(p2) mlabel(monto_pc) mlabpos(12) mlabcolor("114 113 118") mlabsize(vsmall) lpattern(dot) msize(small)), ///
 			title("`graphtitle'"`textsize') ///
-			/*subtitle(Montos observados)*/ ///
+			subtitle(" Montos reportados (millones) y por persona, MXN `aniovp'", margin(bottom)) ///
 			///b1title(`"`textografica'"', size(small)) ///
 			///b2title(`"`textovp'"', size(small)) ///
-			ytitle(millones MXN `aniovp') ///
-			ytitle(% PIB, axis(2)) xtitle("") ///
+			ytitle("", axis(1)) ///
+			ytitle("", axis(2)) ///
+			xtitle("") ///
 			///xlabel(`prianio' `=round(`prianio',5)'(5)`ultanio') ///
-			///xlabel(`prianio'(1)`ultanio') ///
-			ylabel(, format(%15.0fc)) yscale(range(0)) ///
-			ylabel(, axis(2) format(%5.1fc) noticks) ///
-			yscale(range(0) noline axis(2)) ///
+			xlabel(`prianio'(1)`ultanio') ///
+			ylabel(none, format(%15.0fc)) ///
+			yscale(range(0 `=`rango'[2,1]*1.75')) ///
+			ylabel(none, axis(2) format(%7.0fc) noticks) ///
+			yscale(range(0 `=`rango'[1,2]-1.75*(`rango'[2,2]-`rango'[1,2])') noline axis(2)) ///
 			legend(off label(1 "Reportado") label(2 "LIF") order(1 2)) ///
 			text(`text1', yaxis(2) color(white) size(vsmall)) ///
 			caption("`graphfuente'") ///
-			note("{bf:{c U'}ltimo dato:} `ultanio'm`ultmes'.") ///
-			name(H`anything', replace)
-		
+			note("{c U'}ltimo dato: `ultanio'm`ultmes'.") ///
+			name(`anything'PC, replace)
+
+
+		twoway (bar `montomill' anio if anio < `aniovp', ///
+				mlabel(`montomill') mlabpos(7) mlabcolor(white) mlabsize(vsmall) msize(small) mlabangle(90)) ///
+			(bar `montomill' anio if anio >= `aniovp', mlabel(`montomill') mlabpos(7) mlabcolor(white) mlabsize(vsmall) msize(small) mlabangle(90)) ///
+			(connected monto_pib anio if anio < `aniovp', ///
+				yaxis(2) pstyle(p1) mlabel(monto_pib) mlabpos(12) mlabcolor("114 113 118") mlabsize(vsmall) lpattern(dot) msize(small)) ///
+			(connected monto_pib anio if anio >= `aniovp', ///
+				yaxis(2) pstyle(p2) mlabel(monto_pib) mlabpos(12) mlabcolor("114 113 118") mlabsize(vsmall) lpattern(dot) msize(small)), ///
+			title("`graphtitle'"`textsize') ///
+			subtitle(" Montos reportados (millones) y como % del PIB, MXN `aniovp'", margin(bottom)) ///
+			///b1title(`"`textografica'"', size(small)) ///
+			///b2title(`"`textovp'"', size(small)) ///
+			ytitle("", axis(1)) ///
+			ytitle("", axis(2)) ///
+			xtitle("") ///
+			///xlabel(`prianio' `=round(`prianio',5)'(5)`ultanio') ///
+			xlabel(`prianio'(1)`ultanio') ///
+			ylabel(none, format(%15.0fc)) ///
+			yscale(range(0 `=`rango'[2,1]*1.75')) ///
+			ylabel(none, axis(2) format(%7.0fc) noticks) ///
+			yscale(range(0 `=`rango'[1,3]-1.75*(`rango'[2,3]-`rango'[1,3])') noline axis(2)) ///
+			legend(off label(1 "Reportado") label(2 "LIF") order(1 2)) ///
+			text(`text1', yaxis(2) color(white) size(vsmall)) ///
+			caption("`graphfuente'") ///
+			note("{c U'}ltimo dato: `ultanio'm`ultmes'.") ///
+			name(`anything'PIB, replace)
+
 		capture confirm existence $export
 		if _rc == 0 {
 			graph export "$export/H`anything'.png", replace name(H`anything')
 		}
 	}
-	noisily list anio monto acum_prom mes monto_pib monto_pc, separator(30) string(30)
+	noisily list anio mes acum_prom monto monto_pib monto_pc, separator(30) string(30)
 }
 end

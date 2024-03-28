@@ -79,6 +79,18 @@ PEF if divCIEP == 9 & ramo == 19, by(capitulo) min(0) rows(2) anio(`aniovp') ///
 graph export "$export/sns_r19.png", as(png) name("gastoscapitulo") replace
 
 
+* Figuras xxx */
+PIBDeflactor, aniovp(`aniovp') nographs nooutput
+tempfile pib
+save "`pib'"
+
+PEF if divCIEP == 9 & ramo == 12, base
+collapse (sum) gasto* if anio == 2023, by(capitulo desc_ur anio)
+merge m:1 anio using "`pib'", nogen
+
+
+graph bar (sum) gasto, over(capitulo) over(desc_ur) stack asyvars percentage
+exit
 
 *********************************/
 ***                            ***
