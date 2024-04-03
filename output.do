@@ -2,21 +2,21 @@ if "$output" != "" {
 	quietly log on output
 
 	noisily di in w "CRECPIB: ["  ///
-		%8.1f $pib2023 ", " ///
 		%8.1f $pib2024 ", " ///
 		%8.1f $pib2025 ", " ///
 		%8.1f $pib2026 ", " ///
 		%8.1f $pib2027 ", " ///
 		%8.1f $pib2028 ", " ///
+		%8.1f $pib2029 ", " ///
 		%8.1f $pib2029 ///
 	"]"
 	noisily di in w "CRECDEF: ["  ///
-		%8.1f $def2023 ", " ///
 		%8.1f $def2024 ", " ///
 		%8.1f $def2025 ", " ///
 		%8.1f $def2026 ", " ///
 		%8.1f $def2027 ", " ///
 		%8.1f $def2028 ", " ///
+		%8.1f $def2029 ", " ///
 		%8.1f $def2029 ///
 	"]"
 	noisily di in w "DEUDAPARAM: [" ///

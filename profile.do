@@ -9,7 +9,7 @@ capture log close _all
 timer on 1
 
 
-** Estilo CIEP **
+** 1.1 Estilo CIEP **
 set scheme ciep
 graph set window fontface "Ubuntu"
 set more off, permanently
@@ -17,10 +17,17 @@ set type double, permanently
 set charset latin1, permanently
 
 
-** Ruta PERSONAL **
+** 1.2 Ruta PERSONAL **
 sysdir set PERSONAL `"`c(sysdir_site)'"'
 adopath ++PERSONAL
 cd `"`c(sysdir_personal)'"'
+
+
+** 1.3 Crear carpetas **
+capture mkdir `"`c(sysdir_personal)'/SIM/"'
+capture mkdir `"`c(sysdir_personal)'/SIM/graphs"'
+capture mkdir `"`c(sysdir_personal)'/users/"'
+capture mkdir `"`c(sysdir_personal)'/users/$id/"'
 
 
 
@@ -44,27 +51,24 @@ scalar aniovp = 2024
 ** 2.2 Economía **
 ** Fuente: CGPE 2024 (página 121)
 ** 2.2.1 Parámetros: Crecimiento anual del Producto Interno Bruto **
-global pib2023 = 3.1766
-global pib2024 = 2.6189
-global pib2025 = 2.5097
+global pib2024 = 2.591
+global pib2025 = 2.5007
 global pib2026 = 2.4779
 global pib2027 = 2.5
 global pib2028 = 2.5
 global pib2029 = 2.5002
 
 ** 2.2.2 Parámetros: Crecimiento anual del índice de precios implícitos **
-global def2023 = 5.0
-global def2024 = 4.8
-global def2025 = 3.5
+global def2024 = 4.1
+global def2025 = 3.9
 global def2026 = 3.5
 global def2027 = 3.5
 global def2028 = 3.5
 global def2029 = 3.5
 
 ** 2.2.3 Parámetros: Crecimiento anual del índice nacional de precios al consumidor **
-global inf2023 = 5.7
-global inf2024 = 4.5
-global inf2025 = 3.4
+global inf2024 = 3.8
+global inf2025 = 3.3
 global inf2026 = 3.0
 global inf2027 = 3.0
 global inf2028 = 3.0

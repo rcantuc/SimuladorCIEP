@@ -11,25 +11,34 @@ timer on 1
 
 
 ** 0.1 Rutas de archivos  **
-if "`c(username)'" == "ricardo" ///                             // iMac Ricardo
+if "`c(username)'" == "ricardo" ///                                   // iMac Ricardo
 	sysdir set PERSONAL "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
-else if "`c(username)'" == "ciepmx" & "`c(console)'" == "" ///       // Servidor CIEP
+else if "`c(username)'" == "ciepmx" & "`c(console)'" == "" ///        // Servidor CIEP
 	sysdir set PERSONAL "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
-else ///														   // Web
+else ///														      // Web
 	sysdir set PERSONAL "/SIM/OUT/6/"
 cd `"`c(sysdir_personal)'"'
+
+
+** 0.2 Crear carpetas **
 capture mkdir `"`c(sysdir_personal)'/SIM/"'
 capture mkdir `"`c(sysdir_personal)'/SIM/graphs"'
 capture mkdir `"`c(sysdir_personal)'/users/"'
 capture mkdir `"`c(sysdir_personal)'/users/$id/"'
 
 
-**  0.2 Opciones globales  **
-** Comentar o descomentar, según el caso. **
-//global id = "`c(username)'"                                                   // IDENTIFICADOR DEL USUARIO
-global nographs "nographs"                                                    // SUPRIMIR GRAFICAS
-global output "output"                                                        // OUTPUTS (WEB)
-global paqueteEconomico "PE 2024"
+** 0.3 Opciones globales **
+global id = "ciepmx"													// IDENTIFICADOR DEL USUARIO
+global nographs "nographs"												// SUPRIMIR GRAFICAS
+//global update "update"													// ACTUALIZAR ARCHIVOS
+
+
+** 0.4 Archivo output.txt (web) **
+global output "output"													// OUTPUTS (WEB)
+if "$output" != "" {
+	quietly log using `"`c(sysdir_personal)'/users/$id/output.txt"', replace text name(output)
+	quietly log off output
+}
 
 
 
@@ -38,51 +47,44 @@ global paqueteEconomico "PE 2024"
 **#    1. MARCO MACRO   ***
 ***                     ***
 ***************************
+global paqueteEconomico "PE 2024"
 scalar anioPE = 2024
 scalar aniovp = 2024
-
-
-**  1.1 Archivo output.txt (web)  **
-if "$output" != "" {
-	quietly log using `"`c(sysdir_personal)'/users/$id/output.txt"', replace text name(output)
-	quietly log off output
-}
+scalar anioenigh = 2022
 
 
 ** 1.2 Economía **
 ** 1.2.1 Parámetros: Crecimiento anual del Producto Interno Bruto **
-global pib2023 = 2.6893
-global pib2024 = 2.6189
-global pib2025 = 2.5097
+global pib2024 = 2.591
+global pib2025 = 2.5007
 global pib2026 = 2.4779
 global pib2027 = 2.5
 global pib2028 = 2.5
 global pib2029 = 2.5002
 
 ** 1.2.2 Parámetros: Crecimiento anual del índice de precios implícitos **
-global def2023 = 5.0
-global def2024 = 4.8
-global def2025 = 3.5
+global def2024 = 4.1
+global def2025 = 3.9
 global def2026 = 3.5
 global def2027 = 3.5
 global def2028 = 3.5
 global def2029 = 3.5
 
 ** 1.2.3 Parámetros: Crecimiento anual del índice nacional de precios al consumidor **
-global inf2023 = 5.7
-global inf2024 = 4.5
-global inf2025 = 3.4
+global inf2024 = 3.8
+global inf2025 = 3.3
 global inf2026 = 3.0
 global inf2027 = 3.0
 global inf2028 = 3.0
 global inf2029 = 3.0
 
-scalar tasaEfectiva = 6.7358
+** 1.2.4 Proyecciones: PIB, Deflactor e Inflación **
+//noisily PIBDeflactor, anio(`=aniovp') geopib(2010) geodef(2010) $nographs $update
 
 
-** 1.3 Perfiles **
+** 1.5 Perfiles fiscales **
 capture confirm file "`c(sysdir_personal)'/SIM/perfiles`=anioPE'.dta"
-if _rc != 0 ///
+if _rc != 0 | "`update'" == "update" ///
 	noisily run `"`c(sysdir_personal)'/PerfilesSim.do"' `=anioPE'
 
 
@@ -203,11 +205,11 @@ matrix	SE =  (0.01,		1768.96,	407.02		\    /// 1
 
 * Artículo 151, último párrafo (LISR) *
 *            Ex. SS.MM.	Ex. 	% ing. gravable		% Informalidad PF	% Informalidad Salarios
-matrix DED = (5,				15,					70.62, 				89.07)
+matrix DED = (5,				15,					65.51, 				0)
 
 * Artículo 9, primer párrafo (LISR) * 
 *           Tasa ISR PM.	% Informalidad PM
-matrix PM = (30,			28.08)
+matrix PM = (30,			27.14)
 
 
 ** 2.9 Parámetros: IMSS e ISSSTE **
@@ -236,18 +238,10 @@ matrix CSS_ISSSTE = ///
 		0.000,		0.000,			13.9)		//  Cuota social
 
 if "`cambioisrpf'" == "1" {
-	noisily run "`c(sysdir_personal)'/ISRPF_Mod.do"
+	noisily run "`c(sysdir_personal)'/ISR_Mod.do"
 	scalar ISRAS  = ISR_AS_Mod
 	scalar ISRPF  = ISR_PF_Mod
-}
-
-if "`cambioisrpm'" == "1" {
-	noisily run "`c(sysdir_personal)'/ISRPM_Mod.do"
 	scalar ISRPM  = ISR_PM_Mod
-}
-
-if "`cambioisrpf'" == "1" {
-	noisily run "`c(sysdir_personal)'/CUTOAS_Mod.do"
 	scalar CUOTAS = CUOTAS_Mod
 }
 
@@ -300,7 +294,7 @@ matrix IEPST = (26.5	,		0 			\ /// Cerveza y alcohol 14
 
 ** 2.12 Integración de módulos ***
 noisily TasasEfectivas, anio(`=anioPE')
-noisily GastoPC, aniope(`=anioPE') aniovp(2024)
+noisily GastoPC, aniope(`=anioPE') aniovp(`=aniovp')
 
 
 
@@ -309,11 +303,10 @@ noisily GastoPC, aniope(`=anioPE') aniovp(2024)
 **#    3. CICLO DE VIDA    ***
 ***                        ***
 ******************************
-capture use `"`c(sysdir_personal)'/users/$id/ingresos.dta"', clear
-capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/users/$id/gastos.dta", nogen replace update
-if _rc != 0 {
-	use "`c(sysdir_personal)'/SIM/perfiles`=anioPE'.dta", clear
-}
+use `"`c(sysdir_personal)'/users/$id/ingresos.dta"', clear
+merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/users/$id/gastos.dta", nogen
+capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/users/$id/isr_mod.dta", nogen replace update
+capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/users/$id/iva_mod.dta", nogen replace update
 
 
 ** 3.1 (+) Impuestos y aportaciones **
@@ -351,7 +344,7 @@ foreach k in decil grupoedad /*sexo rural escol*/ {
 **#    4. PARTE IV: DEUDA + FISCAL GAP    ***
 ***                                       ***
 *********************************************
-scalar tasaEfectiva = 6.4175
+scalar tasaEfectiva = 6.4111
 
 scalar shrfsp2024 = 48.8
 scalar shrfspInterno2024 = 37.4
@@ -451,6 +444,8 @@ scalar costodeudaExterno2029 = 2.5
 
 ** Inputs: Archivo "`c(sysdir_site)'/users/$pais/$id/households.dta", SHRFSP, PEFs y LIFs.
 ** Outputs: Sostenibilidad de la deuda y brecha fiscal hasta 2030.
+** 4.2 Proyecciones: Saldo Histórico de los Requerimientos Financieros del Sector Público **/
+//noisily SHRFSP, ultanio(2001) anio(`=anioPE') $update
 noisily FiscalGap, anio(`=anioPE') end(2030) aniomin(2016) $nographs desde(2016) discount(10) //update //anio(`=aniovp')
 
 

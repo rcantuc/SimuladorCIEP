@@ -689,7 +689,7 @@ foreach k in Alim BebN BebA Taba Vest Calz Alqu Agua Elec Hoga Salu Vehi FTra ST
 	tabstat gas_pc_`k' [aw=factor], stat(sum) f(%20.0fc) save
 	scalar M`k' = r(StatTotal)[1,1]
 	scalar E`k'PIB = M`k'/PIB*100
-	scalar E`k'PC = M`k'/pobtotNac
+	scalar E`k'PC = M`k'/pobtotNacional
 
 	Gini gas_pc_`k', hogar(folioviv foliohog) factor(factor)
 	local gini`k' = r(gini_gas_pc_`k')
@@ -698,7 +698,7 @@ foreach k in Alim BebN BebA Taba Vest Calz Alqu Agua Elec Hoga Salu Vehi FTra ST
 	scalar MTot = MTot + M`k'
 }
 scalar ETotPIB = MTot/PIB*100
-scalar ETotPC = MTot/pobtotNac
+scalar ETotPC = MTot/pobtotNacional
 
 
 * Display de resultados *
@@ -820,12 +820,12 @@ foreach k in Alim BebN BebA Taba Vest Calz Alqu Agua Elec Hoga Salu Vehi FTra ST
 	tabstat gas_pc_`k' [aw=factor], stat(sum) f(%20.0fc) save
 	scalar MM`k' = r(StatTotal)[1,1]
 	scalar EE`k'PIB = MM`k'/PIB*100
-	scalar EE`k'PC = MM`k'/pobtotNac
+	scalar EE`k'PC = MM`k'/pobtotNacional
 
 	scalar MMTot = MMTot + MM`k'
 }
 scalar EETotPIB = MMTot/PIB*100
-scalar EETotPC = MMTot/pobtotNac
+scalar EETotPC = MMTot/pobtotNacional
 
 
 ** 4.2 Display de resultados **
@@ -999,7 +999,8 @@ noisily di in g "  Total " ///
 	_col(66) %7.3fc `IVA'/PIB*100 ///
 	_col(77) %6.2fc -(`IVA'/scalar(IVA)-1)*100 "%"
 
-*collapse (sum) IVA, by(folioviv foliohog numren)
+save "`c(sysdir_personal)'/SIM/`enighanio'/categ_iva.dta", replace
+collapse (sum) IVA, by(folioviv foliohog numren)
 save "`c(sysdir_personal)'/SIM/`enighanio'/consumption_categ_iva.dta", replace
 
 

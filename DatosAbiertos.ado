@@ -252,7 +252,7 @@ quietly {
 			(connected monto_pc anio if anio >= `aniovp', ///
 				yaxis(2) pstyle(p2) mlabel(monto_pc) mlabpos(12) mlabcolor("114 113 118") mlabsize(vsmall) lpattern(dot) msize(small)), ///
 			title("`graphtitle'"`textsize') ///
-			subtitle(" Montos reportados (millones) y por persona, MXN `aniovp'", margin(bottom)) ///
+			subtitle(" Montos reportados (millones MXN `aniovp') y por persona", margin(bottom)) ///
 			///b1title(`"`textografica'"', size(small)) ///
 			///b2title(`"`textovp'"', size(small)) ///
 			ytitle("", axis(1)) ///
@@ -279,7 +279,7 @@ quietly {
 			(connected monto_pib anio if anio >= `aniovp', ///
 				yaxis(2) pstyle(p2) mlabel(monto_pib) mlabpos(12) mlabcolor("114 113 118") mlabsize(vsmall) lpattern(dot) msize(small)), ///
 			title("`graphtitle'"`textsize') ///
-			subtitle(" Montos reportados (millones) y como % del PIB, MXN `aniovp'", margin(bottom)) ///
+			subtitle(" Montos reportados (millones MXN `aniovp') y como % del PIB", margin(bottom)) ///
 			///b1title(`"`textografica'"', size(small)) ///
 			///b2title(`"`textovp'"', size(small)) ///
 			ytitle("", axis(1)) ///

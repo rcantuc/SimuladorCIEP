@@ -35,6 +35,8 @@ quietly {
 		local `=substr("`k'",1,7)' = r(`k')
 		local `=substr("`k'",1,7)' = ``=substr("`k'",1,7)''/scalar(PIB)*100
 	}
+	scalar IngKPublicosPIB = `FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE'
+	scalar IngKPublicosPor = (`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE')/(CapIncImpPIB)*100
 
 
 
@@ -110,6 +112,66 @@ quietly {
 		_col(80) %7.3fc in y (`ISRAS'+`ISRPF'+`CUOTAS')/(YlPIB)*100 " %" "}"
 	scalar YlImpPIB = (`ISRAS'+`ISRPF'+`CUOTAS')
 	scalar YlImpPor = (`ISRAS'+`ISRPF'+`CUOTAS')/(YlPIB)*100
+
+
+
+
+
+	******************************
+	**# 4 Impuestos al capital ***
+	******************************
+	noisily di _newline(2) in y "{bf: B. " in y "Generación de recursos de capital" "}"
+	noisily di _newline in g "{bf:  Cuentas Nacionales" ///
+		_col(37) %7s in g "% PIB" ///
+		_col(48) "Personas morales" ///
+		_col(72) %7s in g "% PIB" ///
+		_col(80) in g "Tasa efectiva" "}"
+	noisily di in g _dup(88) "-"
+
+
+	** 4.1 ISR (personas morales) **
+	capture confirm scalar ISRPM
+	if _rc == 0 {
+		local ISRPM = scalar(ISRPM)
+	}
+	else {
+		scalar ISRPM = `ISRPM'
+	}
+	noisily di in g "  Ingresos de capital privado*" ///
+		_col(37) %7.3fc in y (ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-IngKPublicosPIB) ///
+		_col(48) in g "ISR (morales)" ///
+		_col(72) %7.3fc in y (`ISRPM') ///
+		_col(80) %7.3fc in y (`ISRPM')/(ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-IngKPublicosPIB)*100 " %"
+
+
+	** 4.2 Productos, derechos, aprovechamientos, contribuciones **
+	capture confirm scalar OTROSK
+	if _rc == 0 {
+		local OTROSK = scalar(OTROSK)
+	}
+	else {
+		scalar OTROSK = `OTROSK'
+	}
+	noisily di in g "  Ingresos de capital privado*" ///
+		_col(37) %7.3fc in y (ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-IngKPublicosPIB) ///
+		_col(48) in g "Prod., der., apr., etc." ///
+		_col(72) %7.3fc in y (`OTROSK') ///
+		_col(80) %7.3fc in y (`OTROSK')/(ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-IngKPublicosPIB)*100 " %"
+	scalar IngKPrivadoPIB = ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-IngKPublicosPIB
+	scalar ISRPMPor = (`ISRPM')/(ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-IngKPublicosPIB)*100
+	scalar OTROSKPor = (`OTROSK')/(ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-IngKPublicosPIB)*100
+
+
+	** 4.3 TOTAL CAPITAL PRIVADO **
+	noisily di in g _dup(88) "-"
+	noisily di in g "{bf:  Ingresos de capital privados" ///
+		_col(37) %7.3fc in y (CapIncImpPIB-IngKPublicosPIB) ///
+		_col(48) in g "Recaudaci{c o'}n total" ///
+		_col(72) %7.3fc in y (`ISRPM'+`OTROSK') ///
+		_col(80) %7.3fc in y (`ISRPM'+`OTROSK')/(CapIncImpPIB-IngKPublicosPIB)*100 " %" "}"
+	scalar IngKPrivadoTotPIB = CapIncImpPIB-IngKPublicosPIB
+	scalar IngKPrivadoTotPor = (`ISRPM'+`OTROSK')/(CapIncImpPIB-IngKPublicosPIB)*100
+	scalar ImpKPrivadoPIB = `ISRPM'+`OTROSK'
 
 
 
@@ -214,71 +276,6 @@ quietly {
 		_col(48) in g "Ingresos propios totales" ///
 		_col(72) %7.3fc in y (`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE') ///
 		_col(80) %7.3fc in y (`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE')/(CapIncImpPIB)*100 " %" "}"
-
-
-
-	scalar IngKPublicosPIB = `FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE'
-	scalar IngKPublicosPor = (`FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE')/(CapIncImpPIB)*100
-
-
-
-
-
-	******************************
-	**# 4 Impuestos al capital ***
-	******************************
-	noisily di _newline(2) in y "{bf: B. " in y "Generación de recursos de capital" "}"
-	noisily di _newline in g "{bf:  Cuentas Nacionales" ///
-		_col(37) %7s in g "% PIB" ///
-		_col(48) "Personas morales" ///
-		_col(72) %7s in g "% PIB" ///
-		_col(80) in g "Tasa efectiva" "}"
-	noisily di in g _dup(88) "-"
-
-
-	** 4.1 ISR (personas morales) **
-	capture confirm scalar ISRPM
-	if _rc == 0 {
-		local ISRPM = scalar(ISRPM)
-	}
-	else {
-		scalar ISRPM = `ISRPM'
-	}
-	noisily di in g "  Ingresos de capital privado*" ///
-		_col(37) %7.3fc in y (ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-IngKPublicosPIB) ///
-		_col(48) in g "ISR (morales)" ///
-		_col(72) %7.3fc in y (`ISRPM') ///
-		_col(80) %7.3fc in y (`ISRPM')/(ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-IngKPublicosPIB)*100 " %"
-
-
-	** 4.2 Productos, derechos, aprovechamientos, contribuciones **
-	capture confirm scalar OTROSK
-	if _rc == 0 {
-		local OTROSK = scalar(OTROSK)
-	}
-	else {
-		scalar OTROSK = `OTROSK'
-	}
-	noisily di in g "  Ingresos de capital privado*" ///
-		_col(37) %7.3fc in y (ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-IngKPublicosPIB) ///
-		_col(48) in g "Prod., der., apr., etc." ///
-		_col(72) %7.3fc in y (`OTROSK') ///
-		_col(80) %7.3fc in y (`OTROSK')/(ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-IngKPublicosPIB)*100 " %"
-	scalar IngKPrivadoPIB = ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-IngKPublicosPIB
-	scalar ISRPMPor = (`ISRPM')/(ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-IngKPublicosPIB)*100
-	scalar OTROSKPor = (`OTROSK')/(ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-IngKPublicosPIB)*100
-
-
-	** 4.3 TOTAL CAPITAL PRIVADO **
-	noisily di in g _dup(88) "-"
-	noisily di in g "{bf:  Ingresos de capital privados" ///
-		_col(37) %7.3fc in y (CapIncImpPIB-IngKPublicosPIB) ///
-		_col(48) in g "Recaudaci{c o'}n total" ///
-		_col(72) %7.3fc in y (`ISRPM'+`OTROSK') ///
-		_col(80) %7.3fc in y (`ISRPM'+`OTROSK')/(CapIncImpPIB-IngKPublicosPIB)*100 " %" "}"
-	scalar IngKPrivadoTotPIB = CapIncImpPIB-IngKPublicosPIB
-	scalar IngKPrivadoTotPor = (`ISRPM'+`OTROSK')/(CapIncImpPIB-IngKPublicosPIB)*100
-	scalar ImpKPrivadoPIB = `ISRPM'+`OTROSK'
 
 
 
@@ -395,6 +392,8 @@ quietly {
 	**# 7. Base SIM ***
 	*******************
 	use "`c(sysdir_personal)'/SIM/perfiles`anio'.dta", clear
+	keep folioviv foliohog numren factor edad ///
+		ISRAS ISRPF CUOTAS ISRPM OTROSK /*FMP PEMEX CFE IMSS ISSSTE*/ IVA IEPSNP IEPSP ISAN IMPORT
 
 	* 7.1 Distribuir los ingresos entre las observaciones *
 	foreach k of varlist ISRAS ISRPF CUOTAS ///
