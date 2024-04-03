@@ -1612,13 +1612,13 @@ scalar DifIMSSCSS = (`SBCIMSS'[1,1]/`CuotasIMSS'-1)*100
 noisily di ///
 	_col(04) in g "(+) ISSSTE " ///
 	_col(44) in y "(" %5.3fc `gini_cuotasISSSTE' ")" ///
-	_col(57) in y %7.3fc (`SBCISSSTE'[1,1]+`SBCISSSTEEST'[1,1])/`PIBSCN'*100 ///
+	_col(57) in y %7.3fc (`SBCISSSTE'[1,1])/`PIBSCN'*100 ///
 	_col(66) in y %7.3fc `Cuotas_ISSSTE'/`PIBSCN'*100 ///
-	_col(77) in y %7.1fc ((`SBCISSSTE'[1,1]+`SBCISSSTEEST'[1,1])/`Cuotas_ISSSTE'-1)*100 "%"
+	_col(77) in y %7.1fc ((`SBCISSSTE'[1,1])/`Cuotas_ISSSTE'-1)*100 "%"
 scalar ISSSTECSSSCNPIB = `Cuotas_ISSSTE'/`PIBSCN'*100
-scalar ISSSTECSSHHSPIB = (`SBCISSSTE'[1,1]+`SBCISSSTEEST'[1,1])/`PIBSCN'*100
+scalar ISSSTECSSHHSPIB = (`SBCISSSTE'[1,1])/`PIBSCN'*100
 scalar giniISSSTECSS = string(`gini_cuotasISSSTE',"%5.3f")
-scalar DifISSSTECSS = ((`SBCISSSTE'[1,1]+`SBCISSSTEEST'[1,1])/`Cuotas_ISSSTE'-1)*100
+scalar DifISSSTECSS = ((`SBCISSSTE'[1,1])/`Cuotas_ISSSTE'-1)*100
 noisily di ///
 	_col(04) in g "(+) Federaci{c o'}n " ///
 	_col(44) in y "(" %5.3fc `gini_cuotasFED' ")" ///
@@ -1632,16 +1632,16 @@ scalar DifFEDCSS = ((`SBCFED'[1,1])/`SSFederacion'-1)*100
 noisily di ///
 	_col(04) in g "(+) Otros " ///
 	_col(44) in y "(" %5.3fc `gini_cuotasOTR' ")" ///
-	_col(57) in y %7.3fc (`SBCOTR'[1,1]+`SBCINF'[1,1]+`SBCINF'[1,2]+`SBCFED2'[1,1])/`PIBSCN'*100 ///
+	_col(57) in y %7.3fc (`SBCOTR'[1,1]+`SBCINF'[1,1]+`SBCINF'[1,2]+`SBCFED2'[1,1]+`SBCISSSTEEST'[1,1])/`PIBSCN'*100 ///
 	_col(66) in y %7.3fc ((`SSEmpleadores'+`SSImputada')-`SSFederacion'-`SSImputada' ///
 		-`Cuotas_ISSSTE'-`CuotasIMSS')/`PIBSCN'*100 ///
-	_col(77) in y %7.1fc ((`SBCOTR'[1,1]+`SBCINF'[1,1]+`SBCINF'[1,2]+`SBCFED2'[1,1])/((`SSEmpleadores'+`SSImputada') ///
+	_col(77) in y %7.1fc ((`SBCOTR'[1,1]+`SBCINF'[1,1]+`SBCINF'[1,2]+`SBCFED2'[1,1]+`SBCISSSTEEST'[1,1])/((`SSEmpleadores'+`SSImputada') ///
 		-`SSFederacion'-`SSImputada'-`Cuotas_ISSSTE'-`CuotasIMSS')-1)*100 "%"
 scalar OTROCSSSCNPIB = ((`SSEmpleadores'+`SSImputada')-`SSFederacion'-`SSImputada' ///
 	-`Cuotas_ISSSTE'-`CuotasIMSS')/`PIBSCN'*100
-scalar OTROCSSHHSPIB = (`SBCOTR'[1,1]+`SBCINF'[1,1]+`SBCINF'[1,2]+`SBCFED2'[1,1])/`PIBSCN'*100
+scalar OTROCSSHHSPIB = (`SBCOTR'[1,1]+`SBCINF'[1,1]+`SBCINF'[1,2]+`SBCFED2'[1,1]+`SBCISSSTEEST'[1,1])/`PIBSCN'*100
 scalar giniOTROCSS = string(`gini_cuotasOTR',"%5.3f")
-scalar DifOTROCSS = ((`SBCOTR'[1,1]+`SBCINF'[1,1]+`SBCINF'[1,2]+`SBCFED2'[1,1])/((`SSEmpleadores'+`SSImputada') ///
+scalar DifOTROCSS = ((`SBCOTR'[1,1]+`SBCINF'[1,1]+`SBCINF'[1,2]+`SBCFED2'[1,1]+`SBCISSSTEEST'[1,1])/((`SSEmpleadores'+`SSImputada') ///
 		-`SSFederacion'-`SSImputada'-`Cuotas_ISSSTE'-`CuotasIMSS')-1)*100
 noisily di ///
 	_col(04) in g "(+) Imputada " ///
@@ -1666,6 +1666,7 @@ scalar DifCSSE = ((`SBCTOTAL'[1,1]+`SBCINF'[1,1]+`SBCINF'[1,2])/(`SSEmpleadores'
 scalar giniCSSE = string(`gini_cuotasTPF',"%5.3f")
 
 
+
 ** 6.2 Ingresos brutos trabajo subordinado **
 * Calculo de ISR retenciones por salarios *
 g double ing_subor = .
@@ -1673,18 +1674,21 @@ g categ = ""
 g SE = 0
 forvalues j=`=rowsof(ISR)'(-1)1 {
 	forvalues k=`=rowsof(SE)'(-1)1 {
-		replace ing_subor = (ing_t4_cap1 + ISR[`j',3] - SE[`k',3]*htrab/48 + (cuotasTPF + infonavit + fovissste) ///
+		replace ing_subor = (ing_t4_cap1 + ISR[`j',3] - SE[`k',3]*htrab/48 ///
+			+ (cuotasTPF + infonavit + fovissste) ///
 			- ISR[`j',4]/100*(ISR[`j',1] + exen_t4_cap1)) / (1-ISR[`j',4]/100) ///
 			if (ing_t4_cap1 != 0) & htrab < 48 & categ == ""
 			
-		replace ing_subor = (ing_t4_cap1 + ISR[`j',3] - SE[`k',3] + (cuotasTPF + infonavit + fovissste) ///
+		replace ing_subor = (ing_t4_cap1 + ISR[`j',3] - SE[`k',3] ///
+			+ (cuotasTPF + infonavit + fovissste) ///
 			- ISR[`j',4]/100*(ISR[`j',1] + exen_t4_cap1)) / (1-ISR[`j',4]/100) ///
 			if (ing_t4_cap1 != 0) & htrab >= 48 & categ == ""
 
-		replace categ = "i`j's`k'" if ing_subor - exen_t4_cap1 >= ISR[`j',1] ///
-			& ing_subor - exen_t4_cap1 <= ISR[`j',2] ///
-			& ing_subor - exen_t4_cap1 >= SE[`k',1] ///
-			& ing_subor - exen_t4_cap1 <= SE[`k',2] ///
+		replace categ = "i`j's`k'" ///
+			if ing_subor - exen_t4_cap1 - (cuotasTPF + infonavit + fovissste) >= ISR[`j',1] ///
+			& ing_subor - exen_t4_cap1 - (cuotasTPF + infonavit + fovissste) <= ISR[`j',2] ///
+			& ing_subor - exen_t4_cap1 - (cuotasTPF + infonavit + fovissste) >= SE[`k',1] ///
+			& ing_subor - exen_t4_cap1 - (cuotasTPF + infonavit + fovissste) <= SE[`k',2] ///
 			& categ == ""
 
 		*replace SE = SE[`k',3]*htrab/48 if categ == "i`j's`k'" & htrab < 48 & formal != 0
@@ -1697,7 +1701,7 @@ replace ing_subor = ing_t4_cap1 if formal == 0
 
 
 ** 6.3 ISR salarios **
-g double isrE = ing_subor - ing_t4_cap1 - (cuotasTP + infonavit + fovissste) if formal != 0
+g double isrE = ing_subor - ing_t4_cap1 - (cuotasTPF + infonavit + fovissste) - SE if formal != 0
 replace isrE = 0 if isrE == .
 label var isrE "ISR retenciones a asalariados"
 
@@ -2184,7 +2188,7 @@ forvalues j=`=rowsof(ISR)'(-1)1 {
 			 & (ing_bruto_tax - exen_tot - deduc_isr - cuotasTPF) >= SE[`k',1] ///
 			 & (ing_bruto_tax - exen_tot - deduc_isr - cuotasTPF) <= SE[`k',2]
 
-		replace ISR = ISR[`j',3] + (ISR[`j',4]/100)*(ing_bruto_tax - exen_tot - deduc_isr - cuotasTPF - ISR[`j',1]) ///
+		replace ISR = ISR[`j',3] + (ISR[`j',4]/100)*(ing_bruto_tax - exen_tot - deduc_isr - cuotasTPF - ISR[`j',1]) - SE ///
 			if categF == "J`j'K`k'"
 	}
 }
@@ -2212,7 +2216,7 @@ scalar asisFORMALSalarios = string((`FORAS'[1,1])*100,"%6.3f")
 
 ** 11.2 ISR PERSONAS FISICAS **
 gsort -formal_probit -prob_formal
-g double ISR_PF = ISR - ISR_asalariados if ISR - ISR_asalariados > 0 & prob_formal != .
+g double ISR_PF = ISR - ISR_asalariados - cuotasTP if ISR - ISR_asalariados - cuotasTP > 0 & prob_formal != .
 replace ISR_PF = 0 if ISR_PF == .
 label var ISR_PF "ISR (personas f{c i'}sicas)"
 
@@ -2233,7 +2237,6 @@ scalar asisFORMALFisicas = string((`FORPF'[1,1])*100,"%6.3f")
 
 ** 11.3 ISR PERSONAS MORALES **
 gsort -formal_probit -prob_moral
-
 g double ISR_PM = (ing_bruto_tpm-exen_tpm*0)*.3 - SE_empresas
 replace ISR_PM = 0 if ISR_PM == .
 label var ISR_PM "ISR (personas morales)"
@@ -2631,7 +2634,7 @@ else {
 ** Inputs: Archivo "`c(sysdir_personal)'/SIM/`anio'/households.dta".
 ** Outputs: Archivos .json en carpeta "/var/www/html/SankeyNTA/.
 foreach k in decil sexo grupoedad escol rural {
-	run "`c(sysdir_personal)'/Sankey.do" `k' `enighanio' SankeyNTA
+//	run "`c(sysdir_personal)'/Sankey.do" `k' `enighanio' SankeyNTA
 }
 
 

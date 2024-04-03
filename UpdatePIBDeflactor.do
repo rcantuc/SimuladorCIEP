@@ -14,8 +14,10 @@ noisily di in g "  Updating PIBDeflactor.dta..." _newline
 **************
 
 ** 1.1. Importar variables de interés desde el BIE **
-run "`c(sysdir_personal)'/AccesoBIE.do" "734407 735143 446562 446565 446566 628194" "pibQ indiceQ PoblacionENOE PoblacionOcupada PoblacionDesocupada inpc"
+run "`c(sysdir_personal)'/AccesoBIE.do" "734407 735143 446562 446565 446566" "pibQ indiceQ PoblacionENOE PoblacionOcupada PoblacionDesocupada"
 
+* 628194 inpc 
+* label var inpc "Índice Nacional de Precios al Consumidor"
 
 ** 1.2 Label variables **
 label var pibQ "Producto Interno Bruto (trimestral)"
@@ -23,12 +25,11 @@ label var indiceQ "Índice de precios implícitos (trimestral)"
 label var PoblacionENOE "Población ENOE"
 label var PoblacionOcupada "Población Ocupada (ENOE)"
 label var PoblacionDesocupada "Población Desocupada (ENOE)"
-label var inpc "Índice Nacional de Precios al Consumidor"
 
 
 ** 1.3 Dar formato a variables **
 replace pibQ = pibQ*1000000
-format indice* inpc %8.3f
+format indice* %8.3f
 format pib %20.0fc
 format Poblacion* %12.0fc
 
@@ -47,6 +48,46 @@ drop periodo
 compress
 tempfile PIB
 save `PIB'
+
+
+
+***************
+***         ***
+**# 2. INPC ***
+***         ***
+***************
+** 1.1. Importar variables de interés desde el BIE **
+run "`c(sysdir_personal)'/AccesoBIE.do" "628194" "inpc"
+
+
+** 1.2 Label variables **
+label var inpc "Índice Nacional de Precios al Consumidor"
+
+
+** 1.3 Dar formato a variables **
+format inpc %8.3f
+
+
+** 1.4 Time Series **
+split periodo, destring p("/") //ignore("r p")
+rename periodo1 anio
+label var anio "anio"
+rename periodo2 mes
+label var mes "mes"
+
+g trimestre = 1 if mes <= 3
+replace trimestre = 2 if mes > 3 & mes <= 6
+replace trimestre = 3 if mes > 6 & mes <= 9
+replace trimestre = 4 if mes > 9
+
+collapse (mean) inpc, by(anio trimestre)
+
+
+** 1.5 Guardar **
+order anio trimestre inpc
+compress
+tempfile inpc
+save `inpc'
 
 
 
@@ -100,12 +141,13 @@ use `PIB', clear
 merge m:1 (anio) using "`Poblacion'", nogen //keep(matched)
 merge m:1 (anio) using "`WorkingAge'", nogen //keep(matched)
 merge m:1 (anio) using "`Poblacion0'", nogen //keep(matched)
+replace trimestre = 1 if trimestre == .
+merge 1:1 (anio trimestre) using "`inpc'", nogen //keep(matched)
 
 ** 1.4 Moneda **
 g currency = "MXN"
 
 ** 3.1 Anio + Trimestre **
-replace trimestre = 1 if trimestre == .
 g aniotrimestre = yq(anio,trimestre)
 format aniotrimestre %tq
 label var aniotrimestre "YearQuarter"

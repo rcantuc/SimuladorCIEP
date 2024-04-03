@@ -1412,6 +1412,8 @@ quietly {
 	*** 9 Base SIM ***
 	******************
 	drop asis_esc tipoesc nivel inst_* ing_jubila jubilado disc*
+	drop ISRAS ISRPF CUOTAS ISRPM OTROSK /*FMP PEMEX CFE IMSS ISSSTE*/ IVA IEPSNP IEPSP ISAN IMPORT
+
 	capture drop __*
 	capture mkdir `"`c(sysdir_personal)'/users/"'
 	capture mkdir `"`c(sysdir_personal)'/users/$id/"'

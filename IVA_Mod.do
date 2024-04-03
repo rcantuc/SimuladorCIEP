@@ -22,7 +22,7 @@ local pibY = pibY[_N]
 
 
 * Households *
-use "`c(sysdir_personal)'/SIM/`=anioenigh'/consumption_categ_iva.dta", clear
+use "`c(sysdir_personal)'/SIM/`=anioenigh'/categ_iva.dta", clear
 
 
 ** 5.2. Cálculo del IVA **
@@ -49,7 +49,8 @@ save `ivamod'
 
 
 * Households *
-use `"`c(sysdir_personal)'/users/$pais/$id/households.dta"', clear
+use "`c(sysdir_personal)'/SIM/perfiles`=anioPE'.dta", clear
+keep folioviv foliohog numren factor
 merge 1:1 (folioviv foliohog numren) using `ivamod', nogen update replace keepus(IVA)
 
 
