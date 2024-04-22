@@ -20,17 +20,17 @@ else ///														      // Web
 cd `"`c(sysdir_personal)'"'
 
 
-** 0.2 Crear carpetas **
+** 0.2 Opciones globales **
+global id = "ciepmx"													// IDENTIFICADOR DEL USUARIO
+global nographs "nographs"												// SUPRIMIR GRAFICAS
+//global update "update"													// ACTUALIZAR ARCHIVOS
+
+
+** 0.3 Crear carpetas **
 capture mkdir `"`c(sysdir_personal)'/SIM/"'
 capture mkdir `"`c(sysdir_personal)'/SIM/graphs"'
 capture mkdir `"`c(sysdir_personal)'/users/"'
 capture mkdir `"`c(sysdir_personal)'/users/$id/"'
-
-
-** 0.3 Opciones globales **
-global id = "ciepmx"													// IDENTIFICADOR DEL USUARIO
-global nographs "nographs"												// SUPRIMIR GRAFICAS
-//global update "update"													// ACTUALIZAR ARCHIVOS
 
 
 ** 0.4 Archivo output.txt (web) **
@@ -96,7 +96,7 @@ if _rc != 0 | "`update'" == "update" ///
 **********************************
 
 
-** 2.1 Parámetros: Ingresos **
+/** 2.1 Parámetros: Ingresos **
 scalar ISRAS       =   3.666 // *(1+ r(EISRAS)*(${pib2023}-${pib2023_0})/100)) 		// ISR (asalariados)
 scalar ISRPF       =   0.232 // *(1+ r(EISRPF)*(${pib2023}-${pib2023_0})/100)) 		// ISR (personas f{c i'}sicas)
 scalar CUOTAS      =   1.567 // *(1+ r(ECUOTAS)*(${pib2023}-${pib2023_0})/100)) 	// Cuotas (IMSS)
@@ -171,7 +171,7 @@ scalar gasmadres   =     472 //    Apoyo a madres trabajadoras
 scalar gascuidados =    1722 //    Gasto en cuidados
 
 
-** 2.8 Parámetros: ISR **
+** 2.8 Parámetros: ISR **/
 ** Inputs: Archivo "`c(sysdir_personal)'/SIM/perfiles`=anioPE'.dta" o "`c(sysdir_site)'/users/$pais/$id/households.dta"
 ** Outputs: Archivo "`c(sysdir_site)'/users/$pais/$id/households.dta" actualizado más scalars ISRAS, ISRPF, ISRPM y CUOTAS.
 * Anexo 8 de la Resolución Miscelánea Fiscal para 2023 *

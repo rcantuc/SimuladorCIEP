@@ -7,7 +7,7 @@ quietly {
 		BANDwidth(int 5) ///
 		MACro(string) ///
 		POBlacion(string) FOLIO(string) ///
-		NOKernel POBGraph ANIOVP(int -1) ANIOPE(int -1)]
+		NOKernel POBGraph ANIOVP(int -1) ANIOPE(int -1) TITLE(string)]
 
 
 
@@ -49,7 +49,9 @@ quietly {
 
 
 	** 0.3 Texto introductorio **
-	local title : variable label `varlist'
+	if "`title'" == "" {
+		local title : variable label `varlist'
+	}
 	local nombre `"`=subinstr("`varlist'","_","",.)'"'
 	noisily di _newline(2) in g "  {bf:Variable label: " in y "`title'}"
 	noisily di in g "  {bf:Variable name: " in y "`varlist'}"
@@ -465,7 +467,7 @@ quietly {
 			in g "  I.C. (95%): " in y "+/-" %7.2fc (r(ub)/r(mean)-1)*100 "%"
 		scalar `varlist'`decil2' = r(mean)
 
-		if "$export" != "" {
+		/*if "$export" != "" {
 			if `aniope' == 2014 {
 				local col = "B"
 			}
@@ -490,7 +492,7 @@ quietly {
 			putexcel `col'1 = "`aniope'"
 			putexcel `col'`j' = `=scalar(`varlist'`decil2')', nformat(number_sep)
 			local ++j
-		}
+		}*/
 
 		if "$output" == "output" {
 			local incd = "`incd' `=string(`=`varlist'`decil2'',"%10.0f")',"
@@ -558,7 +560,8 @@ quietly {
 	label define deciles 1 "I" 2 "II" 3 "III" 4 "IV" 5 "V" 6 "VI" 7 "VII" 8 "VIII" 9 "IX" 10 "X" 11 "Nac"
 	label values decil deciles
 
-	label define sexo 1 "Hombres" 2 "Mujeres"
+	//label define sexo 1 "Hombres" 2 "Mujeres"
+	label define sexo 1 "Men" 2 "Women"
 	label values sexo sexo
 
 
@@ -713,6 +716,7 @@ program graphpiramide
 	tempname TOT POR
 	egen double `TOT' = sum(`varlist')
 	g double `POR' = `varlist'/`pib'*100
+	//g double `POR' = `varlist'/poblacion
 
 	* Max number *
 	tempvar PORmax
@@ -759,6 +763,75 @@ program graphpiramide
 			}
 		}
 
+		* REC % del PIB * 
+		*if "`rect'" != "100" {
+			*local rect `"{bf: Tama{c n~}o}: `=string(`rect',"%6.3fc")' % PIB"'
+			*local rect `"{bf: Size}: `=string(`rect',"%6.3fc")' % GDP"'
+		*}
+		*else {
+			local rect ""
+		*}
+
+		* Boottext *
+		if "`boottext'" != "" {
+			local boottext " `boottext'"
+		}
+
+		graph hbar (sum) `POR' if sexo == 1, ///
+			over(`over') over(edad, axis(noextend noline outergap(0)) descending ///
+			relabel(`relabel') ///
+			label(labsize(vsmall) labcolor(white))) ///
+			stack asyvars xalternate ///
+			yscale(noextend noline /*range(-7(1)7)*/) ///
+			blabel(none, format(%5.1fc)) ///
+			///t2title({bf:Hombres} (`men'%), size(medsmall)) ///
+			///ytitle(% PIB) ///
+			t2title({bf:Men} (`men'%), size(medsmall)) ///
+			ytitle(% GDP) ///
+			ylabel(`=round(`PORmaxval'[2,1],.1)'(.025)`=`PORmaxval'[1,1]', format(%7.1fc) noticks) ///
+			name(H`varlist', replace) ///
+			legend(cols(4) pos(6) bmargin(zero) label(1 "") label(2 "") label(3 "`rect'") ///
+			label(4 "") label(5 "") label(6 "") label(7 "") label(8 "") label(9 "") ///
+			label(10 "") symxsize(0)) ///
+			yreverse ///
+			plotregion(margin(zero)) ///
+			graphregion(margin(zero))
+
+		graph hbar (sum) `POR' if sexo == 2, ///
+			over(`over') over(edad, axis(noextend noline outergap(0)) descending ///
+			relabel(`relabel') ///
+			label(labsize(vsmall) labcolor("122 122 122"))) ///
+			stack asyvars ///
+			yscale(noextend noline /*range(1.8)*/) /// |
+			blabel(none, format(%5.1fc)) ///
+			///t2title({bf:Mujeres} (`women'%), size(medsmall)) ///
+			///ytitle(% PIB) ///
+			t2title({bf:Women} (`women'%), size(medsmall)) ///
+			ytitle(% GDP) ///
+			ylabel(`=round(`PORmaxval'[2,1],.1)'(.025)`=`PORmaxval'[1,1]', format(%7.1fc) noticks) ///
+			name(M`varlist', replace) ///
+			legend(cols(4) pos(5) bmargin(zero) size(vsmall) keygap(1) symxsize(3) textwidth(30) forcesize) ///
+			plotregion(margin(zero)) ///
+			graphregion(margin(zero))
+
+		graph combine H`varlist' M`varlist', ///
+			name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)', replace) ycommon xcommon ///
+			title("{bf:`title'}") subtitle("$pais") ///
+			///title("`title' {bf:profile}") ///
+			///caption("{bf:Fuente}: Elaborado por el CIEP, con la `base'.") ///
+			///note(`"{bf:Nota}: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n en cada grupo."') ///
+			caption("{bf:Source}: Prepared by CIEP, using data from `base'.") ///
+			note(`"{bf:Note}: Percentages in parentheses show the concentration in each group."')
+	
+		graph save `=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)' `"`c(sysdir_personal)'/SIM/graphs/`varlist'_`titleover'.gph"', replace
+		if "$export" != "" {
+			graph export `"$export/`varlist'_`titleover'.png"', replace name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)')
+		}
+		capture window manage close graph H`varlist'
+		capture window manage close graph M`varlist'
+	}
+
+	if "$output" != "" & "`nooutput'" != "nooutput" {
 		g grupo_edad = 1
 		replace grupo_edad = 2 if edad > 4
 		replace grupo_edad = 3 if edad > 9
@@ -782,76 +855,7 @@ program graphpiramide
 		replace grupo_edad = 21 if edad > 99
 		replace grupo_edad = 22 if edad > 104
 		replace grupo_edad = 23 if edad > 109
-	
-		* REC % del PIB * 
-		if "`rect'" != "100" {
-			local rect `"{bf: Tama{c n~}o}: `=string(`rect',"%6.3fc")' % PIB"'
-			*local rect `"{bf: Size}: `=string(`rect',"%6.3fc")' % GDP"'
-		}
-		else {
-			local rect ""
-		}
 
-		* Boottext *
-		if "`boottext'" != "" {
-			local boottext " `boottext'"
-		}
-
-		graph hbar (sum) `POR' if sexo == 1, ///
-			over(`over') over(grupo_edad, axis(noextend noline outergap(0)) descending ///
-			relabel(`relabel') ///
-			label(labsize(vsmall) labcolor(white))) ///
-			/*stack*/ asyvars xalternate ///
-			yscale(noextend noline /*range(-7(1)7)*/) ///
-			blabel(none, format(%5.1fc)) ///
-			t2title({bf:Hombres} (`men'%), size(medsmall)) ///
-			ytitle(% PIB) ///
-			///t2title({bf:Men} (`men'%), size(medsmall)) ///
-			///ytitle(% GDP) ///
-			ylabel(`=round(`PORmaxval'[2,1],.1)'(.5)`=`PORmaxval'[1,1]', format(%7.1fc) noticks) ///
-			name(H`varlist', replace) ///
-			legend(cols(4) pos(6) bmargin(zero) label(1 "") label(2 "") label(3 "`rect'") ///
-			label(4 "") label(5 "") label(6 "") label(7 "") label(8 "") label(9 "") ///
-			label(10 "") symxsize(0)) ///
-			yreverse ///
-			plotregion(margin(zero)) ///
-			graphregion(margin(zero)) aspectratio(, placement(right))
-
-		graph hbar (sum) `POR' if sexo == 2, ///
-			over(`over') over(grupo_edad, axis(noextend noline outergap(0)) descending ///
-			relabel(`relabel') ///
-			label(labsize(vsmall) labcolor("122 122 122"))) ///
-			/*stack*/ asyvars ///
-			yscale(noextend noline /*range(1.8)*/) /// |
-			blabel(none, format(%5.1fc)) ///
-			t2title({bf:Mujeres} (`women'%), size(medsmall)) ///
-			ytitle(% PIB) ///
-			///t2title({bf:Women} (`women'%), size(medsmall)) ///
-			///ytitle(% GDP) ///
-			ylabel(`=round(`PORmaxval'[2,1],.1)'(.5)`=`PORmaxval'[1,1]', format(%7.1fc) noticks) ///
-			name(M`varlist', replace) ///
-			legend(cols(4) pos(5) bmargin(zero) size(vsmall) keygap(1) symxsize(3) textwidth(30) forcesize) ///
-			plotregion(margin(zero)) ///
-			graphregion(margin(zero)) aspectratio(, placement(left))
-
-		graph combine H`varlist' M`varlist', ///
-			name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)', replace) ycommon xcommon ///
-			title("{bf:`title'}") subtitle("$pais") ///
-			///title("`title' {bf:profile}") ///
-			caption("{bf:Fuente}: Elaborado por el CIEP, con la `base'.") ///
-			note(`"{bf:Nota}: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n en cada grupo."') ///
-			///caption("{bf:Source}: Prepared by CIEP, using data from `base'.") ///
-			///note(`"{bf:Note}: Percentages in parentheses show the concentration in each group."')
-	
-		graph save `=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)' `"`c(sysdir_personal)'/SIM/graphs/`varlist'_`titleover'.gph"', replace
-		if "$export" != "" {
-			graph export `"$export/`varlist'_`titleover'.png"', replace name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)')
-		}
-		capture window manage close graph H`varlist'
-		capture window manage close graph M`varlist'
-	}
-
-	if "$output" != "" & "`nooutput'" != "nooutput" {
 		label define grupo_edad 1 "0-4" 2 "5-9" 3 "10-14" 4 "15-19" ///
 			5 "20-24" 6 "25-29" 7 "30-34" 8 "35-39" 9 "40-44" 10 "45-49" ///
 			11 "50-54" 12 "55-59" 13 "60-64" 14 "65-69" 15 "70-74" ///
@@ -926,8 +930,8 @@ program define ProyGraph
 
 	local title = modulo[1]
 	
-	*replace estimacion = estimacion*lambda/1000000000000
-	replace estimacion = estimacion*lambda/pibYR*100
+	replace estimacion = estimacion*lambda/1000000000000
+	*replace estimacion = estimacion*lambda/pibYR*100
 
 	forvalues aniohoy = `aniope'(1)`aniope' {
 	*forvalues aniohoy = 1990(1)2050 {

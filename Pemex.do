@@ -10,51 +10,37 @@ cd `"`c(sysdir_personal)'"'
 
 
 
-***************************
-** Primero, los ingresos **
-***************************
-//noisily LIF if divCIEP2 == 4, by(divPE) rows(1) min(0) anio(2024) $update desde(2000) title("Ingresos petroleros") update
 
 
+***************************************
+***                                 ***
+*** Eje 1: Ingresos propios (PEMEX) ***
+***                                 ***
+***************************************
 
-***************************************************
-** Segundo, las aportaciones al gobierno federal **
-***************************************************
-
-
-************************************************
-** Eje 1: Venta de bienes y servicios (PEMEX) **
+** 1.1. Ventas netas de bienes y servicios **
 DatosAbiertos XKC0106, nog
-
-keep if anio == 2023
 rename monto Ventas
 keep anio Ventas
-
 tempfile XKC0106
 save `XKC0106'
 
 
-** Otros ingresos **
+** 1.2. Otros ingresos **
 DatosAbiertos XKC0179, nog
-
-keep if anio == 2023
 rename monto OtrosIngresos
 keep anio OtrosIngresos
-
-replace OtrosIngresos = OtrosIngresos //- 166615122970
-
 tempfile XKC0179
 save `XKC0179'
 
 
-** Append **
+** 1.3 Append **
 use `XKC0106', clear
 append using `XKC0179'
 
 tempvar from to
 g `to' = "Pemex"
-
-collapse (sum) Ing_Propios_Ventas=Ventas Ing_Propios__Otros_Ingresos=OtrosIngresos, by(anio `to')
+collapse (sum) Ing_Propios_Ventas=Ventas Ing_Propios__Otros_Ingresos=OtrosIngresos if anio >= 2019 & anio <= 2023, by(anio `to')
 reshape long Ing_Propios_, i(anio) j(`from') string
 
 encode `to', g(to)
@@ -66,38 +52,34 @@ save `eje1'
 
 
 
-*******************************************************
-** Eje 2: Gastos operativos, financieros e impuestos **
+
+
+*********************************************************
+***                                                   ***
+*** Eje 2: Gastos operativos, financieros e impuestos ***
+***                                                   ***
+*********************************************************
+
+** 2.1. Derechos y enteros **
 DatosAbiertos XKC0113, nog
-
-keep if anio == 2023
-rename monto Impuestos
-keep anio Impuestos
-
-replace Impuestos = Impuestos + 157500*1000000 + 86640*1000000
-
+rename monto Derechos
+keep anio Derechos
 tempfile XKC0113
 save `XKC0113'
 
 
-** Gasto programable **
+** 2.2. Gasto programable **
 DatosAbiertos XKC0131, nog
-
-keep if anio == 2023
-rename monto GastoProgramable
-keep anio GastoProgramable
-
+rename monto Programable
+keep anio Programable
 tempfile XKC0131
 save `XKC0131'
 
 
-** Gasto no programable **
+** 2.3. Gasto no programable **
 DatosAbiertos XKC0157, nog
-
-keep if anio == 2023
-rename monto GastoNoProgramable
-keep anio GastoNoProgramable
-
+rename monto NoProgramable
+keep anio NoProgramable
 tempfile XKC0157
 save `XKC0157'
 
@@ -105,24 +87,32 @@ save `XKC0157'
 ** Append **
 use `eje1', clear
 collapse (sum) profile, by(to)
-local from = to in 1
+local from = to
+drop to
 
-tempvar to
 use `XKC0113', clear
 append using `XKC0131'
 append using `XKC0157'
-collapse (sum) Ing_Propios_Gobierno_Federal=Impuestos Ing_Propios_Gastos_Operativos=GastoProgramable ///
-    Ing_Propios_Gastos_Financieros=GastoNoProgramable, by(anio)
-reshape long Ing_Propios_, i(anio) j(`to') string
+collapse (sum) Gastos_Derechos_y_Enteros=Derechos Gastos_Gastos_Operativos=Programable ///
+    Gastos_Gastos_Financieros=NoProgramable if anio >= 2019 & anio <= 2023, by(anio)
+tempvar to
+reshape long Gastos_, i(anio) j(`to') string
 
 g from = `from'
 label define from 1 "Pemex", add
 label values from from
 
 encode `to', g(to)
-rename Ing_Propios_ profile
+rename Gastos_ profile
 tempfile eje2
 save `eje2'
+
+
+
+
+
+
+
 
 
 
@@ -159,11 +149,21 @@ save `eje3'
 
 
 
+noisily SankeySumLoop, anio(2023) name(Fed) folder(SankeyPemex) a(`eje1') b(`eje2') //c(`eje3') //d(`eje4') 
 
 
 
 
 
 
+***************************
+** Primero, los ingresos **
+***************************
+//noisily LIF if divCIEP2 == 4, by(divPE) rows(1) min(0) anio(2024) $update desde(2000) title("Ingresos petroleros") update
 
-noisily SankeySumSim, anio(2023) name(Fed) folder(SankeyPemex) a(`eje1') b(`eje2') c(`eje3') //d(`eje4') 
+
+
+***************************************************
+** Segundo, las aportaciones al gobierno federal **
+***************************************************
+

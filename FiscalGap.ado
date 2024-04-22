@@ -99,7 +99,7 @@ quietly {
 	g modulo = ""
 	foreach k of local divSIM {
 		preserve
-		use `"`c(sysdir_personal)'/users/bootstraps/1/`k'REC.dta"', clear
+		use `"`c(sysdir_personal)'/users/ciepmx/bootstraps/1/`k'REC.dta"', clear
 		collapse estimacion contribuyentes, by(anio modulo aniobase)
 		tsset anio
 
@@ -289,7 +289,7 @@ quietly {
 	foreach k of local divCIEP {
 		if `"`=strtoname("`k'")'"' != "Costo_de_la_deuda" {
 			preserve
-			use `"`c(sysdir_personal)'/users/bootstraps/1/`=strtoname("`k'")'REC.dta"', clear
+			use `"`c(sysdir_personal)'/users/ciepmx/bootstraps/1/`=strtoname("`k'")'REC.dta"', clear
 			collapse estimacion contribuyentes, by(anio modulo aniobase)
 			tsset anio
 			
