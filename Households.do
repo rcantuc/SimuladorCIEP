@@ -1883,7 +1883,7 @@ collapse (mean) ing_* exen_* cuotas* infonavit fovissste htrab isrE renta deduc_
 	(max) scian formal* tipo_contribuyente sinco hablaind jubilado ///
 	(min) subor, by(folioviv foliohog numren)
 merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'../BasesCIEP/INEGI/`enigh'/`enighanio'/poblacion.dta", nogen ///
-	keepusing(sexo edad nivelaprob gradoaprob asis_esc tipoesc nivel grado inst_* `segpop')
+	keepusing(sexo edad nivelaprob gradoaprob asis_esc tipoesc nivel grado inst_* `segpop' disc*)
 
 * Formalidad *
 tabstat edad [fw=factor] if ing_subor != 0 | ing_mixto != 0, stat(count) f(%15.0fc) save by(formal)

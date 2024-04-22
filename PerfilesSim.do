@@ -120,7 +120,7 @@ foreach k of local recursos {
 **# 3. Ajuste Población ***
 ***                     *** 
 **************************
-use if anio == `1' using `"`c(sysdir_personal)'/SIM/Poblaciontot.dta"', clear
+use if anio == `1' using `"SIM/Poblaciontot.dta"', clear
 local ajustepob = poblacion
 
 
@@ -146,22 +146,21 @@ SCN, anio(`1')nographs
 
 ** 5.1 Encuesta Nacional de Ingresos y Gastos de los Hogares (expenditures) **
 ** Inputs: `c(sysdir_personal)'../BasesCIEP/INEGI/ENIGH/`anio'/
-** Outputs: Archivo "`c(sysdir_personal)'/SIM/`anio'/expenditures.dta".
-capture confirm file "`c(sysdir_personal)'/SIM/`enighanio'/expenditures.dta"
+** Outputs: Archivo "SIM/`anio'/expenditures.dta".
+capture confirm file "SIM/`enighanio'/expenditures.dta"
 if _rc != 0 ///
-	noisily run "`c(sysdir_personal)'/Expenditure.do" `1'
+	noisily run "Expenditure.do" `1'
 
 
 ** 5.2 Encuesta Nacional de Ingresos y Gastos de los Hogares (ingresos) **
-** Outputs: Archivo "`c(sysdir_personal)'/SIM/`anio'/households.dta".
-capture confirm file "`c(sysdir_personal)'/SIM/`enighanio'/households.dta"
+** Outputs: Archivo "SIM/`anio'/households.dta".
+capture confirm file "SIM/`enighanio'/households.dta"
 if _rc != 0 ///
-	noisily run `"`c(sysdir_personal)'/Households.do"' `1'
+	noisily run `"Households.do"' `1'
 
 
 ** 5.3 Usar base de datos conciliada **
-use "`c(sysdir_personal)'/SIM/`enighanio'/households.dta", clear
-merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/`enighanio'/poblacion.dta", nogen keepus(disc*) 
+use "SIM/`enighanio'/households.dta", clear
 tabstat factor, stat(sum) f(%20.0fc) save
 tempname pobenigh
 matrix `pobenigh' = r(StatTotal)
@@ -398,13 +397,13 @@ replace educacion = 0 if educacion == .
 
 Distribucion Educación, relativo(educacion) macro(`Educacion')
 label var Educación "Educación `1'"
-noisily Perfiles Educación [fw=factor], boot(1) reboot aniope(`1') aniovp(`=aniovp')
+noisily Perfiles Educación if Educación != 0 [fw=factor], boot(1) reboot aniope(`1') aniovp(`=aniovp')
 *noisily Gini Educación, hogar(folioviv foliohog) factor(factor)
 
 ** (-) Salud **
 Distribucion Salud, relativo(gas_pc_Salu) macro(`Salud')
 label var Salud "Salud `1'"
-noisily Perfiles Salud [fw=factor], boot(1) reboot aniope(`1') aniovp(`=aniovp') //poblacion(defunciones)
+noisily Perfiles Salud if Salud != 0 [fw=factor], boot(1) reboot aniope(`1') aniovp(`=aniovp') //poblacion(defunciones)
 *noisily Gini Salud, hogar(folioviv foliohog) factor(factor)
 
 ** (-) Pension Bienestar **
@@ -426,8 +425,9 @@ replace ing_jubila_pub = 0 if ing_jubila_pub == .
 replace ing_jubila_pub = ing_jubila_pub + Pensión_AM
 
 Distribucion Pensiones, relativo(ing_jubila_pub) macro(`Pensiones')
+replace Pensiones = Pensiones + Pensión_AM
 label var Pensiones "Pensiones `1'"
-*noisily Perfiles Pensiones [fw=factor], boot(1) reboot aniope(`1') aniovp(`=aniovp')
+noisily Perfiles Pensiones if Pensiones != 0 [fw=factor], boot(1) reboot aniope(`1') aniovp(`=aniovp')
 *noisily Gini Pension, hogar(folioviv foliohog) factor(factor)
 
 
@@ -510,7 +510,7 @@ label var IngBasico "`enighanio' Basic universal income"
 ***           ***
 /****************
 foreach k in grupoedad sexo decil rural escol {
-	run "`c(sysdir_personal)'/Sankey.do" `k' `1'
+	run "Sankey.do" `k' `1'
 }
 
 
@@ -552,8 +552,8 @@ keep ISRAS ISRPF CUOTAS ISRPM OTROSK FMP PEMEX CFE IMSS ISSSTE IVA IEPSNP IEPSP 
 	folio* numren edad sexo factor decil escol formal ingbrutotot rural grupoedad /// Perfiles.ado
 	disc* //asis_esc tipoesc nivel inst_* ing_jubila jubilado // GastoPC.ado
 if `c(version)' > 13.1 {
-	save "`c(sysdir_personal)'/SIM/perfiles`1'.dta", replace
+	save "SIM/perfiles`1'.dta", replace
 }
 else {
-	saveold "`c(sysdir_personal)'/SIM/perfiles`1'.dta", replace version(13)	
+	saveold "SIM/perfiles`1'.dta", replace version(13)	
 }

@@ -80,7 +80,8 @@ local IepsAlcohol = r(Alcohol)
 
 ** 1.3 Población **
 Poblacion, anio(`enighanio') nographs
-
+tabstat poblacion if anio == `enighanio', stat(sum) save f(%15.0fc)
+local pobtotNacional = r(StatTotal)[1,1]
 
 
 
@@ -531,6 +532,7 @@ foreach categ in categ categ_iva categ_ieps {
 		** 3.4 Gasto per cápita **
 		noisily di in g `"`categs'"'
 		foreach k of local categs {
+		//foreach k in Salu {
 			local k = strtoname("`k'")
 			foreach vars in gas_ cant_ {
 				if "`vars'" == "gas_" {
@@ -553,10 +555,10 @@ foreach categ in categ categ_iva categ_ieps {
 				local label = subinstr("`title' per cápita en `k'","_"," ",.)
 				label var `vars'pc_`k' "`label'"
 
-				*tempvar `vars'pc_`k'
-				*g ``vars'pc_`k'' = `vars'pc_`k' + `vars'ind`k'
-				*label var ``vars'pc_`k'' "`title' en `k' (original)"
-				*noisily Simulador ``vars'pc_`k'' [fw=factor], reboot aniope(2022)
+				tempvar `vars'pc_`k'
+				g ``vars'pc_`k'' = `vars'pc_`k' + `vars'ind`k'
+				label var ``vars'pc_`k'' "`title' en `k' (original)"
+				//noisily Perfiles ``vars'pc_`k'' [fw=factor], reboot aniope(2022)
 
 				* Iteraciones *
 				noisily di in y "`k': " _cont
@@ -579,13 +581,13 @@ foreach categ in categ categ_iva categ_ieps {
 					replace `vars'pc_`k' = `vars'hog`k'*`vars'pc_`k'/equivalencia`k'
 					drop equivalencia`k'
 				}
-				*replace `vars'pc_`k' = 0 if `vars'pc_`k' == .
-				*replace `vars'pc_`k' = `vars'pc_`k' + `vars'ind`k'
-				*noisily Simulador `vars'pc_`k' [fw=factor], reboot aniope(2022)
+				replace `vars'pc_`k' = 0 if `vars'pc_`k' == .
+				//replace `vars'pc_`k' = `vars'pc_`k' + `vars'ind`k'
+				//noisily Simulador `vars'pc_`k' [fw=factor], reboot aniope(2022)
+				//noisily Perfiles `vars'pc_`k' [fw=factor], reboot aniope(2022) title(Gasto per cápita en `k')
 			}
 			noisily di
 		}
-
 		** 3.5 Coeficientes de consumo por edades **
 		g alfa = 1 if edad != .
 		replace alfa = alfa - .6*(20-edad)/16 if edad >= 5 & edad <= 20
@@ -689,7 +691,7 @@ foreach k in Alim BebN BebA Taba Vest Calz Alqu Agua Elec Hoga Salu Vehi FTra ST
 	tabstat gas_pc_`k' [aw=factor], stat(sum) f(%20.0fc) save
 	scalar M`k' = r(StatTotal)[1,1]
 	scalar E`k'PIB = M`k'/PIB*100
-	scalar E`k'PC = M`k'/pobtotNacional
+	scalar E`k'PC = M`k'/`pobtotNacional'
 
 	Gini gas_pc_`k', hogar(folioviv foliohog) factor(factor)
 	local gini`k' = r(gini_gas_pc_`k')
@@ -698,7 +700,7 @@ foreach k in Alim BebN BebA Taba Vest Calz Alqu Agua Elec Hoga Salu Vehi FTra ST
 	scalar MTot = MTot + M`k'
 }
 scalar ETotPIB = MTot/PIB*100
-scalar ETotPC = MTot/pobtotNacional
+scalar ETotPC = MTot/`pobtotNacional'
 
 
 * Display de resultados *
@@ -820,12 +822,12 @@ foreach k in Alim BebN BebA Taba Vest Calz Alqu Agua Elec Hoga Salu Vehi FTra ST
 	tabstat gas_pc_`k' [aw=factor], stat(sum) f(%20.0fc) save
 	scalar MM`k' = r(StatTotal)[1,1]
 	scalar EE`k'PIB = MM`k'/PIB*100
-	scalar EE`k'PC = MM`k'/pobtotNacional
+	scalar EE`k'PC = MM`k'/`pobtotNacional'
 
 	scalar MMTot = MMTot + MM`k'
 }
 scalar EETotPIB = MMTot/PIB*100
-scalar EETotPC = MMTot/pobtotNacional
+scalar EETotPC = MMTot/`pobtotNacional'
 
 
 ** 4.2 Display de resultados **

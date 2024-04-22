@@ -23,91 +23,91 @@ if "$output" != "" {
 		%8.3f scalar(tasaEfectiva) /// Tasa de interés efectiva
 	"]"
 	noisily di in w "GASTOS: ["  ///
-		%8.3f iniciaAPIB "," /// Educación inicial
-		%8.3f basicaPIB "," /// Educación básica
-		%8.3f medsupPIB "," /// Educación media superior
-		%8.3f superiPIB "," /// Educación superior
-		%8.3f posgraPIB "," /// Educación Posgrado
-		%8.3f eduaduPIB "," /// Educación para adultos
-		%8.3f otrosePIB "," /// Otros gastos educativos
-		%8.3f inverePIB "," /// Inversión educativa
-		%8.3f culturPIB "," /// Cultura
-		%8.3f investPIB "," /// Inversión en ciencia y tecnología
-		%8.3f iniciaAPIB+basicaPIB+medsupPIB+superiPIB+posgraPIB+eduaduPIB+otrosePIB+inverePIB+culturPIB+investPIB "," /// Total Educación
-		%8.3f ssaPIB "," /// Secretaría de Salud
-		%8.3f imssbienPIB "," /// IMSS-Bienestar
-		%8.3f imssPIB "," /// IMSS 
-		%8.3f issstePIB "," /// ISSSTE
-		%8.3f pemexPIB "," /// Pemex
-		%8.3f issfamPIB "," /// ISSFAM
-		%8.3f inversPIB "," /// Inversión en salud
-		%8.3f ssaPIB+imssbienPIB+imssPIB+issstePIB+pemexPIB+issfamPIB+inversPIB "," /// Total Salud
-		%8.3f pamPIB "," /// Pensión Bienestar
-		%8.3f penimssPIB "," /// Pensión IMSS
-		%8.3f penisssPIB "," /// Pensión ISSSTE
-		%8.3f penpemePIB "," /// Pensión Pemex
-		%8.3f penotroPIB "," /// Pensión CFE, LFC, ISSFAM, Otros
-		%8.3f pamPIB+penimssPIB+penisssPIB+penpemePIB+penotroPIB "," /// Total Pensiones
-		%8.3f gascfePIB "," /// Gasto en CFE
-		%8.3f gaspemexPIB "," /// Gasto en Pemex
-		%8.3f gassenerPIB "," /// Gasto en SENER
-		%8.3f gasinverfPIB "," /// Gasto en Inversión (energía)
-		%8.3f gascosdeuePIB "," /// Gasto en Costo de la deuda (energía)
-		%8.3f gascfePIB+gaspemexPIB+gassenerPIB+gasinverfPIB+gascosdeuePIB "," /// Total Energía
-		%8.3f gasinfraPIB "," /// Gasto en Inversión
-		%8.3f gascuidadosPIB "," /// Gasto en cuidados
-		%8.3f gasotrosPIB "," /// Otros gastos
-		%8.3f gasfederPIB "," /// Participaciones y aportaciones
-		%8.3f gascostoPIB "," /// Gasto en Costo de la deuda
-		%8.3f gasinfraPIB+gascuidadosPIB+gasotrosPIB+gasfederPIB+gascostoPIB "," /// Total Otros gastos
-		%8.3f IngBasPIB "," /// Ingreso Básico
-		%8.3f gasmadresPIB "," /// Apoyo a madres trabajadoras
-		%8.3f gascuidadosPIB "," /// Gasto en cuidados
-		%8.3f iniciaAPIB+basicaPIB+medsupPIB+superiPIB+posgraPIB+eduaduPIB+otrosePIB+inverePIB+culturPIB+investPIB+ssaPIB+imssbienPIB+imssPIB+issstePIB+pemexPIB+inversPIB+pamPIB+penimssPIB+penisssPIB+penpemePIB+penotroPIB+gascfePIB+gaspemexPIB+gassenerPIB+gasinverfPIB+gascosdeuePIB+gasinfraPIB+gascuidadosPIB+gasotrosPIB+gasfederPIB+gascostoPIB+IngBasPIB /// Total GASTO
+		%8.3f iniciaAPIB "," /// Educación inicial 0
+		%8.3f basicaPIB "," /// Educación básica 1
+		%8.3f medsupPIB "," /// Educación media superior 2
+		%8.3f superiPIB "," /// Educación superior 3
+		%8.3f posgraPIB "," /// Educación Posgrado 4
+		%8.3f eduaduPIB "," /// Educación para adultos 5
+		%8.3f otrosePIB "," /// Otros gastos educativos 6
+		%8.3f inverePIB "," /// Inversión educativa 7
+		%8.3f culturPIB "," /// Cultura 8
+		%8.3f investPIB "," /// Inversión en ciencia y tecnología 9
+		%8.3f EducacPIB "," /// Total Educación 10
+		%8.3f ssaPIB "," /// Secretaría de Salud 11
+		%8.3f imssbienPIB "," /// IMSS-Bienestar 12
+		%8.3f imssPIB "," /// IMSS 13
+		%8.3f issstePIB "," /// ISSSTE 14
+		%8.3f pemexPIB "," /// Pemex 15
+		%8.3f issfamPIB "," /// ISSFAM 16
+		%8.3f inversPIB "," /// Inversión en salud 17
+		%8.3f saludPIB "," /// Total Salud 18
+		%8.3f pamPIB "," /// Pensión Bienestar 19
+		%8.3f penimssPIB "," /// Pensión IMSS 20
+		%8.3f penisssPIB "," /// Pensión ISSSTE 21
+		%8.3f penpemePIB "," /// Pensión Pemex 22
+		%8.3f penotroPIB "," /// Pensión CFE, LFC, ISSFAM, Otros 23
+		%8.3f pensionPIB "," /// Total Pensiones 24
+		%8.3f gascfePIB "," /// Gasto en CFE 25
+		%8.3f gaspemexPIB "," /// Gasto en Pemex 26
+		%8.3f gassenerPIB "," /// Gasto en SENER 27
+		%8.3f gasinverfPIB "," /// Gasto en Inversión (energía) 28
+		%8.3f gascosdeuePIB "," /// Gasto en Costo de la deuda (energía) 29
+		%8.3f gasenergiaPIB "," /// Total Energía 30
+		%8.3f gasinfraPIB "," /// Gasto en Inversión 31
+		%8.3f gasotrosPIB "," /// Otros gastos 32
+		%8.3f gasfederPIB "," /// Participaciones y aportaciones 33
+		%8.3f gascostoPIB "," /// Gasto en Costo de la deuda 34
+		%8.3f otrosgasPIB "," /// Total Otros gastos 35
+		%8.3f IngBasPIB "," /// Ingreso Básico 36
+		%8.3f gasmadresPIB "," /// Apoyo a madres trabajadoras 37
+		%8.3f gascuidadosPIB "," /// Gasto en cuidados 38
+		%8.3f transfPIB /// Total Transferencias 39
+		%8.3f iniciaAPIB+basicaPIB+medsupPIB+superiPIB+posgraPIB+eduaduPIB+otrosePIB+inverePIB+culturPIB+investPIB+ssaPIB+imssbienPIB+imssPIB+issstePIB+pemexPIB+inversPIB+pamPIB+penimssPIB+penisssPIB+penpemePIB+penotroPIB+gascfePIB+gaspemexPIB+gassenerPIB+gasinverfPIB+gascosdeuePIB+gasinfraPIB+gascuidadosPIB+gasotrosPIB+gasfederPIB+gascostoPIB+IngBasPIB+gasmadresPIB+gascuidadosPIB /// Total GASTO 40
 		"]"
 	noisily di in w "GASTOSPC: ["  ///
-		%8.0f iniciaA "," /// Educación inicial
-		%8.0f basica "," /// Educación básica
-		%8.0f medsup "," /// Educación media superior
-		%8.0f superi "," /// Educación superior
-		%8.0f posgra "," /// Educación Posgrado
-		%8.0f eduadu "," /// Educación para adultos
-		%8.0f otrose "," /// Otros gastos educativos
-		%8.0f invere "," /// Inversión educativa
-		%8.0f cultur "," /// Cultura
-		%8.0f invest "," /// Inversión en ciencia y tecnología
-		%8.0f scalar(educacion) "," /// Total Educación
-		%8.0f ssa "," /// Secretaría de Salud
-		%8.0f imssbien "," /// IMSS-Bienestar
-		%8.0f imss "," /// IMSS
-		%8.0f issste "," /// ISSSTE
-		%8.0f pemex "," /// Pemex
-		%8.0f issfam "," /// ISSFAM
-		%8.0f invers "," /// Inversión en salud
-		%8.0f scalar(salud) "," /// Total Salud
-		%8.0f pam "," /// Pensión Bienestar
-		%8.0f penimss "," /// Pensión IMSS
-		%8.0f penisss "," /// Pensión ISSSTE
-		%8.0f penpeme "," /// Pensión Pemex
-		%8.0f penotro "," /// Pensión CFE, LFC, ISSFAM, Otros
-		%8.0f scalar(pensiones) "," /// Total Pensiones
-		%8.0f gascfe "," /// Gasto en CFE
-		%8.0f gaspemex "," /// Gasto en Pemex
-		%8.0f gassener "," /// Gasto en SENER
-		%8.0f gasinverf "," /// Gasto en Inversión (energía)
-		%8.0f gascosdeue "," /// Gasto en Costo de la deuda (energía)
-		%8.0f scalar(gasenergia) "," /// Total Energía
-		%8.0f gasinfra "," /// Gasto en Inversión
-		%8.0f gascuidados "," /// Gasto en cuidados
-		%8.0f gasotros "," /// Otros gastos
-		%8.0f gasfeder "," /// Participaciones y aportaciones
-		%8.0f gascosto "," /// Gasto en costo de la deuda
-		%8.0f scalar(otrosgas) "," /// Total Otros gastos
-		%8.0f ingbasico "," /// Ingreso Básico
-		%8.0f ingbasico18 "," /// Checkbox "menores de 18 años"
-		%8.0f ingbasico65 "," /// Checkbox "mayores de 65 años"
-		%8.0f gasmadres "," /// Apoyo a madres trabajadoras
-		%8.0f gascuidados /// Gasto en cuidados
+		%8.0f iniciaA "," /// Educación inicial 0
+		%8.0f basica "," /// Educación básica 1
+		%8.0f medsup "," /// Educación media superior 2
+		%8.0f superi "," /// Educación superior 3
+		%8.0f posgra "," /// Educación Posgrado 4
+		%8.0f eduadu "," /// Educación para adultos 5
+		%8.0f otrose "," /// Otros gastos educativos 6
+		%8.0f invere "," /// Inversión educativa 7
+		%8.0f cultur "," /// Cultura 8
+		%8.0f invest "," /// Inversión en ciencia y tecnología 9
+		%8.0f scalar(Educacion) "," /// Total Educación 10
+		%8.0f ssa "," /// Secretaría de Salud 11
+		%8.0f imssbien "," /// IMSS-Bienestar 12
+		%8.0f imss "," /// IMSS 13
+		%8.0f issste "," /// ISSSTE 14
+		%8.0f pemex "," /// Pemex 15
+		%8.0f issfam "," /// ISSFAM 16
+		%8.0f invers "," /// Inversión en salud 17
+		%8.0f scalar(salud) "," /// Total Salud 18
+		%8.0f pam "," /// Pensión Bienestar 19
+		%8.0f penimss "," /// Pensión IMSS 20
+		%8.0f penisss "," /// Pensión ISSSTE 21
+		%8.0f penpeme "," /// Pensión Pemex 22
+		%8.0f penotro "," /// Pensión CFE, LFC, ISSFAM, Otros 23
+		%8.0f scalar(pensiones) "," /// Total Pensiones 24
+		%8.0f gascfe "," /// Gasto en CFE 25
+		%8.0f gaspemex "," /// Gasto en Pemex 26
+		%8.0f gassener "," /// Gasto en SENER 27
+		%8.0f gasinverf "," /// Gasto en Inversión (energía) 28
+		%8.0f gascosdeue "," /// Gasto en Costo de la deuda (energía) 29
+		%8.0f scalar(gasenergia) "," /// Total Energía 30
+		%8.0f gasinfra "," /// Gasto en Inversión 31
+		%8.0f gasotros "," /// Otros gastos 32
+		%8.0f gasfeder "," /// Participaciones y aportaciones 33
+		%8.0f gascosto "," /// Gasto en costo de la deuda 34
+		%8.0f scalar(otrosgas) "," /// Total Otros gastos 35
+		%8.0f ingbasico "," /// Ingreso Básico 36
+		%8.0f ingbasico18 "," /// Checkbox "menores de 18 años" 37
+		%8.0f ingbasico65 "," /// Checkbox "mayores de 65 años" 38
+		%8.0f gasmadres "," /// Apoyo a madres trabajadoras 39
+		%8.0f gascuidados /// Gasto en cuidados 40
+		%8.0f scalar(transf) /// Total Transferencias 41
 		"]"
 	noisily di in w "INGRESOS: " in w "["  ///
 		%8.3f scalar(ISRAS) "," /// ISR (salarios) - 0

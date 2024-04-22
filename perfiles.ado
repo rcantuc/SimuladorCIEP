@@ -7,7 +7,7 @@ quietly {
 		BANDwidth(int 5) ///
 		MACro(string) ///
 		FOLIO(string) ///
-		NOKernel POBGraph ANIOVP(int -1) ANIOPE(int -1)]
+		NOKernel POBGraph ANIOVP(int -1) ANIOPE(int -1) TITLE(string)]
 
 
 
@@ -52,7 +52,9 @@ quietly {
 
 
 	** 0.2 Texto introductorio **
-	local title : variable label `varlist'
+	if "`title'" == "" {
+		local title : variable label `varlist'
+	}
 	local nombre `"`=subinstr("`varlist'","_","",.)'"'
 	noisily di _newline(2) in g "  {bf:Variable label: " in y "`title'}"
 	noisily di in g "  {bf:Variable name: " in y "`varlist'}"
@@ -620,11 +622,12 @@ quietly {
 		graph combine H`varlist' `varlist'Proj, ///
 			name(`=substr("`varlist'",1,10)'_`aniope', replace) ///
 			title("{bf:`title'}") ///
-			subtitle(" Perfil etario y proyección demográfica, billones MXN `aniovp'", margin(bottom)) ///
+			///subtitle(" Perfil etario (MXN `aniovp') y proyección demográfica (% PIB)", margin(bottom)) ///
+			subtitle(" Age profile (MXN `aniovp') and demographic projection (% GDP)", margin(bottom)) ///
 			///title("`title' {bf:profile}") ///
-			caption("Fuente: Elaborado por el CIEP, con información de INEGI/`base', INEGI/BIE, CONAPO y SHCP.") ///
+			///caption("Fuente: Elaborado por el CIEP, con información de INEGI/`base', INEGI/BIE, CONAPO y SHCP.") ///
 			///note(`"Nota: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n en cada grupo."') ///
-			///caption("{bf:Source}: Prepared by CIEP, using data from `base'.") ///
+			caption("{bf:Source}: Prepared by CIEP, using data from `base'.") ///
 			///note(`"{bf:Note}: Percentages in parentheses show the concentration in each group."')
 
 		graph save `=substr("`varlist'",1,10)'_`aniope' `"`c(sysdir_personal)'/SIM/graphs/`varlist'_`aniope'.gph"', replace
@@ -682,9 +685,9 @@ program poblaciongini
 	replace `grupo' = 3 if decil == 10
 
 	tempname grupoval
-	label define `grupoval' 1 `"{bf:Los deciles I-V} el `=string(`gdeclab1'+`gdeclab2'+`gdeclab3'+`gdeclab4'+`gdeclab5',"%7.0fc")'%"' ///
-		2 `"{bf:VI-IX} el `=string(`gdeclab6'+`gdeclab7'+`gdeclab8'+`gdeclab9',"%7.0fc")'%"' ///
-		3 `"{bf:X} el `=string(`gdeclab10',"%7.0fc")'%"'
+	label define `grupoval' 1 `"{bf:Deciles I-V} (`=string(`gdeclab1'+`gdeclab2'+`gdeclab3'+`gdeclab4'+`gdeclab5',"%7.0fc")'%)"' ///
+		2 `"{bf:VI-IX} (`=string(`gdeclab6'+`gdeclab7'+`gdeclab8'+`gdeclab9',"%7.0fc")'%)"' ///
+		3 `"{bf:X} (`=string(`gdeclab10',"%7.0fc")'%)"'
 	label values `grupo' `grupoval'
 	label var `grupo' "deciles"
 	scalar `varlist'GIV = `gdeclab1'+`gdeclab2'+`gdeclab3'+`gdeclab4'+`gdeclab5'
@@ -761,7 +764,7 @@ program graphpiramide
 	tempname TOT POR
 	egen double `TOT' = sum(`varlist')
 	*g double `POR' = `varlist'/`pib'*100
-	g double `POR' = `varlist'/1000000000000
+	g double `POR' = `varlist'/poblacion
 
 	* Max number *
 	tempvar PORmax
@@ -809,7 +812,7 @@ program graphpiramide
 			local boottext " `boottext'"
 		}
 
-		graph bar (sum) `POR' /*if sexo == 1*/, ///
+		graph bar (mean) `POR' /*if sexo == 1*/, ///
 			over(`over') over(grupo_edad, axis(noextend outergap(0)) ///
 			relabel(`relabel') ///
 			label(labsize(vsmall))) ///
@@ -817,25 +820,26 @@ program graphpiramide
 			yscale(noextend noline /*range(-7(1)7)*/) ///
 			blabel(none, format(%5.1fc)) ///
 			b1title(" ") ///
-			b2title(" Los {bf:hombres concentran} el `men'% y las {bf:mujeres} el `women'%", size(small)) ///
+			b2title(" {bf:Men} consume `men'% and {bf:women} `women'%", size(small)) ///
+			///subtitle("Perfil etario") ///
 			///ytitle(% PIB) ///
 			ytitle("") ///
 			///t2title({bf:Men} (`men'%), size(medsmall)) ///
 			///ytitle(% GDP) ///
 			///ylabel(`=round(`PORmaxval'[2,1],.1)'(.1)`=`PORmaxval'[1,1]', format(%7.1fc) noticks) ///
-			ylabel(#5, format(%7.2fc) noticks) ///
+			ylabel(#5, format(%10.0fc) noticks) ///
 			name(H`varlist', replace) ///
 			legend(rows(1) pos(6)) ///
 			///yreverse ///
 			plotregion(margin(zero)) ///
-			graphregion(margin(zero)) aspectratio(, placement(right))
+			graphregion(margin(zero))
 	}
 
 	if "$output" != "" & "`nooutput'" != "nooutput" {
 		g over = `over'
 		label define over 1 "Deciles I-V" 2 "VI-IX" 3 "X"
 		label values over over
-		collapse (sum) porcentaje=`POR', by(sexo grupo_edad over)
+		collapse (mean) porcentaje=`POR', by(sexo grupo_edad over)
 		reshape wide porcentaje, i(sexo grupo_edad) j(over)
 		reshape wide porcentaje*, i(sexo) j(grupo_edad)
 		reshape long porcentaje1 porcentaje2 porcentaje3, i(sexo) j(grupo_edad)
@@ -845,24 +849,24 @@ program graphpiramide
 		forvalues k=`=_N'(-1)1 {
 			if sexo[`k'] == 1 {
 				if over[`k'] == 1 {
-					local aportHIV = "`aportHIV' `=string(`=porcentaje[`k']',"%8.3f")',"
+					local aportHIV = "`aportHIV' `=string(`=porcentaje[`k']',"%10.0f")',"
 				}
 				if over[`k'] == 2 {
-					local aportHVIIX = "`aportHVIIX' `=string(`=porcentaje[`k']',"%8.3f")',"
+					local aportHVIIX = "`aportHVIIX' `=string(`=porcentaje[`k']',"%10.0f")',"
 				}
 				if over[`k'] == 3 {
-					local aportHX = "`aportHX' `=string(`=porcentaje[`k']',"%8.3f")',"			
+					local aportHX = "`aportHX' `=string(`=porcentaje[`k']',"%10.0f")',"			
 				}
 			}
 			if sexo[`k'] == 2 {
 				if over[`k'] == 1 {
-					local aportMIV = "`aportMIV' `=string(`=porcentaje[`k']',"%8.3f")',"
+					local aportMIV = "`aportMIV' `=string(`=porcentaje[`k']',"%10.0f")',"
 				}
 				if over[`k'] == 2 {
-					local aportMVIIX = "`aportMVIIX' `=string(`=porcentaje[`k']',"%8.3f")',"
+					local aportMVIIX = "`aportMVIIX' `=string(`=porcentaje[`k']',"%10.0f")',"
 				}
 				if over[`k'] == 3 {
-					local aportMX = "`aportMX' `=string(`=porcentaje[`k']',"%8.3f")',"			
+					local aportMX = "`aportMX' `=string(`=porcentaje[`k']',"%10.0f")',"			
 				}		
 			}
 		}
@@ -906,8 +910,8 @@ program define ProyGraph
 	format estimacion %7.3fc
 
 	forvalues aniohoy = `aniope'(1)`aniope' {
-	*forvalues aniohoy = 1990(1)2050 {
-		tabstat estimacion /*if anio >= `aniope'*/, stat(max) save
+	*forvalues aniohoy = 2022(1)2050 {
+		tabstat estimacion if anio >= `aniope', stat(max) save
 		tempname MAX
 		matrix `MAX' = r(StatTotal)
 		forvalues k=1(1)`=_N' {
@@ -932,21 +936,24 @@ program define ProyGraph
 			twoway (connected estimacion anio, lpattern(dot) msize(small)) ///
 				(connected estimacion anio if anio == `aniohoy', mlabel(estimacion) mlabposition(12) mlabcolor("114 113 118")) ///
 				(connected estimacion anio if anio == `aniomax', mlabel(estimacion) mlabposition(12) mlabcolor("114 113 118")) ///
-				if anio > 1990, ///
+				if anio > 2020, ///
 				///ytitle("billones `currency' `aniovp'") ///
 				///ytitle("% PIB") ///
+				///subtitle("Proyección demográfica, billones MXN `aniovp'") ///
 				ytitle("") ///
 				///yscale(range(0)) /*ylabel(0(1)4)*/ ///
 				ylabel(#5, format(%5.2fc) labsize(small)) ///
 				yscale(range(0)) ///
-				xlabel(1990(10)`=anio[_N]' `aniohoy', labsize(small)) ///
+				xlabel(2020(10)`=anio[_N]' `aniohoy', labsize(small)) ///
 				xtitle("") ///
 				legend(off) ///
 				xline(`aniohoy', lpattern(dot)) ///
 				xline(`aniomax', lpattern(dot)) ///
 				///yline(0, lpattern(solid) lcolor(black)) ///
-				text(`=`estimacionmax'*.05' `aniomax' "Este perfil, junto con" "las proyecciones demográficas," "obtiene un {bf:máximo en `aniomax'}.", size(medsmall) place(11) justification(right)) ///
-				text(`=`estimacionvp'*1.05' `aniohoy' "De `aniohoy' a `aniomax',"  `"{bf:cambiaría `=string((`estimacionmax'/`estimacionvp'-1)*100,"%5.2f")'%}."', size(medsmall) place(11) justification(left)) ///
+				///text(`=`estimacionmax'*.05' `aniomax' "Este perfil, junto con" "las proyecciones demográficas," "obtiene un {bf:máximo en `aniomax'}.", size(medsmall) place(11) justification(right)) ///
+				text(`=`estimacionmax'*.05' `aniomax' "This age profile, along with" "CONAPO's demographic projections," "reaches a maximum in {bf:`aniomax'}.", size(medsmall) place(11) justification(right)) ///
+				///text(`=`estimacionvp'*1.05' `aniohoy' "De `aniohoy' a `aniomax',"  `"{bf:cambiaría `=string((`estimacionmax'/`estimacionvp'-1)*100,"%5.2f")'%}."', size(medsmall) place(11) justification(left)) ///
+				text(`=`estimacionvp'*1.1' `aniohoy' "From `aniohoy' to `aniomax',"  "consumption will" `"change {bf:`=string((`estimacionmax'/`estimacionvp'-1)*100,"%5.2f")'%}."', size(medsmall) place(1) justification(left)) ///
 				///title("{bf:Proyecci{c o'}n} de `title'") subtitle("$pais") ///
 				///caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.") ///
 				name(`varlist'Proj, replace)
