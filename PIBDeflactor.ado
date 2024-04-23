@@ -11,7 +11,7 @@ timer on 2
 quietly {
 
 	** 0.1 Revisa si se puede usar la base de datos **
-	capture use "SIM/PIBDeflactor.dta", clear
+	capture use "`c(sysdir_personal)'/SIM/PIBDeflactor.dta", clear
 	if _rc != 0 {
 		UpdatePIBDeflactor
 	}
@@ -44,7 +44,7 @@ quietly {
 	************************
 	**# 2 Bases de datos ***
 	************************
-	use if anio <= `aniomax' using "SIM/PIBDeflactor.dta", clear
+	use if anio <= `aniomax' using "`c(sysdir_personal)'/SIM/PIBDeflactor.dta", clear
 
 	** 2.1 Obtiene el año inicial y final de la base **
 	forvalues k=1(1)`=_N' {
@@ -799,7 +799,7 @@ program define UpdatePIBDeflactor
 	********************
 
 	** 3.1 Población (CONAPO) **
-	capture use `"SIM/$pais/Poblacion.dta"', clear
+	capture use `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
 	if _rc != 0 {
 		noisily run `"UpdatePoblacion`=subinstr("${pais}"," ","",.)'.do"'
 	}
@@ -809,14 +809,14 @@ program define UpdatePIBDeflactor
 	save "`Poblacion'"
 
 	** 3.2 Working Ages (CONAPO) **
-	use `"SIM/$pais/Poblacion.dta"', clear
+	use `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
 	collapse (sum) WorkingAge=poblacion if edad >= 15 & edad <= 65 & entidad == "Nacional", by(anio)
 	format WorkingAge %15.0fc
 	tempfile WorkingAge
 	save "`WorkingAge'"
 
 	** 3.3 Recién nacidos (CONAPO) **
-	use `"SIM/$pais/Poblacion.dta"', clear
+	use `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
 	collapse (sum) Poblacion0=poblacion if edad == 0 & entidad == "Nacional", by(anio)
 	format Poblacion0 %15.0fc
 	tempfile Poblacion0
@@ -882,10 +882,10 @@ program define UpdatePIBDeflactor
 	capture drop __*
 	sort aniotrimestre
 	if `c(version)' > 13.1 {
-		saveold "SIM/PIBDeflactor.dta", replace version(13)
+		saveold "`c(sysdir_personal)'/SIM/PIBDeflactor.dta", replace version(13)
 	}
 	else {
-		save "SIM/PIBDeflactor.dta", replace
+		save "`c(sysdir_personal)'/SIM/PIBDeflactor.dta", replace
 	}
 
 

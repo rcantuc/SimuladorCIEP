@@ -13,7 +13,7 @@ quietly {
 	timer on 14
 
 	** 0.1 Revisa si se puede usar la base de datos **
-	capture use `"SIM/Poblacion.dta"', clear
+	capture use `"`c(sysdir_personal)'/SIM/Poblacion.dta"', clear
 	if _rc != 0 {
 		UpdatePoblacion
 	}
@@ -50,7 +50,7 @@ quietly {
 	************************
 	*** 2. Base de datos ***
 	************************
-	use `if' using `"SIM/Poblacion.dta"', clear
+	use `if' using `"`c(sysdir_personal)'/SIM/Poblacion.dta"', clear
 	noisily di _newline(2) in g _dup(20) "." "{bf:   Poblaci{c o'}n: " in y "`=entidad[1]'   }" in g _dup(20) "." _newline
 
 	* Obtiene el año inicial de la base *
@@ -276,8 +276,8 @@ quietly {
 		capture window manage close graph P_`anio'_`aniofinal'_`entidadGName'A
 		capture window manage close graph P_`anio'_`aniofinal'_`entidadGName'B
 
-		capture mkdir "SIM/graphs"
-		graph save P_`anio'_`aniofinal'_`entidadGName' "SIM/graphs/P_`anio'_`aniofinal'_`entidadGName'", replace
+		capture mkdir "`c(sysdir_personal)'/SIM/graphs"
+		graph save P_`anio'_`aniofinal'_`entidadGName' "`c(sysdir_personal)'/SIM/graphs/P_`anio'_`aniofinal'_`entidadGName'", replace
 		if "$export" != "" {
 			graph export "$export/P_`anio'_`aniofinal'_`entidadGName'.png", replace name(P_`anio'_`aniofinal'_`entidadGName')
 		}
@@ -429,7 +429,7 @@ quietly {
 			xlabel(`anioinicial'(10)`=anio[_N]') ///
 			name(E_`anio'_`aniofinal'_`entidadGName', replace)
 			
-		graph save E_`anio'_`aniofinal'_`entidadGName' "SIM/graphs/E_`anio'_`aniofinal'_`entidadGName'", replace
+		graph save E_`anio'_`aniofinal'_`entidadGName' "`c(sysdir_personal)'/SIM/graphs/E_`anio'_`aniofinal'_`entidadGName'", replace
 		if "$export" != "" {
 			graph export "$export/E_`anio'_`aniofinal'_`entidadGName'.png", replace name(E_`anio'_`aniofinal'_`entidadGName')
 		}
@@ -478,7 +478,7 @@ quietly {
 			legend(off label(1 "Observado") label(2 "Proyectado") region(margin(zero)) rows(1)) ///
 			name(T_`anio'_`aniofinal'_`entidadGName', replace)
 
-		graph save T_`anio'_`aniofinal'_`entidadGName' "SIM/graphs/T_`anio'_`aniofinal'_`entidadGName'", replace
+		graph save T_`anio'_`aniofinal'_`entidadGName' "`c(sysdir_personal)'/SIM/graphs/T_`anio'_`aniofinal'_`entidadGName'", replace
 		if "$export" != "" {
 			graph export "$export/T_`anio'_`aniofinal'_`entidadGName'.png", replace name(T_`anio'_`aniofinal'_`entidadGName')
 		}
@@ -492,6 +492,8 @@ quietly {
 	noisily di _newline in y round(`=r(t14)/r(nt14)',.1) in g " segs  "
 }
 end
+
+
 
 
 
@@ -651,21 +653,21 @@ program define UpdatePoblacion
 	drop cve_geo 
 	capture drop __*
 	compress
-	capture mkdir "SIM/"
+	capture mkdir "`c(sysdir_personal)'/SIM/"
 
 	if `c(version)' > 13.1 {
-		saveold "SIM/Poblacion.dta", replace version(13)
+		saveold "`c(sysdir_personal)'/SIM/Poblacion.dta", replace version(13)
 	}
 	else {
-		save "SIM/Poblacion.dta", replace
+		save "`c(sysdir_personal)'/SIM/Poblacion.dta", replace
 	}
 
 	collapse (sum) poblacion, by(anio entidad)
 	keep if entidad == "Nacional"
 	if `c(version)' > 13.1 {
-		saveold `"SIM/Poblaciontot.dta"', replace version(13)
+		saveold `"`c(sysdir_personal)'/SIM/Poblaciontot.dta"', replace version(13)
 	}
 	else {
-		save `"SIM/Poblaciontot.dta"', replace
+		save `"`c(sysdir_personal)'/SIM/Poblaciontot.dta"', replace
 	}
 end

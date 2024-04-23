@@ -21,8 +21,8 @@ cd `"`c(sysdir_personal)'"'
 **  0.2 Opciones globales  **
 ** Agregar o modificar según sea necesario. **
 global id = "ciepmx"												// IDENTIFICADOR DEL USUARIO
-global export "SIM/graphs"							                    // DIRECTORIO DE IMÁGENES
-//global nographs "nographs"											// SUPRIMIR GRAFICAS
+global export "`c(sysdir_personal)'/SIM/graphs"							                    // DIRECTORIO DE IMÁGENES
+global nographs "nographs"											// SUPRIMIR GRAFICAS
 //global update "update"												// UPDATE BASES DE DATOS
 global output "output"												// ARCHIVO DE SALIDA
 
@@ -57,7 +57,7 @@ if "$output" != "" {
 ** Fuente: CONAPO 2023. Ver archivo "UpdatePoblacion.do".
 //forvalues anio = 1950(1)`=anioPE' {                              // <-- Año(s) de interés
 	//foreach entidad of global entidadesL {                            // <-- Nacional o para todas las entidades
-		//noisily Poblacion if entidad == "`entidad'", anio(`=anioPE') aniofinal(2050) //$update   // Last updated: 9 de febrero de 2024
+		noisily Poblacion if entidad == "`entidad'", anio(`=anioPE') aniofinal(2050) //$update   // Last updated: 9 de febrero de 2024
 	//}
 //}
 
@@ -98,7 +98,7 @@ noisily PIBDeflactor, geodef(2005) geopib(2005) $update aniovp(`=aniovp')
 * Inputs: PIB, índice de precios implícitos, inpc, población y población ocupada.
 * Outputs: Base de datos con las cuentas macroeconómicas para todos los años.
 * Fuente: INEGI, BIE. Ver archivo "UpdatePIBDeflactor.do".
-//noisily SCN, //$update
+noisily SCN, //$update
 
 
 ************************
@@ -126,9 +126,9 @@ noisily PEF, by(divCIEP) rows(2) min(0) anio(`=anioPE') $update desde(2018)
 ***************************
 ** 1.5 Perfiles fiscales **
 * Inputs: ENIGHs (diversos años).
-* Outputs: Archivo "SIM/perfiles`anio'.dta".
+* Outputs: Archivo "`c(sysdir_personal)'/SIM/perfiles`anio'.dta".
 forvalues anio = `=anioPE'(2)`=anioPE' {
-	capture confirm file "SIM/perfiles`anio'.dta"
+	capture confirm file "`c(sysdir_personal)'/SIM/perfiles`anio'.dta"
 	if _rc != 0 ///
 		noisily run "PerfilesSim.do" `anio'
 }
@@ -167,7 +167,7 @@ scalar IMPORT      =   0.301 // *(1+ r(EIMPORT)*(${pib2023}-${pib2023_0})/100))	
 ** 2.2 Parámetros: Educación **
 scalar iniciaA     =     417 //    Inicial
 
-scalar basica      =   28107 // *0+31154 //    Educación b{c a'}sica
+scalar basica      =   28017 // *0+31154 //    Educación b{c a'}sica
 scalar medsup      =   27811 // *0+41083 //    Educación media superior
 scalar superi      =   39927 //    Educación superior
 scalar posgra      =   65408 //    Posgrado
@@ -232,7 +232,7 @@ scalar gascuidados =    1722 //    Gasto en cuidados
 
 ************************/
 ** 2.8 Parámetros: ISR **
-** Inputs: Archivo "SIM/perfiles`=anioPE'.dta" o "`c(sysdir_site)'/users/$pais/$id/households.dta"
+** Inputs: Archivo "`c(sysdir_personal)'/SIM/perfiles`=anioPE'.dta" o "`c(sysdir_site)'/users/$pais/$id/households.dta"
 ** Outputs: Archivo "`c(sysdir_site)'/users/$pais/$id/households.dta" actualizado más scalars ISRAS, ISRPF, ISRPM y CUOTAS.
 * Anexo 8 de la Resolución Miscelánea Fiscal para 2024 *
 * Tarifa para el cálculo del impuesto correspondiente al ejericio 2024 a que se refieren los artículos 97 y 152 de la Ley del ISR
@@ -309,7 +309,7 @@ if "`cambioisrpf'" == "1" {
 
 **************************
 ** 2.10 Parámetros: IVA **
-* Inputs: Archivo "SIM/perfiles`=anioPE'.dta" o "`c(sysdir_site)'/users/$pais/$id/households.dta"
+* Inputs: Archivo "`c(sysdir_personal)'/SIM/perfiles`=anioPE'.dta" o "`c(sysdir_site)'/users/$pais/$id/households.dta"
 * Outputs: Archivo "`c(sysdir_site)'/users/$pais/$id/households.dta" actualizado más scalar IVA.
 matrix IVAT = (16 \     ///  1  Tasa general 
 	1  \     ///  2  Alimentos, input[1]: Tasa Cero, [2]: Exento, [3]: Gravado
@@ -336,7 +336,7 @@ if "`cambioiva'" == "1" {
 
 ***************************
 ** 2.11 Parámetros: IEPS **
-* Inputs: Archivo "SIM/perfiles`=anioPE'.dta" o "`c(sysdir_site)'/users/$pais/$id/households.dta"
+* Inputs: Archivo "`c(sysdir_personal)'/SIM/perfiles`=anioPE'.dta" o "`c(sysdir_site)'/users/$pais/$id/households.dta"
 * Outputs: Archivo "`c(sysdir_site)'/users/$pais/$id/households.dta" actualizado más scalar IEPS.
 * Fuente: Ley del IEPS, Artículo 2.
 *              Ad valorem		Específico
@@ -406,7 +406,7 @@ noisily Perfiles AportacionesNetas [fw=factor], reboot aniovp(2024) aniope(`=ani
 
 ***************************************
 ** 3.5 (*) Sankey del sistema fiscal **
-foreach k in decil grupoedad sexo /*rural escol*/ {
+foreach k in decil grupoedad /*sexo rural escol*/ {
 	noisily run "SankeySF.do" `k' `=anioPE'
 }
 
