@@ -1,6 +1,8 @@
-********************
-*** LINGO, Pemex ***
-********************
+********************************
+***                          ***
+*** LINGO, Sankey's de Pemex ***
+***                          ***
+********************************
 clear all
 if "`c(username)'" == "ricardo" ///                             // iMac Ricardo
 	sysdir set PERSONAL "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
@@ -34,14 +36,17 @@ tempfile XKC0179
 save `XKC0179'
 
 
-** 1.3 Append **
+************
+** Append **
 use `XKC0106', clear
 append using `XKC0179'
 
 tempvar from to
+collapse (sum) Ing_Propios_Ventas=Ventas Ing_Propios__Otros_Ingresos=OtrosIngresos ///
+	if anio >= 2019 & anio <= 2024, //by(anio `to')
+
 g `to' = "Pemex"
-collapse (sum) Ing_Propios_Ventas=Ventas Ing_Propios__Otros_Ingresos=OtrosIngresos if anio >= 2019 & anio <= 2023, by(anio `to')
-reshape long Ing_Propios_, i(anio) j(`from') string
+reshape long Ing_Propios_, i(`to') j(`from') string
 
 encode `to', g(to)
 encode `from', g(from)
@@ -84,25 +89,22 @@ tempfile XKC0157
 save `XKC0157'
 
 
+************
 ** Append **
-use `eje1', clear
-collapse (sum) profile, by(to)
-local from = to
-drop to
-
 use `XKC0113', clear
 append using `XKC0131'
 append using `XKC0157'
-collapse (sum) Gastos_Derechos_y_Enteros=Derechos Gastos_Gastos_Operativos=Programable ///
-    Gastos_Gastos_Financieros=NoProgramable if anio >= 2019 & anio <= 2023, by(anio)
-tempvar to
-reshape long Gastos_, i(anio) j(`to') string
 
-g from = `from'
-label define from 1 "Pemex", add
-label values from from
+tempvar from to
+collapse (sum) Gastos_Derechos_y_Enteros=Derechos Gastos_Gastos_Operativos=Programable Gastos_Gastos_Financieros=NoProgramable ///
+	if anio >= 2019 & anio <= 2024, //by(anio)
+
+g `from' = "Pemex"
+reshape long Gastos_, i(`from') j(`to') string
 
 encode `to', g(to)
+encode `from', g(from)
+
 rename Gastos_ profile
 tempfile eje2
 save `eje2'

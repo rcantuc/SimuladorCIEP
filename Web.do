@@ -27,8 +27,6 @@ global nographs "nographs"												// SUPRIMIR GRAFICAS
 
 
 ** 0.3 Crear carpetas **
-capture mkdir `"`c(sysdir_personal)'/SIM/"'
-capture mkdir `"`c(sysdir_personal)'/SIM/graphs"'
 capture mkdir `"`c(sysdir_personal)'/users/"'
 capture mkdir `"`c(sysdir_personal)'/users/$id/"'
 
