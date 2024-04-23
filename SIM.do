@@ -142,29 +142,29 @@ forvalues anio = `=anioPE'(2)`=anioPE' {
 **********************************
 
 ******************************
-/** 2.1 Parámetros: Ingresos **
-scalar ISRAS       =   3.666 // *(1+ r(EISRAS)*(${pib2023}-${pib2023_0})/100)) 		// ISR (asalariados)
-scalar ISRPF       =   0.232 // *(1+ r(EISRPF)*(${pib2023}-${pib2023_0})/100)) 		// ISR (personas f{c i'}sicas)
-scalar CUOTAS      =   1.567 // *(1+ r(ECUOTAS)*(${pib2023}-${pib2023_0})/100)) 	// Cuotas (IMSS)
+** 2.1 Parámetros: Ingresos **
+scalar ISRAS       =   3.691 // *(1+ r(EISRAS)*(${pib2023}-${pib2023_0})/100)) 		// ISR (asalariados)
+scalar ISRPF       =   0.234 // *(1+ r(EISRPF)*(${pib2023}-${pib2023_0})/100)) 		// ISR (personas f{c i'}sicas)
+scalar CUOTAS      =   1.578 // *(1+ r(ECUOTAS)*(${pib2023}-${pib2023_0})/100)) 	// Cuotas (IMSS)
 
-scalar FMP         =   0.888 // *(1+ r(EFMP)*(${pib2023}-${pib2023_0})/100)) 		// Fondo Mexicano del Petróleo
-scalar PEMEX       =   2.179 // *(1+ r(EPEMEX)*(${pib2023}-${pib2023_0})/100)) 		// Organismos y empresas (Pemex)
-scalar CFE         =   1.309 // *(1+ r(ECFE)*(${pib2023}-${pib2023_0})/100)) 		// Organismos y empresas (CFE)
-scalar IMSS        =   0.124 // *(1+ r(EIMSS)*(${pib2023}-${pib2023_0})/100)) 		// Organismos y empresas (IMSS)
-scalar ISSSTE      =   0.156 // *(1+ r(EISSSTE)*(${pib2023}-${pib2023_0})/100)) 	// Organismos y empresas (ISSSTE)
+scalar FMP         =   0.894 // *(1+ r(EFMP)*(${pib2023}-${pib2023_0})/100)) 		// Fondo Mexicano del Petróleo
+scalar PEMEX       =   2.194 // *(1+ r(EPEMEX)*(${pib2023}-${pib2023_0})/100)) 		// Organismos y empresas (Pemex)
+scalar CFE         =   1.317 // *(1+ r(ECFE)*(${pib2023}-${pib2023_0})/100)) 		// Organismos y empresas (CFE)
+scalar IMSS        =   0.125 // *(1+ r(EIMSS)*(${pib2023}-${pib2023_0})/100)) 		// Organismos y empresas (IMSS)
+scalar ISSSTE      =   0.157 // *(1+ r(EISSSTE)*(${pib2023}-${pib2023_0})/100)) 	// Organismos y empresas (ISSSTE)
 
-scalar ISRPM       =   4.036 // *(1+ r(EISRPM)*(${pib2023}-${pib2023_0})/100)) 		// ISR (personas morales)
-scalar OTROSK      =   1.036 // *(1+ r(EOTROSK)*(${pib2023}-${pib2023_0})/100)) 	// Productos, derechos, aprovech.
+scalar ISRPM       =   4.063 // *(1+ r(EISRPM)*(${pib2023}-${pib2023_0})/100)) 		// ISR (personas morales)
+scalar OTROSK      =   1.043 // *(1+ r(EOTROSK)*(${pib2023}-${pib2023_0})/100)) 	// Productos, derechos, aprovech.
 
-scalar IVA         =   3.895 // *(1+ r(EIVA)*(${pib2023}-${pib2023_0})/100)) 		// IVA
+scalar IVA         =   3.921 // *(1+ r(EIVA)*(${pib2023}-${pib2023_0})/100)) 		// IVA
 scalar ISAN        =   0.057 // *(1+ r(EISAN)*(${pib2023}-${pib2023_0})/100)) 		// ISAN
-scalar IEPSNP      =   0.678 // *(1+ r(EIEPSNP)*(${pib2023}-${pib2023_0})/100))		// IEPS (no petrolero)
-scalar IEPSP       =   1.336 // IEPS (petrolero): 0.662
-scalar IMPORT      =   0.299 // *(1+ r(EIMPORT)*(${pib2023}-${pib2023_0})/100))		// Importaciones
+scalar IEPSNP      =   0.683 // *(1+ r(EIEPSNP)*(${pib2023}-${pib2023_0})/100))		// IEPS (no petrolero)
+scalar IEPSP       =   1.345 // IEPS (petrolero): 0.662
+scalar IMPORT      =   0.301 // *(1+ r(EIMPORT)*(${pib2023}-${pib2023_0})/100))		// Importaciones
 
 
 *******************************/
-/** 2.2 Parámetros: Educación **
+** 2.2 Parámetros: Educación **
 scalar iniciaA     =     417 //    Inicial
 
 scalar basica      =   28107 // *0+31154 //    Educación b{c a'}sica
@@ -234,8 +234,8 @@ scalar gascuidados =    1722 //    Gasto en cuidados
 ** 2.8 Parámetros: ISR **
 ** Inputs: Archivo "SIM/perfiles`=anioPE'.dta" o "`c(sysdir_site)'/users/$pais/$id/households.dta"
 ** Outputs: Archivo "`c(sysdir_site)'/users/$pais/$id/households.dta" actualizado más scalars ISRAS, ISRPF, ISRPM y CUOTAS.
-* Anexo 8 de la Resolución Miscelánea Fiscal para 2023 *
-* Tarifa para el cálculo del impuesto correspondiente al ejericio 2023 (página 782) *
+* Anexo 8 de la Resolución Miscelánea Fiscal para 2024 *
+* Tarifa para el cálculo del impuesto correspondiente al ejericio 2024 a que se refieren los artículos 97 y 152 de la Ley del ISR
 *             INFERIOR			SUPERIOR	CF		TASA
 matrix ISR =  (0.01,			8952.49,	0.0,		1.92	\    /// 1
 			8952.49    +.01,	75984.55,	171.88,		6.40	\    /// 2
@@ -246,8 +246,8 @@ matrix ISR =  (0.01,			8952.49,	0.0,		1.92	\    /// 1
 			374837.88  +.01,	590795.99,	60049.40,	23.52	\    /// 7
 			590795.99  +.01,	1127926.84,	110842.74,	30.00	\    /// 8
 			1127926.84 +.01,	1503902.46,	271981.99,	32.00	\    /// 9
-			1503902.46 +.01,	3511707.37,	392294.17,	34.00	\    /// 10
-			3511707.37 +.01,	1E+12,		1414947.85,	35.00)	     //  11
+			1503902.46 +.01,	4511707.37,	392294.17,	34.00	\    /// 10
+			4511707.37 +.01,	1E+12,		1414947.85,	35.00)	     //  11
 
 * Tabla del subsidio para el empleo aplicable a la tarifa del numeral 5 del rubro B (página 773) *
 *             INFERIOR		SUPERIOR	SUBSIDIO

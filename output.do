@@ -106,7 +106,7 @@ if "$output" != "" {
 		%8.0f ingbasico18 "," /// Checkbox "menores de 18 años" 37
 		%8.0f ingbasico65 "," /// Checkbox "mayores de 65 años" 38
 		%8.0f gasmadres "," /// Apoyo a madres trabajadoras 39
-		%8.0f gascuidados /// Gasto en cuidados 40
+		%8.0f gascuidados "," /// Gasto en cuidados 40
 		%8.0f scalar(transf) /// Total Transferencias 41
 		"]"
 	noisily di in w "INGRESOS: " in w "["  ///
