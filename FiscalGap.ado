@@ -373,7 +373,7 @@ quietly {
 	** 5.5 Output **
 	if "$output" != "" {
 		preserve
-		noisily levelsof divSIM, local(divSIM)
+		*noisily levelsof divSIM, local(divSIM)
 		collapse (sum) gasto_pib estimacionGasto_pib if anio <= `end', by(anio divSIM) fast
 		forvalues k=1(1)`=_N' {
 			if anio[`k'] >= 2013 & anio[`k'] < `anio' {
@@ -443,10 +443,11 @@ quietly {
 	tsset anio
 
 	* Reemplazar tasaEfectiva con la media artimética desde el año `desde' *
-	tabstat tasaEfectiva if anio <= `anio' & anio >= `desde', save
+	noisily tabstat tasaEfectiva if anio <= `anio' & anio >= `desde', save
 	tempname tasaEfectiva_ari
 	matrix `tasaEfectiva_ari' = r(StatTotal)
 	replace tasaEfectiva = r(StatTotal)[1,1] if anio >= `anio'
+	local tasaEfectiva = r(StatTotal)[1,1]
 
 	* Reemplazar Costo_de_la_deuda con el escalar gascosto si fue provisto desde los parámetros en SIM.do *
 	g gastoCosto_de_la_deuda = costodeudaInterno + costodeudaExterno
@@ -467,7 +468,11 @@ quietly {
 	* Reemplazar tasasEfectivas con el escalar tasasEfectiva si fue provisto desde los parámetros en SIM.do *
 	capture confirm scalar tasaEfectiva
 	if _rc == 0 {
-		replace tasaEfectiva = tasaEfectiva if anio >= `anio'
+		replace tasaEfectiva = scalar(tasaEfectiva) if anio >= `anio'
+	}
+	else {
+		replace tasaEfectiva = `tasaEfectiva' if anio >= `anio'
+		scalar tasaEfectiva = `tasaEfectiva'
 	}
 
 

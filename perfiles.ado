@@ -7,7 +7,8 @@ quietly {
 		BANDwidth(int 5) ///
 		MACro(string) ///
 		FOLIO(string) ///
-		NOKernel POBGraph ANIOVP(int -1) ANIOPE(int -1) TITLE(string)]
+		NOKernel POBGraph ANIOVP(int -1) ANIOPE(int -1) TITLE(string) ///
+		EXCEL]
 
 
 
@@ -91,15 +92,10 @@ quietly {
 	*** 1. Archivos POST ***
 	************************
 
-
-	******************************
 	** 1.1 Variables de control **
-	tempvar cont boot
-	g double `cont' = 1
+	tempvar boot
 	g `boot' = .
 
-
-	********************************
 	** 1.2 Directorios y archivos **
 	capture mkdir `"`c(sysdir_personal)'/users/$id/graphs/"'
 	capture mkdir `"`c(sysdir_personal)'/users/$id/bootstraps/"'
@@ -107,35 +103,32 @@ quietly {
 
 
 	** 1.2.1 Información per cápita **
-	** Output: `varlist'PC.dta **
-	postfile PC double(estimacion contribuyentes poblacion montopc edad39) ///
-		using `"`c(sysdir_personal)'/users/$id/bootstraps/`bootstrap'/`varlist'PC"', replace
+	* Output: `varlist'PC.dta *
+	postfile PC2 double(estimacion contribuyentes poblacion montopc hombrespc mujerespc pob0_18pc pob19_64pc pob65pc) ///
+		using `"`c(sysdir_personal)'/users/$id/bootstraps/`bootstrap'/`varlist'PC2"', replace
 
 
 	** 1.2.2. Información por edad y sexo **
-	** Output: `varlist'PERF.dta **
-	postfile PERF edad double(perfil1 perfil2 ///
-		contribuyentes1 contribuyentes2 ///
-		estimacion1 estimacion2 ///
-		pobcont1 pobcont2 ///
-		poblacion1 poblacion2) ///
+	* Output: `varlist'PERF.dta *
+	postfile PERF edad double(perfil1 perfil2 contribuyentes1 contribuyentes2 estimacion1 estimacion2 ///
+		pobcont1 pobcont2 poblacion1 poblacion2) ///
 		using `"`c(sysdir_personal)'/users/$id/bootstraps/`bootstrap'/`varlist'PERF"', replace
 
 
 	** 1.2.3. Incidencia por hogares **
-	** Output: `varlist'INCI.dta **
+	* Output: `varlist'INCI.dta *
 	postfile INCI decil double(xhogar distribucion incidencia hogares) ///
 		using `"`c(sysdir_personal)'/users/$id/bootstraps/`bootstrap'/`varlist'INCI"', replace
 
 
 	** 1.2.4. Ciclo de vida **
-	** Output: `varlist'CICLO.dta **
+	* Output: `varlist'CICLO.dta *
 	postfile CICLO bootstrap sexo edad decil double(poblacion `varlist') ///
 		using `"`c(sysdir_personal)'/users/$id/bootstraps/`bootstrap'/`varlist'CICLO"', replace
 
 
 	** 1.2.5. Proyecciones demográficas de recaudación/gasto **
-	** Output: `varlist'REC.dta **
+	* Output: `varlist'REC.dta *
 	postfile REC str30 (modulo) int (bootstrap anio aniobase) ///
 		double (estimacion ///
 		contribuyentes poblacion montopc ///
@@ -146,8 +139,9 @@ quietly {
 
 
 
-	*******************
-	** 1.3 Bootstrap **
+	*********************
+	*** 2. Bootstraps ***
+	*********************
 	set seed 1111
 	forvalues k = 1(1)`bootstrap' {
 		if `bootstrap' != 1 {
@@ -160,98 +154,17 @@ quietly {
 			replace `boot' = 1
 		}
 
-		** 1.3.1. Monto per capita **
-		** Recaudacion **
+		** 2.1. Monto per capita **
+		`noisily' PC `varlist' `if' [`weight' = `exp'*`boot'], post
 		tempname REC
-		capture tabstat `varlist' [`weight' = `exp'*`boot'] `if', stat(sum) f(%20.2fc) save
-		if _rc == 0 {
-			matrix `REC' = r(StatTotal)
-		}
-		else {
-			matrix `REC' = J(1,1,0)
-		}
-
-		** Recaudacion, Edad 39, Hombres **
-		tempname REC39
-		if "`if'" != "" {
-			local if39 = "`if' & edad == 39 & sexo == 1"
-		}
-		else {
-			local if39 = "if edad == 39 & sexo == 1"
-		}
-		capture tabstat `varlist' [`weight' = `exp'*`boot'] `if39', stat(sum) f(%20.2fc) save
-		if _rc == 0 {
-			matrix `REC39' = r(StatTotal)
-		}
-		else {
-			matrix `REC39' = J(1,1,0)
-		}
-
-		** Contribuyentes **
-		tempname FOR
-		capture tabstat `cont' [`weight' = `exp'*`boot'] `if', stat(sum) f(%12.0fc) save
-		if _rc == 0 {
-			matrix `FOR' = r(StatTotal)
-		}
-		else {
-			matrix `FOR' = J(1,1,0)
-		}
-
-		** Poblacion **
-		tempname POB
-		capture tabstat `cont' [`weight' = `exp'*`boot'], stat(sum) f(%12.0fc) save
-		if _rc == 0 {
-			matrix `POB' = r(StatTotal)
-		}
-		else {
-			matrix `POB' = J(1,1,0)
-		}
-
-		** Poblacion, Edad 39, Hombres **
-		tempname POB39
-		capture tabstat `cont' [`weight' = `exp'*`boot'] `if39', stat(sum) f(%12.0fc) save
-		if _rc == 0 {
-			matrix `POB39' = r(StatTotal)
-		}
-		else {
-			matrix `POB39' = J(1,1,0)
-		}
-
-		** Monto per capita promedio **
-		if `FOR'[1,1] != 0 {
-			local montopc = `REC'[1,1]/`FOR'[1,1]
-		}
-		else {
-			local montopc = 0
-		}
-
-		** Mata: PC **
-		local edad39 = `REC39'[1,1]/`POB39'[1,1]
-		if `edad39' == . | `edad39' == 0 {
-			local pc = `montopc'
-		}
-		else {
-			local pc = `edad39'
-		}
-		mata: PC = `pc'
-
-		* Desplegar estadisticos *
-		`noisily' di in y "  Monto PC (`aniovp')"
-		`noisily' di in g "  Monto:" _column(40) in y %25.0fc `REC'[1,1]
-		`noisily' di in g "  Poblaci{c o'}n:" _column(40) in y %25.0fc `POB'[1,1]
-		`noisily' di in g "  Contribuyentes/Beneficiarios:" _column(40) in y %25.0fc `FOR'[1,1]
-		`noisily' di in g "  Per c{c a'}pita:" _column(40) in y %25.0fc `montopc'
-		`noisily' di in g "  Hombre de 39 a{c n~}os:" _column(40) in y %25.0fc `edad39' _newline
-
-		* Guardar resultados POST *
-		post PC (`REC'[1,1]) (`FOR'[1,1]) (`POB'[1,1]) (`montopc') (`edad39')
+		matrix `REC' = r(REC)
 
 
-		*** 1.3.2. Perfiles ***
-		`noisily' PERF `varlist' `if' [`weight' = `exp'*`boot'], montopc(`pc') post
+		*** 2.2. Perfiles ***
+		`noisily' PERF `varlist' `if' [`weight' = `exp'*`boot'], montopc(`=r(pc)') post
 
 
-		*** 1.3.3. Incidencia por hogar **
+		*** 2.3. Incidencia por hogar **
 		tempvar decil
 		capture confirm variable decil
 		if _rc != 0 {
@@ -264,11 +177,11 @@ quietly {
 		`noisily' INCI `varlist' `if' [`weight' = `exp'*`boot'], folio(folioviv foliohog) n(`decil') relativo(`ingreso') post
 
 
-		*** 1.3.4. Ciclo de Vida ***/
+		*** 2.4. Ciclo de Vida ***/
 		`noisily' CICLO `varlist' `if' [`weight' = `exp'*`boot'], post boot(`k') decil(`decil')
 
 
-		*** 1.3.5. Proyecciones ***
+		*** 2.5. Proyecciones ***
 		`noisily' REC `varlist', post pob(poblacion) boot(`k') aniobase(`aniope') title(`title')
 	}
 
@@ -276,7 +189,7 @@ quietly {
 	***********************
 	*** 1.4. Post close ***
 	noisily di _newline in y "  Simulador.ado" in g " (post-bootstraps)"
-	postclose PC
+	postclose PC2
 	postclose PERF
 	postclose INCI
 	postclose CICLO
@@ -287,7 +200,7 @@ quietly {
 	**************************
 	*** 2 Monto per capita ***
 	**************************
-	use `"`c(sysdir_personal)'/users/$id/bootstraps/`bootstrap'/`varlist'PC"', clear
+	use `"`c(sysdir_personal)'/users/$id/bootstraps/`bootstrap'/`varlist'PC2"', clear
 
 
 	***********************************
@@ -296,6 +209,56 @@ quietly {
 	noisily di _newline in g "  Monto:" _column(40) in y %20.0fc r(mean) ///
 		in g "  I.C. (95%): " in y "+/-" %7.2fc (r(ub)/r(mean)-1)*100 "%"
 
+
+	* Guardar en Excel *
+	if `aniope' == 2014 {
+		local col = "B"
+	}
+	if `aniope' == 2016 {
+		local col = "C"
+	}
+	if `aniope' == 2018 {
+		local col = "D"
+	}
+	if `aniope' == 2020 {
+		local col = "E"
+	}
+	if `aniope' == 2022 {
+		local col = "F"
+	}
+	if `aniope' == 2024 {
+		local col = "G"
+	}
+
+	ci means hombrespc
+
+	* Guardar en Excel *
+	if "`excel'" == "excel" {
+		local j = 12
+		putexcel set "`c(sysdir_personal)'/users/$id/Deciles.xlsx", modify sheet("`varlist'")
+		putexcel A`j' = "Hombres"
+		putexcel `col'`j' = `=r(mean)', nformat(number_sep)
+
+		ci means mujerespc
+		local ++j
+		putexcel A`j' = "Mujeres"
+		putexcel `col'`j' = `=r(mean)', nformat(number_sep)
+
+		ci means pob0_18pc
+		local ++j
+		putexcel A`j' = "0-18"
+		putexcel `col'`j' = `=r(mean)', nformat(number_sep)
+
+		ci means pob19_64pc
+		local ++j
+		putexcel A`j' = "19-64"
+		putexcel `col'`j' = `=r(mean)', nformat(number_sep)
+
+		ci means pob65pc
+		local ++j
+		putexcel A`j' = "65+"
+		putexcel `col'`j' = `=r(mean)', nformat(number_sep)
+	}
 
 	*******************************
 	*** 2.2 Resultados globales ***
@@ -315,20 +278,9 @@ quietly {
 	noisily di in g "  Per c{c a'}pita:" _column(40) in y %20.0fc r(mean) ///
 		in g "  I.C. (95%): " in y "+/-" %7.2fc (r(ub)/r(mean)-1)*100 "%"
 
-	ci means edad39
-	noisily di in g "  Edad 39:" _column(40) in y %20.0fc r(mean) ///
-		in g "  I.C. (95%): " in y "+/-" %7.2fc (r(ub)/r(mean)-1)*100 "%"
-	local edad39_boot = r(mean)
-
 	* Y label *
-	if `edad39_boot' == . | `edad39_boot' == 0 {
-		local ylabelpc = "Promedio"
-		*local ylabelpc = "Average"
-	}
-	else {
-		local ylabelpc = "hombre de 39 a{c n~}os"
-		*local ylabelpc = "39-year-old male"
-	}
+	local ylabelpc = "Promedio"
+	*local ylabelpc = "Average"
 
 
 
@@ -468,38 +420,43 @@ quietly {
 			in g "  I.C. (95%): " in y "+/-" %7.2fc (r(ub)/r(mean)-1)*100 "%"
 		scalar `varlist'`decil2' = r(mean)
 
-		/* Guardar en Excel *
-		if `aniope' == 2014 {
-			local col = "B"
+		* Guardar en Excel *
+		if "`excel'" == "excel" {
+			if `aniope' == 2014 {
+				local col = "B"
+			}
+			if `aniope' == 2016 {
+				local col = "C"
+			}
+			if `aniope' == 2018 {
+				local col = "D"
+			}
+			if `aniope' == 2020 {
+				local col = "E"
+			}
+			if `aniope' == 2022 {
+				local col = "F"
+			}
+			if `aniope' == 2024 {
+				local col = "G"
+			}
+			putexcel set "`c(sysdir_personal)'/users/$id/Deciles.xlsx", modify sheet("`varlist'")
+			putexcel A1 = "Decil"
+			if "`decil2'" == "Nac" {
+				local j = 17
+			}
+			putexcel A`j' = "`decil2'"
+			putexcel `col'1 = "`aniope'"
+			putexcel `col'`j' = `=scalar(`varlist'`decil2')', nformat(number_sep)
+			local ++j
 		}
-		if `aniope' == 2016 {
-			local col = "C"
-		}
-		if `aniope' == 2018 {
-			local col = "D"
-		}
-		if `aniope' == 2020 {
-			local col = "E"
-		}
-		if `aniope' == 2022 {
-			local col = "F"
-		}
-		if `aniope' == 2024 {
-			local col = "G"
-		}
-		putexcel set "`c(sysdir_personal)'/users/$id/Deciles.xlsx", modify sheet("`varlist'")
-		putexcel A1 = "Decil"
-		putexcel A`j' = "`decil2'"
-		putexcel `col'1 = "`aniope'"
-		putexcel `col'`j' = `=scalar(`varlist'`decil2')', nformat(number_sep)
-		local ++j
 
 		* Output */
 		if "$output" == "output" {
 			local incd = "`incd' `=string(`=`varlist'`decil2'',"%10.0f")',"
 		}
 	}
-	
+
 
 	*** 4.2 Distribucion ***
 	noisily di _newline in g "  Decil" _column(20) %20s "Distribuci{c o'}n"
@@ -622,8 +579,8 @@ quietly {
 		graph combine H`varlist' `varlist'Proj, ///
 			name(`=substr("`varlist'",1,10)'_`aniope', replace) ///
 			title("{bf:`title'}") ///
-			///subtitle(" Perfil etario (MXN `aniovp') y proyección demográfica (% PIB)", margin(bottom)) ///
-			subtitle(" Age profile (MXN `aniovp') and demographic projection (% GDP)", margin(bottom)) ///
+			subtitle(" Perfil etario (MXN `aniovp') y proyección demográfica (% PIB)", margin(bottom)) ///
+			///subtitle(" Age profile (PPP `aniovp') and demographic projection (% GDP)", margin(bottom)) ///
 			///title("`title' {bf:profile}") ///
 			///caption("Fuente: Elaborado por el CIEP, con información de INEGI/`base', INEGI/BIE, CONAPO y SHCP.") ///
 			///note(`"Nota: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n en cada grupo."') ///
@@ -685,9 +642,9 @@ program poblaciongini
 	replace `grupo' = 3 if decil == 10
 
 	tempname grupoval
-	label define `grupoval' 1 `"{bf:Deciles I-V} (`=string(`gdeclab1'+`gdeclab2'+`gdeclab3'+`gdeclab4'+`gdeclab5',"%7.0fc")'%)"' ///
-		2 `"{bf:VI-IX} (`=string(`gdeclab6'+`gdeclab7'+`gdeclab8'+`gdeclab9',"%7.0fc")'%)"' ///
-		3 `"{bf:X} (`=string(`gdeclab10',"%7.0fc")'%)"'
+	label define `grupoval' 1 `"{bf:Deciles I-V} consume `=string(`gdeclab1'+`gdeclab2'+`gdeclab3'+`gdeclab4'+`gdeclab5',"%7.0fc")'%"' ///
+		2 `"{bf:VI-IX}, `=string(`gdeclab6'+`gdeclab7'+`gdeclab8'+`gdeclab9',"%7.0fc")'%"' ///
+		3 `"{bf:X}, `=string(`gdeclab10',"%7.0fc")'%"'
 	label values `grupo' `grupoval'
 	label var `grupo' "deciles"
 	scalar `varlist'GIV = `gdeclab1'+`gdeclab2'+`gdeclab3'+`gdeclab4'+`gdeclab5'
@@ -763,8 +720,8 @@ program graphpiramide
 	*** 1. Valores agregados ***
 	tempname TOT POR
 	egen double `TOT' = sum(`varlist')
-	*g double `POR' = `varlist'/`pib'*100
-	g double `POR' = `varlist'/poblacion
+	g double `POR' = `varlist'/`pib'*100
+	*g double `POR' = `varlist'/poblacion
 
 	* Max number *
 	tempvar PORmax
@@ -821,6 +778,7 @@ program graphpiramide
 			blabel(none, format(%5.1fc)) ///
 			b1title(" ") ///
 			b2title(" {bf:Men} consume `men'% and {bf:women} `women'%", size(small)) ///
+			///subtitle("Age profile 2022 (PPP)") ///
 			///subtitle("Perfil etario") ///
 			///ytitle(% PIB) ///
 			ytitle("") ///
@@ -849,24 +807,24 @@ program graphpiramide
 		forvalues k=`=_N'(-1)1 {
 			if sexo[`k'] == 1 {
 				if over[`k'] == 1 {
-					local aportHIV = "`aportHIV' `=string(`=porcentaje[`k']',"%10.0f")',"
+					local aportHIV = "`aportHIV' `=string(`=porcentaje[`k']',"%10.3f")',"
 				}
 				if over[`k'] == 2 {
-					local aportHVIIX = "`aportHVIIX' `=string(`=porcentaje[`k']',"%10.0f")',"
+					local aportHVIIX = "`aportHVIIX' `=string(`=porcentaje[`k']',"%10.3f")',"
 				}
 				if over[`k'] == 3 {
-					local aportHX = "`aportHX' `=string(`=porcentaje[`k']',"%10.0f")',"			
+					local aportHX = "`aportHX' `=string(`=porcentaje[`k']',"%10.3f")',"			
 				}
 			}
 			if sexo[`k'] == 2 {
 				if over[`k'] == 1 {
-					local aportMIV = "`aportMIV' `=string(`=porcentaje[`k']',"%10.0f")',"
+					local aportMIV = "`aportMIV' `=string(`=porcentaje[`k']',"%10.3f")',"
 				}
 				if over[`k'] == 2 {
-					local aportMVIIX = "`aportMVIIX' `=string(`=porcentaje[`k']',"%10.0f")',"
+					local aportMVIIX = "`aportMVIIX' `=string(`=porcentaje[`k']',"%10.3f")',"
 				}
 				if over[`k'] == 3 {
-					local aportMX = "`aportMX' `=string(`=porcentaje[`k']',"%10.0f")',"			
+					local aportMX = "`aportMX' `=string(`=porcentaje[`k']',"%10.3f")',"			
 				}		
 			}
 		}
@@ -932,6 +890,10 @@ program define ProyGraph
 			matrix `MAX' = J(1,1,0)
 		}
 
+		tabstat estimacion if anio == 2070, stat(max) save
+		tempname LAST
+		matrix `LAST' = r(StatTotal)
+
 		if "$nographs" != "nographs" & "`nographs'" != "nographs" {
 			twoway (connected estimacion anio, lpattern(dot) msize(small)) ///
 				(connected estimacion anio if anio == `aniohoy', mlabel(estimacion) mlabposition(12) mlabcolor("114 113 118")) ///
@@ -940,6 +902,7 @@ program define ProyGraph
 				///ytitle("billones `currency' `aniovp'") ///
 				///ytitle("% PIB") ///
 				///subtitle("Proyección demográfica, billones MXN `aniovp'") ///
+				///subtitle("Demographic projection (% GDP)") ///
 				ytitle("") ///
 				///yscale(range(0)) /*ylabel(0(1)4)*/ ///
 				ylabel(#5, format(%5.2fc) labsize(small)) ///
@@ -951,9 +914,9 @@ program define ProyGraph
 				xline(`aniomax', lpattern(dot)) ///
 				///yline(0, lpattern(solid) lcolor(black)) ///
 				///text(`=`estimacionmax'*.05' `aniomax' "Este perfil, junto con" "las proyecciones demográficas," "obtiene un {bf:máximo en `aniomax'}.", size(medsmall) place(11) justification(right)) ///
-				text(`=`estimacionmax'*.05' `aniomax' "This age profile, along with" "CONAPO's demographic projections," "reaches a maximum in {bf:`aniomax'}.", size(medsmall) place(11) justification(right)) ///
+				///text(`=`estimacionmax'*.05' `aniomax' "This age profile, along with" "CONAPO's demographic projections," "reaches a maximum in {bf:`aniomax'}.", size(medsmall) place(11) justification(right)) ///
 				///text(`=`estimacionvp'*1.05' `aniohoy' "De `aniohoy' a `aniomax',"  `"{bf:cambiaría `=string((`estimacionmax'/`estimacionvp'-1)*100,"%5.2f")'%}."', size(medsmall) place(11) justification(left)) ///
-				text(`=`estimacionvp'*1.1' `aniohoy' "From `aniohoy' to `aniomax',"  "consumption will" `"change {bf:`=string((`estimacionmax'/`estimacionvp'-1)*100,"%5.2f")'%}."', size(medsmall) place(1) justification(left)) ///
+				text(`=`estimacionvp'*0.25' `aniohoy' "From `aniohoy' to 2070,"  "its demand will" `"change in {bf:`=string((`LAST'[1,1]/`estimacionvp'-1)*100,"%5.2f")'%}."', size(medsmall) place(1) justification(left)) ///
 				///title("{bf:Proyecci{c o'}n} de `title'") subtitle("$pais") ///
 				///caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.") ///
 				name(`varlist'Proj, replace)

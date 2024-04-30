@@ -947,7 +947,7 @@ if `enighanio' >= 2014 {
 		3  \     /// 10  Otros, idem
 		2  \     /// 11  Transporte local, idem
 		3  \     /// 12  Transporte foraneo, idem
-		28.37)   //  13  Evasion e informalidad IVA, input[0-100]
+		28.22)   //  13  Evasion e informalidad IVA, input[0-100]
 }
 
 use "`c(sysdir_personal)'/SIM/`enighanio'/consumption_categ_iva_pc.dta", clear
@@ -981,8 +981,10 @@ foreach k of local categs {
 	}
 	local ++j
 }
-tabstat IVA [aw=factor], stat(sum) f(%20.0fc) save
+noisily tabstat IVA [aw=factor], stat(sum) f(%20.0fc) save
 scalar IVA = r(StatTotal)[1,1]
+
+noisily di in g "IVA Observado: " in y %20.0fc `IVA'
 
 Gini IVA, hogar(folioviv foliohog) factor(factor)
 local gini_IVA = r(gini_IVA)
@@ -999,7 +1001,7 @@ noisily di in g "  Total " ///
 	_col(44) in y "(" %5.3fc giniIVA ")" ///
 	_col(55) in y %7.3fc scalar(IVA)/PIB*100 ///
 	_col(66) %7.3fc `IVA'/PIB*100 ///
-	_col(77) %6.2fc -(`IVA'/scalar(IVA)-1)*100 "%"
+	_col(77) %6.2fc (1-`IVA'/scalar(IVA))*100 "%"
 
 save "`c(sysdir_personal)'/SIM/`enighanio'/categ_iva.dta", replace
 collapse (sum) IVA, by(folioviv foliohog numren)

@@ -35,19 +35,16 @@ forvalues k=2(1)`=rowsof(SE)' {
 		matrix SE[`k',2] = SE[`k',1]+.01
 	}
 }
-local smdf = 172.87 			// SM 2022
+local smdf = 248.93 			// SM 2024
 
 
 
 ****************
 ** Households **
 ****************
-*capture use `"`c(sysdir_site)'/users/$pais/$id/households.dta"', clear
-*if _rc != 0 {
-	use "`c(sysdir_personal)'/SIM/perfiles`=anioPE'.dta", clear
-*}
+use "`c(sysdir_personal)'/SIM/perfiles`=anioPE'.dta", clear
 merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/`=anioenigh'/households.dta", ///
-	nogen keepus(ing_subor ing_bruto_tax ing_bruto_tpm cuotasTPF infonavit fovissste sbc formal* ///
+	nogen keepus(ing_subor ing_mixto ing_capital ing_bruto_tax ing_bruto_tpm cuotasTPF infonavit fovissste sbc formal* ///
 	ing_ss ISR* SE deduc_isr categ* exen_* prop_* ing_t4_cap1) 
 
 replace ing_subor = (ing_subor)/(`deflator'*`lambda')
@@ -227,22 +224,21 @@ forvalues j=`=rowsof(ISR)'(-1)1 {
 
 ******************
 ** ISR SALARIOS **
-replace SE = 0 if formal_asalariados == 0
-replace SE = SE*.1492/.1780
+replace SE = SE*.1492/.138
 
 replace formal_asalariados = prop_salarios <= (1-DED[1,4]/100)
-replace ISR_asalariados = ISR - SE if ing_t4_cap1 != 0
+replace ISR_asalariados = ISR*ing_subor/(ing_mixto+ing_subor+ing_capital) - SE if ing_t4_cap1 != 0
 replace ISR_asalariados = 0 if formal_asalariados == 0 | ISR_asalariados == .
-replace ISR_asalariados = ISR_asalariados*3.666/3.316
+replace ISR_asalariados = ISR_asalariados*3.691/2.384
 
 
 
 **************************
 ** ISR PERSONAS FISICAS **
 replace formal_fisicas = prop_formal <= (1-DED[1,3]/100)
-replace ISR_PF = ISR //if ing_t4_cap1 == 0
+replace ISR_PF = ISR - ISR_asalariados if ISR - ISR_asalariados >= 0
 replace ISR_PF = 0 if formal_fisicas == 0 | ISR_PF == . | ISR_PF < 0
-replace ISR_PF = ISR_PF*0.232/0.982
+replace ISR_PF = ISR_PF*0.234/0.266
 
 
 **************************
@@ -257,12 +253,12 @@ Distribucion SE_empresas, relativo(ing_bruto_tpm) macro(`=`SE'[1,1]')
 
 replace ISRPM = (ing_bruto_tpm-exen_tpm)*PM[1,1]/100 - SE_empresas if formal_morales == 1
 replace ISRPM = 0 if ISRPM == .
-replace ISRPM = ISRPM*4.036/3.129
+replace ISRPM = ISRPM*4.063/3.803
 
 
 *****************
 ** CUOTAS IMSS **
-replace cuotasTP = cuotasTP*1.567/1.393 if formal2 == 1
+replace cuotasTP = cuotasTP*1.578/1.414 if formal2 == 1
 
 
 
@@ -290,12 +286,14 @@ matrix `SIMCSS' = r(StatTotal)
 scalar ISR_AS_Mod = `SIMTAXS'[1,1]/`pibY'*100 								// ISR (asalariados)
 scalar ISR_PF_Mod = `SIMTAX'[1,1]/`pibY'*100 								// ISR (personas f{c i'}sicas)
 scalar ISR_PM_Mod = `SIMTAXM'[1,1]/`pibY'*100 								// ISR (personas morales)
-scalar CUOTAS_Mod = `SIMCSS'[1,1]/`pibY'*100 									// Cuotas IMSS
+scalar CUOTAS_Mod = `SIMCSS'[1,1]/`pibY'*100 								// Cuotas IMSS
+scalar SE_Mod = `SE'[1,1]/`pibY'*100 									// Subsidio al empleo
 
 noisily di _newline in g "    RESULTADOS ISR (salarios): " _col(33) in y %10.3fc ISR_AS_Mod
 noisily di in g "    RESULTADOS ISR (f{c i'}sicas):  " _col(33) in y %10.3fc ISR_PF_Mod
 noisily di in g "    RESULTADOS ISR (morales):  " _col(33) in y %10.3fc ISR_PM_Mod
 noisily di in g "    RESULTADOS IMSS (obr-pat):  " _col(33) in y %10.3fc CUOTAS_Mod
+noisily di in g "    RESULTADOS SE:  " _col(33) in y %10.3fc SE_Mod
 
 
 

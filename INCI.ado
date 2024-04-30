@@ -19,7 +19,29 @@ quietly {
 	** 1. Variables internas **
 	tempvar miembros
 	egen `miembros' = count(`exp'), by(`folio')
-	g hog = 1/`miembros'
+	if "`if'" != "" {
+		g hog = `=substr("`if'",3,.)'
+		replace hog = hog/`miembros'
+	}
+	else {
+		g hog = 1/`miembros'
+	}
+
+    /*if "`=scalar(aniovp)'" == "2022" {
+        local ppp = 9.684
+    }
+    if "`=scalar(aniovp)'" == "2020" {
+        local ppp = 9.813
+    }
+    if "`=scalar(aniovp)'" == "2018" {
+        local ppp = 9.276
+    }
+    if "`=scalar(aniovp)'" == "2016" {
+        local ppp = 8.446
+    }
+    if "`=scalar(aniovp)'" == "2014" {
+        local ppp = 8.045
+    }*/
 
 	tempvar varlist2
 	g double `varlist2' = `varlist' `if'

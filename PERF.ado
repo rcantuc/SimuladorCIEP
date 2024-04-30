@@ -10,19 +10,14 @@ quietly {
 	********************************
 	*** 0. Guardar base original ***
 	********************************
-	//preserve
-	//use`"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
-	//local edadmax = edad[_N]
-	//restore
 	preserve
 	local edadmax = 109
+
 
 
 	****************************
 	*** 1 Variables internas ***
 	****************************
-	sort edad
-	//local edadmaxEncuesta = edad[_N]
 	local title : variable label `varlist'
 
 	tempvar pob for rec
@@ -42,38 +37,30 @@ quietly {
 	******************
 	*** 2 Collapse ***
 	******************
-	replace edad = `edadmax' if edad > `edadmax' & edad != . 		// Por si hay observaciones mayores a `edadmax' (PoblacionBase.ado).
+	replace edad = `edadmax' if edad > `edadmax' & edad != . 		// Por si hay observaciones mayores a `edadmax'
 	collapse (sum) `rec' `pob' `for' [`weight' = `exp'], by(sexo edad)
 
-
-	*********************
 	** 2.1 Recaudacion **
 	tempname REC
 	tabstat `rec', stat(sum) f(%25.2fc) save
 	matrix `REC' = r(StatTotal)
 
-
-	************************
 	** 2.2 Contribuyentes **
 	tempname FOR
 	tabstat `for', stat(sum) f(%12.0fc) save
 	matrix `FOR' = r(StatTotal)
 
-
-	*******************
 	** 2.3 Poblacion **
 	tempname POB
 	tabstat `pob', stat(sum) f(%12.0fc) save
 	matrix `POB' = r(StatTotal)
 
-
-	**************************
 	** 2.4 Completar edades **
 	destring sexo, replace
 
 	* Observaciones no encontradas *
 	sort sexo edad
-	forvalues k=0(1)`edadmax' {										// Edades segun Poblacion.dta
+	forvalues k=0(1)`edadmax' {
 		forvalues j=1(1)2 {
 			count if edad == `k' & sexo == `j'
 			if r(N) == 0 {
@@ -92,26 +79,18 @@ quietly {
 	keep `rec' `for' `pob' edad sexo
 	reshape wide `rec' `for' `pob', i(edad) j(sexo)
 
-
-	************************
 	** 3.1 Perfil de pago **
 	tsset edad
 	tempvar perfil1 perfil2
 	g double `perfil1' = `rec'1/`for'1/`montopc'
 	g double `perfil2' = `rec'2/`for'2/`montopc'
-	//replace `perfil1' = L.`perfil1' if `perfil1' == . & edad >= `edadmaxEncuesta'-5
-	//replace `perfil2' = L.`perfil2' if `perfil2' == . & edad >= `edadmaxEncuesta'-5
 	replace `perfil1' = 0 if `perfil1' == .
 	replace `perfil2' = 0 if `perfil2' == .
 
-
-	*********************************
 	** 3.2 Perfil de participacion **
 	tempvar pcont1 pcont2
 	g double `pcont1' = `for'1/`pob'1*100
 	g double `pcont2' = `for'2/`pob'2*100
-	//replace `pcont1' = L.`pcont1' if `pcont1' == . & edad >= `edadmaxEncuesta'-5
-	//replace `pcont2' = L.`pcont2' if `pcont2' == . & edad >= `edadmaxEncuesta'-5
 	replace `pcont1' = 0 if `pcont1' == .
 	replace `pcont2' = 0 if `pcont2' == .
 	replace `pcont1' = 100 if `pob'1 == 0 | `pob'1 == .
@@ -129,8 +108,6 @@ quietly {
 		}
 	}
 
-
-	****************
 	** 4.1 A Mata **
 	sort edad
 	mkmat `perfil1' `perfil2', matrix(PERFIL)

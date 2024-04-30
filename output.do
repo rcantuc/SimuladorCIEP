@@ -63,7 +63,11 @@ if "$output" != "" {
 		%8.3f gasmadresPIB "," /// Apoyo a madres trabajadoras 37
 		%8.3f gascuidadosPIB "," /// Gasto en cuidados 38
 		%8.3f transfPIB "," /// Total Transferencias 39
-		%8.3f iniciaAPIB+basicaPIB+medsupPIB+superiPIB+posgraPIB+eduaduPIB+otrosePIB+inverePIB+culturPIB+investPIB+ssaPIB+imssbienPIB+imssPIB+issstePIB+pemexPIB+inversPIB+pamPIB+penimssPIB+penisssPIB+penpemePIB+penotroPIB+gascfePIB+gaspemexPIB+gassenerPIB+gasinverfPIB+gascosdeuePIB+gasinfraPIB+gascuidadosPIB+gasotrosPIB+gasfederPIB+gascostoPIB+IngBasPIB+gasmadresPIB+gascuidadosPIB /// Total GASTO 40
+		%8.3f iniciaAPIB+basicaPIB+medsupPIB+superiPIB+posgraPIB+eduaduPIB+otrosePIB+inverePIB+culturPIB+investPIB+ ///
+			ssaPIB+imssbienPIB+imssPIB+issstePIB+pemexPIB+issfamPIB+inversPIB+ ///
+			pamPIB+penimssPIB+penisssPIB+penpemePIB+penotroPIB+ ///
+			gascfePIB+gaspemexPIB+gassenerPIB+gasinverfPIB+gascosdeuePIB+ ///
+			gasinfraPIB+gasotrosPIB+gasfederPIB+gascostoPIB+IngBasPIB+gasmadresPIB+gascuidadosPIB /// Total GASTO 40
 		"]"
 	noisily di in w "GASTOSPC: ["  ///
 		%8.0f iniciaA "," /// Educación inicial 0

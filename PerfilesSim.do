@@ -120,7 +120,7 @@ foreach k of local recursos {
 **# 3. Ajuste Población ***
 ***                     *** 
 **************************
-use if anio == `1' using `"SIM/Poblaciontot.dta"', clear
+use if anio == `1' using `"`c(sysdir_personal)'/SIM/Poblaciontot.dta"', clear
 local ajustepob = poblacion
 
 
@@ -146,21 +146,21 @@ SCN, anio(`1')nographs
 
 ** 5.1 Encuesta Nacional de Ingresos y Gastos de los Hogares (expenditures) **
 ** Inputs: `c(sysdir_personal)'../BasesCIEP/INEGI/ENIGH/`anio'/
-** Outputs: Archivo "SIM/`anio'/expenditures.dta".
-capture confirm file "SIM/`enighanio'/expenditures.dta"
+** Outputs: Archivo "`c(sysdir_personal)'/SIM/`anio'/expenditures.dta".
+capture confirm file "`c(sysdir_personal)'/SIM/`enighanio'/expenditures.dta"
 if _rc != 0 ///
 	noisily run "Expenditure.do" `1'
 
 
 ** 5.2 Encuesta Nacional de Ingresos y Gastos de los Hogares (ingresos) **
-** Outputs: Archivo "SIM/`anio'/households.dta".
-capture confirm file "SIM/`enighanio'/households.dta"
+** Outputs: Archivo "`c(sysdir_personal)'/SIM/`anio'/households.dta".
+capture confirm file "`c(sysdir_personal)'/SIM/`enighanio'/households.dta"
 if _rc != 0 ///
 	noisily run `"Households.do"' `1'
 
 
 ** 5.3 Usar base de datos conciliada **
-use "SIM/`enighanio'/households.dta", clear
+use "`c(sysdir_personal)'/SIM/`enighanio'/households.dta", clear
 tabstat factor, stat(sum) f(%20.0fc) save
 tempname pobenigh
 matrix `pobenigh' = r(StatTotal)
@@ -420,12 +420,12 @@ noisily Perfiles Pensión_AM [fw=factor], boot(1) reboot aniope(`1') aniovp(`=an
 
 ** (-) Pensiones **
 capture drop ing_jubila_pub
-g ing_jubila_pub = ing_jubila if /*(formal == 1 | formal == 2 | formal == 3) &*/ ing_jubila != 0
+g ing_jubila_pub = ing_jubila if jubilado == 1
 replace ing_jubila_pub = 0 if ing_jubila_pub == .
-replace ing_jubila_pub = ing_jubila_pub + Pensión_AM
+*replace ing_jubila_pub = ing_jubila_pub + Pensión_AM
 
 Distribucion Pensiones, relativo(ing_jubila_pub) macro(`Pensiones')
-replace Pensiones = Pensiones + Pensión_AM
+replace Pensiones = Pensiones //+ Pensión_AM
 label var Pensiones "Pensiones `1'"
 noisily Perfiles Pensiones if Pensiones != 0 [fw=factor], boot(1) reboot aniope(`1') aniovp(`=aniovp')
 *noisily Gini Pension, hogar(folioviv foliohog) factor(factor)
@@ -550,10 +550,10 @@ capture drop _*
 keep ISRAS ISRPF CUOTAS ISRPM OTROSK FMP PEMEX CFE IMSS ISSSTE IVA IEPSNP IEPSP ISAN IMPORT /// Ingresos
 	Pension Educación Salud IngBasico Pensión_AM Otros_gastos Otras_inversiones Part_y_otras_Apor Energía infra_entidad /// Gastos
 	folio* numren edad sexo factor decil escol formal ingbrutotot rural grupoedad /// Perfiles.ado
-	disc* //asis_esc tipoesc nivel inst_* ing_jubila jubilado // GastoPC.ado
+	disc* gas_pc_Salu //asis_esc tipoesc nivel inst_* ing_jubila jubilado // GastoPC.ado
 if `c(version)' > 13.1 {
-	save "SIM/perfiles`1'.dta", replace
+	save "`c(sysdir_personal)'/SIM/perfiles`1'.dta", replace
 }
 else {
-	saveold "SIM/perfiles`1'.dta", replace version(13)	
+	saveold "`c(sysdir_personal)'/SIM/perfiles`1'.dta", replace version(13)	
 }
