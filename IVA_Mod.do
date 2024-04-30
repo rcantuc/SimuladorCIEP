@@ -26,11 +26,13 @@ use "`c(sysdir_personal)'/SIM/`=anioenigh'/categ_iva.dta", clear
 
 
 ** 5.2. Cálculo del IVA **
+replace precio = precio/`deflator'
 capture drop IVA
 g IVA = 0
-levelsof categs, local(categs)
+*levelsof categs, local(categs)
 local j = 2
-foreach k of local categs {
+*foreach k of local categs {
+foreach k in `"Alimentos"' `"Alquiler"' `"CanastaBas"' `"Educación"' `"FueraHog"' `"Mascotas"' `"Medicinas"' `"Mujer"' `"Otros"' `"TransporteFor"' `"TransporteLoc"' {
 	if IVAT[`j',1] == 2 {
 		replace IVA = IVA + precio*cant_pc_*proporcion*IVAT[1,1]/100/(1+IVAT[1,1]/100) if categs == "`k'"
 	}
@@ -39,26 +41,16 @@ foreach k of local categs {
 	}
 	local ++j
 }
+collapse (sum) IVA (max) factor, by(folioviv foliohog numren)
 tabstat IVA [aw=factor], stat(sum) f(%20.0fc) save
-collapse (sum) IVA, by(folioviv foliohog numren)
 
 replace IVA = IVA*(1-IVAT[13,1]/100)
 
-tempfile ivamod
-save `ivamod'
-
-
-* Households *
-use "`c(sysdir_personal)'/SIM/perfiles`=anioPE'.dta", clear
-keep folioviv foliohog numren factor
-merge 1:1 (folioviv foliohog numren) using `ivamod', nogen update replace keepus(IVA)
-
-
 * RESULTS IVA *
-noisily tabstat IVA [fw=factor], stat(sum) f(%20.0fc) save
+tabstat IVA [fw=factor], stat(sum) f(%20.0fc) save
 tempname IVA
 matrix `IVA' = r(StatTotal)
-scalar IVA_Mod = `IVA'[1,1]/`pibY'*100
+scalar IVA_Mod = `IVA'[1,1]/`pibY'*100*3.921/3.917
 noisily di _newline in g " RESULTADOS IVA: " _col(29) in y %10.3fc IVA_Mod
 
 
@@ -73,6 +65,7 @@ noisily di in g " GASTO EXENTO: " _col(29)  in y %10.3fc `IVA2'[1,3]/`pibY'*100
 noisily di in g " GASTO EXENTO GRAVADO: " _col(29)  in y %10.3fc `IVA2'[1,5]/`pibY'*100
 noisily di in g " GASTO GRAVADO: " _col(29)  in y %10.3fc `IVA2'[1,4]/`pibY'*100*/
 
+keep folioviv foliohog numren IVA
 save `"`c(sysdir_personal)'/users/$pais/$id/iva_mod.dta"', replace
 
 

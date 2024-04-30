@@ -20,11 +20,11 @@ cd `"`c(sysdir_personal)'"'
 *****************************
 **  0.2 Opciones globales  **
 ** Agregar o modificar según sea necesario. **
-global id = "ciepmx"												// IDENTIFICADOR DEL USUARIO
-global export "`c(sysdir_personal)'/SIM/graphs"							                    // DIRECTORIO DE IMÁGENES
-global nographs "nographs"											// SUPRIMIR GRAFICAS
-//global update "update"												// UPDATE BASES DE DATOS
-global output "output"												// ARCHIVO DE SALIDA
+global id = "ciepmx"                                                // IDENTIFICADOR DEL USUARIO
+global export "`c(sysdir_personal)'/SIM/graphs"                     // DIRECTORIO DE IMÁGENES
+//global nographs "nographs"                                          // SUPRIMIR GRAFICAS
+//global update "update"                                            // UPDATE BASES DE DATOS
+global output "output"                                            // ARCHIVO DE SALIDA (WEB)
 
 
 ************************
@@ -35,7 +35,6 @@ capture mkdir `"`c(sysdir_personal)'/users/$id/"'
 
 **********************************
 ** 0.4 Archivo output.txt (web) **
-global output "output"													// OUTPUTS (WEB)
 if "$output" != "" {
 	quietly log using `"`c(sysdir_personal)'/users/$id/output.txt"', replace text name(output)
 	quietly log off output
@@ -57,7 +56,7 @@ if "$output" != "" {
 ** Fuente: CONAPO 2023. Ver archivo "UpdatePoblacion.do".
 //forvalues anio = 1950(1)`=anioPE' {                              // <-- Año(s) de interés
 	//foreach entidad of global entidadesL {                            // <-- Nacional o para todas las entidades
-		noisily Poblacion if entidad == "`entidad'", anio(`=anioPE') aniofinal(2050) //$update   // Last updated: 9 de febrero de 2024
+		//noisily Poblacion if entidad == "`entidad'", anio(`=anioPE') aniofinal(2050) //$update   // Last updated: 9 de febrero de 2024
 	//}
 //}
 
@@ -92,13 +91,13 @@ global inf2029 = 3.0
 * Inputs: PIB, índice de precios implícitos, inpc, población y población ocupada.
 * Outputs: Base de datos con su deflactor y productividad laboral para todos los años.
 * Fuente: INEGI, BIE. Ver archivo "UpdatePIBDeflactor.do".
-noisily PIBDeflactor, geodef(2005) geopib(2005) $update aniovp(`=aniovp')
+//noisily PIBDeflactor, geodef(2005) geopib(2005) $update aniovp(`=aniovp')
 
 * 1.2.5 Proyecciones: Sistema de Cuentas Nacionales *
 * Inputs: PIB, índice de precios implícitos, inpc, población y población ocupada.
 * Outputs: Base de datos con las cuentas macroeconómicas para todos los años.
 * Fuente: INEGI, BIE. Ver archivo "UpdatePIBDeflactor.do".
-noisily SCN, //$update
+//noisily SCN, //$update
 
 
 ************************
@@ -107,13 +106,13 @@ noisily SCN, //$update
 * Inputs: LIFs + Estadísticas Oportunas. Archivo: LIFs.xlsx.
 * Outputs: Bases de datos con ingresos, gastos y deuda para todos los años.
 * Fuentes. SHCP, Estadísticas Oportunas. Ver archivos "UpdateLIF.do".
-noisily LIF, by(divPE) rows(1) min(0) anio(`=anioPE') $update desde(2018)
+//noisily LIF, by(divCIEP) rows(1) min(0) anio(`=anioPE') $update desde(2018)
 
 * 1.3.2 Presupuesto de Egresos de la Federación **
 * Inputs: Cuentas Públicas y PEF/PPEF (varios años). Archivos: CPXXXX.xlsx, PEFXXXX.xlsx o PPEFXXXX.xlsx.
 * Outputs: Bases de datos con gastos ejercidos/aprobados/proyectados para todos los años.
 * Fuentes. SHCP, Cuentas Públicas. Ver archivo "UpdatePEF.do".
-noisily PEF, by(divCIEP) rows(2) min(0) anio(`=anioPE') $update desde(2018)
+//noisily PEF, by(divCIEP) rows(2) min(0) anio(`=anioPE') $update desde(2018)
 
 
 ***********************
@@ -162,13 +161,12 @@ scalar IEPSNP      =   0.683 // *(1+ r(EIEPSNP)*(${pib2023}-${pib2023_0})/100))	
 scalar IEPSP       =   1.345 // IEPS (petrolero): 0.662
 scalar IMPORT      =   0.301 // *(1+ r(EIMPORT)*(${pib2023}-${pib2023_0})/100))		// Importaciones
 
-
 *******************************/
 ** 2.2 Parámetros: Educación **
 scalar iniciaA     =     417 //    Inicial
 
-scalar basica      =   28017 // *0+31154 //    Educación b{c a'}sica
-scalar medsup      =   27811 // *0+41083 //    Educación media superior
+scalar basica      =   28017 //    Educación b{c a'}sica
+scalar medsup      =   27811 //    Educación media superior
 scalar superi      =   39927 //    Educación superior
 scalar posgra      =   65408 //    Posgrado
 scalar eduadu      =   39492 //    Educación para adultos
@@ -179,18 +177,16 @@ scalar invere      =     827 //    Inversión en educación
 scalar cultur      =     153 //    Cultura, deportes y recreación
 scalar invest      =     393 //    Ciencia y tecnología
 
-
 ***************************
 ** 2.3 Parámetros: Salud **
-scalar ssa         =     107 //    SSalud
-scalar imssbien    =    5560 //    IMSS-Bienestar
+scalar ssa         =      60 //    SSalud
+scalar imssbien    =    5644 //    IMSS-Bienestar
 scalar imss        =    8573 //    IMSS (salud)
 scalar issste      =    9873 //    ISSSTE (salud)
 scalar pemex       =   31176 //    Pemex (salud)
 scalar issfam      =   20070 //    ISSFAM (salud)
 
 scalar invers      =     255 //    Inversión en salud
-
 
 *******************************
 ** 2.4 Parámetros: Pensiones **
@@ -199,7 +195,6 @@ scalar penimss     =  279557 //    Pensión IMSS
 scalar penisss     =  362409 //    Pensión ISSSTE
 scalar penpeme     =  822902 //    Pensión Pemex
 scalar penotro     = 3629857 //    Pensión CFE, LFC, ISSFAM, Ferronales
-
 
 *****************************
 ** 2.5 Parámetros: Energía **
@@ -211,14 +206,12 @@ scalar gasinverf   =    3692 //    Gasto en inversión (energía)
 
 scalar gascosdeue  =    1349 //    Gasto en costo de la deuda (energía)
 
-
 **********************************
 ** 2.6 Parámetros: Otros gastos **
 scalar gasinfra    =    4263 //    Gasto en Otras Inversiones
 scalar gasotros    =    4750 //    Otros gastos
 scalar gasfeder    =   10185 //    Participaciones y Otras aportaciones
 scalar gascosto    =    8539 //    Gasto en Costo de la deuda
-
 
 ***********************************
 ** 2.7 Parámetros: Transferencas **
@@ -229,48 +222,46 @@ scalar ingbasico65 =       1 //    1: Incluye mayores de 65 anios, 0: no
 scalar gasmadres   =     472 //    Apoyo a madres trabajadoras
 scalar gascuidados =    1722 //    Gasto en cuidados
 
-
 ************************/
 ** 2.8 Parámetros: ISR **
 ** Inputs: Archivo "`c(sysdir_personal)'/SIM/perfiles`=anioPE'.dta" o "`c(sysdir_site)'/users/$pais/$id/households.dta"
 ** Outputs: Archivo "`c(sysdir_site)'/users/$pais/$id/households.dta" actualizado más scalars ISRAS, ISRPF, ISRPM y CUOTAS.
 * Anexo 8 de la Resolución Miscelánea Fiscal para 2024 *
 * Tarifa para el cálculo del impuesto correspondiente al ejericio 2024 a que se refieren los artículos 97 y 152 de la Ley del ISR
-*             INFERIOR			SUPERIOR	CF		TASA
-matrix ISR =  (0.01,			8952.49,	0.0,		1.92	\    /// 1
-			8952.49    +.01,	75984.55,	171.88,		6.40	\    /// 2
-			75984.55   +.01,	133536.07,	4461.94,	10.88	\    /// 3
-			133536.07  +.01,	155229.80,	10723.55,	16.00	\    /// 4
-			155229.80  +.01,	185852.57,	14194.54,	17.92	\    /// 5
-			185852.57  +.01,	374837.88,	19682.13,	21.36	\    /// 6
-			374837.88  +.01,	590795.99,	60049.40,	23.52	\    /// 7
-			590795.99  +.01,	1127926.84,	110842.74,	30.00	\    /// 8
-			1127926.84 +.01,	1503902.46,	271981.99,	32.00	\    /// 9
-			1503902.46 +.01,	4511707.37,	392294.17,	34.00	\    /// 10
-			4511707.37 +.01,	1E+12,		1414947.85,	35.00)	     //  11
+*             INFERIOR			SUPERIOR		CF			TASA
+matrix ISR =  (0.01,			8952.49,		0.0,		1.92	\    /// 1
+			8952.49    +.01,	75984.55,		171.88,		6.40	\    /// 2
+			75984.55   +.01,	133536.07,		4461.94,	10.88	\    /// 3
+			133536.07  +.01,	155229.80,		10723.55,	16.00	\    /// 4
+			155229.80  +.01,	185852.57,		14194.54,	17.92	\    /// 5
+			185852.57  +.01,	374837.88,		19682.13,	21.36	\    /// 6
+			374837.88  +.01,	590795.99,		60049.40,	23.52	\    /// 7
+			590795.99  +.01,	1127926.84,		110842.74,	30.00	\    /// 8
+			1127926.84 +.01,	1503902.46,		271981.99,	32.00	\    /// 9
+			1503902.46 +.01,	4511707.37,		392294.17,	34.00	\    /// 10
+			4511707.37 +.01,	1E+12,			1414947.85,	35.00)	     //  11
 
 * Tabla del subsidio para el empleo aplicable a la tarifa del numeral 5 del rubro B (página 773) *
-*             INFERIOR		SUPERIOR	SUBSIDIO
-matrix	SE =  (0.01,		1768.96,	407.02		\    /// 1
-			1768.96 +.01,	2653.38,	406.83		\    /// 2
-			2653.38 +.01,	3472.84,	406.62		\    /// 3
-			3472.84 +.01,	3537.87,	392.77		\    /// 4
-			3537.87 +.01,	4446.15,	382.46		\    /// 5
-			4446.15 +.01,	4717.18,	354.23		\    /// 6
-			4717.18 +.01,	5335.42,	324.87		\    /// 7
-			5335.42 +.01,	6224.67,	294.63		\    /// 8
-			6224.67 +.01,	7113.90,	253.54		\    /// 9
-			7113.90 +.01,	7382.33,	217.61		\    /// 10
-			7382.33 +.01,   1E+12,		0)		 	     //  11
+*             INFERIOR			SUPERIOR		SUBSIDIO
+matrix	SE =  (0.01,			1768.96*12,		407.02*12		\    /// 1
+			1768.96*12 +.01,	2653.38*12,		406.83*12		\    /// 2
+			2653.38*12 +.01,	3472.84*12,		406.62*12		\    /// 3
+			3472.84*12 +.01,	3537.87*12,		392.77*12		\    /// 4
+			3537.87*12 +.01,	4446.15*12,		382.46*12		\    /// 5
+			4446.15*12 +.01,	4717.18*12,		354.23*12		\    /// 6
+			4717.18*12 +.01,	5335.42*12,		324.87*12		\    /// 7
+			5335.42*12 +.01,	6224.67*12,		294.63*12		\    /// 8
+			6224.67*12 +.01,	7113.90*12,		253.54*12		\    /// 9
+			7113.90*12 +.01,	7382.33*12,		217.61*12		\    /// 10
+			7382.33*12 +.01,	1E+12,			0)		 	     //  11
 
 * Artículo 151, último párrafo (LISR) *
 *            Ex. SS.MM.	Ex. 	% ing. gravable		% Informalidad PF	% Informalidad Salarios
-matrix DED = (5,				15,					70.62, 				89.07)
+matrix DED = (5,				15,					57.79, 				42.82*0)
 
 * Artículo 9, primer párrafo (LISR) * 
 *           Tasa ISR PM.	% Informalidad PM
-matrix PM = (30,			28.08)
-
+matrix PM = (30,			21.59)
 
 ***********************************
 ** 2.9 Parámetros: IMSS e ISSSTE **
@@ -298,7 +289,7 @@ matrix CSS_ISSSTE = ///
 		0.000,		5.000,			0.000	\   /// Vivienda
 		0.000,		0.000,			13.9)		//  Cuota social
 
-if "`cambioisrpf'" == "1" {
+if "`cambioisrpf'" == "" {
 	noisily run "ISR_Mod.do"
 	scalar ISRAS  = ISR_AS_Mod
 	scalar ISRPF  = ISR_PF_Mod
@@ -323,7 +314,7 @@ matrix IVAT = (16 \     ///  1  Tasa general
 	3  \     /// 10  Otros, idem
 	2  \     /// 11  Transporte local, idem
 	3  \     /// 12  Transporte foraneo, idem
-	29.96)   //  13  Evasion e informalidad IVA, input[0-100]
+	28.22)   //  13  Evasion e informalidad IVA, input[0-100]
 if "`cambioiva'" == "1" {
 	noisily run "IVA_Mod.do"
 	noisily di "IVA Anterior: " _col(20) %7.3fc scalar(IVA) " % PIB"
@@ -371,11 +362,10 @@ noisily GastoPC, aniope(`=anioPE') aniovp(2024)
 **#    3. CICLO DE VIDA    ***
 ***                        ***
 ******************************
-use `"users/$id/ingresos.dta"', clear
+use `"`c(sysdir_personal)'/users/$id/ingresos.dta"', clear
 merge 1:1 (folioviv foliohog numren) using "users/$id/gastos.dta", nogen
-capture merge 1:1 (folioviv foliohog numren) using "users/$id/isr_mod.dta", nogen replace update
-capture merge 1:1 (folioviv foliohog numren) using "users/$id/iva_mod.dta", nogen replace update
-
+capture merge 1:1 (folioviv foliohog numren) using "users/$id/isr_mod.dta", nogen replace update keepus(ISRAS ISRPF ISRPM CUOTAS)
+capture merge 1:1 (folioviv foliohog numren) using "users/$id/iva_mod.dta", nogen replace update keepus(IVA)
 
 **************************************
 ** 3.1 (+) Impuestos y aportaciones **
@@ -521,7 +511,7 @@ scalar costodeudaInterno2029 = 2.5
 scalar costodeudaExterno2029 = 2.5
 
 ** 4.2 Proyecciones: Saldo Histórico de los Requerimientos Financieros del Sector Público **/
-noisily SHRFSP, ultanio(2001) anio(`=anioPE') $update
+//noisily SHRFSP, ultanio(2001) anio(`=anioPE') $update
 
 ** 4.3 Sostenibilidad de la deuda y brecha fiscal **
 * Inputs: Archivo "`c(sysdir_site)'/users/$pais/$id/households.dta", SHRFSP, PEFs y LIFs.

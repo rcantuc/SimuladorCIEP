@@ -436,6 +436,8 @@ quietly {
 	***************
 	replace Salud = 0
 
+
+	************************************
 	** 4.1 Asegurados y beneficiarios **
 	capture drop benef_*
 	g benef_ssa = 1
@@ -446,14 +448,14 @@ quietly {
 		replace benef_pemex = benef_pemex*602513/1169476
 	g benef_issfam = inst_4 == "4"
 		replace benef_issfam = benef_issfam - benef_pemex
-	g benef_imssbien = 1 // inst_5 == "5"
 	if `aniope' == 2014 {
 		g benef_otros = inst_5 == "5"
 	}
 	else {
 		g benef_otros = inst_6 == "6"
 	}
-	replace benef_imssbien = 0 if benef_imss == 1 | benef_issste == 1 | benef_pemex == 1 | benef_issfam == 1 | benef_otros == 1
+	g benef_imssbien = 1 // inst_5 == "5"
+	replace benef_imssbien = 0 if benef_imss != 0 | benef_issste != 0 | benef_pemex != 0 | benef_issfam != 0 | benef_otros != 0
 
 	/** 4.1.1 Ajuste con las estadisticas oficiales **
 	tabstat benef_imss benef_issste benef_pemex benef_imssprospera benef_seg_pop ///
@@ -482,6 +484,7 @@ quietly {
 	local benef_nna = `Salud'[1,8]
 
 
+	************************
 	** 4.2 IMSS-Bienestar **
 	capture confirm scalar imssbien
 	if _rc == 0 {
@@ -538,14 +541,13 @@ quietly {
 	** 4.2.1 Scalars **
 	scalar imssbienPIB = `imssbien'/`PIB'*100
 
-	** 4.2.2 Asignación de gasto en variable **
-	replace Salud = Salud + scalar(imssbien)*benef_imssbien
 
 
-	** 4.4 Secretaría de Salud **
+	*****************************
+	** 4.3 Secretaría de Salud **
 	capture confirm scalar ssa
 	if _rc == 0 {
-		local ssa = scalar(ssa)*`benef_imssbien'
+		local ssa = scalar(ssa)*`benef_ssa'
 	}
 	else {
 		preserve
@@ -559,18 +561,17 @@ quietly {
 
 		PEF if anio == `aniope' & divCIEP == 9 & divSIM != 5, anio(`aniope') by(ramo) min(0) nographs
 		local ssa = r(Salud)+`incorpo'+`adeusal'+`caneros'-`segpop0'-`fortaINSABI'-`atencINSABI'
-		scalar ssa = `ssa'/`benef_imssbien'
+		scalar ssa = `ssa'/`benef_ssa'
 		restore
 	}
 
-	** 4.4.1 Scalars **
+	** 4.3.1 Scalars **
 	scalar ssaPIB = `ssa'/`PIB'*100
 
-	** 4.4.2 Asignación de gasto en variable **
-	replace Salud = Salud + scalar(ssa)*benef_imssbien
 
 
-	** 4.5 IMSS (salud) **
+	**********************
+	** 4.4 IMSS (salud) **
 	capture confirm scalar imss
 	if _rc == 0 {
 		local imss = scalar(imss)*`benef_imss'
@@ -585,14 +586,13 @@ quietly {
 		restore
 	}
 
-	** 4.5.1 Scalars **
+	** 4.4.1 Scalars **
 	scalar imssPIB = `imss'/`PIB'*100
 
-	** 4.5.2 Asignación de gasto en variable **
-	replace Salud = Salud + scalar(imss)*benef_imss
 
 
-	** 4.6 ISSSTE Federal (salud) **
+	********************************
+	** 4.5 ISSSTE Federal (salud) **
 	capture confirm scalar issste
 	if _rc == 0 {
 		local issste = scalar(issste)*`benef_issste'
@@ -607,14 +607,13 @@ quietly {
 		restore
 	}
 
-	** 4.6.1 Scalars **
+	** 4.5.1 Scalars **
 	scalar issstePIB = `issste'/`PIB'*100
 
-	** 4.6.2 Asignación de gasto en variable **
-	replace Salud = Salud + scalar(issste)*benef_issste
 
 
-	** 4.7 Pemex (salud) **
+	***********************
+	** 4.6 Pemex (salud) **
 	capture confirm scalar pemex
 	if _rc == 0 {
 		local pemex = scalar(pemex)*`benef_pemex'
@@ -627,14 +626,13 @@ quietly {
 		restore
 	}
 
-	** 4.7.1 Scalars **
+	** 4.6.1 Scalars **
 	scalar pemexPIB = `pemex'/`PIB'*100
 
-	** 4.7.2 Asignación de gasto en variable **
-	replace Salud = Salud + scalar(pemex)*benef_pemex
 
 
-	** 4.8 ISSFAM (salud) **
+	************************
+	** 4.7 ISSFAM (salud) **
 	capture confirm scalar issfam
 	if _rc == 0 {
 		local issfam = scalar(issfam)*`benef_issfam'
@@ -647,14 +645,13 @@ quietly {
 		restore
 	}
 
-	** 4.8.1 Scalars **
+	** 4.7.1 Scalars **
 	scalar issfamPIB = `issfam'/`PIB'*100
 
-	** 4.8.2 Asignación de gasto en variable **
-	replace Salud = Salud + scalar(issfam)*benef_issfam
 
 
-	** 4.9 Inversión en salud **
+	****************************
+	** 4.8 Inversión en salud **
 	capture confirm scalar invers
 	if _rc == 0 {
 		local invers = scalar(invers)*`Salud'[1,1]
@@ -667,19 +664,51 @@ quietly {
 		restore
 	}
 
-	** 4.9.1 Scalars **
+	** 4.8.1 Scalars **
 	scalar inversPIB = `invers'/`PIB'*100
 
-	** 4.9.2 Asignación de gasto en variable **
+	** 4.8.2 Asignación de gasto en variable **
 	replace Salud = Salud + scalar(invers)*benef_ssa
+	replace Salud = Salud + scalar(issfam)*benef_issfam
+	replace Salud = Salud + scalar(pemex)*benef_pemex
+	replace Salud = Salud + scalar(issste)*benef_issste
+	replace Salud = Salud + scalar(imss)*benef_imss
+	replace Salud = Salud + scalar(ssa)*benef_ssa
+	replace Salud = Salud + scalar(imssbien)*benef_imssbien
+
+	/* Iteraciones *
+	egen Saludhog = sum(Salud), by(folioviv foliohog)
+	local salto = 2
+	forvalues iter=1(1)25 {
+		noisily di in w "`iter' " _cont
+		forvalues edades=0(`salto')109 {
+			forvalues sexos=1(1)2 {
+				capture tabstat Salud [fw=factor] if (edad >= `edades' & edad <= `edades'+`salto'-1) & sexo == `sexos', stat(mean) f(%20.0fc) save
+				if _rc != 0 {
+					local valor = 0
+				}
+				else {
+					local valor = r(StatTotal)[1,1]
+				}
+				replace Salud = `valor' if (edad >= `edades' & edad <= `edades'+`salto'-1) & sexo == `sexos'
+			}
+		}
+		egen equivalencia = sum(Salud), by(folioviv foliohog)
+		replace Salud = Saludhog*Salud/equivalencia
+		drop equivalencia
+	}
+	replace Salud = 0 if Salud == .
+	noisily Perfiles Salud [fw=factor], reboot aniope(2022)
 
 
-	** 4.10 Total SALUD **
+	********************/
+	** 4.9 Total SALUD **
 	scalar saludPIB = ssaPIB+imssbienPIB+imssPIB+issstePIB+pemexPIB+issfamPIB+inversPIB
 	scalar salud = saludPIB/100*`PIB'/`benef_ssa'
 
 
-	** 4.11 Resultados **
+	*********************
+	** 4.10 Resultados **
 	noisily di _newline(2) in g "{bf: B. Salud CIEP}"
 	noisily di _newline in g "{bf:  Gasto por instituci{c o'}n" ///
 		_col(33) %15s in g "Asegurados" ///
@@ -687,7 +716,7 @@ quietly {
 		_col(60) %10s in g "Per c{c a'}pita (MXN `aniovp')" "}"
 	noisily di in g _dup(80) "-"
 	noisily di in g "  SSa" ///
-		_col(33) %15.0fc in y `benef_imssbien' ///
+		_col(33) %15.0fc in y `benef_ssa' ///
 		_col(50) %7.3fc in y scalar(ssaPIB) ///
 		_col(60) %15.0fc in y scalar(ssa)
 	noisily di in g "  IMSS-Bienestar" ///
@@ -742,7 +771,7 @@ quietly {
 		if `aniope' == 2024 {
 			local col "N"
 		}
-		putexcel set "$export/Deciles.xlsx", modify sheet("Salud")
+		putexcel set "`c(sysdir_personal)'/users/$id/Deciles.xlsx", modify sheet("Salud")
 		putexcel `col'17 = `=scalar(ssa)+scalar(imssbien)', nformat(number_sep)
 		putexcel `col'18 = `=scalar(imss)', nformat(number_sep)
 		putexcel `col'19 = `=scalar(issste)', nformat(number_sep)

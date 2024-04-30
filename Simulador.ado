@@ -49,7 +49,7 @@ quietly {
 
 
 	** 0.3 Texto introductorio **
-	if "`title'" == "" {
+	if "`notitle'" == "" {
 		local title : variable label `varlist'
 	}
 	local nombre `"`=subinstr("`varlist'","_","",.)'"'
@@ -467,33 +467,6 @@ quietly {
 			in g "  I.C. (95%): " in y "+/-" %7.2fc (r(ub)/r(mean)-1)*100 "%"
 		scalar `varlist'`decil2' = r(mean)
 
-		/*if "$export" != "" {
-			if `aniope' == 2014 {
-				local col = "B"
-			}
-			if `aniope' == 2016 {
-				local col = "C"
-			}
-			if `aniope' == 2018 {
-				local col = "D"
-			}
-			if `aniope' == 2020 {
-				local col = "E"
-			}
-			if `aniope' == 2022 {
-				local col = "F"
-			}
-			if `aniope' == 2024 {
-				local col = "G"
-			}
-			putexcel set "$export/Deciles.xlsx", modify sheet("`varlist'")
-			putexcel A1 = "Decil"
-			putexcel A`j' = "`decil2'"
-			putexcel `col'1 = "`aniope'"
-			putexcel `col'`j' = `=scalar(`varlist'`decil2')', nformat(number_sep)
-			local ++j
-		}*/
-
 		if "$output" == "output" {
 			local incd = "`incd' `=string(`=`varlist'`decil2'',"%10.0f")',"
 		}
@@ -816,12 +789,12 @@ program graphpiramide
 
 		graph combine H`varlist' M`varlist', ///
 			name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)', replace) ycommon xcommon ///
-			title("{bf:`title'}") subtitle("$pais") ///
+			///title("{bf:`title'}") subtitle("$pais") ///
 			///title("`title' {bf:profile}") ///
 			///caption("{bf:Fuente}: Elaborado por el CIEP, con la `base'.") ///
 			///note(`"{bf:Nota}: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n en cada grupo."') ///
 			caption("{bf:Source}: Prepared by CIEP, using data from `base'.") ///
-			note(`"{bf:Note}: Percentages in parentheses show the concentration in each group."')
+			note(`"{bf:Note}: Percentages in parentheses represent each group's share of the total account."')
 	
 		graph save `=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)' `"`c(sysdir_personal)'/SIM/graphs/`varlist'_`titleover'.gph"', replace
 		if "$export" != "" {

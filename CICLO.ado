@@ -12,6 +12,21 @@ quietly {
 	*******************************
 	preserve
 
+    /*if "`=scalar(aniovp)'" == "2022" {
+        local ppp = 9.684
+    }
+    if "`=scalar(aniovp)'" == "2020" {
+        local ppp = 9.813
+    }
+    if "`=scalar(aniovp)'" == "2018" {
+        local ppp = 9.276
+    }
+    if "`=scalar(aniovp)'" == "2016" {
+        local ppp = 8.446
+    }
+    if "`=scalar(aniovp)'" == "2014" {
+        local ppp = 8.045
+    }*/
 
 
 	****************************
@@ -25,7 +40,7 @@ quietly {
 	tempvar varlist2
 	g double `varlist2' = `varlist' `if'
 	
-	collapse (sum) `varlist2' `pob' [`weight' `exp'], by(sexo edad `decil')
+	collapse (sum) `varlist2' `pob' [`weight' `exp'] `if', by(sexo edad `decil')
 	format `varlist2' %20.0fc
 
 
