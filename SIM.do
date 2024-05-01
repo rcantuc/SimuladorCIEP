@@ -21,7 +21,7 @@ cd `"`c(sysdir_personal)'"'
 **  0.2 Opciones globales  **
 ** Agregar o modificar según sea necesario. **
 global id = "ciepmx"                                                // IDENTIFICADOR DEL USUARIO
-global export "`c(sysdir_personal)'/SIM/graphs"                     // DIRECTORIO DE IMÁGENES
+//global export "`c(sysdir_personal)'/SIM/graphs"                     // DIRECTORIO DE IMÁGENES
 //global nographs "nographs"                                          // SUPRIMIR GRAFICAS
 //global update "update"                                            // UPDATE BASES DE DATOS
 global output "output"                                            // ARCHIVO DE SALIDA (WEB)

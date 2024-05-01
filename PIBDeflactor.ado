@@ -36,7 +36,7 @@ quietly {
 
 	** 1.1 Si la opción "update" es llamada, se ejecuta el do-file UpdatePIBDeflactor.do **
 	if "`update'" == "update" {
-		UpdatePIBDeflactor.do
+		UpdatePIBDeflactor
 	}
 
 

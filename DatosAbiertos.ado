@@ -2,7 +2,7 @@ program define DatosAbiertos, return
 quietly {
 
 	** 0.1 Revisa si se puede usar la base de datos **
-	capture use "SIM/DatosAbiertos.dta", clear
+	capture use "`c(sysdir_personal)'/SIM/DatosAbiertos.dta", clear
 	if _rc != 0 {
 		UpdateDatosAbiertos
 	}
@@ -19,6 +19,9 @@ quietly {
 
 	syntax [anything] [if] [, NOGraphs PIBVP(real -999) PIBVF(real -999) UPDATE DESDE(real 1993) REVERSE]
 
+	if "`update'" == "update" {
+		UpdateDatosAbiertos, update
+	}
 
 
 	***********************
@@ -33,9 +36,9 @@ quietly {
 	save "`PIB'"
 
 	** 1.2 Datos Abiertos (Estadísticas Oportunas) **
-	use if clave_de_concepto == "`anything'" using "SIM/DatosAbiertos.dta", clear
+	use if clave_de_concepto == "`anything'" using "`c(sysdir_personal)'/SIM/DatosAbiertos.dta", clear
 	if "`anything'" == "" {
-		use "SIM/DatosAbiertos.dta", clear
+		use "`c(sysdir_personal)'/SIM/DatosAbiertos.dta", clear
 		exit
 	}
 	if `=_N' == 0 {
@@ -45,7 +48,6 @@ quietly {
 	if "`reverse'" == "reverse" {
 		replace monto = -monto
 	}
-
 	tsset aniomes
 	sort aniomes
 	local last_anio = anio[_N]
@@ -323,7 +325,7 @@ program define UpdateDatosAbiertos, return
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 	local mesvp = substr(`"`=trim("`fecha'")'"',6,2)
 
-	capture use "SIM/DatosAbiertos.dta", clear
+	capture use "`c(sysdir_personal)'/SIM/DatosAbiertos.dta", clear
 	if (_rc == 0 & "`update'" != "update") {	
 		sort anio mes
 		return local ultanio = anio[_N]
@@ -648,10 +650,10 @@ program define UpdateDatosAbiertos, return
 	compress
 
 	if `c(version)' > 13.1 {
-		saveold "SIM/DatosAbiertos.dta", replace version(13)
+		saveold "`c(sysdir_personal)'/SIM/DatosAbiertos.dta", replace version(13)
 	}
 	else {
-		save "SIM/DatosAbiertos.dta", replace
+		save "`c(sysdir_personal)'/SIM/DatosAbiertos.dta", replace
 	}
 
 	noisily di in g "{c U'}ltimo dato: " in y "`=anio[_N]'m`=mes[_N]'."
