@@ -17,7 +17,7 @@ quietly {
 	}
 
 	** 1.2 Base SHRFSP **
-	capture confirm file `"SIM/SHRFSP.dta"'
+	capture confirm file `"`c(sysdir_personal)'/SIM/SHRFSP.dta"'
 	if _rc != 0 {
 		noisily UpdateSHRFSP
 	}
@@ -27,7 +27,7 @@ quietly {
 	****************
 	**# 2 SYNTAX ***
 	****************
-	use in 1 using `"SIM/SHRFSP.dta"', clear
+	use in 1 using `"`c(sysdir_personal)'/SIM/SHRFSP.dta"', clear
 	syntax [if] [, ANIO(int `aniovp' ) DEPreciacion(int 5) NOGraphs UPDATE Base ///
 		 ULTAnio(int 1993)]
 	
@@ -46,7 +46,7 @@ quietly {
 	}
 
 	** 2.4 Bases RAW **
-	use `if' using `"SIM/SHRFSP.dta"', clear
+	use `if' using `"`c(sysdir_personal)'/SIM/SHRFSP.dta"', clear
 	if "`base'" == "base" {
 		exit
 	}
@@ -247,7 +247,7 @@ quietly {
 			region(margin(zero))) ///
 			name(shrfsp, replace)
 
-		graph save shrfsp `"SIM/graphs/shrfsp.gph"', replace
+		graph save shrfsp `"`c(sysdir_personal)'/SIM/graphs/shrfsp.gph"', replace
 		capture confirm existence $export
 		if _rc == 0 {
 			graph export "$export/shrfsp.png", replace name(shrfsp)
@@ -292,7 +292,7 @@ quietly {
 			region(margin(zero))) ///
 			name(shrfsppc, replace)
 
-		graph save shrfsppc `"SIM/graphs/shrfsppc.gph"', replace
+		graph save shrfsppc `"`c(sysdir_personal)'/SIM/graphs/shrfsppc.gph"', replace
 		capture confirm existence $export
 		if _rc == 0 {
 			graph export "$export/shrfsppc.png", replace name(shrfsppc)
@@ -988,9 +988,9 @@ program define UpdateSHRFSP
 	* Guardar *
 	compress
 	if `c(version)' > 13.1 {
-		saveold `"SIM/SHRFSP.dta"', replace version(13)
+		saveold `"`c(sysdir_personal)'/SIM/SHRFSP.dta"', replace version(13)
 	}
 	else {
-		save `"SIM/SHRFSP.dta"', replace
+		save `"`c(sysdir_personal)'/SIM/SHRFSP.dta"', replace
 	}
 end
