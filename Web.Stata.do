@@ -319,7 +319,7 @@ label var Transferencias "transferencias públicas"
 capture drop AportacionesNetas
 g AportacionesNetas = ImpuestosAportaciones - Transferencias
 label var AportacionesNetas "aportaciones netas"
-noisily Simulador AportacionesNetas [fw=factor], reboot aniovp(2024) aniope(`=anioPE') $nographs //boot(20)
+noisily Perfiles AportacionesNetas [fw=factor], reboot aniovp(2024) aniope(`=anioPE') $nographs //boot(20)
 
 
 ** 3.4 (*) Cuentas generacionales **

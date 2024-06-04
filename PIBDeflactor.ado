@@ -924,7 +924,7 @@ program define UpdatePIBDeflactor
 			local graphtitle ""
 			local graphfuente ""
 		}
-		twoway (bar pibPO aniotrimestre, mlabel(pibPO) mlabposition(7) mlabangle(90) mlabcolor(white) mlabgap(0pt)) ///
+		twoway (connected pibPO aniotrimestre, mlabel(pibPO) mlabposition(6) mlabangle(90) mlabcolor(black) mlabgap(0pt) lpattern(dot)) ///
 			if pibPO != ., ///
 			title("`graphtitle'") ///
 			ytitle("PIB/Población ocupada (`=currency[`obsvp']' `aniofinal')") xtitle("") ///

@@ -71,7 +71,7 @@ quietly {
 			local obsvp = `k'		
 		}
 	}
-	local lastexo = anio[_N]
+	local lastexo = anio[`obsvp']
 	local obsfin = _N
 
 
@@ -197,12 +197,13 @@ quietly {
 	if "`nographs'" != "nographs" & "$nographs" == "" {
 
 		** % del PIB **
-		tempvar shrfsp_pib interno externo
+		tempvar shrfsp_pib interno externo interno_label
 		g `shrfsp_pib' = shrfsp/pibY*100
 		g `externo' = shrfspExterno/1000000000000/deflator
 		g `interno' = `externo' + shrfspInterno/1000000000000/deflator
+		g `interno_label' = shrfspInterno/1000000000000/deflator
 		format `shrfsp_pib' %7.1fc
-		format `interno' `externo' %10.1fc
+		format `interno' `externo' `interno_label' %10.1fc
 
 		if `"$export"' == "" {
 			local graphtitle "{bf:Saldo hist{c o'}rico de RFSP}"
@@ -218,20 +219,20 @@ quietly {
 		matrix `rango' = r(StatTotal)
 
 		twoway (bar `interno' anio if mes == 12, ///
-				mlabel(`interno') mlabsize(vsmall) mlabposition(12) mlabangle(0) mlabcolor("114 113 118") barwidth(.75)) ///
+				mlabel(`interno_label') mlabsize(small) mlabposition(6) mlabangle(0) mlabcolor("114 113 118") barwidth(.75)) ///
 			(bar `externo' anio if mes == 12, ///
-				barwidth(.75)) ///
+				mlabel(`externo') mlabsize(small) mlabposition(6) mlabangle(0) mlabcolor("114 113 118") barwidth(.75)) ///
 			(bar `interno' anio if mes != 12, ///
-				mlabel(`interno') mlabsize(vsmall) mlabpositio(12) mlabangle(0) mlabcolor("114 113 118") pstyle(p1) barwidth(.1)) ///
+				mlabel(`interno_label') mlabsize(small) mlabpositio(6) mlabangle(0) mlabcolor("114 113 118") pstyle(p1) barwidth(.75) fintensity(50) lcolor(%7)) ///
 			(bar `externo' anio if mes != 12, ///
-				pstyle(p2) barwidth(.1)) ///
+				mlabel(`externo') mlabsize(small) mlabpositio(6) mlabangle(0) mlabcolor("114 113 118") pstyle(p2) barwidth(.75) fintensity(50) lcolor(%7)) ///
 			(connected `shrfsp_pib' anio if mes == 12, ///
-				yaxis(2) mlabel(`shrfsp_pib') mlabposition(12) mlabcolor("114 113 118") pstyle(p3) mlabsize(vsmall)) ///
+				yaxis(2) mlabel(`shrfsp_pib') mlabposition(12) mlabcolor("114 113 118") pstyle(p3) mlabsize(small)) ///
 			(connected `shrfsp_pib' anio if mes != 12, ///
-				yaxis(2) mlabel(`shrfsp_pib') mlabposition(12) mlabcolor("114 113 118") pstyle(p3) mlabsize(vsmall) lpattern(dot) msize(small)) ///
+				yaxis(2) mlabel(`shrfsp_pib') mlabposition(12) mlabcolor("114 113 118") pstyle(p3) mlabsize(small) lpattern(dot) msize(small)) ///
 			if `externo' != . & anio >= `ultanio', ///
 			title(`graphtitle') ///
-			subtitle("Monto reportado (billones `currency' `aniovp') y como % del PIB") ///
+			///subtitle("Monto reportado (billones `currency' `aniovp') y como % del PIB") ///
 			caption("`graphfuente'") ///
 			ylabel(none, format(%15.0fc) labsize(small)) ///
 			ylabel(none, format(%10.0fc) labsize(small) axis(2)) ///
@@ -241,9 +242,10 @@ quietly {
 			ytitle("", axis(2)) ///
 			xtitle("") ///
 			xlabel(`ultanio'(1)`lastexo', noticks) ///	
-			legend(on position(6) rows(1) order(1 2) ///
-			label(1 `"Interno (`=string(`interno'[`obsvp']/(`interno'[`obsvp']+`externo'[`obsvp'])*100,"%7.1fc")'% en `=anio[`obsvp']')"') ///
-			label(2 `"Externo (`=string(`externo'[`obsvp']/(`interno'[`obsvp']+`externo'[`obsvp'])*100,"%7.1fc")'% en `=anio[`obsvp']')"') ///
+			legend(on position(6) rows(1) order(1 2 5) ///
+			label(1 `"Interno (billones `currency' `=anio[`obsvp']')"') ///
+			label(2 `"Externo (billones `currency' `=anio[`obsvp']')"') ///
+			label(5 `"Saldo (% del PIB)"') ///
 			region(margin(zero))) ///
 			name(shrfsp, replace)
 
@@ -263,20 +265,20 @@ quietly {
 		matrix `rango' = r(StatTotal)
 
 		twoway (bar `interno' anio if mes == 12, ///
-				mlabel(`interno') mlabsize(vsmall) mlabposition(12) mlabangle(0) mlabcolor("114 113 118") barwidth(.75)) ///
+				mlabel(`interno_label') mlabsize(small) mlabposition(6) mlabangle(0) mlabcolor("114 113 118") barwidth(.75)) ///
 			(bar `externo' anio if mes == 12, ///
-				barwidth(.75)) ///
+				mlabel(`externo') mlabsize(small) mlabposition(6) mlabangle(0) mlabcolor("114 113 118") barwidth(.75)) ///
 			(bar `interno' anio if mes != 12, ///
-				mlabel(`interno') mlabsize(vsmall) mlabpositio(12) mlabangle(0) mlabcolor("114 113 118") pstyle(p1) barwidth(.1)) ///
+				mlabel(`interno_label') mlabsize(small) mlabpositio(6) mlabangle(0) mlabcolor("114 113 118") pstyle(p1) barwidth(.75) fintensity(50) lcolor(%7)) ///
 			(bar `externo' anio if mes != 12, ///
-				pstyle(p2) barwidth(.1)) ///
+				mlabel(`externo') mlabsize(small) mlabposition(6) mlabangle(0) mlabcolor("114 113 118") pstyle(p2) barwidth(.75) fintensity(50) lcolor(%7)) ///
 			(connected `shrfsp_pc' anio if mes == 12, ///
-				yaxis(2) mlabel(`shrfsp_pc') mlabposition(12) mlabcolor("114 113 118") pstyle(p3) mlabsize(vsmall)) ///
+				yaxis(2) mlabel(`shrfsp_pc') mlabposition(12) mlabcolor("114 113 118") pstyle(p3) mlabsize(small)) ///
 			(connected `shrfsp_pc' anio if mes != 12, ///
-				yaxis(2) mlabel(`shrfsp_pc') mlabposition(12) mlabcolor("114 113 118") pstyle(p3) mlabsize(vsmall) lpattern(dot) msize(small)) ///
+				yaxis(2) mlabel(`shrfsp_pc') mlabposition(12) mlabcolor("114 113 118") pstyle(p3) mlabsize(small) lpattern(dot) msize(small)) ///
 			if `externo' != . & anio >= `ultanio', ///
 			title(`graphtitle') ///
-			subtitle("Monto reportado (billones `currency' `aniovp') y por persona (miles `currency' `aniovp')") ///
+			///subtitle("Monto reportado (billones `currency' `aniovp') y por persona (miles `currency' `aniovp')") ///
 			caption("`graphfuente'") ///
 			ylabel(none, format(%15.0fc) labsize(small)) ///
 			ylabel(none, format(%10.0fc) labsize(small) axis(2)) ///
@@ -286,9 +288,10 @@ quietly {
 			ytitle("", axis(2)) ///
 			xtitle("") ///
 			xlabel(`ultanio'(1)`lastexo', noticks) ///	
-			legend(on position(6) rows(1) order(1 2) ///
-			label(1 `"Interno (`=string(`interno'[`obsvp']/(`interno'[`obsvp']+`externo'[`obsvp'])*100,"%7.1fc")'% en `=anio[`obsvp']')"') ///
-			label(2 `"Externo (`=string(`externo'[`obsvp']/(`interno'[`obsvp']+`externo'[`obsvp'])*100,"%7.1fc")'% en `=anio[`obsvp']')"') ///
+			legend(on position(6) rows(1) order(1 2 5) ///
+			label(1 `"Interno (billones `currency' `=anio[`obsvp']')"') ///
+			label(2 `"Externo (billones `currency' `=anio[`obsvp']')"') ///
+			label(5 `"Saldo (miles `currency' `=anio[`obsvp']' por persona)"') ///
 			region(margin(zero))) ///
 			name(shrfsppc, replace)
 
@@ -340,24 +343,26 @@ quietly {
 		g `costodeudaPIB' = `costodeudaTot'/pibY*100
 		format `costodeudaTot' %5.1fc
 
-		twoway (connected tasaEfectiva anio if mes == 12, ///
-				mlabel(tasaEfectiva) mlabsize(vsmall) mlabposition(12) mlabcolor("114 113 118")) ///
-			(connected tasaEfectiva anio if mes != 12, ///
-				mlabel(tasaEfectiva) msize(small) mlabsize(vsmall) mlabposition(12) mlabcolor("114 113 118") lpattern(dot)) ///
-			(bar `costodeudaTot' anio if mes == 12, ///
-				yaxis(2) mlabel(`costodeudaTot') mlabsize(vsmall) mlabposition(12) mlabcolor("114 113 118") pstyle(p1) lwidth(none) barwidth(.75)) ///
+		twoway (bar `costodeudaTot' anio if mes == 12, ///
+				yaxis(2) mlabel(`costodeudaTot') mlabsize(small) mlabposition(6) mlabcolor("114 113 118") pstyle(p1) lwidth(none) barwidth(.75)) ///
 			(bar `costodeudaTot' anio if mes != 12, ///
-				yaxis(2) mlabel(`costodeudaTot') mlabsize(vsmall) mlabposition(12) mlabcolor("114 113 118") pstyle(p2) lwidth(none) barwidth(.1)) ///
+				yaxis(2) mlabel(`costodeudaTot') mlabsize(small) mlabposition(6) mlabcolor("114 113 118") pstyle(p1) lwidth(none) barwidth(.75) fintensity(50) lcolor(%7)) ///
+			(connected tasaEfectiva anio if mes == 12, ///
+				mlabel(tasaEfectiva) mlabsize(vsmall) mlabposition(12) mlabcolor("114 113 118") pstyle(p3)) ///
+			(connected tasaEfectiva anio if mes != 12, ///
+				mlabel(tasaEfectiva) msize(small) mlabsize(vsmall) mlabposition(12) mlabcolor("114 113 118") pstyle(p3) lpattern(dot)) ///
 			if tasaInterno != . & anio >= `ultanio', ///
 			title("{bf:Costo de la deuda pública}") ///
-			subtitle("Costo financiero (billones `currency' `aniovp') y tasa de interés efectiva (costo/saldo*100)") /**/ ///
+			///subtitle("Costo financiero (billones `currency' `aniovp') y tasa de interés efectiva (costo/saldo*100)") /**/ ///
 			ylabel(none, format(%15.0fc) labsize(small)) ///
 			ylabel(none, format(%15.0fc) labsize(small) axis(2)) ///
 			yscale(range(0) noline) ///
 			yscale(range(0 3) axis(2) noline) ///
 			ytitle("") ///
 			ytitle("", axis(2)) ///
-			legend(off position(6) rows(1) order(1 2 3 4) region(margin(zero))) ///
+			legend(position(6) rows(1) order(1 3) region(margin(zero)) ///
+			label(1 "Costo financiero (billones `currency' `aniovp')") ///
+			label(3 "Tasa de inter{c e'}s efectiva (costo/saldo*100)")) ///
 			xlabel(`ultanio'(1)`lastexo') xtitle("") ///
 			name(tasasdeinteres, replace) ///
 			///note("{bf:{c U'}ltimo dato}: `aniofin'm`mesfin'") ///

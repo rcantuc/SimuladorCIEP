@@ -1,9 +1,5 @@
 **/users/**
 **/SIM/**
-**/bases/INEGI/**
-**/bases/SHCP/**
-**/bases/SAT/**
-**/bases/PEFs/**
-**/bases/CONAPO/**
+**/v6/**
 .DS_Store
 Icon?

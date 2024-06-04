@@ -20,7 +20,7 @@ margin 		graph               medlarge
 // margin   legend			none
 // margin   label 			none
 // margin   textbox			none
-
+margin heading medium
 
 // Background
 color 		background          white
@@ -66,7 +66,7 @@ yesno 		note_span           no
 
 textboxstyle	t1title			body
 textboxstyle	t2title			small_body
-textboxstyle	b1title			body
+textboxstyle	b1title			subheading
 textboxstyle	b2title			small_body
 
 

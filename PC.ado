@@ -6,6 +6,26 @@ quietly {
 	capture di _newline in y "  PC.ado"
 
 
+    /*if "`=scalar(aniovp)'" == "2022" {
+        local ppp = 9.684
+    }
+    if "`=scalar(aniovp)'" == "2020" {
+        local ppp = 9.813
+    }
+    if "`=scalar(aniovp)'" == "2018" {
+        local ppp = 9.276
+    }
+    if "`=scalar(aniovp)'" == "2016" {
+        local ppp = 8.446
+    }
+    if "`=scalar(aniovp)'" == "2014" {
+        local ppp = 8.045
+    }*/
+
+
+	tempvar varlist2
+	g double `varlist2' = `varlist' /* / `ppp' */ `if'
+
 
 	**********************
 	*** 1. Recaudacion ***
@@ -15,7 +35,7 @@ quietly {
 
 	** 1.1 Recaudacion total **
 	tempname REC
-	capture tabstat `varlist' [`weight' = `exp'] `if', stat(sum) f(%20.2fc) save
+	capture tabstat `varlist2' [`weight' = `exp'] `if', stat(sum) f(%20.2fc) save
 	if _rc == 0 {
 		matrix `REC' = r(StatTotal)
 	}
@@ -32,7 +52,7 @@ quietly {
 	else {
 		local ifm = "if sexo == 2"
 	}
-	capture tabstat `varlist' [`weight' = `exp'] `ifm', stat(sum) f(%20.2fc) save
+	capture tabstat `varlist2' [`weight' = `exp'] `ifm', stat(sum) f(%20.2fc) save
 	if _rc == 0 {
 		matrix `RECM' = r(StatTotal)
 	}
@@ -47,7 +67,7 @@ quietly {
 	else {
 		local ifh = "if sexo == 1"
 	}
-	capture tabstat `varlist' [`weight' = `exp'] `ifh', stat(sum) f(%20.2fc) save
+	capture tabstat `varlist2' [`weight' = `exp'] `ifh', stat(sum) f(%20.2fc) save
 	if _rc == 0 {
 		matrix `RECH' = r(StatTotal)
 	}
@@ -64,7 +84,7 @@ quietly {
 	else {
 		local if0_18 = "if edad <= 18"
 	}
-	capture tabstat `varlist' [`weight' = `exp'] `if0_18', stat(sum) f(%20.2fc) save
+	capture tabstat `varlist2' [`weight' = `exp'] `if0_18', stat(sum) f(%20.2fc) save
 	if _rc == 0 {
 		matrix `REC0_18' = r(StatTotal)
 	}
@@ -79,7 +99,7 @@ quietly {
 	else {
 		local if19_64 = "if edad > 18 & edad < 65"
 	}
-	capture tabstat `varlist' [`weight' = `exp'] `if19_64', stat(sum) f(%20.2fc) save
+	capture tabstat `varlist2' [`weight' = `exp'] `if19_64', stat(sum) f(%20.2fc) save
 	if _rc == 0 {
 		matrix `REC19_64' = r(StatTotal)
 	}
@@ -94,7 +114,7 @@ quietly {
 	else {
 		local if65 = "if edad >= 65"
 	}
-	capture tabstat `varlist' [`weight' = `exp'] `if65', stat(sum) f(%20.2fc) save
+	capture tabstat `varlist2' [`weight' = `exp'] `if65', stat(sum) f(%20.2fc) save
 	if _rc == 0 {
 		matrix `REC65' = r(StatTotal)
 	}

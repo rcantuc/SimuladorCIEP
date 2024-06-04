@@ -524,7 +524,7 @@ foreach categ in categ categ_iva categ_ieps {
 		merge 1:m (folioviv foliohog) using "`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/`enighanio'/poblacion.dta", nogen keepus(numren edad sexo)
 		merge 1:1 (folioviv foliohog numren) using `gastoindividuos', nogen keepus(*_ind* proporcion*)
 		merge m:1 (folioviv foliohog) using "`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/`enighanio'/concentrado.dta", nogen keepus(factor)
-		*merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/perfiles`enighanio'.dta", nogen keepus(decil ingbrutotot)
+		merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/perfiles`enighanio'.dta", nogen keepus(decil ingbrutotot)
 		sort folioviv foliohog numren
 		egen tot_integ = count(edad), by(folioviv foliohog)
 
@@ -532,7 +532,7 @@ foreach categ in categ categ_iva categ_ieps {
 		** 3.4 Gasto per cápita **
 		noisily di in g `"`categs'"'
 		foreach k of local categs {
-		//foreach k in Salu {
+		*foreach k in Salu {
 			local k = strtoname("`k'")
 			foreach vars in gas_ cant_ {
 				if "`vars'" == "gas_" {
@@ -558,12 +558,12 @@ foreach categ in categ categ_iva categ_ieps {
 				tempvar `vars'pc_`k'
 				g ``vars'pc_`k'' = `vars'pc_`k' + `vars'ind`k'
 				label var ``vars'pc_`k'' "`title' en `k' (original)"
-				//noisily Perfiles ``vars'pc_`k'' [fw=factor], reboot aniope(2022)
+				noisily Perfiles ``vars'pc_`k'' [fw=factor], reboot aniope(2022)
 
 				* Iteraciones *
 				noisily di in y "`k': " _cont
 				local salto = 2
-				forvalues iter=1(1)25 {
+				forvalues iter=1(1)5 {
 					noisily di in w "`iter' " _cont
 					forvalues edades=0(`salto')109 {
 						forvalues sexos=1(1)2 {
@@ -581,10 +581,10 @@ foreach categ in categ categ_iva categ_ieps {
 					replace `vars'pc_`k' = `vars'hog`k'*`vars'pc_`k'/equivalencia`k'
 					drop equivalencia`k'
 				}
-				replace `vars'pc_`k' = 0 if `vars'pc_`k' == .
+				//replace `vars'pc_`k' = 0 if `vars'pc_`k' == .
 				//replace `vars'pc_`k' = `vars'pc_`k' + `vars'ind`k'
 				//noisily Simulador `vars'pc_`k' [fw=factor], reboot aniope(2022)
-				//noisily Perfiles `vars'pc_`k' [fw=factor], reboot aniope(2022) title(Gasto per cápita en `k')
+				noisily Perfiles `vars'pc_`k' [fw=factor], reboot aniope(2022) title(Gasto per cápita en `k')
 			}
 			noisily di
 		}

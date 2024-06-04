@@ -14,7 +14,7 @@ noisily di _newline(2) in g "   MODULO: " in y "IVA"
 ** Microsimulacion **
 *********************
 PIBDeflactor, nog nooutput
-keep if anio == 2022 | anio == aniovp
+keep if anio == 2022 | anio == scalar(anioPE)
 local lambda = lambda[1]
 local deflator = deflator[1]
 local pibY = pibY[_N]

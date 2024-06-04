@@ -149,11 +149,11 @@ if "$output" != "" {
 		%8.1f scalar(IEPSP)/ConHogPIB*100 "," /// IEPS (petrolero) - 10
 		%8.1f scalar(IMPORT)/ConHogPIB*100 "," /// Importaciones - 11
 		%8.1f ((IVA)+scalar(ISAN)+scalar(IEPSNP)+scalar(IEPSP)+scalar(IMPORT))/ConHogPIB*100 "," /// Total Impuestos al consumo - 12
-		%8.1f scalar(IMSS)/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 "," /// IMSS - 13
-		%8.1f scalar(ISSSTE)/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 "," /// ISSSTE - 14
-		%8.1f scalar(FMP)/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 "," /// FMP - 15
-		%8.1f scalar(PEMEX)/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 "," /// Pemex - 16
-		%8.1f scalar(CFE)/(IMSS+ISSSTE+FMP+PEMEX+CFE)*100 "," /// CFE - 17
+		%8.1f scalar(IMSS)/(CapIncImpPIB)*100 "," /// IMSS - 13
+		%8.1f scalar(ISSSTE)/(CapIncImpPIB)*100 "," /// ISSSTE - 14
+		%8.1f scalar(FMP)/(CapIncImpPIB)*100 "," /// FMP - 15
+		%8.1f scalar(PEMEX)/(CapIncImpPIB)*100 "," /// Pemex - 16
+		%8.1f scalar(CFE)/(CapIncImpPIB)*100 "," /// CFE - 17
 		%8.1f (scalar(IMSS)+scalar(ISSSTE)+scalar(FMP)+scalar(PEMEX)+scalar(CFE))/CapIncImpPIB*100 /// Total Organismos y Empresas - 18
 		"]"
 	noisily di in w "ISRTASA: [" ///

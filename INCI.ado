@@ -21,10 +21,10 @@ quietly {
 	egen `miembros' = count(`exp'), by(`folio')
 	if "`if'" != "" {
 		g hog = `=substr("`if'",3,.)'
-		replace hog = hog/`miembros'
+		*replace hog = hog/`miembros'
 	}
 	else {
-		g hog = 1/`miembros'
+		g hog = 1 // 1/`miembros'
 	}
 
     /*if "`=scalar(aniovp)'" == "2022" {
@@ -43,8 +43,9 @@ quietly {
         local ppp = 8.045
     }*/
 
+
 	tempvar varlist2
-	g double `varlist2' = `varlist' `if'
+	g double `varlist2' = `varlist' /* / `ppp' */ `if'
 
 	collapse (sum) `varlist2' hog `relativo' [`weight' = `exp'], by(`n')
 
