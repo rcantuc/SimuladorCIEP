@@ -4,41 +4,33 @@
 ***        ver: SIM.md          ***
 ***                             ***
 ***********************************
-noisily run "profile.do"							// PERFIL DE USUARIO
-
-
-****************************
-** 0.1 Rutas de archivos  **
-** Agregar o modificar según sea necesario. **
-if "`c(username)'" == "ricardo" ///										// iMac Ricardo
-	sysdir set PERSONAL "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
-if "`c(username)'" == "ciepmx" & "`c(console)'" == "" ///				// Servidor CIEP
-	sysdir set PERSONAL "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
-cd `"`c(sysdir_personal)'"'
+noisily run "`c(sysdir_personal)'/profile.do"                           // PERFIL DE USUARIO
 
 
 *****************************
-**  0.2 Opciones globales  **
+**  0.1 Opciones globales  **
 ** Agregar o modificar según sea necesario. **
 global id = "ciepmx"                                                // IDENTIFICADOR DEL USUARIO
 //global export "`c(sysdir_personal)'/SIM/graphs"                     // DIRECTORIO DE IMÁGENES
 //global nographs "nographs"                                          // SUPRIMIR GRAFICAS
 //global update "update"                                            // UPDATE BASES DE DATOS
-global output "output"                                            // ARCHIVO DE SALIDA (WEB)
+//global output "output"                                            // ARCHIVO DE SALIDA (WEB)
 
 
-************************
-** 0.3 Crear carpetas **
-capture mkdir `"`c(sysdir_personal)'/users/"'
-capture mkdir `"`c(sysdir_personal)'/users/$id/"'
+
+****************************
+** 0.2 Rutas de archivos  **
+** Agregar o modificar según sea necesario. **
+if "`c(username)'" == "ricardo" ///                                 // iMac Ricardo
+	sysdir set PERSONAL "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
+else if "`c(username)'" == "ciepmx" & "`c(console)'" == "" ///      // Servidor CIEP
+	sysdir set PERSONAL "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
+else ///                                                            // Web
+	sysdir set PERSONAL "/SIM/OUT/6/"
 
 
-**********************************
-** 0.4 Archivo output.txt (web) **
-if "$output" != "" {
-	quietly log using `"`c(sysdir_personal)'/users/$id/output.txt"', replace text name(output)
-	quietly log off output
-}
+
+
 
 
 
@@ -64,7 +56,7 @@ if "$output" != "" {
 ******************
 ** 1.2 Economía **
 ** 1.2.1 Parámetros: Crecimiento anual del Producto Interno Bruto **
-global pib2024 = 2.591
+global pib2024 = 3.051 //2.591
 global pib2025 = 2.5007
 global pib2026 = 2.4779
 global pib2027 = 2.5
@@ -72,7 +64,7 @@ global pib2028 = 2.5
 global pib2029 = 2.5002
 
 ** 1.2.2 Parámetros: Crecimiento anual del índice de precios implícitos **
-global def2024 = 4.1
+global def2024 = 5.0 //4.1
 global def2025 = 3.9
 global def2026 = 3.5
 global def2027 = 3.5
@@ -106,8 +98,8 @@ global inf2029 = 3.0
 * Inputs: LIFs + Estadísticas Oportunas. Archivo: LIFs.xlsx.
 * Outputs: Bases de datos con ingresos, gastos y deuda para todos los años.
 * Fuentes. SHCP, Estadísticas Oportunas. Ver archivos "UpdateLIF.do".
-//noisily LIF, by(divCIEP) rows(1) min(0) anio(`=anioPE') $update desde(2018)
-
+noisily LIF if divPE == 3 | divPE == 9, by(divCIEP) rows(1) anio(`=anioPE') $update desde(2000) min(0) title(" ")
+exit
 * 1.3.2 Presupuesto de Egresos de la Federación **
 * Inputs: Cuentas Públicas y PEF/PPEF (varios años). Archivos: CPXXXX.xlsx, PEFXXXX.xlsx o PPEFXXXX.xlsx.
 * Outputs: Bases de datos con gastos ejercidos/aprobados/proyectados para todos los años.
@@ -129,7 +121,7 @@ global inf2029 = 3.0
 forvalues anio = `=anioPE'(2)`=anioPE' {
 	capture confirm file "`c(sysdir_personal)'/SIM/perfiles`anio'.dta"
 	if _rc != 0 ///
-		noisily run "PerfilesSim.do" `anio'
+		noisily do "PerfilesSim.do" `anio'
 }
 
 
@@ -142,23 +134,23 @@ forvalues anio = `=anioPE'(2)`=anioPE' {
 
 ******************************
 ** 2.1 Parámetros: Ingresos **
-scalar ISRAS       =   3.691 // *(1+ r(EISRAS)*(${pib2023}-${pib2023_0})/100)) 		// ISR (asalariados)
-scalar ISRPF       =   0.234 // *(1+ r(EISRPF)*(${pib2023}-${pib2023_0})/100)) 		// ISR (personas f{c i'}sicas)
+scalar ISRAS       =   3.691*1.014 // *(1+ r(EISRAS)*(${pib2023}-${pib2023_0})/100)) 		// ISR (asalariados)
+scalar ISRPF       =   0.234*1.014 // *(1+ r(EISRPF)*(${pib2023}-${pib2023_0})/100)) 		// ISR (personas f{c i'}sicas)
 scalar CUOTAS      =   1.578 // *(1+ r(ECUOTAS)*(${pib2023}-${pib2023_0})/100)) 	// Cuotas (IMSS)
 
-scalar FMP         =   0.894 // *(1+ r(EFMP)*(${pib2023}-${pib2023_0})/100)) 		// Fondo Mexicano del Petróleo
-scalar PEMEX       =   2.194 // *(1+ r(EPEMEX)*(${pib2023}-${pib2023_0})/100)) 		// Organismos y empresas (Pemex)
+scalar FMP         =   0.894*1.1 // *(1+ r(EFMP)*(${pib2023}-${pib2023_0})/100)) 		// Fondo Mexicano del Petróleo
+scalar PEMEX       =   2.194*1.1 // *(1+ r(EPEMEX)*(${pib2023}-${pib2023_0})/100)) 		// Organismos y empresas (Pemex)
 scalar CFE         =   1.317 // *(1+ r(ECFE)*(${pib2023}-${pib2023_0})/100)) 		// Organismos y empresas (CFE)
 scalar IMSS        =   0.125 // *(1+ r(EIMSS)*(${pib2023}-${pib2023_0})/100)) 		// Organismos y empresas (IMSS)
 scalar ISSSTE      =   0.157 // *(1+ r(EISSSTE)*(${pib2023}-${pib2023_0})/100)) 	// Organismos y empresas (ISSSTE)
 
-scalar ISRPM       =   4.063 // *(1+ r(EISRPM)*(${pib2023}-${pib2023_0})/100)) 		// ISR (personas morales)
+scalar ISRPM       =   4.063*1.014 // *(1+ r(EISRPM)*(${pib2023}-${pib2023_0})/100)) 		// ISR (personas morales)
 scalar OTROSK      =   1.043 // *(1+ r(EOTROSK)*(${pib2023}-${pib2023_0})/100)) 	// Productos, derechos, aprovech.
 
-scalar IVA         =   3.921 // *(1+ r(EIVA)*(${pib2023}-${pib2023_0})/100)) 		// IVA
-scalar ISAN        =   0.057 // *(1+ r(EISAN)*(${pib2023}-${pib2023_0})/100)) 		// ISAN
-scalar IEPSNP      =   0.683 // *(1+ r(EIEPSNP)*(${pib2023}-${pib2023_0})/100))		// IEPS (no petrolero)
-scalar IEPSP       =   1.345 // IEPS (petrolero): 0.662
+scalar IVA         =   3.921*1.014 // *(1+ r(EIVA)*(${pib2023}-${pib2023_0})/100)) 		// IVA
+scalar ISAN        =   0.057*1.014 // *(1+ r(EISAN)*(${pib2023}-${pib2023_0})/100)) 		// ISAN
+scalar IEPSNP      =   0.683*1.014 // *(1+ r(EIEPSNP)*(${pib2023}-${pib2023_0})/100))		// IEPS (no petrolero)
+scalar IEPSP       =   1.345*1.014 // IEPS (petrolero): 0.662
 scalar IMPORT      =   0.301 // *(1+ r(EIMPORT)*(${pib2023}-${pib2023_0})/100))		// Importaciones
 
 *******************************/
@@ -190,7 +182,7 @@ scalar invers      =     255 //    Inversión en salud
 
 *******************************
 ** 2.4 Parámetros: Pensiones **
-scalar pam         =    9286 //    Pensión Bienestar
+scalar pam         =   38172 //    Pensión Bienestar
 scalar penimss     =  279557 //    Pensión IMSS
 scalar penisss     =  362409 //    Pensión ISSSTE
 scalar penpeme     =  822902 //    Pensión Pemex
@@ -211,7 +203,7 @@ scalar gascosdeue  =    1349 //    Gasto en costo de la deuda (energía)
 scalar gasinfra    =    4263 //    Gasto en Otras Inversiones
 scalar gasotros    =    4750 //    Otros gastos
 scalar gasfeder    =   10185 //    Participaciones y Otras aportaciones
-scalar gascosto    =    8539 //    Gasto en Costo de la deuda
+scalar gascosto    =    8539*.9730 //    Gasto en Costo de la deuda
 
 ***********************************
 ** 2.7 Parámetros: Transferencas **
@@ -257,11 +249,11 @@ matrix	SE =  (0.01,			1768.96*12,		407.02*12		\    /// 1
 
 * Artículo 151, último párrafo (LISR) *
 *            Ex. SS.MM.	Ex. 	% ing. gravable		% Informalidad PF	% Informalidad Salarios
-matrix DED = (5,				15,					57.79, 				42.82*0)
+matrix DED = (5,				15,					50.95, 				52.76)
 
 * Artículo 9, primer párrafo (LISR) * 
 *           Tasa ISR PM.	% Informalidad PM
-matrix PM = (30,			21.59)
+matrix PM = (30,			16.16)
 
 ***********************************
 ** 2.9 Parámetros: IMSS e ISSSTE **
@@ -303,18 +295,19 @@ if "`cambioisrpf'" == "" {
 * Inputs: Archivo "`c(sysdir_personal)'/SIM/perfiles`=anioPE'.dta" o "`c(sysdir_site)'/users/$pais/$id/households.dta"
 * Outputs: Archivo "`c(sysdir_site)'/users/$pais/$id/households.dta" actualizado más scalar IVA.
 matrix IVAT = (16 \     ///  1  Tasa general 
-	1  \     ///  2  Alimentos, input[1]: Tasa Cero, [2]: Exento, [3]: Gravado
-	2  \     ///  3  Alquiler, idem
-	1  \     ///  4  Canasta basica, idem
-	2  \     ///  5  Educacion, idem
+	1+2  \     ///  2  Alimentos, input[1]: Tasa Cero, [2]: Exento, [3]: Gravado
+	2+1  \     ///  3  Alquiler, idem
+	1+2  \     ///  4  Canasta basica, idem
+	2+1  \     ///  5  Educacion, idem
 	3  \     ///  6  Consumo fuera del hogar, idem
 	3  \     ///  7  Mascotas, idem
-	1  \     ///  8  Medicinas, idem
-	1  \     ///  9  Toallas sanitarias, idem
+	1+2  \     ///  8  Medicinas, idem
+	1+2  \     ///  9  Toallas sanitarias, idem
 	3  \     /// 10  Otros, idem
-	2  \     /// 11  Transporte local, idem
+	2+1  \     /// 11  Transporte local, idem
 	3  \     /// 12  Transporte foraneo, idem
 	28.22)   //  13  Evasion e informalidad IVA, input[0-100]
+
 if "`cambioiva'" == "1" {
 	noisily run "IVA_Mod.do"
 	noisily di "IVA Anterior: " _col(20) %7.3fc scalar(IVA) " % PIB"
@@ -353,7 +346,8 @@ matrix IEPST = (26.5	,		0 			\ /// Cerveza y alcohol 14
 *********************************/
 ** 2.12 Integración de módulos ***
 noisily TasasEfectivas, anio(`=anioPE')
-noisily GastoPC, aniope(`=anioPE') aniovp(2024)
+exit
+noisily GastoPC, aniope(`=anioPE') aniovp(`=aniovp')
 
 
 
@@ -364,8 +358,8 @@ noisily GastoPC, aniope(`=anioPE') aniovp(2024)
 ******************************
 use `"`c(sysdir_personal)'/users/$id/ingresos.dta"', clear
 merge 1:1 (folioviv foliohog numren) using "users/$id/gastos.dta", nogen
-capture merge 1:1 (folioviv foliohog numren) using "users/$id/isr_mod.dta", nogen replace update keepus(ISRAS ISRPF ISRPM CUOTAS)
-capture merge 1:1 (folioviv foliohog numren) using "users/$id/iva_mod.dta", nogen replace update keepus(IVA)
+*capture merge 1:1 (folioviv foliohog numren) using "users/$id/isr_mod.dta", nogen replace update keepus(ISRAS ISRPF ISRPM CUOTAS)
+*capture merge 1:1 (folioviv foliohog numren) using "users/$id/iva_mod.dta", nogen replace update keepus(IVA)
 
 **************************************
 ** 3.1 (+) Impuestos y aportaciones **
@@ -373,13 +367,11 @@ capture drop ImpuestosAportaciones
 egen ImpuestosAportaciones = rsum(IVA FMP ISRAS ISRPF CUOTAS ISRPM OTROSK IVA IEPSNP IEPSP ISAN IMPORT) //
 label var ImpuestosAportaciones "impuestos y aportaciones"
 
-
 **************************************
 ** 3.2 (-) Impuestos y aportaciones **
 capture drop Transferencias
 egen Transferencias = rsum(Educación Pensiones Educación Salud IngBasico Pensión_AM Otras_inversiones) // 
 label var Transferencias "transferencias públicas"
-
 
 ********************************
 ** 3.3 (=) Aportaciones netas **
@@ -388,11 +380,9 @@ g AportacionesNetas = ImpuestosAportaciones - Transferencias
 label var AportacionesNetas "Aportaciones netas"
 noisily Perfiles AportacionesNetas [fw=factor], reboot aniovp(2024) aniope(`=anioPE') $nographs //boot(10)
 
-
 ************************************
 ** 3.4 (*) Cuentas generacionales **
 //noisily CuentasGeneracionales AportacionesNetas, anio(`=anioPE') discount(7)
-
 
 ***************************************
 ** 3.5 (*) Sankey del sistema fiscal **
@@ -412,7 +402,7 @@ foreach k in decil grupoedad /*sexo rural escol*/ {
 * Inputs: LIFs + Estadísticas Oportunas. Archivo: SHRFSP.dta.
 * Outputs: Base de datos con SHRFSP para todos los años.
 * Fuentes. SHCP, Estadísticas Oportunas. Ver archivo "UpdateSHRFSP.do".
-scalar tasaEfectiva = 6.4111
+scalar tasaEfectiva = 6.3858
 
 scalar shrfsp2024 = 50.2
 scalar shrfspInterno2024 = 38.8

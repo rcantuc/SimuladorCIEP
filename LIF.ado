@@ -1,12 +1,12 @@
 program define LIF, return
+timer on 4
 quietly {
 
-	timer on 4
-	***********************
-	*** 1 BASE DE DATOS ***
-	***********************
+	*****************
+	*** 0. INICIO ***
+	*****************
 
-	** 1.1 Anio valor presente **
+	** 0.1 Anio valor presente **
 	capture confirm scalar aniovp
 	if _rc == 0 {
 		local aniovp = scalar(aniovp)
@@ -16,7 +16,7 @@ quietly {
 		local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 	}
 
-	** 1.2 Base LIF **
+	** 0.2 Base LIF **
 	capture confirm file "`c(sysdir_personal)'/SIM/$pais/LIF.dta"
 	if _rc != 0 {
 		noisily UpdateLIF
@@ -25,14 +25,48 @@ quietly {
 
 
 	***************
-	*** 2 SYNTAX **
+	*** 1 SYNTAX **
 	***************
+	noisily di _newline(2) in g _dup(20) "." "{bf:   Sistema Fiscal:" in y " INGRESOS `anio'   }" in g _dup(20) "."
 	use in 1 using "`c(sysdir_personal)'/SIM/$pais/LIF.dta", clear
-	syntax [if] [, ANIO(int `aniovp' ) UPDATE NOGraphs Base ID(string) ///
-		MINimum(real 0.5) DESDE(int `=`aniovp'-1') ILIF LIF EOFP BY(varname) ROWS(int 2) COLS(int 5) ///
-		TITle(string) SUBTITle(string)]
+	syntax [if] [, ANIO(int `aniovp' ) BY(varname) ///
+		UPDATE NOGraphs Base ///
+		MINimum(real 0.5) DESDE(int -1) ///
+		ILIF LIF EOFP ///
+		ROWS(int 1) COLS(int 5) ///
+		TITle(string)]
 
-	noisily di _newline(2) in g _dup(20) "." "{bf:   Sistema Fiscal:" in y " INGRESOS $pais `anio'   }" in g _dup(20) "."
+	* 1.1 Valor año mínimo *
+	if `desde' == -1 {
+		local desde = `anio'-10
+	}
+
+	* 1.2 Títulos y fuentes *
+	if "`title'" == "" {
+		local graphtitle "{bf:Ingresos presupuestarios}"
+		local graphfuente "Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP y $paqueteEconomico."
+	}
+	else {
+		local graphtitle "`title'"
+		local graphfuente ""
+	}
+
+	** 1.3 Base RAW **
+	if "`base'" == "base" {
+		use `if' using "`c(sysdir_personal)'/SIM/$pais/LIF.dta", clear
+		exit
+	}
+
+	** 1.4 Valor default `by' **
+	if "`by'" == "" {
+		local by = "divPE"
+	}
+
+
+
+	****************
+	*** 2. DATOS ***
+	****************
 
 	** 2.1 PIB + Deflactor **
 	PIBDeflactor, anio(`anio') nographs nooutput `update'
@@ -52,7 +86,7 @@ quietly {
 	if "`update'" == "update" {
 		capture confirm file "`c(sysdir_personal)'/SIM/DatosAbiertos.dta"
 		if _rc != 0 | "`update'" == "update" {
-			UpdateDatosAbiertos
+			DatosAbiertos, update
 			local updated = r(updated)
 			local ultanio = r(ultanio)
 			local ultmes = r(ultmes)
@@ -70,41 +104,22 @@ quietly {
 		noisily UpdateLIF
 	}
 
-	** 2.4 Base RAW **
-	use `if' using "`c(sysdir_personal)'/SIM/$pais/LIF.dta", clear
-	if "`base'" == "base" {
-		exit
-	}
-
-	** 2.5 Default `by' **
-	if "`by'" == "" {
-		local by = "divCIEP"
-	}
-
 
 
 	***************
 	*** 3 Merge ***
 	***************
-	sort anio
-	merge m:1 (anio) using `PIB', nogen keepus(pibY indiceY deflator lambda var_pibY) update replace keep(matched) sorted
-	
-	capture sort anio mes
-	capture keep `if'
-
-
+	use "`c(sysdir_personal)'/SIM/$pais/LIF.dta", clear
+	drop if nombre == ""
+	sort anio mes
+	merge m:1 (anio) using `PIB', nogen keepus(pibY indiceY deflator lambda var_pibY) update replace keep(matched)
 	local aniofirst = anio[1]
 	local aniolast = anio[_N]
 
-	capture tabstat mes if anio == `aniolast', stat(max) save
-	tempname MLast
-	matrix `MLast' = r(StatTotal)
-	if `MLast'[1,1] != . {
-		local meslast = "m`=`MLast'[1,1]'"
-	}
-
 	** 3.1 Utilizar LIF o ILIF **
-	capture replace recaudacion = LIF if mes < 12
+	if "`lif'" == "" {}
+		replace recaudacion = monto/acum_prom if mes < 12 & divLIF != 10
+	}
 	if "`eofp'" == "eofp" {
 		replace recaudacion = monto if mes < 12
 	}
@@ -114,13 +129,18 @@ quietly {
 	foreach k of varlist recaudacion monto LIF ILIF {
 		g double `k'PIB = `k'/pibY*100
 	}
+	g double recaudacionR = recaudacion/deflator
+	egen double recaudacionTOT = sum(recaudacion), by(anio)
 	format *PIB %10.3fc
+	format recaudacionR recaudacionTOT %20.0fc
 
 
 
-	***************
-	*** 4 Graph ***
-	***************
+	******************
+	*** 4 RESUMIDO ***
+	******************
+	capture keep `if'
+	keep if anio >= `desde'-1
 	tempvar resumido recaudacionPIB
 	g resumido = `by'
 
@@ -131,7 +151,7 @@ quietly {
 	label values resumido label
 
 	egen `recaudacionPIB' = max(recaudacionPIB) /*if anio >= 2010*/, by(`by')
-	replace resumido = 999 if abs(`recaudacionPIB') < `minimum' //& divCIEP != 15 | recaudacionPIB == . | recaudacionPIB == 0
+	replace resumido = 999 if abs(`recaudacionPIB') < `minimum' //| recaudacionPIB == . | recaudacionPIB == 0 //& divCIEP != 15 
 	label define label 999 `"< `=string(`minimum',"%5.1fc")'% PIB"', add modify
 
 	capture replace nombre = subinstr(nombre,"Impuesto especial sobre producci{c o'}n y servicios de ","",.)
@@ -139,11 +159,8 @@ quietly {
 	capture replace nombre = subinstr(nombre,"/","_",.)
 	
 
-
 	********************
 	** 4. Display LIF **
-
-	** 4.1 Division `by' **
 	noisily di _newline in g "{bf: A. Ingresos presupuestarios (`by')}" ///
 		_newline ///
 		_col(30) in g %20s "`currency'" ///
@@ -194,6 +211,8 @@ quietly {
 
 	return scalar `=strtoname("Ingresos totales")' = `mattot'[1,1]
 
+
+	***************************
 	** 4.2 Division Resumido **
 	noisily di _newline in g "{bf: B. Ingresos presupuestarios (divResumido)}" ///
 		_newline ///
@@ -202,14 +221,11 @@ quietly {
 		_col(61) %7s "% Real"
 
 	preserve
-	g by = `by'
-	collapse (sum) recaudacion* if divLIF != 10, by(anio pibY deflator resumido)
+	collapse (sum) recaudacion recaudacionPIB recaudacionR (max) recaudacionTOT pibY deflator if divLIF != 10, by(anio resumido)
 	reshape wide recaudacion*, i(anio) j(resumido)
 	reshape long
 
-	tempvar recreal
-	g `recreal' = recaudacion/deflator
-	capture tabstat `recreal' if anio == `desde', by(resumido) stat(sum) f(%20.1fc) save
+	capture tabstat recaudacionR if anio == `desde', by(resumido) stat(sum) f(%20.1fc) save
 	if _rc == 0 {
 		tempname sindeudatotpre
 		matrix `sindeudatotpre' = r(StatTotal)
@@ -264,6 +280,7 @@ quietly {
 	return scalar Ingresos_sin_deudaC = (`sindeudatot'[1,1]/`sindeudatotpre'[1,1]-1)*100
 
 
+	**********************
 	** 4.3 Crecimientos **
 	noisily di _newline in g "{bf: C. Cambios:" in y " `desde' - `anio'" in g " (% PIB)}" ///
 		_newline ///
@@ -319,14 +336,14 @@ quietly {
 	}
 	restore
 
-	** 4.4 Elasticidades **/
+
+	***********************
+	** 4.4 Elasticidades **
 	noisily di _newline in g "{bf: D. Elasticidades:" in y " `desde' - `anio'}" in g ///
 		_newline ///
 		_col(33) %7s "%G" ///
 		_col(43) %7s "%G pibR" ///
 		_col(52) %7s "Elastic"
-
-	g recaudacionR = recaudacion/deflator
 
 	tabstat recaudacionR recaudacionPIB if anio == `anio' & divLIF != 10, by(resumido) stat(sum) f(%20.3fc) save missing
 	tempname mattot
@@ -368,7 +385,6 @@ quietly {
 				_col(52) in y %7.3fc (((`mattot'[1,1]/`mattot5'[1,1])^(1/(`=`anio'-`desde''))-1)*100)/ ///
 				(((`pibYR`anio''/`pibYR`desde'')^(1/(`=`anio'-`desde''))-1)*100) "}"
 	}
-	drop recaudacionR
 
 
 
@@ -409,18 +425,23 @@ quietly {
 	matrix `ieps'5 = r(Stat5)
 	return scalar Fosiles = `ieps'5[1,1]
 
+
+
+	*******************
+	*** 5. Gráficos ***
+	*++****++++++++++**
 	if "`nographs'" != "nographs" & "$nographs" == "" {
 		*preserve
 
 		* Normalizar valores a billones *
-		replace recaudacion=recaudacion/deflator/1000000000000
-		replace monto=monto/deflator/1000000000000
-		replace LIF=LIF/deflator/1000000000000
+		*replace recaudacion=recaudacion/deflator/1000000000000
+		*replace monto=monto/deflator/1000000000000
+		*replace LIF=LIF/deflator/1000000000000
 
-		collapse (sum) recaudacion* if divLIF != 10 & anio >= `desde', by(anio resumido)
+		collapse (sum) recaudacion recaudacionR recaudacionPIB (max) recaudacionTOT pibY deflator if anio >= `desde', by(anio resumido)
 		levelsof resumido, local(lev_resumido)
 		label values resumido label
-		
+
 		* Ciclo para poner los paréntesis (% del total) en el legend *
 		tabstat recaudacionPIB if anio == `anio', by(resumido) stat(sum) f(%20.0fc) save
 		tempname SUM
@@ -442,16 +463,11 @@ quietly {
 			replace `recaudacionPIB`k'' = 0 if `recaudacionPIB`k'' == .
 			label var `recaudacionPIB`k'' "`legend`k''"
 
-			egen `connectedTOT`k'' = sum(recaudacion), by(anio)
-			g `connectedPIB`k'' = recaudacion/`connectedTOT`k''*100 if resumido == `k'
-			//replace `connectedPIB`k'' = . if anio != `anio' & anio != `desde'
+			egen `connectedTOT`k'' = sum(recaudacionR), by(anio)
+			g `connectedPIB`k'' = recaudacionR/`connectedTOT`k''*100 if resumido == `k'
 			format `recaudacionPIB`k'' `connectedPIB`k'' %7.1fc
 
-			local extras = `"`extras' (area `recaudacionPIB`k'' anio if anio <= `anio' & resumido == `k', mlabpos(0) mlabcolor("114 113 118") mlabsize(vsmall) lpattern(dot) msize(small) mlabel(`recaudacionPIB`k'')) "'
-
-			local extras2 = `"`extras2' (connected `connectedPIB`k'' anio if anio <= `anio', mlabpos(12) mlabcolor("114 113 118") mlabsize(small) mlabel(`connectedPIB`k'')) "'
-
-			*local gr_edit`totlev' `"gr_edit .legend.plotregion1.key[`totlev'].xsz.editstyle `=`SUM`totlev''[1,1]/`SUM'[1,1]*100'"'
+			local extras = `"`extras' (bar `recaudacionPIB`k'' anio if anio <= `anio' & resumido == `k', mlabpos(6) mlabcolor("114 113 118") mlabsize(medium) lpattern(dot) msize(medlarge)) "'
 		}
 		local legend `"`legend' label(`=`totlev'+1' "Recaudación total")"'
 		
@@ -461,66 +477,28 @@ quietly {
 		gsort -anio -recaudacion
 		forvalues k=1(1)`=_N'{
 			if anio[`k'] == `anio' {
-			*	local order "`order' `=`ordervar'[`k']'"
+				local order "`order' `=`ordervar'[`k']'"
 			}
 		}
+		sort anio resumido
 
-		* Ciclo para los texto totales *
-		tabstat recaudacion recaudacionPIB, stat(sum) by(anio) save
-		local j = 100/(`anio'-`desde'+1)/2
-		forvalues k=1(1)`=`anio'-`desde'+1' {
-			if anio[`k'] >= `desde' & anio[`k'] <= `anio' {
-				tempname TOT`k'
-				matrix `TOT`k'' = r(Stat`k')
-				local text `"`text' `=`TOT`k''[1,1]*1.005' `j' "{bf:`=string(`TOT`k''[1,2],"%7.1fc")'% PIB}""'
-				local j = `j' + 100/(`anio'-`desde'+1)
-			}
-		}
-
-		if "`title'" == "" {
-			local graphtitle "{bf:Ingresos presupuestarios}"
-			local graphfuente "Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP y $paqueteEconomico."
-		}
-		else {
-			local graphtitle "`title'"
-			local graphfuente ""
-		}
-
-		tempvar recaudacionbar
-		g `recaudacionbar' = recaudacion //if anio == `anio' | anio == `desde'
+		tempvar recaudacionbar recaudacionline recaudacionby
+		g `recaudacionbar' = recaudacionR
 		replace `recaudacionbar' = 0 if `recaudacionbar' == .
-		format recaudacion* `recaudacionbar' %15.1fc
 
-		//graph bar `recaudacionbar', ///
-		//	over(resumido, sort(1) descending) over(anio, gap(30)) ///
-		//	stack asyvars percentages blabel(bar, format(%7.1fc)) outergap(0) ///
-		twoway `extras2', ///aspectratio(4) ///
-			xtitle("") ///
-			xlabel(`desde'(1)`anio') ///
-			subtitle("Distribución, como % de la recaudación") ///
-			///subtitle(billones MXN `aniovp') ///
-			///note("Nota: Porcentajes entre par{c e'}ntesis son con respecto al total de `anio'.") ///
-			///bar(4, color(40 173 58)) bar(1, color(255 55 0)) ///
-			///bar(2, color(255 129 0)) ///
-			///text(`text', color(black) placement(n) size(vsmall)) ///
-			///text(110 50 "De `desde' a `anio'," "{bf:el PIB creció `=string(((`pibYR`anio''/`pibYR`desde'')^(1/(`=`anio'-`desde''))-1)*100,"%7.1fc")'%}," "en promedio, cada año.", placement(12) size(small) justification(center)) ///
-			///ytitle("billones `currency' `anio'") ///
-			ylabel(none, format(%15.1fc) labsize(small)) ///
-			yscale(range(0 100)) ///
-			legend(on position(6) rows(`rows') cols(`cols') `legend' region(margin(zero)) /*symxsize(5)*/ symysize(6) width(250) order(`order') justification(left)) ///
-			name(ingresosMXN`by', replace)
-
-		foreach k of local lev_resumido {
-			//`gr_edit`k''
-			//`gr_edit2`k''
-		}
+		egen `recaudacionby' = sum(recaudacion), by(anio)
+		g `recaudacionline' = `recaudacionby'/recaudacionTOT*100
+		format recaudacion* `recaudacionbar' `recaudacionline' `recaudacionby' %15.1fc
 
 		* Información agregada *
 		egen recaudacionPIBTOT = sum(recaudacionPIB), by(anio)
 		format recaudacionPIBTOT %7.1fc
 
+
+		***********
+		** Texto **
 		* Máximo *
-		tabstat recaudacionPIBTOT, stat(max) by(anio) save
+		tabstat recaudacionPIBTOT `recaudacionline', stat(max) by(anio) save
 		tempname maxPIBTOT
 		matrix `maxPIBTOT' = r(StatTotal)
 
@@ -543,34 +521,37 @@ quietly {
 		}
 
 		twoway `extras' ///
-			(connected recaudacionPIBTOT anio if anio <= `anio', ///
-				mlabel(recaudacionPIBTOT) mlabpos(12) mlabcolor("114 113 118") mlabsize(small) lpattern(dot) msize(small)) ///
-			, ///aspectratio(.25) ///
-		///graph bar recaudacionPIB if anio <= `anio', ///
-		///	over(resumido, sort(1) descending) over(anio, gap(30)) ///
-		///	stack asyvars blabel(bar, format(%7.1fc)) outergap(0) ///
+			(connected `recaudacionline' anio if resumido == resumido[1], mlabpos(12) mlabcolor("114 113 118") mlabsize(medium) mlabel(`recaudacionline') lpattern(dot) yaxis(2)) ///
+			(connected recaudacionPIBTOT anio if resumido == resumido[1], mlabpos(12) mlabcolor("114 113 118") mlabsize(medium) mlabel(recaudacionPIBTOT) lpattern(dot)) ///
+			if anio <= `anio', ///
+			///over(resumido, sort(1) descending) over(anio, gap(30)) ///
+			///stack asyvars blabel(bar, format(%7.1fc)) outergap(0) ///
 			name(ingresos`by'PIB, replace) ///
+			title("`graphtitle'") ///
 			yscale(range(0 `=`maxPIBTOT'[1,1]*1.25')) ///
+			yscale(range(-50 `=`maxPIBTOT'[1,2]*1.1') axis(2) noline) ///
 			ylabel(none, format(%7.1fc) labsize(small)) ///
+			ylabel(none, axis(2)) ///
 			xlabel(`desde'(1)`anio') ///
 			xtitle("") ///
 			ytitle("") ///
-			subtitle("Recaudación, como % del PIB") ///
-			legend(on position(6) rows(`rows') cols(`cols') `legend' region(margin(zero)) /*symxsize(5)*/ symysize(6) width(250) order(`order') justification(left)) ///
+			ytitle("", axis(2)) ///
+			///subtitle("Recaudación, como % del PIB") ///
+			legend(on position(6) rows(`rows') cols(`cols') `legend' region(margin(zero)) order(`order') justification(left)) ///
 			/// Added text 
-			xline(`desde', lcolor("114 113 118") lpattern(dot)) ///
-			xline(`anio', lcolor("114 113 118") lpattern(dot)) ///
-			text(`=`maxPIBTOT'[1,1]*1.15' `=(`anio'-`desde')/2+`desde'' "De `desde' a `anio'," "{bf:la recaudación `cambio' `=string((`finPIBTOT'[1,1]-`iniPIBTOT'[1,1]),"%7.1fc")'}" "puntos porcentuales del PIB", size(medsmall)) ///
+			text(`=recaudacionPIBTOT[1]' `=anio[1]' "{bf:% PIB}", size(medium) placement(6)) ///
+			text(`=`recaudacionline'[1]' `=anio[1]' "{bf:% LIF}", size(medium) placement(6) yaxis(2)) ///
+			b1title("De `desde' a `anio', la {bf:recaudación `cambio' `=string(abs(`finPIBTOT'[1,1]-`iniPIBTOT'[1,1]),"%7.1fc")'} puntos porcentuales del PIB.")
 
-		grc1leg ///
+		/*grc1leg ///
 		///graph combine ///
 		ingresos`by'PIB ingresosMXN`by' , ///
 			title("{bf:`graphtitle'}") ///
 			caption("Fuente: Elaborado por el CIEP, con informaci{c o'}n de SHCP/EOFP, INEGI/BIE y $paqueteEconomico.") ///
-			name(ingresos`by', replace) xcommon ///
+			name(ingresos`by', replace) xcommon */
 
-		capture window manage close graph ingresosMXN`by'
-		capture window manage close graph ingresos`by'PIB
+		*capture window manage close graph ingresosMXN`by'
+		*capture window manage close graph ingresos`by'PIB
 	
 		if "$export" != "" {
 			graph export "$export/ingresos`by'.png", as(png) name("ingresos`by'") replace
@@ -719,6 +700,7 @@ program define UpdateLIF
 
 	capture order div* nombre serie anio LIF ILIF monto
 	compress
+	sort div* nombre serie anio
 	if `c(version)' > 13.1 {
 		saveold "`c(sysdir_personal)'/SIM/$pais/LIF.dta", replace version(13)
 	}

@@ -64,7 +64,8 @@ quietly {
 		else if `aniope' >= 2016 & `aniope' < 2018 scalar anioenigh = 2016
 		else if `aniope' >= 2014 & `aniope' < 2016 scalar anioenigh = 2014
 		else if `aniope' >= 2012 & `aniope' < 2014 scalar anioenigh = 2012	
-	capture use "`c(sysdir_personal)'/SIM/perfiles`aniope'.dta", clear
+
+	capture confirm file "`c(sysdir_personal)'/SIM/perfiles`aniope'.dta"
 	if _rc != 0 {
 		noisily di _newline in g "Creando base: " in y "/SIM/perfiles`aniope'.dta" ///
 			in g " con " in y "ENIGH " scalar(anioenigh)
@@ -72,7 +73,11 @@ quietly {
 		noisily run `"`c(sysdir_personal)'/PerfilesSim.do"' `aniope'
 	}
 
-	use "`c(sysdir_personal)'/SIM/perfiles`aniope'.dta", clear
+	*capture use "`c(sysdir_personal)'/users/$id/gastos.dta", clear
+	*if _rc != 0 {
+		use "`c(sysdir_personal)'/SIM/perfiles`aniope'.dta", clear
+	*}
+
 	merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/`=anioenigh'/households.dta", nogen keepus(asis_esc tipoesc nivel inst_* ing_jubila jubilado ing_PAM) 
 	capture drop __*
 	tabstat factor, stat(sum) f(%20.0fc) save
@@ -326,69 +331,69 @@ quietly {
 	scalar Educacion = EducacPIB/100*`PIB'/`pobenigh'[1,1]
 
 
-	** 3.11 Resultados **
+	/** 3.11 Resultados **
 	noisily di _newline(2) in g "{bf: A. Educaci{c o'}n CIEP}"
 	noisily di _newline in g "{bf:  Gasto por nivel" ///
-		_col(33) %15s in g "Alumnos" ///
-		_col(50) %7s "% PIB" ///
-		_col(60) %10s in g "Per c{c a'}pita (MXN `aniovp')" "}"
-	noisily di in g _dup(80) "-"
+		_col(32) %15s in g "Alumnos" ///
+		_col(49) %7s "% PIB" ///
+		_col(59) %10s in g "Per c{c a'}pita (MXN `aniovp')" "}"
+	noisily di in g _dup(79) "-"
 	noisily di in g "  Inicial y comunitaria" ///
-		_col(33) %15.0fc in y (`alum_adoles') ///
-		_col(50) %7.3fc in y scalar(iniciaAPIB) ///
-		_col(60) %15.0fc in y scalar(iniciaA)
+		_col(32) %15.0fc in y (`alum_adoles') ///
+		_col(49) %7.3fc in y scalar(iniciaAPIB) ///
+		_col(59) %15.0fc in y scalar(iniciaA)
 	noisily di
 	noisily di in g "  B{c a'}sica" ///
-		_col(33) %15.0fc in y `alum_basica' ///
-		_col(50) %7.3fc in y scalar(basicaPIB) ///
-		_col(60) %15.0fc in y scalar(basica)
+		_col(32) %15.0fc in y `alum_basica' ///
+		_col(49) %7.3fc in y scalar(basicaPIB) ///
+		_col(59) %15.0fc in y scalar(basica)
 	noisily di in g "  Media superior" ///
-		_col(33) %15.0fc in y `alum_medsup' ///
-		_col(50) %7.3fc in y scalar(medsupPIB) ///
-		_col(60) %15.0fc in y scalar(medsup)
+		_col(32) %15.0fc in y `alum_medsup' ///
+		_col(49) %7.3fc in y scalar(medsupPIB) ///
+		_col(59) %15.0fc in y scalar(medsup)
 	noisily di in g "  Superior" ///
-		_col(33) %15.0fc in y `alum_superi' ///
-		_col(50) %7.3fc in y scalar(superiPIB) ///
-		_col(60) %15.0fc in y scalar(superi)
+		_col(32) %15.0fc in y `alum_superi' ///
+		_col(49) %7.3fc in y scalar(superiPIB) ///
+		_col(59) %15.0fc in y scalar(superi)
 	noisily di in g "  Posgrado" ///
-		_col(33) %15.0fc in y `alum_posgra' ///
-		_col(50) %7.3fc in y scalar(posgraPIB) ///
-		_col(60) %15.0fc in y scalar(posgra)
+		_col(32) %15.0fc in y `alum_posgra' ///
+		_col(49) %7.3fc in y scalar(posgraPIB) ///
+		_col(59) %15.0fc in y scalar(posgra)
 	noisily di in g "  Para adultos" ///
-		_col(33) %15.0fc in y `alum_adulto' ///
-		_col(50) %7.3fc in y scalar(eduaduPIB) ///
-		_col(60) %15.0fc in y scalar(eduadu)
+		_col(32) %15.0fc in y `alum_adulto' ///
+		_col(49) %7.3fc in y scalar(eduaduPIB) ///
+		_col(59) %15.0fc in y scalar(eduadu)
 	noisily di in g "  Otros gastos educativos" ///
-		_col(33) %15.0fc in y (`alum_basica'+`alum_medsup'+`alum_superi'+`alum_posgra'+`alum_adulto') ///
-		_col(50) %7.3fc in y scalar(otrosePIB) ///
-		_col(60) %15.0fc in y scalar(otrose)
+		_col(32) %15.0fc in y (`alum_basica'+`alum_medsup'+`alum_superi'+`alum_posgra'+`alum_adulto') ///
+		_col(49) %7.3fc in y scalar(otrosePIB) ///
+		_col(59) %15.0fc in y scalar(otrose)
 	noisily di
 	noisily di in g "  Inversión en educación" ///
-		_col(33) %15.0fc in y (`alum_basica'+`alum_medsup'+`alum_superi'+`alum_posgra'+`alum_adulto') ///
-		_col(50) %7.3fc in y scalar(inverePIB) ///
-		_col(60) %15.0fc in y scalar(invere)
-	noisily di in g _dup(80) "-"
+		_col(32) %15.0fc in y (`alum_basica'+`alum_medsup'+`alum_superi'+`alum_posgra'+`alum_adulto') ///
+		_col(49) %7.3fc in y scalar(inverePIB) ///
+		_col(59) %15.0fc in y scalar(invere)
+	noisily di in g _dup(79) "-"
 	noisily di in g "  {bf:Gasto p{c u'}blico en educación" ///
-		_col(33) %15.0fc in y (`alum_basica'+`alum_medsup'+`alum_superi'+`alum_posgra'+`alum_adulto') ///
-		_col(50) %7.3fc in y scalar(educacPIB) ///
-		_col(60) %15.0fc in y scalar(educacion) "}"
-	noisily di in g _dup(80) "-"
-	noisily di in g "  Cultura, deportes y recreación" ///
-		_col(33) %15.0fc in y (`pobenigh'[1,1]) ///
-		_col(50) %7.3fc in y scalar(culturPIB) ///
-		_col(60) %15.0fc in y scalar(cultur)
+		_col(32) %15.0fc in y (`alum_basica'+`alum_medsup'+`alum_superi'+`alum_posgra'+`alum_adulto') ///
+		_col(49) %7.3fc in y scalar(educacPIB) ///
+		_col(59) %15.0fc in y scalar(educacion) "}"
+	noisily di in g _dup(79) "-"
+	noisily di in g "  Cultura y deportes" ///
+		_col(32) %15.0fc in y (`pobenigh'[1,1]) ///
+		_col(49) %7.3fc in y scalar(culturPIB) ///
+		_col(59) %15.0fc in y scalar(cultur)
 	noisily di in g "  Ciencia y tecnología" ///
-		_col(33) %15.0fc in y (`pobenigh'[1,1]) ///
-		_col(50) %7.3fc in y scalar(investPIB) ///
-		_col(60) %15.0fc in y scalar(invest)
-	noisily di in g _dup(80) "-"
+		_col(32) %15.0fc in y (`pobenigh'[1,1]) ///
+		_col(49) %7.3fc in y scalar(investPIB) ///
+		_col(59) %15.0fc in y scalar(invest)
+	noisily di in g _dup(79) "-"
 	noisily di in g "  {bf:Gasto público total" ///
-		_col(33) %15.0fc in y (`pobenigh'[1,1]) ///
-		_col(50) %7.3fc in y scalar(EducacPIB) ///
-		_col(60) %15.0fc in y scalar(Educacion) "}"
+		_col(32) %15.0fc in y (`pobenigh'[1,1]) ///
+		_col(49) %7.3fc in y scalar(EducacPIB) ///
+		_col(59) %15.0fc in y scalar(Educacion) "}"
 
 
-	** 3.12 Put excel **
+	** 3.12 Put excel **/
 	if "$export" != "" {
 		if `aniope' == 2014 {
 			local col "I"
@@ -675,11 +680,12 @@ quietly {
 	replace Salud = Salud + scalar(imss)*benef_imss
 	replace Salud = Salud + scalar(ssa)*benef_ssa
 	replace Salud = Salud + scalar(imssbien)*benef_imssbien
+	drop if folioviv == "2701076617"							// Eliminar outliers
 
 	/* Iteraciones *
 	egen Saludhog = sum(Salud), by(folioviv foliohog)
 	local salto = 2
-	forvalues iter=1(1)25 {
+	forvalues iter=1(1)0 {
 		noisily di in w "`iter' " _cont
 		forvalues edades=0(`salto')109 {
 			forvalues sexos=1(1)2 {
@@ -711,44 +717,44 @@ quietly {
 	** 4.10 Resultados **
 	noisily di _newline(2) in g "{bf: B. Salud CIEP}"
 	noisily di _newline in g "{bf:  Gasto por instituci{c o'}n" ///
-		_col(33) %15s in g "Asegurados" ///
-		_col(50) %7s "% PIB" ///
-		_col(60) %10s in g "Per c{c a'}pita (MXN `aniovp')" "}"
-	noisily di in g _dup(80) "-"
+		_col(32) %15s in g "Asegurados" ///
+		_col(49) %7s "% PIB" ///
+		_col(59) %10s in g "Per c{c a'}pita (MXN `aniovp')" "}"
+	noisily di in g _dup(79) "-"
 	noisily di in g "  SSa" ///
-		_col(33) %15.0fc in y `benef_ssa' ///
-		_col(50) %7.3fc in y scalar(ssaPIB) ///
-		_col(60) %15.0fc in y scalar(ssa)
+		_col(32) %15.0fc in y `benef_ssa' ///
+		_col(49) %7.3fc in y scalar(ssaPIB) ///
+		_col(59) %15.0fc in y scalar(ssa)
 	noisily di in g "  IMSS-Bienestar" ///
-		_col(33) %15.0fc in y `benef_imssbien' ///
-		_col(50) %7.3fc in y scalar(imssbienPIB) ///
-		_col(60) %15.0fc in y scalar(imssbien)
+		_col(32) %15.0fc in y `benef_imssbien' ///
+		_col(49) %7.3fc in y scalar(imssbienPIB) ///
+		_col(59) %15.0fc in y scalar(imssbien)
 	noisily di in g "  IMSS" ///
-		_col(33) %15.0fc in y `benef_imss' ///
-		_col(50) %7.3fc in y scalar(imssPIB) ///
-		_col(60) %15.0fc in y scalar(imss)
+		_col(32) %15.0fc in y `benef_imss' ///
+		_col(49) %7.3fc in y scalar(imssPIB) ///
+		_col(59) %15.0fc in y scalar(imss)
 	noisily di in g "  ISSSTE" ///
-		_col(33) %15.0fc in y `benef_issste' ///
-		_col(50) %7.3fc in y scalar(issstePIB) ///
-		_col(60) %15.0fc in y scalar(issste)
+		_col(32) %15.0fc in y `benef_issste' ///
+		_col(49) %7.3fc in y scalar(issstePIB) ///
+		_col(59) %15.0fc in y scalar(issste)
 	noisily di in g "  Pemex" ///
-		_col(33) %15.0fc in y `benef_pemex' ///
-		_col(50) %7.3fc in y scalar(pemexPIB) ///
-		_col(60) %15.0fc in y scalar(pemex)
+		_col(32) %15.0fc in y `benef_pemex' ///
+		_col(49) %7.3fc in y scalar(pemexPIB) ///
+		_col(59) %15.0fc in y scalar(pemex)
 	noisily di in g "  ISSFAM" ///
-		_col(33) %15.0fc in y `benef_issfam' ///
-		_col(50) %7.3fc in y scalar(issfamPIB) ///
-		_col(60) %15.0fc in y scalar(issfam)
+		_col(32) %15.0fc in y `benef_issfam' ///
+		_col(49) %7.3fc in y scalar(issfamPIB) ///
+		_col(59) %15.0fc in y scalar(issfam)
 	noisily di
 	noisily di in g "  Inversión en salud" ///
-		_col(33) %15.0fc in y `benef_ssa' ///
-		_col(50) %7.3fc in y scalar(inversPIB) ///
-		_col(60) %15.0fc in y scalar(invers)
-	noisily di in g _dup(80) "-"
+		_col(32) %15.0fc in y `benef_ssa' ///
+		_col(49) %7.3fc in y scalar(inversPIB) ///
+		_col(59) %15.0fc in y scalar(invers)
+	noisily di in g _dup(79) "-"
 	noisily di in g "  {bf:Gasto público total" ///
-		_col(33) %15.0fc in y `benef_ssa' ///
-		_col(50) %7.3fc in y scalar(saludPIB) ///
-		_col(60) %15.0fc in y scalar(salud) "}"
+		_col(32) %15.0fc in y `benef_ssa' ///
+		_col(49) %7.3fc in y scalar(saludPIB) ///
+		_col(59) %15.0fc in y scalar(salud) "}"
 
 	
 	** 4.12 Put excel **
@@ -796,7 +802,7 @@ quietly {
 
 	** 5.1 Pensionados **
 	capture drop pens_*
-	g pens_pam = ing_PAM != 0
+	g pens_pam = /*ing_PAM != 0 &*/ edad >= 65
 	g pens_imss = ing_jubila != 0 & formal == 1 & jubilado == 1
 	g pens_issste = ing_jubila != 0 & formal == 2 & jubilado == 1
 	g pens_pemex = ing_jubila != 0 & formal == 3 & jubilado == 1
@@ -932,41 +938,41 @@ quietly {
 	scalar pensiones = (`pam'+`penimss'+`penisss'+`penpeme'+`penotro')/(`pens_pam'+`pens_imss'+`pens_issste'+`pens_pemex'+`pens_otro')
 
 
-	** 5.7 Resultados **
+	/** 5.7 Resultados **
 	noisily di _newline(2) in g "{bf: C. Pensiones CIEP}"
 	noisily di _newline in g "{bf:  Gasto por instituci{c o'}n" ///
-		_col(33) %15s in g "Pensionados" ///
-		_col(50) %7s "% PIB" ///
-		_col(60) %10s in g "Per c{c a'}pita (MXN `aniovp')" "}"
-	noisily di in g _dup(80) "-"
+		_col(32) %15s in g "Pensionados" ///
+		_col(49) %7s "% PIB" ///
+		_col(59) %10s in g "Per c{c a'}pita (MXN `aniovp')" "}"
+	noisily di in g _dup(79) "-"
 	noisily di in g "  Pensi{c o'}n Adultos Mayores" ///
-		_col(33) %15.0fc in y `pens_pam' ///
-		_col(50) %7.3fc in y scalar(pamPIB) ///
-		_col(60) %15.0fc in y scalar(pam)
+		_col(32) %15.0fc in y `pens_pam' ///
+		_col(49) %7.3fc in y scalar(pamPIB) ///
+		_col(59) %15.0fc in y scalar(pam)
 	noisily di in g "  IMSS" ///
-		_col(33) %15.0fc in y `pens_imss' ///
-		_col(50) %7.3fc in y scalar(penimssPIB) ///
-		_col(60) %15.0fc in y scalar(penimss)
+		_col(32) %15.0fc in y `pens_imss' ///
+		_col(49) %7.3fc in y scalar(penimssPIB) ///
+		_col(59) %15.0fc in y scalar(penimss)
 	noisily di in g "  ISSSTE" ///
-		_col(33) %15.0fc in y `pens_issste' ///
-		_col(50) %7.3fc in y scalar(penisssPIB) ///
-		_col(60) %15.0fc in y scalar(penisss)
+		_col(32) %15.0fc in y `pens_issste' ///
+		_col(49) %7.3fc in y scalar(penisssPIB) ///
+		_col(59) %15.0fc in y scalar(penisss)
 	noisily di in g "  Pemex" ///
-		_col(33) %15.0fc in y `pens_pemex' ///
-		_col(50) %7.3fc in y scalar(penpemePIB) ///
-		_col(60) %15.0fc in y scalar(penpeme)
+		_col(32) %15.0fc in y `pens_pemex' ///
+		_col(49) %7.3fc in y scalar(penpemePIB) ///
+		_col(59) %15.0fc in y scalar(penpeme)
 	noisily di in g "  CFE, LFC, Ferro, ISSFAM" ///
-		_col(33) %15.0fc in y `pens_otro' ///
-		_col(50) %7.3fc in y scalar(penotroPIB) ///
-		_col(60) %15.0fc in y scalar(penotro)
-	noisily di in g _dup(80) "-"
+		_col(32) %15.0fc in y `pens_otro' ///
+		_col(49) %7.3fc in y scalar(penotroPIB) ///
+		_col(59) %15.0fc in y scalar(penotro)
+	noisily di in g _dup(79) "-"
 	noisily di in g "  {bf:Gasto público total" ///
-		_col(33) %15.0fc in y (`pens_pam'+`pens_imss'+`pens_issste'+`pens_pemex'+`pens_otro') ///
-		_col(50) %7.3fc in y (pamPIB+penimssPIB+penisssPIB+penpemePIB+penotroPIB) ///
-		_col(60) %15.0fc in y (`pam'+`penimss'+`penisss'+`penpeme'+`penotro')/(`pens_pam'+`pens_imss'+`pens_issste'+`pens_pemex'+`pens_otro') "}"
+		_col(32) %15.0fc in y (`pens_pam'+`pens_imss'+`pens_issste'+`pens_pemex'+`pens_otro') ///
+		_col(49) %7.3fc in y (pamPIB+penimssPIB+penisssPIB+penpemePIB+penotroPIB) ///
+		_col(59) %15.0fc in y (`pam'+`penimss'+`penisss'+`penpeme'+`penotro')/(`pens_pam'+`pens_imss'+`pens_issste'+`pens_pemex'+`pens_otro') "}"
 
 
-	** 5.8 Put excel **
+	** 5.8 Put excel **/
 	if "$export" != "" {
 		if `aniope' == 2014 {
 			local col "I"
@@ -1097,45 +1103,45 @@ quietly {
 	scalar gasenergia = (gaspemexPIB+gascfePIB+gassenerPIB+gasinverfPIB+gascosdeuePIB)/100*`PIB'/`Energia'[1,1]
 
 
-	** 6.6 Resultados **
+	/** 6.6 Resultados **
 	noisily di _newline(2) in g "{bf: D. Energía CIEP}"
 	noisily di _newline in g "{bf:  Gasto por organismo" ///
-		_col(33) %15s in g "Poblacion" ///
-		_col(50) %7s "% PIB" ///
-		_col(60) %10s in g "Per c{c a'}pita (MXN `aniovp')" "}"
-	noisily di in g _dup(80) "-"
+		_col(32) %15s in g "Poblacion" ///
+		_col(49) %7s "% PIB" ///
+		_col(59) %10s in g "Per c{c a'}pita (MXN `aniovp')" "}"
+	noisily di in g _dup(79) "-"
 	noisily di in g "  CFE" ///
-		_col(33) %15.0fc in y `Energia'[1,1] ///
-		_col(50) %7.3fc in y scalar(gascfePIB) ///
-		_col(60) %15.0fc in y scalar(gascfe)
+		_col(32) %15.0fc in y `Energia'[1,1] ///
+		_col(49) %7.3fc in y scalar(gascfePIB) ///
+		_col(59) %15.0fc in y scalar(gascfe)
 	noisily di in g "  Pemex" ///
-		_col(33) %15.0fc in y `Energia'[1,1] ///
-		_col(50) %7.3fc in y scalar(gaspemexPIB) ///
-		_col(60) %15.0fc in y scalar(gaspemex)
+		_col(32) %15.0fc in y `Energia'[1,1] ///
+		_col(49) %7.3fc in y scalar(gaspemexPIB) ///
+		_col(59) %15.0fc in y scalar(gaspemex)
 	noisily di in g "  SENER y otros" ///
-		_col(33) %15.0fc in y `Energia'[1,1] ///
-		_col(50) %7.3fc in y scalar(gassenerPIB) ///
-		_col(60) %15.0fc in y scalar(gassener)
+		_col(32) %15.0fc in y `Energia'[1,1] ///
+		_col(49) %7.3fc in y scalar(gassenerPIB) ///
+		_col(59) %15.0fc in y scalar(gassener)
 	noisily di 
 	noisily di in g "  Inversión en energía" ///
-		_col(33) %15.0fc in y `Energia'[1,1] ///
-		_col(50) %7.3fc in y scalar(gasinverfPIB) ///
-		_col(60) %15.0fc in y scalar(gasinverf)
+		_col(32) %15.0fc in y `Energia'[1,1] ///
+		_col(49) %7.3fc in y scalar(gasinverfPIB) ///
+		_col(59) %15.0fc in y scalar(gasinverf)
 	noisily di in g "  Costo de la deuda (energía)" ///
-		_col(33) %15.0fc in y `Energia'[1,1] ///
-		_col(50) %7.3fc in y scalar(gascosdeuePIB) ///
-		_col(60) %15.0fc in y scalar(gascosdeue)
-	noisily di in g _dup(80) "-"
+		_col(32) %15.0fc in y `Energia'[1,1] ///
+		_col(49) %7.3fc in y scalar(gascosdeuePIB) ///
+		_col(59) %15.0fc in y scalar(gascosdeue)
+	noisily di in g _dup(79) "-"
 	noisily di in g "  {bf:Gastos público total" ///
-		_col(33) %15.0fc in y `Energia'[1,1] ///
-		_col(50) %7.3fc in y gasenergiaPIB ///
-		_col(60) %15.0fc in y gasenergia "}"
+		_col(32) %15.0fc in y `Energia'[1,1] ///
+		_col(49) %7.3fc in y gasenergiaPIB ///
+		_col(59) %15.0fc in y gasenergia "}"
 
 
 
 
 
-	*****************************
+	****************************/
 	**# 7 Resto de los gastos ***
 	*****************************
 	capture drop discap* mayores_depe primi* cuidados*
@@ -1166,14 +1172,14 @@ quietly {
 
 
 	** Población potencial cuidados **
-	g cuidados_pot = (primi == 1 | discap_2 == 1 | mayores_depe == 1)
+	g cuidados_pot = (primi == 1 | discap_2 == 1 | mayores_depe == 1 | primi_discap == 1)
 	tabstat cuidados_pot [fw=factor], stat(sum) f(%20.0fc) save
 	tempname Resto
 	matrix `Resto' = r(StatTotal)
 
 
 	** Primera infancia de madres trabajadoras **
-	g primi2 = edad < 4 | edad < 6 & discap == 1
+	g primi2 = edad < 4 | (edad < 6 & discap == 1)
 	tabstat primi2 [fw=factor], stat(sum) f(%20.0fc) save
 	tempname MADRES
 	matrix `MADRES' = r(StatTotal)
@@ -1192,6 +1198,7 @@ quietly {
 		restore
 	}
 	scalar gasfederPIB = `gasfeder'/`PIB'*100
+	replace Part_y_otras_Apor = scalar(gasfeder)
 
 
 	** 7.2 Costo financiero de la deuda **
@@ -1283,38 +1290,40 @@ quietly {
 		restore
 	}
 	scalar gasotrosPIB = `gasotros'/`PIB'*100
+	replace Otros_gastos = scalar(gasotros)
+
 	scalar otrosgasPIB = gasfederPIB+gascostoPIB+gasinfraPIB+gasotrosPIB
 	scalar otrosgas = otrosgasPIB/100*`PIB'/`Energia'[1,1]
 
-	* Resultados *
+	/* Resultados *
 	noisily di _newline(2) in g "{bf: E. Otros gastos CIEP}"
 	noisily di _newline in g "{bf:  Gasto por concepto" ///
-		_col(33) %15s in g "Poblacion" ///
-		_col(50) %7s "% PIB" ///
-		_col(60) %10s in g "Per c{c a'}pita (MXN `aniovp')" "}"
-	noisily di in g _dup(80) "-"
+		_col(32) %15s in g "Poblacion" ///
+		_col(49) %7s "% PIB" ///
+		_col(59) %10s in g "Per c{c a'}pita (MXN `aniovp')" "}"
+	noisily di in g _dup(79) "-"
 	noisily di in g "  Otras inversiones" ///
-		_col(33) %15.0fc in y `Energia'[1,1] ///
-		_col(50) %7.3fc in y scalar(gasinfraPIB) ///
-		_col(60) %15.0fc in y gasinfra
+		_col(32) %15.0fc in y `Energia'[1,1] ///
+		_col(49) %7.3fc in y scalar(gasinfraPIB) ///
+		_col(59) %15.0fc in y gasinfra
 	noisily di in g "  Resto de los gastos" ///
-		_col(33) %15.0fc in y `Energia'[1,1] ///
-		_col(50) %7.3fc in y scalar(gasotrosPIB) ///
-		_col(60) %15.0fc in y gasotros
+		_col(32) %15.0fc in y `Energia'[1,1] ///
+		_col(49) %7.3fc in y scalar(gasotrosPIB) ///
+		_col(59) %15.0fc in y gasotros
 	noisily di
 	noisily di in g "  Part y otras Aport" ///
-		_col(33) %15.0fc in y `Energia'[1,1] ///
-		_col(50) %7.3fc in y scalar(gasfederPIB) ///
-		_col(60) %15.0fc in y gasfeder
+		_col(32) %15.0fc in y `Energia'[1,1] ///
+		_col(49) %7.3fc in y scalar(gasfederPIB) ///
+		_col(59) %15.0fc in y gasfeder
 	noisily di in g "  Costo de la deuda (gobierno)" ///
-		_col(33) %15.0fc in y `Energia'[1,1] ///
-		_col(50) %7.3fc in y scalar(gascostoPIB) ///
-		_col(60) %15.0fc in y gascosto
-	noisily di in g _dup(80) "-"
+		_col(32) %15.0fc in y `Energia'[1,1] ///
+		_col(49) %7.3fc in y scalar(gascostoPIB) ///
+		_col(59) %15.0fc in y gascosto
+	noisily di in g _dup(79) "-"
 	noisily di in g "  {bf:Gasto público total" ///
-		_col(33) %15.0fc in y `Energia'[1,1] ///
-		_col(50) %7.3fc in y otrosgasPIB ///
-		_col(60) %15.0fc in y otrosgas "}"
+		_col(32) %15.0fc in y `Energia'[1,1] ///
+		_col(49) %7.3fc in y otrosgasPIB ///
+		_col(59) %15.0fc in y otrosgas "}"
 
 	*capture drop Inversión
 	*Distribucion Inversión, relativo(infra_entidad) macro(`gasinfra')
@@ -1324,7 +1333,7 @@ quietly {
 
 	****************************/
 	**# 8 Ingreso b{c a'}sico ***
-	*****************************
+	/*****************************
 	replace IngBasico = 0
 
 	local bititle = "General"
@@ -1375,7 +1384,7 @@ quietly {
 	scalar IngBasPIB = `IngBas'/`PIB'*100
 	scalar ingbasico = `IngBas'/`pobIngBas'[1,1]
 	
-	scalar transfPIB = gasmadresPIB+IngBasPIB+gascuidadosPIB
+	scalar transfPIB = IngBasPIB+gasmadresPIB+gascuidadosPIB
 	scalar transf = transfPIB/100*`PIB'/`pobIngBas'[1,1]
 
 	if ingbasico18 == 0 & ingbasico65 == 1 {
@@ -1394,28 +1403,28 @@ quietly {
 	* Resultados *
 	noisily di _newline(2) in g "{bf: F. Transferencias}" 
 	noisily di _newline in g "{bf:  Gasto por concepto" ///
-		_col(33) %15s in g "Población" ///
-		_col(50) %7s "% PIB" ///
-		_col(60) %10s in g "Per c{c a'}pita (MXN `aniovp')" "}"
-	noisily di in g _dup(80) "-"
+		_col(32) %15s in g "Población" ///
+		_col(49) %7s "% PIB" ///
+		_col(59) %10s in g "Per c{c a'}pita (MXN `aniovp')" "}"
+	noisily di in g _dup(79) "-"
 	noisily di in g "  `bititle'" ///
-		_col(33) %15.0fc in y `pobIngBas'[1,1] ///
-		_col(50) %7.3fc in y IngBasPIB ///
-		_col(60) %15.0fc in y IngBas
+		_col(32) %15.0fc in y `pobIngBas'[1,1] ///
+		_col(49) %7.3fc in y IngBasPIB ///
+		_col(59) %15.0fc in y IngBas
 	noisily di in g "  Apoyo a madres trabajadoras" ///
-		_col(33) %15.0fc in y `MADRES'[1,1] ///
-		_col(50) %7.3fc in y scalar(gasmadresPIB) ///
-		_col(60) %15.0fc in y scalar(gasmadres)
+		_col(32) %15.0fc in y `MADRES'[1,1] ///
+		_col(49) %7.3fc in y scalar(gasmadresPIB) ///
+		_col(59) %15.0fc in y scalar(gasmadres)
 	noisily di in g "  Gasto en cuidados" ///
-		_col(33) %15.0fc in y `Resto'[1,1] ///
-		_col(50) %7.3fc in y scalar(gascuidadosPIB) ///
-		_col(60) %15.0fc in y gascuidados
+		_col(32) %15.0fc in y `Resto'[1,1] ///
+		_col(49) %7.3fc in y scalar(gascuidadosPIB) ///
+		_col(59) %15.0fc in y gascuidados
 
-	noisily di in g _dup(80) "-"
+	noisily di in g _dup(79) "-"
 	noisily di in g "  {bf:Gasto público total" "}" ///
-		_col(33) %15.0fc in y `pobIngBas'[1,1] ///
-		_col(50) %7.3fc in y scalar(transfPIB) ///
-		_col(60) %15.0fc in y scalar(transf)
+		_col(32) %15.0fc in y `pobIngBas'[1,1] ///
+		_col(49) %7.3fc in y scalar(transfPIB) ///
+		_col(59) %15.0fc in y scalar(transf)
 
 	replace IngBasico = IngBasico + scalar(gasmadres) if primi2 == 1
 	replace IngBasico = IngBasico + scalar(gascuidados) if cuidados_pot == 1
@@ -1423,7 +1432,7 @@ quietly {
 
 
 
-	******************************
+	*****************************/
 	*** 8 Salarios de gobierno ***
 	/*****************************
 	tabstat ing_subor if scian == "93" [fw=factor], stat(sum) f(%20.0fc) save

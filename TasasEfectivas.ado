@@ -63,7 +63,7 @@ quietly {
 		scalar ISRAS = `ISRAS'
 	}
 	
-	noisily di in g "  Compensaci{c o'}n de asalariados*" ///
+	noisily di in g "  Remuneraci{c o'}n de asalariados" ///
 		_col(37) %7.3fc in y RemSalPIB ///
 		_col(48) in g "ISR (salarios)" ///
 		_col(72) %7.3fc in y (`ISRAS') ///
@@ -95,7 +95,7 @@ quietly {
 	else {
 		scalar CUOTAS = `CUOTAS'
 	}
-	noisily di in g "  Compensaci{c o'}n de asalariados" ///
+	noisily di in g "  Remuneraci{c o'}n de asalariados" ///
 		_col(37) %7.3fc in y (RemSalPIB+SSImputadaPIB+SSEmpleadoresPIB) ///
 		_col(48) in g "Cuotas IMSS" ///
 		_col(72) %7.3fc in y (`CUOTAS') ///
@@ -301,13 +301,12 @@ quietly {
 	else {
 		scalar IVA = `IVA'
 	}
-	noisily di in g "  Consumo hogares e ISFLSH*" ///
-		_col(37) %7.3fc in y (ConHogPIB - AlimPIB - BebNPIB - SaluPIB) ///
+	noisily di in g "  Consumo hogares e ISFLSH" ///
+		_col(37) %7.3fc in y (ConHogPIB) ///
 		_col(48) in g "IVA" ///
 		_col(72) %7.3fc in y `IVA' ///
-		_col(80) %7.3fc in y `IVA'/(ConHogPIB - AlimPIB - BebNPIB - SaluPIB)*100 " %"
-	scalar ConHogNBPIB = ConHogPIB - AlimPIB - BebNPIB - SaluPIB
-	scalar IVAPor = `IVA'/(ConHogPIB - AlimPIB - BebNPIB - SaluPIB)*100
+		_col(80) %7.3fc in y `IVA'/(ConHogPIB)*100 " %"
+	scalar IVAPor = `IVA'/(ConHogPIB)*100
 
 
 	** 6.2 ISAN **
@@ -391,7 +390,10 @@ quietly {
 	******************/
 	**# 7. Base SIM ***
 	*******************
-	use "`c(sysdir_personal)'/SIM/perfiles`anio'.dta", clear
+	capture use "`c(sysdir_personal)'/users/$id/ingresos.dta", clear
+	if _rc != 0 {
+		use "`c(sysdir_personal)'/SIM/perfiles`anio'.dta", clear
+	}
 	keep folioviv foliohog numren factor edad ///
 		ISRAS ISRPF CUOTAS ISRPM OTROSK FMP PEMEX CFE IMSS ISSSTE IVA IEPSNP IEPSP ISAN IMPORT
 

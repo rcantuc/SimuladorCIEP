@@ -20,7 +20,6 @@ set charset latin1, permanently
 ** 1.2 Ruta PERSONAL **
 sysdir set PERSONAL `"`c(sysdir_site)'"'
 adopath ++PERSONAL
-cd `"`c(sysdir_personal)'"'
 
 
 ** 1.3 Crear carpetas **
@@ -43,7 +42,7 @@ scalar aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
 
 ** 1.1 Política Fiscal **
-global paqueteEconomico "PE 2024"
+global paqueteEconomico "Pre Criterios 2025"
 scalar anioPE = 2024
 scalar aniovp = 2024
 
@@ -51,22 +50,22 @@ scalar aniovp = 2024
 ** 2.2 Economía **
 ** Fuente: CGPE 2024 (página 121)
 ** 2.2.1 Parámetros: Crecimiento anual del Producto Interno Bruto **
-global pib2024 = 2.591
+global pib2024 = 3.051 //2.591
 global pib2025 = 2.5007
 global pib2026 = 2.4779
 global pib2027 = 2.5
 global pib2028 = 2.5
 global pib2029 = 2.5002
 
-** 2.2.2 Parámetros: Crecimiento anual del índice de precios implícitos **
-global def2024 = 4.1
+** 1.2.2 Parámetros: Crecimiento anual del índice de precios implícitos **
+global def2024 = 5.0 //4.1
 global def2025 = 3.9
 global def2026 = 3.5
 global def2027 = 3.5
 global def2028 = 3.5
 global def2029 = 3.5
 
-** 2.2.3 Parámetros: Crecimiento anual del índice nacional de precios al consumidor **
+** 1.2.3 Parámetros: Crecimiento anual del índice nacional de precios al consumidor **
 global inf2024 = 3.8
 global inf2025 = 3.3
 global inf2026 = 3.0
@@ -94,6 +93,11 @@ global entidadesL `""Aguascalientes" "Baja California" "Baja California Sur" "Ca
 global entidadesC "Ags BC BCS Camp Coah Col Chis Chih CDMX Dgo Gto Gro Hgo Jal EdoMex Mich Mor Nay NL Oax Pue Qro QRoo SLP Sin Son Tab Tamps Tlax Ver Yuc Zac Nac"
 
 
+** 2.5 Archivo output.txt (web) **
+if "$output" != "" {
+	quietly log using `"`c(sysdir_personal)'/users/$id/output.txt"', replace text name(output)
+	quietly log off output
+}
 
 
 
@@ -104,7 +108,7 @@ global entidadesC "Ags BC BCS Camp Coah Col Chis Chih CDMX Dgo Gto Gro Hgo Jal E
 ********************
 noisily di _newline(50) in w "{bf:Centro de Investigaci{c o'}n Econ{c o'}mica y Presupuestaria, A.C.}"
 
-noisily di _newline(2) in g `"{bf:{stata `"projmanager "`c(sysdir_site)'/simulador.stpr""': Simulador Fiscal CIEP v6}}"'
+noisily di _newline(2) in g `"{bf:{stata `"projmanager "`c(sysdir_personal)'/simulador.stpr""': Simulador Fiscal CIEP v6}}"'
 noisily di in g " Información Económica:  " _col(30) in y "$paqueteEconomico" ///
 	_newline in g " Año de Valor Presente:  " _col(30) in y "`=aniovp'" ///
 	_newline in g " Año de ENIGH:  " _col(30) in y "`=anioenigh'" ///

@@ -10,7 +10,9 @@ capture log close _all
 timer on 1
 
 
+****************************
 ** 0.1 Rutas de archivos  **
+** Agregar o modificar según sea necesario. **
 if "`c(username)'" == "ricardo" ///                                   // iMac Ricardo
 	sysdir set PERSONAL "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
 else if "`c(username)'" == "ciepmx" & "`c(console)'" == "" ///        // Servidor CIEP
@@ -20,19 +22,22 @@ else ///														      // Web
 cd `"`c(sysdir_personal)'"'
 
 
+***************************
 ** 0.2 Opciones globales **
 global id = "ciepmx"													// IDENTIFICADOR DEL USUARIO
 global nographs "nographs"												// SUPRIMIR GRAFICAS
 //global update "update"													// ACTUALIZAR ARCHIVOS
 
 
+************************
 ** 0.3 Crear carpetas **
 capture mkdir `"`c(sysdir_personal)'/users/"'
 capture mkdir `"`c(sysdir_personal)'/users/$id/"'
 
 
+**********************************
 ** 0.4 Archivo output.txt (web) **
-global output "output"													// OUTPUTS (WEB)
+global output "output"                                            // ARCHIVO DE SALIDA (WEB)
 if "$output" != "" {
 	quietly log using `"`c(sysdir_personal)'/users/$id/output.txt"', replace text name(output)
 	quietly log off output
@@ -45,12 +50,9 @@ if "$output" != "" {
 **#    1. MARCO MACRO   ***
 ***                     ***
 ***************************
-global paqueteEconomico "PE 2024"
 scalar anioPE = 2024
 scalar aniovp = 2024
-scalar anioenigh = 2022
-
-
+global paqueteEconomico = "PE 2024"
 ** 1.2 Economía **
 ** 1.2.1 Parámetros: Crecimiento anual del Producto Interno Bruto **
 global pib2024 = 2.591
@@ -76,14 +78,7 @@ global inf2027 = 3.0
 global inf2028 = 3.0
 global inf2029 = 3.0
 
-** 1.2.4 Proyecciones: PIB, Deflactor e Inflación **
-//noisily PIBDeflactor, anio(`=aniovp') geopib(2010) geodef(2010) $nographs $update
 
-
-** 1.5 Perfiles fiscales **
-capture confirm file "`c(sysdir_personal)'/SIM/perfiles`=anioPE'.dta"
-if _rc != 0 | "`update'" == "update" ///
-	noisily run `"`c(sysdir_personal)'/PerfilesSim.do"' `=anioPE'
 
 
 
@@ -128,11 +123,11 @@ matrix	SE =  (0.01,			1768.96*12,		407.02*12		\    /// 1
 
 * Artículo 151, último párrafo (LISR) *
 *            Ex. SS.MM.	Ex. 	% ing. gravable		% Informalidad PF	% Informalidad Salarios
-matrix DED = (5,				15,					57.79, 				42.82)
+matrix DED = (5,				15,					52.21, 				42.89)
 
 * Artículo 9, primer párrafo (LISR) * 
 *           Tasa ISR PM.	% Informalidad PM
-matrix PM = (30,			21.59)
+matrix PM = (30,			17.14)
 
 
 ** 2.9 Parámetros: IMSS e ISSSTE **
@@ -228,8 +223,8 @@ noisily GastoPC, aniope(`=anioPE') aniovp(`=aniovp')
 ******************************
 use `"`c(sysdir_personal)'/users/$id/ingresos.dta"', clear
 merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/users/$id/gastos.dta", nogen
-capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/users/$id/isr_mod.dta", nogen replace update
-capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/users/$id/iva_mod.dta", nogen replace update
+capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/users/$id/isr_mod.dta", nogen replace update keepus(ISRAS ISRPF ISRPM CUOTAS)
+capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/users/$id/iva_mod.dta", nogen replace update keepus(IVA)
 
 
 ** 3.1 (+) Impuestos y aportaciones **

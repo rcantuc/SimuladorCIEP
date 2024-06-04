@@ -579,8 +579,8 @@ quietly {
 		graph combine H`varlist' `varlist'Proj, ///
 			name(`=substr("`varlist'",1,10)'_`aniope', replace) ///
 			title("{bf:`title'}") ///
-			subtitle(" Perfil etario (MXN `aniovp') y proyección demográfica (% PIB)", margin(bottom)) ///
-			///subtitle(" Age profile (PPP `aniovp') and demographic projection (% GDP)", margin(bottom)) ///
+			///subtitle(" Perfil etario (MXN `aniovp') y proyección demográfica (% PIB)", margin(bottom)) ///
+			subtitle(" Age profile (PPP `aniovp') and demographic projection (% GDP)", margin(bottom)) ///
 			///title("`title' {bf:profile}") ///
 			///caption("Fuente: Elaborado por el CIEP, con información de INEGI/`base', INEGI/BIE, CONAPO y SHCP.") ///
 			///note(`"Nota: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n en cada grupo."') ///
@@ -720,8 +720,8 @@ program graphpiramide
 	*** 1. Valores agregados ***
 	tempname TOT POR
 	egen double `TOT' = sum(`varlist')
-	g double `POR' = `varlist'/`pib'*100
-	*g double `POR' = `varlist'/poblacion
+	*g double `POR' = `varlist'/`pib'*100
+	g double `POR' = `varlist'/poblacion
 
 	* Max number *
 	tempvar PORmax
@@ -733,22 +733,52 @@ program graphpiramide
 
 	* By age *
 	tempname AGEH AGEM
-	tabstat `POR' if edad < 18 & sexo == 1, by(`over') stat(sum) save
-	matrix `AGEH' = [r(Stat1),r(Stat2),r(Stat3)]
-	tabstat `POR' if edad < 18 & sexo == 2, by(`over') stat(sum) save
-	matrix `AGEM' = [r(Stat1),r(Stat2),r(Stat3)]
+	capture tabstat `POR' if edad < 18 & sexo == 1, by(`over') stat(sum) save
+	if _rc == 0 {
+		matrix `AGEH' = [r(Stat1),r(Stat2),r(Stat3)]
+	}
+	else {
+		matrix `AGEH' = J(1,3,0)
+	}
+	capture tabstat `POR' if edad < 18 & sexo == 2, by(`over') stat(sum) save
+	if _rc == 0 {
+		matrix `AGEM' = [r(Stat1),r(Stat2),r(Stat3)]
+	}
+	else {
+		matrix `AGEM' = J(1,3,0)
+	}
 
 	tempname AGEH1 AGEM1
-	tabstat `POR' if edad >= 18 & edad < 65 & sexo == 1, by(`over') stat(sum) save
-	matrix `AGEH1' = [r(Stat1),r(Stat2),r(Stat3)]
-	tabstat `POR' if edad >= 18 & edad < 65 & sexo == 2, by(`over') stat(sum) save
-	matrix `AGEM1' = [r(Stat1),r(Stat2),r(Stat3)]
+	capture tabstat `POR' if edad >= 18 & edad < 65 & sexo == 1, by(`over') stat(sum) save
+	if _rc == 0 {
+		matrix `AGEH1' = [r(Stat1),r(Stat2),r(Stat3)]
+	}
+	else {
+		matrix `AGEH1' = J(1,3,0)
+	}
+	capture tabstat `POR' if edad >= 18 & edad < 65 & sexo == 2, by(`over') stat(sum) save
+	if _rc == 0 {
+		matrix `AGEM1' = [r(Stat1),r(Stat2),r(Stat3)]
+	}
+	else {
+		matrix `AGEM1' = J(1,3,0)
+	}
 
 	tempname AGEH2 AGEM2
-	tabstat `POR' if edad >= 65 & sexo == 1, by(`over') stat(sum) save
-	matrix `AGEH2' = [r(Stat1),r(Stat2),r(Stat3)]
-	tabstat `POR' if edad >= 65 & sexo == 2, by(`over') stat(sum) save
-	matrix `AGEM2' = [r(Stat1),r(Stat2),r(Stat3)]
+	capture tabstat `POR' if edad >= 65 & sexo == 1, by(`over') stat(sum) save
+	if _rc == 0 {
+		matrix `AGEH2' = [r(Stat1),r(Stat2),r(Stat3)]
+	}
+	else {
+		matrix `AGEH2' = J(1,3,0)
+	}
+	capture tabstat `POR' if edad >= 65 & sexo == 2, by(`over') stat(sum) save
+	if _rc == 0 {
+		matrix `AGEM2' = [r(Stat1),r(Stat2),r(Stat3)]
+	}
+	else {
+		matrix `AGEM2' = J(1,3,0)
+	}
 
 
 	*******************
@@ -807,24 +837,24 @@ program graphpiramide
 		forvalues k=`=_N'(-1)1 {
 			if sexo[`k'] == 1 {
 				if over[`k'] == 1 {
-					local aportHIV = "`aportHIV' `=string(`=porcentaje[`k']',"%10.3f")',"
+					local aportHIV = "`aportHIV' `=string(`=porcentaje[`k']',"%10.0f")',"
 				}
 				if over[`k'] == 2 {
-					local aportHVIIX = "`aportHVIIX' `=string(`=porcentaje[`k']',"%10.3f")',"
+					local aportHVIIX = "`aportHVIIX' `=string(`=porcentaje[`k']',"%10.0f")',"
 				}
 				if over[`k'] == 3 {
-					local aportHX = "`aportHX' `=string(`=porcentaje[`k']',"%10.3f")',"			
+					local aportHX = "`aportHX' `=string(`=porcentaje[`k']',"%10.0f")',"			
 				}
 			}
 			if sexo[`k'] == 2 {
 				if over[`k'] == 1 {
-					local aportMIV = "`aportMIV' `=string(`=porcentaje[`k']',"%10.3f")',"
+					local aportMIV = "`aportMIV' `=string(`=porcentaje[`k']',"%10.0f")',"
 				}
 				if over[`k'] == 2 {
-					local aportMVIIX = "`aportMVIIX' `=string(`=porcentaje[`k']',"%10.3f")',"
+					local aportMVIIX = "`aportMVIIX' `=string(`=porcentaje[`k']',"%10.0f")',"
 				}
 				if over[`k'] == 3 {
-					local aportMX = "`aportMX' `=string(`=porcentaje[`k']',"%10.3f")',"			
+					local aportMX = "`aportMX' `=string(`=porcentaje[`k']',"%10.0f")',"			
 				}		
 			}
 		}
@@ -869,7 +899,7 @@ program define ProyGraph
 
 	forvalues aniohoy = `aniope'(1)`aniope' {
 	*forvalues aniohoy = 2022(1)2050 {
-		tabstat estimacion if anio >= `aniope', stat(max) save
+		tabstat estimacion /*if anio >= `aniope'*/, stat(max) save
 		tempname MAX
 		matrix `MAX' = r(StatTotal)
 		forvalues k=1(1)`=_N' {
@@ -923,7 +953,7 @@ program define ProyGraph
 		}
 	}
 
-	if "$output" != "" {
+	if "$output" != "" & "`nooutput'" != "nooutput" {
 		forvalues k=1(5)`=_N' {
 			if anio[`k'] >= 2010 {
 				local out_proy = "`out_proy' `=string(estimacion[`k'],"%8.3f")',"

@@ -560,8 +560,30 @@ quietly {
 	save `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'REC"', replace
 
 	
-	*ProyGraph `varlist' `nographs'
+	ProyGraph `varlist' `aniope' `nographs'
 
+	******************************
+	*** 7. Gráficas combinadas ***
+	******************************
+	if "$nographs" != "nographs" & "`nographs'" != "nographs" {
+		graph combine `=substr("`varlist'",1,10)'_dec `varlist'Proj, ///
+			name(`=substr("`varlist'",1,10)'_`aniope', replace) ///
+			title("{bf:`title'}") ///
+			subtitle(" Perfil etario (MXN `aniovp') y proyección demográfica (% PIB)", margin(bottom)) ///
+			///subtitle(" Age profile (PPP `aniovp') and demographic projection (% GDP)", margin(bottom)) ///
+			///title("`title' {bf:profile}") ///
+			///caption("Fuente: Elaborado por el CIEP, con información de INEGI/`base', INEGI/BIE, CONAPO y SHCP.") ///
+			///note(`"Nota: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n en cada grupo."') ///
+			caption("{bf:Source}: Prepared by CIEP, using data from `base'.") ///
+			///note(`"{bf:Note}: Percentages in parentheses show the concentration in each group."')
+
+		graph save `=substr("`varlist'",1,10)'_`aniope' `"`c(sysdir_personal)'/SIM/graphs/`varlist'_`aniope'.gph"', replace
+		if "$export" != "" {
+			graph export `"$export/`varlist'_`aniope'.png"', replace name(`=substr("`varlist'",1,10)'_`aniope')
+		}
+		capture window manage close graph `=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)'
+		capture window manage close graph `varlist'Proj
+	}
 
 
 	************/
@@ -889,7 +911,7 @@ end
 
 program define ProyGraph
 
-	args varlist nographs
+	args varlist aniope nographs
 
 	PIBDeflactor, nographs nooutput
 	tempfile PIB
@@ -903,8 +925,11 @@ program define ProyGraph
 
 	local title = modulo[1]
 	
-	replace estimacion = estimacion*lambda/1000000000000
-	*replace estimacion = estimacion*lambda/pibYR*100
+	*replace estimacion = estimacion*lambda/1000000000000
+	format estimacion %20.0fc
+
+	replace estimacion = estimacion*lambda/pibYR*100
+	format estimacion %7.3fc
 
 	forvalues aniohoy = `aniope'(1)`aniope' {
 	*forvalues aniohoy = 1990(1)2050 {
@@ -928,28 +953,37 @@ program define ProyGraph
 			matrix `MAX' = J(1,1,0)
 		}
 
+		tabstat estimacion if anio == 2070, stat(max) save
+		tempname LAST
+		matrix `LAST' = r(StatTotal)
+
+
 		if "$nographs" != "nographs" & "`nographs'" != "nographs" {
-			twoway (connected estimacion anio) ///
-				(connected estimacion anio if anio == `aniohoy') ///
-				(connected estimacion anio if anio == `aniomax') ///
-				if anio > 1990, ///
-				ytitle("billones `currency' `aniovp'") ///
+			twoway (connected estimacion anio, lpattern(dot) msize(small)) ///
+				(connected estimacion anio if anio == `aniohoy', mlabel(estimacion) mlabposition(12) mlabcolor("114 113 118")) ///
+				(connected estimacion anio if anio == `aniomax', mlabel(estimacion) mlabposition(12) mlabcolor("114 113 118")) ///
+				if anio > 2020, ///
+				///ytitle("billones `currency' `aniovp'") ///
 				///ytitle("% PIB") ///
-				yscale(range(0)) /*ylabel(0(1)4)*/ ///
-				ylabel(#5, format(%5.0fc) labsize(small)) ///
-				xlabel(1990(10)`=anio[_N]', labsize(small)) ///
+				///subtitle("Proyección demográfica, billones MXN `aniovp'") ///
+				///subtitle("Demographic projection (% GDP)") ///
+				ytitle("") ///
+				///yscale(range(0)) /*ylabel(0(1)4)*/ ///
+				ylabel(#5, format(%5.2fc) labsize(small)) ///
+				yscale(range(0)) ///
+				xlabel(2020(10)`=anio[_N]' `aniohoy', labsize(small)) ///
 				xtitle("") ///
 				legend(off) ///
-				text(`=`MAX'[1,1]' `aniomax' "`aniomax'", place(c)) ///
-				text(`estimacionvp' `aniohoy' "`aniohoy'", place(c)) ///
-				title("{bf:Proyecci{c o'}n} de `title'") subtitle("$pais") ///
-				caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.") ///
+				xline(`aniohoy', lpattern(dot)) ///
+				xline(`aniomax', lpattern(dot)) ///
+				///yline(0, lpattern(solid) lcolor(black)) ///
+				///text(`=`estimacionmax'*.05' `aniomax' "Este perfil, junto con" "las proyecciones demográficas," "obtiene un {bf:máximo en `aniomax'}.", size(medsmall) place(11) justification(right)) ///
+				///text(`=`estimacionmax'*.05' `aniomax' "This age profile, along with" "CONAPO's demographic projections," "reaches a maximum in {bf:`aniomax'}.", size(medsmall) place(11) justification(right)) ///
+				///text(`=`estimacionvp'*1.05' `aniohoy' "De `aniohoy' a `aniomax',"  `"{bf:cambiaría `=string((`estimacionmax'/`estimacionvp'-1)*100,"%5.2f")'%}."', size(medsmall) place(11) justification(left)) ///
+				text(`=`estimacionvp'*0.25' `aniohoy' "From `aniohoy' to 2070,"  "its demand will" `"change in {bf:`=string((`LAST'[1,1]/`estimacionvp'-1)*100,"%5.2f")'%}."', size(medsmall) place(1) justification(left)) ///
+				///title("{bf:Proyecci{c o'}n} de `title'") subtitle("$pais") ///
+				///caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.") ///
 				name(`varlist'Proj, replace)
-
-			capture confirm existence $export
-			if _rc == 0 {
-				graph export "$export/`varlist'Proj`aniohoy'.png", replace name(`varlist'Proj)
-			}
 		}
 	}
 

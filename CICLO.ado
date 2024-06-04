@@ -38,7 +38,7 @@ quietly {
 	destring sexo, replace ignore("co")
 
 	tempvar varlist2
-	g double `varlist2' = `varlist' `if'
+	g double `varlist2' = `varlist' /* /`ppp' */ `if'
 	
 	collapse (sum) `varlist2' `pob' [`weight' `exp'] `if', by(sexo edad `decil')
 	format `varlist2' %20.0fc
