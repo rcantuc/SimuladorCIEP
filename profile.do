@@ -11,7 +11,7 @@ timer on 1
 
 ** 1.1 Estilo CIEP **
 set scheme ciep
-graph set window fontface "Ubuntu"
+graph set window fontface "Ubuntu Light"
 set more off, permanently
 set type double, permanently
 set charset latin1, permanently

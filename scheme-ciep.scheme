@@ -14,14 +14,15 @@ graphsize 	y                   7
 
 // Margins
 margin 		graph               medlarge
-// margin   combinegraph    none
-// margin   piegraph		none
-// margin   plotregion		none
-// margin   axis_title		none
-// margin   legend			none
-// margin   label 			none
-// margin   textbox			none
-margin heading medium
+margin      heading             medium
+margin      subheading          medsmall
+margin      legend              zero
+// margin   combinegraph        none
+// margin   piegraph            none
+// margin   plotregion          none
+// margin   axis_title          none
+// margin   label               none
+// margin   textbox             none
 
 
 
@@ -31,7 +32,7 @@ color 		plotregion          white
 color 		plotregion_line     white
 color 		legend              white
 // color 	bylabel_outline   	none
-// color 	textbox  		"236,236,236"
+// color 	textbox  		    "236,236,236"
 
 
 
@@ -39,10 +40,10 @@ color 		legend              white
 gsize 		text_option 		large
 color 		text_option         "111,111,111"
 clockdir 	text_option         0
-color       text_option_fill    white
-yesno       text_option         yes
+// color    text_option_fill    white
+// yesno    text_option         yes
 linewidth 	text_option         none
-margin      text_option     small
+margin      text_option         small
 
 // Axis lines
 color		xyline              "200,200,200"
@@ -73,7 +74,7 @@ yesno 		note_span           no
 
 textboxstyle	t1title			body
 textboxstyle	t2title			small_body
-textboxstyle	b1title			subheading
+textboxstyle	b1title			heading
 textboxstyle	b2title			small_body
 
 
@@ -87,11 +88,11 @@ yesno 		draw_major_nlt_vgrid 	yes
 
 
 // Axis
-color		tick			white
+color		tick			"111,111,111"
 color      	tick_label		"111,111,111"
 gsize      	tick_label		small
-color 		tick_biglabel 		"111,111,111"
-gsize		tick_biglabel		medium
+color 		tick_biglabel 	"111,111,111"
+gsize		tick_biglabel	medium
 color 		axis_title 		"111,111,111"
 gsize		axis_title		medium
 
@@ -113,7 +114,7 @@ gsize 		legend_key_xsize	medlarge
 gsize 		legend_key_ysize	medlarge
 color       key_label      "111,111,111"
 numstyle 	legend_cols		4
-gsize 		key_label		large
+gsize 		key_label		medlarge
 
 
 
@@ -136,7 +137,7 @@ relsize 	bar_subgroupgap		50
 symbol 		p 			circle
 symbolsize 	p			large
 color      	refmarker		red
-linewidth  	refmarker		vvvthick
+linewidth  	refmarker		thin
 
 // Grosor
 linewidth 	p1mark			none
@@ -250,24 +251,29 @@ linepattern p17line dot
 
 
 // Colores
-color p1 "255,129,0"
-color p2 "210,213,32"
-color p8 "224,97,83"
-color p4 "255,189,0"
-color p5 "57,198,184"
-color p6 "0,151,201"
-color p7 "53,200,71"
-color p3 "150,6,92"
-color p9 "103,223,87"
-color p10 "213,155,190"
-color p11 "23,105,114"
-color p12 "0,151,125"
-color p13 "181,185,27"
-color p14 "9,63,93"
-color p15 "255,55,0"
-color p16 "227,229,99"
-color p17 "133,53,44"
-color p18 "0,151,125"
-color p19 "102,62,76"
-color p20 "133,53,44"
+color p1 "255,129,0"  // Vibrante
+color p2 "255,189,0"  // Vibrante
+color p3 "150,6,92"  // Vibrante
+color p4 "0,151,201"  // Vibrante
+color p5 "255,55,0"  // Vibrante
+color p6 "102,177,0"  // Vibrante
+color p7 "0,78,198"  // Vibrante
+color p8 "175,174,180"  // Vibrante
 
+color p9  "57,198,184"  // Triadas
+color p10 "0,180,148"  // Triadas
+color p11 "0,151,125"  // Triadas
+color p12 "103,223,87"  // Triadas
+color p13 "53,200,71"  // Triadas
+color p14 "40,173,58"  // Triadas
+color p15 "227,229,99"  // Triadas
+color p16 "210,213,32"  // Triadas
+
+color p17 "181,185,27"  // Triadas
+color p18 "255,182,76"  // Triadas
+color p19 "239,143,51"  // Triadas
+color p20 "220,117,0"  // Triadas
+color p21 "254,118,109"  // Triadas
+color p22 "224,97,83"  // Triadas
+color p23 "194,76,68"  // Triadas
+color p24 "186,34,64"  // Triadas

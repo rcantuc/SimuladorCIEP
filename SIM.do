@@ -83,8 +83,8 @@ global inf2029 = 3.0
 * Inputs: PIB, índice de precios implícitos, inpc, población y población ocupada.
 * Outputs: Base de datos con su deflactor y productividad laboral para todos los años.
 * Fuente: INEGI, BIE. Ver archivo "UpdatePIBDeflactor.do".
-noisily PIBDeflactor, geodef(2005) geopib(2005) $update aniovp(`=aniovp')
-exit
+///noisily PIBDeflactor, geodef(2005) geopib(2005) $update aniovp(`=aniovp')
+
 * 1.2.5 Proyecciones: Sistema de Cuentas Nacionales *
 * Inputs: PIB, índice de precios implícitos, inpc, población y población ocupada.
 * Outputs: Base de datos con las cuentas macroeconómicas para todos los años.
