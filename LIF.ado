@@ -521,7 +521,7 @@ quietly {
 		}
 
 		twoway `extras' ///
-			(connected `recaudacionline' anio if resumido == resumido[1], mlabpos(12) mlabcolor("111 111 111") mlabel(`recaudacionline') yaxis(2) mlabsize(large)) ///
+			(connected `recaudacionline' anio if resumido == resumido[1], mlabpos(12) mlabcolor("111 111 111") mlabel(`recaudacionline') yaxis(2) mlabsize(large) pstyle(p1)) ///
 			(scatter recaudacionPIBTOT anio if resumido == resumido[1], mlabpos(12) mlabcolor("111 111 111") mlabel(recaudacionPIBTOT) mlabsize(large) mcolor(white) lcolor(white)) ///
 			if anio <= `anio', ///
 			///over(resumido, sort(1) descending) over(anio, gap(30)) ///
