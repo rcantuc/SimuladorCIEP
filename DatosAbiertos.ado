@@ -211,8 +211,10 @@ quietly {
 		egen `montoanual' = sum(monto) if anio < `last_anio' & anio >= `desde', by(anio)
 		g `propmensual' = monto/`montoanual' if anio < `last_anio' & anio >= `desde'
 		egen acum_prom = mean(`propmensual'), by(mes)
+		
 		collapse (sum) `montomill' monto* acum_prom (last) mes Poblacion pibY deflator if monto != ., by(anio nombre clave_de_concepto unidad_de_medida)
-		*replace monto = monto/acum_prom if mes < 12
+
+		replace monto = monto/acum_prom if mes < 12
 		local textografica `"{bf:Promedio a `mesname'}: `=string(acum_prom[_N]*100,"%5.1fc")'% del total anual."'
 		local palabra "Proyectado"
 	}

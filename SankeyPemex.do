@@ -13,8 +13,6 @@ cd "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/LINGO/Sankeys/"
 
 
 
-
-
 *************************
 ***                   ***
 *** 1. Bases de datos ***
@@ -25,97 +23,125 @@ cd "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/LINGO/Sankeys/"
 DatosAbiertos XKC0106, nog
 rename monto Ventas
 keep anio Ventas
-save XKC0106
+save XKC0106, replace
 
 
 ** 1.2. Otros ingresos **
 DatosAbiertos XKC0179, nog
 rename monto OtrosIngresos
 keep anio OtrosIngresos
-save XKC0179
+save XKC0179, replace
 
 
 ** 2.1. Derechos y enteros **
 DatosAbiertos XKC0113, nog
 rename monto Derechos
 keep anio Derechos
-save XKC0113
+save XKC0113, replace
 
 
 ** 2.2. Gasto programable **
 DatosAbiertos XKC0131, nog
 rename monto Programable
 keep anio Programable
-save XKC0131
+save XKC0131, replace
 
 
 ** 2.2.1 Pensiones y jubilaciones **
 DatosAbiertos XKC0139, nog
 rename monto Pensiones
 keep anio Pensiones
-save XKC0139
+save XKC0139, replace
 
 
 ** 2.2.2. Gastos de inversión **
 DatosAbiertos XKC0145, nog
 rename monto Inversion
 keep anio Inversion
-save XKC0145
+save XKC0145, replace
 
 
 ** 2.3. Gasto no programable **
 DatosAbiertos XKC0157, nog
 rename monto NoProgramable
 keep anio NoProgramable
-save XKC0157
+save XKC0157, replace
 
 
 
-
-
-** 1.1. Append y collapse **/
-forvalues anio = 2019(1)2023 {
-
-	** 1.2. Información adicional **
-	if "`anio'" == "2023" {
-		local reduccionduc = 157500000000
-		local estimulosfiscales = 86640000000
-		local apoyospatrimoniales = 166615122970
-		local indirectos = 416875393557
-		local fmp = 255633786073
-		local tesofe = 320323565125.80
-	}
-	if "`anio'" == "2022" {
-		local reduccionduc = 238100*1000000
-		local estimulosfiscales = (7455+23000)*1000000
-		local apoyospatrimoniales = 188306*1000000
-		local indirectos = 299434678260
-		local fmp = 529233592611
-		local tesofe = 619950978054.93
-	}
-	if "`anio'" == "2021" {
-		local reduccionduc = 77900*1000000
-		local estimulosfiscales = (73280+22915)*1000000
-		local apoyospatrimoniales = 316354*1000000
-		local indirectos = 357608812555
-		local fmp = 383922663710
-		local tesofe = 349684357892.52
+** 1.2. Información adicional **/
+forvalues anio = 2019(1)2024 {
+	if "`anio'" == "2019" {
+		local reduccionduc = 0
+		local estimulosfiscales = (25787+38704)*1000000
+		local apoyospatrimoniales = 122131*1000000
+		local indirectos = 443943085740*0
+		local fmp = 410158961425
+		local fmp_feip_feief = 3.42
+		local fmp_feh = 1.05
+		local fmp_investigacion = 0.78
+		local fmp_tesofe = 94.75
+		local fmp_otros = 0.00
 	}
 	if "`anio'" == "2020" {
 		local reduccionduc = 26500*1000000
 		local estimulosfiscales = (65000+5800)*1000000
 		local apoyospatrimoniales = 46256*1000000
-		local indirectos = 399325085921
+		local indirectos = 399325085921*0
 		local fmp = 187271584137
-		local tesofe = 180066508495.78
+		local fmp_feip_feief = 5.91
+		local fmp_feh = 1.79
+		local fmp_investigacion = 1.35
+		local fmp_tesofe = 90.95
+		local fmp_otros = 0.00
 	}
-	if "`anio'" == "2019" {
-		local reduccionduc = 0
-		local estimulosfiscales = (25787+38704)*1000000
-		local apoyospatrimoniales = 122131*1000000
-		local indirectos = 443943085740
-		local fmp = 410158961425
-		local tesofe = 408901963776.66
+	if "`anio'" == "2021" {
+		local reduccionduc = 77900*1000000
+		local estimulosfiscales = (73280+22915)*1000000
+		local apoyospatrimoniales = 316354*1000000
+		local indirectos = 357608812555*0
+		local fmp = 383922663710
+		local fmp_feip_feief = 2.67
+		local fmp_feh = 0.83
+		local fmp_investigacion = 0.61
+		local fmp_tesofe = 95.89
+		local fmp_otros = 0.00
+	}
+	if "`anio'" == "2022" {
+		local reduccionduc = 238100*1000000
+		local estimulosfiscales = (7455+23000)*1000000
+		local apoyospatrimoniales = 188306*1000000
+		local indirectos = 299434678260*0
+		local fmp = 529233592611
+		local fmp_feip_feief = 1.66
+		local fmp_feh = 0.51
+		local fmp_investigacion = 0.38
+		local fmp_tesofe = 97.45
+		local fmp_otros = 0.00
+	}
+	if "`anio'" == "2023" {
+		local reduccionduc = 157500000000
+		local estimulosfiscales = 86640000000
+		local apoyospatrimoniales = 166615122970
+		local indirectos = 416875393557*0
+		local fmp = 255633786073
+		local fmp_feip_feief = 4.05
+		local fmp_feh = 1.24
+		local fmp_investigacion = 0.93
+		local fmp_tesofe = 93.78
+		local fmp_otros = 0.00
+	}
+	if "`anio'" == "2024" {
+		local reduccionduc = 178735000000
+		local estimulosfiscales = 0
+		local apoyospatrimoniales = 170929000000
+		local indirectos = 0
+		local fmp = 41468323430/.2616  // 344478000000
+		local fmp_feip_feief = 4.05
+		local fmp_feh = 1.24
+		local fmp_investigacion = 0.93
+		local fmp_tesofe = 93.78
+		local fmp_otros = 0.00
 	}
 
 
@@ -188,7 +214,7 @@ forvalues anio = 2019(1)2023 {
 	replace Gastos_Derechos = Gastos_Derechos //+ `indirectos'		// IEPS e IVA
 
 	tabstat Gastos_Derechos, s(sum) save
-	local gastosGobiernoFederal = r(StatTotal)[1,1] - `reduccionduc' - `estimulosfiscales' + `indirectos'
+	local gastosGobiernoFederal = r(StatTotal)[1,1]*`fmp_tesofe'/100 - `reduccionduc' - `estimulosfiscales' + `indirectos'
 
 	tempvar from to
 	g `from' = "Pemex"
@@ -202,14 +228,14 @@ forvalues anio = 2019(1)2023 {
 	tabstat profile, s(sum) save
 	local gastosPemex = r(StatTotal)[1,1]
 
-	if `ingresosPemex' - `gastosPemex' > 0 {
+	/*if `ingresosPemex' - `gastosPemex' > 0 {
 		set obs `=_N+1'
 		replace anio = `anio' in -1
 		replace from = 1 in -1
 		replace to = 99 in -1
 		replace profile = `ingresosPemex' - `gastosPemex' in -1
 		label define to 99 "Superávit", add
-	}
+	}*/
 
 	replace profile = profile / 1000000000
 	tempfile eje2
@@ -241,6 +267,7 @@ forvalues anio = 2019(1)2023 {
 	replace to = 7 in -1
 	label define to 7 "Gobierno Federal", add
 	replace profile = `DerechosEnteros' - (`fmp' + `reduccionduc' + `estimulosfiscales')/1000000000 in -1
+	*replace profile = 0 if profile < 0
 
 	set obs `=_N+1'
 	replace anio = `anio' in -1
@@ -256,13 +283,13 @@ forvalues anio = 2019(1)2023 {
 	replace profile = (`reduccionduc' + `estimulosfiscales')/1000000000 in -1
 	label define to 8 "Pemex", add
 
-	if `ingresosPemex' - `gastosPemex' > 0 {
+	/*if `ingresosPemex' - `gastosPemex' > 0 {
 		set obs `=_N+1'
 		replace anio = `anio' in -1
 		replace from = 99 in -1
 		replace to = 100 in -1
 		replace profile = (`ingresosPemex' - `gastosPemex')/1000000000 in -1
-	}
+	}*/
 	label define to 100 "Contribución neta", add
 
 	tempfile eje3
@@ -278,18 +305,42 @@ forvalues anio = 2019(1)2023 {
 
 	g to = 7
 	label values to to
-	*replace profile = `tesofe' / 1000000000
 
-	/*set obs `=_N+1'
+	tabstat profile, s(sum) save
+	local profile = r(StatTotal)[1,1]
+	replace profile = `profile' * `fmp_tesofe' / 100
+
+	set obs `=_N+1'
 	replace anio = `anio' in -1
 	replace from = 6 in -1
 	replace to = 101 in -1
-	replace profile = (`fmp' - `tesofe') / 1000000000 in -1
-	label define to 101 "Otros fondos", add*/
+	replace profile = `profile' * `fmp_feip_feief' / 100 in -1
+	label define to 101 "FEIP y FEIEF", add
+
+	set obs `=_N+1'
+	replace anio = `anio' in -1
+	replace from = 6 in -1
+	replace to = 102 in -1
+	replace profile = `profile' * `fmp_feh' / 100 in -1
+	label define to 102 "FEH", add
+
+	set obs `=_N+1'
+	replace anio = `anio' in -1
+	replace from = 6 in -1
+	replace to = 103 in -1
+	replace profile = `profile' * `fmp_investigacion' / 100 in -1
+	label define to 103 "Trans energética", add
+
+	set obs `=_N+1'
+	replace anio = `anio' in -1
+	replace from = 6 in -1
+	replace to = 104 in -1
+	replace profile = `profile' * `fmp_otros' / 100 in -1
+	label define to 104 "Otros", add
 
 	local deficit = 0
 	if `ingresosPemex' - `gastosPemex' < 0 {
-		local deficit = -(`ingresosPemex' - `gastosPemex')
+		local deficit = -(`ingresosPemex' - `gastosPemex')*0
 	}
 	label define to 201 "Pemex", add
 	label values to to

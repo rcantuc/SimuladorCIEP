@@ -5,6 +5,7 @@
 // help scheme files
 
 
+
 // Graph Size
 graphsize 	x                   16
 graphsize 	y                   7
@@ -22,6 +23,8 @@ margin 		graph               medlarge
 // margin   textbox			none
 margin heading medium
 
+
+
 // Background
 color 		background          white
 color 		plotregion          white
@@ -33,10 +36,15 @@ color 		legend              white
 
 
 // Added text and lines
-gsize 		text_option 		small
-color 		text_option         "114,113,118"
-clockdir 	text_option         12
+gsize 		text_option 		large
+color 		text_option         "111,111,111"
+clockdir 	text_option         0
+color       text_option_fill    white
+yesno       text_option         yes
+linewidth 	text_option         none
+margin      text_option     small
 
+// Axis lines
 color		xyline              "200,200,200"
 linepattern	xyline              dash
 
@@ -49,20 +57,19 @@ gsize 		heading             vlarge
 yesno 		title_span          no
 
 clockdir 	subtitle_position   11
-color 		subheading          "114,113,118"
+color 		subheading          "111,111,111"
 gsize 		subheading          medsmall
 yesno 		subtitle_span       no
 
 clockdir 	caption_position    7
-color		body                "114,113,118"
+color		body                "111,111,111"
 gsize 		body                vsmall
 yesno 		caption_span        no
 
 clockdir 	note_position       7
-color		small_body          "114,113,118"
+color		small_body          "111,111,111"
 gsize 		small_body          vsmall
 yesno 		note_span           no
-
 
 textboxstyle	t1title			body
 textboxstyle	t2title			small_body
@@ -80,20 +87,20 @@ yesno 		draw_major_nlt_vgrid 	yes
 
 
 // Axis
-color		tick			"52,70,78"
-color      	tick_label		"114,113,118"
-gsize      	tick_label		vsmall
-color 		tick_biglabel 		"114,113,118"
-gsize		tick_biglabel		vsmall
-color 		axis_title 		"114,113,118"
-gsize		axis_title		vsmall
+color		tick			white
+color      	tick_label		"111,111,111"
+gsize      	tick_label		small
+color 		tick_biglabel 		"111,111,111"
+gsize		tick_biglabel		medium
+color 		axis_title 		"111,111,111"
+gsize		axis_title		medium
 
 axisstyle 	vertical_default 	vertical_nolinetick
 axisstyle 	bar_scale_vert		vertical_nolinetick
 anglestyle 	vertical_tick 		horizontal
 anglestyle 	horizontal_tick 	horizontal
 
-color		tickline		"114,113,118"
+color		tickline		white
 linewidth	axisline		medium
 tickposition	axis_tick		inside
 
@@ -104,24 +111,24 @@ clockdir 	legend_position		6
 linestyle 	legend			none
 gsize 		legend_key_xsize	medlarge
 gsize 		legend_key_ysize	medlarge
-color       key_label      "114,113,118"
+color       key_label      "111,111,111"
 numstyle 	legend_cols		4
-gsize 		key_label		small
+gsize 		key_label		large
 
 
 
 // Labels
-color 		label 			white
-gsize 		small_label		small
+color 		label 			"111,111,111"
+gsize 		small_label		large
 
 
 
 // Bar labels
 barlabelpos 	bar 			center
 barlabelstyle 	bar			bar
-relsize 	bar_gap			0
+relsize 	bar_gap			50
 relsize 	bar_groupgap		30
-relsize 	bar_subgroupgap		0
+relsize 	bar_subgroupgap		50
 
 
 
@@ -221,6 +228,24 @@ linewidth	p14area			none
 linewidth	p15area			none
 linewidth	p16area			none
 linewidth	p17area			none
+
+linepattern p1line dot
+linepattern p2line dot
+linepattern p3line dot
+linepattern p4line dot
+linepattern p5line dot
+linepattern p6line dot
+linepattern p7line dot
+linepattern p8line dot
+linepattern p9line dot
+linepattern p10line dot
+linepattern p11line dot
+linepattern p12line dot
+linepattern p13line dot
+linepattern p14line dot
+linepattern p15line dot
+linepattern p16line dot
+linepattern p17line dot
 
 
 
