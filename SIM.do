@@ -83,8 +83,8 @@ global inf2029 = 3.0
 * Inputs: PIB, índice de precios implícitos, inpc, población y población ocupada.
 * Outputs: Base de datos con su deflactor y productividad laboral para todos los años.
 * Fuente: INEGI, BIE. Ver archivo "UpdatePIBDeflactor.do".
-//noisily PIBDeflactor, geodef(2005) geopib(2005) $update aniovp(`=aniovp')
-
+noisily PIBDeflactor, geodef(2005) geopib(2005) $update aniovp(`=aniovp')
+exit
 * 1.2.5 Proyecciones: Sistema de Cuentas Nacionales *
 * Inputs: PIB, índice de precios implícitos, inpc, población y población ocupada.
 * Outputs: Base de datos con las cuentas macroeconómicas para todos los años.
@@ -98,7 +98,7 @@ global inf2029 = 3.0
 * Inputs: LIFs + Estadísticas Oportunas. Archivo: LIFs.xlsx.
 * Outputs: Bases de datos con ingresos, gastos y deuda para todos los años.
 * Fuentes. SHCP, Estadísticas Oportunas. Ver archivos "UpdateLIF.do".
-noisily LIF if divPE == 3 | divPE == 9, by(divCIEP) rows(1) anio(`=anioPE') $update desde(2000) min(0) title(" ")
+noisily LIF if divPE == 2 & divCIEP != 2, by(divCIEP) rows(1) anio(`=anioPE') $update desde(2008) min(0) title(" ")
 exit
 * 1.3.2 Presupuesto de Egresos de la Federación **
 * Inputs: Cuentas Públicas y PEF/PPEF (varios años). Archivos: CPXXXX.xlsx, PEFXXXX.xlsx o PPEFXXXX.xlsx.

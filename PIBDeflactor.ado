@@ -326,7 +326,7 @@ quietly {
 		
 		* Títulos y fuentes *
 		if "$export" == "" {
-			local graphtitle "{bf:Índice de precios (implícitos)}"
+			local graphtitle "{bf:Índice de precios implícitos}"
 			local graphfuente "Fuente: Elaborado por el CIEP, con información de INEGI/SHCP."
 		}
 		else {
@@ -356,23 +356,23 @@ quietly {
 		twoway /// Bar
 			(bar deflator anio if (anio < `aniofinal' & anio >= `anioinicial') | (anio == `aniofinal' & trimestre == 12), ///
 				yaxis(2) mlabel(deflator) mlabposition(12) mlabcolor("114 113 118") mlabgap(0pt) mlabsize(tiny) barwidth(.75)) ///
-			(bar deflator anio if anio < `aniofinal'+`exo_def' & anio > `aniofinal', ///
+			(bar deflator anio if anio < `aniofinal'+`exo_def' & anio >= `aniofinal', ///
 				yaxis(2) mlabel(deflator) mlabposition(12) mlabcolor("114 113 118") mlabgap(0pt) mlabsize(tiny) barwidth(.1)) ///
 			(bar deflator anio if anio >= `aniofinal'+`exo_def', ///
 				yaxis(2) mlabel(deflator) mlabposition(12) mlabcolor("114 113 118") mlabgap(0pt) mlabsize(tiny) barwidth(.1)) ///
 			/// Connected
 			(connected var_indiceY anio if (anio < `aniofinal' & anio >= `anioinicial') | (anio == `aniofinal' & trimestre == 12), ///
-				yaxis(1) mlabel(var_indiceY) mlabpos(12) mlabcolor("114 113 118") mlabsize(tiny) mstyle(p1) lstyle(p1)) ///
-			(connected var_indiceY anio if anio < `aniofinal'+`exo_def' & anio > `aniofinal', ///
+				yaxis(1) mlabel(var_indiceY) mlabpos(12) mlabcolor("114 113 118") mlabsize(tiny) mstyle(p1) lstyle(p1) lpattern(dot) msize(small)) ///
+			(connected var_indiceY anio if anio < `aniofinal'+`exo_def' & anio >= `aniofinal', ///
 				yaxis(1) mlabel(var_indiceY) mlabpos(12) mlabcolor("114 113 118") mlabsize(tiny) mstyle(p2) lstyle(p2) lpattern(dot) msize(small)) ///
 			(connected var_indiceY anio if anio >= `aniofinal'+`exo_def', ///
 				yaxis(1) mlabel(var_indiceY) mlabpos(12) mlabcolor("114 113 118") mlabsize(tiny) mstyle(p3) lstyle(p3) lpattern(dot) msize(small)) ///
 			, ///
 			title("`graphtitle'" "") ///
-			subtitle(" Crecimiento y nivel de precios en la economía, `aniovp'=1.00", margin(bottom)) ///
-			xlabel(`anioinicial'(5)`aniomax' `aniovp' `=`aniofinal'+`exo_count'-1') ///
-			ylabel(none, format(%3.0f) axis(2) noticks) yscale(range(0 3.5) axis(2) noline) ///
-			ylabel(none, format(%3.0f) axis(1) noticks) yscale(range(0 -12) axis(1) noline) ///
+			subtitle("    Nivel de precios de la economía (`aniovp'=1.0) y crecimiento anual (%)", margin(bottom)) ///
+			xlabel(`=round(`anioinicial',5)'(5)`aniomax') ///
+			ylabel(none, format(%3.0f) axis(2) noticks) yscale(range(0 10) axis(2) noline) ///
+			ylabel(none, format(%3.0f) axis(1) noticks) yscale(range(0 -100) axis(1) noline) ///
 			xtitle("") ///
 			ytitle("", axis(1)) ///
 			ytitle("", axis(2)) ///
@@ -381,13 +381,10 @@ quietly {
 			note("Nota: La proyección representa el promedio geométrico de los últimos `difdef' años. {c U'}ltimo dato reportado: `=`aniofinal''t`trim_last'.") ///
 			name(deflactor, replace) ///
 			/// Added text
-			xline(`aniovp', lcolor("114 113 118") lpattern(dot) lwidth(medium)) ///
-			xline(`anioinicial', lcolor("114 113 118") lpattern(dot) lwidth(medium)) ///
-			xline(`aniomax', lcolor("114 113 118") lpattern(dot) lwidth(medium)) ///
-			text(`=(`defl_vp'-`defl_ini')*1.5+`defl_ini'' `=(`aniovp'-`anioinicial'-1)/2+`anioinicial'' "De `anioinicial' a `aniovp'," "el nivel de precios" "<-----     {bf:ha crecido `=string((1/`defl_ini'-1)*100,"%5.1fc")'%}     ----->", size(vsmall) place(0) justification(center) yaxis(2)) ///
-			text(`=(`defl_fin'-`defl_vp')*1.25+`defl_vp'' `=(`aniomax'-`aniofinal'-1)/2+`aniofinal'' "De `aniovp' a `aniomax'," "el nivel de precios" "<-----     {bf:crecerá `=string((`defl_fin'-1)*100,"%5.1fc")'%}     ----->", size(vsmall) place(0) justification(center) yaxis(2)) ///
-			text(`=`indi_ini'-1' `=`aniofinal'+`exo_def'/2-.5' "$paqueteEconomico", size(vsmall) place(12) justification(right) yaxis(1)) ///
-			text(`=`indi_fin'-1' `=`aniofinal'+`exo_def'+(`aniomax'-`aniofinal'-`exo_def')/2' "Proyectado", size(vsmall) place(12) justification(left)  yaxis(1)) ///
+			text(`=(`defl_fin'-`defl_vp')*.75+`defl_vp'' `=(`aniovp'-`anioinicial'-1)/2+`anioinicial'' "De `anioinicial' a `aniovp'," "el nivel de precios" "<-----     {bf:ha crecido `=string((1/`defl_ini'-1)*100,"%5.1fc")'%}     ----->", size(small) place(0) justification(center) yaxis(2)) ///
+			text(`=(`defl_fin'-`defl_vp')*.75+`defl_vp'' `=(`aniomax'-`aniofinal'-1)/2+`aniofinal'' "De `aniovp' a `aniomax'," "el nivel de precios" "<-----     {bf:crecerá `=string((`defl_fin'-1)*100,"%5.1fc")'%}     ----->", size(small) place(0) justification(center) yaxis(2)) ///
+			text(0 `=`aniofinal'+`exo_def'/2-.5' "$paqueteEconomico", size(vsmall) place(12) justification(right) yaxis(2)) ///
+			text(0 `=`aniofinal'+`exo_def'+(`aniomax'-`aniofinal'-`exo_def')/2' "Proyectado", size(vsmall) place(12) justification(left)  yaxis(2)) ///
 
 		capture confirm existence $export
 		if _rc == 0 {
@@ -438,19 +435,19 @@ quietly {
 		twoway ///
 			(bar `pibYRmil' anio if (anio < `aniofinal' & anio >= `anioinicial') | (anio == `aniofinal' & trimestre == 12), ///
 				yaxis(2) mlabel(`pibYRmil') mlabpos(12) mlabcolor("114 113 118") mlabgap(0pt) mlabsize(tiny) barwidth(.75)) ///
-			(bar `pibYRmil' anio if anio < `aniofinal'+`exo_def' & anio > `aniofinal', ///
+			(bar `pibYRmil' anio if anio < `aniofinal'+`exo_def' & anio >= `aniofinal', ///
 				yaxis(2) mlabel(`pibYRmil') mlabpos(12) mlabcolor("114 113 118") mlabgap(0pt) mlabsize(tiny) barwidth(.1)) ///
 			(bar `pibYRmil' anio if anio >= `aniofinal'+`exo_def', ///
 				yaxis(2) mlabel(`pibYRmil') mlabpos(12) mlabcolor("114 113 118") mlabgap(0pt) mlabsize(tiny) barwidth(.1)) ///
 			(connected var_pibY anio if (anio < `aniofinal' & anio >= `anioinicial') | (anio == `aniofinal' & trimestre == 12), ///
-				yaxis(1) mlabel(var_pibY) mlabpos(12) mlabcolor("114 113 118") mlabsize(tiny) mstyle(p1) lstyle(p1)) ///
-			(connected var_pibY anio if anio < `aniofinal'+`exo_def' & anio > `aniofinal', ///
+				yaxis(1) mlabel(var_pibY) mlabpos(12) mlabcolor("114 113 118") mlabsize(tiny) mstyle(p1) lstyle(p1) lpattern(dot) msize(small)) ///
+			(connected var_pibY anio if anio < `aniofinal'+`exo_def' & anio >= `aniofinal', ///
 				yaxis(1) mlabel(var_pibY) mlabpos(12) mlabcolor("114 113 118") mlabsize(tiny) mstyle(p2) lstyle(p2) lpattern(dot) msize(small)) ///
 			(connected var_pibY anio if anio >= `aniofinal'+`exo_def', ///
 				yaxis(1) mlabel(var_pibY) mlabpos(12) mlabcolor("114 113 118") mlabsize(tiny) mstyle(p3) lstyle(p3) lpattern(dot) msize(small)) ///
 			, ///
 			title("`graphtitle'") ///
-			subtitle(" Crecimiento y nivel de producción de la economía, billones MXN `aniovp'") ///
+			subtitle("    Nivel de producto per cápita (billones MXN `aniovp') y crecimiento anual (%)", margin(bottom)) ///
 			xtitle("") ///
 			ytitle("", axis(1)) ///
 			ytitle("", axis(2)) ///
@@ -458,21 +455,21 @@ quietly {
 			ylabel(none, format(%3.0f) axis(2) noticks) ///
 			ylabel(none, format(%3.0f) axis(1) noticks) ///
 			yscale(range(0 `=`pibYRmil2'[1,1]-2.75*(`pibYRmil2'[2,1]-`pibYRmil2'[1,1])') axis(1) noline) ///
-			yscale(range(0 `=`pibYRmil2'[2,1]*1.75') axis(2) noline) ///
+			yscale(range(0 `=`pibYRmil2'[2,1]*2') axis(2) noline) ///
 			legend(off label(1 "INEGI, SCN 2018") label(2 "$paqueteEconomico") label(3 "Proyección") order(1 2 3)) ///
 			caption("`graphfuente'") ///
 			note("Nota: La proyección incluye la transición de personas en edad de trabajar con una productividad anual de `=string(llambda,"%5.2fc")'%. {c U'}ltimo dato reportado: `=`aniofinal''t`trim_last'.") ///
 			name(pib, replace) ///
 			/// Added text
-			xline(`aniovp', lcolor("114 113 118") lpattern(dot) lwidth(medium)) ///
-			xline(`anioinicial', lcolor("114 113 118") lpattern(dot) lwidth(medium)) ///
-			xline(`aniomax', lcolor("114 113 118") lpattern(dot) lwidth(medium)) ///
-			text(`=`pibYRmil2'[1,2]-(`pibYRmil2'[2,2]-`pibYRmil2'[1,2])' `=(`aniovp'-`anioinicial'-1)/2+`anioinicial'' ///
-				"De `anioinicial' a `aniovp'," "los precios de la canasta" "<-----     {bf:han crecido `=string((1/`defl_ini'-1)*100,"%5.1fc")'%}     ----->", size(small) place(0) justification(center) yaxis(1)) ///
-			text(`=`pibYRmil2'[1,2]-(`pibYRmil2'[2,2]-`pibYRmil2'[1,2])' `=(`aniomax'-`aniofinal'-1)/2+`aniofinal'' ///
-				"De `aniovp' a `aniomax'," "los precios de la canasta" "<-----     {bf:crecerían `=string((`defl_fin'-1)*100,"%5.1fc")'%}     ----->", size(small) place(0) justification(center) yaxis(1)) ///
-			text(`=`pibYRmil2'[1,2]*.3' `=`aniofinal'+`exo_def'/2-.5' "$paqueteEconomico", size(vsmall) place(12) justification(right) yaxis(1)) ///
-			text(`=`pibYRmil2'[1,2]*.3' `=`aniofinal'+`exo_def'+(`aniomax'-`aniofinal'-`exo_def')/2' "Proyectado", size(vsmall) place(12) justification(left)  yaxis(1)) ///
+			///xline(`aniovp', lcolor("114 113 118") lpattern(dot) lwidth(medium)) ///
+			///xline(`anioinicial', lcolor("114 113 118") lpattern(dot) lwidth(medium)) ///
+			///xline(`aniomax', lcolor("114 113 118") lpattern(dot) lwidth(medium)) ///
+			text(`=`pibYRmil2'[2,1]*1.1' `=(`aniovp'-`anioinicial'-1)/2+`anioinicial'' ///
+				"De `anioinicial' a `aniovp'," "el PIB real" "<-----     {bf:ha crecido `=string((`pib_vp'/`pib_ini'-1)*100,"%5.1fc")'%}     ----->", size(small) place(0) justification(center) yaxis(2)) ///
+			text(`=`pibYRmil2'[2,1]*1.4' `=(`aniomax'-`aniofinal'-1)/2+`aniofinal'' ///
+				"De `aniovp' a `aniomax'," "el PIB real" "<-----     {bf:crecería `=string((`pib_fin'/`pib_vp'-1)*100,"%5.1fc")'%}     ----->", size(small) place(0) justification(center) yaxis(2)) ///
+			text(0 `=`aniofinal'+`exo_def'/2-.5' "$paqueteEconomico", size(vsmall) place(12) justification(right) yaxis(2)) ///
+			text(0 `=`aniofinal'+`exo_def'+(`aniomax'-`aniofinal'-`exo_def')/2' "Proyectado", size(vsmall) place(12) justification(left) yaxis(2)) ///
 
 
 		capture confirm existence $export
@@ -532,19 +529,19 @@ quietly {
 
 		twoway (bar PIBPob anio if (anio < `aniofinal' & anio >= `anioinicial') | (anio == `aniofinal' & trimestre == 12), ///
 				yaxis(2) mlabel(PIBPob) mlabposition(12) mlabcolor("114 113 118") mlabgap(0pt) mlabsize(tiny) barwidth(.75)) ///
-			(bar PIBPob anio if anio < `aniofinal'+`exo_count' & anio > `aniofinal', ///
+			(bar PIBPob anio if anio < `aniofinal'+`exo_count' & anio >= `aniofinal', ///
 				yaxis(2) mlabel(PIBPob) mlabposition(12) mlabcolor("114 113 118") mlabgap(0pt) mlabsize(tiny) barwidth(.1)) ///
 			(bar PIBPob anio if anio >= `aniofinal'+`exo_def', ///
 				yaxis(2) mlabel(PIBPob) mlabposition(12) mlabcolor("114 113 118") mlabgap(0pt) mlabsize(tiny) barwidth(.1)) ///			
 			(connected var_pibPob anio if (anio < `aniofinal' & anio >= `anioinicial') | (anio == `aniofinal' & trimestre == 12), ///
-				yaxis(1) mlabel(var_pibPob) mlabpos(12) mlabcolor("114 113 118") mlabsize(tiny) mstyle(p1) lstyle(p1)) ///
-			(connected var_pibPob anio if anio < `aniofinal'+`exo_def' & anio > `aniofinal', ///
+				yaxis(1) mlabel(var_pibPob) mlabpos(12) mlabcolor("114 113 118") mlabsize(tiny) mstyle(p1) lstyle(p1) lpattern(dot) msize(small)) ///
+			(connected var_pibPob anio if anio < `aniofinal'+`exo_def' & anio >= `aniofinal', ///
 				yaxis(1) mlabel(var_pibPob) mlabpos(12) mlabcolor("114 113 118") mlabsize(tiny) mstyle(p2) lstyle(p2) lpattern(dot) msize(small)) ///
 			(connected var_pibPob anio if anio >= `aniofinal'+`exo_def', ///
 				yaxis(1) mlabel(var_pibPob) mlabpos(12) mlabcolor("114 113 118") mlabsize(tiny) mstyle(p3) lstyle(p3) lpattern(dot) msize(small)) ///
 			, ///
 			title("`graphtitle'") ///
-			subtitle(" Nivel de producto per cápita (miles MXN `aniovp') y crecimiento anual (%)", margin(bottom)) ///
+			subtitle("    Nivel de producto per cápita (miles MXN `aniovp') y crecimiento anual (%)", margin(bottom)) ///
 			xtitle("") ///
 			ytitle("", axis(1)) ///
 			ytitle("", axis(2)) ///
@@ -558,15 +555,15 @@ quietly {
 			caption("`graphfuente'") ///
 			name(pib_pc, replace) ///
 			/// Added text
-			xline(`aniovp', lcolor("114 113 118") lpattern(dot) lwidth(medium)) ///
-			xline(`anioinicial', lcolor("114 113 118") lpattern(dot) lwidth(medium)) ///
-			xline(`aniomax', lcolor("114 113 118") lpattern(dot) lwidth(medium)) ///
-			text(`=`pibPob'[1,2]-(`pibPob'[2,2]-`pibPob'[1,2])' `=(`aniovp'-`anioinicial'-1)/2+`anioinicial'' ///
-				"De `anioinicial' a `aniovp'," "los precios de la canasta" "<-----     {bf:han crecido `=string((1/`defl_ini'-1)*100,"%5.1fc")'%}     ----->", size(small) place(0) justification(center) yaxis(1)) ///
-			text(`=`pibPob'[1,2]-(`pibPob'[2,2]-`pibPob'[1,2])' `=(`aniomax'-`aniofinal'-1)/2+`aniofinal'' ///
-				"De `aniovp' a `aniomax'," "los precios de la canasta" "<-----     {bf:crecerían `=string((`defl_fin'-1)*100,"%5.1fc")'%}     ----->", size(small) place(0) justification(center) yaxis(1)) ///
-			text(`=`pibPob2'[1,1]-0*`pibPob2'[1,1]' `=`aniofinal'+`exo_def'/2-.5' "$paqueteEconomico", size(vsmall) place(12) justification(right) yaxis(1)) ///
-			text(`=`pibPob3'[1,1]-0*`pibPob3'[1,1]' `=`aniofinal'+`exo_def'+(`aniomax'-`aniofinal'-`exo_def')/4' "Proyectado", size(vsmall) place(12) justification(left)  yaxis(1)) ///
+			///xline(`aniovp', lcolor("114 113 118") lpattern(dot) lwidth(medium)) ///
+			///xline(`anioinicial', lcolor("114 113 118") lpattern(dot) lwidth(medium)) ///
+			///xline(`aniomax', lcolor("114 113 118") lpattern(dot) lwidth(medium)) ///
+			text(`=`pibPob'[2,1]*1.15' `=(`aniovp'-`anioinicial'-1)/2+`anioinicial'' ///
+				"De `anioinicial' a `aniovp'," "el PIB por persona" "<-----     {bf:han crecido `=string((`pib_vp'/`pib_ini'-1)*100,"%5.1fc")'%}     ----->", size(small) place(0) justification(center) yaxis(2)) ///
+			text(`=`pibPob'[2,1]*1.35' `=(`aniomax'-`aniofinal'-1)/2+`aniofinal'' ///
+				"De `aniovp' a `aniomax'," "el PIB por persona" "<-----     {bf:crecerían `=string((`pib_fin'/`pib_vp'-1)*100,"%5.1fc")'%}     ----->", size(small) place(0) justification(center) yaxis(2)) ///
+			text(0 `=`aniofinal'+`exo_def'/2-.5' "$paqueteEconomico", size(vsmall) place(12) justification(right) yaxis(2)) ///
+			text(0 `=`aniofinal'+`exo_def'+(`aniomax'-`aniofinal'-`exo_def')/2' "Proyectado", size(vsmall) place(12) justification(left)  yaxis(2)) ///
 
 
 		capture confirm existence $export
@@ -625,40 +622,40 @@ quietly {
 		twoway ///
 			(bar deflatorpp anio if (anio < `aniofinal' & anio >= `anioinicial') | (anio == `aniofinal' & trimestre == 12), ///
 				yaxis(2) mlabel(deflatorpp) mlabposition(12) mlabcolor("114 113 118") mlabgap(0pt) mlabsize(tiny) barwidth(.75)) ///
-			(bar deflatorpp anio if anio < `aniofinal'+`exo_def' & anio > `aniofinal', ///
+			(bar deflatorpp anio if anio < `aniofinal'+`exo_def' & anio >= `aniofinal', ///
 				yaxis(2) mlabel(deflatorpp) mlabposition(12) mlabcolor("114 113 118") mlabgap(0pt) mlabsize(tiny) barwidth(.1)) ///
 			(bar deflatorpp anio if anio >= `aniofinal'+`exo_def', ///
 				yaxis(2) mlabel(deflatorpp) mlabposition(12) mlabcolor("114 113 118") mlabgap(0pt) mlabsize(tiny) barwidth(.1)) ///
 			(connected var_inflY anio if (anio < `aniofinal' & anio >= `anioinicial') | (anio == `aniofinal' & trimestre == 12), ///
-				yaxis(1) mlabel(var_inflY) mlabpos(12) mlabcolor("114 113 118") mlabsize(tiny) mstyle(p1) lstyle(p1)) ///
-			(connected var_inflY anio if anio < `aniofinal'+`exo_def' & anio > `aniofinal', ///
+				yaxis(1) mlabel(var_inflY) mlabpos(12) mlabcolor("114 113 118") mlabsize(tiny) mstyle(p1) lstyle(p1) lpattern(dot) msize(small)) ///
+			(connected var_inflY anio if anio < `aniofinal'+`exo_def' & anio >= `aniofinal', ///
 				yaxis(1) mlabel(var_inflY) mlabpos(12) mlabcolor("114 113 118") mlabsize(tiny) mstyle(p2) lstyle(p2) lpattern(dot) msize(small)) ///
 			(connected var_inflY anio if anio >= `aniofinal'+`exo_def', ///
 				yaxis(1) mlabel(var_inflY) mlabpos(12) mlabcolor("114 113 118") mlabsize(tiny) mstyle(p3) lstyle(p3) lpattern(dot) msize(small)) ///
 			, ///
 			title("`graphtitle'") ///
-			subtitle(" Nivel de precios de la canasta representativa (`aniovp'=1.0) y crecimiento anual (%)", margin(bottom)) ///
+			subtitle("    Nivel de precios de la canasta del consumidor (`aniovp'=1.0) y crecimiento anual (%)", margin(bottom)) ///
 			xtitle("") ///
 			ytitle("", axis(1)) ///
 			ytitle("", axis(2)) ///
 			xlabel(`=round(`anioinicial',5)'(5)`aniomax') ///
 			ylabel(none, format(%3.0f) axis(2) noticks) ///
 			ylabel(none, format(%3.0f) axis(1) noticks) ///
-			yscale(range(0 `=`deflatorpp'[1,1]-4.75*(`deflatorpp'[2,1]-`deflatorpp'[1,1])') axis(1) noline) ///
-			yscale(range(0 `=`deflatorpp'[2,1]*1.25') axis(2) noline) ///
+			yscale(range(0 10) axis(2) noline) ///
+			yscale(range(0 -100) axis(1) noline) ///
 			legend(off label(1 "INEGI, SCN 2018") label(2 "$paqueteEconomico") label(3 "Proyección") order(1 2 3)) ///
 			note("La proyección se calcula con el promedio móvil geométrico de los últimos `difdef' años. {c U'}ltimo dato: `=`aniofinal''t`trim_last'.") ///
 			caption("`graphfuente'") ///
 			name(inflacion, replace) ///
 			/// Added text
-			xline(`aniovp', lcolor("114 113 118") lpattern(dot) lwidth(medium)) ///
-			xline(`anioinicial', lcolor("114 113 118") lpattern(dot) lwidth(medium)) ///
-			text(`=`deflatorpp'[1,2]+.618*(`deflatorpp'[2,2]-`deflatorpp'[1,2])' `=(`aniovp'-`anioinicial'-1)/2+`anioinicial'' ///
-				"De `anioinicial' a `aniovp'," "los precios de la canasta" "<-----     {bf:han crecido `=string((1/`defl_ini'-1)*100,"%5.1fc")'%}     ----->", size(small) place(0) justification(center) yaxis(1)) ///
-			text(`=`deflatorpp'[1,2]+.618*(`deflatorpp'[2,2]-`deflatorpp'[1,2])' `=(`aniomax'-`aniofinal'-1)/2+`aniofinal'' ///
-				"De `aniovp' a `aniomax'," "los precios de la canasta" "<-----     {bf:crecerían `=string((`defl_fin'-1)*100,"%5.1fc")'%}     ----->", size(small) place(0) justification(center) yaxis(1)) ///
-			text(`=`deflatorpp2'[1,1]-0.1*`deflatorpp2'[1,1]' `=`aniofinal'+`exo_def'/2-.5' "$paqueteEconomico", size(vsmall) place(12) justification(right) yaxis(1)) ///
-			text(`=`deflatorpp3'[1,1]-0.1*`deflatorpp3'[1,1]' `=`aniofinal'+`exo_def'+(`aniomax'-`aniofinal'-`exo_def')/4' "Proyectado", size(vsmall) place(12) justification(left)  yaxis(1)) ///
+			///xline(`aniovp', lcolor("114 113 118") lpattern(dot) lwidth(medium)) ///
+			///xline(`anioinicial', lcolor("114 113 118") lpattern(dot) lwidth(medium)) ///
+			text(`=(`defl_fin'-`defl_vp')*.75+`defl_vp'' `=(`aniovp'-`anioinicial'-1)/2+`anioinicial'' ///
+				"De `anioinicial' a `aniovp'," "el nivel de precios" "<-----     {bf:han crecido `=string((1/`defl_ini'-1)*100,"%5.1fc")'%}     ----->", size(small) place(0) justification(center) yaxis(2)) ///
+			text(`=(`defl_fin'-`defl_vp')*.75+`defl_vp'' `=(`aniomax'-`aniofinal'-1)/2+`aniofinal'' ///
+				"De `aniovp' a `aniomax'," "el nivel de precios" "<-----     {bf:crecerían `=string((`defl_fin'-1)*100,"%5.1fc")'%}     ----->", size(small) place(0) justification(center) yaxis(2)) ///
+			text(0 `=`aniofinal'+`exo_def'/2-.5' "$paqueteEconomico", size(vsmall) place(12) justification(right) yaxis(2)) ///
+			text(0 `=`aniofinal'+`exo_def'+(`aniomax'-`aniofinal'-`exo_def')/2' "Proyectado", size(vsmall) place(12) justification(left)  yaxis(2)) ///
 
 
 		capture confirm existence $export

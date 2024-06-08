@@ -467,7 +467,7 @@ quietly {
 			g `connectedPIB`k'' = recaudacionR/`connectedTOT`k''*100 if resumido == `k'
 			format `recaudacionPIB`k'' `connectedPIB`k'' %7.1fc
 
-			local extras = `"`extras' (bar `recaudacionPIB`k'' anio if anio <= `anio' & resumido == `k', mlabpos(6) mlabcolor("114 113 118") mlabsize(medium) lpattern(dot) msize(medlarge)) "'
+			local extras = `"`extras' (bar `recaudacionPIB`k'' anio if anio <= `anio' & resumido == `k', mlabpos(6) mlabcolor("114 113 118") barwidth(.8)) "'
 		}
 		local legend `"`legend' label(`=`totlev'+1' "Recaudación total")"'
 		
@@ -488,7 +488,7 @@ quietly {
 
 		egen `recaudacionby' = sum(recaudacion), by(anio)
 		g `recaudacionline' = `recaudacionby'/recaudacionTOT*100
-		format recaudacion* `recaudacionbar' `recaudacionline' `recaudacionby' %15.1fc
+		format recaudacion* `recaudacionbar' `recaudacionline' `recaudacionby' %15.0fc
 
 		* Información agregada *
 		egen recaudacionPIBTOT = sum(recaudacionPIB), by(anio)
@@ -521,14 +521,14 @@ quietly {
 		}
 
 		twoway `extras' ///
-			(connected `recaudacionline' anio if resumido == resumido[1], mlabpos(12) mlabcolor("114 113 118") mlabsize(medium) mlabel(`recaudacionline') lpattern(dot) yaxis(2)) ///
-			(connected recaudacionPIBTOT anio if resumido == resumido[1], mlabpos(12) mlabcolor("114 113 118") mlabsize(medium) mlabel(recaudacionPIBTOT) lpattern(dot)) ///
+			(connected `recaudacionline' anio if resumido == resumido[1], mlabpos(12) mlabcolor("111 111 111") mlabel(`recaudacionline') yaxis(2) mlabsize(large)) ///
+			(connected recaudacionPIBTOT anio if resumido == resumido[1], mlabpos(12) mlabcolor("111 111 111") mlabel(recaudacionPIBTOT) mlabsize(large)) ///
 			if anio <= `anio', ///
 			///over(resumido, sort(1) descending) over(anio, gap(30)) ///
 			///stack asyvars blabel(bar, format(%7.1fc)) outergap(0) ///
 			name(ingresos`by'PIB, replace) ///
 			title("`graphtitle'") ///
-			yscale(range(0 `=`maxPIBTOT'[1,1]*1.25')) ///
+			yscale(range(0 `=`maxPIBTOT'[1,1]*1.75')) ///
 			yscale(range(-50 `=`maxPIBTOT'[1,2]*1.1') axis(2) noline) ///
 			ylabel(none, format(%7.1fc) labsize(small)) ///
 			ylabel(none, axis(2)) ///
@@ -539,8 +539,8 @@ quietly {
 			///subtitle("Recaudación, como % del PIB") ///
 			legend(on position(6) rows(`rows') cols(`cols') `legend' region(margin(zero)) order(`order') justification(left)) ///
 			/// Added text 
-			text(`=recaudacionPIBTOT[1]' `=anio[1]' "{bf:% PIB}", size(medium) placement(6)) ///
-			text(`=`recaudacionline'[1]' `=anio[1]' "{bf:% LIF}", size(medium) placement(6) yaxis(2)) ///
+			text(`=recaudacionPIBTOT[1]*.9' `=anio[1]' "{bf:% PIB}", placement(6)) ///
+			text(`=`recaudacionline'[1]*.9' `=anio[1]' "{bf:% LIF}", placement(6) yaxis(2)) ///
 			b1title("De `desde' a `anio', la {bf:recaudación `cambio' `=string(abs(`finPIBTOT'[1,1]-`iniPIBTOT'[1,1]),"%7.1fc")'} puntos porcentuales del PIB.")
 
 		/*grc1leg ///
