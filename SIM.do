@@ -98,7 +98,9 @@ global inf2029 = 3.0
 * Inputs: LIFs + Estadísticas Oportunas. Archivo: LIFs.xlsx.
 * Outputs: Bases de datos con ingresos, gastos y deuda para todos los años.
 * Fuentes. SHCP, Estadísticas Oportunas. Ver archivos "UpdateLIF.do".
-noisily LIF if divPE == 2 & divCIEP != 2, by(divCIEP) rows(1) anio(`=anioPE') $update desde(2008) min(0) title(" ")
+//set scheme ciepnewrojos
+//set scheme ciepnewazules
+noisily LIF if divCIEP2 != 1, by(divCIEP) rows(2) anio(`=anioPE') $update desde(2008) min(1) title(" ")
 exit
 * 1.3.2 Presupuesto de Egresos de la Federación **
 * Inputs: Cuentas Públicas y PEF/PPEF (varios años). Archivos: CPXXXX.xlsx, PEFXXXX.xlsx o PPEFXXXX.xlsx.

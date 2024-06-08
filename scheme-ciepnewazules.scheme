@@ -249,42 +249,20 @@ linepattern p16line dot
 linepattern p17line dot
 
 
-// Amariilos
-color 		p1			"210,213,32"
-color 		p2			"255,153,51"
-color 		p3			"255,255,0"
-color 		p4			"102,255,51"
-color 		p5			"255,204,0"
-color 		p6			"102,255,153"
-color 		p7			"255,102,51"
-color 		p8			"255,255,102"
-color 		p9			"255,51,153"
-color 		p10			"255,255,204"
-color 		p11			"255,204,102"
-color 		p12			"255,153,102"
-color 		p13			"102,204,153"
-color 		p14			"255,255,153"
-color 		p15			"255,102,204"
-color 		p16			"255,255,51"
-color 		p17			"255,204,153"
-color 		p18			"204,204,51"
-color 		p19			"153,255,153"
-color 		p20			"102,255,102"
 
-
-// Verdes
-color 		p1			"31,74,69"
-color 		p2			"158,222,185"
-color 		p3			"0,112,84"
-color 		p4			"38,203,139"
-color 		p5			"56,128,90"
-color 		p6			"79,180,114"
-color 		p7			"0,90,198"
-color 		p8			"6,62,160"
-color 		p9			"57,198,184"
-color 		p10			"12,45,121"
-color 		p11			"176,232,227"
-color 		p12			"6,23,61"
+// Azules originales
+color 		p1			"6,23,61"
+color 		p2			"176,232,227"
+color 		p3			"12,45,121"
+color 		p4			"57,198,184"
+color 		p5			"6,62,160"
+color 		p6			"0,90,198"
+color 		p7			"186,43,43"
+color 		p8			"255,119,108"
+color 		p9			"169,7,156"
+color 		p10			"211,98,210"
+color 		p11			"134,90,75"
+color 		p12			"210,167,128"
 color 		p13			"122,124,128"
 color 		p14			"175,174,180"
 color 		p15			"0,0,0"
@@ -292,53 +270,30 @@ color 		p16			"255,255,255"
 color 		p17			"74,74,74"
 
 
-// Ingresos
-color 		p1			"40,173,58"
-color 		p2			"255,69,0"
-color 		p3			"0,151,201"
-color 		p4			"255,215,48"
-color 		p5			"210,213,32"
-color 		p6			"255,129,0"
-color 		p7			"57,198,184"
-color 		p8			"255,40,0"
-color 		p9			"133,88,14"
-color 		p10			"255,235,48"
-color 		p11			"23,105,114"
-color 		p12			"150,6,92"
-color 		p13			"102,62,76"
-color 		p14			"9,63,93"
-color 		p15			"224,97,83"
-color 		p16			"227,229,99"
-color 		p17			"181,185,27"
-color 		p18			"53,200,71"
-color 		p19			"254,118,109"
-color 		p20			"213,155,190"
+// Azules chat-gpt
+color p1 "57,198,184"  // Base, azul
+color p2 "102,177,0"  // Verde vibrante
+color p3 "0,151,201"  // Azul vibrante
+color p4 "255,129,0"  // Naranja vibrante
+color p5 "255,189,0"  // Amarillo vibrante
+color p6 "255,55,0"  // Rojo vibrante
+color p7 "150,6,92"  // Magenta vibrante
+color p8 "175,174,180"  // Gris vibrante
 
+color p9  "0,180,148"  // Verde-azul triadas
+color p10 "0,151,125"  // Verde oscuro triadas
+color p11 "103,223,87"  // Verde claro triadas
+color p12 "53,200,71"  // Verde triadas
+color p13 "40,173,58"  // Verde oscuro triadas
+color p14 "227,229,99"  // Amarillo pastel triadas
+color p15 "210,213,32"  // Amarillo-verde triadas
+color p16 "181,185,27"  // Oliva triadas
 
-// Colores CIEP
-color p1 "255,129,0"  // Vibrante
-color p2 "255,189,0"  // Vibrante
-color p3 "150,6,92"  // Vibrante
-color p4 "0,151,201"  // Vibrante
-color p5 "255,55,0"  // Vibrante
-color p6 "102,177,0"  // Vibrante
-color p7 "0,78,198"  // Vibrante
-color p8 "175,174,180"  // Vibrante
-
-color p9  "57,198,184"  // Triadas
-color p10 "0,180,148"  // Triadas
-color p11 "0,151,125"  // Triadas
-color p12 "103,223,87"  // Triadas
-color p13 "53,200,71"  // Triadas
-color p14 "40,173,58"  // Triadas
-color p15 "227,229,99"  // Triadas
-color p16 "210,213,32"  // Triadas
-
-color p17 "181,185,27"  // Triadas
-color p18 "255,182,76"  // Triadas
-color p19 "239,143,51"  // Triadas
-color p20 "220,117,0"  // Triadas
-color p21 "254,118,109"  // Triadas
-color p22 "224,97,83"  // Triadas
-color p23 "194,76,68"  // Triadas
-color p24 "186,34,64"  // Triadas
+color p17 "255,182,76"  // Amarillo pálido triadas
+color p18 "239,143,51"  // Naranja pastel triadas
+color p19 "220,117,0"  // Naranja oscuro triadas
+color p20 "254,118,109"  // Rojo pastel triadas
+color p21 "224,97,83"  // Rojo oscuro triadas
+color p22 "194,76,68"  // Marrón triadas
+color p23 "186,34,64"  // Magenta oscuro triadas
+color p24 "75,0,130"  // Índigo triadas
