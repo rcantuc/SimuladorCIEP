@@ -270,29 +270,21 @@ color p17 "74,74,74"
 
 
 // Color Salud
-color p1 "57,198,184"  // Vibrante, turquesa
-color p2 "0,180,148"  // Vibrante, verde-azul
-color p3 "0,151,125"  // Vibrante, verde oscuro
-color p4 "103,223,87"  // Vibrante, verde claro
-color p5 "53,200,71"  // Vibrante, verde
-color p6 "40,173,58"  // Vibrante, verde oscuro
-color p7 "227,229,99"  // Vibrante, amarillo pastel
-color p8 "210,213,32"  // Vibrante, amarillo-verde
+color p1 "150,6,92"  // Magenta
+color p2 "255,189,0"  // Amarillo
+color p3 "57,198,184"  // Turquesa
+color p4 "254,118,109"  // Rojo pastel
+color p5 "210,213,32"  // Amarillo-verde
+color p6 "0,78,198"  // Azul oscuro
+color p7 "255,129,0"  // Naranja
+color p8 "40,173,58"  // Verde oscuro
 
-color p9  "181,185,27"  // Vibrante, oliva
-color p10 "255,182,76"  // Vibrante, amarillo pálido
-color p11 "239,143,51"  // Vibrante, naranja pastel
-color p12 "220,117,0"  // Vibrante, naranja oscuro
-color p13 "254,118,109"  // Vibrante, rojo pastel
-color p14 "224,97,83"  // Vibrante, rojo oscuro
-color p15 "194,76,68"  // Vibrante, marrón
-color p16 "186,34,64"  // Vibrante, magenta oscuro
+color p9  "213,155,190"  // Pastel rosa
+color p10 "255,229,153"  // Amarillo pálido
+color p11 "176,232,227"  // Verde-azul claro
+color p12 "255,200,197"  // Salmón claro
+color p13 "237,238,166"  // Amarillo pálido
+color p14 "153,184,232"  // Azul claro
+color p15 "255,205,153"  // Durazno
+color p16 "169,222,176"  // Verde pálido
 
-color p17 "255,129,0"  // Vibrante, naranja
-color p18 "255,189,0"  // Vibrante, amarillo
-color p19 "150,6,92"  // Vibrante, magenta
-color p20 "0,151,201"  // Vibrante, azul
-color p21 "255,55,0"  // Vibrante, rojo
-color p22 "102,177,0"  // Vibrante, verde
-color p23 "0,78,198"  // Vibrante, azul oscuro
-color p24 "175,174,180"  // Vibrante, gris
