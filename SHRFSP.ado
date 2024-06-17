@@ -29,7 +29,7 @@ quietly {
 	****************
 	use in 1 using `"`c(sysdir_personal)'/SIM/SHRFSP.dta"', clear
 	syntax [if] [, ANIO(int `aniovp' ) DEPreciacion(int 5) NOGraphs UPDATE Base ///
-		 ULTAnio(int 1993)]
+		 ULTAnio(int 2001)]
 	
 	noisily di _newline(2) in g _dup(20) "." "{bf:  Sistema Fiscal: DEUDA $pais " in y `anio' "  }" in g _dup(20) "."
 

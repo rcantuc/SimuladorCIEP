@@ -100,15 +100,15 @@ global inf2029 = 3.0
 * Fuentes. SHCP, Estadísticas Oportunas. Ver archivos "UpdateLIF.do".
 //set scheme ciepnewrojos
 //set scheme ciepnewazules
-noisily LIF if divCIEP2 != 1, by(divCIEP) rows(2) anio(`=anioPE') $update desde(2008) min(1) title(" ")
-exit
+noisily LIF if divPE == 2 & divCIEP != 2, by(divCIEP) rows(1) anio(`=anioPE') $update desde(2014) min(1) title(" ")
+
 * 1.3.2 Presupuesto de Egresos de la Federación **
 * Inputs: Cuentas Públicas y PEF/PPEF (varios años). Archivos: CPXXXX.xlsx, PEFXXXX.xlsx o PPEFXXXX.xlsx.
 * Outputs: Bases de datos con gastos ejercidos/aprobados/proyectados para todos los años.
 * Fuentes. SHCP, Cuentas Públicas. Ver archivo "UpdatePEF.do".
-//noisily PEF, by(divCIEP) rows(2) min(0) anio(`=anioPE') $update desde(2018)
+noisily PEF if ramo == 52, by(divSIM) rows(1) min(0) anio(`=anioPE') $update desde(2014) title(" ") 
 
-
+exit
 ***********************
 ** 1.4 Subnacionales **
 * Inputs: ingresos, gastos y deuda de los gobiernos subnacionales.
@@ -283,7 +283,7 @@ matrix CSS_ISSSTE = ///
 		0.000,		5.000,			0.000	\   /// Vivienda
 		0.000,		0.000,			13.9)		//  Cuota social
 
-if "`cambioisrpf'" == "" {
+if "`cambioisrpf'" == "1" {
 	noisily run "ISR_Mod.do"
 	scalar ISRAS  = ISR_AS_Mod
 	scalar ISRPF  = ISR_PF_Mod
@@ -297,16 +297,16 @@ if "`cambioisrpf'" == "" {
 * Inputs: Archivo "`c(sysdir_personal)'/SIM/perfiles`=anioPE'.dta" o "`c(sysdir_site)'/users/$pais/$id/households.dta"
 * Outputs: Archivo "`c(sysdir_site)'/users/$pais/$id/households.dta" actualizado más scalar IVA.
 matrix IVAT = (16 \     ///  1  Tasa general 
-	1+2  \     ///  2  Alimentos, input[1]: Tasa Cero, [2]: Exento, [3]: Gravado
-	2+1  \     ///  3  Alquiler, idem
-	1+2  \     ///  4  Canasta basica, idem
-	2+1  \     ///  5  Educacion, idem
+	1  \     ///  2  Alimentos, input[1]: Tasa Cero, [2]: Exento, [3]: Gravado
+	2  \     ///  3  Alquiler, idem
+	1  \     ///  4  Canasta basica, idem
+	2  \     ///  5  Educacion, idem
 	3  \     ///  6  Consumo fuera del hogar, idem
 	3  \     ///  7  Mascotas, idem
-	1+2  \     ///  8  Medicinas, idem
-	1+2  \     ///  9  Toallas sanitarias, idem
+	1  \     ///  8  Medicinas, idem
+	1  \     ///  9  Toallas sanitarias, idem
 	3  \     /// 10  Otros, idem
-	2+1  \     /// 11  Transporte local, idem
+	2  \     /// 11  Transporte local, idem
 	3  \     /// 12  Transporte foraneo, idem
 	28.22)   //  13  Evasion e informalidad IVA, input[0-100]
 
@@ -347,9 +347,8 @@ matrix IEPST = (26.5	,		0 			\ /// Cerveza y alcohol 14
 
 *********************************/
 ** 2.12 Integración de módulos ***
-noisily TasasEfectivas, anio(`=anioPE')
-exit
-noisily GastoPC, aniope(`=anioPE') aniovp(`=aniovp')
+//noisily TasasEfectivas, anio(`=anioPE')
+//noisily GastoPC, aniope(`=anioPE') aniovp(`=aniovp')
 
 
 
@@ -357,7 +356,7 @@ noisily GastoPC, aniope(`=anioPE') aniovp(`=aniovp')
 ***                        ***
 **#    3. CICLO DE VIDA    ***
 ***                        ***
-******************************
+/******************************
 use `"`c(sysdir_personal)'/users/$id/ingresos.dta"', clear
 merge 1:1 (folioviv foliohog numren) using "users/$id/gastos.dta", nogen
 *capture merge 1:1 (folioviv foliohog numren) using "users/$id/isr_mod.dta", nogen replace update keepus(ISRAS ISRPF ISRPM CUOTAS)
@@ -503,8 +502,8 @@ scalar costodeudaInterno2029 = 2.5
 scalar costodeudaExterno2029 = 2.5
 
 ** 4.2 Proyecciones: Saldo Histórico de los Requerimientos Financieros del Sector Público **/
-//noisily SHRFSP, ultanio(2001) anio(`=anioPE') $update
-
+noisily SHRFSP, anio(`=anioPE') $update
+exit
 ** 4.3 Sostenibilidad de la deuda y brecha fiscal **
 * Inputs: Archivo "`c(sysdir_site)'/users/$pais/$id/households.dta", SHRFSP, PEFs y LIFs.
 * Outputs: Sostenibilidad de la deuda y brecha fiscal hasta 2030.

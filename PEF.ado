@@ -1,66 +1,76 @@
 program define PEF, return
+timer on 5
 quietly {
 
-	timer on 5
-	***********************
-	*** 1 BASE DE DATOS ***
-	***********************
+	*****************
+	*** 0. INICIO ***
+	*****************
 
-	** 1.1 Anio valor presente **
-	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
-	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
+	** 0.1 Anio valor presente **
+	capture confirm scalar aniovp
+	if _rc == 0 {
+		local aniovp = scalar(aniovp)
+	}
+	else {
+		local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
+		local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
+	}
 
-	** ¿Existe base PEF.dta? **
-	capture confirm file "`c(sysdir_personal)'/SIM/$pais/PEF.dta"
+	** 0.2 Base PEF **
+	capture confirm file "`c(sysdir_personal)'/SIM/PEF.dta"
 	if _rc != 0 {
 		noisily UpdatePEF
 	}
 
-	capture confirm scalar aniovp
-	if _rc == 0 {
-		local aniovp = scalar(aniovp)
-	}	
 
 
 	****************
-	*** 2 SYNTAX ***
+	*** 1 SYNTAX ***
 	****************
-	use in 1 using "`c(sysdir_personal)'/SIM/$pais/PEF.dta", clear
-	syntax [if] [, ANIO(int `aniovp') NOGraphs Update Base ///
-		BY(varname) ROWS(int 2) COLS(int 5) MINimum(real 1) ///
-		PEF PPEF APROBado DESDE(int `=`aniovp'-1') ///
-		TITle(string) SUBTitle(string)]
+	use in 1 using "`c(sysdir_personal)'/SIM/PEF.dta", clear
+	syntax [if] [, ANIO(int `aniovp') BY(varname) ///
+		UPDATE NOGraphs Base ///
+		MINimum(real 1) DESDE(int -1) ///
+	 	PEF PPEF APROBado  ///
+		ROWS(int 2) COLS(int 5) ///
+		TITle(string)]
 
-	noisily di _newline(2) in g _dup(20) "." "{bf:  Sistema Fiscal: GASTOS $pais " in y `anio' "  }" in g _dup(20) "."
+	noisily di _newline(2) in g _dup(20) "." "{bf:  Sistema Fiscal: GASTOS " in y `anio' "  }" in g _dup(20) "."
 
-	** 2.1 PIB + Deflactor **
-	PIBDeflactor, anio(`anio') nographs nooutput
-	local currency = currency[1]
-	tempfile PIB
-	save "`PIB'"
-
-	** 2.2 Update PEF **
-	if "`update'" == "update" {
-		noisily UpdatePEF
+	* 1.1 Valor año mínimo *
+	if `desde' == -1 {
+		local desde = `anio'-10
 	}
 
-	** 2.2 Base RAW **
-	use `if' using "`c(sysdir_personal)'/SIM/$pais/PEF.dta", clear
+	* 1.2 Títulos y fuentes *
+	if "`title'" == "" {
+		local graphtitle "{bf:Gasto público}"
+		local graphfuente "Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/CPs/PEFs y $paqueteEconomico."
+	}
+	else {
+		local graphtitle "`title'"
+		local graphfuente ""
+	}
+
+	** 1.3 Base RAW **
 	if "`base'" == "base" {
+		use `if' using "`c(sysdir_personal)'/SIM/PEF.dta", clear
 		exit
 	}
 
-	** 2.3 Default `by' **
+	** 1.4 Valor default `by' **
 	if "`by'" == "" {
 		local by = "divCIEP"
 	}
+
+	* Modificaciones especiales *
 	replace desc_pp = 914 if desc_pp == 915
 	replace desc_pp = 71 if desc_pp == 72
 
 	** 2.4 Etiquetas abreviadas **
 	label define ramo 7 "SEDENA", modify
-	label define ramo 19 "Aportaciones a Seg Soc", modify
-	label define ramo 33 "Aportaciones federales", modify
+	label define ramo 19 "Aport a Seg Soc", modify
+	label define ramo 33 "Aport federales", modify
 	label define ramo 47 "No sectorizadas", modify
 	label define ramo 50 "IMSS", modify
 	label define ramo 51 "ISSSTE", modify
@@ -69,10 +79,38 @@ quietly {
 
 
 
+	****************
+	*** 2. DATOS ***
+	****************
+
+	** 2.1 PIB + Deflactor **
+	PIBDeflactor, anio(`anio') nographs nooutput `update'
+	local currency = currency[1]
+	forvalues k=1(1)`=_N' {
+		if anio[`k'] == `anio' {
+			local pibYR`anio' = pibYR[`k']
+		}
+		if anio[`k'] == `desde' {
+			local pibYR`desde' = pibYR[`k']
+		}
+	}
+	tempfile PIB
+	save `PIB'
+
+	** 2.3 Update PEF **
+	if "`update'" == "update" {
+		noisily UpdatePEF
+	}
+
+
+
 	***************
 	*** 3 Merge ***
 	***************
-	collapse (sum) gasto*, by(anio `by' transf_gf) fast
+	use "`c(sysdir_personal)'/SIM/PEF.dta", clear
+	egen double gastoTOT = sum(gasto), by(anio)
+	collapse (sum) gasto (max) gastoTOT `if', by(anio `by' transf_gf) fast
+	sort anio `by'
 	merge m:1 (anio) using "`PIB'", nogen keepus(pibY indiceY deflator lambda Poblacion) keep(matched) sorted
 	forvalues k=1(1)`=_N' {
 		if gasto[`k'] != . & "`first'" != "first" { 
@@ -86,29 +124,32 @@ quietly {
 	foreach k of varlist gasto* {
 		g double `k'PIB = `k'/pibY*100
 	}
+	g double gastoR = gasto/deflator
 	format *PIB %10.3fc
+	format gastoR gastoTOT %10.0fc
 
 
 
 	******************
 	*** 4 Resumido ***
 	******************
-	tempvar resumido resumidopie gastoPIB
-	g `resumido' = `by'
-	g `resumidopie' = `by'
+	keep if anio >= `desde'-1
+	tempvar resumido gastoPIB
+	g resumido = `by'
 
-	tempname labelresumido
-	label copy `by' labelresumido
-	label values `resumido' labelresumido
-	label values `resumidopie' labelresumido
+	capture label copy `by' label
+	if _rc != 0 {
+		label copy num`by' label
+	}
+	label values resumido label
 
-	egen `gastoPIB' = max(gastoPIB), by(`by')
-	replace `resumido' = 99999998 if `by' == -1
-	label define labelresumido 99999998 "Cuotas ISSSTE", add modify
+	egen `gastoPIB' = max(gastoPIB) /*if anio >= 2010*/, by(`by')
+	replace resumido = -2 if abs(`gastoPIB') < `minimum' //| gastoPIB == . | gastoPIB == 0 //& divCIEP != 15 
+	label define label -2 `"< `=string(`minimum',"%5.1fc")'% PIB"', add modify
 
-	replace `resumido' = 99999999 if abs(`gastoPIB') < `minimum' & `by' != -1
-	replace `resumidopie' = 99999999 if gastoPIB < `minimum'
-	label define labelresumido 99999999 "< `minimum'% PIB", add modify
+	* Especiales *
+	replace resumido = -1 if `by' == -1
+	label define label -1 "Cuotas ISSSTE", add modify
 
 
 
@@ -208,19 +249,21 @@ quietly {
 		_col(66) %7s "% PIB" ///
 		_col(77) %7s "Dif% Real" "}"
 
-	collapse (sum) gasto* if transf_gf == 0, by(anio pibY deflator lambda Poblacion `resumido')
-	g resumido = `resumido'
-	reshape wide gasto* `resumido', i(anio) j(resumido)
+	collapse (sum) gasto gastoPIB gastoR (max) gastoTOT pibY deflator lambda Poblacion if transf_gf == 0, by(anio resumido)
+	decode resumido, gen(resumido2)
+	replace resumido2 = subinstr(resumido2," ","_",.)
+	replace resumido2 = strtoname(resumido2)
+	replace resumido2 = substr(resumido2,1,20)
+	reshape wide gasto* resumido, i(anio) j(resumido2) string
 	reshape long
-	label values resumido labelresumido
+	label values resumido label
 
 	replace gasto = 0 if gasto == .
 	replace gastoPIB = 0 if gastoPIB == .
-	replace gasto = -gasto if resumido == 99999998
-	replace gastoPIB = -gastoPIB if resumido == 99999998
+	replace gasto = -gasto if resumido == -1
+	replace gastoPIB = -gastoPIB if resumido == -1
 	
-	g gastoreal = gasto/deflator
-	capture tabstat gastoreal if anio == `desde', by(resumido) stat(sum) f(%20.1fc) save missing
+	tabstat gastoR if anio == `desde', by(resumido) stat(sum) f(%20.1fc) save missing
 	if _rc == 0 {
 		tempname pregastot
 		matrix `pregastot' = r(StatTotal)
@@ -343,93 +386,142 @@ quietly {
 			_col(77) in y %7.1fc (`mattot5'[1,2]-`mattot'[1,2])/`mattot'[1,2]*100 "}"
 	}
 
+
+	*******************
+	*** 5. Gráficos ***
+	*******************
 	if "`nographs'" != "nographs" & "$nographs" == "" {
-		replace gastoreal = gastoreal/1000000000
-		
-		levelsof resumido if anio == `anio', local(lev_resumido)
-		tabstat gastoreal if anio == `anio', by(resumido) stat(sum) f(%20.0fc) save
+		*preserve
+
+		* Normalizar valores a billones *
+		*replace gasto=gasto/deflator/1000000000000
+		*replace monto=monto/deflator/1000000000000
+
+		collapse (sum) gasto gastoR gastoPIB (max) gastoTOT pibY deflator if anio >= `desde', by(anio resumido)
+		replace resumido = 9999 if resumido == -1
+		label define label 9999 "Cuotas ISSSTE", add
+
+		replace resumido = 9998 if resumido == -2
+		label define label 9998 "< `minimum'% PIB", add
+
+		levelsof resumido, local(lev_resumido)
+		label values resumido label
+
+		* Ciclo para poner los paréntesis (% del total) en el legend *
+		tabstat gastoPIB if anio == `anio', by(resumido) stat(sum) f(%20.0fc) save
 		tempname SUM
 		matrix `SUM' = r(StatTotal)
 
-		/* Ciclo para poner los paréntesis (% del total) en el legend *
 		local totlev = 0
 		foreach k of local lev_resumido {
 			local ++totlev
 			tempname SUM`totlev'
 			matrix `SUM`totlev'' = r(Stat`totlev')
-			local legend`k' : label labelresumido `k'
-			local legend`k' = substr("`legend`k''",1,23)
-			local legend = `"`legend' label(`totlev' "`legend`k'' (`=string(`SUM`totlev''[1,1]/`SUM'[1,1]*100,"%7.1fc")'%)")"'
-		}
 
-		* Ciclo para determinar el orden de mayor a menor, según gastoneto */
+			local legend`k' : label label `k'
+			*local legend`k' = substr("`legend`k''",1,20)
+			local legend = `"`legend' label(`totlev' "{bf:`legend`k''}")"'  
+			//"(`=string(`SUM`totlev''[1,1]/`SUM'[1,1]*100,"%7.1fc")'%)"
+
+			tempvar gastoPIB`k' connectedPIB`k' connectedTOT`k'
+			egen `gastoPIB`k'' = sum(gastoPIB) if resumido >= `k', by(anio)
+			replace `gastoPIB`k'' = 0 if `gastoPIB`k'' == .
+			label var `gastoPIB`k'' "`legend`k''"
+
+			egen `connectedTOT`k'' = sum(gastoR), by(anio)
+			g `connectedPIB`k'' = gastoR/`connectedTOT`k''*100 if resumido == `k'
+			format `gastoPIB`k'' `connectedPIB`k'' %7.1fc
+
+			local extras = `"`extras' (bar `gastoPIB`k'' anio if anio <= `anio' & resumido == `k', mlabpos(6) mlabcolor("111 111 111") barwidth(.8)) "'
+		}
+		local legend `"`legend' label(`=`totlev'+1' "Gasto total")"'
+		
+		* Ciclo para determinar el orden de mayor a menor, según gastoneto *
 		tempvar ordervar
 		bysort anio: g `ordervar' = _n
-		gsort -anio -gastoreal
+		gsort -anio -gasto
 		forvalues k=1(1)`=_N'{
 			if anio[`k'] == `anio' {
 				local order "`order' `=`ordervar'[`k']'"
 			}
 		}
+		sort anio resumido
 
-		* Ciclo para los texto totales *
-		capture tabstat gastoreal if resumido == 99999998 & anio >= `aniofirst', stat(sum) by(anio) save
-		if _rc == 0 {
-			forvalues k=1(1)`=`anio'-`aniofirst'+1' {
-				tempname CUOTAS`k'
-				matrix `CUOTAS`k'' = r(Stat`k')
-			}
+		tempvar gastobar gastoline gastoby
+		g `gastobar' = gastoR
+		replace `gastobar' = 0 if `gastobar' == .
+
+		egen `gastoby' = sum(gasto), by(anio)
+		g `gastoline' = `gastoby'/gastoTOT*100
+		format gasto* `gastobar' `gastoline' `gastoby' %15.0fc
+
+		* Información agregada *
+		egen gastoPIBTOT = sum(gastoPIB), by(anio)
+		format gastoPIBTOT %7.1fc
+
+
+		***********
+		** Texto **
+		* Máximo *
+		tabstat gastoPIBTOT `gastoline', stat(max) by(anio) save
+		tempname maxPIBTOT
+		matrix `maxPIBTOT' = r(StatTotal)
+
+		* Inicial *
+		tabstat gastoPIBTOT if anio == `desde', stat(max) save by(anio)
+		tempname iniPIBTOT
+		matrix `iniPIBTOT' = r(StatTotal)
+
+		* Final *
+		tabstat gastoPIBTOT if anio == `anio', stat(max) save by(anio)
+		tempname finPIBTOT
+		matrix `finPIBTOT' = r(StatTotal)
+
+		* Cambios * 
+		if (`finPIBTOT'[1,1]-`iniPIBTOT'[1,1]) > 0 {
+			local cambio = "aumentó"
 		}
 		else {
-			forvalues k=1(1)`=`anio'-`aniofirst'+1' {
-				tempname CUOTAS`k'
-				matrix `CUOTAS`k'' = J(1,1,0)
-			}
+			local cambio = "disminuyó"
 		}
 
-		tabstat gastoreal gastoPIB if anio >= `aniofirst', stat(sum) by(anio) save
-		local j = 100/(`anio'-`aniofirst'+1)/2
-		forvalues k=1(1)`=`anio'-`aniofirst'+1' {
-			tempname TOT`k'
-			matrix `TOT`k'' = r(Stat`k')
-			if `TOT`k''[1,1]-`CUOTAS`k''[1,1] != . {
-				local text `"`text' `=(`TOT`k''[1,1]-`CUOTAS`k''[1,1])*1.02' `j' "{bf:`=string(`TOT`k''[1,1],"%7.1fc")'}""'
-				local j = `j' + 100/(`anio'-`aniofirst'+1)
-			}
-		}
-		if "`title'" == "" {
-			local graphtitle "Gasto público"
-			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP."
-		}
-		else {
-			local graphtitle "`title'"
-			local graphsubtitle "`subtitle'"
-			local graphfuente ""
-		}
-
-		graph bar (sum) gastoreal if anio >= `aniofirst' & anio <= `anio', ///
-			over(resumido, sort(1) descending) over(anio, gap(0)) stack asyvar ///
-			blabel(none, format(%10.1fc)) outergap(0) ///
-			bar(9, color(150 6 92)) bar(8, color(53 200 71)) ///
-			bar(7, color(255 129 0)) bar(6, color(0 151 201)) ///
-			bar(5, color(224 97 83)) bar(4, color(255 189 0)) ///
-			bar(3, color(255 55 0)) bar(2, color(57 198 184)) ///
-			bar(1, color(211 199 225)) ///
+		twoway `extras' ///
+			(connected `gastoline' anio if resumido == resumido[1], mlabpos(12) mlabcolor("111 111 111") mlabel(`gastoline') yaxis(2) mlabsize(large)) ///
+			(scatter gastoPIBTOT anio if resumido == resumido[1], mlabpos(12) mlabcolor("111 111 111") mlabel(gastoPIBTOT) mlabsize(large) mcolor(white) lcolor(white)) ///
+			if anio <= `anio', ///
+			///over(resumido, sort(1) descending) over(anio, gap(30)) ///
+			///stack asyvars blabel(bar, format(%7.1fc)) outergap(0) ///
+			name(gastos`by'PIB, replace) ///
 			title("`graphtitle'") ///
-			subtitle("`graphsubtitle'") ///
-			caption("`graphfuente'") ///
-			text(`text', color(black) placement(n) size(small)) ///
-			ytitle(mil millones MXN `anio') ///
-			ylabel(, format(%15.0fc) labsize(small)) ///
-			yscale(range(0)) ///
-			legend(on position(6) rows(`rows') cols(`cols') `legend' order(`order')) /// 
-			name(gastos`by', replace) ///
-			//note("{bf:Nota}: Porcentajes entre par{c e'}ntesis son con respecto al total de `anio'.")
+			yscale(range(0 `=`maxPIBTOT'[1,1]*1.75')) ///
+			yscale(range(-50 `=`maxPIBTOT'[1,2]*1.1') axis(2) noline) ///
+			ylabel(none, format(%7.1fc) labsize(small)) ///
+			ylabel(none, axis(2)) ///
+			xlabel(`desde'(1)`anio') ///
+			xtitle("") ///
+			ytitle("") ///
+			ytitle("", axis(2)) ///
+			///subtitle("Gasto, como % del PIB") ///
+			legend(on position(6) rows(`rows') cols(`cols') `legend' order(`order') justification(left)) ///
+			/// Added text 
+			text(`=gastoPIBTOT[1]' `=anio[1]' "{bf:% PIB}", placement(6)) ///
+			text(`=`gastoline'[1]' `=anio[1]' "{bf:% PEF}", placement(6) yaxis(2)) ///
+			b1title("De `desde' a `anio', el {bf:gasto `cambio' `=string(abs(`finPIBTOT'[1,1]-`iniPIBTOT'[1,1]),"%7.1fc")'} puntos porcentuales del PIB.")
 
+		/*grc1leg ///
+		///graph combine ///
+		ingresos`by'PIB ingresosMXN`by' , ///
+			title("{bf:`graphtitle'}") ///
+			caption("Fuente: Elaborado por el CIEP, con informaci{c o'}n de SHCP/EOFP, INEGI/BIE y $paqueteEconomico.") ///
+			name(ingresos`by', replace) xcommon */
+
+		*capture window manage close graph ingresosMXN`by'
+		*capture window manage close graph ingresos`by'PIB
+	
 		if "$export" != "" {
-			*graph export "$export/gastos`by'`if'.png", as(png) name("gastos`by'") replace
-			graph save gastos`by' "$export/gastos`by'`if'.gph", replace
+			graph export "$export/ingresos`by'.png", as(png) name("ingresos`by'") replace
 		}
+		*restore
 	}
 
 
@@ -463,7 +555,7 @@ program define UpdatePEF
 	***                   ***
 	*************************
 	capture confirm file "`c(sysdir_personal)'/SIM/prePEF.dta"
-	if _rc != 0 | "`1'" == "update" {
+	if _rc != 0 /*| "`1'" == "update"*/ {
 		local archivos: dir "`c(sysdir_site)'../BasesCIEP/PEFs" files "*.xlsx"			// Busca todos los archivos .xlsx en /bases/PEFs/
 		*local archivos `""PEF 2024.xlsx" "CuotasISSSTE.xlsx" "'
 
@@ -882,15 +974,13 @@ program define UpdatePEF
 	replace desc_divCIEP = "Salud" if desc_divCIEP == "" & ramo == 52 & ai == 231
 
 
+	** 4.4 Costo de la deuda **
+	replace desc_divCIEP = "Costo de la deuda" if desc_divCIEP == "" & capitulo == 9
+
 	** 4.3 Energía **
 	replace desc_divCIEP = "Energía" if desc_divCIEP == "" ///
 		& (ramo == 18 | ramo == 45 | ramo == 46 | ramo == 52 | ramo == 53 ///
 		| (ramo == 23 & desc_funcion == 7))
-
-
-	** 4.4 Costo de la deuda **
-	replace desc_divCIEP = "Costo de la deuda" if desc_divCIEP == "" & capitulo == 9
-
 
 	** 4.5 Educación **
 	replace desc_divCIEP = "Educación" if desc_divCIEP == "" ///
