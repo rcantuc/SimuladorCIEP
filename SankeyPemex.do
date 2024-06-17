@@ -17,56 +17,57 @@ cd "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/LINGO/Sankeys/"
 ***                   ***
 *** 1. Bases de datos ***
 ***                   ***
-/*************************
+*************************
 
-** 1.1. Ventas netas de bienes y servicios **
-DatosAbiertos XKC0106, nog
-rename monto Ventas
-keep anio Ventas
-save XKC0106, replace
-
-
-** 1.2. Otros ingresos **
-DatosAbiertos XKC0179, nog
-rename monto OtrosIngresos
-keep anio OtrosIngresos
-save XKC0179, replace
+if "`1'" == "update" {
+	** 1.1. Ventas netas de bienes y servicios **
+	DatosAbiertos XKC0106, nog
+	rename monto Ventas
+	keep anio Ventas
+	save XKC0106, replace
 
 
-** 2.1. Derechos y enteros **
-DatosAbiertos XKC0113, nog
-rename monto Derechos
-keep anio Derechos
-save XKC0113, replace
+	** 1.2. Otros ingresos **
+	DatosAbiertos XKC0179, nog
+	rename monto OtrosIngresos
+	keep anio OtrosIngresos
+	save XKC0179, replace
 
 
-** 2.2. Gasto programable **
-DatosAbiertos XKC0131, nog
-rename monto Programable
-keep anio Programable
-save XKC0131, replace
+	** 2.1. Derechos y enteros **
+	DatosAbiertos XKC0113, nog
+	rename monto Derechos
+	keep anio Derechos
+	save XKC0113, replace
 
 
-** 2.2.1 Pensiones y jubilaciones **
-DatosAbiertos XKC0139, nog
-rename monto Pensiones
-keep anio Pensiones
-save XKC0139, replace
+	** 2.2. Gasto programable **
+	DatosAbiertos XKC0131, nog
+	rename monto Programable
+	keep anio Programable
+	save XKC0131, replace
 
 
-** 2.2.2. Gastos de inversión **
-DatosAbiertos XKC0145, nog
-rename monto Inversion
-keep anio Inversion
-save XKC0145, replace
+	** 2.2.1 Pensiones y jubilaciones **
+	DatosAbiertos XKC0139, nog
+	rename monto Pensiones
+	keep anio Pensiones
+	save XKC0139, replace
 
 
-** 2.3. Gasto no programable **
-DatosAbiertos XKC0157, nog
-rename monto NoProgramable
-keep anio NoProgramable
-save XKC0157, replace
+	** 2.2.2. Gastos de inversión **
+	DatosAbiertos XKC0145, nog
+	rename monto Inversion
+	keep anio Inversion
+	save XKC0145, replace
 
+
+	** 2.3. Gasto no programable **
+	DatosAbiertos XKC0157, nog
+	rename monto NoProgramable
+	keep anio NoProgramable
+	save XKC0157, replace
+}
 
 
 ** 1.2. Información adicional **/
@@ -145,6 +146,7 @@ forvalues anio = 2019(1)2024 {
 	}
 
 
+
 	**************************************/
 	***                                 ***
 	*** Eje 1: Ingresos propios (PEMEX) ***
@@ -184,8 +186,8 @@ forvalues anio = 2019(1)2024 {
 	label define to 98 "Imp Indirectos", add
 
 	replace profile = profile / 1000000000
-	tempfile eje1
-	save `eje1'
+	tempfile eje`anio'1
+	save `eje`anio'1'
 
 
 
@@ -214,7 +216,7 @@ forvalues anio = 2019(1)2024 {
 	replace Gastos_Derechos = Gastos_Derechos //+ `indirectos'		// IEPS e IVA
 
 	tabstat Gastos_Derechos, s(sum) save
-	local gastosGobiernoFederal = r(StatTotal)[1,1]*`fmp_tesofe'/100 - `reduccionduc' - `estimulosfiscales' + `indirectos'
+	local gastosDerechos = r(StatTotal)[1,1] - `reduccionduc' - `estimulosfiscales' + `indirectos'
 
 	tempvar from to
 	g `from' = "Pemex"
@@ -228,18 +230,9 @@ forvalues anio = 2019(1)2024 {
 	tabstat profile, s(sum) save
 	local gastosPemex = r(StatTotal)[1,1]
 
-	/*if `ingresosPemex' - `gastosPemex' > 0 {
-		set obs `=_N+1'
-		replace anio = `anio' in -1
-		replace from = 1 in -1
-		replace to = 99 in -1
-		replace profile = `ingresosPemex' - `gastosPemex' in -1
-		label define to 99 "Superávit", add
-	}*/
-
 	replace profile = profile / 1000000000
-	tempfile eje2
-	save `eje2'
+	tempfile eje`anio'2
+	save `eje`anio'2'
 
 
 
@@ -248,7 +241,7 @@ forvalues anio = 2019(1)2024 {
 	*** Eje 3: Aportaciones al gobierno federal y al FMP ***
 	***                                                  ***
 	********************************************************
-	use `eje2', clear
+	use `eje`anio'2', clear
 	collapse (sum) profile if to == 1, by(to anio)
 	rename to from 
 
@@ -267,14 +260,8 @@ forvalues anio = 2019(1)2024 {
 	replace to = 7 in -1
 	label define to 7 "Gobierno Federal", add
 	replace profile = `DerechosEnteros' - (`fmp' + `reduccionduc' + `estimulosfiscales')/1000000000 in -1
-	*replace profile = 0 if profile < 0
-
-	set obs `=_N+1'
-	replace anio = `anio' in -1
-	replace from = 200 in -1
-	replace to = 7 in -1
-	replace profile = `indirectos' / 1000000000 in -1
-	label define to 200 "Imp Indirectos", add
+	local impuestosExtrac_Explora = profile*1000000000 in -1
+	local gastosDerechos = `gastosDerechos' - `impuestosExtrac_Explora'
 
 	set obs `=_N+1'
 	replace anio = `anio' in -1
@@ -283,23 +270,21 @@ forvalues anio = 2019(1)2024 {
 	replace profile = (`reduccionduc' + `estimulosfiscales')/1000000000 in -1
 	label define to 8 "Pemex", add
 
-	/*if `ingresosPemex' - `gastosPemex' > 0 {
-		set obs `=_N+1'
-		replace anio = `anio' in -1
-		replace from = 99 in -1
-		replace to = 100 in -1
-		replace profile = (`ingresosPemex' - `gastosPemex')/1000000000 in -1
-	}*/
-	label define to 100 "Contribución neta", add
+	set obs `=_N+1'
+	replace anio = `anio' in -1
+	replace from = 200 in -1
+	replace to = 7 in -1
+	replace profile = `indirectos' / 1000000000 in -1
+	label define to 200 "Imp Indirectos", add
 
-	tempfile eje3
-	save `eje3'
+	tempfile eje`anio'3
+	save `eje`anio'3'
 
 
 
 	********************************/
 	** Eje 4: Aportaciones del FMP **
-	use `eje3', clear
+	use `eje`anio'3', clear
 	collapse (sum) profile if to == 6, by(to anio)
 	rename to from 
 
@@ -315,21 +300,21 @@ forvalues anio = 2019(1)2024 {
 	replace from = 6 in -1
 	replace to = 101 in -1
 	replace profile = `profile' * `fmp_feip_feief' / 100 in -1
-	label define to 101 "FEIP y FEIEF", add
+	label define to 101 "Fondos", add
 
 	set obs `=_N+1'
 	replace anio = `anio' in -1
 	replace from = 6 in -1
 	replace to = 102 in -1
 	replace profile = `profile' * `fmp_feh' / 100 in -1
-	label define to 102 "FEH", add
+	label define to 102 "Fondos", add
 
 	set obs `=_N+1'
 	replace anio = `anio' in -1
 	replace from = 6 in -1
 	replace to = 103 in -1
 	replace profile = `profile' * `fmp_investigacion' / 100 in -1
-	label define to 103 "Trans energética", add
+	label define to 103 "Fondos", add
 
 	set obs `=_N+1'
 	replace anio = `anio' in -1
@@ -343,30 +328,33 @@ forvalues anio = 2019(1)2024 {
 		local deficit = -(`ingresosPemex' - `gastosPemex')*0
 	}
 	label define to 201 "Pemex", add
-	label values to to
 
-	set obs `=_N+1'
-	replace anio = `anio' in -1
-	replace from = 7 in -1
-	replace to = 100 in -1
-	replace profile = (`gastosGobiernoFederal' - (`apoyospatrimoniales') - `deficit')/1000000000 in -1
-
-	/*if `ingresosPemex' - `gastosPemex' < 0 {
+	*if (`gastosDerechos'*`fmp_tesofe'/100 - `apoyospatrimoniales' - `deficit' + `impuestosExtrac_Explora') > 0 {
 		set obs `=_N+1'
 		replace anio = `anio' in -1
 		replace from = 7 in -1
-		replace to = 201 in -1
-		replace profile = -(`ingresosPemex' - `gastosPemex') / 1000000000 in -1
+		replace to = 100 in -1
+		replace profile = (`gastosDerechos'*`fmp_tesofe'/100 - `apoyospatrimoniales' - `deficit' + `impuestosExtrac_Explora')/1000000000 in -1
+		label define to 100 "Aportación neta", add
+	/*}
+	else {
+		set obs `=_N+1'
+		replace anio = `anio' in -1
+		replace from = 202 in -1
+		replace to = 7 in -1
+		replace profile = -(`gastosDerechos'*`fmp_tesofe'/100 - `apoyospatrimoniales' - `deficit' + `impuestosExtrac_Explora')/1000000000 in -1
+		label define to 202 "Subsidio neto", add
 	}*/
 
-	tempfile eje4
-	save `eje4'
+	label values to to
+	tempfile eje`anio'4
+	save `eje`anio'4'
 
 
 
 	**********************************************
 	** Eje 5: Aportaciones del gobierno federal **
-	use `eje4', clear
+	use `eje`anio'4', clear
 	collapse (sum) profile if to == 7, by(to anio)
 	rename to from
 
@@ -376,31 +364,47 @@ forvalues anio = 2019(1)2024 {
 	g to = 201
 	label values to to
 
-	/*set obs `=_N+1'
-	replace anio = `anio' in -1
-	replace from = 99 in -1
-	replace to = 100 in -1
-	replace profile = (`ingresosPemex' - `gastosPemex') / 1000000000 in -1*/
-
-	tempfile eje5
-	save `eje5'
+	tempfile eje`anio'5
+	save `eje`anio'5'
 
 
-	noisily SankeySumLoop, anio(`anio') name(`anio') folder(SankeyPemex) a(`eje1') b(`eje2') c(`eje3') d(`eje4') e(`eje5')
+	noisily SankeySumLoop, anio(`anio') name(`anio') folder(SankeyPemex) a(`eje`anio'1') b(`eje`anio'2') c(`eje`anio'3') d(`eje`anio'4') e(`eje`anio'5')
 }
 
 
+********************
+***              ***
+*** 2. 2019-2024 ***
+***              ***
+********************
+PIBDeflactor, aniovp(2024) nographs
+keep if anio >= 2019 & anio <= 2024
+sort anio
+local deflactor2019 = deflator[1]
+local deflactor2020 = deflator[2]
+local deflactor2021 = deflator[3]
+local deflactor2022 = deflator[4]
+local deflactor2023 = deflator[5]
+local deflactor2024 = deflator[6]
+
+forvalues k = 1(1)5 {
+	use `eje2019`k'', clear
+	forvalues anio = 2020(1)2024 {
+		append using `eje`anio'`k''
+	}
+
+	replace profile = profile/`deflactor2019' if anio == 2019
+	replace profile = profile/`deflactor2020' if anio == 2020
+	replace profile = profile/`deflactor2021' if anio == 2021
+	replace profile = profile/`deflactor2022' if anio == 2022
+	replace profile = profile/`deflactor2023' if anio == 2023
+	replace profile = profile/`deflactor2024' if anio == 2024
+
+	collapse (sum) profile, by(from to)
+
+	tempfile ejetot`k'
+	save `ejetot`k''
+}
 
 
-
-***************************
-** Primero, los ingresos **
-***************************
-//noisily LIF if divCIEP2 == 4, by(divPE) rows(1) min(0) anio(2024) $update desde(2000) title("Ingresos petroleros") update
-
-
-
-***************************************************
-** Segundo, las aportaciones al gobierno federal **
-***************************************************
-
+noisily SankeySumLoop, anio(2024) name(2019_2024) folder(SankeyPemex) a(`ejetot1') b(`ejetot2') c(`ejetot3') d(`ejetot4') e(`ejetot5')

@@ -17,7 +17,7 @@ quietly {
 	}
 
 	** 0.2 Base LIF **
-	capture confirm file "`c(sysdir_personal)'/SIM/$pais/LIF.dta"
+	capture confirm file "`c(sysdir_personal)'/SIM/LIF.dta"
 	if _rc != 0 {
 		noisily UpdateLIF
 	}
@@ -27,14 +27,15 @@ quietly {
 	***************
 	*** 1 SYNTAX **
 	***************
-	noisily di _newline(2) in g _dup(20) "." "{bf:   Sistema Fiscal:" in y " INGRESOS `anio'   }" in g _dup(20) "."
-	use in 1 using "`c(sysdir_personal)'/SIM/$pais/LIF.dta", clear
+	use in 1 using "`c(sysdir_personal)'/SIM/LIF.dta", clear
 	syntax [if] [, ANIO(int `aniovp' ) BY(varname) ///
 		UPDATE NOGraphs Base ///
 		MINimum(real 0.5) DESDE(int -1) ///
 		ILIF LIF EOFP ///
 		ROWS(int 1) COLS(int 5) ///
 		TITle(string)]
+
+	noisily di _newline(2) in g _dup(20) "." "{bf:   Sistema Fiscal:" in y " INGRESOS `anio'   }" in g _dup(20) "."
 
 	* 1.1 Valor año mínimo *
 	if `desde' == -1 {
@@ -53,7 +54,7 @@ quietly {
 
 	** 1.3 Base RAW **
 	if "`base'" == "base" {
-		use `if' using "`c(sysdir_personal)'/SIM/$pais/LIF.dta", clear
+		use `if' using "`c(sysdir_personal)'/SIM/LIF.dta", clear
 		exit
 	}
 
@@ -109,7 +110,7 @@ quietly {
 	***************
 	*** 3 Merge ***
 	***************
-	use "`c(sysdir_personal)'/SIM/$pais/LIF.dta", clear
+	use "`c(sysdir_personal)'/SIM/LIF.dta", clear
 	drop if nombre == ""
 	sort anio mes
 	merge m:1 (anio) using `PIB', nogen keepus(pibY indiceY deflator lambda var_pibY) update replace keep(matched)
@@ -154,6 +155,7 @@ quietly {
 	replace resumido = 999 if abs(`recaudacionPIB') < `minimum' //| recaudacionPIB == . | recaudacionPIB == 0 //& divCIEP != 15 
 	label define label 999 `"< `=string(`minimum',"%5.1fc")'% PIB"', add modify
 
+	* Especiales *
 	capture replace nombre = subinstr(nombre,"Impuesto especial sobre producci{c o'}n y servicios de ","",.)
 	capture replace nombre = subinstr(nombre,"alimentos no b{c a'}sicos con alta densidad cal{c o'}rica","comida chatarra",.)
 	capture replace nombre = subinstr(nombre,"/","_",.)
@@ -521,7 +523,7 @@ quietly {
 		}
 
 		twoway `extras' ///
-			(connected `recaudacionline' anio if resumido == resumido[1], mlabpos(12) mlabcolor("111 111 111") mlabel(`recaudacionline') yaxis(2) mlabsize(large) pstyle(p1)) ///
+			(connected `recaudacionline' anio if resumido == resumido[1], mlabpos(12) mlabcolor("111 111 111") mlabel(`recaudacionline') yaxis(2) mlabsize(large)) ///
 			(scatter recaudacionPIBTOT anio if resumido == resumido[1], mlabpos(12) mlabcolor("111 111 111") mlabel(recaudacionPIBTOT) mlabsize(large) mcolor(white) lcolor(white)) ///
 			if anio <= `anio', ///
 			///over(resumido, sort(1) descending) over(anio, gap(30)) ///
@@ -539,7 +541,7 @@ quietly {
 			///subtitle("Recaudación, como % del PIB") ///
 			legend(on position(6) rows(`rows') cols(`cols') `legend' order(`order') justification(left)) ///
 			/// Added text 
-			text(`=recaudacionPIBTOT[1]*0' `=anio[1]' "{bf:% PIB}", placement(12)) ///
+			text(`=recaudacionPIBTOT[1]' `=anio[1]' "{bf:% PIB}", placement(6)) ///
 			text(`=`recaudacionline'[1]' `=anio[1]' "{bf:% LIF}", placement(6) yaxis(2)) ///
 			b1title("De `desde' a `anio', la {bf:recaudación `cambio' `=string(abs(`finPIBTOT'[1,1]-`iniPIBTOT'[1,1]),"%7.1fc")'} puntos porcentuales del PIB.")
 
@@ -583,12 +585,7 @@ program define UpdateLIF
 	************************
 	*** 1. BASE DE DATOS ***
 	************************
-	if "$pais" == "" {
-		import excel `"`c(sysdir_site)'../BasesCIEP/LIFs/LIFs.xlsx"', clear firstrow
-	}
-	else {
-		import excel `"`c(sysdir_site)'../BasesCIEP/Otros/$pais/LIFs.xlsx"', clear firstrow
-	}
+	import excel `"`c(sysdir_site)'../BasesCIEP/LIFs/LIFs.xlsx"', clear firstrow
 	foreach k of varlist _all {
 		capture confirm string variable `k'
 		if _rc == 0 {
@@ -702,9 +699,9 @@ program define UpdateLIF
 	compress
 	sort div* nombre serie anio
 	if `c(version)' > 13.1 {
-		saveold "`c(sysdir_personal)'/SIM/$pais/LIF.dta", replace version(13)
+		saveold "`c(sysdir_personal)'/SIM/LIF.dta", replace version(13)
 	}
 	else {
-		save "`c(sysdir_personal)'/SIM/$pais/LIF.dta", replace
+		save "`c(sysdir_personal)'/SIM/LIF.dta", replace
 	}
 end
