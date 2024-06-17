@@ -271,20 +271,21 @@ color 		p17			"74,74,74"
 
 
 // Azules chat-gpt
-color p1 "0,78,198"  // Azul oscuro
-color p2 "150,6,92"  // Magenta
-color p3 "255,189,0"  // Amarillo
-color p4 "57,198,184"  // Turquesa
-color p5 "254,118,109"  // Rojo pastel
-color p6 "210,213,32"  // Amarillo-verde
-color p7 "255,129,0"  // Naranja
-color p8 "40,173,58"  // Verde oscuro
+color p1 "46,48,106"  // Azul medio oscuro
+color p2 "0,78,198"  // Azul oscuro
+color p3 "150,6,92"  // Magenta
+color p4 "255,189,0"  // Amarillo
+color p5 "57,198,184"  // Turquesa
+color p6 "254,118,109"  // Rojo pastel
+color p7 "210,213,32"  // Amarillo-verde
+color p8 "255,129,0"  // Naranja
 
-color p9  "213,155,190"  // Pastel rosa
-color p10 "255,229,153"  // Amarillo pálido
-color p11 "176,232,227"  // Verde-azul claro
-color p12 "255,200,197"  // Salmón claro
-color p13 "237,238,166"  // Amarillo pálido
-color p14 "153,184,232"  // Azul claro
-color p15 "255,205,153"  // Durazno
-color p16 "169,222,176"  // Verde pálido
+color p9  "40,173,58"  // Verde oscuro
+color p10 "213,155,190"  // Pastel rosa
+color p11 "255,229,153"  // Amarillo pálido
+color p12 "176,232,227"  // Verde-azul claro
+color p13 "255,200,197"  // Salmón claro
+color p14 "237,238,166"  // Amarillo pálido
+color p15 "153,184,232"  // Azul claro
+color p16 "255,205,153"  // Durazno
+color p17 "169,222,176"  // Verde pálido
