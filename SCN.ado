@@ -10,13 +10,18 @@ program define SCN, return
 quietly {
 	timer on 3
 
-	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
-	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
+	capture mkdir `"`c(sysdir_personal)'/SIM/"'
+	capture mkdir `"`c(sysdir_personal)'/SIM/graphs/"'
 
+	** 0.2 Revisa si existe el scalar aniovp **
 	capture confirm scalar aniovp
 	if _rc == 0 {
 		local aniovp = scalar(aniovp)
-	}	
+	}
+	else {
+		local aniovp : di %td_CY-N-D  date("$S_DATE", "DMY")
+		local aniovp = substr(`"`=trim("`aniovp'")'"',1,4)	
+	}
 
 	syntax [, ANIO(int `aniovp') NOGraphs UPDATE]
 
@@ -290,7 +295,7 @@ quietly {
 	}
 
 	** D.8. PIBDeflactor **
-	*capture use "`c(sysdir_site)'/users/$pais/$id/PIB.dta", clear
+	*capture use "`c(sysdir_personal)'/users/$pais/$id/PIB.dta", clear
 	PIBDeflactor, anio(`anio') nographs nooutput
 	local anio_exo = r(anio_exo)
 	local except = r(except)

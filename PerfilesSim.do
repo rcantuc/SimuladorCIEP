@@ -30,8 +30,6 @@ else {
 
 
 
-
-
 **********************
 ***                ***
 **# 1. Macros: PEF ***
@@ -44,7 +42,7 @@ local SSFederacion = r(Aportaciones_a_Seguridad_Social) + `Cuotas_ISSSTE'
 ** 1.1 Educación **
 PEF if divCIEP == 2, anio(`1') by(desc_subfuncion) min(0) nographs
 local Basica = r(Educación_Básica)
-local Media = r(Educación_Media_Superior)
+local Media = r(Educación_Media_Superi)
 local Superior = r(Educación_Superior)
 local Adultos = r(Educación_para_Adultos)
 local Posgrado = r(Posgrado)
@@ -98,8 +96,6 @@ local InfraT = r(Gasto_neto)
 
 
 
-
-
 **********************
 ***                ***
 **# 2. Macros: LIF ***
@@ -113,8 +109,6 @@ foreach k of local recursos {
 
 
 
-
-
 ***************************
 ***                     ***
 **# 3. Ajuste Población ***
@@ -125,16 +119,12 @@ local ajustepob = poblacion
 
 
 
-
-
 *************/
 ***        ***
 **# 4. SCN ***
 ***        ***
 **************
-SCN, anio(`1')nographs
-
-
+SCN, anio(`1') nographs
 
 
 
@@ -148,15 +138,15 @@ SCN, anio(`1')nographs
 ** Inputs: `c(sysdir_personal)'../BasesCIEP/INEGI/ENIGH/`anio'/
 ** Outputs: Archivo "`c(sysdir_personal)'/SIM/`anio'/expenditures.dta".
 capture confirm file "`c(sysdir_personal)'/SIM/`enighanio'/expenditures.dta"
-//if _rc != 0 ///
-	noisily run "Expenditure.do" `1'
+if _rc != 0 ///
+	noisily run "`c(sysdir_personal)'/Expenditure.do" `1'
 
 
 ** 5.2 Encuesta Nacional de Ingresos y Gastos de los Hogares (ingresos) **
 ** Outputs: Archivo "`c(sysdir_personal)'/SIM/`anio'/households.dta".
 capture confirm file "`c(sysdir_personal)'/SIM/`enighanio'/households.dta"
-//if _rc != 0 ///
-	noisily run `"Households.do"' `1'
+if _rc != 0 ///
+	noisily run `"`c(sysdir_personal)'/Households.do"' `1'
 
 
 ** 5.3 Usar base de datos conciliada **
@@ -164,7 +154,8 @@ use "`c(sysdir_personal)'/SIM/`enighanio'/households.dta", clear
 tabstat factor, stat(sum) f(%20.0fc) save
 tempname pobenigh
 matrix `pobenigh' = r(StatTotal)
-replace factor = round(factor*`ajustepob'/`pobenigh'[1,1],1)
+*replace factor = round(factor*`ajustepob'/`pobenigh'[1,1],1)
+replace factor = round(factor,1)
 capture g pob = 1
 
 
@@ -488,29 +479,6 @@ label var IngBasico "Ingreso b{c a'}sico `1'"
 *noisily Gini IngBasico, hogar(folioviv foliohog) factor(factor)
 
 
-
-
-
-******************
-***            ***
-*** 6. ENGLISH ***
-***            ***
-/*****************
-label var Laboral "`enighanio' Labor-based income tax"
-label var CUOTAS "`enighanio' Social Security"
-label var Consumo "`enighanio' Consumption tax"
-label var OtrosC "`enighanio' Capital income"
-label var Pension "`enighanio' Pensions"
-label var PenBienestar "`enighanio' Bienestar pension"
-label var Educacion "`enighanio' Education"
-label var Salud "`enighanio' Health"
-label var OtrosGas "`enighanio' Other expenditures"
-label var IngBasico "`enighanio' Basic universal income"
-
-
-
-
-
 ****************/
 ***           ***
 *** 7. SANKEY ***
@@ -519,7 +487,6 @@ label var IngBasico "`enighanio' Basic universal income"
 foreach k in grupoedad sexo decil rural escol {
 	run "Sankey.do" `k' `1'
 }
-
 
 
 ***********************/

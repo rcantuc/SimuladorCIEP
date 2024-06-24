@@ -29,7 +29,7 @@ quietly {
 	*********************
 	**# 2 RECAUDACIÓN ***
 	*********************
-	LIF, anio(`anio') by(divSIM) nographs desde(2018) min(0)
+	LIF, anio(`anio') by(divSIM) nographs desde(2018) min(0) lif
 	local recursos = r(divSIM)
 	foreach k of local recursos {
 		local `=substr("`k'",1,7)' = r(`k')
@@ -390,10 +390,10 @@ quietly {
 	******************/
 	**# 7. Base SIM ***
 	*******************
-	capture use "`c(sysdir_personal)'/users/$id/ingresos.dta", clear
-	if _rc != 0 {
+	*capture use "`c(sysdir_personal)'/users/$id/ingresos.dta", clear
+	*if _rc != 0 {
 		use "`c(sysdir_personal)'/SIM/perfiles`anio'.dta", clear
-	}
+	*}
 	keep folioviv foliohog numren factor edad ///
 		ISRAS ISRPF CUOTAS ISRPM OTROSK FMP PEMEX CFE IMSS ISSSTE IVA IEPSNP IEPSP ISAN IMPORT
 

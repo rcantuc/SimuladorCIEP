@@ -99,7 +99,7 @@ quietly {
 
 	** 2.3 Update PEF **
 	if "`update'" == "update" {
-		noisily UpdatePEF
+		noisily UpdatePEF $update
 	}
 
 
@@ -108,8 +108,17 @@ quietly {
 	*** 3 Merge ***
 	***************
 	use "`c(sysdir_personal)'/SIM/PEF.dta", clear
-	egen double gastoTOT = sum(gasto), by(anio)
-	collapse (sum) gasto (max) gastoTOT `if', by(anio `by' transf_gf) fast
+
+	** 3.1 Gasto total **
+	egen double gastoTOT = sum(gasto) if transf_gf == 0, by(anio)
+
+	** 3.2 Cuotas ISSSTE **
+	g cuotasTOT = gasto if ramo == -1
+	egen double CuoTOT = sum(cuotasTOT), by(anio)
+
+	** 3.3 Gasto neto **
+	replace gastoTOT = gastoTOT - CuoTOT
+	collapse (sum) gasto (max) gastoTOT CuoTOT `if', by(anio `by' transf_gf) fast
 	sort anio `by'
 	merge m:1 (anio) using "`PIB'", nogen keepus(pibY indiceY deflator lambda Poblacion) keep(matched) sorted
 	forvalues k=1(1)`=_N' {
@@ -120,13 +129,13 @@ quietly {
 	}
 	local aniolast = anio[_N]
 
-	** 3.1 Valores como % del PIB **
+	** 3.4 Valores como % del PIB **
 	foreach k of varlist gasto* {
 		g double `k'PIB = `k'/pibY*100
 	}
 	g double gastoR = gasto/deflator
 	format *PIB %10.3fc
-	format gastoR gastoTOT %10.0fc
+	format gastoR gastoTOT CuoTOT %20.0fc
 
 
 
@@ -249,21 +258,22 @@ quietly {
 		_col(66) %7s "% PIB" ///
 		_col(77) %7s "Dif% Real" "}"
 
-	collapse (sum) gasto gastoPIB gastoR (max) gastoTOT pibY deflator lambda Poblacion if transf_gf == 0, by(anio resumido)
-	decode resumido, gen(resumido2)
+	decode resumido, g(resumido2)
 	replace resumido2 = subinstr(resumido2," ","_",.)
+	replace resumido2 = substr(resumido2,1,24)
 	replace resumido2 = strtoname(resumido2)
-	replace resumido2 = substr(resumido2,1,20)
-	reshape wide gasto* resumido, i(anio) j(resumido2) string
+	collapse (sum) gasto gastoPIB gastoR (max) gastoTOT CuoTOT pibY deflator lambda Poblacion if transf_gf == 0, by(anio resumido2)
+	reshape wide gasto* CuoTOT, i(anio) j(resumido2) string
 	reshape long
-	label values resumido label
+	replace resumido2 = subinstr(resumido2,"_"," ",.)
+	encode resumido2, g(resumido)
 
 	replace gasto = 0 if gasto == .
 	replace gastoPIB = 0 if gastoPIB == .
 	replace gasto = -gasto if resumido == -1
 	replace gastoPIB = -gastoPIB if resumido == -1
 	
-	tabstat gastoR if anio == `desde', by(resumido) stat(sum) f(%20.1fc) save missing
+	capture tabstat gastoR if anio == `desde', by(resumido) stat(sum) f(%20.1fc) save missing
 	if _rc == 0 {
 		tempname pregastot
 		matrix `pregastot' = r(StatTotal)
@@ -308,13 +318,13 @@ quietly {
 		* Display *
 		return scalar `=substr("`name'",1,31)' = `mat`k''[1,1]
 		return scalar `=substr("`name'",1,28)'PIB = `mat`k''[1,2]
-		return scalar `=substr("`name'",1,31)'C = ((`mat`k''[1,1]/`pre`k''[1,1])^(1/(`=`aniovp'-`desde''))-1)*100
+		return scalar `=substr("`name'",1,31)'C = (abs(`mat`k''[1,1]/`pre`k''[1,1])^(1/(`=`aniovp'-`desde''))-1)*100
 		local divResumido `"`divResumido' `name'"'
 
 		noisily di in g `"  (+) `disptext'"' ///
 			_col(44) in y %20.0fc `mat`k''[1,1] ///
 			_col(66) in y %7.3fc `mat`k''[1,2] ///
-			_col(77) in y %7.1fc ((`mat`k''[1,1]/`pre`k''[1,1])^(1/(`=`aniovp'-`desde''))-1)*100
+			_col(77) in y %7.1fc (abs(`mat`k''[1,1]/`pre`k''[1,1])^(1/(`=`aniovp'-`desde''))-1)*100
 		local ++k
 	}
 	return local divResumido `"`divResumido'"'
@@ -397,7 +407,7 @@ quietly {
 		*replace gasto=gasto/deflator/1000000000000
 		*replace monto=monto/deflator/1000000000000
 
-		collapse (sum) gasto gastoR gastoPIB (max) gastoTOT pibY deflator if anio >= `desde', by(anio resumido)
+		collapse (sum) gasto gastoR gastoPIB (max) gastoTOT CuoTOT pibY deflator if anio >= `desde', by(anio resumido)
 		replace resumido = 9999 if resumido == -1
 		label define label 9999 "Cuotas ISSSTE", add
 
@@ -452,7 +462,7 @@ quietly {
 		replace `gastobar' = 0 if `gastobar' == .
 
 		egen `gastoby' = sum(gasto), by(anio)
-		g `gastoline' = `gastoby'/gastoTOT*100
+		g `gastoline' = `gastoby'/(gastoTOT - CuoTOT)*100
 		format gasto* `gastobar' `gastoline' `gastoby' %15.0fc
 
 		* Información agregada *
@@ -504,8 +514,8 @@ quietly {
 			///subtitle("Gasto, como % del PIB") ///
 			legend(on position(6) rows(`rows') cols(`cols') `legend' order(`order') justification(left)) ///
 			/// Added text 
-			text(`=gastoPIBTOT[1]' `=anio[1]' "{bf:% PIB}", placement(6)) ///
-			text(`=`gastoline'[1]' `=anio[1]' "{bf:% PEF}", placement(6) yaxis(2)) ///
+			///text(`=gastoPIBTOT[1]' `=anio[1]' "{bf:% PIB}", placement(6)) ///
+			///text(`=`gastoline'[1]' `=anio[1]' "{bf:% PEF}", placement(6) yaxis(2)) ///
 			b1title("De `desde' a `anio', el {bf:gasto `cambio' `=string(abs(`finPIBTOT'[1,1]-`iniPIBTOT'[1,1]),"%7.1fc")'} puntos porcentuales del PIB.")
 
 		/*grc1leg ///
@@ -550,12 +560,10 @@ program define UpdatePEF
 
 
 	*************************
-	***                   ***
 	*** 1. BASES DE DATOS ***
-	***                   ***
 	*************************
 	capture confirm file "`c(sysdir_personal)'/SIM/prePEF.dta"
-	if _rc != 0 /*| "`1'" == "update"*/ {
+	if _rc != 0 | "`1'" == "update" {
 		local archivos: dir "`c(sysdir_site)'../BasesCIEP/PEFs" files "*.xlsx"			// Busca todos los archivos .xlsx en /bases/PEFs/
 		*local archivos `""PEF 2024.xlsx" "CuotasISSSTE.xlsx" "'
 
@@ -623,9 +631,9 @@ program define UpdatePEF
 			* 1.4 Limpiar valores *
 			capture drop v*
 			foreach j of varlist _all {
-				tostring `j', replace													// Primero, que todos sean strings (facilidad)
-				capture confirm string variable `k'										// Segundo, comprobar que la variable sea string (no siempre el tostring funciona)
-				if _rc == 0 {															// Tercero, si es string, quitar espacios y caracteres especiales
+				tostring `j', replace				// Primero, que todos sean strings (facilidad)
+				capture confirm string variable `k'	// Segundo, comprobar que la variable sea string (no siempre el tostring funciona)
+				if _rc == 0 {						// Tercero, si es string, quitar espacios y caracteres especiales
 					replace `j' = trim(`j')
 					replace `j' = subinstr(`j',`"""',"",.)
 					replace `j' = subinstr(`j',"  "," ",.)
@@ -635,7 +643,7 @@ program define UpdatePEF
 					replace `j' = subinstr(`j'," "," ",.)
 					format `j' %30s
 				}
-				destring `j', replace													// Cuarto, hacer numéricas las variables posibles
+				destring `j', replace				// Cuarto, hacer numéricas las variables posibles
 			}
 
 			* Quinto, asegurar que las variables de gasto sean numéricas. 
@@ -667,9 +675,6 @@ program define UpdatePEF
 			}
 		}
 		compress
-
-
-
 
 
 		***********************************
@@ -785,7 +790,8 @@ program define UpdatePEF
 		label values ramo_tipo tipos_ramo
 
 		** 2.6 Encode y agregar Cuotas ISSSTE **
-		foreach k of varlist desc_ur desc_funcion desc_subfuncion desc_ai desc_modalidad desc_pp ///
+		foreach k of varlist desc_ur desc_funcion desc_subfuncion ///
+			desc_ai desc_modalidad desc_pp ///
 			desc_objeto desc_tipogasto /*desc_partida_generica*/ {
 
 			rename `k' `k'2
@@ -796,9 +802,6 @@ program define UpdatePEF
 			replace `k' = -1 if `k' == .
 			label define `k' -1 "Cuotas ISSSTE", add
 		}
-
-
-
 
 
 		*********************************
@@ -897,7 +900,7 @@ program define UpdatePEF
 			save "`c(sysdir_personal)'/SIM/prePEF.dta", replace
 		}
 
-		* 3.3 Datos Abiertos: PEFEstOpor.dta *
+		/* 3.3 Datos Abiertos: PEFEstOpor.dta *
 		levelsof serie_desc_funcion, local(serie)
 		foreach k of local serie {
 			noisily DatosAbiertos `k', nog
@@ -908,7 +911,6 @@ program define UpdatePEF
 			tempfile `k'
 			quietly save ``k''
 		}
-
 
 		** 2.1.1 Append **
 		local j = 0
@@ -933,10 +935,8 @@ program define UpdatePEF
 		}
 		else {
 			save "`c(sysdir_personal)'/SIM/GastoEstOpor.dta", replace
-		}
+		}*/
 	}
-
-
 
 
 	***************************************/
@@ -945,7 +945,6 @@ program define UpdatePEF
 	***                                  ***
 	****************************************
 	use "`c(sysdir_personal)'/SIM/prePEF.dta", clear
-
 
 	** 4.1 Pensiones **
 	levelsof desc_pp, local(levelsof)
@@ -967,12 +966,10 @@ program define UpdatePEF
 	replace desc_divCIEP = "Pensión AM" if desc_divCIEP == "" & `ifpp'
 	replace desc_divSIM = "Pensiones" if desc_divSIM == "" & `ifpp'
 
-
 	** 4.2 Salud **
 	replace desc_divCIEP = "Salud" if desc_divCIEP == "" & (desc_funcion == 21 | ramo == 12)
 	replace desc_divCIEP = "Salud" if desc_divCIEP == "" & (ramo == 50 | ramo == 51) & (pp == 4 | pp == 15) & funcion == 8
 	replace desc_divCIEP = "Salud" if desc_divCIEP == "" & ramo == 52 & ai == 231
-
 
 	** 4.4 Costo de la deuda **
 	replace desc_divCIEP = "Costo de la deuda" if desc_divCIEP == "" & capitulo == 9
@@ -986,13 +983,11 @@ program define UpdatePEF
 	replace desc_divCIEP = "Educación" if desc_divCIEP == "" ///
 		& (desc_funcion == 10 | ramo == 11 | ramo == 48 | ramo == 38)
 
-
 	** 4.6 Inversión e Infraestructura **
 	replace desc_divCIEP = "Otras inversiones" if desc_divCIEP == "" ///
 		& (desc_tipogasto == 4 | desc_tipogasto == 5 | desc_tipogasto == 6 | desc_tipogasto == 8)
 
 	replace desc_divSIM = "Inversión" if (desc_tipogasto == 4 | desc_tipogasto == 5 | desc_tipogasto == 6 | desc_tipogasto == 8)
-
 
 	** 4.7 Federalizado **
 	replace desc_divCIEP = "Part y otras Apor" if desc_divCIEP == "" & (ramo == 28)                                  // Part
@@ -1023,9 +1018,9 @@ program define UpdatePEF
 	replace desc_divCIEP = "Part y otras Apor" if desc_divCIEP == "" & (pp == 13 & (ramo == 12 | ramo == 47) & modalidad == "U") // INSABI/Seguro Popular/IMSS-Bienestar
 	replace desc_divFEDE = "Salud (federalizado)" if (pp == 13 & (ramo == 12 | ramo == 47) & modalidad == "U")         // INSABI/Seguro Popular/IMSS-Bienestar
 
-
 	** 4.7 Economía de los cuidados **
-	replace desc_divSIM = "Cuidados" if (ramo == 11 & pp == 312) | (ramo == 11 & pp == 31) | (ramo == 11 & pp == 66) ///
+	replace desc_divSIM = "Cuidados" if (ramo == 11 & pp == 312) | (ramo == 11 & pp == 31) ///
+		| (ramo == 11 & pp == 66) ///
 		| (ramo == 20 & pp == 174) | (ramo == 51 & pp == 48) | (ramo == 50 & pp == 7) ///
 		| (ramo == 20 & pp == 241) ///
 		| (ramo == 12 & pp == 41) | (ramo == 20 & pp == 3 & ur == "V3A") | (ramo == 33 & pp == 6) ///
@@ -1033,12 +1028,10 @@ program define UpdatePEF
 		| (ramo == 12 & pp == 40) | (ramo == 11 & pp == 221) | (ramo == 25 & pp == 221) ///
 		| (ramo == 51 & subfuncion == 3 & anio <= 2019) | (ramo == 20 & pp == 12 & anio >= 2019 & anio <= 2022)
 
-
 	** 4.8 Otros **
 	replace desc_divCIEP = "Otros gastos" if desc_divCIEP == ""
 	replace desc_divFEDE = "No federalizado" if desc_divFEDE == ""
 	replace desc_divSIM = desc_divCIEP if desc_divSIM == ""
-
 
 	** 4.9 Cuotas ISSSTE **
 	foreach k in divCIEP divFEDE divSIM {
@@ -1048,7 +1041,6 @@ program define UpdatePEF
 		replace `k' = -1 if ramo == -1
 		label define `k' -1 "Cuotas ISSSTE", add
 	}
-
 
 
 	**************************
@@ -1077,7 +1069,6 @@ program define UpdatePEF
 	*replace ineludible = 2 if divCIEP == 8
 	label define ineludible 2 "Programas prioritarios" 1 "Ineludible" 0 "No ineludible" -1 "Cuotas ISSSTE"
 	label values ineludible ineludible
-
 
 
 	****************/

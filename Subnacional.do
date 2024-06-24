@@ -42,7 +42,7 @@ replace anio = anio[_N-1]+1 in -1
 
 local j = 1
 foreach k of varlist B-AG {
-	replace `k' = $pib2023 in -1
+	replace `k' = $pib2024 in -1
 	rename `k' ITAEE``j''
 	local ++j
 }

@@ -6,11 +6,14 @@
 *!***    Fecha: 20/04/2024               ****
 *!***                                    ****
 *!***    Sintaxis:                       ****
-*!***    Poblacion [if] [, ANIO(int) ANIOFINal(int) NOGraphs UPDATE]
+*!***    Poblacion [if] [, ANIOinicial(int) ANIOFinal(int) NOGraphs UPDATE]
 *!*******************************************
 program define Poblacion, return
 quietly {
 	timer on 14
+
+	capture mkdir `"`c(sysdir_personal)'/SIM/"'
+	capture mkdir `"`c(sysdir_personal)'/SIM/graphs/"'
 
 	** 0.1 Revisa si se puede usar la base de datos **
 	capture use `"`c(sysdir_personal)'/SIM/Poblacion.dta"', clear
@@ -54,7 +57,7 @@ quietly {
 	noisily di _newline(2) in g _dup(20) "." "{bf:   Poblaci{c o'}n: " in y "`=entidad[1]'   }" in g _dup(20) "." _newline
 
 	* Obtiene el año inicial de la base *
-	local anioinicial = anio in 1
+	local aniofirst = anio in 1
 	local entidadGName = "`=entidad[1]'"
 	
 	tokenize $entidadesC
@@ -426,7 +429,7 @@ quietly {
 			legend(on label(1 "61 y más") label(2 "35 -- 60") label(3 "19 -- 34") label(4 "18 y menos") order(- "{bf:Edades:}" 4 3 2 1) ///
 			position(6) region(margin(zero)) rows(1)) ///
 			ylabel(, format(%20.0fc)) yscale(range(0)) ///
-			xlabel(`anioinicial'(10)`=anio[_N]') ///
+			xlabel(`aniofirst'(10)`=anio[_N]') ///
 			name(E_`anioinicial'_`aniofinal'_`entidadGName', replace)
 			
 		graph save E_`anioinicial'_`aniofinal'_`entidadGName' "`c(sysdir_personal)'/SIM/graphs/E_`anioinicial'_`aniofinal'_`entidadGName'", replace
@@ -438,7 +441,7 @@ quietly {
 		*** 5. Gráfica de tasa de dependencia ***
 		*****************************************
 		g tasaDependencia = (pob18 + pob61)/(pob3560 + pob1934)*100
-		format tasaDependencia %10.1fc
+		format tasaDependencia %10.0fc
 
 		tabstat tasaDependencia, stat(min max) save
 		forvalues k = 1(1)`=_N' {
@@ -466,14 +469,15 @@ quietly {
 		twoway (connected tasaDependencia anio if anio <= `anioinicial') ///
 			(connected tasaDependencia anio if anio > `anioinicial'), ///
 			title("`graphtitle'") ///
-			subtitle(${pais} `=entidad[1]') ///
+			subtitle("${pais} `=entidad[1]'. Dependientes por c/100 personas en edad de trabajar") ///
 			caption("`graphfuente'") ///
 			xtitle("") ///
-			text(`=r(StatTotal)[2,1]' `aniotdmax' "`=string(r(StatTotal)[2,1],"%7.1fc")'", place(n) size(large) color(black)) ///
-			text(`=r(StatTotal)[1,1]' `aniotdmin' "`=string(r(StatTotal)[1,1],"%7.1fc")'", place(n) size(large) color(black)) ///
-			text(`=tasaDependencia[_N]' `=anio[_N]' "`=string(tasaDependencia[_N],"%7.1fc")'", place(n) size(large) color(black)) ///
-			xlabel(`anioinicial'(10)`=anio[_N]') ///
-			ytitle("Dependientes por cada 100 personas en edad de trabajar") ///
+			text(`=r(StatTotal)[2,1]' `aniotdmax' "`=string(r(StatTotal)[2,1],"%7.0fc")'", place(n) size(large) color(black)) ///
+			text(`=r(StatTotal)[1,1]' `aniotdmin' "`=string(r(StatTotal)[1,1],"%7.0fc")'", place(n) size(large) color(black)) ///
+			text(`=tasaDependencia[_N]' `=anio[_N]' "`=string(tasaDependencia[_N],"%7.0fc")'", place(n) size(large) color(black)) ///
+			xlabel(`aniofirst'(10)`=anio[_N]') ///
+			ytitle("") ///
+			///ylabel(, format(%10.0fc)) ///
 			xline(`=`anioinicial'+.5') ///
 			legend(off label(1 "Observado") label(2 "Proyectado") region(margin(zero)) rows(1)) ///
 			name(T_`anioinicial'_`aniofinal'_`entidadGName', replace)
@@ -653,7 +657,6 @@ program define UpdatePoblacion
 	drop cve_geo 
 	capture drop __*
 	compress
-	capture mkdir "`c(sysdir_personal)'/SIM/"
 
 	if `c(version)' > 13.1 {
 		saveold "`c(sysdir_personal)'/SIM/Poblacion.dta", replace version(13)
