@@ -351,16 +351,11 @@ if _rc != 0 {
 
 
 	** 2.12 IVA categorías **
-	g categ_iva = 1 if letra == "A" & iva201 == "Tasa Cero"
+	g categ_iva = 1 if letra == "A"
 	replace categ_iva = 2 if letra == "A" & ((num >= 198 & num <= 202) | (num >= 243 & num <= 247))
-	replace categ_iva = 3 if letra == "A" & (iva201 == "Tasa Cero" ///
-		& (num >= 1 & num <= 100) | num == 102 | (num >= 137 & num <= 143) | (num >= 107 & num <= 136) ///
-		| (num >= 147 & num <= 172) | (num >= 173 & num <= 175))
+	replace categ_iva = 3 if letra == "A" & ((num == 1 | num == 4 | num == 9 | num == 10 | num == 12 | num == 13 | num == 19 | num == 25 | num == 34 | num == 38 | num == 42 | num == 48 | num == 55 | num == 57 | num == 58 | num == 59 | num == 62 | num == 66 | num == 75 | num == 85 | num == 87 | num == 91 | num == 93 | num == 95 | num == 102 | num == 112 | num == 115 | num == 116 | num == 117 | num == 118 | num == 124 | num == 137 | num == 154 | num == 158 | num == 160 | num == 166 | num == 173 | num == 200 | num == 215 | num == 220 | num == 243 | num == 244 | num == 245 | num == 202))
 	replace categ_iva = 4 if (letra == "L" & (num == 029)) | (letra == "A" & (num == 213 | num == 214))
-	replace categ_iva = 5 if letra == "J" & (iva201 == "Tasa Cero" ///
-		& (num == 9 | num == 10 | num == 14 | (num >= 20 & num <= 27) | num == 28 | num == 29 ///
-		| num == 30 | num == 31 | num == 34 | (num >= 36 & num <= 38) | num == 42 | (num >= 44 & num <= 51) ///
-		| num == 54 | (num >= 53 & num <= 56) | num == 64))
+	replace categ_iva = 5 if letra == "J" & ((num == 9 | (num >= 20 & num <= 38) | num == 42 | (num >= 44 & num <= 59) | num == 64))
 	replace categ_iva = 6 if letra == "B"
 	replace categ_iva = 7 if (letra == "M" & num == 1) | (letra == "B" & num == 6)
 	replace categ_iva = 8 if letra == "E" & (num >= 1 & num <= 7)
@@ -383,9 +378,9 @@ if _rc != 0 {
 
 
 	** 2.13 IEPS categorías **
-	g categ_ieps = 1 if (letra == "A" & (num == 222 | num == 224 | num == 226 | num == 228 | num == 231 | num == 232 | num == 234 | num == 238))
-	replace categ_ieps = 2 if (letra == "A" & num == 227)
-	replace categ_ieps = 3 if (letra == "A" & (num == 223 | num == 225 | num == 229 | num == 230 | num == 233 | num == 235 | num == 236))
+	g categ_ieps = 1 if (letra == "A" & (num == 224))
+	replace categ_ieps = 2 if (letra == "A" & num == 225 | num == 226 | num == 227 | num == 228 | num == 231 | num == 232 | num == 234)
+	replace categ_ieps = 3 if (letra == "A" & (num == 223 | num == 229 | num == 230 | num == 233 | num == 235 | num == 236 | num == 237 | num == 238))
 	replace categ_ieps = 4 if (letra == "A" & (num >= 239 & num <= 241))
 	replace categ_ieps = 5 if (letra == "E" & num == 031)
 	replace categ_ieps = 6 if (letra == "F" & (num >= 1 & num <= 3)) ///
@@ -395,8 +390,7 @@ if _rc != 0 {
 	replace categ_ieps = 9 if (letra == "A" & (num == 106 | (num >= 180 & num <= 182) | (num >= 205 & num <= 209)))
 	replace categ_ieps = 10 if (letra == "G" & (num >= 9 & num <= 11))
 	replace categ_ieps = 11 if (letra == "F" & (num >= 7 & num <= 9))
-	replace categ_ieps = 12 if categ_ieps == 1 | categ_ieps == 2 | categ_ieps == 3
-	replace categ_ieps = 13 if categ_ieps == .
+	replace categ_ieps = 12 if categ_ieps == .
 
 	label define categ_ieps 1 "Cervezas" ///
 		2 "Alcohol 20" ///
@@ -409,8 +403,7 @@ if _rc != 0 {
 		9 "AltoContCal" ///
 		10 "Combustibles" ///
 		11 "Gasolinas" ///
-		12 "Alcohol" ///
-		13 "Sin IEPS"
+		12 "Sin IEPS"
 	label values categ_ieps categ_ieps
 
 
@@ -524,10 +517,11 @@ foreach categ in categ categ_iva categ_ieps {
 		merge 1:m (folioviv foliohog) using "`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/`enighanio'/poblacion.dta", nogen keepus(numren edad sexo)
 		merge 1:1 (folioviv foliohog numren) using `gastoindividuos', nogen keepus(*_ind* proporcion*)
 		merge m:1 (folioviv foliohog) using "`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/`enighanio'/concentrado.dta", nogen keepus(factor)
-		merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/perfiles`enighanio'.dta", nogen keepus(decil ingbrutotot)
+		capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/perfiles`enighanio'.dta", nogen keepus(decil ingbrutotot)
 		sort folioviv foliohog numren
 		egen tot_integ = count(edad), by(folioviv foliohog)
 
+		*drop if folioviv == "0902784406"
 
 		** 3.4 Gasto per cápita **
 		noisily di in g `"`categs'"'
@@ -551,19 +545,20 @@ foreach categ in categ categ_iva categ_ieps {
 					g `vars'ind`k' = 0
 				}
 
-				g `vars'pc_`k' = `vars'hog`k'/tot_integ + `vars'ind`k'
+				g `vars'pc_`k' = `vars'hog`k'/tot_integ //+ `vars'ind`k'
 				local label = subinstr("`title' per cápita en `k'","_"," ",.)
 				label var `vars'pc_`k' "`label'"
 
+				* Perfil original *
 				tempvar `vars'pc_`k'
-				g ``vars'pc_`k'' = `vars'pc_`k' + `vars'ind`k'
-				label var ``vars'pc_`k'' "`title' en `k' (original)"
+				g ``vars'pc_`k'' = `vars'pc_`k'
+				label var ``vars'pc_`k'' "`title' per cápita en `k' (original)"
 				noisily Perfiles ``vars'pc_`k'' [fw=factor], reboot aniope(2022)
 
 				* Iteraciones *
 				noisily di in y "`k': " _cont
 				local salto = 2
-				forvalues iter=1(1)5 {
+				forvalues iter=1(1)10 {
 					noisily di in w "`iter' " _cont
 					forvalues edades=0(`salto')109 {
 						forvalues sexos=1(1)2 {
@@ -581,10 +576,10 @@ foreach categ in categ categ_iva categ_ieps {
 					replace `vars'pc_`k' = `vars'hog`k'*`vars'pc_`k'/equivalencia`k'
 					drop equivalencia`k'
 				}
-				//replace `vars'pc_`k' = 0 if `vars'pc_`k' == .
-				//replace `vars'pc_`k' = `vars'pc_`k' + `vars'ind`k'
+				replace `vars'pc_`k' = 0 if `vars'pc_`k' == .
+				replace `vars'pc_`k' = `vars'pc_`k' + `vars'ind`k'
 				//noisily Simulador `vars'pc_`k' [fw=factor], reboot aniope(2022)
-				noisily Perfiles `vars'pc_`k' [fw=factor], reboot aniope(2022) title(Gasto per cápita en `k')
+				noisily Perfiles `vars'pc_`k' [fw=factor], reboot aniope(2022) title(`title' per cápita en `k')
 			}
 			noisily di
 		}

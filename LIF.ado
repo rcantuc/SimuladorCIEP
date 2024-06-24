@@ -31,7 +31,7 @@ quietly {
 	syntax [if] [, ANIO(int `aniovp' ) BY(varname) ///
 		UPDATE NOGraphs Base ///
 		MINimum(real 0.5) DESDE(int -1) ///
-		ILIF LIF EOFP ///
+		EOFP PROYeccion ///
 		ROWS(int 1) COLS(int 5) ///
 		TITle(string)]
 
@@ -118,7 +118,7 @@ quietly {
 	local aniolast = anio[_N]
 
 	** 3.1 Utilizar LIF o ILIF **
-	if "`lif'" == "" {}
+	if "`proyeccion'" == "proyeccion" {
 		replace recaudacion = monto/acum_prom if mes < 12 & divLIF != 10
 	}
 	if "`eofp'" == "eofp" {
@@ -575,12 +575,14 @@ end
 
 
 
-*****************************
-****                     ****
-**** BASE DE DATOS: LIFs ****
-****                     ****
-*****************************
+*************************
+****                 ****
+**** UpdateLIF.do    ****
+**** De .xlsx a .dta ****
+****                 ****
+*************************
 program define UpdateLIF
+
 
 	************************
 	*** 1. BASE DE DATOS ***

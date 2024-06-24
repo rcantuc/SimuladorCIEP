@@ -1,7 +1,7 @@
 *!*******************************************
 *!***                                    ****
 *!***    PIB, deflactor e inflación      ****
-*!***    BIE/INEGI                       ****
+*!***    Fuente: BIE/INEGI               ****
 *!***    Autor: Ricardo                  ****
 *!***    Fecha: 29/Sept/22               ****
 *!***                                    ****
@@ -10,8 +10,11 @@ program define PIBDeflactor, return
 timer on 2
 quietly {
 
+	capture mkdir `"`c(sysdir_personal)'/SIM/"'
+	capture mkdir `"`c(sysdir_personal)'/SIM/graphs/"'
+
 	** 0.1 Revisa si se puede usar la base de datos **
-	capture use "`c(sysdir_personal)'/SIM/PIBDeflactor.dta", clear
+	capture use "`c(sysdir_site)'/SIM/PIBDeflactor.dta", clear
 	if _rc != 0 {
 		UpdatePIBDeflactor
 	}
@@ -44,7 +47,7 @@ quietly {
 	************************
 	**# 2 Bases de datos ***
 	************************
-	use if anio <= `aniomax' using "`c(sysdir_personal)'/SIM/PIBDeflactor.dta", clear
+	use if anio <= `aniomax' using "`c(sysdir_site)'/SIM/PIBDeflactor.dta", clear
 
 	** 2.1 Obtiene el año inicial y final de la base **
 	forvalues k=1(1)`=_N' {
@@ -386,6 +389,7 @@ quietly {
 			text(0 `=`aniofinal'+`exo_def'/2-.5' "$paqueteEconomico", size(vsmall) place(12) justification(right) yaxis(2)) ///
 			text(0 `=`aniofinal'+`exo_def'+(`aniomax'-`aniofinal'-`exo_def')/2' "Proyectado", size(vsmall) place(12) justification(left)  yaxis(2)) ///
 
+		graph save deflactor "`c(sysdir_personal)'/SIM/graphs/deflactor", replace
 		capture confirm existence $export
 		if _rc == 0 {
 			graph export "$export/deflactor.png", replace name(deflactor)
@@ -471,7 +475,7 @@ quietly {
 			text(0 `=`aniofinal'+`exo_def'/2-.5' "$paqueteEconomico", size(vsmall) place(12) justification(right) yaxis(2)) ///
 			text(0 `=`aniofinal'+`exo_def'+(`aniomax'-`aniofinal'-`exo_def')/2' "Proyectado", size(vsmall) place(12) justification(left) yaxis(2)) ///
 
-
+		graph save pib "`c(sysdir_personal)'/SIM/graphs/pib", replace
 		capture confirm existence $export
 		if _rc == 0 {
 			graph export "$export/pib.png", replace name(pib)
@@ -565,7 +569,7 @@ quietly {
 			text(0 `=`aniofinal'+`exo_def'/2-.5' "$paqueteEconomico", size(vsmall) place(12) justification(right) yaxis(2)) ///
 			text(0 `=`aniofinal'+`exo_def'+(`aniomax'-`aniofinal'-`exo_def')/2' "Proyectado", size(vsmall) place(12) justification(left)  yaxis(2)) ///
 
-
+		graph save pib_pc "`c(sysdir_personal)'/SIM/graphs/pib_pc", replace
 		capture confirm existence $export
 		if _rc == 0 {
 			graph export "$export/pib_pc.png", replace name(pib_pc)
@@ -657,7 +661,7 @@ quietly {
 			text(0 `=`aniofinal'+`exo_def'/2-.5' "$paqueteEconomico", size(vsmall) place(12) justification(right) yaxis(2)) ///
 			text(0 `=`aniofinal'+`exo_def'+(`aniomax'-`aniofinal'-`exo_def')/2' "Proyectado", size(vsmall) place(12) justification(left)  yaxis(2)) ///
 
-
+		graph save inflacion "`c(sysdir_personal)'/SIM/graphs/inflacion", replace
 		capture confirm existence $export
 		if _rc == 0 {
 			graph export "$export/inflacion.png", replace name(inflacion)
@@ -697,7 +701,6 @@ quietly {
 			noisily di in g " `=anio[`k']' " _col(10) %8.1fc in y var_pibY[`k'] " %" _col(25) %20.0fc pibY[`k'] _col(50) %8.1fc in y var_indiceY[`k'] " %" _col(65) %12.10fc deflator[`k']
 		}
 	}
-
 	return scalar aniolast = `aniofinal'
 
 	timer off 2
@@ -722,7 +725,7 @@ program define UpdatePIBDeflactor
 	**************
 
 	** 1.1. Importar variables de interés desde el BIE **
-	run "`c(sysdir_personal)'/AccesoBIE.do" "734407 735143 446562 446565 446566" "pibQ indiceQ PoblacionENOE PoblacionOcupada PoblacionDesocupada"
+	run "`c(sysdir_site)'/AccesoBIE.do" "734407 735143 446562 446565 446566" "pibQ indiceQ PoblacionENOE PoblacionOcupada PoblacionDesocupada"
 
 	** 1.2 Label variables **
 	label var pibQ "Producto Interno Bruto (trimestral)"
@@ -759,7 +762,7 @@ program define UpdatePIBDeflactor
 	***         ***
 	***************
 	** 2.1. Importar variables de interés desde el BIE **
-	run "`c(sysdir_personal)'/AccesoBIE.do" "628194" "inpc"
+	run "`c(sysdir_site)'/AccesoBIE.do" "628194" "inpc"
 
 	** 2.2 Label variables **
 	label var inpc "Índice Nacional de Precios al Consumidor"
@@ -796,9 +799,9 @@ program define UpdatePIBDeflactor
 	********************
 
 	** 3.1 Población (CONAPO) **
-	capture use `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
+	capture use `"`c(sysdir_site)'/SIM/$pais/Poblacion.dta"', clear
 	if _rc != 0 {
-		noisily run `"UpdatePoblacion`=subinstr("${pais}"," ","",.)'.do"'
+		Poblacion, nographs
 	}
 	collapse (sum) Poblacion=poblacion if entidad == "Nacional", by(anio)
 	format Poblacion %15.0fc
@@ -806,14 +809,14 @@ program define UpdatePIBDeflactor
 	save "`Poblacion'"
 
 	** 3.2 Working Ages (CONAPO) **
-	use `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
+	use `"`c(sysdir_site)'/SIM/$pais/Poblacion.dta"', clear
 	collapse (sum) WorkingAge=poblacion if edad >= 15 & edad <= 65 & entidad == "Nacional", by(anio)
 	format WorkingAge %15.0fc
 	tempfile WorkingAge
 	save "`WorkingAge'"
 
 	** 3.3 Recién nacidos (CONAPO) **
-	use `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
+	use `"`c(sysdir_site)'/SIM/$pais/Poblacion.dta"', clear
 	collapse (sum) Poblacion0=poblacion if edad == 0 & entidad == "Nacional", by(anio)
 	format Poblacion0 %15.0fc
 	tempfile Poblacion0
@@ -879,10 +882,10 @@ program define UpdatePIBDeflactor
 	capture drop __*
 	sort aniotrimestre
 	if `c(version)' > 13.1 {
-		saveold "`c(sysdir_personal)'/SIM/PIBDeflactor.dta", replace version(13)
+		saveold "`c(sysdir_site)'/SIM/PIBDeflactor.dta", replace version(13)
 	}
 	else {
-		save "`c(sysdir_personal)'/SIM/PIBDeflactor.dta", replace
+		save "`c(sysdir_site)'/SIM/PIBDeflactor.dta", replace
 	}
 
 

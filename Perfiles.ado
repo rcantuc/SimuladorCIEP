@@ -579,12 +579,12 @@ quietly {
 		graph combine H`varlist' `varlist'Proj, ///
 			name(`=substr("`varlist'",1,10)'_`aniope', replace) ///
 			title("{bf:`title'}") ///
-			///subtitle(" Perfil etario (MXN `aniovp') y proyección demográfica (% PIB)", margin(bottom)) ///
-			subtitle(" Age profile (PPP `aniovp') and demographic projection (% GDP)", margin(bottom)) ///
+			subtitle(" Perfil etario (MXN `aniovp') y proyección demográfica (% PIB)", margin(bottom)) ///
+			caption("Fuente: Elaborado por el CIEP, con información de INEGI/`base', INEGI/BIE, CONAPO y SHCP.") ///
+			note(`"Nota: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n en cada grupo."') ///
 			///title("`title' {bf:profile}") ///
-			///caption("Fuente: Elaborado por el CIEP, con información de INEGI/`base', INEGI/BIE, CONAPO y SHCP.") ///
-			///note(`"Nota: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n en cada grupo."') ///
-			caption("{bf:Source}: Prepared by CIEP, using data from `base'.") ///
+			///subtitle(" Age profile (MXN `aniovp') and demographic projection (% GDP)", margin(bottom)) ///
+			///caption("{bf:Source}: Prepared by CIEP, using data from `base'.") ///
 			///note(`"{bf:Note}: Percentages in parentheses show the concentration in each group."')
 
 		graph save `=substr("`varlist'",1,10)'_`aniope' `"`c(sysdir_personal)'/SIM/graphs/`varlist'_`aniope'.gph"', replace
@@ -642,7 +642,7 @@ program poblaciongini
 	replace `grupo' = 3 if decil == 10
 
 	tempname grupoval
-	label define `grupoval' 1 `"{bf:Deciles I-V} consume `=string(`gdeclab1'+`gdeclab2'+`gdeclab3'+`gdeclab4'+`gdeclab5',"%7.0fc")'%"' ///
+	label define `grupoval' 1 `"{bf:Deciles I-V}, `=string(`gdeclab1'+`gdeclab2'+`gdeclab3'+`gdeclab4'+`gdeclab5',"%7.0fc")'%"' ///
 		2 `"{bf:VI-IX}, `=string(`gdeclab6'+`gdeclab7'+`gdeclab8'+`gdeclab9',"%7.0fc")'%"' ///
 		3 `"{bf:X}, `=string(`gdeclab10',"%7.0fc")'%"'
 	label values `grupo' `grupoval'
@@ -807,7 +807,8 @@ program graphpiramide
 			yscale(noextend noline /*range(-7(1)7)*/) ///
 			blabel(none, format(%5.1fc)) ///
 			b1title(" ") ///
-			b2title(" {bf:Men} consume `men'% and {bf:women} `women'%", size(small)) ///
+			///b2title(" {bf:Men} consume `men'% and {bf:women} `women'%", size(small)) ///
+			b2title(" {bf:Hombres}, `men'%   {bf:mujeres}, `women'%", size(small)) ///
 			///subtitle("Age profile 2022 (PPP)") ///
 			///subtitle("Perfil etario") ///
 			///ytitle(% PIB) ///
@@ -945,8 +946,8 @@ program define ProyGraph
 				///yline(0, lpattern(solid) lcolor(black)) ///
 				///text(`=`estimacionmax'*.05' `aniomax' "Este perfil, junto con" "las proyecciones demográficas," "obtiene un {bf:máximo en `aniomax'}.", size(medsmall) place(11) justification(right)) ///
 				///text(`=`estimacionmax'*.05' `aniomax' "This age profile, along with" "CONAPO's demographic projections," "reaches a maximum in {bf:`aniomax'}.", size(medsmall) place(11) justification(right)) ///
-				///text(`=`estimacionvp'*1.05' `aniohoy' "De `aniohoy' a `aniomax',"  `"{bf:cambiaría `=string((`estimacionmax'/`estimacionvp'-1)*100,"%5.2f")'%}."', size(medsmall) place(11) justification(left)) ///
-				text(`=`estimacionvp'*0.25' `aniohoy' "From `aniohoy' to 2070,"  "its demand will" `"change in {bf:`=string((`LAST'[1,1]/`estimacionvp'-1)*100,"%5.2f")'%}."', size(medsmall) place(1) justification(left)) ///
+				text(`=`estimacionvp'*0.25' `aniohoy' "De `aniohoy' a 2070,"  "la demanda cambiaría" `"en {bf:`=string((`LAST'[1,1]/`estimacionvp'-1)*100,"%5.2f")'%}."', size(medsmall) place(1) justification(left)) ///
+				///text(`=`estimacionvp'*0.25' `aniohoy' "From `aniohoy' to 2070,"  "its demand will" `"change in {bf:`=string((`LAST'[1,1]/`estimacionvp'-1)*100,"%5.2f")'%}."', size(medsmall) place(1) justification(left)) ///
 				///title("{bf:Proyecci{c o'}n} de `title'") subtitle("$pais") ///
 				///caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.") ///
 				name(`varlist'Proj, replace)

@@ -14,7 +14,7 @@ graphsize 	y                   7
 
 // Margins
 margin 		graph               medlarge
-margin      heading             medium
+margin      heading             medsmall
 margin      subheading          medsmall
 margin      legend              zero
 // margin   combinegraph        none
