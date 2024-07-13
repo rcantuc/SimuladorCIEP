@@ -16,10 +16,10 @@ renombrándolas de la siguiente forma:
 Base de población: poblacion.dta
 Base de trabajos: trabajos.dta
 Base de ingresos: ingresos.dta
-Base de viviendas: viviendas.dta
+Base de viviendas: vivienda.dta
 Base de hogares: hogares.dta
-Base de concentrado: concentradohogar.dta
-Base de no monetario hogar: gastoshogar.dta
+Base de concentrado: concentrado.dta
+Base de no monetario hogar: gastohogar.dta
 Base de no monetario personas: gastospersona.dta
 
 En este programa se utilizan tres tipos de archivos, los cuales 
@@ -30,9 +30,9 @@ están ubicados en las siguientes carpetas:
 3) Bitácoras: "C:\Pobreza 2020\log"
 
 Para cambiar estas ubicaciones, se modifican los siguientes globals (gl); 
-gl data="/home/ciepmx/CIEP Dropbox/Ricardo Cantú/ENIGH2022 - Conciliación con SCN/Bases de datos";
-gl bases="/home/ciepmx/CIEP Dropbox/Ricardo Cantú/ENIGH2022 - Conciliación con SCN/Bases";
-gl log="/home/ciepmx/CIEP Dropbox/Ricardo Cantú/ENIGH2022 - Conciliación con SCN/Log";
+gl data="`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/2022";
+gl bases="`c(sysdir_site)'../BasesCIEP/INEGI/CONEVAL/2022/Base final";
+gl log="`c(sysdir_site)'../BasesCIEP/INEGI/CONEVAL/2022/Log";
 
 
 log using "$log/Pobreza_20.txt", text replace;
@@ -864,12 +864,12 @@ save "$bases/ic_segsoc20.dta", replace;
 
 *Material de construcción de la vivienda;
 
-use "$data/viviendas.dta", clear;
+use "$data/vivienda.dta", clear;
 sort folioviv;
-save "$bases/viviendas.dta", replace;
-use "$data/concentradohogar.dta", clear;
+save "$bases/vivienda.dta", replace;
+use "$data/concentrado.dta", clear;
 sort folioviv ;
-merge folioviv using "$bases/viviendas.dta";
+merge folioviv using "$bases/vivienda.dta";
 tab _merge;
 drop _merge;
 
@@ -956,10 +956,10 @@ save "$bases/ic_cev20.dta", replace;
 *INDICADOR DE CARENCIA POR ACCESO A LOS SERVICIOS BÁSICOS EN LA VIVIENDA
 ************************************************************************;
 
-use "$data/concentradohogar.dta", clear;
+use "$data/concentrado.dta", clear;
 keep folioviv foliohog;
 sort folioviv ;
-merge folioviv using "$bases/viviendas.dta";
+merge folioviv using "$bases/vivienda.dta";
 tab _merge;
 drop _merge;
 
@@ -1422,7 +1422,7 @@ agosto del 2020
 
 *No Monetario;
 
-use "$data/gastoshogar.dta", clear;
+use "$data/gastohogar.dta", clear;
 gen base=1;
 append using "$data/gastospersona.dta";
 recode base (.=2);
@@ -1893,7 +1893,7 @@ Construcción del ingreso corriente total
 
 *********************************************************;
 
-use "$data/concentradohogar.dta", clear;
+use "$data/concentrado.dta", clear;
 keep folioviv foliohog tam_loc factor tot_integ est_dis upm ubica_geo;
 
 
