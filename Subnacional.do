@@ -219,7 +219,7 @@ save `GastoFedBase'
 *cd "`c(sysdir_site)'../BasesCIEP/UPDATE/Subnacional/CDMX"
 *unzipfile "https://www.inegi.org.mx/contenidos/programas/finanzas/datosabiertos/efipem_cdmx_csv.zip", replace
 
-forvalues anio=2013(1)2021 {
+forvalues anio=2013(1)2022 {
 
 	***************
 	** 4.1 Bases **
@@ -407,15 +407,54 @@ replace divCIEP = "Organismos y empresas" if capitulo == "Cuotas y Aportaciones 
 replace divCIEP = "Financiamiento" if capitulo == "Financiamiento"
 replace divCIEP = "Federalizado" if concepto == "Recursos federales reasignados" //& capitulo == "Aportaciones Federales" 
 
+/*
 g entidad = ""
 forvalues k=1(1)32 {
 	replace entidad = "``k''" if id_entidad == `k'
 }
+*/
+
+gen ent=""
+replace ent="Aguascalientes" if id_ent==1
+replace ent="Baja California" if id_ent==2
+replace ent="Baja California Sur" if id_ent==3
+replace ent="Campeche" if id_ent==4
+replace ent="Coahuila" if id_ent==5
+replace ent="Colima" if id_ent==6
+replace ent="Chiapas" if id_ent==7
+replace ent="Chihuahua" if id_ent==8
+replace ent="Ciudad de México" if id_ent==9
+replace ent="Durango" if id_ent==10
+replace ent="Guanajuato" if id_ent==11
+replace ent="Guerrero" if id_ent==12
+replace ent="Hidalgo" if id_ent==13
+replace ent="Jalisco" if id_ent==14
+replace ent="México" if id_ent==15
+replace ent="Michoacán" if id_ent==16
+replace ent="Morelos" if id_ent==17
+replace ent="Nayarit" if id_ent==18
+replace ent="Nuevo León" if id_ent==19
+replace ent="Oaxaca" if id_ent==20
+replace ent="Puebla" if id_ent==21
+replace ent="Querétaro" if id_ent==22
+replace ent="Quintana Roo" if id_ent==23
+replace ent="San Luis Potosí" if id_ent==24
+replace ent="Sinaloa" if id_ent==25
+replace ent="Sonora" if id_ent==26
+replace ent="Tabasco" if id_ent==27
+replace ent="Tamaulipas" if id_ent==28
+replace ent="Tlaxcala" if id_ent==29
+replace ent="Veracruz" if id_ent==30
+replace ent="Yucatán" if id_ent==31
+replace ent="Zacatecas" if id_ent==32
+
 
 ** Guardar **
-drop id_entidad
-order anio entidad capitulo concepto partida subpartida divCIEP valor
-sort entidad anio capitulo concepto partida subpartida
+*drop id_entidad
+order anio id_entidad ent capitulo concepto partida subpartida divCIEP valor
+sort id_entidad anio capitulo concepto partida subpartida
+rename valor monto
+* entidad ya no existe *
 
 tempfile LIEs_INEGI
 save `LIEs_INEGI'
