@@ -107,7 +107,7 @@ forvalues anio = `=anioPE'(2)`=anioPE' {
 ***                            ***
 **********************************
 
-** 2.1 Parámetros: Educación **
+/** 2.1 Parámetros: Educación **
 scalar iniciaA     =     428 //    Inicial
 scalar basica      =   28729 //    Educación b{c a'}sica
 scalar medsup      =   28521 //    Educación media superior
@@ -160,7 +160,7 @@ noisily GastoPC, aniope(`=anioPE') aniovp(`=aniovp')
 
 
 
-** 2.1 Parámetros: Ingresos **
+/** 2.1 Parámetros: Ingresos **
 scalar ISRAS       =   3.642 		// ISR (asalariados)
 scalar ISRPF       =   0.231 		// ISR (personas f{c i'}sicas)
 scalar CUOTAS      =   1.557	 	// Cuotas (IMSS)
@@ -182,7 +182,7 @@ scalar IMPORT      =   0.297 		// Importaciones
 
 
 
-** 2.2 Parámetros: ISR **
+** 2.2 Parámetros: ISR **/
 * Anexo 8 de la Resolución Miscelánea Fiscal para 2024 *
 * Tarifa para el cálculo del impuesto correspondiente al ejericio 2024 a que se refieren los artículos 97 y 152 de la Ley del ISR
 * Tabla del subsidio para el empleo aplicable a la tarifa del numeral 5 del rubro B (página 773) *
@@ -358,7 +358,7 @@ foreach k in decil grupoedad /*sexo rural escol*/ {
 **#    4. PARTE IV: DEUDA + FISCAL GAP    ***
 ***                                       ***
 *********************************************
-scalar tasaEfectiva = 6.2167
+*scalar tasaEfectiva = 6.2167
 
 scalar shrfsp2024 = 50.2
 scalar shrfspInterno2024 = 38.8
