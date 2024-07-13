@@ -9,7 +9,7 @@ capture log close _all
 
 *********************
 ** 1.1 Estilo CIEP **
-set scheme ciep
+set scheme ciepnew
 graph set window fontface "Ubuntu Light"
 set more off, permanently
 set type double, permanently
