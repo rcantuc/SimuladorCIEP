@@ -78,11 +78,11 @@ quietly {
 
 	foreach k of local divSIM {
 		local `k'C = r(`k'C)
-		if ``k'C' > 15 {
-			local `k'C = 15
+		if ``k'C' > 5 {
+			local `k'C = 5
 		}
-		if ``k'C' < -15 {
-			local `k'C = -15
+		if ``k'C' < -5 {
+			local `k'C = -5
 		}
 		capture confirm scalar `k'
 		if _rc != 0 {
@@ -99,7 +99,7 @@ quietly {
 	g modulo = ""
 	foreach k of local divSIM {
 		preserve
-		use `"`c(sysdir_personal)'/users/ciepmx/bootstraps/1/`k'REC.dta"', clear
+		use `"`c(sysdir_personal)'/SIM/bootstraps/1/`k'REC.dta"', clear
 		collapse estimacion contribuyentes, by(anio modulo aniobase)
 		tsset anio
 
@@ -266,17 +266,17 @@ quietly {
 
 	*********************************************
 	** 5.1 Información histórica de los gastos **
-	PEF if transf_gf == 0 & anio >= 2013 & divCIEP != -1, anio(`anio') by(divCIEP) nographs desde(`desde')
+	PEF if transf_gf == 0 & anio >= `desde' & divCIEP != "Cuotas ISSSTE", anio(`anio') by(divCIEP) nographs desde(`desde')
 	local divCIEP "`=r(divCIEP)' IngBasico"
 
 	foreach k of local divCIEP {
 		local `k' = r(`k')
 		local `k'C = r(`k'C)
-		if ``k'C' > 15 {
-			local `k'C = 15
+		if ``k'C' > 5 {
+			local `k'C = 5
 		}
-		if ``k'C' < -15 {
-			local `k'C = -15
+		if ``k'C' < -5 {
+			local `k'C = -5
 		}
 	}
 	decode resumido, g(divCIEP)
@@ -289,7 +289,7 @@ quietly {
 	foreach k of local divCIEP {
 		if `"`=strtoname("`k'")'"' != "Costo_de_la_deuda" {
 			preserve
-			use `"`c(sysdir_personal)'/users/ciepmx/bootstraps/1/`=strtoname("`k'")'REC.dta"', clear
+			use `"`c(sysdir_personal)'/SIM/bootstraps/1/`=strtoname("`k'")'REC.dta"', clear
 			collapse estimacion contribuyentes, by(anio modulo aniobase)
 			tsset anio
 			
@@ -466,7 +466,7 @@ quietly {
 	//noisily tabstat gasto_pib estimacionGasto_pib if anio >= `aniomin', stat(sum) by(anio) save
 
 	* Reemplazar tasasEfectivas con el escalar tasasEfectiva si fue provisto desde los parámetros en SIM.do *
-	capture confirm scalar tasaEfectiva
+	capture confirm existence `=scalar(tasaEfectiva)'
 	if _rc == 0 {
 		replace tasaEfectiva = scalar(tasaEfectiva) if anio >= `anio'
 	}
@@ -753,7 +753,7 @@ quietly {
 		in y _col(35) %25.0fc shrfsp_pib[_N] ///
 		in g " % PIB"	
 	noisily di in g "  " _dup(61) "-"
-	noisily di in g "  (*) Tasa Efectiva Promedio: " in y _col(35) %25.4fc `tasaEfectiva_ari'[1,1] in g " %"
+	noisily di in g "  (*) Tasa Efectiva Promedio: " in y _col(35) %25.4fc scalar(tasaEfectiva) in g " %"
 	noisily di in g "  (*) Discount rate:" in y _col(35) %25.4fc `discount' in g " %"
 	noisily di in g "  (*) Actualización deuda:" in y _col(35) %25.4fc `actualizacion_geo' in g " %"
 

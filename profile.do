@@ -6,7 +6,6 @@
 clear all
 macro drop _all
 capture log close _all
-timer on 1
 
 *********************
 ** 1.1 Estilo CIEP **
@@ -18,23 +17,10 @@ set charset latin1, permanently
 
 ***********************
 ** 1.2 Ruta PERSONAL **
+cd `"`c(sysdir_site)'"'
 sysdir set PERSONAL `"`c(sysdir_site)'"'
 adopath ++PERSONAL
-cd `"`c(sysdir_personal)'"'
 
-************************
-** 1.3 Crear carpetas **
-capture mkdir `"`c(sysdir_personal)'/SIM/"'
-capture mkdir `"`c(sysdir_personal)'/SIM/graphs/"'
-capture mkdir `"`c(sysdir_personal)'/users/"'
-capture mkdir `"`c(sysdir_personal)'/users/$id/"'
-
-****************************
-** 1.4 Archivo output.txt **
-if "$output" != "" {
-	quietly log using `"`c(sysdir_personal)'/users/$id/output.txt"', replace text name(output)
-	quietly log off output
-}
 
 
 ********************
@@ -102,7 +88,6 @@ if anioPE >= 2016 & anioPE < 2018 {
 ***		         ***
 ********************
 noisily di _newline(50) in w "{bf:Centro de Investigaci{c o'}n Econ{c o'}mica y Presupuestaria, A.C.}"
-
 noisily di _newline(2) in g `"{bf:{stata `"projmanager "`c(sysdir_personal)'/simulador.stpr""': Simulador Fiscal CIEP}}"'
 noisily di in g " Información Económica:  " _col(30) in y "$paqueteEconomico" ///
 	_newline in g " Año de Valor Presente:  " _col(30) in y "`=aniovp'" ///

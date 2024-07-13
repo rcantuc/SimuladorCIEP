@@ -15,5 +15,4 @@ program Distribucion, return
 	else {
 		g double `anything' = `relativo'*`macro'/`SumaVar'[1,1] `if'
 	}
-	tabstat `relativo' `if' [fw=factor], stat(sum) f(%20.0fc) save
 end

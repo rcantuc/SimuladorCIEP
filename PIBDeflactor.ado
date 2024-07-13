@@ -7,8 +7,8 @@
 *!***                                    ****
 *!*******************************************
 program define PIBDeflactor, return
-timer on 2
 quietly {
+	timer on 3
 
 	capture mkdir `"`c(sysdir_personal)'/SIM/"'
 	capture mkdir `"`c(sysdir_personal)'/SIM/graphs/"'
@@ -703,9 +703,9 @@ quietly {
 	}
 	return scalar aniolast = `aniofinal'
 
-	timer off 2
-	timer list 2
-	noisily di _newline in g "Tiempo: " in y round(`=r(t2)/r(nt2)',.01) in g " segs."
+	timer off 3
+	timer list 3
+	noisily di _newline in g "Tiempo: " in y round(`=r(t3)/r(nt3)',.01) in g " segs."
 }
 end
 
@@ -906,8 +906,8 @@ program define UpdatePIBDeflactor
 			local graphtitle ""
 			local graphfuente ""
 		}
-		twoway (connected crec_pibQR aniotrimestre, mlabel(crec_pibQR) mlabposition(0) mlabcolor(white) mlabgap(0pt)) if pibPO != ., ///
-			title({bf:Producto Interno Bruto}) subtitle(Crecimiento trim. vs. trim.) ///
+		twoway (connected crec_pibQR aniotrimestre, mlabel(crec_pibQR) mlabposition(12) mlabcolor(black) mlabgap(0pt)) if pibPO != ., ///
+			title({bf:Producto Interno Bruto}) subtitle(Crecimiento trimestral) ///
 			ytitle("Crecimiento anual (%)") xtitle("") ///
 			tlabel(2005q1(4)`aniofinal'q`trim_last') ///
 			ylabel(none, format(%20.0fc)) ///
@@ -924,7 +924,7 @@ program define UpdatePIBDeflactor
 			local graphtitle ""
 			local graphfuente ""
 		}
-		twoway (connected pibPO aniotrimestre, mlabel(pibPO) mlabposition(6) mlabangle(90) mlabcolor(black) mlabgap(0pt) lpattern(dot)) ///
+		twoway (bar pibPO aniotrimestre, mlabel(pibPO) mlabposition(9) mlabangle(90) mlabcolor(black) mlabgap(0pt) lpattern(dot)) ///
 			if pibPO != ., ///
 			title("`graphtitle'") ///
 			ytitle("PIB/Población ocupada (`=currency[`obsvp']' `aniofinal')") xtitle("") ///

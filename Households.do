@@ -8,6 +8,15 @@ if "`1'" == "" {
 	clear all
 	local 1 = 2022
 	scalar aniovp = 2022
+	scalar anioenigh = 2022
+	local enigh = "ENIGH"
+	local betamin = 1							// ENIGH: 2.436
+	local altimir = "yes"
+	local SubsidioEmpleo = 43131000000 			// Presupuesto de gastos fiscales (2020)
+	local udis = 7.380711						// Promedio de valor de UDIS de enero a diciembre 2020
+	local smdf = 172.87							// Unidad de medida y actualizacion (UMA)
+	local enighanio = 2022
+	local segpop = "pop_insabi"
 }
 timer on 6
 if `1' >= 2022 {
@@ -129,18 +138,17 @@ local SNAAlojamiento = scalar(Alojamiento)
 
 *********************
 ** 1.3 Macros: PEF **
-PEF, anio(`enighanio') by(desc_funcion) min(0) nographs
+PEF, anio(`enighanio') min(0) nographs
 local Cuotas_ISSSTE = -r(Cuotas_ISSSTE)
 
-PEF if transf_gf == 0 & ramo != -1 & (substr(string(objeto),1,2) == "45" ///
-	| substr(string(objeto),1,2) == "47" | desc_pp == 779), anio(`enighanio') by(ramo) min(0) nographs
-local SSFederacion = r(Aportaciones_a_Seguridad_Social) + `Cuotas_ISSSTE'
+capture PEF if transf_gf == 1, anio(`enighanio') by(desc_pp) min(0) nographs
+local SSFederacion = r(cuota_social_seguro_de_salud_iss)+r(seguro_de_enfermedad_y_maternida)+r(seguro_de_invalidez_y_vida)+r(seguro_de_salud_para_la_familia)
 
-PEF if divCIEP == 2, anio(`enighanio') by(desc_subfuncion) min(0) nographs
-local Basica = r(Educación_Básica)
-local Media = r(Educación_Media_Superior)
-local Superior = r(Educación_Superior)
-local Adultos = r(Educación_para_Adultos)
+PEF if divCIEP == "Educación", anio(`enighanio') by(desc_subfuncion) min(0) nographs
+local Basica = r(educacion_basica)
+local Media = r(educacion_media_superio)
+local Superior = r(educacion_superior)
+local Adultos = r(educacion_para_adultos)
 
 PEF, anio(`enighanio') by(divCIEP) min(0) nographs
 local PenBienestar = r(Pensión_Bienestar)
@@ -149,7 +157,7 @@ local Pensiones = r(Pensiones)-`PenBienestar'
 local Educacion = r(Educación)
 local Salud = r(Salud)
 
-PEF if divCIEP == 5, anio(`enighanio') by(entidad) min(0) nographs
+PEF if divCIEP == "Otras inversiones", anio(`enighanio') by(entidad) min(0) nographs
 local Aguas = r(Aguascalientes)
 local BajaN = r(Baja_California)
 local BajaS = r(Baja_California_Sur)
@@ -769,7 +777,7 @@ cargo en los terminos del articulo 152 de esta Ley. (...) */
 * s. Honorarios *
 noisily di _col(04) in g "{bf:SUPUESTO: " in y ///
 	"Se considera un " %5.2fc 0.634768962*100 ///
-	"% de los ingresos por servicios profesionales (honorarios) como remuneraciones y gastos operativos.}" // Censo Económico 2019
+	"% de servicios profesionales (honorarios) como remuneraciones y gastos operativos.}" // Censo Económico 2019
 g exen_honor = min(0.634768962*ing_honor,ing_honor)
 egen double exen_t4_cap2 = rsum(exen_honor)
 
@@ -1501,9 +1509,12 @@ label var cuotasTPF "Contribuciones a la seguridad social"
 * Cuotas a la seguridad social por institucion *
 g cuotasIMSS = cuotasTP if formal2 == 1
 g cuotasISSSTE = cuotasTP if formal2 == 2
-g cuotasFED = cuotasF if formal2 == 1 | formal2 == 2
+g cuotasFED = cuotasF if formal2 == 1
+
+g cuotasOTR = cuotasTPF if formal2 == 4 | formal2 == 2
+replace cuotasOTR = cuotasOTR - cuotasTP if formal2 == 2
+
 g cuotasIMP = cuotasTPF if formal2 == 3 | formal2 == 6 | formal2 == 5
-g cuotasOTR = cuotasTPF if formal2 == 4
 
 * IMSS *
 tabstat cuotasIMSS [aw=factor], stat(sum) f(%20.0fc) save
@@ -2085,9 +2096,10 @@ replace prop_capital = 0 if prop_capital == .
 ***************************************
 ** 10.2 Probit formalidad (salarios) **
 noisily di _newline _col(04) in g "{bf:3.2. Probit de formalidad: " in y "Salarios.}"
-noisily xi: probit formal_probit prop_mixto prop_capital ///
+noisily xi: probit formal_probit prop_mixto prop_capital deduc_isr ///
 	edad edad2 i.sexo aniosesc aniosesc2 rural i.sinco2 i.scian2 ///
 	if ing_t4_cap1 != 0 & edad >= 16 [pw=factor]
+estimates save "`c(sysdir_personal)'/SIM/`enighanio'/formal_salarios", replace
 predict double prob_salarios if e(sample)
 
 * Seleccionar individuo formales (general) *
@@ -2099,10 +2111,11 @@ g prop_salarios = formal_accumSAL/formal_SAL
 **************************************
 ** 10.3 Probit formalidad (fisicas) **
 noisily di _newline _col(04) in g "{bf:3.3. Probit de formalidad: " in y "Personas f{c i'}sicas.}"
-noisily xi: probit formal_probit prop_mixto prop_capital ///
+noisily xi: probit formal_probit prop_mixto prop_capital deduc_isr ///
 	edad edad2 i.sexo aniosesc aniosesc2 rural i.sinco2 i.scian2 ///
 	if ing_t4_cap2 + ing_t4_cap3 + ing_t4_cap4 + ing_t4_cap5 ///
 	+ ing_t4_cap6 + ing_t4_cap7 + ing_t4_cap8 + ing_t4_cap9 != 0 & edad >= 16 [pw=factor]
+estimates save "`c(sysdir_personal)'/SIM/`enighanio'/formal_fisicas", replace
 predict double prob_formal if e(sample)
 
 * Seleccionar individuo formales (general) *
@@ -2117,6 +2130,7 @@ noisily di _newline _col(04) in g "{bf:3.4. Probit de formalidad: " in y "Person
 noisily xi: probit formal_probit prop_mixto prop_capital ///
 	edad edad2 i.sexo aniosesc aniosesc2 rural i.sinco2 i.scian2 ///
 	if ing_bruto_tpm != 0 & edad >= 16 [pw=factor]
+estimates save "`c(sysdir_personal)'/SIM/`enighanio'/formal_morales", replace
 predict double prob_moral if e(sample)
 
 * Seleccionar individuo formales (general) *
@@ -2448,17 +2462,19 @@ scalar giniPIBF = string(`gini_ingbrutotot',"%5.3f")
 *********************************/
 **# 12. Variables descriptivas ***
 **********************************
+merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/`enighanio'/expenditures.dta", nogen keepus(gas_pc_*)
+merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/`enighanio'/consumption_categ_iva.dta", nogen keepus(IVA)
+merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/`enighanio'/consumption_categ_ieps.dta", nogen keepus(IEPS)
+merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'../BasesCIEP/INEGI/CONEVAL/2022/Base final/pobreza_20.dta", nogen keepus(ictpc)
+
 tempvar tot_integ
 egen `tot_integ' = count(edad), by(folioviv foliohog)
 
 * Deciles brutos SIMULADOR *
-egen double ing_decil_hog = sum(ingbrutotot), by(folioviv foliohog)
-g ing_decil_pc = ing_decil_hog/`tot_integ'
-
-xtile decil = ing_decil_pc [pw=factor/`tot_integ'], n(10)
-*xtile decil = ing_decil_hog [pw=factor/`tot_integ'], n(10)
-xtile quintil = ing_decil_pc [pw=factor/`tot_integ'], n(5)
-xtile percentil = ing_decil_pc [pw=factor/`tot_integ'], n(100)
+replace ictpc = 0 if ictpc == .
+xtile decil = ictpc [pw=factor/`tot_integ'], n(10)
+xtile quintil = ictpc [pw=factor/`tot_integ'], n(5)
+xtile percentil = ictpc [pw=factor/`tot_integ'], n(100)
 
 * Label values *
 label define decil 1 "I" 2 "II" 3 "III" 4 "IV" 5 "V" 6 "VI" 7 "VII" 8 "VIII" 9 "IX" 10 "X"
@@ -2487,10 +2503,6 @@ replace formalmax = 3 if formalmax == 4
 label define formalidad 3 "Pemex y otros", modify
 label values formalmax formalidad
 
-merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/`enighanio'/expenditures.dta", nogen keepus(gas_pc_*)
-merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/`enighanio'/consumption_categ_iva.dta", nogen keepus(IVA)
-merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/`enighanio'/consumption_categ_ieps.dta", nogen keepus(IEPS)
-
 egen gastoanualTOT = rsum(gas_pc_*)
 label var gastoanualTOT "Gasto anual total"
 
@@ -2514,25 +2526,25 @@ egen ImpuestosConsumoTOT = rsum(IVA IEPS ISAN Importaciones)
 
 *******************************
 *** Sankey: PIB demográfico ***
-*******************************
+/*******************************
 egen double Yl = rsum(ing_subor ing_mixtoL)
 label var Yl "Ingreso laboral"
-noisily Perfiles Yl [fw=factor], boot(1) reboot aniope(`enighanio') aniovp(`enighanio') title("Ingreso laboral")
+noisily Perfiles Yl [fw=factor], boot(25) reboot aniope(`enighanio') aniovp(`enighanio') title("Ingreso laboral")
 
 egen double Yk = rsum(ing_capital ing_mixtoK ing_estim_alqu gasto_anualDepreciacion)
 label var Yk "Ingreso de capital"
-noisily Perfiles Yk [fw=factor], boot(1) reboot aniope(`enighanio') aniovp(`enighanio') title("Ingreso de capital")
+noisily Perfiles Yk [fw=factor], boot(25) reboot aniope(`enighanio') aniovp(`enighanio') title("Ingreso de capital")
 
-noisily Perfiles gastoanualTOT [fw=factor], boot(1) reboot aniope(`enighanio') aniovp(`enighanio') title("Gasto anual total")
-noisily Perfiles ing_suborROW [fw=factor], boot(1) reboot aniope(`enighanio') aniovp(`enighanio') title("Ingreso laboral ROW")
+noisily Perfiles gastoanualTOT [fw=factor], boot(25) reboot aniope(`enighanio') aniovp(`enighanio') title("Gasto anual total")
+noisily Perfiles ing_suborROW [fw=factor], boot(25) reboot aniope(`enighanio') aniovp(`enighanio') title("Ingreso laboral ROW")
 
 g Ciclodevida = Yl + Yk + ing_remesas + ing_suborROW - gastoanualTOT
 label var Ciclodevida "ciclo de vida"
-noisily Perfiles Ciclodevida [fw=factor], boot(1) reboot aniope(`enighanio') aniovp(`enighanio') title("Ciclo de vida")
+noisily Perfiles Ciclodevida [fw=factor], boot(25) reboot aniope(`enighanio') aniovp(`enighanio') title("Ciclo de vida")
 
 g Ahorro = ingbrutotot + ing_capitalROW + ing_suborROW + ing_remesas ///
 	- gastoanualTOT - gasto_anualComprasN - gasto_anualGobierno
-noisily Perfiles Ahorro [fw=factor], boot(1) reboot aniope(`enighanio') aniovp(`enighanio') title("Ahorro")
+noisily Perfiles Ahorro [fw=factor], boot(25) reboot aniope(`enighanio') aniovp(`enighanio') title("Ahorro")
 label var Ahorro "ahorro"
 
 
