@@ -17,7 +17,8 @@ quietly {
 		local aniovp = substr(`"`=trim("`aniovp'")'"',1,4)	
 	}
 
-	syntax [anything] [if] [, NOGraphs PIBVP(real -999) PIBVF(real -999) UPDATE DESDE(real 1993) REVERSE]
+	syntax [anything] [if] [,  PIBVP(real -999) PIBVF(real -999) DESDE(real 1993) ///
+		UPDATE NOGraphs REVERSE PROYeccion]
 
 	if "`update'" == "update" {
 		UpdateDatosAbiertos, update
@@ -148,10 +149,10 @@ quietly {
 			*local textsize ", size(medium)"
 		}
 		if `length' > 90 {
-			*local textsize ", size(small)"
+			*local textsize ", size(large)"
 		}
 		if `length' > 110 {
-			*local textsize ", size(vsmall)"
+			*local textsize ", size(large)"
 		}
 
 		* Fuente *
@@ -165,7 +166,7 @@ quietly {
 		** 2.2 Gráfica por mes calendario **
 		tabstat `montomill' /*if anio >= 2008*/, stat(sum) by(mes) f(%20.0fc) save
 		graph bar (sum) `montomill', over(mes) over(anio) stack asyvar ///
-			legend(rows(1) size(vsmall)) ///
+			legend(rows(1) size(large)) ///
 			name(M`anything', replace) blabel(none) ///
 			ytitle("") ///
 			yline(0, lcolor(black) lpattern(solid)) ///
@@ -182,7 +183,7 @@ quietly {
 			subtitle(" `mesname', millones de `=currency[1]' `aniovp'", margin(bottom)) ///
 			ytitle("") ///
 			ylabel(none, format(%15.0fc)) ///
-			blabel(, format(%10.0fc) position(outside) color("114 113 118") size(vsmall)) legend(off) ///
+			blabel(, format(%10.0fc) position(6) color("114 113 118") size(small)) legend(off) ///
 			yline(0, lcolor(black) lpattern(solid)) ///
 			note("{c U'}ltimo dato: `last_anio'm`last_mes'.") ///
 			caption("`graphfuente'") ///
@@ -195,7 +196,7 @@ quietly {
 			ylabel(none, format(%15.0fc)) ///
 			title("{bf:`=nombre[1]'}"`textsize') ///
 			subtitle(`"Acumulado a `=lower("`mesname'")', millones de `=currency[1]' `aniovp'"', margin(bottom)) ///
-			blabel(, format(%10.0fc) position(outside) color("114 113 118") size(vsmall)) legend(off) ///
+			blabel(, format(%10.0fc) position(6) color("114 113 118") size(small)) legend(off) ///
 			yline(0, lcolor(black) lpattern(solid)) ///
 			note("{c U'}ltimo dato: `last_anio'm`last_mes'.") ///
 			caption("`graphfuente'")
@@ -214,7 +215,13 @@ quietly {
 		
 		collapse (sum) `montomill' monto* acum_prom (last) mes Poblacion pibY deflator if monto != ., by(anio nombre clave_de_concepto unidad_de_medida)
 
-		replace monto = monto/acum_prom if mes < 12
+		if "`proyeccion'" == "proyeccion" {
+			replace monto = monto/acum_prom if mes < 12
+			replace monto_pib = monto/pibY*100 if mes < 12
+			replace monto_pc = monto/Poblacion/deflator if mes < 12
+			replace `montomill' = monto/1000000/deflator if mes < 12
+		}
+
 		local textografica `"{bf:Promedio a `mesname'}: `=string(acum_prom[_N]*100,"%5.1fc")'% del total anual."'
 		local palabra "Proyectado"
 	}
@@ -249,16 +256,15 @@ quietly {
 		matrix `rango' = r(StatTotal)
 
 		twoway (bar `montomill' anio if anio < `aniovp', ///
-				mlabel(`montomill') mlabpos(7) mlabcolor(white) mlabsize(vsmall) msize(small) mlabangle(90)) ///
-			(bar `montomill' anio if anio >= `aniovp', mlabel(`montomill') mlabpos(7) mlabcolor(white) mlabsize(vsmall) msize(small) mlabangle(90)) ///
+				mlabel(`montomill') mlabpos(7) mlabcolor(white) mlabsize(small) msize(large) mlabangle(90)) ///
+			(bar `montomill' anio if anio >= `aniovp', mlabel(`montomill') mlabpos(7) mlabcolor(white) mlabsize(small) msize(large) mlabangle(90)) ///
 			(connected monto_pc anio if anio < `aniovp', ///
-				yaxis(2) pstyle(p1) mlabel(monto_pc) mlabpos(12) mlabcolor("114 113 118") mlabsize(vsmall) lpattern(dot) msize(small)) ///
+				yaxis(2) pstyle(p1) mlabel(monto_pc) mlabpos(12) mlabcolor("114 113 118") mlabsize(small) lpattern(dot) msize(large)) ///
 			(connected monto_pc anio if anio >= `aniovp', ///
-				yaxis(2) pstyle(p2) mlabel(monto_pc) mlabpos(12) mlabcolor("114 113 118") mlabsize(vsmall) lpattern(dot) msize(small)), ///
+				yaxis(2) pstyle(p2) mlabel(monto_pc) mlabpos(12) mlabcolor("114 113 118") mlabsize(small) lpattern(dot) msize(large)), ///
 			title("`graphtitle'"`textsize') ///
 			subtitle(" Montos reportados (millones MXN `aniovp') y por persona", margin(bottom)) ///
-			///b1title(`"`textografica'"', size(small)) ///
-			///b2title(`"`textovp'"', size(small)) ///
+			///b1title(`"`textografica'"') ///
 			ytitle("", axis(1)) ///
 			ytitle("", axis(2)) ///
 			xtitle("") ///
@@ -269,7 +275,7 @@ quietly {
 			ylabel(none, axis(2) format(%7.0fc) noticks) ///
 			yscale(range(0 `=`rango'[1,2]-1.75*(`rango'[2,2]-`rango'[1,2])') noline axis(2)) ///
 			legend(off label(1 "Reportado") label(2 "LIF") order(1 2)) ///
-			text(`text1', yaxis(2) color(white) size(vsmall)) ///
+			text(`text1', yaxis(2) color(white) size(large)) ///
 			caption("`graphfuente'") ///
 			note("{c U'}ltimo dato: `ultanio'm`ultmes'.") ///
 			name(`anything'PC, replace)
@@ -281,16 +287,15 @@ quietly {
 
 
 		twoway (bar `montomill' anio if anio < `aniovp', ///
-				mlabel(`montomill') mlabpos(7) mlabcolor(white) mlabsize(vsmall) msize(small) mlabangle(90)) ///
-			(bar `montomill' anio if anio >= `aniovp', mlabel(`montomill') mlabpos(7) mlabcolor(white) mlabsize(vsmall) msize(small) mlabangle(90)) ///
+				mlabel(`montomill') mlabpos(7) mlabcolor(white) mlabsize(small) msize(large) mlabangle(90)) ///
+			(bar `montomill' anio if anio >= `aniovp', mlabel(`montomill') mlabpos(7) mlabcolor(white) mlabsize(small) msize(large) mlabangle(90)) ///
 			(connected monto_pib anio if anio < `aniovp', ///
-				yaxis(2) pstyle(p1) mlabel(monto_pib) mlabpos(12) mlabcolor("114 113 118") mlabsize(vsmall) lpattern(dot) msize(small)) ///
+				yaxis(2) pstyle(p1) mlabel(monto_pib) mlabpos(12) mlabcolor("114 113 118") mlabsize(small) lpattern(dot) msize(large)) ///
 			(connected monto_pib anio if anio >= `aniovp', ///
-				yaxis(2) pstyle(p2) mlabel(monto_pib) mlabpos(12) mlabcolor("114 113 118") mlabsize(vsmall) lpattern(dot) msize(small)), ///
+				yaxis(2) pstyle(p2) mlabel(monto_pib) mlabpos(12) mlabcolor("114 113 118") mlabsize(small) lpattern(dot) msize(large)), ///
 			title("`graphtitle'"`textsize') ///
 			subtitle(" Montos reportados (millones MXN `aniovp') y como % del PIB", margin(bottom)) ///
-			///b1title(`"`textografica'"', size(small)) ///
-			///b2title(`"`textovp'"', size(small)) ///
+			///b1title(`"`textografica'"') ///
 			ytitle("", axis(1)) ///
 			ytitle("", axis(2)) ///
 			xtitle("") ///
@@ -301,7 +306,7 @@ quietly {
 			ylabel(none, axis(2) format(%7.0fc) noticks) ///
 			yscale(range(0 `=`rango'[1,3]-1.75*(`rango'[2,3]-`rango'[1,3])') noline axis(2)) ///
 			legend(off label(1 "Reportado") label(2 "LIF") order(1 2)) ///
-			text(`text1', yaxis(2) color(white) size(vsmall)) ///
+			text(`text1', yaxis(2) color(white) size(large)) ///
 			caption("`graphfuente'") ///
 			note("{c U'}ltimo dato: `ultanio'm`ultmes'.") ///
 			name(`anything'PIB, replace)
@@ -473,7 +478,7 @@ program define UpdateDatosAbiertos, return
 
 	***************************************************
 	** 4.1 ISR fisicas, morales, asalariados y otros **
-	import excel "`c(sysdir_personal)'/ISRInformesTrimestrales.xlsx", ///
+	import excel "`c(sysdir_site)'../BasesCIEP/LIFs/ISRInformesTrimestrales.xlsx", ///
 		clear sheet("TipoDeContribuyente") firstrow case(lower)
 	tsset anio trimestre
 	drop total

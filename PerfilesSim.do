@@ -6,25 +6,25 @@
 ******************************************
 if "`1'" == "" {
 	clear all
-	local 1 = 2022
-	local enighanio = 2022
+	local 1 = 2024
+	scalar anioenigh = 2022
 	scalar aniovp = 2022
 }
 else {
 	if `1' >= 2022 {
-		local enighanio = 2022
+		scalar anioenigh = 2022
 	}
 	if `1' >= 2020 & `1' < 2022 {
-		local enighanio = 2020
+		scalar anioenigh = 2020
 	}
 	if `1' >= 2018 & `1' < 2020 {
-		local enighanio = 2018
+		scalar anioenigh = 2018
 	}
 	if `1' >= 2016 & `1' < 2018 {
-		local enighanio = 2016
+		scalar anioenigh = 2016
 	}
 	if `1' >= 2014 & `1' < 2016 {
-		local enighanio = 2014
+		scalar anioenigh = 2014
 	}
 }
 
@@ -40,26 +40,26 @@ local Cuotas_ISSSTE = r(Cuotas_ISSSTE)
 local SSFederacion = r(Aportaciones_a_Seguridad_Social) + `Cuotas_ISSSTE'
 
 ** 1.1 Educación **
-PEF if divCIEP == 2, anio(`1') by(desc_subfuncion) min(0) nographs
-local Basica = r(Educación_Básica)
-local Media = r(Educación_Media_Superi)
-local Superior = r(Educación_Superior)
-local Adultos = r(Educación_para_Adultos)
-local Posgrado = r(Posgrado)
+PEF if divCIEP == "Educación", anio(`1') by(desc_subfuncion) min(0) nographs
+local Basica = r(educacion_basica)
+local Media = r(educacion_media_superio)
+local Superior = r(educacion_superior)
+local Adultos = r(educacion_para_adultos)
+local Posgrado = r(posgrado)
 local OtrosEdu = r(Gasto_neto) - `Basica' - `Media' - `Superior' - `Adultos' - `Posgrado'
 
 ** 1.2 Otros gastos **
 PEF, anio(`1') by(divCIEP) min(0) nographs
-local PenBienestar = r(Pensión_AM)
+local PenBienestar = r(Pension_AM)
 local Otros_gastos = r(Otros_gastos)+r(Cuotas_ISSSTE)
 local Pensiones = r(Pensiones)
-local Educacion = r(Educación)
+local Educacion = r(Educacion)
 local Salud = r(Salud)
-local Energía = r(Energía)
+local Energía = r(Energia)
 local Part_y_otras_Apor = r(Part_y_otras_Apor)
 
 ** 1.3 Infraestructura **
-PEF if divCIEP == 4, anio(`1') by(entidad) min(0) nographs
+PEF if divCIEP == "Otras inversiones", anio(`1') by(entidad) min(0) nographs
 local Aguas = r(Aguascalientes)
 local BajaN = r(Baja_California)
 local BajaS = r(Baja_California_Sur)
@@ -68,29 +68,29 @@ local Coahu = r(Coahuila)
 local Colim = r(Colima)
 local Chiap = r(Chiapas)
 local Chihu = r(Chihuahua)
-local Ciuda = r(Ciudad_de_México)
+local Ciuda = r(Ciudad_de_Mexico)
 local Duran = r(Durango)
 local Guana = r(Guanajuato)
 local Guerr = r(Guerrero)
 local Hidal = r(Hidalgo)
 local Jalis = r(Jalisco)
-local Estad = r(Estado_de_México)
-local Micho = r(Michoacán)
+local Estad = r(Estado_de_Mexico)
+local Micho = r(Michoacan)
 local Morel = r(Morelos)
 local Nayar = r(Nayarit)
-local Nuevo = r(Nuevo_León)
+local Nuevo = r(Nuevo_Leon)
 local Oaxac = r(Oaxaca)
 local Puebl = r(Puebla)
-local Quere = r(Querétaro)
+local Quere = r(Queretaro)
 local Quint = r(Quintana_Roo)
-local SanLu = r(San_Luis_Potosí)
+local SanLu = r(San_Luis_Potosi)
 local Sinal = r(Sinaloa)
 local Sonor = r(Sonora)
 local Tabas = r(Tabasco)
 local Tamau = r(Tamaulipas)
 local Tlaxc = r(Tlaxcala)
 local Verac = r(Veracruz)
-local Yucat = r(Yucatán)
+local Yucat = r(Yucatan)
 local Zacat = r(Zacatecas)
 local InfraT = r(Gasto_neto)
 
@@ -106,6 +106,7 @@ local recursos = r(divSIM)
 foreach k of local recursos {
 	local `=substr("`k'",1,7)' = r(`k')
 }
+scalar IngKPublicos = `FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE'
 
 
 
@@ -128,7 +129,7 @@ SCN, anio(`1') nographs
 
 
 
-**********************************************
+*********************************************/
 ***                                        ***
 **# 5. Variables INGRESOS - GASTOS TOTALES ***
 ***                                        ***
@@ -137,20 +138,20 @@ SCN, anio(`1') nographs
 ** 5.1 Encuesta Nacional de Ingresos y Gastos de los Hogares (expenditures) **
 ** Inputs: `c(sysdir_personal)'../BasesCIEP/INEGI/ENIGH/`anio'/
 ** Outputs: Archivo "`c(sysdir_personal)'/SIM/`anio'/expenditures.dta".
-capture confirm file "`c(sysdir_personal)'/SIM/`enighanio'/expenditures.dta"
+capture confirm file "`c(sysdir_personal)'/SIM/`=anioenigh'/expenditures.dta"
 if _rc != 0 ///
 	noisily run "`c(sysdir_personal)'/Expenditure.do" `1'
 
 
 ** 5.2 Encuesta Nacional de Ingresos y Gastos de los Hogares (ingresos) **
 ** Outputs: Archivo "`c(sysdir_personal)'/SIM/`anio'/households.dta".
-capture confirm file "`c(sysdir_personal)'/SIM/`enighanio'/households.dta"
+capture confirm file "`c(sysdir_personal)'/SIM/`=anioenigh'/households.dta"
 if _rc != 0 ///
 	noisily run `"`c(sysdir_personal)'/Households.do"' `1'
 
 
 ** 5.3 Usar base de datos conciliada **
-use "`c(sysdir_personal)'/SIM/`enighanio'/households.dta", clear
+use "`c(sysdir_personal)'/SIM/`=anioenigh'/households.dta", clear
 tabstat factor, stat(sum) f(%20.0fc) save
 tempname pobenigh
 matrix `pobenigh' = r(StatTotal)
@@ -173,6 +174,22 @@ label var gastoanualTOT "Consumo total `1'"
 *noisily Gini gastoanualTOT, hogar(folioviv foliohog) factor(factor)
 
 
+** 5.6 (*) Ingresos para el módulo ISR **
+Distribucion ing_bruto_tax, relativo(ing_bruto_tax) macro(`=scalar(Yl)+scalar(MixKN)')
+label var ing_bruto_tax "Ingresos laborales `1'"
+*noisily Perfiles ing_bruto_tax [fw=factor], boot(1) reboot aniope(`1') aniovp(`=aniovp')
+*noisily Gini ing_bruto_tax, hogar(folioviv foliohog) factor(factor)
+
+Distribucion ing_subor, relativo(ing_subor) macro(`=scalar(RemSal)+scalar(ImpNetProduccionL)')
+label var ing_subor "Remuneración de asalariados `1'"
+*noisily Perfiles ing_subor [fw=factor], boot(1) reboot aniope(`1') aniovp(`=aniovp')
+*noisily Gini ing_subor, hogar(folioviv foliohog) factor(factor)
+
+Distribucion ing_bruto_tpm, relativo(ing_bruto_tpm) macro(`=scalar(ExNOpSoc)+scalar(ImpNetProductos)-scalar(IngKPublicos)')
+label var ing_bruto_tpm "Ingresos de capital privado `1'"
+*noisily Perfiles ing_bruto_tpm [fw=factor], boot(1) reboot aniope(`1') aniovp(`=aniovp')
+*noisily Gini ing_bruto_tpm, hogar(folioviv foliohog) factor(factor)
+
 
 ****************************/
 ** (+) IMPUESTOS laborales **
@@ -190,7 +207,7 @@ label var ISRPF "ISR (personas f{c i'}sicas) `1'"
 *noisily Gini ISRPF, hogar(folioviv foliohog) factor(factor)
 
 ** (+) Cuotas obrero-patronal IMSS **
-Distribucion CUOTAS if formal == 1, relativo(cuotasTP) macro(`CUOTAS')
+Distribucion CUOTAS if formal2 == 1, relativo(cuotasTP) macro(`CUOTAS')
 replace CUOTAS = 0 if CUOTAS == .
 label var CUOTAS "Cuotas IMSS `1'"
 *noisily Perfiles CUOTAS [fw=factor], boot(1) reboot aniope(`1') aniovp(`=aniovp')
@@ -324,48 +341,48 @@ label var ImpuestosAportaciones "Impuestos y aportaciones `1'"
 replace nivel = "0" + nivel if length(nivel) == 1
 
 * Educación básica *
-if `enighanio' == 2014 {
+if `=anioenigh' == 2014 {
 	tabstat factor if asis_esc == "1" & tipoesc == "1" & (nivel >= "01" & nivel <= "03") & edad <= 18, stat(sum) f(%15.0fc) save
 	matrix BasAlum = r(StatTotal)
 	g educacion = `Basica'/BasAlum[1,1] if asis_esc == "1" & tipoesc == "1" & (nivel >= "01" & nivel <= "03") & edad <= 18
 }
-if `enighanio' > 2014 {
+if `=anioenigh' > 2014 {
 	tabstat factor if asis_esc == "1" & tipoesc == "1" & (nivel >= "01" & nivel <= "07") & edad <= 18, stat(sum) f(%15.0fc) save
 	matrix BasAlum = r(StatTotal)
 	g educacion = `Basica'/BasAlum[1,1] if asis_esc == "1" & tipoesc == "1" & (nivel >= "01" & nivel <= "07") & edad <= 18
 }
 
 * Educación media superior *
-if `enighanio' == 2014 {
+if `=anioenigh' == 2014 {
 	tabstat factor if asis_esc == "1" & tipoesc == "1" & (nivel >= "04" & nivel <= "06"), stat(sum) f(%15.0fc) save
 	matrix MedAlum = r(StatTotal)
 	replace educacion = `Media'/MedAlum[1,1] if asis_esc == "1" & tipoesc == "1" & (nivel >= "04" & nivel <= "06")
 }
-if `enighanio' > 2014 {
+if `=anioenigh' > 2014 {
 	tabstat factor if asis_esc == "1" & tipoesc == "1" & (nivel >= "08" & nivel <= "10"), stat(sum) f(%15.0fc) save
 	matrix MedAlum = r(StatTotal)
 	replace educacion = `Media'/MedAlum[1,1] if asis_esc == "1" & tipoesc == "1" & (nivel >= "08" & nivel <= "10")
 }
 
 * Educación superior *
-if `enighanio' == 2014 {
+if `=anioenigh' == 2014 {
 	tabstat factor if asis_esc == "1" & tipoesc == "1" & (nivel >= "07" & nivel <= "08"), stat(sum) f(%15.0fc) save
 	matrix SupAlum = r(StatTotal)
 	replace educacion = `Superior'/SupAlum[1,1] if asis_esc == "1" & tipoesc == "1" & (nivel >= "07" & nivel <= "08")
 }
-if `enighanio' > 2014 {
+if `=anioenigh' > 2014 {
 	tabstat factor if asis_esc == "1" & tipoesc == "1" & (nivel >= "11" & nivel <= "12"), stat(sum) f(%15.0fc) save
 	matrix SupAlum = r(StatTotal)
 	replace educacion = `Superior'/SupAlum[1,1] if asis_esc == "1" & tipoesc == "1" & (nivel >= "11" & nivel <= "12")
 }
 
 * Educación posgrado *
-if `enighanio' == 2014 {
+if `=anioenigh' == 2014 {
 	tabstat factor if asis_esc == "1" & tipoesc == "1" & nivel == "09", stat(sum) f(%15.0fc) save
 	matrix PosAlum = r(StatTotal)
 	replace educacion = `Posgrado'/PosAlum[1,1] if asis_esc == "1" & tipoesc == "1" & nivel == "09"
 }
-if `enighanio' > 2014 {
+if `=anioenigh' > 2014 {
 	tabstat factor if asis_esc == "1" & tipoesc == "1" & nivel == "13", stat(sum) f(%15.0fc) save
 	matrix PosAlum = r(StatTotal)
 	replace educacion = `Posgrado'/PosAlum[1,1] if asis_esc == "1" & tipoesc == "1" & nivel == "13"
@@ -373,12 +390,12 @@ if `enighanio' > 2014 {
 
 
 * Educación para adultos *
-if `enighanio' == 2014 {
+if `=anioenigh' == 2014 {
 	tabstat factor if asis_esc == "1" & tipoesc == "1" & (nivel >= "01" & nivel <= "03") & edad > 18, stat(sum) f(%15.0fc) save
 	matrix AduAlum = r(StatTotal)
 	replace educacion = `Adultos'/AduAlum[1,1] if asis_esc == "1" & tipoesc == "1" & (nivel >= "01" & nivel <= "03") & edad > 18
 }
-if `enighanio' > 2014 {
+if `=anioenigh' > 2014 {
 	tabstat factor if asis_esc == "1" & tipoesc == "1" & (nivel >= "01" & nivel <= "07") & edad > 18, stat(sum) f(%15.0fc) save
 	matrix AduAlum = r(StatTotal)
 	replace educacion = `Adultos'/AduAlum[1,1] if asis_esc == "1" & tipoesc == "1" & (nivel >= "01" & nivel <= "07") & edad > 18
@@ -519,9 +536,9 @@ if "$nographs" == "" & "`nographs'" != "nographs" & `anio' == `aniovp' {
 *** SAVE ***
 ***      ***
 ************
-capture drop _*
+capture drop __*
 compress
-keep ISRAS ISRPF CUOTAS ISRPM OTROSK FMP PEMEX CFE IMSS ISSSTE IVA IEPSNP IEPSP ISAN IMPORT /// Ingresos
+*keep ISRAS ISRPF CUOTAS ISRPM OTROSK FMP PEMEX CFE IMSS ISSSTE IVA IEPSNP IEPSP ISAN IMPORT /// Ingresos
 	Pension Educación Salud IngBasico Pensión_AM Otros_gastos Otras_inversiones Part_y_otras_Apor Energía infra_entidad /// Gastos
 	folio* numren edad sexo factor decil escol formal ingbrutotot rural grupoedad /// Perfiles.ado
 	disc* gas_pc_Salu //asis_esc tipoesc nivel inst_* ing_jubila jubilado // GastoPC.ado

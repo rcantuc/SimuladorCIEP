@@ -39,7 +39,7 @@ quietly {
 
 	* 1.1 Valor año mínimo *
 	if `desde' == -1 {
-		local desde = `anio'-10
+		local desde = `anio'-9
 	}
 
 	* 1.2 Títulos y fuentes *
@@ -62,10 +62,6 @@ quietly {
 	if "`by'" == "" {
 		local by = "divCIEP"
 	}
-
-	* Modificaciones especiales *
-	replace desc_pp = 914 if desc_pp == 915
-	replace desc_pp = 71 if desc_pp == 72
 
 	** 2.4 Etiquetas abreviadas **
 	label define ramo 7 "SEDENA", modify
@@ -143,23 +139,27 @@ quietly {
 	*** 4 Resumido ***
 	******************
 	keep if anio >= `desde'-1
-	tempvar resumido gastoPIB
-	g resumido = `by'
+	capture confirm string variable `by'
+	if _rc != 0 {
+		tempvar by2
+		rename `by' `by2'
+		decode `by2', g(resumido)
+		decode `by2', g(`by')
+	}
+	else {
+		g resumido = `by'
+	}
 
 	capture label copy `by' label
 	if _rc != 0 {
-		label copy num`by' label
+		capture label copy num`by' label
 	}
-	label values resumido label
+	capture label values resumido label
 
-	egen `gastoPIB' = max(gastoPIB) /*if anio >= 2010*/, by(`by')
-	replace resumido = -2 if abs(`gastoPIB') < `minimum' //| gastoPIB == . | gastoPIB == 0 //& divCIEP != 15 
-	label define label -2 `"< `=string(`minimum',"%5.1fc")'% PIB"', add modify
-
-	* Especiales *
-	replace resumido = -1 if `by' == -1
-	label define label -1 "Cuotas ISSSTE", add modify
-
+	tempvar gastoPIB
+	egen `gastoPIB' = max(gastoPIB), by(`by')
+	replace resumido = `"_menor_a_`minimum'_PIB"' if abs(`gastoPIB') < `minimum' & lower(resumido) != "cuotas issste"
+	*replace resumido = `"< `=string(`minimum',"%5.1fc")'% PIB"' if abs(`gastoPIB') < `minimum' & resumido != "Cuotas ISSSTE"
 
 
 	********************
@@ -171,9 +171,9 @@ quietly {
 		_col(66) %7s "% PIB" ///
 		_col(77) %7s "% Total" "}"
 
-	capture tabstat gasto gastoPIB if anio == `anio' & `by' != -1, by(`by') stat(sum) f(%20.0fc) save
+	capture tabstat gasto gastoPIB if anio == `anio' & lower(`by') != "cuotas issste", by(`by') stat(sum) f(%20.0fc) save
 	if _rc != 0 {
-		noisily di in r "No hay informaci{c o'}n para el a{c n~}o `anio'."
+		noisily di in g "No hay informaci{c o'}n para el a{c n~}o `anio'."
 		exit
 	}
 	tempname mattot
@@ -215,17 +215,42 @@ quietly {
 
 	** 5.2 Gasto neto **
 	* Aportaciones y cuotas de la Federacion *
-	capture tabstat gasto gastoPIB if anio == `anio' & transf_gf == 1, stat(sum) f(%20.0fc) save
+	capture tabstat gasto if anio == `anio' & transf_gf == 1, stat(sum) f(%20.0fc) save by(`by')
 	tempname Aportaciones_Federacion
 	if _rc == 0 {
 		matrix `Aportaciones_Federacion' = r(StatTotal)
 	}
 	else {
-		matrix `Aportaciones_Federacion' = J(1,2,0)
+		matrix `Aportaciones_Federacion' = J(1,1,0)
 	}
 	return scalar Aportaciones_a_Seguridad_Social = `Aportaciones_Federacion'[1,1]
+	local k = 1
+	while `"`=r(name`k')'"' != "." {
+		tempname tgf`k'
+		matrix `tgf`k'' = r(Stat`k')
+		
+		if `tgf`k''[1,1] == . {
+			matrix `tgf`k'' = J(1,1,0)
+		}
 
-	capture tabstat gasto gastoPIB if `by' == -1 & anio == `anio', stat(sum) f(%20.0fc) save
+		* Display text *
+		local disptext = r(name`k')
+		local disptext = subinstr(`"`disptext'"',"á","a",.)
+		local disptext = subinstr(`"`disptext'"',"é","e",.)
+		local disptext = subinstr(`"`disptext'"',"í","i",.)
+		local disptext = subinstr(`"`disptext'"',"ó","o",.)
+		local disptext = subinstr(`"`disptext'"',"ú","u",.)
+		local disptext = subinstr(`"`disptext'"',"ñ","n",.)
+		local disptext = subinstr(`"`disptext'"',"ü","u",.)
+		local disptext = ustrregexra(`"`disptext'"',`"[^a-zA-Z0-9 ]"',"")
+		local name = strtoname(`"`disptext'"')
+
+		* Display *
+		return scalar `name' = `tgf`k''[1,1]
+		local ++k
+	}
+
+	capture tabstat gasto gastoPIB if lower(`by') == "cuotas issste" & anio == `anio', stat(sum) f(%20.0fc) save
 	tempname Cuotas_ISSSTE
 	if _rc == 0 {
 		matrix `Cuotas_ISSSTE' = r(StatTotal)
@@ -258,20 +283,19 @@ quietly {
 		_col(66) %7s "% PIB" ///
 		_col(77) %7s "Dif% Real" "}"
 
-	decode resumido, g(resumido2)
-	replace resumido2 = subinstr(resumido2," ","_",.)
-	replace resumido2 = substr(resumido2,1,24)
+	replace gasto = -gasto if lower(resumido) == "cuotas issste"
+	replace gastoPIB = -gastoPIB if lower(resumido) == "cuotas issste"
+	replace gasto = 0 if gasto == .
+	replace gastoPIB = 0 if gastoPIB == .
+
+	rename resumido resumido2
 	replace resumido2 = strtoname(resumido2)
+	replace resumido2 = substr(resumido2,1,24)
 	collapse (sum) gasto gastoPIB gastoR (max) gastoTOT CuoTOT pibY deflator lambda Poblacion if transf_gf == 0, by(anio resumido2)
 	reshape wide gasto* CuoTOT, i(anio) j(resumido2) string
 	reshape long
 	replace resumido2 = subinstr(resumido2,"_"," ",.)
 	encode resumido2, g(resumido)
-
-	replace gasto = 0 if gasto == .
-	replace gastoPIB = 0 if gastoPIB == .
-	replace gasto = -gasto if resumido == -1
-	replace gastoPIB = -gastoPIB if resumido == -1
 	
 	capture tabstat gastoR if anio == `desde', by(resumido) stat(sum) f(%20.1fc) save missing
 	if _rc == 0 {
@@ -285,21 +309,29 @@ quietly {
 		}
 	}
 
-	tabstat gasto gastoPIB if anio == `anio', by(resumido) stat(sum) f(%20.1fc) save missing
+	capture tabstat gasto gastoPIB if anio == `anio', by(resumido) stat(sum) f(%20.1fc) save missing
 	tempname mattot
-	matrix `mattot' = r(StatTotal)
+	if _rc == 0 {
+		matrix `mattot' = r(StatTotal)
+	}
+	else {
+		matrix `mattot' = J(1,1,0)
+	}
 
 	local k = 1
 	while `"`=r(name`k')'"' != "." {
 		tempname mat`k'
 		matrix `mat`k'' = r(Stat`k')
 		
+		if `mat`k''[1,1] == . {
+			matrix `mat`k'' = J(1,1,0)
+		}
+
 		capture confirm matrix `pre`k''
 		if _rc != 0 {
 			tempname pre`k'
 			matrix `pre`k'' = J(1,1,0)
 		}
-		
 		capture confirm matrix `pregastot'
 		if _rc != 0 {
 			tempname pregastot
@@ -307,18 +339,21 @@ quietly {
 		}
 
 		* Display text *
-		if substr(`"`=r(name`k')'"',1,31) == `"'"' {
-			local disptext = substr(`"`=r(name`k')'"',1,30)
-		}
-		else {
-			local disptext = substr(`"`=r(name`k')'"',1,31)
-		}
+		local disptext = r(name`k')
+		local disptext = subinstr(`"`disptext'"',"á","a",.)
+		local disptext = subinstr(`"`disptext'"',"é","e",.)
+		local disptext = subinstr(`"`disptext'"',"í","i",.)
+		local disptext = subinstr(`"`disptext'"',"ó","o",.)
+		local disptext = subinstr(`"`disptext'"',"ú","u",.)
+		local disptext = subinstr(`"`disptext'"',"ñ","n",.)
+		local disptext = subinstr(`"`disptext'"',"ü","u",.)
+		local disptext = ustrregexra(`"`disptext'"',`"[^a-zA-Z0-9 ]"',"")
 		local name = strtoname(`"`disptext'"')
 
 		* Display *
-		return scalar `=substr("`name'",1,31)' = `mat`k''[1,1]
-		return scalar `=substr("`name'",1,28)'PIB = `mat`k''[1,2]
-		return scalar `=substr("`name'",1,31)'C = (abs(`mat`k''[1,1]/`pre`k''[1,1])^(1/(`=`aniovp'-`desde''))-1)*100
+		return scalar `name' = `mat`k''[1,1]
+		return scalar `name'PIB = `mat`k''[1,2]
+		return scalar `name'C = (abs(`mat`k''[1,1]/`pre`k''[1,1])^(1/(`=`aniovp'-`desde''))-1)*100
 		local divResumido `"`divResumido' `name'"'
 
 		noisily di in g `"  (+) `disptext'"' ///
@@ -372,12 +407,17 @@ quietly {
 			tempname mat5`k'
 			matrix `mat5`k'' = r(Stat`k')
 
-			if substr(`"`=r(name`k')'"',1,25) == `"'"' {
-				local disptext = substr(`"`=r(name`k')'"',1,25)
-			}
-			else {
-				local disptext = substr(`"`=r(name`k')'"',1,26)
-			}
+			* Display text *
+			local disptext = r(name`k')
+			local disptext = subinstr(`"`disptext'"',"á","a",.)
+			local disptext = subinstr(`"`disptext'"',"é","e",.)
+			local disptext = subinstr(`"`disptext'"',"í","i",.)
+			local disptext = subinstr(`"`disptext'"',"ó","o",.)
+			local disptext = subinstr(`"`disptext'"',"ú","u",.)
+			local disptext = subinstr(`"`disptext'"',"ñ","n",.)
+			local disptext = subinstr(`"`disptext'"',"ü","u",.)
+			local disptext = ustrregexra(`"`disptext'"',`"[^a-zA-Z0-9 ]"',"")
+			local name = strtoname(`"`disptext'"')
 			
 			noisily di in g `"  (+) `disptext'"' ///
 				_col(44) in y %7.3fc `mat5`k''[1,2] ///
@@ -408,31 +448,34 @@ quietly {
 		*replace monto=monto/deflator/1000000000000
 
 		collapse (sum) gasto gastoR gastoPIB (max) gastoTOT CuoTOT pibY deflator if anio >= `desde', by(anio resumido)
-		replace resumido = 9999 if resumido == -1
-		label define label 9999 "Cuotas ISSSTE", add
-
-		replace resumido = 9998 if resumido == -2
-		label define label 9998 "< `minimum'% PIB", add
-
 		levelsof resumido, local(lev_resumido)
-		label values resumido label
 
+		foreach k of local lev_resumido {
+			local legend`k' : label resumido `k'
+			if "`legend`k''" == "Cuotas ISSSTE" | "`legend`k''" == "cuotas issste" {
+				replace resumido = -1 if resumido == `k'
+				label define resumido -1 "Cuotas ISSSTE", add
+				*label define resumido 1 `"< `=string(`minimum',"%5.1fc")'% PIB"', modify
+			}
+		}
+		
 		* Ciclo para poner los paréntesis (% del total) en el legend *
 		tabstat gastoPIB if anio == `anio', by(resumido) stat(sum) f(%20.0fc) save
 		tempname SUM
 		matrix `SUM' = r(StatTotal)
 
+		levelsof resumido if resumido != -1, local(lev_resumido)
 		local totlev = 0
 		foreach k of local lev_resumido {
 			local ++totlev
 			tempname SUM`totlev'
 			matrix `SUM`totlev'' = r(Stat`totlev')
 
-			local legend`k' : label label `k'
-			*local legend`k' = substr("`legend`k''",1,20)
+			local legend`k' : label resumido `k'
+			local legend`k' = substr("`legend`k''",1,20)
 			local legend = `"`legend' label(`totlev' "{bf:`legend`k''}")"'  
 			//"(`=string(`SUM`totlev''[1,1]/`SUM'[1,1]*100,"%7.1fc")'%)"
-
+			
 			tempvar gastoPIB`k' connectedPIB`k' connectedTOT`k'
 			egen `gastoPIB`k'' = sum(gastoPIB) if resumido >= `k', by(anio)
 			replace `gastoPIB`k'' = 0 if `gastoPIB`k'' == .
@@ -444,7 +487,7 @@ quietly {
 
 			local extras = `"`extras' (bar `gastoPIB`k'' anio if anio <= `anio' & resumido == `k', mlabpos(6) mlabcolor("111 111 111") barwidth(.8)) "'
 		}
-		local legend `"`legend' label(`=`totlev'+1' "Gasto total")"'
+		*local legend `"`legend' label(`=`totlev'+1' "Gasto total")"'
 		
 		* Ciclo para determinar el orden de mayor a menor, según gastoneto *
 		tempvar ordervar
@@ -452,7 +495,7 @@ quietly {
 		gsort -anio -gasto
 		forvalues k=1(1)`=_N'{
 			if anio[`k'] == `anio' {
-				local order "`order' `=`ordervar'[`k']'"
+				*local order "`order' `=`ordervar'[`k']'"
 			}
 		}
 		sort anio resumido
@@ -528,6 +571,7 @@ quietly {
 		*capture window manage close graph ingresosMXN`by'
 		*capture window manage close graph ingresos`by'PIB
 	
+		graph save gastos`by'PIB "`c(sysdir_personal)'/SIM/graphs/gastos`by'PIB", replace
 		if "$export" != "" {
 			graph export "$export/ingresos`by'.png", as(png) name("ingresos`by'") replace
 		}
@@ -558,28 +602,33 @@ end
 *************************
 program define UpdatePEF
 
-
 	*************************
 	*** 1. BASES DE DATOS ***
 	*************************
 	capture confirm file "`c(sysdir_personal)'/SIM/prePEF.dta"
-	if _rc != 0 | "`1'" == "update" {
-		local archivos: dir "`c(sysdir_site)'../BasesCIEP/PEFs" files "*.xlsx"			// Busca todos los archivos .xlsx en /bases/PEFs/
-		*local archivos `""PEF 2024.xlsx" "CuotasISSSTE.xlsx" "'
+	if _rc != 0 {
+		*local archivos: dir "`c(sysdir_site)'../BasesCIEP/PEFs" files "*.xlsx"			// Busca todos los archivos .xlsx en /bases/PEFs/
+		local archivos `""CP 2013.xlsx" "CP 2014.xlsx" "CP 2015.xlsx" "CP 2016.xlsx" "CP 2017.xlsx" "CP 2018.xlsx" "CP 2019.xlsx" "CP 2020.xlsx" "CP 2021.xlsx" "CP 2022.xlsx" "CP 2023.xlsx" "PEF 2024.xlsx" "CuotasISSSTE.xlsx""'
+		*local archivos `""PEF 2024.xlsx" "CuotasISSSTE.xlsx""'
 
 		foreach k of local archivos {															// Loop para todos los archivos .xlsx encontrados
 
 			* 1.1 Importar el archivo `k'.xlsx (Cuenta Pública) *
 			noisily di in g "Importando: " in y "`k'"
-			import excel "`c(sysdir_site)'../BasesCIEP/PEFs/`k'", clear firstrow case(lower)
+			import excel "`c(sysdir_site)'../BasesCIEP/PEFs/`k'", clear firstrow case(lower) allstring
+			capture drop v*
 
 			* 1.2 Limpiar observaciones *
 			capture drop if ciclo == ""
-			capture drop if ciclo == .
 			capture rename ciclo anio
 
 			* 1.3 Limpiar nombres *
 			capture rename ejercicio ejercido
+			foreach j of varlist _all {
+				if strlen("`j'") == 2 {
+					drop `j'
+				}
+			}
 			foreach j of varlist _all {
 				if `"`=substr("`j'",1,3)'"' == "id_" {
 					local newname = `"`=substr("`j'",4,.)'"'
@@ -629,52 +678,52 @@ program define UpdatePEF
 			}
 
 			* 1.4 Limpiar valores *
-			capture drop v*
-			foreach j of varlist _all {
-				tostring `j', replace				// Primero, que todos sean strings (facilidad)
-				capture confirm string variable `k'	// Segundo, comprobar que la variable sea string (no siempre el tostring funciona)
-				if _rc == 0 {						// Tercero, si es string, quitar espacios y caracteres especiales
-					replace `j' = trim(`j')
-					replace `j' = subinstr(`j',`"""',"",.)
-					replace `j' = subinstr(`j',"  "," ",.)
-					replace `j' = subinstr(`j',"Ê"," ",.)								// <--Algunas CPs tienen este caracter "raro".
-					replace `j' = subinstr(`j',"Â","",.)
-					replace `j' = subinstr(`j'," "," ",.)
-					replace `j' = subinstr(`j'," "," ",.)
-					format `j' %30s
-				}
-				destring `j', replace				// Cuarto, hacer numéricas las variables posibles
-			}
-
-			* Quinto, asegurar que las variables de gasto sean numéricas. 
+			// Primero, asegurar que las variables de gasto sean numéricas. 
 			foreach j in aprobado modificado devengado pagado adefas ejercido proyecto {
-				capture destring `j', replace ignore(",") 								// Ignorar las comas
+				capture destring `j', replace ignore(",") 	// Ignorar las comas
 				if _rc == 0 {
 					format `j' %20.0fc
 					replace `j' = 0 if `j' == .
 				}
 			}
+
+			// Segundo, limpiar
+			foreach j of varlist _all {
+				if "`j'" != "ejercido" & "`j'" != "aprobado" & "`j'" != "proyecto" ///
+					& "`j'" != "modificado" & "`j'" != "devengado" & "`j'" != "pagado" ///
+					& "`j'" != "adefas" & "`j'" != "ramo" {	
+					noisily di "`j'"
+					replace `j' = trim(`j')
+					replace `j' = lower(`j')
+					replace `j' = subinstr(`j',`"""',"",.)
+					replace `j' = subinstr(`j',"  "," ",.)
+					replace `j' = subinstr(`j',"Ê"," ",.)	// <--Algunas CPs tienen este caracter "raro".
+					replace `j' = subinstr(`j',"Â","",.)
+					replace `j' = subinstr(`j'," "," ",.)
+					format `j' %30s
+				}
+				destring `j', replace				// Tercero, hacer numéricas las variables posibles
+			}
 			capture tostring ramo, replace
 
 			* 1.5 Save *
-			tempfile `=strtoname("`k'")'												// strtoname convierte el texto en Stata var_type_name
+			tempfile `=strtoname("`k'")'				// strtoname convierte el texto en Stata var_type_name
 			save ``=strtoname("`k'")''
 		}
 
-		* Sexto, loop para unir los archivos ya limpios y en formato Stata *
+		* Cuarto, loop para unir los archivos ya limpios y en formato Stata *
 		local j = 0
 		foreach k of local archivos {
-		*foreach k in "CP 2019" {														// <-- Dejar para hacer pruebas
+		*foreach k in "CP 2019" {					// <-- Dejar para hacer pruebas
 			noisily di in g "Appending: " in y "`k'"
 			if `j' == 0 {
 				use ``=strtoname("`k'")'', clear
 				local ++j
 			}
 			else {
-				append using ``=strtoname("`k'")'', force
+				append using ``=strtoname("`k'")''
 			}
 		}
-		compress
 
 
 		***********************************
@@ -711,6 +760,7 @@ program define UpdatePEF
 		replace desc_ramo = "Instituto Nacional de Transparencia, Acceso a la Información y Protección de Datos Personales" if ramo == 44
 		replace desc_ramo = "Petróleos Mexicanos" if ramo == 52
 		replace desc_ramo = "Comisión Federal de Electricidad" if ramo == 53
+		replace desc_ramo = lower(desc_ramo)
 
 		labmask ramo, values(desc_ramo)
 		drop desc_ramo
@@ -790,13 +840,14 @@ program define UpdatePEF
 		label values ramo_tipo tipos_ramo
 
 		** 2.6 Encode y agregar Cuotas ISSSTE **
-		foreach k of varlist desc_ur desc_funcion desc_subfuncion ///
-			desc_ai desc_modalidad desc_pp ///
-			desc_objeto desc_tipogasto /*desc_partida_generica*/ {
+		foreach k of varlist desc_* {
 
+			if "`k'" == "desc_pp" {
+				continue
+			}
+		
 			rename `k' `k'2
 			encode `k'2, g(`k')
-			format %30.0fc `k'
 			drop `k'2	
 
 			replace `k' = -1 if `k' == .
@@ -893,133 +944,160 @@ program define UpdatePEF
 		replace serie_ramo = "XKC0131" if ramo == 52
 		replace serie_ramo = "XOA0141" if ramo == 53
 
+		compress
 		if `c(version)' > 13.1 {
 			saveold "`c(sysdir_personal)'/SIM/prePEF.dta", replace version(13)
 		}
 		else {
 			save "`c(sysdir_personal)'/SIM/prePEF.dta", replace
 		}
-
-		/* 3.3 Datos Abiertos: PEFEstOpor.dta *
-		levelsof serie_desc_funcion, local(serie)
-		foreach k of local serie {
-			noisily DatosAbiertos `k', nog
-
-			rename clave_de_concepto serie
-			keep anio serie nombre monto mes acum_prom
-
-			tempfile `k'
-			quietly save ``k''
-		}
-
-		** 2.1.1 Append **
-		local j = 0
-		foreach k of local serie {
-			if `j' == 0 {
-				use ``k'', clear
-				local ++j
-			}
-			else {
-				append using ``k''
-			}
-		}
-
-		rename serie series
-		encode series, generate(serie)
-		drop series
-
-		capture drop __*
-		compress
-		if `c(version)' > 13.1 {
-			saveold "`c(sysdir_personal)'/SIM/GastoEstOpor.dta", replace version(13)
-		}
-		else {
-			save "`c(sysdir_personal)'/SIM/GastoEstOpor.dta", replace
-		}*/
 	}
 
+	/* 3.3 Datos Abiertos: PEFEstOpor.dta *
+	levelsof serie_desc_funcion, local(serie)
+	foreach k of local serie {
+		noisily DatosAbiertos `k', nog
+
+		rename clave_de_concepto serie
+		keep anio serie nombre monto mes acum_prom
+
+		tempfile `k'
+		quietly save ``k''
+	}
+
+	** 2.1.1 Append **
+	local j = 0
+	foreach k of local serie {
+		if `j' == 0 {
+			use ``k'', clear
+			local ++j
+		}
+		else {
+			append using ``k''
+		}
+	}
+
+	rename serie series
+	encode series, generate(serie)
+	drop series
+
+	capture drop __*
+	compress
+	if `c(version)' > 13.1 {
+		saveold "`c(sysdir_personal)'/SIM/GastoEstOpor.dta", replace version(13)
+	}
+	else {
+		save "`c(sysdir_personal)'/SIM/GastoEstOpor.dta", replace
+	}*/
 
 	***************************************/
 	***                                  ***
 	*** 4. Modulos SIMULADOR FISCAL CIEP ***
 	***                                  ***
 	****************************************
-	use "`c(sysdir_personal)'/SIM/prePEF.dta", clear
+	use if anio >= 2013 using "`c(sysdir_personal)'/SIM/prePEF.dta", clear
+	replace desc_pp = "Cuotas ISSSTE" if desc_pp == ""
 
+
+	*******************
 	** 4.1 Pensiones **
-	levelsof desc_pp, local(levelsof)
-	foreach k of local levelsof {
-		local label : label desc_pp `k'
-		if `"`label'"' == "Pensión para Adultos Mayores" | ///
-			`"`label'"' == "Pensión para el Bienestar de las Personas Adultas Mayores" | ///
-			`"`label'"' == "Pensión para el Bienestar de las Personas con Discapacidad Permanente" {
-			local ifpp `"`ifpp'desc_pp == `k' | "'
-		}
-	}
-	local ifpp `"(`=substr("`ifpp'",1,`=strlen("`ifpp'")-3')')"'
-
 	// Pensiones contributivas
-	g desc_divCIEP = "Pensiones" if (substr(string(objeto),1,2) == "45" | substr(string(objeto),1,2) == "47")
-	g desc_divSIM = desc_divCIEP
+	g divCIEP = "Pensiones" if (substr(string(objeto),1,2) == "45" | substr(string(objeto),1,2) == "47")
+	
+	g divSIM = "Pensiones" if divCIEP == "Pensiones"
 
 	// Pensión para adultos mayores
-	replace desc_divCIEP = "Pensión AM" if desc_divCIEP == "" & `ifpp'
-	replace desc_divSIM = "Pensiones" if desc_divSIM == "" & `ifpp'
+	replace divCIEP = "Pensión AM" if divCIEP == "" ///
+		& (desc_pp == "pensión para adultos mayores" ///
+		| desc_pp == "pensión para el bienestar de las personas adultas mayores" ///
+		| desc_pp == "pensión para el bienestar de las personas con discapacidad permanente")
+	
+	replace divSIM = "Pensiones" if divCIEP == "Pensión AM"
 
+
+	***************
 	** 4.2 Salud **
-	replace desc_divCIEP = "Salud" if desc_divCIEP == "" & (desc_funcion == 21 | ramo == 12)
-	replace desc_divCIEP = "Salud" if desc_divCIEP == "" & (ramo == 50 | ramo == 51) & (pp == 4 | pp == 15) & funcion == 8
-	replace desc_divCIEP = "Salud" if desc_divCIEP == "" & ramo == 52 & ai == 231
+	replace divCIEP = "Salud" if divCIEP == "" ///
+		& (desc_funcion == 21 | ramo == 12)
+	replace divCIEP = "Salud" if divCIEP == "" ///
+		& (ramo == 50 | ramo == 51) & (pp == 4 | pp == 15) & funcion == 8
+	replace divCIEP = "Salud" if divCIEP == "" ///
+		& ramo == 52 & ai == 231
+	
+	replace divSIM = "Salud" if divCIEP == "Salud"
 
-	** 4.4 Costo de la deuda **
-	replace desc_divCIEP = "Costo de la deuda" if desc_divCIEP == "" & capitulo == 9
 
+	*****************
 	** 4.3 Energía **
-	replace desc_divCIEP = "Energía" if desc_divCIEP == "" ///
+	replace divCIEP = "Energía" if divCIEP == "" ///
 		& (ramo == 18 | ramo == 45 | ramo == 46 | ramo == 52 | ramo == 53 ///
 		| (ramo == 23 & desc_funcion == 7))
+	
+	replace divSIM = "Energía" if divCIEP == "Energía"
 
+
+	***************************
+	** 4.4 Costo de la deuda **
+	replace divCIEP = "Costo de la deuda" if divCIEP == "" ///
+		& capitulo == 9
+
+	replace divSIM = "Costo de la deuda" ///
+		if capitulo == 9
+
+		
+	*******************
 	** 4.5 Educación **
-	replace desc_divCIEP = "Educación" if desc_divCIEP == "" ///
+	replace divCIEP = "Educación" if divCIEP == "" ///
 		& (desc_funcion == 10 | ramo == 11 | ramo == 48 | ramo == 38)
 
+	replace divSIM = "Educación" if divCIEP == "Educación"
+
+
+	*************************************
 	** 4.6 Inversión e Infraestructura **
-	replace desc_divCIEP = "Otras inversiones" if desc_divCIEP == "" ///
-		& (desc_tipogasto == 4 | desc_tipogasto == 5 | desc_tipogasto == 6 | desc_tipogasto == 8)
+	replace divCIEP = "Otras inversiones" if divCIEP == "" ///
+		& (desc_tipogasto == 4 | desc_tipogasto == 5 | desc_tipogasto == 6)
 
-	replace desc_divSIM = "Inversión" if (desc_tipogasto == 4 | desc_tipogasto == 5 | desc_tipogasto == 6 | desc_tipogasto == 8)
+	replace divSIM = "Inversión" ///
+		if (desc_tipogasto == 4 | desc_tipogasto == 5 | desc_tipogasto == 6)
 
+
+	**********************
 	** 4.7 Federalizado **
-	replace desc_divCIEP = "Part y otras Apor" if desc_divCIEP == "" & (ramo == 28)                                  // Part
-	replace desc_divCIEP = "Part y otras Apor" if desc_divCIEP == "" & (ramo == 33 | ramo == 25)                     // Aport
+	replace divCIEP = "Part y otras Apor" if divCIEP == "" ///
+		& (ramo == 28)                                        // Part
+	replace divCIEP = "Part y otras Apor" if divCIEP == "" ///
+		& (ramo == 33 | ramo == 25)                           // Aport
+	replace divCIEP = "Part y otras Apor" if divCIEP == "" ///
+		& (objeto == 43801)                                   // Convenios descentralizados
+	replace divCIEP = "Part y otras Apor" if divCIEP == "" ///
+		& (objeto == 85101)                                   // Convenios de reasignación
+	replace divCIEP = "Part y otras Apor" if divCIEP == "" ///
+		& (objeto == 43101 & ramo == 8 & pp == 263 & entidad != 34) // Convenios de reasignación
+	replace divCIEP = "Part y otras Apor" if divCIEP == "" ///
+		& (objeto == 46101 & ramo == 23 & pp == 80)           // FEIEF
+	replace divCIEP = "Part y otras Apor" if divCIEP == "" ///
+		& (ramo == 23 & pp == 4 & modalidad == "Y")           // FEIEF
+	replace divCIEP = "Part y otras Apor" if divCIEP == "" ///
+		& (ramo == 23 & pp == 141)                            // FIES
+	replace divCIEP = "Part y otras Apor" if divCIEP == "" ///
+		& (pp == 13 & (ramo == 12 | ramo == 47) & modalidad == "U") // INSABI/Seguro Popular/IMSS-Bienestar
 
-	g desc_divFEDE = "Participaciones" if (ramo == 28)                                                               // Part
-	replace desc_divFEDE = "Aportaciones" if (ramo == 33 | ramo == 25)                                               // Aport
+	g divFEDE = "Participaciones" if (ramo == 28) // Part
+	replace divFEDE = "Aportaciones" if (ramo == 33 | ramo == 25)    // Aport
+	replace divFEDE = "Convenios" if (objeto == 43801 & ramo != 23)  // Convenios descentralizados
+	replace divFEDE = "Convenios" if (objeto == 85101)               // Convenios de reasignación
+	replace divFEDE = "Convenios" if (objeto == 43101 & ramo == 8 & pp == 263 & entidad != 34) // Convenios de reasignación
+	replace divFEDE = "Subsidios" if (objeto == 46101 & ramo == 23 & pp == 80) // FEIEF
+	replace divFEDE = "Subsidios" if (ramo == 23 & pp == 4 & modalidad == "Y") // FEIEF
+	replace divFEDE = "Subsidios" if (ramo == 23 & pp == 141) // FIES
+	replace divFEDE = "Subsidios" if (ramo == 23 & objeto == 43801)
+	replace divFEDE = "Salud (federalizado)" if (pp == 13 & (ramo == 12 | ramo == 47) & modalidad == "U") // INSABI/Seguro Popular/IMSS-Bienestar
 
-	replace desc_divCIEP = "Part y otras Apor" if desc_divCIEP == "" & (objeto == 43801)                             // Convenios descentralizados
 
-	replace desc_divFEDE = "Convenios" if (objeto == 43801 & ramo != 23)                                             // Convenios descentralizados
-
-	replace desc_divCIEP = "Part y otras Apor" if desc_divCIEP == "" & (objeto == 85101)                             // Convenios de reasignación
-	replace desc_divCIEP = "Part y otras Apor" if desc_divCIEP == "" & (objeto == 43101 & ramo == 8 & pp == 263 & entidad != 34) // Convenios de reasignación
-
-	replace desc_divFEDE = "Convenios" if (objeto == 85101)                                                          // Convenios de reasignación
-	replace desc_divFEDE = "Convenios" if (objeto == 43101 & ramo == 8 & pp == 263 & entidad != 34)                  // Convenios de reasignación
-
-	replace desc_divCIEP = "Part y otras Apor" if desc_divCIEP == "" & (objeto == 46101 & ramo == 23 & pp == 80)     // FEIEF
-	replace desc_divCIEP = "Part y otras Apor" if desc_divCIEP == "" & (ramo == 23 & pp == 4 & modalidad == "Y")     // FEIEF
-	replace desc_divCIEP = "Part y otras Apor" if desc_divCIEP == "" & (ramo == 23 & pp == 141)                      // FIES
-
-	replace desc_divFEDE = "Subsidios" if (objeto == 46101 & ramo == 23 & pp == 80)                                  // FEIEF
-	replace desc_divFEDE = "Subsidios" if (ramo == 23 & pp == 4 & modalidad == "Y")                                  // FEIEF
-	replace desc_divFEDE = "Subsidios" if (ramo == 23 & pp == 141)                                                   // FIES
-	replace desc_divFEDE = "Subsidios" if (ramo == 23 & objeto == 43801)
-
-	replace desc_divCIEP = "Part y otras Apor" if desc_divCIEP == "" & (pp == 13 & (ramo == 12 | ramo == 47) & modalidad == "U") // INSABI/Seguro Popular/IMSS-Bienestar
-	replace desc_divFEDE = "Salud (federalizado)" if (pp == 13 & (ramo == 12 | ramo == 47) & modalidad == "U")         // INSABI/Seguro Popular/IMSS-Bienestar
-
-	** 4.7 Economía de los cuidados **
-	replace desc_divSIM = "Cuidados" if (ramo == 11 & pp == 312) | (ramo == 11 & pp == 31) ///
+	**********************************
+	** 4.8 Economía de los cuidados **
+	replace divSIM = "Cuidados" if (ramo == 11 & pp == 312) | (ramo == 11 & pp == 31) ///
 		| (ramo == 11 & pp == 66) ///
 		| (ramo == 20 & pp == 174) | (ramo == 51 & pp == 48) | (ramo == 50 & pp == 7) ///
 		| (ramo == 20 & pp == 241) ///
@@ -1028,19 +1106,20 @@ program define UpdatePEF
 		| (ramo == 12 & pp == 40) | (ramo == 11 & pp == 221) | (ramo == 25 & pp == 221) ///
 		| (ramo == 51 & subfuncion == 3 & anio <= 2019) | (ramo == 20 & pp == 12 & anio >= 2019 & anio <= 2022)
 
-	** 4.8 Otros **
-	replace desc_divCIEP = "Otros gastos" if desc_divCIEP == ""
-	replace desc_divFEDE = "No federalizado" if desc_divFEDE == ""
-	replace desc_divSIM = desc_divCIEP if desc_divSIM == ""
 
-	** 4.9 Cuotas ISSSTE **
+	***************
+	** 4.9 Otros **
+	replace divCIEP = "Otros gastos" if divCIEP == ""
+	replace divFEDE = "No federalizado" if divFEDE == ""
+	replace divSIM = divCIEP if divSIM == ""
+
+
+	************************
+	** 4.10 Cuotas ISSSTE **
 	foreach k in divCIEP divFEDE divSIM {
-		replace desc_`k' = "zCuotas ISSSTE" if ramo == -1
-		encode desc_`k', generate(`k')
-		replace desc_`k' = "Cuotas ISSSTE" if ramo == -1
-		replace `k' = -1 if ramo == -1
-		label define `k' -1 "Cuotas ISSSTE", add
+		replace `k' = "Cuotas ISSSTE" if ramo == -1
 	}
+
 
 
 	**************************
@@ -1056,19 +1135,13 @@ program define UpdatePEF
 	replace gasto = aprobado if ejercido == . & aprobado != .
 	replace gasto = proyecto if ejercido == . & aprobado == . & proyecto != .
 
-	g byte transf_gf = (ramo == 19 & ur == "GYN") | (ramo == 19 & ur == "GYR")
+	g byte transf_gf = (ramo == 19 & ur == "gyn") | (ramo == 19 & ur == "gyr")
 
 	g byte noprogramable = ramo == 28 | capitulo == 9
 	replace noprogramable = -1 if ramo == -1
 	label define noprogramable 1 "No programable" 0 "Programable" -1 "Cuotas ISSSTE"
 	label values noprogramable noprogramable
 
-	g byte ineludible = divCIEP == 7 | divFEDE == 4 | ramo == 28 ///
-		| capitulo == 9 | (ramo >= 50 & ramo <= 53) | divCIEP == 8
-	replace ineludible = -1 if ramo == -1
-	*replace ineludible = 2 if divCIEP == 8
-	label define ineludible 2 "Programas prioritarios" 1 "Ineludible" 0 "No ineludible" -1 "Cuotas ISSSTE"
-	label values ineludible ineludible
 
 
 	****************/
@@ -1088,4 +1161,5 @@ program define UpdatePEF
 	else {
 		save "`c(sysdir_personal)'/SIM/PEF.dta", replace
 	}
+
 end

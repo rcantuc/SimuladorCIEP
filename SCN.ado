@@ -697,6 +697,7 @@ quietly {
 			note("{bf:{c U'}ltimo dato reportado}: `anio_last'.") ///
 			name(gdp_generacion, replace)
 
+		graph save gdp_generacion "`c(sysdir_personal)'/SIM/graphs/gdp_generacion", replace
 		capture confirm existence $export
 		if _rc == 0 {
 			graph export "$export/PIB_GeneracionIngreso.png", replace name(gdp_generacion)
@@ -820,6 +821,7 @@ quietly {
 			note("{bf:{c U'}ltimo dato reportado}: `anio_last'.") ///
 			name(gdp_utilizacion, replace)
 
+		graph save gdp_utilizacion "`c(sysdir_personal)'/SIM/graphs/gdp_utilizacion", replace
 		capture confirm existence $export
 		if _rc == 0 {
 			graph export "$export/PIB_UtilizacionIngreso.png", replace name(gdp_utilizacion)

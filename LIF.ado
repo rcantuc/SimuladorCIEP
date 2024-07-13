@@ -1,10 +1,6 @@
 program define LIF, return
-timer on 4
 quietly {
-
-	*****************
-	*** 0. INICIO ***
-	*****************
+	timer on 4
 
 	** 0.1 Anio valor presente **
 	capture confirm scalar aniovp
@@ -555,6 +551,7 @@ quietly {
 		*capture window manage close graph ingresosMXN`by'
 		*capture window manage close graph ingresos`by'PIB
 	
+		graph save ingresos`by'PIB "`c(sysdir_personal)'/SIM/graphs/ingresos`by'PIB", replace
 		if "$export" != "" {
 			graph export "$export/ingresos`by'.png", as(png) name("ingresos`by'") replace
 		}

@@ -8,9 +8,7 @@ if "`c(username)'" == "ricardo" ///                             // iMac Ricardo
 	sysdir set PERSONAL "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
 if "`c(username)'" == "ciepmx" & "`c(console)'" == "" ///       // Servidor CIEP
 	sysdir set PERSONAL "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
-
 cd "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/LINGO/Sankeys/"
-
 
 
 *************************
@@ -18,60 +16,164 @@ cd "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/LINGO/Sankeys/"
 *** 1. Bases de datos ***
 ***                   ***
 *************************
-
 if "`1'" == "update" {
 	** 1.1. Ventas netas de bienes y servicios **
 	DatosAbiertos XKC0106, nog
 	rename monto Ventas
+
+	tabstat monto_pib if anio >= 2019 & anio < 2024, save
+	tempname Ventas_pib
+	matrix `Ventas_pib' = r(StatTotal)
+
+	tabstat monto_pib if anio >= 2013 & anio < 2019, save
+	tempname Ventas_pib2013
+	matrix `Ventas_pib2013' = r(StatTotal)
+
 	keep anio Ventas
 	save XKC0106, replace
-
 
 	** 1.2. Otros ingresos **
 	DatosAbiertos XKC0179, nog
 	rename monto OtrosIngresos
+
+	tabstat monto_pib if anio >= 2019 & anio < 2024, save
+	tempname OtrosIngresos_pib
+	matrix `OtrosIngresos_pib' = r(StatTotal)
+
+	tabstat monto_pib if anio >= 2013 & anio < 2019, save
+	tempname OtrosIngresos_pib2013
+	matrix `OtrosIngresos_pib2013' = r(StatTotal)
+
 	keep anio OtrosIngresos
 	save XKC0179, replace
-
 
 	** 2.1. Derechos y enteros **
 	DatosAbiertos XKC0113, nog
 	rename monto Derechos
+
+	tabstat monto_pib if anio >= 2019 & anio < 2024, save
+	tempname Derechos_pib
+	matrix `Derechos_pib' = r(StatTotal)
+
+	tabstat monto_pib if anio >= 2013 & anio < 2019, save
+	tempname Derechos_pib2013
+	matrix `Derechos_pib2013' = r(StatTotal)
+
 	keep anio Derechos
 	save XKC0113, replace
-
 
 	** 2.2. Gasto programable **
 	DatosAbiertos XKC0131, nog
 	rename monto Programable
+
+	tabstat monto_pib if anio >= 2019 & anio < 2024, save
+	tempname Programable_pib
+	matrix `Programable_pib' = r(StatTotal)
+
+	tabstat monto_pib if anio >= 2013 & anio < 2019, save
+	tempname Programable_pib2013
+	matrix `Programable_pib2013' = r(StatTotal)
+
 	keep anio Programable
 	save XKC0131, replace
-
 
 	** 2.2.1 Pensiones y jubilaciones **
 	DatosAbiertos XKC0139, nog
 	rename monto Pensiones
+
+	tabstat monto_pib if anio >= 2019 & anio < 2024, save
+	tempname Pensiones_pib
+	matrix `Pensiones_pib' = r(StatTotal)
+
+	tabstat monto_pib if anio >= 2013 & anio < 2019, save
+	tempname Pensiones_pib2013
+	matrix `Pensiones_pib2013' = r(StatTotal)
+
 	keep anio Pensiones
 	save XKC0139, replace
-
 
 	** 2.2.2. Gastos de inversión **
 	DatosAbiertos XKC0145, nog
 	rename monto Inversion
+
+	tabstat monto_pib if anio >= 2019 & anio < 2024, save
+	tempname Inversion_pib
+	matrix `Inversion_pib' = r(StatTotal)
+
+	tabstat monto_pib if anio >= 2013 & anio < 2019, save
+	tempname Inversion_pib2013
+	matrix `Inversion_pib2013' = r(StatTotal)
+
 	keep anio Inversion
 	save XKC0145, replace
-
 
 	** 2.3. Gasto no programable **
 	DatosAbiertos XKC0157, nog
 	rename monto NoProgramable
+
+	tabstat monto_pib if anio >= 2019 & anio < 2024, save
+	tempname NoProgramable_pib
+	matrix `NoProgramable_pib' = r(StatTotal)
+
+	tabstat monto_pib if anio >= 2013 & anio < 2019, save
+	tempname NoProgramable_pib2013
+	matrix `NoProgramable_pib2013' = r(StatTotal)
+
 	keep anio NoProgramable
 	save XKC0157, replace
 }
 
 
-** 1.2. Información adicional **/
+** 1.2. Información adicional **
 forvalues anio = 2019(1)2024 {
+	/*if "`anio'" == "2015" {
+		local reduccionduc = 0
+		local estimulosfiscales = 0
+		local apoyospatrimoniales = 60000*1000000
+		local indirectos = 0
+		local fmp = 426395128797
+		local fmp_feip_feief = 5.38
+		local fmp_feh = 1.52
+		local fmp_investigacion = 1.23
+		local fmp_tesofe = 91.87
+		local fmp_otros = 0.00
+	}
+	if "`anio'" == "2016" {
+		local reduccionduc = 0
+		local estimulosfiscales = 40213*1000000
+		local apoyospatrimoniales = 161939*1000000
+		local indirectos = 0
+		local fmp = 321023438114
+		local fmp_feip_feief = 4.48
+		local fmp_feh = 1.29
+		local fmp_investigacion = 1.03
+		local fmp_tesofe = 93.20
+		local fmp_otros = 0.00
+	}
+	if "`anio'" == "2017" {
+		local reduccionduc = 0
+		local estimulosfiscales = 7769*1000000
+		local apoyospatrimoniales = 0
+		local indirectos = 0
+		local fmp = 434763080208
+		local fmp_feip_feief = 2.48
+		local fmp_feh = 0.73
+		local fmp_investigacion = 0.57
+		local fmp_tesofe = 96.21
+		local fmp_otros = 0.00
+	}
+	if "`anio'" == "2018" {
+		local reduccionduc = 0
+		local estimulosfiscales = 11110*1000000
+		local apoyospatrimoniales = 0
+		local indirectos = 0
+		local fmp = 526831188563
+		local fmp_feip_feief = 2.39
+		local fmp_feh = 0.72
+		local fmp_investigacion = 0.55
+		local fmp_tesofe = 96.33
+		local fmp_otros = 0.01
+	}*/
 	if "`anio'" == "2019" {
 		local reduccionduc = 0
 		local estimulosfiscales = (25787+38704)*1000000
@@ -146,8 +248,7 @@ forvalues anio = 2019(1)2024 {
 	}
 
 
-
-	**************************************/
+	***************************************
 	***                                 ***
 	*** Eje 1: Ingresos propios (PEMEX) ***
 	***                                 ***
@@ -188,7 +289,6 @@ forvalues anio = 2019(1)2024 {
 	replace profile = profile / 1000000000
 	tempfile eje`anio'1
 	save `eje`anio'1'
-
 
 
 	*********************************************************
@@ -233,7 +333,6 @@ forvalues anio = 2019(1)2024 {
 	replace profile = profile / 1000000000
 	tempfile eje`anio'2
 	save `eje`anio'2'
-
 
 
 	********************************************************
@@ -281,8 +380,7 @@ forvalues anio = 2019(1)2024 {
 	save `eje`anio'3'
 
 
-
-	********************************/
+	********************************
 	** Eje 4: Aportaciones del FMP **
 	use `eje`anio'3', clear
 	collapse (sum) profile if to == 6, by(to anio)
@@ -351,7 +449,6 @@ forvalues anio = 2019(1)2024 {
 	save `eje`anio'4'
 
 
-
 	**********************************************
 	** Eje 5: Aportaciones del gobierno federal **
 	use `eje`anio'4', clear
@@ -371,40 +468,3 @@ forvalues anio = 2019(1)2024 {
 	noisily SankeySumLoop, anio(`anio') name(`anio') folder(SankeyPemex) a(`eje`anio'1') b(`eje`anio'2') c(`eje`anio'3') d(`eje`anio'4') e(`eje`anio'5')
 }
 
-
-********************
-***              ***
-*** 2. 2019-2024 ***
-***              ***
-********************
-PIBDeflactor, aniovp(2024) nographs
-keep if anio >= 2019 & anio <= 2024
-sort anio
-local deflactor2019 = deflator[1]
-local deflactor2020 = deflator[2]
-local deflactor2021 = deflator[3]
-local deflactor2022 = deflator[4]
-local deflactor2023 = deflator[5]
-local deflactor2024 = deflator[6]
-
-forvalues k = 1(1)5 {
-	use `eje2019`k'', clear
-	forvalues anio = 2020(1)2024 {
-		append using `eje`anio'`k''
-	}
-
-	replace profile = profile/`deflactor2019' if anio == 2019
-	replace profile = profile/`deflactor2020' if anio == 2020
-	replace profile = profile/`deflactor2021' if anio == 2021
-	replace profile = profile/`deflactor2022' if anio == 2022
-	replace profile = profile/`deflactor2023' if anio == 2023
-	replace profile = profile/`deflactor2024' if anio == 2024
-
-	collapse (sum) profile, by(from to)
-
-	tempfile ejetot`k'
-	save `ejetot`k''
-}
-
-
-noisily SankeySumLoop, anio(2024) name(2019_2024) folder(SankeyPemex) a(`ejetot1') b(`ejetot2') c(`ejetot3') d(`ejetot4') e(`ejetot5')

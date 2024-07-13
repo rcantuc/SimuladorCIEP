@@ -14,18 +14,15 @@ if "`1'" == "" {
 ***************************************
 *** 1 Sistema de Cuentas Nacionales ***
 ***************************************
-SCN, anio(`2') nographs
+*SCN, anio(`2') nographs
 
 
 
 
 **********************************/
 ** Eje 1: Generación del ingreso **
-capture use `"`c(sysdir_personal)'/users/$id/ingresos.dta"', clear
-capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/users/$id/gastos.dta", nogen replace update
-if _rc != 0 {
-	*use "`c(sysdir_personal)'/SIM/perfiles`=anioPE'.dta", clear
-}
+use `"`c(sysdir_personal)'/users/$id/ingresos.dta"', clear
+
 tempvar Laboral Consumo Capital FMP
 egen `Laboral'  = rsum(ISRAS ISRPF CUOTAS)
 egen `Consumo'  = rsum(IVA IEPSP IEPSNP ISAN IMPORT)
@@ -86,14 +83,8 @@ save `eje1'
 
 ********************
 ** Eje 4: Consumo **
-use if anio == `2' using `"`c(sysdir_personal)'/SIM/Poblaciontot.dta"', clear
-local ajustepob = poblacion
+use `"`c(sysdir_personal)'/users/$id/gastos.dta"', clear
 
-capture use `"`c(sysdir_personal)'/users/$id/ingresos.dta"', clear
-capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/users/$id/gastos.dta", nogen replace update
-if _rc != 0 {
-	*use "`c(sysdir_personal)'/SIM/perfiles`=anioPE'.dta", clear
-}
 tabstat factor, stat(sum) f(%20.0fc) save
 tempname pobenigh
 matrix `pobenigh' = r(StatTotal)
@@ -104,12 +95,9 @@ matrix `pobpenbien' = r(StatTotal)
 
 tabstat factor, stat(sum) f(%20.0fc) save
 tempname pobtot
-matrix `pobtot' = r(StatTotal)*`ajustepob'/`pobenigh'[1,1]
+matrix `pobtot' = r(StatTotal)
 
 replace Pension = Pension + Pensión_AM
-*tabstat Pension Educación Salud Otros_gastos [fw=factor], stat(sum) f(%20.0fc) save
-*tempname GAST 
-*matrix `GAST' = r(StatTotal)
 
 collapse (sum) gas_Educación=Educación gas_Salud=Salud /*gas__Salarios_de_gobierno=Salarios*/ ///
 	gas___Pensiones=Pension gas____Transferencias=IngBasico ///
