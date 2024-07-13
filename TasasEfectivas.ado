@@ -29,7 +29,7 @@ quietly {
 	*********************
 	**# 2 RECAUDACIÓN ***
 	*********************
-	LIF, anio(`anio') by(divSIM) nographs desde(2018) min(0) lif
+	LIF, anio(`anio') by(divSIM) nographs desde(2018) min(0)
 	local recursos = r(divSIM)
 	foreach k of local recursos {
 		local `=substr("`k'",1,7)' = r(`k')
@@ -64,11 +64,11 @@ quietly {
 	}
 	
 	noisily di in g "  Remuneraci{c o'}n de asalariados" ///
-		_col(37) %7.3fc in y RemSalPIB ///
+		_col(37) %7.3fc in y RemSalPIB+ImpNetProduccionLPIB ///
 		_col(48) in g "ISR (salarios)" ///
 		_col(72) %7.3fc in y (`ISRAS') ///
-		_col(80) %7.3fc in y (`ISRAS')/RemSalPIB*100 " %"
-	scalar ISRASPor = (`ISRAS')/RemSalPIB*100
+		_col(80) %7.3fc in y (`ISRAS')/(RemSalPIB+ImpNetProduccionLPIB)*100 " %"
+	scalar ISRASPor = (`ISRAS')/(RemSalPIB+ImpNetProduccionLPIB)*100
 
 
 	** 3.2 ISR (personas físicas) **
@@ -96,11 +96,11 @@ quietly {
 		scalar CUOTAS = `CUOTAS'
 	}
 	noisily di in g "  Remuneraci{c o'}n de asalariados" ///
-		_col(37) %7.3fc in y (RemSalPIB+SSImputadaPIB+SSEmpleadoresPIB) ///
+		_col(37) %7.3fc in y (RemSalPIB+SSImputadaPIB+SSEmpleadoresPIB+ImpNetProduccionLPIB) ///
 		_col(48) in g "Cuotas IMSS" ///
 		_col(72) %7.3fc in y (`CUOTAS') ///
-		_col(80) %7.3fc in y (`CUOTAS')/(RemSalPIB+SSImputadaPIB+SSEmpleadoresPIB)*100 " %"
-	scalar CUOTASPor = (`CUOTAS')/(RemSalPIB+SSImputadaPIB+SSEmpleadoresPIB)*100
+		_col(80) %7.3fc in y (`CUOTAS')/(RemSalPIB+SSImputadaPIB+SSEmpleadoresPIB+ImpNetProduccionLPIB)*100 " %"
+	scalar CUOTASPor = (`CUOTAS')/(RemSalPIB+SSImputadaPIB+SSEmpleadoresPIB+ImpNetProduccionLPIB)*100
 
 
 	** 3.4 TOTAL LABORALES **
@@ -390,12 +390,9 @@ quietly {
 	******************/
 	**# 7. Base SIM ***
 	*******************
-	*capture use "`c(sysdir_personal)'/users/$id/ingresos.dta", clear
-	*if _rc != 0 {
-		use "`c(sysdir_personal)'/SIM/perfiles`anio'.dta", clear
-	*}
-	keep folioviv foliohog numren factor edad ///
-		ISRAS ISRPF CUOTAS ISRPM OTROSK FMP PEMEX CFE IMSS ISSSTE IVA IEPSNP IEPSP ISAN IMPORT
+	use (folioviv foliohog numren factor edad decil grupoedad sexo rural escol ingbrutotot ///
+		ISRAS ISRPF CUOTAS ISRPM OTROSK FMP PEMEX CFE IMSS ISSSTE IVA IEPSNP IEPSP ISAN IMPORT) ///
+		using "`c(sysdir_personal)'/SIM/perfiles`anio'.dta", clear 
 
 	* 7.1 Distribuir los ingresos entre las observaciones *
 	foreach k of varlist ISRAS ISRPF CUOTAS ///

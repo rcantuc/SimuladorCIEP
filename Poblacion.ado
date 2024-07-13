@@ -10,7 +10,7 @@
 *!*******************************************
 program define Poblacion, return
 quietly {
-	timer on 14
+	timer on 2
 
 	capture mkdir `"`c(sysdir_personal)'/SIM/"'
 	capture mkdir `"`c(sysdir_personal)'/SIM/graphs/"'
@@ -491,9 +491,9 @@ quietly {
 
 
 	** END **
-	timer off 14
-	timer list 14
-	noisily di _newline in y round(`=r(t14)/r(nt14)',.1) in g " segs  "
+	timer off 2
+	timer list 2
+	noisily di _newline in y round(`=r(t2)/r(nt2)',.1) in g " segs  "
 }
 end
 

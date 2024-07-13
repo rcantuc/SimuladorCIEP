@@ -895,12 +895,15 @@ program define UpdateSHRFSP
 	save "`costocfe'"
 
 
-	noisily DatosAbiertos XOA0155, $nographs			// costo deuda interna
+	** Costo de la deuda interna **
+	noisily DatosAbiertos XOA0155, $nographs
 	rename monto costodeudaInterno
 	tempfile costodeudaII
 	save "`costodeudaII'"
 
-	noisily DatosAbiertos XOA0156, $nographs			// costo deuda externa
+
+	** Costo de la deuda externa **
+	noisily DatosAbiertos XOA0156, $nographs
 	rename monto costodeudaExterno
 	tempfile costodeudaEE
 	save "`costodeudaEE'"
