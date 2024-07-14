@@ -14,7 +14,7 @@ quietly {
 	capture mkdir `"`c(sysdir_personal)'/SIM/graphs/"'
 
 	** 0.1 Revisa si se puede usar la base de datos **
-	capture use "`c(sysdir_site)'/SIM/PIBDeflactor.dta", clear
+	capture use "`c(sysdir_personal)'/SIM/PIBDeflactor.dta", clear
 	if _rc != 0 {
 		UpdatePIBDeflactor
 	}
@@ -47,7 +47,7 @@ quietly {
 	************************
 	**# 2 Bases de datos ***
 	************************
-	use if anio <= `aniomax' using "`c(sysdir_site)'/SIM/PIBDeflactor.dta", clear
+	use if anio <= `aniomax' using "`c(sysdir_personal)'/SIM/PIBDeflactor.dta", clear
 
 	** 2.1 Obtiene el año inicial y final de la base **
 	forvalues k=1(1)`=_N' {
@@ -725,7 +725,7 @@ program define UpdatePIBDeflactor
 	**************
 
 	** 1.1. Importar variables de interés desde el BIE **
-	run "`c(sysdir_site)'/AccesoBIE.do" "734407 735143 446562 446565 446566" "pibQ indiceQ PoblacionENOE PoblacionOcupada PoblacionDesocupada"
+	run "`c(sysdir_personal)'/AccesoBIE.do" "734407 735143 446562 446565 446566" "pibQ indiceQ PoblacionENOE PoblacionOcupada PoblacionDesocupada"
 
 	** 1.2 Label variables **
 	label var pibQ "Producto Interno Bruto (trimestral)"
@@ -762,7 +762,7 @@ program define UpdatePIBDeflactor
 	***         ***
 	***************
 	** 2.1. Importar variables de interés desde el BIE **
-	run "`c(sysdir_site)'/AccesoBIE.do" "628194" "inpc"
+	run "`c(sysdir_personal)'/AccesoBIE.do" "628194" "inpc"
 
 	** 2.2 Label variables **
 	label var inpc "Índice Nacional de Precios al Consumidor"
@@ -799,7 +799,7 @@ program define UpdatePIBDeflactor
 	********************
 
 	** 3.1 Población (CONAPO) **
-	capture use `"`c(sysdir_site)'/SIM/$pais/Poblacion.dta"', clear
+	capture use `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
 	if _rc != 0 {
 		Poblacion, nographs
 	}
@@ -809,14 +809,14 @@ program define UpdatePIBDeflactor
 	save "`Poblacion'"
 
 	** 3.2 Working Ages (CONAPO) **
-	use `"`c(sysdir_site)'/SIM/$pais/Poblacion.dta"', clear
+	use `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
 	collapse (sum) WorkingAge=poblacion if edad >= 15 & edad <= 65 & entidad == "Nacional", by(anio)
 	format WorkingAge %15.0fc
 	tempfile WorkingAge
 	save "`WorkingAge'"
 
 	** 3.3 Recién nacidos (CONAPO) **
-	use `"`c(sysdir_site)'/SIM/$pais/Poblacion.dta"', clear
+	use `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
 	collapse (sum) Poblacion0=poblacion if edad == 0 & entidad == "Nacional", by(anio)
 	format Poblacion0 %15.0fc
 	tempfile Poblacion0
@@ -882,10 +882,10 @@ program define UpdatePIBDeflactor
 	capture drop __*
 	sort aniotrimestre
 	if `c(version)' > 13.1 {
-		saveold "`c(sysdir_site)'/SIM/PIBDeflactor.dta", replace version(13)
+		saveold "`c(sysdir_personal)'/SIM/PIBDeflactor.dta", replace version(13)
 	}
 	else {
-		save "`c(sysdir_site)'/SIM/PIBDeflactor.dta", replace
+		save "`c(sysdir_personal)'/SIM/PIBDeflactor.dta", replace
 	}
 
 
