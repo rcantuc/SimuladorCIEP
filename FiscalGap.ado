@@ -56,6 +56,11 @@ quietly {
 	merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/users/$id/gastos.dta", nogen update
 	capture drop _*
 	foreach k in Educación Pensiones Pensión_AM Salud Otros_gastos IngBasico Otras_inversiones Part_y_otras_Apor Energía {
+		local k = subinstr("`k'","á","a",.)
+		local k = subinstr("`k'","é","e",.)
+		local k = subinstr("`k'","í","i",.)
+		local k = subinstr("`k'","ó","o",.)
+		local k = subinstr("`k'","ú","u",.)
 		tabstat `k' [fw=factor], stat(sum) f(%20.0fc) save
 		tempname HH`k'
 		matrix `HH`k'' = r(StatTotal)
