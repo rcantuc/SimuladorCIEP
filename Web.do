@@ -14,7 +14,7 @@ if "`c(username)'" == "ricardo" ///                                 // iMac Rica
 	sysdir set PERSONAL "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
 else if "`c(username)'" == "ciepmx" & "`c(console)'" == "" ///      // Servidor CIEP
 	sysdir set PERSONAL "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
-else if "`c(username)'" == "ciepmx" & "`c(console)'" != "" ///      // Web
+else if "`c(console)'" != "" ///      // Web
 	sysdir set PERSONAL "/SIM/OUT/6/"
 cd "`c(sysdir_personal)'"
 

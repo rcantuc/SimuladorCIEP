@@ -17,8 +17,8 @@ set charset latin1, permanently
 
 ***********************
 ** 1.2 Ruta PERSONAL **
-cd `"`c(sysdir_site)'"'
-sysdir set PERSONAL `"`c(sysdir_site)'"'
+*cd `"`c(sysdir_site)'"'
+*sysdir set PERSONAL `"`c(sysdir_site)'"'
 adopath ++PERSONAL
 
 
