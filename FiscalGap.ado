@@ -289,6 +289,11 @@ quietly {
 	foreach k of local divCIEP {
 		if `"`=strtoname("`k'")'"' != "Costo_de_la_deuda" {
 			preserve
+			local k = subinstr("`k'","á","a",.)
+			local k = subinstr("`k'","é","e",.)
+			local k = subinstr("`k'","í","i",.)
+			local k = subinstr("`k'","ó","o",.)
+			local k = subinstr("`k'","ú","u",.)
 			use `"`c(sysdir_personal)'/SIM/bootstraps/1/`=strtoname("`k'")'REC.dta"', clear
 			collapse estimacion contribuyentes, by(anio modulo aniobase)
 			tsset anio
