@@ -348,7 +348,7 @@ noisily Perfiles AportacionesNetas [fw=factor], reboot aniovp(2024) aniope(`=ani
 ***************************************
 ** 3.5 (*) Sankey del sistema fiscal **
 foreach k in decil grupoedad /*sexo rural escol*/ {
-	noisily run "SankeySF.do" `k' `=anioPE'
+	noisily run "`c(sysdir_personal)'/SankeySF.do" `k' `=anioPE'
 }
 
 
