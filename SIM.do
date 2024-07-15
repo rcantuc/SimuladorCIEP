@@ -21,7 +21,7 @@ cd "`c(sysdir_personal)'"
 **  0.2 Opciones globales  **
 **  (agregar o modificar)  **
 global id = "ciepmx"                                                // IDENTIFICADOR DEL USUARIO
-//global nographs "nographs"                                        // SUPRIMIR GRAFICAS
+global nographs "nographs"                                        // SUPRIMIR GRAFICAS
 global output "output"                                            // ARCHIVO DE SALIDA (WEB)
 //global export "`c(sysdir_personal)'/SIM/graphs"                   // DIRECTORIO DE IMÁGENES
 //global update "update"                                            // UPDATE BASES DE DATOS
@@ -458,7 +458,7 @@ scalar costodeudaExterno2029 = 2.5
 
 
 ** 4.3 Sostenibilidad de la deuda y brecha fiscal **
-noisily FiscalGap, anio(`=anioPE') end(2030) aniomin(2014) $nographs desde(2014) //discount(10) //update //anio(`=aniovp')
+noisily FiscalGap, anio(`=anioPE') end(2030) aniomin(2014) $nographs desde(2013) //discount(10) //update //anio(`=aniovp')
 
 
 
