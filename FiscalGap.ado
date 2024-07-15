@@ -56,12 +56,12 @@ quietly {
 	merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/users/$id/gastos.dta", nogen update
 	capture drop _*
 	foreach k in Educación Pensiones Pensión_AM Salud Otros_gastos IngBasico Otras_inversiones Part_y_otras_Apor Energía {
+		tabstat `k' [fw=factor], stat(sum) f(%20.0fc) save
 		local k = subinstr("`k'","á","a",.)
 		local k = subinstr("`k'","é","e",.)
 		local k = subinstr("`k'","í","i",.)
 		local k = subinstr("`k'","ó","o",.)
 		local k = subinstr("`k'","ú","u",.)
-		tabstat `k' [fw=factor], stat(sum) f(%20.0fc) save
 		tempname HH`k'
 		matrix `HH`k'' = r(StatTotal)
 	}
@@ -273,10 +273,15 @@ quietly {
 	** 5.1 Información histórica de los gastos **
 	PEF if transf_gf == 0 & anio >= `desde' & divCIEP != "Cuotas ISSSTE", anio(`anio') by(divCIEP) nographs desde(`desde')
 	local divCIEP "`=r(divCIEP)' IngBasico"
-
+	local divCIEP = subinstr("`divCIEP'","á","a",.)
+	local divCIEP = subinstr("`divCIEP'","é","e",.)
+	local divCIEP = subinstr("`divCIEP'","í","i",.)
+	local divCIEP = subinstr("`divCIEP'","ó","o",.)
+	local divCIEP = subinstr("`divCIEP'","ú","u",.)
 	foreach k of local divCIEP {
 		local `k' = r(`k')
 		local `k'C = r(`k'C)
+		
 		if ``k'C' > 5 {
 			local `k'C = 5
 		}
@@ -286,6 +291,11 @@ quietly {
 	}
 	decode resumido, g(divCIEP)
 	replace divCIEP = strtoname(divCIEP)
+	replace divCIEP = subinstr(divCIEP,"á","a",.)
+	replace divCIEP = subinstr(divCIEP,"é","e",.)
+	replace divCIEP = subinstr(divCIEP,"í","i",.)
+	replace divCIEP = subinstr(divCIEP,"ó","o",.)
+	replace divCIEP = subinstr(divCIEP,"ú","u",.)
 
 
 	*****************************************
@@ -294,11 +304,6 @@ quietly {
 	foreach k of local divCIEP {
 		if `"`=strtoname("`k'")'"' != "Costo_de_la_deuda" {
 			preserve
-			local k = subinstr("`k'","á","a",.)
-			local k = subinstr("`k'","é","e",.)
-			local k = subinstr("`k'","í","i",.)
-			local k = subinstr("`k'","ó","o",.)
-			local k = subinstr("`k'","ú","u",.)
 			use `"`c(sysdir_personal)'/SIM/bootstraps/1/`=strtoname("`k'")'REC.dta"', clear
 			collapse estimacion contribuyentes, by(anio modulo aniobase)
 			tsset anio
@@ -335,7 +340,7 @@ quietly {
 
 	g divSIM = subinstr(divCIEP,"_"," ",.)
 	replace divSIM = "Otros gastos" if divSIM == "IngBasico" | divSIM == "Part y otras Apor"
-	replace divSIM = "Pensiones" if divSIM == "Pensión AM"
+	replace divSIM = "Pensiones" if divSIM == "Pension AM"
 
 
 	****************
