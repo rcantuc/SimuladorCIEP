@@ -11,6 +11,8 @@ set charset latin1, permanently
 
 * 1.1 Identificador del usuario *
 global id = "`c(username)'"
+sysdir set PERSONAL "`c(sysdir_site)'"
+
 
 * 1.2 Carpetas de trabajo *
 capture mkdir "`c(sysdir_personal)'/SIM/"
