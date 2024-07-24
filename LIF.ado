@@ -553,7 +553,7 @@ quietly {
 	
 		graph save ingresos`by'PIB "`c(sysdir_personal)'/SIM/graphs/ingresos`by'PIB", replace
 		if "$export" != "" {
-			graph export "$export/ingresos`by'.png", as(png) name("ingresos`by'") replace
+			graph export "$export/ingresos`by'PIB.png", as(png) name("ingresos`by'PIB") replace
 		}
 		*restore
 	}

@@ -19,7 +19,6 @@ else ///														    // Servidor VPS (web)
 cd `"`c(sysdir_personal)'"'
 
 **  0.2 Opciones globales  **
-**  (agregar o modificar)  **
 global id = "{{idSession}}"                                         // IDENTIFICADOR DEL USUARIO
 global nographs "nographs"                                          // SUPRIMIR GRAFICAS
 global output "output"                                              // OUTPUTS (WEB)

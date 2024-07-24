@@ -69,6 +69,36 @@ if `1' >= 2014 & `1' < 2016 {
 	local enighanio = 2014
 	local segpop = "segpop"
 }
+if `1' >= 2012 & `1' < 2014 {
+	local enigh = "ENIGH"
+	local betamin = 1							// ENIGH: 2.95
+	local altimir = "yes"
+	local SubsidioEmpleo = 41293000000			// Presupuesto de gastos fiscales (2014)
+	local udis = 5.1561230329  					// Promedio de valor de UDIS de enero a diciembre 2014
+	local smdf = 67.29							// Zona A. 2014
+	local enighanio = 2012
+	local segpop = "segpop"
+}
+if `1' >= 2010 & `1' < 2012 {
+	local enigh = "ENIGH"
+	local betamin = 1							// ENIGH: 2.95
+	local altimir = "yes"
+	local SubsidioEmpleo = 41293000000			// Presupuesto de gastos fiscales (2014)
+	local udis = 5.1561230329  					// Promedio de valor de UDIS de enero a diciembre 2014
+	local smdf = 67.29							// Zona A. 2014
+	local enighanio = 2010
+	local segpop = "segpop"
+}
+if `1' >= 2008 & `1' < 2010 {
+	local enigh = "ENIGH"
+	local betamin = 1							// ENIGH: 2.95
+	local altimir = "yes"
+	local SubsidioEmpleo = 41293000000			// Presupuesto de gastos fiscales (2014)
+	local udis = 5.1561230329  					// Promedio de valor de UDIS de enero a diciembre 2014
+	local smdf = 67.29							// Zona A. 2014
+	local enighanio = 2008
+	local segpop = "segpop"
+}
 
 
 ******************
@@ -2465,19 +2495,21 @@ scalar giniPIBF = string(`gini_ingbrutotot',"%5.3f")
 merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/`enighanio'/expenditures.dta", nogen keepus(gas_pc_*)
 merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/`enighanio'/consumption_categ_iva.dta", nogen keepus(IVA)
 merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/`enighanio'/consumption_categ_ieps.dta", nogen keepus(IEPS)
-merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'../BasesCIEP/INEGI/CONEVAL/2022/Base final/pobreza_20.dta", nogen keepus(ictpc)
 
 tempvar tot_integ
 egen `tot_integ' = count(edad), by(folioviv foliohog)
 
 * Deciles brutos SIMULADOR *
-replace ictpc = 0 if ictpc == .
-xtile decil = ictpc [pw=factor/`tot_integ'], n(10)
-xtile quintil = ictpc [pw=factor/`tot_integ'], n(5)
-xtile percentil = ictpc [pw=factor/`tot_integ'], n(100)
+egen double ing_decil_hog = sum(ingbrutotot), by(folioviv foliohog)
+g ing_decil_pc = ing_decil_hog/`tot_integ'
+
+xtile decil = ing_decil_pc [pw=factor/`tot_integ'], n(10)   // Ingreso per capita
+*xtile decil = ing_decil_hog [pw=factor/`tot_integ'], n(10) // Ingreso por hogar
+xtile quintil = ing_decil_pc [pw=factor/`tot_integ'], n(5)
+xtile percentil = ing_decil_pc [pw=factor/`tot_integ'], n(100)
 
 * Label values *
-label define decil 1 "I" 2 "II" 3 "III" 4 "IV" 5 "V" 6 "VI" 7 "VII" 8 "VIII" 9 "IX" 10 "X"
+label define decil 1 "I" 2 "II" 3 "III" 4 "IV" 5 "V" 6 "VI" 7 "VII" 8 "VIII" 9 "IX" 10 "X", modify
 label values decil decil
 
 label define quintil 1 "I" 2 "II" 3 "III" 4 "IV" 5 "V"
@@ -2526,25 +2558,25 @@ egen ImpuestosConsumoTOT = rsum(IVA IEPS ISAN Importaciones)
 
 *******************************
 *** Sankey: PIB demográfico ***
-/*******************************
+*******************************
 egen double Yl = rsum(ing_subor ing_mixtoL)
 label var Yl "Ingreso laboral"
-noisily Perfiles Yl [fw=factor], boot(25) reboot aniope(`enighanio') aniovp(`enighanio') title("Ingreso laboral")
+noisily Perfiles Yl [fw=factor], aniope(`enighanio') aniovp(`enighanio') title("Ingreso laboral")
 
 egen double Yk = rsum(ing_capital ing_mixtoK ing_estim_alqu gasto_anualDepreciacion)
 label var Yk "Ingreso de capital"
-noisily Perfiles Yk [fw=factor], boot(25) reboot aniope(`enighanio') aniovp(`enighanio') title("Ingreso de capital")
+noisily Perfiles Yk [fw=factor], aniope(`enighanio') aniovp(`enighanio') title("Ingreso de capital")
 
-noisily Perfiles gastoanualTOT [fw=factor], boot(25) reboot aniope(`enighanio') aniovp(`enighanio') title("Gasto anual total")
-noisily Perfiles ing_suborROW [fw=factor], boot(25) reboot aniope(`enighanio') aniovp(`enighanio') title("Ingreso laboral ROW")
+noisily Perfiles gastoanualTOT [fw=factor], aniope(`enighanio') aniovp(`enighanio') title("Gasto anual total")
+noisily Perfiles ing_suborROW [fw=factor], aniope(`enighanio') aniovp(`enighanio') title("Ingreso laboral ROW")
 
 g Ciclodevida = Yl + Yk + ing_remesas + ing_suborROW - gastoanualTOT
 label var Ciclodevida "ciclo de vida"
-noisily Perfiles Ciclodevida [fw=factor], boot(25) reboot aniope(`enighanio') aniovp(`enighanio') title("Ciclo de vida")
+noisily Perfiles Ciclodevida [fw=factor], aniope(`enighanio') aniovp(`enighanio') title("Ciclo de vida")
 
 g Ahorro = ingbrutotot + ing_capitalROW + ing_suborROW + ing_remesas ///
 	- gastoanualTOT - gasto_anualComprasN - gasto_anualGobierno
-noisily Perfiles Ahorro [fw=factor], boot(25) reboot aniope(`enighanio') aniovp(`enighanio') title("Ahorro")
+noisily Perfiles Ahorro [fw=factor], aniope(`enighanio') aniovp(`enighanio') title("Ahorro")
 label var Ahorro "ahorro"
 
 

@@ -199,7 +199,7 @@ quietly {
 			& edad != 100 & edad != 105
 		g zero = 0
 
-		if "$textbook" == "" {
+		if "$export" == "" {
 			local graphtitle "{bf:Pirámides demográficas}"
 			///local graphtitle "{bf:Population} pyramid"
 			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de CONAPO (2023)."
@@ -221,8 +221,8 @@ quietly {
 			///text(105 `=-`MaxH'[1,1]*.5' "{bf:Edad mediana}") ///
 			///text(97.5 `=-`MaxH'[1,1]*.5' "Hombres: `=`H`anioinicial''[1,1]'") ///
 			///text(90 `=-`MaxH'[1,1]*.5' "Mujeres: `=`M`anioinicial''[1,1]'") ///
-			text(`=(109-(`aniofinal'-`anioinicial'))/2' `=-`MaxH'[1,1]*.5' "{bf: Vivos en `aniofinal'}", size(huge) color(black)) ///
-			text(`=(109-(`aniofinal'-`anioinicial'))/2' `=`MaxH'[1,1]*.5' `"`=string(`Phoy'[1,1],"%20.0fc")'"', size(huge) color(black)) ///
+			text(`=(109-(`aniofinal'-`anioinicial'))/2' `=-`MaxH'[1,1]*.35' "{bf: Gens. vivas en `aniofinal'}", size(huge) color(black)) ///
+			text(`=(109-(`aniofinal'-`anioinicial'))/2' `=`MaxH'[1,1]*.35' `"`=string(`Phoy'[1,1],"%20.0fc")'"', size(huge) color(black)) ///
 			/*legend(label(1 "Men") label(2 "Women")) ///
 			text(105 `=`MaxH'[1,1]*.618' "{bf:Population}") ///
 			text(100 `=`MaxH'[1,1]*.618' `"`=string(`P`anioinicial''[1,1],"%20.0fc")'"') ///
@@ -246,10 +246,10 @@ quietly {
 			legend(label(1 "Hombres") label(2 "Mujeres")) ///
 			legend(off order(1 2) rows(1) region(margin(zero))) ///
 			yscale(noline) ylabel(none) xscale(noline) ///
-			text(`=((`aniofinal'-`anioinicial'))/2' `=-`MaxH'[1,1]*.5' "{bf: Por nacer}", size(huge) color(black)) ///
-			text(`=((`aniofinal'-`anioinicial'))/2' `=`MaxH'[1,1]*.5' `"`=string(`Pnacida'[1,1],"%20.0fc")'"', size(huge) color(black)) ///
-			text(`=(`aniofinal'-`anioinicial')+(109-(`aniofinal'-`anioinicial'))/2' `=-`MaxH'[1,1]*.5' "{bf: Vivos en `anioinicial'}", size(huge) color(black)) ///
-			text(`=(`aniofinal'-`anioinicial')+(109-(`aniofinal'-`anioinicial'))/2' `=`MaxH'[1,1]*.5' `"`=string(`Pviva'[1,1],"%20.0fc")'"', size(huge) color(black)) ///
+			text(`=((`aniofinal'-`anioinicial'))/2' `=-`MaxH'[1,1]*.35' "{bf: Por nacer}", size(huge) color(black)) ///
+			text(`=((`aniofinal'-`anioinicial'))/2' `=`MaxH'[1,1]*.35' `"`=string(`Pnacida'[1,1],"%20.0fc")'"', size(huge) color(black)) ///
+			text(`=(`aniofinal'-`anioinicial')+(109-(`aniofinal'-`anioinicial'))/2' `=-`MaxH'[1,1]*.35' "{bf: Vivos en `anioinicial'}", size(huge) color(black)) ///
+			text(`=(`aniofinal'-`anioinicial')+(109-(`aniofinal'-`anioinicial'))/2' `=`MaxH'[1,1]*.35' `"`=string(`Pviva'[1,1],"%20.0fc")'"', size(huge) color(black)) ///
 			///text(105 `=-`MaxH'[1,1]*.5' "{bf:Edad mediana}") ///
 			///text(97.5 `=-`MaxH'[1,1]*.5' "Hombres: `=`H`aniofinal''[1,1]'") ///
 			///text(90 `=-`MaxH'[1,1]*.5' "Mujeres: `=`M`aniofinal''[1,1]'") ///
@@ -389,7 +389,7 @@ quietly {
 		g `pob3560' = (pob3560 + pob1934 + pob18)/1000000
 		g `pob61' = (pob61 + pob3560 + pob1934 + pob18)/1000000
 
-		if "$textbook" == "" {
+		if "$export" == "" {
 			local graphtitle "{bf:Transici{c o'}n demogr{c a'}fica}"
 			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de CONAPO (2023)."
 		}
@@ -403,9 +403,9 @@ quietly {
 			(area `pob3560' anio if anio > `anioinicial', astyle(p2area)) ///
 			(area `pob1934' anio if anio > `anioinicial', astyle(p3area)) ///
 			(area `pob18' anio if anio > `anioinicial', astyle(p4area)), ///
-			///text(`y1' `x1' `"{bf:Max:} `=string(`MAX'[1,1],"%5.1fc")' % (`x1')"', place(s)) ///
+			text(`y1' `x1' `"{bf:Max:} `=string(`MAX'[1,1],"%5.1fc")' % (`x1')"', place(s)) ///
 			///text(`y1' `x1' `"{bf:<18:} `=string(pob18[`p1'],"%12.0fc")'"', place(n)) ///
-			///text(`y2' `x2' `"{bf:Max:} `=string(`MAX'[1,2],"%5.1fc")' % (`x2')"', place(s)) ///
+			text(`y2' `x2' `"{bf:Max:} `=string(`MAX'[1,2],"%5.1fc")' % (`x2')"', place(s)) ///
 			///text(`y2' `x2' `"{bf:19-34:} `=string(pob1934[`p2'],"%12.0fc")'"', place(n)) ///
 			text(`y3' `x3' `"{bf:Max:} `=string(`MAX'[1,3],"%5.1fc")' % (`x3')"', place(c) size(medlarge) color(black)) ///
 			///text(`y3' `x3' `"{bf:35-60:} `=string(pob3560[`p3'],"%12.0fc")'"', place(nw)) ///
@@ -415,9 +415,9 @@ quietly {
 			///text(`z1' `m1' `"{bf:<18:} `=string(pob18[`q1'],"%12.0fc")'"', place(nw)) ///
 			text(`z2' `m2' `"{bf:Min:} `=string(`MAX'[2,2],"%5.1fc")' % (`m2')"', place(`place21') size(medlarge) color(black)) ///
 			///text(`z2' `m2' `"{bf:19-34:} `=string(pob1934[`q2'],"%12.0fc")'"', place(`place22')) ///
-			///text(`z3' `m3' `"{bf:Min:} `=string(`MAX'[2,3],"%5.1fc")' % (`m3')"', place(s)) ///
+			text(`z3' `m3' `"{bf:Min:} `=string(`MAX'[2,3],"%5.1fc")' % (`m3')"', place(s)) ///
 			///text(`z3' `m3' `"{bf:35-60:} `=string(pob3560[`q3'],"%12.0fc")'"', place(n)) ///
-			///text(`z4' `m4' `"{bf:Min:} `=string(`MAX'[2,4],"%5.1fc")' % (`m4')"', place(s)) ///
+			text(`z4' `m4' `"{bf:Min:} `=string(`MAX'[2,4],"%5.1fc")' % (`m4')"', place(s)) ///
 			///text(`z4' `m4' `"{bf:61+:} `=string(pob61[`q4'],"%12.0fc")'"', place(n)) ///
 			text(`=`POBTOT'[1,1]/1000000*.015' `=`anioinicial'-.5' "{bf:`anioinicial'}", place(nw)) ///
 			xtitle("") ///
@@ -457,7 +457,7 @@ quietly {
 		noisily di _newline in g " Año con mayor tasa de dependencia: " in y `aniotdmax'
 		noisily di in g " Año con menor tasa de dependencia: " in y `aniotdmin'
 
-		if "$textbook" == "" {
+		if "$export" == "" {
 			local graphtitle "{bf:Tasa de dependencia}"
 			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de CONAPO (2023)."
 		}
@@ -466,19 +466,17 @@ quietly {
 			local graphfuente ""
 		}
 
-		twoway (connected tasaDependencia anio if anio <= `anioinicial') ///
-			(connected tasaDependencia anio if anio > `anioinicial'), ///
+		twoway (connected tasaDependencia anio if anio >= `anioinicial' & anio <= `aniovp', mlabel(tasaDependencia) mlabcolor(black) mlabpos(12)) ///
+			(connected tasaDependencia anio if anio > `aniovp' & anio <= `aniofinal', mlabel(tasaDependencia) mlabcolor(black) mlabpos(12)), ///
 			title("`graphtitle'") ///
-			subtitle("${pais} `=entidad[1]'. Dependientes por c/100 personas en edad de trabajar") ///
+			///subtitle("${pais} `=entidad[1]'.") ///
 			caption("`graphfuente'") ///
 			xtitle("") ///
-			text(`=r(StatTotal)[2,1]' `aniotdmax' "`=string(r(StatTotal)[2,1],"%7.0fc")'", place(n) size(large) color(black)) ///
-			text(`=r(StatTotal)[1,1]' `aniotdmin' "`=string(r(StatTotal)[1,1],"%7.0fc")'", place(n) size(large) color(black)) ///
 			text(`=tasaDependencia[_N]' `=anio[_N]' "`=string(tasaDependencia[_N],"%7.0fc")'", place(n) size(large) color(black)) ///
-			xlabel(`aniofirst'(10)`=anio[_N]') ///
-			ytitle("") ///
+			xlabel(`=round(`anioinicial',5)'(5)`=round(`aniofinal',5)') ///
+			ytitle("Dependientes por c/100 personas en edad de trabajar") ///
 			///ylabel(, format(%10.0fc)) ///
-			xline(`=`anioinicial'+.5') ///
+			xline(`=`aniovp'+.5') ///
 			legend(off label(1 "Observado") label(2 "Proyectado") region(margin(zero)) rows(1)) ///
 			name(T_`anioinicial'_`aniofinal'_`entidadGName', replace)
 

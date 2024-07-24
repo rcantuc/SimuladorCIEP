@@ -11,7 +11,7 @@
 // graphsize 	x 			5.5
 // graphsize 	y 			4
 graphsize 	x 			16
-graphsize 	y 			7
+graphsize 	y 			5
 
 
 
@@ -37,7 +37,7 @@ color 		legend			white
 
 
 // Added text and lines
-gsize 		text_option 		medium
+gsize 		text_option 		large
 color 		text_option		black
 clockdir 	text_option		12
 
@@ -85,11 +85,11 @@ yesno 		draw_major_nlt_vgrid 	yes
 
 // Axis
 color		tick			"52,70,78"
-color      	tick_label		"114,113,118"
+color      	tick_label		"111,111,111"
 gsize      	tick_label		small
-color 		tick_biglabel 		"114,113,118"
+color 		tick_biglabel 		"111,111,111"
 gsize		tick_biglabel		small
-color 		axis_title 		"114,113,118"
+color 		axis_title 		"111,111,111"
 gsize		axis_title		small
 
 axisstyle 	vertical_default 	vertical_nolinetick
@@ -130,9 +130,12 @@ relsize 	bar_subgroupgap		0
 
 // Símbolos
 symbol 		p 			circle
-symbolsize 	p			vhuge
+symbolsize 	p			small
 color      	refmarker		red
 linewidth  	refmarker		vvvthick
+linepattern 	p			dot
+
+
 
 // Grosor
 linewidth 	p1mark			none

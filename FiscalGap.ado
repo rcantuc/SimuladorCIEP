@@ -15,8 +15,6 @@ quietly {
 
 
 
-
-
 	*************
 	***       ***
 	**# 1 PIB ***
@@ -32,8 +30,6 @@ quietly {
 
 
 
-
-
 	****************
 	***          ***
 	**# 2 SHRFSP ***
@@ -42,8 +38,6 @@ quietly {
 	SHRFSP, anio(`anio') nographs //update
 	tempfile shrfsp
 	save `shrfsp'
-
-
 
 
 
@@ -68,15 +62,12 @@ quietly {
 
 
 
-
-
 	******************************
 	***                        ***
 	**# 4 Fiscal Gap: Ingresos ***
 	***                        ***
 	******************************
 
-	***********************************************
 	** 4.1 Información histórica de los ingresos **
 	LIF if divLIF != 10, anio(`anio') nographs by(divSIM) min(0) desde(`desde') //eofp //ilif
 	local divSIM = r(divSIM)
@@ -98,13 +89,11 @@ quietly {
 	decode divSIM, g(divCIEP)
 	replace divCIEP = strtoname(divCIEP)
 
-
-	*******************************************
 	** 4.2 Proyección futura de los ingresos **
 	g modulo = ""
 	foreach k of local divSIM {
 		preserve
-		use `"`c(sysdir_personal)'/SIM/bootstraps/1/`k'REC.dta"', clear
+		use `"`c(sysdir_personal)'/users/ciepmx/bootstraps/1/`k'REC.dta"', clear
 		collapse estimacion contribuyentes, by(anio modulo aniobase)
 		tsset anio
 
@@ -113,7 +102,7 @@ quietly {
 		replace estimacion = `estimacion'/L.`estimacion'*       /// Cambio demográfico (PerfilesSim.do)
 			(scalar(`k'))/100*scalar(pibY)*                     /// Estimación como % del PIB (TasasEfectivas.ado)
 			(1+``k'C'/100)^(anio-`anio')                        /// Tendencia de largo plazo (LIF.ado)
-			if anio >= `anio'
+			if anio > `anio'
 
 		g divCIEP = `"`=strtoname("`k'")'"'
 
@@ -124,8 +113,6 @@ quietly {
 		merge 1:1 (anio divCIEP) using  ``k'', nogen update replace
 	}
 
-
-	*************************
 	** 4.3 Actualizaciones **
 	collapse (sum) recaudacion estimacionRecaudacion=estimacion if anio <= `end', by(anio divCIEP) fast
 	merge m:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda Poblacion*) update keep(matched)
@@ -133,6 +120,7 @@ quietly {
 	replace estimacionRecaudacion = estimacionRecaudacion*deflator*lambda
 	replace recaudacion = 0 if recaudacion == .
 	replace estimacionRecaudacion = 0 if estimacionRecaudacion == .
+	format estimacion* %20.0fc
 
 	g recaudacion_pib = recaudacion/pibY*100 				
 	g estimacionRecaudacion_pib = estimacionRecaudacion/pibY*100 
@@ -271,7 +259,7 @@ quietly {
 
 	*********************************************
 	** 5.1 Información histórica de los gastos **
-	PEF if transf_gf == 0 & anio >= `desde' & divCIEP != "Cuotas ISSSTE", anio(`anio') by(divCIEP) nographs desde(`desde')
+	PEF if transf_gf == 0 & anio >= `desde', anio(`anio') by(divCIEP) nographs desde(`desde')
 	local divCIEP "`=r(divCIEP)' IngBasico"
 	local divCIEP = subinstr("`divCIEP'","á","a",.)
 	local divCIEP = subinstr("`divCIEP'","é","e",.)
@@ -302,9 +290,9 @@ quietly {
 	** 5.2 Proyección futura de los gastos **
 	g modulo = ""
 	foreach k of local divCIEP {
-		if `"`=strtoname("`k'")'"' != "Costo_de_la_deuda" {
+		if `"`=strtoname("`k'")'"' != "Costo_de_la_deuda" & `"`=strtoname("`k'")'"' != "Cuotas_ISSSTE" {
 			preserve
-			use `"`c(sysdir_personal)'/SIM/bootstraps/1/`=strtoname("`k'")'REC.dta"', clear
+			use `"`c(sysdir_personal)'/users/ciepmx/bootstraps/1/`=strtoname("`k'")'REC.dta"', clear
 			collapse estimacion contribuyentes, by(anio modulo aniobase)
 			tsset anio
 			
@@ -313,7 +301,7 @@ quietly {
 			replace estimacion = `estimacion'/L.`estimacion'*     /// Cambio demográfico
 				`HH`=strtoname("`k'")''[1,1]* 			          /// Gasto total (GastoPC.ado)
 				(1+``=strtoname("`k'")'C'/100)^(anio-`anio')      /// Tendencia de largo plazo (PEF.ado)
-				if anio >= `anio'
+				if anio > `anio'
 
 			g divCIEP = `"`=strtoname("`k'")'"'
 
@@ -331,6 +319,7 @@ quietly {
 	collapse (sum) gasto estimacionGasto=estimacion if anio <= `end', by(anio divCIEP) fast
 	merge m:1 (anio) using `PIB', nogen keepus(indiceY pibY* deflator lambda currency Poblacion*) keep(matched) update
 
+	replace estimacionGasto = gasto if divCIEP == "Cuotas_ISSSTE"
 	replace estimacionGasto = estimacionGasto*deflator*lambda
 	replace gasto = 0 if gasto == .
 	replace estimacionGasto = 0 if estimacionGasto == .
@@ -339,7 +328,7 @@ quietly {
 	g estimacionGasto_pib = estimacionGasto/pibY*100
 
 	g divSIM = subinstr(divCIEP,"_"," ",.)
-	replace divSIM = "Otros gastos" if divSIM == "IngBasico" | divSIM == "Part y otras Apor"
+	replace divSIM = "Otros gastos" if divSIM == "IngBasico" | divSIM == "Part y otras Apor" | divSIM == "Cuotas ISSSTE"
 	replace divSIM = "Pensiones" if divSIM == "Pension AM"
 
 
@@ -458,7 +447,7 @@ quietly {
 	tsset anio
 
 	* Reemplazar tasaEfectiva con la media artimética desde el año `desde' *
-	noisily tabstat tasaEfectiva if anio <= `anio' & anio >= `desde', save
+	tabstat tasaEfectiva if anio <= `anio' & anio >= `desde', save
 	tempname tasaEfectiva_ari
 	matrix `tasaEfectiva_ari' = r(StatTotal)
 	replace tasaEfectiva = r(StatTotal)[1,1] if anio >= `anio'
@@ -466,22 +455,21 @@ quietly {
 
 	* Reemplazar Costo_de_la_deuda con el escalar gascosto si fue provisto desde los parámetros en SIM.do *
 	g gastoCosto_de_la_deuda = costodeudaInterno + costodeudaExterno
+	g estimacionCosto_de_la_deuda = gastoCosto_de_la_deuda if gastoCosto_de_la_deuda != .
+	format estimacion* %20.0fc
 	capture confirm scalar gascosto
 	if _rc == 0 {
-		g estimacionCosto_de_la_deuda = scalar(gascosto)*Poblacion if anio == `anio'
+		replace estimacionCosto_de_la_deuda = scalar(gascosto)*Poblacion if anio == `anio'
 		replace gastoCosto_de_la_deuda = estimacionCosto_de_la_deuda if anio == `anio'
-
-		replace estimacionGasto = estimacionGasto + estimacionCosto_de_la_deuda if anio == `anio'
-		replace estimacionGasto_pib = estimacionGasto_pib + estimacionCosto_de_la_deuda/pibY*100 if anio == `anio'
+		replace estimacionGasto_pib = estimacionGasto_pib/pibY*100 if anio == `anio'
 
 		* Reestimar la tasa efectiva para el año `anio' *
 		replace tasaEfectiva = gastoCosto_de_la_deuda/L.shrfsp*100 if anio == `anio'
 		format %20.0fc *Costo_de_la_deuda
 	}
-	//noisily tabstat gasto_pib estimacionGasto_pib if anio >= `aniomin', stat(sum) by(anio) save
 
 	* Reemplazar tasasEfectivas con el escalar tasasEfectiva si fue provisto desde los parámetros en SIM.do *
-	capture confirm existence `=scalar(tasaEfectiva)'
+	capture confirm scalar tasaEfectiva
 	if _rc == 0 {
 		replace tasaEfectiva = scalar(tasaEfectiva) if anio >= `anio'
 	}
@@ -504,12 +492,10 @@ quietly {
 	replace shrfspExternoUSD = shrfspExterno/tipoDeCambio
 
 	g efectoTipoDeCambio = shrfspExternoUSD*(tipoDeCambio-L.tipoDeCambio)
-	g difshrfsp = shrfsp - L.shrfsp - efectoTipoDeCambio + rfsp if anio >= 2009
+	g difshrfsp = shrfsp - L.shrfsp - efectoTipoDeCambio - rfsp if anio >= 2009
 	format shrfspExternoUSD efectoTipoDeCambio difshrfsp %20.0fc
 
 	* Efecto acumulado del tipo de cambio y los rfsp *
-	replace rfsp = -rfsp
-	replace rfspBalance = -rfspBalance
 	tabstat efectoTipoDeCambio rfsp difshrfsp if anio >= 2009, stat(sum) f(%20.0fc) save
 	tempname ACT
 	matrix `ACT' = r(StatTotal)
@@ -533,37 +519,37 @@ quietly {
 	local shrfspobslast = shrfsp[`obslast']/pibY[`obslast']*100
 
 	* Actualizacion de los saldos *
-	local actualizacion_geo = (((shrfsp[`obslast']-shrfsp[`obsfirs'])/(`ACT'[1,1]+`ACT'[1,2]))^(1/(`obslast'-`obsfirs'))-1)*100
-	g actualizacion = `actualizacion_geo'
+	local actualizacion_geo = 0 // (((shrfsp[`obslast']-shrfsp[`obsfirs'])/(`ACT'[1,1]+`ACT'[1,2]))^(1/(`obslast'-`obsfirs'))-1)*100
+	g actualizacion = 0 // `actualizacion_geo'
 
 	* Otros rfsp (% del PIB) *
 	foreach k of varlist rfspPIDIREGAS rfspIPAB rfspFONADIN rfspDeudores rfspBanca rfspAdecuaciones {
-		g `k'_pib = -`k'/pibY*100 //deflator
+		g `k'_pib = `k'/pibY*100 //deflator
 		replace `k'_pib = L.`k'_pib if `k'_pib == .
-		replace `k' = -`k'_pib/100*pibY if `k' == . //deflator
+		replace `k' = `k'_pib/100*pibY if `k' == . //deflator
 	}
 
 
 	**********************************************************
 	** 5.5 Iteraciones para el costo financiero de la deuda **
-	forvalues k = `=`anio'+1'(1)`=anio[_N]' {
+	forvalues k = `=`anio''(1)`=anio[_N]' {
 
 		* Costo de la deuda *
-		replace estimacionCosto_de_la_deuda = tasaEfectiva/100*L.shrfsp if anio == `k'
+		*replace estimacionCosto_de_la_deuda = tasaEfectiva/100*L.shrfsp if anio == `k'
 		replace estimacionGasto = estimacionGasto + estimacionCosto_de_la_deuda if anio == `k'
 
 		* RFSP *
-		replace rfspBalance = estimacionGasto - estimacionRecaudacion if anio == `k'
+		replace rfspBalance = estimacionRecaudacion - estimacionGasto if anio == `k'
 		replace rfsp = rfspBalance + rfspPIDIREGAS + rfspIPAB + rfspFONADIN + rfspDeudores + rfspBanca + rfspAdecuaciones if anio == `k'
 
 		* SHRFSP *
 		replace shrfspExternoUSD = L.shrfspExterno/L.tipoDeCambio if anio == `k'
 		replace efectoTipoDeCambio = shrfspExternoUSD*(tipoDeCambio-L.tipoDeCambio)
 
-		replace shrfspExterno = L.shrfspExterno*(1+`actualizacion_geo'/100*0) + efectoTipoDeCambio ///
-			+ rfsp*L.shrfspExterno/L.shrfsp if anio == `k'
-		replace shrfspInterno = L.shrfspInterno*(1+`actualizacion_geo'/100*0) ///
-			+ rfsp*L.shrfspInterno/L.shrfsp if anio == `k'
+		replace shrfspExterno = L.shrfspExterno*(1+`actualizacion_geo'/100) + efectoTipoDeCambio ///
+			- rfsp*L.shrfspExterno/L.shrfsp if anio == `k'
+		replace shrfspInterno = L.shrfspInterno*(1+`actualizacion_geo'/100) ///
+			- rfsp*L.shrfspInterno/L.shrfsp if anio == `k'
 
 		replace shrfsp = shrfspExterno + shrfspInterno if anio == `k'
 	}

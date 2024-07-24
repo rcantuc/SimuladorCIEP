@@ -573,7 +573,7 @@ quietly {
 	
 		graph save gastos`by'PIB "`c(sysdir_personal)'/SIM/graphs/gastos`by'PIB", replace
 		if "$export" != "" {
-			graph export "$export/ingresos`by'.png", as(png) name("ingresos`by'") replace
+			graph export "$export/gastos`by'PIB.png", as(png) name("gastos`by'PIB") replace
 		}
 		*restore
 	}
@@ -1056,10 +1056,10 @@ program define UpdatePEF
 	*************************************
 	** 4.6 Inversión e Infraestructura **
 	replace divCIEP = "Otras inversiones" if divCIEP == "" ///
-		& (desc_tipogasto == 4 | desc_tipogasto == 5 | desc_tipogasto == 6)
+		& (desc_tipogasto == 4 | desc_tipogasto == 5 | desc_tipogasto == 6 | desc_tipogasto == 7 | desc_tipogasto == 8)
 
 	replace divSIM = "Inversión" ///
-		if (desc_tipogasto == 4 | desc_tipogasto == 5 | desc_tipogasto == 6)
+		if (desc_tipogasto == 4 | desc_tipogasto == 5 | desc_tipogasto == 6 | desc_tipogasto == 7 | desc_tipogasto == 8)
 
 
 	**********************
@@ -1097,7 +1097,7 @@ program define UpdatePEF
 
 	**********************************
 	** 4.8 Economía de los cuidados **
-	replace divSIM = "Cuidados" if (ramo == 11 & pp == 312) | (ramo == 11 & pp == 31) ///
+	replace divSIM = "Cuidados" if divSIM == "" & (ramo == 11 & pp == 312) | (ramo == 11 & pp == 31) ///
 		| (ramo == 11 & pp == 66) ///
 		| (ramo == 20 & pp == 174) | (ramo == 51 & pp == 48) | (ramo == 50 & pp == 7) ///
 		| (ramo == 20 & pp == 241) ///

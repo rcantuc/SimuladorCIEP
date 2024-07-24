@@ -13,6 +13,7 @@
 *********************
 timer on 15
 if "`1'" == "" {
+	clear all
 	scalar anioenigh = 2022
 	local claveiva = "*2018"
 }
@@ -465,7 +466,7 @@ if _rc != 0 {
 ***  3. Integración consumo de hogares + individuos  ***
 ***                                                  ***
 ********************************************************
-foreach categ in categ categ_iva categ_ieps {
+foreach categ in categ categ_iva /*categ_ieps*/ {
 	capture confirm file "`c(sysdir_personal)'/SIM/`=anioenigh'/consumption_`categ'_pc.dta"
 	if _rc != 0 {
 	*if _rc == 0 {
@@ -519,36 +520,40 @@ foreach categ in categ categ_iva categ_ieps {
 		merge 1:m (folioviv foliohog) using "`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/`=anioenigh'/poblacion.dta", nogen keepus(numren edad sexo)
 		merge 1:1 (folioviv foliohog numren) using `gastoindividuos', nogen keepus(*_ind* proporcion*)
 		merge m:1 (folioviv foliohog) using "`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/`=anioenigh'/concentrado.dta", nogen keepus(factor)
-		merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'../BasesCIEP/INEGI/CONEVAL/2022/Base final/pobreza_20.dta", nogen keepus(ictpc)
-
-		sort folioviv foliohog numren
-		egen tot_integ = count(edad), by(folioviv foliohog)
-		replace ictpc = 0 if ictpc == .
-		xtile decil = ictpc [pw=factor/tot_integ], n(10)
-
-		*drop if folioviv == "0902784406"
+		merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/`=anioenigh'/households.dta", nogen keepus(decil tot_integ)
 
 		** 3.4 Gasto per cápita **
 		noisily di in g `"`categs'"'
 		foreach k of local categs {
-		*foreach k in Vehi {
+		*foreach k in Educ {
 			local k = strtoname("`k'")
-			foreach vars in gas_ cant_ {
+			foreach vars in cant_ gas_ {
 				if "`vars'" == "gas_" {
 					local title = "Gasto"
 				}
 				if "`vars'" == "cant_" {
 					local title = "Cantidad"
 				}
-
+				
+				* Gasto por hogar *
 				capture replace `vars'hog`k' = 0 if `vars'hog`k' == .
 				if _rc != 0 {
 					g `vars'hog`k' = 0
 				}
+
+				* Outliers *
+				tabstat `vars'hog`k' if `vars'hog`k' != 0, stat(p99 p95) save
+				g hogar_outlier = 1 if `vars'hog`k' >= r(StatTotal)[1,1] & r(StatTotal)[1,1] != r(StatTotal)[2,1]
+
+				* Gasto por individuo *
 				capture replace `vars'ind`k' = 0 if `vars'ind`k' == .
 				if _rc != 0 {
 					g `vars'ind`k' = 0
 				}
+				
+				* Outliers *
+				tabstat `vars'ind`k' if `vars'ind`k' != 0, stat(p99 p95) save
+				g ind_outlier = 1 if `vars'ind`k' >= r(StatTotal)[1,1] & r(StatTotal)[1,1] != r(StatTotal)[2,1]
 
 				g `vars'pc_`k' = `vars'hog`k'/tot_integ //+ `vars'ind`k'
 				local label = subinstr("`title' per cápita en `k'","_"," ",.)
@@ -558,12 +563,12 @@ foreach categ in categ categ_iva categ_ieps {
 				tempvar `vars'pc_`k'
 				g ``vars'pc_`k'' = `vars'pc_`k'
 				label var ``vars'pc_`k'' "`title' per cápita en `k' (original)"
-				noisily Perfiles ``vars'pc_`k'' [fw=factor] if ``vars'pc_`k'' != 0, reboot aniope(2022) boot(25)
+				*noisily Perfiles ``vars'pc_`k'' [fw=factor] if ``vars'pc_`k'' != 0 & hogar_outlier == . & ind_outlier == ., aniope(`=anioenigh')
 
 				* Iteraciones *
 				noisily di in y "`k': " _cont
-				local salto = 2
-				forvalues iter=1(1)25 {
+				local salto = 5
+				forvalues iter=1(1)50 {
 					noisily di in w "`iter' " _cont
 					forvalues edades=0(`salto')109 {
 						forvalues sexos=1(1)2 {
@@ -583,12 +588,12 @@ foreach categ in categ categ_iva categ_ieps {
 				}
 				replace `vars'pc_`k' = 0 if `vars'pc_`k' == .
 				replace `vars'pc_`k' = `vars'pc_`k' + `vars'ind`k'
-				*noisily Simulador `vars'pc_`k' [fw=factor], reboot aniope(2022)
-				noisily Perfiles `vars'pc_`k' [fw=factor] if ``vars'pc_`k'' != 0, reboot aniope(2022) title(`title' per cápita en `k') boot(25)
+				*noisily Perfiles `vars'pc_`k' [fw=factor] if `vars'pc_`k' != 0 & hogar_outlier == . & ind_outlier == ., aniope(`=anioenigh') title(`title' per cápita en `k')
 				capture g precio_`k' = gas_pc_`k'/cant_pc_`k'
+				drop *outlier
 			}
 			noisily di
-			noisily tabstat precio_`k' gas_pc_`k' cant_pc_`k' [fw=factor], stat(mean) f(%10.2fc)
+			tabstat precio_`k' gas_pc_`k' cant_pc_`k' [fw=factor], stat(mean) f(%10.2fc)
 		}
 
 		** 3.5 Coeficientes de consumo por edades **
@@ -967,7 +972,7 @@ reshape long gas_pc_ cant_pc_ proporcion, i(folioviv foliohog numren) j(categs) 
 replace gas_pc_ = gas_pc_*ConHog/MTot
 replace cant_pc_ = cant_pc_*ConHog/MTot
 g precio = gas_pc_/cant_pc_
-noisily tabstat precio gas_pc_ cant_pc_ [aw=factor], f(%20.0fc) by(categs)
+tabstat precio gas_pc_ cant_pc_ [aw=factor], f(%20.0fc) by(categs)
 
 
 ** 5.2. Cálculo del IVA **
@@ -1018,7 +1023,7 @@ save "`c(sysdir_personal)'/SIM/`=anioenigh'/consumption_categ_iva.dta", replace
 ***         ***
 *** 6. IEPS ***
 ***         ***
-***************
+/***************
 if `=anioenigh' >= 2014 {
 	matrix IEPST = (26.5	,		0 			\ /// Cervezas y licores
 				30.0	,		0 			\ /// Alcohol 14+ a 20
@@ -1109,7 +1114,7 @@ noisily di in g "  Total " ///
 
 collapse (sum) IEPS, by(folioviv foliohog numren)
 save "`c(sysdir_personal)'/SIM/`=anioenigh'/consumption_categ_ieps.dta", replace
-
+*/
 
 
 timer off 15

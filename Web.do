@@ -49,7 +49,7 @@ scalar anioenigh = 2022
 ** 1.1 Proyecciones demográficas **
 //forvalues anio = 1950(1)`=anioPE' {                         // <-- Año(s) de interés
 	//foreach entidad of global entidadesL {                  // <-- Nacional o para todas las entidades
-		//noisily Poblacion if entidad == "`entidad'", anioi(`=anioPE') aniofinal(2050) $update
+		//noisily Poblacion if entidad == "`entidad'", //anioi(2008) aniofinal(2050) $update
 	//}
 //}
 
