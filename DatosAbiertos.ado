@@ -58,7 +58,7 @@ quietly {
 	replace nombre = "Saldo histórico de los RFSP" if nombre == "Saldo hist?rico de los RFSP"
 	replace nombre = "Saldo histórico de los RFSP internos" if nombre == "Saldo hist?rico de los RFSP internos"
 	replace nombre = "Saldo histórico de los RFSP externos" if nombre == "Saldo hist?rico de los RFSP externos"
-	replace nombre = "Requerimientos financieros del sector público" if nombre == "Requerimientos financieros del sector p??blico federal (I+II)"
+	replace nombre = "Requerimientos financieros del sector público" if nombre == "Requerimientos financieros del sector p¿¿blico federal (I+II)"
 
 
 	*********************************
@@ -89,7 +89,8 @@ quietly {
 
 	g `crecreal' = (`montomill'/L12.`montomill'-1)*100
 
-	label define mes 1 "Enero" 2 "Febrero" 3 "Marzo" 4 "Abril" 5 "Mayo" 6 "Junio" 7 "Julio" 8 "Agosto" 9 "Septiembre" 10 "Octubre" 11 "Noviembre" 12 "Diciembre"
+	label define mes 1 "Enero" 2 "Febrero" 3 "Marzo" 4 "Abril" 5 "Mayo" 6 "Junio" ///
+		7 "Julio" 8 "Agosto" 9 "Septiembre" 10 "Octubre" 11 "Noviembre" 12 "Diciembre"
 	label values mes mes
 	local mesname : label mes `=mes[_N]'
 	local mesnameant : label mes `=mes[`=_N-1']'
@@ -157,6 +158,7 @@ quietly {
 
 		* Fuente *
 		if "$export" == "" {
+			local graphtitle `""{bf:`=nombre[1]'}"`textsize'"'
 			local graphfuente "Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP."
 		}
 		else {
@@ -164,16 +166,27 @@ quietly {
 		}
 
 		** 2.2 Gráfica por mes calendario **
+		local meses "Enero Febrero Marzo Abril Mayo Junio Julio Agosto Septiembre Octubre Noviembre Diciembre"
+		tokenize "`meses'"
 		tabstat `montomill' /*if anio >= 2008*/, stat(sum) by(mes) f(%20.0fc) save
-		graph bar (sum) `montomill', over(mes) over(anio) stack asyvar ///
-			legend(rows(1) size(large)) ///
+		forvalues k=1(1)12 {
+			label define mes `k' "``k'' (`=string(r(Stat`k')[1,1]/r(StatTotal)[1,1]*100,"%7.1fc")'%)", modify
+			local ++k
+		}
+		
+		graph bar (sum) monto_pib, over(mes) over(anio) stack asyvar ///
+			legend(rows(2) size(large)) ///
 			name(M`anything', replace) blabel(none) ///
-			ytitle("") ///
+			ytitle("% PIB") ///
 			yline(0, lcolor(black) lpattern(solid)) ///
-			title("{bf:`=nombre[1]'}"`textsize') ///
-			subtitle(" por mes calendario, millones de `=currency[1]' `aniovp'", margin(bottom)) ///
+			title(`graphtitle') ///
 			ylabel(, format(%15.0fc)) ///
-			caption("`graphfuente'") ///
+			note("Las cifras entre paréntesis representan la distribución promedio mensual desde 2008.") ///
+			caption("`graphfuente'")
+		capture confirm existence $export
+		if _rc == 0 {
+			graph export "$export/M`anything'.png", replace name(M`anything')
+		}
 
 
 		** 2.3 Gráfica por mes **
@@ -183,7 +196,7 @@ quietly {
 			subtitle(" `mesname', millones de `=currency[1]' `aniovp'", margin(bottom)) ///
 			ytitle("") ///
 			ylabel(none, format(%15.0fc)) ///
-			blabel(, format(%10.0fc) position(6) color("114 113 118") size(small)) legend(off) ///
+			blabel(, format(%10.0fc) position(6) color("111 111 111") size(small)) legend(off) ///
 			yline(0, lcolor(black) lpattern(solid)) ///
 			note("{c U'}ltimo dato: `last_anio'm`last_mes'.") ///
 			caption("`graphfuente'") ///
@@ -196,7 +209,7 @@ quietly {
 			ylabel(none, format(%15.0fc)) ///
 			title("{bf:`=nombre[1]'}"`textsize') ///
 			subtitle(`"Acumulado a `=lower("`mesname'")', millones de `=currency[1]' `aniovp'"', margin(bottom)) ///
-			blabel(, format(%10.0fc) position(6) color("114 113 118") size(small)) legend(off) ///
+			blabel(, format(%10.0fc) position(6) color("111 111 111") size(small)) legend(off) ///
 			yline(0, lcolor(black) lpattern(solid)) ///
 			note("{c U'}ltimo dato: `last_anio'm`last_mes'.") ///
 			caption("`graphfuente'")
@@ -259,9 +272,9 @@ quietly {
 				mlabel(`montomill') mlabpos(7) mlabcolor(white) mlabsize(small) msize(large) mlabangle(90)) ///
 			(bar `montomill' anio if anio >= `aniovp', mlabel(`montomill') mlabpos(7) mlabcolor(white) mlabsize(small) msize(large) mlabangle(90)) ///
 			(connected monto_pc anio if anio < `aniovp', ///
-				yaxis(2) pstyle(p1) mlabel(monto_pc) mlabpos(12) mlabcolor("114 113 118") mlabsize(small) lpattern(dot) msize(large)) ///
+				yaxis(2) pstyle(p1) mlabel(monto_pc) mlabpos(12) mlabcolor("111 111 111") mlabsize(small) lpattern(dot) msize(large)) ///
 			(connected monto_pc anio if anio >= `aniovp', ///
-				yaxis(2) pstyle(p2) mlabel(monto_pc) mlabpos(12) mlabcolor("114 113 118") mlabsize(small) lpattern(dot) msize(large)), ///
+				yaxis(2) pstyle(p2) mlabel(monto_pc) mlabpos(12) mlabcolor("111 111 111") mlabsize(small) lpattern(dot) msize(large)), ///
 			title("`graphtitle'"`textsize') ///
 			subtitle(" Montos reportados (millones MXN `aniovp') y por persona", margin(bottom)) ///
 			///b1title(`"`textografica'"') ///
@@ -290,9 +303,9 @@ quietly {
 				mlabel(`montomill') mlabpos(7) mlabcolor(white) mlabsize(small) msize(large) mlabangle(90)) ///
 			(bar `montomill' anio if anio >= `aniovp', mlabel(`montomill') mlabpos(7) mlabcolor(white) mlabsize(small) msize(large) mlabangle(90)) ///
 			(connected monto_pib anio if anio < `aniovp', ///
-				yaxis(2) pstyle(p1) mlabel(monto_pib) mlabpos(12) mlabcolor("114 113 118") mlabsize(small) lpattern(dot) msize(large)) ///
+				yaxis(2) pstyle(p1) mlabel(monto_pib) mlabpos(12) mlabcolor("111 111 111") mlabsize(small) lpattern(dot) msize(large)) ///
 			(connected monto_pib anio if anio >= `aniovp', ///
-				yaxis(2) pstyle(p2) mlabel(monto_pib) mlabpos(12) mlabcolor("114 113 118") mlabsize(small) lpattern(dot) msize(large)), ///
+				yaxis(2) pstyle(p2) mlabel(monto_pib) mlabpos(12) mlabcolor("111 111 111") mlabsize(small) lpattern(dot) msize(large)), ///
 			title("`graphtitle'"`textsize') ///
 			subtitle(" Montos reportados (millones MXN `aniovp') y como % del PIB", margin(bottom)) ///
 			///b1title(`"`textografica'"') ///

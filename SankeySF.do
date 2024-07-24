@@ -14,7 +14,7 @@ if "`1'" == "" {
 ***************************************
 *** 1 Sistema de Cuentas Nacionales ***
 ***************************************
-*SCN, anio(`2') nographs
+SCN, anio(`2') nographs
 
 
 

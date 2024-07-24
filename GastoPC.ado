@@ -25,7 +25,7 @@ quietly {
 
 	// 0.5 Define los inputs que este script acepta
 	// 0.5.1 ANIOvp y ANIOPE son enteros opcionales que por defecto son aniovp y aniope
-	syntax [, ANIOvp(int `aniovp') ANIOPE(int `aniope')]
+	syntax [, ANIOvp(int `aniovp') ANIOPE(int `aniope') EXCEL]
 
 	// 0.6 Muestra una cadena formateada
 	noisily di _newline(2) in g _dup(20) "." "{bf:   GASTO PÚBLICO per c{c a'}pita " in y `aniope' "   }" in g _dup(20) "."	
@@ -56,6 +56,8 @@ quietly {
 	else if `aniope' >= 2016 & `aniope' < 2018 scalar anioenigh = 2016
 	else if `aniope' >= 2014 & `aniope' < 2016 scalar anioenigh = 2014
 	else if `aniope' >= 2012 & `aniope' < 2014 scalar anioenigh = 2012
+	else if `aniope' >= 2010 & `aniope' < 2012 scalar anioenigh = 2010
+	else if `aniope' >= 2008 & `aniope' < 2010 scalar anioenigh = 2008
 
 	// Carga la base de datos de ENIGH correspondiente al año de referencia
 	capture use (folioviv foliohog numren factor edad decil grupoedad escol rural) using "`c(sysdir_personal)'/SIM/perfiles`aniope'.dta", clear
@@ -360,7 +362,7 @@ quietly {
 
 
 	** 3.12 Put excel **/
-	if "$export" != "" {
+	if "`excel'" == "excel" {
 		if `aniope' == 2014 {
 			local col "I"
 		}
@@ -666,7 +668,7 @@ quietly {
 
 
 	** 4.12 Put excel **
-	if "$export" != "" {
+	if "`excel'" == "excel" {
 		if `aniope' == 2014 {
 			local col "I"
 		}
@@ -685,7 +687,7 @@ quietly {
 		if `aniope' == 2024 {
 			local col "N"
 		}
-		putexcel set "`c(sysdir_personal)'/users/$id/Deciles.xlsx", modify sheet("Salud")
+		putexcel set "$export/Deciles.xlsx", modify sheet("Salud")
 		putexcel `col'17 = `=scalar(ssa)+scalar(imssbien)', nformat(number_sep)
 		putexcel `col'18 = `=scalar(imss)', nformat(number_sep)
 		putexcel `col'19 = `=scalar(issste)', nformat(number_sep)
@@ -865,7 +867,7 @@ quietly {
 
 
 	** 5.8 Put excel **/
-	if "$export" != "" {
+	if "`excel'" == "excel" {
 		if `aniope' == 2014 {
 			local col "I"
 		}

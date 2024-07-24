@@ -3,7 +3,7 @@ quietly {
 	timer on 7
 	syntax varname [if] [fweight/], ///
 		[BOOTstrap(int 1) ///
-		NOGraphs NOOutput REboot Noisily ///
+		NOGraphs NOOutput Noisily ///
 		BANDwidth(int 5) ///
 		MACro(string) ///
 		FOLIO(string) ///
@@ -97,34 +97,34 @@ quietly {
 	g `boot' = .
 
 	** 1.2 Directorios y archivos **
-	capture mkdir `"`c(sysdir_personal)'/SIM/graphs/"'
-	capture mkdir `"`c(sysdir_personal)'/SIM/bootstraps/"'
-	capture mkdir `"`c(sysdir_personal)'/SIM/bootstraps/`bootstrap'"'
+	capture mkdir `"`c(sysdir_personal)'/users/$id/graphs/"'
+	capture mkdir `"`c(sysdir_personal)'/users/$id/bootstraps/"'
+	capture mkdir `"`c(sysdir_personal)'/users/$id/bootstraps/`bootstrap'"'
 
 
 	** 1.2.1 Información per cápita **
 	* Output: `varlist'PC.dta *
 	postfile PC2 double(estimacion contribuyentes poblacion montopc hombrespc mujerespc pob0_18pc pob19_64pc pob65pc) ///
-		using `"`c(sysdir_personal)'/SIM/bootstraps/`bootstrap'/`varlist'PC2"', replace
+		using `"`c(sysdir_personal)'/users/$id/bootstraps/`bootstrap'/`varlist'PC2"', replace
 
 
 	** 1.2.2. Información por edad y sexo **
 	* Output: `varlist'PERF.dta *
 	postfile PERF edad double(perfil1 perfil2 contribuyentes1 contribuyentes2 estimacion1 estimacion2 ///
 		pobcont1 pobcont2 poblacion1 poblacion2) ///
-		using `"`c(sysdir_personal)'/SIM/bootstraps/`bootstrap'/`varlist'PERF"', replace
+		using `"`c(sysdir_personal)'/users/$id/bootstraps/`bootstrap'/`varlist'PERF"', replace
 
 
 	** 1.2.3. Incidencia por hogares **
 	* Output: `varlist'INCI.dta *
 	postfile INCI decil double(xhogar distribucion incidencia hogares) ///
-		using `"`c(sysdir_personal)'/SIM/bootstraps/`bootstrap'/`varlist'INCI"', replace
+		using `"`c(sysdir_personal)'/users/$id/bootstraps/`bootstrap'/`varlist'INCI"', replace
 
 
 	** 1.2.4. Ciclo de vida **
 	* Output: `varlist'CICLO.dta *
 	postfile CICLO bootstrap sexo edad decil double(poblacion `varlist') ///
-		using `"`c(sysdir_personal)'/SIM/bootstraps/`bootstrap'/`varlist'CICLO"', replace
+		using `"`c(sysdir_personal)'/users/$id/bootstraps/`bootstrap'/`varlist'CICLO"', replace
 
 
 	** 1.2.5. Proyecciones demográficas de recaudación/gasto **
@@ -135,7 +135,7 @@ quietly {
 		contribuyentes_Hom contribuyentes_Muj ///
 		contribuyentes_0_24 contribuyentes_25_49 ///
 		contribuyentes_50_74 contribuyentes_75_mas) ///
-		using `"`c(sysdir_personal)'/SIM/bootstraps/`bootstrap'/`varlist'REC"', replace
+		using `"`c(sysdir_personal)'/users/$id/bootstraps/`bootstrap'/`varlist'REC"', replace
 
 
 
@@ -200,7 +200,7 @@ quietly {
 	**************************
 	*** 2 Monto per capita ***
 	**************************
-	use `"`c(sysdir_personal)'/SIM/bootstraps/`bootstrap'/`varlist'PC2"', clear
+	use `"`c(sysdir_personal)'/users/$id/bootstraps/`bootstrap'/`varlist'PC2"', clear
 
 
 	***********************************
@@ -211,23 +211,32 @@ quietly {
 
 
 	* Guardar en Excel *
-	if `aniope' == 2014 {
+	if `aniope' == 2008 {
 		local col = "B"
 	}
-	if `aniope' == 2016 {
+	if `aniope' == 2010 {
 		local col = "C"
 	}
-	if `aniope' == 2018 {
+	if `aniope' == 2012 {
 		local col = "D"
 	}
-	if `aniope' == 2020 {
+	if `aniope' == 2014 {
 		local col = "E"
 	}
-	if `aniope' == 2022 {
+	if `aniope' == 2016 {
 		local col = "F"
 	}
-	if `aniope' == 2024 {
+	if `aniope' == 2018 {
 		local col = "G"
+	}
+	if `aniope' == 2020 {
+		local col = "H"
+	}
+	if `aniope' == 2022 {
+		local col = "I"
+	}
+	if `aniope' == 2024 {
+		local col = "J"
 	}
 
 	ci means hombrespc
@@ -235,7 +244,7 @@ quietly {
 	* Guardar en Excel *
 	if "`excel'" == "excel" {
 		local j = 12
-		putexcel set "`c(sysdir_personal)'/SIM/Deciles.xlsx", modify sheet("`varlist'")
+		putexcel set "`c(sysdir_personal)'/users/$id/Deciles.xlsx", modify sheet("`varlist'")
 		putexcel A`j' = "Hombres"
 		putexcel `col'`j' = `=r(mean)', nformat(number_sep)
 
@@ -287,7 +296,7 @@ quietly {
 	******************
 	*** 3 Perfiles ***
 	/******************
-	use `"`c(sysdir_personal)'/SIM/bootstraps/`bootstrap'/`varlist'PERF"', clear
+	use `"`c(sysdir_personal)'/users/$id/bootstraps/`bootstrap'/`varlist'PERF"', clear
 
 
 	*************************
@@ -390,17 +399,17 @@ quietly {
 	}
 
 	if "$nographs" != "nographs" & "`nographs'" != "nographs" {
-		graph save PerfilH`varlist' `"`c(sysdir_personal)'/SIM/graphs/PerfilH`varlist'"', replace
-		graph save PerfilM`varlist' `"`c(sysdir_personal)'/SIM/graphs/PerfilM`varlist'"', replace
-		graph save ContH`varlist' `"`c(sysdir_personal)'/SIM/graphs/ContH`varlist'"', replace
-		graph save ContH`varlist' `"`c(sysdir_personal)'/SIM/graphs/ContH`varlist'"', replace
+		graph save PerfilH`varlist' `"`c(sysdir_personal)'/users/$id/graphs/PerfilH`varlist'"', replace
+		graph save PerfilM`varlist' `"`c(sysdir_personal)'/users/$id/graphs/PerfilM`varlist'"', replace
+		graph save ContH`varlist' `"`c(sysdir_personal)'/users/$id/graphs/ContH`varlist'"', replace
+		graph save ContH`varlist' `"`c(sysdir_personal)'/users/$id/graphs/ContH`varlist'"', replace
 	}
 
 
 	**********************/
 	*** 4. Incidencia *****
 	***********************
-	use `"`c(sysdir_personal)'/SIM/bootstraps/`bootstrap'/`varlist'INCI"', clear
+	use `"`c(sysdir_personal)'/users/$id/bootstraps/`bootstrap'/`varlist'INCI"', clear
 	format xhogar %15.1fc
 	format distribucion %6.1fc
 	format incidencia %6.1fc
@@ -422,25 +431,34 @@ quietly {
 
 		* Guardar en Excel *
 		if "`excel'" == "excel" {
-			if `aniope' == 2014 {
+			if `aniope' == 2008 {
 				local col = "B"
 			}
-			if `aniope' == 2016 {
+			if `aniope' == 2010 {
 				local col = "C"
 			}
-			if `aniope' == 2018 {
+			if `aniope' == 2012 {
 				local col = "D"
 			}
-			if `aniope' == 2020 {
+			if `aniope' == 2014 {
 				local col = "E"
 			}
-			if `aniope' == 2022 {
+			if `aniope' == 2016 {
 				local col = "F"
 			}
-			if `aniope' == 2024 {
+			if `aniope' == 2018 {
 				local col = "G"
 			}
-			putexcel set "`c(sysdir_personal)'/SIM/Deciles.xlsx", modify sheet("`varlist'")
+			if `aniope' == 2020 {
+				local col = "H"
+			}
+			if `aniope' == 2022 {
+				local col = "I"
+			}
+			if `aniope' == 2024 {
+				local col = "J"
+			}
+			putexcel set "`c(sysdir_personal)'/users/$id/Deciles.xlsx", modify sheet("`varlist'")
 			putexcel A1 = "Decil"
 			if "`decil2'" == "Nac" {
 				local j = 17
@@ -508,7 +526,7 @@ quietly {
 	***********************/
 	*** 5. CICLO DE VIDA ***
 	************************
-	use `"`c(sysdir_personal)'/SIM/bootstraps/`bootstrap'/`varlist'CICLO"', clear
+	use `"`c(sysdir_personal)'/users/$id/bootstraps/`bootstrap'/`varlist'CICLO"', clear
 
 	* Labels *
 	label define deciles 1 "I" 2 "II" 3 "III" 4 "IV" 5 "V" 6 "VI" 7 "VII" 8 "VIII" 9 "IX" 10 "X" 11 "Nac"
@@ -558,7 +576,7 @@ quietly {
 	**********************
 	*** 6. RECAUDACION ***
 	**********************
-	use `"`c(sysdir_personal)'/SIM/bootstraps/`bootstrap'/`varlist'REC"', clear
+	use `"`c(sysdir_personal)'/users/$id/bootstraps/`bootstrap'/`varlist'REC"', clear
 	forvalues k=1(1)`=_N' {
 		if anio[`k'] == aniobase[`k'] {
 			local ajuste = `REC'[1,1]/estimacion[`k']
@@ -566,7 +584,7 @@ quietly {
 		}
 	}
 	replace estimacion = estimacion*`ajuste'
-	save `"`c(sysdir_personal)'/SIM/bootstraps/`bootstrap'/`varlist'REC"', replace
+	save `"`c(sysdir_personal)'/users/$id/bootstraps/`bootstrap'/`varlist'REC"', replace
 
 	ProyGraph `varlist' `aniope' `bootstrap' `nographs'
 
@@ -581,13 +599,13 @@ quietly {
 			title("{bf:`title'}") ///
 			subtitle(" Perfil etario (MXN `aniovp') y proyección demográfica (% PIB)", margin(bottom)) ///
 			caption("Fuente: Elaborado por el CIEP, con información de INEGI/`base', INEGI/BIE, CONAPO y SHCP.") ///
-			note(`"Nota: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n en cada grupo."') ///
+			note(`"Nota: Los porcentajes representan la concentración de cada grupo."') ///
 			///title("`title' {bf:profile}") ///
 			///subtitle(" Age profile (MXN `aniovp') and demographic projection (% GDP)", margin(bottom)) ///
 			///caption("{bf:Source}: Prepared by CIEP, using data from `base'.") ///
 			///note(`"{bf:Note}: Percentages in parentheses show the concentration in each group."')
 
-		graph save `=substr("`varlist'",1,10)'_`aniope' `"`c(sysdir_personal)'/SIM/graphs/`varlist'_`aniope'.gph"', replace
+		graph save `=substr("`varlist'",1,10)'_`aniope' `"`c(sysdir_personal)'/users/$id/graphs/`varlist'_`aniope'.gph"', replace
 		if "$export" != "" {
 			graph export `"$export/`varlist'_`aniope'.png"', replace name(`=substr("`varlist'",1,10)'_`aniope')
 		}
@@ -887,10 +905,13 @@ program define ProyGraph
 	local currency = currency[1]
 	local anio = r(aniovp)
 
-	use `"`c(sysdir_personal)'/SIM/bootstraps/`bootstrap'/`varlist'REC.dta"', clear
-	merge m:1 (anio) using `PIB', nogen
+	use `"`c(sysdir_personal)'/users/$id/bootstraps/`bootstrap'/`varlist'REC.dta"', clear
+	merge m:1 (anio) using `PIB', nogen keep(matched)
 
 	local title = modulo[1]
+	local anioi = anio[1]
+	local aniof = 2040 // anio[_N]
+	keep if anio <= `aniof'
 	
 	*replace estimacion = estimacion*lambda/1000000000000
 	format estimacion %20.0fc
@@ -921,15 +942,15 @@ program define ProyGraph
 			matrix `MAX' = J(1,1,0)
 		}
 
-		tabstat estimacion if anio == 2070, stat(max) save
+		tabstat estimacion if anio == `aniof', stat(max) save
 		tempname LAST
 		matrix `LAST' = r(StatTotal)
 
 		if "$nographs" != "nographs" & "`nographs'" != "nographs" {
 			twoway (connected estimacion anio, lpattern(dot) msize(small)) ///
 				(connected estimacion anio if anio == `aniohoy', mlabel(estimacion) mlabposition(12) mlabcolor("114 113 118")) ///
-				(connected estimacion anio if anio == `aniomax', mlabel(estimacion) mlabposition(12) mlabcolor("114 113 118")) ///
-				if anio > 2020, ///
+				(connected estimacion anio if anio == `aniof', mlabel(estimacion) mlabposition(12) mlabcolor("114 113 118")) ///
+				/*if anio > 2020*/, ///
 				///ytitle("billones `currency' `aniovp'") ///
 				///ytitle("% PIB") ///
 				///subtitle("Proyección demográfica, billones MXN `aniovp'") ///
@@ -938,15 +959,14 @@ program define ProyGraph
 				///yscale(range(0)) /*ylabel(0(1)4)*/ ///
 				ylabel(#5, format(%5.2fc) labsize(small)) ///
 				yscale(range(0)) ///
-				xlabel(2020(10)`=anio[_N]' `aniohoy', labsize(small)) ///
+				xlabel(`=round(`anioi',5)'(5)`=round(`aniof',5)' `aniohoy', labsize(small)) ///
 				xtitle("") ///
 				legend(off) ///
 				xline(`aniohoy', lpattern(dot)) ///
-				xline(`aniomax', lpattern(dot)) ///
 				///yline(0, lpattern(solid) lcolor(black)) ///
 				///text(`=`estimacionmax'*.05' `aniomax' "Este perfil, junto con" "las proyecciones demográficas," "obtiene un {bf:máximo en `aniomax'}.", size(medsmall) place(11) justification(right)) ///
 				///text(`=`estimacionmax'*.05' `aniomax' "This age profile, along with" "CONAPO's demographic projections," "reaches a maximum in {bf:`aniomax'}.", size(medsmall) place(11) justification(right)) ///
-				text(`=`estimacionvp'*0.25' `aniohoy' "De `aniohoy' a 2070,"  "la demanda cambiaría" `"en {bf:`=string((`LAST'[1,1]/`estimacionvp'-1)*100,"%5.2f")'%}."', size(medsmall) place(1) justification(left)) ///
+				text(`=`estimacionvp'*0' `=round(`aniof',5)' "De `aniohoy' a `aniof',"  "el cambio sería" `"de {bf:`=string((`LAST'[1,1]/`estimacionvp'-1)*100,"%5.2f")'%}."', size(medsmall) place(11) justification(right)) ///
 				///text(`=`estimacionvp'*0.25' `aniohoy' "From `aniohoy' to 2070,"  "its demand will" `"change in {bf:`=string((`LAST'[1,1]/`estimacionvp'-1)*100,"%5.2f")'%}."', size(medsmall) place(1) justification(left)) ///
 				///title("{bf:Proyecci{c o'}n} de `title'") subtitle("$pais") ///
 				///caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.") ///
