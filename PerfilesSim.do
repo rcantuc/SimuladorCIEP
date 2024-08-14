@@ -8,7 +8,7 @@ if "`1'" == "" {
 	clear all
 	local 1 = 2024
 	scalar anioenigh = 2022
-	scalar aniovp = 2022
+	scalar aniovp = 2024
 }
 else {
 	if `1' >= 2022 {
@@ -146,7 +146,7 @@ if _rc != 0 ///
 ** 5.2 Encuesta Nacional de Ingresos y Gastos de los Hogares (ingresos) **
 ** Outputs: Archivo "`c(sysdir_personal)'/SIM/`anio'/households.dta".
 capture confirm file "`c(sysdir_personal)'/SIM/`=anioenigh'/households.dta"
-if _rc != 0 ///
+//if _rc != 0 ///
 	noisily run `"`c(sysdir_personal)'/Households.do"' `1'
 
 
@@ -175,7 +175,7 @@ label var gastoanualTOT "Consumo total `1'"
 
 
 ** 5.6 (*) Ingresos para el módulo ISR **
-Distribucion ing_bruto_tax, relativo(ing_bruto_tax) macro(`=scalar(Yl)+scalar(MixKN)')
+Distribucion ing_bruto_tax, relativo(ing_bruto_tax) macro(`=scalar(Yl)+scalar(MixK)')
 label var ing_bruto_tax "Ingresos laborales `1'"
 *noisily Perfiles ing_bruto_tax [fw=factor], aniope(`1') aniovp(`=aniovp')
 *noisily Gini ing_bruto_tax, hogar(folioviv foliohog) factor(factor)
@@ -434,7 +434,7 @@ matrix POBLACION68 = r(StatTotal)
 
 Distribucion Pension_AM, relativo(ing_pam) macro(`PenBienestar')
 label var Pension_AM "Pensi{c o'}n para adultos mayores `1'"
-noisily Perfiles Pension_AM [fw=factor], aniope(`1') aniovp(`=aniovp')
+*noisily Perfiles Pension_AM [fw=factor], aniope(`1') aniovp(`=aniovp')
 *noisily Gini Pension_AM, hogar(folioviv foliohog) factor(factor)
 
 ** (-) Pensiones **
@@ -542,10 +542,11 @@ if "$nographs" == "" & "`nographs'" != "nographs" & `anio' == `aniovp' {
 ************
 capture drop __*
 compress
-*keep ISRAS ISRPF CUOTAS ISRPM OTROSK FMP PEMEX CFE IMSS ISSSTE IVA IEPSNP IEPSP ISAN IMPORT /// Ingresos
-	Pension Educación Salud IngBasico Pension_AM Otros_gastos Otras_inversiones Part_y_otras_Apor Energia infra_entidad /// Gastos
-	folio* numren edad sexo factor decil escol formal ingbrutotot rural grupoedad /// Perfiles.ado
-	disc* gas_pc_Salu //asis_esc tipoesc nivel inst_* ing_jubila jubilado // GastoPC.ado
+keep ISRAS ISRPF CUOTAS ISRPM OTROSK FMP PEMEX CFE IMSS ISSSTE IVA IEPSNP IEPSP ISAN IMPORT /// Ingresos
+	Pension* Educacion Salud IngBasico Pension_AM Otros_gastos Otras_inversiones Part_y_otras_Apor Energia infra_entidad /// Gastos
+	folio* numren edad sexo factor decil escol formal* ingbrutotot rural grupoedad /// Perfiles.ado
+	disc* gas_pc_Salu asis_esc tipoesc nivel inst_* ing_jubila jubilado /// GastoPC.ado
+	sbc cuotasTPF deduc_isr ing_bruto_tax *_tpm exen_tot prop* ing_subor // ISR_Mod.do
 if `c(version)' > 13.1 {
 	save "`c(sysdir_personal)'/SIM/perfiles`1'.dta", replace
 }

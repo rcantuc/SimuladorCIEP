@@ -943,19 +943,23 @@ program define UpdatePIBDeflactor
 			local graphtitle ""
 			local graphfuente ""
 		}
-		twoway (bar pibPO aniotrimestre, mlabel(pibPO) mlabposition(9) mlabangle(90) mlabcolor(black) mlabgap(0pt) lpattern(dot)) ///
+		tempvar pibPO
+		g `pibPO' = pibPO/1000
+		format `pibPO' %7.0fc
+		twoway (connected pibPO aniotrimestre, mlabel(`pibPO') mlabposition(12) mlabangle(0) mlabcolor(black) mlabgap(0pt) lpattern(dot)) ///
 			if pibPO != ., ///
 			title("`graphtitle'") ///
-			ytitle("PIB/Población ocupada (`=currency[`obsvp']' `aniofinal')") xtitle("") ///
+			ytitle("") xtitle("") ///
 			tlabel(2005q1(4)`aniofinal'q`trim_last') ///
-			///text(`crec_PIBPC', size(vsmall)) ///
+			text(`=pibPO[92]' `=aniotrimestre[92]+1' "miles MXN `aniofinal'" "por ocupado(a)", ///
+			color("111 111 111") size(small) place(6) justification(left)) ///
 			ylabel(none, format(%20.0fc)) yscale(range(500000)) ///
 			caption("`graphfuente'") ///
 			name(pib_po, replace)
 
-			capture confirm existence $export
-			if _rc == 0 {
-				graph export "$export/pib_po.png", replace name(pib_po)
-			}
+		capture confirm existence $export
+		if _rc == 0 {
+			graph export "$export/pib_po.png", replace name(pib_po)
+		}
 	}
 end

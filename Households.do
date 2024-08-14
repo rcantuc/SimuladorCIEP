@@ -10,107 +10,102 @@ if "`1'" == "" {
 	scalar aniovp = 2022
 	scalar anioenigh = 2022
 	local enigh = "ENIGH"
-	local betamin = 1							// ENIGH: 2.436
+	local betamin = 1			// ENIGH: 2.436
 	local altimir = "yes"
-	local SubsidioEmpleo = 43131000000 			// Presupuesto de gastos fiscales (2020)
-	local udis = 7.380711						// Promedio de valor de UDIS de enero a diciembre 2020
-	local smdf = 172.87							// Unidad de medida y actualizacion (UMA)
+	local SubsidioEmpleo = 43131000000 	// Presupuesto de gastos fiscales (2020)
+	local udis = 7.380711			// Promedio de valor de UDIS de enero a diciembre 2020
+	local smdf = 172.87			// Unidad de medida y actualizacion (UMA)
 	local enighanio = 2022
 	local segpop = "pop_insabi"
 }
 timer on 6
 if `1' >= 2022 {
 	local enigh = "ENIGH"
-	local betamin = 1							// ENIGH: 2.436
+	local betamin = 1			// ENIGH: 2.436
 	local altimir = "yes"
-	local SubsidioEmpleo = 43131000000 			// Presupuesto de gastos fiscales (2020)
-	local udis = 7.380711						// Promedio de valor de UDIS de enero a diciembre 2020
-	local smdf = 172.87							// Unidad de medida y actualizacion (UMA)
+	local SubsidioEmpleo = 43131000000 	// Presupuesto de gastos fiscales (2020)
+	local udis = 7.380711			// Promedio de valor de UDIS de enero a diciembre 2020
+	local smdf = 172.87			// Unidad de medida y actualizacion (UMA)
 	local enighanio = 2022
 	local segpop = "pop_insabi"
 }
 if `1' >= 2020 & `1' < 2022 {
 	local enigh = "ENIGH"
-	local betamin = 1							// ENIGH: 2.436
+	local betamin = 1			// ENIGH: 2.436
 	local altimir = "yes"
-	local SubsidioEmpleo = 49997000000 			// Presupuesto de gastos fiscales (2020)
-	local udis = 6.496487003					// Promedio de valor de UDIS de enero a diciembre 2020
-	local smdf = 123.22							// Unidad de medida y actualizacion (UMA)
+	local SubsidioEmpleo = 49997000000 	// Presupuesto de gastos fiscales (2020)
+	local udis = 6.496487003		// Promedio de valor de UDIS de enero a diciembre 2020
+	local smdf = 123.22			// Unidad de medida y actualizacion (UMA)
 	local enighanio = 2020
 	local segpop = "pop_insabi"
 }
 if `1' >= 2018 & `1' < 2020 {
 	local enigh = "ENIGH"
-	local betamin = 1							// ENIGH: 2.25
+	local betamin = 1			// ENIGH: 2.25
 	local altimir = "yes"
-	local SubsidioEmpleo = 50979000000 			// Presupuesto de gastos fiscales (2018)
-	local udis = 6.054085						// Promedio de valor de UDIS de enero a diciembre 2018
-	local smdf = 88.36							// Unidad de medida y actualizacion (UMA)
+	local SubsidioEmpleo = 50979000000 	// Presupuesto de gastos fiscales (2018)
+	local udis = 6.054085			// Promedio de valor de UDIS de enero a diciembre 2018
+	local smdf = 88.36			// Unidad de medida y actualizacion (UMA)
 	local enighanio = 2018
 	local segpop = "segpop"
 }
 if `1' >= 2016 & `1' < 2018 {
 	local enigh = "ENIGH"
-	local betamin = 1							// ENIGH: 2.38
+	local betamin = 1			// ENIGH: 2.38
 	local altimir = "yes"
-	local SubsidioEmpleo = 43707000000			// Presupuesto de gastos fiscales (2016)
-	local udis = 5.4490872131					// Promedio de valor de UDIS de enero a diciembre 2016
-	local smdf = 73.04							// Unidad de medida y actualizacion (UMA)
+	local SubsidioEmpleo = 43707000000	// Presupuesto de gastos fiscales (2016)
+	local udis = 5.4490872131		// Promedio de valor de UDIS de enero a diciembre 2016
+	local smdf = 73.04			// Unidad de medida y actualizacion (UMA)
 	local enighanio = 2016
 	local segpop = "segpop"
 }
 if `1' >= 2014 & `1' < 2016 {
 	local enigh = "ENIGH"
-	local betamin = 1							// ENIGH: 2.95
+	local betamin = 1			// ENIGH: 2.95
 	local altimir = "yes"
-	local SubsidioEmpleo = 41293000000			// Presupuesto de gastos fiscales (2014)
-	local udis = 5.1561230329  					// Promedio de valor de UDIS de enero a diciembre 2014
-	local smdf = 67.29							// Zona A. 2014
+	local SubsidioEmpleo = 41293000000	// Presupuesto de gastos fiscales (2014)
+	local udis = 5.1561230329  		// Promedio de valor de UDIS de enero a diciembre 2014
+	local smdf = 67.29			// Zona A. 2014
 	local enighanio = 2014
 	local segpop = "segpop"
 }
 if `1' >= 2012 & `1' < 2014 {
 	local enigh = "ENIGH"
-	local betamin = 1							// ENIGH: 2.95
+	local betamin = 1			// ENIGH: 2.95
 	local altimir = "yes"
-	local SubsidioEmpleo = 41293000000			// Presupuesto de gastos fiscales (2014)
-	local udis = 5.1561230329  					// Promedio de valor de UDIS de enero a diciembre 2014
-	local smdf = 67.29							// Zona A. 2014
+	local SubsidioEmpleo = 41293000000	// Presupuesto de gastos fiscales (2014)
+	local udis = 5.1561230329  		// Promedio de valor de UDIS de enero a diciembre 2014
+	local smdf = 67.29			// Zona A. 2014
 	local enighanio = 2012
 	local segpop = "segpop"
 }
 if `1' >= 2010 & `1' < 2012 {
 	local enigh = "ENIGH"
-	local betamin = 1							// ENIGH: 2.95
+	local betamin = 1			// ENIGH: 2.95
 	local altimir = "yes"
-	local SubsidioEmpleo = 41293000000			// Presupuesto de gastos fiscales (2014)
-	local udis = 5.1561230329  					// Promedio de valor de UDIS de enero a diciembre 2014
-	local smdf = 67.29							// Zona A. 2014
+	local SubsidioEmpleo = 41293000000	// Presupuesto de gastos fiscales (2014)
+	local udis = 5.1561230329  		// Promedio de valor de UDIS de enero a diciembre 2014
+	local smdf = 67.29			// Zona A. 2014
 	local enighanio = 2010
 	local segpop = "segpop"
 }
 if `1' >= 2008 & `1' < 2010 {
 	local enigh = "ENIGH"
-	local betamin = 1							// ENIGH: 2.95
+	local betamin = 1			// ENIGH: 2.95
 	local altimir = "yes"
-	local SubsidioEmpleo = 41293000000			// Presupuesto de gastos fiscales (2014)
-	local udis = 5.1561230329  					// Promedio de valor de UDIS de enero a diciembre 2014
-	local smdf = 67.29							// Zona A. 2014
+	local SubsidioEmpleo = 41293000000	// Presupuesto de gastos fiscales (2014)
+	local udis = 5.1561230329  		// Promedio de valor de UDIS de enero a diciembre 2014
+	local smdf = 67.29			// Zona A. 2014
 	local enighanio = 2008
 	local segpop = "segpop"
 }
 
-
-******************
 ** 0.1 Log-file **
 capture log close households
-capture mkdir "`c(sysdir_personal)'/SIM/"
 capture mkdir "`c(sysdir_personal)'/SIM/`enighanio'/"
 log using "`c(sysdir_personal)'/SIM/`enighanio'/households.smcl", replace name(households)
 local dir_enigh "`c(sysdir_site)'../BasesCIEP/INEGI/`enigh'/`enighanio'"
 
-
-********************
 ** 0.2 Bienvenida **
 noisily di _newline(2) in g _dup(20) "." "{bf:   Economía generacional: " in y "INGRESOS - `enigh' `enighanio'  }" in g _dup(20) "." _newline(2)
 
@@ -148,8 +143,6 @@ local ComprasN = scalar(ComprasN)
 local ConCapFij = scalar(ConCapFij)
 local ConGob = scalar(ConGob)
 
-
-**************************************************
 ** 1.2 Ajustes Rentas y Servicios Profesionales **
 * Documento: Tributacion a ingresos por alquileres y servicios profesionales *
 * BID, SHCP, CIEP, 2018 *
@@ -165,8 +158,6 @@ local SNAInmobiliarias = scalar(Inmobiliarias)
 local SNAExBOpHog = scalar(ExBOpHog)
 local SNAAlojamiento = scalar(Alojamiento)
 
-
-*********************
 ** 1.3 Macros: PEF **
 PEF, anio(`enighanio') min(0) nographs
 local Cuotas_ISSSTE = -r(Cuotas_ISSSTE)
@@ -181,9 +172,9 @@ local Superior = r(educacion_superior)
 local Adultos = r(educacion_para_adultos)
 
 PEF, anio(`enighanio') by(divCIEP) min(0) nographs
-local PenBienestar = r(Pensión_Bienestar)
+local PenBienestar = r(Pension_AM)
 local OtrosGas = r(Otros)
-local Pensiones = r(Pensiones)-`PenBienestar'
+local Pensiones = r(Pensiones)
 local Educacion = r(Educación)
 local Salud = r(Salud)
 
@@ -282,87 +273,87 @@ else {
 ********************/
 ** 1.6 Macros: ISR **
 if `enighanio' < 2018 {
-	*				Inferior	Superior	CF			Tasa		
+	*			Inferior	Superior	CF		Tasa		
 	matrix	ISR	=	(0.00,		5952.84,	0.0,		1.92	\	///	1
-					5952.85,	50524.92,	114.24,		6.40	\ 	///	2
-					50524.93,	88793.04,	2966.76,	10.88	\ 	///	3
-					88793.05,	103218.00,	7130.88,	16.00	\ 	///	4
-					103218.01,	123580.20,	9438.60,	17.92	\ 	///	5
-					123580.21,	249243.48,	13087.44,	21.36	\ 	///	6
-					249243.49,	392841.96,	39929.04,	23.52	\ 	///	7
-					392841.97,	750000.00, 	73703.40,	30.00	\ 	///	8
-					750000.01,	1000000.00,	180850.82,	32.00	\ 	///	9
-					1000000.01,	3000000.00,	360850.81,	34.00	\ 	///	10
-					3000000.01,	1E+14, 		940850.81,	35.00)		//	11
+				5952.85,	50524.92,	114.24,		6.40	\ 	///	2
+				50524.93,	88793.04,	2966.76,	10.88	\ 	///	3
+				88793.05,	103218.00,	7130.88,	16.00	\ 	///	4
+				103218.01,	123580.20,	9438.60,	17.92	\ 	///	5
+				123580.21,	249243.48,	13087.44,	21.36	\ 	///	6
+				249243.49,	392841.96,	39929.04,	23.52	\ 	///	7
+				392841.97,	750000.00, 	73703.40,	30.00	\ 	///	8
+				750000.01,	1000000.00,	180850.82,	32.00	\ 	///	9
+				1000000.01,	3000000.00,	360850.81,	34.00	\ 	///	10
+				3000000.01,	1E+14, 		940850.81,	35.00)		//	11
 
-	*				Inferior	Superior	Subsidio
+	*			Inferior	Superior	Subsidio
 	matrix	SE	=	(0.00,		21227.52,	4884.24	\	///	1
-					21227.53,	23744.40,	4881.96	\	///	2
-					23744.41,	31840.56,	4318.08	\	///	3
-					31840.57,	41674.08,	4123.20	\	///	4
-					41674.09,	42454.44,	3723.48	\	///	5
-					42454.45,	53353.80,	3581.28	\	///	6
-					53353.81,	56606.16,	4250.76	\	///	7
-					56606.17,	64025.04,	3898.44	\	///	8
-					64025.05,	74696.04,	3535.56	\	///	9
-					74696.05,	85366.80,	3042.48	\	///	10
-					85366.81,	88587.96,	2611.32	\	///	11
-					88587.97, 	1E+14,		0)		//	12
+				21227.53,	23744.40,	4881.96	\	///	2
+				23744.41,	31840.56,	4318.08	\	///	3
+				31840.57,	41674.08,	4123.20	\	///	4
+				41674.09,	42454.44,	3723.48	\	///	5
+				42454.45,	53353.80,	3581.28	\	///	6
+				53353.81,	56606.16,	4250.76	\	///	7
+				56606.17,	64025.04,	3898.44	\	///	8
+				64025.05,	74696.04,	3535.56	\	///	9
+				74696.05,	85366.80,	3042.48	\	///	10
+				85366.81,	88587.96,	2611.32	\	///	11
+				88587.97, 	1E+14,		0)		//	12
 }
 if `enighanio' >= 2018 & `enighanio' <= 2020 {
-	*			Inferior		Superior	CF			Tasa		
+	*			Inferior	Superior	CF		Tasa		
 	matrix	ISR	=	(0.00,		6942.20,	0.0,		1.92	\	///	1
-					6942.21,	58922.16,	114.24,		6.40	\ 	///	2
-					58922.17,	103550.44,	2966.76,	10.88	\ 	///	3
-					103550.45,	120372.83,	7130.88,	16.00	\ 	///	4
-					120372.84,	144119.23,	9438.60,	17.92	\ 	///	5
-					144119.24,	290667.75,	13087.44,	21.36	\ 	///	6
-					290667.76,	458132.29,	39929.04,	23.52	\ 	///	7
-					458132.30,	874650.00, 	73703.40,	30.00	\ 	///	8
-					874650.01,	1166200.00,	180850.82,	32.00	\ 	///	9
-					1166200.01,	3498600.00,	360850.81,	34.00	\ 	///	10
-					3498600.01,	1E+14, 		940850.81,	35.00)		//	11
+				6942.21,	58922.16,	114.24,		6.40	\ 	///	2
+				58922.17,	103550.44,	2966.76,	10.88	\ 	///	3
+				103550.45,	120372.83,	7130.88,	16.00	\ 	///	4
+				120372.84,	144119.23,	9438.60,	17.92	\ 	///	5
+				144119.24,	290667.75,	13087.44,	21.36	\ 	///	6
+				290667.76,	458132.29,	39929.04,	23.52	\ 	///	7
+				458132.30,	874650.00, 	73703.40,	30.00	\ 	///	8
+				874650.01,	1166200.00,	180850.82,	32.00	\ 	///	9
+				1166200.01,	3498600.00,	360850.81,	34.00	\ 	///	10
+				3498600.01,	1E+14, 		940850.81,	35.00)		//	11
 
-	*			Inferior			Superior	Subsidio
-	matrix	SE	=	(0.00,			1768.96*12,	407.02*12	\	///	1
-					1768.96*12+.01,	2653.38*12,	406.83*12	\	///	2
-					2653.38*12+.01,	3472.84*12,	406.62*12	\	///	3
-					3472.84*12+.01,	3537.87*12,	392.77*12	\	///	4
-					3537.87*12+.01,	4446.15*12,	382.46*12	\	///	5
-					4446.15*12+.01,	4717.18*12,	354.23*12	\	///	6
-					4717.18*12+.01,	5335.42*12,	324.87*12	\	///	7
-					5335.42*12+.01,	6224.67*12,	294.63*12	\	///	8
-					6224.67*12+.01,	7113.90*12,	253.54*12	\	///	9
-					7113.90*12+.01,	7382.33*12,	217.61*12	\	///	10
-					7382.33*12+.01,	1E+14,		0)				//	11
+	*			Inferior	Superior	Subsidio
+	matrix	SE	=	(0.00,		1768.96*12,	407.02*12	\	///	1
+				1768.96*12+.01,	2653.38*12,	406.83*12	\	///	2
+				2653.38*12+.01,	3472.84*12,	406.62*12	\	///	3
+				3472.84*12+.01,	3537.87*12,	392.77*12	\	///	4
+				3537.87*12+.01,	4446.15*12,	382.46*12	\	///	5
+				4446.15*12+.01,	4717.18*12,	354.23*12	\	///	6
+				4717.18*12+.01,	5335.42*12,	324.87*12	\	///	7
+				5335.42*12+.01,	6224.67*12,	294.63*12	\	///	8
+				6224.67*12+.01,	7113.90*12,	253.54*12	\	///	9
+				7113.90*12+.01,	7382.33*12,	217.61*12	\	///	10
+				7382.33*12+.01,	1E+14,		0)				//	11
 }
 
 if `enighanio' >= 2022 {
-	*				Inferior		Superior		CF				Tasa		
-	matrix ISR = 	(0.01,			7735.00,		0.0,			1.92	\	/// 1
-					7735.01,		65651.07,		148.51,			6.40	\	/// 2
-					65651.08,		115375.90,		3855.14,		10.88	\	/// 3
-					115375.91,		134119.41,		9265.20,		16.00	\	/// 4
-					134119.42,		160577.65,		12264.16,		17.92	\	/// 5
-					160577.66,		323862.00,		17005.47,		21.36	\	/// 6
-					323862.01,		510451.00,		51883.01,		23.52	\	/// 7
-					510451.01,		974535.03,		95768.74,		30.00	\	/// 8
-					974535.04,		1299380.04,		234993.95,		32.00	\	/// 9
-					1299380.05,		3898140.12,		338944.34,		34.00	\	/// 10
-					3898140.13,		1E+14,			1222522.76,		35.00)		//  11
+	*			Inferior	Superior		CF				Tasa		
+	matrix ISR 	= 	(0.01,		7735.00,		0.0,			1.92	\	/// 1
+				7735.01,	65651.07,		148.51,			6.40	\	/// 2
+				65651.08,	115375.90,		3855.14,		10.88	\	/// 3
+				115375.91,	134119.41,		9265.20,		16.00	\	/// 4
+				134119.42,	160577.65,		12264.16,		17.92	\	/// 5
+				160577.66,	323862.00,		17005.47,		21.36	\	/// 6
+				323862.01,	510451.00,		51883.01,		23.52	\	/// 7
+				510451.01,	974535.03,		95768.74,		30.00	\	/// 8
+				974535.04,	1299380.04,		234993.95,		32.00	\	/// 9
+				1299380.05,	3898140.12,		338944.34,		34.00	\	/// 10
+				3898140.13,	1E+14,			1222522.76,		35.00)		//  11
 
-	*             	Inferior			Superior		Subsidio
-	matrix	SE	=	(0.00,				1768.96*12,		407.02*12	\	///	1
-					1768.96*12+.01,		2653.38*12,		406.83*12	\	///	2
-					2653.38*12+.01,		3472.84*12,		406.62*12	\	///	3
-					3472.84*12+.01,		3537.87*12,		392.77*12	\	///	4
-					3537.87*12+.01,		4446.15*12,		382.46*12	\	///	5
-					4446.15*12+.01,		4717.18*12,		354.23*12	\	///	6
-					4717.18*12+.01,		5335.42*12,		324.87*12	\	///	7
-					5335.42*12+.01,		6224.67*12,		294.63*12	\	///	8
-					6224.67*12+.01,		7113.90*12,		253.54*12	\	///	9
-					7113.90*12+.01,		7382.33*12,		217.61*12	\	///	10
-					7382.33*12+.01,		1E+14,			0)				//	11
+	*             		Inferior		Superior		Subsidio
+	matrix	SE	=	(0.00,			1768.96*12,		407.02*12	\	///	1
+				1768.96*12+.01,		2653.38*12,		406.83*12	\	///	2
+				2653.38*12+.01,		3472.84*12,		406.62*12	\	///	3
+				3472.84*12+.01,		3537.87*12,		392.77*12	\	///	4
+				3537.87*12+.01,		4446.15*12,		382.46*12	\	///	5
+				4446.15*12+.01,		4717.18*12,		354.23*12	\	///	6
+				4717.18*12+.01,		5335.42*12,		324.87*12	\	///	7
+				5335.42*12+.01,		6224.67*12,		294.63*12	\	///	8
+				6224.67*12+.01,		7113.90*12,		253.54*12	\	///	9
+				7113.90*12+.01,		7382.33*12,		217.61*12	\	///	10
+				7382.33*12+.01,		1E+14,			0)				//	11
 }
 
 ********************************
@@ -1304,6 +1295,7 @@ tostring inst_* inscr_* pres_*, replace
 
 merge m:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/`enighanio'/deducciones.dta", ///
 	nogen keepus(deduc_*)
+
 replace deduc_STrans_escolar = deduc_STrans_escolar
 replace deduc_honor_medicos = deduc_honor_medicos
 replace deduc_segur_medicos = deduc_segur_medicos
@@ -1674,19 +1666,19 @@ g categ = ""
 g SE = 0
 forvalues j=`=rowsof(ISR)'(-1)1 {
 	forvalues k=`=rowsof(SE)'(-1)1 {
-		replace ing_subor = (ing_t4_cap1 + ISR[`j',3] - SE[`k',3]*htrab/40 + (cuotasTPF + infonavit + fovissste) ///
-			- ISR[`j',4]/100*(ISR[`j',1] + exen_t4_cap1 + cuotasTP)) / (1 - ISR[`j',4]/100) ///
-			if (ing_t4_cap1 != 0) & htrab < 40 & categ == ""
+		*replace ing_subor = (ing_t4_cap1 + ISR[`j',3] - SE[`k',3]*htrab/40 + (cuotasTPF + infonavit + fovissste) ///
+			- ISR[`j',4]/100*(ISR[`j',1] + exen_t4_cap1 + (cuotasTP + infonavit + fovissste))) / (1 - ISR[`j',4]/100) ///
+			if (ing_t4_cap1 != 0 & ing_t4_cap1 != .) & htrab < 40 & categ == ""
 			
 		replace ing_subor = (ing_t4_cap1 + ISR[`j',3] - SE[`k',3] + (cuotasTPF + infonavit + fovissste) ///
-			- ISR[`j',4]/100*(ISR[`j',1] + exen_t4_cap1 + cuotasTP)) / (1 - ISR[`j',4]/100) ///
-			if (ing_t4_cap1 != 0) & htrab >= 40 & categ == ""
+			- ISR[`j',4]/100*(ISR[`j',1] + exen_t4_cap1 + (cuotasTP + infonavit + fovissste))) / (1 - ISR[`j',4]/100) ///
+			if (ing_t4_cap1 != 0 & ing_t4_cap1 != .) /*& htrab >= 40*/ & categ == ""
 
 		replace categ = "i`j's`k'" ///
-			if ing_subor - exen_t4_cap1 - cuotasTP >= ISR[`j',1] ///
-			& ing_subor - exen_t4_cap1 - cuotasTP <= ISR[`j',2] ///
-			& ing_subor - exen_t4_cap1 - cuotasTP >= SE[`k',1] ///
-			& ing_subor - exen_t4_cap1 - cuotasTP <= SE[`k',2] ///
+			if ing_subor - exen_t4_cap1 - (cuotasTP + infonavit + fovissste) >= ISR[`j',1] ///
+			& ing_subor - exen_t4_cap1 - (cuotasTP + infonavit + fovissste) <= ISR[`j',2] ///
+			& ing_subor - exen_t4_cap1 - (cuotasTP + infonavit + fovissste) >= SE[`k',1] ///
+			& ing_subor - exen_t4_cap1 - (cuotasTP + infonavit + fovissste) <= SE[`k',2] ///
 			& categ == ""
 
 		*replace SE = SE[`k',3]*htrab/48 if categ == "i`j's`k'" & htrab < 40 & formal != 0
@@ -1699,7 +1691,7 @@ replace ing_subor = ing_t4_cap1 if formal == 0
 
 **********************
 ** 6.3 ISR salarios **
-g isrE = ing_subor - ing_t4_cap1 - cuotasTP if formal != 0
+g isrE = ing_subor - ing_t4_cap1 - (cuotasTP + infonavit + fovissste) if formal != 0
 replace isrE = 0 if isrE == .
 label var isrE "ISR retenciones a asalariados"
 
@@ -2053,19 +2045,19 @@ if "`altimir'" == "yes" {
 **# 10. Re-calculo de ISR ***
 *****************************
 noisily di _newline(2) _col(04) in g "{bf:Paso 3: Sumar ingresos por individuo y re-calcular ISR}"
-g ing_bruto_tax = ing_subor + ing_t4_cap2pf + ing_t4_cap3pf ///
-	+ ing_t4_cap4 + ing_t4_cap5 + ing_t4_cap6 + ing_t4_cap7 + ing_t4_cap8 + ing_t4_cap9
+egen ing_bruto_tax = rsum(ing_subor ing_t4_cap2pf ing_t4_cap3pf ing_t4_cap4 ing_t4_cap5 ///
+	ing_t4_cap6 ing_t4_cap7 ing_t4_cap8 ing_t4_cap9)
 replace ing_bruto_tax = 0 if ing_bruto_tax < 0
 label var ing_bruto_tax "Ingreso gravable"
 
-g exen_tot = exen_t4_cap1 + exen_t4_cap2pf + exen_t4_cap3pf ///
-	+ exen_t4_cap4 + exen_t4_cap5 + exen_t4_cap6 + exen_t4_cap7 + exen_t4_cap8 + exen_t4_cap9
+egen exen_tot = rsum(exen_t4_cap1 exen_t4_cap2pf exen_t4_cap3pf exen_t4_cap4 exen_t4_cap5 ///
+	exen_t4_cap6 exen_t4_cap7 exen_t4_cap8 exen_t4_cap9)
 label var exen_tot "Exenciones totales"
 
-g ing_bruto_tpm = ing_t2_cap1 + ing_t2_cap8 + ing_t4_cap2PM + ing_t4_cap3PM
+egen ing_bruto_tpm = rsum(ing_t2_cap1 ing_t2_cap8 ing_t4_cap2PM ing_t4_cap3PM)
 label var ing_bruto_tpm "Ingreso gravable PM"
 
-g exen_tpm = exen_t2_cap1 + exen_t2_cap8 + exen_t4_cap2PM + exen_t4_cap3PM
+egen exen_tpm = rsum(exen_t2_cap1 exen_t2_cap8 exen_t4_cap2PM exen_t4_cap3PM)
 label var exen_tot "Exenciones PM"
 
 ** Subsidio al empleo EMPRESAS **
@@ -2101,7 +2093,7 @@ forvalues j=`=rowsof(ISR)'(-1)1 {
 ******************
 **# 11 PROBITS ***
 ******************
-g formal_probit = formal != 0
+g formal_probit = formal2 != 0
 g rural = substr(folioviv,3,1) == "6"
 g edad2 = edad^2
 g aniosesc2 = aniosesc^2
@@ -2116,19 +2108,25 @@ g sinco2 = substr(sinco,1,1)
 
 replace subor = 2 if subor == .
 
+g prop_subor = ing_subor/(ing_mixto+ing_subor+ing_capital)
+replace prop_subor = 0 if prop_subor == .
+
 g prop_mixto = ing_mixto/(ing_mixto+ing_subor+ing_capital)
 replace prop_mixto = 0 if prop_mixto == .
 
 g prop_capital = ing_capital/(ing_mixto+ing_subor+ing_capital)
 replace prop_capital = 0 if prop_capital == .
 
+foreach k of varlist ing_* {
+	replace `k' = 0 if `k' == .
+}
 
 ***************************************
 ** 10.2 Probit formalidad (salarios) **
 noisily di _newline _col(04) in g "{bf:3.2. Probit de formalidad: " in y "Salarios.}"
-noisily xi: probit formal_probit prop_mixto prop_capital deduc_isr ///
+noisily xi: probit formal_probit deduc_isr ///
 	edad edad2 i.sexo aniosesc aniosesc2 rural i.sinco2 i.scian2 ///
-	if ing_t4_cap1 != 0 & edad >= 16 [pw=factor]
+	if ing_t4_cap1 > 0 & edad >= 16 [pw=factor]
 estimates save "`c(sysdir_personal)'/SIM/`enighanio'/formal_salarios", replace
 predict double prob_salarios if e(sample)
 
@@ -2141,10 +2139,10 @@ g prop_salarios = formal_accumSAL/formal_SAL
 **************************************
 ** 10.3 Probit formalidad (fisicas) **
 noisily di _newline _col(04) in g "{bf:3.3. Probit de formalidad: " in y "Personas f{c i'}sicas.}"
-noisily xi: probit formal_probit prop_mixto prop_capital deduc_isr ///
+noisily xi: probit formal_probit deduc_isr ///
 	edad edad2 i.sexo aniosesc aniosesc2 rural i.sinco2 i.scian2 ///
 	if ing_t4_cap2 + ing_t4_cap3 + ing_t4_cap4 + ing_t4_cap5 ///
-	+ ing_t4_cap6 + ing_t4_cap7 + ing_t4_cap8 + ing_t4_cap9 != 0 & edad >= 16 [pw=factor]
+	+ ing_t4_cap6 + ing_t4_cap7 + ing_t4_cap8 + ing_t4_cap9 > 0 & edad >= 16 [pw=factor]
 estimates save "`c(sysdir_personal)'/SIM/`enighanio'/formal_fisicas", replace
 predict double prob_formal if e(sample)
 
@@ -2157,9 +2155,9 @@ g prop_formal = formal_accum/formal_NAC
 **************************************
 ** 10.4 Probit formalidad (morales) **
 noisily di _newline _col(04) in g "{bf:3.4. Probit de formalidad: " in y "Personas morales.}"
-noisily xi: probit formal_probit prop_mixto prop_capital ///
+noisily xi: probit formal_probit deduc_isr ///
 	edad edad2 i.sexo aniosesc aniosesc2 rural i.sinco2 i.scian2 ///
-	if ing_bruto_tpm != 0 & edad >= 16 [pw=factor]
+	if ing_bruto_tpm > 0 & edad >= 16 [pw=factor]
 estimates save "`c(sysdir_personal)'/SIM/`enighanio'/formal_morales", replace
 predict double prob_moral if e(sample)
 
@@ -2558,7 +2556,7 @@ egen ImpuestosConsumoTOT = rsum(IVA IEPS ISAN Importaciones)
 
 *******************************
 *** Sankey: PIB demográfico ***
-*******************************
+/*******************************
 egen double Yl = rsum(ing_subor ing_mixtoL)
 label var Yl "Ingreso laboral"
 noisily Perfiles Yl [fw=factor], aniope(`enighanio') aniovp(`enighanio') title("Ingreso laboral")

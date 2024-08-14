@@ -28,7 +28,7 @@ quietly {
 	syntax [, ANIOvp(int `aniovp') ANIOPE(int `aniope') EXCEL]
 
 	// 0.6 Muestra una cadena formateada
-	noisily di _newline(2) in g _dup(20) "." "{bf:   GASTO PÚBLICO per c{c a'}pita " in y `aniope' "   }" in g _dup(20) "."	
+	noisily di _newline(2) in g _dup(20) "." "{bf:   GASTO per cápita " in y `aniope' "   }" in g _dup(20) "."	
 
 
 
@@ -629,7 +629,7 @@ quietly {
 	noisily di _newline in g "{bf:  Gasto por instituci{c o'}n" ///
 		_col(32) %15s in g "Asegurados" ///
 		_col(49) %7s "% PIB" ///
-		_col(57) %10s in g "Per c{c a'}pita (MXN `aniovp')" "}"
+		_col(59) %10s in g "PC (MXN `aniovp')" "}"
 	noisily di in g _dup(71) "-"
 	noisily di in g "  SSa" ///
 		_col(32) %15.0fc in y `Salud'[1,1] ///
@@ -837,7 +837,7 @@ quietly {
 	noisily di _newline in g "{bf:  Gasto por instituci{c o'}n" ///
 		_col(32) %15s in g "Pensionados" ///
 		_col(49) %7s "% PIB" ///
-		_col(57) %10s in g "Per c{c a'}pita (MXN `aniovp')" "}"
+		_col(59) %10s in g "PC (MXN `aniovp')" "}"
 	noisily di in g _dup(71) "-"
 	noisily di in g "  Pensi{c o'}n Adultos Mayores" ///
 		_col(32) %15.0fc in y `pens_pam' ///
@@ -1000,7 +1000,7 @@ quietly {
 	noisily di _newline in g "{bf:  Gasto por organismo" ///
 		_col(32) %15s in g "Poblacion" ///
 		_col(49) %7s "% PIB" ///
-		_col(57) %10s in g "Per c{c a'}pita (MXN `aniovp')" "}"
+		_col(59) %10s in g "PC (MXN `aniovp')" "}"
 	noisily di in g _dup(71) "-"
 	noisily di in g "  CFE" ///
 		_col(32) %15.0fc in y `Energia'[1,1] ///
@@ -1189,7 +1189,7 @@ quietly {
 	noisily di _newline in g "{bf:  Gasto por concepto" ///
 		_col(32) %15s in g "Poblacion" ///
 		_col(49) %7s "% PIB" ///
-		_col(57) %10s in g "Per c{c a'}pita (MXN `aniovp')" "}"
+		_col(59) %10s in g "PC (MXN `aniovp')" "}"
 	noisily di in g _dup(71) "-"
 	noisily di in g "  Otras inversiones" ///
 		_col(32) %15.0fc in y `Energia'[1,1] ///
@@ -1294,7 +1294,7 @@ quietly {
 	noisily di _newline in g "{bf:  Gasto por concepto" ///
 		_col(32) %15s in g "Población" ///
 		_col(49) %7s "% PIB" ///
-		_col(57) %10s in g "Per c{c a'}pita (MXN `aniovp')" "}"
+		_col(59) %10s in g "PC (MXN `aniovp')" "}"
 	noisily di in g _dup(71) "-"
 	noisily di in g "  `bititle'" ///
 		_col(32) %15.0fc in y `pobIngBas'[1,1] ///

@@ -156,7 +156,7 @@ quietly {
 			name(Proy_ingresos2) ///
 			title(Proyectado)
 
-		grc1leg Proy_ingresos1 Proy_ingresos2, ycommon ///
+		graph combine Proy_ingresos1 Proy_ingresos2, ycommon ///
 			title({bf:Ingresos p{c u'}blicos}) ///
 			subtitle($pais) ///
 			caption("`graphfuente'") ///
@@ -357,7 +357,7 @@ quietly {
 			name(Proy_gastos2) ///
 			title(Proyectado)
 
-		grc1leg Proy_gastos1 Proy_gastos2, ycommon ///
+		graph combine Proy_gastos1 Proy_gastos2, ycommon ///
 			title({bf:Gasto p{c u'}blico primario}) ///
 			subtitle($pais) ///
 			caption("`graphfuente'") ///
@@ -381,7 +381,7 @@ quietly {
 		collapse (sum) gasto_pib estimacionGasto_pib if anio <= `end', by(anio divSIM) fast
 		forvalues k=1(1)`=_N' {
 			if anio[`k'] >= 2013 & anio[`k'] < `anio' {
-				if divSIM[`k'] == "Educación" {
+				if divSIM[`k'] == "Educacion" {
 					local proy_educacion = "`proy_educacion' `=string(`=gasto_pib[`k']',"%10.1f")',"
 				}
 				if divSIM[`k'] == "Pensiones" {
@@ -393,7 +393,7 @@ quietly {
 				if divSIM[`k'] == "Otros gastos" {
 					local proy_otros = "`proy_otros' `=string(`=gasto_pib[`k']',"%10.1f")',"
 				}
-				if divSIM[`k'] == "Energía" {
+				if divSIM[`k'] == "Energia" {
 					local proy_energia = "`proy_energia' `=string(`=gasto_pib[`k']',"%10.1f")',"
 				}
 				if divSIM[`k'] == "Otras inversiones" {
@@ -401,7 +401,7 @@ quietly {
 				}
 			}
 			if anio[`k'] >= `anio' & anio[`k'] <= 2030 {
-				if divSIM[`k'] == "Educación" {
+				if divSIM[`k'] == "Educacion" {
 					local proy_educacion = "`proy_educacion' `=string(`=estimacionGasto_pib[`k']',"%10.1f")',"
 				}
 				if divSIM[`k'] == "Pensiones" {
@@ -413,7 +413,7 @@ quietly {
 				if divSIM[`k'] == "Otros gastos" {
 					local proy_otros = "`proy_otros' `=string(`=estimacionGasto_pib[`k']',"%10.1f")',"
 				}
-				if divSIM[`k'] == "Energía" {
+				if divSIM[`k'] == "Energia" {
 					local proy_energia = "`proy_energia' `=string(`=estimacionGasto_pib[`k']',"%10.1f")',"
 				}
 				if divSIM[`k'] == "Otras inversiones" {
@@ -446,6 +446,7 @@ quietly {
 	merge 1:1 (anio) using `baseingresos', nogen
 	tsset anio
 
+
 	* Reemplazar tasaEfectiva con la media artimética desde el año `desde' *
 	tabstat tasaEfectiva if anio <= `anio' & anio >= `desde', save
 	tempname tasaEfectiva_ari
@@ -471,10 +472,10 @@ quietly {
 	* Reemplazar tasasEfectivas con el escalar tasasEfectiva si fue provisto desde los parámetros en SIM.do *
 	capture confirm scalar tasaEfectiva
 	if _rc == 0 {
-		replace tasaEfectiva = scalar(tasaEfectiva) if anio >= `anio'
+		replace tasaEfectiva = scalar(tasaEfectiva) if anio > `anio'
 	}
 	else {
-		replace tasaEfectiva = `tasaEfectiva' if anio >= `anio'
+		replace tasaEfectiva = `tasaEfectiva' if anio > `anio'
 		scalar tasaEfectiva = `tasaEfectiva'
 	}
 
@@ -535,7 +536,7 @@ quietly {
 	forvalues k = `=`anio''(1)`=anio[_N]' {
 
 		* Costo de la deuda *
-		*replace estimacionCosto_de_la_deuda = tasaEfectiva/100*L.shrfsp if anio == `k'
+		replace estimacionCosto_de_la_deuda = tasaEfectiva/100*L.shrfsp if anio == `k'
 		replace estimacionGasto = estimacionGasto + estimacionCosto_de_la_deuda if anio == `k'
 
 		* RFSP *

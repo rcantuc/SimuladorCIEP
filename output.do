@@ -2,22 +2,22 @@ if "$output" != "" {
 	quietly log on output
 
 	noisily di in w "CRECPIB: ["  ///
-		%8.1f $pib2024 ", " ///
-		%8.1f $pib2025 ", " ///
-		%8.1f $pib2026 ", " ///
-		%8.1f $pib2027 ", " ///
-		%8.1f $pib2028 ", " ///
-		%8.1f $pib2029 ", " ///
-		%8.1f $pib2029 ///
+		%8.1f pib2024 ", " ///
+		%8.1f pib2025 ", " ///
+		%8.1f pib2026 ", " ///
+		%8.1f pib2027 ", " ///
+		%8.1f pib2028 ", " ///
+		%8.1f pib2029 ", " ///
+		%8.1f pib2029 ///
 	"]"
 	noisily di in w "CRECDEF: ["  ///
-		%8.1f $def2024 ", " ///
-		%8.1f $def2025 ", " ///
-		%8.1f $def2026 ", " ///
-		%8.1f $def2027 ", " ///
-		%8.1f $def2028 ", " ///
-		%8.1f $def2029 ", " ///
-		%8.1f $def2029 ///
+		%8.1f def2024 ", " ///
+		%8.1f def2025 ", " ///
+		%8.1f def2026 ", " ///
+		%8.1f def2027 ", " ///
+		%8.1f def2028 ", " ///
+		%8.1f def2029 ", " ///
+		%8.1f def2029 ///
 	"]"
 	noisily di in w "DEUDAPARAM: [" ///
 		%8.3f scalar(tasaEfectiva) /// Tasa de interés efectiva
@@ -136,14 +136,14 @@ if "$output" != "" {
 		%8.3f scalar(ISRAS)+scalar(ISRPF)+scalar(CUOTAS)+scalar(ISRPM)+scalar(OTROSK)+scalar(IVA)+scalar(ISAN)+scalar(IEPSNP)+scalar(IEPSP)+scalar(IMPORT)+scalar(IMSS)+scalar(ISSSTE)+scalar(FMP)+scalar(PEMEX)+scalar(CFE) /// Total INGRESOS - 19
 		"]"
 	noisily di in w "INGRESOSTEF: " in w "["  ///
-		%8.1f scalar(ISRAS)/RemSalPIB*100 "," /// ISR (salarios) - 0
+		%8.1f scalar(ISRAS)/(RemSalPIB+SSImputadaPIB+SSEmpleadoresPIB+ImpNetProduccionLPIB)*100 "," /// ISR (salarios) - 0
 		%8.1f scalar(ISRPF)/MixLPIB*100 "," /// ISR (físicas) - 1
-		%8.1f scalar(CUOTAS)/(RemSalPIB+SSImputadaPIB+SSEmpleadoresPIB)*100 "," /// Cuotas IMSS - 2
+		%8.1f scalar(CUOTAS)/(RemSalPIB+SSImputadaPIB+SSEmpleadoresPIB+ImpNetProduccionLPIB)*100 "," /// Cuotas IMSS - 2
 		%8.1f (scalar(ISRAS)+scalar(ISRPF)+scalar(CUOTAS))/YlPIB*100 "," /// Total Impuestos laborales - 3
 		%8.1f scalar(ISRPM)/(ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-IngKPublicosPIB)*100 "," /// ISR (morales) - 4
 		%8.1f scalar(OTROSK)/(ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-IngKPublicosPIB)*100 "," /// Productos, derechos y aprovechamientos - 5
 		%8.1f (scalar(ISRPM)+scalar(OTROSK))/(CapIncImpPIB-IngKPublicosPIB)*100 "," /// Total Impuestos al capital - 6
-		%8.1f scalar(IVA)/(ConHogPIB-AlimPIB-BebNPIB-SaluPIB)*100 "," /// IVA - 7
+		%8.1f scalar(IVA)/(ConHogPIB)*100 "," /// IVA - 7
 		%8.1f scalar(ISAN)/VehiPIB*100 "," /// ISAN - 8
 		%8.1f scalar(IEPSNP)/ConHogPIB*100 "," /// IEPS (no petrolero) - 9
 		%8.1f scalar(IEPSP)/ConHogPIB*100 "," /// IEPS (petrolero) - 10

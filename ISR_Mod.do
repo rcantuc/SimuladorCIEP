@@ -34,7 +34,7 @@ local smdf = 248.93 			// SM 2024
 SCN, nographs
 local pibY = scalar(PIB)
 
-use "`c(sysdir_personal)'/SIM/perfiles`=anioPE'.dta", clear
+use "`c(sysdir_personal)'/SIM/perfiles2024.dta", clear
 drop CUOTAS ISRAS ISRPF
 
 
@@ -121,17 +121,17 @@ replace cuotasTPF = cuotasF + CUOTAS
 *************************/
 ** CALCULO DE ISR FINAL **
 **************************
-replace ISR = 0
+g ISR = 0
 label var ISR "ISR (f{c i'}sicas y asalariados)"
 
-replace SE = 0
+g SE = 0
 label var SE "Subsidio al empleo (SIM)"
 
 * Limitar deducciones *
 replace deduc_isr = `=DED[1,1]'*`smdf' if `=DED[1,1]'*`smdf' <= `=DED[1,2]'/100*ing_bruto_tax & deduc_isr >= `=DED[1,1]'*`smdf'
 replace deduc_isr = `=DED[1,2]'/100*ing_bruto_tax if `=DED[1,1]'*`smdf' >= `=DED[1,2]'/100*ing_bruto_tax & deduc_isr >= `=DED[1,2]'/100*ing_bruto_tax
 
-replace categF = ""
+g categF = ""
 forvalues j=`=rowsof(ISR)'(-1)1 {
 	forvalues k=`=rowsof(SE)'(-1)1 {
 		if ISR[`j',1] > SE[`k',2] {
@@ -144,37 +144,36 @@ forvalues j=`=rowsof(ISR)'(-1)1 {
 			 & (ing_bruto_tax - exen_tot - deduc_isr - CUOTAS) <= SE[`k',2]
 
 		replace ISR = ISR[`j',3] + (ISR[`j',4]/100)*(ing_bruto_tax - exen_tot - deduc_isr - CUOTAS - ISR[`j',1]) if categF == "J`j'K`k'"
-
-		*replace SE = SE[`k',3]*htrab/48 if categ == "i`j's`k'" & htrab < 40 & formal != 0
-		replace SE = SE[`k',3] if categF == "J`j'K`k'" /*& htrab >= 40*/
+		replace SE = SE[`k',3] if categF == "J`j'K`k'"
 	}
 }
 
 
+************************
+** Subsidio al empleo **
+replace SE = SE*.1492/.131
+
+
 ******************
 ** ISR SALARIOS **
-replace formal_asalariados = prob_salarios >= (1-DED[1,4]/100)
-
-g ISRAS = ISR*3.167/(3.167+0.176)
-replace ISRAS = ISRAS if formal_asalariados == 1
-replace ISRAS = ISRAS*3.642/3.563
-
-* Subsidio al empleo *
-replace SE = SE*.1492/.226
+replace formal_asalariados = prop_salarios <= (1-DED[1,4]/100) & prop_salarios != .
+g ISRAS = ISR*(ing_subor+cuotasTPF)/(ing_bruto_tax)
+replace ISRAS = 0 if formal_asalariados == 0
+replace ISRAS = ISRAS*3.691/2.442
 
 
 **************************
 ** ISR PERSONAS FISICAS **
-replace formal_fisicas = prob_formal >= (1-DED[1,3]/100)
+replace formal_fisicas = prop_formal <= (1-DED[1,3]/100) & prop_formal != .
 
-g ISRPF = ISR*0.176/(3.167+0.176)
-replace ISRPF = 0 if formal_fisicas == 0 | ISRPF == . | ISRPF < 0
-replace ISRPF = ISRPF*0.234/0.223
+g ISRPF = ISR*(1-(ing_subor+cuotasTPF)/(ing_bruto_tax))
+replace ISRPF = 0 if formal_fisicas == 0
+replace ISRPF = ISRPF*0.234/0.254
 
 
 **************************
 ** ISR PERSONAS MORALES **
-replace formal_morales = prop_moral <= (1-PM[1,2]/100)
+replace formal_morales = prop_moral <= (1-PM[1,2]/100) & prop_moral != .
 
 tabstat SE [fw=factor] if formal_asalariados == 1, stat(sum) f(%20.0fc) save
 tempname SE
@@ -184,12 +183,12 @@ Distribucion SE_empresas, relativo(ing_bruto_tpm) macro(`=`SE'[1,1]')
 
 replace ISRPM = (ing_bruto_tpm-exen_tpm)*PM[1,1]/100 - SE_empresas if formal_morales == 1
 replace ISRPM = 0 if ISRPM == .
-replace ISRPM = ISRPM*4.009/4.891
+replace ISRPM = ISRPM*4.063/4.138
 
 
 *****************
 ** CUOTAS IMSS **
-replace CUOTAS = CUOTAS*1.557/1.501 if formal2 == 1
+replace CUOTAS = CUOTAS*1.578/1.419 if formal2 == 1
 
 
 ***************
