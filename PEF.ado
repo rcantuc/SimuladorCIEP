@@ -215,13 +215,13 @@ quietly {
 
 	** 5.2 Gasto neto **
 	* Aportaciones y cuotas de la Federacion *
-	capture tabstat gasto if anio == `anio' & transf_gf == 1, stat(sum) f(%20.0fc) save by(`by')
+	capture tabstat gasto gastoPIB if anio == `anio' & transf_gf == 1, stat(sum) f(%20.0fc) save by(`by')
 	tempname Aportaciones_Federacion
 	if _rc == 0 {
 		matrix `Aportaciones_Federacion' = r(StatTotal)
 	}
 	else {
-		matrix `Aportaciones_Federacion' = J(1,1,0)
+		matrix `Aportaciones_Federacion' = J(1,2,0)
 	}
 	return scalar Aportaciones_a_Seguridad_Social = `Aportaciones_Federacion'[1,1]
 	local k = 1

@@ -16,7 +16,7 @@ run "`c(sysdir_personal)'profile.do"
 global id = "ciepmx"			// IDENTIFICADOR DEL USUARIO
 //global nographs "nographs"		// SUPRIMIR GRAFICAS
 //global output "output"		// ARCHIVO DE SALIDA (WEB)
-global export "`c(sysdir_personal)'../../+EquipoCIEP/Boletines/Consolidación fiscal/images" // IMÁGENES A EXPORTAR
+//global export "`c(sysdir_personal)'../../+EquipoCIEP/Boletines/Consolidación fiscal/images" // IMÁGENES A EXPORTAR
 //global update "update"		// UPDATE BASES DE DATOS
 
 ** 0.2 Archivos output **
@@ -49,6 +49,15 @@ if "$output" != "" {
 
 ** 1.5 Presupuesto de Egresos de la Federación **
 //noisily PEF, by(divSIM) rows(2) min(0) anio(`=anioPE') desde(2013) title("Gasto presupuestario") $update
+//noisily PEF if divSIM == "Inversión" & ramo == 18, by(desc_ur)
+//noisily PEF if clave_cartera == "2021w3n0001" /// Tren Maya
+//	| clave_cartera == "13093110008" /// Interubano Toluca
+//	| clave_cartera == "20093110004" /// Suburbano-AIFA
+//	| (clave_cartera == "2009d000005" | clave_cartera == "1909j3l0001" | clave_cartera == "2147ayh0001" ///
+//	| clave_cartera == "2247j3l0001" | clave_cartera == "2247ayh0001" | clave_cartera == "1409j3l0003" ///
+//	| clave_cartera == "2047ayh0002" /// Itsmo
+//	| desc_ur == 1184 | desc_ur == 316 & divSIM == "Inversión"), /// Itsmo
+//	by(ramo)
 
 //noisily SHRFSP, anio(`=anioPE') $update ultanio(2008)
 
@@ -82,8 +91,8 @@ if "`cambioiva'" == "1" {
 }
 
 ** Integración de módulos ***
-//noisily TasasEfectivas, anio(`=anioPE')
-//noisily GastoPC, aniope(`=anioPE') aniovp(`=aniovp')
+noisily TasasEfectivas, anio(`=anioPE')
+noisily GastoPC, aniope(`=anioPE') aniovp(`=aniovp')
 
 
 
@@ -99,15 +108,15 @@ capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/users/$
 
 ** 3.1 (+) Impuestos y aportaciones **
 capture drop ImpuestosAportaciones
-egen ImpuestosAportaciones = rsum(ISRAS ISRPF CUOTAS ISRPM OTROSK IVA IEPSNP IEPSP ISAN IMPORT) //FMP
+egen ImpuestosAportaciones = rsum(ISRPM OTROSK) //FMP ISRAS ISRPF CUOTAS IVA IEPSNP IEPSP ISAN IMPORT
 label var ImpuestosAportaciones "Impuestos, cuotas y otras contribuciones"
-noisily Perfiles ImpuestosAportaciones [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
+*noisily Perfiles ImpuestosAportaciones [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
 
 ** 3.2 (-) Impuestos y aportaciones **
 capture drop Transferencias
-egen Transferencias = rsum(Educación Salud Pensiones Pensión_AM Otras_inversiones IngBasico)
+egen Transferencias = rsum(Pensiones Pensión_AM Otras_inversiones IngBasico Educación Salud)
 label var Transferencias "Transferencias públicas"
-noisily Perfiles Transferencias [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
+*noisily Perfiles Transferencias [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
 
 ** 3.3 (=) Aportaciones netas **
 capture drop AportacionesNetas
@@ -120,8 +129,9 @@ noisily Perfiles AportacionesNetas [fw=factor], aniovp(`=aniovp') aniope(`=anioP
 
 ** 3.5 (*) Sankey del sistema fiscal **
 foreach k in decil grupoedad /*sexo rural escol*/ {
-	//noisily run "`c(sysdir_personal)'/SankeySF.do" `k' `=anioPE'
+	noisily run "`c(sysdir_personal)'/SankeySF.do" `k' `=anioPE'
 }
+
 
 
 
@@ -140,7 +150,7 @@ noisily FiscalGap, anio(`=anioPE') end(2030) aniomin(2014) $nographs desde(2013)
 ****                    ****
 ****************************
 if "$output" == "output" {
-	run "output.do"
+	run "`c(sysdir_personal)'/output.do"
 }
 timer off 1
 timer list 1

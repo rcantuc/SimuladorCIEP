@@ -10,12 +10,7 @@ capture log close _all
 timer on 1
 
 ** 0.1 Rutas de archivos  **
-if "`c(username)'" == "ricardo" ///                                 // iMac Ricardo
-	sysdir set PERSONAL "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
-else if "`c(username)'" == "ciepmx" & "`c(console)'" == "" ///      // Servidor CIEP
-	sysdir set PERSONAL "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
-else ///														    // Servidor VPS (web)
-	sysdir set PERSONAL "/SIM/OUT/6/"
+sysdir set PERSONAL "/SIM/OUT/6/"
 cd `"`c(sysdir_personal)'"'
 
 **  0.2 Opciones globales  **
@@ -40,7 +35,7 @@ if "$output" != "" {
 **#    1. MARCO MACRO   ***
 ***                     ***
 ***************************
-global paqueteEconomico "PE 2024"
+global paqueteEconomico "Pre-CGPE 2025"
 scalar anioPE = 2024
 scalar aniovp = 2024
 scalar anioenigh = 2022
@@ -53,26 +48,26 @@ scalar anioenigh = 2022
 //}
 
 ** 1.2 Parámetros: PIB, Deflactor e Inflación **
-global pib2024 = {{CRECPIB2024}}
-global pib2025 = {{CRECPIB2025}}
-global pib2026 = {{CRECPIB2026}}
-global pib2027 = {{CRECPIB2027}}
-global pib2028 = {{CRECPIB2028}}
-global pib2029 = {{CRECPIB2029}}
+scalar pib2024 = {{CRECPIB2024}}
+scalar pib2025 = {{CRECPIB2025}}
+scalar pib2026 = {{CRECPIB2026}}
+scalar pib2027 = {{CRECPIB2027}}
+scalar pib2028 = {{CRECPIB2028}}
+scalar pib2029 = {{CRECPIB2029}}
 
-global def2024 = {{CRECDEF2024}}
-global def2025 = {{CRECDEF2025}}
-global def2026 = {{CRECDEF2026}}
-global def2027 = {{CRECDEF2027}}
-global def2028 = {{CRECDEF2028}}
-global def2029 = {{CRECDEF2029}}
+scalar def2024 = {{CRECDEF2024}}
+scalar def2025 = {{CRECDEF2025}}
+scalar def2026 = {{CRECDEF2026}}
+scalar def2027 = {{CRECDEF2027}}
+scalar def2028 = {{CRECDEF2028}}
+scalar def2029 = {{CRECDEF2029}}
 
-global inf2024 = 3.8
-global inf2025 = 3.3
-global inf2026 = 3.0
-global inf2027 = 3.0
-global inf2028 = 3.0
-global inf2029 = 3.0
+scalar inf2024 = 3.8
+scalar inf2025 = 3.3
+scalar inf2026 = 3.0
+scalar inf2027 = 3.0
+scalar inf2028 = 3.0
+scalar inf2029 = 3.0
 
 //noisily PIBDeflactor, geodef(2005) geopib(2005) $update aniovp(`=aniovp')
 
@@ -336,7 +331,7 @@ label var Transferencias "transferencias públicas"
 capture drop AportacionesNetas
 g AportacionesNetas = ImpuestosAportaciones - Transferencias
 label var AportacionesNetas "aportaciones netas"
-noisily Perfiles AportacionesNetas [fw=factor], reboot aniovp(2024) aniope(`=anioPE') $nographs //boot(20)
+noisily Perfiles AportacionesNetas [fw=factor], aniovp(2024) aniope(`=anioPE') $nographs //boot(20)
 
 
 ************************************
@@ -455,9 +450,24 @@ scalar balprimario2029 = -0.3
 scalar costodeudaInterno2029 = 2.5
 scalar costodeudaExterno2029 = 2.5
 
+scalar shrfsp2030 = 48.8
+scalar shrfspInterno2030 = 38.9
+scalar shrfspExterno2030 = 10.0
+scalar rfsp2030 = -2.7
+scalar rfspPIDIREGAS2030 = -0.1
+scalar rfspIPAB2030 = -0.1
+scalar rfspFONADIN2030 = 0.0
+scalar rfspDeudores2030 = 0.0
+scalar rfspBanca2030 = 0.0
+scalar rfspAdecuaciones2030 = -0.3
+scalar rfspBalance2030 = -2.2
+scalar tipoDeCambio2030 = 18.6
+scalar balprimario2030 = -0.3
+scalar costodeudaInterno2030 = 2.5
+scalar costodeudaExterno2030 = 2.5
 
 ** 4.3 Sostenibilidad de la deuda y brecha fiscal **
-noisily FiscalGap, anio(`=anioPE') end(2030) aniomin(2016) $nographs desde(2016) discount(10) //update //anio(`=aniovp')
+noisily FiscalGap, anio(`=anioPE') end(2030) aniomin(2013) $nographs desde(2013) discount(10) //update //anio(`=aniovp')
 
 
 

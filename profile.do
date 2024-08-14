@@ -11,7 +11,7 @@ set charset latin1, permanently
 
 * 1.1 Identificador del usuario *
 global id = "`c(username)'"
-sysdir set PERSONAL "`c(sysdir_site)'"
+*sysdir set PERSONAL "`c(sysdir_site)'"
 
 
 * 1.2 Carpetas de trabajo *
@@ -24,7 +24,7 @@ capture mkdir "`c(sysdir_personal)'/users/$id/"
 ********************
 ***              ***
 *** 2 PARÁMETROS ***
-***		         ***
+***		 ***
 ********************
 
 ** 2.1 Entidades Federativas **
@@ -61,6 +61,9 @@ scalar pib2026 = 2.5
 scalar pib2027 = 2.5
 scalar pib2028 = 2.5
 scalar pib2029 = 2.5
+forvalues k = 2030(1)2040 {
+	scalar pib`k' = scalar(pib2029)
+}
 
 ** 2.6 Economía: Deflactor del Producto Interno Bruto **
 scalar def2024 = 4.1
@@ -69,6 +72,9 @@ scalar def2026 = 3.5
 scalar def2027 = 3.5
 scalar def2028 = 3.5
 scalar def2029 = 3.5
+forvalues k = 2030(1)2040 {
+	scalar def`k' = scalar(def2029)
+}
 
 ** 2.7 Economía: Inflación **
 scalar inf2024 = 3.8
@@ -77,6 +83,9 @@ scalar inf2026 = 3.0
 scalar inf2027 = 3.0
 scalar inf2028 = 3.0
 scalar inf2029 = 3.0
+forvalues k = 2030(1)2040 {
+	scalar inf`k' = scalar(inf2029)
+}
 
 ** 2.8 Deuda Pública **
 scalar tasaEfectiva = 6.134738
@@ -295,11 +304,11 @@ matrix	SE =  (0.01,			1768.96*12,		407.02*12		\    /// 1
 
 * Artículo 151, último párrafo (LISR) *
 *            Ex. SS.MM.	Ex. 	% ing. gravable		% Informalidad PF	% Informalidad Salarios
-matrix DED = (5,		15,			62.07, 			27.03)
+matrix DED = (5,		15,			87.30, 			25.02)
 
 * Artículo 9, primer párrafo (LISR) * 
 *           Tasa ISR PM.	% Informalidad PM
-matrix PM = (30,			15.23)
+matrix PM = (30,			30.55)
 
 ** 2.12 Parámetros: IMSS e ISSSTE **
 * Informe al Ejecutivo Federal y al Congreso de la Unión la situación financiera y los riesgos del IMSS 2021-2022 *

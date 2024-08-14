@@ -635,6 +635,9 @@ quietly {
 	scalar ExNOpSoc = ExNOpSoc[`obs']
 	scalar ExNOpSocPIB = ExNOpSoc[`obs']/PIB[`obs']*100
 
+	scalar MixK = MixK[`obs']
+	scalar MixKPIB = MixK[`obs']/PIB[`obs']*100	
+	
 	scalar MixKN = MixKN[`obs']
 	scalar MixKNPIB = MixKN[`obs']/PIB[`obs']*100
 
