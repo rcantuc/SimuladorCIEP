@@ -151,7 +151,7 @@ forvalues j=`=rowsof(ISR)'(-1)1 {
 
 ************************
 ** Subsidio al empleo **
-replace SE = SE*.1492/.131
+replace SE = SE*.1492/.109
 
 
 ******************
@@ -159,7 +159,7 @@ replace SE = SE*.1492/.131
 replace formal_asalariados = prop_salarios <= (1-DED[1,4]/100) & prop_salarios != .
 g ISRAS = ISR*(ing_subor+cuotasTPF)/(ing_bruto_tax)
 replace ISRAS = 0 if formal_asalariados == 0
-replace ISRAS = ISRAS*3.691/2.442
+replace ISRAS = ISRAS*3.798/2.925
 
 
 **************************
@@ -168,7 +168,7 @@ replace formal_fisicas = prop_formal <= (1-DED[1,3]/100) & prop_formal != .
 
 g ISRPF = ISR*(1-(ing_subor+cuotasTPF)/(ing_bruto_tax))
 replace ISRPF = 0 if formal_fisicas == 0
-replace ISRPF = ISRPF*0.234/0.254
+replace ISRPF = ISRPF*0.241/0.348
 
 
 **************************
@@ -183,12 +183,12 @@ Distribucion SE_empresas, relativo(ing_bruto_tpm) macro(`=`SE'[1,1]')
 
 replace ISRPM = (ing_bruto_tpm-exen_tpm)*PM[1,1]/100 - SE_empresas if formal_morales == 1
 replace ISRPM = 0 if ISRPM == .
-replace ISRPM = ISRPM*4.063/4.138
+replace ISRPM = ISRPM*4.181/4.797
 
 
 *****************
 ** CUOTAS IMSS **
-replace CUOTAS = CUOTAS*1.578/1.419 if formal2 == 1
+replace CUOTAS = CUOTAS*1.624/1.419 if formal2 == 1
 
 
 ***************

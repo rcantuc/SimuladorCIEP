@@ -88,7 +88,7 @@ forvalues k = 2030(1)2040 {
 }
 
 ** 2.8 Deuda Pública **
-scalar tasaEfectiva = 6.134738
+scalar tasaEfectiva = 6.2166
 
 scalar shrfsp2024 = 50.2
 scalar shrfspInterno2024 = 38.8
@@ -253,24 +253,24 @@ scalar gasmadres   =     489 //    Apoyo a madres trabajadoras
 scalar gascuidados =    3174 //    Gasto en cuidados
 
 ** 2.10 Parámetros: Ingresos **
-scalar ISRAS       =   3.691 		// ISR (asalariados)
-scalar ISRPF       =   0.234 		// ISR (personas f{c i'}sicas)
-scalar CUOTAS      =   1.578	 	// Cuotas (IMSS)
+scalar ISRAS       =   3.798 //    ISR (asalariados)
+scalar ISRPF       =   0.241 //    ISR (personas f{c i'}sicas)
+scalar CUOTAS      =   1.624 //    Cuotas (IMSS)
 
-scalar ISRPM       =   4.063 		// ISR (personas morales)
-scalar OTROSK      =   1.043	 	// Productos, derechos, aprovech.
+scalar ISRPM       =   4.181 //    ISR (personas morales)
+scalar OTROSK      =   1.073 //    Productos, derechos, aprovech.
 
-scalar FMP         =   0.894  		// Fondo Mexicano del Petróleo
-scalar PEMEX       =   2.194  		// Organismos y empresas (Pemex)
-scalar CFE         =   1.317  		// Organismos y empresas (CFE)
-scalar IMSS        =   0.125  		// Organismos y empresas (IMSS)
-scalar ISSSTE      =   0.157 	 	// Organismos y empresas (ISSSTE)
+scalar FMP         =   0.920 //    Fondo Mexicano del Petróleo
+scalar PEMEX       =   2.258 //    Organismos y empresas (Pemex)
+scalar CFE         =   1.356 //    Organismos y empresas (CFE)
+scalar IMSS        =   0.128 //    Organismos y empresas (IMSS)
+scalar ISSSTE      =   0.162 //    Organismos y empresas (ISSSTE)
 
-scalar IVA         =   3.921  		// IVA
-scalar ISAN        =   0.057  		// ISAN
-scalar IEPSNP      =   0.683 		// IEPS (no petrolero)
-scalar IEPSP       =   1.345 		// IEPS (petrolero)
-scalar IMPORT      =   0.301 		// Importaciones
+scalar IVA         =   4.036 //    IVA
+scalar ISAN        =   0.059 //    ISAN
+scalar IEPSNP      =   0.703 //    IEPS (no petrolero)
+scalar IEPSP       =   1.384 //    IEPS (petrolero)
+scalar IMPORT      =   0.309 //    Importaciones
 
 ** 2.11 Parámetros: ISR **
 * Anexo 8 de la Resolución Miscelánea Fiscal para 2024 *
