@@ -219,7 +219,7 @@ save `GastoFedBase'
 *cd "`c(sysdir_site)'../BasesCIEP/UPDATE/Subnacional/CDMX"
 *unzipfile "https://www.inegi.org.mx/contenidos/programas/finanzas/datosabiertos/efipem_cdmx_csv.zip", replace
 
-forvalues anio=2013(1)2023 {
+forvalues anio=2007(1)2023 {
 
 	***************
 	** 4.1 Bases **
