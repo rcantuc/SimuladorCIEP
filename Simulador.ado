@@ -912,7 +912,7 @@ program define ProyGraph
 
 	args varlist aniope nographs
 
-	PIBDeflactor, nographs nooutput desde(`=`aniope'-10')
+	PIBDeflactor, nographs nooutput
 	tempfile PIB
 	save `PIB'
 	
