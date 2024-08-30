@@ -92,7 +92,7 @@ noisily GastoPC, aniope(`=anioPE') aniovp(`=aniovp')
 ***                        ***
 **#    3. CICLO DE VIDA    ***
 ***                        ***
-******************************
+/******************************
 use `"`c(sysdir_personal)'/users/$id/ingresos.dta"', clear
 merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/users/$id/gastos.dta", nogen
 capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/users/$id/isr_mod.dta", nogen replace update keepus(ISRAS ISRPF ISRPM CUOTAS)

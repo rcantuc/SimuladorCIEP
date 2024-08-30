@@ -112,13 +112,13 @@ capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/users/$
 capture drop ImpuestosAportaciones
 egen ImpuestosAportaciones = rsum(ISRPM OTROSK FMP ISRAS ISRPF CUOTAS IVA IEPSNP IEPSP ISAN IMPORT)
 label var ImpuestosAportaciones "Impuestos, cuotas y otras contribuciones"
-*noisily Perfiles ImpuestosAportaciones [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
+noisily Perfiles ImpuestosAportaciones [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
 
 ** 3.2 (-) Impuestos y aportaciones **
 capture drop Transferencias
 egen Transferencias = rsum(Pensiones Pensión_AM Otras_inversiones IngBasico Educación Salud)
 label var Transferencias "Transferencias públicas"
-*noisily Perfiles Transferencias [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
+noisily Perfiles Transferencias [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
 
 ** 3.3 (=) Aportaciones netas **
 capture drop AportacionesNetas
@@ -142,7 +142,7 @@ foreach k in decil grupoedad /*sexo rural escol*/ {
 **#    4. PARTE IV: DEUDA + FISCAL GAP    ***
 ***                                       ***
 *********************************************
-noisily FiscalGap, anio(`=anioPE') end(2030) aniomin(2014) $nographs desde(2018) //discount(10) //update //anio(`=aniovp')
+noisily FiscalGap, anio(`=anioPE') end(2030) aniomin(2014) $nographs desde(2014) //discount(10) //update //anio(`=aniovp')
 
 
 
