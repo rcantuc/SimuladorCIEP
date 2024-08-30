@@ -18,7 +18,7 @@ else if "`c(console)'" != "" ///      // Web
 	sysdir set PERSONAL "/SIM/OUT/6/"
 cd "`c(sysdir_personal)'"
 
-*run "`c(sysdir_personal)'profile.do"
+run "`c(sysdir_personal)'profile.do"
 scalar anioPE = 2024
 scalar aniovp = 2024
 scalar anioenigh = 2022
