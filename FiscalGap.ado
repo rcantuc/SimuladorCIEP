@@ -99,7 +99,7 @@ quietly {
 
 		tempvar estimacion
 		g `estimacion' = estimacion
-		replace estimacion = `estimacion'/L.`estimacion'*       /// Cambio demográfico (PerfilesSim.do)
+		replace estimacion = `estimacion'/L.`estimacion'*           /// Cambio demográfico (PerfilesSim.do)
 			(scalar(`k'))/100*scalar(pibY)*                     /// Estimación como % del PIB (TasasEfectivas.ado)
 			(1+``k'C'/100)^(anio-`anio')                        /// Tendencia de largo plazo (LIF.ado)
 			if anio > `anio'
@@ -135,7 +135,7 @@ quietly {
 	** 4.4 Graphs **
 	if "`nographs'" != "nographs" & "$nographs" != "nographs" {
 		//noisily tabstat recaudacion_pib estimacionRecaudacion_pib if anio >= `aniomin', stat(sum) by(anio) save
-		graph bar (sum) recaudacion_pib if anio < `anio' & anio >= `aniomin', ///
+		graph bar (sum) recaudacion_pib if anio <= `anio' & anio >= `desde', ///
 			over(divSIM) ///
 			over(anio, gap(0)) ///
 			ytitle("% PIB") ///
@@ -146,7 +146,7 @@ quietly {
 			name(Proy_ingresos1) ///
 			title(Observado)
 
-		graph bar (sum) estimacionRecaudacion_pib if anio >= `anio', ///
+		graph bar (sum) estimacionRecaudacion_pib if anio > `anio', ///
 			over(divSIM) ///
 			over(anio, gap(0)) ///
 			ytitle("") ylabel(, labcolor(white)) ///
@@ -336,7 +336,7 @@ quietly {
 	** 5.4 Graphs **
 	if "`nographs'" != "nographs" & "$nographs" != "nographs" {
 		//noisily tabstat gasto_pib estimacionGasto if anio >= `aniomin', stat(sum) by(anio) save
-		graph bar (sum) gasto_pib if anio < `anio' & anio >= `aniomin' & divSIM != "Costo de la deuda", ///
+		graph bar (sum) gasto_pib if anio <= `anio' & anio >= `desde' & divSIM != "Costo de la deuda", ///
 			over(divSIM) ///
 			over(anio, gap(0)) ///
 			ytitle("% PIB") ///
@@ -347,7 +347,7 @@ quietly {
 			name(Proy_gastos1) ///
 			title(Observado)
 
-		graph bar (sum) estimacionGasto_pib if anio >= `anio' & divSIM != "Costo de la deuda", ///
+		graph bar (sum) estimacionGasto_pib if anio > `anio' & divSIM != "Costo de la deuda", ///
 			over(divSIM) ///
 			over(anio, gap(0)) ///
 			ytitle("") ylabel(none) ///
@@ -460,12 +460,12 @@ quietly {
 	format estimacion* %20.0fc
 	capture confirm scalar gascosto
 	if _rc == 0 {
-		replace estimacionCosto_de_la_deuda = scalar(gascosto)*Poblacion if anio == `anio'
-		replace gastoCosto_de_la_deuda = estimacionCosto_de_la_deuda if anio == `anio'
-		replace estimacionGasto_pib = estimacionGasto_pib/pibY*100 if anio == `anio'
+		replace estimacionCosto_de_la_deuda = scalar(gascosto)*Poblacion if anio > `anio'
+		replace gastoCosto_de_la_deuda = estimacionCosto_de_la_deuda if anio > `anio'
+		replace estimacionGasto_pib = estimacionGasto_pib/pibY*100 if anio > `anio'
 
 		* Reestimar la tasa efectiva para el año `anio' *
-		replace tasaEfectiva = gastoCosto_de_la_deuda/L.shrfsp*100 if anio == `anio'
+		replace tasaEfectiva = gastoCosto_de_la_deuda/L.shrfsp*100 if anio > `anio'
 		format %20.0fc *Costo_de_la_deuda
 	}
 
@@ -489,7 +489,7 @@ quietly {
 
 	* SHRFSP externo en USD *
 	g shrfspExternoUSD = shrfspExterno/tipoDeCambio
-	replace tipoDeCambio = L.tipoDeCambio + depreciacion if anio >= `anio'
+	replace tipoDeCambio = L.tipoDeCambio + depreciacion if anio > `anio'
 	replace shrfspExternoUSD = shrfspExterno/tipoDeCambio
 
 	g efectoTipoDeCambio = shrfspExternoUSD*(tipoDeCambio-L.tipoDeCambio)
@@ -533,7 +533,7 @@ quietly {
 
 	**********************************************************
 	** 5.5 Iteraciones para el costo financiero de la deuda **
-	forvalues k = `=`anio''(1)`=anio[_N]' {
+	forvalues k = `=`anio'+1'(1)`=anio[_N]' {
 
 		* Costo de la deuda *
 		replace estimacionCosto_de_la_deuda = tasaEfectiva/100*L.shrfsp if anio == `k'
@@ -568,12 +568,12 @@ quietly {
 	****************
 	** 5.6 Graphs **
 	if "`nographs'" != "nographs" & "$nographs" != "nographs" {
-		twoway (area rfsp_pib anio if anio < `anio' & anio >= `aniomin') ///
-			(area rfsp_pib anio if anio >= `anio' & anio <= `end'), ///
+		twoway (area rfsp_pib anio if anio <= `anio' & anio >= `desde') ///
+			(area rfsp_pib anio if anio > `anio' & anio <= `end'), ///
 			yscale(range(0)) ///
 			ytitle(% PIB) ///
 			xtitle("") ///
-			xlabel(`aniomin'(1)`=round(anio[_N],10)') ///
+			xlabel(`desde'(1)`=round(anio[_N],10)') ///
 			xline(`=`anio'+.5') ///
 			legend(off) ///
 			///text(`=rfsp_pib[`obs`anio_last'']*.1' `=`anio'+1.5' "{bf:Proyecci{c o'}n}", color(white) placement(e)) ///
@@ -676,13 +676,13 @@ quietly {
 			local graphfuente ""
 		}
 
-		twoway (connected shrfsp_pib anio if shrfsp_pib != . & anio < `anio' & anio >= `aniomin', mlabel(shrfsp_pib) mlabpos(0) mlabcolor(black) mlabgap(0pt)) ///
-			(connected shrfsp_pib anio if anio >= `anio' & anio <= `end', mlabel(shrfsp_pib) mlabpos(0) mlabcolor(black) mlabgap(0pt)), ///
+		twoway (connected shrfsp_pib anio if shrfsp_pib != . & anio <= `anio' & anio >= `desde', mlabel(shrfsp_pib) mlabpos(0) mlabcolor(black) mlabgap(0pt)) ///
+			(connected shrfsp_pib anio if anio > `anio' & anio <= `end', mlabel(shrfsp_pib) mlabpos(0) mlabcolor(black) mlabgap(0pt)), ///
 			title("`graphtitle'") ///
 			subtitle("{bf:Como % del PIB}") ///
 			caption("`graphfuente'") ///
 			xtitle("") ytitle(% PIB) ///
-			xlabel(`aniomin'(1)`end') ///
+			xlabel(`desde'(1)`end') ///
 			yscale(range(0)) ///
 			legend(off) ///
 			///text(`=shrfsp_pib[`obs`anio_last'']*.1' `=`anio'+1.5' "{bf:Proyecci{c o'}n}", color(white) placement(e)) ///
@@ -703,15 +703,15 @@ quietly {
 			local graphfuente ""
 		}
 
-		twoway (connected shrfspPC anio if shrfsp_pib != . & anio < `anio'-1 & anio >= `aniomin', mlabel(shrfspPC) mlabpos(0) mlabcolor(black) mlabgap(0pt)) ///
-			(connected shrfspPC anio if anio >= `anio'-1 & anio <= `end', mlabel(shrfspPC) mlabpos(0) mlabcolor(black) mlabgap(0pt)), ///
+		twoway (connected shrfspPC anio if shrfsp_pib != . & anio <= `anio' & anio >= `desde', mlabel(shrfspPC) mlabpos(0) mlabcolor(black) mlabgap(0pt)) ///
+			(connected shrfspPC anio if anio > `anio' & anio <= `end', mlabel(shrfspPC) mlabpos(0) mlabcolor(black) mlabgap(0pt)), ///
 			title(`graphtitle') ///
 			subtitle("{bf:Por persona ajustada}") ///
 			caption("`graphfuente'") ///
 			xtitle("") ///
 			ytitle("`currency' `aniovp' por persona") ///
 			ylabel(0(50000)200000, format(%10.0fc)) ///
-			xlabel(`aniomin'(1)`end') ///
+			xlabel(`desde'(1)`end') ///
 			legend(off) ///
 			text(`textPC2', color(black) placement(c) size(small)) ///
 			name(Proy_shrfsppc, replace)
@@ -720,7 +720,7 @@ quietly {
 			graph export `"$export/Proy_shrfsppc.png"', replace name(Proy_shrfsppc)
 		}
 
-		* Saldo de la deuda combinada *
+		/* Saldo de la deuda combinada *
 		if "$export" == "" {
 			local graphtitle "{bf:Saldo hist{c o'}rico de RFSP}"
 			local graphfuente "{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5."
@@ -747,7 +747,7 @@ quietly {
 
 		if "$export" != "" {
 			graph export `"$export/Proy_combinado.png"', replace name(Proy_combinado)
-		}
+		}*/
 	}
 
 	noisily di in g "  " _dup(61) "-"

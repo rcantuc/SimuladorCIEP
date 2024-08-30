@@ -271,11 +271,11 @@ quietly {
 	noisily di in g "{bf:  (=) Ingresos (sin deuda)" ///
 		_col(30) in y %20.0fc `sindeudatot'[1,1] ///
 		_col(52) in y %7.3fc `sindeudatot'[1,2] ///
-		_col(61) in y %7.1fc (`sindeudatot'[1,1]/`sindeudatotpre'[1,1]-1)*100 "}"
+		_col(61) in y %7.1fc ((`sindeudatot'[1,1]/`sindeudatotpre'[1,1])^(1/(`=`anio'-`desde''))-1)*100 "}"
 	
 	return scalar Ingresos_sin_deuda = `sindeudatot'[1,1]
 	return scalar Ingresos_sin_deudaPIB = `sindeudatot'[1,2]
-	return scalar Ingresos_sin_deudaC = (`sindeudatot'[1,1]/`sindeudatotpre'[1,1]-1)*100
+	return scalar Ingresos_sin_deudaC = ((`sindeudatot'[1,1]/`sindeudatotpre'[1,1])^(1/(`=`anio'-`desde''))-1)*100
 
 
 	**********************

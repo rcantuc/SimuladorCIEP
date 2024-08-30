@@ -9,17 +9,29 @@ macro drop _all
 capture log close _all
 timer on 1
 
-run "`c(sysdir_personal)'/sysprofile.do"
-run "`c(sysdir_personal)'profile.do"
+**  0.1 Rutas de archivos  **
+if "`c(username)'" == "ricardo" ///                                 // iMac Ricardo
+	sysdir set PERSONAL "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
+else if "`c(username)'" == "ciepmx" & "`c(console)'" == "" ///      // Servidor CIEP
+	sysdir set PERSONAL "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
+else if "`c(console)'" != "" ///      // Web
+	sysdir set PERSONAL "/SIM/OUT/6/"
+cd "`c(sysdir_personal)'"
 
-**  0.1 Opciones globales  **
+*run "`c(sysdir_personal)'profile.do"
+scalar anioPE = 2024
+scalar aniovp = 2024
+scalar anioenigh = 2022
+global paqueteEconomico "Pre-CGPE 2025"
+
+**  0.2 Opciones globales  **
 global id = "ciepmx"			// IDENTIFICADOR DEL USUARIO
 //global nographs "nographs"		// SUPRIMIR GRAFICAS
 //global output "output"		// ARCHIVO DE SALIDA (WEB)
 //global export "`c(sysdir_personal)'../../+EquipoCIEP/Boletines/Consolidación fiscal/images" // IMÁGENES A EXPORTAR
 //global update "update"		// UPDATE BASES DE DATOS
 
-** 0.2 Archivos output **
+** 0.3 Archivos output **
 if "$output" != "" {
 	quietly log using `"`c(sysdir_personal)'/users/$id/output.txt"', replace text name(output)
 	quietly log off output
@@ -48,17 +60,7 @@ if "$output" != "" {
 //noisily LIF, by(divCIEP) rows(2) anio(`=anioPE') $update desde(2008) min(1) title("Ingresos presupuestarios")
 
 ** 1.5 Presupuesto de Egresos de la Federación **
-//noisily PEF, by(divSIM) rows(2) min(0) anio(`=anioPE') desde(2013) title("Gasto presupuestario") $update
-//noisily PEF if divSIM == "Inversión" & ramo == 18, by(desc_ur)
-//noisily PEF if clave_cartera == "2021w3n0001" /// Tren Maya
-//	| clave_cartera == "13093110008" /// Interubano Toluca
-//	| clave_cartera == "20093110004" /// Suburbano-AIFA
-//	| (clave_cartera == "2009d000005" | clave_cartera == "1909j3l0001" | clave_cartera == "2147ayh0001" ///
-//	| clave_cartera == "2247j3l0001" | clave_cartera == "2247ayh0001" | clave_cartera == "1409j3l0003" ///
-//	| clave_cartera == "2047ayh0002" /// Itsmo
-//	| desc_ur == 1184 | desc_ur == 316 & divSIM == "Inversión"), /// Itsmo
-//	by(ramo)
-
+//noisily PEF, by(divSIM) rows(2) min(0) anio(`=anioPE') desde(2013) title("Gasto presupuestario") //$update
 //noisily SHRFSP, anio(`=anioPE') $update ultanio(2008)
 
 ** 1.7 Subnacionales **
@@ -67,7 +69,7 @@ if "$output" != "" {
 ** 1.8 Perfiles **
 forvalues anio = `=anioPE'(2)`=anioPE' {
 	capture confirm file "`c(sysdir_personal)'/SIM/perfiles`anio'.dta"
-	if _rc != 0 ///
+	if _rc != 0 | "$update" == "update" ///
 		noisily run "`c(sysdir_personal)'/PerfilesSim.do" `anio'
 }
 
@@ -108,7 +110,7 @@ capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/users/$
 
 ** 3.1 (+) Impuestos y aportaciones **
 capture drop ImpuestosAportaciones
-egen ImpuestosAportaciones = rsum(ISRPM OTROSK) //FMP ISRAS ISRPF CUOTAS IVA IEPSNP IEPSP ISAN IMPORT
+egen ImpuestosAportaciones = rsum(ISRPM OTROSK FMP ISRAS ISRPF CUOTAS IVA IEPSNP IEPSP ISAN IMPORT)
 label var ImpuestosAportaciones "Impuestos, cuotas y otras contribuciones"
 *noisily Perfiles ImpuestosAportaciones [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
 
@@ -140,7 +142,7 @@ foreach k in decil grupoedad /*sexo rural escol*/ {
 **#    4. PARTE IV: DEUDA + FISCAL GAP    ***
 ***                                       ***
 *********************************************
-noisily FiscalGap, anio(`=anioPE') end(2030) aniomin(2014) $nographs desde(2013) //discount(10) //update //anio(`=aniovp')
+noisily FiscalGap, anio(`=anioPE') end(2030) aniomin(2014) $nographs desde(2018) //discount(10) //update //anio(`=aniovp')
 
 
 
