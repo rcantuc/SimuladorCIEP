@@ -2492,7 +2492,7 @@ scalar giniPIBF = string(`gini_ingbrutotot',"%5.3f")
 **********************************
 merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/`enighanio'/expenditures.dta", nogen keepus(gas_pc_*)
 merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/`enighanio'/consumption_categ_iva.dta", nogen keepus(IVA)
-merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/`enighanio'/consumption_categ_ieps.dta", nogen keepus(IEPS)
+*merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/`enighanio'/consumption_categ_ieps.dta", nogen keepus(IEPS)
 
 tempvar tot_integ
 egen `tot_integ' = count(edad), by(folioviv foliohog)

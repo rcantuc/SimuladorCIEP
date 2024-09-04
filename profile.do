@@ -1,20 +1,20 @@
 *********************
 ***               ***
 *** 1 Estilo CIEP ***
-***		          ***
+***		  ***
 *********************
+clear all
+macro drop _all
+capture log close _all
+timer on 1
+
 set scheme ciepnew
 graph set window fontface "Ubuntu Light"
 set more off, permanently
 set type double, permanently
 set charset latin1, permanently
 
-* 1.1 Identificador del usuario *
 global id = "`c(username)'"
-*sysdir set PERSONAL "`c(sysdir_site)'"
-
-
-* 1.2 Carpetas de trabajo *
 capture mkdir "`c(sysdir_personal)'/SIM/"
 capture mkdir "`c(sysdir_personal)'/users/"
 capture mkdir "`c(sysdir_personal)'/users/$id/"
@@ -31,7 +31,7 @@ capture mkdir "`c(sysdir_personal)'/users/$id/"
 global entidadesL `""Aguascalientes" "Baja California" "Baja California Sur" "Campeche" "Coahuila" "Colima" "Chiapas" "Chihuahua" "Ciudad de México" "Durango" "Guanajuato" "Guerrero" "Hidalgo" "Jalisco" "Estado de México" "Michoacán" "Morelos" "Nayarit" "Nuevo León" "Oaxaca" "Puebla" "Querétaro" "Quintana Roo" "San Luis Potosí" "Sinaloa" "Sonora" "Tabasco" "Tamaulipas" "Tlaxcala" "Veracruz" "Yucatán" "Zacatecas" "Nacional" "'
 global entidadesC "Ags BC BCS Camp Coah Col Chis Chih CDMX Dgo Gto Gro Hgo Jal EdoMex Mich Mor Nay NL Oax Pue Qro QRoo SLP Sin Son Tab Tamps Tlax Ver Yuc Zac Nac"
 
-** 2.2 Anio valor presente **
+** 2.2 Valor Presente **
 local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 scalar aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 scalar aniovp = 2024
@@ -40,7 +40,7 @@ scalar aniovp = 2024
 global paqueteEconomico "Pre CGPE 2025"
 scalar anioPE = 2024
 
-** 2.4 Incidencia ENIGH **
+** 2.4 ENIGH **
 if anioPE >= 2022 {
 	scalar anioenigh = 2022
 }
@@ -61,9 +61,6 @@ scalar pib2026 = 2.5
 scalar pib2027 = 2.5
 scalar pib2028 = 2.5
 scalar pib2029 = 2.5
-forvalues k = 2030(1)2040 {
-	scalar pib`k' = scalar(pib2029)
-}
 
 ** 2.6 Economía: Deflactor del Producto Interno Bruto **
 scalar def2024 = 4.1
@@ -72,9 +69,6 @@ scalar def2026 = 3.5
 scalar def2027 = 3.5
 scalar def2028 = 3.5
 scalar def2029 = 3.5
-forvalues k = 2030(1)2040 {
-	scalar def`k' = scalar(def2029)
-}
 
 ** 2.7 Economía: Inflación **
 scalar inf2024 = 3.8
@@ -83,12 +77,9 @@ scalar inf2026 = 3.0
 scalar inf2027 = 3.0
 scalar inf2028 = 3.0
 scalar inf2029 = 3.0
-forvalues k = 2030(1)2040 {
-	scalar inf`k' = scalar(inf2029)
-}
 
 ** 2.8 Deuda Pública **
-scalar tasaEfectiva = 6.2166
+scalar tasaEfectiva = 6.2068
 
 scalar shrfsp2024 = 50.2
 scalar shrfspInterno2024 = 38.8
@@ -205,52 +196,52 @@ scalar costodeudaExterno2030 = 2.5
 
 ** 2.9 Parámetros: PEF **
 ** 2.9.1 Parámetros: Educación **
-scalar iniciaA     =     372 //    Inicial
-scalar basica      =   28768 //    Educación b{c a'}sica
-scalar medsup      =   28517 //    Educación media superior
-scalar superi      =   40942 //    Educación superior
-scalar posgra      =   67068 //    Posgrado
-scalar eduadu      =   40494 //    Educación para adultos
-scalar otrose      =    1781 //    Otros gastos educativos
-scalar invere      =     848 //    Inversión en educación
-scalar cultur      =     157 //    Cultura, deportes y recreación
-scalar invest      =     403 //    Ciencia y tecnología
+scalar iniciaA     =     363 //    Inicial
+scalar basica      =   28056 //    Educación b{c a'}sica
+scalar medsup      =   27811 //    Educación media superior
+scalar superi      =   39927 //    Educación superior
+scalar posgra      =   65408 //    Posgrado
+scalar eduadu      =   39492 //    Educación para adultos
+scalar otrose      =    1737 //    Otros gastos educativos
+scalar invere      =     827 //    Inversión en educación
+scalar cultur      =     153 //    Cultura, deportes y recreación
+scalar invest      =     393 //    Ciencia y tecnología
 
 ** 2.9.2 Parámetros: Salud **
-scalar ssa         =      62 //    SSalud
-scalar imssbien    =    5787 //    IMSS-Bienestar
-scalar imss        =    8790 //    IMSS (salud)
-scalar issste      =   10123 //    ISSSTE (salud)
-scalar pemex       =   31969 //    Pemex (salud)
-scalar issfam      =   20580 //    ISSFAM (salud)
-scalar invers      =     261 //    Inversión en salud
+scalar ssa         =      60 //    SSalud
+scalar imssbien    =    5644 //    IMSS-Bienestar
+scalar imss        =    8573 //    IMSS (salud)
+scalar issste      =    9873 //    ISSSTE (salud)
+scalar pemex       =   31176 //    Pemex (salud)
+scalar issfam      =   20070 //    ISSFAM (salud)
+scalar invers      =     255 //    Inversión en salud
 
 ** 2.9.3 Parámetros: Pensiones **
-scalar pam         =   39142 //    Pensión Bienestar
-scalar penimss     =  286655 //    Pensión IMSS
-scalar penisss     =  371619 //    Pensión ISSSTE
-scalar penpeme     =  843855 //    Pensión Pemex
-scalar penotro     = 3722282 //    Pensión CFE, LFC, ISSFAM, Ferronales
+scalar pam         =   38172 //    Pensión Bienestar
+scalar penimss     =  279557 //    Pensión IMSS
+scalar penisss     =  362409 //    Pensión ISSSTE
+scalar penpeme     =  822902 //    Pensión Pemex
+scalar penotro     = 3629857 //    Pensión CFE, LFC, ISSFAM, Ferronales
 
 ** 2.9.4 Parámetros: Energía **
-scalar gascfe      =    2957 //    Gasto en CFE
-scalar gaspemex    =    1061 //    Gasto en Pemex
-scalar gassener    =     654 //    Gasto en SENER
-scalar gasinverf   =    3786 //    Gasto en inversión (energía)
-scalar gascosdeue  =    1384 //    Gasto en costo de la deuda (energía)
+scalar gascfe      =    2884 //    Gasto en CFE
+scalar gaspemex    =    1035 //    Gasto en Pemex
+scalar gassener    =     638 //    Gasto en SENER
+scalar gasinverf   =    3692 //    Gasto en inversión (energía)
+scalar gascosdeue  =    1349 //    Gasto en costo de la deuda (energía)
 
 ** 2.9.5 Parámetros: Otros gastos **
-scalar gasinfra    =    4371 //    Gasto en Otras Inversiones
-scalar gasotros    =    4877 //    Otros gastos
-scalar gasfeder    =   10444 //    Participaciones y Otras aportaciones
-scalar gascosto    =    8756 //    Gasto en Costo de la deuda
+scalar gasinfra    =    4263 //    Gasto en Otras Inversiones
+scalar gasotros    =    4756 //    Otros gastos
+scalar gasfeder    =   10185 //    Participaciones y Otras aportaciones
+scalar gascosto    =    8539 //    Gasto en Costo de la deuda
 
 ** 2.9.6 Parámetros: Transferencas **
 scalar IngBas      =       0 //    Ingreso b{c a'}sico
 scalar ingbasico18 =       1 //    1: Incluye menores de 18 anios, 0: no
 scalar ingbasico65 =       1 //    1: Incluye mayores de 65 anios, 0: no
-scalar gasmadres   =     489 //    Apoyo a madres trabajadoras
-scalar gascuidados =    3174 //    Gasto en cuidados
+scalar gasmadres   =     477 //    Apoyo a madres trabajadoras
+scalar gascuidados =    3095 //    Gasto en cuidados
 
 ** 2.10 Parámetros: Ingresos **
 scalar ISRAS       =   3.691 //    ISR (asalariados)
@@ -272,7 +263,7 @@ scalar IEPSNP      =   0.683 //    IEPS (no petrolero)
 scalar IEPSP       =   1.345 //    IEPS (petrolero)
 scalar IMPORT      =   0.301 //    Importaciones
 
-** 2.11 Parámetros: ISR **
+** 2.11 Parámetros: ISR **/
 * Anexo 8 de la Resolución Miscelánea Fiscal para 2024 *
 * Tarifa para el cálculo del impuesto correspondiente al ejericio 2024 a que se refieren los artículos 97 y 152 de la Ley del ISR
 * Tabla del subsidio para el empleo aplicable a la tarifa del numeral 5 del rubro B (página 773) *

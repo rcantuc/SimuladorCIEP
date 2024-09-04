@@ -155,7 +155,7 @@ use "`c(sysdir_personal)'/SIM/`=anioenigh'/households.dta", clear
 tabstat factor, stat(sum) f(%20.0fc) save
 tempname pobenigh
 matrix `pobenigh' = r(StatTotal)
-*replace factor = round(factor*`ajustepob'/`pobenigh'[1,1],1)
+replace factor = round(factor*`ajustepob'/`pobenigh'[1,1],1)
 replace factor = round(factor,1)
 capture g pob = 1
 

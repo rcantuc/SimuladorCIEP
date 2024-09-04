@@ -520,7 +520,8 @@ foreach categ in categ categ_iva /*categ_ieps*/ {
 		merge 1:m (folioviv foliohog) using "`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/`=anioenigh'/poblacion.dta", nogen keepus(numren edad sexo)
 		merge 1:1 (folioviv foliohog numren) using `gastoindividuos', nogen keepus(*_ind* proporcion*)
 		merge m:1 (folioviv foliohog) using "`c(sysdir_site)'../BasesCIEP/INEGI/ENIGH/`=anioenigh'/concentrado.dta", nogen keepus(factor)
-		merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/`=anioenigh'/households.dta", nogen keepus(decil tot_integ)
+		*merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/`=anioenigh'/households.dta", nogen keepus(decil)
+		egen tot_integ = count(factor), by(folioviv foliohog)
 
 		** 3.4 Gasto per cápita **
 		noisily di in g `"`categs'"'
@@ -552,8 +553,8 @@ foreach categ in categ categ_iva /*categ_ieps*/ {
 				}
 				
 				* Outliers *
-				tabstat `vars'ind`k' if `vars'ind`k' != 0, stat(p99 p95) save
-				g ind_outlier = 1 if `vars'ind`k' >= r(StatTotal)[1,1] & r(StatTotal)[1,1] != r(StatTotal)[2,1]
+				*tabstat `vars'ind`k' if `vars'ind`k' != 0, stat(p99 p95) save
+				*g ind_outlier = 1 if `vars'ind`k' >= r(StatTotal)[1,1] & r(StatTotal)[1,1] != r(StatTotal)[2,1]
 
 				g `vars'pc_`k' = `vars'hog`k'/tot_integ //+ `vars'ind`k'
 				local label = subinstr("`title' per cápita en `k'","_"," ",.)
@@ -568,7 +569,7 @@ foreach categ in categ categ_iva /*categ_ieps*/ {
 				* Iteraciones *
 				noisily di in y "`k': " _cont
 				local salto = 5
-				forvalues iter=1(1)50 {
+				forvalues iter=1(1)10 {
 					noisily di in w "`iter' " _cont
 					forvalues edades=0(`salto')109 {
 						forvalues sexos=1(1)2 {
