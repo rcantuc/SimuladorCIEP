@@ -446,6 +446,9 @@ quietly {
 	merge 1:1 (anio) using `baseingresos', nogen
 	tsset anio
 
+	g gastoCosto_de_la_deuda = costodeudaInterno + costodeudaExterno
+	g estimacionCosto_de_la_deuda = gastoCosto_de_la_deuda if gastoCosto_de_la_deuda != .
+	format estimacion* gasto* %20.0fc
 
 	* Reemplazar tasaEfectiva con la media artimética desde el año `desde' *
 	tabstat tasaEfectiva if anio <= `anio' & anio >= `desde', save
@@ -454,10 +457,20 @@ quietly {
 	replace tasaEfectiva = r(StatTotal)[1,1] if anio >= `anio'
 	local tasaEfectiva = r(StatTotal)[1,1]
 
-	* Reemplazar Costo_de_la_deuda con el escalar gascosto si fue provisto desde los parámetros en SIM.do *
-	g gastoCosto_de_la_deuda = costodeudaInterno + costodeudaExterno
-	g estimacionCosto_de_la_deuda = gastoCosto_de_la_deuda if gastoCosto_de_la_deuda != .
-	format estimacion* %20.0fc
+	* Reemplazar tasasEfectivas con el escalar tasasEfectiva *
+	capture confirm scalar tasaEfectiva
+	if _rc == 0 {
+		replace tasaEfectiva = scalar(tasaEfectiva) if anio > `anio'
+	}
+	else {
+		replace tasaEfectiva = `tasaEfectiva' if anio > `anio'
+		scalar tasaEfectiva = `tasaEfectiva'
+	}
+	tabstat gastoCosto_de_la_deuda Poblacion pibY if anio == `anio'+1, f(%20.0fc) save
+	scalar gascosto = r(StatTotal)[1,1]/r(StatTotal)[1,2]
+	scalar gascostoPIB = r(StatTotal)[1,1]/r(StatTotal)[1,3]
+
+	/* Reemplazar Costo_de_la_deuda con el escalar gascosto *
 	capture confirm scalar gascosto
 	if _rc == 0 {
 		replace estimacionCosto_de_la_deuda = scalar(gascosto)*Poblacion if anio > `anio'
@@ -469,18 +482,9 @@ quietly {
 		format %20.0fc *Costo_de_la_deuda
 	}
 
-	* Reemplazar tasasEfectivas con el escalar tasasEfectiva si fue provisto desde los parámetros en SIM.do *
-	capture confirm scalar tasaEfectiva
-	if _rc == 0 {
-		replace tasaEfectiva = scalar(tasaEfectiva) if anio > `anio'
-	}
-	else {
-		replace tasaEfectiva = `tasaEfectiva' if anio > `anio'
-		scalar tasaEfectiva = `tasaEfectiva'
-	}
 
 
-	***********************
+	**********************/
 	** 5.3 Tipo de cambio *
 	g depreciacion = tipoDeCambio-L.tipoDeCambio
 

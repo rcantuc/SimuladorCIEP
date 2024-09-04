@@ -107,7 +107,7 @@ quietly {
 	*** 3 Merge ***
 	***************
 	use "`c(sysdir_personal)'/SIM/LIF.dta", clear
-	drop if nombre == ""
+	*drop if nombre == ""
 	sort anio mes
 	merge m:1 (anio) using `PIB', nogen keepus(pibY indiceY deflator lambda var_pibY) update replace keep(matched)
 	local aniofirst = anio[1]
