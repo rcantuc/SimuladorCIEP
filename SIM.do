@@ -17,7 +17,7 @@ cd "`c(sysdir_personal)'"
 
 **  0.2 Opciones globales  **
 global id = "ciepmx"			// IDENTIFICADOR DEL USUARIO
-global nographs "nographs"		// SUPRIMIR GRAFICAS
+//global nographs "nographs"		// SUPRIMIR GRAFICAS
 global output "output"			// ARCHIVO DE SALIDA (WEB)
 //global update "update"		// UPDATE BASES DE DATOS
 //global export "`c(sysdir_personal)'../../+EquipoCIEP/Boletines/Consolidación fiscal/images" // IMÁGENES A EXPORTAR
@@ -39,21 +39,21 @@ if "$output" != "" {
 ** 1.1 Proyecciones demográficas **
 //forvalues anio = 1950(1)`=anioPE' {                         // <-- Año(s) de interés
 	//foreach entidad of global entidadesL {                  // <-- Nacional o para todas las entidades
-		noisily Poblacion if entidad == "`entidad'", anioi(1990) aniofinal(2040) //$update
+		//noisily Poblacion if entidad == "`entidad'", anioi(1990) aniofinal(2040) //$update
 	//}
 //}
 
 ** 1.2 Producto Interno Bruto y su deflactor **
-noisily PIBDeflactor, geodef(1993) geopib(1993) $update aniovp(`=aniovp')
+//noisily PIBDeflactor, geodef(1993) geopib(1993) $update aniovp(`=aniovp')
 
 ** 1.3 Sistema de Cuentas Nacionales **
-noisily SCN, //$update
+//noisily SCN, //$update
 
 ** 1.4 Ley de Ingresos de la Federación **
-noisily LIF, by(divCIEP) rows(2) anio(`=anioPE') $update desde(2008) min(1) title("Ingresos presupuestarios")
+//noisily LIF, by(divCIEP) rows(2) anio(`=anioPE') $update desde(2008) min(1) title("Ingresos presupuestarios")
 
 ** 1.5 Presupuesto de Egresos de la Federación **
-noisily PEF, by(divSIM) rows(2) min(0) anio(`=anioPE') desde(2013) title("Gasto presupuestario") //$update
+//noisily PEF, by(divSIM) rows(2) min(0) anio(`=anioPE') desde(2013) title("Gasto presupuestario") //$update
 noisily SHRFSP, anio(`=anioPE') ultanio(2008) $update
 
 ** 1.7 Subnacionales **
@@ -96,7 +96,7 @@ noisily GastoPC, aniope(`=anioPE') aniovp(`=aniovp')
 ***                        ***
 **#    3. CICLO DE VIDA    ***
 ***                        ***
-******************************
+/******************************
 use `"`c(sysdir_personal)'/users/$id/ingresos.dta"', clear
 merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/users/$id/gastos.dta", nogen
 capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/users/$id/isr_mod.dta", nogen replace update keepus(ISRAS ISRPF ISRPM CUOTAS)
