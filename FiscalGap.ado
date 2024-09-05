@@ -451,7 +451,8 @@ quietly {
 	format estimacion* gasto* %20.0fc
 
 	* Reemplazar tasaEfectiva con la media artimética desde el año `desde' *
-	tabstat tasaEfectiva if anio <= `anio' & anio >= `desde', save
+	replace tasaEfectiva = gastoCosto_de_la_deuda/L.shrfsp*100
+	tabstat tasaEfectiva if anio == `anio', save
 	tempname tasaEfectiva_ari
 	matrix `tasaEfectiva_ari' = r(StatTotal)
 	replace tasaEfectiva = r(StatTotal)[1,1] if anio >= `anio'
@@ -460,15 +461,16 @@ quietly {
 	* Reemplazar tasasEfectivas con el escalar tasasEfectiva *
 	capture confirm scalar tasaEfectiva
 	if _rc == 0 {
-		replace tasaEfectiva = scalar(tasaEfectiva) if anio > `anio'
+		replace tasaEfectiva = scalar(tasaEfectiva) if anio >= `anio'
+		replace gastoCosto_de_la_deuda = tasaEfectiva/100*L.shrfsp if anio >= `anio'
 	}
 	else {
-		replace tasaEfectiva = `tasaEfectiva' if anio > `anio'
-		scalar tasaEfectiva = `tasaEfectiva'
+		replace tasaEfectiva = `tasaEfectiva' if anio >= `anio'
+		scalar tasaEfectiva = `tasaEfectiva'		
 	}
-	tabstat gastoCosto_de_la_deuda Poblacion pibY if anio == `anio'+1, f(%20.0fc) save
-	scalar gascosto = r(StatTotal)[1,1]/r(StatTotal)[1,2]
-	scalar gascostoPIB = r(StatTotal)[1,1]/r(StatTotal)[1,3]
+	tabstat gastoCosto_de_la_deuda Poblacion pibY if anio == `anio', f(%20.0fc) save
+	scalar gascosto = r(StatTotal)[1,1]/r(StatTotal)[1,2]*8539/9234
+	scalar gascostoPIB = r(StatTotal)[1,1]/r(StatTotal)[1,3]*100*3.329/3.600
 
 	/* Reemplazar Costo_de_la_deuda con el escalar gascosto *
 	capture confirm scalar gascosto
@@ -681,7 +683,9 @@ quietly {
 		}
 
 		twoway (connected shrfsp_pib anio if shrfsp_pib != . & anio <= `anio' & anio >= `desde', mlabel(shrfsp_pib) mlabpos(0) mlabcolor(black) mlabgap(0pt)) ///
-			(connected shrfsp_pib anio if anio > `anio' & anio <= `end', mlabel(shrfsp_pib) mlabpos(0) mlabcolor(black) mlabgap(0pt)), ///
+			(connected shrfsp_pib anio if anio > `anio' & anio <= `end', mlabel(shrfsp_pib) mlabpos(0) mlabcolor(black) mlabgap(0pt)) ///
+		(connected shrfspPC anio if shrfsp_pib != . & anio <= `anio' & anio >= `desde', mlabel(shrfspPC) mlabpos(0) mlabcolor(black) mlabgap(0pt) yaxis(2)) ///
+			(connected shrfspPC anio if anio > `anio' & anio <= `end', mlabel(shrfspPC) mlabpos(0) mlabcolor(black) mlabgap(0pt) yaxis(2)), ///
 			title("`graphtitle'") ///
 			subtitle("{bf:Como % del PIB}") ///
 			caption("`graphfuente'") ///

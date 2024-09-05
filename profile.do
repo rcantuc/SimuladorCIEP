@@ -79,7 +79,7 @@ scalar inf2028 = 3.0
 scalar inf2029 = 3.0
 
 ** 2.8 Deuda Pública **
-scalar tasaEfectiva = 6.2068
+scalar tasaEfectiva = 8.2161*0 + 7.7161
 
 scalar shrfsp2024 = 50.2
 scalar shrfspInterno2024 = 38.8
@@ -231,7 +231,7 @@ scalar gasinverf   =    3692 //    Gasto en inversión (energía)
 scalar gascosdeue  =    1349 //    Gasto en costo de la deuda (energía)
 
 ** 2.9.5 Parámetros: Otros gastos **
-scalar gasinfra    =    4263 //    Gasto en Otras Inversiones
+scalar gasinfra    =    4263*0.6991576414 //    Gasto en Otras Inversiones
 scalar gasotros    =    4756 //    Otros gastos
 scalar gasfeder    =   10185 //    Participaciones y Otras aportaciones
 scalar gascosto    =    8539 //    Gasto en Costo de la deuda
@@ -251,7 +251,7 @@ scalar CUOTAS      =   1.578 //    Cuotas (IMSS)
 scalar ISRPM       =   4.063 //    ISR (personas morales)
 scalar OTROSK      =   1.043 //    Productos, derechos, aprovech.
 
-scalar FMP         =   0.894 //    Fondo Mexicano del Petróleo
+scalar FMP         =   0.894-0.4 //    Fondo Mexicano del Petróleo
 scalar PEMEX       =   2.194 //    Organismos y empresas (Pemex)
 scalar CFE         =   1.317 //    Organismos y empresas (CFE)
 scalar IMSS        =   0.125 //    Organismos y empresas (IMSS)
