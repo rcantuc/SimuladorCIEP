@@ -517,7 +517,9 @@ quietly {
 		}
 		if anio[`k'] == 2009 & "`lastfound'" == "yes" {
 			local obsfirs = `k'
-			continue, break
+		}
+		if anio[`k'] == `desde' {
+			local obsdesde = `k'
 		}
 	}
 	if "`lastfound'" == "yes" & "`obsfirs'" == "" {
@@ -672,63 +674,7 @@ quietly {
 
 	if "`nographs'" != "nographs" & "$nographs" != "nographs" {
 
-		* Saldo de la deuda *
-		if "$export" == "" {
-			local graphtitle "{bf:Saldo hist{c o'}rico} de la deuda"
-			local graphfuente "{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5."
-		}
-		else {
-			local graphtitle ""
-			local graphfuente ""
-		}
-
-		twoway (connected shrfsp_pib anio if shrfsp_pib != . & anio <= `anio' & anio >= `desde', mlabel(shrfsp_pib) mlabpos(0) mlabcolor(black) mlabgap(0pt)) ///
-			(connected shrfsp_pib anio if anio > `anio' & anio <= `end', mlabel(shrfsp_pib) mlabpos(0) mlabcolor(black) mlabgap(0pt)) ///
-		(connected shrfspPC anio if shrfsp_pib != . & anio <= `anio' & anio >= `desde', mlabel(shrfspPC) mlabpos(0) mlabcolor(black) mlabgap(0pt) yaxis(2)) ///
-			(connected shrfspPC anio if anio > `anio' & anio <= `end', mlabel(shrfspPC) mlabpos(0) mlabcolor(black) mlabgap(0pt) yaxis(2)), ///
-			title("`graphtitle'") ///
-			subtitle("{bf:Como % del PIB}") ///
-			caption("`graphfuente'") ///
-			xtitle("") ytitle(% PIB) ///
-			xlabel(`desde'(1)`end') ///
-			yscale(range(0)) ///
-			legend(off) ///
-			///text(`=shrfsp_pib[`obs`anio_last'']*.1' `=`anio'+1.5' "{bf:Proyecci{c o'}n}", color(white) placement(e)) ///
-			name(Proy_shrfsp, replace)
-
-		if "$export" != "" {
-			graph export `"$export/Proy_shrfsp.png"', replace name(Proy_shrfsp)
-		}
-
-
-		* Saldo de la deuda por persona *
-		if "$export" == "" {
-			local graphtitle "{bf:Saldo hist{c o'}rico} por persona"
-			local graphfuente "{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5."
-		}
-		else {
-			local graphtitle ""
-			local graphfuente ""
-		}
-
-		twoway (connected shrfspPC anio if shrfsp_pib != . & anio <= `anio' & anio >= `desde', mlabel(shrfspPC) mlabpos(0) mlabcolor(black) mlabgap(0pt)) ///
-			(connected shrfspPC anio if anio > `anio' & anio <= `end', mlabel(shrfspPC) mlabpos(0) mlabcolor(black) mlabgap(0pt)), ///
-			title(`graphtitle') ///
-			subtitle("{bf:Por persona ajustada}") ///
-			caption("`graphfuente'") ///
-			xtitle("") ///
-			ytitle("`currency' `aniovp' por persona") ///
-			ylabel(0(50000)200000, format(%10.0fc)) ///
-			xlabel(`desde'(1)`end') ///
-			legend(off) ///
-			text(`textPC2', color(black) placement(c) size(small)) ///
-			name(Proy_shrfsppc, replace)
-
-		if "$export" != "" {
-			graph export `"$export/Proy_shrfsppc.png"', replace name(Proy_shrfsppc)
-		}
-
-		/* Saldo de la deuda combinada *
+		* Saldo de la deuda combinada *
 		if "$export" == "" {
 			local graphtitle "{bf:Saldo hist{c o'}rico de RFSP}"
 			local graphfuente "{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5."
@@ -738,24 +684,27 @@ quietly {
 			local graphfuente ""
 		}
 
-		twoway (connected shrfsp_pib anio, mlabel(shrfsp_pib) mlabpos(0) mlabcolor(black) mlabgap(0)) ///
-			(connected shrfspPC anio, mlabel(shrfspPC) mlabpos(0) mlabcolor(black) mlabgap(0) yaxis(2)) if anio >= `desde', ///
+		twoway (connected shrfsp_pib anio, mlabel(shrfsp_pib) mlabpos(12) mlabcolor(black) mlabgap(0)) ///
+			(connected shrfspPC anio, mlabel(shrfspPC) mlabpos(12) mlabcolor(black) mlabgap(0) yaxis(2)) if anio >= `desde', ///
 			title("`graphtitle'") ///
-			///subtitle("{bf:Indicadores de la deuda}") ///
+			subtitle("Indicadores de la deuda") ///
 			caption("`graphfuente'") ///
 			xtitle("") ///
-			yscale(range(75)) ///
-			yscale(range(175000) axis(2) lwidth(none)) ///
-			ylabel(, axis(2) noticks) ///
-			ytitle("Como % del PIB") ///
-			ytitle("`currency' `aniovp'", axis(2)) ///
+			yscale(range(-50)) ///
+			yscale(range(0 250000) axis(2) lwidth(none)) ///
+			ylabel(none, axis(2) noticks) ///
+			ylabel(none, axis(1) noticks) ///
+			ytitle("", axis(1)) ///
+			ytitle("", axis(2)) ///
 			xlabel(`desde'(1)`end') ///
-			legend(label(1 "Como % del PIB") label(2 "Por persona ajustada")) ///
+			legend(off label(1 "Como % del PIB") label(2 "Por persona ajustada")) ///
+			text(`=shrfsp_pib[`obsdesde']*.95' `=anio[`obsdesde']' "{bf:Como}" "{bf:% del PIB}", place(5) color("111 111 111") size(small)) ///
+			text(`=shrfspPC[`obsdesde']*.95' `=anio[`obsdesde']' "{bf:Por persona ajustada}" "{bf:(`currency' `aniovp')}", place(5) color("111 111 111") size(small) yaxis(2)) ///
 			name(Proy_combinado, replace)
 
 		if "$export" != "" {
 			graph export `"$export/Proy_combinado.png"', replace name(Proy_combinado)
-		}*/
+		}
 	}
 
 	noisily di in g "  " _dup(61) "-"
@@ -814,7 +763,7 @@ quietly {
 	** Output **
 	if "$output" != "" {
 		forvalues k=1(1)`=_N' {
-			if anio[`k'] < `anio'-1 & anio[`k'] >= 2013 {
+			if anio[`k'] < `anio' & anio[`k'] >= 2013 {
 				local proy_shrfsp = "`proy_shrfsp' `=string(`=shrfsp_pib[`k']',"%10.3f")',"
 				local proy_shrfsp2 = "`proy_shrfsp2' null,"
 			}
@@ -824,7 +773,7 @@ quietly {
 				*local proy_shrfsp = "`proy_shrfsp' `=string(51.000,"%10.3f")',"
 				local proy_shrfsp2 = "`proy_shrfsp2' `=string(`=shrfsp_pib[`k']',"%10.3f")',"
 			}
-			if anio[`k'] > `anio'-1 & anio[`k'] <= 2030 {
+			if anio[`k'] > `anio' & anio[`k'] <= 2030 {
 				local proy_shrfsp = "`proy_shrfsp' null,"
 				local proy_shrfsp2 = "`proy_shrfsp2' `=string(`=shrfsp_pib[`k']',"%10.3f")',"
 			}

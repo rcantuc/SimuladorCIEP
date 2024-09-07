@@ -4,25 +4,26 @@
 ***        ver: SIM.md          ***
 ***                             ***
 ***********************************
-run "`c(sysdir_personal)'profile.do"
 
-**  0.1 Rutas al Github **
+** 0.1 Rutas al Github **
 if "`c(username)'" == "ricardo" /// iMac Ricardo
 	sysdir set PERSONAL "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
 else if "`c(username)'" == "ciepmx" & "`c(console)'" == "" /// Servidor CIEP
 	sysdir set PERSONAL "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
 else if "`c(console)'" != "" /// Servidor Web
 	sysdir set PERSONAL "/SIM/OUT/6/"
-cd "`c(sysdir_personal)'"
 
-**  0.2 Opciones globales  **
+** 0.2 Parámetros iniciales **
+run "`c(sysdir_personal)'/profile.do"
+
+** 0.3 Opciones globales  **
 global id = "ciepmx"			// IDENTIFICADOR DEL USUARIO
 //global nographs "nographs"		// SUPRIMIR GRAFICAS
 global output "output"			// ARCHIVO DE SALIDA (WEB)
 //global update "update"		// UPDATE BASES DE DATOS
 //global export "`c(sysdir_personal)'../../+EquipoCIEP/Boletines/Consolidación fiscal/images" // IMÁGENES A EXPORTAR
 
-** 0.3 Archivos output **
+** 0.4 Archivos output **
 if "$output" != "" {
 	quietly log using `"`c(sysdir_personal)'/users/$id/output.txt"', replace text name(output)
 	quietly log off output
@@ -96,7 +97,7 @@ noisily GastoPC, aniope(`=anioPE') aniovp(`=aniovp')
 ***                        ***
 **#    3. CICLO DE VIDA    ***
 ***                        ***
-/******************************
+******************************
 use `"`c(sysdir_personal)'/users/$id/ingresos.dta"', clear
 merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/users/$id/gastos.dta", nogen
 capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/users/$id/isr_mod.dta", nogen replace update keepus(ISRAS ISRPF ISRPM CUOTAS)
@@ -123,12 +124,6 @@ noisily Perfiles AportacionesNetas [fw=factor], aniovp(`=aniovp') aniope(`=anioP
 ** 3.4 (*) Cuentas generacionales **
 //noisily CuentasGeneracionales AportacionesNetas, anio(`=anioPE') discount(7)
 
-** 3.5 (*) Sankey del sistema fiscal **
-foreach k in decil grupoedad /*sexo rural escol*/ {
-	noisily run "`c(sysdir_personal)'/SankeySF.do" `k' `=anioPE'
-}
-
-
 
 
 ********************************************/
@@ -136,7 +131,12 @@ foreach k in decil grupoedad /*sexo rural escol*/ {
 **#    4. PARTE IV: DEUDA + FISCAL GAP    ***
 ***                                       ***
 *********************************************
-noisily FiscalGap, anio(`=anioPE') end(2030) aniomin(2014) $nographs desde(2014) //discount(10) //update //anio(`=aniovp')
+noisily FiscalGap, anio(`=anioPE') end(2030) aniomin(2013) $nographs desde(2013) discount(10) //update
+
+** 4.1 (*) Sankey del sistema fiscal **
+foreach k in decil grupoedad /*sexo rural escol*/ {
+	noisily run "`c(sysdir_personal)'/SankeySF.do" `k' `=anioPE'
+}
 
 
 

@@ -6,6 +6,10 @@ quietly {
 	if _rc != 0 {
 		UpdateDatosAbiertos
 	}
+	capture use "`c(sysdir_personal)'/SIM/Deflactor.dta", clear
+	if _rc != 0 {
+		UpdateDeflactor
+	}
 
 	** 0.2 Revisa si existe el scalar aniovp **
 	capture confirm scalar aniovp
@@ -17,27 +21,39 @@ quietly {
 		local aniovp = substr(`"`=trim("`aniovp'")'"',1,4)	
 	}
 
+	** 0.3 Sintaxis del comando **
 	syntax [anything] [if] [,  PIBVP(real -999) PIBVF(real -999) DESDE(real 1993) ///
 		UPDATE NOGraphs REVERSE PROYeccion]
 
-	if "`update'" == "update" {
-		UpdateDatosAbiertos, update
-	}
 
 
 	***********************
 	*** 1 Base de datos ***
 	***********************
-	
-	** 1.1 PIB + Deflactor **
-	PIBDeflactor, nographs nooutput aniovp(`aniovp')
-	replace Poblacion = Poblacion*lambda
-	local currency = currency[1]
-	tempfile PIB
-	save "`PIB'"
+	if "`update'" == "update" {
+		UpdateDatosAbiertos, update
+		UpdateDeflactor
+	}
 
-	** 1.2 Datos Abiertos (Estadísticas Oportunas) **
+	PIBDeflactor, nographs
+	
 	use if clave_de_concepto == "`anything'" using "`c(sysdir_personal)'/SIM/DatosAbiertos.dta", clear
+	merge 1:1 (anio mes) using "`c(sysdir_personal)'/SIM/Deflactor.dta", nogen keep(matched)
+	merge m:1 (anio) using "`c(sysdir_personal)'/SIM/Poblaciontot.dta", nogen keep(matched)
+	merge m:1 (anio trimestre) using "`c(sysdir_personal)'/SIM/PIBDeflactor.dta", nogen keep(matched)
+	tsset aniomes
+
+	local currency = currency[1]
+	foreach k of varlist pibQ - crec_pibQR {
+		capture confirm numeric variable `k'
+		if _rc == 0 {
+			replace `k' = L.`k' if `k' == .
+		}
+	}
+	
+	g lambda = (1+scalar(llambda)/100)^(anio-`aniovp')
+	replace poblacion = poblacion*lambda
+
 	if "`anything'" == "" {
 		use "`c(sysdir_personal)'/SIM/DatosAbiertos.dta", clear
 		exit
@@ -63,31 +79,34 @@ quietly {
 
 	*********************************
 	** 1.1 Informacion de la serie **
-	merge m:1 (anio) using "`PIB'", nogen keep(matched) //keepus(pibY deflator currency Poblacion*)
 	noisily di _newline in g " Serie: " in y "`anything'" in g ". Nombre: " in y "`=nombre[1]'" in g "."
-	*keep if anio >= 2013 & anio <= `last_anio'
 	
 	if "`if'" != "" {
 		keep `if'
 	}
+	
+	tempvar deflactormes deflactoracum deflactor
+	g `deflactoracum' = inpc if mes <= mes[_N]
+	egen deflactoracum = mean(`deflactoracum'), by(anio)
+	replace deflactoracum = deflactoracum/deflactoracum[_N]
 
-	tsset aniomes
-	//tempvar dif_Poblacion dif2_Poblacion
-	//g `dif_Poblacion' = D.Poblacion
-	//egen `dif2_Poblacion' = max(`dif_Poblacion')
-	//replace Poblacion = Poblacion + `dif2_Poblacion'*mes/12
+	g `deflactormes' = inpc if mes == mes[_N]
+	egen deflactormes = mean(`deflactormes'), by(anio)
+	replace deflactormes = deflactormes/deflactormes[_N]
+	
+	g deflactor = inpc/inpc[_N]
 
-	tempvar montomill crecreal
-	g `montomill' = monto/1000000/deflator
-	format `montomill' %20.0fc
+	tempvar crecreal
+	g montomill = monto/1000000
+	format montomill %20.0fc
 
-	g monto_pc = monto/Poblacion/deflator
+	g monto_pc = monto/poblacion/deflactor
 	format monto_pc %10.0fc
 
-	g monto_pib = monto/pibY*100
+	g monto_pib = monto/pibQ*100
 	format monto_pib %7.1fc
 
-	g `crecreal' = (`montomill'/L12.`montomill'-1)*100
+	g `crecreal' = (montomill/L12.montomill-1)*100
 
 	label define mes 1 "Enero" 2 "Febrero" 3 "Marzo" 4 "Abril" 5 "Mayo" 6 "Junio" ///
 		7 "Julio" 8 "Agosto" 9 "Septiembre" 10 "Octubre" 11 "Noviembre" 12 "Diciembre"
@@ -96,26 +115,29 @@ quietly {
 	local mesnameant : label mes `=mes[`=_N-1']'
 
 	if tipo_de_informacion == "Flujo" {
-		tabstat `montomill' if mes == `=mes[_N]' & (anio == `=anio[_N]' | anio == `=anio[_N]-1'), stat(sum) by(anio) format(%7.0fc) save
+		tabstat montomill deflactoracum deflactormes if mes == `=mes[_N]' & (anio == `=anio[_N]' | anio == `=anio[_N]-1'), stat(sum) by(anio) format(%10.3fc) save
 		tempname meshoy mesant
 		matrix `meshoy' = r(Stat2)
 		matrix `mesant' = r(Stat1)
 
-		noisily di _newline in g "  Mes " in y "`mesname' `=anio[_N]'" in g ": " _col(40) in y %20.0fc `meshoy'[1,1] in g " millones `currency'"
-		noisily di in g "  Mes " in y "`mesname' `=anio[_N]-1'" in g ": " _col(40) in y %20.0fc `mesant'[1,1] in g " millones `currency' `aniovp'"
-		noisily di in g "  Crecimiento: " _col(44) in y %16.1fc (`meshoy'[1,1]/`mesant'[1,1]-1)*100 in g " %"
+		noisily di _newline in g "  Mes " in y "`mesname' `=anio[_N]'" in g ": " _col(40) in y %20.0fc `meshoy'[1,1]/`meshoy'[1,3] in g " millones `currency'"
+		noisily di in g "  Mes " in y "`mesname' `=anio[_N]-1'" in g ": " _col(40) in y %20.0fc `mesant'[1,1]/`mesant'[1,3] in g " millones `currency' `aniovp'"
+		noisily di in g "  Crecimiento: " _col(44) in y %16.1fc ((`meshoy'[1,1]/`meshoy'[1,3])/(`mesant'[1,1]/`mesant'[1,3])-1)*100 in g " %"
 
-		tabstat `montomill' if mes <= `=mes[_N]' & (anio == `=anio[_N]' | anio == `=anio[_N]-1'), stat(sum) by(anio) format(%7.0fc) save
-		tempname meshoy mesant
-		matrix `meshoy' = r(Stat2)
-		matrix `mesant' = r(Stat1)
+		tabstat montomill if mes <= `=mes[_N]' & (anio == `=anio[_N]' | anio == `=anio[_N]-1'), stat(sum) by(anio) format(%10.3fc) save
+		tempname meshoyacum mesantacum
+		matrix `meshoyacum' = r(Stat2)
+		matrix `mesantacum' = r(Stat1)
 
-		noisily di _newline in g "  Acumulado " in y "`mesname' `=anio[_N]'" in g ": " _col(40) in y %20.0fc `meshoy'[1,1] in g " millones `currency'"
-		noisily di in g "  Acumulado " in y "`mesname' `=anio[_N]-1'" in g ": " _col(40) in y %20.0fc `mesant'[1,1] in g " millones `currency' `aniovp'"
-		noisily di in g "  Crecimiento: " _col(44) in y %16.1fc (`meshoy'[1,1]/`mesant'[1,1]-1)*100 in g " %"
+		noisily di _newline in g "  Acumulado " in y "`mesname' `=anio[_N]'" in g ": " _col(40) in y %20.0fc `meshoyacum'[1,1]/`meshoy'[1,2] in g " millones `currency'"
+		noisily di in g "  Acumulado " in y "`mesname' `=anio[_N]-1'" in g ": " _col(40) in y %20.0fc `mesantacum'[1,1]/`mesant'[1,2] in g " millones `currency' `aniovp'"
+		noisily di in g "  Crecimiento: " _col(44) in y %16.1fc ((`meshoyacum'[1,1]/`meshoy'[1,2])/(`mesantacum'[1,1]/`mesant'[1,2])-1)*100 in g " %"
 	}
+	
+	replace montomill = montomill/deflactor
+
 	if tipo_de_informacion == "Saldo" {
-		tabstat `montomill' if ((anio == `last_anio'-1 & mes == 12) | (anio == `last_anio' & mes == `last_mes')), stat(sum) by(anio) format(%7.0fc) save
+		tabstat montomill if ((anio == `last_anio'-1 & mes == 12) | (anio == `last_anio' & mes == `last_mes')), stat(sum) by(anio) format(%7.0fc) save
 		tempname meshoy mesant
 		matrix `meshoy' = r(Stat2)
 		matrix `mesant' = r(Stat1)
@@ -124,7 +146,7 @@ quietly {
 		noisily di in g "  Acumulado " in y "Diciembre `=anio[_N]-1'" in g ": " _col(40) in y %20.0fc `mesant'[1,1] in g " millones `currency' `aniovp'"
 		noisily di in g "  Crecimiento: " _col(44) in y %16.1fc (`meshoy'[1,1]/`mesant'[1,1]-1)*100 in g " %"
 
-		tabstat `montomill' if ((anio == `last_anio'-1 & mes == `last_mes') | (anio == `last_anio' & mes == `last_mes')), stat(sum) by(anio) format(%7.0fc) save
+		tabstat montomill if ((anio == `last_anio'-1 & mes == `last_mes') | (anio == `last_anio' & mes == `last_mes')), stat(sum) by(anio) format(%7.0fc) save
 		tempname meshoy mesant
 		matrix `meshoy' = r(Stat2)
 		matrix `mesant' = r(Stat1)
@@ -168,7 +190,7 @@ quietly {
 		** 2.2 Gráfica por mes calendario **
 		local meses "Enero Febrero Marzo Abril Mayo Junio Julio Agosto Septiembre Octubre Noviembre Diciembre"
 		tokenize "`meses'"
-		tabstat `montomill' /*if anio >= 2008*/, stat(sum) by(mes) f(%20.0fc) save
+		tabstat montomill /*if anio >= 2008*/, stat(sum) by(mes) f(%20.0fc) save
 		forvalues k=1(1)12 {
 			label define mes `k' "``k'' (`=string(r(Stat`k')[1,1]/r(StatTotal)[1,1]*100,"%7.1fc")'%)", modify
 			local ++k
@@ -190,26 +212,27 @@ quietly {
 
 
 		** 2.3 Gráfica por mes **
-		graph bar (sum) `montomill' if mes == `=mes[_N]' /*& anio >= 2008*/, over(anio) ///
+		graph bar (sum) montomill if mes == `=mes[_N]' /*& anio >= 2008*/, over(anio) ///
 			name(`mesname'`anything', replace) ///
 			title("{bf:`=nombre[1]'}"`textsize') ///
 			subtitle(" `mesname', millones de `=currency[1]' `aniovp'", margin(bottom)) ///
 			ytitle("") ///
 			ylabel(none, format(%15.0fc)) ///
-			blabel(, format(%10.0fc) position(6) color("111 111 111") size(small)) legend(off) ///
+			blabel(, format(%10.0fc) color(white) size(small) orient(vertical)) ///
+			legend(off) ///
 			yline(0, lcolor(black) lpattern(solid)) ///
 			note("{c U'}ltimo dato: `last_anio'm`last_mes'.") ///
 			caption("`graphfuente'") ///
 
 
 		** 2.4 Gráfica acumulado **
-		graph bar (sum) `montomill' if mes <= `=mes[_N]' /*& anio >= 2008*/, over(anio) ///
+		graph bar (sum) montomill if mes <= `=mes[_N]' /*& anio >= 2008*/, over(anio) ///
 			name(Acum`mesname'`anything', replace) ///
 			ytitle("") ///
 			ylabel(none, format(%15.0fc)) ///
 			title("{bf:`=nombre[1]'}"`textsize') ///
 			subtitle(`"Acumulado a `=lower("`mesname'")', millones de `=currency[1]' `aniovp'"', margin(bottom)) ///
-			blabel(, format(%10.0fc) position(6) color("111 111 111") size(small)) legend(off) ///
+			blabel(, format(%10.0fc) color(white) size(small) orient(vertical)) legend(off) ///
 			yline(0, lcolor(black) lpattern(solid)) ///
 			note("{c U'}ltimo dato: `last_anio'm`last_mes'.") ///
 			caption("`graphfuente'")
@@ -226,13 +249,13 @@ quietly {
 		g `propmensual' = monto/`montoanual' if anio < `last_anio' & anio >= `desde'
 		egen acum_prom = mean(`propmensual'), by(mes)
 		
-		collapse (sum) `montomill' monto* acum_prom (last) mes Poblacion pibY deflator if monto != ., by(anio nombre clave_de_concepto unidad_de_medida)
+		collapse (sum) monto* acum_prom (last) mes poblacion pibQ deflactor if monto != ., by(anio nombre clave_de_concepto unidad_de_medida)
 
 		if "`proyeccion'" == "proyeccion" {
 			replace monto = monto/acum_prom if mes < 12
-			replace monto_pib = monto/pibY*100 if mes < 12
-			replace monto_pc = monto/Poblacion/deflator if mes < 12
-			replace `montomill' = monto/1000000/deflator if mes < 12
+			replace monto_pib = monto/pibQ*100 if mes < 12
+			replace monto_pc = monto/poblacion/deflactor if mes < 12
+			replace montomill = monto/1000000/deflactor if mes < 12
 		}
 
 		local textografica `"{bf:Promedio a `mesname'}: `=string(acum_prom[_N]*100,"%5.1fc")'% del total anual."'
@@ -241,9 +264,8 @@ quietly {
 	else if tipo_de_informacion == "Saldo" {
 		tempvar maxmes
 		egen `maxmes' = max(mes), by(anio)
-		*drop if mes < `maxmes'
 		sort anio mes
-		collapse (last) `montomill' monto* mes Poblacion pibY deflator if monto != ., by(anio nombre clave_de_concepto unidad_de_medida)
+		collapse (last) monto* mes poblacion pibQ deflactor if monto != ., by(anio nombre clave_de_concepto unidad_de_medida)
 		g acum_prom = 1
 	}
 	*tsset aniomes
@@ -263,14 +285,14 @@ quietly {
 			local graphtitle ""
 		}
 
-		tabstat `montomill' monto_pc monto_pib, by(anio) stat(min max) save
+		tabstat montomill monto_pc monto_pib, by(anio) stat(min max) save
 		return list
 		tempname rango
 		matrix `rango' = r(StatTotal)
 
-		twoway (bar `montomill' anio if anio < `aniovp', ///
-				mlabel(`montomill') mlabpos(7) mlabcolor(white) mlabsize(small) msize(large) mlabangle(90)) ///
-			(bar `montomill' anio if anio >= `aniovp', mlabel(`montomill') mlabpos(7) mlabcolor(white) mlabsize(small) msize(large) mlabangle(90)) ///
+		twoway (bar montomill anio if anio < `aniovp', ///
+				mlabel(montomill) mlabpos(7) mlabcolor(white) mlabsize(small) msize(large) mlabangle(90)) ///
+			(bar montomill anio if anio >= `aniovp', mlabel(montomill) mlabpos(7) mlabcolor(white) mlabsize(small) msize(large) mlabangle(90)) ///
 			(connected monto_pc anio if anio < `aniovp', ///
 				yaxis(2) pstyle(p1) mlabel(monto_pc) mlabpos(12) mlabcolor("111 111 111") mlabsize(small) lpattern(dot) msize(large)) ///
 			(connected monto_pc anio if anio >= `aniovp', ///
@@ -299,9 +321,9 @@ quietly {
 		}
 
 
-		twoway (bar `montomill' anio if anio < `aniovp', ///
-				mlabel(`montomill') mlabpos(7) mlabcolor(white) mlabsize(small) msize(large) mlabangle(90)) ///
-			(bar `montomill' anio if anio >= `aniovp', mlabel(`montomill') mlabpos(7) mlabcolor(white) mlabsize(small) msize(large) mlabangle(90)) ///
+		twoway (bar montomill anio if anio < `aniovp', ///
+				mlabel(montomill) mlabpos(7) mlabcolor(white) mlabsize(small) msize(large) mlabangle(90)) ///
+			(bar montomill anio if anio >= `aniovp', mlabel(montomill) mlabpos(7) mlabcolor(white) mlabsize(small) msize(large) mlabangle(90)) ///
 			(connected monto_pib anio if anio < `aniovp', ///
 				yaxis(2) pstyle(p1) mlabel(monto_pib) mlabpos(12) mlabcolor("111 111 111") mlabsize(small) lpattern(dot) msize(large)) ///
 			(connected monto_pib anio if anio >= `aniovp', ///
@@ -365,56 +387,71 @@ program define UpdateDatosAbiertos, return
 
 	*****************************************
 	** 1.1 Ingreso, gasto y financiamiento **
-	import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/ingreso_gasto_finan.csv", clear
+	*import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/ingreso_gasto_finan.csv", clear
+	*save "`c(sysdir_site)'../BasesCIEP/SHCP/Datos Abiertos/ingreso_gasto_finan.csv", replace
+	import delimited "`c(sysdir_site)'../BasesCIEP/SHCP/Datos Abiertos/ingreso_gasto_finan.csv", clear
 	tempfile ing
 	save "`ing'"
-
-	import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/ingreso_gasto_finan_hist.csv", clear
-	*import delimited "`c(sysdir_personal)'../BasesCIEP/SHCP/Datos Abiertos/ingreso_gasto_finan_hist.csv", clear
+	
+	*import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/ingreso_gasto_finan_hist.csv", clear
+	*save "`c(sysdir_site)'../BasesCIEP/SHCP/Datos Abiertos/ingreso_gasto_finan_hist.csv", replace
+	import delimited "`c(sysdir_site)'../BasesCIEP/SHCP/Datos Abiertos/ingreso_gasto_finan_hist.csv", clear
 	tempfile ingH
 	save "`ingH'"
 
 	***************
 	** 1.2 Deuda **
-	import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/deuda_publica.csv", clear
+	*import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/deuda_publica.csv", clear
+	*save "`c(sysdir_site)'../BasesCIEP/SHCP/Datos Abiertos/deuda_publica.csv", replace
+	import delimited "`c(sysdir_site)'../BasesCIEP/SHCP/Datos Abiertos/deuda_publica.csv", clear
 	tempfile deuda
 	save "`deuda'"
 
-	import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/deuda_publica_hist.csv", clear
-	*import delimited "`c(sysdir_personal)'../BasesCIEP/SHCP/Datos Abiertos/deuda_publica_hist.csv", clear
+	*import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/deuda_publica_hist.csv", clear
+	*save "`c(sysdir_site)'../BasesCIEP/SHCP/Datos Abiertos/deuda_publica_hist.csv", replace
+	import delimited "`c(sysdir_personal)'../BasesCIEP/SHCP/Datos Abiertos/deuda_publica_hist.csv", clear
 	tempfile deudaH
 	save "`deudaH'"
 
 	****************
 	** 1.3 SHRFSP **
-	import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/shrfsp_deuda_amplia_actual.csv", clear
+	*import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/shrfsp_deuda_amplia_actual.csv", clear
+	*save "`c(sysdir_site)'../BasesCIEP/SHCP/Datos Abiertos/shrfsp_deuda_amplia_actual.csv", replace
+	import delimited "`c(sysdir_site)'../BasesCIEP/SHCP/Datos Abiertos/shrfsp_deuda_amplia_actual.csv", clear
 	tempfile shrf
 	save "`shrf'"
 
-	import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/shrfsp_deuda_amplia_antes_2014.csv", clear
-	*import delimited "`c(sysdir_personal)'../BasesCIEP/SHCP/Datos Abiertos/shrfsp_deuda_amplia_antes_2014.csv", clear
+	*import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/shrfsp_deuda_amplia_antes_2014.csv", clear
+	*save "`c(sysdir_site)'../BasesCIEP/SHCP/Datos Abiertos/shrfsp_deuda_amplia_antes_2014.csv", replace
+	import delimited "`c(sysdir_personal)'../BasesCIEP/SHCP/Datos Abiertos/shrfsp_deuda_amplia_antes_2014.csv", clear
 	tempfile shrfH
 	save "`shrfH'"
 
 	**************
 	** 1.4 RFSP **
-	import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/rfsp.csv", clear
+	*import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/rfsp.csv", clear
+	*save "`c(sysdir_site)'../BasesCIEP/SHCP/Datos Abiertos/rfsp.csv", replace
+	import delimited "`c(sysdir_site)'../BasesCIEP/SHCP/Datos Abiertos/rfsp.csv", clear
 	tempfile rf
 	save "`rf'"
 
-	import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/rfsp_metodologia_anterior.csv", clear
-	*import delimited "`c(sysdir_personal)'../BasesCIEP/SHCP/Datos Abiertos/rfsp_metodologia_anterior.csv", clear
+	*import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/rfsp_metodologia_anterior.csv", clear
+	*save "`c(sysdir_site)'../BasesCIEP/SHCP/Datos Abiertos/rfsp_metodologia_anterior.csv", replace
+	import delimited "`c(sysdir_personal)'../BasesCIEP/SHCP/Datos Abiertos/rfsp_metodologia_anterior.csv", clear
 	tempfile rfH
 	save "`rfH'"
 
 	*************************************************
 	** 1.5 Transferencias a Entidades y Municipios **
-	import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/transferencias_entidades_fed.csv", clear
+	*import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/transferencias_entidades_fed.csv", clear
+	*save "`c(sysdir_site)'../BasesCIEP/SHCP/Datos Abiertos/transferencias_entidades_fed.csv", replace
+	import delimited "`c(sysdir_site)'../BasesCIEP/SHCP/Datos Abiertos/transferencias_entidades_fed.csv", clear
 	tempfile gf
 	save "`gf'"
 
-	import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/transferencias_entidades_fed_hist.csv", clear
-	*import delimited "`c(sysdir_personal)'../BasesCIEP/SHCP/Datos Abiertos/transferencias_entidades_fed_hist.csv", clear
+	*import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/transferencias_entidades_fed_hist.csv", clear
+	*save "`c(sysdir_site)'../BasesCIEP/SHCP/Datos Abiertos/transferencias_entidades_fed_hist.csv", replace
+	import delimited "`c(sysdir_personal)'../BasesCIEP/SHCP/Datos Abiertos/transferencias_entidades_fed_hist.csv", clear
 	tempfile gfH
 	save "`gfH'"
 
@@ -422,7 +459,7 @@ program define UpdateDatosAbiertos, return
 
 	**************
 	** 2 Append **
-	**************
+	**************/
 	use `ing', clear
 	append using "`ingH'"
 	append using "`deuda'"
@@ -677,8 +714,40 @@ program define UpdateDatosAbiertos, return
 	}
 
 	noisily di in g "{c U'}ltimo dato: " in y "`=anio[_N]'m`=mes[_N]'."
-	
-	*noisily LIF, anio(`aniovp') update rows(2)
-	*noisily SHRFSP, anio(`aniovp') update
+end
 
+
+**************************************
+**** Base de datos: Deflactor.dta ****
+**************************************
+program define UpdateDeflactor
+	noisily di in g "  Updating Deflactor.dta..." _newline
+
+	** 1. Importar variables de interés desde el BIE **
+	run "`c(sysdir_personal)'/AccesoBIE.do" "628194" "inpc"
+
+	** 2 Label variables **
+	label var inpc "Índice Nacional de Precios al Consumidor"
+
+	** 3 Dar formato a variables **
+	format inpc %8.3f
+
+	** 4 Time Series **
+	split periodo, destring p("/") //ignore("r p")
+	rename periodo1 anio
+	label var anio "anio"
+	rename periodo2 mes
+	label var mes "mes"
+	drop periodo
+
+	** 2.5 Guardar **
+	order anio inpc
+	compress
+
+	if `c(version)' > 13.1 {
+		saveold "`c(sysdir_personal)'/SIM/Deflactor.dta", replace version(13)
+	}
+	else {
+		save "`c(sysdir_personal)'/SIM/Deflactor.dta", replace
+	}
 end
