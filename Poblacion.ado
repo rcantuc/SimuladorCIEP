@@ -635,7 +635,7 @@ program define UpdatePoblacion
 	label var emigrantes "Emigrantes internacionales"
 	label var inmigrantes "Inmigrantes internacionales"
 	label var defunciones "Defunciones"
-	format poblacion defunciones *migrantes %10.0fc
+	format poblacion defunciones *migrantes %15.0fc
 
 
 	** 4. Tasa de fertilidad **

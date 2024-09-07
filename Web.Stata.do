@@ -62,13 +62,6 @@ scalar def2027 = {{CRECDEF2027}}
 scalar def2028 = {{CRECDEF2028}}
 scalar def2029 = {{CRECDEF2029}}
 
-scalar inf2024 = 3.8
-scalar inf2025 = 3.3
-scalar inf2026 = 3.0
-scalar inf2027 = 3.0
-scalar inf2028 = 3.0
-scalar inf2029 = 3.0
-
 //noisily PIBDeflactor, geodef(2005) geopib(2005) $update aniovp(`=aniovp')
 
 ** 1.3 Sistema de Cuentas Nacionales **
@@ -149,8 +142,6 @@ scalar ingbasico65 =       {{ingbasico65}} //    1: Incluye mayores de 65 anios,
 scalar gasmadres   =     {{gasmadres}} //    Apoyo a madres trabajadoras
 scalar gascuidados =    {{gascuidados}} //    Gasto en cuidados
 
-** Integración de módulos (Gasto) ***/
-noisily GastoPC, aniope(`=anioPE') aniovp(`=aniovp')
 
 
 
@@ -298,6 +289,7 @@ matrix IEPST = (26.5	,		0 			\ /// Cerveza y alcohol 14
 ****************************/
 ** 2.12 Integración de módulos ***
 noisily TasasEfectivas, anio(`=anioPE')
+noisily GastoPC, aniope(`=anioPE') aniovp(`=aniovp')
 
 
 
@@ -307,22 +299,22 @@ noisily TasasEfectivas, anio(`=anioPE')
 ***                        ***
 ******************************
 use `"`c(sysdir_personal)'/users/$id/ingresos.dta"', clear
-merge 1:1 (folioviv foliohog numren) using "users/$id/gastos.dta", nogen
-capture merge 1:1 (folioviv foliohog numren) using "users/$id/isr_mod.dta", nogen replace update keepus(ISRAS ISRPF ISRPM CUOTAS sexo edad decil grupoedad)
-capture merge 1:1 (folioviv foliohog numren) using "users/$id/iva_mod.dta", nogen replace update keepus(IVA)
+merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/users/$id/gastos.dta", nogen
+capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/users/$id/isr_mod.dta", nogen replace update keepus(ISRAS ISRPF ISRPM CUOTAS)
+capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/users/$id/iva_mod.dta", nogen replace update keepus(IVA)
 
 
 **************************************
 ** 3.1 (+) Impuestos y aportaciones **
 capture drop ImpuestosAportaciones
-egen ImpuestosAportaciones = rsum(ISRAS ISRPF CUOTAS ISRPM OTROSK IVA IEPSNP IEPSP ISAN IMPORT)
+egen ImpuestosAportaciones = rsum(ISRPM OTROSK FMP ISRAS ISRPF CUOTAS IVA IEPSNP IEPSP ISAN IMPORT)
 label var ImpuestosAportaciones "impuestos y aportaciones"
 
 
 **************************************
 ** 3.2 (-) Impuestos y aportaciones **
 capture drop Transferencias
-egen Transferencias = rsum(Pension Educación Salud IngBasico Pensión_AM Otras_inversiones)
+egen Transferencias = rsum(Pensiones Pensión_AM Otras_inversiones IngBasico Educación Salud)
 label var Transferencias "transferencias públicas"
 
 
@@ -339,13 +331,6 @@ noisily Perfiles AportacionesNetas [fw=factor], aniovp(2024) aniope(`=anioPE') $
 //noisily CuentasGeneracionales AportacionesNetas, anio(`=anioPE') discount(7)
 
 
-***************************************
-** 3.5 (*) Sankey del sistema fiscal **
-foreach k in decil grupoedad /*sexo rural escol*/ {
-	noisily run "SankeySF.do" `k' `=aniovp'
-}
-
-
 
 ********************************************/
 ***                                       ***
@@ -354,37 +339,37 @@ foreach k in decil grupoedad /*sexo rural escol*/ {
 *********************************************
 scalar tasaEfectiva = {{DEUDA0}}
 
-scalar shrfsp2024 = 48.8
-scalar shrfspInterno2024 = 37.4
+scalar shrfsp2024 = 50.2
+scalar shrfspInterno2024 = 38.8
 scalar shrfspExterno2024 = 11.4
-scalar rfsp2024 = -5.4
+scalar rfsp2024 = -5.9
 scalar rfspPIDIREGAS2024 = -0.1
 scalar rfspIPAB2024 = -0.1
 scalar rfspFONADIN2024 = -0.1
 scalar rfspDeudores2024 = 0.0
-scalar rfspBanca2024 = 0.0
-scalar rfspAdecuaciones2024 = -0.2
-scalar rfspBalance2024 = -4.9
+scalar rfspBanca2024 = 0.1
+scalar rfspAdecuaciones2024 = -0.6
+scalar rfspBalance2024 = -5.0
 scalar tipoDeCambio2024 = 17.6
-scalar balprimario2024 = 1.2
-scalar costodeudaInterno2024 = 3.7
-scalar costodeudaExterno2024 = 3.7
+scalar balprimario2024 = -1.2
+scalar costodeudaInterno2024 = 3.6
+scalar costodeudaExterno2024 = 3.6
 
-scalar shrfsp2025 = 48.8
-scalar shrfspInterno2025 = 37.7
+scalar shrfsp2025 = 50.2
+scalar shrfspInterno2025 = 39.0
 scalar shrfspExterno2025 = 11.2
-scalar rfsp2025 = -2.6
+scalar rfsp2025 = -3.0
 scalar rfspPIDIREGAS2025 = -0.1
 scalar rfspIPAB2025 = -0.1
 scalar rfspFONADIN2025 = 0.0
 scalar rfspDeudores2025 = 0.0
 scalar rfspBanca2025 = 0.0
-scalar rfspAdecuaciones2025 = -0.2
-scalar rfspBalance2025 = -2.1
+scalar rfspAdecuaciones2025 = -0.3
+scalar rfspBalance2025 = -2.5
 scalar tipoDeCambio2025 = 17.9
 scalar balprimario2025 = -0.9
-scalar costodeudaInterno2025 = 3.1
-scalar costodeudaExterno2025 = 3.1
+scalar costodeudaInterno2025 = 3.4
+scalar costodeudaExterno2025 = 3.4
 
 scalar shrfsp2026 = 49.4
 scalar shrfspInterno2026 = 38.0
@@ -396,7 +381,7 @@ scalar rfspFONADIN2026 = 0.0
 scalar rfspDeudores2026 = 0.0
 scalar rfspBanca2026 = 0.0
 scalar rfspAdecuaciones2026 = -0.3
-scalar rfspBalance2026 = -2.2
+scalar rfspBalance2026 = -2.5
 scalar tipoDeCambio2026 = 18.1
 scalar balprimario2026 = -0.5
 scalar costodeudaInterno2026 = 2.7
@@ -466,8 +451,13 @@ scalar balprimario2030 = -0.3
 scalar costodeudaInterno2030 = 2.5
 scalar costodeudaExterno2030 = 2.5
 
-** 4.3 Sostenibilidad de la deuda y brecha fiscal **
-noisily FiscalGap, anio(`=anioPE') end(2030) aniomin(2013) $nographs desde(2013) discount(10) //update //anio(`=aniovp')
+** 4.1 Sostenibilidad de la deuda y brecha fiscal **
+noisily FiscalGap, anio(`=anioPE') end(2030) aniomin(2013) desde(2013) discount(10) $nographs //$update
+
+** 4.2 Sankey del sistema fiscal **
+foreach k in decil grupoedad /*sexo rural escol*/ {
+	noisily run "SankeySF.do" `k' `=aniovp'
+}
 
 
 

@@ -72,7 +72,8 @@ quietly {
 	noisily di _newline(2) in g _dup(20) "." "{bf:   PIB + Deflactor:" in y " PIB `aniovp'   }" in g _dup(20) "." _newline
 	noisily di in g " PIB " in y "`aniofinal'q`trim_last'" _col(33) %20.0fc pibQ[`obsfinal'] in g " `=currency' ({c u'}ltimo reportado)"
 	sort anio trimestre
-	collapse (mean) indiceY=indiceQ pibY=pibQ pibYR=pibQR WorkingAge Poblacion* pibPO inpc (last) trimestre, by(anio currency)
+	collapse (mean) indiceY=indiceQ pibY=pibQ pibYR=pibQR WorkingAge Poblacion* pibPO ///
+		(max) inpc (last) trimestre, by(anio currency)
 	tsset anio
 
 
@@ -193,7 +194,6 @@ quietly {
 	g double deflatorpp = inpc/inpc[`obsvp']
 	label var deflatorpp "Poder adquisitivo"
 	return scalar deflatorpp = deflatorpp[`obsvp']
-
 
 
 
@@ -800,7 +800,7 @@ program define UpdatePIBDeflactor
 	replace trimestre = 2 if mes > 3 & mes <= 6
 	replace trimestre = 3 if mes > 6 & mes <= 9
 	replace trimestre = 4 if mes > 9
-
+	
 	collapse (mean) inpc, by(anio trimestre)
 
 	** 2.5 Guardar **

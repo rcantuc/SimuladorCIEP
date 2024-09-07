@@ -55,8 +55,8 @@ if anioPE >= 2016 & anioPE < 2018 {
 }
 
 ** 2.5 Economía: Crecimiento anual del Producto Interno Bruto **
-scalar pib2024 = 2.578
-scalar pib2025 = 2.5007
+scalar pib2024 = 2.6 // 2.578
+scalar pib2025 = 2.5 // 2.5007
 scalar pib2026 = 2.5
 scalar pib2027 = 2.5
 scalar pib2028 = 2.5
@@ -70,7 +70,7 @@ scalar def2027 = 3.5
 scalar def2028 = 3.5
 scalar def2029 = 3.5
 
-** 2.7 Economía: Inflación **
+/** 2.7 Economía: Inflación **
 scalar inf2024 = 3.8
 scalar inf2025 = 3.3
 scalar inf2026 = 3.0
@@ -78,8 +78,8 @@ scalar inf2027 = 3.0
 scalar inf2028 = 3.0
 scalar inf2029 = 3.0
 
-** 2.8 Deuda Pública **
-scalar tasaEfectiva = 8.2161*0 + 7.7161
+** 2.8 Deuda Pública **/
+scalar tasaEfectiva = 8.216
 
 scalar shrfsp2024 = 50.2
 scalar shrfspInterno2024 = 38.8
@@ -231,7 +231,7 @@ scalar gasinverf   =    3692 //    Gasto en inversión (energía)
 scalar gascosdeue  =    1349 //    Gasto en costo de la deuda (energía)
 
 ** 2.9.5 Parámetros: Otros gastos **
-scalar gasinfra    =    4263*0.6991576414 //    Gasto en Otras Inversiones
+scalar gasinfra    =    4263 //    Gasto en Otras Inversiones
 scalar gasotros    =    4756 //    Otros gastos
 scalar gasfeder    =   10185 //    Participaciones y Otras aportaciones
 scalar gascosto    =    8539 //    Gasto en Costo de la deuda
@@ -251,7 +251,7 @@ scalar CUOTAS      =   1.578 //    Cuotas (IMSS)
 scalar ISRPM       =   4.063 //    ISR (personas morales)
 scalar OTROSK      =   1.043 //    Productos, derechos, aprovech.
 
-scalar FMP         =   0.894-0.4 //    Fondo Mexicano del Petróleo
+scalar FMP         =   0.894 //    Fondo Mexicano del Petróleo
 scalar PEMEX       =   2.194 //    Organismos y empresas (Pemex)
 scalar CFE         =   1.317 //    Organismos y empresas (CFE)
 scalar IMSS        =   0.125 //    Organismos y empresas (IMSS)

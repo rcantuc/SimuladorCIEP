@@ -846,34 +846,35 @@ program graphpiramide
 		g over = `over'
 		label define over 1 "Deciles I-V" 2 "VI-IX" 3 "X"
 		label values over over
-		collapse (mean) porcentaje=`POR', by(sexo grupo_edad over)
-		reshape wide porcentaje, i(sexo grupo_edad) j(over)
-		reshape wide porcentaje*, i(sexo) j(grupo_edad)
-		reshape long porcentaje1 porcentaje2 porcentaje3, i(sexo) j(grupo_edad)
-		reshape long porcentaje, i(sexo grupo_edad) j(over)
-		replace porcentaje = 0 if porcentaje == .
+		collapse (mean) valor=`POR', by(sexo grupo_edad over)
+		reshape wide valor, i(sexo grupo_edad) j(over)
+		reshape wide valor*, i(sexo) j(grupo_edad)
+		reshape long valor1 valor2 valor3, i(sexo) j(grupo_edad)
+		reshape long valor, i(sexo grupo_edad) j(over)
+		replace valor = 0 if valor == .
+		replace valor = valor/1000
 
 		forvalues k=`=_N'(-1)1 {
 			if sexo[`k'] == 1 {
 				if over[`k'] == 1 {
-					local aportHIV = "`aportHIV' `=string(`=porcentaje[`k']',"%10.0f")',"
+					local aportHIV = "`aportHIV' `=string(`=valor[`k']',"%10.0f")',"
 				}
 				if over[`k'] == 2 {
-					local aportHVIIX = "`aportHVIIX' `=string(`=porcentaje[`k']',"%10.0f")',"
+					local aportHVIIX = "`aportHVIIX' `=string(`=valor[`k']',"%10.0f")',"
 				}
 				if over[`k'] == 3 {
-					local aportHX = "`aportHX' `=string(`=porcentaje[`k']',"%10.0f")',"			
+					local aportHX = "`aportHX' `=string(`=valor[`k']',"%10.0f")',"			
 				}
 			}
 			if sexo[`k'] == 2 {
 				if over[`k'] == 1 {
-					local aportMIV = "`aportMIV' `=string(`=porcentaje[`k']',"%10.0f")',"
+					local aportMIV = "`aportMIV' `=string(`=valor[`k']',"%10.0f")',"
 				}
 				if over[`k'] == 2 {
-					local aportMVIIX = "`aportMVIIX' `=string(`=porcentaje[`k']',"%10.0f")',"
+					local aportMVIIX = "`aportMVIIX' `=string(`=valor[`k']',"%10.0f")',"
 				}
 				if over[`k'] == 3 {
-					local aportMX = "`aportMX' `=string(`=porcentaje[`k']',"%10.0f")',"			
+					local aportMX = "`aportMX' `=string(`=valor[`k']',"%10.0f")',"			
 				}		
 			}
 		}
