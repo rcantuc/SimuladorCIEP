@@ -1,0 +1,43 @@
+\babel@toc {spanish}{}\relax 
+\contentsline {chapter}{\textbf {Presentación} al documento}{\es@scroman {iii}}{chapter*.3}%
+\contentsline {section}{Misión}{\es@scroman {iii}}{section*.4}%
+\contentsline {section}{Visión}{\es@scroman {iii}}{section*.4}%
+\contentsline {section}{Objetivos}{\es@scroman {iii}}{section*.4}%
+\contentsline {section}{Justificación}{\es@scroman {iv}}{section*.4}%
+\contentsline {section}{\numberline {0.1}Manual del Simulador Fiscal CIEP v5}{1}{section.0.1}%
+\contentsline {section}{\numberline {0.2}Manual de uso}{1}{section.0.2}%
+\contentsline {subsubsection}{Presentación}{1}{section.0.2}%
+\contentsline {subsubsection}{Fuentes de información}{1}{section.0.2}%
+\contentsline {subsubsection}{¿Por qué es importante?}{1}{section.0.2}%
+\contentsline {subsubsection}{Estado base}{2}{section.0.2}%
+\contentsline {paragraph}{Impuestos laborales}{3}{section.0.2}%
+\contentsline {paragraph}{Impuestos al consumo}{3}{section.0.2}%
+\contentsline {paragraph}{Impuestos al Capital}{4}{section.0.2}%
+\contentsline {paragraph}{Organismos y empresas}{4}{section.0.2}%
+\contentsline {subsubsection}{Componentes del Gasto público}{5}{section.0.2}%
+\contentsline {paragraph}{Educación Pública}{5}{section.0.2}%
+\contentsline {paragraph}{Salud pública}{5}{section.0.2}%
+\contentsline {paragraph}{Pensiones}{5}{section.0.2}%
+\contentsline {paragraph}{Otros gastos}{5}{section.0.2}%
+\contentsline {paragraph}{ Ingreso básico}{5}{section.0.2}%
+\contentsline {subsubsection}{Marco macroeconómico}{6}{section.0.2}%
+\contentsline {section}{\numberline {0.3}Resultados}{6}{section.0.3}%
+\contentsline {subsubsection}{Incidencia por deciles}{7}{section.0.3}%
+\contentsline {subsubsection}{Incidencia por edades}{7}{section.0.3}%
+\contentsline {subsubsection}{Proyección de las aportaciones}{8}{section.0.3}%
+\contentsline {subsubsection}{Ingresos futuros}{8}{section.0.3}%
+\contentsline {subsubsection}{Gastos futuros}{8}{section.0.3}%
+\contentsline {subsubsection}{Deuda}{9}{section.0.3}%
+\contentsline {subsubsection}{Redistribución fiscal}{9}{section.0.3}%
+\contentsline {section}{\numberline {0.4}Ejemplos de simulación}{10}{section.0.4}%
+\contentsline {subsubsection}{Descripción de la simulación}{10}{section.0.4}%
+\contentsline {subsubsection}{Balance presupuestario}{10}{section.0.4}%
+\contentsline {subsubsection}{Incidencia por deciles}{11}{section.0.4}%
+\contentsline {subsubsection}{Incidencia por edades y sexo}{11}{section.0.4}%
+\contentsline {subsubsection}{Ingresos y Gastos futuros}{11}{section.0.4}%
+\contentsline {subsubsection}{Redistribución del sistema fiscal}{12}{section.0.4}%
+\contentsfinish 
+\contentsline {chapter}{Acrónimos}{14}{chapter*.5}%
+\contentsline {chapter}{Índice de figuras}{15}{section*.6}%
+\contentsline {chapter}{Índice de cuadros}{16}{section*.7}%
+\contentsline {chapter}{Bibliografía}{17}{chapter*.8}%

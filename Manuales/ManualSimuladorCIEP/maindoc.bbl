@@ -1,0 +1,98 @@
+\begin{thebibliography}{}
+
+\bibitem [\protect \citeauthoryear {%
+{\acs{CIEP}}%
+}{%
+{\acs{CIEP}}%
+}{%
+{\protect \APACyear {2022}}%
+}]{%
+hewlett2022}
+\APACinsertmetastar {%
+hewlett2022}%
+\begin{APACrefauthors}%
+{\acs{CIEP}}.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2022}{}{}.
+\newblock
+\APACrefbtitle {{Finanzas públicas locales: hacia una nueva coordinación
+  fiscal}.} {{Finanzas públicas locales: hacia una nueva coordinación
+  fiscal}.}
+\newblock
+\APAChowpublished {Disponible en \url{https://finanzaslocales.ciep.mx/}}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+Heckman%
+}{%
+Heckman%
+}{%
+{\protect \APACyear {2000}}%
+}]{%
+heckman2000real}
+\APACinsertmetastar {%
+heckman2000real}%
+\begin{APACrefauthors}%
+Heckman, J.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2000}{}{}.
+\newblock
+{\BBOQ}\APACrefatitle {The real question is how to use the available funds
+  wisely} {The real question is how to use the available funds wisely}.{\BBCQ}
+\newblock
+\APACjournalVolNumPages{The best}{}{}{}.
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+{Senado de la República}%
+}{%
+{Senado de la República}%
+}{%
+{\protect \APACyear {2021}}%
+}]{%
+senado}
+\APACinsertmetastar {%
+senado}%
+\begin{APACrefauthors}%
+{Senado de la República}.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2021}{}{}.
+\newblock
+\APACrefbtitle {{Senadores perfilan reforma para establecer Sistema Nacional de
+  Cuidados}.} {{Senadores perfilan reforma para establecer Sistema Nacional de
+  Cuidados}.}
+\newblock
+\APACrefnote{Disponible en
+  \url{http://comunicacion.senado.gob.mx/index.php/informacion/boletines/50632-senadores-perfilan-reforma-para-establecer-sistema-nacional-de-cuidados-en-breve-anuncia-marti-batres.html}.}
+\PrintBackRefs{\CurrentBib}
+
+\bibitem [\protect \citeauthoryear {%
+{\acs{SHCP}}%
+}{%
+{\acs{SHCP}}%
+}{%
+{\protect \APACyear {2022}}%
+}]{%
+shcp_ppef2023}
+\APACinsertmetastar {%
+shcp_ppef2023}%
+\begin{APACrefauthors}%
+{\acs{SHCP}}.%
+\end{APACrefauthors}%
+\unskip\
+\newblock
+\APACrefYearMonthDay{2022}{}{}.
+\newblock
+\APACrefbtitle {{Paquete Económico}.} {{Paquete Económico}.}
+\newblock
+\APACrefnote{Disponible en
+  \url{https://www.finanzaspublicas.hacienda.gob.mx/es/Finanzas_Publicas/Paquete_Economico_y_Presupuesto}.}
+\PrintBackRefs{\CurrentBib}
+
+\end{thebibliography}

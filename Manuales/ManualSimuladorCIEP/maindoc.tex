@@ -1,0 +1,851 @@
+%%%%%%%%%%%%%%%%%%
+%%%%          %%%%
+%%%% MAIN DOC %%%%
+%%%%          %%%%
+%%%%%%%%%%%%%%%%%%
+\gdef\maindoc{1}
+\input{preamble}
+
+
+
+
+
+%%%%%%%%%%%%%%%%
+%%%          %%%
+%%% CONTEXTO %%%
+%%%          %%%
+%%%%%%%%%%%%%%%%
+
+\hypertarget{manual-del-simulador-fiscal-ciep-v5}{%
+\section{Manual del Simulador Fiscal CIEP
+v5}\label{manual-del-simulador-fiscal-ciep-v5}}
+
+
+
+\hypertarget{manual-de-uso}{%
+\section{Manual de uso}\label{manual-de-uso}}
+
+\hypertarget{presentaciuxf3n}{%
+\subsubsection{Presentación}\label{presentaciuxf3n}}
+
+El Simulador Fiscal CIEP v5 ha sido programado con la premisa de que el
+Sistema Fiscal se basa en las personas y en el equilibrio presupuestario
+federal. Entendemos el balance presupuestario como la diferencia entre
+los ingresos presupuestarios y el gasto público federal, que puede
+resultar en endeudamiento.
+
+\[Ingresospresupuestarios - GastopúblicoFederal = Endeudamiento\]
+
+\hypertarget{fuentes-de-informaciuxf3n}{%
+\subsubsection{Fuentes de información}\label{fuentes-de-informaciuxf3n}}
+
+La información presupuestaria se actualiza con base en los resultados
+fiscales más recientes de los ingresos y el gasto público, según lo
+establecido en la Ley de Ingresos de la Federación (LIF) y el
+Presupuesto de Egresos de la Federación (PEF) 2023. Además, los cálculos
+se realizan utilizando datos del Sistema de Cuentas Nacionales (del
+Banco de Información Económica), el crecimiento demográfico del Consejo
+Nacional de Población (CONAPO) y el número de personas matriculadas,
+aseguradas en el sistema público de salud y pensionadas de la Encuesta
+Nacional de Ingresos y Gastos de los Hogares (ENIGH) 2020. Hasta la
+fecha de redacción de este manual, la información está actualizada hasta
+el año 2023.
+
+\hypertarget{por-quuxe9-es-importante}{%
+\subsubsection{¿Por qué es importante?}\label{por-quuxe9-es-importante}}
+
+El Simulador Fiscal CIEP v5 es una herramienta invaluable para abordar
+los desafíos fiscales que enfrenta México. En primer lugar, el actual
+sistema fiscal no cuenta con los recursos suficientes para mantener el
+gasto público en el largo plazo. Aumentar la recaudación implica cambios
+significativos en las prioridades públicas y no tomar medidas sería aún
+más perjudicial, con grandes costos para todos los ciudadanos.
+
+En segundo lugar, el cambio demográfico proyectado por CONAPO representa
+un desafío adicional. Con el paso del tiempo, la proporción de niños
+disminuye y la de adultos mayores aumenta. En 2050, se espera que haya
+la misma cantidad de personas mayores de 60 años que menores de 18 años,
+algo nunca antes visto. Esto implica menos personas en edad de trabajar
+y más en edad de jubilarse, lo que genera una mayor presión sobre el
+sistema fiscal.
+
+Además, la deuda pública es otra preocupación significativa. Durante más
+de 10 años, el gasto ha superado la recaudación, lo que ha generado un
+desbalance y una creciente deuda. El costo de dicha deuda ya supera el
+gasto total en salud y se espera que pronto supere incluso al de
+educación. Esto limita nuestras posibilidades de inversión en sectores
+clave y compromete nuestro futuro financiero.
+
+Ante este panorama, el Simulador Fiscal CIEP v5 se vuelve esencial para
+que todos podamos comprender la magnitud de los retos fiscales y
+participar en su solución. Nos invita a explorar diferentes escenarios,
+calcular la recaudación necesaria y proponer medidas para lograr un
+sistema fiscal más equitativo y sostenible.
+
+\hypertarget{estado-base}{%
+\subsubsection{Estado base}\label{estado-base}}
+
+Al interactuar con el Simulador Fiscal CIEP v5, se muestra el balance
+presupuestario más actualizado como porcentaje (\%) del Producto Interno
+Bruto (PIB). En el momento de redacción de este documento, el balance
+presupuestario era de -3.8\% del PIB (un negativo represente un
+endeudamiento y un positivo un ahorro), debido a que los gastos
+representaron el 26.9\% del PIB, mientras que los ingresos fueron del
+23.1\% del PIB (Figura 1).
+
+Además, se presentan los diferentes conceptos que componen los ingresos,
+los gastos y el marco macroeconómico nacional. Si bien estos componentes
+se encuentran actualizados según el entorno económico actual, el usuario
+tiene la posibilidad de modificarlos para sus propuestas y simulaciones
+de política pública. En esta sección, el manual se enfoca en el estado
+base y la presentación de los componentes. Para ver un ejemplo de
+simulaciones, consulte la sección XXX.
+
+Figura. 1: Balance presupuestario
+
+%\includegraphics[width=5.90556in,height=0.58056in]{media/image4.png}
+
+Componentes de los Ingresos
+
+Para asegurar la claridad y accesibilidad del Simulador Fiscal CIEP v5,
+es importante comprender los componentes de los ingresos presupuestarios
+federales. Estos se dividen en cuatro categorías principales:
+\textbf{impuestos laborales, impuestos al consumo, impuestos al
+capital}\footnote{En esta sección, se incluyen los ingresos tributarios
+  al capital y los ingresos no tributarios como derechos, productos y
+  aprovechamientos.} \textbf{y los ingresos propios de organismos y
+empresas}. Cada uno de estos componentes está vinculado a una fuente de
+ingreso específica del Sistema de Cuentas Nacionales y su resultado
+recaudatorio se presenta como un porcentaje del Producto Interno Bruto
+(PIB), relacionado con su cuenta macroeconómica gravable (Figura 2).
+Esta información proviene del Banco de Información Económica (BIE) del
+INEGI. Si se quiere más información sobre las cifras presentadas, todos
+los cuadros tienen su liga que te dirige a la fuente de información
+primaria.
+
+Por ejemplo, el Impuesto Sobre la Renta (ISR) se vincula a las
+compensaciones de los asalariados\footnote{Excluyendo contribuciones a
+  la seguridad social.}. Así, el Simulador Fiscal CIEP v5 muestra la
+tasa efectiva para cada fuente de ingreso, lo que permite conocer qué
+proporción de la cuenta macroeconómica gravable representaría un ingreso
+público.
+
+\[tasaefectiva\left( \text{\%} \right) = \frac{Recaudación}{Cuentamacroeconómicagravable}\]
+
+Es recomendable tener conocimiento sobre conceptos tributarios
+utilizados a lo largo de la sección de ingresos, como la tasa cero,
+exenciones y tabuladores que generan los impuestos. Para ello, se
+sugiere consultar el significado de dichos conceptos en la publicación
+\href{https://ingresosenmexico.ciep.mx/}{``Ingresos públicos en México:
+Hacia un nuevo sistema fiscal''} elaborada por CIEP en 2021. Además, se
+recomienda explorar la línea de investigación sobre ingresos públicos
+disponible en la página oficial de
+\href{https://ciep.mx/investigaciones/}{CIEP}.
+
+\hypertarget{impuestos-laborales}{%
+\paragraph{Impuestos laborales}\label{impuestos-laborales}}
+
+Dentro de los ingresos presupuestarios federales, los impuestos
+laborales comprenden el Impuesto Sobre la Renta (ISR) aplicado a
+personas asalariadas y personas físicas, así como los ingresos públicos
+generados por las cuotas de seguridad social. Por un lado, estos tres
+conceptos pueden ser simulados y ajustados en el simulador, modificando
+su recaudación como un porcentaje del PIB (Figura 2). Por otro lado,
+también es posible realizar cambios en el marco legal establecido por la
+Ley del Impuesto Sobre la Renta (artículos 151, 152 y décimo
+transitorio), después de dar click al bontón ``Submódulo'' (Figura 3).
+
+Figura 2: Impuestos laborales
+
+%\includegraphics[width=4.83125in,height=3.63056in]{media/image5.png}
+
+Por ejemplo, en el caso del ISR sobre asalariados y personas físicas, es
+posible ajustar las tasas impositivas y los subsidios aplicados a los
+diferentes rangos salariales utilizados para calcular el ISR y el
+subsidio al empleo. Cada impuesto está relacionado con su cuenta
+macroeconómica gravable, que en este caso son las variables de ingresos
+laborales. En el estado base, los impuestos laborales representan el
+5.4\% del PIB y el 13.2\% (tasa efectiva) de los ingresos laborales en
+México.
+
+Además, en el simulador, es posible modificar las deducciones como un
+porcentaje del ingreso sujeto a gravamen, así como el porcentaje de
+informalidad (con base a la ENIGH 2020 y la recaudación reportada por la
+SHCP). Para este último, se considera a la población que genera
+ingresos, pero que no paga ISR (Figura 3).
+
+Figura 3: Rangos de ingresos salariales
+
+%\includegraphics[width=3.45833in,height=3.04306in]{media/image6.png}
+
+\hypertarget{impuestos-al-consumo}{%
+\paragraph{Impuestos al consumo}\label{impuestos-al-consumo}}
+
+Dentro de los ingresos presupuestarios federales, los impuestos al
+consumo se componen de diferentes elementos, entre ellos (Figura 4):
+
+\begin{itemize}
+\item
+  Impuesto al Valor Agregado (IVA): Este impuesto se aplica a la mayoría
+  de los bienes y servicios, gravando el valor agregado en cada etapa de
+  producción y comercialización.
+\item
+  Impuesto Sobre Automóviles Nuevos (ISAN): Este impuesto se aplica a la
+  adquisición de vehículos nuevos.
+\item
+  Impuestos sobre importaciones: Son los impuestos aplicados a los
+  bienes y servicios que son importados al país.
+\item
+  Impuesto Especial Sobre productos y Servicios (IEPS): Este impuesto se
+  aplica a productos específicos, como las gasolinas y el diésel
+  (petrolero), así como a otros bienes y servicios.
+\end{itemize}
+
+Cada uno de estos impuestos está vinculado a una cuenta macroeconómica
+gravable relacionada con el consumo de los hogares. En el estado base,
+los impuestos al consumo representan el 6.5\% del PIB y el 10.3\% (tasa
+efectiva) del valor económico del consumo de los hogares e instituciones
+sin fines de lucro.
+
+Figura 4: Impuestos al consumo
+
+%\includegraphics[width=3.72708in,height=3.20069in]{media/image7.png}
+
+En el simulador, es posible realizar simulaciones y ajustes relacionados
+con el IVA, como la tasa cero y las exenciones aplicadas a diferentes
+grupos de bienes y servicios (Figura 5). Por ejemplo, se puede eliminar
+la tasa cero sobre alimentos o medicinas y evaluar su impacto
+recaudatorio.
+
+Figura 5: Gravámenes, tasa cero y exenciones del IVA
+
+%\includegraphics[width=3.56597in,height=3.98523in]{media/image8.png}
+
+\hypertarget{impuestos-al-capital}{%
+\paragraph{Impuestos al Capital}\label{impuestos-al-capital}}
+
+Dentro de los ingresos presupuestarios federales, los impuestos al
+capital se componen de dos elementos principales (Figura 6):
+
+\begin{itemize}
+\item
+  Impuesto Sobre la Renta (ISR) aplicado a personas morales: En el
+  simulador, es posible realizar simulaciones sobre la tasa estatuaria
+  aplicada al ISR de personas morales. En el estado base, esta tasa es
+  del 30\%. Modificar esta tasa permite evaluar su impacto en los
+  ingresos generados por el capital privado.
+\item
+  Contribuciones no tributarias: Estas contribuciones incluyen los
+  productos, derechos y aprovechamientos relacionados con el capital
+  privado.
+\end{itemize}
+
+Cada contribución está vinculada a una cuenta macroeconómica gravable
+que representa los ingresos generados por el capital privado. En el
+estado base, los impuestos al capital representan el 5.2\% del PIB y
+equivalen al 16\% (tasa efectiva) del retorno del capital privado.
+
+Figura 6: Impuestos al capital
+
+%\includegraphics[width=5.87232in,height=3.68559in]{media/image9.png}
+
+Además, en el simulador se puede modificar el porcentaje de personas
+morales que no contribuyen a través del ISR (estimados con la ENIGH 2020
+e información de la SHCP) y modificar la tasa impositiva. Esto permite
+evaluar diferentes escenarios y entender cómo estos cambios impactan la
+recaudación fiscal por parte del capital privado (Figura 7).
+
+Figura 7: Parámetros de recaudación sobre personas morales
+
+%\includegraphics[width=5.90556in,height=2.58681in]{media/image10.png}
+
+\hypertarget{organismos-y-empresas}{%
+\paragraph{Organismos y empresas}\label{organismos-y-empresas}}
+
+Dentro de los ingresos presupuestarios federales, los ingresos de
+organismos y empresas públicas abarcan distintas entidades, entre las
+cuales se encuentran (Figura 8):
+
+\begin{itemize}
+\item
+  Empresas presupuestarias de control directo: Estas empresas incluyen
+  instituciones como el Instituto Mexicano del Seguro Social (IMSS) y el
+  Instituto de Seguridad y Servicios Sociales de los Trabajadores del
+  Estado (ISSSTE).
+\item
+  Empresas productivas del Estado: Este grupo incluye entidades como la
+  Comisión Federal de Electricidad (CFE) y Petróleos Mexicanos (Pemex).
+\item
+  Transferencias al Fondo Mexicano del Petróleo (FMP): Estas
+  transferencias también forman parte de los ingresos de organismos y
+  empresas públicas.
+\end{itemize}
+
+\begin{quote}
+Figura 8: Ingresos de organismos y empresas
+\end{quote}
+
+%\includegraphics[width=4.2793in,height=3.72437in]{media/image11.png}
+
+Cada uno de estos componentes está vinculado a la cuenta macroeconómica
+gravable del ingreso de capital público y contribuye al total
+recaudatorio de ingresos de capital. Mientras que, el total se vincula
+con los ingresos de capital, pero descontando el consumo de capital
+fijo. En el estado base, estos ingresos representan el 5.8\% del PIB y
+el 15.2\% (tasa efectiva) del ingreso de capital.
+
+\hypertarget{componentes-del-gasto-puxfablico}{%
+\subsubsection{Componentes del Gasto
+público}\label{componentes-del-gasto-puxfablico}}
+
+El gasto público federal se divide en cinco categorías principales:
+educación pública, salud, pensiones, otros gastos y un posible ingreso
+básico universal. Cada una de estas categorías está vinculada a su
+población beneficiaria y se relaciona con el resultado recaudatorio
+actualizado como porcentaje del Producto Interno Bruto (PIB) y el gasto
+per cápita. Las simulaciones se realizan con base en el gasto per
+cápita.
+
+A lo largo de la sección de gasto, se utilizan conceptos de gasto con
+base en las clasificaciones del presupuesto; por lo que, se recomienda
+la línea de investigación sobre el gasto público disponible en la página
+oficial de \href{https://ciep.mx/investigaciones/}{CIEP}.
+
+\hypertarget{educaciuxf3n-puxfablica}{%
+\paragraph{Educación Pública}\label{educaciuxf3n-puxfablica}}
+
+El gasto educativo abarca desde la educación inicial hasta el posgrado,
+incluyendo también la educación para adultos y otros gastos educativos.
+En el simulador, es posible ajustar el gasto per cápita en educación. En
+el estado base, el gasto educativo total equivale al 3.3\% del PIB y a
+32,103 pesos por alumno (Figura 9).
+
+Figura 9: Gasto en educación pública
+
+%\includegraphics[width=4.64931in,height=3.80903in]{media/image12.png}
+
+\hypertarget{salud-puxfablica}{%
+\paragraph{Salud pública}\label{salud-puxfablica}}
+
+El gasto en salud se compone de distintas entidades públicas que brindan
+servicios de salud, como IMSS Bienestar, ISSSTE, Pemex y el Instituto de
+Seguridad Social para las Fuerzas Armadas Mexicanas (ISSFAM). Además, se
+considera el gasto en salud para la población no afiliada a estos
+servicios públicos. Al igual que en otros componentes, es posible
+ajustar el gasto per cápita en salud. En el estado base, el gasto en
+salud equivale al 2.9\% del PIB y a 6,804 pesos por persona (Figura 10).
+
+Figura 10: Gasto en salud
+
+%\includegraphics[width=4.57733in,height=3.34319in]{media/image13.png}
+
+\hypertarget{pensiones}{%
+\paragraph{Pensiones}\label{pensiones}}
+
+El gasto en pensiones incluye distintas entidades públicas responsables
+del pago de pensiones, como IMSS, ISSSTE, Pemex, CFE, ISSFAM, Ferronales
+y la extinta Luz y Fuerza del Centro (LFC). También se contempla el
+gasto por la pensión del bienestar para adultos mayores. Al igual que en
+los otros componentes, se puede ajustar el gasto per cápita en
+pensiones. En el estado base, el gasto en pensiones equivale al 5.5\%
+del PIB y a 93,256 pesos por persona (Figura 11).
+
+Figura 11: Gasto en Pensiones
+
+%\includegraphics[width=5.90556in,height=3.97569in]{media/image14.png}
+
+\hypertarget{otros-gastos}{%
+\paragraph{Otros gastos}\label{otros-gastos}}
+
+Los otros gastos corresponden a distintas entidades públicas
+asignatarias del gasto público, como CFE, Pemex, Secretaría de Energía
+(SENER) y otros gastos energéticos, infraestructura, costo de la deuda,
+gasto federalizado y el resto de los gastos. En este caso, el gasto per
+cápita se calcula en función de la población total. En el estado base,
+estos gastos representan el 15.2\% del PIB y 35,779 pesos por persona
+(Figura 12).
+
+Figura 12: Otros gastos
+
+%\includegraphics[width=3.31171in,height=2.93241in]{media/image15.png}
+
+\hypertarget{ingreso-buxe1sico}{%
+\paragraph{\texorpdfstring{ Ingreso
+básico}{ Ingreso básico}}\label{ingreso-buxe1sico}}
+
+Por último, el simulador permite explorar un posible ingreso básico para
+toda la población. Es posible ajustar las opciones para excluir a la
+población menor de edad o a la población adulta mayor. Por ejemplo, se
+puede asignar un ingreso básico a toda la población marcando ambas
+opciones disponibles. También se pueden marcar únicamente el ingreso
+básico a mayores de 65 años o a menores de 18 años. En resumen, las
+personas entre 18 y 68 años siempre recibirían el ingreso básico (Figura
+13).
+
+Figura 13: Ingreso básico
+
+%\includegraphics[width=5.90556in,height=2.56111in]{media/image16.png}
+
+\hypertarget{marco-macroeconuxf3mico}{%
+\subsubsection{Marco macroeconómico}\label{marco-macroeconuxf3mico}}
+
+En el marco macroeconómico se toman en cuenta las estimaciones
+proporcionadas por la Secretaría de Hacienda en los Criterios Generales
+de Política Económica, presentados como parte del Paquete Económico.
+Estas estimaciones incluyen el crecimiento proyectado del Producto
+Interno Bruto (PIB) y la inflación para el año fiscal en curso y los
+años venideros.
+
+Además, se consideran estimaciones relacionadas con los intereses de la
+deuda pública, expresados como porcentaje del Saldo Histórico de los
+Requerimientos Financieros del Sector Público (SHRFSP). También se
+incluyen datos sobre el tipo de cambio frente al dólar y la depreciación
+esperada del peso mexicano respecto al dólar estadounidense. Estos
+factores tienen un impacto significativo en la economía y se reflejan en
+las simulaciones realizadas en el simulador (Figura 14).
+
+Figura 14: Marco macroeconómico
+
+%\includegraphics[width=2.93472in,height=4.53681in]{media/image17.png}
+
+\hypertarget{resultados}{%
+\section{Resultados}\label{resultados}}
+
+Después de seleccionar los parámetros disponibles en ingresos, gastos y
+marco macroeconómico, el Simulador Fiscal CIEP v5 proporciona resultados
+que pueden ser visualizados en diferentes aspectos. Estos incluyen la
+incidencia de las políticas fiscales por deciles de ingreso, grupos
+etarios y género; estimaciones futuras de ingresos, gastos y deuda
+pública; así como la redistribución del sistema fiscal a través del
+ciclo fiscal.
+
+Es importante destacar que el Simulador Fiscal CIEP v5 está diseñado
+como un equilibrio parcial, también conocido como "aritmético". Esto
+implica que las variables simuladas no afectan a otros parámetros en el
+modelo. Por ejemplo, si la simulación incorpora aumentos en el gasto
+público en educación, salud e infraestructura, esto no tendría un
+impacto simulado en el crecimiento económico o en los ingresos futuros
+de los hogares, entre otros aspectos.
+
+Nota adicional: El enfoque del Simulador Fiscal CIEP v5 se centra en el
+análisis de políticas fiscales y sus efectos directos en los indicadores
+seleccionados. Sin embargo, es importante tener en cuenta que existen
+otros factores y variables macroeconómicas que pueden influir en los
+resultados generales de la economía, pero que no están contemplados en
+esta herramienta de simulación específica. Por tanto, es recomendable
+considerar estos resultados como una visión parcial y complementar el
+análisis con información adicional.
+
+\hypertarget{incidencia-por-deciles}{%
+\subsubsection[Incidencia por deciles]{\texorpdfstring{Incidencia por
+deciles\footnote{Cada decil representa 10\% de la población ordenado por
+  nivel de ingreso. El primero decil representaría al promedio del 10\%
+  con menos ingresos; mientras que, el décimo representaría al 10\% con
+  mayores ingresos.}}{Incidencia por deciles}}\label{incidencia-por-deciles}}
+
+Uno de los resultados visibles en el Simulador Fiscal CIEP v5 es la
+distribución de las aportaciones netas de los hogares al sistema fiscal,
+mediante el uso de la ENIGH 2020. Se considera como aportación neta la
+diferencia entre los ingresos y el gasto públicos aportado y recibido
+por cada hogar. Con el fin de analizar la progresividad del sistema
+fiscal, los resultados se segmentan por deciles. Además, se presentan
+las aportaciones netas promedio por hogar, la distribución porcentual de
+estas aportaciones y el promedio de cuánto representan las aportaciones
+netas en relación con el ingreso anual del hogar (Figura 15).
+
+Figura 15: Incidencia por deciles
+
+%\includegraphics[width=5.90556in,height=3.37847in]{media/image18.png}
+
+En el estado base, el 10\% de los hogares con menores ingresos presenta
+una aportación neta negativa de 57,313 pesos. Esto implica que reciben
+más gasto público del que aportan por impuestos y las aportaciones netas
+representan, en promedio, el 73.2\% de su ingreso anual. Por otro lado,
+el 10\% de los hogares con mayores ingresos realiza una aportación neta
+promedio de 285,583 pesos, que representa el 14.5\% de su ingreso anual.
+
+Nota adicional: Los resultados presentados son una descripción general
+de la incidencia por deciles en el estado base. La progresividad del
+sistema fiscal puede variar según las políticas fiscales y los
+parámetros seleccionados en el simulador. Es importante analizar estos
+resultados en conjunto con otras variables y considerar que pueden
+existir otras formas de medir la progresividad y equidad del sistema
+fiscal.
+
+\hypertarget{incidencia-por-edades}{%
+\subsubsection{Incidencia por edades}\label{incidencia-por-edades}}
+
+En concordancia con la importancia del ciclo de vida fiscal, se
+presentan resultados diferenciados por sexo, grupos de deciles y rangos
+de edad, también mediante el uso de la ENIGH 2020. De esta manera, se
+puede observar cómo las personas contribuyen a lo largo de su vida
+(Figura. 16).
+
+Como resultado general, se observa que las niñas, niños y adolescentes
+(NNA) y las personas adultas mayores tienden a recibir más del sistema
+fiscal de lo que aportan. Esto se debe a que, al no estar en edad de
+trabajar, suelen ser beneficiarios de programas sociales y contribuyen a
+través de impuestos al consumo. Por otro lado, cuando una persona se
+encuentra en edad laboral, tiende a contribuir al sistema fiscal
+mediante impuestos laborales, de capital y consumo, mientras que suelen
+recibir menos gasto fiscal en relación con sus contribuciones. Además,
+los roles de género, como las diferencias salariales y de oportunidades,
+entre otros factores, se reflejan en los resultados observados.
+
+Es importante destacar que estos resultados evidencian patrones
+generales y no representan necesariamente la situación individual de
+cada persona. La forma en que cada individuo contribuye y se beneficia
+del sistema fiscal puede variar según su situación personal, ingresos,
+gastos y otros factores específicos. Por lo tanto, es fundamental
+considerar estos resultados en un contexto más amplio y complementarlos
+con análisis adicionales para tener una visión completa de la equidad y
+efectividad del sistema fiscal.
+
+Figura 16: Incidencia por edades
+
+%\includegraphics[width=5.90556in,height=4.17083in]{media/image19.png}
+
+\hypertarget{proyecciuxf3n-de-las-aportaciones}{%
+\subsubsection{Proyección de las
+aportaciones}\label{proyecciuxf3n-de-las-aportaciones}}
+
+Dada la existente y difícil de revertir transición demográfica, el
+CONAPO ha proyectado una tendencia en la que cada vez hay menos personas
+en edad de trabajar y, en contraste, un aumento en la demanda de
+servicios públicos. Teniendo en cuenta las aportaciones netas
+mencionadas anteriormente y el contexto demográfico, se estima que el
+punto máximo de estas contribuciones se alcance en 2025, a partir del
+cual podrían comenzar a disminuir (Figura 17). Es decir, a partir de
+entonces, la población empezará a demandar más servicios por pensiones y
+salud y contribuirá menos por impuestos.
+
+Con el fin de retrasar el punto máximo de las aportaciones netas, se
+sugieren algunas recomendaciones de simulación. Dado que las personas
+que no se encuentran en edad laboral, como los NNA y las personas
+adultas mayores, contribuyen al sistema fiscal a través del consumo, una
+manera de retrasar este punto sería mediante la implementación de
+mayores impuestos al consumo. Otra estrategia sería la reducción de
+programas sociales que benefician a esta población.
+
+Figura 17: Proyección de las aportaciones
+
+%\includegraphics[width=5.90556in,height=2.625in]{media/image20.png}
+
+\hypertarget{ingresos-futuros}{%
+\subsubsection{Ingresos futuros}\label{ingresos-futuros}}
+
+En la estimación de los ingresos públicos futuros (Figura 18), se toman
+en cuenta varios factores, como los componentes fiscales de la
+recaudación presupuestaria, las tasas efectivas, los componentes del
+PIB, el crecimiento económico y la transición demográfica. Los
+resultados se presentan desglosados según los ingresos derivados de
+impuestos al consumo, impuestos laborales y de capital, tanto públicos
+como privados.
+
+Como recomendación de simulación, es importante recordar que, para
+mantener un equilibrio presupuestario, los ingresos deben ser mayores
+que los gastos. Ante los cambios demográficos, es fundamental considerar
+la población contribuyente de cada tipo de ingreso al realizar
+simulaciones. Por ejemplo, si se estima que habrá menos personas en edad
+de trabajar en el futuro, se podría considerar incrementar los impuestos
+al consumo como una forma de aumentar los ingresos futuros.
+
+Figura 18: Ingresos públicos futuros
+
+%\includegraphics[width=5.90556in,height=2.76667in]{media/image21.png}
+
+\hypertarget{gastos-futuros}{%
+\subsubsection{Gastos futuros}\label{gastos-futuros}}
+
+La estimación futura del gasto público (Figura 19) se realiza
+considerando diversos componentes fiscales del presupuesto, la
+composición demográfica y el costo de la deuda. Se proyectan los
+resultados en el tiempo a partir de los gastos per cápita estimados. Los
+resultados se desagregan por las áreas de educación, pensiones, salud,
+costo de la deuda, pensión del bienestar y renta básica.
+
+Es fundamental tener en cuenta que, para mantener un balance
+presupuestario, los gastos deben ser menores a los ingresos. Ante los
+cambios demográficos, es necesario considerar la población beneficiaria
+de cada concepto de gasto. Es importante tener presente que, si la
+simulación genera un desbalance presupuestario, esto puede resultar en
+un aumento en el costo de la deuda.
+
+Por ejemplo, si se estiman mayores gastos per cápita en pensiones y se
+presenta un desbalance presupuestario, el gasto en pensiones y el costo
+de la deuda pueden reducir el presupuesto disponible para otros
+conceptos, como educación y salud. Por lo tanto, es necesario evaluar
+cuidadosamente las prioridades de gasto y considerar los compromisos
+financieros a largo plazo.
+
+Figura 19: Gasto público futuro
+
+%\includegraphics[width=5.90556in,height=2.62708in]{media/image22.png}
+
+\hypertarget{deuda}{%
+\subsubsection{Deuda}\label{deuda}}
+
+El (des)balance presupuestario, junto con el SHRFSP actual y
+considerando el crecimiento económico, entre otras variables, da lugar
+al SHRFSP futuro (Figura 20). Este saldo representa las obligaciones
+fiscales que se heredan a las generaciones futuras, lo que permite
+visualizar la sostenibilidad y, en cierta medida, la desigualdad fiscal
+intergeneracional.
+
+Es importante tener en cuenta que el SHRFSP futuro refleja la
+acumulación de deuda y compromisos financieros que afectarán las
+finanzas públicas en el futuro. Un balance presupuestario positivo
+contribuye a mantener una trayectoria sostenible de la deuda, mientras
+que un balance negativo puede resultar en un aumento de la carga de la
+deuda y generar preocupaciones sobre la capacidad del gobierno para
+cumplir con sus obligaciones.
+
+En la simulación, se recomienda realizar escenarios con balances
+presupuestarios positivos y negativos para observar el comportamiento
+del SHRFSP futuro. Además, es importante considerar diferentes
+estimaciones de crecimiento del PIB, ya que este factor influye en la
+relación entre el comportamiento de la deuda.
+
+El Simulador Fiscal CIEP v5 ofrece una herramienta útil para evaluar y
+analizar el impacto de diferentes escenarios presupuestarios en la
+sostenibilidad de la deuda y en la equidad intergeneracional. Sin
+embargo, es fundamental tener en cuenta que las proyecciones y
+resultados son estimaciones basadas en supuestos y variables, y están
+sujetas a incertidumbre y cambios en el entorno económico y político. Se
+recomienda realizar análisis detallados y considerar múltiples factores
+al interpretar y utilizar los resultados de la simulación.
+
+Figura 20: Proyección de la deuda
+
+%\includegraphics[width=5.90556in,height=2.58889in]{media/image23.png}
+
+\hypertarget{redistribuciuxf3n-fiscal}{%
+\subsubsection{Redistribución fiscal}\label{redistribuciuxf3n-fiscal}}
+
+Por último, es importante destacar que el sistema fiscal comienza y
+termina en las personas. El Simulador Fiscal CIEP v5 permite visualizar
+este flujo fiscal mediante un diagrama de Sankey (Figura. 21),
+desglosando las aportaciones fiscales de los diferentes deciles de la
+población y mostrando cómo se distribuye el gasto público entre ellos.
+
+Al utilizar el Simulador Fiscal CIEP v5, se puede observar claramente
+cómo los diferentes deciles contribuyen al ingreso presupuestario a
+través de sus aportaciones fiscales, y cómo reciben el gasto público en
+forma de beneficios y servicios. El diagrama de Sankey proporciona una
+representación visual efectiva de esta interacción entre los deciles y
+el sistema fiscal. Además, el simulador ofrece la capacidad de aislar un
+tipo específico de ingreso o gasto, estableciendo los demás parámetros
+en cero. Esto permite analizar el impacto de políticas públicas
+individuales y observar cómo afectan a los diferentes deciles de la
+población.
+
+Recuerda que la simulación es una herramienta valiosa para comprender
+las implicaciones de las decisiones fiscales y evaluar distintos
+escenarios. Al explorar y analizar los resultados del Simulador Fiscal
+V5, se puede obtener una mejor comprensión de cómo las políticas
+fiscales afectan a las personas y cómo se distribuyen los recursos a lo
+largo de los diferentes deciles de la sociedad.
+
+¡Sigue utilizando el Simulador Fiscal y explora los resultados
+detallados para obtener una visión más clara de cómo el sistema fiscal
+impacta a cada segmento de la población y cómo se pueden diseñar
+políticas más equitativas y eficientes!
+
+Figura 21: Diagrama de Sankey
+
+%\includegraphics[width=5.90556in,height=3.21806in]{media/image24.png}
+
+\hypertarget{ejemplos-de-simulaciuxf3n}{%
+\section{Ejemplos de simulación}\label{ejemplos-de-simulaciuxf3n}}
+
+En esta sección, llevaremos a cabo una simulación y análisis de
+resultados utilizando el Simulador Fiscal CIEP v5. El objetivo es
+proporcionar un ejemplo práctico sobre cómo utilizar los diferentes
+parámetros y cómo interpretar los resultados obtenidos. Es importante
+destacar que no existen limitaciones para la imaginación en este
+simulador. Puedes simular políticas públicas basadas en la literatura
+disponible o simplemente dejarte llevar por tu propia curiosidad. La
+herramienta te brinda la libertad de explorar y experimentar diferentes
+escenarios fiscales para comprender mejor su impacto.
+
+\hypertarget{descripciuxf3n-de-la-simulaciuxf3n}{%
+\subsubsection{Descripción de la
+simulación}\label{descripciuxf3n-de-la-simulaciuxf3n}}
+
+En esta simulación, nos enfocaremos en dos aspectos clave: los ingresos
+y los gastos. Por el lado de los ingresos, se implementará un gravamen
+de IVA sobre alimentos y medicinas utilizando los módulos de impuestos
+al consumo en IVA (Figura 22). Por otro lado, en cuanto a los gastos, se
+aplicará un ingreso básico para la población menor de 65 años (Figura
+23).
+
+Es importante tener en cuenta que esta simulación es ilustrativa y no
+debe interpretarse como una recomendación de política pública. Su
+propósito es brindar un ejemplo práctico y permitirnos explorar las
+implicaciones de diferentes escenarios fiscales.
+
+\hypertarget{balance-presupuestario}{%
+\subsubsection{Balance presupuestario}\label{balance-presupuestario}}
+
+%\includegraphics[width=3.33889in,height=4.53889in]{media/image25.png}%\includegraphics[width=3.33889in,height=4.53889in]{media/image26.png}En
+cuanto al balance presupuestario, los resultados iniciales revelan que
+la recaudación por IVA representaría el 6.2\% del PIB (Figura 22), lo
+cual es 1.6\% del PIB más alto en comparación con el estado base, que es
+del 4.6\%. Por otro lado, el gasto en la pensión universal sería del
+1.5\% (Figura 23), mientras que en el estado base no había asignación
+para este rubro. Estos mayores ingresos contribuirían a una disminución
+en el endeudamiento, pasando del 3.81\% del PIB al 3.78\%. Además, la
+estimación de la deuda per cápita en 2030 sería de 181,492 pesos, una
+cifra ligeramente menor que la del estado base, que es de 182,152 pesos
+(Figura 24). Aunque estos cambios no tendrían un impacto sustancial en
+el balance presupuestario, se observan resultados interesantes en otras
+visualizaciones.
+
+%\includegraphics[width=3.72078in,height=1.76623in]{media/image29.png}%\includegraphics[width=6in,height=0.96824in]{media/image31.png}%\includegraphics[width=6in,height=0.96824in]{media/image32.png}
+
+\hypertarget{incidencia-por-deciles-1}{%
+\subsubsection{Incidencia por deciles}\label{incidencia-por-deciles-1}}
+
+Analizando la distribución de las aportaciones netas por deciles de los
+hogares (Figura 25), se observa que el 10\% de menores ingresos tendría
+una aportación negativa de 67 mil 383 pesos (86\% del ingreso del hogar)
+en comparación con los 57 mil 413 pesos (73.2\% del ingreso del hogar)
+en el estado base. Esto indica que, a pesar de pagar más IVA, las
+familias del primer decil recibirían relativamente más a través del
+ingreso básico. Este resultado es similar para los deciles I al V, lo
+que significa que el 50\% de los hogares de menores ingresos se
+beneficiaría de esta medida.
+
+En contraste, el 10\% de los hogares con mayores ingresos aportaría en
+promedio 300 mil 579 pesos (11.9\% del ingreso del hogar) en comparación
+con los 285 mil 583 pesos (14.5\% del ingreso del hogar) en el estado
+base. Por lo tanto, el pago de IVA de estos hogares sería mayor que el
+ingreso básico recibido. Este patrón se observa de manera similar en los
+deciles VI al X.
+
+Figura 23: Incidencia por deciles
+
+%\includegraphics[width=5.84348in,height=2.24348in]{media/image35.png}%\includegraphics[width=5.84348in,height=2.24348in]{media/image36.png}
+
+\hypertarget{incidencia-por-edades-y-sexo}{%
+\subsubsection{Incidencia por edades y
+sexo}\label{incidencia-por-edades-y-sexo}}
+
+En cuanto a los resultados por edad y sexo (Figura 24), no se observan
+cambios visualmente perceptibles en las tendencias generales. Según la
+simulación, los hombres continuarían realizando mayores aportaciones al
+sistema fiscal en comparación con las mujeres, y la etapa laboral
+seguiría siendo la principal en términos de aportaciones netas.
+
+Sin embargo, al explorar detalladamente la página del Simulador Fiscal
+CIEP v5, se pueden apreciar cambios marginales en puntos específicos de
+la gráfica. Por ejemplo, los hombres de entre 40 y 44 años aumentarían
+su aportación al 0.38\% del PIB, cifra superior al 0.36\% aportado en el
+estado base. Este patrón puede verificarse de manera similar para cada
+grupo de edad y por grupos de deciles.
+
+Figura 24:Incidencia por edades
+
+%\includegraphics[width=4.33913in,height=2.91304in]{media/image39.png}%\includegraphics[width=4.33913in,height=2.91304in]{media/image40.png}
+
+\hypertarget{ingresos-y-gastos-futuros}{%
+\subsubsection{Ingresos y Gastos
+futuros}\label{ingresos-y-gastos-futuros}}
+
+Para proyectar los ingresos y gastos futuros, nos basaremos en el cuadro
+auxiliar disponible en la versión en línea del Simulador Fiscal V5.
+Según las estimaciones, para el año 2030 se prevé que los ingresos por
+consumo alcancen los 2.602 billones de pesos, en comparación con los
+2.087 billones de pesos del estado base. Esto indica que con el tiempo,
+los ingresos por IVA aumentarían, generando aproximadamente 1.25
+billones de pesos adicionales en recaudación\footnote{Los cambios en las
+  demás cifras se deben al redondeo de los números; por lo que
+  recomendamos no considerar los resultados ajenos a tu simulación. Ya
+  que pueden tener una desviación original respecto al estado base.}
+(Figura 25).
+
+De manera similar, se estima que el gasto extraordinario por el ingreso
+básico para 2030 sería de 0.494 billones de pesos, cantidad menor a los
+1.25 billones de pesos adicionales generados por el gravamen al IVA.
+Además, al observar un déficit presupuestario menor al estado base, se
+espera que el endeudamiento hasta 2030 sea ligeramente inferior, lo que
+a su vez reduciría el costo de la deuda. Según las proyecciones, el
+costo de la deuda estimado para 2030 sería de 1.58 billones de pesos,
+una cifra ligeramente menor en .006 billones de pesos en comparación con
+el estado base. Aunque este monto es relativamente pequeño en
+comparación con otros rubros, este resultado ilustra el efecto de
+reducir el déficit presupuestario a lo largo del tiempo en el costo de
+la deuda (Figura 26).
+
+Figura 25: Ingresos futuros
+
+%\includegraphics[width=4.02609in,height=4.74783in]{media/image43.png}%\includegraphics[width=4.02609in,height=4.74783in]{media/image44.png}
+
+%\includegraphics[width=4.80486in,height=6.20764in]{media/image47.png}%\includegraphics[width=4.80486in,height=6.20764in]{media/image48.png}
+
+\hypertarget{redistribuciuxf3n-del-sistema-fiscal}{%
+\subsubsection{Redistribución del sistema
+fiscal}\label{redistribuciuxf3n-del-sistema-fiscal}}
+
+Por último, en el diagrama de Sankey se muestra el gasto correspondiente
+al ingreso básico propuesto en la simulación. Este gasto representa el
+1.5\% del PIB y se distribuye de la siguiente manera: el 0.16\% para los
+deciles I a IV, y el 0.15\% para cada decil a partir del V.
+
+En cuanto a los impuestos al consumo, el décimo decil aportaría el
+1.99\% del PIB, mientras que en el estado base esa cifra era del 1.61\%
+del PIB. En contraste, el primer decil aportaría el 0.24\% del PIB, en
+comparación con el 0.19\% del estado base. La diferencia en las
+contribuciones del primer decil sería de aproximadamente 0.05\% del PIB,
+lo cual es mayor en comparación con la pensión universal. Por lo tanto,
+el primer decil se beneficiaría más de esta medida. Esta comparación se
+puede realizar para todos los deciles.
+
+Figura 26: Diagrama de Sankey (simulación)
+
+%\includegraphics[width=6.16114in,height=3.34441in]{media/image51.png}
+
+Querido lectora o lector,
+
+Espero que esta conversación haya sido de utilidad para ti y que hayas
+encontrado en nuestro manual una herramienta valiosa para comprender y
+simular diferentes escenarios en las finanzas públicas. Nuestro objetivo
+principal ha sido proporcionarte un ejemplo práctico de cómo utilizar
+parámetros relacionados al sistema fiscal y analizar distintos
+resultados, todo ello gracias al Simulador Fiscal CIEP v5.
+
+La relevancia de este manual radica en su capacidad para democratizar el
+conocimiento sobre las finanzas públicas y abrir nuevas puertas en el
+campo de las políticas públicas. No hay restricciones para tu
+imaginación, puedes simular desde políticas basadas en la literatura
+existente hasta ideas surgidas de tu propia curiosidad. La simulación
+nos permite explorar diversas perspectivas y entender mejor las
+implicaciones de nuestras decisiones en el ámbito de las finanzas
+públicas.
+
+Al democratizar las finanzas públicas, estamos fomentando un mayor
+involucramiento de la sociedad en los asuntos que nos conciernen a
+todos. Este manual no solo ofrece información, sino que también busca
+generar conocimiento y promover un diálogo constructivo en la búsqueda
+de soluciones y mejoras para nuestro entorno público.
+
+Recuerda que los resultados aquí presentados son ilustrativos y no
+representan recomendaciones de política pública. Sin embargo, a través
+de las visualizaciones y datos proporcionados, podemos identificar
+interesantes hallazgos y reflexionar sobre el impacto de nuestras
+decisiones en el ámbito de las finanzas públicas.
+
+¡Te animo a seguir explorando y utilizando el Simulador Fiscal CIEP v5
+para expandir tu conocimiento y participar activamente en el debate
+sobre las políticas públicas!
+
+Hasta pronto,
+
+Equipo CIEP.
+
+%\includegraphics[width=8.46429in,height=10.65873in]{media/image52.png}
+
+
+
+
+\end{document}

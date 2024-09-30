@@ -19,7 +19,7 @@ run "`c(sysdir_personal)'/profile.do"
 ** 0.3 Opciones globales  **
 global id = "ciepmx"			// IDENTIFICADOR DEL USUARIO
 //global nographs "nographs"		// SUPRIMIR GRAFICAS
-global output "output"			// ARCHIVO DE SALIDA (WEB)
+//global output "output"			// ARCHIVO DE SALIDA (WEB)
 //global update "update"		// UPDATE BASES DE DATOS
 //global export "`c(sysdir_personal)'../../+EquipoCIEP/Boletines/Consolidación fiscal/images" // IMÁGENES A EXPORTAR
 
@@ -35,18 +35,18 @@ if "$output" != "" {
 ***                     ***
 **#    1. MARCO MACRO   ***
 ***                     ***
-/***************************
+***************************
 
 ** 1.1 Proyecciones demográficas **
 //forvalues anio = 1950(1)`=anioPE' {                         // <-- Año(s) de interés
 	//foreach entidad of global entidadesL {                  // <-- Nacional o para todas las entidades
-		//noisily Poblacion if entidad == "`entidad'", anioi(1990) aniofinal(2040) //$update
+		noisily Poblacion if entidad == "`entidad'", anioi(1990) aniofinal(2040) //$update
 	//}
 //}
 
 ** 1.2 Producto Interno Bruto y su deflactor **
-//noisily PIBDeflactor, geodef(1993) geopib(1993) $update aniovp(`=aniovp')
-
+noisily PIBDeflactor, geodef(1993) geopib(1993) $update aniovp(`=aniovp')
+exit
 ** 1.3 Sistema de Cuentas Nacionales **
 //noisily SCN, //$update
 
