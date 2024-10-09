@@ -38,13 +38,14 @@ quietly {
 	PIBDeflactor, nographs
 	
 	use if clave_de_concepto == "`anything'" using "`c(sysdir_personal)'/SIM/DatosAbiertos.dta", clear
-	merge 1:1 (anio mes) using "`c(sysdir_personal)'/SIM/Deflactor.dta", nogen keep(matched)
+	merge m:1 (anio mes) using "`c(sysdir_personal)'/SIM/Deflactor.dta", nogen //keep(matched)
 	merge m:1 (anio) using "`c(sysdir_personal)'/SIM/Poblaciontot.dta", nogen keep(matched)
 	merge m:1 (anio trimestre) using "`c(sysdir_personal)'/SIM/PIBDeflactor.dta", nogen keep(matched)
 	tsset aniomes
 
+	order inpc, last
 	local currency = currency[1]
-	foreach k of varlist pibQ - crec_pibQR {
+	foreach k of varlist pibQ - inpc {
 		capture confirm numeric variable `k'
 		if _rc == 0 {
 			replace `k' = L.`k' if `k' == .
@@ -461,9 +462,12 @@ program define UpdateDatosAbiertos, return
 	tempfile gf
 	save "`gf'"
 
-	import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/transferencias_entidades_fed_hist.csv", clear
-	*save "`c(sysdir_site)'../BasesCIEP/SHCP/Datos Abiertos/transferencias_entidades_fed_hist.csv", replace
-	*import delimited "`c(sysdir_site)'../BasesCIEP/SHCP/Datos Abiertos/transferencias_entidades_fed_hist.csv", clear
+	capture confirm file "`c(sysdir_site)'../BasesCIEP/SHCP/Datos Abiertos/transferencias_entidades_fed_hist.csv"
+	if _rc != 0 {
+		import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/transferencias_entidades_fed_hist.csv", clear
+		save "`c(sysdir_site)'../BasesCIEP/SHCP/Datos Abiertos/transferencias_entidades_fed_hist.csv", replace
+	}
+	import delimited "`c(sysdir_site)'../BasesCIEP/SHCP/Datos Abiertos/transferencias_entidades_fed_hist.csv", clear
 	tempfile gfH
 	save "`gfH'"
 

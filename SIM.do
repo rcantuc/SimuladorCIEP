@@ -8,10 +8,11 @@
 ** 0.1 Rutas al Github **
 if "`c(username)'" == "ricardo" /// iMac Ricardo
 	sysdir set PERSONAL "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
-else if "`c(username)'" == "ciepmx" & "`c(console)'" == "" /// Servidor CIEP
-	sysdir set PERSONAL "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
+else if "`c(username)'" == "servidorciep" & "`c(console)'" == "" /// Servidor CIEP
+	sysdir set PERSONAL "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
 else if "`c(console)'" != "" /// Servidor Web
 	sysdir set PERSONAL "/SIM/OUT/6/"
+cd "`c(sysdir_personal)'"
 
 ** 0.2 Parámetros iniciales **
 run "`c(sysdir_personal)'/profile.do"
@@ -40,13 +41,13 @@ if "$output" != "" {
 ** 1.1 Proyecciones demográficas **
 //forvalues anio = 1950(1)`=anioPE' {                         // <-- Año(s) de interés
 	//foreach entidad of global entidadesL {                  // <-- Nacional o para todas las entidades
-		noisily Poblacion if entidad == "`entidad'", anioi(1990) aniofinal(2040) //$update
+		//noisily Poblacion if entidad == "`entidad'", anioi(1990) aniofinal(2040) //$update
 	//}
 //}
 
 ** 1.2 Producto Interno Bruto y su deflactor **
-noisily PIBDeflactor, geodef(1993) geopib(1993) $update aniovp(`=aniovp')
-exit
+//noisily PIBDeflactor, geodef(1993) geopib(1993) $update aniovp(`=aniovp')
+
 ** 1.3 Sistema de Cuentas Nacionales **
 //noisily SCN, //$update
 
@@ -56,7 +57,7 @@ exit
 ** 1.5 Presupuesto de Egresos de la Federación **
 //noisily PEF, by(divSIM) rows(2) min(0) anio(`=anioPE') desde(2013) title("Gasto presupuestario") //$update
 noisily SHRFSP, anio(`=anioPE') ultanio(2008) $update
-
+exit
 ** 1.7 Subnacionales **
 //noisily run "Subnacional.do" //$update
 
