@@ -95,7 +95,7 @@ quietly {
 
 	** 2.3 Update PEF **
 	if "`update'" == "update" {
-		noisily UpdatePEF $update
+		noisily UpdatePEF `update'
 	}
 
 
@@ -521,9 +521,14 @@ quietly {
 		matrix `maxPIBTOT' = r(StatTotal)
 
 		* Inicial *
-		tabstat gastoPIBTOT if anio == `desde', stat(max) save by(anio)
 		tempname iniPIBTOT
-		matrix `iniPIBTOT' = r(StatTotal)
+		capture tabstat gastoPIBTOT if anio == `desde', stat(max) save by(anio)
+		if _rc == 0 {
+			matrix `iniPIBTOT' = r(StatTotal)
+		}
+		else {
+			matrix `iniPIBTOT' = J(1,1,0)
+		}
 
 		* Final *
 		tabstat gastoPIBTOT if anio == `anio', stat(max) save by(anio)
@@ -606,16 +611,17 @@ program define UpdatePEF
 	*** 1. BASES DE DATOS ***
 	*************************
 	capture confirm file "`c(sysdir_personal)'/SIM/prePEF.dta"
-	if _rc != 0 {
-		*local archivos: dir "`c(sysdir_site)'../BasesCIEP/PEFs" files "*.xlsx"			// Busca todos los archivos .xlsx en /bases/PEFs/
+	if _rc == 0 {
+		local archivos: dir "`c(sysdir_site)'../BasesCIEP/PEFs" files "*.xlsx"			// Busca todos los archivos .xlsx en /bases/PEFs/
 		local archivos `""CP 2013.xlsx" "CP 2014.xlsx" "CP 2015.xlsx" "CP 2016.xlsx" "CP 2017.xlsx" "CP 2018.xlsx" "CP 2019.xlsx" "CP 2020.xlsx" "CP 2021.xlsx" "CP 2022.xlsx" "CP 2023.xlsx" "PEF 2024.xlsx" "CuotasISSSTE.xlsx""'
-		*local archivos `""PEF 2024.xlsx" "CuotasISSSTE.xlsx""'
+		*local archivos `""CP 2008.xlsx" "PEF 2024.xlsx" "CuotasISSSTE.xlsx""'
 
 		foreach k of local archivos {															// Loop para todos los archivos .xlsx encontrados
 
 			* 1.1 Importar el archivo `k'.xlsx (Cuenta Pública) *
 			noisily di in g "Importando: " in y "`k'"
-			import excel "`c(sysdir_site)'../BasesCIEP/PEFs/`k'", clear firstrow case(lower) allstring
+			tokenize `k'
+			import excel "`c(sysdir_site)'../BasesCIEP/PEFs/`k'", clear firstrow case(lower) allstring sheet(`=substr("`2'",1,4)')
 			capture drop v*
 
 			* 1.2 Limpiar observaciones *
@@ -766,7 +772,11 @@ program define UpdatePEF
 		drop desc_ramo
 
 		** 2.3 Descripción Entidad Federativa **
-		replace desc_entidad = trim(desc_entidad)
+		capture replace desc_entidad = trim(desc_entidad)
+		if _rc != 0 {
+			g desc_entidad = ""
+			g entidad = .
+		}
 		replace entidad = 34 if entidad == .
 		replace desc_entidad = "Aguascalientes" if entidad == 1
 		replace desc_entidad = "Baja California" if entidad == 2
@@ -995,7 +1005,7 @@ program define UpdatePEF
 	*** 4. Modulos SIMULADOR FISCAL CIEP ***
 	***                                  ***
 	****************************************
-	use if anio >= 2013 using "`c(sysdir_personal)'/SIM/prePEF.dta", clear
+	use "`c(sysdir_personal)'/SIM/prePEF.dta", clear
 	replace desc_pp = "Cuotas ISSSTE" if desc_pp == ""
 
 
@@ -1161,5 +1171,4 @@ program define UpdatePEF
 	else {
 		save "`c(sysdir_personal)'/SIM/PEF.dta", replace
 	}
-
 end

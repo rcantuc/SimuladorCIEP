@@ -6,9 +6,9 @@
 clear all
 if "`c(username)'" == "ricardo" ///                             // iMac Ricardo
 	sysdir set PERSONAL "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
-if "`c(username)'" == "ciepmx" & "`c(console)'" == "" ///       // Servidor CIEP
-	sysdir set PERSONAL "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
-cd "/home/ciepmx/CIEP Dropbox/Ricardo Cantú/LINGO/Sankeys/"
+if "`c(username)'" == "servidorciep" & "`c(console)'" == "" ///       // Servidor CIEP
+	sysdir set PERSONAL "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
+cd "/home/servidorciep/CIEP Dropbox/BasesCIEP/SHCP/"
 
 
 *************************
@@ -125,7 +125,7 @@ if "`1'" == "update" {
 
 
 ** 1.2. Información adicional **
-forvalues anio = 2019(1)2024 {
+forvalues anio = 2019(1)2023 {
 	/*if "`anio'" == "2015" {
 		local reduccionduc = 0
 		local estimulosfiscales = 0
@@ -178,7 +178,7 @@ forvalues anio = 2019(1)2024 {
 		local reduccionduc = 0
 		local estimulosfiscales = (25787+38704)*1000000
 		local apoyospatrimoniales = 122131*1000000
-		local indirectos = 443943085740*0
+		local indirectos = 443943085740
 		local fmp = 410158961425
 		local fmp_feip_feief = 3.42
 		local fmp_feh = 1.05
@@ -190,7 +190,7 @@ forvalues anio = 2019(1)2024 {
 		local reduccionduc = 26500*1000000
 		local estimulosfiscales = (65000+5800)*1000000
 		local apoyospatrimoniales = 46256*1000000
-		local indirectos = 399325085921*0
+		local indirectos = 399325085921
 		local fmp = 187271584137
 		local fmp_feip_feief = 5.91
 		local fmp_feh = 1.79
@@ -202,7 +202,7 @@ forvalues anio = 2019(1)2024 {
 		local reduccionduc = 77900*1000000
 		local estimulosfiscales = (73280+22915)*1000000
 		local apoyospatrimoniales = 316354*1000000
-		local indirectos = 357608812555*0
+		local indirectos = 357608812555
 		local fmp = 383922663710
 		local fmp_feip_feief = 2.67
 		local fmp_feh = 0.83
@@ -214,7 +214,7 @@ forvalues anio = 2019(1)2024 {
 		local reduccionduc = 238100*1000000
 		local estimulosfiscales = (7455+23000)*1000000
 		local apoyospatrimoniales = 188306*1000000
-		local indirectos = 299434678260*0
+		local indirectos = 299434678260
 		local fmp = 529233592611
 		local fmp_feip_feief = 1.66
 		local fmp_feh = 0.51
@@ -226,7 +226,7 @@ forvalues anio = 2019(1)2024 {
 		local reduccionduc = 157500000000
 		local estimulosfiscales = 86640000000
 		local apoyospatrimoniales = 166615122970
-		local indirectos = 416875393557*0
+		local indirectos = 416875393557
 		local fmp = 255633786073
 		local fmp_feip_feief = 4.05
 		local fmp_feh = 1.24
@@ -238,7 +238,7 @@ forvalues anio = 2019(1)2024 {
 		local reduccionduc = 178735000000
 		local estimulosfiscales = 0
 		local apoyospatrimoniales = 170929000000
-		local indirectos = 0
+		local indirectos = 416875393557 // <-- Falta actualizar
 		local fmp = 41468323430/.2616  // 344478000000
 		local fmp_feip_feief = 4.05
 		local fmp_feh = 1.24
@@ -262,7 +262,7 @@ forvalues anio = 2019(1)2024 {
 		Ing_Propios_Otros_Ingresos=OtrosIngresos ///
 		if anio == `anio', by(anio)
 
-	replace Ing_Propios_Ventas = Ing_Propios_Ventas //+ `indirectos'
+	replace Ing_Propios_Ventas = Ing_Propios_Ventas + `indirectos'
 	replace Ing_Propios_Otros_Ingresos = Ing_Propios_Otros_Ingresos - `apoyospatrimoniales'
 
 	** 1.2. Reshape para el Sankey **
@@ -313,10 +313,10 @@ forvalues anio = 2019(1)2024 {
 
 	replace Gastos_Derechos = Gastos_Derechos + `reduccionduc' 		// Reducción DUC
 	replace Gastos_Derechos = Gastos_Derechos + `estimulosfiscales' // Estímulos fiscales
-	replace Gastos_Derechos = Gastos_Derechos //+ `indirectos'		// IEPS e IVA
+	replace Gastos_Derechos = Gastos_Derechos + `indirectos'*0		// IEPS e IVA
 
 	tabstat Gastos_Derechos, s(sum) save
-	local gastosDerechos = r(StatTotal)[1,1] - `reduccionduc' - `estimulosfiscales' + `indirectos'
+	local gastosDerechos = r(StatTotal)[1,1] - `reduccionduc' - `estimulosfiscales' //+ `indirectos'
 
 	tempvar from to
 	g `from' = "Pemex"
@@ -432,7 +432,7 @@ forvalues anio = 2019(1)2024 {
 		replace anio = `anio' in -1
 		replace from = 7 in -1
 		replace to = 100 in -1
-		replace profile = (`gastosDerechos'*`fmp_tesofe'/100 - `apoyospatrimoniales' - `deficit' + `impuestosExtrac_Explora')/1000000000 in -1
+		replace profile = (`gastosDerechos'*`fmp_tesofe'/100 - `apoyospatrimoniales' - `deficit' + `impuestosExtrac_Explora' + `indirectos')/1000000000 in -1
 		label define to 100 "Aportación neta", add
 	/*}
 	else {
@@ -465,6 +465,6 @@ forvalues anio = 2019(1)2024 {
 	save `eje`anio'5'
 
 
-	noisily SankeySumLoop, anio(`anio') name(`anio') folder(SankeyPemex) a(`eje`anio'1') b(`eje`anio'2') c(`eje`anio'3') d(`eje`anio'4') e(`eje`anio'5')
+	noisily SankeySumLoop, anio(`anio') name(`anio'_IVA) folder(SankeyPemex) a(`eje`anio'1') b(`eje`anio'2') c(`eje`anio'3') d(`eje`anio'4') e(`eje`anio'5')
 }
 

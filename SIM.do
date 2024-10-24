@@ -4,31 +4,29 @@
 ***        ver: SIM.md          ***
 ***                             ***
 ***********************************
+clear all
+macro drop _all
+capture log close _all
+timer on 1
 
 ** 0.1 Rutas al Github **
-if "`c(username)'" == "ricardo" /// iMac Ricardo
+if "`c(username)'" == "ricardo" 						/// iMac Ricardo
 	sysdir set PERSONAL "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
-else if "`c(username)'" == "servidorciep" & "`c(console)'" == "" /// Servidor CIEP
+else if "`c(username)'" == "servidorciep" & "`c(console)'" == "" 		/// Servidor CIEP
 	sysdir set PERSONAL "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
-else if "`c(console)'" != "" /// Servidor Web
+else if "`c(console)'" != "" 							/// Servidor Web
 	sysdir set PERSONAL "/SIM/OUT/6/"
 cd "`c(sysdir_personal)'"
 
-** 0.2 Parámetros iniciales **
-run "`c(sysdir_personal)'/profile.do"
-
-** 0.3 Opciones globales  **
-global id = "ciepmx"			// IDENTIFICADOR DEL USUARIO
-//global nographs "nographs"		// SUPRIMIR GRAFICAS
-//global output "output"			// ARCHIVO DE SALIDA (WEB)
-//global update "update"		// UPDATE BASES DE DATOS
+** 0.2 Opciones globales  **
+global id = "ciepmx"								// IDENTIFICADOR DEL USUARIO
+//global nographs "nographs"							// SUPRIMIR GRAFICAS
+//global output "output"							// ARCHIVO DE SALIDA (WEB)
+global update "update"								// UPDATE BASES DE DATOS
 //global export "`c(sysdir_personal)'../../+EquipoCIEP/Boletines/Consolidación fiscal/images" // IMÁGENES A EXPORTAR
 
-** 0.4 Archivos output **
-if "$output" != "" {
-	quietly log using `"`c(sysdir_personal)'/users/$id/output.txt"', replace text name(output)
-	quietly log off output
-}
+** 0.3 Parámetros iniciales **
+run "`c(sysdir_personal)'/profile.do"
 
 
 
@@ -39,8 +37,8 @@ if "$output" != "" {
 ***************************
 
 ** 1.1 Proyecciones demográficas **
-//forvalues anio = 1950(1)`=anioPE' {                         // <-- Año(s) de interés
-	//foreach entidad of global entidadesL {                  // <-- Nacional o para todas las entidades
+//forvalues anio = 1950(1)`=anioPE' {											// <-- Año(s) de interés
+	//foreach entidad of global entidadesL {									// <-- Nacional o para todas las entidades
 		//noisily Poblacion if entidad == "`entidad'", anioi(1990) aniofinal(2040) //$update
 	//}
 //}
@@ -55,8 +53,8 @@ if "$output" != "" {
 //noisily LIF, by(divCIEP) rows(2) anio(`=anioPE') $update desde(2008) min(1) title("Ingresos presupuestarios")
 
 ** 1.5 Presupuesto de Egresos de la Federación **
-//noisily PEF, by(divSIM) rows(2) min(0) anio(`=anioPE') desde(2013) title("Gasto presupuestario") //$update
-noisily SHRFSP, anio(`=anioPE') ultanio(2008) $update
+noisily PEF, by(divSIM) rows(2) min(0) anio(`=anioPE') desde(2008) title("Gasto presupuestario") $update
+//noisily SHRFSP, anio(`=anioPE') ultanio(2008) $update
 exit
 ** 1.7 Subnacionales **
 //noisily run "Subnacional.do" //$update
@@ -101,8 +99,10 @@ noisily GastoPC, aniope(`=anioPE') aniovp(`=aniovp')
 ******************************
 use `"`c(sysdir_personal)'/users/$id/ingresos.dta"', clear
 merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/users/$id/gastos.dta", nogen
-capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/users/$id/isr_mod.dta", nogen replace update keepus(ISRAS ISRPF ISRPM CUOTAS)
-capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/users/$id/iva_mod.dta", nogen replace update keepus(IVA)
+capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/users/$id/isr_mod.dta", ///
+	nogen replace update keepus(ISRAS ISRPF ISRPM CUOTAS)
+capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/users/$id/iva_mod.dta", ///
+	nogen replace update keepus(IVA)
 
 ** 3.1 (+) Impuestos y aportaciones **
 capture drop ImpuestosAportaciones

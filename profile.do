@@ -1,13 +1,8 @@
 *********************
 ***               ***
 *** 1 Estilo CIEP ***
-***		  ***
+***               ***
 *********************
-clear all
-macro drop _all
-capture log close _all
-timer on 1
-
 set scheme ciepnew
 graph set window fontface "Ubuntu Light"
 set more off, permanently
@@ -24,11 +19,11 @@ capture mkdir "`c(sysdir_personal)'/users/$id/"
 ********************
 ***              ***
 *** 2 PARÁMETROS ***
-***		 ***
+***              ***
 ********************
 
 ** 2.1 Entidades Federativas **
-global entidadesL `""Aguascalientes" "Baja California" "Baja California Sur" "Campeche" "Coahuila" "Colima" "Chiapas" "Chihuahua" "Ciudad de México" "Durango" "Guanajuato" "Guerrero" "Hidalgo" "Jalisco" "Estado de México" "Michoacán" "Morelos" "Nayarit" "Nuevo León" "Oaxaca" "Puebla" "Querétaro" "Quintana Roo" "San Luis Potosí" "Sinaloa" "Sonora" "Tabasco" "Tamaulipas" "Tlaxcala" "Veracruz" "Yucatán" "Zacatecas" "Nacional" "'
+global entidadesL `" "Aguascalientes" "Baja California" "Baja California Sur" "Campeche" "Coahuila" "Colima" "Chiapas" "Chihuahua" "Ciudad de México" "Durango" "Guanajuato" "Guerrero" "Hidalgo" "Jalisco" "Estado de México" "Michoacán" "Morelos" "Nayarit" "Nuevo León" "Oaxaca" "Puebla" "Querétaro" "Quintana Roo" "San Luis Potosí" "Sinaloa" "Sonora" "Tabasco" "Tamaulipas" "Tlaxcala" "Veracruz" "Yucatán" "Zacatecas" "Nacional" "'
 global entidadesC "Ags BC BCS Camp Coah Col Chis Chih CDMX Dgo Gto Gro Hgo Jal EdoMex Mich Mor Nay NL Oax Pue Qro QRoo SLP Sin Son Tab Tamps Tlax Ver Yuc Zac Nac"
 
 ** 2.2 Valor Presente **
@@ -70,7 +65,7 @@ scalar def2027 = 3.5
 scalar def2028 = 3.5
 scalar def2029 = 3.5
 
-/** 2.7 Economía: Inflación **
+** 2.7 Economía: Inflación **
 scalar inf2024 = 3.8
 scalar inf2025 = 3.3
 scalar inf2026 = 3.0
@@ -363,10 +358,22 @@ matrix IEPST = (26.5	,		0 			\ /// Cerveza y alcohol 14
 				0		,		6.7865		) // Gasolina: diésel
 
 
+				
+****************
+***          ***
+*** 3 OUTPUT ***
+***		     ***
+****************
+if "$output" != "" {
+	quietly log using `"`c(sysdir_personal)'/users/$id/output.txt"', replace text name(output)
+	quietly log off output
+}
+
+
 
 ********************
 ***              ***
-*** 3 BIENVENIDA ***
+*** 4 BIENVENIDA ***
 ***		         ***
 ********************
 noisily di in w _newline(50) "{bf:Centro de Investigaci{c o'}n Econ{c o'}mica y Presupuestaria, A.C.}"
