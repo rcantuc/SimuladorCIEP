@@ -921,8 +921,8 @@ program define UpdateDatosAbiertos, return
 	g nombre = "Aprov, Der, Prod, otros"
 	g tipo_de_informacion = "Flujo"
 
-	tempfile gastofed
-	save "`gastofed'"
+	tempfile otrosingresos
+	save "`otrosingresos'"
 
 
 
@@ -937,6 +937,7 @@ program define UpdateDatosAbiertos, return
 	append using "`deficit_oye'"
 	append using "`diferencias'"
 	append using "`gastofed'"
+	append using "`otrosingresos'"
 
 	*drop if monto == .
 	*drop tema subtema sector ambito base unidad periodo* frecuencia
