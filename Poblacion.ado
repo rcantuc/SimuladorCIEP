@@ -221,8 +221,8 @@ quietly {
 			///text(105 `=-`MaxH'[1,1]*.5' "{bf:Edad mediana}") ///
 			///text(97.5 `=-`MaxH'[1,1]*.5' "Hombres: `=`H`anioinicial''[1,1]'") ///
 			///text(90 `=-`MaxH'[1,1]*.5' "Mujeres: `=`M`anioinicial''[1,1]'") ///
-			text(`=(109-(`aniofinal'-`anioinicial'))/2' `=-`MaxH'[1,1]*.35' "{bf: Gens. vivas en `aniofinal'}", size(huge) color(black)) ///
-			text(`=(109-(`aniofinal'-`anioinicial'))/2' `=`MaxH'[1,1]*.35' `"`=string(`Phoy'[1,1],"%20.0fc")'"', size(huge) color(black)) ///
+			text(`=(109-(`aniofinal'-`anioinicial'))/2' `=-`MaxH'[1,1]*.35' "{bf: Población}", size(huge) color(black)) ///
+			text(`=(109-(`aniofinal'-`anioinicial'))/2' `=`MaxH'[1,1]*.35' `"`=string(`P`anioinicial''[1,1],"%20.0fc")'"', size(huge) color(black)) ///
 			/*legend(label(1 "Men") label(2 "Women")) ///
 			text(105 `=`MaxH'[1,1]*.618' "{bf:Population}") ///
 			text(100 `=`MaxH'[1,1]*.618' `"`=string(`P`anioinicial''[1,1],"%20.0fc")'"') ///
@@ -235,7 +235,7 @@ quietly {
 			`=`MaxM'[1,1]/2' `"Mujeres"' ///
 			`=`MaxM'[1,1]' `"`=string(`MaxM'[1,1],"%15.0fc")'"', angle(horizontal)) ///
 			title(`"{bf:`anioinicial'}"') ///
-			subtitle(`"`=string(`P`anioinicial''[1,1],"%20.0fc")'"') ///
+			///subtitle(`"`=string(`P`anioinicial''[1,1],"%20.0fc")'"') ///
 		
 
 		twoway (bar `pob2' edad if sexo == 1 & anio == `aniofinal' & edad < `aniofinal'-`anioinicial', horizontal barwidth(.5)) ///
@@ -267,7 +267,7 @@ quietly {
 			`=`MaxM'[1,1]/2' `"Mujeres"' ///
 			`=`MaxM'[1,1]' `"`=string(`MaxM'[1,1],"%15.0fc")'"', angle(horizontal)) ///
 			title(`"{bf:`aniofinal'}"') ///
-			subtitle(`"`=string(`P`aniofinal''[1,1],"%20.0fc")'"') ///
+			///subtitle(`"`=string(`P`aniofinal''[1,1],"%20.0fc")'"') ///
 
 
 		graph combine P_`anioinicial'_`aniofinal'_`entidadGName'A P_`anioinicial'_`aniofinal'_`entidadGName'B, ///
@@ -466,17 +466,17 @@ quietly {
 			local graphfuente ""
 		}
 
-		twoway (connected tasaDependencia anio if anio >= `anioinicial' & anio <= `aniovp', mlabel(tasaDependencia) mlabcolor(black) mlabpos(12)) ///
-			(connected tasaDependencia anio if anio > `aniovp' & anio <= `aniofinal', mlabel(tasaDependencia) mlabcolor(black) mlabpos(12)), ///
+		twoway (connected tasaDependencia anio if anio >= `anioinicial' & anio < `aniovp', mlabel(tasaDependencia) mlabcolor(black) mlabpos(12)) ///
+			(connected tasaDependencia anio if anio >= `aniovp' & anio <= `aniofinal', mlabel(tasaDependencia) mlabcolor(black) mlabpos(12)), ///
 			title("`graphtitle'") ///
 			///subtitle("${pais} `=entidad[1]'.") ///
 			caption("`graphfuente'") ///
 			xtitle("") ///
 			text(`=tasaDependencia[_N]' `=anio[_N]' "`=string(tasaDependencia[_N],"%7.0fc")'", place(n) size(large) color(black)) ///
-			xlabel(`=round(`anioinicial',5)'(5)`=round(`aniofinal',5)') ///
+			///xlabel(`=round(`anioinicial',5)'(5)`=round(`aniofinal',5)') ///
+			xlabel(`anioinicial'(1)`aniofinal') ///
 			ytitle("Dependientes por c/100 personas en edad de trabajar") ///
 			///ylabel(, format(%10.0fc)) ///
-			xline(`=`aniovp'+.5') ///
 			legend(off label(1 "Observado") label(2 "Proyectado") region(margin(zero)) rows(1)) ///
 			name(T_`anioinicial'_`aniofinal'_`entidadGName', replace)
 

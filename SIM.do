@@ -9,52 +9,63 @@ macro drop _all
 capture log close _all
 timer on 1
 
+*************************
 ** 0.1 Rutas al Github **
-if "`c(username)'" == "ricardo" 						/// iMac Ricardo
+if "`c(username)'" == "ricardo" {						// iMac Ricardo
 	sysdir set PERSONAL "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
-else if "`c(username)'" == "servidorciep" & "`c(console)'" == "" 		/// Servidor CIEP
+	*global export "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/Paquete Económico 2025/4. Documento CIEP/images"
+	*global export "/Users/ricardo/CIEP Dropbox/TextbookCIEP/images"
+}
+else if "`c(username)'" == "servidorciep" {					// Servidor CIEP
 	sysdir set PERSONAL "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
-else if "`c(console)'" != "" 							/// Servidor Web
+	*global export "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/CIEP_Deuda/0. Paquete Económico/2025"
+}
+else if "`c(console)'" != "" {							// Servidor Web
 	sysdir set PERSONAL "/SIM/OUT/6/"
+}
 cd "`c(sysdir_personal)'"
 
+****************************
 ** 0.2 Opciones globales  **
 global id = "ciepmx"								// IDENTIFICADOR DEL USUARIO
 //global nographs "nographs"							// SUPRIMIR GRAFICAS
 //global output "output"							// ARCHIVO DE SALIDA (WEB)
-global update "update"								// UPDATE BASES DE DATOS
-//global export "`c(sysdir_personal)'../../+EquipoCIEP/Boletines/Consolidación fiscal/images" // IMÁGENES A EXPORTAR
+//global update "update"							// UPDATE BASES DE DATOS
 
+******************************
 ** 0.3 Parámetros iniciales **
-run "`c(sysdir_personal)'/profile.do"
+noisily run "`c(sysdir_personal)'/profile.do"
 
 
 
 ***************************
 ***                     ***
-**#    1. MARCO MACRO   ***
+**# 1. SISTEMA FISCAL   ***
 ***                     ***
 ***************************
 
 ** 1.1 Proyecciones demográficas **
-//forvalues anio = 1950(1)`=anioPE' {											// <-- Año(s) de interés
-	//foreach entidad of global entidadesL {									// <-- Nacional o para todas las entidades
-		//noisily Poblacion if entidad == "`entidad'", anioi(1990) aniofinal(2040) //$update
+//forvalues anio = 1950(1)`=anioPE' {						// <-- Año(s) de interés
+	//foreach entidad of global entidadesL {				// <-- Nacional o entidad
+		//noisily Poblacion if entidad == "`entidad'", anioi(2024) aniofinal(2030) //$update
+		//noisily Poblacion if entidad == "`entidad'", anioi(2024) aniofinal(2034)
 	//}
 //}
 
 ** 1.2 Producto Interno Bruto y su deflactor **
-//noisily PIBDeflactor, geodef(1993) geopib(1993) $update aniovp(`=aniovp')
+//noisily PIBDeflactor if anio <= 2030 & anio >= 2013, geodef(2013) geopib(2013) aniovp(`=aniovp') $update
 
 ** 1.3 Sistema de Cuentas Nacionales **
 //noisily SCN, //$update
 
 ** 1.4 Ley de Ingresos de la Federación **
-//noisily LIF, by(divCIEP) rows(2) anio(`=anioPE') $update desde(2008) min(1) title("Ingresos presupuestarios")
-
+noisily LIF, by(divPE) rows(1) anio(`=anioPE-1') desde(2013) min(0) title("Ingresos presupuestarios") $update
+ex
 ** 1.5 Presupuesto de Egresos de la Federación **
-noisily PEF, by(divSIM) rows(2) min(0) anio(`=anioPE') desde(2008) title("Gasto presupuestario") $update
-//noisily SHRFSP, anio(`=anioPE') ultanio(2008) $update
+noisily PEF, by(divSIM) rows(2) min(0) anio(`=anioPE-1') desde(2013) title("Gasto presupuestario") $update
+
+** 1.6 Saldo Histórico de Requerimientos Financieros del Sector Público **
+noisily SHRFSP, anio(`=anioPE') ultanio(2013) $update
 exit
 ** 1.7 Subnacionales **
 //noisily run "Subnacional.do" //$update

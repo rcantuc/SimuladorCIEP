@@ -32,8 +32,8 @@ scalar aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 scalar aniovp = 2024
 
 ** 2.3 Política Fiscal **
-global paqueteEconomico "Pre CGPE 2025"
-scalar anioPE = 2024
+global paqueteEconomico "CGPE 2025"
+scalar anioPE = 2025
 
 ** 2.4 ENIGH **
 if anioPE >= 2022 {
@@ -56,6 +56,7 @@ scalar pib2026 = 2.5
 scalar pib2027 = 2.5
 scalar pib2028 = 2.5
 scalar pib2029 = 2.5
+scalar pib2030 = 2.5
 
 ** 2.6 Economía: Deflactor del Producto Interno Bruto **
 scalar def2024 = 4.1
@@ -64,6 +65,7 @@ scalar def2026 = 3.5
 scalar def2027 = 3.5
 scalar def2028 = 3.5
 scalar def2029 = 3.5
+scalar def2030 = 3.5
 
 ** 2.7 Economía: Inflación **
 scalar inf2024 = 3.8
@@ -72,6 +74,7 @@ scalar inf2026 = 3.0
 scalar inf2027 = 3.0
 scalar inf2028 = 3.0
 scalar inf2029 = 3.0
+scalar inf2030 = 3.0
 
 ** 2.8 Deuda Pública **/
 scalar tasaEfectiva = 8.216
@@ -189,7 +192,7 @@ scalar costodeudaInterno2030 = 2.5
 scalar costodeudaExterno2030 = 2.5
 
 
-** 2.9 Parámetros: PEF **
+** 2.9 Parámetros: PEF **/
 ** 2.9.1 Parámetros: Educación **
 scalar iniciaA     =     363 //    Inicial
 scalar basica      =   28056 //    Educación b{c a'}sica
