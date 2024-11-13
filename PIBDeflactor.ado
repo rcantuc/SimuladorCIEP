@@ -47,7 +47,7 @@ quietly {
 	************************
 	**# 2 Bases de datos ***
 	************************
-	use if anio <= `aniomax' using "`c(sysdir_personal)'/SIM/PIBDeflactor.dta", clear
+	use `if' using "`c(sysdir_personal)'/SIM/PIBDeflactor.dta", clear
 
 	** 2.1 Obtiene el año inicial y final de la base **
 	forvalues k=1(1)`=_N' {
@@ -72,8 +72,7 @@ quietly {
 	noisily di _newline(2) in g _dup(20) "." "{bf:   PIB + Deflactor:" in y " PIB `aniovp'   }" in g _dup(20) "." _newline
 	noisily di in g " PIB " in y "`aniofinal'q`trim_last'" _col(33) %20.0fc pibQ[`obsfinal'] in g " `=currency' ({c u'}ltimo reportado)"
 	sort anio trimestre
-	collapse (mean) indiceY=indiceQ pibY=pibQ pibYR=pibQR WorkingAge Poblacion* pibPO ///
-		(max) inpc (last) trimestre, by(anio currency)
+	collapse (mean) indiceY=indiceQ pibY=pibQ pibYR=pibQR WorkingAge Poblacion* pibPO inpc (last) trimestre, by(anio currency)
 	tsset anio
 
 
@@ -697,27 +696,39 @@ quietly {
 	***************
 	*** 4 Texto ***
 	***************
-	noisily di _newline in g _col(11) %~14s "Crec. PIB" _col(25) %~23s "PIB Nominal" _col(50) %~14s "Crec. {c I'}ndice" _col(64) %~14s "Deflactor"
+	noisily di _newline in g _col(6) %~12s "Cr. PIB" _col(24) %~17s "PIB Nominal" _col(29) %~10s "Infl." _col(50) %~12s "Deflactor" _col(67) %-14s "Defl. INPC"
 	forvalues k=`=`obsvp'-10'(1)`=`obsvp'+10' {
 		if anio[`k'] < `aniofinal' | (anio[`k'] == `aniofinal' & trimestre[`k'] == 4) {
 			if "`reportado'" == "" {
 				local reportado = "done"
 			}
-			noisily di in g " `=anio[`k']' " _col(10) %8.1fc in y var_pibY[`k'] " %" _col(25) %20.0fc pibY[`k'] _col(50) %8.1fc in y var_indiceY[`k'] " %" _col(65) %12.10fc deflator[`k']
+			noisily di in g " `=anio[`k']' " _col(7) %6.1fc in y var_pibY[`k'] " %" ///
+				_col(18) %20.0fc pibY[`k'] ///
+				_col(35) %8.1fc in y var_indiceY[`k'] " %" ///
+				_col(52) %12.10fc deflator[`k'] ///
+				_col(65) %14.10fc deflatorpp[`k']
 		}
 		if (anio[`k'] == `aniofinal' & trimestre[`k'] < 4) | (anio[`k'] <= anio[`obs_exo'] & anio[`k'] > `aniofinal') {
 			if "`estimado'" == "" {
-				noisily di in g %~72s "$paqueteEconomico"
+				noisily di _col(25) in g %~17s "$paqueteEconomico"
 				local estimado = "done"
 			}
-			noisily di in g "{bf: `=anio[`k']' " _col(10) %8.1fc in y var_pibY[`k'] " %" _col(25) %20.0fc pibY[`k'] _col(50) %8.1fc in y var_indiceY[`k'] " %" _col(65) %12.10fc deflator[`k'] "}"
+			noisily di in g "{bf: `=anio[`k']' " _col(7) %6.1fc in y var_pibY[`k'] " %" ///
+				_col(18) %20.0fc pibY[`k'] ///
+				_col(35) %8.1fc in y var_indiceY[`k'] " %" ///
+				_col(52) %12.10fc deflator[`k'] ///
+				_col(65) %14.10fc deflatorpp[`k'] "}"
 		}
 		if (anio[`k'] > `aniofinal') & anio[`k'] > anio[`obs_exo'] {
 			if "`proyectado'" == "" {
-				noisily di in g %~72s "PROYECTADO"
+				noisily di in g _col(25) %~17s "PROYECTADO"
 				local proyectado = "done"
 			}
-			noisily di in g " `=anio[`k']' " _col(10) %8.1fc in y var_pibY[`k'] " %" _col(25) %20.0fc pibY[`k'] _col(50) %8.1fc in y var_indiceY[`k'] " %" _col(65) %12.10fc deflator[`k']
+			noisily di in g " `=anio[`k']' " _col(7) %6.1fc in y var_pibY[`k'] " %" ///
+				_col(18) %20.0fc pibY[`k'] ///
+				_col(35) %8.1fc in y var_indiceY[`k'] " %" ///
+				_col(52) %12.10fc deflator[`k'] ///
+				_col(65) %14.10fc deflatorpp[`k']
 		}
 	}
 	return scalar aniolast = `aniofinal'
@@ -781,7 +792,7 @@ program define UpdatePIBDeflactor
 	***         ***
 	***************
 	** 2.1. Importar variables de interés desde el BIE **
-	run "`c(sysdir_personal)'/AccesoBIE.do" "628194" "inpc"
+	run "`c(sysdir_personal)'/AccesoBIE.do" "910392" "inpc"
 
 	** 2.2 Label variables **
 	label var inpc "Índice Nacional de Precios al Consumidor"
@@ -823,7 +834,7 @@ program define UpdatePIBDeflactor
 		Poblacion, nographs
 	}
 	collapse (sum) Poblacion=poblacion if entidad == "Nacional", by(anio)
-	format Poblacion %15.0fc
+	format Poblacion %20.0fc
 	tempfile Poblacion
 	save "`Poblacion'"
 
@@ -918,19 +929,34 @@ program define UpdatePIBDeflactor
 		
 		* Títulos y fuentes *
 		if "$export" == "" {
-			local graphtitle "{bf:Índice de precios al consumidor}"
-			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/SHCP."
+			local graphtitle "{bf:Producto Interno Bruto}"
+			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE."
 		}
 		else {
 			local graphtitle ""
 			local graphfuente ""
 		}
-		twoway (connected crec_pibQR aniotrimestre, mlabel(crec_pibQR) mlabposition(12) mlabcolor(black) mlabgap(0pt)) if pibPO != ., ///
-			title({bf:Producto Interno Bruto}) subtitle(Crecimiento trimestral) ///
-			ytitle("Crecimiento anual (%)") xtitle("") ///
+
+		twoway (dropline crec_pibQR aniotrimestre if anio > 2024, ///
+			mlabel(crec_pibQR) mlabposition(12) mlabcolor(black) mlabgap(0pt)) ///
+			(dropline crec_pibQR aniotrimestre if anio > 2018 & anio <= 2024, ///
+			mlabel(crec_pibQR) mlabposition(12) mlabcolor(black) mlabgap(0pt)) ///
+			(dropline crec_pibQR aniotrimestre if anio > 2012 & anio <= 2018, ///
+			mlabel(crec_pibQR) mlabposition(12) mlabcolor(black) mlabgap(0pt)) ///
+			(dropline crec_pibQR aniotrimestre if anio > 2006 & anio <= 2012, ///
+			mlabel(crec_pibQR) mlabposition(12) mlabcolor(black) mlabgap(0pt)) ///
+			(dropline crec_pibQR aniotrimestre if anio > 2000 & anio <= 2006, ///
+			mlabel(crec_pibQR) mlabposition(12) mlabcolor(black) mlabgap(0pt)) ///
+			(dropline crec_pibQR aniotrimestre if anio > 1994 & anio <= 2000, ///
+			mlabel(crec_pibQR) mlabposition(12) mlabcolor(black) mlabgap(0pt)) ///
+			if pibPO != ., ///
+			title(`graphtitle') ///
+			ytitle("Crecimiento trimestre a trimestre") xtitle("") ///
 			tlabel(2005q1(4)`aniofinal'q`trim_last') ///
 			ylabel(none, format(%20.0fc)) ///
-			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
+			legend(off)	///
+			yline(0) ///
+			caption("`graphfuente'") ///
 			name(UpdatePIBDeflactor, replace)
 
 
@@ -946,14 +972,24 @@ program define UpdatePIBDeflactor
 		tempvar pibPO
 		g `pibPO' = pibPO/1000
 		format `pibPO' %7.0fc
-		twoway (connected pibPO aniotrimestre, mlabel(`pibPO') mlabposition(12) mlabangle(0) mlabcolor(black) mlabgap(0pt) lpattern(dot)) ///
+		twoway (dropline pibPO aniotrimestre if anio > 2024, ///
+			mlabel(`pibPO') mlabposition(12) mlabangle(0) mlabcolor(black) mlabgap(0pt) lpattern(dot)) ///
+			(dropline pibPO aniotrimestre if anio > 2018 & anio <= 2024, ///
+			mlabel(`pibPO') mlabposition(12) mlabangle(0) mlabcolor(black) mlabgap(0pt) lpattern(dot)) ///
+			(dropline pibPO aniotrimestre if anio > 2012 & anio <= 2018, ///
+			mlabel(`pibPO') mlabposition(12) mlabangle(0) mlabcolor(black) mlabgap(0pt) lpattern(dot)) ///
+			(dropline pibPO aniotrimestre if anio > 2006 & anio <= 2012, ///
+			mlabel(`pibPO') mlabposition(12) mlabangle(0) mlabcolor(black) mlabgap(0pt) lpattern(dot)) ///
+			(dropline pibPO aniotrimestre if anio > 2000 & anio <= 2006, ///
+			mlabel(`pibPO') mlabposition(12) mlabangle(0) mlabcolor(black) mlabgap(0pt) lpattern(dot)) ///
+			(dropline pibPO aniotrimestre if anio > 1994 & anio <= 2000, ///
+			mlabel(`pibPO') mlabposition(12) mlabangle(0) mlabcolor(black) mlabgap(0pt) lpattern(dot)) ///
 			if pibPO != ., ///
 			title("`graphtitle'") ///
-			ytitle("") xtitle("") ///
+			ytitle("miles MXN `aniofinal' por ocupado(a)") xtitle("") ///
 			tlabel(2005q1(4)`aniofinal'q`trim_last') ///
-			text(`=pibPO[92]' `=aniotrimestre[92]+1' "miles MXN `aniofinal'" "por ocupado(a)", ///
-			color("111 111 111") size(small) place(6) justification(left)) ///
 			ylabel(none, format(%20.0fc)) yscale(range(500000)) ///
+			legend(off)	///
 			caption("`graphfuente'") ///
 			name(pib_po, replace)
 

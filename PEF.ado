@@ -32,7 +32,7 @@ quietly {
 		UPDATE NOGraphs Base ///
 		MINimum(real 1) DESDE(int -1) ///
 	 	PEF PPEF APROBado  ///
-		ROWS(int 2) COLS(int 5) ///
+		ROWS(int 1) COLS(int 5) ///
 		TITle(string)]
 
 	noisily di _newline(2) in g _dup(20) "." "{bf:  Sistema Fiscal: GASTOS " in y `anio' "  }" in g _dup(20) "."
@@ -505,8 +505,9 @@ quietly {
 		replace `gastobar' = 0 if `gastobar' == .
 
 		egen `gastoby' = sum(gasto), by(anio)
-		g `gastoline' = `gastoby'/(gastoTOT - CuoTOT)*100
-		format gasto* `gastobar' `gastoline' `gastoby' %15.0fc
+		g `gastoline' = `gastoby'/(pibY)*100
+		format gasto* `gastobar' `gastoline' `gastoby' %15.1fc
+		label var `gastoline' "Como % del PIB"
 
 		* Información agregada *
 		egen gastoPIBTOT = sum(gastoPIB), by(anio)
@@ -545,7 +546,7 @@ quietly {
 
 		twoway `extras' ///
 			(connected `gastoline' anio if resumido == resumido[1], mlabpos(12) mlabcolor("111 111 111") mlabel(`gastoline') yaxis(2) mlabsize(large)) ///
-			(scatter gastoPIBTOT anio if resumido == resumido[1], mlabpos(12) mlabcolor("111 111 111") mlabel(gastoPIBTOT) mlabsize(large) mcolor(white) lcolor(white)) ///
+			///(scatter gastoPIBTOT anio if resumido == resumido[1], mlabpos(12) mlabcolor("111 111 111") mlabel(gastoPIBTOT) mlabsize(large) mcolor(white) lcolor(white)) ///
 			if anio <= `anio', ///
 			///over(resumido, sort(1) descending) over(anio, gap(30)) ///
 			///stack asyvars blabel(bar, format(%7.1fc)) outergap(0) ///
@@ -553,18 +554,18 @@ quietly {
 			title("`graphtitle'") ///
 			yscale(range(0 `=`maxPIBTOT'[1,1]*1.75')) ///
 			yscale(range(-50 `=`maxPIBTOT'[1,2]*1.1') axis(2) noline) ///
-			ylabel(none, format(%7.1fc) labsize(small)) ///
+			ylabel(, format(%7.1fc) labsize(small)) ///
 			ylabel(none, axis(2)) ///
 			xlabel(`desde'(1)`anio') ///
 			xtitle("") ///
-			ytitle("") ///
+			ytitle("billones de `currency' `anio'") ///
 			ytitle("", axis(2)) ///
 			///subtitle("Gasto, como % del PIB") ///
 			legend(on position(6) rows(`rows') cols(`cols') `legend' order(`order') justification(left)) ///
 			/// Added text 
 			///text(`=gastoPIBTOT[1]' `=anio[1]' "{bf:% PIB}", placement(6)) ///
 			///text(`=`gastoline'[1]' `=anio[1]' "{bf:% PEF}", placement(6) yaxis(2)) ///
-			b1title("De `desde' a `anio', el {bf:gasto `cambio' `=string(abs(`finPIBTOT'[1,1]-`iniPIBTOT'[1,1]),"%7.1fc")'} puntos porcentuales del PIB.")
+			///b1title("De `desde' a `anio', el {bf:gasto `cambio' `=string(abs(`finPIBTOT'[1,1]-`iniPIBTOT'[1,1]),"%7.1fc")'} puntos porcentuales del PIB.")
 
 		/*grc1leg ///
 		///graph combine ///
