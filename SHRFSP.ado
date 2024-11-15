@@ -222,40 +222,50 @@ quietly {
 		tempname rango
 		matrix `rango' = r(StatTotal)
 
-		twoway (bar `interno' anio if anio > 2000 & anio <= 2030, ///
+		twoway (bar `interno' anio if anio > 2000 & anio <= 2024, ///
 				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75)) ///
-			(bar `externo' anio if anio > 2000 & anio <= 2030, ///
+			(bar `externo' anio if anio > 2000 & anio <= 2024, ///
 				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p1) fintensity(50) lcolor(none)) ///
-			(connected `shrfsp_pib' anio if anio > 2000 & anio <= 2030, ///
+			(bar `interno' anio if anio > 2024 & anio <= 2030, ///
+				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p2)) ///
+			(bar `externo' anio if anio > 2024 & anio <= 2030, ///
+				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p2) fintensity(50) lcolor(none)) ///
+			(connected `shrfsp_pib' anio if anio > 2000 & anio <= 2024, ///
 				yaxis(2) mlabel(`shrfsp_pib') mlabposition(12) mlabcolor(black) pstyle(p1) lpattern(dot) msize(small)) ///
+			(connected `shrfsp_pib' anio if anio > 2024 & anio <= 2030, ///
+				yaxis(2) mlabel(`shrfsp_pib') mlabposition(12) mlabcolor(black) pstyle(p2) lpattern(dot) msize(small)) ///
+			(scatter `interno' anio if anio > 2000 & anio <= 2030, ///
+				mlabel(`interno') mlabposition(12) mlabcolor(black) msize(zero)) ///
 			if `externo' != . & anio > `ultanio', ///
 			title(`graphtitle') ///
 			///subtitle("Monto reportado (billones `currency' `aniovp') y como % del PIB") ///
 			caption("`graphfuente'") ///
-			ytitle("billones `currency' `aniovp'") ///
-			ylabel(, format(%15.0fc) labsize(small)) ///
+			ytitle("") ///
+			ylabel(none, format(%15.0fc) labsize(small)) ///
 			ylabel(none, format(%10.0fc) labsize(small) axis(2)) ///
 			yscale(range(0 `=`rango'[2,1]*1.5') axis(1) noline) ///
 			yscale(range(-10 `=`rango'[2,2]*1.25') axis(2) noline) ///
-			text(`=`shrfsp_pib'[12]' `=`ultanio'+1' "% PIB", ///
+			text(`=`shrfsp_pib'[24]' `=`ultanio'+1' "{bf:% PIB}", ///
 				place(6) yaxis(2) size(small) color("111 111 111")) ///
-			text(`=(`interno'[12]-`externo'[12])*.5+`externo'[12]' `=`ultanio'+1' "Interno", ///
+			text(`=`interno'[24]' `=`ultanio'+1' "{bf:billones}" "{bf:`currency' `aniovp'}", ///
+				place(6) size(small) color("111 111 111")) ///
+			text(`=(`interno'[24]-`externo'[12])*.5+`externo'[12]' `=`ultanio'+1' "Interno", ///
 				place(0) size(small) color("111 111 111") justification(center)) ///
-			text(`=`externo'[12]*.5' `=`ultanio'+1' "Externo", ///
+			text(`=`externo'[24]*.5' `=`ultanio'+1' "Externo", ///
 				place(0) size(small) color("111 111 111") justification(center)) ///
-			text(`=`rango'[2,2]*1.15' `=2001+2.5' "{   {bf:`=string(`shrfsp_pib'[17]-`shrfsp_pib'[11],"%5.1f")' puntos PIB}   }", ///
+			text(`=`rango'[2,2]*1.15' `=2001+2.5' "{bf:Dif. `=anio[11]'-`=anio[17]':} `=string(`shrfsp_pib'[17]-`shrfsp_pib'[11],"%5.1f")' puntos PIB", ///
 				place(0) size(small) color("111 111 111") justification(center) yaxis(2)) ///
-			text(`=`rango'[2,2]*1.15' `=2007+2.5' "{   {bf:`=string(`shrfsp_pib'[23]-`shrfsp_pib'[17],"%5.1f")' puntos PIB}   }", ///
+			text(`=`rango'[2,2]*1.15' `=2007+2.5' "{bf:Dif. `=anio[17]'-`=anio[23]':} `=string(`shrfsp_pib'[23]-`shrfsp_pib'[17],"%5.1f")' puntos PIB", ///
 				place(0) size(small) color("111 111 111") justification(center) yaxis(2)) ///
-			text(`=`rango'[2,2]*1.15' `=2013+2.5' "{   {bf:`=string(`shrfsp_pib'[29]-`shrfsp_pib'[23],"%5.1f")' puntos PIB}   }", ///
+			text(`=`rango'[2,2]*1.15' `=2013+2.5' "{bf:Dif. `=anio[23]'-`=anio[29]':} `=string(`shrfsp_pib'[29]-`shrfsp_pib'[23],"%5.1f")' puntos PIB", ///
 				place(0) size(small) color("111 111 111") justification(center) yaxis(2)) ///
-			text(`=`rango'[2,2]*1.15' `=2019+2.5' "{   {bf:`=string(`shrfsp_pib'[35]-`shrfsp_pib'[29],"%5.1f")' puntos PIB}   }", ///
+			text(`=`rango'[2,2]*1.15' `=2019+2.5' "{bf:Dif. `=anio[29]'-`=anio[35]':} `=string(`shrfsp_pib'[35]-`shrfsp_pib'[29],"%5.1f")' puntos PIB", ///
 				place(0) size(small) color("111 111 111") justification(center) yaxis(2)) ///
-			text(`=`rango'[2,2]*1.15' `=2025+2.5' "{   {bf:`=string(`shrfsp_pib'[41]-`shrfsp_pib'[35],"%5.1f")' puntos PIB}   }", ///
+			text(`=`rango'[2,2]*1.15' `=2025+2.5' "{bf:Dif. `=anio[35]'-`=anio[41]':} `=string(`shrfsp_pib'[41]-`shrfsp_pib'[35],"%5.1f")' puntos PIB", ///
 				place(0) size(small) color("111 111 111") justification(center) yaxis(2)) ///
 			///text(0 `=2024+(2025-2024)/2' "{bf:$paqueteEconomico}", ///
 			///	place(12) size(medsmall) color(black) justification(center) bcolor(white) box) ///
-			note("{bf:{c U'}ltimo dato}: `aniofin'm`mesfin'. Las diferencias en puntos PIB se hacen con respecto al último año de la serie anterior.") ///
+			///note("{bf:{c U'}ltimo dato}: `aniofin'm`mesfin'. Las diferencias en puntos PIB se hacen con respecto al último año de la serie anterior.") ///
 			ytitle("", axis(2)) ///
 			xtitle("") ///
 			xlabel(`=`ultanio'+1'(1)`lastexo', noticks) ///	
@@ -277,30 +287,50 @@ quietly {
 		tempname rango
 		matrix `rango' = r(StatTotal)
 
-		twoway (bar `interno' anio if anio > 2000 & anio <= 2030, ///
+		twoway (bar `interno' anio if anio > 2000 & anio <= 2024, ///
 				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75)) ///
-			(bar `externo' anio if anio > 2000 & anio <= 2030, ///
+			(bar `externo' anio if anio > 2000 & anio <= 2024, ///
 				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p1) fintensity(50) lcolor(none)) ///
-			(connected `shrfsp_pc' anio if anio > 2000 & anio <= 2030, ///
+			(bar `interno' anio if anio > 2024 & anio <= 2030, ///
+				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p2)) ///
+			(bar `externo' anio if anio > 2024 & anio <= 2030, ///
+				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p2) fintensity(50) lcolor(none)) ///
+			(connected `shrfsp_pc' anio if anio > 2000 & anio <= 2024, ///
 				yaxis(2) mlabel(`shrfsp_pc') mlabposition(12) mlabcolor(black) pstyle(p1) lpattern(dot) msize(small)) ///
+			(connected `shrfsp_pc' anio if anio > 2024 & anio <= 2030, ///
+				yaxis(2) mlabel(`shrfsp_pc') mlabposition(12) mlabcolor(black) pstyle(p2) lpattern(dot) msize(small)) ///
 			(scatter `interno' anio if anio > 2000 & anio <= 2030, ///
-				yaxis(1) mlabel(`interno') mlabposition(12) mlabcolor(black) pstyle(p1) lpattern(dot) msize(zero)) ///
+				mlabel(`interno') mlabposition(12) mlabcolor(black) msize(zero)) ///
 			if `externo' != . & anio > `ultanio', ///
 			title(`graphtitle') ///
+			///subtitle("Monto reportado (billones `currency' `aniovp') y como % del PIB") ///
 			caption("`graphfuente'") ///
+			ytitle("") ///
 			ylabel(none, format(%15.0fc) labsize(small)) ///
 			ylabel(none, format(%10.0fc) labsize(small) axis(2)) ///
-			text(`=`interno'[24]' `=`ultanio'+1' "{bf:billones}" "{bf:`currency' `aniovp'}", ///
-				place(6) size(small) color("111 111 111")) ///
-			text(`=`shrfsp_pc'[24]' `=`ultanio'+1' "{bf:miles `currency' `aniovp'}" "{bf:por persona}", ///
-				place(6) size(small) color("111 111 111") yaxis(2)) ///
-			text(`=`externo'[24]*1.1' `=`ultanio'+1' "Interno", ///
-				place(12) size(small) color("111 111 111") justification(center)) ///
-			text(`=`externo'[24]*0.9' `=`ultanio'+1' "Externo", ///
-				place(6) size(small) color("111 111 111") justification(center)) ///
 			yscale(range(0 `=`rango'[2,1]*1.5') axis(1) noline) ///
 			yscale(range(-10 `=`rango'[2,2]*1.25') axis(2) noline) ///
-			ytitle("") ///
+			text(`=`shrfsp_pc'[24]' `=`ultanio'+1' "{bf:miles `currency' `aniovp'}" "{bf:por persona}", ///
+				place(6) yaxis(2) size(small) color("111 111 111")) ///
+			text(`=`interno'[24]' `=`ultanio'+1' "{bf:billones}" "{bf:`currency' `aniovp'}", ///
+				place(6) size(small) color("111 111 111")) ///
+			text(`=(`interno'[24]-`externo'[12])*.5+`externo'[12]' `=`ultanio'+1' "Interno", ///
+				place(0) size(small) color("111 111 111") justification(center)) ///
+			text(`=`externo'[24]*.5' `=`ultanio'+1' "Externo", ///
+				place(0) size(small) color("111 111 111") justification(center)) ///
+			text(`=`rango'[2,2]*1.15' `=2001+2.5' "{bf:Dif. `=anio[11]'-`=anio[17]':} `=string(`shrfsp_pc'[17]-`shrfsp_pc'[11],"%5.1f")' miles `currency' `aniovp'", ///
+				place(0) size(small) color("111 111 111") justification(center) yaxis(2)) ///
+			text(`=`rango'[2,2]*1.15' `=2007+2.5' "{bf:Dif. `=anio[17]'-`=anio[23]':} `=string(`shrfsp_pc'[23]-`shrfsp_pc'[17],"%5.1f")' miles `currency' `aniovp'", ///
+				place(0) size(small) color("111 111 111") justification(center) yaxis(2)) ///
+			text(`=`rango'[2,2]*1.15' `=2013+2.5' "{bf:Dif. `=anio[23]'-`=anio[29]':} `=string(`shrfsp_pc'[29]-`shrfsp_pc'[23],"%5.1f")' miles `currency' `aniovp'", ///
+				place(0) size(small) color("111 111 111") justification(center) yaxis(2)) ///
+			text(`=`rango'[2,2]*1.15' `=2019+2.5' "{bf:Dif. `=anio[29]'-`=anio[35]':} `=string(`shrfsp_pc'[35]-`shrfsp_pc'[29],"%5.1f")' miles `currency' `aniovp'", ///
+				place(0) size(small) color("111 111 111") justification(center) yaxis(2)) ///
+			text(`=`rango'[2,2]*1.15' `=2025+2.5' "{bf:Dif. `=anio[35]'-`=anio[41]':} `=string(`shrfsp_pc'[41]-`shrfsp_pc'[35],"%5.1f")' miles `currency' `aniovp'", ///
+				place(0) size(small) color("111 111 111") justification(center) yaxis(2)) ///
+			///text(0 `=2024+(2025-2024)/2' "{bf:$paqueteEconomico}", ///
+			///	place(12) size(medsmall) color(black) justification(center) bcolor(white) box) ///
+			///note("{bf:{c U'}ltimo dato}: `aniofin'm`mesfin'. Las diferencias en puntos PIB se hacen con respecto al último año de la serie anterior.") ///
 			ytitle("", axis(2)) ///
 			xtitle("") ///
 			xlabel(`=`ultanio'+1'(1)`lastexo', noticks) ///	
@@ -351,8 +381,8 @@ quietly {
 		tempvar costodeudaTot costodeudaOyE
 		egen `costodeudaTot' = rsum(costodeudaInterno costodeudaExterno)
 		egen `costodeudaOyE' = rsum(costopemex costocfe)
-		replace `costodeudaTot' = `costodeudaTot'/1000000000000/deflator
 		replace `costodeudaOyE' = `costodeudaOyE'/1000000000000/deflator
+		replace `costodeudaTot' = `costodeudaTot'/1000000000000/deflator
 		format `costodeudaTot' %5.1fc
 		
 		if `"$export"' == "" {
@@ -363,48 +393,42 @@ quietly {
 			local graphtitle ""
 			local graphfuente ""
 		}		
-		twoway (bar `costodeudaTot' anio if anio > 2000 & anio <= 2006, ///
+		twoway (bar `costodeudaTot' anio if anio > 2000 & anio <= 2024, ///
 					yaxis(2) mlabposition(6) mlabcolor(black) pstyle(p1) lwidth(none) barwidth(.75)) ///
-				(bar `costodeudaOyE' anio if anio > 2000 & anio <= 2006, ///
-					yaxis(2) mlabposition(6) mlabcolor(black) pstyle(p1) lwidth(none) barwidth(.75) fintensity(50) lcolor(none)) ///
-				(bar `costodeudaTot' anio if anio > 2006 & anio <= 2012, ///
-					yaxis(2) mlabposition(6) mlabcolor(black) pstyle(p2) lwidth(none) barwidth(.75)) ///
-				(bar `costodeudaOyE' anio if anio > 2006 & anio <= 2012, ///
-					yaxis(2) mlabposition(6) mlabcolor(black) pstyle(p2) lwidth(none) barwidth(.75) fintensity(50) lcolor(none)) ///
-				(bar `costodeudaTot' anio if anio > 2012 & anio <= 2018, ///
-					yaxis(2) mlabposition(6) mlabcolor(black) pstyle(p3) lwidth(none) barwidth(.75)) ///
-				(bar `costodeudaOyE' anio if anio > 2012 & anio <= 2018, ///
-					yaxis(2) mlabposition(6) mlabcolor(black) pstyle(p3) lwidth(none) barwidth(.75) fintensity(50) lcolor(none)) ///
-				(bar `costodeudaTot' anio if anio > 2018 & anio <= 2024, ///
-					yaxis(2) mlabposition(6) mlabcolor(black) pstyle(p4) lwidth(none) barwidth(.75)) ///
-				(bar `costodeudaOyE' anio if anio > 2018 & anio <= 2024, ///
-					yaxis(2) mlabposition(6) mlabcolor(black) pstyle(p4) lwidth(none) barwidth(.75) fintensity(50) lcolor(none)) ///
+				///(bar `costodeudaOyE' anio if anio > 2000 & anio <= 2024, ///
+				///	yaxis(2) mlabposition(6) mlabcolor(black) pstyle(p1) lwidth(none) barwidth(.75) fintensity(50) lcolor(none)) ///
 				(bar `costodeudaTot' anio if anio > 2024 & anio <= 2030, ///
-					yaxis(2) mlabposition(6) mlabcolor(black) pstyle(p5) lwidth(none) barwidth(.75) fintensity(75)) ///
-				(bar `costodeudaOyE' anio if anio > 2024 & anio <= 2030, ///
-					yaxis(2) mlabposition(6) mlabcolor(black) pstyle(p5) lwidth(none) barwidth(.75) fintensity(50) lcolor(none)) ///
-				(connected tasaEfectiva anio if anio > 2000 & anio <= 2006, ///
+					yaxis(2) mlabposition(6) mlabcolor(black) pstyle(p2) lwidth(none) barwidth(.75) fintensity(75)) ///
+				///(bar `costodeudaOyE' anio if anio > 2024 & anio <= 2030, ///
+				///	yaxis(2) mlabposition(6) mlabcolor(black) pstyle(p2) lwidth(none) barwidth(.75) fintensity(50) lcolor(none)) ///
+				(connected tasaEfectiva anio if anio > 2000 & anio <= 2024, ///
 					mlabel(tasaEfectiva) mlabposition(12) mlabcolor(black) pstyle(p1)) ///
-				(connected tasaEfectiva anio if anio > 2006 & anio <= 2012, ///
-					mlabel(tasaEfectiva) mlabposition(12) mlabcolor(black) pstyle(p2)) ///
-				(connected tasaEfectiva anio if anio > 2012 & anio <= 2018, ///
-					mlabel(tasaEfectiva) mlabposition(12) mlabcolor(black) pstyle(p3)) ///
-				(connected tasaEfectiva anio if anio > 2018 & anio <= 2024, ///
-					mlabel(tasaEfectiva) mlabposition(12) mlabcolor(black) pstyle(p4)) ///
 				(connected tasaEfectiva anio if anio > 2024 & anio <= 2030, ///
-					mlabel(tasaEfectiva) mlabposition(12) mlabcolor(black) pstyle(p5)) ///
-				if tasaInterno != . & anio >= `ultanio', ///
+					mlabel(tasaEfectiva) mlabposition(12) mlabcolor(black) pstyle(p2)) ///
+				(scatter `costodeudaTot' anio if anio > 2000 & anio <= 2030, ///
+					yaxis(2) mlabel(`costodeudaTot') mlabposition(12) mlabcolor(black) msize(zero)) ///
+				if tasaInterno != . & anio > `ultanio', ///
 				title("`graphtitle'") ///
-				ylabel(none, format(%15.0fc) labsize(small)) ///
-				ylabel(0(.5)1.5, format(%15.1fc) labsize(small) axis(2)) ///
-				text(`=tasaEfectiva[12]' `=`ultanio'+1' "Tasa de interés" "promedio (%)", place(6) size(medsmall) color("111 111 111")) ///
+				text(`=`costodeudaTot'[24]' `=`ultanio'+1' "{bf:billones}" "{bf:`currency' `aniovp'}", ///
+					yaxis(2) place(6) size(small) color("111 111 111")) ///
+				///text(`=(`costodeudaTot'[24]-`costodeudaOyE'[24])*.25+`costodeudaOyE'[24]' `=`ultanio'+1' "Gob. Fed.", ///
+				///	yaxis(2) place(0) size(small) color("111 111 111") justification(center)) ///
+				///text(`=`costodeudaOyE'[24]*.5' `=`ultanio'+1' "OyE", ///
+				///	yaxis(2) place(0) size(small) color("111 111 111") justification(center)) ///
+				text(`=tasaEfectiva[24]' `=2013+2.5' "{bf:Dif. `=anio[23]'-`=anio[29]':} `=string(`tasaEfectiva'[29]-`tasaEfectiva'[23],"%5.1f")'%", ///
+					place(0) size(small) color("111 111 111") justification(center) yaxis(2)) ///
+				text(`=tasaEfectiva[24]*1.15' `=2019+2.5' "{bf:Dif. `=anio[29]'-`=anio[35]':} `=string(`tasaEfectiva'[35]-`tasaEfectiva'[29],"%5.1f")'%", ///
+					place(0) size(small) color("111 111 111") justification(center) yaxis(2)) ///
+				text(`=tasaEfectiva[24]*1.15' `=2025+2.5' "{bf:Dif. `=anio[35]'-`=anio[41]':} `=string(`tasaEfectiva'[41]-`tasaEfectiva'[35],"%5.1f")'%", ///
+					place(0) size(small) color("111 111 111") justification(center) yaxis(2)) ///
+					ylabel(none, format(%15.0fc) labsize(small)) ///
+				ylabel(none, format(%15.1fc) labsize(small) axis(2)) ///
+				text(`=tasaEfectiva[24]' `=`ultanio'+1' "{bf:Tasa de interés}" "{bf:promedio (%)}", place(6) size(medsmall) color("111 111 111")) ///
 				yscale(range(0) noline) ///
 				yscale(range(0 3) axis(2) noline) ///
 				ytitle("") ///
-				ytitle("billones `currency' `aniovp'", axis(2)) ///
-				legend(off position(6) rows(1) order(1 3) ///
-				label(1 "Costo financiero (billones `currency' `aniovp')") ///
-				label(3 "Tasa de inter{c e'}s efectiva (costo/saldo*100)")) ///
+				ytitle("", axis(2)) ///
+				legend(off) ///
 				xlabel(`=`ultanio'+1'(1)`lastexo') xtitle("") ///
 				name(tasasdeinteres, replace) ///
 				caption("`graphfuente'")
@@ -415,7 +439,7 @@ quietly {
 			graph export "$export/tasasdeinteres.png", replace name(tasasdeinteres)
 		}
 	}
-
+ddd
 
 
 	*********************************
@@ -459,82 +483,26 @@ quietly {
 			local graphfuente ""
 		}
 
-		twoway (bar balprimario_pib anio if anio > 2000 & anio <= 2006, ///
-				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p1)) ///
-			(bar efectoCrecimiento anio if anio > 2000 & anio <= 2006, ///
-				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p1) lcolor(none) fintensity(75)) ///
-			(bar efectoIntereses anio if anio > 2000 & anio <= 2006, ///
-				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p1) lcolor(none) fintensity(50)) ///
-			(bar efectoTipoDeCambio anio if anio > 2000 & anio <= 2006, ///
-				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p1) lcolor(none) fintensity(25)) ///
-			(bar efectoOtros anio if anio > 2000 & anio <= 2006, ///
-				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p1) lcolor(none) fintensity(10)) ///
-			(bar balprimario_pib anio if anio > 2006 & anio <= 2012, ///
-				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p2)) ///
-			(bar efectoCrecimiento anio if anio > 2006 & anio <= 2012, ///
-				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p2) lcolor(none) fintensity(75)) ///
-			(bar efectoIntereses anio if anio > 2006 & anio <= 2012, ///
-				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p2) lcolor(none) fintensity(50)) ///
-			(bar efectoTipoDeCambio anio if anio > 2006 & anio <= 2012, ///
-				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p2) lcolor(none) fintensity(25)) ///
-			(bar efectoOtros anio if anio > 2006 & anio <= 2012, ///
-				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p2) lcolor(none) fintensity(10)) ///
-			(bar balprimario_pib anio if anio > 2012 & anio <= 2018, ///
-				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p3)) ///
-			(bar efectoCrecimiento anio if anio > 2012 & anio <= 2018, ///
-				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p3) lcolor(none) fintensity(75)) ///
-			(bar efectoIntereses anio if anio > 2012 & anio <= 2018, ///
-				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p3) lcolor(none) fintensity(50)) ///
-			(bar efectoTipoDeCambio anio if anio > 2012 & anio <= 2018, ///
-				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p3) lcolor(none) fintensity(25)) ///
-			(bar efectoOtros anio if anio > 2012 & anio <= 2018, ///
-				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p3) lcolor(none) fintensity(10)) ///
-			(bar balprimario_pib anio if anio > 2018 & anio <= 2024, ///
-				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p4)) ///
-			(bar efectoCrecimiento anio if anio > 2018 & anio <= 2024, ///
-				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p4) lcolor(none) fintensity(75)) ///
-			(bar efectoIntereses anio if anio > 2018 & anio <= 2024, ///
-				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p4) lcolor(none) fintensity(50)) ///
-			(bar efectoTipoDeCambio anio if anio > 2018 & anio <= 2024, ///
-				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p4) lcolor(none) fintensity(25)) ///
-			(bar efectoOtros anio if anio > 2018 & anio <= 2024, ///
-				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p4) lcolor(none) fintensity(10)) ///
-			(bar balprimario_pib anio if anio > 2024 & anio <= 2030, ///
-				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p5)) ///
-			(bar efectoCrecimiento anio if anio > 2024 & anio <= 2030, ///
-				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p5) lcolor(none) fintensity(75)) ///
-			(bar efectoIntereses anio if anio > 2024 & anio <= 2030, ///
-				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p5) lcolor(none) fintensity(50)) ///
-			(bar efectoTipoDeCambio anio if anio > 2024 & anio <= 2030, ///
-				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p5) lcolor(none) fintensity(25)) ///
-			(bar efectoOtros anio if anio > 2024 & anio <= 2030, ///
-				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p5) lcolor(none) fintensity(10)) ///
-			if balprimario_pib != . & anio >= 2008, ///
-			title("`graphtitle'") ///
-			name(efectoDeuda2, replace) ///
-			legend(off) ///
-			xtitle("") ///
-			xlabel(2008(1)`lastexo', noticks) ///
-
 		graph bar balprimario_pib efectoCrecimiento efectoIntereses efectoTipoDeCambio efectoInflacion efectoOtros if balprimario_pib != ., ///
 			over(anio, gap(0)) stack ///
 			blabel(, format(%5.1fc)) outergap(0) ///
 			text(`textDeuda1', color(red) size(small)) ///
 			text(`textDeuda2', color(green) size(small)) ///
 			ytitle("% PIB") ///
+			title("`graphtitle'") ///
+			caption("`graphfuente'") ///
 			legend(on position(6) rows(1) label(3 "Tasas de inter{c e'}s") label(5 "Inflaci{c o'}n") label(2 "Crec. Econ{c o'}mico") ///
 			label(1 "Déficit Primario") label(4 "Tipo de cambio") label(7 "No presupuestario") ///
 			label(6 "Otros") region(margin(zero))) ///
 			name(efectoDeuda, replace) ///
-			///note("{bf:{c U'}ltimo dato}: `aniofin'm`mesfin'") ///
-			title({it:Observado})
+			///note("{bf:{c U'}ltimo dato}: `aniofin'm`mesfin'")
 		
 		capture confirm existence $export
 		if _rc == 0 {
 			graph export "$export/efectoDeuda.png", replace name(efectoDeuda)
 		}
 
-
+sss
 
 	g efectoCrecimiento_pc  = -((Poblacion_adj-L.Poblacion_adj)/L.Poblacion_adj)*L.shrfsp/Poblacion_adj/deflator
 	g efectoInflacion_pc= -(var_indiceY/100+var_indiceY/100*((Poblacion_adj-L.Poblacion_adj)/L.Poblacion_adj))*L.shrfsp/Poblacion_adj/deflator
@@ -661,8 +629,8 @@ quietly {
 	** EFECTOS SOBRE LOS INDICADORES **
 	if "`nographs'" != "nographs" & "$nographs" == "" {
 		tempvar rfspBalance rfspOtros rfspBalance0 rfspOtros0 rfsppib rfsppc rfsp
-		g `rfspOtros0' = (- rfspPIDIREGAS - rfspIPAB - rfspFONADIN - rfspDeudores - rfspBanca - rfspAdecuacion)/1000000000000/deflator
-		g `rfspOtros' = (- rfspPIDIREGAS - rfspIPAB - rfspFONADIN - rfspDeudores - rfspBanca  - rfspAdecuacion)/1000000000000/deflator
+		g `rfspOtros0' = (- rfspPIDIREGAS - rfspIPAB - rfspFONADIN - rfspDeudores - rfspBanca - rfspAdecuaciones)/1000000000000/deflator
+		g `rfspOtros' = (- rfspPIDIREGAS - rfspIPAB - rfspFONADIN - rfspDeudores - rfspBanca  - rfspAdecuaciones)/1000000000000/deflator
 
 		g `rfspBalance0' = - rfspBalance/1000000000000/deflator
 		g `rfspBalance' = (- rfspBalance + `rfspOtros')/1000000000000/deflator if `rfspOtros' < 0

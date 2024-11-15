@@ -13,13 +13,13 @@ timer on 1
 ** 0.1 Rutas al Github **
 if "`c(username)'" == "ricardo" {						// iMac Ricardo
 	sysdir set PERSONAL "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
-	global export "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/CIEP_Deuda/0. Paquete Económico/2025"
+	*global export "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/CIEP_Deuda/0. Paquete Económico/2025"
 	*global export "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/Paquete Económico 2025/4. Documento CIEP/images"
 	*global export "/Users/ricardo/CIEP Dropbox/TextbookCIEP/images"
 }
 else if "`c(username)'" == "servidorciep" {					// Servidor CIEP
 	sysdir set PERSONAL "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
-	global export "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/CIEP_Deuda/0. Paquete Económico/2025"
+	*global export "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/CIEP_Deuda/0. Paquete Económico/2025"
 }
 else if "`c(console)'" != "" {							// Servidor Web
 	sysdir set PERSONAL "/SIM/OUT/6/"
@@ -28,7 +28,7 @@ cd "`c(sysdir_personal)'"
 
 ****************************
 ** 0.2 Opciones globales  **
-//global nographs "nographs"							// SUPRIMIR GRAFICAS
+global nographs "nographs"							// SUPRIMIR GRAFICAS
 //global output "output"							// ARCHIVO DE SALIDA (WEB)
 //global update "update"							// UPDATE BASES DE DATOS
 
@@ -60,14 +60,14 @@ ex
 //noisily SCN, //$update
 
 ** 1.4 Ley de Ingresos de la Federación **
-noisily LIF, by(divPE) rows(1) anio(`=anioPE-1') desde(2013) min(0) title("Ingresos presupuestarios") $update
+//noisily LIF, by(divPE) rows(1) anio(`=anioPE-1') desde(2013) min(0) title("Ingresos presupuestarios") $update
 
 ** 1.5 Presupuesto de Egresos de la Federación **
-noisily PEF, by(divSIM) rows(2) min(0) anio(`=anioPE-1') desde(2013) title("Gasto presupuestario") $update
+//noisily PEF, by(divSIM) rows(2) min(0) anio(`=anioPE-1') desde(2013) title("Gasto presupuestario") $update
 
 ** 1.6 Saldo Histórico de Requerimientos Financieros del Sector Público **
-//noisily SHRFSP, anio(`=anioPE') ultanio(2012) $update
-
+noisily SHRFSP, anio(`=anioPE') ultanio(2012) $update
+ex
 ** 1.7 Subnacionales **
 //noisily run "Subnacional.do" //$update
 
@@ -75,10 +75,10 @@ noisily PEF, by(divSIM) rows(2) min(0) anio(`=anioPE-1') desde(2013) title("Gast
 forvalues anio = `=anioPE-10'(1)`=anioPE-1' {
 	noisily di in y "PerfilesSim `anio'"
 	capture confirm file "`c(sysdir_personal)'/SIM/perfiles`anio'.dta"
-	//if _rc != 0 | "$update" == "update" ///
+	if _rc != 0 | "$update" == "update" ///
 		noisily run "`c(sysdir_personal)'/PerfilesSim.do" `anio'
 }
-ex
+
 
 
 *********************************/
