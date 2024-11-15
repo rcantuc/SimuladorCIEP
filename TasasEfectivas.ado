@@ -390,9 +390,12 @@ quietly {
 	******************/
 	**# 7. Base SIM ***
 	*******************
-	use (folioviv foliohog numren factor edad decil grupoedad sexo rural escol ingbrutotot ///
+	capture use (folioviv foliohog numren factor edad decil grupoedad sexo rural escol ingbrutotot ///
 		ISRAS ISRPF CUOTAS ISRPM OTROSK FMP PEMEX CFE IMSS ISSSTE IVA IEPSNP IEPSP ISAN IMPORT) ///
 		using "`c(sysdir_personal)'/SIM/perfiles`anio'.dta", clear 
+	if _rc != 0 {
+		noisily run "`c(sysdir_personal)'/PerfilesSim.do" `anio'
+	}
 
 	* 7.1 Distribuir los ingresos entre las observaciones *
 	foreach k of varlist ISRAS ISRPF CUOTAS ///

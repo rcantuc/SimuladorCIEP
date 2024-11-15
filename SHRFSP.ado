@@ -222,36 +222,12 @@ quietly {
 		tempname rango
 		matrix `rango' = r(StatTotal)
 
-		twoway (bar `interno' anio if anio > 2000 & anio <= 2006, ///
+		twoway (bar `interno' anio if anio > 2000 & anio <= 2030, ///
 				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75)) ///
-			(bar `externo' anio if anio > 2000 & anio <= 2006, ///
+			(bar `externo' anio if anio > 2000 & anio <= 2030, ///
 				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p1) fintensity(50) lcolor(none)) ///
-			(bar `interno' anio if anio > 2006 & anio <= 2012, ///
-			mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p2) lcolor(none)) ///
-			(bar `externo' anio if anio > 2006 & anio <= 2012, ///
-				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p2) fintensity(50) lcolor(none)) ///
-			(bar `interno' anio if anio > 2012 & anio <= 2018, ///
-				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p3) lcolor(none)) ///
-			(bar `externo' anio if anio > 2012 & anio <= 2018, ///
-				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p3) fintensity(50) lcolor(none)) ///
-			(bar `interno' anio if anio > 2018 & anio <= 2024, ///
-				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p4) lcolor(none)) ///
-			(bar `externo' anio if anio > 2018 & anio <= 2024, ///
-				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p4) fintensity(50) lcolor(none)) ///
-			(bar `interno' anio if anio > 2024 & anio <= 2030, ///
-				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p5) fintensity(75) lcolor(none)) ///
-			(bar `externo' anio if anio > 2024 & anio <= 2030, ///
-				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p5) fintensity(50) lcolor(none)) ///
-			(connected `shrfsp_pib' anio if anio > 2000 & anio <= 2006, ///
+			(connected `shrfsp_pib' anio if anio > 2000 & anio <= 2030, ///
 				yaxis(2) mlabel(`shrfsp_pib') mlabposition(12) mlabcolor(black) pstyle(p1) lpattern(dot) msize(small)) ///
-			(connected `shrfsp_pib' anio if anio > 2006 & anio <= 2012, ///
-				yaxis(2) mlabel(`shrfsp_pib') mlabposition(12) mlabcolor(black) pstyle(p2) lpattern(dot) msize(small)) ///
-			(connected `shrfsp_pib' anio if anio > 2012 & anio <= 2018, ///
-				yaxis(2) mlabel(`shrfsp_pib') mlabposition(12) mlabcolor(black) pstyle(p3) lpattern(dot) msize(small)) ///
-			(connected `shrfsp_pib' anio if anio > 2018 & anio <= 2024, ///
-				yaxis(2) mlabel(`shrfsp_pib') mlabposition(12) mlabcolor(black) pstyle(p4) lpattern(dot) msize(small)) ///
-			(connected `shrfsp_pib' anio if anio > 2024 & anio <= 2030, ///
-				yaxis(2) mlabel(`shrfsp_pib') mlabposition(12) mlabcolor(black) pstyle(p5) lpattern(dot) msize(small)) ///
 			if `externo' != . & anio > `ultanio', ///
 			title(`graphtitle') ///
 			///subtitle("Monto reportado (billones `currency' `aniovp') y como % del PIB") ///
@@ -301,68 +277,34 @@ quietly {
 		tempname rango
 		matrix `rango' = r(StatTotal)
 
-		twoway (bar `interno' anio if anio > 2000 & anio <= 2006, ///
+		twoway (bar `interno' anio if anio > 2000 & anio <= 2030, ///
 				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75)) ///
-			(bar `externo' anio if anio > 2000 & anio <= 2006, ///
+			(bar `externo' anio if anio > 2000 & anio <= 2030, ///
 				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p1) fintensity(50) lcolor(none)) ///
-			(bar `interno' anio if anio > 2006 & anio <= 2012, ///
-				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p2) lcolor(none)) ///
-			(bar `externo' anio if anio > 2006 & anio <= 2012, ///
-				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p2) fintensity(50) lcolor(none)) ///
-			(bar `interno' anio if anio > 2012 & anio <= 2018, ///
-				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p3) lcolor(none)) ///
-			(bar `externo' anio if anio > 2012 & anio <= 2018, ///
-				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p3) fintensity(50) lcolor(none)) ///
-			(bar `interno' anio if anio > 2018 & anio <= 2024, ///
-				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p4) lcolor(none)) ///
-			(bar `externo' anio if anio > 2018 & anio <= 2024, ///
-				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p4) fintensity(50) lcolor(none)) ///
-			(bar `interno' anio if anio > 2024 & anio <= 2030, ///
-				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p5) fintensity(75) lcolor(none)) ///
-			(bar `externo' anio if anio > 2024 & anio <= 2030, ///
-				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p5) fintensity(50) lcolor(none)) ///
-			(connected `shrfsp_pc' anio if anio > 2000 & anio <= 2006, ///
+			(connected `shrfsp_pc' anio if anio > 2000 & anio <= 2030, ///
 				yaxis(2) mlabel(`shrfsp_pc') mlabposition(12) mlabcolor(black) pstyle(p1) lpattern(dot) msize(small)) ///
-			(connected `shrfsp_pc' anio if anio > 2006 & anio <= 2012, ///
-				yaxis(2) mlabel(`shrfsp_pc') mlabposition(12) mlabcolor(black) pstyle(p2) lpattern(dot) msize(small)) ///
-			(connected `shrfsp_pc' anio if anio > 2012 & anio <= 2018, ///
-				yaxis(2) mlabel(`shrfsp_pc') mlabposition(12) mlabcolor(black) pstyle(p3) lpattern(dot) msize(small)) ///
-			(connected `shrfsp_pc' anio if anio > 2018 & anio <= 2024, ///
-				yaxis(2) mlabel(`shrfsp_pc') mlabposition(12) mlabcolor(black) pstyle(p4) lpattern(dot) msize(small)) ///
-			(connected `shrfsp_pc' anio if anio > 2024 & anio <= 2030, ///
-				yaxis(2) mlabel(`shrfsp_pc') mlabposition(12) mlabcolor(black) pstyle(p5) lpattern(dot) msize(small)) ///
+			(scatter `interno' anio if anio > 2000 & anio <= 2030, ///
+				yaxis(1) mlabel(`interno') mlabposition(12) mlabcolor(black) pstyle(p1) lpattern(dot) msize(zero)) ///
 			if `externo' != . & anio > `ultanio', ///
 			title(`graphtitle') ///
-			///subtitle("Monto reportado (billones `currency' `aniovp') y por persona (miles `currency' `aniovp')") ///
-			note("{bf:{c U'}ltimo dato}: `aniofin'm`mesfin'. Las diferencias en miles `currency' `aniovp' se hacen con respecto al último año de la serie anterior.") ///
 			caption("`graphfuente'") ///
-			ylabel(, format(%15.0fc) labsize(small)) ///
+			ylabel(none, format(%15.0fc) labsize(small)) ///
 			ylabel(none, format(%10.0fc) labsize(small) axis(2)) ///
-			text(`=`shrfsp_pc'[12]' `=`ultanio'+1' "miles `currency' `aniovp'", ///
-				place(6) yaxis(2) size(small) color("111 111 111")) ///
-			text(`=(`interno'[12]-`externo'[12])*.5+`externo'[12]' `=`ultanio'+1' "Interno", ///
-				place(0) size(small) color("111 111 111") justification(center)) ///
-			text(`=`externo'[12]*.5' `=`ultanio'+1' "Externo", ///
-				place(0) size(small) color("111 111 111") justification(center)) ///
-			text(`=`rango'[2,2]*1.15' `=2001+2.5' "{   {bf:`=string(`shrfsp_pc'[17]-`shrfsp_pc'[11],"%5.1f")' miles `currency' `aniovp'}   }", ///
-				place(0) size(small) color("111 111 111") justification(center) yaxis(2)) ///
-			text(`=`rango'[2,2]*1.15' `=2007+2.5' "{   {bf:`=string(`shrfsp_pc'[23]-`shrfsp_pc'[17],"%5.1f")' miles `currency' `aniovp'}   }", ///
-				place(0) size(small) color("111 111 111") justification(center) yaxis(2)) ///
-			text(`=`rango'[2,2]*1.15' `=2013+2.5' "{   {bf:`=string(`shrfsp_pc'[29]-`shrfsp_pc'[23],"%5.1f")' miles `currency' `aniovp'}   }", ///
-				place(0) size(small) color("111 111 111") justification(center) yaxis(2)) ///
-			text(`=`rango'[2,2]*1.15' `=2019+2.5' "{   {bf:`=string(`shrfsp_pc'[35]-`shrfsp_pc'[29],"%5.1f")' miles `currency' `aniovp'}   }", ///
-				place(0) size(small) color("111 111 111") justification(center) yaxis(2)) ///
-			text(`=`rango'[2,2]*1.15' `=2025+2.5' "{   {bf:`=string(`shrfsp_pc'[41]-`shrfsp_pc'[35],"%5.1f")' miles `currency' `aniovp'}   }", ///
-				place(0) size(small) color("111 111 111") justification(center) yaxis(2)) ///
+			text(`=`interno'[24]' `=`ultanio'+1' "{bf:billones}" "{bf:`currency' `aniovp'}", ///
+				place(6) size(small) color("111 111 111")) ///
+			text(`=`shrfsp_pc'[24]' `=`ultanio'+1' "{bf:miles `currency' `aniovp'}" "{bf:por persona}", ///
+				place(6) size(small) color("111 111 111") yaxis(2)) ///
+			text(`=`externo'[24]*1.1' `=`ultanio'+1' "Interno", ///
+				place(12) size(small) color("111 111 111") justification(center)) ///
+			text(`=`externo'[24]*0.9' `=`ultanio'+1' "Externo", ///
+				place(6) size(small) color("111 111 111") justification(center)) ///
 			yscale(range(0 `=`rango'[2,1]*1.5') axis(1) noline) ///
 			yscale(range(-10 `=`rango'[2,2]*1.25') axis(2) noline) ///
-			ytitle("billones `currency' `aniovp'") ///
+			ytitle("") ///
 			ytitle("", axis(2)) ///
 			xtitle("") ///
 			xlabel(`=`ultanio'+1'(1)`lastexo', noticks) ///	
-			legend(off position(6) rows(1) order(1 2) ///
-			label(1 `"Interno"') ///
-			label(2 `"Externo"')) ///
+			legend(off) ///
 			name(shrfsppc, replace)
 
 		graph save shrfsppc `"`c(sysdir_personal)'/SIM/graphs/shrfsppc.gph"', replace
@@ -592,7 +534,7 @@ quietly {
 			graph export "$export/efectoDeuda.png", replace name(efectoDeuda)
 		}
 
-sss
+
 
 	g efectoCrecimiento_pc  = -((Poblacion_adj-L.Poblacion_adj)/L.Poblacion_adj)*L.shrfsp/Poblacion_adj/deflator
 	g efectoInflacion_pc= -(var_indiceY/100+var_indiceY/100*((Poblacion_adj-L.Poblacion_adj)/L.Poblacion_adj))*L.shrfsp/Poblacion_adj/deflator

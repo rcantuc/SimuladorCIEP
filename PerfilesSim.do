@@ -8,7 +8,7 @@ if "`1'" == "" {
 	clear all
 	local 1 = 2024
 	scalar anioenigh = 2022
-	scalar aniovp = 2024
+	scalar aniovp = 2025
 }
 else {
 	if `1' >= 2022 {
