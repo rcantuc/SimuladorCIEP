@@ -466,7 +466,7 @@ if _rc != 0 {
 ***  3. Integración consumo de hogares + individuos  ***
 ***                                                  ***
 ********************************************************
-foreach categ in categ categ_iva /*categ_ieps*/ {
+foreach categ in categ categ_iva categ_ieps {
 	capture confirm file "`c(sysdir_personal)'/SIM/`=anioenigh'/consumption_`categ'_pc.dta"
 	if _rc != 0 {
 	*if _rc == 0 {
@@ -568,8 +568,8 @@ foreach categ in categ categ_iva /*categ_ieps*/ {
 
 				* Iteraciones *
 				noisily di in y "`k': " _cont
-				local salto = 5
-				forvalues iter=1(1)10 {
+				local salto = 1
+				forvalues iter=1(1)25 {
 					noisily di in w "`iter' " _cont
 					forvalues edades=0(`salto')109 {
 						forvalues sexos=1(1)2 {
@@ -1024,7 +1024,7 @@ save "`c(sysdir_personal)'/SIM/`=anioenigh'/consumption_categ_iva.dta", replace
 ***         ***
 *** 6. IEPS ***
 ***         ***
-/***************
+***************
 if `=anioenigh' >= 2014 {
 	matrix IEPST = (26.5	,		0 			\ /// Cervezas y licores
 				30.0	,		0 			\ /// Alcohol 14+ a 20
@@ -1115,7 +1115,7 @@ noisily di in g "  Total " ///
 
 collapse (sum) IEPS, by(folioviv foliohog numren)
 save "`c(sysdir_personal)'/SIM/`=anioenigh'/consumption_categ_ieps.dta", replace
-*/
+
 
 
 timer off 15

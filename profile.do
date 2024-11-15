@@ -50,8 +50,8 @@ if anioPE >= 2016 & anioPE < 2018 {
 }
 
 ** 2.5 Economía: Crecimiento anual del Producto Interno Bruto **
-scalar pib2024 = 2.6 // 2.578
-scalar pib2025 = 2.5 // 2.5007
+scalar pib2024 = 2.0876 // 2.578
+scalar pib2025 = 2.2038 // 2.5007
 scalar pib2026 = 2.5
 scalar pib2027 = 2.5
 scalar pib2028 = 2.5
@@ -59,8 +59,8 @@ scalar pib2029 = 2.5
 scalar pib2030 = 2.5
 
 ** 2.6 Economía: Deflactor del Producto Interno Bruto **
-scalar def2024 = 4.1
-scalar def2025 = 3.9
+scalar def2024 = 4.6
+scalar def2025 = 4.3
 scalar def2026 = 3.5
 scalar def2027 = 3.5
 scalar def2028 = 3.5
@@ -68,13 +68,13 @@ scalar def2029 = 3.5
 scalar def2030 = 3.5
 
 ** 2.7 Economía: Inflación **
-scalar inf2024 = 3.8
-scalar inf2025 = 3.3
-scalar inf2026 = 3.0
-scalar inf2027 = 3.0
-scalar inf2028 = 3.0
-scalar inf2029 = 3.0
-scalar inf2030 = 3.0
+scalar inf2024 = 4.3
+scalar inf2025 = 3.5
+scalar inf2026 = 3.5
+scalar inf2027 = 3.5
+scalar inf2028 = 3.5
+scalar inf2029 = 3.5
+scalar inf2030 = 3.5
 
 ** 2.8 Deuda Pública **/
 scalar tasaEfectiva = 8.216

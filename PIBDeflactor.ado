@@ -118,15 +118,15 @@ quietly {
 	forvalues k=`aniofinal'(1)`=anio[_N]' {
 		capture confirm scalar def`k'
 		if _rc == 0 {
-			replace var_indiceY = `=scalar(def`k')' if anio == `k' & trimestre != 4
+			replace var_indiceY = `=scalar(def`k')' if anio == `k' //& trimestre != 4
 			local exceptI "`exceptI'`=scalar(def`k')'% (`k'), "
 			local anio_def = `k'
 			local ++exo_def
 		}
 		else {
-			replace var_indiceY = L.var_indiceG if anio == `k' & trimestre != 4 & var_indiceY == .
+			replace var_indiceY = L.var_indiceG if anio == `k' & var_indiceY == . //& trimestre != 4 
 		}
-		replace indiceY = L.indiceY*(1+var_indiceY/100) if anio == `k' & trimestre != 4
+		replace indiceY = L.indiceY*(1+var_indiceY/100) if anio == `k' //& trimestre != 4
 		replace var_indiceG = ((indiceY/L`=`difdef''.indiceY)^(1/(`difdef'))-1)*100 if anio == `k' & anio > `aniofinal'
 	}
 	if "`exceptI'" != "" {
@@ -137,14 +137,14 @@ quietly {
 	forvalues k=`aniofinal'(1)`=anio[_N]' {
 		capture confirm scalar inf`k'
 		if _rc == 0 {
-			replace var_inflY = `=scalar(inf`k')' if anio == `k' & trimestre != 4
+			replace var_inflY = `=scalar(inf`k')' if anio == `k' //& trimestre != 4
 			local exceptI "`exceptI'`k' (`=scalar(inf`k')'%), "
 			local ++exo_count
 		}
 		else {
-			replace var_inflY = L.var_inflG if anio == `k' & trimestre != 4 & var_inflY == .
+			replace var_inflY = L.var_inflG if anio == `k' & var_inflY == . //& trimestre != 4 
 		}
-		replace inpc = L.inpc*(1+var_inflY/100) if anio == `k' & trimestre != 4
+		replace inpc = L.inpc*(1+var_inflY/100) if anio == `k' //& trimestre != 4
 		replace var_inflG = ((inpc/L`=`difdef''.inpc)^(1/`difdef')-1)*100 if anio == `k' & anio > `aniofinal'
 	}
 
@@ -216,13 +216,13 @@ quietly {
 	forvalues k=`aniofinal'(1)`=anio[_N]' {
 		capture confirm scalar pib`k'
 		if _rc == 0 {
-			replace var_pibY = `=scalar(pib`k')' if anio == `k' & trimestre != 4
+			replace var_pibY = `=scalar(pib`k')' if anio == `k' //& trimestre != 4
 			local except "`except'`=scalar(pib`k')'% (`k'); "
 			local anio_exo = `k'
 			local ++exo_count
 
-			replace pibY = L.pibY*(1+var_pibY/100)*(1+var_indiceY/100) if anio == `k' & trimestre != 4
-			replace pibYR = L.pibYR*(1+var_pibY/100) if anio == `k' & trimestre != 4
+			replace pibY = L.pibY*(1+var_pibY/100)*(1+var_indiceY/100) if anio == `k' //& trimestre != 4
+			replace pibYR = L.pibYR*(1+var_pibY/100) if anio == `k' //& trimestre != 4
 		}
 	}
 
