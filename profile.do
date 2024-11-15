@@ -29,7 +29,7 @@ global entidadesC "Ags BC BCS Camp Coah Col Chis Chih CDMX Dgo Gto Gro Hgo Jal E
 ** 2.2 Valor Presente **
 local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 scalar aniovp = substr(`"`=trim("`fecha'")'"',1,4)
-scalar aniovp = 2024
+scalar aniovp = 2025
 
 ** 2.3 Política Fiscal **
 global paqueteEconomico "CGPE 2025"
