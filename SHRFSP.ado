@@ -82,7 +82,7 @@ quietly {
 
 	*****************************
 	***                       ***
-	**# 5 PARÁMETROS EXÓGENOS ***
+	**# 4 PARÁMETROS EXÓGENOS ***
 	***                       ***
 	*****************************
 	tsset anio
@@ -118,21 +118,23 @@ quietly {
 		}
 
 		replace shrfsp = shrfspInterno + shrfspExterno if anio == `=anio[`j']'
+		replace costofinanciero = costodeudaInterno + costodeudaExterno
 	}
 
 
 
 	*****************
-	**# 4 DISPLAY ***
+	***           ***
+	**# 5 DISPLAY ***
+	***           ***
 	*****************
 	noisily di _newline in g "{bf: " ///
 		_col(44) in g %20s "`currency'" ///
 		_col(66) %7s "% PIB" ///
 		_col(77) %7s "Per cápita" "}"
 
-	tempvar rfspOtros
-	egen `rfspOtros' = rowtotal(rfspPIDIREGAS rfspIPAB rfspFONADIN rfspDeudores rfspBanca rfspAdecuaciones)
-	tabstat rfspBalance `rfspOtros' rfsp shrfspInterno shrfspExterno shrfsp if anio == `anio', stat(sum) format(%20.0fc) save
+	egen rfspOtros = rowtotal(rfspPIDIREGAS rfspIPAB rfspFONADIN rfspDeudores rfspBanca rfspAdecuaciones)
+	tabstat rfspBalance rfspOtros rfsp shrfspInterno shrfspExterno shrfsp if anio == `anio', stat(sum) format(%20.0fc) save
 	if _rc != 0 {
 		noisily di in r "No hay informaci{c o'}n para el a{c n~}o `anio'"
 		exit
@@ -378,12 +380,11 @@ quietly {
 
 	** 6.1 Gráfica tasas de interés **
 	if "`nographs'" != "nographs" & "$nographs" == "" {
-		tempvar costodeudaTot costodeudaOyE
-		egen `costodeudaTot' = rsum(costodeudaInterno costodeudaExterno)
-		egen `costodeudaOyE' = rsum(costopemex costocfe)
-		replace `costodeudaOyE' = `costodeudaOyE'/1000000000000/deflator
-		replace `costodeudaTot' = `costodeudaTot'/1000000000000/deflator
-		format `costodeudaTot' %5.1fc
+		egen costodeudaTotg = rsum(costodeudaInterno costodeudaExterno)
+		egen costodeudaOyEg = rsum(costopemex costocfe)
+		replace costodeudaOyEg = costodeudaOyEg/1000000000000/deflator
+		replace costodeudaTotg = costodeudaTotg/1000000000000/deflator
+		format costodeudaTotg %5.1fc
 		
 		if `"$export"' == "" {
 			local graphtitle "{bf:Costo de la deuda pública}"
@@ -393,28 +394,28 @@ quietly {
 			local graphtitle ""
 			local graphfuente ""
 		}		
-		twoway (bar `costodeudaTot' anio if anio > 2000 & anio <= 2024, ///
+		twoway (bar costodeudaTotg anio if anio > 2000 & anio <= 2024, ///
 					yaxis(2) mlabposition(6) mlabcolor(black) pstyle(p1) lwidth(none) barwidth(.75)) ///
-				///(bar `costodeudaOyE' anio if anio > 2000 & anio <= 2024, ///
-				///	yaxis(2) mlabposition(6) mlabcolor(black) pstyle(p1) lwidth(none) barwidth(.75) fintensity(50) lcolor(none)) ///
-				(bar `costodeudaTot' anio if anio > 2024 & anio <= 2030, ///
+				(bar costodeudaOyE anio if anio > 2000 & anio <= 2024, ///
+					yaxis(2) mlabposition(6) mlabcolor(black) pstyle(p1) lwidth(none) barwidth(.75) fintensity(50) lcolor(none)) ///
+				(bar costodeudaTotg anio if anio > 2024 & anio <= 2030, ///
 					yaxis(2) mlabposition(6) mlabcolor(black) pstyle(p2) lwidth(none) barwidth(.75) fintensity(75)) ///
-				///(bar `costodeudaOyE' anio if anio > 2024 & anio <= 2030, ///
-				///	yaxis(2) mlabposition(6) mlabcolor(black) pstyle(p2) lwidth(none) barwidth(.75) fintensity(50) lcolor(none)) ///
+				(bar costodeudaOyE anio if anio > 2024 & anio <= 2030, ///
+					yaxis(2) mlabposition(6) mlabcolor(black) pstyle(p2) lwidth(none) barwidth(.75) fintensity(50) lcolor(none)) ///
 				(connected tasaEfectiva anio if anio > 2000 & anio <= 2024, ///
 					mlabel(tasaEfectiva) mlabposition(12) mlabcolor(black) pstyle(p1)) ///
 				(connected tasaEfectiva anio if anio > 2024 & anio <= 2030, ///
 					mlabel(tasaEfectiva) mlabposition(12) mlabcolor(black) pstyle(p2)) ///
-				(scatter `costodeudaTot' anio if anio > 2000 & anio <= 2030, ///
-					yaxis(2) mlabel(`costodeudaTot') mlabposition(12) mlabcolor(black) msize(zero)) ///
+				(scatter costodeudaTotg anio if anio > 2000 & anio <= 2030, ///
+					yaxis(2) mlabel(costodeudaTotg) mlabposition(12) mlabcolor(black) msize(zero)) ///
 				if tasaInterno != . & anio > `ultanio', ///
 				title("`graphtitle'") ///
-				text(`=`costodeudaTot'[24]' `=`ultanio'+1' "{bf:billones}" "{bf:`currency' `aniovp'}", ///
+				text(`=costodeudaTotg[24]' `=`ultanio'+1' "{bf:billones}" "{bf:`currency' `aniovp'}", ///
 					yaxis(2) place(6) size(small) color("111 111 111")) ///
-				///text(`=(`costodeudaTot'[24]-`costodeudaOyE'[24])*.25+`costodeudaOyE'[24]' `=`ultanio'+1' "Gob. Fed.", ///
-				///	yaxis(2) place(0) size(small) color("111 111 111") justification(center)) ///
-				///text(`=`costodeudaOyE'[24]*.5' `=`ultanio'+1' "OyE", ///
-				///	yaxis(2) place(0) size(small) color("111 111 111") justification(center)) ///
+				text(`=(costodeudaTotg[24]-costodeudaOyEg[24])*.25+costodeudaOyEg[24]' `=`ultanio'+1' "Gob. Fed.", ///
+					yaxis(2) place(0) size(small) color("111 111 111") justification(center)) ///
+				text(`=costodeudaOyEg[24]*.5' `=`ultanio'+1' "OyE", ///
+					yaxis(2) place(0) size(small) color("111 111 111") justification(center)) ///
 				text(`=tasaEfectiva[24]' `=2013+2.5' "{bf:Dif. `=anio[23]'-`=anio[29]':} `=string(`tasaEfectiva'[29]-`tasaEfectiva'[23],"%5.1f")'%", ///
 					place(0) size(small) color("111 111 111") justification(center) yaxis(2)) ///
 				text(`=tasaEfectiva[24]*1.15' `=2019+2.5' "{bf:Dif. `=anio[29]'-`=anio[35]':} `=string(`tasaEfectiva'[35]-`tasaEfectiva'[29],"%5.1f")'%", ///
@@ -423,7 +424,7 @@ quietly {
 					place(0) size(small) color("111 111 111") justification(center) yaxis(2)) ///
 					ylabel(none, format(%15.0fc) labsize(small)) ///
 				ylabel(none, format(%15.1fc) labsize(small) axis(2)) ///
-				text(`=tasaEfectiva[24]' `=`ultanio'+1' "{bf:Tasa de interés}" "{bf:promedio (%)}", place(6) size(medsmall) color("111 111 111")) ///
+				text(`=tasaEfectiva[24]' `=`ultanio'+1' "{bf:Interés}" "{bf:promedio (%)}", place(6) size(medsmall) color("111 111 111")) ///
 				yscale(range(0) noline) ///
 				yscale(range(0 3) axis(2) noline) ///
 				ytitle("") ///
@@ -439,7 +440,7 @@ quietly {
 			graph export "$export/tasasdeinteres.png", replace name(tasasdeinteres)
 		}
 	}
-ddd
+
 
 
 	*********************************
@@ -447,27 +448,27 @@ ddd
 	**# 7 Efectos indicador deuda ***
 	***                           ***
 	*********************************
-	*replace balprimario = balprimario + `rfspOtros'
-	foreach k of varlist rfsp* shrfsp* balprimario `rfspOtros' costofinanciero tipoDeCambio {
+	*replace balprimario = balprimario + rfspOtros
+	foreach k of varlist rfsp* shrfsp* balprimario costofinanciero tipoDeCambio nopresupuestario {
 		g `k'_pib = `k'/pibY*100
 		g `k'_pc = `k'/Poblacion_adj/deflator
 		g `k'_real = `k'/deflator
 		format `k'_pib `k'_pc %10.1fc
 	}
 
+	replace balprimario_pib = -balprimario_pib - rfspOtros_pib
 
 	g shrfspExternoUSD = shrfspExterno/tipoDeCambio
-	g dif_shrfsp_pib = shrfsp_pib - L.shrfsp_pib
+	g dif_shrfsp_pib = D.shrfsp_pib
 	g dif_shrfsp_pc = shrfsp_pc - L.shrfsp_pc
 	format dif_* %10.1fc
 
 	** 7.1 Efectos sobre el indicador **
-	g efectoCrecimiento  = -(var_pibY/100)*L.shrfsp_real/pibYR*100
-	g efectoIntereses    = (costofinanciero_real)/pibYR*100
-	g efectoTipoDeCambio = (D.tipoDeCambio_real)*L.shrfspExternoUSD/pibYR*100
-	g efectoInflacion    = 0
-	g efectoTotal        = balprimario_pib + efectoCrecimiento + efectoIntereses + efectoTipoDeCambio + efectoInflacion
-	g efectoOtros        = dif_shrfsp_pib - efectoTotal
+	g efectoCrecimiento  = -var_pibY/100*L.shrfsp/pibY*100 - var_indiceY/100*L.shrfsp/pibY*100
+	g efectoIntereses    = costofinanciero/pibY*100 + D.tipoDeCambio*L.shrfspExternoUSD/pibY*100
+	
+	g efectoTotal        = balprimario_pib + efectoCrecimiento + efectoIntereses
+	g efectoOtros        = dif_shrfsp_pib - efectoTotal //+ rfspOtros_pib
 
 	if "`nographs'" != "nographs" & "$nographs" == "" {
 		local j = 100/(2023-`ultanio'+1)/2
@@ -483,17 +484,17 @@ ddd
 			local graphfuente ""
 		}
 
-		graph bar balprimario_pib efectoCrecimiento efectoIntereses efectoTipoDeCambio efectoInflacion efectoOtros if balprimario_pib != ., ///
-			over(anio, gap(0)) stack ///
+		graph bar balprimario_pib efectoCrecimiento efectoIntereses efectoOtros if balprimario_pib != . & anio > `ultanio', ///
+			over(anio) stack ///
 			blabel(, format(%5.1fc)) outergap(0) ///
 			text(`textDeuda1', color(red) size(small)) ///
 			text(`textDeuda2', color(green) size(small)) ///
 			ytitle("% PIB") ///
 			title("`graphtitle'") ///
 			caption("`graphfuente'") ///
-			legend(on position(6) rows(1) label(3 "Tasas de inter{c e'}s") label(5 "Inflaci{c o'}n") label(2 "Crec. Econ{c o'}mico") ///
-			label(1 "Déficit Primario") label(4 "Tipo de cambio") label(7 "No presupuestario") ///
-			label(6 "Otros") region(margin(zero))) ///
+			legend(on position(6) rows(1) label(3 "Tasas de inter{c e'}s") label(6 "Inflaci{c o'}n") label(2 "Crec. Econ{c o'}mico") ///
+			label(1 "Déficit Primario") label(5 "No presupuestario") label(7 "No presupuestario") ///
+			label(4 "Otros") region(margin(zero))) ///
 			name(efectoDeuda, replace) ///
 			///note("{bf:{c U'}ltimo dato}: `aniofin'm`mesfin'")
 		
@@ -501,81 +502,6 @@ ddd
 		if _rc == 0 {
 			graph export "$export/efectoDeuda.png", replace name(efectoDeuda)
 		}
-
-sss
-
-	g efectoCrecimiento_pc  = -((Poblacion_adj-L.Poblacion_adj)/L.Poblacion_adj)*L.shrfsp/Poblacion_adj/deflator
-	g efectoInflacion_pc= -(var_indiceY/100+var_indiceY/100*((Poblacion_adj-L.Poblacion_adj)/L.Poblacion_adj))*L.shrfsp/Poblacion_adj/deflator
-	g efectoIntereses_pc    = (tasaInterno/100)*L.shrfspInterno/Poblacion_adj/deflator + (tasaExterno/100)*L.shrfspExterno/Poblacion_adj/deflator
-	g efectoTipoDeCambio_pc = (Depreciacion/100 + tasaExterno/100*Depreciacion/100)*L.shrfspExterno/Poblacion_adj/deflator
-	g efectoTotal_pc = balprimario_pc + `rfspOtros'_pc + efectoCrecimiento_pc + efectoInflacion_pc + efectoIntereses_pc + efectoTipoDeCambio_pc
-	g efectoOtros_pc        = dif_shrfsp_pc - efectoTotal_pc
-
-	g efectoPositivo = 0
-	g efectoPositivo_pc = 0
-	g efectoNegativo = 0
-	g efectoNegativo_pc = 0
-	foreach k of varlist balprimario_pib `rfspOtros'_pib efectoCrecimiento ///
-		efectoIntereses efectoTipoDeCambio efectoOtros {
-			replace efectoPositivo = efectoPositivo + `k' if `k' > 0
-			replace efectoNegativo = efectoNegativo + `k' if `k' < 0
-	}
-	foreach k of varlist balprimario_pc `rfspOtros'_pc efectoCrecimiento_pc ///
-		efectoIntereses_pc efectoTipoDeCambio_pc efectoOtros_pc {
-			replace efectoPositivo_pc = efectoPositivo_pc + `k' if `k' > 0
-			replace efectoNegativo_pc = efectoNegativo_pc + `k' if `k' < 0
-	}
-
-		forvalues k=1(1)`=_N' {
-			if abs(efectoPositivo[`k']) > abs(efectoNegativo[`k']) & mes[`k'] == 12 & anio[`k'] >= `ultanio' & efectoPositivo[`k'] != . & efectoNegativo[`k'] != . {
-				local textDeuda1 `"`textDeuda1' `=efectoPositivo[`k']+.5' `j' "{bf:`=string(shrfsp_pib[`k'],"%5.1fc")'% PIB}""'
-				local textDeuda11 `"`textDeuda11' `=efectoPositivo_pc[`k']+750' `j' "{bf:`=string(shrfsp_pc[`k'],"%10.0fc")' MXN}""'
-				local j = `j' + 100/(2023-`ultanio'+1)
-			}
-			if abs(efectoNegativo[`k']) >= abs(efectoPositivo[`k']) & mes[`k'] == 12 & anio[`k'] >= `ultanio' & efectoNegativo[`k'] != . & efectoPositivo[`k'] != . {
-				local textDeuda2 `"`textDeuda2' `=efectoNegativo[`k']-.5' `j' "{bf:`=string(shrfsp_pib[`k'],"%5.1fc")'% PIB}""'
-				local textDeuda22 `"`textDeuda22' `=efectoNegativo_pc[`k']-750' `j' "{bf:`=string(shrfsp_pc[`k'],"%10.0fc")' MXN}""'
-				local j = `j' + 100/(2023-`ultanio'+1)
-			}
-
-			if abs(efectoPositivo[`k']) > abs(efectoNegativo[`k']) & mes[`k'] != 12 & anio[`k'] >= `ultanio' & anio[`k'] <= `lastexo' & efectoPositivo[`k'] != . & efectoNegativo[`k'] != . {
-				local textDeuda3 `"`textDeuda3' `=efectoPositivo[`k']+.5' `i' "{bf:`=string(shrfsp_pib[`k'],"%5.1fc")'% PIB}""'
-				local textDeuda33 `"`textDeuda33' `=efectoPositivo_pc[`k']+750' `i' "{bf:`=string(shrfsp_pc[`k'],"%10.0fc")' MXN}""'
-				local i = `i' + 100/(`lastexo'-2023)
-			}
-			if abs(efectoNegativo[`k']) >= abs(efectoPositivo[`k']) & mes[`k'] != 12 & anio[`k'] >= `ultanio' & anio[`k'] <= `lastexo' & efectoNegativo[`k'] != . & efectoPositivo[`k'] != . {
-				local textDeuda4 `"`textDeuda4' `=efectoNegativo[`k']-.5' `i' "{bf:`=string(shrfsp_pib[`k'],"%5.1fc")'% PIB}""'
-				local textDeuda44 `"`textDeuda44' `=efectoNegativo_pc[`k']-750' `i' "{bf:`=string(shrfsp_pc[`k'],"%10.0fc")' MXN}""'
-				local i = `i' + 100/(`lastexo'-2023)
-			}
-		}
-
-		** Gráfica por persona ajustada **	
-		if `"$export"' == "" {
-			local graphtitle "{bf:Efectos sobre el indicador de la deuda per cápita}"
-			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP, INEGI/BIE y $paqueteEconomico."
-		}
-		else {
-			local graphtitle ""
-			local graphfuente ""
-		}
-		graph bar balprimario_pc `rfspOtros'_pc efectoCrecimiento_pc efectoInflacion_pc efectoIntereses_pc efectoTipoDeCambio_pc efectoOtros_pc if balprimario_pc != ., ///
-			over(anio, gap(0)) stack ///
-			blabel(, format(%10.0fc)) outergap(0) ///
-			text(`textDeuda11', color(red) size(small)) ///
-			text(`textDeuda22', color(green) size(small)) ///
-			ytitle("`currency' `aniovp'") ///
-			legend(off position(6) rows(1) label(5 "Tasas de inter{c e'}s") label(4 "Inflaci{c o'}n") label(3 "Crec. Demogr{c a'}fico") ///
-			label(1 "Déficit Primario") label(6 "Tipo de cambio") label(2 "No presupuestario") ///
-			label(7 "Otros") region(margin(zero))) ///
-			name(efectoDeudaPC, replace) ///
-			///note("{bf:{c U'}ltimo dato}: `aniofin'm`mesfin'") ///
-			title(Observado)
-
-		capture confirm existence $export
-		if _rc == 0 {
-			graph export "$export/efectoDeudaPC.png", replace name(efectoDeudaPC)
-		}			
 	}
 
 
@@ -674,7 +600,7 @@ sss
 				yaxis(2) mlabel(`rfsppib') mlabposition(12) mlabcolor(black) pstyle(p2) lpattern(dot) msize(small)) ///
 			(connected `rfsppib' anio if mes != 12, ///
 				yaxis(2) mlabel(`rfsppib') mlabposition(12) mlabcolor(black) pstyle(p2) lpattern(dot) msize(small) mcolor(%50)) ///
-			if rfsp != . & anio >= `ultanio', ///
+			if rfsp != . & anio > `ultanio', ///
 			title("`graphtitle'") ///
 			xtitle("") ///
 			name(rfsp, replace) ///
@@ -683,7 +609,7 @@ sss
 			text(0 `=2024+(2025-2024)/2' "{bf:$paqueteEconomico}", place(12) size(medsmall) color(black) justification(center) bcolor(white) box) ///
 			ylabel(none, format(%15.0fc) labsize(small)) ///
 			ylabel(none, format(%15.0fc) labsize(small) axis(2)) ///
-			xlabel(2008(1)`lastexo', noticks) ///	
+			xlabel(`=`ultanio'+1'(1)`lastexo', noticks) ///	
 			yscale(range(0 `=`rango'[2,1]*2') axis(1) noline) ///
 			yscale(range(0 `=-`rango'[2,1]*3') axis(2) noline) ///
 			ytitle("") ///
