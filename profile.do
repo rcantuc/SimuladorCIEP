@@ -191,9 +191,9 @@ scalar balprimario2030 = 0.4
 scalar costodeudaInterno2030 = 2.7
 scalar costodeudaExterno2030 = 2.7
 
-exit
+
 ** 2.9 Parámetros: PEF **/
-** 2.9.1 Parámetros: Educación **
+/** 2.9.1 Parámetros: Educación **
 scalar iniciaA     =     363 //    Inicial
 scalar basica      =   28056 //    Educación b{c a'}sica
 scalar medsup      =   27811 //    Educación media superior
