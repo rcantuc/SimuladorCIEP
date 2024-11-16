@@ -14,12 +14,12 @@ timer on 1
 if "`c(username)'" == "ricardo" {						// iMac Ricardo
 	sysdir set PERSONAL "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
 	*global export "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/CIEP_Deuda/0. Paquete Económico/2025"
-	*global export "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/Paquete Económico 2025/4. Documento CIEP/images"
+	global export "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/Paquete Económico 2025/4. Documento CIEP/images"
 	*global export "/Users/ricardo/CIEP Dropbox/TextbookCIEP/images"
 }
 else if "`c(username)'" == "servidorciep" {					// Servidor CIEP
 	sysdir set PERSONAL "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
-	*global export "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/CIEP_Deuda/0. Paquete Económico/2025"
+	*global export "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/Paquete Económico 2025/4. Documento CIEP/images"
 }
 else if "`c(console)'" != "" {							// Servidor Web
 	sysdir set PERSONAL "/SIM/OUT/6/"
@@ -28,7 +28,7 @@ cd "`c(sysdir_personal)'"
 
 ****************************
 ** 0.2 Opciones globales  **
-global nographs "nographs"							// SUPRIMIR GRAFICAS
+//global nographs "nographs"							// SUPRIMIR GRAFICAS
 //global output "output"							// ARCHIVO DE SALIDA (WEB)
 //global update "update"							// UPDATE BASES DE DATOS
 
@@ -54,8 +54,8 @@ global id = "ciepmx"								// IDENTIFICADOR DEL USUARIO
 //}
 
 ** 1.2 Producto Interno Bruto y su deflactor **
-noisily PIBDeflactor if anio <= 2030 & anio >= 2013, geodef(2013) geopib(2013) aniovp(`=aniovp') $update
-ex
+//noisily PIBDeflactor if anio <= 2030 & anio >= 2013, geodef(2013) geopib(2013) aniovp(`=aniovp') $update
+
 ** 1.3 Sistema de Cuentas Nacionales **
 //noisily SCN, //$update
 
@@ -67,12 +67,12 @@ ex
 
 ** 1.6 Saldo Histórico de Requerimientos Financieros del Sector Público **
 noisily SHRFSP, anio(`=anioPE') ultanio(2012) $update
-ex
+
 ** 1.7 Subnacionales **
 //noisily run "Subnacional.do" //$update
-
+exit
 ** 1.8 Perfiles **
-forvalues anio = `=anioPE-10'(1)`=anioPE-1' {
+forvalues anio = `=anioPE-12'(1)`=anioPE-1' {
 	noisily di in y "PerfilesSim `anio'"
 	capture confirm file "`c(sysdir_personal)'/SIM/perfiles`anio'.dta"
 	if _rc != 0 | "$update" == "update" ///
@@ -99,10 +99,11 @@ if "`cambioiva'" == "1" {
 }
 
 ** Integración de módulos ***
-noisily TasasEfectivas, anio(`=anioPE')
-noisily GastoPC, aniope(`=anioPE') aniovp(`=aniovp')
-
-
+forvalues anio = `=anioPE-12'(1)`=anioPE-1' {
+	noisily TasasEfectivas, anio(`anio')
+	noisily GastoPC, aniope(`anio') aniovp(`=aniovp')
+}
+ex
 
 *****************************/
 ***                        ***

@@ -114,7 +114,7 @@ scalar costodeudaExterno2025 = 3.8
 scalar shrfsp2026 = 51.4
 scalar shrfspInterno2026 = 40.5
 scalar shrfspExterno2026 = 10.9
-scalar rfsp2026 = -2.7
+scalar rfsp2026 = -3.2
 scalar rfspPIDIREGAS2026 = -0.1
 scalar rfspIPAB2026 = -0.1
 scalar rfspFONADIN2026 = 0.0
@@ -130,7 +130,7 @@ scalar costodeudaExterno2026 = 3.2
 scalar shrfsp2027 = 51.4
 scalar shrfspInterno2027 = 40.8
 scalar shrfspExterno2027 = 10.6
-scalar rfsp2027 = -3.2
+scalar rfsp2027 = -2.9
 scalar rfspPIDIREGAS2027 = -0.1
 scalar rfspIPAB2027 = -0.1
 scalar rfspFONADIN2027 = 0.0
@@ -191,7 +191,7 @@ scalar balprimario2030 = 0.4
 scalar costodeudaInterno2030 = 2.7
 scalar costodeudaExterno2030 = 2.7
 
-
+exit
 ** 2.9 Parámetros: PEF **/
 ** 2.9.1 Parámetros: Educación **
 scalar iniciaA     =     363 //    Inicial
