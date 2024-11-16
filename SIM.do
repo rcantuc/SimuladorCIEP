@@ -36,7 +36,7 @@ cd "`c(sysdir_personal)'"
 ** 0.3 Parámetros iniciales **
 noisily run "`c(sysdir_personal)'/profile.do"
 global id = "ciepmx"								// IDENTIFICADOR DEL USUARIO
-
+set scheme ciepdeuda
 
 
 ***************************

@@ -229,7 +229,7 @@ quietly {
 			(bar `externo' anio if anio > 2000 & anio <= 2024, ///
 				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p1) fintensity(50) lcolor(none)) ///
 			(bar `interno' anio if anio > 2024 & anio <= 2030, ///
-				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p2)) ///
+				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p2) lcolor(none)) ///
 			(bar `externo' anio if anio > 2024 & anio <= 2030, ///
 				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p2) fintensity(50) lcolor(none)) ///
 			(connected `shrfsp_pib' anio if anio > 2000 & anio <= 2024, ///
@@ -294,7 +294,7 @@ quietly {
 			(bar `externo' anio if anio > 2000 & anio <= 2024, ///
 				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p1) fintensity(50) lcolor(none)) ///
 			(bar `interno' anio if anio > 2024 & anio <= 2030, ///
-				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p2)) ///
+				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p2) lcolor(none)) ///
 			(bar `externo' anio if anio > 2024 & anio <= 2030, ///
 				mlabposition(6) mlabangle(0) mlabcolor(black) barwidth(.75) pstyle(p2) fintensity(50) lcolor(none)) ///
 			(connected `shrfsp_pc' anio if anio > 2000 & anio <= 2024, ///
@@ -403,9 +403,9 @@ quietly {
 				(bar costodeudaOyE anio if anio > 2024 & anio <= 2030, ///
 					yaxis(2) mlabposition(6) mlabcolor(black) pstyle(p2) lwidth(none) barwidth(.75) fintensity(50) lcolor(none)) ///
 				(connected tasaEfectiva anio if anio > 2000 & anio <= 2024, ///
-					mlabel(tasaEfectiva) mlabposition(12) mlabcolor(black) pstyle(p1)) ///
+					mlabel(tasaEfectiva) mlabposition(12) mlabcolor(black) pstyle(p1) lpattern(dot) msize(small)) ///
 				(connected tasaEfectiva anio if anio > 2024 & anio <= 2030, ///
-					mlabel(tasaEfectiva) mlabposition(12) mlabcolor(black) pstyle(p2)) ///
+					mlabel(tasaEfectiva) mlabposition(12) mlabcolor(black) pstyle(p2) lpattern(dot) msize(small)) ///
 				(scatter costodeudaTotg anio if anio > 2000 & anio <= 2030, ///
 					yaxis(2) mlabel(costodeudaTotg) mlabposition(12) mlabcolor(black) msize(zero)) ///
 				if tasaInterno != . & anio > `ultanio', ///
