@@ -37,8 +37,8 @@ color 		legend			white
 
 
 // Added text and lines
-gsize 		text_option 		medium
-color 		text_option		black
+gsize 		text_option 		vlarge
+color 		text_option		"111,111,111"
 clockdir 	text_option		12
 
 color		xyline			"200,200,200"
@@ -49,10 +49,13 @@ linepattern	xyline			dash
 // Title, subtitle, caption, notes
 clockdir 	title_position		12
 color 		heading			black
+
 clockdir 	subtitle_position	12
 color 		subheading		black
+
 clockdir 	caption_position	6
 color		body			black
+
 clockdir 	note_position		6
 color		small_body		black
 
@@ -70,6 +73,7 @@ yesno 		caption_span		no
 
 textboxstyle	t1title			body
 textboxstyle	t2title			small_body
+
 textboxstyle	b1title			body
 textboxstyle	b2title			small_body
 
@@ -86,7 +90,7 @@ yesno 		draw_major_nlt_vgrid 	yes
 // Axis
 color		tick			"52,70,78"
 color      	tick_label		"114,113,118"
-gsize      	tick_label		small
+gsize      	tick_label		large
 color 		tick_biglabel 		"114,113,118"
 gsize		tick_biglabel		small
 color 		axis_title 		"114,113,118"
@@ -98,7 +102,7 @@ anglestyle 	vertical_tick 		horizontal
 anglestyle 	horizontal_tick 	horizontal
 
 color		tickline		black
-linewidth	axisline		medium
+linewidth	axisline		none
 tickposition	axis_tick		inside
 
 
@@ -114,8 +118,9 @@ gsize 		key_label		small
 
 
 // Labels
-color 		label 			white
-gsize 		small_label		small
+color 		label 			"111,111,111"
+gsize 		label			vlarge
+gsize 		small_label		vlarge
 
 
 
@@ -228,23 +233,20 @@ linewidth	p17area			none
 
 
 // Colores
-color 		p1			"40,173,58"
-color 		p2			"255,69,0"
-color 		p3			"0,151,201"
-color 		p4			"255,215,48"
-color 		p5			"210,213,32"
-color 		p6			"255,129,0"
-color 		p7			"57,198,184"
-color 		p8			"255,40,0"
-color 		p9			"133,88,14"
-color 		p10			"255,235,48"
-color 		p11			"23,105,114"
-color 		p12			"150,6,92"
-color 		p13			"102,62,76"
-color 		p14			"9,63,93"
-color 		p15			"224,97,83"
-color 		p16			"227,229,99"
-color 		p17			"181,185,27"
-color 		p18			"53,200,71"
-color 		p19			"254,118,109"
-color 		p20			"213,155,190"
+color 		p1		"31,74,69"
+color 		p2		"158,222,185"
+color 		p3		"0,112,84"
+color 		p4		"38,203,139"
+color 		p5		"56,128,90"
+color 		p6		"79,180,114"
+color 		p7		"0,90,198"
+color 		p8		"6,62,160"
+color 		p9		"57,198,184"
+color 		p10		"12,45,121"
+color 		p11		"176,232,227"
+color 		p12		"6,23,61"
+color 		p13		"122,124,128"
+color 		p14		"175,174,180"
+color 		p15		"0,0,0"
+color 		p16		"255,255,255"
+color 		p17		"74,74,74"
