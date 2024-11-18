@@ -135,7 +135,7 @@ relsize 	bar_subgroupgap		0
 
 // Símbolos
 symbol 		p 			circle
-symbolsize 	p			vhuge
+symbolsize 	p			small
 color      	refmarker		red
 linewidth  	refmarker		vvvthick
 
