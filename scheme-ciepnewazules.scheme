@@ -138,6 +138,7 @@ symbol 		p 			circle
 symbolsize 	p			small
 color      	refmarker		red
 linewidth  	refmarker		vvvthick
+linepattern 	p			dot
 
 // Grosor
 linewidth 	p1mark			none
