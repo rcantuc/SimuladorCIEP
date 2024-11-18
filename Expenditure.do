@@ -34,7 +34,7 @@ else {
 		scalar anioenigh = 2016
 		local claveiva = "*2014"
 	}
-	if `1' >= 2014 & `1' < 2016 {
+	if `1' >= 2013 & `1' < 2016 {
 		scalar anioenigh = 2014
 		local claveiva = "*2014"
 	}

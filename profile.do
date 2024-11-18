@@ -48,6 +48,9 @@ if anioPE >= 2018 & anioPE < 2020 {
 if anioPE >= 2016 & anioPE < 2018 {
 	scalar anioenigh = 2016
 }
+if anioPE >= 2013 & anioPE < 2016 {
+	scalar anioenigh = 2014
+}
 
 ** 2.5 Economía: Crecimiento anual del Producto Interno Bruto **
 scalar pib2024 = 2.0876 // 2.578

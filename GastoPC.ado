@@ -54,8 +54,8 @@ quietly {
 	else if `aniope' >= 2020 & `aniope' < 2022 scalar anioenigh = 2020
 	else if `aniope' >= 2018 & `aniope' < 2020 scalar anioenigh = 2018
 	else if `aniope' >= 2016 & `aniope' < 2018 scalar anioenigh = 2016
-	else if `aniope' >= 2014 & `aniope' < 2016 scalar anioenigh = 2014
-	else if `aniope' >= 2012 & `aniope' < 2014 scalar anioenigh = 2012
+	else if `aniope' >= 2013 & `aniope' < 2016 scalar anioenigh = 2014
+	else if `aniope' >= 2012 & `aniope' < 2013 scalar anioenigh = 2012
 	else if `aniope' >= 2010 & `aniope' < 2012 scalar anioenigh = 2010
 	else if `aniope' >= 2008 & `aniope' < 2010 scalar anioenigh = 2008
 
@@ -84,7 +84,7 @@ quietly {
 	***             ***
 	*******************
 
-	** 3.1 Alumnos y beneficiarios **
+	/** 3.1 Alumnos y beneficiarios **
 	capture drop alum_*
 	if `aniope' >= 2016 {
 		g alum_basica = asis_esc == "1" & tipoesc == "1" & (nivel >= "01" & nivel <= "07") & edad <= 15
@@ -361,7 +361,7 @@ quietly {
 		_col(57) %15.0fc in y scalar(Educacion) "}"
 
 
-	** 3.12 Put excel **/
+	** 3.12 Put excel **
 	if "`excel'" == "excel" {
 		if `aniope' == 2014 {
 			local col "I"
@@ -416,12 +416,12 @@ quietly {
 		replace benef_pemex = benef_pemex*602513/1169476
 	g benef_issfam = inst_4 == "4"
 		replace benef_issfam = benef_issfam - benef_pemex
-	if `aniope' == 2014 {
+	*if `aniope' >= 2014 {
 		g benef_otros = inst_5 == "5"
-	}
-	else {
-		g benef_otros = inst_6 == "6"
-	}
+	*}
+	*else {
+	*	g benef_otros = inst_6 == "6"
+	*}
 	g benef_imssbien = 1 // inst_5 == "5"
 	replace benef_imssbien = 0 if benef_imss != 0 | benef_issste != 0 | benef_pemex != 0 | benef_issfam != 0 | benef_otros != 0
 
@@ -441,10 +441,10 @@ quietly {
 		PEF if anio == `aniope' & divCIEP == "Salud" & divSIM != "Inversión", anio(`aniope') by(desc_pp) min(0) nographs
 		local imssbien0 = r(programa_imss_bienestar)
 		if `imssbien0' == . {
-			local imssbien0 = r(programa_imss_propsera)
+			local imssbien0 = r(programa_imss_prospera)
 		}
 		if `imssbien0' == . {
-			local imssbien0 = r(programa_imss_oportunid)
+			local imssbien0 = r(programa_imss_oportunida)
 		}
 		local segpop0 = r(seguro_popular)
 		if `segpop0' == . {
@@ -495,6 +495,9 @@ quietly {
 		PEF if anio == `aniope' & divCIEP == "Salud" & divSIM != "Inversión", anio(`aniope') by(desc_pp) min(0) nographs
 		local caneros = r(seguridad_social_canero)
 		local incorpo = r(regimen_de_incorporaci)
+		if `incorpo' == . {
+			local incorpo = 0
+		}
 		local adeusal = r(adeudos_con_el_imss_e_is)
 		if `adeusal' == . {
 			local adeusal = 0
@@ -701,7 +704,7 @@ quietly {
 	*noisily tabstat Salud [fw=factor], stat(sum) f(%20.0fc)
 
 
-
+ex
 
 
 	******************/
