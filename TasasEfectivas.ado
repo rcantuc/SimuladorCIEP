@@ -29,7 +29,7 @@ quietly {
 	*********************
 	**# 2 RECAUDACIÓN ***
 	*********************
-	LIF, anio(`anio') by(divSIM) nographs desde(2018) min(0)
+	LIF, anio(`anio') by(divSIM) nographs min(0)
 	local recursos = r(divSIM)
 	foreach k of local recursos {
 		local `=substr("`k'",1,7)' = r(`k')

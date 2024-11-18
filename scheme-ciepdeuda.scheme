@@ -37,8 +37,8 @@ color 		legend			white
 
 
 // Added text and lines
-gsize 		text_option 		medium
-color 		text_option		black
+gsize 		text_option 		vlarge
+color 		text_option		"111,111,111"
 clockdir 	text_option		12
 
 color		xyline			"200,200,200"
@@ -49,10 +49,13 @@ linepattern	xyline			dash
 // Title, subtitle, caption, notes
 clockdir 	title_position		12
 color 		heading			black
+
 clockdir 	subtitle_position	12
 color 		subheading		black
+
 clockdir 	caption_position	6
 color		body			black
+
 clockdir 	note_position		6
 color		small_body		black
 
@@ -70,6 +73,7 @@ yesno 		caption_span		no
 
 textboxstyle	t1title			body
 textboxstyle	t2title			small_body
+
 textboxstyle	b1title			body
 textboxstyle	b2title			small_body
 
@@ -86,7 +90,7 @@ yesno 		draw_major_nlt_vgrid 	yes
 // Axis
 color		tick			"52,70,78"
 color      	tick_label		"114,113,118"
-gsize      	tick_label		small
+gsize      	tick_label		large
 color 		tick_biglabel 		"114,113,118"
 gsize		tick_biglabel		small
 color 		axis_title 		"114,113,118"
@@ -98,7 +102,7 @@ anglestyle 	vertical_tick 		horizontal
 anglestyle 	horizontal_tick 	horizontal
 
 color		tickline		black
-linewidth	axisline		medium
+linewidth	axisline		none
 tickposition	axis_tick		inside
 
 
@@ -114,8 +118,9 @@ gsize 		key_label		small
 
 
 // Labels
-color 		label 			white
-gsize 		small_label		small
+color 		label 			"111,111,111"
+gsize 		label			vlarge
+gsize 		small_label		vlarge
 
 
 
@@ -228,23 +233,23 @@ linewidth	p17area			none
 
 
 // Colores
-color 		p1			"210,213,32"
-color 		p2			"255,153,51"
-color 		p3			"255,255,0"
-color 		p4			"102,255,51"
-color 		p5			"255,204,0"
-color 		p6			"102,255,153"
-color 		p7			"255,102,51"
-color 		p8			"255,255,102"
-color 		p9			"255,51,153"
-color 		p10			"255,255,204"
-color 		p11			"255,204,102"
-color 		p12			"255,153,102"
-color 		p13			"102,204,153"
-color 		p14			"255,255,153"
-color 		p15			"255,102,204"
-color 		p16			"255,255,51"
-color 		p17			"255,204,153"
-color 		p18			"204,204,51"
-color 		p19			"153,255,153"
-color 		p20			"102,255,102"
+color       p1          "210,213,32"
+color       p2          "255,153,51"
+color       p3          "204,204,51"
+color       p4          "255,204,0"
+color       p5          "255,255,0"
+color       p6          "255,204,102"
+color       p7          "255,153,102"
+color       p8          "255,204,153"
+color       p9          "255,255,153"
+color       p10         "255,255,102"
+color       p11         "255,255,204"
+color       p12         "102,204,153"
+color       p13         "153,255,153"
+color       p14         "102,255,102"
+color       p15         "102,255,51"
+color       p16         "102,255,153"
+color       p17         "255,102,51"
+color       p18         "255,51,153"
+color       p19         "255,102,204"
+color       p20         "255,255,51"

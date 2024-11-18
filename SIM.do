@@ -19,7 +19,7 @@ if "`c(username)'" == "ricardo" {						// iMac Ricardo
 }
 else if "`c(username)'" == "servidorciep" {					// Servidor CIEP
 	sysdir set PERSONAL "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
-	*global export "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/Paquete Económico 2025/4. Documento CIEP/images"
+	global export "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/Paquete Económico 2025/4. Documento CIEP/images"
 }
 else if "`c(console)'" != "" {							// Servidor Web
 	sysdir set PERSONAL "/SIM/OUT/6/"
@@ -36,7 +36,7 @@ cd "`c(sysdir_personal)'"
 ** 0.3 Parámetros iniciales **
 noisily run "`c(sysdir_personal)'/profile.do"
 global id = "ciepmx"								// IDENTIFICADOR DEL USUARIO
-set scheme ciepdeuda
+
 
 
 ***************************
@@ -66,12 +66,13 @@ set scheme ciepdeuda
 //noisily PEF, by(divSIM) rows(2) min(0) anio(`=anioPE-1') desde(2013) title("Gasto presupuestario") $update
 
 ** 1.6 Saldo Histórico de Requerimientos Financieros del Sector Público **
+set scheme ciepdeuda
 noisily SHRFSP, anio(`=anioPE') ultanio(2012) $update
-
+ex
 ** 1.7 Subnacionales **
 //noisily run "Subnacional.do" //$update
-exit
-** 1.8 Perfiles **
+
+/** 1.8 Perfiles **
 forvalues anio = `=anioPE-12'(1)`=anioPE-1' {
 	noisily di in y "PerfilesSim `anio'"
 	capture confirm file "`c(sysdir_personal)'/SIM/perfiles`anio'.dta"
@@ -99,10 +100,9 @@ if "`cambioiva'" == "1" {
 }
 
 ** Integración de módulos ***
-forvalues anio = `=anioPE-12'(1)`=anioPE-1' {
-	noisily TasasEfectivas, anio(`anio')
-	noisily GastoPC, aniope(`anio') aniovp(`=aniovp')
-}
+*noisily TasasEfectivas, anio(`=anioPE')
+*noisily GastoPC, aniope(`=anioPE') aniovp(`=aniovp')
+
 ex
 
 *****************************/
