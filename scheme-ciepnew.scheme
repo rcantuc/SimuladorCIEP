@@ -37,8 +37,8 @@ color 		legend			white
 
 
 // Added text and lines
-gsize 		text_option 		large
-color 		text_option		black
+gsize 		text_option 		vlarge
+color 		text_option		"111,111,111"
 clockdir 	text_option		12
 
 color		xyline			"200,200,200"
@@ -49,10 +49,13 @@ linepattern	xyline			dash
 // Title, subtitle, caption, notes
 clockdir 	title_position		12
 color 		heading			black
+
 clockdir 	subtitle_position	12
 color 		subheading		black
+
 clockdir 	caption_position	6
 color		body			black
+
 clockdir 	note_position		6
 color		small_body		black
 
@@ -70,6 +73,7 @@ yesno 		caption_span		no
 
 textboxstyle	t1title			body
 textboxstyle	t2title			small_body
+
 textboxstyle	b1title			body
 textboxstyle	b2title			small_body
 
@@ -85,11 +89,11 @@ yesno 		draw_major_nlt_vgrid 	yes
 
 // Axis
 color		tick			"52,70,78"
-color      	tick_label		"111,111,111"
-gsize      	tick_label		small
-color 		tick_biglabel 		"111,111,111"
+color      	tick_label		"114,113,118"
+gsize      	tick_label		large
+color 		tick_biglabel 		"114,113,118"
 gsize		tick_biglabel		small
-color 		axis_title 		"111,111,111"
+color 		axis_title 		"114,113,118"
 gsize		axis_title		small
 
 axisstyle 	vertical_default 	vertical_nolinetick
@@ -98,7 +102,7 @@ anglestyle 	vertical_tick 		horizontal
 anglestyle 	horizontal_tick 	horizontal
 
 color		tickline		black
-linewidth	axisline		medium
+linewidth	axisline		none
 tickposition	axis_tick		inside
 
 
@@ -114,8 +118,9 @@ gsize 		key_label		small
 
 
 // Labels
-color 		label 			white
-gsize 		small_label		small
+color 		label 			"111,111,111"
+gsize 		label			vlarge
+gsize 		small_label		vlarge
 
 
 
@@ -134,8 +139,6 @@ symbolsize 	p			small
 color      	refmarker		red
 linewidth  	refmarker		vvvthick
 linepattern 	p			dot
-
-
 
 // Grosor
 linewidth 	p1mark			none
@@ -227,7 +230,6 @@ linewidth	p14area			none
 linewidth	p15area			none
 linewidth	p16area			none
 linewidth	p17area			none
-
 
 
 // Colores
