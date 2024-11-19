@@ -8,10 +8,8 @@
 
 
 // Graph Size
-// graphsize 	x 			5.5
-// graphsize 	y 			4
-graphsize 	x 			16
-graphsize 	y 			5
+graphsize 	x 			5.5
+graphsize 	y 			4
 
 
 
@@ -231,22 +229,22 @@ linewidth	p16area			none
 linewidth	p17area			none
 
 
-// Color Salud
-color p1 "150,6,92"  // Magenta
-color p2 "255,189,0"  // Amarillo
-color p3 "57,198,184"  // Turquesa
-color p4 "254,118,109"  // Rojo pastel
-color p5 "210,213,32"  // Amarillo-verde
-color p6 "0,78,198"  // Azul oscuro
-color p7 "255,129,0"  // Naranja
-color p8 "40,173,58"  // Verde oscuro
 
-color p9  "213,155,190"  // Pastel rosa
-color p10 "255,229,153"  // Amarillo pálido
-color p11 "176,232,227"  // Verde-azul claro
-color p12 "255,200,197"  // Salmón claro
-color p13 "237,238,166"  // Amarillo pálido
-color p14 "153,184,232"  // Azul claro
-color p15 "255,205,153"  // Durazno
-color p16 "169,222,176"  // Verde pálido
-
+// Colores
+color 		p1		"40,173,58"      
+color 		p2		"34,155,52"      
+color 		p3		"46,191,65"      
+color 		p4		"28,141,48"      
+color 		p5		"51,206,75"      
+color 		p6		"39,132,51"      
+color 		p7		"31,186,63"      
+color 		p8		"43,147,57"      
+color 		p9		"61,221,91"      
+color 		p10		"20,115,40"      
+color 		p11		"73,237,110"     
+color 		p12		"16,87,34"       
+color 		p13		"50,173,83"      
+color 		p14		"42,201,76"      
+color 		p15		"10,61,20"       
+color 		p16		"210,240,210"    
+color 		p17		"15,120,45"      
