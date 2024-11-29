@@ -17,7 +17,7 @@ quietly {
 	}
 
 	** 0.2 Base PEF **
-	capture confirm file "`c(sysdir_personal)'/SIM/PEF.dta"
+	capture confirm file "`c(sysdir_site)'/SIM/PEF.dta"
 	if _rc != 0 {
 		noisily UpdatePEF
 	}
@@ -27,7 +27,7 @@ quietly {
 	****************
 	*** 1 SYNTAX ***
 	****************
-	use in 1 using "`c(sysdir_personal)'/SIM/PEF.dta", clear
+	use in 1 using "`c(sysdir_site)'/SIM/PEF.dta", clear
 	syntax [if] [, ANIO(int `aniovp') BY(varname) ///
 		UPDATE NOGraphs Base ///
 		MINimum(real 1) DESDE(int -1) ///
@@ -54,7 +54,7 @@ quietly {
 
 	** 1.3 Base RAW **
 	if "`base'" == "base" {
-		use `if' using "`c(sysdir_personal)'/SIM/PEF.dta", clear
+		use `if' using "`c(sysdir_site)'/SIM/PEF.dta", clear
 		exit
 	}
 
@@ -103,17 +103,17 @@ quietly {
 	***************
 	*** 3 Merge ***
 	***************
-	use "`c(sysdir_personal)'/SIM/PEF.dta", clear
+	use "`c(sysdir_site)'/SIM/PEF.dta", clear
 
 	** 3.1 Gasto total **
 	egen double gastoTOT = sum(gasto) if transf_gf == 0, by(anio)
 
 	** 3.2 Cuotas ISSSTE **
-	g cuotasTOT = gasto if ramo == -1
+	g cuotasTOT = -gasto if ramo == -1
 	egen double CuoTOT = sum(cuotasTOT), by(anio)
 
 	** 3.3 Gasto neto **
-	replace gastoTOT = gastoTOT - CuoTOT
+	replace gastoTOT = gastoTOT + CuoTOT
 	collapse (sum) gasto (max) gastoTOT CuoTOT `if', by(anio `by' transf_gf) fast
 	sort anio `by'
 	merge m:1 (anio) using "`PIB'", nogen keepus(pibY indiceY deflator lambda Poblacion) keep(matched) sorted
@@ -284,15 +284,18 @@ quietly {
 		_col(77) %7s "Dif% Real" "}"
 
 	replace gasto = -gasto if lower(resumido) == "cuotas issste"
+	replace gastoR = -gastoR if lower(resumido) == "cuotas issste"
 	replace gastoPIB = -gastoPIB if lower(resumido) == "cuotas issste"
+	
 	replace gasto = 0 if gasto == .
+	replace gastoR = 0 if gastoR == .
 	replace gastoPIB = 0 if gastoPIB == .
 
 	rename resumido resumido2
 	replace resumido2 = strtoname(resumido2)
 	replace resumido2 = substr(resumido2,1,24)
-	collapse (sum) gasto gastoPIB gastoR (max) gastoTOT CuoTOT pibY deflator lambda Poblacion if transf_gf == 0, by(anio resumido2)
-	reshape wide gasto* CuoTOT, i(anio) j(resumido2) string
+	collapse (sum) gasto gastoPIB gastoR (max) pibY deflator lambda Poblacion if transf_gf == 0, by(anio resumido2)
+	reshape wide gasto*, i(anio) j(resumido2) string
 	reshape long
 	replace resumido2 = subinstr(resumido2,"_"," ",.)
 	encode resumido2, g(resumido)
@@ -447,7 +450,7 @@ quietly {
 		*replace gasto=gasto/deflator/1000000000000
 		*replace monto=monto/deflator/1000000000000
 
-		collapse (sum) gasto gastoR gastoPIB (max) gastoTOT CuoTOT pibY deflator if anio >= `desde', by(anio resumido)
+		collapse (sum) gasto gastoR gastoPIB (max) pibY deflator if anio >= `desde', by(anio resumido)
 		levelsof resumido, local(lev_resumido)
 
 		foreach k of local lev_resumido {
@@ -577,7 +580,7 @@ quietly {
 		*capture window manage close graph ingresosMXN`by'
 		*capture window manage close graph ingresos`by'PIB
 	
-		graph save gastos`by'PIB "`c(sysdir_personal)'/SIM/graphs/gastos`by'PIB", replace
+		*graph save gastos`by'PIB "`c(sysdir_personal)'/SIM/graphs/gastos`by'PIB", replace
 		if "$export" != "" {
 			graph export "$export/gastos`by'PIB.png", as(png) name("gastos`by'PIB") replace
 		}
@@ -611,13 +614,13 @@ program define UpdatePEF
 	*************************
 	*** 1. BASES DE DATOS ***
 	*************************
-	capture confirm file "`c(sysdir_personal)'/SIM/prePEF.dta"
+	capture confirm file "`c(sysdir_site)'/SIM/prePEF.dta"
 	if _rc == 0 {
-		local archivos: dir "`c(sysdir_site)'../BasesCIEP/PEFs" files "*.xlsx"			// Busca todos los archivos .xlsx en /bases/PEFs/
-		local archivos `""CP 2013.xlsx" "CP 2014.xlsx" "CP 2015.xlsx" "CP 2016.xlsx" "CP 2017.xlsx" "CP 2018.xlsx" "CP 2019.xlsx" "CP 2020.xlsx" "CP 2021.xlsx" "CP 2022.xlsx" "CP 2023.xlsx" "PEF 2024.xlsx" "CuotasISSSTE.xlsx""'
-		*local archivos `""CP 2008.xlsx" "PEF 2024.xlsx" "CuotasISSSTE.xlsx""'
+		local archivos: dir "`c(sysdir_site)'../BasesCIEP/PEFs" files "*.xlsx"		// Archivos .xlsx
+		*local archivos `""PPEF 2025.xlsx" "PEF 2024.xlsx" "CuotasISSSTE.xlsx""'
+		*local archivos `""CP 2013.xlsx" "CuotasISSSTE.xlsx""'
 
-		foreach k of local archivos {															// Loop para todos los archivos .xlsx encontrados
+		foreach k of local archivos {
 
 			* 1.1 Importar el archivo `k'.xlsx (Cuenta Pública) *
 			noisily di in g "Importando: " in y "`k'"
@@ -630,7 +633,6 @@ program define UpdatePEF
 			capture rename ciclo anio
 
 			* 1.3 Limpiar nombres *
-			capture rename ejercicio ejercido
 			foreach j of varlist _all {
 				if strlen("`j'") == 2 {
 					drop `j'
@@ -682,12 +684,13 @@ program define UpdatePEF
 				if "`j'" == "entidad_federativa" {
 					capture rename `j' entidad
 				}
+				capture rename ejercicio ejercido
 			}
 
 			* 1.4 Limpiar valores *
 			// Primero, asegurar que las variables de gasto sean numéricas. 
 			foreach j in aprobado modificado devengado pagado adefas ejercido proyecto {
-				capture destring `j', replace ignore(",") 	// Ignorar las comas
+				capture destring `j', replace ignore(",")
 				if _rc == 0 {
 					format `j' %20.0fc
 					replace `j' = 0 if `j' == .
@@ -705,7 +708,7 @@ program define UpdatePEF
 					replace `j' = subinstr(`j',`"""',"",.)
 					replace `j' = subinstr(`j',"  "," ",.)
 					replace `j' = subinstr(`j',"Ê"," ",.)	// <--Algunas CPs tienen este caracter "raro".
-					replace `j' = subinstr(`j',"Â","",.)
+					replace `j' = subinstr(`j',"Â","",.) 	// <--Algunas CPs tienen este caracter "raro".
 					replace `j' = subinstr(`j'," "," ",.)
 					format `j' %30s
 				}
@@ -861,7 +864,7 @@ program define UpdatePEF
 			encode `k'2, g(`k')
 			drop `k'2	
 
-			replace `k' = -1 if `k' == .
+			//replace `k' = -1 if `k' == .
 			label define `k' -1 "Cuotas ISSSTE", add
 		}
 
@@ -957,10 +960,10 @@ program define UpdatePEF
 
 		compress
 		if `c(version)' > 13.1 {
-			saveold "`c(sysdir_personal)'/SIM/prePEF.dta", replace version(13)
+			saveold "`c(sysdir_site)'/SIM/prePEF.dta", replace version(13)
 		}
 		else {
-			save "`c(sysdir_personal)'/SIM/prePEF.dta", replace
+			save "`c(sysdir_site)'/SIM/prePEF.dta", replace
 		}
 	}
 
@@ -1006,15 +1009,14 @@ program define UpdatePEF
 	*** 4. Modulos SIMULADOR FISCAL CIEP ***
 	***                                  ***
 	****************************************
-	use "`c(sysdir_personal)'/SIM/prePEF.dta", clear
-	replace desc_pp = "Cuotas ISSSTE" if desc_pp == ""
+	use "`c(sysdir_site)'/SIM/prePEF.dta", clear
+	*replace desc_pp = "Cuotas ISSSTE" if desc_pp == ""
 
 
 	*******************
 	** 4.1 Pensiones **
 	// Pensiones contributivas
 	g divCIEP = "Pensiones" if (substr(string(objeto),1,2) == "45" | substr(string(objeto),1,2) == "47")
-	
 	g divSIM = "Pensiones" if divCIEP == "Pensiones"
 
 	// Pensión para adultos mayores
@@ -1022,7 +1024,7 @@ program define UpdatePEF
 		& (desc_pp == "pensión para adultos mayores" ///
 		| desc_pp == "pensión para el bienestar de las personas adultas mayores" ///
 		| desc_pp == "pensión para el bienestar de las personas con discapacidad permanente")
-	
+
 	replace divSIM = "Pensiones" if divCIEP == "Pensión AM"
 
 
@@ -1167,9 +1169,9 @@ program define UpdatePEF
 	capture drop __*
 	compress
 	if `c(version)' > 13.1 {
-		saveold "`c(sysdir_personal)'/SIM/PEF.dta", replace version(13)
+		saveold "`c(sysdir_site)'/SIM/PEF.dta", replace version(13)
 	}
 	else {
-		save "`c(sysdir_personal)'/SIM/PEF.dta", replace
+		save "`c(sysdir_site)'/SIM/PEF.dta", replace
 	}
 end

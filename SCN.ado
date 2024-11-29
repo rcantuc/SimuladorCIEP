@@ -703,7 +703,7 @@ quietly {
 		graph save gdp_generacion "`c(sysdir_personal)'/SIM/graphs/gdp_generacion", replace
 		capture confirm existence $export
 		if _rc == 0 {
-			graph export "$export/PIB_GeneracionIngreso.png", replace name(gdp_generacion)
+			graph export "$export/gdp_generacion.png", replace name(gdp_generacion)
 		}
 	}
 
@@ -827,7 +827,7 @@ quietly {
 		graph save gdp_utilizacion "`c(sysdir_personal)'/SIM/graphs/gdp_utilizacion", replace
 		capture confirm existence $export
 		if _rc == 0 {
-			graph export "$export/PIB_UtilizacionIngreso.png", replace name(gdp_utilizacion)
+			graph export "$export/gdp_utilizacion.png", replace name(gdp_utilizacion)
 		}
 
 

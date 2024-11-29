@@ -1,13 +1,20 @@
-** Update PaqueteEconomico.ciep.mx **
+*****************************************
+****                                 ****
+**** UPDATE PaqueteEconomico.ciep.mx ****
+****                                 ****
+*****************************************
 timer on 19
 putexcel set "`c(sysdir_personal)'../../DatosMicrositioApp.xlsx", modify sheet("Paquete")
 
 
-** Ingresos **
+
+*******************
+*** 1. Ingresos ***
+*******************
 local inicio = 6
 forvalues anio=2013(1)`=anioPE' {
 	putexcel A`inicio' = `anio'
-	noisily LIF, by(divPE) rows(1) min(0) anio(`anio') desde(`=`anio'-1') nographs
+	noisily LIF, by(divMicrositio) rows(1) min(0) anio(`anio') desde(`=`anio'-1') nographs
 
 	* ISR *
 	putexcel B`inicio' = `=r(ISR)'/1000000, nformat(number_sep) right
@@ -40,14 +47,14 @@ forvalues anio=2013(1)`=anioPE' {
 	putexcel S`inicio' = `=r(IMSS_e_ISSSTEC)', nformat(0.0"%") right
 
 	* IEPS *
-	putexcel T`inicio' = `=r(IEPS)'/1000000, nformat(number_sep) right
-	putexcel U`inicio' = `=r(IEPSPIB)', nformat(0.0"%") right
-	putexcel V`inicio' = `=r(IEPSC)', nformat(0.0"%") right
+	putexcel T`inicio' = `=r(IEPS__petrolero_)'/1000000, nformat(number_sep) right
+	putexcel U`inicio' = `=r(IEPS__petrolero_PIB)', nformat(0.0"%") right
+	putexcel V`inicio' = `=r(IEPS__petrolero_C)', nformat(0.0"%") right
 
 	* Otros ingresos *
-	putexcel W`inicio' = `=r(Otros)'/1000000, nformat(number_sep) right
-	putexcel X`inicio' = `=r(OtrosPIB)', nformat(0.0"%") right
-	putexcel Y`inicio' = `=r(OtrosC)', nformat(0.0"%") right
+	putexcel W`inicio' = `=r(Otros_ingresos)'/1000000, nformat(number_sep) right
+	putexcel X`inicio' = `=r(Otros_ingresosPIB)', nformat(0.0"%") right
+	putexcel Y`inicio' = `=r(Otros_ingresosC)', nformat(0.0"%") right
 
 	* Total ingresos *
 	putexcel Z`inicio' = `=r(Ingresos_sin_deuda)'/1000000, nformat(number_sep) right
@@ -57,7 +64,11 @@ forvalues anio=2013(1)`=anioPE' {
 }
 
 
-** Gastos **
+
+
+*****************
+*** 2. Gastos ***
+*****************
 local inicio = 25
 forvalues anio=2013(1)`=anioPE' {
 	putexcel A`inicio' = `anio'
@@ -69,19 +80,19 @@ forvalues anio=2013(1)`=anioPE' {
 	putexcel D`inicio' = `=r(Part_y_otras_AporC)', nformat(0.0"%") right
 
 	* Pensiones *
-	putexcel E`inicio' = `=(r(Pensiones)+r(Pensión_AM))'/1000000, nformat(number_sep) right
-	putexcel F`inicio' = `=r(PensionesPIB)+r(Pensión_AMPIB)', nformat(0.0"%") right
-	putexcel G`inicio' = `=r(PensionesC)+r(Pensión_AMC)', nformat(0.0"%") right
+	putexcel E`inicio' = `=(r(Pensiones)+r(Pension_AM))'/1000000, nformat(number_sep) right
+	putexcel F`inicio' = `=r(PensionesPIB)+r(Pension_AMPIB)', nformat(0.0"%") right
+	putexcel G`inicio' = `=r(PensionesC)+r(Pension_AMC)', nformat(0.0"%") right
 
 	* Energía *
-	putexcel H`inicio' = `=r(Energía)'/1000000, nformat(number_sep) right
-	putexcel I`inicio' = `=r(EnergíaPIB)', nformat(0.0"%") right
-	putexcel J`inicio' = `=r(EnergíaC)', nformat(0.0"%") right
+	putexcel H`inicio' = `=r(Energia)'/1000000, nformat(number_sep) right
+	putexcel I`inicio' = `=r(EnergiaPIB)', nformat(0.0"%") right
+	putexcel J`inicio' = `=r(EnergiaC)', nformat(0.0"%") right
 
 	* Educación *
-	putexcel K`inicio' = `=r(Educación)'/1000000, nformat(number_sep) right
-	putexcel L`inicio' = `=r(EducaciónPIB)', nformat(0.0"%") right
-	putexcel M`inicio' = `=r(EducaciónC)', nformat(0.0"%") right
+	putexcel K`inicio' = `=r(Educacion)'/1000000, nformat(number_sep) right
+	putexcel L`inicio' = `=r(EducacionPIB)', nformat(0.0"%") right
+	putexcel M`inicio' = `=r(EducacionC)', nformat(0.0"%") right
 
 	* Costo de la deuda *
 	putexcel N`inicio' = `=r(Costo_de_la_deuda)'/1000000, nformat(number_sep) right
@@ -112,11 +123,14 @@ forvalues anio=2013(1)`=anioPE' {
 }
 
 
-** Deuda **
+
+****************
+*** 3. Deuda ***
+****************
 local inicio = 44
 forvalues anio=2013(1)`=anioPE' {
 	putexcel A`inicio' = `anio'
-	noisily SHRFSP, anio(`anio') ultanio(2013) //update
+	noisily SHRFSP, anio(`anio') ultanio(2013) nographs //update
 
 	* Balance presupuestario *
 	putexcel B`inicio' = `=r(rfspBalance)'/1000000, nformat(number_sep) right

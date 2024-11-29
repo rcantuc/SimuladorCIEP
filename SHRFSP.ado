@@ -247,10 +247,10 @@ quietly {
 				place(6) yaxis(2) size(large) color("111 111 111")) ///
 			text(`=`interno'[24]' `=`ultanio'+1' "{bf:billones}" "{bf:`currency' `aniovp'}", ///
 				place(6) size(large) color("111 111 111")) ///
-			text(`=(`interno'[41]-`externo'[41])*.5+`externo'[41]' 2030 "Interno", ///
-				place(0) size(large) color("111 111 111") justification(center)) ///
-			text(`=`externo'[41]*.5' 2030 "Externo", ///
-				place(0) size(large) color("111 111 111") justification(center)) ///
+			///text(`=(`interno'[41]-`externo'[41])*.5+`externo'[41]' 2030 "Interno", ///
+			///	place(0) size(large) color("111 111 111") justification(center)) ///
+			///text(`=`externo'[41]*.5' 2030 "Externo", ///
+			///	place(0) size(large) color("111 111 111") justification(center)) ///
 			///text(`=`rango'[2,2]*1.45' `=2001+2.5' "{bf:Dif. `=anio[11]'-`=anio[17]':} `=string(`shrfsp_pib'[17]-`shrfsp_pib'[11],"%5.1f")' puntos PIB", ///
 			///	place(0) size(large) color("111 111 111") justification(center) yaxis(2)) ///
 			///text(`=`rango'[2,2]*1.45' `=2007+2.5' "{bf:Dif. `=anio[17]'-`=anio[23]':} `=string(`shrfsp_pib'[23]-`shrfsp_pib'[17],"%5.1f")' puntos PIB", ///
@@ -306,10 +306,10 @@ quietly {
 				place(6) yaxis(2) size(medium) color("111 111 111")) ///
 			text(`=`interno'[24]' `=`ultanio'+1' "{bf:billones}" "{bf:`currency' `aniovp'}", ///
 				place(6) size(large) color("111 111 111")) ///
-			text(`=(`interno'[41]-`externo'[41])*.5+`externo'[41]' 2030 "Interno", ///
-				place(0) size(large) color("111 111 111") justification(center)) ///
-			text(`=`externo'[41]*.5' 2030 "Externo", ///
-				place(0) size(large) color("111 111 111") justification(center)) ///
+			///text(`=(`interno'[41]-`externo'[41])*.5+`externo'[41]' 2030 "Interno", ///
+			///	place(0) size(large) color("111 111 111") justification(center)) ///
+			///text(`=`externo'[41]*.5' 2030 "Externo", ///
+			///	place(0) size(large) color("111 111 111") justification(center)) ///
 			///text(`=`rango'[2,2]*1.15' `=2001+2.5' "{bf:Dif. `=anio[11]'-`=anio[17]':} `=string(`shrfsp_pc'[17]-`shrfsp_pc'[11],"%5.1f")' miles `currency' `aniovp'", ///
 			///	place(0) size(large) color("111 111 111") justification(center) yaxis(2)) ///
 			///text(`=`rango'[2,2]*1.15' `=2007+2.5' "{bf:Dif. `=anio[17]'-`=anio[23]':} `=string(`shrfsp_pc'[23]-`shrfsp_pc'[17],"%5.1f")' miles `currency' `aniovp'", ///
@@ -402,10 +402,10 @@ quietly {
 			title("`graphtitle'") ///
 			text(`=costodeudaTotg[24]' `=`ultanio'+1' "{bf:billones}" "{bf:`currency' `aniovp'}", ///
 				yaxis(2) place(6) size(large) color("111 111 111")) ///
-			text(`=(costodeudaTotg[41]-costodeudaOyEg[41])*.25+costodeudaOyEg[41]' 2030 "Gob. Fed.", ///
-				yaxis(2) place(0) size(large) color("111 111 111") justification(center)) ///
-			text(`=costodeudaOyEg[41]*.5' 2030 "OyE", ///
-				yaxis(2) place(0) size(large) color("111 111 111") justification(center)) ///
+			///text(`=(costodeudaTotg[41]-costodeudaOyEg[41])*.25+costodeudaOyEg[41]' 2030 "Gob. Fed.", ///
+			///	yaxis(2) place(0) size(large) color("111 111 111") justification(center)) ///
+			///text(`=costodeudaOyEg[41]*.5' 2030 "OyE", ///
+			///	yaxis(2) place(0) size(large) color("111 111 111") justification(center)) ///
 			ylabel(none) ///
 			ylabel(none, axis(2)) ///
 			text(`=tasaEfectiva[24]' `=`ultanio'+1' "{bf:Interés}" "{bf:promedio (%)}", ///
@@ -588,8 +588,8 @@ quietly {
 			name(rfsp, replace) ///
 			text(`=`rfsppib'[24]' 2013 "{bf:% PIB}", place(6) yaxis(2)) ///
 			text(`=`rfsp'[24]' 2013 "{bf:billones}" "{bf:`currency' `aniovp'}", place(6)) ///
-			text(`=(`rfsp'[41]-`rfspOtros'[41])*.5+`rfspOtros'[41]' 2030 "Balance", place(0) size(large)) ///
-			text(`=`rfspOtros'[41]*.5' 2030 "Otros RFSP", place(0) size(large)) ///
+			///text(`=(`rfsp'[41]-`rfspOtros'[41])*.5+`rfspOtros'[41]' 2030 "Balance", place(0) size(large)) ///
+			///text(`=`rfspOtros'[41]*.5' 2030 "Otros RFSP", place(0) size(large)) ///
 			ylabel(none, format(%15.0fc) labsize(small)) ///
 			ylabel(none, format(%15.0fc) labsize(small) axis(2)) ///
 			xlabel(`=`ultanio'+1'(1)`lastexo', noticks) ///	
