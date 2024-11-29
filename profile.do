@@ -78,7 +78,7 @@ scalar inf2027 = 3.0
 scalar inf2028 = 3.0
 scalar inf2029 = 3.0
 scalar inf2030 = 3.0
-ex
+
 ** 2.8 Deuda Pública **/
 scalar tasaEfectiva = 8.216
 
