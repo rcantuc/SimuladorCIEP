@@ -14,12 +14,12 @@ timer on 1
 if "`c(username)'" == "ricardo" {						// iMac Ricardo
 	sysdir set PERSONAL "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
 	*global export "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/CIEP_Deuda/0. Paquete Económico/2025"
-	global export "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/Paquete Económico 2025/4. Documento CIEP/images"
+	*global export "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/Paquete Económico 2025/4. Documento CIEP/images"
 	*global export "/Users/ricardo/CIEP Dropbox/TextbookCIEP/images"
 }
 else if "`c(username)'" == "servidorciep" {					// Servidor CIEP
 	sysdir set PERSONAL "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
-	global export "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/Paquete Económico 2025/4. Documento CIEP/images"
+	*global export "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/Paquete Económico 2025/4. Documento CIEP/images"
 }
 else if "`c(console)'" != "" {							// Servidor Web
 	sysdir set PERSONAL "/SIM/OUT/6/"
@@ -30,7 +30,7 @@ cd "`c(sysdir_personal)'"
 ** 0.2 Opciones globales  **
 //global nographs "nographs"							// SUPRIMIR GRAFICAS
 //global output "output"							// ARCHIVO DE SALIDA (WEB)
-//global update "update"							// UPDATE BASES DE DATOS
+global update "update"							// UPDATE BASES DE DATOS
 
 ******************************
 ** 0.3 Parámetros iniciales **
@@ -54,7 +54,7 @@ global id = "ciepmx"								// IDENTIFICADOR DEL USUARIO
 //}
 
 ** 1.2 Producto Interno Bruto y su deflactor **
-//noisily PIBDeflactor if anio <= 2030 & anio >= 2013, geodef(2013) geopib(2013) aniovp(`=aniovp') $update
+//noisily PIBDeflactor if anio <= 2030, geodef(1993) geopib(1993) aniovp(`=aniovp') $update
 
 ** 1.3 Sistema de Cuentas Nacionales **
 //noisily SCN, //$update
@@ -63,11 +63,11 @@ global id = "ciepmx"								// IDENTIFICADOR DEL USUARIO
 //noisily LIF, by(divPE) rows(1) anio(`=anioPE-1') desde(2013) min(0) title("Ingresos presupuestarios") $update
 
 ** 1.5 Presupuesto de Egresos de la Federación **
-//noisily PEF, by(divSIM) rows(2) min(0) anio(`=anioPE-1') desde(2013) title("Gasto presupuestario") $update
+//noisily PEF, by(divSIM) rows(2) min(0) anio(`=anioPE') desde(2024) title("Gasto presupuestario") $update
 
 ** 1.6 Saldo Histórico de Requerimientos Financieros del Sector Público **
 set scheme ciepdeuda
-noisily SHRFSP, anio(`=anioPE') ultanio(2012) $update
+noisily SHRFSP, anio(`=anioPE-1') ultanio(2012) $update
 ex
 ** 1.7 Subnacionales **
 //noisily run "Subnacional.do" //$update

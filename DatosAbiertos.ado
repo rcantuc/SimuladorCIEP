@@ -31,7 +31,7 @@ quietly {
 	*** 1 Base de datos ***
 	***********************
 	if "`update'" == "update" {
-		*UpdateDatosAbiertos, `update' `zipfile'
+		UpdateDatosAbiertos, `update' `zipfile'
 		noisily UpdateDeflactor
 	}
 
