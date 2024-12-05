@@ -9,7 +9,7 @@ quietly {
 
 	syntax varname [, ANIObase(int `aniovp') BOOTstrap(int 1) Graphs POST DIScount(real 3)]
 
-	noisily di _newline(2) in g _dup(20) "." "{bf:   Cuentas Generacionales " in y "$pais " `anio' "   }" in g _dup(20) "."
+	noisily di _newline(2) in g _dup(20) "." "{bf:   Cuentas Generacionales " in y "$pais" `aniobase' "   }" in g _dup(20) "."
 	local title : variable label `varlist'
 
 

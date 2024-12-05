@@ -3,8 +3,8 @@ program define scalarlatex
 	if "$export" != "" {
 		syntax [, Logname(string) ALTname(string)]
 
-		capture log off overall
-		
+		*capture log off overall
+
 		* Scalar list *
 		noisily di _newline(3) in g "{bf:LaTeX scalar list}"
 		tempfile scalarstata
@@ -12,33 +12,34 @@ program define scalarlatex
 		noisily scalar list
 		quietly log close scalar
 
-		tempname myfile myout
+		tempname myfile
 		file open `myfile' using `scalarstata', read write text
 		file read `myfile' line
 		while r(eof) == 0 {
 			local name = word("`line'",1)
 			local scalars "`scalars' `name'"
-		
 			file read `myfile' line
 		}
-		file close `myfile'	
-		
+		file close `myfile'
+
 		* New log *
-		quietly log using "$export/statalatex_`logname'.tex", name(latex) replace text
-		quietly log close latex
+		quietly log using "$export/statalatex_`logname'.tex", name(`logname') replace text
+		quietly log close `logname'
 
 		* LaTeX-friendly log *
 		foreach name in `scalars' {
 
-			quietly log using "$export/statalatex_`logname'.tex", name(latex) append text
+			quietly log using "$export/statalatex_`logname'.tex", name(`logname') append text
 
 			if `"`=substr("`name'",1,4)'"' == "anio" | `"`=substr("`name'",1,4)'"' == "defl" ///
 				| `"`=substr("`name'",1,4)'"' == "trim" | `"`=substr("`name'",1,4)'"' == "infl" ///
 				| `"`=substr("`name'",1,6)'"' == "output" | `"`=substr("`name'",1,4)'"' == "asis" ///
-				| `"`=substr("`name'",1,7)'"' == "pibYEnt" {
+				| `"`=substr("`name'",1,7)'"' == "pibYEnt" | `"`=substr("`name'",-5,5)'"' == "VECES" ///
+				| `"`=substr("`name'",-4,4)'"' == "Prom" | `"`=substr("`name'",-2,2)'"' == "LP" ///
+				| (`"`=substr("`name'",1,4)'"' == "rfsp" & `"`=substr("`name'",-3,3)'"' != "PIB") {
 				local value = scalar(`name')
 				di in w "\def\d`name'`altname'#1{\gdef\\`name'`altname'{#1}}"
-				di in w `"\d`name'`altname'{`value'}"'		
+				di in w `"\d`name'`altname'{`value'}"'
 			}
 
 			else if (`"`=substr("`name'",-3,3)'"' == "PIB" & `"`=substr("`name'",1,3)'"' != "PIB") ///
@@ -51,7 +52,7 @@ program define scalarlatex
 					local value = 0
 				}
 				di in w "\def\d`name'`altname'#1{\gdef\\`name'`altname'{#1}}"
-				di in w `"\d`name'`altname'{`=string(`value',"%6.3fc")'}"'
+				di in w `"\d`name'`altname'{`=string(`value',"%06.3fc")'}"'
 			}
 
 			else if "`name'" == "ISRAS" | "`name'" == "ISRPF" | "`name'" == "CUOTAS" ///
@@ -65,11 +66,12 @@ program define scalarlatex
 				di in w "\def\d`name'`altname'#1{\gdef\\`name'`altname'{#1}}"
 				di in w `"\d`name'`altname'{`=string(`value',"%7.3fc")'}"'
 			}
-			
+
 			else if `"`=substr("`name'",-1,1)'"' == "I" | `"`=substr("`name'",-1,1)'"' == "V" ///
 				| `"`=substr("`name'",-1,1)'"' == "X" | `"`=substr("`name'",-1,1)'"' == "H" ///
 				| `"`=substr("`name'",-1,1)'"' == "M" | `"`=substr("`name'",-8,8)'"' == "Nacional" ///
-				| `"`=substr("`name'",-2,2)'"' == "PC" | "`name'" == "basica" | "`name'" == "medsup" | "`name'" == "superi" ///
+				| `"`=substr("`name'",-2,2)'"' == "PC" | "`name'" == "basica" | "`name'" == "medsup" ///
+				| "`name'" == "superi" ///
 				| `"`=substr("`name'",1,3)'"' == "pob" ///
 				| "`name'" == "posgra" | "`name'" == "eduadu" | "`name'" == "otrose" ///
 				| "`name'" == "ssa" | "`name'" == "segpop" | "`name'" == "imss" ///
@@ -87,7 +89,7 @@ program define scalarlatex
 				| `"`=substr("`name'",1,3)'"' == "Imp" {
 				local value = scalar(`name')
 				di in w "\def\d`name'`altname'#1{\gdef\\`name'`altname'{#1}}"
-				di in w `"\d`name'`altname'{`=string(`value',"%15.0fc")'}"'			
+				di in w `"\d`name'`altname'{`=string(`value',"%15.0fc")'}"'
 			}
 			
 			else if `"`=substr("`name'",-3,3)'"' == "GEO" ///
@@ -95,7 +97,7 @@ program define scalarlatex
 				| `"`=substr("`name'",1,3)'"' == "Dif" {
 				local value = scalar(`name')
 				di in w "\def\d`name'`altname'#1{\gdef\\`name'`altname'{#1}}"
-				di in w `"\d`name'`altname'{`=string(`value',"%15.1fc")'}"'				
+				di in w `"\d`name'`altname'{`=string(`value',"%15.1fc")'}"'
 			}
 
 			else {
@@ -106,12 +108,11 @@ program define scalarlatex
 					local value = 0
 				}
 				di in w "\def\d`name'`altname'#1{\gdef\\`name'`altname'{#1}}"
-				di in w `"\d`name'`altname'{`=string(`value',"%12.1fc")'}"'		
+				di in w `"\d`name'`altname'{`=string(`value',"%12.1fc")'}"'
 			}
-
-			quietly log close latex
+			quietly log close `logname'
 		}
 		*scalar drop _all
-		capture log on overall
+		*capture log on overall
 	}
 end

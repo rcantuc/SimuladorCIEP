@@ -36,23 +36,25 @@ quietly {
 	}
 
 	PIBDeflactor, nographs
+	tempfile PIBDeflactor
+	save "`PIBDeflactor'"
 	
 	use if clave_de_concepto == "`anything'" using "`c(sysdir_site)'/SIM/DatosAbiertos.dta", clear
 	merge m:1 (anio mes) using "`c(sysdir_site)'/SIM/Deflactor.dta", nogen //keep(matched)
 	merge m:1 (anio) using "`c(sysdir_site)'/SIM/Poblaciontot.dta", nogen keep(matched)
-	merge m:1 (anio trimestre) using "`c(sysdir_site)'/SIM/PIBDeflactor.dta", nogen keep(matched)
+	merge m:1 (anio trimestre) using "`PIBDeflactor'", nogen keep(matched)
 	tsset aniomes
 
 	order inpc, last
 	local currency = currency[1]
-	foreach k of varlist pibQ - inpc {
+	foreach k of varlist inpc {
 		capture confirm numeric variable `k'
 		if _rc == 0 {
 			replace `k' = L.`k' if `k' == .
 		}
 	}
 	
-	g lambda = (1+scalar(llambda)/100)^(anio-`aniovp')
+	*g lambda = (1+scalar(llambda)/100)^(anio-`aniovp')
 	replace poblacion = poblacion*lambda
 
 	if "`anything'" == "" {
@@ -104,7 +106,7 @@ quietly {
 	g monto_pc = monto/poblacion/deflactor
 	format monto_pc %10.0fc
 
-	g monto_pib = monto/pibQ*100
+	g monto_pib = monto/pibY*100
 	format monto_pib %7.1fc
 
 	g `crecreal' = (montomill/L12.montomill-1)*100
@@ -197,7 +199,7 @@ quietly {
 			local ++k
 		}
 		
-		graph bar (sum) monto_pib, over(mes) over(anio) stack asyvar ///
+		graph bar (sum) monto_pib if monto_pib != ., over(mes) over(anio) stack asyvar ///
 			legend(rows(2) size(large)) ///
 			name(M`anything', replace) blabel(none) ///
 			ytitle("% PIB") ///
@@ -223,7 +225,11 @@ quietly {
 			legend(off) ///
 			yline(0, lcolor(black) lpattern(solid)) ///
 			note("{c U'}ltimo dato: `last_anio'm`last_mes'.") ///
-			caption("`graphfuente'") ///
+			caption("`graphfuente'")
+		capture confirm existence $export
+		if _rc == 0 {
+			graph export "$export/`mesname'`anything'.png", replace name(`mesname'`anything')
+		}		
 
 
 		** 2.4 Gráfica acumulado **
@@ -275,7 +281,7 @@ quietly {
 		g `propmensual' = monto/`montoanual' if anio < `last_anio' & anio >= `desde'
 		egen acum_prom = mean(`propmensual'), by(mes)
 		
-		collapse (sum) monto* acum_prom (last) mes poblacion pibQ deflactor if monto != ., by(anio nombre clave_de_concepto unidad_de_medida)
+		collapse (sum) monto* acum_prom (last) mes poblacion pibY deflactor if monto != ., by(anio nombre clave_de_concepto unidad_de_medida)
 
 		if "`proyeccion'" == "proyeccion" {
 			replace monto = monto/acum_prom if mes < 12
@@ -291,7 +297,7 @@ quietly {
 		tempvar maxmes
 		egen `maxmes' = max(mes), by(anio)
 		sort anio mes
-		collapse (last) monto* mes poblacion pibQ deflactor if monto != ., by(anio nombre clave_de_concepto unidad_de_medida)
+		collapse (last) monto* mes poblacion pibY deflactor if monto != ., by(anio nombre clave_de_concepto unidad_de_medida)
 		g acum_prom = 1
 	}
 	*tsset aniomes
@@ -360,8 +366,9 @@ quietly {
 
 
 		twoway (bar montomill anio if anio < `aniovp', ///
-				mlabel(montomill) mlabpos(7) mlabcolor(white) mlabsize(small) msize(large) mlabangle(90)) ///
-			(bar montomill anio if anio >= `aniovp', mlabel(montomill) mlabpos(7) mlabcolor(white) mlabsize(small) msize(large) mlabangle(90)) ///
+				mlabel(montomill) mlabpos(7) mlabcolor(white) mlabsize(small) msize(large) mlabangle(90) barwidth(.75)) ///
+			(bar montomill anio if anio >= `aniovp', ///
+				mlabel(montomill) mlabpos(7) mlabcolor(white) mlabsize(small) msize(large) mlabangle(90) barwidth(.75)) ///
 			(connected monto_pib anio if anio < `aniovp', ///
 				yaxis(2) pstyle(p1) mlabel(monto_pib) mlabpos(12) mlabcolor("111 111 111") mlabsize(small) lpattern(dot) msize(large)) ///
 			(connected monto_pib anio if anio >= `aniovp', ///

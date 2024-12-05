@@ -494,7 +494,7 @@ quietly {
 	replace depreciacion = L.depreciacion if depreciacion == .
 
 	* SHRFSP externo en USD *
-	g shrfspExternoUSD = shrfspExterno/tipoDeCambio
+	*g shrfspExternoUSD = shrfspExterno/tipoDeCambio
 	replace tipoDeCambio = L.tipoDeCambio + depreciacion if anio > `anio'
 	replace shrfspExternoUSD = shrfspExterno/tipoDeCambio
 
@@ -533,7 +533,7 @@ quietly {
 
 	* Otros rfsp (% del PIB) *
 	foreach k of varlist rfspPIDIREGAS rfspIPAB rfspFONADIN rfspDeudores rfspBanca rfspAdecuaciones {
-		g `k'_pib = `k'/pibY*100 //deflator
+		*g `k'_pib = `k'/pibY*100 //deflator
 		replace `k'_pib = L.`k'_pib if `k'_pib == .
 		replace `k' = `k'_pib/100*pibY if `k' == . //deflator
 	}
@@ -566,7 +566,7 @@ quietly {
 	replace shrfsp_pib = shrfsp/pibY*100 //if anio >= `anio'
 	replace estimacionGasto_pib = estimacionGasto/pibY*100 //if anio >= `anio'
 
-	g rfsp_pib = rfsp/pibY*100
+	*g rfsp_pib = rfsp/pibY*100
 	format *_pib %7.1fc
 
 	g shrfspPC = shrfsp/Poblacion/deflator

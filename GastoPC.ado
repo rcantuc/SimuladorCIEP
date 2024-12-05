@@ -84,7 +84,7 @@ quietly {
 	***             ***
 	*******************
 
-	/** 3.1 Alumnos y beneficiarios **
+	** 3.1 Alumnos y beneficiarios **
 	capture drop alum_*
 	if `aniope' >= 2016 {
 		g alum_basica = asis_esc == "1" & tipoesc == "1" & (nivel >= "01" & nivel <= "07") & edad <= 15
@@ -473,6 +473,9 @@ quietly {
 		if `nosec' == . {
 			local nosec = 0
 		}
+		if `imssbien0' == . {
+			local imssbien0 = r(entidades_no_sectorizada)
+		}
 		local imssbien = `segpop0'+`imssbien0'+`fassa'+`fortaINSABI'+`atencINSABI'+`nosec'
 		scalar imssbien = `imssbien'/`Salud'[1,7]
 		restore
@@ -493,7 +496,6 @@ quietly {
 	else {
 		preserve
 		PEF if anio == `aniope' & divCIEP == "Salud" & divSIM != "Inversión", anio(`aniope') by(desc_pp) min(0) nographs
-		local caneros = r(seguridad_social_canero)
 		local incorpo = r(regimen_de_incorporaci)
 		if `incorpo' == . {
 			local incorpo = 0
@@ -502,6 +504,7 @@ quietly {
 		if `adeusal' == . {
 			local adeusal = 0
 		}
+		local caneros = r(seguridad_social_canero)
 
 		PEF if anio == `aniope' & divCIEP == "Salud" & divSIM != "Inversión", anio(`aniope') by(ramo) min(0) nographs
 		local ssa = r(salud)+`incorpo'+`adeusal'+`caneros'-`segpop0'-`fortaINSABI'-`atencINSABI'
@@ -703,8 +706,6 @@ quietly {
 	** 4.12 Asignación per cápita en la base de datos de individuos **
 	*noisily tabstat Salud [fw=factor], stat(sum) f(%20.0fc)
 
-
-ex
 
 
 	******************/

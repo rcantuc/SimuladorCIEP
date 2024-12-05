@@ -89,7 +89,7 @@ quietly {
 	************************
 	*** 1. Archivos POST ***
 	************************
-	capture confirm file `"`c(sysdir_personal)'/SIM/bootstraps/`bootstrap'/`varlist'REC.dta"'
+	capture confirm file `"`c(sysdir_personal)'/users/$id/bootstraps/`bootstrap'/`varlist'REC.dta"'
 	if "`reboot'" == "reboot" | _rc != 0 {
 
 
@@ -102,31 +102,31 @@ quietly {
 
 		******************
 		** 1.2 Archivos **
-		capture mkdir `"`c(sysdir_personal)'/SIM/"'
-		capture mkdir `"`c(sysdir_personal)'/SIM/graphs/"'
-		capture mkdir `"`c(sysdir_personal)'/SIM/bootstraps/"'
-		capture mkdir `"`c(sysdir_personal)'/SIM/bootstraps/`bootstrap'"'
+		capture mkdir `"`c(sysdir_personal)'/users/$id/"'
+		capture mkdir `"`c(sysdir_personal)'/users/$id/graphs/"'
+		capture mkdir `"`c(sysdir_personal)'/users/$id/bootstraps/"'
+		capture mkdir `"`c(sysdir_personal)'/users/$id/bootstraps/`bootstrap'"'
 
 
 		** Per c{c a'}pita **
 		postfile PC double(estimacion contribuyentes poblacion montopc edad39) ///
-			using `"`c(sysdir_personal)'/SIM/bootstraps/`bootstrap'/`varlist'PC"', replace
+			using `"`c(sysdir_personal)'/users/$id/bootstraps/`bootstrap'/`varlist'PC"', replace
 
 
 		** Perfiles **
 		postfile PERF edad double(perfil1 perfil2 contribuyentes1 contribuyentes2 ///
 			estimacion1 estimacion2 pobcont1 pobcont2 poblacion1 poblacion2) ///
-			using `"`c(sysdir_personal)'/SIM/bootstraps/`bootstrap'/`varlist'PERF"', replace
+			using `"`c(sysdir_personal)'/users/$id/bootstraps/`bootstrap'/`varlist'PERF"', replace
 
 
 		** Incidencia por hogares **
 		postfile INCI decil double(xhogar distribucion incidencia hogares) ///
-			using `"`c(sysdir_personal)'/SIM/bootstraps/`bootstrap'/`varlist'INCI"', replace
+			using `"`c(sysdir_personal)'/users/$id/bootstraps/`bootstrap'/`varlist'INCI"', replace
 
 
 		** Ciclo de vida **
 		postfile CICLO bootstrap sexo edad decil double(poblacion `varlist') ///
-			using `"`c(sysdir_personal)'/SIM/bootstraps/`bootstrap'/`varlist'CICLO"', replace
+			using `"`c(sysdir_personal)'/users/$id/bootstraps/`bootstrap'/`varlist'CICLO"', replace
 
 
 		** Proyecciones **
@@ -135,7 +135,7 @@ quietly {
 			contribuyentes_Hom contribuyentes_Muj ///
 			contribuyentes_0_24 contribuyentes_25_49 ///
 			contribuyentes_50_74 contribuyentes_75_mas) ///
-			using `"`c(sysdir_personal)'/SIM/bootstraps/`bootstrap'/`varlist'REC"', replace
+			using `"`c(sysdir_personal)'/users/$id/bootstraps/`bootstrap'/`varlist'REC"', replace
 
 
 
@@ -285,7 +285,7 @@ quietly {
 	**************************
 	*** 2 Monto per capita ***
 	**************************
-	use `"`c(sysdir_personal)'/SIM/bootstraps/`bootstrap'/`varlist'PC"', clear
+	use `"`c(sysdir_personal)'/users/$id/bootstraps/`bootstrap'/`varlist'PC"', clear
 
 
 	***********************************
@@ -332,7 +332,7 @@ quietly {
 	******************
 	*** 3 Perfiles ***
 	******************
-	use `"`c(sysdir_personal)'/SIM/bootstraps/`bootstrap'/`varlist'PERF"', clear
+	use `"`c(sysdir_personal)'/users/$id/bootstraps/`bootstrap'/`varlist'PERF"', clear
 
 
 	*************************
@@ -435,17 +435,17 @@ quietly {
 	}
 
 	if "$nographs" != "nographs" & "`nographs'" != "nographs" {
-		graph save PerfilH`varlist' `"`c(sysdir_personal)'/SIM/graphs/PerfilH`varlist'"', replace
-		graph save PerfilM`varlist' `"`c(sysdir_personal)'/SIM/graphs/PerfilM`varlist'"', replace
-		graph save ContH`varlist' `"`c(sysdir_personal)'/SIM/graphs/ContH`varlist'"', replace
-		graph save ContH`varlist' `"`c(sysdir_personal)'/SIM/graphs/ContH`varlist'"', replace
+		graph save PerfilH`varlist' `"`c(sysdir_personal)'/users/$id/graphs/PerfilH`varlist'"', replace
+		graph save PerfilM`varlist' `"`c(sysdir_personal)'/users/$id/graphs/PerfilM`varlist'"', replace
+		graph save ContH`varlist' `"`c(sysdir_personal)'/users/$id/graphs/ContH`varlist'"', replace
+		graph save ContH`varlist' `"`c(sysdir_personal)'/users/$id/graphs/ContH`varlist'"', replace
 	}
 
 
 	**********************/
 	*** 4. Incidencia *****
 	***********************
-	use `"`c(sysdir_personal)'/SIM/bootstraps/`bootstrap'/`varlist'INCI"', clear
+	use `"`c(sysdir_personal)'/users/$id/bootstraps/`bootstrap'/`varlist'INCI"', clear
 	format xhogar %15.1fc
 	format distribucion %6.1fc
 	format incidencia %6.1fc
@@ -526,7 +526,7 @@ quietly {
 	***********************/
 	*** 5. CICLO DE VIDA ***
 	************************
-	use `"`c(sysdir_personal)'/SIM/bootstraps/`bootstrap'/`varlist'CICLO"', clear
+	use `"`c(sysdir_personal)'/users/$id/bootstraps/`bootstrap'/`varlist'CICLO"', clear
 
 	* Labels *
 	label define deciles 1 "I" 2 "II" 3 "III" 4 "IV" 5 "V" 6 "VI" 7 "VII" 8 "VIII" 9 "IX" 10 "X" 11 "Nac"
@@ -548,7 +548,7 @@ quietly {
 	**********************
 	*** 6. RECAUDACION ***
 	**********************
-	use `"`c(sysdir_personal)'/SIM/bootstraps/`bootstrap'/`varlist'REC"', clear
+	use `"`c(sysdir_personal)'/users/$id/bootstraps/`bootstrap'/`varlist'REC"', clear
 	forvalues k=1(1)`=_N' {
 		if anio[`k'] == aniobase[`k'] {
 			local ajuste = `REC'[1,1]/estimacion[`k']
@@ -556,7 +556,7 @@ quietly {
 		}
 	}
 	replace estimacion = estimacion*`ajuste'
-	save `"`c(sysdir_personal)'/SIM/bootstraps/`bootstrap'/`varlist'REC"', replace
+	save `"`c(sysdir_personal)'/users/$id/bootstraps/`bootstrap'/`varlist'REC"', replace
 
 	
 	ProyGraph `varlist' `aniope' `nographs'
@@ -576,7 +576,7 @@ quietly {
 			caption("{bf:Source}: Prepared by CIEP, using data from `base'.") ///
 			///note(`"{bf:Note}: Percentages in parentheses show the concentration in each group."')
 
-		graph save `=substr("`varlist'",1,10)'_`aniope' `"`c(sysdir_personal)'/SIM/graphs/`varlist'_`aniope'.gph"', replace
+		graph save `=substr("`varlist'",1,10)'_`aniope' `"`c(sysdir_personal)'/users/$id/graphs/`varlist'_`aniope'.gph"', replace
 		if "$export" != "" {
 			graph export `"$export/`varlist'_`aniope'.png"', replace name(`=substr("`varlist'",1,10)'_`aniope')
 		}
@@ -817,7 +817,7 @@ program graphpiramide
 			caption("{bf:Source}: Prepared by CIEP, using data from `base'.") ///
 			note(`"{bf:Note}: Percentages in parentheses represent each group's share of the total account."')
 	
-		graph save `=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)' `"`c(sysdir_personal)'/SIM/graphs/`varlist'_`titleover'.gph"', replace
+		graph save `=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)' `"`c(sysdir_personal)'/users/$id/graphs/`varlist'_`titleover'.gph"', replace
 		if "$export" != "" {
 			graph export `"$export/`varlist'_`titleover'.png"', replace name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)')
 		}
@@ -919,7 +919,7 @@ program define ProyGraph
 	local currency = currency[1]
 	local anio = r(aniovp)
 
-	use `"`c(sysdir_personal)'/SIM/bootstraps/1/`varlist'REC.dta"', clear
+	use `"`c(sysdir_personal)'/users/$id/bootstraps/1/`varlist'REC.dta"', clear
 	merge 1:1 (anio) using `PIB', nogen
 
 	local title = modulo[1]
