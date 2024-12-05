@@ -35,7 +35,8 @@ quietly {
 	**# 1. Sintaxis ***
 	*******************
 	syntax [if] [, ANIOvp(int `aniovp') NOGraphs UPDATE ///
-		GEOPIB(int -1) GEODEF(int -1) DIScount(real 5) NOOutput ANIOMAX(int 2070)]
+		GEOPIB(int -1) GEODEF(int -1) DIScount(real 5) ANIOMAX(int 2070) ///
+		NOOutput TEXTbook]
 
 	** 1.1 Si la opción "update" es llamada, se ejecuta el do-file UpdatePIBDeflactor.do **
 	if "`update'" == "update" {
@@ -67,14 +68,14 @@ quietly {
 		}
 	}
 
-
 	** 2.2 Display inicial **
-	noisily di _newline(2) in g _dup(20) "." "{bf:   PIB + Deflactor:" in y " PIB `aniovp'   }" in g _dup(20) "." _newline
-	noisily di in g " PIB " in y "`aniofinal'q`trim_last'" _col(33) %20.0fc pibQ[`obsfinal'] in g " `=currency' ({c u'}ltimo reportado)"
+	noisily di _newline(2) in g _dup(20) "." "{bf:   PIB + Deflactor:" in y " `aniovp'   }" in g _dup(20) "." _newline
+	noisily di in g " PIB " in y "`aniofinal'q`trim_last'" ///
+		_col(33) %20.0fc pibQ[`obsfinal'] in g " `=currency' ({c u'}ltimo reportado)"
 	sort anio trimestre
+
 	collapse (mean) indiceY=indiceQ pibY=pibQ pibYR=pibQR WorkingAge Poblacion* pibPO inpc (last) trimestre, by(anio currency)
 	tsset anio
-
 
 	** 2.3 Locales para los cálculos geométricos **
 	if `geodef' < `anioinicial' {
@@ -108,18 +109,17 @@ quietly {
 	g double var_inflG = ((inpc/L`=`difdef''.inpc)^(1/`difdef')-1)*100
 	label var var_inflG "Promedio geométrico (`difdef' años)"
 
-
-	** 2.3 Imputar Parámetros exógenos **
+	** 2.4 Imputar Parámetros exógenos **
 	/* Para todos los años, si existe información sobre el crecimiento del deflactor 
 	utilizarla, si no existe, tomar el rezago del índice geométrico. Posteriormente
 	ajustar los valores del índice con sus rezagos. */
 	local exo_def = 0
 	local anio_def = `aniovp'
 	forvalues k=`aniofinal'(1)`=anio[_N]' {
-		capture confirm scalar def`k'
+		capture confirm existence ${def`k'}
 		if _rc == 0 {
-			replace var_indiceY = `=scalar(def`k')' if anio == `k' //& trimestre != 4
-			local exceptI "`exceptI'`=scalar(def`k')'% (`k'), "
+			replace var_indiceY = ${def`k'} if anio == `k' //& trimestre != 4
+			local exceptI "`exceptI'${def`k'}% (`k'), "
 			local anio_def = `k'
 			local ++exo_def
 		}
@@ -135,10 +135,10 @@ quietly {
 
 	local exo_count = 0
 	forvalues k=`aniofinal'(1)`=anio[_N]' {
-		capture confirm scalar inf`k'
+		capture confirm existence ${inf`k'}
 		if _rc == 0 {
-			replace var_inflY = `=scalar(inf`k')' if anio == `k' //& trimestre != 4
-			local exceptI "`exceptI'`k' (`=scalar(inf`k')'%), "
+			replace var_inflY = ${inf`k'} if anio == `k' //& trimestre != 4
+			local exceptI "`exceptI'`k' (${inf`k'}%), "
 			local ++exo_count
 		}
 		else {
@@ -148,8 +148,7 @@ quietly {
 		replace var_inflG = ((inpc/L`=`difdef''.inpc)^(1/`difdef')-1)*100 if anio == `k' & anio > `aniofinal'
 	}
 
-
-	** 2.4 Merge datasets **
+	** 2.5 Merge datasets **
 	if `aniovp' < `=`anioinicial'' | `aniovp' > anio[_N] {
 		noisily di in r "A{c n~}o para valor presente (`aniovp') inferior a `=`anioinicial'' o superior a `aniofinal'."
 		exit
@@ -166,12 +165,12 @@ quietly {
 	label var indiceY "Índice de Precios Implícitos"
 	format indiceY %7.1fc
 
-
-	** 3.2 Valor presente **
+	** 3.1 Valor presente **
 	if `aniovp' == -1 {
 		local aniovp : di %td_CY-N-D  date("$S_DATE", "DMY")
 		local aniovp = substr(`"`=trim("`aniovp'")'"',1,4)
 	}
+
 	forvalues k=1(1)`=_N' {
 		if anio[`k'] == `aniovp' {
 			local obsvp = `k'
@@ -186,10 +185,11 @@ quietly {
 			local obsPIB = `k'
 		}
 	}
+
 	g double deflator = indiceY/indiceY[`obsvp']
 	label var deflator "Deflactor"
 	return scalar deflator = deflator[`obsvp']
-	
+
 	g double deflatorpp = inpc/inpc[`obsvp']
 	label var deflatorpp "Poder adquisitivo"
 	return scalar deflatorpp = deflatorpp[`obsvp']
@@ -214,10 +214,10 @@ quietly {
 	local anio_exo = `aniofinal'
 	local exo_count = 0
 	forvalues k=`aniofinal'(1)`=anio[_N]' {
-		capture confirm scalar pib`k'
+		capture confirm existence ${pib`k'}
 		if _rc == 0 {
-			replace var_pibY = `=scalar(pib`k')' if anio == `k' //& trimestre != 4
-			local except "`except'`=scalar(pib`k')'% (`k'); "
+			replace var_pibY = ${pib`k'} if anio == `k' //& trimestre != 4
+			local except "`except'${pib`k'}% (`k'); "
 			local anio_exo = `k'
 			local ++exo_count
 
@@ -242,14 +242,13 @@ quietly {
 	}
 	return scalar anio_exo = `anio_exo'
 
-	scalar llambda = ((OutputPerWorker[`obs_exo']/OutputPerWorker[`obsPIB'])^(1/(`obs_exo'-`obsPIB'))-1)*100
-	scalar LLambda = ((OutputPerWorker[`obs_exo']/OutputPerWorker[1])^(1/(`obs_exo'))-1)*100
+	scalar llambda = ((OutputPerWorker[`obslast']/OutputPerWorker[`obsPIB'])^(1/(`obslast'-`obsPIB'))-1)*100
+	scalar LLambda = ((OutputPerWorker[`obslast']/OutputPerWorker[1])^(1/(`obslast'))-1)*100
 	capture confirm existence $lambda
 	if _rc == 0 {
 		scalar llambda = $lambda
 	}
 	g lambda = (1+scalar(llambda)/100)^(anio-`aniovp')
-	
 
 
 
@@ -268,8 +267,6 @@ quietly {
 	format pibYVP %20.0fc
 
 	replace OutputPerWorker = pibYR/WorkingAge if OutputPerWorker == .
-	
-
 
 
 
@@ -279,11 +276,17 @@ quietly {
 	noisily di in g " PIB " in y anio[`obsvp'] in g " per c{c a'}pita " in y _col(43) %10.0fc pibY[`obsvp']/Poblacion[`obsvp'] in g " `=currency[`obsvp']'"
 	noisily di in g " PIB " in y anio[`obsvp'] in g " por edades laborales " in y _col(43) %10.0fc OutputPerWorker[`obsvp'] in g " `=currency[`obsvp']' (16-65 a{c n~}os)"
 
-	local crecimientoProm = ((pibYR[`obs_exo']/pibYR[`obsPIB'])^(1/(`obs_exo'-`obsPIB'))-1)*100
-	local deflactorProm = ((deflator[`obs_exo']/deflator[`obsDEF'])^(1/(`obs_exo'-`obsDEF'))-1)*100
-	local inflacionProm = ((inpc[`obs_exo']/inpc[`obsDEF'])^(1/(`obs_exo'-`obsDEF'))-1)*100
-	noisily di _newline in g " Crecimiento promedio " in y anio[`obsPIB'] "-" anio[`obs_exo'] _col(43) %10.4f ((pibYR[`obs_exo']/pibYR[`obsPIB'])^(1/(`obs_exo'-`obsPIB'))-1)*100 in g " %" 
-	noisily di in g " Lambda por trabajador " in y anio[`obsPIB'] "-" anio[`obs_exo'] _col(43) %10.4f scalar(llambda) in g " %" 
+	local crecimientoProm = ((pibYR[`obslast']/pibYR[`obsPIB'])^(1/(`obslast'-`obsPIB'))-1)*100
+	scalar crecimientoProm = string(`crecimientoProm',"%5.1f")
+
+	local deflactorProm = ((deflator[`obslast']/deflator[`obsDEF'])^(1/(`obslast'-`obsDEF'))-1)*100
+	scalar deflactorProm = string(`deflactorProm',"%5.1f")
+
+	local inflacionProm = ((inpc[`obslast']/inpc[`obsDEF'])^(1/(`obslast'-`obsDEF'))-1)*100
+	scalar inflacionProm = string(`inflacionProm',"%5.1f")
+
+	noisily di _newline in g " Crecimiento promedio " in y anio[`obsPIB'] "-" anio[`obslast'] _col(43) %10.4f ((pibYR[`obslast']/pibYR[`obsPIB'])^(1/(`obslast'-`obsPIB'))-1)*100 in g " %" 
+	noisily di in g " Lambda por trabajador " in y anio[`obsPIB'] "-" anio[`obslast'] _col(43) %10.4f scalar(llambda) in g " %" 
 	*noisily di in g " Lambda por trabajador " in y anio[1] "-" anio[`obs_exo'] _col(35) %10.4f scalar(LLambda) in g " %" 
 
 	local grow_rate_LR = (pibYR[_N]/pibYR[_N-10])^(1/10)-1
@@ -296,10 +299,15 @@ quietly {
 
 	scalar pibVPINF = `pibYVP'[1,1] + pibINF
 	scalar pibY = pibY[`obsvp']
-	*global pib`aniovp' = var_pibY[`obsvp']
-	scalar deflatorLP = round(deflator[_N],.1)
-	scalar deflatorINI = string(round(1/deflator[1],.1),"%5.1f")
+	scalar pibVECES = round(pibYR[`obsvp']/pibYR[1],.1)
+	scalar pibLP = round((pibYR[_N]/pibYR[`obsvp']-1)*100,.1)
+
+	scalar deflactorLP = string((deflator[_N] - 1)*100,"%5.1f")
+	scalar deflactorVECES = string(round(1/deflator[1],.1),"%5.1f")
 	scalar anioLP = anio[_N]
+
+	scalar inflacionLP = string((deflatorpp[_N] - 1)*100,"%5.1f")
+	scalar inflacionVECES = string(round(1/deflatorpp[1],.1),"%5.1f")
 
 	scalar anioPWI = anio[`obsPIB']
 	scalar anioPWF = anio[`obs_exo']
@@ -312,7 +320,9 @@ quietly {
 	di in g " Crec. al infinito: " in y _col(25) %20.1fc var_pibY[_N] in g " %"
 	di in g " Defl. al infinito: " in y _col(25) %20.1fc var_indiceY[_N] in g " %"
 
-
+	g PIBPob = pibYR/Poblacion/1000
+	format PIBPob %20.0fc
+	scalar pibYPC = PIBPob[`obsvp']*1000
 
 
 
@@ -390,7 +400,7 @@ quietly {
 			text(`=`pibYRmil'[1]*0' `=`aniofinal'+1' "{bf:$paqueteEconomico}",  yaxis(2) size(medsmall) place(12) justification(left) bcolor(white) box) ///
 			///text(0 `=`aniofinal'+`exo_def'+(`aniomax'-`aniofinal'-`exo_def')/2' "Proyectado", size(vsmall) place(12) justification(left)  yaxis(2)) ///
 			yline(`deflactorProm', axis(1)) ///
-			text(`deflactorProm' `=`anioinicial'' "{bf:Crecimiento}" `"{bf:promedio: `=string(`deflactorProm',"%5.1fc")'%}"', justification(left) place(5) color("111 111 111") size(vlarge))
+			text(`deflactorProm' `=`anioinicial'' "{bf:Crecimiento}" `"{bf:promedio: `=string(`deflactorProm',"%5.1fc")'%}"', justification(left) place(5) color("111 111 111") size(large))
 
 		graph save deflactor "`c(sysdir_personal)'/SIM/graphs/deflactor", replace
 		capture confirm existence $export
@@ -474,7 +484,7 @@ quietly {
 			yline(`crecimientoProm', axis(1)) ///
 			text(`=`pibYRmil'[1]*0' `=`anioinicial'' "{bf:billones MXN `aniovp'}", yaxis(2) size(medsmall) place(1) justification(left) bcolor(white) box) ///
 			text(`=`pibYRmil'[1]*0' `=`aniofinal'+1' "{bf:$paqueteEconomico}",  yaxis(2) size(medsmall) place(12) justification(left) bcolor(white) box) ///
-			text(`crecimientoProm' `=`anioinicial'' "{bf:Crecimiento}" "{bf:promedio: `=string(`crecimientoProm',"%5.1fc")'%}", justification(left) place(5) color("111 111 111") size(vlarge)) ///
+			text(`crecimientoProm' `=`anioinicial'' "{bf:Crecimiento}" "{bf:promedio: `=string(`crecimientoProm',"%5.1fc")'%}", justification(left) place(5) color("111 111 111") size(large)) ///
 			//text(0 `=`aniofinal'+`exo_def'+(`aniomax'-`aniofinal'-`exo_def')/2' "Proyectado", size(medsmall) place(12) justification(left) yaxis(2)) ///
 
 		graph save pib "`c(sysdir_personal)'/SIM/graphs/pib", replace
@@ -488,9 +498,6 @@ quietly {
 		**************************
 		*** 3. PIB por persona ***
 		**************************
-		g PIBPob = pibYR/Poblacion/1000
-		format PIBPob %20.0fc
-
 		g var_pibPob = (PIBPob/L.PIBPob-1)*100
 		format var_pibPob %7.1fc
 
@@ -637,18 +644,18 @@ quietly {
 		format var_inflY %7.1fc
 		twoway ///
 			(bar deflatorpp anio if (anio < `aniofinal' & anio >= `anioinicial') | (anio == `aniofinal' & trimestre == 12), ///
-				yaxis(2) mlabel(deflatorpp) mlabposition(12) mlabcolor(black) mlabgap(0pt) barwidth(.75)) ///
+				yaxis(2) mlabel(deflatorpp) mlabposition(12) mlabcolor(black) mlabgap(0pt) barwidth(.75) mlabsize(large)) ///
 			(bar deflatorpp anio if anio < `aniofinal'+`exo_def' & anio >= `aniofinal', ///
-				yaxis(2) mlabel(deflatorpp) mlabposition(12) mlabcolor(black) mlabgap(0pt) barwidth(.75)  fintensity(50)) ///
+				yaxis(2) mlabel(deflatorpp) mlabposition(12) mlabcolor(black) mlabgap(0pt) barwidth(.75) mlabsize(large) fintensity(50)) ///
 			(bar deflatorpp anio if anio >= `aniofinal'+`exo_def', ///
-				yaxis(2) mlabel(deflatorpp) mlabposition(12) mlabcolor(black) mlabgap(0pt) barwidth(.75)  fintensity(50)) ///
+				yaxis(2) mlabel(deflatorpp) mlabposition(12) mlabcolor(black) mlabgap(0pt) barwidth(.75) mlabsize(large) fintensity(50)) ///
 			/// Connected
 			(connected var_inflY anio if (anio < `aniofinal' & anio >= `anioinicial') | (anio == `aniofinal' & trimestre == 12), ///
-				yaxis(1) mlabel(var_inflY) mlabpos(12) mlabcolor(black) mstyle(p1) lstyle(p1) lpattern(dot) msize(small)) ///
+				yaxis(1) mlabel(var_inflY) mlabpos(12) mlabcolor(black) mstyle(p1) lstyle(p1) lpattern(dot) msize(small) mlabsize(large)) ///
 			(connected var_inflY anio if anio < `aniofinal'+`exo_def' & anio >= `aniofinal', ///
-				yaxis(1) mlabel(var_inflY) mlabpos(12) mlabcolor(black) mstyle(p2) lstyle(p2) lpattern(dot) msize(small)) ///
+				yaxis(1) mlabel(var_inflY) mlabpos(12) mlabcolor(black) mstyle(p2) lstyle(p2) lpattern(dot) msize(small) mlabsize(large)) ///
 			(connected var_inflY anio if anio >= `aniofinal'+`exo_def', ///
-				yaxis(1) mlabel(var_inflY) mlabpos(12) mlabcolor(black) mstyle(p3) lstyle(p3) lpattern(dot) msize(small)) ///
+				yaxis(1) mlabel(var_inflY) mlabpos(12) mlabcolor(black) mstyle(p3) lstyle(p3) lpattern(dot) msize(small) mlabsize(large)) ///
 			, ///
 			title("`graphtitle'") ///
 			xtitle("") ///
@@ -668,7 +675,7 @@ quietly {
 			text(`=`pibYRmil'[1]*0' `=`aniofinal'+1' "{bf:$paqueteEconomico}",  yaxis(2) size(medsmall) place(12) justification(left) bcolor(white) box) ///
 			///text(0 `=`aniofinal'+`exo_def'+(`aniomax'-`aniofinal'-`exo_def')/2' "Proyectado", size(vsmall) place(12) justification(left)  yaxis(2)) ///
 			yline(`inflacionProm', axis(1)) ///
-			text(`inflacionProm' `=`anioinicial'' "{bf:Crecimiento}" `"{bf:promedio: `=string(`inflacionProm',"%5.1fc")'%}"', justification(left) place(5) color("111 111 111") size(vlarge))
+			text(`inflacionProm' `=`anioinicial'' "{bf:Crecimiento}" `"{bf:promedio: `=string(`inflacionProm',"%5.1fc")'%}"', justification(left) place(5) color("111 111 111") size(large))
 
 		graph save inflacion "`c(sysdir_personal)'/SIM/graphs/inflacion", replace
 		capture confirm existence $export
@@ -722,8 +729,12 @@ quietly {
 				_col(65) %14.10fc deflatorpp[`k']
 		}
 	}
-	return scalar aniolast = `aniofinal'
+	scalar aniolast = `aniofinal'
 
+	if "`textbook'" == "textbook" {
+		noisily scalarlatex, log(pibdeflactor) alt(pib)
+	}
+	
 	timer off 3
 	timer list 3
 	noisily di _newline in g "Tiempo: " in y round(`=r(t3)/r(nt3)',.01) in g " segs."

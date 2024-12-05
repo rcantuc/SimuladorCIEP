@@ -615,7 +615,7 @@ program define UpdatePEF
 	*** 1. BASES DE DATOS ***
 	*************************
 	capture confirm file "`c(sysdir_site)'/SIM/prePEF.dta"
-	if _rc == 0 {
+	if _rc != 0 {
 		local archivos: dir "`c(sysdir_site)'../BasesCIEP/PEFs" files "*.xlsx"		// Archivos .xlsx
 		*local archivos `""PPEF 2025.xlsx" "PEF 2024.xlsx" "CuotasISSSTE.xlsx""'
 		*local archivos `""CP 2013.xlsx" "CuotasISSSTE.xlsx""'
@@ -1024,7 +1024,6 @@ program define UpdatePEF
 		& (desc_pp == "pensión para adultos mayores" ///
 		| desc_pp == "pensión para el bienestar de las personas adultas mayores" ///
 		| desc_pp == "pensión para el bienestar de las personas con discapacidad permanente")
-
 	replace divSIM = "Pensiones" if divCIEP == "Pensión AM"
 
 
@@ -1036,7 +1035,11 @@ program define UpdatePEF
 		& (ramo == 50 | ramo == 51) & (pp == 4 | pp == 15) & funcion == 8
 	replace divCIEP = "Salud" if divCIEP == "" ///
 		& ramo == 52 & ai == 231
-	
+	replace divCIEP = "Salud" if divCIEP == "" ///
+		& ramo == 47 & ur == "ayo"
+	replace divCIEP = "Salud" if divCIEP == "" ///
+		& ramo == 20 & pp == 317
+
 	replace divSIM = "Salud" if divCIEP == "Salud"
 
 
@@ -1045,7 +1048,7 @@ program define UpdatePEF
 	replace divCIEP = "Energía" if divCIEP == "" ///
 		& (ramo == 18 | ramo == 45 | ramo == 46 | ramo == 52 | ramo == 53 ///
 		| (ramo == 23 & desc_funcion == 7))
-	
+
 	replace divSIM = "Energía" if divCIEP == "Energía"
 
 
@@ -1057,7 +1060,7 @@ program define UpdatePEF
 	replace divSIM = "Costo de la deuda" ///
 		if capitulo == 9
 
-		
+
 	*******************
 	** 4.5 Educación **
 	replace divCIEP = "Educación" if divCIEP == "" ///

@@ -2,11 +2,7 @@ program define SHRFSP, return
 quietly {
 
 	timer on 5
-	**********************
-	**# 1 BASE DE DATOS **
-	**********************
 
-	** 1.1 Anio valor presente **
 	capture confirm scalar aniovp
 	if _rc == 0 {
 		local aniovp = scalar(aniovp)
@@ -16,7 +12,11 @@ quietly {
 		local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 	}
 
-	** 1.2 Base SHRFSP **
+	***********************
+	***                 ***
+	**# 1 BASE DE DATOS ***
+	***                 ***
+	***********************
 	capture confirm file `"`c(sysdir_personal)'/SIM/SHRFSP.dta"'
 	if _rc != 0 {
 		noisily UpdateSHRFSP
@@ -25,18 +25,21 @@ quietly {
 
 
 	****************
+	***          ***
 	**# 2 SYNTAX ***
+	***          ***
 	****************
 	use in 1 using `"`c(sysdir_personal)'/SIM/SHRFSP.dta"', clear
-	syntax [if] [, ANIO(int `aniovp' ) DEPreciacion(int 5) NOGraphs UPDATE Base ///
-		 ULTAnio(int 2001)]
+	syntax [if] [, ANIO(int `aniovp' ) DEPreciacion(int 5) ///
+		NOGraphs UPDATE Base ///
+		ULTAnio(int 2001) TEXTbook]
 	
 	noisily di _newline(2) in g _dup(20) "." "{bf:  Sistema Fiscal: DEUDA $pais " in y `anio' "  }" in g _dup(20) "."
 
 	** 2.1 PIB + Deflactor **
 	PIBDeflactor, anio(`=aniovp') nographs nooutput `update'
 	local currency = currency[1]
-	g Poblacion_adj = Poblacion*lambda
+	g Poblacion_ajustada = Poblacion*lambda
 	tempfile PIB
 	save `PIB'
 
@@ -56,11 +59,12 @@ quietly {
 
 
 	***************
+	***         ***
 	**# 3 MERGE ***
+	***         ***
 	***************
 	sort anio
 	merge m:1 (anio) using `PIB', nogen keepus(pibY pibYR var_* Poblacion* deflator lambda currency) update replace
-
 	capture sort anio mes
 	capture keep `if'
 	local aniofirst = anio[1]
@@ -89,34 +93,35 @@ quietly {
 	forvalues j = 1(1)`=_N' {
 		* Política fiscal *
 		foreach k of varlist shrfspInterno shrfspExterno ///
-			rfsp rfspBalance rfspPIDIREGAS rfspIPAB rfspFONADIN rfspDeudores rfspBanca rfspAdecuaciones ///
+			rfspBalance rfspPIDIREGAS rfspIPAB rfspFONADIN rfspDeudores rfspBanca rfspAdecuaciones ///
 			balprimario {
-			capture confirm scalar `k'`=anio[`j']'
+			capture confirm existence ${`k'`=anio[`j']'}
 			if _rc == 0 {
-				replace `k' = scalar(`k'`=anio[`j']')/100*pibY if anio == `=anio[`j']'
+				replace `k' = ${`k'`=anio[`j']'}/100*pibY if anio == `=anio[`j']'
 				local lastexo = `=anio[`j']'
+				local obslastexo = `j'
 			}
 		}
 		
 		* Costos financieros *
 		replace porInterno = shrfspInterno/(shrfspInterno+shrfspExterno) if porInterno == .
 		replace porExterno = shrfspExterno/(shrfspInterno+shrfspExterno) if porExterno == .
-		capture confirm scalar costodeudaInterno`=anio[`j']'
+		capture confirm existence ${costodeudaInterno`=anio[`j']'}
 		if _rc == 0 {
-			replace costodeudaInterno = scalar(costodeudaInterno`=anio[`j']')/100*porInterno*pibY if anio == `=anio[`j']'
+			replace costodeudaInterno = ${costodeudaInterno`=anio[`j']'}/100*porInterno*pibY if anio == `=anio[`j']'
 		}		
-		capture confirm scalar costodeudaExterno`=anio[`j']'
+		capture confirm existence ${costodeudaExterno`=anio[`j']'}
 		if _rc == 0 {
-			replace costodeudaExterno = scalar(costodeudaExterno`=anio[`j']')/100*porExterno*pibY if anio == `=anio[`j']'
+			replace costodeudaExterno = ${costodeudaExterno`=anio[`j']'}/100*porExterno*pibY if anio == `=anio[`j']'
 		}
 		format costodeuda* %20.0fc
 		
 		* Tipo de cambio *
-		capture confirm scalar tipoDeCambio`=anio[`j']'
+		capture confirm existence ${tipoDeCambio`=anio[`j']'}
 		if _rc == 0 {
-			replace tipoDeCambio = scalar(tipoDeCambio`=anio[`j']') if anio == `=anio[`j']'
+			replace tipoDeCambio = ${tipoDeCambio`=anio[`j']'} if anio == `=anio[`j']'
 		}
-
+		replace rfsp = rfspBalance + rfspPIDIREGAS + rfspIPAB + rfspFONADIN + rfspDeudores + rfspBanca + rfspAdecuaciones if anio == `=anio[`j']'
 		replace shrfsp = shrfspInterno + shrfspExterno if anio == `=anio[`j']'
 		replace costofinanciero = costodeudaInterno + costodeudaExterno
 	}
@@ -129,12 +134,13 @@ quietly {
 	***           ***
 	*****************
 	noisily di _newline in g "{bf: " ///
-		_col(44) in g %20s "`currency'" ///
-		_col(66) %7s "% PIB" ///
-		_col(77) %7s "Per cápita" "}"
+		_col(33) in g %20s "`currency'" ///
+		_col(55) %7s "% PIB" ///
+		_col(66) %7s "% Tot" "}"
 
 	egen rfspOtros = rowtotal(rfspPIDIREGAS rfspIPAB rfspFONADIN rfspDeudores rfspBanca rfspAdecuaciones)
-	tabstat rfspBalance rfspOtros rfsp shrfspInterno shrfspExterno shrfsp if anio == `anio', stat(sum) format(%20.0fc) save
+	tabstat rfspBalance rfspOtros rfsp shrfspInterno shrfspExterno shrfsp ///
+		rfspPIDIREGAS rfspIPAB rfspFONADIN rfspDeudores rfspBanca rfspAdecuaciones if anio == `anio', stat(sum) format(%20.0fc) save
 	if _rc != 0 {
 		noisily di in r "No hay informaci{c o'}n para el a{c n~}o `anio'"
 		exit
@@ -142,38 +148,92 @@ quietly {
 	tempname mattot
 	matrix `mattot' = r(StatTotal)
 
-	tabstat pibY Poblacion_adj if anio == `anio', stat(sum) format(%20.0fc) save
+	tabstat pibY Poblacion_ajustada if anio == `anio', stat(sum) format(%20.0fc) save
 	tempname mattot2
 	matrix `mattot2' = r(StatTotal)
 
-	noisily di in g "  {bf:(+) Balance presupuestario" ///
-		_col(44) in y %20.0fc `mattot'[1,1] ///
-		_col(66) in y %7.1fc `mattot'[1,1]/`mattot2'[1,1]*100 ///
-		_col(77) in y %7.0fc `mattot'[1,1]/`mattot2'[1,2] "}"
-	noisily di in g "  {bf:(+) Otros RFSP" ///
-		_col(44) in y %20.0fc `mattot'[1,2] ///
-		_col(66) in y %7.1fc `mattot'[1,2]/`mattot2'[1,1]*100 ///
-		_col(77) in y %7.0fc `mattot'[1,2]/`mattot2'[1,2] "}"
-	noisily di in g _dup(83) "-"
-	noisily di in g "  {bf:(=) RFSP" ///
-		_col(44) in y %20.0fc `mattot'[1,3] ///
-		_col(66) in y %7.1fc `mattot'[1,3]/`mattot2'[1,1]*100 ///
-		_col(77) in y %7.0fc `mattot'[1,3]/`mattot2'[1,2] "}"
-	noisily di in g _dup(83) "="
-	noisily di in g "  {bf:(+) SHRFSP Interna" ///
-		_col(44) in y %20.0fc `mattot'[1,4] ///
-		_col(66) in y %7.1fc `mattot'[1,4]/`mattot2'[1,1]*100 ///
-		_col(77) in y %7.0fc `mattot'[1,4]/`mattot2'[1,2] "}"
-	noisily di in g "  {bf:(+) SHRFSP Externa" ///
-		_col(44) in y %20.0fc `mattot'[1,5] ///
-		_col(66) in y %7.1fc `mattot'[1,5]/`mattot2'[1,1]*100 ///
-		_col(77) in y %7.0fc `mattot'[1,5]/`mattot2'[1,2] "}"
-	noisily di in g _dup(83) "-"
-	noisily di in g "  {bf:(=) SHRFSP" ///
-		_col(44) in y %20.0fc `mattot'[1,6] ///
-		_col(66) in y %7.1fc `mattot'[1,6]/`mattot2'[1,1]*100 ///
-		_col(77) in y %7.0fc `mattot'[1,6]/`mattot2'[1,2] "}"
+	scalar rfspBalance = string(rfspBalance[`obsvp']/rfsp[`obsvp']*100,"%5.1f")
+	scalar rfspBalancePIB = rfspBalance[`obsvp']/pibY[`obsvp']*100
 
+	scalar rfspPIDIREGAS = string(rfspPIDIREGAS[`obsvp']/rfsp[`obsvp']*100,"%5.1f")
+	scalar rfspPIDIREGASPIB = rfspPIDIREGAS[`obsvp']/pibY[`obsvp']*100
+
+	scalar rfspIPAB = string(rfspIPAB[`obsvp']/rfsp[`obsvp']*100,"%5.1f")
+	scalar rfspIPABPIB = rfspIPAB[`obsvp']/pibY[`obsvp']*100
+
+	scalar rfspFONADIN = string(rfspFONADIN[`obsvp']/rfsp[`obsvp']*100,"%5.1f")
+	scalar rfspFONADINPIB = rfspFONADIN[`obsvp']/pibY[`obsvp']*100
+
+	scalar rfspDeudores = string(rfspDeudores[`obsvp']/rfsp[`obsvp']*100,"%5.1f")
+	scalar rfspDeudoresPIB = rfspDeudores[`obsvp']/pibY[`obsvp']*100
+
+	scalar rfspBanca = string(rfspBanca[`obsvp']/rfsp[`obsvp']*100,"%5.1f")
+	scalar rfspBancaPIB = rfspBanca[`obsvp']/pibY[`obsvp']*100
+
+	scalar rfspAdecuaciones = string(rfspAdecuaciones[`obsvp']/rfsp[`obsvp']*100,"%5.1f")
+	scalar rfspAdecuacionesPIB = rfspAdecuaciones[`obsvp']/pibY[`obsvp']*100
+
+	scalar RFSP = rfsp[`obsvp']
+	scalar RFSPPIB = rfsp[`obsvp']/pibY[`obsvp']*100
+	scalar RFSPlastPIB = rfsp[`obslastexo']/pibY[`obslastexo']*100
+
+	scalar SHRFSPInterno = shrfspInterno[`obsvp']/shrfsp[`obsvp']*100
+	scalar SHRFSPExterno = shrfspExterno[`obsvp']/shrfsp[`obsvp']*100
+	scalar SHRFSP = shrfsp[`obsvp']
+	scalar SHRFSPPIB = shrfsp[`obsvp']/pibY[`obsvp']*100
+	scalar SHRFSPlastPIB = shrfsp[`obslastexo']/pibY[`obslastexo']*100
+	scalar SHRFSPPC = shrfsp[`obsvp']/Poblacion_ajustada[`obsvp']
+	scalar SHRFSPlastPC = shrfsp[`obslastexo']/Poblacion_ajustada[`obslastexo']
+
+	noisily di in g "  (+) Balance presupuestario" ///
+		_col(33) in y %20.0fc `mattot'[1,1] ///
+		_col(55) in y %7.1fc `mattot'[1,1]/`mattot2'[1,1]*100 ///
+		_col(66) in y %7.1fc `mattot'[1,1]/`mattot'[1,3]*100
+	noisily di in g "  (+) PIDIREGAS" ///
+		_col(33) in y %20.0fc `mattot'[1,7] ///
+		_col(55) in y %7.1fc `mattot'[1,7]/`mattot2'[1,1]*100 ///
+		_col(66) in y %7.1fc `mattot'[1,7]/`mattot'[1,3]*100
+	noisily di in g "  (+) IPAB" ///
+		_col(33) in y %20.0fc `mattot'[1,8] ///
+		_col(55) in y %7.1fc `mattot'[1,8]/`mattot2'[1,1]*100 ///
+		_col(66) in y %7.1fc `mattot'[1,8]/`mattot'[1,3]*100
+	noisily di in g "  (+) FONADIN" ///
+		_col(33) in y %20.0fc `mattot'[1,9] ///
+		_col(55) in y %7.1fc `mattot'[1,9]/`mattot2'[1,1]*100 ///
+		_col(66) in y %7.1fc `mattot'[1,9]/`mattot'[1,3]*100
+	noisily di in g "  (+) Programa de Deudores" ///
+		_col(33) in y %20.0fc `mattot'[1,10] ///
+		_col(55) in y %7.1fc `mattot'[1,10]/`mattot2'[1,1]*100 ///
+		_col(66) in y %7.1fc `mattot'[1,10]/`mattot'[1,3]*100
+	noisily di in g "  (+) Banca de Desarrollo" ///
+		_col(33) in y %20.0fc `mattot'[1,11] ///
+		_col(55) in y %7.1fc `mattot'[1,11]/`mattot2'[1,1]*100 ///
+		_col(66) in y %7.1fc `mattot'[1,11]/`mattot'[1,3]*100
+	noisily di in g "  (+) Adecuaciones" ///
+		_col(33) in y %20.0fc `mattot'[1,12] ///
+		_col(55) in y %7.1fc `mattot'[1,12]/`mattot2'[1,1]*100 ///
+		_col(66) in y %7.1fc `mattot'[1,12]/`mattot'[1,3]*100
+	noisily di in g _dup(72) "-"
+	noisily di in g "  {bf:(=) RFSP" ///
+		_col(33) in y %20.0fc `mattot'[1,3] ///
+		_col(55) in y %7.1fc `mattot'[1,3]/`mattot2'[1,1]*100 ///
+		_col(66) in y %7.1fc `mattot'[1,3]/`mattot'[1,3]*100 "}"
+	noisily di in g _dup(72) "="
+	noisily di in g "  (+) SHRFSP Interna" ///
+		_col(33) in y %20.0fc `mattot'[1,4] ///
+		_col(55) in y %7.1fc `mattot'[1,4]/`mattot2'[1,1]*100 ///
+		_col(66) in y %7.1fc `mattot'[1,4]/`mattot'[1,6]*100
+	noisily di in g "  (+) SHRFSP Externa" ///
+		_col(33) in y %20.0fc `mattot'[1,5] ///
+		_col(55) in y %7.1fc `mattot'[1,5]/`mattot2'[1,1]*100 ///
+		_col(66) in y %7.1fc `mattot'[1,5]/`mattot'[1,6]*100
+	noisily di in g _dup(72) "-"
+	noisily di in g "  {bf:(=) SHRFSP" ///
+		_col(33) in y %20.0fc `mattot'[1,6] ///
+		_col(55) in y %7.1fc `mattot'[1,6]/`mattot2'[1,1]*100 ///
+		_col(66) in y %7.1fc `mattot'[1,6]/`mattot'[1,6]*100 "}"
+
+	* Micrositio *
 	return scalar rfspBalance = `mattot'[1,1]
 	return scalar rfspBalancePIB = `mattot'[1,1]/`mattot2'[1,1]*100
 	return scalar rfspBalancePC = `mattot'[1,1]/`mattot2'[1,2]
@@ -197,12 +257,10 @@ quietly {
 	return scalar shrfsp = `mattot'[1,6]
 	return scalar shrfspPIB = `mattot'[1,6]/`mattot2'[1,1]*100
 	return scalar shrfspPC = `mattot'[1,6]/`mattot2'[1,2]
-
-
+	
 	** 4.2.1 Gráfica generales **
 	if "`nographs'" != "nographs" & "$nographs" == "" {
 
-		** % del PIB **
 		tempvar shrfsp_pib interno externo interno_label
 		g `shrfsp_pib' = shrfsp/pibY*100
 		g `externo' = shrfspExterno/1000000000000/deflator
@@ -224,7 +282,7 @@ quietly {
 		tempname rango
 		matrix `rango' = r(StatTotal)
 
-		twoway ( bar `interno' anio if anio > 2000 & anio <= 2024, barwidth(.75)) ///
+		twoway (bar `interno' anio if anio > 2000 & anio <= 2024, barwidth(.75)) ///
 			(bar `externo' anio if anio > 2000 & anio <= 2024, barwidth(.75) pstyle(p1) fintensity(50) lcolor(none)) ///
 			(bar `interno' anio if anio > 2024 & anio <= 2030, barwidth(.75) pstyle(p2) lcolor(none)) ///
 			(bar `externo' anio if anio > 2024 & anio <= 2030, barwidth(.75) pstyle(p2) fintensity(50) lcolor(none)) ///
@@ -276,7 +334,7 @@ quietly {
 
 		** Por persona **
 		tempvar shrfsp_pc
-		g `shrfsp_pc' = shrfsp/Poblacion_adj/deflator/1000
+		g `shrfsp_pc' = shrfsp/Poblacion_ajustada/deflator/1000
 		format `shrfsp_pc' %10.0fc
 
 		tabstat `interno' `shrfsp_pc', stat(min max) by(anio) save
@@ -357,15 +415,15 @@ quietly {
 	tempname mattot
 	matrix `mattot' = r(StatTotal)
 
-	tabstat pibY Poblacion_adj if anio == `anio', stat(sum) format(%20.0fc) save
+	tabstat pibY Poblacion_ajustada if anio == `anio', stat(sum) format(%20.0fc) save
 	tempname mattot2
 	matrix `mattot2' = r(StatTotal)
 
-	noisily di in g _dup(83) "="
+	noisily di in g _dup(72) "="
 	noisily di in g "  {bf:(*) Costo financiero" ///
-		_col(44) in y %20.0fc `mattot'[1,1] ///
-		_col(66) in y %7.1fc `mattot'[1,1]/`mattot2'[1,1]*100 ///
-		_col(77) in y %7.0fc `mattot'[1,1]/`mattot2'[1,2] "}"
+		_col(33) in y %20.0fc `mattot'[1,1] ///
+		_col(55) in y %7.1fc `mattot'[1,1]/`mattot2'[1,1]*100 ///
+		_col(66) in y %7.1fc `mattot'[1,1]/`mattot'[1,1]*100 "}"
 
 
 	** 6.1 Gráfica tasas de interés **
@@ -436,10 +494,17 @@ quietly {
 	*replace balprimario = balprimario + rfspOtros
 	foreach k of varlist rfsp* shrfsp* balprimario costofinanciero tipoDeCambio nopresupuestario {
 		g `k'_pib = `k'/pibY*100
-		g `k'_pc = `k'/Poblacion_adj/deflator
+		g `k'_pc = `k'/Poblacion_ajustada/deflator
 		g `k'_real = `k'/deflator
 		format `k'_pib `k'_pc %10.1fc
 	}
+
+	sort rfsp_pib
+	scalar RFSPmaxPIB = rfsp_pib[1]
+	scalar aniorfspmax = anio[1]
+	scalar RFSPmax = rfsp[1]/deflator[1]
+	scalar anioLP = `lastexo'
+	sort anio
 
 	replace balprimario_pib = -balprimario_pib - rfspOtros_pib
 
@@ -538,35 +603,38 @@ quietly {
 
 	**********************************/
 	** EFECTOS SOBRE LOS INDICADORES **
+	tempvar rfspBalance rfspOtros rfspBalance0 rfspOtros0 rfsppib rfsppc rfsp
+	g `rfspOtros0' = (- rfspPIDIREGAS - rfspIPAB - rfspFONADIN - rfspDeudores - rfspBanca - rfspAdecuaciones)/1000000000000/deflator
+	g `rfspOtros' = (- rfspPIDIREGAS - rfspIPAB - rfspFONADIN - rfspDeudores - rfspBanca  - rfspAdecuaciones)/1000000000000/deflator
+
+	g `rfspBalance0' = - rfspBalance/1000000000000/deflator
+	g `rfspBalance' = (- rfspBalance + `rfspOtros')/1000000000000/deflator if `rfspOtros' < 0
+	replace `rfspBalance' = `rfspOtros' - rfspBalance/1000000000000/deflator if `rfspOtros' >= 0
+	format `rfspBalance' `rfspOtros' `rfspBalance0' `rfspOtros0' %5.1f
+	
+	g `rfsppib' = -rfsp/pibY*100
+	g rfsppc = -rfsp/(Poblacion_ajustada)/deflator
+	g `rfsp' = -rfsp/1000000000000/deflator
+	format `rfsp' %5.1fc
+	format `rfsppib' %5.1fc
+
+	* Informes mensuales texto *
+	tabstat `rfsp' if anio == `anio' | anio == `anio'-1, by(anio) f(%20.0fc) stat(sum) c(v) save nototal
+	tempname stathoy statayer rango
+	matrix `stathoy' = r(Stat2)
+	matrix `statayer' = r(Stat1)
+
+	tabstat `rfsp' `rfsppib', f(%20.3fc) stat(min max mean) save
+	matrix `rango' = r(StatTotal)
+
+	scalar RFSPPromPIB = -`rango'[3,2]
+
+	g efectoPositivoRFSP = 0
+	foreach k of varlist `rfspBalance0' `rfspOtros0' {
+			replace efectoPositivoRFSP = efectoPositivoRFSP + `k' if `k' > 0
+	}
+
 	if "`nographs'" != "nographs" & "$nographs" == "" {
-		tempvar rfspBalance rfspOtros rfspBalance0 rfspOtros0 rfsppib rfsppc rfsp
-		g `rfspOtros0' = (- rfspPIDIREGAS - rfspIPAB - rfspFONADIN - rfspDeudores - rfspBanca - rfspAdecuaciones)/1000000000000/deflator
-		g `rfspOtros' = (- rfspPIDIREGAS - rfspIPAB - rfspFONADIN - rfspDeudores - rfspBanca  - rfspAdecuaciones)/1000000000000/deflator
-
-		g `rfspBalance0' = - rfspBalance/1000000000000/deflator
-		g `rfspBalance' = (- rfspBalance + `rfspOtros')/1000000000000/deflator if `rfspOtros' < 0
-		replace `rfspBalance' = `rfspOtros' - rfspBalance/1000000000000/deflator if `rfspOtros' >= 0
-		format `rfspBalance' `rfspOtros' `rfspBalance0' `rfspOtros0' %5.1f
-		
-		g `rfsppib' = -rfsp/pibY*100
-		g rfsppc = -rfsp/(Poblacion_adj)/deflator
-		g `rfsp' = -rfsp/1000000000000/deflator
-		format `rfsp' %5.1fc
-		format `rfsppib' %5.1fc
-
-		* Informes mensuales texto *
-		tabstat `rfsp' if anio == `anio' | anio == `anio'-1, by(anio) f(%20.0fc) stat(sum) c(v) save nototal
-		tempname stathoy statayer rango
-		matrix `stathoy' = r(Stat2)
-		matrix `statayer' = r(Stat1)
-
-		tabstat `rfsp' `rfsppib', by(anio) f(%20.0fc) stat(min max mean) save
-		matrix `rango' = r(StatTotal)
-
-		g efectoPositivoRFSP = 0
-		foreach k of varlist `rfspBalance0' `rfspOtros0' {
-				replace efectoPositivoRFSP = efectoPositivoRFSP + `k' if `k' > 0
-		}
 		if "$export" == "" {
 			local graphtitle "{bf:Requerimientos financieros del sector p{c u'}blico}"
 		}
@@ -590,6 +658,7 @@ quietly {
 			text(`=`rfsp'[24]' 2013 "{bf:billones}" "{bf:`currency' `aniovp'}", place(6)) ///
 			///text(`=(`rfsp'[41]-`rfspOtros'[41])*.5+`rfspOtros'[41]' 2030 "Balance", place(0) size(large)) ///
 			///text(`=`rfspOtros'[41]*.5' 2030 "Otros RFSP", place(0) size(large)) ///
+			text(`=`rango'[3,2]' 2008 "{bf:Promedio:}" `"`=string(`rango'[3,2],"%5.1f")' % PIB"', place(5) yaxis(2)) ///
 			ylabel(none, format(%15.0fc) labsize(small)) ///
 			ylabel(none, format(%15.0fc) labsize(small) axis(2)) ///
 			xlabel(`=`ultanio'+1'(1)`lastexo', noticks) ///	
@@ -611,6 +680,9 @@ quietly {
 	***********
 	*** END ***
 	***********
+	if "`textbook'" == "textbook" {
+		noisily scalarlatex, log(shrfsp) alt(shrfsp)
+	}
 	capture drop __*
 	timer off 5
 	timer list 5
@@ -649,8 +721,6 @@ program define UpdateSHRFSP
 
 
 
-
-
 	*******************************
 	***                         ***
 	***     2 RFSP (flujos)     ***
@@ -662,7 +732,7 @@ program define UpdateSHRFSP
 	save "`rfsp'"
 
 
-	** Endeudamiento presupuestario **
+	** Endeudamiento presupuestario y no presupuestario **
 	noisily DatosAbiertos RF000001SPFCS, $nographs reverse
 	rename monto rfspBalance
 	tempfile Balance
