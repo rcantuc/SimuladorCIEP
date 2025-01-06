@@ -22,7 +22,7 @@ quietly {
 	}
 
 	** 0.3 Sintaxis del comando **
-	syntax [anything] [if] [,  PIBVP(real -999) PIBVF(real -999) DESDE(real 1993) ///
+	syntax [anything] [if] [,  PIBVP(real -999) PIBVF(real -999) DESDE(real 2008) ///
 		UPDATE NOGraphs REVERSE PROYeccion ZIPFILE]
 
 
@@ -34,17 +34,15 @@ quietly {
 		UpdateDatosAbiertos, `update' `zipfile'
 		noisily UpdateDeflactor
 	}
-
-	PIBDeflactor, nographs
-	tempfile PIBDeflactor
-	save "`PIBDeflactor'"
 	
 	use if clave_de_concepto == "`anything'" using "`c(sysdir_site)'/SIM/DatosAbiertos.dta", clear
-	merge m:1 (anio mes) using "`c(sysdir_site)'/SIM/Deflactor.dta", nogen //keep(matched)
+	merge 1:1 (anio mes) using "`c(sysdir_site)'/SIM/Deflactor.dta", nogen keep(matched)
 	merge m:1 (anio) using "`c(sysdir_site)'/SIM/Poblaciontot.dta", nogen keep(matched)
-	merge m:1 (anio trimestre) using "`PIBDeflactor'", nogen keep(matched)
-	tsset aniomes
+	merge m:1 (anio trimestre) using "`c(sysdir_personal)'/SIM/PIBDeflactor.dta", nogen
 
+	** Limpiar **
+	tsset aniomes
+	drop if aniomes == .
 	order inpc, last
 	local currency = currency[1]
 	foreach k of varlist inpc {
@@ -54,7 +52,7 @@ quietly {
 		}
 	}
 	
-	*g lambda = (1+scalar(llambda)/100)^(anio-`aniovp')
+	g lambda = (1+scalar(llambda)/100)^(anio-`aniovp')
 	replace poblacion = poblacion*lambda
 
 	if "`anything'" == "" {
@@ -78,6 +76,7 @@ quietly {
 	replace nombre = "Saldo histórico de los RFSP internos" if nombre == "Saldo hist?rico de los RFSP internos"
 	replace nombre = "Saldo histórico de los RFSP externos" if nombre == "Saldo hist?rico de los RFSP externos"
 	replace nombre = "Requerimientos financieros del sector público" if nombre == "Requerimientos financieros del sector p¿¿blico federal (I+II)"
+	replace nombre = "Requerimientos financieros del sector público" if nombre == "Requerimientos financieros del sector p??blico federal (I+II)"
 
 
 	*********************************
@@ -106,6 +105,7 @@ quietly {
 	g monto_pc = monto/poblacion/deflactor
 	format monto_pc %10.0fc
 
+	egen pibY = mean(pibQ), by(anio)
 	g monto_pib = monto/pibY*100
 	format monto_pib %7.1fc
 
@@ -124,19 +124,25 @@ quietly {
 		matrix `mesant' = r(Stat1)
 
 		noisily di _newline in g "  Mes " in y "`mesname' `=anio[_N]'" in g ": " _col(40) in y %20.0fc `meshoy'[1,1]/`meshoy'[1,3] in g " millones `currency'"
+		noisily di in g "  Mes " in y "`mesname' `=anio[_N]-1'" in g ": " _col(40) in y %20.0fc `mesant'[1,1] in g " millones `currency'"
+		noisily di in g "  " _dup(75) "-"
 		noisily di in g "  Mes " in y "`mesname' `=anio[_N]-1'" in g ": " _col(40) in y %20.0fc `mesant'[1,1]/`mesant'[1,3] in g " millones `currency' `aniovp'"
-		noisily di in g "  Crecimiento: " _col(44) in y %16.1fc ((`meshoy'[1,1]/`meshoy'[1,3])/(`mesant'[1,1]/`mesant'[1,3])-1)*100 in g " %"
+		noisily di in g "  " _dup(75) "-"
+		noisily di in g "  Crecimiento real: " _col(44) in y %16.1fc ((`meshoy'[1,1]/`meshoy'[1,3])/(`mesant'[1,1]/`mesant'[1,3])-1)*100 in g " %"
 
 		tabstat montomill if mes <= `=mes[_N]' & (anio == `=anio[_N]' | anio == `=anio[_N]-1'), stat(sum) by(anio) format(%10.3fc) save
 		tempname meshoyacum mesantacum
 		matrix `meshoyacum' = r(Stat2)
 		matrix `mesantacum' = r(Stat1)
 
-		noisily di _newline in g "  Acumulado " in y "`mesname' `=anio[_N]'" in g ": " _col(40) in y %20.0fc `meshoyacum'[1,1]/`meshoy'[1,2] in g " millones `currency'"
+		noisily di _newline(2) in g "  Acumulado " in y "`mesname' `=anio[_N]'" in g ": " _col(40) in y %20.0fc `meshoyacum'[1,1]/`meshoy'[1,2] in g " millones `currency'"
+		noisily di in g "  Acumulado " in y "`mesname' `=anio[_N]-1'" in g ": " _col(40) in y %20.0fc `mesantacum'[1,1] in g " millones `currency'"
+		noisily di in g "  " _dup(75) "-"
 		noisily di in g "  Acumulado " in y "`mesname' `=anio[_N]-1'" in g ": " _col(40) in y %20.0fc `mesantacum'[1,1]/`mesant'[1,2] in g " millones `currency' `aniovp'"
-		noisily di in g "  Crecimiento: " _col(44) in y %16.1fc ((`meshoyacum'[1,1]/`meshoy'[1,2])/(`mesantacum'[1,1]/`mesant'[1,2])-1)*100 in g " %"
+		noisily di in g "  " _dup(75) "-"
+		noisily di in g "  Crecimiento real: " _col(44) in y %16.1fc ((`meshoyacum'[1,1]/`meshoy'[1,2])/(`mesantacum'[1,1]/`mesant'[1,2])-1)*100 in g " %"
 	}
-	
+
 	replace montomill = montomill/deflactor
 
 	if tipo_de_informacion == "Saldo" {
@@ -145,9 +151,9 @@ quietly {
 		matrix `meshoy' = r(Stat2)
 		matrix `mesant' = r(Stat1)
 
-		noisily di _newline in g "  Acumulado " in y "`mesname' `=anio[_N]'" in g ": " _col(40) in y %20.0fc `meshoy'[1,1] in g " millones `currency'"
+		noisily di _newline(2) in g "  Acumulado " in y "`mesname' `=anio[_N]'" in g ": " _col(40) in y %20.0fc `meshoy'[1,1] in g " millones `currency'"
 		noisily di in g "  Acumulado " in y "Diciembre `=anio[_N]-1'" in g ": " _col(40) in y %20.0fc `mesant'[1,1] in g " millones `currency' `aniovp'"
-		noisily di in g "  Crecimiento: " _col(44) in y %16.1fc (`meshoy'[1,1]/`mesant'[1,1]-1)*100 in g " %"
+		noisily di in g "  Crecimiento real: " _col(44) in y %16.1fc (`meshoy'[1,1]/`mesant'[1,1]-1)*100 in g " %"
 
 		tabstat montomill if ((anio == `last_anio'-1 & mes == `last_mes') | (anio == `last_anio' & mes == `last_mes')), stat(sum) by(anio) format(%7.0fc) save
 		tempname meshoy mesant
@@ -156,11 +162,7 @@ quietly {
 
 		noisily di _newline in g "  Acumulado " in y "`mesname' `=anio[_N]'" in g ": " _col(40) in y %20.0fc `meshoy'[1,1] in g " per cápita `currency' `aniovp'"
 		noisily di in g "  Acumulado " in y "`mesname' `=anio[_N]-1'" in g ": " _col(40) in y %20.0fc `mesant'[1,1] in g " per cápita `currency' `aniovp'"
-		noisily di in g "  Crecimiento: " _col(44) in y %16.1fc (`meshoy'[1,1]/`mesant'[1,1]-1)*100 in g " %"
-	}
-
-	if "`reverse'" == "reverse" {
-		replace monto = -monto
+		noisily di in g "  Crecimiento real: " _col(44) in y %16.1fc (`meshoy'[1,1]/`mesant'[1,1]-1)*100 in g " %"
 	}
 
 
@@ -191,15 +193,24 @@ quietly {
 		}
 
 		** 2.2 Gráfica por mes calendario **
+		tempvar finishedY finishedYY
+		g `finishedY' = mes == 12
+		egen `finishedYY' = max(`finishedY'), by(anio)
+
+		tempvar montoanual propmensual
+		egen `montoanual' = sum(monto) if `finishedYY' == 1 & anio >= `desde', by(anio)
+		g propmensual = monto/`montoanual' if `finishedYY' == 1 & anio >= `desde'
+		egen acum_prom = mean(propmensual), by(mes)
+
 		local meses "Enero Febrero Marzo Abril Mayo Junio Julio Agosto Septiembre Octubre Noviembre Diciembre"
 		tokenize "`meses'"
-		tabstat montomill /*if anio >= 2008*/, stat(sum) by(mes) f(%20.0fc) save
+		tabstat acum_prom if `finishedYY' == 1, stat(mean) by(mes) f(%20.3fc) save
 		forvalues k=1(1)12 {
-			label define mes `k' "``k'' (`=string(r(Stat`k')[1,1]/r(StatTotal)[1,1]*100,"%7.1fc")'%)", modify
+			label define mes `k' "``k'' (`=string(r(Stat`k')[1,1]*100,"%7.1fc")'%)", modify
 			local ++k
 		}
-		
-		graph bar (sum) monto_pib if monto_pib != ., over(mes) over(anio) stack asyvar ///
+
+		graph bar (sum) monto_pib if monto_pib != . & anio >= `desde', over(mes) over(anio) stack asyvar ///
 			legend(rows(2) size(large)) ///
 			name(M`anything', replace) blabel(none) ///
 			ytitle("% PIB") ///
@@ -215,21 +226,21 @@ quietly {
 
 
 		** 2.3 Gráfica por mes **
-		graph bar (sum) montomill if mes == `=mes[_N]' /*& anio >= 2008*/, over(anio) ///
+		graph bar (sum) montomill if mes == `=mes[_N]' & anio >= `desde', over(anio) ///
 			name(`mesname'`anything', replace) ///
 			title("{bf:`=nombre[1]'}"`textsize') ///
 			subtitle(" `mesname', millones de `=currency[1]' `aniovp'", margin(bottom)) ///
-			ytitle("") ///
+			ytitle("millones de `=currency[1]' `aniovp'") ///
 			ylabel(none, format(%15.0fc)) ///
-			blabel(, format(%10.0fc) color(white) size(small) orient(vertical)) ///
+			blabel(bar, format(%10.0fc) color(white) size(small) orient(vertical)) ///
 			legend(off) ///
-			yline(0, lcolor(black) lpattern(solid)) ///
+			///yline(0, lcolor(black) lpattern(dash)) ///
 			note("{c U'}ltimo dato: `last_anio'm`last_mes'.") ///
 			caption("`graphfuente'")
 		capture confirm existence $export
 		if _rc == 0 {
 			graph export "$export/`mesname'`anything'.png", replace name(`mesname'`anything')
-		}		
+		}
 
 
 		** 2.4 Gráfica acumulado **
@@ -241,32 +252,18 @@ quietly {
 		tempname rango
 		matrix `rango' = r(StatTotal)
 
-		graph twoway ///(bar montomill anio if anio > 1994 & anio <= 2000, barwidth(.75)) ///
-			(bar montomill anio if anio > 2000 & anio <= 2006, barwidth(.75)) ///
-			(bar montomill anio if anio > 2006 & anio <= 2012, barwidth(.75)) ///
-			(bar montomill anio if anio > 2012 & anio <= 2018, barwidth(.75)) ///
-			(bar montomill anio if anio > 2018 & anio <= 2024, barwidth(.75)) ///
-			(bar montomill anio if anio > 2024 & anio <= 2030, barwidth(.75)) ///
-			if anio > 1994 & anio <= `=anio[_N]', ///
-			ytitle("millones de `=currency[1]' `aniovp'") ///
-			xtitle("") ///
-			ylabel(, format(%15.0fc)) ///
-			yscale(range(0)) ///
-			xlabel(2001(1)`=anio[_N]') ///
+		graph bar (sum) montomill if anio >= `desde', over(anio) ///
+			name(Acum`mesname'`anything', replace) ///
 			title("{bf:`=nombre[1]'}"`textsize') ///
 			subtitle(`"Acumulado a `=lower("`mesname'")'"', margin(bottom)) ///
+			ytitle("millones de `=currency[1]' `aniovp'") ///
+			ylabel(none, format(%15.0fc)) ///
+			yscale(range(0)) ///
+			blabel(bar, format(%10.0fc) color(white) size(small) orient(vertical)) ///
 			legend(off) ///
 			caption("`graphfuente'") ///
-			text(`=`rango'[2,1]*1.15' `=2001+2.5' "{   {bf:`=string(((montomill[17]/montomill[11])-1)*100,"%5.1f")'% real}   }", ///
-				place(0) size(small) color("111 111 111") justification(center)) ///
-			text(`=`rango'[2,1]*1.15' `=2007+2.5' "{   {bf:`=string(((montomill[23]/montomill[17])-1)*100,"%5.1f")'% real}   }", ///
-				place(0) size(small) color("111 111 111") justification(center)) ///
-			text(`=`rango'[2,1]*1.15' `=2013+2.5' "{   {bf:`=string(((montomill[29]/montomill[23])-1)*100,"%5.1f")'% real}   }", ///
-				place(0) size(small) color("111 111 111") justification(center)) ///
-			text(`=`rango'[2,1]*1.15' `=2019+2.5' "{   {bf:`=string(((montomill[35]/montomill[29])-1)*100,"%5.1f")'% real}   }", ///
-				place(0) size(small) color("111 111 111") justification(center)) ///
 			note("{bf:Nota:} Los crecimientos se hacen con respecto al último año de la serie anterior.") ///
-			name(Acum`mesname'`anything', replace)
+
 		restore
 	}
 
@@ -276,16 +273,12 @@ quietly {
 	*** 2 Proyeccion anual ***
 	**************************
 	if tipo_de_informacion == "Flujo" {
-		tempvar montoanual propmensual
-		egen `montoanual' = sum(monto) if anio < `last_anio' & anio >= `desde', by(anio)
-		g `propmensual' = monto/`montoanual' if anio < `last_anio' & anio >= `desde'
-		egen acum_prom = mean(`propmensual'), by(mes)
 		
 		collapse (sum) monto* acum_prom (last) mes poblacion pibY deflactor if monto != ., by(anio nombre clave_de_concepto unidad_de_medida)
 
 		if "`proyeccion'" == "proyeccion" {
 			replace monto = monto/acum_prom if mes < 12
-			replace monto_pib = monto/pibQ*100 if mes < 12
+			replace monto_pib = monto/pibY*100 if mes < 12
 			replace monto_pc = monto/poblacion/deflactor if mes < 12
 			replace montomill = monto/1000000/deflactor if mes < 12
 		}
@@ -322,7 +315,7 @@ quietly {
 		tempname rango
 		matrix `rango' = r(StatTotal)
 
-		twoway (bar montomill anio if inrange(anio, 2001, 2006), ///
+		/*twoway (bar montomill anio if inrange(anio, 2001, 2006), ///
 					mlabel(montomill) mlabpos(7) mlabcolor(white) mlabsize(small) msize(large) mlabangle(90) barwidth(.75)) ///
 			(bar montomill anio if inrange(anio, 2007, 2012), ///
 					mlabel(montomill) mlabpos(7) mlabcolor(white) mlabsize(small) msize(large) mlabangle(90) barwidth(.75)) ///
@@ -362,16 +355,16 @@ quietly {
 		capture confirm existence $export
 		if _rc == 0 {
 			graph export "$export/`anything'PC.png", replace name(`anything'PC)
-		}
+		}*/
 
 
-		twoway (bar montomill anio if anio < `aniovp', ///
+		twoway (bar montomill anio if anio < `ultanio' & anio >= `desde', ///
 				mlabel(montomill) mlabpos(7) mlabcolor(white) mlabsize(small) msize(large) mlabangle(90) barwidth(.75)) ///
-			(bar montomill anio if anio >= `aniovp', ///
+			(bar montomill anio if anio >= `ultanio', ///
 				mlabel(montomill) mlabpos(7) mlabcolor(white) mlabsize(small) msize(large) mlabangle(90) barwidth(.75)) ///
-			(connected monto_pib anio if anio < `aniovp', ///
+			(connected monto_pib anio if anio < `ultanio' & anio >= `desde', ///
 				yaxis(2) pstyle(p1) mlabel(monto_pib) mlabpos(12) mlabcolor("111 111 111") mlabsize(small) lpattern(dot) msize(large)) ///
-			(connected monto_pib anio if anio >= `aniovp', ///
+			(connected monto_pib anio if anio >= `ultanio', ///
 				yaxis(2) pstyle(p2) mlabel(monto_pib) mlabpos(12) mlabcolor("111 111 111") mlabsize(small) lpattern(dot) msize(large)), ///
 			title("`graphtitle'"`textsize') ///
 			subtitle(" Montos reportados (millones MXN `aniovp') y como % del PIB", margin(bottom)) ///
@@ -380,7 +373,7 @@ quietly {
 			ytitle("", axis(2)) ///
 			xtitle("") ///
 			///xlabel(`prianio' `=round(`prianio',5)'(5)`ultanio') ///
-			xlabel(`prianio'(1)`ultanio') ///
+			xlabel(`desde'(1)`ultanio') ///
 			ylabel(none, format(%15.0fc)) ///
 			yscale(range(0 `=`rango'[2,1]*1.75')) ///
 			ylabel(none, axis(2) format(%7.0fc) noticks) ///

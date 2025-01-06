@@ -18,6 +18,7 @@ else if "`c(username)'" == "servidorciep" {					// Servidor CIEP
 }
 else if "`c(console)'" != "" {							// Servidor Web
 	sysdir set PERSONAL "/SIM/OUT/6/"
+	sysdir set SITE "/SIM/OUT/6/"
 }
 cd "`c(sysdir_personal)'"
 
@@ -52,7 +53,7 @@ global id = "ciepmx"								// IDENTIFICADOR DEL USUARIO
 *noisily PIBDeflactor if anio <= 2030, aniovp(`=aniovp') geodef(1993) geopib(1993) $update $textbook
 
 ** 2.2 Sistema de Cuentas Nacionales
-*noisily SCN, //$update
+*noisily SCN if anio <= 2030, //$update
 
 
 
@@ -64,11 +65,11 @@ global id = "ciepmx"								// IDENTIFICADOR DEL USUARIO
 *noisily LIF, by(divPE) rows(1) anio(`=anioPE') desde(`=anioPE-1') min(0) title("Ingresos presupuestarios") $update
 
 ** 3.2 Presupuesto de Egresos de la Federación
-noisily PEF, by(divSIM) rows(2) min(0) anio(`=anioPE') desde(2024) title("Gasto presupuestario") $update
-ex
+*noisily PEF, by(divSIM) rows(2) min(0) anio(`=anioPE') desde(`=anioPE-1') title("Gasto presupuestario") $update
+
 ** 3.3 Saldo Histórico de Requerimientos Financieros del Sector Público
 noisily SHRFSP, anio(`=anioPE') ultanio(2007) $update $textbook
-
+ex
 ** 3.4 Subnacionales
 //noisily run "Subnacional.do" //$update
 
@@ -98,8 +99,8 @@ if "`cambioiva'" == "1" {
 }
 
 ** 4.1 Integración de módulos
-noisily TasasEfectivas, anio(`=anioPE')
-noisily GastoPC, aniope(`=anioPE') aniovp(`=aniovp')
+*noisily TasasEfectivas, anio(`=anioPE')
+*noisily GastoPC, aniope(`=anioPE') aniovp(`=aniovp')
 
 
 
@@ -123,8 +124,9 @@ label var ImpuestosAportaciones "Impuestos, cuotas y otras contribuciones"
 capture drop Transferencias
 egen Transferencias = rsum(Pensiones Pensión_AM Otras_inversiones IngBasico Educación Salud)
 label var Transferencias "Transferencias públicas"
-*noisily Perfiles Transferencias [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
-
+noisily Perfiles Transferencias [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
+noisily Simulador Transferencias [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot //boot(10)
+ex
 ** 5.3 (=) Aportaciones netas
 capture drop AportacionesNetas
 g AportacionesNetas = ImpuestosAportaciones - Transferencias
@@ -132,8 +134,8 @@ label var AportacionesNetas "Aportaciones netas"
 noisily Perfiles AportacionesNetas [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
 
 ** 5.4 (*) Cuentas generacionales
-noisily Simulador AportacionesNetas [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot //boot(10)
-noisily CuentasGeneracionales AportacionesNetas, anio(`=anioPE') discount(7)
+*noisily Simulador AportacionesNetas [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot //boot(10)
+*noisily CuentasGeneracionales AportacionesNetas, anio(`=anioPE') discount(7)
 
 
 

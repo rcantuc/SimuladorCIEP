@@ -298,7 +298,7 @@ quietly {
 	matrix `pibYVP' = r(StatTotal)
 
 	scalar pibVPINF = `pibYVP'[1,1] + pibINF
-	scalar pibY = pibY[`obsvp']
+	*scalar pibY = pibY[`obsvp']
 	scalar pibVECES = round(pibYR[`obsvp']/pibYR[1],.1)
 	scalar pibLP = round((pibYR[_N]/pibYR[`obsvp']-1)*100,.1)
 
@@ -322,7 +322,7 @@ quietly {
 
 	g PIBPob = pibYR/Poblacion/1000
 	format PIBPob %20.0fc
-	scalar pibYPC = PIBPob[`obsvp']*1000
+	*scalar pibYPC = PIBPob[`obsvp']*1000
 
 
 
@@ -548,9 +548,9 @@ quietly {
 		twoway (bar PIBPob anio if (anio < `aniofinal' & anio >= `anioinicial') | (anio == `aniofinal' & trimestre == 12), ///
 				yaxis(2) mlabel(PIBPob) mlabposition(12) mlabcolor(black) mlabgap(0pt) barwidth(.75)) ///
 			(bar PIBPob anio if anio < `aniofinal'+`exo_count' & anio >= `aniofinal', ///
-				yaxis(2) mlabel(PIBPob) mlabposition(12) mlabcolor(black) mlabgap(0pt) barwidth(.75)  fintensity(50)) ///
+				yaxis(2) mlabel(PIBPob) mlabposition(12) mlabcolor(black) mlabgap(0pt) barwidth(.75) fintensity(50)) ///
 			(bar PIBPob anio if anio >= `aniofinal'+`exo_def', ///
-				yaxis(2) mlabel(PIBPob) mlabposition(12) mlabcolor(black) mlabgap(0pt) barwidth(.75)  fintensity(50)) ///			
+				yaxis(2) mlabel(PIBPob) mlabposition(12) mlabcolor(black) mlabgap(0pt) barwidth(.75) fintensity(50)) ///			
 			(connected var_pibPob anio if (anio < `aniofinal' & anio >= `anioinicial') | (anio == `aniofinal' & trimestre == 12), ///
 				yaxis(1) mlabel(var_pibPob) mlabpos(12) mlabcolor(black) mstyle(p1) lstyle(p1) lpattern(dot) msize(small)) ///
 			(connected var_pibPob anio if anio < `aniofinal'+`exo_def' & anio >= `aniofinal', ///
