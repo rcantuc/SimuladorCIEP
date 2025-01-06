@@ -469,8 +469,8 @@ quietly {
 		scalar tasaEfectiva = `tasaEfectiva'		
 	}
 	tabstat gastoCosto_de_la_deuda Poblacion pibY if anio == `anio', f(%20.0fc) save
-	scalar gascosto = r(StatTotal)[1,1]/r(StatTotal)[1,2]*8539/9234
-	scalar gascostoPIB = r(StatTotal)[1,1]/r(StatTotal)[1,3]*100*3.329/3.600
+	*scalar gascosto = r(StatTotal)[1,1]/r(StatTotal)[1,2]*8539/9234
+	*scalar gascostoPIB = r(StatTotal)[1,1]/r(StatTotal)[1,3]*100*3.329/3.600
 
 	/* Reemplazar Costo_de_la_deuda con el escalar gascosto *
 	capture confirm scalar gascosto

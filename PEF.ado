@@ -1010,7 +1010,7 @@ program define UpdatePEF
 	***                                  ***
 	****************************************
 	use "`c(sysdir_site)'/SIM/prePEF.dta", clear
-	*replace desc_pp = "Cuotas ISSSTE" if desc_pp == ""
+	replace desc_funcion = -1 if ramo == -1
 
 
 	*******************

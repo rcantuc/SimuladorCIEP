@@ -78,9 +78,10 @@ global inf2027 = 3.0
 global inf2028 = 3.0
 global inf2029 = 3.0
 global inf2030 = 3.0
+exit
 
 ** 2.8 Deuda Pública **/
-scalar tasaEfectiva = 8.216
+scalar tasaEfectiva = 7.8808
 
 global shrfsp2024 = 51.4
 global shrfspInterno2024 = 38.5
@@ -196,73 +197,73 @@ global costodeudaExterno2030 = 2.7
 
 
 ** 2.9 Parámetros: PEF **/
-/** 2.9.1 Parámetros: Educación **
-scalar iniciaA     =     363 //    Inicial
-scalar basica      =   28056 //    Educación b{c a'}sica
-scalar medsup      =   27811 //    Educación media superior
-scalar superi      =   39927 //    Educación superior
-scalar posgra      =   65408 //    Posgrado
-scalar eduadu      =   39492 //    Educación para adultos
-scalar otrose      =    1737 //    Otros gastos educativos
-scalar invere      =     827 //    Inversión en educación
-scalar cultur      =     153 //    Cultura, deportes y recreación
-scalar invest      =     393 //    Ciencia y tecnología
+** 2.9.1 Parámetros: Educación **
+scalar iniciaA     =     370 //    Inicial
+scalar basica      =   29529 //    Educación b{c a'}sica
+scalar medsup      =   28787 //    Educación media superior
+scalar superi      =   38452 //    Educación superior
+scalar posgra      =   59266 //    Posgrado
+scalar eduadu      =   40517 //    Educación para adultos
+scalar otrose      =    1713 //    Otros gastos educativos
+scalar invere      =     675 //    Inversión en educación
+scalar cultur      =     146 //    Cultura, deportes y recreación
+scalar invest      =     380 //    Ciencia y tecnología
 
 ** 2.9.2 Parámetros: Salud **
-scalar ssa         =      60 //    SSalud
-scalar imssbien    =    5644 //    IMSS-Bienestar
-scalar imss        =    8573 //    IMSS (salud)
-scalar issste      =    9873 //    ISSSTE (salud)
-scalar pemex       =   31176 //    Pemex (salud)
-scalar issfam      =   20070 //    ISSFAM (salud)
-scalar invers      =     255 //    Inversión en salud
+scalar ssa         =     276 //    SSalud
+scalar imssbien    =    3728 //    IMSS-Bienestar
+scalar imss        =    8923 //    IMSS (salud)
+scalar issste      =   11161 //    ISSSTE (salud)
+scalar pemex       =   29562 //    Pemex (salud)
+scalar issfam      =   17397 //    ISSFAM (salud)
+scalar invers      =     240 //    Inversión en salud
 
 ** 2.9.3 Parámetros: Pensiones **
-scalar pam         =   38172 //    Pensión Bienestar
-scalar penimss     =  279557 //    Pensión IMSS
-scalar penisss     =  362409 //    Pensión ISSSTE
-scalar penpeme     =  822902 //    Pensión Pemex
-scalar penotro     = 3629857 //    Pensión CFE, LFC, ISSFAM, Ferronales
+scalar pam         =   39356 //    Pensión Bienestar
+scalar penimss     =  307742 //    Pensión IMSS
+scalar penisss     =  410655 //    Pensión ISSSTE
+scalar penpeme     =  923092 //    Pensión Pemex
+scalar penotro     = 3336107 //    Pensión CFE, LFC, ISSFAM, Ferronales
 
 ** 2.9.4 Parámetros: Energía **
-scalar gascfe      =    2884 //    Gasto en CFE
-scalar gaspemex    =    1035 //    Gasto en Pemex
-scalar gassener    =     638 //    Gasto en SENER
-scalar gasinverf   =    3692 //    Gasto en inversión (energía)
-scalar gascosdeue  =    1349 //    Gasto en costo de la deuda (energía)
+scalar gascfe      =    3146 //    Gasto en CFE
+scalar gaspemex    =    1129 //    Gasto en Pemex
+scalar gassener    =     690 //    Gasto en SENER
+scalar gasinverf   =    3182 //    Gasto en inversión (energía)
+scalar gascosdeue  =    1397 //    Gasto en costo de la deuda (energía)
 
 ** 2.9.5 Parámetros: Otros gastos **
-scalar gasinfra    =    4263 //    Gasto en Otras Inversiones
-scalar gasotros    =    4756 //    Otros gastos
-scalar gasfeder    =   10185 //    Participaciones y Otras aportaciones
-scalar gascosto    =    8539 //    Gasto en Costo de la deuda
+scalar gasinfra    =    3890 //    Gasto en Otras Inversiones
+scalar gasotros    =    4451 //    Otros gastos
+scalar gasfeder    =   10720 //    Participaciones y Otras aportaciones
+scalar gascosto    =    9356 //    Gasto en Costo de la deuda
 
 ** 2.9.6 Parámetros: Transferencas **
 scalar IngBas      =       0 //    Ingreso b{c a'}sico
 scalar ingbasico18 =       1 //    1: Incluye menores de 18 anios, 0: no
 scalar ingbasico65 =       1 //    1: Incluye mayores de 65 anios, 0: no
-scalar gasmadres   =     477 //    Apoyo a madres trabajadoras
-scalar gascuidados =    3095 //    Gasto en cuidados
+scalar gasmadres   =     492 //    Apoyo a madres trabajadoras
+scalar gascuidados =    3339 //    Gasto en cuidados
 
 ** 2.10 Parámetros: Ingresos **
-scalar ISRAS       =   3.691 //    ISR (asalariados)
-scalar ISRPF       =   0.234 //    ISR (personas f{c i'}sicas)
-scalar CUOTAS      =   1.578 //    Cuotas (IMSS)
+scalar ISRAS       =   3.644 //    ISR (asalariados)
+scalar ISRPF       =   0.231 //    ISR (personas f{c i'}sicas)
+scalar CUOTAS      =   1.663 //    Cuotas (IMSS)
 
-scalar ISRPM       =   4.063 //    ISR (personas morales)
-scalar OTROSK      =   1.043 //    Productos, derechos, aprovech.
+scalar ISRPM       =   4.011 //    ISR (personas morales)
+scalar OTROSK      =   1.278 //    Productos, derechos, aprovech.
 
-scalar FMP         =   0.894 //    Fondo Mexicano del Petróleo
-scalar PEMEX       =   2.194 //    Organismos y empresas (Pemex)
-scalar CFE         =   1.317 //    Organismos y empresas (CFE)
-scalar IMSS        =   0.125 //    Organismos y empresas (IMSS)
-scalar ISSSTE      =   0.157 //    Organismos y empresas (ISSSTE)
+scalar FMP         =   0.772 //    Fondo Mexicano del Petróleo
+scalar PEMEX       =   2.374 //    Organismos y empresas (Pemex)
+scalar CFE         =   1.487 //    Organismos y empresas (CFE)
+scalar IMSS        =   0.117 //    Organismos y empresas (IMSS)
+scalar ISSSTE      =   0.160 //    Organismos y empresas (ISSSTE)
 
-scalar IVA         =   3.921 //    IVA
-scalar ISAN        =   0.057 //    ISAN
-scalar IEPSNP      =   0.683 //    IEPS (no petrolero)
-scalar IEPSP       =   1.345 //    IEPS (petrolero)
-scalar IMPORT      =   0.301 //    Importaciones
+scalar IVA         =   4.035 //    IVA
+scalar ISAN        =   0.056 //    ISAN
+scalar IEPSNP      =   0.663 //    IEPS (no petrolero)
+scalar IEPSP       =   1.306 //    IEPS (petrolero)
+scalar IMPORT      =   0.419 //    Importaciones
 
 ** 2.11 Parámetros: ISR **/
 * Anexo 8 de la Resolución Miscelánea Fiscal para 2024 *

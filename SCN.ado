@@ -23,7 +23,8 @@ quietly {
 		local aniovp = substr(`"`=trim("`aniovp'")'"',1,4)	
 	}
 
-	syntax [, ANIO(int `aniovp') NOGraphs UPDATE]
+	capture use in 1 using "`c(sysdir_personal)'/SIM/SCN.dta", clear
+	syntax [if] [, ANIO(int `aniovp') NOGraphs UPDATE]
 
 	noisily di _newline(2) in g _dup(20) "." "{bf:   Econom{c i'}a:" in y " SCN `anio'   }" in g _dup(20) "." _newline
 
@@ -327,6 +328,7 @@ quietly {
 	local anio_last = anio[_N]
 	merge 1:1 (anio) using `basepib', nogen
 	tsset anio
+	capture keep `if'
 
 
 
@@ -336,7 +338,7 @@ quietly {
 
 	* guarda el {c u'}ltimo año para el que hay un valor de PIB *
 	forvalues k = `=_N'(-1)1 {
-		if PIB[`k'] != . {
+		if RemSalSS[`k'] != . {
 			local latest = anio[`k']
 			continue, break
 		}
@@ -665,37 +667,47 @@ quietly {
 		label var `Capital' "Ingresos de capital"
 		g `Depreciacion' = (ConCapFij + CapIncImp + Yl)/deflator/1000000000000
 		label var `Depreciacion' "Depreciaci{c o'}n"
+		format `Depreciacion' %7.0fc
 		
 		if `anio_exo'-`latest' == 1 {
 			local graphtype "bar"
 		}
 		else {
-			local graphtype "area"
+			local graphtype "bar"
 		}
-		
+
+		if "$export" == "" {
+			local graphtitle = "{bf:Distribuci{c o'}n} del ingreso"
+			local graphfuente = "{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE."
+		}
+		else {
+			local graphtitle = ""
+			local graphfuente = ""
+		}
+
 		tabstat `Depreciacion', stat(max) save
 		tempname DEPMAX
 		matrix `DEPMAX' = r(StatTotal)
 
-		twoway (area `Depreciacion' anio if anio <= `anio_last', pstyle(p1) lwidth(none)) ///
-			(area `Capital' anio if anio <= `anio_last', pstyle(p2) lwidth(none)) ///
-			(area `Laboral' anio if anio <= `anio_last', pstyle(p3) lwidth(none)) ///
-			(`graphtype' `Depreciacion' anio if anio <= `anio_exo' & anio > `anio_last', pstyle(p1) lwidth(none)) ///
-			(`graphtype' `Capital' anio if anio <= `anio_exo' & anio > `anio_last', pstyle(p2) lwidth(none)) ///
-			(`graphtype' `Laboral' anio if anio <= `anio_exo' & anio > `anio_last', pstyle(p3) lwidth(none)) ///
-			(area `Depreciacion' anio if anio > `anio_last' & anio > `anio_exo', pstyle(p1) lwidth(none)) ///
-			(area `Capital' anio if anio > `anio_last' & anio > `anio_exo', pstyle(p2) lwidth(none)) ///
-			(area `Laboral' anio if anio > `anio_last' & anio > `anio_exo', pstyle(p3) lwidth(none)), ///
-			title("{bf:Distribuci{c o'}n} del ingreso") ///
-			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
+		twoway (bar `Depreciacion' anio if anio <= `anio_last', pstyle(p1) lwidth(none) barwidth(.75) mlabel(`Depreciacion') mlabpos(12) mlabcolor(black) mlabsize(large)) ///
+			(bar `Capital' anio if anio <= `anio_last', pstyle(p2) lwidth(none) barwidth(.75)) ///
+			(bar `Laboral' anio if anio <= `anio_last', pstyle(p3) lwidth(none) barwidth(.75)) ///
+			(`graphtype' `Depreciacion' anio if anio <= `anio_exo' & anio > `anio_last', pstyle(p1) lwidth(none) barwidth(.75) mlabel(`Depreciacion') mlabpos(12) mlabcolor(black) mlabsize(large) fintensity(50)) ///
+			(`graphtype' `Capital' anio if anio <= `anio_exo' & anio > `anio_last', pstyle(p2) lwidth(none) barwidth(.75) fintensity(50)) ///
+			(`graphtype' `Laboral' anio if anio <= `anio_exo' & anio > `anio_last', pstyle(p3) lwidth(none) barwidth(.75) fintensity(50)) ///
+			(bar `Depreciacion' anio if anio > `anio_last' & anio > `anio_exo', pstyle(p1) lwidth(none) barwidth(.75)) ///
+			(bar `Capital' anio if anio > `anio_last' & anio > `anio_exo', pstyle(p2) lwidth(none) barwidth(.75)) ///
+			(bar `Laboral' anio if anio > `anio_last' & anio > `anio_exo', pstyle(p3) lwidth(none) barwidth(.75)), ///
+			title("`graphtitle'") ///
+			caption("`graphfuente'") ///
 			legend(cols(3) order(1 2 3) region(margin(zero))) ///
 			xtitle("") ///
-			text(`=`Depreciacion'[1]*.05' `=`latest'+(`anio_exo'-`latest')/2+.5' "{bf:$paqueteEconomico}", place(n) color(white)) ///
-			text(`=`Depreciacion'[1]*.05' `=anio[1]+.5' "{bf:Reportado}", place(ne) color(white)) ///
-			text(`=`Depreciacion'[1]*.05' `=anio[_N]-7.5' "{bf:Proyecci{c o'}n CIEP}", place(ne) color(white)) ///
+			text(`=`Depreciacion'[1]*0' `=`latest'+1' "{bf:$paqueteEconomico}", color("111 111 111") place(1) justification(left) bcolor(white) box size(medlarge)) ///
+			text(`=`Depreciacion'[1]*0' `=anio[1]' "{bf:billones MXN `anio'}", color("111 111 111") place(1) justification(left) bcolor(white) box size(medlarge)) ///
+			///text(`=`Depreciacion'[1]*.05' `=anio[_N]-7.5' "{bf:Proyecci{c o'}n CIEP}", place(ne) color(white)) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)' `anio') ///
-			ylabel(0(5)`=ceil(`DEPMAX'[1,1])+2.5', format(%20.0fc)) ///
-			ytitle(billones MXN `anio') ///
+			ylabel(none, format(%20.0fc)) ///
+			ytitle("") ///
 			yscale(range(0)) xscale(range(1993)) ///
 			note("{bf:{c U'}ltimo dato reportado}: `anio_last'.") ///
 			name(gdp_generacion, replace)
@@ -797,29 +809,39 @@ quietly {
 		label var `ConGob' "Consumo de gobierno"
 		g `AhorroN' = (AhorroN + ConGob + ConHog + ComprasN)/deflator/1000000000000
 		label var `AhorroN' "Ahorro neto"
+		format `AhorroN' %7.0fc
 
-		twoway (area `AhorroN' anio if anio <= `anio_last', pstyle(p1) lwidth(none)) ///
-			(area `ConGob' anio if anio <= `anio_last', pstyle(p2) lwidth(none)) ///
-			(area `ConHog' anio if anio <= `anio_last', pstyle(p3) lwidth(none)) ///
-			(area `ComprasN' anio if anio <= `anio_last', pstyle(p4) lwidth(none)) ///
-			(`graphtype' `AhorroN' anio if anio <= `anio_exo' & anio > `anio_last', pstyle(p1) lwidth(none)) ///
-			(`graphtype' `ConGob' anio if anio <= `anio_exo' & anio > `anio_last', pstyle(p2) lwidth(none)) ///
-			(`graphtype' `ConHog' anio if anio <= `anio_exo' & anio > `anio_last', pstyle(p3) lwidth(none)) ///
-			(`graphtype' `ComprasN' anio if anio <= `anio_exo' & anio > `anio_last', pstyle(p4) lwidth(none)) ///
-			(area `AhorroN' anio if anio > `anio_last' & anio > `anio_exo', pstyle(p1) lwidth(none)) ///
-			(area `ConGob' anio if anio > `anio_last' & anio > `anio_exo', pstyle(p2) lwidth(none)) ///
-			(area `ConHog' anio if anio > `anio_last' & anio > `anio_exo', pstyle(p3) lwidth(none)) ///
-			(area `ComprasN' anio if anio > `anio_last' & anio > `anio_exo', pstyle(p4) lwidth(none)), ///
-			title("{bf:Utilizaci{c o'}n} del ingreso disponible") ///
-			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE.") ///
+		if "$export" == "" {
+			local graphtitle = "{bf:Utilizaci{c o'}n} del ingreso disponible"
+			local graphfuente = "{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE."
+		}
+		else {
+			local graphtitle = ""
+			local graphfuente = ""
+		}
+		
+		twoway (bar `AhorroN' anio if anio <= `anio_last', pstyle(p1) lwidth(none) barwidth(.75) mlabel(`AhorroN') mlabpos(12) mlabcolor(black) mlabsize(large)) ///
+			(bar `ConGob' anio if anio <= `anio_last', pstyle(p2) lwidth(none) barwidth(.75)) ///
+			(bar `ConHog' anio if anio <= `anio_last', pstyle(p3) lwidth(none) barwidth(.75)) ///
+			(bar `ComprasN' anio if anio <= `anio_last', pstyle(p4) lwidth(none) barwidth(.75)) ///
+			(`graphtype' `AhorroN' anio if anio <= `anio_exo' & anio > `anio_last', pstyle(p1) lwidth(none) barwidth(.75) mlabel(`AhorroN') mlabpos(12) mlabcolor(black) mlabsize(large) fintensity(50)) ///
+			(`graphtype' `ConGob' anio if anio <= `anio_exo' & anio > `anio_last', pstyle(p2) lwidth(none) barwidth(.75) fintensity(50)) ///
+			(`graphtype' `ConHog' anio if anio <= `anio_exo' & anio > `anio_last', pstyle(p3) lwidth(none) barwidth(.75) fintensity(50)) ///
+			(`graphtype' `ComprasN' anio if anio <= `anio_exo' & anio > `anio_last', pstyle(p4) lwidth(none) barwidth(.75) fintensity(50)) ///
+			(bar `AhorroN' anio if anio > `anio_last' & anio > `anio_exo', pstyle(p1) lwidth(none)) ///
+			(bar `ConGob' anio if anio > `anio_last' & anio > `anio_exo', pstyle(p2) lwidth(none)) ///
+			(bar `ConHog' anio if anio > `anio_last' & anio > `anio_exo', pstyle(p3) lwidth(none)) ///
+			(bar `ComprasN' anio if anio > `anio_last' & anio > `anio_exo', pstyle(p4) lwidth(none)), ///
+			title("`graphtitle'") ///
+			caption("`graphfuente'") ///
 			legend(cols(4) order(1 2 3 4) region(margin(zero))) ///
 			xtitle("") ///
-			text(`=`AhorroN'[1]*.05' `=`latest'+(`anio_exo'-`latest')/2+.5' "{bf:$paqueteEconomico}", place(n) color(white)) ///
-			text(`=`AhorroN'[1]*.05' `=anio[1]+.5' "{bf:Reportado}", place(ne) color(white)) ///
-			text(`=`AhorroN'[1]*.05' `=anio[_N]-7.5' "{bf:Proyecci{c o'}n CIEP}", place(ne) color(white)) ///
+			text(`=`AhorroN'[1]*0' `=`latest'+1' "{bf:$paqueteEconomico}", color("111 111 111") place(1) justification(left) bcolor(white) box size(medlarge)) ///
+			text(`=`AhorroN'[1]*0' `=anio[1]' "{bf:billones MXN `anio'}", color("111 111 111") place(1) justification(left) bcolor(white) box size(medlarge)) ///
+			///text(`=`AhorroN'[1]*0' `=anio[_N]-7.5' "{bf:Proyecci{c o'}n CIEP}", place(ne) color(white)) ///
 			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)' `anio') ///
-			ylabel(0(5)`=ceil(`DEPMAX'[1,1])+2.5', format(%20.0fc)) ///
-			ytitle(billones MXN `anio') ///
+			ylabel(none, format(%20.0fc)) ///
+			ytitle("") ///
 			yscale(range(0)) xscale(range(1993)) ///
 			note("{bf:{c U'}ltimo dato reportado}: `anio_last'.") ///
 			name(gdp_utilizacion, replace)
@@ -829,7 +851,6 @@ quietly {
 		if _rc == 0 {
 			graph export "$export/gdp_utilizacion.png", replace name(gdp_utilizacion)
 		}
-
 
 		/* Estructura económca *
 		tempvar FFFG OTRAE TOTAE HUae
@@ -973,7 +994,8 @@ quietly {
 		g ExAgricultura = `Cex'
 		g ExMineria = `Dex'
 		g ExElectrica = `Eex'
-		g ExManufactura = `Gex'*/
+		g ExManufactura = `Gex'
+		*********/
 
 	}
 	

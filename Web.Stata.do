@@ -11,6 +11,7 @@ timer on 1
 
 ** 0.1 Rutas de archivos  **
 sysdir set PERSONAL "/SIM/OUT/6/"
+sysdir set SITE "/SIM/OUT/6/"
 cd `"`c(sysdir_personal)'"'
 
 **  0.2 Opciones globales  **
@@ -36,8 +37,8 @@ if "$output" != "" {
 ***                     ***
 ***************************
 global paqueteEconomico "Pre-CGPE 2025"
-scalar anioPE = 2024
-scalar aniovp = 2024
+scalar anioPE = 2025
+scalar aniovp = 2025
 scalar anioenigh = 2022
 
 ** 1.1 Proyecciones demográficas **
@@ -48,19 +49,19 @@ scalar anioenigh = 2022
 //}
 
 ** 1.2 Parámetros: PIB, Deflactor e Inflación **
-scalar pib2024 = {{CRECPIB2024}}
-scalar pib2025 = {{CRECPIB2025}}
-scalar pib2026 = {{CRECPIB2026}}
-scalar pib2027 = {{CRECPIB2027}}
-scalar pib2028 = {{CRECPIB2028}}
-scalar pib2029 = {{CRECPIB2029}}
+global pib2024 = {{CRECPIB2024}}
+global pib2025 = {{CRECPIB2025}}
+global pib2026 = {{CRECPIB2026}}
+global pib2027 = {{CRECPIB2027}}
+global pib2028 = {{CRECPIB2028}}
+global pib2029 = {{CRECPIB2029}}
 
-scalar def2024 = {{CRECDEF2024}}
-scalar def2025 = {{CRECDEF2025}}
-scalar def2026 = {{CRECDEF2026}}
-scalar def2027 = {{CRECDEF2027}}
-scalar def2028 = {{CRECDEF2028}}
-scalar def2029 = {{CRECDEF2029}}
+global def2024 = {{CRECDEF2024}}
+global def2025 = {{CRECDEF2025}}
+global def2026 = {{CRECDEF2026}}
+global def2027 = {{CRECDEF2027}}
+global def2028 = {{CRECDEF2028}}
+global def2029 = {{CRECDEF2029}}
 
 //noisily PIBDeflactor, geodef(2005) geopib(2005) $update aniovp(`=aniovp')
 
@@ -339,117 +340,117 @@ noisily Perfiles AportacionesNetas [fw=factor], aniovp(2024) aniope(`=anioPE') $
 *********************************************
 scalar tasaEfectiva = {{DEUDA0}}
 
-scalar shrfsp2024 = 50.2
-scalar shrfspInterno2024 = 38.8
-scalar shrfspExterno2024 = 11.4
-scalar rfsp2024 = -5.9
-scalar rfspPIDIREGAS2024 = -0.1
-scalar rfspIPAB2024 = -0.1
-scalar rfspFONADIN2024 = -0.1
-scalar rfspDeudores2024 = 0.0
-scalar rfspBanca2024 = 0.1
-scalar rfspAdecuaciones2024 = -0.6
-scalar rfspBalance2024 = -5.0
-scalar tipoDeCambio2024 = 17.6
-scalar balprimario2024 = -1.2
-scalar costodeudaInterno2024 = 3.6
-scalar costodeudaExterno2024 = 3.6
+global shrfsp2024 = 51.4
+global shrfspInterno2024 = 38.5
+global shrfspExterno2024 = 12.9
+global rfsp2024 = -5.9
+global rfspPIDIREGAS2024 = 0.02
+global rfspIPAB2024 = -0.03
+global rfspFONADIN2024 = -0.04
+global rfspDeudores2024 = -0.01
+global rfspBanca2024 = 0.01
+global rfspAdecuaciones2024 = -0.81
+global rfspBalance2024 = -5.0
+global tipoDeCambio2024 = 18.2
+global balprimario2024 = -1.4
+global costodeudaInterno2024 = 3.6
+global costodeudaExterno2024 = 3.6
 
-scalar shrfsp2025 = 50.2
-scalar shrfspInterno2025 = 39.0
-scalar shrfspExterno2025 = 11.2
-scalar rfsp2025 = -3.0
-scalar rfspPIDIREGAS2025 = -0.1
-scalar rfspIPAB2025 = -0.1
-scalar rfspFONADIN2025 = 0.0
-scalar rfspDeudores2025 = 0.0
-scalar rfspBanca2025 = 0.0
-scalar rfspAdecuaciones2025 = -0.3
-scalar rfspBalance2025 = -2.5
-scalar tipoDeCambio2025 = 17.9
-scalar balprimario2025 = -0.9
-scalar costodeudaInterno2025 = 3.4
-scalar costodeudaExterno2025 = 3.4
+global shrfsp2025 = 51.4
+global shrfspInterno2025 = 39.8
+global shrfspExterno2025 = 11.6
+global rfsp2025 = -3.9
+global rfspPIDIREGAS2025 = -0.15
+global rfspIPAB2025 = -0.1
+global rfspFONADIN2025 = -0.03
+global rfspDeudores2025 = -0.01
+global rfspBanca2025 = 0.01
+global rfspAdecuaciones2025 = -0.44
+global rfspBalance2025 = -3.2
+global tipoDeCambio2025 = 18.7
+global balprimario2025 = 0.6
+global costodeudaInterno2025 = 3.8
+global costodeudaExterno2025 = 3.8
 
-scalar shrfsp2026 = 49.4
-scalar shrfspInterno2026 = 38.0
-scalar shrfspExterno2026 = 10.9
-scalar rfsp2026 = -2.7
-scalar rfspPIDIREGAS2026 = -0.1
-scalar rfspIPAB2026 = -0.1
-scalar rfspFONADIN2026 = 0.0
-scalar rfspDeudores2026 = 0.0
-scalar rfspBanca2026 = 0.0
-scalar rfspAdecuaciones2026 = -0.3
-scalar rfspBalance2026 = -2.5
-scalar tipoDeCambio2026 = 18.1
-scalar balprimario2026 = -0.5
-scalar costodeudaInterno2026 = 2.7
-scalar costodeudaExterno2026 = 2.7
+global shrfsp2026 = 51.4
+global shrfspInterno2026 = 40.5
+global shrfspExterno2026 = 10.9
+global rfsp2026 = -3.2
+global rfspPIDIREGAS2026 = -0.1
+global rfspIPAB2026 = -0.1
+global rfspFONADIN2026 = 0.0
+global rfspDeudores2026 = 0.0
+global rfspBanca2026 = 0.0
+global rfspAdecuaciones2026 = -0.3
+global rfspBalance2026 = -2.7
+global tipoDeCambio2026 = 18.5
+global balprimario2026 = 0.5
+global costodeudaInterno2026 = 3.2
+global costodeudaExterno2026 = 3.2
 
-scalar shrfsp2027 = 48.8
-scalar shrfspInterno2027 = 38.3
-scalar shrfspExterno2027 = 10.6
-scalar rfsp2027 = -2.7
-scalar rfspPIDIREGAS2027 = -0.1
-scalar rfspIPAB2027 = -0.1
-scalar rfspFONADIN2027 = 0.0
-scalar rfspDeudores2027 = 0.1
-scalar rfspBanca2027 = 0.0
-scalar rfspAdecuaciones2027 = -0.4
-scalar rfspBalance2027 = -2.2
-scalar tipoDeCambio2027 = 18.2
-scalar balprimario2027 = -0.3
-scalar costodeudaInterno2027 = 2.5
-scalar costodeudaExterno2027 = 2.5
+global shrfsp2027 = 51.4
+global shrfspInterno2027 = 40.8
+global shrfspExterno2027 = 10.6
+global rfsp2027 = -2.9
+global rfspPIDIREGAS2027 = -0.1
+global rfspIPAB2027 = -0.1
+global rfspFONADIN2027 = 0.0
+global rfspDeudores2027 = 0.1
+global rfspBanca2027 = 0.0
+global rfspAdecuaciones2027 = -0.3
+global rfspBalance2027 = -2.4
+global tipoDeCambio2027 = 18.7
+global balprimario2027 = 0.5
+global costodeudaInterno2027 = 2.8
+global costodeudaExterno2027 = 2.8
 
-scalar shrfsp2028 = 48.8
-scalar shrfspInterno2028 = 38.6
-scalar shrfspExterno2028 = 10.3
-scalar rfsp2028 = -2.7
-scalar rfspPIDIREGAS2028 = -0.1
-scalar rfspIPAB2028 = -0.1
-scalar rfspFONADIN2028 = 0.1
-scalar rfspDeudores2028 = 0.0
-scalar rfspBanca2028 = 0.0
-scalar rfspAdecuaciones2028 = -0.3
-scalar rfspBalance2028 = -2.2
-scalar tipoDeCambio2028 = 18.4
-scalar balprimario2028 = -0.3
-scalar costodeudaInterno2028 = 2.5
-scalar costodeudaExterno2028 = 2.5
+global shrfsp2028 = 51.4
+global shrfspInterno2028 = 41.1
+global shrfspExterno2028 = 10.3
+global rfsp2028 = -2.9
+global rfspPIDIREGAS2028 = -0.1
+global rfspIPAB2028 = -0.1
+global rfspFONADIN2028 = 0.0
+global rfspDeudores2028 = 0.0
+global rfspBanca2028 = 0.0
+global rfspAdecuaciones2028 = -0.3
+global rfspBalance2028 = -2.4
+global tipoDeCambio2028 = 18.9
+global balprimario2028 = 0.4
+global costodeudaInterno2028 = 2.8
+global costodeudaExterno2028 = 2.8
 
-scalar shrfsp2029 = 48.8
-scalar shrfspInterno2029 = 38.9
-scalar shrfspExterno2029 = 10.0
-scalar rfsp2029 = -2.7
-scalar rfspPIDIREGAS2029 = -0.1
-scalar rfspIPAB2029 = -0.1
-scalar rfspFONADIN2029 = 0.0
-scalar rfspDeudores2029 = 0.0
-scalar rfspBanca2029 = 0.0
-scalar rfspAdecuaciones2029 = -0.3
-scalar rfspBalance2029 = -2.2
-scalar tipoDeCambio2029 = 18.6
-scalar balprimario2029 = -0.3
-scalar costodeudaInterno2029 = 2.5
-scalar costodeudaExterno2029 = 2.5
+global shrfsp2029 = 51.4
+global shrfspInterno2029 = 41.4
+global shrfspExterno2029 = 10.0
+global rfsp2029 = -2.9
+global rfspPIDIREGAS2029 = -0.1
+global rfspIPAB2029 = -0.1
+global rfspFONADIN2029 = 0.0
+global rfspDeudores2029 = 0.0
+global rfspBanca2029 = 0.0
+global rfspAdecuaciones2029 = -0.3
+global rfspBalance2029 = -2.4
+global tipoDeCambio2029 = 19.1
+global balprimario2029 = 0.4
+global costodeudaInterno2029 = 2.7
+global costodeudaExterno2029 = 2.7
 
-scalar shrfsp2030 = 48.8
-scalar shrfspInterno2030 = 38.9
-scalar shrfspExterno2030 = 10.0
-scalar rfsp2030 = -2.7
-scalar rfspPIDIREGAS2030 = -0.1
-scalar rfspIPAB2030 = -0.1
-scalar rfspFONADIN2030 = 0.0
-scalar rfspDeudores2030 = 0.0
-scalar rfspBanca2030 = 0.0
-scalar rfspAdecuaciones2030 = -0.3
-scalar rfspBalance2030 = -2.2
-scalar tipoDeCambio2030 = 18.6
-scalar balprimario2030 = -0.3
-scalar costodeudaInterno2030 = 2.5
-scalar costodeudaExterno2030 = 2.5
+global shrfsp2030 = 51.4
+global shrfspInterno2030 = 41.7
+global shrfspExterno2030 = 9.7
+global rfsp2030 = -2.9
+global rfspPIDIREGAS2030 = -0.1
+global rfspIPAB2030 = -0.1
+global rfspFONADIN2030 = 0.0
+global rfspDeudores2030 = 0.0
+global rfspBanca2030 = 0.0
+global rfspAdecuaciones2030 = -0.3
+global rfspBalance2030 = -2.4
+global tipoDeCambio2030 = 19.3
+global balprimario2030 = 0.4
+global costodeudaInterno2030 = 2.7
+global costodeudaExterno2030 = 2.7
 
 ** 4.1 Sostenibilidad de la deuda y brecha fiscal **
 noisily FiscalGap, anio(`=anioPE') end(2030) aniomin(2013) desde(2013) discount(10) $nographs //$update

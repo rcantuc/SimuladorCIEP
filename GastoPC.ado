@@ -446,6 +446,9 @@ quietly {
 		if `imssbien0' == . {
 			local imssbien0 = r(programa_imss_oportunida)
 		}
+		if `imssbien0' == . {
+			local imssbien0 = 0
+		}
 		local segpop0 = r(seguro_popular)
 		if `segpop0' == . {
 			local segpop0 = r(atencion_a_la_salud_y_m)
@@ -473,10 +476,11 @@ quietly {
 		if `nosec' == . {
 			local nosec = 0
 		}
-		if `imssbien0' == . {
-			local imssbien0 = r(entidades_no_sectorizada)
+		local saludbienestar = r(bienestar)
+		if `saludbienestar' == . {
+			local saludbienestar = 0
 		}
-		local imssbien = `segpop0'+`imssbien0'+`fassa'+`fortaINSABI'+`atencINSABI'+`nosec'
+		local imssbien = `imssbien0'+`fassa'+`fortaINSABI'+`atencINSABI'+`nosec'+`saludbienestar'
 		scalar imssbien = `imssbien'/`Salud'[1,7]
 		restore
 	}
@@ -507,7 +511,7 @@ quietly {
 		local caneros = r(seguridad_social_canero)
 
 		PEF if anio == `aniope' & divCIEP == "Salud" & divSIM != "Inversión", anio(`aniope') by(ramo) min(0) nographs
-		local ssa = r(salud)+`incorpo'+`adeusal'+`caneros'-`segpop0'-`fortaINSABI'-`atencINSABI'
+		local ssa = r(salud)+`incorpo'+`adeusal'+`caneros'-`fortaINSABI'-`atencINSABI'
 		scalar ssa = `ssa'/`Salud'[1,1]
 		restore
 	}
