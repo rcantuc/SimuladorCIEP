@@ -165,6 +165,15 @@ quietly {
 		noisily di in g "  Crecimiento real: " _col(44) in y %16.1fc (`meshoy'[1,1]/`mesant'[1,1]-1)*100 in g " %"
 	}
 
+	tempvar finishedY finishedYY
+	g `finishedY' = mes == 12
+	egen `finishedYY' = max(`finishedY'), by(anio)
+
+	tempvar montoanual propmensual
+	egen `montoanual' = sum(monto) if `finishedYY' == 1 & anio >= `desde', by(anio)
+	g propmensual = monto/`montoanual' if `finishedYY' == 1 & anio >= `desde'
+	egen acum_prom = mean(propmensual), by(mes)
+
 
 	****************************
 	*** 2 Proyeccion mensual ***
@@ -193,15 +202,6 @@ quietly {
 		}
 
 		** 2.2 Gráfica por mes calendario **
-		tempvar finishedY finishedYY
-		g `finishedY' = mes == 12
-		egen `finishedYY' = max(`finishedY'), by(anio)
-
-		tempvar montoanual propmensual
-		egen `montoanual' = sum(monto) if `finishedYY' == 1 & anio >= `desde', by(anio)
-		g propmensual = monto/`montoanual' if `finishedYY' == 1 & anio >= `desde'
-		egen acum_prom = mean(propmensual), by(mes)
-
 		local meses "Enero Febrero Marzo Abril Mayo Junio Julio Agosto Septiembre Octubre Noviembre Diciembre"
 		tokenize "`meses'"
 		tabstat acum_prom if `finishedYY' == 1, stat(mean) by(mes) f(%20.3fc) save
@@ -217,7 +217,7 @@ quietly {
 			yline(0, lcolor(black) lpattern(solid)) ///
 			title(`graphtitle') ///
 			ylabel(, format(%15.0fc)) ///
-			note("Las cifras entre paréntesis representan la distribución promedio mensual desde 2008.") ///
+			note("Las cifras entre paréntesis representan la distribución promedio mensual desde `desde'.") ///
 			caption("`graphfuente'")
 		capture confirm existence $export
 		if _rc == 0 {
@@ -235,7 +235,7 @@ quietly {
 			blabel(bar, format(%10.0fc) color(white) size(small) orient(vertical)) ///
 			legend(off) ///
 			///yline(0, lcolor(black) lpattern(dash)) ///
-			note("{c U'}ltimo dato: `last_anio'm`last_mes'.") ///
+			///note("{c U'}ltimo dato: `last_anio'm`last_mes'.") ///
 			caption("`graphfuente'")
 		capture confirm existence $export
 		if _rc == 0 {
@@ -262,7 +262,6 @@ quietly {
 			blabel(bar, format(%10.0fc) color(white) size(small) orient(vertical)) ///
 			legend(off) ///
 			caption("`graphfuente'") ///
-			note("{bf:Nota:} Los crecimientos se hacen con respecto al último año de la serie anterior.") ///
 
 		restore
 	}
