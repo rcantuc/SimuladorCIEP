@@ -89,6 +89,7 @@ quietly {
 	**# 4 PARÁMETROS EXÓGENOS ***
 	***                       ***
 	*****************************
+	local obslastexo = _N
 	tsset anio
 	forvalues j = 1(1)`=_N' {
 		* Política fiscal *
@@ -604,17 +605,17 @@ quietly {
 	**********************************/
 	** EFECTOS SOBRE LOS INDICADORES **
 	tempvar rfspBalance rfspOtros rfspBalance0 rfspOtros0 rfsppib rfsppc rfsp
-	g `rfspOtros0' = (- rfspPIDIREGAS - rfspIPAB - rfspFONADIN - rfspDeudores - rfspBanca - rfspAdecuaciones)/1000000000000/deflator
-	g `rfspOtros' = (- rfspPIDIREGAS - rfspIPAB - rfspFONADIN - rfspDeudores - rfspBanca  - rfspAdecuaciones)/1000000000000/deflator
+	g `rfspOtros0' = -(- rfspPIDIREGAS - rfspIPAB - rfspFONADIN - rfspDeudores - rfspBanca - rfspAdecuaciones)/1000000000000/deflator
+	g `rfspOtros' = -(- rfspPIDIREGAS - rfspIPAB - rfspFONADIN - rfspDeudores - rfspBanca  - rfspAdecuaciones)/1000000000000/deflator
 
-	g `rfspBalance0' = - rfspBalance/1000000000000/deflator
-	g `rfspBalance' = (- rfspBalance + `rfspOtros')/1000000000000/deflator if `rfspOtros' < 0
+	g `rfspBalance0' = rfspBalance/1000000000000/deflator
+	g `rfspBalance' = (rfspBalance + `rfspOtros')/1000000000000/deflator if `rfspOtros' < 0
 	replace `rfspBalance' = `rfspOtros' - rfspBalance/1000000000000/deflator if `rfspOtros' >= 0
 	format `rfspBalance' `rfspOtros' `rfspBalance0' `rfspOtros0' %5.1f
 	
-	g `rfsppib' = -rfsp/pibY*100
-	g rfsppc = -rfsp/(Poblacion_ajustada)/deflator
-	g `rfsp' = -rfsp/1000000000000/deflator
+	g `rfsppib' = rfsp/pibY*100
+	g rfsppc = rfsp/(Poblacion_ajustada)/deflator
+	g `rfsp' = rfsp/1000000000000/deflator
 	format `rfsp' %5.1fc
 	format `rfsppib' %5.1fc
 
@@ -652,13 +653,14 @@ quietly {
 			(scatter `rfsp' anio, mlabel(`rfsp') mlabposition(12) mlabcolor(black) msize(zero) mlabsize(vlarge)) ///
 			if rfsp != . & anio > `ultanio', ///
 			title("`graphtitle'") ///
+			subtitle(" Montos reportados (millones MXN `aniovp') y como % del PIB", margin(bottom)) ///
 			xtitle("") ///
 			name(rfsp, replace) ///
-			text(`=`rfsppib'[24]' 2013 "{bf:% PIB}", place(6) yaxis(2)) ///
-			text(`=`rfsp'[24]' 2013 "{bf:billones}" "{bf:`currency' `aniovp'}", place(6)) ///
+			///text(`=`rfsppib'[24]' 2013 "{bf:% PIB}", place(6) yaxis(2)) ///
+			///text(`=`rfsp'[24]' 2013 "{bf:billones}" "{bf:`currency' `aniovp'}", place(6)) ///
 			///text(`=(`rfsp'[41]-`rfspOtros'[41])*.5+`rfspOtros'[41]' 2030 "Balance", place(0) size(large)) ///
 			///text(`=`rfspOtros'[41]*.5' 2030 "Otros RFSP", place(0) size(large)) ///
-			text(`=`rango'[3,2]' 2008 "{bf:Promedio:}" `"`=string(`rango'[3,2],"%5.1f")' % PIB"', place(5) yaxis(2)) ///
+			text(`=`rango'[3,2]' 2008 `"{bf:Promedio:} `=string(`rango'[3,2],"%5.1f")' % PIB"', place(5) yaxis(2) size(medium)) ///
 			ylabel(none, format(%15.0fc) labsize(small)) ///
 			ylabel(none, format(%15.0fc) labsize(small) axis(2)) ///
 			xlabel(`=`ultanio'+1'(1)`lastexo', noticks) ///	
@@ -726,56 +728,56 @@ program define UpdateSHRFSP
 	***     2 RFSP (flujos)     ***
 	***                         ***
 	*******************************
-	noisily DatosAbiertos RF000000SPFCS, $nographs reverse
+	noisily DatosAbiertos RF000000SPFCS, $nographs reverse proy desde(2009)
 	rename monto rfsp
 	tempfile rfsp
 	save "`rfsp'"
 
 
 	** Endeudamiento presupuestario y no presupuestario **
-	noisily DatosAbiertos RF000001SPFCS, $nographs reverse
+	noisily DatosAbiertos RF000001SPFCS, $nographs reverse proy desde(2009)
 	rename monto rfspBalance
 	tempfile Balance
 	save "`Balance'"
 
 
 	** PIDIREGAS **
-	noisily DatosAbiertos RF000002SPFCS, $nographs reverse
+	noisily DatosAbiertos RF000002SPFCS, $nographs reverse proy desde(2009)
 	rename monto rfspPIDIREGAS
 	tempfile PIDIREGAS
 	save "`PIDIREGAS'"
 
 
 	** IPAB **
-	noisily DatosAbiertos RF000003SPFCS, $nographs reverse
+	noisily DatosAbiertos RF000003SPFCS, $nographs reverse proy desde(2009)
 	rename monto rfspIPAB
 	tempfile IPAB
 	save "`IPAB'"
 
 
 	** FONADIN **
-	noisily DatosAbiertos RF000004SPFCS, $nographs reverse
+	noisily DatosAbiertos RF000004SPFCS, $nographs reverse proy desde(2009)
 	rename monto rfspFONADIN
 	tempfile FONADIN
 	save "`FONADIN'"
 
 
 	** PROGRAMA DE DEUDORES **
-	noisily DatosAbiertos RF000005SPFCS, $nographs reverse
+	noisily DatosAbiertos RF000005SPFCS, $nographs reverse proy desde(2009)
 	rename monto rfspDeudores
 	tempfile Deudores
 	save "`Deudores'"
 
 
 	** BANCA DE DESARROLLO **
-	noisily DatosAbiertos RF000006SPFCS, $nographs reverse
+	noisily DatosAbiertos RF000006SPFCS, $nographs reverse proy desde(2009)
 	rename monto rfspBanca
 	tempfile Banca
 	save "`Banca'"
 
 
 	** ADECUACIONES PRESUPUESTARIAS **
-	noisily DatosAbiertos RF000007SPFCS, $nographs reverse
+	noisily DatosAbiertos RF000007SPFCS, $nographs reverse proy desde(2009)
 	rename monto rfspAdecuaciones
 	tempfile Adecuaciones
 	save "`Adecuaciones'"

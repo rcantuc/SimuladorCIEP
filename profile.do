@@ -78,9 +78,9 @@ global inf2027 = 3.0
 global inf2028 = 3.0
 global inf2029 = 3.0
 global inf2030 = 3.0
-exit
 
-** 2.8 Deuda Pública **/
+
+/** 2.8 Deuda Pública **
 scalar tasaEfectiva = 7.8808
 
 global shrfsp2024 = 51.4
@@ -196,7 +196,7 @@ global costodeudaInterno2030 = 2.7
 global costodeudaExterno2030 = 2.7
 
 
-** 2.9 Parámetros: PEF **/
+** 2.9 Parámetros: PEF **
 ** 2.9.1 Parámetros: Educación **
 scalar iniciaA     =     370 //    Inicial
 scalar basica      =   29529 //    Educación b{c a'}sica
@@ -265,7 +265,7 @@ scalar IEPSNP      =   0.663 //    IEPS (no petrolero)
 scalar IEPSP       =   1.306 //    IEPS (petrolero)
 scalar IMPORT      =   0.419 //    Importaciones
 
-** 2.11 Parámetros: ISR **/
+** 2.11 Parámetros: ISR **
 * Anexo 8 de la Resolución Miscelánea Fiscal para 2024 *
 * Tarifa para el cálculo del impuesto correspondiente al ejericio 2024 a que se refieren los artículos 97 y 152 de la Ley del ISR
 * Tabla del subsidio para el empleo aplicable a la tarifa del numeral 5 del rubro B (página 773) *
@@ -369,7 +369,7 @@ matrix IEPST = (26.5	,		0 			\ /// Cerveza y alcohol 14
 ****************
 ***          ***
 *** 3 OUTPUT ***
-***		     ***
+***          ***
 ****************
 if "$output" != "" {
 	quietly log using `"`c(sysdir_personal)'/users/$id/output.txt"', replace text name(output)
@@ -378,10 +378,10 @@ if "$output" != "" {
 
 
 
-********************
+*******************/
 ***              ***
 *** 4 BIENVENIDA ***
-***		         ***
+***              ***
 ********************
 noisily di in w _newline(50) "{bf:Centro de Investigaci{c o'}n Econ{c o'}mica y Presupuestaria, A.C.}"
 noisily di _newline(2) in g `"{bf:{stata `"projmanager "`c(sysdir_personal)'/simulador.stpr""': Simulador Fiscal CIEP}}"'

@@ -68,7 +68,7 @@ global id = "ciepmx"								// IDENTIFICADOR DEL USUARIO
 *noisily PEF, by(divSIM) rows(2) min(0) anio(`=anioPE') desde(`=anioPE-1') title("Gasto presupuestario") $update
 
 ** 3.3 Saldo Histórico de Requerimientos Financieros del Sector Público
-noisily SHRFSP, anio(`=anioPE') ultanio(2007) $update $textbook
+noisily SHRFSP, anio(`=anioPE-1') ultanio(2007) $update $textbook
 ex
 ** 3.4 Subnacionales
 //noisily run "Subnacional.do" //$update
