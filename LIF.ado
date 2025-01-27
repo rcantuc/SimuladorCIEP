@@ -137,7 +137,7 @@ quietly {
 	*** 4 RESUMIDO ***
 	******************
 	capture keep `if'
-	keep if anio >= `desde'-1
+	*keep if anio >= `desde'-1
 	tempvar resumido recaudacionPIB
 	g resumido = `by'
 

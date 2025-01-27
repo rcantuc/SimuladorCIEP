@@ -567,13 +567,13 @@ quietly {
 	if "$nographs" != "nographs" & "`nographs'" != "nographs" {
 		graph combine `=substr("`varlist'",1,10)'_dec `varlist'Proj, ///
 			name(`=substr("`varlist'",1,10)'_`aniope', replace) ///
-			title("{bf:`title'}") ///
-			subtitle(" Perfil etario (MXN `aniovp') y proyección demográfica (% PIB)", margin(bottom)) ///
+			///title("{bf:`title'}") ///
+			subtitle(" Perfil etario (MXN `aniovp') y proyección demográfica (billones MXN)", margin(bottom)) ///
 			///subtitle(" Age profile (PPP `aniovp') and demographic projection (% GDP)", margin(bottom)) ///
 			///title("`title' {bf:profile}") ///
-			///caption("Fuente: Elaborado por el CIEP, con información de INEGI/`base', INEGI/BIE, CONAPO y SHCP.") ///
+			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/`base', INEGI/BIE, CONAPO y SHCP.") ///
 			///note(`"Nota: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n en cada grupo."') ///
-			caption("{bf:Source}: Prepared by CIEP, using data from `base'.") ///
+			///caption("{bf:Source}: Prepared by CIEP, using data from `base'.") ///
 			///note(`"{bf:Note}: Percentages in parentheses show the concentration in each group."')
 
 		graph save `=substr("`varlist'",1,10)'_`aniope' `"`c(sysdir_personal)'/users/$id/graphs/`varlist'_`aniope'.gph"', replace
@@ -778,11 +778,11 @@ program graphpiramide
 			stack asyvars xalternate ///
 			yscale(noextend noline /*range(-7(1)7)*/) ///
 			blabel(none, format(%5.1fc)) ///
-			///t2title({bf:Hombres} (`men'%), size(medsmall)) ///
-			///ytitle(% PIB) ///
-			t2title({bf:Men} (`men'%), size(medsmall)) ///
-			ytitle(% GDP) ///
-			ylabel(`=round(`PORmaxval'[2,1],.1)'(.025)`=`PORmaxval'[1,1]', format(%7.1fc) noticks) ///
+			t2title({bf:Hombres} (`men'%), size(medsmall)) ///
+			ytitle(% PIB) ///
+			///t2title({bf:Men} (`men'%), size(medsmall)) ///
+			///ytitle(% GDP) ///
+			ylabel(`=round(`PORmaxval'[2,1],.1)'(.1)`=`PORmaxval'[1,1]', format(%7.1fc) noticks) ///
 			name(H`varlist', replace) ///
 			legend(cols(4) pos(6) bmargin(zero) label(1 "") label(2 "") label(3 "`rect'") ///
 			label(4 "") label(5 "") label(6 "") label(7 "") label(8 "") label(9 "") ///
@@ -798,13 +798,13 @@ program graphpiramide
 			stack asyvars ///
 			yscale(noextend noline /*range(1.8)*/) /// |
 			blabel(none, format(%5.1fc)) ///
-			///t2title({bf:Mujeres} (`women'%), size(medsmall)) ///
-			///ytitle(% PIB) ///
-			t2title({bf:Women} (`women'%), size(medsmall)) ///
-			ytitle(% GDP) ///
-			ylabel(`=round(`PORmaxval'[2,1],.1)'(.025)`=`PORmaxval'[1,1]', format(%7.1fc) noticks) ///
+			t2title({bf:Mujeres} (`women'%), size(medsmall)) ///
+			ytitle(% PIB) ///
+			///t2title({bf:Women} (`women'%), size(medsmall)) ///
+			///ytitle(% GDP) ///
+			ylabel(`=round(`PORmaxval'[2,1],.1)'(.1)`=`PORmaxval'[1,1]', format(%7.1fc) noticks) ///
 			name(M`varlist', replace) ///
-			legend(cols(4) pos(5) bmargin(zero) size(vsmall) keygap(1) symxsize(3) textwidth(30) forcesize) ///
+			legend(cols(4) pos(5) bmargin(zero) size(medlarge) keygap(1) symxsize(3) textwidth(30) forcesize) ///
 			plotregion(margin(zero)) ///
 			graphregion(margin(zero))
 
@@ -813,9 +813,9 @@ program graphpiramide
 			///title("{bf:`title'}") subtitle("$pais") ///
 			///title("`title' {bf:profile}") ///
 			///caption("{bf:Fuente}: Elaborado por el CIEP, con la `base'.") ///
-			///note(`"{bf:Nota}: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n en cada grupo."') ///
-			caption("{bf:Source}: Prepared by CIEP, using data from `base'.") ///
-			note(`"{bf:Note}: Percentages in parentheses represent each group's share of the total account."')
+			note(`"{bf:Nota}: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n en cada grupo."') ///
+			///caption("{bf:Source}: Prepared by CIEP, using data from `base'.") ///
+			///note(`"{bf:Note}: Percentages in parentheses represent each group's share of the total account."')
 	
 		graph save `=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)' `"`c(sysdir_personal)'/users/$id/graphs/`varlist'_`titleover'.gph"', replace
 		if "$export" != "" {
@@ -924,10 +924,8 @@ program define ProyGraph
 
 	local title = modulo[1]
 	
-	*replace estimacion = estimacion*lambda/1000000000000
-	format estimacion %20.0fc
-
-	replace estimacion = estimacion*lambda/pibYR*100
+	replace estimacion = estimacion*lambda/1000000000000
+	*replace estimacion = estimacion*lambda/pibYR*100
 	format estimacion %7.3fc
 
 	forvalues aniohoy = `aniope'(1)`aniope' {
@@ -959,8 +957,8 @@ program define ProyGraph
 
 		if "$nographs" != "nographs" & "`nographs'" != "nographs" {
 			twoway (connected estimacion anio, lpattern(dot) msize(small)) ///
-				(connected estimacion anio if anio == `aniohoy', mlabel(estimacion) mlabposition(12) mlabcolor("114 113 118")) ///
-				(connected estimacion anio if anio == `aniomax', mlabel(estimacion) mlabposition(12) mlabcolor("114 113 118")) ///
+				(connected estimacion anio if anio == `aniohoy', mlabel(estimacion) mlabposition(12) mlabcolor("114 113 118") mlabsize(medlarge)) ///
+				(connected estimacion anio if anio == `aniomax', mlabel(estimacion) mlabposition(12) mlabcolor("114 113 118") mlabsize(medlarge)) ///
 				if anio > 2020, ///
 				///ytitle("billones `currency' `aniovp'") ///
 				///ytitle("% PIB") ///
@@ -970,7 +968,7 @@ program define ProyGraph
 				///yscale(range(0)) /*ylabel(0(1)4)*/ ///
 				ylabel(#5, format(%5.2fc) labsize(small)) ///
 				yscale(range(0)) ///
-				xlabel(2020(10)`=anio[_N]' `aniohoy', labsize(small)) ///
+				xlabel(2020(10)`=anio[_N]' `aniohoy' `aniomax', labsize(small)) ///
 				xtitle("") ///
 				legend(off) ///
 				xline(`aniohoy', lpattern(dot)) ///
@@ -978,8 +976,8 @@ program define ProyGraph
 				///yline(0, lpattern(solid) lcolor(black)) ///
 				///text(`=`estimacionmax'*.05' `aniomax' "Este perfil, junto con" "las proyecciones demográficas," "obtiene un {bf:máximo en `aniomax'}.", size(medsmall) place(11) justification(right)) ///
 				///text(`=`estimacionmax'*.05' `aniomax' "This age profile, along with" "CONAPO's demographic projections," "reaches a maximum in {bf:`aniomax'}.", size(medsmall) place(11) justification(right)) ///
-				///text(`=`estimacionvp'*1.05' `aniohoy' "De `aniohoy' a `aniomax',"  `"{bf:cambiaría `=string((`estimacionmax'/`estimacionvp'-1)*100,"%5.2f")'%}."', size(medsmall) place(11) justification(left)) ///
-				text(`=`estimacionvp'*0.25' `aniohoy' "From `aniohoy' to 2070,"  "its demand will" `"change in {bf:`=string((`LAST'[1,1]/`estimacionvp'-1)*100,"%5.2f")'%}."', size(medsmall) place(1) justification(left)) ///
+				text(`=`estimacionvp'*0.33' `aniohoy' "De `aniohoy' a `aniomax',"  `"cambiaría {bf:`=string((`MAX'[1,1]/`estimacionvp'-1)*100,"%5.2f")'%}."', size(medsmall) place(11) justification(left)) ///
+				///text(`=`estimacionvp'*0.25' `aniohoy' "From `aniohoy' to 2070,"  "its demand will" `"change in {bf:`=string((`LAST'[1,1]/`estimacionvp'-1)*100,"%5.2f")'%}."', size(medsmall) place(1) justification(left)) ///
 				///title("{bf:Proyecci{c o'}n} de `title'") subtitle("$pais") ///
 				///caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.") ///
 				name(`varlist'Proj, replace)

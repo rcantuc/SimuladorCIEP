@@ -138,7 +138,7 @@ quietly {
 	******************
 	*** 4 Resumido ***
 	******************
-	keep if anio >= `desde'-1
+	*keep if anio >= `desde'-1
 	capture confirm string variable `by'
 	if _rc != 0 {
 		tempvar by2

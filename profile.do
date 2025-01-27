@@ -71,7 +71,7 @@ global def2029 = 3.5
 global def2030 = 3.5
 
 ** 2.7 Economía: Inflación **
-global inf2024 = 4.3
+*global inf2024 = 4.3
 global inf2025 = 3.5
 global inf2026 = 3.0
 global inf2027 = 3.0
@@ -80,20 +80,20 @@ global inf2029 = 3.0
 global inf2030 = 3.0
 
 
-/** 2.8 Deuda Pública **
-scalar tasaEfectiva = 7.8808
+** 2.8 Deuda Pública **
+scalar tasaEfectiva = 6.3782
 
 global shrfsp2024 = 51.4
 global shrfspInterno2024 = 38.5
 global shrfspExterno2024 = 12.9
-global rfsp2024 = -5.9
-global rfspPIDIREGAS2024 = 0.02
-global rfspIPAB2024 = -0.03
-global rfspFONADIN2024 = -0.04
-global rfspDeudores2024 = -0.01
-global rfspBanca2024 = 0.01
-global rfspAdecuaciones2024 = -0.81
-global rfspBalance2024 = -5.0
+global rfsp2024 = 5.9
+global rfspPIDIREGAS2024 = -0.02
+global rfspIPAB2024 = 0.03
+global rfspFONADIN2024 = 0.04
+global rfspDeudores2024 = 0.01
+global rfspBanca2024 = -0.01
+global rfspAdecuaciones2024 = 0.81
+global rfspBalance2024 = 5.0
 global tipoDeCambio2024 = 18.2
 global balprimario2024 = -1.4
 global costodeudaInterno2024 = 3.6
@@ -102,101 +102,101 @@ global costodeudaExterno2024 = 3.6
 global shrfsp2025 = 51.4
 global shrfspInterno2025 = 39.8
 global shrfspExterno2025 = 11.6
-global rfsp2025 = -3.9
-global rfspPIDIREGAS2025 = -0.15
-global rfspIPAB2025 = -0.1
-global rfspFONADIN2025 = -0.03
-global rfspDeudores2025 = -0.01
-global rfspBanca2025 = 0.01
-global rfspAdecuaciones2025 = -0.44
-global rfspBalance2025 = -3.2
+global rfsp2025 = 3.9
+global rfspPIDIREGAS2025 = 0.15
+global rfspIPAB2025 = 0.1
+global rfspFONADIN2025 = 0.03
+global rfspDeudores2025 = 0.01
+global rfspBanca2025 = -0.01
+global rfspAdecuaciones2025 = 0.44
+global rfspBalance2025 = 3.2
 global tipoDeCambio2025 = 18.7
-global balprimario2025 = 0.6
+global balprimario2025 = -0.6
 global costodeudaInterno2025 = 3.8
 global costodeudaExterno2025 = 3.8
 
 global shrfsp2026 = 51.4
 global shrfspInterno2026 = 40.5
 global shrfspExterno2026 = 10.9
-global rfsp2026 = -3.2
-global rfspPIDIREGAS2026 = -0.1
-global rfspIPAB2026 = -0.1
+global rfsp2026 = 3.2
+global rfspPIDIREGAS2026 = 0.1
+global rfspIPAB2026 = 0.1
 global rfspFONADIN2026 = 0.0
 global rfspDeudores2026 = 0.0
 global rfspBanca2026 = 0.0
-global rfspAdecuaciones2026 = -0.3
-global rfspBalance2026 = -2.7
+global rfspAdecuaciones2026 = 0.3
+global rfspBalance2026 = 2.7
 global tipoDeCambio2026 = 18.5
-global balprimario2026 = 0.5
+global balprimario2026 = -0.5
 global costodeudaInterno2026 = 3.2
 global costodeudaExterno2026 = 3.2
 
 global shrfsp2027 = 51.4
 global shrfspInterno2027 = 40.8
 global shrfspExterno2027 = 10.6
-global rfsp2027 = -2.9
-global rfspPIDIREGAS2027 = -0.1
-global rfspIPAB2027 = -0.1
+global rfsp2027 = 2.9
+global rfspPIDIREGAS2027 = 0.1
+global rfspIPAB2027 = 0.1
 global rfspFONADIN2027 = 0.0
-global rfspDeudores2027 = 0.1
+global rfspDeudores2027 = -0.1
 global rfspBanca2027 = 0.0
-global rfspAdecuaciones2027 = -0.3
-global rfspBalance2027 = -2.4
+global rfspAdecuaciones2027 = 0.3
+global rfspBalance2027 = 2.4
 global tipoDeCambio2027 = 18.7
-global balprimario2027 = 0.5
+global balprimario2027 = -0.5
 global costodeudaInterno2027 = 2.8
 global costodeudaExterno2027 = 2.8
 
 global shrfsp2028 = 51.4
 global shrfspInterno2028 = 41.1
 global shrfspExterno2028 = 10.3
-global rfsp2028 = -2.9
-global rfspPIDIREGAS2028 = -0.1
-global rfspIPAB2028 = -0.1
+global rfsp2028 = 2.9
+global rfspPIDIREGAS2028 = 0.1
+global rfspIPAB2028 = 0.1
 global rfspFONADIN2028 = 0.0
 global rfspDeudores2028 = 0.0
 global rfspBanca2028 = 0.0
-global rfspAdecuaciones2028 = -0.3
-global rfspBalance2028 = -2.4
+global rfspAdecuaciones2028 = 0.3
+global rfspBalance2028 = 2.4
 global tipoDeCambio2028 = 18.9
-global balprimario2028 = 0.4
+global balprimario2028 = -0.4
 global costodeudaInterno2028 = 2.8
 global costodeudaExterno2028 = 2.8
 
 global shrfsp2029 = 51.4
 global shrfspInterno2029 = 41.4
 global shrfspExterno2029 = 10.0
-global rfsp2029 = -2.9
-global rfspPIDIREGAS2029 = -0.1
-global rfspIPAB2029 = -0.1
+global rfsp2029 = 2.9
+global rfspPIDIREGAS2029 = 0.1
+global rfspIPAB2029 = 0.1
 global rfspFONADIN2029 = 0.0
 global rfspDeudores2029 = 0.0
 global rfspBanca2029 = 0.0
-global rfspAdecuaciones2029 = -0.3
-global rfspBalance2029 = -2.4
+global rfspAdecuaciones2029 = 0.3
+global rfspBalance2029 = 2.4
 global tipoDeCambio2029 = 19.1
-global balprimario2029 = 0.4
+global balprimario2029 = -0.4
 global costodeudaInterno2029 = 2.7
 global costodeudaExterno2029 = 2.7
 
 global shrfsp2030 = 51.4
 global shrfspInterno2030 = 41.7
 global shrfspExterno2030 = 9.7
-global rfsp2030 = -2.9
-global rfspPIDIREGAS2030 = -0.1
-global rfspIPAB2030 = -0.1
+global rfsp2030 = 2.9
+global rfspPIDIREGAS2030 = 0.1
+global rfspIPAB2030 = 0.1
 global rfspFONADIN2030 = 0.0
 global rfspDeudores2030 = 0.0
 global rfspBanca2030 = 0.0
-global rfspAdecuaciones2030 = -0.3
-global rfspBalance2030 = -2.4
+global rfspAdecuaciones2030 = 0.3
+global rfspBalance2030 = 2.4
 global tipoDeCambio2030 = 19.3
-global balprimario2030 = 0.4
+global balprimario2030 = -0.4
 global costodeudaInterno2030 = 2.7
 global costodeudaExterno2030 = 2.7
 
 
-** 2.9 Parámetros: PEF **
+** 2.9 Parámetros: PEF **/
 ** 2.9.1 Parámetros: Educación **
 scalar iniciaA     =     370 //    Inicial
 scalar basica      =   29529 //    Educación b{c a'}sica
@@ -265,7 +265,7 @@ scalar IEPSNP      =   0.663 //    IEPS (no petrolero)
 scalar IEPSP       =   1.306 //    IEPS (petrolero)
 scalar IMPORT      =   0.419 //    Importaciones
 
-** 2.11 Parámetros: ISR **
+** 2.11 Parámetros: ISR **/
 * Anexo 8 de la Resolución Miscelánea Fiscal para 2024 *
 * Tarifa para el cálculo del impuesto correspondiente al ejericio 2024 a que se refieren los artículos 97 y 152 de la Ley del ISR
 * Tabla del subsidio para el empleo aplicable a la tarifa del numeral 5 del rubro B (página 773) *
@@ -345,24 +345,24 @@ matrix IVAT = (16 \     ///  1  Tasa general
 
 ** 2.14 Parámetros: IEPS **
 * Fuente: Ley del IEPS, Artículo 2.
-*              Ad valorem		Específico
-matrix IEPST = (26.5	,		0 			\ /// Cerveza y alcohol 14
-				30.0	,		0 			\ /// Alcohol 14+ a 20
-				53.0	,		0 			\ /// Alcohol 20+
-				160.0	,		0.6166		\ /// Tabaco y cigarros
-				30.0	,		0 			\ /// Juegos y sorteos
-				3.0		,		0 			\ /// Telecomunicaciones
-				25.0	,		0 			\ /// Bebidas energéticas
-				0		,		1.5737		\ /// Bebidas saborizadas
-				8.0		,		0 			\ /// Alto contenido calórico
-				0		,		10.7037		\ /// Gas licuado de petróleo (propano y butano)
-				0		,		21.1956		\ /// Combustibles (petróleo)
-				0		,		19.8607		\ /// Combustibles (diésel)
-				0		,		43.4269		\ /// Combustibles (carbón)
-				0		,		21.1956		\ /// Combustibles (combustible para calentar)
-				0		,		6.1752		\ /// Gasolina: magna
-				0		,		5.2146		\ /// Gasolina: premium
-				0		,		6.7865		) // Gasolina: diésel
+*              Ad valorem	Específico
+matrix IEPST = (26.5	,	0 		\ /// Cerveza y alcohol 14
+		30.0	,	0 		\ /// Alcohol 14+ a 20
+		53.0	,	0 		\ /// Alcohol 20+
+		160.0	,	0.6166		\ /// Tabaco y cigarros
+		30.0	,	0 		\ /// Juegos y sorteos
+		3.0	,	0 		\ /// Telecomunicaciones
+		25.0	,	0 		\ /// Bebidas energéticas
+		0	,	1.5737		\ /// Bebidas saborizadas
+		8.0	,	0 		\ /// Alto contenido calórico
+		0	,	10.7037		\ /// Gas licuado de petróleo (propano y butano)
+		0	,	21.1956		\ /// Combustibles (petróleo)
+		0	,	19.8607		\ /// Combustibles (diésel)
+		0	,	43.4269		\ /// Combustibles (carbón)
+		0	,	21.1956		\ /// Combustibles (combustible para calentar)
+		0	,	6.1752		\ /// Gasolina: magna
+		0	,	5.2146		\ /// Gasolina: premium
+		0	,	6.7865		) // Gasolina: diésel
 
 
 				
