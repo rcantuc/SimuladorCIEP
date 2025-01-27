@@ -10,11 +10,11 @@ timer on 1
 ** 0.1 Rutas al Github
 if "`c(username)'" == "ricardo" {						// iMac Ricardo
 	sysdir set PERSONAL "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
-	*global export "/Users/ricardo/CIEP Dropbox/TextbookCIEP/images"
+	//global export "/Users/ricardo/CIEP Dropbox/TextbookCIEP/images"
 }
 else if "`c(username)'" == "servidorciep" {					// Servidor CIEP
 	sysdir set PERSONAL "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
-	*global export "/home/servidorciep/CIEP Dropbox/TextbookCIEP/images"
+	//global export "/home/servidorciep/CIEP Dropbox/TextbookCIEP/images"
 }
 else if "`c(console)'" != "" {							// Servidor Web
 	sysdir set PERSONAL "/SIM/OUT/6/"
@@ -36,40 +36,40 @@ global id = "ciepmx"								// IDENTIFICADOR DEL USUARIO
 
 ***
 **# 1. DEMOGRAFÍA
-***
-//forvalues anio = 1950(1)`=anioPE' {						// <-- Año(s) de interés
+/***
+forvalues anio = `=aniovp'(1)`=aniovp' {					// <-- Año(s) de interés
 	//foreach entidad of global entidadesL {				// <-- Nacional o entidad
-		*noisily Poblacion if entidad == "`entidad'", anioi(2024) aniofinal(2030) //$update
+		noisily Poblacion if entidad == "`entidad'", anioi(`anio') aniofinal(2030) //$update
 	//}
-//}
+}
 
 
 
-***
+**/
 **# 2. ECONOMÍA
 ***
 
 ** 2.1 Producto Interno Bruto 
-*noisily PIBDeflactor if anio <= 2030, aniovp(`=aniovp') geodef(1993) geopib(1993) $update $textbook
+noisily PIBDeflactor, aniovp(`=aniovp') geodef(`=aniovp-1') geopib(`=aniovp-1') $update $textbook
 
 ** 2.2 Sistema de Cuentas Nacionales
-*noisily SCN if anio <= 2030, //$update
+noisily SCN if anio <= 2030, //$update
 
 
 
-***
+**/
 **# 3. SISTEMA FISCAL
 ***
 
 ** 3.1 Ley de Ingresos de la Federación
-*noisily LIF, by(divPE) rows(1) anio(`=anioPE') desde(`=anioPE-1') min(0) title("Ingresos presupuestarios") $update
+noisily LIF, by(divSIM) rows(1) anio(`=anioPE') desde(`=anioPE-1') min(0) title("Ingresos presupuestarios") $update
 
 ** 3.2 Presupuesto de Egresos de la Federación
-*noisily PEF, by(divSIM) rows(2) min(0) anio(`=anioPE') desde(`=anioPE-1') title("Gasto presupuestario") $update
+noisily PEF, by(divSIM) rows(2) min(0) anio(`=anioPE') desde(`=anioPE-1') title("Gasto presupuestario") $update
 
 ** 3.3 Saldo Histórico de Requerimientos Financieros del Sector Público
 noisily SHRFSP, anio(`=anioPE-1') ultanio(2007) $update $textbook
-ex
+
 ** 3.4 Subnacionales
 //noisily run "Subnacional.do" //$update
 
@@ -83,9 +83,9 @@ forvalues anio = `=anioPE'(1)`=anioPE' {
 
 
 
-***
+**/
 **# 4. MÓDULOS SIMULADOR
-***
+/***
 if "`cambioisrpf'" == "1" {
 	noisily run "`c(sysdir_personal)'/ISR_Mod.do"
 	scalar ISRAS  = ISR_AS_Mod
@@ -99,12 +99,12 @@ if "`cambioiva'" == "1" {
 }
 
 ** 4.1 Integración de módulos
-*noisily TasasEfectivas, anio(`=anioPE')
-*noisily GastoPC, aniope(`=anioPE') aniovp(`=aniovp')
+noisily TasasEfectivas, anio(`=anioPE')
+noisily GastoPC, aniope(`=anioPE') aniovp(`=aniovp')
 
 
 
-***
+**/
 **# 5. CICLO DE VIDA
 ***
 use `"`c(sysdir_personal)'/users/$id/ingresos.dta"', clear
@@ -116,44 +116,44 @@ capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/users/$
 
 ** 5.1 (+) Impuestos y aportaciones
 capture drop ImpuestosAportaciones
-egen ImpuestosAportaciones = rsum(ISRPM OTROSK FMP ISRAS ISRPF CUOTAS IVA IEPSNP IEPSP ISAN IMPORT)
-label var ImpuestosAportaciones "Impuestos, cuotas y otras contribuciones"
+egen ImpuestosAportaciones = rsum(ISRPM ISRAS ISRPF CUOTAS IVA IEPSNP IEPSP ISAN IMPORT) // FMP OTROSK
+label var ImpuestosAportaciones "Impuestos y otras contribuciones"
 *noisily Perfiles ImpuestosAportaciones [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
 
 ** 5.2 (-) Impuestos y aportaciones
 capture drop Transferencias
-egen Transferencias = rsum(Pensiones Pensión_AM Otras_inversiones IngBasico Educación Salud)
+egen Transferencias = rsum(Pensiones Pensión_AM IngBasico Educación Salud) // Otras_inversiones
 label var Transferencias "Transferencias públicas"
-noisily Perfiles Transferencias [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
-noisily Simulador Transferencias [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot //boot(10)
-ex
+*noisily Perfiles Transferencias [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
+*noisily Simulador Transferencias [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot //boot(10)
+
 ** 5.3 (=) Aportaciones netas
 capture drop AportacionesNetas
 g AportacionesNetas = ImpuestosAportaciones - Transferencias
-label var AportacionesNetas "Aportaciones netas"
-noisily Perfiles AportacionesNetas [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
+label var AportacionesNetas "Ciclo de vida de las aportaciones netas"
+*noisily Perfiles AportacionesNetas [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
+noisily Simulador AportacionesNetas [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot //boot(10)
 
 ** 5.4 (*) Cuentas generacionales
-*noisily Simulador AportacionesNetas [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot //boot(10)
 *noisily CuentasGeneracionales AportacionesNetas, anio(`=anioPE') discount(7)
 
 
 
-***
+**/
 **# 6. PARTE IV: DEUDA + FISCAL GAP
 ***
 
 ** 6.1 Brecha fiscal
-noisily FiscalGap, anio(`=anioPE') end(2030) aniomin(2013) $nographs desde(2013) discount(10) //update
+noisily FiscalGap, anio(`=anioPE') end(2030) aniomin(2015) $nographs desde(`=anioPE-15') discount(10) //update
 
-** 6.2 Sankey del sistema fiscal
+/** 6.2 Sankey del sistema fiscal
 foreach k in decil grupoedad /*sexo rural escol*/ {
 	noisily run "`c(sysdir_personal)'/SankeySF.do" `k' `=anioPE'
 }
 
 
 
-****
+***/
 **** Touchdown!!!
 ****
 if "$output" == "output" ///

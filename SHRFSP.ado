@@ -140,8 +140,20 @@ quietly {
 		_col(66) %7s "% Tot" "}"
 
 	egen rfspOtros = rowtotal(rfspPIDIREGAS rfspIPAB rfspFONADIN rfspDeudores rfspBanca rfspAdecuaciones)
+	g shrfspGobFed = shrfspGobFedInterno + shrfspGobFedExterno*tipoDeCambio
+	g shrfspOyE = shrfspOyEInterno + shrfspOyEExterno*tipoDeCambio
+	g shrfspBanca = shrfspBancaInterno + shrfspBancaExterno*tipoDeCambio
+
+	g shrfspLP = shrfspLargoPlazoInterno + shrfspLargoPlazoExterno*tipoDeCambio
+	g shrfspCP = shrfspCortoPlazoInterno + shrfspCortoPlazoExterno*tipoDeCambio
+
+	g deudabruta = shrfspLP + shrfspCP
+
 	tabstat rfspBalance rfspOtros rfsp shrfspInterno shrfspExterno shrfsp ///
-		rfspPIDIREGAS rfspIPAB rfspFONADIN rfspDeudores rfspBanca rfspAdecuaciones if anio == `anio', stat(sum) format(%20.0fc) save
+		rfspPIDIREGAS rfspIPAB rfspFONADIN rfspDeudores rfspBanca rfspAdecuaciones ///
+		shrfspGobFed shrfspOyE ///
+		shrfspBanca shrfspLP shrfspCP deudabruta ///
+		if anio == `anio', stat(sum) format(%20.0fc) save
 	if _rc != 0 {
 		noisily di in r "No hay informaci{c o'}n para el a{c n~}o `anio'"
 		exit
@@ -233,6 +245,28 @@ quietly {
 		_col(33) in y %20.0fc `mattot'[1,6] ///
 		_col(55) in y %7.1fc `mattot'[1,6]/`mattot2'[1,1]*100 ///
 		_col(66) in y %7.1fc `mattot'[1,6]/`mattot'[1,6]*100 "}"
+	noisily di in g _dup(72) "="
+	noisily di in g "  {bf:(+) Deuda Gobierno federal" ///
+		_col(33) in y %20.0fc `mattot'[1,13] ///
+		_col(55) in y %7.1fc `mattot'[1,13]/`mattot2'[1,1]*100 ///
+		_col(66) in y %7.1fc `mattot'[1,13]/`mattot'[1,18]*100 "}"
+	noisily di in g "  {bf:(+) Deuda OyE" ///
+		_col(33) in y %20.0fc `mattot'[1,14] ///
+		_col(55) in y %7.1fc `mattot'[1,14]/`mattot2'[1,1]*100 ///
+		_col(66) in y %7.1fc `mattot'[1,14]/`mattot'[1,18]*100 "}"
+	noisily di in g "  {bf:(+) Deuda Banca de desarrollo" ///
+		_col(33) in y %20.0fc `mattot'[1,15] ///
+		_col(55) in y %7.1fc `mattot'[1,15]/`mattot2'[1,1]*100 ///
+		_col(66) in y %7.1fc `mattot'[1,15]/`mattot'[1,18]*100 "}"
+	noisily di in g _dup(72) "="
+	noisily di in g "  {bf:(+) Deuda corto plazo" ///
+		_col(33) in y %20.0fc `mattot'[1,16] ///
+		_col(55) in y %7.1fc `mattot'[1,16]/`mattot2'[1,1]*100 ///
+		_col(66) in y %7.1fc `mattot'[1,16]/`mattot'[1,18]*100 "}"
+	noisily di in g "  {bf:(+) Deuda largo plazo" ///
+		_col(33) in y %20.0fc `mattot'[1,17] ///
+		_col(55) in y %7.1fc `mattot'[1,17]/`mattot2'[1,1]*100 ///
+		_col(66) in y %7.1fc `mattot'[1,17]/`mattot'[1,18]*100 "}" 
 
 	* Micrositio *
 	return scalar rfspBalance = `mattot'[1,1]
@@ -262,13 +296,29 @@ quietly {
 	** 4.2.1 Gráfica generales **
 	if "`nographs'" != "nographs" & "$nographs" == "" {
 
-		tempvar shrfsp_pib interno externo interno_label
+		** Como % del PIB **
+		tempvar shrfsp_pib
 		g `shrfsp_pib' = shrfsp/pibY*100
+		format `shrfsp_pib' %7.1fc
+
+		tempvar interno externo interno_label
 		g `externo' = shrfspExterno/1000000000000/deflator
 		g `interno' = `externo' + shrfspInterno/1000000000000/deflator
 		g `interno_label' = shrfspInterno/1000000000000/deflator
-		format `shrfsp_pib' %7.1fc
 		format `interno' `externo' `interno_label' %10.1fc
+
+		tempvar shrfsp_gob shrfsp_oye shrfsp_banca shrfsp_gob_pib shrfsp_oye_pib shrfsp_banca_pib
+		g `shrfsp_gob' = (shrfspGobFedInterno+shrfspGobFedExterno*tipoDeCambio)/1000000000000/deflator
+		g `shrfsp_oye' = `shrfsp_gob' + (shrfspOyEInterno+shrfspOyEExterno*tipoDeCambio)/1000000000000/deflator
+		g `shrfsp_banca' = `shrfsp_oye'+ (shrfspBancaInterno+shrfspBancaExterno*tipoDeCambio)/1000000000000/deflator
+		g `shrfsp_gob_pib' = (`shrfsp_gob'*1000000000000*deflator)/pibY*100
+		format `shrfsp_gob' `shrfsp_oye' `shrfsp_banca' %10.1fc
+		format `shrfsp_gob_pib' %7.1fc
+
+		tempvar deuda_largo_plazo deuda_corto_plazo
+		g `deuda_largo_plazo' = (shrfspLargoPlazoInterno+shrfspLargoPlazoExterno*tipoDeCambio)/1000000000000/deflator
+		g `deuda_corto_plazo' = `deuda_largo_plazo' + (shrfspCortoPlazoInterno+shrfspCortoPlazoExterno*tipoDeCambio)/1000000000000/deflator
+		format `deuda_largo_plazo' `deuda_corto_plazo' %10.1fc
 
 		if `"$export"' == "" {
 			local graphtitle "{bf:Saldo hist{c o'}rico de RFSP}"
@@ -288,43 +338,26 @@ quietly {
 			(bar `interno' anio if anio > 2024 & anio <= 2030, barwidth(.75) pstyle(p2) lcolor(none)) ///
 			(bar `externo' anio if anio > 2024 & anio <= 2030, barwidth(.75) pstyle(p2) fintensity(50) lcolor(none)) ///
 			(connected `shrfsp_pib' anio if anio > 2000 & anio <= 2024, ///
-				yaxis(2) mlabel(`shrfsp_pib') mlabposition(12) mlabcolor(black) pstyle(p1) lpattern(dot) msize(small) mlabsize(vlarge)) ///
+				yaxis(2) mlabel(`shrfsp_pib') mlabposition(12) mlabcolor(black) pstyle(p1) ///
+				lpattern(dot) msize(small) mlabsize(vlarge)) ///
 			(connected `shrfsp_pib' anio if anio > 2024 & anio <= 2030, ///
-				yaxis(2) mlabel(`shrfsp_pib') mlabposition(12) mlabcolor(black) pstyle(p2) lpattern(dot) msize(small) mlabsize(vlarge)) ///
+				yaxis(2) mlabel(`shrfsp_pib') mlabposition(12) mlabcolor(black) pstyle(p2) ///
+				lpattern(dot) msize(small) mlabsize(vlarge)) ///
 			(scatter `interno' anio if anio > 2000 & anio <= 2030, ///
 				mlabel(`interno') mlabposition(12) mlabcolor(black) msize(zero) mlabsize(vlarge)) ///
 			if `externo' != . & anio > `ultanio', ///
 			title(`graphtitle') ///
-			///subtitle("Monto reportado (billones `currency' `aniovp') y como % del PIB") ///
+			subtitle("Monto reportado (billones `currency' `aniovp') y como % del PIB") ///
 			caption("`graphfuente'") ///
 			ytitle("") ///
 			ylabel(none) ///
 			ylabel(none, axis(2)) ///
 			yscale(range(0 `=`rango'[2,1]*1.65') axis(1) noline) ///
 			yscale(range(-10 `=`rango'[2,2]*1.45') axis(2) noline) ///
-			text(`=`shrfsp_pib'[24]' `=`ultanio'+1' "{bf:% PIB}", ///
-				place(6) yaxis(2) size(large) color("111 111 111")) ///
-			text(`=`interno'[24]' `=`ultanio'+1' "{bf:billones}" "{bf:`currency' `aniovp'}", ///
-				place(6) size(large) color("111 111 111")) ///
-			///text(`=(`interno'[41]-`externo'[41])*.5+`externo'[41]' 2030 "Interno", ///
-			///	place(0) size(large) color("111 111 111") justification(center)) ///
-			///text(`=`externo'[41]*.5' 2030 "Externo", ///
-			///	place(0) size(large) color("111 111 111") justification(center)) ///
-			///text(`=`rango'[2,2]*1.45' `=2001+2.5' "{bf:Dif. `=anio[11]'-`=anio[17]':} `=string(`shrfsp_pib'[17]-`shrfsp_pib'[11],"%5.1f")' puntos PIB", ///
-			///	place(0) size(large) color("111 111 111") justification(center) yaxis(2)) ///
-			///text(`=`rango'[2,2]*1.45' `=2007+2.5' "{bf:Dif. `=anio[17]'-`=anio[23]':} `=string(`shrfsp_pib'[23]-`shrfsp_pib'[17],"%5.1f")' puntos PIB", ///
-			///	place(0) size(large) color("111 111 111") justification(center) yaxis(2)) ///
-			///text(`=`rango'[2,2]*1.45' `=2013+2.5' "{bf:Dif. `=anio[23]'-`=anio[29]':} `=string(`shrfsp_pib'[29]-`shrfsp_pib'[23],"%5.1f")' puntos PIB", ///
-			///	place(0) size(large) color("111 111 111") justification(center) yaxis(2)) ///
-			///text(`=`rango'[2,2]*1.45' `=2019+2.5' "{bf:Dif. `=anio[29]'-`=anio[35]':} `=string(`shrfsp_pib'[35]-`shrfsp_pib'[29],"%5.1f")' puntos PIB", ///
-			///	place(0) size(large) color("111 111 111") justification(center) yaxis(2)) ///
-			///text(`=`rango'[2,2]*1.45' `=2025+2.5' "{bf:Dif. `=anio[35]'-`=anio[41]':} `=string(`shrfsp_pib'[41]-`shrfsp_pib'[35],"%5.1f")' puntos PIB", ///
-			///	place(0) size(large) color("111 111 111") justification(center) yaxis(2)) ///
-			///note("{bf:{c U'}ltimo dato}: `aniofin'm`mesfin'. Las diferencias en puntos PIB se hacen con respecto al último año de la serie anterior.") ///
 			ytitle("", axis(2)) ///
 			xtitle("") ///
 			xlabel(`=`ultanio'+1'(1)`lastexo', noticks) ///	
-			legend(off) ///
+			legend(on order(1 2) label(1 "Interna") label(2 "Externa")) ///
 			name(shrfsp, replace)
 
 		graph save shrfsp `"`c(sysdir_personal)'/SIM/graphs/shrfsp.gph"', replace
@@ -347,41 +380,22 @@ quietly {
 			(bar `interno' anio if anio > 2024 & anio <= 2030, barwidth(.75) pstyle(p2) lcolor(none)) ///
 			(bar `externo' anio if anio > 2024 & anio <= 2030, barwidth(.75) pstyle(p2) fintensity(50) lcolor(none)) ///
 			(connected `shrfsp_pc' anio if anio > 2000 & anio <= 2024, ///
-				yaxis(2) mlabel(`shrfsp_pc') mlabposition(12) mlabcolor(black) pstyle(p1) lpattern(dot) msize(small) mlabsize(vlarge)) ///
+				yaxis(2) mlabel(`shrfsp_pc') mlabposition(12) mlabcolor(black) pstyle(p1) ///
+				lpattern(dot) msize(small) mlabsize(vlarge)) ///
 			(connected `shrfsp_pc' anio if anio > 2024 & anio <= 2030, ///
-				yaxis(2) mlabel(`shrfsp_pc') mlabposition(12) mlabcolor(black) pstyle(p2) lpattern(dot) msize(small) mlabsize(vlarge)) ///
+				yaxis(2) mlabel(`shrfsp_pc') mlabposition(12) mlabcolor(black) pstyle(p2) ///
+				lpattern(dot) msize(small) mlabsize(vlarge)) ///
 			(scatter `interno' anio if anio > 2000 & anio <= 2030, ///
 				mlabel(`interno') mlabposition(12) mlabcolor(black) msize(zero) mlabsize(vlarge)) ///
 			if `externo' != . & anio > `ultanio', ///
 			title(`graphtitle') ///
-			///subtitle("Monto reportado (billones `currency' `aniovp') y como % del PIB") ///
+			subtitle("Monto reportado (billones `currency' `aniovp') y como miles de `currency' `aniovp' por persona") ///
 			caption("`graphfuente'") ///
 			ytitle("") ///
 			ylabel(none) ///
 			ylabel(none, axis(2)) ///
 			yscale(range(0 `=`rango'[2,1]*1.5') axis(1) noline) ///
 			yscale(range(-10 `=`rango'[2,2]*1.25') axis(2) noline) ///
-			text(`=`shrfsp_pc'[24]' `=`ultanio'+1' "{bf:miles `currency' `aniovp'}" "{bf:por persona}", ///
-				place(6) yaxis(2) size(medium) color("111 111 111")) ///
-			text(`=`interno'[24]' `=`ultanio'+1' "{bf:billones}" "{bf:`currency' `aniovp'}", ///
-				place(6) size(large) color("111 111 111")) ///
-			///text(`=(`interno'[41]-`externo'[41])*.5+`externo'[41]' 2030 "Interno", ///
-			///	place(0) size(large) color("111 111 111") justification(center)) ///
-			///text(`=`externo'[41]*.5' 2030 "Externo", ///
-			///	place(0) size(large) color("111 111 111") justification(center)) ///
-			///text(`=`rango'[2,2]*1.15' `=2001+2.5' "{bf:Dif. `=anio[11]'-`=anio[17]':} `=string(`shrfsp_pc'[17]-`shrfsp_pc'[11],"%5.1f")' miles `currency' `aniovp'", ///
-			///	place(0) size(large) color("111 111 111") justification(center) yaxis(2)) ///
-			///text(`=`rango'[2,2]*1.15' `=2007+2.5' "{bf:Dif. `=anio[17]'-`=anio[23]':} `=string(`shrfsp_pc'[23]-`shrfsp_pc'[17],"%5.1f")' miles `currency' `aniovp'", ///
-			///	place(0) size(large) color("111 111 111") justification(center) yaxis(2)) ///
-			///text(`=`rango'[2,2]*1.15' `=2013+2.5' "{bf:Dif. `=anio[23]'-`=anio[29]':} `=string(`shrfsp_pc'[29]-`shrfsp_pc'[23],"%5.1f")' miles `currency' `aniovp'", ///
-			///	place(0) size(large) color("111 111 111") justification(center) yaxis(2)) ///
-			///text(`=`rango'[2,2]*1.15' `=2019+2.5' "{bf:Dif. `=anio[29]'-`=anio[35]':} `=string(`shrfsp_pc'[35]-`shrfsp_pc'[29],"%5.1f")' miles `currency' `aniovp'", ///
-			///	place(0) size(large) color("111 111 111") justification(center) yaxis(2)) ///
-			///text(`=`rango'[2,2]*1.15' `=2025+2.5' "{bf:Dif. `=anio[35]'-`=anio[41]':} `=string(`shrfsp_pc'[41]-`shrfsp_pc'[35],"%5.1f")' miles `currency' `aniovp'", ///
-			///	place(0) size(large) color("111 111 111") justification(center) yaxis(2)) ///
-			///text(0 `=2024+(2025-2024)/2' "{bf:$paqueteEconomico}", ///
-			///	place(12) size(medsmall) color("111 111 111") justification(center) bcolor(white) box) ///
-			///note("{bf:{c U'}ltimo dato}: `aniofin'm`mesfin'. Las diferencias en puntos PIB se hacen con respecto al último año de la serie anterior.") ///
 			ytitle("", axis(2)) ///
 			xtitle("") ///
 			xlabel(`=`ultanio'+1'(1)`lastexo', noticks) ///	
@@ -392,6 +406,77 @@ quietly {
 		capture confirm existence $export
 		if _rc == 0 {
 			graph export "$export/shrfsppc.png", replace name(shrfsppc)
+		}
+
+		** Por Gobierno, OyE y Banca de desarrollo **
+		tabstat `shrfsp_banca' `shrfsp_pib', stat(min max) by(anio) save
+		tempname rango
+		matrix `rango' = r(StatTotal)
+
+		if `"$export"' == "" {
+			local graphtitle "{bf:Deuda bruta}"
+			local graphfuente "Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP y INEGI/BIE."
+		}
+		else {
+			local graphtitle ""
+			local graphfuente ""
+		}
+
+		twoway (bar `shrfsp_banca' anio if anio > 2000 & anio <= 2024, barwidth(.75)) ///
+			(bar `shrfsp_oye' anio if anio > 2000 & anio <= 2024, barwidth(.75) pstyle(p2) fintensity(50) lcolor(none)) ///
+			(bar `shrfsp_gob' anio if anio > 2000 & anio <= 2024, barwidth(.75) pstyle(p14) fintensity(75) lcolor(none)) ///
+			(connected `shrfsp_gob_pib' anio if anio > 2000 & anio <= 2024, ///
+				yaxis(2) mlabel(`shrfsp_gob_pib') mlabposition(12) mlabcolor(black) pstyle(p1) ///
+				lpattern(dot) msize(small) mlabsize(vlarge)) ///
+			(scatter `shrfsp_banca' anio if anio > 2000 & anio <= 2024, ///
+				mlabel(`shrfsp_banca') mlabposition(12) mlabcolor(black) msize(zero) mlabsize(vlarge)) ///
+			if `externo' != . & anio > `ultanio', ///
+			title(`graphtitle') ///
+			subtitle("Monto reportado (billones `currency' `aniovp') y como % del PIB") ///
+			caption("`graphfuente'") ///
+			ytitle("") ///
+			ylabel(none) ///
+			ylabel(none, axis(2)) ///
+			yscale(range(0 `=`rango'[2,1]*1.75') axis(1) noline) ///
+			yscale(range(-10 `=`rango'[2,2]*1.1') axis(2) noline) ///
+			ytitle("", axis(2)) ///
+			xtitle("") ///
+			xlabel(`=`ultanio'+1'(1)`anio', noticks) ///	
+			legend(on label(1 "Banca de desarrollo") label(2 "Pemex+CFE") label(3 "Gobierno federal") order(1 2 3)) ///
+			name(shrfsp_oye, replace)
+
+		graph save shrfsp_oye `"`c(sysdir_personal)'/SIM/graphs/shrfsp_oye.gph"', replace
+		capture confirm existence $export
+		if _rc == 0 {
+			graph export "$export/shrfsp_oye.png", replace name(shrfsp_oye)
+		}
+
+		twoway (bar `deuda_corto_plazo' anio if anio > 2000 & anio <= 2024, barwidth(.75)) ///
+			(bar `deuda_largo_plazo' anio if anio > 2000 & anio <= 2024, barwidth(.75) pstyle(p2) fintensity(50) lcolor(none)) ///
+			(connected `shrfsp_gob_pib' anio if anio > 2000 & anio <= 2024, ///
+				yaxis(2) mlabel(`shrfsp_gob_pib') mlabposition(12) mlabcolor(black) pstyle(p1) ///
+				lpattern(dot) msize(small) mlabsize(vlarge)) ///
+			(scatter `deuda_corto_plazo' anio if anio > 2000 & anio <= 2024, ///
+				mlabel(`deuda_corto_plazo') mlabposition(12) mlabcolor(black) msize(zero) mlabsize(vlarge)) ///
+			if `externo' != . & anio > `ultanio', ///
+			title(`graphtitle') ///
+			subtitle("Monto reportado (billones `currency' `aniovp') y como % del PIB") ///
+			caption("`graphfuente'") ///
+			ytitle("") ///
+			ylabel(none) ///
+			ylabel(none, axis(2)) ///
+			yscale(range(0 `=`rango'[2,1]*1.75') axis(1) noline) ///
+			yscale(range(-10 `=`rango'[2,2]*1.1') axis(2) noline) ///
+			ytitle("", axis(2)) ///
+			xtitle("") ///
+			xlabel(`=`ultanio'+1'(1)`anio', noticks) ///	
+			legend(on label(1 "Corto plazo") label(2 "Largo plazo") order(1 2)) ///
+			name(shrfsp_plazo, replace)
+
+		graph save shrfsp_plazo `"`c(sysdir_personal)'/SIM/graphs/shrfsp_plazo.gph"', replace
+		capture confirm existence $export
+		if _rc == 0 {
+			graph export "$export/shrfsp_plazo.png", replace name(shrfsp_plazo)
 		}
 	}
 
@@ -669,7 +754,7 @@ quietly {
 			ytitle("") ///
 			ytitle("", axis(2)) ///
 			yline(`=`rango'[3,2]', axis(2)) ///
-			legend(off) ///
+			legend(on label(1 "Interno") label(2 "Externo") order(1 2)) ///
 			caption("`graphfuente'")
 
 		capture confirm existence $export
@@ -707,19 +792,79 @@ program define UpdateSHRFSP
 	tempfile shrfsp
 	save "`shrfsp'"
 
-
 	** Interno **
 	noisily DatosAbiertos SHRF5100, $nographs
 	rename monto shrfspInterno
 	tempfile shrfspinterno
 	save "`shrfspinterno'"
 
-
 	** Externo **
 	noisily DatosAbiertos SHRF5200, $nographs
 	rename monto shrfspExterno
 	tempfile shrfspexterno
 	save "`shrfspexterno'"
+
+
+	** Deuda bruta **
+	** OyE Interno **
+	noisily DatosAbiertos XED110, $nographs
+	rename monto shrfspOyEInterno
+	tempfile shrfspOyEInterno
+	save "`shrfspOyEInterno'"
+
+	** OyE Externo **
+	noisily DatosAbiertos XEB4020, $nographs
+	rename monto shrfspOyEExterno
+	tempfile shrfspOyEExterno
+	save "`shrfspOyEExterno'"
+
+	** Gobierno Federal Intero **
+	noisily DatosAbiertos XED80, $nographs
+	rename monto shrfspGobFedInterno
+	tempfile shrfspGobFedInterno
+	save "`shrfspGobFedInterno'"
+
+	** Gobierno Federal Externo **
+	noisily DatosAbiertos XEB4010, $nographs
+	rename monto shrfspGobFedExterno
+	tempfile shrfspGobFedExterno
+	save "`shrfspGobFedExterno'"
+
+	** Banca de desarrollo Intero **
+	noisily DatosAbiertos XED140, $nographs
+	rename monto shrfspBancaInterno
+	tempfile shrfspBancaInterno
+	save "`shrfspBancaInterno'"
+
+	** Banca de desarrollo Externo **
+	noisily DatosAbiertos XEB4030, $nographs
+	rename monto shrfspBancaExterno
+	tempfile shrfspBancaExterno
+	save "`shrfspBancaExterno'"
+
+	** Largo plazo interno **
+	noisily DatosAbiertos XED50, $nographs
+	rename monto shrfspLargoPlazoInterno
+	tempfile shrfspLargoPlazoInterno
+	save "`shrfspLargoPlazoInterno'"
+
+	** Corto plazo interno **
+	noisily DatosAbiertos XED60, $nographs
+	rename monto shrfspCortoPlazoInterno
+	tempfile shrfspCortoPlazoInterno
+	save "`shrfspCortoPlazoInterno'"
+
+	** Largo plazo externo **
+	noisily DatosAbiertos XEB3010, $nographs
+	rename monto shrfspLargoPlazoExterno
+	tempfile shrfspLargoPlazoExterno
+	save "`shrfspLargoPlazoExterno'"
+
+	** Corto plazo externo **
+	noisily DatosAbiertos XEB3020, $nographs
+	rename monto shrfspCortoPlazoExterno
+	tempfile shrfspCortoPlazoExterno
+	save "`shrfspCortoPlazoExterno'"
 
 
 
@@ -733,13 +878,11 @@ program define UpdateSHRFSP
 	tempfile rfsp
 	save "`rfsp'"
 
-
 	** Endeudamiento presupuestario y no presupuestario **
 	noisily DatosAbiertos RF000001SPFCS, $nographs reverse proy desde(2009)
 	rename monto rfspBalance
 	tempfile Balance
 	save "`Balance'"
-
 
 	** PIDIREGAS **
 	noisily DatosAbiertos RF000002SPFCS, $nographs reverse proy desde(2009)
@@ -747,13 +890,11 @@ program define UpdateSHRFSP
 	tempfile PIDIREGAS
 	save "`PIDIREGAS'"
 
-
 	** IPAB **
 	noisily DatosAbiertos RF000003SPFCS, $nographs reverse proy desde(2009)
 	rename monto rfspIPAB
 	tempfile IPAB
 	save "`IPAB'"
-
 
 	** FONADIN **
 	noisily DatosAbiertos RF000004SPFCS, $nographs reverse proy desde(2009)
@@ -761,13 +902,11 @@ program define UpdateSHRFSP
 	tempfile FONADIN
 	save "`FONADIN'"
 
-
 	** PROGRAMA DE DEUDORES **
 	noisily DatosAbiertos RF000005SPFCS, $nographs reverse proy desde(2009)
 	rename monto rfspDeudores
 	tempfile Deudores
 	save "`Deudores'"
-
 
 	** BANCA DE DESARROLLO **
 	noisily DatosAbiertos RF000006SPFCS, $nographs reverse proy desde(2009)
@@ -775,14 +914,11 @@ program define UpdateSHRFSP
 	tempfile Banca
 	save "`Banca'"
 
-
 	** ADECUACIONES PRESUPUESTARIAS **
 	noisily DatosAbiertos RF000007SPFCS, $nographs reverse proy desde(2009)
 	rename monto rfspAdecuaciones
 	tempfile Adecuaciones
 	save "`Adecuaciones'"
-
-
 
 
 
@@ -793,33 +929,28 @@ program define UpdateSHRFSP
 	************************************************
 
 	** Activos financieros internos del SP **
-	noisily DatosAbiertos XED20, $nographs
+	noisily DatosAbiertos XED20, $nographs proy desde(2009)
 	rename monto activosInt
 	tempfile activosInt
 	save "`activosInt'"
 
-
 	** Activos financieros externos del SP **
-	noisily DatosAbiertos XEB10, $nographs
+	noisily DatosAbiertos XEB10, $nographs proy desde(2009)
 	rename monto activosExt
 	tempfile activosExt
 	save "`activosExt'"
 
-
 	** Diferimientos **
-	noisily DatosAbiertos XOA0108, $nographs
+	noisily DatosAbiertos XOA0108, $nographs proy desde(2009)
 	rename monto diferimientos
 	tempfile diferimientos
 	save "`diferimientos'"
 
-
 	** Amortización **
-	noisily DatosAbiertos IF03230, $nographs
+	noisily DatosAbiertos IF03230, $nographs proy desde(2009)
 	rename monto amortizacion
 	tempfile amortizacion
 	save "`amortizacion'"
-
-
 
 
 
@@ -836,20 +967,17 @@ program define UpdateSHRFSP
 	tempfile balancepublico
 	save "`balancepublico'"
 
-
 	** Endeudamiento presupuestario **
 	noisily DatosAbiertos XAA10, $nographs reverse
 	rename monto presupuestario
 	tempfile presupuestario
 	save "`presupuestario'"
 
-
 	** Endeudamiento no presupuestario **
 	noisily DatosAbiertos XAA20, $nographs reverse
 	rename monto nopresupuestario
 	tempfile nopresupuestario
 	save "`nopresupuestario'"
-
 
 
 	****************************************
@@ -861,13 +989,11 @@ program define UpdateSHRFSP
 	tempfile gobiernofederal
 	save "`gobiernofederal'"
 
-
 	** Pemex **
 	noisily DatosAbiertos XAA1210, $nographs
 	rename monto pemex
 	tempfile pemex
 	save "`pemex'"
-
 
 	** CFE **
 	noisily DatosAbiertos XOA0101, $nographs
@@ -875,13 +1001,11 @@ program define UpdateSHRFSP
 	tempfile cfe
 	save "`cfe'"
 
-
 	** IMSS **
 	noisily DatosAbiertos XOA0105, $nographs
 	rename monto imss
 	tempfile imss
 	save "`imss'"
-
 
 	** ISSSTE **
 	noisily DatosAbiertos XOA0106, $nographs
@@ -891,54 +1015,28 @@ program define UpdateSHRFSP
 
 
 
-
-
 	**********************************************
 	***                                        ***
 	***     5 Costo financiero de la deuda     ***
 	***                                        ***
 	**********************************************
 	noisily di _newline(2) in g "{bf: Costo financiero de la deuda} en millones de pesos"
-	noisily DatosAbiertos XAC21, $nographs
+	noisily DatosAbiertos XAC21, $nographs proy desde(2009)
 	rename monto costofinanciero
 	tempfile costofinanciero
 	save "`costofinanciero'"
 
-
 	** Gobierno Federal **
-	noisily DatosAbiertos XBC21, $nographs
+	noisily DatosAbiertos XBC21, $nographs proy desde(2009)
 	rename monto costogobiernofederal
 	tempfile costogobiernofederal
 	save "`costogobiernofederal'"
 
-
 	** Pemex **
 	noisily DatosAbiertos XOA0160, $nographs
 	rename monto costopemex
-
-	g deudaPemex = .
-	replace deudaPemex = 2070542.31635290 if anio == 2022 	// a septiembre
-	replace deudaPemex = 2173189.44800813 if anio == 2021
-	replace deudaPemex = 2218737.53616582 if anio == 2020
-	replace deudaPemex = 1922589.08819400 if anio == 2019
-	replace deudaPemex = 2000374.02960390 if anio == 2018
-	replace deudaPemex = 1940286.92629512 if anio == 2017
-	replace deudaPemex = 1819638.21654995 if anio == 2016
-	replace deudaPemex = 1384012.95509301 if anio == 2015
-	replace deudaPemex = 1025261.97573126 if anio == 2014
-	replace deudaPemex = 760494.694310920 if anio == 2013
-	replace deudaPemex = 667623.708531536 if anio == 2012
-	replace deudaPemex = 668178.069289112  if anio == 2011
-	replace deudaPemex = 531138.3347399 if anio == 2010
-	replace deudaPemex = 472098.44249911 if anio == 2009
-	replace deudaPemex = 472486.10948318 if anio == 2008
-
-	replace deudaPemex = deudaPemex*1000000
-	format deudaPemex %20.0fc
-
 	tempfile costopemex
 	save "`costopemex'"
-
 
 	** CFE **
 	noisily DatosAbiertos XOA0162, $nographs
@@ -946,21 +1044,17 @@ program define UpdateSHRFSP
 	tempfile costocfe
 	save "`costocfe'"
 
-
 	** Costo de la deuda interna **
-	noisily DatosAbiertos XOA0155, $nographs
+	noisily DatosAbiertos XOA0155, $nographs proy desde(2009)
 	rename monto costodeudaInterno
 	tempfile costodeudaII
 	save "`costodeudaII'"
 
-
 	** Costo de la deuda externa **
-	noisily DatosAbiertos XOA0156, $nographs
+	noisily DatosAbiertos XOA0156, $nographs proy desde(2009)
 	rename monto costodeudaExterno
 	tempfile costodeudaEE
 	save "`costodeudaEE'"
-
-
 
 
 
@@ -976,14 +1070,11 @@ program define UpdateSHRFSP
 	tempfile MXN
 	save "`MXN'"
 
-
 	* Deuda en dólares *
 	noisily DatosAbiertos XET40, $nographs
 	rename monto deudaUSD
 	tempfile USD
 	save "`USD'"
-
-
 
 
 
@@ -997,7 +1088,16 @@ program define UpdateSHRFSP
 	use `shrfsp', clear
 	merge 1:1 (anio) using "`shrfspinterno'", nogen
 	merge 1:1 (anio) using "`shrfspexterno'", nogen
-
+	merge 1:1 (anio) using "`shrfspOyEInterno'", nogen
+	merge 1:1 (anio) using "`shrfspOyEExterno'", nogen
+	merge 1:1 (anio) using "`shrfspGobFedInterno'", nogen
+	merge 1:1 (anio) using "`shrfspGobFedExterno'", nogen
+	merge 1:1 (anio) using "`shrfspBancaInterno'", nogen
+	merge 1:1 (anio) using "`shrfspBancaExterno'", nogen
+	merge 1:1 (anio) using "`shrfspLargoPlazoInterno'", nogen
+	merge 1:1 (anio) using "`shrfspCortoPlazoInterno'", nogen
+	merge 1:1 (anio) using "`shrfspLargoPlazoExterno'", nogen
+	merge 1:1 (anio) using "`shrfspCortoPlazoExterno'", nogen
 
 	* Flujos *
 	merge 1:1 (anio) using "`rfsp'", nogen
@@ -1009,7 +1109,6 @@ program define UpdateSHRFSP
 	merge 1:1 (anio) using "`Banca'", nogen
 	merge 1:1 (anio) using "`Adecuaciones'", nogen
 
-
 	* Adecuaciones *
 	merge 1:1 (anio) using "`nopresupuestario'", nogen
 	merge 1:1 (anio) using "`activosInt'", nogen
@@ -1017,11 +1116,9 @@ program define UpdateSHRFSP
 	merge 1:1 (anio) using "`diferimientos'", nogen
 	merge 1:1 (anio) using "`amortizacion'", nogen
 
-
 	* Tipo de cambio *
 	merge 1:1 (anio) using "`MXN'", nogen
 	merge 1:1 (anio) using "`USD'", nogen
-
 
 	* Costos financieros *
 	merge 1:1 (anio) using "`costodeudaII'", nogen update
@@ -1031,21 +1128,17 @@ program define UpdateSHRFSP
 	merge 1:1 (anio) using "`costofinanciero'", nogen update
 	tsset anio
 
-
 	* Tipo de cambio *
 	g double tipoDeCambio = deudaMXN/deudaUSD
 	format tipoDeCambio %7.2fc
-
 
 	* Porcentaje interna y externa *
 	g porInterno = shrfspInterno/shrfsp
 	g porExterno = shrfspExterno/shrfsp
 
-
 	* Balance primario *
 	g balprimario = rfsp + costofinanciero
 	format balprimario %20.0fc
-
 
 	* Guardar *
 	compress

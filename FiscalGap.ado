@@ -20,7 +20,7 @@ quietly {
 	**# 1 PIB ***
 	***       ***
 	*************
-	PIBDeflactor, nographs nooutput
+	PIBDeflactor, anio(`=aniovp') geopib(`desde') geodef(`desde') nographs nooutput
 	replace Poblacion = Poblacion*lambda
 	replace Poblacion0 = Poblacion0*lambda
 	keep if anio <= `end'
@@ -110,8 +110,9 @@ quietly {
 		save ``k''
 
 		restore
-		merge 1:1 (anio divCIEP) using  ``k'', nogen update replace
+		merge 1:1 (anio divCIEP) using ``k'', nogen update replace
 	}
+	format estimacion %20.0fc
 
 	** 4.3 Actualizaciones **
 	collapse (sum) recaudacion estimacionRecaudacion=estimacion if anio <= `end', by(anio divCIEP) fast
@@ -135,7 +136,7 @@ quietly {
 	** 4.4 Graphs **
 	if "`nographs'" != "nographs" & "$nographs" != "nographs" {
 		//noisily tabstat recaudacion_pib estimacionRecaudacion_pib if anio >= `aniomin', stat(sum) by(anio) save
-		graph bar (sum) recaudacion_pib if anio <= `anio' & anio >= `desde', ///
+		graph bar (sum) recaudacion_pib if anio < `anio'-1 & anio >= `aniomin', ///
 			over(divSIM) ///
 			over(anio, gap(0)) ///
 			ytitle("% PIB") ///
@@ -146,7 +147,7 @@ quietly {
 			name(Proy_ingresos1) ///
 			title(Observado)
 
-		graph bar (sum) estimacionRecaudacion_pib if anio > `anio', ///
+		graph bar (sum) estimacionRecaudacion_pib if anio >= `anio'-1, ///
 			over(divSIM) ///
 			over(anio, gap(0)) ///
 			ytitle("") ylabel(, labcolor(white)) ///
@@ -156,7 +157,11 @@ quietly {
 			name(Proy_ingresos2) ///
 			title(Proyectado)
 
-		graph combine Proy_ingresos1 Proy_ingresos2, ycommon ///
+		capture which grc1leg
+		if _rc != 0 {
+			net install grc1leg.pkg
+		}
+		grc1leg Proy_ingresos1 Proy_ingresos2, ycommon ///
 			title({bf:Ingresos p{c u'}blicos}) ///
 			subtitle($pais) ///
 			caption("`graphfuente'") ///
@@ -242,7 +247,6 @@ quietly {
 	noisily di in g "      (*) Ingresos VP:" in y _col(35) %25.0fc `estimacionVP'[1,1] in g " `currency'"
 	noisily di in g "      (*) Growth rate LP:" in y _col(35) %25.4fc `grow_rate_LR' in g " %"
 
-
 	* Save *
 	tempfile baseingresos
 	save `baseingresos'
@@ -259,7 +263,7 @@ quietly {
 
 	*********************************************
 	** 5.1 Información histórica de los gastos **
-	PEF if transf_gf == 0 & anio >= `desde', anio(`anio') by(divCIEP) nographs desde(`desde')
+	PEF if transf_gf == 0, anio(`anio') by(divCIEP) nographs desde(`desde')
 	local divCIEP "`=r(divCIEP)' IngBasico"
 	local divCIEP = subinstr("`divCIEP'","á","a",.)
 	local divCIEP = subinstr("`divCIEP'","é","e",.)
@@ -336,7 +340,7 @@ quietly {
 	** 5.4 Graphs **
 	if "`nographs'" != "nographs" & "$nographs" != "nographs" {
 		//noisily tabstat gasto_pib estimacionGasto if anio >= `aniomin', stat(sum) by(anio) save
-		graph bar (sum) gasto_pib if anio <= `anio' & anio >= `desde' & divSIM != "Costo de la deuda", ///
+		graph bar (sum) gasto_pib if anio < `anio'-1 & anio >= `aniomin' & divSIM != "Costo de la deuda", ///
 			over(divSIM) ///
 			over(anio, gap(0)) ///
 			ytitle("% PIB") ///
@@ -347,7 +351,7 @@ quietly {
 			name(Proy_gastos1) ///
 			title(Observado)
 
-		graph bar (sum) estimacionGasto_pib if anio > `anio' & divSIM != "Costo de la deuda", ///
+		graph bar (sum) estimacionGasto_pib if anio >= `anio'-1 & divSIM != "Costo de la deuda", ///
 			over(divSIM) ///
 			over(anio, gap(0)) ///
 			ytitle("") ylabel(none) ///
@@ -357,7 +361,7 @@ quietly {
 			name(Proy_gastos2) ///
 			title(Proyectado)
 
-		graph combine Proy_gastos1 Proy_gastos2, ycommon ///
+		grc1leg Proy_gastos1 Proy_gastos2, ycommon ///
 			title({bf:Gasto p{c u'}blico primario}) ///
 			subtitle($pais) ///
 			caption("`graphfuente'") ///
@@ -446,13 +450,15 @@ quietly {
 	merge 1:1 (anio) using `baseingresos', nogen
 	tsset anio
 
+	* Actualización de la deuda *
 	g gastoCosto_de_la_deuda = costodeudaInterno + costodeudaExterno
 	g estimacionCosto_de_la_deuda = gastoCosto_de_la_deuda if gastoCosto_de_la_deuda != .
+	*replace estimacionGasto = estimacionGasto + estimacionCosto_de_la_deuda if anio == `anio'
 	format estimacion* gasto* %20.0fc
 
 	* Reemplazar tasaEfectiva con la media artimética desde el año `desde' *
 	replace tasaEfectiva = gastoCosto_de_la_deuda/L.shrfsp*100
-	tabstat tasaEfectiva if anio == `anio', save
+	tabstat tasaEfectiva if anio <= `anio' & anio >= `anio'-5, save
 	tempname tasaEfectiva_ari
 	matrix `tasaEfectiva_ari' = r(StatTotal)
 	replace tasaEfectiva = r(StatTotal)[1,1] if anio >= `anio'
@@ -465,25 +471,24 @@ quietly {
 		replace gastoCosto_de_la_deuda = tasaEfectiva/100*L.shrfsp if anio >= `anio'
 	}
 	else {
-		replace tasaEfectiva = `tasaEfectiva' if anio >= `anio'
 		scalar tasaEfectiva = `tasaEfectiva'		
 	}
-	tabstat gastoCosto_de_la_deuda Poblacion pibY if anio == `anio', f(%20.0fc) save
-	*scalar gascosto = r(StatTotal)[1,1]/r(StatTotal)[1,2]*8539/9234
-	*scalar gascostoPIB = r(StatTotal)[1,1]/r(StatTotal)[1,3]*100*3.329/3.600
 
-	/* Reemplazar Costo_de_la_deuda con el escalar gascosto *
+	* Scalar Costo_de_la_deuda (gascosto) *
 	capture confirm scalar gascosto
 	if _rc == 0 {
-		replace estimacionCosto_de_la_deuda = scalar(gascosto)*Poblacion if anio > `anio'
-		replace gastoCosto_de_la_deuda = estimacionCosto_de_la_deuda if anio > `anio'
-		replace estimacionGasto_pib = estimacionGasto_pib/pibY*100 if anio > `anio'
+		replace estimacionCosto_de_la_deuda = scalar(gascosto)*Poblacion if anio == `anio'
+		replace gastoCosto_de_la_deuda = estimacionCosto_de_la_deuda if anio == `anio'
+		replace estimacionGasto_pib = estimacionGasto_pib/pibY*100 if anio == `anio'
 
 		* Reestimar la tasa efectiva para el año `anio' *
-		replace tasaEfectiva = gastoCosto_de_la_deuda/L.shrfsp*100 if anio > `anio'
+		replace tasaEfectiva = L.tasaEfectiva if anio >= `anio'
 		format %20.0fc *Costo_de_la_deuda
 	}
-
+	else {
+		scalar gascosto = r(StatTotal)[1,1]/r(StatTotal)[1,2]*8539/9234
+		scalar gascostoPIB = r(StatTotal)[1,1]/r(StatTotal)[1,3]*100*3.329/3.600
+	}
 
 
 	**********************/
@@ -491,11 +496,12 @@ quietly {
 	g depreciacion = tipoDeCambio-L.tipoDeCambio
 
 	* Reemplazar depreciacion por el último valor observado para los años futuros *
-	replace depreciacion = L.depreciacion if depreciacion == .
+	tabstat depreciacion if anio >= 2009, stat(mean) f(%20.3fc) save
+	replace depreciacion = r(StatTotal)[1,1] if depreciacion == .
 
 	* SHRFSP externo en USD *
 	*g shrfspExternoUSD = shrfspExterno/tipoDeCambio
-	replace tipoDeCambio = L.tipoDeCambio + depreciacion if anio > `anio'
+	replace tipoDeCambio = L.tipoDeCambio + L.depreciacion if anio >= `anio' & tipoDeCambio == .
 	replace shrfspExternoUSD = shrfspExterno/tipoDeCambio
 
 	g efectoTipoDeCambio = shrfspExternoUSD*(tipoDeCambio-L.tipoDeCambio)
@@ -528,8 +534,8 @@ quietly {
 	local shrfspobslast = shrfsp[`obslast']/pibY[`obslast']*100
 
 	* Actualizacion de los saldos *
-	local actualizacion_geo = 0 // (((shrfsp[`obslast']-shrfsp[`obsfirs'])/(`ACT'[1,1]+`ACT'[1,2]))^(1/(`obslast'-`obsfirs'))-1)*100
-	g actualizacion = 0 // `actualizacion_geo'
+	local actualizacion_geo = (((shrfsp[`obslast']-shrfsp[`obsfirs'])/(`ACT'[1,1]+`ACT'[1,2]))^(1/(`obslast'-`obsfirs'))-1)*100
+	g actualizacion = `actualizacion_geo'
 
 	* Otros rfsp (% del PIB) *
 	foreach k of varlist rfspPIDIREGAS rfspIPAB rfspFONADIN rfspDeudores rfspBanca rfspAdecuaciones {
@@ -541,24 +547,24 @@ quietly {
 
 	**********************************************************
 	** 5.5 Iteraciones para el costo financiero de la deuda **
-	forvalues k = `=`anio'+1'(1)`=anio[_N]' {
+	forvalues k = `=`anio''(1)`=anio[_N]' {
 
 		* Costo de la deuda *
-		replace estimacionCosto_de_la_deuda = tasaEfectiva/100*L.shrfsp if anio == `k'
+		replace estimacionCosto_de_la_deuda = tasaEfectiva/100*L.shrfsp if anio == `k' & estimacionCosto_de_la_deuda == .
 		replace estimacionGasto = estimacionGasto + estimacionCosto_de_la_deuda if anio == `k'
 
 		* RFSP *
-		replace rfspBalance = estimacionRecaudacion - estimacionGasto if anio == `k'
-		replace rfsp = rfspBalance + rfspPIDIREGAS + rfspIPAB + rfspFONADIN + rfspDeudores + rfspBanca + rfspAdecuaciones if anio == `k'
+		replace rfspBalance = -estimacionRecaudacion + estimacionGasto if anio == `k'
+		replace rfsp = (rfspBalance + rfspPIDIREGAS + rfspIPAB + rfspFONADIN + rfspDeudores + rfspBanca + rfspAdecuaciones) if anio == `k'
 
 		* SHRFSP *
 		replace shrfspExternoUSD = L.shrfspExterno/L.tipoDeCambio if anio == `k'
 		replace efectoTipoDeCambio = shrfspExternoUSD*(tipoDeCambio-L.tipoDeCambio)
 
 		replace shrfspExterno = L.shrfspExterno*(1+`actualizacion_geo'/100) + efectoTipoDeCambio ///
-			- rfsp*L.shrfspExterno/L.shrfsp if anio == `k'
+			+ rfsp*L.shrfspExterno/L.shrfsp if anio == `k'
 		replace shrfspInterno = L.shrfspInterno*(1+`actualizacion_geo'/100) ///
-			- rfsp*L.shrfspInterno/L.shrfsp if anio == `k'
+			+ rfsp*L.shrfspInterno/L.shrfsp if anio == `k'
 
 		replace shrfsp = shrfspExterno + shrfspInterno if anio == `k'
 	}
@@ -566,7 +572,7 @@ quietly {
 	replace shrfsp_pib = shrfsp/pibY*100 //if anio >= `anio'
 	replace estimacionGasto_pib = estimacionGasto/pibY*100 //if anio >= `anio'
 
-	*g rfsp_pib = rfsp/pibY*100
+	replace rfsp_pib = rfsp/pibY*100
 	format *_pib %7.1fc
 
 	g shrfspPC = shrfsp/Poblacion/deflator
@@ -684,11 +690,18 @@ quietly {
 			local graphfuente ""
 		}
 
-		twoway (connected shrfsp_pib anio, mlabel(shrfsp_pib) mlabpos(12) mlabcolor(black) mlabgap(0)) ///
-			(connected shrfspPC anio, mlabel(shrfspPC) mlabpos(12) mlabcolor(black) mlabgap(0) yaxis(2)) if anio >= `desde', ///
-			title("`graphtitle'") ///
-			subtitle("Indicadores de la deuda") ///
-			caption("`graphfuente'") ///
+		twoway (connected shrfsp_pib anio if anio < `anio', ///
+				mlabel(shrfsp_pib) mlabpos(12) mlabcolor(black) mlabgap(0) mlabsize(medlarge)) ///
+			(connected shrfsp_pib anio if anio >= `anio', ///
+				mlabel(shrfsp_pib) mlabpos(12) mlabcolor(black) mlabgap(0) mlabsize(medlarge)) ///			
+			(connected shrfspPC anio if anio < `anio', ///
+				mlabel(shrfspPC) mlabpos(12) mlabcolor(black) mlabgap(0) mlabsize(medlarge) yaxis(2) pstyle(p1)) ///
+			(connected shrfspPC anio if anio >= `anio', ///
+				mlabel(shrfspPC) mlabpos(12) mlabcolor(black) mlabgap(0) mlabsize(medlarge) yaxis(2) pstyle(p2)) ///
+			if anio >= `aniomin', ///
+			///title("`graphtitle'") ///
+			///subtitle("Indicadores de la deuda") ///
+			///caption("`graphfuente'") ///
 			xtitle("") ///
 			yscale(range(-50)) ///
 			yscale(range(0 250000) axis(2) lwidth(none)) ///
@@ -696,10 +709,12 @@ quietly {
 			ylabel(none, axis(1) noticks) ///
 			ytitle("", axis(1)) ///
 			ytitle("", axis(2)) ///
-			xlabel(`desde'(1)`end') ///
+			xlabel(`aniomin'(1)`end') ///
 			legend(off label(1 "Como % del PIB") label(2 "Por persona ajustada")) ///
-			text(`=shrfsp_pib[`obsdesde']*.95' `=anio[`obsdesde']' "{bf:Como}" "{bf:% del PIB}", place(5) color("111 111 111") size(small)) ///
-			text(`=shrfspPC[`obsdesde']*.95' `=anio[`obsdesde']' "{bf:Por persona ajustada}" "{bf:(`currency' `aniovp')}", place(5) color("111 111 111") size(small) yaxis(2)) ///
+			text(`=shrfsp_pib[`obsdesde']*.95' `=anio[`obsdesde']' "{bf:Como}" "{bf:% del PIB}", ///
+				place(5) color("111 111 111") size(medsmall)) ///
+			text(`=shrfspPC[`obsdesde']*.95' `=anio[`obsdesde']' "{bf:Por persona ajustada}" "{bf:(`currency' `aniovp')}", ///
+				place(5) color("111 111 111") size(medsmall) yaxis(2)) ///
 			name(Proy_combinado, replace)
 
 		if "$export" != "" {

@@ -584,6 +584,7 @@ quietly {
 		}
 	}
 	replace estimacion = estimacion*`ajuste'
+	*noisily tabstat estimacion if anio == 2025, format(%20.0fc)
 	save `"`c(sysdir_personal)'/users/$id/bootstraps/`bootstrap'/`varlist'REC"', replace
 
 	ProyGraph `varlist' `aniope' `bootstrap' `nographs'
