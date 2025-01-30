@@ -36,6 +36,7 @@ quietly {
 	}
 	
 	use if clave_de_concepto == "`anything'" using "`c(sysdir_site)'/SIM/DatosAbiertos.dta", clear
+	*drop in -1
 	merge 1:1 (anio mes) using "`c(sysdir_site)'/SIM/Deflactor.dta", nogen keep(matched)
 	merge m:1 (anio) using "`c(sysdir_site)'/SIM/Poblaciontot.dta", nogen keep(matched)
 	merge m:1 (anio trimestre) using "`c(sysdir_personal)'/SIM/PIBDeflactor.dta", nogen
@@ -362,9 +363,9 @@ quietly {
 			(bar montomill anio if anio >= `ultanio', ///
 				mlabel(montomill) mlabpos(7) mlabcolor(white) mlabsize(small) msize(large) mlabangle(90) barwidth(.75)) ///
 			(connected monto_pib anio if anio < `ultanio' & anio >= `desde', ///
-				yaxis(2) pstyle(p1) mlabel(monto_pib) mlabpos(12) mlabcolor("111 111 111") mlabsize(small) lpattern(dot) msize(large)) ///
+				yaxis(2) pstyle(p1) mlabel(monto_pib) mlabpos(12) mlabcolor("111 111 111") mlabsize(medium) lpattern(dot) msize(large)) ///
 			(connected monto_pib anio if anio >= `ultanio', ///
-				yaxis(2) pstyle(p2) mlabel(monto_pib) mlabpos(12) mlabcolor("111 111 111") mlabsize(small) lpattern(dot) msize(large)), ///
+				yaxis(2) pstyle(p2) mlabel(monto_pib) mlabpos(12) mlabcolor("111 111 111") mlabsize(medium) lpattern(dot) msize(large)), ///
 			title("`graphtitle'"`textsize') ///
 			subtitle(" Montos reportados (millones MXN `aniovp') y como % del PIB", margin(bottom)) ///
 			///b1title(`"`textografica'"') ///
@@ -373,7 +374,7 @@ quietly {
 			xtitle("") ///
 			///xlabel(`prianio' `=round(`prianio',5)'(5)`ultanio') ///
 			xlabel(`desde'(1)`ultanio') ///
-			ylabel(none, format(%15.0fc)) ///
+			ylabel(, format(%15.0fc)) ///
 			yscale(range(0 `=`rango'[2,1]*1.75')) ///
 			ylabel(none, axis(2) format(%7.0fc) noticks) ///
 			yscale(range(0 `=`rango'[1,3]-1.75*(`rango'[2,3]-`rango'[1,3])') noline axis(2)) ///

@@ -37,7 +37,7 @@ quietly {
 	noisily di _newline(2) in g _dup(20) "." "{bf:  Sistema Fiscal: DEUDA $pais " in y `anio' "  }" in g _dup(20) "."
 
 	** 2.1 PIB + Deflactor **
-	PIBDeflactor, anio(`=aniovp') nographs nooutput `update'
+	PIBDeflactor, anio(`anio') nographs nooutput `update'
 	local currency = currency[1]
 	g Poblacion_ajustada = Poblacion*lambda
 	tempfile PIB
@@ -544,16 +544,16 @@ quietly {
 				yaxis(2) mlabel(costodeudaTotg) mlabposition(12) mlabcolor(black) msize(zero) mlabsize(vlarge)) ///
 			if tasaInterno != . & anio > `ultanio', ///
 			title("`graphtitle'") ///
-			text(`=costodeudaTotg[24]' `=`ultanio'+1' "{bf:billones}" "{bf:`currency' `aniovp'}", ///
-				yaxis(2) place(6) size(large) color("111 111 111")) ///
+			text(`=costodeudaTotg[24]*0' `=`ultanio'+.75' "{bf:billones `currency' `aniovp'}", ///
+				yaxis(2) place(1) size(large) color("111 111 111") bcolor(white) box) ///
 			///text(`=(costodeudaTotg[41]-costodeudaOyEg[41])*.25+costodeudaOyEg[41]' 2030 "Gob. Fed.", ///
 			///	yaxis(2) place(0) size(large) color("111 111 111") justification(center)) ///
 			///text(`=costodeudaOyEg[41]*.5' 2030 "OyE", ///
 			///	yaxis(2) place(0) size(large) color("111 111 111") justification(center)) ///
 			ylabel(none) ///
 			ylabel(none, axis(2)) ///
-			text(`=tasaEfectiva[24]' `=`ultanio'+1' "{bf:Interés}" "{bf:promedio (%)}", ///
-				place(6) size(large) color("111 111 111")) ///
+			text(`=tasaEfectiva[24]' `=`ultanio'+.75' "{bf:Tasa de interés promedio (%)}", ///
+				place(5) size(large) color("111 111 111")) ///
 			yscale(range(-10) noline) ///
 			yscale(range(0 1.75) axis(2) noline) ///
 			ytitle("") ///
@@ -745,7 +745,7 @@ quietly {
 			///text(`=`rfsp'[24]' 2013 "{bf:billones}" "{bf:`currency' `aniovp'}", place(6)) ///
 			///text(`=(`rfsp'[41]-`rfspOtros'[41])*.5+`rfspOtros'[41]' 2030 "Balance", place(0) size(large)) ///
 			///text(`=`rfspOtros'[41]*.5' 2030 "Otros RFSP", place(0) size(large)) ///
-			text(`=`rango'[3,2]' 2008 `"{bf:Promedio:} `=string(`rango'[3,2],"%5.1f")' % PIB"', place(5) yaxis(2) size(medium)) ///
+			text(`=`rango'[3,2]' 2008.75 `"{bf:Promedio:} `=string(`rango'[3,2],"%5.1f")' % PIB"', place(5) yaxis(2) size(medium)) ///
 			ylabel(none, format(%15.0fc) labsize(small)) ///
 			ylabel(none, format(%15.0fc) labsize(small) axis(2)) ///
 			xlabel(`=`ultanio'+1'(1)`lastexo', noticks) ///	
