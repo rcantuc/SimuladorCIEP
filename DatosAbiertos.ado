@@ -52,8 +52,8 @@ quietly {
 		}
 	}
 	
-	g lambda = (1+scalar(llambda)/100)^(anio-`aniovp')
-	replace poblacion = poblacion*lambda
+	*g lambda = (1+scalar(llambda)/100)^(anio-`aniovp')
+	*replace poblacion = poblacion*lambda
 
 	if "`anything'" == "" {
 		use "`c(sysdir_site)'/SIM/DatosAbiertos.dta", clear
