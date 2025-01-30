@@ -79,7 +79,7 @@ global inf2028 = 3.0
 global inf2029 = 3.0
 global inf2030 = 3.0
 
-
+ex
 ** 2.8 Deuda Pública **
 scalar tasaEfectiva = 6.3782
 
