@@ -738,7 +738,7 @@ quietly {
 			(scatter `rfsp' anio, mlabel(`rfsp') mlabposition(12) mlabcolor(black) msize(zero) mlabsize(vlarge)) ///
 			if rfsp != . & anio > `ultanio', ///
 			title("`graphtitle'") ///
-			subtitle(" Montos reportados (millones MXN `aniovp') y como % del PIB", margin(bottom)) ///
+			subtitle(" Montos reportados (billones MXN `aniovp') y como % del PIB", margin(bottom)) ///
 			xtitle("") ///
 			name(rfsp, replace) ///
 			///text(`=`rfsppib'[24]' 2013 "{bf:% PIB}", place(6) yaxis(2)) ///

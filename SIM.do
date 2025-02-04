@@ -47,7 +47,7 @@ forvalues anio = `=aniovp'(1)`=aniovp' {					// <-- Año(s) de interés
 
 **/
 **# 2. ECONOMÍA
-***
+/***
 
 ** 2.1 Producto Interno Bruto 
 noisily PIBDeflactor, aniovp(`=aniovp') geodef(`=aniovp-1') geopib(`=aniovp-1') $update $textbook
@@ -59,7 +59,7 @@ noisily SCN if anio <= 2030, //$update
 
 **/
 **# 3. SISTEMA FISCAL
-***
+/***
 
 ** 3.1 Ley de Ingresos de la Federación
 noisily LIF, by(divSIM) rows(1) anio(`=anioPE') desde(`=anioPE-1') min(0) title("Ingresos presupuestarios") $update
@@ -67,9 +67,9 @@ noisily LIF, by(divSIM) rows(1) anio(`=anioPE') desde(`=anioPE-1') min(0) title(
 ** 3.2 Presupuesto de Egresos de la Federación
 noisily PEF, by(divSIM) rows(2) min(0) anio(`=anioPE') desde(`=anioPE-1') title("Gasto presupuestario") $update
 
-** 3.3 Saldo Histórico de Requerimientos Financieros del Sector Público
-noisily SHRFSP, anio(`=anioPE-1') ultanio(2007) $update $textbook
-
+** 3.3 Saldo Histórico de Requerimientos Financieros del Sector Público **/
+noisily SHRFSP, anio(`=anioPE-1') ultanio(2008) $update $textbook
+ex
 ** 3.4 Subnacionales
 //noisily run "Subnacional.do" //$update
 
