@@ -16,11 +16,11 @@ capture mkdir "`c(sysdir_personal)'/users/$id/"
 
 
 
-********************
-***              ***
-*** 2 PARÁMETROS ***
-***              ***
-********************
+******************************
+***                        ***
+*** 2 PARÁMETROS GENERALES ***
+***                        ***
+******************************
 
 ** 2.1 Entidades Federativas **
 global entidadesL `" "Aguascalientes" "Baja California" "Baja California Sur" "Campeche" "Coahuila" "Colima" "Chiapas" "Chihuahua" "Ciudad de México" "Durango" "Guanajuato" "Guerrero" "Hidalgo" "Jalisco" "Estado de México" "Michoacán" "Morelos" "Nayarit" "Nuevo León" "Oaxaca" "Puebla" "Querétaro" "Quintana Roo" "San Luis Potosí" "Sinaloa" "Sonora" "Tabasco" "Tamaulipas" "Tlaxcala" "Veracruz" "Yucatán" "Zacatecas" "Nacional" "'
@@ -79,7 +79,40 @@ global inf2028 = 3.0
 global inf2029 = 3.0
 global inf2030 = 3.0
 
+
+
+*******************/
+***              ***
+*** 3 BIENVENIDA ***
+***              ***
+********************
+noisily di in w _newline(50) "{bf:Centro de Investigaci{c o'}n Econ{c o'}mica y Presupuestaria, A.C.}"
+noisily di _newline(2) in g `"{bf:{stata `"projmanager "`c(sysdir_personal)'/simulador.stpr""': Simulador Fiscal CIEP}}"'
+noisily di in g " Información Económica:  " _col(30) in y "$paqueteEconomico" ///
+	_newline in g " Año de Valor Presente:  " _col(30) in y "`=aniovp'" ///
+	_newline in g " Año de ENIGH:  " _col(30) in y "`=anioenigh'" ///
+	_newline in g " User: " _col(30) in y "$id" ///
+	_newline(2) " CLICK para ejecutar los comandos o usar la siguiente sintaxis: "
+
+noisily di _newline `" {stata "Poblacion":Poblacion} [if entidad == "{it:Nombre}"] [, ANIOinicial(int) ANIOFINal(int) NOGraphs]"'
+noisily di `" {stata "PIBDeflactor, geopib(2010) geodef(2010)":PIBDeflactor} [, ANIOvp(int) DIScount(real) NOGraphs]"'
+noisily di `" {stata "Inflacion":Inflacion} [, ANIOvp(int) NOGraphs]"'
+noisily di `" {stata "SCN":SCN} [, ANIO(int) NOGraphs]"'
+noisily di `" {stata "LIF":LIF} [, ANIO(int) NOGraphs MINimum(real) BY(varname) ROWS(int) COLS(int) BASE]"'
+noisily di `" {stata "PEF":PEF} [if] [, ANIO(int) NOGraphs MINimum(real) BY(varname) ROWS(int) COLS(int) BASE]"'
+noisily di `" {stata "SHRFSP":SHRFSP} [, ANIO(int) DEPreciacion(int) NOGraphs]"' 
+noisily di `" {stata "DatosAbiertos XAB":DatosAbiertos {it:serie}} [, NOGraphs DESDE(real) MES]"' 
+noisily di `" {stata "TasasEfectivas":TasasEfectivas} [, ANIO(int)]"' 
+noisily di `" {stata "GastoPC":GastoPC} [, ANIO(int)]"'
+
+
 ex
+******************************
+***                        ***
+*** 2 PARÁMETROS GENERALES ***
+***                        ***
+******************************
+
 ** 2.8 Deuda Pública **
 scalar tasaEfectiva = 6.3782
 
@@ -375,29 +408,3 @@ if "$output" != "" {
 	quietly log using `"`c(sysdir_personal)'/users/$id/output.txt"', replace text name(output)
 	quietly log off output
 }
-
-
-
-*******************/
-***              ***
-*** 4 BIENVENIDA ***
-***              ***
-********************
-noisily di in w _newline(50) "{bf:Centro de Investigaci{c o'}n Econ{c o'}mica y Presupuestaria, A.C.}"
-noisily di _newline(2) in g `"{bf:{stata `"projmanager "`c(sysdir_personal)'/simulador.stpr""': Simulador Fiscal CIEP}}"'
-noisily di in g " Información Económica:  " _col(30) in y "$paqueteEconomico" ///
-	_newline in g " Año de Valor Presente:  " _col(30) in y "`=aniovp'" ///
-	_newline in g " Año de ENIGH:  " _col(30) in y "`=anioenigh'" ///
-	_newline in g " User: " _col(30) in y "$id" ///
-	_newline(2) " CLICK para ejecutar los comandos o usar la siguiente sintaxis: "
-
-noisily di _newline `" {stata "Poblacion":Poblacion} [if entidad == "{it:Nombre}"] [, ANIOinicial(int) ANIOFINal(int) NOGraphs]"'
-noisily di `" {stata "PIBDeflactor, geopib(2010) geodef(2010)":PIBDeflactor} [, ANIOvp(int) DIScount(real) NOGraphs]"'
-noisily di `" {stata "Inflacion":Inflacion} [, ANIOvp(int) NOGraphs]"'
-noisily di `" {stata "SCN":SCN} [, ANIO(int) NOGraphs]"'
-noisily di `" {stata "LIF":LIF} [, ANIO(int) NOGraphs MINimum(real) BY(varname) ROWS(int) COLS(int) BASE]"'
-noisily di `" {stata "PEF":PEF} [if] [, ANIO(int) NOGraphs MINimum(real) BY(varname) ROWS(int) COLS(int) BASE]"'
-noisily di `" {stata "SHRFSP":SHRFSP} [, ANIO(int) DEPreciacion(int) NOGraphs]"' 
-noisily di `" {stata "DatosAbiertos XAB":DatosAbiertos {it:serie}} [, NOGraphs DESDE(real) MES]"' 
-noisily di `" {stata "TasasEfectivas":TasasEfectivas} [, ANIO(int)]"' 
-noisily di `" {stata "GastoPC":GastoPC} [, ANIO(int)]"'
