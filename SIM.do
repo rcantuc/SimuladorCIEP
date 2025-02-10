@@ -47,11 +47,11 @@ forvalues anio = `=aniovp'(1)`=aniovp' {					// <-- Año(s) de interés
 
 **/
 **# 2. ECONOMÍA
-/***
+***
 
 ** 2.1 Producto Interno Bruto 
 noisily PIBDeflactor, aniovp(`=aniovp') geodef(`=aniovp-1') geopib(`=aniovp-1') $update $textbook
-
+ex
 ** 2.2 Sistema de Cuentas Nacionales
 noisily SCN if anio <= 2030, //$update
 
