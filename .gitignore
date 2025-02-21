@@ -4,6 +4,7 @@
 **/03_temp/**
 **/04_master/**
 **/05_graphs/**
+**/SIM/**
 *.stswp
 .DS_Store
 Icon?
