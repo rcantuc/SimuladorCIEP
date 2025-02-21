@@ -68,7 +68,6 @@ noisily di in g " Información Económica:  " _col(30) in y "$paqueteEconomico" 
 
 noisily di _newline `" {stata "Poblacion":Poblacion} [if entidad == "{it:Nombre}"] [, ANIOinicial(int) ANIOFINal(int) NOGraphs]"'
 noisily di `" {stata "PIBDeflactor, geopib(2010) geodef(2010)":PIBDeflactor} [, ANIOvp(int) DIScount(real) NOGraphs]"'
-noisily di `" {stata "Inflacion":Inflacion} [, ANIOvp(int) NOGraphs]"'
 noisily di `" {stata "SCN":SCN} [, ANIO(int) NOGraphs]"'
 noisily di `" {stata "LIF":LIF} [, ANIO(int) NOGraphs MINimum(real) BY(varname) ROWS(int) COLS(int) BASE]"'
 noisily di `" {stata "PEF":PEF} [if] [, ANIO(int) NOGraphs MINimum(real) BY(varname) ROWS(int) COLS(int) BASE]"'
