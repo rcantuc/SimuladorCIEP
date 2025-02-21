@@ -392,15 +392,24 @@ quietly {
 		tempname DEPMAX
 		matrix `DEPMAX' = r(StatTotal)
 
-		twoway (bar `Depreciacion' anio if anio <= `aniomax', pstyle(p1) lwidth(none) barwidth(.75) mlabel(`Depreciacion') mlabpos(12) mlabcolor(black) mlabsize(large)) ///
+		twoway (bar `Depreciacion' anio if anio <= `aniomax', ///
+				pstyle(p1) lwidth(none) barwidth(.75) mlabel(`Depreciacion') ///
+				mlabpos(12) mlabcolor(black) mlabsize(large)) ///
 			(bar `Capital' anio if anio <= `aniomax', pstyle(p2) lwidth(none) barwidth(.75)) ///
 			(bar `Laboral' anio if anio <= `aniomax', pstyle(p3) lwidth(none) barwidth(.75)) ///
-			(`graphtype' `Depreciacion' anio if anio <= `anio_exo' & anio > `aniomax', pstyle(p1) lwidth(none) barwidth(.75) mlabel(`Depreciacion') mlabpos(12) mlabcolor(black) mlabsize(large) fintensity(50)) ///
-			(`graphtype' `Capital' anio if anio <= `anio_exo' & anio > `aniomax', pstyle(p2) lwidth(none) barwidth(.75) fintensity(50)) ///
-			(`graphtype' `Laboral' anio if anio <= `anio_exo' & anio > `aniomax', pstyle(p3) lwidth(none) barwidth(.75) fintensity(50)) ///
-			(bar `Depreciacion' anio if anio > `aniomax' & anio > `anio_exo', pstyle(p1) lwidth(none) barwidth(.75)) ///
-			(bar `Capital' anio if anio > `aniomax' & anio > `anio_exo', pstyle(p2) lwidth(none) barwidth(.75)) ///
-			(bar `Laboral' anio if anio > `aniomax' & anio > `anio_exo', pstyle(p3) lwidth(none) barwidth(.75)), ///
+			(`graphtype' `Depreciacion' anio if anio <= `anio_exo' & anio > `aniomax', ///
+				pstyle(p1) lwidth(none) barwidth(.75) mlabel(`Depreciacion') ///
+				mlabpos(12) mlabcolor(black) mlabsize(large) fintensity(50)) ///
+			(`graphtype' `Capital' anio if anio <= `anio_exo' & anio > `aniomax', ///
+				pstyle(p2) lwidth(none) barwidth(.75) fintensity(50)) ///
+			(`graphtype' `Laboral' anio if anio <= `anio_exo' & anio > `aniomax', ///
+				pstyle(p3) lwidth(none) barwidth(.75) fintensity(50)) ///
+			(bar `Depreciacion' anio if anio > `aniomax' & anio > `anio_exo', ///
+				pstyle(p1) lwidth(none) barwidth(.75)) ///
+			(bar `Capital' anio if anio > `aniomax' & anio > `anio_exo', ///
+				pstyle(p2) lwidth(none) barwidth(.75)) ///
+			(bar `Laboral' anio if anio > `aniomax' & anio > `anio_exo', ///
+				pstyle(p3) lwidth(none) barwidth(.75)), ///
 			title("`graphtitle'") ///
 			caption("`graphfuente'") ///
 			legend(cols(3) order(1 2 3) region(margin(zero))) ///
@@ -535,9 +544,12 @@ quietly {
 			(`graphtype' `AhorroN' anio if anio <= `anio_exo' & anio > `aniomax', ///
 				pstyle(p1) lwidth(none) barwidth(.75) mlabel(`AhorroN') ///
 				mlabpos(12) mlabcolor(black) mlabsize(large) fintensity(50)) ///
-			(`graphtype' `ConGob' anio if anio <= `anio_exo' & anio > `aniomax', pstyle(p2) lwidth(none) barwidth(.75) fintensity(50)) ///
-			(`graphtype' `ConHog' anio if anio <= `anio_exo' & anio > `aniomax', pstyle(p3) lwidth(none) barwidth(.75) fintensity(50)) ///
-			(`graphtype' `ComprasN' anio if anio <= `anio_exo' & anio > `aniomax', pstyle(p4) lwidth(none) barwidth(.75) fintensity(50)) ///
+			(`graphtype' `ConGob' anio if anio <= `anio_exo' & anio > `aniomax', ///
+				pstyle(p2) lwidth(none) barwidth(.75) fintensity(50)) ///
+			(`graphtype' `ConHog' anio if anio <= `anio_exo' & anio > `aniomax', ///
+				pstyle(p3) lwidth(none) barwidth(.75) fintensity(50)) ///
+			(`graphtype' `ComprasN' anio if anio <= `anio_exo' & anio > `aniomax', ///
+				pstyle(p4) lwidth(none) barwidth(.75) fintensity(50)) ///
 			(bar `AhorroN' anio if anio > `aniomax' & anio > `anio_exo', pstyle(p1) lwidth(none)) ///
 			(bar `ConGob' anio if anio > `aniomax' & anio > `anio_exo', pstyle(p2) lwidth(none)) ///
 			(bar `ConHog' anio if anio > `aniomax' & anio > `anio_exo', pstyle(p3) lwidth(none)) ///
@@ -739,7 +751,7 @@ quietly {
 	scalar DiveT     = DiveT[`obs']
 	scalar DiveTPIB  = DiveT[`obs']/PIB[`obs']*100
 
-	* --- SCALARS COMPUUESTOS ---
+	* --- SCALARS COMPUESTOS ---
 	scalar AlimBebT      = Alim + BebN
 	scalar AlimBebTPIB   = (Alim + BebN)/PIB[`obs']*100
 
@@ -758,6 +770,7 @@ quietly {
 	scalar Salud6213 = Salud6213[`obs']
 	scalar Salud6216 = Salud6216[`obs']
 
+	scalar ConsPriv_54 = ConsPriv_54[`obs']
 	scalar ConsPriv_62 = ConsPriv_62[`obs']
 
 	scalar Inmob5311 = Inmob5311[`obs']

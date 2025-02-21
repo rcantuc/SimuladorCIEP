@@ -559,7 +559,7 @@ quietly {
 		*capture window manage close graph ingresosMXN`by'
 		*capture window manage close graph ingresos`by'PIB
 	
-		graph save ingresos`by'PIB "`c(sysdir_site)'/04_master/graphs/ingresos`by'PIB", replace
+		graph save ingresos`by'PIB "`c(sysdir_site)'/05_graphs/ingresos`by'PIB", replace
 		if "$export" != "" {
 			graph export "$export/ingresos`by'PIB.png", as(png) name("ingresos`by'PIB") replace
 		}

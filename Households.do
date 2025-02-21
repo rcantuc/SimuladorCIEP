@@ -103,7 +103,7 @@ if `1' >= 2008 & `1' < 2010 {
 ** 0.1 Log-file **
 capture log close households
 log using "`c(sysdir_site)'/03_temp/`enighanio'/households.smcl", replace name(households)
-local dir_enigh "`c(sysdir_site)'../BasesCIEP/INEGI/`enigh'/`enighanio'"
+local dir_enigh "`c(sysdir_site)'/01_raw/`enigh'/`enighanio'"
 
 ** 0.2 Bienvenida **
 noisily di _newline(2) in g _dup(20) "." "{bf:   Economía generacional: " in y "INGRESOS - `enigh' `enighanio'  }" in g _dup(20) "." _newline(2)
@@ -128,7 +128,7 @@ local SSImputada = scalar(SSImputada)
 local MixL = scalar(MixL)
 local ImpNetProduccionL = scalar(ImpNetProduccionL)
 local ImpNetProduccionK = scalar(ImpNetProduccionK)
-local ImpNetProductos = scalar(ImpNetProductos)
+local ImpNetProductos = scalar(ImpNet)
 
 local ExNOpSoc = scalar(ExNOpSoc)
 local ExNOpHog = scalar(ExNOpHog)
@@ -139,23 +139,25 @@ local ROWTrans = scalar(ROWTrans)
 local ROWProp = scalar(ROWProp)
 
 local ComprasN = scalar(ComprasN)
-local ConCapFij = scalar(ConCapFij)
+local ConCapFij = scalar(CapFij)
 local ConGob = scalar(ConGob)
 
 ** 1.2 Ajustes Rentas y Servicios Profesionales **
 * Documento: Tributacion a ingresos por alquileres y servicios profesionales *
 * BID, SHCP, CIEP, 2018 *
-local ServProf = scalar(ServProf)
-local ConsMedi = scalar(ConsMedi)
-local ConsDent = scalar(ConsDent)
-local ConsOtro = scalar(ConsOtro)
-local EnfeDomi = scalar(EnfeDomi)
-local ServProfH = scalar(ServProfH)
-local SaludH = scalar(SaludH)
-local SNAAlquiler = scalar(Alquileres)
-local SNAInmobiliarias = scalar(Inmobiliarias)
+local ServProf = scalar(Prof541_T)
+local ConsMedi = scalar(Salud6211)
+local ConsDent = scalar(Salud6212)
+local ConsOtro = scalar(Salud6213)
+local EnfeDomi = scalar(Salud6216)
+
+local ServProfH = scalar(ConsPriv_54)
+local SaludH = scalar(ConsPriv_62)
+
+local SNAAlquiler = scalar(Inmob5311)
+local SNAInmobiliarias = scalar(Inmob5312)
 local SNAExBOpHog = scalar(ExBOpHog)
-local SNAAlojamiento = scalar(Alojamiento)
+local SNAAlojamiento = scalar(AlojT)
 
 ** 1.3 Macros: PEF **
 PEF, anio(`enighanio') min(0) nographs
@@ -357,7 +359,7 @@ if `enighanio' >= 2022 {
 
 ********************************
 ** 1.7 Micro 1. ENIGH. Gastos **
-capture confirm file "`c(sysdir_site)'/SIM/`enighanio'/deducciones.dta"
+capture confirm file "`c(sysdir_site)'/04_master/`enighanio'/deducciones.dta"
 if _rc != 0 {
 	noisily run "`c(sysdir_site)'/Expenditure.do" `enighanio'
 }
@@ -1292,7 +1294,7 @@ merge m:1 (folioviv) using "`dir_enigh'/vivienda.dta", ///
 	nogen keepusing(tenencia renta)
 tostring inst_* inscr_* pres_*, replace
 
-merge m:1 (folioviv foliohog numren) using "`c(sysdir_site)'/SIM/`enighanio'/deducciones.dta", ///
+merge m:1 (folioviv foliohog numren) using "`c(sysdir_site)'/04_master/`enighanio'/deducciones.dta", ///
 	nogen keepus(deduc_*)
 
 replace deduc_STrans_escolar = deduc_STrans_escolar
@@ -2126,7 +2128,7 @@ noisily di _newline _col(04) in g "{bf:3.2. Probit de formalidad: " in y "Salari
 noisily xi: probit formal_probit deduc_isr ///
 	edad edad2 i.sexo aniosesc aniosesc2 rural i.sinco2 i.scian2 ///
 	if ing_t4_cap1 > 0 & edad >= 16 [pw=factor]
-estimates save "`c(sysdir_site)'/SIM/`enighanio'/formal_salarios", replace
+estimates save "`c(sysdir_site)'/04_master/`enighanio'/formal_salarios", replace
 predict double prob_salarios if e(sample)
 
 * Seleccionar individuo formales (general) *
@@ -2142,7 +2144,7 @@ noisily xi: probit formal_probit deduc_isr ///
 	edad edad2 i.sexo aniosesc aniosesc2 rural i.sinco2 i.scian2 ///
 	if ing_t4_cap2 + ing_t4_cap3 + ing_t4_cap4 + ing_t4_cap5 ///
 	+ ing_t4_cap6 + ing_t4_cap7 + ing_t4_cap8 + ing_t4_cap9 > 0 & edad >= 16 [pw=factor]
-estimates save "`c(sysdir_site)'/SIM/`enighanio'/formal_fisicas", replace
+estimates save "`c(sysdir_site)'/04_master/`enighanio'/formal_fisicas", replace
 predict double prob_formal if e(sample)
 
 * Seleccionar individuo formales (general) *
@@ -2157,7 +2159,7 @@ noisily di _newline _col(04) in g "{bf:3.4. Probit de formalidad: " in y "Person
 noisily xi: probit formal_probit deduc_isr ///
 	edad edad2 i.sexo aniosesc aniosesc2 rural i.sinco2 i.scian2 ///
 	if ing_bruto_tpm > 0 & edad >= 16 [pw=factor]
-estimates save "`c(sysdir_site)'/SIM/`enighanio'/formal_morales", replace
+estimates save "`c(sysdir_site)'/04_master/`enighanio'/formal_morales", replace
 predict double prob_moral if e(sample)
 
 * Seleccionar individuo formales (general) *
@@ -2489,9 +2491,9 @@ scalar giniPIBF = string(`gini_ingbrutotot',"%5.3f")
 *********************************/
 **# 12. Variables descriptivas ***
 **********************************
-merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/SIM/`enighanio'/expenditures.dta", nogen keepus(gas_pc_*)
-merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/SIM/`enighanio'/consumption_categ_iva.dta", nogen keepus(IVA)
-merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/SIM/`enighanio'/consumption_categ_ieps.dta", nogen keepus(IEPS)
+merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/04_master/`enighanio'/expenditures.dta", nogen keepus(gas_pc_*)
+merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/04_master/`enighanio'/consumption_categ_iva.dta", nogen keepus(IVA)
+merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/04_master/`enighanio'/consumption_categ_ieps.dta", nogen keepus(IEPS)
 
 tempvar tot_integ
 egen `tot_integ' = count(edad), by(folioviv foliohog)
@@ -2585,10 +2587,10 @@ capture drop __*
 format ing_* exen_* renta %10.0fc
 compress
 if `c(version)' > 13.1 {
-	saveold "`c(sysdir_site)'/SIM/`enighanio'/households.dta", replace version(13)
+	saveold "`c(sysdir_site)'/04_master/`enighanio'/households.dta", replace version(13)
 }
 else {
-	save "`c(sysdir_site)'/SIM/`enighanio'/households.dta", replace
+	save "`c(sysdir_site)'/04_master/`enighanio'/households.dta", replace
 }
 
 
@@ -2596,7 +2598,7 @@ else {
 *****************
 ** Sankeys NTA **
 *****************
-** Inputs: Archivo "`c(sysdir_site)'/SIM/`anio'/households.dta".
+** Inputs: Archivo "`c(sysdir_site)'/04_master/`anio'/households.dta".
 ** Outputs: Archivos .json en carpeta "/var/www/html/SankeyNTA/.
 //foreach k in decil sexo grupoedad escol rural {
 //	run "`c(sysdir_site)'/Sankey.do" `k' `enighanio' SankeyNTA
