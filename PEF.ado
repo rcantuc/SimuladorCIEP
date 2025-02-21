@@ -17,7 +17,7 @@ quietly {
 	}
 
 	** 0.2 Base PEF **
-	capture confirm file "`c(sysdir_site)'/SIM/PEF.dta"
+	capture confirm file "`c(sysdir_site)'/04_master/PEF.dta"
 	if _rc != 0 {
 		noisily UpdatePEF
 	}
@@ -27,7 +27,7 @@ quietly {
 	****************
 	*** 1 SYNTAX ***
 	****************
-	use in 1 using "`c(sysdir_site)'/SIM/PEF.dta", clear
+	use in 1 using "`c(sysdir_site)'/04_master/PEF.dta", clear
 	syntax [if] [, ANIO(int `aniovp') BY(varname) ///
 		UPDATE NOGraphs Base ///
 		MINimum(real 1) DESDE(int -1) ///
@@ -54,7 +54,7 @@ quietly {
 
 	** 1.3 Base RAW **
 	if "`base'" == "base" {
-		use `if' using "`c(sysdir_site)'/SIM/PEF.dta", clear
+		use `if' using "`c(sysdir_site)'/04_master/PEF.dta", clear
 		exit
 	}
 
@@ -103,7 +103,7 @@ quietly {
 	***************
 	*** 3 Merge ***
 	***************
-	use "`c(sysdir_site)'/SIM/PEF.dta", clear
+	use "`c(sysdir_site)'/04_master/PEF.dta", clear
 
 	** 3.1 Gasto total **
 	egen double gastoTOT = sum(gasto) if transf_gf == 0, by(anio)
@@ -580,7 +580,7 @@ quietly {
 		*capture window manage close graph ingresosMXN`by'
 		*capture window manage close graph ingresos`by'PIB
 	
-		*graph save gastos`by'PIB "`c(sysdir_personal)'/SIM/graphs/gastos`by'PIB", replace
+		graph save gastos`by'PIB "`c(sysdir_site)'/05_graphs/gastos`by'PIB", replace
 		if "$export" != "" {
 			graph export "$export/gastos`by'PIB.png", as(png) name("gastos`by'PIB") replace
 		}
@@ -614,10 +614,10 @@ program define UpdatePEF
 	*************************
 	*** 1. BASES DE DATOS ***
 	*************************
-	capture confirm file "`c(sysdir_site)'/SIM/prePEF.dta"
-	if _rc != 0 {
-		local archivos: dir "`c(sysdir_site)'../BasesCIEP/PEFs" files "*.xlsx"		// Archivos .xlsx
-		*local archivos `""PPEF 2025.xlsx" "PEF 2024.xlsx" "CuotasISSSTE.xlsx""'
+	capture confirm file "`c(sysdir_site)'/03_temp/prePEF.dta"
+	if _rc == 0 {
+		local archivos: dir "`c(sysdir_site)'/01_raw/PEFs" files "*.xlsx"		// Archivos .xlsx
+		*local archivos `""PEF 2025.xlsx" "CuotasISSSTE.xlsx""'
 		*local archivos `""CP 2013.xlsx" "CuotasISSSTE.xlsx""'
 
 		foreach k of local archivos {
@@ -625,7 +625,7 @@ program define UpdatePEF
 			* 1.1 Importar el archivo `k'.xlsx (Cuenta Pública) *
 			noisily di in g "Importando: " in y "`k'"
 			tokenize `k'
-			import excel "`c(sysdir_site)'../BasesCIEP/PEFs/`k'", clear firstrow case(lower) allstring sheet(`=substr("`2'",1,4)')
+			import excel "`c(sysdir_site)'/01_raw/PEFs/`k'", clear firstrow case(lower) allstring sheet(`=substr("`2'",1,4)')
 			capture drop v*
 
 			* 1.2 Limpiar observaciones *
@@ -764,6 +764,7 @@ program define UpdatePEF
 		replace desc_ramo = "Desarrollo Agrario, Territorial y Urbano" if ramo == 15
 		replace desc_ramo = "Bienestar" if ramo == 20
 		replace desc_ramo = "Instituto Nacional Electoral" if ramo == 22
+		replace desc_ramo = "Anticorrupción y Buen Gobierno" if ramo == 27
 		replace desc_ramo = "Tribunal Federal de Justicia Administrativa" if ramo == 32
 		replace desc_ramo = "Seguridad y Protección Ciudadana" if ramo == 36
 		replace desc_ramo = "Humanidades, Ciencias, Tecnologías e Innovación" if ramo == 38
@@ -960,10 +961,10 @@ program define UpdatePEF
 
 		compress
 		if `c(version)' > 13.1 {
-			saveold "`c(sysdir_site)'/SIM/prePEF.dta", replace version(13)
+			saveold "`c(sysdir_site)'/03_temp/prePEF.dta", replace version(13)
 		}
 		else {
-			save "`c(sysdir_site)'/SIM/prePEF.dta", replace
+			save "`c(sysdir_site)'/03_temp/prePEF.dta", replace
 		}
 	}
 
@@ -1009,7 +1010,7 @@ program define UpdatePEF
 	*** 4. Modulos SIMULADOR FISCAL CIEP ***
 	***                                  ***
 	****************************************
-	use "`c(sysdir_site)'/SIM/prePEF.dta", clear
+	use "`c(sysdir_site)'/03_temp/prePEF.dta", clear
 	replace desc_funcion = -1 if ramo == -1
 
 
@@ -1172,9 +1173,9 @@ program define UpdatePEF
 	capture drop __*
 	compress
 	if `c(version)' > 13.1 {
-		saveold "`c(sysdir_site)'/SIM/PEF.dta", replace version(13)
+		saveold "`c(sysdir_site)'/04_master/PEF.dta", replace version(13)
 	}
 	else {
-		save "`c(sysdir_site)'/SIM/PEF.dta", replace
+		save "`c(sysdir_site)'/04_master/PEF.dta", replace
 	}
 end

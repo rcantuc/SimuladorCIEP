@@ -46,8 +46,8 @@ quietly {
 	**# 3 HOUSEHOLDS ***
 	***              ***
 	********************
-	use "`c(sysdir_personal)'/users/$id/ingresos.dta", clear
-	merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/users/$id/gastos.dta", nogen update
+	use "`c(sysdir_site)'/users/$id/ingresos.dta", clear
+	merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/users/$id/gastos.dta", nogen update
 	capture drop _*
 	foreach k in Educación Pensiones Pensión_AM Salud Otros_gastos IngBasico Otras_inversiones Part_y_otras_Apor Energía {
 		tabstat `k' [fw=factor], stat(sum) f(%20.0fc) save
@@ -93,7 +93,7 @@ quietly {
 	g modulo = ""
 	foreach k of local divSIM {
 		preserve
-		use `"`c(sysdir_personal)'/users/ciepmx/bootstraps/1/`k'REC.dta"', clear
+		use `"`c(sysdir_site)'/users/ciepmx/bootstraps/1/`k'REC.dta"', clear
 		collapse estimacion contribuyentes, by(anio modulo aniobase)
 		tsset anio
 
@@ -157,11 +157,7 @@ quietly {
 			name(Proy_ingresos2) ///
 			title(Proyectado)
 
-		capture which grc1leg
-		if _rc != 0 {
-			net install grc1leg.pkg
-		}
-		grc1leg Proy_ingresos1 Proy_ingresos2, ycommon ///
+		graph combine Proy_ingresos1 Proy_ingresos2, ycommon ///
 			title({bf:Ingresos p{c u'}blicos}) ///
 			subtitle($pais) ///
 			caption("`graphfuente'") ///
@@ -296,7 +292,7 @@ quietly {
 	foreach k of local divCIEP {
 		if `"`=strtoname("`k'")'"' != "Costo_de_la_deuda" & `"`=strtoname("`k'")'"' != "Cuotas_ISSSTE" {
 			preserve
-			use `"`c(sysdir_personal)'/users/ciepmx/bootstraps/1/`=strtoname("`k'")'REC.dta"', clear
+			use `"`c(sysdir_site)'/users/ciepmx/bootstraps/1/`=strtoname("`k'")'REC.dta"', clear
 			collapse estimacion contribuyentes, by(anio modulo aniobase)
 			tsset anio
 			
@@ -361,7 +357,7 @@ quietly {
 			name(Proy_gastos2) ///
 			title(Proyectado)
 
-		grc1leg Proy_gastos1 Proy_gastos2, ycommon ///
+		graph combine Proy_gastos1 Proy_gastos2, ycommon ///
 			title({bf:Gasto p{c u'}blico primario}) ///
 			subtitle($pais) ///
 			caption("`graphfuente'") ///

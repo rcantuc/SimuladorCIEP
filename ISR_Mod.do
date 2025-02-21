@@ -34,7 +34,7 @@ local smdf = 248.93 			// SM 2024
 SCN, nographs
 local pibY = scalar(PIB)
 
-use "`c(sysdir_personal)'/SIM/perfiles2024.dta", clear
+use "`c(sysdir_site)'/04_master/perfiles2024.dta", clear
 drop CUOTAS ISRAS ISRPF
 
 
@@ -228,7 +228,7 @@ noisily di in g "  RESULTADOS Cuotas IMSS:  " _col(33) in y %10.3fc CUOTAS_Mod
 **** Touchdown!!! :) ****
 *************************
 capture drop __*
-save "`c(sysdir_personal)'/users/$id/isr_mod.dta", replace
+save "`c(sysdir_site)'/users/$id/isr_mod.dta", replace
 timer off 94
 timer list 94
 noisily di _newline(2) in g _dup(20) "." "  " in y round(`=r(t94)/r(nt94)',.1) in g " segs  " _dup(20) "."

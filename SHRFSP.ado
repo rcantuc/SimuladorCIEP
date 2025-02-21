@@ -12,12 +12,14 @@ quietly {
 		local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 	}
 
+
+
 	***********************
 	***                 ***
 	**# 1 BASE DE DATOS ***
 	***                 ***
 	***********************
-	capture confirm file `"`c(sysdir_personal)'/SIM/SHRFSP.dta"'
+	capture confirm file `"`c(sysdir_site)'/04_master/SHRFSP.dta"'
 	if _rc != 0 {
 		noisily UpdateSHRFSP
 	}
@@ -29,7 +31,7 @@ quietly {
 	**# 2 SYNTAX ***
 	***          ***
 	****************
-	use in 1 using `"`c(sysdir_personal)'/SIM/SHRFSP.dta"', clear
+	use in 1 using `"`c(sysdir_site)'/04_master/SHRFSP.dta"', clear
 	syntax [if] [, ANIO(int `aniovp' ) DEPreciacion(int 5) ///
 		NOGraphs UPDATE Base ///
 		ULTAnio(int 2001) TEXTbook]
@@ -49,7 +51,7 @@ quietly {
 	}
 
 	** 2.4 Bases RAW **
-	use `if' using `"`c(sysdir_personal)'/SIM/SHRFSP.dta"', clear
+	use `if' using `"`c(sysdir_site)'/04_master/SHRFSP.dta"', clear
 	if "`base'" == "base" {
 		exit
 	}
@@ -360,7 +362,7 @@ quietly {
 			legend(on order(1 2) label(1 "Interna") label(2 "Externa")) ///
 			name(shrfsp, replace)
 
-		graph save shrfsp `"`c(sysdir_personal)'/SIM/graphs/shrfsp.gph"', replace
+		graph save shrfsp `"`c(sysdir_site)'/05_graphs/shrfsp.gph"', replace
 		capture confirm existence $export
 		if _rc == 0 {
 			graph export "$export/shrfsp.png", replace name(shrfsp)
@@ -402,7 +404,7 @@ quietly {
 			legend(off) ///
 			name(shrfsppc, replace)
 
-		graph save shrfsppc `"`c(sysdir_personal)'/SIM/graphs/shrfsppc.gph"', replace
+		graph save shrfsppc `"`c(sysdir_site)'/05_graphs/shrfsppc.gph"', replace
 		capture confirm existence $export
 		if _rc == 0 {
 			graph export "$export/shrfsppc.png", replace name(shrfsppc)
@@ -445,7 +447,7 @@ quietly {
 			legend(on label(1 "Banca de desarrollo") label(2 "Pemex+CFE") label(3 "Gobierno federal") order(1 2 3)) ///
 			name(shrfsp_oye, replace)
 
-		graph save shrfsp_oye `"`c(sysdir_personal)'/SIM/graphs/shrfsp_oye.gph"', replace
+		graph save shrfsp_oye `"`c(sysdir_site)'/05_graphs/shrfsp_oye.gph"', replace
 		capture confirm existence $export
 		if _rc == 0 {
 			graph export "$export/shrfsp_oye.png", replace name(shrfsp_oye)
@@ -473,7 +475,7 @@ quietly {
 			legend(on label(1 "Corto plazo") label(2 "Largo plazo") order(1 2)) ///
 			name(shrfsp_plazo, replace)
 
-		graph save shrfsp_plazo `"`c(sysdir_personal)'/SIM/graphs/shrfsp_plazo.gph"', replace
+		graph save shrfsp_plazo `"`c(sysdir_site)'/05_graphs/shrfsp_plazo.gph"', replace
 		capture confirm existence $export
 		if _rc == 0 {
 			graph export "$export/shrfsp_plazo.png", replace name(shrfsp_plazo)
@@ -563,7 +565,7 @@ quietly {
 			name(tasasdeinteres, replace) ///
 			caption("`graphfuente'")
 				
-		graph save tasasdeinteres `"`c(sysdir_personal)'/SIM/graphs/tasasdeinteres.gph"', replace
+		graph save tasasdeinteres `"`c(sysdir_site)'/05_graphs/tasasdeinteres.gph"', replace
 		capture confirm existence $export
 		if _rc == 0 {
 			graph export "$export/tasasdeinteres.png", replace name(tasasdeinteres)
@@ -1143,9 +1145,9 @@ program define UpdateSHRFSP
 	* Guardar *
 	compress
 	if `c(version)' > 13.1 {
-		saveold `"`c(sysdir_personal)'/SIM/SHRFSP.dta"', replace version(13)
+		saveold `"`c(sysdir_site)'/04_master/SHRFSP.dta"', replace version(13)
 	}
 	else {
-		save `"`c(sysdir_personal)'/SIM/SHRFSP.dta"', replace
+		save `"`c(sysdir_site)'/04_master/SHRFSP.dta"', replace
 	}
 end

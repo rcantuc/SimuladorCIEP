@@ -60,15 +60,15 @@ quietly {
 	else if `aniope' >= 2008 & `aniope' < 2010 scalar anioenigh = 2008
 
 	// Carga la base de datos de ENIGH correspondiente al año de referencia
-	capture use (folioviv foliohog numren factor edad decil grupoedad escol rural) using "`c(sysdir_personal)'/SIM/perfiles`aniope'.dta", clear
+	capture use (folioviv foliohog numren factor edad decil grupoedad escol rural) using "`c(sysdir_site)'/04_master/perfiles`aniope'.dta", clear
 	if _rc != 0 {
-		noisily di _newline in g "Creando base: " in y "/SIM/perfiles`aniope'.dta" ///
+		noisily di _newline in g "Creando base: " in y "/04_master/perfiles`aniope'.dta" ///
 			in g " con " in y "ENIGH " scalar(anioenigh)
-		noisily run `"`c(sysdir_personal)'/PerfilesSim.do"' `aniope'
+		noisily run `"`c(sysdir_site)'/PerfilesSim.do"' `aniope'
 	}
 
 	// Combina la base de datos de ENIGH con la base de datos de hogares
-	merge 1:1 (folioviv foliohog numren) using "`c(sysdir_personal)'/SIM/`=anioenigh'/households.dta", nogen keepus(asis_esc tipoesc nivel inst_* ing_jubila jubilado ing_PAM formal) 
+	merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/04_master/`=anioenigh'/households.dta", nogen keepus(asis_esc tipoesc nivel inst_* ing_jubila jubilado ing_PAM formal) 
 	capture drop __*
 
 	// Calcula la suma de los factores de ponderación de la base de datos de ENIGH
@@ -1347,13 +1347,13 @@ quietly {
 	*** 9 Base SIM ***
 	******************
 	capture drop __*
-	capture mkdir `"`c(sysdir_personal)'/users/"'
-	capture mkdir `"`c(sysdir_personal)'/users/$id/"'
+	capture mkdir `"`c(sysdir_site)'/users/"'
+	capture mkdir `"`c(sysdir_site)'/users/$id/"'
 	if `c(version)' > 13.1 {
-		saveold `"`c(sysdir_personal)'/users/$id/gastos.dta"', replace version(13)
+		saveold `"`c(sysdir_site)'/users/$id/gastos.dta"', replace version(13)
 	}
 	else {
-		save `"`c(sysdir_personal)'/users/$id/gastos.dta"', replace	
+		save `"`c(sysdir_site)'/users/$id/gastos.dta"', replace	
 	}
 
 

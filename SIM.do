@@ -11,8 +11,8 @@ timer on 1
 
 ***
 *** 0. Setup
-***
 if "`c(username)'" == "ricardo" {						// iMac Ricardo
+***
 	sysdir set SITE "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
 	sysdir set PERSONAL "/Users/ricardo/"
 	*global export "/Users/ricardo/CIEP Dropbox/TextbookCIEP/images"
@@ -38,16 +38,17 @@ global id = "ciepmx"								// IDENTIFICADOR DEL USUARIO
 
 ***
 **# 1. DEMOGRAFÍA
-/***
+***
 *foreach entidad of global entidadesL {
 	noisily Poblacion if entidad == "`entidad'", anioi(`=aniovp') aniofinal(`=`=aniovp'+25') $update
 *}
 
 
 
-***
+**/
 **# 2. ECONOMÍA
 ***
+
 ** 2.1 Producto Interno Bruto 
 noisily PIBDeflactor, aniovp(`=aniovp') geodef(1993) geopib(1993) $update $textbook
 
@@ -59,18 +60,19 @@ noisily SCN, anio(2023) $update
 **/
 **# 3. HOGARES
 ***
-** 3.1 Encuesta Nacional de Ingresos y Gastos de los Hogares (Usos) **
+
+** 3.1 Encuesta Nacional de Ingresos y Gastos de los Hogares (Usos)
 capture confirm file "`c(sysdir_site)'/04_master/`=anioenigh'/expenditures.dta"
 if _rc != 0 ///
 	noisily run "`c(sysdir_site)'/Expenditure.do" `=anioenigh'
-ex
-** 3.2 Encuesta Nacional de Ingresos y Gastos de los Hogares (Recursos) **
-capture confirm file "`c(sysdir_site)'/SIM/`=anioenigh'/households.dta"
+
+** 3.2 Encuesta Nacional de Ingresos y Gastos de los Hogares (Recursos)
+capture confirm file "`c(sysdir_site)'/04_master/`=anioenigh'/households.dta"
 if _rc != 0 ///
 	noisily run `"`c(sysdir_site)'/Households.do"' `=anioenigh'
 
 
-ex
+
 **/
 **# 3. SISTEMA FISCAL
 ***
@@ -81,16 +83,16 @@ noisily LIF, by(divSIM) rows(1) anio(`=anioPE') desde(`=anioPE-1') min(0) title(
 ** 3.2 Presupuesto de Egresos de la Federación
 noisily PEF, by(divSIM) rows(2) min(0) anio(`=anioPE') desde(`=anioPE-1') title("Gasto presupuestario") $update
 
-** 3.3 Saldo Histórico de Requerimientos Financieros del Sector Público **
+** 3.3 Saldo Histórico de Requerimientos Financieros del Sector Público
 noisily SHRFSP, anio(`=anioPE-1') ultanio(2008) $update $textbook
-ex
+
 ** 3.4 Subnacionales
 //noisily run "Subnacional.do" //$update
 
 ** 3.5 Perfiles
 forvalues anio = `=anioPE'(1)`=anioPE' {
 	noisily di in y "PerfilesSim `anio'"
-	capture confirm file "`c(sysdir_site)'/SIM/perfiles`anio'.dta"
+	capture confirm file "`c(sysdir_site)'/04_master/perfiles`anio'.dta"
 	if _rc != 0 | "$update" == "update" ///
 		noisily run "`c(sysdir_site)'/PerfilesSim.do" `anio'
 }
@@ -99,15 +101,15 @@ forvalues anio = `=anioPE'(1)`=anioPE' {
 
 **/
 **# 4. MÓDULOS SIMULADOR
-/***
-if "`cambioisrpf'" == "1" {
+***
+if "`cambioisrpf'" == "" {
 	noisily run "`c(sysdir_site)'/ISR_Mod.do"
 	scalar ISRAS  = ISR_AS_Mod
 	scalar ISRPF  = ISR_PF_Mod
 	scalar ISRPM  = ISR_PM_Mod
 	scalar CUOTAS = CUOTAS_Mod
 }
-if "`cambioiva'" == "1" {
+if "`cambioiva'" == "" {
 	noisily run "`c(sysdir_site)'/IVA_Mod.do"
 	scalar IVA = IVA_Mod
 }
@@ -145,8 +147,8 @@ label var Transferencias "Transferencias públicas"
 capture drop AportacionesNetas
 g AportacionesNetas = ImpuestosAportaciones - Transferencias
 label var AportacionesNetas "Ciclo de vida de las aportaciones netas"
-*noisily Perfiles AportacionesNetas [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
-noisily Simulador AportacionesNetas [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot //boot(10)
+noisily Perfiles AportacionesNetas [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
+*noisily Simulador AportacionesNetas [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot //boot(10)
 
 ** 5.4 (*) Cuentas generacionales
 *noisily CuentasGeneracionales AportacionesNetas, anio(`=anioPE') discount(7)

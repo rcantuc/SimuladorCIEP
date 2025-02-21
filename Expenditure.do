@@ -95,8 +95,8 @@ local pobtotNacional = r(StatTotal)[1,1]
 ***                            ***
 **********************************
 capture confirm file "`c(sysdir_site)'/03_temp/`=anioenigh'/preconsumption.dta"
-*if _rc != 0 {
-if _rc == 0 {
+if _rc != 0 {
+*if _rc == 0 {
 
 	** 2.1. Base de datos de gastos de los hogares **
 	use "`c(sysdir_site)'/01_raw/ENIGH/`=anioenigh'/gastospersona.dta", clear
@@ -437,12 +437,7 @@ if _rc == 0 {
 	compress
 	sort folioviv foliohog numren clave
 
-	if `c(version)' > 13.1 {
-		saveold "`c(sysdir_site)'/03_temp/`=anioenigh'/preconsumption.dta", replace version(13)
-	}
-	else {
-		save "`c(sysdir_site)'/03_temp/`=anioenigh'/preconsumption.dta", replace
-	}
+	save "`c(sysdir_site)'/03_temp/`=anioenigh'/preconsumption.dta", replace
 
 
 	** 2.19. Deducciones personales del ISR **
@@ -450,12 +445,7 @@ if _rc == 0 {
 	replace numren = "01"
 	collapse (sum) deduc_*, by(folioviv foliohog numren)
 
-	if `c(version)' > 13.1 {
-		saveold "`c(sysdir_site)'/03_temp/`=anioenigh'/deducciones.dta", replace version(13)
-	}
-	else {
-		save "`c(sysdir_site)'/03_temp/`=anioenigh'/deducciones.dta", replace
-	}
+	save "`c(sysdir_site)'/04_master/`=anioenigh'/deducciones.dta", replace
 }
 
 
@@ -467,10 +457,10 @@ if _rc == 0 {
 ***  3. Integración consumo de hogares + individuos  ***
 ***                                                  ***
 ********************************************************
-foreach categ in categ /*categ_iva categ_ieps*/ {
+foreach categ in categ categ_iva categ_ieps {
 	capture confirm file "`c(sysdir_site)'/04_master/`=anioenigh'/consumption_`categ'_pc.dta"
-	*if _rc != 0 {
-	if _rc == 0 {
+	if _rc != 0 {
+	*if _rc == 0 {
 
 		** 3.1 Consumo de los individuos **
 		use "`c(sysdir_site)'/03_temp/`=anioenigh'/preconsumption.dta", clear

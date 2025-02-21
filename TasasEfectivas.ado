@@ -392,9 +392,9 @@ quietly {
 	*******************
 	capture use (folioviv foliohog numren factor edad decil grupoedad sexo rural escol ingbrutotot ///
 		ISRAS ISRPF CUOTAS ISRPM OTROSK FMP PEMEX CFE IMSS ISSSTE IVA IEPSNP IEPSP ISAN IMPORT) ///
-		using "`c(sysdir_personal)'/SIM/perfiles`anio'.dta", clear 
+		using "`c(sysdir_site)'/04_master/perfiles`anio'.dta", clear 
 	if _rc != 0 {
-		noisily run "`c(sysdir_personal)'/PerfilesSim.do" `anio'
+		noisily run "`c(sysdir_site)'/PerfilesSim.do" `anio'
 	}
 
 	* 7.1 Distribuir los ingresos entre las observaciones *
@@ -408,10 +408,10 @@ quietly {
 	* 7.2 Guardar *
 	capture drop __*
 	if `c(version)' > 13.1 {
-		saveold `"`c(sysdir_personal)'/users/$id/ingresos.dta"', replace version(13)
+		saveold `"`c(sysdir_site)'/users/$id/ingresos.dta"', replace version(13)
 	}
 	else {
-		save `"`c(sysdir_personal)'/users/$id/ingresos.dta"', replace	
+		save `"`c(sysdir_site)'/users/$id/ingresos.dta"', replace	
 	}
 
 
