@@ -186,7 +186,7 @@ Para crear comandos de manera automática y evitar errores de sintaxis, utiliza 
 
 Tras ingresar el prompt, el código devolverá tres elementos: ventana de resultados, dos gráficas y la base de datos. Podrás modificar el ado.file para obtener una base a tus necesidades.
 
-**1. Ventana de Resultados:** Muestra un resumen del análisis realizado. 
+**1. Ventana de Resultados:** Muestra un resumen del análisis realizado.
 
   ![resultados](images/Poblacion/Ventana de Resultados.png) 
   
