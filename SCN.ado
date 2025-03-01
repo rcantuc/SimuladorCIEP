@@ -21,7 +21,7 @@ quietly {
 	}
 
 	capture use in 1 using "`c(sysdir_site)'/04_master/SCN.dta", clear
-	syntax [, ANIO(int `aniovp') NOGraphs UPDATE ANIOMax(int `=`aniovp'+15')]
+	syntax [, ANIO(int `aniovp') NOGraphs UPDATE ANIOMax(int `=`aniovp'+15') TEXTBOOK]
 
 	noisily di _newline(2) in g _dup(20) "." "{bf:   Econom{c i'}a:" in y " SCN `anio'   }" in g _dup(20) "." _newline
 
@@ -473,8 +473,8 @@ quietly {
 	scalar ROW = ROW[`obs']
 	scalar ROWPIB = ROW[`obs']/PIB[`obs']*100
 
-	scalar IngDisp = IngDisp[`obs']
-	scalar IngDispPIB = IngDisp[`obs']/PIB[`obs']*100
+	scalar IngDisp = IngDisp[`obs']-CapFij[`obs']
+	scalar IngDispPIB = (IngDisp[`obs']-CapFij[`obs'])/PIB[`obs']*100
 
 	* R.6 Consumo *
 	noisily di _newline in y "{bf: D. Utilizaci{c o'}n del ingreso disp" in g ///
@@ -511,9 +511,9 @@ quietly {
 	scalar ComprasN = ComprasN[`obs']
 	scalar ComprasNPIB = ComprasN[`obs']/PIB[`obs']*100
 
-	scalar AhorroN = AhorroN[`obs']
-	scalar AhorroNPIB = AhorroN[`obs']/PIB[`obs']*100
-	scalar AhorroNPC = AhorroN[`obs']/poblacion[`obs']
+	scalar AhorroN = AhorroN[`obs']-CapFij[`obs']
+	scalar AhorroNPIB = (AhorroN[`obs']-CapFij[`obs'])/PIB[`obs']*100
+	scalar AhorroNPC = (AhorroN[`obs']-CapFij[`obs'])/poblacion[`obs']
 
 	** R.3. Graph **
 	if "`nographs'" != "nographs" & "$nographs" == "" {
@@ -1011,6 +1011,10 @@ quietly {
 	noisily di in g "{bf:  (=) Producto Interno Bruto" ///
 		_col(44) in y %20.0fc PIB_T[`obs'] ///
 		_col(66) in y %7.3fc PIB_T[`obs']/PIB[`obs']*100 "}"
+
+	if "`textbook'" == "textbook" {
+		noisily scalarlatex, log(scn) alt(scn)
+	}
 
 	timer off 33
 	timer list 33

@@ -917,11 +917,11 @@ program define ProyGraph
 	local aniof = 2040 // anio[_N]
 	keep if anio <= `aniof'
 	
-	*replace estimacion = estimacion*lambda/1000000000000
+	replace estimacion = estimacion*lambda/1000000000000
 	format estimacion %20.0fc
 
-	replace estimacion = estimacion*lambda/pibYR*100
-	format estimacion %7.3fc
+	*replace estimacion = estimacion*lambda/pibYR*100
+	*format estimacion %7.3fc
 
 	forvalues aniohoy = `aniope'(1)`aniope' {
 	*forvalues aniohoy = 2022(1)2050 {

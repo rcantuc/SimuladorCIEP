@@ -570,7 +570,7 @@ program define UpdateDatosAbiertos, return
 	save "`gfH'"
 	
 	***********************************************************
-	** 1.6 Asignación y ejecución del presupuesto de egresos **
+	/** 1.6 Asignación y ejecución del presupuesto de egresos **
 	capture confirm file "`c(sysdir_site)'/03_temp/Datos Abiertos/asignacion_ejecucion_2024.dta"
 	if _rc != 0 {
 		import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/asignacion_ejecucion_2024.csv", clear
@@ -899,7 +899,7 @@ program define UpdateDatosAbiertos, return
 	}
 	use "`c(sysdir_site)'/03_temp/Datos Abiertos/asignacion_ejecucion_2003.dta", clear
 	tempfile asignacion2003
-	save "`asignacion2003'"
+	save "`asignacion2003'"*/
 
 
 
@@ -916,7 +916,7 @@ program define UpdateDatosAbiertos, return
 	append using "`rfH'"
 	append using "`gf'"
 	append using "`gfH'"
-	append using "`asignacion2024'"
+	/*append using "`asignacion2024'"
 	append using "`asignacion2023'"
 	append using "`asignacion2022'"
 	append using "`asignacion2021'"
@@ -937,7 +937,7 @@ program define UpdateDatosAbiertos, return
 	append using "`asignacion2006'"
 	append using "`asignacion2005'"
 	append using "`asignacion2004'"
-	append using "`asignacion2003'"
+	append using "`asignacion2003'"*/
 
 
 
@@ -996,7 +996,7 @@ program define UpdateDatosAbiertos, return
 
 	***************************************************
 	** 4.1 ISR fisicas, morales, asalariados y otros **
-	import excel "`c(sysdir_site)'/01_raw/ISRInformesTrimestrales.xlsx", ///
+	import excel "https://www.dropbox.com/scl/fi/e6zdb26t6srrhbohld3mz/ISRInformesTrimestrales.xlsx?rlkey=bc2p9gvg56rgwlwu3ewjql7ny&st=c47v2gm1&dl=1", ///
 		clear sheet("TipoDeContribuyente") firstrow case(lower)
 	tsset anio trimestre
 	drop total

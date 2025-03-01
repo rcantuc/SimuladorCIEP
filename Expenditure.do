@@ -518,7 +518,7 @@ foreach categ in categ categ_iva categ_ieps {
 		}
 
 		merge 1:1 (folioviv foliohog numren) using `gastoindividuos', nogen keepus(*_ind* proporcion*)
-		*merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/04_master/`=anioenigh'/households.dta", nogen keepus(decil)
+		merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/04_master/`=anioenigh'/households.dta", nogen keepus(decil)
 
 		** 3.4 Gasto per cápita **
 		noisily di in g `"`categs'"'
@@ -556,20 +556,22 @@ foreach categ in categ categ_iva categ_ieps {
 				*g ind_outlier = 1 if `vars'ind`k' >= r(StatTotal)[1,1] & r(StatTotal)[1,1] != r(StatTotal)[2,1]
 
 				g `vars'pc_`k' = `vars'hog`k' //+ `vars'ind`k'
-				local label = subinstr("`title' per cápita en `k'","_"," ",.)
+				local label = subinstr("`title' en `k'","_"," ",.)
 				label var `vars'pc_`k' "`label'"
 
 				* Perfil original *
-				*tempvar `vars'pc_`k'
-				*g ``vars'pc_`k'' = `vars'pc_`k'
-				*label var ``vars'pc_`k'' "`title' per cápita en `k' (original)"
+				tempvar `vars'pc_`k'
+				g ``vars'pc_`k'' = `vars'pc_`k'
+				label var ``vars'pc_`k'' "`title' en `k' (original)"
 				*noisily Perfiles ``vars'pc_`k'' [fw=factor] ///
 					if ``vars'pc_`k'' != 0 /*& hogar_outlier == . & ind_outlier == .*/, aniope(`=anioenigh')
+				noisily Simulador ``vars'pc_`k'' [fw=factor] ///
+					if ``vars'pc_`k'' != 0 /*& hogar_outlier == . & ind_outlier == .*/, aniope(`=anioenigh') reboot
 
 				* Iteraciones *
 				noisily di in y "`k': " _cont
-				local salto = 3
-				forvalues iter=1(1)10 {
+				local salto = 5
+				forvalues iter=1(1)15 {
 					noisily di in w "`iter' " _cont
 					forvalues edades=0(`salto')109 {
 						forvalues sexos=1(1)2 {
@@ -598,7 +600,10 @@ foreach categ in categ categ_iva categ_ieps {
 				
 				*noisily Perfiles `vars'pc_`k' [fw=factor] ///
 					if `vars'pc_`k' != 0 /*& hogar_outlier == . & ind_outlier == .*/, aniope(`=anioenigh') ///
-					title(`title' per cápita en `k')
+					title(`title' en `k')
+				noisily Simulador `vars'pc_`k' [fw=factor] ///
+					if `vars'pc_`k' != 0 /*& hogar_outlier == . & ind_outlier == .*/, aniope(`=anioenigh') ///
+					title(`title' en `k') reboot
 				*capture g precio_`k' = gas_pc_`k'/cant_pc_`k'
 				*drop *outlier
 			}
@@ -995,10 +1000,12 @@ foreach k of local categs {
 	}
 	local ++j
 }
-noisily tabstat IVA [aw=factor], stat(sum) f(%20.0fc) save
-scalar IVA = r(StatTotal)[1,1]
+tabstat IVA [aw=factor], stat(sum) f(%20.0fc) save
+di in g "IVA Observado: " in y %20.0fc `IVA'
 
-noisily di in g "IVA Observado: " in y %20.0fc `IVA'
+scalar IVAHHSPIB = r(StatTotal)[1,1]/PIB*100
+scalar IVASCNPIB = `IVA'/PIB*100
+scalar DifIVA = (scalar(IVAHHSPIB) - scalar(IVASCNPIB))/scalar(IVAHHSPIB)*100
 
 Gini IVA, hogar(folioviv foliohog) factor(factor)
 local gini_IVA = r(gini_IVA)
@@ -1013,9 +1020,9 @@ noisily di _newline in g "{bf: C. IVA" ///
 	_col(77) %6s  "Informalidad %}"
 noisily di in g "  Total " ///
 	_col(44) in y "(" %5.3fc giniIVA ")" ///
-	_col(55) in y %7.3fc scalar(IVA)/PIB*100 ///
-	_col(66) %7.3fc `IVA'/PIB*100 ///
-	_col(77) %6.2fc (1-`IVA'/scalar(IVA))*100 "%"
+	_col(55) in y %7.3fc scalar(IVAHHSPIB) ///
+	_col(66) %7.3fc scalar(IVASCNPIB) ///
+	_col(77) %6.2fc scalar(DifIVA) "%"
 
 save "`c(sysdir_site)'/04_master/`=anioenigh'/categ_iva.dta", replace
 collapse (sum) IVA, by(folioviv foliohog numren)
@@ -1052,7 +1059,7 @@ reshape long gas_pc_ cant_pc_ proporcion, i(folioviv foliohog numren) j(categs) 
 
 ** 6.1. Cálculo de precios **
 g precio = gas_pc_/cant_pc_*ConHog/MTot
-noisily tabstat precio gas_pc_ cant_pc_ [aw=factor], f(%20.0fc) by(categs)
+*noisily tabstat precio gas_pc_ cant_pc_ [aw=factor], f(%20.0fc) by(categs)
 
 
 ** 6.2. Cálculo del IEPS **
@@ -1076,7 +1083,11 @@ foreach k of local categs {
 }
 
 tabstat IEPS [aw=factor], stat(sum) f(%20.0fc) save by(categs)
-scalar IEPS = r(StatTotal)[1,1]
+
+scalar IEPSNPHHSPIB = r(StatTotal)[1,1]/PIB*100
+scalar IEPSNPSCNPIB = `IEPSNP'/PIB*100
+scalar DifIEPSNP = (scalar(IEPSNPHHSPIB) - scalar(IEPSNPSCNPIB))/scalar(IEPSNPHHSPIB)*100
+
 foreach k of local categs {
 	local j = 1
 	while "`=r(name`j')'" != "`k'" {
@@ -1092,9 +1103,8 @@ foreach k of local categs {
 }
 
 Gini IEPS, hogar(folioviv foliohog) factor(factor)
-local gini_IEPS = r(gini_IEPS)
-scalar gini_IEPS = `gini_IEPS'
-
+local giniIEPS = r(gini_IEPS)
+scalar giniIEPS = `giniIEPS'
 
 ** 6.3. Display de resultados **
 noisily di _newline in g "{bf: D. IEPS" ///
@@ -1106,17 +1116,17 @@ foreach k of local categs {
 	if "`k'" != "Sin_IEPS" {
 		noisily di in g "  (+) `name`k''" ///
 			_col(44) in y "(" %5.3fc gini_ieps`k' ")" ///
-			_col(55) in y %7.3fc IEPS`k'[1,1]/PIB*100 ///
-			_col(66) in y %7.3fc `Ieps`k''/PIB*100 ///
-			_col(77) in y %6.1fc (IEPS`k'[1,1]/`Ieps`k''-1)*100 "%"
+			_col(55) in y %7.3fc scalar(IEPSNPHHSPIB) ///
+			_col(66) in y %7.3fc scalar(IEPSNPSCNPIB) ///
+			_col(77) in y %6.1fc scalar(DifIEPSNP) "%"
 	}
 }
 noisily di in g _dup(84) "-"
 noisily di in g "  Total " ///
-	_col(44) in y "(" %5.3fc gini_IEPS ")" ///
-	_col(55) in y %7.3fc scalar(IEPS)/PIB*100 ///
-	_col(66) %7.3fc `IEPSNP'/PIB*100 ///
-	_col(77) %6.1fc -(`IEPSNP'/scalar(IEPS)-1)*100 "%"
+	_col(44) in y "(" %5.3fc giniIEPS ")" ///
+	_col(55) in y %7.3fc scalar(IEPSNPHHSPIB) ///
+	_col(66) %7.3fc scalar(IEPSNPSCNPIB) ///
+	_col(77) %6.1fc scalar(DifIEPSNP) "%"
 
 collapse (sum) IEPS, by(folioviv foliohog numren)
 save "`c(sysdir_site)'/04_master/`=anioenigh'/consumption_categ_ieps.dta", replace

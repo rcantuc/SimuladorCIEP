@@ -85,7 +85,6 @@ noisily di `" {stata "GastoPC":GastoPC} [, ANIO(int)]"'
 *********************************
 
 ** 4.1 Economía: Crecimiento anual del Producto Interno Bruto **
-global pib2024 = 2.0876 // 2.578
 global pib2025 = 2.2505 // 2.5007
 global pib2026 = 2.5
 global pib2027 = 2.5
@@ -94,7 +93,6 @@ global pib2029 = 2.5
 global pib2030 = 2.5
 
 ** 4.2 Economía: Deflactor del Producto Interno Bruto **
-global def2024 = 4.6
 global def2025 = 4.2521
 global def2026 = 3.5
 global def2027 = 3.5
@@ -103,13 +101,14 @@ global def2029 = 3.5
 global def2030 = 3.5
 
 ** 4.3 Economía: Inflación **
-global inf2024 = 4.3
 global inf2025 = 3.5
 global inf2026 = 3.0
 global inf2027 = 3.0
 global inf2028 = 3.0
 global inf2029 = 3.0
 global inf2030 = 3.0
+
+exit
 
 ** 4.4 Deuda Pública **
 scalar tasaEfectiva = 6.3782

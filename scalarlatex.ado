@@ -69,7 +69,7 @@ program define scalarlatex
 
 			else if `"`=substr("`name'",-1,1)'"' == "I" | `"`=substr("`name'",-1,1)'"' == "V" ///
 				| `"`=substr("`name'",-1,1)'"' == "X" | `"`=substr("`name'",-1,1)'"' == "H" ///
-				| `"`=substr("`name'",-1,1)'"' == "M" | `"`=substr("`name'",-8,8)'"' == "Nacional" ///
+				| `"`=substr("`name'",-1,1)'"' == "M" | `"`=substr("`name'",-3,3)'"' == "Nac" ///
 				| `"`=substr("`name'",-2,2)'"' == "PC" | "`name'" == "basica" | "`name'" == "medsup" ///
 				| "`name'" == "superi" ///
 				| `"`=substr("`name'",1,3)'"' == "pob" ///
@@ -86,7 +86,7 @@ program define scalarlatex
 				| `"`=substr("`name'",1,4)'"' == "Conv"| `"`=substr("`name'",1,4)'"' == "Prov" ///
 				| `"`=substr("`name'",1,4)'"' == "Prot" | `"`=substr("`name'",1,6)'"' == "GasFed" ///
 				| `"`=substr("`name'",1,3)'"' == "LIE" | `"`=substr("`name'",1,2)'"' == "RP" ///
-				| `"`=substr("`name'",1,3)'"' == "Imp" {
+				/*| `"`=substr("`name'",1,3)'"' == "Imp"*/ {
 				local value = scalar(`name')
 				di in w "\def\d`name'`altname'#1{\gdef\\`name'`altname'{#1}}"
 				di in w `"\d`name'`altname'{`=string(`value',"%15.0fc")'}"'

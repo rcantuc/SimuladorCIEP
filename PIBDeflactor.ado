@@ -74,7 +74,8 @@ quietly {
 		_col(33) %20.0fc pibQ[`obsfinal'] in g " `=currency' ({c u'}ltimo reportado)"
 	sort anio trimestre
 
-	collapse (mean) indiceY=indiceQ pibY=pibQ pibYR=pibQR WorkingAge Poblacion* pibPO (last) inpc trimestre, by(anio currency)
+	collapse (mean) indiceY=indiceQ pibY=pibQ pibYR=pibQR WorkingAge Poblacion* pibPO ///
+		(last) inpc trimestre, by(anio currency)
 	tsset anio
 
 	** 2.3 Locales para los cálculos geométricos **
@@ -118,15 +119,15 @@ quietly {
 	forvalues k=`aniofinal'(1)`=anio[_N]' {
 		capture confirm existence ${def`k'}
 		if _rc == 0 {
-			replace var_indiceY = ${def`k'} if anio == `k' //& trimestre != 4
+			replace var_indiceY = ${def`k'} if anio == `k' & trimestre != 4
 			local exceptI "`exceptI'${def`k'}% (`k'), "
 			local anio_def = `k'
 			local ++exo_def
 		}
 		else {
-			replace var_indiceY = L.var_indiceG if anio == `k' & var_indiceY == . //& trimestre != 4 
+			replace var_indiceY = L.var_indiceG if anio == `k' & var_indiceY == . & trimestre != 4 
 		}
-		replace indiceY = L.indiceY*(1+var_indiceY/100) if anio == `k' //& trimestre != 4
+		replace indiceY = L.indiceY*(1+var_indiceY/100) if anio == `k' & trimestre != 4
 		replace var_indiceG = ((indiceY/L`=`difdef''.indiceY)^(1/(`difdef'))-1)*100 if anio == `k' & anio > `aniofinal'
 	}
 	if "`exceptI'" != "" {
@@ -137,14 +138,14 @@ quietly {
 	forvalues k=`aniofinal'(1)`=anio[_N]' {
 		capture confirm existence ${inf`k'}
 		if _rc == 0 {
-			replace var_inflY = ${inf`k'} if anio == `k' //& trimestre != 4
+			replace var_inflY = ${inf`k'} if anio == `k' & trimestre != 4
 			local exceptI "`exceptI'`k' (${inf`k'}%), "
 			local ++exo_count
 		}
 		else {
-			replace var_inflY = L.var_inflG if anio == `k' & var_inflY == . //& trimestre != 4 
+			replace var_inflY = L.var_inflG if anio == `k' & var_inflY == . & trimestre != 4 
 		}
-		replace inpc = L.inpc*(1+var_inflY/100) if anio == `k' //& trimestre != 4
+		replace inpc = L.inpc*(1+var_inflY/100) if anio == `k' & trimestre != 4
 		replace var_inflG = ((inpc/L`=`difdef''.inpc)^(1/`difdef')-1)*100 if anio == `k' & anio > `aniofinal'
 	}
 
@@ -216,13 +217,13 @@ quietly {
 	forvalues k=`aniofinal'(1)`=anio[_N]' {
 		capture confirm existence ${pib`k'}
 		if _rc == 0 {
-			replace var_pibY = ${pib`k'} if anio == `k' //& trimestre != 4
+			replace var_pibY = ${pib`k'} if anio == `k' & trimestre != 4
 			local except "`except'${pib`k'}% (`k'); "
 			local anio_exo = `k'
 			local ++exo_count
 
-			replace pibY = L.pibY*(1+var_pibY/100)*(1+var_indiceY/100) if anio == `k' //& trimestre != 4
-			replace pibYR = L.pibYR*(1+var_pibY/100) if anio == `k' //& trimestre != 4
+			replace pibY = L.pibY*(1+var_pibY/100)*(1+var_indiceY/100) if anio == `k' & trimestre != 4
+			replace pibYR = L.pibYR*(1+var_pibY/100) if anio == `k' & trimestre != 4
 		}
 	}
 
@@ -270,7 +271,7 @@ quietly {
 
 	g PIBPob = pibYR/Poblacion/1000
 	format PIBPob %20.0fc
-	*scalar pibYPC = PIBPob[`obsvp']*1000
+	scalar pibYPC = PIBPob[`obsvp']*1000
 
 
 
@@ -281,16 +282,16 @@ quietly {
 	noisily di in g " PIB " in y anio[`obsvp'] in g " por edades laborales " in y _col(43) %10.0fc OutputPerWorker[`obsvp'] in g " `=currency[`obsvp']' (16-65 a{c n~}os)"
 
 	local crecimientoProm = ((pibYR[`obsvp']/pibYR[`obsPIB'])^(1/(`obsvp'-`obsPIB'))-1)*100
-	scalar crecimientoProm = string(`crecimientoProm',"%5.1f")
+	scalar crecimientoProm = string(`crecimientoProm',"%7.1fc")
 
 	local crecimientoPobProm = ((PIBPob[`obsvp']/PIBPob[`obsPIB'])^(1/(`obsvp'-`obsPIB'))-1)*100
-	scalar crecimientoPobProm = string(`crecimientoPobProm',"%5.1f")
+	scalar crecimientoPobProm = string(`crecimientoPobProm',"%7.1fc")
 
 	local deflactorProm = ((deflator[`obsvp']/deflator[`obsDEF'])^(1/(`obsvp'-`obsDEF'))-1)*100
-	scalar deflactorProm = string(`deflactorProm',"%5.1f")
+	scalar deflactorProm = string(`deflactorProm',"%7.1fc")
 
 	local inflacionProm = ((inpc[`obsvp']/inpc[`obsDEF'])^(1/(`obsvp'-`obsDEF'))-1)*100
-	scalar inflacionProm = string(`inflacionProm',"%5.1f")
+	scalar inflacionProm = string(`inflacionProm',"%7.1fc")
 
 	noisily di _newline in g " Crecimiento promedio " in y anio[`obsPIB'] "-" anio[`obsvp'] _col(43) %10.4f ((pibYR[`obsvp']/pibYR[`obsPIB'])^(1/(`obsvp'-`obsPIB'))-1)*100 in g " %" 
 	noisily di in g " Lambda por trabajador " in y anio[`obsPIB'] "-" anio[`obsvp'] _col(43) %10.4f scalar(llambda) in g " %" 
@@ -306,19 +307,23 @@ quietly {
 
 	scalar pibVPINF = `pibYVP'[1,1] + pibINF
 	scalar pibY = pibY[`obsvp']
-	scalar pibVECES = round(pibYR[`obsvp']/pibYR[1],.1)
+	scalar pibVECES = round((pibYR[`obsvp']/pibYR[`obsPIB']-1)*100,.1)
 	scalar pibLP = round((pibYR[_N]/pibYR[`obsvp']-1)*100,.1)
+	
+	scalar pibVECESPC = round((PIBPob[`obsvp']/PIBPob[`obsPIB']-1)*100,.1)
+	scalar pibLPPC = round((PIBPob[_N]/PIBPob[`obsvp']-1)*100,.1)
 
-	scalar deflactorLP = string((deflator[_N] - 1)*100,"%5.1f")
-	scalar deflactorVECES = string(round(1/deflator[1],.1),"%5.1f")
+	scalar deflactorLP = string((deflator[`obs_exo']/deflator[`obsvp'] - 1)*100,"%7.1fc")
+	scalar deflactorVECES = string(round((deflator[`obsvp']/deflator[`obsDEF']-1)*100,.1),"%7.1fc")
 	scalar anioLP = anio[_N]
 
-	scalar inflacionLP = string((deflatorpp[_N] - 1)*100,"%5.1f")
-	scalar inflacionVECES = string(round(1/deflatorpp[1],.1),"%5.1f")
+	scalar inflacionLP = string((deflatorpp[`obs_exo']/deflatorpp[`obsvp'] - 1)*100,"%7.1fc")
+	scalar inflacionVECES = string(round((deflatorpp[`obsvp']/deflatorpp[`obsDEF']-1)*100,.1),"%7.1fc")
 
 	scalar anioPWI = anio[`obsPIB']
 	scalar anioPWF = anio[`obs_exo']
 	scalar outputPW = string(OutputPerWorker[`obsvp'],"%10.0fc")
+	scalar outputPWVECES = string(round((OutputPerWorker[`obsvp']/OutputPerWorker[`obsPIB']-1)*100,.1),"%10.0fc")
 	scalar lambdaNW = ((pibYR[`obs_exo']/pibYR[`=`obs_exo'-`difpib''])^(1/(`difpib'))-1)*100
 	scalar LambdaNW = ((pibYR[`obs_exo']/pibYR[1])^(1/(`obs_exo'))-1)*100
 
@@ -367,19 +372,29 @@ quietly {
 		format deflator %7.1fc
 		format var_indiceY %7.1fc
 		twoway /// Bar
-			(bar deflator anio if (anio < `aniofinal' & anio >= `geodef') | (anio == `aniofinal' & trimestre == 12), ///
-				yaxis(2) mlabel(deflator) mlabposition(12) mlabcolor(black) mlabgap(0pt) barwidth(.75) mlabsize(medium)) ///
-			(bar deflator anio if anio < `aniofinal'+`exo_def' & anio >= `aniofinal', ///
-				yaxis(2) mlabel(deflator) mlabposition(12) mlabcolor(black) mlabgap(0pt) barwidth(.75) mlabsize(medium) fintensity(50)) ///
-			(bar deflator anio if anio >= `aniofinal'+`exo_def' & anio <= `aniomax', ///
-				yaxis(2) mlabel(deflator) mlabposition(12) mlabcolor(black) mlabgap(0pt) barwidth(.75) mlabsize(medium) fintensity(50)) ///
+			(bar deflator anio if (anio < `aniofinal' & anio >= `geodef') ///
+				| (anio == `aniofinal' & trimestre == 4), ///
+				yaxis(2) mlabel(deflator) mlabposition(12) mlabcolor(black) ///
+				mlabgap(0pt) barwidth(.75) mlabsize(medium)) ///
+			(bar deflator anio if anio <= `aniofinal'+`exo_def' & anio > `aniofinal' ///
+				| (anio == `aniofinal' & trimestre < 4), ///
+				yaxis(2) mlabel(deflator) mlabposition(12) mlabcolor(black) ///
+				mlabgap(0pt) barwidth(.75) mlabsize(medium) fintensity(50)) ///
+			(bar deflator anio if anio > `aniofinal'+`exo_def' & anio <= `aniomax', ///
+				yaxis(2) mlabel(deflator) mlabposition(12) mlabcolor(black) ///
+				mlabgap(0pt) barwidth(.75) mlabsize(medium) fintensity(50)) ///
 			/// Connected
-			(connected var_indiceY anio if (anio < `aniofinal' & anio >= `geodef') | (anio == `aniofinal' & trimestre == 12), ///
-				yaxis(1) mlabel(var_indiceY) mlabpos(12) mlabcolor(black) mstyle(p1) lstyle(p1) lpattern(dot) msize(small) mlabsize(medium)) ///
-			(connected var_indiceY anio if anio < `aniofinal'+`exo_def' & anio >= `aniofinal', ///
-				yaxis(1) mlabel(var_indiceY) mlabpos(12) mlabcolor(black) mstyle(p2) lstyle(p2) lpattern(dot) msize(small) mlabsize(medium)) ///
-			(connected var_indiceY anio if anio >= `aniofinal'+`exo_def' & anio <= `aniomax', ///
-				yaxis(1) mlabel(var_indiceY) mlabpos(12) mlabcolor(black) mstyle(p3) lstyle(p3) lpattern(dot) msize(small) mlabsize(medium)) ///
+			(connected var_indiceY anio if (anio < `aniofinal' & anio >= `geodef') ///
+				| (anio == `aniofinal' & trimestre == 4), ///
+				yaxis(1) mlabel(var_indiceY) mlabpos(12) mlabcolor(black) ///
+				mstyle(p1) lstyle(p1) lpattern(dot) msize(small) mlabsize(medium)) ///
+			(connected var_indiceY anio if anio <= `aniofinal'+`exo_def' & anio > `aniofinal' ///
+				| (anio == `aniofinal' & trimestre < 4), ///
+				yaxis(1) mlabel(var_indiceY) mlabpos(12) mlabcolor(black) ///
+				mstyle(p2) lstyle(p2) lpattern(dot) msize(small) mlabsize(medium)) ///
+			(connected var_indiceY anio if anio > `aniofinal'+`exo_def' & anio <= `aniomax', ///
+				yaxis(1) mlabel(var_indiceY) mlabpos(12) mlabcolor(black) ///
+				mstyle(p3) lstyle(p3) lpattern(dot) msize(small) mlabsize(medium)) ///
 			, ///
 			title("`graphtitle'") ///
 			xlabel(`=round(`geodef',5)'(5)`aniomax') ///
@@ -393,11 +408,16 @@ quietly {
 			note("{bf:Nota}: La proyección representa el promedio geométrico móvil de los últimos `difdef' años.") ///
 			name(deflactor, replace) ///
 			/// Added text
-			text(0 `=`aniofinal'-1' "{bf:Índice `aniovp' = 1.0}", yaxis(2) size(medsmall) place(11) justification(right) bcolor(white) box) ///
-			text(0 `=`aniofinal'+1.5' "{bf:$paqueteEconomico}", yaxis(2) size(medsmall) place(12) justification(left) bcolor(white) box) ///
-			text(0 `=`aniofinal'+`exo_def'+1.5' "{bf:Proyección}", yaxis(2) size(medsmall) place(12) justification(left) bcolor(white) box) ///
+			text(0 `=`aniofinal'' "{bf:Índice `aniovp' = 1.0}", ///
+				yaxis(2) size(medsmall) place(11) justification(right) bcolor(white) box) ///
+			text(0 `=`aniofinal'+2.5' "{bf:$paqueteEconomico}", ///
+				yaxis(2) size(medsmall) place(12) justification(left) bcolor(white) box) ///
+			text(0 `=`aniofinal'+`exo_def'+2.5' "{bf:Proyección}", ///
+				yaxis(2) size(medsmall) place(12) justification(left) bcolor(white) box) ///
 			yline(`deflactorProm', axis(1)) ///
-			text(`deflactorProm' `=`geodef'' "{bf:Crec. prom.}" `"{bf:`geodef'-`aniofinal': `=string(`deflactorProm',"%5.1fc")'%}"', justification(left) place(5) color("111 111 111") size(medlarge))
+			text(`deflactorProm' `=`geodef'' "{bf:Crec. prom.}" ///
+				`"{bf:`geodef'-`aniofinal': `=string(`deflactorProm',"%5.1fc")'%}"', ///
+				justification(left) place(5) color("111 111 111") size(medlarge))
 
 		graph save deflactor "`c(sysdir_site)'/05_graphs/deflactor", replace
 		capture confirm existence $export
@@ -445,18 +465,28 @@ quietly {
 		matrix `pibYRmil2' = r(StatTotal)
 		
 		twoway ///
-			(bar `pibYRmil' anio if (anio < `aniofinal' & anio >= `geopib') | (anio == `aniofinal' & trimestre == 12), ///
-				yaxis(2) mlabel(`pibYRmil') mlabpos(12) mlabcolor(black) mlabgap(0pt) barwidth(.75) mlabsize(medium)) ///
-			(bar `pibYRmil' anio if anio < `aniofinal'+`exo_def' & anio >= `aniofinal', ///
-				yaxis(2) mlabel(`pibYRmil') mlabpos(12) mlabcolor(black) mlabgap(0pt) barwidth(.75) mlabsize(medium) fintensity(50)) ///
-			(bar `pibYRmil' anio if anio >= `aniofinal'+`exo_def' & anio <= `aniomax', ///
-				yaxis(2) mlabel(`pibYRmil') mlabpos(12) mlabcolor(black) mlabgap(0pt) barwidth(.75) mlabsize(medium) fintensity(50)) ///
-			(connected var_pibY anio if (anio < `aniofinal' & anio >= `geopib') | (anio == `aniofinal' & trimestre == 12), ///
-				yaxis(1) mlabel(var_pibY) mlabpos(12) mlabcolor(black) mstyle(p1) lstyle(p1) lpattern(dot) msize(small) mlabsize(medium)) ///
-			(connected var_pibY anio if anio < `aniofinal'+`exo_def' & anio >= `aniofinal', ///
-				yaxis(1) mlabel(var_pibY) mlabpos(12) mlabcolor(black) mstyle(p2) lstyle(p2) lpattern(dot) msize(small) mlabsize(medium)) ///
-			(connected var_pibY anio if anio >= `aniofinal'+`exo_def' & anio <= `aniomax', ///
-				yaxis(1) mlabel(var_pibY) mlabpos(12) mlabcolor(black) mstyle(p3) lstyle(p3) lpattern(dot) msize(small) mlabsize(medium)) ///
+			(bar `pibYRmil' anio if (anio < `aniofinal' & anio >= `geopib') ///
+				| (anio == `aniofinal' & trimestre == 4), ///
+				yaxis(2) mlabel(`pibYRmil') mlabpos(12) mlabcolor(black) /// 
+				mlabgap(0pt) barwidth(.75) mlabsize(medium)) ///
+			(bar `pibYRmil' anio if anio <= `aniofinal'+`exo_def' & anio > `aniofinal' ///
+				| (anio == `aniofinal' & trimestre < 4), ///
+				yaxis(2) mlabel(`pibYRmil') mlabpos(12) mlabcolor(black) ///
+				mlabgap(0pt) barwidth(.75) mlabsize(medium) fintensity(50)) ///
+			(bar `pibYRmil' anio if anio > `aniofinal'+`exo_def' & anio <= `aniomax', ///
+				yaxis(2) mlabel(`pibYRmil') mlabpos(12) mlabcolor(black) ///
+				mlabgap(0pt) barwidth(.75) mlabsize(medium) fintensity(50)) ///
+			(connected var_pibY anio if (anio < `aniofinal' & anio >= `geopib') ///
+				| (anio == `aniofinal' & trimestre == 4), ///
+				yaxis(1) mlabel(var_pibY) mlabpos(12) mlabcolor(black) ///
+				mstyle(p1) lstyle(p1) lpattern(dot) msize(small) mlabsize(medium)) ///
+			(connected var_pibY anio if anio < `aniofinal'+`exo_def' & anio > `aniofinal' ///
+				| (anio == `aniofinal' & trimestre < 4), ///
+				yaxis(1) mlabel(var_pibY) mlabpos(12) mlabcolor(black) ///
+				mstyle(p2) lstyle(p2) lpattern(dot) msize(small) mlabsize(medium)) ///
+			(connected var_pibY anio if anio > `aniofinal'+`exo_def' & anio <= `aniomax', ///
+				yaxis(1) mlabel(var_pibY) mlabpos(12) mlabcolor(black) ///
+				mstyle(p3) lstyle(p3) lpattern(dot) msize(small) mlabsize(medium)) ///
 			, ///
 			title("`graphtitle'") ///
 			xtitle("") ///
@@ -473,10 +503,15 @@ quietly {
 			name(pib, replace) ///
 			/// Added text
 			yline(`crecimientoProm', axis(1)) ///
-			text(0 `=`aniofinal'-1' "{bf:billones MXN `aniovp'}", yaxis(2) size(medsmall) place(11) justification(right) bcolor(white) box) ///
-			text(0 `=`aniofinal'+1.5' "{bf:$paqueteEconomico}",  yaxis(2) size(medsmall) place(12) justification(left) bcolor(white) box) ///
-			text(0 `=`aniofinal'+`exo_def'+1.5' "{bf:Proyección}", yaxis(2) size(medsmall) place(12) justification(left) bcolor(white) box) ///
-			text(`crecimientoProm' `=`geopib'' "{bf:Crec. prom.}" "{bf:`geopib'-`aniofinal': `=string(`crecimientoProm',"%5.1fc")'%}", justification(left) place(5) color("111 111 111") size(medlarge)) ///
+			text(0 `=`aniofinal'' "{bf:billones MXN `aniovp'}", ///
+				yaxis(2) size(medsmall) place(11) justification(right) bcolor(white) box) ///
+			text(0 `=`aniofinal'+2.5' "{bf:$paqueteEconomico}",  ///
+				yaxis(2) size(medsmall) place(12) justification(left) bcolor(white) box) ///
+			text(0 `=`aniofinal'+`exo_def'+2.5' "{bf:Proyección}", ///
+				yaxis(2) size(medsmall) place(12) justification(left) bcolor(white) box) ///
+			text(`crecimientoProm' `=`geopib'' "{bf:Crec. prom.}" ///
+				`"{bf:`geopib'-`aniofinal': `=string(`crecimientoProm',"%5.1fc")'%}"', ///
+				justification(left) place(5) color("111 111 111") size(medlarge)) ///
 
 		graph save pib "`c(sysdir_site)'/05_graphs/pib", replace
 		capture confirm existence $export
@@ -530,19 +565,30 @@ quietly {
 			matrix `pibPob3' = J(1,1,0)
 		}
 
-		twoway ///
-			(bar PIBPob anio if (anio < `aniofinal' & anio >= `geopib') | (anio == `aniofinal' & trimestre == 12), ///
-				yaxis(2) mlabel(PIBPob) mlabposition(12) mlabcolor(black) mlabgap(0pt) barwidth(.75) mlabsize(medsmall)) ///
-			(bar PIBPob anio if anio < `aniofinal'+`exo_count' & anio >= `aniofinal', ///
-				yaxis(2) mlabel(PIBPob) mlabposition(12) mlabcolor(black) mlabgap(0pt) barwidth(.75) mlabsize(medsmall) fintensity(50)) ///
-			(bar PIBPob anio if anio >= `aniofinal'+`exo_def' & anio <= `aniomax', ///
-				yaxis(2) mlabel(PIBPob) mlabposition(12) mlabcolor(black) mlabgap(0pt) barwidth(.75) mlabsize(medsmall) fintensity(50)) ///			
-			(connected var_pibPob anio if (anio < `aniofinal' & anio >= `geopib') | (anio == `aniofinal' & trimestre == 12), ///
-				yaxis(1) mlabel(var_pibPob) mlabpos(12) mlabcolor(black) mstyle(p1) lstyle(p1) lpattern(dot) msize(small) mlabsize(medsmall)) ///
-			(connected var_pibPob anio if anio < `aniofinal'+`exo_def' & anio >= `aniofinal', ///
-				yaxis(1) mlabel(var_pibPob) mlabpos(12) mlabcolor(black) mstyle(p2) lstyle(p2) lpattern(dot) msize(small) mlabsize(medsmall)) ///
-			(connected var_pibPob anio if anio >= `aniofinal'+`exo_def' & anio <= `aniomax', ///
-				yaxis(1) mlabel(var_pibPob) mlabpos(12) mlabcolor(black) mstyle(p3) lstyle(p3) lpattern(dot) msize(small) mlabsize(medsmall)) ///
+		twoway /// Bar
+			(bar PIBPob anio if (anio < `aniofinal' & anio >= `geopib') ///
+				| (anio == `aniofinal' & trimestre == 4), ///
+				yaxis(2) mlabel(PIBPob) mlabposition(12) mlabcolor(black) ///
+				mlabgap(0pt) barwidth(.75) mlabsize(medsmall)) ///
+			(bar PIBPob anio if anio <= `aniofinal'+`exo_count' & anio > `aniofinal' ///
+				| (anio == `aniofinal' & trimestre < 4), ///
+				yaxis(2) mlabel(PIBPob) mlabposition(12) mlabcolor(black) ///
+				mlabgap(0pt) barwidth(.75) mlabsize(medsmall) fintensity(50)) ///
+			(bar PIBPob anio if anio > `aniofinal'+`exo_def' & anio <= `aniomax', ///
+				yaxis(2) mlabel(PIBPob) mlabposition(12) mlabcolor(black) ///
+				mlabgap(0pt) barwidth(.75) mlabsize(medsmall) fintensity(50)) ///
+			/// Connected
+			(connected var_pibPob anio if (anio < `aniofinal' & anio >= `geopib') ///
+				| (anio == `aniofinal' & trimestre == 4), ///
+				yaxis(1) mlabel(var_pibPob) mlabpos(12) mlabcolor(black) ///
+				mstyle(p1) lstyle(p1) lpattern(dot) msize(small) mlabsize(medsmall)) ///
+			(connected var_pibPob anio if anio <= `aniofinal'+`exo_def' & anio >= `aniofinal' ///
+				| (anio == `aniofinal' & trimestre < 4), ///
+				yaxis(1) mlabel(var_pibPob) mlabpos(12) mlabcolor(black) ///
+				mstyle(p2) lstyle(p2) lpattern(dot) msize(small) mlabsize(medsmall)) ///
+			(connected var_pibPob anio if anio > `aniofinal'+`exo_def' & anio <= `aniomax', ///
+				yaxis(1) mlabel(var_pibPob) mlabpos(12) mlabcolor(black) ///
+				mstyle(p3) lstyle(p3) lpattern(dot) msize(small) mlabsize(medsmall)) ///
 			, ///
 			title("`graphtitle'") ///
 			///subtitle("    Nivel de producto per cápita (miles MXN `aniovp') y crecimiento anual (%)", margin(bottom)) ///
@@ -560,9 +606,9 @@ quietly {
 			name(pib_pc, replace) ///
 			/// Added text
 			yline(`crecimientoProm', axis(1)) ///
-			text(0 `=`aniofinal'-1' "{bf:miles MXN `aniovp' per cápita}", yaxis(2) size(medsmall) place(11) justification(right) bcolor(white) box) ///
-			text(0 `=`aniofinal'+1.5' "{bf:$paqueteEconomico}",  yaxis(2) size(medsmall) place(12) justification(left) bcolor(white) box) ///
-			text(0 `=`aniofinal'+`exo_def'+1.5' "{bf:Proyección}", yaxis(2) size(medsmall) place(12) justification(left) bcolor(white) box) ///
+			text(0 `=`aniofinal'' "{bf:miles MXN `aniovp' per cápita}", yaxis(2) size(medsmall) place(11) justification(right) bcolor(white) box) ///
+			text(0 `=`aniofinal'+2.5' "{bf:$paqueteEconomico}",  yaxis(2) size(medsmall) place(12) justification(left) bcolor(white) box) ///
+			text(0 `=`aniofinal'+`exo_def'+2.5' "{bf:Proyección}", yaxis(2) size(medsmall) place(12) justification(left) bcolor(white) box) ///
 			text(`crecimientoPobProm' `=`geopib'' "{bf:Crec. prom.}" "{bf:`geopib'-`aniofinal': `=string(`crecimientoPobProm',"%5.1fc")'%}", justification(left) place(5) color("111 111 111") size(medlarge)) ///
 
 		graph save pib_pc "`c(sysdir_site)'/05_graphs/pib_pc", replace
@@ -619,19 +665,29 @@ quietly {
 		format deflatorpp %7.1fc
 		format var_inflY %7.1fc
 		twoway ///
-			(bar deflatorpp anio if (anio < `aniofinal' & anio >= `geodef') | (anio == `aniofinal' & trimestre == 12), ///
-				yaxis(2) mlabel(deflatorpp) mlabposition(12) mlabcolor(black) mlabgap(0pt) barwidth(.75) mlabsize(medium)) ///
-			(bar deflatorpp anio if anio < `aniofinal'+`exo_def' & anio >= `aniofinal', ///
-				yaxis(2) mlabel(deflatorpp) mlabposition(12) mlabcolor(black) mlabgap(0pt) barwidth(.75) mlabsize(medium) fintensity(50)) ///
-			(bar deflatorpp anio if anio >= `aniofinal'+`exo_def' & anio <= `aniomax', ///
-				yaxis(2) mlabel(deflatorpp) mlabposition(12) mlabcolor(black) mlabgap(0pt) barwidth(.75) mlabsize(medium) fintensity(50)) ///
+			(bar deflatorpp anio if (anio < `aniofinal' & anio >= `geodef') ///
+				| (anio == `aniofinal' & trimestre == 4), ///
+				yaxis(2) mlabel(deflatorpp) mlabposition(12) mlabcolor(black) ///
+				mlabgap(0pt) barwidth(.75) mlabsize(medium)) ///
+			(bar deflatorpp anio if anio <= `aniofinal'+`exo_def' & anio > `aniofinal' ///
+				| (anio == `aniofinal' & trimestre < 4), ///
+				yaxis(2) mlabel(deflatorpp) mlabposition(12) mlabcolor(black) ///
+				mlabgap(0pt) barwidth(.75) mlabsize(medium) fintensity(50)) ///
+			(bar deflatorpp anio if anio > `aniofinal'+`exo_def' & anio <= `aniomax', ///
+				yaxis(2) mlabel(deflatorpp) mlabposition(12) mlabcolor(black) ///
+				mlabgap(0pt) barwidth(.75) mlabsize(medium) fintensity(50)) ///
 			/// Connected
-			(connected var_inflY anio if (anio < `aniofinal' & anio >= `geodef') | (anio == `aniofinal' & trimestre == 12), ///
-				yaxis(1) mlabel(var_inflY) mlabpos(12) mlabcolor(black) mstyle(p1) lstyle(p1) lpattern(dot) msize(small) mlabsize(medium)) ///
-			(connected var_inflY anio if anio < `aniofinal'+`exo_def' & anio >= `aniofinal', ///
-				yaxis(1) mlabel(var_inflY) mlabpos(12) mlabcolor(black) mstyle(p2) lstyle(p2) lpattern(dot) msize(small) mlabsize(medium)) ///
-			(connected var_inflY anio if anio >= `aniofinal'+`exo_def' & anio <= `aniomax', ///
-				yaxis(1) mlabel(var_inflY) mlabpos(12) mlabcolor(black) mstyle(p3) lstyle(p3) lpattern(dot) msize(small) mlabsize(medium)) ///
+			(connected var_inflY anio if (anio < `aniofinal' & anio >= `geodef') ///
+				| (anio == `aniofinal' & trimestre == 12), ///
+				yaxis(1) mlabel(var_inflY) mlabpos(12) mlabcolor(black) ///
+				mstyle(p1) lstyle(p1) lpattern(dot) msize(small) mlabsize(medium)) ///
+			(connected var_inflY anio if anio <= `aniofinal'+`exo_def' & anio >= `aniofinal' ///
+				| (anio == `aniofinal' & trimestre < 4), ///
+				yaxis(1) mlabel(var_inflY) mlabpos(12) mlabcolor(black) ///
+				mstyle(p2) lstyle(p2) lpattern(dot) msize(small) mlabsize(medium)) ///
+			(connected var_inflY anio if anio > `aniofinal'+`exo_def' & anio <= `aniomax', ///
+				yaxis(1) mlabel(var_inflY) mlabpos(12) mlabcolor(black) ///
+				mstyle(p3) lstyle(p3) lpattern(dot) msize(small) mlabsize(medium)) ///
 			, ///
 			title("`graphtitle'") ///
 			xtitle("") ///
@@ -647,9 +703,12 @@ quietly {
 			caption("`graphfuente'") ///
 			name(inflacion, replace) ///
 			/// Added text
-			text(0 `=`aniofinal'-1' "{bf:Índice `aniovp' = 1.0}", yaxis(2) size(medsmall) place(11) justification(right) bcolor(white) box) ///
-			text(0 `=`aniofinal'+1.5' "{bf:$paqueteEconomico}",  yaxis(2) size(medsmall) place(12) justification(left) bcolor(white) box) ///
-			text(0 `=`aniofinal'+`exo_def'+1.5' "{bf:Proyección}", yaxis(2) size(medsmall) place(12) justification(left) bcolor(white) box) ///
+			text(0 `=`aniofinal'' "{bf:Índice `aniovp' = 1.0}", ///
+				yaxis(2) size(medsmall) place(11) justification(right) bcolor(white) box) ///
+			text(0 `=`aniofinal'+2.5' "{bf:$paqueteEconomico}",  ///
+				yaxis(2) size(medsmall) place(12) justification(left) bcolor(white) box) ///
+			text(0 `=`aniofinal'+`exo_def'+2.5' "{bf:Proyección}", ///
+				yaxis(2) size(medsmall) place(12) justification(left) bcolor(white) box) ///
 			yline(`inflacionProm', axis(1)) ///
 			text(`inflacionProm' `=`geodef'' "{bf:Crec. prom.}" `"{bf:`geodef'-`aniofinal': `=string(`inflacionProm',"%5.1fc")'%}"', justification(left) place(5) color("111 111 111") size(medlarge))
 

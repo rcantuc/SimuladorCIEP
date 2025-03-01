@@ -36,7 +36,7 @@ quietly {
 	*******************
 	*** 1. Sintaxis ***
 	*******************
-	syntax [if] [, ANIOinicial(int `aniovp') ANIOFinal(int -1) NOGraphs UPDATE]
+	syntax [if] [, ANIOinicial(int `aniovp') ANIOFinal(int -1) NOGraphs UPDATE TEXTBOOK]
 
 	* 1.1 Si la opción "update" es llamada, ejecuta el comando UpdatePoblacion (definido al final del archivo) *
 	if "`update'" == "update" {
@@ -78,6 +78,7 @@ quietly {
 		local aniofinal = anio in -1
 	}
 
+	scalar aniofinal = `aniofinal'
 
 	** 2.1 Display inicial **
 	noisily di in g _col(14) "Total" _col(25) "Hombres" _col(38) "Mujeres" _col(54) "0-17" _col(66) "18-65" _col(81) "65+"
@@ -100,6 +101,15 @@ quietly {
 		else {
 			matrix `POBHOM' = J(1,1,0)
 		}
+
+		if "`k'" == "`anioinicial'" {
+			scalar pobhomI`entidadGName' = `POBHOM'[1,1]
+			scalar pobhompropI`entidadGName' = string(`POBHOM'[1,1]/`POBTOT'[1,1]*100,"%7.1fc")
+		}
+		if "`k'" == "`aniofinal'" {
+			scalar pobhomF`entidadGName' = `POBHOM'[1,1]
+			scalar pobhompropF`entidadGName' = string(`POBHOM'[1,1]/`POBTOT'[1,1]*100,"%7.1fc")
+		}
 		
 		capture tabstat poblacion if anio == `k' & sexo == 2, f(%20.0fc) stat(sum) save
 		tempname POBMUJ
@@ -108,6 +118,15 @@ quietly {
 		}
 		else {
 			matrix `POBMUJ' = J(1,1,0)
+		}
+
+		if "`k'" == "`anioinicial'" {
+			scalar pobmujI`entidadGName' = `POBMUJ'[1,1]
+			scalar pobmujpropI`entidadGName' = string(`POBMUJ'[1,1]/`POBTOT'[1,1]*100,"%7.1fc")
+		}
+		if "`k'" == "`aniofinal'" {
+			scalar pobmujF`entidadGName' = `POBMUJ'[1,1]
+			scalar pobmujpropF`entidadGName' = string(`POBMUJ'[1,1]/`POBTOT'[1,1]*100,"%7.1fc")
 		}
 		
 		capture tabstat poblacion if anio == `k' & edad < 18, f(%20.0fc) stat(sum) save
@@ -118,6 +137,15 @@ quietly {
 		else {
 			matrix `POB017' = J(1,1,0)
 		}
+
+		if "`k'" == "`anioinicial'" {
+			scalar pobMenoresI`entidadGName' = `POB017'[1,1]
+			scalar pobMenorespropI`entidadGName' = string(`POB017'[1,1]/`POBTOT'[1,1]*100,"%7.1fc")
+		}
+		if "`k'" == "`aniofinal'" {
+			scalar pobMenoresF`entidadGName' = `POB017'[1,1]
+			scalar pobMenorespropF`entidadGName' = string(`POB017'[1,1]/`POBTOT'[1,1]*100,"%7.1fc")
+		}
 		
 		capture tabstat poblacion if anio == `k' & edad >= 18 & edad < 65, f(%20.0fc) stat(sum) save
 		tempname POB1864
@@ -127,7 +155,16 @@ quietly {
 		else {
 			matrix `POB1864' = J(1,1,0)
 		}
-		
+
+		if "`k'" == "`anioinicial'" {
+			scalar pobPrimeI`entidadGName' = `POB1864'[1,1]
+			scalar pobPrimepropI`entidadGName' = string(`POB1864'[1,1]/`POBTOT'[1,1]*100,"%7.1fc")
+		}
+		if "`k'" == "`aniofinal'" {
+			scalar pobPrimeF`entidadGName' = `POB1864'[1,1]
+			scalar pobPrimepropF`entidadGName' = string(`POB1864'[1,1]/`POBTOT'[1,1]*100,"%7.1fc")
+		}
+
 		capture tabstat poblacion if anio == `k' & edad >= 65, f(%20.0fc) stat(sum) save
 		tempname POB65
 		if _rc == 0 {
@@ -136,7 +173,16 @@ quietly {
 		else {
 			matrix `POB65' = J(1,1,0)
 		}
-		
+
+		if "`k'" == "`anioinicial'" {
+			scalar pobMayoresI`entidadGName' = `POB65'[1,1]
+			scalar pobMayorespropI`entidadGName' = string(`POB65'[1,1]/`POBTOT'[1,1]*100,"%7.1fc")
+		}
+		if "`k'" == "`aniofinal'" {
+			scalar pobMayoresF`entidadGName' = `POB65'[1,1]
+			scalar pobMayorespropF`entidadGName' = string(`POB65'[1,1]/`POBTOT'[1,1]*100,"%7.1fc")
+		}
+
 		noisily di in g " " `k' _col(8) in y %12.0fc `POBTOT'[1,1] _col(21) in y %12.0fc `POBHOM'[1,1] _col(34) in y %12.0fc `POBMUJ'[1,1] _col(47) in y %12.0fc `POB017'[1,1] _col(60) in y %12.0fc `POB1864'[1,1] _col(73) in y %12.0fc `POB65'[1,1]
 	}
 
@@ -520,17 +566,21 @@ quietly {
 			caption("{bf:Fuente}: Elaborado por el CIEP, con información de CONAPO (2023).") ///
 			name(ET_`anioinicial'_`aniofinal'_`entidadGName', replace)
 
-		capture window manage close graph E_`anioinicial'_`aniofinal'_`entidadGName'
-		capture window manage close graph T_`anioinicial'_`aniofinal'_`entidadGName'
 
 		graph save ET_`anioinicial'_`aniofinal'_`entidadGName' "`c(sysdir_site)'/05_graphs/ET_`anioinicial'_`aniofinal'_`entidadGName'", replace
 		if "$export" != "" {
 			graph export "$export/ET_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(ET_`anioinicial'_`aniofinal'_`entidadGName')
+			graph export "$export/T_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(T_`anioinicial'_`aniofinal'_`entidadGName')
+			graph export "$export/E_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(E_`anioinicial'_`aniofinal'_`entidadGName')
 		}
-
+		capture window manage close graph E_`anioinicial'_`aniofinal'_`entidadGName'
+		capture window manage close graph T_`anioinicial'_`aniofinal'_`entidadGName'
 		restore
 	}
 
+	if "`textbook'" == "textbook" {
+		noisily scalarlatex, log(poblacion) alt(pob)
+	}
 
 	** END **
 	timer off 2

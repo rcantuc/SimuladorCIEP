@@ -592,7 +592,7 @@ program define UpdateLIF
 	************************
 	*** 1. BASE DE DATOS ***
 	************************
-	import excel `"`c(sysdir_site)'/01_raw/LIFs.xlsx"', clear firstrow
+	import excel "https://www.dropbox.com/scl/fi/d5tof6svvpjd5h5tef570/LIFs.xlsx?rlkey=drn1a2fenarwo9cooe4o9eemh&st=iuykql5n&dl=1", clear firstrow
 	foreach k of varlist _all {
 		capture confirm string variable `k'
 		if _rc == 0 {
