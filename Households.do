@@ -2557,26 +2557,63 @@ egen ImpuestosConsumoTOT = rsum(IVA IEPS ISAN Importaciones)
 
 *******************************
 *** Sankey: PIB demográfico ***
-/*******************************
+*******************************
 egen double Yl = rsum(ing_subor ing_mixtoL)
 label var Yl "Ingreso laboral"
 noisily Perfiles Yl [fw=factor], aniope(`enighanio') aniovp(`enighanio') title("Ingreso laboral")
+noisily Simulador Yl [fw=factor], aniope(`enighanio') aniovp(`enighanio') title("Ingreso laboral") reboot
 
 egen double Yk = rsum(ing_capital ing_mixtoK ing_estim_alqu gasto_anualDepreciacion)
 label var Yk "Ingreso de capital"
 noisily Perfiles Yk [fw=factor], aniope(`enighanio') aniovp(`enighanio') title("Ingreso de capital")
+noisily Simulador Yk [fw=factor], aniope(`enighanio') aniovp(`enighanio') title("Ingreso de capital") reboot
+
+noisily Perfiles ingbrutotot [fw=factor], aniope(`enighanio') aniovp(`enighanio') title("Gasto anual total")
+noisily Simulador ingbrutotot [fw=factor], aniope(`enighanio') aniovp(`enighanio') title("Gasto anual total") reboot
 
 noisily Perfiles gastoanualTOT [fw=factor], aniope(`enighanio') aniovp(`enighanio') title("Gasto anual total")
-noisily Perfiles ing_suborROW [fw=factor], aniope(`enighanio') aniovp(`enighanio') title("Ingreso laboral ROW")
+noisily Simulador gastoanualTOT [fw=factor], aniope(`enighanio') aniovp(`enighanio') title("Gasto anual total") reboot
 
-g Ciclodevida = Yl + Yk + ing_remesas + ing_suborROW - gastoanualTOT
-label var Ciclodevida "ciclo de vida"
-noisily Perfiles Ciclodevida [fw=factor], aniope(`enighanio') aniovp(`enighanio') title("Ciclo de vida")
+*noisily Perfiles ing_suborROW [fw=factor], aniope(`enighanio') aniovp(`enighanio') title("Ingreso laboral ROW")
+*noisily Simulador ing_suborROW [fw=factor], aniope(`enighanio') aniovp(`enighanio') title("Ingreso laboral ROW") reboot
+
+*g Ciclodevida = Yl + Yk + ing_remesas + ing_suborROW - gastoanualTOT
+*label var Ciclodevida "Ciclo de vida"
+*noisily Perfiles Ciclodevida [fw=factor], aniope(`enighanio') aniovp(`enighanio') title("Ciclo de vida")
+*noisily Simulador Ciclodevida [fw=factor], aniope(`enighanio') aniovp(`enighanio') title("Ciclo de vida") reboot
 
 g Ahorro = ingbrutotot + ing_capitalROW + ing_suborROW + ing_remesas ///
 	- gastoanualTOT - gasto_anualComprasN - gasto_anualGobierno
+label var Ahorro "Ahorro"
 noisily Perfiles Ahorro [fw=factor], aniope(`enighanio') aniovp(`enighanio') title("Ahorro")
-label var Ahorro "ahorro"
+noisily Simulador Ahorro [fw=factor], aniope(`enighanio') aniovp(`enighanio') title("Ahorro") reboot
+
+local enighanio = 2022
+graph combine Yl_dec Yk_dec, ///
+	name(Recursos, replace) ycommon xcommon ///
+	title("{bf:Entradas (recursos)}") subtitle("$pais") ///
+	caption("{bf:Fuente}: Elaborado por el CIEP, con la ENIGH `enighanio'.") ///
+	note(`"{bf:Nota}: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n en cada grupo."')
+
+graph save Recursos `"`c(sysdir_site)'/users/$id/graphs/Recursos.gph"', replace
+if "$export" != "" {
+	graph export `"$export/Recursos.png"', replace name(Recursos)
+}
+
+graph combine gastoanual_dec Ahorro_dec, ///
+	name(Usos, replace) ycommon xcommon ///
+	title("{bf:Salidas (usos)}") subtitle("$pais") ///
+	caption("{bf:Fuente}: Elaborado por el CIEP, con la ENIGH `enighanio'.") ///
+	note(`"{bf:Nota}: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n en cada grupo."')
+
+graph save Usos `"`c(sysdir_site)'/users/$id/graphs/Usos.gph"', replace
+if "$export" != "" {
+	graph export `"$export/Usos.png"', replace name(Usos)
+}
+
+label var cuotasTPF "Cuotas a la Seguridad Social"
+noisily Perfiles cuotasTPF [fw=factor], aniope(`enighanio') aniovp(`enighanio') title("Cuotas a la Seguridad Social")
+noisily Simulador cuotasTPF [fw=factor], aniope(`enighanio') aniovp(`enighanio') title("Cuotas a la Seguridad Social") reboot
 
 
 
@@ -2609,3 +2646,9 @@ timer off 6
 timer list 6
 noisily di _newline in g "{bf:Tiempo:} " in y round(`=r(t6)/r(nt6)',.1) in g " segs."
 log close households
+
+
+if "$textbook" == "textbook" {
+	noisily scalarlatex, log(households) alt(H)
+}
+

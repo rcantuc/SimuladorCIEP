@@ -566,9 +566,9 @@ quietly {
 	******************************
 	if "$nographs" != "nographs" & "`nographs'" != "nographs" {
 		graph combine `=substr("`varlist'",1,10)'_dec `varlist'Proj, ///
-			name(`=substr("`varlist'",1,10)'_`aniope', replace) ///
-			///title("{bf:`title'}") ///
-			subtitle(" Perfil etario (MXN `aniovp') y proyección demográfica (billones MXN)", margin(bottom)) ///
+			name(`=substr("`varlist'",1,10)'_`aniope'S, replace) ///
+			title("{bf:`title'}") ///
+			subtitle(" Per cápita (MXN `aniovp') y proyección demográfica (billones MXN `aniovp')", margin(bottom)) ///
 			///subtitle(" Age profile (PPP `aniovp') and demographic projection (% GDP)", margin(bottom)) ///
 			///title("`title' {bf:profile}") ///
 			caption("{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/`base', INEGI/BIE, CONAPO y SHCP.") ///
@@ -576,11 +576,11 @@ quietly {
 			///caption("{bf:Source}: Prepared by CIEP, using data from `base'.") ///
 			///note(`"{bf:Note}: Percentages in parentheses show the concentration in each group."')
 
-		graph save `=substr("`varlist'",1,10)'_`aniope' `"`c(sysdir_site)'/users/$id/graphs/`varlist'_`aniope'.gph"', replace
+		graph save `=substr("`varlist'",1,10)'_`aniope'S `"`c(sysdir_site)'/users/$id/graphs/`varlist'_`aniope'.gph"', replace
 		if "$export" != "" {
-			graph export `"$export/`varlist'_`aniope'.png"', replace name(`=substr("`varlist'",1,10)'_`aniope')
+			graph export `"$export/`varlist'_`aniope'S.png"', replace name(`=substr("`varlist'",1,10)'_`aniope'S)
 		}
-		capture window manage close graph `=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)'
+		*capture window manage close graph `=substr("`varlist'",1,10)'_dec
 		capture window manage close graph `varlist'Proj
 	}
 
@@ -810,9 +810,9 @@ program graphpiramide
 
 		graph combine H`varlist' M`varlist', ///
 			name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)', replace) ycommon xcommon ///
-			///title("{bf:`title'}") subtitle("$pais") ///
+			title("{bf:`title'}") subtitle("$pais") ///
 			///title("`title' {bf:profile}") ///
-			///caption("{bf:Fuente}: Elaborado por el CIEP, con la `base'.") ///
+			caption("{bf:Fuente}: Elaborado por el CIEP, con la `base'.") ///
 			note(`"{bf:Nota}: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n en cada grupo."') ///
 			///caption("{bf:Source}: Prepared by CIEP, using data from `base'.") ///
 			///note(`"{bf:Note}: Percentages in parentheses represent each group's share of the total account."')

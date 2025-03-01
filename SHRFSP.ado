@@ -875,49 +875,49 @@ program define UpdateSHRFSP
 	***     2 RFSP (flujos)     ***
 	***                         ***
 	*******************************
-	noisily DatosAbiertos RF000000SPFCS, $nographs reverse proy desde(2009)
+	noisily DatosAbiertos RF000000SPFCS, $nographs reverse desde(2009)
 	rename monto rfsp
 	tempfile rfsp
 	save "`rfsp'"
 
 	** Endeudamiento presupuestario y no presupuestario **
-	noisily DatosAbiertos RF000001SPFCS, $nographs reverse proy desde(2009)
+	noisily DatosAbiertos RF000001SPFCS, $nographs reverse desde(2009)
 	rename monto rfspBalance
 	tempfile Balance
 	save "`Balance'"
 
 	** PIDIREGAS **
-	noisily DatosAbiertos RF000002SPFCS, $nographs reverse proy desde(2009)
+	noisily DatosAbiertos RF000002SPFCS, $nographs reverse desde(2009)
 	rename monto rfspPIDIREGAS
 	tempfile PIDIREGAS
 	save "`PIDIREGAS'"
 
 	** IPAB **
-	noisily DatosAbiertos RF000003SPFCS, $nographs reverse proy desde(2009)
+	noisily DatosAbiertos RF000003SPFCS, $nographs reverse desde(2009)
 	rename monto rfspIPAB
 	tempfile IPAB
 	save "`IPAB'"
 
 	** FONADIN **
-	noisily DatosAbiertos RF000004SPFCS, $nographs reverse proy desde(2009)
+	noisily DatosAbiertos RF000004SPFCS, $nographs reverse desde(2009)
 	rename monto rfspFONADIN
 	tempfile FONADIN
 	save "`FONADIN'"
 
 	** PROGRAMA DE DEUDORES **
-	noisily DatosAbiertos RF000005SPFCS, $nographs reverse proy desde(2009)
+	noisily DatosAbiertos RF000005SPFCS, $nographs reverse desde(2009)
 	rename monto rfspDeudores
 	tempfile Deudores
 	save "`Deudores'"
 
 	** BANCA DE DESARROLLO **
-	noisily DatosAbiertos RF000006SPFCS, $nographs reverse proy desde(2009)
+	noisily DatosAbiertos RF000006SPFCS, $nographs reverse desde(2009)
 	rename monto rfspBanca
 	tempfile Banca
 	save "`Banca'"
 
 	** ADECUACIONES PRESUPUESTARIAS **
-	noisily DatosAbiertos RF000007SPFCS, $nographs reverse proy desde(2009)
+	noisily DatosAbiertos RF000007SPFCS, $nographs reverse desde(2009)
 	rename monto rfspAdecuaciones
 	tempfile Adecuaciones
 	save "`Adecuaciones'"
@@ -931,25 +931,25 @@ program define UpdateSHRFSP
 	************************************************
 
 	** Activos financieros internos del SP **
-	noisily DatosAbiertos XED20, $nographs proy desde(2009)
+	noisily DatosAbiertos XED20, $nographs desde(2009)
 	rename monto activosInt
 	tempfile activosInt
 	save "`activosInt'"
 
 	** Activos financieros externos del SP **
-	noisily DatosAbiertos XEB10, $nographs proy desde(2009)
+	noisily DatosAbiertos XEB10, $nographs desde(2009)
 	rename monto activosExt
 	tempfile activosExt
 	save "`activosExt'"
 
 	** Diferimientos **
-	noisily DatosAbiertos XOA0108, $nographs proy desde(2009)
+	noisily DatosAbiertos XOA0108, $nographs desde(2009)
 	rename monto diferimientos
 	tempfile diferimientos
 	save "`diferimientos'"
 
 	** Amortización **
-	noisily DatosAbiertos IF03230, $nographs proy desde(2009)
+	noisily DatosAbiertos IF03230, $nographspro desde(2009)
 	rename monto amortizacion
 	tempfile amortizacion
 	save "`amortizacion'"
@@ -1023,13 +1023,13 @@ program define UpdateSHRFSP
 	***                                        ***
 	**********************************************
 	noisily di _newline(2) in g "{bf: Costo financiero de la deuda} en millones de pesos"
-	noisily DatosAbiertos XAC21, $nographs proy desde(2009)
+	noisily DatosAbiertos XAC21, $nographs desde(2009)
 	rename monto costofinanciero
 	tempfile costofinanciero
 	save "`costofinanciero'"
 
 	** Gobierno Federal **
-	noisily DatosAbiertos XBC21, $nographs proy desde(2009)
+	noisily DatosAbiertos XBC21, $nographs desde(2009)
 	rename monto costogobiernofederal
 	tempfile costogobiernofederal
 	save "`costogobiernofederal'"
@@ -1047,13 +1047,13 @@ program define UpdateSHRFSP
 	save "`costocfe'"
 
 	** Costo de la deuda interna **
-	noisily DatosAbiertos XOA0155, $nographs proy desde(2009)
+	noisily DatosAbiertos XOA0155, $nographs desde(2009)
 	rename monto costodeudaInterno
 	tempfile costodeudaII
 	save "`costodeudaII'"
 
 	** Costo de la deuda externa **
-	noisily DatosAbiertos XOA0156, $nographs proy desde(2009)
+	noisily DatosAbiertos XOA0156, $nographs desde(2009)
 	rename monto costodeudaExterno
 	tempfile costodeudaEE
 	save "`costodeudaEE'"
