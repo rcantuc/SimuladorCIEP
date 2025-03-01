@@ -14,11 +14,11 @@ timer on 1
 if "`c(username)'" == "ricardo" {						// iMac Ricardo
 ***
 	sysdir set SITE "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
-	global export "/Users/ricardo/CIEP Dropbox/TextbookCIEP/images"
+	*global export "/Users/ricardo/CIEP Dropbox/TextbookCIEP/images"
 }
 else if "`c(username)'" == "servidorciep" {					// Servidor CIEP
 	sysdir set SITE "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
-	global export "/home/servidorciep/CIEP Dropbox/TextbookCIEP/images"
+	*global export "/home/servidorciep/CIEP Dropbox/TextbookCIEP/images"
 }
 else if "`c(console)'" != "" {							// Servidor Web
 	sysdir set SITE "/SIM/OUT/6/"
@@ -29,7 +29,7 @@ noisily run "`c(sysdir_site)'/profile.do"
 global id = "ciepmx"								// IDENTIFICADOR DEL USUARIO
 *global nographs "nographs"							// SUPRIMIR GRAFICAS
 *global output "output"								// ARCHIVO DE SALIDA (WEB)
-global update "update"								// UPDATE BASES DE DATOS
+*global update "update"								// UPDATE BASES DE DATOS
 *global textbook "textbook"							// SCALAR TO LATEX
 
 
@@ -38,7 +38,7 @@ global update "update"								// UPDATE BASES DE DATOS
 **# 1. DEMOGRAFÍA
 ***
 *foreach entidad of global entidadesL {
-	*noisily Poblacion if entidad == "`entidad'", anioi(`=aniovp') aniofinal(`=`=aniovp'+25') $update $textbook
+	noisily Poblacion if entidad == "`entidad'", anioi(`=aniovp') aniofinal(`=`=aniovp'+25') $update $textbook
 *}
 
 
@@ -48,13 +48,21 @@ global update "update"								// UPDATE BASES DE DATOS
 ***
 
 ** 2.1 Producto Interno Bruto 
-*noisily PIBDeflactor, aniovp(`=aniovp') geodef(1993) geopib(1993) $update $textbook
+noisily PIBDeflactor, aniovp(`=aniovp') geodef(1993) geopib(1993) $update $textbook
 
 ** 2.2 Sistema de Cuentas Nacionales
-*noisily SCN, anio(`=aniovp') $update $textbook
+noisily SCN, anio(`=aniovp') $update $textbook
 
+** 3.1 Ley de Ingresos de la Federación
+noisily LIF, by(divSIM) rows(1) anio(`=anioPE') desde(`=anioPE-1') min(0) title("Ingresos presupuestarios") $update
 
+** 3.2 Presupuesto de Egresos de la Federación
+noisily PEF, by(divSIM) rows(2) min(0) anio(`=anioPE') desde(`=anioPE-1') title("Gasto presupuestario") $update
 
+** 3.3 Saldo Histórico de Requerimientos Financieros del Sector Público
+noisily SHRFSP, anio(`=anioPE') ultanio(2008) $update $textbook
+
+ex
 **/
 **# 3. HOGARES
 ***

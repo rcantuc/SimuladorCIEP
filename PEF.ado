@@ -717,7 +717,7 @@ program define UpdatePEF
 	}
 
 	capture confirm file "`c(sysdir_site)'/03_temp/prePEF.dta"
-	if _rc == 0 {
+	if _rc != 0 {
 		local archivos: dir "`c(sysdir_site)'/03_temp/PEFs" files "*.dta"		// Archivos .xlsx
 		*local archivos `""PEF 2025.dta" "CuotasISSSTE.dta""'
 
@@ -1061,12 +1061,7 @@ program define UpdatePEF
 		replace serie_ramo = "XOA0141" if ramo == 53
 
 		compress
-		if `c(version)' > 13.1 {
-			saveold "`c(sysdir_site)'/03_temp/prePEF.dta", replace version(13)
-		}
-		else {
-			save "`c(sysdir_site)'/03_temp/prePEF.dta", replace
-		}
+		save "`c(sysdir_site)'/03_temp/prePEF.dta", replace
 	}
 
 	/* 3.3 Datos Abiertos: PEFEstOpor.dta *
