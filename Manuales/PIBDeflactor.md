@@ -1,4 +1,4 @@
-# Simulador Fiscal CIEP v5.3: PIB, deflactor y proyecciones
+# Simulador Fiscal CIEP: PIB, deflactor y proyecciones
 
 Versión: 20 de Febrero de 2025
 
@@ -6,13 +6,8 @@ Versión: 20 de Febrero de 2025
 <hr style="border: none; height: 2px; background-color: #ff7020;">
 
 ## PIBDeflactor.ado
-**Descripción**: *Ado-file* (`.ado`) diseñado para automatizar el cálculo y proyección de indicadores económicos utilizando datos del Banco de Información Económica (BIE) y el Consejo Nacional de Población (CONAPO). 
+**Descripción**: *Ado-file* (`.ado`) diseñado para automatizar el cálculo y proyección de todos los indicadores económicos relacionados con el PIB utilizando datos del Banco de Información Económica (BIE) y el Consejo Nacional de Población (CONAPO). 
 
-Los indicadores se dividen en 3 temporalidades:
-
-* Datos históricos (naranja): datos reales reportados desde 1993 hasta la fecha.
-* Estimaciones de los CGPE (amarillo): datos estimados por la Secretaría de Hacienda desde la fecha actual hasta siete años en el futuro.
-* Proyecciones CIEP (verde): datos proyectados utilizando la metodología del CIEP con base en tendencias históricas. 
 
 <details>
   <summary>**Conoce la lista de indicadores generados**</summary>
@@ -53,7 +48,6 @@ Los indicadores se dividen en 3 temporalidades:
 
 </details>
 
-**Ejemplo:**
 
  ![ilustracion1](images/PIBDeflactor/ilustracion1.png)
 
@@ -192,6 +186,13 @@ Tras ingresar el prompt, el código devolverá tres elementos: ventana de result
 
 
 **2. Gráficas:** Representación visual de los indicadores calculados. 
+
+Los indicadores se dividen en 3 temporalidades:
+
+* Datos históricos (naranja): datos reales reportados desde 1993 hasta la fecha.
+* Estimaciones de los CGPE (amarillo): datos estimados por la Secretaría de Hacienda desde la fecha actual hasta siete años en el futuro.
+* Proyecciones CIEP (verde): datos proyectados utilizando la metodología del CIEP con base en tendencias históricas. 
+
 
 #####A
 ![Indice](images/PIBDeflactor/Indice de Precios Implicitos.png)

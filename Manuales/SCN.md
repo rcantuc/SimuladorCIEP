@@ -1,37 +1,40 @@
-# Simulador Fiscal CIEP v5.3: Sistema de Cuentas Nacionales
+# Simulador Fiscal CIEP: Sistema de Cuentas Nacionales
 
 Versión: 21 de febrero de 2025
 
 <hr style="border: none; height: 2px; background-color: #ff7020;">
 
 
+
 ## SCN.ado
-**Descripción:** Ado-file (.ado) diseñado para automatizar el análisis y proyección de datos del Sistema de Cuentas Nacionales (SCN). 
+**Descripción:** *Ado-file* diseñado para automatizar el análisis y proyección de datos del Sistema de Cuentas Nacionales (SCN). Para este programa se utilizan datos del INEGI.
+
+![Grafica1](images/SCN/GeneracionGDP.png) 
 
 **Alcance:** Para abordar las limitaciones en la disponibilidad de información, se implementó un modelo que combina un *pastcast* para estimar datos históricos y un *forecast* para proyectar datos futuros. Como resultado, el programa presenta una base de datos integral del SCN, con información abarcando desde 1993 hasta 2070. 
 
 
 <details>
   <summary>**Esta es la información que encontrarás aquí**</summary>
-  
+
 * **Cuenta de producción bruta:** Presenta el cálculo del PIB utilizando el método del valor agregado, considerando la producción total menos el consumo intermedio. 
 * **Cuenta de distribución del ingreso:** Desglosa el PIB a través de los ingresos de asalariados, las ganancias de las empresas y el consumo de capital fijo.
 * **Cuenta de los ingresos del capital:** Examina las ganancias de las empresas. 
 * **Distribución secundaria del ingreso:** Contabiliza los ingresos disponibles para el país.
-* **Utilización del ingreso disponible**  Calcula el ingreso nacional disponible utilizando el método del gasto. Se obtiene sumando el consumo de los hogares, el gasto del gobierno, las importaciones netas y el ahorro bruto, lo que genera el PIB. Restando el consumo de capital fijo, se obtiene el Ingreso Nacional Disponible.
+* **Utilización del ingreso disponible**  Calcula el ingreso nacional disponible utilizando el método del uso. Se obtiene sumando el consumo de los hogares, el gasto del gobierno, las importaciones netas y el ahorro bruto, lo que genera el PIB. Restando el consumo de capital fijo, se obtiene el Ingreso Nacional Disponible.
 * **Consumo de los hogares:** Desglosa el gasto de los hogares en bienes y servicios.
 * **Consumo Gobierno:** Detalla el gasto público en bienes y servicios.
 *  **Cuenta de actividad económica:**  Calcula el PIB por el método del valor agregado, de cada sector productivo e incorporando los impuestos sobre los bienes y servicios. 
 </details>
 
+
 <h3 style="color: #ff7020;">1. Input:</h3>
 
-En este programa se integran dos bases de datos:
+En este programa se integran dos fuentes de datos:
 
-1. BIE:  Proporciona datos sobre el ingreso, la producción bruta, la cuenta de ingreso nacional disponible, el consumo de los hogares, el gasto de consumo privado, el gasto de consumo del gobierno y el PIB por actividad económica. [^1] 
+1. Banco de Indicadores (BIE):  Proporciona datos sobre el ingreso, la producción bruta, la cuenta de ingreso nacional disponible, el consumo de los hogares, el gasto de consumo privado, el gasto de consumo del gobierno y el PIB por actividad económica. [^1] 
 
-2. CSI: Proporciona información sobre el ingreso mixto bruto, las cuotas a la seguridad social, los subsidios a los productos, la producción e importaciones y los excedentes de operación.[^2]
-
+2. Cuentas por Sectores Institucionales (CSI): Proporciona información sobre el ingreso mixto bruto, las cuotas a la seguridad social, los subsidios a los productos, la producción e importaciones y los excedentes de operación.[^2]
 
 <h3 style="color: #ff7020;">2. Sintaxis:</h3>
 
@@ -101,22 +104,33 @@ Para crear comandos de manera automática y evitar errores de sintaxis, utiliza 
   }
 </script>
 
+<details>
+  <summary>**Descripción de opciones:**</summary>
+  
+ - **Año Inicial (anio):** Cambia el año de referencia. Tiene que ser un número entre 1993 y el año actual, que es el valor default. 
+
+- **Año Máximo (aniomax)**: Define el año límite hasta el cual se extenderá la proyección en la gráfica.
+- **Sin Gráfico (nographs)**: Evita la generación de gráficas.
+- **Actualizar Base (update)**: Corre un *do.file* para obtener los datos más recientes del SHCP. 
+  
+</details>
+
 
 <h3 style="color: #ff7020;">3. Output:</h3>
 
-Tras ingresar el prompt, el código devolverá tres elementos. La ventana de resultados, dos gráficas y una base de datos. A diferencia de otros programas, consideramos que la ventana de resultado es el principal elemento de interés para el usuario.
+Tras ingresar el prompt, el código devolverá tres elementos. La ventana de resultados, dos gráficas y una base de datos. A diferencia de otros programas, consideramos que la ventana de resultados es el principal elemento de interés.
 
 **1. Ventana de Resultados:** Muestra un resumen del Sistema de Cuentas Nacionales. En total, encontrarás ocho tablas.
 
  <details>
-  <summary>Método de valor agregado (Tabla A y G):</summary>
+  <summary>Calculo por método de valor agregado (Tabla A y G):</summary>
 
-Descripción: 
+**A. Cuenta de producción bruta:**
 La tabla muestra cómo se calcula el PIB desde el valor agregado. Se obtiene restando el consumo intermedio a la producción bruta y sumando los impuestos a los productos.
 
 ![metodovaloragregado1](images/SCN/CuentaA.png) 
 
-Descripción:
+**G. Cuenta de actividad económica:**
 La tabla desglosa el PIB por sector económico, mostrando la contribución de cada actividad al valor agregado bruto.
 ![metodovaloragregado2](images/SCN/CuentaG.png)
 
@@ -124,46 +138,51 @@ La tabla desglosa el PIB por sector económico, mostrando la contribución de ca
   
   
 <details>
-  <summary>Método del ingreso (Tabla B1, B2, C y D):</summary>
+  <summary>Calculo por método de los recursos (Tabla B1, B2, C):</summary>
 
-Descripción: 
+**B1. Cuenta de Distribución del ingreso:**
 La tabla muestra cómo se calcula el PIB desde la distribución del ingreso, desglosando la participación del trabajo y el capital. 
 ![metodoingreso1](images/SCN/CuentaB1.png)
 
-Descripción:
-La tabla muestra la composición de los ingresos de capital en la economía, incluyendo ganancias empresariales, ingreso mixto y alquileres imputados.
+**B2. Cuenta de los ingresos del capital:**
+La tabla muestra la composición de los ingresos de capital en la economía, incluyendo ganancias empresariales, ingreso mixto del capital (1/3 del ingreso mixto total) y alquileres imputados.
 ![metodoingreso2](images/SCN/CuentaB2.png)
 
-Descripción:
+**C. Distribución secundaria del ingreso:**
 La tabla muestra cómo se transforma el PIB en ingreso nacional disponible a través de la distribución secundaria del ingreso.
 ![metodoingreso3](images/SCN/CuentaC.png)
 
-Descripción:
-La tabla muestra cómo se distribuye el ingreso nacional disponible entre consumo, ahorro y otras transacciones
-![metodoingreso4](images/SCN/CuentaD.png)
 
   </details> 
 
  
 <details>
-  <summary>Método del consumo (Tabla E y F):
+  <summary>Cálculo por el método de los usos (Tabla D, E y F):
 </summary>
 
-Descripción: 
-La tabla desglosa el consumo de los hogares e ISFLSH en diferentes categorías de bienes y servicios.
+**D. Utilización del ingreso disponible:**
+La tabla muestra cómo se distribuye el ingreso nacional disponible entre consumo, ahorro y otras transacciones
+![metodoingreso4](images/SCN/CuentaD.png)
+
+**E. Consumo de los hogares e ISFLSH:** La tabla muestra el consumo de hogares e ISFLSH en diferentes categorías de bienes y servicios.
+
+<small>*Solo los elementos con (+) se consideran para la suma.</small>
+
+
 ![metodoconsumo1](images/SCN/CuentaE.png)
-Descripción: 
-La tabla muestra la distribución del gasto del gobierno en bienes y servicios, destacando su inversión en sectores clave como educación, salud y justicia.
+
+**F. Consumo de gobierno**
+La tabla muestra la distribución del gasto del gobierno por sectores económicos.
 ![metodoconsumo2](images/SCN/CuentaF.png)
 
   </details> 
   
 **2. Gráficas:** Representación visual del PIB.
 
-PIB por el método de ingreso:
+PIB por el método de los recursos:
 ![Grafica1](images/SCN/GeneracionGDP.png) 
 
-PIB por el método de consumo:
+PIB por el método de los usos:
 ![Grafica2](images/SCN/DistribuciónGDP.png) 
 
 **3. Base de datos:**  Permite al usuario obtener una base recortada y limpia para hacer sus propios análisis.
@@ -172,4 +191,6 @@ PIB por el método de consumo:
 
 
 [^1]: **Link:** [Banco de Indicadores](https://www.inegi.org.mx/app/indicadores/) 
+[^2]: **Link:** [Cuentas de Sectores Institucionales](https://www.inegi.org.mx/temas/si/#tabulados) 
+
 
