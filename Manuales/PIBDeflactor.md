@@ -83,6 +83,8 @@ Para crear comandos de manera automática y evitar errores de sintaxis, utiliza 
     <h4 style="border-bottom: 2px solid black; display: inline-block;">Calculadora de Prompts</h4>
 </div>
 
+
+
 **A. Opciones disponibles:**
 <!-- Opciones para PIBDeflactor -->
 
@@ -157,21 +159,21 @@ Para crear comandos de manera automática y evitar errores de sintaxis, utiliza 
   }
 </script>
 
-**Descripción de opciones**:
 
+
+<details>
+  <summary>**Descripción de opciones**</summary>
+  
 - **Año Base (aniovp)**: Cambia el año de referencia para calcular el *valor presente*. Tiene que ser un número entre 1993 (mínimo reportado por el INEGI/BIE) y 2050 (máximo proyectado por el CONAPO, en su base de población). El *año actual* es el valor por default.
 - **Año Final (aniomax)**: Año final para las proyecciónes de las gráficas. El último año de la serie (2070) es el valor por default.
-- **Promedio Geométrico PIB (geopib)**:  Año base a partir del cual se calcula el crecimiento promedio geométrico del PIB, utilizado para proyectar el crecimiento en años futuros. [^3]
-- **Promedio Geométrico Deflactor (geodef)**:  Año base a partir del cual se calcula el crecimiento promedio geométrico del deflactor del PIB, utilizado para estimar la evolución de los precios en el futuro. [^4] 
+- **Promedio Geométrico PIB (geopib)**:  Año base a partir del cual se calcula el crecimiento geométrico promedio del PIB, utilizado para proyectar el crecimiento en años futuros. [^3]
+- **Promedio Geométrico Deflactor (geodef)**:  Año base a partir del cual se calcula el crecimiento geométrico promedio del deflactor del PIB, utilizado para estimar la evolución de los precios en el futuro. [^4] 
 - **Tasa de Descuento (discount)**: Tasa utilizada para convertir valores futuros del PIB en su equivalente a valor presente.
 - **Sin Gráfico (nographs)**: Evita la generación de gráficas.
 - **Actualizar Base (update)**: Corre un *do.file* para obtener los datos más recientes del BIE y el CONAPO. 
 
-
-<details>
-  <summary>Mostrar código fuente</summary>
-  ![paso1](images/PIBDeflactor/CodigoFuente2A.png)
 </details>
+
 
 
 

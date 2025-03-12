@@ -780,8 +780,8 @@ quietly {
 
 	* Display table header
 	noisily di _newline in y "{bf: F. Consumo (gobierno)" in g ///
-		_col(44) in y %20s "MXN" ///
-		_col(66) in y %7s "% PIB" "}" 
+		_col(44) in g %20s "MXN" ///
+		_col(66) in g %7s "% PIB" "}" 
 
 	* Display de sectores con texto abreviado
 	noisily di in g "  (+) 11 Agric., cría, pesca" ///

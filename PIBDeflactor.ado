@@ -279,7 +279,7 @@ quietly {
 	** 6 Simulador **
 	*****************
 	noisily di in g " PIB " in y anio[`obsvp'] in g " per c{c a'}pita " in y _col(43) %10.0fc pibY[`obsvp']/Poblacion[`obsvp'] in g " `=currency[`obsvp']'"
-	noisily di in g " PIB " in y anio[`obsvp'] in g " por edades laborales " in y _col(43) %10.0fc OutputPerWorker[`obsvp'] in g " `=currency[`obsvp']' (16-65 a{c n~}os)"
+	noisily di in g " PIB " in y anio[`obsvp'] in g " per c{c a'}pita por edades laborales " in y _col(43) %10.0fc OutputPerWorker[`obsvp'] in g " `=currency[`obsvp']' (16-65 a{c n~}os)"
 
 	local crecimientoProm = ((pibYR[`obsvp']/pibYR[`obsPIB'])^(1/(`obsvp'-`obsPIB'))-1)*100
 	scalar crecimientoProm = string(`crecimientoProm',"%7.1fc")
