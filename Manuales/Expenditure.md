@@ -1,28 +1,44 @@
-# Conoce el Simulador Fiscal CIEP
+# Simulador Fiscal CIEP: Expenditure
 
-Versión: 14 de marzo de 2025
+Versión: 17 de marzo de 2025
 
 <hr style="border: none; height: 2px; background-color: #ff7020;">
 
 ## Expenditure.do
 
+**Descripción:**  Do.File diseñado para integrar información económica mediante la armonización de datos macroeconómicos y microeconómicos. El programa consolida diversas fuentes oficiales y produce, varias bases de datos que permiten evaluar el comportamiento del gasto.
+
 
 <h3 style="color: #ff7020;">1. Input:</h3>
 
-En este programa se utilizan varias fuentes de datos macroeconómicas y microeconómicas:
+En este programa se utilizan diversas fuentes de datos macroeconómicas y microeconómicas:
 
-Fuentes Macroeconómicas:
+**Fuentes Macroeconómicas:**
 
-1. Banco de Indicadores (BIE):  Proporciona datos sobre el ingreso, la producción bruta, la cuenta de ingreso nacional disponible, el consumo de los hogares, el gasto de consumo privado, el gasto de consumo del gobierno y el PIB por actividad económica. [^1] 
+Para obtener las información macroeconómica se utilizan los datos generados a través de los siguientes programas del SimuladorFiscal.
 
-2. Cuentas por Sectores Institucionales (CSI): Proporciona información sobre el ingreso mixto bruto, las cuotas a la seguridad social, los subsidios a los productos, la producción e importaciones y los excedentes de operación.[^2]
+1. SCN: Importa y procesa los datos Sistema de Cuentas Nacionales. Para este programa se utilizan datos del INEGI.
 
-3. LIF: Ley con los montos aprobados para la recaudación de impuestos. [^1]
-4. Estadísticas Oportunas de la SHCP: Proporciona información sobre finanzas públicas del país, incluyendo balances fiscales, ingresos, gastos y deuda pública.[^2]
-5. Estadísticas Oportunas de la SHCP: Proporciona información sobre finanzas públicas del país, incluyendo balances fiscales, ingresos, gastos y deuda pública.[^2]
-6. CONAPO: Contiene la estimación del número de habitantes a mitad de cada año entre 1950 y 2070.
+2. LIF: Importa y procesa datos sobre los ingresos de la federación, utilizando información oficial de la SHCP y el INEGI. 
 
-Fuentes Microeconómicas:
+3. Población: Importa los datos de población. Los datos provienen de la CONAPO.
 
-1. Eni
+**Fuentes Microeconómicas:**
+
+Para obtener las cifras microeconómicas, se utiliza información de encuestas del INEGI.
+
+1. ENIGH: Se utilizan información de seis tablas de la ENIGH: gastospersona, gastohogar, gastotarjetas, erogaciones, concentrado y vivienda.
+
+2. Censo Económico:  Se utiliza información del Censo Económico.
+
+
+
+<h3 style="color: #ff7020;">2. Output:</h3>
+
+El programa devolverá una base final, `expenditures.dta`, y tres bases intermedias, `preconsumption.dta`, `deducciones.dta`y `consumption_categ_pc.dta` .  
+
+1. Expenditures.dta: Es el producto final del proceso de armonización de los datos microeconómicos con información macroeconómica. 
+2. Preconsumption.dta: Contiene la base microeconómica de gastos de hogares y personas después de haber sido limpiada, unida y procesada.
+3. Deducciones.dta: Resume a nivel hogar los gastos que pueden ser considerados deducciones personales para el ISR.
+4. consumption_categ_pc.dta: Es la base final que integra el consumo de individuos y hogares, desagregado en categorías.
 
