@@ -22,7 +22,7 @@ El proyecto del Simulador Fiscal facilita el acceso a toda la informaci√≥n econ√
     </div>
 </div>
 
-![Paso1](manuales/images/ReadMe/video2.gif)
+![Paso1](video2.gif)
 <div style="display: flex;">
     <div style="flex: 1; padding: 10px;">
         <ul>
