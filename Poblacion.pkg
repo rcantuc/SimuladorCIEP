@@ -1,11 +1,11 @@
-        v 3
-        d myprog.  Package to analyze data.
-        d Program by me.
-        d Other lines describing the package could appear here.
+v 3
+d myprog.  Package to analyze data.
+d Program by me.
+d Other lines describing the package could appear here.
 
-        * I can also insert comments; these will not be displayed.
-        * f lines name the files that comprise your package:
+* I can also insert comments; these will not be displayed.
+* f lines name the files that comprise your package:
 
-        f myprog.ado
-        f myprog.sthlp
-        f mydata.dta
+f myprog.ado
+f myprog.sthlp
+f mydata.dta
