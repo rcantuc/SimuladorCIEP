@@ -1,7 +1,8 @@
 v 3
-d myprog.  Package to analyze data.
-d Program by me.
-d Other lines describing the package could appear here.
+d Poblacion.  Comando que automatiza la extracción de datos de las Proyecciones de la Población de México del CONAPO.
+d Programado por Ricardo Cantú Calderón.
+d Centro de Investigación Económica y Presupuestaria, A.C.
+d ricardocantu@ciep.mx
 
 * I can also insert comments; these will not be displayed.
 * f lines name the files that comprise your package:
