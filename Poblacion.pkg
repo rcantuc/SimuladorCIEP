@@ -1,4 +1,3 @@
---- BEGIN --- myprog.pkg -----------------------------------
 v 3
 d myprog.  Package to analyze data.
 d Program by me.
@@ -10,4 +9,3 @@ d Other lines describing the package could appear here.
 f myprog.ado
 f myprog.sthlp
 f mydata.dta
---- END ----- myprog.pkg -----------------------------------
