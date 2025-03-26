@@ -84,6 +84,7 @@ Opcionalmente, se pueden incluir filtros en la condición {it:if}:
 
 {marker references}{...}
 {title:References}
+
 {pstd}
 1. Bases de Datos CONAPO: {browse "https://www.gob.mx/conapo/documentos/bases-de-datos-de-la-conciliacion-demografica-1950-a-2019-y-proyecciones-de-la-poblacion-de-mexico-2020-a-2070"}
 {p_end}
