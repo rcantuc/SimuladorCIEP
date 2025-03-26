@@ -38,6 +38,7 @@ Genera una base de datos final que incluye datos históricos y proyecciones, per
 {marker options}{...}
 {title:Options}
 {dlgtab:General}
+
 {phang}
 {opt anioinicial(int)}    Especifica el año inicial de la proyección (rango: 1950–2069).
 {p_end}
@@ -55,6 +56,7 @@ Genera una base de datos final que incluye datos históricos y proyecciones, per
 {p_end}
 
 {dlgtab:Filters}
+
 {phang}
 Opcionalmente, se pueden incluir filtros en la condición {it:if}:
 
@@ -67,6 +69,7 @@ Opcionalmente, se pueden incluir filtros en la condición {it:if}:
 
 {marker examples}{...}
 {title:Examples}
+
 {pstd}Ejemplo 1: Uso básico sin filtros{p_end}
 {phang2}{cmd:. Poblacion, anioinicial(2025) aniofinal(2050)}
 {p_end}
