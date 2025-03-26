@@ -31,6 +31,7 @@ Integra tres bases de datos:
 {pstd}
 3. {bf:Migración Internacional:} Estimación de inmigrantes y emigrantes (1950–2069).  
 
+{pstd}
 Genera una base de datos final que incluye datos históricos y proyecciones, permitiendo análisis por entidad, sexo, edad y año.
 {p_end}
 
@@ -49,6 +50,7 @@ Genera una base de datos final que incluye datos históricos y proyecciones, per
 {phang}
 {opt update}            Ejecuta un do-file para actualizar la base de datos con datos recientes.
 {p_end}
+
 {dlgtab:Filters}
 {phang}
 Opcionalmente, se pueden incluir filtros en la condición {if}:
