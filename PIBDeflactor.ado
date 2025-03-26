@@ -6,7 +6,7 @@
 *!***    Fecha: 29/Sept/22               ****
 *!***                                    ****
 *!*******************************************
-program define PIBDeflactor, return
+program define pibdeflactor, return
 quietly {
 	timer on 3
 
@@ -792,7 +792,7 @@ program define UpdatePIBDeflactor
 	**************
 
 	** 1.1. Importar variables de interés desde el BIE **
-	run "`c(sysdir_site)'/AccesoBIE.do" "734407 735143 446562 446565 446566" "pibQ indiceQ PoblacionENOE PoblacionOcupada PoblacionDesocupada"
+	run "https://raw.githubusercontent.com/rcantuc/SimuladorCIEP/refs/heads/master/AccesoBIE.do" "734407 735143 446562 446565 446566" "pibQ indiceQ PoblacionENOE PoblacionOcupada PoblacionDesocupada"
 
 	** 1.2 Label variables **
 	label var pibQ "Producto Interno Bruto (trimestral)"
@@ -829,7 +829,7 @@ program define UpdatePIBDeflactor
 	***         ***
 	***************
 	** 2.1. Importar variables de interés desde el BIE **
-	run "`c(sysdir_site)'/AccesoBIE.do" "910392" "inpc"
+	run "https://raw.githubusercontent.com/rcantuc/SimuladorCIEP/refs/heads/master/AccesoBIE.do" "910392" "inpc"
 
 	** 2.2 Label variables **
 	label var inpc "Índice Nacional de Precios al Consumidor"
