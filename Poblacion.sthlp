@@ -1,12 +1,12 @@
 {smcl}
 {* *! version 1.4.20  22mar2025}{...}
-{viewerdialog Poblacion "dialog Poblacion"}
-{vieweralsosee "[R] Poblacion" "mansection R Poblacion"}
-{viewerjumpto "Syntax" "Poblacion##syntax"}
-{viewerjumpto "Description" "Poblacion##description"}
-{viewerjumpto "Options" "Poblacion##options"}
-{viewerjumpto "Examples" "Poblacion##examples"}
-{viewerjumpto "References" "Poblacion##references"}
+{viewerdialog Poblacion "dialog Poblacion"}{...}
+{vieweralsosee "[R] Poblacion" "mansection R Poblacion"}{...}
+{viewerjumpto "Syntax" "Poblacion##syntax"}{...}
+{viewerjumpto "Description" "Poblacion##description"}{...}
+{viewerjumpto "Options" "Poblacion##options"}{...}
+{viewerjumpto "Examples" "Poblacion##examples"}{...}
+{viewerjumpto "References" "Poblacion##references"}{...}
 
 {marker syntax}{...}
 {title:Syntax}
