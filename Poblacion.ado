@@ -8,7 +8,7 @@
 *!***    Sintaxis:                       ****
 *!***    Poblacion [if] [, ANIOinicial(int) ANIOFinal(int) NOGraphs UPDATE]
 *!*******************************************
-program define Poblacion, return
+program define poblacion, return
 quietly {
 	timer on 2
 
