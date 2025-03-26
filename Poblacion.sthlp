@@ -59,10 +59,10 @@ Genera una base de datos final que incluye datos históricos y proyecciones, per
 Opcionalmente, se pueden incluir filtros en la condición {it:if}:
 
 {pstd}
-  - {bf:Entidad:} Filtra por entidad federativa (ej. "Jalisco", "Ciudad de México", etc.).
-{pstd}
-  - {bf:Sexo:} Filtra por sexo, donde 1 representa Hombres, 2 Mujeres; si se omite, se incluyen ambos.
+  {bf:Entidad:} Filtra por entidad federativa (ej. "Jalisco", "Ciudad de México", etc.).
 
+{pstd}
+  {bf:Sexo:} Filtra por sexo, donde 1 representa Hombres, 2 Mujeres; si se omite, se incluyen ambos.
 {p_end}
 
 {marker examples}{...}
