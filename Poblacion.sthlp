@@ -10,8 +10,9 @@
 
 {marker syntax}{...}
 {title:Syntax}
+
 {p 8 16 2}
-{opt Poblacion} [{if}] [, {it:anioinicial(int)} {it:aniofinal(int)} {it:nographs} {it:update}]
+{opt Poblacion} [if] [, {it:anioinicial(int)} {it:aniofinal(int)} {it:nographs} {it:update}]
 {p_end}
 
 {marker description}{...}
