@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 1.4.20  22mar2025}{...}
+{* *! version 1.  22mar2025}{...}
 {viewerdialog Poblacion "dialog Poblacion"}{...}
 {vieweralsosee "[R] Poblacion" "mansection R Poblacion"}{...}
 {viewerjumpto "Syntax" "Poblacion##syntax"}{...}
@@ -16,6 +16,7 @@
 
 {marker description}{...}
 {title:Description}
+
 {pstd}
 {cmd:Poblacion} es un comando que automatiza la extracción de datos de las Proyecciones de la Población de México, utilizando información proveniente del CONAPO.  
 Integra tres bases de datos:
