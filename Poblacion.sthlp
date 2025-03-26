@@ -24,7 +24,9 @@ Integra tres bases de datos:
 
 {pstd}
 1. {bf:Población:} Estimación del número de habitantes a mitad de cada año (1950–2070).
+{pstd}
 2. {bf:Defunciones:} Estimación anual de defunciones (1950–2070).
+{pstd}
 3. {bf:Migración Internacional:} Estimación de inmigrantes y emigrantes (1950–2069).  
 
 Genera una base de datos final que incluye datos históricos y proyecciones, permitiendo análisis por entidad, sexo, edad y año.
