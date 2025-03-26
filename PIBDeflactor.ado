@@ -6,7 +6,7 @@
 *!***    Fecha: 29/Sept/22               ****
 *!***                                    ****
 *!*******************************************
-program define pibdeflactor, return
+program define PIBDeflactor, return
 quietly {
 	timer on 3
 
