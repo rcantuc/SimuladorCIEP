@@ -12,14 +12,14 @@
 {title:Syntax}
 
 {p 8 16 2}
-{opt poblacion} [if] [, ANIOinicial(int) ANIOFinal(int) NOGraphs UPDATE]
+{opt Poblacion} [if] [, ANIOinicial(int) ANIOFinal(int) NOGraphs UPDATE]
 {p_end}
 
 {marker description}{...}
 {title:Description}
 
 {pstd}
-{cmd:poblacion} es un comando que automatiza la extracción de datos de las Proyecciones de la Población de México, utilizando información proveniente del CONAPO.  
+{cmd:Poblacion} es un comando que automatiza la extracción de datos de las Proyecciones de la Población de México, utilizando información proveniente del CONAPO.  
 Integra tres bases de datos:
 
 {pstd}

@@ -4,5 +4,4 @@ d Simulador Fiscal CIEP
 
 d Do-files y Ado-files para ejecutar el Simulador Fiscal CIEP y todas sus bases de datos.
 
-p Poblacion Comando que extrae las Proyecciones de la Población de México del CONAPO, a nivel nacional y para todas las entidades federativas, de 1950 a 2070.
-p PIBDeflactor Comando que automatiza el cálculo y proyección de todos los indicadores económicos relacionados con el PIB utilizando datos del Banco de Información Económica (BIE) y el Consejo Nacional de Población (CONAPO).
+p SimuladorFiscal El proyecto del Simulador Fiscal facilita el acceso a toda la información económica relevante de México.
