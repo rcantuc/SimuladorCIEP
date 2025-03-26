@@ -41,21 +41,28 @@ Genera una base de datos final que incluye datos históricos y proyecciones, per
 {phang}
 {opt anioinicial(int)}    Especifica el año inicial de la proyección (rango: 1950–2069).
 {p_end}
+
 {phang}
 {opt aniofinal(int)}     Especifica el año final de la proyección (rango: 1951–2070).
 {p_end}
+
 {phang}
 {opt nographs}          Suprime la generación de gráficas.
 {p_end}
+
 {phang}
 {opt update}            Ejecuta un do-file para actualizar la base de datos con datos recientes.
 {p_end}
 
 {dlgtab:Filters}
 {phang}
-Opcionalmente, se pueden incluir filtros en la condición {if}:
+Opcionalmente, se pueden incluir filtros en la condición {it:if}:
+
+{pstd}
   - {bf:Entidad:} Filtra por entidad federativa (ej. "Jalisco", "Ciudad de México", etc.).
+{pstd}
   - {bf:Sexo:} Filtra por sexo, donde 1 representa Hombres, 2 Mujeres; si se omite, se incluyen ambos.
+
 {p_end}
 
 {marker examples}{...}
@@ -63,9 +70,11 @@ Opcionalmente, se pueden incluir filtros en la condición {if}:
 {pstd}Ejemplo 1: Uso básico sin filtros{p_end}
 {phang2}{cmd:. Poblacion, anioinicial(2025) aniofinal(2050)}
 {p_end}
+
 {pstd}Ejemplo 2: Uso con filtros y actualización de datos{p_end}
 {phang2}{cmd:. Poblacion if entidad == "Jalisco" & sexo == 1, anioinicial(2020) aniofinal(2070) update}
 {p_end}
+
 {pstd}Ejemplo 3: Sin generación de gráficas{p_end}
 {phang2}{cmd:. Poblacion, anioinicial(2010) aniofinal(2070) nographs}
 {p_end}
