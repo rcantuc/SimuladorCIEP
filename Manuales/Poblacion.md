@@ -1,24 +1,24 @@
-# Simulador Fiscal CIEP v5.3: Población y proyecciones
+# Simulador Fiscal CIEP: Población y sus proyecciones
 
-Versión: 21 de febrero de 2025
+Versión: 22 de marzo de 2025
 
 
 <hr style="border: none; height: 2px; background-color: #ff7020;">
 
 
-## Poblacion.ado
+## ARCHIVO: Poblacion.ado
 
 **Descripción:** *Ado-file* que automatiza la extracción de datos de las Proyecciones de la Población de México del CONAPO. 
 
 
 <details>
-  <summary>**Conoce la lista de indicadores de interés generados**</summary>
+  <summary>**Conoce la lista de variables generadas**</summary>
   
-  * **Población:** Muestra los datos de población históricos y su proyección hasta 2070.
+  * **Población:** Muestra los datos de población históricos y su proyección hasta 2070 por sexo, edad, año y entidad federativa.
 </details>
 
 
-<h3 style="color: #ff7020;">1. Input:</h3>
+<h3 style="color: #ff7020;">1. Bases de datos iniciales (inputs):</h3>
 
 En este programa se integran tres bases de datos del CONAPO:[^1]
 
@@ -105,11 +105,11 @@ Para crear comandos de manera automática y evitar errores de sintaxis, utiliza 
 **B. Opciones disponibles:**
 
 <!-- Filtro: Año inicial y final -->
-<label for="anioInicial">Año Inicial:</strong></label>
-<input type="number" id="anioInicial" placeholder="Escribe el año base" oninput="actualizarComando()">
+<label for="anioInicial">Año Inicial (1950-2069):</strong></label>
+<input type="number" id="anioInicial" placeholder="Ej. 2025" oninput="actualizarComando()">
 
-<label for="anioFinal">Año Final:</strong></label>
-<input type="number" id="anioFinal" placeholder="Escribe el año final" oninput="actualizarComando()">
+<label for="anioFinal">Año Final (1951-2070):</strong></label>
+<input type="number" id="anioFinal" placeholder="Ej. 2050" oninput="actualizarComando()">
 
 <!-- Opciones: NOGraphs y UPDATE -->
 <label for="noGraphs">Sin gráficos:</label>
@@ -182,7 +182,7 @@ Para crear comandos de manera automática y evitar errores de sintaxis, utiliza 
 
 
 
-<h3 style="color: #ff7020;">3. Output:</h3>
+<h3 style="color: #ff7020;">3. Base de datos final (output):</h3>
 
 Tras ingresar el prompt, el código devolverá tres elementos: ventana de resultados, dos gráficas y la base de datos. Podrás modificar el ado.file para obtener una base a tus necesidades.
 
@@ -212,4 +212,4 @@ Tras ingresar el prompt, el código devolverá tres elementos: ventana de result
 
 
 
-[^1]: **Link:** [Bases de Datos CONAPO](https://www.gob.mx/conapo/articulos/reconstruccion-y-proyecciones-de-la-poblacion-de-los-municipios-de-mexico)
+[^1]: **Link:** [Bases de Datos CONAPO](https://www.gob.mx/conapo/documentos/bases-de-datos-de-la-conciliacion-demografica-1950-a-2019-y-proyecciones-de-la-poblacion-de-mexico-2020-a-2070)

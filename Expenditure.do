@@ -112,8 +112,10 @@ if _rc != 0 {
 
 
 	** 2.3. Variables sociodemograficas **
-	merge m:1 (folioviv foliohog) using "`c(sysdir_site)'/01_raw/ENIGH/`=anioenigh'/concentrado.dta", nogen keepus(factor) update replace
-	merge m:1 (folioviv) using "`c(sysdir_site)'/01_raw/ENIGH/`=anioenigh'/vivienda.dta", keepus(ubica_geo tenencia) nogen update replace
+	merge m:1 (folioviv foliohog) using "`c(sysdir_site)'/01_raw/ENIGH/`=anioenigh'/concentrado.dta", ///
+		nogen keepus(factor) update replace
+	merge m:1 (folioviv) using "`c(sysdir_site)'/01_raw/ENIGH/`=anioenigh'/vivienda.dta", ///
+		keepus(ubica_geo tenencia) nogen update replace
 	capture rename factor_hog factor
 
 
@@ -153,7 +155,7 @@ if _rc != 0 {
 	tempfile pre_iva
 	save `pre_iva'
 
-	use "`c(sysdir_site)'/01_raw/censo_eco.dta", clear
+	use "`c(sysdir_site)'/01_raw/ENIGH/`=anioenigh'/censo_eco.dta", clear
 	/* a218a: Participación de la prestación de servicios profesionales, científicos y 
 	técnicos en el total de ingresos por suministro de bienes y servicios: Porcentaje 
 	de los ingresos a valor de venta que obtuvo la unidad económica por la prestación 
@@ -216,24 +218,42 @@ if _rc != 0 {
 
 	order folioviv-porcentaje_ieps201 *1 *2 *3 *4 *5 *6
 	/* Valor agregado diferente a servicios profesionales de la actividad económica */
-	replace proporcion = (1-`PR11'[1,1]/100)*`PR11'[1,2]/100 if substr(clase_de_actividad1,1,2) == "11" | proporcion == . | proporcion < 0
-	replace proporcion = (1-`PR21'[1,1]/100)*`PR21'[1,2]/100 if substr(clase_de_actividad1,1,2) == "21" | proporcion == . | proporcion < 0
-	replace proporcion = (1-`PR22'[1,1]/100)*`PR22'[1,2]/100 if substr(clase_de_actividad1,1,2) == "22" | proporcion == . | proporcion < 0
-	replace proporcion = (1-`PR23'[1,1]/100)*`PR23'[1,2]/100 if substr(clase_de_actividad1,1,2) == "23" | proporcion == . | proporcion < 0
-	replace proporcion = (1-`PR43'[1,1]/100)*`PR43'[1,2]/100 if substr(clase_de_actividad1,1,2) == "43" | proporcion == . | proporcion < 0
-	replace proporcion = (1-`PR46'[1,1]/100)*`PR46'[1,2]/100 if substr(clase_de_actividad1,1,2) == "46" | proporcion == . | proporcion < 0
-	replace proporcion = (1-`PR51'[1,1]/100)*`PR51'[1,2]/100 if substr(clase_de_actividad1,1,2) == "51" | proporcion == . | proporcion < 0
-	replace proporcion = (1-`PR52'[1,1]/100)*`PR52'[1,2]/100 if substr(clase_de_actividad1,1,2) == "52" | proporcion == . | proporcion < 0
-	replace proporcion = (1-`PR53'[1,1]/100)*`PR53'[1,2]/100 if substr(clase_de_actividad1,1,2) == "53" | proporcion == . | proporcion < 0
-	replace proporcion = (1-`PR54'[1,1]/100)*`PR54'[1,2]/100 if substr(clase_de_actividad1,1,2) == "54" | proporcion == . | proporcion < 0
-	replace proporcion = (1-`PR55'[1,1]/100)*`PR55'[1,2]/100 if substr(clase_de_actividad1,1,2) == "55" | proporcion == . | proporcion < 0
-	replace proporcion = (1-`PR56'[1,1]/100)*`PR56'[1,2]/100 if substr(clase_de_actividad1,1,2) == "56" | proporcion == . | proporcion < 0
-	replace proporcion = (1-`PR61'[1,1]/100)*`PR61'[1,2]/100 if substr(clase_de_actividad1,1,2) == "61" | proporcion == . | proporcion < 0
-	replace proporcion = (1-`PR62'[1,1]/100)*`PR62'[1,2]/100 if substr(clase_de_actividad1,1,2) == "62" | proporcion == . | proporcion < 0
-	replace proporcion = (1-`PR71'[1,1]/100)*`PR71'[1,2]/100 if substr(clase_de_actividad1,1,2) == "71" | proporcion == . | proporcion < 0
-	replace proporcion = (1-`PR72'[1,1]/100)*`PR72'[1,2]/100 if substr(clase_de_actividad1,1,2) == "72" | proporcion == . | proporcion < 0
-	replace proporcion = (1-`PR81'[1,1]/100)*`PR81'[1,2]/100 if substr(clase_de_actividad1,1,2) == "81" | proporcion == . | proporcion < 0
-	replace proporcion = (1-`PR'[1,1]/100)*`PR'[1,2]/100 if clase_de_actividad1 == "000000" | proporcion == . | proporcion < 0
+	replace proporcion = (1-`PR11'[1,1]/100)*`PR11'[1,2]/100 if substr(clase_de_actividad1,1,2) == "11" ///
+		| proporcion == . | proporcion < 0
+	replace proporcion = (1-`PR21'[1,1]/100)*`PR21'[1,2]/100 if substr(clase_de_actividad1,1,2) == "21" ///
+		| proporcion == . | proporcion < 0
+	replace proporcion = (1-`PR22'[1,1]/100)*`PR22'[1,2]/100 if substr(clase_de_actividad1,1,2) == "22" ///
+		| proporcion == . | proporcion < 0
+	replace proporcion = (1-`PR23'[1,1]/100)*`PR23'[1,2]/100 if substr(clase_de_actividad1,1,2) == "23" ///
+		| proporcion == . | proporcion < 0
+	replace proporcion = (1-`PR43'[1,1]/100)*`PR43'[1,2]/100 if substr(clase_de_actividad1,1,2) == "43" ///
+		| proporcion == . | proporcion < 0
+	replace proporcion = (1-`PR46'[1,1]/100)*`PR46'[1,2]/100 if substr(clase_de_actividad1,1,2) == "46" ///
+		| proporcion == . | proporcion < 0
+	replace proporcion = (1-`PR51'[1,1]/100)*`PR51'[1,2]/100 if substr(clase_de_actividad1,1,2) == "51" ///
+		| proporcion == . | proporcion < 0
+	replace proporcion = (1-`PR52'[1,1]/100)*`PR52'[1,2]/100 if substr(clase_de_actividad1,1,2) == "52" ///
+		| proporcion == . | proporcion < 0
+	replace proporcion = (1-`PR53'[1,1]/100)*`PR53'[1,2]/100 if substr(clase_de_actividad1,1,2) == "53" ///
+		| proporcion == . | proporcion < 0
+	replace proporcion = (1-`PR54'[1,1]/100)*`PR54'[1,2]/100 if substr(clase_de_actividad1,1,2) == "54" ///
+		| proporcion == . | proporcion < 0
+	replace proporcion = (1-`PR55'[1,1]/100)*`PR55'[1,2]/100 if substr(clase_de_actividad1,1,2) == "55" ///
+		| proporcion == . | proporcion < 0
+	replace proporcion = (1-`PR56'[1,1]/100)*`PR56'[1,2]/100 if substr(clase_de_actividad1,1,2) == "56" ///
+		| proporcion == . | proporcion < 0
+	replace proporcion = (1-`PR61'[1,1]/100)*`PR61'[1,2]/100 if substr(clase_de_actividad1,1,2) == "61" ///
+		| proporcion == . | proporcion < 0
+	replace proporcion = (1-`PR62'[1,1]/100)*`PR62'[1,2]/100 if substr(clase_de_actividad1,1,2) == "62" ///
+		| proporcion == . | proporcion < 0
+	replace proporcion = (1-`PR71'[1,1]/100)*`PR71'[1,2]/100 if substr(clase_de_actividad1,1,2) == "71" ///
+		| proporcion == . | proporcion < 0
+	replace proporcion = (1-`PR72'[1,1]/100)*`PR72'[1,2]/100 if substr(clase_de_actividad1,1,2) == "72" ///
+		| proporcion == . | proporcion < 0
+	replace proporcion = (1-`PR81'[1,1]/100)*`PR81'[1,2]/100 if substr(clase_de_actividad1,1,2) == "81" ///
+		| proporcion == . | proporcion < 0
+	replace proporcion = (1-`PR'[1,1]/100)*`PR'[1,2]/100 if clase_de_actividad1 == "000000" ///
+		| proporcion == . | proporcion < 0
 	noisily di in g "Proporcion: " in y (1-`PR'[1,1]/100)*`PR'[1,2]/100*100 "%"
 
 
@@ -445,6 +465,7 @@ if _rc != 0 {
 	replace numren = "01"
 	collapse (sum) deduc_*, by(folioviv foliohog numren)
 
+	capture mkdir "`c(sysdir_site)'/04_master/`=anioenigh'"
 	save "`c(sysdir_site)'/04_master/`=anioenigh'/deducciones.dta", replace
 }
 
@@ -508,8 +529,10 @@ foreach categ in categ categ_iva categ_ieps {
 
 
 		** 3.3 Consumo de los hogares + individuos **
-		merge 1:m (folioviv foliohog) using "`c(sysdir_site)'/01_raw/ENIGH/`=anioenigh'/poblacion.dta", nogen keepus(numren edad sexo)
-		merge m:1 (folioviv foliohog) using "`c(sysdir_site)'/01_raw/ENIGH/`=anioenigh'/concentrado.dta", nogen keepus(factor)
+		merge 1:m (folioviv foliohog) using "`c(sysdir_site)'/01_raw/ENIGH/`=anioenigh'/poblacion.dta", ///
+			nogen keepus(numren edad sexo)
+		merge m:1 (folioviv foliohog) using "`c(sysdir_site)'/01_raw/ENIGH/`=anioenigh'/concentrado.dta", ///
+			nogen keepus(factor)
 		egen tot_integ = count(factor), by(folioviv foliohog)
 		
 		foreach k of varlist *hog* {
@@ -518,7 +541,8 @@ foreach categ in categ categ_iva categ_ieps {
 		}
 
 		merge 1:1 (folioviv foliohog numren) using `gastoindividuos', nogen keepus(*_ind* proporcion*)
-		merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/04_master/`=anioenigh'/households.dta", nogen keepus(decil)
+		*merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/04_master/`=anioenigh'/households.dta", ///
+			nogen keepus(decil)
 
 		** 3.4 Gasto per cápita **
 		noisily di in g `"`categs'"'
@@ -564,9 +588,11 @@ foreach categ in categ categ_iva categ_ieps {
 				g ``vars'pc_`k'' = `vars'pc_`k'
 				label var ``vars'pc_`k'' "`title' en `k' (original)"
 				*noisily Perfiles ``vars'pc_`k'' [fw=factor] ///
-					if ``vars'pc_`k'' != 0 /*& hogar_outlier == . & ind_outlier == .*/, aniope(`=anioenigh')
-				noisily Simulador ``vars'pc_`k'' [fw=factor] ///
-					if ``vars'pc_`k'' != 0 /*& hogar_outlier == . & ind_outlier == .*/, aniope(`=anioenigh') reboot
+					if ``vars'pc_`k'' != 0 /*& hogar_outlier == . & ind_outlier == .*/, ///
+					aniope(`=anioenigh')
+				*noisily Simulador ``vars'pc_`k'' [fw=factor] ///
+					if ``vars'pc_`k'' != 0 /*& hogar_outlier == . & ind_outlier == .*/, ///
+					aniope(`=anioenigh') reboot
 
 				* Iteraciones *
 				noisily di in y "`k': " _cont
@@ -599,10 +625,12 @@ foreach categ in categ categ_iva categ_ieps {
 				*noisily tabstat `vars'pc_`k' `vars'hog`k' `vars'ind`k' [fw=factor], stat(sum) f(%20.0fc)
 				
 				*noisily Perfiles `vars'pc_`k' [fw=factor] ///
-					if `vars'pc_`k' != 0 /*& hogar_outlier == . & ind_outlier == .*/, aniope(`=anioenigh') ///
+					if `vars'pc_`k' != 0 /*& hogar_outlier == . & ind_outlier == .*/, ///
+					aniope(`=anioenigh') ///
 					title(`title' en `k')
-				noisily Simulador `vars'pc_`k' [fw=factor] ///
-					if `vars'pc_`k' != 0 /*& hogar_outlier == . & ind_outlier == .*/, aniope(`=anioenigh') ///
+				*noisily Simulador `vars'pc_`k' [fw=factor] ///
+					if `vars'pc_`k' != 0 /*& hogar_outlier == . & ind_outlier == .*/, ///
+					aniope(`=anioenigh') ///
 					title(`title' en `k') reboot
 				*capture g precio_`k' = gas_pc_`k'/cant_pc_`k'
 				*drop *outlier

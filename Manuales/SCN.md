@@ -1,17 +1,17 @@
 # Simulador Fiscal CIEP: Sistema de Cuentas Nacionales
 
-Versión: 21 de febrero de 2025
+Versión: 22 de marzo de 2025
 
 <hr style="border: none; height: 2px; background-color: #ff7020;">
 
 
 
-## SCN.ado
-**Descripción:** *Ado-file* diseñado para automatizar el análisis y proyección de datos del Sistema de Cuentas Nacionales (SCN). Para este programa se utilizan datos del INEGI.
+## ARCHIVO: SCN.ado
+**Descripción:** *Ado-file* que automatiza la extracción y proyección de datos del Sistema de Cuentas Nacionales (SCN) del INEGI.
 
 ![Grafica1](images/SCN/GeneracionGDP.png) 
 
-**Alcance:** Para abordar las limitaciones en la disponibilidad de información, se implementó un modelo que combina un *pastcast* para estimar datos históricos y un *forecast* para proyectar datos futuros. Como resultado, el programa presenta una base de datos integral del SCN, con información abarcando desde 1993 hasta 2070. 
+**Alcance:** Para abordar las limitaciones en la disponibilidad de información, se implementó un modelo que realiza un *forecast* para proyectar datos futuros. Como resultado, el programa presenta una base de datos integral del SCN, con información abarcando desde 1993 hasta 2070. 
 
 
 <details>
@@ -23,12 +23,12 @@ Versión: 21 de febrero de 2025
 * **Distribución secundaria del ingreso:** Contabiliza los ingresos disponibles para el país.
 * **Utilización del ingreso disponible**  Calcula el ingreso nacional disponible utilizando el método del uso. Se obtiene sumando el consumo de los hogares, el gasto del gobierno, las importaciones netas y el ahorro bruto, lo que genera el PIB. Restando el consumo de capital fijo, se obtiene el Ingreso Nacional Disponible.
 * **Consumo de los hogares:** Desglosa el gasto de los hogares en bienes y servicios.
-* **Consumo Gobierno:** Detalla el gasto público en bienes y servicios.
+* **Consumo Gobierno:** Detalla el consumo público en bienes y servicios.
 *  **Cuenta de actividad económica:**  Calcula el PIB por el método del valor agregado, de cada sector productivo e incorporando los impuestos sobre los bienes y servicios. 
 </details>
 
 
-<h3 style="color: #ff7020;">1. Input:</h3>
+<h3 style="color: #ff7020;">1. Bases de datos (inputs):</h3>
 
 En este programa se integran dos fuentes de datos:
 
@@ -52,16 +52,16 @@ Para crear comandos de manera automática y evitar errores de sintaxis, utiliza 
 <!-- Opciones para PIBDeflactor -->
 
 <div>
-  <label for="anio">Año Inicial:</label>
+  <label for="anio">Año Inicial (1993-2069):</label>
   <input 
     type="number" 
     id="anio" 
-    placeholder="Ej. 2024" 
+    placeholder="Ej. 2025" 
     oninput="actualizarComando()"
   >
 </div>
 <div>
-  <label for="aniomax">Año Máximo:</label>
+  <label for="aniomax">Año Final (1994-2070):</label>
   <input type="number" id="aniomax" placeholder="Ej. 2070" oninput="actualizarComando()">
 </div>
 <div>
@@ -116,7 +116,7 @@ Para crear comandos de manera automática y evitar errores de sintaxis, utiliza 
 </details>
 
 
-<h3 style="color: #ff7020;">3. Output:</h3>
+<h3 style="color: #ff7020;">3. Base de datos (output):</h3>
 
 Tras ingresar el prompt, el código devolverá tres elementos. La ventana de resultados, dos gráficas y una base de datos. A diferencia de otros programas, consideramos que la ventana de resultados es el principal elemento de interés.
 
