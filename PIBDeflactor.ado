@@ -792,7 +792,7 @@ program define UpdatePIBDeflactor
 	**************
 
 	** 1.1. Importar variables de interés desde el BIE **
-	run "https://raw.githubusercontent.com/rcantuc/SimuladorCIEP/refs/heads/master/AccesoBIE.do" "734407 735143 446562 446565 446566" "pibQ indiceQ PoblacionENOE PoblacionOcupada PoblacionDesocupada"
+	run AccesoBIE.do "734407 735143 446562 446565 446566" "pibQ indiceQ PoblacionENOE PoblacionOcupada PoblacionDesocupada"
 
 	** 1.2 Label variables **
 	label var pibQ "Producto Interno Bruto (trimestral)"
