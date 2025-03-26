@@ -21,9 +21,11 @@
 {pstd}
 {cmd:Poblacion} es un comando que automatiza la extracción de datos de las Proyecciones de la Población de México, utilizando información proveniente del CONAPO.  
 Integra tres bases de datos:
+
   1. {bf:Población:} Estimación del número de habitantes a mitad de cada año (1950–2070).
   2. {bf:Defunciones:} Estimación anual de defunciones (1950–2070).
   3. {bf:Migración Internacional:} Estimación de inmigrantes y emigrantes (1950–2069).  
+
 Genera una base de datos final que incluye datos históricos y proyecciones, permitiendo análisis por entidad, sexo, edad y año.
 {p_end}
 
