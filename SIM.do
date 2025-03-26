@@ -14,11 +14,11 @@ timer on 1
 if "`c(username)'" == "ricardo" {						// iMac Ricardo
 ***
 	sysdir set SITE "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
-	*global export "/Users/ricardo/CIEP Dropbox/TextbookCIEP/images"
+	global export "/Users/ricardo/CIEP Dropbox/TextbookCIEP/images"
 }
 else if "`c(username)'" == "servidorciep" {					// Servidor CIEP
 	sysdir set SITE "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
-	*global export "/home/servidorciep/CIEP Dropbox/TextbookCIEP/images"
+	global export "/home/servidorciep/CIEP Dropbox/TextbookCIEP/images"
 }
 else if "`c(console)'" != "" {							// Servidor Web
 	sysdir set SITE "/SIM/OUT/6/"
@@ -27,10 +27,10 @@ else if "`c(console)'" != "" {							// Servidor Web
 ** 0.2 Parámetros y opciones iniciales
 noisily run "`c(sysdir_site)'/profile.do"
 global id = "ciepmx"								// IDENTIFICADOR DEL USUARIO
-*global nographs "nographs"							// SUPRIMIR GRAFICAS
-*global output "output"								// ARCHIVO DE SALIDA (WEB)
 *global update "update"								// UPDATE BASES DE DATOS
+*global nographs "nographs"							// SUPRIMIR GRAFICAS
 *global textbook "textbook"							// SCALAR TO LATEX
+*global output "output"								// ARCHIVO DE SALIDA (WEB)
 
 
 
@@ -38,7 +38,7 @@ global id = "ciepmx"								// IDENTIFICADOR DEL USUARIO
 **# 1. DEMOGRAFÍA
 ***
 *foreach entidad of global entidadesL {
-	noisily Poblacion if entidad == "`entidad'", anioi(`=aniovp') aniofinal(`=`=aniovp'+25') $update $textbook
+	*noisily Poblacion if entidad == "`entidad'", anioi(`=aniovp') aniofinal(`=`=aniovp'+25') $update $textbook
 *}
 
 
@@ -48,33 +48,35 @@ global id = "ciepmx"								// IDENTIFICADOR DEL USUARIO
 ***
 
 ** 2.1 Producto Interno Bruto 
-noisily PIBDeflactor, aniovp(`=aniovp') geodef(1993) geopib(1993) $update $textbook
+*noisily PIBDeflactor, aniovp(`=aniovp') geodef(1993) geopib(1993) $update $textbook
 
 ** 2.2 Sistema de Cuentas Nacionales
-noisily SCN, anio(`=aniovp') $update $textbook
+*noisily SCN, anio(`=aniovp') $update $textbook
 
 ** 3.1 Ley de Ingresos de la Federación
-noisily LIF, by(divSIM) rows(1) anio(`=anioPE') desde(`=anioPE-1') min(0) title("Ingresos presupuestarios") $update
-
+noisily LIF, by(divSIM) rows(1) anio(`=anioPE') desde(`=anioPE-10') min(0) title("Ingresos presupuestarios") $update
+LIF if divLIF <= 6, by(divLIF) rows(1) anio(`=anioPE') desde(`=anioPE-10') min(0) title("Impuestos y contribuciones")
+*LIF if divLIF > 6 & divLIF != 10, by(divLIF) rows(1) anio(`=anioPE') desde(`=anioPE-10') min(0) title("Ingresos propios")
+ex
 ** 3.2 Presupuesto de Egresos de la Federación
 noisily PEF, by(divSIM) rows(2) min(0) anio(`=anioPE') desde(`=anioPE-1') title("Gasto presupuestario") $update
 
 ** 3.3 Saldo Histórico de Requerimientos Financieros del Sector Público
 noisily SHRFSP, anio(`=anioPE') ultanio(2008) $update $textbook
 
-ex
+
 **/
 **# 3. HOGARES
 ***
 
 ** 3.1 Encuesta Nacional de Ingresos y Gastos de los Hogares (Usos)
 capture confirm file "`c(sysdir_site)'/04_master/`=anioenigh'/expenditures.dta"
-if _rc != 0 ///
+if _rc != 0 | "$update" == "update" ///
 	noisily run "`c(sysdir_site)'/Expenditure.do" `=anioenigh'
 
 ** 3.2 Encuesta Nacional de Ingresos y Gastos de los Hogares (Recursos)
 capture confirm file "`c(sysdir_site)'/04_master/`=anioenigh'/households.dta"
-if _rc != 0 ///
+if _rc != 0 | "$update" == "update" ///
 	noisily run `"`c(sysdir_site)'/Households.do"' `=anioenigh'
 
 
@@ -95,16 +97,11 @@ if "`cambioiva'" == "1" {
 }
 
 ** 3.1 Ley de Ingresos de la Federación
-*noisily LIF, by(divSIM) rows(1) anio(`=anioPE') desde(`=anioPE-1') min(0) title("Ingresos presupuestarios") $update
-*noisily TasasEfectivas, anio(`=anioPE')
+noisily TasasEfectivas, anio(`=anioPE')
 
 ** 3.2 Presupuesto de Egresos de la Federación
-*noisily PEF, by(divSIM) rows(2) min(0) anio(`=anioPE') desde(`=anioPE-1') title("Gasto presupuestario") $update
-*noisily GastoPC, aniope(`=anioPE') aniovp(`=aniovp')
+noisily GastoPC, aniope(`=anioPE') aniovp(`=aniovp')
 
-** 3.3 Saldo Histórico de Requerimientos Financieros del Sector Público
-noisily SHRFSP, anio(`=anioPE') ultanio(2008) $update $textbook
-ex
 ** 3.4 Subnacionales
 //noisily run "Subnacional.do" //$update
 
