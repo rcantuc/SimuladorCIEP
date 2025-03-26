@@ -1,6 +1,6 @@
 v 3
-d Materials by me
+d Simulador Fiscal CIEP
 
-d Here are some useful things I have written
+d Do-files y Ado-files para ejecutar el Simulador Fiscal CIEP y todas sus bases de datos.
 
-p myprog A program to analyze data
+p Poblacion Comando que extrae las Proyecciones de la Población de México del CONAPO, a nivel nacional y para todas las entidades federativas, de 1950 a 2070.
