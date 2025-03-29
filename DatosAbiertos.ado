@@ -1194,21 +1194,13 @@ quietly {
 	noisily di in g "  Updating Deflactor.dta..." _newline
 
 	** 1. Importar variables de interés desde el BIE **
-	run "`c(sysdir_site)'/AccesoBIE.do" "910392" "inpc"
+	AccesoBIE "910392" "inpc"
 
 	** 2 Label variables **
 	label var inpc "Índice Nacional de Precios al Consumidor"
 
 	** 3 Dar formato a variables **
 	format inpc %8.3f
-
-	** 4 Time Series **
-	split periodo, destring p("/") //ignore("r p")
-	rename periodo1 anio
-	label var anio "anio"
-	rename periodo2 mes
-	label var mes "mes"
-	drop periodo
 
 	** 2.5 Guardar **
 	order anio inpc

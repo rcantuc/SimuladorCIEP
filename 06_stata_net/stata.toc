@@ -1,0 +1,14 @@
+v 3
+
+d Simulador Fiscal CIEP v7. 29 de marzo de 2025
+
+d Ado-files para descargar las bases del Simulador Fiscal CIEP. Estos comandos también pre-analizan la información.
+
+p Poblacion Extrae datos de las Proyecciones de Población de México del CONAPO.  
+p PIBDeflactor Calcula y proyecta estimaciones del PIB.  
+p SCN Extrae y proyecta datos del SCN del INEGI.  
+p DatosAbiertos Accede a las Estadísticas Oportunas de Finanzas Públicas de la SHCP.  
+p LIF Extrae y analiza datos de ingresos federales.  
+p PEF Extrae y analiza datos del PEF.  
+p SHRFSP Extrae datos de la deuda pública de México.  
+

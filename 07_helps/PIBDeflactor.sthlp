@@ -12,7 +12,7 @@
 {title:Syntax}
 
 {p 8 16 2}
-{opt PIBDeflactor} [if] [, {it:aniovp(int)} {it:aniomax(int)} {it:geopib(int)} {it:geodef(int)} {it:discount(real)} {it:nographs} {it:update}]
+{opt PIBDeflactor} [if] [, ANIOvp(int) NOGraphs UPDATE GEOPIB(int) GEODEF(int) DIScount(real) ANIOMAX(int) NOOutput TEXTbook]
 {p_end}
 
 {marker description}{...}

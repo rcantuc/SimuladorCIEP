@@ -1,7 +1,0 @@
-v 3
-
-d Simulador Fiscal CIEP
-
-d Do-files y Ado-files para ejecutar el Simulador Fiscal CIEP y todas sus bases de datos.
-
-p SimuladorFiscal El proyecto del Simulador Fiscal facilita el acceso a toda la información económica relevante de México.

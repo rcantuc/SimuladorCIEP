@@ -10,9 +10,6 @@ set type double, permanently
 set charset latin1, permanently
 
 global id = "`c(username)'"
-*capture mkdir "`c(sysdir_site)'/SIM/"
-*capture mkdir "`c(sysdir_site)'/users/"
-*capture mkdir "`c(sysdir_site)'/users/$id/"
 
 
 
@@ -108,10 +105,8 @@ global inf2028 = 3.0
 global inf2029 = 3.0
 global inf2030 = 3.0
 
-exit
-
 ** 4.4 Deuda Pública **
-scalar tasaEfectiva = 6.3782
+*scalar tasaEfectiva = 6.3782
 
 global shrfsp2024 = 51.4
 global shrfspInterno2024 = 38.5
