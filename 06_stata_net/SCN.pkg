@@ -1,11 +1,10 @@
 v 3
-d Simulador Fiscal CIEP v7
+d Cuentas del Sistema de Cuentas Nacionales
 d Centro de Investigación Económica y Presupuestaria, A.C.
 d 15 años democratizando las finanzas púbicas
+d Ricardo Cantú Calderón
 d ricardocantu@ciep.mx
 
-f PIBDeflactor.ado
-f PIBDeflactor.sthlp
-f Poblacion.ado
-f Poblacion.sthlp
-f AccesoBIE.do
+f SCN.ado
+f SCN.sthlp
+f AccesoBIE.ado

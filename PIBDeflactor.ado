@@ -40,7 +40,7 @@ quietly {
 
 	** 1.1 Si la opción "update" es llamada, se ejecuta el do-file UpdatePIBDeflactor.do **
 	if "`update'" == "update" {
-		UpdatePIBDeflactor
+		UpdatePIBDeflactor `nographs'
 	}
 
 
@@ -784,6 +784,7 @@ end
 program define UpdatePIBDeflactor
 	noisily di in g "  Updating PIBDeflactor.dta..." _newline
 
+	args nographs
 
 	**************
 	***        ***
@@ -792,7 +793,7 @@ program define UpdatePIBDeflactor
 	**************
 
 	** 1.1. Importar variables de interés desde el BIE **
-	run AccesoBIE.do "734407 735143 446562 446565 446566" "pibQ indiceQ PoblacionENOE PoblacionOcupada PoblacionDesocupada"
+	AccesoBIE "734407 735143 446562 446565 446566" "pibQ indiceQ PoblacionENOE PoblacionOcupada PoblacionDesocupada"
 
 	** 1.2 Label variables **
 	label var pibQ "Producto Interno Bruto (trimestral)"
@@ -807,16 +808,15 @@ program define UpdatePIBDeflactor
 	format pib %20.0fc
 	format Poblacion* %12.0fc
 
-	** 1.4 Time Series **
+	/** 1.4 Time Series **
 	split periodo, destring p("/") //ignore("r p")
 	rename periodo1 anio
 	label var anio "anio"
 	rename periodo2 trimestre
 	label var trimestre "trimestre"
 
-	** 1.5 Guardar **
+	** 1.5 Guardar **/
 	order anio trimestre pibQ
-	drop periodo
 	compress
 	tempfile PIB
 	save `PIB'
@@ -829,7 +829,7 @@ program define UpdatePIBDeflactor
 	***         ***
 	***************
 	** 2.1. Importar variables de interés desde el BIE **
-	run "https://raw.githubusercontent.com/rcantuc/SimuladorCIEP/refs/heads/master/AccesoBIE.do" "910392" "inpc"
+	AccesoBIE "910392" "inpc"
 
 	** 2.2 Label variables **
 	label var inpc "Índice Nacional de Precios al Consumidor"
@@ -837,12 +837,12 @@ program define UpdatePIBDeflactor
 	** 2.3 Dar formato a variables **
 	format inpc %8.3f
 
-	** 2.4 Time Series **
+	/** 2.4 Time Series **
 	split periodo, destring p("/") //ignore("r p")
 	rename periodo1 anio
 	label var anio "anio"
 	rename periodo2 mes
-	label var mes "mes"
+	label var mes "mes"*/
 
 	g trimestre = 1 if mes <= 3
 	replace trimestre = 2 if mes > 3 & mes <= 6
@@ -969,7 +969,7 @@ program define UpdatePIBDeflactor
 	**# 6 Gráficas ***
 	***            ***
 	******************
-	if "$nographs" == "" {
+	if "`nographs'" != "nographs" & "$nographs" == "" {
 		
 		* Títulos y fuentes *
 		local graphtitle "{bf:Producto Interno Bruto}"
