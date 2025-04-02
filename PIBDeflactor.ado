@@ -279,7 +279,7 @@ quietly {
 	** 6 Simulador **
 	*****************
 	noisily di in g " PIB " in y anio[`obsvp'] in g " per c{c a'}pita " in y _col(43) %10.0fc pibY[`obsvp']/Poblacion[`obsvp'] in g " `=currency[`obsvp']'"
-	noisily di in g " PIB " in y anio[`obsvp'] in g " per c{c a'}pita por edades laborales " in y _col(43) %10.0fc OutputPerWorker[`obsvp'] in g " `=currency[`obsvp']' (16-65 a{c n~}os)"
+	noisily di in g " PIB " in y anio[`obsvp'] in g " per c{c a'}pita (edades laborales) " in y _col(43) %10.0fc OutputPerWorker[`obsvp'] in g " `=currency[`obsvp']' (16-65 a{c n~}os)"
 
 	local crecimientoProm = ((pibYR[`obsvp']/pibYR[`obsPIB'])^(1/(`obsvp'-`obsPIB'))-1)*100
 	scalar crecimientoProm = string(`crecimientoProm',"%7.1fc")
@@ -294,7 +294,7 @@ quietly {
 	scalar inflacionProm = string(`inflacionProm',"%7.1fc")
 
 	noisily di _newline in g " Crecimiento promedio " in y anio[`obsPIB'] "-" anio[`obsvp'] _col(43) %10.4f ((pibYR[`obsvp']/pibYR[`obsPIB'])^(1/(`obsvp'-`obsPIB'))-1)*100 in g " %" 
-	noisily di in g " Lambda por trabajador " in y anio[`obsPIB'] "-" anio[`obsvp'] _col(43) %10.4f scalar(llambda) in g " %" 
+	noisily di in g " Crecimiento productividad " in y anio[`obsPIB'] "-" anio[`obsvp'] _col(43) %10.4f scalar(llambda) in g " %" 
 	*noisily di in g " Lambda por trabajador " in y anio[1] "-" anio[`obs_exo'] _col(35) %10.4f scalar(LLambda) in g " %" 
 
 	local grow_rate_LR = (pibYR[_N]/pibYR[_N-10])^(1/10)-1
@@ -403,14 +403,14 @@ quietly {
 			xtitle("") ///
 			ytitle("", axis(1)) ///
 			ytitle("", axis(2)) ///
-			legend(off label(1 "INEGI, SCN 2018") label(2 "$paqueteEconomico") label(3 "Proyección") order(1 2 3)) ///
+			legend(off label(1 "INEGI, SCN 2018") label(2 "Estimaciones") label(3 "Proyección") order(1 2 3)) ///
 			caption("`graphfuente'") ///
 			note("{bf:Nota}: La proyección representa el promedio geométrico móvil de los últimos `difdef' años.") ///
 			name(deflactor, replace) ///
 			/// Added text
 			text(0 `=`aniofinal'' "{bf:Índice `aniovp' = 1.0}", ///
 				yaxis(2) size(medsmall) place(11) justification(right) bcolor(white) box) ///
-			text(0 `=`aniofinal'+2.5' "{bf:$paqueteEconomico}", ///
+			text(0 `=`aniofinal'+2.5' "{bf:Estimaciones}", ///
 				yaxis(2) size(medsmall) place(12) justification(left) bcolor(white) box) ///
 			text(0 `=`aniofinal'+`exo_def'+2.5' "{bf:Proyección}", ///
 				yaxis(2) size(medsmall) place(12) justification(left) bcolor(white) box) ///
@@ -497,7 +497,7 @@ quietly {
 			ylabel(none, format(%3.0f) axis(1) noticks) ///
 			yscale(range(0 `=`pibYRmil2'[1,2]*3') axis(1) noline) ///
 			yscale(range(0 `=`pibYRmil2'[2,1]*2') axis(2) noline) ///
-			legend(off label(1 "INEGI, SCN 2018") label(2 "$paqueteEconomico") label(3 "Proyección") order(1 2 3)) ///
+			legend(off label(1 "INEGI, SCN 2018") label(2 "Estimaciones") label(3 "Proyección") order(1 2 3)) ///
 			caption("`graphfuente'") ///
 			note("{bf:Nota}: La proyección representa el promedio geométrico móvil de los últimos `difpib' años.") ///
 			name(pib, replace) ///
@@ -505,7 +505,7 @@ quietly {
 			yline(`crecimientoProm', axis(1)) ///
 			text(0 `=`aniofinal'' "{bf:billones MXN `aniovp'}", ///
 				yaxis(2) size(medsmall) place(11) justification(right) bcolor(white) box) ///
-			text(0 `=`aniofinal'+2.5' "{bf:$paqueteEconomico}",  ///
+			text(0 `=`aniofinal'+2.5' "{bf:Estimaciones}",  ///
 				yaxis(2) size(medsmall) place(12) justification(left) bcolor(white) box) ///
 			text(0 `=`aniofinal'+`exo_def'+2.5' "{bf:Proyección}", ///
 				yaxis(2) size(medsmall) place(12) justification(left) bcolor(white) box) ///
@@ -600,14 +600,14 @@ quietly {
 			ylabel(none, format(%3.0f) axis(1) noticks) ///
 			yscale(range(0 `=`pibPob'[1,1]-2.5*(`pibPob'[2,1]-`pibPob'[1,1])') axis(1) noline) ///
 			yscale(range(0 `=`pibPob'[2,1]*1.75') axis(2) noline) ///
-			legend(off label(1 "Observado") label(2 "$paqueteEconomico") label(3 "Proyección") order(1 2 3)) ///
+			legend(off label(1 "Observado") label(2 "Estimaciones") label(3 "Proyección") order(1 2 3)) ///
 			note("{bf:Nota}: La proyección representa el promedio geométrico móvil de los últimos `difpib' años.") ///
 			caption("`graphfuente'") ///
 			name(pib_pc, replace) ///
 			/// Added text
 			yline(`crecimientoProm', axis(1)) ///
 			text(0 `=`aniofinal'' "{bf:miles MXN `aniovp' per cápita}", yaxis(2) size(medsmall) place(11) justification(right) bcolor(white) box) ///
-			text(0 `=`aniofinal'+2.5' "{bf:$paqueteEconomico}",  yaxis(2) size(medsmall) place(12) justification(left) bcolor(white) box) ///
+			text(0 `=`aniofinal'+2.5' "{bf:Estimaciones}",  yaxis(2) size(medsmall) place(12) justification(left) bcolor(white) box) ///
 			text(0 `=`aniofinal'+`exo_def'+2.5' "{bf:Proyección}", yaxis(2) size(medsmall) place(12) justification(left) bcolor(white) box) ///
 			text(`crecimientoPobProm' `=`geopib'' "{bf:Crec. prom.}" "{bf:`geopib'-`aniofinal': `=string(`crecimientoPobProm',"%5.1fc")'%}", justification(left) place(5) color("111 111 111") size(medlarge)) ///
 
@@ -698,14 +698,14 @@ quietly {
 			ylabel(none, format(%3.0f) axis(1) noticks) ///
 			yscale(range(0 3.5) axis(2) noline) ///
 			yscale(range(0 -75) axis(1) noline) ///
-			legend(off label(1 "INEGI, SCN 2018") label(2 "$paqueteEconomico") label(3 "Proyección") order(1 2 3)) ///
+			legend(off label(1 "INEGI, SCN 2018") label(2 "Estimaciones") label(3 "Proyección") order(1 2 3)) ///
 			note("{bf:Nota}: La proyección representa el promedio geométrico móvil de los últimos `difdef' años.") ///
 			caption("`graphfuente'") ///
 			name(inflacion, replace) ///
 			/// Added text
 			text(0 `=`aniofinal'' "{bf:Índice `aniovp' = 1.0}", ///
 				yaxis(2) size(medsmall) place(11) justification(right) bcolor(white) box) ///
-			text(0 `=`aniofinal'+2.5' "{bf:$paqueteEconomico}",  ///
+			text(0 `=`aniofinal'+2.5' "{bf:Estimaciones}",  ///
 				yaxis(2) size(medsmall) place(12) justification(left) bcolor(white) box) ///
 			text(0 `=`aniofinal'+`exo_def'+2.5' "{bf:Proyección}", ///
 				yaxis(2) size(medsmall) place(12) justification(left) bcolor(white) box) ///
@@ -729,40 +729,48 @@ quietly {
 	***************
 	*** 4 Texto ***
 	***************
-	noisily di _newline in g _col(6) %~12s "Cr. PIB" _col(24) %~17s "PIB Nominal" _col(29) %~10s "Infl." _col(50) %~12s "Deflactor" _col(67) %-14s "Defl. INPC"
+	noisily di _newline in g _col(6) %~12s "Cr. PIB" ///
+	    _col(24) %~17s "PIB Nominal" ///
+	    _col(29) %~10s "Infl." ///
+	    _col(45) %~13s "Defl. INPC" ///
+	    _col(55) %~8s "Cr. Def." ///
+	    _col(76) %~14s "Deflactor"
 	forvalues k=`=`obsvp'-10'(1)`=`obsvp'+10' {
-		if anio[`k'] < `aniofinal' | (anio[`k'] == `aniofinal' & trimestre[`k'] == 4) {
-			if "`reportado'" == "" {
-				local reportado = "done"
-			}
-			noisily di in g " `=anio[`k']' " _col(7) %6.1fc in y var_pibY[`k'] " %" ///
-				_col(18) %20.0fc pibY[`k'] ///
-				_col(35) %8.2fc in y var_inflY[`k'] " %" ///
-				_col(52) %12.10fc deflator[`k'] ///
-				_col(65) %14.10fc deflatorpp[`k']
+	    if anio[`k'] < `aniofinal' | (anio[`k'] == `aniofinal' & trimestre[`k'] == 4) {
+		if "`reportado'" == "" {
+		    local reportado = "done"
 		}
-		if (anio[`k'] == `aniofinal' & trimestre[`k'] < 4) | (anio[`k'] <= anio[`obs_exo'] & anio[`k'] > `aniofinal') {
-			if "`estimado'" == "" {
-				noisily di _col(25) in g %~17s "$paqueteEconomico"
-				local estimado = "done"
-			}
-			noisily di in g "{bf: `=anio[`k']' " _col(7) %6.1fc in y var_pibY[`k'] " %" ///
-				_col(18) %20.0fc pibY[`k'] ///
-				_col(35) %8.2fc in y var_inflY[`k'] " %" ///
-				_col(52) %12.10fc deflator[`k'] ///
-				_col(65) %14.10fc deflatorpp[`k'] "}"
+		noisily di in g " `=anio[`k']' " _col(7) %6.1fc in y var_pibY[`k'] " %" ///
+		    _col(18) %20.0fc pibY[`k'] ///
+		    _col(35) %8.2fc in y var_inflY[`k'] " %" ///
+		    _col(45) %14.10fc deflatorpp[`k'] ///
+		    _col(55) %8.2fc var_indiceY[`k'] " %" ///
+		    _col(75) %12.10fc deflator[`k']
+	    }
+	    if (anio[`k'] == `aniofinal' & trimestre[`k'] < 4) | (anio[`k'] <= anio[`obs_exo'] & anio[`k'] > `aniofinal') {
+		if "`estimado'" == "" {
+		    noisily di _col(24) in g %~17s "Estimaciones"
+		    local estimado = "done"
 		}
-		if (anio[`k'] > `aniofinal') & anio[`k'] > anio[`obs_exo'] {
-			if "`proyectado'" == "" {
-				noisily di in g _col(25) %~17s "PROYECTADO"
-				local proyectado = "done"
-			}
-			noisily di in g " `=anio[`k']' " _col(7) %6.1fc in y var_pibY[`k'] " %" ///
-				_col(18) %20.0fc pibY[`k'] ///
-				_col(35) %8.2fc in y var_inflY[`k'] " %" ///
-				_col(52) %12.10fc deflator[`k'] ///
-				_col(65) %14.10fc deflatorpp[`k']
+		noisily di in g "{bf: `=anio[`k']' " _col(7) %6.1fc in y var_pibY[`k'] " %" ///
+		    _col(18) %20.0fc pibY[`k'] ///
+		    _col(35) %8.2fc in y var_inflY[`k'] " %" ///
+		    _col(45) %14.10fc deflatorpp[`k'] ///
+		    _col(55) %8.2fc var_indiceY[`k'] " %" ///
+		    _col(75) %12.10fc deflator[`k'] "}"
+	    }
+	    if (anio[`k'] > `aniofinal') & anio[`k'] > anio[`obs_exo'] {
+		if "`proyectado'" == "" {
+		    noisily di in g _col(25) %~17s "Proyecciones"
+		    local proyectado = "done"
 		}
+		noisily di in g " `=anio[`k']' " _col(7) %6.1fc in y var_pibY[`k'] " %" ///
+		    _col(18) %20.0fc pibY[`k'] ///
+		    _col(35) %8.2fc in y var_inflY[`k'] " %" ///
+		    _col(45) %14.10fc deflatorpp[`k'] ///
+		    _col(55) %8.2fc var_indiceY[`k'] " %" ///
+		    _col(75) %12.10fc deflator[`k']
+	    }
 	}
 	scalar aniolast = `aniofinal'
 

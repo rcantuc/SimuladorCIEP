@@ -11,8 +11,8 @@ timer on 1
 
 ***
 *** 0. Setup
-if "`c(username)'" == "ricardo" {						// iMac Ricardo
 ***
+if "`c(username)'" == "ricardo" {						// iMac Ricardo
 	sysdir set SITE "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
 	*global export "/Users/ricardo/CIEP Dropbox/TextbookCIEP/images"
 }
@@ -24,10 +24,12 @@ else if "`c(console)'" != "" {							// Servidor Web
 	sysdir set SITE "/SIM/OUT/6/"
 }
 
-** 0.2 Parámetros y opciones iniciales
+**
+** Parámetros y opciones iniciales
+**
 noisily run "`c(sysdir_site)'/profile.do"
-global id = "ciepmx"								// IDENTIFICADOR DEL USUARIO
-global update "update"								// UPDATE BASES DE DATOS
+global id = "ciepmx"								// USUARIO
+*global update "update"								// UPDATE BASES DE DATOS
 global nographs "nographs"							// SUPRIMIR GRAFICAS
 *global textbook "textbook"							// SCALAR TO LATEX
 *global output "output"								// ARCHIVO DE SALIDA (WEB)
@@ -38,7 +40,7 @@ global nographs "nographs"							// SUPRIMIR GRAFICAS
 **# 1. DEMOGRAFÍA
 ***
 *foreach entidad of global entidadesL {
-	noisily Poblacion if entidad == "`entidad'", anioi(`=aniovp') aniofinal(`=`=aniovp'+25') $update $textbook
+	*noisily Poblacion if entidad == "`entidad'", anioi(`=aniovp') aniofinal(`=`=aniovp'+25') $update $textbook
 *}
 
 
@@ -47,13 +49,19 @@ global nographs "nographs"							// SUPRIMIR GRAFICAS
 **# 2. ECONOMÍA
 ***
 
+**
 ** 2.1 Producto Interno Bruto 
+**
 noisily PIBDeflactor, aniovp(`=aniovp') geodef(1993) geopib(1993) $update $textbook
-
+ex
+**
 ** 2.2 Sistema de Cuentas Nacionales
+**
 noisily SCN, anio(`=aniovp') $update $textbook
 
+**
 ** 3.1 Ley de Ingresos de la Federación
+**
 noisily LIF, by(divSIM) rows(1) anio(`=anioPE') desde(`=anioPE-10') min(0) title("Ingresos presupuestarios") $update
 *LIF if divLIF <= 6, by(divLIF) rows(1) anio(`=anioPE') desde(`=anioPE-10') min(0) title("Impuestos y contribuciones")
 *LIF if divLIF > 6 & divLIF != 10, by(divLIF) rows(1) anio(`=anioPE') desde(`=anioPE-10') min(0) title("Ingresos propios")
