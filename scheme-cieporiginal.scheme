@@ -1,0 +1,344 @@
+#include s2color
+// #include economist
+// #include s1rcolor
+// help scheme entries
+// help scheme files
+
+
+
+// Graph Size
+graphsize 	x                   16
+graphsize 	y                   7
+
+
+
+// Margins
+margin 		graph               medlarge
+margin      heading             medsmall
+margin      subheading          medsmall
+margin      legend              zero
+// margin   combinegraph        none
+// margin   piegraph            none
+// margin   plotregion          none
+// margin   axis_title          none
+// margin   label               none
+// margin   textbox             none
+
+
+
+// Background
+color 		background          white
+color 		plotregion          white
+color 		plotregion_line     white
+color 		legend              white
+// color 	bylabel_outline   	none
+// color 	textbox  		    "236,236,236"
+
+
+
+// Added text and lines
+gsize 		text_option 		large
+color 		text_option         "111,111,111"
+clockdir 	text_option         0
+// color    text_option_fill    white
+// yesno    text_option         yes
+linewidth 	text_option         none
+margin      text_option         small
+
+// Axis lines
+color		xyline              "200,200,200"
+linepattern	xyline              dash
+
+
+
+// Title, subtitle, caption, notes
+clockdir 	title_position      11
+color 		heading             black
+gsize 		heading             vlarge
+yesno 		title_span          no
+
+clockdir 	subtitle_position   11
+color 		subheading          "111,111,111"
+gsize 		subheading          medsmall
+yesno 		subtitle_span       no
+
+clockdir 	caption_position    7
+color		body                "111,111,111"
+gsize 		body                vsmall
+yesno 		caption_span        no
+
+clockdir 	note_position       7
+color		small_body          "111,111,111"
+gsize 		small_body          vsmall
+yesno 		note_span           no
+
+textboxstyle	t1title			body
+textboxstyle	t2title			small_body
+textboxstyle	b1title			heading
+textboxstyle	b2title			small_body
+
+
+
+// Grids
+color 		major_grid 		"200,200,200"
+linepattern 	major_grid 		dash
+linewidth 	major_grid		thin
+yesno 		draw_major_nlt_vgrid 	yes
+
+
+
+// Axis
+color		tick			"111,111,111"
+color      	tick_label		"111,111,111"
+gsize      	tick_label		small
+color 		tick_biglabel 	"111,111,111"
+gsize		tick_biglabel	medium
+color 		axis_title 		"111,111,111"
+gsize		axis_title		medium
+
+axisstyle 	vertical_default 	vertical_nolinetick
+axisstyle 	bar_scale_vert		vertical_nolinetick
+anglestyle 	vertical_tick 		horizontal
+anglestyle 	horizontal_tick 	horizontal
+
+color		tickline		white
+linewidth	axisline		medium
+tickposition	axis_tick		inside
+
+
+
+// Legend
+clockdir 	legend_position		6
+linestyle 	legend			none
+gsize 		legend_key_xsize	medlarge
+gsize 		legend_key_ysize	medlarge
+color       key_label      "111,111,111"
+numstyle 	legend_cols		4
+gsize 		key_label		medlarge
+
+
+
+// Labels
+color 		label 			"111,111,111"
+gsize 		small_label		large
+
+
+
+// Bar labels
+barlabelpos 	bar 			center
+barlabelstyle 	bar			bar
+relsize 	bar_gap			50
+relsize 	bar_groupgap		30
+relsize 	bar_subgroupgap		50
+
+
+
+// Símbolos
+symbol 		p 			circle
+symbolsize 	p			large
+color      	refmarker		red
+linewidth  	refmarker		thin
+
+// Grosor
+linewidth 	p1mark			none
+linewidth 	p2mark			none
+linewidth 	p3mark			none
+linewidth 	p4mark			none
+linewidth 	p5mark			none
+linewidth 	p6mark			none
+linewidth 	p7mark			none
+linewidth 	p8mark			none
+linewidth 	p9mark			none
+linewidth 	p10mark			none
+linewidth 	p11mark			none
+linewidth 	p12mark			none
+linewidth 	p13mark			none
+linewidth 	p14mark			none
+linewidth 	p15mark			none
+linewidth 	p16mark			none
+linewidth 	p17mark			none
+
+linewidth 	p1			thick
+linewidth 	p2			thick
+linewidth 	p3			thick
+linewidth 	p4			thick
+linewidth 	p5			thick
+linewidth 	p6			thick
+linewidth 	p7			thick
+linewidth 	p8			thick
+linewidth 	p9			thick
+linewidth 	p10			thick
+linewidth 	p11			thick
+linewidth 	p12			thick
+linewidth 	p13			thick
+linewidth 	p14			thick
+linewidth 	p15			thick
+linewidth 	p16			thick
+linewidth 	p17			thick
+
+linewidth 	p1lineplot		thick
+linewidth 	p2lineplot		thick
+linewidth 	p3lineplot		thick
+linewidth 	p4lineplot		thick
+linewidth 	p5lineplot		thick
+linewidth 	p6lineplot		thick
+linewidth 	p7lineplot		thick
+linewidth 	p8lineplot		thick
+linewidth 	p9lineplot		thick
+linewidth 	p10lineplot		thick
+linewidth 	p11lineplot		thick
+linewidth 	p12lineplot		thick
+linewidth 	p13lineplot		thick
+linewidth 	p14lineplot		thick
+linewidth 	p15lineplot		thick
+linewidth 	p16lineplot		thick
+linewidth 	p17lineplot		thick
+
+linewidth 	p1bar			none
+linewidth 	p2bar			none
+linewidth 	p3bar			none
+linewidth 	p4bar			none
+linewidth 	p5bar			none
+linewidth 	p6bar			none
+linewidth 	p7bar			none
+linewidth 	p8bar			none
+linewidth 	p9bar			none
+linewidth 	p10bar			none
+linewidth 	p11bar			none
+linewidth 	p12bar			none
+linewidth 	p13bar			none
+linewidth 	p14bar			none
+linewidth 	p15bar			none
+linewidth 	p16bar			none
+linewidth 	p17bar			none
+
+linewidth	p1area			none
+linewidth	p2area			none
+linewidth	p3area			none
+linewidth	p4area			none
+linewidth	p5area			none
+linewidth	p6area			none
+linewidth	p7area			none
+linewidth	p8area			none
+linewidth	p9area			none
+linewidth	p10area			none
+linewidth	p11area			none
+linewidth	p12area			none
+linewidth	p13area			none
+linewidth	p14area			none
+linewidth	p15area			none
+linewidth	p16area			none
+linewidth	p17area			none
+
+linepattern p1line dot
+linepattern p2line dot
+linepattern p3line dot
+linepattern p4line dot
+linepattern p5line dot
+linepattern p6line dot
+linepattern p7line dot
+linepattern p8line dot
+linepattern p9line dot
+linepattern p10line dot
+linepattern p11line dot
+linepattern p12line dot
+linepattern p13line dot
+linepattern p14line dot
+linepattern p15line dot
+linepattern p16line dot
+linepattern p17line dot
+
+
+// Amariilos
+color 		p1			"210,213,32"
+color 		p2			"255,153,51"
+color 		p3			"255,255,0"
+color 		p4			"102,255,51"
+color 		p5			"255,204,0"
+color 		p6			"102,255,153"
+color 		p7			"255,102,51"
+color 		p8			"255,255,102"
+color 		p9			"255,51,153"
+color 		p10			"255,255,204"
+color 		p11			"255,204,102"
+color 		p12			"255,153,102"
+color 		p13			"102,204,153"
+color 		p14			"255,255,153"
+color 		p15			"255,102,204"
+color 		p16			"255,255,51"
+color 		p17			"255,204,153"
+color 		p18			"204,204,51"
+color 		p19			"153,255,153"
+color 		p20			"102,255,102"
+
+
+// Verdes
+color 		p1			"31,74,69"
+color 		p2			"158,222,185"
+color 		p3			"0,112,84"
+color 		p4			"38,203,139"
+color 		p5			"56,128,90"
+color 		p6			"79,180,114"
+color 		p7			"0,90,198"
+color 		p8			"6,62,160"
+color 		p9			"57,198,184"
+color 		p10			"12,45,121"
+color 		p11			"176,232,227"
+color 		p12			"6,23,61"
+color 		p13			"122,124,128"
+color 		p14			"175,174,180"
+color 		p15			"0,0,0"
+color 		p16			"255,255,255"
+color 		p17			"74,74,74"
+
+
+// Ingresos
+color 		p1			"40,173,58"
+color 		p2			"255,69,0"
+color 		p3			"0,151,201"
+color 		p4			"255,215,48"
+color 		p5			"210,213,32"
+color 		p6			"255,129,0"
+color 		p7			"57,198,184"
+color 		p8			"255,40,0"
+color 		p9			"133,88,14"
+color 		p10			"255,235,48"
+color 		p11			"23,105,114"
+color 		p12			"150,6,92"
+color 		p13			"102,62,76"
+color 		p14			"9,63,93"
+color 		p15			"224,97,83"
+color 		p16			"227,229,99"
+color 		p17			"181,185,27"
+color 		p18			"53,200,71"
+color 		p19			"254,118,109"
+color 		p20			"213,155,190"
+
+
+// Colores CIEP
+color p1 "255,129,0"  // Vibrante
+color p2 "255,189,0"  // Vibrante
+color p3 "150,6,92"  // Vibrante
+color p4 "0,151,201"  // Vibrante
+color p5 "255,55,0"  // Vibrante
+color p6 "102,177,0"  // Vibrante
+color p7 "0,78,198"  // Vibrante
+color p8 "175,174,180"  // Vibrante
+
+color p9  "57,198,184"  // Triadas
+color p10 "0,180,148"  // Triadas
+color p11 "0,151,125"  // Triadas
+color p12 "103,223,87"  // Triadas
+color p13 "53,200,71"  // Triadas
+color p14 "40,173,58"  // Triadas
+color p15 "227,229,99"  // Triadas
+color p16 "210,213,32"  // Triadas
+
+color p17 "181,185,27"  // Triadas
+color p18 "255,182,76"  // Triadas
+color p19 "239,143,51"  // Triadas
+color p20 "220,117,0"  // Triadas
+color p21 "254,118,109"  // Triadas
+color p22 "224,97,83"  // Triadas
+color p23 "194,76,68"  // Triadas
+color p24 "186,34,64"  // Triadas
