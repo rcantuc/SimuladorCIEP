@@ -1,5 +1,5 @@
 ****
-**** SIMULADOR FISCAL CIEP (10 de abril de 2025)
+**** SIMULADOR FISCAL CIEP (7 de mayo de 2025)
 **** ver: ReadMe.md
 **** Autor: Ricardo Cantú Calderón (ricardocantu@ciep.mx)
 ****
