@@ -73,7 +73,7 @@ quietly {
 	local divSIM = r(divSIM)
 
 	foreach k of local divSIM {
-		local `k'C = r(`k'C)
+		local `k'C = scalar(`k'C)
 		if ``k'C' > 5 {
 			local `k'C = 5
 		}
@@ -82,7 +82,7 @@ quietly {
 		}
 		capture confirm scalar `k'
 		if _rc != 0 {
-			scalar `k' = r(`k')/scalar(pibY)*100
+			scalar `k' = scalar(`k')/scalar(pibY)*100
 		}
 	}
 	collapse (sum) recaudacion, by(anio divSIM) fast
@@ -99,9 +99,9 @@ quietly {
 
 		tempvar estimacion
 		g `estimacion' = estimacion
-		replace estimacion = `estimacion'/L.`estimacion'*           /// Cambio demográfico (PerfilesSim.do)
-			(scalar(`k'))/100*scalar(pibY)*                     /// Estimación como % del PIB (TasasEfectivas.ado)
-			(1+``k'C'/100)^(anio-`anio')                        /// Tendencia de largo plazo (LIF.ado)
+		replace estimacion = `estimacion'/L.`estimacion'*		/// Cambio demográfico (PerfilesSim.do)
+			(scalar(`k'))*						/// Estimación como % del PIB (TasasEfectivas.ado)
+			(1+``k'C'/100)^(anio-`anio')				/// Tendencia de largo plazo (LIF.ado)
 			if anio > `anio'
 
 		g divCIEP = `"`=strtoname("`k'")'"'

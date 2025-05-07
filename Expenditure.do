@@ -66,19 +66,19 @@ SCN, anio(`=anioenigh') nographs
 
 ** 1.2 SHCP: Datos Abiertos **
 LIF, anio(`=anioenigh') by(divCIEP) nographs min(0)
-local IVA = r(IVA)
-local IEPSNP = r(IEPS__no_petrolero_) //+r(IEPS__petrolero_)
-local IepsTabaco = r(Tabacos)
-local IepsJuegos = r(Juegos)
-local IepsTelecom = r(Telecom)
-local IepsBebidasEner = r(Energiza)
-local IepsBebidasSabor = r(Saboriza)
-local IepsAltoContCal = r(AlimNoBa)
-local IepsCombustibles = r(Fosiles)
-local IepsGasolinas = r(IEPS__petrolero_)
-local IepsAlcohol_20 = r(Alcohol)*.2
-local IepsAlcohol_20_ = r(Alcohol)*.2
-local IepsCervezas = r(Alcohol)*.6
+local IVA = scalar(IVA)
+local IEPSNP = scalar(IEPS__no_petrolero_) //+scalar(IEPS__petrolero_)
+local IepsTabaco = scalar(Tabacos)
+local IepsJuegos = scalar(Juegos)
+local IepsTelecom = scalar(Telecom)
+local IepsBebidasEner = scalar(Energiza)
+local IepsBebidasSabor = scalar(Saboriza)
+local IepsAltoContCal = scalar(AlimNoBa)
+local IepsCombustibles = scalar(Fosiles)
+local IepsGasolinas = scalar(IEPS__petrolero_)
+local IepsAlcohol_20 = scalar(Alcohol)*.2
+local IepsAlcohol_20_ = scalar(Alcohol)*.2
+local IepsCervezas = scalar(Alcohol)*.6
 
 
 ** 1.3 Población **
@@ -202,7 +202,7 @@ if _rc != 0 {
 
 	** 2.8. Unión de censo económico **
 	forvalues k=1(1)6 {
-		use "`c(sysdir_site)'/01_raw/censo_eco.dta", clear
+		use "`c(sysdir_site)'/01_raw/ENIGH/`=anioenigh'/censo_eco.dta", clear
 		g num = length(codigo)
 		drop if num != 6
 		keep if id_estrato == .
@@ -480,7 +480,7 @@ if _rc != 0 {
 ********************************************************
 foreach categ in categ categ_iva categ_ieps {
 	capture confirm file "`c(sysdir_site)'/04_master/`=anioenigh'/consumption_`categ'_pc.dta"
-	if _rc != 0 {
+	if _rc != 0 | "$update" == "update" {
 	*if _rc == 0 {
 
 		** 3.1 Consumo de los individuos **
@@ -534,15 +534,18 @@ foreach categ in categ categ_iva categ_ieps {
 		merge m:1 (folioviv foliohog) using "`c(sysdir_site)'/01_raw/ENIGH/`=anioenigh'/concentrado.dta", ///
 			nogen keepus(factor)
 		egen tot_integ = count(factor), by(folioviv foliohog)
-		
+
 		foreach k of varlist *hog* {
-			if "`k'" == "foliohog" continue
+			if "`k'" == "foliohog" | "`k'" == "factor_hog" continue
 			replace `k' = `k'/tot_integ
 		}
 
 		merge 1:1 (folioviv foliohog numren) using `gastoindividuos', nogen keepus(*_ind* proporcion*)
-		*merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/04_master/`=anioenigh'/households.dta", ///
+		capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/04_master/`=anioenigh'/households.dta", ///
 			nogen keepus(decil)
+		if _rc != 0 {
+			local nohouseholds = "nohouseholds"
+		}
 
 		** 3.4 Gasto per cápita **
 		noisily di in g `"`categs'"'
@@ -587,12 +590,14 @@ foreach categ in categ categ_iva categ_ieps {
 				tempvar `vars'pc_`k'
 				g ``vars'pc_`k'' = `vars'pc_`k'
 				label var ``vars'pc_`k'' "`title' en `k' (original)"
-				*noisily Perfiles ``vars'pc_`k'' [fw=factor] ///
-					if ``vars'pc_`k'' != 0 /*& hogar_outlier == . & ind_outlier == .*/, ///
-					aniope(`=anioenigh')
-				*noisily Simulador ``vars'pc_`k'' [fw=factor] ///
-					if ``vars'pc_`k'' != 0 /*& hogar_outlier == . & ind_outlier == .*/, ///
-					aniope(`=anioenigh') reboot
+				if "`nohouseholds'" == "" {
+					noisily Perfiles ``vars'pc_`k'' [fw=factor] ///
+						if ``vars'pc_`k'' != 0 /*& hogar_outlier == . & ind_outlier == .*/, ///
+						aniope(`=anioenigh')
+					noisily Simulador ``vars'pc_`k'' [fw=factor] ///
+						if ``vars'pc_`k'' != 0 /*& hogar_outlier == . & ind_outlier == .*/, ///
+						aniope(`=anioenigh') reboot
+				}
 
 				* Iteraciones *
 				noisily di in y "`k': " _cont
@@ -623,20 +628,22 @@ foreach categ in categ categ_iva categ_ieps {
 				}
 				replace `vars'pc_`k' = `vars'pc_`k' + `vars'ind`k'
 				*noisily tabstat `vars'pc_`k' `vars'hog`k' `vars'ind`k' [fw=factor], stat(sum) f(%20.0fc)
-				
-				*noisily Perfiles `vars'pc_`k' [fw=factor] ///
-					if `vars'pc_`k' != 0 /*& hogar_outlier == . & ind_outlier == .*/, ///
-					aniope(`=anioenigh') ///
-					title(`title' en `k')
-				*noisily Simulador `vars'pc_`k' [fw=factor] ///
-					if `vars'pc_`k' != 0 /*& hogar_outlier == . & ind_outlier == .*/, ///
-					aniope(`=anioenigh') ///
-					title(`title' en `k') reboot
-				*capture g precio_`k' = gas_pc_`k'/cant_pc_`k'
+
+				if "`nohouseholds'" == "" {
+					noisily Perfiles `vars'pc_`k' [fw=factor] ///
+						if `vars'pc_`k' != 0 /*& hogar_outlier == . & ind_outlier == .*/, ///
+						aniope(`=anioenigh') ///
+						title(`title' en `k')
+					noisily Simulador `vars'pc_`k' [fw=factor] ///
+						if `vars'pc_`k' != 0 /*& hogar_outlier == . & ind_outlier == .*/, ///
+						aniope(`=anioenigh') ///
+						title(`title' en `k') reboot
+				}
+				capture g precio_`k' = gas_pc_`k'/cant_pc_`k'
 				*drop *outlier
 			}
 			noisily di
-			*noisily tabstat precio_`k' gas_pc_`k' cant_pc_`k' [fw=factor] if cant_pc_`k' > 0.01, stat(mean) f(%10.2fc)
+			noisily tabstat precio_`k' gas_pc_`k' cant_pc_`k' [fw=factor], stat(mean) f(%10.2fc)
 		}
 
 		** 3.5 Coeficientes de consumo por edades **

@@ -93,7 +93,8 @@ quietly {
 	tempfile PIB
 	save `PIB'
 
-	** 2.3 Update PEF **
+
+	** 2.2 Update PEF **
 	if "`update'" == "update" {
 		noisily UpdatePEF `update'
 	}

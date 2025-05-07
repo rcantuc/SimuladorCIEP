@@ -949,7 +949,7 @@ program define UpdateSHRFSP
 	save "`diferimientos'"
 
 	** Amortización **
-	noisily DatosAbiertos IF03230, $nographspro desde(2009)
+	noisily DatosAbiertos IF03230, $nographs desde(2009)
 	rename monto amortizacion
 	tempfile amortizacion
 	save "`amortizacion'"

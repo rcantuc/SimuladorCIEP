@@ -15,7 +15,6 @@ quietly {
 	capture mkdir "`c(sysdir_site)'/04_master/"
 	cd "`c(sysdir_site)'/03_temp/AccesoBIE/"
 
-	*python script "`c(sysdir_site)'/python.py", args("`series'")
 	python: inegi_python("`series'")
 
 	// Process the CSV files to organize data for Stata.
@@ -83,7 +82,7 @@ from sfi import Macro
 def inegi_python(series):
 	""" Open the .iqy file and read the URL and parameters. """
 	url = 'http://www.inegi.org.mx/app/indicadores/exportacion.aspx'
-	params = 'cveser=&ag=00&bie=true&aamin=1993&aamax=9999&ordena=a&ordenaPeriodo=ap&orientacion=v&frecuencia=Todo&estadistico=false&esquema=&bdesplaza=False&FileFormat=iqy&subapp=Banco%20de%20Informaci%C3%B3n%20Econ%C3%B3mica%20(BIE)&tematica=0'
+	params = 'cveser=&ag=00&bie=true&aamin=1980&aamax=9999&ordena=a&ordenaPeriodo=ap&orientacion=v&frecuencia=Todo&estadistico=false&esquema=&bdesplaza=False&FileFormat=iqy&subapp=Banco%20de%20Informaci%C3%B3n%20Econ%C3%B3mica%20(BIE)&tematica=0'
 
 	""" Get the series from Stata. """
 	series = Macro.getLocal('series')

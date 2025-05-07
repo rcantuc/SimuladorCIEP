@@ -86,7 +86,7 @@ quietly {
 
 	** 3.1 Alumnos y beneficiarios **
 	capture drop alum_*
-	if `aniope' >= 2016 {
+	if `=anioenigh' >= 2016 {
 		g alum_basica = asis_esc == "1" & tipoesc == "1" & (nivel >= "01" & nivel <= "07") & edad <= 15
 		g alum_medsup = asis_esc == "1" & tipoesc == "1" & (nivel >= "08" & nivel <= "09")
 		g alum_superi = asis_esc == "1" & tipoesc == "1" & (nivel >= "10" & nivel <= "12")
@@ -94,7 +94,7 @@ quietly {
 		g alum_adulto = asis_esc == "1" & tipoesc == "1" & (nivel >= "01" & nivel <= "07") & edad > 15
 	}
 
-	if `aniope' < 2016 {
+	if `=anioenigh' < 2016 {
 		g alum_basica = asis_esc == "1" & tipoesc == "1" & (nivel >= "1" & nivel <= "3") & edad <= 15
 		g alum_medsup = asis_esc == "1" & tipoesc == "1" & (nivel >= "4" & nivel <= "6")
 		g alum_superi = asis_esc == "1" & tipoesc == "1" & (nivel >= "7" & nivel <= "8")
@@ -488,7 +488,8 @@ quietly {
 	* 4.2.1 Scalars *
 	scalar imssbienPIB = `imssbien'/`PIB'*100
 
-	* 4.2.2 Asignación de gasto en variable *	
+	* 4.2.2 Asignación de gasto en variable *
+	capture drop Salud
 	g Salud = scalar(imssbien)*benef_imssbien
 
 
@@ -774,6 +775,7 @@ quietly {
 	scalar penimssPIB = `penimss'/`PIB'*100
 
 	** 5.3.2 Asignación de gasto en variable **
+	capture drop Pensiones
 	g Pensiones = scalar(penimss)*pens_imss
 
 
@@ -794,7 +796,7 @@ quietly {
 	scalar penisssPIB = `penisss'/`PIB'*100
 
 	** 5.4.2 Asignación de gasto en variable **
-	replace Pension = Pension + scalar(penisss)*pens_issste
+	replace Pensiones = Pensiones + scalar(penisss)*pens_issste
 
 
 	** 5.5 Pensiones Pemex **
@@ -814,7 +816,7 @@ quietly {
 	scalar penpemePIB = `penpeme'/`PIB'*100
 
 	** 5.5.2 Asignación de gasto en variable **
-	replace Pension = Pension + scalar(penpeme)*pens_pemex
+	replace Pensiones = Pensiones + scalar(penpeme)*pens_pemex
 
 
 	** 5.6 Pensiones CFE, LFC, Ferronales, ISSFAM **

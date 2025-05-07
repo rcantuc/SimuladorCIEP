@@ -188,9 +188,9 @@ quietly {
 		local name = strtoname(`"`disptext'"')
 
 		* Display *
-		//return scalar `name' = `mat`k''[1,1]
-		//return scalar `name'PIB = `mat`k''[1,2]
-		//return scalar `name'Tot = `mat`k''[1,1]/`mattot'[1,1]*100
+		scalar `name' = `mat`k''[1,1]
+		//scalar `name'PIB = `mat`k''[1,2]
+		//scalar `name'Tot = `mat`k''[1,1]/`mattot'[1,1]*100
 		local `by' `"``by'' `name'"'
 
 		noisily di in g `"  (+) `disptext'"' ///
@@ -207,7 +207,7 @@ quietly {
 		_col(52) in y %7.3fc `mattot'[1,2] ///
 		_col(61) in y %7.1fc `mattot'[1,1]/`mattot'[1,1]*100 "}"
 
-	return scalar `=strtoname("Ingresos totales")' = `mattot'[1,1]
+	scalar Ingresos_totales = `mattot'[1,1]
 
 
 	***************************
@@ -254,9 +254,9 @@ quietly {
 		local name = strtoname(`"`disptext'"')
 
 		* Display *
-		return scalar `=strtoname("`=r(name`k')'")' = `mat`k''[1,1]
-		return scalar `=strtoname("`=r(name`k')'")'PIB = `mat`k''[1,2]
-		return scalar `=strtoname("`=r(name`k')'")'C = ((`mat`k''[1,1]/`pre`k''[1,1])^(1/(`=`anio'-`desde''))-1)*100
+		scalar `=strtoname("`=r(name`k')'")' = `mat`k''[1,1]
+		scalar `=strtoname("`=r(name`k')'")'PIB = `mat`k''[1,2]
+		scalar `=strtoname("`=r(name`k')'")'C = ((`mat`k''[1,1]/`pre`k''[1,1])^(1/(`=`anio'-`desde''))-1)*100
 		local divResumido `"`divResumido' `=strtoname(abbrev("`=r(name`k')'",7))'"'
 
 		noisily di in g "  (+) `=r(name`k')'" ///
@@ -273,9 +273,9 @@ quietly {
 		_col(52) in y %7.3fc `sindeudatot'[1,2] ///
 		_col(61) in y %7.1fc ((`sindeudatot'[1,1]/`sindeudatotpre'[1,1])^(1/(`=`anio'-`desde''))-1)*100 "}"
 	
-	return scalar Ingresos_sin_deuda = `sindeudatot'[1,1]
-	return scalar Ingresos_sin_deudaPIB = `sindeudatot'[1,2]
-	return scalar Ingresos_sin_deudaC = ((`sindeudatot'[1,1]/`sindeudatotpre'[1,1])^(1/(`=`anio'-`desde''))-1)*100
+	scalar Ingresos_sin_deuda = `sindeudatot'[1,1]
+	scalar Ingresos_sin_deudaPIB = `sindeudatot'[1,2]
+	scalar Ingresos_sin_deudaC = ((`sindeudatot'[1,1]/`sindeudatotpre'[1,1])^(1/(`=`anio'-`desde''))-1)*100
 
 
 	**********************
@@ -369,7 +369,7 @@ quietly {
 					_col(52) in y %7.3fc (((`mat`k''[1,1]/`mat5`k''[1,1])^(1/(`=`anio'-`desde''))-1))/ ///
 					(((`pibYR`anio''/`pibYR`desde'')^(1/(`=`anio'-`desde''))-1))
 			}
-			return scalar E`=strtoname("`=r(name`k')'")' = (((`mat`k''[1,1]/`mat5`k''[1,1])^(1/(`=`anio'-`desde''))-1))/ ///
+			scalar E`=strtoname("`=r(name`k')'")' = (((`mat`k''[1,1]/`mat5`k''[1,1])^(1/(`=`anio'-`desde''))-1))/ ///
 					(((`pibYR`anio''/`pibYR`desde'')^(1/(`=`anio'-`desde''))-1))
 			local E`=strtoname("`=r(name`k')'")' = (((`mat`k''[1,1]/`mat5`k''[1,1])^(1/(`=`anio'-`desde''))-1))/ ///
 					(((`pibYR`anio''/`pibYR`desde'')^(1/(`=`anio'-`desde''))-1))
@@ -391,37 +391,37 @@ quietly {
 	capture tabstat recaudacion recaudacionPIB if anio == `anio' & nombre == "Cuotas a la seguridad social (IMSS)", stat(sum) f(%20.1fc) save
 	tempname cuotas
 	matrix `cuotas' = r(StatTotal)
-	return scalar Cuotas_IMSS = `cuotas'[1,1]
+	scalar Cuotas_IMSS = `cuotas'[1,1]
 
 	capture tabstat recaudacion recaudacionPIB if anio == `anio' & divCIEP == 12, stat(sum) by(nombre) f(%20.1fc) save
 	
 	tempname ieps
 	matrix `ieps'1 = r(Stat1)
-	return scalar Alcohol = `ieps'1[1,1]
+	scalar Alcohol = `ieps'1[1,1]
 
 	matrix `ieps'2 = r(Stat2)
-	return scalar AlimNoBa = `ieps'2[1,1]
+	scalar AlimNoBa = `ieps'2[1,1]
 
 	matrix `ieps'7 = r(Stat7)
-	return scalar Juegos = `ieps'7[1,1]
+	scalar Juegos = `ieps'7[1,1]
 	
 	matrix `ieps'6 = r(Stat6)
-	return scalar Cervezas = `ieps'6[1,1]
+	scalar Cervezas = `ieps'6[1,1]
 	
 	matrix `ieps'9 = r(Stat9)
-	return scalar Tabacos = `ieps'9[1,1]
+	scalar Tabacos = `ieps'9[1,1]
 	
 	matrix `ieps'10 = r(Stat10)
-	return scalar Telecom = `ieps'10[1,1]
+	scalar Telecom = `ieps'10[1,1]
 	
 	matrix `ieps'3 = r(Stat3)
-	return scalar Energiza = `ieps'3[1,1]
+	scalar Energiza = `ieps'3[1,1]
 
 	matrix `ieps'4 = r(Stat4)
-	return scalar Saboriza = `ieps'4[1,1]
+	scalar Saboriza = `ieps'4[1,1]
 
 	matrix `ieps'5 = r(Stat5)
-	return scalar Fosiles = `ieps'5[1,1]
+	scalar Fosiles = `ieps'5[1,1]
 
 
 

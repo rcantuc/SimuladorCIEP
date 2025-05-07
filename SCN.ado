@@ -329,6 +329,8 @@ quietly {
 	scalar ImpNetProduccionK = ImpNetProduccionK[`obs']
 	scalar ImpNetProduccionKPIB = ImpNetProduccionK[`obs']/PIB[`obs']*100
 
+	scalar ImpNetProductos = ImpNetProductos[`obs']
+	scalar ImpNetProductosPIB = ImpNetProductos[`obs']/PIB[`obs']*100
 
 	** C.9. Resto del Mundo **
 	g double AhorroN = IngDisp - ConHog - ConGob - ComprasN
@@ -755,6 +757,8 @@ quietly {
 	scalar AlimBebT      = Alim + BebN
 	scalar AlimBebTPIB   = (Alim + BebN)/PIB[`obs']*100
 
+	scalar Recre7132PIB = Recre7132[`obs']/PIB[`obs']*100
+	
 	scalar BebTabT       = BebA + Taba
 	scalar BebTabTPIB    = (BebA + Taba)/PIB[`obs']*100
 
@@ -772,6 +776,8 @@ quietly {
 
 	scalar ConsPriv_54 = ConsPriv_54[`obs']
 	scalar ConsPriv_62 = ConsPriv_62[`obs']
+	scalar ConsPriv_21PIB = ConsPriv_21[`obs']/PIB[`obs']*100
+	scalar Min211_TPIB = Min211_T[`obs']/PIB[`obs']*100
 
 	scalar Inmob5311 = Inmob5311[`obs']
 	scalar Inmob5312 = Inmob5312[`obs']
