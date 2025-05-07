@@ -761,7 +761,7 @@ quietly {
 	    }
 	    if (anio[`k'] > `aniofinal') & anio[`k'] > anio[`obs_exo'] {
 		if "`proyectado'" == "" {
-		    noisily di in g _col(25) %~17s "Proyecciones"
+		    noisily di in g _col(24) %~17s "Proyecciones"
 		    local proyectado = "done"
 		}
 		noisily di in g " `=anio[`k']' " _col(7) %6.1fc in y var_pibY[`k'] " %" ///

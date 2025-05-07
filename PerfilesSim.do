@@ -104,7 +104,7 @@ local InfraT = r(Gasto_neto)
 LIF, anio(`1') by(divSIM) nographs min(0)
 local recursos = r(divSIM)
 foreach k of local recursos {
-	local `=substr("`k'",1,7)' = r(`k')
+	local `=substr("`k'",1,7)' = scalar(`k')
 }
 scalar IngKPublicos = `FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE'
 
@@ -137,7 +137,12 @@ SCN, anio(`1') nographs
 
 
 ** 5.3 Usar base de datos conciliada **
-use "`c(sysdir_site)'/04_master/`=anioenigh'/households.dta", clear
+capture use "`c(sysdir_site)'/04_master/`=anioenigh'/households.dta", clear
+if _rc != 0 {
+	noisily run "`c(sysdir_site)'/Expenditure.do" `=anioenigh'
+	noisily run `"`c(sysdir_site)'/Households.do"' `=anioenigh'
+}
+
 tabstat factor, stat(sum) f(%20.0fc) save
 tempname pobenigh
 matrix `pobenigh' = r(StatTotal)
@@ -430,6 +435,7 @@ g ing_jubila_pub = ing_jubila if jubilado == 1
 replace ing_jubila_pub = 0 if ing_jubila_pub == .
 *replace ing_jubila_pub = ing_jubila_pub + Pension_AM
 
+capture drop Pensiones
 Distribucion Pensiones, relativo(ing_jubila_pub) macro(`Pensiones')
 replace Pensiones = Pensiones //+ Pension_AM
 label var Pensiones "Pensiones `1'"
