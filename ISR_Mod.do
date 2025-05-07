@@ -4,7 +4,7 @@
 ***                       ***
 *****************************
 timer on 94
-noisily di _newline(2) in g "  MODULO: " in y "ISR: " aniovp
+noisily di _newline(2) in g "  MODULO: " in y "ISR " aniovp
 
 
 
