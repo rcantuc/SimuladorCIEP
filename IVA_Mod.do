@@ -51,7 +51,7 @@ tabstat IVA [fw=factor], stat(sum) f(%20.0fc) save
 tempname IVA
 matrix `IVA' = r(StatTotal)
 scalar IVA_Mod = `IVA'[1,1]/`pibY'*100*4.074/3.893
-noisily di _newline in g " RESULTADOS IVA: " _col(29) in y %10.3fc IVA_Mod
+noisily di _newline in g "   RESULTADOS IVA: " _col(33) in y %10.3fc IVA_Mod
 
 
 /* RESULTS GASTO *
