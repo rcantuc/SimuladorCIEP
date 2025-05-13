@@ -52,7 +52,6 @@ quietly {
 				local ++number
 			}
 
-
 			* TO Nodes *
 			local taccountname : label (to) `=to[`k']'
 			local taccountname = subinstr("`taccountname'"," ","_",.)
@@ -111,7 +110,7 @@ quietly {
 	//	filefilter `sankey3' `"/var/www/html/`folder'/sankey-`name'.json"', from(".,") to("0") replace
 	//}
 	//if "`c(os)'" == "Unix" & "`c(username)'" == "root" {
-		filefilter `sankey3' `"`c(sysdir_personal)'/users/$id/sankey-`name'.json"', from(".,") to("0") replace
+		filefilter `sankey3' `"`c(sysdir_site)'/users/$id/sankey-`name'.json"', from(".,") to("0") replace
 	//}
 }
 end

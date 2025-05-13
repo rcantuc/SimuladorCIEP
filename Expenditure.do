@@ -12,31 +12,70 @@
 ***               ***
 *********************
 timer on 15
+capture mkdir "`c(sysdir_site)'/01_raw"
+capture mkdir "`c(sysdir_site)'/01_raw/ENIGH/"
+cd "`c(sysdir_site)'/01_raw/ENIGH/"
 if "`1'" == "" {
 	clear all
 	scalar anioenigh = 2022
 	local claveiva = "*2018"
+	capture confirm file "`c(sysdir_site)'/01_raw/ENIGH/`=anioenigh'/gastospersona.dta"
+	if _rc != 0 {
+		copy "https://www.dropbox.com/scl/fi/otyib7mwgegyuihryg8f7/2022.zip?rlkey=qyvaz279bhv59wilsvossm2ss&dl=1" "`c(sysdir_site)'/01_raw/ENIGH/2022.zip", replace
+		unzipfile "`c(sysdir_site)'/01_raw/ENIGH/2022.zip", replace
+		erase "`c(sysdir_site)'/01_raw/ENIGH/2022.zip"
+	}
 }
 else {
 	if `1' >= 2022 {
 		scalar anioenigh = 2022
 		local claveiva = "*2018"
+		capture confirm file "`c(sysdir_site)'/01_raw/ENIGH/`=anioenigh'/gastospersona.dta"
+		if _rc != 0 {
+			copy "https://www.dropbox.com/scl/fi/otyib7mwgegyuihryg8f7/2022.zip?rlkey=qyvaz279bhv59wilsvossm2ss&dl=1" "`c(sysdir_site)'/01_raw/ENIGH/2022.zip", replace
+			unzipfile "`c(sysdir_site)'/01_raw/ENIGH/2022.zip", replace
+			erase "`c(sysdir_site)'/01_raw/ENIGH/2022.zip"
+		}
 	}
 	if `1' >= 2020 & `1' < 2022 {
 		scalar anioenigh = 2020
 		local claveiva = "*2018"
+		capture confirm file "`c(sysdir_site)'/01_raw/ENIGH/`=anioenigh'/gastospersona.dta"
+		if _rc != 0 {
+			copy "https://www.dropbox.com/scl/fi/v4vi20or8r7le5x915brz/2020.zip?rlkey=mpwh3qqtqase8wf23vcc4vb7d&dl=1" "`c(sysdir_site)'/01_raw/ENIGH/2020.zip", replace
+			unzipfile "`c(sysdir_site)'/01_raw/ENIGH/2020.zip", replace
+			erase "`c(sysdir_site)'/01_raw/ENIGH/2020.zip"
+		}
 	}
 	if `1' >= 2018 & `1' < 2020 {
 		scalar anioenigh = 2018
 		local claveiva = "*2018"
+		capture confirm file "`c(sysdir_site)'/01_raw/ENIGH/`=anioenigh'/gastospersona.dta"
+		if _rc != 0 {
+			copy "https://www.dropbox.com/scl/fi/jaqgl4xnfhuc057g5ckzv/2018.zip?rlkey=m1p37d6bcvyzh022hdxn6ld9m&dl=1" "`c(sysdir_site)'/01_raw/ENIGH/2018.zip", replace
+			unzipfile "`c(sysdir_site)'/01_raw/ENIGH/2018.zip", replace
+			erase "`c(sysdir_site)'/01_raw/ENIGH/2018.zip"
+		}
 	}
 	if `1' >= 2016 & `1' < 2018 {
 		scalar anioenigh = 2016
 		local claveiva = "*2014"
+		capture confirm file "`c(sysdir_site)'/01_raw/ENIGH/`=anioenigh'/gastospersona.dta"
+		if _rc != 0 {
+			copy "https://www.dropbox.com/scl/fi/lmyw9nc30ub0qacxrm47z/2016.zip?rlkey=l7mqjf6wkwvkccpw2kisd47ti&dl=1" "`c(sysdir_site)'/01_raw/ENIGH/2016.zip", replace
+			unzipfile "`c(sysdir_site)'/01_raw/ENIGH/2016.zip", replace
+			erase "`c(sysdir_site)'/01_raw/ENIGH/2016.zip"
+		}
 	}
 	if `1' >= 2013 & `1' < 2016 {
 		scalar anioenigh = 2014
 		local claveiva = "*2014"
+		capture confirm file "`c(sysdir_site)'/01_raw/ENIGH/`=anioenigh'/gastospersona.dta"
+		if _rc != 0 {
+			copy "https://www.dropbox.com/scl/fi/o3x89s7nlab8fvis42nxk/2014.zip?rlkey=23ewaqdslog7pfhee5933hl3c&dl=1" "`c(sysdir_site)'/01_raw/ENIGH/2014.zip", replace
+			unzipfile "`c(sysdir_site)'/01_raw/ENIGH/2014.zip", replace
+			erase "`c(sysdir_site)'/01_raw/ENIGH/2014.zip"
+		}
 	}
 }
 
@@ -478,7 +517,7 @@ if _rc != 0 {
 ***  3. Integración consumo de hogares + individuos  ***
 ***                                                  ***
 ********************************************************
-foreach categ in categ categ_iva categ_ieps {
+foreach categ in categ categ_iva /*categ_ieps*/ {
 	capture confirm file "`c(sysdir_site)'/04_master/`=anioenigh'/consumption_`categ'_pc.dta"
 	if _rc != 0 | "$update" == "update" {
 	*if _rc == 0 {
@@ -568,8 +607,8 @@ foreach categ in categ categ_iva categ_ieps {
 				*noisily tabstat `vars'hog`k' [fw=factor], stat(sum) f(%20.0fc)
 
 				* Outliers *
-				*tabstat `vars'hog`k' if `vars'hog`k' != 0, stat(p99 p95) save
-				*g hogar_outlier = 1 if `vars'hog`k' >= r(StatTotal)[1,1] & r(StatTotal)[1,1] != r(StatTotal)[2,1]
+				tabstat `vars'hog`k' if `vars'hog`k' != 0, stat(p99 p95) save
+				g hogar_outlier = 1 if `vars'hog`k' >= r(StatTotal)[1,1] & r(StatTotal)[1,1] != r(StatTotal)[2,1]
 
 				* Gasto por individuo *
 				capture replace `vars'ind`k' = 0 if `vars'ind`k' == .
@@ -579,8 +618,8 @@ foreach categ in categ categ_iva categ_ieps {
 				*noisily tabstat `vars'ind`k' [fw=factor], stat(sum) f(%20.0fc)
 
 				* Outliers *
-				*tabstat `vars'ind`k' if `vars'ind`k' != 0, stat(p99 p95) save
-				*g ind_outlier = 1 if `vars'ind`k' >= r(StatTotal)[1,1] & r(StatTotal)[1,1] != r(StatTotal)[2,1]
+				tabstat `vars'ind`k' if `vars'ind`k' != 0, stat(p99 p95) save
+				g ind_outlier = 1 if `vars'ind`k' >= r(StatTotal)[1,1] & r(StatTotal)[1,1] != r(StatTotal)[2,1]
 
 				g `vars'pc_`k' = `vars'hog`k' //+ `vars'ind`k'
 				local label = subinstr("`title' en `k'","_"," ",.)
@@ -592,17 +631,17 @@ foreach categ in categ categ_iva categ_ieps {
 				label var ``vars'pc_`k'' "`title' en `k' (original)"
 				if "`nohouseholds'" == "" {
 					noisily Perfiles ``vars'pc_`k'' [fw=factor] ///
-						if ``vars'pc_`k'' != 0 /*& hogar_outlier == . & ind_outlier == .*/, ///
+						if ``vars'pc_`k'' != 0 & hogar_outlier == . & ind_outlier == ., ///
 						aniope(`=anioenigh')
 					noisily Simulador ``vars'pc_`k'' [fw=factor] ///
-						if ``vars'pc_`k'' != 0 /*& hogar_outlier == . & ind_outlier == .*/, ///
+						if ``vars'pc_`k'' != 0 & hogar_outlier == . & ind_outlier == ., ///
 						aniope(`=anioenigh') reboot
 				}
 
 				* Iteraciones *
 				noisily di in y "`k': " _cont
-				local salto = 5
-				forvalues iter=1(1)15 {
+				local salto = 1
+				forvalues iter=1(1)25 {
 					noisily di in w "`iter' " _cont
 					forvalues edades=0(`salto')109 {
 						forvalues sexos=1(1)2 {
@@ -631,16 +670,16 @@ foreach categ in categ categ_iva categ_ieps {
 
 				if "`nohouseholds'" == "" {
 					noisily Perfiles `vars'pc_`k' [fw=factor] ///
-						if `vars'pc_`k' != 0 /*& hogar_outlier == . & ind_outlier == .*/, ///
+						if `vars'pc_`k' != 0 & hogar_outlier == . & ind_outlier == ., ///
 						aniope(`=anioenigh') ///
 						title(`title' en `k')
 					noisily Simulador `vars'pc_`k' [fw=factor] ///
-						if `vars'pc_`k' != 0 /*& hogar_outlier == . & ind_outlier == .*/, ///
+						if `vars'pc_`k' != 0 & hogar_outlier == . & ind_outlier == ., ///
 						aniope(`=anioenigh') ///
 						title(`title' en `k') reboot
 				}
 				capture g precio_`k' = gas_pc_`k'/cant_pc_`k'
-				*drop *outlier
+				capture drop *outlier
 			}
 			noisily di
 			noisily tabstat precio_`k' gas_pc_`k' cant_pc_`k' [fw=factor], stat(mean) f(%10.2fc)

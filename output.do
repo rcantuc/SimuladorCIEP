@@ -114,47 +114,47 @@ if "$output" != "" {
 		%8.0f scalar(transf) /// Total Transferencias 41
 		"]"
 	noisily di in w "INGRESOS: " in w "["  ///
-		%8.3f scalar(ISRAS) "," /// ISR (salarios) - 0
-		%8.3f scalar(ISRPF) "," /// ISR (físicas) - 1
-		%8.3f scalar(CUOTAS) "," /// Cuotas IMSS - 2
-		%8.3f scalar(ISRAS)+scalar(ISRPF)+scalar(CUOTAS) "," /// Total Impuestos laborales - 3
-		%8.3f scalar(ISRPM) "," /// ISR (morales) - 4
-		%8.3f scalar(OTROSK) "," /// Productos, derechos y aprovechamientos - 5
-		%8.3f scalar(ISRPM)+scalar(OTROSK) "," /// Total Impuestos al capital - 6
-		%8.3f scalar(IVA) "," /// IVA - 7
-		%8.3f scalar(ISAN) "," /// ISAN - 8
-		%8.3f scalar(IEPSNP) "," /// IEPS (no petrolero)- 9
-		%8.3f scalar(IEPSP) "," /// IEPS (petrolero) - 10
-		%8.3f scalar(IMPORT) "," /// Importaciones - 11
-		%8.3f scalar(IVA)+scalar(ISAN)+scalar(IEPSNP)+scalar(IEPSP)+scalar(IMPORT) "," /// Total Impuestos al consumo - 12
-		%8.3f scalar(IMSS) "," /// IMSS - 13
-		%8.3f scalar(ISSSTE) "," /// ISSSTE - 14
-		%8.3f scalar(FMP) "," /// FMP - 15
-		%8.3f scalar(PEMEX) "," /// Pemex - 16
-		%8.3f scalar(CFE) "," /// CFE - 17
-		%8.3f scalar(IMSS)+scalar(ISSSTE)+scalar(FMP)+scalar(PEMEX)+scalar(CFE) "," /// Total Organismos y Empresas - 18
-		%8.3f scalar(ISRAS)+scalar(ISRPF)+scalar(CUOTAS)+scalar(ISRPM)+scalar(OTROSK)+scalar(IVA)+scalar(ISAN)+scalar(IEPSNP)+scalar(IEPSP)+scalar(IMPORT)+scalar(IMSS)+scalar(ISSSTE)+scalar(FMP)+scalar(PEMEX)+scalar(CFE) /// Total INGRESOS - 19
+		%8.3f scalar(ISRAS)/scalar(pibY)*100 "," /// ISR (salarios) - 0
+		%8.3f scalar(ISRPF)/scalar(pibY)*100 "," /// ISR (físicas) - 1
+		%8.3f scalar(CUOTAS)/scalar(pibY)*100 "," /// Cuotas IMSS - 2
+		%8.3f (scalar(ISRAS)+scalar(ISRPF)+scalar(CUOTAS))/scalar(pibY)*100 "," /// Total Impuestos laborales - 3
+		%8.3f scalar(ISRPM)/scalar(pibY)*100 "," /// ISR (morales) - 4
+		%8.3f scalar(OTROSK)/scalar(pibY)*100 "," /// Productos, derechos y aprovechamientos - 5
+		%8.3f (scalar(ISRPM)+scalar(OTROSK))/scalar(pibY)*100 "," /// Total Impuestos al capital - 6
+		%8.3f scalar(IVA)/scalar(pibY)*100 "," /// IVA - 7
+		%8.3f scalar(ISAN)/scalar(pibY)*100 "," /// ISAN - 8
+		%8.3f scalar(IEPSNP)/scalar(pibY)*100 "," /// IEPS (no petrolero)- 9
+		%8.3f scalar(IEPSP)/scalar(pibY)*100 "," /// IEPS (petrolero) - 10
+		%8.3f scalar(IMPORT)/scalar(pibY)*100 "," /// Importaciones - 11
+		%8.3f (scalar(IVA)+scalar(ISAN)+scalar(IEPSNP)+scalar(IEPSP)+scalar(IMPORT))/scalar(pibY)*100 "," /// Total Impuestos al consumo - 12
+		%8.3f scalar(IMSS)/scalar(pibY)*100 "," /// IMSS - 13
+		%8.3f scalar(ISSSTE)/scalar(pibY)*100 "," /// ISSSTE - 14
+		%8.3f scalar(FMP)/scalar(pibY)*100 "," /// FMP - 15
+		%8.3f scalar(PEMEX)/scalar(pibY)*100 "," /// Pemex - 16
+		%8.3f scalar(CFE)/scalar(pibY)*100 "," /// CFE - 17
+		%8.3f (scalar(IMSS)+scalar(ISSSTE)+scalar(FMP)+scalar(PEMEX)+scalar(CFE))/scalar(pibY)*100 "," /// Total Organismos y Empresas - 18
+		%8.3f (scalar(ISRAS)+scalar(ISRPF)+scalar(CUOTAS)+scalar(ISRPM)+scalar(OTROSK)+scalar(IVA)+scalar(ISAN)+scalar(IEPSNP)+scalar(IEPSP)+scalar(IMPORT)+scalar(IMSS)+scalar(ISSSTE)+scalar(FMP)+scalar(PEMEX)+scalar(CFE))/scalar(pibY)*100 /// Total INGRESOS - 19
 		"]"
 	noisily di in w "INGRESOSTEF: " in w "["  ///
-		%8.1f scalar(ISRAS)/(RemSalPIB+SSImputadaPIB+SSEmpleadoresPIB+ImpNetProduccionLPIB)*100 "," /// ISR (salarios) - 0
-		%8.1f scalar(ISRPF)/MixLPIB*100 "," /// ISR (físicas) - 1
-		%8.1f scalar(CUOTAS)/(RemSalPIB+SSImputadaPIB+SSEmpleadoresPIB+ImpNetProduccionLPIB)*100 "," /// Cuotas IMSS - 2
-		%8.1f (scalar(ISRAS)+scalar(ISRPF)+scalar(CUOTAS))/YlPIB*100 "," /// Total Impuestos laborales - 3
-		%8.1f scalar(ISRPM)/(ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-IngKPublicosPIB)*100 "," /// ISR (morales) - 4
-		%8.1f scalar(OTROSK)/(ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-IngKPublicosPIB)*100 "," /// Productos, derechos y aprovechamientos - 5
-		%8.1f (scalar(ISRPM)+scalar(OTROSK))/(CapIncImpPIB-IngKPublicosPIB)*100 "," /// Total Impuestos al capital - 6
-		%8.1f scalar(IVA)/(ConHogPIB)*100 "," /// IVA - 7
-		%8.1f scalar(ISAN)/VehiPIB*100 "," /// ISAN - 8
-		%8.1f scalar(IEPSNP)/ConHogPIB*100 "," /// IEPS (no petrolero) - 9
-		%8.1f scalar(IEPSP)/ConHogPIB*100 "," /// IEPS (petrolero) - 10
-		%8.1f scalar(IMPORT)/ConHogPIB*100 "," /// Importaciones - 11
-		%8.1f ((IVA)+scalar(ISAN)+scalar(IEPSNP)+scalar(IEPSP)+scalar(IMPORT))/ConHogPIB*100 "," /// Total Impuestos al consumo - 12
-		%8.1f scalar(IMSS)/(CapIncImpPIB)*100 "," /// IMSS - 13
-		%8.1f scalar(ISSSTE)/(CapIncImpPIB)*100 "," /// ISSSTE - 14
-		%8.1f scalar(FMP)/(CapIncImpPIB)*100 "," /// FMP - 15
-		%8.1f scalar(PEMEX)/(CapIncImpPIB)*100 "," /// Pemex - 16
-		%8.1f scalar(CFE)/(CapIncImpPIB)*100 "," /// CFE - 17
-		%8.1f (scalar(IMSS)+scalar(ISSSTE)+scalar(FMP)+scalar(PEMEX)+scalar(CFE))/CapIncImpPIB*100 /// Total Organismos y Empresas - 18
+		%8.1f (scalar(ISRAS)/scalar(pibY)*100)/(RemSalPIB+SSImputadaPIB+SSEmpleadoresPIB+ImpNetProduccionLPIB)*100 "," /// ISR (salarios) - 0
+		%8.1f (scalar(ISRPF)/scalar(pibY)*100)/MixLPIB*100 "," /// ISR (físicas) - 1
+		%8.1f (scalar(CUOTAS)/scalar(pibY)*100)/(RemSalPIB+SSImputadaPIB+SSEmpleadoresPIB+ImpNetProduccionLPIB)*100 "," /// Cuotas IMSS - 2
+		%8.1f ((scalar(ISRAS)+scalar(ISRPF)+scalar(CUOTAS))/scalar(pibY)*100)/YlPIB*100 "," /// Total Impuestos laborales - 3
+		%8.1f (scalar(ISRPM)/scalar(pibY)*100)/(ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-IngKPublicosPIB)*100 "," /// ISR (morales) - 4
+		%8.1f (scalar(OTROSK)/scalar(pibY)*100)/(ExNOpSocPIB+MixKNPIB+ImpNetProduccionKPIB+ImpNetProductosPIB-IngKPublicosPIB)*100 "," /// Productos, derechos y aprovechamientos - 5
+		%8.1f ((scalar(ISRPM)+scalar(OTROSK))/scalar(pibY)*100)/(CapIncImpPIB-IngKPublicosPIB)*100 "," /// Total Impuestos al capital - 6
+		%8.1f (scalar(IVA)/scalar(pibY)*100)/(ConHogPIB)*100 "," /// IVA - 7
+		%8.1f (scalar(ISAN)/scalar(pibY)*100)/VehiPIB*100 "," /// ISAN - 8
+		%8.1f (scalar(IEPSNP)/scalar(pibY)*100)/ConHogPIB*100 "," /// IEPS (no petrolero) - 9
+		%8.1f (scalar(IEPSP)/scalar(pibY)*100)/ConHogPIB*100 "," /// IEPS (petrolero) - 10
+		%8.1f (scalar(IMPORT)/scalar(pibY)*100)/ConHogPIB*100 "," /// Importaciones - 11
+		%8.1f (((IVA)+scalar(ISAN)+scalar(IEPSNP)+scalar(IEPSP)+scalar(IMPORT))/scalar(pibY)*100)/ConHogPIB*100 "," /// Total Impuestos al consumo - 12
+		%8.1f (scalar(IMSS)/scalar(pibY)*100)/(CapIncImpPIB)*100 "," /// IMSS - 13
+		%8.1f (scalar(ISSSTE)/scalar(pibY)*100)/(CapIncImpPIB)*100 "," /// ISSSTE - 14
+		%8.1f (scalar(FMP)/scalar(pibY)*100)/(CapIncImpPIB)*100 "," /// FMP - 15
+		%8.1f (scalar(PEMEX)/scalar(pibY)*100)/(CapIncImpPIB)*100 "," /// Pemex - 16
+		%8.1f (scalar(CFE)/scalar(pibY)*100)/(CapIncImpPIB)*100 "," /// CFE - 17
+		%8.1f ((scalar(IMSS)+scalar(ISSSTE)+scalar(FMP)+scalar(PEMEX)+scalar(CFE))/scalar(pibY)*100)/CapIncImpPIB*100 /// Total Organismos y Empresas - 18
 		"]"
 	noisily di in w "ISRTASA: [" ///
 		%10.2f ISR[1,4] "," ///
@@ -276,12 +276,12 @@ if "$output" != "" {
 	quietly log close output
 	tempfile output1 output2 output3
 	if "`=c(os)'" == "Windows" {
-		capture filefilter "`c(sysdir_personal)'/users/$pais/$id/${output}.txt" `output1', from(\r\n>) to("") replace // Windows
+		capture filefilter "`c(sysdir_site)'/users/$pais/$id/${output}.txt" `output1', from(\r\n>) to("") replace // Windows
 	}
 	else {
-		filefilter "`c(sysdir_personal)'/users/$pais/$id/${output}.txt" `output1', from(\n>) to("") replace // Mac & Linux
+		filefilter "`c(sysdir_site)'/users/$pais/$id/${output}.txt" `output1', from(\n>) to("") replace // Mac & Linux
 	}
 	filefilter `output1' `output2', from(" ") to("") replace
 	filefilter `output2' `output3', from("_") to(" ") replace
-	filefilter `output3' "`c(sysdir_personal)'/users/$pais/$id/${output}.txt", from(".,") to("0") replace
+	filefilter `output3' "`c(sysdir_site)'/users/$pais/$id/${output}.txt", from(".,") to("0") replace
 }

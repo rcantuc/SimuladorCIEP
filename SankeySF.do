@@ -21,7 +21,7 @@ SCN, anio(`2') nographs
 
 **********************************/
 ** Eje 1: Generación del ingreso **
-use `"`c(sysdir_personal)'/users/$id/ingresos.dta"', clear
+use `"`c(sysdir_site)'/users/$id/ingresos.dta"', clear
 
 tempvar Laboral Consumo Capital FMP
 egen `Laboral'  = rsum(ISRAS ISRPF CUOTAS)
@@ -83,7 +83,7 @@ save `eje1'
 
 ********************
 ** Eje 4: Consumo **
-use `"`c(sysdir_personal)'/users/$id/gastos.dta"', clear
+use `"`c(sysdir_site)'/users/$id/gastos.dta"', clear
 
 tabstat factor, stat(sum) f(%20.0fc) save
 tempname pobenigh

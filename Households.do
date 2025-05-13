@@ -14,7 +14,7 @@ if "`1'" == "" {
 	local SubsidioEmpleo = 43131000000 	// Presupuesto de gastos fiscales (2020)
 	local udis = 7.380711			// Promedio de valor de UDIS de enero a diciembre 2020
 	local smdf = 172.87			// Unidad de medida y actualizacion (UMA)
-	local anioenigh = 2022
+	scalar anioenigh = 2022
 	local segpop = "pop_insabi"
 }
 timer on 6
@@ -25,7 +25,7 @@ if `1' >= 2022 {
 	local SubsidioEmpleo = 43131000000 	// Presupuesto de gastos fiscales (2020)
 	local udis = 7.380711			// Promedio de valor de UDIS de enero a diciembre 2020
 	local smdf = 172.87			// Unidad de medida y actualizacion (UMA)
-	local anioenigh = 2022
+	scalar anioenigh = 2022
 	local segpop = "pop_insabi"
 }
 if `1' >= 2020 & `1' < 2022 {
@@ -35,7 +35,7 @@ if `1' >= 2020 & `1' < 2022 {
 	local SubsidioEmpleo = 49997000000 	// Presupuesto de gastos fiscales (2020)
 	local udis = 6.496487003		// Promedio de valor de UDIS de enero a diciembre 2020
 	local smdf = 123.22			// Unidad de medida y actualizacion (UMA)
-	local anioenigh = 2020
+	scalar anioenigh = 2020
 	local segpop = "pop_insabi"
 }
 if `1' >= 2018 & `1' < 2020 {
@@ -45,7 +45,7 @@ if `1' >= 2018 & `1' < 2020 {
 	local SubsidioEmpleo = 50979000000 	// Presupuesto de gastos fiscales (2018)
 	local udis = 6.054085			// Promedio de valor de UDIS de enero a diciembre 2018
 	local smdf = 88.36			// Unidad de medida y actualizacion (UMA)
-	local anioenigh = 2018
+	scalar anioenigh = 2018
 	local segpop = "segpop"
 }
 if `1' >= 2016 & `1' < 2018 {
@@ -55,7 +55,7 @@ if `1' >= 2016 & `1' < 2018 {
 	local SubsidioEmpleo = 43707000000	// Presupuesto de gastos fiscales (2016)
 	local udis = 5.4490872131		// Promedio de valor de UDIS de enero a diciembre 2016
 	local smdf = 73.04			// Unidad de medida y actualizacion (UMA)
-	local anioenigh = 2016
+	scalar anioenigh = 2016
 	local segpop = "segpop"
 }
 if `1' >= 2014 & `1' < 2016 {
@@ -65,7 +65,7 @@ if `1' >= 2014 & `1' < 2016 {
 	local SubsidioEmpleo = 41293000000	// Presupuesto de gastos fiscales (2014)
 	local udis = 5.1561230329  		// Promedio de valor de UDIS de enero a diciembre 2014
 	local smdf = 67.29			// Zona A. 2014
-	local anioenigh = 2014
+	scalar anioenigh = 2014
 	local segpop = "segpop"
 }
 
@@ -2532,8 +2532,8 @@ label var Yk "Ingreso de capital"
 noisily Perfiles Yk [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Ingreso de capital")
 noisily Simulador Yk [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Ingreso de capital") reboot
 
-noisily Perfiles ingbrutotot [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Gasto anual total")
-noisily Simulador ingbrutotot [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Gasto anual total") reboot
+noisily Perfiles ingbrutotot [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Ingreso bruto total")
+noisily Simulador ingbrutotot [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Ingreso bruto total") reboot
 
 noisily Perfiles gastoanualTOT [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Gasto anual total")
 noisily Simulador gastoanualTOT [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Gasto anual total") reboot
@@ -2580,6 +2580,7 @@ label var cuotasTPF "Cuotas a la Seguridad Social"
 noisily Perfiles cuotasTPF [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Cuotas a la Seguridad Social")
 noisily Simulador cuotasTPF [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Cuotas a la Seguridad Social") reboot
 
+g PIB = Yl + Yk
 
 
 **********/
