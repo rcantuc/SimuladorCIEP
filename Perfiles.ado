@@ -97,9 +97,9 @@ quietly {
 	g `boot' = .
 
 	** 1.2 Directorios y archivos **
+	capture mkdir `"`c(sysdir_site)'/05_graphs/"'
 	capture mkdir `"`c(sysdir_site)'/users/"'
 	capture mkdir `"`c(sysdir_site)'/users/$id/"'
-	capture mkdir `"`c(sysdir_site)'/users/$id/graphs/"'
 	capture mkdir `"`c(sysdir_site)'/users/$id/bootstraps/"'
 	capture mkdir `"`c(sysdir_site)'/users/$id/bootstraps/`bootstrap'"'
 
@@ -401,10 +401,10 @@ quietly {
 	}
 
 	if "$nographs" != "nographs" & "`nographs'" != "nographs" {
-		graph save PerfilH`varlist' `"`c(sysdir_site)'/users/$id/graphs/PerfilH`varlist'"', replace
-		graph save PerfilM`varlist' `"`c(sysdir_site)'/users/$id/graphs/PerfilM`varlist'"', replace
-		graph save ContH`varlist' `"`c(sysdir_site)'/users/$id/graphs/ContH`varlist'"', replace
-		graph save ContH`varlist' `"`c(sysdir_site)'/users/$id/graphs/ContH`varlist'"', replace
+		graph save PerfilH`varlist' `"`c(sysdir_site)'/05_graphs/PerfilH`varlist'"', replace
+		graph save PerfilM`varlist' `"`c(sysdir_site)'/05_graphs/PerfilM`varlist'"', replace
+		graph save ContH`varlist' `"`c(sysdir_site)'/05_graphs/ContH`varlist'"', replace
+		graph save ContH`varlist' `"`c(sysdir_site)'/05_graphs/ContH`varlist'"', replace
 	}
 
 
@@ -608,7 +608,7 @@ quietly {
 			///caption("{bf:Source}: Prepared by CIEP, using data from `base'.") ///
 			///note(`"{bf:Note}: Percentages in parentheses show the concentration in each group."')
 
-		graph save `=substr("`varlist'",1,10)'_`aniope' `"`c(sysdir_site)'/users/$id/graphs/`varlist'_`aniope'.gph"', replace
+		graph save `=substr("`varlist'",1,10)'_`aniope' `"`c(sysdir_site)'/05_graphs/`varlist'_`aniope'.gph"', replace
 		if "$export" != "" {
 			graph export `"$export/`varlist'_`aniope'.png"', replace name(`=substr("`varlist'",1,10)'_`aniope')
 		}

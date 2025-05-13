@@ -102,8 +102,8 @@ quietly {
 
 		******************
 		** 1.2 Archivos **
+		capture mkdir `"`c(sysdir_site)'/05_graphs/"'
 		capture mkdir `"`c(sysdir_site)'/users/$id/"'
-		capture mkdir `"`c(sysdir_site)'/users/$id/graphs/"'
 		capture mkdir `"`c(sysdir_site)'/users/$id/bootstraps/"'
 		capture mkdir `"`c(sysdir_site)'/users/$id/bootstraps/`bootstrap'"'
 
@@ -435,10 +435,10 @@ quietly {
 	}
 
 	if "$nographs" != "nographs" & "`nographs'" != "nographs" {
-		graph save PerfilH`varlist' `"`c(sysdir_site)'/users/$id/graphs/PerfilH`varlist'"', replace
-		graph save PerfilM`varlist' `"`c(sysdir_site)'/users/$id/graphs/PerfilM`varlist'"', replace
-		graph save ContH`varlist' `"`c(sysdir_site)'/users/$id/graphs/ContH`varlist'"', replace
-		graph save ContH`varlist' `"`c(sysdir_site)'/users/$id/graphs/ContH`varlist'"', replace
+		graph save PerfilH`varlist' `"`c(sysdir_site)'/05_graphs/PerfilH`varlist'"', replace
+		graph save PerfilM`varlist' `"`c(sysdir_site)'/05_graphs/PerfilM`varlist'"', replace
+		graph save ContH`varlist' `"`c(sysdir_site)'/05_graphs/ContH`varlist'"', replace
+		graph save ContH`varlist' `"`c(sysdir_site)'/05_graphs/ContH`varlist'"', replace
 	}
 
 
@@ -576,11 +576,11 @@ quietly {
 			///caption("{bf:Source}: Prepared by CIEP, using data from `base'.") ///
 			///note(`"{bf:Note}: Percentages in parentheses show the concentration in each group."')
 
-		graph save `=substr("`varlist'",1,10)'_`aniope'S `"`c(sysdir_site)'/users/$id/graphs/`varlist'_`aniope'.gph"', replace
+		graph save `=substr("`varlist'",1,10)'_`aniope'S `"`c(sysdir_site)'/05_graphs/`varlist'_`aniope'.gph"', replace
 		if "$export" != "" {
 			graph export `"$export/`varlist'_`aniope'S.png"', replace name(`=substr("`varlist'",1,10)'_`aniope'S)
 		}
-		*capture window manage close graph `=substr("`varlist'",1,10)'_dec
+		capture window manage close graph `=substr("`varlist'",1,10)'_dec
 		capture window manage close graph `varlist'Proj
 	}
 
@@ -817,9 +817,10 @@ program graphpiramide
 			///caption("{bf:Source}: Prepared by CIEP, using data from `base'.") ///
 			///note(`"{bf:Note}: Percentages in parentheses represent each group's share of the total account."')
 	
-		graph save `=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)' `"`c(sysdir_site)'/users/$id/graphs/`varlist'_`titleover'.gph"', replace
+		graph save `=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)' `"`c(sysdir_site)'/05_graphs/`varlist'_`titleover'.gph"', replace
 		if "$export" != "" {
-			graph export `"$export/`varlist'_`titleover'.png"', replace name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)')
+			graph export `"$export/`varlist'_`titleover'.png"', ///
+				replace name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)')
 		}
 		capture window manage close graph H`varlist'
 		capture window manage close graph M`varlist'

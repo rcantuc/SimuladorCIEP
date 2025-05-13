@@ -520,30 +520,22 @@ quietly {
 
 		* Cambios * 
 		if (`finPIBTOT'[1,1]-`iniPIBTOT'[1,1]) > 0 {
-			local cambio = "aumentó"
+			local cambio = "aumentaría"
 		}
 		else {
-			local cambio = "disminuyó"
+			local cambio = "disminuiría"
 		}
 
-		twoway `extras' ///
-			(connected `recaudacionline' anio if resumido == resumido[1], mlabpos(12) mlabcolor("111 111 111") mlabel(`recaudacionline') yaxis(2) mlabsize(large)) ///
-			///(scatter recaudacionPIBTOT anio if resumido == resumido[1], mlabpos(12) mlabcolor("111 111 111") mlabel(recaudacionPIBTOT) mlabsize(large) mcolor(white) lcolor(white)) ///
-			if anio <= `anio', ///
-			///over(resumido, sort(1) descending) over(anio, gap(30)) ///
-			///stack asyvars blabel(bar, format(%7.1fc)) outergap(0) ///
+		graph bar recaudacionPIB if anio <= `anio', ///
+			over(resumido, sort(1) descending) over(anio, gap(30)) ///
+			stack asyvars blabel(bar, format(%7.1fc)) outergap(0) ///
 			name(ingresos`by'PIB, replace) ///
 			title("`graphtitle'") ///
-			yscale(range(0 `=`maxPIBTOT'[1,1]*1.75')) ///
-			yscale(range(-50 `=`maxPIBTOT'[1,2]*1.1') axis(2) noline) ///
 			ylabel(, format(%7.1fc) labsize(small)) ///
-			ylabel(none, axis(2)) ///
-			xlabel(`desde'(1)`anio') ///
-			xtitle("") ///
 			ytitle("billones de `currency' `aniovp'") ///
-			ytitle("", axis(2)) ///
-			///subtitle("Recaudación, como % del PIB") ///
-			legend(on position(6) rows(`rows') cols(`cols') `legend' order(`order') justification(left)) ///
+			subtitle("Recaudación, como % del PIB") ///
+			blabel(bar, format(%5.1fc)) ///
+			legend(on position(6) rows(`rows') cols(`cols') /*`legend' order(`order')*/ justification(left)) ///
 			/// Added text 
 			///text(`=recaudacionPIBTOT[1]' `=anio[1]' "{bf:% PIB}", placement(6)) ///
 			///text(`=`recaudacionline'[1]' `=anio[1]' "{bf:% LIF}", placement(6) yaxis(2)) ///

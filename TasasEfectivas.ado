@@ -270,7 +270,9 @@ quietly {
 		_col(40) in g "Ing. propios" ///
 		_col(55) %7.3fc in y (FMPPIB+PEMEXPIB+CFEPIB+IMSSPIB+ISSSTEPIB) ///
 		_col(63) %7.3fc in y (FMPPIB+PEMEXPIB+CFEPIB+IMSSPIB+ISSSTEPIB)/(CapIncImpPIB)*100 " %" "}"
-
+	scalar IngKPublicosTotPIB = (FMPPIB+PEMEXPIB+CFEPIB+IMSSPIB+ISSSTEPIB)
+	scalar IngKPublicosTotPor = (FMPPIB+PEMEXPIB+CFEPIB+IMSSPIB+ISSSTEPIB)/(CapIncImpPIB)*100
+	scalar ImpKPublicosPIB = FMPPIB+PEMEXPIB+CFEPIB+IMSSPIB+ISSSTEPIB
 
 
 

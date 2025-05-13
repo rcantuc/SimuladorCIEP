@@ -836,7 +836,7 @@ quietly {
 	scalar penotroPIB = `penotro'/`PIB'*100
 
 	** 5.6.2 Asignación de gasto en variable **
-	replace Pension = Pension + scalar(penotro)*pens_otro
+	replace Pensiones = Pensiones + scalar(penotro)*pens_otro
 
 	scalar pensionPIB = (`pam'+`penimss'+`penisss'+`penpeme'+`penotro')/`PIB'*100
 	scalar pensiones = (`pam'+`penimss'+`penisss'+`penpeme'+`penotro')/(`pens_pam'+`pens_imss'+`pens_issste'+`pens_pemex'+`pens_otro')
@@ -1097,6 +1097,7 @@ quietly {
 		restore
 	}
 	scalar gasfederPIB = `gasfeder'/`PIB'*100
+	capture drop Part_y_otras_Apor
 	g Part_y_otras_Apor = scalar(gasfeder)
 
 

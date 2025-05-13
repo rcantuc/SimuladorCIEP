@@ -548,28 +548,20 @@ quietly {
 			local cambio = "disminuyó"
 		}
 
-		twoway `extras' ///
-			(connected `gastoline' anio if resumido == resumido[1], mlabpos(12) mlabcolor("111 111 111") mlabel(`gastoline') yaxis(2) mlabsize(large)) ///
-			///(scatter gastoPIBTOT anio if resumido == resumido[1], mlabpos(12) mlabcolor("111 111 111") mlabel(gastoPIBTOT) mlabsize(large) mcolor(white) lcolor(white)) ///
-			if anio <= `anio', ///
-			///over(resumido, sort(1) descending) over(anio, gap(30)) ///
-			///stack asyvars blabel(bar, format(%7.1fc)) outergap(0) ///
+		graph bar gastoPIB if anio <= `anio', ///
+			over(resumido, sort(1) descending) over(anio, gap(30)) ///
+			stack asyvars blabel(bar, format(%7.1fc)) outergap(0) ///
 			name(gastos`by'PIB, replace) ///
 			title("`graphtitle'") ///
-			yscale(range(0 `=`maxPIBTOT'[1,1]*1.75')) ///
-			yscale(range(-50 `=`maxPIBTOT'[1,2]*1.1') axis(2) noline) ///
 			ylabel(, format(%7.1fc) labsize(small)) ///
-			ylabel(none, axis(2)) ///
-			xlabel(`desde'(1)`anio') ///
-			xtitle("") ///
-			ytitle("billones de `currency' `anio'") ///
-			ytitle("", axis(2)) ///
-			///subtitle("Gasto, como % del PIB") ///
-			legend(on position(6) rows(`rows') cols(`cols') `legend' order(`order') justification(left)) ///
+			ytitle("billones de `currency' `aniovp'") ///
+			subtitle("Recaudación, como % del PIB") ///
+			blabel(bar, format(%5.1fc)) ///
+			legend(on position(6) rows(`rows') cols(`cols') /*`legend' order(`order')*/ justification(left)) ///
 			/// Added text 
-			///text(`=gastoPIBTOT[1]' `=anio[1]' "{bf:% PIB}", placement(6)) ///
-			///text(`=`gastoline'[1]' `=anio[1]' "{bf:% PEF}", placement(6) yaxis(2)) ///
-			///b1title("De `desde' a `anio', el {bf:gasto `cambio' `=string(abs(`finPIBTOT'[1,1]-`iniPIBTOT'[1,1]),"%7.1fc")'} puntos porcentuales del PIB.")
+			///text(`=recaudacionPIBTOT[1]' `=anio[1]' "{bf:% PIB}", placement(6)) ///
+			///text(`=`recaudacionline'[1]' `=anio[1]' "{bf:% LIF}", placement(6) yaxis(2)) ///
+			b1title("De `desde' a `anio', el {bf:gasto `cambio' `=string(abs(`finPIBTOT'[1,1]-`iniPIBTOT'[1,1]),"%7.1fc")'} puntos porcentuales del PIB.")
 
 		/*grc1leg ///
 		///graph combine ///
@@ -616,110 +608,110 @@ program define UpdatePEF
 	*** 1. BASES DE DATOS ***
 	*************************
 	* 1.1. Descargar archivos *
-	capture mkdir "`c(sysdir_site)'/03_temp/PEFs"
-	cd "`c(sysdir_site)'/03_temp/PEFs"
+	capture mkdir "`c(sysdir_site)'/01_raw/PEFs"
+	cd "`c(sysdir_site)'/01_raw/PEFs"
 
 	// CP 2013
-	capture confirm file "`c(sysdir_site)'/03_temp/PEFs/CP 2013.dta"
+	capture confirm file "`c(sysdir_site)'/01_raw/PEFs/CP 2013.dta"
 	if _rc != 0 {
 		import excel "https://www.dropbox.com/scl/fi/tmj8e6ab3rx9bga2lio8f/CP-2013.xlsx?rlkey=p06bems5260g4buvmljeq4xqg&dl=1", clear firstrow case(lower) allstring sheet("2013")
-		save "`c(sysdir_site)'/03_temp/PEFs/CP 2013.dta", replace
+		save "`c(sysdir_site)'/01_raw/PEFs/CP 2013.dta", replace
 	}
 
 	// CP 2014
-	capture confirm file "`c(sysdir_site)'/03_temp/PEFs/CP 2014.dta"
+	capture confirm file "`c(sysdir_site)'/01_raw/PEFs/CP 2014.dta"
 	if _rc != 0 {
 		import excel "https://www.dropbox.com/scl/fi/0jwdav5s73ailx3jt4ho1/CP-2014.xlsx?rlkey=xgb9290slqrh2sfb3i7p13d4v&dl=1", clear firstrow case(lower) allstring sheet("2014")
-		save "`c(sysdir_site)'/03_temp/PEFs/CP 2014.dta", replace
+		save "`c(sysdir_site)'/01_raw/PEFs/CP 2014.dta", replace
 	}
 
 	// CP 2015
-	capture confirm file "`c(sysdir_site)'/03_temp/PEFs/CP 2015.dta"
+	capture confirm file "`c(sysdir_site)'/01_raw/PEFs/CP 2015.dta"
 	if _rc != 0 {
 		import excel "https://www.dropbox.com/scl/fi/8uwgudsxbfo1825p75eqc/CP-2015.xlsx?rlkey=nqbd9uq7jh9v9fshqmgjz12o6&dl=1", clear firstrow case(lower) allstring sheet("2015")
-		save "`c(sysdir_site)'/03_temp/PEFs/CP 2015.dta", replace
+		save "`c(sysdir_site)'/01_raw/PEFs/CP 2015.dta", replace
 	}
 
 	// CP 2016
-	capture confirm file "`c(sysdir_site)'/03_temp/PEFs/CP 2016.dta"
+	capture confirm file "`c(sysdir_site)'/01_raw/PEFs/CP 2016.dta"
 	if _rc != 0 {
 		import excel "https://www.dropbox.com/scl/fi/rpcekelvlw4d2hpalrdsj/CP-2016.xlsx?rlkey=787g02ct7087glqitzowdwqqw&dl=1", clear firstrow case(lower) allstring sheet("2016")
-		save "`c(sysdir_site)'/03_temp/PEFs/CP 2016.dta", replace
+		save "`c(sysdir_site)'/01_raw/PEFs/CP 2016.dta", replace
 	}
 
 	// CP 2017
-	capture confirm file "`c(sysdir_site)'/03_temp/PEFs/CP 2017.dta"
+	capture confirm file "`c(sysdir_site)'/01_raw/PEFs/CP 2017.dta"
 	if _rc != 0 {
 		import excel "https://www.dropbox.com/scl/fi/a9g3jco2j9styyle11q0d/CP-2017.xlsx?rlkey=nve5lmln454z9qfcv73fdop5h&dl=1", clear firstrow case(lower) allstring sheet("2017")
-		save "`c(sysdir_site)'/03_temp/PEFs/CP 2017.dta", replace
+		save "`c(sysdir_site)'/01_raw/PEFs/CP 2017.dta", replace
 	}
 
 	// CP 2018
-	capture confirm file "`c(sysdir_site)'/03_temp/PEFs/CP 2018.dta"
+	capture confirm file "`c(sysdir_site)'/01_raw/PEFs/CP 2018.dta"
 	if _rc != 0 {
 		import excel "https://www.dropbox.com/scl/fi/royddlkuy3ur1wd2f1m77/CP-2018.xlsx?rlkey=ai07mkjz09cbklvqw4s69dwb8&dl=1", clear firstrow case(lower) allstring sheet("2018")
-		save "`c(sysdir_site)'/03_temp/PEFs/CP 2018.dta", replace
+		save "`c(sysdir_site)'/01_raw/PEFs/CP 2018.dta", replace
 	}
 
 	// CP 2019
-	capture confirm file "`c(sysdir_site)'/03_temp/PEFs/CP 2019.dta"
+	capture confirm file "`c(sysdir_site)'/01_raw/PEFs/CP 2019.dta"
 	if _rc != 0 {
 		import excel "https://www.dropbox.com/scl/fi/n74mtitayigfox9j7tlqp/CP-2019.xlsx?rlkey=aq04x74ptfw4lqefzhhk7757y&dl=1", clear firstrow case(lower) allstring sheet("2019")
-		save "`c(sysdir_site)'/03_temp/PEFs/CP 2019.dta", replace
+		save "`c(sysdir_site)'/01_raw/PEFs/CP 2019.dta", replace
 	}
 
 	// CP 2020
-	capture confirm file "`c(sysdir_site)'/03_temp/PEFs/CP 2020.dta"
+	capture confirm file "`c(sysdir_site)'/01_raw/PEFs/CP 2020.dta"
 	if _rc != 0 {
 		import excel "https://www.dropbox.com/scl/fi/jm0izq4a7q65bi2o9t20i/CP-2020.xlsx?rlkey=opanqlje6qc65fa9snv48xkyj&dl=1", clear firstrow case(lower) allstring sheet("2020")
-		save "`c(sysdir_site)'/03_temp/PEFs/CP 2020.dta", replace
+		save "`c(sysdir_site)'/01_raw/PEFs/CP 2020.dta", replace
 	}
 
 	// CP 2021
-	capture confirm file "`c(sysdir_site)'/03_temp/PEFs/CP 2021.dta"
+	capture confirm file "`c(sysdir_site)'/01_raw/PEFs/CP 2021.dta"
 	if _rc != 0 {
 		import excel "https://www.dropbox.com/scl/fi/8kg8uryf8wxj1whhugxca/CP-2021.xlsx?rlkey=vesikealy59v4h1jncrj8ar50&dl=1", clear firstrow case(lower) allstring sheet("2021")
-		save "`c(sysdir_site)'/03_temp/PEFs/CP 2021.dta", replace
+		save "`c(sysdir_site)'/01_raw/PEFs/CP 2021.dta", replace
 	}
 
 	// CP 2022
-	capture confirm file "`c(sysdir_site)'/03_temp/PEFs/CP 2022.dta"
+	capture confirm file "`c(sysdir_site)'/01_raw/PEFs/CP 2022.dta"
 	if _rc != 0 {
 		import excel "https://www.dropbox.com/scl/fi/zqoi2rf7k328dxb4qshlj/CP-2022.xlsx?rlkey=7z6mgion5y24z3c9ngolprn4h&dl=1", clear firstrow case(lower) allstring sheet("2022")
-		save "`c(sysdir_site)'/03_temp/PEFs/CP 2022.dta", replace
+		save "`c(sysdir_site)'/01_raw/PEFs/CP 2022.dta", replace
 	}
 
 	// CP 2023
-	capture confirm file "`c(sysdir_site)'/03_temp/PEFs/CP 2023.dta"
+	capture confirm file "`c(sysdir_site)'/01_raw/PEFs/CP 2023.dta"
 	if _rc != 0 {
 		import excel "https://www.dropbox.com/scl/fi/6duzir94gzhmho17nm71b/CP-2023.xlsx?rlkey=9t577ttfnwl3hkxtv2hxqrc4v&dl=1", clear firstrow case(lower) allstring sheet("2023")
-		save "`c(sysdir_site)'/03_temp/PEFs/CP 2023.dta", replace
+		save "`c(sysdir_site)'/01_raw/PEFs/CP 2023.dta", replace
 	}
 
 	// PEF 2024
-	capture confirm file "`c(sysdir_site)'/03_temp/PEFs/PEF 2024.dta"
+	capture confirm file "`c(sysdir_site)'/01_raw/PEFs/PEF 2024.dta"
 	if _rc != 0 {
 		import excel "https://www.dropbox.com/scl/fi/puf4ut4o2ppjrenxmjmb7/PEF-2024.xlsx?rlkey=1lijn8yr90o8uzxz8ytz0je59&dl=1", clear firstrow case(lower) allstring sheet("2024")
-		save "`c(sysdir_site)'/03_temp/PEFs/PEF 2024.dta", replace
+		save "`c(sysdir_site)'/01_raw/PEFs/PEF 2024.dta", replace
 	}
 
 	// PEF 2025
-	capture confirm file "`c(sysdir_site)'/03_temp/PEFs/PEF 2025.dta"
+	capture confirm file "`c(sysdir_site)'/01_raw/PEFs/PEF 2025.dta"
 	if _rc != 0 {
 		import excel "https://www.dropbox.com/scl/fi/w71pnp8zlntsly1mrb3pw/PEF-2025.xlsx?rlkey=hvj1jv5hrfaytmtw4gtljka5l&dl=1", clear firstrow case(lower) allstring sheet("2025")
-		save "`c(sysdir_site)'/03_temp/PEFs/PEF 2025.dta", replace
+		save "`c(sysdir_site)'/01_raw/PEFs/PEF 2025.dta", replace
 	}
 
 	// Cuotas ISSSTE
-	capture confirm file "`c(sysdir_site)'/03_temp/PEFs/Cuotas ISSSTE.dta"
+	capture confirm file "`c(sysdir_site)'/01_raw/PEFs/Cuotas ISSSTE.dta"
 	if _rc != 0 {
 		import excel "https://www.dropbox.com/scl/fi/xr8vzvlszzkensfz3fcr9/CuotasISSSTE.xlsx?rlkey=2ncpvhtuo6zoy2l74l7bq7v40&dl=1", clear firstrow case(lower) allstring
-		save "`c(sysdir_site)'/03_temp/PEFs/Cuotas ISSSTE.dta", replace
+		save "`c(sysdir_site)'/01_raw/PEFs/Cuotas ISSSTE.dta", replace
 	}
 
 	capture confirm file "`c(sysdir_site)'/03_temp/prePEF.dta"
 	if _rc != 0 {
-		local archivos: dir "`c(sysdir_site)'/03_temp/PEFs" files "*.dta"		// Archivos .xlsx
+		local archivos: dir "`c(sysdir_site)'/01_raw/PEFs" files "*.dta"		// Archivos .xlsx
 		*local archivos `""PEF 2025.dta" "CuotasISSSTE.dta""'
 
 		foreach k of local archivos {
@@ -727,7 +719,7 @@ program define UpdatePEF
 			* 1.1 Importar el archivo `k'.xlsx (Cuenta Pública) *
 			noisily di in g "Importando: " in y "`k'"
 			tokenize `k'
-			use "`c(sysdir_site)'/03_temp/PEFs/`k'", clear
+			use "`c(sysdir_site)'/01_raw/PEFs/`k'", clear
 			capture drop v*
 
 			* 1.2 Limpiar observaciones *

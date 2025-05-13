@@ -105,7 +105,7 @@ quietly {
 				local obslastexo = `j'
 			}
 		}
-		
+
 		* Costos financieros *
 		replace porInterno = shrfspInterno/(shrfspInterno+shrfspExterno) if porInterno == .
 		replace porExterno = shrfspExterno/(shrfspInterno+shrfspExterno) if porExterno == .
@@ -410,7 +410,7 @@ quietly {
 			graph export "$export/shrfsppc.png", replace name(shrfsppc)
 		}
 
-		** Por Gobierno, OyE y Banca de desarrollo **
+		/** Por Gobierno, OyE y Banca de desarrollo **
 		tabstat `shrfsp_banca' `shrfsp_pib', stat(min max) by(anio) save
 		tempname rango
 		matrix `rango' = r(StatTotal)
@@ -479,7 +479,7 @@ quietly {
 		capture confirm existence $export
 		if _rc == 0 {
 			graph export "$export/shrfsp_plazo.png", replace name(shrfsp_plazo)
-		}
+		}*/
 	}
 
 
