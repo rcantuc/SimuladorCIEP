@@ -429,7 +429,7 @@ quietly {
 	*** 5. Gráficos ***
 	*++****++++++++++**
 	if "`nographs'" != "nographs" & "$nographs" == "" {
-		*preserve
+		preserve
 
 		* Normalizar valores a billones *
 		*replace recaudacion=recaudacion/deflator/1000000000000

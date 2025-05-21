@@ -17,14 +17,14 @@ timer on 1
 ** Directorios de trabajo (uno por computadora)
 if "`c(username)'" == "ricardo" {						// iMac Ricardo
 	sysdir set SITE "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
-	global export "/Users/ricardo/CIEP Dropbox/TextbookCIEP/images"
+	//global export "/Users/ricardo/CIEP Dropbox/TextbookCIEP/images"
 }
 else if "`c(username)'" == "servidorciep" {					// Servidor CIEP
 	sysdir set SITE "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
-	global export "/home/servidorciep/CIEP Dropbox/TextbookCIEP/images"
+	//global export "/home/servidorciep/CIEP Dropbox/TextbookCIEP/images"
 }
 else if "`c(console)'" != "" {							// Servidor Web
-	sysdir set SITE "/SIM/OUT/6/"
+	sysdir set SITE "/SIM/OUT/7/"
 }
 
 ** Parámetros iniciales
@@ -73,6 +73,7 @@ global pib2027 = 2.5
 global pib2028 = 2.5
 global pib2029 = 2.5
 global pib2030 = 2.5
+global pib2031 = 2.5
 
 global def2025 = 4.4								// CRECIMIENTO ANUAL PRECIOS IMPLÍCITOS
 global def2026 = 4.0								// <-- AGREGAR O QUITAR AÑOS
@@ -80,6 +81,7 @@ global def2027 = 3.5
 global def2028 = 3.5
 global def2029 = 3.5
 global def2030 = 3.5
+global def2031 = 3.5
 
 global inf2025 = 3.5								// CRECIMIENTO ANUAL INFLACIÓN
 global inf2026 = 3.0								// <-- AGREGAR O QUITAR AÑOS
@@ -87,6 +89,7 @@ global inf2027 = 3.0
 global inf2028 = 3.0
 global inf2029 = 3.0
 global inf2030 = 3.0
+global inf2031 = 3.0
 
 
 ** 2.1 Producto Interno Bruto
@@ -94,7 +97,7 @@ global inf2030 = 3.0
 
 
 ** 2.2 Sistema de Cuentas Nacionales
-//noisily SCN, anio(`=aniovp') $update $textbook nographs
+noisily SCN, anio(`=aniovp') $update $textbook
 
 
 
@@ -103,11 +106,17 @@ global inf2030 = 3.0
 ***
 
 ** 3.1 Ley de Ingresos de la Federación
-//noisily LIF if divLIF != 10, anio(`=anioPE') by(divOrigen) $update 		///
-	//title("Ingresos presupuestarios") 					/// Cambiar título
-	//desde(`=`=anioPE'-12') 						/// Año de inicio PROMEDIO
-	//min(0) 								/// Mínimo 0% del PIB (no negativo)
-	//rows(1)								// Número de filas en la leyenda
+noisily LIF if divLIF != 10, anio(`=anioPE') by(divSIM) $update 		///
+	title("Ingresos presupuestarios") 					/// Cambiar título
+	desde(`=`=anioPE'-12') 							/// Año de inicio PROMEDIO
+	min(0) 									/// Mínimo 0% del PIB (no negativo)
+	rows(1)									//  Número de filas en la leyenda
+
+rename divSIM divCODE
+decode divCODE, g(divSIM) 
+collapse (sum) recaudacion, by(anio divSIM) fast
+save `"`c(sysdir_site)'/users/$id/LIF.dta"', replace	
+
 
 //postfile TE double(anio ISRAS ISRPF CUOTAS IngLab 				/// Impuestos al trabajo
 	//ISRPM OTROSK IngCap 							/// Impuestos al capital
@@ -117,26 +126,146 @@ global inf2030 = 3.0
 forvalues anio = `=anioPE'(1)`=anioPE' {
 
 	** 3.1.1 Parámetros: Ingresos **
-	scalar ISRAS  =   3.678 						// ISR (asalariados)
-	scalar ISRPF  =   0.233 						// ISR (personas f{c i'}sicas)
-	scalar CUOTAS =   1.679  						// Cuotas (IMSS)
+	if "$update" != "update" {
+		scalar ISRASPIB  =   3.678 					// ISR (asalariados)
+		scalar ISRPFPIB  =   0.233 					// ISR (personas f{c i'}sicas)
+		scalar CUOTASPIB =   1.679  					// Cuotas (IMSS)
 
-	scalar ISRPM  =   4.049  						// ISR (personas morales)
-	scalar OTROSK =   1.290  						// Productos, derechos, aprovech.
+		scalar ISRPMPIB  =   4.049  					// ISR (personas morales)
+		scalar OTROSKPIB =   1.290  					// Productos, derechos, aprovech.
 
-	scalar FMP    =   0.779  						// Fondo Mexicano del Petróleo
-	scalar PEMEX  =   2.397  						// Organismos y empresas (Pemex)
-	scalar CFE    =   1.501  						// Organismos y empresas (CFE)
-	scalar IMSS   =   0.118  						// Organismos y empresas (IMSS)
-	scalar ISSSTE =   0.162  						// Organismos y empresas (ISSSTE)
+		scalar FMPPIB    =   0.779  					// Fondo Mexicano del Petróleo
+		scalar PEMEXPIB  =   2.397  					// Organismos y empresas (Pemex)
+		scalar CFEPIB    =   1.501  					// Organismos y empresas (CFE)
+		scalar IMSSPIB   =   0.118  					// Organismos y empresas (IMSS)
+		scalar ISSSTEPIB =   0.162  					// Organismos y empresas (ISSSTE)
 
-	scalar IVA    =   4.074  						// IVA
-	scalar ISAN   =   0.057  						// ISAN
-	scalar IEPSNP =   0.669  						// IEPS (resumido)
-	scalar IEPSP  =   1.318  						// IEPS (petrolero)
-	scalar IMPORT =   0.423  						// Importaciones
+		scalar IVAPIB    =   4.074  					// IVA
+		scalar ISANPIB   =   0.057  					// ISAN
+		scalar IEPSNPPIB =   0.669  					// IEPS (resumido)
+		scalar IEPSPPIB  =   1.318 					// IEPS (petrolero)
+		scalar IMPORTPIB =   0.423  					// Importaciones
+	}
 
-	** 3.1.2 Tasas Efectivas **/
+	** 3.1.2 Parámetros: ISR **
+	* Anexo 8 de la Resolución Miscelánea Fiscal para 2024 *
+	* Tarifa para el cálculo del impuesto correspondiente al ejericio 2024 a que se refieren los artículos 97 y 152 de la Ley del ISR
+	* Tabla del subsidio para el empleo aplicable a la tarifa del numeral 5 del rubro B (página 773) *
+	*             INFERIOR		SUPERIOR	CF		TASA
+	matrix ISR =  (0.01,		8952.49,	0.0,		1.92	\	/// 1
+			8952.49+.01,	75984.55,	171.88,		6.40	\	/// 2
+			75984.55+.01,	133536.07,	4461.94,	10.88	\	/// 3
+			133536.07+.01,	155229.80,	10723.55,	16.00	\	/// 4
+			155229.80+.01,	185852.57,	14194.54,	17.92	\	/// 5
+			185852.57+.01,	374837.88,	19682.13,	21.36	\	/// 6
+			374837.88+.01,	590795.99,	60049.40,	23.52	\	/// 7
+			590795.99+.01,	1127926.84,	110842.74,	30.00	\	/// 8
+			1127926.84+.01,	1503902.46,	271981.99,	32.00	\	/// 9
+			1503902.46+.01,	4511707.37,	392294.17,	34.00	\	/// 10
+			4511707.37+.01,	1E+12,		1414947.85,	35.00)		//  11
+
+	*             INFERIOR		SUPERIOR	SUBSIDIO
+	matrix	SE =  (0.01,		1768.96*12,	407.02*12	\	/// 1
+			1768.96*12+.01,	2653.38*12,	406.83*12	\	/// 2
+			2653.38*12+.01,	3472.84*12,	406.62*12	\	/// 3
+			3472.84*12+.01,	3537.87*12,	392.77*12	\	/// 4
+			3537.87*12+.01,	4446.15*12,	382.46*12	\	/// 5
+			4446.15*12+.01,	4717.18*12,	354.23*12	\	/// 6
+			4717.18*12+.01,	5335.42*12,	324.87*12	\	/// 7
+			5335.42*12+.01,	6224.67*12,	294.63*12	\	/// 8
+			6224.67*12+.01,	7113.90*12,	253.54*12	\	/// 9
+			7113.90*12+.01,	7382.33*12,	217.61*12	\	/// 10
+			7382.33*12+.01,	1E+12,		0)			//  11
+
+	* Artículo 151, último párrafo (LISR) *
+	*            Ex. SS.MM.	Ex. 	% ing. gravable		% Informalidad PF	% Informalidad Salarios
+	matrix DED = (5,		15,			93.02, 			18.86)
+
+	* Artículo 9, primer párrafo (LISR) * 
+	*           Tasa ISR PM.	% Informalidad PM
+	matrix PM = (30,			48.45)
+
+	** 3.1.3 Parámetros: IMSS e ISSSTE **
+	* Informe al Ejecutivo Federal y al Congreso de la Unión la situación financiera y los riesgos del IMSS 2021-2022 *
+	* Anexo A, Cuadro A.4 *
+	matrix CSS_IMSS = ///
+	///		PATRONES	TRABAJADORES		GOBIERNO FEDERAL
+			(5.42,		0.44,			3.21	\	/// Enfermedad y maternidad, asegurados (Tgmasg*)
+			1.05,		0.37,			0.08	\	/// Enfermedad y maternidad, pensionados (Tgmpen*)
+			1.75,		0.63,			0.13	\	/// Invalidez y vida (Tinvyvida*)
+			1.83,		0.00,			0.00	\	/// Riesgos de trabajo (Triesgo*)
+			1.00,		0.00,			0.00	\	/// Guarderias y prestaciones sociales (Tguard*)
+			5.15,		1.12,			1.49	\	/// Retiro, cesantia en edad avanzada y vejez (Tcestyvej*)
+			0.00,		0.00,			6.55)		//  Cuota social -- hasta 25 UMA -- (TcuotaSocIMSS*)
+
+	* Informe Financiero Actuarial ISSSTE 2021 *
+	matrix CSS_ISSSTE = ///
+	///		PATRONES	TRABAJADORES	GOBIERNO FEDERAL
+			(7.375,		2.750,			391.0	\	/// Seguro de salud, trabajadores en activo y familiares
+			0.720,		0.625,			0.000	\	/// Seguro de salud, pensionados y familiares
+			0.750,		0.000,			0.000	\	/// Riesgo de trabajo
+			0.625,		0.625,			0.000	\	/// Invalidez y vida
+			0.500,		0.500,			0.000	\	/// Servicios sociales y culturales
+			6.125,		2+3.175,		5.500	\	/// Retiro, cesantia en edad avanzada y vejez
+			0.000,		5.000,			0.000	\	/// Vivienda
+			0.000,		0.000,			13.9)		//  Cuota social
+
+	** 3.1.4 Parámetros: IVA **
+	matrix IVAT = (16 \     ///  1  Tasa general 
+		1  \     ///  2  Alimentos, input[1]: Tasa Cero, [2]: Exento, [3]: Gravado
+		2  \     ///  3  Alquiler, idem
+		1  \     ///  4  Canasta basica, idem
+		2  \     ///  5  Educacion, idem
+		3  \     ///  6  Consumo fuera del hogar, idem
+		3  \     ///  7  Mascotas, idem
+		1  \     ///  8  Medicinas, idem
+		1  \     ///  9  Toallas sanitarias, idem
+		3  \     /// 10  Otros, idem
+		2  \     /// 11  Transporte local, idem
+		3  \     /// 12  Transporte foraneo, idem
+		15.09)   //  13  Evasion e informalidad IVA, input[0-100]
+
+	** 3.1.5 Parámetros: IEPS **
+	* Fuente: Ley del IEPS, Artículo 2.
+	*		Ad valorem	Específico
+	matrix IEPST = (26.5	,	0 		\			/// Cerveza y alcohol 14
+			30.0	,	0 		\			/// Alcohol 14+ a 20
+			53.0	,	0 		\			/// Alcohol 20+
+			160.0	,	0.6166		\			/// Tabaco y cigarros
+			30.0	,	0 		\			/// Juegos y sorteos
+			3.0	,	0 		\			/// Telecomunicaciones
+			25.0	,	0 		\			/// Bebidas energéticas
+			0	,	1.5737		\			/// Bebidas saborizadas
+			8.0	,	0 		\			/// Alto contenido calórico
+			0	,	10.7037		\			/// Gas licuado de petróleo (propano y butano)
+			0	,	21.1956		\			/// Combustibles (petróleo)
+			0	,	19.8607		\			/// Combustibles (diésel)
+			0	,	43.4269		\			/// Combustibles (carbón)
+			0	,	21.1956		\			/// Combustibles (combustible para calentar)
+			0	,	6.1752		\			/// Gasolina: magna
+			0	,	5.2146		\			/// Gasolina: premium
+			0	,	6.7865		)			// Gasolina: diésel
+
+	** 3.1.6 Submódulo ISR (web) **/
+	if "`cambioisrpf'" == "1" {
+		noisily run "`c(sysdir_site)'/ISR_Mod.do"
+		scalar ISRASPIB  = ISR_AS_Mod					// NUEVA ESTIMACIÓN ISR ASALARIADOS
+		scalar ISRAS = ISRASPIB/100*scalar(pibY)
+		scalar ISRPFPIB  = ISR_PF_Mod					// NUEVA ESTIMACIÓN ISR P. FÍSICAS
+		scalar ISRPF = ISRPFPIB/100*scalar(pibY)
+		scalar ISRPMPIB  = ISR_PM_Mod					// NUEVA ESTIMACIÓN ISR P. MORALES
+		scalar ISRPM = ISRPMPIB/100*scalar(pibY)
+		scalar CUOTASPIB = CUOTAS_Mod					// NUEVA ESTIMACIÓN CUOTAS IMSS
+		scalar CUOTAS = CUOTASPIB/100*scalar(pibY)
+	}
+	** 3.1.7 Submódulo IVA (web) **
+	if "`cambioiva'" == "1" {
+		noisily run "`c(sysdir_site)'/IVA_Mod.do"
+		scalar IVAPIB = IVA_Mod						// NUEVA ESTIMACIÓN IVA
+		scalar IVA = IVAPIB/100*scalar(pibY)
+	}
+
+	** 3.1.8 Tasas Efectivas **/
 	//capture scalar drop ISRAS ISRPF CUOTAS ISRPM OTROSK FMP PEMEX CFE IMSS ISSSTE IVA ISAN IEPSNP IEPSP IMPORT
 	noisily TasasEfectivas, anio(`anio')
 	//post TE (`anio') (`=ISRASPor') (`=ISRPFPor') (`=CUOTASPor') (`=YlImpPor') ///
@@ -267,48 +396,49 @@ if "$nographs" != "nographs" {
 forvalues anio = `=anioPE'(1)`=anioPE' {
 
 	** 3.2.1 Parámetros: Gasto **
-	scalar iniciaA     =     370  						// Inicial
-	scalar basica      =   29529  						// Educación b{c a'}sica
-	scalar medsup      =   28713  						// Educación media superior
-	scalar superi      =   41404  						// Educación superior
-	scalar posgra      =   66122  						// Posgrado
-	scalar eduadu      =   40517  						// Educación para adultos
-	scalar otrose      =    1720  						// Otros gastos educativos
-	scalar invere      =     675  						// Inversión en educación
-	scalar cultur      =     173  						// Cultura, deportes y recreación
-	scalar invest      =     398  						// Ciencia y tecnología
+	if "$update" != "update" {
+		scalar iniciaA     =     370  					// Inicial
+		scalar basica      =   29529  					// Educación b{c a'}sica
+		scalar medsup      =   28713  					// Educación media superior
+		scalar superi      =   41404  					// Educación superior
+		scalar posgra      =   66122  					// Posgrado
+		scalar eduadu      =   40517  					// Educación para adultos
+		scalar otrose      =    1720  					// Otros gastos educativos
+		scalar invere      =     675  					// Inversión en educación
+		scalar cultur      =     173  					// Cultura, deportes y recreación
+		scalar invest      =     398  					// Ciencia y tecnología
 
-	scalar ssa         =     276  						// SSalud
-	scalar imssbien    =    3728  						// IMSS-Bienestar
-	scalar imss        =    8923  						// IMSS (salud)
-	scalar issste      =   11161  						// ISSSTE (salud)
-	scalar pemex       =   29562  						// Pemex (salud)
-	scalar issfam      =   18040  						// ISSFAM (salud)
-	scalar invers      =     240  						// Inversión en salud
+		scalar ssa         =     276  					// SSalud
+		scalar imssbien    =    3728  					// IMSS-Bienestar
+		scalar imss        =    8923  					// IMSS (salud)
+		scalar issste      =   11161  					// ISSSTE (salud)
+		scalar pemex       =   29562  					// Pemex (salud)
+		scalar issfam      =   18040  					// ISSFAM (salud)
+		scalar invers      =     240  					// Inversión en salud
 
-	scalar pam         =   39356  						// Pensión Bienestar
-	scalar penimss     =  307742  						// Pensión IMSS
-	scalar penisss     =  410655  						// Pensión ISSSTE
-	scalar penpeme     =  923092  						// Pensión Pemex
-	scalar penotro     = 3336107  						// Pensión CFE, LFC, ISSFAM, Ferronales
+		scalar pam         =   39356  					// Pensión Bienestar
+		scalar penimss     =  307742  					// Pensión IMSS
+		scalar penisss     =  410655  					// Pensión ISSSTE
+		scalar penpeme     =  923092  					// Pensión Pemex
+		scalar penotro     = 3336107  					// Pensión CFE, LFC, ISSFAM, Ferronales
 
-	scalar gascfe      =    3146  						// Gasto en CFE
-	scalar gaspemex    =    1129  						// Gasto en Pemex
-	scalar gassener    =     690  						// Gasto en SENER
-	scalar gasinverf   =    3182  						// Gasto en inversión (energía)
-	scalar gascosdeue  =    1397  						// Gasto en costo de la deuda (energía)
+		scalar gascfe      =    3146  					// Gasto en CFE
+		scalar gaspemex    =    1129  					// Gasto en Pemex
+		scalar gassener    =     690  					// Gasto en SENER
+		scalar gasinverf   =    3182  					// Gasto en inversión (energía)
+		scalar gascosdeue  =    1397  					// Gasto en costo de la deuda (energía)
 
-	scalar gasinfra    =    3966  						// Gasto en Otras Inversiones
-	scalar gasotros    =    4233  						// Otros gastos
-	scalar gasfeder    =   10720  						// Participaciones y Otras aportaciones
-	scalar gascosto    =    9356  						// Gasto en Costo de la deuda
+		scalar gasinfra    =    3966  					// Gasto en Otras Inversiones
+		scalar gasotros    =    4233  					// Otros gastos
+		scalar gasfeder    =   10720  					// Participaciones y Otras aportaciones
+		scalar gascosto    =    9356  					// Gasto en Costo de la deuda
 
-	scalar ingbasico18 =       1  						// 1: Incluye menores de 18 anios, 0: no
-	scalar ingbasico65 =       1  						// 1: Incluye mayores de 65 anios, 0: no
-	scalar IngBas      =       0  						// Ingreso b{c a'}sico
-	scalar gasmadres   =     492  						// Apoyo a madres trabajadoras
-	scalar gascuidados =    3339  						// Gasto en cuidados
-
+		scalar ingbasico18 =       1  					// 1: Incluye menores de 18 anios, 0: no
+		scalar ingbasico65 =       1  					// 1: Incluye mayores de 65 anios, 0: no
+		scalar IngBas      =       0  					// Ingreso b{c a'}sico
+		scalar gasmadres   =     492  					// Apoyo a madres trabajadoras
+		scalar gascuidados =    3339  					// Gasto en cuidados
+	}
 
 	** 3.2.2 Gasto per cápita **/
 	//capture scalar drop iniciaA basica medsup superi posgra eduadu otrose invere cultur invest ///
@@ -484,8 +614,8 @@ forvalues k = 2025(1)2030 {
 }
 
 ** 3.3.2 SHRFSP **/
-*scalar tasaEfectiva = 6.3782
-//noisily SHRFSP, anio(`=anioPE') ultanio(2008) $update $textbook $nographs
+scalar tasaEfectiva = 6.8011
+noisily SHRFSP, anio(`=anioPE') ultanio(2008) $update $textbook $nographs
 
 
 **/
@@ -512,131 +642,6 @@ forvalues anio = `=anioPE'(-1)`=anioPE' {
 		noisily run "`c(sysdir_site)'/PerfilesSim.do" `anio'
 }
 
-
-
-**/
-**# 5. SIMULACIONES
-***
-
-
-** 5.1 Módulo ISR
-
-** 5.1.1 Parámetros: ISR
-* Anexo 8 de la Resolución Miscelánea Fiscal para 2024 *
-* Tarifa para el cálculo del impuesto correspondiente al ejericio 2024 a que se refieren los artículos 97 y 152 de la Ley del ISR
-* Tabla del subsidio para el empleo aplicable a la tarifa del numeral 5 del rubro B (página 773) *
-*             INFERIOR		SUPERIOR	CF		TASA
-matrix ISR =  (0.01,		8952.49,	0.0,		1.92	\	/// 1
-		8952.49+.01,	75984.55,	171.88,		6.40	\	/// 2
-		75984.55+.01,	133536.07,	4461.94,	10.88	\	/// 3
-		133536.07+.01,	155229.80,	10723.55,	16.00	\	/// 4
-		155229.80+.01,	185852.57,	14194.54,	17.92	\	/// 5
-		185852.57+.01,	374837.88,	19682.13,	21.36	\	/// 6
-		374837.88+.01,	590795.99,	60049.40,	23.52	\	/// 7
-		590795.99+.01,	1127926.84,	110842.74,	30.00	\	/// 8
-		1127926.84+.01,	1503902.46,	271981.99,	32.00	\	/// 9
-		1503902.46+.01,	4511707.37,	392294.17,	34.00	\	/// 10
-		4511707.37+.01,	1E+12,		1414947.85,	35.00)		//  11
-
-*             INFERIOR		SUPERIOR	SUBSIDIO
-matrix	SE =  (0.01,		1768.96*12,	407.02*12	\		/// 1
-		1768.96*12+.01,	2653.38*12,	406.83*12	\		/// 2
-		2653.38*12+.01,	3472.84*12,	406.62*12	\		/// 3
-		3472.84*12+.01,	3537.87*12,	392.77*12	\		/// 4
-		3537.87*12+.01,	4446.15*12,	382.46*12	\		/// 5
-		4446.15*12+.01,	4717.18*12,	354.23*12	\		/// 6
-		4717.18*12+.01,	5335.42*12,	324.87*12	\		/// 7
-		5335.42*12+.01,	6224.67*12,	294.63*12	\		/// 8
-		6224.67*12+.01,	7113.90*12,	253.54*12	\		/// 9
-		7113.90*12+.01,	7382.33*12,	217.61*12	\		/// 10
-		7382.33*12+.01,	1E+12,		0)				//  11
-
-* Artículo 151, último párrafo (LISR) *
-*            Ex. SS.MM.	Ex. 	% ing. gravable		% Informalidad PF	% Informalidad Salarios
-matrix DED = (5,		15,			93.02, 			18.86)
-
-* Artículo 9, primer párrafo (LISR) * 
-*           Tasa ISR PM.	% Informalidad PM
-matrix PM = (30,			48.45)
-
-** 5.1.2 Parámetros: IMSS e ISSSTE **
-* Informe al Ejecutivo Federal y al Congreso de la Unión la situación financiera y los riesgos del IMSS 2021-2022 *
-* Anexo A, Cuadro A.4 *
-matrix CSS_IMSS = ///
-///		PATRONES	TRABAJADORES		GOBIERNO FEDERAL
-		(5.42,		0.44,			3.21	\		/// Enfermedad y maternidad, asegurados (Tgmasg*)
-		1.05,		0.37,			0.08	\		/// Enfermedad y maternidad, pensionados (Tgmpen*)
-		1.75,		0.63,			0.13	\		/// Invalidez y vida (Tinvyvida*)
-		1.83,		0.00,			0.00	\		/// Riesgos de trabajo (Triesgo*)
-		1.00,		0.00,			0.00	\		/// Guarderias y prestaciones sociales (Tguard*)
-		5.15,		1.12,			1.49	\		/// Retiro, cesantia en edad avanzada y vejez (Tcestyvej*)
-		0.00,		0.00,			6.55)			//  Cuota social -- hasta 25 UMA -- (TcuotaSocIMSS*)
-
-* Informe Financiero Actuarial ISSSTE 2021 *
-matrix CSS_ISSSTE = ///
-///		PATRONES	TRABAJADORES	GOBIERNO FEDERAL
-		(7.375,		2.750,			391.0	\		/// Seguro de salud, trabajadores en activo y familiares
-		0.720,		0.625,			0.000	\		/// Seguro de salud, pensionados y familiares
-		0.750,		0.000,			0.000	\		/// Riesgo de trabajo
-		0.625,		0.625,			0.000	\		/// Invalidez y vida
-		0.500,		0.500,			0.000	\		/// Servicios sociales y culturales
-		6.125,		2+3.175,		5.500	\		/// Retiro, cesantia en edad avanzada y vejez
-		0.000,		5.000,			0.000	\		/// Vivienda
-		0.000,		0.000,			13.9)			//  Cuota social
-
-** 5.1.3 Submódulo ISR (web) **/
-if "`cambioisrpf'" == "1" {
-	noisily run "`c(sysdir_site)'/ISR_Mod.do"
-	scalar ISRAS  = ISR_AS_Mod						// NUEVA ESTIMACIÓN ISR ASALARIADOS
-	scalar ISRPF  = ISR_PF_Mod						// NUEVA ESTIMACIÓN ISR P. FÍSICAS
-	scalar ISRPM  = ISR_PM_Mod						// NUEVA ESTIMACIÓN ISR P. MORALES
-	scalar CUOTAS = CUOTAS_Mod						// NUEVA ESTIMACIÓN CUOTAS IMSS
-}
-
-
-** 5.2 Módulo IVA
-
-** 5.2.1 Parámetros: IVA
-matrix IVAT = (16 \     ///  1  Tasa general 
-	1  \     ///  2  Alimentos, input[1]: Tasa Cero, [2]: Exento, [3]: Gravado
-	2  \     ///  3  Alquiler, idem
-	1  \     ///  4  Canasta basica, idem
-	2  \     ///  5  Educacion, idem
-	3  \     ///  6  Consumo fuera del hogar, idem
-	3  \     ///  7  Mascotas, idem
-	1  \     ///  8  Medicinas, idem
-	1  \     ///  9  Toallas sanitarias, idem
-	3  \     /// 10  Otros, idem
-	2  \     /// 11  Transporte local, idem
-	3  \     /// 12  Transporte foraneo, idem
-	15.09)   //  13  Evasion e informalidad IVA, input[0-100]
-
-** 5.2.2 Parámetros: IEPS
-* Fuente: Ley del IEPS, Artículo 2.
-*		Ad valorem	Específico
-matrix IEPST = (26.5	,	0 		\				/// Cerveza y alcohol 14
-		30.0	,	0 		\				/// Alcohol 14+ a 20
-		53.0	,	0 		\				/// Alcohol 20+
-		160.0	,	0.6166		\				/// Tabaco y cigarros
-		30.0	,	0 		\				/// Juegos y sorteos
-		3.0	,	0 		\				/// Telecomunicaciones
-		25.0	,	0 		\				/// Bebidas energéticas
-		0	,	1.5737		\				/// Bebidas saborizadas
-		8.0	,	0 		\				/// Alto contenido calórico
-		0	,	10.7037		\				/// Gas licuado de petróleo (propano y butano)
-		0	,	21.1956		\				/// Combustibles (petróleo)
-		0	,	19.8607		\				/// Combustibles (diésel)
-		0	,	43.4269		\				/// Combustibles (carbón)
-		0	,	21.1956		\				/// Combustibles (combustible para calentar)
-		0	,	6.1752		\				/// Gasolina: magna
-		0	,	5.2146		\				/// Gasolina: premium
-		0	,	6.7865		)				// Gasolina: diésel
-
-** 5.2.3 Submódulo IVA (web) **/
-if "`cambioiva'" == "1" {
-	noisily run "`c(sysdir_site)'/IVA_Mod.do"
-	scalar IVA = IVA_Mod							// NUEVA ESTIMACIÓN IVA
-}
 
 
 ** 5.4 Subnacionales
@@ -703,7 +708,7 @@ label var Transferencias "Transferencias públicas"
 //noisily Simulador Transferencias [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot //boot(10)
 
 
-** 6.3 (=) Aportaciones netas **/
+** 6.3 (=) Aportaciones netas **
 capture drop AportacionesNetas
 g AportacionesNetas = ImpuestosAportaciones - Transferencias
 label var AportacionesNetas "Ciclo de vida de las aportaciones netas"

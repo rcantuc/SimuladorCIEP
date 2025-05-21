@@ -519,7 +519,7 @@ if _rc != 0 {
 ********************************************************
 foreach categ in categ categ_iva /*categ_ieps*/ {
 	capture confirm file "`c(sysdir_site)'/04_master/`=anioenigh'/consumption_`categ'_pc.dta"
-	if _rc != 0 | "$update" == "update" {
+	if _rc != 0 /*| "$update" == "update"*/ {
 	*if _rc == 0 {
 
 		** 3.1 Consumo de los individuos **
@@ -640,8 +640,8 @@ foreach categ in categ categ_iva /*categ_ieps*/ {
 
 				* Iteraciones *
 				noisily di in y "`k': " _cont
-				local salto = 1
-				forvalues iter=1(1)25 {
+				local salto = 3
+				forvalues iter=1(1)10 {
 					noisily di in w "`iter' " _cont
 					forvalues edades=0(`salto')109 {
 						forvalues sexos=1(1)2 {
