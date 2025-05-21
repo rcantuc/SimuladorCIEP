@@ -21,7 +21,7 @@ quietly {
 	}
 
 	capture use in 1 using "`c(sysdir_site)'/04_master/SCN.dta", clear
-	syntax [, ANIO(int `aniovp') NOGraphs UPDATE ANIOMax(int `=`aniovp'+15') TEXTBOOK]
+	syntax [, ANIO(int `aniovp') NOGraphs UPDATE TEXTBOOK]
 
 	noisily di _newline(2) in g _dup(20) "." "{bf:   Econom{c i'}a:" in y " SCN `anio'   }" in g _dup(20) "." _newline
 
@@ -39,7 +39,7 @@ quietly {
 	** 1.1. PIBDeflactor
 	PIBDeflactor, anio(`anio') nographs nooutput
 	local anio_exo = r(anio_exo)
-	local geo = r(geo)
+	//local geo = r(geo)
 
 	tempfile basepib
 	save `basepib'
@@ -49,6 +49,7 @@ quietly {
 	**************************
 	** 1.1. Merge databases **
 	use "`c(sysdir_site)'/04_master/SCN.dta", clear
+	local aniomax = anio[_N]
 	merge 1:1 (anio) using `basepib', nogen
 	tsset anio
 
@@ -373,13 +374,6 @@ quietly {
 		g `Depreciacion' = (CapFij + CapIncImp + Yl)/deflator/1000000000000
 		label var `Depreciacion' "Depreciaci{c o'}n"
 		format `Depreciacion' %7.0fc
-		
-		if `anio_exo'-`latest' == 1 {
-			local graphtype "bar"
-		}
-		else {
-			local graphtype "bar"
-		}
 
 		if "$export" == "" {
 			local graphtitle = "{bf:Distribuci{c o'}n} del ingreso"
@@ -395,32 +389,32 @@ quietly {
 		matrix `DEPMAX' = r(StatTotal)
 
 		twoway (bar `Depreciacion' anio if anio <= `aniomax', ///
-				pstyle(p1) lwidth(none) barwidth(.75) mlabel(`Depreciacion') ///
+				pstyle(p1) lwidth(none) barwidth(.75) ///
 				mlabpos(12) mlabcolor(black) mlabsize(large)) ///
 			(bar `Capital' anio if anio <= `aniomax', pstyle(p2) lwidth(none) barwidth(.75)) ///
 			(bar `Laboral' anio if anio <= `aniomax', pstyle(p3) lwidth(none) barwidth(.75)) ///
-			(`graphtype' `Depreciacion' anio if anio <= `anio_exo' & anio > `aniomax', ///
-				pstyle(p1) lwidth(none) barwidth(.75) mlabel(`Depreciacion') ///
+			(bar `Depreciacion' anio if anio <= `anio_exo' & anio > `aniomax', ///
+				pstyle(p1) lwidth(none) barwidth(.75) ///
 				mlabpos(12) mlabcolor(black) mlabsize(large) fintensity(50)) ///
-			(`graphtype' `Capital' anio if anio <= `anio_exo' & anio > `aniomax', ///
+			(bar `Capital' anio if anio <= `anio_exo' & anio > `aniomax', ///
 				pstyle(p2) lwidth(none) barwidth(.75) fintensity(50)) ///
-			(`graphtype' `Laboral' anio if anio <= `anio_exo' & anio > `aniomax', ///
+			(bar `Laboral' anio if anio <= `anio_exo' & anio > `aniomax', ///
 				pstyle(p3) lwidth(none) barwidth(.75) fintensity(50)) ///
-			(bar `Depreciacion' anio if anio > `aniomax' & anio > `anio_exo', ///
-				pstyle(p1) lwidth(none) barwidth(.75)) ///
-			(bar `Capital' anio if anio > `aniomax' & anio > `anio_exo', ///
-				pstyle(p2) lwidth(none) barwidth(.75)) ///
-			(bar `Laboral' anio if anio > `aniomax' & anio > `anio_exo', ///
-				pstyle(p3) lwidth(none) barwidth(.75)), ///
-			title("`graphtitle'") ///
+			///(bar `Depreciacion' anio if anio > `aniomax' & anio > `anio_exo', ///
+				///pstyle(p1) lwidth(none) barwidth(.75) fintensity(40)) ///
+			///(bar `Capital' anio if anio > `aniomax' & anio > `anio_exo', ///
+				///pstyle(p2) lwidth(none) barwidth(.75) fintensity(40)) ///
+			///(bar `Laboral' anio if anio > `aniomax' & anio > `anio_exo', ///
+				///pstyle(p3) lwidth(none) barwidth(.75) fintensity(40)) ///
+			, title("`graphtitle'") ///
 			caption("`graphfuente'") ///
 			legend(cols(3) order(1 2 3) region(margin(zero))) ///
 			xtitle("") ///
 			text(0 `=`latest'+1' "{bf:$paqueteEconomico}", color("111 111 111") place(1) justification(left) bcolor(white) box size(medlarge)) ///
 			text(0 `=anio[1]' "{bf:billones MXN `anio'}", color("111 111 111") place(1) justification(left) bcolor(white) box size(medlarge)) ///
 			///text(`=`Depreciacion'[1]*.05' `=anio[_N]-7.5' "{bf:Proyecci{c o'}n CIEP}", place(ne) color(white)) ///
-			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)' `anio') ///
-			ylabel(none, format(%20.0fc)) ///
+			xlabel(`=round(anio[1],5)'(5)`aniomax' `anio') ///
+			ylabel(, format(%5.1fc)) ///
 			ytitle("") ///
 			yscale(range(0)) xscale(range(1993)) ///
 			note("{bf:{c U'}ltimo dato reportado}: `aniomax'.") ///
@@ -539,32 +533,31 @@ quietly {
 			local graphfuente = ""
 		}
 		
-		twoway (bar `AhorroN' anio if anio <= `aniomax', pstyle(p1) lwidth(none) barwidth(.75) mlabel(`AhorroN') mlabpos(12) mlabcolor(black) mlabsize(large)) ///
+		twoway (bar `AhorroN' anio if anio <= `aniomax', pstyle(p1) lwidth(none) barwidth(.75)) ///
 			(bar `ConGob' anio if anio <= `aniomax', pstyle(p2) lwidth(none) barwidth(.75)) ///
 			(bar `ConHog' anio if anio <= `aniomax', pstyle(p3) lwidth(none) barwidth(.75)) ///
 			(bar `ComprasN' anio if anio <= `aniomax', pstyle(p4) lwidth(none) barwidth(.75)) ///
-			(`graphtype' `AhorroN' anio if anio <= `anio_exo' & anio > `aniomax', ///
-				pstyle(p1) lwidth(none) barwidth(.75) mlabel(`AhorroN') ///
-				mlabpos(12) mlabcolor(black) mlabsize(large) fintensity(50)) ///
-			(`graphtype' `ConGob' anio if anio <= `anio_exo' & anio > `aniomax', ///
+			(bar `AhorroN' anio if anio <= `anio_exo' & anio > `aniomax', ///
+				pstyle(p1) lwidth(none) barwidth(.75) fintensity(50)) ///
+			(bar `ConGob' anio if anio <= `anio_exo' & anio > `aniomax', ///
 				pstyle(p2) lwidth(none) barwidth(.75) fintensity(50)) ///
-			(`graphtype' `ConHog' anio if anio <= `anio_exo' & anio > `aniomax', ///
+			(bar `ConHog' anio if anio <= `anio_exo' & anio > `aniomax', ///
 				pstyle(p3) lwidth(none) barwidth(.75) fintensity(50)) ///
-			(`graphtype' `ComprasN' anio if anio <= `anio_exo' & anio > `aniomax', ///
+			(bar `ComprasN' anio if anio <= `anio_exo' & anio > `aniomax', ///
 				pstyle(p4) lwidth(none) barwidth(.75) fintensity(50)) ///
-			(bar `AhorroN' anio if anio > `aniomax' & anio > `anio_exo', pstyle(p1) lwidth(none)) ///
-			(bar `ConGob' anio if anio > `aniomax' & anio > `anio_exo', pstyle(p2) lwidth(none)) ///
-			(bar `ConHog' anio if anio > `aniomax' & anio > `anio_exo', pstyle(p3) lwidth(none)) ///
-			(bar `ComprasN' anio if anio > `aniomax' & anio > `anio_exo', pstyle(p4) lwidth(none)), ///
-			title("`graphtitle'") ///
+			///(bar `AhorroN' anio if anio > `aniomax' & anio > `anio_exo', pstyle(p1) lwidth(none)) ///
+			///(bar `ConGob' anio if anio > `aniomax' & anio > `anio_exo', pstyle(p2) lwidth(none)) ///
+			///(bar `ConHog' anio if anio > `aniomax' & anio > `anio_exo', pstyle(p3) lwidth(none)) ///
+			///(bar `ComprasN' anio if anio > `aniomax' & anio > `anio_exo', pstyle(p4) lwidth(none)) ///
+			, title("`graphtitle'") ///
 			caption("`graphfuente'") ///
 			legend(cols(4) order(1 2 3 4) region(margin(zero))) ///
 			xtitle("") ///
 			text(0 `=`latest'+1' "{bf:$paqueteEconomico}", color("111 111 111") place(1) justification(left) bcolor(white) box size(medlarge)) ///
 			text(0 `=anio[1]' "{bf:billones MXN `anio'}", color("111 111 111") place(1) justification(left) bcolor(white) box size(medlarge)) ///
 			///text(`=`AhorroN'[1]*0' `=anio[_N]-7.5' "{bf:Proyecci{c o'}n CIEP}", place(ne) color(white)) ///
-			xlabel(`=round(anio[1],5)'(5)`=round(anio[_N],5)' `anio') ///
-			ylabel(none, format(%20.0fc)) ///
+			xlabel(`=round(anio[1],5)'(5)`aniomax' `anio') ///
+			ylabel(, format(%5.1fc)) ///
 			ytitle("") ///
 			yscale(range(0)) xscale(range(1993)) ///
 			note("{bf:{c U'}ltimo dato reportado}: `aniomax'.") ///
@@ -1017,6 +1010,67 @@ quietly {
 	noisily di in g "{bf:  (=) Producto Interno Bruto" ///
 		_col(44) in y %20.0fc PIB_T[`obs'] ///
 		_col(66) in y %7.3fc PIB_T[`obs']/PIB[`obs']*100 "}"
+
+	* Returns (scalar calculations)
+	scalar Agr_T     = Agr_T[`obs']
+	scalar Agr_TPIB  = Agr_T[`obs']/PIB[`obs']*100
+	
+	scalar Min_T     = Min_T[`obs']
+	scalar Min_TPIB  = Min_T[`obs']/PIB[`obs']*100
+	
+	scalar Ener_T    = Ener_T[`obs']
+	scalar Ener_TPIB = Ener_T[`obs']/PIB[`obs']*100
+	
+	scalar Const_T   = Const_T[`obs']
+	scalar Const_TPIB = Const_T[`obs']/PIB[`obs']*100
+	
+	scalar Manu_T    = Manu_T[`obs']
+	scalar Manu_TPIB = Manu_T[`obs']/PIB[`obs']*100
+	
+	scalar ComMayor_T = ComMayor_T[`obs']
+	scalar ComMayor_TPIB = ComMayor_T[`obs']/PIB[`obs']*100
+	
+	scalar ComMenor_T = ComMenor_T[`obs']
+	scalar ComMenor_TPIB = ComMenor_T[`obs']/PIB[`obs']*100
+	
+	scalar Trans_T    = Trans_T[`obs']
+	scalar Trans_TPIB = Trans_T[`obs']/PIB[`obs']*100
+	
+	scalar Medios_T   = Medios_T[`obs']
+	scalar Medios_TPIB= Medios_T[`obs']/PIB[`obs']*100
+	
+	scalar FinSeg_T   = FinSeg_T[`obs']
+	scalar FinSeg_TPIB= FinSeg_T[`obs']/PIB[`obs']*100
+	
+	scalar Inmob_T    = Inmob_T[`obs']
+	scalar Inmob_TPIB = Inmob_T[`obs']/PIB[`obs']*100
+	
+	scalar Prof_T     = Prof_T[`obs']
+	scalar Prof_TPIB  = Prof_T[`obs']/PIB[`obs']*100
+	
+	scalar Corp_T     = Corp_T[`obs']
+	scalar Corp_TPIB  = Corp_T[`obs']/PIB[`obs']*100
+	
+	scalar Apoyo_T    = Apoyo_T[`obs']
+	scalar Apoyo_TPIB = Apoyo_T[`obs']/PIB[`obs']*100
+	
+	scalar Edu_T      = Edu_T[`obs']
+	scalar Edu_TPIB   = Edu_T[`obs']/PIB[`obs']*100
+	
+	scalar Salud_T    = Salud_T[`obs']
+	scalar Salud_TPIB = Salud_T[`obs']/PIB[`obs']*100
+	
+	scalar Recre_T    = Recre_T[`obs']
+	scalar Recre_TPIB = Recre_T[`obs']/PIB[`obs']*100
+	
+	scalar AloPrep_T  = AloPrep_T[`obs']
+	scalar AloPrep_TPIB= AloPrep_T[`obs']/PIB[`obs']*100
+	
+	scalar Otros_T    = Otros_T[`obs']
+	scalar Otros_TPIB = Otros_T[`obs']/PIB[`obs']*100
+	
+	scalar Legis_T    = Legis_T[`obs']
+	scalar Legis_TPIB = Legis_T[`obs']/PIB[`obs']*100
 
 	if "`textbook'" == "textbook" {
 		noisily scalarlatex, log(scn) alt(scn)
