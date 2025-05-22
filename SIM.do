@@ -1,11 +1,12 @@
 ****
 **** SIMULADOR FISCAL CIEP (9 de mayo de 2025)
-**** ver: ReadMe.md
-**** Autor: Ricardo Cantú Calderón (ricardocantu@ciep.mx)
+**** Manual: ReadMe.md
+**** Autor: Ricardo Cantú Calderón
+**** Email: ricardocantu@ciep.mx
 ****
 
 
-
+  
 ***
 **# 0. SET UP
 ***
@@ -28,8 +29,7 @@ else if "`c(console)'" != "" {							// Servidor Web
 }
 
 ** Parámetros iniciales
-local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
-scalar aniovp = substr(`"`=trim("`fecha'")'"',1,4)				// ANIO VALOR PRESENTE
+scalar aniovp = 2025								// ANIO VALOR PRESENTE
 scalar anioPE = 2025								// ANIO PAQUETE ECONÓMICO
 scalar anioenigh = 2022								// ANIO ENIGH
 
@@ -37,9 +37,9 @@ global id = "ciepmx"								// ID USUARIO
 global paqueteEconomico "CGPE 2025"						// POLÍTICA FISCAL
 
 ** Opciones
-global nographs "nographs"							// SUPRIMIR GRAFICAS
+//global nographs "nographs"							// SUPRIMIR GRAFICAS
 //global update "update"							// UPDATE BASES DE DATOS
-global output "output"							// ARCHIVO DE SALIDA (WEB)
+//global output "output"							// ARCHIVO DE SALIDA (WEB)
 //global textbook "textbook"							// SCALAR TO LATEX
 
 if "$output" != "" {
@@ -52,8 +52,6 @@ if "$output" != "" {
 ***
 **# 1. DEMOGRAFÍA
 /***
-global entidadesL `" "Aguascalientes" "Baja California" "Baja California Sur" "Campeche" "Coahuila" "Colima" "Chiapas" "Chihuahua" "Ciudad de México" "Durango" "Guanajuato" "Guerrero" "Hidalgo" "Jalisco" "Estado de México" "Michoacán" "Morelos" "Nayarit" "Nuevo León" "Oaxaca" "Puebla" "Querétaro" "Quintana Roo" "San Luis Potosí" "Sinaloa" "Sonora" "Tabasco" "Tamaulipas" "Tlaxcala" "Veracruz" "Yucatán" "Zacatecas" "Nacional" "'
-
 
 ** 1.1 Pirámide demográfica 
 //foreach entidad of global entidadesL {
@@ -111,7 +109,7 @@ noisily LIF if divLIF != 10, anio(`=anioPE') by(divSIM) $update 		///
 	desde(`=`=anioPE'-12') 							/// Año de inicio PROMEDIO
 	min(0) 									/// Mínimo 0% del PIB (no negativo)
 	rows(1)									//  Número de filas en la leyenda
-
+ex
 rename divSIM divCODE
 decode divCODE, g(divSIM) 
 collapse (sum) recaudacion, by(anio divSIM) fast

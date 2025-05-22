@@ -18,14 +18,17 @@ quietly {
 	*********************************
 	**# 1 Cuentas macroeconómicas ***
 	*********************************
-	*SCN, anio(`anio') nographs
+	SCN, anio(`anio') nographs
 
 
 
 	*********************
 	**# 2 RECAUDACIÓN ***
 	*********************
-	*LIF, anio(`anio') by(divSIM) nographs min(0) desde(`=`anio'-1')
+	capture confirm scalar ISRAS 
+	if _rc != 0 {
+		LIF, anio(`anio') by(divSIM) nographs min(0) desde(`=`anio'-1')
+	}
 	*local recursos = r(divSIM)
 	*foreach k of local recursos {
 	*	local `=substr("`k'",1,7)' = r(`k')
