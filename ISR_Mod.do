@@ -34,7 +34,11 @@ local smdf = 248.93 			// SM 2024
 SCN, nographs
 local pibY = scalar(PIB)
 
-use "`c(sysdir_site)'/04_master/perfiles2024.dta", clear
+capture use "`c(sysdir_site)'/04_master/perfiles`=anioPE'.dta", clear
+if _rc != 0 {
+	noisily run "`c(sysdir_site)'/PerfilesSim.do" `=anioPE'
+}
+
 drop CUOTAS ISRAS ISRPF
 
 
@@ -151,7 +155,7 @@ forvalues j=`=rowsof(ISR)'(-1)1 {
 
 ************************
 ** Subsidio al empleo **
-replace SE = SE*.1492/.132
+replace SE = SE*.1492/.123
 
 
 ******************
@@ -159,7 +163,7 @@ replace SE = SE*.1492/.132
 replace formal_asalariados = prop_salarios <= (1-DED[1,4]/100) & prop_salarios != .
 g ISRAS = ISR*(ing_subor+cuotasTPF)/(ing_bruto_tax)
 replace ISRAS = 0 if formal_asalariados == 0
-replace ISRAS = ISRAS*3.678/3.000
+replace ISRAS = ISRAS*3.670/3.261
 
 
 **************************
@@ -168,7 +172,7 @@ replace formal_fisicas = prop_formal <= (1-DED[1,3]/100) & prop_formal != .
 
 g ISRPF = ISR*(1-(ing_subor+cuotasTPF)/(ing_bruto_tax))
 replace ISRPF = 0 if formal_fisicas == 0
-replace ISRPF = ISRPF*0.233/0.294
+replace ISRPF = ISRPF*0.233/0.328
 
 
 **************************
@@ -183,12 +187,12 @@ Distribucion SE_empresas, relativo(ing_bruto_tpm) macro(`=`SE'[1,1]')
 
 replace ISRPM = (ing_bruto_tpm-exen_tpm)*PM[1,1]/100 - SE_empresas if formal_morales == 1
 replace ISRPM = 0 if ISRPM == .
-replace ISRPM = ISRPM*4.049/4.631
+replace ISRPM = ISRPM*4.039/4.862
 
 
 *****************
 ** CUOTAS IMSS **
-replace CUOTAS = CUOTAS*1.679/1.374 if formal2 == 1
+replace CUOTAS = CUOTAS*1.675/1.382 if formal2 == 1
 
 
 ***************

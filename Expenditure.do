@@ -641,7 +641,7 @@ foreach categ in categ categ_iva /*categ_ieps*/ {
 				* Iteraciones *
 				noisily di in y "`k': " _cont
 				local salto = 3
-				forvalues iter=1(1)10 {
+				forvalues iter=1(1)15 {
 					noisily di in w "`iter' " _cont
 					forvalues edades=0(`salto')109 {
 						forvalues sexos=1(1)2 {
