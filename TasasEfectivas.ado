@@ -25,15 +25,17 @@ quietly {
 	*********************
 	**# 2 RECAUDACIÓN ***
 	*********************
-	capture confirm scalar ISRAS 
-	if _rc != 0 {
-		LIF, anio(`anio') by(divSIM) nographs min(0) desde(`=`anio'-1')
-	}
+	LIF, anio(`anio') by(divSIM) nographs min(0) desde(`=`anio'-12')
 	*local recursos = r(divSIM)
 	*foreach k of local recursos {
 	*	local `=substr("`k'",1,7)' = r(`k')
 	*	local `=substr("`k'",1,7)' = ``=substr("`k'",1,7)''/scalar(PIB)*100
 	*}
+
+	rename divSIM divCODE
+	decode divCODE, g(divSIM) 
+	collapse (sum) recaudacion, by(anio divSIM) fast
+	save `"`c(sysdir_site)'/users/$id/LIF.dta"', replace	
 
 
 

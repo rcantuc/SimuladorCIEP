@@ -405,6 +405,7 @@ program define UpdateDatosAbiertos, return
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 	local mesvp = substr(`"`=trim("`fecha'")'"',6,2)
 
+	capture mkdir "`c(sysdir_site)'/03_temp/"
 	capture mkdir "`c(sysdir_site)'/03_temp/Datos Abiertos/"
 	capture use "`c(sysdir_site)'/04_master/DatosAbiertos.dta", clear
 	if (_rc == 0 & "`update'" != "update") {	
@@ -1175,6 +1176,7 @@ program define UpdateDatosAbiertos, return
 	replace nombre = trim(nombre)
 	compress
 
+	capture mkdir "`c(sysdir_site)'/04_master/"
 	if `c(version)' > 13.1 {
 		saveold "`c(sysdir_site)'/04_master/DatosAbiertos.dta", replace version(13)
 	}

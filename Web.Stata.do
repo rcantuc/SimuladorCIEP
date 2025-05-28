@@ -15,17 +15,18 @@ capture log close _all
 timer on 1
 
 ** Directorios de trabajo (uno por computadora)
-if "`c(username)'" == "ricardo" {						// iMac Ricardo
-	sysdir set SITE "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
-	//global export "/Users/ricardo/CIEP Dropbox/TextbookCIEP/images"
-}
-else if "`c(username)'" == "servidorciep" {					// Servidor CIEP
-	sysdir set SITE "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
-	//global export "/home/servidorciep/CIEP Dropbox/TextbookCIEP/images"
-}
-else if "`c(console)'" != "" {							// Servidor Web
-	sysdir set SITE "/SIM/OUT/7/"
-}
+sysdir set SITE "/SIM/OUT/7/"
+
+
+
+
+
+
+
+
+
+
+
 
 ** Parámetros iniciales
 scalar aniovp = 2025								// ANIO VALOR PRESENTE
@@ -42,6 +43,7 @@ global output "output"								// ARCHIVO DE SALIDA (WEB)
 //global textbook "textbook"							// SCALAR TO LATEX
 
 if "$output" != "" {
+	capture mkdir "`c(sysdir_site)'/users/$id"
 	quietly log using `"`c(sysdir_site)'/users/$id/output.txt"', replace text name(output)
 	quietly log off output
 }
@@ -64,20 +66,29 @@ if "$output" != "" {
 **/
 **# 2. ECONOMÍA
 ***
-global pib2025 = {{CRECPIB2024}}
-global pib2026 = {{CRECPIB2025}}
-global pib2027 = {{CRECPIB2026}}
-global pib2028 = {{CRECPIB2027}}
-global pib2029 = {{CRECPIB2028}}
-global pib2030 = {{CRECPIB2029}}
+global pib2025 = {{CRECPIB2025}}
+global pib2026 = {{CRECPIB2026}}
+global pib2027 = {{CRECPIB2027}}
+global pib2028 = {{CRECPIB2028}}
+global pib2029 = {{CRECPIB2029}}
+global pib2030 = {{CRECPIB2030}}
+global pib2031 = {{CRECPIB2030}}
 
-global def2025 = {{CRECDEF2024}}
-global def2026 = {{CRECDEF2025}}
-global def2027 = {{CRECDEF2026}}
-global def2028 = {{CRECDEF2027}}
-global def2029 = {{CRECDEF2028}}
-global def2030 = {{CRECDEF2029}}
+global def2025 = {{CRECDEF2025}}
+global def2026 = {{CRECDEF2026}}
+global def2027 = {{CRECDEF2027}}
+global def2028 = {{CRECDEF2028}}
+global def2029 = {{CRECDEF2029}}
+global def2030 = {{CRECDEF2030}}
+global def2031 = {{CRECDEF2030}}
 
+global inf2025 = 3.5								// CRECIMIENTO ANUAL INFLACIÓN
+global inf2026 = 3.0								// <-- AGREGAR O QUITAR AÑOS
+global inf2027 = 3.0
+global inf2028 = 3.0
+global inf2029 = 3.0
+global inf2030 = 3.0
+global inf2031 = 3.0
 
 ** 2.1 Producto Interno Bruto
 //noisily PIBDeflactor, aniovp(`=aniovp') geodef(1993) geopib(1993) $update $textbook
@@ -118,14 +129,14 @@ forvalues anio = `=anioPE'(1)`=anioPE' {
 		scalar ISRPFPIB       = {{INGRESOS1}}				// ISR (personas f{c i'}sicas)
 		scalar CUOTASPIB      = {{INGRESOS2}}				// Cuotas (IMSS)
 
+		scalar ISRPMPIB       = {{INGRESOS4}}				// ISR (personas morales)
+		scalar OTROSKPIB      = {{INGRESOS5}}				// Productos, derechos, aprovech.
+
 		scalar FMPPIB         = {{INGRESOS15}}				// Fondo Mexicano del Petróleo
 		scalar PEMEXPIB       = {{INGRESOS16}}				// Organismos y empresas (Pemex)
 		scalar CFEPIB         = {{INGRESOS17}}				// Organismos y empresas (CFE)
 		scalar IMSSPIB        = {{INGRESOS13}}				// Organismos y empresas (IMSS)
 		scalar ISSSTEPIB      = {{INGRESOS14}}				// Organismos y empresas (ISSSTE)
-
-		scalar ISRPMPIB       = {{INGRESOS4}}				// ISR (personas morales)
-		scalar OTROSKPIB      = {{INGRESOS5}}				// Productos, derechos, aprovech.
 
 		scalar IVAPIB         = {{INGRESOS7}}				// IVA
 		scalar ISANPIB        = {{INGRESOS8}}				// ISAN
@@ -148,8 +159,8 @@ forvalues anio = `=anioPE'(1)`=anioPE' {
 		374837.88  +.01,	590795.99,	60049.40,	{{ISRTASA6}}	\    /// 7
 		590795.99  +.01,	1127926.84,	110842.74,	{{ISRTASA7}}	\    /// 8
 		1127926.84 +.01,	1503902.46,	271981.99,	{{ISRTASA8}}	\    /// 9
-		1503902.46 +.01,	3511707.37,	392294.17,	{{ISRTASA9}}	\    /// 10
-		3511707.37 +.01,	1E+12,		1414947.85,	{{ISRTASA10}})	     //  11
+		1503902.46 +.01,	4511707.37,	392294.17,	{{ISRTASA9}}	\    /// 10
+		4511707.37 +.01,	1E+12,		1414947.85,	{{ISRTASA10}})	     //  11
 
 	*             INFERIOR		SUPERIOR	SUBSIDIO
 	matrix	SE =  (0.01,		1768.96*12,	{{SE0}}			\    /// 1

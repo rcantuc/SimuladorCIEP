@@ -335,14 +335,14 @@ quietly {
 		tempname rango
 		matrix `rango' = r(StatTotal)
 
-		twoway (bar `interno' anio if anio > 2000 & anio <= 2024, barwidth(.75)) ///
-			(bar `externo' anio if anio > 2000 & anio <= 2024, barwidth(.75) pstyle(p1) fintensity(50) lcolor(none)) ///
-			(bar `interno' anio if anio > 2024 & anio <= 2030, barwidth(.75) pstyle(p2) lcolor(none)) ///
-			(bar `externo' anio if anio > 2024 & anio <= 2030, barwidth(.75) pstyle(p2) fintensity(50) lcolor(none)) ///
-			(connected `shrfsp_pib' anio if anio > 2000 & anio <= 2024, ///
+		twoway (bar `interno' anio if anio > 2000 & anio <= `=`anio'-1', barwidth(.75)) ///
+			(bar `externo' anio if anio > 2000 & anio <= `=`anio'-1', barwidth(.75) pstyle(p1) fintensity(50) lcolor(none)) ///
+			(bar `interno' anio if anio > `=`anio'-1' & anio <= 2030, barwidth(.75) pstyle(p2) lcolor(none)) ///
+			(bar `externo' anio if anio > `=`anio'-1' & anio <= 2030, barwidth(.75) pstyle(p2) fintensity(50) lcolor(none)) ///
+			(connected `shrfsp_pib' anio if anio > 2000 & anio <= `=`anio'-1', ///
 				yaxis(2) mlabel(`shrfsp_pib') mlabposition(12) mlabcolor(black) pstyle(p1) ///
 				lpattern(dot) msize(small) mlabsize(vlarge)) ///
-			(connected `shrfsp_pib' anio if anio > 2024 & anio <= 2030, ///
+			(connected `shrfsp_pib' anio if anio > `=`anio'-1' & anio <= 2030, ///
 				yaxis(2) mlabel(`shrfsp_pib') mlabposition(12) mlabcolor(black) pstyle(p2) ///
 				lpattern(dot) msize(small) mlabsize(vlarge)) ///
 			(scatter `interno' anio if anio > 2000 & anio <= 2030, ///
@@ -377,14 +377,14 @@ quietly {
 		tempname rango
 		matrix `rango' = r(StatTotal)
 
-		twoway (bar `interno' anio if anio > 2000 & anio <= 2024, barwidth(.75)) ///
-			(bar `externo' anio if anio > 2000 & anio <= 2024, barwidth(.75) pstyle(p1) fintensity(50) lcolor(none)) ///
-			(bar `interno' anio if anio > 2024 & anio <= 2030, barwidth(.75) pstyle(p2) lcolor(none)) ///
-			(bar `externo' anio if anio > 2024 & anio <= 2030, barwidth(.75) pstyle(p2) fintensity(50) lcolor(none)) ///
-			(connected `shrfsp_pc' anio if anio > 2000 & anio <= 2024, ///
+		twoway (bar `interno' anio if anio > 2000 & anio <= `=`anio'-1', barwidth(.75)) ///
+			(bar `externo' anio if anio > 2000 & anio <= `=`anio'-1', barwidth(.75) pstyle(p1) fintensity(50) lcolor(none)) ///
+			(bar `interno' anio if anio > `=`anio'-1' & anio <= 2030, barwidth(.75) pstyle(p2) lcolor(none)) ///
+			(bar `externo' anio if anio > `=`anio'-1' & anio <= 2030, barwidth(.75) pstyle(p2) fintensity(50) lcolor(none)) ///
+			(connected `shrfsp_pc' anio if anio > 2000 & anio <= `=`anio'-1', ///
 				yaxis(2) mlabel(`shrfsp_pc') mlabposition(12) mlabcolor(black) pstyle(p1) ///
 				lpattern(dot) msize(small) mlabsize(vlarge)) ///
-			(connected `shrfsp_pc' anio if anio > 2024 & anio <= 2030, ///
+			(connected `shrfsp_pc' anio if anio > `=`anio'-1' & anio <= 2030, ///
 				yaxis(2) mlabel(`shrfsp_pc') mlabposition(12) mlabcolor(black) pstyle(p2) ///
 				lpattern(dot) msize(small) mlabsize(vlarge)) ///
 			(scatter `interno' anio if anio > 2000 & anio <= 2030, ///
@@ -410,7 +410,7 @@ quietly {
 			graph export "$export/shrfsppc.png", replace name(shrfsppc)
 		}
 
-		/** Por Gobierno, OyE y Banca de desarrollo **
+		** Por Gobierno, OyE y Banca de desarrollo **
 		tabstat `shrfsp_banca' `shrfsp_pib', stat(min max) by(anio) save
 		tempname rango
 		matrix `rango' = r(StatTotal)
@@ -424,13 +424,13 @@ quietly {
 			local graphfuente ""
 		}
 
-		twoway (bar `shrfsp_banca' anio if anio > 2000 & anio <= 2024, barwidth(.75)) ///
-			(bar `shrfsp_oye' anio if anio > 2000 & anio <= 2024, barwidth(.75) pstyle(p2) fintensity(50) lcolor(none)) ///
-			(bar `shrfsp_gob' anio if anio > 2000 & anio <= 2024, barwidth(.75) pstyle(p14) fintensity(75) lcolor(none)) ///
-			(connected `shrfsp_gob_pib' anio if anio > 2000 & anio <= 2024, ///
+		twoway (bar `shrfsp_banca' anio if anio > 2000 & anio <= `anio', barwidth(.75)) ///
+			(bar `shrfsp_oye' anio if anio > 2000 & anio <= `anio', barwidth(.75) pstyle(p2) fintensity(50) lcolor(none)) ///
+			(bar `shrfsp_gob' anio if anio > 2000 & anio <= `anio', barwidth(.75) pstyle(p14) fintensity(75) lcolor(none)) ///
+			(connected `shrfsp_gob_pib' anio if anio > 2000 & anio <= `anio', ///
 				yaxis(2) mlabel(`shrfsp_gob_pib') mlabposition(12) mlabcolor(black) pstyle(p1) ///
 				lpattern(dot) msize(small) mlabsize(vlarge)) ///
-			(scatter `shrfsp_banca' anio if anio > 2000 & anio <= 2024, ///
+			(scatter `shrfsp_banca' anio if anio > 2000 & anio <= `anio', ///
 				mlabel(`shrfsp_banca') mlabposition(12) mlabcolor(black) msize(zero) mlabsize(vlarge)) ///
 			if `externo' != . & anio > `ultanio', ///
 			title(`graphtitle') ///
@@ -453,12 +453,12 @@ quietly {
 			graph export "$export/shrfsp_oye.png", replace name(shrfsp_oye)
 		}
 
-		twoway (bar `deuda_corto_plazo' anio if anio > 2000 & anio <= 2024, barwidth(.75)) ///
-			(bar `deuda_largo_plazo' anio if anio > 2000 & anio <= 2024, barwidth(.75) pstyle(p2) fintensity(50) lcolor(none)) ///
-			(connected `shrfsp_gob_pib' anio if anio > 2000 & anio <= 2024, ///
+		twoway (bar `deuda_corto_plazo' anio if anio > 2000 & anio <= `anio', barwidth(.75)) ///
+			(bar `deuda_largo_plazo' anio if anio > 2000 & anio <= `anio', barwidth(.75) pstyle(p2) fintensity(50) lcolor(none)) ///
+			(connected `shrfsp_gob_pib' anio if anio > 2000 & anio <= `anio', ///
 				yaxis(2) mlabel(`shrfsp_gob_pib') mlabposition(12) mlabcolor(black) pstyle(p1) ///
 				lpattern(dot) msize(small) mlabsize(vlarge)) ///
-			(scatter `deuda_corto_plazo' anio if anio > 2000 & anio <= 2024, ///
+			(scatter `deuda_corto_plazo' anio if anio > 2000 & anio <= `anio', ///
 				mlabel(`deuda_corto_plazo') mlabposition(12) mlabcolor(black) msize(zero) mlabsize(vlarge)) ///
 			if `externo' != . & anio > `ultanio', ///
 			title(`graphtitle') ///
@@ -479,7 +479,7 @@ quietly {
 		capture confirm existence $export
 		if _rc == 0 {
 			graph export "$export/shrfsp_plazo.png", replace name(shrfsp_plazo)
-		}*/
+		}
 	}
 
 
@@ -530,17 +530,17 @@ quietly {
 			local graphtitle ""
 			local graphfuente ""
 		}		
-		twoway (bar costodeudaTotg anio if anio > 2000 & anio <= 2024, ///
+		twoway (bar costodeudaTotg anio if anio > 2000 & anio <= `=`anio'-1', ///
 				yaxis(2) pstyle(p1) lwidth(none) barwidth(.75)) ///
-			(bar costodeudaOyE anio if anio > 2000 & anio <= 2024, ///
+			(bar costodeudaOyE anio if anio > 2000 & anio <= `=`anio'-1', ///
 				yaxis(2) pstyle(p1) lwidth(none) barwidth(.75) fintensity(50) lcolor(none)) ///
-			(bar costodeudaTotg anio if anio > 2024 & anio <= 2030, ///
+			(bar costodeudaTotg anio if anio > `=`anio'-1' & anio <= 2030, ///
 				yaxis(2) pstyle(p2) lwidth(none) barwidth(.75) fintensity(75)) ///
-			(bar costodeudaOyE anio if anio > 2024 & anio <= 2030, ///
+			(bar costodeudaOyE anio if anio > `=`anio'-1' & anio <= 2030, ///
 				yaxis(2) pstyle(p2) lwidth(none) barwidth(.75) fintensity(50) lcolor(none)) ///
-			(connected tasaEfectiva anio if anio > 2000 & anio <= 2024, ///
+			(connected tasaEfectiva anio if anio > 2000 & anio <= `=`anio'-1', ///
 				mlabel(tasaEfectiva) mlabposition(12) mlabcolor(black) pstyle(p1) lpattern(dot) msize(small) mlabsize(vlarge)) ///
-			(connected tasaEfectiva anio if anio > 2024 & anio <= 2030, ///
+			(connected tasaEfectiva anio if anio > `=`anio'-1' & anio <= 2030, ///
 				mlabel(tasaEfectiva) mlabposition(12) mlabcolor(black) pstyle(p2) lpattern(dot) msize(small) mlabsize(vlarge)) ///
 			(scatter costodeudaTotg anio if anio > 2000 & anio <= 2030, ///
 				yaxis(2) mlabel(costodeudaTotg) mlabposition(12) mlabcolor(black) msize(zero) mlabsize(vlarge)) ///
