@@ -29,17 +29,17 @@ else if "`c(console)'" != "" {							// Servidor Web
 }
 
 ** Parámetros iniciales
-scalar aniovp = 2024								// ANIO VALOR PRESENTE
-scalar anioPE = 2024								// ANIO PAQUETE ECONÓMICO
+scalar aniovp = 2025								// ANIO VALOR PRESENTE
+scalar anioPE = 2025								// ANIO PAQUETE ECONÓMICO
 scalar anioenigh = 2022								// ANIO ENIGH
 
 global id = "ciepmx"								// ID USUARIO
 global paqueteEconomico "CGPE 2025"						// POLÍTICA FISCAL
 
 ** Opciones
-//global nographs "nographs"							// SUPRIMIR GRAFICAS
+global nographs "nographs"							// SUPRIMIR GRAFICAS
 //global update "update"							// UPDATE BASES DE DATOS
-global output "output"							// ARCHIVO DE SALIDA (WEB)
+//global output "output"							// ARCHIVO DE SALIDA (WEB)
 //global textbook "textbook"							// SCALAR TO LATEX
 
 if "$output" != "" {
@@ -105,11 +105,16 @@ global inf2031 = 3.0
 ***
 
 ** 3.1 Ley de Ingresos de la Federación
-//noisily LIF if divLIF != 10, anio(`=anioPE') by(divSIM) ///$update 		///
-	//title("Ingresos presupuestarios") 					/// Cambiar título
-	//desde(`=`=anioPE'-12') 							/// Año de inicio PROMEDIO
-	//min(0) 									/// Mínimo 0% del PIB (no negativo)
-	//rows(1)									//  Número de filas en la leyenda
+noisily LIF if divLIF != 10, anio(`=anioPE') by(divSIM) ///$update 		///
+	title("Ingresos presupuestarios") 					/// Cambiar título
+	desde(`=`=anioPE'-12') 							/// Año de inicio PROMEDIO
+	min(0) 									/// Mínimo 0% del PIB (no negativo)
+	rows(1)									//  Número de filas en la leyenda
+
+rename divSIM divCODE
+decode divCODE, g(divSIM) 
+collapse (sum) recaudacion, by(anio divSIM) fast
+save `"`c(sysdir_site)'/users/$id/LIF.dta"', replace	
 
 //postfile TE double(anio ISRAS ISRPF CUOTAS IngLab 				/// Impuestos al trabajo
 	//ISRPM OTROSK IngCap 							/// Impuestos al capital
@@ -543,7 +548,7 @@ if "$nographs" != "nographs" {
 ** 3.3 Saldo Histórico de Requerimientos Financieros del Sector Público **
 **
 
-/* SHRFSP: Total, Interno, Externo (como % del PIB)
+* SHRFSP: Total, Interno, Externo (como % del PIB)
 matrix shrfsp = (51.4, 39.8, 11.6 \ 	/// 2025
 		 51.4, 40.5, 10.9 \ 	/// 2026
 		 51.4, 40.8, 10.6 \ 	/// 2027
@@ -610,7 +615,7 @@ forvalues k = 2025(1)2030 {
 ** 3.3.2 SHRFSP **/
 scalar tasaEfectiva = 6.801
 noisily SHRFSP, anio(`=anioPE') ultanio(2008) $nographs $update $textbook
-ex
+
 
 **/
 **# 4. HOGARES: ARMONIZACIÓN MACRO-MICRO
