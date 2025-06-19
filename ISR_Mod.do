@@ -32,7 +32,7 @@ local smdf = 248.93 			// SM 2024
 ** Households **
 ****************
 SCN, nographs
-local pibY = scalar(PIB)
+local pibY = real(subinstr(scalar(PIB),",","",.))*1000000
 
 capture use "`c(sysdir_site)'/04_master/perfiles`=anioPE'.dta", clear
 if _rc != 0 {
@@ -155,24 +155,24 @@ forvalues j=`=rowsof(ISR)'(-1)1 {
 
 ************************
 ** Subsidio al empleo **
-replace SE = SE*.1492/.123
+replace SE = SE*.1492/.138
 
 
 ******************
 ** ISR SALARIOS **
 replace formal_asalariados = prop_salarios <= (1-DED[1,4]/100) & prop_salarios != .
-g ISRAS = ISR*(ing_subor+cuotasTPF)/(ing_bruto_tax)
-replace ISRAS = 0 if formal_asalariados == 0
-replace ISRAS = ISRAS*3.670/3.261
+g ISRAS_Sim = ISR*(ing_subor+cuotasTPF)/(ing_bruto_tax)
+replace ISRAS_Sim = 0 if formal_asalariados == 0
+replace ISRAS_Sim = ISRAS_Sim*3.670/3.312
 
 
 **************************
 ** ISR PERSONAS FISICAS **
 replace formal_fisicas = prop_formal <= (1-DED[1,3]/100) & prop_formal != .
 
-g ISRPF = ISR*(1-(ing_subor+cuotasTPF)/(ing_bruto_tax))
-replace ISRPF = 0 if formal_fisicas == 0
-replace ISRPF = ISRPF*0.233/0.328
+g ISRPF_Sim = ISR*(1-(ing_subor+cuotasTPF)/(ing_bruto_tax))
+replace ISRPF_Sim = 0 if formal_fisicas == 0
+replace ISRPF_Sim = ISRPF_Sim*0.233/0.511
 
 
 **************************
@@ -185,33 +185,33 @@ matrix `SE' = r(StatTotal)
 capture drop SE_empresas
 Distribucion SE_empresas, relativo(ing_bruto_tpm) macro(`=`SE'[1,1]')
 
-replace ISRPM = (ing_bruto_tpm-exen_tpm)*PM[1,1]/100 - SE_empresas if formal_morales == 1
-replace ISRPM = 0 if ISRPM == .
-replace ISRPM = ISRPM*4.039/4.862
+g ISRPM_Sim = (ing_bruto_tpm-exen_tpm)*PM[1,1]/100 - SE_empresas if formal_morales == 1
+replace ISRPM_Sim = 0 if ISRPM_Sim == .
+replace ISRPM_Sim = ISRPM_Sim*4.039/4.905
 
 
 *****************
 ** CUOTAS IMSS **
-replace CUOTAS = CUOTAS*1.675/1.382 if formal2 == 1
+g CUOTAS_Sim = CUOTAS*1.675/1.389 if formal2 == 1
 
 
 ***************
 ** ISR TOTAL **
 
 * Results *
-tabstat ISRAS [fw=factor] if formal_asalariados == 1, stat(sum) f(%25.2fc) save
+tabstat ISRAS_Sim [fw=factor] if formal_asalariados == 1, stat(sum) f(%25.2fc) save
 tempname SIMTAXS
 matrix `SIMTAXS' = r(StatTotal)
 
-tabstat ISRPF [fw=factor] if formal_fisicas == 1, stat(sum) f(%25.2fc) save
+tabstat ISRPF_Sim [fw=factor] if formal_fisicas == 1, stat(sum) f(%25.2fc) save
 tempname SIMTAX
 matrix `SIMTAX' = r(StatTotal)
 
-tabstat ISRPM [fw=factor] if formal_morales == 1, stat(sum) f(%25.2fc) save
+tabstat ISRPM_Sim [fw=factor] if formal_morales == 1, stat(sum) f(%25.2fc) save
 tempname SIMTAXM
 matrix `SIMTAXM' = r(StatTotal)
 
-tabstat CUOTAS [fw=factor] if formal2 == 1, stat(sum) f(%25.2fc) save
+tabstat CUOTAS_Sim [fw=factor] if formal2 == 1, stat(sum) f(%25.2fc) save
 tempname SIMCSS
 matrix `SIMCSS' = r(StatTotal)
 

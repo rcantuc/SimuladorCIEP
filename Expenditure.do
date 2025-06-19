@@ -101,6 +101,8 @@ noisily di _newline(2) in g _dup(20) "." "{bf:   Economía generacional: " in y 
 
 ** 1.1 Sistema de Cuentas Nacionales **
 SCN, anio(`=anioenigh') nographs
+local PIB = real(subinstr(scalar(PIB),",","",.))*1000000
+local ConHog = real(subinstr(scalar(ConHog),",","",.))*1000000
 
 
 ** 1.2 SHCP: Datos Abiertos **
@@ -391,24 +393,24 @@ if _rc != 0 {
 	replace categ = 19 if categ == .
 
 	label define categ 1 "Alim" /// Alimentos
-		2 "BebN" /// Bebidas no alcohólicas
-		3 "BebA" /// Bebidas alcohólicas
-		4 "Taba" /// Tabaco
-		5 "Vest" /// Prendas de vestir
-		6 "Calz" /// Calzado
-		7 "AlojT" /// Alquileres y vivienda
-		8 "Agua" /// Agua
-		9 "Elec" /// Electricidad
-		10 "HogaT" /// Artículos para el hogar
-		11 "SaluT" /// Salud
-		12 "Vehi" /// Adquisición de vehículos
-		13 "FTra" /// Transporte personal
-		14 "STra" /// Servicios de transporte
-		15 "ComuT" /// Comunicaciones
-		16 "RecrT" /// Recreación y cultura
-		17 "EducT" /// Educación
-		18 "RestT" /// Restaurantes y hoteles
-		19 "DiveT" // Otros diversos
+		2 "`BebN'" /// Bebidas no alcohólicas
+		3 "`BebA'" /// Bebidas alcohólicas
+		4 "`Taba'" /// Tabaco
+		5 "`Vest'" /// Prendas de vestir
+		6 "`Calz'" /// Calzado
+		7 "`AlojT'" /// Alquileres y vivienda
+		8 "`Agua'" /// `Agua'
+		9 "`Elec'" /// Electricidad
+		10 "`HogaT'" /// Artículos para el hogar
+		11 "`SaluT'" /// Salud
+		12 "`Vehi'" /// Adquisición de vehículos
+		13 "`FTra'" /// Transporte personal
+		14 "`STra'" /// Servicios de transporte
+		15 "`ComuT'" /// Comunicaciones
+		16 "`RecrT'" /// Recreación y cultura
+		17 "`EducT'" /// Educación
+		18 "`RestT'" /// Restaurantes y hoteles
+		19 "`DiveT'" // Otros diversos
 	label values categ categ
 
 
@@ -589,7 +591,7 @@ foreach categ in categ categ_iva /*categ_ieps*/ {
 		** 3.4 Gasto per cápita **
 		noisily di in g `"`categs'"'
 		foreach k of local categs {
-		*foreach k in Vest {
+		*foreach k in `Vest' {
 			local k = strtoname("`k'")
 			foreach vars in cant_ gas_ {
 				if "`vars'" == "gas_" {
@@ -724,66 +726,67 @@ scalar ginigastopc = `gini_gasto_pc'
 
 scalar MTot = 0
 foreach k in Alim BebN BebA Taba Vest Calz AlojT Agua Elec HogaT SaluT Vehi FTra STra ComuT RecrT EducT RestT DiveT {
+	local `k' = real(subinstr(scalar(`k'),",","",.))*1000000
 	if "`k'" == "Alim" {
 		label var gas_pc_Alim "Alimentos"
 	}
-	if "`k'" == "BebN" {
+	if "`k'" == "`BebN'" {
 		label var gas_pc_BebN "Bebidas no alcohólicas"
 	}
-	if "`k'" == "BebA" {
+	if "`k'" == "`BebA'" {
 		label var gas_pc_BebA "Bebidas alcohólicas"
 	}
-	if "`k'" == "Taba" {
+	if "`k'" == "`Taba'" {
 		label var gas_pc_Taba "Tabaco"
 	}
-	if "`k'" == "Vest" {
+	if "`k'" == "`Vest'" {
 		label var gas_pc_Vest "Prendas de vestir"
 	}
-	if "`k'" == "Calz" {
+	if "`k'" == "`Calz'" {
 		label var gas_pc_Calz "Calzado"
 	}
-	if "`k'" == "AlojT" {
+	if "`k'" == "`AlojT'" {
 		label var gas_pc_AlojT "Alquileres y vivienda"
 	}
-	if "`k'" == "Agua" {
-		label var gas_pc_Agua "Agua"
+	if "`k'" == "`Agua'" {
+		label var gas_pc_Agua "`Agua'"
 	}
-	if "`k'" == "Elec" {
+	if "`k'" == "`Elec'" {
 		label var gas_pc_Elec "Electricidad"
 	}
-	if "`k'" == "HogaT" {
+	if "`k'" == "`HogaT'" {
 		label var gas_pc_HogaT "Artículos para el hogar"
 	}
-	if "`k'" == "SaluT" {
+	if "`k'" == "`SaluT'" {
 		label var gas_pc_SaluT "Salud"
 	}
-	if "`k'" == "Vehi" {
+	if "`k'" == "`Vehi'" {
 		label var gas_pc_Vehi "Adquisición de vehículos"
 	}
-	if "`k'" == "FTra" {
+	if "`k'" == "`FTra'" {
 		label var gas_pc_FTra "Transporte personal"
 	}
-	if "`k'" == "STra" {
+	if "`k'" == "`STra'" {
 		label var gas_pc_STra "Servicios de transporte"
 	}
-	if "`k'" == "ComuT" {
+	if "`k'" == "`ComuT'" {
 		label var gas_pc_ComuT "Comunicaciones"
 	}
-	if "`k'" == "RecrT" {
+	if "`k'" == "`RecrT'" {
 		label var gas_pc_RecrT "Recreación y cultura"
 	}
-	if "`k'" == "EducT" {
+	if "`k'" == "`EducT'" {
 		label var gas_pc_EducT "Educación"
 	}
-	if "`k'" == "RestT" {
+	if "`k'" == "`RestT'" {
 		label var gas_pc_RestT "Restaurantes y hoteles"
 	}
-	if "`k'" == "DiveT" {
+	if "`k'" == "`DiveT'" {
 		label var gas_pc_DiveT "Otros diversos"
 	}
 	tabstat gas_pc_`k' [aw=factor], stat(sum) f(%20.0fc) save
 	scalar M`k' = r(StatTotal)[1,1]
-	scalar E`k'PIB = M`k'/PIB*100
+	scalar E`k'PIB = M`k'/`PIB'*100
 	scalar E`k'PC = M`k'/`pobtotNacional'
 
 	Gini gas_pc_`k', hogar(folioviv foliohog) factor(factor)
@@ -792,7 +795,7 @@ foreach k in Alim BebN BebA Taba Vest Calz AlojT Agua Elec HogaT SaluT Vehi FTra
 
 	scalar MTot = MTot + M`k'
 }
-scalar ETotPIB = MTot/PIB*100
+scalar ETotPIB = MTot/`PIB'*100
 scalar ETotPC = MTot/`pobtotNacional'
 
 
@@ -804,122 +807,122 @@ noisily di _newline in g "{bf: A. Gasto inicial" ///
 	_col(77) %7s "Dif. %" "}"
 noisily di in g "  (+) Alimentos " ///
 	_col(44) in y "(" %5.3fc giniAlim ")" ///
-	_col(55) in y %7.3fc MAlim/PIB*100 ///
-	_col(66) %7.3fc Alim/PIB*100 ///
-	_col(77) %6.1fc (MAlim/Alim-1)*100 "%"
+	_col(55) in y %7.3fc MAlim/`PIB'*100 ///
+	_col(66) %7.3fc `Alim'/`PIB'*100 ///
+	_col(77) %6.1fc (MAlim/`Alim'-1)*100 "%"
 noisily di in g "  (+) Bebidas no alcohólicas " ///
 	_col(44) in y "(" %5.3fc giniBebN ")" ///
-	_col(55) in y %7.3fc MBebN/PIB*100 ///
-	_col(66) %7.3fc BebN/PIB*100 ///
-	_col(77) %6.1fc (MBebN/BebN-1)*100 "%"
+	_col(55) in y %7.3fc MBebN/`PIB'*100 ///
+	_col(66) %7.3fc `BebN'/`PIB'*100 ///
+	_col(77) %6.1fc (MBebN/`BebN'-1)*100 "%"
 noisily di in g "  (+) Bebidas alcohólicas " ///
 	_col(44) in y "(" %5.3fc giniBebA ")" ///
-	_col(55) in y %7.3fc MBebA/PIB*100 ///
-	_col(66) %7.3fc BebA/PIB*100 ///
-	_col(77) %6.1fc (MBebA/BebA-1)*100 "%"
+	_col(55) in y %7.3fc MBebA/`PIB'*100 ///
+	_col(66) %7.3fc `BebA'/`PIB'*100 ///
+	_col(77) %6.1fc (MBebA/`BebA'-1)*100 "%"
 noisily di in g "  (+) Tabaco " ///
 	_col(44) in y "(" %5.3fc giniTaba ")" ///
-	_col(55) in y %7.3fc MTaba/PIB*100 ///
-	_col(66) %7.3fc Taba/PIB*100 ///
-	_col(77) %6.1fc (MTaba/Taba-1)*100 "%"
+	_col(55) in y %7.3fc MTaba/`PIB'*100 ///
+	_col(66) %7.3fc `Taba'/`PIB'*100 ///
+	_col(77) %6.1fc (MTaba/`Taba'-1)*100 "%"
 noisily di in g "  (+) Prendas de vestir " ///
 	_col(44) in y "(" %5.3fc giniVest ")" ///
-	_col(55) in y %7.3fc MVest/PIB*100 ///
-	_col(66) %7.3fc Vest/PIB*100 ///
-	_col(77) %6.1fc (MVest/Vest-1)*100 "%"
+	_col(55) in y %7.3fc MVest/`PIB'*100 ///
+	_col(66) %7.3fc `Vest'/`PIB'*100 ///
+	_col(77) %6.1fc (MVest/`Vest'-1)*100 "%"
 noisily di in g "  (+) Calzado " ///
 	_col(44) in y "(" %5.3fc giniCalz ")" ///
-	_col(55) in y %7.3fc MCalz/PIB*100 ///
-	_col(66) %7.3fc Calz/PIB*100 ///
-	_col(77) %6.1fc (MCalz/Calz-1)*100 "%"
+	_col(55) in y %7.3fc MCalz/`PIB'*100 ///
+	_col(66) %7.3fc `Calz'/`PIB'*100 ///
+	_col(77) %6.1fc (MCalz/`Calz'-1)*100 "%"
 noisily di in g "  (+) Vivienda " ///
 	_col(44) in y "(" %5.3fc giniAlojT ")" ///
-	_col(55) in y %7.3fc MAlojT/PIB*100 ///
-	_col(66) %7.3fc AlojT/PIB*100 ///
-	_col(77) %6.1fc (MAlojT/AlojT-1)*100 "%"
+	_col(55) in y %7.3fc MAlojT/`PIB'*100 ///
+	_col(66) %7.3fc `AlojT'/`PIB'*100 ///
+	_col(77) %6.1fc (MAlojT/`AlojT'-1)*100 "%"
 noisily di in g "  (+) Agua " ///
 	_col(44) in y "(" %5.3fc giniAgua ")" ///
-	_col(55) in y %7.3fc MAgua/PIB*100 ///
-	_col(66) %7.3fc Agua/PIB*100 ///
-	_col(77) %6.1fc (MAgua/Agua-1)*100 "%"
+	_col(55) in y %7.3fc MAgua/`PIB'*100 ///
+	_col(66) %7.3fc `Agua'/`PIB'*100 ///
+	_col(77) %6.1fc (MAgua/`Agua'-1)*100 "%"
 noisily di in g "  (+) Electricidad " ///
 	_col(44) in y "(" %5.3fc giniElec ")" ///
-	_col(55) in y %7.3fc MElec/PIB*100 ///
-	_col(66) %7.3fc Elec/PIB*100 ///
-	_col(77) %6.1fc (MElec/Elec-1)*100 "%"
+	_col(55) in y %7.3fc MElec/`PIB'*100 ///
+	_col(66) %7.3fc `Elec'/`PIB'*100 ///
+	_col(77) %6.1fc (MElec/`Elec'-1)*100 "%"
 noisily di in g "  (+) Artículos para el hogar " ///
 	_col(44) in y "(" %5.3fc giniHogaT ")" ///
-	_col(55) in y %7.3fc MHogaT/PIB*100 ///
-	_col(66) %7.3fc HogaT/PIB*100 ///
-	_col(77) %6.1fc (MHogaT/HogaT-1)*100 "%"
+	_col(55) in y %7.3fc MHogaT/`PIB'*100 ///
+	_col(66) %7.3fc `HogaT'/`PIB'*100 ///
+	_col(77) %6.1fc (MHogaT/`HogaT'-1)*100 "%"
 noisily di in g "  (+) Salud " ///
 	_col(44) in y "(" %5.3fc giniSaluT ")" ///
-	_col(55) in y %7.3fc MSaluT/PIB*100 ///
-	_col(66) %7.3fc SaluT/PIB*100 ///
-	_col(77) %6.1fc (MSaluT/SaluT-1)*100 "%"
+	_col(55) in y %7.3fc MSaluT/`PIB'*100 ///
+	_col(66) %7.3fc `SaluT'/`PIB'*100 ///
+	_col(77) %6.1fc (MSaluT/`SaluT'-1)*100 "%"
 noisily di in g "  (+) Aquisición de vehículos " ///
 	_col(44) in y "(" %5.3fc giniVehi ")" ///
-	_col(55) in y %7.3fc MVehi/PIB*100 ///
-	_col(66) %7.3fc Vehi/PIB*100 ///
-	_col(77) %6.1fc (MVehi/Vehi-1)*100 "%"
+	_col(55) in y %7.3fc MVehi/`PIB'*100 ///
+	_col(66) %7.3fc `Vehi'/`PIB'*100 ///
+	_col(77) %6.1fc (MVehi/`Vehi'-1)*100 "%"
 noisily di in g "  (+) Funcionamiento de STransporte " ///
 	_col(44) in y "(" %5.3fc giniFTra ")" ///
-	_col(55) in y %7.3fc MFTra/PIB*100 ///
-	_col(66) %7.3fc FTra/PIB*100 ///
-	_col(77) %6.1fc (MFTra/FTra-1)*100 "%"
+	_col(55) in y %7.3fc MFTra/`PIB'*100 ///
+	_col(66) %7.3fc `FTra'/`PIB'*100 ///
+	_col(77) %6.1fc (MFTra/`FTra'-1)*100 "%"
 noisily di in g "  (+) Servicios de STransporte " ///
 	_col(44) in y "(" %5.3fc giniSTra ")" ///
-	_col(55) in y %7.3fc MSTra/PIB*100 ///
-	_col(66) %7.3fc STra/PIB*100 ///
-	_col(77) %6.1fc (MSTra/STra-1)*100 "%"
+	_col(55) in y %7.3fc MSTra/`PIB'*100 ///
+	_col(66) %7.3fc `STra'/`PIB'*100 ///
+	_col(77) %6.1fc (MSTra/`STra'-1)*100 "%"
 noisily di in g "  (+) Comunicaciones " ///
 	_col(44) in y "(" %5.3fc giniComuT ")" ///
-	_col(55) in y %7.3fc MComuT/PIB*100 ///
-	_col(66) %7.3fc ComuT/PIB*100 ///
-	_col(77) %6.1fc (MComuT/ComuT-1)*100 "%"
+	_col(55) in y %7.3fc MComuT/`PIB'*100 ///
+	_col(66) %7.3fc `ComuT'/`PIB'*100 ///
+	_col(77) %6.1fc (MComuT/`ComuT'-1)*100 "%"
 noisily di in g "  (+) Recreación y cultura " ///
 	_col(44) in y "(" %5.3fc giniRecrT ")" ///
-	_col(55) in y %7.3fc MRecrT/PIB*100 ///
-	_col(66) %7.3fc RecrT/PIB*100 ///
-	_col(77) %6.1fc (MRecrT/RecrT-1)*100 "%"
+	_col(55) in y %7.3fc MRecrT/`PIB'*100 ///
+	_col(66) %7.3fc `RecrT'/`PIB'*100 ///
+	_col(77) %6.1fc (MRecrT/`RecrT'-1)*100 "%"
 noisily di in g "  (+) Educación " ///
 	_col(44) in y "(" %5.3fc giniEducT ")" ///
-	_col(55) in y %7.3fc MEducT/PIB*100 ///
-	_col(66) %7.3fc EducT/PIB*100 ///
-	_col(77) %6.1fc (MEducT/EducT-1)*100 "%"
+	_col(55) in y %7.3fc MEducT/`PIB'*100 ///
+	_col(66) %7.3fc `EducT'/`PIB'*100 ///
+	_col(77) %6.1fc (MEducT/`EducT'-1)*100 "%"
 noisily di in g "  (+) Restaurantes y hoteles" ///
 	_col(44) in y "(" %5.3fc giniRestT ")" ///
-	_col(55) in y %7.3fc MRestT/PIB*100 ///
-	_col(66) %7.3fc RestT/PIB*100 ///
-	_col(77) %6.1fc (MRestT/RestT-1)*100 "%"
+	_col(55) in y %7.3fc MRestT/`PIB'*100 ///
+	_col(66) %7.3fc `RestT'/`PIB'*100 ///
+	_col(77) %6.1fc (MRestT/`RestT'-1)*100 "%"
 noisily di in g "  (+) Bienes y servicios diveresos " ///
 	_col(44) in y "(" %5.3fc giniDiveT ")" ///
-	_col(55) in y %7.3fc MDiveT/PIB*100 ///
-	_col(66) %7.3fc DiveT/PIB*100 ///
-	_col(77) %6.1fc (MDiveT/DiveT-1)*100 "%"
+	_col(55) in y %7.3fc MDiveT/`PIB'*100 ///
+	_col(66) %7.3fc `DiveT'/`PIB'*100 ///
+	_col(77) %6.1fc (MDiveT/`DiveT'-1)*100 "%"
 noisily di in g _dup(84) "-"
 noisily di in g "{bf:  (=) Total " ///
 	_col(44) in y "(" %5.3fc ginigastopc ")" ///
-	_col(55) in y %7.3fc MTot/PIB*100 ///
-	_col(66) %7.3fc ConHog/PIB*100 ///
-	_col(77) %6.1fc (MTot/ConHog-1)*100 "}" "%"
+	_col(55) in y %7.3fc MTot/`PIB'*100 ///
+	_col(66) %7.3fc `ConHog'/`PIB'*100 ///
+	_col(77) %6.1fc (MTot/`ConHog'-1)*100 "}" "%"
 
 
 ** 4.1. Factores de escala  **
 scalar MMTot = 0
 foreach k in Alim BebN BebA Taba Vest Calz AlojT Agua Elec HogaT SaluT Vehi FTra STra ComuT RecrT EducT RestT DiveT {
-	scalar TT`k' = (M`k'/`k')^(-1)
-	scalar Dif`k' = ((M`k'/`k')-1)*100
+	scalar TT`k' = (M`k'/``k'')^(-1)
+	scalar Dif`k' = ((M`k'/``k'')-1)*100
 	replace gas_pc_`k' = gas_pc_`k'*scalar(TT`k')
 
 	tabstat gas_pc_`k' [aw=factor], stat(sum) f(%20.0fc) save
 	scalar MM`k' = r(StatTotal)[1,1]
-	scalar EE`k'PIB = MM`k'/PIB*100
+	scalar EE`k'PIB = MM`k'/`PIB'*100
 	scalar EE`k'PC = MM`k'/`pobtotNacional'
 
 	scalar MMTot = MMTot + MM`k'
 }
-scalar EETotPIB = MMTot/PIB*100
+scalar EETotPIB = MMTot/`PIB'*100
 scalar EETotPC = MMTot/`pobtotNacional'
 
 
@@ -929,86 +932,86 @@ noisily di _newline in g "{bf: B. Gasto ajustado" ///
 	_col(66) %6s "Macro" in g ///
 	_col(77) %6s  "Dif. %}"
 noisily di in g "  (+) Alimentos " ///
-	_col(44) in y %20.3fc MMAlim/PIB*100 ///
-	_col(66) %7.3fc Alim/PIB*100 ///
-	_col(77) %6.1fc (MMAlim/Alim-1)*100
+	_col(44) in y %20.3fc MMAlim/`PIB'*100 ///
+	_col(66) %7.3fc `Alim'/`PIB'*100 ///
+	_col(77) %6.1fc (MMAlim/`Alim'-1)*100
 noisily di in g "  (+) Bebidas no alcohólicas " ///
-	_col(44) in y %20.3fc MMBebN/PIB*100 ///
-	_col(66) %7.3fc BebN/PIB*100 ///
-	_col(77) %6.1fc (MMBebN/BebN-1)*100
+	_col(44) in y %20.3fc MMBebN/`PIB'*100 ///
+	_col(66) %7.3fc `BebN'/`PIB'*100 ///
+	_col(77) %6.1fc (MMBebN/`BebN'-1)*100
 noisily di in g "  (+) Bebidas alcohólicas " ///
-	_col(44) in y %20.3fc MMBebA/PIB*100 ///
-	_col(66) %7.3fc BebA/PIB*100 ///
-	_col(77) %6.1fc (MMBebA/BebA-1)*100
+	_col(44) in y %20.3fc MMBebA/`PIB'*100 ///
+	_col(66) %7.3fc `BebA'/`PIB'*100 ///
+	_col(77) %6.1fc (MMBebA/`BebA'-1)*100
 noisily di in g "  (+) Tabaco " ///
-	_col(44) in y %20.3fc MMTaba/PIB*100 ///
-	_col(66) %7.3fc Taba/PIB*100 ///
-	_col(77) %6.1fc (MMTaba/Taba-1)*100
+	_col(44) in y %20.3fc MMTaba/`PIB'*100 ///
+	_col(66) %7.3fc `Taba'/`PIB'*100 ///
+	_col(77) %6.1fc (MMTaba/`Taba'-1)*100
 noisily di in g "  (+) Prendas de vestir " ///
-	_col(44) in y %20.3fc MMVest/PIB*100 ///
-	_col(66) %7.3fc Vest/PIB*100 ///
-	_col(77) %6.1fc (MMVest/Vest-1)*100
+	_col(44) in y %20.3fc MMVest/`PIB'*100 ///
+	_col(66) %7.3fc `Vest'/`PIB'*100 ///
+	_col(77) %6.1fc (MMVest/`Vest'-1)*100
 noisily di in g "  (+) Calzado " ///
-	_col(44) in y %20.3fc MMCalz/PIB*100 ///
-	_col(66) %7.3fc Calz/PIB*100 ///
-	_col(77) %6.1fc (MMCalz/Calz-1)*100
+	_col(44) in y %20.3fc MMCalz/`PIB'*100 ///
+	_col(66) %7.3fc `Calz'/`PIB'*100 ///
+	_col(77) %6.1fc (MMCalz/`Calz'-1)*100
 noisily di in g "  (+) Vivienda " ///
-	_col(44) in y %20.3fc MMAlojT/PIB*100 ///
-	_col(66) %7.3fc AlojT/PIB*100 ///
-	_col(77) %6.1fc (MMAlojT/AlojT-1)*100
+	_col(44) in y %20.3fc MMAlojT/`PIB'*100 ///
+	_col(66) %7.3fc `AlojT'/`PIB'*100 ///
+	_col(77) %6.1fc (MMAlojT/`AlojT'-1)*100
 noisily di in g "  (+) Agua " ///
-	_col(44) in y %20.3fc MMAgua/PIB*100 ///
-	_col(66) %7.3fc Agua/PIB*100 ///
-	_col(77) %6.1fc (MMAgua/Agua-1)*100
+	_col(44) in y %20.3fc MMAgua/`PIB'*100 ///
+	_col(66) %7.3fc `Agua'/`PIB'*100 ///
+	_col(77) %6.1fc (MMAgua/`Agua'-1)*100
 noisily di in g "  (+) Electricidad " ///
-	_col(44) in y %20.3fc MMElec/PIB*100 ///
-	_col(66) %7.3fc Elec/PIB*100 ///
-	_col(77) %6.1fc (MMElec/Elec-1)*100
+	_col(44) in y %20.3fc MMElec/`PIB'*100 ///
+	_col(66) %7.3fc `Elec'/`PIB'*100 ///
+	_col(77) %6.1fc (MMElec/`Elec'-1)*100
 noisily di in g "  (+) Artículos para el hogar " ///
-	_col(44) in y %20.3fc MMHogaT/PIB*100 ///
-	_col(66) %7.3fc HogaT/PIB*100 ///
-	_col(77) %6.1fc (MMHogaT/HogaT-1)*100
+	_col(44) in y %20.3fc MMHogaT/`PIB'*100 ///
+	_col(66) %7.3fc `HogaT'/`PIB'*100 ///
+	_col(77) %6.1fc (MMHogaT/`HogaT'-1)*100
 noisily di in g "  (+) Salud " ///
-	_col(44) in y %20.3fc MMSaluT/PIB*100 ///
-	_col(66) %7.3fc SaluT/PIB*100 ///
-	_col(77) %6.1fc (MMSaluT/SaluT-1)*100
+	_col(44) in y %20.3fc MMSaluT/`PIB'*100 ///
+	_col(66) %7.3fc `SaluT'/`PIB'*100 ///
+	_col(77) %6.1fc (MMSaluT/`SaluT'-1)*100
 noisily di in g "  (+) Aquisición de vehículos " ///
-	_col(44) in y %20.3fc MMVehi/PIB*100 ///
-	_col(66) %7.3fc Vehi/PIB*100 ///
-	_col(77) %6.1fc (MMVehi/Vehi-1)*100
+	_col(44) in y %20.3fc MMVehi/`PIB'*100 ///
+	_col(66) %7.3fc `Vehi'/`PIB'*100 ///
+	_col(77) %6.1fc (MMVehi/`Vehi'-1)*100
 noisily di in g "  (+) Funcionamiento de STransporte " ///
-	_col(44) in y %20.3fc MMFTra/PIB*100 ///
-	_col(66) %7.3fc FTra/PIB*100 ///
-	_col(77) %6.1fc (MMFTra/FTra-1)*100
+	_col(44) in y %20.3fc MMFTra/`PIB'*100 ///
+	_col(66) %7.3fc `FTra'/`PIB'*100 ///
+	_col(77) %6.1fc (MMFTra/`FTra'-1)*100
 noisily di in g "  (+) Servicios de STransporte " ///
-	_col(44) in y %20.3fc MMSTra/PIB*100 ///
-	_col(66) %7.3fc STra/PIB*100 ///
-	_col(77) %6.1fc (MMSTra/STra-1)*100
+	_col(44) in y %20.3fc MMSTra/`PIB'*100 ///
+	_col(66) %7.3fc `STra'/`PIB'*100 ///
+	_col(77) %6.1fc (MMSTra/`STra'-1)*100
 noisily di in g "  (+) Comunicaciones " ///
-	_col(44) in y %20.3fc MMComuT/PIB*100 ///
-	_col(66) %7.3fc ComuT/PIB*100 ///
-	_col(77) %6.1fc (MMComuT/ComuT-1)*100
+	_col(44) in y %20.3fc MMComuT/`PIB'*100 ///
+	_col(66) %7.3fc `ComuT'/`PIB'*100 ///
+	_col(77) %6.1fc (MMComuT/`ComuT'-1)*100
 noisily di in g "  (+) Recreación y cultura " ///
-	_col(44) in y %20.3fc MMRecrT/PIB*100 ///
-	_col(66) %7.3fc RecrT/PIB*100 ///
-	_col(77) %6.1fc (MMRecrT/RecrT-1)*100
+	_col(44) in y %20.3fc MMRecrT/`PIB'*100 ///
+	_col(66) %7.3fc `RecrT'/`PIB'*100 ///
+	_col(77) %6.1fc (MMRecrT/`RecrT'-1)*100
 noisily di in g "  (+) Educación " ///
-	_col(44) in y %20.3fc MMEducT/PIB*100 ///
-	_col(66) %7.3fc EducT/PIB*100 ///
-	_col(77) %6.1fc (MMEducT/EducT-1)*100
+	_col(44) in y %20.3fc MMEducT/`PIB'*100 ///
+	_col(66) %7.3fc `EducT'/`PIB'*100 ///
+	_col(77) %6.1fc (MMEducT/`EducT'-1)*100
 noisily di in g "  (+) Restaurantes y hoteles" ///
-	_col(44) in y %20.3fc MMRestT/PIB*100 ///
-	_col(66) %7.3fc RestT/PIB*100 ///
-	_col(77) %6.1fc (MMRestT/RestT-1)*100
+	_col(44) in y %20.3fc MMRestT/`PIB'*100 ///
+	_col(66) %7.3fc `RestT'/`PIB'*100 ///
+	_col(77) %6.1fc (MMRestT/`RestT'-1)*100
 noisily di in g "  (+) Bienes y servicios diveresos " ///
-	_col(44) in y %20.3fc MMDiveT/PIB*100 ///
-	_col(66) %7.3fc DiveT/PIB*100 ///
-	_col(77) %6.1fc (MMDiveT/DiveT-1)*100
+	_col(44) in y %20.3fc MMDiveT/`PIB'*100 ///
+	_col(66) %7.3fc `DiveT'/`PIB'*100 ///
+	_col(77) %6.1fc (MMDiveT/`DiveT'-1)*100
 noisily di in g _dup(84) "-"
 noisily di in g "  (=) Total Consumo " ///
-	_col(44) in y %20.3fc MMTot/PIB*100 ///
-	_col(66) %7.3fc ConHog/PIB*100 ///
-	_col(77) %6.1fc (MMTot/ConHog-1)*100
+	_col(44) in y %20.3fc MMTot/`PIB'*100 ///
+	_col(66) %7.3fc `ConHog'/`PIB'*100 ///
+	_col(77) %6.1fc (MMTot/`ConHog'-1)*100
 
 
 ** 4.3. Guardar base **
@@ -1054,8 +1057,8 @@ reshape long gas_pc_ cant_pc_ proporcion, i(folioviv foliohog numren) j(categs) 
 
 
 ** 5.1. Cálculo de precios **
-replace gas_pc_ = gas_pc_*ConHog/MTot
-replace cant_pc_ = cant_pc_*ConHog/MTot
+replace gas_pc_ = gas_pc_*`ConHog'/MTot
+replace cant_pc_ = cant_pc_*`ConHog'/MTot
 g precio = gas_pc_/cant_pc_
 tabstat precio gas_pc_ cant_pc_ [aw=factor], f(%20.0fc) by(categs)
 
@@ -1077,8 +1080,8 @@ foreach k of local categs {
 tabstat IVA [aw=factor], stat(sum) f(%20.0fc) save
 di in g "IVA Observado: " in y %20.0fc `IVA'
 
-scalar IVAHHSPIB = r(StatTotal)[1,1]/PIB*100
-scalar IVASCNPIB = `IVA'/PIB*100
+scalar IVAHHSPIB = r(StatTotal)[1,1]/`PIB'*100
+scalar IVASCNPIB = `IVA'/`PIB'*100
 scalar DifIVA = (scalar(IVAHHSPIB) - scalar(IVASCNPIB))/scalar(IVAHHSPIB)*100
 
 Gini IVA, hogar(folioviv foliohog) factor(factor)
@@ -1106,22 +1109,22 @@ save "`c(sysdir_site)'/04_master/`=anioenigh'/consumption_categ_iva.dta", replac
 
 
 
-**************/
-***         ***
-*** 6. IEPS ***
-***         ***
-***************
+*******************/
+***              ***
+***    6. IEPS   ***
+*** (incompleto) ***
+/*******************
 if `=anioenigh' >= 2014 {
 	matrix IEPST = (26.5	,		0 			\ /// Cervezas y licores
-				30.0	,		0 			\ /// Alcohol 14+ a 20
-				53.0	,		0 			\ /// Alcohol 20+
-				8.0		,		0 			\ /// Alto contenido calórico
-				25.0	,		0 			\ /// Bebidas energéticas
-				0		,		1.5737		\ /// Bebidas saborizadas
-				0		,		19.8607		\ /// Combustibles (diesel)
-				30.0	,		0 			\ /// Juegos y sorteos
-				160.0	,		0.6166		\ /// Tabaco y cigarros
-				3.0		,		0 			) //  Telecomunicaciones
+		30.0	,		0 			\ /// Alcohol 14+ a 20
+		53.0	,		0 			\ /// Alcohol 20+
+		8.0		,		0 			\ /// Alto contenido calórico
+		25.0	,		0 			\ /// Bebidas energéticas
+		0		,		1.5737		\ /// Bebidas saborizadas
+		0		,		19.8607		\ /// Combustibles (diesel)
+		30.0	,		0 			\ /// Juegos y sorteos
+		160.0	,		0.6166		\ /// Tabaco y cigarros
+		3.0		,		0 			) //  Telecomunicaciones
 }
 
 use "`c(sysdir_site)'/04_master/`=anioenigh'/consumption_categ_ieps_pc.dta", clear
@@ -1132,11 +1135,12 @@ reshape long gas_pc_ cant_pc_ proporcion, i(folioviv foliohog numren) j(categs) 
 
 
 ** 6.1. Cálculo de precios **
-g precio = gas_pc_/cant_pc_*ConHog/MTot
+g precio = gas_pc_/cant_pc_*`ConHog'/MTot
 *noisily tabstat precio gas_pc_ cant_pc_ [aw=factor], f(%20.0fc) by(categs)
 
 
 ** 6.2. Cálculo del IEPS **
+** (proceso incompleto) **
 capture drop IEPS
 g IEPS = 0
 levelsof categs, local(categs)
@@ -1158,8 +1162,8 @@ foreach k of local categs {
 
 tabstat IEPS [aw=factor], stat(sum) f(%20.0fc) save by(categs)
 
-scalar IEPSNPHHSPIB = r(StatTotal)[1,1]/PIB*100
-scalar IEPSNPSCNPIB = `IEPSNP'/PIB*100
+scalar IEPSNPHHSPIB = r(StatTotal)[1,1]/`PIB'*100
+scalar IEPSNPSCNPIB = `IEPSNP'/`PIB'*100
 scalar DifIEPSNP = (scalar(IEPSNPHHSPIB) - scalar(IEPSNPSCNPIB))/scalar(IEPSNPHHSPIB)*100
 
 foreach k of local categs {
@@ -1206,7 +1210,7 @@ collapse (sum) IEPS, by(folioviv foliohog numren)
 save "`c(sysdir_site)'/04_master/`=anioenigh'/consumption_categ_ieps.dta", replace
 
 
-
+*** TOUCH DOWN ***/
 timer off 15
 timer list 15
 noisily di _newline in g "{bf:Tiempo:} " in y round(`=r(t15)/r(nt15)',.1) in g " segs."

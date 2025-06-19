@@ -106,7 +106,7 @@ local recursos = r(divSIM)
 foreach k of local recursos {
 	local `=substr("`k'",1,7)' = scalar(`k')
 }
-scalar IngKPublicos = `FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE'
+local IngKPublicos = `FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE'
 
 
 
@@ -126,6 +126,14 @@ local ajustepob = poblacion
 ***        ***
 **************
 SCN, anio(`1') nographs
+local PIN = real(subinstr(scalar(PIN),",","",.))*1000000
+local ConHog = real(subinstr(scalar(ConHog),",","",.))*1000000
+local Yl = real(subinstr(scalar(Yl),",","",.))*1000000
+local MixK = real(subinstr(scalar(MixK),",","",.))*1000000
+local RemSal = real(subinstr(scalar(RemSal),",","",.))*1000000
+local ImpNetProduccionL = real(subinstr(scalar(ImpNetProduccionL),",","",.))*1000000
+local ExNOpSoc = real(subinstr(scalar(ExNOpSoc),",","",.))*1000000
+local ImpNet = real(subinstr(scalar(ImpNet),",","",.))*1000000
 
 
 
@@ -152,33 +160,33 @@ capture g pob = 1
 
 
 ** 5.4 (+) Ingreso bruto **
-Distribucion ingbrutotot, relativo(ingbrutotot) macro(`=scalar(PIN)')
+Distribucion ingbrutotot, relativo(ingbrutotot) macro(`PIN')
 label var ingbrutotot "Ingreso bruto total `1'"
-noisily Perfiles ingbrutotot [fw=factor], aniope(`1') aniovp(`=aniovp')
+*noisily Perfiles ingbrutotot [fw=factor], aniope(`1') aniovp(`=aniovp')
 *noisily Gini ingbrutotot, hogar(folioviv foliohog) factor(factor)
 
 
 ** 5.5 (-) Consumo total **
-Distribucion gastoanualTOT, relativo(gastoanualTOT) macro(`=scalar(ConHog)')
+Distribucion gastoanualTOT, relativo(gastoanualTOT) macro(`ConHog')
 label var gastoanualTOT "Consumo total `1'"
-noisily Perfiles gastoanualTOT [fw=factor], aniope(`1') aniovp(`=aniovp')
+*noisily Perfiles gastoanualTOT [fw=factor], aniope(`1') aniovp(`=aniovp')
 *noisily Gini gastoanualTOT, hogar(folioviv foliohog) factor(factor)
 
 
 ** 5.6 (*) Ingresos para el módulo ISR **
-Distribucion ing_bruto_tax, relativo(ing_bruto_tax) macro(`=scalar(Yl)+scalar(MixK)')
+Distribucion ing_bruto_tax, relativo(ing_bruto_tax) macro(`=`Yl'+`MixK'')
 label var ing_bruto_tax "Ingresos laborales `1'"
-noisily Perfiles ing_bruto_tax [fw=factor], aniope(`1') aniovp(`=aniovp')
+*noisily Perfiles ing_bruto_tax [fw=factor], aniope(`1') aniovp(`=aniovp')
 *noisily Gini ing_bruto_tax, hogar(folioviv foliohog) factor(factor)
 
-Distribucion ing_subor, relativo(ing_subor) macro(`=scalar(RemSal)+scalar(ImpNetProduccionL)')
+Distribucion ing_subor, relativo(ing_subor) macro(`=`RemSal'+`ImpNetProduccionL'')
 label var ing_subor "Remuneración de asalariados `1'"
-noisily Perfiles ing_subor [fw=factor], aniope(`1') aniovp(`=aniovp')
+*noisily Perfiles ing_subor [fw=factor], aniope(`1') aniovp(`=aniovp')
 *noisily Gini ing_subor, hogar(folioviv foliohog) factor(factor)
 
-Distribucion ing_bruto_tpm, relativo(ing_bruto_tpm) macro(`=scalar(ExNOpSoc)+scalar(ImpNet)-scalar(IngKPublicos)')
+Distribucion ing_bruto_tpm, relativo(ing_bruto_tpm) macro(`=`ExNOpSoc'+`ImpNet'-`IngKPublicos'')
 label var ing_bruto_tpm "Ingresos de capital privado `1'"
-noisily Perfiles ing_bruto_tpm [fw=factor], aniope(`1') aniovp(`=aniovp')
+*noisily Perfiles ing_bruto_tpm [fw=factor], aniope(`1') aniovp(`=aniovp')
 *noisily Gini ing_bruto_tpm, hogar(folioviv foliohog) factor(factor)
 
 
@@ -188,20 +196,20 @@ noisily Perfiles ing_bruto_tpm [fw=factor], aniope(`1') aniovp(`=aniovp')
 ** (+) ISR Asalariados **
 Distribucion ISRAS, relativo(ISR_asalariados) macro(`ISRAS')
 label var ISRAS "ISR (sueldos y salarios) `1'"
-noisily Perfiles ISRAS [fw=factor], aniope(`1') aniovp(`=aniovp')
+*noisily Perfiles ISRAS [fw=factor], aniope(`1') aniovp(`=aniovp')
 *noisily Gini ISRAS, hogar(folioviv foliohog) factor(factor)
 
 ** (+) ISR Personas Físicas **
 Distribucion ISRPF, relativo(ISR_PF) macro(`ISRPF')
 label var ISRPF "ISR (personas f{c i'}sicas) `1'"
-noisily Perfiles ISRPF [fw=factor], aniope(`1') aniovp(`=aniovp')
+*noisily Perfiles ISRPF [fw=factor], aniope(`1') aniovp(`=aniovp')
 *noisily Gini ISRPF, hogar(folioviv foliohog) factor(factor)
 
 ** (+) Cuotas obrero-patronal IMSS **
 Distribucion CUOTAS if formal2 == 1, relativo(cuotasTP) macro(`CUOTAS')
 replace CUOTAS = 0 if CUOTAS == .
 label var CUOTAS "Cuotas IMSS `1'"
-noisily Perfiles CUOTAS [fw=factor], aniope(`1') aniovp(`=aniovp')
+*noisily Perfiles CUOTAS [fw=factor], aniope(`1') aniovp(`=aniovp')
 *noisily Gini CUOTAS, hogar(folioviv foliohog) factor(factor)
 
 ** (+) Impuestos laborales **
@@ -209,7 +217,7 @@ egen laboral = rsum(ISRAS ISRPF CUOTAS)
 replace laboral = 0 if laboral == .
 Distribucion Laboral, relativo(laboral) macro(`=`ISRAS'+`ISRPF'+`CUOTAS'')
 label var Laboral "Impuestos laborales `1'"
-noisily Perfiles Laboral [fw=factor], aniope(`1') aniovp(`=aniovp')
+*noisily Perfiles Laboral [fw=factor], aniope(`1') aniovp(`=aniovp')
 *noisily Gini Laboral, hogar(folioviv foliohog) factor(factor)
 
 
@@ -220,19 +228,19 @@ noisily Perfiles Laboral [fw=factor], aniope(`1') aniovp(`=aniovp')
 ** (+) ISR Personas Morales **
 Distribucion ISRPM, relativo(ISR_PM) macro(`ISRPM')
 label var ISRPM "ISR (personas morales) `1'"
-noisily Perfiles ISRPM [fw=factor], aniope(`1') aniovp(`=aniovp')
+*noisily Perfiles ISRPM [fw=factor], aniope(`1') aniovp(`=aniovp')
 *noisily Gini ISRPM, hogar(folioviv foliohog) factor(factor)
 
 ** (+) Otros de capital **
 Distribucion OTROSK, relativo(ISR_PM) macro(`OTROSK')
 label var OTROSK "Productos, derechos, aprovechamientos... `1'"
-noisily Perfiles OTROSK [fw=factor], aniope(`1') aniovp(`=aniovp')
+*noisily Perfiles OTROSK [fw=factor], aniope(`1') aniovp(`=aniovp')
 *noisily Gini OTROSK, hogar(folioviv foliohog) factor(factor)
 
 ** (+) Impuestos de capital privado **
 Distribucion KPrivado, relativo(ISR_PM) macro(`=`OTROSK'+`ISRPM'')
 label var KPrivado "Impuestos al capital privado `1'"
-noisily Perfiles KPrivado [fw=factor], aniope(`1') aniovp(`=aniovp')
+*noisily Perfiles KPrivado [fw=factor], aniope(`1') aniovp(`=aniovp')
 *noisily Gini KPrivado, hogar(folioviv foliohog) factor(factor)
 
 
@@ -243,7 +251,7 @@ noisily Perfiles KPrivado [fw=factor], aniope(`1') aniovp(`=aniovp')
 ** (+) IVA **
 Distribucion IVA, relativo(IVA) macro(`IVA')
 label var IVA "IVA `1'"
-noisily Perfiles IVA [fw=factor], aniope(`1') aniovp(`=aniovp')
+*noisily Perfiles IVA [fw=factor], aniope(`1') aniovp(`=aniovp')
 *noisily Gini IVA, hogar(folioviv foliohog) factor(factor)
 
 ** (+) ISAN **
@@ -252,25 +260,25 @@ g `ISANH' = ISAN
 drop ISAN
 Distribucion ISAN, relativo(`ISANH') macro(`ISAN')
 label var ISAN "ISAN `1'"
-noisily Perfiles ISAN [fw=factor], aniope(`1') aniovp(`=aniovp')
+*noisily Perfiles ISAN [fw=factor], aniope(`1') aniovp(`=aniovp')
 *noisily Gini ISAN, hogar(folioviv foliohog) factor(factor)
 
 ** (+) IEPS (no petrolero) **
 Distribucion IEPSNP, relativo(gas_pc_BebA) macro(`IEPSNP')
 label var IEPSNP "IEPS (no petrolero) `1'"
-noisily Perfiles IEPSNP [fw=factor], aniope(`1') aniovp(`=aniovp')
+*noisily Perfiles IEPSNP [fw=factor], aniope(`1') aniovp(`=aniovp')
 *noisily Gini IEPSNP, hogar(folioviv foliohog) factor(factor)
 
 ** (+) IEPS (petrolero) **
 Distribucion IEPSP, relativo(gas_pc_Vehi) macro(`IEPSP')
 label var IEPSP "IEPS (petrolero) `1'"
-noisily Perfiles IEPSP [fw=factor], aniope(`1') aniovp(`=aniovp')
+*noisily Perfiles IEPSP [fw=factor], aniope(`1') aniovp(`=aniovp')
 *noisily Gini IEPSP, hogar(folioviv foliohog) factor(factor)
 
 ** (+) Importaciones **
 Distribucion IMPORT, relativo(Importaciones) macro(`IMPORT')
 label var IMPORT "Importaciones `1'"
-noisily Perfiles IMPORT [fw=factor], aniope(`1') aniovp(`=aniovp')
+*noisily Perfiles IMPORT [fw=factor], aniope(`1') aniovp(`=aniovp')
 *noisily Gini IMPORT, hogar(folioviv foliohog) factor(factor)
 
 ** (+) Impuestos al consumo **
@@ -278,7 +286,7 @@ egen consumo = rsum(IVA ISAN IEPSNP IEPSP IMPORT)
 replace consumo = 0 if consumo == .
 Distribucion Consumo, relativo(consumo) macro(`=`IEPSP'+`IEPSNP'+`IMPORT'+`ISAN'+`IVA'')
 label var Consumo "Impuestos al consumo `1'"
-noisily Perfiles Consumo [fw=factor], aniope(`1') aniovp(`=aniovp')
+*noisily Perfiles Consumo [fw=factor], aniope(`1') aniovp(`=aniovp')
 *noisily Gini Consumo, hogar(folioviv foliohog) factor(factor)
 
 
@@ -289,39 +297,39 @@ noisily Perfiles Consumo [fw=factor], aniope(`1') aniovp(`=aniovp')
 ** (+) Fondo Mexicano del Petróleo **
 Distribucion FMP, relativo(pob) macro(`=`FMP'')
 label var FMP "FMP `1'"
-noisily Perfiles FMP [fw=factor], aniope(`1') aniovp(`=aniovp')
+*noisily Perfiles FMP [fw=factor], aniope(`1') aniovp(`=aniovp')
 *noisily Gini FMP, hogar(folioviv foliohog) factor(factor)
 
 ** (+) IMSS **
 Distribucion IMSS, relativo(pob) macro(`=`IMSS'')
 label var IMSS "IMSS `1'"
-noisily Perfiles IMSS [fw=factor], aniope(`1') aniovp(`=aniovp')
+*noisily Perfiles IMSS [fw=factor], aniope(`1') aniovp(`=aniovp')
 *noisily Gini IMSS, hogar(folioviv foliohog) factor(factor)
 
 ** (+) ISSSTE **
 Distribucion ISSSTE, relativo(pob) macro(`=`ISSSTE'')
 label var ISSSTE "ISSSTE `1'"
-noisily Perfiles ISSSTE [fw=factor], aniope(`1') aniovp(`=aniovp')
+*noisily Perfiles ISSSTE [fw=factor], aniope(`1') aniovp(`=aniovp')
 *noisily Gini ISSSTE, hogar(folioviv foliohog) factor(factor)
 
 ** (+) CFE **
 Distribucion CFE, relativo(pob) macro(`=`CFE'')
 label var CFE "CFE `1'"
-noisily Perfiles CFE [fw=factor], aniope(`1') aniovp(`=aniovp')
+*noisily Perfiles CFE [fw=factor], aniope(`1') aniovp(`=aniovp')
 *noisily Gini CFE, hogar(folioviv foliohog) factor(factor)
 
 ** (+) PEMEX **
 Distribucion PEMEX, relativo(pob) macro(`=`PEMEX'')
 label var PEMEX "PEMEX `1'"
-noisily Perfiles PEMEX [fw=factor], aniope(`1') aniovp(`=aniovp')
+*noisily Perfiles PEMEX [fw=factor], aniope(`1') aniovp(`=aniovp')
 *noisily Gini PEMEX, hogar(folioviv foliohog) factor(factor)
 
 ** (+) Impuestos y aportaciones **
 capture drop ImpuestosAportaciones
 egen ImpuestosAportaciones = rsum(ISRAS ISRPF CUOTAS ISRPM OTROSK IVA IEPSNP IEPSP ISAN IMPORT)
 label var ImpuestosAportaciones "Impuestos y aportaciones `1'"
-noisily Perfiles ImpuestosAportaciones [fw=factor], aniope(`1') aniovp(`=aniovp')
-noisily Simulador ImpuestosAportaciones [fw=factor], aniope(`1') aniovp(`=aniovp') reboot
+*noisily Perfiles ImpuestosAportaciones [fw=factor], aniope(`1') aniovp(`=aniovp')
+*noisily Simulador ImpuestosAportaciones [fw=factor], aniope(`1') aniovp(`=aniovp') reboot
 *noisily Gini ImpuestosAportaciones, hogar(folioviv foliohog) factor(factor)
 
 
@@ -399,13 +407,13 @@ replace educacion = 0 if educacion == .
 
 Distribucion Educacion, relativo(educacion) macro(`Educacion')
 label var Educacion "Educación `1'"
-noisily Perfiles Educacion if Educacion != 0 [fw=factor], aniope(`1') aniovp(`=aniovp')
+*noisily Perfiles Educacion if Educacion != 0 [fw=factor], aniope(`1') aniovp(`=aniovp')
 *noisily Gini Educacion, hogar(folioviv foliohog) factor(factor)
 
 ** (-) Salud **
 Distribucion Salud, relativo(gas_pc_Salu) macro(`Salud')
 label var Salud "Salud `1'"
-noisily Perfiles Salud if Salud != 0 [fw=factor], aniope(`1') aniovp(`=aniovp') //poblacion(defunciones)
+*noisily Perfiles Salud if Salud != 0 [fw=factor], aniope(`1') aniovp(`=aniovp') //poblacion(defunciones)
 *noisily Gini Salud, hogar(folioviv foliohog) factor(factor)
 
 ** (-) Pension Bienestar **
@@ -426,7 +434,7 @@ matrix POBLACION68 = r(StatTotal)
 
 Distribucion Pension_AM, relativo(ing_pam) macro(`PenBienestar')
 label var Pension_AM "Pensi{c o'}n para adultos mayores `1'"
-noisily Perfiles Pension_AM [fw=factor], aniope(`1') aniovp(`=aniovp')
+*noisily Perfiles Pension_AM [fw=factor], aniope(`1') aniovp(`=aniovp')
 *noisily Gini Pension_AM, hogar(folioviv foliohog) factor(factor)
 
 ** (-) Pensiones **
@@ -439,7 +447,7 @@ capture drop Pensiones
 Distribucion Pensiones, relativo(ing_jubila_pub) macro(`Pensiones')
 replace Pensiones = Pensiones //+ Pension_AM
 label var Pensiones "Pensiones `1'"
-noisily Perfiles Pensiones if Pensiones != 0 [fw=factor], aniope(`1') aniovp(`=aniovp')
+*noisily Perfiles Pensiones if Pensiones != 0 [fw=factor], aniope(`1') aniovp(`=aniovp')
 *noisily Gini Pension, hogar(folioviv foliohog) factor(factor)
 
 
@@ -463,25 +471,25 @@ foreach k in Aguas BajaN BajaS Campe Coahu Colim Chiap Chihu Ciuda Duran Guana /
 egen infra_entidad = rsum(Infra_*)
 Distribucion Otras_inversiones, relativo(infra_entidad) macro(`InfraT')
 label var Otras_inversiones "Otras inversiones `1'"
-noisily Perfiles Otras_inversiones [fw=factor], aniope(`1') aniovp(`=aniovp')
+*noisily Perfiles Otras_inversiones [fw=factor], aniope(`1') aniovp(`=aniovp')
 *noisily Gini Otras_inversiones, hogar(folioviv foliohog) factor(factor)
 
 ** (-) Otros gastos **
 Distribucion Otros_gastos, relativo(pob) macro(`=`Otros_gastos'')
 label var Otros_gastos "Otros gastos `1'"
-noisily Perfiles Otros_gastos [fw=factor], aniope(`1') aniovp(`=aniovp')
+*noisily Perfiles Otros_gastos [fw=factor], aniope(`1') aniovp(`=aniovp')
 *noisily Gini Otros_gastos, hogar(folioviv foliohog) factor(factor)
 
 ** (-) Energía **
 Distribucion Energia, relativo(pob) macro(`=`Energía'')
 label var Energia "Energia `1'"
-noisily Perfiles Energia [fw=factor], aniope(`1') aniovp(`=aniovp')
+*noisily Perfiles Energia [fw=factor], aniope(`1') aniovp(`=aniovp')
 *noisily Gini Energia, hogar(folioviv foliohog) factor(factor)
 
 ** (-) Otras Participaciones y Aportaciones **
 Distribucion Part_y_otras_Apor, relativo(pob) macro(`=`Part_y_otras_Apor'')
 label var Part_y_otras_Apor "Participaciones y otras aportaciones `1'"
-noisily Perfiles Part_y_otras_Apor [fw=factor], aniope(`1') aniovp(`=aniovp')
+*noisily Perfiles Part_y_otras_Apor [fw=factor], aniope(`1') aniovp(`=aniovp')
 *noisily Gini Part_y_otras_Apor, hogar(folioviv foliohog) factor(factor)
 
 
@@ -489,7 +497,7 @@ noisily Perfiles Part_y_otras_Apor [fw=factor], aniope(`1') aniovp(`=aniovp')
 ** (-) Ingreso B{c a'}sico **
 g IngBasico = 0.0000000001
 label var IngBasico "Ingreso b{c a'}sico `1'"
-noisily Perfiles IngBasico [fw=factor], aniope(`1') aniovp(`=aniovp')
+*noisily Perfiles IngBasico [fw=factor], aniope(`1') aniovp(`=aniovp')
 *noisily Gini IngBasico, hogar(folioviv foliohog) factor(factor)
 
 
@@ -498,7 +506,7 @@ noisily Perfiles IngBasico [fw=factor], aniope(`1') aniovp(`=aniovp')
 ** (=) Resultado de gasto **
 egen GastoPublico = rsum(Educacion Salud Pension_AM Pensiones infra_entidad)
 label var GastoPublico "Gasto público"
-noisily Simulador GastoPublico [fw=factor], aniope(`1') aniovp(`=aniovp') reboot
+*noisily Simulador GastoPublico [fw=factor], aniope(`1') aniovp(`=aniovp') reboot
 
 
 

@@ -18,6 +18,7 @@ keep if anio == 2022 | anio == scalar(anioPE)
 local lambda = lambda[1]
 local deflator = deflator[1]
 local pibY = pibY[_N]
+scalar pibY = real(subinstr(scalar(pibY),",","",.))*1000000
 
 
 
@@ -41,16 +42,16 @@ foreach k in `"Alimentos"' `"Alquiler"' `"CanastaBas"' `"Educación"' `"FueraHog
 	}
 	local ++j
 }
-collapse (sum) IVA (max) factor, by(folioviv foliohog numren)
-tabstat IVA [aw=factor], stat(sum) f(%20.0fc) save
+collapse (sum) IVA_Sim=IVA (max) factor, by(folioviv foliohog numren)
+tabstat IVA_Sim [aw=factor], stat(sum) f(%20.0fc) save
 
-replace IVA = IVA*(1-IVAT[13,1]/100)
+replace IVA_Sim = IVA*(1-IVAT[13,1]/100)
 
 * RESULTS IVA *
-tabstat IVA [fw=factor], stat(sum) f(%20.0fc) save
-tempname IVA
-matrix `IVA' = r(StatTotal)
-scalar IVA_Mod = `IVA'[1,1]/`pibY'*100*4.064/3.889
+tabstat IVA_Sim [fw=factor], stat(sum) f(%20.0fc) save
+tempname IVA_Sim
+matrix `IVA_Sim' = r(StatTotal)
+scalar IVA_Mod = `IVA_Sim'[1,1]/scalar(pibY)*100 // *4.064/3.889
 noisily di _newline in g "   RESULTADOS IVA: " _col(33) in y %10.3fc IVA_Mod
 
 

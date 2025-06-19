@@ -35,6 +35,8 @@ quietly {
 		noisily UpdateDeflactor
 	}
 	
+	PIBDeflactor, nographs
+	
 	use if clave_de_concepto == "`anything'" using "`c(sysdir_site)'/04_master/DatosAbiertos.dta", clear
 	*drop in -1
 	merge 1:1 (anio mes) using "`c(sysdir_site)'/04_master/Deflactor.dta", nogen keep(matched)
@@ -161,8 +163,8 @@ quietly {
 		matrix `meshoy' = r(Stat2)
 		matrix `mesant' = r(Stat1)
 
-		noisily di _newline in g "  Acumulado " in y "`mesname' `=anio[_N]'" in g ": " _col(40) in y %20.0fc `meshoy'[1,1] in g " per cápita `currency' `aniovp'"
-		noisily di in g "  Acumulado " in y "`mesname' `=anio[_N]-1'" in g ": " _col(40) in y %20.0fc `mesant'[1,1] in g " per cápita `currency' `aniovp'"
+		noisily di _newline in g "  Acumulado " in y "`mesname' `=anio[_N]'" in g ": " _col(40) in y %20.0fc `meshoy'[1,1] in g " millones `currency' `aniovp'"
+		noisily di in g "  Acumulado " in y "`mesname' `=anio[_N]-1'" in g ": " _col(40) in y %20.0fc `mesant'[1,1] in g " millones `currency' `aniovp'"
 		noisily di in g "  Crecimiento real: " _col(44) in y %16.1fc (`meshoy'[1,1]/`mesant'[1,1]-1)*100 in g " %"
 	}
 
@@ -274,7 +276,7 @@ quietly {
 	**************************
 	if tipo_de_informacion == "Flujo" {
 		
-		collapse (sum) monto* acum_prom (last) mes poblacion pibY deflactor if monto != ., by(anio nombre clave_de_concepto unidad_de_medida)
+		collapse (sum) monto* acum_prom (lastnm) mes poblacion pibY deflactor Poblacion* if monto != ., by(anio nombre clave_de_concepto unidad_de_medida)
 
 		if "`proyeccion'" == "proyeccion" {
 			replace monto = monto/acum_prom if mes < 12

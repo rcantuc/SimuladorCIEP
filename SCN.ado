@@ -49,8 +49,9 @@ quietly {
 	**************************
 	** 1.1. Merge databases **
 	use "`c(sysdir_site)'/04_master/SCN.dta", clear
+	merge 1:1 (anio) using `basepib', nogen keep(matched)
 	local aniomax = anio[_N]
-	merge 1:1 (anio) using `basepib', nogen
+	scalar aniomax = `aniomax'
 	tsset anio
 
 
@@ -116,17 +117,17 @@ quietly {
 
 		
 	* Returns *
-	scalar ProdBruta = ProdT[`obs']
-	scalar ProdBrutaPIB = ProdT[`obs']/PIB[`obs']*100
+	scalar ProdBruta = string(ProdT[`obs']/1000000,"%12.1fc")
+	scalar ProdBrutaPIB = string(ProdT[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar ConsInter = ConsInt[`obs']
-	scalar ConsInterPIB = ConsInt[`obs']/PIB[`obs']*100
+	scalar ConsInter = string(ConsInt[`obs']/1000000,"%12.1fc")
+	scalar ConsInterPIB = string(ConsInt[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar ValoAgreg = (ProdT[`obs']-ConsInt[`obs'])
-	scalar ValoAgregPIB = (ProdT[`obs']-ConsInt[`obs'])/PIB[`obs']*100
+	scalar ValoAgreg = string((ProdT[`obs']-ConsInt[`obs'])/1000000,"%12.1fc")
+	scalar ValoAgregPIB = string((ProdT[`obs']-ConsInt[`obs'])/PIB[`obs']*100,"%7.3fc")
 
-	scalar ImpuProdu = ImpNet[`obs']
-	scalar ImpuProduPIB = ImpNet[`obs']/PIB[`obs']*100
+	scalar ImpuProdu = string(ImpNet[`obs']/1000000,"%12.1fc")
+	scalar ImpuProduPIB = string(ImpNet[`obs']/PIB[`obs']*100,"%7.3fc")
 
 
 	**
@@ -237,40 +238,42 @@ quietly {
 		_col(66) in y %7.3fc PIB[`obs']/PIB[`obs']*100 "}"
 
 	** R.4. Returns ***
-	scalar RemSal = RemSal[`obs']
-	scalar RemSalPIB = RemSal[`obs']/PIB[`obs']*100
+	scalar RemSal = string(RemSal[`obs']/1000000,"%12.1fc")
+	scalar RemSalPIB = string(RemSal[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar SSocial = SSEmpleadores[`obs'] + SSImputada[`obs']
-	scalar SSocialPIB = (SSEmpleadores[`obs'] + SSImputada[`obs'])/PIB[`obs']*100
+	scalar SSocial = string(SSEmpleadores[`obs'] + SSImputada[`obs']/1000000,"%12.1fc")
+	scalar SSocialPIB = string((SSEmpleadores[`obs'] + SSImputada[`obs'])/PIB[`obs']*100,"%7.3fc")
 
-	scalar MixL = MixL[`obs']
-	scalar MixLPIB = MixL[`obs']/PIB[`obs']*100
+	scalar MixL = string(MixL[`obs']/1000000,"%12.1fc")
+	scalar MixLPIB = string(MixL[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar ImpNetProduccionL = ImpNetProduccionL[`obs']
-	scalar ImpNetProduccionLPIB = ImpNetProduccionL[`obs']/PIB[`obs']*100
+	scalar ImpNetProduccionL = string(ImpNetProduccionL[`obs']/1000000,"%12.1fc")
+	scalar ImpNetProduccionLPIB = string(ImpNetProduccionL[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar Yl = Yl[`obs']
-	scalar YlPIB = Yl[`obs']/PIB[`obs']*100
-	scalar CapIncImp = CapIncImp[`obs']
-	scalar CapIncImpPIB = CapIncImp[`obs']/PIB[`obs']*100
+	scalar Yl = string(Yl[`obs']/1000000,"%12.1fc")
+	scalar YlPIB = string(Yl[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar PIN = PIN[`obs']
-	scalar PINPIB = PIN[`obs']/PIB[`obs']*100
-	scalar CapFij = CapFij[`obs']
-	scalar CapFijPIB = CapFij[`obs']/PIB[`obs']*100
+	scalar CapIncImp = string(CapIncImp[`obs']/1000000,"%12.1fc")
+	scalar CapIncImpPIB = string(CapIncImp[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar PIB = PIB[`obs']
-	scalar PIPIB = PIB[`obs']/PIB[`obs']*100
+	scalar PIN = string(PIN[`obs']/1000000,"%12.1fc")
+	scalar PINPIB = string(PIN[`obs']/PIB[`obs']*100,"%7.3fc")
+
+	scalar CapFij = string(CapFij[`obs']/1000000,"%12.1fc")
+	scalar CapFijPIB = string(CapFij[`obs']/PIB[`obs']*100,"%7.3fc")
+
+	scalar PIB = string(PIB[`obs']/1000000,"%12.1fc")
+	scalar PIPIB = string(PIB[`obs']/PIB[`obs']*100,"%7.3fc")
 	
 	g geoPIB = (((PIB/deflator)/(L5.PIB/L5.deflator))^(1/5)-1)*100
 	scalar crecpibpGEO = geoPIB[`obs']
 	scalar crecpibfGEO = geoPIB[`=`obs'+5']
 
-	scalar SSEmpleadores = SSEmpleadores[`obs']
-	scalar SSEmpleadoresPIB = SSEmpleadores[`obs']/PIB[`obs']*100
+	scalar SSEmpleadores = string(SSEmpleadores[`obs']/1000000,"%12.1fc")
+	scalar SSEmpleadoresPIB = string(SSEmpleadores[`obs']/PIB[`obs']*100,"%7.3fc")
 	
-	scalar SSImputada = SSImputada[`obs']
-	scalar SSImputadaPIB = SSImputada[`obs']/PIB[`obs']*100
+	scalar SSImputada = string(SSImputada[`obs']/1000000,"%12.1fc")
+	scalar SSImputadaPIB = string(SSImputada[`obs']/PIB[`obs']*100,"%7.3fc")
 
 
 	* Cuenta de capital *
@@ -306,32 +309,32 @@ quietly {
 		_col(66) in y %7.3fc CapIncImp[`obs']/PIB[`obs']*100 "}"
 
 	* Returns *
-	scalar ExNOpSoc = ExNOpSoc[`obs']
-	scalar ExNOpSocPIB = ExNOpSoc[`obs']/PIB[`obs']*100
+	scalar ExNOpSoc = string(ExNOpSoc[`obs']/1000000,"%12.1fc")
+	scalar ExNOpSocPIB = string(ExNOpSoc[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar MixK = MixK[`obs']
-	scalar MixKPIB = MixK[`obs']/PIB[`obs']*100	
+	scalar MixK = string(MixK[`obs']/1000000,"%12.1fc")
+	scalar MixKPIB = string(MixK[`obs']/PIB[`obs']*100,"%7.3fc")	
 	
-	scalar MixKN = MixKN[`obs']
-	scalar MixKNPIB = MixKN[`obs']/PIB[`obs']*100
+	scalar MixKN = string(MixKN[`obs']/1000000,"%12.1fc")
+	scalar MixKNPIB = string(MixKN[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar ExNOpHog = ExNOpHog[`obs']
-	scalar ExNOpHogPIB = ExNOpHog[`obs']/PIB[`obs']*100
+	scalar ExNOpHog = string(ExNOpHog[`obs']/1000000,"%12.1fc")
+	scalar ExNOpHogPIB = string(ExNOpHog[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar ExNOpGob = ExNOpGob[`obs']
-	scalar ExNOpGobPIB = ExNOpGob[`obs']/PIB[`obs']*100
+	scalar ExNOpGob = string(ExNOpGob[`obs']/1000000,"%12.1fc")
+	scalar ExNOpGobPIB = string(ExNOpGob[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar Capital = Capital[`obs']
-	scalar CapitalPIB = Capital[`obs']/PIB[`obs']*100
+	scalar Capital = string(Capital[`obs']/1000000,"%12.1fc")
+	scalar CapitalPIB = string(Capital[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar ImpNet = ImpNet[`obs']
-	scalar ImpNetPIB = ImpNet[`obs']/PIB[`obs']*100
+	scalar ImpNet = string(ImpNet[`obs']/1000000,"%12.1fc")
+	scalar ImpNetPIB = string(ImpNet[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar ImpNetProduccionK = ImpNetProduccionK[`obs']
-	scalar ImpNetProduccionKPIB = ImpNetProduccionK[`obs']/PIB[`obs']*100
+	scalar ImpNetProduccionK = string(ImpNetProduccionK[`obs']/1000000,"%12.1fc")
+	scalar ImpNetProduccionKPIB = string(ImpNetProduccionK[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar ImpNetProductos = ImpNetProductos[`obs']
-	scalar ImpNetProductosPIB = ImpNetProductos[`obs']/PIB[`obs']*100
+	scalar ImpNetProductos = string(ImpNetProductos[`obs']/1000000,"%12.1fc")
+	scalar ImpNetProductosPIB = string(ImpNetProductos[`obs']/PIB[`obs']*100,"%7.3fc")
 
 	** C.9. Resto del Mundo **
 	g double AhorroN = IngDisp - ConHog - ConGob - ComprasN
@@ -457,20 +460,20 @@ quietly {
 		_col(66) in y %7.3fc (IngDisp[`obs']-CapFij[`obs'])/PIB[`obs']*100 "}"
 
 	* Returns *
-	scalar ROWRem = ROWRem[`obs']
-	scalar ROWRemPIB = ROWRem[`obs']/PIB[`obs']*100
+	scalar ROWRem = string(ROWRem[`obs']/1000000,"%12.1fc")
+	scalar ROWRemPIB = string(ROWRem[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar ROWProp = ROWProp[`obs']
-	scalar ROWPropPIB = ROWProp[`obs']/PIB[`obs']*100
+	scalar ROWProp = string(ROWProp[`obs']/1000000,"%12.1fc")
+	scalar ROWPropPIB = string(ROWProp[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar ROWTrans = ROWTrans[`obs']
-	scalar ROWTransPIB = ROWTrans[`obs']/PIB[`obs']*100
+	scalar ROWTrans = string(ROWTrans[`obs']/1000000,"%12.1fc")
+	scalar ROWTransPIB = string(ROWTrans[`obs']/PIB[`obs']*100,"%7.3fc")
 	
-	scalar ROW = ROW[`obs']
-	scalar ROWPIB = ROW[`obs']/PIB[`obs']*100
+	scalar ROW = string(ROW[`obs']/1000000,"%12.1fc")
+	scalar ROWPIB = string(ROW[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar IngDisp = IngDisp[`obs']-CapFij[`obs']
-	scalar IngDispPIB = (IngDisp[`obs']-CapFij[`obs'])/PIB[`obs']*100
+	scalar IngDisp = string((IngDisp[`obs']-CapFij[`obs'])/1000000,"%12.1fc")
+	scalar IngDispPIB = string((IngDisp[`obs']-CapFij[`obs'])/PIB[`obs']*100,"%7.3fc")
 
 	* R.6 Consumo *
 	noisily di _newline in y "{bf: D. Utilizaci{c o'}n del ingreso disp" in g ///
@@ -498,18 +501,18 @@ quietly {
 		_col(66) in y %7.3fc (IngDisp[`obs']-CapFij[`obs'])/PIB[`obs']*100 "}"
 
 	* Returns *
-	scalar ConHog = ConHog[`obs']
-	scalar ConHogPIB = ConHog[`obs']/PIB[`obs']*100
+	scalar ConHog = string(ConHog[`obs']/1000000,"%12.1fc")
+	scalar ConHogPIB = string(ConHog[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar ConGob = ConGob[`obs']
-	scalar ConGobPIB = ConGob[`obs']/PIB[`obs']*100
+	scalar ConGob = string(ConGob[`obs']/1000000,"%12.1fc")
+	scalar ConGobPIB = string(ConGob[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar ComprasN = ComprasN[`obs']
-	scalar ComprasNPIB = ComprasN[`obs']/PIB[`obs']*100
+	scalar ComprasN = string(ComprasN[`obs']/1000000,"%12.1fc")
+	scalar ComprasNPIB = string(ComprasN[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar AhorroN = AhorroN[`obs']-CapFij[`obs']
-	scalar AhorroNPIB = (AhorroN[`obs']-CapFij[`obs'])/PIB[`obs']*100
-	scalar AhorroNPC = (AhorroN[`obs']-CapFij[`obs'])/poblacion[`obs']
+	scalar AhorroN = string((AhorroN[`obs']-CapFij[`obs'])/1000000,"%12.1fc")
+	scalar AhorroNPIB = string((AhorroN[`obs']-CapFij[`obs'])/PIB[`obs']*100,"%7.3fc")
+	scalar AhorroNPC = string((AhorroN[`obs']-CapFij[`obs'])/poblacion[`obs'],"%12.1fc")
 
 	** R.3. Graph **
 	if "`nographs'" != "nographs" & "$nographs" == "" {
@@ -685,97 +688,97 @@ quietly {
 
 	* Returns *
 	* Variables ya calculadas (usando los indicadores originales)
-	scalar Alim      = Alim[`obs']
-	scalar AlimPIB   = Alim[`obs']/PIB[`obs']*100
+	scalar Alim      = string(Alim[`obs']/1000000,"%12.1fc")
+	scalar AlimPIB   = string(Alim[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar BebN      = BebN[`obs']
-	scalar BebNPIB   = BebN[`obs']/PIB[`obs']*100
+	scalar BebN      = string(BebN[`obs']/1000000,"%12.1fc")
+	scalar BebNPIB   = string(BebN[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar BebA      = BebA[`obs']
-	scalar BebAPIB   = BebA[`obs']/PIB[`obs']*100
+	scalar BebA      = string(BebA[`obs']/1000000,"%12.1fc")
+	scalar BebAPIB   = string(BebA[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar Taba      = Taba[`obs']
-	scalar TabaPIB   = Taba[`obs']/PIB[`obs']*100
+	scalar Taba      = string(Taba[`obs']/1000000,"%12.1fc")
+	scalar TabaPIB   = string(Taba[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar Vest      = Vest[`obs']
-	scalar VestPIB   = Vest[`obs']/PIB[`obs']*100
+	scalar Vest      = string(Vest[`obs']/1000000,"%12.1fc")
+	scalar VestPIB   = string(Vest[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar Calz      = Calz[`obs']
-	scalar CalzPIB   = Calz[`obs']/PIB[`obs']*100
+	scalar Calz      = string(Calz[`obs']/1000000,"%12.1fc")
+	scalar CalzPIB   = string(Calz[`obs']/PIB[`obs']*100,"%7.3fc")
 
 	* Renombrado: Alquiler (se guarda en AlojT)
-	scalar AlojT     = AlojT[`obs']
-	scalar AlojTPIB  = AlojT[`obs']/PIB[`obs']*100
+	scalar AlojT     = string(AlojT[`obs']/1000000,"%12.1fc")
+	scalar AlojTPIB  = string(AlojT[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar Agua      = Agua[`obs']
-	scalar AguaPIB   = Agua[`obs']/PIB[`obs']*100
+	scalar Agua      = string(Agua[`obs']/1000000,"%12.1fc")
+	scalar AguaPIB   = string(Agua[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar Elec      = Elec[`obs']
-	scalar ElecPIB   = Elec[`obs']/PIB[`obs']*100
+	scalar Elec      = string(Elec[`obs']/1000000,"%12.1fc")
+	scalar ElecPIB   = string(Elec[`obs']/PIB[`obs']*100,"%7.3fc")
 
 	* Renombrado: Artículos para el hogar -> HogaT
-	scalar HogaT     = HogaT[`obs']
-	scalar HogaTPIB  = HogaT[`obs']/PIB[`obs']*100
+	scalar HogaT     = string(HogaT[`obs']/1000000,"%12.1fc")
+	scalar HogaTPIB  = string(HogaT[`obs']/PIB[`obs']*100,"%7.3fc")
 
 	* Salud (se asocia a SaluT)
-	scalar SaluT     = SaluT[`obs']
-	scalar SaluTPIB  = SaluT[`obs']/PIB[`obs']*100
+	scalar SaluT     = string(SaluT[`obs']/1000000,"%12.1fc")
+	scalar SaluTPIB  = string(SaluT[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar Vehi      = Vehi[`obs']
-	scalar VehiPIB   = Vehi[`obs']/PIB[`obs']*100
+	scalar Vehi      = string(Vehi[`obs']/1000000,"%12.1fc")
+	scalar VehiPIB   = string(Vehi[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar FTra      = FTra[`obs']
-	scalar FTraPIB   = FTra[`obs']/PIB[`obs']*100
+	scalar FTra      = string(FTra[`obs']/1000000,"%12.1fc")
+	scalar FTraPIB   = string(FTra[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar STra      = STra[`obs']
-	scalar STraPIB   = STra[`obs']/PIB[`obs']*100
+	scalar STra      = string(STra[`obs']/1000000,"%12.1fc")
+	scalar STraPIB   = string(STra[`obs']/PIB[`obs']*100,"%7.3fc")
 
 	* Comunicaciones renombrado -> ComuT
-	scalar ComuT     = ComuT[`obs']
-	scalar ComuTPIB  = ComuT[`obs']/PIB[`obs']*100
+	scalar ComuT     = string(ComuT[`obs']/1000000,"%12.1fc")
+	scalar ComuTPIB  = string(ComuT[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar RecrT     = RecrT[`obs']
-	scalar RecrTPIB  = RecrT[`obs']/PIB[`obs']*100
+	scalar RecrT     = string(RecrT[`obs']/1000000,"%12.1fc")
+	scalar RecrTPIB  = string(RecrT[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar EducT     = EducT[`obs']
-	scalar EducTPIB  = EducT[`obs']/PIB[`obs']*100
+	scalar EducT     = string(EducT[`obs']/1000000,"%12.1fc")
+	scalar EducTPIB  = string(EducT[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar RestT     = RestT[`obs']
-	scalar RestTPIB  = RestT[`obs']/PIB[`obs']*100
+	scalar RestT     = string(RestT[`obs']/1000000,"%12.1fc")
+	scalar RestTPIB  = string(RestT[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar DiveT     = DiveT[`obs']
-	scalar DiveTPIB  = DiveT[`obs']/PIB[`obs']*100
+	scalar DiveT     = string(DiveT[`obs']/1000000,"%12.1fc")
+	scalar DiveTPIB  = string(DiveT[`obs']/PIB[`obs']*100,"%7.3fc")
 
 	* --- SCALARS COMPUESTOS ---
-	scalar AlimBebT      = Alim + BebN
-	scalar AlimBebTPIB   = (Alim + BebN)/PIB[`obs']*100
+	scalar AlimBebT      = string((Alim + BebN)/1000000,"%12.1fc")
+	scalar AlimBebTPIB   = string((Alim + BebN)/PIB[`obs']*100,"%7.3fc")
 
-	scalar Recre7132PIB = Recre7132[`obs']/PIB[`obs']*100
+	scalar Recre7132PIB = string(Recre7132[`obs']/PIB[`obs']*100,"%7.3fc")
 	
-	scalar BebTabT       = BebA + Taba
-	scalar BebTabTPIB    = (BebA + Taba)/PIB[`obs']*100
+	scalar BebTabT       = string((BebA + Taba)/1000000,"%12.1fc")
+	scalar BebTabTPIB    = string((BebA + Taba)/PIB[`obs']*100,"%7.3fc")
 
-	scalar VestCalT      = Vest + Calz
-	scalar VestCalTPIB   = (Vest + Calz)/PIB[`obs']*100
+	scalar VestCalT      = string((Vest + Calz)/1000000,"%12.1fc")
+	scalar VestCalTPIB   = string((Vest + Calz)/PIB[`obs']*100,"%7.3fc")
 
-	scalar TraT          = Vehi + FTra + STra
-	scalar TraTPIB       = (Vehi + FTra + STra)/PIB[`obs']*100
+	scalar TraT          = string((Vehi + FTra + STra)/1000000,"%12.1fc")
+	scalar TraTPIB       = string((Vehi + FTra + STra)/PIB[`obs']*100,"%7.3fc")
 	
-	scalar Prof541_T = Prof541_T[`obs']
-	scalar Salud6211 = Salud6211[`obs']
-	scalar Salud6212 = Salud6212[`obs']
-	scalar Salud6213 = Salud6213[`obs']
-	scalar Salud6216 = Salud6216[`obs']
+	scalar Prof541T = string(Prof541_T[`obs']/1000000,"%12.1fc")
+	scalar Salud6211 = string(Salud6211[`obs']/1000000,"%12.1fc")
+	scalar Salud6212 = string(Salud6212[`obs']/1000000,"%12.1fc")
+	scalar Salud6213 = string(Salud6213[`obs']/1000000,"%12.1fc")
+	scalar Salud6216 = string(Salud6216[`obs']/1000000,"%12.1fc")
 
-	scalar ConsPriv_54 = ConsPriv_54[`obs']
-	scalar ConsPriv_62 = ConsPriv_62[`obs']
-	scalar ConsPriv_21PIB = ConsPriv_21[`obs']/PIB[`obs']*100
-	scalar Min211_TPIB = Min211_T[`obs']/PIB[`obs']*100
+	scalar ConsPriv54 = string(ConsPriv_54[`obs']/1000000,"%12.1fc")
+	scalar ConsPriv62 = string(ConsPriv_62[`obs']/1000000,"%12.1fc")
+	scalar ConsPriv21PIB = string(ConsPriv_21[`obs']/PIB[`obs']*100,"%7.3fc")
+	scalar Min211TPIB = string(Min211_T[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar Inmob5311 = Inmob5311[`obs']
-	scalar Inmob5312 = Inmob5312[`obs']
-	scalar ExBOpHog = ExBOpHog[`obs']
-	scalar AlojT = AlojT[`obs']
+	scalar Inmob5311 = string(Inmob5311[`obs']/1000000,"%12.1fc")
+	scalar Inmob5312 = string(Inmob5312[`obs']/1000000,"%12.1fc")
+	scalar ExBOpHog = string(ExBOpHog[`obs']/1000000,"%12.1fc")
+	scalar AlojT = string(AlojT[`obs']/1000000,"%12.1fc")
 
 	* Display table header
 	noisily di _newline in y "{bf: F. Consumo (gobierno)" in g ///
@@ -873,68 +876,68 @@ quietly {
 		_col(66) in y %7.3fc ConGob[`obs']/PIB[`obs']*100 "}"		
 
 	* Returns (scalar calculations)
-	scalar AgriGob   = GovAgr[`obs']
-	scalar AgriGobPIB = GovAgr[`obs'] / PIB[`obs'] * 100
+	scalar AgriGob   = string(GovAgr[`obs']/1000000,"%12.1fc")
+	scalar AgriGobPIB = string(GovAgr[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar MineGob   = GovMin[`obs']
-	scalar MineGobPIB = GovMin[`obs'] / PIB[`obs'] * 100
+	scalar MineGob   = string(GovMin[`obs']/1000000,"%12.1fc")
+	scalar MineGobPIB = string(GovMin[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar ElecGob   = GovEner[`obs']
-	scalar ElecGobPIB = GovEner[`obs'] / PIB[`obs'] * 100
+	scalar ElecGob   = string(GovEner[`obs']/1000000,"%12.1fc")
+	scalar ElecGobPIB = string(GovEner[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar ConsGob   = GovConstr[`obs']
-	scalar ConsGobPIB = GovConstr[`obs'] / PIB[`obs'] * 100
+	scalar ConsGob   = string(GovConstr[`obs']/1000000,"%12.1fc")
+	scalar ConsGobPIB = string(GovConstr[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar ManuGob   = GovManuf[`obs']
-	scalar ManuGobPIB = GovManuf[`obs'] / PIB[`obs'] * 100
+	scalar ManuGob   = string(GovManuf[`obs']/1000000,"%12.1fc")
+	scalar ManuGobPIB = string(GovManuf[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar ComMGob   = GovMayor[`obs']
-	scalar ComMGobPIB = GovMayor[`obs'] / PIB[`obs'] * 100
+	scalar ComMGob   = string(GovMayor[`obs']/1000000,"%12.1fc")
+	scalar ComMGobPIB = string(GovMayor[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar CommGob   = GovMenor[`obs']
-	scalar CommGobPIB = GovMenor[`obs'] / PIB[`obs'] * 100
+	scalar CommGob   = string(GovMenor[`obs']/1000000,"%12.1fc")
+	scalar CommGobPIB = string(GovMenor[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar TranGob   = GovTrans[`obs']
-	scalar TranGobPIB = GovTrans[`obs'] / PIB[`obs'] * 100
+	scalar TranGob   = string(GovTrans[`obs']/1000000,"%12.1fc")
+	scalar TranGobPIB = string(GovTrans[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar MediGob   = GovInfo[`obs']
-	scalar MediGobPIB = GovInfo[`obs'] / PIB[`obs'] * 100
+	scalar MediGob   = string(GovInfo[`obs']/1000000,"%12.1fc")
+	scalar MediGobPIB = string(GovInfo[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar SerFGob   = GovFin[`obs']
-	scalar SerFGobPIB = GovFin[`obs'] / PIB[`obs'] * 100
+	scalar SerFGob   = string(GovFin[`obs']/1000000,"%12.1fc")
+	scalar SerFGobPIB = string(GovFin[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar SerIGob   = GovInmob[`obs']
-	scalar SerIGobPIB = GovInmob[`obs'] / PIB[`obs'] * 100
+	scalar SerIGob   = string(GovInmob[`obs']/1000000,"%12.1fc")
+	scalar SerIGobPIB = string(GovInmob[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar SerPGob   = GovProf[`obs']
-	scalar SerPGobPIB = GovProf[`obs'] / PIB[`obs'] * 100
+	scalar SerPGob   = string(GovProf[`obs']/1000000,"%12.1fc")
+	scalar SerPGobPIB = string(GovProf[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar DireGob   = GovCorp[`obs']
-	scalar DireGobPIB = GovCorp[`obs'] / PIB[`obs'] * 100
+	scalar DireGob   = string(GovCorp[`obs']/1000000,"%12.1fc")
+	scalar DireGobPIB = string(GovCorp[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar SerNGob   = GovApoyo[`obs']
-	scalar SerNGobPIB = GovApoyo[`obs'] / PIB[`obs'] * 100
+	scalar SerNGob   = string(GovApoyo[`obs']/1000000,"%12.1fc")
+	scalar SerNGobPIB = string(GovApoyo[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar SerEGob   = GovEdu[`obs']
-	scalar SerEGobPIB = GovEdu[`obs'] / PIB[`obs'] * 100
+	scalar SerEGob   = string(GovEdu[`obs']/1000000,"%12.1fc")
+	scalar SerEGobPIB = string(GovEdu[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar SaluGob   = GovSalud[`obs']
-	scalar SaluGobPIB = GovSalud[`obs'] / PIB[`obs'] * 100
+	scalar SaluGob   = string(GovSalud[`obs']/1000000,"%12.1fc")
+	scalar SaluGobPIB = string(GovSalud[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar CultGob   = GovRecrea[`obs']
-	scalar CultGobPIB = GovRecrea[`obs'] / PIB[`obs'] * 100
+	scalar CultGob   = string(GovRecrea[`obs']/1000000,"%12.1fc")
+	scalar CultGobPIB = string(GovRecrea[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar AlojGob   = GovAloj[`obs']
-	scalar AlojGobPIB = GovAloj[`obs'] / PIB[`obs'] * 100
+	scalar AlojGob   = string(GovAloj[`obs']/1000000,"%12.1fc")
+	scalar AlojGobPIB = string(GovAloj[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar OtroGob   = GovOtros[`obs']
-	scalar OtroGobPIB = GovOtros[`obs'] / PIB[`obs'] * 100
+	scalar OtroGob   = string(GovOtros[`obs']/1000000,"%12.1fc")
+	scalar OtroGobPIB = string(GovOtros[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar GobiGob   = GovLegis[`obs']
-	scalar GobiGobPIB = GovLegis[`obs'] / PIB[`obs'] * 100
+	scalar GobiGob   = string(GovLegis[`obs']/1000000,"%12.1fc")
+	scalar GobiGobPIB = string(GovLegis[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar CompGob   = GovCompExt[`obs']
-	scalar CompGobPIB = GovCompExt[`obs'] / PIB[`obs'] * 100
+	scalar CompGob   = string(GovCompExt[`obs']/1000000,"%12.1fc")
+	scalar CompGobPIB = string(GovCompExt[`obs']/PIB[`obs']*100,"%7.3fc")
 
 	noisily di _newline in g "{bf: G. Cuenta: " in y "actividad econ{c o'}mica" in g ///
 		_col(44) in g %20s "MXN" ///
@@ -1012,65 +1015,65 @@ quietly {
 		_col(66) in y %7.3fc PIB_T[`obs']/PIB[`obs']*100 "}"
 
 	* Returns (scalar calculations)
-	scalar Agr_T     = Agr_T[`obs']
-	scalar Agr_TPIB  = Agr_T[`obs']/PIB[`obs']*100
+	scalar AgrT     = string(Agr_T[`obs']/1000000,"%12.1fc")
+	scalar AgrTPIB  = string(Agr_T[`obs']/PIB[`obs']*100,"%7.3fc")
 	
-	scalar Min_T     = Min_T[`obs']
-	scalar Min_TPIB  = Min_T[`obs']/PIB[`obs']*100
+	scalar MinT     = string(Min_T[`obs']/1000000,"%12.1fc")
+	scalar MinTPIB  = string(Min_T[`obs']/PIB[`obs']*100,"%7.3fc")
 	
-	scalar Ener_T    = Ener_T[`obs']
-	scalar Ener_TPIB = Ener_T[`obs']/PIB[`obs']*100
+	scalar EnerT    = string(Ener_T[`obs']/1000000,"%12.1fc")
+	scalar EnerTPIB = string(Ener_T[`obs']/PIB[`obs']*100,"%7.3fc")
 	
-	scalar Const_T   = Const_T[`obs']
-	scalar Const_TPIB = Const_T[`obs']/PIB[`obs']*100
+	scalar ConstT   = string(Const_T[`obs']/1000000,"%12.1fc")
+	scalar ConstTPIB = string(Const_T[`obs']/PIB[`obs']*100,"%7.3fc")
 	
-	scalar Manu_T    = Manu_T[`obs']
-	scalar Manu_TPIB = Manu_T[`obs']/PIB[`obs']*100
+	scalar ManuT    = string(Manu_T[`obs']/1000000,"%12.1fc")
+	scalar ManuTPIB = string(Manu_T[`obs']/PIB[`obs']*100,"%7.3fc")
 	
-	scalar ComMayor_T = ComMayor_T[`obs']
-	scalar ComMayor_TPIB = ComMayor_T[`obs']/PIB[`obs']*100
+	scalar ComMayorT = string(ComMayor_T[`obs']/1000000,"%12.1fc")
+	scalar ComMayorTPIB = string(ComMayor_T[`obs']/PIB[`obs']*100,"%7.3fc")
 	
-	scalar ComMenor_T = ComMenor_T[`obs']
-	scalar ComMenor_TPIB = ComMenor_T[`obs']/PIB[`obs']*100
+	scalar ComMenorT = string(ComMenor_T[`obs']/1000000,"%12.1fc")
+	scalar ComMenorTPIB = string(ComMenor_T[`obs']/PIB[`obs']*100,"%7.3fc")
 	
-	scalar Trans_T    = Trans_T[`obs']
-	scalar Trans_TPIB = Trans_T[`obs']/PIB[`obs']*100
+	scalar TransT    = string(Trans_T[`obs']/1000000,"%12.1fc")
+	scalar TransTPIB = string(Trans_T[`obs']/PIB[`obs']*100,"%7.3fc")
 	
-	scalar Medios_T   = Medios_T[`obs']
-	scalar Medios_TPIB= Medios_T[`obs']/PIB[`obs']*100
+	scalar MediosT   = string(Medios_T[`obs']/1000000,"%12.1fc")
+	scalar MediosTPIB= string(Medios_T[`obs']/PIB[`obs']*100,"%7.3fc")
 	
-	scalar FinSeg_T   = FinSeg_T[`obs']
-	scalar FinSeg_TPIB= FinSeg_T[`obs']/PIB[`obs']*100
+	scalar FinSegT   = string(FinSeg_T[`obs']/1000000,"%12.1fc")
+	scalar FinSegTPIB= string(FinSeg_T[`obs']/PIB[`obs']*100,"%7.3fc")
 	
-	scalar Inmob_T    = Inmob_T[`obs']
-	scalar Inmob_TPIB = Inmob_T[`obs']/PIB[`obs']*100
+	scalar InmobT    = string(Inmob_T[`obs']/1000000,"%12.1fc")
+	scalar InmobTPIB = string(Inmob_T[`obs']/PIB[`obs']*100,"%7.3fc")
 	
-	scalar Prof_T     = Prof_T[`obs']
-	scalar Prof_TPIB  = Prof_T[`obs']/PIB[`obs']*100
+	scalar ProfT     = string(Prof_T[`obs']/1000000,"%12.1fc")
+	scalar ProfTPIB  = string(Prof_T[`obs']/PIB[`obs']*100,"%7.3fc")
 	
-	scalar Corp_T     = Corp_T[`obs']
-	scalar Corp_TPIB  = Corp_T[`obs']/PIB[`obs']*100
+	scalar CorpT     = string(Corp_T[`obs']/1000000,"%12.1fc")
+	scalar CorpTPIB  = string(Corp_T[`obs']/PIB[`obs']*100,"%7.3fc")
 	
-	scalar Apoyo_T    = Apoyo_T[`obs']
-	scalar Apoyo_TPIB = Apoyo_T[`obs']/PIB[`obs']*100
+	scalar ApoyoT    = string(Apoyo_T[`obs']/1000000,"%12.1fc")
+	scalar ApoyoTPIB = string(Apoyo_T[`obs']/PIB[`obs']*100,"%7.3fc")
 	
-	scalar Edu_T      = Edu_T[`obs']
-	scalar Edu_TPIB   = Edu_T[`obs']/PIB[`obs']*100
+	scalar EduT      = string(Edu_T[`obs']/1000000,"%12.1fc")
+	scalar EduTPIB   = string(Edu_T[`obs']/PIB[`obs']*100,"%7.3fc")
 	
-	scalar Salud_T    = Salud_T[`obs']
-	scalar Salud_TPIB = Salud_T[`obs']/PIB[`obs']*100
+	scalar SaludT    = string(Salud_T[`obs']/1000000,"%12.1fc")
+	scalar SaludTPIB = string(Salud_T[`obs']/PIB[`obs']*100,"%7.3fc")
 	
-	scalar Recre_T    = Recre_T[`obs']
-	scalar Recre_TPIB = Recre_T[`obs']/PIB[`obs']*100
+	scalar RecreT    = string(Recre_T[`obs']/1000000,"%12.1fc")
+	scalar RecreTPIB = string(Recre_T[`obs']/PIB[`obs']*100,"%7.3fc")
 	
-	scalar AloPrep_T  = AloPrep_T[`obs']
-	scalar AloPrep_TPIB= AloPrep_T[`obs']/PIB[`obs']*100
+	scalar AloPrepT  = string(AloPrep_T[`obs']/1000000,"%12.1fc")
+	scalar AloPrepTPIB= string(AloPrep_T[`obs']/PIB[`obs']*100,"%7.3fc")
 	
-	scalar Otros_T    = Otros_T[`obs']
-	scalar Otros_TPIB = Otros_T[`obs']/PIB[`obs']*100
+	scalar OtrosT    = string(Otros_T[`obs']/1000000,"%12.1fc")
+	scalar OtrosTPIB = string(Otros_T[`obs']/PIB[`obs']*100,"%7.3fc")
 	
-	scalar Legis_T    = Legis_T[`obs']
-	scalar Legis_TPIB = Legis_T[`obs']/PIB[`obs']*100
+	scalar LegisT    = string(Legis_T[`obs']/1000000,"%12.1fc")
+	scalar LegisTPIB = string(Legis_T[`obs']/PIB[`obs']*100,"%7.3fc")
 
 	if "`textbook'" == "textbook" {
 		noisily scalarlatex, log(scn) alt(scn)
@@ -2565,7 +2568,7 @@ program define UpdateSCN
 	merge 1:1 anio using `ExNOpGob', nogen
 	merge 1:1 anio using `AhorroB', nogen
 	merge 1:1 anio using `IngDisp', nogen
-	merge 1:1 (anio) using "`c(sysdir_site)'/04_master/Poblaciontot.dta", nogen keep(matched)
+	merge 1:1 (anio) using "`c(sysdir_site)'/04_master/Poblaciontot.dta", nogen //keep(matched)
 	tsset anio
 
 	save "`c(sysdir_site)'/04_master/SCN.dta", replace

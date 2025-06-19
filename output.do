@@ -135,6 +135,23 @@ if "$output" != "" {
 		%8.3f (scalar(IMSSPIB)+scalar(ISSSTEPIB)+scalar(FMPPIB)+scalar(PEMEXPIB)+scalar(CFEPIB)) "," /// Total Organismos y Empresas - 18
 		%8.3f (scalar(ISRASPIB)+scalar(ISRPFPIB)+scalar(CUOTASPIB)+scalar(ISRPMPIB)+scalar(OTROSKPIB)+scalar(IVAPIB)+scalar(ISANPIB)+scalar(IEPSNPPIB)+scalar(IEPSPPIB)+scalar(IMPORTPIB)+scalar(IMSSPIB)+scalar(ISSSTEPIB)+scalar(FMPPIB)+scalar(PEMEXPIB)+scalar(CFEPIB)) /// Total INGRESOS - 19
 		"]"
+
+	capture scalar RemSalPIB = real(RemSalPIB)
+	capture scalar SSImputadaPIB = real(SSImputadaPIB)
+	capture scalar SSEmpleadoresPIB = real(SSEmpleadoresPIB)
+	capture scalar ImpNetProduccionLPIB = real(ImpNetProduccionLPIB)
+	capture scalar ExNOpSocPIB = real(ExNOpSocPIB)
+	capture scalar MixKNPIB = real(MixKNPIB)
+	capture scalar ImpNetProduccionKPIB = real(ImpNetProduccionKPIB)
+	capture scalar ImpNetProductosPIB = real(ImpNetProductosPIB)
+	capture scalar IngKPublicosPIB = real(IngKPublicosPIB)
+	capture scalar CapIncImpPIB = real(CapIncImpPIB)
+	capture scalar ConHogPIB = real(ConHogPIB)
+	capture scalar VehiPIB = real(VehiPIB)
+	capture scalar YlPIB = real(YlPIB)
+	capture scalar MixLPIB = real(MixLPIB)
+	capture scalar ExNOpSocPIB = real(ExNOpSocPIB)
+	
 	noisily di in w "INGRESOSTEF: " in w "["  ///
 		%8.1f (scalar(ISRASPIB))/(RemSalPIB+SSImputadaPIB+SSEmpleadoresPIB+ImpNetProduccionLPIB)*100 "," /// ISR (salarios) - 0
 		%8.1f (scalar(ISRPFPIB))/MixLPIB*100 "," /// ISR (físicas) - 1
