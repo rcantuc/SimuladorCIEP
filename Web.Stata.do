@@ -440,9 +440,10 @@ forvalues anio = `=anioPE'(-1)`=anioPE' {
 use `"`c(sysdir_site)'/users/$id/ingresos.dta"', clear
 merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/users/$id/gastos.dta", nogen
 capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/users/$id/isr_mod.dta", ///
-	nogen replace update keepus(ISRAS ISRPF ISRPM CUOTAS)
+	nogen replace update keepus(ISRAS_Sim ISRPF_Sim ISRPM_Sim CUOTAS_Sim)
 capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/users/$id/iva_mod.dta", ///
-	nogen replace update keepus(IVA)
+	nogen replace update keepus(IVA_Sim)
+save `"`c(sysdir_site)'/users/$id/aportaciones.dta"', replace
 
 
 ** 6.1 (+) Impuestos y aportaciones

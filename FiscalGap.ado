@@ -85,6 +85,7 @@ quietly {
 	replace divCIEP = strtoname(divCIEP)
 
 	** 4.2 Proyección futura de los ingresos **/
+	scalar pibY = real(subinstr(scalar(pibY),",","",.))*1000000
 	foreach k in CFE CUOTAS FMP IEPSNP IEPSP IMPORT IMSS ISAN ISRAS ISRPF ISRPM ISSSTE IVA OTROSK PEMEX {
 		use `"`c(sysdir_site)'/users/ciepmx/bootstraps/1/`k'REC.dta"', clear
 		collapse estimacion contribuyentes, by(anio modulo aniobase)
@@ -99,9 +100,9 @@ quietly {
 		tempvar estimacion
 		g `estimacion' = estimacion
 		replace estimacion = `estimacion'/L.`estimacion'*		/// Cambio demográfico (PerfilesSim.do)
-			(scalar(`k'))*						/// Estimación como % del PIB (TasasEfectivas.ado)
+			(scalar(`k'PIB)/100*scalar(pibY))*			/// Estimación como % del PIB (Parámetros)
 			(1+scalar(`k'C)/100)^(anio-`anio')			/// Tendencia de largo plazo (LIF.ado)
-			if anio > `anio'
+			if anio >= `anio'
 
 		tempfile `k'
 		save ``k''
@@ -136,7 +137,7 @@ quietly {
 	** 4.4 Graphs **
 	if "`nographs'" != "nographs" & "$nographs" != "nographs" {
 		//noisily tabstat recaudacion_pib estimacionRecaudacion_pib if anio >= `aniomin', stat(sum) by(anio) save
-		graph bar (sum) recaudacion_pib if anio <= `anio' & anio >= `aniomin', ///
+		graph bar (sum) recaudacion_pib if anio < `anio' & anio >= `aniomin', ///
 			over(divGraph) ///
 			over(anio, gap(0)) ///
 			ytitle("% PIB") ///
@@ -147,7 +148,7 @@ quietly {
 			name(Proy_ingresos1) ///
 			title(Observado)
 
-		graph bar (sum) estimacionRecaudacion_pib if anio > `anio', ///
+		graph bar (sum) estimacionRecaudacion_pib if anio >= `anio', ///
 			over(divGraph) ///
 			over(anio, gap(0)) ///
 			ytitle("") ylabel(, labcolor(white)) ///
@@ -177,7 +178,7 @@ quietly {
 		preserve
 		collapse (sum) recaudacion_pib estimacionRecaudacion_pib if anio <= `end', by(anio divGraph) fast
 		forvalues k=1(1)`=_N' {
-			if anio[`k'] >= 2013 & anio[`k'] <= `anio' {
+			if anio[`k'] >= 2013 & anio[`k'] < `anio' {
 				if divGraph[`k'] == "Impuestos laborales" {
 					local proy_laborales = "`proy_laborales' `=string(`=recaudacion_pib[`k']',"%10.1f")',"
 				}
@@ -191,7 +192,7 @@ quietly {
 					local proy_organismos  = "`proy_organismos' `=string(`=recaudacion_pib[`k']',"%10.1f")',"
 				}
 			}
-			if anio[`k'] > `anio' & anio[`k'] <= 2030 {
+			if anio[`k'] >= `anio' & anio[`k'] <= 2030 {
 				if divGraph[`k'] == "Impuestos laborales" {
 					local proy_laborales = "`proy_laborales' `=string(`=estimacionRecaudacion_pib[`k']',"%10.1f")',"
 				}
@@ -300,7 +301,7 @@ quietly {
 			replace estimacion = `estimacion'/L.`estimacion'*     /// Cambio demográfico
 				`HH`=strtoname("`k'")''[1,1]* 			          /// Gasto total (GastoPC.ado)
 				(1+``=strtoname("`k'")'C'/100)^(anio-`anio')      /// Tendencia de largo plazo (PEF.ado)
-				if anio > `anio'
+				if anio >= `anio'
 
 			g divCIEP = `"`=strtoname("`k'")'"'
 
@@ -335,7 +336,7 @@ quietly {
 	** 5.4 Graphs **
 	if "`nographs'" != "nographs" & "$nographs" != "nographs" {
 		//noisily tabstat gasto_pib estimacionGasto if anio >= `aniomin', stat(sum) by(anio) save
-		graph bar (sum) gasto_pib if anio <= `anio' & anio >= `aniomin' & divSIM != "Costo de la deuda", ///
+		graph bar (sum) gasto_pib if anio < `anio' & anio >= `aniomin' & divSIM != "Costo de la deuda", ///
 			over(divSIM) ///
 			over(anio, gap(0)) ///
 			ytitle("% PIB") ///
@@ -346,7 +347,7 @@ quietly {
 			name(Proy_gastos1) ///
 			title(Observado)
 
-		graph bar (sum) estimacionGasto_pib if anio > `anio' & divSIM != "Costo de la deuda", ///
+		graph bar (sum) estimacionGasto_pib if anio >= `anio' & divSIM != "Costo de la deuda", ///
 			over(divSIM) ///
 			over(anio, gap(0)) ///
 			ytitle("") ylabel(none) ///
@@ -379,7 +380,7 @@ quietly {
 		*noisily levelsof divSIM, local(divSIM)
 		collapse (sum) gasto_pib estimacionGasto_pib if anio <= `end', by(anio divSIM) fast
 		forvalues k=1(1)`=_N' {
-			if anio[`k'] >= 2013 & anio[`k'] <= `anio' {
+			if anio[`k'] >= 2013 & anio[`k'] < `anio' {
 				if divSIM[`k'] == "Educacion" {
 					local proy_educacion = "`proy_educacion' `=string(`=gasto_pib[`k']',"%10.1f")',"
 				}
@@ -399,7 +400,7 @@ quietly {
 					local proy_inversiones = "`proy_inversiones' `=string(`=gasto_pib[`k']',"%10.1f")',"
 				}
 			}
-			if anio[`k'] >= `anio' & anio[`k'] < 2030 {
+			if anio[`k'] >= `anio' & anio[`k'] <= 2030 {
 				if divSIM[`k'] == "Educacion" {
 					local proy_educacion = "`proy_educacion' `=string(`=estimacionGasto_pib[`k']',"%10.1f")',"
 				}
@@ -545,7 +546,7 @@ quietly {
 	forvalues k = `=`anio''(1)`=anio[_N]' {
 
 		* Costo de la deuda *
-		replace estimacionCosto_de_la_deuda = tasaEfectiva/100*L.shrfsp if anio == `k' & estimacionCosto_de_la_deuda == .
+		replace estimacionCosto_de_la_deuda = tasaEfectiva/100*L.shrfsp if anio == `k' //& estimacionCosto_de_la_deuda == .
 		replace estimacionGasto = estimacionGasto + estimacionCosto_de_la_deuda if anio == `k'
 
 		* RFSP *

@@ -19,6 +19,7 @@ quietly {
 	**# 1 Cuentas macroeconómicas ***
 	*********************************
 	SCN, anio(`anio') nographs
+	
 
 
 
@@ -59,6 +60,11 @@ quietly {
 	*else {
 	*	scalar ISRAS = ISRASPIB
 	*}
+	scalar RemSalPIB = real(RemSalPIB)
+	scalar SSImputadaPIB = real(SSImputadaPIB)
+	scalar SSEmpleadoresPIB = real(SSEmpleadoresPIB)
+	scalar ImpNetProduccionLPIB = real(ImpNetProduccionLPIB)
+
 	noisily di in g "  Rem. de asalariados" ///
 		_col(30) %7.3fc in y RemSalPIB+SSImputadaPIB+SSEmpleadoresPIB+ImpNetProduccionLPIB ///
 		_col(40) in g "ISR (salarios)" ///
@@ -75,6 +81,8 @@ quietly {
 	*else {
 	*	scalar ISRPF = ISRPFPIB
 	*}
+	scalar MixLPIB = real(MixLPIB)
+
 	noisily di in g "  Ingreso mixto laboral" ///
 		_col(30) %7.3fc in y MixLPIB ///
 		_col(40) in g "ISR (f{c i'}sicas)" ///
@@ -100,6 +108,7 @@ quietly {
 
 
 	** 3.4 TOTAL LABORALES **
+	scalar YlPIB = real(YlPIB)
 	noisily di in g _dup(71) "-"
 	noisily di in g "{bf:  Ingresos laborales" ///
 		_col(30) %7.3fc in y (YlPIB) ///
@@ -116,6 +125,7 @@ quietly {
 	******************************
 	**# 4 Impuestos al capital ***
 	******************************
+	scalar CapIncImpPIB = real(CapIncImpPIB)
 	scalar IngKPublicosPIB = FMPPIB+PEMEXPIB+CFEPIB+IMSSPIB+ISSSTEPIB
 	scalar IngKPublicosPor = (FMPPIB+PEMEXPIB+CFEPIB+IMSSPIB+ISSSTEPIB)/(CapIncImpPIB)*100
 
@@ -151,6 +161,8 @@ quietly {
 	*else {
 	*	scalar OTROSK = OTROSKPIB
 	*}
+	scalar IngKPrivadoPIB = CapIncImpPIB-IngKPublicosPIB
+
 	noisily di in g "  Ing. de capital privado" ///
 		_col(30) %7.3fc in y (CapIncImpPIB-IngKPublicosPIB) ///
 		_col(40) in g "Otros ingresos" ///
@@ -302,6 +314,7 @@ quietly {
 	*else {
 	*	scalar IVA = IVAPIB
 	*}
+	scalar ConHogPIB = real(ConHogPIB)
 	noisily di in g "  Consumo hogares e ISFLSH" ///
 		_col(30) %7.3fc in y (ConHogPIB) ///
 		_col(40) in g "IVA" ///
@@ -318,6 +331,7 @@ quietly {
 	*else {
 	*	scalar ISAN = ISANPIB
 	*}
+	scalar VehiPIB = real(VehiPIB)
 	noisily di in g "  Compra de veh{c i'}culos" ///
 		_col(30) %7.3fc in y VehiPIB ///
 		_col(40) in g "ISAN" ///
@@ -334,6 +348,9 @@ quietly {
 	*else {
 	*	scalar IEPSNP = IEPSNPPIB
 	*}
+	scalar BebAPIB = real(BebAPIB)
+	scalar TabaPIB = real(TabaPIB)
+	scalar Recre7132PIB = real(Recre7132PIB)
 	noisily di in g "  Alcohol, tabaco y juegos" ///
 		_col(30) %7.3fc in y (BebAPIB+TabaPIB+Recre7132PIB) ///
 		_col(40) in g "IEPS (No petr.)" ///
@@ -350,12 +367,13 @@ quietly {
 	*else {
 	*	scalar IEPSP = IEPSPPIB
 	*}
+	scalar ConsPriv21PIB = real(ConsPriv21PIB)
 	noisily di in g "  Consumo privado minería" ///
-		_col(30) %7.3fc in y ConsPriv_21PIB ///
+		_col(30) %7.3fc in y ConsPriv21PIB ///
 		_col(40) in g "IEPS (Petr.)" ///
 		_col(55) %7.3fc in y IEPSPPIB ///
-		_col(63) %7.3fc in y IEPSPPIB/ConsPriv_21PIB*100 " %"
-	scalar IEPSPPor = IEPSPPIB/ConsPriv_21PIB*100
+		_col(63) %7.3fc in y IEPSPPIB/ConsPriv21PIB*100 " %"
+	scalar IEPSPPor = IEPSPPIB/ConsPriv21PIB*100
 
 
 	** 6.5 Importaciones **
@@ -399,10 +417,12 @@ quietly {
 	}
 
 	* 7.1 Distribuir los ingresos entre las observaciones *
+	scalar pibY = real(subinstr(scalar(pibY),",","",.))*1000000
 	foreach k of varlist ISRAS ISRPF CUOTAS ///
 		ISRPM OTROSK ///
 		FMP PEMEX CFE IMSS ISSSTE ///
 		IVA IEPSNP IEPSP ISAN IMPORT {
+		
 		Distribucion `k'_Sim, relativo(`k') macro(`=scalar(`k'PIB)/100*scalar(pibY)')
 	}
 

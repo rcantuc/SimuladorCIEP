@@ -659,7 +659,6 @@ program define UpdateLIF
 			drop _merge
 		}
 	}
-
 	rename serie series
 	encode series, generate(serie)
 	drop series

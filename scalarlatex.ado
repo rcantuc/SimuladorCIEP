@@ -31,7 +31,7 @@ program define scalarlatex
 
 			quietly log using "$export/statalatex_`logname'.tex", name(`logname') append text
 
-			if `"`=substr("`name'",1,4)'"' == "anio" | `"`=substr("`name'",1,4)'"' == "defl" ///
+			*if `"`=substr("`name'",1,4)'"' == "anio" | `"`=substr("`name'",1,4)'"' == "defl" ///
 				| `"`=substr("`name'",1,4)'"' == "trim" | `"`=substr("`name'",1,4)'"' == "infl" ///
 				| `"`=substr("`name'",1,6)'"' == "output" | `"`=substr("`name'",1,4)'"' == "asis" ///
 				| `"`=substr("`name'",1,7)'"' == "pibYEnt" | `"`=substr("`name'",-5,5)'"' == "VECES" ///
@@ -40,34 +40,34 @@ program define scalarlatex
 				local value = scalar(`name')
 				di in w "\def\d`name'`altname'#1{\gdef\\`name'`altname'{#1}}"
 				di in w `"\d`name'`altname'{`value'}"'
-			}
+			*}
 
-			else if (`"`=substr("`name'",-3,3)'"' == "PIB" & `"`=substr("`name'",1,3)'"' != "PIB") ///
+			*else if (`"`=substr("`name'",-3,3)'"' == "PIB" & `"`=substr("`name'",1,3)'"' != "PIB") ///
 				| `"`=substr("`name'",1,6)'"' == "lambda" | `"`=substr("`name'",1,2)'"' == "TT" ///
 				| `"`=substr("`name'",1,7)'"' == "llambda" | `"`=substr("`name'",1,6)'"' == "Lambda" {
-				if scalar(`name') != . {
-					local value = scalar(`name')
-				}
-				else {
-					local value = 0
-				}
-				di in w "\def\d`name'`altname'#1{\gdef\\`name'`altname'{#1}}"
-				di in w `"\d`name'`altname'{`=string(`value',"%06.3fc")'}"'
-			}
+				*if scalar(`name') != . {
+					*local value = scalar(`name')
+				*}
+				*else {
+					*local value = 0
+				*}
+				*di in w "\def\d`name'`altname'#1{\gdef\\`name'`altname'{#1}}"
+				*di in w `"\d`name'`altname'{`=string(`value',"%06.3fc")'}"'
+			*}
 
-			else if "`name'" == "ISRAS" | "`name'" == "ISRPF" | "`name'" == "CUOTAS" ///
+			*else if "`name'" == "ISRAS" | "`name'" == "ISRPF" | "`name'" == "CUOTAS" ///
 				| "`name'" == "IVA" | "`name'" == "ISAN" | "`name'" == "IEPSNP" | "`name'" == "IEPSP" ///
 				| "`name'" == "IMPORT" | "`name'" == "ISRPM" | "`name'" == "FMP" ///
 				| "`name'" == "CFE" | "`name'" == "PEMEX" | "`name'" == "IMSS" | "`name'" == "ISSSTE" ///
 				| "`name'" == "OTROSK" | `"`=substr("`name'",1,9)'"' == "GasFedPIB" ///
 				| `"`=substr("`name'",1,9)'"' == "LIETotPIB" | `"`=substr("`name'",1,6)'"' == "ImpPIB" ///
 				| `"`=substr("`name'",1,7)'"' == "RePrPIB" | `"`=substr("`name'",1,4)'"' == "gini" {
-				local value = scalar(`name')
-				di in w "\def\d`name'`altname'#1{\gdef\\`name'`altname'{#1}}"
-				di in w `"\d`name'`altname'{`=string(`value',"%7.3fc")'}"'
-			}
+				*local value = scalar(`name')
+				*di in w "\def\d`name'`altname'#1{\gdef\\`name'`altname'{#1}}"
+				*di in w `"\d`name'`altname'{`=string(`value',"%7.3fc")'}"'
+			*}
 
-			else if `"`=substr("`name'",-1,1)'"' == "I" | `"`=substr("`name'",-1,1)'"' == "V" ///
+			*else if `"`=substr("`name'",-1,1)'"' == "I" | `"`=substr("`name'",-1,1)'"' == "V" ///
 				| `"`=substr("`name'",-1,1)'"' == "X" | `"`=substr("`name'",-1,1)'"' == "H" ///
 				| `"`=substr("`name'",-1,1)'"' == "M" | `"`=substr("`name'",-3,3)'"' == "Nac" ///
 				| `"`=substr("`name'",-2,2)'"' == "PC" | "`name'" == "basica" | "`name'" == "medsup" ///
@@ -87,29 +87,29 @@ program define scalarlatex
 				| `"`=substr("`name'",1,4)'"' == "Prot" | `"`=substr("`name'",1,6)'"' == "GasFed" ///
 				| `"`=substr("`name'",1,3)'"' == "LIE" | `"`=substr("`name'",1,2)'"' == "RP" ///
 				/*| `"`=substr("`name'",1,3)'"' == "Imp"*/ {
-				local value = scalar(`name')
-				di in w "\def\d`name'`altname'#1{\gdef\\`name'`altname'{#1}}"
-				di in w `"\d`name'`altname'{`=string(`value',"%15.0fc")'}"'
-			}
+				*local value = scalar(`name')
+				*di in w "\def\d`name'`altname'#1{\gdef\\`name'`altname'{#1}}"
+				*di in w `"\d`name'`altname'{`=string(`value',"%15.0fc")'}"'
+			*}
 			
-			else if `"`=substr("`name'",-3,3)'"' == "GEO" ///
+			*else if `"`=substr("`name'",-3,3)'"' == "GEO" ///
 				| `"`=substr("`name'",-3,3)'"' == "Por" | `"`=substr("`name'",1,5)'"' == "Depen" ///
 				| `"`=substr("`name'",1,3)'"' == "Dif" {
-				local value = scalar(`name')
-				di in w "\def\d`name'`altname'#1{\gdef\\`name'`altname'{#1}}"
-				di in w `"\d`name'`altname'{`=string(`value',"%15.1fc")'}"'
-			}
+				*local value = scalar(`name')
+				*di in w "\def\d`name'`altname'#1{\gdef\\`name'`altname'{#1}}"
+				*di in w `"\d`name'`altname'{`=string(`value',"%15.1fc")'}"'
+			*}
 
-			else {
-				if scalar(`name') != . {
-					local value = scalar(`name')/1000000
-				}
-				else {
-					local value = 0
-				}
-				di in w "\def\d`name'`altname'#1{\gdef\\`name'`altname'{#1}}"
-				di in w `"\d`name'`altname'{`=string(`value',"%12.1fc")'}"'
-			}
+			*else {
+				*if scalar(`name') != . {
+					*local value = scalar(`name')/1000000
+				*}
+				*else {
+					*local value = 0
+				*}
+				*di in w "\def\d`name'`altname'#1{\gdef\\`name'`altname'{#1}}"
+				*di in w `"\d`name'`altname'{`=string(`value',"%12.1fc")'}"'
+			*}
 			quietly log close `logname'
 		}
 		*scalar drop _all

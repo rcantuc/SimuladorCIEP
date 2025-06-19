@@ -14,8 +14,9 @@ if "`1'" == "" {
 ***************************************
 *** 1 Sistema de Cuentas Nacionales ***
 ***************************************
-SCN, anio(`2') nographs
-
+*SCN, anio(`2') nographs
+PIBDeflactor, anio(`2') nographs nooutput
+scalar pibY = real(subinstr(scalar(pibY),",","",.))*1000000
 
 
 
@@ -24,10 +25,10 @@ SCN, anio(`2') nographs
 use `"`c(sysdir_site)'/users/$id/aportaciones.dta"', clear
 
 tempvar Laboral Consumo Capital FMP
-egen `Laboral'  = rsum(ISRAS ISRPF CUOTAS)
-egen `Consumo'  = rsum(IVA IEPSP IEPSNP ISAN IMPORT)
-egen `Capital'  = rsum(ISRPM OTROSK)
-egen `FMP' = rsum(FMP)
+egen `Laboral'  = rsum(ISRAS_Sim ISRPF_Sim CUOTAS_Sim)
+egen `Consumo'  = rsum(IVA_Sim IEPSP_Sim IEPSNP_Sim ISAN_Sim IMPORT_Sim)
+egen `Capital'  = rsum(ISRPM_Sim OTROSK_Sim)
+egen `FMP' = rsum(FMP_Sim)
 
 collapse (sum) ing_Imp_al_trabajo=`Laboral' ing__Imp_al_consumo=`Consumo' ///
 	ing___Imp_al_capital=`Capital' /*ing____FMP=`FMP'*/ [fw=factor], by(`1')
@@ -44,29 +45,29 @@ rename `1' from
 * IMSS e ISSSTE *
 set obs `=_N+1'
 replace from = 99 in -1
-replace profile = (scalar(IMSS)+scalar(ISSSTE))/100*scalar(PIB) in -1
+replace profile = (scalar(IMSSPIB)+scalar(ISSSTEPIB))/100*scalar(pibY) in -1
 replace to = 4 in -1
+label define to 4 "Empresas públicas", add
 label define `1' 99 "IMSS, ISSSTE", add
 
 * CFE *
 set obs `=_N+1'
 replace from = 98 in -1
-replace profile = scalar(CFE)/100*scalar(PIB) in -1
+replace profile = scalar(CFEPIB)/100*scalar(pibY) in -1
 replace to = 4 in -1
 label define `1' 98 "CFE", add
 
 * Pemex *
 set obs `=_N+1'
 replace from = 97 in -1
-replace profile = (scalar(PEMEX))/100*scalar(PIB) in -1
+replace profile = (scalar(PEMEXPIB))/100*scalar(pibY) in -1
 replace to = 4 in -1
 label define `1' 97 "Pemex", add
-label define to 4 "Empresas públicas", add
 
 * FMP *
 set obs `=_N+1'
 replace from = 97 in -1
-replace profile = scalar(FMP)/100*scalar(PIB) in -1
+replace profile = scalar(FMPPIB)/100*scalar(pibY) in -1
 replace to = 5 in -1
 label define to 5 "FMP", add
 
@@ -244,7 +245,7 @@ save `eje3'
 
 ************
 ** Sankey **
-noisily SankeySumSim, anio(`2') name(`1') folder(SankeySF5) a(`eje1') b(`eje2') c(`eje3') d(`eje4') 
+noisily SankeySumSim, anio(`2') name(`1') a(`eje1') b(`eje2') c(`eje3') d(`eje4') 
 
 timer off 9
 timer list 9

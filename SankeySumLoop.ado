@@ -107,15 +107,15 @@ quietly {
 	}
 	filefilter `sankey1' `sankey2', from(" ") to("") replace
 	filefilter `sankey2' `sankey3', from("_") to(" ") replace
-	if "`c(os)'" == "MacOSX" {
-		filefilter `sankey3' "/Applications/XAMPP/xamppfiles/htdocs/`folder'/sankey-`name'.js", from(".,") to("0") replace
-	}
-	if "`c(os)'" == "Unix" & "`c(username)'" != "root" {
-		filefilter `sankey3' `"/var/www/html/`folder'/sankey-`name'.js"', from(".,") to("0") replace
+	//if "`c(os)'" == "MacOSX" {
+		//filefilter `sankey3' "/Applications/XAMPP/xamppfiles/htdocs/`folder'/sankey-`name'.js", from(".,") to("0") replace
+	//}
+	//if "`c(os)'" == "Unix" & "`c(username)'" != "root" {
+		//filefilter `sankey3' `"/var/www/html/`folder'/sankey-`name'.js"', from(".,") to("0") replace
 		//filefilter `sankey3' `"/var/www/html/`folder'/data.js"', from(".,") to("0") replace
-	}
-	if "`c(os)'" == "Unix" & "`c(username)'" == "root" {
+	//}
+	//if "`c(os)'" == "Unix" & "`c(username)'" == "root" {
 		filefilter `sankey3' `"`c(sysdir_personal)'/users/$id/sankey-`name'.js"', from(".,") to("0") replace
-	}
+	//}
 }
 end

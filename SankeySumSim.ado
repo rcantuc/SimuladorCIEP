@@ -5,10 +5,11 @@ quietly {
 	local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 
-	syntax, A(string) NAME(string) FOLDER(string) ///
-		[B(string) C(string) D(string) E(string) ANIO(int `aniovp')]
+	syntax, A(string) NAME(string) ///
+		[B(string) C(string) D(string) E(string) ANIO(int `aniovp') FOLDER(string)]
 
 	PIBDeflactor, anio(`anio') nographs nooutput
+	scalar pibY = real(subinstr(scalar(pibY),",","",.))*1000000
 
 
 	******************

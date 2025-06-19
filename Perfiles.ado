@@ -297,7 +297,7 @@ quietly {
 
 	******************
 	*** 3 Perfiles ***
-	/******************
+	******************
 	use `"`c(sysdir_site)'/users/$id/bootstraps/`bootstrap'/`varlist'PERF"', clear
 
 
@@ -317,7 +317,7 @@ quietly {
 		local pais = ""
 	}
 
-	* Sin kernel *
+	/* Sin kernel *
 	if "`nokernel'" == "nokernel" & "$nographs" != "nographs" & "`nographs'" != "nographs" {
 
 		twoway line perfil1 edad, ///
@@ -902,7 +902,7 @@ program define ProyGraph
 
 	args varlist aniope bootstrap nographs
 
-	PIBDeflactor, nographs nooutput
+	PIBDeflactor, nographs nooutput aniomax(2040)
 	tempfile PIB
 	save `PIB'
 	
