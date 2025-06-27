@@ -84,16 +84,16 @@ Ve a la página de [github.com/apps/desktop](https://github.com/apps/desktop) y 
  
  
  <div style="display: flex; justify-content: center; align-items: center;">
-    <img src="manuales/images/ReadMe/Paso1.png" style="width: 50%; height: auto;" alt="Paso1">
+    <img src="manuales/images/Paso1.png" style="width: 50%; height: auto;" alt="Paso1">
 </div>
  
 3. Ingresa el URL `https://github.com/rcantuc/SimuladorCIEP` y haz click en Clone
  <div style="display: flex; justify-content: center; align-items: center;">
-    <img src="manuales/images/ReadMe/Paso2.png" style="width: 50%; height: auto;" alt="Paso2">
+    <img src="manuales/images/Paso2.png" style="width: 50%; height: auto;" alt="Paso2">
 </div>
 4. El repositorio empezará a descargarse en tu computadora
  <div style="display: flex; justify-content: center; align-items: center;">
-    <img src="manuales/images/ReadMe/Paso3.png" style="width: 50%; height: auto;" alt="Paso3">
+    <img src="manuales/images/Paso3.png" style="width: 50%; height: auto;" alt="Paso3">
 </div>
  
 </details>
@@ -131,7 +131,7 @@ Este programa está diseñado para proporcionar acceso estructurado a cualquier 
 Para llamar al programa es necesario escribir un comando en la consola de Stata. Cada comando tiene una sintaxis específica y puede incluir *options*, instrucciones específicas que permiten refinar tu búsqueda para adaptarlo a lo que buscas.
 
 <div style="display: flex; justify-content: center; align-items: center;">
-    <img src="manuales/images/ReadMe/imagen1.png" style="width: 50%; height: auto;" alt="Paso1">
+    <img src="manuales/images/imagen1.png" style="width: 50%; height: auto;" alt="Paso1">
 </div>
 
 
