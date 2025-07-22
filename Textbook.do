@@ -24,6 +24,10 @@ else if "`c(username)'" == "servidorciep" {					// Servidor CIEP
 	sysdir set SITE "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
 	global export "/home/servidorciep/CIEP Dropbox/TextbookCIEP/images"
 }
+else if "`c(username)'" == "gabriel" {
+	sysdir set SITE "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
+	global export "/home/servidorciep/CIEP Dropbox/TextbookCIEP/images"
+}
 else if "`c(console)'" != "" {							// Servidor Web
 	sysdir set SITE "/SIM/OUT/7/"
 }
@@ -77,7 +81,7 @@ noisily SCN, anio(`=aniovp') $update $textbook
 
 
 
-**/
+**
 **# 2. CAPTÍULO 3
 ***
 noisily Poblacion, anioi(`=anioPE') aniofinal(`=`=anioPE'+25') $textbook
@@ -88,7 +92,67 @@ noisily run "`c(sysdir_site)'/Expenditure.do" `=anioenigh'
 ** 2.2 Encuesta Nacional de Ingresos y Gastos de los Hogares (Recursos)
 noisily run `"`c(sysdir_site)'/Households.do"' `=anioenigh'
 
+
+
+
+
+**/
+**# 3. CAPÍTULO 12: Redistribución
+***
+use `"`c(sysdir_site)'/users/$id/ingresos.dta"', clear
+merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/users/$id/gastos.dta", nogen
+capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/users/$id/isr_mod.dta", ///
+	nogen replace update keepus(ISRAS_Sim ISRPF_Sim ISRPM_Sim CUOTAS_Sim)
+capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/users/$id/iva_mod.dta", ///
+	nogen replace update keepus(IVA_Sim)
+save `"`c(sysdir_site)'/users/$id/aportaciones.dta"', replace
+capture drop ImpuestosAportaciones
+
+
+** 6.1 (+) Impuestos y aportaciones
+egen AlTrabajo = rsum(ISRPF_Sim ISRAS_Sim CUOTAS_Sim)
+label var AlTrabajo "Impuestos al trabajo"
+
+egen AlCapital = rsum(ISRPM_Sim OTROSK)
+label var AlCapital "Impuestos al capital"
+
+egen AlConsumo = rsum(IVA_Sim IEPSNP_Sim IEPSP_Sim ISAN_Sim IMPORT_Sim)
+label var AlConsumo "Impuestos al consumo"
+
+egen ImpuestosAportaciones = rsum(ISRPM_Sim ISRAS_Sim ISRPF_Sim CUOTAS_Sim IVA_Sim IEPSNP_Sim IEPSP_Sim ISAN_Sim IMPORT_Sim) // FMP_Sim OTROSK_Sim
+label var ImpuestosAportaciones "Impuestos y contribuciones"
+
+
+** 6.2 (-) Gastos
+label var Pensión_AM "Pensión para adultos mayores"
+label var Educación "Educación"
+
+capture drop Transferencias
+egen Transferencias = rsum(Pensiones Pensión_AM IngBasico Educación Salud) // Otras_inversiones
+label var Transferencias "Transferencias públicas"
+
+
+** 6.3 (=) Aportaciones netas **
+capture drop AportacionesNetas
+g AportacionesNetas = ImpuestosAportaciones - Transferencias
+label var AportacionesNetas "Ciclo de vida de las aportaciones netas"
+
+
+** 6.4 Perfiles **
+foreach k of varlist AlTrabajo AlCapital AlConsumo ///
+	Pensiones Pensión_AM IngBasico Educación Salud ///
+	AportacionesNetas {
+	rename `k' `=subinstr("`k'","_","",.)'
+	noisily Simulador `=subinstr("`k'","_","",.)' [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot //boot(10)
+}
+
+
+** 6.4 (*) Cuentas generacionales
+*noisily CuentasGeneracionales AportacionesNetas, anio(`=anioPE') discount(7)
+
+
+
 if "$textbook" == "textbook" {
-	noisily scalarlatex, log(households) alt(H)
+	noisily scalarlatex, log(aportaciones) alt(Apor)
 }
 
