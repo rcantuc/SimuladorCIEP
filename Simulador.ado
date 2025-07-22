@@ -796,7 +796,7 @@ program graphpiramide
 		graph hbar (sum) `POR' if sexo == 2, ///
 			over(`over') over(edad, axis(noextend noline outergap(0)) descending ///
 			relabel(`relabel') ///
-			label(labsize(vsmall) labcolor("122 122 122"))) ///
+			label(labsize(vsmall) labcolor("111 111 111"))) ///
 			stack asyvars ///
 			yscale(noextend noline /*range(1.8)*/) /// |
 			blabel(none, format(%5.1fc)) ///
@@ -959,8 +959,8 @@ program define ProyGraph
 
 		if "$nographs" != "nographs" & "`nographs'" != "nographs" {
 			twoway (connected estimacion anio, lpattern(dot) msize(small)) ///
-				(connected estimacion anio if anio == `aniohoy', mlabel(estimacion) mlabposition(12) mlabcolor("114 113 118") mlabsize(medlarge)) ///
-				(connected estimacion anio if anio == `aniomax', mlabel(estimacion) mlabposition(12) mlabcolor("114 113 118") mlabsize(medlarge)) ///
+				(connected estimacion anio if anio == `aniohoy', mlabel(estimacion) mlabposition(12) mlabcolor("111 111 111") mlabsize(medlarge)) ///
+				(connected estimacion anio if anio == `aniomax', mlabel(estimacion) mlabposition(12) mlabcolor("111 111 111") mlabsize(medlarge)) ///
 				if anio > 2020, ///
 				///ytitle("billones `currency' `aniovp'") ///
 				///ytitle("% PIB") ///

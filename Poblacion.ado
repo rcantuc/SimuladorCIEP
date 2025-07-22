@@ -361,8 +361,8 @@ quietly {
 			text(105 `=-`MaxH'[1,1]*.5' "{bf:Edad mediana}") ///
 			text(97.5 `=-`MaxH'[1,1]*.5' "Hombres: `=`H`anioinicial''[1,1]'") ///
 			text(90 `=-`MaxH'[1,1]*.5' "Mujeres: `=`M`anioinicial''[1,1]'") ///
-			text(`=(109-(`aniofinal'-`anioinicial'))/2' `=-`MaxH'[1,1]*.35' "{bf: `=entidad[1]'}", size(huge) color(black)) ///
-			text(`=(109-(`aniofinal'-`anioinicial'))/2' `=`MaxH'[1,1]*.35' `"`=string(`P`anioinicial''[1,1],"%20.0fc")'"', size(huge) color(black)) ///
+			text(`=(109-(`aniofinal'-`anioinicial'))/2' `=-`MaxH'[1,1]*.35' "{bf: `=entidad[1]'}", size(huge) color("111 111 111")) ///
+			text(`=(109-(`aniofinal'-`anioinicial'))/2' `=`MaxH'[1,1]*.35' `"`=string(`P`anioinicial''[1,1],"%20.0fc")'"', size(huge) color("111 111 111")) ///
 			text(105 `=`MaxH'[1,1]*.5' "{bf:Estructura poblacional}") ///
 			text(97.5 `=`MaxH'[1,1]*.5' "0-18: `=string(`P18_`anioinicial''[1,1]/`P`anioinicial''[1,1]*100,"%7.1fc")'%") ///
 			text(90 `=`MaxH'[1,1]*.5' "19-65: `=string(`P1865_`anioinicial''[1,1]/`P`anioinicial''[1,1]*100,"%7.1fc")'%") ///
@@ -382,10 +382,10 @@ quietly {
 			legend(label(1 "Hombres") label(2 "Mujeres")) ///
 			legend(off order(1 2) rows(1) region(margin(zero))) ///
 			yscale(noline) ylabel(none) xscale(noline) ///
-			text(`=((`aniofinal'-`anioinicial'))/2' `=-`MaxH'[1,1]*.35' "{bf: Por nacer}", size(huge) color(black)) ///
-			text(`=((`aniofinal'-`anioinicial'))/2' `=`MaxH'[1,1]*.35' `"`=string(`Pnacida'[1,1],"%20.0fc")'"', size(huge) color(black)) ///
-			text(`=(`aniofinal'-`anioinicial')+(109-(`aniofinal'-`anioinicial'))/2' `=-`MaxH'[1,1]*.35' "{bf: Vivos en `anioinicial'}", size(huge) color(black)) ///
-			text(`=(`aniofinal'-`anioinicial')+(109-(`aniofinal'-`anioinicial'))/2' `=`MaxH'[1,1]*.35' `"`=string(`Pviva'[1,1],"%20.0fc")'"', size(huge) color(black)) ///
+			text(`=((`aniofinal'-`anioinicial'))/2' `=-`MaxH'[1,1]*.35' "{bf: Por nacer}", size(huge) color("111 111 111")) ///
+			text(`=((`aniofinal'-`anioinicial'))/2' `=`MaxH'[1,1]*.35' `"`=string(`Pnacida'[1,1],"%20.0fc")'"', size(huge) color("111 111 111")) ///
+			text(`=(`aniofinal'-`anioinicial')+(109-(`aniofinal'-`anioinicial'))/2' `=-`MaxH'[1,1]*.35' "{bf: Vivos en `anioinicial'}", size(huge) color("111 111 111")) ///
+			text(`=(`aniofinal'-`anioinicial')+(109-(`aniofinal'-`anioinicial'))/2' `=`MaxH'[1,1]*.35' `"`=string(`Pviva'[1,1],"%20.0fc")'"', size(huge) color("111 111 111")) ///
 			text(105 `=-`MaxH'[1,1]*.5' "{bf:Edad mediana}") ///
 			text(97.5 `=-`MaxH'[1,1]*.5' "Hombres: `=`H`aniofinal''[1,1]'") ///
 			text(90 `=-`MaxH'[1,1]*.5' "Mujeres: `=`M`aniofinal''[1,1]'") ///
@@ -494,12 +494,12 @@ quietly {
 			(area `pob60' anio if anio > `anioinicial' & anio <= `aniofinal', astyle(p1area)) ///
 			(area `pob1860' anio if anio > `anioinicial' & anio <= `aniofinal', astyle(p2area)) ///
 			(area `pob18' anio if anio > `anioinicial' & anio <= `aniofinal', astyle(p3area)), ///
-			text(`y1' `x1' `"{bf:Max (0-18):} `=string(`MAX'[1,1],"%5.1fc")' % (`x1')"', place(s) size(medlarge) color(black)) ///
-			text(`y2' `x2' `"{bf:Max (19-60):} `=string(`MAX'[1,2],"%5.1fc")' % (`x2')"', place(s) size(medlarge) color(black)) ///
-			text(`y3' `x3' `"{bf:Max (61+):} `=string(`MAX'[1,3],"%5.1fc")' % (`x3')"', place(nw) size(medlarge) color(black)) ///
-			///text(`z1' `m1' `"{bf:Min (0-18):} `=string(`MAX'[2,1],"%5.1fc")' % (`m1')"', place(w) size(medlarge) color(black)) ///
-			///text(`z2' `m2' `"{bf:Min (19-60):} `=string(`MAX'[2,2],"%5.1fc")' % (`m2')"', place(`place21') size(medlarge) color(black)) ///
-			///text(`z3' `m3' `"{bf:Min (61+):} `=string(`MAX'[2,3],"%5.1fc")' % (`m3')"', place(ne) size(medlarge) color(black)) ///
+			text(`y1' `x1' `"{bf:Max (0-18):} `=string(`MAX'[1,1],"%5.1fc")' % (`x1')"', place(s) size(medlarge) color("111 111 111")) ///
+			text(`y2' `x2' `"{bf:Max (19-60):} `=string(`MAX'[1,2],"%5.1fc")' % (`x2')"', place(s) size(medlarge) color("111 111 111")) ///
+			text(`y3' `x3' `"{bf:Max (61+):} `=string(`MAX'[1,3],"%5.1fc")' % (`x3')"', place(nw) size(medlarge) color("111 111 111")) ///
+			///text(`z1' `m1' `"{bf:Min (0-18):} `=string(`MAX'[2,1],"%5.1fc")' % (`m1')"', place(w) size(medlarge) color("111 111 111")) ///
+			///text(`z2' `m2' `"{bf:Min (19-60):} `=string(`MAX'[2,2],"%5.1fc")' % (`m2')"', place(`place21') size(medlarge) color("111 111 111")) ///
+			///text(`z3' `m3' `"{bf:Min (61+):} `=string(`MAX'[2,3],"%5.1fc")' % (`m3')"', place(ne) size(medlarge) color("111 111 111")) ///
 			text(`=`POBTOT'[1,1]/1000000*.015' `=`anioinicial'-.5' "{bf:`anioinicial'}", place(nw)) ///
 			xtitle("") ///
 			ytitle("millones de personas") ///
@@ -548,9 +548,9 @@ quietly {
 			title("Dependientes por c/100 personas en edad de trabajar") ///
 			///caption("`graphfuente'") ///
 			xtitle("") ///
-			text(`=tasaDependencia[`obsini']' `=anio[`obsini']' "`=string(tasaDependencia[`obsini'],"%7.2fc")'", place(n) size(large) color(black)) ///
-			text(`=tasaDependencia[`aniotdmin']' `=anio[`aniotdmin']' "{bf:Min}: `=string(tasaDependencia[`aniotdmin'],"%7.2fc")'", place(s) size(large) color(black)) ///
-			text(`=tasaDependencia[`aniotdmax']' `=anio[`aniotdmax']' "{bf:Max}: `=string(tasaDependencia[`aniotdmax'],"%7.2fc")'", place(n) size(large) color(black)) ///
+			text(`=tasaDependencia[`obsini']' `=anio[`obsini']' "`=string(tasaDependencia[`obsini'],"%7.2fc")'", place(n) size(large) color("111 111 111")) ///
+			text(`=tasaDependencia[`aniotdmin']' `=anio[`aniotdmin']' "{bf:Min}: `=string(tasaDependencia[`aniotdmin'],"%7.2fc")'", place(s) size(large) color("111 111 111")) ///
+			text(`=tasaDependencia[`aniotdmax']' `=anio[`aniotdmax']' "{bf:Max}: `=string(tasaDependencia[`aniotdmax'],"%7.2fc")'", place(n) size(large) color("111 111 111")) ///
 			///xlabel(`=round(`anioinicial',5)'(5)`=round(`aniofinal',5)') ///
 			xlabel(`aniofirst'(10)`aniofinal') ///
 			ytitle("") ///

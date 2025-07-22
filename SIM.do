@@ -18,11 +18,11 @@ timer on 1
 ** Directorios de trabajo (uno por computadora)
 if "`c(username)'" == "ricardo" {						// iMac Ricardo
 	sysdir set SITE "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
-	//global export "/Users/ricardo/CIEP Dropbox/TextbookCIEP/images"
+	global export "/Users/ricardo/CIEP Dropbox/TextbookCIEP/images"
 }
 else if "`c(username)'" == "servidorciep" {					// Servidor CIEP
 	sysdir set SITE "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
-	//global export "/home/servidorciep/CIEP Dropbox/TextbookCIEP/images"
+	global export "/home/servidorciep/CIEP Dropbox/TextbookCIEP/images"
 }
 else if "`c(console)'" != "" {							// Servidor Web
 	sysdir set SITE "/SIM/OUT/7/"
@@ -38,8 +38,8 @@ global paqueteEconomico "pre-CGPE 2026"						// POLÍTICA FISCAL
 
 ** Opciones
 //global nographs "nographs"							// SUPRIMIR GRAFICAS
-global update "update"							// UPDATE BASES DE DATOS
-global output "output"							// ARCHIVO DE SALIDA (WEB)
+global update "update"								// UPDATE BASES DE DATOS
+global output "output"								// ARCHIVO DE SALIDA (WEB)
 //global textbook "textbook"							// SCALAR TO LATEX
 
 ** Output (web)
