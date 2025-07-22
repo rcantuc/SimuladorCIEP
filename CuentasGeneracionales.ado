@@ -24,7 +24,7 @@ quietly {
 	*******************
 	*** 1 Poblacion ***
 	*******************
-	use `"`c(sysdir_personal)'/SIM/$pais/Poblacion.dta"', clear
+	use `"`c(sysdir_site)'/04_master/Poblacion.dta"', clear
 
 	sort anio
 	local anio = anio[1]
@@ -48,7 +48,7 @@ quietly {
 	****************
 	** 2 Perfiles **
 	****************
-	use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'PERF"', clear
+	use `"`c(sysdir_site)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'PERF"', clear
 	collapse perfil1 perfil2 contribuyentes1 contribuyentes2, by(edad)
 
 	sort edad
@@ -63,7 +63,7 @@ quietly {
 	**************************
 	*** 3 Monto per capita ***
 	**************************
-	use `"`c(sysdir_personal)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'PC"', clear
+	use `"`c(sysdir_site)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'PC"', clear
 
 	ci montopc
 	local montopc = r(mean)
@@ -150,6 +150,8 @@ quietly {
 		noisily di in w _col(3) "GAH: [`=substr("`GAH'",1,`=`lenghtGAH'-1')']"
 		noisily di in w _col(3) "GAM: [`=substr("`GAM'",1,`=`lenghtGAM'-1')']"
 		noisily di in w _col(3) "GAT: [`=substr("`GAT'",1,`=`lenghtGAT'-1')']"
+		
+		scalar GAH`k' = string(`GAH',"%20.0fc")
 	}
 
 

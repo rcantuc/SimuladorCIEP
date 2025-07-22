@@ -296,7 +296,7 @@ quietly {
 	*******************************
 	*** 2.2 Resultados globales ***
 	local RECT = r(mean)/`PIB'*100
-	scalar `varlist'GPIB = `RECT'
+	scalar `varlist'GPIB = string(`RECT',"%7.3fc")
 
 	ci means contribuyentes
 	noisily di in g "  Contribuyentes/Beneficiarios:" _column(40) in y %20.0fc r(mean) ///
@@ -462,7 +462,7 @@ quietly {
 		local decil2 : label deciles `k'
 		noisily di in g "  `decil2'" _column(20) in y %20.0fc r(mean) ///
 			in g "  I.C. (95%): " in y "+/-" %7.2fc (r(ub)/r(mean)-1)*100 "%"
-		scalar `varlist'`decil2' = r(mean)
+		scalar `varlist'`decil2' = string(r(mean),"%10.0fc")
 
 		if "$output" == "output" {
 			local incd = "`incd' `=string(`=`varlist'`decil2'',"%10.0f")',"
@@ -479,7 +479,7 @@ quietly {
 		local decil2 : label deciles `k'
 		noisily di in g "  `decil2'" _column(20) in y %20.1fc r(mean) ///
 			in g "  I.C. (95%): " in y "+/-" %7.2fc (r(ub)/r(mean)-1)*100 "%"
-		scalar dis`varlist'`decil2' = r(mean)
+		scalar dis`varlist'`decil2' = string(r(mean),"%7.1fc")
 
 		if "$output" == "output" {
 			local incd2 = "`incd2' `=string(`=dis`varlist'`decil2'',"%10.1f")',"
@@ -500,7 +500,7 @@ quietly {
 		local decil2 : label deciles `k'
 		noisily di in g "  `decil2'" _column(20) in y %20.1fc r(mean) ///
 			in g "  I.C. (95%): " in y "+/-" %7.2fc (r(ub)/r(mean)-1)*100 "%"
-		scalar inc`varlist'`decil2' = r(mean)
+		scalar inc`varlist'`decil2' = string(r(mean),"%7.1fc")
 
 		if "$output" == "output" {
 			local incd3 = "`incd3' `=string(`=inc`varlist'`decil2'',"%10.1f")',"
@@ -634,9 +634,9 @@ program poblaciongini
 		3 `"{bf:X}: `=string(`gdeclab10',"%7.0fc")'%"'
 	label values `grupo' `grupoval'
 	label var `grupo' "deciles"
-	scalar `varlist'GIV = `gdeclab1'+`gdeclab2'+`gdeclab3'+`gdeclab4'+`gdeclab5'
-	scalar `varlist'GVIIX = `gdeclab6'+`gdeclab7'+`gdeclab8'+`gdeclab9'
-	scalar `varlist'GX = `gdeclab10'
+	scalar `varlist'GIV = string(`gdeclab1'+`gdeclab2'+`gdeclab3'+`gdeclab4'+`gdeclab5',"%10.0fc")
+	scalar `varlist'GVIIX = string(`gdeclab6'+`gdeclab7'+`gdeclab8'+`gdeclab9',"%10.0fc")
+	scalar `varlist'GX = string(`gdeclab10',"%10.0fc")
 
 
 	***************
@@ -648,8 +648,8 @@ program poblaciongini
 		matrix `GSEX' = r(StatTotal)
 		local gsexlab`k' = `GSEX'[1,1]/`GTOT'[1,1]*100
 	}
-	scalar `varlist'GH = `gsexlab1'
-	scalar `varlist'GM = `gsexlab2'
+	scalar `varlist'GH = string(`gsexlab1',"%7.1fc")
+	scalar `varlist'GM = string(`gsexlab2',"%7.1fc")
 
 
 	*********************************
