@@ -22,7 +22,7 @@ quietly {
 	tokenize `names'
 	local j = 1
 	foreach k of local series {
-		import delimited "`=c(sysdir_site)'/03_temp/AccesoBIE/`k'.csv", clear
+		import delimited "`=c(sysdir_site)'/03_temp/AccesoBIE/`k'.csv", clear varnames(1)
 		capture replace periodo = subinstr(periodo, "/p1", "", .)
 		capture replace periodo = subinstr(periodo, "/r1", "", .)
 		rename variable ``j''

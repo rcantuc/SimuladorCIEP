@@ -28,18 +28,26 @@ local smdf = 248.93 			// SM 2024
 *local smdf = 172.87 			// SM 2022
 
 
-****************
-** Households **
-****************
+*********************
+** INFORMACIÓN PIB **
+*********************
 SCN, nographs
 local pibY = real(subinstr(scalar(PIB),",","",.))*1000000
 
+
+
+****************************
+** INFORMACIÓN HOUSEHOLDS **
+****************************
 capture use "`c(sysdir_site)'/04_master/perfiles`=anioPE'.dta", clear
 if _rc != 0 {
 	noisily run "`c(sysdir_site)'/PerfilesSim.do" `=anioPE'
 }
-
 drop CUOTAS ISRAS ISRPF
+
+noisily tabstat ing_bruto_tax [fw=factor], stat(sum) f(%20.0fc) save
+noisily di _newline in g "INGRESOS BRUTOS: " in y %20.3fc r(StatTotal)[1,1]/`pibY'*100
+
 
 
 
@@ -151,6 +159,16 @@ forvalues j=`=rowsof(ISR)'(-1)1 {
 		replace SE = SE[`k',3] if categF == "J`j'K`k'"
 	}
 }
+
+/*g ing_EITC = (ing_bruto_tax - CUOTAS)/12
+gen EITC = 0
+replace EITC = 2500.00 - (ing_EITC/4) if ing_EITC <= 644.58
+replace EITC = 2338.86 - ((ing_EITC-644.59)/6) if ing_EITC > 644.58 & ing_EITC <= 5470.92
+replace EITC = 1534.47 if ing_EITC>5470.92 & ing_EITC <= 9614.66
+replace EITC = 1534.47 if ing_EITC>9614.66 & ing_EITC <= 11176.62
+replace EITC = 1534.47 if ing_EITC>11176.62 & ing_EITC <= 13381.47
+replace EITC = 1534.47 - ((ing_EITC-13381.48)/8.9) if ing_EITC > 13381.47 & ing_EITC <= 26988.50
+replace ISR = ISR - EITC*12 if categF != ""*/
 
 
 ************************

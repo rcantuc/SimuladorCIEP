@@ -67,7 +67,7 @@ else {
 			erase "`c(sysdir_site)'/01_raw/ENIGH/2016.zip"
 		}
 	}
-	if `1' >= 2013 & `1' < 2016 {
+	if `1' >= 2014 & `1' < 2016 {
 		scalar anioenigh = 2014
 		local claveiva = "*2014"
 		capture confirm file "`c(sysdir_site)'/01_raw/ENIGH/`=anioenigh'/gastospersona.dta"
@@ -393,24 +393,24 @@ if _rc != 0 {
 	replace categ = 19 if categ == .
 
 	label define categ 1 "Alim" /// Alimentos
-		2 "`BebN'" /// Bebidas no alcohólicas
-		3 "`BebA'" /// Bebidas alcohólicas
-		4 "`Taba'" /// Tabaco
-		5 "`Vest'" /// Prendas de vestir
-		6 "`Calz'" /// Calzado
-		7 "`AlojT'" /// Alquileres y vivienda
-		8 "`Agua'" /// `Agua'
-		9 "`Elec'" /// Electricidad
-		10 "`HogaT'" /// Artículos para el hogar
-		11 "`SaluT'" /// Salud
-		12 "`Vehi'" /// Adquisición de vehículos
-		13 "`FTra'" /// Transporte personal
-		14 "`STra'" /// Servicios de transporte
-		15 "`ComuT'" /// Comunicaciones
-		16 "`RecrT'" /// Recreación y cultura
-		17 "`EducT'" /// Educación
-		18 "`RestT'" /// Restaurantes y hoteles
-		19 "`DiveT'" // Otros diversos
+		2 "BebN" /// Bebidas no alcohólicas
+		3 "BebA" /// Bebidas alcohólicas
+		4 "Taba" /// Tabaco
+		5 "Vest" /// Prendas de vestir
+		6 "Calz" /// Calzado
+		7 "AlojT" /// Alquileres y vivienda
+		8 "Agua" /// `Agua'
+		9 "Elec" /// Electricidad
+		10 "HogaT" /// Artículos para el hogar
+		11 "SaluT" /// Salud
+		12 "Vehi" /// Adquisición de vehículos
+		13 "FTra" /// Transporte personal
+		14 "STra" /// Servicios de transporte
+		15 "ComuT" /// Comunicaciones
+		16 "RecrT" /// Recreación y cultura
+		17 "EducT" /// Educación
+		18 "RestT" /// Restaurantes y hoteles
+		19 "DiveT" // Otros diversos
 	label values categ categ
 
 
@@ -521,7 +521,7 @@ if _rc != 0 {
 ********************************************************
 foreach categ in categ categ_iva /*categ_ieps*/ {
 	capture confirm file "`c(sysdir_site)'/04_master/`=anioenigh'/consumption_`categ'_pc.dta"
-	if _rc != 0 /*| "$update" == "update"*/ {
+	if _rc != 0 | "$update" == "update" {
 	*if _rc == 0 {
 
 		** 3.1 Consumo de los individuos **
@@ -632,18 +632,18 @@ foreach categ in categ categ_iva /*categ_ieps*/ {
 				g ``vars'pc_`k'' = `vars'pc_`k'
 				label var ``vars'pc_`k'' "`title' en `k' (original)"
 				if "`nohouseholds'" == "" {
-					noisily Perfiles ``vars'pc_`k'' [fw=factor] ///
-						if ``vars'pc_`k'' != 0 & hogar_outlier == . & ind_outlier == ., ///
-						aniope(`=anioenigh')
+					//noisily Perfiles ``vars'pc_`k'' [fw=factor] ///
+					//	if ``vars'pc_`k'' != 0 & hogar_outlier == . & ind_outlier == ., ///
+					//	aniope(`=anioenigh')
 					noisily Simulador ``vars'pc_`k'' [fw=factor] ///
 						if ``vars'pc_`k'' != 0 & hogar_outlier == . & ind_outlier == ., ///
-						aniope(`=anioenigh') reboot
+						aniope(`=anioenigh') reboot boot(25)
 				}
 
 				* Iteraciones *
 				noisily di in y "`k': " _cont
-				local salto = 3
-				forvalues iter=1(1)15 {
+				local salto = 1
+				forvalues iter=1(1)25 {
 					noisily di in w "`iter' " _cont
 					forvalues edades=0(`salto')109 {
 						forvalues sexos=1(1)2 {
@@ -671,14 +671,14 @@ foreach categ in categ categ_iva /*categ_ieps*/ {
 				*noisily tabstat `vars'pc_`k' `vars'hog`k' `vars'ind`k' [fw=factor], stat(sum) f(%20.0fc)
 
 				if "`nohouseholds'" == "" {
-					noisily Perfiles `vars'pc_`k' [fw=factor] ///
-						if `vars'pc_`k' != 0 & hogar_outlier == . & ind_outlier == ., ///
-						aniope(`=anioenigh') ///
-						title(`title' en `k')
+					//noisily Perfiles `vars'pc_`k' [fw=factor] ///
+					//	if `vars'pc_`k' != 0 & hogar_outlier == . & ind_outlier == ., ///
+					//	aniope(`=anioenigh') ///
+					//	title(`title' en `k')
 					noisily Simulador `vars'pc_`k' [fw=factor] ///
 						if `vars'pc_`k' != 0 & hogar_outlier == . & ind_outlier == ., ///
 						aniope(`=anioenigh') ///
-						title(`title' en `k') reboot
+						title(`title' en `k') reboot boot(25)
 				}
 				capture g precio_`k' = gas_pc_`k'/cant_pc_`k'
 				capture drop *outlier
@@ -1113,7 +1113,7 @@ save "`c(sysdir_site)'/04_master/`=anioenigh'/consumption_categ_iva.dta", replac
 ***              ***
 ***    6. IEPS   ***
 *** (incompleto) ***
-/*******************
+*******************
 if `=anioenigh' >= 2014 {
 	matrix IEPST = (26.5	,		0 			\ /// Cervezas y licores
 		30.0	,		0 			\ /// Alcohol 14+ a 20

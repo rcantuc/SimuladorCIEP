@@ -46,7 +46,7 @@ global textbook "textbook"							// SCALAR TO LATEX
 ***
 **# 1. CAPTÍULO 2
 ***
-** 2.1 Producto Interno Bruto (inputs opcionales)
+/** 1.1 Producto Interno Bruto (inputs opcionales)
 global pib2025 = 1.5								// CRECIMIENTO ANUAL PIB
 global pib2026 = 2.1								// <-- AGREGAR O QUITAR AÑOS
 global pib2027 = 2.5
@@ -54,7 +54,7 @@ global pib2028 = 2.5
 global pib2029 = 2.5
 global pib2030 = 2.5
 
-** 2.2 Deflactor (inputs opcionales)
+** 1.2 Deflactor (inputs opcionales)
 global def2025 = 4.4								// CRECIMIENTO ANUAL PRECIOS IMPLÍCITOS
 global def2026 = 4.0								// <-- AGREGAR O QUITAR AÑOS
 global def2027 = 3.5
@@ -62,7 +62,7 @@ global def2028 = 3.5
 global def2029 = 3.5
 global def2030 = 3.5
 
-** 2.3 Inflación (inputs opcionales)
+** 1.3 Inflación (inputs opcionales)
 global inf2025 = 3.5								// CRECIMIENTO ANUAL INFLACIÓN
 global inf2026 = 3.0								// <-- AGREGAR O QUITAR AÑOS
 global inf2027 = 3.0
@@ -72,12 +72,23 @@ global inf2030 = 3.0
 
 noisily PIBDeflactor, aniovp(`=aniovp') geodef(1993) geopib(1993) aniomax(2030) $update $textbook
 
-
-** 2.4 Sistema de Cuentas Nacionales (sin inputs)
+** 1.4 Sistema de Cuentas Nacionales (sin inputs)
 noisily SCN, anio(`=aniovp') $update $textbook
 
 
 
-***
+**/
 **# 2. CAPTÍULO 3
 ***
+noisily Poblacion, anioi(`=anioPE') aniofinal(`=`=anioPE'+25') $textbook
+
+** 2.1 Encuesta Nacional de Ingresos y Gastos de los Hogares (Usos)
+noisily run "`c(sysdir_site)'/Expenditure.do" `=anioenigh'
+
+** 2.2 Encuesta Nacional de Ingresos y Gastos de los Hogares (Recursos)
+noisily run `"`c(sysdir_site)'/Households.do"' `=anioenigh'
+
+if "$textbook" == "textbook" {
+	noisily scalarlatex, log(households) alt(H)
+}
+

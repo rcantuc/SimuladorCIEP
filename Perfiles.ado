@@ -595,9 +595,9 @@ quietly {
 
 	******************************
 	*** 7. Gráficas combinadas ***
-	******************************
+	/******************************
 	if "$nographs" != "nographs" & "`nographs'" != "nographs" {
-		graph combine H`varlist' `varlist'Proj, ///
+		graph combine D`varlist' `varlist'ProjD, ///
 			name(`=substr("`varlist'",1,10)'_`aniope', replace) ///
 			title("{bf:`title'}") ///
 			subtitle(" Perfil etario (MXN `aniovp') y proyección demográfica (% PIB)", margin(bottom)) ///
@@ -613,7 +613,7 @@ quietly {
 			graph export `"$export/`varlist'_`aniope'.png"', replace name(`=substr("`varlist'",1,10)'_`aniope')
 		}
 		capture window manage close graph H`varlist'
-		capture window manage close graph `varlist'Proj
+		capture window manage close graph `varlist'ProjD
 	}
 
 
@@ -830,6 +830,7 @@ program graphpiramide
 			b1title(" ") ///
 			///b2title(" {bf:Men} consume `men'% and {bf:women} `women'%", size(small)) ///
 			b2title(" {bf:Hombres}, `men'%   {bf:mujeres}, `women'%", size(small)) ///
+			title("{bf:`title'}") subtitle("$pais") ///
 			///subtitle("Age profile 2022 (PPP)") ///
 			///subtitle("Perfil etario") ///
 			///ytitle(% PIB) ///
@@ -838,7 +839,7 @@ program graphpiramide
 			///ytitle(% GDP) ///
 			///ylabel(`=round(`PORmaxval'[2,1],.1)'(.1)`=`PORmaxval'[1,1]', format(%7.1fc) noticks) ///
 			ylabel(#5, format(%10.0fc) noticks) ///
-			name(H`varlist', replace) ///
+			name(D`varlist', replace) ///
 			legend(rows(1) pos(6)) ///
 			///yreverse ///
 			plotregion(margin(zero)) ///
@@ -974,7 +975,7 @@ program define ProyGraph
 				///text(`=`estimacionvp'*0.25' `aniohoy' "From `aniohoy' to 2070,"  "its demand will" `"change in {bf:`=string((`LAST'[1,1]/`estimacionvp'-1)*100,"%5.2f")'%}."', size(medsmall) place(1) justification(left)) ///
 				///title("{bf:Proyecci{c o'}n} de `title'") subtitle("$pais") ///
 				///caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.") ///
-				name(`varlist'Proj, replace)
+				name(`varlist'ProjD, replace)
 		}
 	}
 

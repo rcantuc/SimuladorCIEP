@@ -93,9 +93,10 @@ quietly {
 	*****************************
 	local obslastexo = _N
 	tsset anio
+
+	* Política fiscal *
 	forvalues j = 1(1)`=_N' {
-		* Política fiscal *
-		foreach k of varlist shrfspInterno shrfspExterno ///
+		foreach k of varlist shrfsp ///
 			rfspBalance rfspPIDIREGAS rfspIPAB rfspFONADIN rfspDeudores rfspBanca rfspAdecuaciones ///
 			balprimario {
 			capture confirm existence ${`k'`=anio[`j']'}
@@ -105,29 +106,35 @@ quietly {
 				local obslastexo = `j'
 			}
 		}
+	}
 
-		* Costos financieros *
-		replace porInterno = shrfspInterno/(shrfspInterno+shrfspExterno) if porInterno == .
-		replace porExterno = shrfspExterno/(shrfspInterno+shrfspExterno) if porExterno == .
-		capture confirm existence ${costodeudaInterno`=anio[`j']'}
+	* Interno y Externo *
+	replace porInterno = L.porInterno if porInterno == .
+	replace porExterno = L.porExterno if porExterno == .
+
+	replace shrfspInterno = shrfsp*porInterno if shrfspInterno == .
+	replace shrfspExterno = shrfsp*porExterno if shrfspExterno == .
+
+	* Costos financieros y tipo de cambio *
+	forvalues j = 1(1)`=_N' {
+		capture confirm existence ${costodeuda`=anio[`j']'}
 		if _rc == 0 {
-			replace costodeudaInterno = ${costodeudaInterno`=anio[`j']'}/100*porInterno*pibY if anio == `=anio[`j']'
-		}		
-		capture confirm existence ${costodeudaExterno`=anio[`j']'}
-		if _rc == 0 {
-			replace costodeudaExterno = ${costodeudaExterno`=anio[`j']'}/100*porExterno*pibY if anio == `=anio[`j']'
+			replace costodeudaInterno = ${costodeuda`=anio[`j']'}/100*porInterno*pibY if anio == `=anio[`j']'
+			replace costodeudaExterno = ${costodeuda`=anio[`j']'}/100*porExterno*pibY if anio == `=anio[`j']'
+			format costodeuda* %20.0fc
 		}
-		format costodeuda* %20.0fc
-		
-		* Tipo de cambio *
+
 		capture confirm existence ${tipoDeCambio`=anio[`j']'}
 		if _rc == 0 {
 			replace tipoDeCambio = ${tipoDeCambio`=anio[`j']'} if anio == `=anio[`j']'
+			format tipoDeCambio %7.2fc
 		}
+
 		replace rfsp = rfspBalance + rfspPIDIREGAS + rfspIPAB + rfspFONADIN + rfspDeudores + rfspBanca + rfspAdecuaciones if anio == `=anio[`j']'
 		replace shrfsp = shrfspInterno + shrfspExterno if anio == `=anio[`j']'
-		replace costofinanciero = costodeudaInterno + costodeudaExterno
+		replace costofinanciero = costodeudaInterno + costodeudaExterno if anio == `=anio[`j']'
 	}
+
 
 
 
