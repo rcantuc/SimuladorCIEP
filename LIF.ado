@@ -530,10 +530,10 @@ quietly {
 			over(resumido, sort(1) descending) over(anio, gap(30)) ///
 			stack asyvars blabel(bar, format(%7.1fc)) outergap(0) ///
 			name(ingresos`by'PIB, replace) ///
+			caption("Fuente: Elaborado por el CIEP, con informaci{c o'}n de SHCP/EOFP, INEGI/BIE y $paqueteEconomico.") ///
 			title("`graphtitle'") ///
 			ylabel(, format(%7.1fc) labsize(small)) ///
-			ytitle("billones de `currency' `aniovp'") ///
-			subtitle("Recaudación, como % del PIB") ///
+			ytitle("% del PIB") ///
 			blabel(bar, format(%5.1fc)) ///
 			legend(on position(6) rows(`rows') cols(`cols') /*`legend' order(`order')*/ justification(left)) ///
 			/// Added text 

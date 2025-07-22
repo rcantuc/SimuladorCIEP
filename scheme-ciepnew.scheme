@@ -11,7 +11,7 @@
 // graphsize 	x 			5.5
 // graphsize 	y 			4
 graphsize 	x 			16
-graphsize 	y 			5
+graphsize 	y 			7
 
 
 
@@ -37,7 +37,7 @@ color 		legend			white
 
 
 // Added text and lines
-gsize 		text_option 		vlarge
+gsize 		text_option 		large
 color 		text_option		"111,111,111"
 clockdir 	text_option		12
 
@@ -232,27 +232,27 @@ linewidth	p17area			none
 
 
 // Colores
-color 		p1			"255,129,0"
-color 		p2			"255,189,0"
-color 		p3			"102,177,0"
-color 		p4			"0,151,201"
-color 		p5			"0,78,198"
-color 		p6			"245,55,0"
-color 		p7			"150,6,92"
-color 		p8			"175,174,180"
-color 		p9			"57,108,184"
-color 		p10			"0,180,148"
-color 		p11			"0,151,125"
-color 		p12			"103,223,87"
-color 		p13			"53,200,71"
-color 		p14			"40,173,58"
-color 		p15			"227,229,99"
-color 		p16			"210,213,32"
-color 		p17			"181,185,27"
-color 		p18			"255,182,76"
-color 		p19			"239,143,51"
-color 		p20			"220,117,0"
-color 		p21			"254,118,109"
-color 		p22			"224,97,83"
-color 		p23			"194,68,68"
-color 		p24			"186,34,64"
+color 		p1		"255,128,0"
+color 		p3		"255,135,77"
+color 		p2		"255,181,75"
+color 		p4		"219,117,0"
+color 		p5		"215,111,51"
+color 		p6		"209,212,32"
+color 		p7		"226,228,99"
+color 		p8		"180,184,27"
+color 		p9		"103,222,86"
+color 		p10		"255,55,0"
+color 		p11		"40,172,58"
+color 		p12		"0,179,147"
+color 		p13		"0,150,200"
+color 		p14		"186,34,64"
+color 		p15		"194,76,68"
+color 		p16		"57,197,183"
+color 		p17		"150,6,92"
+color 		p18		"254,118,109"
+color 		p19		"53,199,72"
+color 		p20		"255,128,0"
+color 		p21		"153,155,156"
+color 		p22		"31,31,31"
+color 		p23		"235,235,235"
+color 		p24		"243,243,233"

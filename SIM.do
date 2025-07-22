@@ -37,14 +37,15 @@ global id = "ciepmx"								// ID USUARIO
 global paqueteEconomico "pre-CGPE 2026"						// POLÍTICA FISCAL
 
 ** Opciones
-global nographs "nographs"							// SUPRIMIR GRAFICAS
-//global update "update"							// UPDATE BASES DE DATOS
+//global nographs "nographs"							// SUPRIMIR GRAFICAS
+global update "update"							// UPDATE BASES DE DATOS
 global output "output"							// ARCHIVO DE SALIDA (WEB)
 //global textbook "textbook"							// SCALAR TO LATEX
 
 ** Output (web)
 if "$output" != "" {
 	capture mkdir "`c(sysdir_site)'/users/$id"
+	quietly log using `"`c(sysdir_site)'/users/$id/Expenditures.smcl"', replace name(SIM)
 	quietly log using `"`c(sysdir_site)'/users/$id/output.txt"', replace text name(output)
 	quietly log off output
 }
@@ -53,8 +54,8 @@ if "$output" != "" {
 
 ***
 **# 1. DEMOGRAFÍA
-/***
-noisily Poblacion if entidad == "`entidad'", anioi(`=anioPE') aniofinal(`=`=anioPE'+25') $textbook
+***
+noisily Poblacion if entidad == "", anioi(`=aniovp') aniofinal(2050) $textbook $nographs
 
 
 
@@ -89,35 +90,37 @@ global inf2029 = 3.0
 global inf2030 = 3.0
 global inf2031 = 3.0
 
-noisily PIBDeflactor, aniovp(`=aniovp') geodef(1993) geopib(1993) $update $textbook
+noisily PIBDeflactor if anio >= 2005, aniovp(`=aniovp') geodef(1993) geopib(1993) //$update $textbook
 
 
 ** 2.4 Sistema de Cuentas Nacionales (sin inputs)
-noisily SCN, anio(`=aniovp') $update $textbook
+noisily SCN, anio(`=aniovp') nographs //$update $textbook
 
 
 
 **/
 **# 3. HOGARES: ARMONIZACIÓN MACRO-MICRO
-/***
-
+***
 forvalues anio = `=anioPE'(-2)`=anioPE' {
+
 	** 3.1 Encuesta Nacional de Ingresos y Gastos de los Hogares (Usos)
 	capture confirm file "`c(sysdir_site)'/04_master/`=anioenigh'/expenditures.dta"
-	if _rc != 0 | "$update" == "update" ///
+	//if _rc != 0 | "$update" == "update" ///
+		noisily di _newline in y "Expenditure `anio'"
 		noisily run "`c(sysdir_site)'/Expenditure.do" `anio'
 
 
 	** 3.2 Encuesta Nacional de Ingresos y Gastos de los Hogares (Recursos)
 	capture confirm file "`c(sysdir_site)'/04_master/`=anioenigh'/households.dta"
-	if _rc != 0 | "$update" == "update" ///
+	//if _rc != 0 | "$update" == "update" ///
+		noisily di _newline in y "Household `anio'"
 		noisily run `"`c(sysdir_site)'/Households.do"' `anio'
 
 
 	** 3.3 Perfiles de la política económica actual (Paquete Económico)
-	noisily di _newline in y "PerfilesSim `anio'"
 	capture confirm file "`c(sysdir_site)'/04_master/perfiles`anio'.dta"
-	if _rc != 0 | "$update" == "update" ///
+	//if _rc != 0 | "$update" == "update" ///
+		noisily di _newline in y "PerfilesSim `anio'"
 		noisily run "`c(sysdir_site)'/PerfilesSim.do" `anio'
 }
 
@@ -125,9 +128,12 @@ forvalues anio = `=anioPE'(-2)`=anioPE' {
 
 **/
 **# 4. SISTEMA FISCAL
-***
+/***
 
 ** 4.1 Ley de Ingresos de la Federación
+if "$nographs" != "nographs" {
+	*do "`c(sysdir_site)'/Graphs_TE.do"
+}	
 noisily LIF if divLIF != 10, anio(`=anioPE') by(divSIM) $update 		///
 	title("Ingresos presupuestarios") 					/// Cambiar título de la gráfica
 	desde(`=`=anioPE'-12') 							/// Año de inicio para el PROMEDIO
@@ -181,16 +187,16 @@ matrix ISR =  (0.01,		8952.49,	0.0,		1.92	\	/// 1
 		4511707.37+.01,	1E+12,		1414947.85,	35.00)		//  11
 
 *             INFERIOR		SUPERIOR	SUBSIDIO
-matrix	SE =  (0.01,		1768.96*12,	407.02*12	\	/// 1
-		1768.96*12+.01,	2653.38*12,	406.83*12	\	/// 2
-		2653.38*12+.01,	3472.84*12,	406.62*12	\	/// 3
-		3472.84*12+.01,	3537.87*12,	392.77*12	\	/// 4
-		3537.87*12+.01,	4446.15*12,	382.46*12	\	/// 5
-		4446.15*12+.01,	4717.18*12,	354.23*12	\	/// 6
-		4717.18*12+.01,	5335.42*12,	324.87*12	\	/// 7
-		5335.42*12+.01,	6224.67*12,	294.63*12	\	/// 8
-		6224.67*12+.01,	7113.90*12,	253.54*12	\	/// 9
-		7113.90*12+.01,	7382.33*12,	217.61*12	\	/// 10
+matrix	SE =  (0.01,		1768.96*12,	407.02*12*0	\	/// 1
+		1768.96*12+.01,	2653.38*12,	406.83*12*0	\	/// 2
+		2653.38*12+.01,	3472.84*12,	406.62*12*0	\	/// 3
+		3472.84*12+.01,	3537.87*12,	392.77*12*0	\	/// 4
+		3537.87*12+.01,	4446.15*12,	382.46*12*0	\	/// 5
+		4446.15*12+.01,	4717.18*12,	354.23*12*0	\	/// 6
+		4717.18*12+.01,	5335.42*12,	324.87*12*0	\	/// 7
+		5335.42*12+.01,	6224.67*12,	294.63*12*0	\	/// 8
+		6224.67*12+.01,	7113.90*12,	253.54*12*0	\	/// 9
+		7113.90*12+.01,	7382.33*12,	217.61*12*0	\	/// 10
 		7382.33*12+.01,	1E+12,		0)			//  11
 
 * Artículo 151, último párrafo (LISR) *
@@ -263,7 +269,7 @@ matrix IEPST = (26.5	,	0 		\		/// Cerveza y alcohol 14
 		0	,	6.7865		)		// Gasolina: diésel
 
 ** 4.1.6 Submódulo ISR (web) **
-if "`cambioisrpf'" == "1" {
+if "`cambioisrpf'" == "" {
 	noisily run "`c(sysdir_site)'/ISR_Mod.do"
 	scalar ISRASPIB  = ISR_AS_Mod					// NUEVA ESTIMACIÓN ISR ASALARIADOS
 	scalar ISRAS = ISRASPIB/100*scalar(pibY)
@@ -289,7 +295,7 @@ noisily TasasEfectivas, anio(`=anioPE')
 
 **/
 ** 4.2 Presupuesto de Egresos de la Federación **
-**
+/**
 noisily PEF, anio(`=anioPE') by(divSIM) ///$update 				///
 	title("Gasto presupuestario") 						/// Cambiar título
 	desde(`=`=anioPE'-12') 							/// Año de inicio PROMEDIO
@@ -349,58 +355,35 @@ noisily GastoPC, aniope(`=anioPE') aniovp(`=aniovp')
 
 **/
 ** 4.3 Saldo Histórico de Requerimientos Financieros del Sector Público **
-**
+/**
 
 * SHRFSP: Total, Interno, Externo (como % del PIB)
-matrix shrfsp = (51.4, 39.8, 11.6 \ 	/// 2025
-		 51.4, 40.5, 10.9 \ 	/// 2026
-		 51.4, 40.8, 10.6 \ 	/// 2027
-		 51.4, 41.1, 10.3 \ 	/// 2028
-		 51.4, 41.4, 10.0 \ 	/// 2029
-		 51.4, 41.7, 9.7)	//  2030
+*                2025  2026  2027  2028  2029  2030
+matrix shrfsp = (52.3, 52.3, 52.3, 52.3, 52.3, 52.3)
 
 * SHRFSP: Total, PIDIREGAS, IPAB, FONADIN, Deudores, Banca, Adecuaciones, Balance (como % del PIB)
-matrix rfsp = 	(5.9, -0.02, 0.03, 0.04, 0.01, -0.01, 0.81, 5.0 \ 		/// 2025
-		3.9, 0.15, 0.1, 0.03, 0.01, -0.01, 0.44, 3.2 \ 			/// 2026
-		3.2, 0.1, 0.1, 0.0, 0.0, 0.0, 0.3, 2.7 \ 			/// 2027
-		2.9, 0.1, 0.1, 0.0, -0.1, 0.0, 0.3, 2.4 \ 			/// 2028
-		2.9, 0.1, 0.1, 0.0, 0.0, 0.0, 0.3, 2.4 \ 			/// 2029
-		2.9, 0.1, 0.1, 0.0, 0.0, 0.0, 0.3, 2.4)				//  2030
+matrix rfsp =  (3.9, 0.15, 0.10, 0.03, 0.01,-0.01, 0.44, 3.2 \ 			/// 2025
+		3.2, 0.10, 0.10, 0.00, 0.00, 0.00, 0.30, 2.7 \ 			/// 2026
+		2.9, 0.10, 0.10, 0.00,-0.10, 0.00, 0.30, 2.4 \ 			/// 2027
+		2.9, 0.10, 0.10, 0.00, 0.00, 0.00, 0.30, 2.4 \ 			/// 2028
+		2.9, 0.10, 0.10, 0.00, 0.00, 0.00, 0.30, 2.4 \ 			/// 2029
+		2.9, 0.10, 0.10, 0.00, 0.00, 0.00, 0.30, 2.4) 			//  2030
 
 * SHRFSP: Tipo de cambio (MXN/USD)
-matrix tipoDeCambio = (18.2, 							/// 2025
-		 18.5, 								/// 2026
-		 18.7, 								/// 2027
-		 18.9, 								/// 2028
-		 19.1, 								/// 2029
-		 19.3) 								//  2030
+*                      2025, 2026, 2027, 2028, 2029, 2030
+matrix tipoDeCambio = (18.2, 18.5, 18.7, 18.9, 19.1, 19.3)
 
 * Balance primario (como % del PIB)
-matrix balprimario = (-1.4,							/// 2025
-		-0.6,								/// 2026
-		-0.5,								/// 2027
-		-0.4,								/// 2028
-		-0.4,								/// 2029
-		-0.4)								//  2030
+*                     2025, 2026, 2027, 2028, 2029, 2030
+matrix balprimario = (-1.4, -0.6, -0.5, -0.4, -0.4, -0.4)
+
 * Costo de la deuda (como % del PIB)
-matrix costodeudaInterno = (3.6, /// 2025
-		3.8, 								/// 2026
-		3.2, 								/// 2027
-		2.8, 								/// 2028
-		2.7, 								/// 2029
-		2.7) 								//  2030
-matrix costodeudaExterno = (3.6, ///
-		3.8, 								/// 2025
-		3.2, 								/// 2026
-		2.8, 								/// 2027
-		2.7, 								/// 2028
-		2.7) 								//  2030
+*                   2025, 2026, 2027, 2028, 2029, 2030
+matrix costodeuda = (3.6,  3.8,  3.2,  2.8,  2.7,  2.7)
 
 forvalues k = 2025(1)2030 {
 	local j = `k' - 2025 + 1
-	global shrfsp`k' = shrfsp[`j', 1]
-	global shrfspInterno`k' = shrfsp[`j', 2]
-	global shrfspExterno`k' = shrfsp[`j', 3]
+	global shrfsp`k' = shrfsp[1,`j']
 	global rfsp`k' = rfsp[`j', 1]
 	global rfspPIDIREGAS`k' = rfsp[`j', 2]
 	global rfspIPAB`k' = rfsp[`j', 3]
@@ -411,8 +394,7 @@ forvalues k = 2025(1)2030 {
 	global rfspBalance`k' = rfsp[`j', 8]
 	global tipoDeCambio`k' = tipoDeCambio[`j',1]
 	global balprimario`k' = balprimario[`j',1]
-	global costodeudaInterno`k' = costodeudaInterno[`j',1]
-	global costodeudaExterno`k' = costodeudaExterno[`j',1]
+	global costodeuda`k' = costodeuda[1,`j']
 }
 
 *scalar tasaEfectiva = 6.801
@@ -429,7 +411,7 @@ noisily SHRFSP, anio(`=anioPE') ultanio(2008) $nographs $update $textbook
 
 **/
 **# 6. CICLO DE VIDA
-***
+/***
 use `"`c(sysdir_site)'/users/$id/ingresos.dta"', clear
 merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/users/$id/gastos.dta", nogen
 capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/users/$id/isr_mod.dta", ///
@@ -437,75 +419,55 @@ capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/users/$id/i
 capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/users/$id/iva_mod.dta", ///
 	nogen replace update keepus(IVA_Sim)
 save `"`c(sysdir_site)'/users/$id/aportaciones.dta"', replace
+capture drop ImpuestosAportaciones
 
 
 ** 6.1 (+) Impuestos y aportaciones
-//egen AlTrabajo = rsum(ISRPF_Sim ISRAS_Sim CUOTAS_Sim)
-//label var AlTrabajo "Impuestos al trabajo"
-//noisily Perfiles AlTrabajo [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
-//noisily Simulador AlTrabajo [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot //boot(10)
+egen AlTrabajo = rsum(ISRPF_Sim ISRAS_Sim CUOTAS_Sim)
+label var AlTrabajo "Impuestos al trabajo"
 
-//egen AlCapital = rsum(ISRPM_Sim OTROSK)
-//label var AlCapital "Impuestos al capital"
-//noisily Perfiles AlCapital [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
-//noisily Simulador AlCapital [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot //boot(10)
+egen AlCapital = rsum(ISRPM_Sim OTROSK)
+label var AlCapital "Impuestos al capital"
 
-//egen AlConsumo = rsum(IVA_Sim IEPSNP_Sim IEPSP_Sim ISAN_Sim IMPORT_Sim)
-//label var AlConsumo "Impuestos al consumo"
-//noisily Perfiles AlConsumo [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
-//noisily Simulador AlConsumo [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot //boot(10)
+egen AlConsumo = rsum(IVA_Sim IEPSNP_Sim IEPSP_Sim ISAN_Sim IMPORT_Sim)
+label var AlConsumo "Impuestos al consumo"
 
-capture drop ImpuestosAportaciones
 egen ImpuestosAportaciones = rsum(ISRPM_Sim ISRAS_Sim ISRPF_Sim CUOTAS_Sim IVA_Sim IEPSNP_Sim IEPSP_Sim ISAN_Sim IMPORT_Sim) // FMP_Sim OTROSK_Sim
 label var ImpuestosAportaciones "Impuestos y contribuciones"
-//noisily Perfiles ImpuestosAportaciones [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
-//noisily Simulador ImpuestosAportaciones [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot //boot(10)
 
 
 ** 6.2 (-) Gastos
-//noisily Perfiles Pensiones [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
-//noisily Simulador Pensiones [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot //boot(10)
-
-//label var Pensión_AM "Pensión para adultos mayores"
-//noisily Perfiles Pensión_AM [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
-//noisily Simulador Pensión_AM [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot //boot(10)
-
-//noisily Perfiles IngBasico [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
-//noisily Simulador IngBasico [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot //boot(10)
-
-//label var Educación "Educación"
-//noisily Perfiles Educación [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
-//noisily Simulador Educación [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot //boot(10)
-
-//noisily Perfiles Salud [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
-//noisily Simulador Salud [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot //boot(10)
+label var Pensión_AM "Pensión para adultos mayores"
+label var Educación "Educación"
 
 capture drop Transferencias
 egen Transferencias = rsum(Pensiones Pensión_AM IngBasico Educación Salud) // Otras_inversiones
 label var Transferencias "Transferencias públicas"
-//noisily Perfiles Transferencias [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
-//noisily Simulador Transferencias [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot //boot(10)
 
 
 ** 6.3 (=) Aportaciones netas **
 capture drop AportacionesNetas
 g AportacionesNetas = ImpuestosAportaciones - Transferencias
 label var AportacionesNetas "Ciclo de vida de las aportaciones netas"
-noisily Perfiles AportacionesNetas [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
-//noisily Simulador AportacionesNetas [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot //boot(10)
 
-
-** 6.4 (*) Cuentas generacionales
-//noisily CuentasGeneracionales AportacionesNetas, anio(`=anioPE') discount(7)
+foreach k of varlist /*AlTrabajo AlCapital AlConsumo ImpuestosAportaciones*/ ISRAS_Sim ///
+	/*Pensiones Pensión_AM IngBasico Educación Salud Transferencias AportacionesNetas*/ {
+	noisily Perfiles `k' [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
+	noisily Simulador `k' [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot //boot(10)
+}
+exit
 
 
 
 **/
 **# 7. DEUDA + FISCAL GAP + REDISTRIBUCIÓN
-***
+/***
 
 ** 7.1 Brecha fiscal
 noisily FiscalGap, anio(`=anioPE') end(2030) aniomin(2015) $nographs desde(`=anioPE-15') discount(10) //update
+
+** 6.4 (*) Cuentas generacionales
+//noisily CuentasGeneracionales AportacionesNetas, anio(`=anioPE') discount(7)
 
 
 ** 7.2 Sankey del sistema fiscal
@@ -518,8 +480,9 @@ foreach k in decil grupoedad /*sexo rural escol*/ {
 ***/
 **** Touchdown!!!
 ****
-if "$output" == "output" ///
-	run "`c(sysdir_site)'/output.do"
 timer off 1
 timer list 1
 noisily di _newline(2) in g _dup(20) ":" "  " in y "TOUCH-DOWN!!!  " round(`=r(t1)/r(nt1)',.1) in g " segs  " _dup(20) ":"
+//if "$output" == "output" ///
+	//run "`c(sysdir_site)'/output.do"
+quietly log close SIM

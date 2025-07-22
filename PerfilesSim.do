@@ -23,8 +23,14 @@ else {
 	if `1' >= 2016 & `1' < 2018 {
 		scalar anioenigh = 2016
 	}
-	if `1' >= 2013 & `1' < 2016 {
+	if `1' >= 2014 & `1' < 2016 {
 		scalar anioenigh = 2014
+	}
+	if `1' >= 2012 & `1' < 2014 {
+		scalar anioenigh = 2012
+	}
+	if `1' >= 2010 & `1' < 2012 {
+		scalar anioenigh = 2010
 	}
 }
 

@@ -144,9 +144,7 @@ quietly {
 		set seed 1111
 		forvalues k = 1(1)`bootstrap' {
 			if `bootstrap' != 1 {
-				if `k'/5 == int(`k'/5) {
-					noisily di in y . _cont
-				}
+				noisily di in y . _cont
 				bsample _N, w(`boot')
 			}
 			else {
@@ -563,7 +561,7 @@ quietly {
 
 	******************************
 	*** 7. Gráficas combinadas ***
-	******************************
+	/******************************
 	if "$nographs" != "nographs" & "`nographs'" != "nographs" {
 		graph combine `=substr("`varlist'",1,10)'_dec `varlist'Proj, ///
 			name(`=substr("`varlist'",1,10)'_`aniope'S, replace) ///
@@ -580,7 +578,7 @@ quietly {
 		if "$export" != "" {
 			graph export `"$export/`varlist'_`aniope'S.png"', replace name(`=substr("`varlist'",1,10)'_`aniope'S)
 		}
-		capture window manage close graph `=substr("`varlist'",1,10)'_dec
+		*capture window manage close graph `=substr("`varlist'",1,10)'_dec
 		capture window manage close graph `varlist'Proj
 	}
 
@@ -631,9 +629,9 @@ program poblaciongini
 	replace `grupo' = 3 if decil == 10
 
 	tempname grupoval
-	label define `grupoval' 1 `"{bf:I-V} (`=string(`gdeclab1'+`gdeclab2'+`gdeclab3'+`gdeclab4'+`gdeclab5',"%7.0fc")'%)"' ///
-		2 `"{bf:VI-IX} (`=string(`gdeclab6'+`gdeclab7'+`gdeclab8'+`gdeclab9',"%7.0fc")'%)"' ///
-		3 `"{bf:X} (`=string(`gdeclab10',"%7.0fc")'%)"'
+	label define `grupoval' 1 `"{bf:Deciles I-V}: `=string(`gdeclab1'+`gdeclab2'+`gdeclab3'+`gdeclab4'+`gdeclab5',"%7.0fc")'%"' ///
+		2 `"{bf:VI-IX}: `=string(`gdeclab6'+`gdeclab7'+`gdeclab8'+`gdeclab9',"%7.0fc")'%"' ///
+		3 `"{bf:X}: `=string(`gdeclab10',"%7.0fc")'%"'
 	label values `grupo' `grupoval'
 	label var `grupo' "deciles"
 	scalar `varlist'GIV = `gdeclab1'+`gdeclab2'+`gdeclab3'+`gdeclab4'+`gdeclab5'
@@ -671,9 +669,9 @@ program poblaciongini
 	replace `grupoesc' = 3 if escol > 2 & escol != .
 
 	tempname grupoescval
-	label define `grupoescval' 1 `"{bf:B{c a'}sica o menos} (`=string(`gesclab0'+`gesclab1',"%7.0fc")'%)"' ///
-		2 `"{bf:Media superior} (`=string(`gesclab2',"%7.0fc")'%)"' ///
-		3 `"{bf:Superior o m{c a'}s} (`=string(`gesclab3',"%7.0fc")'%)"'
+	label define `grupoescval' 1 `"{bf:B{c a'}sica o menos}: (`=string(`gesclab0'+`gesclab1',"%7.0fc")'%)"' ///
+		2 `"{bf:Media superior}: (`=string(`gesclab2',"%7.0fc")'%)"' ///
+		3 `"{bf:Superior o m{c a'}s}: (`=string(`gesclab3',"%7.0fc")'%)"'
 	label values `grupoesc' `grupoescval'
 	label var `grupoesc' "escolaridad"
 
@@ -709,7 +707,7 @@ program graphpiramide
 	*** 1. Valores agregados ***
 	tempname TOT POR
 	egen double `TOT' = sum(`varlist')
-	g double `POR' = `varlist'/`pib'*100
+	g double `POR' = `varlist'/`TOT'*100 //`pib'*100
 	//g double `POR' = `varlist'/poblacion
 
 	* Max number *
@@ -771,6 +769,9 @@ program graphpiramide
 			local boottext " `boottext'"
 		}
 
+		local agehlab =`AGEH'[1,1]/(`AGEH'[1,1]+`AGEH1'[1,1]+`AGEH2'[1,1])*100
+		local agehlab1 =`AGEH1'[1,1]/(`AGEH'[1,1]+`AGEH1'[1,1]+`AGEH2'[1,1])*100
+		local agehlab2 =`AGEH2'[1,1]/(`AGEH'[1,1]+`AGEH1'[1,1]+`AGEH2'[1,1])*100
 		graph hbar (sum) `POR' if sexo == 1, ///
 			over(`over') over(edad, axis(noextend noline outergap(0)) descending ///
 			relabel(`relabel') ///
@@ -778,13 +779,14 @@ program graphpiramide
 			stack asyvars xalternate ///
 			yscale(noextend noline /*range(-7(1)7)*/) ///
 			blabel(none, format(%5.1fc)) ///
-			t2title({bf:Hombres} (`men'%), size(medsmall)) ///
-			ytitle(% PIB) ///
+			t2title({bf:Hombres}: `men'%, size(medsmall)) ///
+			ytitle(%, size(medsmall)) ///
 			///t2title({bf:Men} (`men'%), size(medsmall)) ///
 			///ytitle(% GDP) ///
-			ylabel(`=round(`PORmaxval'[2,1],.1)'(.1)`=`PORmaxval'[1,1]', format(%7.1fc) noticks) ///
+			ylabel(`=round(`PORmaxval'[2,1],.1)'(1)`=`PORmaxval'[1,1]', format(%7.0fc) noticks) ///
 			name(H`varlist', replace) ///
-			legend(cols(4) pos(6) bmargin(zero) label(1 "") label(2 "") label(3 "`rect'") ///
+			legend(cols(4) pos(6) bmargin(zero) label(1 `"{bf:Edades 0-18}: `=string(`agehlab',"%7.0fc")' %"') ///
+			label(2 `"{bf:19-65}: `=string(`agehlab1',"%7.0fc")' %"') label(3 `"{bf:65+}: `=string(`agehlab2',"%7.0fc")' %"') ///
 			label(4 "") label(5 "") label(6 "") label(7 "") label(8 "") label(9 "") ///
 			label(10 "") symxsize(0)) ///
 			yreverse ///
@@ -798,11 +800,11 @@ program graphpiramide
 			stack asyvars ///
 			yscale(noextend noline /*range(1.8)*/) /// |
 			blabel(none, format(%5.1fc)) ///
-			t2title({bf:Mujeres} (`women'%), size(medsmall)) ///
-			ytitle(% PIB) ///
+			t2title({bf:Mujeres}: `women'%, size(medsmall)) ///
+			ytitle(%, size(medsmall)) ///
 			///t2title({bf:Women} (`women'%), size(medsmall)) ///
 			///ytitle(% GDP) ///
-			ylabel(`=round(`PORmaxval'[2,1],.1)'(.1)`=`PORmaxval'[1,1]', format(%7.1fc) noticks) ///
+			ylabel(`=round(`PORmaxval'[2,1],.1)'(1)`=`PORmaxval'[1,1]', format(%7.0fc) noticks) ///
 			name(M`varlist', replace) ///
 			legend(cols(4) pos(5) bmargin(zero) size(medlarge) keygap(1) symxsize(3) textwidth(30) forcesize) ///
 			plotregion(margin(zero)) ///
@@ -813,7 +815,7 @@ program graphpiramide
 			title("{bf:`title'}") subtitle("$pais") ///
 			///title("`title' {bf:profile}") ///
 			caption("{bf:Fuente}: Elaborado por el CIEP, con la `base'.") ///
-			note(`"{bf:Nota}: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n en cada grupo."') ///
+			note(`"{bf:Nota}: Los porcentajes representan la concentraci{c o'}n de cada grupo."') ///
 			///caption("{bf:Source}: Prepared by CIEP, using data from `base'.") ///
 			///note(`"{bf:Note}: Percentages in parentheses represent each group's share of the total account."')
 	
@@ -859,7 +861,7 @@ program graphpiramide
 		label values grupo_edad grupo_edad
 		
 		g over = `over'
-		label define over 1 "I-V" 2 "VI-IX" 3 "X"
+		label define over 1 "Deciles I-V" 2 "VI-IX" 3 "X"
 		label values over over
 		collapse (sum) porcentaje=`POR', by(sexo grupo_edad over)
 		reshape wide porcentaje, i(sexo grupo_edad) j(over)
@@ -913,7 +915,7 @@ program define ProyGraph
 
 	args varlist aniope nographs
 
-	PIBDeflactor, nographs nooutput
+	PIBDeflactor, nographs nooutput aniomax(2070)
 	tempfile PIB
 	save `PIB'
 	
@@ -922,7 +924,6 @@ program define ProyGraph
 
 	use `"`c(sysdir_site)'/users/$id/bootstraps/1/`varlist'REC.dta"', clear
 	merge 1:1 (anio) using `PIB', nogen
-
 	local title = modulo[1]
 	
 	replace estimacion = estimacion*lambda/1000000000000
