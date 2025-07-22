@@ -6,8 +6,7 @@ Versión: 20 de Febrero de 2025
 <hr style="border: none; height: 2px; background-color: #ff7020;">
 
 ## PIBDeflactor.ado
-**Descripción**: *Ado-file* (`.ado`) diseñado para automatizar el cálculo y proyección de todos los indicadores económicos relacionados con el PIB utilizando datos del Banco de Información Económica (BIE) y el Consejo Nacional de Población (CONAPO). 
-
+**Descripción**: *Ado-file* diseñado para automatizar el acceso y generar proyecciones de indicadores económicos clave a partir de escenarios definidos por el usuario. Desarrollado con información del Banco de Información Económica (BIE) y el Consejo Nacional de Población (CONAPO).
 
 <details>
   <summary>**Conoce la lista de indicadores generados**</summary>
@@ -73,7 +72,11 @@ En este programa se utilizan dos fuentes de datos:
 
 <h3 style="color: #ff7020;">2. Sintaxis:</h3>
 
-Para extraer los datos, es necesario ingresar el prompt en la consola siguiendo esta sintaxis:
+Recuerda que este programa tiene dos funciones: acceder a los datos económicos y generar proyecciones económicos a partir de escenarios definidos por el usario. Antes de generar las proyecciones, es necesario ejecutar el programa para cargar los datos económicos.
+
+<h5 style="color: #ff7020;">Accede a los datos:</h3>
+
+Para extraer los datos, es necesario ingresar el comando en la consola siguiendo esta sintaxis:
 
 `PIBDeflactor [if] [, ANIOvp(int) ANIOMAX(int 2070)  GEOPIB(int) GEODEF(int) DIScount(real) NOGraphs UPDATE]`
 
@@ -85,7 +88,7 @@ Para crear comandos de manera automática y evitar errores de sintaxis, utiliza 
 
 
 
-**A. Opciones disponibles:**
+**Opciones disponibles:**
 <!-- Opciones para PIBDeflactor -->
 
 <div>
@@ -174,7 +177,12 @@ Para crear comandos de manera automática y evitar errores de sintaxis, utiliza 
 
 </details>
 
+<h5 style="color: #ff7020;">Genera escenarios económicos:</h3>
 
+Para generar escenarios económicos podras modificar 3 variables y observar los efectos en las proyecciones económicas.
+
+1. Crecimiento económico:
+2. 
 
 
 
