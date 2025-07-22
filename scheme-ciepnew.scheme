@@ -89,11 +89,11 @@ yesno 		draw_major_nlt_vgrid 	yes
 
 // Axis
 color		tick			"52,70,78"
-color      	tick_label		"114,113,118"
+color      	tick_label		"111 111 111"
 gsize      	tick_label		medium
-color 		tick_biglabel 		"114,113,118"
+color 		tick_biglabel 		"111 111 111"
 gsize		tick_biglabel		small
-color 		axis_title 		"114,113,118"
+color 		axis_title 		"111 111 111"
 gsize		axis_title		small
 
 axisstyle 	vertical_default 	vertical_nolinetick
@@ -232,27 +232,27 @@ linewidth	p17area			none
 
 
 // Colores
-color 		p1		"255,128,0"
-color 		p3		"255,135,77"
-color 		p2		"255,181,75"
-color 		p4		"219,117,0"
-color 		p5		"215,111,51"
-color 		p6		"209,212,32"
-color 		p7		"226,228,99"
-color 		p8		"180,184,27"
-color 		p9		"103,222,86"
-color 		p10		"255,55,0"
-color 		p11		"40,172,58"
-color 		p12		"0,179,147"
-color 		p13		"0,150,200"
-color 		p14		"186,34,64"
-color 		p15		"194,76,68"
-color 		p16		"57,197,183"
-color 		p17		"150,6,92"
-color 		p18		"254,118,109"
-color 		p19		"53,199,72"
-color 		p20		"255,128,0"
-color 		p21		"153,155,156"
-color 		p22		"31,31,31"
-color 		p23		"235,235,235"
-color 		p24		"243,243,233"
+color 		p1		"255,128,0"    // Naranja CIEP brillante
+color 		p2		"255,189,0"    // Amarillo institucional
+color 		p4		"23,151,201"    // Celeste vibrante
+color 		p6		"186,34,64"    // Rojo institucional
+color 		p10		"0,179,147"    // Verde jade
+color 		p5		"255,55,0"     // Rojo fuego
+color 		p7		"57,197,183"   // Azul aguamarina
+color 		p8		"102,177,0"    // Verde lima
+color 		p9		"150,6,92"     // Vino CIEP
+color 		p3		"53,199,72"    // Verde bandera
+color 		p11		"0,78,198"     // Azul CIEP profundo
+color 		p12		"194,76,68"    // Terracota intensa
+color 		p13		"254,118,109"  // Coral claro
+color 		p14		"40,172,58"    // Verde medio brillante
+color 		p15		"34,112,255"   // Azul eléctrico
+color 		p16		"255,181,76"   // Naranja pastel
+color 		p17		"15,174,183"   // Verde océano
+color 		p18		"224,97,83"    // Coral denso
+color 		p19		"0,150,125"    // Verde petróleo
+color 		p20		"255,234,0"    // Amarillo vibrante
+color 		p21		"168,142,226"  // Lila suave
+color 		p22		"34,34,34"     // Negro técnico
+color 		p23		"175,174,180"  // Gris claro
+color 		p24		"243,243,233"  // Beige claro

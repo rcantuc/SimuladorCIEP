@@ -1,7 +1,7 @@
 *!*******************************************
 *!***                                    ****
 *!***    PIB, deflactor e inflación      ****
-*!***    Fuente: BIE/INEGI               ****
+*!***    {bf:Fuente}: BIE/INEGI               ****
 *!***    Autor: Ricardo                  ****
 *!***    Fecha: 29/Sept/22               ****
 *!***                                    ****
@@ -380,10 +380,10 @@ quietly {
 		local crecpo3 = `meanPO3'[1,1]
 
 		twoway (bar `gpibYR' anio, ///
-			mlabel(`gpibYR') mlabposition(12) mlabcolor(black) mlabgap(0pt) mlabsize(medium) yaxis(1) barwidth(.75) pstyle(p2)) ///
-			(bar `gPO' anio, mlabel(`gPO') mlabposition(12) mlabcolor(black) mlabgap(0pt) ///
+			mlabel(`gpibYR') mlabposition(12) mlabcolor("111 111 111") mlabgap(0pt) mlabsize(medium) yaxis(1) barwidth(.75) pstyle(p2)) ///
+			(bar `gPO' anio, mlabel(`gPO') mlabposition(12) mlabcolor("111 111 111") mlabgap(0pt) ///
 				lpattern(dot) mlabsize(medium) yaxis(2) barwidth(.33) pstyle(p1)) ///
-			(connected `gPO2' anio, yaxis(3) mlabel(`gPO2') mlabposition(12) mlabcolor(black) mlabgap(0pt) ///
+			(connected `gPO2' anio, yaxis(3) mlabel(`gPO2') mlabposition(12) mlabcolor("111 111 111") mlabgap(0pt) ///
 				lpattern(dot) mlabsize(medium) pstyle(p3)) ///)
 			if pibPO != . & anio <= `aniovp', ///
 			title(`graphtitle') ///
@@ -426,7 +426,7 @@ quietly {
 		* Títulos y fuentes *
 		if "$textbook" == "" {
 			local graphtitle "{bf:Índice de precios implícitos}"
-			local graphfuente "Fuente: Elaborado por el CIEP, con información de INEGI/SHCP."
+			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/SHCP."
 		}
 		else {
 			local graphtitle ""
@@ -454,26 +454,26 @@ quietly {
 		twoway /// Bar
 			(bar deflator anio if (anio < `aniofinal' & anio >= `geodef') ///
 				| (anio == `aniofinal' & trimestre == 4), ///
-				yaxis(2) mlabel(deflator) mlabposition(12) mlabcolor(black) ///
+				yaxis(2) mlabel(deflator) mlabposition(12) mlabcolor("111 111 111") ///
 				mlabgap(0pt) barwidth(.75) mlabsize(medium)) ///
 			(bar deflator anio if anio <= `aniofinal'+`exo_def'-1 & anio > `aniofinal' ///
 				| (anio == `aniofinal' & trimestre < 4), ///
-				yaxis(2) mlabel(deflator) mlabposition(12) mlabcolor(black) ///
+				yaxis(2) mlabel(deflator) mlabposition(12) mlabcolor("111 111 111") ///
 				mlabgap(0pt) barwidth(.75) mlabsize(medium)) ///
 			(bar deflator anio if anio > `aniofinal'+`exo_def'-1 & anio <= `aniomax', ///
-				yaxis(2) mlabel(deflator) mlabposition(12) mlabcolor(black) ///
+				yaxis(2) mlabel(deflator) mlabposition(12) mlabcolor("111 111 111") ///
 				mlabgap(0pt) barwidth(.75) mlabsize(medium)) ///
 			/// Connected
 			(connected var_indiceY anio if (anio < `aniofinal' & anio >= `geodef') ///
 				| (anio == `aniofinal' & trimestre == 4), ///
-				yaxis(1) mlabel(var_indiceY) mlabpos(12) mlabcolor(black) ///
+				yaxis(1) mlabel(var_indiceY) mlabpos(12) mlabcolor("111 111 111") ///
 				mstyle(p1) lstyle(p1) lpattern(dot) msize(small) mlabsize(medium)) ///
 			(connected var_indiceY anio if anio <= `aniofinal'+`exo_def'-1 & anio > `aniofinal' ///
 				| (anio == `aniofinal' & trimestre < 4), ///
-				yaxis(1) mlabel(var_indiceY) mlabpos(12) mlabcolor(black) ///
+				yaxis(1) mlabel(var_indiceY) mlabpos(12) mlabcolor("111 111 111") ///
 				mstyle(p2) lstyle(p2) lpattern(dot) msize(small) mlabsize(medium)) ///
 			(connected var_indiceY anio if anio > `aniofinal'+`exo_def'-1 & anio <= `aniomax', ///
-				yaxis(1) mlabel(var_indiceY) mlabpos(12) mlabcolor(black) ///
+				yaxis(1) mlabel(var_indiceY) mlabpos(12) mlabcolor("111 111 111") ///
 				mstyle(p3) lstyle(p3) lpattern(dot) msize(small) mlabsize(medium)) ///
 			, ///
 			title("`graphtitle'") ///
@@ -517,7 +517,7 @@ quietly {
 		* Títulos y fuentes *
 		if "$textbook" == "" {
 			local graphtitle "{bf:Producto Interno Bruto}"
-			local graphfuente "Fuente: Elaborado por el CIEP, con información de INEGI/SHCP."
+			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/SHCP."
 		}
 		else {
 			local graphtitle ""
@@ -553,25 +553,25 @@ quietly {
 		twoway ///
 			(bar `pibYRmil' anio if (anio < `aniofinal' & anio >= `geopib') ///
 				| (anio == `aniofinal' & trimestre == 4), ///
-				yaxis(2) mlabel(`pibYRmil') mlabpos(12) mlabcolor(black) /// 
+				yaxis(2) mlabel(`pibYRmil') mlabpos(12) mlabcolor("111 111 111") /// 
 				mlabgap(0pt) barwidth(.75) mlabsize(medium)) ///
 			(bar `pibYRmil' anio if anio <= `aniofinal'+`exo_def'-1 & anio > `aniofinal' ///
 				| (anio == `aniofinal' & trimestre < 4), ///
-				yaxis(2) mlabel(`pibYRmil') mlabpos(12) mlabcolor(black) ///
+				yaxis(2) mlabel(`pibYRmil') mlabpos(12) mlabcolor("111 111 111") ///
 				mlabgap(0pt) barwidth(.75) mlabsize(medium)) ///
 			(bar `pibYRmil' anio if anio > `aniofinal'+`exo_def'-1 & anio <= `aniomax', ///
-				yaxis(2) mlabel(`pibYRmil') mlabpos(12) mlabcolor(black) ///
+				yaxis(2) mlabel(`pibYRmil') mlabpos(12) mlabcolor("111 111 111") ///
 				mlabgap(0pt) barwidth(.75) mlabsize(medium)) ///
 			(connected var_pibY anio if (anio < `aniofinal' & anio >= `geopib') ///
 				| (anio == `aniofinal' & trimestre == 4), ///
-				yaxis(1) mlabel(var_pibY) mlabpos(12) mlabcolor(black) ///
+				yaxis(1) mlabel(var_pibY) mlabpos(12) mlabcolor("111 111 111") ///
 				mstyle(p1) lstyle(p1) lpattern(dot) msize(small) mlabsize(medium)) ///
 			(connected var_pibY anio if anio < `aniofinal'+`exo_def'-1 & anio > `aniofinal' ///
 				| (anio == `aniofinal' & trimestre < 4), ///
-				yaxis(1) mlabel(var_pibY) mlabpos(12) mlabcolor(black) ///
+				yaxis(1) mlabel(var_pibY) mlabpos(12) mlabcolor("111 111 111") ///
 				mstyle(p2) lstyle(p2) lpattern(dot) msize(small) mlabsize(medium)) ///
 			(connected var_pibY anio if anio > `aniofinal'+`exo_def'-1 & anio <= `aniomax', ///
-				yaxis(1) mlabel(var_pibY) mlabpos(12) mlabcolor(black) ///
+				yaxis(1) mlabel(var_pibY) mlabpos(12) mlabcolor("111 111 111") ///
 				mstyle(p3) lstyle(p3) lpattern(dot) msize(small) mlabsize(medium)) ///
 			, ///
 			title("`graphtitle'") ///
@@ -616,7 +616,7 @@ quietly {
 		* Títulos y fuentes *
 		if "$textbook" == "" {
 			local graphtitle "{bf:Producto Interno Bruto por persona}"
-			local graphfuente "Fuente: Elaborado por el CIEP, con información de INEGI/CONAPO."
+			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/CONAPO."
 		}
 		else {
 			local graphtitle ""
@@ -660,26 +660,26 @@ quietly {
 		twoway /// Bar
 			(bar PIBPob anio if (anio < `aniofinal' & anio >= `geopib') ///
 				| (anio == `aniofinal' & trimestre == 4), ///
-				yaxis(2) mlabel(PIBPob) mlabposition(12) mlabcolor(black) ///
+				yaxis(2) mlabel(PIBPob) mlabposition(12) mlabcolor("111 111 111") ///
 				mlabgap(0pt) barwidth(.75) mlabsize(small)) ///
 			(bar PIBPob anio if anio <= `aniofinal'+`exo_count'-1 & anio > `aniofinal' ///
 				| (anio == `aniofinal' & trimestre < 4), ///
-				yaxis(2) mlabel(PIBPob) mlabposition(12) mlabcolor(black) ///
+				yaxis(2) mlabel(PIBPob) mlabposition(12) mlabcolor("111 111 111") ///
 				mlabgap(0pt) barwidth(.75) mlabsize(small)) ///
 			(bar PIBPob anio if anio > `aniofinal'+`exo_count'-1 & anio <= `aniomax', ///
-				yaxis(2) mlabel(PIBPob) mlabposition(12) mlabcolor(black) ///
+				yaxis(2) mlabel(PIBPob) mlabposition(12) mlabcolor("111 111 111") ///
 				mlabgap(0pt) barwidth(.75) mlabsize(small)) ///
 			/// Connected
 			(connected var_pibPob anio if (anio < `aniofinal' & anio >= `geopib') ///
 				| (anio == `aniofinal' & trimestre == 4), ///
-				yaxis(1) mlabel(var_pibPob) mlabpos(12) mlabcolor(black) ///
+				yaxis(1) mlabel(var_pibPob) mlabpos(12) mlabcolor("111 111 111") ///
 				mstyle(p1) lstyle(p1) lpattern(dot) msize(small) mlabsize(medsmall)) ///
 			(connected var_pibPob anio if anio <= `aniofinal'+`exo_count'-1 & anio >= `aniofinal' ///
 				| (anio == `aniofinal' & trimestre < 4), ///
-				yaxis(1) mlabel(var_pibPob) mlabpos(12) mlabcolor(black) ///
+				yaxis(1) mlabel(var_pibPob) mlabpos(12) mlabcolor("111 111 111") ///
 				mstyle(p2) lstyle(p2) lpattern(dot) msize(small) mlabsize(medsmall)) ///
 			(connected var_pibPob anio if anio > `aniofinal'+`exo_count'-1 & anio <= `aniomax', ///
-				yaxis(1) mlabel(var_pibPob) mlabpos(12) mlabcolor(black) ///
+				yaxis(1) mlabel(var_pibPob) mlabpos(12) mlabcolor("111 111 111") ///
 				mstyle(p3) lstyle(p3) lpattern(dot) msize(small) mlabsize(medsmall)) ///
 			, ///
 			title("`graphtitle'") ///
@@ -718,7 +718,7 @@ quietly {
 		* Títulos y fuentes *
 		if "$textbook" == "" {
 			local graphtitle "{bf:Índice nacional de precios al consumidor}"
-			local graphfuente "Fuente: Elaborado por el CIEP, con información de INEGI/SHCP."
+			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/SHCP."
 		}
 		else {
 			local graphtitle ""
@@ -765,26 +765,26 @@ quietly {
 		twoway ///
 			(bar deflatorpp anio if (anio < `aniofinal' & anio >= `geodef') ///
 				| (anio == `aniofinal' & trimestre == 4), ///
-				yaxis(2) mlabel(deflatorpp) mlabposition(12) mlabcolor(black) ///
+				yaxis(2) mlabel(deflatorpp) mlabposition(12) mlabcolor("111 111 111") ///
 				mlabgap(0pt) barwidth(.75) mlabsize(medium)) ///
 			(bar deflatorpp anio if anio <= `aniofinal'+`exo_def'-1 & anio > `aniofinal' ///
 				| (anio == `aniofinal' & trimestre < 4), ///
-				yaxis(2) mlabel(deflatorpp) mlabposition(12) mlabcolor(black) ///
+				yaxis(2) mlabel(deflatorpp) mlabposition(12) mlabcolor("111 111 111") ///
 				mlabgap(0pt) barwidth(.75) mlabsize(medium)) ///
 			(bar deflatorpp anio if anio > `aniofinal'+`exo_def'-1 & anio <= `aniomax', ///
-				yaxis(2) mlabel(deflatorpp) mlabposition(12) mlabcolor(black) ///
+				yaxis(2) mlabel(deflatorpp) mlabposition(12) mlabcolor("111 111 111") ///
 				mlabgap(0pt) barwidth(.75) mlabsize(medium)) ///
 			/// Connected
 			(connected var_inflY anio if (anio < `aniofinal' & anio >= `geodef') ///
 				| (anio == `aniofinal' & trimestre == 12), ///
-				yaxis(1) mlabel(var_inflY) mlabpos(12) mlabcolor(black) ///
+				yaxis(1) mlabel(var_inflY) mlabpos(12) mlabcolor("111 111 111") ///
 				mstyle(p1) lstyle(p1) lpattern(dot) msize(small) mlabsize(medium)) ///
 			(connected var_inflY anio if anio <= `aniofinal'+`exo_def'-1 & anio >= `aniofinal' ///
 				| (anio == `aniofinal' & trimestre < 4), ///
-				yaxis(1) mlabel(var_inflY) mlabpos(12) mlabcolor(black) ///
+				yaxis(1) mlabel(var_inflY) mlabpos(12) mlabcolor("111 111 111") ///
 				mstyle(p2) lstyle(p2) lpattern(dot) msize(small) mlabsize(medium)) ///
 			(connected var_inflY anio if anio > `aniofinal'+`exo_def'-1 & anio <= `aniomax', ///
-				yaxis(1) mlabel(var_inflY) mlabpos(12) mlabcolor(black) ///
+				yaxis(1) mlabel(var_inflY) mlabpos(12) mlabcolor("111 111 111") ///
 				mstyle(p3) lstyle(p3) lpattern(dot) msize(small) mlabsize(medium)) ///
 			, ///
 			title("`graphtitle'") ///
