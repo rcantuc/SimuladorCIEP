@@ -38,8 +38,8 @@ global paqueteEconomico "pre-CGPE 2026"						// POLÍTICA FISCAL
 
 ** Opciones
 //global nographs "nographs"							// SUPRIMIR GRAFICAS
-global update "update"								// UPDATE BASES DE DATOS
-global output "output"								// ARCHIVO DE SALIDA (WEB)
+//global update "update"								// UPDATE BASES DE DATOS
+//global output "output"								// ARCHIVO DE SALIDA (WEB)
 //global textbook "textbook"							// SCALAR TO LATEX
 
 ** Output (web)
@@ -128,7 +128,7 @@ forvalues anio = `=anioPE'(-2)`=anioPE' {
 
 **/
 **# 4. SISTEMA FISCAL
-/***
+***
 
 ** 4.1 Ley de Ingresos de la Federación
 if "$nographs" != "nographs" {
@@ -139,7 +139,6 @@ noisily LIF if divLIF != 10, anio(`=anioPE') by(divSIM) $update 		///
 	desde(`=`=anioPE'-12') 							/// Año de inicio para el PROMEDIO
 	min(0) 									/// Mínimo 0% del PIB (no negativos)
 	rows(1)									//  Número de filas en la leyenda
-
 rename divSIM divCODE
 decode divCODE, g(divSIM) 
 collapse (sum) recaudacion, by(anio divSIM) fast
@@ -295,7 +294,7 @@ noisily TasasEfectivas, anio(`=anioPE')
 
 **/
 ** 4.2 Presupuesto de Egresos de la Federación **
-/**
+**
 noisily PEF, anio(`=anioPE') by(divSIM) ///$update 				///
 	title("Gasto presupuestario") 						/// Cambiar título
 	desde(`=`=anioPE'-12') 							/// Año de inicio PROMEDIO
@@ -355,7 +354,7 @@ noisily GastoPC, aniope(`=anioPE') aniovp(`=aniovp')
 
 **/
 ** 4.3 Saldo Histórico de Requerimientos Financieros del Sector Público **
-/**
+**
 
 * SHRFSP: Total, Interno, Externo (como % del PIB)
 *                2025  2026  2027  2028  2029  2030
@@ -411,7 +410,7 @@ noisily SHRFSP, anio(`=anioPE') ultanio(2008) $nographs $update $textbook
 
 **/
 **# 6. CICLO DE VIDA
-/***
+***
 use `"`c(sysdir_site)'/users/$id/ingresos.dta"', clear
 merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/users/$id/gastos.dta", nogen
 capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/users/$id/isr_mod.dta", ///
@@ -450,24 +449,25 @@ capture drop AportacionesNetas
 g AportacionesNetas = ImpuestosAportaciones - Transferencias
 label var AportacionesNetas "Ciclo de vida de las aportaciones netas"
 
-foreach k of varlist /*AlTrabajo AlCapital AlConsumo ImpuestosAportaciones*/ ISRAS_Sim ///
-	/*Pensiones Pensión_AM IngBasico Educación Salud Transferencias AportacionesNetas*/ {
-	noisily Perfiles `k' [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
+foreach k of varlist AlTrabajo AlCapital AlConsumo ImpuestosAportaciones ///
+	ISRPM_Sim ISRAS_Sim ISRPF_Sim CUOTAS_Sim IVA_Sim IEPSNP_Sim IEPSP_Sim ISAN_Sim IMPORT_Sim ///
+	Pensiones Pensión_AM IngBasico Educación Salud Transferencias AportacionesNetas {
+	*noisily Perfiles `k' [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
 	noisily Simulador `k' [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot //boot(10)
 }
-exit
+
+
+** 6.4 (*) Cuentas generacionales
+noisily CuentasGeneracionales AportacionesNetas, anio(`=anioPE') discount(7)
 
 
 
 **/
 **# 7. DEUDA + FISCAL GAP + REDISTRIBUCIÓN
-/***
+***
 
 ** 7.1 Brecha fiscal
 noisily FiscalGap, anio(`=anioPE') end(2030) aniomin(2015) $nographs desde(`=anioPE-15') discount(10) //update
-
-** 6.4 (*) Cuentas generacionales
-//noisily CuentasGeneracionales AportacionesNetas, anio(`=anioPE') discount(7)
 
 
 ** 7.2 Sankey del sistema fiscal

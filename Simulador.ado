@@ -7,7 +7,7 @@ quietly {
 		BANDwidth(int 5) ///
 		MACro(string) ///
 		POBlacion(string) FOLIO(string) ///
-		NOKernel POBGraph ANIOVP(int -1) ANIOPE(int -1) TITLE(string)]
+		NOKernel POBGraph ANIOVP(int -1) ANIOPE(int -1) TITLE(string) TEXTBOOK]
 
 
 
