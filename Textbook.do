@@ -87,10 +87,10 @@ noisily SCN, anio(`=aniovp') $update $textbook
 noisily Poblacion, anioi(`=anioPE') aniofinal(`=`=anioPE'+25') $textbook
 
 ** 2.1 Encuesta Nacional de Ingresos y Gastos de los Hogares (Usos)
-noisily run "`c(sysdir_site)'/Expenditure.do" `=anioenigh'
+//noisily run "`c(sysdir_site)'/Expenditure.do" `=anioenigh'
 
 ** 2.2 Encuesta Nacional de Ingresos y Gastos de los Hogares (Recursos)
-noisily run `"`c(sysdir_site)'/Households.do"' `=anioenigh'
+//noisily run `"`c(sysdir_site)'/Households.do"' `=anioenigh'
 
 
 
