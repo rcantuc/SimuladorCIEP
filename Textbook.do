@@ -24,6 +24,10 @@ else if "`c(username)'" == "servidorciep" {					// Servidor CIEP
 	sysdir set SITE "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
 	global export "/home/servidorciep/CIEP Dropbox/TextbookCIEP/images"
 }
+else if "`c(username)'" == "gabrielsantisteban" {					// Servidor CIEP
+	sysdir set SITE "/Users/gabrielsantisteban/Documents/CIEP/Nuevo Simulador/SimuladorCIEP/"
+	global export "/Users/gabrielsantisteban/Dropbox/TextbookCIEP/images"
+}
 else if "`c(console)'" != "" {							// Servidor Web
 	sysdir set SITE "/SIM/OUT/7/"
 }
