@@ -2540,18 +2540,18 @@ egen ImpuestosConsumoTOT = rsum(IVA IEPS ISAN Importaciones)
 egen double Yl = rsum(ing_subor ing_mixtoL)
 label var Yl "Ingreso laboral"
 
-noisily Perfiles Yl [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Ingreso laboral")
+*noisily Perfiles Yl [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Ingreso laboral")
 noisily Simulador Yl [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Ingreso laboral") reboot
 
 egen double Yk = rsum(ing_capital ing_mixtoK ing_estim_alqu gasto_anualDepreciacion)
 label var Yk "Ingreso de capital"
-noisily Perfiles Yk [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Ingreso de capital")
+*noisily Perfiles Yk [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Ingreso de capital")
 noisily Simulador Yk [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Ingreso de capital") reboot
 
-noisily Perfiles ingbrutotot [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Ingreso bruto total")
+*noisily Perfiles ingbrutotot [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Ingreso bruto total")
 noisily Simulador ingbrutotot [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Ingreso bruto total") reboot
 
-noisily Perfiles gastoanualTOT [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Gasto anual total")
+*noisily Perfiles gastoanualTOT [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Gasto anual total")
 noisily Simulador gastoanualTOT [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Gasto anual total") reboot
 
 *noisily Perfiles ing_suborROW [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Ingreso laboral ROW")
@@ -2565,7 +2565,7 @@ noisily Simulador gastoanualTOT [fw=factor], aniope(`=anioenigh') aniovp(`=anioe
 g Ahorro = ingbrutotot + ing_capitalROW + ing_suborROW + ing_remesas ///
 	- gastoanualTOT //- gasto_anualComprasN - gasto_anualGobierno
 label var Ahorro "Ahorro"
-noisily Perfiles Ahorro [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Ahorro")
+*noisily Perfiles Ahorro [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Ahorro")
 noisily Simulador Ahorro [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Ahorro") reboot
 
 if "$nographs" == "" {
@@ -2593,7 +2593,7 @@ if "$nographs" == "" {
 }
 
 label var cuotasTPF "Cuotas a la Seguridad Social"
-noisily Perfiles cuotasTPF [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Cuotas a la Seguridad Social")
+*noisily Perfiles cuotasTPF [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Cuotas a la Seguridad Social")
 noisily Simulador cuotasTPF [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Cuotas a la Seguridad Social") reboot
 
 g PIB = Yl + Yk

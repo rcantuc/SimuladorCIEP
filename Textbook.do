@@ -8,7 +8,7 @@
 
 
 ***
-**# 0. SET UP
+**# 0. SET UP: VERSIÓN 7
 ***
 clear all
 macro drop _all
@@ -21,10 +21,6 @@ if "`c(username)'" == "ricardo" {						// iMac Ricardo
 	global export "/Users/ricardo/CIEP Dropbox/TextbookCIEP/images"
 }
 else if "`c(username)'" == "servidorciep" {					// Servidor CIEP
-	sysdir set SITE "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
-	global export "/home/servidorciep/CIEP Dropbox/TextbookCIEP/images"
-}
-else if "`c(username)'" == "gabriel" {
 	sysdir set SITE "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
 	global export "/home/servidorciep/CIEP Dropbox/TextbookCIEP/images"
 }
@@ -41,16 +37,16 @@ global id = "ciepmx"								// ID USUARIO
 global paqueteEconomico "CGPE 2025"						// POLÍTICA FISCAL
 
 ** Opciones
-//global nographs "nographs"							// SUPRIMIR GRAFICAS
+global nographs "nographs"							// SUPRIMIR GRAFICAS
 //global update "update"							// UPDATE BASES DE DATOS
 global textbook "textbook"							// SCALAR TO LATEX
 
 
 
 ***
-**# 1. CAPTÍULO 2
+**# 1. CAPTÍULO 2: SISTEMA
 ***
-/** 1.1 Producto Interno Bruto (inputs opcionales)
+** 1.1 Producto Interno Bruto (inputs opcionales)
 global pib2025 = 1.5								// CRECIMIENTO ANUAL PIB
 global pib2026 = 2.1								// <-- AGREGAR O QUITAR AÑOS
 global pib2027 = 2.5
@@ -74,7 +70,7 @@ global inf2028 = 3.0
 global inf2029 = 3.0
 global inf2030 = 3.0
 
-noisily PIBDeflactor, aniovp(`=aniovp') geodef(1993) geopib(1993) aniomax(2030) $update $textbook
+noisily PIBDeflactor, aniovp(`=aniovp') geodef(2000) geopib(2000) aniomax(2030) $update $textbook
 
 ** 1.4 Sistema de Cuentas Nacionales (sin inputs)
 noisily SCN, anio(`=aniovp') $update $textbook
@@ -82,7 +78,7 @@ noisily SCN, anio(`=aniovp') $update $textbook
 
 
 **
-**# 2. CAPTÍULO 3
+**# 2. CAPTÍULO 3: AGENTES
 ***
 noisily Poblacion, anioi(`=anioPE') aniofinal(`=`=anioPE'+25') $textbook
 
@@ -97,7 +93,7 @@ noisily run `"`c(sysdir_site)'/Households.do"' `=anioenigh'
 
 
 **/
-**# 3. CAPÍTULO 12: Redistribución
+**# 3. CAPÍTULO 12: REDISTRIBUCIÓN
 ***
 use `"`c(sysdir_site)'/users/$id/ingresos.dta"', clear
 merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/users/$id/gastos.dta", nogen
@@ -109,7 +105,7 @@ save `"`c(sysdir_site)'/users/$id/aportaciones.dta"', replace
 capture drop ImpuestosAportaciones
 
 
-** 6.1 (+) Impuestos y aportaciones
+** 6.1 (+) Impuestos y aportaciones **
 egen AlTrabajo = rsum(ISRPF_Sim ISRAS_Sim CUOTAS_Sim)
 label var AlTrabajo "Impuestos al trabajo"
 
@@ -119,11 +115,11 @@ label var AlCapital "Impuestos al capital"
 egen AlConsumo = rsum(IVA_Sim IEPSNP_Sim IEPSP_Sim ISAN_Sim IMPORT_Sim)
 label var AlConsumo "Impuestos al consumo"
 
-egen ImpuestosAportaciones = rsum(ISRPM_Sim ISRAS_Sim ISRPF_Sim CUOTAS_Sim IVA_Sim IEPSNP_Sim IEPSP_Sim ISAN_Sim IMPORT_Sim) // FMP_Sim OTROSK_Sim
-label var ImpuestosAportaciones "Impuestos y contribuciones"
+egen ImpuestosAportaciones = rsum(AlTrabajo AlCapital AlConsumo)
+label var ImpuestosAportaciones "Impuestos y aportaciones"
 
 
-** 6.2 (-) Gastos
+** 6.2 (-) Gastos **
 label var Pensión_AM "Pensión para adultos mayores"
 label var Educación "Educación"
 
@@ -138,21 +134,29 @@ g AportacionesNetas = ImpuestosAportaciones - Transferencias
 label var AportacionesNetas "Ciclo de vida de las aportaciones netas"
 
 
-** 6.4 Perfiles **
+** 6.4 Perfiles y cuentas generacionales **
 foreach k of varlist AlTrabajo AlCapital AlConsumo ///
 	Pensiones Pensión_AM IngBasico Educación Salud ///
 	AportacionesNetas {
+
 	rename `k' `=subinstr("`k'","_","",.)'
-	noisily Simulador `=subinstr("`k'","_","",.)' [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot //boot(10)
+	*noisily Simulador `=subinstr("`k'","_","",.)' [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot //boot(25)
 }
 
 
-** 6.4 (*) Cuentas generacionales
-*noisily CuentasGeneracionales AportacionesNetas, anio(`=anioPE') discount(7)
-
-
+** 6.5 (*) Cuentas generacionales **
+noisily Simulador AportacionesNetas [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot //boot(25)
+noisily CuentasGeneracionales AportacionesNetas, anio(`=anioPE') discount(7)
 
 if "$textbook" == "textbook" {
-	noisily scalarlatex, log(aportaciones) alt(Apor)
+	noisily scalarlatex, log(perfiles) alt(perf)
 }
 
+
+
+
+
+*** TOUCHDOWN!!! ***
+timer off 1
+timer list 1
+noisily di _newline(2) in g _dup(20) ":" "  " in y "TOUCH-DOWN!!!  " round(`=r(t1)/r(nt1)',.1) in g " segs  " _dup(20) ":"

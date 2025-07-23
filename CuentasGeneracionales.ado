@@ -41,7 +41,7 @@ quietly {
 	mkmat poblacion* if sexo == 2, matrix(MUJ)
 	mata: MUJ = st_matrix("MUJ")
 
-	mata: lambda = st_numscalar("llambda")
+	mata: lambda = `=scalar(llambda)'
 
 
 	
@@ -137,11 +137,18 @@ quietly {
 	**************
 	*** OUTPUT ***
 	**************
-	if "$output" == "output" {
+	if "$textbook" == "textbook" {
+		local i = 1
 		forvalues k = 0(5)`=`edadmax'-1' {
 				local GAH = "`GAH' `=string(GA[`k'+1,1],"%20.0f")',"
 				local GAM = "`GAM' `=string(GA[`k'+1,2],"%20.0f")',"
 				local GAT = "`GAT' `=string(GA[`k'+1,3],"%20.0f")',"
+
+				local letter = char(64 + `i')
+				scalar GAH`letter' = string(GA[`k'+1,1],"%20.0fc")
+				scalar GAM`letter' = string(GA[`k'+1,2],"%20.0fc")
+				scalar GAT`letter' = string(GA[`k'+1,3],"%20.0fc")
+				local i = `i' + 1
 		}
 
 		local lenghtGAH = strlen("`GAH'")
@@ -150,8 +157,6 @@ quietly {
 		noisily di in w _col(3) "GAH: [`=substr("`GAH'",1,`=`lenghtGAH'-1')']"
 		noisily di in w _col(3) "GAM: [`=substr("`GAM'",1,`=`lenghtGAM'-1')']"
 		noisily di in w _col(3) "GAT: [`=substr("`GAT'",1,`=`lenghtGAT'-1')']"
-		
-		scalar GAH`k' = string(`GAH',"%20.0fc")
 	}
 
 
