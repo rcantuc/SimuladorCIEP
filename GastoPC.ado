@@ -52,26 +52,26 @@ quietly {
 	***                                   ***
 	*****************************************
 	// Asigna el año de ENIGH correspondiente al año de referencia
-	if `aniope' >= 2024 scalar anioenigh = 2024
-	else if `aniope' >= 2022 & `aniope' < 2024 scalar anioenigh = 2022
-	else if `aniope' >= 2020 & `aniope' < 2022 scalar anioenigh = 2020
-	else if `aniope' >= 2018 & `aniope' < 2020 scalar anioenigh = 2018
-	else if `aniope' >= 2016 & `aniope' < 2018 scalar anioenigh = 2016
-	else if `aniope' >= 2013 & `aniope' < 2016 scalar anioenigh = 2014
-	else if `aniope' >= 2012 & `aniope' < 2013 scalar anioenigh = 2012
-	else if `aniope' >= 2010 & `aniope' < 2012 scalar anioenigh = 2010
-	else if `aniope' >= 2008 & `aniope' < 2010 scalar anioenigh = 2008
+	if `aniope' >= 2024 local anioenigh = 2024
+	else if `aniope' >= 2022 & `aniope' < 2024 local anioenigh = 2022
+	else if `aniope' >= 2020 & `aniope' < 2022 local anioenigh = 2020
+	else if `aniope' >= 2018 & `aniope' < 2020 local anioenigh = 2018
+	else if `aniope' >= 2016 & `aniope' < 2018 local anioenigh = 2016
+	else if `aniope' >= 2013 & `aniope' < 2016 local anioenigh = 2014
+	else if `aniope' >= 2012 & `aniope' < 2013 local anioenigh = 2012
+	else if `aniope' >= 2010 & `aniope' < 2012 local anioenigh = 2010
+	else if `aniope' >= 2008 & `aniope' < 2010 local anioenigh = 2008
 
 	// Carga la base de datos de ENIGH correspondiente al año de referencia
 	capture use "`c(sysdir_site)'/04_master/perfiles`aniope'.dta", clear	
 	if _rc != 0 {
 		noisily di _newline in g "Creando base: " in y "/04_master/perfiles`aniope'.dta" ///
-			in g " con " in y "ENIGH " scalar(anioenigh)
+			in g " con " in y "ENIGH " `anioenigh'
 		noisily run `"`c(sysdir_site)'/PerfilesSim.do"' `aniope'
 	}
 
 	// Combina la base de datos de ENIGH con la base de datos de hogares
-	merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/04_master/`=anioenigh'/households.dta", ///
+	merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/04_master/`anioenigh'/households.dta", ///
 		nogen keepus(asis_esc tipoesc nivel inst_* ing_jubila jubilado ing_PAM formal) update
 	capture drop __*
 
@@ -133,7 +133,7 @@ quietly {
 		
 			** 3.1 Alumnos y beneficiarios **
 			capture drop alum_*
-			if `=anioenigh' >= 2024 {
+			if `anioenigh' >= 2024 {
 				g alum_basica = asis_esc == "1" & tipoesc == "1" & (nivel >= "01" & nivel <= "07") & edad <= 15
 				g alum_medsup = asis_esc == "1" & tipoesc == "1" & (nivel >= "08" & nivel <= "09")
 				g alum_superi = asis_esc == "1" & tipoesc == "1" & (nivel >= "10" & nivel <= "12")
@@ -141,7 +141,7 @@ quietly {
 				g alum_adulto = asis_esc == "1" & tipoesc == "1" & (nivel >= "01" & nivel <= "07") & edad > 15
 			}
 
-			if `=anioenigh' < 2024 & `=anioenigh' >= 2016 {
+			if `anioenigh' < 2024 & `anioenigh' >= 2016 {
 				g alum_basica = asis_esc == "1" & tipoesc == "1" & (nivel >= "01" & nivel <= "07") & edad <= 15
 				g alum_medsup = asis_esc == "1" & tipoesc == "1" & (nivel >= "08" & nivel <= "09")
 				g alum_superi = asis_esc == "1" & tipoesc == "1" & (nivel >= "10" & nivel <= "12")
@@ -149,7 +149,7 @@ quietly {
 				g alum_adulto = asis_esc == "1" & tipoesc == "1" & (nivel >= "01" & nivel <= "07") & edad > 15
 			}
 
-			if `=anioenigh' < 2016 {
+			if `anioenigh' < 2016 {
 				g alum_basica = asis_esc == "1" & tipoesc == "1" & (nivel >= "1" & nivel <= "3") & edad <= 15
 				g alum_medsup = asis_esc == "1" & tipoesc == "1" & (nivel >= "4" & nivel <= "6")
 				g alum_superi = asis_esc == "1" & tipoesc == "1" & (nivel >= "7" & nivel <= "8")
