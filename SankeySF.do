@@ -98,10 +98,10 @@ tabstat factor, stat(sum) f(%20.0fc) save
 tempname pobtot
 matrix `pobtot' = r(StatTotal)
 
-replace Pension = Pension + Pensión_AM
+replace Pensiones = Pensiones + Pensión_AM
 
 collapse (sum) gas_Educación=Educación gas_Salud=Salud /*gas__Salarios_de_gobierno=Salarios*/ ///
-	gas___Pensiones=Pension gas____Transferencias=IngBasico ///
+	gas___Pensiones=Pensiones gas____Transferencias=IngBasico ///
 	gas____Inversión=Otras_inversiones [fw=factor], by(`1')
 
 levelsof `1', local(`1')

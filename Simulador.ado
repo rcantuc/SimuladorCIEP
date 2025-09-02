@@ -23,7 +23,7 @@ quietly {
 	if `aniope' == -1 {
 		local aniope = `aniovp'
 	}
-	local base = "ENIGH 2022"
+	local base = "ENIGH `=anioenigh'"
 
 
 	** 0.1 Macros: PIB **
@@ -109,7 +109,7 @@ quietly {
 
 
 		** Per c{c a'}pita **
-		postfile PC double(estimacion contribuyentes poblacion montopc edad39) ///
+		postfile PC double(estimacion contribuyentes poblacion montopc edad40) ///
 			using `"`c(sysdir_site)'/users/$id/bootstraps/`bootstrap'/`varlist'PC"', replace
 
 
@@ -162,20 +162,20 @@ quietly {
 				matrix `REC' = J(1,1,0)
 			}
 
-			** Recaudacion, Edad 39, Hombres **
-			tempname REC39
+			** Recaudacion, Edad 40, Hombres **
+			tempname REC40
 			if "`if'" != "" {
-				local if39 = "`if' & edad == 39 & sexo == 1"
+				local if40 = "`if' & edad == 40 & sexo == 1"
 			}
 			else {
-				local if39 = "if edad == 39 & sexo == 1"
+				local if40 = "if edad == 40 & sexo == 1"
 			}
-			capture tabstat `varlist' [`weight' = `exp'*`boot'] `if39', stat(sum) f(%20.2fc) save
+			capture tabstat `varlist' [`weight' = `exp'*`boot'] `if40', stat(sum) f(%20.2fc) save
 			if _rc == 0 {
-				matrix `REC39' = r(StatTotal)
+				matrix `REC40' = r(StatTotal)
 			}
 			else {
-				matrix `REC39' = J(1,1,0)
+				matrix `REC40' = J(1,1,0)
 			}
 
 			** Contribuyentes **
@@ -198,14 +198,14 @@ quietly {
 				matrix `POB' = J(1,1,0)
 			}
 
-			** Poblacion, Edad 39, Hombres **
-			tempname POB39
-			capture tabstat `cont' [`weight' = `exp'*`boot'] `if39', stat(sum) f(%12.0fc) save
+			** Poblacion, Edad 40, Hombres **
+			tempname POB40
+			capture tabstat `cont' [`weight' = `exp'*`boot'] `if40', stat(sum) f(%12.0fc) save
 			if _rc == 0 {
-				matrix `POB39' = r(StatTotal)
+				matrix `POB40' = r(StatTotal)
 			}
 			else {
-				matrix `POB39' = J(1,1,0)
+				matrix `POB40' = J(1,1,0)
 			}
 
 			** Monto per capita promedio **
@@ -217,12 +217,12 @@ quietly {
 			}
 
 			** Mata: PC **
-			local edad39 = `REC39'[1,1]/`POB39'[1,1]
-			if `edad39' == . | `edad39' == 0 {
+			local edad40 = `REC40'[1,1]/`POB40'[1,1]
+			if `edad40' == . | `edad40' == 0 {
 				local pc = `montopc'
 			}
 			else {
-				local pc = `edad39'
+				local pc = `edad40'
 			}
 			mata: PC = `pc'
 
@@ -232,10 +232,10 @@ quietly {
 			`noisily' di in g "  Poblaci{c o'}n:" _column(40) in y %25.0fc `POB'[1,1]
 			`noisily' di in g "  Contribuyentes/Beneficiarios:" _column(40) in y %25.0fc `FOR'[1,1]
 			`noisily' di in g "  Per c{c a'}pita (contr./benef.):" _column(40) in y %25.0fc `montopc'
-			`noisily' di in g "  Edad 39 (poblaci{c o'}n):" _column(40) in y %25.0fc `edad39'
+			`noisily' di in g "  Edad 40 (poblaci{c o'}n):" _column(40) in y %25.0fc `edad40'
 
 			* Guardar resultados POST *
-			post PC (`REC'[1,1]) (`FOR'[1,1]) (`POB'[1,1]) (`montopc') (`REC39'[1,1]/`POB39'[1,1])
+			post PC (`REC'[1,1]) (`FOR'[1,1]) (`POB'[1,1]) (`montopc') (`REC40'[1,1]/`POB40'[1,1])
 
 
 			*** 1.3.2. Perfiles ***
@@ -311,19 +311,19 @@ quietly {
 	noisily di in g "  Per c{c a'}pita:" _column(40) in y %20.0fc r(mean) ///
 		in g "  I.C. (95%): " in y "+/-" %7.2fc (r(ub)/r(mean)-1)*100 "%"
 
-	ci means edad39
-	noisily di in g "  Edad 39:" _column(40) in y %20.0fc r(mean) ///
+	ci means edad40
+	noisily di in g "  Edad 40:" _column(40) in y %20.0fc r(mean) ///
 		in g "  I.C. (95%): " in y "+/-" %7.2fc (r(ub)/r(mean)-1)*100 "%"
-	local edad39_boot = r(mean)
+	local edad40_boot = r(mean)
 
 	* Y label *
-	if `edad39_boot' == . | `edad39_boot' == 0 {
+	if `edad40_boot' == . | `edad40_boot' == 0 {
 		local ylabelpc = "Promedio"
 		*local ylabelpc = "Average"
 	}
 	else {
-		local ylabelpc = "hombre de 39 a{c n~}os"
-		*local ylabelpc = "39-year-old male"
+		local ylabelpc = "hombre de 40 a{c n~}os"
+		*local ylabelpc = "40-year-old male"
 	}
 
 
@@ -557,7 +557,7 @@ quietly {
 	save `"`c(sysdir_site)'/users/$id/bootstraps/`bootstrap'/`varlist'REC"', replace
 
 	
-	ProyGraph `varlist' `aniope' `nographs'
+	//ProyGraph `varlist' "`title'" `aniope' `nographs'
 
 	******************************
 	*** 7. Gráficas combinadas ***
@@ -742,6 +742,7 @@ program graphpiramide
 	*** 2. GRAFICAS ***
 	if "$nographs" != "nographs" & "`nographs'" != "nographs" {
 		* Edades *
+		*local relabel `"1 "Edad 0""'
 		forvalues k=0(1)120 {
 			if `k' != 0 & `k' != 5 & `k' != 10 & `k' != 15 & `k' != 20 & `k' != 25 & `k' != 30 ///
 				& `k' != 35 & `k' != 40 & `k' != 45 & `k' != 50 & `k' != 55 ///
@@ -773,11 +774,11 @@ program graphpiramide
 		local agehlab1 =`AGEH1'[1,1]/(`AGEH'[1,1]+`AGEH1'[1,1]+`AGEH2'[1,1])*100
 		local agehlab2 =`AGEH2'[1,1]/(`AGEH'[1,1]+`AGEH1'[1,1]+`AGEH2'[1,1])*100
 		graph hbar (sum) `POR' if sexo == 1, ///
-			over(`over') over(edad, axis(noextend noline outergap(0)) descending ///
+			over(`over') over(edad, axis(noextend noline outergap(0) off) descending ///
 			relabel(`relabel') ///
-			label(labsize(vsmall) labcolor(white))) ///
+			label(labsize(vsmall) labcolor(white) labgap(0pt))) ///
 			stack asyvars xalternate ///
-			yscale(noextend noline /*range(-7(1)7)*/) ///
+			yscale(noextend noline range(2.5)) ///
 			blabel(none, format(%5.1fc)) ///
 			t2title({bf:Hombres}: `men'%, size(medsmall)) ///
 			ytitle(%, size(medsmall)) ///
@@ -785,8 +786,10 @@ program graphpiramide
 			///ytitle(% GDP) ///
 			ylabel(`=round(`PORmaxval'[2,1],.1)'(1)`=`PORmaxval'[1,1]', format(%7.0fc) noticks) ///
 			name(H`varlist', replace) ///
-			legend(cols(4) pos(6) bmargin(zero) label(1 `"{bf:Edades 0-18}: `=string(`agehlab',"%7.0fc")' %"') ///
-			label(2 `"{bf:19-65}: `=string(`agehlab1',"%7.0fc")' %"') label(3 `"{bf:65+}: `=string(`agehlab2',"%7.0fc")' %"') ///
+			legend(cols(4) pos(6) bmargin(zero) ///
+			label(1 `"{bf:Edades 0-18}: `=string(`agehlab',"%7.0fc")' %"') ///
+			label(2 `"{bf:19-65}: `=string(`agehlab1',"%7.0fc")' %"') ///
+			label(3 `"{bf:65+}: `=string(`agehlab2',"%7.0fc")' %"') ///
 			label(4 "") label(5 "") label(6 "") label(7 "") label(8 "") label(9 "") ///
 			label(10 "") symxsize(0)) ///
 			yreverse ///
@@ -796,9 +799,9 @@ program graphpiramide
 		graph hbar (sum) `POR' if sexo == 2, ///
 			over(`over') over(edad, axis(noextend noline outergap(0)) descending ///
 			relabel(`relabel') ///
-			label(labsize(vsmall) labcolor("111 111 111"))) ///
+			label(labsize(medlarge) labcolor("111 111 111"))) ///
 			stack asyvars ///
-			yscale(noextend noline /*range(1.8)*/) /// |
+			yscale(noextend noline range(2.5)) ///
 			blabel(none, format(%5.1fc)) ///
 			t2title({bf:Mujeres}: `women'%, size(medsmall)) ///
 			ytitle(%, size(medsmall)) ///
@@ -811,11 +814,12 @@ program graphpiramide
 			graphregion(margin(zero))
 
 		graph combine H`varlist' M`varlist', ///
-			name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)', replace) ycommon xcommon ///
+			name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)', replace) ///
+			ycommon xcommon ///
 			title("{bf:`title'}") subtitle("$pais") ///
-			///title("`title' {bf:profile}") ///
 			caption("{bf:Fuente}: Elaborado por el CIEP, con la `base'.") ///
 			note(`"{bf:Nota}: Los porcentajes representan la concentraci{c o'}n de cada grupo."') ///
+			///title("`title' {bf:profile}") ///
 			///caption("{bf:Source}: Prepared by CIEP, using data from `base'.") ///
 			///note(`"{bf:Note}: Percentages in parentheses represent each group's share of the total account."')
 	
@@ -913,7 +917,7 @@ end
 
 program define ProyGraph
 
-	args varlist aniope nographs
+	args varlist title aniope nographs
 
 	PIBDeflactor, nographs nooutput aniomax(2070)
 	tempfile PIB
@@ -924,7 +928,6 @@ program define ProyGraph
 
 	use `"`c(sysdir_site)'/users/$id/bootstraps/1/`varlist'REC.dta"', clear
 	merge 1:1 (anio) using `PIB', nogen
-	local title = modulo[1]
 	
 	replace estimacion = estimacion*lambda/1000000000000
 	*replace estimacion = estimacion*lambda/pibYR*100
@@ -962,11 +965,10 @@ program define ProyGraph
 				(connected estimacion anio if anio == `aniohoy', mlabel(estimacion) mlabposition(12) mlabcolor("111 111 111") mlabsize(medlarge)) ///
 				(connected estimacion anio if anio == `aniomax', mlabel(estimacion) mlabposition(12) mlabcolor("111 111 111") mlabsize(medlarge)) ///
 				if anio > 2020, ///
-				///ytitle("billones `currency' `aniovp'") ///
+				ytitle("billones `currency' `=aniovp'") ///
 				///ytitle("% PIB") ///
-				///subtitle("Proyección demográfica, billones MXN `aniovp'") ///
+				///subtitle("{bf:Proyección} del perfil demográfico") ///
 				///subtitle("Demographic projection (% GDP)") ///
-				ytitle("") ///
 				///yscale(range(0)) /*ylabel(0(1)4)*/ ///
 				ylabel(#5, format(%5.2fc) labsize(small)) ///
 				yscale(range(0)) ///
@@ -978,9 +980,9 @@ program define ProyGraph
 				///yline(0, lpattern(solid) lcolor(black)) ///
 				///text(`=`estimacionmax'*.05' `aniomax' "Este perfil, junto con" "las proyecciones demográficas," "obtiene un {bf:máximo en `aniomax'}.", size(medsmall) place(11) justification(right)) ///
 				///text(`=`estimacionmax'*.05' `aniomax' "This age profile, along with" "CONAPO's demographic projections," "reaches a maximum in {bf:`aniomax'}.", size(medsmall) place(11) justification(right)) ///
-				text(`=`estimacionvp'*0.33' `aniohoy' "De `aniohoy' a `aniomax',"  `"cambiaría {bf:`=string((`MAX'[1,1]/`estimacionvp'-1)*100,"%5.2f")'%}."', size(medsmall) place(11) justification(left)) ///
+				b1title(`"De `aniohoy' a `aniomax', el cambio sería de {bf:`=string((`MAX'[1,1]/`estimacionvp'-1)*100,"%5.2f")'%} real."', size(large)) ///
 				///text(`=`estimacionvp'*0.25' `aniohoy' "From `aniohoy' to 2070,"  "its demand will" `"change in {bf:`=string((`LAST'[1,1]/`estimacionvp'-1)*100,"%5.2f")'%}."', size(medsmall) place(1) justification(left)) ///
-				///title("{bf:Proyecci{c o'}n} de `title'") subtitle("$pais") ///
+				title("{bf:`title'}") subtitle("$pais") ///
 				///caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.") ///
 				name(`varlist'Proj, replace)
 		}

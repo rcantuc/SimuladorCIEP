@@ -428,7 +428,7 @@ quietly {
 			ylabel(, format(%5.0fc)) ///
 			ytitle("") ///
 			yscale(range(0)) xscale(range(1993)) ///
-			note("{bf:{c U'}ltimo dato reportado}: `aniomax'.") ///
+			note("{bf:{c U'}ltimo dato reportado}: `latest'.") ///
 			name(gdp_generacion, replace)
 
 		capture mkdir "`c(sysdir_site)'/05_graphs/"
@@ -485,8 +485,8 @@ quietly {
 
 	* R.6 Consumo *
 	noisily di _newline in y "{bf: D. Utilizaci{c o'}n del ingreso disp" in g ///
-		_col(44) in g "MXN" ///
-		_col(66) in g "% PIB" "}"
+		_col(44) in g %20s "MXN" ///
+		_col(66) in g %7s "% PIB" "}" 
 	noisily di in g "  (+) Consumo de hogares e ISFLSH" ///
 		_col(44) in y %20.0fc ConHog[`obs'] ///
 		_col(66) in y %7.3fc ConHog[`obs']/PIB[`obs']*100
@@ -571,7 +571,7 @@ quietly {
 			ylabel(, format(%5.0fc)) ///
 			ytitle("") ///
 			yscale(range(0)) xscale(range(1993)) ///
-			note("{bf:{c U'}ltimo dato reportado}: `aniomax'.") ///
+			note("{bf:{c U'}ltimo dato reportado}: `latest'.") ///
 			name(gdp_utilizacion, replace)
 
 		graph save gdp_utilizacion "`c(sysdir_site)'/05_graphs/gdp_utilizacion", replace
@@ -586,8 +586,8 @@ quietly {
 	* Cuenta de consumo *
 	* --- TABLA DE CONSUMO Y PORCENTAJE SOBRE EL PIB ---
 	noisily di _newline in y "{bf: E. Consumo de hogares e ISFLSH" in g ///
-		_col(44) in g "MXN" ///
-		_col(66) in g "% PIB" "}"
+		_col(44) in g %20s "MXN" ///
+		_col(66) in g %7s "% PIB" "}" 
 	* ------------------- CATEGORÍA: ALIMENTOS Y BEBIDAS -------------------
 	* Composite: Alimentos y bebidas
 	noisily di in g "  (+) Alimentos y bebidas" ///
@@ -633,6 +633,10 @@ quietly {
 		_col(44) in y %20.0fc AlojT[`obs'] ///
 		_col(66) in y %7.3fc AlojT[`obs']/PIB[`obs']*100
 	* ------------------- CATEGORÍA: AGUA Y ELECTRICIDAD -------------------
+	* Alquier efectivo
+	noisily di in g "      Alquiler efectivo" ///
+		_col(44) in y %20.0fc Alqu[`obs']+CRep[`obs'] ///
+		_col(66) in y %7.3fc (Alqu[`obs']+CRep[`obs'])/PIB[`obs']*100
 	* Agua
 	noisily di in g "      Agua" ///
 		_col(44) in y %20.0fc Agua[`obs'] ///
@@ -714,9 +718,9 @@ quietly {
 	scalar Calz      = string(Calz[`obs']/1000000,"%12.1fc")
 	scalar CalzPIB   = string(Calz[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	* Renombrado: Alquiler (se guarda en AlojT)
-	scalar AlojT     = string(AlojT[`obs']/1000000,"%12.1fc")
-	scalar AlojTPIB  = string(AlojT[`obs']/PIB[`obs']*100,"%7.3fc")
+	* Renombrado: Alquiler (se guarda en Alqu)
+	scalar Alqu     = string((Alqu[`obs']+CRep[`obs'])/1000000,"%12.1fc")
+	scalar AlquPIB  = string((Alqu[`obs']+CRep[`obs'])/PIB[`obs']*100,"%7.3fc")
 
 	scalar Agua      = string(Agua[`obs']/1000000,"%12.1fc")
 	scalar AguaPIB   = string(Agua[`obs']/PIB[`obs']*100,"%7.3fc")

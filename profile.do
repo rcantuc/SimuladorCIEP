@@ -16,6 +16,7 @@ set charset latin1, permanently
 *** 2 PARÁMETROS GENERALES ***
 ***                        ***
 ******************************
+cd `"`c(sysdir_site)'"'
 
 ** 2.1 Entidades Federativas **
 global entidadesL `" "Aguascalientes" "Baja California" "Baja California Sur" "Campeche" "Coahuila" "Colima" "Chiapas" "Chihuahua" "Ciudad de México" "Durango" "Guanajuato" "Guerrero" "Hidalgo" "Jalisco" "Estado de México" "Michoacán" "Morelos" "Nayarit" "Nuevo León" "Oaxaca" "Puebla" "Querétaro" "Quintana Roo" "San Luis Potosí" "Sinaloa" "Sonora" "Tabasco" "Tamaulipas" "Tlaxcala" "Veracruz" "Yucatán" "Zacatecas" "Nacional" "'
@@ -25,9 +26,11 @@ global id = "`c(username)'"
 ** 2.2 Valor presente **
 local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 scalar aniovp = substr(`"`=trim("`fecha'")'"',1,4)
+scalar aniovp = 2026
 
 ** 2.3 Año paquete económico **
-scalar anioPE = 2025
+global paqueteEconomico "CGPE 2026"						// POLÍTICA FISCAL
+scalar anioPE = 2026
 
 
 
@@ -38,12 +41,12 @@ scalar anioPE = 2025
 ********************
 noisily di in w _newline(50) "{bf:Centro de Investigaci{c o'}n Econ{c o'}mica y Presupuestaria, A.C.}"
 noisily di _newline(2) in g `"{bf:{stata `"projmanager "`c(sysdir_site)'/simulador.stpr""': Simulador Fiscal CIEP}}"'
-noisily di in g " Información Económica:  " _col(30) in y "`=anioPE'" ///
+noisily di in g " Información Económica:  " _col(30) in y "$paqueteEconomico" ///
 	_newline in g " Año de Valor Presente:  " _col(30) in y "`=aniovp'" ///
 	_newline in g " User: " _col(30) in y "$id"
 
 noisily di _newline `" {stata "Poblacion":Poblacion} [if entidad == "{it:Nombre}"] [, ANIOinicial(int) ANIOFINal(int) NOGraphs]"'
-noisily di `" {stata "PIBDeflactor, geopib(2010) geodef(2010)":PIBDeflactor} [, ANIOvp(int) DIScount(real) NOGraphs]"'
+noisily di `" {stata "PIBDeflactor, geopib(2010) geodef(2010) aniomax(2031)":PIBDeflactor} [, ANIOvp(int) ANIOMAX(int) NOGraphs]"'
 noisily di `" {stata "SCN":SCN} [, ANIO(int) NOGraphs]"'
 noisily di `" {stata "LIF":LIF} [, ANIO(int) NOGraphs MINimum(real) BY(varname) ROWS(int) COLS(int) BASE]"'
 noisily di `" {stata "PEF":PEF} [if] [, ANIO(int) NOGraphs MINimum(real) BY(varname) ROWS(int) COLS(int) BASE]"'
