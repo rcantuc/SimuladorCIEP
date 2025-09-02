@@ -63,9 +63,9 @@ quietly {
 	else if `aniope' >= 2008 & `aniope' < 2010 scalar anioenigh = 2008
 
 	// Carga la base de datos de ENIGH correspondiente al año de referencia
-	capture use "`c(sysdir_site)'/04_master/perfiles`=anioPE'.dta", clear	
+	capture use "`c(sysdir_site)'/04_master/perfiles`aniope'.dta", clear	
 	if _rc != 0 {
-		noisily di _newline in g "Creando base: " in y "/04_master/perfiles`=anioPE'.dta" ///
+		noisily di _newline in g "Creando base: " in y "/04_master/perfiles`aniope'.dta" ///
 			in g " con " in y "ENIGH " scalar(anioenigh)
 		noisily run `"`c(sysdir_site)'/PerfilesSim.do"' `aniope'
 	}
