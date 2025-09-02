@@ -25,7 +25,7 @@ quietly {
 
 	// 0.5 Define los inputs que este script acepta
 	// 0.5.1 ANIOvp y ANIOPE son enteros opcionales que por defecto son aniovp y aniope
-	syntax anything [, ANIOvp(int `aniovp') ANIOPE(int `aniope') EXCEL]
+	syntax [anything] [, ANIOVP(int `aniovp') ANIOpe(int `aniope') EXCEL]
 	tokenize `anything'
 	local word_count = wordcount("`anything'")
 	
@@ -63,7 +63,7 @@ quietly {
 	else if `aniope' >= 2008 & `aniope' < 2010 scalar anioenigh = 2008
 
 	// Carga la base de datos de ENIGH correspondiente al año de referencia
-	use "`c(sysdir_site)'/04_master/perfiles`=anioPE'.dta", clear	
+	capture use "`c(sysdir_site)'/04_master/perfiles`=anioPE'.dta", clear	
 	if _rc != 0 {
 		noisily di _newline in g "Creando base: " in y "/04_master/perfiles`=anioPE'.dta" ///
 			in g " con " in y "ENIGH " scalar(anioenigh)
@@ -129,7 +129,7 @@ quietly {
 	***             ***
 	*******************
 	forvalues tok = 1(1)`word_count' {
-		if "``tok''" == "educacion" | "`anything'" == "" {
+		if "``tok''" == "educacion" | "`1'" == "" {
 		
 			** 3.1 Alumnos y beneficiarios **
 			capture drop alum_*
@@ -137,7 +137,7 @@ quietly {
 				g alum_basica = asis_esc == "1" & tipoesc == "1" & (nivel >= "01" & nivel <= "07") & edad <= 15
 				g alum_medsup = asis_esc == "1" & tipoesc == "1" & (nivel >= "08" & nivel <= "09")
 				g alum_superi = asis_esc == "1" & tipoesc == "1" & (nivel >= "10" & nivel <= "12")
-				g alum_posgra = asis_esc == "1" & tipoesc == "1" & nivel == "13"
+				g alum_posgra = asis_esc == "1" & tipoesc == "1" & (nivel >= "13" & nivel <= "14")
 				g alum_adulto = asis_esc == "1" & tipoesc == "1" & (nivel >= "01" & nivel <= "07") & edad > 15
 			}
 
@@ -461,7 +461,7 @@ quietly {
 		***         ***
 		***************
 
-		if "``tok''" == "salud" | "`anything'" == "all" {
+		if "``tok''" == "salud" | "`1'" == "all" {
 
 			** 4.1 Asegurados y beneficiarios **
 			capture drop benef_*
@@ -774,7 +774,7 @@ quietly {
 		**# 5 Pensiones ***
 		*******************
 
-		if "``tok''" == "pensiones" | "`anything'" == "all" {
+		if "``tok''" == "pensiones" | "`1'" == "all" {
 
 			** 5.1 Pensionados **
 			capture drop pens_*
@@ -974,7 +974,7 @@ quietly {
 		*****************
 		**# 6 Energía ***
 		*****************
-		if "``tok''" == "energia" | "`anything'" == "all" {
+		if "``tok''" == "energia" | "`1'" == "all" {
 			capture drop pob
 			g pob = 1
 			tabstat pob [fw=factor], stat(sum) f(%20.0fc) save
@@ -1105,7 +1105,7 @@ quietly {
 		****************************/
 		**# 7 Resto de los gastos ***
 		*****************************
-		if "``tok''" == "resto" | "`anything'" == "all" {
+		if "``tok''" == "resto" | "`1'" == "all" {
 
 			** 7.1 Gasto federalizado **
 			capture confirm scalar gasfeder
@@ -1239,7 +1239,7 @@ quietly {
 		****************************/
 		**# 8 Ingreso b{c a'}sico ***
 		*****************************
-		if "``tok''" == "transferencias" | "`anything'" == "all" {
+		if "``tok''" == "transferencias" | "`1'" == "all" {
 
 			** 8.1 Gastos en cuidados **
 			capture confirm scalar gascuidados
