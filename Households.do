@@ -5,8 +5,8 @@
 if "`1'" == "" {
 	clear all
 	local 1 = 2022
-	scalar aniovp = 2022
-	scalar anioenigh = 2022
+	local aniovp = 2022
+	local anioenigh = 2022
 	local enigh = "ENIGH"
 	local betamin = 1			// ENIGH: 2.436
 	local altimir = "yes"
@@ -22,6 +22,8 @@ if `1' >= 2024 {
 	local SubsidioEmpleo = 43131000000 	// Presupuesto de gastos fiscales (2020)
 	local udis = 7.380711			// Promedio de valor de UDIS de enero a diciembre 2020
 	local smdf = 96.22			// Unidad de medida y actualizacion (UMA)
+	local aniovp = `1'
+	local anioenigh = 2024
 }
 if `1' >= 2022 & `1' < 2024 {
 	local enigh = "ENIGH"
@@ -30,6 +32,8 @@ if `1' >= 2022 & `1' < 2024 {
 	local SubsidioEmpleo = 43131000000 	// Presupuesto de gastos fiscales (2020)
 	local udis = 7.380711			// Promedio de valor de UDIS de enero a diciembre 2020
 	local smdf = 96.22			// Unidad de medida y actualizacion (UMA)
+	local aniovp = `1'
+	local anioenigh = 2022
 }
 if `1' >= 2020 & `1' < 2022 {
 	local enigh = "ENIGH"
@@ -38,6 +42,8 @@ if `1' >= 2020 & `1' < 2022 {
 	local SubsidioEmpleo = 49997000000 	// Presupuesto de gastos fiscales (2020)
 	local udis = 6.496487003		// Promedio de valor de UDIS de enero a diciembre 2020
 	local smdf = 86.88			// Unidad de medida y actualizacion (UMA)
+	local aniovp = `1'
+	local anioenigh = 2020
 }
 if `1' >= 2018 & `1' < 2020 {
 	local enigh = "ENIGH"
@@ -46,6 +52,8 @@ if `1' >= 2018 & `1' < 2020 {
 	local SubsidioEmpleo = 50979000000 	// Presupuesto de gastos fiscales (2018)
 	local udis = 6.054085			// Promedio de valor de UDIS de enero a diciembre 2018
 	local smdf = 80.60			// Unidad de medida y actualizacion (UMA)
+	local aniovp = `1'
+	local anioenigh = 2018
 }
 if `1' >= 2016 & `1' < 2018 {
 	local enigh = "ENIGH"
@@ -54,17 +62,19 @@ if `1' >= 2016 & `1' < 2018 {
 	local SubsidioEmpleo = 43707000000	// Presupuesto de gastos fiscales (2016)
 	local udis = 5.4490872131		// Promedio de valor de UDIS de enero a diciembre 2016
 	local smdf = 73.04			// Unidad de medida y actualizacion (UMA)
+	local aniovp = `1'
+	local anioenigh = 2016
 }
 
 
 ** 0.1 Log-file
 capture log close households
-log using "`c(sysdir_site)'/03_temp/`=anioenigh'/households.smcl", replace name(households)
-local dir_enigh "`c(sysdir_site)'/01_raw/`enigh'/`=anioenigh'"
+log using "`c(sysdir_site)'/03_temp/`anioenigh'/households.smcl", replace name(households)
+local dir_enigh "`c(sysdir_site)'/01_raw/`enigh'/`anioenigh'"
 
 
 ** 0.2 Bienvenida
-noisily di _newline(2) in g _dup(20) "." "{bf:   Economía generacional: " in y "INGRESOS - `enigh' `=anioenigh'  }" in g _dup(20) "." _newline(2)
+noisily di _newline(2) in g _dup(20) "." "{bf:   Economía generacional: " in y "INGRESOS - `enigh' `anioenigh'  }" in g _dup(20) "." _newline(2)
 
 
 
@@ -74,14 +84,14 @@ noisily di _newline(2) in g _dup(20) "." "{bf:   Economía generacional: " in y 
 
 
 ** 1.1 Producto Interno Bruto
-PIBDeflactor, aniovp(`=anioenigh') nog
+PIBDeflactor, aniovp(`anioenigh') nog
 forvalues k=1(1)`=_N' {
-	if anio[`k'] == `=anioenigh' {
+	if anio[`k'] == `anioenigh' {
 		local deflatorpp = deflatorpp[`k']
 	}
 }
 
-SCN, anio(`=anioenigh') nographs
+SCN, anio(`anioenigh') nographs
 local PIBSCN = real(subinstr(scalar(PIB),",","",.))*1000000
 local RemSal = real(subinstr(scalar(RemSal),",","",.))*1000000
 local SSEmpleadores = real(subinstr(scalar(SSEmpleadores),",","",.))*1000000
@@ -125,26 +135,26 @@ local SNAAlojamiento = real(scalar(AlojT))*1000000
 
 
 ** 1.3 Macros: PEF
-PEF, anio(`=anioenigh') min(0) nographs
+PEF, anio(`anioenigh') min(0) nographs
 local Cuotas_ISSSTE = -r(Cuotas_ISSSTE)
 
-capture PEF if transf_gf == 1, anio(`=anioenigh') by(desc_pp) min(0) nographs
+capture PEF if transf_gf == 1, anio(`anioenigh') by(desc_pp) min(0) nographs
 local SSFederacion = r(cuota_social_seguro_de_salud_iss)+r(seguro_de_enfermedad_y_maternida)+r(seguro_de_invalidez_y_vida)+r(seguro_de_salud_para_la_familia)
 
-PEF if divCIEP == "Educación", anio(`=anioenigh') by(desc_subfuncion) min(0) nographs
+PEF if divCIEP == "Educación", anio(`anioenigh') by(desc_subfuncion) min(0) nographs
 local Basica = r(educacion_basica)
 local Media = r(educacion_media_superio)
 local Superior = r(educacion_superior)
 local Adultos = r(educacion_para_adultos)
 
-PEF, anio(`=anioenigh') by(divCIEP) min(0) nographs
+PEF, anio(`anioenigh') by(divCIEP) min(0) nographs
 local PenBienestar = r(Pension_AM)
 local OtrosGas = r(Otros)
 local Pensiones = r(Pensiones)
 local Educacion = r(Educación)
 local Salud = r(Salud)
 
-PEF if divCIEP == "Otras inversiones", anio(`=anioenigh') by(entidad) min(0) nographs
+PEF if divCIEP == "Otras inversiones", anio(`anioenigh') by(entidad) min(0) nographs
 local Aguas = r(Aguascalientes)
 local BajaN = r(Baja_California)
 local BajaS = r(Baja_California_Sur)
@@ -181,7 +191,7 @@ local InfraT = r(StatTotal)
 
 
 ** 1.4 Macros: LIF
-LIF, anio(`=anioenigh') nographs min(0) by(divCIEP)
+LIF, anio(`anioenigh') nographs min(0) by(divCIEP)
 local ISRSalarios = scalar(ISR_Asa_)
 local ISRFisicas = scalar(ISR_PF)
 local ISRMorales = scalar(ISR_PM)
@@ -204,7 +214,7 @@ local IEPS = scalar(IEPS)
 
 
 ** 1.5 Macros: ISR
-if `=anioenigh' < 2018 {
+if `anioenigh' < 2018 {
 	*			Inferior	Superior	CF		Tasa		
 	matrix	ISR	=	(0.00,	5952.84,	0.0,		1.92	\	///	1
 				5952.85,	50524.92,	114.24,		6.40	\ 	///	2
@@ -232,7 +242,7 @@ if `=anioenigh' < 2018 {
 				85366.81,	88587.96,	2611.32	\	///	11
 				88587.97, 	1E+14,		0)		//	12
 }
-if `=anioenigh' >= 2018 & `=anioenigh' <= 2020 {
+if `anioenigh' >= 2018 & `anioenigh' <= 2020 {
 	*			Inferior	Superior	CF		Tasa		
 	matrix	ISR	=	(0.00,	6942.20,	0.0,		1.92	\	///	1
 				6942.21,	58922.16,	114.24,		6.40	\ 	///	2
@@ -259,7 +269,7 @@ if `=anioenigh' >= 2018 & `=anioenigh' <= 2020 {
 				7113.90*12+.01,	7382.33*12,	217.61*12	\	///	10
 				7382.33*12+.01,	1E+14,		0)				//	11
 }
-if `=anioenigh' >= 2022 {
+if `anioenigh' >= 2022 {
 	*			Inferior	Superior	CF		Tasa		
 	matrix ISR 	= 	(0.01,		7735.00,	0.0,		1.92	\	/// 1
 				7735.01,	65651.07,	148.51,		6.40	\	/// 2
@@ -289,9 +299,9 @@ if `=anioenigh' >= 2022 {
 
 
 ** 1.6 Micro 1. ENIGH. Gastos
-capture confirm file "`c(sysdir_site)'/04_master/`=anioenigh'/deducciones.dta"
+capture confirm file "`c(sysdir_site)'/04_master/`anioenigh'/deducciones.dta"
 if _rc != 0 {
-	noisily run "`c(sysdir_site)'/Expenditure.do" `=anioenigh'
+	noisily run "`c(sysdir_site)'/Expenditure.do" `anioenigh'
 }
 
 
@@ -502,7 +512,7 @@ g ing_benef = ing_anual if clave == "P037" | clave == "P038" | (clave >= "P042" 
 g ing_heren = ing_anual if clave == "P057"
 
 * ag. PAM *
-if `=anioenigh' >= 2020 {
+if `anioenigh' >= 2020 {
 	g ing_PAM = ing_anual if clave == "P104" | clave == "P105"
 }
 else {
@@ -1249,7 +1259,7 @@ merge m:1 (folioviv foliohog) using "`dir_enigh'/concentrado.dta", ///
 	nogen update replace keepusing(tot_integ ubica_geo factor)
 merge m:1 (folioviv) using "`dir_enigh'/vivienda.dta", ///
 	nogen keepusing(tenencia renta)
-merge m:1 (folioviv foliohog numren) using "`c(sysdir_site)'/04_master/`=anioenigh'/deducciones.dta", ///
+merge m:1 (folioviv foliohog numren) using "`c(sysdir_site)'/04_master/`anioenigh'/deducciones.dta", ///
 	nogen keepus(deduc_*)
 tostring inst_* inscr_* pres_*, replace
 destring hablaind, replace
@@ -2106,7 +2116,7 @@ noisily di _newline _col(04) in g "{bf:3.2. Probit de formalidad: " in y "Salari
 noisily xi: probit formal_probit deduc_isr ///
 	edad edad2 i.sexo aniosesc aniosesc2 rural i.sinco2 i.scian2 i.emp_clasif i.emp_tam ///
 	if ing_t4_cap1 > 0 & edad >= 16 [pw=factor]
-estimates save "`c(sysdir_site)'/04_master/`=anioenigh'/formal_salarios", replace
+estimates save "`c(sysdir_site)'/04_master/`anioenigh'/formal_salarios", replace
 predict double prob_salarios if e(sample)
 
 * Seleccionar individuo formales (general) *
@@ -2123,7 +2133,7 @@ noisily xi: probit formal_probit deduc_isr ///
 	edad edad2 i.sexo aniosesc aniosesc2 rural i.sinco2 i.scian2 i.emp_clasif i.emp_tam ///
 	if ing_t4_cap2 + ing_t4_cap3 + ing_t4_cap4 + ing_t4_cap5 ///
 	+ ing_t4_cap6 + ing_t4_cap7 + ing_t4_cap8 + ing_t4_cap9 > 0 & edad >= 16 [pw=factor]
-estimates save "`c(sysdir_site)'/04_master/`=anioenigh'/formal_fisicas", replace
+estimates save "`c(sysdir_site)'/04_master/`anioenigh'/formal_fisicas", replace
 predict double prob_formal if e(sample)
 
 * Seleccionar individuo formales (general) *
@@ -2138,7 +2148,7 @@ noisily di _newline _col(04) in g "{bf:3.4. Probit de formalidad: " in y "Person
 noisily xi: probit formal_probit deduc_isr ///
 	edad edad2 i.sexo aniosesc aniosesc2 rural i.sinco2 i.scian2 i.emp_clasif i.emp_tam ///
 	if ing_bruto_tpm > 0 & edad >= 16 [pw=factor]
-estimates save "`c(sysdir_site)'/04_master/`=anioenigh'/formal_morales", replace
+estimates save "`c(sysdir_site)'/04_master/`anioenigh'/formal_morales", replace
 predict double prob_moral if e(sample)
 
 * Seleccionar individuo formales (general) *
@@ -2470,9 +2480,9 @@ scalar giniPIBF = string(`gini_ingbrutotot',"%5.3f")
 *********************************/
 **# 12. Variables descriptivas ***
 **********************************
-merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/04_master/`=anioenigh'/expenditures.dta", nogen keepus(gas_pc_*)
-merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/04_master/`=anioenigh'/consumption_categ_iva.dta", nogen keepus(IVA)
-merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/04_master/`=anioenigh'/consumption_categ_ieps.dta", nogen keepus(IEPS)
+merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/04_master/`anioenigh'/expenditures.dta", nogen keepus(gas_pc_*)
+merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/04_master/`anioenigh'/consumption_categ_iva.dta", nogen keepus(IVA)
+merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/04_master/`anioenigh'/consumption_categ_ieps.dta", nogen keepus(IEPS)
 
 tempvar tot_integ
 egen `tot_integ' = count(edad), by(folioviv foliohog)
@@ -2540,37 +2550,37 @@ egen ImpuestosConsumoTOT = rsum(IVA IEPS ISAN Importaciones)
 egen double Yl = rsum(ing_subor ing_mixtoL)
 label var Yl "Ingreso laboral"
 
-*noisily Perfiles Yl [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Ingreso laboral")
-*noisily Simulador Yl [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Ingreso laboral") reboot
+*noisily Perfiles Yl [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ingreso laboral")
+*noisily Simulador Yl [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ingreso laboral") reboot
 
 egen double Yk = rsum(ing_capital ing_mixtoK ing_estim_alqu gasto_anualDepreciacion)
 label var Yk "Ingreso de capital"
-*noisily Perfiles Yk [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Ingreso de capital")
-*noisily Simulador Yk [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Ingreso de capital") reboot
+*noisily Perfiles Yk [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ingreso de capital")
+*noisily Simulador Yk [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ingreso de capital") reboot
 
-*noisily Perfiles ingbrutotot [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Ingreso bruto total")
-*noisily Simulador ingbrutotot [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Ingreso bruto total") reboot
+*noisily Perfiles ingbrutotot [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ingreso bruto total")
+*noisily Simulador ingbrutotot [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ingreso bruto total") reboot
 
-*noisily Perfiles gastoanualTOT [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Gasto anual total")
-*noisily Simulador gastoanualTOT [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Gasto anual total") reboot
+*noisily Perfiles gastoanualTOT [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Gasto anual total")
+*noisily Simulador gastoanualTOT [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Gasto anual total") reboot
 
-*noisily Perfiles ing_suborROW [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Ingreso laboral ROW")
-*noisily Simulador ing_suborROW [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Ingreso laboral ROW") reboot
+*noisily Perfiles ing_suborROW [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ingreso laboral ROW")
+*noisily Simulador ing_suborROW [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ingreso laboral ROW") reboot
 
 *g Ciclodevida = Yl + Yk + ing_remesas + ing_suborROW - gastoanualTOT
 *label var Ciclodevida "Ciclo de vida"
-*noisily Perfiles Ciclodevida [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Ciclo de vida")
-*noisily Simulador Ciclodevida [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Ciclo de vida") reboot
+*noisily Perfiles Ciclodevida [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ciclo de vida")
+*noisily Simulador Ciclodevida [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ciclo de vida") reboot
 
 g Ahorro = ingbrutotot + ing_capitalROW + ing_suborROW + ing_remesas ///
 	- gastoanualTOT //- gasto_anualComprasN - gasto_anualGobierno
 label var Ahorro "Ahorro"
-*noisily Perfiles Ahorro [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Ahorro")
-*noisily Simulador Ahorro [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Ahorro") reboot
+*noisily Perfiles Ahorro [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ahorro")
+*noisily Simulador Ahorro [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ahorro") reboot
 
 label var cuotasTPF "Cuotas a la Seguridad Social"
-*noisily Perfiles cuotasTPF [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Cuotas a la Seguridad Social")
-*noisily Simulador cuotasTPF [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Cuotas a la Seguridad Social") reboot
+*noisily Perfiles cuotasTPF [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Cuotas a la Seguridad Social")
+*noisily Simulador cuotasTPF [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Cuotas a la Seguridad Social") reboot
 
 g PIB = Yl + Yk
 
@@ -2582,10 +2592,10 @@ capture drop __*
 format ing_* exen_* renta %10.0fc
 compress
 if `c(version)' > 13.1 {
-	saveold "`c(sysdir_site)'/04_master/`=anioenigh'/households.dta", replace version(13)
+	saveold "`c(sysdir_site)'/04_master/`anioenigh'/households.dta", replace version(13)
 }
 else {
-	save "`c(sysdir_site)'/04_master/`=anioenigh'/households.dta", replace
+	save "`c(sysdir_site)'/04_master/`anioenigh'/households.dta", replace
 }
 
 
@@ -2596,7 +2606,7 @@ else {
 ** Inputs: Archivo "`c(sysdir_site)'/04_master/`anio'/households.dta".
 ** Outputs: Archivos .json en carpeta "/var/www/html/SankeyNTA/.
 //foreach k in decil sexo grupoedad escol rural {
-//	run "`c(sysdir_site)'/Sankey.do" `k' `=anioenigh' SankeyNTA
+//	run "`c(sysdir_site)'/Sankey.do" `k' `anioenigh' SankeyNTA
 //}
 
 

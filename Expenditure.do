@@ -8,10 +8,10 @@ capture mkdir "`c(sysdir_site)'/01_raw/ENIGH/"
 cd "`c(sysdir_site)'/01_raw/ENIGH/"
 if "`1'" == "" {
 	clear all
-	scalar anioenigh = 2024
-	scalar aniovp = 2024
+	local anioenigh = 2024
+	local aniovp = 2024
 	local claveiva = "*2018"
-	capture confirm file "`c(sysdir_site)'/01_raw/ENIGH/`=anioenigh'/gastospersona.dta"
+	capture confirm file "`c(sysdir_site)'/01_raw/ENIGH/`anioenigh'/gastospersona.dta"
 	if _rc != 0 {
 		copy "https://www.dropbox.com/scl/fi/cs096yrwwbtoo37n9ahfd/2024.zip?rlkey=zsrmmy70wdbwiq5j13yyoy3os&dl=1" "`c(sysdir_site)'/01_raw/ENIGH/2024.zip", replace
 		unzipfile "`c(sysdir_site)'/01_raw/ENIGH/2024.zip", replace
@@ -23,7 +23,7 @@ else {
 	if `1' >= 2024 {
 		scalar anioenigh = 2024
 		local claveiva = "*2018"
-		capture confirm file "`c(sysdir_site)'/01_raw/ENIGH/`=anioenigh'/gastospersona.dta"
+		capture confirm file "`c(sysdir_site)'/01_raw/ENIGH/`anioenigh'/gastospersona.dta"
 		if _rc != 0 {
 			copy "https://www.dropbox.com/scl/fi/cs096yrwwbtoo37n9ahfd/2024.zip?rlkey=zsrmmy70wdbwiq5j13yyoy3os&dl=1" "`c(sysdir_site)'/01_raw/ENIGH/2024.zip", replace
 			unzipfile "`c(sysdir_site)'/01_raw/ENIGH/2024.zip", replace
@@ -33,7 +33,7 @@ else {
 	if `1' >= 2022 & `1' < 2024 {
 		scalar anioenigh = 2022
 		local claveiva = "*2018"
-		capture confirm file "`c(sysdir_site)'/01_raw/ENIGH/`=anioenigh'/gastospersona.dta"
+		capture confirm file "`c(sysdir_site)'/01_raw/ENIGH/`anioenigh'/gastospersona.dta"
 		if _rc != 0 {
 			copy "https://www.dropbox.com/scl/fi/otyib7mwgegyuihryg8f7/2022.zip?rlkey=qyvaz279bhv59wilsvossm2ss&dl=1" "`c(sysdir_site)'/01_raw/ENIGH/2022.zip", replace
 			unzipfile "`c(sysdir_site)'/01_raw/ENIGH/2022.zip", replace
@@ -43,7 +43,7 @@ else {
 	if `1' >= 2020 & `1' < 2022 {
 		scalar anioenigh = 2020
 		local claveiva = "*2018"
-		capture confirm file "`c(sysdir_site)'/01_raw/ENIGH/`=anioenigh'/gastospersona.dta"
+		capture confirm file "`c(sysdir_site)'/01_raw/ENIGH/`anioenigh'/gastospersona.dta"
 		if _rc != 0 {
 			copy "https://www.dropbox.com/scl/fi/v4vi20or8r7le5x915brz/2020.zip?rlkey=mpwh3qqtqase8wf23vcc4vb7d&dl=1" "`c(sysdir_site)'/01_raw/ENIGH/2020.zip", replace
 			unzipfile "`c(sysdir_site)'/01_raw/ENIGH/2020.zip", replace
@@ -53,7 +53,7 @@ else {
 	if `1' >= 2018 & `1' < 2020 {
 		scalar anioenigh = 2018
 		local claveiva = "*2018"
-		capture confirm file "`c(sysdir_site)'/01_raw/ENIGH/`=anioenigh'/gastospersona.dta"
+		capture confirm file "`c(sysdir_site)'/01_raw/ENIGH/`anioenigh'/gastospersona.dta"
 		if _rc != 0 {
 			copy "https://www.dropbox.com/scl/fi/jaqgl4xnfhuc057g5ckzv/2018.zip?rlkey=m1p37d6bcvyzh022hdxn6ld9m&dl=1" "`c(sysdir_site)'/01_raw/ENIGH/2018.zip", replace
 			unzipfile "`c(sysdir_site)'/01_raw/ENIGH/2018.zip", replace
@@ -63,7 +63,7 @@ else {
 	if `1' >= 2016 & `1' < 2018 {
 		scalar anioenigh = 2016
 		local claveiva = "*2014"
-		capture confirm file "`c(sysdir_site)'/01_raw/ENIGH/`=anioenigh'/gastospersona.dta"
+		capture confirm file "`c(sysdir_site)'/01_raw/ENIGH/`anioenigh'/gastospersona.dta"
 		if _rc != 0 {
 			copy "https://www.dropbox.com/scl/fi/lmyw9nc30ub0qacxrm47z/2016.zip?rlkey=l7mqjf6wkwvkccpw2kisd47ti&dl=1" "`c(sysdir_site)'/01_raw/ENIGH/2016.zip", replace
 			unzipfile "`c(sysdir_site)'/01_raw/ENIGH/2016.zip", replace
@@ -73,7 +73,7 @@ else {
 	if `1' >= 2014 & `1' < 2016 {
 		scalar anioenigh = 2014
 		local claveiva = "*2014"
-		capture confirm file "`c(sysdir_site)'/01_raw/ENIGH/`=anioenigh'/gastospersona.dta"
+		capture confirm file "`c(sysdir_site)'/01_raw/ENIGH/`anioenigh'/gastospersona.dta"
 		if _rc != 0 {
 			copy "https://www.dropbox.com/scl/fi/o3x89s7nlab8fvis42nxk/2014.zip?rlkey=23ewaqdslog7pfhee5933hl3c&dl=1" "`c(sysdir_site)'/01_raw/ENIGH/2014.zip", replace
 			unzipfile "`c(sysdir_site)'/01_raw/ENIGH/2014.zip", replace
@@ -85,12 +85,12 @@ else {
 
 ** 0.1 Directorios y log files **
 capture log close expenditures
-capture mkdir "`c(sysdir_site)'/03_temp/`=anioenigh'"
-log using "`c(sysdir_site)'/03_temp/`=anioenigh'/expenditures.smcl", replace name(expenditures)
+capture mkdir "`c(sysdir_site)'/03_temp/`anioenigh'"
+log using "`c(sysdir_site)'/03_temp/`anioenigh'/expenditures.smcl", replace name(expenditures)
 
 
 ** 0.2 Texto introductorio **
-noisily di _newline(2) in g _dup(20) "." "{bf:   Economía generacional: " in y "GASTOS - ENIGH `=anioenigh'  }" in g _dup(20) "."
+noisily di _newline(2) in g _dup(20) "." "{bf:   Economía generacional: " in y "GASTOS - ENIGH `anioenigh'  }" in g _dup(20) "."
 
 
 
@@ -103,13 +103,13 @@ noisily di _newline(2) in g _dup(20) "." "{bf:   Economía generacional: " in y 
 **********************************
 
 ** 1.1 Sistema de Cuentas Nacionales **
-SCN, anio(`=anioenigh') nographs
+SCN, anio(`anioenigh') nographs
 local PIB = real(subinstr(scalar(PIB),",","",.))*1000000
 local ConHog = real(subinstr(scalar(ConHog),",","",.))*1000000
 
 
 ** 1.2 SHCP: Datos Abiertos **
-LIF, anio(`=anioenigh') by(divCIEP) nographs min(0)
+LIF, anio(`anioenigh') by(divCIEP) nographs min(0)
 local IVA = scalar(IVA)
 local IEPSNP = scalar(IEPS__no_petrolero_) //+scalar(IEPS__petrolero_)
 local IepsTabaco = scalar(Tabacos)
@@ -126,8 +126,8 @@ local IepsCervezas = scalar(Alcohol)*.6
 
 
 ** 1.3 Población **
-Poblacion, anio(`=anioenigh') nographs
-tabstat poblacion if anio == `=anioenigh', stat(sum) save f(%15.0fc)
+Poblacion, anio(`anioenigh') nographs
+tabstat poblacion if anio == `anioenigh', stat(sum) save f(%15.0fc)
 local pobtotNacional = r(StatTotal)[1,1]
 
 
@@ -138,16 +138,16 @@ local pobtotNacional = r(StatTotal)[1,1]
 ***  2. DATOS MICROECONóMICOS  ***
 ***                            ***
 **********************************
-capture confirm file "`c(sysdir_site)'/03_temp/`=anioenigh'/preconsumption.dta"
+capture confirm file "`c(sysdir_site)'/03_temp/`anioenigh'/preconsumption.dta"
 if _rc != 0 {
-	capture confirm file "`c(sysdir_site)'/03_temp/`=anioenigh'/pre_iva.dta"
+	capture confirm file "`c(sysdir_site)'/03_temp/`anioenigh'/pre_iva.dta"
 	if _rc != 0 {
 
 		** 2.1. Base de datos de gastos de los hogares **
-		use "`c(sysdir_site)'/01_raw/ENIGH/`=anioenigh'/gastospersona.dta", clear
-		append using "`c(sysdir_site)'/01_raw/ENIGH/`=anioenigh'/gastohogar.dta"
-		append using "`c(sysdir_site)'/01_raw/ENIGH/`=anioenigh'/gastotarjetas.dta"
-		append using "`c(sysdir_site)'/01_raw/ENIGH/`=anioenigh'/erogaciones.dta"
+		use "`c(sysdir_site)'/01_raw/ENIGH/`anioenigh'/gastospersona.dta", clear
+		append using "`c(sysdir_site)'/01_raw/ENIGH/`anioenigh'/gastohogar.dta"
+		append using "`c(sysdir_site)'/01_raw/ENIGH/`anioenigh'/gastotarjetas.dta"
+		append using "`c(sysdir_site)'/01_raw/ENIGH/`anioenigh'/erogaciones.dta"
 
 		** 2.2. Gasto anual **
 		egen gasto_anual = rsum(gas_nm_tri gasto_tri)
@@ -155,9 +155,9 @@ if _rc != 0 {
 		format gasto_anual %10.2fc
 
 		** 2.3. Variables sociodemograficas **
-		merge m:1 (folioviv foliohog) using "`c(sysdir_site)'/01_raw/ENIGH/`=anioenigh'/concentrado.dta", ///
+		merge m:1 (folioviv foliohog) using "`c(sysdir_site)'/01_raw/ENIGH/`anioenigh'/concentrado.dta", ///
 			nogen keepus(factor)
-		merge m:1 (folioviv) using "`c(sysdir_site)'/01_raw/ENIGH/`=anioenigh'/vivienda.dta", ///
+		merge m:1 (folioviv) using "`c(sysdir_site)'/01_raw/ENIGH/`anioenigh'/vivienda.dta", ///
 			nogen keepus(ubica_geo tenencia)
 		capture rename factor_hog factor
 
@@ -166,7 +166,7 @@ if _rc != 0 {
 		replace colegia = 0 if colegia == .
 		capture replace material = 0 if material == .
 
-		if `=anioenigh' < 2024 {
+		if `anioenigh' < 2024 {
 			** 2.5. Deducciones personales del ISR **
 			g deduc_gasto_colegi1 = gasto_anual if clave == "E001"
 			g deduc_gasto_colegi2 = gasto_anual if clave == "E002"
@@ -182,7 +182,7 @@ if _rc != 0 {
 			g deduc_gasto_donativ = gasto_anual if clave == "N014"
 		}
 
-		if `=anioenigh' >= 2024 {
+		if `anioenigh' >= 2024 {
 			** 2.5. Deducciones personales del ISR **
 			g deduc_gasto_colegi1 = gasto_anual if clave == "174111" | clave == "174112" ///
 				| clave == "133011" | clave == "133012" | clave == "101011" | clave == "101012"
@@ -203,19 +203,19 @@ if _rc != 0 {
 		}
 
 		** 2.6. Unión de claves de IVA y IEPS **
-		merge m:1 (clave) using "`c(sysdir_site)'/01_raw/ENIGH/`=anioenigh'/clave_iva.dta", ///
+		merge m:1 (clave) using "`c(sysdir_site)'/01_raw/ENIGH/`anioenigh'/clave_iva.dta", ///
 			nogen keepus(descripcion `claveiva' clase_de_actividad*) keep(matched master)
 		encode iva201, gen(tiva)
 		compress
-		save "`c(sysdir_site)'/03_temp/`=anioenigh'/pre_iva.dta", replace
+		save "`c(sysdir_site)'/03_temp/`anioenigh'/pre_iva.dta", replace
 	}
 
-	capture confirm file "`c(sysdir_site)'/03_temp/`=anioenigh'/ioc_por_clase_actividad.dta"
+	capture confirm file "`c(sysdir_site)'/03_temp/`anioenigh'/ioc_por_clase_actividad.dta"
 	if _rc != 0 {
 		*-------------------------------------------------------
 		* Cargar datos del Censo Económico (con clase_de_actividad y métricas)
 		*-------------------------------------------------------
-		use "`c(sysdir_site)'/01_raw/ENIGH/`=anioenigh'/censo_eco_municipios.dta", clear
+		use "`c(sysdir_site)'/01_raw/ENIGH/`anioenigh'/censo_eco_municipios.dta", clear
 
 		*-------------------------------------------------------
 		* Paso 1: Crear los indicadores por dimensión
@@ -280,20 +280,20 @@ if _rc != 0 {
 		* Opcional: guardar resultados para merge posterior
 		*-------------------------------------------------------
 		keep clase_de_actividad ioc tiporientacion
-		save "`c(sysdir_site)'/03_temp/`=anioenigh'/ioc_por_clase_actividad.dta", replace
+		save "`c(sysdir_site)'/03_temp/`anioenigh'/ioc_por_clase_actividad.dta", replace
 	}
 
 	** 2.8. Unión de censo económico **
-	capture confirm file "`c(sysdir_site)'/03_temp/`=anioenigh'/pre_iva_final.dta"
+	capture confirm file "`c(sysdir_site)'/03_temp/`anioenigh'/pre_iva_final.dta"
 	if _rc != 0 {
-		use "`c(sysdir_site)'/03_temp/`=anioenigh'/pre_iva.dta", clear
-		save "`c(sysdir_site)'/03_temp/`=anioenigh'/pre_iva_final.dta", replace
+		use "`c(sysdir_site)'/03_temp/`anioenigh'/pre_iva.dta", clear
+		save "`c(sysdir_site)'/03_temp/`anioenigh'/pre_iva_final.dta", replace
 
 		* Build hierarchical lookup tables once
 		tempfile LU6 LU5 LU4 LU3 LU2
 		forvalues n = 6(-1)2 {
 			preserve
-			use "`c(sysdir_site)'/03_temp/`=anioenigh'/ioc_por_clase_actividad.dta", clear
+			use "`c(sysdir_site)'/03_temp/`anioenigh'/ioc_por_clase_actividad.dta", clear
 			tostring clase_de_actividad, replace
 			gen code = substr(clase_de_actividad, 1, `n')
 			keep code ioc
@@ -304,7 +304,7 @@ if _rc != 0 {
 		}
 
 		* Start from master
-		use "`c(sysdir_site)'/03_temp/`=anioenigh'/pre_iva_final.dta", clear
+		use "`c(sysdir_site)'/03_temp/`anioenigh'/pre_iva_final.dta", clear
 
 		* For each clase_de_actividad#, merge hierarchically: 6 -> 5 -> 4 -> 3 -> 2
 		forvalues k = 1/6 {
@@ -319,10 +319,10 @@ if _rc != 0 {
 			}
 		}
 
-		save "`c(sysdir_site)'/03_temp/`=anioenigh'/pre_iva_final.dta", replace
+		save "`c(sysdir_site)'/03_temp/`anioenigh'/pre_iva_final.dta", replace
 	}
 
-	use "`c(sysdir_site)'/03_temp/`=anioenigh'/pre_iva_final.dta", clear
+	use "`c(sysdir_site)'/03_temp/`anioenigh'/pre_iva_final.dta", clear
 	order folioviv-porcentaje_ieps201 *1 *2 *3 *4 *5 *6
 	drop clave // Quedarnos con la clave_2018
 
@@ -559,7 +559,7 @@ if _rc != 0 {
 	compress
 	sort folioviv foliohog numren clave
 
-	save "`c(sysdir_site)'/03_temp/`=anioenigh'/preconsumption.dta", replace
+	save "`c(sysdir_site)'/03_temp/`anioenigh'/preconsumption.dta", replace
 
 
 	** 2.19. Deducciones personales del ISR **
@@ -567,8 +567,8 @@ if _rc != 0 {
 	replace numren = "01"
 	collapse (sum) deduc_*, by(folioviv foliohog numren)
 
-	capture mkdir "`c(sysdir_site)'/04_master/`=anioenigh'"
-	save "`c(sysdir_site)'/04_master/`=anioenigh'/deducciones.dta", replace
+	capture mkdir "`c(sysdir_site)'/04_master/`anioenigh'"
+	save "`c(sysdir_site)'/04_master/`anioenigh'/deducciones.dta", replace
 }
 
 
@@ -581,11 +581,11 @@ if _rc != 0 {
 ***                                                  ***
 ********************************************************
 foreach categ in categ categ_iva categ_ieps {
-	capture confirm file "`c(sysdir_site)'/04_master/`=anioenigh'/consumption_`categ'_pc.dta"
+	capture confirm file "`c(sysdir_site)'/04_master/`anioenigh'/consumption_`categ'_pc.dta"
 	if _rc != 0 {
 
 		** 3.1 Consumo de los individuos **
-		use "`c(sysdir_site)'/03_temp/`=anioenigh'/preconsumption.dta", clear
+		use "`c(sysdir_site)'/03_temp/`anioenigh'/preconsumption.dta", clear
 		drop if gasto_anual == 0 | numren == ""
 		collapse (sum) gas_ind=gasto_anual cant_ind=cantidad (mean) prop=proporcion, by(folioviv foliohog numren `categ')
 
@@ -610,7 +610,7 @@ foreach categ in categ categ_iva categ_ieps {
 
 
 		** 3.2 Consumo de los hogares **
-		use "`c(sysdir_site)'/03_temp/`=anioenigh'/preconsumption.dta", clear
+		use "`c(sysdir_site)'/03_temp/`anioenigh'/preconsumption.dta", clear
 		drop if gasto_anual == 0 | numren != ""
 		collapse (sum) gas_hog=gasto_anual cant_hog=cantidad (mean) prop=proporcion, by(folioviv foliohog `categ')
 
@@ -631,9 +631,9 @@ foreach categ in categ categ_iva categ_ieps {
 
 
 		** 3.3 Consumo de los hogares + individuos **
-		merge 1:m (folioviv foliohog) using "`c(sysdir_site)'/01_raw/ENIGH/`=anioenigh'/poblacion.dta", ///
+		merge 1:m (folioviv foliohog) using "`c(sysdir_site)'/01_raw/ENIGH/`anioenigh'/poblacion.dta", ///
 			nogen keepus(numren edad sexo) keep(master match)
-		merge m:1 (folioviv foliohog) using "`c(sysdir_site)'/01_raw/ENIGH/`=anioenigh'/concentrado.dta", ///
+		merge m:1 (folioviv foliohog) using "`c(sysdir_site)'/01_raw/ENIGH/`anioenigh'/concentrado.dta", ///
 			nogen keepus(factor) keep(master match)
 		egen tot_integ = count(factor), by(folioviv foliohog)
 
@@ -643,7 +643,7 @@ foreach categ in categ categ_iva categ_ieps {
 		}
 
 		merge 1:1 (folioviv foliohog numren) using `gastoindividuos', nogen keepus(*_ind* prop*) keep(master match)
-		capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/04_master/`=anioenigh'/households.dta", ///
+		capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/04_master/`anioenigh'/households.dta", ///
 			nogen keepus(decil) keep(master match)
 		if _rc != 0 {
 			local nohouseholds = "nohouseholds"
@@ -760,10 +760,10 @@ foreach categ in categ categ_iva categ_ieps {
 				if "`nohouseholds'" == "" | "$nographs" != "nographs" {
 					//noisily Perfiles ``vars'pc_`k'' [fw=factor] ///
 					//	if ``vars'pc_`k'' != 0 & hogar_outlier == . & ind_outlier == ., ///
-					//	aniope(`=anioenigh')
+					//	aniope(`anioenigh')
 					noisily Simulador o`vars'pc_`k' [fw=factor] ///
 						if o`vars'pc_`k' != 0 & hogar_outlier == 0 & ind_outlier == 0, ///
-						aniope(`=anioenigh') ///
+						aniope(`anioenigh') ///
 						title("`label'") reboot //boot(25)
 				}
 
@@ -800,11 +800,11 @@ foreach categ in categ categ_iva categ_ieps {
 				if "`nohouseholds'" == "" | "$nographs" != "nographs" {
 					//noisily Perfiles `vars'pc_`k' [fw=factor] ///
 					//	if `vars'pc_`k' != 0 & hogar_outlier == . & ind_outlier == ., ///
-					//	aniope(`=anioenigh') ///
+					//	aniope(`anioenigh') ///
 					//	title(`title' en `k')
 					noisily Simulador `vars'pc_`k' [fw=factor] ///
 						if `vars'pc_`k' != 0 & hogar_outlier == 0 & ind_outlier == 0, ///
-						aniope(`=anioenigh') ///
+						aniope(`anioenigh') ///
 						title("`label'") reboot //boot(25)
 				}
 				capture g preci`k' = gas_pc_`k'/cant_pc_`k'
@@ -823,8 +823,8 @@ foreach categ in categ categ_iva categ_ieps {
 		capture drop __*
 		compress
 		sort folioviv foliohog numren
-		capture mkdir "`c(sysdir_site)'/04_master/`=anioenigh'"
-		save "`c(sysdir_site)'/04_master/`=anioenigh'/consumption_`categ'_pc.dta", replace
+		capture mkdir "`c(sysdir_site)'/04_master/`anioenigh'"
+		save "`c(sysdir_site)'/04_master/`anioenigh'/consumption_`categ'_pc.dta", replace
 	}
 }
 
@@ -837,8 +837,8 @@ foreach categ in categ categ_iva categ_ieps {
 ***  4. Aggregated values  ***
 ***                        ***
 ******************************
-use "`c(sysdir_site)'/04_master/`=anioenigh'/consumption_categ_pc.dta", replace
-merge m:1 (folioviv foliohog) using "`c(sysdir_site)'/01_raw/ENIGH/`=anioenigh'/concentrado.dta", nogen keepus(factor)
+use "`c(sysdir_site)'/04_master/`anioenigh'/consumption_categ_pc.dta", replace
+merge m:1 (folioviv foliohog) using "`c(sysdir_site)'/01_raw/ENIGH/`anioenigh'/concentrado.dta", nogen keepus(factor)
 capture rename factor_hog factor
 order folioviv foliohog numren
 drop *_hog* *_ind*
@@ -1096,10 +1096,10 @@ noisily di in g "  (=) Total Consumo " ///
 
 ** 4.3. Guardar base **
 if `c(version)' > 13.1 {
-	saveold "`c(sysdir_site)'/04_master/`=anioenigh'/expenditures.dta", replace version(13)
+	saveold "`c(sysdir_site)'/04_master/`anioenigh'/expenditures.dta", replace version(13)
 }
 else {
-	save "`c(sysdir_site)'/04_master/`=anioenigh'/expenditures.dta", replace
+	save "`c(sysdir_site)'/04_master/`anioenigh'/expenditures.dta", replace
 }
 
 
@@ -1110,7 +1110,7 @@ else {
 *** 5. IVA ***
 ***        ***
 **************
-if `=anioenigh' >= 2014 {
+if `anioenigh' >= 2014 {
 	matrix IVAT = (16 \     ///  1  Tasa general 
 		1  \     ///  2  Alimentos, input[1]: Tasa Cero, [2]: Exento, [3]: Gravado
 		2  \     ///  3  Alquiler, idem
@@ -1126,8 +1126,8 @@ if `=anioenigh' >= 2014 {
 		7.77)   //  13  Evasion e informalidad IVA, input[0-100]
 }
 
-use "`c(sysdir_site)'/04_master/`=anioenigh'/consumption_categ_iva_pc.dta", clear
-merge m:1 (folioviv foliohog) using "`c(sysdir_site)'/01_raw/ENIGH/`=anioenigh'/concentrado.dta", nogen keepus(factor) keep(master match)
+use "`c(sysdir_site)'/04_master/`anioenigh'/consumption_categ_iva_pc.dta", clear
+merge m:1 (folioviv foliohog) using "`c(sysdir_site)'/01_raw/ENIGH/`anioenigh'/concentrado.dta", nogen keepus(factor) keep(master match)
 capture rename factor_hog factor
 order folioviv foliohog numren
 drop *_hog* *_ind*
@@ -1181,9 +1181,9 @@ noisily di in g "  Total " ///
 	_col(66) %7.3fc scalar(IVASCNPIB) ///
 	_col(77) %6.2fc scalar(DifIVA) "%"
 
-save "`c(sysdir_site)'/04_master/`=anioenigh'/categ_iva.dta", replace
+save "`c(sysdir_site)'/04_master/`anioenigh'/categ_iva.dta", replace
 collapse (sum) IVA, by(folioviv foliohog numren)
-save "`c(sysdir_site)'/04_master/`=anioenigh'/consumption_categ_iva.dta", replace
+save "`c(sysdir_site)'/04_master/`anioenigh'/consumption_categ_iva.dta", replace
 
 
 
@@ -1194,7 +1194,7 @@ save "`c(sysdir_site)'/04_master/`=anioenigh'/consumption_categ_iva.dta", replac
 ***    6. IEPS   ***
 *** (incompleto) ***
 /*******************
-if `=anioenigh' >= 2014 {
+if `anioenigh' >= 2014 {
 	matrix IEPST = (26.5	,		0 			\ /// Cervezas y licores
 		30.0	,		0 			\ /// Alcohol 14+ a 20
 		53.0	,		0 			\ /// Alcohol 20+
@@ -1207,7 +1207,7 @@ if `=anioenigh' >= 2014 {
 		3.0		,		0 			) //  Telecomunicaciones
 }
 
-use "`c(sysdir_site)'/04_master/`=anioenigh'/consumption_categ_ieps_pc.dta", clear
+use "`c(sysdir_site)'/04_master/`anioenigh'/consumption_categ_ieps_pc.dta", clear
 drop gas_hog* cant_hog* gas_ind* cant_ind*
 
 *merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/01_raw/CONEVAL/2022/Base final/pobreza_20.dta", nogen keepus(decil)
@@ -1287,7 +1287,7 @@ noisily di in g "  Total " ///
 	_col(77) %6.1fc scalar(DifIEPSNP) "%"
 
 collapse (sum) IEPS, by(folioviv foliohog numren)
-save "`c(sysdir_site)'/04_master/`=anioenigh'/consumption_categ_ieps.dta", replace
+save "`c(sysdir_site)'/04_master/`anioenigh'/consumption_categ_ieps.dta", replace
 
 
 *** TOUCH DOWN ***/
