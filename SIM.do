@@ -35,11 +35,11 @@ cd "`c(sysdir_site)'"
 ** Parámetros
 global id = "ciepmx"								// ID USUARIO
 scalar aniovp = 2026								// ANIO VALOR PRESENTE
-scalar anioPE = 2025								// ANIO PAQUETE ECONÓMICO
+scalar anioPE = 2025-1								// ANIO PAQUETE ECONÓMICO
 scalar anioenigh = 2024								// ANIO ENIGH
 
 ** Opciones
-//global nographs "nographs"							// SUPRIMIR GRAFICAS
+global nographs "nographs"							// SUPRIMIR GRAFICAS
 //global update "update"							// UPDATE BASES DE DATOS
 //global textbook "textbook"							// SCALAR TO LATEX
 
@@ -127,7 +127,7 @@ forvalues anio = `=anioPE'(-2)`=anioPE' {
 
 **/
 **# 4. SISTEMA FISCAL
-***
+/***
 
 ** 4.1 Ley de Ingresos de la Federación
 if "$nographs" != "nographs" {
@@ -300,7 +300,7 @@ noisily PEF, anio(`=anioPE') by(divSIM) ///$update 				///
 	rows(2)									// Número de filas en la leyenda
 
 
-** 4.2.1 Parámetros: Gasto **/
+** 4.2.1 Parámetros: Gasto **
 if "$update" != "update" {
 	scalar iniciaA     =     370  					// Inicial
 	scalar basica      =   29529  					// Educación b{c a'}sica
@@ -346,8 +346,8 @@ if "$update" != "update" {
 }
 
 ** 4.2.2 Gasto per cápita **/
-noisily GastoPC educacion salud pensiones energia resto transferencias, aniope(`=anioPE') aniovp(`=aniovp')
-
+noisily GastoPC educacion /*salud pensiones energia resto transferencias*/, aniope(`=anioPE') aniovp(`=aniovp')
+exit
 
 
 **/
