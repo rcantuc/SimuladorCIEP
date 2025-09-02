@@ -7,11 +7,14 @@
 if "`1'" == "" {
 	clear all
 	local 1 = 2025
-	scalar anioenigh = 2022
-	scalar aniovp = 2025
+	scalar anioenigh = 2024
+	scalar aniovp = 2026
 }
 else {
-	if `1' >= 2022 {
+	if `1' >= 2024 {
+		scalar anioenigh = 2024
+	}
+	if `1' >= 2022 & `1' < 2024 {
 		scalar anioenigh = 2022
 	}
 	if `1' >= 2020 & `1' < 2022 {
@@ -41,7 +44,7 @@ else {
 **# 1. Macros: PEF ***
 ***                ***
 **********************
-PEF, anio(`=aniovp') by(desc_funcion) min(0) nographs
+PEF, anio(`1') by(desc_funcion) min(0) nographs
 local Cuotas_ISSSTE = r(Cuotas_ISSSTE)
 local SSFederacion = r(Aportaciones_a_Seguridad_Social) + `Cuotas_ISSSTE'
 
@@ -121,7 +124,7 @@ local IngKPublicos = `FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE'
 **# 3. Ajuste Población ***
 ***                     *** 
 **************************
-use if anio == `1' using `"`c(sysdir_site)'/04_master/Poblaciontot.dta"', clear
+use if anio == `=aniovp' using `"`c(sysdir_site)'/04_master/Poblaciontot.dta"', clear
 local ajustepob = poblacion
 
 
@@ -156,6 +159,7 @@ if _rc != 0 {
 	noisily run "`c(sysdir_site)'/Expenditure.do" `=anioenigh'
 	noisily run `"`c(sysdir_site)'/Households.do"' `=anioenigh'
 }
+drop if folioviv == ""
 
 tabstat factor, stat(sum) f(%20.0fc) save
 tempname pobenigh

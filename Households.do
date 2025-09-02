@@ -6,25 +6,30 @@ if "`1'" == "" {
 	clear all
 	local 1 = 2022
 	scalar aniovp = 2022
+	scalar anioenigh = 2022
 	local enigh = "ENIGH"
 	local betamin = 1			// ENIGH: 2.436
 	local altimir = "yes"
 	local SubsidioEmpleo = 43131000000 	// Presupuesto de gastos fiscales (2020)
 	local udis = 7.380711			// Promedio de valor de UDIS de enero a diciembre 2020
 	local smdf = 96.22			// Unidad de medida y actualizacion (UMA)
-	scalar anioenigh = 2022
-	local segpop = "pop_insabi"
 }
 timer on 6
-if `1' >= 2022 {
+if `1' >= 2024 {
 	local enigh = "ENIGH"
 	local betamin = 1			// ENIGH: 2.436
 	local altimir = "yes"
 	local SubsidioEmpleo = 43131000000 	// Presupuesto de gastos fiscales (2020)
 	local udis = 7.380711			// Promedio de valor de UDIS de enero a diciembre 2020
 	local smdf = 96.22			// Unidad de medida y actualizacion (UMA)
-	scalar anioenigh = 2022
-	local segpop = "pop_insabi"
+}
+if `1' >= 2022 & `1' < 2024 {
+	local enigh = "ENIGH"
+	local betamin = 1			// ENIGH: 2.436
+	local altimir = "yes"
+	local SubsidioEmpleo = 43131000000 	// Presupuesto de gastos fiscales (2020)
+	local udis = 7.380711			// Promedio de valor de UDIS de enero a diciembre 2020
+	local smdf = 96.22			// Unidad de medida y actualizacion (UMA)
 }
 if `1' >= 2020 & `1' < 2022 {
 	local enigh = "ENIGH"
@@ -33,8 +38,6 @@ if `1' >= 2020 & `1' < 2022 {
 	local SubsidioEmpleo = 49997000000 	// Presupuesto de gastos fiscales (2020)
 	local udis = 6.496487003		// Promedio de valor de UDIS de enero a diciembre 2020
 	local smdf = 86.88			// Unidad de medida y actualizacion (UMA)
-	scalar anioenigh = 2020
-	local segpop = "pop_insabi"
 }
 if `1' >= 2018 & `1' < 2020 {
 	local enigh = "ENIGH"
@@ -43,8 +46,6 @@ if `1' >= 2018 & `1' < 2020 {
 	local SubsidioEmpleo = 50979000000 	// Presupuesto de gastos fiscales (2018)
 	local udis = 6.054085			// Promedio de valor de UDIS de enero a diciembre 2018
 	local smdf = 80.60			// Unidad de medida y actualizacion (UMA)
-	scalar anioenigh = 2018
-	local segpop = "segpop"
 }
 if `1' >= 2016 & `1' < 2018 {
 	local enigh = "ENIGH"
@@ -53,8 +54,6 @@ if `1' >= 2016 & `1' < 2018 {
 	local SubsidioEmpleo = 43707000000	// Presupuesto de gastos fiscales (2016)
 	local udis = 5.4490872131		// Promedio de valor de UDIS de enero a diciembre 2016
 	local smdf = 73.04			// Unidad de medida y actualizacion (UMA)
-	scalar anioenigh = 2016
-	local segpop = "segpop"
 }
 
 
@@ -1245,7 +1244,7 @@ destring scian sinco subor pres_* tam_emp clas_emp, replace
 
 collapse (sum) ing_* exen_* htrab (max) factor* pres_* scian sinco jubilado tam_emp clas_emp (min) subor, by(folioviv foliohog numren)
 merge m:1 (folioviv foliohog numren) using "`dir_enigh'/poblacion.dta", ///
-	nogen keepusing(sexo edad trabajo_mp inscr_* inst_* atemed `segpop' hablaind)
+	nogen keepusing(sexo edad trabajo_mp inscr_* inst_* atemed hablaind)
 merge m:1 (folioviv foliohog) using "`dir_enigh'/concentrado.dta", ///
 	nogen update replace keepusing(tot_integ ubica_geo factor)
 merge m:1 (folioviv) using "`dir_enigh'/vivienda.dta", ///
@@ -1832,7 +1831,7 @@ collapse (mean) ing_* exen_* cuotas* infonavit htrab isrE renta deduc_isr SE ///
 	(max) factor* sbc tot_integ scian formal* tipo_contribuyente sinco hablaind jubilado emp_clasif emp_tam ///
 	(min) subor, by(folioviv foliohog numren)
 merge 1:1 (folioviv foliohog numren) using "`dir_enigh'/poblacion.dta", nogen ///
-	keepusing(sexo edad nivelaprob gradoaprob asis_esc tipoesc nivel grado inst_* `segpop' disc*)
+	keepusing(sexo edad nivelaprob gradoaprob asis_esc tipoesc nivel grado inst_* disc*)
 
 * Formalidad *
 tabstat edad [fw=factor] if ing_subor != 0 | ing_mixto != 0, stat(count) f(%15.0fc) save by(formal)
@@ -1947,7 +1946,8 @@ if `betamin' > 1 {
 
 *********************
 ** 8.3 Escolaridad **
-destring gradoaprob, replace
+destring gradoaprob nivelaprob, replace
+tostring nivelaprob, replace
 g aniosesc = 0 //if nivelaprob == "0"
 replace aniosesc = 1 if nivelaprob == "1"
 replace aniosesc = gradoaprob + 1 if nivelaprob == "2"
@@ -2541,18 +2541,18 @@ egen double Yl = rsum(ing_subor ing_mixtoL)
 label var Yl "Ingreso laboral"
 
 *noisily Perfiles Yl [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Ingreso laboral")
-noisily Simulador Yl [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Ingreso laboral") reboot
+*noisily Simulador Yl [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Ingreso laboral") reboot
 
 egen double Yk = rsum(ing_capital ing_mixtoK ing_estim_alqu gasto_anualDepreciacion)
 label var Yk "Ingreso de capital"
 *noisily Perfiles Yk [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Ingreso de capital")
-noisily Simulador Yk [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Ingreso de capital") reboot
+*noisily Simulador Yk [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Ingreso de capital") reboot
 
 *noisily Perfiles ingbrutotot [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Ingreso bruto total")
-noisily Simulador ingbrutotot [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Ingreso bruto total") reboot
+*noisily Simulador ingbrutotot [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Ingreso bruto total") reboot
 
 *noisily Perfiles gastoanualTOT [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Gasto anual total")
-noisily Simulador gastoanualTOT [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Gasto anual total") reboot
+*noisily Simulador gastoanualTOT [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Gasto anual total") reboot
 
 *noisily Perfiles ing_suborROW [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Ingreso laboral ROW")
 *noisily Simulador ing_suborROW [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Ingreso laboral ROW") reboot
@@ -2566,35 +2566,11 @@ g Ahorro = ingbrutotot + ing_capitalROW + ing_suborROW + ing_remesas ///
 	- gastoanualTOT //- gasto_anualComprasN - gasto_anualGobierno
 label var Ahorro "Ahorro"
 *noisily Perfiles Ahorro [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Ahorro")
-noisily Simulador Ahorro [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Ahorro") reboot
-
-if "$nographs" == "" {
-	graph combine Yl_dec Yk_dec, ///
-		name(Recursos, replace) ycommon xcommon ///
-		title("{bf:Entradas (recursos)}") subtitle("$pais") ///
-		caption("{bf:Fuente}: Elaborado por el CIEP, con la ENIGH `=anioenigh'.") ///
-		note(`"{bf:Nota}: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n en cada grupo."')
-
-	graph save Recursos `"`c(sysdir_site)'/users/$id/graphs/Recursos.gph"', replace
-	if "$export" != "" {
-		graph export `"$export/Recursos.png"', replace name(Recursos)
-	}
-
-	graph combine gastoanual_dec Ahorro_dec, ///
-		name(Usos, replace) ycommon xcommon ///
-		title("{bf:Salidas (usos)}") subtitle("$pais") ///
-		caption("{bf:Fuente}: Elaborado por el CIEP, con la ENIGH `=anioenigh'.") ///
-		note(`"{bf:Nota}: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n en cada grupo."')
-
-	graph save Usos `"`c(sysdir_site)'/users/$id/graphs/Usos.gph"', replace
-	if "$export" != "" {
-		graph export `"$export/Usos.png"', replace name(Usos)
-	}
-}
+*noisily Simulador Ahorro [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Ahorro") reboot
 
 label var cuotasTPF "Cuotas a la Seguridad Social"
 *noisily Perfiles cuotasTPF [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Cuotas a la Seguridad Social")
-noisily Simulador cuotasTPF [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Cuotas a la Seguridad Social") reboot
+*noisily Simulador cuotasTPF [fw=factor], aniope(`=anioenigh') aniovp(`=anioenigh') title("Cuotas a la Seguridad Social") reboot
 
 g PIB = Yl + Yk
 

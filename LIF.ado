@@ -83,7 +83,7 @@ quietly {
 	if "`update'" == "update" {
 		capture confirm file "`c(sysdir_site)'/04_master/DatosAbiertos.dta"
 		if _rc != 0 | "`update'" == "update" {
-			DatosAbiertos, update
+			DatosAbiertos //, update
 			local updated = r(updated)
 			local ultanio = r(ultanio)
 			local ultmes = r(ultmes)
@@ -639,7 +639,7 @@ program define UpdateLIF
 	levelsof serie, local(serie)
 	foreach k of local serie {
 		if "`k'" != "NA" {
-			noisily DatosAbiertos `k', nog
+			noisily DatosAbiertos `k', proy //nog
 
 			rename clave_de_concepto serie
 			keep anio serie nombre monto mes acum_prom

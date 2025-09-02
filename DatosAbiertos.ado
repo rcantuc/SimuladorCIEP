@@ -4,11 +4,11 @@ quietly {
 	** 0.1 Revisa si se puede usar la base de datos **
 	capture use "`c(sysdir_site)'/04_master/DatosAbiertos.dta", clear
 	if _rc != 0 {
-		UpdateDatosAbiertos
+		noisily UpdateDatosAbiertos
 	}
 	capture use "`c(sysdir_site)'/04_master/Deflactor.dta", clear
 	if _rc != 0 {
-		UpdateDeflactor
+		noisily UpdateDeflactor
 	}
 
 	** 0.2 Revisa si existe el scalar aniovp **
@@ -31,7 +31,7 @@ quietly {
 	*** 1 Base de datos ***
 	***********************
 	if "`update'" == "update" {
-		UpdateDatosAbiertos, `update' `zipfile'
+		noisily UpdateDatosAbiertos, `update' `zipfile'
 		noisily UpdateDeflactor
 	}
 	
@@ -214,7 +214,7 @@ quietly {
 		}
 
 		graph bar (sum) monto_pib if monto_pib != . & anio >= `desde', over(mes) over(anio) stack asyvar ///
-			legend(rows(2) size(large)) ///
+			legend(rows(2) size(medium)) ///
 			name(M`anything', replace) blabel(none) ///
 			ytitle("% PIB") ///
 			yline(0, lcolor(black) lpattern(solid)) ///

@@ -10,7 +10,7 @@ quietly {
 		local aniovp = scalar(aniovp)
 	}
 
-	syntax [, ANIO(int `aniovp') NOGraphs CRECSIM(real 1)]
+	syntax [, ANIO(int `aniovp') NOGraphs CRECSIM(real 1) EOFP]
 	noisily di _newline(2) in g _dup(20) "." "{bf:   Fiscalización INGRESOS " in y `anio' "   }" in g _dup(20) "."
 
 
@@ -26,7 +26,7 @@ quietly {
 	*********************
 	**# 2 RECAUDACIÓN ***
 	*********************
-	LIF, anio(`anio') by(divSIM) nographs min(0) desde(`=`anio'-12')
+	LIF, anio(`anio') by(divSIM) nographs min(0) desde(`=`anio'-12') `eofp'
 	*local recursos = r(divSIM)
 	*foreach k of local recursos {
 	*	local `=substr("`k'",1,7)' = r(`k')

@@ -3,7 +3,7 @@
 *!***    Poblacion y defunciones         ****
 *!***    Bases: CONAPO 1950-2070         ****
 *!***    Autor: Ricardo                  ****
-*!***    Fecha: 20/04/2024               ****
+*!***    Fecha: 28/09/2025               ****
 *!***                                    ****
 *!***    Sintaxis:                       ****
 *!***    Poblacion [if] [, ANIOinicial(int) ANIOFinal(int) NOGraphs UPDATE]
@@ -44,16 +44,17 @@ quietly {
 	}
 
 	* if default *
-	if `"`if'"' == `"if entidad == """' | `"`if'"' == "" {
-		local if = `"if entidad == "Nacional""'
-	}
-
+	local ifentidad = strpos("`if'","ent")
 
 
 	************************
 	*** 2. Base de datos ***
 	************************
 	use `if' using `"`c(sysdir_site)'/04_master/Poblacion.dta"', clear
+	if `ifentidad' == 0 {
+		keep if entidad == "Nacional"
+	}
+	
 	noisily di _newline(2) in g _dup(30) "." "{bf:   Poblaci{c o'}n: " in y "`=entidad[1]'   }" in g _dup(30) "." ///
 		_newline
 

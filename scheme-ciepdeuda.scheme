@@ -233,12 +233,12 @@ linewidth	p17area			none
 
 
 // Colores
-color       p1          "210,213,32"
-color       p2          "255,153,51"
-color       p3          "204,204,51"
-color       p4          "255,204,0"
-color       p5          "255,255,0"
-color       p6          "255,204,102"
+color       p1          "209,212,55"
+color       p2          "52,197,184"
+color       p3          "151,6,90"
+color       p4          "255,181,82"
+color       p5          "254,118,109"
+color       p6          "101,222,96"
 color       p7          "255,153,102"
 color       p8          "255,204,153"
 color       p9          "255,255,153"
