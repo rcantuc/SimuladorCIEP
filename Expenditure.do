@@ -13,7 +13,7 @@ if "`1'" == "" {
 	local claveiva = "*2018"
 	capture confirm file "`c(sysdir_site)'/01_raw/ENIGH/`anioenigh'/gastospersona.dta"
 	if _rc != 0 {
-		copy "https://www.dropbox.com/scl/fi/cs096yrwwbtoo37n9ahfd/2024.zip?rlkey=zsrmmy70wdbwiq5j13yyoy3os&dl=1" "`c(sysdir_site)'/01_raw/ENIGH/2024.zip", replace
+		copy "https://www.dropbox.com/scl/fi/q48r50p461tlyytm2xywy/2024.zip?rlkey=8dkk05h7gugfk4ns7a5jdmhw9&dl=1" "`c(sysdir_site)'/01_raw/ENIGH/2024.zip", replace
 		unzipfile "`c(sysdir_site)'/01_raw/ENIGH/2024.zip", replace
 		erase "`c(sysdir_site)'/01_raw/ENIGH/2024.zip"
 	}
@@ -25,7 +25,7 @@ else {
 		local claveiva = "*2018"
 		capture confirm file "`c(sysdir_site)'/01_raw/ENIGH/`anioenigh'/gastospersona.dta"
 		if _rc != 0 {
-			copy "https://www.dropbox.com/scl/fi/cs096yrwwbtoo37n9ahfd/2024.zip?rlkey=zsrmmy70wdbwiq5j13yyoy3os&dl=1" "`c(sysdir_site)'/01_raw/ENIGH/2024.zip", replace
+			copy "https://www.dropbox.com/scl/fi/q48r50p461tlyytm2xywy/2024.zip?rlkey=8dkk05h7gugfk4ns7a5jdmhw9&dl=1" "`c(sysdir_site)'/01_raw/ENIGH/2024.zip", replace
 			unzipfile "`c(sysdir_site)'/01_raw/ENIGH/2024.zip", replace
 			erase "`c(sysdir_site)'/01_raw/ENIGH/2024.zip"
 		}
@@ -35,7 +35,7 @@ else {
 		local claveiva = "*2018"
 		capture confirm file "`c(sysdir_site)'/01_raw/ENIGH/`anioenigh'/gastospersona.dta"
 		if _rc != 0 {
-			copy "https://www.dropbox.com/scl/fi/otyib7mwgegyuihryg8f7/2022.zip?rlkey=qyvaz279bhv59wilsvossm2ss&dl=1" "`c(sysdir_site)'/01_raw/ENIGH/2022.zip", replace
+			copy "https://www.dropbox.com/scl/fi/81oizm6udw7wgrrx4roj3/2022.zip?rlkey=z8evwh138uqz2e1no558kc1f0&dl=1" "`c(sysdir_site)'/01_raw/ENIGH/2022.zip", replace
 			unzipfile "`c(sysdir_site)'/01_raw/ENIGH/2022.zip", replace
 			erase "`c(sysdir_site)'/01_raw/ENIGH/2022.zip"
 		}
@@ -45,7 +45,7 @@ else {
 		local claveiva = "*2018"
 		capture confirm file "`c(sysdir_site)'/01_raw/ENIGH/`anioenigh'/gastospersona.dta"
 		if _rc != 0 {
-			copy "https://www.dropbox.com/scl/fi/v4vi20or8r7le5x915brz/2020.zip?rlkey=mpwh3qqtqase8wf23vcc4vb7d&dl=1" "`c(sysdir_site)'/01_raw/ENIGH/2020.zip", replace
+			copy "https://www.dropbox.com/scl/fi/thcpcj00xk7runakysim3/2020.zip?rlkey=ttipwso0kw7pjfebm76nxtgma&dl=1" "`c(sysdir_site)'/01_raw/ENIGH/2020.zip", replace
 			unzipfile "`c(sysdir_site)'/01_raw/ENIGH/2020.zip", replace
 			erase "`c(sysdir_site)'/01_raw/ENIGH/2020.zip"
 		}
