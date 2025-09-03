@@ -65,6 +65,16 @@ if `1' >= 2016 & `1' < 2018 {
 	local aniovp = `1'
 	local anioenigh = 2016
 }
+if `1' >= 2014 & `1' < 2016 {
+	local enigh = "ENIGH"
+	local betamin = 1			// ENIGH: 2.38
+	local altimir = "yes"
+	local SubsidioEmpleo = 43707000000	// Presupuesto de gastos fiscales (2016)
+	local udis = 5.4490872131		// Promedio de valor de UDIS de enero a diciembre 2016
+	local smdf = 73.04			// Unidad de medida y actualizacion (UMA)
+	local aniovp = `1'
+	local anioenigh = 2014
+}
 
 
 ** 0.1 Log-file

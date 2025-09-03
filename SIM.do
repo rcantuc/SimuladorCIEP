@@ -103,24 +103,16 @@ noisily SCN, anio(`=aniovp') $textbook $update nographs
 **/
 **# 3. HOGARES: ARMONIZACIÓN MACRO-MICRO
 ***
-forvalues anio = `=anioPE'(-2)`=anioPE-10' {
+forvalues anio = `=anioPE-9'(-1)`=anioPE-9' {
 
 	** 3.1 Encuesta Nacional de Ingresos y Gastos de los Hogares (Usos)
-	capture confirm file "`c(sysdir_site)'/04_master/`=anioenigh'/expenditures.dta"
-	if _rc != 0 | "$update" == "update" ///
-		noisily run "`c(sysdir_site)'/Expenditure.do" `anio'
+	noisily run "`c(sysdir_site)'/Expenditure.do" `anio'
 
 	** 3.2 Encuesta Nacional de Ingresos y Gastos de los Hogares (Recursos)
-	capture confirm file "`c(sysdir_site)'/04_master/`=anioenigh'/households.dta"
-	if _rc != 0 | "$update" == "update" ///
-		noisily run `"`c(sysdir_site)'/Households.do"' `anio'
-}
+	noisily run `"`c(sysdir_site)'/Households.do"' `anio'
 
-** 3.3 Perfiles de la política económica actual (Paquete Económico)
-forvalues anio = `=anioPE'(-2)`=anioPE-10' {
-	capture confirm file "`c(sysdir_site)'/04_master/perfiles`anio'.dta"
-	if _rc != 0 | "$update" == "update" ///
-		noisily run "`c(sysdir_site)'/PerfilesSim.do" `anio'
+	** 3.3 Perfiles de la política económica actual (Paquete Económico)
+	noisily run "`c(sysdir_site)'/PerfilesSim.do" `anio'
 }
 
 
@@ -130,19 +122,15 @@ forvalues anio = `=anioPE'(-2)`=anioPE-10' {
 ***
 
 ** 4.1 Ley de Ingresos de la Federación
-if "$nographs" != "nographs" {
-	*do "`c(sysdir_site)'/Graphs_TE.do"
-}	
 noisily LIF if divLIF != 10, anio(`=anioPE') by(divOrigen) $update 		///
 	title("Ingresos presupuestarios") 					/// Cambiar título de la gráfica
 	desde(`=`=anioPE'-12') 							/// Año de inicio para el PROMEDIO
-	min(0.5) 									/// Mínimo 0% del PIB (no negativos)
+	min(0)	 								/// Mínimo 0% del PIB (no negativos)
 	rows(1)									//  Número de filas en la leyenda
 rename divSIM divCODE
 decode divCODE, g(divSIM) 
 collapse (sum) recaudacion, by(anio divSIM) fast
-save `"`c(sysdir_site)'/users/$id/LIF.dta"', replace	
-
+save `"`c(sysdir_site)'/users/$id/LIF.dta"', replace
 
 /** 4.1.1 Parámetros: Ingresos **
 if "$update" != "update" {
@@ -287,6 +275,9 @@ if "`cambioiva'" == "1" {
 
 ** 4.1.8 Tasas Efectivas **
 noisily TasasEfectivas, anio(`=anioPE') //eofp
+if "$nographs" != "nographs" {
+	*do "`c(sysdir_site)'/Graphs_TE.do"
+}	
 
 
 
