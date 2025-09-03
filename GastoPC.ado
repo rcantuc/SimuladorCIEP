@@ -28,6 +28,8 @@ quietly {
 	syntax [anything] [, ANIOVP(int `aniovp') ANIOpe(int `aniope') EXCEL]
 	tokenize `anything'
 	local word_count = wordcount("`anything'")
+
+	if  "`anything'" == "" local word_count = 1
 	
 	// 0.6 Muestra una cadena formateada
 	noisily di _newline(2) in g _dup(20) "." "{bf:   GASTO per cápita " in y `aniope' "   }" in g _dup(20) "."	
