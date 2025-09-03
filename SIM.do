@@ -20,11 +20,11 @@ timer on 1
 
 ** Directorios de trabajo (uno por computadora)
 if "`c(username)'" == "ricardo" {						// iMac Ricardo
-	*sysdir set SITE "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
+	sysdir set SITE "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
 	*global export "/Users/ricardo/CIEP Dropbox/TextbookCIEP/images"
 }
 else if "`c(username)'" == "servidorciep" {					// Servidor CIEP
-	*sysdir set SITE "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
+	sysdir set SITE "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
 	*global export "/home/servidorciep/CIEP Dropbox/TextbookCIEP/images"
 }
 else if "`c(console)'" != "" {							// Servidor Web
@@ -103,7 +103,7 @@ noisily SCN, anio(`=aniovp') $textbook $update nographs
 **/
 **# 3. HOGARES: ARMONIZACIÓN MACRO-MICRO
 ***
-forvalues anio = `=anioPE'(-2)`=anioPE' {
+forvalues anio = `=anioPE'(-2)`=anioPE-10' {
 
 	** 3.1 Encuesta Nacional de Ingresos y Gastos de los Hogares (Usos)
 	capture confirm file "`c(sysdir_site)'/04_master/`=anioenigh'/expenditures.dta"
@@ -117,7 +117,7 @@ forvalues anio = `=anioPE'(-2)`=anioPE' {
 }
 
 ** 3.3 Perfiles de la política económica actual (Paquete Económico)
-forvalues anio = `=anioPE'(-2)`=anioPE' {
+forvalues anio = `=anioPE'(-2)`=anioPE-10' {
 	capture confirm file "`c(sysdir_site)'/04_master/perfiles`anio'.dta"
 	if _rc != 0 | "$update" == "update" ///
 		noisily run "`c(sysdir_site)'/PerfilesSim.do" `anio'
@@ -300,49 +300,49 @@ noisily PEF, anio(`=anioPE') by(divSIM) ///$update 				///
 	rows(2)									// Número de filas en la leyenda
 
 
-/** 4.2.1 Parámetros: Gasto **
+** 4.2.1 Parámetros: Gasto **
 if "$update" != "update" {
-	scalar iniciaA     =   0.016    				// Inicial
-	scalar basica      =   1.778    				// Educación b{c a'}sica
-	scalar medsup      =   0.428    				// Educación media superior
-	scalar superi      =   0.442    				// Educación superior
-	scalar posgra      =   0.030    				// Posgrado
-	scalar eduadu      =   0.014    				// Educación para adultos
-	scalar otrose      =   0.149    				// Otros gastos educativos
-	scalar invere      =   0.058    				// Inversión en educación
-	scalar cultur      =   0.065    				// Cultura, deportes y recreación
-	scalar invest      =   0.149    				// Ciencia y tecnología
+	scalar iniciaA     =   0.017    				// Inicial
+	scalar basica      =   1.863    				// Educación b{c a'}sica
+	scalar medsup      =   0.418    				// Educación media superior
+	scalar superi      =   0.457    				// Educación superior
+	scalar posgra      =   0.029    				// Posgrado
+	scalar eduadu      =   0.016    				// Educación para adultos
+	scalar otrose      =   0.154    				// Otros gastos educativos
+	scalar invere      =   0.060    				// Inversión en educación
+	scalar cultur      =   0.064    				// Cultura, deportes y recreación
+	scalar invest      =   0.147    				// Ciencia y tecnología
 
-	scalar ssa         =   0.103    				// SSalud
-	scalar imssbien    =   0.691    				// IMSS-Bienestar
-	scalar imss        =   1.371    				// IMSS (salud)
-	scalar issste      =   0.222    				// ISSSTE (salud)
+	scalar ssa         =   0.102    				// SSalud
+	scalar imssbien    =   0.768    				// IMSS-Bienestar
+	scalar imss        =   1.265    				// IMSS (salud)
+	scalar issste      =   0.220    				// ISSSTE (salud)
 	scalar pemex       =   0.051    				// Pemex (salud)
 	scalar issfam      =   0.029    				// ISSFAM (salud)
-	scalar invers      =   0.090    				// Inversión en salud
+	scalar invers      =   0.089    				// Inversión en salud
 
-	scalar pam         =   1.522  					// Pensión Bienestar
-	scalar penimss     =   3.069 					// Pensión IMSS
-	scalar penisss     =   1.205 					// Pensión ISSSTE
-	scalar penpeme     =   0.249 					// Pensión Pemex
-	scalar penotro     =   0.584					// Pensión CFE, LFC, ISSFAM, Ferronales
+	scalar pam         =   1.423  					// Pensión Bienestar
+	scalar penimss     =   2.685 					// Pensión IMSS
+	scalar penisss     =   1.085 					// Pensión ISSSTE
+	scalar penpeme     =   0.233 					// Pensión Pemex
+	scalar penotro     =   0.545					// Pensión CFE, LFC, ISSFAM, Ferronales
 
-	scalar gascfe      =   1.174   					// Gasto en CFE
-	scalar gaspemex    =   0.421   					// Gasto en Pemex
-	scalar gassener    =   0.258   					// Gasto en SENER
-	scalar gasinverf   =   1.188   					// Gasto en inversión (energía)
-	scalar gascosdeue  =   0.521   					// Gasto en costo de la deuda (energía)
+	scalar gascfe      =   1.165   					// Gasto en CFE
+	scalar gaspemex    =   0.418   					// Gasto en Pemex
+	scalar gassener    =   0.255   					// Gasto en SENER
+	scalar gasinverf   =   1.178   					// Gasto en inversión (energía)
+	scalar gascosdeue  =   0.518   					// Gasto en costo de la deuda (energía)
 
-	scalar gasinfra    =   1.480   					// Gasto en Otras Inversiones
-	scalar gasotros    =   1.580   					// Otros gastos
-	scalar gasfeder    =   4.002  					// Participaciones y Otras aportaciones
-	scalar gascosto    =   3.492   					// Gasto en Costo de la deuda
+	scalar gasinfra    =   1.469   					// Gasto en Otras Inversiones
+	scalar gasotros    =   1.568   					// Otros gastos
+	scalar gasfeder    =   3.971  					// Participaciones y Otras aportaciones
+	scalar gascosto    =   3.465   					// Gasto en Costo de la deuda
 
 	scalar ingbasico18 =       1  					// 1: Incluye menores de 18 anios, 0: no
 	scalar ingbasico65 =       1  					// 1: Incluye mayores de 65 anios, 0: no
 	scalar IngBas      =       0  					// Ingreso b{c a'}sico
-	scalar gasmadres   =   0.013   					// Apoyo a madres trabajadoras
-	*scalar gascuidados =   1.244   					// Gasto en cuidados
+	scalar gasmadres   =   0.009   					// Apoyo a madres trabajadoras
+	scalar gascuidados =   0.097   					// Gasto en cuidados
 }
 
 ** 4.2.2 Gasto per cápita **/
