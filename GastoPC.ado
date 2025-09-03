@@ -128,6 +128,8 @@ quietly {
 	g benef_imssbien = 1 // inst_5 == "5"
 	replace benef_imssbien = 0 if benef_imss != 0 | benef_issste != 0 | benef_pemex != 0 | benef_issfam != 0 | benef_otros != 0
 
+	g benef_invers = 1
+
 	tabstat benef_ssa benef_imss benef_issste benef_pemex benef_issfam benef_otros benef_imssbien ///
 		[fw=factor], stat(sum) f(%20.0fc) save
 	tempname Salud
