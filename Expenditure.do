@@ -324,7 +324,7 @@ if _rc != 0 {
 
 	use "`c(sysdir_site)'/03_temp/`anioenigh'/pre_iva_final.dta", clear
 	order folioviv-porcentaje_ieps201 *1 *2 *3 *4 *5 *6
-	drop clave // Quedarnos con la clave_2018
+	if `anioenigh' >= 2024 drop clave // Quedarnos con la clave_2018
 
 	egen proporcion = rowmean(ioc*)
 	replace proporcion = . if proporcion < 0
@@ -1193,7 +1193,7 @@ save "`c(sysdir_site)'/04_master/`anioenigh'/consumption_categ_iva.dta", replace
 ***              ***
 ***    6. IEPS   ***
 *** (incompleto) ***
-/*******************
+*******************
 if `anioenigh' >= 2014 {
 	matrix IEPST = (26.5	,		0 			\ /// Cervezas y licores
 		30.0	,		0 			\ /// Alcohol 14+ a 20

@@ -504,7 +504,7 @@ quietly {
 		***         ***
 		***************
 
-		if "``tok''" == "salud" | "`1'" == "all" {
+		if "``tok''" == "salud" | "`1'" == "" {
 
 			** 4.1 IMSS-Bienestar **
 			capture confirm scalar imssbien
@@ -786,7 +786,7 @@ quietly {
 		**# 5 Pensiones ***
 		*******************
 
-		if "``tok''" == "pensiones" | "`1'" == "all" {
+		if "``tok''" == "pensiones" | "`1'" == "" {
 
 			** 5.1 Pensión para adultos mayores **
 			capture confirm scalar pam
@@ -965,7 +965,7 @@ quietly {
 		*****************
 		**# 6 Energía ***
 		*****************
-		if "``tok''" == "energia" | "`1'" == "all" {
+		if "``tok''" == "energia" | "`1'" == "" {
 			capture drop pob
 			g pob = 1
 			tabstat pob [fw=factor], stat(sum) f(%20.0fc) save
@@ -1096,7 +1096,7 @@ quietly {
 		****************************/
 		**# 7 Resto de los gastos ***
 		*****************************
-		if "``tok''" == "resto" | "`1'" == "all" {
+		if "``tok''" == "resto" | "`1'" == "" {
 
 			** 7.1 Gasto federalizado **
 			capture confirm scalar gasfeder
@@ -1230,7 +1230,7 @@ quietly {
 		****************************/
 		**# 8 Ingreso b{c a'}sico ***
 		*****************************
-		if "``tok''" == "transferencias" | "`1'" == "all" {
+		if "``tok''" == "transferencias" | "`1'" == "" {
 
 			** 8.1 Gastos en cuidados **
 			capture confirm scalar gascuidados
