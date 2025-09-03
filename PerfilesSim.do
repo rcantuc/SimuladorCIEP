@@ -8,7 +8,6 @@ if "`1'" == "" {
 	clear all
 	local 1 = 2025
 	local anioenigh = 2024
-	local aniovp = 2026
 }
 else {
 	if `1' >= 2024 {

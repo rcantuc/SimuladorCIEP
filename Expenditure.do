@@ -21,7 +21,7 @@ if "`1'" == "" {
 timer on 15
 else {
 	if `1' >= 2024 {
-		scalar anioenigh = 2024
+		local anioenigh = 2024
 		local claveiva = "*2018"
 		capture confirm file "`c(sysdir_site)'/01_raw/ENIGH/`anioenigh'/gastospersona.dta"
 		if _rc != 0 {
@@ -31,7 +31,7 @@ else {
 		}
 	}
 	if `1' >= 2022 & `1' < 2024 {
-		scalar anioenigh = 2022
+		local anioenigh = 2022
 		local claveiva = "*2018"
 		capture confirm file "`c(sysdir_site)'/01_raw/ENIGH/`anioenigh'/gastospersona.dta"
 		if _rc != 0 {
@@ -41,7 +41,7 @@ else {
 		}
 	}
 	if `1' >= 2020 & `1' < 2022 {
-		scalar anioenigh = 2020
+		local anioenigh = 2020
 		local claveiva = "*2018"
 		capture confirm file "`c(sysdir_site)'/01_raw/ENIGH/`anioenigh'/gastospersona.dta"
 		if _rc != 0 {
@@ -51,7 +51,7 @@ else {
 		}
 	}
 	if `1' >= 2018 & `1' < 2020 {
-		scalar anioenigh = 2018
+		local anioenigh = 2018
 		local claveiva = "*2018"
 		capture confirm file "`c(sysdir_site)'/01_raw/ENIGH/`anioenigh'/gastospersona.dta"
 		if _rc != 0 {
@@ -61,7 +61,7 @@ else {
 		}
 	}
 	if `1' >= 2016 & `1' < 2018 {
-		scalar anioenigh = 2016
+		local anioenigh = 2016
 		local claveiva = "*2014"
 		capture confirm file "`c(sysdir_site)'/01_raw/ENIGH/`anioenigh'/gastospersona.dta"
 		if _rc != 0 {
@@ -71,7 +71,7 @@ else {
 		}
 	}
 	if `1' >= 2014 & `1' < 2016 {
-		scalar anioenigh = 2014
+		local anioenigh = 2014
 		local claveiva = "*2014"
 		capture confirm file "`c(sysdir_site)'/01_raw/ENIGH/`anioenigh'/gastospersona.dta"
 		if _rc != 0 {

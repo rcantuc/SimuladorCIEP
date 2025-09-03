@@ -69,8 +69,6 @@ quietly {
 			in g " con " in y "ENIGH " `anioenigh'
 		noisily run `"`c(sysdir_site)'/PerfilesSim.do"' `aniope'
 	}
-
-	// Combina la base de datos de ENIGH con la base de datos de hogares
 	merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/04_master/`anioenigh'/households.dta", ///
 		nogen keepus(asis_esc tipoesc nivel inst_* ing_jubila jubilado ing_PAM formal) update
 	capture drop __*
@@ -80,7 +78,82 @@ quietly {
 	tempname pobenigh
 	matrix `pobenigh' = r(StatTotal)
 
-	** Personas en discapacidad **
+	** 2.1 Alumnos y beneficiarios **
+	capture drop alum_*
+	if `anioenigh' >= 2024 {
+		g alum_basica = asis_esc == "1" & tipoesc == "1" & (nivel >= "01" & nivel <= "07") & edad <= 15
+		g alum_medsup = asis_esc == "1" & tipoesc == "1" & (nivel >= "08" & nivel <= "09")
+		g alum_superi = asis_esc == "1" & tipoesc == "1" & (nivel >= "10" & nivel <= "12")
+		g alum_posgra = asis_esc == "1" & tipoesc == "1" & (nivel >= "13" & nivel <= "14")
+		g alum_adulto = asis_esc == "1" & tipoesc == "1" & (nivel >= "01" & nivel <= "07") & edad > 15
+	}
+
+	if `anioenigh' < 2024 & `anioenigh' >= 2016 {
+		g alum_basica = asis_esc == "1" & tipoesc == "1" & (nivel >= "01" & nivel <= "07") & edad <= 15
+		g alum_medsup = asis_esc == "1" & tipoesc == "1" & (nivel >= "08" & nivel <= "09")
+		g alum_superi = asis_esc == "1" & tipoesc == "1" & (nivel >= "10" & nivel <= "12")
+		g alum_posgra = asis_esc == "1" & tipoesc == "1" & nivel == "13"
+		g alum_adulto = asis_esc == "1" & tipoesc == "1" & (nivel >= "01" & nivel <= "07") & edad > 15
+	}
+
+	if `anioenigh' < 2016 {
+		g alum_basica = asis_esc == "1" & tipoesc == "1" & (nivel >= "1" & nivel <= "3") & edad <= 15
+		g alum_medsup = asis_esc == "1" & tipoesc == "1" & (nivel >= "4" & nivel <= "6")
+		g alum_superi = asis_esc == "1" & tipoesc == "1" & (nivel >= "7" & nivel <= "8")
+		g alum_posgra = asis_esc == "1" & tipoesc == "1" & nivel == "9"
+		g alum_adulto = asis_esc == "1" & tipoesc == "1" & (nivel >= "1" & nivel <= "3") & edad > 15
+	}
+	g alum_adoles = edad > 5 & edad <= 12
+
+	tabstat alum_basica alum_medsup alum_superi alum_posgra alum_adulto alum_adoles [fw=factor], stat(sum) f(%20.0fc) save
+	tempname Educacion
+	matrix `Educacion' = r(StatTotal)
+
+	** 2.2 Asegurados y beneficiarios **
+	capture drop benef_*
+	g benef_ssa = 1
+	g benef_imss = inst_1 == "1"
+	g benef_issste = inst_2 == "2"
+	g benef_isssteEst = inst_3 == "3"
+	g benef_pemex = inst_4 == "4"
+		replace benef_pemex = benef_pemex*602513/1169476
+	g benef_issfam = inst_4 == "4"
+		replace benef_issfam = benef_issfam - benef_pemex
+	*if `aniope' >= 2014 {
+		g benef_otros = inst_5 == "5"
+	*}
+	*else {
+	*	g benef_otros = inst_6 == "6"
+	*}
+	g benef_imssbien = 1 // inst_5 == "5"
+	replace benef_imssbien = 0 if benef_imss != 0 | benef_issste != 0 | benef_pemex != 0 | benef_issfam != 0 | benef_otros != 0
+
+	tabstat benef_ssa benef_imss benef_issste benef_pemex benef_issfam benef_otros benef_imssbien ///
+		[fw=factor], stat(sum) f(%20.0fc) save
+	tempname Salud
+	matrix `Salud' = r(StatTotal)
+
+	** 2.3 Pensionados **
+	capture drop pens_*
+	g pens_pam = /*ing_PAM != 0 &*/ edad >= 65
+	g pens_imss = ing_jubila != 0 & formal == 1 & jubilado == 1
+	g pens_issste = ing_jubila != 0 & formal == 2 & jubilado == 1
+	g pens_pemex = ing_jubila != 0 & formal == 3 & jubilado == 1
+		replace pens_pemex = pens_pemex*110000/181290
+	g pens_otro = ing_jubila != 0 & formal == 3 & jubilado == 1
+		replace pens_otro = pens_otro - pens_pemex
+
+	tabstat pens_pam pens_imss pens_issste pens_pemex pens_otro [fw=factor], stat(sum) f(%20.0fc) save
+	tempname Pension
+	matrix `Pension' = r(StatTotal)
+
+	local pens_pam = `Pension'[1,1]
+	local pens_imss = `Pension'[1,2]
+	local pens_issste = `Pension'[1,3]
+	local pens_pemex = `Pension'[1,4]
+	local pens_otro = `Pension'[1,5]
+
+	** 2.4 Personas en discapacidad **
 	g discap = 0
 	capture replace discap = 0 if disc_camin == "3" | disc_camin == "4" ///
 		| disc_ver == "3" | disc_ver == "4" | disc_brazo == "3" | disc_brazo == "4" ///
@@ -94,28 +167,27 @@ quietly {
 		| disc_acti == "1" | disc_acti == "2"
 
 
-	** Adultos mayores con dependencia ** 
+	** 2.5 Adultos mayores con dependencia ** 
 	g mayores_depe = edad >= 65 & discap == 1
 
-
-	** Primera infancia con y sin discapacidad **
+	** 2.6 Primera infancia con y sin discapacidad **
 	g primi = edad < 6 & discap == 0
 	g primi_discap = edad < 6 & discap == 1
 	g discap_2 = discap == 1 & edad < 65
 	
-	** Primera infancia de madres trabajadoras **
+	** 2.7 Primera infancia de madres trabajadoras **
 	g primi2 = edad < 4 | (edad < 6 & discap == 1)
 	tabstat primi2 [fw=factor], stat(sum) f(%20.0fc) save
 	tempname MADRES
 	matrix `MADRES' = r(StatTotal)
 
-	** Población potencial cuidados **
+	** 2.8 Población potencial cuidados **
 	g cuidados_pot = (primi == 1 | discap_2 == 1 | mayores_depe == 1 | primi_discap == 1)
 	tabstat cuidados_pot [fw=factor], stat(sum) f(%20.0fc) save
 	tempname Resto
 	matrix `Resto' = r(StatTotal)
 
-	* Población total *
+	** 2.9 Población total **
 	capture drop pob
 	g pob = 1
 	tabstat pob [fw=factor], stat(sum) f(%20.0fc) save
@@ -130,42 +202,11 @@ quietly {
 	*******************
 	forvalues tok = 1(1)`word_count' {
 		if "``tok''" == "educacion" | "`1'" == "" {
-		
-			** 3.1 Alumnos y beneficiarios **
-			capture drop alum_*
-			if `anioenigh' >= 2024 {
-				g alum_basica = asis_esc == "1" & tipoesc == "1" & (nivel >= "01" & nivel <= "07") & edad <= 15
-				g alum_medsup = asis_esc == "1" & tipoesc == "1" & (nivel >= "08" & nivel <= "09")
-				g alum_superi = asis_esc == "1" & tipoesc == "1" & (nivel >= "10" & nivel <= "12")
-				g alum_posgra = asis_esc == "1" & tipoesc == "1" & (nivel >= "13" & nivel <= "14")
-				g alum_adulto = asis_esc == "1" & tipoesc == "1" & (nivel >= "01" & nivel <= "07") & edad > 15
-			}
 
-			if `anioenigh' < 2024 & `anioenigh' >= 2016 {
-				g alum_basica = asis_esc == "1" & tipoesc == "1" & (nivel >= "01" & nivel <= "07") & edad <= 15
-				g alum_medsup = asis_esc == "1" & tipoesc == "1" & (nivel >= "08" & nivel <= "09")
-				g alum_superi = asis_esc == "1" & tipoesc == "1" & (nivel >= "10" & nivel <= "12")
-				g alum_posgra = asis_esc == "1" & tipoesc == "1" & nivel == "13"
-				g alum_adulto = asis_esc == "1" & tipoesc == "1" & (nivel >= "01" & nivel <= "07") & edad > 15
-			}
-
-			if `anioenigh' < 2016 {
-				g alum_basica = asis_esc == "1" & tipoesc == "1" & (nivel >= "1" & nivel <= "3") & edad <= 15
-				g alum_medsup = asis_esc == "1" & tipoesc == "1" & (nivel >= "4" & nivel <= "6")
-				g alum_superi = asis_esc == "1" & tipoesc == "1" & (nivel >= "7" & nivel <= "8")
-				g alum_posgra = asis_esc == "1" & tipoesc == "1" & nivel == "9"
-				g alum_adulto = asis_esc == "1" & tipoesc == "1" & (nivel >= "1" & nivel <= "3") & edad > 15
-			}
-			g alum_adoles = edad > 5 & edad <= 12
-
-			tabstat alum_basica alum_medsup alum_superi alum_posgra alum_adulto alum_adoles [fw=factor], stat(sum) f(%20.0fc) save
-			tempname Educacion
-			matrix `Educacion' = r(StatTotal)
-
-			** 3.2 Primera infancia y cuidados **
+			** 3.1 Primera infancia y cuidados **
 			capture confirm scalar iniciaA
 			if _rc == 0 {
-				local iniciaA = scalar(iniciaA)*`Educacion'[1,6]
+				local iniciaA = scalar(iniciaA)/100*`PIB'
 				local iniciaB = 0
 			}
 			else {
@@ -179,145 +220,143 @@ quietly {
 				if `iniciaB' == . {
 					local iniciaB = 0
 				}
-				scalar iniciaA = (`iniciaA' + `iniciaB')/`Educacion'[1,6]
 				restore
 			}
 
-			* 3.2.1 Scalars *
+			** 3.1.1 Scalars **
+			scalar iniciaAPC = (`iniciaA' + `iniciaB')/`Educacion'[1,6]
 			scalar iniciaAPIB = (`iniciaA' + `iniciaB')/`PIB'*100
 
-			* 3.2.2 Asignación de gasto en variable *
-			g Educación = scalar(iniciaA)*alum_adoles
+			** 3.1.2 Asignación de gasto en variable **
+			g Educación = scalar(iniciaAPC)*alum_adoles
 
 
-			** 3.3 Básica **
+			** 3.2 Básica **
 			capture confirm scalar basica
 			if _rc == 0 {
-				local basica = scalar(basica)*`Educacion'[1,1]
+				local basica = scalar(basica)/100*`PIB'
 			}
 			else {
 				preserve
 				PEF if anio == `aniope' & divCIEP == "Educación" & divSIM != "Inversión" & divSIM != "Cuidados", anio(`aniope') by(desc_subfuncion) min(0) rows(3) nographs
 				local basica = r(educacion_basica)
-				scalar basica = `basica'/`Educacion'[1,1]
 				restore
 			}
 
-			** 3.3.1 Scalars **
+			** 3.2.1 Scalars **
+			scalar basicaPC = `basica'/`Educacion'[1,1]
 			scalar basicaPIB = (`basica')/`PIB'*100
 
-			** 3.3.2 Asignación de gasto en variable **
-			replace Educación = Educación + scalar(basica)*alum_basica
+			** 3.2.2 Asignación de gasto en variable **
+			replace Educación = Educación + scalar(basicaPC)*alum_basica
 
 
-			** 3.4 Media superior **
+			** 3.3 Media superior **
 			capture confirm scalar medsup
 			if _rc == 0 {
-				local medsup = scalar(medsup)*`Educacion'[1,2]
+				local medsup = scalar(medsup)/100*`PIB'
 			}
 			else {
 				preserve
 				PEF if anio == `aniope' & divCIEP == "Educación" & divSIM != "Inversión" & divSIM != "Cuidados", anio(`aniope') by(desc_subfuncion) min(0) nographs
 				local medsup = r(educacion_media_superio)
-				scalar medsup = `medsup'/`Educacion'[1,2]
 				restore
 			}
 
-			** 3.4.1 Scalars **
+			** 3.3.1 Scalars **
+			scalar medsupPC = `medsup'/`Educacion'[1,2]
 			scalar medsupPIB = (`medsup')/`PIB'*100
 
-			** 3.4.2 Asignación de gasto en variable **
-			replace Educación = Educación + scalar(medsup)*alum_medsup
+			** 3.3.2 Asignación de gasto en variable **
+			replace Educación = Educación + scalar(medsupPC)*alum_medsup
 
 
-			** 3.5 Superior **
+			** 3.4 Superior **
 			capture confirm scalar superi
 			if _rc == 0 {
-				local superi = scalar(superi)*`Educacion'[1,3]
+				local superi = scalar(superi)/100*`PIB'
 			}
 			else {
 				preserve
 				PEF if anio == `aniope' & divCIEP == "Educación" & divSIM != "Inversión" & divSIM != "Cuidados", anio(`aniope') by(desc_subfuncion) min(0) nographs
 				local superi = r(educacion_superior)
-				scalar superi = `superi'/`Educacion'[1,3]
 				restore
 			}
 
-			** 3.5.1 Scalars **
+			** 3.4.1 Scalars **
+			scalar superiPC = `superi'/`Educacion'[1,3]
 			scalar superiPIB = (`superi')/`PIB'*100
 
-			** 3.5.2 Asignación de gasto en variable **
-			replace Educación = Educación + scalar(superi)*alum_superi
+			** 3.4.2 Asignación de gasto en variable **
+			replace Educación = Educación + scalar(superiPC)*alum_superi
 
 
-			** 3.6 Posgrado **
+			** 3.5 Posgrado **
 			capture confirm scalar posgra
 			if _rc == 0 {
-				local posgra = scalar(posgra)*`Educacion'[1,4]
+				local posgra = scalar(posgra)/100*`PIB'
 			}
 			else {
 				preserve
 				PEF if anio == `aniope' & divCIEP == "Educación" & divSIM != "Inversión" & divSIM != "Cuidados", anio(`aniope') by(desc_subfuncion) min(0) nographs
 				local posgra = r(posgrado)
-				scalar posgra = `posgra'/`Educacion'[1,4]
 				restore
 			}
 
-			** 3.6.1 Scalars **
+			** 3.5.1 Scalars **
+			scalar posgraPC = `posgra'/`Educacion'[1,4]
 			scalar posgraPIB = (`posgra')/`PIB'*100
 
-			** 3.6.2 Asignación de gasto en variable **
-			replace Educación = Educación + scalar(posgra)*alum_posgra
+			** 3.5.2 Asignación de gasto en variable **
+			replace Educación = Educación + scalar(posgraPC)*alum_posgra
 
 
-			** 3.7 Educación para adultos **
+			** 3.6 Educación para adultos **
 			capture confirm scalar eduadu
 			if _rc == 0 {
-				local eduadu = scalar(eduadu)*`Educacion'[1,5]
+				local eduadu = scalar(eduadu)/100*`PIB'
 			}
 			else {
 				preserve
 				PEF if anio == `aniope' & divCIEP == "Educación" & divSIM != "Inversión" & divSIM != "Cuidados", anio(`aniope') by(desc_subfuncion) min(0) nographs
 				local eduadu = r(educacion_para_adultos)
-
-				scalar eduadu = `eduadu'/`Educacion'[1,5]
 				restore
 			}
 
-			** 3.7.1 Scalars **
+			** 3.6.1 Scalars **
+			scalar eduaduPC = `eduadu'/`Educacion'[1,5]
 			scalar eduaduPIB = (`eduadu')/`PIB'*100
 
-			** 3.7.2 Asignación de gasto en variable **
-			replace Educación = Educación + scalar(eduadu)*alum_adulto
+			** 3.6.2 Asignación de gasto en variable **
+			replace Educación = Educación + scalar(eduaduPC)*alum_adulto
 
 
-			** 3.8 Inversión educativa **
+			** 3.7 Inversión educativa **
 			capture confirm scalar invere
 			if _rc == 0 {
-				local invere = scalar(invere)*(`Educacion'[1,1]+`Educacion'[1,2]+`Educacion'[1,3]+`Educacion'[1,4]+`Educacion'[1,5])
+				local invere = scalar(invere)/100*`PIB'
 			}
 			else {
 				preserve
 				PEF if anio == `aniope' & divCIEP == "Educación" & divSIM == "Inversión" & divSIM != "Cuidados", anio(`aniope') by(divCIEP) min(0) nographs
 				local invere = r(Gasto_neto)
-
-				scalar invere = `invere'/(`Educacion'[1,1]+`Educacion'[1,2]+`Educacion'[1,3]+`Educacion'[1,4]+`Educacion'[1,5])
 				restore
 			}
 
-			** 3.8.1 Scalars **
+			** 3.7.1 Scalars **
+			scalar inverePC = `invere'/`PIB'
 			scalar inverePIB = (`invere')/`PIB'*100
 
-			** 3.8.2 Asignación de gasto en variable **
-			replace Educación = Educación + scalar(invere) if alum_basica+alum_medsup+alum_superi+alum_posgra+alum_adulto > 0
+			** 3.7.2 Asignación de gasto en variable **
+			replace Educación = Educación + scalar(inverePC) if alum_basica+alum_medsup+alum_superi+alum_posgra+alum_adulto > 0
 
 
-			** 3.9 Otros gastos educativos **
+			** 3.8 Otros gastos educativos **
 			capture confirm scalar otrose
 			if _rc == 0 {
-				local cultur = scalar(cultur)*`pobenigh'[1,1]
-				local invest = scalar(invest)*`pobenigh'[1,1]
-				local otrose = scalar(otrose)*(`Educacion'[1,1]+`Educacion'[1,2]+`Educacion'[1,3]+`Educacion'[1,4]+`Educacion'[1,5])
+				local cultur = scalar(cultur)/100*`PIB'
+				local invest = scalar(invest)/100*`PIB'
+				local otrose = scalar(otrose)/100*`PIB'
 			}
 			else {
 				preserve
@@ -325,36 +364,36 @@ quietly {
 				local otrose = r(otros_servicios_educativ) + r(funcion_publica)
 				local cultur = r(cultura) + r(deporte_y_recreacion)
 				local invest = r(desarrollo_tecnologico) + r(investigacion_cientifi) + r(servicios_cientificos_y)
-
-				scalar otrose = `otrose'/(`Educacion'[1,1]+`Educacion'[1,2]+`Educacion'[1,3]+`Educacion'[1,4]+`Educacion'[1,5])
-				scalar cultur = `cultur'/`pobenigh'[1,1]
-				scalar invest = `invest'/`pobenigh'[1,1]
 				restore
 			}
 
-			** 3.9.1 Scalars **
+			** 3.8.1 Scalars **
+			scalar otrosePC = `otrose'/(`Educacion'[1,1]+`Educacion'[1,2]+`Educacion'[1,3]+`Educacion'[1,4]+`Educacion'[1,5])
 			scalar otrosePIB = (`otrose')/`PIB'*100
+
+			scalar culturPC = `cultur'/`pobenigh'[1,1]
 			scalar culturPIB = (`cultur')/`PIB'*100
+
+			scalar investPC = `invest'/`pobenigh'[1,1]
 			scalar investPIB = (`invest')/`PIB'*100
 
-			** 3.9.2 Asignación de gasto en variable **
-			replace Educación = Educación + scalar(otrose) if alum_basica+alum_medsup+alum_superi+alum_posgra+alum_adulto > 0
-			replace Educación = Educación + scalar(cultur)
-			replace Educación = Educación + scalar(invest)
+			** 3.8.2 Asignación de gasto en variable **
+			replace Educación = Educación + scalar(otrosePC) if alum_basica+alum_medsup+alum_superi+alum_posgra+alum_adulto > 0
+			replace Educación = Educación + scalar(culturPC)
+			replace Educación = Educación + scalar(investPC)
 
 
-
-			** 3.10 Total Educación **
+			** 3.9 Total Educación **
 			scalar educacPIB = basicaPIB + medsupPIB + superiPIB + posgraPIB + eduaduPIB + otrosePIB ///
 				+ inverePIB + iniciaAPIB
-			scalar educacion = educacPIB/100*`PIB'/(`Educacion'[1,1]+`Educacion'[1,2]+`Educacion'[1,3]+`Educacion'[1,4]+`Educacion'[1,5])
+			scalar educacionPC = educacPIB/100*`PIB'/(`Educacion'[1,1]+`Educacion'[1,2]+`Educacion'[1,3]+`Educacion'[1,4]+`Educacion'[1,5])
 
 			scalar EducacPIB = basicaPIB + medsupPIB + superiPIB + posgraPIB + eduaduPIB + otrosePIB ///
 				+ culturPIB + investPIB + inverePIB + iniciaAPIB
-			scalar Educacion = EducacPIB/100*`PIB'/`pobenigh'[1,1]
+			scalar EducacionPC = EducacPIB/100*`PIB'/`pobenigh'[1,1]
 
 
-			** 3.11 Resultados **
+			** 3.10 Resultados **
 			noisily di _newline(2) in g "{bf: A. Educaci{c o'}n CIEP}"
 			noisily di _newline in g "{bf:  Gasto por nivel" ///
 				_col(32) %15s in g "Alumnos" ///
@@ -364,59 +403,59 @@ quietly {
 			noisily di in g "  Inicial y comunitaria" ///
 				_col(32) %15.0fc in y (`Educacion'[1,6]) ///
 				_col(49) %7.3fc in y scalar(iniciaAPIB) ///
-				_col(57) %15.0fc in y scalar(iniciaA)
+				_col(57) %15.0fc in y scalar(iniciaAPC)
 			noisily di
 			noisily di in g "  B{c a'}sica" ///
 				_col(32) %15.0fc in y `Educacion'[1,1] ///
 				_col(49) %7.3fc in y scalar(basicaPIB) ///
-				_col(57) %15.0fc in y scalar(basica)
+				_col(57) %15.0fc in y scalar(basicaPC)
 			noisily di in g "  Media superior" ///
 				_col(32) %15.0fc in y `Educacion'[1,2] ///
 				_col(49) %7.3fc in y scalar(medsupPIB) ///
-				_col(57) %15.0fc in y scalar(medsup)
+				_col(57) %15.0fc in y scalar(medsupPC)
 			noisily di in g "  Superior" ///
 				_col(32) %15.0fc in y `Educacion'[1,3] ///
 				_col(49) %7.3fc in y scalar(superiPIB) ///
-				_col(57) %15.0fc in y scalar(superi)
+				_col(57) %15.0fc in y scalar(superiPC)
 			noisily di in g "  Posgrado" ///
 				_col(32) %15.0fc in y `Educacion'[1,4] ///
 				_col(49) %7.3fc in y scalar(posgraPIB) ///
-				_col(57) %15.0fc in y scalar(posgra)
+				_col(57) %15.0fc in y scalar(posgraPC)
 			noisily di in g "  Para adultos" ///
 				_col(32) %15.0fc in y `Educacion'[1,5] ///
 				_col(49) %7.3fc in y scalar(eduaduPIB) ///
-				_col(57) %15.0fc in y scalar(eduadu)
+				_col(57) %15.0fc in y scalar(eduaduPC)
 			noisily di in g "  Otros gastos educativos" ///
 				_col(32) %15.0fc in y (`Educacion'[1,1]+`Educacion'[1,2]+`Educacion'[1,3]+`Educacion'[1,4]+`Educacion'[1,5]) ///
 				_col(49) %7.3fc in y scalar(otrosePIB) ///
-				_col(57) %15.0fc in y scalar(otrose)
+				_col(57) %15.0fc in y scalar(otrosePC)
 			noisily di
 			noisily di in g "  Inversión en educación" ///
 				_col(32) %15.0fc in y (`Educacion'[1,1]+`Educacion'[1,2]+`Educacion'[1,3]+`Educacion'[1,4]+`Educacion'[1,5]) ///
 				_col(49) %7.3fc in y scalar(inverePIB) ///
-				_col(57) %15.0fc in y scalar(invere)
+				_col(57) %15.0fc in y scalar(inverePC)
 			noisily di in g _dup(71) "-"
 			noisily di in g "  {bf:Gasto p{c u'}blico en educación" ///
 				_col(32) %15.0fc in y (`Educacion'[1,1]+`Educacion'[1,2]+`Educacion'[1,3]+`Educacion'[1,4]+`Educacion'[1,5]) ///
 				_col(49) %7.3fc in y scalar(educacPIB) ///
-				_col(57) %15.0fc in y scalar(educacion) "}"
+				_col(57) %15.0fc in y scalar(educacionPC) "}"
 			noisily di in g _dup(71) "-"
 			noisily di in g "  Cultura y deportes" ///
 				_col(32) %15.0fc in y (`pobenigh'[1,1]) ///
 				_col(49) %7.3fc in y scalar(culturPIB) ///
-				_col(57) %15.0fc in y scalar(cultur)
+				_col(57) %15.0fc in y scalar(culturPC)
 			noisily di in g "  Ciencia y tecnología" ///
 				_col(32) %15.0fc in y (`pobenigh'[1,1]) ///
 				_col(49) %7.3fc in y scalar(investPIB) ///
-				_col(57) %15.0fc in y scalar(invest)
+				_col(57) %15.0fc in y scalar(investPC)
 			noisily di in g _dup(71) "-"
 			noisily di in g "  {bf:Gasto público total" ///
 				_col(32) %15.0fc in y (`pobenigh'[1,1]) ///
 				_col(49) %7.3fc in y scalar(EducacPIB) ///
-				_col(57) %15.0fc in y scalar(Educacion) "}"
+				_col(57) %15.0fc in y scalar(EducacionPC) "}"
 
 
-			** 3.12 Put excel **
+			** 3.11 Put excel **
 			if "`excel'" == "excel" {
 				if `aniope' == 2014 {
 					local col "I"
@@ -450,7 +489,7 @@ quietly {
 				putexcel `col'27 = `=scalar(Educacion)', nformat(number_sep)
 			}
 
-			** 3.13 Asignación per cápita en la base de datos de individuos **
+			** 3.12 Asignación per cápita en la base de datos de individuos **
 			*noisily tabstat Educacion [fw=factor], stat(sum) f(%20.0fc)
 		}
 
@@ -463,35 +502,10 @@ quietly {
 
 		if "``tok''" == "salud" | "`1'" == "all" {
 
-			** 4.1 Asegurados y beneficiarios **
-			capture drop benef_*
-			g benef_ssa = 1
-			g benef_imss = inst_1 == "1"
-			g benef_issste = inst_2 == "2"
-			g benef_isssteEst = inst_3 == "3"
-			g benef_pemex = inst_4 == "4"
-				replace benef_pemex = benef_pemex*602513/1169476
-			g benef_issfam = inst_4 == "4"
-				replace benef_issfam = benef_issfam - benef_pemex
-			*if `aniope' >= 2014 {
-				g benef_otros = inst_5 == "5"
-			*}
-			*else {
-			*	g benef_otros = inst_6 == "6"
-			*}
-			g benef_imssbien = 1 // inst_5 == "5"
-			replace benef_imssbien = 0 if benef_imss != 0 | benef_issste != 0 | benef_pemex != 0 | benef_issfam != 0 | benef_otros != 0
-
-			tabstat benef_ssa benef_imss benef_issste benef_pemex benef_issfam benef_otros benef_imssbien ///
-				[fw=factor], stat(sum) f(%20.0fc) save
-			tempname Salud
-			matrix `Salud' = r(StatTotal)
-
-
-			** 4.2 IMSS-Bienestar **
+			** 4.1 IMSS-Bienestar **
 			capture confirm scalar imssbien
 			if _rc == 0 {
-				local imssbien = scalar(imssbien)*`Salud'[1,7]
+				local imssbien = scalar(imssbien)/100*`PIB'
 			}
 			else {
 				preserve
@@ -538,22 +552,22 @@ quietly {
 					local saludbienestar = 0
 				}
 				local imssbien = `imssbien0'+`fassa'+`fortaINSABI'+`atencINSABI'+`nosec'+`saludbienestar'
-				scalar imssbien = `imssbien'/`Salud'[1,7]
 				restore
 			}
 
-			* 4.2.1 Scalars *
+			* 4.1.1 Scalars *
+			scalar imssbienPC = `imssbien'/`Salud'[1,7]
 			scalar imssbienPIB = `imssbien'/`PIB'*100
 
-			* 4.2.2 Asignación de gasto en variable *
+			* 4.1.2 Asignación de gasto en variable *
 			capture drop Salud
-			g Salud = scalar(imssbien)*benef_imssbien
+			g Salud = scalar(imssbienPC)*benef_imssbien
 
 
-			** 4.3 Secretaría de Salud **
+			** 4.2 Secretaría de Salud **
 			capture confirm scalar ssa
 			if _rc == 0 {
-				local ssa = scalar(ssa)*`Salud'[1,1]
+				local ssa = scalar(ssa)/100*`PIB'
 			}
 			else {
 				preserve
@@ -570,129 +584,123 @@ quietly {
 
 				PEF if anio == `aniope' & divCIEP == "Salud" & divSIM != "Inversión", anio(`aniope') by(ramo) min(0) nographs
 				local ssa = r(salud)+`incorpo'+`adeusal'+`caneros'-`fortaINSABI'-`atencINSABI'
-				scalar ssa = `ssa'/`Salud'[1,1]
 				restore
 			}
 
-			* 4.3.1 Scalars *
+			* 4.2.1 Scalars *
+			scalar ssaPC = `ssa'/`Salud'[1,1]
 			scalar ssaPIB = `ssa'/`PIB'*100
 
-			* 4.3.2 Asignación de gasto en variable *	
-			replace Salud = Salud + scalar(ssa)*benef_ssa
+			* 4.2.2 Asignación de gasto en variable *	
+			replace Salud = Salud + scalar(ssaPC)*benef_ssa
 
 
-			** 4.4 IMSS (salud) **
+			** 4.3 IMSS (salud) **
 			capture confirm scalar imss
 			if _rc == 0 {
-				local imss = scalar(imss)*`Salud'[1,2]
+				local imss = scalar(imss)/100*`PIB'
 			}
 			else {
 				preserve
 				PEF if anio == `aniope' & divCIEP == "Salud" & divSIM != "Inversión", anio(`aniope') by(ramo) min(0) nographs
 				local imss = r(instituto_mexicano_del_s)
-
-				local imss = `imss'
-				scalar imss = `imss'/`Salud'[1,2]
 				restore
 			}
 
-			* 4.4.1 Scalars *
+			* 4.3.1 Scalars *
+			scalar imssPC = `imss'/`Salud'[1,2]
 			scalar imssPIB = `imss'/`PIB'*100
 
-			* 4.4.2 Asignación de gasto en variable *	
-			replace Salud = Salud + scalar(imss)*benef_imss
+			* 4.3.2 Asignación de gasto en variable *	
+			replace Salud = Salud + scalar(imssPC)*benef_imss
 
 
-			** 4.5 ISSSTE Federal (salud) **
+			** 4.4 ISSSTE Federal (salud) **
 			capture confirm scalar issste
 			if _rc == 0 {
-				local issste = scalar(issste)*`Salud'[1,3]
+				local issste = scalar(issste)/100*`PIB'
 			}
 			else {
 				preserve
 				PEF if anio == `aniope' & divCIEP == "Salud" & divSIM != "Inversión", anio(`aniope') by(ramo) min(0) nographs
 				local issste = r(instituto_de_seguridad_y)
-
-				local issste = `issste'
-				scalar issste = `issste'/`Salud'[1,3]
 				restore
 			}
 
-			* 4.5.1 Scalars *
+			* 4.4.1 Scalars *
+			scalar issstePC = `issste'/`Salud'[1,3]
 			scalar issstePIB = `issste'/`PIB'*100
 
-			* 4.5.2 Asignación de gasto en variable *	
-			replace Salud = Salud + scalar(issste)*benef_issste
+			* 4.4.2 Asignación de gasto en variable *	
+			replace Salud = Salud + scalar(issstePC)*benef_issste
 
 
-			** 4.6 Pemex (salud) **
+			** 4.5 Pemex (salud) **
 			capture confirm scalar pemex
 			if _rc == 0 {
-				local pemex = scalar(pemex)*`Salud'[1,4]
+				local pemex = scalar(pemex)/100*`PIB'
 			}
 			else {
 				preserve
 				PEF if anio == `aniope' & divCIEP == "Salud" & divSIM != "Inversión", anio(`aniope') by(ramo) min(0) nographs
 				local pemex = r(petroleos_mexicanos)
-				scalar pemex = (`pemex')/`Salud'[1,4]
 				restore
 			}
 
-			* 4.6.1 Scalars *
+			* 4.5.1 Scalars *
+			scalar pemexPC = `pemex'/`Salud'[1,4]
 			scalar pemexPIB = `pemex'/`PIB'*100
 
-			* 4.6.2 Asignación de gasto en variable *	
-			replace Salud = Salud + scalar(pemex)*benef_pemex
+			* 4.5.2 Asignación de gasto en variable *	
+			replace Salud = Salud + scalar(pemexPC)*benef_pemex
 
 			
-			** 4.7 ISSFAM (salud) **
+			** 4.6 ISSFAM (salud) **
 			capture confirm scalar issfam
 			if _rc == 0 {
-				local issfam = scalar(issfam)*`Salud'[1,5]
+				local issfam = scalar(issfam)/100*`PIB'
 			}
 			else {
 				preserve
 				PEF if anio == `aniope' & divCIEP == "Salud" & divSIM != "Inversión", anio(`aniope') by(ramo) min(0) nographs
 				local issfam = r(defensa_nacional) + r(marina)
-				scalar issfam = (`issfam')/`Salud'[1,5]
 				restore
 			}
 
-			** 4.7.1 Scalars **
+			* 4.6.1 Scalars *
+			scalar issfamPC = `issfam'/`Salud'[1,5]
 			scalar issfamPIB = `issfam'/`PIB'*100
 
-			* 4.7.2 Asignación de gasto en variable *	
-			replace Salud = Salud + scalar(issfam)*benef_issfam
+			* 4.6.2 Asignación de gasto en variable *	
+			replace Salud = Salud + scalar(issfamPC)*benef_issfam
 
 
-			** 4.8 Inversión en salud **
+			** 4.7 Inversión en salud **
 			capture confirm scalar invers
 			if _rc == 0 {
-				local invers = scalar(invers)*`Salud'[1,1]
+				local invers = scalar(invers)/100*`PIB'
 			}
 			else {
 				preserve
 				PEF if anio == `aniope' & divCIEP == "Salud" & divSIM == "Inversión", anio(`aniope') by(divCIEP) min(0) nographs
 				local invers = r(Gasto_neto)
-				scalar invers = (`invers')/`Salud'[1,1]
 				restore
 			}
 
-			* 4.8.1 Scalars *
+			* 4.7.1 Scalars *
+			scalar inversPC = `invers'/`Salud'[1,1]
 			scalar inversPIB = `invers'/`PIB'*100
 
-			* 4.8.2 Asignación de gasto en variable *
-			replace Salud = Salud + scalar(invers)*benef_ssa
+			* 4.7.2 Asignación de gasto en variable *
+			replace Salud = Salud + scalar(inversPC)*benef_invers
 
 
-			*********************
-			** 4.9 Total SALUD **
+			** 4.8 Total SALUD **
 			scalar saludPIB = ssaPIB+imssbienPIB+imssPIB+issstePIB+pemexPIB+issfamPIB+inversPIB
-			scalar salud = saludPIB/100*`PIB'/`Salud'[1,1]
+			scalar saludPC = saludPIB/100*`PIB'/`Salud'[1,1]
 
 
-			********************/
-			** 4.10 Resultados **
+			** 4.9 Resultados **
 			noisily di _newline(2) in g "{bf: B. Salud CIEP}"
 			noisily di _newline in g "{bf:  Gasto por instituci{c o'}n" ///
 				_col(32) %15s in g "Asegurados" ///
@@ -702,40 +710,40 @@ quietly {
 			noisily di in g "  SSa" ///
 				_col(32) %15.0fc in y `Salud'[1,1] ///
 				_col(49) %7.3fc in y scalar(ssaPIB) ///
-				_col(57) %15.0fc in y scalar(ssa)
+				_col(57) %15.0fc in y scalar(ssaPC)
 			noisily di in g "  IMSS-Bienestar" ///
 				_col(32) %15.0fc in y `Salud'[1,7] ///
 				_col(49) %7.3fc in y scalar(imssbienPIB) ///
-				_col(57) %15.0fc in y scalar(imssbien)
+				_col(57) %15.0fc in y scalar(imssbienPC)
 			noisily di in g "  IMSS" ///
 				_col(32) %15.0fc in y `Salud'[1,2] ///
 				_col(49) %7.3fc in y scalar(imssPIB) ///
-				_col(57) %15.0fc in y scalar(imss)
+				_col(57) %15.0fc in y scalar(imssPC)
 			noisily di in g "  ISSSTE" ///
 				_col(32) %15.0fc in y `Salud'[1,3] ///
 				_col(49) %7.3fc in y scalar(issstePIB) ///
-				_col(57) %15.0fc in y scalar(issste)
+				_col(57) %15.0fc in y scalar(issstePC)
 			noisily di in g "  Pemex" ///
 				_col(32) %15.0fc in y `Salud'[1,4] ///
 				_col(49) %7.3fc in y scalar(pemexPIB) ///
-				_col(57) %15.0fc in y scalar(pemex)
+				_col(57) %15.0fc in y scalar(pemexPC)
 			noisily di in g "  ISSFAM" ///
 				_col(32) %15.0fc in y `Salud'[1,5] ///
 				_col(49) %7.3fc in y scalar(issfamPIB) ///
-				_col(57) %15.0fc in y scalar(issfam)
+				_col(57) %15.0fc in y scalar(issfamPC)
 			noisily di
 			noisily di in g "  Inversión en salud" ///
 				_col(32) %15.0fc in y `Salud'[1,1] ///
 				_col(49) %7.3fc in y scalar(inversPIB) ///
-				_col(57) %15.0fc in y scalar(invers)
+				_col(57) %15.0fc in y scalar(inversPC)
 			noisily di in g _dup(71) "-"
 			noisily di in g "  {bf:Gasto público total" ///
 				_col(32) %15.0fc in y `Salud'[1,1] ///
 				_col(49) %7.3fc in y scalar(saludPIB) ///
-				_col(57) %15.0fc in y scalar(salud) "}"
+				_col(57) %15.0fc in y scalar(saludPC) "}"
 
 
-			** 4.12 Put excel **
+			** 4.10 Put excel **
 			if "`excel'" == "excel" {
 				if `aniope' == 2014 {
 					local col "I"
@@ -765,7 +773,7 @@ quietly {
 				putexcel `col'23 = `=scalar(salud)', nformat(number_sep)
 			}
 
-			** 4.12 Asignación per cápita en la base de datos de individuos **
+			** 4.11 Asignación per cápita en la base de datos de individuos **
 			*noisily tabstat Salud [fw=factor], stat(sum) f(%20.0fc)
 		}
 
@@ -776,132 +784,111 @@ quietly {
 
 		if "``tok''" == "pensiones" | "`1'" == "all" {
 
-			** 5.1 Pensionados **
-			capture drop pens_*
-			g pens_pam = /*ing_PAM != 0 &*/ edad >= 65
-			g pens_imss = ing_jubila != 0 & formal == 1 & jubilado == 1
-			g pens_issste = ing_jubila != 0 & formal == 2 & jubilado == 1
-			g pens_pemex = ing_jubila != 0 & formal == 3 & jubilado == 1
-				replace pens_pemex = pens_pemex*110000/181290
-			g pens_otro = ing_jubila != 0 & formal == 3 & jubilado == 1
-				replace pens_otro = pens_otro - pens_pemex
-
-			tabstat pens_pam pens_imss pens_issste pens_pemex pens_otro [fw=factor], stat(sum) f(%20.0fc) save
-			tempname Pension
-			matrix `Pension' = r(StatTotal)
-
-			local pens_pam = `Pension'[1,1]
-			local pens_imss = `Pension'[1,2]
-			local pens_issste = `Pension'[1,3]
-			local pens_pemex = `Pension'[1,4]
-			local pens_otro = `Pension'[1,5]
-
-
-			** 5.2 Pensión para adultos mayores **
+			** 5.1 Pensión para adultos mayores **
 			capture confirm scalar pam
 			if _rc == 0 {
-				local pam = scalar(pam)*`pens_pam'
+				local pam = scalar(pam)/100*`PIB'
 			}
 			else {
 				preserve
 				PEF if anio == `aniope' & divCIEP == "Pensión AM", anio(`aniope') by(divCIEP) min(0) nographs
 				local pam = r(Pension_AM)
-				scalar pam = `pam'/`pens_pam'
 				restore
 			}
 
-			** 5.2.1 Scalars **
+			** 5.1.1 Scalars **
+			scalar pamPC = `pam'/`pens_pam'
 			scalar pamPIB = `pam'/`PIB'*100
 
-			** 5.2.2 Asignación de gasto en variable **
-			g Pensión_AM = scalar(pam)*pens_pam
+			** 5.1.2 Asignación de gasto en variable **
+			g Pensión_AM = scalar(pamPC)*pens_pam
 
 
-			** 5.3 Pensiones IMSS **
+			** 5.2 Pensiones IMSS **
 			capture confirm scalar penimss
 			if _rc == 0 {
-				local penimss = scalar(penimss)*`pens_imss'
+				local penimss = scalar(penimss)/100*`PIB'
 			}
 			else {
 				preserve
 				PEF if anio == `aniope' & divCIEP == "Pensiones", anio(`aniope') by(ramo) min(0) nographs
 				local penimss = r(instituto_mexicano_del_s)
-				scalar penimss = `penimss'/`pens_imss'
 				restore
 			}
 
-			** 5.3.1 Scalars **
+			** 5.2.1 Scalars **
+			scalar penimssPC = `penimss'/`pens_imss'
 			scalar penimssPIB = `penimss'/`PIB'*100
 
-			** 5.3.2 Asignación de gasto en variable **
+			** 5.2.2 Asignación de gasto en variable **
 			capture drop Pensiones
-			g Pensiones = scalar(penimss)*pens_imss
+			g Pensiones = scalar(penimssPC)*pens_imss
 
 
-			** 5.4 Pensiones ISSSTE **
+			** 5.3 Pensiones ISSSTE **
 			capture confirm scalar penisss
 			if _rc == 0 {
-				local penisss = scalar(penisss)*`pens_issste'
+				local penisss = scalar(penisss)/100*`PIB'
 			}
 			else {
 				preserve
 				PEF if anio == `aniope' & divCIEP == "Pensiones", anio(`aniope') by(ramo) min(0) nographs
 				local penisss = r(instituto_de_seguridad_y)
-				scalar penisss = `penisss'/`pens_issste'
 				restore
 			}
 
-			** 5.4.1 Scalars **
+			** 5.3.1 Scalars **
+			scalar penisssPC = `penisss'/`pens_issste'
 			scalar penisssPIB = `penisss'/`PIB'*100
 
-			** 5.4.2 Asignación de gasto en variable **
-			replace Pensiones = Pensiones + scalar(penisss)*pens_issste
+			** 5.3.2 Asignación de gasto en variable **
+			replace Pensiones = Pensiones + scalar(penisssPC)*pens_issste
 
 
-			** 5.5 Pensiones Pemex **
+			** 5.4 Pensiones Pemex **
 			capture confirm scalar penpeme
 			if _rc == 0 {
-				local penpeme = scalar(penpeme)*`pens_pemex'
+				local penpeme = scalar(penpeme)/100*`PIB'
 			}
 			else {
 				preserve
 				PEF if anio == `aniope' & divCIEP == "Pensiones", anio(`aniope') by(ramo) min(0) nographs
 				local penpeme = r(petroleos_mexicanos)
-				scalar penpeme = `penpeme'/`pens_pemex'
 				restore
 			}
 
-			** 5.5.1 Scalars **
+			** 5.4.1 Scalars **
+			scalar penpemePC = `penpeme'/`pens_pemex'
 			scalar penpemePIB = `penpeme'/`PIB'*100
 
-			** 5.5.2 Asignación de gasto en variable **
-			replace Pensiones = Pensiones + scalar(penpeme)*pens_pemex
+			** 5.4.2 Asignación de gasto en variable **
+			replace Pensiones = Pensiones + scalar(penpemePC)*pens_pemex
 
 
-			** 5.6 Pensiones CFE, LFC, Ferronales, ISSFAM **
+			** 5.5 Pensiones CFE, LFC, Ferronales, ISSFAM **
 			capture confirm scalar penotro
 			if _rc == 0 {
-				local penotro = scalar(penotro)*`Pension'[1,5]
+				local penotro = scalar(penotro)/100*`PIB'
 			}
 			else {
 				preserve
 				PEF if anio == `aniope' & divCIEP == "Pensiones", anio(`aniope') by(ramo) min(0) nographs
 				local penotro = r(aportaciones_a_seguridad)+r(comision_federal_de_ele)
-				scalar penotro = `penotro'/`Pension'[1,5]
 				restore
 			}
 
-			** 5.6.1 Scalars **
+			** 5.5.1 Scalars **
+			scalar penotroPC = `penotro'/`pens_otro'
 			scalar penotroPIB = `penotro'/`PIB'*100
 
-			** 5.6.2 Asignación de gasto en variable **
-			replace Pensiones = Pensiones + scalar(penotro)*pens_otro
+			** 5.5.2 Asignación de gasto en variable **
+			replace Pensiones = Pensiones + scalar(penotroPC)*pens_otro
 
 			scalar pensionPIB = (`pam'+`penimss'+`penisss'+`penpeme'+`penotro')/`PIB'*100
-			scalar pensiones = (`pam'+`penimss'+`penisss'+`penpeme'+`penotro')/(`pens_pam'+`pens_imss'+`pens_issste'+`pens_pemex'+`pens_otro')
+			scalar pensionPC = (`pam'+`penimss'+`penisss'+`penpeme'+`penotro')/(`pens_pam'+`pens_imss'+`pens_issste'+`pens_pemex'+`pens_otro')
 
 
-			** 5.7 Resultados **
+			** 5.6 Resultados **
 			noisily di _newline(2) in g "{bf: C. Pensiones CIEP}"
 			noisily di _newline in g "{bf:  Gasto por instituci{c o'}n" ///
 				_col(32) %15s in g "Pensionados" ///
@@ -911,31 +898,31 @@ quietly {
 			noisily di in g "  Pensi{c o'}n Adultos Mayores" ///
 				_col(32) %15.0fc in y `pens_pam' ///
 				_col(49) %7.3fc in y scalar(pamPIB) ///
-				_col(57) %15.0fc in y scalar(pam)
+				_col(57) %15.0fc in y scalar(pamPC)
 			noisily di in g "  IMSS" ///
 				_col(32) %15.0fc in y `pens_imss' ///
 				_col(49) %7.3fc in y scalar(penimssPIB) ///
-				_col(57) %15.0fc in y scalar(penimss)
+				_col(57) %15.0fc in y scalar(penimssPC)
 			noisily di in g "  ISSSTE" ///
 				_col(32) %15.0fc in y `pens_issste' ///
 				_col(49) %7.3fc in y scalar(penisssPIB) ///
-				_col(57) %15.0fc in y scalar(penisss)
+				_col(57) %15.0fc in y scalar(penisssPC)
 			noisily di in g "  Pemex" ///
 				_col(32) %15.0fc in y `pens_pemex' ///
 				_col(49) %7.3fc in y scalar(penpemePIB) ///
-				_col(57) %15.0fc in y scalar(penpeme)
+				_col(57) %15.0fc in y scalar(penpemePC)
 			noisily di in g "  CFE, LFC, Ferro, ISSFAM" ///
 				_col(32) %15.0fc in y `pens_otro' ///
 				_col(49) %7.3fc in y scalar(penotroPIB) ///
-				_col(57) %15.0fc in y scalar(penotro)
+				_col(57) %15.0fc in y scalar(penotroPC)
 			noisily di in g _dup(71) "-"
 			noisily di in g "  {bf:Gasto público total" ///
 				_col(32) %15.0fc in y (`pens_pam'+`pens_imss'+`pens_issste'+`pens_pemex'+`pens_otro') ///
-				_col(49) %7.3fc in y (pamPIB+penimssPIB+penisssPIB+penpemePIB+penotroPIB) ///
-				_col(57) %15.0fc in y (`pam'+`penimss'+`penisss'+`penpeme'+`penotro')/(`pens_pam'+`pens_imss'+`pens_issste'+`pens_pemex'+`pens_otro') "}"
+				_col(49) %7.3fc in y pensionPIB ///
+				_col(57) %15.0fc in y pensionPC "}"
 
 
-			** 5.8 Put excel **/
+			** 5.7 Put excel **/
 			if "`excel'" == "excel" {
 				if `aniope' == 2014 {
 					local col "I"
@@ -956,15 +943,15 @@ quietly {
 					local col "N"
 				}
 				putexcel set "$export/Deciles.xlsx", modify sheet("Pensiones")
-				putexcel `col'17 = `=scalar(pam)', nformat(number_sep)
-				putexcel `col'18 = `=scalar(penimss)', nformat(number_sep)
-				putexcel `col'19 = `=scalar(penisss)', nformat(number_sep)
-				putexcel `col'20 = `=scalar(penpeme)', nformat(number_sep)
-				putexcel `col'21 = `=scalar(penotro)', nformat(number_sep)
-				putexcel `col'22 = `=scalar(pensiones)', nformat(number_sep)
+				putexcel `col'17 = `=scalar(pamPC)', nformat(number_sep)
+				putexcel `col'18 = `=scalar(penimssPC)', nformat(number_sep)
+				putexcel `col'19 = `=scalar(penisssPC)', nformat(number_sep)
+				putexcel `col'20 = `=scalar(penpemePC)', nformat(number_sep)
+				putexcel `col'21 = `=scalar(penotroPC)', nformat(number_sep)
+				putexcel `col'22 = `=scalar(pensionPC)', nformat(number_sep)
 			}
 
-			** 5.9 Asignación per cápita en la base de datos de individuos **
+			** 5.8 Asignación per cápita en la base de datos de individuos **
 			*noisily tabstat Pension Pensión_AM [fw=factor], stat(sum) f(%20.0fc)
 		}
 
@@ -985,84 +972,84 @@ quietly {
 			** 6.1 CFE **
 			capture confirm scalar gascfe
 			if _rc == 0 {
-				local gascfe = gascfe*`Energia'[1,1]
+				local gascfe = scalar(gascfe)/100*`PIB'
 			}
 			else {
 				preserve
 				PEF if anio == `aniope' & divCIEP == "Energía" & divSIM != "Inversión" & divSIM != "Costo de la deuda", by(ramo) anio(`aniope') min(0) nographs
 				local gascfe = r(comision_federal_de_ele)
-				scalar gascfe = `gascfe'/`Energia'[1,1]
 				restore
 			}
+			scalar gascfePC = `gascfe'/`Energia'[1,1]
 			scalar gascfePIB = `gascfe'/`PIB'*100
-			g Energía = scalar(gascfe)
+			g Energía = scalar(gascfePC)
 
 
 			** 6.2 Pemex **
 			capture confirm scalar gaspemex
 			if _rc == 0 {
-				local gaspemex = gaspemex*`Energia'[1,1]
+				local gaspemex = scalar(gaspemex)/100*`PIB'
 			}
 			else {
 				preserve
 				PEF if anio == `aniope' & divCIEP == "Energía" & divSIM != "Inversión" & capitulo != 9, by(ramo) anio(`aniope') min(0) nographs
 				local gaspemex = r(petroleos_mexicanos)
-				scalar gaspemex = `gaspemex'/`Energia'[1,1]
 				restore
 			}
+			scalar gaspemexPC = `gaspemex'/`Energia'[1,1]
 			scalar gaspemexPIB = `gaspemex'/`PIB'*100
-			replace Energía = Energía + scalar(gaspemex)
+			replace Energía = Energía + scalar(gaspemexPC)
 
 
 			** 6.3 SENER y otros **
 			capture confirm scalar gassener
 			if _rc == 0 {
-				local gassener = gassener*`Energia'[1,1]
+				local gassener = scalar(gassener)/100*`PIB'
 			}
 			else {
 				preserve
 				PEF if anio == `aniope' & divCIEP == "Energía" & divSIM != "Inversión" & divSIM != "Costo de la deuda", by(ramo) anio(`aniope') min(0) nographs
 				local gassener = r(Gasto_neto)-r(comision_federal_de_ele)-r(petroleos_mexicanos)
-				scalar gassener = `gassener'/`Energia'[1,1]
 				restore
 			}
+			scalar gassenerPC = `gassener'/`Energia'[1,1]
 			scalar gassenerPIB = `gassener'/`PIB'*100
-			replace Energía = Energía + scalar(gassener)
+			replace Energía = Energía + scalar(gassenerPC)
 
 
 			** 6.4 Inversión en energía **
 			capture confirm scalar gasinverf
 			if _rc == 0 {
-				local gasinverf = gasinverf*`Energia'[1,1]
+				local gasinverf = scalar(gasinverf)/100*`PIB'
 			}
 			else {
 				preserve
 				PEF if anio == `aniope' & divCIEP == "Energía" & divSIM == "Inversión" & divSIM != "Costo de la deuda", by(ramo) anio(`aniope') min(0) nographs
 				local gasinverf = r(Gasto_neto)
-				scalar gasinverf = `gasinverf'/`Energia'[1,1]
 				restore
 			}
+			scalar gasinverfPC = `gasinverf'/`Energia'[1,1]
 			scalar gasinverfPIB = `gasinverf'/`PIB'*100
-			replace Energía = Energía + scalar(gasinverf)
+			replace Energía = Energía + scalar(gasinverfPC)
 
 
 			** 6.5 Cost de la deuda (energía) **
 			capture confirm scalar gascosdeue
 			if _rc == 0 {
-				local gascosdeue = gascosdeue*`Energia'[1,1]
+				local gascosdeue = scalar(gascosdeue)/100*`PIB'
 			}
 			else {
 				preserve
 				PEF if anio == `aniope' & divCIEP == "Energía" & divSIM == "Costo de la deuda", by(ramo) anio(`aniope') min(0) nographs
 				local gascosdeue = r(Gasto_neto)
-				scalar gascosdeue = `gascosdeue'/`Energia'[1,1]
 				restore
 			}
+			scalar gascosdeuePC = `gascosdeue'/`Energia'[1,1]
 			scalar gascosdeuePIB = `gascosdeue'/`PIB'*100
-			replace Energía = Energía + scalar(gascosdeue)
+			replace Energía = Energía + scalar(gascosdeuePC)
 
 			scalar gasenergiaPIB = gaspemexPIB+gascfePIB+gassenerPIB+gasinverfPIB+gascosdeuePIB
-			scalar gasenergia = (gaspemexPIB+gascfePIB+gassenerPIB+gasinverfPIB+gascosdeuePIB)/100*`PIB'/`Energia'[1,1]
+			scalar gasenergiaPC = (gaspemexPC+gascfePC+gassenerPC+gasinverfPC+gascosdeuePC)
 
 
 			** 6.6 Resultados **
@@ -1075,29 +1062,29 @@ quietly {
 			noisily di in g "  CFE" ///
 				_col(32) %15.0fc in y `Energia'[1,1] ///
 				_col(49) %7.3fc in y scalar(gascfePIB) ///
-				_col(57) %15.0fc in y scalar(gascfe)
+				_col(57) %15.0fc in y scalar(gascfePC)
 			noisily di in g "  Pemex" ///
 				_col(32) %15.0fc in y `Energia'[1,1] ///
 				_col(49) %7.3fc in y scalar(gaspemexPIB) ///
-				_col(57) %15.0fc in y scalar(gaspemex)
+				_col(57) %15.0fc in y scalar(gaspemexPC)
 			noisily di in g "  SENER y otros" ///
 				_col(32) %15.0fc in y `Energia'[1,1] ///
 				_col(49) %7.3fc in y scalar(gassenerPIB) ///
-				_col(57) %15.0fc in y scalar(gassener)
+				_col(57) %15.0fc in y scalar(gassenerPC)
 			noisily di 
 			noisily di in g "  Inversión en energía" ///
 				_col(32) %15.0fc in y `Energia'[1,1] ///
 				_col(49) %7.3fc in y scalar(gasinverfPIB) ///
-				_col(57) %15.0fc in y scalar(gasinverf)
+				_col(57) %15.0fc in y scalar(gasinverfPC)
 			noisily di in g "  Costo de la deuda (energía)" ///
 				_col(32) %15.0fc in y `Energia'[1,1] ///
 				_col(49) %7.3fc in y scalar(gascosdeuePIB) ///
-				_col(57) %15.0fc in y scalar(gascosdeue)
+				_col(57) %15.0fc in y scalar(gascosdeuePC)
 			noisily di in g _dup(71) "-"
 			noisily di in g "  {bf:Gastos público total" ///
 				_col(32) %15.0fc in y `Energia'[1,1] ///
 				_col(49) %7.3fc in y gasenergiaPIB ///
-				_col(57) %15.0fc in y gasenergia "}"
+				_col(57) %15.0fc in y gasenergiaPC "}"
 
 		}
 
@@ -1110,55 +1097,55 @@ quietly {
 			** 7.1 Gasto federalizado **
 			capture confirm scalar gasfeder
 			if _rc == 0 {
-				local gasfeder = gasfeder*`Energia'[1,1]
+				local gasfeder = scalar(gasfeder)/100*`PIB'
 			}
 			else {
 				preserve
 				PEF if anio == `aniope', by(divCIEP) anio(`aniope') min(0) nographs
 				local gasfeder = r(Part_y_otras_Apor)
-				scalar gasfeder = `gasfeder'/`Energia'[1,1]
 				restore
 			}
+			scalar gasfederPC = `gasfeder'/`Energia'[1,1]
 			scalar gasfederPIB = `gasfeder'/`PIB'*100
 			capture drop Part_y_otras_Apor
-			g Part_y_otras_Apor = scalar(gasfeder)
+			g Part_y_otras_Apor = scalar(gasfederPC)
 
 
 			** 7.2 Costo financiero de la deuda **
 			capture confirm scalar gascosto
 			if _rc == 0 {
-				local gascosto = gascosto*`Energia'[1,1]
+				local gascosto = scalar(gascosto)/100*`PIB'
 			}
 			else {
 				preserve
 				PEF if anio == `aniope', by(divCIEP) anio(`aniope') min(0) nographs
 				local gascosto = r(Costo_de_la_deuda)
-				scalar gascosto = `gascosto'/`Energia'[1,1]
 				restore
 			}
+			scalar gascostoPC = `gascosto'/`Energia'[1,1]
 			scalar gascostoPIB = `gascosto'/`PIB'*100
 
 
 			** 7.3 Gasto en otras inversiones **
 			capture confirm scalar gasinfra
 			if _rc == 0 {
-				local gasinfra = gasinfra*`Energia'[1,1]
+				local gasinfra = scalar(gasinfra)/100*`PIB'
 			}
 			else {
 				preserve
 				PEF if anio == `aniope' & divCIEP != "Energía", by(divCIEP) anio(`aniope') min(0) nographs
 				local gasinfra = r(Otras_inversiones)
-				scalar gasinfra = `gasinfra'/`Energia'[1,1]
 				restore
 			}
+			scalar gasinfraPC = `gasinfra'/`Energia'[1,1]
 			scalar gasinfraPIB = `gasinfra'/`PIB'*100
 			capture drop Otras_inversiones
-			g Otras_inversiones = scalar(gasinfra)
+			g Otras_inversiones = scalar(gasinfraPC)
 
 			** 8.1 Gastos en cuidados **
 			capture confirm scalar gascuidados
 			if _rc == 0 {
-				local gascuidados = gascuidados*`Resto'[1,1]
+				local gascuidados = scalar(gascuidados)/100*`PIB'
 			}
 			else {
 				if `aniope' <= 2023 {
@@ -1176,29 +1163,29 @@ quietly {
 				}
 
 				local gascuidados = r(Gasto_neto) - `FAM_gastocuidados' - `gasmadres'
-				scalar gascuidados = `gascuidados'/`Resto'[1,1]
 				restore
 			}
+			scalar gascuidadosPC = `gascuidados'/`Resto'[1,1]
 			scalar gascuidadosPIB = `gascuidados'/`PIB'*100
 
 			** 7.6 Otros gastos **
 			capture confirm scalar gasotros
 			if _rc == 0 {
-				local gasotros = gasotros*`Energia'[1,1]
+				local gasotros = scalar(gasotros)/100*`PIB'
 			}
 			else {
 				preserve
 				PEF if anio == `aniope', by(divCIEP) anio(`aniope') min(0) nographs
 				local gasotros = r(Otros_gastos)+r(Cuotas_ISSSTE)-`gascuidados'-`gasmadres'
-				scalar gasotros = `gasotros'/`Energia'[1,1]
 				restore
 			}
+			scalar gasotrosPC = `gasotros'/`Energia'[1,1]
 			scalar gasotrosPIB = `gasotros'/`PIB'*100
 			capture drop Otros_gastos
-			g Otros_gastos = scalar(gasotros)
+			g Otros_gastos = scalar(gasotrosPC)
 
 			scalar otrosgasPIB = gasfederPIB+gascostoPIB+gasinfraPIB+gasotrosPIB
-			scalar otrosgas = otrosgasPIB/100*`PIB'/`Energia'[1,1]
+			scalar otrosgasPC = gasfederPC+gascostoPC+gasinfraPC+gasotrosPC
 
 			* Resultados *
 			noisily di _newline(2) in g "{bf: E. Otros gastos CIEP}"
@@ -1210,25 +1197,25 @@ quietly {
 			noisily di in g "  Otras inversiones" ///
 				_col(32) %15.0fc in y `Energia'[1,1] ///
 				_col(49) %7.3fc in y scalar(gasinfraPIB) ///
-				_col(57) %15.0fc in y gasinfra
+				_col(57) %15.0fc in y scalar(gasinfraPC)
 			noisily di in g "  Resto de los gastos" ///
 				_col(32) %15.0fc in y `Energia'[1,1] ///
 				_col(49) %7.3fc in y scalar(gasotrosPIB) ///
-				_col(57) %15.0fc in y gasotros
+				_col(57) %15.0fc in y scalar(gasotrosPC)
 			noisily di
 			noisily di in g "  Part y otras Aport" ///
 				_col(32) %15.0fc in y `Energia'[1,1] ///
 				_col(49) %7.3fc in y scalar(gasfederPIB) ///
-				_col(57) %15.0fc in y gasfeder
+				_col(57) %15.0fc in y scalar(gasfederPC)
 			noisily di in g "  Costo de la deuda (gobierno)" ///
 				_col(32) %15.0fc in y `Energia'[1,1] ///
 				_col(49) %7.3fc in y scalar(gascostoPIB) ///
-				_col(57) %15.0fc in y gascosto
+				_col(57) %15.0fc in y scalar(gascostoPC)
 			noisily di in g _dup(71) "-"
 			noisily di in g "  {bf:Gasto público total" ///
 				_col(32) %15.0fc in y `Energia'[1,1] ///
 				_col(49) %7.3fc in y otrosgasPIB ///
-				_col(57) %15.0fc in y otrosgas "}"
+				_col(57) %15.0fc in y scalar(otrosgasPC) "}"
 
 			*capture drop Inversión
 			*Distribucion Inversión, relativo(infra_entidad) macro(`gasinfra')
@@ -1244,7 +1231,7 @@ quietly {
 			** 8.1 Gastos en cuidados **
 			capture confirm scalar gascuidados
 			if _rc == 0 {
-				local gascuidados = gascuidados*`Resto'[1,1]
+				local gascuidados = scalar(gascuidados)/100*`PIB'
 			}
 			else {
 				if `aniope' <= 2023 {
@@ -1262,16 +1249,16 @@ quietly {
 				}
 
 				local gascuidados = r(Gasto_neto) - `FAM_gastocuidados' - `gasmadres'
-				scalar gascuidados = `gascuidados'/`Resto'[1,1]
 				restore
 			}
+			scalar gascuidadosPC = `gascuidados'/`Resto'[1,1]
 			scalar gascuidadosPIB = `gascuidados'/`PIB'*100
 
 
-			** (.2 Apoyo a madres trabajadoras (cuidados) **
+			** 8.2 Apoyo a madres trabajadoras (cuidados) **
 			capture confirm scalar gasmadres
 			if _rc == 0 {
-				local gasmadres = gasmadres*`MADRES'[1,1]
+				local gasmadres = scalar(gasmadres)/100*`PIB'
 			}
 			else {
 				preserve
@@ -1280,9 +1267,9 @@ quietly {
 				if `gasmadres' == . {
 					local gasmadres = 0
 				}
-				scalar gasmadres = `gasmadres'/`MADRES'[1,1]
 				restore
 			}
+			scalar gasmadresPC = `gasmadres'/`MADRES'[1,1]
 			scalar gasmadresPIB = `gasmadres'/`PIB'*100
 
 			capture drop IngBasico
@@ -1326,18 +1313,16 @@ quietly {
 			* Inputs *
 			capture confirm scalar IngBas
 			if _rc == 0 {
-				local IngBas = scalar(IngBas)*`pobIngBas'[1,1]
-				*local IngBas = `IngBas'-(`IngBas'*(1-.06270)*0.084)
+				local IngBas = scalar(IngBas)/100*`PIB'
 			}
 			else {
 				local IngBas = 0
-				scalar IngBas = `IngBas'/`pobIngBas'[1,1]
 			}
+			scalar IngBasPC = `IngBas'/`pobIngBas'[1,1]
 			scalar IngBasPIB = `IngBas'/`PIB'*100
-			scalar ingbasico = `IngBas'/`pobIngBas'[1,1]
 			
 			scalar transfPIB = IngBasPIB+gasmadresPIB+gascuidadosPIB
-			scalar transf = transfPIB/100*`PIB'/`pobIngBas'[1,1]
+			scalar transfPC = transfPIB/100*`PIB'/`pobIngBas'[1,1]
 
 			if ingbasico18 == 0 & ingbasico65 == 1 {
 				replace IngBasico = `IngBas'/`pobIngBas'[1,1] if edad >= 18
@@ -1366,20 +1351,20 @@ quietly {
 			noisily di in g "  Apoyo a madres trabajadoras" ///
 				_col(32) %15.0fc in y `MADRES'[1,1] ///
 				_col(49) %7.3fc in y scalar(gasmadresPIB) ///
-				_col(57) %15.0fc in y scalar(gasmadres)
+				_col(57) %15.0fc in y scalar(gasmadresPC)
 			noisily di in g "  Gasto en cuidados" ///
 				_col(32) %15.0fc in y `Resto'[1,1] ///
 				_col(49) %7.3fc in y scalar(gascuidadosPIB) ///
-				_col(57) %15.0fc in y gascuidados
+				_col(57) %15.0fc in y scalar(gascuidadosPC)
 
 			noisily di in g _dup(71) "-"
 			noisily di in g "  {bf:Gasto público total" "}" ///
 				_col(32) %15.0fc in y `pobIngBas'[1,1] ///
 				_col(49) %7.3fc in y scalar(transfPIB) ///
-				_col(57) %15.0fc in y scalar(transf)
+				_col(57) %15.0fc in y scalar(transfPC)
 
-			replace IngBasico = IngBasico + scalar(gasmadres) if primi2 == 1
-			replace IngBasico = IngBasico + scalar(gascuidados) if cuidados_pot == 1
+			replace IngBasico = IngBasico + scalar(gasmadresPC) if primi2 == 1
+			replace IngBasico = IngBasico + scalar(gascuidadosPC) if cuidados_pot == 1
 		}
 	}
 
