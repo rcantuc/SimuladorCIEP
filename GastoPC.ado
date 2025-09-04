@@ -105,9 +105,10 @@ quietly {
 		g alum_posgra = asis_esc == "1" & tipoesc == "1" & nivel == "9"
 		g alum_adulto = asis_esc == "1" & tipoesc == "1" & (nivel >= "1" & nivel <= "3") & edad > 15
 	}
-	g alum_adoles = edad > 5 & edad <= 12
+	g alum_totales = alum_basica != 0 | alum_medsup != 0 | alum_superi != 0 | alum_posgra != 0 | alum_adulto != 0
+	g alum_priminf = edad < 3
 
-	tabstat alum_basica alum_medsup alum_superi alum_posgra alum_adulto alum_adoles [fw=factor], stat(sum) f(%20.0fc) save
+	tabstat alum_basica alum_medsup alum_superi alum_posgra alum_adulto alum_totales alum_priminf [fw=factor], stat(sum) f(%20.0fc) save
 	tempname Educacion
 	matrix `Educacion' = r(StatTotal)
 
@@ -228,11 +229,11 @@ quietly {
 			}
 
 			** 3.1.1 Scalars **
-			scalar iniciaAPC = (`iniciaA' + `iniciaB')/`Educacion'[1,6]
+			scalar iniciaAPC = (`iniciaA' + `iniciaB')/`Educacion'[1,7]
 			scalar iniciaAPIB = (`iniciaA' + `iniciaB')/`PIB'*100
 
 			** 3.1.2 Asignación de gasto en variable **
-			g Educación = scalar(iniciaAPC)*alum_adoles
+			g Educación = scalar(iniciaAPC)*alum_priminf
 
 
 			** 3.2 Básica **
@@ -348,11 +349,11 @@ quietly {
 			}
 
 			** 3.7.1 Scalars **
-			scalar inverePC = `invere'/`PIB'
+			scalar inverePC = `invere'/`Educacion'[1,6]
 			scalar inverePIB = (`invere')/`PIB'*100
 
 			** 3.7.2 Asignación de gasto en variable **
-			replace Educación = Educación + scalar(inverePC) if alum_basica+alum_medsup+alum_superi+alum_posgra+alum_adulto > 0
+			replace Educación = Educación + scalar(inverePC) if alum_totales > 0
 
 
 			** 3.8 Otros gastos educativos **
@@ -1329,16 +1330,16 @@ quietly {
 			scalar transfPC = transfPIB/100*`PIB'/`pobIngBas'[1,1]
 
 			if ingbasico18 == 0 & ingbasico65 == 1 {
-				replace IngBasico = `IngBas'/`pobIngBas'[1,1] if edad >= 18
+				replace IngBasico = IngBasPC if edad >= 18
 			}
 			else if ingbasico18 == 1 & ingbasico65 == 0 {
-				replace IngBasico = `IngBas'/`pobIngBas'[1,1] if edad < 65
+				replace IngBasico = IngBasPC if edad < 65
 			}
 			else if ingbasico18 == 0 & ingbasico65 == 0 {
-				replace IngBasico = `IngBas'/`pobIngBas'[1,1] if edad >= 18 & edad < 65
+				replace IngBasico = IngBasPC if edad >= 18 & edad < 65
 			}
 			else { 
-				replace IngBasico = `IngBas'/`pobIngBas'[1,1]
+				replace IngBasico = IngBasPC
 			}
 
 			* Resultados *
