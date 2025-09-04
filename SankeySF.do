@@ -4,7 +4,7 @@
 timer on 9
 if "`1'" == "" {
 	local 1 = "decil"
-	local 2 = 2023
+	local 2 = 2025
 }
 
 
@@ -30,7 +30,7 @@ egen `Consumo'  = rsum(IVA_Sim IEPSP_Sim IEPSNP_Sim ISAN_Sim IMPORT_Sim)
 egen `Capital'  = rsum(ISRPM_Sim OTROSK_Sim)
 egen `FMP' = rsum(FMP_Sim)
 
-collapse (sum) ing_Imp_al_trabajo=`Laboral' ing__Imp_al_consumo=`Consumo' ///
+collapse (sum) ing_Imp_al_trabajo=AlTrabajo ing__Imp_al_consumo=`Consumo' ///
 	ing___Imp_al_capital=`Capital' /*ing____FMP=`FMP'*/ [fw=factor], by(`1')
 
 * to *
@@ -125,7 +125,7 @@ set obs `=_N+5'
 replace from = 97 in -1
 label define from 97 "Costo de la deuda", add
 
-replace profile = scalar(gascosto)*`pobtot'[1,1] in -1
+replace profile = scalar(gascostoPC)*`pobtot'[1,1] in -1
 
 replace to = 14 in -1
 label define `1' 14 "Sistema financiero", add
@@ -134,7 +134,7 @@ label define `1' 14 "Sistema financiero", add
 replace from = 94 in -2
 label define from 94 "Otras Part y Aport", add
 
-replace profile = scalar(gasfeder)*`pobtot'[1,1] in -2
+replace profile = scalar(gasfederPC)*`pobtot'[1,1] in -2
 
 replace to = 12 in -2
 label define `1' 12 "Estados y municipios", add
@@ -143,7 +143,7 @@ label define `1' 12 "Estados y municipios", add
 replace from = 95 in -3
 label define from 95 "Otros gastos", add
 
-replace profile = scalar(gasotros)*`pobtot'[1,1] in -3
+replace profile = scalar(gasotrosPC)*`pobtot'[1,1] in -3
 
 replace to = 13 in -3
 label define `1' 13 "No distribuibles", add
@@ -152,7 +152,7 @@ label define `1' 13 "No distribuibles", add
 replace from = 96 in -4
 label define from 96 "Energía", add
 
-replace profile = (scalar(gaspemex)+scalar(gascfe)+scalar(gassener)+scalar(gasinverf))*`pobtot'[1,1] in -4
+replace profile = (scalar(gaspemexPC)+scalar(gascfePC)+scalar(gassenerPC)+scalar(gasinverfPC))*`pobtot'[1,1] in -4
 
 replace to = 11 in -4
 label define `1' 11 "CFE Pemex SENER", add
@@ -160,7 +160,7 @@ label define `1' 11 "CFE Pemex SENER", add
 * Costo de la deuda energía *
 replace from = 96 in -5
 
-replace profile = scalar(gascosdeue)*`pobtot'[1,1] in -5
+replace profile = scalar(gascosdeuePC)*`pobtot'[1,1] in -5
 
 replace to = 14 in -5
 

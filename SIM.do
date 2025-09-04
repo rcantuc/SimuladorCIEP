@@ -34,7 +34,7 @@ cd "`c(sysdir_site)'"
 
 ** Parámetros
 global id = "ciepmx"								// ID USUARIO
-scalar aniovp = 2026								// ANIO VALOR PRESENTE
+scalar aniovp = 2025								// ANIO VALOR PRESENTE
 scalar anioPE = 2025								// ANIO PAQUETE ECONÓMICO
 scalar anioenigh = 2024								// ANIO ENIGH
 
@@ -102,8 +102,9 @@ noisily SCN, anio(`=aniovp') $textbook $update nographs
 
 **/
 **# 3. HOGARES: ARMONIZACIÓN MACRO-MICRO
-***
-forvalues anio = `=anioPE-9'(-1)`=anioPE-9' {
+/***
+
+forvalues anio = `=anioPE'(1)`=anioPE' {
 
 	** 3.1 Encuesta Nacional de Ingresos y Gastos de los Hogares (Usos)
 	noisily run "`c(sysdir_site)'/Expenditure.do" `anio'
@@ -132,7 +133,7 @@ decode divCODE, g(divSIM)
 collapse (sum) recaudacion, by(anio divSIM) fast
 save `"`c(sysdir_site)'/users/$id/LIF.dta"', replace
 
-/** 4.1.1 Parámetros: Ingresos **
+** 4.1.1 Parámetros: Ingresos **
 if "$update" != "update" {
 	scalar ISRASPIB  =   3.670 					// ISR (asalariados)
 	scalar ISRPFPIB  =   0.233 					// ISR (personas f{c i'}sicas)
@@ -338,14 +339,14 @@ if "$update" != "update" {
 
 ** 4.2.2 Gasto per cápita **/
 noisily GastoPC educacion salud pensiones energia resto transferencias, aniope(`=anioPE') aniovp(`=aniovp')
-exit
+
 
 
 **/
 ** 4.3 Saldo Histórico de Requerimientos Financieros del Sector Público **
 **
 
-/* SHRFSP: Total, Interno, Externo (como % del PIB)
+* SHRFSP: Total, Interno, Externo (como % del PIB)
 *                2025  2026  2027  2028  2029  2030
 matrix shrfsp = (52.3, 52.3, 52.3, 52.3, 52.3, 52.3)
 
@@ -404,11 +405,10 @@ noisily SHRFSP, anio(`=anioPE') ultanio(2008) $nographs $update $textbook
 ***
 use `"`c(sysdir_site)'/users/$id/ingresos.dta"', clear
 merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/users/$id/gastos.dta", nogen
-capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/users/$id/isr_mod.dta", ///
+*capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/users/$id/isr_mod.dta", ///
 	nogen replace update keepus(ISRAS_Sim ISRPF_Sim ISRPM_Sim CUOTAS_Sim)
-capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/users/$id/iva_mod.dta", ///
+*capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/users/$id/iva_mod.dta", ///
 	nogen replace update keepus(IVA_Sim)
-save `"`c(sysdir_site)'/users/$id/aportaciones.dta"', replace
 capture drop ImpuestosAportaciones
 
 
@@ -446,6 +446,7 @@ foreach k of varlist /*AlTrabajo AlCapital AlConsumo ImpuestosAportaciones ///
 	*noisily Perfiles `k' [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
 	noisily Simulador `k' [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot //boot(10)
 }
+save `"`c(sysdir_site)'/users/$id/aportaciones.dta"', replace
 
 
 ** 6.4 (*) Cuentas generacionales
