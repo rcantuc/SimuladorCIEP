@@ -469,7 +469,7 @@ save `"`c(sysdir_site)'/users/$id/aportaciones.dta"', replace
 
 ** 7.2 Sankey del sistema fiscal
 foreach k in decil grupoedad sexo rural escol {
-	noisily run "`c(sysdir_site)'/SankeySF.do" `k' `=anioPE'
+	*noisily run "`c(sysdir_site)'/SankeySF.do" `k' `=anioPE'
 }
 
 
