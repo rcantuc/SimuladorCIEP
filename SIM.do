@@ -20,11 +20,11 @@ timer on 1
 
 ** Directorios de trabajo (uno por computadora)
 if "`c(username)'" == "ricardo" {						// iMac Ricardo
-	sysdir set SITE "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
+	*sysdir set SITE "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
 	*global export "/Users/ricardo/CIEP Dropbox/TextbookCIEP/images"
 }
 else if "`c(username)'" == "servidorciep" {					// Servidor CIEP
-	sysdir set SITE "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
+	*sysdir set SITE "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
 	*global export "/home/servidorciep/CIEP Dropbox/TextbookCIEP/images"
 }
 else if "`c(console)'" != "" {							// Servidor Web
@@ -93,10 +93,10 @@ global inf2029 = 3.0
 global inf2030 = 3.0
 global inf2031 = 3.0
 
-noisily PIBDeflactor if anio >= 2005, aniovp(`=aniovp') aniomax(2031) $textbook $update nographs
+noisily PIBDeflactor if anio >= 2005, aniovp(`=aniovp') aniomax(2031) $textbook nographs //$update
 
 ** 2.4 Sistema de Cuentas Nacionales (sin inputs)
-noisily SCN, anio(`=aniovp') $textbook $update nographs
+noisily SCN, anio(`=aniovp') $textbook nographs //$update
 
 
 
@@ -113,6 +113,7 @@ forvalues anio = `=anioPE'(1)`=anioPE' {
 	noisily run `"`c(sysdir_site)'/Households.do"' `anio'
 
 	** 3.3 Perfiles de la política económica actual (Paquete Económico)
+	noisily di _newline in g "Actualizando: " in y "04_master/perfiles`anio'.dta"
 	noisily run "`c(sysdir_site)'/PerfilesSim.do" `anio'
 }
 
@@ -123,7 +124,7 @@ forvalues anio = `=anioPE'(1)`=anioPE' {
 ***
 
 ** 4.1 Ley de Ingresos de la Federación
-noisily LIF if divLIF != 10, anio(`=anioPE') by(divOrigen) $update 		///
+noisily LIF, anio(`=anioPE') by(divOrigen) $update 		///
 	title("Ingresos presupuestarios") 					/// Cambiar título de la gráfica
 	desde(`=`=anioPE'-12') 							/// Año de inicio para el PROMEDIO
 	min(0)	 								/// Mínimo 0% del PIB (no negativos)
@@ -155,7 +156,7 @@ if "$update" != "update" {
 	scalar IMPORTPIB =   0.422  					// Importaciones
 }
 
-** 4.1.2 Parámetros: ISR **/
+** 4.1.2 Parámetros: ISR **
 * Anexo 8 de la Resolución Miscelánea Fiscal para 2025 *
 * Tarifa para el cálculo del impuesto correspondiente al ejericio 2025 
 * a que se refieren los artículos 97 y 152 de la Ley del ISR
@@ -274,7 +275,7 @@ if "`cambioiva'" == "1" {
 	scalar IVA = IVAPIB/100*scalar(pibY)
 }
 
-** 4.1.8 Tasas Efectivas **
+** 4.1.8 Tasas Efectivas **/
 noisily TasasEfectivas, anio(`=anioPE') //eofp
 if "$nographs" != "nographs" {
 	*do "`c(sysdir_site)'/Graphs_TE.do"
@@ -292,7 +293,7 @@ noisily PEF, anio(`=anioPE') by(divSIM) ///$update 				///
 	rows(2)									// Número de filas en la leyenda
 
 
-** 4.2.1 Parámetros: Gasto **
+** 4.2.1 Parámetros: Gasto **/
 if "$update" != "update" {
 	scalar iniciaA     =   0.017    				// Inicial
 	scalar basica      =   1.863    				// Educación b{c a'}sica
@@ -386,8 +387,8 @@ forvalues k = 2025(1)2030 {
 	global costodeuda`k' = costodeuda[1,`j']
 }
 
-* SHRFSP: comando */
-set scheme ciepdeuda
+* SHRFSP: comando *
+*set scheme ciepdeuda
 *scalar tasaEfectiva = 6.801
 noisily SHRFSP, anio(`=anioPE') ultanio(2008) $nographs $update $textbook
 
@@ -405,10 +406,14 @@ noisily SHRFSP, anio(`=anioPE') ultanio(2008) $nographs $update $textbook
 ***
 use `"`c(sysdir_site)'/users/$id/ingresos.dta"', clear
 merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/users/$id/gastos.dta", nogen
-*capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/users/$id/isr_mod.dta", ///
-	nogen replace update keepus(ISRAS_Sim ISRPF_Sim ISRPM_Sim CUOTAS_Sim)
-*capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/users/$id/iva_mod.dta", ///
-	nogen replace update keepus(IVA_Sim)
+if "`cambioisrpf'" == "1" {
+	capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/users/$id/isr_mod.dta", ///
+		nogen replace update keepus(ISRAS_Sim ISRPF_Sim ISRPM_Sim CUOTAS_Sim)
+}
+if "`cambioiva'" == "1" {
+	capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/users/$id/iva_mod.dta", ///
+		nogen replace update keepus(IVA_Sim)
+}
 capture drop ImpuestosAportaciones
 
 
@@ -444,7 +449,7 @@ foreach k of varlist /*AlTrabajo AlCapital AlConsumo ImpuestosAportaciones ///
 	ISRPM_Sim ISRAS_Sim ISRPF_Sim CUOTAS_Sim IVA_Sim IEPSNP_Sim IEPSP_Sim ISAN_Sim IMPORT_Sim ///
 	Pensiones Pensión_AM IngBasico Educación Salud Transferencias*/ AportacionesNetas {
 	*noisily Perfiles `k' [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
-	noisily Simulador `k' [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot //boot(10)
+	*noisily Simulador `k' [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot //boot(10)
 }
 save `"`c(sysdir_site)'/users/$id/aportaciones.dta"', replace
 
@@ -459,7 +464,7 @@ save `"`c(sysdir_site)'/users/$id/aportaciones.dta"', replace
 ***
 
 ** 7.1 Brecha fiscal
-noisily FiscalGap, anio(`=anioPE') end(2030) aniomin(2015) $nographs desde(`=anioPE-15') discount(10) //update
+*noisily FiscalGap, anio(`=anioPE') end(2030) aniomin(2015) $nographs desde(`=anioPE-15') discount(10) //update
 
 
 ** 7.2 Sankey del sistema fiscal

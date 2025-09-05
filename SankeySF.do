@@ -23,15 +23,8 @@ scalar pibY = real(subinstr(scalar(pibY),",","",.))*1000000
 **********************************/
 ** Eje 1: Generación del ingreso **
 use `"`c(sysdir_site)'/users/$id/aportaciones.dta"', clear
-
-tempvar Laboral Consumo Capital FMP
-egen `Laboral'  = rsum(ISRAS_Sim ISRPF_Sim CUOTAS_Sim)
-egen `Consumo'  = rsum(IVA_Sim IEPSP_Sim IEPSNP_Sim ISAN_Sim IMPORT_Sim)
-egen `Capital'  = rsum(ISRPM_Sim OTROSK_Sim)
-egen `FMP' = rsum(FMP_Sim)
-
-collapse (sum) ing_Imp_al_trabajo=AlTrabajo ing__Imp_al_consumo=`Consumo' ///
-	ing___Imp_al_capital=`Capital' /*ing____FMP=`FMP'*/ [fw=factor], by(`1')
+collapse (sum) ing_Imp_al_trabajo=AlTrabajo ing__Imp_al_consumo=AlConsumo ///
+	ing___Imp_al_capital=AlCapital /*ing____FMP=FMP_Sim*/ [fw=factor], by(`1')
 
 * to *
 tempvar to
@@ -46,30 +39,30 @@ rename `1' from
 set obs `=_N+1'
 replace from = 99 in -1
 replace profile = (scalar(IMSSPIB)+scalar(ISSSTEPIB))/100*scalar(pibY) in -1
-replace to = 4 in -1
-label define to 4 "Empresas públicas", add
+replace to = 99 in -1
+label define to 99 "Empresas públicas", add
 label define `1' 99 "IMSS, ISSSTE", add
 
-* CFE *
+/* CFE *
 set obs `=_N+1'
 replace from = 98 in -1
 replace profile = scalar(CFEPIB)/100*scalar(pibY) in -1
-replace to = 4 in -1
+replace to = 99 in -1
 label define `1' 98 "CFE", add
 
-* Pemex *
+* Pemex */
 set obs `=_N+1'
 replace from = 97 in -1
-replace profile = (scalar(PEMEXPIB))/100*scalar(pibY) in -1
-replace to = 4 in -1
-label define `1' 97 "Pemex", add
+replace profile = (scalar(PEMEXPIB)+scalar(CFEPIB))/100*scalar(pibY) in -1
+replace to = 99 in -1
+label define `1' 97 "Pemex, CFE", add
 
 * FMP *
 set obs `=_N+1'
 replace from = 97 in -1
 replace profile = scalar(FMPPIB)/100*scalar(pibY) in -1
-replace to = 5 in -1
-label define to 5 "FMP", add
+replace to = 100 in -1
+label define to 100 "FMP", add
 
 * TOTAL *
 tabstat profile, stat(sum) f(%20.0fc) save
@@ -132,7 +125,7 @@ label define `1' 14 "Sistema financiero", add
 
 * Aportaciones y participaciones *
 replace from = 94 in -2
-label define from 94 "Otras Part y Aport", add
+label define from 94 "Part y otras Aport", add
 
 replace profile = scalar(gasfederPC)*`pobtot'[1,1] in -2
 
@@ -184,12 +177,12 @@ if `gastot'[1,1]-`ingtot'[1,1] > 0 {
 
 	set obs `=_N+1'
 
-	replace from = 100 in -1
+	replace from = 101 in -1
 	replace profile = (`gastot'[1,1]-`ingtot'[1,1]) in -1
-	replace to = 6 in -1
+	replace to = 101 in -1
 
-	label define `1' 100 "Futuro", add
-	label define to 6 "Endeudamiento", add
+	label define `1' 101 "Futuro", add
+	label define to 101 "Endeudamiento", add
 
 	save `eje1', replace
 }
@@ -198,12 +191,12 @@ else {
 
 	set obs `=_N+1'
 
-	replace from = 101 in -1
+	replace from = 102 in -1
 	replace profile = (`ingtot'[1,1]-`gastot'[1,1]) in -1
 	replace to = 15 in -1
 
 	label define `1' 15 "Futuro", add
-	label define from 101 "Ahorro", add
+	label define from 102 "Ahorro", add
 
 	save `eje4', replace
 }
