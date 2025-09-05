@@ -98,7 +98,7 @@ quietly {
 
 	** 2.3 Update LIF **
 	if "`update'" == "update" | "`updated'" != "yes" {
-		noisily UpdateLIF
+		noisily UpdateLIF `update'
 	}
 
 
@@ -580,12 +580,13 @@ end
 *************************
 program define UpdateLIF
 
+	args update
 
 	************************
 	*** 1. BASE DE DATOS ***
 	************************
 	capture confirm file "`c(sysdir_site)'/01_raw/LIFs.dta"
-	if _rc != 0 {
+	if _rc != 0 | "`update'" == "update" {
 		capture mkdir "`c(sysdir_site)'/01_raw/"
 		import excel "https://www.dropbox.com/scl/fi/d5tof6svvpjd5h5tef570/LIFs.xlsx?rlkey=drn1a2fenarwo9cooe4o9eemh&st=iuykql5n&dl=1", clear firstrow
 		save "`c(sysdir_site)'/01_raw/LIFs.dta", replace
@@ -639,7 +640,7 @@ program define UpdateLIF
 	levelsof serie, local(serie)
 	foreach k of local serie {
 		if "`k'" != "NA" {
-			noisily DatosAbiertos `k', proy //nog
+			noisily DatosAbiertos `k', nog proy
 
 			rename clave_de_concepto serie
 			keep anio serie nombre monto mes acum_prom

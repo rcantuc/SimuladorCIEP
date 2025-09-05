@@ -1984,6 +1984,7 @@ replace escol = 1 if nivelaprob == "1" | nivelaprob == "2" | nivelaprob == "3"
 replace escol = 2 if nivelaprob == "4" | nivelaprob == "6"
 replace escol = 3 if nivelaprob == "5" | nivelaprob == "7"
 replace escol = 4 if nivelaprob == "8" | nivelaprob == "9"
+replace escol = 0 if escol == .
 
 * Labels *
 label define escol 0 "Sin escolaridad" 1 "Básica" 2 "Media Superior" 3 "Superior" 4 "Posgrado"

@@ -126,8 +126,8 @@ quietly {
 	**# 4 Impuestos al capital ***
 	******************************
 	scalar CapIncImpPIB = real(CapIncImpPIB)
-	scalar IngKPublicosPIB = FMPPIB+PEMEXPIB+CFEPIB+IMSSPIB+ISSSTEPIB
-	scalar IngKPublicosPor = (FMPPIB+PEMEXPIB+CFEPIB+IMSSPIB+ISSSTEPIB)/(CapIncImpPIB)*100
+	scalar IngKPublicosPIB = PEMEXPIB+CFEPIB+IMSSPIB+ISSSTEPIB
+	scalar IngKPublicosPor = (PEMEXPIB+CFEPIB+IMSSPIB+ISSSTEPIB)/(CapIncImpPIB)*100
 
 	noisily di _newline(2) in y "{bf: B. " in y "Impuestos al capital" "}"
 	noisily di _newline in g "{bf:  Cuentas Nacionales" ///
@@ -173,16 +173,32 @@ quietly {
 	scalar OTROSKPor = (OTROSKPIB)/(CapIncImpPIB-IngKPublicosPIB)*100
 
 
+	** 5.1 FMP (energía) **
+	*capture confirm scalar FMP
+	*if _rc == 0 {
+	*	local FMP = scalar(FMP)
+	*}
+	*else {
+	*	scalar FMP = FMPPIB
+	*}
+	noisily di in g "  Ing. de capital privado" ///
+		_col(30) %7.3fc in y (CapIncImpPIB-IngKPublicosPIB) ///
+		_col(40) in g "FMP" ///
+		_col(55) %7.3fc in y (FMPPIB) ///
+		_col(63) %7.3fc in y (FMPPIB)/(CapIncImpPIB-IngKPublicosPIB)*100 " %"
+	scalar FMPPor = (FMPPIB)/(CapIncImpPIB-IngKPublicosPIB)*100
+
+
 	** 4.3 TOTAL CAPITAL PRIVADO **
 	noisily di in g _dup(71) "-"
 	noisily di in g "{bf:  Ing. de capital privado" ///
 		_col(30) %7.3fc in y (CapIncImpPIB-IngKPublicosPIB) ///
 		_col(40) in g "Recaudaci{c o'}n" ///
-		_col(55) %7.3fc in y (ISRPMPIB+OTROSKPIB) ///
-		_col(63) %7.3fc in y (ISRPMPIB+OTROSKPIB)/(CapIncImpPIB-IngKPublicosPIB)*100 " %" "}"
+		_col(55) %7.3fc in y (ISRPMPIB+OTROSKPIB+FMPPIB) ///
+		_col(63) %7.3fc in y (ISRPMPIB+OTROSKPIB+FMPPIB)/(CapIncImpPIB-IngKPublicosPIB)*100 " %" "}"
 	scalar IngKPrivadoTotPIB = CapIncImpPIB-IngKPublicosPIB
-	scalar IngKPrivadoTotPor = (ISRPMPIB+OTROSKPIB)/(CapIncImpPIB-IngKPublicosPIB)*100
-	scalar ImpKPrivadoPIB = ISRPMPIB+OTROSKPIB
+	scalar IngKPrivadoTotPor = (ISRPMPIB+OTROSKPIB+FMPPIB)/(CapIncImpPIB-IngKPublicosPIB)*100
+	scalar ImpKPrivadoPIB = ISRPMPIB+OTROSKPIB+FMPPIB
 
 
 
@@ -198,22 +214,6 @@ quietly {
 		_col(55) %7s in g "% PIB" ///
 		_col(63) in g "  TE (%)" "}"
 	noisily di in g _dup(71) "-"
-
-
-	** 5.1 FMP (energía) **
-	*capture confirm scalar FMP
-	*if _rc == 0 {
-	*	local FMP = scalar(FMP)
-	*}
-	*else {
-	*	scalar FMP = FMPPIB
-	*}
-	noisily di in g "  Ingresos de capital" ///
-		_col(30) %7.3fc in y (CapIncImpPIB) ///
-		_col(40) in g "FMP" ///
-		_col(55) %7.3fc in y (FMPPIB) ///
-		_col(63) %7.3fc in y (FMPPIB)/(CapIncImpPIB)*100 " %"
-	scalar FMPPor = (FMPPIB)/(CapIncImpPIB)*100
 
 
 	** 5.2 Pemex (energía) **
@@ -422,7 +422,7 @@ quietly {
 		ISRPM OTROSK ///
 		FMP PEMEX CFE IMSS ISSSTE ///
 		IVA IEPSNP IEPSP ISAN IMPORT {
-		
+
 		Distribucion `k'_Sim, relativo(`k') macro(`=scalar(`k'PIB)/100*scalar(pibY)')
 	}
 
