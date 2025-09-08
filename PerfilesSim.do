@@ -114,7 +114,9 @@ local InfraT = r(Gasto_neto)
 LIF, anio(`1') by(divSIM) nographs min(0)
 local recursos = r(divSIM)
 foreach k of local recursos {
-	local `=substr("`k'",1,7)' = scalar(`k')
+	if `=substr("`k'",1,7)' != . {
+		local `=substr("`k'",1,7)' = scalar(`k')
+	}
 }
 local IngKPublicos = `FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE'
 
