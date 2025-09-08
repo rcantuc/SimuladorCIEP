@@ -174,7 +174,8 @@ quietly {
 
 	capture tabstat gasto gastoPIB if anio == `anio' & lower(`by') != "cuotas issste", by(`by') stat(sum) f(%20.0fc) save
 	if _rc != 0 {
-		noisily di in g "No hay informaci{c o'}n para el a{c n~}o `anio'."
+		noisily di in g " No hay informaci{c o'}n para el a{c n~}o `anio'."
+		return local rc = "NoData"
 		exit
 	}
 	tempname mattot
@@ -688,11 +689,11 @@ program define UpdatePEF
 		save "`c(sysdir_site)'/01_raw/PEFs/CP 2023.dta", replace
 	}
 
-	// PEF 2024
-	capture confirm file "`c(sysdir_site)'/01_raw/PEFs/PEF 2024.dta"
+	// CP 2024
+	capture confirm file "`c(sysdir_site)'/01_raw/PEFs/CP 2024.dta"
 	if _rc != 0 {
-		import excel "https://www.dropbox.com/scl/fi/puf4ut4o2ppjrenxmjmb7/PEF-2024.xlsx?rlkey=1lijn8yr90o8uzxz8ytz0je59&dl=1", clear firstrow case(lower) allstring sheet("2024")
-		save "`c(sysdir_site)'/01_raw/PEFs/PEF 2024.dta", replace
+		import excel "https://www.dropbox.com/scl/fi/widixtowhwetugq2ipf6r/CP-2024.xlsx?rlkey=3weelo2kaicjqkxq1ck339yk2&dl=1", clear firstrow case(lower) allstring sheet("2024")
+		save "`c(sysdir_site)'/01_raw/PEFs/CP 2024.dta", replace
 	}
 
 	// PEF 2025

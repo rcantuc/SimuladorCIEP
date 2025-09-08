@@ -34,8 +34,8 @@ cd "`c(sysdir_site)'"
 
 ** Parámetros
 global id = "ciepmx"								// ID USUARIO
-scalar aniovp = 2025								// ANIO VALOR PRESENTE
-scalar anioPE = 2025								// ANIO PAQUETE ECONÓMICO
+scalar aniovp = 2026								// ANIO VALOR PRESENTE
+scalar anioPE = 2026								// ANIO PAQUETE ECONÓMICO
 scalar anioenigh = 2024								// ANIO ENIGH
 
 ** Opciones
