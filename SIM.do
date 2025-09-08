@@ -121,7 +121,7 @@ forvalues anio = `=anioPE'(1)`=anioPE' {
 
 **/
 **# 4. SISTEMA FISCAL
-***
+/***
 
 ** 4.1 Ley de Ingresos de la Federación
 noisily LIF, anio(`=anioPE') by(divOrigen) $update 		///
@@ -275,7 +275,7 @@ if "`cambioiva'" == "1" {
 	scalar IVA = IVAPIB/100*scalar(pibY)
 }
 
-** 4.1.8 Tasas Efectivas **/
+** 4.1.8 Tasas Efectivas **
 noisily TasasEfectivas, anio(`=anioPE') //eofp
 if "$nographs" != "nographs" {
 	*do "`c(sysdir_site)'/Graphs_TE.do"
