@@ -8,6 +8,7 @@ if "`1'" == "" {
 	clear all
 	local 1 = 2025
 	local anioenigh = 2024
+	scalar aniovp = 2026
 }
 else {
 	if `1' >= 2024 {
@@ -35,7 +36,7 @@ else {
 		local anioenigh = 2010
 	}
 }
-local aniovp = `1'
+local aniovp = `=aniovp'
 
 
 
@@ -569,8 +570,8 @@ keep ISRAS ISRPF CUOTAS ISRPM OTROSK FMP PEMEX CFE IMSS ISSSTE IVA IEPSNP IEPSP 
 	disc* gas_pc_Salu asis_esc tipoesc nivel inst_* ing_jubila jubilado /// GastoPC.ado
 	sbc cuotasTPF deduc_isr ing_bruto_tax *_tpm exen_tot prop* ing_subor // ISR_Mod.do
 if `c(version)' > 13.1 {
-	save "`c(sysdir_site)'/04_master/perfiles`1'.dta", replace
+	save "`c(sysdir_site)'/04_master/perfiles`=aniovp'.dta", replace
 }
 else {
-	saveold "`c(sysdir_site)'/04_master/perfiles`1'.dta", replace version(13)	
+	saveold "`c(sysdir_site)'/04_master/perfiles`=aniovp'.dta", replace version(13)	
 }

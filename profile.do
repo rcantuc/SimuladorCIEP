@@ -30,7 +30,7 @@ scalar aniovp = 2026
 
 ** 2.3 Año paquete económico **
 global paqueteEconomico "CGPE 2026"						// POLÍTICA FISCAL
-scalar anioPE = 2025
+scalar anioPE = 2026
 
 
 
