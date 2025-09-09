@@ -20,11 +20,11 @@ timer on 1
 
 ** Directorios de trabajo (uno por computadora)
 if "`c(username)'" == "ricardo" {						// iMac Ricardo
-	sysdir set SITE "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
+	*sysdir set SITE "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
 	*global export "/Users/ricardo/CIEP Dropbox/TextbookCIEP/images"
 }
 else if "`c(username)'" == "servidorciep" {					// Servidor CIEP
-	sysdir set SITE "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
+	*sysdir set SITE "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
 	*global export "/home/servidorciep/CIEP Dropbox/TextbookCIEP/images"
 }
 else if "`c(console)'" != "" {							// Servidor Web
@@ -124,9 +124,9 @@ forvalues anio = `=anioPE'(1)`=anioPE' {
 ***
 
 ** 4.1 Ley de Ingresos de la Federación
-*set scheme ciepnewingresos
-*set scheme ciepnewenergia
-*set scheme ciepnewdeuda
+set scheme ciepnewingresos
+set scheme ciepnewenergia
+set scheme ciepnewdeuda
 noisily LIF, anio(`=anioPE') by(divOrigen) $update 			///
 	title("Ingresos presupuestarios") 				/// Cambiar título de la gráfica
 	desde(`=`=anioPE'-12') 						/// Año de inicio para el PROMEDIO
@@ -341,10 +341,8 @@ scalar gascuidados =   0.097   					// Gasto en cuidados
 
 
 ** 4.2.2 Gasto per cápita **/
-forvalues anio = 2016/2025 {
-	noisily GastoPC /*educacion*/ salud /*pensiones energia resto transferencias*/, aniope(`anio') aniovp(`=aniovp')
-}
-ex
+noisily GastoPC educacion salud pensiones energia resto transferencias, aniope(`anio') aniovp(`=aniovp')
+
 
 
 **/
