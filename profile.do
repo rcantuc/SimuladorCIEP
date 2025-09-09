@@ -83,8 +83,8 @@ global def2030 = 4.0
 global def2031 = 4.0
 
 ** 2.3 Inflación (inputs opcionales)
-global inf2025 = 3.8							// CRECIMIENTO ANUAL INFLACIÓN
-global inf2026 = 3.0							// <-- AGREGAR O QUITAR AÑOS
+global inf2025 = 4.2							// CRECIMIENTO ANUAL INFLACIÓN
+global inf2026 = 3.54							// <-- AGREGAR O QUITAR AÑOS
 global inf2027 = 3.0
 global inf2028 = 3.0
 global inf2029 = 3.0
