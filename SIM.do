@@ -3,7 +3,7 @@
 ****
 **** Autor: Ricardo Cantú Calderón
 **** Email: ricardocantu@ciep.mx
-**** Fecha: 9 de mayo de 2025
+**** Fecha: 8 de septiembre de 2025
 **** Manual: ReadMe.md
 ****
 

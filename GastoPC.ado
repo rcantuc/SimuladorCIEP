@@ -1055,7 +1055,7 @@ quietly {
 			replace Energía = Energía + scalar(gascosdeuePC)
 
 			scalar gasenergiaPIB = gaspemexPIB+gascfePIB+gassenerPIB+gasinverfPIB+gascosdeuePIB
-			scalar gasenergiaPC = ((`gaspemexPC'+`gascfePC'+`gassenerPC'+`gasinverfPC'+`gascosdeuePC'))/`deflator'
+			scalar gasenergiaPC = (gaspemexPC+gascfePC+gassenerPC+gasinverfPC+gascosdeuePC)
 
 
 			** 6.6 Resultados **
@@ -1191,7 +1191,7 @@ quietly {
 			g Otros_gastos = scalar(gasotrosPC)
 
 			scalar otrosgasPIB = gasfederPIB+gascostoPIB+gasinfraPIB+gasotrosPIB
-			scalar otrosgasPC = (`gasfederPC'+`gascostoPC'+`gasinfraPC'+`gasotrosPC')/`deflator'
+			scalar otrosgasPC = (gasfederPC+gascostoPC+gasinfraPC+gasotrosPC)
 
 			* Resultados *
 			noisily di _newline(2) in g "{bf: E. Otros gastos CIEP}"
