@@ -550,16 +550,6 @@ quietly {
 		}
 
 		graph bar gastoPIB if anio <= `anio', ///
-			bar(1, bstyle(p9)) ///
-			bar(2, bstyle(p11)) ///
-			bar(3, bstyle(p2)) ///
-			bar(4, bstyle(p18)) ///
-			bar(5, bstyle(p3)) ///
-			bar(6, bstyle(p9)) ///
-			bar(7, bstyle(p6)) ///
-			bar(8, bstyle(p19)) ///
-			bar(9, bstyle(p8)) ///
-			bar(10, bstyle(p1)) ///
 			over(resumido, sort(1) descending) over(anio, gap(30)) ///
 			stack asyvars outergap(0) ///
 			name(gastos`by'PIB, replace) ///
@@ -1255,7 +1245,7 @@ program define UpdatePEF
 	g byte transf_gf = (ramo == 19 & ur == "gyn") | (ramo == 19 & ur == "gyr")
 
 	g byte noprogramable = ramo == 28 | capitulo == 9
-	replace noprogramable = -1 if ramo == -1
+	replace noprogramable = 0 if ramo == -1
 	label define noprogramable 1 "No programable" 0 "Programable" -1 "Cuotas ISSSTE"
 	label values noprogramable noprogramable
 

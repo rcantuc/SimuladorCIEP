@@ -95,7 +95,7 @@ quietly {
 
 	* Política fiscal *
 	forvalues j = 1(1)`=_N' {
-		foreach k of varlist shrfsp ///
+		foreach k of varlist shrfsp* ///
 			rfspBalance rfspPIDIREGAS rfspIPAB rfspFONADIN rfspDeudores rfspBanca rfspAdecuaciones ///
 			balprimario {
 			capture confirm existence ${`k'`=anio[`j']'}
@@ -107,20 +107,15 @@ quietly {
 		}
 	}
 
-	* Interno y Externo *
-	replace porInterno = L.porInterno if porInterno == .
-	replace porExterno = L.porExterno if porExterno == .
-
-	replace shrfspInterno = shrfsp*porInterno if shrfspInterno == .
-	replace shrfspExterno = shrfsp*porExterno if shrfspExterno == .
+	replace porInterno = shrfspInterno/shrfsp*100 if porInterno == .
+	replace porExterno = shrfspExterno/shrfsp*100 if porExterno == .
 
 	* Costos financieros y tipo de cambio *
 	forvalues j = 1(1)`=_N' {
 		capture confirm existence ${costodeuda`=anio[`j']'}
 		if _rc == 0 {
-			replace costodeudaInterno = ${costodeuda`=anio[`j']'}/100*porInterno*pibY if anio == `=anio[`j']'
-			replace costodeudaExterno = ${costodeuda`=anio[`j']'}/100*porExterno*pibY if anio == `=anio[`j']'
-			format costodeuda* %20.0fc
+			replace costofinanciero = ${costodeuda`=anio[`j']'}/100*pibY if anio == `=anio[`j']'
+			format costofinanciero %20.0fc
 		}
 
 		capture confirm existence ${tipoDeCambio`=anio[`j']'}
@@ -130,10 +125,7 @@ quietly {
 		}
 
 		replace rfsp = rfspBalance + rfspPIDIREGAS + rfspIPAB + rfspFONADIN + rfspDeudores + rfspBanca + rfspAdecuaciones if anio == `=anio[`j']'
-		replace shrfsp = shrfspInterno + shrfspExterno if anio == `=anio[`j']'
-		replace costofinanciero = costodeudaInterno + costodeudaExterno if anio == `=anio[`j']'
 	}
-
 
 
 	*****************
@@ -339,9 +331,9 @@ quietly {
 		g `shrfsp_pib' = shrfsp/pibY*100
 		format `shrfsp_pib' %7.1fc
 
-		tempvar rfsppib rfsp
+		tempvar rfsppib rfsp rfsppc
 		g `rfsppib' = rfsp/pibY*100
-		g rfsppc = rfsp/(Poblacion_ajustada)/deflator
+		g `rfsppc' = rfsp/(Poblacion_ajustada)/deflator
 		g `rfsp' = rfsp/1000000000000/deflator
 		format `rfsp' %5.1fc
 		format `rfsppib' %5.1fc
@@ -417,10 +409,8 @@ quietly {
 	**# 6 TASAS EFECTIVAS ***
 	***                   ***
 	*************************
-	g costodeudaTot = costodeudaExterno + costodeudaInterno
-	g tasaInterno = costodeudaInterno/L.shrfspInterno*100
-	g tasaExterno = costodeudaExterno/L.shrfspExterno*100
-	g tasaEfectiva = porInterno*tasaInterno + porExterno*tasaExterno
+	g costodeudaTot = costofinanciero
+	g tasaEfectiva = costodeudaTot/L.shrfsp*100
 
 	g depreciacion = tipoDeCambio-L.tipoDeCambio
 	g Depreciacion = (tipoDeCambio/L.tipoDeCambio-1)*100
@@ -445,11 +435,9 @@ quietly {
 
 	** 6.1 Gráfica tasas de interés **
 	if "`nographs'" != "nographs" & "$nographs" == "" {
-		egen costodeudaTotg = rsum(costodeudaInterno costodeudaExterno)
+		g costodeudaTotg = costofinanciero
 		replace costodeudaTotg = costodeudaTotg/pibY*100
-		egen costodeudaOyEg = rsum(costopemex costocfe)
-		replace costodeudaOyEg = costodeudaOyEg/pibY*100
-		format costodeudaTotg costodeudaOyEg %5.1fc
+		format costodeudaTotg %5.1fc
 		
 		if `"$export"' == "" {
 			local graphtitle "{bf:Costo de la deuda pública}"
@@ -479,7 +467,7 @@ quietly {
 				yaxis(1) mlabel(`shrfsp_pib') mlabposition(12) mlabcolor(black) msize(zero) mlabsize(medium)) ///
 			(scatter costodeudaTotg anio if anio > 2000 & anio <= 2031, ///
 				yaxis(3) mlabel(costodeudaTotg) mlabposition(12) mlabcolor(black) msize(zero) mlabsize(medium)) ///
-			if tasaInterno != . & anio > `ultanio', ///
+			if tasaEfectiva != . & anio > `ultanio', ///
 			title("`graphtitle'") ///
 			text(0 `=`ultanio'+1' "{bf:% PIB}", ///
 				yaxis(3) size(medium) place(1) justification(right) bcolor(white) box) ///
@@ -620,8 +608,8 @@ quietly {
 	*replace balprimario = balprimario + rfspOtros
 	foreach k of varlist rfsp* shrfsp* balprimario costofinanciero tipoDeCambio nopresupuestario {
 		g `k'_pib = `k'/pibY*100
-		g `k'_pc = `k'/Poblacion_ajustada/deflator
 		g `k'_real = `k'/deflator
+		g `k'_pc = `k'_real/Poblacion_ajustada
 		format `k'_pib `k'_pc %10.1fc
 	}
 
