@@ -840,9 +840,9 @@ quietly {
 		}
 		noisily di in g " `=anio[`k']' " _col(7) %6.1fc in y var_pibY[`k'] " %" ///
 		    _col(18) %20.0fc pibY[`k'] ///
-		    _col(35) %8.2fc in y var_inflY[`k'] " %" ///
+		    _col(35) %8.1fc in y var_inflY[`k'] " %" ///
 		    _col(45) %14.10fc deflatorpp[`k'] ///
-		    _col(55) %8.2fc var_indiceY[`k'] " %" ///
+		    _col(55) %8.1fc var_indiceY[`k'] " %" ///
 		    _col(75) %12.10fc deflator[`k']
 	    }
 	    if (anio[`k'] <= anio[`obs_exo'] & anio[`k'] >= `aniofinal') {
@@ -852,9 +852,9 @@ quietly {
 		}
 		noisily di in g "{bf: `=anio[`k']' " _col(7) %6.1fc in y var_pibY[`k'] " %" ///
 		    _col(18) %20.0fc pibY[`k'] ///
-		    _col(35) %8.2fc in y var_inflY[`k'] " %" ///
+		    _col(35) %8.1fc in y var_inflY[`k'] " %" ///
 		    _col(45) %14.10fc deflatorpp[`k'] ///
-		    _col(55) %8.2fc var_indiceY[`k'] " %" ///
+		    _col(55) %8.1fc var_indiceY[`k'] " %" ///
 		    _col(75) %12.10fc deflator[`k'] "}"
 	    }
 	    /*if (anio[`k'] > `aniofinal') & anio[`k'] > anio[`obs_exo'] {
@@ -864,9 +864,9 @@ quietly {
 		}
 		noisily di in g " `=anio[`k']' " _col(7) %6.1fc in y var_pibY[`k'] " %" ///
 		    _col(18) %20.0fc pibY[`k'] ///
-		    _col(35) %8.2fc in y var_inflY[`k'] " %" ///
+		    _col(35) %8.1fc in y var_inflY[`k'] " %" ///
 		    _col(45) %14.10fc deflatorpp[`k'] ///
-		    _col(55) %8.2fc var_indiceY[`k'] " %" ///
+		    _col(55) %8.1fc var_indiceY[`k'] " %" ///
 		    _col(75) %12.10fc deflator[`k']
 	    }*/
 	}

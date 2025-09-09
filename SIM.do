@@ -39,7 +39,7 @@ scalar anioPE = 2026							// ANIO PAQUETE ECONÓMICO
 scalar anioenigh = 2024							// ANIO ENIGH
 
 ** Opciones
-//global nographs "nographs"						// SUPRIMIR GRAFICAS
+global nographs "nographs"						// SUPRIMIR GRAFICAS
 //global update "update"						// UPDATE BASES DE DATOS
 //global textbook "textbook"						// SCALAR TO LATEX
 
@@ -93,8 +93,8 @@ global inf2029 = 3.0
 global inf2030 = 3.0
 global inf2031 = 3.0
 
-noisily PIBDeflactor if anio >= 2005, aniovp(`=aniovp') aniomax(2031) $textbook nographs //$update
-
+noisily PIBDeflactor if anio >= 2005, aniovp(`=aniovp') aniomax(2031) $textbook //$update
+ex
 ** 2.4 Sistema de Cuentas Nacionales (sin inputs)
 noisily SCN, anio(`=aniovp') $textbook nographs //$update
 
@@ -397,7 +397,7 @@ forvalues k = 2025(1)2031 {
 *set scheme ciepdeuda
 *scalar tasaEfectiva = 6.801
 noisily SHRFSP, anio(`=anioPE') ultanio(2008) $nographs $update $textbook
-
+ex
 
 
 **/
