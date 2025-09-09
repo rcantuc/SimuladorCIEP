@@ -93,7 +93,7 @@ global inf2029 = 3.0
 global inf2030 = 3.0
 global inf2031 = 3.0
 
-noisily PIBDeflactor if anio >= 2005, aniovp(`=aniovp') aniomax(2031) $textbook //$update
+/*noisily PIBDeflactor if anio >= 2005, aniovp(`=aniovp') aniomax(2031) $textbook //$update
 
 ** 2.4 Sistema de Cuentas Nacionales (sin inputs)
 noisily SCN, anio(`=aniovp') $textbook nographs //$update
@@ -121,13 +121,13 @@ forvalues anio = `=anioPE'(-1)`=anioPE-10' {
 
 **/
 **# 4. SISTEMA FISCAL
-***
+/***
 
 ** 4.1 Ley de Ingresos de la Federación
 *set scheme ciepnewdeuda
 noisily LIF, anio(`=anioPE') by(divOrigen) $update 			///
 	title("Ingresos presupuestarios") 				/// Cambiar título de la gráfica
-	desde(`=`=anioPE'-12') 						/// Año de inicio para el PROMEDIO
+	desde(`=`=anioPE'-1') 						/// Año de inicio para el PROMEDIO
 	min(0)	 							/// Mínimo 0% del PIB (no negativos)
 	rows(1)								//  Número de filas en la leyenda
 rename divSIM divCODE
@@ -138,7 +138,7 @@ save `"`c(sysdir_site)'/users/$id/LIF.dta"', replace
 *set scheme ciepnewenergia
 noisily LIF if divPE == 2, anio(`=anioPE') by(divCIEP) $update 		///
 	title("Ingresos presupuestarios") 				/// Cambiar título de la gráfica
-	desde(`=`=anioPE'-12') 						/// Año de inicio para el PROMEDIO
+	desde(`=`=anioPE'-1') 						/// Año de inicio para el PROMEDIO
 	min(0)	 							/// Mínimo 0% del PIB (no negativos)
 	rows(1)								//  Número de filas en la leyenda
 
@@ -353,8 +353,10 @@ noisily GastoPC educacion salud pensiones energia resto transferencias, aniope(`
 **
 
 * SHRFSP: Total, Interno, Externo (como % del PIB)
-*                2025  2026  2027  2028  2029  2030  2031
-matrix shrfsp = (52.3, 52.3, 52.3, 52.3, 52.3, 52.3, 52.3)
+*                	2025  2026  2027  2028  2029  2030  2031
+matrix shrfsp = 	(52.3, 52.3, 52.3, 52.3, 52.3, 52.3, 52.3)
+matrix shrfspInterno = 	(40.2, 41.3, 42.1, 42.5, 42.8, 43.2, 43.5)
+matrix shrfspExterno = 	(12.1, 11.0, 10.2, 9.8, 9.5, 9.1, 8.8)
 
 * SHRFSP:      Total, PIDIREGAS, IPAB, FONADIN, Deudores, Banca, Adecuaciones, Balance (como % del PIB)
 matrix rfsp =  (4.3, 0.15, 0.15, 0.00, 0.00, 0.00, 0.40, 3.6 \ 		/// 2025
@@ -375,11 +377,13 @@ matrix balprimario = (-0.2, -0.5, -0.8, -0.8, -0.8, -0.8, -0.6)
 
 * Costo de la deuda (como % del PIB)
 *                   2025, 2026, 2027, 2028, 2029, 2030, 2031
-matrix costodeuda = (3.8,  4.1,  3.8,  3.6,  3.6,  3.6,  3.6)
+matrix costodeuda = (3.8,  4.1,  3.8,  3.4,  3.3,  3.3,  3.1)
 
 forvalues k = 2025(1)2031 {
 	local j = `k' - 2025 + 1
 	global shrfsp`k' = shrfsp[1,`j']
+	global shrfspInterno`k' = shrfspInterno[1,`j']
+	global shrfspExterno`k' = shrfspExterno[1,`j']
 	global rfsp`k' = rfsp[`j', 1]
 	global rfspPIDIREGAS`k' = rfsp[`j', 2]
 	global rfspIPAB`k' = rfsp[`j', 3]
