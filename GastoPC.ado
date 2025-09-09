@@ -1328,7 +1328,7 @@ quietly {
 			scalar IngBasPIB = `IngBas'/`PIB'*100
 			
 			scalar transfPIB = IngBasPIB+gasmadresPIB+gascuidadosPIB
-			scalar transfPC = (`transfPIB'/`pobIngBas'[1,1])/`deflator'
+			scalar transfPC = (transfPIB/`pobIngBas'[1,1])/`deflator'
 
 			if ingbasico18 == 0 & ingbasico65 == 1 {
 				replace IngBasico = IngBasPC if edad >= 18
