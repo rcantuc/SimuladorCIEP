@@ -341,7 +341,7 @@ scalar gascuidados =   0.097   					// Gasto en cuidados
 
 
 ** 4.2.2 Gasto per cápita **/
-noisily GastoPC educacion salud pensiones energia resto transferencias, aniope(`anio') aniovp(`=aniovp')
+noisily GastoPC educacion salud pensiones energia resto transferencias, aniope(`=anioPE') aniovp(`=aniovp')
 
 
 
