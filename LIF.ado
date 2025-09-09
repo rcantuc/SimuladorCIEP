@@ -126,7 +126,7 @@ quietly {
 	foreach k of varlist recaudacion monto LIF ILIF {
 		g double `k'PIB = `k'/pibY*100
 	}
-	g double recaudacionR = recaudacion/deflator
+	g double recaudacionR = recaudacion/deflatorpp
 	egen double recaudacionTOT = sum(recaudacion), by(anio)
 	format *PIB %10.3fc
 	format recaudacionR recaudacionTOT %20.0fc
@@ -219,7 +219,7 @@ quietly {
 		_col(61) %7s "% Real"
 
 	preserve
-	collapse (sum) recaudacion recaudacionPIB recaudacionR (max) recaudacionTOT pibY deflator if divLIF != 10, by(anio resumido)
+	collapse (sum) recaudacion recaudacionPIB recaudacionR (max) recaudacionTOT pibY deflatorpp if divLIF != 10, by(anio resumido)
 	reshape wide recaudacion*, i(anio) j(resumido)
 	reshape long
 
@@ -432,11 +432,11 @@ quietly {
 		preserve
 
 		* Normalizar valores a billones *
-		*replace recaudacion=recaudacion/deflator/1000000000000
-		*replace monto=monto/deflator/1000000000000
-		*replace LIF=LIF/deflator/1000000000000
+		*replace recaudacion=recaudacion/deflatorpp/1000000000000
+		*replace monto=monto/deflatorpp/1000000000000
+		*replace LIF=LIF/deflatorpp/1000000000000
 
-		collapse (sum) recaudacion recaudacionR recaudacionPIB (max) recaudacionTOT pibY deflator if anio >= `desde', by(anio resumido)
+		collapse (sum) recaudacion recaudacionR recaudacionPIB (max) recaudacionTOT pibY deflatorpp if anio >= `desde', by(anio resumido)
 		levelsof resumido, local(lev_resumido)
 		label values resumido label
 
