@@ -64,26 +64,29 @@ noisily di `" {stata "AccesoBIE 734407 pibQ":AccesoBIE {it:clave} {it:nombre}}"'
 ***                           ***
 *********************************
 
-** 4.1 Economía: Crecimiento anual del Producto Interno Bruto **
-global pib2025 = 1.4541 // 2.5007
-global pib2026 = 2.0708
-global pib2027 = 2.5
-global pib2028 = 2.5
-global pib2029 = 2.5
-global pib2030 = 2.5
+** 2.1 Producto Interno Bruto (inputs opcionales)
+global pib2025 = 1.0575							// CRECIMIENTO ANUAL PIB
+global pib2026 = 2.262							// <-- AGREGAR O QUITAR AÑOS
+global pib2027 = 2.0898
+global pib2028 = 2.0548
+global pib2029 = 2.015
+global pib2030 = 2.0137
+global pib2031 = 2.0366
 
-** 4.2 Economía: Deflactor del Producto Interno Bruto **
-global def2025 = 4.4
-global def2026 = 4.0
-global def2027 = 3.5
-global def2028 = 3.5
-global def2029 = 3.5
-global def2030 = 3.5
+** 2.2 Deflactor (inputs opcionales)
+global def2025 = 5.2							// CRECIMIENTO ANUAL PRECIOS IMPLÍCITOS
+global def2026 = 4.8							// <-- AGREGAR O QUITAR AÑOS
+global def2027 = 4.2
+global def2028 = 4.0
+global def2029 = 4.0
+global def2030 = 4.0
+global def2031 = 4.0
 
-** 4.3 Economía: Inflación **
-global inf2025 = 3.5
-global inf2026 = 3.0
+** 2.3 Inflación (inputs opcionales)
+global inf2025 = 3.8							// CRECIMIENTO ANUAL INFLACIÓN
+global inf2026 = 3.0							// <-- AGREGAR O QUITAR AÑOS
 global inf2027 = 3.0
 global inf2028 = 3.0
 global inf2029 = 3.0
 global inf2030 = 3.0
+global inf2031 = 3.0

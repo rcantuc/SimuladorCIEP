@@ -20,11 +20,11 @@ timer on 1
 
 ** Directorios de trabajo (uno por computadora)
 if "`c(username)'" == "ricardo" {					// iMac Ricardo
-	*sysdir set SITE "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
+	sysdir set SITE "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
 	*global export "/Users/ricardo/CIEP Dropbox/TextbookCIEP/images"
 }
 else if "`c(username)'" == "servidorciep" {				// Servidor CIEP
-	*sysdir set SITE "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
+	sysdir set SITE "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
 	*global export "/home/servidorciep/CIEP Dropbox/TextbookCIEP/images"
 }
 else if "`c(console)'" != "" {						// Servidor Web
@@ -35,7 +35,7 @@ cd "`c(sysdir_site)'"
 ** Parámetros
 global id = "ciepmx"							// ID USUARIO
 scalar aniovp = 2026							// ANIO VALOR PRESENTE
-scalar anioPE = 2025							// ANIO PAQUETE ECONÓMICO
+scalar anioPE = 2026							// ANIO PAQUETE ECONÓMICO
 scalar anioenigh = 2024							// ANIO ENIGH
 
 ** Opciones
@@ -94,7 +94,7 @@ global inf2030 = 3.0
 global inf2031 = 3.0
 
 noisily PIBDeflactor if anio >= 2005, aniovp(`=aniovp') aniomax(2031) $textbook nographs //$update
-ex
+
 ** 2.4 Sistema de Cuentas Nacionales (sin inputs)
 noisily SCN, anio(`=aniovp') $textbook nographs //$update
 
@@ -291,14 +291,14 @@ if "$nographs" != "nographs" {
 
 **/
 ** 4.2 Presupuesto de Egresos de la Federación **
-**
+/**
 noisily PEF, anio(`=anioPE') by(divSIM) ///$update 			///
 	title("Gasto presupuestario") 					/// Cambiar título
 	desde(`=`=anioPE'-12') 						/// Año de inicio PROMEDIO
 	min(0) 								/// Mínimo 0% del PIB (resumido)
 	rows(2)								/// Número de filas en la leyenda
 
-ex
+
 /** 4.2.1 Parámetros: Gasto **
 scalar iniciaA     =   0.017    					// Inicial
 scalar basica      =   1.863    					// Educación b{c a'}sica
@@ -353,30 +353,31 @@ noisily GastoPC educacion salud pensiones energia resto transferencias, aniope(`
 **
 
 * SHRFSP: Total, Interno, Externo (como % del PIB)
-*                2025  2026  2027  2028  2029  2030
-matrix shrfsp = (52.3, 52.3, 52.3, 52.3, 52.3, 52.3)
+*                2025  2026  2027  2028  2029  2030  2031
+matrix shrfsp = (52.3, 52.3, 52.3, 52.3, 52.3, 52.3, 52.3)
 
-* SHRFSP: Total, PIDIREGAS, IPAB, FONADIN, Deudores, Banca, Adecuaciones, Balance (como % del PIB)
-matrix rfsp =  (3.9, 0.15, 0.10, 0.03, 0.01,-0.01, 0.44, 3.2 \ 		/// 2025
-		3.2, 0.10, 0.10, 0.00, 0.00, 0.00, 0.30, 2.7 \ 		/// 2026
-		2.9, 0.10, 0.10, 0.00,-0.10, 0.00, 0.30, 2.4 \ 		/// 2027
-		2.9, 0.10, 0.10, 0.00, 0.00, 0.00, 0.30, 2.4 \ 		/// 2028
-		2.9, 0.10, 0.10, 0.00, 0.00, 0.00, 0.30, 2.4 \ 		/// 2029
-		2.9, 0.10, 0.10, 0.00, 0.00, 0.00, 0.30, 2.4) 		/// 2030
+* SHRFSP:      Total, PIDIREGAS, IPAB, FONADIN, Deudores, Banca, Adecuaciones, Balance (como % del PIB)
+matrix rfsp =  (4.3, 0.15, 0.15, 0.00, 0.00, 0.00, 0.40, 3.6 \ 		/// 2025
+		4.1, 0.10, 0.10, 0.00, 0.00, 0.00, 0.30, 3.6 \ 		/// 2026
+		3.5, 0.10, 0.10, 0.00,-0.10, 0.00, 0.40, 3.0 \ 		/// 2027
+		3.0, 0.10, 0.10, 0.00, 0.00, 0.00, 0.30, 2.5 \ 		/// 2028
+		3.0, 0.10, 0.10, 0.00, 0.00, 0.00, 0.30, 2.5 \ 		/// 2029
+		3.0, 0.10, 0.10,-0.10, 0.00, 0.00, 0.40, 2.5 \ 		/// 2030
+		3.0, 0.10, 0.10, 0.00, 0.00, 0.00, 0.30, 2.5) 		/// 2031
 
 * SHRFSP: Tipo de cambio (MXN/USD)
-*                      2025, 2026, 2027, 2028, 2029, 2030
-matrix tipoDeCambio = (18.2, 18.5, 18.7, 18.9, 19.1, 19.3)
+*                      2025, 2026, 2027, 2028, 2029, 2030, 2031
+matrix tipoDeCambio = (19.6, 18.9, 18.2, 18.2, 18.2, 18.3, 18.3)
 
 * Balance primario (como % del PIB)
-*                     2025, 2026, 2027, 2028, 2029, 2030
-matrix balprimario = (-1.4, -0.6, -0.5, -0.4, -0.4, -0.4)
+*                     2025, 2026, 2027, 2028, 2029, 2030, 2031
+matrix balprimario = (-0.2, -0.5, -0.8, -0.8, -0.8, -0.8, -0.6)
 
 * Costo de la deuda (como % del PIB)
-*                   2025, 2026, 2027, 2028, 2029, 2030
-matrix costodeuda = (3.6,  3.8,  3.2,  2.8,  2.7,  2.7)
+*                   2025, 2026, 2027, 2028, 2029, 2030, 2031
+matrix costodeuda = (3.8,  4.1,  3.8,  3.6,  3.6,  3.6,  3.6)
 
-forvalues k = 2025(1)2030 {
+forvalues k = 2025(1)2031 {
 	local j = `k' - 2025 + 1
 	global shrfsp`k' = shrfsp[1,`j']
 	global rfsp`k' = rfsp[`j', 1]
