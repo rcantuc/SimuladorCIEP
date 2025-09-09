@@ -109,7 +109,7 @@ quietly {
 	use "`c(sysdir_site)'/04_master/LIF.dta", clear
 	*drop if nombre == ""
 	sort anio mes
-	merge m:1 (anio) using `PIB', nogen keepus(pibY indiceY deflator lambda var_pibY) update replace keep(matched)
+	merge m:1 (anio) using `PIB', nogen keepus(pibY indiceY deflatorpp lambda var_pibY) update replace keep(matched)
 	local aniofirst = anio[1]
 	local aniolast = anio[_N]
 
