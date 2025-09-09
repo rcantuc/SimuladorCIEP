@@ -640,7 +640,7 @@ program define UpdateLIF
 	levelsof serie, local(serie)
 	foreach k of local serie {
 		if "`k'" != "NA" {
-			noisily DatosAbiertos `k', nog proy
+			noisily DatosAbiertos `k', nog //proy
 
 			rename clave_de_concepto serie
 			keep anio serie nombre monto mes acum_prom
