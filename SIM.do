@@ -39,7 +39,7 @@ scalar anioPE = 2026							// ANIO PAQUETE ECONÓMICO
 scalar anioenigh = 2024							// ANIO ENIGH
 
 ** Opciones
-global nographs "nographs"						// SUPRIMIR GRAFICAS
+//global nographs "nographs"						// SUPRIMIR GRAFICAS
 //global update "update"						// UPDATE BASES DE DATOS
 //global textbook "textbook"						// SCALAR TO LATEX
 
