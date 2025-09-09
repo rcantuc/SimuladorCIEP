@@ -124,7 +124,7 @@ forvalues anio = `=anioPE'(1)`=anioPE' {
 ***
 
 ** 4.1 Ley de Ingresos de la Federación
-set scheme ciepnewingresos
+*set scheme ciepnewingresos
 *set scheme ciepnewenergia
 *set scheme ciepnewdeuda
 noisily LIF, anio(`=anioPE') by(divOrigen) $update 			///
