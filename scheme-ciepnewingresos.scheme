@@ -118,7 +118,7 @@ gsize 		key_label		small
 
 
 // Labels
-color 		label 			"111,111,111"
+color 		label 			white
 gsize 		label			vlarge
 gsize 		small_label		vlarge
 
@@ -233,23 +233,23 @@ linewidth	p17area			none
 
 
 // Colores
-color       p1          "209,212,55"
-color       p2          "52,197,184"
-color       p3          "151,6,90"
-color       p4          "255,181,82"
-color       p5          "254,118,109"
-color       p6          "101,222,96"
-color       p7          "255,153,102"
-color       p8          "255,204,153"
-color       p9          "255,255,153"
-color       p10         "255,255,102"
-color       p11         "255,255,204"
-color       p12         "102,204,153"
-color       p13         "153,255,153"
-color       p14         "102,255,102"
-color       p15         "102,255,51"
-color       p16         "102,255,153"
-color       p17         "255,102,51"
-color       p18         "255,51,153"
-color       p19         "255,102,204"
-color       p20         "255,255,51"
+color 		p1		"#28ac3a"
+color 		p2		"#35c748"
+color 		p3		"#67de56"
+color 		p4		"#b4b81b"
+color 		p5		"#d1d420"
+color 		p6		"#e2e463"
+color 		p7		"#ffb54b"
+color 		p8		"#ff8000"
+color 		p9		"#db7500"
+color 		p10		"#fe766d"
+color 		p11		"#e4574d"
+color 		p12		"#c24c44"
+color 		p13		"#ff3700"
+color 		p14		"#ba2240"
+color 		p15		"#96065c"
+color 		p16		"#004ec5"
+color 		p17		"#0096c8"
+color 		p18		"#39c5b7"
+color 		p19		"#00b393"
+color 		p20		"#00967d"

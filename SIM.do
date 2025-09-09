@@ -20,11 +20,11 @@ timer on 1
 
 ** Directorios de trabajo (uno por computadora)
 if "`c(username)'" == "ricardo" {						// iMac Ricardo
-	*sysdir set SITE "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
+	sysdir set SITE "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
 	*global export "/Users/ricardo/CIEP Dropbox/TextbookCIEP/images"
 }
 else if "`c(username)'" == "servidorciep" {					// Servidor CIEP
-	*sysdir set SITE "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
+	sysdir set SITE "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
 	*global export "/home/servidorciep/CIEP Dropbox/TextbookCIEP/images"
 }
 else if "`c(console)'" != "" {							// Servidor Web
@@ -35,11 +35,11 @@ cd "`c(sysdir_site)'"
 ** Parámetros
 global id = "ciepmx"								// ID USUARIO
 scalar aniovp = 2026								// ANIO VALOR PRESENTE
-scalar anioPE = 2026								// ANIO PAQUETE ECONÓMICO
+scalar anioPE = 2025								// ANIO PAQUETE ECONÓMICO
 scalar anioenigh = 2024								// ANIO ENIGH
 
 ** Opciones
-global nographs "nographs"							// SUPRIMIR GRAFICAS
+//global nographs "nographs"							// SUPRIMIR GRAFICAS
 //global update "update"							// UPDATE BASES DE DATOS
 //global textbook "textbook"							// SCALAR TO LATEX
 
@@ -121,14 +121,17 @@ forvalues anio = `=anioPE'(1)`=anioPE' {
 
 **/
 **# 4. SISTEMA FISCAL
-/***
+***
 
 ** 4.1 Ley de Ingresos de la Federación
-noisily LIF, anio(`=anioPE') by(divOrigen) $update 		///
-	title("Ingresos presupuestarios") 					/// Cambiar título de la gráfica
-	desde(`=`=anioPE'-12') 							/// Año de inicio para el PROMEDIO
-	min(0)	 								/// Mínimo 0% del PIB (no negativos)
-	rows(1)									//  Número de filas en la leyenda
+set scheme ciepnewingresos
+*set scheme ciepnewenergia
+*set scheme ciepnewdeuda
+noisily LIF, anio(`=anioPE') by(divOrigen) $update 			///
+	title("Ingresos presupuestarios") 				/// Cambiar título de la gráfica
+	desde(`=`=anioPE'-12') 						/// Año de inicio para el PROMEDIO
+	min(0)	 							/// Mínimo 0% del PIB (no negativos)
+	rows(1)								//  Número de filas en la leyenda
 rename divSIM divCODE
 decode divCODE, g(divSIM) 
 collapse (sum) recaudacion, by(anio divSIM) fast
@@ -259,19 +262,19 @@ matrix IEPST = (26.5	,	0 		\		/// Cerveza y alcohol 14
 ** 4.1.6 Submódulo ISR (web) **
 if "`cambioisrpf'" == "1" {
 	noisily run "`c(sysdir_site)'/ISR_Mod.do"
-	scalar ISRASPIB  = ISR_AS_Mod					// NUEVA ESTIMACIÓN ISR ASALARIADOS
+	scalar ISRASPIB  = ISR_AS_Mod				// NUEVA ESTIMACIÓN ISR ASALARIADOS
 	scalar ISRAS = ISRASPIB/100*scalar(pibY)
-	scalar ISRPFPIB  = ISR_PF_Mod					// NUEVA ESTIMACIÓN ISR P. FÍSICAS
+	scalar ISRPFPIB  = ISR_PF_Mod				// NUEVA ESTIMACIÓN ISR P. FÍSICAS
 	scalar ISRPF = ISRPFPIB/100*scalar(pibY)
-	scalar ISRPMPIB  = ISR_PM_Mod					// NUEVA ESTIMACIÓN ISR P. MORALES
+	scalar ISRPMPIB  = ISR_PM_Mod				// NUEVA ESTIMACIÓN ISR P. MORALES
 	scalar ISRPM = ISRPMPIB/100*scalar(pibY)
-	scalar CUOTASPIB = CUOTAS_Mod					// NUEVA ESTIMACIÓN CUOTAS IMSS
+	scalar CUOTASPIB = CUOTAS_Mod				// NUEVA ESTIMACIÓN CUOTAS IMSS
 	scalar CUOTAS = CUOTASPIB/100*scalar(pibY)
 }
 ** 4.1.7 Submódulo IVA (web) **
 if "`cambioiva'" == "1" {
 	noisily run "`c(sysdir_site)'/IVA_Mod.do"
-	scalar IVAPIB = IVA_Mod						// NUEVA ESTIMACIÓN IVA
+	scalar IVAPIB = IVA_Mod					// NUEVA ESTIMACIÓN IVA
 	scalar IVA = IVAPIB/100*scalar(pibY)
 }
 
@@ -286,14 +289,14 @@ if "$nographs" != "nographs" {
 **/
 ** 4.2 Presupuesto de Egresos de la Federación **
 **
-noisily PEF, anio(`=anioPE') by(divSIM) ///$update 				///
-	title("Gasto presupuestario") 						/// Cambiar título
-	desde(`=`=anioPE'-12') 							/// Año de inicio PROMEDIO
-	min(0) 									/// Mínimo 0% del PIB (resumido)
-	rows(2)									// Número de filas en la leyenda
+noisily PEF, anio(`=anioPE') by(divSIM) ///$update 		///
+	title("Gasto presupuestario") 				/// Cambiar título
+	desde(`=`=anioPE'-12') 					/// Año de inicio PROMEDIO
+	min(0) 							/// Mínimo 0% del PIB (resumido)
+	rows(2)							// Número de filas en la leyenda
 
 
-** 4.2.1 Parámetros: Gasto **/
+/** 4.2.1 Parámetros: Gasto **
 scalar iniciaA     =   0.017    				// Inicial
 scalar basica      =   1.863    				// Educación b{c a'}sica
 scalar medsup      =   0.418    				// Educación media superior
@@ -338,8 +341,10 @@ scalar gascuidados =   0.097   					// Gasto en cuidados
 
 
 ** 4.2.2 Gasto per cápita **/
-noisily GastoPC educacion salud pensiones energia resto transferencias, aniope(`=anioPE') aniovp(`=aniovp')
-
+forvalues anio = 2016/2025 {
+	noisily GastoPC /*educacion*/ salud /*pensiones energia resto transferencias*/, aniope(`anio') aniovp(`=aniovp')
+}
+ex
 
 
 **/
