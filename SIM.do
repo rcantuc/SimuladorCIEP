@@ -85,8 +85,8 @@ global def2030 = 4.0
 global def2031 = 4.0
 
 ** 2.3 Inflación (inputs opcionales)
-global inf2025 = 3.8							// CRECIMIENTO ANUAL INFLACIÓN
-global inf2026 = 3.0							// <-- AGREGAR O QUITAR AÑOS
+global inf2025 = 4.2							// CRECIMIENTO ANUAL INFLACIÓN
+global inf2026 = 3.54							// <-- AGREGAR O QUITAR AÑOS
 global inf2027 = 3.0
 global inf2028 = 3.0
 global inf2029 = 3.0
@@ -94,7 +94,7 @@ global inf2030 = 3.0
 global inf2031 = 3.0
 
 noisily PIBDeflactor if anio >= 2005, aniovp(`=aniovp') aniomax(2031) $textbook //$update
-ex
+
 ** 2.4 Sistema de Cuentas Nacionales (sin inputs)
 noisily SCN, anio(`=aniovp') $textbook nographs //$update
 
@@ -121,7 +121,7 @@ forvalues anio = `=anioPE'(-1)`=anioPE-10' {
 
 **/
 **# 4. SISTEMA FISCAL
-/***
+***
 
 ** 4.1 Ley de Ingresos de la Federación
 *set scheme ciepnewdeuda
