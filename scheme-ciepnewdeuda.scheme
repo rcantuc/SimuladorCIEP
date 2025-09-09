@@ -8,8 +8,10 @@
 
 
 // Graph Size
-graphsize 	x 			5.5
-graphsize 	y 			4
+// graphsize 	x 			5.5
+// graphsize 	y 			4
+graphsize 	x 			16
+graphsize 	y 			5
 
 
 
@@ -116,7 +118,7 @@ gsize 		key_label		small
 
 
 // Labels
-color 		label 			"111,111,111"
+color 		label 			white
 gsize 		label			vlarge
 gsize 		small_label		vlarge
 
@@ -231,20 +233,23 @@ linewidth	p17area			none
 
 
 // Colores
-color 		p1		"40,173,58"      
-color 		p2		"34,155,52"      
-color 		p3		"46,191,65"      
-color 		p4		"28,141,48"      
-color 		p5		"51,206,75"      
-color 		p6		"39,132,51"      
-color 		p7		"31,186,63"      
-color 		p8		"43,147,57"      
-color 		p9		"61,221,91"      
-color 		p10		"20,115,40"      
-color 		p11		"73,237,110"     
-color 		p12		"16,87,34"       
-color 		p13		"50,173,83"      
-color 		p14		"42,201,76"      
-color 		p15		"10,61,20"       
-color 		p16		"210,240,210"    
-color 		p17		"15,120,45"      
+color 		p5		"#28ac3a"
+color 		p4		"#35c748"
+color 		p3		"#67de56"
+color 		p2		"#b4b81b"
+color 		p1		"#d1d420"
+color 		p20		"#e2e463"
+color 		p19		"#ffb54b"
+color 		p18		"#ff8000"
+color 		p17		"#db7500"
+color 		p16		"#fe766d"
+color 		p15		"#e4574d"
+color 		p14		"#c24c44"
+color 		p13		"#ff3700"
+color 		p12		"#ba2240"
+color 		p11		"#96065c"
+color 		p10		"#004ec5"
+color 		p9		"#0096c8"
+color 		p8		"#39c5b7"
+color 		p7		"#00b393"
+color 		p6		"#00967d"
