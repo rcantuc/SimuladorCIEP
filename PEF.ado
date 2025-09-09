@@ -550,8 +550,18 @@ quietly {
 		}
 
 		graph bar gastoPIB if anio <= `anio', ///
+			bar(1, bstyle(p9)) ///
+			bar(2, bstyle(p11)) ///
+			bar(3, bstyle(p2)) ///
+			bar(4, bstyle(p18)) ///
+			bar(5, bstyle(p3)) ///
+			bar(6, bstyle(p9)) ///
+			bar(7, bstyle(p6)) ///
+			bar(8, bstyle(p19)) ///
+			bar(9, bstyle(p8)) ///
+			bar(10, bstyle(p1)) ///
 			over(resumido, sort(1) descending) over(anio, gap(30)) ///
-			stack asyvars blabel(bar, format(%7.1fc)) outergap(0) ///
+			stack asyvars outergap(0) ///
 			name(gastos`by'PIB, replace) ///
 			title("`graphtitle'") ///
 			ylabel(, format(%7.1fc) labsize(small)) ///

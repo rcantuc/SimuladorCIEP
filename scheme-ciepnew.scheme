@@ -158,41 +158,41 @@ linewidth 	p15mark			none
 linewidth 	p16mark			none
 linewidth 	p17mark			none
 
-linewidth 	p1			vthick
-linewidth 	p2			vthick
-linewidth 	p3			vthick
-linewidth 	p4			vthick
-linewidth 	p5			vthick
-linewidth 	p6			vthick
-linewidth 	p7			vthick
-linewidth 	p8			vthick
-linewidth 	p9			vthick
-linewidth 	p10			vthick
-linewidth 	p11			vthick
-linewidth 	p12			vthick
-linewidth 	p13			vthick
-linewidth 	p14			vthick
-linewidth 	p15			vthick
-linewidth 	p16			vthick
-linewidth 	p17			vthick
+linewidth 	p1			none
+linewidth 	p2			none
+linewidth 	p3			none
+linewidth 	p4			none
+linewidth 	p5			none
+linewidth 	p6			none
+linewidth 	p7			none
+linewidth 	p8			none
+linewidth 	p9			none
+linewidth 	p10			none
+linewidth 	p11			none
+linewidth 	p12			none
+linewidth 	p13			none
+linewidth 	p14			none
+linewidth 	p15			none
+linewidth 	p16			none
+linewidth 	p17			none
 
-linewidth 	p1lineplot		thick
-linewidth 	p2lineplot		thick
-linewidth 	p3lineplot		thick
-linewidth 	p4lineplot		thick
-linewidth 	p5lineplot		thick
-linewidth 	p6lineplot		thick
-linewidth 	p7lineplot		thick
-linewidth 	p8lineplot		thick
-linewidth 	p9lineplot		thick
-linewidth 	p10lineplot		thick
-linewidth 	p11lineplot		thick
-linewidth 	p12lineplot		thick
-linewidth 	p13lineplot		thick
-linewidth 	p14lineplot		thick
-linewidth 	p15lineplot		thick
-linewidth 	p16lineplot		thick
-linewidth 	p17lineplot		thick
+linewidth 	p1lineplot		none
+linewidth 	p2lineplot		none
+linewidth 	p3lineplot		none
+linewidth 	p4lineplot		none
+linewidth 	p5lineplot		none
+linewidth 	p6lineplot		none
+linewidth 	p7lineplot		none
+linewidth 	p8lineplot		none
+linewidth 	p9lineplot		none
+linewidth 	p10lineplot		none
+linewidth 	p11lineplot		none
+linewidth 	p12lineplot		none
+linewidth 	p13lineplot		none
+linewidth 	p14lineplot		none
+linewidth 	p15lineplot		none
+linewidth 	p16lineplot		none
+linewidth 	p17lineplot		none
 
 linewidth 	p1bar			none
 linewidth 	p2bar			none
@@ -234,7 +234,7 @@ linewidth	p17area			none
 // Colores
 color 		p1		"255,128,0"    // Naranja CIEP brillante
 color 		p2		"255,189,0"    // Amarillo institucional
-color 		p4		"23,151,201"    // Celeste vibrante
+color 		p4		"23,151,201"   // Celeste vibrante
 color 		p6		"186,34,64"    // Rojo institucional
 color 		p10		"0,179,147"    // Verde jade
 color 		p5		"255,55,0"     // Rojo fuego
