@@ -121,7 +121,7 @@ forvalues anio = `=anioPE'(-1)`=anioPE-10' {
 
 **/
 **# 4. SISTEMA FISCAL
-/***
+***
 
 ** 4.1 Ley de Ingresos de la Federación
 *set scheme ciepnewdeuda
@@ -142,7 +142,7 @@ noisily LIF if divPE == 2, anio(`=anioPE') by(divCIEP) $update 		///
 	min(0)	 							/// Mínimo 0% del PIB (no negativos)
 	rows(1)								//  Número de filas en la leyenda
 
-** 4.1.1 Parámetros: Ingresos **
+/** 4.1.1 Parámetros: Ingresos **
 scalar ISRASPIB  =   3.670 						// ISR (asalariados)
 scalar ISRPFPIB  =   0.233 						// ISR (personas f{c i'}sicas)
 scalar CUOTASPIB =   1.675  						// Cuotas (IMSS)
@@ -262,7 +262,7 @@ matrix IEPST = (26.5	,	0 		\			/// Cerveza y alcohol 14
 		0	,	5.2146		\			/// Gasolina: premium
 		0	,	6.7865		)			// Gasolina: diésel
 
-** 4.1.6 Submódulo ISR (web) **
+** 4.1.6 Submódulo ISR (web) **/
 if "`cambioisrpf'" == "1" {
 	noisily run "`c(sysdir_site)'/ISR_Mod.do"
 	scalar ISRASPIB  = ISR_AS_Mod					// NUEVA ESTIMACIÓN ISR ASALARIADOS
@@ -384,24 +384,24 @@ forvalues k = 2025(1)2031 {
 	global shrfsp`k' = shrfsp[1,`j']
 	global shrfspInterno`k' = shrfspInterno[1,`j']
 	global shrfspExterno`k' = shrfspExterno[1,`j']
-	global rfsp`k' = rfsp[`j', 1]
-	global rfspPIDIREGAS`k' = rfsp[`j', 2]
-	global rfspIPAB`k' = rfsp[`j', 3]
-	global rfspFONADIN`k' = rfsp[`j', 4]
-	global rfspDeudores`k' = rfsp[`j', 5]
-	global rfspBanca`k' = rfsp[`j', 6]
-	global rfspAdecuaciones`k' = rfsp[`j', 7]
-	global rfspBalance`k' = rfsp[`j', 8]
-	global tipoDeCambio`k' = tipoDeCambio[`j',1]
-	global balprimario`k' = balprimario[`j',1]
+	global rfsp`k' = rfsp[`j',1]
+	global rfspPIDIREGAS`k' = rfsp[`j',2]
+	global rfspIPAB`k' = rfsp[`j',3]
+	global rfspFONADIN`k' = rfsp[`j',4]
+	global rfspDeudores`k' = rfsp[`j',5]
+	global rfspBanca`k' = rfsp[`j',6]
+	global rfspAdecuaciones`k' = rfsp[`j',7]
+	global rfspBalance`k' = rfsp[`j',8]
+	global tipoDeCambio`k' = tipoDeCambio[1,`j']
+	global balprimario`k' = balprimario[1,`j']
 	global costodeuda`k' = costodeuda[1,`j']
 }
 
 * SHRFSP: comando *
 *set scheme ciepdeuda
 *scalar tasaEfectiva = 6.801
-noisily SHRFSP, anio(`=anioPE') ultanio(2008) $nographs $update $textbook
-ex
+noisily SHRFSP, anio(`=anioPE') ultanio(2018) $nographs $update $textbook
+
 
 
 **/
@@ -442,24 +442,24 @@ label var ImpuestosAportaciones "Impuestos y contribuciones"
 
 
 ** 6.2 (-) Gastos
-label var Pensión_AM "Pensión para adultos mayores"
-label var Educación "Educación"
+*label var Pensión_AM "Pensión para adultos mayores"
+*label var Educación "Educación"
 
-capture drop Transferencias
-egen Transferencias = rsum(Pensiones Pensión_AM IngBasico Educación Salud) // Otras_inversiones
-label var Transferencias "Transferencias públicas"
+*capture drop Transferencias
+*egen Transferencias = rsum(Pensiones Pensión_AM IngBasico Educación Salud) // Otras_inversiones
+*label var Transferencias "Transferencias públicas"
 
 
 ** 6.3 (=) Aportaciones netas **
-capture drop AportacionesNetas
-g AportacionesNetas = ImpuestosAportaciones - Transferencias
-label var AportacionesNetas "Ciclo de vida de las aportaciones netas"
+*capture drop AportacionesNetas
+*g AportacionesNetas = ImpuestosAportaciones - Transferencias
+*label var AportacionesNetas "Ciclo de vida de las aportaciones netas"
 
-foreach k of varlist /*AlTrabajo AlCapital AlConsumo ImpuestosAportaciones ///
+foreach k of varlist /*AlTrabajo AlCapital AlConsumo ImpuestosAportaciones*/ ///
 	ISRPM_Sim ISRAS_Sim ISRPF_Sim CUOTAS_Sim IVA_Sim IEPSNP_Sim IEPSP_Sim ISAN_Sim IMPORT_Sim ///
-	Pensiones Pensión_AM IngBasico Educación Salud Transferencias*/ AportacionesNetas {
+	/*Pensiones Pensión_AM IngBasico Educación Salud Transferencias AportacionesNetas*/ {
 	*noisily Perfiles `k' [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
-	*noisily Simulador `k' [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot //boot(10)
+	noisily Simulador `k' [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot //boot(10)
 }
 save `"`c(sysdir_site)'/users/$id/aportaciones.dta"', replace
 
