@@ -327,9 +327,11 @@ quietly {
 	if "`nographs'" != "nographs" & "$nographs" == "" {
 
 		** Como % del PIB **
-		tempvar shrfsp_pib
+		tempvar shrfsp_pib shrfsp_pc
 		g `shrfsp_pib' = shrfsp/pibY*100
 		format `shrfsp_pib' %7.1fc
+		g `shrfsp_pc' = shrfsp/(Poblacion_ajustada)/deflator/1000
+		format `shrfsp_pc' %7.0fc
 
 		tempvar rfsppib rfsp rfsppc
 		g `rfsppib' = rfsp/pibY*100
@@ -401,6 +403,58 @@ quietly {
 		if _rc == 0 {
 			graph export "$export/shrfsp.png", replace name(shrfsp)
 		}
+
+		tabstat `shrfsp_pib' `shrfsp_pc' `rfsppib', stat(min max) by(anio) save
+		tempname rango
+		matrix `rango' = r(StatTotal)
+
+		twoway  (bar `shrfsp_pib' anio if anio > 2000 & anio <= `=`anio'-1', barwidth(.75)) ///
+			(bar `shrfsp_pib' anio if anio > `=`anio'-1' & anio <= 2031, barwidth(.75) ///
+				pstyle(p1) lcolor(none) fintensity(40)) ///
+			(bar `rfsppib' anio if anio < `anio', barwidth(.35) yaxis(3) ///
+				pstyle(p2) lwidth(none)) ///
+			(bar `rfsppib' anio if anio >= `anio', barwidth(.35) yaxis(3) ///
+				pstyle(p2) lwidth(none) fintensity(40)) ///
+			(connected `shrfsp_pc' anio if anio > 2000 & anio <= `=`anio'-1', ///
+				yaxis(2) mlabel(`shrfsp_pc') mlabposition(12) mlabcolor(black) pstyle(p3) ///
+				lpattern(dot) msize(small) mlabsize(medium)) ///
+			(connected `shrfsp_pc' anio if anio > `=`anio'-1' & anio <= 2031, ///
+				yaxis(2) mlabel(`shrfsp_pc') mlabposition(12) mlabcolor(black) pstyle(p3) ///
+				lpattern(dot) msize(small) mlabsize(medium) fintensity(40)) ///
+			(scatter `shrfsp_pib' anio if anio > 2000 & anio <= 2031, ///
+				mlabel(`shrfsp_pib') mlabposition(12) mlabcolor(black) msize(zero) mlabsize(medium)) ///
+			(scatter `rfsppib' anio if anio > 2000 & anio <= 2031, ///
+				mlabel(`rfsppib') mlabposition(12) mlabcolor(black) msize(zero) mlabsize(medium) yaxis(3)) ///
+			if `shrfsp_pib' != . & anio > `ultanio', ///
+			title(`graphtitle') ///
+			///subtitle("Monto reportado (billones `currency' `aniovp') y como % del PIB") ///
+			caption("`graphfuente'") ///
+			ytitle("") ///
+			ytitle("", axis(2)) ///
+			ytitle("", axis(3)) ///
+			ylabel(none) ///
+			ylabel(none, axis(2)) ///
+			ylabel(none, axis(3)) ///
+			yscale(range(0 `=`rango'[2,1]*1.75') axis(1) noline) ///
+			yscale(range(-50 `=`rango'[2,2]*1.15') axis(2) noline) ///
+			yscale(range(0 `=`rango'[2,3]*2.5') axis(3) noline) ///
+			xtitle("") ///
+			xlabel(`=`ultanio'+1'(1)`lastexo', noticks) ///	
+			legend(on order(1 4) label(1 "SHRFSP") label(4 "RFSP")) ///
+			text(0 `=`ultanio'+1' "{bf:% PIB}", ///
+				yaxis(3) size(medium) place(1) justification(right) bcolor(white) box) ///
+			text(0 `=`anio'' "{bf:$paqueteEconomico}", ///
+				yaxis(3) size(medium) place(1) justification(right) bcolor(white) box) ///
+			text(`=`rango'[2,3]' `=`ultanio'+.5' "{bf:`currency' `aniovp' por persona}", ///
+				yaxis(2) size(medium) place(1) justification(left) bcolor(white) box) ///
+			name(shrfsppc, replace)
+
+		graph save shrfsppc `"`c(sysdir_site)'/05_graphs/shrfsppc.gph"', replace
+		capture confirm existence $export
+		if _rc == 0 {
+			graph export "$export/shrfsppc.png", replace name(shrfsppc)
+		}
+
 	}
 
 
@@ -597,9 +651,6 @@ quietly {
 
 
 
-
-
-
 	*********************************
 	***                           ***
 	**# 7 Efectos indicador deuda ***
@@ -738,25 +789,6 @@ quietly {
 		}
 	}
 
-
-	**********************************/
-	** EFECTOS SOBRE LOS INDICADORES **
-
-	/* Informes mensuales texto *
-	tabstat `rfsp' if anio == `anio' | anio == `anio'-1, by(anio) f(%20.0fc) stat(sum) c(v) save nototal
-	tempname stathoy statayer rango
-	matrix `stathoy' = r(Stat2)
-	matrix `statayer' = r(Stat1)
-
-	tabstat `rfsp' `rfsppib', f(%20.3fc) stat(min max mean) save
-	matrix `rango' = r(StatTotal)
-
-	scalar RFSPPromPIB = -`rango'[3,2]
-
-	g efectoPositivoRFSP = 0
-	foreach k of varlist `rfspBalance0' `rfspOtros0' {
-			replace efectoPositivoRFSP = efectoPositivoRFSP + `k' if `k' > 0
-	}
 
 
 	**********/
