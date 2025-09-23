@@ -354,8 +354,14 @@ quietly {
 		
 		** 7.1 Gráficas iniciales ***
 		* Títulos y fuentes *
-		local graphtitle "{bf:Productividad laboral}"
-		local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE."
+		if "$export" == "" {
+			local graphtitle "{bf:Productividad laboral}"
+			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE."
+		}
+		else {
+			local graphtitle ""
+			local graphfuente ""
+		}
 
 		tempvar gpibYR gPO gPO2
 		g `gpibYR' = pibYR/1000000000000
@@ -424,7 +430,7 @@ quietly {
 		************************************
 		
 		* Títulos y fuentes *
-		if "$textbook" == "" {
+		if "$export" == "" {
 			local graphtitle "{bf:Índice de precios implícitos}"
 			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/SHCP."
 		}
@@ -477,7 +483,7 @@ quietly {
 				mstyle(p3) lstyle(p3) lpattern(dot) msize(small) mlabsize(medium)) ///
 			, ///
 			title("`graphtitle'") ///
-			xlabel(`=round(`geodef',5)'(5)`aniomax') ///
+			xlabel(`=round(`geodef',5)'(1)`aniomax') ///
 			ylabel(none, format(%3.0f) axis(2) noticks) yscale(range(0 3.5) axis(2) noline) ///
 			ylabel(none, format(%3.0f) axis(1) noticks) yscale(range(0) axis(1) noline) ///
 			xtitle("") ///
@@ -515,7 +521,7 @@ quietly {
 		format `pibYRmil' %7.0fc
 
 		* Títulos y fuentes *
-		if "$textbook" == "" {
+		if "$export" == "" {
 			local graphtitle "{bf:Producto Interno Bruto}"
 			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/SHCP."
 		}
@@ -578,7 +584,7 @@ quietly {
 			xtitle("") ///
 			ytitle("", axis(1)) ///
 			ytitle("", axis(2)) ///
-			xlabel(`=round(`geopib',5)'(5)`aniomax') ///
+			xlabel(`=round(`geopib',5)'(1)`aniomax') ///
 			ylabel(none, format(%3.0f) axis(2) noticks) ///
 			ylabel(none, format(%3.0f) axis(1) noticks) ///
 			yscale(range(0 `=`pibYRmil2'[1,2]*3') axis(1) noline) ///
@@ -614,7 +620,7 @@ quietly {
 		format var_pibPob %7.1fc
 
 		* Títulos y fuentes *
-		if "$textbook" == "" {
+		if "$export" == "" {
 			local graphtitle "{bf:Producto Interno Bruto por persona}"
 			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/CONAPO."
 		}
@@ -687,7 +693,7 @@ quietly {
 			xtitle("") ///
 			ytitle("", axis(1)) ///
 			ytitle("", axis(2)) ///
-			xlabel(`=round(`geopib',5)'(5)`aniomax') ///
+			xlabel(`=round(`geopib',5)'(1)`aniomax') ///
 			ylabel(none, format(%3.0f) axis(2) noticks) ///
 			ylabel(none, format(%3.0f) axis(1) noticks) ///
 			yscale(range(0 -40) axis(1) noline) ///
@@ -716,7 +722,7 @@ quietly {
 		**************************
 
 		* Títulos y fuentes *
-		if "$textbook" == "" {
+		if "$export" == "" {
 			local graphtitle "{bf:Índice nacional de precios al consumidor}"
 			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/SHCP."
 		}
@@ -791,7 +797,7 @@ quietly {
 			xtitle("") ///
 			ytitle("", axis(1)) ///
 			ytitle("", axis(2)) ///
-			xlabel(`=round(`geodef',5)'(5)`aniomax') ///
+			xlabel(`=round(`geodef',5)'(1)`aniomax') ///
 			ylabel(none, format(%3.0f) axis(2) noticks) ///
 			ylabel(none, format(%3.0f) axis(1) noticks) ///
 			yscale(range(0 3.5) axis(2) noline) ///

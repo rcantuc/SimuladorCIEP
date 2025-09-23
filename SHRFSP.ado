@@ -97,7 +97,7 @@ quietly {
 	forvalues j = 1(1)`=_N' {
 		foreach k of varlist shrfsp* ///
 			rfspBalance rfspPIDIREGAS rfspIPAB rfspFONADIN rfspDeudores rfspBanca rfspAdecuaciones ///
-			balprimario {
+			balprimario ingresos egresos {
 			capture confirm existence ${`k'`=anio[`j']'}
 			if _rc == 0 {
 				replace `k' = ${`k'`=anio[`j']'}/100*pibY if anio == `=anio[`j']'
@@ -322,16 +322,28 @@ quietly {
 	return scalar shrfsp = `mattot'[1,6]
 	return scalar shrfspPIB = `mattot'[1,6]/`mattot2'[1,1]*100
 	return scalar shrfspPC = `mattot'[1,6]/`mattot2'[1,2]
-	
+
+	g costodeudaTot = costofinanciero
+	g tasaEfectiva = costodeudaTot/shrfsp*100
+
+	g depreciacion = tipoDeCambio-L.tipoDeCambio
+	g Depreciacion = (tipoDeCambio/L.tipoDeCambio-1)*100
+
+	format tasa* depreciacion Depreciacion %7.1fc
+
 	** 4.2.1 Gráfica generales **
 	if "`nographs'" != "nographs" & "$nographs" == "" {
 
 		** Como % del PIB **
-		tempvar shrfsp_pib shrfsp_pc
+		tempvar shrfsp_pib shrfsp_pc shrfsp_bill shrfsp_lif
 		g `shrfsp_pib' = shrfsp/pibY*100
 		format `shrfsp_pib' %7.1fc
 		g `shrfsp_pc' = shrfsp/(Poblacion_ajustada)/deflator/1000
 		format `shrfsp_pc' %7.0fc
+		g `shrfsp_bill' = shrfsp/1000000000000/deflator
+		format `shrfsp_bill' %7.1fc
+		g `shrfsp_lif' = shrfsp/ingresos*100
+		format `shrfsp_lif' %7.0fc
 
 		tempvar rfsppib rfsp rfsppc
 		g `rfsppib' = rfsp/pibY*100
@@ -340,9 +352,15 @@ quietly {
 		format `rfsp' %5.1fc
 		format `rfsppib' %5.1fc
 
-		tempvar rfspshrfsp
+		tempvar rfspshrfsp lifpib
 		g `rfspshrfsp' = rfsp/shrfsp*100
 		format `rfspshrfsp' %5.1fc
+		g `lifpib' = ingresos/pibY*100
+		format `lifpib' %5.1fc
+
+		tempvar pobmill
+		g `pobmill' = Poblacion_ajustada/1000000
+		format `pobmill' %7.0fc
 
 		if `"$export"' == "" {
 			local graphtitle "{bf:Saldo hist{c o'}rico de RFSP}"
@@ -357,24 +375,76 @@ quietly {
 		tempname rango
 		matrix `rango' = r(StatTotal)
 
-		twoway  (bar `shrfsp_pib' anio if anio > 2000 & anio <= `=`anio'-1', barwidth(.75)) ///
-			(bar `shrfsp_pib' anio if anio > `=`anio'-1' & anio <= 2031, barwidth(.75) ///
-				pstyle(p1) lcolor(none) fintensity(40)) ///
-			(bar `rfsppib' anio if anio < `anio', barwidth(.35) yaxis(3) ///
+		twoway  (bar `shrfsp_pib' anio if anio > 2000 & anio < `=`anio'-1', barwidth(.75)) ///
+			(bar `shrfsp_pib' anio if anio >= `=`anio'-1' & anio <= 2031, barwidth(.75) ///
+				pstyle(p1) lcolor(none) fintensity(50)) ///
+			(bar `rfsppib' anio if anio < `=`anio'-1', barwidth(.35) yaxis(3) ///
 				pstyle(p2) lwidth(none)) ///
-			(bar `rfsppib' anio if anio >= `anio', barwidth(.35) yaxis(3) ///
-				pstyle(p2) lwidth(none) fintensity(40)) ///
-			(connected `rfspshrfsp' anio if anio > 2000 & anio <= `=`anio'-1', ///
+			(bar `rfsppib' anio if anio >= `=`anio'-1', barwidth(.35) yaxis(3) ///
+				pstyle(p2) lwidth(none) fintensity(50)) ///
+			(connected `rfspshrfsp' anio if anio > 2000 & anio < `=`anio'-1', ///
 				yaxis(2) mlabel(`rfspshrfsp') mlabposition(12) mlabcolor(black) pstyle(p3) ///
 				lpattern(dot) msize(small) mlabsize(medium)) ///
-			(connected `rfspshrfsp' anio if anio > `=`anio'-1' & anio <= 2031, ///
+			(connected `rfspshrfsp' anio if anio >= `=`anio'-1' & anio <= 2031, ///
 				yaxis(2) mlabel(`rfspshrfsp') mlabposition(12) mlabcolor(black) pstyle(p3) ///
 				lpattern(dot) msize(small) mlabsize(medium) fintensity(40)) ///
 			(scatter `shrfsp_pib' anio if anio > 2000 & anio <= 2031, ///
-				mlabel(`shrfsp_pib') mlabposition(12) mlabcolor(black) msize(zero) mlabsize(medium)) ///
+				mlabel(`shrfsp_pib') mlabposition(12) mlabcolor(black) msize(zero) mlabsize(medsmall)) ///
 			(scatter `rfsppib' anio if anio > 2000 & anio <= 2031, ///
-				mlabel(`rfsppib') mlabposition(12) mlabcolor(black) msize(zero) mlabsize(medium) yaxis(3)) ///
+				mlabel(`rfsppib') mlabposition(12) mlabcolor(black) msize(zero) mlabsize(medsmall) yaxis(3)) ///
 			if `shrfsp_pib' != . & anio > `ultanio', ///
+			title(`graphtitle') ///
+			///subtitle("Monto reportado (billones `currency' `aniovp') y como % del PIB") ///
+			note("{bf:Nota}: No se publican cifras de los RFSP previos al 2008.") ///
+			caption("`graphfuente'") ///
+			ytitle("") ///
+			ytitle("", axis(2)) ///
+			ytitle("", axis(3)) ///
+			ylabel(none) ///
+			ylabel(none, axis(2)) ///
+			ylabel(none, axis(3)) ///
+			yscale(range(0 `=`rango'[2,1]*1.8') axis(1) noline) ///
+			yscale(range(-20 `=`rango'[2,2]*1.15') axis(2) noline) ///
+			yscale(range(0 `=`rango'[2,3]*2.5') axis(3) noline) ///
+			xtitle("") ///
+			xlabel(`=`ultanio'+1'(1)`lastexo', noticks) ///	
+			legend(on order(1 4) label(1 "SHRFSP (% PIB)") label(4 "RFSP (% PIB)")) ///
+			text(0 `=`ultanio'+2' "{bf:Observado}", ///
+				yaxis(3) size(medium) place(1) justification(right) bcolor(white) box) ///
+			text(0 `=`anio'' "{bf:$paqueteEconomico}", ///
+				yaxis(3) size(medium) place(1) justification(right) bcolor(white) box) ///
+			text(`=`rango'[1,2]' `=`ultanio'+2' "{bf:% RFSP}" "{bf:entre SHRFSP}", ///
+				yaxis(2) size(medium) place(0) justification(left) bcolor(white) box) ///
+			name(shrfsp, replace)
+
+		graph save shrfsp `"`c(sysdir_site)'/05_graphs/shrfsp.gph"', replace
+		capture confirm existence $export
+		if _rc == 0 {
+			graph export "$export/shrfsp.png", replace name(shrfsp)
+		}
+
+		tabstat `shrfsp_bill' `shrfsp_pc' `pobmill', stat(min max) by(anio) save
+		tempname rango
+		matrix `rango' = r(StatTotal)
+
+		twoway  (bar `shrfsp_bill' anio if anio > 2000 & anio < `=`anio'-1', barwidth(.75)) ///
+			(bar `shrfsp_bill' anio if anio >= `=`anio'-1' & anio <= 2031, barwidth(.75) ///
+				pstyle(p1) lcolor(none) fintensity(40)) ///
+			(bar `pobmill' anio if anio < `=`anio'-1', barwidth(.35) yaxis(3) ///
+				pstyle(p2) lwidth(none)) ///
+			(bar `pobmill' anio if anio >= `=`anio'-1', barwidth(.35) yaxis(3) ///
+				pstyle(p2) lwidth(none) fintensity(40)) ///
+			(connected `shrfsp_pc' anio if anio > 2000 & anio < `=`anio'-1', ///
+				yaxis(2) mlabel(`shrfsp_pc') mlabposition(12) mlabcolor(black) pstyle(p3) ///
+				lpattern(dot) msize(small) mlabsize(medium)) ///
+			(connected `shrfsp_pc' anio if anio >= `=`anio'-1' & anio <= 2031, ///
+				yaxis(2) mlabel(`shrfsp_pc') mlabposition(12) mlabcolor(black) pstyle(p3) ///
+				lpattern(dot) msize(small) mlabsize(medium) fintensity(40)) ///
+			(scatter `shrfsp_bill' anio if anio > 2000 & anio <= 2031, ///
+				mlabel(`shrfsp_bill') mlabposition(12) mlabcolor(black) msize(zero) mlabsize(medsmall)) ///
+			(scatter `pobmill' anio if anio > 2000 & anio <= 2031, ///
+				mlabel(`pobmill') mlabposition(12) mlabcolor(black) msize(zero) mlabsize(medsmall) yaxis(3)) ///
+			if `shrfsp_bill' != . & anio > `ultanio', ///
 			title(`graphtitle') ///
 			///subtitle("Monto reportado (billones `currency' `aniovp') y como % del PIB") ///
 			caption("`graphfuente'") ///
@@ -385,46 +455,46 @@ quietly {
 			ylabel(none, axis(2)) ///
 			ylabel(none, axis(3)) ///
 			yscale(range(0 `=`rango'[2,1]*1.5') axis(1) noline) ///
-			yscale(range(-25 `=`rango'[2,2]*1.15') axis(2) noline) ///
-			yscale(range(0 `=`rango'[2,3]*2.5') axis(3) noline) ///
+			yscale(range(-30 `=`rango'[2,2]*1.15') axis(2) noline) ///
+			yscale(range(0 `=`rango'[2,3]*3.25') axis(3) noline) ///
 			xtitle("") ///
 			xlabel(`=`ultanio'+1'(1)`lastexo', noticks) ///	
-			legend(on order(1 4) label(1 "SHRFSP") label(4 "RFSP")) ///
-			text(0 `=`ultanio'+1' "{bf:% PIB}", ///
+			legend(on order(1 4) label(1 "SHRFSP (billones `currency' `aniovp')") label(4 "Población (millones)")) ///
+			text(0 `=`ultanio'+2' "{bf:Observado}", ///
 				yaxis(3) size(medium) place(1) justification(right) bcolor(white) box) ///
 			text(0 `=`anio'' "{bf:$paqueteEconomico}", ///
 				yaxis(3) size(medium) place(1) justification(right) bcolor(white) box) ///
-			text(`=`rango'[2,3]' `=`ultanio'+.5' "{bf:% RFSP}" "{bf:de SHRFSP}", ///
-				yaxis(2) size(medium) place(1) justification(left) bcolor(white) box) ///
-			name(shrfsp, replace)
+			text(`=`rango'[1,2]' `=`ultanio'+2' "{bf:miles `currency' `aniovp'}" "{bf:por persona}", ///
+				yaxis(2) size(medium) place(6) justification(left) bcolor(white) box) ///
+			name(shrfsppc, replace)
 
-		graph save shrfsp `"`c(sysdir_site)'/05_graphs/shrfsp.gph"', replace
+		graph save shrfsppc `"`c(sysdir_site)'/05_graphs/shrfsppc.gph"', replace
 		capture confirm existence $export
 		if _rc == 0 {
-			graph export "$export/shrfsp.png", replace name(shrfsp)
+			graph export "$export/shrfsppc.png", replace name(shrfsppc)
 		}
 
-		tabstat `shrfsp_pib' `shrfsp_pc' `rfsppib', stat(min max) by(anio) save
+		tabstat `shrfsp_pib' `shrfsp_lif' `lifpib', stat(min max) by(anio) save
 		tempname rango
 		matrix `rango' = r(StatTotal)
 
-		twoway  (bar `shrfsp_pib' anio if anio > 2000 & anio <= `=`anio'-1', barwidth(.75)) ///
-			(bar `shrfsp_pib' anio if anio > `=`anio'-1' & anio <= 2031, barwidth(.75) ///
-				pstyle(p1) lcolor(none) fintensity(40)) ///
-			(bar `rfsppib' anio if anio < `anio', barwidth(.35) yaxis(3) ///
+		twoway (bar `shrfsp_pib' anio if anio > 2000 & anio < `=`anio'-1', barwidth(.75)) ///
+			(bar `shrfsp_pib' anio if anio >= `=`anio'-1' & anio <= 2031, barwidth(.75) ///
+				pstyle(p1) lcolor(none) fintensity(50)) ///
+			(bar `lifpib' anio if anio < `=`anio'-1', barwidth(.35) yaxis(3) ///
 				pstyle(p2) lwidth(none)) ///
-			(bar `rfsppib' anio if anio >= `anio', barwidth(.35) yaxis(3) ///
-				pstyle(p2) lwidth(none) fintensity(40)) ///
-			(connected `shrfsp_pc' anio if anio > 2000 & anio <= `=`anio'-1', ///
-				yaxis(2) mlabel(`shrfsp_pc') mlabposition(12) mlabcolor(black) pstyle(p3) ///
+			(bar `lifpib' anio if anio >= `=`anio'-1', barwidth(.35) yaxis(3) ///
+				pstyle(p2) lwidth(none) fintensity(50)) ///
+			(connected `shrfsp_lif' anio if anio > 2000 & anio < `=`anio'-1', ///
+				yaxis(2) mlabel(`shrfsp_lif') mlabposition(12) mlabcolor(black) pstyle(p3) ///
 				lpattern(dot) msize(small) mlabsize(medium)) ///
-			(connected `shrfsp_pc' anio if anio > `=`anio'-1' & anio <= 2031, ///
-				yaxis(2) mlabel(`shrfsp_pc') mlabposition(12) mlabcolor(black) pstyle(p3) ///
+			(connected `shrfsp_lif' anio if anio >= `=`anio'-1' & anio <= 2031, ///
+				yaxis(2) mlabel(`shrfsp_lif') mlabposition(12) mlabcolor(black) pstyle(p3) ///
 				lpattern(dot) msize(small) mlabsize(medium) fintensity(40)) ///
 			(scatter `shrfsp_pib' anio if anio > 2000 & anio <= 2031, ///
-				mlabel(`shrfsp_pib') mlabposition(12) mlabcolor(black) msize(zero) mlabsize(medium)) ///
-			(scatter `rfsppib' anio if anio > 2000 & anio <= 2031, ///
-				mlabel(`rfsppib') mlabposition(12) mlabcolor(black) msize(zero) mlabsize(medium) yaxis(3)) ///
+				mlabel(`shrfsp_pib') mlabposition(12) mlabcolor(black) msize(zero) mlabsize(medsmall)) ///
+			(scatter `lifpib' anio if anio > 2000 & anio <= 2031, ///
+				mlabel(`lifpib') mlabposition(12) mlabcolor(black) msize(zero) mlabsize(medsmall) yaxis(3)) ///
 			if `shrfsp_pib' != . & anio > `ultanio', ///
 			title(`graphtitle') ///
 			///subtitle("Monto reportado (billones `currency' `aniovp') y como % del PIB") ///
@@ -436,25 +506,24 @@ quietly {
 			ylabel(none, axis(2)) ///
 			ylabel(none, axis(3)) ///
 			yscale(range(0 `=`rango'[2,1]*1.75') axis(1) noline) ///
-			yscale(range(-50 `=`rango'[2,2]*1.15') axis(2) noline) ///
-			yscale(range(0 `=`rango'[2,3]*2.5') axis(3) noline) ///
+			yscale(range(-60 `=`rango'[2,2]*1.15') axis(2) noline) ///
+			yscale(range(0 `=`rango'[2,3]*3.5') axis(3) noline) ///
 			xtitle("") ///
 			xlabel(`=`ultanio'+1'(1)`lastexo', noticks) ///	
-			legend(on order(1 4) label(1 "SHRFSP") label(4 "RFSP")) ///
-			text(0 `=`ultanio'+1' "{bf:% PIB}", ///
+			legend(on order(1 4) label(1 "SHRFSP (% PIB)") label(4 "Recaudación (% PIB)")) ///
+			text(0 `=`ultanio'+2' "{bf:Observado}", ///
 				yaxis(3) size(medium) place(1) justification(right) bcolor(white) box) ///
 			text(0 `=`anio'' "{bf:$paqueteEconomico}", ///
 				yaxis(3) size(medium) place(1) justification(right) bcolor(white) box) ///
-			text(`=`rango'[2,3]' `=`ultanio'+.5' "{bf:`currency' `aniovp' por persona}", ///
-				yaxis(2) size(medium) place(1) justification(left) bcolor(white) box) ///
-			name(shrfsppc, replace)
+			text(`=`rango'[1,2]' `=`ultanio'+2' "{bf:% SHRFSP}" "{bf:entre recaudación}", ///
+				yaxis(2) size(medium) place(6) justification(left) bcolor(white) box) ///
+			name(shrfsplif, replace)
 
-		graph save shrfsppc `"`c(sysdir_site)'/05_graphs/shrfsppc.gph"', replace
+		graph save shrfsplif `"`c(sysdir_site)'/05_graphs/shrfsplif.gph"', replace
 		capture confirm existence $export
 		if _rc == 0 {
-			graph export "$export/shrfsppc.png", replace name(shrfsppc)
+			graph export "$export/shrfsplif.png", replace name(shrfsplif)
 		}
-
 	}
 
 
@@ -463,13 +532,6 @@ quietly {
 	**# 6 TASAS EFECTIVAS ***
 	***                   ***
 	*************************
-	g costodeudaTot = costofinanciero
-	g tasaEfectiva = costodeudaTot/L.shrfsp*100
-
-	g depreciacion = tipoDeCambio-L.tipoDeCambio
-	g Depreciacion = (tipoDeCambio/L.tipoDeCambio-1)*100
-
-	format tasa* depreciacion Depreciacion %7.1fc
 
 	tabstat costodeudaTot if anio == `anio', stat(sum) format(%20.0fc) save
 	tempname mattot
@@ -506,28 +568,28 @@ quietly {
 		tempname rango
 		matrix `rango' = r(StatTotal)
 	
-		twoway (bar `shrfsp_pib' anio if anio > 2000 & anio <= `=`anio'-1', barwidth(.75)) ///
-			(bar `shrfsp_pib' anio if anio > `=`anio'-1' & anio <= 2031, barwidth(.75) ///
+		twoway (bar `shrfsp_pib' anio if anio > 2000 & anio < `=`anio'-1', barwidth(.75)) ///
+			(bar `shrfsp_pib' anio if anio >= `=`anio'-1' & anio <= 2031, barwidth(.75) ///
 				pstyle(p1) lcolor(none) fintensity(40)) ///
-			(bar costodeudaTotg anio if anio < `anio', barwidth(.35) yaxis(3) ///
+			(bar costodeudaTotg anio if anio < `=`anio'-1', barwidth(.35) yaxis(3) ///
 				pstyle(p2) lwidth(none)) ///
-			(bar costodeudaTotg anio if anio >= `anio', barwidth(.35) yaxis(3) ///
+			(bar costodeudaTotg anio if anio >= `=`anio'-1', barwidth(.35) yaxis(3) ///
 				pstyle(p2) lwidth(none) fintensity(40)) ///
-			(connected tasaEfectiva anio if anio > 2000 & anio <= `=`anio'-1', ///
+			(connected tasaEfectiva anio if anio > 2000 & anio < `=`anio'-1', ///
 				yaxis(2) mlabel(tasaEfectiva) mlabposition(12) mlabcolor(black) pstyle(p3) lpattern(dot) msize(small) mlabsize(medium)) ///
-			(connected tasaEfectiva anio if anio > `=`anio'-1' & anio <= 2031, ///
+			(connected tasaEfectiva anio if anio >= `=`anio'-1' & anio <= 2031, ///
 				yaxis(2) mlabel(tasaEfectiva) mlabposition(12) mlabcolor(black) pstyle(p3) lpattern(dot) msize(small) mlabsize(medium)) ///
 			(scatter `shrfsp_pib' anio if anio > 2000 & anio <= 2031, ///
-				yaxis(1) mlabel(`shrfsp_pib') mlabposition(12) mlabcolor(black) msize(zero) mlabsize(medium)) ///
+				yaxis(1) mlabel(`shrfsp_pib') mlabposition(12) mlabcolor(black) msize(zero) mlabsize(medsmall)) ///
 			(scatter costodeudaTotg anio if anio > 2000 & anio <= 2031, ///
-				yaxis(3) mlabel(costodeudaTotg) mlabposition(12) mlabcolor(black) msize(zero) mlabsize(medium)) ///
+				yaxis(3) mlabel(costodeudaTotg) mlabposition(12) mlabcolor(black) msize(zero) mlabsize(medsmall)) ///
 			if tasaEfectiva != . & anio > `ultanio', ///
 			title("`graphtitle'") ///
-			text(0 `=`ultanio'+1' "{bf:% PIB}", ///
+			text(0 `=`ultanio'+2' "{bf:Observado}", ///
 				yaxis(3) size(medium) place(1) justification(right) bcolor(white) box) ///
 			text(0 `=`anio'' "{bf:$paqueteEconomico}", ///
 				yaxis(3) size(medium) place(1) justification(right) bcolor(white) box) ///
-			text(`=`rango'[2,2]' `=`ultanio'+.75' "{bf:Tasa de interés promedio (%)}", ///
+			text(`=`rango'[2,2]' `=`ultanio'+.75' "{bf:Intereses promedio (%)}", ///
 				place(5) size(medium) color("111 111 111") yaxis(2)) ///
 			ylabel(none) ///
 			ylabel(none, axis(2)) ///
@@ -538,7 +600,7 @@ quietly {
 			ytitle("") ///
 			ytitle("", axis(2)) ///
 			ytitle("", axis(3)) ///
-			legend(on order(1 4) label(1 "SHRFSP") label(4 "Costo financiero")) ///
+			legend(on order(1 4) label(1 "SHRFSP (% PIB)") label(4 "Costo financiero (% PIB)")) ///
 			xlabel(`=`ultanio'+1'(1)`lastexo', noticks) xtitle("") ///
 			name(tasasdeinteres, replace) ///
 			caption("`graphfuente'")
@@ -549,7 +611,7 @@ quietly {
 			graph export "$export/tasasdeinteres.png", replace name(tasasdeinteres)
 		}
 
-		** Por Gobierno, OyE y Banca de desarrollo **
+		/** Por Gobierno, OyE y Banca de desarrollo **
 		tempvar shrfsp_gob shrfsp_oye shrfsp_banca shrfsp_bruta_pib shrfsp_oye_pib shrfsp_banca_pib
 		g `shrfsp_gob' = (shrfspGobFedInterno+shrfspGobFedExterno*tipoDeCambio)/1000000000000/deflator
 		g `shrfsp_oye' = `shrfsp_gob' + (shrfspOyEInterno+shrfspOyEExterno*tipoDeCambio)/1000000000000/deflator
@@ -647,6 +709,7 @@ quietly {
 		if _rc == 0 {
 			graph export "$export/shrfsp_plazo.png", replace name(shrfsp_plazo)
 		}
+		*/
 	}
 
 
@@ -722,9 +785,9 @@ quietly {
 			local graphfuente ""
 		}
 
-		graph bar balprimario_pib efectoCrecimientoReal efectoIntereses efectoTipoCambio efectoInflacion efectoOtros if balprimario_pib != . & anio > `ultanio', ///
+		graph bar balprimario_pib efectoCrecimientoReal efectoIntereses efectoTipoCambio efectoInflacion efectoOtros if balprimario_pib != . & anio > `ultanio'*0+2008, ///
 			over(anio) stack ///
-			blabel(, format(%5.1fc)) outergap(0) ///
+			blabel(, format(%5.1fc) color(black) size(medsmall)) outergap(0) ///
 			text(`textDeuda1', color(red) size(small)) ///
 			text(`textDeuda2', color(green) size(small)) ///
 			ytitle("% PIB") ///
@@ -993,6 +1056,17 @@ program define UpdateSHRFSP
 	rename monto balancepublico
 	tempfile balancepublico
 	save "`balancepublico'"
+	
+	noisily DatosAbiertos XAB, $nographs
+	rename monto ingresos
+	tempfile ingresos
+	save "`ingresos'"
+	
+	noisily DatosAbiertos XAC, $nographs
+	rename monto egresos
+	tempfile egresos
+	save "`egresos'"
+
 
 	** Endeudamiento presupuestario **
 	noisily DatosAbiertos XAA10, $nographs reverse
@@ -1137,6 +1211,10 @@ program define UpdateSHRFSP
 	merge 1:1 (anio) using "`Adecuaciones'", nogen
 
 	* Adecuaciones *
+	merge 1:1 (anio) using "`balancepublico'", nogen
+	merge 1:1 (anio) using "`ingresos'", nogen
+	merge 1:1 (anio) using "`egresos'", nogen
+	merge 1:1 (anio) using "`presupuestario'", nogen
 	merge 1:1 (anio) using "`nopresupuestario'", nogen
 	merge 1:1 (anio) using "`activosInt'", nogen
 	merge 1:1 (anio) using "`activosExt'", nogen

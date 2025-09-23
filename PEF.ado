@@ -550,14 +550,13 @@ quietly {
 		}
 
 		graph bar gastoPIB if anio <= `anio', ///
-			over(resumido, sort(1) descending) over(anio, gap(30)) ///
+			over(resumido, sort(1) descending) over(anio, gap(10)) ///
 			stack asyvars outergap(0) ///
 			name(gastos`by'PIB, replace) ///
 			title("`graphtitle'") ///
 			ylabel(, format(%7.1fc) labsize(small)) ///
-			ytitle("billones de `currency' `aniovp'") ///
-			subtitle("Recaudación, como % del PIB") ///
-			blabel(bar, format(%5.1fc)) ///
+			ytitle("% PIB") ///
+			blabel(bar, format(%5.1fc) size(medsmall)) ///
 			legend(on position(6) rows(`rows') cols(`cols') /*`legend' order(`order')*/ justification(left)) ///
 			/// Added text 
 			///text(`=recaudacionPIBTOT[1]' `=anio[1]' "{bf:% PIB}", placement(6)) ///
@@ -1171,23 +1170,23 @@ program define UpdatePEF
 
 	**********************
 	** 4.7 Federalizado **
-	replace divCIEP = "Part y otras Apor" if divCIEP == "" ///
+	replace divCIEP = "Federalizado" if divCIEP == "" ///
 		& (ramo == 28)                                        // Part
-	replace divCIEP = "Part y otras Apor" if divCIEP == "" ///
+	replace divCIEP = "Federalizado" if divCIEP == "" ///
 		& (ramo == 33 | ramo == 25)                           // Aport
-	replace divCIEP = "Part y otras Apor" if divCIEP == "" ///
+	replace divCIEP = "Federalizado" if divCIEP == "" ///
 		& (objeto == 43801)                                   // Convenios descentralizados
-	replace divCIEP = "Part y otras Apor" if divCIEP == "" ///
+	replace divCIEP = "Federalizado" if divCIEP == "" ///
 		& (objeto == 85101)                                   // Convenios de reasignación
-	replace divCIEP = "Part y otras Apor" if divCIEP == "" ///
+	replace divCIEP = "Federalizado" if divCIEP == "" ///
 		& (objeto == 43101 & ramo == 8 & pp == 263 & entidad != 34) // Convenios de reasignación
-	replace divCIEP = "Part y otras Apor" if divCIEP == "" ///
+	replace divCIEP = "Federalizado" if divCIEP == "" ///
 		& (objeto == 46101 & ramo == 23 & pp == 80)           // FEIEF
-	replace divCIEP = "Part y otras Apor" if divCIEP == "" ///
+	replace divCIEP = "Federalizado" if divCIEP == "" ///
 		& (ramo == 23 & pp == 4 & modalidad == "Y")           // FEIEF
-	replace divCIEP = "Part y otras Apor" if divCIEP == "" ///
+	replace divCIEP = "Federalizado" if divCIEP == "" ///
 		& (ramo == 23 & pp == 141)                            // FIES
-	replace divCIEP = "Part y otras Apor" if divCIEP == "" ///
+	replace divCIEP = "Federalizado" if divCIEP == "" ///
 		& (pp == 13 & (ramo == 12 | ramo == 47) & modalidad == "U") // INSABI/Seguro Popular/IMSS-Bienestar
 
 	g divFEDE = "Participaciones" if (ramo == 28) // Part

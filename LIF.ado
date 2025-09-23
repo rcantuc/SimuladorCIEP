@@ -149,7 +149,7 @@ quietly {
 
 	egen `recaudacionPIB' = max(recaudacionPIB) /*if anio >= 2010*/, by(`by')
 	replace resumido = 999 if abs(`recaudacionPIB') < `minimum' //| recaudacionPIB == . | recaudacionPIB == 0 //& divCIEP != 15 
-	label define label 999 `"< `=string(`minimum',"%5.1fc")'% PIB"', add modify
+	label define label 999 `"Otros (< `=string(`minimum',"%5.1fc")'% PIB)"', add modify
 
 	* Especiales *
 	capture replace nombre = subinstr(nombre,"Impuesto especial sobre producci{c o'}n y servicios de ","",.)
@@ -520,32 +520,32 @@ quietly {
 
 		* Cambios * 
 		if (`finPIBTOT'[1,1]-`iniPIBTOT'[1,1]) > 0 {
-			local cambio = "aumentaría"
+			local cambio = "aumentó"
 		}
 		else {
-			local cambio = "disminuiría"
+			local cambio = "disminuyó"
 		}
 
 		graph bar recaudacionPIB if anio <= `anio', ///
-			over(resumido, sort(1) descending) over(anio, gap(30)) ///
-			stack asyvars blabel(bar, format(%7.1fc)) outergap(0) ///
+			over(resumido, sort(1) descending) over(anio, gap(10)) ///
+			stack asyvars blabel(bar, format(%7.1fc) size(medsmall)) outergap(0) ///
 			name(ingresos`by'PIB, replace) ///
-			caption("Fuente: Elaborado por el CIEP, con informaci{c o'}n de SHCP/EOFP, INEGI/BIE y $paqueteEconomico.") ///
+			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de SHCP/EOFP, INEGI/BIE y $paqueteEconomico.") ///
 			title("`graphtitle'") ///
 			ylabel(, format(%7.1fc) labsize(small)) ///
-			ytitle("% del PIB") ///
+			ytitle("% PIB") ///
 			blabel(bar, format(%5.1fc)) ///
 			legend(on position(6) rows(`rows') cols(`cols') /*`legend' order(`order')*/ justification(left)) ///
 			/// Added text 
 			///text(`=recaudacionPIBTOT[1]' `=anio[1]' "{bf:% PIB}", placement(6)) ///
 			///text(`=`recaudacionline'[1]' `=anio[1]' "{bf:% LIF}", placement(6) yaxis(2)) ///
+			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de SHCP/EOFP, INEGI/BIE y $paqueteEconomico.") ///
 			b1title("De `desde' a `anio', la {bf:recaudación `cambio' `=string(abs(`finPIBTOT'[1,1]-`iniPIBTOT'[1,1]),"%7.1fc")'} puntos porcentuales del PIB.")
 
 		/*grc1leg ///
 		///graph combine ///
 		ingresos`by'PIB ingresosMXN`by' , ///
 			title("{bf:`graphtitle'}") ///
-			caption("Fuente: Elaborado por el CIEP, con informaci{c o'}n de SHCP/EOFP, INEGI/BIE y $paqueteEconomico.") ///
 			name(ingresos`by', replace) xcommon */
 
 		*capture window manage close graph ingresosMXN`by'
