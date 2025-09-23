@@ -37,8 +37,8 @@ color 		legend			white
 
 
 // Added text and lines
-gsize 		text_option 		medium
-color 		text_option		black
+gsize 		text_option 		medlarge
+color 		text_option		"111,111,111"
 clockdir 	text_option		12
 
 color		xyline			"200,200,200"
@@ -49,10 +49,13 @@ linepattern	xyline			dash
 // Title, subtitle, caption, notes
 clockdir 	title_position		12
 color 		heading			black
+
 clockdir 	subtitle_position	12
 color 		subheading		black
+
 clockdir 	caption_position	6
 color		body			black
+
 clockdir 	note_position		6
 color		small_body		black
 
@@ -70,6 +73,7 @@ yesno 		caption_span		no
 
 textboxstyle	t1title			body
 textboxstyle	t2title			small_body
+
 textboxstyle	b1title			body
 textboxstyle	b2title			small_body
 
@@ -85,11 +89,11 @@ yesno 		draw_major_nlt_vgrid 	yes
 
 // Axis
 color		tick			"52,70,78"
-color      	tick_label		"114,113,118"
+color      	tick_label		"111 111 111"
 gsize      	tick_label		small
-color 		tick_biglabel 		"114,113,118"
+color 		tick_biglabel 		"111 111 111"
 gsize		tick_biglabel		small
-color 		axis_title 		"114,113,118"
+color 		axis_title 		"111 111 111"
 gsize		axis_title		small
 
 axisstyle 	vertical_default 	vertical_nolinetick
@@ -98,9 +102,8 @@ anglestyle 	vertical_tick 		horizontal
 anglestyle 	horizontal_tick 	horizontal
 
 color		tickline		black
-linewidth	axisline		medium
+linewidth	axisline		none
 tickposition	axis_tick		inside
-
 
 
 // Legend
@@ -108,14 +111,15 @@ clockdir 	legend_position		6
 linestyle 	legend			none
 gsize 		legend_key_xsize	medlarge
 gsize 		legend_key_ysize	medlarge
-numstyle 	legend_cols		4
-gsize 		key_label		small
+numstyle 	legend_cols		8
+gsize 		key_label		medlarge
 
 
 
 // Labels
 color 		label 			white
-gsize 		small_label		small
+gsize 		label			vlarge
+gsize 		small_label		vlarge
 
 
 
@@ -127,12 +131,13 @@ relsize 	bar_groupgap		30
 relsize 	bar_subgroupgap		0
 
 
-
 // Símbolos
 symbol 		p 			circle
-symbolsize 	p			vhuge
+symbolsize 	p			medlarge
 color      	refmarker		red
 linewidth  	refmarker		vvvthick
+linepattern 	p			dot
+
 
 // Grosor
 linewidth 	p1mark			none
@@ -171,23 +176,23 @@ linewidth 	p15			thick
 linewidth 	p16			thick
 linewidth 	p17			thick
 
-linewidth 	p1lineplot		thick
-linewidth 	p2lineplot		thick
-linewidth 	p3lineplot		thick
-linewidth 	p4lineplot		thick
-linewidth 	p5lineplot		thick
-linewidth 	p6lineplot		thick
-linewidth 	p7lineplot		thick
-linewidth 	p8lineplot		thick
-linewidth 	p9lineplot		thick
-linewidth 	p10lineplot		thick
-linewidth 	p11lineplot		thick
-linewidth 	p12lineplot		thick
-linewidth 	p13lineplot		thick
-linewidth 	p14lineplot		thick
-linewidth 	p15lineplot		thick
-linewidth 	p16lineplot		thick
-linewidth 	p17lineplot		thick
+linewidth 	p1lineplot		none
+linewidth 	p2lineplot		none
+linewidth 	p3lineplot		none
+linewidth 	p4lineplot		none
+linewidth 	p5lineplot		none
+linewidth 	p6lineplot		none
+linewidth 	p7lineplot		none
+linewidth 	p8lineplot		none
+linewidth 	p9lineplot		none
+linewidth 	p10lineplot		none
+linewidth 	p11lineplot		none
+linewidth 	p12lineplot		none
+linewidth 	p13lineplot		none
+linewidth 	p14lineplot		none
+linewidth 	p15lineplot		none
+linewidth 	p16lineplot		none
+linewidth 	p17lineplot		none
 
 linewidth 	p1bar			none
 linewidth 	p2bar			none
@@ -226,26 +231,28 @@ linewidth	p16area			none
 linewidth	p17area			none
 
 
-
 // Colores
-color 		p1			"255,129,0"
-color 		p2			"255,189,0"
-color 		p3			"224,97,83"
-color 		p4			"53,200,71"
-color 		p5			"255,55,0"
-color 		p6			"0,151,201"
-color 		p7			"210,213,32"
-color 		p8			"254,118,109"
-color 		p9			"150,6,92"
-color 		p10			"213,155,190"
-color 		p11			"23,105,114"
-color 		p12			"57,198,184"
-color 		p13			"133,88,14"
-color 		p14			"227,229,99"
-color 		p15			"102,62,76"
-color 		p16			"0,151,125"
-color 		p17			"181,185,27"
-color 		p18			"9,63,93"
-color 		p19			"0,151,125"
-color 		p20			"133,53,44"
-
+color 		p1		"255,128,0"    // Naranja CIEP brillante
+color 		p2		"255,189,0"    // Amarillo institucional
+color 		p4		"23,151,201"   // Celeste vibrante
+color 		p6		"186,34,64"    // Rojo institucional
+color 		p10		"0,179,147"    // Verde jade
+color 		p5		"255,55,0"     // Rojo fuego
+color 		p7		"57,197,183"   // Azul aguamarina
+color 		p8		"102,177,0"    // Verde lima
+color 		p9		"150,6,92"     // Vino CIEP
+color 		p3		"53,199,72"    // Verde bandera
+color 		p11		"0,78,198"     // Azul CIEP profundo
+color 		p12		"194,76,68"    // Terracota intensa
+color 		p13		"254,118,109"  // Coral claro
+color 		p14		"40,172,58"    // Verde medio brillante
+color 		p15		"34,112,255"   // Azul eléctrico
+color 		p16		"255,181,76"   // Naranja pastel
+color 		p17		"15,174,183"   // Verde océano
+color 		p18		"224,97,83"    // Coral denso
+color 		p19		"0,150,125"    // Verde petróleo
+color 		p20		"255,234,0"    // Amarillo vibrante
+color 		p21		"168,142,226"  // Lila suave
+color 		p22		"34,34,34"     // Negro técnico
+color 		p23		"175,174,180"  // Gris claro
+color 		p24		"243,243,233"  // Beige claro

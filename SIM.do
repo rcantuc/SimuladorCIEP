@@ -15,13 +15,13 @@
 clear all
 macro drop _all
 capture log close _all
-set scheme ciepnew
+set scheme ciep
 timer on 1
 
 ** Directorios de trabajo (uno por computadora)
 if "`c(username)'" == "ricardo" {					// iMac Ricardo
 	sysdir set SITE "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
-	*global export "/Users/ricardo/CIEP Dropbox/TextbookCIEP/images"
+	global export "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/CIEP_Deuda/0. Paquete Económico/Deuda 2026/images"
 }
 else if "`c(username)'" == "servidorciep" {				// Servidor CIEP
 	sysdir set SITE "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
@@ -102,12 +102,12 @@ noisily SCN, anio(`=aniovp') $textbook nographs //$update
 
 **/
 **# 3. HOGARES: ARMONIZACIÓN MACRO-MICRO
-/***
+***
 
 forvalues anio = `=anioPE'(-1)`=anioPE-10' {
 
 	** 3.1 Encuesta Nacional de Ingresos y Gastos de los Hogares (Usos)
-	noisily run "`c(sysdir_site)'/Expenditure.do" `anio'
+	*noisily run "`c(sysdir_site)'/Expenditure.do" `anio'
 
 	** 3.2 Encuesta Nacional de Ingresos y Gastos de los Hogares (Recursos)
 	noisily run `"`c(sysdir_site)'/Households.do"' `anio'
@@ -125,11 +125,12 @@ forvalues anio = `=anioPE'(-1)`=anioPE-10' {
 
 ** 4.1 Ley de Ingresos de la Federación
 *set scheme ciepnewdeuda
-noisily LIF, anio(`=anioPE') by(divOrigen) $update 			///
+noisily LIF, anio(`=anioPE') by(divPE) $update 			///
 	title("Ingresos presupuestarios") 				/// Cambiar título de la gráfica
-	desde(`=`=anioPE'-1') 						/// Año de inicio para el PROMEDIO
-	min(0)	 							/// Mínimo 0% del PIB (no negativos)
+	desde(`=`=anioPE'-13') 						/// Año de inicio para el PROMEDIO
+	min(1.5)	 							/// Mínimo 0% del PIB (no negativos)
 	rows(1)								//  Número de filas en la leyenda
+exit
 rename divSIM divCODE
 decode divCODE, g(divSIM) 
 collapse (sum) recaudacion, by(anio divSIM) fast
@@ -142,7 +143,7 @@ noisily LIF if divPE == 2, anio(`=anioPE') by(divCIEP) $update 		///
 	min(0)	 							/// Mínimo 0% del PIB (no negativos)
 	rows(1)								//  Número de filas en la leyenda
 
-/** 4.1.1 Parámetros: Ingresos **
+** 4.1.1 Parámetros: Ingresos **
 scalar ISRASPIB  =   3.670 						// ISR (asalariados)
 scalar ISRPFPIB  =   0.233 						// ISR (personas f{c i'}sicas)
 scalar CUOTASPIB =   1.675  						// Cuotas (IMSS)
@@ -262,7 +263,7 @@ matrix IEPST = (26.5	,	0 		\			/// Cerveza y alcohol 14
 		0	,	5.2146		\			/// Gasolina: premium
 		0	,	6.7865		)			// Gasolina: diésel
 
-** 4.1.6 Submódulo ISR (web) **/
+** 4.1.6 Submódulo ISR (web) **
 if "`cambioisrpf'" == "1" {
 	noisily run "`c(sysdir_site)'/ISR_Mod.do"
 	scalar ISRASPIB  = ISR_AS_Mod					// NUEVA ESTIMACIÓN ISR ASALARIADOS
@@ -379,6 +380,14 @@ matrix balprimario = (-0.2, -0.5, -0.8, -0.8, -0.8, -0.8, -0.6)
 *                   2025, 2026, 2027, 2028, 2029, 2030, 2031
 matrix costodeuda = (3.8,  4.1,  3.8,  3.4,  3.3,  3.3,  3.1)
 
+* Ingresos (como % del PIB)
+*                     2025, 2026, 2027, 2028, 2029, 2030, 2031
+matrix ingresos = (21.9,  22.5,  22.4,  22.4,  22.4,  22.4,  22.4)
+
+* Gastos (como % del PIB)
+*                     2025, 2026, 2027, 2028, 2029, 2030, 2031
+matrix egresos = (25.5,  26.1,  25.4,  24.9,  24.9,  24.9,  24.9)
+
 forvalues k = 2025(1)2031 {
 	local j = `k' - 2025 + 1
 	global shrfsp`k' = shrfsp[1,`j']
@@ -395,13 +404,15 @@ forvalues k = 2025(1)2031 {
 	global tipoDeCambio`k' = tipoDeCambio[1,`j']
 	global balprimario`k' = balprimario[1,`j']
 	global costodeuda`k' = costodeuda[1,`j']
+	global ingresos`k' = ingresos[1,`j']
+	global egresos`k' = egresos[1,`j']
 }
 
 * SHRFSP: comando *
-*set scheme ciepdeuda
+set scheme ciepdeuda
 *scalar tasaEfectiva = 6.801
-noisily SHRFSP, anio(`=anioPE') ultanio(2018) $nographs $update $textbook
-
+noisily SHRFSP, anio(`=anioPE') ultanio(2002) $nographs $update $textbook
+ex
 
 
 **/

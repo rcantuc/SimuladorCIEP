@@ -3,7 +3,7 @@
 *** 1 Estilo CIEP ***
 ***               ***
 *********************
-set scheme ciepnew
+set scheme ciep
 graph set window fontface "Ubuntu Light"
 set more off, permanently
 set type double, permanently
