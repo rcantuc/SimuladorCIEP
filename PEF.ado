@@ -115,7 +115,12 @@ quietly {
 
 	** 3.3 Gasto neto **
 	replace gastoTOT = gastoTOT + CuoTOT
-	collapse (sum) gasto (max) gastoTOT CuoTOT `if', by(anio `by' transf_gf) fast
+	capture collapse (sum) gasto (max) gastoTOT CuoTOT `if', by(anio `by' transf_gf) fast
+	if _rc != 0 {
+		noisily di in g `" No hay informaci{c o'}n para el a{c n~}o `if'."'
+		return local rc = "NoData"
+		exit
+	}
 	sort anio `by'
 	merge m:1 (anio) using "`PIB'", nogen keepus(pibY indiceY deflator lambda Poblacion) keep(matched) sorted
 	forvalues k=1(1)`=_N' {
