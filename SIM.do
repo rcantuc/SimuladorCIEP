@@ -8,7 +8,7 @@
 ****
 
 
-  
+
 ***
 **# 0. SET UP
 ***
@@ -40,7 +40,7 @@ scalar anioenigh = 2024							// ANIO ENIGH
 
 ** Opciones
 //global nographs "nographs"						// SUPRIMIR GRAFICAS
-//global update "update"						// UPDATE BASES DE DATOS
+global update "update"						// UPDATE BASES DE DATOS
 //global textbook "textbook"						// SCALAR TO LATEX
 
 ** Output (web)
@@ -102,12 +102,12 @@ noisily SCN, anio(`=aniovp') $textbook nographs //$update
 
 **/
 **# 3. HOGARES: ARMONIZACIÓN MACRO-MICRO
-***
+/***
 
 forvalues anio = `=anioPE'(-1)`=anioPE-10' {
 
 	** 3.1 Encuesta Nacional de Ingresos y Gastos de los Hogares (Usos)
-	*noisily run "`c(sysdir_site)'/Expenditure.do" `anio'
+	noisily run "`c(sysdir_site)'/Expenditure.do" `anio'
 
 	** 3.2 Encuesta Nacional de Ingresos y Gastos de los Hogares (Recursos)
 	noisily run `"`c(sysdir_site)'/Households.do"' `anio'
@@ -121,7 +121,7 @@ forvalues anio = `=anioPE'(-1)`=anioPE-10' {
 
 **/
 **# 4. SISTEMA FISCAL
-***
+/***
 
 ** 4.1 Ley de Ingresos de la Federación
 *set scheme ciepnewdeuda
@@ -130,7 +130,6 @@ noisily LIF, anio(`=anioPE') by(divPE) $update 			///
 	desde(`=`=anioPE'-13') 						/// Año de inicio para el PROMEDIO
 	min(1.5)	 							/// Mínimo 0% del PIB (no negativos)
 	rows(1)								//  Número de filas en la leyenda
-exit
 rename divSIM divCODE
 decode divCODE, g(divSIM) 
 collapse (sum) recaudacion, by(anio divSIM) fast
@@ -292,13 +291,14 @@ if "$nographs" != "nographs" {
 
 **/
 ** 4.2 Presupuesto de Egresos de la Federación **
-/**
-noisily PEF, anio(`=anioPE') by(divSIM) ///$update 			///
+**
+noisily PEF, anio(`=anioPE') by(divSIM) $update 			///
 	title("Gasto presupuestario") 					/// Cambiar título
 	desde(`=`=anioPE'-12') 						/// Año de inicio PROMEDIO
 	min(0) 								/// Mínimo 0% del PIB (resumido)
 	rows(2)								/// Número de filas en la leyenda
 
+ex
 
 /** 4.2.1 Parámetros: Gasto **
 scalar iniciaA     =   0.017    					// Inicial
