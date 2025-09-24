@@ -39,8 +39,8 @@ scalar anioPE = 2026							// ANIO PAQUETE ECONÓMICO
 scalar anioenigh = 2024							// ANIO ENIGH
 
 ** Opciones
-//global nographs "nographs"						// SUPRIMIR GRAFICAS
-global update "update"						// UPDATE BASES DE DATOS
+global nographs "nographs"						// SUPRIMIR GRAFICAS
+//global update "update"						// UPDATE BASES DE DATOS
 //global textbook "textbook"						// SCALAR TO LATEX
 
 ** Output (web)
@@ -93,10 +93,10 @@ global inf2029 = 3.0
 global inf2030 = 3.0
 global inf2031 = 3.0
 
-/*noisily PIBDeflactor if anio >= 2005, aniovp(`=aniovp') aniomax(2031) $textbook //$update
+noisily PIBDeflactor if anio >= 2005, aniovp(`=aniovp') aniomax(2031) $textbook $update
 
 ** 2.4 Sistema de Cuentas Nacionales (sin inputs)
-noisily SCN, anio(`=aniovp') $textbook nographs //$update
+noisily SCN, anio(`=aniovp') $textbook nographs $update
 
 
 
@@ -121,7 +121,7 @@ forvalues anio = `=anioPE'(-1)`=anioPE-10' {
 
 **/
 **# 4. SISTEMA FISCAL
-/***
+***
 
 ** 4.1 Ley de Ingresos de la Federación
 *set scheme ciepnewdeuda
@@ -135,34 +135,27 @@ decode divCODE, g(divSIM)
 collapse (sum) recaudacion, by(anio divSIM) fast
 save `"`c(sysdir_site)'/users/$id/LIF.dta"', replace
 
-*set scheme ciepnewenergia
-noisily LIF if divPE == 2, anio(`=anioPE') by(divCIEP) $update 		///
-	title("Ingresos presupuestarios") 				/// Cambiar título de la gráfica
-	desde(`=`=anioPE'-1') 						/// Año de inicio para el PROMEDIO
-	min(0)	 							/// Mínimo 0% del PIB (no negativos)
-	rows(1)								//  Número de filas en la leyenda
+/** 4.1.1 Parámetros: Ingresos **
+scalar ISRASPIB  =   3.664 						// ISR (asalariados)
+scalar ISRPFPIB  =   0.232 						// ISR (personas f{c i'}sicas)
+scalar CUOTASPIB =   1.658  						// Cuotas (IMSS)
 
-** 4.1.1 Parámetros: Ingresos **
-scalar ISRASPIB  =   3.670 						// ISR (asalariados)
-scalar ISRPFPIB  =   0.233 						// ISR (personas f{c i'}sicas)
-scalar CUOTASPIB =   1.675  						// Cuotas (IMSS)
+scalar ISRPMPIB  =   4.033  						// ISR (personas morales)
+scalar OTROSKPIB =   1.343 						// Productos, derechos, aprovech.
 
-scalar ISRPMPIB  =   4.039  						// ISR (personas morales)
-scalar OTROSKPIB =   1.287 						// Productos, derechos, aprovech.
+scalar FMPPIB    =   0.601  						// Fondo Mexicano del Petróleo
+scalar PEMEXPIB  =   2.510  						// Organismos y empresas (Pemex)
+scalar CFEPIB    =   1.383  						// Organismos y empresas (CFE)
+scalar IMSSPIB   =   0.162  						// Organismos y empresas (IMSS)
+scalar ISSSTEPIB =   0.158  						// Organismos y empresas (ISSSTE)
 
-scalar FMPPIB    =   0.777  						// Fondo Mexicano del Petróleo
-scalar PEMEXPIB  =   2.391  						// Organismos y empresas (Pemex)
-scalar CFEPIB    =   1.497  						// Organismos y empresas (CFE)
-scalar IMSSPIB   =   0.118  						// Organismos y empresas (IMSS)
-scalar ISSSTEPIB =   0.161  						// Organismos y empresas (ISSSTE)
+scalar IVAPIB    =   4.104  						// IVA
+scalar ISANPIB   =   0.052  						// ISAN
+scalar IEPSNPPIB =   0.744  						// IEPS (resumido)
+scalar IEPSPPIB  =   1.222 						// IEPS (petrolero)
+scalar IMPORTPIB =   0.658  						// Importaciones
 
-scalar IVAPIB    =   4.064  						// IVA
-scalar ISANPIB   =   0.056  						// ISAN
-scalar IEPSNPPIB =   0.667  						// IEPS (resumido)
-scalar IEPSPPIB  =   1.315 						// IEPS (petrolero)
-scalar IMPORTPIB =   0.422  						// Importaciones
-
-** 4.1.2 Parámetros: ISR **
+** 4.1.2 Módulo: ISR **
 * Anexo 8 de la Resolución Miscelánea Fiscal para 2025 *
 * Tarifa para el cálculo del impuesto correspondiente al ejericio 2025 
 * a que se refieren los artículos 97 y 152 de la Ley del ISR
@@ -281,7 +274,7 @@ if "`cambioiva'" == "1" {
 	scalar IVA = IVAPIB/100*scalar(pibY)
 }
 
-** 4.1.8 Tasas Efectivas **
+** 4.1.8 Tasas Efectivas **/
 noisily TasasEfectivas, anio(`=anioPE') //eofp
 if "$nographs" != "nographs" {
 	*do "`c(sysdir_site)'/Graphs_TE.do"
@@ -298,7 +291,7 @@ noisily PEF, anio(`=anioPE') by(divSIM) $update 			///
 	min(0) 								/// Mínimo 0% del PIB (resumido)
 	rows(2)								/// Número de filas en la leyenda
 
-ex
+
 
 /** 4.2.1 Parámetros: Gasto **
 scalar iniciaA     =   0.017    					// Inicial
@@ -347,7 +340,7 @@ scalar gascuidados =   0.097   						// Gasto en cuidados
 ** 4.2.2 Gasto per cápita **/
 noisily GastoPC educacion salud pensiones energia resto transferencias, aniope(`=anioPE') aniovp(`=aniovp')
 
-
+ex
 
 **/
 ** 4.3 Saldo Histórico de Requerimientos Financieros del Sector Público **
