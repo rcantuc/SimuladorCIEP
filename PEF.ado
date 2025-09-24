@@ -703,15 +703,20 @@ program define UpdatePEF
 		save "`c(sysdir_site)'/01_raw/PEFs/PEF 2025.dta", replace
 	}
 
-	// Cuotas ISSSTE
-	capture confirm file "`c(sysdir_site)'/01_raw/PEFs/Cuotas ISSSTE.dta"
+	// PPEF 2026
+	capture confirm file "`c(sysdir_site)'/01_raw/PEFs/PPEF 2026.dta"
 	if _rc != 0 {
-		import excel "https://www.dropbox.com/scl/fi/xr8vzvlszzkensfz3fcr9/CuotasISSSTE.xlsx?rlkey=2ncpvhtuo6zoy2l74l7bq7v40&dl=1", clear firstrow case(lower) allstring
-		save "`c(sysdir_site)'/01_raw/PEFs/Cuotas ISSSTE.dta", replace
+		import excel "https://www.dropbox.com/scl/fi/wlrxs35b415w3uit5h125/PPEF-2026.xlsx?rlkey=iabv2gjaz8bmznh4a6jm5k9g8&dl=1", clear firstrow case(lower) allstring sheet("2026")
+		save "`c(sysdir_site)'/01_raw/PEFs/PPEF 2026.dta", replace
 	}
 
-	capture confirm file "`c(sysdir_site)'/03_temp/prePEF.dta"
-	if _rc != 0 {
+
+	// Cuotas ISSSTE
+	import excel "https://www.dropbox.com/scl/fi/xr8vzvlszzkensfz3fcr9/CuotasISSSTE.xlsx?rlkey=2ncpvhtuo6zoy2l74l7bq7v40&dl=1", clear firstrow case(lower) allstring
+	save "`c(sysdir_site)'/01_raw/PEFs/Cuotas ISSSTE.dta", replace
+
+	*capture confirm file "`c(sysdir_site)'/03_temp/prePEF.dta"
+	*if _rc != 0 {
 		local archivos: dir "`c(sysdir_site)'/01_raw/PEFs" files "*.dta"		// Archivos .xlsx
 		*local archivos `""PEF 2025.dta" "CuotasISSSTE.dta""'
 
@@ -1056,7 +1061,7 @@ program define UpdatePEF
 
 		compress
 		save "`c(sysdir_site)'/03_temp/prePEF.dta", replace
-	}
+	*}
 
 	/* 3.3 Datos Abiertos: PEFEstOpor.dta *
 	levelsof serie_desc_funcion, local(serie)
@@ -1262,10 +1267,5 @@ program define UpdatePEF
 	capture order proyecto, last
 	capture drop __*
 	compress
-	if `c(version)' > 13.1 {
-		saveold "`c(sysdir_site)'/04_master/PEF.dta", replace version(13)
-	}
-	else {
-		save "`c(sysdir_site)'/04_master/PEF.dta", replace
-	}
+	save "`c(sysdir_site)'/04_master/PEF.dta", replace
 end
