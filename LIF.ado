@@ -41,7 +41,7 @@ quietly {
 	* 1.2 Títulos y fuentes *
 	if "`title'" == "" {
 		local graphtitle "{bf:Ingresos presupuestarios}"
-		local graphfuente "Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP y $paqueteEconomico."
+		local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP y $paqueteEconomico."
 	}
 	else {
 		local graphtitle "{bf:`title'}"

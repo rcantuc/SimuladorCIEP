@@ -11,7 +11,7 @@
 // graphsize 	x 			5.5
 // graphsize 	y 			4
 graphsize 	x 			16
-graphsize 	y 			5
+graphsize 	y 			7
 
 
 
@@ -37,7 +37,7 @@ color 		legend			white
 
 
 // Added text and lines
-gsize 		text_option 		vlarge
+gsize 		text_option 		medlarge
 color 		text_option		"111,111,111"
 clockdir 	text_option		12
 
@@ -89,11 +89,11 @@ yesno 		draw_major_nlt_vgrid 	yes
 
 // Axis
 color		tick			"52,70,78"
-color      	tick_label		"114,113,118"
-gsize      	tick_label		large
-color 		tick_biglabel 		"114,113,118"
+color      	tick_label		"111 111 111"
+gsize      	tick_label		small
+color 		tick_biglabel 		"111 111 111"
 gsize		tick_biglabel		small
-color 		axis_title 		"114,113,118"
+color 		axis_title 		"111 111 111"
 gsize		axis_title		small
 
 axisstyle 	vertical_default 	vertical_nolinetick
@@ -106,14 +106,13 @@ linewidth	axisline		none
 tickposition	axis_tick		inside
 
 
-
 // Legend
 clockdir 	legend_position		6
 linestyle 	legend			none
 gsize 		legend_key_xsize	medlarge
 gsize 		legend_key_ysize	medlarge
-numstyle 	legend_cols		4
-gsize 		key_label		small
+numstyle 	legend_cols		8
+gsize 		key_label		medlarge
 
 
 
@@ -132,12 +131,13 @@ relsize 	bar_groupgap		30
 relsize 	bar_subgroupgap		0
 
 
-
 // Símbolos
 symbol 		p 			circle
-symbolsize 	p			vhuge
+symbolsize 	p			medlarge
 color      	refmarker		red
 linewidth  	refmarker		vvvthick
+linepattern 	p			dot
+
 
 // Grosor
 linewidth 	p1mark			none
@@ -176,23 +176,23 @@ linewidth 	p15			thick
 linewidth 	p16			thick
 linewidth 	p17			thick
 
-linewidth 	p1lineplot		thick
-linewidth 	p2lineplot		thick
-linewidth 	p3lineplot		thick
-linewidth 	p4lineplot		thick
-linewidth 	p5lineplot		thick
-linewidth 	p6lineplot		thick
-linewidth 	p7lineplot		thick
-linewidth 	p8lineplot		thick
-linewidth 	p9lineplot		thick
-linewidth 	p10lineplot		thick
-linewidth 	p11lineplot		thick
-linewidth 	p12lineplot		thick
-linewidth 	p13lineplot		thick
-linewidth 	p14lineplot		thick
-linewidth 	p15lineplot		thick
-linewidth 	p16lineplot		thick
-linewidth 	p17lineplot		thick
+linewidth 	p1lineplot		none
+linewidth 	p2lineplot		none
+linewidth 	p3lineplot		none
+linewidth 	p4lineplot		none
+linewidth 	p5lineplot		none
+linewidth 	p6lineplot		none
+linewidth 	p7lineplot		none
+linewidth 	p8lineplot		none
+linewidth 	p9lineplot		none
+linewidth 	p10lineplot		none
+linewidth 	p11lineplot		none
+linewidth 	p12lineplot		none
+linewidth 	p13lineplot		none
+linewidth 	p14lineplot		none
+linewidth 	p15lineplot		none
+linewidth 	p16lineplot		none
+linewidth 	p17lineplot		none
 
 linewidth 	p1bar			none
 linewidth 	p2bar			none
@@ -231,25 +231,24 @@ linewidth	p16area			none
 linewidth	p17area			none
 
 
-
 // Colores
-color     p1      "40,172,58"
-color     p2      "53,199,72"
-color     p3      "103,222,86"
-color     p4      "180,184,27"
-color     p5      "209,212,32"
-color     p6      "226,228,99"
-color     p7      "255,181,75"
-color     p8      "255,128,0"
-color     p9      "219,117,0"
-color     p10     "254,118,109"
-color     p11     "228,87,77"
+color     p1      "186,34,64"
+color     p2     "40,172,58"
+color     p3      "255,181,75"
+color     p4      "255,55,0"
+color     p5     "0,150,125"
+color     p6     "226,228,99"
+color     p7      "194,76,68"
+color     p8     "0,179,147"
+color     p9     "209,212,32"
+color     p10      "224,97,95"
+color     p11     "57,197,183"
 color     p12     "194,76,68"
-color     p13     "255,55,0"
-color     p14     "186,34,64"
-color     p15     "150,6,92"
-color     p16     "0,78,197"
-color     p17     "0,150,200"
-color     p18     "57,197,183"
-color     p19     "0,179,147"
-color     p20     "0,150,125"
+color     p13      "254,118,109"
+color     p14     "0,150,200"
+color     p15     "103,222,86"
+color     p16      "219,117,0"
+color     p17     "0,78,197"
+color     p18     "53,199,72"
+color     p19      "255,128,0"
+color     p20      "150,6,92"

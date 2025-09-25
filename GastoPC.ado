@@ -1108,13 +1108,13 @@ quietly {
 			else {
 				preserve
 				PEF if anio == `aniope', by(divCIEP) anio(`aniope') min(0) nographs
-				local gasfeder = r(Part_y_otras_Apor)
+				local gasfeder = r(Federalizado)
 				restore
 			}
 			scalar gasfederPC = (`gasfeder'/`Energia'[1,1])/`deflator'
 			scalar gasfederPIB = `gasfeder'/`PIB'*100
-			capture drop Part_y_otras_Apor
-			g Part_y_otras_Apor = scalar(gasfederPC)
+			capture drop Federalizado
+			g Federalizado = scalar(gasfederPC)
 
 
 			** 7.2 Costo financiero de la deuda **
@@ -1396,12 +1396,7 @@ quietly {
 	capture drop __*
 	capture mkdir `"`c(sysdir_site)'/users/"'
 	capture mkdir `"`c(sysdir_site)'/users/$id/"'
-	if `c(version)' > 13.1 {
-		saveold `"`c(sysdir_site)'/users/$id/gastos.dta"', replace version(13)
-	}
-	else {
-		save `"`c(sysdir_site)'/users/$id/gastos.dta"', replace	
-	}
+	save `"`c(sysdir_site)'/users/$id/gastos.dta"', replace	
 
 
 

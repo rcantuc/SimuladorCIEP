@@ -25,10 +25,10 @@ else {
 	if `1' >= 2016 & `1' < 2018 {
 		local anioenigh = 2016
 	}
-	if `1' >= 2014 & `1' < 2016 {
+	if `1' >= 2013 & `1' < 2016 {
 		local anioenigh = 2014
 	}
-	if `1' >= 2012 & `1' < 2014 {
+	if `1' >= 2012 & `1' < 2013 {
 		local anioenigh = 2012
 	}
 	if `1' >= 2010 & `1' < 2012 {
@@ -64,7 +64,7 @@ local Pensiones = r(Pensiones)
 local Educacion = r(Educacion)
 local Salud = r(Salud)
 local Energía = r(Energia)
-local Part_y_otras_Apor = r(Part_y_otras_Apor)
+local Federalizado = r(Federalizado)
 
 ** 1.3 Infraestructura **
 PEF if divCIEP == "Otras inversiones", anio(`1') by(entidad) min(0) nographs
@@ -499,10 +499,10 @@ label var Energia "Energia `1'"
 *noisily Gini Energia, hogar(folioviv foliohog) factor(factor)
 
 ** (-) Otras Participaciones y Aportaciones **
-Distribucion Part_y_otras_Apor, relativo(pob) macro(`=`Part_y_otras_Apor'')
-label var Part_y_otras_Apor "Participaciones y otras aportaciones `1'"
-*noisily Perfiles Part_y_otras_Apor [fw=factor], aniope(`1') aniovp(`1')
-*noisily Gini Part_y_otras_Apor, hogar(folioviv foliohog) factor(factor)
+Distribucion Federalizado, relativo(pob) macro(`=`Federalizado'')
+label var Federalizado "Participaciones y otras aportaciones `1'"
+*noisily Perfiles Federalizado [fw=factor], aniope(`1') aniovp(`1')
+*noisily Gini Federalizado, hogar(folioviv foliohog) factor(factor)
 
 
 *****************************
@@ -566,7 +566,7 @@ if "$nographs" == "" & "`nographs'" != "nographs" & `anio' == `1' {
 capture drop __*
 compress
 keep ISRAS ISRPF CUOTAS ISRPM OTROSK FMP PEMEX CFE IMSS ISSSTE IVA IEPSNP IEPSP ISAN IMPORT /// Ingresos
-	Pension* Educacion Salud IngBasico Pension_AM Otros_gastos Otras_inversiones Part_y_otras_Apor Energia infra_entidad /// Gastos
+	Pension* Educacion Salud IngBasico Pension_AM Otros_gastos Otras_inversiones Federalizado Energia infra_entidad /// Gastos
 	folio* numren edad sexo factor decil escol formal* ingbrutotot rural grupoedad /// Perfiles.ado
 	disc* gas_pc_Salu asis_esc tipoesc nivel inst_* ing_jubila jubilado /// GastoPC.ado
 	sbc cuotasTPF deduc_isr ing_bruto_tax *_tpm exen_tot prop* ing_subor // ISR_Mod.do
