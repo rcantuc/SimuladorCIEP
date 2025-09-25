@@ -354,7 +354,7 @@ quietly {
 		
 		** 7.1 Gráficas iniciales ***
 		* Títulos y fuentes *
-		if "$export" == "" {
+		if "$textbook" == "" {
 			local graphtitle "{bf:Productividad laboral}"
 			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE."
 		}
@@ -430,7 +430,7 @@ quietly {
 		************************************
 		
 		* Títulos y fuentes *
-		if "$export" == "" {
+		if "$textbook" == "" {
 			local graphtitle "{bf:Índice de precios implícitos}"
 			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/SHCP."
 		}
@@ -521,7 +521,7 @@ quietly {
 		format `pibYRmil' %7.0fc
 
 		* Títulos y fuentes *
-		if "$export" == "" {
+		if "$textbook" == "" {
 			local graphtitle "{bf:Producto Interno Bruto}"
 			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/SHCP."
 		}
@@ -620,7 +620,7 @@ quietly {
 		format var_pibPob %7.1fc
 
 		* Títulos y fuentes *
-		if "$export" == "" {
+		if "$textbook" == "" {
 			local graphtitle "{bf:Producto Interno Bruto por persona}"
 			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/CONAPO."
 		}
@@ -722,7 +722,7 @@ quietly {
 		**************************
 
 		* Títulos y fuentes *
-		if "$export" == "" {
+		if "$textbook" == "" {
 			local graphtitle "{bf:Índice nacional de precios al consumidor}"
 			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/SHCP."
 		}

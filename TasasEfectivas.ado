@@ -10,7 +10,7 @@ quietly {
 		local aniovp = scalar(aniovp)
 	}
 
-	syntax [, ANIO(int `aniovp') NOGraphs CRECSIM(real 1) EOFP]
+	syntax [, ANIO(int `aniovp') NOGraphs CRECSIM(real 1) EOFP ENIGH]
 	noisily di _newline(2) in g _dup(20) "." "{bf:   Fiscalización INGRESOS " in y `anio' "   }" in g _dup(20) "."
 
 
@@ -22,21 +22,12 @@ quietly {
 	
 
 
-
 	*********************
 	**# 2 RECAUDACIÓN ***
 	*********************
-	LIF, anio(`anio') by(divSIM) nographs min(0) desde(`=`anio'-12') `eofp'
-	*local recursos = r(divSIM)
-	*foreach k of local recursos {
-	*	local `=substr("`k'",1,7)' = r(`k')
-	*	local `=substr("`k'",1,7)' = ``=substr("`k'",1,7)''/scalar(PIB)*100
-	*}
-
-	*rename divSIM divCODE
-	*decode divCODE, g(divSIM) 
-	*collapse (sum) recaudacion, by(anio divSIM) fast
-	*save `"`c(sysdir_site)'/users/$id/LIF.dta"', replace	
+	if "$update" == "update" {
+		LIF, anio(`anio') by(divSIM) nographs min(0) desde(`=`anio'-1') `eofp'
+	}
 
 
 
@@ -50,7 +41,6 @@ quietly {
 		_col(55) %7s in g "% PIB" ///
 		_col(63) in g "  TE (%)" "}"
 	noisily di in g _dup(71) "-"
-
 
 	** 3.1 ISR (asalariados) **
 	*capture confirm scalar ISRAS
@@ -72,7 +62,6 @@ quietly {
 		_col(63) %7.3fc in y (ISRASPIB)/(RemSalPIB+SSImputadaPIB+SSEmpleadoresPIB+ImpNetProduccionLPIB)*100 " %"
 	scalar ISRASPor = (ISRASPIB)/(RemSalPIB+SSImputadaPIB+SSEmpleadoresPIB+ImpNetProduccionLPIB)*100
 
-
 	** 3.2 ISR (personas físicas) **
 	*capture confirm scalar ISRPF
 	*if _rc == 0 {
@@ -90,7 +79,6 @@ quietly {
 		_col(63) %7.3fc in y (ISRPFPIB)/MixLPIB*100 " %"
 	scalar ISRPFPor = (ISRPFPIB)/MixLPIB*100
 
-
 	** 3.3 Cuotas (IMSS) **
 	*capture confirm scalar CUOTAS
 	*if _rc == 0 {
@@ -106,7 +94,6 @@ quietly {
 		_col(63) %7.3fc in y (CUOTASPIB)/(RemSalPIB+SSImputadaPIB+SSEmpleadoresPIB+ImpNetProduccionLPIB)*100 " %"
 	scalar CUOTASPor = (CUOTASPIB)/(RemSalPIB+SSImputadaPIB+SSEmpleadoresPIB+ImpNetProduccionLPIB)*100
 
-
 	** 3.4 TOTAL LABORALES **
 	scalar YlPIB = real(YlPIB)
 	noisily di in g _dup(71) "-"
@@ -117,8 +104,6 @@ quietly {
 		_col(63) %7.3fc in y (ISRASPIB+ISRPFPIB+CUOTASPIB)/(YlPIB)*100 " %" "}"
 	scalar YlImpPIB = (ISRASPIB+ISRPFPIB+CUOTASPIB)
 	scalar YlImpPor = (ISRASPIB+ISRPFPIB+CUOTASPIB)/(YlPIB)*100
-
-
 
 
 
@@ -137,7 +122,6 @@ quietly {
 		_col(63) in g "  TE (%)" "}"
 	noisily di in g _dup(71) "-"
 
-
 	** 4.1 ISR (personas morales) **
 	*capture confirm scalar ISRPM
 	*if _rc == 0 {
@@ -151,7 +135,6 @@ quietly {
 		_col(40) in g "ISR (morales)" ///
 		_col(55) %7.3fc in y (ISRPMPIB) ///
 		_col(63) %7.3fc in y (ISRPMPIB)/(CapIncImpPIB-IngKPublicosPIB)*100 " %"
-
 
 	** 4.2 Productos, derechos, aprovechamientos, contribuciones **
 	*capture confirm scalar OTROSK
@@ -172,7 +155,6 @@ quietly {
 	scalar ISRPMPor = (ISRPMPIB)/(CapIncImpPIB-IngKPublicosPIB)*100
 	scalar OTROSKPor = (OTROSKPIB)/(CapIncImpPIB-IngKPublicosPIB)*100
 
-
 	** 5.1 FMP (energía) **
 	*capture confirm scalar FMP
 	*if _rc == 0 {
@@ -188,7 +170,6 @@ quietly {
 		_col(63) %7.3fc in y (FMPPIB)/(CapIncImpPIB-IngKPublicosPIB)*100 " %"
 	scalar FMPPor = (FMPPIB)/(CapIncImpPIB-IngKPublicosPIB)*100
 
-
 	** 4.3 TOTAL CAPITAL PRIVADO **
 	noisily di in g _dup(71) "-"
 	noisily di in g "{bf:  Ing. de capital privado" ///
@@ -202,8 +183,6 @@ quietly {
 
 
 
-
-
 	*******************************
 	**# 5 Organismos y empresas ***
 	*******************************
@@ -214,7 +193,6 @@ quietly {
 		_col(55) %7s in g "% PIB" ///
 		_col(63) in g "  TE (%)" "}"
 	noisily di in g _dup(71) "-"
-
 
 	** 5.2 Pemex (energía) **
 	*capture confirm scalar PEMEX
@@ -231,7 +209,6 @@ quietly {
 		_col(63) %7.3fc in y (PEMEXPIB)/(CapIncImpPIB)*100 " %"
 	scalar PEMEXPor = (PEMEXPIB)/(CapIncImpPIB)*100
 
-
 	** 5.3 CFE (energía) **
 	*capture confirm scalar CFE
 	*if _rc == 0 {
@@ -246,7 +223,6 @@ quietly {
 		_col(55) %7.3fc in y (CFEPIB) ///
 		_col(63) %7.3fc in y (CFEPIB)/(CapIncImpPIB)*100 " %"
 	scalar CFEPor = (CFEPIB)/(CapIncImpPIB)*100
-
 
 	** 5.4 IMSS **
 	*capture confirm scalar IMSS
@@ -263,7 +239,6 @@ quietly {
 		_col(63) %7.3fc in y (IMSSPIB)/(CapIncImpPIB)*100 " %"
 	scalar IMSSPor = (IMSSPIB)/(CapIncImpPIB)*100
 
-
 	** 5.4 ISSSTE **
 	*capture confirm scalar ISSSTE
 	*if _rc == 0 {
@@ -279,7 +254,6 @@ quietly {
 		_col(63) %7.3fc in y (ISSSTEPIB)/(CapIncImpPIB)*100 " %"
 	scalar ISSSTEPor = (ISSSTEPIB)/(CapIncImpPIB)*100
 
-
 	** 5.5 TOTAL INGRESOS DE CAPITAL PUBLICOS **
 	noisily di in g _dup(71) "-"
 	noisily di in g "{bf:  Ingresos de capital" ///
@@ -293,7 +267,6 @@ quietly {
 
 
 
-
 	******************************
 	**# 6 Impuestos al consumo ***
 	******************************
@@ -304,7 +277,6 @@ quietly {
 		_col(55) %7s in g "% PIB" ///
 		_col(63) in g "  TE (%)" "}"
 	noisily di in g _dup(71) "-"
-
 
 	** 6.1 IVA **
 	*capture confirm scalar IVA
@@ -322,7 +294,6 @@ quietly {
 		_col(63) %7.3fc in y IVAPIB/(ConHogPIB)*100 " %"
 	scalar IVAPor = IVAPIB/(ConHogPIB)*100
 
-
 	** 6.2 ISAN **
 	*capture confirm scalar ISAN
 	*if _rc == 0 {
@@ -338,7 +309,6 @@ quietly {
 		_col(55) %7.3fc in y ISANPIB ///
 		_col(63) %7.3fc in y ISANPIB/VehiPIB*100 " %"
 	scalar ISANPor = ISANPIB/VehiPIB*100
-
 
 	** 6.3 IEPS (no petrolero) **
 	*capture confirm scalar IEPSNP
@@ -358,7 +328,6 @@ quietly {
 		_col(63) %7.3fc in y IEPSNPPIB/(BebAPIB+TabaPIB+Recre7132PIB)*100 " %"
 	scalar IEPSNPPor = IEPSNPPIB/(BebAPIB+TabaPIB+Recre7132PIB)*100
 
-
 	** 6.4 IEPS (petrolero) **
 	*capture confirm scalar IEPSP
 	*if _rc == 0 {
@@ -375,7 +344,6 @@ quietly {
 		_col(63) %7.3fc in y IEPSPPIB/ConsPriv21PIB*100 " %"
 	scalar IEPSPPor = IEPSPPIB/ConsPriv21PIB*100
 
-
 	** 6.5 Importaciones **
 	*capture confirm scalar IMPORT
 	*if _rc == 0 {
@@ -391,7 +359,6 @@ quietly {
 		_col(63) %7.3fc in y IMPORTPIB/ConHogPIB*100 " %"
 	scalar IMPORTPor = IMPORTPIB/ConHogPIB*100
 
-
 	** 6.6 TOTAL CONSUMO **
 	noisily di in g _dup(71) "-"
 	noisily di in g "{bf:  Consumo hogares e ISFLSH" ///
@@ -404,38 +371,34 @@ quietly {
 
 
 
-
-
 	******************/
 	**# 7. Base SIM ***
 	*******************
-	capture use (folioviv foliohog numren factor edad decil grupoedad sexo rural escol ingbrutotot ///
-		ISRAS ISRPF CUOTAS ISRPM OTROSK FMP PEMEX CFE IMSS ISSSTE IVA IEPSNP IEPSP ISAN IMPORT) ///
-		using "`c(sysdir_site)'/04_master/perfiles`anio'.dta", clear 
-	if _rc != 0 {
-		noisily run "`c(sysdir_site)'/PerfilesSim.do" `anio'
+	if "`enigh'" == "enigh" {
+		capture use (folioviv foliohog numren factor edad decil grupoedad sexo rural escol ingbrutotot ///
+			ISRAS ISRPF CUOTAS ISRPM OTROSK FMP PEMEX CFE IMSS ISSSTE IVA IEPSNP IEPSP ISAN IMPORT) ///
+			using "`c(sysdir_site)'/04_master/perfiles`anio'.dta", clear 
+		if _rc != 0 {
+			noisily run "`c(sysdir_site)'/PerfilesSim.do" `anio'
+			use (folioviv foliohog numren factor edad decil grupoedad sexo rural escol ingbrutotot ///
+				ISRAS ISRPF CUOTAS ISRPM OTROSK FMP PEMEX CFE IMSS ISSSTE IVA IEPSNP IEPSP ISAN IMPORT) ///
+				using "`c(sysdir_site)'/04_master/perfiles`anio'.dta", clear
+		}
+
+		* 7.1 Distribuir los ingresos entre las observaciones *
+		scalar pibY = real(subinstr(scalar(pibY),",","",.))*1000000
+		foreach k of varlist ISRAS ISRPF CUOTAS ///
+			ISRPM OTROSK ///
+			FMP PEMEX CFE IMSS ISSSTE ///
+			IVA IEPSNP IEPSP ISAN IMPORT {
+
+			Distribucion `k'_Sim, relativo(`k') macro(`=scalar(`k'PIB)/100*scalar(pibY)')
+		}
+
+		* 7.2 Guardar *
+		capture drop __*
+		save `"`c(sysdir_site)'/users/$id/ingresos.dta"', replace
 	}
-
-	* 7.1 Distribuir los ingresos entre las observaciones *
-	scalar pibY = real(subinstr(scalar(pibY),",","",.))*1000000
-	foreach k of varlist ISRAS ISRPF CUOTAS ///
-		ISRPM OTROSK ///
-		FMP PEMEX CFE IMSS ISSSTE ///
-		IVA IEPSNP IEPSP ISAN IMPORT {
-
-		Distribucion `k'_Sim, relativo(`k') macro(`=scalar(`k'PIB)/100*scalar(pibY)')
-	}
-
-	* 7.2 Guardar *
-	capture drop __*
-	if `c(version)' > 13.1 {
-		saveold `"`c(sysdir_site)'/users/$id/ingresos.dta"', replace version(13)
-	}
-	else {
-		save `"`c(sysdir_site)'/users/$id/ingresos.dta"', replace	
-	}
-
-
 
 
 

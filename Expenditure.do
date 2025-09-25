@@ -70,7 +70,7 @@ else {
 			erase "`c(sysdir_site)'/01_raw/ENIGH/2016.zip"
 		}
 	}
-	if `1' >= 2014 & `1' < 2016 {
+	if `1' >= 2013 & `1' < 2016 {
 		local anioenigh = 2014
 		local claveiva = "*2014"
 		capture confirm file "`c(sysdir_site)'/01_raw/ENIGH/`anioenigh'/gastospersona.dta"

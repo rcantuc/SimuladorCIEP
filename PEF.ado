@@ -45,10 +45,10 @@ quietly {
 	* 1.2 Títulos y fuentes *
 	if "`title'" == "" {
 		local graphtitle "{bf:Gasto público}"
-		local graphfuente "Fuente: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/CPs/PEFs y $paqueteEconomico."
+		local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/CPs/PEFs y $paqueteEconomico."
 	}
 	else {
-		local graphtitle "`title'"
+		local graphtitle "{bf:`title'}"
 		local graphfuente ""
 	}
 
