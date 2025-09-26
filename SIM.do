@@ -12,11 +12,11 @@ timer on 1
 
 ** 0.1 Directorios de trabajo (uno por computadora)
 if "`c(username)'" == "ricardo" {						// Mac
-	sysdir set SITE "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
+	*sysdir set SITE "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
 	*global export "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/CIEP_Deuda/0. Paquete Económico/2026/Deuda 2026/images"
 }
 else if "`c(username)'" == "servidorciep" {					// Servidor CIEP
-	sysdir set SITE "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
+	*sysdir set SITE "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
 	*global export "/home/servidorciep/CIEP Dropbox/TextbookCIEP/images"
 }
 else if "`c(console)'" != "" {							// Servidor Web
@@ -48,7 +48,7 @@ if "$output" != "" {
 
 ***
 **# 1. DEMOGRAFÍA
-/**
+***
 noisily Poblacion, anioi(`=aniovp') aniofinal(2050) $textbook $nographs $update
 
 
@@ -85,7 +85,7 @@ global inf2029 = 3.0
 global inf2030 = 3.0
 global inf2031 = 3.0
 
-/** 2.4 PIB + Deflactores
+** 2.4 PIB + Deflactores
 noisily PIBDeflactor if anio >= 2005, aniovp(`=aniovp') aniomax(2031) $textbook $nographs $update
 
 ** 2.5 Sistema de Cuentas Nacionales (sin inputs)
@@ -97,26 +97,23 @@ noisily SCN, anio(`=aniovp') $textbook $nographs $update
 **# 3. HOGARES: ARMONIZACIÓN MACRO-MICRO
 ***
 
-forvalues anio = `=anioPE'(-1)`=anioPE-10' {
+** 3.1 Encuesta Nacional de Ingresos y Gastos de los Hogares (Usos)
+noisily di _newline in g "Actualizando: " in y "expenditures.dta"
+noisily run "`c(sysdir_site)'/Expenditure.do" `=anioPE'
 
-	** 3.1 Encuesta Nacional de Ingresos y Gastos de los Hogares (Usos)
-	noisily di _newline in g "Actualizando: " in y "expenditures.dta"
-	noisily run "`c(sysdir_site)'/Expenditure.do" `anio'
+** 3.2 Encuesta Nacional de Ingresos y Gastos de los Hogares (Recursos)
+noisily di _newline in g "Actualizando: " in y "households.dta"
+noisily run `"`c(sysdir_site)'/Households.do"' `=anioPE'
 
-	** 3.2 Encuesta Nacional de Ingresos y Gastos de los Hogares (Recursos)
-	noisily di _newline in g "Actualizando: " in y "households.dta"
-	noisily run `"`c(sysdir_site)'/Households.do"' `anio'
-
-	** 3.3 Perfiles de la política económica actual (Paquete Económico)
-	noisily di _newline in g "Actualizando: " in y "perfiles`anio'.dta"
-	noisily run "`c(sysdir_site)'/PerfilesSim.do" `anio'
-}
+** 3.3 Perfiles de la política económica actual (Paquete Económico)
+noisily di _newline in g "Actualizando: " in y "perfiles`anio'.dta"
+noisily run "`c(sysdir_site)'/PerfilesSim.do" `=anioPE'
 
 
 
 **/
 **# 4. SISTEMA FISCAL: INGRESOS
-/***
+***
 set scheme ciepingresos
 
 ** 4.1 Ley de Ingresos de la Federación
@@ -277,7 +274,7 @@ noisily TasasEfectivas, anio(`=anioPE') //eofp
 
 **/
 **# 5. SISTEMA FISCAL: EGRESOS
-/***
+***
 set scheme ciep	
 noisily PEF, anio(`=anioPE') by(divSIM)	$update 				///
 	title("Gasto presupuestario") 						/// Cambiar título
@@ -289,7 +286,7 @@ if "$update" == "update" ///
 	do "`c(sysdir_site)'/Graphs_PC.do"
 
 
-** 5.1 Parámetros: Gasto
+** 5.1 Parámetros: Gasto **/
 if "$update" == "" {
 	scalar iniciaA     =   0.000    					// Inicial
 	scalar basica      =   1.941    					// Educación b{c a'}sica
@@ -341,7 +338,7 @@ noisily GastoPC educacion salud pensiones energia resto transferencias, aniope(`
 
 **/
 **# 6. SISTEMA FISCAL: DEUDA
-/***
+***
 
 * SHRFSP: Total, Interno, Externo (como % del PIB)
 *                	2025  2026  2027  2028  2029  2030  2031
@@ -394,14 +391,14 @@ forvalues k = 2025(1)2031 {
 
 * SHRFSP: comando *
 set scheme ciepdeuda
-*scalar tasaEfectiva = 6.801
+*scalar tasaEfectiva = 6.2967
 noisily SHRFSP, anio(`=anioPE') ultanio(2002) $nographs $update $textbook
 
 
 
 **/
 **# 7. CICLO DE VIDA FISCAL
-/***
+***
 use `"`c(sysdir_site)'/users/$id/ingresos.dta"', clear
 merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/users/$id/gastos.dta", nogen
 if "`cambioisrpf'" == "1" {
@@ -448,13 +445,17 @@ foreach k of varlist AlTrabajo AlCapital AlConsumo ImpuestosAportaciones ///
 }
 save `"`c(sysdir_site)'/users/$id/aportaciones.dta"', replace
 
-** 7.4 (*) Cuentas generacionales
+
+
+**/
+*** 8. (*) Cuentas generacionales
+***
 noisily CuentasGeneracionales AportacionesNetas, anio(`=anioPE') discount(7)
 
-** 7.5 Brecha fiscal
-noisily FiscalGap, anio(`=anioPE') end(2030) aniomin(2015) $nographs desde(2013) discount(10) //update
+** 8.1 Brecha fiscal
+noisily FiscalGap, anio(`=anioPE') end(2030) aniomin(2015) $nographs desde(2024) discount(10)
 
-** 7.6 Sankey del sistema fiscal
+** 8.2 Sankey del sistema fiscal
 foreach k in decil grupoedad sexo rural escol {
 	noisily run "`c(sysdir_site)'/SankeySF.do" `k' `=anioPE'
 }
