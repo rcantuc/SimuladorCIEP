@@ -268,7 +268,7 @@ if "`cambioiva'" == "1" {
 }
 
 ** 4.5 Tasas Efectivas *
-noisily TasasEfectivas, anio(`=anioPE') //eofp
+noisily TasasEfectivas, anio(`=anioPE') enigh //eofp
 
 
 
