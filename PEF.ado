@@ -80,7 +80,7 @@ quietly {
 	****************
 
 	** 2.1 PIB + Deflactor **
-	PIBDeflactor, anio(`anio') nographs nooutput `update'
+	PIBDeflactor, anio(`anio') nographs nooutput //`update'
 	local currency = currency[1]
 	forvalues k=1(1)`=_N' {
 		if anio[`k'] == `anio' {
@@ -720,8 +720,8 @@ program define UpdatePEF
 	import excel "https://www.dropbox.com/scl/fi/xr8vzvlszzkensfz3fcr9/CuotasISSSTE.xlsx?rlkey=2ncpvhtuo6zoy2l74l7bq7v40&dl=1", clear firstrow case(lower) allstring
 	save "`c(sysdir_site)'/01_raw/PEFs/Cuotas ISSSTE.dta", replace
 
-	*capture confirm file "`c(sysdir_site)'/03_temp/prePEF.dta"
-	*if _rc != 0 {
+	capture confirm file "`c(sysdir_site)'/03_temp/prePEF.dta"
+	if _rc != 0 {
 		local archivos: dir "`c(sysdir_site)'/01_raw/PEFs" files "*.dta"		// Archivos .xlsx
 		*local archivos `""PEF 2025.dta" "CuotasISSSTE.dta""'
 
@@ -1066,7 +1066,7 @@ program define UpdatePEF
 
 		compress
 		save "`c(sysdir_site)'/03_temp/prePEF.dta", replace
-	*}
+	}
 
 	/* 3.3 Datos Abiertos: PEFEstOpor.dta *
 	levelsof serie_desc_funcion, local(serie)
@@ -1131,9 +1131,9 @@ program define UpdatePEF
 	***************
 	** 4.2 Salud **
 	replace divCIEP = "Salud" if divCIEP == "" ///
-		& (desc_funcion == 21 | ramo == 12)
+		& (desc_funcion == 21 | ramo == 12 | ramo == 56)
 	replace divCIEP = "Salud" if divCIEP == "" ///
-		& (ramo == 50 | ramo == 51) & (pp == 4 | pp == 15) & funcion == 8
+		& (ramo == 50 | ramo == 51) & (pp == 4 | pp == 15 | pp == 8) & funcion == 8
 	replace divCIEP = "Salud" if divCIEP == "" ///
 		& ramo == 52 & ai == 231
 	replace divCIEP = "Salud" if divCIEP == "" ///

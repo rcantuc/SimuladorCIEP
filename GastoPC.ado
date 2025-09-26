@@ -123,12 +123,14 @@ quietly {
 		replace benef_pemex = benef_pemex*602513/1169476
 	g benef_issfam = inst_4 == "4"
 		replace benef_issfam = benef_issfam - benef_pemex
-	*if `aniope' >= 2014 {
+
+	capture confirm variable inst_6	
+	if _rc != 0 {
 		g benef_otros = inst_5 == "5"
-	*}
-	*else {
-	*	g benef_otros = inst_6 == "6"
-	*}
+	}
+	else {
+		g benef_otros = inst_6 == "6"
+	}
 	g benef_imssbien = 1 // inst_5 == "5"
 	replace benef_imssbien = 0 if benef_imss != 0 | benef_issste != 0 | benef_pemex != 0 | benef_issfam != 0 | benef_otros != 0
 
@@ -524,11 +526,18 @@ quietly {
 					local imssbien0 = r(programa_imss_oportunida)
 				}
 				if `imssbien0' == . {
+					PEF if anio == `aniope' & divCIEP == "Salud" & divSIM != "Inversión" & ramo == 56, anio(`aniope') by(ramo) min(0) nographs
+					local imssbien0 = r(Gasto_neto)
+				}
+				if `imssbien0' == . {
 					local imssbien0 = 0
 				}
 				local segpop0 = r(seguro_popular)
 				if `segpop0' == . {
 					local segpop0 = r(atencion_a_la_salud_y_m)
+				}
+				if `segpop0' == . {
+					local segpop0 = 0
 				}
 
 				PEF if anio == `aniope' & divCIEP == "Salud" & divSIM != "Inversión" & ramo == 12, anio(`aniope') by(desc_pp) min(0) nographs
@@ -536,6 +545,10 @@ quietly {
 				if `atencINSABI' == . {
 					local atencINSABI = r(prestacion_de_servicios)
 				}
+				if `atencINSABI' == . {
+					local atencINSABI = 0
+				}
+				
 				local fortaINSABI = r(fortalecimiento_a_la_ate)
 				if `fortaINSABI' == . {
 					local fortaINSABI = 0
@@ -587,6 +600,9 @@ quietly {
 					local adeusal = 0
 				}
 				local caneros = r(seguridad_social_canero)
+				if `caneros' == . {
+					local caneros = 0
+				}
 
 				PEF if anio == `aniope' & divCIEP == "Salud" & divSIM != "Inversión", anio(`aniope') by(ramo) min(0) nographs
 				local ssa = r(salud)+`incorpo'+`adeusal'+`caneros'-`fortaINSABI'-`atencINSABI'
