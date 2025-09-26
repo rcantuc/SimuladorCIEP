@@ -44,7 +44,7 @@ quietly {
 	use "`c(sysdir_site)'/users/$id/ingresos.dta", clear
 	merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/users/$id/gastos.dta", nogen update
 	capture drop _*
-	foreach k in Educación Pensiones Pensión_AM Salud Otros_gastos IngBasico Otras_inversiones Part_y_otras_Apor Energía {
+	foreach k in Educación Pensiones Pensión_AM Salud Otros_gastos IngBasico Otras_inversiones Federalizado Energía {
 		tabstat `k' [fw=factor], stat(sum) f(%20.0fc) save
 		local k = subinstr("`k'","á","a",.)
 		local k = subinstr("`k'","é","e",.)
@@ -63,7 +63,7 @@ quietly {
 	***                        ***
 	******************************
 
-	/** 4.1 Información histórica de los ingresos **
+	** 4.1 Información histórica de los ingresos **
 	LIF if divLIF != 10, anio(`anio') nographs by(divSIM) min(0) desde(`desde') //eofp //ilif
 	local divSIM = r(divSIM)
 
@@ -298,10 +298,10 @@ quietly {
 			
 			tempvar estimacion
 			g `estimacion' = estimacion
-			replace estimacion = `estimacion'/L.`estimacion'*     /// Cambio demográfico
-				`HH`=strtoname("`k'")''[1,1]* 			          /// Gasto total (GastoPC.ado)
-				(1+``=strtoname("`k'")'C'/100)^(anio-`anio')      /// Tendencia de largo plazo (PEF.ado)
-				if anio >= `anio'
+			replace estimacion = `estimacion'/L.`estimacion'*     	/// Cambio demográfico
+				`HH`=strtoname("`k'")''[1,1] * 			/// Gasto total (GastoPC.ado)
+				(1+``=strtoname("`k'")'C'/100)^(anio-`anio')    /// Tendencia de largo plazo (PEF.ado)
+				if anio > `anio'
 
 			g divCIEP = `"`=strtoname("`k'")'"'
 

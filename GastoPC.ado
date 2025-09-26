@@ -100,11 +100,11 @@ quietly {
 	}
 
 	if `anioenigh' < 2016 {
-		g alum_basica = asis_esc == "1" & tipoesc == "1" & (nivel >= "1" & nivel <= "3") & edad <= 15
-		g alum_medsup = asis_esc == "1" & tipoesc == "1" & (nivel >= "4" & nivel <= "6")
-		g alum_superi = asis_esc == "1" & tipoesc == "1" & (nivel >= "7" & nivel <= "8")
-		g alum_posgra = asis_esc == "1" & tipoesc == "1" & nivel == "9"
-		g alum_adulto = asis_esc == "1" & tipoesc == "1" & (nivel >= "1" & nivel <= "3") & edad > 15
+		g alum_basica = asis_esc == "1" & tipoesc == "1" & (nivel >= "01" & nivel <= "03") & edad <= 15
+		g alum_medsup = asis_esc == "1" & tipoesc == "1" & (nivel >= "04" & nivel <= "06")
+		g alum_superi = asis_esc == "1" & tipoesc == "1" & (nivel >= "07" & nivel <= "08")
+		g alum_posgra = asis_esc == "1" & tipoesc == "1" & nivel == "09"
+		g alum_adulto = asis_esc == "1" & tipoesc == "1" & (nivel >= "01" & nivel <= "03") & edad > 15
 	}
 	g alum_totales = alum_basica != 0 | alum_medsup != 0 | alum_superi != 0 | alum_posgra != 0 | alum_adulto != 0
 	g alum_priminf = edad < 3

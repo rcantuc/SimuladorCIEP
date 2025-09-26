@@ -17,7 +17,7 @@ quietly {
 	*******************************
 	*** 0 Guardar base original ***
 	*******************************
-	*preserve
+	PIBDeflactor, nographs
 
 
 
@@ -68,14 +68,14 @@ quietly {
 	ci montopc
 	local montopc = r(mean)
 
-	ci edad39
-	local edad39 = r(mean)
+	ci edad40
+	local edad40 = r(mean)
 
-	if `edad39' == . | `edad39' == 0 {
+	if `edad40' == . | `edad40' == 0 {
 		local pc = `montopc'
 	}
 	else {
-		local pc = `edad39'
+		local pc = `edad40'
 	}
 
 	mata: PC = `pc'
