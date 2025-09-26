@@ -5,6 +5,7 @@
 ******************************************************************
 capture mkdir "`c(sysdir_site)'/01_raw"
 capture mkdir "`c(sysdir_site)'/01_raw/ENIGH/"
+capture mkdir "`c(sysdir_site)'/03_temp"
 cd "`c(sysdir_site)'/01_raw/ENIGH/"
 if "`1'" == "" {
 	clear all
