@@ -386,7 +386,7 @@ quietly {
 		label var `Depreciacion' "Depreciaci{c o'}n"
 		format `Depreciacion' %7.0fc
 
-		if "$export" == "" {
+		if "$textbook" == "" {
 			local graphtitle = "{bf:Distribuci{c o'}n} del ingreso"
 			local graphfuente = "{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE."
 		}
@@ -432,11 +432,7 @@ quietly {
 			name(gdp_generacion, replace)
 
 		capture mkdir "`c(sysdir_site)'/05_graphs/"
-		graph save gdp_generacion "`c(sysdir_site)'/05_graphs/gdp_generacion", replace
-		capture confirm existence $export
-		if _rc == 0 {
-			graph export "$export/gdp_generacion.png", replace name(gdp_generacion)
-		}
+		graph export "`c(sysdir_site)'/users/$id/graphs/gdp_generacion.png", replace name(gdp_generacion)
 	}
 
 	** R.5 Display (de la producci{c o'}n al ingreso) ***
@@ -535,7 +531,7 @@ quietly {
 		label var `AhorroN' "Ahorro neto"
 		format `AhorroN' %7.0fc
 
-		if "$export" == "" {
+		if "$textbook" == "" {
 			local graphtitle = "{bf:Utilizaci{c o'}n} del ingreso disponible"
 			local graphfuente = "{bf:Fuente}: Elaborado por el CIEP, con información de INEGI/BIE."
 		}
@@ -574,11 +570,7 @@ quietly {
 			note("{bf:{c U'}ltimo dato reportado}: `latest'.") ///
 			name(gdp_utilizacion, replace)
 
-		graph save gdp_utilizacion "`c(sysdir_site)'/05_graphs/gdp_utilizacion", replace
-		capture confirm existence $export
-		if _rc == 0 {
-			graph export "$export/gdp_utilizacion.png", replace name(gdp_utilizacion)
-		}
+		graph export "`c(sysdir_site)'/users/$id/graphs/gdp_utilizacion.png", replace name(gdp_utilizacion)
 	}
 
 
@@ -790,7 +782,9 @@ quietly {
 	scalar Inmob5311 = string(Inmob5311[`obs']/1000000,"%12.1fc")
 	scalar Inmob5312 = string(Inmob5312[`obs']/1000000,"%12.1fc")
 	scalar ExBOpHog = string(ExBOpHog[`obs']/1000000,"%12.1fc")
+	
 	scalar AlojT = string(AlojT[`obs']/1000000,"%12.1fc")
+	scalar AlojTPIB = string(AlojT/PIB[`obs']*100,"%7.3fc")
 
 	* Display table header
 	noisily di _newline in y "{bf: F. Consumo (gobierno)" in g ///

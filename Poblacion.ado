@@ -12,8 +12,8 @@ program define Poblacion, return
 quietly {
 	timer on 2
 
-	capture mkdir `"`c(sysdir_site)'/04_master/"'
-	capture mkdir `"`c(sysdir_site)'/05_graphs/"'
+	capture mkdir `"`c(sysdir_site)'/04_master"'
+	capture mkdir "`c(sysdir_site)'/users/$id/graphs"
 
 	** 0.1 Revisa si se puede usar la base de datos **
 	capture use `"`c(sysdir_site)'/04_master/Poblacion.dta"', clear
@@ -407,12 +407,9 @@ quietly {
 			caption("`graphfuente'") ///
 			name(PP_`anioinicial'_`aniofinal'_`entidadGName', replace)
 
-		graph save PP_`anioinicial'_`aniofinal'_`entidadGName' "`c(sysdir_site)'/05_graphs/PP_`anioinicial'_`aniofinal'_`entidadGName'", replace
-		if "$export" != "" {
-			graph export "$export/PP_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(PP_`anioinicial'_`aniofinal'_`entidadGName')
-			graph export "$export/PA_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(P_`anioinicial'_`aniofinal'_`entidadGName'A)
-			graph export "$export/PB_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(P_`anioinicial'_`aniofinal'_`entidadGName'B)
-		}
+		graph export "`c(sysdir_site)'/users/$id/graphs/PP_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(PP_`anioinicial'_`aniofinal'_`entidadGName')
+		graph export "`c(sysdir_site)'/users/$id/graphs/PA_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(P_`anioinicial'_`aniofinal'_`entidadGName'A)
+		graph export "`c(sysdir_site)'/users/$id/graphs/PB_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(P_`anioinicial'_`aniofinal'_`entidadGName'B)
 		capture window manage close graph P_`anioinicial'_`aniofinal'_`entidadGName'A
 		capture window manage close graph P_`anioinicial'_`aniofinal'_`entidadGName'B
 
@@ -566,12 +563,10 @@ quietly {
 			name(ET_`anioinicial'_`aniofinal'_`entidadGName', replace)
 
 
-		graph save ET_`anioinicial'_`aniofinal'_`entidadGName' "`c(sysdir_site)'/05_graphs/ET_`anioinicial'_`aniofinal'_`entidadGName'", replace
-		if "$export" != "" {
-			graph export "$export/ET_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(ET_`anioinicial'_`aniofinal'_`entidadGName')
-			graph export "$export/T_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(T_`anioinicial'_`aniofinal'_`entidadGName')
-			graph export "$export/E_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(E_`anioinicial'_`aniofinal'_`entidadGName')
-		}
+		graph export "`c(sysdir_site)'/users/$id/graphs/ET_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(ET_`anioinicial'_`aniofinal'_`entidadGName')
+		graph export "`c(sysdir_site)'/users/$id/graphs/T_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(T_`anioinicial'_`aniofinal'_`entidadGName')
+		graph export "`c(sysdir_site)'/users/$id/graphs/E_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(E_`anioinicial'_`aniofinal'_`entidadGName')
+
 		capture window manage close graph E_`anioinicial'_`aniofinal'_`entidadGName'
 		capture window manage close graph T_`anioinicial'_`aniofinal'_`entidadGName'
 		restore

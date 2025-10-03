@@ -23,7 +23,7 @@ quietly {
 
 	** 0.3 Sintaxis del comando **
 	syntax [anything] [if] [,  PIBVP(real -999) PIBVF(real -999) DESDE(real 2008) ///
-		UPDATE NOGraphs REVERSE PROYeccion ZIPFILE]
+		UPDATE NOGraphs REVERSE PROYeccion ZIPFILE CSVFILE FILES]
 
 
 
@@ -429,86 +429,90 @@ program define UpdateDatosAbiertos, return
 
 	*****************************************
 	** 1.1 Ingreso, gasto y financiamiento **
-	if "`zipfile'" == "" {
+	if "`csvfile'" == "csvfile" {
 		import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/ingreso_gasto_finan.csv", clear
 	}
-	else {
+	else if "`zipfile'" == "zipfile" {
 		cd "`c(sysdir_site)'/03_temp/Datos Abiertos"
 		unzipfile "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/ingreso_gasto_finan.zip", replace
 		import delimited "`c(sysdir_site)'/03_temp/Datos Abiertos/ingreso_gasto_finan.csv", clear
-		save "`c(sysdir_site)'/03_temp/Datos Abiertos/ingreso_gasto_finan.dta", replace
+	}
+	else {
+		import delimited "$basesCIEP/SHCP/Datos Abiertos/ingreso_gasto_finan.csv", clear
 	}
 	tempfile ing
 	save "`ing'"
 	
-	capture confirm file "`c(sysdir_site)'/03_temp/Datos Abiertos/ingreso_gasto_finan_hist.dta"
-	if _rc != 0 {
+	if "`csvfile'" == "csvfile" {
 		import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/ingreso_gasto_finan_hist.csv", clear
-		save "`c(sysdir_site)'/03_temp/Datos Abiertos/ingreso_gasto_finan_hist.dta", replace
 	}
-	if "`zipfile'" == "zipfile" {
+	else if "`zipfile'" == "zipfile" {
 		cd "`c(sysdir_site)'/03_temp/Datos Abiertos"
 		unzipfile "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/ingreso_gasto_finan_hist.zip", replace
 		import delimited "`c(sysdir_site)'/03_temp/Datos Abiertos/ingreso_gasto_finan_hist.csv", clear
-		save "`c(sysdir_site)'/03_temp/Datos Abiertos/ingreso_gasto_finan_hist.dta", replace
 	}
-	use "`c(sysdir_site)'/03_temp/Datos Abiertos/ingreso_gasto_finan_hist.dta", clear
+	else {
+		import delimited "$basesCIEP/SHCP/Datos Abiertos/ingreso_gasto_finan_hist.csv", clear
+	}
 	tempfile ingH
 	save "`ingH'"
 
 	***************
 	** 1.2 Deuda **
-	if "`zipfile'" == "" {
+	if "`csvfile'" == "csvfile" {
 		import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/deuda_publica.csv", clear
 	}
-	else {
+	else if "`zipfile'" == "zipfile" {
 		cd "`c(sysdir_site)'/03_temp/Datos Abiertos"
 		unzipfile "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/deuda_publica.zip", replace
 		import delimited "`c(sysdir_site)'/03_temp/Datos Abiertos/deuda_publica.csv", clear
-		save "`c(sysdir_site)'/03_temp/Datos Abiertos/deuda_publica.dta", replace
 	}	
+	else {
+		import delimited "$basesCIEP/SHCP/Datos Abiertos/deuda_publica.csv", clear
+	}
 	tempfile deuda
 	save "`deuda'"
 
-	capture confirm file "`c(sysdir_site)'/03_temp/Datos Abiertos/deuda_publica_hist.dta"
-	if _rc != 0 {
+	if "`csvfile'" == "csvfile" {
 		import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/deuda_publica_hist.csv", clear
-		save "`c(sysdir_site)'/03_temp/Datos Abiertos/deuda_publica_hist.dta", replace
 	}
-	if "`zipfile'" == "zipfile" {
+	else if "`zipfile'" == "zipfile" {
 		cd "`c(sysdir_site)'/03_temp/Datos Abiertos"
 		unzipfile "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/deuda_publica_hist.zip", replace
 		import delimited "`c(sysdir_site)'/03_temp/Datos Abiertos/deuda_publica_hist.csv", clear
-		save "`c(sysdir_site)'/03_temp/Datos Abiertos/deuda_publica_hist.dta", replace
 	}
-	use "`c(sysdir_site)'/03_temp/Datos Abiertos/deuda_publica_hist.dta", clear
+	else {
+		import delimited "$basesCIEP/SHCP/Datos Abiertos/deuda_publica_hist.csv", clear
+	}
 	tempfile deudaH
 	save "`deudaH'"
 
 	****************
 	** 1.3 SHRFSP **
-	if "`zipfile'" == "" {
+	if "`csvfile'" == "csvfile" {
 		import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/shrfsp_deuda_amplia_actual.csv", clear
 	}
-	else {
+	else if "`zipfile'" == "zipfile" {
 		cd "`c(sysdir_site)'/03_temp/Datos Abiertos"
 		unzipfile "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/shrfsp_deuda_amplia_actual.zip", replace
 		import delimited "`c(sysdir_site)'/03_temp/Datos Abiertos/shrfsp_deuda_amplia_actual.csv", clear
-		save "`c(sysdir_site)'/03_temp/Datos Abiertos/shrfsp_deuda_amplia_actual.dta", replace
+	}
+	else {
+		import delimited "$basesCIEP/SHCP/Datos Abiertos/shrfsp_deuda_amplia_actual.csv", clear
 	}
 	tempfile shrf
 	save "`shrf'"
 
-	capture confirm file "`c(sysdir_site)'/03_temp/Datos Abiertos/shrfsp_deuda_amplshrfsp_deuda_amplia_antes_2014ia_actual_hist.dta"
-	if _rc != 0 {
+	if "`csvfile'" == "csvfile" {
 		import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/shrfsp_deuda_amplia_antes_2014.csv", clear
-		save "`c(sysdir_site)'/03_temp/Datos Abiertos/shrfsp_deuda_amplia_antes_2014.dta", replace
 	}
-	if "`zipfile'" == "zipfile" {
+	else if "`zipfile'" == "zipfile" {
 		cd "`c(sysdir_site)'/03_temp/Datos Abiertos"
 		unzipfile "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/shrfsp_deuda_amplia_antes_2014.zip", replace
 		import delimited "`c(sysdir_site)'/03_temp/Datos Abiertos/shrfsp_deuda_amplia_antes_2014.csv", clear
-		save "`c(sysdir_site)'/03_temp/Datos Abiertos/shrfsp_deuda_amplia_antes_2014.dta", replace
+	}
+	else {
+		import delimited "$basesCIEP/SHCP/Datos Abiertos/shrfsp_deuda_amplia_antes_2014.csv", clear
 	}
 	use "`c(sysdir_site)'/03_temp/Datos Abiertos/shrfsp_deuda_amplia_antes_2014.dta", clear
 	tempfile shrfH
@@ -516,59 +520,61 @@ program define UpdateDatosAbiertos, return
 
 	**************
 	** 1.4 RFSP **
-	if "`zipfile'" == "" {
+	if "`csvfile'" == "csvfile" {
 		import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/rfsp.csv", clear
 	}
-	else {
+	else if "`zipfile'" == "zipfile" {
 		cd "`c(sysdir_site)'/03_temp/Datos Abiertos"
 		unzipfile "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/rfsp.zip", replace
 		import delimited "`c(sysdir_site)'/03_temp/Datos Abiertos/rfsp.csv", clear
-		save "`c(sysdir_site)'/03_temp/Datos Abiertos/rfsp.dta", replace
+	}
+	else {
+		import delimited "$basesCIEP/SHCP/Datos Abiertos/rfsp.csv", clear
 	}
 	tempfile rf
 	save "`rf'"
 
-	capture confirm file "`c(sysdir_site)'/03_temp/Datos Abiertos/rfsp_metodologia_anterior.dta"
-	if _rc != 0 {
+	if "`csvfile'" == "csvfile" {
 		import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/rfsp_metodologia_anterior.csv", clear
-		save "`c(sysdir_site)'/03_temp/Datos Abiertos/rfsp_metodologia_anterior.dta", replace
 	}
-	if "`zipfile'" == "zipfile" {
+	else if "`zipfile'" == "zipfile" {
 		cd "`c(sysdir_site)'/03_temp/Datos Abiertos"
 		unzipfile "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/rfsp_metodologia_anterior.zip", replace
 		import delimited "`c(sysdir_site)'/03_temp/Datos Abiertos/rfsp_metodologia_anterior.csv", clear
-		save "`c(sysdir_site)'/03_temp/Datos Abiertos/rfsp_metodologia_anterior.dta", replace
 	}
-	use "`c(sysdir_site)'/03_temp/Datos Abiertos/rfsp_metodologia_anterior.dta", clear
+	else {
+		import delimited "$basesCIEP/SHCP/Datos Abiertos/rfsp_metodologia_anterior.csv", clear
+	}
 	tempfile rfH
 	save "`rfH'"
 
 	*************************************************
 	** 1.5 Transferencias a Entidades y Municipios **
-	if "`zipfile'" == "" {
+	if "`csvfile'" == "csvfile" {
 		import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/transferencias_entidades_fed.csv", clear
 	}
-	else {
+	else if "`zipfile'" == "zipfile" {
 		cd "`c(sysdir_site)'/03_temp/Datos Abiertos"
 		unzipfile "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/transferencias_entidades_fed.zip", replace
 		import delimited "`c(sysdir_site)'/03_temp/Datos Abiertos/transferencias_entidades_fed.csv", clear
-		save "`c(sysdir_site)'/03_temp/Datos Abiertos/transferencias_entidades_fed.dta", replace
+	}
+	else {
+		import delimited "$basesCIEP/SHCP/Datos Abiertos/transferencias_entidades_fed.csv", clear
 	}
 	tempfile gf
 	save "`gf'"
 
-	capture confirm file "`c(sysdir_site)'/03_temp/Datos Abiertos/transferencias_entidades_fed_hist.dta"
-	if _rc != 0 {
+	if "`csvfile'" == "csvfile" {
 		import delimited "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/transferencias_entidades_fed_hist.csv", clear
-		save "`c(sysdir_site)'/03_temp/Datos Abiertos/transferencias_entidades_fed_hist.dta", replace
 	}
-	if "`zipfile'" == "zipfile" {
+	else if "`zipfile'" == "zipfile" {
 		cd "`c(sysdir_site)'/03_temp/Datos Abiertos"
 		unzipfile "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/transferencias_entidades_fed_hist.zip", replace
 		import delimited "`c(sysdir_site)'/03_temp/Datos Abiertos/transferencias_entidades_fed_hist.csv", clear
-		save "`c(sysdir_site)'/03_temp/Datos Abiertos/transferencias_entidades_fed_hist.dta", replace
 	}
-	use "`c(sysdir_site)'/03_temp/Datos Abiertos/transferencias_entidades_fed_hist.dta", clear
+	else {
+		import delimited "$basesCIEP/SHCP/Datos Abiertos/transferencias_entidades_fed_hist.csv", clear
+	}
 	tempfile gfH
 	save "`gfH'"
 	

@@ -333,8 +333,9 @@ quietly {
 
 	scalar anioPWI = anio[`obsPIB']
 	scalar anioPWF = anio[`obs_exo']
+	scalar outputPWI = string(OutputPerWorker[`obsPIB'],"%10.0fc")
 	scalar outputPW = string(OutputPerWorker[`obsvp'],"%10.0fc")
-	scalar outputPWVECES = string(round((OutputPerWorker[`obsvp']/OutputPerWorker[`obsPIB']),.1),"%7.1fc")
+	scalar outputPWVECES = string(round(((OutputPerWorker[`obsvp']/OutputPerWorker[`obsPIB']-1)*100),.1),"%7.1fc")
 	scalar lambdaNW = ((pibYR[`obs_exo']/pibYR[`=`obs_exo'-`difpib''])^(1/(`difpib'))-1)*100
 	scalar LambdaNW = ((pibYR[`obs_exo']/pibYR[1])^(1/(`obs_exo'))-1)*100
 
@@ -413,10 +414,7 @@ quietly {
 			caption("`graphfuente'") ///
 			name(Productividad`aniofinal', replace)
 
-		capture confirm existence $export
-		if _rc == 0 {
-			graph export "$export/Productividad`aniofinal'.png", replace name(Productividad`aniofinal')
-		}
+		graph export "`c(sysdir_site)'/users/$id/graphs/Productividad`aniofinal'.png", replace name(Productividad`aniofinal')
 
 		** 7.2 Gráficas finales **/
 		if "`if'" != "" {
@@ -489,6 +487,7 @@ quietly {
 			xtitle("") ///
 			ytitle("", axis(1)) ///
 			ytitle("", axis(2)) ///
+			b1title(`"1 MXN de `anioinicial' = {bf:`=string(1/deflator[1],"%6.2fc")'} MXN en `aniovp'"', size(vlarge)) ///
 			legend(off label(1 "INEGI, SCN 2018") label(2 "$paqueteEconomico") label(3 "Proyección") order(1 2 3)) ///
 			caption("`graphfuente'") ///
 			///note("{bf:Nota}: La proyección representa el promedio geométrico móvil de los últimos `difdef' años.") ///
@@ -505,11 +504,7 @@ quietly {
 				`"{bf:`geodef'-`aniofinal': `=string(`deflactorProm',"%5.1fc")'%}"', ///
 				justification(left) place(5) color("111 111 111") size(medlarge))
 
-		graph save deflactor "`c(sysdir_site)'/05_graphs/deflactor", replace
-		capture confirm existence $export
-		if _rc == 0 {
-			graph export "$export/deflactor.png", replace name(deflactor)
-		}
+		graph export "`c(sysdir_site)'/users/$id/graphs/deflactor.png", replace name(deflactor)
 
 
 
@@ -605,11 +600,7 @@ quietly {
 				`"{bf:`geopib'-`aniofinal': `=string(`crecimientoProm',"%5.1fc")'%}"', ///
 				justification(left) place(5) color("111 111 111") size(medlarge)) ///
 
-		graph save pib "`c(sysdir_site)'/05_graphs/pib", replace
-		capture confirm existence $export
-		if _rc == 0 {
-			graph export "$export/pib.png", replace name(pib)
-		}
+		graph export "`c(sysdir_site)'/users/$id/graphs/pib.png", replace name(pib)
 
 
 
@@ -709,11 +700,7 @@ quietly {
 			text(0 `=`aniofinal'+`exo_def'+1.5' "{bf:  Proyección}", yaxis(2) size(medsmall) place(12) justification(left) bcolor(white) box) ///
 			text(`=`crecimientoPobProm'-6' `=`geopib'' "{bf:Crec. prom.}" "{bf:`geopib'-`aniofinal': `=string(`crecimientoPobProm',"%5.1fc")'%}", justification(left) place(5) color("111 111 111") size(medlarge)) ///
 
-		graph save pib_pc "`c(sysdir_site)'/05_graphs/pib_pc", replace
-		capture confirm existence $export
-		if _rc == 0 {
-			graph export "$export/pib_pc.png", replace name(pib_pc)
-		}
+		graph export "`c(sysdir_site)'/users/$id/graphs/pib_pc.png", replace name(pib_pc)
 
 
 
@@ -816,11 +803,7 @@ quietly {
 			yline(`inflacionProm', axis(1)) ///
 			text(`=`inflacionProm'-.75' `=`geodef'' "{bf:Crec. prom.}" `"{bf:`geodef'-`aniofinal': `=string(`inflacionProm',"%5.1fc")'%}"', justification(left) place(5) color("111 111 111") size(medlarge))
 
-		graph save inflacion "`c(sysdir_site)'/05_graphs/inflacion", replace
-		capture confirm existence $export
-		if _rc == 0 {
-			graph export "$export/inflacion.png", replace name(inflacion)
-		}
+		graph export "`c(sysdir_site)'/users/$id/graphs/inflacion.png", replace name(inflacion)
 	}
 	return local except "`except'"
 	return local exceptI "`exceptI'"

@@ -12,11 +12,13 @@ timer on 1
 
 ** 0.1 Directorios de trabajo (uno por computadora)
 if "`c(username)'" == "ricardo" {						// Mac
-	*sysdir set SITE "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
-	*global export "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/CIEP_Deuda/0. Paquete Económico/2026/Deuda 2026/images"
+	sysdir set SITE "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
+	global basesCIEP "/Users/ricardo/CIEP Dropbox/BasesCIEP/"
+	global export "/Users/ricardo/CIEP Dropbox/TextbookCIEP/images"
 }
 else if "`c(username)'" == "servidorciep" {					// Servidor CIEP
-	*sysdir set SITE "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
+	sysdir set SITE "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
+	global basesCIEP "/home/servidorciep/CIEP Dropbox/BasesCIEP/"
 	*global export "/home/servidorciep/CIEP Dropbox/TextbookCIEP/images"
 }
 else if "`c(console)'" != "" {							// Servidor Web
@@ -31,14 +33,15 @@ scalar anioPE = 2026								// ANIO PAQUETE ECONÓMICO
 scalar anioenigh = 2024								// ANIO ENIGH
 
 ** 0.3 Opciones (descomentar para activar)
-global nographs "nographs"							// SUPRIMIR GRAFICAS
+//global nographs "nographs"							// SUPRIMIR GRAFICAS
 //global update "update"							// UPDATE BASES DE DATOS
-//global textbook "textbook"							// SCALAR TO LATEX
+global textbook "textbook"							// SCALAR TO LATEX
 
 ** 0.4 Output (web)
 //global output "output"							// ARCHIVO DE SALIDA (WEB)
+
+capture mkdir "`c(sysdir_site)'/users/$id"
 if "$output" != "" {
-	capture mkdir "`c(sysdir_site)'/users/$id"
 	quietly log using `"`c(sysdir_site)'/users/$id/Expenditures.smcl"', replace name(SIM)
 	quietly log using `"`c(sysdir_site)'/users/$id/output.txt"', replace text name(output)
 	quietly log off output
@@ -100,7 +103,7 @@ noisily SCN, anio(`=aniovp') $textbook $nographs $update
 ** 3.1 Encuesta Nacional de Ingresos y Gastos de los Hogares (Usos)
 noisily di _newline in g "Actualizando: " in y "expenditures.dta"
 noisily run "`c(sysdir_site)'/Expenditure.do" `=anioPE'
-
+ex
 ** 3.2 Encuesta Nacional de Ingresos y Gastos de los Hogares (Recursos)
 noisily di _newline in g "Actualizando: " in y "households.dta"
 noisily run `"`c(sysdir_site)'/Households.do"' `=anioPE'
@@ -108,7 +111,7 @@ noisily run `"`c(sysdir_site)'/Households.do"' `=anioPE'
 ** 3.3 Perfiles de la política económica actual (Paquete Económico)
 noisily di _newline in g "Actualizando: " in y "perfiles`anio'.dta"
 noisily run "`c(sysdir_site)'/PerfilesSim.do" `=anioPE'
-
+ex
 
 
 **/
@@ -127,8 +130,8 @@ decode divCODE, g(divSIM)
 collapse (sum) recaudacion, by(anio divSIM) fast
 save `"`c(sysdir_site)'/users/$id/LIF.dta"', replace	
 
-if "$update" == "update" ///
-	do "`c(sysdir_site)'/Graphs_TE.do"
+* Evolución de las tasas efectivas *
+do "`c(sysdir_site)'/Graphs_TE.do"
 
 
 ** 4.2 Parámetros: Ingresos
@@ -282,8 +285,8 @@ noisily PEF, anio(`=anioPE') by(divSIM)	$update 				///
 	min(0) 									/// Mínimo 0% del PIB (resumido)
 	rows(2)									/// Número de filas en la leyenda
 
-if "$update" == "update" ///
-	do "`c(sysdir_site)'/Graphs_PC.do"
+* Evolución de los gastos per cápita *	
+do "`c(sysdir_site)'/Graphs_PC.do"
 
 
 ** 5.1 Parámetros: Gasto **/
