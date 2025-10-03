@@ -1,0 +1,22 @@
+#include ciep
+color background white
+color plotregion none
+linestyle plotregion none
+color grid dimgray
+color major_grid dimgray
+color minor_grid dimgray
+linewidth grid thin
+linewidth major_grid thin
+linewidth minor_grid thin
+color heading black
+color textbox none
+color bylabel_outline none
+color mat_label_box none
+linepattern p1 solid
+linepattern p2 longdash
+linewidth p1 medthick
+linewidth p2 medthick
+color p1 black
+color p2 blue
+symbol p1 none
+symbol p2 none
