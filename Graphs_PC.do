@@ -52,7 +52,7 @@ twoway connected iniciaA basica medsup superi posgra eduadu otrose invere cultur
 	rows(2)) ///
 	name(GastoPC_Educacion, replace)
 
-graph export "`c(sysdir_site)'/05_graphs/GastoPC_Educacion.png", replace
+graph export "`c(sysdir_site)'/users/$id/graphs/GastoPC_Educacion.png", replace
 
 
 * Gráfica: Gasto per cápita en salud
@@ -71,7 +71,7 @@ twoway connected ssa imssbien imss issste pemex issfam invers anio, ///
 	label(7 "Inversión en salud")) ///
 	name(GastoPC_Salud, replace)
 	
-graph export "`c(sysdir_site)'/05_graphs/GastoPC_Salud.png", replace
+graph export "`c(sysdir_site)'/users/$id/graphs/GastoPC_Salud.png", replace
 
 
 * Gráfica: Gasto per cápita en pensiones
@@ -88,7 +88,7 @@ twoway connected pam penimss penisss penpeme penotro anio, ///
 	label(5 "Pensión CFE, LFC, ISSFAM, Ferronales")) ///
 	name(GastoPC_Pensiones, replace)
 
-graph export "`c(sysdir_site)'/05_graphs/GastoPC_Pensiones.png", replace
+graph export "`c(sysdir_site)'/users/$id/graphs/GastoPC_Pensiones.png", replace
 
 * Gráfica: Gasto per cápita en energía
 twoway connected gascfe gaspemex gassener gasinverf gascosdeue anio, ///
@@ -104,7 +104,7 @@ twoway connected gascfe gaspemex gassener gasinverf gascosdeue anio, ///
 	label(5 "Gasto en costo de la deuda (energía)")) ///
 	name(GastoPC_Energia, replace)
 
-graph export "`c(sysdir_site)'/05_graphs/GastoPC_Energia.png", replace
+graph export "`c(sysdir_site)'/users/$id/graphs/GastoPC_Energia.png", replace
 
 * Gráfica: Gasto per cápita en otros gastos
 twoway connected gasinfra gasotros gasfeder gascosto anio, ///
@@ -119,7 +119,7 @@ twoway connected gasinfra gasotros gasfeder gascosto anio, ///
 	label(4 "Gasto en Costo de la deuda")) ///
 	name(GastoPC_Otros, replace)
 
-graph export "`c(sysdir_site)'/05_graphs/GastoPC_Otros.png", replace
+graph export "`c(sysdir_site)'/users/$id/graphs/GastoPC_Otros.png", replace
 
 * Gráfica: Gasto per cápita en transferencias
 twoway connected IngBas gasmadres gascuidados anio, ///
@@ -133,4 +133,4 @@ twoway connected IngBas gasmadres gascuidados anio, ///
 	label(3 "Gasto en cuidados")) ///
 	name(GastoPC_Transferencias, replace)
 
-graph export "`c(sysdir_site)'/05_graphs/GastoPC_Transferencias.png", replace
+graph export "`c(sysdir_site)'/users/$id/graphs/GastoPC_Transferencias.png", replace

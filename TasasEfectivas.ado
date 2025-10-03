@@ -25,7 +25,7 @@ quietly {
 	*********************
 	**# 2 RECAUDACIÓN ***
 	*********************
-	if "$update" == "update" {
+	if "`enigh'" == "" {
 		LIF, anio(`anio') by(divSIM) nographs min(0) desde(`=`anio'-1') `eofp'
 	}
 

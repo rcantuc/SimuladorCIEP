@@ -595,7 +595,7 @@ quietly {
 
 	******************************
 	*** 7. Gráficas combinadas ***
-	/******************************
+	******************************
 	if "$nographs" != "nographs" & "`nographs'" != "nographs" {
 		graph combine D`varlist' `varlist'ProjD, ///
 			name(`=substr("`varlist'",1,10)'_`aniope', replace) ///
@@ -608,10 +608,9 @@ quietly {
 			///caption("{bf:Source}: Prepared by CIEP, using data from `base'.") ///
 			///note(`"{bf:Note}: Percentages in parentheses show the concentration in each group."')
 
-		graph save `=substr("`varlist'",1,10)'_`aniope' `"`c(sysdir_site)'/05_graphs/`varlist'_`aniope'.gph"', replace
-		if "$export" != "" {
-			graph export `"$export/`varlist'_`aniope'.png"', replace name(`=substr("`varlist'",1,10)'_`aniope')
-		}
+
+		graph export `"`c(sysdir_site)'/users/$id/graphs/`varlist'_`aniope'.png"', replace name(`=substr("`varlist'",1,10)'_`aniope')
+
 		capture window manage close graph H`varlist'
 		capture window manage close graph `varlist'ProjD
 	}
