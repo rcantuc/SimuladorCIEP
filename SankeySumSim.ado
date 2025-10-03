@@ -8,8 +8,8 @@ quietly {
 	syntax, A(string) NAME(string) ///
 		[B(string) C(string) D(string) E(string) ANIO(int `aniovp') FOLDER(string)]
 
-	PIBDeflactor, anio(`anio') nographs nooutput
-	scalar pibY = real(subinstr(scalar(pibY),",","",.))*1000000
+	*PIBDeflactor, anio(`anio') nographs nooutput
+	*scalar pibY = real(subinstr(scalar(pibY),",","",.))*1000000
 
 
 	******************
@@ -79,7 +79,7 @@ quietly {
 			}
 
 			if profile[`k'] != 0 {
-				local links `"`links'{to:"``node`taccountname'''",value:"`=profile[`k']/`=scalar(pibY)'*100'",from:"``node`faccountname'''"},"'
+				local links `"`links'{to:"``node`taccountname'''",value:"`=profile[`k']'",from:"``node`faccountname'''"},"'
 			}
 		}
 	}
