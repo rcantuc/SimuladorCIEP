@@ -414,8 +414,9 @@ quietly {
 			caption("`graphfuente'") ///
 			name(Productividad`aniofinal', replace)
 
-		capture mkddir "`c(sysdir_site)'/users/$id/"
-		capture mkddir "`c(sysdir_site)'/users/$id/graphs/"
+		capture mkdir "`c(sysdir_site)'/users/"
+		capture mkdir "`c(sysdir_site)'/users/$id/"
+		capture mkdir "`c(sysdir_site)'/users/$id/graphs/"
 		graph export "`c(sysdir_site)'/users/$id/graphs/Productividad`aniofinal'.png", replace name(Productividad`aniofinal')
 
 		** 7.2 Gráficas finales **/
