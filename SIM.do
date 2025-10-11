@@ -52,14 +52,14 @@ if "$output" != "" {
 
 ***
 **# 1. DEMOGRAFÍA
-/***
+***
 noisily Poblacion, anioi(`=aniovp') aniofinal(2050) $textbook $nographs $update
 
 
 
 **/
 **# 2. ECONOMÍA
-/***
+***
 global paqueteEconomico "CGPE 2026"						// POLÍTICA FISCAL
 
 ** 2.1 Producto Interno Bruto (inputs opcionales)
@@ -108,7 +108,7 @@ noisily run "`c(sysdir_site)'/Expenditure.do" `=anioPE'
 ** 3.2 Encuesta Nacional de Ingresos y Gastos de los Hogares (Recursos)
 noisily di _newline in g "Actualizando: " in y "households.dta"
 noisily run `"`c(sysdir_site)'/Households.do"' `=anioPE'
-ex
+
 ** 3.3 Perfiles de la política económica actual (Paquete Económico)
 noisily di _newline in g "Actualizando: " in y "perfiles`anio'.dta"
 noisily run "`c(sysdir_site)'/PerfilesSim.do" `=anioPE'
