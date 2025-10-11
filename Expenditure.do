@@ -583,7 +583,7 @@ if _rc != 0 {
 ********************************************************
 foreach categ in categ categ_iva categ_ieps {
 	capture confirm file "`c(sysdir_site)'/04_master/`anioenigh'/consumption_`categ'_pc.dta"
-	if _rc == 0 {
+	if _rc != 0 {
 
 		** 3.1 Consumo de los individuos **
 		use "`c(sysdir_site)'/03_temp/`anioenigh'/preconsumption.dta", clear
@@ -654,6 +654,7 @@ foreach categ in categ categ_iva categ_ieps {
 		noisily di in g `"`categs'"'
 		foreach k of local categs {
 			foreach vars in cant_ gas_ {
+				* Categorías *
 				if "`vars'" == "gas_" {
 					local title = "Gasto"
 				}
@@ -661,6 +662,7 @@ foreach categ in categ categ_iva categ_ieps {
 					local title = "Cantidad"
 				}
 
+				* Categorías: Consumo *
 				if "`k'" == "Alim" {
 					local label = "Alimentos"
 				}
@@ -719,6 +721,80 @@ foreach categ in categ categ_iva categ_ieps {
 					local label = "Otros diversos"
 				}
 
+				* Categorías: IVA *
+				if "`k'" == "Alimentos" {
+					local label = "Otros alimentos"
+				}
+				if "`k'" == "FueraHog" {
+					local label = "Fuera del hogar"
+				}
+				if "`k'" == "CanastaBas" {
+					local label = "Canasta básica"
+				}
+				if "`k'" == "Mascotas" {
+					local label = "Mascotas"
+				}
+				if "`k'" == "Medicinas" {
+					local label = "Medicinas"
+				}
+				if "`k'" == "TransporteLoc" {
+					local label = "Transporte local"
+				}
+				if "`k'" == "TransporteFor" {
+					local label = "Transporte foráneo"
+				}
+				if "`k'" == "Educación" {
+					local label = "Educación"
+				}
+				if "`k'" == "Alquiler" {
+					local label = "Alquiler y vivienda"
+				}
+				if "`k'" == "Mujer" {
+					local label = "Productos femeninos"
+				}
+				if "`k'" == "Otros" {
+					local label = "Otros gastos"
+				}
+
+				* Categorías: IEPS *
+				if "`k'" == "Cervezas" {
+					local label = "Cervezas"
+				}
+				if "`k'" == "Alcohol_20" {
+					local label = "Alcohol 20"
+				}
+				if "`k'" == "Alcohol_20_" {
+					local label = "Alcohol 20+"
+				}
+				if "`k'" == "Tabaco" {
+					local label = "Tabaco"
+				}
+				if "`k'" == "Juegos" {
+					local label = "Juegos y sorteos"
+				}
+				if "`k'" == "Telecom" {
+					local label = "Telecomunicaciones"
+				}
+				if "`k'" == "BebidasEner" {
+					local label = "Bebidas energéticas"
+				}
+				if "`k'" == "BebidasSabor" {
+					local label = "Bebidas saborizadas"
+				}
+				if "`k'" == "AltoContCal" {
+					local label = "Alto contenido calórico"
+				}
+				if "`k'" == "Combustibles" {
+					local label = "Combustibles"
+				}
+				if "`k'" == "Gasolinas" {
+					local label = "Gasolinas"
+				}
+				if "`k'" == "Sin_IEPS" {
+					local label = "Sin IEPS"
+				}
+
+
 				* Gasto por hogar *
 				capture replace `vars'hog`k' = 0 if `vars'hog`k' == .
 				if _rc != 0 {
@@ -770,7 +846,7 @@ foreach categ in categ categ_iva categ_ieps {
 
 				* Iteraciones *
 				noisily di in y "`k': " _cont
-				local salto = 5
+				local salto = 3
 				forvalues iter=1(1)25 {
 					noisily di in w "`iter' " _cont
 					forvalues edades=0(`salto')109 {
@@ -849,7 +925,7 @@ label var gastpc "Gasto total per cápita"
 
 Gini gastpc, hogar(folioviv foliohog) factor(factor)
 local gini_gastpc = r(gini_gastpc)
-scalar ginigastopc = `gini_gastpc'
+scalar ginigastopc = string(`gini_gastpc',"%7.3f")
 
 scalar MTot = 0
 *local scnname = "Alim BebN BebA Taba Vest Calz Alqu Agua Elec HogaT SaluT Vehi FTra STra ComuT RecrT EducT RestT DiveT"
@@ -865,17 +941,18 @@ foreach k of varlist prop* {
 
 	tabstat gas_pc_`varname' [aw=factor], stat(sum) f(%20.0fc) save
 	scalar M``scnvalue'' = r(StatTotal)[1,1]
-	scalar E``scnvalue''PIB = M``scnvalue''/`PIB'*100
+	scalar E``scnvalue''PIB = string((M``scnvalue''/`PIB'*100),"%7.3f")
+	scalar S``scnvalue''PIB = string((```scnvalue'''/`PIB'*100),"%7.3f")
 	scalar E``scnvalue''PC = M``scnvalue''/`pobtotNacional'
 
 	Gini gas_pc_`varname', hogar(folioviv foliohog) factor(factor)
 	local gini``scnvalue'' = r(gini_gas_pc_`varname')
-	scalar gini``scnvalue'' = `gini``scnvalue'''
+	scalar gini``scnvalue'' = string(`gini``scnvalue''',"%7.3f")
 
 	scalar MTot = MTot + M``scnvalue''
 	local ++scnvalue
 }
-scalar ETotPIB = MTot/`PIB'*100
+scalar ETotPIB = string(MTot/`PIB'*100,"%7.3f")
 scalar ETotPC = MTot/`pobtotNacional'
 
 
@@ -994,22 +1071,23 @@ foreach k in Alim BebN BebA Taba Vest Calz Alqu Agua Elec HogaT SaluT Vehi FTra 
 	scalar TT`k' = (M`k'/``k'')^(-1)
 	scalar Dif`k' = ((M`k'/``k'')-1)*100
 	replace gas_pc_`k' = gas_pc_`k'*scalar(TT`k')
+	scalar TT`k' = string((M`k'/``k'')^(-1),"%7.1f")
 
 	tabstat gas_pc_`k' [aw=factor], stat(sum) f(%20.0fc) save
 	scalar MM`k' = r(StatTotal)[1,1]
-	scalar EE`k'PIB = MM`k'/`PIB'*100
+	scalar EE`k'PIB = string(MM`k'/`PIB'*100,"%7.3f")
 	scalar EE`k'PC = MM`k'/`pobtotNacional'
 
 	scalar MMTot = MMTot + MM`k'
 }
-scalar EETotPIB = MMTot/`PIB'*100
+scalar EETotPIB = string(MMTot/`PIB'*100,"%7.3f")
 scalar EETotPC = MMTot/`pobtotNacional'
-scalar TTConHog = (MTot/`ConHog')^(-1)
+scalar TTConHog = string((MTot/`ConHog')^(-1),"%7.1f")
 
 ** 4.2 Display de resultados **
 noisily di _newline in g "{bf: B. Gasto ajustado" ///
 	_col(44) in g %20s "ENIGH" ///
-	_col(66) %6s "Macro" in g ///
+	_col(66) %7s "Macro" in g ///
 	_col(77) %6s  "Factor}"
 noisily di in g "  (+) Alimentos " ///
 	_col(44) in y %20.3fc MMAlim/`PIB'*100 ///
@@ -1161,26 +1239,26 @@ foreach k of local categs {
 tabstat IVA [aw=factor], stat(sum) f(%20.0fc) save
 di in g "IVA Observado: " in y %20.0fc `IVA'
 
-scalar IVAHHSPIB = r(StatTotal)[1,1]/`PIB'*100
-scalar IVASCNPIB = `IVA'/`PIB'*100
-scalar DifIVA = (scalar(IVAHHSPIB) - scalar(IVASCNPIB))/scalar(IVAHHSPIB)*100
+scalar IVAHHSPIB = string((r(StatTotal)[1,1]/`PIB'*100),"%7.1f")
+scalar IVASCNPIB = string((`IVA'/`PIB'*100),"%7.1f")
+scalar DifIVA = string(((real(IVAHHSPIB) - real(IVASCNPIB))/real(IVAHHSPIB)*100),"%7.1f")
 
 Gini IVA, hogar(folioviv foliohog) factor(factor)
 local gini_IVA = r(gini_IVA)
-scalar giniIVA = `gini_IVA'
+scalar giniIVA = string(`gini_IVA',"%7.3f")
 
 
 ** 5.3. Display de resultados **
 noisily di _newline in g "{bf: C. IVA" ///
 	_col(44) in g "(Gini)" ///
 	_col(55) in g %7s "ENIGH" ///
-	_col(66) %6s "Macro" in g ///
+	_col(66) %7s "Macro" in g ///
 	_col(77) %6s  "Informalidad %}"
 noisily di in g "  Total " ///
 	_col(44) in y "(" %5.3fc giniIVA ")" ///
 	_col(55) in y %7.3fc scalar(IVAHHSPIB) ///
 	_col(66) %7.3fc scalar(IVASCNPIB) ///
-	_col(77) %6.2fc scalar(DifIVA) "%"
+	_col(77) %6.1fc scalar(DifIVA) "%"
 
 save "`c(sysdir_site)'/04_master/`anioenigh'/categ_iva.dta", replace
 collapse (sum) IVA, by(folioviv foliohog numren)
@@ -1221,7 +1299,9 @@ g precio = gas_pc_/cant_pc_*`ConHog'/MTot
 
 
 ** 6.2. Cálculo del IEPS **
-** (proceso incompleto) **
+** NOTA: El precio en ENIGH incluye IEPS e IVA. IEPS se aplica antes de IVA.
+** Estructura: Precio_final = (Precio_base + IEPS) * (1 + IVA)
+** Para extraer IEPS: primero quitar IVA, luego calcular IEPS sobre la base
 capture drop IEPS
 g IEPS = 0
 levelsof categs, local(categs)
@@ -1232,20 +1312,24 @@ foreach k of local categs {
 		continue
 	}
 	else if "`k'" == "Alcohol" {
-		replace IEPS = IEPS + ((precio)*prop*((IEPST[`j',1]+IEPST[`j'+1,1]+IEPST[`j'+2,1])/3/100) + IEPST[`j',2])*cant_pc_ if categs == "`k'"
+		* Tasa promedio de alcohol, quitando IVA (16%) del precio
+		local tasa_ieps = (IEPST[`j',1]+IEPST[`j'+1,1]+IEPST[`j'+2,1])/3/100
+		replace IEPS = IEPS + (precio*cant_pc_*prop/(1+0.16))*`tasa_ieps'/(1+`tasa_ieps') + IEPST[`j',2]*cant_pc_ if categs == "`k'"
 		local j = `j' + 2
 		continue
 	}
 	else {
-		replace IEPS = IEPS + ((precio)*prop*(IEPST[`j',1]/100) + IEPST[`j',2])*cant_pc_ if categs == "`k'"
+		* IEPS ad valorem + cuota específica, quitando IVA del precio
+		local tasa_ieps = IEPST[`j',1]/100
+		replace IEPS = IEPS + (precio*cant_pc_*prop/(1+0.16))*`tasa_ieps'/(1+`tasa_ieps') + IEPST[`j',2]*cant_pc_ if categs == "`k'"
 	}
 }
 
 tabstat IEPS [aw=factor], stat(sum) f(%20.0fc) save by(categs)
 
-scalar IEPSNPHHSPIB = r(StatTotal)[1,1]/`PIB'*100
-scalar IEPSNPSCNPIB = `IEPSNP'/`PIB'*100
-scalar DifIEPSNP = (scalar(IEPSNPHHSPIB) - scalar(IEPSNPSCNPIB))/scalar(IEPSNPHHSPIB)*100
+scalar IEPSNPHHSPIB = string((r(StatTotal)[1,1]/`PIB'*100),"%7.1f")
+scalar IEPSNPSCNPIB = string((`IEPSNP'/`PIB'*100),"%7.1f")
+scalar DifIEPSNP = string(((real(IEPSNPHHSPIB) - real(IEPSNPSCNPIB))/real(IEPSNPHHSPIB)*100),"%7.1f")
 
 foreach k of local categs {
 	local j = 1
@@ -1263,21 +1347,22 @@ foreach k of local categs {
 
 Gini IEPS, hogar(folioviv foliohog) factor(factor)
 local giniIEPS = r(gini_IEPS)
-scalar giniIEPS = `giniIEPS'
+scalar giniIEPS = string(`giniIEPS',"%7.3f")
 
 ** 6.3. Display de resultados **
 noisily di _newline in g "{bf: D. IEPS" ///
 	_col(44) in g "(Gini)" ///
 	_col(55) in g %7s "ENIGH" ///
-	_col(66) %6s "Macro" in g ///
+	_col(66) %7s "Macro" in g ///
 	_col(77) %6s  "Informalidad %}"
 foreach k of local categs {
 	if "`k'" != "Sin_IEPS" {
+		local ieps_enigh = IEPS`k'[1,1]/`PIB'*100
 		noisily di in g "  (+) `name`k''" ///
 			_col(44) in y "(" %5.3fc gini_ieps`k' ")" ///
-			_col(55) in y %7.3fc scalar(IEPSNPHHSPIB) ///
-			_col(66) in y %7.3fc scalar(IEPSNPSCNPIB) ///
-			_col(77) in y %6.1fc scalar(DifIEPSNP) "%"
+			_col(55) in y %7.3fc `ieps_enigh' ///
+			_col(66) in y "-" ///
+			_col(77) in y "-"
 	}
 }
 noisily di in g _dup(84) "-"

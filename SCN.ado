@@ -244,7 +244,7 @@ quietly {
 	scalar RemSal = string(RemSal[`obs']/1000000,"%12.1fc")
 	scalar RemSalPIB = string(RemSal[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar SSocial = string(SSEmpleadores[`obs'] + SSImputada[`obs']/1000000,"%12.1fc")
+	scalar SSocial = string((SSEmpleadores[`obs'] + SSImputada[`obs'])/1000000,"%12.1fc")
 	scalar SSocialPIB = string((SSEmpleadores[`obs'] + SSImputada[`obs'])/PIB[`obs']*100,"%7.3fc")
 
 	scalar MixL = string(MixL[`obs']/1000000,"%12.1fc")
@@ -2027,14 +2027,14 @@ program define UpdateSCN
 			local dos = 1
 			continue
 		}
-		rename `k' IngMxito_`anio'
+		rename `k' IngMixto_`anio'
 		local ++anio
 		local ++dos
 	}
 
 	g id = _n
-	reshape long IngMxito_, i(id) j(anio) string
-	rename IngMxito_ IngMixto
+	reshape long IngMixto_, i(id) j(anio) string
+	rename IngMixto_ IngMixto
 
 	replace IngMixto = IngMixto*1000000
 	destring anio, replace
