@@ -10,7 +10,7 @@ capture log close _all
 set scheme ciep
 timer on 1
 
-** 0.1 Directorios de trabajo (uno por computadora)
+/** 0.1 Directorios de trabajo (uno por computadora)
 if "`c(username)'" == "ricardo" {						// Mac
 	sysdir set SITE "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
 	global basesCIEP "/Users/ricardo/CIEP Dropbox/BasesCIEP/"
@@ -24,9 +24,9 @@ else if "`c(username)'" == "servidorciep" {					// Servidor CIEP
 else if "`c(console)'" != "" {							// Servidor Web
 	sysdir set SITE "/SIM/OUT/7/"
 }
-cd "`c(sysdir_site)'"
 
-** 0.2 Parámetros
+
+** 0.2 Parámetros **/
 global id = "ciepmx"								// ID USUARIO
 scalar aniovp = 2026								// ANIO VALOR PRESENTE
 scalar anioPE = 2026								// ANIO PAQUETE ECONÓMICO
@@ -40,6 +40,7 @@ global textbook "textbook"							// SCALAR TO LATEX
 ** 0.4 Output (web)
 //global output "output"							// ARCHIVO DE SALIDA (WEB)
 
+cd "`c(sysdir_site)'"
 capture mkdir "`c(sysdir_site)'/users/$id"
 if "$output" != "" {
 	quietly log using `"`c(sysdir_site)'/users/$id/Expenditures.smcl"', replace name(SIM)
@@ -51,14 +52,14 @@ if "$output" != "" {
 
 ***
 **# 1. DEMOGRAFÍA
-***
+/***
 noisily Poblacion, anioi(`=aniovp') aniofinal(2050) $textbook $nographs $update
 
 
 
 **/
 **# 2. ECONOMÍA
-***
+/***
 global paqueteEconomico "CGPE 2026"						// POLÍTICA FISCAL
 
 ** 2.1 Producto Interno Bruto (inputs opcionales)
@@ -103,11 +104,11 @@ noisily SCN, anio(`=aniovp') $textbook $nographs $update
 ** 3.1 Encuesta Nacional de Ingresos y Gastos de los Hogares (Usos)
 noisily di _newline in g "Actualizando: " in y "expenditures.dta"
 noisily run "`c(sysdir_site)'/Expenditure.do" `=anioPE'
-ex
+
 ** 3.2 Encuesta Nacional de Ingresos y Gastos de los Hogares (Recursos)
 noisily di _newline in g "Actualizando: " in y "households.dta"
 noisily run `"`c(sysdir_site)'/Households.do"' `=anioPE'
-
+ex
 ** 3.3 Perfiles de la política económica actual (Paquete Económico)
 noisily di _newline in g "Actualizando: " in y "perfiles`anio'.dta"
 noisily run "`c(sysdir_site)'/PerfilesSim.do" `=anioPE'
