@@ -35,7 +35,7 @@ scalar anioenigh = 2024								// ANIO ENIGH
 ** 0.3 Opciones (descomentar para activar)
 //global nographs "nographs"							// SUPRIMIR GRAFICAS
 //global update "update"							// UPDATE BASES DE DATOS
-global textbook "textbook"							// SCALAR TO LATEX
+//global textbook "textbook"							// SCALAR TO LATEX
 
 ** 0.4 Output (web)
 //global output "output"							// ARCHIVO DE SALIDA (WEB)
