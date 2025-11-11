@@ -7,19 +7,13 @@
 clear all
 macro drop _all
 capture log close _all
-set scheme ciep
 timer on 1
 
-/** 0.1 Directorios de trabajo (uno por computadora)
+** 0.1 Directorios de trabajo (uno por computadora)
 if "`c(username)'" == "ricardo" {						// Mac
 	sysdir set SITE "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
 	global basesCIEP "/Users/ricardo/CIEP Dropbox/BasesCIEP/"
 	global export "/Users/ricardo/CIEP Dropbox/TextbookCIEP/images"
-}
-else if "`c(username)'" == "servidorciep" {					// Servidor CIEP
-	sysdir set SITE "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
-	global basesCIEP "/home/servidorciep/CIEP Dropbox/BasesCIEP/"
-	*global export "/home/servidorciep/CIEP Dropbox/TextbookCIEP/images"
 }
 else if "`c(console)'" != "" {							// Servidor Web
 	sysdir set SITE "/SIM/OUT/7/"
@@ -35,7 +29,7 @@ scalar anioenigh = 2024								// ANIO ENIGH
 ** 0.3 Opciones (descomentar para activar)
 //global nographs "nographs"							// SUPRIMIR GRAFICAS
 //global update "update"							// UPDATE BASES DE DATOS
-//global textbook "textbook"							// SCALAR TO LATEX
+global textbook "textbook"							// SCALAR TO LATEX
 
 ** 0.4 Output (web)
 //global output "output"							// ARCHIVO DE SALIDA (WEB)
@@ -47,6 +41,7 @@ if "$output" != "" {
 	quietly log using `"`c(sysdir_site)'/users/$id/output.txt"', replace text name(output)
 	quietly log off output
 }
+set scheme ciep
 
 
 
@@ -99,7 +94,7 @@ noisily SCN, anio(`=aniovp') $textbook $nographs $update
 
 **/
 **# 3. HOGARES: ARMONIZACIÓN MACRO-MICRO
-***
+**
 
 ** 3.1 Encuesta Nacional de Ingresos y Gastos de los Hogares (Usos)
 noisily di _newline in g "Actualizando: " in y "expenditures.dta"
@@ -112,7 +107,7 @@ noisily run `"`c(sysdir_site)'/Households.do"' `=anioPE'
 ** 3.3 Perfiles de la política económica actual (Paquete Económico)
 noisily di _newline in g "Actualizando: " in y "perfiles`anio'.dta"
 noisily run "`c(sysdir_site)'/PerfilesSim.do" `=anioPE'
-ex
+
 
 
 **/
@@ -290,7 +285,7 @@ noisily PEF, anio(`=anioPE') by(divSIM)	$update 				///
 do "`c(sysdir_site)'/Graphs_PC.do"
 
 
-** 5.1 Parámetros: Gasto **/
+** 5.1 Parámetros: Gasto **
 if "$update" == "" {
 	scalar iniciaA     =   0.000    					// Inicial
 	scalar basica      =   1.941    					// Educación b{c a'}sica
@@ -441,23 +436,29 @@ capture drop AportacionesNetas
 g AportacionesNetas = ImpuestosAportaciones - Transferencias
 label var AportacionesNetas "Ciclo de vida de las aportaciones netas"
 
-foreach k of varlist AlTrabajo AlCapital AlConsumo ImpuestosAportaciones ///
+foreach k of varlist AlTrabajo AlCapital AlConsumo ///
 	ISRPM_Sim ISRAS_Sim ISRPF_Sim CUOTAS_Sim IVA_Sim IEPSNP_Sim IEPSP_Sim ISAN_Sim IMPORT_Sim ///
-	Pensiones Pensión_AM IngBasico Educación Salud Transferencias AportacionesNetas {
-	*noisily Perfiles `k' [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
-	noisily Simulador `k' [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot //boot(10)
+	Pensiones Pensión_AM IngBasico Educación Salud ///
+	ImpuestosAportaciones Transferencias AportacionesNetas {
+	noisily Perfiles `k' if `k' != 0 [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
+	noisily Simulador `k' if `k' != 0 [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot //boot(10)
 }
 save `"`c(sysdir_site)'/users/$id/aportaciones.dta"', replace
+
+if "$textbook" == "textbook" {
+	noisily scalarlatex, log(perfiles) alt(perf)
+}
 
 
 
 **/
 *** 8. (*) Cuentas generacionales
 ***
-noisily CuentasGeneracionales AportacionesNetas, anio(`=anioPE') discount(7)
+*noisily CuentasGeneracionales AportacionesNetas, anio(`=anioPE') discount(7)
 
 ** 8.1 Brecha fiscal
-noisily FiscalGap, anio(`=anioPE') end(2030) aniomin(2015) $nographs desde(2024) discount(10)
+set scheme ciep
+noisily FiscalGap, anio(`=anioPE') end(`=anioPE+5') aniomin(2015) $nographs desde(2015) discount(10)
 
 ** 8.2 Sankey del sistema fiscal
 foreach k in decil grupoedad sexo rural escol {

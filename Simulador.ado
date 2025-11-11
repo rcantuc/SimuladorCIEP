@@ -718,22 +718,52 @@ program graphpiramide
 
 	* By age *
 	tempname AGEH AGEM
-	tabstat `POR' if edad < 18 & sexo == 1, by(`over') stat(sum) save
-	matrix `AGEH' = [r(Stat1),r(Stat2),r(Stat3)]
-	tabstat `POR' if edad < 18 & sexo == 2, by(`over') stat(sum) save
-	matrix `AGEM' = [r(Stat1),r(Stat2),r(Stat3)]
+	capture tabstat `POR' if edad < 18 & sexo == 1, by(`over') stat(sum) save
+	if _rc == 0 {
+		matrix `AGEH' = [r(Stat1),r(Stat2),r(Stat3)]
+	}
+	else {
+		matrix `AGEH' = [0,0,0]
+	}
+	capture tabstat `POR' if edad < 18 & sexo == 2, by(`over') stat(sum) save
+	if _rc == 0 {
+		matrix `AGEM' = [r(Stat1),r(Stat2),r(Stat3)]
+	}
+	else {
+		matrix `AGEM' = [0,0,0]
+	}
 
 	tempname AGEH1 AGEM1
-	tabstat `POR' if edad >= 18 & edad < 65 & sexo == 1, by(`over') stat(sum) save
-	matrix `AGEH1' = [r(Stat1),r(Stat2),r(Stat3)]
-	tabstat `POR' if edad >= 18 & edad < 65 & sexo == 2, by(`over') stat(sum) save
-	matrix `AGEM1' = [r(Stat1),r(Stat2),r(Stat3)]
+	capture tabstat `POR' if edad >= 18 & edad < 65 & sexo == 1, by(`over') stat(sum) save
+	if _rc == 0 {
+		matrix `AGEH1' = [r(Stat1),r(Stat2),r(Stat3)]
+	}
+	else {
+		matrix `AGEH1' = [0,0,0]
+	}
+	capture tabstat `POR' if edad >= 18 & edad < 65 & sexo == 2, by(`over') stat(sum) save
+	if _rc == 0 {
+		matrix `AGEM1' = [r(Stat1),r(Stat2),r(Stat3)]
+	}
+	else {
+		matrix `AGEM1' = [0,0,0]
+	}
 
 	tempname AGEH2 AGEM2
-	tabstat `POR' if edad >= 65 & sexo == 1, by(`over') stat(sum) save
-	matrix `AGEH2' = [r(Stat1),r(Stat2),r(Stat3)]
-	tabstat `POR' if edad >= 65 & sexo == 2, by(`over') stat(sum) save
-	matrix `AGEM2' = [r(Stat1),r(Stat2),r(Stat3)]
+	capture tabstat `POR' if edad >= 65 & sexo == 1, by(`over') stat(sum) save
+	if _rc == 0 {
+		matrix `AGEH2' = [r(Stat1),r(Stat2),r(Stat3)]
+	}
+	else {
+		matrix `AGEH2' = [0,0,0]
+	}
+	capture tabstat `POR' if edad >= 65 & sexo == 2, by(`over') stat(sum) save
+	if _rc == 0 {
+		matrix `AGEM2' = [r(Stat1),r(Stat2),r(Stat3)]
+	}
+	else {
+		matrix `AGEM2' = [0,0,0]
+	}
 
 
 	*******************
@@ -821,7 +851,8 @@ program graphpiramide
 			///caption("{bf:Source}: Prepared by CIEP, using data from `base'.") ///
 			///note(`"{bf:Note}: Percentages in parentheses represent each group's share of the total account."')
 	
-		graph export `"`c(sysdir_site)'/users/$id/graphs/`varlist'_`titleover'.png"', ///
+		//graph export `"`c(sysdir_site)'/users/$id/graphs/`varlist'_`titleover'.png"', ///
+		graph export `"$export/`varlist'_`titleover'.png"', ///
 				replace name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)')
 		capture window manage close graph H`varlist'
 		capture window manage close graph M`varlist'

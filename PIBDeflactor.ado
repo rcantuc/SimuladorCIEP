@@ -40,7 +40,7 @@ quietly {
 
 	** 1.1 Si la opción "update" es llamada, se ejecuta el do-file UpdatePIBDeflactor.do **
 	if "`update'" == "update" {
-		UpdatePIBDeflactor `nographs'
+		noisily UpdatePIBDeflactor `nographs'
 	}
 
 
@@ -149,7 +149,8 @@ quietly {
 			local ++exo_def
 		}
 		else {
-			replace var_indiceY = L.var_indiceG if anio == `k' & var_indiceY == . & trimestre != 4 
+			replace var_indiceY = L.var_indiceG if anio == `k' & var_indiceY == . & trimestre != 4
+			replace var_indiceY = L.var_indiceY if anio == `k' & var_indiceG == . & trimestre != 4
 		}
 		replace indiceY = L.indiceY*(1+var_indiceY/100) if anio == `k' & trimestre != 4
 		replace var_indiceG = ((indiceY/L`=`difdef''.indiceY)^(1/(`difdef'))-1)*100 if anio == `k' & anio > `aniofinal'
@@ -167,7 +168,8 @@ quietly {
 			local ++exo_count
 		}
 		else {
-			replace var_inflY = L.var_inflG if anio == `k' & var_inflY == . & trimestre != 4 
+			replace var_inflY = L.var_inflG if anio == `k' & var_inflY == . & trimestre != 4
+			replace var_inflY = L.var_inflY if anio == `k' & var_inflG == . & trimestre != 4
 		}
 		replace inpc = L.inpc*(1+var_inflY/100) if anio == `k' & trimestre != 4
 		replace var_inflG = ((inpc/L`=`difdef''.inpc)^(1/`difdef')-1)*100 if anio == `k' & anio > `aniofinal'
@@ -233,6 +235,10 @@ quietly {
 
 			replace pibY = L.pibY*(1+var_pibY/100)*(1+var_indiceY/100) if anio == `k' & trimestre != 4
 			replace pibYR = L.pibYR*(1+var_pibY/100) if anio == `k' & trimestre != 4
+		}
+		else {
+			replace var_pibY = L.var_pibG if anio == `k' & var_pibY == . & trimestre != 4
+			replace var_pibY = L.var_pibY if anio == `k' & var_pibG == . & trimestre != 4
 		}
 	}
 

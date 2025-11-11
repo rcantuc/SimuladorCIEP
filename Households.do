@@ -2070,10 +2070,7 @@ local gini_ing_Sector_Publico = r(gini_ing_Sector_Publico)
 *******************
 **# 9. Altimirs ***
 *******************
-* Separar empresas públicas ANTES de Altimir
-g double ing_capital_sinEP_temp = ing_capital - ing_Sector_Publico
-
-tabstat ing_subor ing_mixto ing_capital_sinEP_temp ing_estim_alqu ing_remesas [aw=factor], stat(sum) f(%20.0fc) save by(formal)
+tabstat ing_subor ing_mixto ing_capital ing_estim_alqu ing_remesas [aw=factor], stat(sum) f(%20.0fc) save by(formal)
 tempname ALTIMIR0
 matrix `ALTIMIR0' = r(StatTotal)
 
@@ -2105,12 +2102,9 @@ if "`altimir'" == "yes" {
 	foreach k of varlist ing_mixto* *_t4_cap2pf *_t4_cap3pf *_t4_cap5 *_t4_cap6 *_t4_cap7 *_t4_cap8 *_t4_cap9 {
 		replace `k' = `k'*TaltimirSelf
 	}
-	* Escalar sociedades SIN empresas públicas
-	foreach k of varlist ing_capital_sinEP_temp ing_t2_cap1 ing_t2_cap8 ing_t4_cap2PM ing_t4_cap3PM {
+	foreach k of varlist ing_capital ing_t2_cap1 ing_t2_cap8 ing_t4_cap2PM ing_t4_cap3PM {
 		replace `k' = `k'*TaltimirCap
 	}
-	* Actualizar ing_capital = sociedades + empresas públicas
-	replace ing_capital = ing_capital_sinEP_temp + ing_Sector_Publico
 }
 
 
@@ -2444,8 +2438,7 @@ if "`altimir'" != "yes" {
 	replace ing_mixtoK = ing_mixtoK + ImpNetProduccionK_mixK + ImpNetProductos_mixK
 	replace ing_mixto = ing_mixtoL + ing_mixtoK
 	
-	replace ing_capital_sinEP_temp = ing_capital_sinEP_temp + ImpNetProduccionK_soc + ImpNetProductos_soc
-	replace ing_capital = ing_capital_sinEP_temp + ing_Sector_Publico
+	*replace ing_capital = ing_capital_sinEP_temp + ing_Sector_Publico
 	
 	replace ing_estim_alqu = ing_estim_alqu + ImpNetProduccionK_hog + ImpNetProductos_hog
 }
@@ -2455,11 +2448,6 @@ local gini_ing_subor = r(gini_ing_subor)
 
 Gini ing_mixto, hogar(folioviv foliohog) factor(factor)
 local gini_ing_mixto = r(gini_ing_mixto)
-
-* Usar la variable ya separada (con o sin Altimir, con o sin impuestos)
-g double ing_capital_sinEP = ing_capital_sinEP_temp
-Gini ing_capital_sinEP, hogar(folioviv foliohog) factor(factor)
-local gini_ing_capital = r(gini_ing_capital_sinEP)
 
 Gini ing_estim_alqu, hogar(folioviv foliohog) factor(factor)
 local gini_ing_estim_alqu = r(gini_ing_estim_alqu)
@@ -2472,7 +2460,7 @@ Gini ingbrutotot, hogar(folioviv foliohog) factor(factor)
 local gini_ingbrutotot = r(gini_ingbrutotot)
 
 * Results *
-tabstat ing_subor ing_mixto ing_capital_sinEP ing_estim_alqu gasto_anualDepreciacion ing_Sector_Publico [aw=factor], stat(sum) f(%20.0fc) save by(formal)	
+tabstat ing_subor ing_mixto ing_capital ing_estim_alqu gasto_anualDepreciacion ing_Sector_Publico [aw=factor], stat(sum) f(%20.0fc) save by(formal)	
 tempname ALTIMIR
 matrix `ALTIMIR' = r(StatTotal)
 
@@ -2662,7 +2650,8 @@ label var Yl "Ingreso laboral"
 *noisily Perfiles Yl [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ingreso laboral")
 noisily Simulador Yl [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ingreso laboral") reboot
 
-egen double Yk = rsum(ing_capital ing_mixtoK ing_estim_alqu gasto_anualDepreciacion)
+g gasto_anualDepPositivo = -gasto_anualDepreciacion
+egen double Yk = rsum(ing_capital ing_mixtoK ing_estim_alqu gasto_anualDepPositivo)
 label var Yk "Ingreso de capital"
 *noisily Perfiles Yk [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ingreso de capital")
 noisily Simulador Yk [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ingreso de capital") reboot
@@ -2691,7 +2680,24 @@ label var cuotasTPF "Cuotas a la Seguridad Social"
 *noisily Perfiles cuotasTPF [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Cuotas a la Seguridad Social")
 *noisily Simulador cuotasTPF [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Cuotas a la Seguridad Social") reboot
 
-g PIB = Yl + Yk
+
+if "$nographs" == "" {
+	graph combine Yl_dec Yk_dec, ///
+		name(Recursos, replace) ycommon xcommon ///
+		title("{bf:Entradas (recursos)}") subtitle("$pais") ///
+		caption("{bf:Fuente}: Elaborado por el CIEP, con la ENIGH `=anioenigh'.") ///
+		note(`"{bf:Nota}: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n en cada grupo."')
+
+	graph export `"`c(sysdir_site)'/users/$id/graphs/Recursos.png"', replace name(Recursos)
+
+	graph combine gastoanual_dec Ahorro_dec, ///
+		name(Usos, replace) ycommon xcommon ///
+		title("{bf:Salidas (usos)}") subtitle("$pais") ///
+		caption("{bf:Fuente}: Elaborado por el CIEP, con la ENIGH `=anioenigh'.") ///
+		note(`"{bf:Nota}: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n en cada grupo."')
+
+	graph export `"`c(sysdir_site)'/users/$id/graphs/Usos.png"', replace name(Usos)
+}
 
 
 **********/
