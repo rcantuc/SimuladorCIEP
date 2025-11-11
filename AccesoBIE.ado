@@ -81,8 +81,8 @@ from sfi import Macro
 
 def inegi_python(series):
 	""" Open the .iqy file and read the URL and parameters. """
-	url = 'http://www.inegi.org.mx/app/indicadores/exportacion.aspx'
-	params = 'cveser=&ag=00&bie=true&aamin=1980&aamax=9999&ordena=a&ordenaPeriodo=ap&orientacion=v&frecuencia=Todo&estadistico=false&esquema=&bdesplaza=False&FileFormat=iqy&subapp=Banco%20de%20Informaci%C3%B3n%20Econ%C3%B3mica%20(BIE)&tematica=0'
+	url = 'https://www.inegi.org.mx/app/indicadores/exportacion.aspx'
+	params = 'cveser=&ag=00&bie=true&aamin=1980&aamax=9999&ordena=a&ordenaPeriodo=ap&orientacion=v&frecuencia=Todo&estadistico=false&esquema=&bdesplaza=False&FileFormat=iqy&subapp=Banco%20de%20Informaci%C3%B3n%20Econ%C3%B3mica%20(BIE)&tematica=0&tyExp=1&cn=1'
 
 	""" Get the series from Stata. """
 	series = Macro.getLocal('series')
@@ -103,6 +103,9 @@ def inegi_python(series):
 
 	    """ Combine the URL and updated parameters into a complete URL. """
 	    complete_url = url + '?' + '&'.join(f'{k}={v}' for k, v in params_dict.items())
+
+	    """ Print the complete URL. """
+	    print(complete_url)
 
 	    """  Make a request to the URL. """
 	    response = requests.get(complete_url)

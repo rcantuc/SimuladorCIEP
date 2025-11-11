@@ -33,6 +33,7 @@ quietly {
 		MINimum(real 1) DESDE(int -1) ///
 	 	PEF PPEF APROBado  ///
 		ROWS(int 1) COLS(int 5) ///
+		HIGHlight(int 0) ///
 		TITle(string)]
 
 	noisily di _newline(2) in g _dup(20) "." "{bf:  Sistema Fiscal: GASTOS " in y `anio' "  }" in g _dup(20) "."
@@ -450,8 +451,8 @@ quietly {
 	*******************
 	*** 5. Gráficos ***
 	*******************
+	preserve
 	if "`nographs'" != "nographs" & "$nographs" == "" {
-		*preserve
 
 		* Normalizar valores a billones *
 		*replace gasto=gasto/deflator/1000000000000
@@ -554,9 +555,31 @@ quietly {
 			local cambio = "disminuyó"
 		}
 
+		* Define color intensity based on highlight option *
+		local int1 = cond(`highlight' == 0 | `highlight' == 1, "100", "30")
+		local int2 = cond(`highlight' == 0 | `highlight' == 2, "100", "30")
+		local int3 = cond(`highlight' == 0 | `highlight' == 3, "100", "30")
+		local int4 = cond(`highlight' == 0 | `highlight' == 4, "100", "30")
+		local int5 = cond(`highlight' == 0 | `highlight' == 5, "100", "30")
+		local int6 = cond(`highlight' == 0 | `highlight' == 6, "100", "30")
+		local int7 = cond(`highlight' == 0 | `highlight' == 7, "100", "30")
+		local int8 = cond(`highlight' == 0 | `highlight' == 8, "100", "30")
+		local int9 = cond(`highlight' == 0 | `highlight' == 9, "100", "30")
+		local int10 = cond(`highlight' == 0 | `highlight' == 10, "100", "30")
+		
 		graph bar gastoPIB if anio <= `anio', ///
-			over(resumido, sort(1) descending) over(anio, gap(10)) ///
+			over(resumido, sort(1)) over(anio, gap(10)) ///
 			stack asyvars outergap(0) ///
+			bar(1, color("255 189 0%`int1'")) ///
+			bar(2, color("209 212 32%`int2'")) ///
+			bar(3, color("57 197 183%`int3'")) ///
+			bar(4, color("255 55 0%`int4'")) ///
+			bar(5, color("0 150 200%`int5'")) ///
+			bar(6, color("226 228 99%`int6'")) ///
+			bar(7, color("224 97 95%`int7'")) ///
+			bar(8, color("255 128 0%`int8'")) ///
+			bar(9, color("103 222 86%`int9'")) ///
+			bar(10, color("150 6 92%`int10'")) ///
 			name(gastos`by'PIB, replace) ///
 			title("`graphtitle'") ///
 			ylabel(, format(%7.1fc) labsize(small)) ///
@@ -583,8 +606,8 @@ quietly {
 		if "$export" != "" {
 			graph export "$export/gastos`by'PIB.png", as(png) name("gastos`by'PIB") replace
 		}
-		*restore
 	}
+	restore
 
 
 
