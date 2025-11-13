@@ -1,10 +1,17 @@
 #include ciep
+linepattern p1 solid
+linepattern p2 solid
+linewidth p1 vthin
+linewidth p2 vthin
 color background white
 color plotregion none
 linestyle plotregion none
-color grid dimgray
-color major_grid dimgray
-color minor_grid dimgray
+color grid gs5
+linepattern grid dot
+color major_grid gs5
+linepattern major_grid dot
+color minor_grid gs5
+linepattern minor_grid dot
 linewidth grid thin
 linewidth major_grid thin
 linewidth minor_grid thin
@@ -12,11 +19,20 @@ color heading black
 color textbox none
 color bylabel_outline none
 color mat_label_box none
-linepattern p1 solid
-linepattern p2 longdash
-linewidth p1 medthick
-linewidth p2 medthick
-color p1 black
-color p2 blue
-symbol p1 none
-symbol p2 none
+anglestyle vertical_tick horizontal
+gsize text medsmall
+gsize heading medlarge
+gsize subheading medium
+gsize axis_title medsmall
+gsize key_label small
+gsize tick_label small
+gsize tick_biglabel medsmall
+gsize text_option small
+symbolsize p medsmall
+gsize legend_key_ysize small
+margin graph medsmall
+gsize matrix_label medium
+symbolsize matrix medsmall
+color p1 "56 108 176"
+color p2 "56 108 176"
+symbol p smcircle
