@@ -55,12 +55,14 @@ quietly {
 	scalar SSEmpleadoresPIB = real(SSEmpleadoresPIB)
 	scalar ImpNetProduccionLPIB = real(ImpNetProduccionLPIB)
 
+	scalar RemSalSSPIB = RemSalPIB+SSImputadaPIB+SSEmpleadoresPIB+ImpNetProduccionLPIB
+
 	noisily di in g "  Rem. de asalariados" ///
-		_col(30) %7.3fc in y RemSalPIB+SSImputadaPIB+SSEmpleadoresPIB+ImpNetProduccionLPIB ///
+		_col(30) %7.3fc in y RemSalSSPIB ///
 		_col(40) in g "ISR (salarios)" ///
-		_col(55) %7.3fc in y (ISRASPIB) ///
-		_col(63) %7.3fc in y (ISRASPIB)/(RemSalPIB+SSImputadaPIB+SSEmpleadoresPIB+ImpNetProduccionLPIB)*100 " %"
-	scalar ISRASPor = (ISRASPIB)/(RemSalPIB+SSImputadaPIB+SSEmpleadoresPIB+ImpNetProduccionLPIB)*100
+		_col(55) %7s in y (ISRASPIB) ///
+		_col(63) %7.3fc in y real(ISRASPIB)/RemSalSSPIB*100 " %"
+	scalar ISRASTE = string(real(ISRASPIB)/RemSalSSPIB*100, "%07.1fc")
 
 	** 3.2 ISR (personas físicas) **
 	*capture confirm scalar ISRPF
@@ -75,9 +77,9 @@ quietly {
 	noisily di in g "  Ingreso mixto laboral" ///
 		_col(30) %7.3fc in y MixLPIB ///
 		_col(40) in g "ISR (f{c i'}sicas)" ///
-		_col(55) %7.3fc in y (ISRPFPIB) ///
-		_col(63) %7.3fc in y (ISRPFPIB)/MixLPIB*100 " %"
-	scalar ISRPFPor = (ISRPFPIB)/MixLPIB*100
+		_col(55) %7s in y (ISRPFPIB) ///
+		_col(63) %7.3fc in y real(ISRPFPIB)/MixLPIB*100 " %"
+	scalar ISRPFTE = string(real(ISRPFPIB)/MixLPIB*100, "%07.1fc")
 
 	** 3.3 Cuotas (IMSS) **
 	*capture confirm scalar CUOTAS
@@ -88,11 +90,11 @@ quietly {
 	*	scalar CUOTAS = CUOTASPIB
 	*}
 	noisily di in g "  Rem. de asalariados" ///
-		_col(30) %7.3fc in y (RemSalPIB+SSImputadaPIB+SSEmpleadoresPIB+ImpNetProduccionLPIB) ///
+		_col(30) %7.3fc in y RemSalSSPIB ///
 		_col(40) in g "Cuotas IMSS" ///
-		_col(55) %7.3fc in y (CUOTASPIB) ///
-		_col(63) %7.3fc in y (CUOTASPIB)/(RemSalPIB+SSImputadaPIB+SSEmpleadoresPIB+ImpNetProduccionLPIB)*100 " %"
-	scalar CUOTASPor = (CUOTASPIB)/(RemSalPIB+SSImputadaPIB+SSEmpleadoresPIB+ImpNetProduccionLPIB)*100
+		_col(55) %7s in y (CUOTASPIB) ///
+		_col(63) %7.3fc in y real(CUOTASPIB)/RemSalSSPIB*100 " %"
+	scalar CUOTASTE = string(real(CUOTASPIB)/RemSalSSPIB*100, "%07.1fc")
 
 	** 3.4 TOTAL LABORALES **
 	scalar YlPIB = real(YlPIB)
@@ -100,10 +102,10 @@ quietly {
 	noisily di in g "{bf:  Ingresos laborales" ///
 		_col(30) %7.3fc in y (YlPIB) ///
 		_col(40) in g "Recaudaci{c o'}n" ///
-		_col(55) %7.3fc in y (ISRASPIB+ISRPFPIB+CUOTASPIB) ///
-		_col(63) %7.3fc in y (ISRASPIB+ISRPFPIB+CUOTASPIB)/(YlPIB)*100 " %" "}"
-	scalar YlImpPIB = (ISRASPIB+ISRPFPIB+CUOTASPIB)
-	scalar YlImpPor = (ISRASPIB+ISRPFPIB+CUOTASPIB)/(YlPIB)*100
+		_col(55) %7.3fc in y (real(ISRASPIB)+real(ISRPFPIB)+real(CUOTASPIB)) ///
+		_col(63) %7.3fc in y (real(ISRASPIB)+real(ISRPFPIB)+real(CUOTASPIB))/(YlPIB)*100 " %" "}"
+	scalar YlImpPIB = (real(ISRASPIB)+real(ISRPFPIB)+real(CUOTASPIB))
+	scalar YlImpTE = string((real(ISRASPIB)+real(ISRPFPIB)+real(CUOTASPIB))/(YlPIB)*100, "%07.1fc")
 
 
 
@@ -111,8 +113,8 @@ quietly {
 	**# 4 Impuestos al capital ***
 	******************************
 	scalar CapIncImpPIB = real(CapIncImpPIB)
-	scalar IngKPublicosPIB = PEMEXPIB+CFEPIB+IMSSPIB+ISSSTEPIB
-	scalar IngKPublicosPor = (PEMEXPIB+CFEPIB+IMSSPIB+ISSSTEPIB)/(CapIncImpPIB)*100
+	scalar IngKPublicosPIB = real(PEMEXPIB)+real(CFEPIB)+real(IMSSPIB)+real(ISSSTEPIB)
+	scalar IngKPublicosTE = (real(PEMEXPIB)+real(CFEPIB)+real(IMSSPIB)+real(ISSSTEPIB))/(CapIncImpPIB)*100
 
 	noisily di _newline(2) in y "{bf: B. " in y "Impuestos al capital" "}"
 	noisily di _newline in g "{bf:  Cuentas Nacionales" ///
@@ -133,8 +135,8 @@ quietly {
 	noisily di in g "  Ing. de capital privado" ///
 		_col(30) %7.3fc in y (CapIncImpPIB-IngKPublicosPIB) ///
 		_col(40) in g "ISR (morales)" ///
-		_col(55) %7.3fc in y (ISRPMPIB) ///
-		_col(63) %7.3fc in y (ISRPMPIB)/(CapIncImpPIB-IngKPublicosPIB)*100 " %"
+		_col(55) %7s in y (ISRPMPIB) ///
+		_col(63) %7.3fc in y real(ISRPMPIB)/(CapIncImpPIB-IngKPublicosPIB)*100 " %"
 
 	** 4.2 Productos, derechos, aprovechamientos, contribuciones **
 	*capture confirm scalar OTROSK
@@ -149,11 +151,11 @@ quietly {
 	noisily di in g "  Ing. de capital privado" ///
 		_col(30) %7.3fc in y (CapIncImpPIB-IngKPublicosPIB) ///
 		_col(40) in g "Otros ingresos" ///
-		_col(55) %7.3fc in y (OTROSKPIB) ///
-		_col(63) %7.3fc in y (OTROSKPIB)/(CapIncImpPIB-IngKPublicosPIB)*100 " %"
+		_col(55) %7s in y (OTROSKPIB) ///
+		_col(63) %7.3fc in y real(OTROSKPIB)/(CapIncImpPIB-IngKPublicosPIB)*100 " %"
 	scalar IngKPrivadoPIB = CapIncImpPIB-IngKPublicosPIB
-	scalar ISRPMPor = (ISRPMPIB)/(CapIncImpPIB-IngKPublicosPIB)*100
-	scalar OTROSKPor = (OTROSKPIB)/(CapIncImpPIB-IngKPublicosPIB)*100
+	scalar ISRPMTE = string(real(ISRPMPIB)/(CapIncImpPIB-IngKPublicosPIB)*100, "%07.1fc")
+	scalar OTROSKTE = string(real(OTROSKPIB)/(CapIncImpPIB-IngKPublicosPIB)*100, "%07.1fc")
 
 	** 5.1 FMP (energía) **
 	*capture confirm scalar FMP
@@ -166,20 +168,20 @@ quietly {
 	noisily di in g "  Ing. de capital privado" ///
 		_col(30) %7.3fc in y (CapIncImpPIB-IngKPublicosPIB) ///
 		_col(40) in g "FMP" ///
-		_col(55) %7.3fc in y (FMPPIB) ///
-		_col(63) %7.3fc in y (FMPPIB)/(CapIncImpPIB-IngKPublicosPIB)*100 " %"
-	scalar FMPPor = (FMPPIB)/(CapIncImpPIB-IngKPublicosPIB)*100
+		_col(55) %7s in y (FMPPIB) ///
+		_col(63) %7.3fc in y real(FMPPIB)/(CapIncImpPIB-IngKPublicosPIB)*100 " %"
+	scalar FMPTE = string(real(FMPPIB)/(CapIncImpPIB-IngKPublicosPIB)*100, "%07.1fc")
 
 	** 4.3 TOTAL CAPITAL PRIVADO **
 	noisily di in g _dup(71) "-"
 	noisily di in g "{bf:  Ing. de capital privado" ///
 		_col(30) %7.3fc in y (CapIncImpPIB-IngKPublicosPIB) ///
 		_col(40) in g "Recaudaci{c o'}n" ///
-		_col(55) %7.3fc in y (ISRPMPIB+OTROSKPIB+FMPPIB) ///
-		_col(63) %7.3fc in y (ISRPMPIB+OTROSKPIB+FMPPIB)/(CapIncImpPIB-IngKPublicosPIB)*100 " %" "}"
+		_col(55) %7.3fc in y (real(ISRPMPIB)+real(OTROSKPIB)+real(FMPPIB)) ///
+		_col(63) %7.3fc in y (real(ISRPMPIB)+real(OTROSKPIB)+real(FMPPIB))/(CapIncImpPIB-IngKPublicosPIB)*100 " %" "}"
 	scalar IngKPrivadoTotPIB = CapIncImpPIB-IngKPublicosPIB
-	scalar IngKPrivadoTotPor = (ISRPMPIB+OTROSKPIB+FMPPIB)/(CapIncImpPIB-IngKPublicosPIB)*100
-	scalar ImpKPrivadoPIB = ISRPMPIB+OTROSKPIB+FMPPIB
+	scalar IngKPrivadoTotTE = string((real(ISRPMPIB)+real(OTROSKPIB)+real(FMPPIB))/(CapIncImpPIB-IngKPublicosPIB)*100, "%07.1fc")
+	scalar ImpKPrivadoPIB = real(ISRPMPIB)+real(OTROSKPIB)+real(FMPPIB)
 
 
 
@@ -205,9 +207,9 @@ quietly {
 	noisily di in g "  Ingresos de capital" ///
 		_col(30) %7.3fc in y (CapIncImpPIB) ///
 		_col(40) in g "Pemex" ///
-		_col(55) %7.3fc in y (PEMEXPIB) ///
-		_col(63) %7.3fc in y (PEMEXPIB)/(CapIncImpPIB)*100 " %"
-	scalar PEMEXPor = (PEMEXPIB)/(CapIncImpPIB)*100
+		_col(55) %7s in y (PEMEXPIB) ///
+		_col(63) %7.3fc in y real(PEMEXPIB)/(CapIncImpPIB)*100 " %"
+	scalar PEMEXTE = string(real(PEMEXPIB)/(CapIncImpPIB)*100, "%07.1fc")
 
 	** 5.3 CFE (energía) **
 	*capture confirm scalar CFE
@@ -220,9 +222,9 @@ quietly {
 	noisily di in g "  Ingresos de capital" ///
 		_col(30) %7.3fc in y (CapIncImpPIB) ///
 		_col(40) in g "CFE" ///
-		_col(55) %7.3fc in y (CFEPIB) ///
-		_col(63) %7.3fc in y (CFEPIB)/(CapIncImpPIB)*100 " %"
-	scalar CFEPor = (CFEPIB)/(CapIncImpPIB)*100
+		_col(55) %7s in y (CFEPIB) ///
+		_col(63) %7.3fc in y real(CFEPIB)/(CapIncImpPIB)*100 " %"
+	scalar CFETE = string(real(CFEPIB)/(CapIncImpPIB)*100, "%07.1fc")
 
 	** 5.4 IMSS **
 	*capture confirm scalar IMSS
@@ -235,9 +237,9 @@ quietly {
 	noisily di in g "  Ingresos de capital" ///
 		_col(30) %7.3fc in y (CapIncImpPIB) ///
 		_col(40) in g "IMSS" ///
-		_col(55) %7.3fc in y (IMSSPIB) ///
-		_col(63) %7.3fc in y (IMSSPIB)/(CapIncImpPIB)*100 " %"
-	scalar IMSSPor = (IMSSPIB)/(CapIncImpPIB)*100
+		_col(55) %7s in y (IMSSPIB) ///
+		_col(63) %7.3fc in y real(IMSSPIB)/(CapIncImpPIB)*100 " %"
+	scalar IMSSTE = string(real(IMSSPIB)/(CapIncImpPIB)*100, "%07.1fc")
 
 	** 5.4 ISSSTE **
 	*capture confirm scalar ISSSTE
@@ -250,20 +252,20 @@ quietly {
 	noisily di in g "  Ingresos de capital" ///
 		_col(30) %7.3fc in y (CapIncImpPIB) ///
 		_col(40) in g "ISSSTE" ///
-		_col(55) %7.3fc in y (ISSSTEPIB) ///
-		_col(63) %7.3fc in y (ISSSTEPIB)/(CapIncImpPIB)*100 " %"
-	scalar ISSSTEPor = (ISSSTEPIB)/(CapIncImpPIB)*100
+		_col(55) %7s in y (ISSSTEPIB) ///
+		_col(63) %7.3fc in y real(ISSSTEPIB)/(CapIncImpPIB)*100 " %"
+	scalar ISSSTETE = string(real(ISSSTEPIB)/(CapIncImpPIB)*100, "%07.1fc")
 
 	** 5.5 TOTAL INGRESOS DE CAPITAL PUBLICOS **
 	noisily di in g _dup(71) "-"
 	noisily di in g "{bf:  Ingresos de capital" ///
 		_col(30) %7.3fc in y (CapIncImpPIB) ///
 		_col(40) in g "Ing. propios" ///
-		_col(55) %7.3fc in y (FMPPIB+PEMEXPIB+CFEPIB+IMSSPIB+ISSSTEPIB) ///
-		_col(63) %7.3fc in y (FMPPIB+PEMEXPIB+CFEPIB+IMSSPIB+ISSSTEPIB)/(CapIncImpPIB)*100 " %" "}"
-	scalar IngKPublicosTotPIB = (FMPPIB+PEMEXPIB+CFEPIB+IMSSPIB+ISSSTEPIB)
-	scalar IngKPublicosTotPor = (FMPPIB+PEMEXPIB+CFEPIB+IMSSPIB+ISSSTEPIB)/(CapIncImpPIB)*100
-	scalar ImpKPublicosPIB = FMPPIB+PEMEXPIB+CFEPIB+IMSSPIB+ISSSTEPIB
+		_col(55) %7.3fc in y (real(FMPPIB)+real(PEMEXPIB)+real(CFEPIB)+real(IMSSPIB)+real(ISSSTEPIB)) ///
+		_col(63) %7.3fc in y (real(FMPPIB)+real(PEMEXPIB)+real(CFEPIB)+real(IMSSPIB)+real(ISSSTEPIB))/(CapIncImpPIB)*100 " %" "}"
+	scalar IngKPublicosTotPIB = (real(FMPPIB)+real(PEMEXPIB)+real(CFEPIB)+real(IMSSPIB)+real(ISSSTEPIB))
+	scalar IngKPublicosTotTE = string((real(FMPPIB)+real(PEMEXPIB)+real(CFEPIB)+real(IMSSPIB)+real(ISSSTEPIB))/(CapIncImpPIB)*100, "%07.1fc")
+	scalar ImpKPublicosPIB = real(FMPPIB)+real(PEMEXPIB)+real(CFEPIB)+real(IMSSPIB)+real(ISSSTEPIB)
 
 
 
@@ -290,9 +292,9 @@ quietly {
 	noisily di in g "  Consumo hogares e ISFLSH" ///
 		_col(30) %7.3fc in y (ConHogPIB) ///
 		_col(40) in g "IVA" ///
-		_col(55) %7.3fc in y IVAPIB ///
-		_col(63) %7.3fc in y IVAPIB/(ConHogPIB)*100 " %"
-	scalar IVAPor = IVAPIB/(ConHogPIB)*100
+		_col(55) %7s in y IVAPIB ///
+		_col(63) %7.3fc in y real(IVAPIB)/ConHogPIB*100 " %"
+	scalar IVATE = string(real(IVAPIB)/ConHogPIB*100, "%07.1fc")
 
 	** 6.2 ISAN **
 	*capture confirm scalar ISAN
@@ -306,9 +308,9 @@ quietly {
 	noisily di in g "  Compra de veh{c i'}culos" ///
 		_col(30) %7.3fc in y VehiPIB ///
 		_col(40) in g "ISAN" ///
-		_col(55) %7.3fc in y ISANPIB ///
-		_col(63) %7.3fc in y ISANPIB/VehiPIB*100 " %"
-	scalar ISANPor = ISANPIB/VehiPIB*100
+		_col(55) %7s in y ISANPIB ///
+		_col(63) %7.3fc in y real(ISANPIB)/VehiPIB*100 " %"
+	scalar ISANTE = string(real(ISANPIB)/VehiPIB*100, "%07.1fc")
 
 	** 6.3 IEPS (no petrolero) **
 	*capture confirm scalar IEPSNP
@@ -324,9 +326,9 @@ quietly {
 	noisily di in g "  Alcohol, tabaco y juegos" ///
 		_col(30) %7.3fc in y (BebAPIB+TabaPIB+Recre7132PIB) ///
 		_col(40) in g "IEPS (No petr.)" ///
-		_col(55) %7.3fc in y IEPSNPPIB ///
-		_col(63) %7.3fc in y IEPSNPPIB/(BebAPIB+TabaPIB+Recre7132PIB)*100 " %"
-	scalar IEPSNPPor = IEPSNPPIB/(BebAPIB+TabaPIB+Recre7132PIB)*100
+		_col(55) %7s in y IEPSNPPIB ///
+		_col(63) %7.3fc in y real(IEPSNPPIB)/(BebAPIB+TabaPIB+Recre7132PIB)*100 " %"
+	scalar IEPSNPTE = string(real(IEPSNPPIB)/(BebAPIB+TabaPIB+Recre7132PIB)*100, "%07.1fc")
 
 	** 6.4 IEPS (petrolero) **
 	*capture confirm scalar IEPSP
@@ -340,9 +342,9 @@ quietly {
 	noisily di in g "  Consumo privado minería" ///
 		_col(30) %7.3fc in y ConsPriv21PIB ///
 		_col(40) in g "IEPS (Petr.)" ///
-		_col(55) %7.3fc in y IEPSPPIB ///
-		_col(63) %7.3fc in y IEPSPPIB/ConsPriv21PIB*100 " %"
-	scalar IEPSPPor = IEPSPPIB/ConsPriv21PIB*100
+		_col(55) %7s in y IEPSPPIB ///
+		_col(63) %7.3fc in y real(IEPSPPIB)/ConsPriv21PIB*100 " %"
+	scalar IEPSPTE = string(real(IEPSPPIB)/ConsPriv21PIB*100, "%07.1fc")
 
 	** 6.5 Importaciones **
 	*capture confirm scalar IMPORT
@@ -355,19 +357,19 @@ quietly {
 	noisily di in g "  Consumo hogares e ISFLSH" ///
 		_col(30) %7.3fc in y ConHogPIB ///
 		_col(40) in g "Importaciones" ///
-		_col(55) %7.3fc in y IMPORTPIB ///
-		_col(63) %7.3fc in y IMPORTPIB/ConHogPIB*100 " %"
-	scalar IMPORTPor = IMPORTPIB/ConHogPIB*100
+		_col(55) %7s in y IMPORTPIB ///
+		_col(63) %7.3fc in y real(IMPORTPIB)/ConHogPIB*100 " %"
+	scalar IMPORTTE = string(real(IMPORTPIB)/ConHogPIB*100, "%07.1fc")
 
 	** 6.6 TOTAL CONSUMO **
 	noisily di in g _dup(71) "-"
 	noisily di in g "{bf:  Consumo hogares e ISFLSH" ///
 		_col(30) %7.3fc in y ConHogPIB ///
 		_col(40) in g "Recaudaci{c o'}n" ///
-		_col(55) %7.3fc in y (IEPSPPIB+IEPSNPPIB+IVAPIB+ISANPIB+IMPORTPIB) ///
-		_col(63) %7.3fc in y (IEPSPPIB+IEPSNPPIB+IVAPIB+ISANPIB+IMPORTPIB)/ConHogPIB*100 " %" "}"
-	scalar ingconsumoPIB = (IEPSPPIB+IEPSNPPIB+IVAPIB+ISANPIB+IMPORTPIB)
-	scalar ingconsumoPor = (IEPSPPIB+IEPSNPPIB+IVAPIB+ISANPIB+IMPORTPIB)/ConHogPIB*100
+		_col(55) %7.3fc in y (real(IEPSPPIB)+real(IEPSNPPIB)+real(IVAPIB)+real(ISANPIB)+real(IMPORTPIB)) ///
+		_col(63) %7.3fc in y (real(IEPSPPIB)+real(IEPSNPPIB)+real(IVAPIB)+real(ISANPIB)+real(IMPORTPIB))/ConHogPIB*100 " %" "}"
+	scalar ingconsumoPIB = (real(IEPSPPIB)+real(IEPSNPPIB)+real(IVAPIB)+real(ISANPIB)+real(IMPORTPIB))
+	scalar ingconsumoTE = string((real(IEPSPPIB)+real(IEPSNPPIB)+real(IVAPIB)+real(ISANPIB)+real(IMPORTPIB))/ConHogPIB*100, "%07.1fc")
 
 
 
@@ -392,7 +394,7 @@ quietly {
 			FMP PEMEX CFE IMSS ISSSTE ///
 			IVA IEPSNP IEPSP ISAN IMPORT {
 
-			Distribucion `k'_Sim, relativo(`k') macro(`=scalar(`k'PIB)/100*scalar(pibY)')
+			Distribucion `k'_Sim, relativo(`k') macro(`=real(`k'PIB)/100*scalar(pibY)')
 		}
 
 		* 7.2 Guardar *
@@ -400,6 +402,9 @@ quietly {
 		save `"`c(sysdir_site)'/users/$id/ingresos.dta"', replace
 	}
 
+	if "$textbook" == "textbook" {
+		noisily scalarlatex, log(tasasEfectivas) alt(tasas)
+	}
 
 
 	**********/

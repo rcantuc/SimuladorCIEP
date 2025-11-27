@@ -47,7 +47,7 @@ set scheme ciep
 
 ***
 **# 1. DEMOGRAFÍA
-***
+/***
 noisily Poblacion, anioi(`=aniovp') aniofinal(2050) $textbook $nographs $update
 
 
@@ -84,7 +84,7 @@ global inf2029 = 3.0
 global inf2030 = 3.0
 global inf2031 = 3.0
 
-** 2.4 PIB + Deflactores
+/** 2.4 PIB + Deflactores
 noisily PIBDeflactor if anio >= 2005, aniovp(`=aniovp') aniomax(2031) $textbook $nographs $update
 
 ** 2.5 Sistema de Cuentas Nacionales (sin inputs)
@@ -94,29 +94,37 @@ noisily SCN, anio(`=aniovp') $textbook $nographs $update
 
 **/
 **# 3. HOGARES: ARMONIZACIÓN MACRO-MICRO
-**
+***
 
-** 3.1 Encuesta Nacional de Ingresos y Gastos de los Hogares (Usos)
-noisily di _newline in g "Actualizando: " in y "expenditures.dta"
-noisily run "`c(sysdir_site)'/Expenditure.do" `=anioPE'
+if "$update" == "update" {
 
-** 3.2 Encuesta Nacional de Ingresos y Gastos de los Hogares (Recursos)
-noisily di _newline in g "Actualizando: " in y "households.dta"
-noisily run `"`c(sysdir_site)'/Households.do"' `=anioPE'
+	** 3.1 Encuesta Nacional de Ingresos y Gastos de los Hogares (Usos)
+	noisily di _newline in g "Actualizando: " in y "expenditures.dta"
+	noisily run "`c(sysdir_site)'/Expenditure.do" `=anioPE'
 
-** 3.3 Perfiles de la política económica actual (Paquete Económico)
-noisily di _newline in g "Actualizando: " in y "perfiles`anio'.dta"
-noisily run "`c(sysdir_site)'/PerfilesSim.do" `=anioPE'
+	** 3.2 Encuesta Nacional de Ingresos y Gastos de los Hogares (Recursos)
+	noisily di _newline in g "Actualizando: " in y "households.dta"
+	noisily run `"`c(sysdir_site)'/Households.do"' `=anioPE'
 
+	** 3.3 Perfiles de la política económica actual (Paquete Económico)
+	noisily di _newline in g "Actualizando: " in y "perfiles`anio'.dta"
+	noisily run "`c(sysdir_site)'/PerfilesSim.do" `=anioPE'
+}
 
 
 **/
 **# 4. SISTEMA FISCAL: INGRESOS
-***
+/***
 set scheme ciepingresos
+** 4.1 Ley de Ingresos de la Federación
+noisily LIF if divLIF != 8 & divLIF != 10, anio(`=anioPE') by(divLIF) $update 					///
+	title("Ingresos presupuestarios") 					/// Cambiar título de la gráfica
+	desde(2013) 								/// Año de inicio para el PROMEDIO
+	min(0)		 							/// Mínimo 0% del PIB (no negativos)
+	rows(2)									//  Número de filas en la leyenda
 
 ** 4.1 Ley de Ingresos de la Federación
-noisily LIF, anio(`=anioPE') by(divPE) $update 					///
+noisily LIF, anio(`=anioPE') by(divSIM) $update nographs				///
 	title("Ingresos presupuestarios") 					/// Cambiar título de la gráfica
 	desde(2013) 								/// Año de inicio para el PROMEDIO
 	min(0)		 							/// Mínimo 0% del PIB (no negativos)
@@ -127,11 +135,13 @@ collapse (sum) recaudacion, by(anio divSIM) fast
 save `"`c(sysdir_site)'/users/$id/LIF.dta"', replace	
 
 * Evolución de las tasas efectivas *
-do "`c(sysdir_site)'/Graphs_TE.do"
+if "$nographs" == "" & "$update" == "update" {
+	do "`c(sysdir_site)'/Graphs_TE.do"
+}
 
 
-** 4.2 Parámetros: Ingresos
-if "$update" == "" {
+** 4.2 Parámetros: Ingresos **
+if "$update" == "" & "$textbook" == "" {
 	scalar ISRASPIB  =   3.664 						// ISR (asalariados)
 	scalar ISRPFPIB  =   0.232 						// ISR (personas f{c i'}sicas)
 	scalar CUOTASPIB =   1.658  						// Cuotas (IMSS)
@@ -152,7 +162,7 @@ if "$update" == "" {
 	scalar IMPORTPIB =   0.658  						// Importaciones
 }
 
-** 4.3 Submódulo ISR (web)
+** 4.3 Submódulo ISR (web) **
 if "`cambioisrpf'" == "1" {
 	* Anexo 8 de la Resolución Miscelánea Fiscal para 2025 *
 	* Tarifa para el cálculo del impuesto correspondiente al ejericio 2025 
@@ -240,26 +250,27 @@ if "`cambioiva'" == "1" {
 		2  \     							/// 11  Transporte local, idem
 		3  \     							/// 12  Transporte foraneo, idem
 		15.09)   							//  13  Evasion e informalidad IVA, input[0-100]
-	* 4.2.4 Parámetros: IEPS
-	* Fuente: Ley del IEPS, Artículo 2.
-	*		Ad valorem	Específico
-	matrix IEPST = (26.5	,	0 		\			/// Cerveza y alcohol 14
-			30.0	,	0 		\			/// Alcohol 14+ a 20
-			53.0	,	0 		\			/// Alcohol 20+
-			160.0	,	0.6166		\			/// Tabaco y cigarros
-			30.0	,	0 		\			/// Juegos y sorteos
-			3.0	,	0 		\			/// Telecomunicaciones
-			25.0	,	0 		\			/// Bebidas energéticas
-			0	,	1.5737		\			/// Bebidas saborizadas
-			8.0	,	0 		\			/// Alto contenido calórico
-			0	,	10.7037		\			/// Gas licuado de petróleo (propano y butano)
-			0	,	21.1956		\			/// Combustibles (petróleo)
-			0	,	19.8607		\			/// Combustibles (diésel)
-			0	,	43.4269		\			/// Combustibles (carbón)
-			0	,	21.1956		\			/// Combustibles (combustible para calentar)
-			0	,	6.1752		\			/// Gasolina: magna
-			0	,	5.2146		\			/// Gasolina: premium
-			0	,	6.7865		)			// Gasolina: diésel
+	
+* 4.2.4 Parámetros: IEPS
+* Fuente: Ley del IEPS, Artículo 2.
+* Ad valorem	Específico
+matrix IEPST = (26.5	,	0 		\			/// Cerveza y alcohol 14
+		30.0	,	0 		\			/// Alcohol 14+ a 20
+		53.0	,	0 		\			/// Alcohol 20+
+		160.0	,	0.6166		\			/// Tabaco y cigarros
+		30.0	,	0 		\			/// Juegos y sorteos
+		3.0	,	0 		\			/// Telecomunicaciones
+		25.0	,	0 		\			/// Bebidas energéticas
+		0	,	1.5737		\			/// Bebidas saborizadas
+		8.0	,	0 		\			/// Alto contenido calórico
+		0	,	10.7037		\			/// Gas licuado de petróleo (propano y butano)
+		0	,	21.1956		\			/// Combustibles (petróleo)
+		0	,	19.8607		\			/// Combustibles (diésel)
+		0	,	43.4269		\			/// Combustibles (carbón)
+		0	,	21.1956		\			/// Combustibles (combustible para calentar)
+		0	,	6.1752		\			/// Gasolina: magna
+		0	,	5.2146		\			/// Gasolina: premium
+		0	,	6.7865		)			// Gasolina: diésel
 
 	noisily run "`c(sysdir_site)'/IVA_Mod.do"
 	scalar IVAPIB = IVA_Mod							// NUEVA ESTIMACIÓN IVA
@@ -273,61 +284,62 @@ noisily TasasEfectivas, anio(`=anioPE') enigh //eofp
 
 **/
 **# 5. SISTEMA FISCAL: EGRESOS
-***
+/***
 set scheme ciep	
-noisily PEF, anio(`=anioPE') by(divSIM)	$update 				///
+noisily PEF, anio(`=anioPE') by(divSIM)	//$update 				///
 	title("Gasto presupuestario") 						/// Cambiar título
 	desde(2013) 								/// Año de inicio PROMEDIO
 	min(0) 									/// Mínimo 0% del PIB (resumido)
 	rows(2)									/// Número de filas en la leyenda
 
-* Evolución de los gastos per cápita *	
-do "`c(sysdir_site)'/Graphs_PC.do"
-
+* Evolución de los gastos per cápita *
+if "$nographs" == "" & "$update" == "update" {
+	do "`c(sysdir_site)'/Graphs_PC.do"
+}
 
 ** 5.1 Parámetros: Gasto **
 if "$update" == "" {
 	scalar iniciaA     =   0.000    					// Inicial
-	scalar basica      =   1.941    					// Educación b{c a'}sica
-	scalar medsup      =   0.388    					// Educación media superior
-	scalar superi      =   0.414    					// Educación superior
-	scalar posgra      =   0.026    					// Posgrado
-	scalar eduadu      =   0.014    					// Educación para adultos
-	scalar otrose      =   0.144    					// Otros gastos educativos
-	scalar invere      =   0.078    					// Inversión en educación
-	scalar cultur      =   0.053    					// Cultura, deportes y recreación
-	scalar invest      =   0.140    					// Ciencia y tecnología
+	scalar basica      =   2.009    					// Educación b{c a'}sica
+	scalar medsup      =   0.402    					// Educación media superior
+	scalar superi      =   0.429    					// Educación superior
+	scalar posgra      =   0.027    					// Posgrado
+	scalar eduadu      =   0.015    					// Educación para adultos
+	scalar otrose      =   0.149    					// Otros gastos educativos
+	scalar invere      =   0.081    					// Inversión en educación
+	scalar cultur      =   0.055    					// Cultura, deportes y recreación
+	scalar invest      =   0.145    					// Ciencia y tecnología
 
-	scalar ssa         =   0.173    					// SSalud
-	scalar imssbien    =   0.660    					// IMSS-Bienestar
-	scalar imss        =   1.343    					// IMSS (salud)
-	scalar issste      =   0.189    					// ISSSTE (salud)
-	scalar pemex       =   0.047    					// Pemex (salud)
-	scalar issfam      =   0.026    					// ISSFAM (salud)
-	scalar invers      =   0.136    					// Inversión en salud
+	scalar ssa         =   0.179    					// SSalud
+	scalar imssbien    =   0.684    					// IMSS-Bienestar
+	scalar imss        =   1.391    					// IMSS (salud)
+	scalar issste      =   0.195    					// ISSSTE (salud)
+	scalar pemex       =   0.049    					// Pemex (salud)
+	scalar issfam      =   0.027    					// ISSFAM (salud)
+	scalar invers      =   0.141    					// Inversión en salud
 
-	scalar pam         =   1.454  						// Pensión Bienestar
-	scalar penimss     =   2.610 						// Pensión IMSS
-	scalar penisss     =   1.021 						// Pensión ISSSTE
-	scalar penpeme     =   0.238 						// Pensión Pemex
-	scalar penotro     =   0.532						// Pensión CFE, LFC, ISSFAM, Ferronales
+	scalar pam         =   1.505  						// Pensión Bienestar
+	scalar penimss     =   2.702 						// Pensión IMSS
+	scalar penisss     =   1.057 						// Pensión ISSSTE
+	scalar penpeme     =   0.247 						// Pensión Pemex
+	scalar penotro     =   0.551						// Pensión CFE, LFC, ISSFAM, Ferronales
 
-	scalar gascfe      =   1.094   						// Gasto en CFE
-	scalar gaspemex    =   0.406   						// Gasto en Pemex
-	scalar gassener    =   0.249   						// Gasto en SENER
-	scalar gasinverf   =   1.524   						// Gasto en inversión (energía)
-	scalar gascosdeue  =   0.617   						// Gasto en costo de la deuda (energía)
+	scalar gascfe      =   1.132   						// Gasto en CFE
+	scalar gaspemex    =   0.420   						// Gasto en Pemex
+	scalar gassener    =   0.258   						// Gasto en SENER
+	scalar gasinverf   =   1.578   						// Gasto en inversión (energía)
+	scalar gascosdeue  =   0.639   						// Gasto en costo de la deuda (energía)
 
-	scalar gasinfra    =   1.495   						// Gasto en Otras Inversiones
-	scalar gasotros    =   1.623   						// Otros gastos
-	scalar gasfeder    =   4.012  						// Participaciones y Otras aportaciones
-	scalar gascosto    =   3.627   						// Gasto en Costo de la deuda
+	scalar gasinfra    =   1.548   						// Gasto en Otras Inversiones
+	scalar gasotros    =   1.681   						// Otros gastos
+	scalar gasfeder    =   4.153  						// Participaciones y Otras aportaciones
+	scalar gascosto    =   3.755   						// Gasto en Costo de la deuda
 
 	scalar ingbasico18 =       1  						// 1: Incluye menores de 18 anios, 0: no
 	scalar ingbasico65 =       1  						// 1: Incluye mayores de 65 anios, 0: no
 	scalar IngBas      =       0  						// Ingreso b{c a'}sico
 	scalar gasmadres   =   0.009   						// Apoyo a madres trabajadoras
-	scalar gascuidados =   0.045   						// Gasto en cuidados
+	scalar gascuidados =   0.047   						// Gasto en cuidados
 }
 
 ** 5.2 Gasto per cápita **
@@ -337,7 +349,7 @@ noisily GastoPC educacion salud pensiones energia resto transferencias, aniope(`
 
 **/
 **# 6. SISTEMA FISCAL: DEUDA
-***
+/***
 
 * SHRFSP: Total, Interno, Externo (como % del PIB)
 *                	2025  2026  2027  2028  2029  2030  2031
@@ -411,36 +423,41 @@ if "`cambioiva'" == "1" {
 
 ** 7.1 (+) Impuestos y aportaciones
 egen AlTrabajo = rsum(ISRPF_Sim ISRAS_Sim CUOTAS_Sim)
-label var AlTrabajo "Impuestos al trabajo"
-
 egen AlCapital = rsum(ISRPM_Sim OTROSK)
-label var AlCapital "Impuestos al capital"
-
 egen AlConsumo = rsum(IVA_Sim IEPSNP_Sim IEPSP_Sim ISAN_Sim IMPORT_Sim)
-label var AlConsumo "Impuestos al consumo"
 
 capture drop ImpuestosAportaciones
 egen ImpuestosAportaciones = rsum(ISRPM_Sim ISRAS_Sim ISRPF_Sim CUOTAS_Sim IVA_Sim IEPSNP_Sim IEPSP_Sim ISAN_Sim IMPORT_Sim) // FMP_Sim OTROSK_Sim
-label var ImpuestosAportaciones "Impuestos y contribuciones"
 
 ** 7.2 (-) Gastos
-label var Pensión_AM "Pensión para adultos mayores"
-label var Educación "Educación"
-
+replace Pensiones = Pensiones + Pensión_AM
 capture drop Transferencias
-egen Transferencias = rsum(Pensiones Pensión_AM IngBasico Educación Salud) // Otras_inversiones
-label var Transferencias "Transferencias públicas"
+egen Transferencias = rsum(Pensiones IngBasico Educacion Salud OtrasInversiones)
 
 ** 7.3 (=) Aportaciones netas **
 capture drop AportacionesNetas
 g AportacionesNetas = ImpuestosAportaciones - Transferencias
-label var AportacionesNetas "Ciclo de vida de las aportaciones netas"
 
+if "$textbook" == "" {
+	label var AlTrabajo "Impuestos al trabajo"
+	label var AlCapital "Impuestos al capital"
+	label var AlConsumo "Impuestos al consumo"
+	label var ImpuestosAportaciones "Impuestos y contribuciones"
+
+	label var Pensiones "Pensiones contributivas"
+	label var IngBasico "Transferencias"
+	label var Educacion "Educación"
+	label var Salud "Salud"
+	label var OtrosGastos "Otros gastos"
+
+	label var Transferencias "Transferencias públicas"
+	label var AportacionesNetas "Ciclo de vida de las aportaciones netas"
+}
 foreach k of varlist AlTrabajo AlCapital AlConsumo ///
-	ISRPM_Sim ISRAS_Sim ISRPF_Sim CUOTAS_Sim IVA_Sim IEPSNP_Sim IEPSP_Sim ISAN_Sim IMPORT_Sim ///
-	Pensiones Pensión_AM IngBasico Educación Salud ///
+	ISRPM ISRAS ISRPF CUOTAS IVA IEPSNP IEPSP ISAN IMPORT ///
+	Pensiones IngBasico Educacion Salud OtrosGastos Energia ///
 	ImpuestosAportaciones Transferencias AportacionesNetas {
-	noisily Perfiles `k' if `k' != 0 [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
+	*noisily Perfiles `k' if `k' != 0 [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
 	noisily Simulador `k' if `k' != 0 [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot //boot(10)
 }
 save `"`c(sysdir_site)'/users/$id/aportaciones.dta"', replace
@@ -457,12 +474,12 @@ if "$textbook" == "textbook" {
 *noisily CuentasGeneracionales AportacionesNetas, anio(`=anioPE') discount(7)
 
 ** 8.1 Brecha fiscal
-set scheme ciep
+set scheme ciepdeuda2
 noisily FiscalGap, anio(`=anioPE') end(`=anioPE+5') aniomin(2015) $nographs desde(2015) discount(10)
 
 ** 8.2 Sankey del sistema fiscal
 foreach k in decil grupoedad sexo rural escol {
-	noisily run "`c(sysdir_site)'/SankeySF.do" `k' `=anioPE'
+	*noisily run "`c(sysdir_site)'/SankeySF.do" `k' `=anioPE'
 }
 
 

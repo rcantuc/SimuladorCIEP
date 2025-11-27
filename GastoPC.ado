@@ -232,11 +232,13 @@ quietly {
 			}
 
 			** 3.1.1 Scalars **
-			scalar iniciaAPC = ((`iniciaA' + `iniciaB')/`Educacion'[1,7])/`deflator'
-			scalar iniciaAPIB = (`iniciaA' + `iniciaB')/`PIB'*100
+			scalar iniciaAPC = string(((`iniciaA' + `iniciaB')/`Educacion'[1,7])/`deflator',"%12.0fc")
+			scalar iniciaAPIB = string((`iniciaA' + `iniciaB')/`PIB'*100,"%7.3fc")
+			scalar iniciaAPob = string(`Educacion'[1,7],"%12.0fc")
 
 			** 3.1.2 Asignación de gasto en variable **
-			g Educación = scalar(iniciaAPC)*alum_priminf
+			capture drop Educacion
+			g Educacion = real(subinstr(iniciaAPC,",","",.))*alum_priminf
 
 
 			** 3.2 Básica **
@@ -252,11 +254,12 @@ quietly {
 			}
 
 			** 3.2.1 Scalars **
-			scalar basicaPC = ((`basica')/`Educacion'[1,1])/`deflator'
-			scalar basicaPIB = (`basica')/`PIB'*100
+			scalar basicaPC = string(((`basica')/`Educacion'[1,1])/`deflator',"%12.0fc")
+			scalar basicaPIB = string((`basica')/`PIB'*100,"%7.3fc")
+			scalar basicaPob = string(`Educacion'[1,1],"%12.0fc")
 
 			** 3.2.2 Asignación de gasto en variable **
-			replace Educación = Educación + scalar(basicaPC)*alum_basica
+			replace Educacion = Educacion + real(subinstr(basicaPC,",","",.))*alum_basica
 
 
 			** 3.3 Media superior **
@@ -272,11 +275,12 @@ quietly {
 			}
 
 			** 3.3.1 Scalars **
-			scalar medsupPC = ((`medsup')/`Educacion'[1,2])/`deflator'
-			scalar medsupPIB = (`medsup')/`PIB'*100
+			scalar medsupPC = string(((`medsup')/`Educacion'[1,2])/`deflator',"%12.0fc")
+			scalar medsupPIB = string((`medsup')/`PIB'*100,"%7.3fc")
+			scalar medsupPob = string(`Educacion'[1,2],"%12.0fc")
 
 			** 3.3.2 Asignación de gasto en variable **
-			replace Educación = Educación + scalar(medsupPC)*alum_medsup
+			replace Educacion = Educacion + real(subinstr(medsupPC,",","",.))*alum_medsup
 
 
 			** 3.4 Superior **
@@ -292,11 +296,12 @@ quietly {
 			}
 
 			** 3.4.1 Scalars **
-			scalar superiPC = ((`superi')/`Educacion'[1,3])/`deflator'
-			scalar superiPIB = (`superi')/`PIB'*100
+			scalar superiPC = string(((`superi')/`Educacion'[1,3])/`deflator',"%12.0fc")
+			scalar superiPIB = string((`superi')/`PIB'*100,"%7.3fc")
+			scalar superiPob = string(`Educacion'[1,3],"%12.0fc")
 
 			** 3.4.2 Asignación de gasto en variable **
-			replace Educación = Educación + scalar(superiPC)*alum_superi
+			replace Educacion = Educacion + real(subinstr(superiPC,",","",.))*alum_superi
 
 
 			** 3.5 Posgrado **
@@ -312,11 +317,12 @@ quietly {
 			}
 
 			** 3.5.1 Scalars **
-			scalar posgraPC = ((`posgra')/`Educacion'[1,4])/`deflator'
-			scalar posgraPIB = (`posgra')/`PIB'*100
+			scalar posgraPC = string(((`posgra')/`Educacion'[1,4])/`deflator',"%12.0fc")
+			scalar posgraPIB = string((`posgra')/`PIB'*100,"%7.3fc")
+			scalar posgraPob = string(`Educacion'[1,4],"%12.0fc")
 
 			** 3.5.2 Asignación de gasto en variable **
-			replace Educación = Educación + scalar(posgraPC)*alum_posgra
+			replace Educacion = Educacion + real(subinstr(posgraPC,",","",.))*alum_posgra
 
 
 			** 3.6 Educación para adultos **
@@ -332,11 +338,12 @@ quietly {
 			}
 
 			** 3.6.1 Scalars **
-			scalar eduaduPC = ((`eduadu')/`Educacion'[1,5])/`deflator'
-			scalar eduaduPIB = (`eduadu')/`PIB'*100
+			scalar eduaduPC = string(((`eduadu')/`Educacion'[1,6])/`deflator',"%12.0fc")
+			scalar eduaduPIB = string((`eduadu')/`PIB'*100,"%7.3fc")
+			scalar eduaduPob = string(`Educacion'[1,6],"%12.0fc")
 
 			** 3.6.2 Asignación de gasto en variable **
-			replace Educación = Educación + scalar(eduaduPC)*alum_adulto
+			replace Educacion = Educacion + real(subinstr(eduaduPC,",","",.))*alum_adulto
 
 
 			** 3.7 Inversión educativa **
@@ -352,11 +359,12 @@ quietly {
 			}
 
 			** 3.7.1 Scalars **
-			scalar inverePC = ((`invere')/`Educacion'[1,6])/`deflator'
-			scalar inverePIB = (`invere')/`PIB'*100
+			scalar inverePC = string(((`invere')/`Educacion'[1,6])/`deflator',"%12.0fc")
+			scalar inverePIB = string((`invere')/`PIB'*100,"%7.3fc")
+			scalar inverePob = string(`Educacion'[1,6],"%12.0fc")
 
 			** 3.7.2 Asignación de gasto en variable **
-			replace Educación = Educación + scalar(inverePC) if alum_totales > 0
+			replace Educacion = Educacion + real(subinstr(inverePC,",","",.)) if alum_totales > 0
 
 
 			** 3.8 Otros gastos educativos **
@@ -376,29 +384,33 @@ quietly {
 			}
 
 			** 3.8.1 Scalars **
-			scalar otrosePC = ((`otrose')/(`Educacion'[1,1]+`Educacion'[1,2]+`Educacion'[1,3]+`Educacion'[1,4]+`Educacion'[1,5]))/`deflator'
-			scalar otrosePIB = (`otrose')/`PIB'*100
+			scalar otrosePC = string(((`otrose')/(`Educacion'[1,1]+`Educacion'[1,2]+`Educacion'[1,3]+`Educacion'[1,4]+`Educacion'[1,5]))/`deflator',"%12.0fc")
+			scalar otrosePIB = string((`otrose')/`PIB'*100,"%7.3fc")
+			scalar otrosePob = string(`Educacion'[1,6],"%12.0fc")
 
-			scalar culturPC = ((`cultur')/`pobenigh'[1,1])/`deflator'
-			scalar culturPIB = (`cultur')/`PIB'*100
+			scalar culturPC = string(((`cultur')/`pobenigh'[1,1])/`deflator',"%12.0fc")
+			scalar culturPIB = string((`cultur')/`PIB'*100,"%7.3fc")
+			scalar culturPob = string(`pobenigh'[1,1],"%12.0fc")
 
-			scalar investPC = ((`invest')/`pobenigh'[1,1])/`deflator'
-			scalar investPIB = (`invest')/`PIB'*100
+			scalar investPC = string(((`invest')/`pobenigh'[1,1])/`deflator',"%12.0fc")
+			scalar investPIB = string((`invest')/`PIB'*100,"%7.3fc")
+			scalar investPob = string(`pobenigh'[1,1],"%12.0fc")
+
 
 			** 3.8.2 Asignación de gasto en variable **
-			replace Educación = Educación + scalar(otrosePC) if alum_basica+alum_medsup+alum_superi+alum_posgra+alum_adulto > 0
-			replace Educación = Educación + scalar(culturPC)
-			replace Educación = Educación + scalar(investPC)
+			replace Educacion = Educacion + real(subinstr(otrosePC,",","",.)) if alum_basica+alum_medsup+alum_superi+alum_posgra+alum_adulto > 0
+			replace Educacion = Educacion + real(subinstr(culturPC,",","",.))
+			replace Educacion = Educacion + real(subinstr(investPC,",","",.))
 
 
 			** 3.9 Total Educación **
-			scalar educacPIB = basicaPIB + medsupPIB + superiPIB + posgraPIB + eduaduPIB + otrosePIB ///
-				+ inverePIB + iniciaAPIB
-			scalar educacionPC = (educacPIB/100*`PIB'/(`Educacion'[1,1]+`Educacion'[1,2]+`Educacion'[1,3]+`Educacion'[1,4]+`Educacion'[1,5]))/`deflator'
+			scalar educacPIB = string(real(basicaPIB) + real(medsupPIB) + real(superiPIB) + real(posgraPIB) + real(eduaduPIB) + real(otrosePIB) + real(inverePIB) + real(iniciaAPIB),"%7.3fc")
+			scalar educacPC = string((real(educacPIB)/100*`PIB'/(`Educacion'[1,1]+`Educacion'[1,2]+`Educacion'[1,3]+`Educacion'[1,4]+`Educacion'[1,5]))/`deflator',"%12.0fc")
+			scalar educacPob = string(`Educacion'[1,6],"%12.0fc")
 
-			scalar EducacPIB = basicaPIB + medsupPIB + superiPIB + posgraPIB + eduaduPIB + otrosePIB ///
-				+ culturPIB + investPIB + inverePIB + iniciaAPIB
-			scalar EducacionPC = (EducacPIB/100*`PIB'/`pobenigh'[1,1])/`deflator'
+			scalar EducacPIB = string(real(basicaPIB) + real(medsupPIB) + real(superiPIB) + real(posgraPIB) + real(eduaduPIB) + real(otrosePIB) + real(inverePIB) + real(iniciaAPIB) + real(culturPIB) + real(investPIB),"%7.3fc")
+			scalar EducacPC = string((real(EducacPIB)/100*`PIB'/`pobenigh'[1,1])/`deflator',"%12.0fc")
+			scalar EducacPob = string(`pobenigh'[1,1],"%12.0fc")
 
 
 			** 3.10 Resultados **
@@ -409,58 +421,58 @@ quietly {
 				_col(59) %10s in g "PC (MXN `aniovp')" "}"
 			noisily di in g _dup(71) "-"
 			noisily di in g "  Inicial y comunitaria" ///
-				_col(32) %15.0fc in y (`Educacion'[1,6]) ///
-				_col(49) %7.3fc in y scalar(iniciaAPIB) ///
-				_col(57) %15.0fc in y scalar(iniciaAPC)
+				_col(32) %15s in y scalar(iniciaAPob) ///
+				_col(49) %7s in y scalar(iniciaAPIB) ///
+				_col(57) %15s in y scalar(iniciaAPC)
 			noisily di
 			noisily di in g "  B{c a'}sica" ///
-				_col(32) %15.0fc in y `Educacion'[1,1] ///
-				_col(49) %7.3fc in y scalar(basicaPIB) ///
-				_col(57) %15.0fc in y scalar(basicaPC)
+				_col(32) %15s in y scalar(basicaPob) ///
+				_col(49) %7s in y scalar(basicaPIB) ///
+				_col(57) %15s in y scalar(basicaPC)
 			noisily di in g "  Media superior" ///
-				_col(32) %15.0fc in y `Educacion'[1,2] ///
-				_col(49) %7.3fc in y scalar(medsupPIB) ///
-				_col(57) %15.0fc in y scalar(medsupPC)
+				_col(32) %15s in y scalar(medsupPob) ///
+				_col(49) %7s in y scalar(medsupPIB) ///
+				_col(57) %15s in y scalar(medsupPC)
 			noisily di in g "  Superior" ///
-				_col(32) %15.0fc in y `Educacion'[1,3] ///
-				_col(49) %7.3fc in y scalar(superiPIB) ///
-				_col(57) %15.0fc in y scalar(superiPC)
+				_col(32) %15s in y scalar(superiPob) ///
+				_col(49) %7s in y scalar(superiPIB) ///
+				_col(57) %15s in y scalar(superiPC)
 			noisily di in g "  Posgrado" ///
-				_col(32) %15.0fc in y `Educacion'[1,4] ///
-				_col(49) %7.3fc in y scalar(posgraPIB) ///
-				_col(57) %15.0fc in y scalar(posgraPC)
+				_col(32) %15s in y scalar(posgraPob) ///
+				_col(49) %7s in y scalar(posgraPIB) ///
+				_col(57) %15s in y scalar(posgraPC)
 			noisily di in g "  Para adultos" ///
-				_col(32) %15.0fc in y `Educacion'[1,5] ///
-				_col(49) %7.3fc in y scalar(eduaduPIB) ///
-				_col(57) %15.0fc in y scalar(eduaduPC)
+				_col(32) %15s in y scalar(eduaduPob) ///
+				_col(49) %7s in y scalar(eduaduPIB) ///
+				_col(57) %15s in y scalar(eduaduPC)
 			noisily di in g "  Otros gastos educativos" ///
-				_col(32) %15.0fc in y (`Educacion'[1,1]+`Educacion'[1,2]+`Educacion'[1,3]+`Educacion'[1,4]+`Educacion'[1,5]) ///
-				_col(49) %7.3fc in y scalar(otrosePIB) ///
-				_col(57) %15.0fc in y scalar(otrosePC)
+				_col(32) %15s in y scalar(educacPob) ///
+				_col(49) %7s in y scalar(otrosePIB) ///
+				_col(57) %15s in y scalar(otrosePC)
 			noisily di
 			noisily di in g "  Inversión en educación" ///
-				_col(32) %15.0fc in y (`Educacion'[1,1]+`Educacion'[1,2]+`Educacion'[1,3]+`Educacion'[1,4]+`Educacion'[1,5]) ///
-				_col(49) %7.3fc in y scalar(inverePIB) ///
-				_col(57) %15.0fc in y scalar(inverePC)
+				_col(32) %15s in y scalar(educacPob) ///
+				_col(49) %7s in y scalar(inverePIB) ///
+				_col(57) %15s in y scalar(inverePC)
 			noisily di in g _dup(71) "-"
 			noisily di in g "  {bf:Gasto p{c u'}blico en educación" ///
-				_col(32) %15.0fc in y (`Educacion'[1,1]+`Educacion'[1,2]+`Educacion'[1,3]+`Educacion'[1,4]+`Educacion'[1,5]) ///
-				_col(49) %7.3fc in y scalar(educacPIB) ///
-				_col(57) %15.0fc in y scalar(educacionPC) "}"
+				_col(32) %15s in y scalar(educacPob) ///
+				_col(49) %7s in y scalar(educacPIB) ///
+				_col(57) %15s in y scalar(educacPC) "}"
 			noisily di in g _dup(71) "-"
 			noisily di in g "  Cultura y deportes" ///
-				_col(32) %15.0fc in y (`pobenigh'[1,1]) ///
-				_col(49) %7.3fc in y scalar(culturPIB) ///
-				_col(57) %15.0fc in y scalar(culturPC)
+				_col(32) %15s in y scalar(culturPob) ///
+				_col(49) %7s in y scalar(culturPIB) ///
+				_col(57) %15s in y scalar(culturPC)
 			noisily di in g "  Ciencia y tecnología" ///
-				_col(32) %15.0fc in y (`pobenigh'[1,1]) ///
-				_col(49) %7.3fc in y scalar(investPIB) ///
-				_col(57) %15.0fc in y scalar(investPC)
+				_col(32) %15s in y scalar(investPob) ///
+				_col(49) %7s in y scalar(investPIB) ///
+				_col(57) %15s in y scalar(investPC)
 			noisily di in g _dup(71) "-"
 			noisily di in g "  {bf:Gasto público total" ///
-				_col(32) %15.0fc in y (`pobenigh'[1,1]) ///
-				_col(49) %7.3fc in y scalar(EducacPIB) ///
-				_col(57) %15.0fc in y scalar(EducacionPC) "}"
+				_col(32) %15s in y scalar(EducacPob) ///
+				_col(49) %7s in y scalar(EducacPIB) ///
+				_col(57) %15s in y scalar(EducacPC) "}"
 
 
 			** 3.11 Put excel **
@@ -575,12 +587,19 @@ quietly {
 			}
 
 			* 4.1.1 Scalars *
-			scalar imssbienPC = (`imssbien')/`Salud'[1,7]/`deflator'
-			scalar imssbienPIB = `imssbien'/`PIB'*100
+			scalar imssbienPC = string(((`imssbien')/`Salud'[1,7])/`deflator',"%12.0fc")
+			scalar imssbienPIB = string((`imssbien')/`PIB'*100,"%7.3fc")
+			scalar imssbienPob = string(`Salud'[1,7],"%12.0fc")
 
 			* 4.1.2 Asignación de gasto en variable *
+			tempvar gas_pc_imssbien
+			g `gas_pc_imssbien' = gas_pc_Salu if benef_imssbien != 0
+			replace `gas_pc_imssbien' = 0 if `gas_pc_imssbien' == .
+			Distribucion imssbien, relativo(`gas_pc_imssbien') macro(`imssbien')
+			replace imssbien = 0 if imssbien == .
+
 			capture drop Salud
-			g Salud = scalar(imssbienPC)*benef_imssbien
+			g Salud = real(subinstr(imssbienPC,",","",.))*benef_imssbien
 
 
 			** 4.2 Secretaría de Salud **
@@ -610,11 +629,17 @@ quietly {
 			}
 
 			* 4.2.1 Scalars *
-			scalar ssaPC = (`ssa'/`Salud'[1,1])/`deflator'
-			scalar ssaPIB = `ssa'/`PIB'*100
+			scalar ssaPC = string((`ssa'/`Salud'[1,1])/`deflator',"%12.0fc")
+			scalar ssaPIB = string((`ssa')/`PIB'*100,"%7.3fc")
+			scalar ssaPob = string(`Salud'[1,1],"%12.0fc")
 
-			* 4.2.2 Asignación de gasto en variable *	
-			replace Salud = Salud + scalar(ssaPC)*benef_ssa
+			* 4.2.2 Asignación de gasto en variable *
+			tempvar gas_pc_ssa
+			g `gas_pc_ssa' = gas_pc_Salu if benef_ssa != 0
+			replace `gas_pc_ssa' = 0 if `gas_pc_ssa' == .
+			Distribucion ssa, relativo(`gas_pc_ssa') macro(`ssa')
+			replace ssa = 0 if ssa == .
+			replace Salud = Salud + real(subinstr(ssaPC,",","",.))*benef_ssa
 
 
 			** 4.3 IMSS (salud) **
@@ -630,11 +655,17 @@ quietly {
 			}
 
 			* 4.3.1 Scalars *
-			scalar imssPC = (`imss'/`Salud'[1,2])/`deflator'
-			scalar imssPIB = `imss'/`PIB'*100
+			scalar imssPC = string((`imss'/`Salud'[1,2])/`deflator',"%12.0fc")
+			scalar imssPIB = string((`imss')/`PIB'*100,"%7.3fc")
+			scalar imssPob = string(`Salud'[1,2],"%12.0fc")
 
 			* 4.3.2 Asignación de gasto en variable *	
-			replace Salud = Salud + scalar(imssPC)*benef_imss
+			tempvar gas_pc_imss
+			g `gas_pc_imss' = gas_pc_Salu if benef_imss != 0
+			replace `gas_pc_imss' = 0 if `gas_pc_imss' == .
+			Distribucion imss, relativo(`gas_pc_imss') macro(`imss')
+			replace imss = 0 if imss == .
+			replace Salud = Salud + real(subinstr(imssPC,",","",.))*benef_imss
 
 
 			** 4.4 ISSSTE Federal (salud) **
@@ -650,11 +681,17 @@ quietly {
 			}
 
 			* 4.4.1 Scalars *
-			scalar issstePC = (`issste'/`Salud'[1,3])/`deflator'
-			scalar issstePIB = `issste'/`PIB'*100
+			scalar issstePC = string((`issste'/`Salud'[1,3])/`deflator',"%12.0fc")
+			scalar issstePIB = string((`issste')/`PIB'*100,"%7.3fc")
+			scalar issstePob = string(`Salud'[1,3],"%12.0fc")
 
 			* 4.4.2 Asignación de gasto en variable *	
-			replace Salud = Salud + scalar(issstePC)*benef_issste
+			tempvar gas_pc_issste
+			g `gas_pc_issste' = gas_pc_Salu if benef_issste != 0
+			replace `gas_pc_issste' = 0 if `gas_pc_issste' == .
+			Distribucion issste, relativo(`gas_pc_issste') macro(`issste')
+			replace issste = 0 if issste == .
+			replace Salud = Salud + real(subinstr(issstePC,",","",.))*benef_issste
 
 
 			** 4.5 Pemex (salud) **
@@ -670,11 +707,17 @@ quietly {
 			}
 
 			* 4.5.1 Scalars *
-			scalar pemexPC = (`pemex'/`Salud'[1,4])/`deflator'
-			scalar pemexPIB = `pemex'/`PIB'*100
+			scalar pemexPC = string((`pemex'/`Salud'[1,4])/`deflator',"%12.0fc")
+			scalar pemexPIB = string((`pemex')/`PIB'*100,"%7.3fc")
+			scalar pemexPob = string(`Salud'[1,4],"%12.0fc")
 
 			* 4.5.2 Asignación de gasto en variable *	
-			replace Salud = Salud + scalar(pemexPC)*benef_pemex
+			tempvar gas_pc_pemex
+			g `gas_pc_pemex' = gas_pc_Salu if benef_pemex != 0
+			replace `gas_pc_pemex' = 0 if `gas_pc_pemex' == .
+			Distribucion pemex, relativo(`gas_pc_pemex') macro(`pemex')
+			replace pemex = 0 if pemex == .
+			replace Salud = Salud + real(subinstr(pemexPC,",","",.))*benef_pemex
 
 			
 			** 4.6 ISSFAM (salud) **
@@ -690,11 +733,17 @@ quietly {
 			}
 
 			* 4.6.1 Scalars *
-			scalar issfamPC = (`issfam'/`Salud'[1,5])/`deflator'
-			scalar issfamPIB = `issfam'/`PIB'*100
+			scalar issfamPC = string((`issfam'/`Salud'[1,5])/`deflator',"%12.0fc")
+			scalar issfamPIB = string((`issfam')/`PIB'*100,"%7.3fc")
+			scalar issfamPob = string(`Salud'[1,5],"%12.0fc")
 
 			* 4.6.2 Asignación de gasto en variable *	
-			replace Salud = Salud + scalar(issfamPC)*benef_issfam
+			tempvar gas_pc_issfam
+			g `gas_pc_issfam' = gas_pc_Salu if benef_issfam != 0
+			replace `gas_pc_issfam' = 0 if `gas_pc_issfam' == .
+			Distribucion issfam, relativo(`gas_pc_issfam') macro(`issfam')
+			replace issfam = 0 if issfam == .
+			replace Salud = Salud + real(subinstr(issfamPC,",","",.))*benef_issfam
 
 
 			** 4.7 Inversión en salud **
@@ -710,16 +759,23 @@ quietly {
 			}
 
 			* 4.7.1 Scalars *
-			scalar inversPC = (`invers'/`Salud'[1,1])/`deflator'
-			scalar inversPIB = `invers'/`PIB'*100
+			scalar inversPC = string((`invers'/`Salud'[1,1])/`deflator',"%12.0fc")
+			scalar inversPIB = string((`invers')/`PIB'*100,"%7.3fc")
+			scalar inversPob = string(`Salud'[1,1],"%12.0fc")
 
 			* 4.7.2 Asignación de gasto en variable *
-			replace Salud = Salud + scalar(inversPC)*benef_invers
+			tempvar gas_pc_invers
+			g `gas_pc_invers' = gas_pc_Salu if benef_invers != 0
+			replace `gas_pc_invers' = 0 if `gas_pc_invers' == .
+			Distribucion invers, relativo(`gas_pc_invers') macro(`invers')
+			replace invers = 0 if invers == .
+			replace Salud = Salud + real(subinstr(inversPC,",","",.))*benef_invers
 
 
 			** 4.8 Total SALUD **
-			scalar saludPIB = ssaPIB+imssbienPIB+imssPIB+issstePIB+pemexPIB+issfamPIB+inversPIB
-			scalar saludPC = (saludPIB/100*`PIB'/`Salud'[1,1])/`deflator'
+			scalar saludPIB = string(real(ssaPIB)+real(imssbienPIB)+real(imssPIB)+real(issstePIB)+real(pemexPIB)+real(issfamPIB)+real(inversPIB),"%7.3fc")
+			scalar saludPC = string((real(saludPIB)/100*`PIB'/`Salud'[1,1])/`deflator',"%12.0fc")
+			scalar saludPob = string(`Salud'[1,1],"%12.0fc")
 
 
 			** 4.9 Resultados **
@@ -730,39 +786,39 @@ quietly {
 				_col(59) %10s in g "PC (MXN `aniovp')" "}"
 			noisily di in g _dup(71) "-"
 			noisily di in g "  SSa" ///
-				_col(32) %15.0fc in y `Salud'[1,1] ///
-				_col(49) %7.3fc in y scalar(ssaPIB) ///
-				_col(57) %15.0fc in y scalar(ssaPC)
+				_col(32) %15s in y scalar(ssaPob) ///
+				_col(49) %7s in y scalar(ssaPIB) ///
+				_col(57) %15s in y scalar(ssaPC)
 			noisily di in g "  IMSS-Bienestar" ///
-				_col(32) %15.0fc in y `Salud'[1,7] ///
-				_col(49) %7.3fc in y scalar(imssbienPIB) ///
-				_col(57) %15.0fc in y scalar(imssbienPC)
+				_col(32) %15s in y scalar(imssbienPob) ///
+				_col(49) %7s in y scalar(imssbienPIB) ///
+				_col(57) %15s in y scalar(imssbienPC)
 			noisily di in g "  IMSS" ///
-				_col(32) %15.0fc in y `Salud'[1,2] ///
-				_col(49) %7.3fc in y scalar(imssPIB) ///
-				_col(57) %15.0fc in y scalar(imssPC)
+				_col(32) %15s in y scalar(imssPob) ///
+				_col(49) %7s in y scalar(imssPIB) ///
+				_col(57) %15s in y scalar(imssPC)
 			noisily di in g "  ISSSTE" ///
-				_col(32) %15.0fc in y `Salud'[1,3] ///
-				_col(49) %7.3fc in y scalar(issstePIB) ///
-				_col(57) %15.0fc in y scalar(issstePC)
+				_col(32) %15s in y scalar(issstePob) ///
+				_col(49) %7s in y scalar(issstePIB) ///
+				_col(57) %15s in y scalar(issstePC)
 			noisily di in g "  Pemex" ///
-				_col(32) %15.0fc in y `Salud'[1,4] ///
-				_col(49) %7.3fc in y scalar(pemexPIB) ///
-				_col(57) %15.0fc in y scalar(pemexPC)
+				_col(32) %15s in y scalar(pemexPob) ///
+				_col(49) %7s in y scalar(pemexPIB) ///
+				_col(57) %15s in y scalar(pemexPC)
 			noisily di in g "  ISSFAM" ///
-				_col(32) %15.0fc in y `Salud'[1,5] ///
-				_col(49) %7.3fc in y scalar(issfamPIB) ///
-				_col(57) %15.0fc in y scalar(issfamPC)
+				_col(32) %15s in y scalar(issfamPob) ///
+				_col(49) %7s in y scalar(issfamPIB) ///
+				_col(57) %15s in y scalar(issfamPC)
 			noisily di
 			noisily di in g "  Inversión en salud" ///
-				_col(32) %15.0fc in y `Salud'[1,1] ///
-				_col(49) %7.3fc in y scalar(inversPIB) ///
-				_col(57) %15.0fc in y scalar(inversPC)
+				_col(32) %15s in y scalar(inversPob) ///
+				_col(49) %7s in y scalar(inversPIB) ///
+				_col(57) %15s in y scalar(inversPC)
 			noisily di in g _dup(71) "-"
 			noisily di in g "  {bf:Gasto público total" ///
-				_col(32) %15.0fc in y `Salud'[1,1] ///
-				_col(49) %7.3fc in y scalar(saludPIB) ///
-				_col(57) %15.0fc in y scalar(saludPC) "}"
+				_col(32) %15s in y scalar(saludPob) ///
+				_col(49) %7s in y scalar(saludPIB) ///
+				_col(57) %15s in y scalar(saludPC) "}"
 
 
 			** 4.10 Put excel **
@@ -819,11 +875,12 @@ quietly {
 			}
 
 			** 5.1.1 Scalars **
-			scalar pamPC = (`pam'/`pens_pam')/`deflator'
-			scalar pamPIB = `pam'/`PIB'*100
+			scalar pamPC = string((`pam'/`pens_pam')/`deflator',"%12.0fc")
+			scalar pamPIB = string((`pam')/`PIB'*100,"%7.3fc")
+			scalar pamPob = string(`pens_pam',"%12.0fc")
 
 			** 5.1.2 Asignación de gasto en variable **
-			g Pensión_AM = scalar(pamPC)*pens_pam
+			g Pensión_AM = real(subinstr(pamPC,",","",.))*pens_pam
 
 
 			** 5.2 Pensiones IMSS **
@@ -839,12 +896,13 @@ quietly {
 			}
 
 			** 5.2.1 Scalars **
-			scalar penimssPC = (`penimss'/`pens_imss')/`deflator'
-			scalar penimssPIB = `penimss'/`PIB'*100
+			scalar penimssPC = string((`penimss'/`pens_imss')/`deflator',"%12.0fc")
+			scalar penimssPIB = string((`penimss')/`PIB'*100,"%7.3fc")
+			scalar penimssPob = string(`pens_imss',"%12.0fc")
 
 			** 5.2.2 Asignación de gasto en variable **
 			capture drop Pensiones
-			g Pensiones = scalar(penimssPC)*pens_imss
+			g Pensiones = real(subinstr(penimssPC,",","",.))*pens_imss
 
 
 			** 5.3 Pensiones ISSSTE **
@@ -860,11 +918,12 @@ quietly {
 			}
 
 			** 5.3.1 Scalars **
-			scalar penisssPC = (`penisss'/`pens_issste')/`deflator'
-			scalar penisssPIB = `penisss'/`PIB'*100
+			scalar penisssPC = string((`penisss'/`pens_issste')/`deflator',"%12.0fc")
+			scalar penisssPIB = string((`penisss')/`PIB'*100,"%7.3fc")
+			scalar penisssPob = string(`pens_issste',"%12.0fc")
 
 			** 5.3.2 Asignación de gasto en variable **
-			replace Pensiones = Pensiones + scalar(penisssPC)*pens_issste
+			replace Pensiones = Pensiones + real(subinstr(penisssPC,",","",.))*pens_issste
 
 
 			** 5.4 Pensiones Pemex **
@@ -880,11 +939,12 @@ quietly {
 			}
 
 			** 5.4.1 Scalars **
-			scalar penpemePC = (`penpeme'/`pens_pemex')/`deflator'
-			scalar penpemePIB = `penpeme'/`PIB'*100
+			scalar penpemePC = string((`penpeme'/`pens_pemex')/`deflator',"%12.0fc")
+			scalar penpemePIB = string((`penpeme')/`PIB'*100,"%7.3fc")
+			scalar penpemePob = string(`pens_pemex',"%12.0fc")
 
 			** 5.4.2 Asignación de gasto en variable **
-			replace Pensiones = Pensiones + scalar(penpemePC)*pens_pemex
+			replace Pensiones = Pensiones + real(subinstr(penpemePC,",","",.))*pens_pemex
 
 
 			** 5.5 Pensiones CFE, LFC, Ferronales, ISSFAM **
@@ -900,14 +960,16 @@ quietly {
 			}
 
 			** 5.5.1 Scalars **
-			scalar penotroPC = (`penotro'/`pens_otro')/`deflator'
-			scalar penotroPIB = `penotro'/`PIB'*100
+			scalar penotroPC = string((`penotro'/`pens_otro')/`deflator',"%12.0fc")
+			scalar penotroPIB = string((`penotro')/`PIB'*100,"%7.3fc")
+			scalar penotroPob = string(`pens_otro',"%12.0fc")
 
 			** 5.5.2 Asignación de gasto en variable **
-			replace Pensiones = Pensiones + scalar(penotroPC)*pens_otro
+			replace Pensiones = Pensiones + real(subinstr(penotroPC,",","",.))*pens_otro
 
-			scalar pensionPIB = (`pam'+`penimss'+`penisss'+`penpeme'+`penotro')/`PIB'*100
-			scalar pensionPC = ((`pam'+`penimss'+`penisss'+`penpeme'+`penotro')/(`pens_pam'+`pens_imss'+`pens_issste'+`pens_pemex'+`pens_otro'))/`deflator'
+			scalar pensionPIB = string(real(subinstr(pamPIB,",","",.))+real(subinstr(penimssPIB,",","",.))+real(subinstr(penisssPIB,",","",.))+real(subinstr(penpemePIB,",","",.))+real(subinstr(penotroPIB,",","",.)),"%7.3fc")
+			scalar pensionPob = string(real(subinstr(pamPob,",","",.))+real(subinstr(penimssPob,",","",.))+real(subinstr(penisssPob,",","",.))+real(subinstr(penpemePob,",","",.))+real(subinstr(penotroPob,",","",.)),"%12.0fc")
+			scalar pensionPC = string((real(subinstr(pensionPIB,",","",.))/100*`PIB')/real(subinstr(pensionPob,",","",.)),"%12.0fc")
 
 
 			** 5.6 Resultados **
@@ -918,30 +980,30 @@ quietly {
 				_col(59) %10s in g "PC (MXN `aniovp')" "}"
 			noisily di in g _dup(71) "-"
 			noisily di in g "  Pensi{c o'}n Adultos Mayores" ///
-				_col(32) %15.0fc in y `pens_pam' ///
-				_col(49) %7.3fc in y scalar(pamPIB) ///
-				_col(57) %15.0fc in y scalar(pamPC)
+				_col(32) %15s in y scalar(pamPob) ///
+				_col(49) %7s in y scalar(pamPIB) ///
+				_col(57) %15s in y scalar(pamPC)
 			noisily di in g "  IMSS" ///
-				_col(32) %15.0fc in y `pens_imss' ///
-				_col(49) %7.3fc in y scalar(penimssPIB) ///
-				_col(57) %15.0fc in y scalar(penimssPC)
+				_col(32) %15s in y scalar(penimssPob) ///
+				_col(49) %7s in y scalar(penimssPIB) ///
+				_col(57) %15s in y scalar(penimssPC)
 			noisily di in g "  ISSSTE" ///
-				_col(32) %15.0fc in y `pens_issste' ///
-				_col(49) %7.3fc in y scalar(penisssPIB) ///
-				_col(57) %15.0fc in y scalar(penisssPC)
+				_col(32) %15s in y scalar(penisssPob) ///
+				_col(49) %7s in y scalar(penisssPIB) ///
+				_col(57) %15s in y scalar(penisssPC)
 			noisily di in g "  Pemex" ///
-				_col(32) %15.0fc in y `pens_pemex' ///
-				_col(49) %7.3fc in y scalar(penpemePIB) ///
-				_col(57) %15.0fc in y scalar(penpemePC)
+				_col(32) %15s in y scalar(penpemePob) ///
+				_col(49) %7s in y scalar(penpemePIB) ///
+				_col(57) %15s in y scalar(penpemePC)
 			noisily di in g "  CFE, LFC, Ferro, ISSFAM" ///
-				_col(32) %15.0fc in y `pens_otro' ///
-				_col(49) %7.3fc in y scalar(penotroPIB) ///
-				_col(57) %15.0fc in y scalar(penotroPC)
+				_col(32) %15s in y scalar(penotroPob) ///
+				_col(49) %7s in y scalar(penotroPIB) ///
+				_col(57) %15s in y scalar(penotroPC)
 			noisily di in g _dup(71) "-"
 			noisily di in g "  {bf:Gasto público total" ///
-				_col(32) %15.0fc in y (`pens_pam'+`pens_imss'+`pens_issste'+`pens_pemex'+`pens_otro') ///
-				_col(49) %7.3fc in y pensionPIB ///
-				_col(57) %15.0fc in y pensionPC "}"
+				_col(32) %15s in y scalar(pensionPob) ///
+				_col(49) %7s in y scalar(pensionPIB) ///
+				_col(57) %15s in y scalar(pensionPC) "}"
 
 
 			** 5.7 Put excel **/
@@ -1002,9 +1064,12 @@ quietly {
 				local gascfe = r(comision_federal_de_ele)
 				restore
 			}
-			scalar gascfePC = (`gascfe'/`Energia'[1,1])/`deflator'
-			scalar gascfePIB = `gascfe'/`PIB'*100
-			g Energía = scalar(gascfePC)
+			scalar gascfePC = string((`gascfe'/`Energia'[1,1])/`deflator',"%12.0fc")
+			scalar gascfePIB = string(`gascfe'/`PIB'*100,"%7.3fc")
+			scalar gascfePob = string(`Energia'[1,1],"%12.0fc")
+			
+			capture drop Energia
+			g Energia = real(subinstr(gascfePC,",","",.))
 
 
 			** 6.2 Pemex **
@@ -1018,9 +1083,10 @@ quietly {
 				local gaspemex = r(petroleos_mexicanos)
 				restore
 			}
-			scalar gaspemexPC = (`gaspemex'/`Energia'[1,1])/`deflator'
-			scalar gaspemexPIB = `gaspemex'/`PIB'*100
-			replace Energía = Energía + scalar(gaspemexPC)
+			scalar gaspemexPC = string((`gaspemex'/`Energia'[1,1])/`deflator',"%12.0fc")
+			scalar gaspemexPIB = string(`gaspemex'/`PIB'*100,"%7.3fc")
+			scalar gaspemexPob = string(`Energia'[1,1],"%12.0fc")
+			replace Energia = Energia + real(subinstr(gaspemexPC,",","",.))
 
 
 			** 6.3 SENER y otros **
@@ -1034,9 +1100,10 @@ quietly {
 				local gassener = r(Gasto_neto)-r(comision_federal_de_ele)-r(petroleos_mexicanos)
 				restore
 			}
-			scalar gassenerPC = (`gassener'/`Energia'[1,1])/`deflator'
-			scalar gassenerPIB = `gassener'/`PIB'*100
-			replace Energía = Energía + scalar(gassenerPC)
+			scalar gassenerPC = string((`gassener'/`Energia'[1,1])/`deflator',"%12.0fc")
+			scalar gassenerPIB = string(`gassener'/`PIB'*100,"%7.3fc")
+			scalar gassenerPob = string(`Energia'[1,1],"%12.0fc")
+			replace Energia = Energia + real(subinstr(gassenerPC,",","",.))
 
 
 			** 6.4 Inversión en energía **
@@ -1050,9 +1117,10 @@ quietly {
 				local gasinverf = r(Gasto_neto)
 				restore
 			}
-			scalar gasinverfPC = (`gasinverf'/`Energia'[1,1])/`deflator'
-			scalar gasinverfPIB = `gasinverf'/`PIB'*100
-			replace Energía = Energía + scalar(gasinverfPC)
+			scalar gasinverfPC = string((`gasinverf'/`Energia'[1,1])/`deflator',"%12.0fc")
+			scalar gasinverfPIB = string(`gasinverf'/`PIB'*100,"%7.3fc")
+			scalar gasinverfPob = string(`Energia'[1,1],"%12.0fc")
+			replace Energia = Energia + real(subinstr(gasinverfPC,",","",.))
 
 
 			** 6.5 Cost de la deuda (energía) **
@@ -1066,12 +1134,14 @@ quietly {
 				local gascosdeue = r(Gasto_neto)
 				restore
 			}
-			scalar gascosdeuePC = (`gascosdeue'/`Energia'[1,1])/`deflator'
-			scalar gascosdeuePIB = `gascosdeue'/`PIB'*100
-			replace Energía = Energía + scalar(gascosdeuePC)
+			scalar gascosdeuePC = string((`gascosdeue'/`Energia'[1,1])/`deflator',"%12.0fc")
+			scalar gascosdeuePIB = string(`gascosdeue'/`PIB'*100,"%7.3fc")
+			scalar gascosdeuePob = string(`Energia'[1,1],"%12.0fc")
+			replace Energia = Energia + real(subinstr(gascosdeuePC,",","",.))
 
-			scalar gasenergiaPIB = gaspemexPIB+gascfePIB+gassenerPIB+gasinverfPIB+gascosdeuePIB
-			scalar gasenergiaPC = (gaspemexPC+gascfePC+gassenerPC+gasinverfPC+gascosdeuePC)
+			scalar gasenergiaPIB = string(real(subinstr(gaspemexPIB,",","",.))+real(subinstr(gascfePIB,",","",.))+real(subinstr(gassenerPIB,",","",.))+real(subinstr(gasinverfPIB,",","",.))+real(subinstr(gascosdeuePIB,",","",.)),"%7.3fc")
+			scalar gasenergiaPC = string(real(subinstr(gaspemexPC,",","",.))+real(subinstr(gascfePC,",","",.))+real(subinstr(gassenerPC,",","",.))+real(subinstr(gasinverfPC,",","",.))+real(subinstr(gascosdeuePC,",","",.)),"%12.0fc")
+			scalar gasenergiaPob = string(`Energia'[1,1],"%12.0fc")
 
 
 			** 6.6 Resultados **
@@ -1082,31 +1152,31 @@ quietly {
 				_col(59) %10s in g "PC (MXN `aniovp')" "}"
 			noisily di in g _dup(71) "-"
 			noisily di in g "  CFE" ///
-				_col(32) %15.0fc in y `Energia'[1,1] ///
-				_col(49) %7.3fc in y scalar(gascfePIB) ///
-				_col(57) %15.0fc in y scalar(gascfePC)
+				_col(32) %15s in y scalar(gascfePob) ///
+				_col(49) %7s in y scalar(gascfePIB) ///
+				_col(57) %15s in y scalar(gascfePC)
 			noisily di in g "  Pemex" ///
-				_col(32) %15.0fc in y `Energia'[1,1] ///
-				_col(49) %7.3fc in y scalar(gaspemexPIB) ///
-				_col(57) %15.0fc in y scalar(gaspemexPC)
+				_col(32) %15s in y scalar(gaspemexPob) ///
+				_col(49) %7s in y scalar(gaspemexPIB) ///
+				_col(57) %15s in y scalar(gaspemexPC)
 			noisily di in g "  SENER y otros" ///
-				_col(32) %15.0fc in y `Energia'[1,1] ///
-				_col(49) %7.3fc in y scalar(gassenerPIB) ///
-				_col(57) %15.0fc in y scalar(gassenerPC)
+				_col(32) %15s in y scalar(gassenerPob) ///
+				_col(49) %7s in y scalar(gassenerPIB) ///
+				_col(57) %15s in y scalar(gassenerPC)
 			noisily di 
 			noisily di in g "  Inversión en energía" ///
-				_col(32) %15.0fc in y `Energia'[1,1] ///
-				_col(49) %7.3fc in y scalar(gasinverfPIB) ///
-				_col(57) %15.0fc in y scalar(gasinverfPC)
+				_col(32) %15s in y scalar(gasinverfPob) ///
+				_col(49) %7s in y scalar(gasinverfPIB) ///
+				_col(57) %15s in y scalar(gasinverfPC)
 			noisily di in g "  Costo de la deuda (energía)" ///
-				_col(32) %15.0fc in y `Energia'[1,1] ///
-				_col(49) %7.3fc in y scalar(gascosdeuePIB) ///
-				_col(57) %15.0fc in y scalar(gascosdeuePC)
+				_col(32) %15s in y scalar(gascosdeuePob) ///
+				_col(49) %7s in y scalar(gascosdeuePIB) ///
+				_col(57) %15s in y scalar(gascosdeuePC)
 			noisily di in g _dup(71) "-"
 			noisily di in g "  {bf:Gastos público total" ///
-				_col(32) %15.0fc in y `Energia'[1,1] ///
-				_col(49) %7.3fc in y gasenergiaPIB ///
-				_col(57) %15.0fc in y gasenergiaPC "}"
+				_col(32) %15s in y scalar(gasenergiaPob) ///
+				_col(49) %7s in y scalar(gasenergiaPIB) ///
+				_col(57) %15s in y scalar(gasenergiaPC) "}"
 
 		}
 
@@ -1127,10 +1197,14 @@ quietly {
 				local gasfeder = r(Federalizado)
 				restore
 			}
-			scalar gasfederPC = (`gasfeder'/`Energia'[1,1])/`deflator'
-			scalar gasfederPIB = `gasfeder'/`PIB'*100
+			scalar gasfederPC = string((`gasfeder'/`Energia'[1,1])/`deflator',"%12.0fc")
+			scalar gasfederPIB = string(`gasfeder'/`PIB'*100,"%7.3fc")
+			scalar gasfederPob = string(`Energia'[1,1],"%12.0fc")
+			
 			capture drop Federalizado
-			g Federalizado = scalar(gasfederPC)
+			Distribucion Federalizado, relativo(infra_entidad) macro(`gasfeder')
+			replace Federalizado = 0 if Federalizado == .
+			replace OtrosGastos = Federalizado
 
 
 			** 7.2 Costo financiero de la deuda **
@@ -1144,8 +1218,10 @@ quietly {
 				local gascosto = r(Costo_de_la_deuda)
 				restore
 			}
-			scalar gascostoPC = (`gascosto'/`Energia'[1,1])/`deflator'
-			scalar gascostoPIB = `gascosto'/`PIB'*100
+			scalar gascostoPC = string((`gascosto'/`Energia'[1,1])/`deflator',"%12.0fc")
+			scalar gascostoPIB = string(`gascosto'/`PIB'*100,"%7.3fc")
+			scalar gascostoPob = string(`Energia'[1,1],"%12.0fc")
+			replace OtrosGastos = OtrosGastos + real(subinstr(gascostoPC,",","",.))
 
 
 			** 7.3 Gasto en otras inversiones **
@@ -1159,10 +1235,16 @@ quietly {
 				local gasinfra = r(Otras_inversiones)
 				restore
 			}
-			scalar gasinfraPC = (`gasinfra'/`Energia'[1,1])/`deflator'
-			scalar gasinfraPIB = `gasinfra'/`PIB'*100
-			capture drop Otras_inversiones
-			g Otras_inversiones = scalar(gasinfraPC)
+			scalar gasinfraPC = string((`gasinfra'/`Energia'[1,1])/`deflator',"%12.0fc")
+			scalar gasinfraPIB = string(`gasinfra'/`PIB'*100,"%7.3fc")
+			scalar gasinfraPob = string(`Energia'[1,1],"%12.0fc")
+			replace OtrosGastos = OtrosGastos + real(subinstr(gasinfraPC,",","",.))
+			
+			capture drop OtrasInversiones
+			Distribucion OtrasInversiones, relativo(infra_entidad) macro(`gasinfra')
+			replace OtrasInversiones = 0 if OtrasInversiones == .
+			replace OtrosGastos = OtrosGastos + OtrasInversiones
+			
 
 			** 8.1 Gastos en cuidados **
 			capture confirm scalar gascuidados
@@ -1187,8 +1269,9 @@ quietly {
 				local gascuidados = r(Gasto_neto) - `FAM_gastocuidados' - `gasmadres'
 				restore
 			}
-			scalar gascuidadosPC = (`gascuidados'/`Resto'[1,1])/`deflator'
-			scalar gascuidadosPIB = `gascuidados'/`PIB'*100
+			scalar gascuidadosPC = string((`gascuidados'/`Resto'[1,1])/`deflator',"%12.0fc")
+			scalar gascuidadosPIB = string(`gascuidados'/`PIB'*100,"%7.3fc")
+			scalar gascuidadosPob = string(`Resto'[1,1],"%12.0fc")
 
 			** 7.6 Otros gastos **
 			capture confirm scalar gasotros
@@ -1201,13 +1284,14 @@ quietly {
 				local gasotros = r(Otros_gastos)+r(Cuotas_ISSSTE)-`gascuidados'-`gasmadres'
 				restore
 			}
-			scalar gasotrosPC = (`gasotros'/`Energia'[1,1])/`deflator'
-			scalar gasotrosPIB = `gasotros'/`PIB'*100
-			capture drop Otros_gastos
-			g Otros_gastos = scalar(gasotrosPC)
+			scalar gasotrosPC = string((`gasotros'/`Energia'[1,1])/`deflator',"%12.0fc")
+			scalar gasotrosPIB = string(`gasotros'/`PIB'*100,"%7.3fc")
+			scalar gasotrosPob = string(`Energia'[1,1],"%12.0fc")
+			replace OtrosGastos = OtrosGastos + real(subinstr(gasotrosPC,",","",.))
 
-			scalar otrosgasPIB = gasfederPIB+gascostoPIB+gasinfraPIB+gasotrosPIB
-			scalar otrosgasPC = (gasfederPC+gascostoPC+gasinfraPC+gasotrosPC)
+			scalar otrosgasPIB = string(real(subinstr(gasfederPIB,",","",.))+real(subinstr(gascostoPIB,",","",.))+real(subinstr(gasinfraPIB,",","",.))+real(subinstr(gasotrosPIB,",","",.)),"%7.3fc")
+			scalar otrosgasPC = string(real(subinstr(gasfederPC,",","",.))+real(subinstr(gascostoPC,",","",.))+real(subinstr(gasinfraPC,",","",.))+real(subinstr(gasotrosPC,",","",.)),"%12.0fc")
+			scalar otrosgasPob = string(`Energia'[1,1],"%12.0fc")
 
 			* Resultados *
 			noisily di _newline(2) in g "{bf: E. Otros gastos CIEP}"
@@ -1217,27 +1301,27 @@ quietly {
 				_col(59) %10s in g "PC (MXN `aniovp')" "}"
 			noisily di in g _dup(71) "-"
 			noisily di in g "  Otras inversiones" ///
-				_col(32) %15.0fc in y `Energia'[1,1] ///
-				_col(49) %7.3fc in y scalar(gasinfraPIB) ///
-				_col(57) %15.0fc in y scalar(gasinfraPC)
+				_col(32) %15s in y scalar(gasinfraPob) ///
+				_col(49) %7s in y scalar(gasinfraPIB) ///
+				_col(57) %15s in y scalar(gasinfraPC)
 			noisily di in g "  Resto de los gastos" ///
-				_col(32) %15.0fc in y `Energia'[1,1] ///
-				_col(49) %7.3fc in y scalar(gasotrosPIB) ///
-				_col(57) %15.0fc in y scalar(gasotrosPC)
+				_col(32) %15s in y scalar(gasotrosPob) ///
+				_col(49) %7s in y scalar(gasotrosPIB) ///
+				_col(57) %15s in y scalar(gasotrosPC)
 			noisily di
 			noisily di in g "  Part y otras Aport" ///
-				_col(32) %15.0fc in y `Energia'[1,1] ///
-				_col(49) %7.3fc in y scalar(gasfederPIB) ///
-				_col(57) %15.0fc in y scalar(gasfederPC)
+				_col(32) %15s in y scalar(gasfederPob) ///
+				_col(49) %7s in y scalar(gasfederPIB) ///
+				_col(57) %15s in y scalar(gasfederPC)
 			noisily di in g "  Costo de la deuda (gobierno)" ///
-				_col(32) %15.0fc in y `Energia'[1,1] ///
-				_col(49) %7.3fc in y scalar(gascostoPIB) ///
-				_col(57) %15.0fc in y scalar(gascostoPC)
+				_col(32) %15s in y scalar(gascostoPob) ///
+				_col(49) %7s in y scalar(gascostoPIB) ///
+				_col(57) %15s in y scalar(gascostoPC)
 			noisily di in g _dup(71) "-"
 			noisily di in g "  {bf:Gasto público total" ///
-				_col(32) %15.0fc in y `Energia'[1,1] ///
-				_col(49) %7.3fc in y otrosgasPIB ///
-				_col(57) %15.0fc in y scalar(otrosgasPC) "}"
+				_col(32) %15s in y scalar(otrosgasPob) ///
+				_col(49) %7s in y scalar(otrosgasPIB) ///
+				_col(57) %15s in y scalar(otrosgasPC) "}"
 
 			*capture drop Inversión
 			*Distribucion Inversión, relativo(infra_entidad) macro(`gasinfra')
@@ -1273,9 +1357,9 @@ quietly {
 				local gascuidados = r(Gasto_neto) - `FAM_gastocuidados' - `gasmadres'
 				restore
 			}
-			scalar gascuidadosPC = (`gascuidados'/`Resto'[1,1])/`deflator'
-			scalar gascuidadosPIB = `gascuidados'/`PIB'*100
-
+			scalar gascuidadosPC = string((`gascuidados'/`Resto'[1,1])/`deflator',"%12.0fc")
+			scalar gascuidadosPIB = string(`gascuidados'/`PIB'*100,"%7.3fc")
+			scalar gascuidadosPob = string(`Resto'[1,1],"%12.0fc")
 
 			** 8.2 Apoyo a madres trabajadoras (cuidados) **
 			capture confirm scalar gasmadres
@@ -1291,11 +1375,9 @@ quietly {
 				}
 				restore
 			}
-			scalar gasmadresPC = (`gasmadres'/`MADRES'[1,1])/`deflator'
-			scalar gasmadresPIB = `gasmadres'/`PIB'*100
-
-			capture drop IngBasico
-			g IngBasico = 0
+			scalar gasmadresPC = string((`gasmadres'/`MADRES'[1,1])/`deflator',"%12.0fc")
+			scalar gasmadresPIB = string(`gasmadres'/`PIB'*100,"%7.3fc")
+			scalar gasmadresPob = string(`MADRES'[1,1],"%12.0fc")
 
 			local bititle = "General"
 			capture confirm scalar ingbasico18
@@ -1340,23 +1422,27 @@ quietly {
 			else {
 				local IngBas = 0
 			}
-			scalar IngBasPC = (`IngBas'/`pobIngBas'[1,1])/`deflator'
-			scalar IngBasPIB = `IngBas'/`PIB'*100
+			scalar IngBasPC = string((`IngBas'/`pobIngBas'[1,1])/`deflator',"%12.0fc")
+			scalar IngBasPIB = string(`IngBas'/`PIB'*100,"%7.3fc")
+			scalar IngBasPob = string(`pobIngBas'[1,1],"%12.0fc")
 			
-			scalar transfPIB = IngBasPIB+gasmadresPIB+gascuidadosPIB
-			scalar transfPC = (transfPIB/`pobIngBas'[1,1])/`deflator'
+			scalar transfPIB = string(real(subinstr(IngBasPIB,",","",.))+real(subinstr(gasmadresPIB,",","",.))+real(subinstr(gascuidadosPIB,",","",.)),"%7.3fc")
+			scalar transfPC = string(real(subinstr(IngBasPC,",","",.))+real(subinstr(gasmadresPC,",","",.))+real(subinstr(gascuidadosPC,",","",.)),"%12.0fc")
+			scalar transfPob = string(`pobIngBas'[1,1],"%12.0fc")
 
+			capture drop IngBasico
+			g IngBasico = 0
 			if ingbasico18 == 0 & ingbasico65 == 1 {
-				replace IngBasico = IngBasPC if edad >= 18
+				replace IngBasico = real(subinstr(IngBasPC,",","",.)) if edad >= 18
 			}
 			else if ingbasico18 == 1 & ingbasico65 == 0 {
-				replace IngBasico = IngBasPC if edad < 65
+				replace IngBasico = real(subinstr(IngBasPC,",","",.)) if edad < 65
 			}
 			else if ingbasico18 == 0 & ingbasico65 == 0 {
-				replace IngBasico = IngBasPC if edad >= 18 & edad < 65
+				replace IngBasico = real(subinstr(IngBasPC,",","",.)) if edad >= 18 & edad < 65
 			}
 			else { 
-				replace IngBasico = IngBasPC
+				replace IngBasico = real(subinstr(IngBasPC,",","",.))
 			}
 
 			* Resultados *
@@ -1367,26 +1453,26 @@ quietly {
 				_col(59) %10s in g "PC (MXN `aniovp')" "}"
 			noisily di in g _dup(71) "-"
 			noisily di in g "  `bititle'" ///
-				_col(32) %15.0fc in y `pobIngBas'[1,1] ///
-				_col(49) %7.3fc in y IngBasPIB ///
-				_col(57) %15.0fc in y IngBas
+				_col(32) %15s in y scalar(IngBasPob) ///
+				_col(49) %7s in y scalar(IngBasPIB) ///
+				_col(57) %15s in y scalar(IngBasPC)
 			noisily di in g "  Apoyo a madres trabajadoras" ///
-				_col(32) %15.0fc in y `MADRES'[1,1] ///
-				_col(49) %7.3fc in y scalar(gasmadresPIB) ///
-				_col(57) %15.0fc in y scalar(gasmadresPC)
+				_col(32) %15s in y scalar(gasmadresPob) ///
+				_col(49) %7s in y scalar(gasmadresPIB) ///
+				_col(57) %15s in y scalar(gasmadresPC)
 			noisily di in g "  Gasto en cuidados" ///
-				_col(32) %15.0fc in y `Resto'[1,1] ///
-				_col(49) %7.3fc in y scalar(gascuidadosPIB) ///
-				_col(57) %15.0fc in y scalar(gascuidadosPC)
+				_col(32) %15s in y scalar(gascuidadosPob) ///
+				_col(49) %7s in y scalar(gascuidadosPIB) ///
+				_col(57) %15s in y scalar(gascuidadosPC)
 
 			noisily di in g _dup(71) "-"
 			noisily di in g "  {bf:Gasto público total" "}" ///
-				_col(32) %15.0fc in y `pobIngBas'[1,1] ///
-				_col(49) %7.3fc in y scalar(transfPIB) ///
-				_col(57) %15.0fc in y scalar(transfPC)
+				_col(32) %15s in y scalar(transfPob) ///
+				_col(49) %7s in y scalar(transfPIB) ///
+				_col(57) %15s in y scalar(transfPC)
 
-			replace IngBasico = IngBasico + scalar(gasmadresPC) if primi2 == 1
-			replace IngBasico = IngBasico + scalar(gascuidadosPC) if cuidados_pot == 1
+			replace IngBasico = IngBasico + real(subinstr(gasmadresPC,",","",.)) if primi2 == 1
+			replace IngBasico = IngBasico + real(subinstr(gascuidadosPC,",","",.)) if cuidados_pot == 1
 		}
 	}
 
@@ -1415,7 +1501,9 @@ quietly {
 	save `"`c(sysdir_site)'/users/$id/gastos.dta"', replace	
 
 
-
+	if "$textbook" == "textbook" {
+		noisily scalarlatex, log(gastopc) alt(gpc)
+	}
 
 
 	***********

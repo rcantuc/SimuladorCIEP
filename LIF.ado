@@ -188,9 +188,9 @@ quietly {
 		local name = strtoname(`"`disptext'"')
 
 		* Display *
-		scalar `name' = `mat`k''[1,1]
-		//scalar `name'PIB = `mat`k''[1,2]
-		//scalar `name'Tot = `mat`k''[1,1]/`mattot'[1,1]*100
+		scalar `name' = string(`mat`k''[1,1], "%20.0fc")
+		scalar `name'PIB = string(`mat`k''[1,2], "%7.3fc")
+		scalar `name'Tot = string(`mat`k''[1,1]/`mattot'[1,1]*100, "%7.1fc")
 		local `by' `"``by'' `name'"'
 
 		noisily di in g `"  (+) `disptext'"' ///
@@ -254,9 +254,9 @@ quietly {
 		local name = strtoname(`"`disptext'"')
 
 		* Display *
-		scalar `=strtoname("`=r(name`k')'")' = `mat`k''[1,1]
-		scalar `=strtoname("`=r(name`k')'")'PIB = `mat`k''[1,2]
-		scalar `=strtoname("`=r(name`k')'")'C = ((`mat`k''[1,1]/`pre`k''[1,1])^(1/(`=`anio'-`desde''))-1)*100
+		scalar `=strtoname("`=r(name`k')'")' = string(`mat`k''[1,1], "%20.0fc")
+		scalar `=strtoname("`=r(name`k')'")'PIB = string(`mat`k''[1,2], "%7.3fc")
+		scalar `=strtoname("`=r(name`k')'")'C = string((((`mat`k''[1,1]/`pre`k''[1,1])^(1/(`=`anio'-`desde''))-1)*100), "%7.1fc")
 		local divResumido `"`divResumido' `=strtoname(abbrev("`=r(name`k')'",7))'"'
 
 		noisily di in g "  (+) `=r(name`k')'" ///

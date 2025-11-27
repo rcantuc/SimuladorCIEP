@@ -7,14 +7,14 @@ postfile TE double(anio ISRAS ISRPF CUOTAS IngLab 				/// Impuestos al trabajo
 	FMP PEMEX CFE IMSS ISSSTE IngCapPub) 					/// Organismos y empresas públicas
 	using `"`c(sysdir_site)'/03_temp/TE.dta"', replace
 
-capture scalar drop ISRASPor ISRPFPor CUOTASPor ISRPMPor OTROSKPor FMPPor ///
-	PEMEXPor CFEPor IMSSPor ISSSTEPor IVAPor ISANPor IEPSNPPor IEPSPPor IMPORTPor
+capture scalar drop ISRASTE ISRPFTE CUOTASTE ISRPMTE OTROSKTE FMPTE ///
+	PEMEXTE CFETE IMSSTE ISSSTETE IVATE ISANTE IEPSNPTE IEPSPTE IMPORTTE
 forvalues anio = 2001(1)`=anioPE' {
 	noisily TasasEfectivas, anio(`anio')
-	post TE (`anio') (`=ISRASPor') (`=ISRPFPor') (`=CUOTASPor') (`=YlImpPor') ///
-		(`=ISRPMPor') (`=OTROSKPor') (`=IngKPrivadoTotPor') ///
-		(`=IVAPor') (`=ISANPor') (`=IEPSNPPor') (`=IEPSPPor') (`=IMPORTPor') (`=ingconsumoPor') ///
-		(`=FMPPor') (`=PEMEXPor') (`=CFEPor') (`=IMSSPor') (`=ISSSTEPor') (`=IngKPublicosTotPor')
+	post TE (`anio') (`=real(ISRASTE)') (`=real(ISRPFTE)') (`=real(CUOTASTE)') (`=real(YlImpTE)') ///
+		(`=real(ISRPMTE)') (`=real(OTROSKTE)') (`=real(IngKPrivadoTotTE)') ///
+		(`=real(IVATE)') (`=real(ISANTE)') (`=real(IEPSNPTE)') (`=real(IEPSPTE)') (`=real(IMPORTTE)') (`=real(ingconsumoTE)') ///
+		(`=real(FMPTE)') (`=real(PEMEXTE)') (`=real(CFETE)') (`=real(IMSSTE)') (`=real(ISSSTETE)') (`=real(IngKPublicosTotTE)')
 }
 postclose TE
 
@@ -37,7 +37,7 @@ twoway (connected IngLab anio) ///
 	caption("{bf:Fuente}: Elaborado por el CIEP con información de la SHCP `=anioPE' e INEGI, BIE.") ///
 	name(TE, replace)
 
-graph export "`c(sysdir_site)'/05_graphs/TE.png", replace
+graph export "$export/TE.png", replace
 
 * Calcular estadísticos para ISR asalariados
 tabstat ISRAS if anio == `=anioPE' | anio == `=anioPE-25', by(anio) save
@@ -63,7 +63,7 @@ twoway (connected ISRAS anio) ///
 	caption("{bf:Fuente}: Elaborado por el CIEP con información de la SHCP `=anioPE' e INEGI, BIE.") ///
 	name(TE_Trabajo, replace)
 
-graph export "`c(sysdir_site)'/05_graphs/TE_Trabajo.png", replace
+graph export "$export/TE_Trabajo.png", replace
 
 
 * Calcular estadísticos para ISR personas morales
@@ -88,7 +88,7 @@ twoway (connected ISRPM anio) ///
 	caption("{bf:Fuente}: Elaborado por el CIEP con información de la SHCP `=anioPE' e INEGI, BIE.") ///
 	name(TE_Capital, replace)
 
-graph export "`c(sysdir_site)'/05_graphs/TE_Capital.png", replace
+graph export "$export/TE_Capital.png", replace
 
 
 * Gráfica: Tasas efectivas por impuestos al consumo
@@ -109,7 +109,7 @@ twoway (connected IVA anio) ///
 	caption("{bf:Fuente}: Elaborado por el CIEP con información de la SHCP `=anioPE' e INEGI, BIE.") ///
 	name(TE_Consumo, replace)
 
-graph export "`c(sysdir_site)'/05_graphs/TE_Consumo.png", replace
+graph export "$export/TE_Consumo.png", replace
 
 
 * Gráfica: Tasas efectivas de organismos y empresas públicas
@@ -138,4 +138,4 @@ twoway (connected FMP anio) ///
 	caption("{bf:Fuente}: Elaborado por el CIEP con información de la SHCP `=anioPE' e INEGI, BIE.") ///
 	name(TE_Organismos, replace)
 
-graph export "`c(sysdir_site)'/05_graphs/TE_Organismos.png", replace
+graph export "$export/TE_Organismos.png", replace
