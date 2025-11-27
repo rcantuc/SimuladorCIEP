@@ -21,10 +21,10 @@ quietly {
 	egen `miembros' = count(`exp'), by(`folio')
 	if "`if'" != "" {
 		g hog = `=substr("`if'",3,.)'
-		*replace hog = hog/`miembros'
+		replace hog = hog/`miembros'
 	}
 	else {
-		g hog = 1 // 1/`miembros'
+		g hog = 1/`miembros'
 	}
 
 	tempvar varlist2
