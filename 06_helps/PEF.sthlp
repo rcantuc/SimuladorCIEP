@@ -1,18 +1,19 @@
 {smcl}
-{* *! version 1.  6mar2025}{...}
+{* *! version 2.0 Ricardo Cantú 11dic2025}{...}
 {viewerdialog PEF "dialog PEF"}{...}
 {vieweralsosee "[R] PEF" "mansection R PEF"}{...}
 {viewerjumpto "Syntax" "PEF##syntax"}{...}
 {viewerjumpto "Description" "PEF##description"}{...}
 {viewerjumpto "Options" "PEF##options"}{...}
 {viewerjumpto "Examples" "PEF##examples"}{...}
+{viewerjumpto "Output" "PEF##output"}{...}
 {viewerjumpto "References" "PEF##references"}{...}
 
 {marker syntax}{...}
 {title:Syntax}
 
 {p 8 16 2}
-{opt PEF} [if] [, ANIO(int) BY(varname) UPDATE NOGraphs Base MINimum(real) DESDE(int) PEF PPEF APROBado ROWS(int) COLS(int) TITle(string)]
+{cmd:PEF} [{it:if}] [, {opt ANIO(int)} {opt BY(varname)} {opt UPDATE} {opt NOGraphs} {opt Base} {opt MINimum(real)} {opt DESDE(int)} {opt PEF} {opt PPEF} {opt APROBado} {opt ROWS(int)} {opt COLS(int)} {opt HIGHlight(int)} {opt TITle(string)}]
 {p_end}
 
 {marker description}{...}
@@ -83,31 +84,81 @@ El alcance del comando permite consultar el gasto histórico desde 2013 hasta el
 {marker examples}{...}
 {title:Examples}
 
-{pstd}Ejemplo 1: Uso básico sin personalización de gráfica{p_end}
-{phang2}{cmd:. PEF, anio(2024) desde(2013)}
+{pstd}{bf:Ejemplo 1}: Análisis básico del gasto público 2025{p_end}
+{phang2}{cmd:. PEF, anio(2025)}
 {p_end}
 
-{pstd}Ejemplo 2: Uso con actualización y sin gráficos{p_end}
-{phang2}{cmd:. PEF, anio(2024) desde(2013) update nographs}
+{pstd}{bf:Ejemplo 2}: Comparar gasto desde 2015{p_end}
+{phang2}{cmd:. PEF, anio(2025) desde(2015)}
 {p_end}
 
-{pstd}Ejemplo 3: Uso con personalización de gráfica{p_end}
-{phang2}{cmd:. PEF, anio(2024) desde(2013) minimum(0.5) rows(1) cols(5) title("Ingresos Fiscales")}
+{pstd}{bf:Ejemplo 3}: Actualizar datos y generar análisis sin gráficas{p_end}
+{phang2}{cmd:. PEF, anio(2025) update nographs}
 {p_end}
+
+{pstd}{bf:Ejemplo 4}: Personalizar gráfica con título{p_end}
+{phang2}{cmd:. PEF, anio(2025) desde(2015) minimum(1) rows(2) cols(5) title("Gasto Público Federal")}
+{p_end}
+
+{pstd}{bf:Ejemplo 5}: Obtener solo la base de datos{p_end}
+{phang2}{cmd:. PEF, base}
+{p_end}
+
+{pstd}{bf:Ejemplo 6}: Análisis por ramo administrativo{p_end}
+{phang2}{cmd:. PEF, anio(2025) by(ramo)}
+{p_end}
+
+{pstd}{bf:Ejemplo 7}: Filtrar por ramo específico (Educación = ramo 11){p_end}
+{phang2}{cmd:. PEF if ramo == 11, anio(2025)}
+{p_end}
+
+{pstd}{bf:Ejemplo 8}: Resaltar una categoría específica en la gráfica{p_end}
+{phang2}{cmd:. PEF, anio(2025) highlight(3)}
+{p_end}
+
+{marker output}{...}
+{title:Output}
+
+{pstd}
+El comando muestra automáticamente:
+{p_end}
+
+{phang2}- {bf:Sección A}: Gasto bruto por categoría con montos, % PIB y % del total{p_end}
+{phang2}- {bf:Sección B}: Gasto resumido descontando cuotas ISSSTE y aportaciones{p_end}
+{phang2}- {bf:Sección C}: Cambios en puntos porcentuales del PIB entre años{p_end}
+
+{pstd}
+Variables generadas:
+{p_end}
+
+{phang2}- {bf:gasto}: Monto del gasto ejercido{p_end}
+{phang2}- {bf:gastoPIB}: Gasto como % del PIB{p_end}
+{phang2}- {bf:gastoR}: Gasto en términos reales{p_end}
+{phang2}- {bf:gastoTOT}: Gasto total del año{p_end}
 
 {marker references}{...}
 {title:References}
 
 {pstd}
-1. {bf:Presupuesto de Egresos:} {browse "https://www.ppef.hacienda.gob.mx/"}
+1. {bf:Presupuesto de Egresos de la Federación:} {browse "https://www.ppef.hacienda.gob.mx/"}
 {p_end}
 
 {pstd}
-2. {bf:BIE:} {browse "https://www.inegi.org.mx/app/indicadores/"}
+2. {bf:Cuenta Pública:} {browse "https://www.cuentapublica.hacienda.gob.mx/"}
 {p_end}
 
 {pstd}
 3. {bf:Transparencia Presupuestaria:} {browse "https://www.transparenciapresupuestaria.gob.mx/Datos-Abiertos"}
+{p_end}
+
+{pstd}
+4. {bf:Banco de Indicadores INEGI:} {browse "https://www.inegi.org.mx/app/indicadores/"}
+{p_end}
+
+{title:See Also}
+
+{pstd}
+{help LIF}, {help DatosAbiertos}, {help PIBDeflactor}, {help SHRFSP}
 {p_end}
 
 {smcl_end}

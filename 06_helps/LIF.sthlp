@@ -1,18 +1,19 @@
 {smcl}
-{* *! version 1.  27feb2025}{...}
+{* *! version 2.0 Ricardo Cantú 11dic2025}{...}
 {viewerdialog LIF "dialog LIF"}{...}
 {vieweralsosee "[R] LIF" "mansection R LIF"}{...}
 {viewerjumpto "Syntax" "LIF##syntax"}{...}
 {viewerjumpto "Description" "LIF##description"}{...}
 {viewerjumpto "Options" "LIF##options"}{...}
 {viewerjumpto "Examples" "LIF##examples"}{...}
+{viewerjumpto "Output" "LIF##output"}{...}
 {viewerjumpto "References" "LIF##references"}{...}
 
 {marker syntax}{...}
 {title:Syntax}
 
 {p 8 16 2}
-{opt LIF} [if] [, ANIO(int) BY(varname) UPDATE NOGraphs Base MINimum(real) DESDE(int) EOFP PROYeccion ROWS(int) COLS(int) TITle(string)]
+{cmd:LIF} [{it:if}] [, {opt ANIO(int)} {opt BY(varname)} {opt UPDATE} {opt NOGraphs} {opt Base} {opt MINimum(real)} {opt DESDE(int)} {opt EOFP} {opt PROYeccion} {opt ROWS(int)} {opt COLS(int)} {opt TITle(string)}]
 {p_end}
 
 {marker description}{...}
@@ -88,31 +89,73 @@ El comando procesa datos de tres fuentes:
 {marker examples}{...}
 {title:Examples}
 
-{pstd}Ejemplo 1: Uso básico sin personalización de gráfica{p_end}
-{phang2}{cmd:. LIF, anio(2024) desde(2013) EOFP}
+{pstd}{bf:Ejemplo 1}: Análisis básico de ingresos para 2025{p_end}
+{phang2}{cmd:. LIF, anio(2025)}
 {p_end}
 
-{pstd}Ejemplo 2: Uso con actualización y sin gráficos{p_end}
-{phang2}{cmd:. LIF, anio(2024) desde(2013) PROYeccion nographs update}
+{pstd}{bf:Ejemplo 2}: Comparar ingresos desde 2015 con datos observados{p_end}
+{phang2}{cmd:. LIF, anio(2025) desde(2015) EOFP}
 {p_end}
 
-{pstd}Ejemplo 3: Uso con personalización de gráfica{p_end}
-{phang2}{cmd:. LIF, anio(2024) desde(2013) EOFP minimum(0.5) rows(1) cols(5) title("Ingresos Fiscales")}
+{pstd}{bf:Ejemplo 3}: Proyectar ingresos del año incompleto{p_end}
+{phang2}{cmd:. LIF, anio(2025) proyeccion}
 {p_end}
+
+{pstd}{bf:Ejemplo 4}: Actualizar datos y generar análisis sin gráficas{p_end}
+{phang2}{cmd:. LIF, anio(2025) desde(2015) update nographs}
+{p_end}
+
+{pstd}{bf:Ejemplo 5}: Personalizar gráfica con título y leyenda{p_end}
+{phang2}{cmd:. LIF, anio(2025) desde(2015) minimum(0.5) rows(2) cols(4) title("Ingresos Tributarios")}
+{p_end}
+
+{pstd}{bf:Ejemplo 6}: Obtener solo la base de datos sin cálculos{p_end}
+{phang2}{cmd:. LIF, base}
+{p_end}
+
+{pstd}{bf:Ejemplo 7}: Análisis por tipo de impuesto{p_end}
+{phang2}{cmd:. LIF if divLIF == 1, anio(2025)}
+{p_end}
+
+{marker output}{...}
+{title:Output}
+
+{pstd}
+El comando muestra automáticamente:
+{p_end}
+
+{phang2}- {bf:Sección A}: Ingresos por categoría con montos, % PIB y % del total{p_end}
+{phang2}- {bf:Sección B}: Ingresos resumidos (sin deuda) y crecimiento real{p_end}
+{phang2}- {bf:Sección C}: Cambios en puntos porcentuales del PIB entre años{p_end}
+{phang2}- {bf:Sección D}: Elasticidades de los ingresos respecto al PIB{p_end}
+
+{pstd}
+Variables generadas:
+{p_end}
+
+{phang2}- {bf:recaudacion}: Monto recaudado (observado o proyectado){p_end}
+{phang2}- {bf:recaudacionPIB}: Recaudación como % del PIB{p_end}
+{phang2}- {bf:recaudacionR}: Recaudación en términos reales{p_end}
 
 {marker references}{...}
 {title:References}
 
 {pstd}
-1. {bf:Ley Federal de Ingresos:} {browse "https://www.finanzaspublicas.hacienda.gob.mx/es/Finanzas_Publicas/Paquete_Economico_y_Presupuesto"}
+1. {bf:Ley de Ingresos de la Federación:} {browse "https://www.finanzaspublicas.hacienda.gob.mx/es/Finanzas_Publicas/Paquete_Economico_y_Presupuesto"}
 {p_end}
 
 {pstd}
-2. {bf:Estadísticas Oportunas:} {browse "http://presto.hacienda.gob.mx/EstoporLayout/estadisticas.jsp"}
+2. {bf:Estadísticas Oportunas de Finanzas Públicas:} {browse "https://www.finanzaspublicas.hacienda.gob.mx/es/Finanzas_Publicas/Estadisticas_Oportunas_de_Finanzas_Publicas"}
 {p_end}
 
 {pstd}
-3. {bf:Banco de Indicadores:} {browse "https://www.inegi.org.mx/app/indicadores/"}
+3. {bf:Banco de Indicadores INEGI:} {browse "https://www.inegi.org.mx/app/indicadores/"}
+{p_end}
+
+{title:See Also}
+
+{pstd}
+{help PEF}, {help DatosAbiertos}, {help PIBDeflactor}, {help SHRFSP}
 {p_end}
 
 {smcl_end}

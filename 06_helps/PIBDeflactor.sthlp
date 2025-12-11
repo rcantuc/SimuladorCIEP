@@ -1,18 +1,19 @@
 {smcl}
-{* *! version 1.  20feb2025}{...}
+{* *! version 2.0 Ricardo Cantú 11dic2025}{...}
 {viewerdialog PIBDeflactor "dialog PIBDeflactor"}{...}
 {vieweralsosee "[R] PIBDeflactor" "mansection R PIBDeflactor"}{...}
 {viewerjumpto "Syntax" "PIBDeflactor##syntax"}{...}
 {viewerjumpto "Description" "PIBDeflactor##description"}{...}
 {viewerjumpto "Options" "PIBDeflactor##options"}{...}
 {viewerjumpto "Examples" "PIBDeflactor##examples"}{...}
+{viewerjumpto "Output" "PIBDeflactor##output"}{...}
 {viewerjumpto "References" "PIBDeflactor##references"}{...}
 
 {marker syntax}{...}
 {title:Syntax}
 
 {p 8 16 2}
-{opt PIBDeflactor} [if] [, ANIOvp(int) NOGraphs UPDATE GEOPIB(int) GEODEF(int) DIScount(real) ANIOMAX(int) NOOutput TEXTbook]
+{cmd:PIBDeflactor} [{it:if}] [, {opt ANIOvp(int)} {opt NOGraphs} {opt UPDATE} {opt GEOPIB(int)} {opt GEODEF(int)} {opt DIScount(real)} {opt ANIOMAX(int)} {opt NOOutput} {opt TEXTbook}]
 {p_end}
 
 {marker description}{...}
@@ -104,23 +105,78 @@ Genera los siguientes indicadores:
 {marker examples}{...}
 {title:Examples}
 
-{pstd}Ejemplo 1: Uso básico{p_end}
-{phang2}{cmd:. PIBDeflactor, aniovp(2024) aniomax(2070) geopib(1993) geodef(1993) discount(5)}
+{pstd}{bf:Ejemplo 1}: Uso básico con año base 2025{p_end}
+{phang2}{cmd:. PIBDeflactor, aniovp(2025)}
 {p_end}
 
-{pstd}Ejemplo 2: Uso sin generación de gráficas y con actualización de datos{p_end}
-{phang2}{cmd:. PIBDeflactor, aniovp(2024) aniomax(2070) geopib(1993) geodef(1993) discount(5) nographs update}
+{pstd}{bf:Ejemplo 2}: Proyección hasta 2050 con tasa de descuento del 3%{p_end}
+{phang2}{cmd:. PIBDeflactor, aniovp(2025) aniomax(2050) discount(3)}
 {p_end}
+
+{pstd}{bf:Ejemplo 3}: Calcular promedios geométricos desde 2000{p_end}
+{phang2}{cmd:. PIBDeflactor, aniovp(2025) geopib(2000) geodef(2000)}
+{p_end}
+
+{pstd}{bf:Ejemplo 4}: Actualizar datos sin generar gráficas{p_end}
+{phang2}{cmd:. PIBDeflactor, aniovp(2025) update nographs}
+{p_end}
+
+{pstd}{bf:Ejemplo 5}: Filtrar solo años específicos{p_end}
+{phang2}{cmd:. PIBDeflactor if anio >= 2010 & anio <= 2030, aniovp(2025)}
+{p_end}
+
+{pstd}{bf:Ejemplo 6}: Uso completo con todos los parámetros{p_end}
+{phang2}{cmd:. PIBDeflactor, aniovp(2025) aniomax(2070) geopib(2000) geodef(2000) discount(5) nographs}
+{p_end}
+
+{marker output}{...}
+{title:Output}
+
+{pstd}
+El comando genera una base de datos con las siguientes variables principales:
+{p_end}
+
+{phang2}- {bf:anio}: Año de la observación{p_end}
+{phang2}- {bf:pibY}: PIB nominal{p_end}
+{phang2}- {bf:pibYR}: PIB real (deflactado al año base){p_end}
+{phang2}- {bf:deflator}: Índice deflactor (año base = 1){p_end}
+{phang2}- {bf:deflatorpp}: Poder adquisitivo basado en INPC{p_end}
+{phang2}- {bf:var_pibY}: Crecimiento anual del PIB real{p_end}
+{phang2}- {bf:var_pibG}: Promedio geométrico del crecimiento{p_end}
+{phang2}- {bf:var_indiceY}: Crecimiento anual del deflactor{p_end}
+{phang2}- {bf:var_inflY}: Inflación anual (INPC){p_end}
+{phang2}- {bf:PIBPob}: PIB real per cápita{p_end}
+{phang2}- {bf:OutputPerWorker}: PIB por trabajador en edad laboral{p_end}
+
+{pstd}
+También genera gráficas de:
+{p_end}
+
+{phang2}- Productividad laboral{p_end}
+{phang2}- Índice de precios implícitos{p_end}
+{phang2}- Crecimiento del PIB{p_end}
+{phang2}- PIB per cápita{p_end}
+{phang2}- Inflación (INPC){p_end}
 
 {marker references}{...}
 {title:References}
 
 {pstd}
-1. {bf:Banco de Indicadores:} {browse "https://www.inegi.org.mx/app/indicadores/"}
+1. {bf:Banco de Indicadores INEGI:} {browse "https://www.inegi.org.mx/app/indicadores/"}
 {p_end}
 
 {pstd}
-2. {bf:Bases de Datos CONAPO:} {browse "https://www.gob.mx/conapo/articulos/reconstruccion-y-proyecciones-de-la-poblacion-de-los-municipios-de-mexico"}
+2. {bf:Sistema de Cuentas Nacionales:} {browse "https://www.inegi.org.mx/temas/pib/"}
+{p_end}
+
+{pstd}
+3. {bf:Proyecciones de Población CONAPO:} {browse "https://www.gob.mx/conapo"}
+{p_end}
+
+{title:See Also}
+
+{pstd}
+{help Poblacion}, {help SCN}, {help LIF}, {help PEF}
 {p_end}
 
 {smcl_end}

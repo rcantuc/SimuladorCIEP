@@ -1,18 +1,19 @@
 {smcl}
-{* *! version 1.  22mar2025}{...}
-{viewerdialog scn "dialog scn"}{...}
+{* *! version 2.0 Ricardo Cantú 11dic2025}{...}
+{viewerdialog SCN "dialog SCN"}{...}
 {vieweralsosee "[R] SCN" "mansection R SCN"}{...}
 {viewerjumpto "Syntax" "SCN##syntax"}{...}
 {viewerjumpto "Description" "SCN##description"}{...}
 {viewerjumpto "Options" "SCN##options"}{...}
 {viewerjumpto "Examples" "SCN##examples"}{...}
+{viewerjumpto "Output" "SCN##output"}{...}
 {viewerjumpto "References" "SCN##references"}{...}
 
 {marker syntax}{...}
 {title:Syntax}
 
 {p 8 16 2}
-{opt SCN} [, ANIO(int) NOGraphs UPDATE ANIOMax(int) TEXTBOOK]
+{cmd:SCN} [, {opt ANIO(int)} {opt NOGraphs} {opt UPDATE} {opt TEXTBOOK}]
 {p_end}
 
 {marker description}{...}
@@ -58,23 +59,67 @@ Además, el comando implementa un modelo de forecast para proyectar datos futuro
 {marker examples}{...}
 {title:Examples}
 
-{pstd}Ejemplo 1: Uso básico sin gráficos{p_end}
-{phang2}{cmd:. SCN, anio(2025) aniomax(2070)}
+{pstd}{bf:Ejemplo 1}: Análisis básico de cuentas nacionales 2024{p_end}
+{phang2}{cmd:. SCN, anio(2024)}
 {p_end}
 
-{pstd}Ejemplo 2: Uso con actualización de datos{p_end}
-{phang2}{cmd:. SCN, anio(2025) aniomax(2070) update}
+{pstd}{bf:Ejemplo 2}: Actualizar datos del BIE{p_end}
+{phang2}{cmd:. SCN, anio(2024) update}
 {p_end}
+
+{pstd}{bf:Ejemplo 3}: Análisis sin gráficas{p_end}
+{phang2}{cmd:. SCN, anio(2024) nographs}
+{p_end}
+
+{pstd}{bf:Ejemplo 4}: Formato para publicación (sin títulos){p_end}
+{phang2}{cmd:. SCN, anio(2024) textbook}
+{p_end}
+
+{marker output}{...}
+{title:Output}
+
+{pstd}
+El comando despliega las siguientes cuentas:
+{p_end}
+
+{phang2}{bf:A. Cuenta de producción:} Producción bruta, consumo intermedio, valor agregado, impuestos a productos y PIB.{p_end}
+
+{phang2}{bf:B.1. Distribución del ingreso:} Remuneraciones, contribuciones sociales, ingreso mixto laboral, impuestos a la producción (laborales), ingresos laborales totales, ingresos de capital, PIN y PIB.{p_end}
+
+{phang2}{bf:B.2. Ingresos de capital:} Excedente de operación de sociedades, ingreso mixto de capital, alquiler imputado, gobierno, impuestos netos.{p_end}
+
+{phang2}{bf:C. Distribución secundaria:} PIB, PIN, ingresos del resto del mundo (remuneraciones, propiedad, transferencias) e ingreso nacional disponible.{p_end}
+
+{phang2}{bf:D. Utilización del ingreso:} Consumo de hogares, consumo de gobierno, compras netas, ahorro bruto.{p_end}
+
+{phang2}{bf:E. Consumo de hogares:} Desglose por categoría (alimentos, vivienda, transporte, salud, educación, etc.).{p_end}
+
+{pstd}
+Gráficas generadas:
+{p_end}
+
+{phang2}- Distribución del ingreso (laborales, capital, depreciación){p_end}
+{phang2}- Utilización del ingreso disponible{p_end}
 
 {marker references}{...}
 {title:References}
 
 {pstd}
-1. {bf:Banco de Indicadores:} {browse "https://www.inegi.org.mx/app/indicadores/"}
+1. {bf:Banco de Indicadores INEGI:} {browse "https://www.inegi.org.mx/app/indicadores/"}
 {p_end}
 
 {pstd}
 2. {bf:Cuentas por Sectores Institucionales:} {browse "https://www.inegi.org.mx/temas/si/#tabulados"}
+{p_end}
+
+{pstd}
+3. {bf:Sistema de Cuentas Nacionales de México:} {browse "https://www.inegi.org.mx/temas/pib/"}
+{p_end}
+
+{title:See Also}
+
+{pstd}
+{help PIBDeflactor}, {help Poblacion}, {help LIF}, {help PEF}
 {p_end}
 
 {smcl_end}
