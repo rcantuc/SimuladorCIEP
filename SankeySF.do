@@ -38,7 +38,7 @@ rename `1' from
 * IMSS e ISSSTE *
 set obs `=_N+1'
 replace from = 99 in -1
-replace profile = (scalar(IMSSPIB)+scalar(ISSSTEPIB))/100*scalar(pibY) in -1
+replace profile = (real(IMSSPIB)+real(ISSSTEPIB))/100*scalar(pibY) in -1
 replace to = 99 in -1
 label define to 99 "Empresas públicas", add
 label define `1' 99 "IMSS, ISSSTE", add
@@ -53,14 +53,14 @@ label define `1' 98 "CFE", add
 * Pemex */
 set obs `=_N+1'
 replace from = 97 in -1
-replace profile = (scalar(PEMEXPIB)+scalar(CFEPIB))/100*scalar(pibY) in -1
+replace profile = (real(PEMEXPIB)+real(CFEPIB))/100*scalar(pibY) in -1
 replace to = 99 in -1
 label define `1' 97 "Pemex, CFE", add
 
 * FMP *
 set obs `=_N+1'
 replace from = 97 in -1
-replace profile = scalar(FMPPIB)/100*scalar(pibY) in -1
+replace profile = real(FMPPIB)/100*scalar(pibY) in -1
 replace to = 100 in -1
 label define to 100 "FMP", add
 
@@ -93,9 +93,9 @@ matrix `pobtot' = r(StatTotal)
 
 replace Pensiones = Pensiones + Pensión_AM
 
-collapse (sum) gas_Educación=Educación gas_Salud=Salud /*gas__Salarios_de_gobierno=Salarios*/ ///
+collapse (sum) gas_Educación=Educacion gas_Salud=Salud /*gas__Salarios_de_gobierno=Salarios*/ ///
 	gas___Pensiones=Pensiones gas____Transferencias=IngBasico ///
-	gas____Inversión=Otras_inversiones [fw=factor], by(`1')
+	gas____Inversión=OtrasInversiones [fw=factor], by(`1')
 
 levelsof `1', local(`1')
 foreach k of local `1' {
@@ -118,7 +118,7 @@ set obs `=_N+5'
 replace from = 97 in -1
 label define from 97 "Costo de la deuda", add
 
-replace profile = scalar(gascostoPC)*`pobtot'[1,1] in -1
+replace profile = real(subinstr(gascostoPC,",","",.))*`pobtot'[1,1] in -1
 
 replace to = 14 in -1
 label define `1' 14 "Sistema financiero", add
@@ -127,7 +127,7 @@ label define `1' 14 "Sistema financiero", add
 replace from = 94 in -2
 label define from 94 "Part y otras Aport", add
 
-replace profile = scalar(gasfederPC)*`pobtot'[1,1] in -2
+replace profile = real(subinstr(gasfederPC,",","",.))*`pobtot'[1,1] in -2
 
 replace to = 12 in -2
 label define `1' 12 "Estados y municipios", add
@@ -136,7 +136,7 @@ label define `1' 12 "Estados y municipios", add
 replace from = 95 in -3
 label define from 95 "Otros gastos", add
 
-replace profile = scalar(gasotrosPC)*`pobtot'[1,1] in -3
+replace profile = real(subinstr(gasotrosPC,",","",.))*`pobtot'[1,1] in -3
 
 replace to = 13 in -3
 label define `1' 13 "No distribuibles", add
@@ -145,7 +145,7 @@ label define `1' 13 "No distribuibles", add
 replace from = 96 in -4
 label define from 96 "Energía", add
 
-replace profile = (scalar(gaspemexPC)+scalar(gascfePC)+scalar(gassenerPC)+scalar(gasinverfPC))*`pobtot'[1,1] in -4
+replace profile = (real(subinstr(gaspemexPC,",","",.))+real(subinstr(gascfePC,",","",.))+real(subinstr(gassenerPC,",","",.))+real(subinstr(gasinverfPC,",","",.)))*`pobtot'[1,1] in -4
 
 replace to = 11 in -4
 label define `1' 11 "CFE Pemex SENER", add
@@ -153,7 +153,7 @@ label define `1' 11 "CFE Pemex SENER", add
 * Costo de la deuda energía *
 replace from = 96 in -5
 
-replace profile = scalar(gascosdeuePC)*`pobtot'[1,1] in -5
+replace profile = real(subinstr(gascosdeuePC,",","",.))*`pobtot'[1,1] in -5
 
 replace to = 14 in -5
 

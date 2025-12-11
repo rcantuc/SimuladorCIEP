@@ -5,10 +5,10 @@
 ********************************
 clear all
 if "`c(username)'" == "ricardo" ///                             // iMac Ricardo
-	sysdir set PERSONAL "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
+	sysdir set SITE "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP"
 if "`c(username)'" == "servidorciep" & "`c(console)'" == "" ///       // Servidor CIEP
-	sysdir set PERSONAL "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
-cd "/home/servidorciep/CIEP Dropbox/BasesCIEP/SHCP/"
+	sysdir set SITE "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
+cd "`c(sysdir_site)'"
 
 
 *************************
@@ -16,6 +16,7 @@ cd "/home/servidorciep/CIEP Dropbox/BasesCIEP/SHCP/"
 *** 1. Bases de datos ***
 ***                   ***
 *************************
+*local 1 "update"
 if "`1'" == "update" {
 	** 1.1. Ventas netas de bienes y servicios **
 	DatosAbiertos XKC0106, nog
@@ -30,7 +31,7 @@ if "`1'" == "update" {
 	matrix `Ventas_pib2013' = r(StatTotal)
 
 	keep anio Ventas
-	save XKC0106, replace
+	save "03_temp/XKC0106.dta", replace
 
 	** 1.2. Otros ingresos **
 	DatosAbiertos XKC0179, nog
@@ -45,7 +46,7 @@ if "`1'" == "update" {
 	matrix `OtrosIngresos_pib2013' = r(StatTotal)
 
 	keep anio OtrosIngresos
-	save XKC0179, replace
+	save "03_temp/XKC0179.dta", replace
 
 	** 2.1. Derechos y enteros **
 	DatosAbiertos XKC0113, nog
@@ -60,7 +61,7 @@ if "`1'" == "update" {
 	matrix `Derechos_pib2013' = r(StatTotal)
 
 	keep anio Derechos
-	save XKC0113, replace
+	save "03_temp/XKC0113.dta", replace
 
 	** 2.2. Gasto programable **
 	DatosAbiertos XKC0131, nog
@@ -75,7 +76,7 @@ if "`1'" == "update" {
 	matrix `Programable_pib2013' = r(StatTotal)
 
 	keep anio Programable
-	save XKC0131, replace
+	save "03_temp/XKC0131.dta", replace
 
 	** 2.2.1 Pensiones y jubilaciones **
 	DatosAbiertos XKC0139, nog
@@ -90,7 +91,7 @@ if "`1'" == "update" {
 	matrix `Pensiones_pib2013' = r(StatTotal)
 
 	keep anio Pensiones
-	save XKC0139, replace
+	save "03_temp/XKC0139.dta", replace
 
 	** 2.2.2. Gastos de inversión **
 	DatosAbiertos XKC0145, nog
@@ -105,7 +106,7 @@ if "`1'" == "update" {
 	matrix `Inversion_pib2013' = r(StatTotal)
 
 	keep anio Inversion
-	save XKC0145, replace
+	save "03_temp/XKC0145.dta", replace
 
 	** 2.3. Gasto no programable **
 	DatosAbiertos XKC0157, nog
@@ -120,65 +121,17 @@ if "`1'" == "update" {
 	matrix `NoProgramable_pib2013' = r(StatTotal)
 
 	keep anio NoProgramable
-	save XKC0157, replace
+	save "03_temp/XKC0157.dta", replace
 }
 
 
 ** 1.2. Información adicional **
-forvalues anio = 2019(1)2023 {
-	/*if "`anio'" == "2015" {
-		local reduccionduc = 0
-		local estimulosfiscales = 0
-		local apoyospatrimoniales = 60000*1000000
-		local indirectos = 0
-		local fmp = 426395128797
-		local fmp_feip_feief = 5.38
-		local fmp_feh = 1.52
-		local fmp_investigacion = 1.23
-		local fmp_tesofe = 91.87
-		local fmp_otros = 0.00
-	}
-	if "`anio'" == "2016" {
-		local reduccionduc = 0
-		local estimulosfiscales = 40213*1000000
-		local apoyospatrimoniales = 161939*1000000
-		local indirectos = 0
-		local fmp = 321023438114
-		local fmp_feip_feief = 4.48
-		local fmp_feh = 1.29
-		local fmp_investigacion = 1.03
-		local fmp_tesofe = 93.20
-		local fmp_otros = 0.00
-	}
-	if "`anio'" == "2017" {
-		local reduccionduc = 0
-		local estimulosfiscales = 7769*1000000
-		local apoyospatrimoniales = 0
-		local indirectos = 0
-		local fmp = 434763080208
-		local fmp_feip_feief = 2.48
-		local fmp_feh = 0.73
-		local fmp_investigacion = 0.57
-		local fmp_tesofe = 96.21
-		local fmp_otros = 0.00
-	}
-	if "`anio'" == "2018" {
-		local reduccionduc = 0
-		local estimulosfiscales = 11110*1000000
-		local apoyospatrimoniales = 0
-		local indirectos = 0
-		local fmp = 526831188563
-		local fmp_feip_feief = 2.39
-		local fmp_feh = 0.72
-		local fmp_investigacion = 0.55
-		local fmp_tesofe = 96.33
-		local fmp_otros = 0.01
-	}*/
+forvalues anio = 2019(1)2025 {
 	if "`anio'" == "2019" {
 		local reduccionduc = 0
 		local estimulosfiscales = (25787+38704)*1000000
 		local apoyospatrimoniales = 122131*1000000
-		local indirectos = 443943085740
+		local indirectos = 443943085740*0
 		local fmp = 410158961425
 		local fmp_feip_feief = 3.42
 		local fmp_feh = 1.05
@@ -190,7 +143,7 @@ forvalues anio = 2019(1)2023 {
 		local reduccionduc = 26500*1000000
 		local estimulosfiscales = (65000+5800)*1000000
 		local apoyospatrimoniales = 46256*1000000
-		local indirectos = 399325085921
+		local indirectos = 399325085921*0
 		local fmp = 187271584137
 		local fmp_feip_feief = 5.91
 		local fmp_feh = 1.79
@@ -202,7 +155,7 @@ forvalues anio = 2019(1)2023 {
 		local reduccionduc = 77900*1000000
 		local estimulosfiscales = (73280+22915)*1000000
 		local apoyospatrimoniales = 316354*1000000
-		local indirectos = 357608812555
+		local indirectos = 357608812555*0
 		local fmp = 383922663710
 		local fmp_feip_feief = 2.67
 		local fmp_feh = 0.83
@@ -214,7 +167,7 @@ forvalues anio = 2019(1)2023 {
 		local reduccionduc = 238100*1000000
 		local estimulosfiscales = (7455+23000)*1000000
 		local apoyospatrimoniales = 188306*1000000
-		local indirectos = 299434678260
+		local indirectos = 299434678260*0
 		local fmp = 529233592611
 		local fmp_feip_feief = 1.66
 		local fmp_feh = 0.51
@@ -226,7 +179,7 @@ forvalues anio = 2019(1)2023 {
 		local reduccionduc = 157500000000
 		local estimulosfiscales = 86640000000
 		local apoyospatrimoniales = 166615122970
-		local indirectos = 416875393557
+		local indirectos = 416875393557*0
 		local fmp = 255633786073
 		local fmp_feip_feief = 4.05
 		local fmp_feh = 1.24
@@ -238,14 +191,39 @@ forvalues anio = 2019(1)2023 {
 		local reduccionduc = 178735000000
 		local estimulosfiscales = 0
 		local apoyospatrimoniales = 170929000000
-		local indirectos = 416875393557 // <-- Falta actualizar
-		local fmp = 41468323430/.2616  // 344478000000
+		local indirectos = 416875393557*0 // <-- Falta actualizar
+		local fmp = 41468323430/.2616  // 344478000000 <-- Falta actualizar
 		local fmp_feip_feief = 4.05
 		local fmp_feh = 1.24
 		local fmp_investigacion = 0.93
 		local fmp_tesofe = 93.78
 		local fmp_otros = 0.00
 	}
+	if "`anio'" == "2025" {
+		local reduccionduc = 0
+		local estimulosfiscales = 0
+		local apoyospatrimoniales = 0
+		local indirectos = 0
+		local fmp = 0
+		local fmp_feip_feief = 0.00
+		local fmp_feh = 0.00
+		local fmp_investigacion = 0.00
+		local fmp_tesofe = 0.00
+		local fmp_otros = 0.00
+	}
+	if "`anio'" == "2026" {
+		local reduccionduc = 0
+		local estimulosfiscales = 0
+		local apoyospatrimoniales = 0
+		local indirectos = 0
+		local fmp = 0
+		local fmp_feip_feief = 0.00
+		local fmp_feh = 0.00
+		local fmp_investigacion = 0.00
+		local fmp_tesofe = 0.00
+		local fmp_otros = 0.00
+	}
+	
 
 
 	***************************************
@@ -255,8 +233,8 @@ forvalues anio = 2019(1)2023 {
 	***************************************
 
 	** 1.1. Ingresos propios **
-	use XKC0106, clear
-	append using XKC0179
+	use "03_temp/XKC0106.dta", clear
+	append using "03_temp/XKC0179.dta"
 
 	collapse (sum) Ing_Propios_Ventas=Ventas ///
 		Ing_Propios_Otros_Ingresos=OtrosIngresos ///
@@ -296,11 +274,11 @@ forvalues anio = 2019(1)2023 {
 	*** Eje 2: Gastos operativos, financieros e impuestos ***
 	***                                                   ***
 	*********************************************************
-	use XKC0113, clear
-	append using XKC0131
-	append using XKC0157
-	append using XKC0139
-	append using XKC0145
+	use "03_temp/XKC0113.dta", clear
+	append using "03_temp/XKC0131.dta"
+	append using "03_temp/XKC0157.dta"
+	append using "03_temp/XKC0139.dta"
+	append using "03_temp/XKC0145.dta"
 
 	collapse (sum) Gastos_Derechos_y_Enteros=Derechos ///
 		Gastos_Gastos_Operativos=Programable ///
@@ -465,6 +443,6 @@ forvalues anio = 2019(1)2023 {
 	save `eje`anio'5'
 
 
-	noisily SankeySumLoop, anio(`anio') name(`anio'_IVA) folder(SankeyPemex) a(`eje`anio'1') b(`eje`anio'2') c(`eje`anio'3') d(`eje`anio'4') e(`eje`anio'5')
+	noisily SankeySumLoop, anio(`anio') name(`anio') folder(SankeyPemex) a(`eje`anio'1') b(`eje`anio'2') c(`eje`anio'3') d(`eje`anio'4') e(`eje`anio'5')
 }
 

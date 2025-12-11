@@ -1198,7 +1198,7 @@ quietly {
 	noisily di in g "  Updating Deflactor.dta..." _newline
 
 	** 1. Importar variables de interés desde el BIE **
-	noisily AccesoBIE "910392" "inpc"
+	noisily AccesoBIE 910392, nombres(inpc)
 
 	** 2 Label variables **
 	label var inpc "Índice Nacional de Precios al Consumidor"

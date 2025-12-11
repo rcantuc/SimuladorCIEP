@@ -465,7 +465,7 @@ quietly {
 		scalar `varlist'`decil2' = string(r(mean),"%10.0fc")
 
 		if "$output" == "output" {
-			local incd = "`incd' `=string(`=`varlist'`decil2'',"%10.0f")',"
+			local incd = `"`incd' `=subinstr(`varlist'`decil2',",","",.)',"'
 		}
 	}
 	
@@ -557,7 +557,7 @@ quietly {
 	save `"`c(sysdir_site)'/users/$id/bootstraps/`bootstrap'/`varlist'REC"', replace
 
 	
-	//ProyGraph `varlist' "`title'" `aniope' `nographs'
+	ProyGraph `varlist' "`title'" `aniope' `nographs'
 
 	******************************
 	*** 7. Gráficas combinadas ***
@@ -852,7 +852,7 @@ program graphpiramide
 			///note(`"{bf:Note}: Percentages in parentheses represent each group's share of the total account."')
 	
 		//graph export `"`c(sysdir_site)'/users/$id/graphs/`varlist'_`titleover'.png"', ///
-		graph export `"$export/`varlist'_`titleover'.png"', ///
+		capture graph export `"$export/`varlist'_`titleover'.png"', ///
 				replace name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)')
 		capture window manage close graph H`varlist'
 		capture window manage close graph M`varlist'

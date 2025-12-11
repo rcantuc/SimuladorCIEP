@@ -33,7 +33,7 @@ quietly {
 	capture confirm file "`c(sysdir_site)'/04_master/SCN.dta"
 	if _rc != 0 | "`update'" == "update" {
 		noisily di in g "  Updating SCN.dta... Este proceso puede demorar varios minutos." _newline
-		UpdateSCN `update'
+		noisily UpdateSCN `update'
 	}
 
 	** 1.1. PIBDeflactor
@@ -157,15 +157,27 @@ quietly {
 	format MixKN %20.0fc
 	label var MixKN "Ingreso mixto neto (capital)"
 
-	g double ROW = ROWRemR + ROWTransR + ROWPropR - ROWTransP - ROWPropP - ROWPropP
+	/* NOTA: ROW es la suma de los tres componentes del resto del mundo */
+	g double ROW = (ROWRemR - ROWRemP) + (ROWTransR - ROWTransP) + (ROWPropR - ROWPropP)
 	format ROW %20.0fc
-	label var ROW "Resto del mundo"
+	label var ROW "Resto del mundo (total)"
 
 	** B.3. Ingreso de capital neto **
-	g double ExNOpSoc = ExNOpNoFin + ExNOpFin + ExNOpISFLSH
+	/* NOTA: Los componentes desagregados del excedente de operación del BIE 
+	   (ExNOpNoFin, ExNOpFin, ExNOpISFLSH, ExNOpHog, ExNOpGob) provienen de tablas 
+	   diferentes que no son consistentes con el ExBOp agregado. La suma de las 
+	   partes es ~820 mil millones mayor que (ExBOp - CapFij).
+	   
+	   Para garantizar consistencia con el PIB oficial y que la sección B.1 cuadre 
+	   (Yl + CapIncImp = PIN + CapFij = PIB), se calcula ExNOpSoc como RESIDUO 
+	   en lugar de sumar los componentes desagregados:
+	   
+	   ExNOpSoc = (ExBOp - CapFij) - MixN - ExNOpHog - ExNOpGob
+	   
+	   Esto absorbe la discrepancia estadística del INEGI en el excedente de sociedades. */
+	g double ExNOpSoc = (ExBOp - CapFij) - MixN - ExNOpHog - ExNOpGob
 	format ExNOpSoc %20.0fc
-	label var ExNOpSoc "Sociedades e ISFLSH"
-	*replace ExNOpSoc = PIN - RemSalSS - MixN - (ImpProductos + SubProductos) - (ImpProduccion + SubProduccion)
+	label var ExNOpSoc "Sociedades e ISFLSH (ajustado)"
 
 	** B.4 Ingreso de capital **
 	g double Capital = ExNOpSoc + MixKN + ExNOpHog + ExNOpGob
@@ -179,11 +191,19 @@ quietly {
 
 	g double ImpNetProduccionL = ImpNetProduccion*(RemSalSS + MixL)/(RemSalSS + MixL + Capital)
 	format ImpNetProduccionL %20.0fc
-	label var ImpNetProduccion "Impuestos netos a la producci{c o'}n e importaciones (laboral)"
+	label var ImpNetProduccionL "Impuestos netos a la producci{c o'}n e importaciones (laboral)"
 
-	g double ImpNetProduccionK = ImpNetProduccion - ImpNetProduccionL
+	/* NOTA: La discrepancia estadística del INEGI (~1.3 mil millones) entre 
+	   PIB oficial y la suma RemSalSS + ExBOp + ImpNetProduccion + ImpNet
+	   se absorbe en ImpNetProduccionK para garantizar que:
+	   Yl + CapIncImp + CapFij = PIB (exactamente 100%) */
+	g double DiscEstPIB = PIB - (RemSalSS + MixL + Capital + ImpNetProduccion + ImpNet + CapFij)
+	format DiscEstPIB %20.0fc
+	label var DiscEstPIB "Discrepancia estadística PIB"
+	
+	g double ImpNetProduccionK = ImpNetProduccion - ImpNetProduccionL + DiscEstPIB
 	format ImpNetProduccionK %20.0fc
-	label var ImpNetProduccionK "Impuestos netos a la producci{c o'}n e importaciones (capital)"
+	label var ImpNetProduccionK "Impuestos netos a la producci{c o'}n e importaciones (capital, ajustado)"
 
 	g double ImpNetProductos = ImpProductos - SubProd
 	format ImpNetProductos %20.0fc
@@ -228,17 +248,19 @@ quietly {
 		_col(44) in y %20.0fc CapIncImp[`obs'] ///
 		_col(66) in y %7.3fc CapIncImp[`obs'] /PIB[`obs']*100
 
+	/* NOTA: Se muestra Yl + CapIncImp como PIN para garantizar consistencia aritmética.
+	   La diferencia con el PIN oficial del BIE (~1.3 mil millones) es discrepancia estadística. */
 	noisily di in g _dup(72) "-"
 	noisily di in g "{bf:  (=) Producto Interno Neto" ///
-		_col(44) in y %20.0fc PIN[`obs'] ///
-		_col(66) in y %7.3fc PIN[`obs']/PIB[`obs']*100 "}"
+		_col(44) in y %20.0fc Yl[`obs']+CapIncImp[`obs'] ///
+		_col(66) in y %7.3fc (Yl[`obs']+CapIncImp[`obs'])/PIB[`obs']*100 "}"
 	noisily di in g "  (+) Consumo de capital fijo" ///
 		_col(44) in y %20.0fc CapFij[`obs'] ///
 		_col(66) in y %7.3fc CapFij[`obs']/PIB[`obs']*100
 	noisily di in g _dup(72) "-"
 	noisily di in g "{bf:  (=) Producto Interno Bruto" ///
-		_col(44) in y %20.0fc PIB[`obs'] ///
-		_col(66) in y %7.3fc PIB[`obs']/PIB[`obs']*100 "}"
+		_col(44) in y %20.0fc Yl[`obs']+CapIncImp[`obs']+CapFij[`obs'] ///
+		_col(66) in y %7.3fc (Yl[`obs']+CapIncImp[`obs']+CapFij[`obs'])/PIB[`obs']*100 "}"
 
 	** R.4. Returns ***
 	scalar RemSal = string(RemSal[`obs']/1000000,"%12.1fc")
@@ -342,22 +364,10 @@ quietly {
 	scalar ImpNetProductos = string(ImpNetProductos[`obs']/1000000,"%12.1fc")
 	scalar ImpNetProductosPIB = string(ImpNetProductos[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	** C.9. Resto del Mundo **
-	g double AhorroN = IngDisp - ConHog - ConGob - ComprasN
-	format AhorroN %20.0fc
-
-	** Validaci{c o'}n **
-	*g double PIBval = RemSalSS + IngMixto + ExBOpSinMix + ImpNet + ImpNetProduccion
-	*format PIBval %20.0fc
-	*label var PIBval "PIB (validaci{c o'}n)"
-
-	** C.6. ROW, Compensation of Employees, pagadas **
-	*replace ROWRemP = PIN + CapFij + ROWRemR + ROWPropR ///
-		- ROWPropP + ROWTransR - ROWTransP - PIBval
-
-	g double ROWRem = ROWRemR // - ROWRemP
+	** C.6. Resto del Mundo (ROW) **
+	g double ROWRem = ROWRemR - ROWRemP
 	format ROWRem %20.0fc
-	label var ROWRem "Remuneraci{c o'}n de asalariados"
+	label var ROWRem "Remuneración de asalariados"
 
 	g double ROWTrans = ROWTransR - ROWTransP
 	format ROWTrans %20.0fc
@@ -366,6 +376,18 @@ quietly {
 	g double ROWProp = ROWPropR - ROWPropP
 	format ROWProp %20.0fc
 	label var ROWProp "Ingresos a la propiedad"
+
+	** C.9. Ahorro Nacional **
+	/* NOTA: AhorroN se calcula como residuo para garantizar consistencia aritmética
+	   con el Ingreso nacional disponible = PIN + ROW. 
+	   La discrepancia con IngDisp del BIE (~190 mil millones) se absorbe aquí. */
+	g double IngDispCalc = PIN + ROWRem + ROWProp + ROWTrans + CapFij
+	format IngDispCalc %20.0fc
+	label var IngDispCalc "Ingreso nacional disponible bruto (calculado)"
+	
+	g double AhorroN = IngDispCalc - ConHog - ConGob - ComprasN
+	format AhorroN %20.0fc
+	label var AhorroN "Ahorro bruto (ajustado)"
 
 
 
@@ -458,10 +480,12 @@ quietly {
 	noisily di in g "  (+) Transferencias corrientes (ROW)" ///
 		_col(44) in y %20.0fc ROWTrans[`obs'] ///
 		_col(66) in y %7.3fc ROWTrans[`obs']/PIB[`obs']*100
+	/* NOTA: Se muestra PIN + ROW como Ingreso nacional disponible para garantizar consistencia aritmética.
+	   La diferencia con IngDisp del BIE (~190 mil millones) es discrepancia en datos del INEGI. */
 	noisily di in g _dup(72) "-"
 	noisily di in g "{bf:  (=) Ingreso nacional disponible" ///
-		_col(44) in y %20.0fc IngDisp[`obs']-CapFij[`obs'] ///
-		_col(66) in y %7.3fc (IngDisp[`obs']-CapFij[`obs'])/PIB[`obs']*100 "}"
+		_col(44) in y %20.0fc PIN[`obs']+ROWRem[`obs']+ROWProp[`obs']+ROWTrans[`obs'] ///
+		_col(66) in y %7.3fc (PIN[`obs']+ROWRem[`obs']+ROWProp[`obs']+ROWTrans[`obs'])/PIB[`obs']*100 "}"
 
 	* Returns *
 	scalar ROWRem = string(ROWRem[`obs']/1000000,"%12.1fc")
@@ -476,8 +500,8 @@ quietly {
 	scalar ROW = string(ROW[`obs']/1000000,"%12.1fc")
 	scalar ROWPIB = string(ROW[`obs']/PIB[`obs']*100,"%7.3fc")
 
-	scalar IngDisp = string((IngDisp[`obs']-CapFij[`obs'])/1000000,"%12.1fc")
-	scalar IngDispPIB = string((IngDisp[`obs']-CapFij[`obs'])/PIB[`obs']*100,"%7.3fc")
+	scalar IngDisp = string((IngDispCalc[`obs']-CapFij[`obs'])/1000000,"%12.1fc")
+	scalar IngDispPIB = string((IngDispCalc[`obs']-CapFij[`obs'])/PIB[`obs']*100,"%7.3fc")
 
 	* R.6 Consumo *
 	noisily di _newline in y "{bf: D. Utilizaci{c o'}n del ingreso disp" in g ///
@@ -501,8 +525,8 @@ quietly {
 		_col(66) in y %7.3fc CapFij[`obs']/PIB[`obs']*100
 	noisily di in g _dup(72) "-"
 	noisily di in g "{bf:  (=) Ingreso nacional disponible" ///
-		_col(44) in y %20.0fc IngDisp[`obs']-CapFij[`obs'] ///
-		_col(66) in y %7.3fc (IngDisp[`obs']-CapFij[`obs'])/PIB[`obs']*100 "}"
+		_col(44) in y %20.0fc IngDispCalc[`obs']-CapFij[`obs'] ///
+		_col(66) in y %7.3fc (IngDispCalc[`obs']-CapFij[`obs'])/PIB[`obs']*100 "}"
 
 	* Returns *
 	scalar ConHog = string(ConHog[`obs']/1000000,"%12.1fc")
@@ -1099,7 +1123,7 @@ program define UpdateSCN
 	***
 	*** 1.1. Importar Cuenta de generación del ingreso
 	***
-	AccesoBIE "724014 724015 724016 724017 724018 724019 724020 724021 724022 724023 724024 724025" "RemSalSS RemSal SSEmpleadores Imp ImpProductos ImpTipoIVA ImpImport OtrImp ImpProduccion Sub ExBOp PIB"
+	AccesoBIE 724014 724015 724016 724017 724018 724019 724020 724021 724022 724023 724024 724025, nombres(RemSalSS RemSal SSEmpleadores Imp ImpProductos ImpTipoIVA ImpImport OtrImp ImpProduccion Sub ExBOp PIB)
 
 	** 1.2 Label variables **
 	label var RemSalSS "Remuneraciones a asalariados + CSS"
@@ -1130,7 +1154,7 @@ program define UpdateSCN
 	***
 	*** 2.1. Importar Producción bruta
 	***
-	AccesoBIE "723651 723652 723653 723654 723655 723656 723657 723658 723659 723660 723661 723662 723663 723664 723665 723666 723667 723668 723669 723670 723671 723672" "RecT ProdT ProdMer ProdUF ProdNM ImpNet ImpProd SubProd ImpT ImpBien ImpServ UsosT ConsInt GcfT GcfI GcfC Fbcf VarExis ExpT ExpBien ExpServ DiscEst"
+	AccesoBIE 723651 723652 723653 723654 723655 723656 723657 723658 723659 723660 723661 723662 723663 723664 723665 723666 723667 723668 723669 723670 723671 723672, nombres(RecT ProdT ProdMer ProdUF ProdNM ImpNet ImpProd SubProd ImpT ImpBien ImpServ UsosT ConsInt GcfT GcfI GcfC Fbcf VarExis ExpT ExpBien ExpServ DiscEst)
 
 	** 2.2 Label variables **
 	label var RecT      "Recursos totales"
@@ -1171,7 +1195,7 @@ program define UpdateSCN
 	***
 	*** 3.1. Cuenta del ingreso nacional disponible
 	***
-	AccesoBIE "724026 724027 724028 724029 724030 724031 724032 724033 724034 724035 724036 724037" "UsosT PIBVA CapFij PIN ROWRemR ROWRemP ROWPropR ROWPropP ROWTransR ROWTransP RecT IngNacD"
+	AccesoBIE 724026 724027 724028 724029 724030 724031 724032 724033 724034 724035 724036 724037, nombres(UsosT PIBVA CapFij PIN ROWRemR ROWRemP ROWPropR ROWPropP ROWTransR ROWTransP RecT IngNacD)
 
 	** 3.2 Label variables **
 	label var UsosT       "Usos totales"
@@ -1202,7 +1226,8 @@ program define UpdateSCN
 	***
 	*** 4.1. Consumo de hogares e ISFLSH
 	***
-	AccesoBIE "724600 724601 724602 724603 724604 724605 724606 724607 724608 724609 724610 724611 724612 724613 724614 724615 724616 724617 724618 724619 724620 724621 724622 724623 724624 724625 724626 724627 724628 724629 724630 724631 724632 724633 724634 724635 724636 724637 724638 724639 724640 724641 724642 724643 724644 724645 724646 724647 724648 724649 724650 724651 724652 724653 724654 724655 724656" "ConHog AlimBebT Alim BebN BebTabT BebA Taba VestCalT Vest Calz AlojT Alqu CRep Agua Elec HogaT Mueb Text Arte Vajil Herr ConH SaluT Smed Sext Hosp TraT Vehi FTra STra ComuT Post TelEq TelS RecrT Audi Durab ArtEq Culs Publ Turis EducT PrePri Secu PostNT Terc NoAtr RestT Comi Hote DiveT Cuid EfeP Prot Segu ServF OtrS"
+	AccesoBIE 724600 724601 724602 724603 724604 724605 724606 724607 724608 724609 724610 724611 724612 724613 724614 724615 724616 724617 724618 724619 724620 724621 724622 724623 724624 724625 724626 724627 724628 724629 724630 724631 724632 724633 724634 724635 724636 724637 724638 724639 724640 724641 724642 724643 724644 724645 724646 724647 724648 724649 724650 724651 724652 724653 724654 724655 724656, ///
+		nombres(ConHog AlimBebT Alim BebN BebTabT BebA Taba VestCalT Vest Calz AlojT Alqu CRep Agua Elec HogaT Mueb Text Arte Vajil Herr ConH SaluT Smed Sext Hosp TraT Vehi FTra STra ComuT Post TelEq TelS RecrT Audi Durab ArtEq Culs Publ Turis EducT PrePri Secu PostNT Terc NoAtr RestT Comi Hote DiveT Cuid EfeP Prot Segu ServF OtrS)
 
 	** 4.2 Label variables **
 	label var ConHog "Consumo de hogares e ISFLSH"
@@ -1278,7 +1303,7 @@ program define UpdateSCN
 	***
 	*** 5.1. Gasto de consumo privado
 	***
-	AccesoBIE "724771 724772 724773 724774 724775 724776 724777" "GastPrivT BienDur BienSemi BienNoDur Serv SubMerc ComprasN"
+	AccesoBIE 724771 724772 724773 724774 724775 724776 724777, nombres(GastPrivT BienDur BienSemi BienNoDur Serv SubMerc ComprasN)
 
 	** 5.2 Label variables **
 	label var GastPrivT "Gastos de consumo privado - Total"
@@ -1304,9 +1329,8 @@ program define UpdateSCN
 	***
 	*** 6.1. Gasto de consumo del gobierno
 	***
-	AccesoBIE ///
-    "724959 724960 724961 724962 724963 724964 724965 724966 724967 724968 724969 724970 724971 724972 724973 724974 724975 724976 724977 724978 724979 724980" ///
-    "ConGob GovAgr GovMin GovEner GovConstr GovManuf GovMayor GovMenor GovTrans GovInfo GovFin GovInmob GovProf GovCorp GovApoyo GovEdu GovSalud GovRecrea GovAloj GovOtros GovLegis GovCompExt"
+	AccesoBIE 724959 724960 724961 724962 724963 724964 724965 724966 724967 724968 724969 724970 724971 724972 724973 724974 724975 724976 724977 724978 724979 724980, ///
+		nombres(ConGob GovAgr GovMin GovEner GovConstr GovManuf GovMayor GovMenor GovTrans GovInfo GovFin GovInmob GovProf GovCorp GovApoyo GovEdu GovSalud GovRecrea GovAloj GovOtros GovLegis GovCompExt)
 
     **  6.2 Label variables **
 	label var ConGob   "Gastos de consumo de gobierno general - Total"
@@ -1347,9 +1371,8 @@ program define UpdateSCN
 	***
 	*** 7.1.1 PIB por actividad económica (Parte 1)
 	***
-	AccesoBIE ///
-	"779804 779805 779806 779807 779808 779809 779810 779811 779812 779813 779814 779815 779816 779817 779818 779819 779820 779821 779822 779823 779824 779825 779826 779827 779828 779829 779830 779831 779832 779833 779834 779835 779836 779837 779838 779839 779840 779841 779842 779843 779844 779845 779846 779847 779848 779849 779850 779851 779852 779853 779854 779855 779856 779857 779858 779859 779860 779861 779862 779863 779864 779865 779866 779867 779868 779869 779870 779871 779872 779873" ///
-	"PIB_T ImpProd_T ValAg_T Agr_T Agr111_T Agr1111 Agr1112 Agr1113 Agr1114 Agr1119 Agr112_T Agr1121 Agr1122 Agr1123 Agr1124 Agr1125 Agr1129 Agr113_T Agr1131 Agr1132 Agr1133 Agr114_T Agr1141 Agr1142 Agr115_T Agr1151 Agr1152 Agr1153 Min_T Min211_T Min2111 Min212_T Min2121 Min2122 Min2123 Min213_T Min2131 Ener_T Ener221_T Ener2211 Ener2212 Ener2213 Const_T Const236_T Const2361 Const2362 Const237_T Const2371 Const2372 Const2373 Const2379 Const238_T Const2381 Const2382 Const2383 Const2389 Manu_T Manu311_T Manu3111 Manu3112 Manu3113 Manu3114 Manu3115 Manu3116 Manu3117 Manu3118 Manu3119 Manu312_T Manu3121 Manu3122"
+	AccesoBIE 779804 779805 779806 779807 779808 779809 779810 779811 779812 779813 779814 779815 779816 779817 779818 779819 779820 779821 779822 779823 779824 779825 779826 779827 779828 779829 779830 779831 779832 779833 779834 779835 779836 779837 779838 779839 779840 779841 779842 779843 779844 779845 779846 779847 779848 779849 779850 779851 779852 779853 779854 779855 779856 779857 779858 779859 779860 779861 779862 779863 779864 779865 779866 779867 779868 779869 779870 779871 779872 779873, ///
+		nombres(PIB_T ImpProd_T ValAg_T Agr_T Agr111_T Agr1111 Agr1112 Agr1113 Agr1114 Agr1119 Agr112_T Agr1121 Agr1122 Agr1123 Agr1124 Agr1125 Agr1129 Agr113_T Agr1131 Agr1132 Agr1133 Agr114_T Agr1141 Agr1142 Agr115_T Agr1151 Agr1152 Agr1153 Min_T Min211_T Min2111 Min212_T Min2121 Min2122 Min2123 Min213_T Min2131 Ener_T Ener221_T Ener2211 Ener2212 Ener2213 Const_T Const236_T Const2361 Const2362 Const237_T Const2371 Const2372 Const2373 Const2379 Const238_T Const2381 Const2382 Const2383 Const2389 Manu_T Manu311_T Manu3111 Manu3112 Manu3113 Manu3114 Manu3115 Manu3116 Manu3117 Manu3118 Manu3119 Manu312_T Manu3121 Manu3122)
 
     ** 7.1.2 Label variables **
 	label var PIB_T     "Producto Interno Bruto"
@@ -1464,9 +1487,8 @@ program define UpdateSCN
 	***
 	*** 7.2.1 PIB por actividad económica (Parte 2)
 	***
-	AccesoBIE ///
-	"779874 779875 779876 779877 779878 779879 779880 779881 779882 779883 779884 779885 779886 779887 779888 779889 779890 779891 779892 779893 779894 779895 779896 779897 779898 779899 779900 779901 779902 779903 779904 779905 779906 779907 779908 779909 779910 779911 779912 779913 779914 779915 779916 779917 779918 779919 779920 779921 779922 779923 779924 779925 779926 779927 779928 779929 779930 779931 779932 779933 779934 779935 779936 779937 779938 779939 779940 779941 779942 779943" ///
-	"Manu313_T Manu3131 Manu3132 Manu3133 Manu314_T Manu3141 Manu3149 Manu315_T Manu3151 Manu3152 Manu3159 Manu316_T Manu3161 Manu3162 Manu3169 Manu321_T Manu3211 Manu3212 Manu3219 Manu322_T Manu3221 Manu3222 Manu323_T Manu3231 Manu324_T Manu3241 Manu325_T Manu3251 Manu3252 Manu3253 Manu3254 Manu3255 Manu3256 Manu3259 Manu326_T Manu3261 Manu3262 Manu327_T Manu3271 Manu3272 Manu3273 Manu3274 Manu3279 Manu331_T Manu3311 Manu3312 Manu3313 Manu3314 Manu3315 Manu332_T Manu3321 Manu3322 Manu3323 Manu3324 Manu3325 Manu3326 Manu3327 Manu3328 Manu3329 Manu333_T Manu3331 Manu3332 Manu3333 Manu3334 Manu3335 Manu3336 Manu3339 Manu334_T Manu3341 Manu3342"
+	AccesoBIE 779874 779875 779876 779877 779878 779879 779880 779881 779882 779883 779884 779885 779886 779887 779888 779889 779890 779891 779892 779893 779894 779895 779896 779897 779898 779899 779900 779901 779902 779903 779904 779905 779906 779907 779908 779909 779910 779911 779912 779913 779914 779915 779916 779917 779918 779919 779920 779921 779922 779923 779924 779925 779926 779927 779928 779929 779930 779931 779932 779933 779934 779935 779936 779937 779938 779939 779940 779941 779942 779943, ///
+		nombres(Manu313_T Manu3131 Manu3132 Manu3133 Manu314_T Manu3141 Manu3149 Manu315_T Manu3151 Manu3152 Manu3159 Manu316_T Manu3161 Manu3162 Manu3169 Manu321_T Manu3211 Manu3212 Manu3219 Manu322_T Manu3221 Manu3222 Manu323_T Manu3231 Manu324_T Manu3241 Manu325_T Manu3251 Manu3252 Manu3253 Manu3254 Manu3255 Manu3256 Manu3259 Manu326_T Manu3261 Manu3262 Manu327_T Manu3271 Manu3272 Manu3273 Manu3274 Manu3279 Manu331_T Manu3311 Manu3312 Manu3313 Manu3314 Manu3315 Manu332_T Manu3321 Manu3322 Manu3323 Manu3324 Manu3325 Manu3326 Manu3327 Manu3328 Manu3329 Manu333_T Manu3331 Manu3332 Manu3333 Manu3334 Manu3335 Manu3336 Manu3339 Manu334_T Manu3341 Manu3342)
 
 	** 7.2.2 Label variables **
 
@@ -1585,9 +1607,8 @@ program define UpdateSCN
 	***
 	*** 7.3.1 PIB por actividad económica (Parte 3)
 	***
-	AccesoBIE ///
-	"779944 779945 779946 779947 779948 779949 779950 779951 779952 779953 779954 779955 779956 779957 779958 779959 779960 779961 779962 779963 779964 779965 779966 779967 779968 779969 779970 779971 779972 779973 779974 779975 779976 779977 779978 779979 779980 779981 779982 779983 779984 779985 779986 779987 779988 779989 779990 779991 779992 779993 779994 779995 779996 779997" ///
-	"Manu3343 Manu3344 Manu3345 Manu3346 Manu335_T Manu3351 Manu3352 Manu3353 Manu3359 Manu336_T Manu3361 Manu3362 Manu3363 Manu3364 Manu3365 Manu3366 Manu3369 Manu337_T Manu3371 Manu3372 Manu3379 Manu339_T Manu3391 Manu3399 ComMayor_T ComMayor430_T ComMayor4300 ComMenor_T ComMenor460_T ComMenor4600 Trans_T TransAereo_T TransAereoReg TransAereoNoReg TransFerro_T TransFerro TransAgua_T TransMaritimo TransAguasInt AutoCarga_T AutoCargaGen AutoCargaEsp TransTerrestre_T TransTer_Urb TransTer_Foraneo TaxiLimus TransEscolar AutobusChofer TransTerOtro TransDuctos_T TransDuct_Petro TransDuct_Gas TransDuct_Otros TransTur_T"
+	AccesoBIE 779944 779945 779946 779947 779948 779949 779950 779951 779952 779953 779954 779955 779956 779957 779958 779959 779960 779961 779962 779963 779964 779965 779966 779967 779968 779969 779970 779971 779972 779973 779974 779975 779976 779977 779978 779979 779980 779981 779982 779983 779984 779985 779986 779987 779988 779989 779990 779991 779992 779993 779994 779995 779996 779997, ///
+		nombres(Manu3343 Manu3344 Manu3345 Manu3346 Manu335_T Manu3351 Manu3352 Manu3353 Manu3359 Manu336_T Manu3361 Manu3362 Manu3363 Manu3364 Manu3365 Manu3366 Manu3369 Manu337_T Manu3371 Manu3372 Manu3379 Manu339_T Manu3391 Manu3399 ComMayor_T ComMayor430_T ComMayor4300 ComMenor_T ComMenor460_T ComMenor4600 Trans_T TransAereo_T TransAereoReg TransAereoNoReg TransFerro_T TransFerro TransAgua_T TransMaritimo TransAguasInt AutoCarga_T AutoCargaGen AutoCargaEsp TransTerrestre_T TransTer_Urb TransTer_Foraneo TaxiLimus TransEscolar AutobusChofer TransTerOtro TransDuctos_T TransDuct_Petro TransDuct_Gas TransDuct_Otros TransTur_T)
 
 	** 7.3.2 Label variables **
 
@@ -1690,9 +1711,8 @@ program define UpdateSCN
 	***
 	*** 7.4.1 PIB por actividad económica (Parte 4)
 	***
-	AccesoBIE ///
-	"779998 779999 780000 780001 780002 780003 780004 780005 780006 780007 780008 780009 780010 780011 780012 780013 780014 780015 780016 780017 780018 780019 780020 780021 780022 780023 780024 780025 780026 780027 780028 780029 780030 780031 780032 780033 780034 780035 780036 780037 780038 780039 780040 780041 780042 780043 780044 780045 780046 780047 780048 780049 780050 780051 780052 780053 780054 780055 780056 780057 780058 780059 780060 780061 780062 780063 780064 780065 780066 780067 780068 780069 780070 780071 780072 780073 780074 780075 780076 780077 780078 780079 780080 780081 780082" ///
-	"TransTurTierra TransTurAgua TransTurOtro ServTrans_T ServTransAereo ServTransFerro ServTransAgua ServTransCarretera ServTransInter ServTransOtros ServPost_T ServPost ServMensaj_T ServMensajFor ServMensajLoc ServAlmac_T ServAlmac Medios_T Medios511_T Medios5111 Medios5112 Medios512_T Medios5121 Medios5122 Medios515_T Medios5151 Medios5152 Medios517_T Medios5173 Medios5174 Medios5179 Medios518_T Medios5182 Medios519_T Medios5191 FinSeg_T Fin521_T Fin5211 Fin522_T Fin5221 Fin5222 Fin5223 Fin5224 Fin5225 Fin523_T Fin5231 Fin5232 Fin5239 Fin524_T Fin5241 Fin5242 Fin525_T Fin5251 Fin5252 Inmob_T Inmob531_T Inmob5311 Inmob5312 Inmob5313 Inmob532_T Inmob5321 Inmob5322 Inmob5323 Inmob5324 Inmob533_T Inmob5331 Prof_T Prof541_T Prof5411 Prof5412 Prof5413 Prof5414 Prof5415 Prof5416 Prof5417 Prof5418 Prof5419 Corp_T Corp551_T Corp5511 Apoyo_T Apoyo561_T Apoyo5611 Apoyo5612 Apoyo5613"
+	AccesoBIE 779998 779999 780000 780001 780002 780003 780004 780005 780006 780007 780008 780009 780010 780011 780012 780013 780014 780015 780016 780017 780018 780019 780020 780021 780022 780023 780024 780025 780026 780027 780028 780029 780030 780031 780032 780033 780034 780035 780036 780037 780038 780039 780040 780041 780042 780043 780044 780045 780046 780047 780048 780049 780050 780051 780052 780053 780054 780055 780056 780057 780058 780059 780060 780061 780062 780063 780064 780065 780066 780067 780068 780069 780070 780071 780072 780073 780074 780075 780076 780077 780078 780079 780080 780081 780082, ///
+		nombres(TransTurTierra TransTurAgua TransTurOtro ServTrans_T ServTransAereo ServTransFerro ServTransAgua ServTransCarretera ServTransInter ServTransOtros ServPost_T ServPost ServMensaj_T ServMensajFor ServMensajLoc ServAlmac_T ServAlmac Medios_T Medios511_T Medios5111 Medios5112 Medios512_T Medios5121 Medios5122 Medios515_T Medios5151 Medios5152 Medios517_T Medios5173 Medios5174 Medios5179 Medios518_T Medios5182 Medios519_T Medios5191 FinSeg_T Fin521_T Fin5211 Fin522_T Fin5221 Fin5222 Fin5223 Fin5224 Fin5225 Fin523_T Fin5231 Fin5232 Fin5239 Fin524_T Fin5241 Fin5242 Fin525_T Fin5251 Fin5252 Inmob_T Inmob531_T Inmob5311 Inmob5312 Inmob5313 Inmob532_T Inmob5321 Inmob5322 Inmob5323 Inmob5324 Inmob533_T Inmob5331 Prof_T Prof541_T Prof5411 Prof5412 Prof5413 Prof5414 Prof5415 Prof5416 Prof5417 Prof5418 Prof5419 Corp_T Corp551_T Corp5511 Apoyo_T Apoyo561_T Apoyo5611 Apoyo5612 Apoyo5613)
 
 	** 7.4.2 Label variables **
 
@@ -1835,9 +1855,8 @@ program define UpdateSCN
 	***
 	*** 7.5.1 PIB por actividad económica (Parte 5)
 	***
-	AccesoBIE ///
-	"780083 780084 780085 780086 780087 780088 780089 780090 780091 780092 780093 780094 780095 780096 780097 780098 780099 780100 780101 780102 780103 780104 780105 780106 780107 780108 780109 780110 780111 780112 780113 780114 780115 780116 780117 780118 780119 780120 780121 780122 780123 780124 780125 780126 780127 780128 780129 780130 780131 780132 780133 780134 780135 780136 780137 780138 780139 780140 780141 780142 780143 780144 780145 780146 780147 780148 780149 780150 780151 780152 780153 780154 780155 780156 780157 780158 780159 780160 780161 780162 780163 780164 780165 780166 780167 780168 780169 780170 780171 780172 780173 780174" ///	
-	"Apoyo5614 Apoyo5615 Apoyo5616 Apoyo5617 Apoyo5619 Apoyo562_T Apoyo5621 Apoyo5622 Apoyo5629 Edu_T Edu611_T Edu6111 Edu6112 Edu6113 Edu6114 Edu6115 Edu6116 Edu6117 Salud_T Salud621_T Salud6211 Salud6212 Salud6213 Salud6214 Salud6215 Salud6216 Salud6219 Salud622_T Salud6221 Salud6222 Salud6223 Salud623_T Salud6231 Salud6232 Salud6233 Salud6239 Salud624_T Salud6241 Salud6242 Salud6243 Salud6244 Recre_T Recre711_T Recre7111 Recre7112 Recre7113 Recre7114 Recre7115 Recre712_T Recre7121 Recre713_T Recre7131 Recre7132 Recre7139 AloPrep_T AloPrep721_T AloPrep7211 AloPrep7212 AloPrep7213 AloPrep722_T AloPrep7223 AloPrep7224 AloPrep7225 Otros_T Otros811_T Otros8111 Otros8112 Otros8113 Otros8114 Otros812_T Otros8121 Otros8122 Otros8123 Otros8124 Otros8129 Otros813_T Otros8131 Otros8132 Otros814_T Otros8141 Legis_T Legis931_T Legis9311 Legis9312 Legis9313 Legis9314 Legis9315 Legis9316 Legis9317 Legis9318 Legis932_T Legis9321"
+	AccesoBIE 780083 780084 780085 780086 780087 780088 780089 780090 780091 780092 780093 780094 780095 780096 780097 780098 780099 780100 780101 780102 780103 780104 780105 780106 780107 780108 780109 780110 780111 780112 780113 780114 780115 780116 780117 780118 780119 780120 780121 780122 780123 780124 780125 780126 780127 780128 780129 780130 780131 780132 780133 780134 780135 780136 780137 780138 780139 780140 780141 780142 780143 780144 780145 780146 780147 780148 780149 780150 780151 780152 780153 780154 780155 780156 780157 780158 780159 780160 780161 780162 780163 780164 780165 780166 780167 780168 780169 780170 780171 780172 780173 780174, ///
+		nombres(Apoyo5614 Apoyo5615 Apoyo5616 Apoyo5617 Apoyo5619 Apoyo562_T Apoyo5621 Apoyo5622 Apoyo5629 Edu_T Edu611_T Edu6111 Edu6112 Edu6113 Edu6114 Edu6115 Edu6116 Edu6117 Salud_T Salud621_T Salud6211 Salud6212 Salud6213 Salud6214 Salud6215 Salud6216 Salud6219 Salud622_T Salud6221 Salud6222 Salud6223 Salud623_T Salud6231 Salud6232 Salud6233 Salud6239 Salud624_T Salud6241 Salud6242 Salud6243 Salud6244 Recre_T Recre711_T Recre7111 Recre7112 Recre7113 Recre7114 Recre7115 Recre712_T Recre7121 Recre713_T Recre7131 Recre7132 Recre7139 AloPrep_T AloPrep721_T AloPrep7211 AloPrep7212 AloPrep7213 AloPrep722_T AloPrep7223 AloPrep7224 AloPrep7225 Otros_T Otros811_T Otros8111 Otros8112 Otros8113 Otros8114 Otros812_T Otros8121 Otros8122 Otros8123 Otros8124 Otros8129 Otros813_T Otros8131 Otros8132 Otros814_T Otros8141 Legis_T Legis931_T Legis9311 Legis9312 Legis9313 Legis9314 Legis9315 Legis9316 Legis9317 Legis9318 Legis932_T Legis9321)
 
 	** 7.5.2 Label variables **
 
@@ -1968,9 +1987,8 @@ program define UpdateSCN
 	***
 	*** 8.1 Consumo privado en bienes y servicios, por actividad económica
 	***
-	AccesoBIE ///
-	"725114 725115 725116 725117 725118 725119 725120 725121 725122 725123 725124 725125 725126 725127 725128 725129 725130 725131 725132 725133 725134 725135" ///
-	"ConsPriv_T ConsPriv_11 ConsPriv_21 ConsPriv_22 ConsPriv_23 ConsPriv_31_33 ConsPriv_43 ConsPriv_46 ConsPriv_48_49 ConsPriv_51 ConsPriv_52 ConsPriv_53 ConsPriv_54 ConsPriv_55 ConsPriv_56 ConsPriv_61 ConsPriv_62 ConsPriv_71 ConsPriv_72 ConsPriv_81 ConsPriv_93 ConsPriv_P721"
+	AccesoBIE 725114 725115 725116 725117 725118 725119 725120 725121 725122 725123 725124 725125 725126 725127 725128 725129 725130 725131 725132 725133 725134 725135, ///
+		nombres(ConsPriv_T ConsPriv_11 ConsPriv_21 ConsPriv_22 ConsPriv_23 ConsPriv_31_33 ConsPriv_43 ConsPriv_46 ConsPriv_48_49 ConsPriv_51 ConsPriv_52 ConsPriv_53 ConsPriv_54 ConsPriv_55 ConsPriv_56 ConsPriv_61 ConsPriv_62 ConsPriv_71 ConsPriv_72 ConsPriv_81 ConsPriv_93 ConsPriv_P721)
 
 	** 8.2 Label variables **
 	label var ConsPriv_T   "Gastos de consumo privado de bienes y servicios - Total"
