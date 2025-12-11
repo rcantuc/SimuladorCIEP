@@ -1,18 +1,19 @@
 {smcl}
-{* *! version 1.  22mar2025}{...}
-{viewerdialog poblacion "dialog poblacion"}{...}
+{* *! version 2.0 Ricardo Cantú 11dic2025}{...}
+{viewerdialog Poblacion "dialog Poblacion"}{...}
 {vieweralsosee "[R] Poblacion" "mansection R Poblacion"}{...}
 {viewerjumpto "Syntax" "Poblacion##syntax"}{...}
 {viewerjumpto "Description" "Poblacion##description"}{...}
 {viewerjumpto "Options" "Poblacion##options"}{...}
 {viewerjumpto "Examples" "Poblacion##examples"}{...}
+{viewerjumpto "Output" "Poblacion##output"}{...}
 {viewerjumpto "References" "Poblacion##references"}{...}
 
 {marker syntax}{...}
 {title:Syntax}
 
 {p 8 16 2}
-{opt Poblacion} [if] [, ANIOinicial(int) ANIOFinal(int) NOGraphs UPDATE]
+{cmd:Poblacion} [{it:if}] [, {opt ANIOinicial(int)} {opt ANIOFinal(int)} {opt NOGraphs} {opt UPDATE} {opt TEXTBOOK}]
 {p_end}
 
 {marker description}{...}
@@ -70,23 +71,74 @@ Opcionalmente, se pueden incluir filtros en la condición {it:if}:
 {marker examples}{...}
 {title:Examples}
 
-{pstd}Ejemplo 1: Uso básico sin filtros{p_end}
+{pstd}{bf:Ejemplo 1}: Proyección poblacional básica 2025-2050{p_end}
 {phang2}{cmd:. Poblacion, anioinicial(2025) aniofinal(2050)}
 {p_end}
 
-{pstd}Ejemplo 2: Uso con filtros y actualización de datos{p_end}
-{phang2}{cmd:. Poblacion if entidad == "Jalisco" & sexo == 1, anioinicial(2020) aniofinal(2070) update}
+{pstd}{bf:Ejemplo 2}: Proyección a nivel nacional hasta 2070{p_end}
+{phang2}{cmd:. Poblacion, anioinicial(2025) aniofinal(2070)}
 {p_end}
 
-{pstd}Ejemplo 3: Sin generación de gráficas{p_end}
-{phang2}{cmd:. Poblacion, anioinicial(2010) aniofinal(2070) nographs}
+{pstd}{bf:Ejemplo 3}: Filtrar por entidad federativa (Jalisco){p_end}
+{phang2}{cmd:. Poblacion if entidad == "Jalisco", anioinicial(2025) aniofinal(2050)}
 {p_end}
+
+{pstd}{bf:Ejemplo 4}: Filtrar solo hombres en CDMX{p_end}
+{phang2}{cmd:. Poblacion if entidad == "Ciudad de México" & sexo == 1, anioinicial(2025) aniofinal(2050)}
+{p_end}
+
+{pstd}{bf:Ejemplo 5}: Actualizar datos de CONAPO sin gráficas{p_end}
+{phang2}{cmd:. Poblacion, anioinicial(2025) aniofinal(2070) update nographs}
+{p_end}
+
+{pstd}{bf:Ejemplo 6}: Análisis histórico desde 1990{p_end}
+{phang2}{cmd:. Poblacion, anioinicial(1990) aniofinal(2025)}
+{p_end}
+
+{marker output}{...}
+{title:Output}
+
+{pstd}
+El comando genera una base de datos con:
+{p_end}
+
+{phang2}- {bf:anio}: Año de la observación{p_end}
+{phang2}- {bf:edad}: Edad simple (0-109){p_end}
+{phang2}- {bf:sexo}: 1=Hombres, 2=Mujeres{p_end}
+{phang2}- {bf:entidad}: Entidad federativa o "Nacional"{p_end}
+{phang2}- {bf:poblacion}: Población a mitad de año{p_end}
+{phang2}- {bf:defunciones}: Defunciones estimadas{p_end}
+{phang2}- {bf:emigrantes}: Emigrantes internacionales{p_end}
+{phang2}- {bf:inmigrantes}: Inmigrantes internacionales{p_end}
+{phang2}- {bf:tasafecundidad}: Tasa de fecundidad{p_end}
+
+{pstd}
+Gráficas generadas:
+{p_end}
+
+{phang2}- Pirámides poblacionales comparativas{p_end}
+{phang2}- Transición demográfica (distribución por grupos de edad){p_end}
+{phang2}- Tasa de dependencia (dependientes por cada 100 personas en edad laboral){p_end}
 
 {marker references}{...}
 {title:References}
 
 {pstd}
-1. Bases de Datos CONAPO: {browse "https://www.gob.mx/conapo/documentos/bases-de-datos-de-la-conciliacion-demografica-1950-a-2019-y-proyecciones-de-la-poblacion-de-mexico-2020-a-2070"}
+1. {bf:Proyecciones de Población CONAPO 2020-2070:} {browse "https://www.gob.mx/conapo"}
+{p_end}
+
+{pstd}
+2. {bf:Datos Abiertos CONAPO:} {browse "http://conapo.segob.gob.mx/work/models/CONAPO/Datos_Abiertos/"}
+{p_end}
+
+{pstd}
+3. {bf:Conciliación Demográfica 1950-2019:} {browse "https://www.gob.mx/conapo/documentos/bases-de-datos-de-la-conciliacion-demografica-1950-a-2019-y-proyecciones-de-la-poblacion-de-mexico-2020-a-2070"}
+{p_end}
+
+{title:See Also}
+
+{pstd}
+{help PIBDeflactor}, {help SCN}, {help LIF}, {help PEF}
 {p_end}
 
 {smcl_end}
