@@ -391,7 +391,7 @@ quietly {
 	capture tabstat recaudacion recaudacionPIB if anio == `anio' & nombre == "Cuotas a la seguridad social (IMSS)", stat(sum) f(%20.1fc) save
 	tempname cuotas
 	matrix `cuotas' = r(StatTotal)
-	scalar Cuotas_IMSS = `cuotas'[1,1]
+	scalar Cuotas_IMSS = string(`cuotas'[1,1],"%20.0fc")
 
 	capture tabstat recaudacion recaudacionPIB if anio == `anio' & divCIEP == 12, stat(sum) by(nombre) f(%20.1fc) save
 	

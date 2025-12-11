@@ -13,6 +13,7 @@ if "`1'" == "" {
 	local smdf = 248.93			// Unidad de medida y actualizacion (UMA)
 	local aniovp = 2024
 	local anioenigh = 2024
+	scalar anioenigh = 2024
 }
 timer on 6
 if `1' >= 2024 {
@@ -202,25 +203,25 @@ local InfraT = r(StatTotal)
 
 ** 1.4 Macros: LIF
 LIF, anio(`anioenigh') nographs min(0) by(divCIEP)
-local ISRSalarios = scalar(ISR_Asa_)
-local ISRFisicas = scalar(ISR_PF)
-local ISRMorales = scalar(ISR_PM)
-local CuotasIMSS = scalar(Cuotas_IMSS)
-local IMSSpropio = scalar(IMSS) //-`CuotasIMSS'
-local ISSSTEpropio = scalar(ISSSTE)
-local CFEpropio = scalar(CFE)
-local Pemexpropio = scalar(Pemex)
-local FMP = scalar(FMP_Derechos)
-local Mejoras = scalar(Contrib_de_mejora)
-local Derechos = scalar(Derechos)
-local Productos = scalar(Productos)
-local Aprovechamientos = scalar(Aprovechamientos)
-local OtrosTributarios = scalar(Otros_tributarios)
-local OtrasEmpresas = scalar(Otras_empresas)
-local ISAN = scalar(ISAN)
-local Importaciones = scalar(Importaciones)
-local IVA = scalar(IVA)
-local IEPS = scalar(IEPS)
+local ISRSalarios = real(subinstr(scalar(ISR_Asa_),",","",.))
+local ISRFisicas = real(subinstr(scalar(ISR_PF),",","",.))
+local ISRMorales = real(subinstr(scalar(ISR_PM),",","",.))
+local CuotasIMSS = real(subinstr(scalar(Cuotas_IMSS),",","",.))
+local IMSSpropio = real(subinstr(scalar(IMSS),",","",.)) //-`CuotasIMSS'
+local ISSSTEpropio = real(subinstr(scalar(ISSSTE),",","",.))
+local CFEpropio = real(subinstr(scalar(CFE),",","",.))
+local Pemexpropio = real(subinstr(scalar(Pemex),",","",.))
+local FMP = real(subinstr(scalar(FMP_Derechos),",","",.))
+local Mejoras = real(subinstr(scalar(Contrib_de_mejora),",","",.))
+local Derechos = real(subinstr(scalar(Derechos),",","",.))
+local Productos = real(subinstr(scalar(Productos),",","",.))
+local Aprovechamientos = real(subinstr(scalar(Aprovechamientos),",","",.))
+local OtrosTributarios = real(subinstr(scalar(Otros_tributarios),",","",.))
+local OtrasEmpresas = real(subinstr(scalar(Otras_empresas),",","",.))
+local ISAN = real(subinstr(scalar(ISAN),",","",.))
+local Importaciones = real(subinstr(scalar(Importaciones),",","",.))
+local IVA = real(subinstr(scalar(IVA),",","",.))
+local IEPS = real(subinstr(scalar(IEPS),",","",.))
 
 
 ** 1.5 Macros: ISR
@@ -1714,12 +1715,12 @@ forvalues j=`=rowsof(ISR)'(-1)1 {
 			& categ == ""
 		
 		* Asignar subsidio al empleo
-		quietly replace SE = `se_cf'*`htrab_factor' if categ == "i`j's`k'" & formal != 0
+		quietly replace SE = `se_cf'*`htrab_factor' if categ == "i`j's`k'" & tipo_contribuyente == 1
 	}
 }
 
 * Ingreso bruto informales *
-replace ing_subor = ing_t4_cap1 if formal == 0
+replace ing_subor = ing_t4_cap1 if categ == ""
 
 
 **********************

@@ -91,7 +91,7 @@ quietly {
 	*** 5 OUTPUT ***
 	****************
 	*noisily di in w "$" `"(document).ready(function()_{const_dataSource={chart:{caption:"",subcaption:"",theme:"fusion",orientation:"horizontal",linkalpha:30,linkhoveralpha:60,nodelabelposition:"start",showLegend:0},"'
-	noisily di in w `"let_data1 = {"'
+	noisily di in w `"let_data`anio' = {"'
 	noisily di in w `"nodes: [ `=substr(`"`nodes'"',1,`=strlen(`"`nodes'"')'-1)'],"'
 	noisily di in w `"links: [ `=substr(`"`links'"',1,`=strlen(`"`links'"')'-1)']"' 
 	noisily di in w "};"
@@ -115,7 +115,7 @@ quietly {
 		//filefilter `sankey3' `"/var/www/html/`folder'/data.js"', from(".,") to("0") replace
 	//}
 	//if "`c(os)'" == "Unix" & "`c(username)'" == "root" {
-		filefilter `sankey3' `"`c(sysdir_personal)'/users/$id/sankey-`name'.js"', from(".,") to("0") replace
+		filefilter `sankey3' `"`c(sysdir_site)'/users/$id/SankeyLoop/sankey-`name'.js"', from(".,") to("0") replace
 	//}
 }
 end

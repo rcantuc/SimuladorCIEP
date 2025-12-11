@@ -32,7 +32,7 @@ quietly {
 	**# 2 SHRFSP ***
 	***          ***
 	****************
-	SHRFSP, anio(`anio') nographs //update
+	noisily SHRFSP, anio(`anio') nographs $textbook //update
 	tempfile shrfsp
 	save `shrfsp'
 
@@ -46,13 +46,22 @@ quietly {
 	use "`c(sysdir_site)'/users/$id/ingresos.dta", clear
 	merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/users/$id/gastos.dta", nogen update
 	capture drop _*
-	foreach k in Educación Pensiones Pensión_AM Salud Otros_gastos IngBasico Otras_inversiones Federalizado Energía {
-		tabstat `k' [fw=factor], stat(sum) f(%20.0fc) save
+	foreach k in Educacion Pensiones Pensión_AM Salud OtrosGastos IngBasico OtrasInversiones Federalizado Energia {
+		noisily tabstat `k' [fw=factor], stat(sum) f(%20.0fc) save
 		local k = subinstr("`k'","á","a",.)
 		local k = subinstr("`k'","é","e",.)
 		local k = subinstr("`k'","í","i",.)
 		local k = subinstr("`k'","ó","o",.)
 		local k = subinstr("`k'","ú","u",.)
+		
+		if "`k'" == "OtrasInversiones" {
+			local k "Otras_inversiones"
+		}
+	
+		if "`k'" == "OtrosGastos" {
+			local k "Otros_gastos"
+		}
+		
 		tempname HH`k'
 		matrix `HH`k'' = r(StatTotal)
 	}
@@ -316,7 +325,7 @@ quietly {
 
 	*********************************************
 	** 5.1 Información histórica de los gastos **
-	PEF if transf_gf == 0, anio(`anio') by(divCIEP) nographs desde(`desde')
+	noisily PEF if transf_gf == 0, anio(`anio') by(divCIEP) nographs desde(`desde')
 	local divCIEP "`=r(divCIEP)' IngBasico"
 	local divCIEP = subinstr("`divCIEP'","á","a",.)
 	local divCIEP = subinstr("`divCIEP'","é","e",.)
@@ -379,13 +388,13 @@ quietly {
 			replace estimacion = (contribuyentes/L.contribuyentes) *     	/// Cambio demográfico PURO
 				`HH`=strtoname("`k'")''[1,1] * 				/// Gasto total del año base (GastoPC.ado)
 				(1+`tendencia_pc'/100)^(anio-`anio')    		/// Tendencia per cápita 
-				if anio > `anio'
+				if anio >= `anio'
 			
 			* Para años donde no hay datos de contribuyentes, usar método original *
 			replace estimacion = `estimacion'/L.`estimacion' * 		/// Cambio demográfico
 				`HH`=strtoname("`k'")''[1,1] * 				/// Gasto total del año base (GastoPC.ado)
 				(1+`tendencia_pc'/100)^(anio-`anio') 			/// Tendencia per cápita
-				if anio > `anio'
+				if anio >= `anio'
 
 			g divCIEP = `"`=strtoname("`k'")'"'
 
@@ -412,7 +421,7 @@ quietly {
 	g estimacionGasto_pib = estimacionGasto/pibY*100
 
 	g divSIM = subinstr(divCIEP,"_"," ",.)
-	replace divSIM = "Otros gastos" if divSIM == "IngBasico" | divSIM == "Part y otras Apor" | divSIM == "Cuotas ISSSTE"
+	replace divSIM = "Otros gastos" if divSIM == "IngBasico" | divSIM == "Federalizado" | divSIM == "Cuotas ISSSTE"
 	replace divSIM = "Pensiones" if divSIM == "Pension AM"
 
 

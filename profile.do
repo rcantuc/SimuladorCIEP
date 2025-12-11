@@ -54,7 +54,7 @@ noisily di `" {stata "SHRFSP":SHRFSP} [, ANIO(int) DEPreciacion(int) NOGraphs]"'
 noisily di `" {stata "DatosAbiertos XAB":DatosAbiertos {it:serie}} [, NOGraphs DESDE(real) MES]"' 
 noisily di `" {stata "TasasEfectivas":TasasEfectivas} [, ANIO(int)]"' 
 noisily di `" {stata "GastoPC":GastoPC} [, ANIO(int)]"'
-noisily di `" {stata "AccesoBIE 734407 pibQ":AccesoBIE {it:clave} {it:nombre}}"' 
+noisily di `" {stata "AccesoBIE 734407, nombres(pibQ)":AccesoBIE {it:serie} [, nombres()]}"' 
 
 
 

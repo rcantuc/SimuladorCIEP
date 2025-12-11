@@ -113,17 +113,17 @@ local ConHog = real(subinstr(scalar(ConHog),",","",.))*1000000
 LIF, anio(`anioenigh') by(divCIEP) nographs min(0)
 local IVA = real(subinstr(scalar(IVA),",","",.))
 local IEPSNP = real(subinstr(scalar(IEPS__no_petrolero_),",","",.))
-local IepsTabaco = real(subinstr(scalar(Tabacos),",","",.))
-local IepsJuegos = real(subinstr(scalar(Juegos),",","",.))
-local IepsTelecom = real(subinstr(scalar(Telecom),",","",.))
-local IepsBebidasEner = real(subinstr(scalar(Energiza),",","",.))
-local IepsBebidasSabor = real(subinstr(scalar(Saboriza),",","",.))
-local IepsAltoContCal = real(subinstr(scalar(AlimNoBa),",","",.))
-local IepsCombustibles = real(subinstr(scalar(Fosiles),",","",.))
-local IepsGasolinas = real(subinstr(scalar(IEPS__petrolero_),",","",.))
-local IepsAlcohol_20 = real(subinstr(scalar(Alcohol),",","",.))*0.2
-local IepsAlcohol_20_ = real(subinstr(scalar(Alcohol),",","",.))*0.2
-local IepsCervezas = real(subinstr(scalar(Alcohol),",","",.))*0.6
+local IepsTabaco = scalar(Tabacos)
+local IepsJuegos = scalar(Juegos)
+local IepsTelecom = scalar(Telecom)
+local IepsBebidasEner = scalar(Energiza)
+local IepsBebidasSabor = scalar(Saboriza)
+local IepsAltoContCal = scalar(AlimNoBa)
+local IepsCombustibles = scalar(Fosiles)
+local IepsGasolinas = scalar(IEPS__petrolero_)
+local IepsAlcohol_20 = scalar(Alcohol)*0.2
+local IepsAlcohol_20_ = scalar(Alcohol)*0.2
+local IepsCervezas = scalar(Alcohol)*0.6
 
 
 ** 1.3 Población **

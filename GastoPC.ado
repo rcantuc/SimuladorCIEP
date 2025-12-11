@@ -1204,7 +1204,8 @@ quietly {
 			capture drop Federalizado
 			Distribucion Federalizado, relativo(infra_entidad) macro(`gasfeder')
 			replace Federalizado = 0 if Federalizado == .
-			replace OtrosGastos = Federalizado
+			
+			g OtrosGastosT = Federalizado
 
 
 			** 7.2 Costo financiero de la deuda **
@@ -1221,7 +1222,7 @@ quietly {
 			scalar gascostoPC = string((`gascosto'/`Energia'[1,1])/`deflator',"%12.0fc")
 			scalar gascostoPIB = string(`gascosto'/`PIB'*100,"%7.3fc")
 			scalar gascostoPob = string(`Energia'[1,1],"%12.0fc")
-			replace OtrosGastos = OtrosGastos + real(subinstr(gascostoPC,",","",.))
+			replace OtrosGastosT = OtrosGastosT + real(subinstr(gascostoPC,",","",.))
 
 
 			** 7.3 Gasto en otras inversiones **
@@ -1238,12 +1239,12 @@ quietly {
 			scalar gasinfraPC = string((`gasinfra'/`Energia'[1,1])/`deflator',"%12.0fc")
 			scalar gasinfraPIB = string(`gasinfra'/`PIB'*100,"%7.3fc")
 			scalar gasinfraPob = string(`Energia'[1,1],"%12.0fc")
-			replace OtrosGastos = OtrosGastos + real(subinstr(gasinfraPC,",","",.))
+			replace OtrosGastosT = OtrosGastosT + real(subinstr(gasinfraPC,",","",.))
 			
 			capture drop OtrasInversiones
 			Distribucion OtrasInversiones, relativo(infra_entidad) macro(`gasinfra')
 			replace OtrasInversiones = 0 if OtrasInversiones == .
-			replace OtrosGastos = OtrosGastos + OtrasInversiones
+			replace OtrosGastosT = OtrosGastosT + OtrasInversiones
 			
 
 			** 8.1 Gastos en cuidados **
@@ -1287,7 +1288,8 @@ quietly {
 			scalar gasotrosPC = string((`gasotros'/`Energia'[1,1])/`deflator',"%12.0fc")
 			scalar gasotrosPIB = string(`gasotros'/`PIB'*100,"%7.3fc")
 			scalar gasotrosPob = string(`Energia'[1,1],"%12.0fc")
-			replace OtrosGastos = OtrosGastos + real(subinstr(gasotrosPC,",","",.))
+			replace OtrosGastosT = OtrosGastosT + real(subinstr(gasotrosPC,",","",.))
+			replace OtrosGastos = real(subinstr(gasotrosPC,",","",.))
 
 			scalar otrosgasPIB = string(real(subinstr(gasfederPIB,",","",.))+real(subinstr(gascostoPIB,",","",.))+real(subinstr(gasinfraPIB,",","",.))+real(subinstr(gasotrosPIB,",","",.)),"%7.3fc")
 			scalar otrosgasPC = string(real(subinstr(gasfederPC,",","",.))+real(subinstr(gascostoPC,",","",.))+real(subinstr(gasinfraPC,",","",.))+real(subinstr(gasotrosPC,",","",.)),"%12.0fc")

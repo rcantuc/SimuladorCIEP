@@ -897,7 +897,7 @@ program define UpdatePIBDeflactor
 	**************
 
 	** 1.1. Importar variables de interés desde el BIE **
-	AccesoBIE "734407 735143 446562 446565 446566" "pibQ indiceQ PoblacionENOE PoblacionOcupada PoblacionDesocupada"
+	AccesoBIE 734407 735143 446562 446565 446566, nombres(pibQ indiceQ PoblacionENOE PoblacionOcupada PoblacionDesocupada)
 
 	** 1.2 Label variables **
 	label var pibQ "Producto Interno Bruto (trimestral)"
@@ -933,7 +933,7 @@ program define UpdatePIBDeflactor
 	***         ***
 	***************
 	** 2.1. Importar variables de interés desde el BIE **
-	AccesoBIE "910392" "inpc"
+	AccesoBIE 910392, nombres(inpc)
 
 	** 2.2 Label variables **
 	label var inpc "Índice Nacional de Precios al Consumidor"
@@ -1059,10 +1059,5 @@ program define UpdatePIBDeflactor
 	format pib* %25.0fc
 	capture drop __*
 	sort aniotrimestre
-	if `c(version)' > 13.1 {
-		saveold "`c(sysdir_site)'/04_master/PIBDeflactor.dta", replace version(13)
-	}
-	else {
-		save "`c(sysdir_site)'/04_master/PIBDeflactor.dta", replace
-	}
+	save "`c(sysdir_site)'/04_master/PIBDeflactor.dta", replace
 end
