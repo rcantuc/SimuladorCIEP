@@ -115,13 +115,17 @@ noisily run "`c(sysdir_site)'/PerfilesSim.do" `=anioPE'
 
 **/
 **# 4. SISTEMA FISCAL: INGRESOS
-/***
+***
 set scheme ciepingresos
-noisily LIF if divLIF != 8 & divLIF != 10, anio(`=anioPE') by(divLIF) $update 					///
+LIF, anio(`=anioPE') by(divSIM) $update $nographs `eofp'		///
 	title("Ingresos presupuestarios") 					/// Cambiar título de la gráfica
 	desde(2013) 								/// Año de inicio para el PROMEDIO
 	min(0)		 							/// Mínimo 0% del PIB (no negativos)
 	rows(2)									//  Número de filas en la leyenda
+rename divSIM divCODE
+decode divCODE, g(divSIM) 
+collapse (sum) recaudacion, by(anio divSIM) fast
+save `"`c(sysdir_site)'/users/$id/LIF.dta"', replace	
 
 * Evolución de las tasas efectivas */
 if "$nographs" == "" & "$update" == "update" {
