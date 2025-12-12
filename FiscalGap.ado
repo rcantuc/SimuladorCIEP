@@ -75,7 +75,7 @@ quietly {
 	******************************
 	noisily di _newline in g "  INGRESOS " in y "`desde'-`anio'"
 
-	** 4.1 Información histórica de los ingresos **
+	/** 4.1 Información histórica de los ingresos **
 	LIF if divLIF != 10, anio(`anio') nographs by(divSIM) min(0) desde(`desde') //eofp //ilif
 	local divSIM = r(divSIM)
 

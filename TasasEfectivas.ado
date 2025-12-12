@@ -18,21 +18,19 @@ quietly {
 	*********************************
 	**# 1 Cuentas macroeconómicas ***
 	*********************************
-	noisily SCN, anio(`anio') nographs
+	SCN, anio(`anio') nographs
 	
 
 
 	*********************
 	**# 2 RECAUDACIÓN ***
 	*********************
-	noisily LIF, anio(`=anioPE') by(divSIM) $update $nographs `eofp'		///
-		title("Ingresos presupuestarios") 					/// Cambiar título de la gráfica
-		desde(2013) 								/// Año de inicio para el PROMEDIO
-		rows(2)									//  Número de filas en la leyenda
-	rename divSIM divCODE
-	decode divCODE, g(divSIM) 
-	collapse (sum) recaudacion, by(anio divSIM) fast
-	save `"`c(sysdir_site)'/users/$id/LIF.dta"', replace	
+	if "`enigh'" == "" {
+		noisily LIF, anio(`=anioPE') by(divSIM) $update $nographs `eofp'		///
+			title("Ingresos presupuestarios") 					/// Cambiar título de la gráfica
+			desde(2013) 								/// Año de inicio para el PROMEDIO
+			rows(2)									//  Número de filas en la leyenda
+	}
 
 
 

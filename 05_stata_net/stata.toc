@@ -1,6 +1,6 @@
 v 3
 
-d Simulador Fiscal CIEP v7. 29 de marzo de 2025
+d Simulador Fiscal CIEP v7. 11 de diciembre de 2025
 
 d Ado-files para descargar las bases del Simulador Fiscal CIEP. Estos comandos también pre-analizan la información.
 
