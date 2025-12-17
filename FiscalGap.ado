@@ -134,7 +134,7 @@ quietly {
 			if anio >= `anio'
 		
 		* Para años donde no hay datos de contribuyentes, usar método original *
-		replace estimacion = `estimacion'/L.`estimacion' * 		/// Cambio demográfico
+		*replace estimacion = `estimacion'/L.`estimacion' * 		/// Cambio demográfico
 			(real(`k'PIB)/100*scalar(pibY)) * 			/// Estimación como % del PIB (Parámetros)
 			(1+`tendencia_pc'/100)^(anio-`anio') 			/// Tendencia per cápita
 			if anio >= `anio'
