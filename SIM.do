@@ -19,7 +19,7 @@ set scheme ciep
 if "`c(username)'" == "ricardo" {						// Mac
 	sysdir set SITE "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
 	*global basesCIEP "/Users/ricardo/CIEP Dropbox/BasesCIEP/"
-	*global export "/Users/ricardo/CIEP Dropbox/TextbookCIEP/images"
+	global export "/Users/ricardo/CIEP Dropbox/TextbookCIEP/images"
 }
 else if "`c(console)'" != "" {							// Servidor Web
 	sysdir set SITE "/SIM/OUT/7/"
@@ -36,10 +36,10 @@ scalar anioPE = 2026								// ANIO PAQUETE ECONÓMICO
 scalar anioenigh = 2024								// ANIO ENIGH
 
 ** 0.4 Opciones (descomentar para activar)
-global nographs "nographs"							// SUPRIMIR GRAFICAS
+//global nographs "nographs"							// SUPRIMIR GRAFICAS
 //global update "update"							// UPDATE BASES DE DATOS
-//global textbook "textbook"							// SCALAR TO LATEX
-global output "output"							// ARCHIVO DE SALIDA (WEB)
+global textbook "textbook"							// SCALAR TO LATEX
+//global output "output"							// ARCHIVO DE SALIDA (WEB)
 
 if "$output" != "" {
 	quietly log using `"`c(sysdir_site)'/users/$id/output.txt"', replace text name(output)
@@ -127,14 +127,14 @@ decode divCODE, g(divSIM)
 collapse (sum) recaudacion, by(anio divSIM) fast
 save `"`c(sysdir_site)'/users/$id/LIF.dta"', replace	
 
-* Evolución de las tasas efectivas */
+* Evolución de las tasas efectivas *
 if "$nographs" == "" & "$update" == "update" {
 	do "`c(sysdir_site)'/Graphs_TE.do"
 }
 
 
-/** 4.1 Parámetros: Ingresos **
-if "$update" == "" & "$textbook" == "" {
+** 4.1 Parámetros: Ingresos **
+if "$update" == "" {
 	scalar ISRASPIB  =   "3.793" 						// ISR (asalariados)
 	scalar ISRPFPIB  =   "0.241" 						// ISR (personas f{c i'}sicas)
 	scalar CUOTASPIB =   "1.716"  						// Cuotas (IMSS)
@@ -156,7 +156,7 @@ if "$update" == "" & "$textbook" == "" {
 }
 
 
-** 4.2 Submódulo ISR (web) **/
+/** 4.2 Submódulo ISR (web) **
 * Anexo 8 de la Resolución Miscelánea Fiscal para 2025 *
 * Tarifa para el cálculo del impuesto correspondiente al ejericio 2025 
 * a que se refieren los artículos 97 y 152 de la Ley del ISR
@@ -293,13 +293,13 @@ noisily PEF, anio(`=anioPE') by(divSIM)	$update 				///
 	min(0) 									/// Mínimo 0% del PIB (resumido)
 	rows(2)									/// Número de filas en la leyenda
 
-* Evolución de los gastos per cápita */
+* Evolución de los gastos per cápita *
 if "$nographs" == "" & "$update" == "update" {
 	do "`c(sysdir_site)'/Graphs_PC.do"
 }
 
 ** 5.1 Parámetros: Gasto **
-if "$update" == "" & "$textbook" == "" {
+if "$update" == "" {
 	scalar iniciaA     =   0.000    					// Inicial
 	scalar basica      =   2.009    					// Educación b{c a'}sica
 	scalar medsup      =   0.402    					// Educación media superior
@@ -343,14 +343,14 @@ if "$update" == "" & "$textbook" == "" {
 	scalar gascuidados =   0.047   						// Gasto en cuidados
 }
 
-** 5.2 Gasto per cápita **/
+** 5.2 Gasto per cápita **
 noisily GastoPC educacion salud pensiones energia resto transferencias, aniope(`=anioPE') aniovp(`=aniovp')
 
 
 
 **/
 **# 6. SISTEMA FISCAL: DEUDA
-***
+/***
 
 * SHRFSP: Total, Interno, Externo (como % del PIB)
 *                	2025  2026  2027  2028  2029  2030  2031
@@ -404,13 +404,13 @@ forvalues k = 2025(1)2031 {
 * SHRFSP: comando *
 set scheme ciepdeuda
 *scalar tasaEfectiva = 6.2967
-*noisily SHRFSP, anio(`=anioPE') ultanio(2002) $nographs $update $textbook
+noisily SHRFSP, anio(`=anioPE') ultanio(2002) $nographs $update $textbook
 
 
 
 **/
 **# 7. CICLO DE VIDA FISCAL
-***
+/***
 set scheme ciep
 use `"`c(sysdir_site)'/users/$id/ingresos.dta"', clear
 merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/users/$id/gastos.dta", nogen
@@ -455,10 +455,10 @@ if "$textbook" == "" {
 	label var Transferencias "Transferencias públicas"
 	label var AportacionesNetas "Ciclo de vida de las aportaciones netas"
 }
-foreach k of varlist /*AlTrabajo AlCapital AlConsumo ///
+foreach k of varlist AlTrabajo AlCapital AlConsumo ///
 	ISRPM ISRAS ISRPF CUOTAS IVA IEPSNP IEPSP ISAN IMPORT ///
 	Pensiones IngBasico Educacion Salud OtrosGastos Energia ///
-	ImpuestosAportaciones Transferencias*/ AportacionesNetas {
+	ImpuestosAportaciones Transferencias AportacionesNetas {
 	*noisily Perfiles `k' if `k' != 0 [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
 	noisily Simulador `k' if `k' != 0 [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot //boot(10)
 }

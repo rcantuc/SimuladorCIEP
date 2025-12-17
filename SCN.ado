@@ -89,6 +89,7 @@ quietly {
 	forvalues k = 1(1)`=_N' {
 		if anio[`k'] == `anio' {
 			local obs = `k'
+			noisily di in g "`k'"
 			continue, break
 		}
 	}
@@ -118,7 +119,7 @@ quietly {
 		_col(44) in y %20.0fc (PIB[`obs']) ///
 		_col(66) in y %7.3fc (PIB[`obs'])/PIB[`obs']*100 "}"
 
-		
+
 	* Returns *
 	scalar ProdBruta = string(ProdT[`obs']/1000000,"%12.1fc")
 	scalar ProdBrutaPIB = string(ProdT[`obs']/PIB[`obs']*100,"%7.3fc")
@@ -397,7 +398,7 @@ quietly {
 	*************************
 	** R.3. Graph **
 	if "`nographs'" != "nographs" & "$nographs" == "" {
-		drop if RemSalSS == .
+		*drop if RemSalSS == .
 		
 		tempvar Laboral Capital Depreciacion
 		g `Laboral' = (Yl)/deflator/1000000000000
