@@ -173,7 +173,7 @@ replace ISR = ISR - EITC*12 if categF != ""*/
 
 ************************
 ** Subsidio al empleo **
-replace SE = SE*.1492/.138
+replace SE = SE*.1492/.098
 
 
 ******************
@@ -181,7 +181,7 @@ replace SE = SE*.1492/.138
 replace formal_asalariados = prop_salarios <= (1-DED[1,4]/100) & prop_salarios != .
 g ISRAS_Sim = ISR*(ing_subor+cuotasTPF)/(ing_bruto_tax)
 replace ISRAS_Sim = 0 if formal_asalariados == 0
-replace ISRAS_Sim = ISRAS_Sim*3.670/3.312
+replace ISRAS_Sim = ISRAS_Sim*3.793/3.255
 
 
 **************************
@@ -190,7 +190,7 @@ replace formal_fisicas = prop_formal <= (1-DED[1,3]/100) & prop_formal != .
 
 g ISRPF_Sim = ISR*(1-(ing_subor+cuotasTPF)/(ing_bruto_tax))
 replace ISRPF_Sim = 0 if formal_fisicas == 0
-replace ISRPF_Sim = ISRPF_Sim*0.233/0.511
+replace ISRPF_Sim = ISRPF_Sim*0.241/0.553
 
 
 **************************
@@ -205,12 +205,12 @@ Distribucion SE_empresas, relativo(ing_bruto_tpm) macro(`=`SE'[1,1]')
 
 g ISRPM_Sim = (ing_bruto_tpm-exen_tpm)*PM[1,1]/100 - SE_empresas if formal_morales == 1
 replace ISRPM_Sim = 0 if ISRPM_Sim == .
-replace ISRPM_Sim = ISRPM_Sim*4.039/4.905
+replace ISRPM_Sim = ISRPM_Sim*4.176/2.781
 
 
 *****************
 ** CUOTAS IMSS **
-g CUOTAS_Sim = CUOTAS*1.675/1.389 if formal2 == 1
+g CUOTAS_Sim = CUOTAS*1.675/1.525 if formal2 == 1
 
 
 ***************

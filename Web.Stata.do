@@ -214,20 +214,20 @@ matrix IEPST = (26.5	,	0 		\			/// Cerveza y alcohol 14
 ** 3.1.6 Submódulo ISR (web) **/
 if "1" == "{{moduloCambio}}" {
 	noisily run "`c(sysdir_site)'/ISR_Mod.do"
-	scalar ISRASPIB  = ISR_AS_Mod					// NUEVA ESTIMACIÓN ISR ASALARIADOS
-	scalar ISRAS = ISRASPIB/100*scalar(pibY)
-	scalar ISRPFPIB  = ISR_PF_Mod					// NUEVA ESTIMACIÓN ISR P. FÍSICAS
-	scalar ISRPF = ISRPFPIB/100*scalar(pibY)
-	scalar ISRPMPIB  = ISR_PM_Mod					// NUEVA ESTIMACIÓN ISR P. MORALES
-	scalar ISRPM = ISRPMPIB/100*scalar(pibY)
-	scalar CUOTASPIB = CUOTAS_Mod					// NUEVA ESTIMACIÓN CUOTAS IMSS
-	scalar CUOTAS = CUOTASPIB/100*scalar(pibY)
+	scalar ISRAS = ISR_AS_Mod/100*scalar(pibY)
+	scalar ISRASPIB  = "`=round(ISR_AS_Mod, 0.001)'"			// NUEVA ESTIMACIÓN ISR ASALARIADOS
+	scalar ISRPF = ISR_PF_Mod/100*scalar(pibY)
+	scalar ISRPFPIB  = "`=round(ISR_PF_Mod, 0.001)'"			// NUEVA ESTIMACIÓN ISR P. FÍSICAS
+	scalar ISRPM = ISR_PM_Mod/100*scalar(pibY)
+	scalar ISRPMPIB  = "`=round(ISR_PM_Mod, 0.001)'"			// NUEVA ESTIMACIÓN ISR P. MORALES
+	scalar CUOTAS = CUOTAS_Mod/100*scalar(pibY)
+	scalar CUOTASPIB = "`=round(CUOTAS_Mod, 0.001)'"			// NUEVA ESTIMACIÓN CUOTAS IMSS
 }
 ** 3.1.7 Submódulo IVA (web) **
 if "1" == "{{moduloCambioIva}}" {
 	noisily run "`c(sysdir_site)'/IVA_Mod.do"
-	scalar IVAPIB = IVA_Mod						// NUEVA ESTIMACIÓN IVA
-	scalar IVA = IVAPIB/100*scalar(pibY)
+	scalar IVA = IVA_Mod/100*scalar(pibY)
+	scalar IVAPIB = "`=round(IVA_Mod, 0.001)'"				// NUEVA ESTIMACIÓN IVA
 }
 
 ** 3.1.8 Tasas Efectivas **/
@@ -290,7 +290,7 @@ scalar gascuidados = {{gascuidados}}				//    Gasto en cuidados
 
 
 ** 3.2.2 Gasto per cápita **/
-noisily GastoPC, aniope(`=anioPE') aniovp(`=aniovp')
+noisily GastoPC educacion salud pensiones energia resto transferencias, aniope(`=anioPE') aniovp(`=aniovp')
 
 
 
@@ -408,7 +408,7 @@ save `"`c(sysdir_site)'/users/$id/aportaciones.dta"', replace
 ***
 
 ** 7.1 Brecha fiscal
-noisily FiscalGap, anio(`=anioPE') end(2030) aniomin(2015) $nographs desde(`=anioPE-15') discount(10) //update
+noisily FiscalGap, anio(`=anioPE') end(2030) aniomin(2015) $nographs desde(2015) discount(10) //update
 
 
 ** 7.2 Sankey del sistema fiscal

@@ -26,21 +26,21 @@ if "`c(username)'" == "Admin" {
 LIF if divPE!=1, by(divLIF) desde(2013) anio(2026) rows(2) min(0) nograph // base
 
 ** Escenarios de las variables:
-scalar crecimientoCGPE_val= 2.3
+scalar crecimientoCGPE_val= 0
 scalar escecrecimientoAltern_Optim= crecimientoCGPE_val+1.0
 scalar escecrecimientoAltern_Pesim= crecimientoCGPE_val-1.0
 
 ** Datos de las partidas (que también es el escenario base)
 
-scalar ImpuestosActual_val = Impuestos/1000000
-scalar CuotasActual_val = Cuotas/1000000
-scalar ContribActual_val = Contrib_de_mejora/1000000
-scalar DerechosActual_val = Derechos/1000000
-scalar ProductosActual_val = Productos/1000000
-scalar AprovechamientosActual_val = Aprovechamientos/1000000
-scalar VentasActual_val= Ventas/1000000
-scalar ParticipacionesActual_val= Participaciones/1000000
-scalar TransferenciasActual_val= Transferencias/1000000
+scalar ImpuestosActual_val = real(subinstr(Impuestos,",","",.))/1000000
+scalar CuotasActual_val = real(subinstr(Cuotas,",","",.))/1000000
+scalar ContribActual_val = real(subinstr(Contrib_de_mejora,",","",.))/1000000
+scalar DerechosActual_val = real(subinstr(Derechos,",","",.))/1000000
+scalar ProductosActual_val = real(subinstr(Productos,",","",.))/1000000
+scalar AprovechamientosActual_val = real(subinstr(Aprovechamientos,",","",.))/1000000
+scalar VentasActual_val= real(subinstr(Ventas,",","",.))/1000000
+scalar ParticipacionesActual_val= real(subinstr(Participaciones,",","",.))/1000000
+scalar TransferenciasActual_val= real(subinstr(Transferencias,",","",.))/1000000
 scalar IngresosTotalesActual_val = Ingresos_sin_deuda/1000000
 
 
@@ -96,18 +96,18 @@ scalar Ingresos_Optim    = IngresosTotalesActual_val  * (1 + ElasIngresosTot* es
 						
 *** ESCENARIO PESIMISTA (crecimiento – 1)
 
-*scalar Impuestos_Pesim      = ImpuestosActual_val        * (1 + ElasImpuestos  * escecrecimientoAltern_Pesim/100)
-*scalar Cuotas_Pesim         = CuotasActual_val           * (1 + ElasCuotas     * escecrecimientoAltern_Pesim/100)
-*scalar Contrib_Pesim        = ContribActual_val          * (1 + ElasContrib    * escecrecimientoAltern_Pesim/100)
-*scalar Derechos_Pesim       = DerechosActual_val         * (1 + ElasDerechos   * escecrecimientoAltern_Pesim/100)
-*scalar Productos_Pesim      = ProductosActual_val        * (1 + ElasProductos  * escecrecimientoAltern_Pesim/100)
-*scalar Aprove_Pesim         = AprovechamientosActual_val * (1 + ElasAprove     * escecrecimientoAltern_Pesim/100)
-*scalar Ventas_Pesim         = VentasActual_val           * (1 + ElasVentas     * escecrecimientoAltern_Pesim/100)
-*scalar Participaciones_Pesim= ParticipacionesActual_val  * (1 + ElasPartici    * escecrecimientoAltern_Pesim/100)
-*scalar Transfer_Pesim       = TransferenciasActual_val   * (1 + ElasTrans      * escecrecimientoAltern_Pesim/100)
+scalar Impuestos_Pesim      = ImpuestosActual_val        * (1 + ElasImpuestos  * escecrecimientoAltern_Pesim/100)
+scalar Cuotas_Pesim         = CuotasActual_val           * (1 + ElasCuotas     * escecrecimientoAltern_Pesim/100)
+scalar Contrib_Pesim        = ContribActual_val          * (1 + ElasContrib    * escecrecimientoAltern_Pesim/100)
+scalar Derechos_Pesim       = DerechosActual_val         * (1 + ElasDerechos   * escecrecimientoAltern_Pesim/100)
+scalar Productos_Pesim      = ProductosActual_val        * (1 + ElasProductos  * escecrecimientoAltern_Pesim/100)
+scalar Aprove_Pesim         = AprovechamientosActual_val * (1 + ElasAprove     * escecrecimientoAltern_Pesim/100)
+scalar Ventas_Pesim         = VentasActual_val           * (1 + ElasVentas     * escecrecimientoAltern_Pesim/100)
+scalar Participaciones_Pesim= ParticipacionesActual_val  * (1 + ElasPartici    * escecrecimientoAltern_Pesim/100)
+scalar Transfer_Pesim       = TransferenciasActual_val   * (1 + ElasTrans      * escecrecimientoAltern_Pesim/100)
 
 
-scalar Impuestos_Pesim      = ImpuestosActual_val       - Impuestos_Optim
+/*scalar Impuestos_Pesim      = ImpuestosActual_val       - Impuestos_Optim
 scalar Cuotas_Pesim         = CuotasActual_val          - Cuotas_Optim
 scalar Contrib_Pesim        = ContribActual_val         - Contrib_Optim
 scalar Derechos_Pesim       = DerechosActual_val        - Derechos_Optim
@@ -115,7 +115,7 @@ scalar Productos_Pesim      = ProductosActual_val       - Productos_Optim
 scalar Aprove_Pesim         = AprovechamientosActual_val- Aprove_Optim 
 scalar Ventas_Pesim         = VentasActual_val          - Ventas_Optim
 scalar Participaciones_Pesim= ParticipacionesActual_val - Participaciones_Optim
-scalar Transfer_Pesim       = TransferenciasActual_val  - Transfer_Optim
+scalar Transfer_Pesim       = TransferenciasActual_val  - Transfer_Optim*/
 
 *scalar Ingresos_Pesim = Impuestos_Pesim + Cuotas_Pesim + Contrib_Pesim + Derechos_Pesim + ///
                         Productos_Pesim + Aprove_Pesim + Ventas_Pesim + ///
@@ -126,9 +126,9 @@ scalar Transfer_Pesim       = TransferenciasActual_val  - Transfer_Optim
                         Productos_Pesim  + Ventas_Pesim + ///
                         Participaciones_Pesim + Transfer_Pesim		
 						
-*scalar Ingresos_Pesim    = IngresosTotalesActual_val  * (1 + ElasIngresosTot* escecrecimientoAltern_Pesim/100)
+scalar Ingresos_Pesim    = IngresosTotalesActual_val  * (1 + ElasIngresosTot* escecrecimientoAltern_Pesim/100)
 
-scalar Ingresos_Pesim    = IngresosTotalesActual_val - Ingresos_Optim
+*scalar Ingresos_Pesim    = IngresosTotalesActual_val - Ingresos_Optim
 					
 ***************************************************
 	*     Strings a llamar en el Latex    *
@@ -175,10 +175,21 @@ scalar ParticipacionesPesiSTR= string(Participaciones_Pesim, "%20.1fc")
 scalar TransferenciasPesiSTR= string(Transfer_Pesim, "%20.1fc")
 scalar IngresosTotalesPesiSTR = string(Ingresos_Pesim, "%20.1fc")
 scalar crecimientoCGPESTR= string(crecimientoCGPE_val, "%20.1fc")
+
+scalar ElasImpuestos = string(EImpuestos,"%5.3f")
+scalar ElasCuotas = string(ECuotas,"%5.3f")
+scalar ElasContrib = string(EContrib_de_mejora,"%5.3f")
+scalar ElasDerechos = string(EDerechos,"%5.3f")
+scalar ElasProductos = string(EProductos,"%5.3f")
+scalar ElasAprove = string(EAprovechamientos,"%5.3f")
+scalar ElasPartici = string(EParticipaciones,"%5.3f")
+scalar ElasTrans = string(ETransferencias,"%5.3f")
+scalar ElasVentas = string(EVentas,"%5.3f")
+scalar ElasIngresosTot = string(1.771,"%5.3f")
 /////////////////////////////////////////////////////
 // EXPORTAR A LaTeX
 /////////////////////////////////////////////////////
-scalarlatex, log(ingresos) alt(anex)
+scalarlatex, log(anexos) alt(anex)
 
 
 
