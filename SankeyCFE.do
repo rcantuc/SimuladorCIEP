@@ -6,8 +6,6 @@
 clear all
 if "`c(username)'" == "ricardo" ///                             // iMac Ricardo
 	sysdir set SITE "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP"
-if "`c(username)'" == "servidorciep" & "`c(console)'" == "" ///       // Servidor CIEP
-	sysdir set SITE "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
 cd "`c(sysdir_site)'"
 
 
@@ -21,105 +19,48 @@ if "`1'" == "update" {
 	** 1.1. Ventas netas de bienes y servicios **
 	DatosAbiertos XKD0106, nog
 	rename monto Ventas
-
-	tabstat monto_pib if anio >= 2019 & anio < 2024, save
-	tempname Ventas_pib
-	matrix `Ventas_pib' = r(StatTotal)
-
-	tabstat monto_pib if anio >= 2013 & anio < 2019, save
-	tempname Ventas_pib2013
-	matrix `Ventas_pib2013' = r(StatTotal)
-
 	keep anio Ventas
 	save "03_temp/XKD0106.dta", replace
 
 	** 1.2. Otros ingresos **
 	DatosAbiertos XKD0179, nog
 	rename monto OtrosIngresos
-
-	tabstat monto_pib if anio >= 2019 & anio < 2024, save
-	tempname OtrosIngresos_pib
-	matrix `OtrosIngresos_pib' = r(StatTotal)
-
-	tabstat monto_pib if anio >= 2013 & anio < 2019, save
-	tempname OtrosIngresos_pib2013
-	matrix `OtrosIngresos_pib2013' = r(StatTotal)
-
 	keep anio OtrosIngresos
 	save "03_temp/XKD0179.dta", replace
+
+	** 1.3. Subsidios **
+	DatosAbiertos XKD0122, nog
+	rename monto Subsidios
+	keep anio Subsidios
+	save "03_temp/XKD0122.dta", replace
 
 	** 2.1. Transferencias al gobierno federal **
 	DatosAbiertos XKD0113, nog
 	rename monto Transferencias
-
-	tabstat monto_pib if anio >= 2019 & anio < 2024, save
-	tempname Transferencias_pib
-	matrix `Transferencias_pib' = r(StatTotal)
-
-	tabstat monto_pib if anio >= 2013 & anio < 2019, save
-	tempname Transferencias_pib2013
-	matrix `Transferencias_pib2013' = r(StatTotal)
-
 	keep anio Transferencias
 	save "03_temp/XKD0113.dta", replace
 
 	** 2.2. Gasto programable **
 	DatosAbiertos XKD0131, nog
 	rename monto Programable
-
-	tabstat monto_pib if anio >= 2019 & anio < 2024, save
-	tempname Programable_pib
-	matrix `Programable_pib' = r(StatTotal)
-
-	tabstat monto_pib if anio >= 2013 & anio < 2019, save
-	tempname Programable_pib2013
-	matrix `Programable_pib2013' = r(StatTotal)
-
 	keep anio Programable
 	save "03_temp/XKD0131.dta", replace
 
 	** 2.2.1 Pensiones y jubilaciones **
 	DatosAbiertos XKD0139, nog
 	rename monto Pensiones
-
-	tabstat monto_pib if anio >= 2019 & anio < 2024, save
-	tempname Pensiones_pib
-	matrix `Pensiones_pib' = r(StatTotal)
-
-	tabstat monto_pib if anio >= 2013 & anio < 2019, save
-	tempname Pensiones_pib2013
-	matrix `Pensiones_pib2013' = r(StatTotal)
-
 	keep anio Pensiones
 	save "03_temp/XKD0139.dta", replace
 
 	** 2.2.2. Gastos de inversión **
 	DatosAbiertos XKD0145, nog
 	rename monto Inversion
-
-	tabstat monto_pib if anio >= 2019 & anio < 2024, save
-	tempname Inversion_pib
-	matrix `Inversion_pib' = r(StatTotal)
-
-	tabstat monto_pib if anio >= 2013 & anio < 2019, save
-	tempname Inversion_pib2013
-	matrix `Inversion_pib2013' = r(StatTotal)
-
 	keep anio Inversion
 	save "03_temp/XKD0145.dta", replace
 
 	** 2.3. Gasto no programable **
 	DatosAbiertos XKD0157, nog
 	rename monto NoProgramable
-
-	tabstat monto_pib if anio >= 2019 & anio < 2024, save
-	tempname NoProgramable_pib
-	matrix `NoProgramable_pib' = r(StatTotal)
-
-	tabstat monto_pib if anio >= 2013 & anio < 2019, save
-	tempname NoProgramable_pib2013
-	matrix `NoProgramable_pib2013' = r(StatTotal)
-
 	keep anio NoProgramable
 	save "03_temp/XKD0157.dta", replace
 }
@@ -127,36 +68,6 @@ if "`1'" == "update" {
 
 ** 1.2. Información adicional **
 forvalues anio = 2019(1)2025 {
-	if "`anio'" == "2019" {
-		local subsidios = 0
-		local transferencias_gf = 0
-	}
-	if "`anio'" == "2020" {
-		local subsidios = 0
-		local transferencias_gf = 0
-	}
-	if "`anio'" == "2021" {
-		local subsidios = 0
-		local transferencias_gf = 0
-	}
-	if "`anio'" == "2022" {
-		local subsidios = 0
-		local transferencias_gf = 0
-	}
-	if "`anio'" == "2023" {
-		local subsidios = 0
-		local transferencias_gf = 0
-	}
-	if "`anio'" == "2024" {
-		local subsidios = 0
-		local transferencias_gf = 0
-	}
-	if "`anio'" == "2025" {
-		local subsidios = 0
-		local transferencias_gf = 0
-	}
-	
-
 
 	************************************
 	***                              ***
@@ -165,10 +76,15 @@ forvalues anio = 2019(1)2025 {
 	************************************
 	use "03_temp/XKD0106.dta", clear
 	append using "03_temp/XKD0179.dta"
+	append using "03_temp/XKD0122.dta"
 
 	collapse (sum) Ing_Propios__Ventas=Ventas ///
 		Ing_Propios_Otros_Ingresos=OtrosIngresos ///
+		Ing_Propios_Subsidios=Subsidios ///
 		if anio == `anio', by(anio)
+
+	tabstat Ing_Propios_Subsidios if anio == `anio', s(sum) save
+	local subsidios = r(StatTotal)[1,1] 
 
 	** 1.2. Reshape para el Sankey **
 	tempvar from to
@@ -268,7 +184,7 @@ forvalues anio = 2019(1)2025 {
 	replace anio = `anio' in -1
 	replace from = 7 in -1
 	replace to = 100 in -1
-	replace profile = (`gastosTransferencias' + `balance')/1000000000 in -1
+	replace profile = (`gastosTransferencias' + `balance' - `subsidios')/1000000000 in -1
 	label define to 100 "BALANCE FISCAL", add
 
 	set obs `=_N+1'
@@ -288,11 +204,11 @@ forvalues anio = 2019(1)2025 {
 	collapse (sum) profile if to == 7, by(to anio)
 	rename to from
 
-	replace profile = `subsidios'
+	replace profile = `subsidios' in -1
 	replace profile = profile / 1000000000
 
-	g to = 202
-	label define to 202 "Subsidios", add
+	g to = 201
+	label define to 201 "Subsidios", add
 	label values to to
 
 	tempfile eje`anio'5
