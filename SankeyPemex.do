@@ -6,8 +6,6 @@
 clear all
 if "`c(username)'" == "ricardo" ///                             // iMac Ricardo
 	sysdir set SITE "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP"
-if "`c(username)'" == "servidorciep" & "`c(console)'" == "" ///       // Servidor CIEP
-	sysdir set SITE "/home/servidorciep/CIEP Dropbox/Ricardo Cantú/SimuladoresCIEP/SimuladorCIEP/"
 cd "`c(sysdir_site)'"
 
 
@@ -21,105 +19,42 @@ if "`1'" == "update" {
 	** 1.1. Ventas netas de bienes y servicios **
 	DatosAbiertos XKC0106, nog
 	rename monto Ventas
-
-	tabstat monto_pib if anio >= 2019 & anio < 2024, save
-	tempname Ventas_pib
-	matrix `Ventas_pib' = r(StatTotal)
-
-	tabstat monto_pib if anio >= 2013 & anio < 2019, save
-	tempname Ventas_pib2013
-	matrix `Ventas_pib2013' = r(StatTotal)
-
 	keep anio Ventas
 	save "03_temp/XKC0106.dta", replace
 
 	** 1.2. Otros ingresos **
 	DatosAbiertos XKC0179, nog
 	rename monto OtrosIngresos
-
-	tabstat monto_pib if anio >= 2019 & anio < 2024, save
-	tempname OtrosIngresos_pib
-	matrix `OtrosIngresos_pib' = r(StatTotal)
-
-	tabstat monto_pib if anio >= 2013 & anio < 2019, save
-	tempname OtrosIngresos_pib2013
-	matrix `OtrosIngresos_pib2013' = r(StatTotal)
-
 	keep anio OtrosIngresos
 	save "03_temp/XKC0179.dta", replace
 
 	** 2.1. Derechos y enteros **
 	DatosAbiertos XKC0113, nog
 	rename monto Derechos
-
-	tabstat monto_pib if anio >= 2019 & anio < 2024, save
-	tempname Derechos_pib
-	matrix `Derechos_pib' = r(StatTotal)
-
-	tabstat monto_pib if anio >= 2013 & anio < 2019, save
-	tempname Derechos_pib2013
-	matrix `Derechos_pib2013' = r(StatTotal)
-
 	keep anio Derechos
 	save "03_temp/XKC0113.dta", replace
 
 	** 2.2. Gasto programable **
 	DatosAbiertos XKC0131, nog
 	rename monto Programable
-
-	tabstat monto_pib if anio >= 2019 & anio < 2024, save
-	tempname Programable_pib
-	matrix `Programable_pib' = r(StatTotal)
-
-	tabstat monto_pib if anio >= 2013 & anio < 2019, save
-	tempname Programable_pib2013
-	matrix `Programable_pib2013' = r(StatTotal)
-
 	keep anio Programable
 	save "03_temp/XKC0131.dta", replace
 
 	** 2.2.1 Pensiones y jubilaciones **
 	DatosAbiertos XKC0139, nog
 	rename monto Pensiones
-
-	tabstat monto_pib if anio >= 2019 & anio < 2024, save
-	tempname Pensiones_pib
-	matrix `Pensiones_pib' = r(StatTotal)
-
-	tabstat monto_pib if anio >= 2013 & anio < 2019, save
-	tempname Pensiones_pib2013
-	matrix `Pensiones_pib2013' = r(StatTotal)
-
 	keep anio Pensiones
 	save "03_temp/XKC0139.dta", replace
 
 	** 2.2.2. Gastos de inversión **
 	DatosAbiertos XKC0145, nog
 	rename monto Inversion
-
-	tabstat monto_pib if anio >= 2019 & anio < 2024, save
-	tempname Inversion_pib
-	matrix `Inversion_pib' = r(StatTotal)
-
-	tabstat monto_pib if anio >= 2013 & anio < 2019, save
-	tempname Inversion_pib2013
-	matrix `Inversion_pib2013' = r(StatTotal)
-
 	keep anio Inversion
 	save "03_temp/XKC0145.dta", replace
 
 	** 2.3. Gasto no programable **
 	DatosAbiertos XKC0157, nog
 	rename monto NoProgramable
-
-	tabstat monto_pib if anio >= 2019 & anio < 2024, save
-	tempname NoProgramable_pib
-	matrix `NoProgramable_pib' = r(StatTotal)
-
-	tabstat monto_pib if anio >= 2013 & anio < 2019, save
-	tempname NoProgramable_pib2013
-	matrix `NoProgramable_pib2013' = r(StatTotal)
-
 	keep anio NoProgramable
 	save "03_temp/XKC0157.dta", replace
 }
@@ -358,7 +293,7 @@ forvalues anio = 2019(1)2025 {
 	collapse (sum) profile if to == 7, by(to anio)
 	rename to from
 
-	replace profile = `apoyospatrimoniales'			// Apoyos patrimoniales
+	replace profile = `apoyospatrimoniales' in -1
 	replace profile = profile / 1000000000
 
 	g to = 202

@@ -31,7 +31,7 @@ noisily di in w "INGRESOS: " in w "["  ///
 	%8.3f scalar(YlImpPIB) "," /// Total Impuestos laborales - 3
 	%8.3f scalar(ISRPMPIB) "," /// ISR (morales) - 4
 	%8.3f scalar(OTROSKPIB) "," /// Productos, derechos y aprovechamientos - 5
-	%8.3f scalar(IngKPrivadoPIB) "," /// Total Impuestos al capital - 6
+	%8.3f scalar(ImpKPrivadoPIB) "," /// Total Impuestos al capital - 6
 	%8.3f scalar(IVAPIB) "," /// IVA - 7
 	%8.3f scalar(ISANPIB) "," /// ISAN - 8
 	%8.3f scalar(IEPSNPPIB) "," /// IEPS (no petrolero)- 9
@@ -66,7 +66,7 @@ noisily di in w "INGRESOSTEF: " in w "["  ///
 	%8.1f (scalar(ISSSTETE)) "," /// ISSSTE - 14
 	%8.1f (scalar(FMPTE)) "," /// FMP - 15
 	%8.1f (scalar(PEMEXTE)) "," /// Pemex - 16
-	%8.1f (scalar(CFEPIB)) "," /// CFE - 17
+	%8.1f (scalar(CFETE)) "," /// CFE - 17
 	%8.1f (scalar(IngKPublicosTotTE)) /// Total Organismos y Empresas - 18
 "]"
 
@@ -278,6 +278,10 @@ noisily di in w "CSSISSSTE: [" ///
 	CSS_ISSSTE[8,1] "," ///
 	CSS_ISSSTE[8,2] "," ///
 	CSS_ISSSTE[8,3] ///
+"]"
+
+noisily di in w "PIBY: [" ///
+	%20.2f pibY ///
 "]"
 
 quietly log off output
