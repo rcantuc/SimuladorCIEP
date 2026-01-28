@@ -17,7 +17,7 @@ set scheme ciep
 
 ** 0.1 Directorio de archivos .ado (Github)
 if "`c(username)'" == "ricardo" {						// Mac
-	sysdir set SITE "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
+	*sysdir set SITE "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
 	*global basesCIEP "/Users/ricardo/CIEP Dropbox/BasesCIEP/"
 	global export "/Users/ricardo/CIEP Dropbox/TextbookCIEP/images"
 }
