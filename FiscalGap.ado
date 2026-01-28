@@ -47,7 +47,7 @@ quietly {
 	merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/users/$id/gastos.dta", nogen update
 	capture drop _*
 	foreach k in Educacion Pensiones Pensión_AM Salud OtrosGastos IngBasico OtrasInversiones Federalizado Energia {
-		noisily tabstat `k' [fw=factor], stat(sum) f(%20.0fc) save
+		tabstat `k' [fw=factor], stat(sum) f(%20.0fc) save
 		local k = subinstr("`k'","á","a",.)
 		local k = subinstr("`k'","é","e",.)
 		local k = subinstr("`k'","í","i",.)
@@ -116,11 +116,11 @@ quietly {
 		* Tendencia total = ``k'C'
 		* Componente demográfico = `tasa_demo'
 		* Componente no demográfico (per cápita) = ``k'C' - `tasa_demo'
-		local tendencia_pc = ``k'C' - `tasa_demo'
+		local tendencia_pc = real(scalar(`k'C)) - `tasa_demo'
 		
 		* Mensaje informativo *
 		noisily di in g "  `k': " ///
-		_col(35) "Tasa total =" in y %7.2f ``k'C' "%" ///
+		_col(35) "Tasa total =" in y %7.2f real(scalar(`k'C)) "%" ///
 		_col(60) in g "Demográfica =" in y %7.2f `tasa_demo' "%" ///
 		_col(85) in g "Económica =" in y %7.2f `tendencia_pc' "%"
 
@@ -352,7 +352,7 @@ quietly {
 	replace divCIEP = subinstr(divCIEP,"ú","u",.)
 
 
-	*****************************************
+	****************************************/
 	** 5.2 Proyección futura de los gastos **
 	g modulo = ""
 	foreach k of local divCIEP {

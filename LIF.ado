@@ -382,6 +382,10 @@ quietly {
 				_col(43) in y %7.3fc (((`pibYR`anio''/`pibYR`desde'')^(1/(`=`anio'-`desde''))-1)*100) ///
 				_col(52) in y %7.3fc (((`mattot'[1,1]/`mattot5'[1,1])^(1/(`=`anio'-`desde''))-1)*100)/ ///
 				(((`pibYR`anio''/`pibYR`desde'')^(1/(`=`anio'-`desde''))-1)*100) "}"
+		
+		scalar EIngresosTotales = string((((`mattot'[1,1]/`mattot5'[1,1])^(1/(`=`anio'-`desde''))-1)*100)/ ///
+				(((`pibYR`anio''/`pibYR`desde'')^(1/(`=`anio'-`desde''))-1)*100), "%7.3fc")
+				
 	}
 
 

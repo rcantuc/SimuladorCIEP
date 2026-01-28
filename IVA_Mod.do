@@ -35,7 +35,7 @@ local j = 2
 *foreach k of local categs {
 foreach k in `"Alimentos"' `"Alquiler"' `"CanastaBas"' `"Educación"' `"FueraHog"' `"Mascotas"' `"Medicinas"' `"Mujer"' `"Otros"' `"TransporteFor"' `"TransporteLoc"' {
 	if IVAT[`j',1] == 2 {
-		replace IVA = IVA + precio*cant_pc_*proporcion*IVAT[1,1]/100/(1+IVAT[1,1]/100) if categs == "`k'"
+		replace IVA = IVA + precio*cant_pc_*prop*IVAT[1,1]/100/(1+IVAT[1,1]/100) if categs == "`k'"
 	}
 	if IVAT[`j',1] == 3 {
 		replace IVA = IVA + precio*cant_pc_*IVAT[1,1]/100/(1+IVAT[1,1]/100) if categs == "`k'"
@@ -51,7 +51,7 @@ replace IVA_Sim = IVA*(1-IVAT[13,1]/100)
 tabstat IVA_Sim [fw=factor], stat(sum) f(%20.0fc) save
 tempname IVA_Sim
 matrix `IVA_Sim' = r(StatTotal)
-scalar IVA_Mod = `IVA_Sim'[1,1]/scalar(pibY)*100 // *4.064/3.889
+scalar IVA_Mod = `IVA_Sim'[1,1]/scalar(pibY)*100*4.249/4.495
 noisily di _newline in g "   RESULTADOS IVA: " _col(33) in y %10.3fc IVA_Mod
 
 
