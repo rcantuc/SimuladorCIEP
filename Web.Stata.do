@@ -54,7 +54,7 @@ global pib2027 = {{CRECPIB2027}}
 global pib2028 = {{CRECPIB2028}}
 global pib2029 = {{CRECPIB2029}}
 global pib2030 = {{CRECPIB2030}}
-global pib2031 = {{CRECPIB2030}}
+global pib2031 = {{CRECPIB2031}}
 
 global def2025 = {{CRECDEF2025}}
 global def2026 = {{CRECDEF2026}}
@@ -62,7 +62,7 @@ global def2027 = {{CRECDEF2027}}
 global def2028 = {{CRECDEF2028}}
 global def2029 = {{CRECDEF2029}}
 global def2030 = {{CRECDEF2030}}
-global def2031 = {{CRECDEF2030}}
+global def2031 = {{CRECDEF2031}}
 
 global inf2025 = 3.5								// CRECIMIENTO ANUAL INFLACIÓN
 global inf2026 = 3.0								// <-- AGREGAR O QUITAR AÑOS
@@ -299,68 +299,54 @@ noisily GastoPC educacion salud pensiones energia resto transferencias, aniope(`
 **
 
 * SHRFSP: Total, Interno, Externo (como % del PIB)
-matrix shrfsp = (51.4, 39.8, 11.6 \ 	/// 2025
-		 51.4, 40.5, 10.9 \ 	/// 2026
-		 51.4, 40.8, 10.6 \ 	/// 2027
-		 51.4, 41.1, 10.3 \ 	/// 2028
-		 51.4, 41.4, 10.0 \ 	/// 2029
-		 51.4, 41.7, 9.7)	//  2030
-
-* SHRFSP: Total, PIDIREGAS, IPAB, FONADIN, Deudores, Banca, Adecuaciones, Balance (como % del PIB)
-matrix rfsp = 	(5.9, -0.02, 0.03, 0.04, 0.01, -0.01, 0.81, 5.0 \ 		/// 2025
-		3.9, 0.15, 0.1, 0.03, 0.01, -0.01, 0.44, 3.2 \ 			/// 2026
-		3.2, 0.1, 0.1, 0.0, 0.0, 0.0, 0.3, 2.7 \ 			/// 2027
-		2.9, 0.1, 0.1, 0.0, -0.1, 0.0, 0.3, 2.4 \ 			/// 2028
-		2.9, 0.1, 0.1, 0.0, 0.0, 0.0, 0.3, 2.4 \ 			/// 2029
-		2.9, 0.1, 0.1, 0.0, 0.0, 0.0, 0.3, 2.4)				//  2030
-
+*                	2025  2026  2027  2028  2029  2030  2031
+matrix shrfsp = 	(52.3, 52.3, 52.3, 52.3, 52.3, 52.3, 52.3)
+matrix shrfspInterno = 	(40.2, 41.3, 42.1, 42.5, 42.8, 43.2, 43.5)
+matrix shrfspExterno = 	(12.1, 11.0, 10.2, 9.8, 9.5, 9.1, 8.8)
+* SHRFSP:      Total, PIDIREGAS, IPAB, FONADIN, Deudores, Banca, Adecuaciones, Balance (como % del PIB)
+matrix rfsp =  (4.3, 0.15, 0.15, 0.00, 0.00, 0.00, 0.40, 3.6 \ 		/// 2025
+		4.1, 0.10, 0.10, 0.00, 0.00, 0.00, 0.30, 3.6 \ 		/// 2026
+		3.5, 0.10, 0.10, 0.00,-0.10, 0.00, 0.40, 3.0 \ 		/// 2027
+		3.0, 0.10, 0.10, 0.00, 0.00, 0.00, 0.30, 2.5 \ 		/// 2028
+		3.0, 0.10, 0.10, 0.00, 0.00, 0.00, 0.30, 2.5 \ 		/// 2029
+		3.0, 0.10, 0.10,-0.10, 0.00, 0.00, 0.40, 2.5 \ 		/// 2030
+		3.0, 0.10, 0.10, 0.00, 0.00, 0.00, 0.30, 2.5) 		// 2031
 * SHRFSP: Tipo de cambio (MXN/USD)
-matrix tipoDeCambio = (18.2, 							/// 2025
-		 18.5, 								/// 2026
-		 18.7, 								/// 2027
-		 18.9, 								/// 2028
-		 19.1, 								/// 2029
-		 19.3) 								//  2030
-
+*                      2025, 2026, 2027, 2028, 2029, 2030, 2031
+matrix tipoDeCambio = (19.6, 18.9, 18.2, 18.2, 18.2, 18.3, 18.3)
 * Balance primario (como % del PIB)
-matrix balprimario = (-1.4,							/// 2025
-		-0.6,								/// 2026
-		-0.5,								/// 2027
-		-0.4,								/// 2028
-		-0.4,								/// 2029
-		-0.4)								//  2030
+*                     2025, 2026, 2027, 2028, 2029, 2030, 2031
+matrix balprimario = (-0.2, -0.5, -0.8, -0.8, -0.8, -0.8, -0.6)
 * Costo de la deuda (como % del PIB)
-matrix costodeudaInterno = (3.6, /// 2025
-		3.8, 								/// 2026
-		3.2, 								/// 2027
-		2.8, 								/// 2028
-		2.7, 								/// 2029
-		2.7) 								//  2030
-matrix costodeudaExterno = (3.6, ///
-		3.8, 								/// 2025
-		3.2, 								/// 2026
-		2.8, 								/// 2027
-		2.7, 								/// 2028
-		2.7) 								//  2030
+*                   2025, 2026, 2027, 2028, 2029, 2030, 2031
+matrix costodeuda = (3.8,  4.1,  3.8,  3.4,  3.3,  3.3,  3.1)
+* Ingresos (como % del PIB)
+*                     2025, 2026, 2027, 2028, 2029, 2030, 2031
+matrix ingresos = (21.9,  22.5,  22.4,  22.4,  22.4,  22.4,  22.4)
+* Gastos (como % del PIB)
+*                     2025, 2026, 2027, 2028, 2029, 2030, 2031
+matrix egresos = (25.5,  26.1,  25.4,  24.9,  24.9,  24.9,  24.9)
 
-forvalues k = 2025(1)2030 {
+forvalues k = 2025(1)2031 {
 	local j = `k' - 2025 + 1
-	global shrfsp`k' = shrfsp[`j', 1]
-	global shrfspInterno`k' = shrfsp[`j', 2]
-	global shrfspExterno`k' = shrfsp[`j', 3]
-	global rfsp`k' = rfsp[`j', 1]
-	global rfspPIDIREGAS`k' = rfsp[`j', 2]
-	global rfspIPAB`k' = rfsp[`j', 3]
-	global rfspFONADIN`k' = rfsp[`j', 4]
-	global rfspDeudores`k' = rfsp[`j', 5]
-	global rfspBanca`k' = rfsp[`j', 6]
-	global rfspAdecuaciones`k' = rfsp[`j', 7]
-	global rfspBalance`k' = rfsp[`j', 8]
-	global tipoDeCambio`k' = tipoDeCambio[`j',1]
-	global balprimario`k' = balprimario[`j',1]
-	global costodeudaInterno`k' = costodeudaInterno[`j',1]
-	global costodeudaExterno`k' = costodeudaExterno[`j',1]
+	global shrfsp`k' = shrfsp[1,`j']
+	global shrfspInterno`k' = shrfspInterno[1,`j']
+	global shrfspExterno`k' = shrfspExterno[1,`j']
+	global rfsp`k' = rfsp[`j',1]
+	global rfspPIDIREGAS`k' = rfsp[`j',2]
+	global rfspIPAB`k' = rfsp[`j',3]
+	global rfspFONADIN`k' = rfsp[`j',4]
+	global rfspDeudores`k' = rfsp[`j',5]
+	global rfspBanca`k' = rfsp[`j',6]
+	global rfspAdecuaciones`k' = rfsp[`j',7]
+	global rfspBalance`k' = rfsp[`j',8]
+	global tipoDeCambio`k' = tipoDeCambio[1,`j']
+	global balprimario`k' = balprimario[1,`j']
+	global costodeuda`k' = costodeuda[1,`j']
+	global ingresos`k' = ingresos[1,`j']
+	global egresos`k' = egresos[1,`j']
 }
+
 
 ** 3.3.2 SHRFSP **/
 scalar tasaEfectiva = {{DEUDA0}}

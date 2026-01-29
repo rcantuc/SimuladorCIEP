@@ -949,6 +949,7 @@ quietly {
 			%10.0f (`shrfsp'[1,1]/`shrfsp'[1,2])/(`poblacionACT'[1,2]) "," ///
 			%10.0f (shrfsp[_N]/deflator[_N])/(`poblacionEND'[1,2]) ///
 			"]"
+		noisily di in w "ANIOBASE: [`anio']"
 		quietly log off output
 	}
 
