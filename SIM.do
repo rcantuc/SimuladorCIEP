@@ -16,8 +16,8 @@ set scheme ciep
 ***
 
 ** 0.1 Directorio de archivos .ado (Github)
-if "`c(username)'" == "ricardo" {						// Mac
-	*sysdir set SITE "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
+if "`c(username)'" == "ricardo" & "`1'" != "ricardo" {						// Mac
+	sysdir set SITE "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
 	*global basesCIEP "/Users/ricardo/CIEP Dropbox/BasesCIEP/"
 	global export "/Users/ricardo/CIEP Dropbox/TextbookCIEP/images"
 }
@@ -26,24 +26,29 @@ else if "`c(console)'" != "" {							// Servidor Web
 }
 cd "`c(sysdir_site)'"
 
-** 0.2 Directorio de archivos "users"
-capture mkdir "`c(sysdir_site)'/users/$id"
-
-** 0.3 Parámetros
+** 0.2 Parámetros
 global id = "ciepmx"								// ID USUARIO
 scalar aniovp = 2026								// ANIO VALOR PRESENTE
 scalar anioPE = 2026								// ANIO PAQUETE ECONÓMICO
 scalar anioenigh = 2024								// ANIO ENIGH
 
+** 0.3 Directorio de archivos "users"
+capture mkdir "`c(sysdir_site)'/users/"
+capture mkdir "`c(sysdir_site)'/users/$id"
+
 ** 0.4 Opciones (descomentar para activar)
-global nographs "nographs"							// SUPRIMIR GRAFICAS
+//global nographs "nographs"							// SUPRIMIR GRAFICAS
 //global update "update"							// UPDATE BASES DE DATOS
 //global textbook "textbook"							// SCALAR TO LATEX
-global output "output"							// ARCHIVO DE SALIDA (WEB)
+//global output "output"							// ARCHIVO DE SALIDA (WEB)
 
+** 0.5 Ejecución de opciones **
 if "$output" != "" {
 	quietly log using `"`c(sysdir_site)'/users/$id/output.txt"', replace text name(output)
 	quietly log off output
+}
+if "$update" == "update" {
+	capture rmdir "`c(sysdir_site)'/03_temp/"
 }
 
 
@@ -51,7 +56,7 @@ if "$output" != "" {
 ***
 **# 1. DEMOGRAFÍA
 /***
-noisily Poblacion, anioi(`=aniovp') aniofinal(2050) $textbook $nographs $update
+noisily Poblacion, anioi(`=aniovp') aniofinal(2050) $textbook $nographs
 
 
 
@@ -106,7 +111,7 @@ noisily run "`c(sysdir_site)'/Expenditure.do" `=anioPE'
 ** 3.2 Encuesta Nacional de Ingresos y Gastos de los Hogares (Recursos)
 noisily di _newline in g "Actualizando: " in y "households.dta"
 noisily run `"`c(sysdir_site)'/Households.do"' `=anioPE'
-ex
+
 ** 3.3 Perfiles de la política económica actual (Paquete Económico)
 noisily di _newline in g "Actualizando: " in y "perfiles`anio'.dta"
 noisily run "`c(sysdir_site)'/PerfilesSim.do" `=anioPE'
@@ -279,8 +284,7 @@ if "`cambioiva'" == "1" {
 
 ** 4.7 Tasas Efectivas *
 noisily TasasEfectivas, anio(`=anioPE') enigh
-if "$textbook" == "textbook" ///
-	noisily run "`c(sysdir_site)'/Ejercicio_Elasticidades_Ingresos_beta.do"
+*noisily run "`c(sysdir_site)'/Ejercicio_Elasticidades_Ingresos_beta.do"
 
 
 **/
@@ -300,15 +304,15 @@ if "$nographs" == "" & "$update" == "update" {
 
 ** 5.1 Parámetros: Gasto **
 scalar iniciaA     =   0.000    					// Inicial
-scalar basica      =   2.009    					// Educación b{c a'}sica
-scalar medsup      =   0.402    					// Educación media superior
-scalar superi      =   0.429    					// Educación superior
+scalar basica      =   2.011    					// Educación b{c a'}sica
+scalar medsup      =   0.403    					// Educación media superior
+scalar superi      =   0.441    					// Educación superior
 scalar posgra      =   0.027    					// Posgrado
 scalar eduadu      =   0.015    					// Educación para adultos
-scalar otrose      =   0.149    					// Otros gastos educativos
+scalar otrose      =   0.162    					// Otros gastos educativos
 scalar invere      =   0.081    					// Inversión en educación
-scalar cultur      =   0.055    					// Cultura, deportes y recreación
-scalar invest      =   0.145    					// Ciencia y tecnología
+scalar cultur      =   0.060    					// Cultura, deportes y recreación
+scalar invest      =   0.152    					// Ciencia y tecnología
 
 scalar ssa         =   0.179    					// SSalud
 scalar imssbien    =   0.684    					// IMSS-Bienestar
@@ -342,7 +346,7 @@ scalar gasmadres   =   0.009   						// Apoyo a madres trabajadoras
 scalar gascuidados =   0.047   						// Gasto en cuidados
 
 
-** 5.2 Gasto per cápita **
+** 5.2 Gasto per cápita **/
 noisily GastoPC educacion salud pensiones energia resto transferencias, aniope(`=anioPE') aniovp(`=aniovp')
 
 
@@ -454,10 +458,10 @@ if "$textbook" == "" {
 	label var Transferencias "Transferencias públicas"
 	label var AportacionesNetas "Ciclo de vida de las aportaciones netas"
 }
-foreach k of varlist /*AlTrabajo AlCapital AlConsumo ///
+foreach k of varlist AlTrabajo AlCapital AlConsumo ///
 	ISRPM ISRAS ISRPF CUOTAS IVA IEPSNP IEPSP ISAN IMPORT ///
 	Pensiones IngBasico Educacion Salud OtrosGastos Energia ///
-	ImpuestosAportaciones Transferencias*/ AportacionesNetas {
+	ImpuestosAportaciones Transferencias AportacionesNetas {
 	*noisily Perfiles `k' if `k' != 0 [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
 	noisily Simulador `k' if `k' != 0 [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot //boot(10)
 }
