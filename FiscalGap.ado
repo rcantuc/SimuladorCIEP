@@ -554,16 +554,6 @@ quietly {
 	replace tasaEfectiva = r(StatTotal)[1,1] if anio >= `anio'
 	local tasaEfectiva = r(StatTotal)[1,1]
 
-	* Reemplazar tasasEfectivas con el escalar tasasEfectiva *
-	capture confirm scalar tasaEfectiva
-	if _rc == 0 {
-		replace tasaEfectiva = scalar(tasaEfectiva) if anio >= `anio'
-		replace gastoCosto_de_la_deuda = tasaEfectiva/100*L.shrfsp if anio >= `anio'
-	}
-	else {
-		scalar tasaEfectiva = `tasaEfectiva'		
-	}
-
 	* Scalar Costo_de_la_deuda (gascosto) *
 	capture confirm scalar gascosto
 	if _rc == 0 {
@@ -578,6 +568,16 @@ quietly {
 	else {
 		*scalar gascosto = r(StatTotal)[1,1]/r(StatTotal)[1,2]*8539/9234
 		*scalar gascostoPIB = r(StatTotal)[1,1]/r(StatTotal)[1,3]*100*3.329/3.600
+	}
+
+	* Reemplazar tasasEfectivas con el escalar tasasEfectiva *
+	capture confirm scalar tasaEfectiva
+	if _rc == 0 {
+		replace tasaEfectiva = scalar(tasaEfectiva) if anio >= `anio'
+		replace gastoCosto_de_la_deuda = tasaEfectiva/100*L.shrfsp if anio >= `anio'
+	}
+	else {
+		scalar tasaEfectiva = `tasaEfectiva'		
 	}
 
 
