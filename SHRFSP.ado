@@ -379,9 +379,11 @@ quietly {
 	if "`nographs'" != "nographs" & "$nographs" == "" {
 
 		** Variables adicionales para gráficas **
-		tempvar shrfsp_pc_miles shrfsp_bill
+		tempvar shrfsp_pc_miles
 		g `shrfsp_pc_miles' = shrfsp_pc/1000
 		format `shrfsp_pc_miles' %7.0fc
+
+		tempvar shrfsp_bill
 		g `shrfsp_bill' = shrfsp_real/1000000000000
 		format `shrfsp_bill' %7.1fc
 
@@ -389,15 +391,21 @@ quietly {
 		g `rfsp_bill' = rfsp_real/1000000000000
 		format `rfsp_bill' %5.1fc
 
-		tempvar rfspshrfsp lifpib
+		tempvar rfspshrfsp
 		g `rfspshrfsp' = (1+tasaEfectiva/100)/((1+var_indiceY/100)*(1+var_pibY/100))
 		format `rfspshrfsp' %5.2fc
+
+		tempvar lifpib
 		g `lifpib' = ingresos/pibY*100
 		format `lifpib' %5.1fc
 
 		tempvar pobmill
 		g `pobmill' = Poblacion_ajustada/1000000
 		format `pobmill' %7.0fc
+
+		tempvar costo_bill
+		g `costo_bill' = costofinanciero_real/1000000000000
+		format `costo_bill' %5.1fc
 
 		if `"$textbook"' == "" {
 			local graphtitle "{bf:Saldo hist{c o'}rico de RFSP}"
@@ -425,22 +433,22 @@ quietly {
 		summarize anio if round(shrfsp_pib,0.001) == round(`minval',0.001) & anio >= `anioIniCentral' & anio <= `anioFinCentral'
 		local minanio = r(mean)
 
-		twoway  (bar `pibY_bill' anio if anio > 2000 & anio < `=`anio'-1', barwidth(.75)) ///
-			(bar `pibY_bill' anio if anio >= `=`anio'-1' & anio <= 2031, barwidth(.75) ///
+		twoway  (bar `pibY_bill' anio if anio > 2000 & anio <= `aniofin', barwidth(.75)) ///
+			(bar `pibY_bill' anio if anio > `aniofin' & anio <= `lastexo', barwidth(.75) ///
 				pstyle(p1) lcolor(none) fintensity(50)) ///
-			(bar `shrfsp_bill' anio if anio < `=`anio'-1', barwidth(.35) yaxis(3) ///
+			(bar `shrfsp_bill' anio if anio <= `aniofin', barwidth(.35) yaxis(3) ///
 				pstyle(p2) lwidth(none)) ///
-			(bar `shrfsp_bill' anio if anio >= `=`anio'-1', barwidth(.35) yaxis(3) ///
+			(bar `shrfsp_bill' anio if anio > `aniofin', barwidth(.35) yaxis(3) ///
 				pstyle(p2) lwidth(none) fintensity(50)) ///
-			(connected shrfsp_pib anio if anio > 2000 & anio < `=`anio'-1', ///
+			(connected shrfsp_pib anio if anio > 2000 & anio <= `aniofin', ///
 				yaxis(2) mlabel(shrfsp_pib) mlabposition(12) mlabcolor(black) pstyle(p3) ///
 				lpattern(dot) msize(small) mlabsize(small)) ///
-			(connected shrfsp_pib anio if anio >= `=`anio'-1' & anio <= 2031, ///
+			(connected shrfsp_pib anio if anio > `aniofin' & anio <= `lastexo', ///
 				yaxis(2) mlabel(shrfsp_pib) mlabposition(12) mlabcolor(black) pstyle(p3) ///
 				lpattern(dot) msize(small) mlabsize(small) fintensity(40)) ///
-			(scatter `pibY_bill' anio if anio > 2000 & anio <= 2031, ///
+			(scatter `pibY_bill' anio if anio > 2000 & anio <= `lastexo', ///
 				mlabel(`pibY_bill') mlabposition(12) mlabcolor(black) msize(zero) mlabsize(small)) ///
-			(scatter `shrfsp_bill' anio if anio > 2000 & anio <= 2031, ///
+			(scatter `shrfsp_bill' anio if anio > 2000 & anio <= `lastexo', ///
 				mlabel(`shrfsp_bill') mlabposition(12) mlabcolor(black) msize(zero) mlabsize(small) yaxis(3)) ///
 			if shrfsp_pib != . & anio > `ultanio', ///
 			title(`graphtitle') ///
@@ -481,22 +489,22 @@ quietly {
 		summarize anio if round(`shrfsp_pc_miles',0.001) == round(`minval2',0.001) & anio >= `anioIniCentral' & anio <= `anioFinCentral'
 		local minanio2 = r(mean)
 
-		twoway  (bar `shrfsp_bill' anio if anio > 2000 & anio < `=`anio'-1', barwidth(.75)) ///
-			(bar `shrfsp_bill' anio if anio >= `=`anio'-1' & anio <= 2031, barwidth(.75) ///
+		twoway  (bar `shrfsp_bill' anio if anio > 2000 & anio <= `aniofin', barwidth(.75)) ///
+			(bar `shrfsp_bill' anio if anio > `aniofin' & anio <= `lastexo', barwidth(.75) ///
 				pstyle(p1) lcolor(none) fintensity(40)) ///
-			(bar `pobmill' anio if anio < `=`anio'-1', barwidth(.35) yaxis(3) ///
+			(bar `pobmill' anio if anio <= `aniofin', barwidth(.35) yaxis(3) ///
 				pstyle(p2) lwidth(none)) ///
-			(bar `pobmill' anio if anio >= `=`anio'-1', barwidth(.35) yaxis(3) ///
+			(bar `pobmill' anio if anio > `aniofin', barwidth(.35) yaxis(3) ///
 				pstyle(p2) lwidth(none) fintensity(40)) ///
-			(connected `shrfsp_pc_miles' anio if anio > 2000 & anio < `=`anio'-1', ///
+			(connected `shrfsp_pc_miles' anio if anio > 2000 & anio <= `aniofin', ///
 				yaxis(2) mlabel(`shrfsp_pc_miles') mlabposition(12) mlabcolor(black) pstyle(p3) ///
 				lpattern(dot) msize(small) mlabsize(small)) ///
-			(connected `shrfsp_pc_miles' anio if anio >= `=`anio'-1' & anio <= 2031, ///
+			(connected `shrfsp_pc_miles' anio if anio > `aniofin' & anio <= `lastexo', ///
 				yaxis(2) mlabel(`shrfsp_pc_miles') mlabposition(12) mlabcolor(black) pstyle(p3) ///
 				lpattern(dot) msize(small) mlabsize(small) fintensity(40)) ///
-			(scatter `shrfsp_bill' anio if anio > 2000 & anio <= 2031, ///
+			(scatter `shrfsp_bill' anio if anio > 2000 & anio <= `lastexo', ///
 				mlabel(`shrfsp_bill') mlabposition(12) mlabcolor(black) msize(zero) mlabsize(small)) ///
-			(scatter `pobmill' anio if anio > 2000 & anio <= 2031, ///
+			(scatter `pobmill' anio if anio > 2000 & anio <= `lastexo', ///
 				mlabel(`pobmill') mlabposition(12) mlabcolor(black) msize(zero) mlabsize(small) yaxis(3)) ///
 			if `shrfsp_bill' != . & anio > `ultanio', ///
 			title(`graphtitle') ///
@@ -537,22 +545,22 @@ quietly {
 		summarize anio if round(shrfsp_lif,0.001) == round(`minval3',0.001) & anio >= `anioIniCentral' & anio <= `anioFinCentral'
 		local minanio3 = r(mean)
 
-		twoway (bar shrfsp_pib anio if anio > 2000 & anio < `=`anio'-1', barwidth(.75)) ///
-			(bar shrfsp_pib anio if anio >= `=`anio'-1' & anio <= 2031, barwidth(.75) ///
+		twoway (bar shrfsp_pib anio if anio > 2000 & anio <= `aniofin', barwidth(.75)) ///
+			(bar shrfsp_pib anio if anio > `aniofin' & anio <= `lastexo', barwidth(.75) ///
 				pstyle(p1) lcolor(none) fintensity(50)) ///
-			(bar `lifpib' anio if anio < `=`anio'-1', barwidth(.35) yaxis(3) ///
+			(bar `lifpib' anio if anio <= `aniofin', barwidth(.35) yaxis(3) ///
 				pstyle(p2) lwidth(none)) ///
-			(bar `lifpib' anio if anio >= `=`anio'-1', barwidth(.35) yaxis(3) ///
+			(bar `lifpib' anio if anio > `aniofin', barwidth(.35) yaxis(3) ///
 				pstyle(p2) lwidth(none) fintensity(50)) ///
-			(connected shrfsp_lif anio if anio > 2000 & anio < `=`anio'-1', ///
+			(connected shrfsp_lif anio if anio > 2000 & anio <= `aniofin', ///
 				yaxis(2) mlabel(shrfsp_lif) mlabposition(12) mlabcolor(black) pstyle(p3) ///
 				lpattern(dot) msize(small) mlabsize(small)) ///
-			(connected shrfsp_lif anio if anio >= `=`anio'-1' & anio <= 2031, ///
+			(connected shrfsp_lif anio if anio > `aniofin' & anio <= `lastexo', ///
 				yaxis(2) mlabel(shrfsp_lif) mlabposition(12) mlabcolor(black) pstyle(p3) ///
 				lpattern(dot) msize(small) mlabsize(small) fintensity(40)) ///
-			(scatter shrfsp_pib anio if anio > 2000 & anio <= 2031, ///
+			(scatter shrfsp_pib anio if anio > 2000 & anio <= `lastexo', ///
 				mlabel(shrfsp_pib) mlabposition(12) mlabcolor(black) msize(zero) mlabsize(small)) ///
-			(scatter `lifpib' anio if anio > 2000 & anio <= 2031, ///
+			(scatter `lifpib' anio if anio > 2000 & anio <= `lastexo', ///
 				mlabel(`lifpib') mlabposition(12) mlabcolor(black) msize(zero) mlabsize(small) yaxis(3)) ///
 			if shrfsp_pib != . & anio > `ultanio', ///
 			title(`graphtitle') ///
@@ -598,22 +606,22 @@ quietly {
 		summarize anio if round(`porcentajeExterno',0.001) == round(`minval4',0.001) & anio >= `anioIniCentral' & anio <= `anioFinCentral'
 		local minanio4 = r(mean)
 
-		twoway (bar shrfspInterno_pib anio if anio > 2000 & anio < `=`anio'-1', barwidth(.75)) ///
-			(bar shrfspInterno_pib anio if anio >= `=`anio'-1' & anio <= 2031, barwidth(.75) ///
+		twoway (bar shrfspInterno_pib anio if anio > 2000 & anio <= `aniofin', barwidth(.75)) ///
+			(bar shrfspInterno_pib anio if anio > `aniofin' & anio <= `lastexo', barwidth(.75) ///
 				pstyle(p1) lcolor(none) fintensity(50)) ///
-			(bar shrfspExterno_pib anio if anio < `=`anio'-1', barwidth(.75) yaxis(1) ///
+			(bar shrfspExterno_pib anio if anio <= `aniofin', barwidth(.75) yaxis(1) ///
 				pstyle(p2) lwidth(none)) ///
-			(bar shrfspExterno_pib anio if anio >= `=`anio'-1', barwidth(.75) yaxis(1) ///
+			(bar shrfspExterno_pib anio if anio > `aniofin', barwidth(.75) yaxis(1) ///
 				pstyle(p2) lwidth(none) fintensity(50)) ///
-			(connected `porcentajeExterno' anio if anio > 2000 & anio < `=`anio'-1', ///
+			(connected `porcentajeExterno' anio if anio > 2000 & anio <= `aniofin', ///
 				yaxis(2) mlabel(`porcentajeExterno') mlabposition(12) mlabcolor(black) pstyle(p3) ///
 				lpattern(dot) msize(small) mlabsize(small)) ///
-			(connected `porcentajeExterno' anio if anio >= `=`anio'-1' & anio <= 2031, ///
+			(connected `porcentajeExterno' anio if anio > `aniofin' & anio <= `lastexo', ///
 				yaxis(2) mlabel(`porcentajeExterno') mlabposition(12) mlabcolor(black) pstyle(p3) ///
 				lpattern(dot) msize(small) mlabsize(small) fintensity(40)) ///
-			(scatter shrfspInterno_pib anio if anio > 2000 & anio <= 2031, ///
+			(scatter shrfspInterno_pib anio if anio > 2000 & anio <= `lastexo', ///
 				mlabel(shrfspInterno_pib) mlabposition(12) mlabcolor(black) msize(zero) mlabsize(small)) ///
-			(scatter shrfspExterno_pib anio if anio > 2000 & anio <= 2031, ///
+			(scatter shrfspExterno_pib anio if anio > 2000 & anio <= `lastexo', ///
 				mlabel(shrfspExterno_pib) mlabposition(12) mlabcolor(black) msize(zero) mlabsize(small)) ///
 			if shrfsp_pib != . & anio > `ultanio', ///
 			title(`graphtitle') ///
@@ -640,6 +648,63 @@ quietly {
 		if _rc == 0 {
 			graph export "$export/shrfspIntExt.png", replace name(shrfspIntExt)
 		}
+
+		** Gráfica SHRFSP y PIB (billones) con RFSP y costo de deuda (% PIB) **
+		capture drop costodeudaTotg
+		g costodeudaTotg = costofinanciero/pibY*100
+		format costodeudaTotg %5.1fc
+
+		tabstat `pibY_bill' `shrfsp_bill' rfsp_pib costodeudaTotg, stat(min max) by(anio) save
+		tempname rango
+		matrix `rango' = r(StatTotal)
+
+		** Calcular el mínimo de rfsp_pib en los 5 años centrales **
+		summarize rfsp_pib if anio >= `anioIniCentral' & anio <= `anioFinCentral' & rfsp_pib != .
+		local minval8 = r(min)
+		summarize anio if round(rfsp_pib,0.001) == round(`minval8',0.001) & anio >= `anioIniCentral' & anio <= `anioFinCentral'
+		local minanio8 = r(mean)
+
+		twoway ///
+			(bar shrfsp_pib anio if anio > 2007 & anio <= `aniofin', barwidth(.75) ///
+				yaxis(1) pstyle(p2) lwidth(none)) ///
+			(bar shrfsp_pib anio if anio > `aniofin', barwidth(.75) ///
+				yaxis(1) pstyle(p2) lwidth(none) fintensity(50)) ///
+			(bar rfsp_pib anio if anio > 2007 & anio <= `aniofin', barwidth(.5) ///
+				yaxis(2) pstyle(p3) lwidth(none)) ///
+			(bar rfsp_pib anio if anio > `aniofin', barwidth(.5) ///
+				yaxis(2) pstyle(p3) lwidth(none) fintensity(50)) ///
+			(bar costodeudaTotg anio if anio > 2007 & anio <= `aniofin', barwidth(.35) ///
+				yaxis(2) pstyle(p4) lwidth(none)) ///
+			(bar costodeudaTotg anio if anio > `aniofin', barwidth(.35) ///
+				yaxis(2) pstyle(p4) lwidth(none) fintensity(50)) ///
+			(scatter shrfsp_pib anio if anio > 2007 & anio <= `lastexo', ///
+				yaxis(1) mlabel(shrfsp_pib) mlabposition(12) mlabcolor(black) msize(zero) mlabsize(small)) ///
+			(scatter rfsp_pib anio if anio > 2007 & anio <= `lastexo', ///
+				yaxis(2) mlabel(rfsp_pib) mlabposition(12) mlabcolor(black) msize(zero) mlabsize(small)) ///
+			(scatter costodeudaTotg anio if anio > 2007 & anio <= `lastexo', ///
+				yaxis(2) mlabel(costodeudaTotg) mlabposition(12) mlabcolor(black) msize(zero) mlabsize(small)) ///
+			if shrfsp_pib != . & anio > `ultanio', ///
+			///title(`graphtitle') ///
+			///caption("`graphfuente'") ///
+			ytitle("% PIB") ///
+			ytitle("", axis(2)) ///
+			ylabel(none) ///
+			ylabel(none, axis(2)) ///
+			yscale(range(0) axis(1) noline) ///
+			yscale(range(0 8) axis(2) noline) ///
+			xtitle("") ///
+			xlabel(2008(1)`lastexo', noticks) ///
+			legend(on order(1 4 7) ///
+				label(1 "SHRFSP") ///
+				label(4 "RFSP") ///
+				label(7 "Costo financiero")) ///
+			name(shrfspResumen, replace)
+
+		graph save shrfspResumen `"`c(sysdir_site)'/05_graphs/shrfspResumen.gph"', replace
+		capture confirm existence $export
+		if _rc == 0 {
+			graph export "$export/shrfspResumen.png", replace name(shrfspResumen)
+		}
 	}
 
 
@@ -665,8 +730,8 @@ quietly {
 
 	** 6.1 Gráfica tasas de interés **
 	if "`nographs'" != "nographs" & "$nographs" == "" {
-		g costodeudaTotg = costofinanciero
-		replace costodeudaTotg = costodeudaTotg/pibY*100
+		capture drop costodeudaTotg
+		g costodeudaTotg = costofinanciero/pibY*100
 		format costodeudaTotg %5.1fc
 		
 		if `"$textbook"' == "" {
@@ -688,20 +753,20 @@ quietly {
 		summarize anio if round(tasaEfectiva,0.001) == round(`minval5',0.001) & anio >= `anioIniCentral' & anio <= `anioFinCentral'
 		local minanio5 = r(mean)
 	
-		twoway (bar shrfsp_pib anio if anio > 2000 & anio < `=`anio'-1', barwidth(.75)) ///
-			(bar shrfsp_pib anio if anio >= `=`anio'-1' & anio <= 2031, barwidth(.75) ///
+		twoway (bar shrfsp_pib anio if anio > 2000 & anio <= `aniofin', barwidth(.75)) ///
+			(bar shrfsp_pib anio if anio > `aniofin' & anio <= `lastexo', barwidth(.75) ///
 				pstyle(p1) lcolor(none) fintensity(40)) ///
-			(bar costodeudaTotg anio if anio < `=`anio'-1', barwidth(.35) yaxis(3) ///
+			(bar costodeudaTotg anio if anio <= `aniofin', barwidth(.35) yaxis(3) ///
 				pstyle(p2) lwidth(none)) ///
-			(bar costodeudaTotg anio if anio >= `=`anio'-1', barwidth(.35) yaxis(3) ///
+			(bar costodeudaTotg anio if anio > `aniofin', barwidth(.35) yaxis(3) ///
 				pstyle(p2) lwidth(none) fintensity(40)) ///
-			(connected tasaEfectiva anio if anio > 2000 & anio < `=`anio'-1', ///
+			(connected tasaEfectiva anio if anio > 2000 & anio <= `aniofin', ///
 				yaxis(2) mlabel(tasaEfectiva) mlabposition(12) mlabcolor(black) pstyle(p3) lpattern(dot) msize(small) mlabsize(small)) ///
-			(connected tasaEfectiva anio if anio >= `=`anio'-1' & anio <= 2031, ///
+			(connected tasaEfectiva anio if anio > `aniofin' & anio <= `lastexo', ///
 				yaxis(2) mlabel(tasaEfectiva) mlabposition(12) mlabcolor(black) pstyle(p3) lpattern(dot) msize(small) mlabsize(small) fintensity(40)) ///
-			(scatter shrfsp_pib anio if anio > 2000 & anio <= 2031, ///
+			(scatter shrfsp_pib anio if anio > 2000 & anio <= `lastexo', ///
 				yaxis(1) mlabel(shrfsp_pib) mlabposition(12) mlabcolor(black) msize(zero) mlabsize(small)) ///
-			(scatter costodeudaTotg anio if anio > 2000 & anio <= 2031, ///
+			(scatter costodeudaTotg anio if anio > 2000 & anio <= `lastexo', ///
 				yaxis(3) mlabel(costodeudaTotg) mlabposition(12) mlabcolor(black) msize(zero) mlabsize(small)) ///
 			if tasaEfectiva != . & anio > `ultanio', ///
 			title("`graphtitle'") ///
@@ -746,7 +811,7 @@ quietly {
 		summarize anio if round(rfsp_pib,0.001) == round(`minval6',0.001) & anio >= `anioIniCentral' & anio <= `anioFinCentral'
 		local minanio6 = r(mean)
 
-		if "$export" != "" {
+		if "$export" == "" {
 			local graphtitle "{bf:RFSP}"
 			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP, INEGI/BIE y $paqueteEconomico."
 		}
@@ -755,22 +820,22 @@ quietly {
 			local graphfuente ""
 		}
 
-		twoway (bar `pibY_bill_rfsp' anio if anio > 2007 & anio < `=`anio'-1', barwidth(.75)) ///
-			(bar `pibY_bill_rfsp' anio if anio >= `=`anio'-1' & anio <= 2031, barwidth(.75) ///
+		twoway (bar `pibY_bill_rfsp' anio if anio > 2007 & anio <= `aniofin', barwidth(.75)) ///
+			(bar `pibY_bill_rfsp' anio if anio > `aniofin' & anio <= `lastexo', barwidth(.75) ///
 				pstyle(p1) lcolor(none) fintensity(50)) ///
-			(bar `rfsp_bill' anio if anio < `=`anio'-1', barwidth(.35) yaxis(3) ///
+			(bar `rfsp_bill' anio if anio <= `aniofin', barwidth(.35) yaxis(3) ///
 				pstyle(p2) lwidth(none)) ///
-			(bar `rfsp_bill' anio if anio >= `=`anio'-1', barwidth(.35) yaxis(3) ///
+			(bar `rfsp_bill' anio if anio > `aniofin', barwidth(.35) yaxis(3) ///
 				pstyle(p2) lwidth(none) fintensity(50)) ///
-			(connected rfsp_pib anio if anio > 2007 & anio < `=`anio'-1', ///
+			(connected rfsp_pib anio if anio > 2007 & anio <= `aniofin', ///
 				yaxis(2) mlabel(rfsp_pib) mlabposition(12) mlabcolor(black) pstyle(p3) ///
 				lpattern(dot) msize(small) mlabsize(small)) ///
-			(connected rfsp_pib anio if anio >= `=`anio'-1' & anio <= 2031, ///
+			(connected rfsp_pib anio if anio > `aniofin' & anio <= `lastexo', ///
 				yaxis(2) mlabel(rfsp_pib) mlabposition(12) mlabcolor(black) pstyle(p3) ///
 				lpattern(dot) msize(small) mlabsize(small) fintensity(40)) ///
-			(scatter `pibY_bill_rfsp' anio if anio > 2007 & anio <= 2031, ///
+			(scatter `pibY_bill_rfsp' anio if anio > 2007 & anio <= `lastexo', ///
 				mlabel(`pibY_bill_rfsp') mlabposition(12) mlabcolor(black) msize(zero) mlabsize(small)) ///
-			(scatter `rfsp_bill' anio if anio > 2007 & anio <= 2031, ///
+			(scatter `rfsp_bill' anio if anio > 2007 & anio <= `lastexo', ///
 				mlabel(`rfsp_bill') mlabposition(12) mlabcolor(black) msize(zero) mlabsize(small) yaxis(3)) ///
 			if rfsp_pib != . & anio > `ultanio', ///
 			title(`graphtitle') ///
@@ -783,17 +848,18 @@ quietly {
 			ylabel(none, axis(2)) ///
 			ylabel(none, axis(3)) ///
 			yscale(range(0 `=`rango'[2,1]*1.8') axis(1) noline) ///
-			yscale(range(-20 `=`rango'[2,2]*1.15') axis(2) noline) ///
+			yscale(range(-10 `=`rango'[2,2]*1.15') axis(2) noline) ///
 			yscale(range(0 `=`rango'[2,3]*2.5') axis(3) noline) ///
 			xtitle("") ///
+			yline(`=rfsp_pib[`=`obsvp'-1']', axis(2) lpattern(dash) lcolor(gray)) ///
 			xlabel(2008(1)`lastexo', noticks) ///
 			legend(on order(1 4) label(1 "PIB (billones `currency' `aniovp')") label(4 "RFSP (billones `currency' `aniovp')")) ///
 			text(0 2009 "{bf:Observado}", ///
 				yaxis(3) size(medium) place(1) justification(right) bcolor(white) box) ///
 			text(0 `=`anio'' "{bf:$paqueteEconomico}", ///
 				yaxis(3) size(medium) place(1) justification(right) bcolor(white) box) ///
-			///text(`=`minval6'-1' `=`minanio6'' "{bf:RFSP % PIB}", ///
-			///	yaxis(2) size(medium) place(6) justification(center) bcolor(white) box) ///
+			text(`=`minval6'-1' `=`minanio6'-1' "{bf:RFSP como % PIB}", ///
+				yaxis(2) size(medium) place(6) justification(center) bcolor(white) box) ///
 			name(rfsp, replace)
 
 		graph save rfsp `"`c(sysdir_site)'/05_graphs/rfsp.gph"', replace
@@ -829,22 +895,22 @@ quietly {
 			local graphfuente ""
 		}
 
-		twoway (bar `rfspBalance_pib' anio if anio > 2007 & anio < `=`anio'-1', barwidth(.75)) ///
-			(bar `rfspBalance_pib' anio if anio >= `=`anio'-1' & anio <= 2031, barwidth(.75) ///
+		twoway (bar `rfspBalance_pib' anio if anio > 2007 & anio <= `aniofin', barwidth(.75)) ///
+			(bar `rfspBalance_pib' anio if anio > `aniofin' & anio <= `lastexo', barwidth(.75) ///
 				pstyle(p1) lcolor(none) fintensity(50)) ///
-			(bar `rfspOtros_pib' anio if anio < `=`anio'-1', barwidth(.75) yaxis(1) ///
+			(bar `rfspOtros_pib' anio if anio <= `aniofin', barwidth(.75) yaxis(1) ///
 				pstyle(p2) lwidth(none)) ///
-			(bar `rfspOtros_pib' anio if anio >= `=`anio'-1', barwidth(.75) yaxis(1) ///
+			(bar `rfspOtros_pib' anio if anio > `aniofin', barwidth(.75) yaxis(1) ///
 				pstyle(p2) lwidth(none) fintensity(50)) ///
-			(connected `porcentajeBalance' anio if anio > 2007 & anio < `=`anio'-1', ///
+			(connected `porcentajeBalance' anio if anio > 2007 & anio <= `aniofin', ///
 				yaxis(2) mlabel(`porcentajeBalance') mlabposition(12) mlabcolor(black) pstyle(p3) ///
 				lpattern(dot) msize(small) mlabsize(small)) ///
-			(connected `porcentajeBalance' anio if anio >= `=`anio'-1' & anio <= 2031, ///
+			(connected `porcentajeBalance' anio if anio > `aniofin' & anio <= `lastexo', ///
 				yaxis(2) mlabel(`porcentajeBalance') mlabposition(12) mlabcolor(black) pstyle(p3) ///
 				lpattern(dot) msize(small) mlabsize(small) fintensity(40)) ///
-			(scatter `rfspBalance_pib' anio if anio > 2007 & anio <= 2031, ///
+			(scatter `rfspBalance_pib' anio if anio > 2007 & anio <= `lastexo', ///
 				mlabel(`rfspBalance_pib') mlabposition(12) mlabcolor(black) msize(zero) mlabsize(small)) ///
-			(scatter `rfspOtros_pib' anio if anio > 2007 & anio <= 2031, ///
+			(scatter `rfspOtros_pib' anio if anio > 2007 & anio <= `lastexo', ///
 				mlabel(`rfspOtros_pib') mlabposition(12) mlabcolor(black) msize(zero) mlabsize(small)) ///
 			if rfsp_pib != . & anio > `ultanio', ///
 			title(`graphtitle') ///

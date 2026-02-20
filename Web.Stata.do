@@ -81,7 +81,7 @@ global inf2031 = 3.0
 ** 3.1 Ley de Ingresos de la Federación
 noisily LIF if divLIF != 10, anio(`=anioPE') by(divSIM) $update 		///
 	title("Ingresos presupuestarios") 					/// Cambiar título
-	desde(`=`=anioPE'-12') 							/// Año de inicio PROMEDIO
+	desde(2021) 							/// Año de inicio PROMEDIO
 	min(0) 									/// Mínimo 0% del PIB (no negativo)
 	rows(1)									//  Número de filas en la leyenda
 rename divSIM divCODE
@@ -394,7 +394,7 @@ save `"`c(sysdir_site)'/users/$id/aportaciones.dta"', replace
 ***
 
 ** 7.1 Brecha fiscal
-noisily FiscalGap, anio(`=anioPE') end(2030) aniomin(2015) $nographs desde(2015) discount(10) //update
+noisily FiscalGap, anio(`=anioPE') end(2030) aniomin(2015) $nographs desde(2021) discount(10) //update
 
 
 ** 7.2 Sankey del sistema fiscal

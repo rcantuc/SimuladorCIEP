@@ -17,9 +17,9 @@ set scheme ciep
 
 ** 0.1 Directorio de archivos .ado (Github)
 if "`c(username)'" == "ricardo" & "`1'" != "ricardo" {						// Mac
-	sysdir set SITE "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
-	*global basesCIEP "/Users/ricardo/CIEP Dropbox/BasesCIEP/"
-	global export "/Users/ricardo/CIEP Dropbox/TextbookCIEP/images"
+	*sysdir set SITE "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
+	sysdir set SITE "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP"
+	*global export "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/Ricardo Cantú/CIEP_Deuda/2. Boletines/Sostenibilidad 2026/images"
 }
 else if "`c(console)'" != "" {							// Servidor Web
 	sysdir set SITE "/SIM/OUT/7/"
@@ -37,10 +37,10 @@ capture mkdir "`c(sysdir_site)'/users/"
 capture mkdir "`c(sysdir_site)'/users/$id"
 
 ** 0.4 Opciones (descomentar para activar)
-//global nographs "nographs"							// SUPRIMIR GRAFICAS
+global nographs "nographs"							// SUPRIMIR GRAFICAS
 //global update "update"							// UPDATE BASES DE DATOS
 //global textbook "textbook"							// SCALAR TO LATEX
-//global output "output"							// ARCHIVO DE SALIDA (WEB)
+global output "output"							// ARCHIVO DE SALIDA (WEB)
 
 ** 0.5 Ejecución de opciones **
 if "$output" != "" {
@@ -66,7 +66,7 @@ noisily Poblacion, anioi(`=aniovp') aniofinal(2050) $textbook $nographs
 global paqueteEconomico "CGPE 2026"						// POLÍTICA FISCAL
 
 ** 2.1 Producto Interno Bruto (inputs opcionales)
-global pib2025 = 1.0575								// CRECIMIENTO ANUAL PIB
+global pib2025 = 1.3								// CRECIMIENTO ANUAL PIB
 global pib2026 = 2.262								// <-- AGREGAR O QUITAR AÑOS
 global pib2027 = 2.0898
 global pib2028 = 2.0548
@@ -122,41 +122,41 @@ noisily run "`c(sysdir_site)'/PerfilesSim.do" `=anioPE'
 **# 4. SISTEMA FISCAL: INGRESOS
 ***
 set scheme ciepingresos
-noisily LIF, anio(`=anioPE') by(divSIM) $update $nographs `eofp'		///
+noisily LIF if divLIF != 10, anio(`=anioPE') by(divSIM) $update $nographs `eofp'		///
 	title("Ingresos presupuestarios") 					/// Cambiar título de la gráfica
-	desde(2013) 								/// Año de inicio para el PROMEDIO
+	desde(2008) 								/// Año de inicio para el PROMEDIO
 	min(0)		 							/// Mínimo 0% del PIB (no negativos)
-	rows(2)									//  Número de filas en la leyenda
+	rows(1)									//  Número de filas en la leyenda
 rename divSIM divCODE
 decode divCODE, g(divSIM) 
 collapse (sum) recaudacion, by(anio divSIM) fast
 save `"`c(sysdir_site)'/users/$id/LIF.dta"', replace	
 
-* Evolución de las tasas efectivas *
+* Evolución de las tasas efectivas */
 if "$nographs" == "" & "$update" == "update" {
 	do "`c(sysdir_site)'/Graphs_TE.do"
 }
 
 
 ** 4.1 Parámetros: Ingresos **
-scalar ISRASPIB  =   "3.793" 						// ISR (asalariados)
-scalar ISRPFPIB  =   "0.241" 						// ISR (personas f{c i'}sicas)
-scalar CUOTASPIB =   "1.716"  						// Cuotas (IMSS)
+scalar ISRASPIB  =   "3.707" 						// ISR (asalariados)
+scalar ISRPFPIB  =   "0.235" 						// ISR (personas f{c i'}sicas)
+scalar CUOTASPIB =   "1.677"  						// Cuotas (IMSS)
 
-scalar ISRPMPIB  =   "4.176"  						// ISR (personas morales)
-scalar OTROSKPIB =   "1.391" 						// Productos, derechos, aprovech.
-scalar FMPPIB    =   "0.622"  						// Fondo Mexicano del Petróleo
+scalar ISRPMPIB  =   "4.081"  						// ISR (personas morales)
+scalar OTROSKPIB =   "1.359" 						// Productos, derechos, aprovech.
+scalar FMPPIB    =   "0.608"  						// Fondo Mexicano del Petróleo
 
-scalar PEMEXPIB  =   "1.838"  						// Organismos y empresas (Pemex)
-scalar CFEPIB    =   "1.423"  						// Organismos y empresas (CFE)
-scalar IMSSPIB   =   "0.168"  						// Organismos y empresas (IMSS)
-scalar ISSSTEPIB =   "0.163"  						// Organismos y empresas (ISSSTE)
+scalar PEMEXPIB  =   "1.797"  						// Organismos y empresas (Pemex)
+scalar CFEPIB    =   "1.399"  						// Organismos y empresas (CFE)
+scalar IMSSPIB   =   "0.164"  						// Organismos y empresas (IMSS)
+scalar ISSSTEPIB =   "0.159"  						// Organismos y empresas (ISSSTE)
 
-scalar IVAPIB    =   "4.249"  						// IVA
-scalar ISANPIB   =   "0.054" 						// ISAN
-scalar IEPSNPPIB =   "0.771"  						// IEPS (resumido)
-scalar IEPSPPIB  =   "1.266" 						// IEPS (petrolero)
-scalar IMPORTPIB =   "0.681"  						// Importaciones
+scalar IVAPIB    =   "4.152"  						// IVA
+scalar ISANPIB   =   "0.053" 						// ISAN
+scalar IEPSNPPIB =   "0.753"  						// IEPS (resumido)
+scalar IEPSPPIB  =   "1.237" 						// IEPS (petrolero)
+scalar IMPORTPIB =   "0.666"  						// Importaciones
 
 
 
@@ -287,15 +287,16 @@ noisily TasasEfectivas, anio(`=anioPE') enigh
 *noisily run "`c(sysdir_site)'/Ejercicio_Elasticidades_Ingresos_beta.do"
 
 
+
 **/
 **# 5. SISTEMA FISCAL: EGRESOS
 ***
 set scheme ciep	
-*noisily PEF, anio(`=anioPE') by(divSIM) $update 				///
-	title("Gasto presupuestario") 						/// Cambiar título
-	desde(2013) 								/// Año de inicio PROMEDIO
-	min(0) 									/// Mínimo 0% del PIB (resumido)
-	rows(2)									/// Número de filas en la leyenda
+noisily PEF if ramo != -1, anio(`=anioPE') by(divSIM) $update 		///
+	title(" ") 						/// Cambiar título
+	desde(2013) 										/// Año de inicio PROMEDIO
+	min(0) 												/// Mínimo 0% del PIB (resumido)
+	rows(2)												// Número de filas en la leyenda
 
 * Evolución de los gastos per cápita *
 if "$nographs" == "" & "$update" == "update" {
@@ -304,46 +305,46 @@ if "$nographs" == "" & "$update" == "update" {
 
 ** 5.1 Parámetros: Gasto **
 scalar iniciaA     =   0.000    					// Inicial
-scalar basica      =   2.011    					// Educación b{c a'}sica
-scalar medsup      =   0.403    					// Educación media superior
-scalar superi      =   0.441    					// Educación superior
+scalar basica      =   1.966    					// Educación b{c a'}sica
+scalar medsup      =   0.394    					// Educación media superior
+scalar superi      =   0.431    					// Educación superior
 scalar posgra      =   0.027    					// Posgrado
 scalar eduadu      =   0.015    					// Educación para adultos
-scalar otrose      =   0.162    					// Otros gastos educativos
-scalar invere      =   0.081    					// Inversión en educación
-scalar cultur      =   0.060    					// Cultura, deportes y recreación
-scalar invest      =   0.152    					// Ciencia y tecnología
+scalar otrose      =   0.159    					// Otros gastos educativos
+scalar invere      =   0.079    					// Inversión en educación
+scalar cultur      =   0.059    					// Cultura, deportes y recreación
+scalar invest      =   0.148    					// Ciencia y tecnología
 
-scalar ssa         =   0.179    					// SSalud
-scalar imssbien    =   0.684    					// IMSS-Bienestar
-scalar imss        =   1.391    					// IMSS (salud)
-scalar issste      =   0.195    					// ISSSTE (salud)
-scalar pemex       =   0.049    					// Pemex (salud)
-scalar issfam      =   0.027    					// ISSFAM (salud)
-scalar invers      =   0.141    					// Inversión en salud
+scalar ssa         =   0.175    					// SSalud
+scalar imssbien    =   0.668    					// IMSS-Bienestar
+scalar imss        =   1.359    					// IMSS (salud)
+scalar issste      =   0.191    					// ISSSTE (salud)
+scalar pemex       =   0.047    					// Pemex (salud)
+scalar issfam      =   0.026    					// ISSFAM (salud)
+scalar invers      =   0.138    					// Inversión en salud
 
-scalar pam         =   1.505  						// Pensión Bienestar
-scalar penimss     =   2.702 						// Pensión IMSS
-scalar penisss     =   1.057 						// Pensión ISSSTE
-scalar penpeme     =   0.247 						// Pensión Pemex
-scalar penotro     =   0.551						// Pensión CFE, LFC, ISSFAM, Ferronales
+scalar pam         =   1.471  						// Pensión Bienestar
+scalar penimss     =   2.641 						// Pensión IMSS
+scalar penisss     =   1.033 						// Pensión ISSSTE
+scalar penpeme     =   0.241 						// Pensión Pemex
+scalar penotro     =   0.539						// Pensión CFE, LFC, ISSFAM, Ferronales
 
-scalar gascfe      =   1.132   						// Gasto en CFE
-scalar gaspemex    =   0.420   						// Gasto en Pemex
-scalar gassener    =   0.258   						// Gasto en SENER
-scalar gasinverf   =   1.578   						// Gasto en inversión (energía)
-scalar gascosdeue  =   0.639   						// Gasto en costo de la deuda (energía)
+scalar gascfe      =   1.107   						// Gasto en CFE
+scalar gaspemex    =   0.410   						// Gasto en Pemex
+scalar gassener    =   0.252   						// Gasto en SENER
+scalar gasinverf   =   1.542   						// Gasto en inversión (energía)
+scalar gascosdeue  =   0.624   						// Gasto en costo de la deuda (energía)
 
-scalar gasinfra    =   1.548   						// Gasto en Otras Inversiones
-scalar gasotros    =   1.681   						// Otros gastos
-scalar gasfeder    =   4.153  						// Participaciones y Otras aportaciones
-scalar gascosto    =   3.755   						// Gasto en Costo de la deuda
+scalar gasinfra    =   1.515   						// Gasto en Otras Inversiones
+scalar gasotros    =   1.600   						// Otros gastos
+scalar gasfeder    =   4.059  						// Participaciones y Otras aportaciones
+scalar gascosto    =   3.669   						// Gasto en Costo de la deuda
 
 scalar ingbasico18 =       1  						// 1: Incluye menores de 18 anios, 0: no
 scalar ingbasico65 =       1  						// 1: Incluye mayores de 65 anios, 0: no
 scalar IngBas      =       0  						// Ingreso b{c a'}sico
 scalar gasmadres   =   0.009   						// Apoyo a madres trabajadoras
-scalar gascuidados =   0.047   						// Gasto en cuidados
+scalar gascuidados =   0.046   						// Gasto en cuidados
 
 
 ** 5.2 Gasto per cápita **/
@@ -355,10 +356,10 @@ noisily GastoPC educacion salud pensiones energia resto transferencias, aniope(`
 **# 6. SISTEMA FISCAL: DEUDA
 ***
 
-* SHRFSP: Total, Interno, Externo (como % del PIB)
+/* SHRFSP: Total, Interno, Externo (como % del PIB)
 *                	2025  2026  2027  2028  2029  2030  2031
-matrix shrfsp = 	(52.3, 52.3, 52.3, 52.3, 52.3, 52.3, 52.3)
-matrix shrfspInterno = 	(40.2, 41.3, 42.1, 42.5, 42.8, 43.2, 43.5)
+matrix shrfsp = 	(52.6, 52.6, 52.6, 52.6, 52.6, 52.6, 52.6)
+matrix shrfspInterno = 	(40.5, 41.5, 42.4, 42.5, 43.1, 43.5, 43.8)
 matrix shrfspExterno = 	(12.1, 11.0, 10.2, 9.8, 9.5, 9.1, 8.8)
 * SHRFSP:      Total, PIDIREGAS, IPAB, FONADIN, Deudores, Banca, Adecuaciones, Balance (como % del PIB)
 matrix rfsp =  (4.3, 0.15, 0.15, 0.00, 0.00, 0.00, 0.40, 3.6 \ 		/// 2025
@@ -384,7 +385,7 @@ matrix ingresos = (21.9,  22.5,  22.4,  22.4,  22.4,  22.4,  22.4)
 *                     2025, 2026, 2027, 2028, 2029, 2030, 2031
 matrix egresos = (25.5,  26.1,  25.4,  24.9,  24.9,  24.9,  24.9)
 
-forvalues k = 2025(1)2031 {
+forvalues k = 2026(1)2031 {
 	local j = `k' - 2025 + 1
 	global shrfsp`k' = shrfsp[1,`j']
 	global shrfspInterno`k' = shrfspInterno[1,`j']
@@ -404,10 +405,10 @@ forvalues k = 2025(1)2031 {
 	global egresos`k' = egresos[1,`j']
 }
 
-* SHRFSP: comando *
+* SHRFSP: comando */
 set scheme ciepdeuda
 *scalar tasaEfectiva = 6.2967
-*noisily SHRFSP, anio(`=anioPE') ultanio(2002) $nographs $update $textbook
+noisily SHRFSP, anio(`=anioPE') ultanio(2002) $nographs $update $textbook
 
 
 
@@ -458,10 +459,10 @@ if "$textbook" == "" {
 	label var Transferencias "Transferencias públicas"
 	label var AportacionesNetas "Ciclo de vida de las aportaciones netas"
 }
-foreach k of varlist AlTrabajo AlCapital AlConsumo ///
+foreach k of varlist /*AlTrabajo AlCapital AlConsumo ///
 	ISRPM ISRAS ISRPF CUOTAS IVA IEPSNP IEPSP ISAN IMPORT ///
 	Pensiones IngBasico Educacion Salud OtrosGastos Energia ///
-	ImpuestosAportaciones Transferencias AportacionesNetas {
+	ImpuestosAportaciones Transferencias*/ AportacionesNetas {
 	*noisily Perfiles `k' if `k' != 0 [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
 	noisily Simulador `k' if `k' != 0 [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot //boot(10)
 }
@@ -480,7 +481,7 @@ if "$textbook" == "textbook" {
 
 ** 8.1 Brecha fiscal
 set scheme ciepdeuda2
-noisily FiscalGap, anio(`=anioPE') end(`=anioPE+5') aniomin(2015) $nographs desde(2015) discount(10)
+noisily FiscalGap, anio(`=anioPE') end(`=anioPE+5') aniomin(2013) $nographs desde(2021) discount(10)
 
 ** 8.2 Sankey del sistema fiscal
 foreach k in decil grupoedad sexo rural escol {

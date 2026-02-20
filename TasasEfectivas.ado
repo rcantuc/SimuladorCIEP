@@ -24,7 +24,7 @@ quietly {
 
 	*********************
 	**# 2 RECAUDACIÓN ***
-	*********************
+	/*********************
 	if "`enigh'" == "" {
 		noisily LIF, anio(`=anioPE') by(divSIM) $update $nographs `eofp'		///
 			title("Ingresos presupuestarios") 					/// Cambiar título de la gráfica
