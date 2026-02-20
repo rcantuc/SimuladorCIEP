@@ -75,17 +75,17 @@ quietly {
 	******************************
 	noisily di _newline in g "  INGRESOS " in y "`desde'-`anio'"
 
-	/** 4.1 Información histórica de los ingresos **
+	** 4.1 Información histórica de los ingresos **
 	LIF if divLIF != 10, anio(`anio') nographs by(divSIM) min(0) desde(`desde') //eofp //ilif
 	local divSIM = r(divSIM)
 
 	foreach k of local divSIM {
 		local `k'C = scalar(`k'C)
 		if ``k'C' > 5 {
-			*local `k'C = 5
+			local `k'C = 5
 		}
 		if ``k'C' < -5 {
-			*local `k'C = -5
+			local `k'C = -5
 		}
 		capture confirm scalar `k'PIB
 		if _rc != 0 {
@@ -165,8 +165,8 @@ quietly {
 
 	g divGraph = "Impuestos laborales" if divSIM == "CUOTAS" | divSIM == "ISRAS" | divSIM == "ISRPF"
 	replace divGraph = "Impuestos al consumo" if divSIM == "IEPSNP" | divSIM == "IEPSP" | divSIM == "IVA" | divSIM == "ISAN" | divSIM == "IMPORT"
-	replace divGraph = "Impuestos al capital" if divSIM == "ISRPM" | divSIM == "OTROSK"
-	replace divGraph = "Organismos y empresas" if divSIM == "CFE" | divSIM == "FMP" | divSIM == "IMSS" | divSIM == "ISSSTE" | divSIM == "PEMEX"
+	replace divGraph = "Impuestos al capital" if divSIM == "ISRPM" | divSIM == "OTROSK" | divSIM == "FMP"
+	replace divGraph = "Organismos y empresas" if divSIM == "CFE" | divSIM == "IMSS" | divSIM == "ISSSTE" | divSIM == "PEMEX"
 
 
 	****************
@@ -202,8 +202,8 @@ quietly {
 		}
 		grc1leg2 Proy_ingresos1 Proy_ingresos2, ycommon ///
 		///graph combine Proy_ingresos1 Proy_ingresos2, ycommon ///
-			title({bf:Ingresos p{c u'}blicos}) ///
-			caption("`graphfuente'") ///
+			///title({bf:Ingresos p{c u'}blicos}) ///
+			///caption("`graphfuente'") ///
 			name(Proy_ingresos, replace)
 
 		capture window manage close graph Proy_ingresos1
@@ -337,10 +337,10 @@ quietly {
 		local `k'C = r(`k'C)
 		
 		if ``k'C' > 5 {
-			*local `k'C = 5
+			local `k'C = 5
 		}
 		if ``k'C' < -5 {
-			*local `k'C = -5
+			local `k'C = -5
 		}
 	}
 	decode resumido, g(divCIEP)
@@ -452,9 +452,9 @@ quietly {
 
 		grc1leg2 Proy_gastos1 Proy_gastos2, ycommon ///
 		///graph combine Proy_gastos1 Proy_gastos2, ycommon ///
-			title({bf:Gasto p{c u'}blico primario}) ///
+			///title({bf:Gasto p{c u'}blico primario}) ///
 			subtitle($pais) ///
-			caption("`graphfuente'") ///
+			///caption("`graphfuente'") ///
 			name(Proy_gastos, replace)
 
 		capture window manage close graph Proy_gastos1
@@ -733,10 +733,10 @@ quietly {
 			ytitle("", axis(2)) ///
 			xlabel(`aniomin'(1)`end') ///
 			legend(off label(1 "Como % del PIB") label(2 "Por persona ajustada")) ///
-			text(`=shrfsp_pib[`obsdesde']*.95' `=anio[`obsdesde']' "{bf:Como}" "{bf:% del PIB}", ///
+			text(`=shrfsp_pib[`obsdesde']*.925' `=anio[`obsdesde']' "{bf:Como % del PIB}", ///
 				place(5) color("111 111 111") size(medsmall)) ///
-			text(`=shrfspPC_mil[`obsdesde']*1.35' `=anio[`obsdesde']' "{bf:Por persona ajustada}" "{bf:(`currency' `=aniovp')}", ///
-				place(5) color("111 111 111") size(medsmall) yaxis(2)) ///
+			text(0 `=anio[`obsdesde']' "{bf:Por persona (miles `currency' `=aniovp')}", ///
+				place(1) color(black) size(medsmall) yaxis(2) bcolor(white) box) ///
 			name(Proy_combinado, replace)
 
 		if "$export" != "" {

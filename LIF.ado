@@ -531,10 +531,9 @@ quietly {
 		}
 
 		graph bar recaudacionPIB if anio <= `anio', ///
-			over(resumido, sort(1) descending) over(anio, gap(10)) ///
+			over(resumido, sort(1) descending) over(anio, gap(25)) ///
 			stack asyvars blabel(bar, format(%7.1fc) size(medsmall)) outergap(0) ///
 			name(ingresos`by'PIB, replace) ///
-			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de SHCP/EOFP, INEGI/BIE y $paqueteEconomico.") ///
 			title("`graphtitle'") ///
 			ylabel(, format(%7.1fc) labsize(small)) ///
 			ytitle("% PIB") ///
@@ -543,7 +542,7 @@ quietly {
 			/// Added text 
 			///text(`=recaudacionPIBTOT[1]' `=anio[1]' "{bf:% PIB}", placement(6)) ///
 			///text(`=`recaudacionline'[1]' `=anio[1]' "{bf:% LIF}", placement(6) yaxis(2)) ///
-			caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de SHCP/EOFP, INEGI/BIE y $paqueteEconomico.") ///
+			///caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de SHCP/EOFP, INEGI/BIE y $paqueteEconomico.") ///
 			b1title("De `desde' a `anio', la {bf:recaudación `cambio' `=string(abs(`finPIBTOT'[1,1]-`iniPIBTOT'[1,1]),"%7.1fc")'} puntos porcentuales del PIB.")
 
 		/*grc1leg ///
@@ -618,7 +617,7 @@ program define UpdateLIF
 		if _rc == 0 {
 			capture which labmask
 			if _rc != 0 {
-				net install labutil.pkg
+				net install http://fmwww.bc.edu/RePEc/bocode/l/labutil.pkg
 			}
 			labmask num`k', values(`k')
 			drop `k'
