@@ -191,6 +191,73 @@ PIB por el método de los usos:
 
 
 [^1]: **Link:** [Banco de Indicadores](https://www.inegi.org.mx/app/indicadores/) 
-[^2]: **Link:** [Cuentas de Sectores Institucionales](https://www.inegi.org.mx/temas/si/#tabulados) 
+[^2]: **Link:** [Cuentas de Sectores Institucionales](https://www.inegi.org.mx/temas/si/#tabulados)
+
+---
+
+<h3 style="color: #ff7020;">4. Información técnica:</h3>
+
+**A. Variables principales generadas:**
+- `PIB`: Producto Interno Bruto (nominal)
+- `PIN`: Producto Interno Neto
+- `RemSal`: Remuneración de asalariados (excluye seguridad social)
+- `RemSalSS`: Remuneración total (incluye seguridad social)
+- `MixL`: Ingreso mixto laboral (2/3 del ingreso mixto neto)
+- `MixK`: Ingreso mixto de capital (1/3 + depreciación)
+- `Yl`: Ingreso laboral total
+- `CapIncImp`: Ingreso de capital neto con impuestos
+- `CapFij`: Consumo de capital fijo (depreciación)
+- `IngDisp`: Ingreso nacional disponible
+- `ConsPriv`: Consumo privado total
+- `ConsGob`: Consumo de gobierno
+- `ROW`: Transferencias netas del resto del mundo
+
+**B. Variables por sector económico:**
+- `PIB_11`: Agricultura, ganadería y pesca
+- `PIB_21_23`: Minería y electricidad
+- `PIB_31_33`: Industrias manufactureras  
+- `PIB_43_46`: Comercio
+- `PIB_48_49`: Transportes
+- `PIB_51_56`: Servicios empresariales
+- `PIB_61_62`: Educación y salud
+- `PIB_71_81`: Otros servicios
+- Más sectores detallados hasta `PIB_93`
+
+**C. Scalars generados (en millones MXN):**
+- `ProdBruta`, `ProdBrutaPIB`: Producción bruta total y % del PIB
+- `ConsInter`, `ConsInterPIB`: Consumo intermedio y % del PIB
+- `ValoAgreg`, `ValoAgregPIB`: Valor agregado y % del PIB
+- `RemSal`, `RemSalPIB`: Remuneraciones y % del PIB
+- `SSocial`, `SSocialPIB`: Seguridad social y % del PIB
+- `Yl`, `YlPIB`: Ingreso laboral y % del PIB
+- `CapIncImp`, `CapIncImpPIB`: Ingreso de capital y % del PIB
+- `PIB`, `PIPIB`: PIB total (siempre 100%)
+- `crecpibpGEO`, `crecpibfGEO`: Tasas de crecimiento geométrico
+
+**D. Archivos de salida:**
+- `04_master/SCN.dta`: Base completa con todas las cuentas nacionales (1993-2070)
+- Gráficos PNG en carpeta `users/$id/graphs/`:
+  - `gdp_generacion.png`: PIB por método de distribución del ingreso
+  - `gdp_utilizacion.png`: PIB por método de utilización (gasto)
+
+**E. Dependencias:**
+- `PIBDeflactor`: Obtiene deflactores y años base
+- `UpdateSCN`: Subrutina que descarga datos del BIE/INEGI y CSI
+- `scalarlatex` (opcional): Exporta scalars para LaTeX con opción `textbook`
+
+**F. Fuentes de datos procesadas:**
+1. **BIE/INEGI**: 200+ series del Banco de Indicadores sobre cuentas nacionales
+2. **CSI**: Archivos Excel de Cuentas por Sectores Institucionales:
+   - Ingreso mixto bruto
+   - Cuotas de seguridad social imputada
+   - Subsidios por tipo
+   - Excedente de operación por sector
+   - Transferencias del resto del mundo
+
+**G. Metodología de proyección:**
+- **Período histórico**: 1993-2023 (datos observados)
+- **Período proyectado**: 2024-2070 (forecast basado en tasas de crecimiento del PIB)
+- **Retropolación**: 1993-2002 utilizando patrones de crecimiento del PIB nominal
+- **Consistencia**: Se garantiza que Yl + CapIncImp + CapFij = PIB (100%) 
 
 

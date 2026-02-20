@@ -233,6 +233,261 @@ Muestra la evolución de los ingresos presupuestarios en el periodo de tiempo se
 
 </details>
 
+## Sintaxis completa (documentación técnica)
+
+```stata
+LIF [if] [, ANIO(int año_actual) BY(varname) UPDATE NOGraphs Base MINimum(real 0.5) DESDE(int año_actual-10) EOFP PROYeccion ROWS(int 1) COLS(int 5) TITle(string)]
+```
+
+### Opciones técnicas no documentadas anteriormente:
+
+- **BY(varname)**: Variable para agrupar los ingresos. Opciones principales:
+  - `divPE`: División de Paquete Económico (predeterminado)
+  - `divCIEP`: División CIEP (clasificación interna)  
+  - `divLIF`: División según Ley de Ingresos
+  - `divSIM`: División para simulación
+  - Cualquier variable de agrupación en la base de datos
+
+## Dependencias
+
+### Programas .ado requeridos:
+- **`PIBDeflactor.ado`**: Para obtener PIB, deflactor y ajustar series fiscales
+- **`UpdateLIF.do`**: Para actualizar datos desde fuentes oficiales
+- **`DatosAbiertos.ado`**: Para información complementaria de SHCP
+
+### Archivos de datos requeridos:
+- **`04_master/LIF.dta`**: Base consolidada de ingresos fiscales históricos
+- **`01_raw/LIFs.dta`**: Datos crudos de Leyes de Ingresos
+- Acceso a Excel online de LIFs (Dropbox) para actualización
+
+### Variables globales utilizadas:
+- **`$pais`**: Nombre del país para títulos
+- **`$id`**: Identificador de usuario para rutas personalizadas  
+- **`$paqueteEconomico`**: Etiqueta del escenario económico oficial
+- **`$export`**: Ruta para exportar gráficos (si está definida)
+
+## Cálculos y metodología técnica
+
+### 4.1 Proyección de datos faltantes:
+```stata
+// Opción PROYECCION: Estima datos mensuales usando promedio acumulado
+replace recaudacion = monto/acum_prom if mes < 12 & divLIF != 10
+
+// Opción EOFP: Usa datos tal como están reportados
+replace recaudacion = monto if mes < 12
+```
+
+### 4.2 Cálculo de tasas de crecimiento:
+```stata
+tasa_crecimiento = ((valor_final/valor_inicial)^(1/num_años) - 1) * 100
+```
+
+### 4.3 Cálculo de elasticidades:
+```stata
+elasticidad = (tasa_crecimiento_impuesto / tasa_crecimiento_PIB)
+```
+Interpretación:
+- **Elasticidad > 1**: El impuesto crece más rápido que el PIB
+- **Elasticidad = 1**: El impuesto crece igual que el PIB  
+- **Elasticidad < 1**: El impuesto crece más lento que el PIB
+
+### 4.4 Valores como porcentaje del PIB:
+```stata
+variable_PIB = (variable / pibY) * 100
+```
+
+## Inputs (archivos de entrada)
+
+### Estructura de `04_master/LIF.dta`:
+Variables principales:
+- **Identificadores**: `anio`, `mes`, `divLIF`, `divPE`, `divCIEP`, `divSIM`
+- **Descriptivas**: `nombre`, `serie`, `clave`
+- **Monetarias**: `recaudacion`, `monto`, `LIF`, `ILIF` 
+- **Calculadas**: `acum_prom` (promedio acumulado para proyección)
+
+### Clasificaciones de ingresos:
+
+#### Por División de Paquete Económico (divPE):
+- Ingresos del Gobierno Federal
+- Ingresos de organismos y empresas
+- Ingresos petroleros
+- Ingresos no petroleros
+
+#### Por División CIEP (divCIEP):
+1. **ISR personas físicas**
+2. **ISR personas morales** 
+3. **ISR asalariados**
+4. **IVA**
+5. **IEPS no petrolero**
+6. **IEPS petrolero**
+7. **Importación**
+8. **ISAN**
+9. **Otros**
+10. **PEMEX**
+11. **CFE**
+12. **IMSS**
+13. **ISSSTE**
+14. **FMP**
+15. **Cuotas seguridad social**
+
+## Outputs (archivos y variables generadas)
+
+### Archivos exportados:
+1. **Gráficos**:
+   - `05_graphs/ingresos{by}PIB.gph`: Archivo de gráfico de Stata
+   - `$export/ingresos{by}PIB.png`: Archivo PNG (si $export está definida)
+
+2. **Bases de datos**:
+   - Dataset en memoria con variables procesadas
+   - `04_master/LIF.dta`: Base actualizada (si se usa `update`)
+
+### Variables en dataset final:
+- **Monetarias básicas**: `recaudacion`, `monto`, `LIF`, `ILIF`
+- **Como % del PIB**: `recaudacionPIB`, `montoPIB`, `LIFPIB`, `ILIFPIB`
+- **Ajustadas por inflación**: `recaudacionR` (valores reales)
+- **Agregados**: `recaudacionTOT` (total por año)
+- **Del PIB**: `pibY`, `indiceY`, `deflatorpp`, `lambda`, `var_pibY`
+- **Agrupación**: `resumido` (variable colapsada según `minimum`)
+
+### Scalars de retorno principales:
+
+#### Ingresos totales:
+- **`r(Ingresos_totales)`**: Total de ingresos del año analizado
+- **`r(Ingresos_sin_deuda)`**: Ingresos excluyendo deuda  
+- **`r(Ingresos_sin_deudaPIB)`**: Ingresos sin deuda como % PIB
+- **`r(Ingresos_sin_deudaC)`**: Crecimiento de ingresos sin deuda
+
+#### Por categoría fiscal (ejemplos):
+- **`r(ISR_personas_fisicas)`**, **`r(ISR_personas_fisicasPIB)`**, **`r(ISR_personas_fisicasC)`**
+- **`r(IVA)`**, **`r(IVAPIB)`**, **`r(IVAC)`**
+- **`r(IEPS)`**, **`r(IEPSPIB)`**, **`r(IEPSC)`**
+- **`r(PEMEX)`**, **`r(PEMEXPIB)`**, **`r(PEMEXC)`**
+
+#### Elasticidades:
+- **`r(EIVA)`**: Elasticidad del IVA respecto al PIB
+- **`r(EISR_personas_fisicas)`**: Elasticidad del ISR personas físicas
+- **`r(EIngresosTotales)`**: Elasticidad de ingresos totales
+- Formato: `E{nombre_impuesto}` para cada categoría
+
+#### IEPS específicos:
+- **`r(Alcohol)`**: Recaudación de bebidas alcohólicas
+- **`r(AlimNoBa)`**: Alimentos no básicos (comida chatarra)
+- **`r(Juegos)`**: Juegos con apuestas y sorteos
+- **`r(Cervezas)`**: Cerveza y bebidas fermentadas
+- **`r(Tabacos)`**: Tabacos labrados
+- **`r(Telecom)`**: Servicios de telecomunicaciones
+- **`r(Energiza)`**: Bebidas energizantes
+- **`r(Saboriza)`**: Bebidas saborizantes
+- **`r(Fosiles)`**: Combustibles fósiles
+
+#### Cuotas sociales:
+- **`r(Cuotas_IMSS)`**: Cuotas del Instituto Mexicano del Seguro Social
+
+### Variables de retorno (locales):
+- **`r(divPE)`** o **`r({by})`**: Lista de categorías según agrupación utilizada
+- **`r(divResumido)`**: Lista de categorías después del filtro `minimum`
+
+## Tablas generadas en pantalla
+
+### Tabla A - Ingresos presupuestarios:
+Muestra para el año analizado:
+- Montos absolutos en moneda local
+- Porcentaje del PIB
+- Porcentaje del total de ingresos
+
+### Tabla B - Ingresos sin deuda:
+Similar a Tabla A pero:
+- Excluye conceptos de endeudamiento
+- Incluye crecimiento anual desde el año base (`desde`)
+
+### Tabla C - Comparativo histórico:
+Compara ingresos como % del PIB entre:
+- Año base (`desde`)  
+- Año analizado (`anio`)
+- Diferencia en puntos porcentuales
+
+### Tabla D - Elasticidades:
+Para cada categoría de ingreso muestra:
+- Tasa de crecimiento anual
+- Elasticidad respecto al PIB
+- Interpretación económica
+
+## Ejemplos prácticos actualizados
+
+### Ejemplo 1: Análisis básico de ingresos
+```stata
+LIF, anio(2024) desde(2015)
+```
+
+### Ejemplo 2: Análisis por clasificación CIEP
+```stata
+LIF, anio(2024) by(divCIEP) minimum(0.25)
+```
+
+### Ejemplo 3: Solo datos históricos sin proyección
+```stata
+LIF, anio(2024) eofp nographs
+```
+
+### Ejemplo 4: Actualizar datos y generar gráfico personalizado
+```stata
+LIF, anio(2024) update title("Ingresos Tributarios 2024") rows(2) cols(3)
+```
+
+### Ejemplo 5: Obtener base de datos cruda
+```stata
+LIF, base
+// Obtiene datos sin procesar, directamente de fuentes oficiales
+```
+
+### Ejemplo 6: Análisis de período específico
+```stata
+LIF if anio >= 2020 & anio <= 2024, by(divSIM) minimum(1.0)
+```
+
+## Ver también
+
+### Programas relacionados:
+- **`PIBDeflactor`**: Proporciona series macroeconómicas para ajustes
+- **`UpdateLIF`**: Actualiza datos desde fuentes oficiales (SHCP, EOFP)
+- **`DatosAbiertos`**: Complementa información fiscal
+- **`PEF`**: Analiza gastos públicos (contraparte de ingresos)
+- **`FiscalGap`**: Utiliza proyecciones de LIF para análisis de brecha fiscal
+- **`TasasEfectivas`**: Calcula tasas efectivas por tipo de impuesto
+
+### Archivos de configuración:
+- **`profile.do`**: Define identificador de usuario ($id) y parámetros globales
+- Variables globales de escenarios económicos: `$pib{año}`, `$def{año}`
+
+## Notas técnicas actualizadas
+
+### Manejo de datos faltantes:
+1. **Opción PROYECCION**: Usa `acum_prom` para estimar recaudación de meses incompletos
+2. **Opción EOFP**: Mantiene datos tal como están reportados oficialmente  
+3. **Datos ILIF**: Valores de Informes sobre la situación económica (cuando disponibles)
+
+### Clasificación automática "Otros":
+- Rubros con participación menor a `minimum` % del PIB se agrupan automáticamente
+- Útil para simplificar gráficos con muchas categorías pequeñas
+- Balanceo entre detalle y legibilidad
+
+### Validaciones y controles:
+- Verifica existencia de datos para el año solicitado
+- Maneja automáticamente años sin información completa
+- Ajusta períodos de comparación si hay datos faltantes
+
+### Rendimiento:
+- **Dataset típico**: 500-2,000 observaciones dependiendo del período
+- **Tiempo de ejecución**: 
+  - Sin actualización: 3-8 segundos
+  - Con actualización: 15-60 segundos
+  - Con gráficos: +5-10 segundos adicionales
+
+### Compatibilidad:
+- **Stata**: Versión 14 o superior
+- **Archivos Excel**: Requiere capacidades de importación online
+- **Memoria**: < 10 MB para datasets completos
+
 [^1]: **Link:** [Ley Federal de Ingresos](https://www.finanzaspublicas.hacienda.gob.mx/es/Finanzas_Publicas/Paquete_Economico_y_Presupuesto) 
 
 [^2]: **Link:** [Estadísticas Oportunas](http://presto.hacienda.gob.mx/EstoporLayout/estadisticas.jsp) 

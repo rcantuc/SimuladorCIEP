@@ -181,5 +181,70 @@ D. Registro anual (% del PIB): Muestra el ingreso recibido en cada año y su pro
 
 [^2]: **Link:** [Bases de Datos CONAPO](https://www.gob.mx/conapo/articulos/reconstruccion-y-proyecciones-de-la-poblacion-de-los-municipios-de-mexico)
 
-[^3]: **Link:** [Banco de Indicadores](https://www.inegi.org.mx/app/indicadores/) 
+[^3]: **Link:** [Banco de Indicadores](https://www.inegi.org.mx/app/indicadores/)
+
+---
+
+<h3 style="color: #ff7020;">4. Información técnica:</h3>
+
+**A. Variables generadas automáticamente:**
+- `montomill`: Monto en millones de pesos nominales
+- `monto_pc`: Monto per cápita en pesos reales (base año actual)
+- `monto_pib`: Monto como % del PIB
+- `deflactor`: Factor de deflactación (INPC base = mes más reciente)
+- `deflactoracum`: Deflactor promedio acumulado por año
+- `deflactormes`: Deflactor del mes específico
+- `poblacion`: Población total por año (de CONAPO)
+- `pibY`: PIB anual (promedio trimestral)
+- `propmensual`: Proporción mensual dentro del año
+- `acum_prom`: Acumulado promedio por mes
+
+**B. Tipos de datos procesados:**
+- **Flujo**: Ingresos, gastos, transacciones mensuales
+- **Saldo**: Deuda, saldos acumulados, posiciones de balance
+
+**C. Cálculos automáticos mostrados:**
+Para series de **Flujo**:
+- Comparación del último mes vs año anterior (nominal y real)
+- Comparación acumulada hasta el último mes vs año anterior
+- Tasas de crecimiento real interanual
+
+Para series de **Saldo**:
+- Saldo al último mes disponible vs diciembre anterior
+- Saldo deflactado a pesos constantes
+- Crecimiento real del saldo
+
+**D. Archivos de salida:**
+- `04_master/DatosAbiertos.dta`: Base completa de todas las series ESTOPOR
+- `04_master/Deflactor.dta`: Deflactores mensuales (INPC)
+- `04_master/Poblaciontot.dta`: Población total anual
+- Gráficos PNG en carpeta `users/$id/graphs/`:
+  - `M[serie].png`: Desglose mensual
+  - `[Mes][serie].png`: Último mes por año
+  - `A[serie].png`: Acumulado anual
+  - `PIBA[serie].png`: Acumulado anual como % del PIB
+
+**E. Dependencias:**
+- `PIBDeflactor`: Obtiene deflactores y PIB trimestral
+- `UpdateDatosAbiertos`: Descarga datos de ESTOPOR/SHCP
+- `UpdateDeflactor`: Actualiza INPC mensual
+
+**F. Series comunes disponibles:**
+- `XED10`: Deuda interna del sector público federal
+- `XEB00`: Deuda externa del sector público federal
+- `XAA`: Balance público
+- `XAA30`: Balance primario
+- `XAB`: Ingresos presupuestarios
+- `XAC`: Gasto público neto pagado
+- Más de 500 series adicionales en ESTOPOR
+
+**G. Opciones de proyección:**
+- Cuando se especifica `proyeccion`, los valores faltantes se completan usando tendencias del período analizado
+- Los datos se extienden hasta diciembre usando patrones estacionales históricos
+
+**H. Monedas y escalas:**
+- Montos originales: Miles de pesos nominales
+- Display: Millones de pesos (nominal y real)
+- PIB: Porcentajes del PIB anual
+- Per cápita: Pesos reales por habitante 
 

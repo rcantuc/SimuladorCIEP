@@ -213,3 +213,56 @@ Tras ingresar el prompt, el código devolverá tres elementos: ventana de result
 
 
 [^1]: **Link:** [Bases de Datos CONAPO](https://www.gob.mx/conapo/documentos/bases-de-datos-de-la-conciliacion-demografica-1950-a-2019-y-proyecciones-de-la-poblacion-de-mexico-2020-a-2070)
+
+---
+
+<h3 style="color: #ff7020;">4. Información técnica:</h3>
+
+**A. Variables en la base de datos:**
+- `anio`: Año (1950-2070)
+- `sexo`: Sexo (1=Hombres, 2=Mujeres)
+- `edad`: Edad (0-109 años)
+- `entidad`: Entidad federativa
+- `poblacion`: Número de habitantes
+- `defunciones`: Número de defunciones
+- `emigrantes`: Emigrantes internacionales
+- `inmigrantes`: Inmigrantes internacionales
+- `tasafecundidad`: Nacimientos por cada mil mujeres (16-49 años)
+
+**B. Scalars generados por entidad:**
+El programa genera automáticamente scalars poblacionales por entidad:
+- `pobtot[Entidad]`: Población total año inicial
+- `pobfin[Entidad]`: Población total año final
+- `pobhomI[Entidad]`, `pobhomF[Entidad]`: Población masculina inicial/final
+- `pobmujI[Entidad]`, `pobmujF[Entidad]`: Población femenina inicial/final
+- `pobMenoresI[Entidad]`, `pobMenoresF[Entidad]`: Población 0-17 años
+- `pobPrimeI[Entidad]`, `pobPrimeF[Entidad]`: Población 18-64 años
+- `pobMayoresI[Entidad]`, `pobMayoresF[Entidad]`: Población 65+ años
+- `aniofinal`: Año final del análisis
+- `aniotdmin`, `aniotdmax`: Años con menor y mayor tasa de dependencia
+
+**C. Archivos de salida:**
+- `04_master/Poblacion.dta`: Base completa por edad, sexo, año y entidad
+- `04_master/Poblaciontot.dta`: Base colapsada por año (solo totales)
+- Gráficos PNG en carpeta `users/$id/graphs/`:
+  - `PP_[año1]_[año2]_[entidad].png`: Pirámides demográficas combinadas
+  - `PA_[año1]_[año2]_[entidad].png`: Pirámide año inicial
+  - `PB_[año1]_[año2]_[entidad].png`: Pirámide año final
+  - `ET_[año1]_[año2]_[entidad].png`: Transición demográfica y tasa de dependencia
+  - `E_[año1]_[año2]_[entidad].png`: Solo transición demográfica
+  - `T_[año1]_[año2]_[entidad].png`: Solo tasa de dependencia
+
+**D. Dependencias:**
+- `UpdatePoblacion`: Subrutina que descarga y procesa bases de CONAPO
+- `scalarlatex` (opcional): Exporta scalars para LaTeX cuando se usa opción `textbook`
+
+**E. Fuentes de datos (procesadas automáticamente):**
+1. Población: http://conapo.segob.gob.mx/.../00_Pob_Mitad_1950_2070.csv
+2. Defunciones: http://conapo.segob.gob.mx/.../01_Defunciones_1950_2070.csv  
+3. Migración: http://conapo.segob.gob.mx/.../02_mig_inter_quinquen_proyecciones.csv
+
+**F. Indicadores calculados:**
+- **Tasa de dependencia**: (Población 0-18 + 60+) / Población 19-60 × 100
+- **Estructura poblacional**: Porcentajes por grupo etario (0-18, 19-65, 65+)
+- **Edad mediana**: Por sexo en años inicial y final
+- **Transición demográfica**: Evolución de estructura por edades

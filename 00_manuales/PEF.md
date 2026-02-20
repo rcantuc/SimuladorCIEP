@@ -197,7 +197,266 @@ Tabla C Cambios: Muestra las diferencias de los gastos en porcentaje del PIB ent
 
 </details>
 
-[^]: **Link:** [Sitio Web Transparencia](https://www.transparenciapresupuestaria.gob.mx/Datos-Abiertos) 
+## Sintaxis completa (documentación técnica)
+
+```stata
+PEF [if] [, ANIO(int año_actual) BY(varname) UPDATE NOGraphs Base MINimum(real 1) DESDE(int año_actual-9) PEF PPEF APROBado ROWS(int 1) COLS(int 5) HIGHlight(int 0) TITle(string)]
+```
+
+### Opciones técnicas no documentadas anteriormente:
+
+- **BY(varname)**: Variable para agrupar el gasto público. Opciones principales:
+  - `divCIEP`: División CIEP (predeterminado) - clasificación por función
+  - `ramo`: División por ramo presupuestario  
+  - `funcion`: División por función de gobierno
+  - `capitulo`: División por capítulo de gasto (objeto del gasto)
+  - Cualquier variable de agrupación en la base de datos
+
+- **PEF/PPEF/APROBado**: (Opciones internas) Jerarquía de datos presupuestarios:
+  - Prioridad: Ejercido > Aprobado > Proyecto
+  - El sistema selecciona automáticamente la mejor información disponible
+
+- **HIGHlight(int 0)**: Destacar una categoría específica en el gráfico (por número de orden)
+
+## Dependencias
+
+### Programas .ado requeridos:
+- **`PIBDeflactor.ado`**: Para obtener PIB, deflactor y ajustar series fiscales
+- **`UpdatePEF.do`**: Para actualizar datos desde fuentes oficiales
+
+### Archivos de datos requeridos:
+- **`04_master/PEF.dta`**: Base consolidada de gastos públicos históricos
+- **`01_raw/PEF.dta`**: Datos crudos de presupuestos y cuenta pública
+- Archivos Excel de cuentas públicas anuales (descarga automática)
+
+### Variables globales utilizadas:
+- **`$pais`**: Nombre del país para títulos
+- **`$id`**: Identificador de usuario para rutas personalizadas
+- **`$paqueteEconomico`**: Etiqueta del escenario económico oficial
+- **`$export`**: Ruta para exportar gráficos (si está definida)
+
+## Cálculos y metodología técnica
+
+### 4.1 Jerarquía de datos presupuestarios:
+```stata
+// Orden de prioridad para variable "gasto":
+gasto = ejercido                              // Primero: gasto ejercido (Cuenta Pública)
+replace gasto = aprobado if ejercido == .     // Segundo: gasto aprobado (PEF original)
+replace gasto = proyecto if aprobado == .     // Tercero: proyecto de presupuesto (PPEF)
+```
+
+### 4.2 Clasificación de transferencias:
+```stata
+// Transferencias del Gobierno Federal (se excluyen del gasto neto):
+transf_gf = (ramo == 19 & ur == "gyn") | (ramo == 19 & ur == "gyr")
+```
+
+### 4.3 Gasto programable vs no programable:
+```stata
+// No programable: participaciones, costo de deuda
+noprogramable = (ramo == 28) | (capitulo == 9)
+```
+
+### 4.4 Valores como porcentaje del PIB:
+```stata
+variable_PIB = (variable / pibY) * 100
+```
+
+### 4.5 Cálculo de tasas de crecimiento real:
+```stata
+tasa_real = ((gasto_final/deflator_final) / (gasto_inicial/deflator_inicial))^(1/num_años) - 1
+```
+
+## Inputs (archivos de entrada)
+
+### Estructura de `04_master/PEF.dta`:
+Variables principales:
+- **Identificadores**: `anio`, `ramo`, `ur`, `pp`, `eje`, `funcion`, `capitulo`
+- **Descriptivas**: `nombre_ramo`, `nombre_pp`, `nombre_funcion`, `desc_capitulo`
+- **Monetarias**: `ejercido`, `aprobado`, `proyecto`, `modificado`, `devengado`, `pagado`
+- **Calculadas**: `gasto` (jerarquía: ejercido>aprobado>proyecto)
+- **Clasificatorias**: `divCIEP`, `transf_gf`, `noprogramable`
+
+### Clasificaciones de gasto:
+
+#### Por División CIEP (divCIEP) - Función:
+1. **Salud**: Servicios de salud, IMSS, ISSSTE
+2. **Educación**: Educación básica, media superior, superior
+3. **Pensiones**: Jubilaciones y pensiones
+4. **Energía**: Subsidios energéticos, CFE, PEMEX
+5. **Seguridad**: Defensa, seguridad pública
+6. **Desarrollo social**: Programas sociales, combate a la pobreza
+7. **Infraestructura**: Transporte, comunicaciones, obra pública
+8. **Otros**: Funciones no clasificadas en anteriores
+
+#### Por Ramo presupuestario (principales):
+- **Ramo 7**: SEDENA (Secretaría de la Defensa Nacional)
+- **Ramo 19**: Aportaciones a Seguridad Social
+- **Ramo 28**: Participaciones a entidades federativas
+- **Ramo 33**: Aportaciones federales
+- **Ramo 50**: IMSS
+- **Ramo 51**: ISSSTE  
+- **Ramo 52**: PEMEX
+- **Ramo 53**: CFE
+
+## Outputs (archivos y variables generadas)
+
+### Archivos exportados:
+1. **Gráficos**:
+   - `05_graphs/gastos{by}PIB.gph`: Archivo de gráfico de Stata
+   - `$export/gastos{by}PIB.png`: Archivo PNG (si $export está definida)
+
+2. **Bases de datos**:
+   - Dataset en memoria con variables procesadas
+   - `04_master/PEF.dta`: Base actualizada (si se usa `update`)
+
+### Variables en dataset final:
+- **Monetarias básicas**: `ejercido`, `aprobado`, `proyecto`, `modificado`, `gasto`
+- **Como % del PIB**: `gastoPIB`, `ejercidoPIB`, `aprobadoPIB`
+- **Ajustadas por inflación**: `gastoR` (valores reales)
+- **Del PIB**: `pibY`, `indiceY`, `deflator`, `lambda`, `Poblacion`
+- **Clasificatorias**: `divCIEP`, `ramo`, `funcion`, `capitulo`, `transf_gf`, `noprogramable`
+- **Agrupación**: variable según opción `by` y `resumido` (colapsada según `minimum`)
+
+### Scalars de retorno principales:
+
+#### Totales agregados:
+- **`r(Gasto_bruto)`**: Total del gasto bruto del año analizado
+- **`r(Aportaciones_a_Seguridad_Social)`**: Aportaciones federales a seguridad social
+- **`r(Cuotas_ISSSTE)`**: Cuotas del ISSSTE
+
+#### Por categoría funcional (ejemplos con divCIEP):
+- **`r(Salud)`**: Gasto total en salud
+- **`r(Educacion)`**: Gasto total en educación  
+- **`r(Pensiones)`**: Gasto en jubilaciones y pensiones
+- **`r(Energia)`**: Subsidios y gasto energético
+- **`r(Seguridad)`**: Gasto en defensa y seguridad pública
+- **`r(Desarrollo_social)`**: Programas de desarrollo social
+- **`r(Infraestructura)`**: Inversión en infraestructura
+- **`r(Otros)`**: Otros gastos no clasificados
+
+#### Por ramo presupuestario (si BY(ramo)):
+- **`r(SEDENA)`** o **`r(Ramo_7)`**: Secretaría de la Defensa Nacional
+- **`r(IMSS)`** o **`r(Ramo_50)`**: Instituto Mexicano del Seguro Social
+- **`r(ISSSTE)`** o **`r(Ramo_51)`**: Instituto de Seguridad y Servicios Sociales
+- **`r(PEMEX)`** o **`r(Ramo_52)`**: Petróleos Mexicanos
+- **`r(CFE)`** o **`r(Ramo_53)`**: Comisión Federal de Electricidad
+
+#### Control de errores:
+- **`r(rc)`**: Código de retorno ("NoData" si no hay información para el año)
+
+### Variables de retorno (locales):
+- Lista de categorías según agrupación utilizada (ej: `r(divCIEP)`, `r(ramo)`)
+
+## Tablas generadas en pantalla
+
+### Tabla A - Gasto Bruto:
+Para el año analizado muestra:
+- Montos absolutos en moneda local
+- Porcentaje del PIB  
+- Porcentaje del gasto total
+
+### Tabla B - Gasto Neto (resumido):
+Excluye transferencias del Gobierno Federal:
+- Montos netos
+- Porcentaje del PIB
+- Crecimiento real desde año de comparación
+
+### Tabla C - Cambios:
+Comparativo entre períodos:
+- Diferencias en puntos porcentuales del PIB
+- Cambios estructurales en composición del gasto
+
+## Ejemplos prácticos actualizados
+
+### Ejemplo 1: Análisis básico del gasto público
+```stata
+PEF, anio(2024) desde(2015)
+```
+
+### Ejemplo 2: Análisis por ramo presupuestario
+```stata
+PEF, anio(2024) by(ramo) minimum(0.5)
+```
+
+### Ejemplo 3: Análisis de funciones de gobierno
+```stata
+PEF, anio(2024) by(funcion) minimum(1.0)
+```
+
+### Ejemplo 4: Gráfico personalizado con destacado
+```stata
+PEF, anio(2024) title("Gasto Social 2024") highlight(1) rows(2) cols(4)
+```
+
+### Ejemplo 5: Solo datos, sin gráficos
+```stata
+PEF, anio(2024) nographs nooutput
+```
+
+### Ejemplo 6: Actualizar datos y generar base cruda
+```stata
+PEF, update base
+// Obtiene datos más recientes sin procesamiento
+```
+
+### Ejemplo 7: Análisis de período específico
+```stata
+PEF if anio >= 2020 & anio <= 2024, by(divCIEP) minimum(2.0)
+```
+
+## Ver también
+
+### Programas relacionados:
+- **`PIBDeflactor`**: Proporciona series macroeconómicas para ajustes
+- **`UpdatePEF`**: Actualiza datos desde fuentes oficiales (SHCP, Transparencia)
+- **`LIF`**: Analiza ingresos públicos (contraparte de gastos)
+- **`FiscalGap`**: Utiliza proyecciones de PEF para análisis de brecha fiscal
+- **`SHRFSP`**: Analiza requerimientos de financiamiento del sector público
+
+### Archivos de configuración:
+- **`profile.do`**: Define identificador de usuario ($id) y parámetros globales
+
+## Notas técnicas actualizadas
+
+### Jerarquía de información presupuestaria:
+1. **Ejercido** (Cuenta Pública): Gasto realmente ejecutado - más confiable
+2. **Aprobado** (PEF): Presupuesto originalmente aprobado por el Congreso
+3. **Proyecto** (PPEF): Propuesta del Ejecutivo antes de aprobación
+
+### Manejo de transferencias intergubernamentales:
+- **Gasto Bruto**: Incluye todas las erogaciones federales
+- **Gasto Neto**: Excluye transferencias a otros niveles de gobierno (evita doble contabilización)
+- **Transferencias GF**: Aportaciones y participaciones federales (Ramo 28, 33, parte del 19)
+
+### Clasificación automática "Otros":
+- Categorías con participación menor a `minimum` % del PIB se agrupan automáticamente
+- Útil para simplificar visualizaciones con muchas categorías pequeñas
+- Balanceo entre detalle y claridad
+
+### Validaciones y controles de calidad:
+- Verifica existencia de información para años solicitados
+- Devuelve código `r(rc) = "NoData"` si no hay información
+- Maneja automáticamente missing values en series incompletas
+- Ajusta períodos de comparación según disponibilidad de datos
+
+### Rendimiento y compatibilidad:
+- **Dataset típico**: 2,000-10,000 observaciones (depende del nivel de detalle)
+- **Tiempo de ejecución**:
+  - Sin actualización: 5-15 segundos
+  - Con actualización: 30-180 segundos (descarga archivos Excel)
+  - Con gráficos: +10-15 segundos adicionales
+- **Memoria**: 20-50 MB para datasets completos con detalle máximo
+- **Stata**: Versión 14 o superior requerida
+- **Internet**: Necesario para actualización de datos
+
+### Limitaciones conocidas:
+- Datos históricos limitados a partir de 2013 (cambio metodológico)
+- Algunas categorías pueden tener clasificaciones inconsistentes entre años
+- Archivos de Cuenta Pública pueden tener retrasos de publicación
+- Reclasificaciones presupuestarias pueden afectar comparabilidad histórica
+
+[^1]: **Link:** [Sitio Web Transparencia](https://www.transparenciapresupuestaria.gob.mx/Datos-Abiertos) 
 
 [^2]: **Link:** [Presupuesto de Egresos](https://www.ppef.hacienda.gob.mx/) 
 

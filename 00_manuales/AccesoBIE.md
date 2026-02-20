@@ -70,4 +70,76 @@ Tras ingresar el comando, el código te devolverá una base de datos con los ind
  
 
 
-[^1]: **Link:** [Banco de Indicadores](https://www.inegi.org.mx/app/indicadores/) 
+[^1]: **Link:** [Banco de Indicadores](https://www.inegi.org.mx/app/indicadores/)
+
+---
+
+<h3 style="color: #ff7020;">4. Información técnica:</h3>
+
+**A. Sintaxis completa:**
+```stata
+AccesoBIE serie1 [serie2 ...] [, nombres(string) token(string)]
+```
+- `serie1 serie2 ...`: Códigos de series del BIE (pueden ser múltiples)
+- `nombres()`: Nombres personalizados para variables (opcional)
+- `token()`: Token de acceso API (opcional, incluye token predeterminado CIEP)
+
+**B. Variables generadas automáticamente:**
+- `anio`: Año extraído del período
+- `mes`: Mes (si la serie es mensual)
+- `trimestre`: Trimestre (si la serie es trimestral)
+- `subperiodo`: Otros tipos de períodos
+- Variables con datos: Nombres automáticos (v[serie]) o personalizados
+
+**C. Métodos de descarga (automático con fallback):**
+1. **API oficial INEGI**: Intenta primero con BIE, luego BISE
+2. **Web scraping**: Si la API falla, extrae datos del portal de exportación
+3. **Sistema de reintentos**: Hasta 3 intentos con 2 segundos de espera
+
+**D. Procesamiento automático de datos:**
+- **Limpieza de períodos**: Elimina sufijos /p1, /r1, /p, /r
+- **Conversión de tipos**: Strings numéricos → números, manejo de "N/E" y "ND"
+- **Detección automática de frecuencia**: Anual, trimestral, mensual
+- **Limpieza de nombres**: Solo caracteres válidos para variables Stata
+- **Etiquetas descriptivas**: Extrae nombres completos del INEGI
+
+**E. Archivos temporales generados:**
+- `03_temp/AccesoBIE/[serie].csv`: Archivos CSV por serie descargada
+- Las series múltiples se combinan automáticamente por período
+
+**F. Ejemplo de uso avanzado:**
+```stata
+// Una serie con nombre automático
+AccesoBIE 628194
+
+// Múltiples series con nombres personalizados  
+AccesoBIE "734407 735143 446562", nombres(PIBNominal InflacionAnual PoblacionENOE)
+
+// Con token personalizado
+AccesoBIE 628194, token(mi-token-personalizado)
+```
+
+**G. Series comunes del BIE:**
+- `628194`: PIB a precios corrientes
+- `734407`: PIB nominal
+- `735143`: Índice de precios implícitos
+- `446562`: Población ENOE
+- `444612`: Tasa de desocupación
+- Más de 200,000 series disponibles en el BIE
+
+**H. Manejo de errores:**
+- Archivos vacíos si no se encuentran datos
+- Nombres de variables por defecto (v[serie])
+- Mensajes informativos durante descarga
+- Reintentos automáticos por problemas de conectividad
+
+**I. Integración con Python:**
+- Requiere Python con librerías: `requests`, `json`, `beautifulsoup4`
+- Sistema híbrido Stata-Python para robustez
+- Timeout de 30-60 segundos para conexiones
+- Codificación UTF-8 para caracteres especiales
+
+**J. Variables globales temporales:**
+- `${INEGI_VARNAME_[serie]}`: Nombre de variable por serie
+- `${INEGI_LABEL_[serie]}`: Etiqueta descriptiva por serie
+- Se limpian automáticamente al finalizar 

@@ -42,3 +42,82 @@ El programa devolverá una base final, `expenditures.dta`, y tres bases intermed
 3. Deducciones.dta: Resume a nivel hogar los gastos que pueden ser considerados deducciones personales para el ISR.
 4. consumption_categ_pc.dta: Es la base final que integra el consumo de individuos y hogares, desagregado en categorías.
 
+---
+
+<h3 style="color: #ff7020;">3. Información técnica:</h3>
+
+**A. Archivos ENIGH procesados (inputs):**
+- `gastospersona.dta`: Gastos individuales por persona
+- `gastohogar.dta`: Gastos del hogar (compartidos)
+- `gastotarjetas.dta`: Gastos con tarjetas de crédito/débito
+- `erogaciones.dta`: Erogaciones y pagos especiales
+- `concentrado.dta`: Información agregada del hogar
+- `vivienda.dta`: Características de la vivienda
+- `clave_iva.dta`: Clasificación de gastos por tasa de IVA
+- `censo_eco_municipios.dta`: Información del Censo Económico municipal
+
+**B. Variables principales generadas:**
+- `gasto_pc`: Gasto per cápita por categoría
+- `gasto_total`: Gasto total del hogar
+- `iva_pagado`: IVA implícito pagado por producto
+- `tasa_iva`: Tasa de IVA aplicable (0%, 8%, 16%)
+- `decil`: Decil de gasto del hogar
+- `factor`: Factor de expansión poblacional
+- `categoria`: Clasificación de gasto (alimentos, transporte, etc.)
+
+**C. Categorías de gasto procesadas:**
+- **Alimentos y bebidas**: Incluye dentro y fuera del hogar
+- **Transporte**: Público, privado, combustibles
+- **Vivienda**: Alquiler, servicios, mantenimiento
+- **Vestido y calzado**: Ropa, calzado, accesorios
+- **Salud**: Medicamentos, consultas, seguros médicos
+- **Educación**: Colegiaturas, libros, materiales
+- **Comunicaciones**: Teléfono, internet, correo
+- **Esparcimiento**: Entretenimiento, vacaciones, deportes
+
+**D. Cálculos fiscales integrados:**
+- **IVA implícito**: Calculado por producto según tasa aplicable
+- **Deducciones ISR**: Gastos deducibles personales
+- **Elasticidades**: Gasto-ingreso por categoría
+- **Incidencia fiscal**: Carga tributaria por decil
+
+**E. Archivos de salida generados:**
+- `03_temp/[año]/preconsumption.dta`: Base intermedia limpia (~200,000 obs)
+- `04_master/[año]/deducciones.dta`: Deducciones por hogar (~74,000 obs)
+- `04_master/[año]/consumption_categ_pc.dta`: Consumo por categoría per cápita
+- `04_master/[año]/expenditures.dta`: Base final armonizada con SCN
+- `03_temp/[año]/pre_iva.dta`, `pre_iva_final.dta`: Archivos intermedios IVA
+
+**F. Metodología de armonización:**
+- **Escalamiento macro**: Gastos ENIGH se escalan a totales de SCN
+- **Imputación IVA**: Se calcula IVA implícito por producto/servicio
+- **Clasificación sectorial**: Se asigna actividad económica por gasto
+- **Corrección estacional**: Ajustes por diferencias temporales
+- **Validación cruzada**: Verificación con agregados macroeconómicos
+
+**G. Variables de clasificación:**
+- `clave`: Código de gasto ENIGH (6 dígitos)
+- `actividad_eco`: Sector de actividad económica
+- `formal`: Establecimiento formal/informal
+- `region`: Región geográfica
+- `area`: Urbano/rural
+- `tam_loc`: Tamaño de localidad
+
+**H. Períodos disponibles:**
+- ENIGH 2014, 2016, 2018, 2020, 2022, 2024
+- Compatible con mismos años de Households.do
+- Datos deflactados a precios constantes
+
+**I. Dependencias externas:**
+- SCN.ado (cuentas nacionales)
+- LIF.ado (ingresos federales)
+- Poblacion.ado (población CONAPO)
+- ENIGH completa del INEGI
+- Censo Económico del INEGI
+
+**J. Usos en el simulador:**
+- Cálculo de bases gravables del IVA
+- Simulación de cambios en tasas impositivas
+- Análisis distributivo del gasto público
+- Elasticidades para modelos de equilibrio general
+
