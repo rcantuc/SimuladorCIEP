@@ -25,7 +25,7 @@ else if "`c(console)'" != "" {							// Servidor Web
 	sysdir set SITE "/SIM/OUT/7/"
 }
 cd "`c(sysdir_site)'"
-
+ex
 ** 0.2 Parámetros
 global id = "ciepmx"								// ID USUARIO
 scalar aniovp = 2026								// ANIO VALOR PRESENTE
