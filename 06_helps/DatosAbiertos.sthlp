@@ -1,150 +1,242 @@
 {smcl}
-{* *! version 2.0 Ricardo Cantú 11dic2025}{...}
-{viewerdialog DatosAbiertos "dialog DatosAbiertos"}{...}
-{vieweralsosee "[R] DatosAbiertos" "mansection R DatosAbiertos"}{...}
-{viewerjumpto "Syntax" "DatosAbiertos##syntax"}{...}
-{viewerjumpto "Description" "DatosAbiertos##description"}{...}
-{viewerjumpto "Options" "DatosAbiertos##options"}{...}
-{viewerjumpto "Examples" "DatosAbiertos##examples"}{...}
-{viewerjumpto "Output" "DatosAbiertos##output"}{...}
-{viewerjumpto "References" "DatosAbiertos##references"}{...}
+{* *! version 3.0 CIEP 23feb2026}{...}
+{viewerjumpto "Descripción" "DatosAbiertos##description"}{...}
+{viewerjumpto "Primeros pasos" "DatosAbiertos##quickstart"}{...}
+{viewerjumpto "Sintaxis" "DatosAbiertos##syntax"}{...}
+{viewerjumpto "Opciones" "DatosAbiertos##options"}{...}
+{viewerjumpto "Cómo encontrar una clave" "DatosAbiertos##findkey"}{...}
+{viewerjumpto "Series comunes" "DatosAbiertos##series"}{...}
+{viewerjumpto "Ejemplos" "DatosAbiertos##examples"}{...}
+{viewerjumpto "Resultados" "DatosAbiertos##output"}{...}
+{viewerjumpto "Referencias" "DatosAbiertos##references"}{...}
 
-{marker syntax}{...}
-{title:Syntax}
+{title:DatosAbiertos — Estadísticas Oportunas de Finanzas Públicas (SHCP)}
 
-{p 8 16 2}
-{cmd:DatosAbiertos} {it:clave_de_concepto} [{it:if}] [, {opt PIBVP(real)} {opt PIBVF(real)} {opt DESDE(real)} {opt UPDATE} {opt NOGraphs} {opt REVERSE} {opt PROYeccion} {opt ZIPFILE} {opt CSVFILE} {opt FILES}]
+{pstd}
+{bf:Centro de Investigación Económica y Presupuestaria, A.C.} {c |} {browse "https://ciep.mx":ciep.mx}
 {p_end}
+
+{hline}
 
 {marker description}{...}
-{title:Description}
+{title:Descripción}
 
 {pstd}
-{cmd:DatosAbiertos} proporciona acceso estructurado a los datos de las {bf:Estadísticas Oportunas de Finanzas Públicas (EOFP)} de la SHCP, facilitando el análisis de series fiscales mensuales.
+{cmd:DatosAbiertos} proporciona acceso directo a cualquier serie de las
+{bf:Estadísticas Oportunas de Finanzas Públicas (ESTOPOR)} de la SHCP,
+con más de 500 series disponibles sobre ingresos, gastos, deuda y balance fiscal.
 {p_end}
 
 {pstd}
-El comando descarga y procesa automáticamente las siguientes bases de datos de la SHCP:
+El comando integra automáticamente tres fuentes para enriquecer los datos:
 {p_end}
 
-{phang2}- Ingresos, gastos y financiamiento del sector público{p_end}
-{phang2}- Deuda pública{p_end}
-{phang2}- SHRFSP (Saldo Histórico de los RFSP){p_end}
-{phang2}- RFSP (Requerimientos Financieros del Sector Público){p_end}
-{phang2}- Transferencias a entidades federativas{p_end}
+{phang2}1. {bf:ESTOPOR (SHCP)} — Serie fiscal mensual solicitada{p_end}
+{phang2}2. {bf:PIBDeflactor} — PIB y deflactor para expresar valores como % del PIB y en términos reales{p_end}
+{phang2}3. {bf:Poblacion (CONAPO)} — Población para calcular valores per cápita{p_end}
 
 {pstd}
-Además, integra información de otros comandos del Simulador:
+{bf:¿Para qué sirve?} Permite analizar cualquier indicador fiscal de México con
+contexto macroeconómico: evolución mensual, comparación anual, proporción del PIB
+y valor per cápita, todo en un solo comando.
 {p_end}
 
-{phang2}- {bf:Poblacion.ado}: Calcula valores per cápita{p_end}
-{phang2}- {bf:PIBDeflactor.ado}: Calcula valores como % del PIB y deflacta a precios constantes{p_end}
+{pstd}
+{bf:Tipos de series disponibles:}
+{p_end}
+{phang2}— {bf:Flujo}: Ingresos, gastos, transacciones mensuales (se acumulan en el año){p_end}
+{phang2}— {bf:Saldo}: Deuda, posiciones de balance (valor al final del período){p_end}
+
+{hline}
+
+{marker quickstart}{...}
+{title:Primeros pasos}
+
+{pstd}
+Para consultar los ingresos presupuestarios totales:
+{p_end}
+
+{phang2}{cmd:. DatosAbiertos XAB}{p_end}
+
+{pstd}
+Para consultar el balance público desde 2015:
+{p_end}
+
+{phang2}{cmd:. DatosAbiertos XAA, desde(2015)}{p_end}
+
+{pstd}
+{bf:¿No sabes la clave?} Consulta la sección {view "06_helps/DatosAbiertos.sthlp##findkey":Cómo encontrar una clave}
+o la lista de {view "06_helps/DatosAbiertos.sthlp##series":Series comunes}.
+{p_end}
+
+{hline}
+
+{marker syntax}{...}
+{title:Sintaxis}
+
+{p 8 16 2}
+{cmd:DatosAbiertos} {it:clave} [{it:if}] [{cmd:,} {opt DESDE(#)} {opt NOGraphs} {opt UPDATE} {opt PROYeccion} {opt REVERSE} {opt ZIPFILE} {opt CSVFILE}]
+{p_end}
+
+{pstd}
+Donde {it:clave} es el código de la serie en las Estadísticas Oportunas de la SHCP
+(ej. {cmd:XAB}, {cmd:XAA}, {cmd:XED10}).
+{p_end}
+
+{hline}
 
 {marker options}{...}
-{title:Options}
-
-{dlgtab:General}
+{title:Opciones}
 
 {phang}
-{opt DESDE(real)} Especifica el año inicial para comparaciones y gráficas. Valor por defecto: 2008.
+{opt desde(#)} — {bf:Año inicial} para las gráficas y comparaciones.
+Por defecto: 2008.
 {p_end}
 
 {phang}
-{opt UPDATE} Descarga los datos más recientes de la SHCP. Útil cuando hay nuevas publicaciones.
+{opt nographs} — Suprime la generación de gráficas.
 {p_end}
 
 {phang}
-{opt NOGraphs} Suprime la generación de gráficas.
+{opt update} — Descarga los datos más recientes de las Estadísticas Oportunas SHCP.
+Requiere conexión a internet.
 {p_end}
 
 {phang}
-{opt REVERSE} Invierte el signo de los montos (útil para series de gasto que se reportan en negativo).
+{opt proyeccion} — {bf:Proyecta el cierre anual} de los meses faltantes usando
+la distribución mensual histórica. Útil para estimar el total del año en curso.
 {p_end}
 
 {phang}
-{opt PROYeccion} Proyecta el monto anual basándose en la distribución mensual histórica cuando el año está incompleto.
-{p_end}
-
-{dlgtab:Fuente de datos}
-
-{phang}
-{opt ZIPFILE} Descarga los datos desde los archivos ZIP del portal de la SHCP (más rápido para actualizaciones completas).
+{opt reverse} — Invierte el signo de los montos. Útil para series que la SHCP
+reporta en negativo (ej. algunos componentes de gasto).
 {p_end}
 
 {phang}
-{opt CSVFILE} Descarga los datos directamente desde los archivos CSV en línea.
+{opt zipfile} — Descarga los datos desde los archivos ZIP del portal SHCP
+(más rápido para actualizaciones completas).
 {p_end}
+
+{phang}
+{opt csvfile} — Descarga los datos directamente desde archivos CSV en línea.
+{p_end}
+
+{hline}
+
+{marker findkey}{...}
+{title:Cómo encontrar la clave de una serie}
+
+{pstd}
+Pasos para localizar el código de cualquier serie en las Estadísticas Oportunas:
+{p_end}
+
+{phang2}1. Ir a: {browse "http://presto.hacienda.gob.mx/EstoporLayout/estadisticas.jsp":ESTOPOR — Estadísticas Oportunas SHCP}{p_end}
+{phang2}2. Buscar el reporte de tu interés (ej. "Ingresos Petroleros del Sector Público"){p_end}
+{phang2}3. Seleccionar la serie específica{p_end}
+{phang2}4. Copiar el código que aparece (ej. {cmd:XAC10}){p_end}
+{phang2}5. Pegar el código después de {cmd:DatosAbiertos} en la consola{p_end}
+
+{hline}
+
+{marker series}{...}
+{title:Series comunes}
+
+{pstd}{bf:Ingresos:}{p_end}
+{phang2}{bf:XAB} — Ingresos presupuestarios totales{p_end}
+{phang2}{bf:XAA} — Balance público{p_end}
+{phang2}{bf:XAA30} — Balance primario{p_end}
+
+{pstd}{bf:Gasto:}{p_end}
+{phang2}{bf:XAC} — Gasto público neto pagado{p_end}
+
+{pstd}{bf:Deuda:}{p_end}
+{phang2}{bf:XED10} — Deuda interna del sector público federal{p_end}
+{phang2}{bf:XEB00} — Deuda externa del sector público federal{p_end}
+
+{hline}
 
 {marker examples}{...}
-{title:Examples}
+{title:Ejemplos}
 
-{pstd}{bf:Ejemplo 1}: Consultar ISR (clave XAA10){p_end}
-{phang2}{cmd:. DatosAbiertos XAA10}
-{p_end}
+{pstd}{bf:Ejemplo 1 — Ingresos presupuestarios totales}{p_end}
+{phang2}{cmd:. DatosAbiertos XAB}{p_end}
 
-{pstd}{bf:Ejemplo 2}: Consultar IVA desde 2010{p_end}
-{phang2}{cmd:. DatosAbiertos XAA20, desde(2010)}
-{p_end}
+{pstd}{bf:Ejemplo 2 — Balance público desde 2015}{p_end}
+{phang2}{cmd:. DatosAbiertos XAA, desde(2015)}{p_end}
 
-{pstd}{bf:Ejemplo 3}: Actualizar datos y consultar IEPS sin gráficas{p_end}
-{phang2}{cmd:. DatosAbiertos XAA30, update nographs}
-{p_end}
+{pstd}{bf:Ejemplo 3 — Deuda interna con proyección del año en curso}{p_end}
+{phang2}{cmd:. DatosAbiertos XED10, proyeccion}{p_end}
+{pstd}Estima el saldo al cierre del año usando la tendencia mensual.{p_end}
 
-{pstd}{bf:Ejemplo 4}: Proyectar el gasto en educación para el año en curso{p_end}
-{phang2}{cmd:. DatosAbiertos XED10, proyeccion}
-{p_end}
+{pstd}{bf:Ejemplo 4 — Deuda externa sin gráficas}{p_end}
+{phang2}{cmd:. DatosAbiertos XEB00, nographs}{p_end}
 
-{pstd}{bf:Ejemplo 5}: Consultar ingresos petroleros con proyección{p_end}
-{phang2}{cmd:. DatosAbiertos XAC10, desde(2008) proyeccion}
-{p_end}
+{pstd}{bf:Ejemplo 5 — Actualizar datos y consultar balance primario}{p_end}
+{phang2}{cmd:. DatosAbiertos XAA30, update desde(2010)}{p_end}
 
-{pstd}{bf:Ejemplo 6}: Solo cargar la base de datos completa (sin filtrar por clave){p_end}
-{phang2}{cmd:. DatosAbiertos}
-{p_end}
+{pstd}{bf:Ejemplo 6 — Gasto neto con proyección desde 2008}{p_end}
+{phang2}{cmd:. DatosAbiertos XAC, desde(2008) proyeccion}{p_end}
+
+{hline}
 
 {marker output}{...}
-{title:Output}
+{title:Resultados}
 
 {pstd}
-El comando genera las siguientes variables:
+Al ejecutar el comando obtienes una tabla en pantalla, cuatro gráficas y una base de datos:
 {p_end}
 
-{phang2}- {bf:anio, mes, aniomes}: Identificadores temporales{p_end}
-{phang2}- {bf:monto}: Valor nominal de la serie{p_end}
-{phang2}- {bf:montomill}: Valor en millones de pesos constantes{p_end}
-{phang2}- {bf:monto_pib}: Valor como porcentaje del PIB{p_end}
-{phang2}- {bf:monto_pc}: Valor per cápita en pesos constantes{p_end}
-{phang2}- {bf:acum_prom}: Proporción promedio mensual histórica{p_end}
+{pstd}{bf:Tabla de resultados:} Comparación del último mes y acumulado anual
+vs el año anterior, en términos nominales y reales.{p_end}
 
-{pstd}
-También genera gráficas automáticas mostrando la evolución mensual y anual de la serie.
-{p_end}
+{pstd}{bf:Cuatro gráficas:}{p_end}
+{phang2}A. {bf:Desglose mensual} — Registro mensual de la serie{p_end}
+{phang2}B. {bf:Último mes por año} — Valor del último mes disponible de cada año{p_end}
+{phang2}C. {bf:Acumulado anual} — Total acumulado hasta el último mes disponible{p_end}
+{phang2}D. {bf:Acumulado anual como % del PIB} — Proporción respecto al PIB{p_end}
 
-{title:Claves comunes}
+{pstd}{bf:Variables en la base de datos:}{p_end}
+{phang2}{bf:anio}, {bf:mes} — Identificadores temporales{p_end}
+{phang2}{bf:montomill} — Monto en millones de pesos nominales{p_end}
+{phang2}{bf:monto_pc} — Monto per cápita en pesos reales{p_end}
+{phang2}{bf:monto_pib} — Monto como % del PIB{p_end}
+{phang2}{bf:deflactor} — Factor de deflactación (INPC){p_end}
+{phang2}{bf:poblacion} — Población total del año{p_end}
+{phang2}{bf:pibY} — PIB anual{p_end}
+{phang2}{bf:acum_prom} — Proporción mensual promedio histórica{p_end}
 
-{pstd}
-Algunas claves frecuentemente utilizadas:
-{p_end}
+{pstd}{bf:Archivos guardados:}{p_end}
+{phang2}— {cmd:04_master/DatosAbiertos.dta} — Base completa de series ESTOPOR{p_end}
+{phang2}— Gráficos PNG en {cmd:users/$id/graphs/}{p_end}
 
-{phang2}- {bf:XAA10}: Impuesto sobre la renta (ISR){p_end}
-{phang2}- {bf:XAA20}: Impuesto al valor agregado (IVA){p_end}
-{phang2}- {bf:XAA30}: Impuesto especial sobre producción y servicios (IEPS){p_end}
-{phang2}- {bf:XAC10}: Ingresos petroleros{p_end}
-{phang2}- {bf:XED10}: Gasto en educación{p_end}
+{hline}
 
 {marker references}{...}
-{title:References}
+{title:Referencias}
 
 {pstd}
-1. {bf:Estadísticas Oportunas de Finanzas Públicas:} {browse "https://www.finanzaspublicas.hacienda.gob.mx/es/Finanzas_Publicas/Estadisticas_Oportunas_de_Finanzas_Publicas"}
+1. {bf:SHCP — Estadísticas Oportunas de Finanzas Públicas:}
+{browse "http://presto.hacienda.gob.mx/EstoporLayout/estadisticas.jsp"}
 {p_end}
 
 {pstd}
-2. {bf:Datos Abiertos SHCP:} {browse "https://www.secciones.hacienda.gob.mx/es/siop/datos_abiertos"}
+2. {bf:SHCP — Datos Abiertos:}
+{browse "https://www.transparenciapresupuestaria.gob.mx/Datos-Abiertos"}
 {p_end}
 
 {pstd}
-3. {bf:Banco de Indicadores INEGI:} {browse "https://www.inegi.org.mx/app/indicadores/"}
+3. {bf:INEGI — Banco de Información Económica:}
+{browse "https://www.inegi.org.mx/app/indicadores/"}
+{p_end}
+
+{title:Ver también}
+
+{pstd}
+{view "06_helps/LIF.sthlp":LIF} {c |}
+{view "06_helps/PEF.sthlp":PEF} {c |}
+{view "06_helps/SHRFSP.sthlp":SHRFSP} {c |}
+{view "06_helps/AccesoBIE.sthlp":AccesoBIE} {c |}
+{view "06_helps/PIBDeflactor.sthlp":PIBDeflactor}
 {p_end}
 
 {smcl_end}
