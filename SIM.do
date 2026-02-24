@@ -16,11 +16,9 @@ set scheme ciep
 ***
 
 ** 0.1 Directorio de archivos .ado (Github)
-if "`c(username)'" == "ricardo" & "`1'" != "ricardo" {						// Mac
-	sysdir set SITE "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP"
-	global export "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/TextbookCIEP/images"
-}
-cd "`c(sysdir_site)'"
+*sysdir set SITE "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP"
+*global export "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/TextbookCIEP/images"
+*cd "`c(sysdir_site)'"
 
 ** 0.2 Parámetros
 global id = "ciepmx"								// ID USUARIO
@@ -103,7 +101,7 @@ noisily SCN, anio(`=aniovp') $textbook $nographs $update
 ** 3.1 Encuesta Nacional de Ingresos y Gastos de los Hogares (Usos)
 noisily di _newline in g "Actualizando: " in y "expenditures.dta"
 noisily run "`c(sysdir_site)'/Expenditure.do" `=anioPE'
-
+ex
 ** 3.2 Encuesta Nacional de Ingresos y Gastos de los Hogares (Recursos)
 noisily di _newline in g "Actualizando: " in y "households.dta"
 noisily run `"`c(sysdir_site)'/Households.do"' `=anioPE'
@@ -293,7 +291,7 @@ noisily PEF if ramo != -1, anio(`=anioPE') by(divSIM) $update 		///
 	rows(2)												// Número de filas en la leyenda
 
 * Evolución de los gastos per cápita *
-do "`c(sysdir_site)'/Graphs_PC.do"					// <-- MUY tardado. MUY pesado.
+*do "`c(sysdir_site)'/Graphs_PC.do"					// <-- MUY tardado. MUY pesado.
 
 ** 5.1 Parámetros: Gasto **
 scalar iniciaA     =   0.000    					// Inicial
