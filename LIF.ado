@@ -80,21 +80,17 @@ quietly {
 	save `PIB'
 
 	** 2.2 Datos Abiertos **
-	if "`update'" == "update" {
-		capture confirm file "`c(sysdir_site)'/04_master/DatosAbiertos.dta"
-		if _rc != 0 | "`update'" == "update" {
-			DatosAbiertos //, update
-			local updated = r(updated)
-			local ultanio = r(ultanio)
-			local ultmes = r(ultmes)
-		}
-		else {
-			local updated = "yes" // r(updated)
-		}
+	capture confirm file "`c(sysdir_site)'/04_master/DatosAbiertos.dta"
+	if _rc != 0 | "`update'" == "update" {
+		DatosAbiertos //, update
+		local updated = r(updated)
+		local ultanio = r(ultanio)
+		local ultmes = r(ultmes)
 	}
 	else {
-		local updated = "yes"
+		local updated = "yes" // r(updated)
 	}
+
 
 	** 2.3 Update LIF **
 	if "`update'" == "update" | "`updated'" != "yes" {
@@ -392,7 +388,7 @@ quietly {
 
 	******************
 	* Returns Extras *
-	capture tabstat recaudacion recaudacionPIB if anio == `anio' & nombre == "Cuotas a la seguridad social (IMSS)", stat(sum) f(%20.1fc) save
+	capture tabstat recaudacion recaudacionPIB if anio == `anio' & nombre == "Ingreso de Finanzas Públicas Cuotas a la Seguridad Social (IMSS)", stat(sum) f(%20.1fc) save
 	tempname cuotas
 	matrix `cuotas' = r(StatTotal)
 	scalar Cuotas_IMSS = string(`cuotas'[1,1],"%20.0fc")
@@ -643,7 +639,7 @@ program define UpdateLIF
 	levelsof serie, local(serie)
 	foreach k of local serie {
 		if "`k'" != "NA" {
-			noisily DatosAbiertos `k', nog //proy
+			noisily DatosAbiertos `k', nog zipfile
 
 			rename clave_de_concepto serie
 			keep anio serie nombre monto mes acum_prom

@@ -407,9 +407,27 @@ quietly {
 			caption("`graphfuente'") ///
 			name(PP_`anioinicial'_`aniofinal'_`entidadGName', replace)
 
-		graph export "`c(sysdir_site)'/users/$id/graphs/PP_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(PP_`anioinicial'_`aniofinal'_`entidadGName')
-		graph export "`c(sysdir_site)'/users/$id/graphs/PA_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(P_`anioinicial'_`aniofinal'_`entidadGName'A)
-		graph export "`c(sysdir_site)'/users/$id/graphs/PB_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(P_`anioinicial'_`aniofinal'_`entidadGName'B)
+		if "$export" != "" {
+			graph export "$export/PP_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(PP_`anioinicial'_`aniofinal'_`entidadGName')
+		}
+		else {
+			graph export "`c(sysdir_site)'/users/$id/graphs/PP_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(PP_`anioinicial'_`aniofinal'_`entidadGName')
+		}
+		
+		if "$export" != "" {
+			graph export "$export/PA_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(P_`anioinicial'_`aniofinal'_`entidadGName'A)
+		}
+		else {
+			graph export "`c(sysdir_site)'/users/$id/graphs/PA_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(P_`anioinicial'_`aniofinal'_`entidadGName'A)
+		}
+		
+		if "$export" != "" {
+			graph export "$export/PB_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(P_`anioinicial'_`aniofinal'_`entidadGName'B)
+		}
+		else {
+			graph export "`c(sysdir_site)'/users/$id/graphs/PB_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(P_`anioinicial'_`aniofinal'_`entidadGName'B)
+		}
+
 		capture window manage close graph P_`anioinicial'_`aniofinal'_`entidadGName'A
 		capture window manage close graph P_`anioinicial'_`aniofinal'_`entidadGName'B
 

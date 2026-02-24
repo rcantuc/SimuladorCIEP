@@ -55,7 +55,7 @@ twoway (connected ISRAS anio) ///
 	legend(label(1 "ISR asalariados") ///
 	label(2 "ISR personas f{c i'}sicas") ///
 	label(3 "Cuotas IMSS") rows(1)) ///
-	text(`=`ISRAS'[2,1]' `=anioPE-25' ///
+	text(10 `=anioPE-25' ///
 	"De `=anioPE-25' a `=anioPE', la tasa efectiva" ///
 	"del {bf:ISR a asalariados}" ///
 	"creció {bf:`=string(`ISRAS'[2,1]-`ISRAS'[1,1],"%5.1fc")' puntos} porcentuales.", ///
@@ -80,7 +80,7 @@ twoway (connected ISRPM anio) ///
 	yscale(range(0)) ///
 	legend(label(1 "ISR personas morales") ///
 	label(2 "Otros ingresos") rows(1)) ///
-	text(`=`ISRAS'[2,1]*.75' `=anioPE-25' ///
+	text(7 `=anioPE-25' ///
 	"De `=anioPE-25' a `=anioPE', la tasa efectiva" ///
 	"del {bf:ISR a personas morales}" ///
 	"creció {bf:`=string(`ISRPM'[2,1]-`ISRPM'[1,1],"%5.1fc")' puntos} porcentuales.", ///
@@ -130,7 +130,7 @@ twoway (connected FMP anio) ///
 	label(3 "CFE") ///
 	label(4 "IMSS") ///
 	label(5 "ISSSTE") rows(1)) ///
-	text(`=`FMP'[2,1]' `=anioPE-10' ///
+	text(3 `=anioPE-10' ///
 	"De `=anioPE-25' a `=anioPE', la tasa efectiva" ///
 	"de los {bf:derechos petroleros}" ///
 	"perdió {bf:`=string(`FMP'[2,1]-`FMP'[1,1],"%5.1fc")' puntos} porcentuales.", ///

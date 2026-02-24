@@ -455,7 +455,13 @@ quietly {
 			name(gdp_generacion, replace)
 
 		capture mkdir "`c(sysdir_site)'/05_graphs/"
-		graph export "`c(sysdir_site)'/users/$id/graphs/gdp_generacion.png", replace name(gdp_generacion)
+		
+		if "$export" != "" {
+			graph export "$export/gdp_generacion.png", replace name(gdp_generacion)
+		}
+		else {
+			graph export "`c(sysdir_site)'/users/$id/graphs/gdp_generacion.png", replace name(gdp_generacion)
+		}
 	}
 
 	** R.5 Display (de la producci{c o'}n al ingreso) ***
@@ -2029,7 +2035,7 @@ program define UpdateSCN
 	**/
 	*** 9. Ingreso mixto bruto
 	***
-	capture confirm file "`c(sysdir_site)'/03_temp/SCN/CSI_99.xlsx"
+	capture confirm file "`c(sysdir_site)'/03_temp/SCN/CSI_103.xlsx"
 	if _rc != 0 | "`update'" == "update" {
 		capture mkdir "`c(sysdir_site)'/03_temp/"
 		capture mkdir "`c(sysdir_site)'/03_temp/SCN/"
@@ -2037,7 +2043,7 @@ program define UpdateSCN
 		unzipfile "https://www.inegi.org.mx/contenidos/programas/si/2018/tabulados/ori/tabulados_CSI.zip", replace
 	}
 
-	import excel using "`c(sysdir_site)'/03_temp/SCN/CSI_99.xlsx", cellrange(B60:AP60) clear
+	import excel using "`c(sysdir_site)'/03_temp/SCN/CSI_103.xlsx", cellrange(B60:AP60) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2068,7 +2074,7 @@ program define UpdateSCN
 	***
 	*** 10. Cuotas a la seguridad social imputada
 	***
-	import excel using "`c(sysdir_site)'/03_temp/SCN/CSI_99.xlsx", cellrange(B41:AP41) clear
+	import excel using "`c(sysdir_site)'/03_temp/SCN/CSI_103.xlsx", cellrange(B41:AP41) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2099,7 +2105,7 @@ program define UpdateSCN
 	***
 	*** 11. Subsidios a los productos, producci{c o'}n e importaciones
 	***
-	import excel using "`c(sysdir_site)'/03_temp/SCN/CSI_99.xlsx", cellrange(B54:AP54) clear
+	import excel using "`c(sysdir_site)'/03_temp/SCN/CSI_103.xlsx", cellrange(B54:AP54) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2130,7 +2136,7 @@ program define UpdateSCN
 	***
 	*** 12. Otros subsidios a la producci{c o'}n
 	***
-	import excel using "`c(sysdir_site)'/03_temp/SCN/CSI_99.xlsx", cellrange(B58:AP58) clear
+	import excel using "`c(sysdir_site)'/03_temp/SCN/CSI_103.xlsx", cellrange(B58:AP58) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2161,7 +2167,7 @@ program define UpdateSCN
 	***
 	*** 13. Depreciaci{c o'}n del ingreso mixto
 	***
-	import excel using "`c(sysdir_site)'/03_temp/SCN/CSI_99.xlsx", cellrange(B62:AP62) clear
+	import excel using "`c(sysdir_site)'/03_temp/SCN/CSI_103.xlsx", cellrange(B62:AP62) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2192,7 +2198,7 @@ program define UpdateSCN
 	***
 	*** 14. Excedente bruto de operaci{c o'}n No Financiero
 	***
-	import excel using "`c(sysdir_site)'/03_temp/SCN/CSI_102.xlsx", cellrange(B59:AP59) clear
+	import excel using "`c(sysdir_site)'/03_temp/SCN/CSI_106.xlsx", cellrange(B59:AP59) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2223,7 +2229,7 @@ program define UpdateSCN
 	***
 	*** 15. Excedente bruto de operaci{c o'}n Financiero
 	***
-	import excel using "`c(sysdir_site)'/03_temp/SCN/CSI_105.xlsx", cellrange(B59:AP59) clear
+	import excel using "`c(sysdir_site)'/03_temp/SCN/CSI_109.xlsx", cellrange(B59:AP59) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2254,7 +2260,7 @@ program define UpdateSCN
 	***
 	*** 16. Excedente bruto de operaci{c o'}n ISFLSH
 	***
-	import excel using "`c(sysdir_site)'/03_temp/SCN/CSI_114.xlsx", cellrange(B59:AP59) clear
+	import excel using "`c(sysdir_site)'/03_temp/SCN/CSI_118.xlsx", cellrange(B59:AP59) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2285,7 +2291,7 @@ program define UpdateSCN
 	***
 	*** 17. Excedente bruto de operaci{c o'}n Hogares
 	***
-	import excel using "`c(sysdir_site)'/03_temp/SCN/CSI_111.xlsx", cellrange(B59:AP59) clear
+	import excel using "`c(sysdir_site)'/03_temp/SCN/CSI_115.xlsx", cellrange(B59:AP59) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2316,7 +2322,7 @@ program define UpdateSCN
 	***
 	*** 18. Excedente bruto de operaci{c o'}n Gobierno
 	***
-	import excel using "`c(sysdir_site)'/03_temp/SCN/CSI_108.xlsx", cellrange(B59:AP59) clear
+	import excel using "`c(sysdir_site)'/03_temp/SCN/CSI_112.xlsx", cellrange(B59:AP59) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2347,7 +2353,7 @@ program define UpdateSCN
 	***
 	*** 19. Excedente neto de operaci{c o'}n No Financiero
 	***
-	import excel using "`c(sysdir_site)'/03_temp/SCN/CSI_102.xlsx", cellrange(B63:AP63) clear
+	import excel using "`c(sysdir_site)'/03_temp/SCN/CSI_106.xlsx", cellrange(B63:AP63) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2378,7 +2384,7 @@ program define UpdateSCN
 	***
 	*** 20. Excedente neto de operaci{c o'}n Financiero
 	***
-	import excel using "`c(sysdir_site)'/03_temp/SCN/CSI_105.xlsx", cellrange(B63:AP63) clear
+	import excel using "`c(sysdir_site)'/03_temp/SCN/CSI_109.xlsx", cellrange(B63:AP63) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2409,7 +2415,7 @@ program define UpdateSCN
 	***
 	*** 21. Excedente neto de operaci{c o'}n ISFLSH
 	***
-	import excel using "`c(sysdir_site)'/03_temp/SCN/CSI_114.xlsx", cellrange(B63:AP63) clear
+	import excel using "`c(sysdir_site)'/03_temp/SCN/CSI_118.xlsx", cellrange(B63:AP63) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2440,7 +2446,7 @@ program define UpdateSCN
 	***
 	*** 22. Excedente neto de operaci{c o'}n Hogares
 	***
-	import excel using "`c(sysdir_site)'/03_temp/SCN/CSI_111.xlsx", cellrange(B63:AP63) clear
+	import excel using "`c(sysdir_site)'/03_temp/SCN/CSI_115.xlsx", cellrange(B63:AP63) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2471,7 +2477,7 @@ program define UpdateSCN
 	***
 	*** 23. Excedente neto de operaci{c o'}n Gobierno
 	***
-	import excel using "`c(sysdir_site)'/03_temp/SCN/CSI_108.xlsx", cellrange(B63:AP63) clear
+	import excel using "`c(sysdir_site)'/03_temp/SCN/CSI_112.xlsx", cellrange(B63:AP63) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2502,7 +2508,7 @@ program define UpdateSCN
 	***
 	*** 24. Ahorro bruto
 	***
-	import excel using "`c(sysdir_site)'/03_temp/SCN/CSI_99.xlsx", cellrange(B170:AP170) clear
+	import excel using "`c(sysdir_site)'/03_temp/SCN/CSI_103.xlsx", cellrange(B170:AP170) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2533,7 +2539,7 @@ program define UpdateSCN
 	***
 	*** 25. Ingreso disponible bruto
 	***
-	import excel using "`c(sysdir_site)'/03_temp/SCN/CSI_99.xlsx", cellrange(B152:AP152) clear
+	import excel using "`c(sysdir_site)'/03_temp/SCN/CSI_103.xlsx", cellrange(B152:AP152) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
