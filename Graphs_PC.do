@@ -82,10 +82,10 @@ twoway connected pam penimss penisss penpeme penotro anio, ///
 	yscale(range(0)) ///
 	ylabel(, format(%9.0fc)) ///
 	legend(label(1 "Pensión Bienestar") ///
-	label(2 "Pensión IMSS") ///
-	label(3 "Pensión ISSSTE") ///
-	label(4 "Pensión Pemex") ///
-	label(5 "Pensión CFE, LFC, ISSFAM, Ferronales")) ///
+	label(2 "IMSS") ///
+	label(3 "ISSSTE") ///
+	label(4 "Pemex") ///
+	label(5 "CFE, LFC, ISSFAM, Ferronales")) ///
 	name(GastoPC_Pensiones, replace)
 
 graph export "`c(sysdir_site)'/users/$id/graphs/GastoPC_Pensiones.png", replace
@@ -97,11 +97,11 @@ twoway connected gascfe gaspemex gassener gasinverf gascosdeue anio, ///
 	xlabel(2013(2)`=anioPE') ///
 	yscale(range(0)) ///
 	ylabel(, format(%9.0fc)) ///
-	legend(label(1 "Gasto en CFE") ///
-	label(2 "Gasto en Pemex") ///
-	label(3 "Gasto en SENER") ///
-	label(4 "Gasto en inversión (energía)") ///
-	label(5 "Gasto en costo de la deuda (energía)")) ///
+	legend(label(1 "CFE") ///
+	label(2 "Pemex") ///
+	label(3 "SENER") ///
+	label(4 "Inversión (energía)") ///
+	label(5 "Costo de la deuda (energía)")) ///
 	name(GastoPC_Energia, replace)
 
 graph export "`c(sysdir_site)'/users/$id/graphs/GastoPC_Energia.png", replace
@@ -113,10 +113,10 @@ twoway connected gasinfra gasotros gasfeder gascosto anio, ///
 	xlabel(2013(2)`=anioPE') ///
 	yscale(range(0)) ///
 	ylabel(, format(%9.0fc)) ///
-	legend(label(1 "Gasto en Otras inversiones") ///
+	legend(label(1 "Otras inversiones") ///
 	label(2 "Otros gastos") ///
-	label(3 "Participaciones y Otras aportaciones") ///
-	label(4 "Gasto en Costo de la deuda")) ///
+	label(3 "Participaciones y Otras Aportaciones") ///
+	label(4 "Costo de la deuda")) ///
 	name(GastoPC_Otros, replace)
 
 graph export "`c(sysdir_site)'/users/$id/graphs/GastoPC_Otros.png", replace

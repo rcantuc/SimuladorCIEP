@@ -80,6 +80,8 @@ if `1' >= 2014 & `1' < 2016 {
 
 ** 0.1 Log-file
 capture log close households
+capture mkdir "`c(sysdir_site)'/03_temp"
+capture mkdir "`c(sysdir_site)'/03_temp/`anioenigh'"
 log using "`c(sysdir_site)'/03_temp/`anioenigh'/households.smcl", replace name(households)
 local dir_enigh "`c(sysdir_site)'/01_raw/`enigh'/`anioenigh'"
 
@@ -1057,19 +1059,19 @@ label var exen_mixtoK "Exenciones a los ingresos mixtos capital"
 
 * 4.3 Laboral
 egen double ing_laboral = rsum(ing_sueldos ing_mixtoL)
-label var ing_laboral "Ingreso laboral"
+label var ing_laboral "Ingreso laboral (anual)"
 egen double exen_laboral = rsum(exen_sueldos exen_mixtoL)
 label var exen_laboral "Exenciones a los ingresos laborales"
 
 * 4.4 Capital
 egen double ing_capital = rsum(ing_t2_cap1 ing_t2_cap8 ing_t4_cap2PM ing_t4_cap3PM ing_estim_alqu)
-label var ing_capital "Ingreso capital"
+label var ing_capital "Ingresos de capital (anual)"
 egen double exen_capital = rsum(exen_t2_cap1 exen_t2_cap8 exen_t4_cap2PM exen_t4_cap3PM)
-label var exen_capital "Exenciones a los ingresos capital"
+label var exen_capital "Exenciones a los ingresos de capital"
 
 * 4.5 Total
 egen double ing_total = rsum(ing_sueldos ing_mixto ing_capital)
-label var ing_total "Ingreso total"
+label var ing_total "Ingreso total (anual)"
 egen double exen_total = rsum(exen_sueldos exen_mixto exen_capital)
 label var exen_total "Exenciones a los ingresos totales"
 replace ing_total = 0 if ing_total == .
@@ -2622,7 +2624,7 @@ label define formalidad 3 "Pemex y otros", modify
 label values formalmax formalidad
 
 egen gastoanualTOT = rsum(gas_pc_*)
-label var gastoanualTOT "Gasto anual total"
+label var gastoanualTOT "Gasto total (anual)"
 
 * Compras netas fuera del pais *
 Distribucion gasto_anualComprasN, relativo(gastoanualTOT) macro(`ComprasN')
@@ -2646,22 +2648,21 @@ egen ImpuestosConsumoTOT = rsum(IVA IEPS ISAN Importaciones)
 *** Sankey: PIB demográfico ***
 *******************************
 egen double Yl = rsum(ing_subor ing_mixtoL)
-label var Yl "Ingreso laboral"
+label var Yl "Ingreso laboral (anual)"
 
 *noisily Perfiles Yl [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ingreso laboral")
-noisily Simulador Yl [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ingreso laboral") reboot
+noisily Simulador Yl [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ingreso laboral (anual)") reboot
 
-g gasto_anualDepPositivo = -gasto_anualDepreciacion
-egen double Yk = rsum(ing_capital ing_mixtoK ing_estim_alqu gasto_anualDepPositivo)
-label var Yk "Ingreso de capital"
+egen double Yk = rsum(ing_capital ing_mixtoK ing_estim_alqu gasto_anualDepreciacion)
+label var Yk "Ingresos de capital (anual)"
 *noisily Perfiles Yk [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ingreso de capital")
-noisily Simulador Yk [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ingreso de capital") reboot
+noisily Simulador Yk [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ingresos de capital (anual)") reboot
 
 *noisily Perfiles ingbrutotot [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ingreso bruto total")
 noisily Simulador ingbrutotot [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ingreso bruto total") reboot
 
 *noisily Perfiles gastoanualTOT [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Gasto anual total")
-noisily Simulador gastoanualTOT [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Gasto anual total") reboot
+noisily Simulador gastoanualTOT [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Gasto total (anual)") reboot
 
 *noisily Perfiles ing_suborROW [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ingreso laboral ROW")
 *noisily Simulador ing_suborROW [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ingreso laboral ROW") reboot
@@ -2673,9 +2674,9 @@ noisily Simulador gastoanualTOT [fw=factor], aniope(`anioenigh') aniovp(`anioeni
 
 g Ahorro = ingbrutotot + ing_capitalROW + ing_suborROW + ing_remesas ///
 	- gastoanualTOT //- gasto_anualComprasN - gasto_anualGobierno
-label var Ahorro "Ahorro"
+label var Ahorro "Ahorro (anual)"
 *noisily Perfiles Ahorro [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ahorro")
-noisily Simulador Ahorro [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ahorro") reboot
+noisily Simulador Ahorro [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ahorro (anual)") reboot
 
 label var cuotasTPF "Cuotas a la Seguridad Social"
 *noisily Perfiles cuotasTPF [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Cuotas a la Seguridad Social")
@@ -2689,7 +2690,12 @@ if "$nographs" == "" {
 		caption("{bf:Fuente}: Elaborado por el CIEP, con la ENIGH `=anioenigh'.") ///
 		note(`"{bf:Nota}: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n en cada grupo."')
 
-	graph export `"`c(sysdir_site)'/users/$id/graphs/Recursos.png"', replace name(Recursos)
+	if "$export" != "" {
+		graph export `"$export/Recursos.png"', replace name(Recursos)
+	}
+	else {
+		graph export `"`c(sysdir_site)'/users/$id/graphs/Recursos.png"', replace name(Recursos)
+	}
 
 	graph combine gastoanual_dec Ahorro_dec, ///
 		name(Usos, replace) ycommon xcommon ///
@@ -2697,7 +2703,12 @@ if "$nographs" == "" {
 		caption("{bf:Fuente}: Elaborado por el CIEP, con la ENIGH `=anioenigh'.") ///
 		note(`"{bf:Nota}: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n en cada grupo."')
 
-	graph export `"`c(sysdir_site)'/users/$id/graphs/Usos.png"', replace name(Usos)
+	if "$export" != "" {
+		graph export `"$export/Usos.png"', replace name(Usos)
+	}
+	else {
+		graph export `"`c(sysdir_site)'/users/$id/graphs/Usos.png"', replace name(Usos)
+	}
 }
 
 
@@ -2716,9 +2727,9 @@ save "`c(sysdir_site)'/04_master/`anioenigh'/households.dta", replace
 *****************
 ** Inputs: Archivo "`c(sysdir_site)'/04_master/`anio'/households.dta".
 ** Outputs: Archivos .json en carpeta "/var/www/html/SankeyNTA/.
-//foreach k in decil sexo grupoedad escol rural {
-//	run "`c(sysdir_site)'/Sankey.do" `k' `anioenigh' SankeyNTA
-//}
+foreach k in decil sexo grupoedad escol rural {
+	run "`c(sysdir_site)'/Sankey.do" `k' `anioenigh' SankeyNTA
+}
 
 
 timer off 6

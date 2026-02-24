@@ -4,7 +4,7 @@ quietly {
 	** 0.1 Revisa si se puede usar la base de datos **
 	capture use "`c(sysdir_site)'/04_master/DatosAbiertos.dta", clear
 	if _rc != 0 {
-		noisily UpdateDatosAbiertos
+		noisily UpdateDatosAbiertos, zipfile
 	}
 	capture use "`c(sysdir_site)'/04_master/Deflactor.dta", clear
 	if _rc != 0 {

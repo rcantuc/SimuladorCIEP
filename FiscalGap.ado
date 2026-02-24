@@ -423,6 +423,8 @@ quietly {
 	g divSIM = subinstr(divCIEP,"_"," ",.)
 	replace divSIM = "Otros gastos" if divSIM == "IngBasico" | divSIM == "Federalizado" | divSIM == "Cuotas ISSSTE"
 	replace divSIM = "Pensiones" if divSIM == "Pension AM"
+	replace divSIM = "Educación" if divSIM == "Educacion"
+	replace divSIM = "Energía" if divSIM == "Energia"
 
 
 	****************
@@ -475,7 +477,7 @@ quietly {
 		collapse (sum) gasto_pib estimacionGasto_pib if anio <= `end', by(anio divSIM) fast
 		forvalues k=1(1)`=_N' {
 			if anio[`k'] >= 2013 & anio[`k'] < `anio' {
-				if divSIM[`k'] == "Educacion" {
+				if divSIM[`k'] == "Educación" {
 					local proy_educacion = "`proy_educacion' `=string(`=gasto_pib[`k']',"%10.1f")',"
 				}
 				if divSIM[`k'] == "Pensiones" {
@@ -487,7 +489,7 @@ quietly {
 				if divSIM[`k'] == "Otros gastos" {
 					local proy_otros = "`proy_otros' `=string(`=gasto_pib[`k']',"%10.1f")',"
 				}
-				if divSIM[`k'] == "Energia" {
+				if divSIM[`k'] == "Energía" {
 					local proy_energia = "`proy_energia' `=string(`=gasto_pib[`k']',"%10.1f")',"
 				}
 				if divSIM[`k'] == "Otras inversiones" {
@@ -495,7 +497,7 @@ quietly {
 				}
 			}
 			if anio[`k'] >= `anio' & anio[`k'] <= 2030 {
-				if divSIM[`k'] == "Educacion" {
+				if divSIM[`k'] == "Educación" {
 					local proy_educacion = "`proy_educacion' `=string(`=estimacionGasto_pib[`k']',"%10.1f")',"
 				}
 				if divSIM[`k'] == "Pensiones" {
@@ -507,7 +509,7 @@ quietly {
 				if divSIM[`k'] == "Otros gastos" {
 					local proy_otros = "`proy_otros' `=string(`=estimacionGasto_pib[`k']',"%10.1f")',"
 				}
-				if divSIM[`k'] == "Energia" {
+				if divSIM[`k'] == "Energía" {
 					local proy_energia = "`proy_energia' `=string(`=estimacionGasto_pib[`k']',"%10.1f")',"
 				}
 				if divSIM[`k'] == "Otras inversiones" {
@@ -693,7 +695,7 @@ quietly {
 			legend(on order(1 3) label(1 "RFSP presupuestario") label(3 "Otros RFSP")) ///
 			text(0 `desde' "{bf:Observado}", ///
 				yaxis(1) size(medium) place(1) justification(right) bcolor(white) box) ///
-			text(0 `=`anio'' "{bf:$paqueteEconomico}", ///
+			text(0 `=`anio'+3' "{bf:$paqueteEconomico}", ///
 				yaxis(1) size(medium) place(1) justification(right) bcolor(white) box) ///
 			name(Proy_rfsp, replace)
 			

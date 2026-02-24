@@ -2,7 +2,7 @@
 **** SIMULADOR FISCAL CIEP
 **** Ricardo Cantú Calderón
 **** ricardocantu@ciep.mx
-**** 24 de septiembre de 2025
+**** 23 de febrero de 2026
 ****
 clear all
 macro drop _all
@@ -17,15 +17,11 @@ set scheme ciep
 
 ** 0.1 Directorio de archivos .ado (Github)
 if "`c(username)'" == "ricardo" & "`1'" != "ricardo" {						// Mac
-	*sysdir set SITE "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
 	sysdir set SITE "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP"
-	*global export "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/Ricardo Cantú/CIEP_Deuda/2. Boletines/Sostenibilidad 2026/images"
-}
-else if "`c(console)'" != "" {							// Servidor Web
-	sysdir set SITE "/SIM/OUT/7/"
+	global export "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/TextbookCIEP/images"
 }
 cd "`c(sysdir_site)'"
-ex
+
 ** 0.2 Parámetros
 global id = "ciepmx"								// ID USUARIO
 scalar aniovp = 2026								// ANIO VALOR PRESENTE
@@ -37,10 +33,10 @@ capture mkdir "`c(sysdir_site)'/users/"
 capture mkdir "`c(sysdir_site)'/users/$id"
 
 ** 0.4 Opciones (descomentar para activar)
-global nographs "nographs"							// SUPRIMIR GRAFICAS
+//global nographs "nographs"							// SUPRIMIR GRAFICAS
 //global update "update"							// UPDATE BASES DE DATOS
 //global textbook "textbook"							// SCALAR TO LATEX
-global output "output"							// ARCHIVO DE SALIDA (WEB)
+//global output "output"							// ARCHIVO DE SALIDA (WEB)
 
 ** 0.5 Ejecución de opciones **
 if "$output" != "" {
@@ -55,7 +51,7 @@ if "$update" == "update" {
 
 ***
 **# 1. DEMOGRAFÍA
-/***
+***
 noisily Poblacion, anioi(`=aniovp') aniofinal(2050) $textbook $nographs
 
 
@@ -92,7 +88,7 @@ global inf2029 = 3.0
 global inf2030 = 3.0
 global inf2031 = 3.0
 
-/** 2.4 PIB + Deflactores
+** 2.4 PIB + Deflactores
 noisily PIBDeflactor if anio >= 2005, aniovp(`=aniovp') aniomax(2031) $textbook $nographs $update
 
 ** 2.5 Sistema de Cuentas Nacionales (sin inputs)
@@ -102,7 +98,7 @@ noisily SCN, anio(`=aniovp') $textbook $nographs $update
 
 **/
 **# 3. HOGARES: ARMONIZACIÓN MACRO-MICRO
-/***
+***
 
 ** 3.1 Encuesta Nacional de Ingresos y Gastos de los Hogares (Usos)
 noisily di _newline in g "Actualizando: " in y "expenditures.dta"
@@ -132,10 +128,8 @@ decode divCODE, g(divSIM)
 collapse (sum) recaudacion, by(anio divSIM) fast
 save `"`c(sysdir_site)'/users/$id/LIF.dta"', replace	
 
-* Evolución de las tasas efectivas */
-if "$nographs" == "" & "$update" == "update" {
-	do "`c(sysdir_site)'/Graphs_TE.do"
-}
+* Evolución de las tasas efectivas *
+do "`c(sysdir_site)'/Graphs_TE.do"
 
 
 ** 4.1 Parámetros: Ingresos **
@@ -160,7 +154,7 @@ scalar IMPORTPIB =   "0.666"  						// Importaciones
 
 
 
-** 4.2 Submódulo ISR (web) **/
+** 4.2 Submódulo ISR (web) **
 * Anexo 8 de la Resolución Miscelánea Fiscal para 2025 *
 * Tarifa para el cálculo del impuesto correspondiente al ejericio 2025 
 * a que se refieren los artículos 97 y 152 de la Ley del ISR
@@ -193,12 +187,12 @@ matrix	SE =  (0.01,		1768.96*12,	407.02*12	\	/// 1
 
 		* Artículo 151, último párrafo (LISR) *
 *            Ex. SS.MM.	Ex. 	% ing. gravable		% Informalidad PF	% Informalidad Salarios
-matrix DED = (5,		15,			73.18, 			21.05)
+matrix DED = (5,		15,			73.14, 			21.06)
 
 
 ** 4.3 Artículo 9, primer párrafo (LISR) **
 *           Tasa ISR PM.	% Informalidad PM
-matrix PM = (30,			63.41)
+matrix PM = (30,			63.52)
 
 
 ** 4.4 Parámetros: IMSS e ISSSTE **
@@ -299,9 +293,7 @@ noisily PEF if ramo != -1, anio(`=anioPE') by(divSIM) $update 		///
 	rows(2)												// Número de filas en la leyenda
 
 * Evolución de los gastos per cápita *
-if "$nographs" == "" & "$update" == "update" {
-	do "`c(sysdir_site)'/Graphs_PC.do"
-}
+do "`c(sysdir_site)'/Graphs_PC.do"					// <-- MUY tardado. MUY pesado.
 
 ** 5.1 Parámetros: Gasto **
 scalar iniciaA     =   0.000    					// Inicial
@@ -347,7 +339,7 @@ scalar gasmadres   =   0.009   						// Apoyo a madres trabajadoras
 scalar gascuidados =   0.046   						// Gasto en cuidados
 
 
-** 5.2 Gasto per cápita **/
+** 5.2 Gasto per cápita **
 noisily GastoPC educacion salud pensiones energia resto transferencias, aniope(`=anioPE') aniovp(`=aniovp')
 
 
@@ -356,7 +348,7 @@ noisily GastoPC educacion salud pensiones energia resto transferencias, aniope(`
 **# 6. SISTEMA FISCAL: DEUDA
 ***
 
-/* SHRFSP: Total, Interno, Externo (como % del PIB)
+* SHRFSP: Total, Interno, Externo (como % del PIB)
 *                	2025  2026  2027  2028  2029  2030  2031
 matrix shrfsp = 	(52.6, 52.6, 52.6, 52.6, 52.6, 52.6, 52.6)
 matrix shrfspInterno = 	(40.5, 41.5, 42.4, 42.5, 43.1, 43.5, 43.8)
@@ -405,7 +397,7 @@ forvalues k = 2026(1)2031 {
 	global egresos`k' = egresos[1,`j']
 }
 
-* SHRFSP: comando */
+* SHRFSP: comando *
 set scheme ciepdeuda
 *scalar tasaEfectiva = 6.2967
 noisily SHRFSP, anio(`=anioPE') ultanio(2002) $nographs $update $textbook
@@ -459,12 +451,12 @@ if "$textbook" == "" {
 	label var Transferencias "Transferencias públicas"
 	label var AportacionesNetas "Ciclo de vida de las aportaciones netas"
 }
-foreach k of varlist /*AlTrabajo AlCapital AlConsumo ///
+foreach k of varlist AlTrabajo AlCapital AlConsumo ///
 	ISRPM ISRAS ISRPF CUOTAS IVA IEPSNP IEPSP ISAN IMPORT ///
 	Pensiones IngBasico Educacion Salud OtrosGastos Energia ///
-	ImpuestosAportaciones Transferencias*/ AportacionesNetas {
+	ImpuestosAportaciones Transferencias AportacionesNetas {
 	*noisily Perfiles `k' if `k' != 0 [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
-	noisily Simulador `k' if `k' != 0 [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot //boot(10)
+	noisily Simulador `k' if `k' != 0 [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot title("") //boot(10)
 }
 save `"`c(sysdir_site)'/users/$id/aportaciones.dta"', replace
 

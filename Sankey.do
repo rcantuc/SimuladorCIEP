@@ -4,12 +4,12 @@
 if "`1'" == "" {
 	clear programs
 	local 1 = "decil"
-	local 2 = 2022
+	local 2 = 2024
 	local 3 = "SankeyNTA"
-	scalar anioenigh = 2022
+	scalar anioenigh = 2024
 }
 if "`2'" >= "2022" {
-	local 2 = 2022
+	local 2 = 2024
 }
 timer on 7
 noisily di _newline(2) in g "{bf: Sankey}: " in y "`1' `2'"
@@ -24,27 +24,32 @@ SCN, anio(`2') nographs
 
 ****************
 ** 1 Ingresos **
-LIF, anio(`2') nographs min(0)
-local CuotasIMSS = r(Cuotas_IMSS)
-local IMSSpropio = r(IMSS) //-`CuotasIMSS'
-local ISSSTEpropio = r(ISSSTE)
-local CFEpropio = r(CFE)
-local Pemexpropio = r(Pemex)
-local FMP = r(FMP___derechos_petro__)
-local Mejoras = r(Contribuciones_de_mejoras)
-local Derechos = r(Derechos)
-local Productos = r(Productos)
-local Aprovechamientos = r(Aprovechamientos)
-local OtrosTributarios = r(Otros_tributarios)
-local OtrasEmpresas = r(Otras_empresas)
+LIF, anio(`2') nographs min(0) by(divCIEP)
+local CuotasIMSS = real(subinstr(scalar(Cuotas_IMSS),",","",.))
+local IMSSpropio = real(subinstr(scalar(IMSS),",","",.)) //-`CuotasIMSS'
+local ISSSTEpropio = real(subinstr(scalar(ISSSTE),",","",.))
+local CFEpropio = real(subinstr(scalar(CFE),",","",.))
+local Pemexpropio = real(subinstr(scalar(Pemex),",","",.))
+local FMP = real(subinstr(scalar(FMP_Derechos),",","",.))
+local Mejoras = real(subinstr(scalar(Contrib_de_mejora),",","",.))
+local Derechos = real(subinstr(scalar(Derechos),",","",.))
+local Productos = real(subinstr(scalar(Productos),",","",.))
+local Aprovechamientos = real(subinstr(scalar(Aprovechamientos),",","",.))
+local OtrosTributarios = real(subinstr(scalar(Otros_tributarios),",","",.))
+local OtrasEmpresas = real(subinstr(scalar(Otras_empresas),",","",.))
 
 
 
 **********************************/
 ** Eje 1: Generación del ingreso **
-use `"`c(sysdir_personal)'/SIM/`2'/households.dta"', clear
+use `"`c(sysdir_site)'/04_master/`2'/households.dta"', clear
+
+noisily tabstat Yl Yk ing_estim_alqu [fw=factor], stat(sum) format(%20.0fc) by(`1')
+
 replace Yk = Yk - ing_estim_alqu
 collapse (sum) ing_Ing_Laboral=Yl ing_Ing_Capital=Yk ing_Alquiler_propio=ing_estim_alqu [fw=factor], by(`1')
+
+noisily tabstat ing_Ing_Laboral ing_Ing_Capital ing_Alquiler_propio, stat(sum) format(%20.0fc) by(`1')
 
 * to *
 tempvar to
@@ -59,27 +64,27 @@ rename `1' from
 set obs `=_N+1'
 replace from = -2 in -1
 replace profile = `IMSSpropio' + `ISSSTEpropio' + `CFEpropio' + `Pemexpropio' + `FMP' + `OtrasEmpresas' in -1
-label define `1' -2 "Empr_públicas", add
+label define `1' -2 "OyE_públicas", add
 replace to = 2 in -1
 
 * ROW *
 set obs `=_N+2'
 replace from = -1 if from == .
 replace to = 3 in -1
-replace profile = scalar(ROWRem) in -1
-label define `1' -1 "Resto del mundo", add
+replace profile = real(subinstr(scalar(ROWRem),",","",.))*1000000 in -1
+label define `1' -1 "El mundo", add
 
 replace to = 101 in -2
-replace profile = scalar(ROWTrans) in -2
+replace profile = real(subinstr(scalar(ROWTrans),",","",.))*1000000 in -2
 label define to 101 "Remesas", add
 
 * Compras Netas *
-if scalar(ComprasN) < 0 {
+if real(subinstr(scalar(ComprasN),",","",.)) < 0 {
 	set obs `=_N+1'
 	replace from = -1 if from == .
 	replace to = 102 in -1
-	replace profile = -scalar(ComprasN) in -1
-	label define to 102 "Turistas y extranjeros", add
+	replace profile = -real(subinstr(scalar(ComprasN),",","",.))*1000000 in -1
+	label define to 102 "Turistas extranjeros", add
 }
 
 * Eje */
@@ -90,7 +95,7 @@ save `eje1'
 
 ********************
 ** Eje 4: Consumo **
-use `"`c(sysdir_personal)'/SIM/`2'/households.dta"', clear
+use `"`c(sysdir_site)'/04_master/`2'/households.dta"', clear
 collapse (sum) gas_pc* gasto_anual* gasto_anualAhorro=Ahorro [fw=factor], by(`1')
 egen gasto_Alimentos = rsum(gas_pc_Agua gas_pc_Alim gas_pc_BebN)
 egen gasto_Vestido = rsum(gas_pc_Vest gas_pc_Calz)
@@ -124,13 +129,13 @@ set obs `=_N+3'
 replace to = -1 if from == .
 label define `1' -1 "Bienes_públicos", add
 
-replace profile = scalar(SerEGob) in -1
+replace profile = real(subinstr(scalar(SerEGob),",","",.))*1000000 in -1
 replace from = 4 in -1
 
-replace profile = scalar(SaluGob) in -2
+replace profile = real(subinstr(scalar(SaluGob),",","",.))*1000000 in -2
 replace from = 3 in -2
 
-replace profile = scalar(ConGob) - scalar(SerEGob) - scalar(SaluGob) in -3
+replace profile = real(subinstr(scalar(ConGob),",","",.))*1000000 - real(subinstr(scalar(SerEGob),",","",.))*1000000 - real(subinstr(scalar(SaluGob),",","",.))*1000000 in -3
 replace from = 7 in -3
 
 * Ahorro *
@@ -138,17 +143,17 @@ set obs `=_N+1'
 drop if from == 98
 replace from = 98 in -1
 replace to = -2 in -1 
-replace profile = scalar(AhorroN) in -1
-label define `1' -2 "__Futuro", add
+replace profile = real(subinstr(scalar(AhorroN),",","",.))*1000000 in -1
+label define `1' -2 "_Futuro", add
 label define from 98 "Ahorro", add
 
 * ROW *
 set obs `=_N+1'
 replace to = -3 if from == .
-label define `1' -3 "__Resto del mundo", add
+label define `1' -3 "__El mundo", add
 replace from = 99 in -1
-replace profile = -scalar(ROWProp) in -1
-label define from 99 "__Ing a la propiedad", add
+replace profile = -real(subinstr(scalar(ROWProp),",","",.))*1000000 in -1
+label define from 99 "_Ing a la propiedad", add
 
 
 /* Depreciacion *

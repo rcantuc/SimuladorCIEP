@@ -8,6 +8,7 @@ capture mkdir "`c(sysdir_site)'/01_raw/ENIGH/"
 capture mkdir "`c(sysdir_site)'/03_temp"
 cd "`c(sysdir_site)'/01_raw/ENIGH/"
 if "`1'" == "" {
+	*clear all
 	local anioenigh = 2024
 	local aniovp = 2024
 	local claveiva = "*2018"
@@ -35,7 +36,7 @@ else {
 		local claveiva = "*2018"
 		capture confirm file "`c(sysdir_site)'/01_raw/ENIGH/`anioenigh'/gastospersona.dta"
 		if _rc != 0 {
-			copy "https://www.dropbox.com/scl/fi/r4b6sqyst3izk8x70r3gq/2022.zip?rlkey=tqos6kar640txowm4gyqxk31n&dl=1" "`c(sysdir_site)'/01_raw/ENIGH/2022.zip", replace
+			copy "https://www.dropbox.com/scl/fi/81oizm6udw7wgrrx4roj3/2022.zip?rlkey=z8evwh138uqz2e1no558kc1f0&dl=1" "`c(sysdir_site)'/01_raw/ENIGH/2022.zip", replace
 			unzipfile "`c(sysdir_site)'/01_raw/ENIGH/2022.zip", replace
 			erase "`c(sysdir_site)'/01_raw/ENIGH/2022.zip"
 		}
@@ -45,7 +46,7 @@ else {
 		local claveiva = "*2018"
 		capture confirm file "`c(sysdir_site)'/01_raw/ENIGH/`anioenigh'/gastospersona.dta"
 		if _rc != 0 {
-			copy "https://www.dropbox.com/scl/fi/smfmu0bkul7knimoppcmv/2020.zip?rlkey=z5n4numiqepoh1q1ukhxj81qx&dl=1" "`c(sysdir_site)'/01_raw/ENIGH/2020.zip", replace
+			copy "https://www.dropbox.com/scl/fi/mj4gd8juoyl7pj2x780r0/2020.zip?rlkey=vvk8mnknngb5hmod7562bp4dl&dl=1" "`c(sysdir_site)'/01_raw/ENIGH/2020.zip", replace
 			unzipfile "`c(sysdir_site)'/01_raw/ENIGH/2020.zip", replace
 			erase "`c(sysdir_site)'/01_raw/ENIGH/2020.zip"
 		}
@@ -55,7 +56,7 @@ else {
 		local claveiva = "*2018"
 		capture confirm file "`c(sysdir_site)'/01_raw/ENIGH/`anioenigh'/gastospersona.dta"
 		if _rc != 0 {
-			copy "https://www.dropbox.com/scl/fi/tmqhyq0j5aczzugl0or22/2018.zip?rlkey=v8ur73t72kisyi22jhcftgfoj&dl=1" "`c(sysdir_site)'/01_raw/ENIGH/2018.zip", replace
+			copy "https://www.dropbox.com/scl/fi/71edca9akpnpujdjmpovq/2018.zip?rlkey=nubev3sxg3vl37ubhgcx0tyb4&dl=1" "`c(sysdir_site)'/01_raw/ENIGH/2018.zip", replace
 			unzipfile "`c(sysdir_site)'/01_raw/ENIGH/2018.zip", replace
 			erase "`c(sysdir_site)'/01_raw/ENIGH/2018.zip"
 		}
@@ -203,8 +204,16 @@ if _rc != 0 {
 		}
 
 		** 2.6. Unión de claves de IVA y IEPS **
-		merge m:1 (clave) using "`c(sysdir_site)'/01_raw/ENIGH/`anioenigh'/clave_iva.dta", ///
-			nogen keepus(descripcion `claveiva' clase_de_actividad*) keep(matched master)
+		* Usar base auditada si existe (ENIGH 2024+), original si no
+		capture confirm file "`c(sysdir_site)'/01_raw/ENIGH/`anioenigh'/clave_iva_auditada.dta"
+		if _rc == 0 {
+			merge m:1 (clave) using "`c(sysdir_site)'/01_raw/ENIGH/`anioenigh'/clave_iva_auditada.dta", ///
+				nogen keepus(descripcion `claveiva' clase_de_actividad*) keep(matched master)
+		}
+		else {
+			merge m:1 (clave) using "`c(sysdir_site)'/01_raw/ENIGH/`anioenigh'/clave_iva.dta", ///
+				nogen keepus(descripcion `claveiva' clase_de_actividad*) keep(matched master)
+		}
 		encode iva201, gen(tiva)
 		compress
 		save "`c(sysdir_site)'/03_temp/`anioenigh'/pre_iva.dta", replace
@@ -773,7 +782,7 @@ foreach categ in categ categ_iva categ_ieps {
 				* Perfil original *
 				g o`vars'pc_`k' = `vars'pc_`k'
 				label var o`vars'pc_`k' "`label' (original)"
-				if "`nohouseholds'" == "" & "$nographs" != "nographs" {
+				if "`nohouseholds'" == "" | "$nographs" != "nographs" {
 					//noisily Perfiles ``vars'pc_`k'' [fw=factor] ///
 					//	if ``vars'pc_`k'' != 0 & hogar_outlier == . & ind_outlier == ., ///
 					//	aniope(`anioenigh')
@@ -785,7 +794,7 @@ foreach categ in categ categ_iva categ_ieps {
 
 				* Iteraciones *
 				noisily di in y "`k': " _cont
-				local salto = 1
+				local salto = 3
 				forvalues iter=1(1)25 {
 					noisily di in w "`iter' " _cont
 					forvalues edades=0(`salto')109 {
@@ -813,7 +822,7 @@ foreach categ in categ categ_iva categ_ieps {
 				replace `vars'pc_`k' = `vars'pc_`k' + `vars'ind`k'
 				*noisily tabstat `vars'pc_`k' `vars'hog`k' `vars'ind`k' [fw=factor], stat(sum) f(%20.0fc)
 
-				if "`nohouseholds'" == "" & "$nographs" != "nographs" {
+				if "`nohouseholds'" == "" | "$nographs" != "nographs" {
 					//noisily Perfiles `vars'pc_`k' [fw=factor] ///
 					//	if `vars'pc_`k' != 0 & hogar_outlier == . & ind_outlier == ., ///
 					//	aniope(`anioenigh') ///

@@ -35,7 +35,7 @@ quietly {
 	**# 1. Sintaxis ***
 	*******************
 	syntax [if] [, ANIOvp(int `aniovp') NOGraphs UPDATE ///
-		GEOPIB(int -1) GEODEF(int -1) DIScount(real 5) ANIOMAX(int `=`aniovp'+15') ///
+		GEOPIB(int -1) GEODEF(int -1) DIScount(real 5) ANIOMAX(int `=`aniovp'+5') ///
 		NOOutput TEXTbook]
 
 	** 1.1 Si la opción "update" es llamada, se ejecuta el do-file UpdatePIBDeflactor.do **
@@ -423,7 +423,13 @@ quietly {
 		capture mkdir "`c(sysdir_site)'/users/"
 		capture mkdir "`c(sysdir_site)'/users/$id/"
 		capture mkdir "`c(sysdir_site)'/users/$id/graphs/"
-		graph export "`c(sysdir_site)'/users/$id/graphs/Productividad`aniofinal'.png", replace name(Productividad`aniofinal')
+		
+		if "$export" != "" {
+			graph export "$export/Productividad`aniofinal'.png", replace name(Productividad`aniofinal')
+		}
+		else {
+			graph export "`c(sysdir_site)'/users/$id/graphs/Productividad`aniofinal'.png", replace name(Productividad`aniofinal')
+		}
 
 		** 7.2 Gráficas finales **/
 		if "`if'" != "" {
@@ -504,16 +510,21 @@ quietly {
 			/// Added text
 			text(0 `=`aniofinal'-1.5' "{bf:Índice `aniovp' = 1.0}", ///
 				yaxis(2) size(medsmall) place(11) justification(right) bcolor(white) box) ///
-			text(0 `=`aniofinal'+1.5' "{bf:$paqueteEconomico}", ///
+			text(0 `=`aniofinal'+2.5' "{bf:$paqueteEconomico}", ///
 				yaxis(2) size(medsmall) place(12) justification(left) bcolor(white) box) ///
-			text(0 `=`aniofinal'+`exo_def'+1.5' "{bf:  Proyección}", ///
+			text(0 `=`aniofinal'+`exo_def'+2.5' "{bf:  Proyección}", ///
 				yaxis(2) size(medsmall) place(12) justification(left) bcolor(white) box) ///
 			yline(`deflactorProm', axis(1)) ///
 			text(`deflactorProm' `=`geodef'' "{bf:Crec. prom.}" ///
 				`"{bf:`geodef'-`aniofinal': `=string(`deflactorProm',"%5.1fc")'%}"', ///
 				justification(left) place(5) color("111 111 111") size(medlarge))
 
-		graph export "`c(sysdir_site)'/users/$id/graphs/deflactor.png", replace name(deflactor)
+		if "$export" != "" {
+			graph export "$export/deflactor.png", replace name(deflactor)
+		}
+		else {
+			graph export "`c(sysdir_site)'/users/$id/graphs/deflactor.png", replace name(deflactor)
+		}
 
 
 
@@ -576,7 +587,7 @@ quietly {
 				| (anio == `aniofinal' & trimestre == 4), ///
 				yaxis(1) mlabel(var_pibY) mlabpos(12) mlabcolor("111 111 111") ///
 				mstyle(p1) lstyle(p1) lpattern(dot) msize(small) mlabsize(medium)) ///
-			(connected var_pibY anio if anio < `aniofinal'+`exo_def'-1 & anio > `aniofinal' ///
+			(connected var_pibY anio if anio <= `aniofinal'+`exo_def'-1 & anio > `aniofinal' ///
 				| (anio == `aniofinal' & trimestre < 4), ///
 				yaxis(1) mlabel(var_pibY) mlabpos(12) mlabcolor("111 111 111") ///
 				mstyle(p2) lstyle(p2) lpattern(dot) msize(small) mlabsize(medium)) ///
@@ -601,15 +612,20 @@ quietly {
 			yline(`crecimientoProm', axis(1)) ///
 			text(0 `=`aniofinal'-1.5' "{bf:billones MXN `aniovp'}", ///
 				yaxis(2) size(medsmall) place(11) justification(right) bcolor(white) box) ///
-			text(0 `=`aniofinal'+1.5' "{bf:$paqueteEconomico}",  ///
+			text(0 `=`aniofinal'+2.5' "{bf:$paqueteEconomico}",  ///
 				yaxis(2) size(medsmall) place(12) justification(left) bcolor(white) box) ///
-			text(0 `=`aniofinal'+`exo_def'+1.5' "{bf:  Proyección}", ///
+			text(0 `=`aniofinal'+`exo_def'+2.5' "{bf:  Proyección}", ///
 				yaxis(2) size(medsmall) place(12) justification(left) bcolor(white) box) ///
 			text(`=`crecimientoProm'-.75' `=`geopib'' "{bf:Crec. prom.}" ///
 				`"{bf:`geopib'-`aniofinal': `=string(`crecimientoProm',"%5.1fc")'%}"', ///
 				justification(left) place(5) color("111 111 111") size(medlarge)) ///
 
-		graph export "`c(sysdir_site)'/users/$id/graphs/pib.png", replace name(pib)
+		if "$export" != "" {
+			graph export "$export/pib.png", replace name(pib)
+		}
+		else {
+			graph export "`c(sysdir_site)'/users/$id/graphs/pib.png", replace name(pib)
+		}
 
 
 
@@ -680,7 +696,7 @@ quietly {
 				| (anio == `aniofinal' & trimestre == 4), ///
 				yaxis(1) mlabel(var_pibPob) mlabpos(12) mlabcolor("111 111 111") ///
 				mstyle(p1) lstyle(p1) lpattern(dot) msize(small) mlabsize(medsmall)) ///
-			(connected var_pibPob anio if anio <= `aniofinal'+`exo_count'-1 & anio >= `aniofinal' ///
+			(connected var_pibPob anio if anio <= `aniofinal'+`exo_count'-1 & anio > `aniofinal' ///
 				| (anio == `aniofinal' & trimestre < 4), ///
 				yaxis(1) mlabel(var_pibPob) mlabpos(12) mlabcolor("111 111 111") ///
 				mstyle(p2) lstyle(p2) lpattern(dot) msize(small) mlabsize(medsmall)) ///
@@ -705,11 +721,16 @@ quietly {
 			/// Added text
 			yline(`crecimientoProm', axis(1)) ///
 			text(0 `=`aniofinal'-1.5' "{bf:miles MXN `aniovp' per cápita}", yaxis(2) size(medsmall) place(11) justification(right) bcolor(white) box) ///
-			text(0 `=`aniofinal'+1.5' "{bf:$paqueteEconomico}",  yaxis(2) size(medsmall) place(12) justification(left) bcolor(white) box) ///
-			text(0 `=`aniofinal'+`exo_def'+1.5' "{bf:  Proyección}", yaxis(2) size(medsmall) place(12) justification(left) bcolor(white) box) ///
+			text(0 `=`aniofinal'+2.5' "{bf:$paqueteEconomico}",  yaxis(2) size(medsmall) place(12) justification(left) bcolor(white) box) ///
+			text(0 `=`aniofinal'+`exo_def'+2.5' "{bf:  Proyección}", yaxis(2) size(medsmall) place(12) justification(left) bcolor(white) box) ///
 			text(`=`crecimientoPobProm'-6' `=`geopib'' "{bf:Crec. prom.}" "{bf:`geopib'-`aniofinal': `=string(`crecimientoPobProm',"%5.1fc")'%}", justification(left) place(5) color("111 111 111") size(medlarge)) ///
 
-		graph export "`c(sysdir_site)'/users/$id/graphs/pib_pc.png", replace name(pib_pc)
+		if "$export" != "" {
+			graph export "$export/pib_pc.png", replace name(pib_pc)
+		}
+		else {
+			graph export "`c(sysdir_site)'/users/$id/graphs/pib_pc.png", replace name(pib_pc)
+		}
 
 
 
@@ -778,10 +799,10 @@ quietly {
 				mlabgap(0pt) barwidth(.75) mlabsize(medium)) ///
 			/// Connected
 			(connected var_inflY anio if (anio < `aniofinal' & anio >= `geodef') ///
-				| (anio == `aniofinal' & trimestre == 12), ///
+				| (anio == `aniofinal' & trimestre == 4), ///
 				yaxis(1) mlabel(var_inflY) mlabpos(12) mlabcolor("111 111 111") ///
 				mstyle(p1) lstyle(p1) lpattern(dot) msize(small) mlabsize(medium)) ///
-			(connected var_inflY anio if anio <= `aniofinal'+`exo_def'-1 & anio >= `aniofinal' ///
+			(connected var_inflY anio if anio <= `aniofinal'+`exo_def'-1 & anio > `aniofinal' ///
 				| (anio == `aniofinal' & trimestre < 4), ///
 				yaxis(1) mlabel(var_inflY) mlabpos(12) mlabcolor("111 111 111") ///
 				mstyle(p2) lstyle(p2) lpattern(dot) msize(small) mlabsize(medium)) ///
@@ -805,14 +826,19 @@ quietly {
 			/// Added text
 			text(0 `=`aniofinal'-1.5' "{bf:Índice `aniovp' = 1.0}", ///
 				yaxis(2) size(medsmall) place(11) justification(right) bcolor(white) box) ///
-			text(0 `=`aniofinal'+1.5' "{bf:$paqueteEconomico}",  ///
+			text(0 `=`aniofinal'+2.5' "{bf:$paqueteEconomico}",  ///
 				yaxis(2) size(medsmall) place(12) justification(left) bcolor(white) box) ///
-			text(0 `=`aniofinal'+`exo_def'+1.5' "{bf:  Proyección}", ///
+			text(0 `=`aniofinal'+`exo_def'+2.5' "{bf:  Proyección}", ///
 				yaxis(2) size(medsmall) place(12) justification(left) bcolor(white) box) ///
 			yline(`inflacionProm', axis(1)) ///
 			text(`=`inflacionProm'-.75' `=`geodef'' "{bf:Crec. prom.}" `"{bf:`geodef'-`aniofinal': `=string(`inflacionProm',"%5.1fc")'%}"', justification(left) place(5) color("111 111 111") size(medlarge))
 
-		graph export "`c(sysdir_site)'/users/$id/graphs/inflacion.png", replace name(inflacion)
+		if "$export" != "" {
+			graph export "$export/inflacion.png", replace name(inflacion)
+		}
+		else {
+			graph export "`c(sysdir_site)'/users/$id/graphs/inflacion.png", replace name(inflacion)
+		}
 	}
 	return local except "`except'"
 	return local exceptI "`exceptI'"

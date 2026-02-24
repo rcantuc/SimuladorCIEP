@@ -627,7 +627,7 @@ program poblaciongini
 	replace `grupo' = 3 if decil == 10
 
 	tempname grupoval
-	label define `grupoval' 1 `"{bf:Deciles I-V}: `=string(`gdeclab1'+`gdeclab2'+`gdeclab3'+`gdeclab4'+`gdeclab5',"%7.0fc")'%"' ///
+	label define `grupoval' 1 `"{bf:I-V}: `=string(`gdeclab1'+`gdeclab2'+`gdeclab3'+`gdeclab4'+`gdeclab5',"%7.0fc")'%"' ///
 		2 `"{bf:VI-IX}: `=string(`gdeclab6'+`gdeclab7'+`gdeclab8'+`gdeclab9',"%7.0fc")'%"' ///
 		3 `"{bf:X}: `=string(`gdeclab10',"%7.0fc")'%"'
 	label values `grupo' `grupoval'
@@ -1011,6 +1011,10 @@ program define ProyGraph
 				title("{bf:`title'}") subtitle("$pais") ///
 				///caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.") ///
 				name(`varlist'Proj, replace)
+
+			if "$export" != "" {
+				graph export "$export/`varlist'Proj.png", replace name(`varlist'Proj)
+			}
 		}
 	}
 
