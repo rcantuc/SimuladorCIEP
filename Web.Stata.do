@@ -64,8 +64,8 @@ global def2029 = {{CRECDEF2029}}
 global def2030 = {{CRECDEF2030}}
 global def2031 = {{CRECDEF2031}}
 
-global inf2025 = 3.5								// CRECIMIENTO ANUAL INFLACIÓN
-global inf2026 = 3.0								// <-- AGREGAR O QUITAR AÑOS
+global inf2025 = 4.2								// CRECIMIENTO ANUAL INFLACIÓN
+global inf2026 = 3.54								// <-- AGREGAR O QUITAR AÑOS
 global inf2027 = 3.0
 global inf2028 = 3.0
 global inf2029 = 3.0
@@ -238,7 +238,7 @@ noisily TasasEfectivas, anio(`=anioPE') enigh
 
 **/
 ** 3.2 Presupuesto de Egresos de la Federación **
-**
+/**
 set scheme ciep	
 noisily PEF if ramo != -1, anio(`=anioPE') by(divSIM) $update 		///
 	title(" ") 						/// Cambiar título
@@ -246,7 +246,7 @@ noisily PEF if ramo != -1, anio(`=anioPE') by(divSIM) $update 		///
 	min(0) 												/// Mínimo 0% del PIB (resumido)
 	rows(2)												// Número de filas en la leyenda
 
-** 3.2.1 Parámetros: Gasto **
+** 3.2.1 Parámetros: Gasto **/
 scalar iniciaA     = {{iniciaA}} 				//    Inicial
 scalar basica      = {{basica}} 				//    Educación b{c a'}sica
 scalar medsup      = {{medsup}} 				//    Educación media superior
@@ -333,8 +333,8 @@ matrix ingresos = (21.9,  22.5,  22.4,  22.4,  22.4,  22.4,  22.4)
 *                     2025, 2026, 2027, 2028, 2029, 2030, 2031
 matrix egresos = (25.5,  26.1,  25.4,  24.9,  24.9,  24.9,  24.9)
 
-forvalues k = 2025(1)2031 {
-	local j = `k' - 2025 + 1
+forvalues k = 2026(1)2031 {
+	local j = `k' - 2026 + 1
 	global shrfsp`k' = shrfsp[1,`j']
 	global shrfspInterno`k' = shrfspInterno[1,`j']
 	global shrfspExterno`k' = shrfspExterno[1,`j']
