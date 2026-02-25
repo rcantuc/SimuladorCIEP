@@ -16,9 +16,9 @@ set scheme ciep
 ***
 
 ** 0.1 Directorio de archivos .ado (Github)
-*sysdir set SITE "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP"
-*global export "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/TextbookCIEP/images"
-*cd "`c(sysdir_site)'"
+sysdir set SITE "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP"
+global export "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/TextbookCIEP/images"
+cd "`c(sysdir_site)'"
 
 ** 0.2 Parámetros
 global id = "ciepmx"								// ID USUARIO
@@ -34,7 +34,7 @@ capture mkdir "`c(sysdir_site)'/users/$id"
 //global nographs "nographs"							// SUPRIMIR GRAFICAS
 //global update "update"							// UPDATE BASES DE DATOS
 //global textbook "textbook"							// SCALAR TO LATEX
-//global output "output"							// ARCHIVO DE SALIDA (WEB)
+global output "output"							// ARCHIVO DE SALIDA (WEB)
 
 ** 0.5 Ejecución de opciones **
 if "$output" != "" {
@@ -49,7 +49,7 @@ if "$update" == "update" {
 
 ***
 **# 1. DEMOGRAFÍA
-***
+/***
 noisily Poblacion, anioi(`=aniovp') aniofinal(2050) $textbook $nographs
 
 
@@ -86,7 +86,7 @@ global inf2029 = 3.0
 global inf2030 = 3.0
 global inf2031 = 3.0
 
-** 2.4 PIB + Deflactores
+/** 2.4 PIB + Deflactores
 noisily PIBDeflactor if anio >= 2005, aniovp(`=aniovp') aniomax(2031) $textbook $nographs $update
 
 ** 2.5 Sistema de Cuentas Nacionales (sin inputs)
@@ -96,19 +96,19 @@ noisily SCN, anio(`=aniovp') $textbook $nographs $update
 
 **/
 **# 3. HOGARES: ARMONIZACIÓN MACRO-MICRO
-***
+/***
 
 ** 3.1 Encuesta Nacional de Ingresos y Gastos de los Hogares (Usos)
 noisily di _newline in g "Actualizando: " in y "expenditures.dta"
 noisily run "`c(sysdir_site)'/Expenditure.do" `=anioPE'
-ex
+
 ** 3.2 Encuesta Nacional de Ingresos y Gastos de los Hogares (Recursos)
 noisily di _newline in g "Actualizando: " in y "households.dta"
 noisily run `"`c(sysdir_site)'/Households.do"' `=anioPE'
 
 ** 3.3 Perfiles de la política económica actual (Paquete Económico)
 noisily di _newline in g "Actualizando: " in y "perfiles`anio'.dta"
-noisily run "`c(sysdir_site)'/PerfilesSim.do" `=anioPE'
+*noisily run "`c(sysdir_site)'/PerfilesSim.do" `=anioPE'
 
 
 
@@ -243,7 +243,7 @@ matrix IVAT = (16 \     ///  1  Tasa general
 	3  \     							/// 10  Otros, idem
 	2  \     							/// 11  Transporte local, idem
 	3  \     							/// 12  Transporte foraneo, idem
-	19.2)   							//  13  Evasion e informalidad IVA, input[0-100]
+	14.3)   							//  13  Evasion e informalidad IVA, input[0-100]
 
 
 ** 4.6 Parámetros: IEPS **
@@ -449,17 +449,17 @@ if "$textbook" == "" {
 	label var Transferencias "Transferencias públicas"
 	label var AportacionesNetas "Ciclo de vida de las aportaciones netas"
 }
-foreach k of varlist AlTrabajo AlCapital AlConsumo ///
+foreach k of varlist /*AlTrabajo AlCapital AlConsumo ///
 	ISRPM ISRAS ISRPF CUOTAS IVA IEPSNP IEPSP ISAN IMPORT ///
 	Pensiones IngBasico Educacion Salud OtrosGastos Energia ///
-	ImpuestosAportaciones Transferencias AportacionesNetas {
+	ImpuestosAportaciones Transferencias*/ AportacionesNetas {
 	*noisily Perfiles `k' if `k' != 0 [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
 	noisily Simulador `k' if `k' != 0 [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot title("") //boot(10)
 }
 save `"`c(sysdir_site)'/users/$id/aportaciones.dta"', replace
 
 if "$textbook" == "textbook" {
-	noisily scalarlatex, log(perfiles) alt(perf)
+	*noisily scalarlatex, log(perfiles) alt(perf)
 }
 
 
@@ -467,11 +467,11 @@ if "$textbook" == "textbook" {
 **/
 *** 8. (*) Cuentas generacionales
 ***
-*noisily CuentasGeneracionales AportacionesNetas, anio(`=anioPE') discount(7)
+noisily CuentasGeneracionales AportacionesNetas, anio(`=anioPE') discount(8)
 
 ** 8.1 Brecha fiscal
 set scheme ciepdeuda2
-noisily FiscalGap, anio(`=anioPE') end(`=anioPE+5') aniomin(2013) $nographs desde(2021) discount(10)
+noisily FiscalGap, anio(`=anioPE') end(`=anioPE+5') aniomin(2013) $nographs desde(2020) discount(8)
 
 ** 8.2 Sankey del sistema fiscal
 foreach k in decil grupoedad sexo rural escol {
