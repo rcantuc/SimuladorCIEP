@@ -81,7 +81,7 @@ global inf2031 = 3.0
 ** 3.1 Ley de Ingresos de la Federación
 noisily LIF if divLIF != 10, anio(`=anioPE') by(divSIM) $update 		///
 	title("Ingresos presupuestarios") 					/// Cambiar título
-	desde(2021) 							/// Año de inicio PROMEDIO
+	desde(2013) 							/// Año de inicio PROMEDIO
 	min(0) 									/// Mínimo 0% del PIB (no negativo)
 	rows(1)									//  Número de filas en la leyenda
 rename divSIM divCODE
@@ -239,6 +239,12 @@ noisily TasasEfectivas, anio(`=anioPE') enigh
 **/
 ** 3.2 Presupuesto de Egresos de la Federación **
 **
+set scheme ciep	
+noisily PEF if ramo != -1, anio(`=anioPE') by(divSIM) $update 		///
+	title(" ") 						/// Cambiar título
+	desde(2013) 										/// Año de inicio PROMEDIO
+	min(0) 												/// Mínimo 0% del PIB (resumido)
+	rows(2)												// Número de filas en la leyenda
 
 ** 3.2.1 Parámetros: Gasto **
 scalar iniciaA     = {{iniciaA}} 				//    Inicial
@@ -300,8 +306,8 @@ noisily GastoPC educacion salud pensiones energia resto transferencias, aniope(`
 
 * SHRFSP: Total, Interno, Externo (como % del PIB)
 *                	2025  2026  2027  2028  2029  2030  2031
-matrix shrfsp = 	(52.3, 52.3, 52.3, 52.3, 52.3, 52.3, 52.3)
-matrix shrfspInterno = 	(40.2, 41.3, 42.1, 42.5, 42.8, 43.2, 43.5)
+matrix shrfsp = 	(52.6, 52.6, 52.6, 52.6, 52.6, 52.6, 52.6)
+matrix shrfspInterno = 	(40.5, 41.5, 42.4, 42.5, 43.1, 43.5, 43.8)
 matrix shrfspExterno = 	(12.1, 11.0, 10.2, 9.8, 9.5, 9.1, 8.8)
 * SHRFSP:      Total, PIDIREGAS, IPAB, FONADIN, Deudores, Banca, Adecuaciones, Balance (como % del PIB)
 matrix rfsp =  (4.3, 0.15, 0.15, 0.00, 0.00, 0.00, 0.40, 3.6 \ 		/// 2025
@@ -394,7 +400,7 @@ save `"`c(sysdir_site)'/users/$id/aportaciones.dta"', replace
 ***
 
 ** 7.1 Brecha fiscal
-noisily FiscalGap, anio(`=anioPE') end(2030) aniomin(2015) $nographs desde(2021) discount(10) //update
+noisily FiscalGap, anio(`=anioPE') end(2031) aniomin(2013) $nographs desde(2020) discount(8) //update
 
 
 ** 7.2 Sankey del sistema fiscal

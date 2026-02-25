@@ -268,7 +268,7 @@ quietly {
 	** 4.6 Al infinito **
 	collapse (sum) recaudacion* estimacionRecaudacion* (last) pibY deflator, by(anio) fast
 
-	/* Calcular tasa de crecimiento de largo plazo (robusto) *
+	* Calcular tasa de crecimiento de largo plazo (robusto) *
 	count if anio >= `anio'
 	local obs_futuras = r(N)
 	local periodo_LR = min(10, `obs_futuras'-1)
@@ -308,7 +308,7 @@ quietly {
 	noisily di in g "      (*) Ingresos VP:" in y _col(35) %25.0fc `estimacionVP'[1,1] in g " `currency'"
 	noisily di in g "      (*) Growth rate LP:" in y _col(35) %25.4fc `grow_rate_LR' in g " %"
 
-	* Save */
+	* Save *
 	tempfile baseingresos
 	save `baseingresos'
 
@@ -391,10 +391,10 @@ quietly {
 				if anio >= `anio'
 			
 			* Para años donde no hay datos de contribuyentes, usar método original *
-			replace estimacion = `estimacion'/L.`estimacion' * 		/// Cambio demográfico
-				`HH`=strtoname("`k'")''[1,1] * 				/// Gasto total del año base (GastoPC.ado)
-				(1+`tendencia_pc'/100)^(anio-`anio') 			/// Tendencia per cápita
-				if anio >= `anio'
+			*replace estimacion = `estimacion'/L.`estimacion' * 		/// Cambio demográfico
+			*	`HH`=strtoname("`k'")''[1,1] * 				/// Gasto total del año base (GastoPC.ado)
+			*	(1+`tendencia_pc'/100)^(anio-`anio') 			/// Tendencia per cápita
+			*	if anio >= `anio'
 
 			g divCIEP = `"`=strtoname("`k'")'"'
 
@@ -584,11 +584,11 @@ quietly {
 
 
 	**********************/
-	** 5.3 Tipo de cambio *
+	** 5.7 Tipo de cambio *
 	g depreciacion = tipoDeCambio-L.tipoDeCambio
 
 	* Reemplazar depreciacion por el último valor observado para los años futuros *
-	tabstat depreciacion if anio >= 2009, stat(mean) f(%20.3fc) save
+	tabstat depreciacion if anio >= `anio'-5 & anio <= `anio', stat(mean) f(%20.3fc) save
 	replace depreciacion = r(StatTotal)[1,1] if depreciacion == .
 
 	* SHRFSP externo en USD *
@@ -607,7 +607,7 @@ quietly {
 
 
 	*********************************
-	** 5.4 Saldo final de la deuda **
+	** 5.8 Saldo final de la deuda **
 	forvalues k=`=_N'(-1)1 {
 		if shrfsp[`k'] != . & "`lastfound'" != "yes" {
 			local obslast = `k'
@@ -626,7 +626,13 @@ quietly {
 	local shrfspobslast = shrfsp[`obslast']/pibY[`obslast']*100
 
 	* Actualizacion de los saldos *
-	local actualizacion_geo = (((shrfsp[`obslast']-shrfsp[`obsfirs'])/(`ACT'[1,1]+`ACT'[1,2]))^(1/(`obslast'-`obsfirs'))-1)*100
+	if (`ACT'[1,1]+`ACT'[1,2]) != 0 {
+		local actualizacion_geo = (((shrfsp[`obslast']-shrfsp[`obsfirs'])/(`ACT'[1,1]+`ACT'[1,2]))^(1/(`obslast'-`obsfirs'))-1)*100
+	}
+	else {
+		local actualizacion_geo = 0
+		noisily di in r "      {bf:WARNING}: Denominador cero en actualización geométrica. Usando 0%."
+	}
 	g actualizacion = `actualizacion_geo'
 
 	* Otros rfsp (% del PIB) *
@@ -637,7 +643,7 @@ quietly {
 
 
 	**********************************************************
-	** 5.5 Iteraciones para el costo financiero de la deuda **
+	** 5.9 Iteraciones para el costo financiero de la deuda **
 	forvalues k = `=`anio''(1)`=anio[_N]' {
 
 		* Costo de la deuda *
@@ -675,7 +681,7 @@ quietly {
 
 
 	****************
-	** 5.6 Graphs **
+	** 5.10 Graphs **
 	if "`nographs'" != "nographs" & "$nographs" != "nographs" {
 		twoway (bar rfsp_pib anio if anio < `anio' & anio >= `desde', barwidth(.75)) ///
 			(bar rfsp_pib anio if anio >= `anio' & anio <= `end', barwidth(.75) ///
@@ -748,7 +754,7 @@ quietly {
 
 
 	*****************
-	** 5.7 Outputs **
+	** 5.11 Outputs **
 	if "$output" != "" {
 		forvalues k=1(1)`=_N' {
 			if anio[`k'] < `anio' & anio[`k'] >= 2013 {
@@ -766,7 +772,7 @@ quietly {
 
 
 	*********************
-	/** 5.8 Al infinito **
+	** 5.12 Al infinito **
 	*drop estimaciongasto
 	*reshape long gasto estimacion, i(anio) j(modulo) string
 	*collapse (sum) gasto estimacion (mean) pibY deflator shrfsp* rfsp Poblacion if modulo != "ingresos" & modulo != "VP" & anio <= `end', by(anio) fast
@@ -809,14 +815,14 @@ quietly {
 	noisily di in g "      (*) Gasto VP:" in y _col(35) %25.0fc `gastoVP'[1,1] in g " `currency'"
 	noisily di in g "      (*) Growth rate LP:" in y _col(35) %25.4fc `grow_rate_LR' in g " %"
 
-	* Save */
+	* Save *
 	*rename estimacion estimaciongastos
 	tempfile basegastos
 	save `basegastos'
 
 
 	* Saldo de la deuda *
-	tabstat shrfsp deflator if anio == `anio', stat(sum) f(%20.0fc) save
+	noisily tabstat shrfsp deflator if anio == `anio', stat(sum) f(%20.0fc) save
 	tempname shrfsp
 	matrix `shrfsp' = r(StatTotal)
 
@@ -826,7 +832,7 @@ quietly {
 	***                       ***
 	**# 7 Fiscal Gap: Balance ***
 	***                       ***
-	/****************************
+	****************************
 	noisily di in g "  " _dup(61) "-"
 	noisily di in g "  (=) Balance futuro en VP:" ///
 		in y _col(35) %25.0fc `estimacionINF'+`estimacionVP'[1,1] - `gastoINF'-`gastoVP'[1,1] ///
@@ -863,7 +869,7 @@ quietly {
 
 
 	****************************************/
-	*** 5 Fiscal Gap: Cuenta Generacional ***
+	*** 6 Fiscal Gap: Cuenta Generacional ***
 	*****************************************
 	tabstat Poblacion0 Poblacion if (anio == `anio' | anio == `end'), stat(sum) save f(%20.0fc) by(anio)
 	tempname poblacionACT poblacionEND
@@ -910,12 +916,17 @@ quietly {
 	*noisily di in g "  " _dup(61) "-"
 	noisily di in g "  (*) Deuda generaciones " in y "`anio'" in g ":" in y _col(35) %25.0fc (`shrfsp'[1,1]/`shrfsp'[1,2])/(`poblacionACT'[1,2]) in g " `currency' por persona"
 	noisily di in g "  (*) Deuda generaciones " in y "`end'" in g ":" in y _col(35) %25.0fc (shrfsp[_N]/deflator[_N])/(`poblacionEND'[1,2]) in g " `currency' por persona"
+	local deudagenlast = (shrfsp[_N]/deflator[_N])/(`poblacionEND'[1,2])
 
 	* Inequidad intergeneracional *
 	noisily di in g "  " _dup(61) "-"
-	*noisily di in g "  (*) Deuda generaci{c o'}n futura:" ///
+	noisily di in g "  (*) Deuda generaci{c o'}n futura:" ///
 		in y _col(35) %25.0fc -(-`shrfsp'[1,1] + `estimacionINF' + `estimacionVP'[1,1] - `gastoINF' - `gastoVP'[1,1])/(`poblacionVP'[1,1]+`poblacionINF') ///
 		in g " `currency' por persona"
+	local deudageninf = -(-`shrfsp'[1,1] + `estimacionINF' + `estimacionVP'[1,1] - `gastoINF' - `gastoVP'[1,1])/(`poblacionVP'[1,1]+`poblacionINF')
+	noisily di in g "  (*) Inequidad intergeneracional:" ///
+		in y _col(35) %25.0fc (`deudageninf'/`deudagenlast'-1)*100 ///
+		in g " %"
 	capture confirm matrix GA
 	if _rc == 0 {
 		noisily di in g "  (*) Inequidad GA:" ///
