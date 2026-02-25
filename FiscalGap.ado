@@ -561,15 +561,10 @@ quietly {
 	if _rc == 0 {
 		replace estimacionCosto_de_la_deuda = scalar(gascosto)*Poblacion if anio == `anio'
 		replace gastoCosto_de_la_deuda = estimacionCosto_de_la_deuda if anio == `anio'
-		*replace estimacionGasto_pib = estimacionGasto_pib/pibY*100 if anio == `anio'
 
 		* Reestimar la tasa efectiva para el año `anio' *
-		replace tasaEfectiva = L.tasaEfectiva if anio >= `anio'
-		format %20.0fc *Costo_de_la_deuda
-	}
-	else {
-		*scalar gascosto = r(StatTotal)[1,1]/r(StatTotal)[1,2]*8539/9234
-		*scalar gascostoPIB = r(StatTotal)[1,1]/r(StatTotal)[1,3]*100*3.329/3.600
+		replace tasaEfectiva = scalar(tasaEfectiva) if anio >= `anio'
+		replace gastoCosto_de_la_deuda = tasaEfectiva/100*L.shrfsp if anio >= `anio'
 	}
 
 	* Reemplazar tasasEfectivas con el escalar tasasEfectiva *
@@ -581,6 +576,7 @@ quietly {
 	else {
 		scalar tasaEfectiva = `tasaEfectiva'		
 	}
+	format %20.0fc *Costo_de_la_deuda
 
 
 	**********************/

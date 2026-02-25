@@ -33,8 +33,8 @@ capture mkdir "`c(sysdir_site)'/users/$id"
 ** 0.4 Opciones (descomentar para activar)
 //global nographs "nographs"							// SUPRIMIR GRAFICAS
 //global update "update"							// UPDATE BASES DE DATOS
-//global textbook "textbook"							// SCALAR TO LATEX
-global output "output"							// ARCHIVO DE SALIDA (WEB)
+global textbook "textbook"							// SCALAR TO LATEX
+//global output "output"							// ARCHIVO DE SALIDA (WEB)
 
 ** 0.5 Ejecución de opciones **
 if "$output" != "" {
@@ -61,12 +61,12 @@ global paqueteEconomico "CGPE 2026"						// POLÍTICA FISCAL
 
 ** 2.1 Producto Interno Bruto (inputs opcionales)
 global pib2025 = 1.3								// CRECIMIENTO ANUAL PIB
-global pib2026 = 2.262								// <-- AGREGAR O QUITAR AÑOS
-global pib2027 = 2.0898
-global pib2028 = 2.0548
-global pib2029 = 2.015
-global pib2030 = 2.0137
-global pib2031 = 2.0366
+global pib2026 = 2.3								// <-- AGREGAR O QUITAR AÑOS
+global pib2027 = 2.1
+global pib2028 = 2.1
+global pib2029 = 2.0
+global pib2030 = 2.0
+global pib2031 = 2.0
 
 ** 2.2 Deflactor (inputs opcionales)
 global def2025 = 5.2								// CRECIMIENTO ANUAL PRECIOS IMPLÍCITOS
@@ -118,7 +118,7 @@ noisily di _newline in g "Actualizando: " in y "perfiles`anio'.dta"
 set scheme ciepingresos
 noisily LIF if divLIF != 10, anio(`=anioPE') by(divSIM) $update $nographs `eofp'		///
 	title("Ingresos presupuestarios") 					/// Cambiar título de la gráfica
-	desde(2008) 								/// Año de inicio para el PROMEDIO
+	desde(2013) 								/// Año de inicio para el PROMEDIO
 	min(0)		 							/// Mínimo 0% del PIB (no negativos)
 	rows(1)									//  Número de filas en la leyenda
 rename divSIM divCODE
@@ -127,7 +127,7 @@ collapse (sum) recaudacion, by(anio divSIM) fast
 save `"`c(sysdir_site)'/users/$id/LIF.dta"', replace	
 
 * Evolución de las tasas efectivas *
-do "`c(sysdir_site)'/Graphs_TE.do"
+*do "`c(sysdir_site)'/Graphs_TE.do"
 
 
 ** 4.1 Parámetros: Ingresos **
@@ -376,7 +376,7 @@ matrix ingresos = (21.9,  22.5,  22.4,  22.4,  22.4,  22.4,  22.4)
 matrix egresos = (25.5,  26.1,  25.4,  24.9,  24.9,  24.9,  24.9)
 
 forvalues k = 2026(1)2031 {
-	local j = `k' - 2025 + 1
+	local j = `k' - 2026 + 1
 	global shrfsp`k' = shrfsp[1,`j']
 	global shrfspInterno`k' = shrfspInterno[1,`j']
 	global shrfspExterno`k' = shrfspExterno[1,`j']
@@ -397,8 +397,8 @@ forvalues k = 2026(1)2031 {
 
 * SHRFSP: comando *
 set scheme ciepdeuda
-*scalar tasaEfectiva = 6.2967
-noisily SHRFSP, anio(`=anioPE') ultanio(2002) $nographs $update $textbook
+scalar tasaEfectiva = 6.919
+//noisily SHRFSP, anio(`=anioPE') ultanio(2002) $nographs $update $textbook
 
 
 
@@ -467,7 +467,7 @@ if "$textbook" == "textbook" {
 **/
 *** 8. (*) Cuentas generacionales
 ***
-noisily CuentasGeneracionales AportacionesNetas, anio(`=anioPE') discount(8)
+*noisily CuentasGeneracionales AportacionesNetas, anio(`=anioPE') discount(8)
 
 ** 8.1 Brecha fiscal
 set scheme ciepdeuda2
