@@ -16,8 +16,9 @@ set scheme ciep
 ***
 
 ** 0.1 Directorio de archivos .ado (Github)
-sysdir set SITE "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP"
-global export "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/TextbookCIEP/images"
+if "`c(username)'" == "ricardo" & "`1'" != "ricardo" {
+	sysdir set SITE "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP"
+}
 cd "`c(sysdir_site)'"
 
 ** 0.2 Parámetros
@@ -33,7 +34,7 @@ capture mkdir "`c(sysdir_site)'/users/$id"
 ** 0.4 Opciones (descomentar para activar)
 //global nographs "nographs"							// SUPRIMIR GRAFICAS
 //global update "update"							// UPDATE BASES DE DATOS
-global textbook "textbook"							// SCALAR TO LATEX
+//global textbook "textbook"							// SCALAR TO LATEX
 //global output "output"							// ARCHIVO DE SALIDA (WEB)
 
 ** 0.5 Ejecución de opciones **
