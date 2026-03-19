@@ -102,7 +102,7 @@ quietly {
 
 		******************
 		** 1.2 Archivos **
-		capture mkdir `"`c(sysdir_site)'/05_graphs/"'
+		capture mkdir `"`c(sysdir_site)'/graphs/"'
 		capture mkdir `"`c(sysdir_site)'/users/$id/"'
 		capture mkdir `"`c(sysdir_site)'/users/$id/bootstraps/"'
 		capture mkdir `"`c(sysdir_site)'/users/$id/bootstraps/`bootstrap'"'
@@ -433,10 +433,10 @@ quietly {
 	}
 
 	if "$nographs" != "nographs" & "`nographs'" != "nographs" {
-		graph save PerfilH`varlist' `"`c(sysdir_site)'/05_graphs/PerfilH`varlist'"', replace
-		graph save PerfilM`varlist' `"`c(sysdir_site)'/05_graphs/PerfilM`varlist'"', replace
-		graph save ContH`varlist' `"`c(sysdir_site)'/05_graphs/ContH`varlist'"', replace
-		graph save ContH`varlist' `"`c(sysdir_site)'/05_graphs/ContH`varlist'"', replace
+		graph save PerfilH`varlist' `"`c(sysdir_site)'/graphs/PerfilH`varlist'"', replace
+		graph save PerfilM`varlist' `"`c(sysdir_site)'/graphs/PerfilM`varlist'"', replace
+		graph save ContH`varlist' `"`c(sysdir_site)'/graphs/ContH`varlist'"', replace
+		graph save ContH`varlist' `"`c(sysdir_site)'/graphs/ContH`varlist'"', replace
 	}
 
 

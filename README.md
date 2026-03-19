@@ -145,6 +145,71 @@ Como cualquier herramienta, el proceso de adaptación al Simulador tomará tiemp
 Si deseas que incluyamos nueva información económica, no dudes en enviarnos un correo a `ricardocantu@ciep.mx`. Estamos comprometidos en hacer este programa lo más robusto posible y estamos abiertos a todas tus sugerencias.
 
 
+---
+
+<h2 style="color: #ff7020;">Documentación Técnica</h2>
+
+### Archivos principales
+
+#### `simulador.stpr`
+Proyecto que concentra todos los do-files y ado-files del Simulador Fiscal CIEP.
+
+#### `SIM.do` 
+Plantilla maestra (template) para hacer simulaciones fiscales. Configura el entorno, define opciones globales, establece el directorio de trabajo basado en el usuario y ejecuta varios comandos de forma secuencial.
+
+#### `profile.do`
+Archivo de configuración inicial que se ejecuta automáticamente al iniciar Stata. Realiza las siguientes configuraciones:
+
+**1. Estilo CIEP**
+- `set scheme ciep`: Esquema de colores y estilos para gráficos estilo CIEP
+- `graph set window fontface "Ubuntu Light"`: Configura la fuente de las ventanas de gráficos
+- `set more off, permanently`: Desactiva la pausa en la visualización de resultados largos
+- `set type double, permanently`: Define el tipo de dato numérico predeterminado como `double`
+- `set charset latin1, permanently`: Establece el conjunto de caracteres para soportar español
+
+**2. Parámetros globales**
+- Define el año base para valores presentes (`aniovp`)
+- Establece el paquete económico (`anioPE`)
+- Determina el año ENIGH más reciente (`anioenigh`)
+- Lista de entidades federativas de México
+
+### Opciones globales
+
+- `id`: Variable global con el nombre de usuario actual
+- `export`: Directorio donde se guardan las imágenes generadas
+- `nographs`: Suprime la generación de gráficos
+- `textbook`: Cambia el formato de los gráficos a LaTeX
+- `output`: Determina si se generan salidas para la web
+- `update`: Determina si se actualizan las bases de datos (toma tiempo)
+
+### Estructura del flujo de trabajo
+
+**1. Marco Macro**
+- Población (CONAPO): Pirámide y transición demográfica
+- Economía (INEGI, BIE): PIB, deflactores, productividad laboral
+- Sistema Fiscal: Ingresos (LIF), Gastos (PEF), Deuda (SHRFSP)
+- Subnacionales: Datos de gobiernos estatales y municipales
+
+**2. Información de Hogares**
+- Procesamiento de ENIGH
+- Generación de `households.dta` y `expenditures.dta`
+- Integración macro-micro
+
+**3. Ciclo de Vida Fiscal**
+- Impuestos y aportaciones por hogar
+- Transferencias públicas
+- Aportaciones netas
+- Cuentas generacionales
+- Diagramas de Sankey por grupo demográfico
+
+### Cómo usar SIM.do
+
+1. Abre el archivo en Stata
+2. Modifica las opciones globales según tus necesidades
+3. Ejecuta el script completo o por secciones
+4. Los resultados se guardan en `users/$id/`
+
+Para más información técnica, consulta la carpeta `00_manuales/`.
 
 
 

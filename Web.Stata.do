@@ -79,11 +79,11 @@ global inf2031 = 3.0
 ***
 
 ** 3.1 Ley de Ingresos de la Federación
-noisily LIF if divLIF != 10, anio(`=anioPE') by(divSIM) $update 		///
+noisily LIF if divLIF != 10, anio(`=anioPE') by(divSIM) $update $nographs 		///
 	title("Ingresos presupuestarios") 					/// Cambiar título
-	desde(2013) 							/// Año de inicio PROMEDIO
+	desde(2016) 							/// Año de inicio PROMEDIO
 	min(0) 									/// Mínimo 0% del PIB (no negativo)
-	rows(1)									//  Número de filas en la leyenda
+	rows(2)									//  Número de filas en la leyenda
 rename divSIM divCODE
 decode divCODE, g(divSIM) 
 collapse (sum) recaudacion, by(anio divSIM) fast
@@ -112,8 +112,8 @@ scalar IMPORTPIB      = "{{INGRESOS11}}"			// Importaciones
 
 
 ** 3.1.2 Parámetros: ISR **
-* Anexo 8 de la Resolución Miscelánea Fiscal para 2024 *
-* Tarifa para el cálculo del impuesto correspondiente al ejericio 2024 a que se refieren los artículos 97 y 152 de la Ley del ISR
+* Anexo 8 de la Resolución Miscelánea Fiscal para 2025 *
+* Tarifa para el cálculo del impuesto correspondiente al ejericio 2025 a que se refieren los artículos 97 y 152 de la Ley del ISR
 * Tabla del subsidio para el empleo aplicable a la tarifa del numeral 5 del rubro B (página 773) *
 *             INFERIOR		SUPERIOR	CF		TASA
 matrix ISR =  (0.01,		8952.49,	0.0,		{{ISRTASA0}}	\    /// 1
@@ -139,7 +139,7 @@ matrix	SE =  (0.01,		1768.96*12,	{{SE0}}			\    /// 1
 	5335.42*12 +.01,	6224.67*12,	{{SE7}}		\    /// 8
 	6224.67*12 +.01,	7113.90*12,	{{SE8}}		\    /// 9
 	7113.90*12 +.01,	7382.33*12,	{{SE9}}		\    /// 10
-	7382.33*12 +.01,  	1E+12*12,	{{SE10}})	 /// 11
+	7382.33*12 +.01,  	1E+12,	{{SE10}})	 /// 11
 
 * Artículo 151, último párrafo (LISR) *
 *            Ex. SS.MM.	Ex. 	% ing. gravable		% Informalidad PF	% Informalidad Salarios
@@ -213,7 +213,7 @@ matrix IEPST = (26.5	,	0 		\			/// Cerveza y alcohol 14
 
 ** 3.1.6 Submódulo ISR (web) **/
 if "1" == "{{moduloCambio}}" {
-	noisily run "`c(sysdir_site)'/ISR_Mod.do"
+	noisily run "`c(sysdir_site)'/01_modulos/tax_models/ISR_Mod.do"
 	scalar ISRAS = ISR_AS_Mod/100*scalar(pibY)
 	scalar ISRASPIB  = "`=round(ISR_AS_Mod, 0.001)'"			// NUEVA ESTIMACIÓN ISR ASALARIADOS
 	scalar ISRPF = ISR_PF_Mod/100*scalar(pibY)
@@ -225,7 +225,7 @@ if "1" == "{{moduloCambio}}" {
 }
 ** 3.1.7 Submódulo IVA (web) **
 if "1" == "{{moduloCambioIva}}" {
-	noisily run "`c(sysdir_site)'/IVA_Mod.do"
+	noisily run "`c(sysdir_site)'/01_modulos/tax_models/IVA_Mod.do"
 	scalar IVA = IVA_Mod/100*scalar(pibY)
 	scalar IVAPIB = "`=round(IVA_Mod, 0.001)'"				// NUEVA ESTIMACIÓN IVA
 }
@@ -400,12 +400,12 @@ save `"`c(sysdir_site)'/users/$id/aportaciones.dta"', replace
 ***
 
 ** 7.1 Brecha fiscal
-noisily FiscalGap, anio(`=anioPE') end(2031) aniomin(2013) $nographs desde(2020) discount(8) //update
+noisily FiscalGap, anio(`=anioPE') end(`=anioPE+5') aniomin(2016) $nographs desde(2016) discount(8)
 
 
 ** 7.2 Sankey del sistema fiscal
 foreach k in decil grupoedad sexo rural escol {
-	noisily run "`c(sysdir_site)'/SankeySF.do" `k' `=anioPE'
+	noisily run "`c(sysdir_site)'/01_modulos/visualizations/sankey/SankeySF.do" `k' `=anioPE'
 }
 
 

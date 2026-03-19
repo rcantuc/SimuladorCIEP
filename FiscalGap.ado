@@ -9,7 +9,8 @@ quietly {
 		ANIOMIN(int 2000) DIScount(real 5) DESDE(int `=`=aniovp'-1')]
 	noisily di _newline(2) in g "{bf: FISCAL GAP:" in y " $pais `anio' }"
 
-
+	scalar aniodesde = "`desde'"
+	scalar anioend = "`end'"
 
 	*************
 	***       ***
@@ -81,12 +82,6 @@ quietly {
 
 	foreach k of local divSIM {
 		local `k'C = scalar(`k'C)
-		if ``k'C' > 5 {
-			local `k'C = 5
-		}
-		if ``k'C' < -5 {
-			local `k'C = -5
-		}
 		capture confirm scalar `k'PIB
 		if _rc != 0 {
 			scalar `k'PIB = scalar(`k')/scalar(pibY)*100
@@ -116,30 +111,31 @@ quietly {
 		* Tendencia total = ``k'C'
 		* Componente demográfico = `tasa_demo'
 		* Componente no demográfico (per cápita) = ``k'C' - `tasa_demo'
-		local tendencia_pc = real(scalar(`k'C)) - `tasa_demo'
+		local tendencia = real(scalar(`k'C)) - `tasa_demo'
+		if `tendencia' > 5 {
+			local tendencia = 5
+		}
+		if `tendencia' < -5 {
+			local tendencia = -5
+		}
 		
 		* Mensaje informativo *
 		noisily di in g "  `k': " ///
 		_col(35) "Tasa total =" in y %7.2f real(scalar(`k'C)) "%" ///
 		_col(60) in g "Demográfica =" in y %7.2f `tasa_demo' "%" ///
-		_col(85) in g "Económica =" in y %7.2f `tendencia_pc' "%"
+		_col(85) in g "Económica =" in y %7.2f `tendencia' "%"
 
-		tempvar estimacion
-		g `estimacion' = estimacion
-		
+		scalar tt`=strtoname("`k'")' = string(real(scalar(`k'C)),"%5.1fc")
+		scalar td`=strtoname("`k'")' = string(`tasa_demo',"%5.1fc")
+		scalar tn`=strtoname("`k'")' = string(`tendencia',"%5.1fc")
+
 		* Nueva fórmula SIN doble contabilización *
-		replace estimacion = (contribuyentes/L.contribuyentes) *	/// Cambio demográfico PURO (contribuyentes)
-			(real(`k'PIB)/100*scalar(pibY)) *			/// Estimación como % del PIB (Parámetros)
-			(1+`tendencia_pc'/100)^(anio-`anio')			/// Tendencia per cápita (LIF.ado - efecto demo)
-			if anio >= `anio'
+		replace estimacion = (real(`k'PIB)/100*scalar(pibY)) if anio == `anio'	// Estimación como % del PIB (Parámetros)
+		replace estimacion = L.estimacion * 									///
+			(contribuyentes/L.contribuyentes) *									/// Cambio demográfico PURO (contribuyentes)
+			(1+`tendencia'/100)													/// Tendencia
+			if anio > `anio'
 		
-		* Para años donde no hay datos de contribuyentes, usar método original *
-		*replace estimacion = `estimacion'/L.`estimacion' * 		/// Cambio demográfico
-			(real(`k'PIB)/100*scalar(pibY)) * 			/// Estimación como % del PIB (Parámetros)
-			(1+`tendencia_pc'/100)^(anio-`anio') 			/// Tendencia per cápita
-			if anio >= `anio'
-
-		*noisily di "`k': " %5.2fc (1+`tendencia_pc'/100) " " %5.2fc `tendencia_pc'
 		tempfile `k'
 		save ``k''
 	}
@@ -325,7 +321,7 @@ quietly {
 
 	*********************************************
 	** 5.1 Información histórica de los gastos **
-	noisily PEF if transf_gf == 0, anio(`anio') by(divCIEP) nographs desde(`desde')
+	PEF if transf_gf == 0, anio(`anio') by(divCIEP) nographs desde(`desde')
 	local divCIEP "`=r(divCIEP)' IngBasico"
 	local divCIEP = subinstr("`divCIEP'","á","a",.)
 	local divCIEP = subinstr("`divCIEP'","é","e",.)
@@ -335,13 +331,6 @@ quietly {
 	foreach k of local divCIEP {
 		local `k' = r(`k')
 		local `k'C = r(`k'C)
-		
-		if ``k'C' > 5 {
-			local `k'C = 5
-		}
-		if ``k'C' < -5 {
-			local `k'C = -5
-		}
 	}
 	decode resumido, g(divCIEP)
 	replace divCIEP = strtoname(divCIEP)
@@ -356,6 +345,7 @@ quietly {
 	** 5.2 Proyección futura de los gastos **
 	g modulo = ""
 	foreach k of local divCIEP {
+	//foreach k in Pensiones {
 		if `"`=strtoname("`k'")'"' != "Costo_de_la_deuda" {
 			preserve
 			use `"`c(sysdir_site)'/users/ciepmx/bootstraps/1/`=strtoname("`k'")'REC.dta"', clear
@@ -372,29 +362,32 @@ quietly {
 			* Separar tendencia de largo plazo en componentes *
 			* Tendencia total = ``=strtoname("`k'")'C'
 			* Componente demográfico = `tasa_demo'
-			* Componente no demográfico (per cápita) = ``=strtoname("`k'")'C' - `tasa_demo'
-			local tendencia_pc = ``=strtoname("`k'")'C' - `tasa_demo'
-			
+			* Componente no demográfico = ``=strtoname("`k'")'C' - `tasa_demo'
+			local tendencia = ``=strtoname("`k'")'C' - `tasa_demo'
+			if `tendencia' > 5 {
+				local tendencia = 5
+			}
+			if `tendencia' < -5 {
+				local tendencia = -5
+			}
+
+
 			* Mensaje informativo *
 			noisily di in g "  `=strtoname("`k'")': " ///
 				_col(35) "Tasa total =" in y %5.2f ``=strtoname("`k'")'C' "%" ///
 				_col(60) in g "Demográfica =" in y %5.2f `tasa_demo' "%" ///
-				_col(85) in g "Económica =" in y %5.2f `tendencia_pc' "%"
-			
-			tempvar estimacion
-			g `estimacion' = estimacion
+				_col(85) in g "Económica =" in y %5.2f `tendencia' "%"
+
+			scalar tt`=subinstr(strtoname("`k'"),"_","",.)' = string(``=strtoname("`k'")'C',"%5.1fc")
+			scalar td`=subinstr(strtoname("`k'"),"_","",.)' = string(`tasa_demo',"%5.1fc")
+			scalar tn`=subinstr(strtoname("`k'"),"_","",.)' = string(`tendencia',"%5.1fc")
 			
 			* Nueva fórmula SIN doble contabilización *
-			replace estimacion = (contribuyentes/L.contribuyentes) *     	/// Cambio demográfico PURO
-				`HH`=strtoname("`k'")''[1,1] * 				/// Gasto total del año base (GastoPC.ado)
-				(1+`tendencia_pc'/100)^(anio-`anio')    		/// Tendencia per cápita 
-				if anio >= `anio'
-			
-			* Para años donde no hay datos de contribuyentes, usar método original *
-			*replace estimacion = `estimacion'/L.`estimacion' * 		/// Cambio demográfico
-			*	`HH`=strtoname("`k'")''[1,1] * 				/// Gasto total del año base (GastoPC.ado)
-			*	(1+`tendencia_pc'/100)^(anio-`anio') 			/// Tendencia per cápita
-			*	if anio >= `anio'
+			replace estimacion = `HH`=strtoname("`k'")''[1,1] if anio == `anio'	// Gasto total del año base (GastoPC.ado)
+			replace estimacion = L.estimacion * 								///
+				(contribuyentes/L.contribuyentes) *     						/// Cambio demográfico PURO
+				(1+`tendencia'/100)   											/// Tendencia 
+				if anio > `anio'
 
 			g divCIEP = `"`=strtoname("`k'")'"'
 
@@ -563,7 +556,7 @@ quietly {
 		replace gastoCosto_de_la_deuda = estimacionCosto_de_la_deuda if anio == `anio'
 
 		* Reestimar la tasa efectiva para el año `anio' *
-		replace tasaEfectiva = scalar(tasaEfectiva) if anio >= `anio'
+		replace tasaEfectiva = `tasaEfectiva' if anio >= `anio'
 		replace gastoCosto_de_la_deuda = tasaEfectiva/100*L.shrfsp if anio >= `anio'
 	}
 
@@ -679,6 +672,14 @@ quietly {
 	****************
 	** 5.10 Graphs **
 	if "`nographs'" != "nographs" & "$nographs" != "nographs" {
+		if "$export" == "" {
+			local graphtitle "{bf:RFSP}"
+			local graphfuente "{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP."
+		}
+		else {
+			local graphtitle ""
+			local graphfuente ""
+		}
 		twoway (bar rfsp_pib anio if anio < `anio' & anio >= `desde', barwidth(.75)) ///
 			(bar rfsp_pib anio if anio >= `anio' & anio <= `end', barwidth(.75) ///
 				pstyle(p1) lcolor(none) fintensity(50)) ///
@@ -689,15 +690,15 @@ quietly {
 				mlabel(rfsp_pib) mlabposition(12) mlabcolor(black) pstyle(p2) ///
 				lpattern(dot) msize(small) mlabsize(small)) ///
 			if rfsp_pib != ., ///
-			title({bf: Proyecci{c o'}n} de los RFSP) subtitle($pais) ///
-			caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.") ///
+			title(`graphtitle') subtitle($pais) ///
+			caption("`graphfuente'") ///
 			ytitle("% PIB") ///
 			xtitle("") ///
 			xlabel(`desde'(1)`end', noticks) ///
 			legend(on order(1 3) label(1 "RFSP presupuestario") label(3 "Otros RFSP")) ///
 			text(0 `desde' "{bf:Observado}", ///
 				yaxis(1) size(medium) place(1) justification(right) bcolor(white) box) ///
-			text(0 `=`anio'+3' "{bf:$paqueteEconomico}", ///
+			text(0 `=`anio'+3' "{bf:Proyección CIEP}", ///
 				yaxis(1) size(medium) place(1) justification(right) bcolor(white) box) ///
 			name(Proy_rfsp, replace)
 			
@@ -709,7 +710,7 @@ quietly {
 		* Saldo de la deuda combinada *
 		if "$export" == "" {
 			local graphtitle "{bf:Saldo hist{c o'}rico de RFSP}"
-			local graphfuente "{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5."
+			local graphfuente "{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP."
 		}
 		else {
 			local graphtitle ""
@@ -740,6 +741,8 @@ quietly {
 			text(`=shrfsp_pib[`obsdesde']*.925' `=anio[`obsdesde']' "{bf:Como % del PIB}", ///
 				place(5) color("111 111 111") size(medsmall)) ///
 			text(0 `=anio[`obsdesde']' "{bf:Por persona (miles `currency' `=aniovp')}", ///
+				place(1) color(black) size(medsmall) yaxis(2) bcolor(white) box) ///
+			text(0 `=`anio'+3' "{bf:Proyección CIEP}", ///
 				place(1) color(black) size(medsmall) yaxis(2) bcolor(white) box) ///
 			name(Proy_combinado, replace)
 
@@ -818,7 +821,7 @@ quietly {
 
 
 	* Saldo de la deuda *
-	noisily tabstat shrfsp deflator if anio == `anio', stat(sum) f(%20.0fc) save
+	tabstat shrfsp deflator shrfsp_pib if anio == `anio', stat(sum) f(%20.0fc) save
 	tempname shrfsp
 	matrix `shrfsp' = r(StatTotal)
 
@@ -854,7 +857,9 @@ quietly {
 	noisily di in g "  " _dup(61) "-"
 	noisily di in g "  (=) Deuda (" in y `end' in g ") :" ///
 		in y _col(35) %25.0fc shrfsp_pib[_N] ///
-		in g " % PIB"	
+		in g " % PIB"
+	scalar shrfspgeneINI = string(`shrfsp'[1,3],"%5.1fc")
+	scalar shrfspgeneFIN = string(shrfsp_pib[_N],"%5.1fc")
 	noisily di in g "  " _dup(61) "-"
 	noisily di in g "  (*) Tasa Efectiva Promedio: " in y _col(35) %25.4fc scalar(tasaEfectiva) in g " %"
 	noisily di in g "  (*) Discount rate:" in y _col(35) %25.4fc `discount' in g " %"
@@ -913,6 +918,8 @@ quietly {
 	noisily di in g "  (*) Deuda generaciones " in y "`anio'" in g ":" in y _col(35) %25.0fc (`shrfsp'[1,1]/`shrfsp'[1,2])/(`poblacionACT'[1,2]) in g " `currency' por persona"
 	noisily di in g "  (*) Deuda generaciones " in y "`end'" in g ":" in y _col(35) %25.0fc (shrfsp[_N]/deflator[_N])/(`poblacionEND'[1,2]) in g " `currency' por persona"
 	local deudagenlast = (shrfsp[_N]/deflator[_N])/(`poblacionEND'[1,2])
+	scalar deudageneINI = string((`shrfsp'[1,1]/`shrfsp'[1,2])/(`poblacionACT'[1,2]),"%10.1fc")
+	scalar deudageneFIN = string((shrfsp[_N]/deflator[_N])/(`poblacionEND'[1,2]),"%10.1fc")
 
 	* Inequidad intergeneracional *
 	noisily di in g "  " _dup(61) "-"
@@ -972,3 +979,4 @@ quietly {
 	noisily di _newline(2) in g _dup(20) "." "  " in y round(`=r(t11)/r(nt11)',.1) in g " segs  " _dup(20) "."
 }
 end
+
