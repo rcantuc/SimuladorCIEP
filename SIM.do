@@ -18,6 +18,7 @@ set scheme ciep
 ** 0.1 Directorio de archivos .ado (Github)
 if "`c(username)'" == "ricardo" & "`1'" != "ricardo" {
 	sysdir set SITE "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP"
+	global export "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/TextbookCIEP/images"
 }
 cd "`c(sysdir_site)'"
 
@@ -34,8 +35,8 @@ capture mkdir "`c(sysdir_site)'/users/$id"
 ** 0.4 Opciones (descomentar para activar)
 //global nographs "nographs"							// SUPRIMIR GRAFICAS
 //global update "update"							// UPDATE BASES DE DATOS
-//global textbook "textbook"							// SCALAR TO LATEX
-//global output "output"							// ARCHIVO DE SALIDA (WEB)
+global textbook "textbook"							// SCALAR TO LATEX
+global output "output"							// ARCHIVO DE SALIDA (WEB)
 
 ** 0.5 Ejecución de opciones **
 if "$output" != "" {
@@ -43,7 +44,7 @@ if "$output" != "" {
 	quietly log off output
 }
 if "$update" == "update" {
-	capture rmdir "`c(sysdir_site)'/03_temp/"
+	capture rmdir "`c(sysdir_site)'/temp/"
 }
 
 
@@ -87,7 +88,7 @@ global inf2029 = 3.0
 global inf2030 = 3.0
 global inf2031 = 3.0
 
-/** 2.4 PIB + Deflactores
+** 2.4 PIB + Deflactores
 noisily PIBDeflactor if anio >= 2005, aniovp(`=aniovp') aniomax(2031) $textbook $nographs $update
 
 ** 2.5 Sistema de Cuentas Nacionales (sin inputs)
@@ -97,19 +98,19 @@ noisily SCN, anio(`=aniovp') $textbook $nographs $update
 
 **/
 **# 3. HOGARES: ARMONIZACIÓN MACRO-MICRO
-/***
+***
 
 ** 3.1 Encuesta Nacional de Ingresos y Gastos de los Hogares (Usos)
 noisily di _newline in g "Actualizando: " in y "expenditures.dta"
-noisily run "`c(sysdir_site)'/Expenditure.do" `=anioPE'
+noisily run "`c(sysdir_site)'/01_modulos/households/Expenditure.do" `=anioPE'
 
 ** 3.2 Encuesta Nacional de Ingresos y Gastos de los Hogares (Recursos)
 noisily di _newline in g "Actualizando: " in y "households.dta"
-noisily run `"`c(sysdir_site)'/Households.do"' `=anioPE'
+noisily run `"`c(sysdir_site)'/01_modulos/households/Households.do"' `=anioPE'
 
 ** 3.3 Perfiles de la política económica actual (Paquete Económico)
 noisily di _newline in g "Actualizando: " in y "perfiles`anio'.dta"
-*noisily run "`c(sysdir_site)'/PerfilesSim.do" `=anioPE'
+noisily run "`c(sysdir_site)'/01_modulos/profiles/PerfilesSim.do" `=anioPE'
 
 
 
@@ -119,9 +120,9 @@ noisily di _newline in g "Actualizando: " in y "perfiles`anio'.dta"
 set scheme ciepingresos
 noisily LIF if divLIF != 10, anio(`=anioPE') by(divSIM) $update $nographs `eofp'		///
 	title("Ingresos presupuestarios") 					/// Cambiar título de la gráfica
-	desde(2013) 								/// Año de inicio para el PROMEDIO
+	desde(2016) 								/// Año de inicio para el PROMEDIO
 	min(0)		 							/// Mínimo 0% del PIB (no negativos)
-	rows(1)									//  Número de filas en la leyenda
+	rows(2)									//  Número de filas en la leyenda
 rename divSIM divCODE
 decode divCODE, g(divSIM) 
 collapse (sum) recaudacion, by(anio divSIM) fast
@@ -219,7 +220,7 @@ matrix CSS_ISSSTE = ///
 	0.000,		0.000,			13.9)			//  Cuota social
 
 if "`cambioisrpf'" == "1" {
-	noisily run "`c(sysdir_site)'/ISR_Mod.do"
+	noisily run "`c(sysdir_site)'/01_modulos/tax_models/ISR_Mod.do"
 	scalar ISRAS = ISR_AS_Mod/100*scalar(pibY)
 	scalar ISRASPIB  = "`=round(ISR_AS_Mod, 0.001)'"			// NUEVA ESTIMACIÓN ISR ASALARIADOS
 	scalar ISRPF = ISR_PF_Mod/100*scalar(pibY)
@@ -269,7 +270,7 @@ matrix IEPST = (26.5	,	0 		\			/// Cerveza y alcohol 14
 		0	,	6.7865		)			// Gasolina: diésel
 
 if "`cambioiva'" == "1" {
-	noisily run "`c(sysdir_site)'/IVA_Mod.do"
+	noisily run "`c(sysdir_site)'/01_modulos/tax_models/IVA_Mod.do"
 	scalar IVA = IVA_Mod/100*scalar(pibY)
 	scalar IVAPIB = "`=round(IVA_Mod, 0.001)'"				// NUEVA ESTIMACIÓN IVA
 }
@@ -287,7 +288,7 @@ noisily TasasEfectivas, anio(`=anioPE') enigh
 set scheme ciep	
 noisily PEF if ramo != -1, anio(`=anioPE') by(divSIM) $update 		///
 	title(" ") 						/// Cambiar título
-	desde(2013) 										/// Año de inicio PROMEDIO
+	desde(2016) 										/// Año de inicio PROMEDIO
 	min(0) 												/// Mínimo 0% del PIB (resumido)
 	rows(2)												// Número de filas en la leyenda
 
@@ -399,13 +400,13 @@ forvalues k = 2026(1)2031 {
 * SHRFSP: comando *
 set scheme ciepdeuda
 scalar tasaEfectiva = 6.919
-//noisily SHRFSP, anio(`=anioPE') ultanio(2002) $nographs $update $textbook
+noisily SHRFSP, anio(`=anioPE') ultanio(2002) $nographs $update $textbook
 
 
 
 **/
 **# 7. CICLO DE VIDA FISCAL
-***
+/***
 set scheme ciep
 use `"`c(sysdir_site)'/users/$id/ingresos.dta"', clear
 merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/users/$id/gastos.dta", nogen
@@ -450,17 +451,17 @@ if "$textbook" == "" {
 	label var Transferencias "Transferencias públicas"
 	label var AportacionesNetas "Ciclo de vida de las aportaciones netas"
 }
-foreach k of varlist /*AlTrabajo AlCapital AlConsumo ///
+foreach k of varlist AlTrabajo AlCapital AlConsumo ///
 	ISRPM ISRAS ISRPF CUOTAS IVA IEPSNP IEPSP ISAN IMPORT ///
 	Pensiones IngBasico Educacion Salud OtrosGastos Energia ///
-	ImpuestosAportaciones Transferencias*/ AportacionesNetas {
+	ImpuestosAportaciones Transferencias AportacionesNetas {
 	*noisily Perfiles `k' if `k' != 0 [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
 	noisily Simulador `k' if `k' != 0 [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot title("") //boot(10)
 }
 save `"`c(sysdir_site)'/users/$id/aportaciones.dta"', replace
 
 if "$textbook" == "textbook" {
-	*noisily scalarlatex, log(perfiles) alt(perf)
+	noisily scalarlatex, log(perfiles) alt(perf)
 }
 
 
@@ -472,11 +473,15 @@ if "$textbook" == "textbook" {
 
 ** 8.1 Brecha fiscal
 set scheme ciepdeuda2
-noisily FiscalGap, anio(`=anioPE') end(`=anioPE+5') aniomin(2013) $nographs desde(2020) discount(8)
+noisily FiscalGap, anio(`=anioPE') end(`=anioPE+5') aniomin(2016) $nographs desde(2016) discount(8)
+
+if "$textbook" == "textbook" {
+	noisily scalarlatex, log(fiscalgap) alt(gap)
+}
 
 ** 8.2 Sankey del sistema fiscal
 foreach k in decil grupoedad sexo rural escol {
-	noisily run "`c(sysdir_site)'/SankeySF.do" `k' `=anioPE'
+	noisily run "`c(sysdir_site)'/01_modulos/visualizations/sankey/SankeySF.do" `k' `=anioPE'
 }
 
 

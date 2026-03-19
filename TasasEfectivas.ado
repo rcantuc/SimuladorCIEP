@@ -302,12 +302,12 @@ quietly {
 	if "`enigh'" == "enigh" {
 		capture use (folioviv foliohog numren factor edad decil grupoedad sexo rural escol ingbrutotot ///
 			ISRAS ISRPF CUOTAS ISRPM OTROSK FMP PEMEX CFE IMSS ISSSTE IVA IEPSNP IEPSP ISAN IMPORT) ///
-			using "`c(sysdir_site)'/04_master/perfiles`anio'.dta", clear 
+			using "`c(sysdir_site)'/master/perfiles`anio'.dta", clear 
 		if _rc != 0 {
 			noisily run "`c(sysdir_site)'/PerfilesSim.do" `anio'
 			use (folioviv foliohog numren factor edad decil grupoedad sexo rural escol ingbrutotot ///
 				ISRAS ISRPF CUOTAS ISRPM OTROSK FMP PEMEX CFE IMSS ISSSTE IVA IEPSNP IEPSP ISAN IMPORT) ///
-				using "`c(sysdir_site)'/04_master/perfiles`anio'.dta", clear
+				using "`c(sysdir_site)'/master/perfiles`anio'.dta", clear
 		}
 
 		* 7.1 Distribuir los ingresos entre las observaciones *

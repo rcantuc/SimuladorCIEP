@@ -66,13 +66,13 @@ quietly {
 	else if `aniope' >= 2008 & `aniope' < 2010 local anioenigh = 2008
 
 	// Carga la base de datos de ENIGH correspondiente al año de referencia
-	capture use "`c(sysdir_site)'/04_master/perfiles`aniope'.dta", clear	
+	capture use "`c(sysdir_site)'/master/perfiles`aniope'.dta", clear	
 	if _rc != 0 {
-		noisily di _newline in g "Creando base: " in y "/04_master/perfiles`aniope'.dta" ///
+		noisily di _newline in g "Creando base: " in y "/master/perfiles`aniope'.dta" ///
 			in g " con " in y "ENIGH " `anioenigh'
-		noisily run `"`c(sysdir_site)'/PerfilesSim.do"' `aniope'
+		noisily run `"`c(sysdir_site)'/01_modules/profiles/PerfilesSim.do"' `aniope'
 	}
-	merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/04_master/`anioenigh'/households.dta", ///
+	merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/master/`anioenigh'/households.dta", ///
 		nogen keepus(asis_esc tipoesc nivel inst_* ing_jubila jubilado ing_PAM formal) update
 	capture drop __*
 

@@ -24,7 +24,7 @@ quietly {
 	*******************
 	*** 1 Poblacion ***
 	*******************
-	use `"`c(sysdir_site)'/04_master/Poblacion.dta"', clear
+	use `"`c(sysdir_site)'/master/Poblacion.dta"', clear
 
 	sort anio
 	local anio = anio[1]

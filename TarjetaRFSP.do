@@ -27,14 +27,14 @@ if _rc != 0 {
 local aniovp = scalar(aniovp)
 
 ** Verificar que exista la base de DatosAbiertos **
-capture confirm file `"`c(sysdir_site)'/04_master/DatosAbiertos.dta"'
+capture confirm file `"`c(sysdir_site)'/master/DatosAbiertos.dta"'
 if _rc != 0 {
 	noisily di in r "No se encontró la base de DatosAbiertos.dta. Ejecute primero: DatosAbiertos, update"
 	exit
 }
 
 ** Verificar que exista el deflactor **
-capture confirm file `"`c(sysdir_site)'/04_master/Deflactor.dta"'
+capture confirm file `"`c(sysdir_site)'/master/Deflactor.dta"'
 if _rc != 0 {
 	noisily di in r "No se encontró la base de Deflactor.dta. Ejecute primero: PIBDeflactor, update"
 	exit
@@ -47,7 +47,7 @@ if _rc != 0 {
 ***
 
 ** 1.1 RFSP Total (flujo, cifras con signo invertido = reverse) **
-use if clave_de_concepto == "RF000000SPFCS" using `"`c(sysdir_site)'/04_master/DatosAbiertos.dta"', clear
+use if clave_de_concepto == "RF000000SPFCS" using `"`c(sysdir_site)'/master/DatosAbiertos.dta"', clear
 replace monto = -monto
 keep anio mes monto
 rename monto rfsp
@@ -55,7 +55,7 @@ tempfile rfsp
 save `rfsp'
 
 ** 1.2 Balance presupuestario **
-use if clave_de_concepto == "RF000001SPFCS" using `"`c(sysdir_site)'/04_master/DatosAbiertos.dta"', clear
+use if clave_de_concepto == "RF000001SPFCS" using `"`c(sysdir_site)'/master/DatosAbiertos.dta"', clear
 replace monto = -monto
 keep anio mes monto
 rename monto rfspBalance
@@ -63,7 +63,7 @@ tempfile balance
 save `balance'
 
 ** 1.3 Banca de desarrollo **
-use if clave_de_concepto == "RF000006SPFCS" using `"`c(sysdir_site)'/04_master/DatosAbiertos.dta"', clear
+use if clave_de_concepto == "RF000006SPFCS" using `"`c(sysdir_site)'/master/DatosAbiertos.dta"', clear
 replace monto = -monto
 keep anio mes monto
 rename monto rfspBanca
@@ -71,7 +71,7 @@ tempfile banca
 save `banca'
 
 ** 1.4 PIDIREGAS **
-use if clave_de_concepto == "RF000002SPFCS" using `"`c(sysdir_site)'/04_master/DatosAbiertos.dta"', clear
+use if clave_de_concepto == "RF000002SPFCS" using `"`c(sysdir_site)'/master/DatosAbiertos.dta"', clear
 replace monto = -monto
 keep anio mes monto
 rename monto rfspPIDIREGAS
@@ -79,7 +79,7 @@ tempfile pidiregas
 save `pidiregas'
 
 ** 1.5 IPAB **
-use if clave_de_concepto == "RF000003SPFCS" using `"`c(sysdir_site)'/04_master/DatosAbiertos.dta"', clear
+use if clave_de_concepto == "RF000003SPFCS" using `"`c(sysdir_site)'/master/DatosAbiertos.dta"', clear
 replace monto = -monto
 keep anio mes monto
 rename monto rfspIPAB
@@ -87,7 +87,7 @@ tempfile ipab
 save `ipab'
 
 ** 1.6 FONADIN **
-use if clave_de_concepto == "RF000004SPFCS" using `"`c(sysdir_site)'/04_master/DatosAbiertos.dta"', clear
+use if clave_de_concepto == "RF000004SPFCS" using `"`c(sysdir_site)'/master/DatosAbiertos.dta"', clear
 replace monto = -monto
 keep anio mes monto
 rename monto rfspFONADIN
@@ -95,7 +95,7 @@ tempfile fonadin
 save `fonadin'
 
 ** 1.7 Programa de Deudores **
-use if clave_de_concepto == "RF000005SPFCS" using `"`c(sysdir_site)'/04_master/DatosAbiertos.dta"', clear
+use if clave_de_concepto == "RF000005SPFCS" using `"`c(sysdir_site)'/master/DatosAbiertos.dta"', clear
 replace monto = -monto
 keep anio mes monto
 rename monto rfspDeudores
@@ -103,7 +103,7 @@ tempfile deudores
 save `deudores'
 
 ** 1.8 Adecuaciones **
-use if clave_de_concepto == "RF000007SPFCS" using `"`c(sysdir_site)'/04_master/DatosAbiertos.dta"', clear
+use if clave_de_concepto == "RF000007SPFCS" using `"`c(sysdir_site)'/master/DatosAbiertos.dta"', clear
 replace monto = -monto
 keep anio mes monto
 rename monto rfspAdecuaciones
@@ -134,7 +134,7 @@ sort anio mes
 ***
 **# 3. MERGE CON DEFLACTOR PARA CIFRAS REALES
 ***
-merge 1:1 (anio mes) using `"`c(sysdir_site)'/04_master/Deflactor.dta"', nogen keep(matched)
+merge 1:1 (anio mes) using `"`c(sysdir_site)'/master/Deflactor.dta"', nogen keep(matched)
 sort anio mes
 
 
@@ -322,28 +322,28 @@ noisily di in g "{bf:Fuentes:} SHCP/Datos Abiertos de Finanzas P{c u'}blicas, CI
 ***
 
 ** 8.1 Costo financiero total **
-use if clave_de_concepto == "XAC21" using `"`c(sysdir_site)'/04_master/DatosAbiertos.dta"', clear
+use if clave_de_concepto == "XAC21" using `"`c(sysdir_site)'/master/DatosAbiertos.dta"', clear
 keep anio mes monto
 rename monto costoTotal
 tempfile costoTotal
 save `costoTotal'
 
 ** 8.2 Costo financiero Gobierno Federal **
-use if clave_de_concepto == "XBC21" using `"`c(sysdir_site)'/04_master/DatosAbiertos.dta"', clear
+use if clave_de_concepto == "XBC21" using `"`c(sysdir_site)'/master/DatosAbiertos.dta"', clear
 keep anio mes monto
 rename monto costoGobFed
 tempfile costoGobFed
 save `costoGobFed'
 
 ** 8.3 Costo financiero Pemex **
-use if clave_de_concepto == "XOA0160" using `"`c(sysdir_site)'/04_master/DatosAbiertos.dta"', clear
+use if clave_de_concepto == "XOA0160" using `"`c(sysdir_site)'/master/DatosAbiertos.dta"', clear
 keep anio mes monto
 rename monto costoPemex
 tempfile costoPemex
 save `costoPemex'
 
 ** 8.4 Costo financiero CFE **
-use if clave_de_concepto == "XOA0162" using `"`c(sysdir_site)'/04_master/DatosAbiertos.dta"', clear
+use if clave_de_concepto == "XOA0162" using `"`c(sysdir_site)'/master/DatosAbiertos.dta"', clear
 keep anio mes monto
 rename monto costoCFE
 tempfile costoCFE
@@ -362,7 +362,7 @@ merge 1:1 (anio mes) using `costoCFE', nogen
 sort anio mes
 
 ** Merge con deflactor **
-merge 1:1 (anio mes) using `"`c(sysdir_site)'/04_master/Deflactor.dta"', nogen keep(matched)
+merge 1:1 (anio mes) using `"`c(sysdir_site)'/master/Deflactor.dta"', nogen keep(matched)
 sort anio mes
 
 
@@ -506,49 +506,49 @@ noisily di ""
 ***
 
 ** 13.1 SHRFSP Total **
-use if clave_de_concepto == "SHRF5000" using `"`c(sysdir_site)'/04_master/DatosAbiertos.dta"', clear
+use if clave_de_concepto == "SHRF5000" using `"`c(sysdir_site)'/master/DatosAbiertos.dta"', clear
 keep anio mes monto
 rename monto shrfspTotal
 tempfile shrfspTotal
 save `shrfspTotal'
 
 ** 13.2 Gobierno Federal - Deuda Interna **
-use if clave_de_concepto == "XED80" using `"`c(sysdir_site)'/04_master/DatosAbiertos.dta"', clear
+use if clave_de_concepto == "XED80" using `"`c(sysdir_site)'/master/DatosAbiertos.dta"', clear
 keep anio mes monto
 rename monto shrfspGFInt
 tempfile shrfspGFInt
 save `shrfspGFInt'
 
 ** 13.3 Gobierno Federal - Deuda Externa **
-use if clave_de_concepto == "XEB4010" using `"`c(sysdir_site)'/04_master/DatosAbiertos.dta"', clear
+use if clave_de_concepto == "XEB4010" using `"`c(sysdir_site)'/master/DatosAbiertos.dta"', clear
 keep anio mes monto
 rename monto shrfspGFExt
 tempfile shrfspGFExt
 save `shrfspGFExt'
 
 ** 13.4 Organismos y Empresas - Deuda Interna **
-use if clave_de_concepto == "XED110" using `"`c(sysdir_site)'/04_master/DatosAbiertos.dta"', clear
+use if clave_de_concepto == "XED110" using `"`c(sysdir_site)'/master/DatosAbiertos.dta"', clear
 keep anio mes monto
 rename monto shrfspOyEInt
 tempfile shrfspOyEInt
 save `shrfspOyEInt'
 
 ** 13.5 Organismos y Empresas - Deuda Externa **
-use if clave_de_concepto == "XEB4020" using `"`c(sysdir_site)'/04_master/DatosAbiertos.dta"', clear
+use if clave_de_concepto == "XEB4020" using `"`c(sysdir_site)'/master/DatosAbiertos.dta"', clear
 keep anio mes monto
 rename monto shrfspOyEExt
 tempfile shrfspOyEExt
 save `shrfspOyEExt'
 
 ** 13.6 Banca de Desarrollo - Deuda Interna **
-use if clave_de_concepto == "XED140" using `"`c(sysdir_site)'/04_master/DatosAbiertos.dta"', clear
+use if clave_de_concepto == "XED140" using `"`c(sysdir_site)'/master/DatosAbiertos.dta"', clear
 keep anio mes monto
 rename monto shrfspBancaInt
 tempfile shrfspBancaInt
 save `shrfspBancaInt'
 
 ** 13.7 Banca de Desarrollo - Deuda Externa **
-use if clave_de_concepto == "XEB4030" using `"`c(sysdir_site)'/04_master/DatosAbiertos.dta"', clear
+use if clave_de_concepto == "XEB4030" using `"`c(sysdir_site)'/master/DatosAbiertos.dta"', clear
 keep anio mes monto
 rename monto shrfspBancaExt
 tempfile shrfspBancaExt
@@ -575,7 +575,7 @@ gen double shrfspOyE = shrfspOyEInt + shrfspOyEExt
 gen double shrfspBanca = shrfspBancaInt + shrfspBancaExt
 
 ** Merge con deflactor **
-merge 1:1 (anio mes) using `"`c(sysdir_site)'/04_master/Deflactor.dta"', nogen keep(matched)
+merge 1:1 (anio mes) using `"`c(sysdir_site)'/master/Deflactor.dta"', nogen keep(matched)
 sort anio mes
 
 

@@ -1,9 +1,6 @@
-**/01_raw/**
-**/02_website/**
-**/03_temp/**
-**/04_master/**
-**/05_graphs/**
+**/raw/**
+**/temp/**
+**/master/**
+**/graphs/**
 **/users/**
-*.stswp
-.DS_Store
-Icon?
+**/simuladorfiscal.ciep.mx/**
