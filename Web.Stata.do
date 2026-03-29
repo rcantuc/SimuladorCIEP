@@ -17,7 +17,7 @@ timer on 1
 
 ** 0.1 Directorios de trabajo (uno por computadora)
 if "`c(username)'" == "ricardo" {						// Mac
-	sysdir set SITE "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
+	sysdir set SITE "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
 }
 else {
 	sysdir set SITE "/SIM/OUT/7/"
