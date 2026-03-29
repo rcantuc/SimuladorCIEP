@@ -348,9 +348,15 @@ quietly {
 			& edad != 100 & edad != 105
 		g zero = 0
 
-		local graphtitle "{bf:Pirámides demográficas}"
-		///local graphtitle "{bf:Population} pyramid"
-		local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de CONAPO (2023)."
+		if "$export" == "" {
+			local graphtitle "{bf:Pirámides demográficas}"
+			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de CONAPO (2023)."
+		}
+		else {
+			local graphtitle ""
+			local graphfuente ""
+		}
+
 		twoway (bar `pob2' edad if sexo == 1 & anio == `anioinicial' & edad+`aniofinal'-`anioinicial' <= 109, horizontal) ///
 			(bar `pob2' edad if sexo == 2 & anio == `anioinicial' & edad+`aniofinal'-`anioinicial' <= 109, horizontal) ///
 			(bar `pob2' edad if sexo == 1 & anio == `anioinicial' & edad+`aniofinal'-`anioinicial' > 109, horizontal barwidth(1) bstyle(p1bar)) ///
@@ -373,7 +379,7 @@ quietly {
 			`=-`MaxH'[1,1]/2' `"Hombres"' 0 ///
 			`=`MaxM'[1,1]/2' `"Mujeres"' ///
 			`=`MaxM'[1,1]' `"`=string(`MaxM'[1,1],"%15.0fc")'"', angle(horizontal) labsize(small)) ///
-			title(`"`anioinicial'"')
+			title(`"{bf:`anioinicial'}"')
 
 		twoway (bar `pob2' edad if sexo == 1 & anio == `aniofinal' & edad < `aniofinal'-`anioinicial', horizontal barwidth(.5)) ///
 			(bar `pob2' edad if sexo == 2 & anio == `aniofinal' & edad < `aniofinal'-`anioinicial', horizontal barwidth(.5)) ///
@@ -399,11 +405,10 @@ quietly {
 			`=-`MaxH'[1,1]/2' `"Hombres"' 0 ///
 			`=`MaxM'[1,1]/2' `"Mujeres"' ///
 			`=`MaxM'[1,1]' `"`=string(`MaxM'[1,1],"%15.0fc")'"', angle(horizontal) labsize(small)) ///
-			title(`"`aniofinal'"')
+			title(`"{bf:`aniofinal'}"')
 
 		graph combine P_`anioinicial'_`aniofinal'_`entidadGName'A P_`anioinicial'_`aniofinal'_`entidadGName'B, ///
 			title("`graphtitle'") ///
-			///subtitle(${pais} `=entidad[1]') ///
 			caption("`graphfuente'") ///
 			name(PP_`anioinicial'_`aniofinal'_`entidadGName', replace)
 
@@ -521,7 +526,7 @@ quietly {
 			ytitle("millones de personas") ///
 			xline(`=`anioinicial'+.5') ///
 			///title("`graphtitle'") ///
-			title("${pais} `=entidad[1]'") ///
+			title("{bf:`=entidad[1]'}") ///
 			///caption("`graphfuente'") ///
 			legend(on label(1 "61 y más") label(2 "19 -- 60") label(3 "18 y menos") order(- "{bf:Edades:}" 3 2 1) ///
 			position(6) region(margin(zero)) rows(1)) ///
@@ -555,18 +560,15 @@ quietly {
 		noisily di _newline in g " Año con mayor tasa de dependencia: " in y aniotdmax
 		noisily di in g " Año con menor tasa de dependencia: " in y aniotdmin
 
-		local graphtitle "{bf:Tasa de dependencia}"
-		local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de CONAPO (2023)."
-
 		twoway (connected tasaDependencia anio if anio >= 1950 & anio <= `anioinicial') ///
 			(connected tasaDependencia anio if anio > `anioinicial' & anio <= `aniofinal'), ///
 			///title("`graphtitle'") ///
-			title("Dependientes por c/100 personas en edad de trabajar") ///
+			title("{bf:Dependientes por c/100 personas en edad de trabajar}") ///
 			///caption("`graphfuente'") ///
 			xtitle("") ///
-			text(`=tasaDependencia[`obsini']' `=anio[`obsini']' "`=string(tasaDependencia[`obsini'],"%7.2fc")'", place(n) size(large) color("111 111 111")) ///
-			text(`=tasaDependencia[`aniotdmin']' `=anio[`aniotdmin']' "{bf:Min}: `=string(tasaDependencia[`aniotdmin'],"%7.2fc")'", place(s) size(large) color("111 111 111")) ///
-			text(`=tasaDependencia[`aniotdmax']' `=anio[`aniotdmax']' "{bf:Max}: `=string(tasaDependencia[`aniotdmax'],"%7.2fc")'", place(n) size(large) color("111 111 111")) ///
+			text(`=tasaDependencia[`obsini']' `=anio[`obsini']' "{bf:`anioinicial'}: `=string(tasaDependencia[`obsini'],"%7.2fc")'", place(n) size(large) color("111 111 111")) ///
+			text(`=tasaDependencia[`aniotdmin']' `=anio[`aniotdmin']' "{bf:Min (`=anio[`aniotdmin']')}: `=string(tasaDependencia[`aniotdmin'],"%7.2fc")'", place(s) size(large) color("111 111 111")) ///
+			text(`=tasaDependencia[`aniotdmax']' `=anio[`aniotdmax']' "{bf:Max (`=anio[`aniotdmax']')}: `=string(tasaDependencia[`aniotdmax'],"%7.2fc")'", place(n) size(large) color("111 111 111")) ///
 			///xlabel(`=round(`anioinicial',5)'(5)`=round(`aniofinal',5)') ///
 			xlabel(`aniofirst'(10)`aniofinal') ///
 			ytitle("") ///
@@ -575,15 +577,39 @@ quietly {
 			legend(off label(1 "Observado") label(2 "Proyectado") region(margin(zero)) rows(1)) ///
 			name(T_`anioinicial'_`aniofinal'_`entidadGName', replace)
 
+		if "$export" == "" {
+			local graphtitle "{bf:Tasa de dependencia}"
+			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con información de CONAPO (2023)."
+		}
+		else {
+			local graphtitle ""
+			local graphfuente ""
+		}
+
 		graph combine E_`anioinicial'_`aniofinal'_`entidadGName' T_`anioinicial'_`aniofinal'_`entidadGName', ///
-			title("{bf:Transición demográfica y tasa de dependencia}") ///
-			caption("{bf:Fuente}: Elaborado por el CIEP, con información de CONAPO (2023).") ///
+			title("`graphtitle'") ///
+			caption("`graphfuente'") ///
 			name(ET_`anioinicial'_`aniofinal'_`entidadGName', replace)
 
 
-		graph export "`c(sysdir_site)'/users/$id/graphs/ET_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(ET_`anioinicial'_`aniofinal'_`entidadGName')
-		graph export "`c(sysdir_site)'/users/$id/graphs/T_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(T_`anioinicial'_`aniofinal'_`entidadGName')
-		graph export "`c(sysdir_site)'/users/$id/graphs/E_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(E_`anioinicial'_`aniofinal'_`entidadGName')
+		if "$export" != "" {
+			graph export "$export/ET_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(ET_`anioinicial'_`aniofinal'_`entidadGName')
+		}
+		else {
+			graph export "`c(sysdir_site)'/users/$id/graphs/ET_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(ET_`anioinicial'_`aniofinal'_`entidadGName')
+		}
+		if "$export" != "" {
+			graph export "$export/T_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(T_`anioinicial'_`aniofinal'_`entidadGName')
+		}
+		else {
+			graph export "`c(sysdir_site)'/users/$id/graphs/T_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(T_`anioinicial'_`aniofinal'_`entidadGName')
+		}
+		if "$export" != "" {
+			graph export "$export/E_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(E_`anioinicial'_`aniofinal'_`entidadGName')
+		}
+		else {
+			graph export "`c(sysdir_site)'/users/$id/graphs/E_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(E_`anioinicial'_`aniofinal'_`entidadGName')
+		}
 
 		capture window manage close graph E_`anioinicial'_`aniofinal'_`entidadGName'
 		capture window manage close graph T_`anioinicial'_`aniofinal'_`entidadGName'

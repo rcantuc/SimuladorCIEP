@@ -175,31 +175,31 @@ capture g pob = 1
 
 ** 5.4 (+) Ingreso bruto **
 Distribucion ingbrutotot, relativo(ingbrutotot) macro(`PIN')
-label var ingbrutotot "Ingreso bruto total `1'"
+label var ingbrutotot "Ingreso bruto total"
 noisily Simulador ingbrutotot if ingbrutotot != 0 [fw=factor], aniope(`1') aniovp(`1') reboot
 noisily Gini ingbrutotot, hogar(folioviv foliohog) factor(factor)
 
 
 ** 5.5 (-) Consumo total **
 Distribucion gastoanualTOT, relativo(gastoanualTOT) macro(`ConHog')
-label var gastoanualTOT "Consumo total `1'"
+label var gastoanualTOT "Consumo total"
 noisily Simulador gastoanualTOT if gastoanualTOT != 0 [fw=factor], aniope(`1') aniovp(`1') reboot
 noisily Gini gastoanualTOT, hogar(folioviv foliohog) factor(factor)
 
 
 ** 5.6 (*) Ingresos para el módulo ISR **
 Distribucion ing_bruto_tax, relativo(ing_bruto_tax) macro(`=`Yl'+`MixK'')
-label var ing_bruto_tax "Ingresos laborales `1'"
+label var ing_bruto_tax "Ingresos laborales"
 noisily Simulador ing_bruto_tax if ing_bruto_tax != 0 [fw=factor], aniope(`1') aniovp(`1') reboot
 noisily Gini ing_bruto_tax, hogar(folioviv foliohog) factor(factor)
 
 Distribucion ing_subor, relativo(ing_subor) macro(`=`RemSal'+`ImpNetProduccionL'')
-label var ing_subor "Remuneración de asalariados `1'"
+label var ing_subor "Remuneración de asalariados"
 noisily Simulador ing_subor if ing_subor != 0 [fw=factor], aniope(`1') aniovp(`1') reboot
 noisily Gini ing_subor, hogar(folioviv foliohog) factor(factor)
 
 Distribucion ing_bruto_tpm, relativo(ing_bruto_tpm) macro(`=`ExNOpSoc'+`ImpNet'-`IngKPublicos'')
-label var ing_bruto_tpm "Ingresos de capital privado `1'"
+label var ing_bruto_tpm "Ingresos de capital privado"
 noisily Simulador ing_bruto_tpm if ing_bruto_tpm != 0 [fw=factor], aniope(`1') aniovp(`1') reboot
 noisily Gini ing_bruto_tpm, hogar(folioviv foliohog) factor(factor)
 
@@ -209,20 +209,20 @@ noisily Gini ing_bruto_tpm, hogar(folioviv foliohog) factor(factor)
 
 ** (+) ISR Asalariados **
 Distribucion ISRAS, relativo(ISR_asalariados) macro(`ISRAS')
-label var ISRAS "ISR (sueldos y salarios) `1'"
+label var ISRAS "ISR (sueldos y salarios)"
 noisily Simulador ISRAS if ISRAS != 0 [fw=factor], aniope(`1') aniovp(`1') reboot
 noisily Gini ISRAS, hogar(folioviv foliohog) factor(factor)
 
 ** (+) ISR Personas Físicas **
 Distribucion ISRPF, relativo(ISR_PF) macro(`ISRPF')
-label var ISRPF "ISR (personas f{c i'}sicas) `1'"
+label var ISRPF "ISR (personas f{c i'}sicas)"
 noisily Simulador ISRPF if ISRPF != 0 [fw=factor], aniope(`1') aniovp(`1') reboot
 noisily Gini ISRPF, hogar(folioviv foliohog) factor(factor)
 
 ** (+) Cuotas obrero-patronal IMSS **
 Distribucion CUOTAS if formal2 == 1, relativo(cuotasTP) macro(`CUOTAS')
 replace CUOTAS = 0 if CUOTAS == .
-label var CUOTAS "Cuotas IMSS `1'"
+label var CUOTAS "Cuotas IMSS"
 noisily Simulador CUOTAS if CUOTAS != 0 [fw=factor], aniope(`1') aniovp(`1') reboot
 noisily Gini CUOTAS, hogar(folioviv foliohog) factor(factor)
 
@@ -230,7 +230,7 @@ noisily Gini CUOTAS, hogar(folioviv foliohog) factor(factor)
 egen laboral = rsum(ISRAS ISRPF CUOTAS)
 replace laboral = 0 if laboral == .
 Distribucion Laboral, relativo(laboral) macro(`=`ISRAS'+`ISRPF'+`CUOTAS'')
-label var Laboral "Impuestos laborales `1'"
+label var Laboral "Impuestos laborales"
 noisily Simulador Laboral if Laboral != 0 [fw=factor], aniope(`1') aniovp(`1') reboot
 noisily Gini Laboral, hogar(folioviv foliohog) factor(factor)
 
@@ -241,19 +241,19 @@ noisily Gini Laboral, hogar(folioviv foliohog) factor(factor)
 
 ** (+) ISR Personas Morales **
 Distribucion ISRPM, relativo(ISR_PM) macro(`ISRPM')
-label var ISRPM "ISR (personas morales) `1'"
+label var ISRPM "ISR (personas morales)"
 noisily Simulador ISRPM if ISRPM != 0 [fw=factor], aniope(`1') aniovp(`1') reboot
 noisily Gini ISRPM, hogar(folioviv foliohog) factor(factor)
 
 ** (+) Otros de capital **
 Distribucion OTROSK, relativo(ISR_PM) macro(`OTROSK')
-label var OTROSK "Productos, derechos, aprovechamientos... `1'"
+label var OTROSK "Productos, derechos, aprovechamientos..."
 noisily Simulador OTROSK if OTROSK != 0 [fw=factor], aniope(`1') aniovp(`1') reboot
 noisily Gini OTROSK, hogar(folioviv foliohog) factor(factor)
 
 ** (+) Impuestos de capital privado **
 Distribucion KPrivado, relativo(ISR_PM) macro(`=`OTROSK'+`ISRPM'')
-label var KPrivado "Impuestos al capital privado `1'"
+label var KPrivado "Impuestos al capital privado"
 noisily Simulador KPrivado if KPrivado != 0 [fw=factor], aniope(`1') aniovp(`1') reboot
 noisily Gini KPrivado, hogar(folioviv foliohog) factor(factor)
 
@@ -264,7 +264,7 @@ noisily Gini KPrivado, hogar(folioviv foliohog) factor(factor)
 
 ** (+) IVA **
 Distribucion IVA, relativo(IVA) macro(`IVA')
-label var IVA "IVA `1'"
+label var IVA "IVA"
 noisily Simulador IVA if IVA != 0 [fw=factor], aniope(`1') aniovp(`1') reboot
 noisily Gini IVA, hogar(folioviv foliohog) factor(factor)
 
@@ -273,25 +273,25 @@ tempvar ISANH
 g `ISANH' = ISAN
 drop ISAN
 Distribucion ISAN, relativo(`ISANH') macro(`ISAN')
-label var ISAN "ISAN `1'"
+label var ISAN "ISAN"
 noisily Simulador ISAN if ISAN != 0 [fw=factor], aniope(`1') aniovp(`1') reboot
 noisily Gini ISAN, hogar(folioviv foliohog) factor(factor)
 
 ** (+) IEPS (no petrolero) **
 Distribucion IEPSNP, relativo(gas_pc_BebA) macro(`IEPSNP')
-label var IEPSNP "IEPS (no petrolero) `1'"
+label var IEPSNP "IEPS (no petrolero)"
 noisily Simulador IEPSNP if IEPSNP != 0 [fw=factor], aniope(`1') aniovp(`1') reboot
 noisily Gini IEPSNP, hogar(folioviv foliohog) factor(factor)
 
 ** (+) IEPS (petrolero) **
 Distribucion IEPSP, relativo(gas_pc_Vehi) macro(`IEPSP')
-label var IEPSP "IEPS (petrolero) `1'"
+label var IEPSP "IEPS (petrolero)"
 noisily Simulador IEPSP if IEPSP != 0 [fw=factor], aniope(`1') aniovp(`1') reboot
 noisily Gini IEPSP, hogar(folioviv foliohog) factor(factor)
 
 ** (+) Importaciones **
 Distribucion IMPORT, relativo(Importaciones) macro(`IMPORT')
-label var IMPORT "Importaciones `1'"
+label var IMPORT "Importaciones"
 noisily Simulador IMPORT if IMPORT != 0 [fw=factor], aniope(`1') aniovp(`1') reboot
 noisily Gini IMPORT, hogar(folioviv foliohog) factor(factor)
 
@@ -299,7 +299,7 @@ noisily Gini IMPORT, hogar(folioviv foliohog) factor(factor)
 egen consumo = rsum(IVA ISAN IEPSNP IEPSP IMPORT)
 replace consumo = 0 if consumo == .
 Distribucion Consumo, relativo(consumo) macro(`=`IEPSP'+`IEPSNP'+`IMPORT'+`ISAN'+`IVA'')
-label var Consumo "Impuestos al consumo `1'"
+label var Consumo "Impuestos al consumo"
 noisily Simulador Consumo if Consumo != 0 [fw=factor], aniope(`1') aniovp(`1') reboot
 noisily Gini Consumo, hogar(folioviv foliohog) factor(factor)
 
@@ -310,43 +310,43 @@ noisily Gini Consumo, hogar(folioviv foliohog) factor(factor)
 
 ** (+) Fondo Mexicano del Petróleo **
 Distribucion FMP, relativo(pob) macro(`=`FMP'')
-label var FMP "FMP `1'"
+label var FMP "FMP"
 noisily Simulador FMP if FMP != 0 [fw=factor], aniope(`1') aniovp(`1') reboot
 noisily Gini FMP, hogar(folioviv foliohog) factor(factor)
 
 ** (+) IMSS **
 Distribucion IMSS, relativo(pob) macro(`=`IMSS'')
-label var IMSS "IMSS `1'"
+label var IMSS "IMSS"
 noisily Simulador IMSS if IMSS != 0 [fw=factor], aniope(`1') aniovp(`1') reboot
 noisily Gini IMSS, hogar(folioviv foliohog) factor(factor)
 
 ** (+) ISSSTE **
 Distribucion ISSSTE, relativo(pob) macro(`=`ISSSTE'')
-label var ISSSTE "ISSSTE `1'"
+label var ISSSTE "ISSSTE"
 noisily Simulador ISSSTE if ISSSTE != 0 [fw=factor], aniope(`1') aniovp(`1') reboot
 noisily Gini ISSSTE, hogar(folioviv foliohog) factor(factor)
 
 Distribucion Cuotas_ISSSTE, relativo(pob) macro(`=`Cuotas_ISSSTE'')
-label var Cuotas_ISSSTE "Cuotas_ISSSTE `1'"
+label var Cuotas_ISSSTE "Cuotas_ISSSTE"
 noisily Simulador Cuotas_ISSSTE if Cuotas_ISSSTE != 0 [fw=factor], aniope(`1') aniovp(`1') reboot
 noisily Gini Cuotas_ISSSTE, hogar(folioviv foliohog) factor(factor)
 
 ** (+) CFE **
 Distribucion CFE, relativo(pob) macro(`=`CFE'')
-label var CFE "CFE `1'"
+label var CFE "CFE"
 noisily Simulador CFE if CFE != 0 [fw=factor], aniope(`1') aniovp(`1') reboot
 noisily Gini CFE, hogar(folioviv foliohog) factor(factor)
 
 ** (+) PEMEX **
 Distribucion PEMEX, relativo(pob) macro(`=`PEMEX'')
-label var PEMEX "PEMEX `1'"
+label var PEMEX "PEMEX"
 noisily Simulador PEMEX if PEMEX != 0 [fw=factor], aniope(`1') aniovp(`1') reboot
 noisily Gini PEMEX, hogar(folioviv foliohog) factor(factor)
 
 ** (+) Impuestos y aportaciones **
 capture drop ImpuestosAportaciones
 egen ImpuestosAportaciones = rsum(ISRAS ISRPF CUOTAS ISRPM OTROSK IVA IEPSNP IEPSP ISAN IMPORT)
-label var ImpuestosAportaciones "Impuestos y aportaciones `1'"
+label var ImpuestosAportaciones "Impuestos y aportaciones"
 noisily Simulador ImpuestosAportaciones if ImpuestosAportaciones != 0 [fw=factor], aniope(`1') aniovp(`1') reboot
 noisily Gini ImpuestosAportaciones, hogar(folioviv foliohog) factor(factor)
 
@@ -424,13 +424,13 @@ replace educacion = educacion + `OtrosEdu'/(BasAlum[1,1]+MedAlum[1,1]+SupAlum[1,
 replace educacion = 0 if educacion == .
 
 Distribucion Educacion, relativo(educacion) macro(`Educacion')
-label var Educacion "Educación `1'"
+label var Educacion "Educación"
 noisily Simulador Educacion if Educacion != 0 [fw=factor], aniope(`1') aniovp(`1') reboot
 noisily Gini Educacion, hogar(folioviv foliohog) factor(factor)
 
 ** (-) Salud **
 Distribucion Salud, relativo(gas_pc_Salu) macro(`Salud')
-label var Salud "Salud `1'"
+label var Salud "Salud"
 noisily Simulador Salud if Salud != 0 [fw=factor], aniope(`1') aniovp(`1') reboot //poblacion(defunciones)
 noisily Gini Salud, hogar(folioviv foliohog) factor(factor)
 
@@ -451,7 +451,7 @@ replace Pension_AM = 0 if Pension_AM == .
 tabstat Pension_AM [fw=factor], stat(sum) f(%20.0fc)
 
 Distribucion Pension_AM, relativo(ing_pam) macro(`PenBienestar')
-label var Pension_AM "Pensi{c o'}n para adultos mayores `1'"
+label var Pension_AM "Pensi{c o'}n para adultos mayores"
 noisily Simulador Pension_AM if Pension_AM != 0 [fw=factor], aniope(`1') aniovp(`1') reboot
 noisily Gini Pension_AM, hogar(folioviv foliohog) factor(factor)
 
@@ -464,7 +464,7 @@ replace ing_jubila_pub = 0 if ing_jubila_pub == .
 capture drop Pensiones
 Distribucion Pensiones, relativo(ing_jubila_pub) macro(`Pensiones')
 replace Pensiones = Pensiones //+ Pension_AM
-label var Pensiones "Pensiones `1'"
+label var Pensiones "Pensiones"
 noisily Simulador Pensiones if Pensiones != 0 [fw=factor], aniope(`1') aniovp(`1') reboot
 noisily Gini Pensiones, hogar(folioviv foliohog) factor(factor)
 
@@ -488,25 +488,25 @@ foreach k in Aguas BajaN BajaS Campe Coahu Colim Chiap Chihu Ciuda Duran Guana /
 }
 egen infra_entidad = rsum(Infra_*)
 Distribucion Otras_inversiones, relativo(infra_entidad) macro(`InfraT')
-label var Otras_inversiones "Otras inversiones `1'"
+label var Otras_inversiones "Otras inversiones"
 noisily Simulador Otras_inversiones if Otras_inversiones != 0 [fw=factor], aniope(`1') aniovp(`1') reboot
 noisily Gini Otras_inversiones, hogar(folioviv foliohog) factor(factor)
 
 ** (-) Otros gastos **
 Distribucion Otros_gastos, relativo(pob) macro(`=`OtrosGastos'')
-label var Otros_gastos "Otros gastos `1'"
+label var Otros_gastos "Otros gastos"
 noisily Simulador Otros_gastos if Otros_gastos != 0 [fw=factor], aniope(`1') aniovp(`1') reboot
 noisily Gini Otros_gastos, hogar(folioviv foliohog) factor(factor)
 
 ** (-) Energía **
 Distribucion Energia, relativo(pob) macro(`=`Energía'')
-label var Energia "Energia `1'"
+label var Energia "Energia"
 noisily Simulador Energia if Energia != 0 [fw=factor], aniope(`1') aniovp(`1') reboot
 noisily Gini Energia, hogar(folioviv foliohog) factor(factor)
 
 ** (-) Otras Participaciones y Aportaciones **
 Distribucion Federalizado, relativo(pob) macro(`=`Federalizado'')
-label var Federalizado "Participaciones y otras aportaciones `1'"
+label var Federalizado "Participaciones y otras aportaciones"
 noisily Simulador Federalizado if Federalizado != 0 [fw=factor], aniope(`1') aniovp(`1') reboot
 noisily Gini Federalizado, hogar(folioviv foliohog) factor(factor)
 
@@ -514,7 +514,7 @@ noisily Gini Federalizado, hogar(folioviv foliohog) factor(factor)
 *****************************
 ** (-) Ingreso B{c a'}sico **
 g IngBasico = 0.0000000001
-label var IngBasico "Ingreso b{c a'}sico `1'"
+label var IngBasico "Ingreso b{c a'}sico"
 noisily Simulador IngBasico if IngBasico != 0 [fw=factor], aniope(`1') aniovp(`1') reboot
 noisily Gini IngBasico, hogar(folioviv foliohog) factor(factor)
 

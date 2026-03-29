@@ -808,14 +808,14 @@ program graphpiramide
 			stack asyvars xalternate ///
 			yscale(noextend noline range(2.5)) ///
 			blabel(none, format(%5.1fc)) ///
-			t2title({bf:Hombres}: `men'%, size(medsmall)) ///
-			ytitle(%, size(medsmall)) ///
-			///t2title({bf:Men} (`men'%), size(medsmall)) ///
+			t2title({bf:Hombres}: `men'%, size(vlarge)) ///
+			ytitle(%, size(vlarge)) ///
+			///t2title({bf:Men} (`men'%), size(vlarge)) ///
 			///ytitle(% GDP) ///
 			ylabel(`=round(`PORmaxval'[2,1],.1)'(1)`=`PORmaxval'[1,1]', format(%7.0fc) noticks) ///
 			name(H`varlist', replace) ///
 			legend(cols(4) pos(6) bmargin(zero) ///
-			label(1 `"{bf:Edades 0-18}: `=string(`agehlab',"%7.0fc")' %"') ///
+			label(1 `"{bf:0-18}: `=string(`agehlab',"%7.0fc")' %"') ///
 			label(2 `"{bf:19-65}: `=string(`agehlab1',"%7.0fc")' %"') ///
 			label(3 `"{bf:65+}: `=string(`agehlab2',"%7.0fc")' %"') ///
 			label(4 "") label(5 "") label(6 "") label(7 "") label(8 "") label(9 "") ///
@@ -831,26 +831,21 @@ program graphpiramide
 			stack asyvars ///
 			yscale(noextend noline range(2.5)) ///
 			blabel(none, format(%5.1fc)) ///
-			t2title({bf:Mujeres}: `women'%, size(medsmall)) ///
-			ytitle(%, size(medsmall)) ///
-			///t2title({bf:Women} (`women'%), size(medsmall)) ///
+			t2title({bf:Mujeres}: `women'%, size(vlarge)) ///
+			ytitle(%, size(vlarge)) ///
+			///t2title({bf:Women} (`women'%), size(vlarge)) ///
 			///ytitle(% GDP) ///
 			ylabel(`=round(`PORmaxval'[2,1],.1)'(1)`=`PORmaxval'[1,1]', format(%7.0fc) noticks) ///
 			name(M`varlist', replace) ///
-			legend(cols(4) pos(5) bmargin(zero) size(medlarge) keygap(1) symxsize(3) textwidth(30) forcesize) ///
+			legend(cols(4) pos(5) bmargin(zero) size(vlarge) keygap(1) symxsize(3) textwidth(30) forcesize) ///
 			plotregion(margin(zero)) ///
 			graphregion(margin(zero))
 
 		graph combine H`varlist' M`varlist', ///
 			name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)', replace) ///
 			ycommon xcommon ///
-			title("{bf:`title'}") subtitle("$pais") ///
-			caption("{bf:Fuente}: Elaborado por el CIEP, con la `base'.") ///
-			note(`"{bf:Nota}: Los porcentajes representan la concentraci{c o'}n de cada grupo."') ///
-			///title("`title' {bf:profile}") ///
-			///caption("{bf:Source}: Prepared by CIEP, using data from `base'.") ///
-			///note(`"{bf:Note}: Percentages in parentheses represent each group's share of the total account."')
-	
+			title("{bf:`title'}")
+			
 		//graph export `"`c(sysdir_site)'/users/$id/graphs/`varlist'_`titleover'.png"', ///
 		capture graph export `"$export/`varlist'_`titleover'.png"', ///
 				replace name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)')
@@ -1004,10 +999,10 @@ program define ProyGraph
 				xline(`aniohoy', lpattern(dot)) ///
 				xline(`aniomax', lpattern(dot)) ///
 				///yline(0, lpattern(solid) lcolor(black)) ///
-				///text(`=`estimacionmax'*.05' `aniomax' "Este perfil, junto con" "las proyecciones demográficas," "obtiene un {bf:máximo en `aniomax'}.", size(medsmall) place(11) justification(right)) ///
-				///text(`=`estimacionmax'*.05' `aniomax' "This age profile, along with" "CONAPO's demographic projections," "reaches a maximum in {bf:`aniomax'}.", size(medsmall) place(11) justification(right)) ///
+				///text(`=`estimacionmax'*.05' `aniomax' "Este perfil, junto con" "las proyecciones demográficas," "obtiene un {bf:máximo en `aniomax'}.", size(vlarge) place(11) justification(right)) ///
+				///text(`=`estimacionmax'*.05' `aniomax' "This age profile, along with" "CONAPO's demographic projections," "reaches a maximum in {bf:`aniomax'}.", size(vlarge) place(11) justification(right)) ///
 				b1title(`"De `aniohoy' a `aniomax', el cambio sería de {bf:`=string((`MAX'[1,1]/`estimacionvp'-1)*100,"%5.2f")'%} real."', size(large)) ///
-				///text(`=`estimacionvp'*0.25' `aniohoy' "From `aniohoy' to 2070,"  "its demand will" `"change in {bf:`=string((`LAST'[1,1]/`estimacionvp'-1)*100,"%5.2f")'%}."', size(medsmall) place(1) justification(left)) ///
+				///text(`=`estimacionvp'*0.25' `aniohoy' "From `aniohoy' to 2070,"  "its demand will" `"change in {bf:`=string((`LAST'[1,1]/`estimacionvp'-1)*100,"%5.2f")'%}."', size(vlarge) place(1) justification(left)) ///
 				title("{bf:`title'}") subtitle("$pais") ///
 				///caption("{bf:Fuente}: Elaborado con el Simulador Fiscal CIEP v5.") ///
 				name(`varlist'Proj, replace)
