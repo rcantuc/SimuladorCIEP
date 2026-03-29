@@ -522,7 +522,7 @@ if _rc != 0 {
 ********************************************************
 foreach categ in categ categ_iva categ_ieps {
 	capture confirm file "`c(sysdir_site)'/master/`anioenigh'/consumption_`categ'_pc.dta"
-	if _rc != 0 {
+	if _rc == 0 {
 
 		** 3.1 Consumo de los individuos **
 		use "`c(sysdir_site)'/temp/`anioenigh'/preconsumption.dta", clear
@@ -806,9 +806,9 @@ foreach categ in categ categ_iva categ_ieps {
 								if `vars'pc_`k' == 0
 						}
 					}
+					capture drop equivalencias`k'
 					egen equivalencias`k' = sum(`vars'pc_`k'), by(folioviv foliohog)
 					replace `vars'pc_`k' = `vars'hog`k'*tot_integ*`vars'pc_`k'/equivalencias`k'
-					drop equivalencias`k'
 				}
 				replace `vars'pc_`k' = `vars'pc_`k' + `vars'ind`k'
 				*noisily tabstat `vars'pc_`k' `vars'hog`k' `vars'ind`k' [fw=factor], stat(sum) f(%20.0fc)

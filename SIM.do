@@ -17,8 +17,8 @@ set scheme ciep
 
 ** 0.1 Directorio de archivos .ado (Github)
 if "`c(username)'" == "ricardo" & "`1'" != "ricardo" {
-	*sysdir set SITE "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP"
-	*global export "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/TextbookCIEP/images"
+	sysdir set SITE "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP"
+	global export "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/TextbookCIEP/images"
 }
 cd "`c(sysdir_site)'"
 
@@ -35,8 +35,8 @@ capture mkdir "`c(sysdir_site)'/users/$id"
 ** 0.4 Opciones (descomentar para activar)
 //global nographs "nographs"							// SUPRIMIR GRAFICAS
 //global update "update"							// UPDATE BASES DE DATOS
-global textbook "textbook"							// SCALAR TO LATEX
-global output "output"							// ARCHIVO DE SALIDA (WEB)
+//global textbook "textbook"							// SCALAR TO LATEX
+//global output "output"							// ARCHIVO DE SALIDA (WEB)
 
 ** 0.5 Ejecución de opciones **
 if "$output" != "" {
@@ -88,7 +88,7 @@ global inf2029 = 3.0
 global inf2030 = 3.0
 global inf2031 = 3.0
 
-** 2.4 PIB + Deflactores
+/** 2.4 PIB + Deflactores
 noisily PIBDeflactor if anio >= 2005, aniovp(`=aniovp') aniomax(2031) $textbook $nographs $update
 
 ** 2.5 Sistema de Cuentas Nacionales (sin inputs)
@@ -106,11 +106,11 @@ noisily run "`c(sysdir_site)'/01_modulos/households/Expenditure.do" `=anioPE'
 
 ** 3.2 Encuesta Nacional de Ingresos y Gastos de los Hogares (Recursos)
 noisily di _newline in g "Actualizando: " in y "households.dta"
-noisily run `"`c(sysdir_site)'/01_modulos/households/Households.do"' `=anioPE'
+*noisily run `"`c(sysdir_site)'/01_modulos/households/Households.do"' `=anioPE'
 
 ** 3.3 Perfiles de la política económica actual (Paquete Económico)
 noisily di _newline in g "Actualizando: " in y "perfiles`anio'.dta"
-noisily run "`c(sysdir_site)'/01_modulos/profiles/PerfilesSim.do" `=anioPE'
+*noisily run "`c(sysdir_site)'/01_modulos/profiles/PerfilesSim.do" `=anioPE'
 
 
 
@@ -406,7 +406,7 @@ noisily SHRFSP, anio(`=anioPE') ultanio(2002) $nographs $update $textbook
 
 **/
 **# 7. CICLO DE VIDA FISCAL
-/***
+***
 set scheme ciep
 use `"`c(sysdir_site)'/users/$id/ingresos.dta"', clear
 merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/users/$id/gastos.dta", nogen
