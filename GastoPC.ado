@@ -599,7 +599,8 @@ quietly {
 			replace imssbien = 0 if imssbien == .
 
 			capture drop Salud
-			g Salud = real(subinstr(imssbienPC,",","",.))*benef_imssbien
+			egen equivalenciasSalu = sum(gas_pc_Salu), by(folioviv foliohog)
+			g Salud = real(subinstr(imssbienPC,",","",.))*benef_imssbien*gas_pc_Salu/equivalenciasSalu
 
 
 			** 4.2 Secretaría de Salud **
@@ -639,7 +640,7 @@ quietly {
 			replace `gas_pc_ssa' = 0 if `gas_pc_ssa' == .
 			Distribucion ssa, relativo(`gas_pc_ssa') macro(`ssa')
 			replace ssa = 0 if ssa == .
-			replace Salud = Salud + real(subinstr(ssaPC,",","",.))*benef_ssa
+			replace Salud = Salud + real(subinstr(ssaPC,",","",.))*benef_ssa*gas_pc_Salu/equivalenciasSalu
 
 
 			** 4.3 IMSS (salud) **
@@ -665,7 +666,7 @@ quietly {
 			replace `gas_pc_imss' = 0 if `gas_pc_imss' == .
 			Distribucion imss, relativo(`gas_pc_imss') macro(`imss')
 			replace imss = 0 if imss == .
-			replace Salud = Salud + real(subinstr(imssPC,",","",.))*benef_imss
+			replace Salud = Salud + real(subinstr(imssPC,",","",.))*benef_imss*gas_pc_Salu/equivalenciasSalu
 
 
 			** 4.4 ISSSTE Federal (salud) **
@@ -691,7 +692,7 @@ quietly {
 			replace `gas_pc_issste' = 0 if `gas_pc_issste' == .
 			Distribucion issste, relativo(`gas_pc_issste') macro(`issste')
 			replace issste = 0 if issste == .
-			replace Salud = Salud + real(subinstr(issstePC,",","",.))*benef_issste
+			replace Salud = Salud + real(subinstr(issstePC,",","",.))*benef_issste*gas_pc_Salu/equivalenciasSalu
 
 
 			** 4.5 Pemex (salud) **
@@ -717,7 +718,7 @@ quietly {
 			replace `gas_pc_pemex' = 0 if `gas_pc_pemex' == .
 			Distribucion pemex, relativo(`gas_pc_pemex') macro(`pemex')
 			replace pemex = 0 if pemex == .
-			replace Salud = Salud + real(subinstr(pemexPC,",","",.))*benef_pemex
+			replace Salud = Salud + real(subinstr(pemexPC,",","",.))*benef_pemex*gas_pc_Salu/equivalenciasSalu
 
 			
 			** 4.6 ISSFAM (salud) **
@@ -743,7 +744,8 @@ quietly {
 			replace `gas_pc_issfam' = 0 if `gas_pc_issfam' == .
 			Distribucion issfam, relativo(`gas_pc_issfam') macro(`issfam')
 			replace issfam = 0 if issfam == .
-			replace Salud = Salud + real(subinstr(issfamPC,",","",.))*benef_issfam
+
+			replace Salud = Salud + real(subinstr(issfamPC,",","",.))*benef_issfam*gas_pc_Salu/equivalenciasSalu
 
 
 			** 4.7 Inversión en salud **
@@ -769,7 +771,7 @@ quietly {
 			replace `gas_pc_invers' = 0 if `gas_pc_invers' == .
 			Distribucion invers, relativo(`gas_pc_invers') macro(`invers')
 			replace invers = 0 if invers == .
-			replace Salud = Salud + real(subinstr(inversPC,",","",.))*benef_invers
+			replace Salud = Salud + real(subinstr(inversPC,",","",.))*benef_invers*gas_pc_Salu/equivalenciasSalu
 
 
 			** 4.8 Total SALUD **

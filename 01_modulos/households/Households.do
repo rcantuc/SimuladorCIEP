@@ -2682,13 +2682,18 @@ label var cuotasTPF "Cuotas a la Seguridad Social"
 *noisily Perfiles cuotasTPF [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Cuotas a la Seguridad Social")
 *noisily Simulador cuotasTPF [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Cuotas a la Seguridad Social") reboot
 
+if "$export" == "" {
+	local graphtitle "{bf:Entradas (recursos)}"
+	local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con la ENIGH `=anioenigh'."
+}
+else {
+	local graphtitle ""
+	local graphfuente ""
+}
 
 if "$nographs" == "" {
 	graph combine Yl_dec Yk_dec, ///
-		name(Recursos, replace) ycommon xcommon ///
-		title("{bf:Entradas (recursos)}") subtitle("$pais") ///
-		caption("{bf:Fuente}: Elaborado por el CIEP, con la ENIGH `=anioenigh'.") ///
-		note(`"{bf:Nota}: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n en cada grupo."')
+		name(Recursos, replace) ycommon xcommon
 
 	if "$export" != "" {
 		graph export `"$export/Recursos.png"', replace name(Recursos)
@@ -2697,11 +2702,17 @@ if "$nographs" == "" {
 		graph export `"`c(sysdir_site)'/users/$id/graphs/Recursos.png"', replace name(Recursos)
 	}
 
+if "$export" == "" {
+	local graphtitle "{bf:Salidas (usos)}"
+	local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con la ENIGH `=anioenigh'."
+}
+else {
+	local graphtitle ""
+	local graphfuente ""
+}
+
 	graph combine gastoanual_dec Ahorro_dec, ///
-		name(Usos, replace) ycommon xcommon ///
-		title("{bf:Salidas (usos)}") subtitle("$pais") ///
-		caption("{bf:Fuente}: Elaborado por el CIEP, con la ENIGH `=anioenigh'.") ///
-		note(`"{bf:Nota}: Porcentajes entre par{c e'}ntesis representan la concentraci{c o'}n en cada grupo."')
+		name(Usos, replace) ycommon xcommon
 
 	if "$export" != "" {
 		graph export `"$export/Usos.png"', replace name(Usos)

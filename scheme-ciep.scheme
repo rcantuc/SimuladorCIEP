@@ -109,10 +109,10 @@ tickposition	axis_tick		inside
 // Legend
 clockdir 	legend_position		6
 linestyle 	legend			none
-gsize 		legend_key_xsize	medlarge
-gsize 		legend_key_ysize	medlarge
+gsize 		legend_key_xsize	vlarge
+gsize 		legend_key_ysize	vlarge
 numstyle 	legend_cols		8
-gsize 		key_label		medlarge
+gsize 		key_label		vlarge
 
 
 
