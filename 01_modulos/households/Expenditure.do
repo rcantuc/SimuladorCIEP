@@ -522,7 +522,7 @@ if _rc != 0 {
 ********************************************************
 foreach categ in categ categ_iva categ_ieps {
 	capture confirm file "`c(sysdir_site)'/master/`anioenigh'/consumption_`categ'_pc.dta"
-	if _rc == 0 {
+	if _rc != 0 {
 
 		** 3.1 Consumo de los individuos **
 		use "`c(sysdir_site)'/temp/`anioenigh'/preconsumption.dta", clear
