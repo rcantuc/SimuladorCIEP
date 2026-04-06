@@ -35,7 +35,7 @@ capture mkdir "`c(sysdir_site)'/users/$id"
 ** 0.4 Opciones (descomentar para activar)
 //global nographs "nographs"							// SUPRIMIR GRAFICAS
 //global update "update"							// UPDATE BASES DE DATOS
-//global textbook "textbook"							// SCALAR TO LATEX
+global textbook "textbook"							// SCALAR TO LATEX
 //global output "output"							// ARCHIVO DE SALIDA (WEB)
 
 ** 0.5 Ejecución de opciones **
@@ -88,7 +88,7 @@ global inf2029 = 3.0
 global inf2030 = 3.0
 global inf2031 = 3.0
 
-/** 2.4 PIB + Deflactores
+** 2.4 PIB + Deflactores
 noisily PIBDeflactor if anio >= 2005, aniovp(`=aniovp') aniomax(2031) $textbook $nographs $update
 
 ** 2.5 Sistema de Cuentas Nacionales (sin inputs)
@@ -98,7 +98,7 @@ noisily SCN, anio(`=aniovp') $textbook $nographs $update
 
 **/
 **# 3. HOGARES: ARMONIZACIÓN MACRO-MICRO
-***
+/***
 
 ** 3.1 Encuesta Nacional de Ingresos y Gastos de los Hogares (Usos)
 noisily di _newline in g "Actualizando: " in y "expenditures.dta"
@@ -106,11 +106,11 @@ noisily run "`c(sysdir_site)'/01_modulos/households/Expenditure.do" `=anioPE'
 
 ** 3.2 Encuesta Nacional de Ingresos y Gastos de los Hogares (Recursos)
 noisily di _newline in g "Actualizando: " in y "households.dta"
-*noisily run `"`c(sysdir_site)'/01_modulos/households/Households.do"' `=anioPE'
+noisily run `"`c(sysdir_site)'/01_modulos/households/Households.do"' `=anioPE'
 
 ** 3.3 Perfiles de la política económica actual (Paquete Económico)
 noisily di _newline in g "Actualizando: " in y "perfiles`anio'.dta"
-*noisily run "`c(sysdir_site)'/01_modulos/profiles/PerfilesSim.do" `=anioPE'
+noisily run "`c(sysdir_site)'/01_modulos/profiles/PerfilesSim.do" `=anioPE'
 
 
 
@@ -297,7 +297,7 @@ noisily PEF if ramo != -1, anio(`=anioPE') by(divSIM) $update 		///
 
 ** 5.1 Parámetros: Gasto **
 scalar iniciaA     =   0.000    					// Inicial
-scalar basica      =   1.966    					// Educación b{c a'}sica
+scalar basica      =   1.965    					// Educación b{c a'}sica
 scalar medsup      =   0.394    					// Educación media superior
 scalar superi      =   0.431    					// Educación superior
 scalar posgra      =   0.027    					// Posgrado
@@ -339,7 +339,7 @@ scalar gasmadres   =   0.009   						// Apoyo a madres trabajadoras
 scalar gascuidados =   0.046   						// Gasto en cuidados
 
 
-** 5.2 Gasto per cápita **
+** 5.2 Gasto per cápita **/
 noisily GastoPC educacion salud pensiones energia resto transferencias, aniope(`=anioPE') aniovp(`=aniovp')
 
 

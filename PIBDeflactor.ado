@@ -413,7 +413,7 @@ quietly {
 			yscale(range(450 675) axis(3)) ///
 			legend(on label(1 "PIB (billones `=currency' `aniovp')") ///
 			label(2 "Población Ocupada (millones)") ///
-			label(3 "Productividad (miles `=currency' `aniovp')"))	///
+			label(3 "Productividad (miles `=currency' `aniovp')") size(medlarge))	///
 			yline(`crecpo2', axis(3)) ///
 			text(`=`crecpo2'-10' 2005 `"Dif. 2005 - `aniofinal': {bf:`=string(`crecpo2'-`crecpo3',"%7.0fc")'}"', ///
 			justification(left) place(5) color("111 111 111") size(medlarge) yaxis(3)) ///
