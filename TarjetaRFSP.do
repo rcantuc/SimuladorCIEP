@@ -27,19 +27,10 @@ if _rc != 0 {
 local aniovp = scalar(aniovp)
 
 ** Verificar que exista la base de DatosAbiertos **
-capture confirm file `"`c(sysdir_site)'/master/DatosAbiertos.dta"'
-if _rc != 0 {
-	noisily di in r "No se encontró la base de DatosAbiertos.dta. Ejecute primero: DatosAbiertos, update"
-	exit
-}
+DatosAbiertos, update zipfile
 
 ** Verificar que exista el deflactor **
-capture confirm file `"`c(sysdir_site)'/master/Deflactor.dta"'
-if _rc != 0 {
-	noisily di in r "No se encontró la base de Deflactor.dta. Ejecute primero: PIBDeflactor, update"
-	exit
-}
-
+PIBDeflactor, update
 
 
 ***
