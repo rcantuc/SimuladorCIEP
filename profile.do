@@ -45,16 +45,16 @@ noisily di in g " Información Económica:  " _col(30) in y "$paqueteEconomico" 
 	_newline in g " Año de Valor Presente:  " _col(30) in y "`=aniovp'" ///
 	_newline in g " User: " _col(30) in y "$id"
 
-noisily di _newline `" {stata "Poblacion":Poblacion} [if entidad == "{it:Nombre}"] [, ANIOinicial(int) ANIOFINal(int) NOGraphs] {view "00_helps/Poblacion.sthlp":({it:help})}"'
-noisily di `" {stata "PIBDeflactor, geopib(2010) geodef(2010) aniomax(2031)":PIBDeflactor} [, ANIOvp(int) ANIOMAX(int) NOGraphs] {view "00_helps/PIBDeflactor.sthlp":({it:help})}"'
-noisily di `" {stata "SCN":SCN} [, ANIO(int) NOGraphs] {view "00_helps/SCN.sthlp":({it:help})}"'
-noisily di `" {stata "LIF":LIF} [, ANIO(int) NOGraphs MINimum(real) BY(varname) ROWS(int) COLS(int) BASE] {view "00_helps/LIF.sthlp":({it:help})}"'
-noisily di `" {stata "PEF":PEF} [if] [, ANIO(int) NOGraphs MINimum(real) BY(varname) ROWS(int) COLS(int) BASE] {view "00_helps/PEF.sthlp":({it:help})}"'
-noisily di `" {stata "SHRFSP":SHRFSP} [, ANIO(int) DEPreciacion(int) NOGraphs] {view "00_helps/SHRFSP.sthlp":({it:help})}"' 
-noisily di `" {stata "DatosAbiertos XAB":DatosAbiertos} {it:serie} [, NOGraphs DESDE(real) MES] {view "00_helps/DatosAbiertos.sthlp":({it:help})}"' 
-noisily di `" {stata "TasasEfectivas":TasasEfectivas} [, ANIO(int)] {view "00_helps/TasasEfectivas.sthlp":({it:help})}"' 
-noisily di `" {stata "GastoPC":GastoPC} [, ANIO(int)] {view "00_helps/GastoPC.sthlp":({it:help})}"'
-noisily di `" {stata "AccesoBIE 734407, nombres(pibQ)":AccesoBIE} {it:serie} [, nombres()] {view "00_helps/AccesoBIE.sthlp":({it:help})}"' 
+noisily di _newline `" {stata "Poblacion":Poblacion} [if entidad == "{it:Nombre}"] [, ANIOinicial(int) ANIOFINal(int) NOGraphs] {view "help/Stata help/Poblacion.sthlp":({it:help})}"'
+noisily di `" {stata "PIBDeflactor, geopib(2010) geodef(2010) aniomax(2031)":PIBDeflactor} [, ANIOvp(int) ANIOMAX(int) NOGraphs] {view "help/Stata help/PIBDeflactor.sthlp":({it:help})}"'
+noisily di `" {stata "SCN":SCN} [, ANIO(int) NOGraphs] {view "help/Stata help/SCN.sthlp":({it:help})}"'
+noisily di `" {stata "LIF":LIF} [, ANIO(int) NOGraphs MINimum(real) BY(varname) ROWS(int) COLS(int) BASE] {view "help/Stata help/LIF.sthlp":({it:help})}"'
+noisily di `" {stata "PEF":PEF} [if] [, ANIO(int) NOGraphs MINimum(real) BY(varname) ROWS(int) COLS(int) BASE] {view "help/Stata help/PEF.sthlp":({it:help})}"'
+noisily di `" {stata "SHRFSP":SHRFSP} [, ANIO(int) DEPreciacion(int) NOGraphs] {view "help/Stata help/SHRFSP.sthlp":({it:help})}"' 
+noisily di `" {stata "DatosAbiertos XAB":DatosAbiertos} {it:serie} [, NOGraphs DESDE(real) MES] {view "help/Stata help/DatosAbiertos.sthlp":({it:help})}"' 
+noisily di `" {stata "TasasEfectivas":TasasEfectivas} [, ANIO(int)] {view "help/Stata help/TasasEfectivas.sthlp":({it:help})}"' 
+noisily di `" {stata "GastoPC":GastoPC} [, ANIO(int)] {view "help/Stata help/GastoPC.sthlp":({it:help})}"'
+noisily di `" {stata "AccesoBIE 734407, nombres(pibQ)":AccesoBIE} {it:serie} [, nombres()] {view "help/Stata help/AccesoBIE.sthlp":({it:help})}"' 
 
 
 
