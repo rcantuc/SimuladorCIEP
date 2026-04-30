@@ -1069,7 +1069,7 @@ program define UpdateDatosAbiertos, return
 
 	***************************************************
 	** 4.1 ISR fisicas, morales, asalariados y otros **
-	import excel "https://www.dropbox.com/scl/fi/e6zdb26t6srrhbohld3mz/ISRInformesTrimestrales.xlsx?rlkey=bc2p9gvg56rgwlwu3ewjql7ny&st=c47v2gm1&dl=1", ///
+	import excel "`c(sysdir_site)'/raw/ISRInformesTrimestrales.xlsx", ///
 		clear sheet("TipoDeContribuyente") firstrow case(lower)
 	tsset anio trimestre
 	drop total

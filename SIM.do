@@ -17,8 +17,7 @@ set scheme ciep
 
 ** 0.1 Directorio de archivos .ado (Github)
 if "`c(username)'" == "ricardo" & "`1'" != "ricardo" {
-	*sysdir set SITE "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP"
-	*global export "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/TextbookCIEP/images"
+	sysdir set SITE "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP"
 }
 cd "`c(sysdir_site)'"
 
@@ -34,36 +33,36 @@ capture mkdir "`c(sysdir_site)'/users/$id"
 
 ** 0.4 Opciones (descomentar para activar)
 global nographs "nographs"							// SUPRIMIR GRAFICAS
-//global update "update"							// UPDATE BASES DE DATOS
-global textbook "textbook"							// SCALAR TO LATEX
-//global output "output"							// ARCHIVO DE SALIDA (WEB)
 
-** 0.5 Ejecución de opciones **
-if "$output" != "" {
-	quietly log using `"`c(sysdir_site)'/users/$id/output.txt"', replace text name(output)
-	quietly log off output
-}
+global update "update"								// UPDATE BASES DE DATOS
 if "$update" == "update" {
 	capture rmdir "`c(sysdir_site)'/temp/"
 }
 
+//global output "output"							// ARCHIVO DE SALIDA (WEB)
+if "$output" != "" {
+	quietly log using `"`c(sysdir_site)'/users/$id/output.txt"', replace text name(output)
+	quietly log off output
+}
+
+//global textbook "textbook"						// SCALAR TO LATEX
 
 
 ***
 **# 1. DEMOGRAFÍA
-/***
-noisily Poblacion, anioi(`=aniovp') aniofinal(2050) $textbook $nographs
+***
+noisily Poblacion, anioi(`=aniovp') aniofinal(2070) $textbook $nographs
 
 
 
 **/
 **# 2. ECONOMÍA
 ***
-global paqueteEconomico "CGPE 2026"						// POLÍTICA FISCAL
+global paqueteEconomico "CGPE 2026"					// POLÍTICA FISCAL A ANALIZAR
 
 ** 2.1 Producto Interno Bruto (inputs opcionales)
 global pib2025 = 1.3								// CRECIMIENTO ANUAL PIB
-global pib2026 = 2.3								// <-- AGREGAR O QUITAR AÑOS
+global pib2026 = 2.3								// <-- AGREGAR O QUITAR AÑOS SEGÚN PROYECCIONES
 global pib2027 = 2.1
 global pib2028 = 2.1
 global pib2029 = 2.0
@@ -72,7 +71,7 @@ global pib2031 = 2.0
 
 ** 2.2 Deflactor (inputs opcionales)
 global def2025 = 5.2								// CRECIMIENTO ANUAL PRECIOS IMPLÍCITOS
-global def2026 = 4.8								// <-- AGREGAR O QUITAR AÑOS
+global def2026 = 4.8								// <-- AGREGAR O QUITAR AÑOS SEGÚN PROYECCIONES
 global def2027 = 4.2
 global def2028 = 4.0
 global def2029 = 4.0
@@ -81,7 +80,7 @@ global def2031 = 4.0
 
 ** 2.3 Inflación (inputs opcionales)
 global inf2025 = 4.2								// CRECIMIENTO ANUAL INFLACIÓN
-global inf2026 = 3.54								// <-- AGREGAR O QUITAR AÑOS
+global inf2026 = 3.54								// <-- AGREGAR O QUITAR AÑOS SEGÚN PROYECCIONES
 global inf2027 = 3.0
 global inf2028 = 3.0
 global inf2029 = 3.0
@@ -98,7 +97,7 @@ noisily SCN, anio(`=aniovp') $textbook $nographs $update
 
 **/
 **# 3. HOGARES: ARMONIZACIÓN MACRO-MICRO
-/***
+***
 
 ** 3.1 Encuesta Nacional de Ingresos y Gastos de los Hogares (Usos)
 noisily di _newline in g "Actualizando: " in y "expenditures.dta"
