@@ -584,14 +584,7 @@ program define UpdateLIF
 	************************
 	*** 1. BASE DE DATOS ***
 	************************
-	capture confirm file "`c(sysdir_site)'/raw/LIFs.dta"
-	if _rc != 0 | "`update'" == "update" {
-		capture mkdir "`c(sysdir_site)'/raw/"
-		import excel "https://www.dropbox.com/scl/fi/d5tof6svvpjd5h5tef570/LIFs.xlsx?rlkey=drn1a2fenarwo9cooe4o9eemh&st=iuykql5n&dl=1", clear firstrow
-		save "`c(sysdir_site)'/raw/LIFs.dta", replace
-	}
-
-	use "`c(sysdir_site)'/raw/LIFs.dta", clear
+	import excel "./raw/LIFs/LIFs.xlsx", clear firstrow
 	foreach k of varlist _all {
 		capture confirm string variable `k'
 		if _rc == 0 {

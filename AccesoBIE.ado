@@ -76,10 +76,11 @@ program define AccesoBIE
 			}
 			
 			// Limpiar periodo
-			capture replace periodo = subinstr(periodo, "/p1", "", .)
-			capture replace periodo = subinstr(periodo, "/r1", "", .)
-			capture replace periodo = subinstr(periodo, "/p", "", .)
-			capture replace periodo = subinstr(periodo, "/r", "", .)
+			*capture replace periodo = subinstr(periodo, "/p1", "", .)
+			*capture replace periodo = subinstr(periodo, "/r1", "", .)
+			*capture replace periodo = subinstr(periodo, "/p", "", .)
+			*capture replace periodo = subinstr(periodo, "/r", "", .)
+			replace periodo = substr(periodo,1,7)
 			
 			// Eliminar columna extra si existe
 			capture drop extra
@@ -121,6 +122,12 @@ program define AccesoBIE
 			rename periodo1 anio
 			label var anio "Año"
 			
+			capture confirm string variable periodo2
+			if _rc == 0 {
+				replace periodo2 = substr(periodo2,1,2)
+				destring periodo2, replace
+			}
+
 			capture confirm variable periodo2
 			if _rc == 0 {
 				qui tabstat periodo2, stat(max) save
