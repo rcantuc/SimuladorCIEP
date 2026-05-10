@@ -1,0 +1,48 @@
+# .mailmap — Normalización de identidades de autoría Git
+#
+# Este archivo le dice a Git que ciertas identidades distintas en el historial
+# (combinaciones de nombre + email) corresponden a la misma persona física.
+# Afecta SOLO la presentación en `git log`, `git blame`, `git shortlog`, etc.
+# NO modifica el historial almacenado.
+#
+# Sintaxis:
+#   <Nombre Canónico> <email-canónico> <Nombre Antiguo> <email-antiguo>
+#
+# Documentación: https://git-scm.com/docs/gitmailmap
+#
+# Para ver el efecto:
+#   git shortlog -sn --all       (commits agregados por autor canónico)
+#   git log --pretty=fuller      (autores normalizados)
+#
+# -----------------------------------------------------------------------------
+# Ricardo Cantú — fundador del CIEP, autor original del Simulador.
+# Aparece en la historia bajo 4 nombres distintos, todos con el mismo email
+# personal (rcantuc@gmail.com). Email canónico: el institucional CIEP.
+# -----------------------------------------------------------------------------
+Ricardo Cantú <ricardocantu@ciep.mx> Ricardo Cantú <rcantuc@gmail.com>
+Ricardo Cantú <ricardocantu@ciep.mx> Ricardo Cantu <rcantuc@gmail.com>
+Ricardo Cantú <ricardocantu@ciep.mx> rcantuc <rcantuc@gmail.com>
+Ricardo Cantú <ricardocantu@ciep.mx> ricarqo <rcantuc@gmail.com>
+
+# -----------------------------------------------------------------------------
+# Erik Covarrubias — colaborador CIEP. Dos emails (uno noreply de GitHub,
+# uno personal). Se canonicaliza al personal.
+# -----------------------------------------------------------------------------
+erikciep <erik.covarru@gmail.com> erikciep <60672234+erikciep@users.noreply.github.com>
+
+# -----------------------------------------------------------------------------
+# Juan Pablo López / Santisteban — colaborador externo.
+# PENDIENTE de confirmar con Ricardo si las dos cuentas GitHub
+# (Jotapelopez3696 y JuanPabloSantisteban) son la misma persona.
+# Si lo son, descomentar las siguientes líneas y elegir nombre canónico:
+#
+# Juan Pablo López <juanpablo.loprey@gmail.com> Jotapelopez3696 <90220294+Jotapelopez3696@users.noreply.github.com>
+# Juan Pablo López <juanpablo.loprey@gmail.com> JuanPabloSantisteban <51425712+JuanPabloSantisteban@users.noreply.github.com>
+
+# -----------------------------------------------------------------------------
+# Identidades sin alias detectados (no requieren mapeo, se documentan aquí
+# para que un nuevo colaborador entienda quién es quién en el historial):
+#
+#   18-carlos       → Carlos [apellido pendiente de confirmar], colaborador CIEP
+#   Leslie Badillo  → Leslie Badillo, CIEP
+# -----------------------------------------------------------------------------

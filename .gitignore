@@ -1,6 +1,126 @@
+# =============================================================================
+# .gitignore — Simulador Fiscal CIEP
+# =============================================================================
+# Última revisión: 2026-05-09 (Fase 0.5 — governance setup, Acción 3).
+# Estructura: secciones comentadas por categoría, de lo más específico del
+# stack (Stata) a lo más genérico (OS, IDEs).
+#
+# Para auditar qué reglas aplican a un path:
+#   git check-ignore -v <ruta>
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# Stata — outputs y artefactos transitorios
+# -----------------------------------------------------------------------------
+# Logs SMCL (formato Stata) y plain
+*.smcl
+*.log
+
+# Swap, backup y autosave de Stata
+*.stswp
+*.stbak
+*.stsem
+
+# Crashes de Stata
+hs_err_pid*.log
+
+# Ado-files instalados en perfil personal (no del repo)
+ado/personal/
+ado/plus/
+
+# Proyectos Stata Project Manager (.stpr) — contienen paths absolutos del
+# usuario (Java serialization data); NO portables entre máquinas.
+*.stpr
+
+
+# -----------------------------------------------------------------------------
+# Sistemas operativos
+# -----------------------------------------------------------------------------
+# macOS — el patrón anterior `**.DS_Store**` era inválido (los `**` solo
+# tienen significado entre slashes). El correcto es:
+**/.DS_Store
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+
+
+# -----------------------------------------------------------------------------
+# Dropbox — archivos de conflicto
+# -----------------------------------------------------------------------------
+# Los patrones cubren ambas convenciones de naming que Dropbox ha usado:
+# lowercase ("conflicted copy") y Title Case ("Conflicted Copy"). Verificado
+# con `git check-ignore -v` en sandbox: portable a Linux (filesystems case-
+# sensitive) sin depender de `core.ignorecase=true`.
+*conflicted copy*
+*Conflicted Copy*
+
+
+# -----------------------------------------------------------------------------
+# Stata — archivos de recuperación automática tras crash
+# -----------------------------------------------------------------------------
+# Stata genera archivos `Foo [Recovered].do` después de cierres anormales.
+# IMPORTANTE: los corchetes deben escaparse con backslash. Sin escape,
+# `[Recovered]` se interpreta como character class (matchea cualquier letra
+# en R,e,c,o,v,r,d), capturando archivos legítimos masivamente. Bug cazado
+# durante la verificación con `git check-ignore -v` (Fase 0.5, Acción 3).
+*\[Recovered\]*
+
+
+# -----------------------------------------------------------------------------
+# IDEs y editores
+# -----------------------------------------------------------------------------
+.vscode/
+.idea/
+.windsurf/cache/
+
+# Decisión explícita (Fase 0.5, 2026-05-09): `.windsurfrules` SÍ se versiona.
+# Razón: el archivo es el contrato de governance que orienta el trabajo de
+# Cascade en este repo. Es meta-documentación operativa, no estado del IDE.
+# Vive en Git para que cualquier co-mantenedor que abra el repo en Windsurf
+# herede automáticamente las mismas reglas. NO añadir a este .gitignore.
+
+
+# -----------------------------------------------------------------------------
+# Secretos y credenciales (refuerzo desde auditoría de seguridad pre-rewrite)
+# -----------------------------------------------------------------------------
+# Llaves SSL/TLS y certificados — nunca commit
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt
+**/ssl/**
+
+# Variables de entorno (incluido el token BIE post-rotación)
+.env
+.env.*
+!.env.example
+
+
+# -----------------------------------------------------------------------------
+# Data Sidecar — `raw/` vive en GitHub Releases, no en Git
+# -----------------------------------------------------------------------------
+# Decisión arquitectónica de Fase 0.5 (ver fase-0-5-git-hygiene-audit.md §4).
+# Los binarios de raw/ se publican como assets del release v7.0; este repo
+# sólo versiona el manifiesto (apuntador con SHA-256 y URLs).
+**/raw/**
+!raw/manifest.json
+
+
+# -----------------------------------------------------------------------------
+# Carpetas de operación local del Simulador (NO se versionan)
+# -----------------------------------------------------------------------------
+# Outputs intermedios de cada corrida y datos del servidor de producción.
 **/temp/**
 **/master/**
 **/graphs/**
 **/users/**
 **/simuladorfiscal.ciep.mx/**
-**.DS_Store**
+
