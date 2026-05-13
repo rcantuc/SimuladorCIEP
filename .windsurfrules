@@ -30,6 +30,117 @@ No vuelvas a preguntar estos puntos; constrúyelos como dados:
 - **Plan de incorporación:** existe equipo CIEP del cual saldrán los co-mantenedores, pero **aún no se ha definido quién**. La primera tarea de Fase A3.5 NO es perfilado genérico ni reclutamiento — es **construir criterios de selección aplicables al pool existente**, para que la decisión sea explícita y defendible.
 - **Capacidad de mentoring de Ricardo:** **hasta 5 horas a la semana** durante los próximos 3–6 meses. Esto sostiene mentoring intensivo de **una persona** con holgura, o de dos personas con tensión. Diseña la transición asumiendo **una persona primero**, no varias en paralelo.
 
+## PERFIL DEL LECTOR DESTINATARIO
+
+Todo artefacto que produzcas en este repositorio está escrito para alguien con este perfil:
+
+- **Economista de formación**, no programador. Posgrado en economía o equivalente.
+- **Stata como herramienta de trabajo** desde hace años. Lee y escribe `.do` y `.ado` con fluidez. No necesita explicación de Stata.
+- **Autodidacta en Git.** Conoce conceptos básicos (`clone`, `commit`, `push`, `pull`). No usa terminal regularmente. No conoce flujos profesionales (PRs, rebase, conventional commits, glob patterns, history rewriting).
+- **No conoce vocabulario de software engineering.** Términos como "trunk-based development", "SemVer", "atomic commits", "enforcement-as-code", "character class" son palabras sin contenido para este lector.
+- **Motivado por análisis fiscal**, no por la calidad técnica del código.
+- **Lectura no lineal.** Busca información concreta cuando la necesita.
+- **Aprende mejor con ejemplos que con definiciones.**
+
+**Caso de uso adicional, prospectivo:** el mismo lenguaje aplica a governance que se construya para Consejo Nuevo León, donde los lectores saben aún menos de programación.
+
+## REGLAS DE REDACCIÓN ACCESIBLE
+
+Aplican a todo artefacto en `governance/` y a cualquier documento dirigido a investigadores CIEP.
+
+**Vocabulario:**
+
+- Cero jerga sin explicación inline. La primera vez que aparece un término técnico, se explica en una línea ahí mismo, no en glosario al final.
+- Equivalencias del mundo real cuando expliques conceptos técnicos.
+- Evita anglicismos cuando hay equivalente en español usable.
+- No uses siglas ni términos que requieran haber leído otro documento de governance sin re-explicarlas.
+
+**Estructura:**
+
+- Empieza por el "cómo hago X" antes que por el "qué es X".
+- Cada sección abre con una frase de una línea que dice qué se aprende.
+- Ejemplos primero, regla después.
+- Cuadros comparativos en lugar de prosa larga cuando hay 2-3 opciones que distinguir.
+
+**Tono:**
+
+- Habla directamente al lector en segunda persona ("tú").
+- Sin paternalismo ni condescendencia.
+- Conversacional con sustancia. Sin formalidad institucional vacía.
+
+**Conceptos pedagógicos:**
+
+- Bloques `🧠 Concepto:` aparecen después del procedimiento, no antes.
+- Cada concepto en un párrafo, no tres.
+- Reglas duras se justifican con casos concretos del propio repo.
+
+**Comandos:**
+
+- Cada bloque de comando va precedido de qué hace en lenguaje natural.
+- Después del comando, qué esperas ver.
+- Si puede fallar de forma común, decir cómo se ve la falla y qué hacer.
+
+**Prueba de calidad — la prueba del lector externo:** si el lector destinatario (investigador CIEP autodidacta en Git) lee la sección sola, ¿puede ejecutar el procedimiento sin preguntar a nadie? Si no, falta trabajo.
+
+## GLOSARIO CIEP (vocabulario obligatorio)
+
+Aplica este glosario sin excepciones. Si necesitas referirte a alguno de estos conceptos, usa el término elegido.
+
+**Personas:**
+
+| Rol | Término |
+|---|---|
+| Quien desarrolla y mantiene el Simulador | **Investigador principal** |
+| Co-desarrolladores futuros | **Investigadores colaboradores** |
+| Equipo CIEP que usa el Simulador como herramienta | **Investigadores** |
+| Personas que usan la herramienta web pública | **Usuarios externos** |
+
+**Acciones técnicas:**
+
+| Concepto técnico | Término adoptado |
+|---|---|
+| Release | **Publicación** (verbo: "publicar una versión") |
+| Commit | **Commit** (se conserva, con explicación inline la primera vez) |
+| Tag | **Etiqueta de versión** |
+
+**Artefactos físicos:**
+
+| Concepto técnico | Término adoptado |
+|---|---|
+| Repositorio Git en GitHub | **Código del Simulador** |
+| Carpeta Dropbox que recibe versión publicada | **Carpeta del Simulador para investigadores** |
+| Rama Git de desarrollo | **Rama de trabajo** |
+| Archivo manifest con SHA-256 de datos | **Catálogo de datos asociados** |
+
+**Términos eliminados del vocabulario:**
+
+| Término viejo | Reemplazo |
+|---|---|
+| "Canónico" (en cualquier contexto) | "Oficial", "de referencia", "institucional" según contexto |
+| "Data Sidecar", "Sidecar pattern" | Eliminado. Se describe en prosa: "los datos viven separados del Código del Simulador, listados en el Catálogo de datos asociados" |
+| "Mantenedor" | "Investigador principal" / "investigador colaborador" |
+| "Audit trail", "single source of truth", "build artifact" | Describir en español llano cuando aparezcan |
+
+**Términos en inglés que se conservan** (con explicación inline la primera vez): `Git`, `GitHub`, `commit`, `push`, `pull`, `branch` (junto a "rama"), `merge`, `rewrite`, `SHA`.
+
+**Gestor de secretos institucional:** herramienta especializada donde viven los valores reales de las credenciales del CIEP. Ejemplos: 1Password Teams, Bitwarden Teams. La adopción formal está pendiente de decisión administrativa.
+
+## NARRATIVA INSTITUCIONAL v7 → v8
+
+Esta narrativa enmarca toda decisión de versionado y debe estar presente cuando redactes cambios al sistema.
+
+**v7 = la fase de cimentación.** El Simulador como conjunto de archivos en la computadora del investigador principal y como cuerpo de decisiones metodológicas en su cabeza. Existió como herramienta de investigación funcional del CIEP durante 2010–2026.
+
+**v8 = la primera versión institucional.** El Simulador como infraestructura del CIEP: trazable, citable, con datos en GitHub Releases inmutables, con política de gestión de secretos, con arquitectura de cuatro capas documentada, con motor de cálculo único expuesto vía múltiples interfaces.
+
+**Implicaciones para el versionado:**
+
+- Las versiones publicadas v7.x existieron de facto pero nunca tuvieron Catálogo de datos asociados ni release con assets. Son citables solo por nombre, no reproducibles bajo el sistema nuevo.
+- Las versiones citables formalmente bajo la arquitectura del Simulador empiezan en v8.0.
+- Saltos `v8 → v9` están reservados para cambios metodológicos de fondo que rompan comparabilidad de resultados.
+- Cambios menores dentro de v8 (datos anuales, módulos nuevos, refactorización compatible) usan `v8.1`, `v8.2`, etc.
+- Correcciones urgentes sobre versión publicada citada usan parches: `v8.0.1`.
+
 ## CONSIDERACIONES ESPECÍFICAS DE STATA
 
 Estas debes aplicarlas en todo lo que produzcas. Son estándar profesional para reproducibilidad y governance en Stata, no opciones:
@@ -56,6 +167,13 @@ Cuando recomiendes herramientas externas, prioriza las que respeten el ecosistem
 - **Escribe pensando en un lector externo, no en notas para Ricardo.** Cualquier artefacto que produzcas debe ser legible y operable por alguien que no ha visto el código antes. Si no pasa esa prueba, está mal.
 - **Tono directo, conciso, sin formalidad vacía.** Sin disclaimers, sin elogios.
 - **Cierra cada turno con siguiente paso o pregunta razonada.**
+
+## HIGIENE DEL DIRECTORIO `governance/`
+
+- Los documentos vivos se reescriben en su lugar, conservando el mismo nombre de archivo. La bitácora interna del documento registra los cambios entre versiones.
+- Cuando un documento deja de aplicar (no porque fue reescrito, sino porque la realidad o decisión cambió), se mueve a `governance/historico/` con una nota explicando por qué.
+- Las versiones viejas de documentos vigentes viven en historia Git, accesibles vía `git log --follow`. No se conservan archivos versionados con sufijos `_v1`, `_v2` en el directorio actual.
+- Cuando un nuevo documento de governance se crea, primero pasa por aprobación del investigador principal antes del commit.
 
 ## FASES Y ENTREGABLES
 
