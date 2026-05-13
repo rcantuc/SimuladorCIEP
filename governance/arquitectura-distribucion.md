@@ -68,17 +68,48 @@ El esquema es éste:
    │ CIEP           │  │ versión vieja  │  │ distas, académicos,  │
    │                │  │                │  │ funcionarios)        │
    │ Carpeta del    │  │ Carpeta tem-   │  │                      │
-   │ Simulador para │  │ poral, descart-│  │ URL: simuladorfiscal │
-   │ investigadores │  │ able           │  │      .ciep.mx        │
-   │ ~/Dropbox-CIEP/│  │ Misma versión  │  │ HTTPS + SSL          │
-   │ SimuladorCIEP/ │  │ que pidió quien│  │                      │
-   │ Stata corre    │  │ corrió el      │  │ Versionado alineado  │
-   │ profile.do al  │  │ script         │  │ con la versión       │
-   │ arrancar       │  │                │  │ publicada actual     │
+   │ Simulador para │  │ poral, descart-│  │ Servidor IONOS,      │
+   │ investigadores │  │ able           │  │ dominio raíz:        │
+   │ ~/Dropbox-CIEP/│  │ Misma versión  │  │ ciep.mx (URLs        │
+   │ SimuladorCIEP/ │  │ que pidió quien│  │ por sub-canal abajo) │
+   │ Stata corre    │  │ corrió el      │  │                      │
+   │ profile.do al  │  │ script         │  │ Dos sub-canales      │
+   │ arrancar       │  │                │  │ (detalle abajo):     │
+   │                │  │                │  │ • web HTML           │
+   │                │  │                │  │ • Stata `net from`   │
+   │                │  │                │  │                      │
+   │                │  │                │  │ Versionado alineado  │
+   │                │  │                │  │ con la versión       │
+   │                │  │                │  │ publicada actual     │
    └────────────────┘  └────────────────┘  └──────────────────────┘
 ```
 
-Las flechas son direccionales. La Capa 1 es el origen: ahí se escribe el código y se mantienen las decisiones metodológicas. Las otras tres capas reciben actualizaciones distintas: la Capa 2 recibe automáticamente cuando se publica una versión nueva (vía `publicar.sh`); la Capa 4 se actualiza siguiendo un procedimiento del lado web cuando se publica versión nueva; la Capa 3 se invoca puntualmente, bajo demanda, sin calendario fijo.
+Las flechas son direccionales. La Capa 1 es el origen: ahí se escribe el código y se mantienen las decisiones metodológicas. Las otras tres capas reciben actualizaciones distintas: la Capa 2 recibe automáticamente cuando se publica una versión nueva (vía `publicar.sh`); la Capa 3 se invoca puntualmente, bajo demanda, sin calendario fijo; la Capa 4 se actualiza siguiendo un procedimiento del lado web cuando se publica versión nueva — con la particularidad de que esa actualización debe llegar a sus **dos sub-canales**: el sitio HTML interactivo (al que entran usuarios externos sin Stata) y el endpoint Stata `net from` (desde donde un usuario externo que sí usa Stata se instala el Simulador en su propia máquina).
+
+**Detalle de la Capa 4 — los dos sub-canales:**
+
+```
+   ┌────────────────────────────┐  ┌────────────────────────────┐
+   │ Sub-canal web HTML         │  │ Sub-canal Stata `net from` │
+   │                            │  │                            │
+   │ Endpoint:                  │  │ Endpoint:                  │
+   │ simuladorfiscal.ciep.mx    │  │ ciep.mx/simuladorfiscal    │
+   │ (sitio HTML interactivo)   │  │ (sirve stata.toc + .ado)   │
+   │                            │  │                            │
+   │ Audiencia: usuarios        │  │ Audiencia: usuarios        │
+   │ externos sin Stata         │  │ externos que sí usan       │
+   │ (ciudadanos,               │  │ Stata (académicos,         │
+   │ periodistas)               │  │ analistas)                 │
+   │                            │  │                            │
+   │ Interfaz: navegador web    │  │ Interfaz: comandos en      │
+   │                            │  │ Stata tras `net install`   │
+   │ Protocolo: HTTPS + SSL     │  │                            │
+   │ (ver §6.4)                 │  │ Despliegue actual: manual  │
+   │                            │  │ desde `Stata net/` (§6.5)  │
+   └────────────────────────────┘  └────────────────────────────┘
+```
+
+Las dos URLs son distintas (la del sub-canal HTML es el subdominio `simuladorfiscal.ciep.mx`; la del sub-canal Stata es la ruta `/simuladorfiscal` del dominio principal `ciep.mx`), pero ambos endpoints corren en infraestructura del CIEP en IONOS y sirven al mismo motor de cálculo. El detalle de cada uno está en §6.4 (web HTML) y §6.5 (Stata `net from`).
 
 ---
 
@@ -283,11 +314,17 @@ Este script todavía no existe (ver §7). Cuando se construya, su contrato es:
 
 `simuladorfiscal.ciep.mx` es la interfaz web del Simulador. Permite a **usuarios externos** — ciudadanos, periodistas, académicos no afiliados al CIEP, funcionarios públicos — simular el impacto de políticas fiscales **sin necesidad de instalar Stata** ni saber programación. La audiencia es deliberadamente distinta a las otras tres capas: investigadores CIEP no son los usuarios típicos del sitio web (ellos usan Stata directamente, que es más expresivo); el sitio web es para quien necesita explorar resultados sin entrar al modelo en profundidad.
 
-### 6.2 Mismo motor, distinta interfaz
+### 6.2 Mismo motor, distintas interfaces
 
-Lo crítico de entender es que **el motor de cálculo detrás del sitio web es el mismo que corre en Stata**. Cuando un periodista mueve un control deslizable en la web para ver el impacto de cambiar la tasa del IVA, el cálculo que se ejecuta es el mismo comando `LIF` que un investigador CIEP corre en Stata. Lo que cambia es la interfaz: la web ofrece formularios, controles deslizables y gráficas interactivas; Stata ofrece comandos en consola. Una sola fuente de cálculo, dos formas distintas de invocarla.
+Lo crítico de entender es que **el motor de cálculo del Simulador es uno solo y corre, sin reimplementaciones paralelas, en tres lugares distintos**:
 
-Esto importa por una razón: garantiza que los números que ven los usuarios externos en la web son los **mismos** que los que un investigador CIEP obtiene en Stata para la misma versión publicada. No hay implementaciones paralelas que puedan divergir.
+1. **En la instalación local de Stata del investigador CIEP** (Capa 2): los comandos `PEF`, `LIF`, `SCN`, `Poblacion`, `FiscalGap`, etc. corriendo desde la Carpeta del Simulador para investigadores.
+2. **En la copia remota de Stata del usuario externo que se instaló el Simulador con `net from`** (Capa 4, sub-canal Stata — ver §6.5): los mismos comandos, descargados desde el endpoint público al Stata personal del usuario.
+3. **Detrás del sitio HTML interactivo** (Capa 4, sub-canal web — ver §6.4): los mismos comandos invocados por la capa web cuando un usuario externo mueve un control deslizable o llena un formulario.
+
+Cuando un periodista mueve un control en la web para ver el impacto de cambiar la tasa del IVA, el cálculo que se ejecuta es el mismo comando `LIF` que un investigador CIEP corre en Stata o que un académico externo invoca después de hacer `net install LIF` desde el endpoint público. Lo que cambia es la interfaz (formularios y gráficas en la web; consola de comandos en las otras dos); el motor es uno.
+
+Esto importa por una razón: garantiza que los números que ve un usuario externo en el sitio HTML son los **mismos** que los que un investigador CIEP obtiene en Stata, y los **mismos** que los que un académico externo obtiene en su Stata local instalada vía `net from`, para la misma versión publicada. No hay implementaciones paralelas que puedan divergir.
 
 ### 6.3 Versionado alineado
 
@@ -295,7 +332,13 @@ El sitio web se versiona en sincronía con el Código del Simulador. Cuando se p
 
 El procedimiento detallado de actualización del sitio (cómo se hace el despliegue al servidor, cuánto downtime hay, cómo se prueba antes de publicar) está pendiente de documentar (§7).
 
-### 6.4 Componente SSL: por qué importa el candadito del navegador
+### 6.4 Sub-canal web HTML
+
+El sub-canal web HTML es el sitio interactivo al que llega un usuario externo cuando teclea `simuladorfiscal.ciep.mx` en su navegador. La audiencia natural son personas que **no usan Stata** (ciudadanos, periodistas, académicos no afiliados al CIEP, funcionarios). La interfaz son formularios, controles deslizables y gráficas; los resultados salen del motor de cálculo del Simulador (§6.2) corriendo detrás del servidor.
+
+**Estado del sub-canal:** existe y funciona hoy. Lo que falta no es construirlo — es documentar formalmente cómo se actualiza con cada publicación y qué hacer si algo falla; esos pendientes viven en §7.
+
+**Componente SSL: por qué importa el candadito del navegador.**
 
 El sitio sirve sobre HTTPS, que es el protocolo seguro que ves en cualquier banco o servicio en línea (el candado a la izquierda de la URL en el navegador). HTTPS se construye sobre **SSL** (un sistema de certificados digitales), que garantiza dos cosas:
 
@@ -333,9 +376,35 @@ Si la fecha de expiración del certificado se acerca y nadie con acceso está di
 
 La documentación detallada del procedimiento de renovación (comandos exactos, dónde se guarda el certificado en el servidor) es trabajo pendiente (§7). La política completa de gestión de secretos vivirá en `governance/politica-gestion-secretos.md` (pendiente).
 
-### 6.5 Estado actual
+### 6.5 Sub-canal Stata `net from`
 
-El sitio web existe y funciona hoy. Lo que falta no es construirlo — es **documentar formalmente** cómo se actualiza con cada publicación, cómo se gestiona el certificado SSL, y qué hacer si algo falla. Esos son los pendientes listados en §7.
+Hay una segunda forma de llegar al Simulador desde fuera del CIEP que no usa el navegador: un usuario externo **que sí sabe Stata** puede instalárselo en su propia copia de Stata con el comando:
+
+```stata
+net from https://ciep.mx/simuladorfiscal/
+```
+
+Nótese que esta URL es **distinta** a la del sub-canal HTML (`simuladorfiscal.ciep.mx`): el sub-canal Stata vive en la ruta `/simuladorfiscal` del dominio principal del CIEP (`ciep.mx`), no en el subdominio. Similar, pero no igual.
+
+Cuando ese comando se ejecuta, Stata busca el archivo `stata.toc` (tabla de contenidos) en `https://ciep.mx/simuladorfiscal/stata.toc`. El `stata.toc` declara qué paquetes están disponibles (`PEF`, `LIF`, `SCN`, `Poblacion`, `PIBDeflactor`, `SHRFSP`, `DatosAbiertos`); con `net install <paquete>` Stata descarga los `.ado` y archivos de ayuda correspondientes desde el servidor a la máquina del usuario. A partir de ahí los comandos del Simulador funcionan en esa instalación remota igual que funcionan en la Capa 2.
+
+**Endpoint.** El `stata.toc` y los archivos asociados (`.ado`, `.sthlp`, `.pkg`) se sirven desde `https://ciep.mx/simuladorfiscal/` — una ruta del dominio principal del CIEP. Es una URL **distinta** a la del sub-canal HTML, que vive en el subdominio aparte `simuladorfiscal.ciep.mx`. Ambos endpoints corren en infraestructura del CIEP en IONOS.
+
+**Mecanismo de despliegue actual — manual.** En el Código del Simulador existe una carpeta `Stata net/` que cumple la función de **área de staging local** del investigador principal. Cuando se va a publicar una versión nueva al endpoint, el flujo es:
+
+1. El investigador principal copia desde la raíz del Código del Simulador los `.ado` y `.pkg` que deben publicarse a la carpeta `Stata net/`.
+2. Edita el `stata.toc` dentro de `Stata net/` para reflejar la versión nueva y la fecha.
+3. Sube el contenido de `Stata net/` al servidor IONOS por SSH/SCP, sobrescribiendo el contenido previo.
+
+A partir de ese momento, cualquier `net from https://ciep.mx/simuladorfiscal/` desde Stata ve la versión nueva.
+
+**Limitaciones reconocidas de este flujo manual:**
+
+- **Sin trazabilidad de qué versión está sirviendo el endpoint.** No hay registro automático de qué se subió ni cuándo; ese dato vive en la memoria del investigador principal.
+- **Sin automatización.** El copy-paste manual desde la raíz a `Stata net/` y luego al servidor depende de hacerlo bien a mano cada vez. Olvidar un archivo o subir uno desactualizado no se detecta hasta que un usuario externo reporte que algo no instala.
+- **Divergencia silenciosa.** No hay separación explícita entre "lo que está en raíz del repo" y "lo que está publicado en el endpoint". Pueden divergir sin que nadie lo note.
+
+**Solución futura (en v8).** Reemplazar `Stata net/` + publicación manual por un script `publicar-endpoint.sh` que lea un manifiesto versionado (`manifest-endpoint.toml`) declarando qué archivos forman parte del Simulador público vía `net from`, y sincronice al servidor IONOS con trazabilidad. Contrato funcional preliminar en §7. La carpeta `Stata net/` se conserva como staging hasta que ese script esté operativo y verificado; en ese momento se elimina.
 
 ---
 
@@ -343,23 +412,39 @@ El sitio web existe y funciona hoy. Lo que falta no es construirlo — es **docu
 
 *Qué aprendes en esta sección:* esta arquitectura es objetivo, no estado actual completo. Aquí está la lista honesta de lo que falta y cuándo se construye.
 
-| Componente                                                                                                     | Estado hoy                                                                                                                                                                                                                                                                   | Cuándo se construye                                                                                                                                                               |
-| ----------------------------------------------------------------------------------------------------------------| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Clon de desarrollo fuera de Dropbox                                                                            | Sigue dentro de Dropbox (`~/Library/CloudStorage/Dropbox-CIEP/.../SimuladorCIEP/`). Riesgo de corrupción del directorio `.git/` documentado en `governance/fase-0-5-git-hygiene-audit.md`.                                                                                   | Migración manual antes de Acción 6.                                                                                                                                               |
-| Carpeta del Simulador para investigadores separada de la carpeta de desarrollo                                 | No existe como carpeta distinta. Hoy `~/Dropbox-CIEP/SimuladorCIEP/` cumple ambos papeles (desarrollo + distribución). La separación entre ambas carpetas se implementa en Fase A5.                                                                                          | Fase A5 (primera publicación formal de una versión).                                                                                                                              |
-| `publicar.sh`                                                                                                  | No implementado. Contrato funcional documentado en §3.2.                                                                                                                                                                                                                     | Fase A5.                                                                                                                                                                          |
-| `reproducir.sh`                                                                                                | No implementado. Contrato funcional documentado en §5.4.                                                                                                                                                                                                                     | Fase A5 o A6 (después de la primera Publicación con datos asociados).                                                                                                             |
-| `profile.do` enriquecido con banner de versión y changelog                                                     | No implementado. El `profile.do` actual ya tiene un banner de bienvenida, pero sin información de versión ni de cambios. Mockup en §2.2.                                                                                                                                     | Fase A5.                                                                                                                                                                          |
-| `CHANGELOG.md` en la raíz del Código del Simulador                                                             | No existe.                                                                                                                                                                                                                                                                   | Fase A5, junto con la primera versión publicable.                                                                                                                                 |
-| Comando interno `sim_changelog` (Stata) que muestra changelog completo                                         | No implementado.                                                                                                                                                                                                                                                             | Fase A5.                                                                                                                                                                          |
-| Mecanismo de archivo de estado local del investigador (`~/.simulador_ciep_state`)                              | No implementado. Diseño preliminar en §2.2; ruta exacta y formato a definir.                                                                                                                                                                                                 | Fase A5.                                                                                                                                                                          |
-| Firma de versión en outputs (globales `${sim_version}`, etc.)                                                  | No implementado. Diseño en §2.4.                                                                                                                                                                                                                                             | Fase A5, integrado con `profile.do` enriquecido.                                                                                                                                  |
-| Procedimiento de incorporación de un investigador CIEP nuevo (configuración estandarizada del `sysprofile.do`) | Hoy es trabajo manual y artesanal del investigador principal (Ricardo configura el `sysprofile.do` de cada investigador CIEP nuevo a mano). No está documentado ni automatizado. La consecuencia es que dar de alta a un investigador nuevo requiere intervención uno-a-uno. | Por definir. Opciones: script `setup_user.sh` o sección nueva en este mismo documento ("Cómo doy de alta a un investigador CIEP nuevo"). Decisión sobre formato y fase pendiente. |
-| Procedimiento detallado de actualización del sitio web por cada publicación                                    | No documentado. Hoy es trabajo manual del investigador principal. Falta especificar: comandos exactos, cuánto downtime, prueba previa, qué hacer si la nueva versión rompe el sitio.                                                                                         | Fase A5 o posterior.                                                                                                                                                              |
-| **Gestor de secretos institucional del CIEP** | No adoptado formalmente. Las credenciales del investigador principal viven en su gestor personal. Práctica a migrar antes de incorporar al primer investigador colaborador. Documento de política pendiente: `governance/politica-gestion-secretos.md`. | Decisión administrativa/presupuestal del investigador principal. Documento de política: próximo turno, después de aprobar este documento. |
-| Documentación operativa del certificado SSL del sitio web                                                      | No documentada. Falta especificar: emisor del certificado, procedimiento de renovación (automático o manual), responsable, calendario de verificación.                                                                                                                       | Fase A5 o posterior.                                                                                                                                                              |
+| Componente                                                                                                     | Estado hoy                                                                                                                                                                                                                                                                                 | Cuándo se construye                                                                                                                                                               |
+| ----------------------------------------------------------------------------------------------------------------| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Clon de desarrollo fuera de Dropbox                                                                            | Sigue dentro de Dropbox (`~/Library/CloudStorage/Dropbox-CIEP/.../SimuladorCIEP/`). Riesgo de corrupción del directorio `.git/` documentado en `governance/fase-0-5-git-hygiene-audit.md`.                                                                                                 | Migración manual antes de Acción 6.                                                                                                                                               |
+| Carpeta del Simulador para investigadores separada de la carpeta de desarrollo                                 | No existe como carpeta distinta. Hoy `~/Dropbox-CIEP/SimuladorCIEP/` cumple ambos papeles (desarrollo + distribución). La separación entre ambas carpetas se implementa en Fase A5.                                                                                                        | Fase A5 (primera publicación formal de una versión).                                                                                                                              |
+| `publicar.sh`                                                                                                  | No implementado. Contrato funcional documentado en §3.2.                                                                                                                                                                                                                                   | Fase A5.                                                                                                                                                                          |
+| `reproducir.sh`                                                                                                | No implementado. Contrato funcional documentado en §5.4.                                                                                                                                                                                                                                   | Fase A5 o A6 (después de la primera Publicación con datos asociados).                                                                                                             |
+| `profile.do` enriquecido con banner de versión y changelog                                                     | No implementado. El `profile.do` actual ya tiene un banner de bienvenida, pero sin información de versión ni de cambios. Mockup en §2.2.                                                                                                                                                   | Fase A5.                                                                                                                                                                          |
+| `CHANGELOG.md` en la raíz del Código del Simulador                                                             | No existe.                                                                                                                                                                                                                                                                                 | Fase A5, junto con la primera versión publicable.                                                                                                                                 |
+| Comando interno `sim_changelog` (Stata) que muestra changelog completo                                         | No implementado.                                                                                                                                                                                                                                                                           | Fase A5.                                                                                                                                                                          |
+| Mecanismo de archivo de estado local del investigador (`~/.simulador_ciep_state`)                              | No implementado. Diseño preliminar en §2.2; ruta exacta y formato a definir.                                                                                                                                                                                                               | Fase A5.                                                                                                                                                                          |
+| Firma de versión en outputs (globales `${sim_version}`, etc.)                                                  | No implementado. Diseño en §2.4.                                                                                                                                                                                                                                                           | Fase A5, integrado con `profile.do` enriquecido.                                                                                                                                  |
+| Procedimiento de incorporación de un investigador CIEP nuevo (configuración estandarizada del `sysprofile.do`) | Hoy es trabajo manual y artesanal del investigador principal (Ricardo configura el `sysprofile.do` de cada investigador CIEP nuevo a mano). No está documentado ni automatizado. La consecuencia es que dar de alta a un investigador nuevo requiere intervención uno-a-uno.               | Por definir. Opciones: script `setup_user.sh` o sección nueva en este mismo documento ("Cómo doy de alta a un investigador CIEP nuevo"). Decisión sobre formato y fase pendiente. |
+| Procedimiento detallado de actualización del sitio web por cada publicación                                    | No documentado. Hoy es trabajo manual del investigador principal. Falta especificar: comandos exactos, cuánto downtime, prueba previa, qué hacer si la nueva versión rompe el sitio.                                                                                                       | Fase A5 o posterior.                                                                                                                                                              |
+| **Gestor de secretos institucional del CIEP**                                                                  | No adoptado formalmente. Las credenciales del investigador principal viven en su gestor personal. Práctica a migrar antes de incorporar al primer investigador colaborador. Documento de política pendiente: `governance/politica-gestion-secretos.md`.                                    | Decisión administrativa/presupuestal del investigador principal. Documento de política: próximo turno, después de aprobar este documento.                                         |
+| Documentación operativa del certificado SSL del sitio web                                                      | No documentada. Falta especificar: emisor del certificado, procedimiento de renovación (automático o manual), responsable, calendario de verificación.                                                                                                                                     | Fase A5 o posterior.                                                                                                                                                              |
+| **Script `publicar-endpoint.sh`**                                                                              | No implementado. El despliegue al sub-canal Stata del endpoint público es hoy un copy-paste manual del investigador principal (raíz del repo → `Stata net/` → servidor IONOS vía SSH). Estado actual y limitaciones documentados en §6.5.                                                  | Fase A5 o A6 (parte del trabajo de v8).                                                                                                                                           |
+| **Manifiesto `manifest-endpoint.toml`**                                                                        | No existe. Sería un archivo versionado en Git que declara explícitamente qué `.ado`, `.sthlp`, `.pkg`, `stata.toc` forman parte del Simulador "público vía `net from`" (subconjunto de todos los archivos del repo). Análogo al Catálogo de datos asociados pero para código de la Capa 4. | Fase A5 o A6, junto con `publicar-endpoint.sh`.                                                                                                                                   |
+| **Borrado de `Stata net/`**                                                                                    | Existente hoy como área de staging manual del sub-canal Stata (§6.5). Se conserva hasta que `publicar-endpoint.sh` esté operativo y verificado. Cuando esté funcionando, ese commit elimina `Stata net/` porque ya no es necesario.                                                        | Fase A5 o A6, después de validar el script automatizado.                                                                                                                          |
 
 Mientras estos componentes no existan, el Simulador opera como siempre: el equipo CIEP usa la carpeta de Dropbox sin distinción de capas, sin trazabilidad de versión en outputs, sin script de reproducción; el sitio web sigue funcionando pero sin procedimiento documentado de actualización. La arquitectura aquí descrita es la que se va construyendo en las fases siguientes.
+
+**Contrato funcional preliminar de `publicar-endpoint.sh`** (pendiente de implementación)
+
+| Elemento | Especificación |
+|---|---|
+| **Entrada** | Un argumento: el número de versión publicada (ejemplo: `v8.0`). |
+| **Lee** | Manifiesto `manifest-endpoint.toml` en raíz del Código del Simulador, que lista qué archivos `.ado`, `.sthlp`, `.pkg`, `stata.toc` forman parte del Simulador público vía `net from`. |
+| **Verifica** | Que estás en `master`, working tree limpio, etiqueta de versión existe. Que las credenciales del servidor IONOS están disponibles vía gestor de secretos institucional (referencia: `governance/politica-gestion-secretos.md`). |
+| **Genera** | El `stata.toc` actualizado con la versión y fecha de publicación. |
+| **Sincroniza** | Los archivos del manifiesto al servidor IONOS vía `rsync` sobre SSH. |
+| **Verifica post-deploy** | Que el endpoint responde y sirve la versión correcta (HTTP GET al `stata.toc` y validación del contenido). |
+| **Registra** | En un log local de despliegues (`governance/deploys/endpoint-stata.log` o similar) qué versión se publicó, cuándo, por quién. |
+| **Si falla** | Aborta antes de tocar el servidor si la validación inicial falla. Si falla en medio del rsync, registra el estado parcial y notifica al investigador principal. |
 
 ---
 
@@ -386,3 +471,4 @@ Reglas operativas para mantener orden en este directorio mientras crece:
 | Fecha | Versión | Cambios |
 |---|---|---|
 | 2026-05-12 | 1.0 | Versión inicial. Documenta la arquitectura de cuatro capas (desarrollo, distribución vigente para investigadores, reproducción histórica, herramienta web pública) que hasta hoy vivía solo en la cabeza del investigador principal. Establece el contrato funcional de los componentes pendientes (`publicar.sh`, `reproducir.sh`, `profile.do` enriquecido, `CHANGELOG.md`, `sim_changelog`, archivo de estado local, procedimientos web y SSL). Adopta el glosario CIEP consolidado: "investigador principal", "investigadores colaboradores", "investigadores", "usuarios externos", "publicación", "etiqueta de versión", "Código del Simulador", "Carpeta del Simulador para investigadores", "Catálogo de datos asociados". Incluye política de higiene del directorio `governance/`. |
+| 2026-05-13 | 1.1 | Reconoce que la Capa 4 (herramienta web pública) tiene **dos sub-canales**: web HTML interactivo (`simuladorfiscal.ciep.mx`) y Stata `net from` (instalación remota vía `https://ciep.mx/simuladorfiscal/`). Las dos URLs son distintas (subdominio vs. ruta del dominio principal del CIEP), pero ambos endpoints corren en infraestructura del CIEP en IONOS y sirven al mismo motor de cálculo. Actualiza el diagrama de §1 con la Capa 4 expandida en sus dos sub-canales. Reescribe §6.2 para reconocer que el motor corre en tres lugares (instalación local del investigador CIEP, copia remota del usuario externo vía `net from`, sitio HTML interactivo). Renombra §6.4 a "Sub-canal web HTML" (la documentación SSL queda como sub-sección sin cambios). Agrega §6.5 "Sub-canal Stata `net from`", que documenta la carpeta `Stata net/` del repo como área de staging actual del sub-canal Stata, con despliegue manual al servidor y limitaciones reconocidas (sin trazabilidad, sin automatización, divergencia silenciosa). Declara solución futura en v8: script `publicar-endpoint.sh` + manifiesto `manifest-endpoint.toml` + borrado de `Stata net/` una vez validado el script. Agrega contrato funcional preliminar de `publicar-endpoint.sh` al final de §7. |
