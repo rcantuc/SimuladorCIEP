@@ -33,7 +33,6 @@ erikciep <erik.covarru@gmail.com> erikciep <60672234+erikciep@users.noreply.gith
 
 # -----------------------------------------------------------------------------
 # Juan Pablo López — colaborador externo histórico, ya no activo.
-# Confirmado por Ricardo: NO es la misma persona que Juan Pablo Santisteban.
 # Aparece en la historia bajo el username de GitHub "Jotapelopez3696" con
 # dos emails distintos (uno noreply, uno personal). Identidad canónica: nombre
 # real + email personal.
@@ -43,9 +42,6 @@ Juan Pablo López <juanpablo.loprey@gmail.com> Jotapelopez3696 <juanpablo.loprey
 
 # -----------------------------------------------------------------------------
 # Juan Pablo Santisteban — colaborador externo histórico, ya no activo.
-# Persona distinta a Juan Pablo López. Una sola identidad GitHub, no requiere
-# mapeo de unificación; se documenta aquí para que un nuevo colaborador entienda
-# la coincidencia de primer nombre y no asuma que son la misma persona.
 # -----------------------------------------------------------------------------
 # (Sin línea de mapeo: JuanPabloSantisteban se mantiene tal cual aparece en historia.)
 
@@ -53,6 +49,6 @@ Juan Pablo López <juanpablo.loprey@gmail.com> Jotapelopez3696 <juanpablo.loprey
 # Identidades sin alias detectados (no requieren mapeo, se documentan aquí
 # para que un nuevo colaborador entienda quién es quién en el historial):
 #
-#   18-carlos       → Carlos [apellido pendiente de confirmar], colaborador CIEP
+#   18-carlos       → Carlos Aviud, colaborador CIEP
 #   Leslie Badillo  → Leslie Badillo, CIEP
 # -----------------------------------------------------------------------------
