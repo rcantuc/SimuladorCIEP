@@ -166,6 +166,41 @@ Estas debes aplicarlas en todo lo que produzcas. Son estándar profesional para 
 
 Cuando recomiendes herramientas externas, prioriza las que respeten el ecosistema Stata. DVC funciona; `renv` no aplica; Docker con imagen de Stata es complejo y caro de licencia — proponlo solo si el caso lo amerita.
 
+## POLÍTICA DE COMMITS Y PUSH POR CASCADE
+
+Cascade **NUNCA** debe ejecutar `git commit` ni `git push` sin solicitar autorización explícita al investigador principal en la misma interacción.
+
+**Reglas fundamentales:**
+
+1. **La autorización es por tarea específica.** Una autorización para una tarea NO se hereda a tareas subsecuentes. Si el investigador principal autorizó un commit para la Tarea A, esa autorización no aplica a la Tarea B aunque sea en la misma sesión del agente.
+
+2. **El contexto previo no implica autorización.** Si Cascade tiene cargado contexto de turnos anteriores donde se hicieron commits, eso no significa que pueda hacer commits nuevos sin pedir permiso. Cada commit requiere autorización propia.
+
+3. **Patrón obligatorio para cualquier cambio que toque archivos versionados:**
+   - Paso 1: Cascade describe el cambio que propone hacer.
+   - Paso 2: Cascade presenta el diff completo para revisión humana.
+   - Paso 3: Cascade espera autorización explícita del investigador principal ("procede", "haz el commit", "pushea", o equivalente inequívoco).
+   - Paso 4: Solo entonces Cascade ejecuta `git add` + `git commit` + `git push` en pasos verificables (no encadenados en un solo comando opaco).
+
+4. **Detección de excepción automática.** Si Cascade detecta que ya está en proceso de ejecutar un commit o push sin haber recibido autorización explícita para esa tarea específica, debe pausar inmediatamente y pedir confirmación antes de continuar.
+
+5. **No agrupar cambios.** Cascade no debe combinar cambios de tareas distintas en un solo commit aunque sean técnicamente compatibles. Cada tarea autorizada produce su propio commit.
+
+**Lo que NO cuenta como autorización:**
+
+- Que la tarea sea "obviamente buena" o "claramente parte del trabajo en curso".
+- Que el contenido sea coherente con commits anteriores autorizados.
+- Que el investigador principal haya autorizado tareas similares antes.
+- Que el agente tenga el contexto cargado de la sesión.
+- Instrucciones inferidas del documento de tarea sin que el investigador principal las ratifique en la conversación.
+
+**Lo que SÍ cuenta como autorización:**
+
+- Frase explícita del investigador principal en la conversación inmediata: "procede con el commit", "haz el push", "ejecuta el plan", o equivalente inequívoco.
+- Confirmación a una pregunta directa de Cascade del tipo "¿procedo con el commit?".
+
+**Origen de esta regla:** el 13 de mayo de 2026, un agente Cascade ejecutó `git commit` + `git push` al `README.md` sin autorización explícita después de actualizar el documento a Simuladores CIEP. El commit (`1a299a0`) era coherente con el trabajo del día, pero el patrón es inaceptable porque rompe el principio "diff antes de add" y la separación entre propuesta y ejecución que la disciplina de governance del Simulador exige.
+
 ## MODO DE OPERACIÓN
 
 - **Socrático, no batch.** Un artefacto a la vez. Construyes uno, lo discutimos, lo afinamos.
