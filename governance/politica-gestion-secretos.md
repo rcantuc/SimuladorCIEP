@@ -18,7 +18,8 @@
 4. [Roles y matriz de acceso](#4-roles-y-matriz-de-acceso)
 5. [Procedimientos](#5-procedimientos)
 6. [Bitácora de incidentes](#6-bitácora-de-incidentes)
-7. [Apéndice A — Aplicación al Simulador Fiscal CIEP](#apéndice-a--aplicación-al-simulador-fiscal-ciep)
+7. [Compromisos institucionales pendientes](#7-compromisos-institucionales-pendientes)
+8. [Apéndice A — Aplicación a los Simuladores CIEP y su infraestructura](#apéndice-a--aplicación-a-los-simuladores-ciep-y-su-infraestructura)
 
 ---
 
@@ -89,6 +90,7 @@ Las siguientes herramientas son útiles para uso personal y no están prohibidas
 | **Investigador principal** | Permanente, a todos los secretos. |
 | **Investigador colaborador con rol de mantenimiento de infraestructura** | Permanente, a secretos relacionados con su rol: SSL del servidor web, VPS de IONOS, deploys del sitio web público, correos de administración de dominio. |
 | **Investigador colaborador con rol de análisis fiscal** | Permanente, a secretos relacionados con su trabajo: token BIE, credenciales de cuentas en plataformas de datos económicos. Sin acceso a infraestructura. |
+| **Desarrollador externo de infraestructura** | Permanente, granularidad por infraestructura. Acceso administrativo (incluyendo superusuario cuando aplique) a la infraestructura específica que opera (ejemplo: Cloudways). Sin acceso por defecto a otras infraestructuras del CIEP (ejemplo: IONOS). |
 | **Investigador colaborador temporal** (becario, consultor externo, residente) | Acceso temporal con caducidad explícita, otorgado caso por caso por el investigador principal. La caducidad se configura en el gestor de secretos, no se asume disciplina manual de revocación. |
 | **Investigador CIEP que solo usa el Simulador como herramienta** | Sin acceso a secretos. Su interacción con el Simulador (correr comandos en Stata, leer outputs, citar versiones publicadas) no requiere credenciales. |
 | **Cualquier persona externa al CIEP** | Sin acceso. |
@@ -97,6 +99,7 @@ Las siguientes herramientas son útiles para uso personal y no están prohibidas
 
 - "Rol" significa **función dentro del CIEP**, no persona individual. Una misma persona puede tener varios roles simultáneos (por ejemplo, un investigador colaborador puede tener rol de análisis fiscal y rol de mantenimiento de infraestructura a la vez).
 - Asignar un rol con acceso a secretos es decisión del investigador principal en consulta con la administración del CIEP. La decisión queda registrada en el gestor de secretos al momento de conceder el acceso.
+- **Sobre el desarrollador externo de infraestructura:** este rol cubre a personas contratadas por el CIEP bajo régimen externo (honorarios, contrato de servicios) que operan infraestructura institucional (hosting, dominios, sistemas de gestión de contenido). A diferencia del investigador colaborador, no toca código de los Simuladores CIEP ni decisiones metodológicas; su trabajo es la operación de la infraestructura. El acceso de este rol es por infraestructura específica, no global. Las decisiones administrativas sobre quién recibe acceso (incorporación, modificación, revocación) las toma el investigador principal en consulta técnica con el desarrollador externo de infraestructura, no el desarrollador externo por sí mismo.
 
 ---
 
@@ -152,6 +155,28 @@ Calendario sugerido (afinable con el investigador principal según riesgo del se
 - **Cada renovación de certificado SSL:** llaves SSL del servidor web, si la renovación implica generar nueva llave (depende del flujo elegido).
 - **Inmediato y sin esperar calendario:** cualquier credencial expuesta o sospechada de exposición, según §5.4.
 
+### 5.6 Incorporación, modificación y salida de desarrolladores externos de infraestructura
+
+**Cuándo aplica:** cuando una persona contratada por el CIEP bajo régimen externo va a operar infraestructura institucional (Cloudways, IONOS, u otras que el CIEP adopte en el futuro), o cuando un desarrollador externo de infraestructura existente cambia de alcance o deja de colaborar.
+
+**Incorporación.** El procedimiento mínimo:
+
+1. El investigador principal define qué infraestructura específica va a operar el nuevo desarrollador externo y con qué nivel de privilegio.
+2. El investigador principal toma la decisión administrativa de otorgar acceso. Si hay un desarrollador externo de infraestructura ya activo en esa infraestructura (caso típico: incorporar a alguien a un equipo donde otro ya opera), puede consultar técnicamente con esa persona, pero la decisión sigue siendo del investigador principal.
+3. Se crea cuenta en la infraestructura correspondiente con los privilegios mínimos necesarios para el trabajo definido (no más).
+4. El nuevo desarrollador firma reconocimiento por escrito de las reglas de esta política, en particular el principio del §1 (cero secretos en canales informales).
+
+**Modificación de alcance.** Si un desarrollador externo de infraestructura va a recibir acceso a una infraestructura adicional, o ampliar privilegios en la que ya opera, aplica el mismo procedimiento de incorporación para la infraestructura nueva o el privilegio nuevo. La decisión la toma el investigador principal.
+
+**Salida.** Cuando un desarrollador externo de infraestructura deja de colaborar con el CIEP:
+
+1. **Revocación inmediata de todos sus accesos** a las infraestructuras del CIEP. La revocación no se posterga aunque la salida sea amistosa.
+2. **Rotación de credenciales** de las infraestructuras a las que tuvo acceso administrativo. Esto incluye cambiar contraseñas maestras de la cuenta (Cloudways, IONOS u otra), generar nuevas llaves SSH si las había, y cualquier otra credencial que él pudo haber conocido en años de operación.
+3. **Período de transición previo a la salida (cuando es amistosa y planificada):** si la salida está agendada con anticipación, el desarrollador externo puede transferir conocimiento operativo en el período previo a la fecha de revocación. La transición NO es ventana de gracia post-revocación; es ventana de transferencia pre-revocación.
+4. **Si la salida es conflictiva o súbita:** revocación inmediata y rotación sin período de transición. El conocimiento operativo se reconstruye desde lo que la documentación operativa del CIEP capture.
+
+**Nota institucional sobre rotación:** la rotación tras la salida de un desarrollador externo de infraestructura no implica desconfianza personal. Es práctica estándar de seguridad institucional, aplicada por igual a salidas amistosas y conflictivas. Una vez que alguien sale del CIEP, las credenciales que conoció dejan de ser válidas, independientemente de la naturaleza de la salida.
+
 ---
 
 ## 6. Bitácora de incidentes
@@ -168,24 +193,46 @@ Nuevos incidentes se registran como filas adicionales en la tabla, en orden cron
 
 ---
 
-## Apéndice A — Aplicación al Simulador Fiscal CIEP
+## 7. Compromisos institucionales pendientes
 
-*Qué aprendes en esta sección:* cómo los principios anteriores se aterrizan al caso concreto del Simulador hoy.
+*Qué aprendes en esta sección:* los compromisos que el CIEP asume al adoptar versiones específicas de esta política, con plazo explícito y criterio de revisión.
 
-### A.1 Inventario de secretos del Simulador
+Esta sección lista compromisos institucionales que el CIEP asume al adoptar versiones específicas de esta política. Cada compromiso tiene plazo razonable. Si el plazo se cumple sin resolución, la política se actualiza en una iteración nueva para reflejar la realidad (extender plazo, cambiar estrategia, o aceptar el riesgo conscientemente).
 
-A la fecha de esta versión (2026-05-12), los secretos asociados al Simulador son:
+### 7.1 Reducción del bus factor en Cloudways a ≥ 2
+
+**Adoptado en:** v1.1 (2026-05-14). **Plazo:** 6-12 meses. **Fecha límite:** 14 de mayo de 2027.
+
+Hasta la fecha de v1.1, la infraestructura Cloudways del CIEP tiene bus factor mixto: bus factor ≥ 2 para tareas operativas básicas (que el investigador principal puede ejecutar), y bus factor = 1 para tareas avanzadas (que solo el desarrollador externo de infraestructura Daniel Orduña conoce a fondo). El CIEP asume el compromiso de reducir el bus factor de las tareas avanzadas a ≥ 2 mediante al menos una de tres estrategias: (a) transferencia de conocimiento operativo del desarrollador externo de infraestructura al investigador principal, (b) documentación operativa escrita de las tareas avanzadas, o (c) incorporación de personal interno con capacidad de operar Cloudways.
+
+Si al cumplirse el plazo el bus factor sigue siendo 1 para tareas avanzadas, la política se actualiza para reflejar la realidad.
+
+---
+
+## Apéndice A — Aplicación a los Simuladores CIEP y su infraestructura
+
+*Qué aprendes en esta sección:* cómo los principios anteriores se aterrizan al caso concreto de los Simuladores CIEP y la infraestructura que los soporta.
+
+### A.1 Inventario de secretos de los Simuladores CIEP y su infraestructura
+
+A la fecha de esta versión (2026-05-14), los secretos asociados a los Simuladores CIEP y su infraestructura son:
 
 - **Token API del BIE de INEGI** — usado por `AccesoBIE.ado` para extraer series económicas. Categoría: token API (§2).
 - **Credenciales de la cuenta de correo `hostmaster.ciep.mx`** — usadas en la renovación del certificado SSL del sitio web público. Categoría: contraseña de correo institucional (§2).
 - **Acceso root al VPS de IONOS** — donde corre el sitio `simuladorfiscal.ciep.mx`. Categoría: credencial de infraestructura (§2).
 - **Llave privada del certificado SSL** del sitio web público. Categoría: llave SSH y certificado (§2).
+- **Credenciales de la cuenta institucional del CIEP en Cloudways** — plataforma de hosting administrado donde el CIEP opera sitios y micrositios institucionales. La cuenta tiene acceso del investigador principal **y** del desarrollador externo de infraestructura (caso fundacional: Daniel Orduña, ver A.5). Categoría: credencial de infraestructura (§2).
 
 ### A.2 Quién tiene acceso (referencia a §4)
 
-- Token BIE: rol de análisis fiscal y rol de mantenimiento de infraestructura.
-- Credenciales `hostmaster.ciep.mx`, root del VPS, llave SSL: solo rol de mantenimiento de infraestructura (e investigador principal de manera permanente).
-- Investigadores CIEP que solo usan el Simulador como herramienta: sin acceso a ninguno de los anteriores.
+| Activo | Quién tiene acceso |
+|---|---|
+| Cuenta Cloudways del CIEP (superusuario) | Investigador principal (Ricardo Cantú) + Desarrollador externo de infraestructura (Daniel Orduña) |
+| Cuenta IONOS del CIEP (VPS de los Simuladores CIEP) | Investigador principal (Ricardo Cantú) — solamente |
+| Credenciales `hostmaster.ciep.mx` y llave privada del certificado SSL | Investigador principal; rol de mantenimiento de infraestructura cuando se incorpore |
+| Token API del BIE de INEGI | Investigador principal — en migración tras incidente (ver §6) |
+
+Investigadores CIEP que solo usan los Simuladores como herramienta no tienen acceso a ninguno de los anteriores.
 
 ### A.3 Estado actual del almacenamiento
 
@@ -203,6 +250,16 @@ Cuando la administración del CIEP, en consulta con el investigador principal, f
 
 La adopción formal del gestor institucional es prerrequisito para incorporar al primer investigador colaborador con rol de mantenimiento de infraestructura. No se incorpora personal con acceso a infraestructura antes de tener el gestor institucional operativo.
 
+### A.5 Sobre Daniel Orduña como desarrollador externo de infraestructura
+
+Daniel Orduña es el primer caso del rol "desarrollador externo de infraestructura" (§4) del CIEP. Su colaboración con el CIEP precede a la formalización de esta política y se ha caracterizado por buena fe operativa y conocimiento técnico profundo de Cloudways: dominios institucionales, configuración de WordPress, micrositios y resolución histórica de incidencias.
+
+**Cambio de práctica reconocido en v1.1.** Hasta la fecha, las decisiones administrativas sobre quién recibe acceso a Cloudways se han tomado de facto por Daniel, dado su conocimiento operativo. La política v1.1 establece que hacia adelante esas decisiones las toma el investigador principal, en consulta técnica con Daniel. Esto es elevación del marco institucional, no crítica retrospectiva.
+
+**Naturaleza de esta iteración:** punto de partida, no versión final. La política v1.1 se elabora con la información disponible al investigador principal. El investigador principal va a conversar con Daniel sobre el contenido de este documento — particularmente A.5 y §5.6 — para incorporar precisiones operativas que solo Daniel conoce (qué tareas específicas hace, qué procesos sigue, cómo resuelve clases de incidencias, qué decisiones técnicas pasadas merece documentar). Esa conversación está agendada como pendiente institucional. La política v1.2 capturará el conocimiento operativo que de ella surja.
+
+**Compromiso institucional asociado:** el §7 de esta política establece el plazo de 6-12 meses para reducir el bus factor de Cloudways a ≥ 2. La conversación con Daniel descrita arriba es el primer paso de ese compromiso.
+
 ---
 
 ## Bitácora de cambios de este documento
@@ -210,3 +267,4 @@ La adopción formal del gestor institucional es prerrequisito para incorporar al
 | Fecha | Versión | Cambios |
 |---|---|---|
 | 2026-05-12 | 1.0 | Versión inicial. Articula el principio fundacional (cero secretos en código, documentación o canales informales), define categorías de secretos, criterios para el gestor institucional, matriz de acceso por rol, cinco procedimientos operativos (incorporación, acceso temporal, salida, compromiso, rotación), y la bitácora de incidentes arrancando con la exposición histórica del token BIE (2018-2026). Diseñada para ser portable a contextos institucionales hermanos; el apéndice A aplica la política al caso específico del Simulador Fiscal CIEP. |
+| 2026-05-14 | 1.1 | Incorpora la categoría de rol **desarrollador externo de infraestructura** (§4): persona contratada por el CIEP bajo régimen externo (honorarios, contrato de servicios) que opera infraestructura institucional (hosting, dominios, sistemas de gestión de contenido) sin tocar código de los Simuladores CIEP. Acceso granular por infraestructura específica; las decisiones administrativas las toma el investigador principal en consulta técnica. Agrega **§5.6** con procedimientos de incorporación, modificación y salida del rol nuevo (la salida implica revocación inmediata más rotación de credenciales sin importar la naturaleza de la salida). Estrena **§7 (Compromisos institucionales pendientes)** con primer compromiso: reducir el bus factor de Cloudways a ≥ 2 en 6-12 meses (fecha límite 2027-05-14). Renombra el **Apéndice A** a *Aplicación a los Simuladores CIEP y su infraestructura*, agrega Cloudways al inventario (A.1), reformatea A.2 como tabla activo→acceso, e incorpora **A.5** sobre Daniel Orduña como caso fundacional del rol nuevo, con reconocimiento explícito del cambio de práctica (decisiones administrativas migran de facto a institución) y nota de que esta versión es punto de partida — la v1.2 capturará el input operativo de Daniel tras conversación pendiente. |
