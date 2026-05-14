@@ -1,14 +1,26 @@
-# Conoce el Simulador Fiscal CIEP
+# Simuladores CIEP
 
-Versión: 14 de marzo de 2025
+Versión: 13 de mayo de 2026
 
 <hr style="border: none; height: 2px; background-color: #ff7020;">
 
-<h2 style="color: #ff7020;">Simulador Fiscal</h2>
+<h2 style="color: #ff7020;">Tres herramientas de simulación fiscal</h2>
 
-#### ¿Qué hace el Simulador Fiscal?
+El CIEP desarrolla tres simuladores de política pública disponibles en línea para cualquier persona, sin necesidad de instalar nada:
 
-El proyecto del Simulador Fiscal facilita el acceso a toda la información económica relevante de México. Con los programas del simulador podrás acceder a gran parte de la información económica pública a través de Stata. Además, el simulador brinda un pre-análisis y gráficas para facilitar la comprensión de los datos.
+| Simulador | URL | Qué permite simular |
+|---|---|---|
+| **Simulador Fiscal CIEP** | [simuladorfiscal.ciep.mx](https://simuladorfiscal.ciep.mx) | Proyecciones fiscales de largo plazo: ingresos, gasto, deuda, pensiones y ciclo de vida fiscal |
+| **Simulador IEPS al tabaco** | [iepsaltabaco.ciep.mx](https://iepsaltabaco.ciep.mx) | Impacto fiscal y de salud de cambios al IEPS aplicado al tabaco |
+| **Simulador de tenencia vehicular** | [tenencia.ciep.mx](https://tenencia.ciep.mx) | Cálculo y análisis del derecho de tenencia o uso de vehículos por entidad federativa |
+
+Los tres son de acceso libre. **Este repositorio** contiene el código fuente del Simulador Fiscal CIEP — el motor de cálculo que corre detrás de `simuladorfiscal.ciep.mx` y que también se puede instalar directamente en Stata. Su arquitectura completa está documentada en [`governance/arquitectura-distribucion.md`](governance/arquitectura-distribucion.md).
+
+<h2 style="color: #ff7020;">Simulador Fiscal CIEP</h2>
+
+#### ¿Qué hace el Simulador Fiscal CIEP?
+
+El Simulador Fiscal CIEP facilita el acceso a toda la información económica relevante de México. Con sus programas podrás acceder a gran parte de la información económica pública a través de Stata. Además, el Simulador brinda un pre-análisis y gráficas para facilitar la comprensión de los datos.
 
 <div>
     <p style="margin-bottom: 5px; font-weight: bold;">¿Cuánto tiempo toma acceder a datos del PIB e inflación?</p>
@@ -68,7 +80,28 @@ Además de facilitar la descarga de indicadores económicos, el simulador tiene 
 </div>
 
 
-<h2 style="color: #ff7020;">Cómo acceder al Simulador</h2>
+<h2 style="color: #ff7020;">Cómo acceder al Simulador Fiscal CIEP</h2>
+
+Hay tres formas de acceder al Simulador Fiscal CIEP según lo que necesitas:
+
+#### Opción A: Sitio web — sin instalar nada
+
+Ve a [simuladorfiscal.ciep.mx](https://simuladorfiscal.ciep.mx) desde cualquier navegador. Sin cuenta, sin instalación. Esta es la opción más rápida para ciudadanos, periodistas y cualquier persona que quiera explorar escenarios fiscales.
+
+#### Opción B: Desde tu propia copia de Stata
+
+Si ya tienes Stata instalado, ejecuta estos dos comandos en la consola de Stata, sustituyendo `LIF` por el nombre del programa que quieres instalar:
+
+```stata
+net from https://ciep.mx/simuladorfiscal/
+net install LIF
+```
+
+Los programas disponibles son: `Poblacion`, `PIBDeflactor`, `SCN`, `SHRFSP`, `LIF`, `PEF`, `DatosAbiertos`. Una vez instalados, funcionan en tu Stata local igual que en el repositorio completo.
+
+#### Opción C: Clonar el repositorio completo
+
+Para investigadores del CIEP y quienes quieran explorar el código fuente o contribuir al desarrollo.
 
 #### 1. Instala GitHub Desktop
 
@@ -103,7 +136,7 @@ Ve a la página de [github.com/apps/desktop](https://github.com/apps/desktop) y 
 
 <h2 style="color: #ff7020;">Programas Disponibles</h2>
 
-A través de este simulador podrás acceder a diversos indicadores económicos con el uso de comandos. Estos son los comandos se han desarrollado hasta el momento:
+Los siguientes comandos de Stata forman parte del Simulador Fiscal CIEP. Están disponibles para cualquier usuario con Stata mediante `net from https://ciep.mx/simuladorfiscal/` (Opción B arriba), y también forman el motor de cálculo que corre detrás de `simuladorfiscal.ciep.mx`.
 
 #### 1. `Poblacion`
 Este programa importa los datos de población por edad, sexo y entidad federativa para todos los años de interés. Los datos provienen de la CONAPO. También genera gráficos de la pirámide y transición demográfica para el año de interés.
@@ -126,7 +159,7 @@ Este programa importa y procesa datos del Presupuesto de Egresos de la Federaci�
 #### 7. `DatosAbiertos`
 Este programa está diseñado para proporcionar acceso estructurado a cualquier indicador económico de las Estadísticas Oportunas de Finanzas Públicas, facilitando su consulta y análisis. Para este programa se utiliza información de la SHCP y del INEGI.
 
-<h2 style="color: #ff7020;">Como usar el Simulador</h2>
+<h2 style="color: #ff7020;">Como usar el Simulador Fiscal CIEP</h2>
 
 Para llamar al programa es necesario escribir un comando en la consola de Stata. Cada comando tiene una sintaxis específica y puede incluir *options*, instrucciones específicas que permiten refinar tu búsqueda para adaptarlo a lo que buscas.
 
@@ -140,14 +173,16 @@ Llamar al programa con la sintaxis correcta puede resultar complejo. Por ello, c
 
 <h2 style="color: #ff7020;">Somos tu mejor aliado en la investigación</h2>
 
-Como cualquier herramienta, el proceso de adaptación al Simulador tomará tiempo. Sin embargo, creemos que una vez que pases por esta etapa de aprendizaje no volverás a acceder a los datos públicos de otra manera.
+Como cualquier herramienta, el proceso de adaptación al Simulador Fiscal CIEP tomará tiempo. Sin embargo, creemos que una vez que pases por esta etapa de aprendizaje no volverás a acceder a los datos públicos de otra manera.
 
-Si deseas que incluyamos nueva información económica, no dudes en enviarnos un correo a `ricardocantu@ciep.mx`. Estamos comprometidos en hacer este programa lo más robusto posible y estamos abiertos a todas tus sugerencias.
+Si deseas que incluyamos nueva información económica o tienes sugerencias para cualquiera de los Simuladores CIEP, no dudes en enviarnos un correo a `ricardocantu@ciep.mx`. Estamos comprometidos en hacer estos simuladores lo más robustos posible y estamos abiertos a todas tus sugerencias.
 
 
 ---
 
 <h2 style="color: #ff7020;">Documentación Técnica</h2>
+
+Esta sección describe los archivos técnicos del Simulador Fiscal CIEP. La arquitectura completa del ecosistema de Simuladores CIEP — incluyendo la infraestructura de distribución, los roles de gobernanza y los componentes pendientes de implementación — está documentada en [`governance/arquitectura-distribucion.md`](governance/arquitectura-distribucion.md).
 
 ### Archivos principales
 
