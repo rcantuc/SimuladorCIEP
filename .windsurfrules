@@ -112,6 +112,14 @@ Aplica este glosario sin excepciones. Si necesitas referirte a alguno de estos c
 | Rama Git de desarrollo | **Rama de trabajo** |
 | Archivo manifest con SHA-256 de datos | **Catálogo de datos asociados** |
 
+**Conjunto de productos:**
+
+| Concepto | Término adoptado |
+|---|---|
+| Ecosistema de las tres herramientas web públicas del CIEP (Fiscal CIEP, IEPS al tabaco, tenencia vehicular) como colectivo | **Simuladores CIEP** |
+
+*Nota sobre uso del término* "Simuladores CIEP" *es sustantivo colectivo plural*. Cuando un documento de governance refiere a *"los Simuladores CIEP"*, las políticas y procedimientos aplican a los tres por defecto, no por excepción. Cuando refiere a *"el Simulador Fiscal CIEP"* (singular, con apellido), aplica solo a ese. Análogamente para *"el Simulador IEPS al tabaco"* y *"el Simulador de tenencia vehicular"*. Hoy el caso operativo más maduro es el Simulador Fiscal CIEP; los otros dos existen sustantivamente como sitios web públicos pero su governance formal está pendiente.
+
 **Términos eliminados del vocabulario:**
 
 | Término viejo | Reemplazo |
