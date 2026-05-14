@@ -124,3 +124,6 @@ Desktop.ini
 **/users/**
 **/simuladorfiscal.ciep.mx/**
 
+
+# Windsurf IDE workflows locales (instalados por el IDE, no institucionales)
+.windsurf/
