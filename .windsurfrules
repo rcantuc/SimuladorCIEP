@@ -86,6 +86,8 @@ Aplican a todo artefacto en `governance/` y a cualquier documento dirigido a inv
 
 Aplica este glosario sin excepciones. Si necesitas referirte a alguno de estos conceptos, usa el término elegido.
 
+**Este es el subconjunto operativo compacto.** La fuente canónica completa del Glosario CIEP — con las definiciones en prosa expandida de Simuladores CIEP / Ecosistema CIEP / Micrositios y las equivalencias de registro formal vs. coloquial — vive en `governance/glosario-ciep.md`. Si hay discrepancia entre este subconjunto y ese archivo, gana el archivo.
+
 **Personas:**
 
 | Rol | Término |
@@ -120,11 +122,7 @@ Aplica este glosario sin excepciones. Si necesitas referirte a alguno de estos c
 | El conjunto completo de productos digitales + infraestructura + dominios del CIEP | **Ecosistema CIEP** |
 | Productos narrativos del CIEP vinculados a proyectos bandera | **Micrositios** |
 
-**Simuladores CIEP** (sustantivo colectivo plural, registro formal): los tres simuladores web interactivos del CIEP — Simulador Fiscal CIEP, Simulador IEPS al tabaco, Simulador de tenencia vehicular. Cada uno tiene repositorio Git propio y desarrollo paralelo; comparten código por reuso histórico, no por dependencia activa. Cuando un documento de governance refiere a *"los Simuladores CIEP"*, las políticas y procedimientos aplican a los tres por defecto, no por excepción. Cuando refiere a *"el Simulador Fiscal CIEP"* (singular, con apellido), aplica solo a ese. Hoy el caso operativo más maduro es el Simulador Fiscal CIEP; los otros dos existen sustantivamente como sitios web públicos pero su governance formal está pendiente. Sinónimo coloquial aceptable: "Simuladores fiscales CIEP".
-
-**Ecosistema CIEP** (sustantivo, registro formal): conjunto completo de productos digitales + infraestructura + dominios del CIEP. Incluye: Simuladores CIEP, Micrositios, sitio principal `ciep.mx`, hosting (Cloudways/Hostinger), VPS IONOS, y dominios `*.ciep.mx`. La infraestructura es parte del Ecosistema, no su contexto externo. Sinónimo coloquial aceptable: "Ecosistema digital del CIEP".
-
-**Micrositios** (sustantivo común, plural): productos narrativos del CIEP vinculados a proyectos bandera. Contenido estructurado (gráficos, narrativa, datos) sin código activo de cálculo, a diferencia de los Simuladores CIEP. Audiencias amplias. Stack actual: Cloudways (migrando a Hostinger). Cadencia: uno por año más actualizaciones de existentes. Sinónimo coloquial aceptable: "Micrositios narrativos".
+Definiciones extendidas de estos tres términos y las equivalencias de registro formal vs. coloquial: ver `governance/glosario-ciep.md` (fuente canónica).
 
 **Términos eliminados del vocabulario:**
 
@@ -137,7 +135,7 @@ Aplica este glosario sin excepciones. Si necesitas referirte a alguno de estos c
 
 **Términos en inglés que se conservan** (con explicación inline la primera vez): `Git`, `GitHub`, `commit`, `push`, `pull`, `branch` (junto a "rama"), `merge`, `rewrite`, `SHA`.
 
-**Gestor de secretos institucional:** herramienta especializada donde viven los valores reales de las credenciales del CIEP. Ejemplos: 1Password Teams, Bitwarden Teams. La adopción formal está pendiente de decisión administrativa.
+**Gestor de secretos institucional:** herramienta especializada donde viven los valores reales de las credenciales del CIEP (ejemplos: 1Password Teams, Bitwarden Teams). Definición completa en `governance/glosario-ciep.md`.
 
 ## NARRATIVA INSTITUCIONAL v7 → v8
 
