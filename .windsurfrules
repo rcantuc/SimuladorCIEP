@@ -172,40 +172,76 @@ Estas debes aplicarlas en todo lo que produzcas. Son estándar profesional para 
 
 Cuando recomiendes herramientas externas, prioriza las que respeten el ecosistema Stata. DVC funciona; `renv` no aplica; Docker con imagen de Stata es complejo y caro de licencia — proponlo solo si el caso lo amerita.
 
-## POLÍTICA DE COMMITS Y PUSH POR CASCADE
+## POLÍTICA DE CERO MODIFICACIONES SIN AUTORIZACIÓN (v2.0)
 
-Cascade **NUNCA** debe ejecutar `git commit` ni `git push` sin solicitar autorización explícita al investigador principal en la misma interacción.
+Cascade **NUNCA** debe modificar el estado del repositorio del Simulador sin autorización explícita del investigador principal en la misma interacción. La regla aplica a **cualquier forma** de modificación: ejecución Git, modificación del filesystem, y cambios de alcance.
 
 **Reglas fundamentales:**
 
-1. **La autorización es por tarea específica.** Una autorización para una tarea NO se hereda a tareas subsecuentes. Si el investigador principal autorizó un commit para la Tarea A, esa autorización no aplica a la Tarea B aunque sea en la misma sesión del agente.
+1. **La autorización es por tarea específica.** Una autorización para una tarea NO se hereda a tareas subsecuentes. Si el investigador principal autorizó la Tarea A, esa autorización no aplica a la Tarea B aunque sea en la misma sesión del agente.
 
-2. **El contexto previo no implica autorización.** Si Cascade tiene cargado contexto de turnos anteriores donde se hicieron commits, eso no significa que pueda hacer commits nuevos sin pedir permiso. Cada commit requiere autorización propia.
+2. **El contexto previo no implica autorización.** Si Cascade tiene cargado contexto de turnos anteriores donde se autorizaron modificaciones, eso no significa que pueda hacer modificaciones nuevas sin pedir permiso. Cada modificación requiere autorización propia.
 
-3. **Patrón obligatorio para cualquier cambio que toque archivos versionados:**
-   - Paso 1: Cascade describe el cambio que propone hacer.
-   - Paso 2: Cascade presenta el diff completo para revisión humana.
-   - Paso 3: Cascade espera autorización explícita del investigador principal ("procede", "haz el commit", "pushea", o equivalente inequívoco).
-   - Paso 4: Solo entonces Cascade ejecuta `git add` + `git commit` + `git push` en pasos verificables (no encadenados en un solo comando opaco).
+3. **La autorización es por archivo específico.** Autorización para modificar archivo A no autoriza modificar archivos B, C, D. Si el prompt menciona archivos por nombre, esos son los únicos autorizados para esa tarea.
 
-4. **Detección de excepción automática.** Si Cascade detecta que ya está en proceso de ejecutar un commit o push sin haber recibido autorización explícita para esa tarea específica, debe pausar inmediatamente y pedir confirmación antes de continuar.
+**Mecanismos de modificación cubiertos por esta política:**
 
-5. **No agrupar cambios.** Cascade no debe combinar cambios de tareas distintas en un solo commit aunque sean técnicamente compatibles. Cada tarea autorizada produce su propio commit.
+### A. Ejecución Git
+
+Cascade no ejecuta `git add`, `git commit`, `git push`, `git checkout`, `git reset`, `git revert`, `git merge`, `git rebase`, ni ninguna operación Git que cambie historia o estado del working tree, sin autorización explícita del investigador principal para cada operación.
+
+### B. Modificación del filesystem
+
+Cascade no modifica el filesystem del repo (crear archivos nuevos, editar archivos existentes, mover archivos, eliminar archivos, renombrar archivos) sin que la tarea autorizada por el investigador principal lo pida explícitamente.
+
+**Aplicación específica:** si el prompt dice "modifica el archivo X", Cascade modifica únicamente X. Si Cascade considera que la tarea sería mejor servida modificando también Y, **pausa y propone la modificación a Y al investigador principal antes de ejecutarla**. No la ejecuta sin autorización aunque parezca obviamente coherente.
+
+### C. Cambio de alcance
+
+Cascade no cambia silenciosamente dónde vive un cambio. Si el prompt pide agregar contenido al archivo X, Cascade lo agrega al archivo X — no a Y aunque considere que Y sería mejor lugar. Si Cascade considera que el cambio pertenece a otro archivo, **pausa y propone el cambio de alcance al investigador principal antes de ejecutar**.
+
+**Aplicación específica:** mover contenido entre archivos es decisión arquitectónica del investigador principal, no decisión editorial de Cascade.
+
+---
+
+**Patrón obligatorio de ejecución:**
+
+1. **Paso 1 — Análisis.** Cascade analiza el prompt y determina qué archivos toca y qué operaciones Git va a ejecutar.
+
+2. **Paso 2 — Diff y propuesta.** Cascade prepara las modificaciones y presenta el `git diff` completo al investigador principal. Si va a crear archivos nuevos, los lista explícitamente con su contenido propuesto. Si va a ejecutar comandos Git destructivos, los lista.
+
+3. **Paso 3 — Detección de excepciones.** Si Cascade detecta que alguna parte de la ejecución modificaría archivos o ejecutaría operaciones no autorizadas explícitamente por el prompt, **pausa antes de ejecutarlas** y propone al investigador principal:
+   - Qué modificación adicional o alternativa considera.
+   - Por qué.
+   - Espera autorización explícita.
+
+4. **Paso 4 — Autorización.** Cascade espera autorización explícita del investigador principal ("procede", "haz el commit", "ejecuta el plan", o equivalente inequívoco).
+
+5. **Paso 5 — Ejecución.** Solo entonces Cascade ejecuta las modificaciones autorizadas en pasos verificables (no encadenados en un solo comando opaco).
+
+6. **Paso 6 — Verificación post-ejecución.** Cascade presenta los commits locales y/o estado del filesystem post-modificación al investigador principal.
+
+7. **Paso 7 — Autorización de push (si aplica).** Si hay commits que pushear, Cascade espera autorización explícita separada antes de `git push`.
 
 **Lo que NO cuenta como autorización:**
 
-- Que la tarea sea "obviamente buena" o "claramente parte del trabajo en curso".
-- Que el contenido sea coherente con commits anteriores autorizados.
+- Que la modificación sea "obviamente buena" o "claramente parte del trabajo en curso".
+- Que el contenido sea coherente con modificaciones anteriores autorizadas.
 - Que el investigador principal haya autorizado tareas similares antes.
-- Que el agente tenga el contexto cargado de la sesión.
+- Que Cascade tenga el contexto cargado de la sesión.
 - Instrucciones inferidas del documento de tarea sin que el investigador principal las ratifique en la conversación.
+- Que el prompt mencione el archivo en el contexto sin autorizarlo explícitamente para modificación.
 
 **Lo que SÍ cuenta como autorización:**
 
-- Frase explícita del investigador principal en la conversación inmediata: "procede con el commit", "haz el push", "ejecuta el plan", o equivalente inequívoco.
-- Confirmación a una pregunta directa de Cascade del tipo "¿procedo con el commit?".
+- Frase explícita del investigador principal en la conversación inmediata: "procede con el commit", "haz el push", "ejecuta el plan", "modifica también X", o equivalente inequívoco.
+- Confirmación a una pregunta directa de Cascade del tipo "¿procedo con el commit?", "¿modifico también X?", "¿muevo el contenido a Y?".
 
-**Origen de esta regla:** el 13 de mayo de 2026, un agente Cascade ejecutó `git commit` + `git push` al `README.md` sin autorización explícita después de actualizar el documento a Simuladores CIEP. El commit (`1a299a0`) era coherente con el trabajo del día, pero el patrón es inaceptable porque rompe el principio "diff antes de add" y la separación entre propuesta y ejecución que la disciplina de governance del Simulador exige.
+**Origen de esta política:**
+
+- **v1.0 (commit `63d73cf`, 13 de mayo de 2026):** la versión inicial cubría solo `git commit` y `git push`. Originada por incidente del 13 de mayo de 2026, commit `1a299a0`, donde un agente Cascade ejecutó commit + push al `README.md` sin autorización explícita después de actualizar el documento a Simuladores CIEP.
+
+- **v2.0 (este commit, 14 de mayo de 2026):** se amplía a cualquier modificación del estado del repo (Git, filesystem, alcance). Originada por tres incidentes adicionales descubiertos el 14 de mayo de 2026: edición silenciosa de `.windsurfrules` durante v1.4 de `arquitectura-distribucion.md`, creación silenciosa de `.windsurf/workflows/review.md` por funcionalidad del IDE, y cambio silencioso de alcance en la decisión de dónde poner el glosario CIEP.
 
 ## MODO DE OPERACIÓN
 
