@@ -5,7 +5,7 @@
 # Verificación obligatoria del .gitignore antes de cualquier merge a master
 # que modifique reglas de ignorado.
 #
-# Define un set canónico de paths que DEBEN y NO deben estar ignorados, y
+# Define un conjunto de referencia de paths que DEBEN y NO deben estar ignorados, y
 # reporta divergencia. Justificación e historial de la regla: ver
 #   governance/convenciones-git.md §6
 #
