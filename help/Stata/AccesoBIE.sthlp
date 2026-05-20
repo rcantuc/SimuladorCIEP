@@ -1,6 +1,7 @@
 {smcl}
 {* *! version 3.0 CIEP 23feb2026}{...}
 {viewerjumpto "Descripción" "AccesoBIE##description"}{...}
+{viewerjumpto "Configuración del token" "AccesoBIE##token"}{...}
 {viewerjumpto "Primeros pasos" "AccesoBIE##quickstart"}{...}
 {viewerjumpto "Sintaxis" "AccesoBIE##syntax"}{...}
 {viewerjumpto "Opciones" "AccesoBIE##options"}{...}
@@ -45,8 +46,33 @@ correspondientes.
 
 {pstd}
 {bf:Nota técnica:} Requiere Python con las librerías {cmd:requests} y
-{cmd:beautifulsoup4}. El token de acceso del CIEP está incluido por defecto,
-por lo que no necesitas registrarte en el INEGI.
+{cmd:beautifulsoup4}. A partir de v8.0, el token de acceso al BIE/INEGI
+{ul:no} viene incluido en el código del comando: debe fijarse como global
+Stata antes de usarse (ver {it:Configuración del token} más abajo).
+{p_end}
+
+{hline}
+
+{marker token}{...}
+{title:Configuración del token del BIE}
+
+{pstd}
+A partir de v8.0, {cmd:AccesoBIE} requiere que el token del BIE/INEGI esté
+fijado como global Stata {cmd:BIE_API_TOKEN} antes de usarse. Si el global
+no está fijado y tampoco se pasa la opción {opt token()}, el comando aborta
+con error.
+{p_end}
+
+{pstd}
+Fíjalo al inicio de cada sesión Stata, o en tu {cmd:profile.do} para que
+quede disponible permanentemente:
+{p_end}
+
+{phang2}{cmd:. global BIE_API_TOKEN "tu-token-aqui"}{p_end}
+
+{pstd}
+Si no tienes token, solicítalo en
+{browse "https://www.inegi.org.mx/servicios/api_biinegi.html":www.inegi.org.mx/servicios/api_biinegi.html}.
 {p_end}
 
 {hline}
@@ -93,8 +119,9 @@ separados por espacio. Si no se especifica, se usan los nombres de los metadatos
 {p_end}
 
 {phang}
-{opt token(string)} — Token de acceso para la API del INEGI. Por defecto usa el
-token del CIEP, por lo que normalmente no necesitas especificarlo.
+{opt token(string)} — Token de acceso para la API del INEGI. Si se omite, el
+comando lee el global Stata {cmd:$BIE_API_TOKEN}. Si tampoco está fijado el
+global, el comando aborta con error. Ver {it:Configuración del token} arriba.
 {p_end}
 
 {hline}

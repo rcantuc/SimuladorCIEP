@@ -8,9 +8,16 @@ program define AccesoBIE
 	
 	syntax anything(name=series) [, Nombres(string) Token(string)]
 	
-	// Token por defecto (CIEP)
+	// Token requerido vía global Stata $BIE_API_TOKEN
 	if "`token'" == "" {
-		local token "[REDACTED-BIE-TOKEN]"
+		if "$BIE_API_TOKEN" == "" {
+			display as error "AccesoBIE requiere el token del BIE/INEGI fijado como global Stata."
+			display as error "Fija el token antes de usar este comando:"
+			display as error `"  global BIE_API_TOKEN "tu-token-aqui""'
+			display as error "Solicita o gestiona tu token en: https://www.inegi.org.mx/servicios/api_biinegi.html"
+			exit 198
+		}
+		local token "$BIE_API_TOKEN"
 	}
 	
 	quietly {

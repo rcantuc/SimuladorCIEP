@@ -17,7 +17,21 @@ Se utiliza una fuente de datos:
 
 Banco de Información Económica:  Proporciona datos económicos sobre PIB, el deflactor de precios, la inflación, el empleo y muchos otros más[^1] 
 
-<h3 style="color: #ff7020;">2. Sintaxis:</h3>
+<h3 style="color: #ff7020;">2. Configuración del token del BIE:</h3>
+
+A partir de v8.0, `AccesoBIE` requiere que el token del BIE/INEGI esté fijado como global Stata `BIE_API_TOKEN` antes de usarse. El token ya **no** viene incluido en el código del comando.
+
+Fíjalo al inicio de cada sesión Stata, o en tu `profile.do` para que quede disponible permanentemente:
+
+```stata
+global BIE_API_TOKEN "tu-token-aqui"
+```
+
+Si no tienes token, solicítalo en [www.inegi.org.mx/servicios/api_biinegi.html](https://www.inegi.org.mx/servicios/api_biinegi.html).
+
+Si el global no está fijado y tampoco se pasa la opción `token()`, el comando aborta con un mensaje que indica cómo fijarlo.
+
+<h3 style="color: #ff7020;">3. Sintaxis:</h3>
 
 Para cargar los datos, es necesario ingresar el comando en la consola siguiendo esta sintaxis:
 
@@ -58,7 +72,7 @@ Pasos para encontrar código de la serie:
 </details>
 
 
-<h3 style="color: #ff7020;">3. Output:</h3>
+<h3 style="color: #ff7020;">4. Output:</h3>
 
 Tras ingresar el comando, el código te devolverá una base de datos con los indicadores solicitados. El código agregará variables de fechas para hacer más fácil la interpretación.
 
@@ -74,7 +88,7 @@ Tras ingresar el comando, el código te devolverá una base de datos con los ind
 
 ---
 
-<h3 style="color: #ff7020;">4. Información técnica:</h3>
+<h3 style="color: #ff7020;">5. Información técnica:</h3>
 
 **A. Sintaxis completa:**
 ```stata
@@ -82,7 +96,7 @@ AccesoBIE serie1 [serie2 ...] [, nombres(string) token(string)]
 ```
 - `serie1 serie2 ...`: Códigos de series del BIE (pueden ser múltiples)
 - `nombres()`: Nombres personalizados para variables (opcional)
-- `token()`: Token de acceso API (opcional, incluye token predeterminado CIEP)
+- `token()`: Token de acceso API (opcional). Si se omite, se lee del global Stata `$BIE_API_TOKEN`; si tampoco está fijado, el comando aborta con error. Ver sección *Configuración del token del BIE*.
 
 **B. Variables generadas automáticamente:**
 - `anio`: Año extraído del período
