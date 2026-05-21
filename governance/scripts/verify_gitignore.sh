@@ -117,6 +117,7 @@ assert_ignored "test.pfx" "Certificado PFX"
 assert_ignored "test.crt" "Certificado CRT"
 assert_ignored ".env" "Env file raíz"
 assert_ignored ".env.production" "Env variant"
+assert_ignored "set_token.do" "Token de usuario del BIE/INEGI (debe estar gitignored, nunca trackeado)"
 
 echo "--- Datos asociados en raw/ (ignorado) ---"
 assert_ignored "raw/PEFs/CP_2024.xlsx" "Asset binario en raw/"
@@ -145,6 +146,9 @@ assert_not_ignored "FiscalGap.ado" "Ado-file principal"
 assert_not_ignored "AccesoBIE.ado" "Ado de acceso BIE"
 assert_not_ignored "Stata net/SIM.ado" "Stata net (legacy)"
 assert_not_ignored "01_modulos/tax_models/IVA_Mod.do" "Módulo de impuesto"
+
+echo "--- Plantillas de secretos (deben versionarse) ---"
+assert_not_ignored "set_token.template.do" "Plantilla de set_token (debe versionarse para guiar a usuarios)"
 
 echo "--- Governance y meta ---"
 assert_not_ignored ".mailmap" "Normalización de identidad"

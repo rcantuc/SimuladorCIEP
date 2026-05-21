@@ -103,6 +103,10 @@ Desktop.ini
 .env.*
 !.env.example
 
+# Token API del BIE/INEGI — archivo local por usuario, NUNCA trackeado.
+# Cada usuario copia set_token.template.do como set_token.do y pone su token.
+set_token.do
+
 
 # -----------------------------------------------------------------------------
 # Data Sidecar — `raw/` vive en GitHub Releases, no en Git

@@ -21,11 +21,19 @@ Banco de Información Económica:  Proporciona datos económicos sobre PIB, el d
 
 A partir de v8.0, `AccesoBIE` requiere que el token del BIE/INEGI esté fijado como global Stata `BIE_API_TOKEN` antes de usarse. El token ya **no** viene incluido en el código del comando.
 
-Fíjalo al inicio de cada sesión Stata, o en tu `profile.do` para que quede disponible permanentemente:
+El simulador usa un archivo `set_token.do` en la raíz del repositorio para cargar el token. Este archivo está en `.gitignore` y **nunca se versiona**; cada usuario tiene el suyo con su token personal.
 
-```stata
-global BIE_API_TOKEN "tu-token-aqui"
-```
+**Configuración inicial** (sólo una vez por máquina):
+
+1. Copia `set_token.template.do` (incluido en el repo) como `set_token.do` en la misma carpeta:
+
+   ```bash
+   cp set_token.template.do set_token.do
+   ```
+
+2. Edita `set_token.do` y reemplaza `tu-token-aqui` con tu token real.
+
+`SIM.do` carga el global automáticamente al inicio de cada corrida (busca la línea con `capture do "set_token.do"`). No necesitas hacer nada más en cada sesión.
 
 Si no tienes token, solicítalo en [www.inegi.org.mx/servicios/api_biinegi.html](https://www.inegi.org.mx/servicios/api_biinegi.html).
 

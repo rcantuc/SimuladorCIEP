@@ -64,11 +64,27 @@ con error.
 {p_end}
 
 {pstd}
-Fíjalo al inicio de cada sesión Stata, o en tu {cmd:profile.do} para que
-quede disponible permanentemente:
+El simulador usa un archivo {cmd:set_token.do} en la raíz del repositorio
+para cargar el token. Este archivo está en {cmd:.gitignore} y nunca se
+versiona; cada usuario tiene el suyo con su token personal.
 {p_end}
 
-{phang2}{cmd:. global BIE_API_TOKEN "tu-token-aqui"}{p_end}
+{pstd}
+{bf:Configuración inicial} (sólo una vez por máquina):
+{p_end}
+
+{phang2}1. Copia {cmd:set_token.template.do} (incluido en el repo) como
+{cmd:set_token.do} en la misma carpeta:{p_end}
+{phang2}{cmd:. ! cp set_token.template.do set_token.do}{p_end}
+
+{phang2}2. Edita {cmd:set_token.do} y reemplaza {cmd:tu-token-aqui} con tu
+token real.{p_end}
+
+{pstd}
+{cmd:SIM.do} carga el global automáticamente al inicio de cada corrida
+(busca la línea con {cmd:capture do "set_token.do"}). No necesitas hacer
+nada más en cada sesión.
+{p_end}
 
 {pstd}
 Si no tienes token, solicítalo en
