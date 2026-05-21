@@ -41,7 +41,7 @@ global nographs "nographs"							// SUPRIMIR GRAFICAS
 
 global update "update"								// UPDATE BASES DE DATOS
 if "$update" == "update" {
-	capture rmdir "`c(sysdir_site)'/temp/"
+	! rm -r "`c(sysdir_site)'/temp/"
 }
 
 //global output "output"							// ARCHIVO DE SALIDA (WEB)

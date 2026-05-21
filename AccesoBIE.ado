@@ -84,7 +84,7 @@ program define AccesoBIE
 			
 			// Limpiar periodo
 			*capture replace periodo = subinstr(periodo, "/p1", "", .)
-			*capture replace periodo = subinstr(periodo, "/r1", "", .)
+			capture replace periodo = subinstr(periodo, "r1", "", .)
 			*capture replace periodo = subinstr(periodo, "/p", "", .)
 			*capture replace periodo = subinstr(periodo, "/r", "", .)
 			replace periodo = substr(periodo,1,7)
@@ -316,7 +316,8 @@ def save_data_api(serie, observations, indicator_name, banco):
     
     Macro.setGlobal(f'INEGI_VARNAME_{serie}', indicator_name_clean)
     # Guardar los últimos 80 caracteres (donde está la info relevante)
-    label = indicator_name[-80:] if len(indicator_name) > 80 else indicator_name
+    label_base = indicator_name.replace('(Millones de Precios corrientes) Anual', '').strip()
+    label = label_base[-80:] if len(label_base) > 80 else label_base
     Macro.setGlobal(f'INEGI_LABEL_{serie}', label)
     
     csv_path = Macro.getGlobal('c(sysdir_site)') + '/temp/AccesoBIE/' + serie + '.csv'
@@ -346,7 +347,8 @@ def save_data_scraping(serie, data_rows, indicator_name):
     
     Macro.setGlobal(f'INEGI_VARNAME_{serie}', indicator_name_clean)
     # Guardar los últimos 80 caracteres (donde está la info relevante)
-    label = indicator_name[-80:] if len(indicator_name) > 80 else indicator_name
+    label_base = indicator_name.replace('(Millones de Precios corrientes) Anual', '').strip()
+    label = label_base[-80:] if len(label_base) > 80 else label_base
     Macro.setGlobal(f'INEGI_LABEL_{serie}', label)
     
     csv_path = Macro.getGlobal('c(sysdir_site)') + '/temp/AccesoBIE/' + serie + '.csv'

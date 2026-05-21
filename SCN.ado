@@ -41,15 +41,14 @@ quietly {
 	local anio_exo = r(anio_exo)
 	//local geo = r(geo)
 
-	tempfile basepib
-	save `basepib'
+	save "`c(sysdir_site)'/temp/basepib.dta", replace
 
 
 
 	**************************
 	** 1.1. Merge databases **
 	use "`c(sysdir_site)'/master/SCN.dta", clear
-	merge 1:1 (anio) using `basepib', nogen keep(matched)
+	merge 1:1 (anio) using "`c(sysdir_site)'/temp/basepib.dta", nogen keep(matched)
 	local aniomax = anio[_N]
 	scalar aniomax = `aniomax'
 	tsset anio
@@ -1127,8 +1126,11 @@ program define UpdateSCN
 
 	args update
 
+	capture mkdir "`c(sysdir_site)'/temp/"
+	capture mkdir "`c(sysdir_site)'/temp/SCN/"
+
 	***
-	*** 1.1. Importar Cuenta de generación del ingreso
+	**# 1.1. Importar Cuenta de generación del ingreso
 	***
 	AccesoBIE 724014 724015 724016 724017 724018 724019 724020 724021 724022 724023 724024 724025, nombres(RemSalSS RemSal SSEmpleadores Imp ImpProductos ImpTipoIVA ImpImport OtrImp ImpProduccion Sub ExBOp PIB)
 
@@ -1154,12 +1156,11 @@ program define UpdateSCN
 
 	** 1.5 Guardar **
 	compress
-	tempfile GenIng
-	save `GenIng'
+	save "`c(sysdir_site)'/temp/GenIng.dta", replace
 
 
 	***
-	*** 2.1. Importar Producción bruta
+	**# 2.1. Importar Producción bruta
 	***
 	AccesoBIE 723651 723652 723653 723654 723655 723656 723657 723658 723659 723660 723661 723662 723663 723664 723665 723666 723667 723668 723669 723670 723671 723672, nombres(RecT ProdT ProdMer ProdUF ProdNM ImpNet ImpProd SubProd ImpT ImpBien ImpServ UsosT ConsInt GcfT GcfI GcfC Fbcf VarExis ExpT ExpBien ExpServ DiscEst)
 
@@ -1195,12 +1196,11 @@ program define UpdateSCN
 
 	** 2.5 Guardar **
 	compress
-	tempfile ProdBru
-	save `ProdBru'
+	save "`c(sysdir_site)'/temp/ProdBru.dta", replace
 
 
 	***
-	*** 3.1. Cuenta del ingreso nacional disponible
+	**# 3.1. Cuenta del ingreso nacional disponible
 	***
 	AccesoBIE 724026 724027 724028 724029 724030 724031 724032 724033 724034 724035 724036 724037, nombres(UsosT PIBVA CapFij PIN ROWRemR ROWRemP ROWPropR ROWPropP ROWTransR ROWTransP RecT IngNacD)
 
@@ -1226,12 +1226,11 @@ program define UpdateSCN
 
 	** 3.5 Guardar **
 	compress
-	tempfile IngNacDis
-	save `IngNacDis'
+	save "`c(sysdir_site)'/temp/IngNacDis.dta", replace
 
 
 	***
-	*** 4.1. Consumo de hogares e ISFLSH
+	**# 4.1. Consumo de hogares e ISFLSH
 	***
 	AccesoBIE 724600 724601 724602 724603 724604 724605 724606 724607 724608 724609 724610 724611 724612 724613 724614 724615 724616 724617 724618 724619 724620 724621 724622 724623 724624 724625 724626 724627 724628 724629 724630 724631 724632 724633 724634 724635 724636 724637 724638 724639 724640 724641 724642 724643 724644 724645 724646 724647 724648 724649 724650 724651 724652 724653 724654 724655 724656, ///
 		nombres(ConHog AlimBebT Alim BebN BebTabT BebA Taba VestCalT Vest Calz AlojT Alqu CRep Agua Elec HogaT Mueb Text Arte Vajil Herr ConH SaluT Smed Sext Hosp TraT Vehi FTra STra ComuT Post TelEq TelS RecrT Audi Durab ArtEq Culs Publ Turis EducT PrePri Secu PostNT Terc NoAtr RestT Comi Hote DiveT Cuid EfeP Prot Segu ServF OtrS)
@@ -1303,12 +1302,11 @@ program define UpdateSCN
 
 	** 4.5 Guardar **
 	compress
-	tempfile ConHog
-	save `ConHog'
+	save "`c(sysdir_site)'/temp/ConHog.dta", replace
 
 
 	***
-	*** 5.1. Gasto de consumo privado
+	**# 5.1. Gasto de consumo privado
 	***
 	AccesoBIE 724771 724772 724773 724774 724775 724776 724777, nombres(GastPrivT BienDur BienSemi BienNoDur Serv SubMerc ComprasN)
 
@@ -1329,12 +1327,11 @@ program define UpdateSCN
 
 	** 5.5 Guardar **
 	compress
-	tempfile GastPriv
-	save `GastPriv'
+	save "`c(sysdir_site)'/temp/GastPriv.dta", replace
 
 
 	***
-	*** 6.1. Gasto de consumo del gobierno
+	**# 6.1. Gasto de consumo del gobierno
 	***
 	AccesoBIE 724959 724960 724961 724962 724963 724964 724965 724966 724967 724968 724969 724970 724971 724972 724973 724974 724975 724976 724977 724978 724979 724980, ///
 		nombres(ConGob GovAgr GovMin GovEner GovConstr GovManuf GovMayor GovMenor GovTrans GovInfo GovFin GovInmob GovProf GovCorp GovApoyo GovEdu GovSalud GovRecrea GovAloj GovOtros GovLegis GovCompExt)
@@ -1371,12 +1368,11 @@ program define UpdateSCN
 
 	**  6.5 Guardar **
 	compress
-	tempfile GovCons
-	save `GovCons'
+	save "`c(sysdir_site)'/temp/GovCons.dta", replace
 
 
 	***
-	*** 7.1.1 PIB por actividad económica (Parte 1)
+	**# 7.1.1 PIB por actividad económica (Parte 1)
 	***
 	AccesoBIE 779804 779805 779806 779807 779808 779809 779810 779811 779812 779813 779814 779815 779816 779817 779818 779819 779820 779821 779822 779823 779824 779825 779826 779827 779828 779829 779830 779831 779832 779833 779834 779835 779836 779837 779838 779839 779840 779841 779842 779843 779844 779845 779846 779847 779848 779849 779850 779851 779852 779853 779854 779855 779856 779857 779858 779859 779860 779861 779862 779863 779864 779865 779866 779867 779868 779869 779870 779871 779872 779873, ///
 		nombres(PIB_T ImpProd_T ValAg_T Agr_T Agr111_T Agr1111 Agr1112 Agr1113 Agr1114 Agr1119 Agr112_T Agr1121 Agr1122 Agr1123 Agr1124 Agr1125 Agr1129 Agr113_T Agr1131 Agr1132 Agr1133 Agr114_T Agr1141 Agr1142 Agr115_T Agr1151 Agr1152 Agr1153 Min_T Min211_T Min2111 Min212_T Min2121 Min2122 Min2123 Min213_T Min2131 Ener_T Ener221_T Ener2211 Ener2212 Ener2213 Const_T Const236_T Const2361 Const2362 Const237_T Const2371 Const2372 Const2373 Const2379 Const238_T Const2381 Const2382 Const2383 Const2389 Manu_T Manu311_T Manu3111 Manu3112 Manu3113 Manu3114 Manu3115 Manu3116 Manu3117 Manu3118 Manu3119 Manu312_T Manu3121 Manu3122)
@@ -1487,12 +1483,11 @@ program define UpdateSCN
 
 	**  7.1.5 Guardar **
 	compress
-	tempfile PIBAE1
-	save `PIBAE1'
+	save "`c(sysdir_site)'/temp/PIBAE1.dta", replace
 
 
 	***
-	*** 7.2.1 PIB por actividad económica (Parte 2)
+	**# 7.2.1 PIB por actividad económica (Parte 2)
 	***
 	AccesoBIE 779874 779875 779876 779877 779878 779879 779880 779881 779882 779883 779884 779885 779886 779887 779888 779889 779890 779891 779892 779893 779894 779895 779896 779897 779898 779899 779900 779901 779902 779903 779904 779905 779906 779907 779908 779909 779910 779911 779912 779913 779914 779915 779916 779917 779918 779919 779920 779921 779922 779923 779924 779925 779926 779927 779928 779929 779930 779931 779932 779933 779934 779935 779936 779937 779938 779939 779940 779941 779942 779943, ///
 		nombres(Manu313_T Manu3131 Manu3132 Manu3133 Manu314_T Manu3141 Manu3149 Manu315_T Manu3151 Manu3152 Manu3159 Manu316_T Manu3161 Manu3162 Manu3169 Manu321_T Manu3211 Manu3212 Manu3219 Manu322_T Manu3221 Manu3222 Manu323_T Manu3231 Manu324_T Manu3241 Manu325_T Manu3251 Manu3252 Manu3253 Manu3254 Manu3255 Manu3256 Manu3259 Manu326_T Manu3261 Manu3262 Manu327_T Manu3271 Manu3272 Manu3273 Manu3274 Manu3279 Manu331_T Manu3311 Manu3312 Manu3313 Manu3314 Manu3315 Manu332_T Manu3321 Manu3322 Manu3323 Manu3324 Manu3325 Manu3326 Manu3327 Manu3328 Manu3329 Manu333_T Manu3331 Manu3332 Manu3333 Manu3334 Manu3335 Manu3336 Manu3339 Manu334_T Manu3341 Manu3342)
@@ -1607,12 +1602,11 @@ program define UpdateSCN
 
 	**  7.2.5 Guardar **
 	compress
-	tempfile PIBAE2
-	save `PIBAE2'
+	save "`c(sysdir_site)'/temp/PIBAE2.dta", replace
 
 
 	***
-	*** 7.3.1 PIB por actividad económica (Parte 3)
+	**# 7.3.1 PIB por actividad económica (Parte 3)
 	***
 	AccesoBIE 779944 779945 779946 779947 779948 779949 779950 779951 779952 779953 779954 779955 779956 779957 779958 779959 779960 779961 779962 779963 779964 779965 779966 779967 779968 779969 779970 779971 779972 779973 779974 779975 779976 779977 779978 779979 779980 779981 779982 779983 779984 779985 779986 779987 779988 779989 779990 779991 779992 779993 779994 779995 779996 779997, ///
 		nombres(Manu3343 Manu3344 Manu3345 Manu3346 Manu335_T Manu3351 Manu3352 Manu3353 Manu3359 Manu336_T Manu3361 Manu3362 Manu3363 Manu3364 Manu3365 Manu3366 Manu3369 Manu337_T Manu3371 Manu3372 Manu3379 Manu339_T Manu3391 Manu3399 ComMayor_T ComMayor430_T ComMayor4300 ComMenor_T ComMenor460_T ComMenor4600 Trans_T TransAereo_T TransAereoReg TransAereoNoReg TransFerro_T TransFerro TransAgua_T TransMaritimo TransAguasInt AutoCarga_T AutoCargaGen AutoCargaEsp TransTerrestre_T TransTer_Urb TransTer_Foraneo TaxiLimus TransEscolar AutobusChofer TransTerOtro TransDuctos_T TransDuct_Petro TransDuct_Gas TransDuct_Otros TransTur_T)
@@ -1711,12 +1705,11 @@ program define UpdateSCN
 
 	** 7.3.5 Guardar **
 	compress
-	tempfile PIBAE3
-	save `PIBAE3'
+	save "`c(sysdir_site)'/temp/PIBAE3.dta", replace
 
 
 	***
-	*** 7.4.1 PIB por actividad económica (Parte 4)
+	**# 7.4.1 PIB por actividad económica (Parte 4)
 	***
 	AccesoBIE 779998 779999 780000 780001 780002 780003 780004 780005 780006 780007 780008 780009 780010 780011 780012 780013 780014 780015 780016 780017 780018 780019 780020 780021 780022 780023 780024 780025 780026 780027 780028 780029 780030 780031 780032 780033 780034 780035 780036 780037 780038 780039 780040 780041 780042 780043 780044 780045 780046 780047 780048 780049 780050 780051 780052 780053 780054 780055 780056 780057 780058 780059 780060 780061 780062 780063 780064 780065 780066 780067 780068 780069 780070 780071 780072 780073 780074 780075 780076 780077 780078 780079 780080 780081 780082, ///
 		nombres(TransTurTierra TransTurAgua TransTurOtro ServTrans_T ServTransAereo ServTransFerro ServTransAgua ServTransCarretera ServTransInter ServTransOtros ServPost_T ServPost ServMensaj_T ServMensajFor ServMensajLoc ServAlmac_T ServAlmac Medios_T Medios511_T Medios5111 Medios5112 Medios512_T Medios5121 Medios5122 Medios515_T Medios5151 Medios5152 Medios517_T Medios5173 Medios5174 Medios5179 Medios518_T Medios5182 Medios519_T Medios5191 FinSeg_T Fin521_T Fin5211 Fin522_T Fin5221 Fin5222 Fin5223 Fin5224 Fin5225 Fin523_T Fin5231 Fin5232 Fin5239 Fin524_T Fin5241 Fin5242 Fin525_T Fin5251 Fin5252 Inmob_T Inmob531_T Inmob5311 Inmob5312 Inmob5313 Inmob532_T Inmob5321 Inmob5322 Inmob5323 Inmob5324 Inmob533_T Inmob5331 Prof_T Prof541_T Prof5411 Prof5412 Prof5413 Prof5414 Prof5415 Prof5416 Prof5417 Prof5418 Prof5419 Corp_T Corp551_T Corp5511 Apoyo_T Apoyo561_T Apoyo5611 Apoyo5612 Apoyo5613)
@@ -1855,12 +1848,11 @@ program define UpdateSCN
 
 	** 7.4.5 Guardar **
 	compress
-	tempfile PIBAE4
-	save `PIBAE4'
+	save "`c(sysdir_site)'/temp/PIBAE4.dta", replace
 
 
 	***
-	*** 7.5.1 PIB por actividad económica (Parte 5)
+	**# 7.5.1 PIB por actividad económica (Parte 5)
 	***
 	AccesoBIE 780083 780084 780085 780086 780087 780088 780089 780090 780091 780092 780093 780094 780095 780096 780097 780098 780099 780100 780101 780102 780103 780104 780105 780106 780107 780108 780109 780110 780111 780112 780113 780114 780115 780116 780117 780118 780119 780120 780121 780122 780123 780124 780125 780126 780127 780128 780129 780130 780131 780132 780133 780134 780135 780136 780137 780138 780139 780140 780141 780142 780143 780144 780145 780146 780147 780148 780149 780150 780151 780152 780153 780154 780155 780156 780157 780158 780159 780160 780161 780162 780163 780164 780165 780166 780167 780168 780169 780170 780171 780172 780173 780174, ///
 		nombres(Apoyo5614 Apoyo5615 Apoyo5616 Apoyo5617 Apoyo5619 Apoyo562_T Apoyo5621 Apoyo5622 Apoyo5629 Edu_T Edu611_T Edu6111 Edu6112 Edu6113 Edu6114 Edu6115 Edu6116 Edu6117 Salud_T Salud621_T Salud6211 Salud6212 Salud6213 Salud6214 Salud6215 Salud6216 Salud6219 Salud622_T Salud6221 Salud6222 Salud6223 Salud623_T Salud6231 Salud6232 Salud6233 Salud6239 Salud624_T Salud6241 Salud6242 Salud6243 Salud6244 Recre_T Recre711_T Recre7111 Recre7112 Recre7113 Recre7114 Recre7115 Recre712_T Recre7121 Recre713_T Recre7131 Recre7132 Recre7139 AloPrep_T AloPrep721_T AloPrep7211 AloPrep7212 AloPrep7213 AloPrep722_T AloPrep7223 AloPrep7224 AloPrep7225 Otros_T Otros811_T Otros8111 Otros8112 Otros8113 Otros8114 Otros812_T Otros8121 Otros8122 Otros8123 Otros8124 Otros8129 Otros813_T Otros8131 Otros8132 Otros814_T Otros8141 Legis_T Legis931_T Legis9311 Legis9312 Legis9313 Legis9314 Legis9315 Legis9316 Legis9317 Legis9318 Legis932_T Legis9321)
@@ -1987,12 +1979,11 @@ program define UpdateSCN
 
 	** 7.5.5 Guardar **
 	compress
-	tempfile PIBAE5
-	save `PIBAE5'
+	save "`c(sysdir_site)'/temp/PIBAE5.dta", replace
 
 
 	***
-	*** 8.1 Consumo privado en bienes y servicios, por actividad económica
+	**# 8.1 Consumo privado en bienes y servicios, por actividad económica
 	***
 	AccesoBIE 725114 725115 725116 725117 725118 725119 725120 725121 725122 725123 725124 725125 725126 725127 725128 725129 725130 725131 725132 725133 725134 725135, ///
 		nombres(ConsPriv_T ConsPriv_11 ConsPriv_21 ConsPriv_22 ConsPriv_23 ConsPriv_31_33 ConsPriv_43 ConsPriv_46 ConsPriv_48_49 ConsPriv_51 ConsPriv_52 ConsPriv_53 ConsPriv_54 ConsPriv_55 ConsPriv_56 ConsPriv_61 ConsPriv_62 ConsPriv_71 ConsPriv_72 ConsPriv_81 ConsPriv_93 ConsPriv_P721)
@@ -2029,21 +2020,18 @@ program define UpdateSCN
 
 	** 8.5 Guardar **
 	compress
-	tempfile SecExt
-	save `SecExt'
+	save "`c(sysdir_site)'/temp/SecExt.dta", replace
 
 	**/
-	*** 9. Ingreso mixto bruto
+	**# 9. Ingreso mixto bruto
 	***
 	capture confirm file "`c(sysdir_site)'/temp/SCN/CSI_103.xlsx"
 	if _rc != 0 | "`update'" == "update" {
-		capture mkdir "`c(sysdir_site)'/temp/"
-		capture mkdir "`c(sysdir_site)'/temp/SCN/"
 		cd "`c(sysdir_site)'/temp/SCN/"
 		unzipfile "https://www.inegi.org.mx/contenidos/programas/si/2018/tabulados/ori/tabulados_CSI.zip", replace
 	}
 
-	import excel using "`c(sysdir_site)'/temp/SCN/CSI_103.xlsx", cellrange(B60:AP60) clear
+	import excel using "`c(sysdir_site)'/temp/SCN/CSI_103.xlsx", cellrange(B60:AS60) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2062,19 +2050,19 @@ program define UpdateSCN
 	rename IngMixto_ IngMixto
 
 	replace IngMixto = IngMixto*1000000
+	replace anio = substr(anio,1,4)
 	destring anio, replace
 
 	order anio
 	format IngMixto %20.0fc
 	
-	tempfile IngMixto
-	save `IngMixto'
+	save "`c(sysdir_site)'/temp/IngMixto.dta", replace
 
 
 	***
-	*** 10. Cuotas a la seguridad social imputada
+	**# 10. Cuotas a la seguridad social imputada
 	***
-	import excel using "`c(sysdir_site)'/temp/SCN/CSI_103.xlsx", cellrange(B41:AP41) clear
+	import excel using "`c(sysdir_site)'/temp/SCN/CSI_103.xlsx", cellrange(B41:AS41) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2093,19 +2081,20 @@ program define UpdateSCN
 	rename SSImputada_ SSImputada
 
 	replace SSImputada = SSImputada*1000000
+	replace anio = substr(anio,1,4)
 	destring anio, replace
+
 
 	order anio
 	format SSImputada %20.0fc
 
-	tempfile SSImputada
-	save `SSImputada'
+	save "`c(sysdir_site)'/temp/SSImputada.dta", replace
 
 
 	***
-	*** 11. Subsidios a los productos, producci{c o'}n e importaciones
+	**# 11. Subsidios a los productos, producci{c o'}n e importaciones
 	***
-	import excel using "`c(sysdir_site)'/temp/SCN/CSI_103.xlsx", cellrange(B54:AP54) clear
+	import excel using "`c(sysdir_site)'/temp/SCN/CSI_103.xlsx", cellrange(B54:AS54) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2124,19 +2113,20 @@ program define UpdateSCN
 	rename SubProductos_ SubProductos
 
 	replace SubProductos = SubProductos*1000000
+	replace anio = substr(anio,1,4)
 	destring anio, replace
+
 
 	order anio
 	format SubProductos %20.0fc
 
-	tempfile SubProductos
-	save `SubProductos'
+	save "`c(sysdir_site)'/temp/SubProductos.dta", replace
 
 
 	***
-	*** 12. Otros subsidios a la producci{c o'}n
+	**# 12. Otros subsidios a la producci{c o'}n
 	***
-	import excel using "`c(sysdir_site)'/temp/SCN/CSI_103.xlsx", cellrange(B58:AP58) clear
+	import excel using "`c(sysdir_site)'/temp/SCN/CSI_103.xlsx", cellrange(B58:AS58) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2155,19 +2145,20 @@ program define UpdateSCN
 	rename SubProduccion_ SubProduccion
 
 	replace SubProduccion = SubProduccion*1000000
+	replace anio = substr(anio,1,4)
 	destring anio, replace
+
 
 	order anio
 	format SubProduccion %20.0fc
 
-	tempfile SubProduccion
-	save `SubProduccion'
+	save "`c(sysdir_site)'/temp/SubProduccion.dta", replace
 
 
 	***
-	*** 13. Depreciaci{c o'}n del ingreso mixto
+	**# 13. Depreciaci{c o'}n del ingreso mixto
 	***
-	import excel using "`c(sysdir_site)'/temp/SCN/CSI_103.xlsx", cellrange(B62:AP62) clear
+	import excel using "`c(sysdir_site)'/temp/SCN/CSI_103.xlsx", cellrange(B62:AS62) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2186,19 +2177,20 @@ program define UpdateSCN
 	rename DepMix_ DepMix
 
 	replace DepMix = DepMix*1000000
+	replace anio = substr(anio,1,4)
 	destring anio, replace
+
 
 	order anio
 	format DepMix %20.0fc
 
-	tempfile DepMix
-	save `DepMix'
+	save "`c(sysdir_site)'/temp/DepMix.dta", replace
 
 
 	***
-	*** 14. Excedente bruto de operaci{c o'}n No Financiero
+	**# 14. Excedente bruto de operaci{c o'}n No Financiero
 	***
-	import excel using "`c(sysdir_site)'/temp/SCN/CSI_106.xlsx", cellrange(B59:AP59) clear
+	import excel using "`c(sysdir_site)'/temp/SCN/CSI_106.xlsx", cellrange(B59:AS59) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2217,19 +2209,20 @@ program define UpdateSCN
 	rename ExBOpNoFin_ ExBOpNoFin
 
 	replace ExBOpNoFin = ExBOpNoFin*1000000
+	replace anio = substr(anio,1,4)
 	destring anio, replace
+
 
 	order anio
 	format ExBOpNoFin %20.0fc
 
-	tempfile ExBOpNoFin
-	save `ExBOpNoFin'
+	save "`c(sysdir_site)'/temp/ExBOpNoFin.dta", replace
 
 
 	***
-	*** 15. Excedente bruto de operaci{c o'}n Financiero
+	**# 15. Excedente bruto de operaci{c o'}n Financiero
 	***
-	import excel using "`c(sysdir_site)'/temp/SCN/CSI_109.xlsx", cellrange(B59:AP59) clear
+	import excel using "`c(sysdir_site)'/temp/SCN/CSI_109.xlsx", cellrange(B59:AS59) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2248,19 +2241,20 @@ program define UpdateSCN
 	rename ExBOpFin_ ExBOpFin
 
 	replace ExBOpFin = ExBOpFin*1000000
+	replace anio = substr(anio,1,4)
 	destring anio, replace
+
 
 	order anio
 	format ExBOpFin %20.0fc
 
-	tempfile ExBOpFin
-	save `ExBOpFin'
+	save "`c(sysdir_site)'/temp/ExBOpFin.dta", replace
 
 
 	***
-	*** 16. Excedente bruto de operaci{c o'}n ISFLSH
+	**# 16. Excedente bruto de operaci{c o'}n ISFLSH
 	***
-	import excel using "`c(sysdir_site)'/temp/SCN/CSI_118.xlsx", cellrange(B59:AP59) clear
+	import excel using "`c(sysdir_site)'/temp/SCN/CSI_118.xlsx", cellrange(B59:AS59) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2279,19 +2273,20 @@ program define UpdateSCN
 	rename ExBOpISFLSH_ ExBOpISFLSH
 
 	replace ExBOpISFLSH = ExBOpISFLSH*1000000
+	replace anio = substr(anio,1,4)
 	destring anio, replace
+
 
 	order anio
 	format ExBOpISFLSH %20.0fc
 
-	tempfile ExBOpISFLSH
-	save `ExBOpISFLSH'
+	save "`c(sysdir_site)'/temp/ExBOpISFLSH.dta", replace
 
 
 	***
-	*** 17. Excedente bruto de operaci{c o'}n Hogares
+	**# 17. Excedente bruto de operaci{c o'}n Hogares
 	***
-	import excel using "`c(sysdir_site)'/temp/SCN/CSI_115.xlsx", cellrange(B59:AP59) clear
+	import excel using "`c(sysdir_site)'/temp/SCN/CSI_115.xlsx", cellrange(B59:AS59) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2310,19 +2305,20 @@ program define UpdateSCN
 	rename ExBOpHog_ ExBOpHog
 
 	replace ExBOpHog = ExBOpHog*1000000
+	replace anio = substr(anio,1,4)
 	destring anio, replace
+
 
 	order anio
 	format ExBOpHog %20.0fc
 
-	tempfile ExBOpHog
-	save `ExBOpHog'
+	save "`c(sysdir_site)'/temp/ExBOpHog.dta", replace
 
 
 	***
-	*** 18. Excedente bruto de operaci{c o'}n Gobierno
+	**# 18. Excedente bruto de operaci{c o'}n Gobierno
 	***
-	import excel using "`c(sysdir_site)'/temp/SCN/CSI_112.xlsx", cellrange(B59:AP59) clear
+	import excel using "`c(sysdir_site)'/temp/SCN/CSI_112.xlsx", cellrange(B59:AS59) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2341,19 +2337,20 @@ program define UpdateSCN
 	rename ExBOpGob_ ExBOpGob
 
 	replace ExBOpGob = ExBOpGob*1000000
+	replace anio = substr(anio,1,4)
 	destring anio, replace
+
 
 	order anio
 	format ExBOpGob %20.0fc
 
-	tempfile ExBOpGob
-	save `ExBOpGob'
+	save "`c(sysdir_site)'/temp/ExBOpGob.dta", replace
 
 
 	***
-	*** 19. Excedente neto de operaci{c o'}n No Financiero
+	**# 19. Excedente neto de operaci{c o'}n No Financiero
 	***
-	import excel using "`c(sysdir_site)'/temp/SCN/CSI_106.xlsx", cellrange(B63:AP63) clear
+	import excel using "`c(sysdir_site)'/temp/SCN/CSI_106.xlsx", cellrange(B63:AS63) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2372,19 +2369,20 @@ program define UpdateSCN
 	rename ExNOpNoFin_ ExNOpNoFin
 
 	replace ExNOpNoFin = ExNOpNoFin*1000000
+	replace anio = substr(anio,1,4)
 	destring anio, replace
+
 
 	order anio
 	format ExNOpNoFin %20.0fc
 
-	tempfile ExNOpNoFin
-	save `ExNOpNoFin'
+	save "`c(sysdir_site)'/temp/ExNOpNoFin.dta", replace
 
 
 	***
-	*** 20. Excedente neto de operaci{c o'}n Financiero
+	**# 20. Excedente neto de operaci{c o'}n Financiero
 	***
-	import excel using "`c(sysdir_site)'/temp/SCN/CSI_109.xlsx", cellrange(B63:AP63) clear
+	import excel using "`c(sysdir_site)'/temp/SCN/CSI_109.xlsx", cellrange(B63:AS63) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2403,19 +2401,20 @@ program define UpdateSCN
 	rename ExNOpFin_ ExNOpFin
 
 	replace ExNOpFin = ExNOpFin*1000000
+	replace anio = substr(anio,1,4)
 	destring anio, replace
+
 
 	order anio
 	format ExNOpFin %20.0fc
 
-	tempfile ExNOpFin
-	save `ExNOpFin'
+	save "`c(sysdir_site)'/temp/ExNOpFin.dta", replace
 
 
 	***
-	*** 21. Excedente neto de operaci{c o'}n ISFLSH
+	**# 21. Excedente neto de operaci{c o'}n ISFLSH
 	***
-	import excel using "`c(sysdir_site)'/temp/SCN/CSI_118.xlsx", cellrange(B63:AP63) clear
+	import excel using "`c(sysdir_site)'/temp/SCN/CSI_118.xlsx", cellrange(B63:AS63) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2434,19 +2433,20 @@ program define UpdateSCN
 	rename ExNOpISFLSH_ ExNOpISFLSH
 
 	replace ExNOpISFLSH = ExNOpISFLSH*1000000
+	replace anio = substr(anio,1,4)
 	destring anio, replace
+
 
 	order anio
 	format ExNOpISFLSH %20.0fc
 
-	tempfile ExNOpISFLSH
-	save `ExNOpISFLSH'
+	save "`c(sysdir_site)'/temp/ExNOpISFLSH.dta", replace
 
 
 	***
-	*** 22. Excedente neto de operaci{c o'}n Hogares
+	**# 22. Excedente neto de operaci{c o'}n Hogares
 	***
-	import excel using "`c(sysdir_site)'/temp/SCN/CSI_115.xlsx", cellrange(B63:AP63) clear
+	import excel using "`c(sysdir_site)'/temp/SCN/CSI_115.xlsx", cellrange(B63:AS63) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2465,19 +2465,20 @@ program define UpdateSCN
 	rename ExNOpHog_ ExNOpHog
 
 	replace ExNOpHog = ExNOpHog*1000000
+	replace anio = substr(anio,1,4)
 	destring anio, replace
+
 
 	order anio
 	format ExNOpHog %20.0fc
 
-	tempfile ExNOpHog
-	save `ExNOpHog'
+	save "`c(sysdir_site)'/temp/ExNOpHog.dta", replace
 
 
 	***
-	*** 23. Excedente neto de operaci{c o'}n Gobierno
+	**# 23. Excedente neto de operaci{c o'}n Gobierno
 	***
-	import excel using "`c(sysdir_site)'/temp/SCN/CSI_112.xlsx", cellrange(B63:AP63) clear
+	import excel using "`c(sysdir_site)'/temp/SCN/CSI_112.xlsx", cellrange(B63:AS63) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2496,19 +2497,20 @@ program define UpdateSCN
 	rename ExNOpGob_ ExNOpGob
 
 	replace ExNOpGob = ExNOpGob*1000000
+	replace anio = substr(anio,1,4)
 	destring anio, replace
+
 
 	order anio
 	format ExNOpGob %20.0fc
 
-	tempfile ExNOpGob
-	save `ExNOpGob'
+	save "`c(sysdir_site)'/temp/ExNOpGob.dta", replace
 
 
 	***
-	*** 24. Ahorro bruto
+	**# 24. Ahorro bruto
 	***
-	import excel using "`c(sysdir_site)'/temp/SCN/CSI_103.xlsx", cellrange(B170:AP170) clear
+	import excel using "`c(sysdir_site)'/temp/SCN/CSI_103.xlsx", cellrange(B170:AS170) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2527,19 +2529,20 @@ program define UpdateSCN
 	rename AhorroB_ AhorroB
 
 	replace AhorroB = AhorroB*1000000
+	replace anio = substr(anio,1,4)
 	destring anio, replace
+
 
 	order anio
 	format AhorroB %20.0fc
 
-	tempfile AhorroB
-	save `AhorroB'
+	save "`c(sysdir_site)'/temp/AhorroB.dta", replace
 
 
 	***
-	*** 25. Ingreso disponible bruto
+	**# 25. Ingreso disponible bruto
 	***
-	import excel using "`c(sysdir_site)'/temp/SCN/CSI_103.xlsx", cellrange(B152:AP152) clear
+	import excel using "`c(sysdir_site)'/temp/SCN/CSI_103.xlsx", cellrange(B152:AS152) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2558,49 +2561,53 @@ program define UpdateSCN
 	rename IngDisp_ IngDisp
 
 	replace IngDisp = IngDisp*1000000
+	replace anio = substr(anio,1,4)
 	destring anio, replace
+
 
 	order anio
 	format IngDisp %20.0fc
 
-	tempfile IngDisp
-	save `IngDisp'
+	save "`c(sysdir_site)'/temp/IngDisp.dta", replace
 
 
 	***
-	*** 26. Merge bases
+	**# 26. Merge bases
 	***
-	use `GenIng', clear
-	merge 1:1 anio using `ProdBru', nogen
-	merge 1:1 anio using `IngNacDis', nogen
-	merge 1:1 anio using `ConHog', nogen
-	merge 1:1 anio using `GastPriv', nogen
-	merge 1:1 anio using `GovCons', nogen
-	merge 1:1 anio using `PIBAE1', nogen
-	merge 1:1 anio using `PIBAE2', nogen
-	merge 1:1 anio using `PIBAE3', nogen
-	merge 1:1 anio using `PIBAE4', nogen
-	merge 1:1 anio using `PIBAE5', nogen
-	merge 1:1 anio using `SecExt', nogen
-	merge 1:1 anio using `IngMixto', nogen
-	merge 1:1 anio using `SSImputada', nogen
-	merge 1:1 anio using `SubProductos', nogen
-	merge 1:1 anio using `SubProduccion', nogen
-	merge 1:1 anio using `DepMix', nogen
-	merge 1:1 anio using `ExBOpNoFin', nogen
-	merge 1:1 anio using `ExBOpFin', nogen
-	merge 1:1 anio using `ExBOpISFLSH', nogen
-	merge 1:1 anio using `ExBOpHog', nogen
-	merge 1:1 anio using `ExBOpGob', nogen
-	merge 1:1 anio using `ExNOpNoFin', nogen
-	merge 1:1 anio using `ExNOpFin', nogen
-	merge 1:1 anio using `ExNOpISFLSH', nogen
-	merge 1:1 anio using `ExNOpHog', nogen
-	merge 1:1 anio using `ExNOpGob', nogen
-	merge 1:1 anio using `AhorroB', nogen
-	merge 1:1 anio using `IngDisp', nogen
+	use "`c(sysdir_site)'/temp/GenIng.dta", clear
+	merge 1:1 anio using "`c(sysdir_site)'/temp/ProdBru.dta", nogen
+	merge 1:1 anio using "`c(sysdir_site)'/temp/IngNacDis.dta", nogen
+	merge 1:1 anio using "`c(sysdir_site)'/temp/ConHog.dta", nogen
+	merge 1:1 anio using "`c(sysdir_site)'/temp/GastPriv.dta", nogen
+	merge 1:1 anio using "`c(sysdir_site)'/temp/GovCons.dta", nogen
+	merge 1:1 anio using "`c(sysdir_site)'/temp/PIBAE1.dta", nogen
+	merge 1:1 anio using "`c(sysdir_site)'/temp/PIBAE2.dta", nogen
+	merge 1:1 anio using "`c(sysdir_site)'/temp/PIBAE3.dta", nogen
+	merge 1:1 anio using "`c(sysdir_site)'/temp/PIBAE4.dta", nogen
+	merge 1:1 anio using "`c(sysdir_site)'/temp/PIBAE5.dta", nogen
+	merge 1:1 anio using "`c(sysdir_site)'/temp/SecExt.dta", nogen
+	merge 1:1 anio using "`c(sysdir_site)'/temp/IngMixto.dta", nogen
+	merge 1:1 anio using "`c(sysdir_site)'/temp/SSImputada.dta", nogen
+	merge 1:1 anio using "`c(sysdir_site)'/temp/SubProductos.dta", nogen
+	merge 1:1 anio using "`c(sysdir_site)'/temp/SubProduccion.dta", nogen
+	merge 1:1 anio using "`c(sysdir_site)'/temp/DepMix.dta", nogen
+	merge 1:1 anio using "`c(sysdir_site)'/temp/ExBOpNoFin.dta", nogen
+	merge 1:1 anio using "`c(sysdir_site)'/temp/ExBOpFin.dta", nogen
+	merge 1:1 anio using "`c(sysdir_site)'/temp/ExBOpISFLSH.dta", nogen
+	merge 1:1 anio using "`c(sysdir_site)'/temp/ExBOpHog.dta", nogen
+	merge 1:1 anio using "`c(sysdir_site)'/temp/ExBOpGob.dta", nogen
+	merge 1:1 anio using "`c(sysdir_site)'/temp/ExNOpNoFin.dta", nogen
+	merge 1:1 anio using "`c(sysdir_site)'/temp/ExNOpFin.dta", nogen
+	merge 1:1 anio using "`c(sysdir_site)'/temp/ExNOpISFLSH.dta", nogen
+	merge 1:1 anio using "`c(sysdir_site)'/temp/ExNOpHog.dta", nogen
+	merge 1:1 anio using "`c(sysdir_site)'/temp/ExNOpGob.dta", nogen
+	merge 1:1 anio using "`c(sysdir_site)'/temp/AhorroB.dta", nogen
+	merge 1:1 anio using "`c(sysdir_site)'/temp/IngDisp.dta", nogen
 	merge 1:1 (anio) using "`c(sysdir_site)'/master/Poblaciontot.dta", nogen //keep(matched)
+	
+	drop periodo
+	order anio
+	sort anio
 	tsset anio
-
 	save "`c(sysdir_site)'/master/SCN.dta", replace
 end
