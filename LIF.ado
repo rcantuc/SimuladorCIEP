@@ -584,7 +584,8 @@ program define UpdateLIF
 	************************
 	*** 1. BASE DE DATOS ***
 	************************
-	import excel "./raw/LIFs/LIFs.xlsx", clear firstrow
+	ensure_asset "LIFs.xlsx"
+	import excel "`c(sysdir_site)'/raw/LIFs/LIFs.xlsx", clear firstrow
 	foreach k of varlist _all {
 		capture confirm string variable `k'
 		if _rc == 0 {

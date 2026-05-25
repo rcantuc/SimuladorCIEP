@@ -13,9 +13,8 @@ if "`1'" == "" {
 	local claveiva = "*2018"
 	capture confirm file "`c(sysdir_site)'/raw/ENIGH/`anioenigh'/gastospersona.dta"
 	if _rc != 0 {
-		copy "https://www.dropbox.com/scl/fi/q48r50p461tlyytm2xywy/2024.zip?rlkey=8dkk05h7gugfk4ns7a5jdmhw9&dl=1" "`c(sysdir_site)'/raw/ENIGH/2024.zip", replace
+		ensure_asset "2024.zip"
 		unzipfile "`c(sysdir_site)'/raw/ENIGH/2024.zip", replace
-		erase "`c(sysdir_site)'/raw/ENIGH/2024.zip"
 	}
 }
 timer on 15
@@ -25,9 +24,8 @@ else {
 		local claveiva = "*2018"
 		capture confirm file "`c(sysdir_site)'/raw/ENIGH/`anioenigh'/gastospersona.dta"
 		if _rc != 0 {
-			copy "https://www.dropbox.com/scl/fi/q48r50p461tlyytm2xywy/2024.zip?rlkey=8dkk05h7gugfk4ns7a5jdmhw9&dl=1" "`c(sysdir_site)'/raw/ENIGH/2024.zip", replace
+			ensure_asset "2024.zip"
 			unzipfile "`c(sysdir_site)'/raw/ENIGH/2024.zip", replace
-			erase "`c(sysdir_site)'/raw/ENIGH/2024.zip"
 		}
 	}
 	if `1' >= 2022 & `1' < 2024 {
@@ -35,9 +33,8 @@ else {
 		local claveiva = "*2018"
 		capture confirm file "`c(sysdir_site)'/raw/ENIGH/`anioenigh'/gastospersona.dta"
 		if _rc != 0 {
-			copy "https://www.dropbox.com/scl/fi/r4b6sqyst3izk8x70r3gq/2022.zip?rlkey=tqos6kar640txowm4gyqxk31n&dl=1" "`c(sysdir_site)'/raw/ENIGH/2022.zip", replace
+			ensure_asset "2022.zip"
 			unzipfile "`c(sysdir_site)'/raw/ENIGH/2022.zip", replace
-			erase "`c(sysdir_site)'/raw/ENIGH/2022.zip"
 		}
 	}
 	if `1' >= 2020 & `1' < 2022 {
@@ -45,9 +42,8 @@ else {
 		local claveiva = "*2018"
 		capture confirm file "`c(sysdir_site)'/raw/ENIGH/`anioenigh'/gastospersona.dta"
 		if _rc != 0 {
-			copy "https://www.dropbox.com/scl/fi/smfmu0bkul7knimoppcmv/2020.zip?rlkey=z5n4numiqepoh1q1ukhxj81qx&dl=1" "`c(sysdir_site)'/raw/ENIGH/2020.zip", replace
+			ensure_asset "2020.zip"
 			unzipfile "`c(sysdir_site)'/raw/ENIGH/2020.zip", replace
-			erase "`c(sysdir_site)'/raw/ENIGH/2020.zip"
 		}
 	}
 	if `1' >= 2018 & `1' < 2020 {
@@ -55,9 +51,8 @@ else {
 		local claveiva = "*2018"
 		capture confirm file "`c(sysdir_site)'/raw/ENIGH/`anioenigh'/gastospersona.dta"
 		if _rc != 0 {
-			copy "https://www.dropbox.com/scl/fi/tmqhyq0j5aczzugl0or22/2018.zip?rlkey=v8ur73t72kisyi22jhcftgfoj&dl=1" "`c(sysdir_site)'/raw/ENIGH/2018.zip", replace
+			ensure_asset "2018.zip"
 			unzipfile "`c(sysdir_site)'/raw/ENIGH/2018.zip", replace
-			erase "`c(sysdir_site)'/raw/ENIGH/2018.zip"
 		}
 	}
 	if `1' >= 2016 & `1' < 2018 {
@@ -65,9 +60,8 @@ else {
 		local claveiva = "*2014"
 		capture confirm file "`c(sysdir_site)'/raw/ENIGH/`anioenigh'/gastospersona.dta"
 		if _rc != 0 {
-			copy "https://www.dropbox.com/scl/fi/pdk6elhey26vl4u12y60a/2016.zip?rlkey=ey4zlyqt0x7nwm0lb60h5s5oe&dl=1" "`c(sysdir_site)'/raw/ENIGH/2016.zip", replace
+			ensure_asset "2016.zip"
 			unzipfile "`c(sysdir_site)'/raw/ENIGH/2016.zip", replace
-			erase "`c(sysdir_site)'/raw/ENIGH/2016.zip"
 		}
 	}
 	if `1' >= 2013 & `1' < 2016 {
@@ -75,9 +69,8 @@ else {
 		local claveiva = "*2014"
 		capture confirm file "`c(sysdir_site)'/raw/ENIGH/`anioenigh'/gastospersona.dta"
 		if _rc != 0 {
-			copy "https://www.dropbox.com/scl/fi/f6w0l8wrdex942f452zch/2014.zip?rlkey=nivfnztigi50yjw5tc5bdro9x&dl=1" "`c(sysdir_site)'/raw/ENIGH/2014.zip", replace
+			ensure_asset "2014.zip"
 			unzipfile "`c(sysdir_site)'/raw/ENIGH/2014.zip", replace
-			erase "`c(sysdir_site)'/raw/ENIGH/2014.zip"
 		}
 	}
 }

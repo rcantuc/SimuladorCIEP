@@ -1069,6 +1069,7 @@ program define UpdateDatosAbiertos, return
 
 	***************************************************
 	** 4.1 ISR fisicas, morales, asalariados y otros **
+	ensure_asset "ISRInformesTrimestrales.xlsx"
 	import excel "`c(sysdir_site)'/raw/ISRInformesTrimestrales.xlsx", ///
 		clear sheet("TipoDeContribuyente") firstrow case(lower)
 	tsset anio trimestre

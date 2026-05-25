@@ -639,6 +639,10 @@ program define UpdatePEF
 	* 1.1. Descargar archivos *
 	capture confirm file "`c(sysdir_site)'/temp/prePEF.dta"
 	if _rc != 0 {
+		* Asegurar que los xlsx esten descargados (GitHub Release v7.0) *
+		foreach a in CP.2013.xlsx CP.2014.xlsx CP.2015.xlsx CP.2016.xlsx CP.2017.xlsx CP.2018.xlsx CP.2019.xlsx CP.2020.xlsx CP.2021.xlsx CP.2022.xlsx CP.2023.xlsx CP.2024.xlsx PEF.2025.xlsx PEF.2026.xlsx CuotasISSSTE.xlsx {
+			ensure_asset "`a'"
+		}
 		local archivos: dir "`c(sysdir_site)'/raw/PEFs" files "*.xlsx"		// Archivos .xlsx
 		*local archivos `""PEF 2025.dta" "CuotasISSSTE.dta""'
 
