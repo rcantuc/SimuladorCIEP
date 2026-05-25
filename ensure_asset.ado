@@ -1,6 +1,6 @@
-*! ensure_asset v1.0 - Garantiza disponibilidad de datos vinculados al repo via GitHub Releases
+*! ensure_asset v1.1 - Garantiza disponibilidad de datos vinculados al repo via GitHub Releases
 *! Sintaxis: ensure_asset "<nombre>"
-*! <nombre> debe coincidir con un campo "name" en raw/manifest.json
+*! <nombre> debe coincidir con un campo "name" en manifest.json (en la raiz del repo)
 *!
 *! Verifica que el asset exista localmente con el SHA-256 declarado en el manifest.
 *! Si falta, lo descarga del GitHub Release indicado por release_url_prefix.
@@ -42,11 +42,11 @@ def _sha256_of(path):
 def ensure_asset_main(asset_name):
     asset_name = asset_name.strip().strip('"')
     sysdir_site = Macro.getGlobal('c(sysdir_site)')
-    manifest_path = os.path.join(sysdir_site, 'raw', 'manifest.json')
+    manifest_path = os.path.join(sysdir_site, 'manifest.json')
 
     if not os.path.isfile(manifest_path):
         _fail(
-            "no se encontro raw/manifest.json en " + manifest_path + ".\n"
+            "no se encontro manifest.json en " + manifest_path + ".\n"
             "Asegurate de estar en un clone del repo del Simulador."
         )
         return
@@ -55,7 +55,7 @@ def ensure_asset_main(asset_name):
         with open(manifest_path, 'r', encoding='utf-8') as f:
             manifest = json.load(f)
     except json.JSONDecodeError as e:
-        _fail("raw/manifest.json no es JSON valido: " + str(e))
+        _fail("manifest.json no es JSON valido: " + str(e))
         return
 
     entry = next(

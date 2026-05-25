@@ -113,9 +113,9 @@ set_token.do
 # -----------------------------------------------------------------------------
 # Decisión arquitectónica de Fase 0.5 (ver fase-0-5-git-hygiene-audit.md §4).
 # Los binarios de raw/ se publican como assets del release v7.0; este repo
-# sólo versiona el manifiesto (apuntador con SHA-256 y URLs).
+# sólo versiona el manifiesto (apuntador con SHA-256 y URLs), que vive en
+# `manifest.json` en la raíz del repo (la carpeta raw/ se borra/regenera).
 **/raw/**
-!raw/manifest.json
 
 
 # -----------------------------------------------------------------------------

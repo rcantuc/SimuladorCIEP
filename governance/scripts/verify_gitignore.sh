@@ -159,8 +159,8 @@ assert_not_ignored "governance/fase-0-5-git-hygiene-audit.md" "Doc governance"
 assert_not_ignored "governance/convenciones-git.md" "Este documento"
 assert_not_ignored "governance/scripts/verify_gitignore.sh" "Este script"
 
-echo "--- Excepción: el manifest del Catálogo de datos asociados sí se versiona ---"
-assert_not_ignored "raw/manifest.json" "Manifest del Catálogo de datos asociados"
+echo "--- Manifest del Catálogo de datos asociados (vive en la raíz del repo) ---"
+assert_not_ignored "manifest.json" "Manifest del Catálogo de datos asociados"
 
 echo "--- Help y docs ---"
 assert_not_ignored "help/FiscalGap.md" "Help file Markdown"
