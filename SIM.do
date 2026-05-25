@@ -8,7 +8,6 @@ clear all
 macro drop _all
 capture log close _all
 timer on 1
-set scheme ciep
 
 
 ***
@@ -20,6 +19,7 @@ if "`c(username)'" == "ricardo" & "`1'" != "ricardo" {
 	sysdir set SITE "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP"
 }
 cd "`c(sysdir_site)'"
+set scheme ciep
 
 ** 0.1.1 Token del BIE/INEGI
 * Se carga desde set_token.do (gitignored, ver help/AccesoBIE.md).
@@ -39,7 +39,7 @@ capture mkdir "`c(sysdir_site)'/users/$id"
 ** 0.4 Opciones (descomentar para activar)
 global nographs "nographs"							// SUPRIMIR GRAFICAS
 
-global update "update"								// UPDATE BASES DE DATOS
+//global update "update"								// UPDATE BASES DE DATOS
 if "$update" == "update" {
 	! rm -r "`c(sysdir_site)'/temp/"
 }
