@@ -17,3 +17,7 @@ export REMOTE_PATH=""
 
 # URL pública del endpoint (para verificación post-deploy)
 export ENDPOINT_URL=""
+
+# Path absoluto a la Carpeta del Simulador para investigadores
+# (Dropbox sincronizada al equipo del CIEP)
+export CARPETA_INVESTIGADORES_PATH=""
