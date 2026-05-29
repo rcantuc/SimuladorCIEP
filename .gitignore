@@ -107,6 +107,11 @@ Desktop.ini
 # Cada usuario copia set_token.template.do como set_token.do y pone su token.
 set_token.do
 
+# Credenciales del endpoint Stata `net from` — valores reales del servidor.
+# Cada operador copia endpoint-credentials.template.sh como endpoint-credentials.sh
+# y rellena SSH_ALIAS, REMOTE_PATH, ENDPOINT_URL. Consumido por publicar-endpoint.sh.
+endpoint-credentials.sh
+
 
 # -----------------------------------------------------------------------------
 # Data Sidecar — `raw/` vive en GitHub Releases, no en Git

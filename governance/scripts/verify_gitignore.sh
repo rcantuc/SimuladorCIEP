@@ -118,6 +118,7 @@ assert_ignored "test.crt" "Certificado CRT"
 assert_ignored ".env" "Env file raíz"
 assert_ignored ".env.production" "Env variant"
 assert_ignored "set_token.do" "Token de usuario del BIE/INEGI (debe estar gitignored, nunca trackeado)"
+assert_ignored "endpoint-credentials.sh" "Credenciales reales del endpoint Stata (debe estar gitignored, nunca trackeado)"
 
 echo "--- Datos asociados en raw/ (ignorado) ---"
 assert_ignored "raw/PEFs/CP_2024.xlsx" "Asset binario en raw/"
@@ -149,6 +150,7 @@ assert_not_ignored "01_modulos/tax_models/IVA_Mod.do" "Módulo de impuesto"
 
 echo "--- Plantillas de secretos (deben versionarse) ---"
 assert_not_ignored "set_token.template.do" "Plantilla de set_token (debe versionarse para guiar a usuarios)"
+assert_not_ignored "endpoint-credentials.template.sh" "Plantilla de credenciales del endpoint (debe versionarse para guiar a operadores)"
 
 echo "--- Governance y meta ---"
 assert_not_ignored ".mailmap" "Normalización de identidad"

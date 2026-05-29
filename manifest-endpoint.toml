@@ -1,0 +1,76 @@
+# manifest-endpoint.toml
+# Declara qué archivos del Código del Simulador forman parte del
+# paquete distribuible vía `net from https://ciep.mx/simuladorfiscal/`.
+#
+# Consumido por publicar-endpoint.sh.
+# Cada cambio a este archivo debe ir acompañado de bump de versión
+# en commits relacionados y entrada en bitácora correspondiente.
+
+[meta]
+manifest_version = "1.0"
+package_name = "simulador-fiscal-ciep"
+endpoint_url = "https://ciep.mx/simuladorfiscal/"
+description = "Sub-canal Stata del Simulador Fiscal CIEP — instalación remota vía net install"
+
+[package]
+# Archivos del repo root que forman parte del paquete público.
+# Todos deben existir en el root del repo al momento de publicar.
+
+ado_files = [
+    "AccesoBIE.ado",
+    "DatosAbiertos.ado",
+    "LIF.ado",
+    "PEF.ado",
+    "PIBDeflactor.ado",
+    "Poblacion.ado",
+    "SCN.ado",
+    "SHRFSP.ado",
+]
+
+sthlp_files = [
+    "AccesoBIE.sthlp",
+    "DatosAbiertos.sthlp",
+    "LIF.sthlp",
+    "PEF.sthlp",
+    "PIBDeflactor.sthlp",
+    "Poblacion.sthlp",
+    "SCN.sthlp",
+    "SHRFSP.sthlp",
+]
+
+pkg_files = [
+    "DatosAbiertos.pkg",
+    "LIF.pkg",
+    "PEF.pkg",
+    "PIBDeflactor.pkg",
+    "Poblacion.pkg",
+    "SCN.pkg",
+    "SHRFSP.pkg",
+]
+
+[toc]
+# El stata.toc se GENERA por el script, no se conserva pre-generado en el repo.
+
+title = "Simulador Fiscal CIEP"
+description_template = "Simulador Fiscal CIEP versión {VERSION}, publicado {DATE}"
+
+[toc.packages]
+# Descripción corta de cada paquete, mostrada al usuario externo al hacer `net from`.
+
+AccesoBIE = "Acceso al Banco de Información Económica de INEGI"
+DatosAbiertos = "Series de datos abiertos del Simulador Fiscal CIEP"
+LIF = "Ley de Ingresos de la Federación"
+PEF = "Presupuesto de Egresos de la Federación"
+PIBDeflactor = "PIB y deflactor implícito de la economía mexicana"
+Poblacion = "Series de población de México"
+SCN = "Sistema de Cuentas Nacionales"
+SHRFSP = "Saldo Histórico de los Requerimientos Financieros del Sector Público"
+
+[exclude_explicit]
+# Archivos que SÍ existen en el repo pero NO se publican.
+# Lista declarativa para auto-documentar decisión.
+
+ensure_asset_ado = "ensure_asset.ado — infraestructura interna del simulador, no del paquete público"
+manifest_json = "manifest.json — manifiesto del data sidecar, no del sub-canal Stata"
+sim_do = "SIM.do — entrada del simulador local, no se distribuye vía net install"
+set_token_template_do = "set_token.template.do — plantilla local, no del paquete público"
