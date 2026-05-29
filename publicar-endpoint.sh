@@ -236,7 +236,9 @@ log_info "✓ stata.toc generado"
 
 if [[ "$DRY_RUN" == "true" ]]; then
     log_step "Dry-run: simulación de rsync"
-    rsync -avzn --delete --itemize-changes "$TMP_DIR/" "$SSH_ALIAS:$REMOTE_PATH/"
+    rsync -avzn --delete --itemize-changes \
+        --chmod=Du=rwx,Dgo=rx,Fu=rw,Fgo=r \
+        "$TMP_DIR/" "$SSH_ALIAS:$REMOTE_PATH/"
     log_info ""
     log_info "Dry-run completado. No se tocó el servidor."
     log_info "Para ejecutar el deploy real: $(basename "$0") $VERSION"
@@ -266,7 +268,9 @@ fi
 
 log_step "Fase 4: Deploy (rsync)"
 
-if ! rsync -avz --delete "$TMP_DIR/" "$SSH_ALIAS:$REMOTE_PATH/"; then
+if ! rsync -avz --delete \
+    --chmod=Du=rwx,Dgo=rx,Fu=rw,Fgo=r \
+    "$TMP_DIR/" "$SSH_ALIAS:$REMOTE_PATH/"; then
     log_error "rsync falló. Servidor puede estar en estado intermedio."
     log_error "Revisar log y considerar restaurar desde: $BACKUP_REMOTE_PATH"
 
