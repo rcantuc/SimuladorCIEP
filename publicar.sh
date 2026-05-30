@@ -182,7 +182,25 @@ do_internos() {
     # shellcheck source=/dev/null
     source ./endpoint-credentials.sh
 
-    [[ -z "${CARPETA_INVESTIGADORES_PATH:-}" ]] && abort "CARPETA_INVESTIGADORES_PATH no está definido en endpoint-credentials.sh"
+    # Resolución de CARPETA_INVESTIGADORES_PATH (prioridad descendente):
+    # 1. Si está definida en endpoint-credentials.sh → usar ese override.
+    # 2. Si no → buscar automáticamente Dropbox-CIEP/SimuladorCIEP dentro de $HOME.
+    # El sufijo "Dropbox-CIEP/SimuladorCIEP" es estable; lo que varía entre
+    # usuarios/sistemas es el path raíz (Mac usa Library/CloudStorage/, Linux usa
+    # directamente $HOME/, etc.). El find con maxdepth 6 cubre los casos típicos.
+    if [[ -z "${CARPETA_INVESTIGADORES_PATH:-}" ]]; then
+        log_info "CARPETA_INVESTIGADORES_PATH no definida, buscando automáticamente..."
+        CARPETA_INVESTIGADORES_PATH="$(find "$HOME" -maxdepth 6 -type d -path '*/Dropbox-CIEP/SimuladorCIEP' 2>/dev/null | head -1)"
+
+        if [[ -z "$CARPETA_INVESTIGADORES_PATH" ]]; then
+            abort "No se encontró Dropbox-CIEP/SimuladorCIEP en \$HOME. Define CARPETA_INVESTIGADORES_PATH en endpoint-credentials.sh, o asegúrate que Dropbox-CIEP esté sincronizado en tu máquina."
+        fi
+
+        log_info "✓ Auto-detectado: $CARPETA_INVESTIGADORES_PATH"
+    else
+        log_info "✓ Override desde endpoint-credentials.sh: $CARPETA_INVESTIGADORES_PATH"
+    fi
+
     [[ ! -d "$CARPETA_INVESTIGADORES_PATH" ]] && abort "La Carpeta no existe: $CARPETA_INVESTIGADORES_PATH"
 
     log_info "Carpeta destino: $CARPETA_INVESTIGADORES_PATH"

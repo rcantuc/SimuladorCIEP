@@ -18,6 +18,15 @@ export REMOTE_PATH=""
 # URL pública del endpoint (para verificación post-deploy)
 export ENDPOINT_URL=""
 
-# Path absoluto a la Carpeta del Simulador para investigadores
-# (Dropbox sincronizada al equipo del CIEP)
-export CARPETA_INVESTIGADORES_PATH=""
+# Path absoluto a la Carpeta del Simulador para investigadores (OPCIONAL).
+#
+# Si NO se define, publicar.sh auto-detecta Dropbox-CIEP/SimuladorCIEP dentro
+# de $HOME (busca recursivamente hasta 6 niveles de profundidad). El sufijo
+# "Dropbox-CIEP/SimuladorCIEP" es estable; lo que varía entre usuarios/sistemas
+# es el path raíz (Mac usa Library/CloudStorage/, Linux usa directamente $HOME/,
+# Windows con WSL puede tener variaciones).
+#
+# Solo descomenta y rellena esta variable si necesitas override
+# (e.g., Dropbox sincronizado en path no-estándar, o múltiples instancias
+# de SimuladorCIEP en disco).
+# export CARPETA_INVESTIGADORES_PATH=""
