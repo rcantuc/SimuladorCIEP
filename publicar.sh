@@ -183,17 +183,32 @@ do_internos() {
     source ./endpoint-credentials.sh
 
     # Resolución de CARPETA_INVESTIGADORES_PATH (prioridad descendente):
-    # 1. Si está definida en endpoint-credentials.sh → usar ese override.
-    # 2. Si no → buscar automáticamente Dropbox-CIEP/SimuladorCIEP dentro de $HOME.
-    # El sufijo "Dropbox-CIEP/SimuladorCIEP" es estable; lo que varía entre
-    # usuarios/sistemas es el path raíz (Mac usa Library/CloudStorage/, Linux usa
-    # directamente $HOME/, etc.). El find con maxdepth 6 cubre los casos típicos.
+    # 1. Si está definida en endpoint-credentials.sh → usar ese override (caso atípico)
+    # 2. Si no → probar candidatos típicos en orden hasta encontrar uno que exista
+    #
+    # El sufijo "Dropbox-CIEP/SimuladorCIEP" es estable entre máquinas del CIEP;
+    # lo que varía es el path raíz (Mac moderno usa Library/CloudStorage/, Linux
+    # usa $HOME/ directamente). En lugar de un find recursivo que puede ser lento
+    # o colgarse en $HOME con muchos archivos, evaluamos directamente los
+    # candidatos típicos. Si aparece un nuevo patrón institucional, se agrega
+    # al array.
     if [[ -z "${CARPETA_INVESTIGADORES_PATH:-}" ]]; then
-        log_info "CARPETA_INVESTIGADORES_PATH no definida, buscando automáticamente..."
-        CARPETA_INVESTIGADORES_PATH="$(find "$HOME" -maxdepth 6 -type d -path '*/Dropbox-CIEP/SimuladorCIEP' 2>/dev/null | head -1)"
+        log_info "CARPETA_INVESTIGADORES_PATH no definida, probando candidatos típicos..."
+
+        local -a candidates=(
+            "$HOME/Library/CloudStorage/Dropbox-CIEP/SimuladorCIEP"     # Mac moderno
+            "$HOME/Dropbox-CIEP/SimuladorCIEP"                          # Linux / Mac clásico
+        )
+
+        for candidate in "${candidates[@]}"; do
+            if [[ -d "$candidate" ]]; then
+                CARPETA_INVESTIGADORES_PATH="$candidate"
+                break
+            fi
+        done
 
         if [[ -z "$CARPETA_INVESTIGADORES_PATH" ]]; then
-            abort "No se encontró Dropbox-CIEP/SimuladorCIEP en \$HOME. Define CARPETA_INVESTIGADORES_PATH en endpoint-credentials.sh, o asegúrate que Dropbox-CIEP esté sincronizado en tu máquina."
+            abort "No se encontró Dropbox-CIEP/SimuladorCIEP en ubicaciones típicas. Define CARPETA_INVESTIGADORES_PATH en endpoint-credentials.sh con el path absoluto, o asegúrate que Dropbox-CIEP esté sincronizado en tu máquina."
         fi
 
         log_info "✓ Auto-detectado: $CARPETA_INVESTIGADORES_PATH"

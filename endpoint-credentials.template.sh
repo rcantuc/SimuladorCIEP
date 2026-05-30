@@ -20,13 +20,10 @@ export ENDPOINT_URL=""
 
 # Path absoluto a la Carpeta del Simulador para investigadores (OPCIONAL).
 #
-# Si NO se define, publicar.sh auto-detecta Dropbox-CIEP/SimuladorCIEP dentro
-# de $HOME (busca recursivamente hasta 6 niveles de profundidad). El sufijo
-# "Dropbox-CIEP/SimuladorCIEP" es estable; lo que varía entre usuarios/sistemas
-# es el path raíz (Mac usa Library/CloudStorage/, Linux usa directamente $HOME/,
-# Windows con WSL puede tener variaciones).
+# Si NO se define, publicar.sh auto-detecta probando ubicaciones típicas:
+#   - $HOME/Library/CloudStorage/Dropbox-CIEP/SimuladorCIEP  (Mac moderno)
+#   - $HOME/Dropbox-CIEP/SimuladorCIEP                       (Linux / Mac clásico)
 #
-# Solo descomenta y rellena esta variable si necesitas override
-# (e.g., Dropbox sincronizado en path no-estándar, o múltiples instancias
-# de SimuladorCIEP en disco).
+# Solo descomenta y rellena esta variable si tu Dropbox está en path
+# no-estándar o tienes múltiples instancias de SimuladorCIEP en disco.
 # export CARPETA_INVESTIGADORES_PATH=""
