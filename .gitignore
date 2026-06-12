@@ -132,6 +132,8 @@ endpoint-credentials.sh
 **/graphs/**
 **/users/**
 **/simuladorfiscal.ciep.mx/**
+# Backups automáticos de publicar.sh internos (tar.gz pre-rsync)
+**/_backups/**
 
 
 # Windsurf IDE workflows locales (instalados por el IDE, no institucionales)
