@@ -136,3 +136,6 @@ endpoint-credentials.sh
 
 # Windsurf IDE workflows locales (instalados por el IDE, no institucionales)
 .windsurf/
+
+# Devin IDE (sucesor de Windsurf) workflows locales (instalados por el IDE)
+.devin/
