@@ -1,12 +1,16 @@
 #!/usr/bin/env bash
-# publicar.sh — Wrapper de publicación del Simulador Fiscal CIEP
+# publicar.sh — Publica una versión nueva al endpoint público del Simulador Fiscal CIEP
 #
-# Orquesta los dos canales de publicación del simulador:
-#   - "internos": copia a Carpeta del Simulador para investigadores (Dropbox)
-#   - "release":  deploy al endpoint público https://ciep.mx/simuladorfiscal/
-#   - "todo":     ambos en orden (internos primero, después release)
+# Qué hace:
+#   1. Verifica precondiciones (master, working tree limpio, alineación con origin/master)
+#   2. Si la etiqueta de versión no existe localmente, ofrece crearla (interactivo o por flag)
+#   3. Push del tag a origin si aún no está allá
+#   4. Invoca publicar-endpoint.sh con la versión, que sincroniza el sub-canal Stata al
+#      servidor Cloudways (ver §3.2 y §6.6 de governance/arquitectura-distribucion.md)
 #
-# Crea el tag annotated automáticamente si no existe (interactivo o por flag).
+# La sincronización de la Carpeta del Simulador para investigadores (Dropbox-CIEP/SimuladorCIEP)
+# NO es responsabilidad de este script. La maneja manualmente el investigador principal
+# mediante `git pull` en su clon local. Ver §6.7 de arquitectura-distribucion.md.
 
 set -euo pipefail
 
@@ -14,12 +18,9 @@ set -euo pipefail
 
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo '')"
 TIMESTAMP="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-TIMESTAMP_FILENAME="$(date -u +%Y%m%d-%H%M%S)"
 
-SUBCOMMAND=""
 VERSION=""
 TAG_MESSAGE=""
-SKIP_BACKUP=false
 ENDPOINT_DRY_RUN=false
 FORCE=false
 
@@ -42,40 +43,35 @@ abort() {
     exit "${2:-1}"
 }
 
-# stat portable entre macOS (-f%z) y Linux (-c%s)
-file_size() {
-    local file="$1"
-    stat -f%z "$file" 2>/dev/null || stat -c%s "$file" 2>/dev/null || wc -c < "$file"
-}
-
 # ═══ USAGE ═══
 
 usage() {
     cat <<EOF
-Uso: $(basename "$0") [opciones] <sub-comando> <version>
+Uso: $(basename "$0") [opciones] <version>
 
-Sub-comandos:
-  release    Crea tag → push → deploy al endpoint público
-  internos   Crea tag → push → backup + rsync a Carpeta para investigadores
-  todo       Crea tag → push → internos + release (en ese orden)
-
-Opciones:
-  --tag-message=MSG     Mensaje del tag inline (evita abrir editor)
-  --skip-backup         Sin backup pre-rsync (solo internos/todo)
-  --endpoint-dry-run    Dry-run del endpoint (solo release/todo)
-  --force               Permite republish de versión existente
-  -h, --help            Ayuda
+Publica una versión nueva del Simulador Fiscal CIEP al endpoint público
+(https://ciep.mx/simuladorfiscal/).
 
 Argumento:
   <version>             Etiqueta de versión (ej. v8.1, v9.0)
 
-Ejemplos:
-  $(basename "$0") release v8.1
-  $(basename "$0") internos v8.1 --tag-message="Fix bug en LIF"
-  $(basename "$0") todo v8.2
+Opciones:
+  --tag-message=MSG     Mensaje del tag inline (evita abrir editor)
+  --endpoint-dry-run    Dry-run del endpoint (no toca el servidor)
+  --force               Permite republish de versión existente
+  -h, --help            Ayuda
 
-Configuración: requiere endpoint-credentials.sh con SSH_ALIAS, REMOTE_PATH,
-ENDPOINT_URL y CARPETA_INVESTIGADORES_PATH definidos.
+Ejemplos:
+  $(basename "$0") v8.1
+  $(basename "$0") v8.1 --tag-message="Fix bug en LIF"
+  $(basename "$0") v8.2 --endpoint-dry-run
+
+La sincronización de la Carpeta para investigadores (Dropbox-CIEP/SimuladorCIEP)
+NO la hace este script. La maneja manualmente el investigador principal con
+'git pull' en su clon local. Ver governance/arquitectura-distribucion.md §6.7.
+
+Configuración: requiere endpoint-credentials.sh con SSH_ALIAS, REMOTE_PATH y
+ENDPOINT_URL definidos.
 EOF
 }
 
@@ -156,196 +152,44 @@ ensure_tag_pushed() {
     log_info "✓ Tag $version pusheado"
 }
 
-do_release() {
-    local version="$1"
-    log_step "Sub-comando: release"
-
-    ensure_tag_exists "$version"
-    ensure_tag_pushed "$version"
-
-    log_info "Invocando publicar-endpoint.sh..."
-    local endpoint_args=()
-    [[ "$ENDPOINT_DRY_RUN" == "true" ]] && endpoint_args+=("--dry-run")
-    [[ "$FORCE" == "true" ]] && endpoint_args+=("--force")
-    endpoint_args+=("$version")
-
-    "$REPO_ROOT/publicar-endpoint.sh" "${endpoint_args[@]}"
-}
-
-do_internos() {
-    local version="$1"
-    log_step "Sub-comando: internos"
-
-    if [[ ! -f endpoint-credentials.sh ]]; then
-        abort "endpoint-credentials.sh no existe. Copia endpoint-credentials.template.sh y rellena."
-    fi
-    # shellcheck source=/dev/null
-    source ./endpoint-credentials.sh
-
-    # Resolución de CARPETA_INVESTIGADORES_PATH (prioridad descendente):
-    # 1. Si está definida en endpoint-credentials.sh → usar ese override (caso atípico)
-    # 2. Si no → probar candidatos típicos en orden hasta encontrar uno que exista
-    #
-    # El sufijo "Dropbox-CIEP/SimuladorCIEP" es estable entre máquinas del CIEP;
-    # lo que varía es el path raíz (Mac moderno usa Library/CloudStorage/, Linux
-    # usa $HOME/ directamente). En lugar de un find recursivo que puede ser lento
-    # o colgarse en $HOME con muchos archivos, evaluamos directamente los
-    # candidatos típicos. Si aparece un nuevo patrón institucional, se agrega
-    # al array.
-    if [[ -z "${CARPETA_INVESTIGADORES_PATH:-}" ]]; then
-        log_info "CARPETA_INVESTIGADORES_PATH no definida, probando candidatos típicos..."
-
-        local -a candidates=(
-            "$HOME/Library/CloudStorage/Dropbox-CIEP/SimuladorCIEP"     # Mac moderno
-            "$HOME/Dropbox-CIEP/SimuladorCIEP"                          # Linux / Mac clásico
-        )
-
-        for candidate in "${candidates[@]}"; do
-            if [[ -d "$candidate" ]]; then
-                CARPETA_INVESTIGADORES_PATH="$candidate"
-                break
-            fi
-        done
-
-        if [[ -z "$CARPETA_INVESTIGADORES_PATH" ]]; then
-            abort "No se encontró Dropbox-CIEP/SimuladorCIEP en ubicaciones típicas. Define CARPETA_INVESTIGADORES_PATH en endpoint-credentials.sh con el path absoluto, o asegúrate que Dropbox-CIEP esté sincronizado en tu máquina."
-        fi
-
-        log_info "✓ Auto-detectado: $CARPETA_INVESTIGADORES_PATH"
-    else
-        log_info "✓ Override desde endpoint-credentials.sh: $CARPETA_INVESTIGADORES_PATH"
-    fi
-
-    [[ ! -d "$CARPETA_INVESTIGADORES_PATH" ]] && abort "La Carpeta no existe: $CARPETA_INVESTIGADORES_PATH"
-
-    log_info "Carpeta destino: $CARPETA_INVESTIGADORES_PATH"
-
-    ensure_tag_exists "$version"
-    ensure_tag_pushed "$version"
-
-    # Backup pre-rsync
-    local backup_path="-"
-    if [[ "$SKIP_BACKUP" == "false" ]]; then
-        log_info "Creando backup pre-rsync..."
-        local backups_dir="$CARPETA_INVESTIGADORES_PATH/_backups"
-        mkdir -p "$backups_dir"
-
-        local backup_name="carpeta-backup-${version}-${TIMESTAMP_FILENAME}.tar.gz"
-        backup_path="$backups_dir/$backup_name"
-
-        # Crear tar en tmp primero (evita problema de "tar dentro de su CWD"), después mover
-        local tmp_backup
-        tmp_backup="$(mktemp).tar.gz"
-
-        (cd "$CARPETA_INVESTIGADORES_PATH" && tar czf "$tmp_backup" --exclude='./_backups' . 2>/dev/null)
-
-        mv "$tmp_backup" "$backup_path"
-
-        local backup_size
-        backup_size="$(file_size "$backup_path")"
-        log_info "✓ Backup creado: $backup_name ($backup_size bytes)"
-
-        # Rotación: mantener últimos 5 backups
-        local backups_count
-        backups_count="$(ls -1 "$backups_dir"/carpeta-backup-*.tar.gz 2>/dev/null | wc -l | tr -d ' ')"
-        if [[ "$backups_count" -gt 5 ]]; then
-            log_info "Rotando backups antiguos (manteniendo últimos 5)..."
-            ls -1t "$backups_dir"/carpeta-backup-*.tar.gz | tail -n +6 | xargs rm -f
-            log_info "✓ Rotación completada"
-        fi
-    else
-        log_warn "--skip-backup activo: no se hizo backup pre-rsync"
-    fi
-
-    # Rsync con exclude list completa
-    log_info "Sincronizando repo → Carpeta..."
-    rsync -a --delete \
-        --exclude='.git/' \
-        --exclude='.gitignore' \
-        --exclude='.gitattributes' \
-        --exclude='.mailmap' \
-        --exclude='.windsurf/' \
-        --exclude='.windsurfrules' \
-        --exclude='.DS_Store' \
-        --exclude='governance/' \
-        --include='raw/' \
-        --include='raw/manifest.json' \
-        --exclude='raw/*' \
-        --exclude='Stata net/' \
-        --exclude='manifest-endpoint.toml' \
-        --exclude='publicar.sh' \
-        --exclude='publicar-endpoint.sh' \
-        --exclude='endpoint-credentials.sh' \
-        --exclude='endpoint-credentials.template.sh' \
-        --exclude='set_token.template.do' \
-        --exclude='*.tar.gz' \
-        --exclude='endpoint-backup-*' \
-        --exclude='carpeta-backup-*' \
-        --exclude='_backups/' \
-        "$REPO_ROOT/" "$CARPETA_INVESTIGADORES_PATH/"
-
-    log_info "✓ Rsync completado"
-
-    # Registrar en log institucional
-    local log_file="$REPO_ROOT/governance/deploys/carpeta-investigadores.log"
-    mkdir -p "$(dirname "$log_file")"
-
-    local commit_short operator
-    commit_short="$(git rev-parse --short HEAD)"
-    operator="$(whoami)"
-
-    echo "$TIMESTAMP $version $commit_short $operator OK $backup_path" >> "$log_file"
-    log_info "✓ Registrado en governance/deploys/carpeta-investigadores.log"
-
-    log_info ""
-    log_info "Sincronización de Carpeta completada exitosamente."
-    log_info "Carpeta: $CARPETA_INVESTIGADORES_PATH"
-    [[ "$backup_path" != "-" ]] && log_info "Backup:  $backup_path"
-}
-
-do_todo() {
-    local version="$1"
-    log_step "Sub-comando: todo (internos → release)"
-    do_internos "$version"
-    do_release "$version"
-}
-
 # ═══ PARSING DE ARGUMENTOS ═══
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --tag-message=*)        TAG_MESSAGE="${1#*=}"; shift ;;
-        --skip-backup)          SKIP_BACKUP=true; shift ;;
         --endpoint-dry-run)     ENDPOINT_DRY_RUN=true; shift ;;
         --force)                FORCE=true; shift ;;
         -h|--help)              usage; exit 0 ;;
-        release|internos|todo)  SUBCOMMAND="$1"; shift ;;
         v*)                     VERSION="$1"; shift ;;
         *)                      log_error "Argumento desconocido: $1"; usage; exit 1 ;;
     esac
 done
 
-[[ -z "$SUBCOMMAND" ]] && { log_error "Falta sub-comando (release|internos|todo)"; usage; exit 1; }
 [[ -z "$VERSION" ]] && { log_error "Falta <version>"; usage; exit 1; }
 [[ -z "$REPO_ROOT" ]] && abort "No se pudo detectar root del repo Git."
 
 cd "$REPO_ROOT"
 
-# ═══ FLUJO COMÚN A TODOS LOS SUB-COMANDOS ═══
+# ═══ EJECUCIÓN ═══
 
-log_info "publicar.sh — sub-comando: $SUBCOMMAND, versión: $VERSION"
+log_info "publicar.sh — versión: $VERSION"
 
 verify_repo_state
 
-# ═══ EJECUCIÓN ═══
+log_step "Publicación al endpoint"
 
-case "$SUBCOMMAND" in
-    release)   do_release "$VERSION" ;;
-    internos)  do_internos "$VERSION" ;;
-    todo)      do_todo "$VERSION" ;;
-esac
+ensure_tag_exists "$VERSION"
+ensure_tag_pushed "$VERSION"
+
+log_info "Invocando publicar-endpoint.sh..."
+endpoint_args=()
+[[ "$ENDPOINT_DRY_RUN" == "true" ]] && endpoint_args+=("--dry-run")
+[[ "$FORCE" == "true" ]] && endpoint_args+=("--force")
+endpoint_args+=("$VERSION")
+
+"$REPO_ROOT/publicar-endpoint.sh" "${endpoint_args[@]}"
 
 log_info ""
-log_info "publicar.sh: sub-comando '$SUBCOMMAND' completado para $VERSION"
+log_info "publicar.sh: publicación completada para $VERSION"
 
 exit 0
