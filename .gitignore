@@ -29,9 +29,11 @@ hs_err_pid*.log
 ado/personal/
 ado/plus/
 
-# Proyectos Stata Project Manager (.stpr) — contienen paths absolutos del
-# usuario (Java serialization data); NO portables entre máquinas.
-*.stpr
+# Proyectos Stata Project Manager (.stpr) — SÍ se trackean (decisión
+# institucional 2026-07-04): simulador.stpr es el snapshot del árbol de
+# organización del proyecto y usa paths relativos al repo (isRelPath).
+# Solo hacer commit cuando hay cambios estructurales intencionales, no en
+# cada save automático de Stata.
 
 
 # -----------------------------------------------------------------------------
