@@ -18,6 +18,33 @@ Formato de cada entrada:
 
 ---
 
+## [v8.0.1] — 2026-07-03
+
+Cleanup documental. La ayuda de comandos institucionales del canon queda consolidada
+en archivos .sthlp como fuente única de verdad. Los .md descriptivos que vivían en
+paralelo desde febrero 2026 fueron migrados (contenido metodológico que sobrevivió
+la auditoría de sincronía .ado/.sthlp) o eliminados. El manual del investigador se
+movió de manuales/ a help/.
+
+### Institucional
+- Los .md de ayuda de los 8 comandos del canon (AccesoBIE, DatosAbiertos, LIF, PEF,
+  PIBDeflactor, Poblacion, SCN, SHRFSP) fueron consolidados en sus respectivos .sthlp
+  y eliminados. Nueva subsección 2.7 en governance/arquitectura-distribucion.md
+  formaliza el principio "la ayuda de comandos vive en .sthlp".
+- Manual del investigador movido de manuales/ a help/ (unifica dominio "help").
+- README.md corregido: rutas de imágenes rotas apuntan a help/images/; bloques con
+  imágenes fantasma eliminados; entrada canónica a la ayuda ahora es help <comando>.
+- Hallazgo #3 de governance/auditoria-drift-sthlp.md marcado como resuelto.
+
+### Comandos
+- Sin cambios respecto a v8.0. Los comandos mantienen la misma sintaxis, opciones,
+  resultados y datasets. Solo cambia el contenido de la ayuda (más rico, sin drift).
+
+### Datos
+- Sin cambios respecto a v8.0. Las fuentes y assets del data sidecar son idénticos.
+
+---
+
 ## [v8.0] — 2026-05-29
 
 **Primera versión bajo arquitectura institucional completa.** Marca el inicio de la era
