@@ -1,3 +1,4 @@
+*! version 8.0 CIEP 03jul2026
 program define GastoPC, return
 quietly {
 	// 0.1 Inicia un temporizador para medir el rendimiento

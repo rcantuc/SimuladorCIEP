@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 3.0 CIEP 23feb2026}{...}
+{* *! version 8.0 CIEP 03jul2026}{...}
 {viewerjumpto "Descripción" "PIBDeflactor##description"}{...}
 {viewerjumpto "Primeros pasos" "PIBDeflactor##quickstart"}{...}
 {viewerjumpto "Sintaxis" "PIBDeflactor##syntax"}{...}

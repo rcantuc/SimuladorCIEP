@@ -1,3 +1,4 @@
+*! version 8.0 CIEP 03jul2026
 program define LIF, return
 quietly {
 	timer on 4

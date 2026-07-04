@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 3.0 CIEP 23feb2026}{...}
+{* *! version 8.0 CIEP 03jul2026}{...}
 {viewerjumpto "Descripción" "DatosAbiertos##description"}{...}
 {viewerjumpto "Primeros pasos" "DatosAbiertos##quickstart"}{...}
 {viewerjumpto "Sintaxis" "DatosAbiertos##syntax"}{...}
@@ -75,7 +75,7 @@ o la lista de {view "help/Stata/DatosAbiertos.sthlp##series":Series comunes}.
 {title:Sintaxis}
 
 {p 8 16 2}
-{cmd:DatosAbiertos} {it:clave} [{it:if}] [{cmd:,} {opt DESDE(#)} {opt NOGraphs} {opt UPDATE} {opt PROYeccion} {opt REVERSE} {opt ZIPFILE} {opt CSVFILE}]
+{cmd:DatosAbiertos} {it:clave} [{it:if}] [{cmd:,} {opt DESDE(#)} {opt PIBVP(#)} {opt PIBVF(#)} {opt NOGraphs} {opt UPDATE} {opt PROYeccion} {opt REVERSE} {opt ZIPFILE} {opt CSVFILE} {opt FILES}]
 {p_end}
 
 {pstd}
@@ -91,6 +91,19 @@ Donde {it:clave} es el código de la serie en las Estadísticas Oportunas de la 
 {phang}
 {opt desde(#)} — {bf:Año inicial} para las gráficas y comparaciones.
 Por defecto: 2008.
+{p_end}
+
+{phang}
+{opt pibvp(#)} — {bf:Cifra oficial para el año en curso}, expresada como % del PIB.
+Sustituye el valor observado del año actual de la serie. Útil cuando existe una
+cifra oficial parcial (por ejemplo, de un documento del paquete económico) antes
+de que cierre el año y llegue la información definitiva.
+{p_end}
+
+{phang}
+{opt pibvf(#)} — {bf:Estimación oficial para el año siguiente}, expresada como % del PIB.
+Agrega el punto a la gráfica para el año inmediato posterior al actual, cuando existe
+una estimación oficial pero todavía no hay cifra realizada.
 {p_end}
 
 {phang}
@@ -119,6 +132,12 @@ reporta en negativo (ej. algunos componentes de gasto).
 
 {phang}
 {opt csvfile} — Descarga los datos directamente desde archivos CSV en línea.
+{p_end}
+
+{phang}
+{opt files} — {bf:Reconstruye la base desde los archivos locales} ya descargados
+en {cmd:temp/Datos Abiertos/}, sin conexión a internet. Útil para ahorrar tiempo
+cuando los archivos fuente ya están en tu máquina.
 {p_end}
 
 {hline}
@@ -176,6 +195,13 @@ Pasos para localizar el código de cualquier serie en las Estadísticas Oportuna
 
 {pstd}{bf:Ejemplo 6 — Gasto neto con proyección desde 2008}{p_end}
 {phang2}{cmd:. DatosAbiertos XAC, desde(2008) proyeccion}{p_end}
+
+{pstd}{bf:Ejemplo 7 — Cifra oficial del año en curso y estimación del siguiente}{p_end}
+{phang2}{cmd:. DatosAbiertos XAB, pibvp(23.5) pibvf(23.9)}{p_end}
+{pstd}Sustituye el año actual con 23.5% del PIB y grafica 23.9% para el año siguiente.{p_end}
+
+{pstd}{bf:Ejemplo 8 — Reconstruir la base sin internet}{p_end}
+{phang2}{cmd:. DatosAbiertos XAA, files}{p_end}
 
 {hline}
 

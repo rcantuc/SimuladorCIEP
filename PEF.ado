@@ -1,3 +1,4 @@
+*! version 8.0 CIEP 03jul2026
 program define PEF, return
 timer on 5
 quietly {
@@ -31,7 +32,6 @@ quietly {
 	syntax [if] [, ANIO(int `aniovp') BY(varname) ///
 		UPDATE NOGraphs Base ///
 		MINimum(real 1) DESDE(int -1) ///
-	 	PEF PPEF APROBado  ///
 		ROWS(int 1) COLS(int 5) ///
 		HIGHlight(int 0) ///
 		TITle(string)]

@@ -1,4 +1,5 @@
-*! AccesoBIE v2.0 - Acceso al Banco de Indicadores del INEGI via API
+*! version 8.0 CIEP 03jul2026
+*! AccesoBIE - Acceso al Banco de Indicadores del INEGI via API
 *! Sintaxis: AccesoBIE serie1 [serie2 ...] [, nombres(string) token(string)]
 *! Ejemplo: AccesoBIE 628194              <- obtiene serie con nombre automático
 *! Ejemplo: AccesoBIE 628194 444612, nombres(PIB Desempleo)

@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 3.0 CIEP 23feb2026}{...}
+{* *! version 8.0 CIEP 03jul2026}{...}
 {viewerjumpto "Descripción" "SHRFSP##description"}{...}
 {viewerjumpto "Primeros pasos" "SHRFSP##quickstart"}{...}
 {viewerjumpto "Sintaxis" "SHRFSP##syntax"}{...}

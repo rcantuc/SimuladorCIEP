@@ -1,3 +1,4 @@
+*! version 8.0 CIEP 03jul2026
 *!*******************************************
 *!***                                    ****
 *!***    Sistema de Cuentas Nacionales   ****
@@ -21,7 +22,7 @@ quietly {
 	}
 
 	capture use in 1 using "`c(sysdir_site)'/master/SCN.dta", clear
-	syntax [, ANIO(int `aniovp') NOGraphs UPDATE TEXTBOOK]
+	syntax [, ANIO(int `aniovp') ANIOMAX(int 2050) NOGraphs UPDATE TEXTBOOK]
 
 	noisily di _newline(2) in g _dup(20) "." "{bf:   Econom{c i'}a:" in y " SCN `anio'   }" in g _dup(20) "." _newline
 
@@ -49,7 +50,6 @@ quietly {
 	** 1.1. Merge databases **
 	use "`c(sysdir_site)'/master/SCN.dta", clear
 	merge 1:1 (anio) using "`c(sysdir_site)'/temp/basepib.dta", nogen keep(matched)
-	local aniomax = anio[_N]
 	scalar aniomax = `aniomax'
 	tsset anio
 

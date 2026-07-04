@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 3.0 CIEP 23feb2026}{...}
+{* *! version 8.0 CIEP 03jul2026}{...}
 {viewerjumpto "Descripción" "GastoPC##description"}{...}
 {viewerjumpto "Primeros pasos" "GastoPC##quickstart"}{...}
 {viewerjumpto "Sintaxis" "GastoPC##syntax"}{...}
@@ -91,8 +91,10 @@ Puedes especificar uno o más de los siguientes componentes:
 {phang2}{bf:salud} — Gasto en salud por institución{p_end}
 {phang2}{bf:pensiones} — Gasto en pensiones y jubilaciones{p_end}
 {phang2}{bf:energia} — Subsidios y gasto en energía (CFE, Pemex){p_end}
-{phang2}{bf:infraestructura} — Inversión en infraestructura pública{p_end}
-{phang2}{bf:otrosgastos} — Otros gastos públicos no clasificados{p_end}
+{phang2}{bf:resto} — Resto del gasto público: gasto federalizado, costo financiero
+de la deuda, otras inversiones y demás gastos no incluidos en los otros componentes{p_end}
+{phang2}{bf:transferencias} — Transferencias a hogares: Pensión para el Bienestar,
+apoyo a madres trabajadoras y gasto en cuidados{p_end}
 
 {pstd}
 {bf:Desglose de educación:}

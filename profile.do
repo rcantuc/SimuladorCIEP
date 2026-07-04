@@ -212,7 +212,7 @@ noisily di `" {stata "SCN":SCN} [, ANIO(int) NOGraphs] {view "help/Stata/SCN.sth
 noisily di `" {stata "LIF":LIF} [, ANIO(int) NOGraphs MINimum(real) BY(varname) ROWS(int) COLS(int) BASE] {view "help/Stata/LIF.sthlp":({it:help})}"'
 noisily di `" {stata "PEF":PEF} [if] [, ANIO(int) NOGraphs MINimum(real) BY(varname) ROWS(int) COLS(int) BASE] {view "help/Stata/PEF.sthlp":({it:help})}"'
 noisily di `" {stata "SHRFSP":SHRFSP} [, ANIO(int) DEPreciacion(int) NOGraphs] {view "help/Stata/SHRFSP.sthlp":({it:help})}"' 
-noisily di `" {stata "DatosAbiertos XAB":DatosAbiertos} {it:serie} [, NOGraphs DESDE(real) MES] {view "help/Stata/DatosAbiertos.sthlp":({it:help})}"' 
+noisily di `" {stata "DatosAbiertos XAB":DatosAbiertos} {it:serie} [, NOGraphs DESDE(real)] {view "help/Stata/DatosAbiertos.sthlp":({it:help})}"' 
 noisily di `" {stata "TasasEfectivas":TasasEfectivas} [, ANIO(int)] {view "help/Stata/TasasEfectivas.sthlp":({it:help})}"' 
 noisily di `" {stata "GastoPC":GastoPC} [, ANIO(int)] {view "help/Stata/GastoPC.sthlp":({it:help})}"'
 noisily di `" {stata "AccesoBIE 734407, nombres(pibQ)":AccesoBIE} {it:serie} [, nombres()] {view "help/Stata/AccesoBIE.sthlp":({it:help})}"' 

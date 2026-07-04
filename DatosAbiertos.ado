@@ -1,3 +1,4 @@
+*! version 8.0 CIEP 03jul2026
 program define DatosAbiertos, return
 quietly {
 
@@ -30,8 +31,8 @@ quietly {
 	***********************
 	*** 1 Base de datos ***
 	***********************
-	if "`update'" == "update" {
-		noisily UpdateDatosAbiertos, `update' `zipfile'
+	if "`update'" == "update" | "`files'" == "files" {
+		noisily UpdateDatosAbiertos, `update' `zipfile' `csvfile' `files'
 		noisily UpdateDeflactor
 	}
 	
@@ -296,11 +297,33 @@ quietly {
 		g acum_prom = 1
 	}
 	*tsset aniomes
+
+	** 2.1 Cifra oficial para el año en curso (% del PIB) **
+	if `pibvp' != -999 {
+		replace monto = `pibvp'*pibY/100 if anio == `aniovp'
+		replace monto_pib = `pibvp' if anio == `aniovp'
+		replace montomill = monto/1000000/deflactor if anio == `aniovp'
+		replace monto_pc = monto/poblacion/deflactor if anio == `aniovp'
+	}
+
 	local prianio = anio in 1
 	local ultanio = anio in -1
 	local ultmes = mes in -1
 	return local ultimoAnio = `ultanio'
 	return local ultimoMes = `ultmes'
+
+	** 2.2 Estimación oficial para el año siguiente (% del PIB) **
+	local ultgraf = `ultanio'
+	if `pibvf' != -999 {
+		set obs `=_N+1'
+		replace anio = `aniovp'+1 in -1
+		replace monto_pib = `pibvf' in -1
+		replace nombre = nombre[1] in -1
+		replace clave_de_concepto = clave_de_concepto[1] in -1
+		replace unidad_de_medida = unidad_de_medida[1] in -1
+		sort anio
+		local ultgraf = max(`ultanio', `aniovp'+1)
+	}
 
 	** 2.1. Grafica **
 	if "`nographs'" != "nographs" {
@@ -375,7 +398,7 @@ quietly {
 			ytitle("", axis(2)) ///
 			xtitle("") ///
 			///xlabel(`prianio' `=round(`prianio',5)'(5)`ultanio') ///
-			xlabel(`desde'(1)`ultanio') ///
+			xlabel(`desde'(1)`ultgraf') ///
 			ylabel(, format(%15.0fc)) ///
 			yscale(range(0 `=`rango'[2,1]*1.75')) ///
 			ylabel(none, axis(2) format(%7.0fc) noticks) ///
@@ -398,7 +421,13 @@ end
 
 program define UpdateDatosAbiertos, return
 
-	syntax [, UPDATE ZIPFILE]
+	syntax [, UPDATE ZIPFILE CSVFILE FILES]
+
+	** files: usa los archivos ya descargados en temp/, sin conexión a internet **
+	if "`files'" == "files" {
+		local zipfile ""
+		local csvfile ""
+	}
 
 	************************
 	*** 1. Base de datos ***
@@ -410,7 +439,7 @@ program define UpdateDatosAbiertos, return
 	capture mkdir "`c(sysdir_site)'/temp/"
 	capture mkdir "`c(sysdir_site)'/temp/Datos Abiertos/"
 	capture use "`c(sysdir_site)'/master/DatosAbiertos.dta", clear
-	if (_rc == 0 & "`update'" != "update") {	
+	if (_rc == 0 & "`update'" != "update" & "`files'" != "files") {	
 		sort anio mes
 		return local ultanio = anio[_N]
 		return local ultmes = mes[_N]

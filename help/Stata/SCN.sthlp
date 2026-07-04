@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 3.0 CIEP 23feb2026}{...}
+{* *! version 8.0 CIEP 03jul2026}{...}
 {viewerjumpto "Descripción" "SCN##description"}{...}
 {viewerjumpto "Primeros pasos" "SCN##quickstart"}{...}
 {viewerjumpto "Sintaxis" "SCN##syntax"}{...}
@@ -79,8 +79,8 @@ Por defecto usa el año del paquete económico ({cmd:anioPE}).
 {p_end}
 
 {phang}
-{opt aniomax(#)} — {bf:Año final} hasta el que se extiende la proyección en las gráficas.
-Por defecto: 2070.
+{opt aniomax(#)} — {bf:Año final del eje horizontal} en las gráficas. Solo afecta
+el rango mostrado; no modifica la base de datos. Por defecto: 2050.
 {p_end}
 
 {phang}

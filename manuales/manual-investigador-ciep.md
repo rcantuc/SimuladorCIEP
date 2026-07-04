@@ -279,7 +279,7 @@ Detalle: `help TasasEfectivas`
 
 | Regla | Por qué |
 |---|---|
-| No edites los archivos `.ado` ni los archivos de configuración (`profile.do`, `sysprofile.do`, `SIM.do`) | Son el motor compartido. Un cambio tuyo afecta a todo el equipo, porque Dropbox lo sincroniza a todas las máquinas. |
+| No edites los archivos `.ado` ni los archivos de configuración (`profile.do`, `SIM.do`, `sysprofile-template.do`) | Son el motor compartido. Un cambio tuyo afecta a todo el equipo, porque Dropbox lo sincroniza a todas las máquinas. |
 | No guardes archivos fuera de tu carpeta `users/` | Todo lo que quede fuera se mezcla con el motor y estorba a los demás. |
 | No borres las carpetas `temp/`, `master/` ni `raw/` | Contienen datos descargados y procesados. Se pueden regenerar, pero cuesta tiempo (descargas de varios GB en algunos casos). |
 | No "arregles" un error del Simulador por tu cuenta | Repórtalo (sección 8). Si lo parchas localmente, tu copia diverge de la del equipo y tus resultados dejan de ser comparables. |

@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 3.0 CIEP 23feb2026}{...}
+{* *! version 8.0 CIEP 03jul2026}{...}
 {viewerjumpto "Descripción" "AccesoBIE##description"}{...}
 {viewerjumpto "Configuración del token" "AccesoBIE##token"}{...}
 {viewerjumpto "Primeros pasos" "AccesoBIE##quickstart"}{...}
