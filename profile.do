@@ -16,7 +16,7 @@ set charset latin1, permanently
 *** 1.5 VERSIÓN Y CAMBIOS   ***
 ***                         ***
 *******************************
-noisily {
+quietly {
 	python:
 import json
 import os
@@ -132,11 +132,14 @@ try:
 					if len(display_lines) >= max_lines:
 						break
 				display_lines.append(clean[:120])
-		Macro.setLocal("sim_changes", " | ".join(display_lines))
+		# Emitir cada linea como local individual (evita limite de longitud).
+		for i, line in enumerate(display_lines, 1):
+			Macro.setLocal("sim_change_" + str(i), line)
+		Macro.setLocal("sim_change_count", str(len(display_lines)))
 
 	nl = chr(10)
 	ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-	state_path.write_text("version=" + sim_version + nl + "timestamp=" + ts + nl, encoding="utf-8")
+	_ = state_path.write_text("version=" + sim_version + nl + "timestamp=" + ts + nl, encoding="utf-8")
 
 except Exception:
 	pass
@@ -189,15 +192,9 @@ if "`sim_version'" != "" {
 		noisily di _newline in g "  Novedades desde " in y "`sim_previous_version'" in g ":"
 	}
 
-	if "`sim_mode'" != "silent" & "`sim_changes'" != "" {
-		local changes_display "`sim_changes'"
-		while strpos("`changes_display'", " | ") > 0 {
-			local segment = substr("`changes_display'", 1, strpos("`changes_display'", " | ") - 1)
-			noisily di in y "    `segment'"
-			local changes_display = substr("`changes_display'", strpos("`changes_display'", " | ") + 3, .)
-		}
-		if "`changes_display'" != "" {
-			noisily di in y "    `changes_display'"
+	if "`sim_mode'" != "silent" & "`sim_change_count'" != "" & "`sim_change_count'" != "0" {
+		forvalues i = 1/`sim_change_count' {
+			noisily di in y "    `sim_change_`i''"
 		}
 	}
 }
