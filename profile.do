@@ -216,6 +216,7 @@ noisily di `" {stata "DatosAbiertos XAB":DatosAbiertos} {it:serie} [, NOGraphs D
 noisily di `" {stata "TasasEfectivas":TasasEfectivas} [, ANIO(int)] {view "help/Stata/TasasEfectivas.sthlp":({it:help})}"' 
 noisily di `" {stata "GastoPC":GastoPC} [, ANIO(int)] {view "help/Stata/GastoPC.sthlp":({it:help})}"'
 noisily di `" {stata "AccesoBIE 734407, nombres(pibQ)":AccesoBIE} {it:serie} [, nombres()] {view "help/Stata/AccesoBIE.sthlp":({it:help})}"' 
+noisily di `" {stata "sim_changelog":sim_changelog} [, VERsion(str)] {view "help/Stata/sim_changelog.sthlp":({it:help})}"'
 
 
 
