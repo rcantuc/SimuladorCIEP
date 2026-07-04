@@ -232,6 +232,17 @@ for k, v in d.get('toc', {}).get('packages', {}).items():
 
 log_info "✓ stata.toc generado"
 
+# Normalizar permisos en el tmp dir ANTES del rsync (dir 755, archivos 644).
+# Razón: el rsync que trae macOS moderno es openrsync, que IGNORA --chmod
+# silenciosamente y copia los permisos de origen (-a implica --perms). Como
+# mktemp crea el tmp dir con 700 y los .ado del repo pueden estar en 600,
+# sin esta normalización el servidor queda ilegible para Apache (HTTP 403,
+# "Server unable to read htaccess file"). Ocurrió en el deploy de v8.0.1.
+# El flag --chmod del rsync se conserva como refuerzo para rsync genuino.
+chmod 755 "$TMP_DIR"
+chmod 644 "$TMP_DIR"/*
+log_info "✓ Permisos normalizados en tmp dir (dir 755, archivos 644)"
+
 # ═══ DRY-RUN: salir aquí ═══
 
 if [[ "$DRY_RUN" == "true" ]]; then
