@@ -16,6 +16,30 @@ Formato de cada entrada:
 - **Datos:** cambios en fuentes, actualizaciones de PEFs, LIFs, ENIGH, u otras fuentes
 - **Correcciones:** bugs corregidos que afectaban resultados o funcionamiento
 
+## [v8.0.5] — 2026-07-04
+
+Nuevo Gate 4 en pipeline de publicación: validación de existencia de archivos
+declarados en manifest-endpoint.toml. Antes de crear la Release en GitHub,
+publicar.sh verifica que cada archivo declarado como ado_files, sthlp_files,
+y pkg_files existe físicamente en el filesystem del repo. Si algún archivo
+falta, aborta con error informativo. Habría atrapado el bug de AccesoBIE.pkg
+(v8.0.3 fix).
+
+### Institucional
+- Nuevo Gate 4 en publicar.sh valida existencia de archivos declarados en
+  manifest-endpoint.toml antes de crear Release GitHub y rsync al endpoint.
+- Los gates semánticos candidatos (autoría, URLs, prueba de humo automatizada)
+  se descartan formalmente. Revisión visual del .sthlp por el investigador
+  cubre autoría y URLs. Prueba de humo manual desde Stata externo (net from +
+  net describe) es el gate humano institucional para validación semántica de
+  paquetes publicados.
+
+### Comandos
+- Sin cambios de comportamiento en los comandos del canon.
+
+### Datos
+- Sin cambios respecto a v8.0.4.
+
 ## [v8.0.4] — 2026-07-04
 
 Fix: corrige link para obtener el token del BIE/INEGI. El link anterior

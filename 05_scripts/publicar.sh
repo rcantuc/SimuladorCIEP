@@ -4,8 +4,9 @@
 # Qué hace:
 #   1. Verifica precondiciones (master, working tree limpio, alineación con origin/master)
 #   2. Gates de validación: entrada en 02_governance/CHANGELOG.md, tag anotado con mensaje,
-#      05_scripts/manifest.json sincronizado con la versión. Si algo falla, aborta ANTES de
-#      cualquier acción con efectos (push, Release, rsync).
+#      05_scripts/manifest.json sincronizado con la versión, y existencia en filesystem de
+#      cada archivo declarado en 05_scripts/manifest-endpoint.toml. Si algo falla, aborta
+#      ANTES de cualquier acción con efectos (push, Release, rsync).
 #   3. Si la etiqueta de versión no existe localmente, ofrece crearla (interactivo o por flag)
 #   4. Push del tag a origin si aún no está allá
 #   5. Crea la GitHub Release <VERSION> (si no existe) con las notas extraídas del
@@ -72,8 +73,8 @@ Argumento:
 
 Opciones:
   --check               Ejecuta SOLO los gates de validación (CHANGELOG, tag anotado,
-                        manifest sincronizado) sin acciones con efectos. Exit 0 si
-                        todos pasan, 1 si alguno falla.
+                        manifest sincronizado, archivos del manifest-endpoint existen)
+                        sin acciones con efectos. Exit 0 si todos pasan, 1 si alguno falla.
   --tag-message=MSG     Mensaje del tag inline (evita abrir editor)
   --endpoint-dry-run    Dry-run del endpoint (no toca el servidor)
   --skip-post-verify    Salta la verificación SHA-256 post-Release (descarga ~1.3 GB).
@@ -120,7 +121,7 @@ verify_repo_state() {
 }
 
 # ═══ GATES DE VALIDACIÓN PRE-PUBLICACIÓN ═══
-# Los tres gates corren ANTES de cualquier acción con efectos (push, Release, rsync).
+# Los cuatro gates corren ANTES de cualquier acción con efectos (push, Release, rsync).
 # Cada gate imprime su resultado y devuelve 0 (pasa) o 1 (falla).
 
 gate_changelog() {
@@ -195,6 +196,76 @@ PYEOF
         return 1
     fi
     log_info "✓ Gate 3: 05_scripts/manifest.json sincronizado con $version"
+    return 0
+}
+
+# Gate 4 — Existencia de archivos declarados en manifest-endpoint.toml.
+# Cada archivo de ado_files, sthlp_files y pkg_files debe existir en el filesystem
+# del repo (path relativo a REPO_ROOT). Motivador: el bug de AccesoBIE.pkg (v8.0.3)
+# — un .pkg ausente del filesystem llegó anunciado al endpoint público.
+# Corre una vez por invocación, tanto en --check como en la publicación real
+# (son procesos separados sin estado compartido; saltarlo en la publicación real
+# abriría el hueco de publicar sin haber corrido --check).
+gate_endpoint_files() {
+    if [[ ! -f 05_scripts/manifest-endpoint.toml ]]; then
+        log_error "Gate 4 FALLO: 05_scripts/manifest-endpoint.toml no existe en el repo."
+        return 1
+    fi
+    local report
+    report="$(python3 <<'PYEOF'
+import os, sys
+try:
+    import tomllib
+except ImportError:
+    try:
+        import tomli as tomllib
+    except ImportError:
+        print("PARSE_ERROR: ni tomllib (Python 3.11+) ni tomli disponibles")
+        sys.exit(0)
+try:
+    with open("05_scripts/manifest-endpoint.toml", "rb") as f:
+        data = tomllib.load(f)
+except Exception as e:
+    print(f"PARSE_ERROR: {e}")
+    sys.exit(0)
+package = data.get("package", {})
+missing = []
+counts = []
+for kind in ("ado_files", "sthlp_files", "pkg_files"):
+    files = package.get(kind, [])
+    for f in files:
+        if not os.path.isfile(f):
+            missing.append(f)
+    counts.append(f"{kind}: {len(files)} archivos verificados")
+if missing:
+    print("MISSING")
+    for f in missing:
+        print(f)
+else:
+    print("OK")
+    for c in counts:
+        print(c)
+PYEOF
+)"
+    local status
+    status="$(head -n 1 <<< "$report")"
+    if [[ "$status" == PARSE_ERROR* ]]; then
+        log_error "Gate 4 FALLO: no se pudo leer 05_scripts/manifest-endpoint.toml:"
+        log_error "        ${status#PARSE_ERROR: }"
+        return 1
+    fi
+    if [[ "$status" == "MISSING" ]]; then
+        log_error "Gate 4 FALLO: archivos declarados en manifest-endpoint.toml no existen en filesystem:"
+        while IFS= read -r line; do
+            log_error "  - $line"
+        done < <(tail -n +2 <<< "$report")
+        log_error "Accion: crea los archivos faltantes o corrige el manifest antes de publicar."
+        return 1
+    fi
+    log_info "✓ Gate 4: Todos los archivos declarados en manifest-endpoint.toml existen"
+    while IFS= read -r line; do
+        log_info "  $line"
+    done < <(tail -n +2 <<< "$report")
     return 0
 }
 
@@ -431,11 +502,12 @@ if [[ "$CHECK_MODE" == "true" ]]; then
     gate_changelog "$VERSION"      || GATE_FAILURES=$((GATE_FAILURES+1))
     gate_tag_annotated "$VERSION"  || GATE_FAILURES=$((GATE_FAILURES+1))
     gate_manifest_sync "$VERSION"  || GATE_FAILURES=$((GATE_FAILURES+1))
+    gate_endpoint_files            || GATE_FAILURES=$((GATE_FAILURES+1))
     if (( GATE_FAILURES > 0 )); then
         log_error "--check: $GATE_FAILURES gate(s) fallaron para $VERSION."
         exit 1
     fi
-    log_info "--check: los 3 gates pasaron para $VERSION."
+    log_info "--check: los 4 gates pasaron para $VERSION."
     exit 0
 fi
 
@@ -447,6 +519,7 @@ log_step "Gates de validación pre-publicación"
 GATE_FAILURES=0
 gate_changelog "$VERSION"      || GATE_FAILURES=$((GATE_FAILURES+1))
 gate_manifest_sync "$VERSION"  || GATE_FAILURES=$((GATE_FAILURES+1))
+gate_endpoint_files            || GATE_FAILURES=$((GATE_FAILURES+1))
 if (( GATE_FAILURES > 0 )); then
     abort "$GATE_FAILURES gate(s) fallaron. Corrige antes de publicar."
 fi
