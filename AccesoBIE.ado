@@ -15,7 +15,7 @@ program define AccesoBIE
 			display as error "AccesoBIE requiere el token del BIE/INEGI fijado como global Stata."
 			display as error "Fija el token antes de usar este comando:"
 			display as error `"  global BIE_API_TOKEN "tu-token-aqui""'
-			display as error "Solicita o gestiona tu token en: https://www.inegi.org.mx/servicios/api_biinegi.html"
+			display as error "Solicita o gestiona tu token en: https://www.inegi.org.mx/app/api/denue/v1/tokenVerify.aspx"
 			exit 198
 		}
 		local token "$BIE_API_TOKEN"

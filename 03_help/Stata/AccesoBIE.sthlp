@@ -89,7 +89,7 @@ nada más en cada sesión.
 
 {pstd}
 Si no tienes token, solicítalo en
-{browse "https://www.inegi.org.mx/servicios/api_biinegi.html":www.inegi.org.mx/servicios/api_biinegi.html}.
+{browse "https://www.inegi.org.mx/app/api/denue/v1/tokenVerify.aspx":www.inegi.org.mx/app/api/denue/v1/tokenVerify.aspx}.
 {p_end}
 
 {hline}

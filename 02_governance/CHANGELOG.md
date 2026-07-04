@@ -16,6 +16,26 @@ Formato de cada entrada:
 - **Datos:** cambios en fuentes, actualizaciones de PEFs, LIFs, ENIGH, u otras fuentes
 - **Correcciones:** bugs corregidos que afectaban resultados o funcionamiento
 
+## [v8.0.4] — 2026-07-04
+
+Fix: corrige link para obtener el token del BIE/INEGI. El link anterior
+(https://www.inegi.org.mx/servicios/api_biinegi.html) era una página obsoleta.
+El link correcto es el generador de tokens de INEGI:
+https://www.inegi.org.mx/app/api/denue/v1/tokenVerify.aspx
+(compartido con DENUE, ya que INEGI usa un único sistema de tokens).
+
+### Institucional
+- 03_help/Stata/AccesoBIE.sthlp: link del {browse} corregido al generador
+  de tokens vigente.
+- AccesoBIE.ado: mensaje de error apunta al link correcto.
+- set_token.template.do: comentario del template apunta al link correcto.
+
+### Comandos
+- Sin cambios de comportamiento. AccesoBIE mantiene sintaxis y datasets.
+
+### Datos
+- Sin cambios respecto a v8.0.3.
+
 ## [v8.0.3] — 2026-07-04
 
 Fix: agrega 05_scripts/AccesoBIE.pkg que estaba declarado en el manifest del
