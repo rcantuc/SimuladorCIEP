@@ -105,7 +105,7 @@ try:
 				selected.append((ver, header, s, e))
 		# Renderizar líneas con sanitización de Markdown y separador entre versiones
 		display_lines = []
-		max_lines = 25
+		max_lines = 100
 		for ver, header, s, e in selected:
 			if len(display_lines) >= max_lines:
 				break

@@ -16,8 +16,6 @@ Formato de cada entrada:
 - **Datos:** cambios en fuentes, actualizaciones de PEFs, LIFs, ENIGH, u otras fuentes
 - **Correcciones:** bugs corregidos que afectaban resultados o funcionamiento
 
----
-
 ## [v8.0.1] — 2026-07-03
 
 Cleanup documental. La ayuda de comandos institucionales del canon queda consolidada
@@ -42,8 +40,6 @@ movió de manuales/ a help/.
 
 ### Datos
 - Sin cambios respecto a v8.0. Las fuentes y assets del data sidecar son idénticos.
-
----
 
 ## [v8.0] — 2026-05-29
 
@@ -71,8 +67,6 @@ para producir un resultado citado del Simulador.
 - Las fuentes de datos son las mismas que v7.0. La ruptura de v8.0 es institucional
   (reproducibilidad, publicación formal), no metodológica ni de fuentes.
 
----
-
 ## [v7.0] — 2026-05-23
 
 **Última versión del Simulador como proyecto personal del investigador principal.**
@@ -98,5 +92,3 @@ principalmente tácito hacia infraestructura institucional. El mensaje del tag l
 ### Datos
 - Fuentes: PEFs (2013-2026), CPs, ENIGH (2014-2024), LIFs, CuotasISSSTE,
   ISRInformesTrimestrales.
-
----
