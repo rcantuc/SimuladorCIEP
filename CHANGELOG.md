@@ -1,0 +1,75 @@
+# Changelog del Simulador Fiscal CIEP
+
+Este archivo registra los cambios de cada versión publicada del Simulador Fiscal CIEP.
+
+Las versiones se numeran siguiendo el esquema descrito en `governance/convenciones-git.md` §3:
+mayor cuando hay cambio metodológico o institucional de fondo, menor cuando hay datos nuevos
+o funcionalidad nueva compatible, patch para correcciones sobre versión publicada.
+
+**A partir de v8.0, todas las versiones son reproducibles end-to-end** — código + datos +
+endpoint publicados en la misma versión, referenciables mediante `git checkout v8.x`.
+
+Formato de cada entrada:
+- **Institucional:** cambios de governance, infraestructura, arquitectura de publicación
+- **Comandos:** cambios que afectan cómo se usa el Simulador desde Stata (nuevas opciones,
+  comandos agregados o modificados, comandos deprecados)
+- **Datos:** cambios en fuentes, actualizaciones de PEFs, LIFs, ENIGH, u otras fuentes
+- **Correcciones:** bugs corregidos que afectaban resultados o funcionamiento
+
+---
+
+## [v8.0] — 2026-05-29
+
+**Primera versión bajo arquitectura institucional completa.** Marca el inicio de la era
+reproducible: a partir de v8.0 cualquiera puede reconstruir código + datos exactos usados
+para producir un resultado citado del Simulador.
+
+### Institucional
+- Data sidecar publicado en GitHub Release v8.0 con 23 archivos de fuentes (PEFs, LIFs,
+  ENIGH, CuotasISSSTE, ISRInformesTrimestrales, CP históricos).
+- Sub-canal Stata público automatizado: `net from https://ciep.mx/simuladorfiscal/`
+  sirve los 8 paquetes principales sin necesidad de tener acceso al repo.
+- `manifest.json` en la raíz del repo declara el Catálogo de datos asociados con
+  huellas digitales SHA-256 y URLs de descarga.
+- `publicar.sh` publica una versión nueva al endpoint público en un solo comando.
+- Governance formal documentada en el directorio `governance/`.
+- Convenciones de Git, versionado y publicación formalizadas en `governance/convenciones-git.md`.
+
+### Comandos
+- Sin cambios respecto a v7.0. Los comandos `PEF`, `LIF`, `SCN`, `Poblacion`, `PIBDeflactor`,
+  `SHRFSP`, `DatosAbiertos`, `AccesoBIE` mantienen la misma sintaxis y opciones.
+- `GastoPC` y `TasasEfectivas` continúan en desarrollo, no publicados oficialmente.
+
+### Datos
+- Las fuentes de datos son las mismas que v7.0. La ruptura de v8.0 es institucional
+  (reproducibilidad, publicación formal), no metodológica ni de fuentes.
+
+---
+
+## [v7.0] — 2026-05-23
+
+**Última versión del Simulador como proyecto personal del investigador principal.**
+Transición del Simulador desde código operativo con conocimiento metodológico
+principalmente tácito hacia infraestructura institucional. El mensaje del tag lo captura:
+"Data sidecar publicado (transición v7.x → v8.0)."
+
+### Institucional
+- Migración inicial de datos: de URLs personales de Dropbox a assets de GitHub Release v7.0.
+- `manifest.json` inicial (23 assets con SHA-256).
+- Introducción de `ensure_asset.ado` para descarga verificada de fuentes.
+- Rewrite de historia Git para purgar credenciales expuestas y binarios pesados
+  (repo: 5.1 GB → 49 MB).
+- Externalización del token BIE/INEGI mediante `set_token.do` gitignored + plantilla
+  `set_token.template.do` versionada.
+- Cierre del canal manual `Stata net/`: los `.ado` viven solo en el root del repo.
+
+### Comandos
+- Los comandos `PEF`, `LIF`, `SCN`, `Poblacion`, `PIBDeflactor`, `SHRFSP`, `DatosAbiertos`,
+  `AccesoBIE` están disponibles y funcionales.
+- Refactor de los `.ado` para usar `ensure_asset` en lugar de URLs hardcoded a Dropbox.
+
+### Datos
+- Fuentes: PEFs (2013-2026), CPs, ENIGH (2014-2024), LIFs, CuotasISSSTE,
+  ISRInformesTrimestrales.
+
+---
