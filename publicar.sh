@@ -8,8 +8,15 @@
 #      cualquier acción con efectos (push, Release, rsync).
 #   3. Si la etiqueta de versión no existe localmente, ofrece crearla (interactivo o por flag)
 #   4. Push del tag a origin si aún no está allá
-#   5. Invoca publicar-endpoint.sh con la versión, que sincroniza el sub-canal Stata al
+#   5. Crea la GitHub Release <VERSION> (si no existe) con las notas extraídas del
+#      CHANGELOG.md, y sube los assets del data sidecar declarados en manifest.json
+#   6. Verifica integridad post-Release: descarga cada asset y compara su SHA-256
+#      contra el manifest (--skip-post-verify lo salta; son ~1.3 GB de descarga)
+#   7. Invoca publicar-endpoint.sh con la versión, que sincroniza el sub-canal Stata al
 #      servidor Cloudways (ver §3.2 y §6.6 de governance/arquitectura-distribucion.md)
+#
+# Orden deliberado: primero la Release inmutable en GitHub (código + datos versionados),
+# después el endpoint operativo. Así el endpoint nunca apunta a una versión sin Release.
 #
 # Modo --check: ejecuta SOLO los gates (sin crear tag, sin push, sin Release, sin rsync).
 # Reporta todas las fallas acumuladas. Exit 0 si todos pasan, 1 si alguno falla.
@@ -30,6 +37,7 @@ TAG_MESSAGE=""
 ENDPOINT_DRY_RUN=false
 FORCE=false
 CHECK_MODE=false
+SKIP_POST_VERIFY=false
 
 # Colores (desactivados si stdout no es tty)
 if [[ -t 1 ]]; then
@@ -68,6 +76,8 @@ Opciones:
                         todos pasan, 1 si alguno falla.
   --tag-message=MSG     Mensaje del tag inline (evita abrir editor)
   --endpoint-dry-run    Dry-run del endpoint (no toca el servidor)
+  --skip-post-verify    Salta la verificación SHA-256 post-Release (descarga ~1.3 GB).
+                        Úsalo cuando republicas una versión ya verificada.
   --force               Permite republish de versión existente
   -h, --help            Ayuda
 
@@ -242,6 +252,154 @@ ensure_tag_pushed() {
     log_info "✓ Tag $version pusheado"
 }
 
+# ═══ GITHUB RELEASE ═══
+
+require_gh() {
+    command -v gh >/dev/null 2>&1 || abort "gh CLI no está instalado. Instálalo con: brew install gh"
+    gh auth status >/dev/null 2>&1 || abort "gh CLI no está autenticado. Corre: gh auth login"
+}
+
+# Extrae la sección del CHANGELOG.md de una versión: desde '## [<VERSION>]' (inclusivo)
+# hasta el siguiente '## [' (exclusivo).
+extract_changelog_section() {
+    local version="$1" outfile="$2"
+    awk -v ver="$version" '
+        /^## \[/ {
+            if (found) exit
+            if (index($0, "## [" ver "]") == 1) found = 1
+        }
+        found { print }
+    ' CHANGELOG.md > "$outfile"
+}
+
+# Emite los assets del manifest como líneas "name<TAB>local_path<TAB>sha256".
+manifest_assets() {
+    python3 <<'PYEOF'
+import json
+with open("manifest.json", encoding="utf-8") as f:
+    m = json.load(f)
+for a in m.get("assets", []):
+    print(f"{a['name']}\t{a['local_path']}\t{a['sha256']}")
+PYEOF
+}
+
+release_create() {
+    local version="$1"
+    log_step "GitHub Release: creación"
+
+    if gh release view "$version" >/dev/null 2>&1; then
+        log_info "Release $version ya existe en GitHub — se omite la creación (no se sobrescribe)"
+        return 0
+    fi
+
+    local notes_file
+    notes_file="$(mktemp)"
+    extract_changelog_section "$version" "$notes_file"
+    if [[ ! -s "$notes_file" ]]; then
+        rm -f "$notes_file"
+        abort "No se pudo extraer la sección de $version del CHANGELOG.md (Gate 1 debería haberlo detectado)."
+    fi
+
+    log_info "Creando Release $version con notas del CHANGELOG..."
+    gh release create "$version" --title "Simulador Fiscal CIEP $version" --notes-file "$notes_file" \
+        || { rm -f "$notes_file"; abort "gh release create falló para $version."; }
+    rm -f "$notes_file"
+    log_info "✓ Release $version creada"
+}
+
+assets_upload() {
+    local version="$1"
+    log_step "GitHub Release: subida de assets del data sidecar"
+
+    # Pre-chequeo: TODOS los archivos locales deben existir antes de subir nada
+    local missing="" name local_path sha
+    while IFS=$'\t' read -r name local_path sha; do
+        [[ -f "$local_path" ]] || missing+=$'\n'"  - $local_path"
+    done < <(manifest_assets)
+    if [[ -n "$missing" ]]; then
+        abort "Assets declarados en manifest.json faltan localmente:$missing"
+    fi
+    log_info "✓ Todos los assets del manifest existen localmente"
+
+    # Assets ya presentes en la Release (idempotencia: no se re-suben)
+    local existing
+    existing="$(gh release view "$version" --json assets --jq '.assets[].name' 2>/dev/null || true)"
+
+    local uploaded=0 skipped=0
+    while IFS=$'\t' read -r name local_path sha; do
+        if grep -qxF "$name" <<< "$existing"; then
+            skipped=$((skipped+1))
+            continue
+        fi
+        log_info "Subiendo $name ($local_path)..."
+        gh release upload "$version" "$local_path" \
+            || abort "Falló la subida de $local_path. Re-corre el script: los ya subidos se omiten."
+        uploaded=$((uploaded+1))
+    done < <(manifest_assets)
+    log_info "✓ Assets: $uploaded subidos, $skipped ya estaban en la Release"
+
+    # Verificación de conteo: Release vs manifest
+    local manifest_count release_count
+    manifest_count="$(manifest_assets | wc -l | tr -d ' ')"
+    release_count="$(gh release view "$version" --json assets --jq '.assets | length')"
+    if (( release_count < manifest_count )); then
+        abort "La Release tiene $release_count assets pero el manifest declara $manifest_count. Faltan assets."
+    elif (( release_count > manifest_count )); then
+        log_warn "La Release tiene $release_count assets; el manifest declara $manifest_count (hay extras no declarados)."
+    else
+        log_info "✓ Cantidad de assets verificada: $release_count == manifest"
+    fi
+}
+
+release_post_verify() {
+    local version="$1"
+    log_step "GitHub Release: verificación SHA-256 post-Release"
+
+    local log_file="$REPO_ROOT/governance/deploys/endpoint-stata.log"
+    mkdir -p "$(dirname "$log_file")"
+    local short_head
+    short_head="$(git rev-parse --short HEAD)"
+
+    if [[ "$SKIP_POST_VERIFY" == "true" ]]; then
+        log_warn "--skip-post-verify activo: se omite la verificación de integridad (~1.3 GB de descarga)"
+        echo "$TIMESTAMP $version $short_head $(whoami) RELEASE-VERIFY SKIPPED" >> "$log_file"
+        return 0
+    fi
+
+    local tmp_dir
+    tmp_dir="$(mktemp -d -t publicar-verify-XXXXXX)"
+
+    local drift=() verified=0 name local_path sha actual
+    while IFS=$'\t' read -r name local_path sha; do
+        log_info "Verificando $name..."
+        rm -f "$tmp_dir/$name"
+        if ! gh release download "$version" --pattern "$name" --dir "$tmp_dir" 2>/dev/null; then
+            log_warn "No se pudo descargar $name para verificación"
+            drift+=("$name(descarga-fallida)")
+            continue
+        fi
+        actual="$(shasum -a 256 "$tmp_dir/$name" | awk '{print $1}')"
+        if [[ "$actual" != "$sha" ]]; then
+            drift+=("$name")
+        else
+            verified=$((verified+1))
+        fi
+        rm -f "$tmp_dir/$name"
+    done < <(manifest_assets)
+    rm -rf "$tmp_dir"
+
+    if (( ${#drift[@]} > 0 )); then
+        local drift_list
+        drift_list="$(IFS=,; echo "${drift[*]}")"
+        log_warn "Assets con drift de SHA-256 (no coinciden con manifest.json): $drift_list"
+        log_warn "La Release quedó publicada; investiga el drift antes de anunciar la versión."
+        echo "$TIMESTAMP $version $short_head $(whoami) RELEASE-VERIFY DRIFT:$drift_list" >> "$log_file"
+    else
+        log_info "✓ $verified assets verificados contra manifest.json"
+        echo "$TIMESTAMP $version $short_head $(whoami) RELEASE-VERIFY OK" >> "$log_file"
+    fi
+}
+
 # ═══ PARSING DE ARGUMENTOS ═══
 
 while [[ $# -gt 0 ]]; do
@@ -249,6 +407,7 @@ while [[ $# -gt 0 ]]; do
         --check)                CHECK_MODE=true; shift ;;
         --tag-message=*)        TAG_MESSAGE="${1#*=}"; shift ;;
         --endpoint-dry-run)     ENDPOINT_DRY_RUN=true; shift ;;
+        --skip-post-verify)     SKIP_POST_VERIFY=true; shift ;;
         --force)                FORCE=true; shift ;;
         -h|--help)              usage; exit 0 ;;
         v*)                     VERSION="$1"; shift ;;
@@ -281,6 +440,7 @@ if [[ "$CHECK_MODE" == "true" ]]; then
 fi
 
 verify_repo_state
+require_gh
 
 # ─── Gates baratos ANTES de crear el tag ───
 log_step "Gates de validación pre-publicación"
@@ -291,13 +451,20 @@ if (( GATE_FAILURES > 0 )); then
     abort "$GATE_FAILURES gate(s) fallaron. Corrige antes de publicar."
 fi
 
-log_step "Publicación al endpoint"
+log_step "Tag de versión"
 
 ensure_tag_exists "$VERSION"
 # Gate 2 corre después de ensure_tag_exists: valida tanto tags preexistentes
 # como el recién creado (crear un tag local es reversible con git tag -d).
 gate_tag_annotated "$VERSION" || abort "Gate 2 falló. Corrige el tag antes de publicar."
 ensure_tag_pushed "$VERSION"
+
+# ─── Release inmutable primero, endpoint operativo después ───
+release_create "$VERSION"
+assets_upload "$VERSION"
+release_post_verify "$VERSION"
+
+log_step "Publicación al endpoint"
 
 log_info "Invocando publicar-endpoint.sh..."
 endpoint_args=()
