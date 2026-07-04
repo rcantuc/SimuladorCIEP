@@ -1,8 +1,8 @@
 {
-  "version": "v8.0.1",
-  "release_tag": "v8.0.1",
-  "release_url_prefix": "https://github.com/rcantuc/SimuladorCIEP/releases/download/v8.0.1/",
-  "generated_at": "2026-07-04T06:07:16Z",
+  "version": "v8.0.2",
+  "release_tag": "v8.0.2",
+  "release_url_prefix": "https://github.com/rcantuc/SimuladorCIEP/releases/download/v8.0.2/",
+  "generated_at": "2026-07-04T18:56:27Z",
   "exclusion_rule": "Excluidos: archivos terminados en .xlsx_ (renombres truncados de Dropbox, no canónicos) y archivos .DS_Store (metadatos macOS, no datos).",
   "assets": [
     {

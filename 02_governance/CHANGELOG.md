@@ -16,6 +16,25 @@ Formato de cada entrada:
 - **Datos:** cambios en fuentes, actualizaciones de PEFs, LIFs, ENIGH, u otras fuentes
 - **Correcciones:** bugs corregidos que afectaban resultados o funcionamiento
 
+## [v8.0.2] — 2026-07-04
+
+Cambio menor de metadata: los 11 archivos .sthlp del canon (AccesoBIE,
+DatosAbiertos, LIF, PEF, PIBDeflactor, Poblacion, SCN, SHRFSP, GastoPC,
+TasasEfectivas, sim_changelog) ahora incluyen autoría del investigador
+principal + correo institucional clicable en el encabezado.
+
+### Institucional
+- Encabezado de los .sthlp muestra ahora: "Centro de Investigación Económica
+  y Presupuestaria, A.C. | ciep.mx" seguido de "Ricardo Cantú Calderón |
+  ricardocantu@ciep.mx" (correo abre cliente de mail al hacer clic).
+
+### Comandos
+- Sin cambios respecto a v8.0.1. Los comandos mantienen sintaxis, opciones,
+  resultados y datasets.
+
+### Datos
+- Sin cambios respecto a v8.0.1. Assets del data sidecar son idénticos.
+
 ## [v8.0.1] — 2026-07-03
 
 Cleanup documental. La ayuda de comandos institucionales del canon queda consolidada
