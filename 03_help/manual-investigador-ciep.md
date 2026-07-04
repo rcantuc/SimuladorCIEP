@@ -302,6 +302,7 @@ Los directorios de la carpeta del Simulador siguen una convención de nombres qu
 | `raw/` (incluye `raw/temp/`) | Datos crudos descargados de fuentes oficiales y archivos intermedios de cada corrida | Sí |
 | `master/` | Bases procesadas listas para usar | Sí |
 | `users/tu-usuario/` | Tu espacio personal: do-files, bases derivadas, gráficas | Sí (solo el tuyo) |
+| `users/tu-usuario/graphs/` | Las gráficas que generan los comandos del Simulador | Sí — se regenera en la siguiente corrida |
 
 **La regla es simple:** los directorios **con prefijo numérico** (`01_`, `02_`…) son permanentes — no los borres ni los muevas. Los directorios **sin prefijo** son restablecibles — el propio Simulador los regenera.
 
@@ -310,6 +311,8 @@ Los directorios de la carpeta del Simulador siguen una convención de nombres qu
 - **`raw/`** — en la siguiente corrida, el Simulador vuelve a descargar cada insumo desde el repositorio institucional en GitHub y verifica su integridad automáticamente (lo hace el comando interno `ensure_asset`). Cuesta tiempo de descarga (varios GB en algunos casos), pero no se pierde nada.
 - **`master/`** — las bases se reconstruyen corriendo el pipeline completo. También cuesta tiempo, tampoco se pierde nada.
 - **`users/tu-usuario/`** — es tu espacio personal; bórralo solo si ya no necesitas lo que hay dentro, porque **eso sí no se regenera**. Nunca borres la carpeta de otra persona.
+
+**Dónde viven las gráficas.** Todas las gráficas que generan los comandos del Simulador se guardan únicamente en `users/tu-usuario/graphs/` — nunca en la raíz del repo. No tienes que crear esa carpeta ni configurar nada: los comandos escriben ahí automáticamente. Si borras tu `graphs/`, las gráficas se regeneran la próxima vez que corras los comandos que las producen.
 
 Los archivos sueltos en la raíz (los `.ado` de los comandos, los `scheme-*.scheme` de las gráficas, `SIM.do`, `profile.do`) tampoco se tocan: Stata los busca exactamente ahí y moverlos rompe los comandos para todo el equipo.
 

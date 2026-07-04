@@ -1,6 +1,9 @@
 *! version 8.0 CIEP 03jul2026
 program define LIF, return
 quietly {
+	capture mkdir `"`c(sysdir_site)'/users/"'
+	capture mkdir `"`c(sysdir_site)'/users/$id/"'
+	capture mkdir `"`c(sysdir_site)'/users/$id/graphs/"'
 	timer on 4
 
 	** 0.1 Anio valor presente **
@@ -551,7 +554,7 @@ quietly {
 		*capture window manage close graph ingresosMXN`by'
 		*capture window manage close graph ingresos`by'PIB
 	
-		graph save ingresos`by'PIB "`c(sysdir_site)'/graphs/ingresos`by'PIB", replace
+		graph save ingresos`by'PIB "`c(sysdir_site)'/users/$id/graphs/ingresos`by'PIB", replace
 		if "$export" != "" {
 			graph export "$export/ingresos`by'PIB.png", as(png) name("ingresos`by'PIB") replace
 		}

@@ -454,7 +454,9 @@ quietly {
 			note("{bf:{c U'}ltimo dato reportado}: `latest'.") ///
 			name(gdp_generacion, replace)
 
-		capture mkdir "`c(sysdir_site)'/graphs/"
+		capture mkdir "`c(sysdir_site)'/users/"
+		capture mkdir "`c(sysdir_site)'/users/$id/"
+		capture mkdir "`c(sysdir_site)'/users/$id/graphs/"
 		
 		if "$export" != "" {
 			graph export "$export/gdp_generacion.png", replace name(gdp_generacion)

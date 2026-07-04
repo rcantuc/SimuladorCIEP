@@ -1,6 +1,9 @@
 *! version 8.0 CIEP 03jul2026
 program define SHRFSP, return
 quietly {
+	capture mkdir `"`c(sysdir_site)'/users/"'
+	capture mkdir `"`c(sysdir_site)'/users/$id/"'
+	capture mkdir `"`c(sysdir_site)'/users/$id/graphs/"'
 
 	timer on 5
 
@@ -474,7 +477,7 @@ quietly {
 				yaxis(2) size(medium) place(6) justification(center) bcolor(white) box) ///
 			name(shrfsp, replace)
 
-		graph save shrfsp `"`c(sysdir_site)'/graphs/shrfsp.gph"', replace
+		graph save shrfsp `"`c(sysdir_site)'/users/$id/graphs/shrfsp.gph"', replace
 		capture confirm existence $export
 		if _rc == 0 {
 			graph export "$export/shrfsp.png", replace name(shrfsp)
@@ -530,7 +533,7 @@ quietly {
 				yaxis(2) size(medium) place(6) justification(center) bcolor(white) box) ///
 			name(shrfsppc, replace)
 
-		graph save shrfsppc `"`c(sysdir_site)'/graphs/shrfsppc.gph"', replace
+		graph save shrfsppc `"`c(sysdir_site)'/users/$id/graphs/shrfsppc.gph"', replace
 		capture confirm existence $export
 		if _rc == 0 {
 			graph export "$export/shrfsppc.png", replace name(shrfsppc)
@@ -586,7 +589,7 @@ quietly {
 				yaxis(2) size(medium) place(6) justification(center) bcolor(white) box) ///
 			name(shrfsplif, replace)
 
-		graph save shrfsplif `"`c(sysdir_site)'/graphs/shrfsplif.gph"', replace
+		graph save shrfsplif `"`c(sysdir_site)'/users/$id/graphs/shrfsplif.gph"', replace
 		capture confirm existence $export
 		if _rc == 0 {
 			graph export "$export/shrfsplif.png", replace name(shrfsplif)
@@ -644,7 +647,7 @@ quietly {
 				yaxis(2) size(medium) place(6) justification(center) bcolor(white) box) ///
 			name(shrfspIntExt, replace)
 
-		graph save shrfspIntExt `"`c(sysdir_site)'/graphs/shrfspIntExt.gph"', replace
+		graph save shrfspIntExt `"`c(sysdir_site)'/users/$id/graphs/shrfspIntExt.gph"', replace
 		capture confirm existence $export
 		if _rc == 0 {
 			graph export "$export/shrfspIntExt.png", replace name(shrfspIntExt)
@@ -701,7 +704,7 @@ quietly {
 				label(7 "Costo financiero")) ///
 			name(shrfspResumen, replace)
 
-		graph save shrfspResumen `"`c(sysdir_site)'/graphs/shrfspResumen.gph"', replace
+		graph save shrfspResumen `"`c(sysdir_site)'/users/$id/graphs/shrfspResumen.gph"', replace
 		capture confirm existence $export
 		if _rc == 0 {
 			graph export "$export/shrfspResumen.png", replace name(shrfspResumen)
@@ -791,7 +794,7 @@ quietly {
 			xlabel(`=`ultanio'+1'(1)`lastexo', noticks) xtitle("") ///
 			name(tasasdeinteres, replace)
 				
-		graph save tasasdeinteres `"`c(sysdir_site)'/graphs/tasasdeinteres.gph"', replace
+		graph save tasasdeinteres `"`c(sysdir_site)'/users/$id/graphs/tasasdeinteres.gph"', replace
 		capture confirm existence $export
 		if _rc == 0 {
 			graph export "$export/tasasdeinteres.png", replace name(tasasdeinteres)
@@ -863,7 +866,7 @@ quietly {
 				yaxis(2) size(medium) place(6) justification(center) bcolor(white) box) ///
 			name(rfsp, replace)
 
-		graph save rfsp `"`c(sysdir_site)'/graphs/rfsp.gph"', replace
+		graph save rfsp `"`c(sysdir_site)'/users/$id/graphs/rfsp.gph"', replace
 		capture confirm existence $export
 		if _rc == 0 {
 			graph export "$export/rfsp.png", replace name(rfsp)
@@ -934,7 +937,7 @@ quietly {
 				yaxis(2) size(medium) place(6) justification(center) bcolor(white) box) ///
 			name(rfspBalOtros, replace)
 
-		graph save rfspBalOtros `"`c(sysdir_site)'/graphs/rfspBalOtros.gph"', replace
+		graph save rfspBalOtros `"`c(sysdir_site)'/users/$id/graphs/rfspBalOtros.gph"', replace
 		capture confirm existence $export
 		if _rc == 0 {
 			graph export "$export/rfspBalOtros.png", replace name(rfspBalOtros)

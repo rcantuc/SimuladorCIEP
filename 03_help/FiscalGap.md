@@ -271,10 +271,10 @@ Calcula la carga de deuda per cápita para generaciones actuales vs futuras.
 
 ### Archivos exportados:
 1. **Gráficos PDF**:
-   - `graphs/ingresos_{anio}.pdf`: Gráficos de ingresos históricos y proyectados
-   - `graphs/gastos_{anio}.pdf`: Gráficos de gastos por categoría
-   - `graphs/balance_{anio}.pdf`: Balance fiscal proyectado
-   - `graphs/shrfsp_{anio}.pdf`: Evolución de la deuda pública
+   - `users/<tu-usuario>/graphs/ingresos_{anio}.pdf`: Gráficos de ingresos históricos y proyectados
+   - `users/<tu-usuario>/graphs/gastos_{anio}.pdf`: Gráficos de gastos por categoría
+   - `users/<tu-usuario>/graphs/balance_{anio}.pdf`: Balance fiscal proyectado
+   - `users/<tu-usuario>/graphs/shrfsp_{anio}.pdf`: Evolución de la deuda pública
 
 2. **Tablas CSV**:  
    - `tablas/ingresos_{anio}.csv`: Ingresos como % del PIB por año

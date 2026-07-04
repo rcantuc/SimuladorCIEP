@@ -13,7 +13,9 @@ quietly {
 	timer on 3
 
 	capture mkdir `"`c(sysdir_site)'/master/"'
-	capture mkdir `"`c(sysdir_site)'/graphs/"'
+	capture mkdir `"`c(sysdir_site)'/users/"'
+	capture mkdir `"`c(sysdir_site)'/users/$id/"'
+	capture mkdir `"`c(sysdir_site)'/users/$id/graphs/"'
 
 	** 0.1 Revisa si se puede usar la base de datos **
 	capture use "`c(sysdir_site)'/master/PIBDeflactor.dta", clear

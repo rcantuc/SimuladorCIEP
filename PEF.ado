@@ -1,5 +1,8 @@
 *! version 8.0 CIEP 03jul2026
 program define PEF, return
+	capture mkdir `"`c(sysdir_site)'/users/"'
+	capture mkdir `"`c(sysdir_site)'/users/$id/"'
+	capture mkdir `"`c(sysdir_site)'/users/$id/graphs/"'
 timer on 5
 quietly {
 
@@ -602,7 +605,7 @@ quietly {
 		*capture window manage close graph ingresosMXN`by'
 		*capture window manage close graph ingresos`by'PIB
 	
-		graph save gastos`by'PIB "`c(sysdir_site)'/graphs/gastos`by'PIB", replace
+		graph save gastos`by'PIB "`c(sysdir_site)'/users/$id/graphs/gastos`by'PIB", replace
 		if "$export" != "" {
 			graph export "$export/gastos`by'PIB.png", as(png) name("gastos`by'PIB") replace
 		}
