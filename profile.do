@@ -83,12 +83,17 @@ try:
 			display_lines = []
 			for line in raw_lines[:15]:
 				clean = line
+				is_header = False
 				if clean.startswith("### "):
 					clean = clean[4:].upper()
+					is_header = True
 				elif clean.startswith("## "):
 					clean = clean[3:]
+					is_header = True
 				clean = re.sub(r"\*\*(.+?)\*\*", r"{bf:\1}", clean)
 				clean = clean.replace("`", "")
+				if is_header and display_lines:
+					display_lines.append("")
 				display_lines.append(clean[:120])
 			Macro.setLocal("sim_changes", " | ".join(display_lines))
 
