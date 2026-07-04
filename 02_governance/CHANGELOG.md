@@ -16,6 +16,26 @@ Formato de cada entrada:
 - **Datos:** cambios en fuentes, actualizaciones de PEFs, LIFs, ENIGH, u otras fuentes
 - **Correcciones:** bugs corregidos que afectaban resultados o funcionamiento
 
+## [v8.0.3] — 2026-07-04
+
+Fix: agrega 05_scripts/AccesoBIE.pkg que estaba declarado en el manifest del
+sub-canal Stata público pero nunca existió en el filesystem. Este bug estaba
+presente silenciosamente desde v8.0 y solo se destapó al probar
+`net describe AccesoBIE` desde Stata externo tras la publicación de v8.0.2.
+
+### Institucional
+- Nuevo 05_scripts/AccesoBIE.pkg permite que investigadores externos hagan
+  `net describe AccesoBIE` y `net install AccesoBIE` correctamente.
+- manifest-endpoint.toml actualizado para incluir AccesoBIE.pkg en pkg_files.
+- Corrección de typo en los 8 .pkg: "finanzas púbicas" → "finanzas públicas"
+  (texto visible para investigadores externos en `net describe`).
+
+### Comandos
+- Sin cambios de comportamiento. Los comandos mantienen sintaxis y datasets.
+
+### Datos
+- Sin cambios respecto a v8.0.2.
+
 ## [v8.0.2] — 2026-07-04
 
 Cambio menor de metadata: los 11 archivos .sthlp del canon (AccesoBIE,

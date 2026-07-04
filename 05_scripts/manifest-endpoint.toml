@@ -39,6 +39,7 @@ sthlp_files = [
 ]
 
 pkg_files = [
+    "05_scripts/AccesoBIE.pkg",
     "05_scripts/DatosAbiertos.pkg",
     "05_scripts/LIF.pkg",
     "05_scripts/PEF.pkg",

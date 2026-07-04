@@ -1,10 +1,9 @@
 v 3
-d Cuentas del Sistema de Cuentas Nacionales
+d Acceso al Banco de Información Económica de INEGI
 d Centro de Investigación Económica y Presupuestaria, A.C.
 d 15 años democratizando las finanzas públicas
 d Ricardo Cantú Calderón
 d ricardocantu@ciep.mx
 
-f SCN.ado
-f SCN.sthlp
 f AccesoBIE.ado
+f AccesoBIE.sthlp
