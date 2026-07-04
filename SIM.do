@@ -14,20 +14,12 @@ timer on 1
 **# 0. SET UP
 ***
 
-** 0.1 Directorio de archivos .ado (Github)
-if "`c(username)'" == "ricardo" & "`1'" != "ricardo" {
-	sysdir set SITE "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP"
-}
-cd "`c(sysdir_site)'"
-set scheme ciep
-
-** 0.1.1 Token del BIE/INEGI
+** 0.1 Token del BIE/INEGI
 * Se carga desde set_token.do (gitignored, ver help/AccesoBIE.md).
 * Si el archivo no existe, AccesoBIE fallará con un error explícito al primer uso.
 capture do "`c(sysdir_site)'/set_token.do"
 
 ** 0.2 Parámetros
-global id = "ciepmx"								// ID USUARIO
 scalar aniovp = 2026								// ANIO VALOR PRESENTE
 scalar anioPE = 2026								// ANIO PAQUETE ECONÓMICO
 scalar anioenigh = 2024								// ANIO ENIGH

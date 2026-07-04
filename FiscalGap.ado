@@ -94,7 +94,7 @@ quietly {
 	** 4.2 Proyección futura de los ingresos **/
 	scalar pibY = real(subinstr(scalar(pibY),",","",.))*1000000
 	foreach k in CFE CUOTAS FMP IEPSNP IEPSP IMPORT IMSS ISAN ISRAS ISRPF ISRPM ISSSTE IVA OTROSK PEMEX {
-		use `"`c(sysdir_site)'/users/ciepmx/bootstraps/1/`k'REC.dta"', clear
+		use `"`c(sysdir_site)'/users/ricardo/bootstraps/1/`k'REC.dta"', clear
 		collapse estimacion contribuyentes, by(anio modulo aniobase)
 		tsset anio
 		
@@ -348,7 +348,7 @@ quietly {
 	//foreach k in Pensiones {
 		if `"`=strtoname("`k'")'"' != "Costo_de_la_deuda" {
 			preserve
-			use `"`c(sysdir_site)'/users/ciepmx/bootstraps/1/`=strtoname("`k'")'REC.dta"', clear
+			use `"`c(sysdir_site)'/users/ricardo/bootstraps/1/`=strtoname("`k'")'REC.dta"', clear
 			collapse estimacion contribuyentes, by(anio modulo aniobase)
 			tsset anio
 			
