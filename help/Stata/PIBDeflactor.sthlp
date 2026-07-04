@@ -90,7 +90,7 @@ en pesos de este año. Rango: 1993–2050. Por defecto usa el año actual.
 
 {phang}
 {opt aniomax(#)} — {bf:Año final de proyección.} Hasta qué año se extienden las
-gráficas y la base de datos. Por defecto: año actual + 15.
+gráficas y la base de datos. Por defecto: año de valor presente + 5.
 {p_end}
 
 {dlgtab:Parámetros de proyección}
@@ -187,7 +187,7 @@ Al ejecutar el comando obtienes:
 
 {pstd}{bf:Archivos guardados:}{p_end}
 
-{phang2}— {cmd:04_master/PIBDeflactor.dta} — Base consolidada con series macroeconómicas{p_end}
+{phang2}— {cmd:master/PIBDeflactor.dta} — Base consolidada con series macroeconómicas{p_end}
 {phang2}— Gráficos PNG en {cmd:users/$id/graphs/}{p_end}
 
 {hline}
@@ -252,11 +252,11 @@ Al ejecutar el comando obtienes:
 {title:Ver también}
 
 {pstd}
-{view "06_helps/Poblacion.sthlp":Poblacion} {c |} 
-{view "06_helps/SCN.sthlp":SCN} {c |} 
-{view "06_helps/LIF.sthlp":LIF} {c |} 
-{view "06_helps/PEF.sthlp":PEF} {c |} 
-{view "06_helps/SHRFSP.sthlp":SHRFSP}
+{view "help/Stata/Poblacion.sthlp":Poblacion} {c |} 
+{view "help/Stata/SCN.sthlp":SCN} {c |} 
+{view "help/Stata/LIF.sthlp":LIF} {c |} 
+{view "help/Stata/PEF.sthlp":PEF} {c |} 
+{view "help/Stata/SHRFSP.sthlp":SHRFSP}
 {p_end}
 
 {smcl_end}

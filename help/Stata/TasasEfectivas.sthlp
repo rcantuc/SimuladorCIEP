@@ -43,7 +43,7 @@ El comando calcula tasas efectivas para cuatro categorías:
 {phang2}{bf:D. Consumo} — IVA, ISAN, IEPS (petrolero y no petrolero), importaciones{p_end}
 
 {pstd}
-Internamente ejecuta {view "06_helps/SCN.sthlp":SCN} y {view "06_helps/LIF.sthlp":LIF}
+Internamente ejecuta {view "help/Stata/SCN.sthlp":SCN} y {view "help/Stata/LIF.sthlp":LIF}
 para obtener las bases macroeconómicas y la recaudación observada.
 {p_end}
 
@@ -200,10 +200,10 @@ Los scalars se guardan con el sufijo {bf:TE} (Tasa Efectiva) y {bf:PIB} (% del P
 {title:Ver también}
 
 {pstd}
-{view "06_helps/SCN.sthlp":SCN} {c |}
-{view "06_helps/LIF.sthlp":LIF} {c |}
-{view "06_helps/GastoPC.sthlp":GastoPC} {c |}
-{view "06_helps/PIBDeflactor.sthlp":PIBDeflactor}
+{view "help/Stata/SCN.sthlp":SCN} {c |}
+{view "help/Stata/LIF.sthlp":LIF} {c |}
+{view "help/Stata/GastoPC.sthlp":GastoPC} {c |}
+{view "help/Stata/PIBDeflactor.sthlp":PIBDeflactor}
 {p_end}
 
 {smcl_end}

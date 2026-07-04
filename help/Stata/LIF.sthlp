@@ -124,7 +124,7 @@ y del BIE/INEGI. Requiere conexión a internet.
 {phang}
 {opt minimum(#)} — Porcentaje mínimo del PIB que un rubro debe alcanzar para
 mostrarse individualmente en la gráfica. Los rubros menores se agrupan en "Otros".
-Por defecto: 0.25. Aumenta este valor para simplificar la gráfica.
+Por defecto: 0.5. Aumenta este valor para simplificar la gráfica.
 {p_end}
 
 {phang}
@@ -197,7 +197,7 @@ respecto al crecimiento del PIB{p_end}
 por año, con cada rubro en distinto color.{p_end}
 
 {pstd}{bf:Archivos guardados:}{p_end}
-{phang2}— {cmd:04_master/LIF.dta} — Base consolidada de ingresos 1993–año actual{p_end}
+{phang2}— {cmd:master/LIF.dta} — Base consolidada de ingresos 1993–año actual{p_end}
 {phang2}— Gráficos PNG en {cmd:users/$id/graphs/}{p_end}
 
 {hline}
@@ -250,11 +250,11 @@ por año, con cada rubro en distinto color.{p_end}
 {title:Ver también}
 
 {pstd}
-{view "06_helps/PEF.sthlp":PEF} {c |}
-{view "06_helps/SHRFSP.sthlp":SHRFSP} {c |}
-{view "06_helps/DatosAbiertos.sthlp":DatosAbiertos} {c |}
-{view "06_helps/PIBDeflactor.sthlp":PIBDeflactor} {c |}
-{view "06_helps/TasasEfectivas.sthlp":TasasEfectivas}
+{view "help/Stata/PEF.sthlp":PEF} {c |}
+{view "help/Stata/SHRFSP.sthlp":SHRFSP} {c |}
+{view "help/Stata/DatosAbiertos.sthlp":DatosAbiertos} {c |}
+{view "help/Stata/PIBDeflactor.sthlp":PIBDeflactor} {c |}
+{view "help/Stata/TasasEfectivas.sthlp":TasasEfectivas}
 {p_end}
 
 {smcl_end}

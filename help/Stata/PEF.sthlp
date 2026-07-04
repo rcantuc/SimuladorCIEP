@@ -206,7 +206,7 @@ el año de análisis y el año de comparación{p_end}
 {pstd}{bf:Gráfica:} Composición del gasto público como % del PIB por año.{p_end}
 
 {pstd}{bf:Archivos guardados:}{p_end}
-{phang2}— {cmd:04_master/PEF.dta} — Base consolidada de gasto 2013–año actual{p_end}
+{phang2}— {cmd:master/PEF.dta} — Base consolidada de gasto 2013–año actual{p_end}
 {phang2}— Gráficos PNG en {cmd:users/$id/graphs/}{p_end}
 
 {hline}
@@ -267,11 +267,11 @@ el año de análisis y el año de comparación{p_end}
 {title:Ver también}
 
 {pstd}
-{view "06_helps/LIF.sthlp":LIF} {c |}
-{view "06_helps/SHRFSP.sthlp":SHRFSP} {c |}
-{view "06_helps/PIBDeflactor.sthlp":PIBDeflactor} {c |}
-{view "06_helps/DatosAbiertos.sthlp":DatosAbiertos} {c |}
-{view "06_helps/GastoPC.sthlp":GastoPC}
+{view "help/Stata/LIF.sthlp":LIF} {c |}
+{view "help/Stata/SHRFSP.sthlp":SHRFSP} {c |}
+{view "help/Stata/PIBDeflactor.sthlp":PIBDeflactor} {c |}
+{view "help/Stata/DatosAbiertos.sthlp":DatosAbiertos} {c |}
+{view "help/Stata/GastoPC.sthlp":GastoPC}
 {p_end}
 
 {smcl_end}

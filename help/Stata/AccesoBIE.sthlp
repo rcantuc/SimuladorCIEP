@@ -215,7 +215,7 @@ de los metadatos del INEGI.
 {p_end}
 
 {pstd}{bf:Archivos temporales generados:}{p_end}
-{phang2}— {cmd:03_temp/AccesoBIE/[serie].csv} — Archivo CSV por serie descargada{p_end}
+{phang2}— {cmd:temp/AccesoBIE/[serie].csv} — Archivo CSV por serie descargada{p_end}
 
 {hline}
 
@@ -240,10 +240,10 @@ de los metadatos del INEGI.
 {title:Ver también}
 
 {pstd}
-{view "06_helps/DatosAbiertos.sthlp":DatosAbiertos} {c |}
-{view "06_helps/PIBDeflactor.sthlp":PIBDeflactor} {c |}
-{view "06_helps/LIF.sthlp":LIF} {c |}
-{view "06_helps/PEF.sthlp":PEF}
+{view "help/Stata/DatosAbiertos.sthlp":DatosAbiertos} {c |}
+{view "help/Stata/PIBDeflactor.sthlp":PIBDeflactor} {c |}
+{view "help/Stata/LIF.sthlp":LIF} {c |}
+{view "help/Stata/PEF.sthlp":PEF}
 {p_end}
 
 {smcl_end}

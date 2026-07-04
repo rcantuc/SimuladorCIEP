@@ -157,7 +157,7 @@ Al ejecutar el comando obtienes una tabla en pantalla, siete gráficas y una bas
 {phang2}7. {bf:RFSP} — Requerimientos financieros anuales por componente{p_end}
 
 {pstd}{bf:Archivos guardados:}{p_end}
-{phang2}— {cmd:04_master/SHRFSP.dta} — Base consolidada de deuda pública{p_end}
+{phang2}— {cmd:master/SHRFSP.dta} — Base consolidada de deuda pública{p_end}
 {phang2}— Gráficos PNG en {cmd:users/$id/graphs/}{p_end}
 
 {hline}
@@ -230,11 +230,11 @@ el costo financiero (intereses pagados) entre el saldo de la deuda del mismo añ
 {title:Ver también}
 
 {pstd}
-{view "06_helps/LIF.sthlp":LIF} {c |}
-{view "06_helps/PEF.sthlp":PEF} {c |}
-{view "06_helps/PIBDeflactor.sthlp":PIBDeflactor} {c |}
-{view "06_helps/TasasEfectivas.sthlp":TasasEfectivas} {c |}
-{view "06_helps/DatosAbiertos.sthlp":DatosAbiertos}
+{view "help/Stata/LIF.sthlp":LIF} {c |}
+{view "help/Stata/PEF.sthlp":PEF} {c |}
+{view "help/Stata/PIBDeflactor.sthlp":PIBDeflactor} {c |}
+{view "help/Stata/TasasEfectivas.sthlp":TasasEfectivas} {c |}
+{view "help/Stata/DatosAbiertos.sthlp":DatosAbiertos}
 {p_end}
 
 {smcl_end}

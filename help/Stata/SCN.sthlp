@@ -153,7 +153,7 @@ transporte, salud, educación, recreación, etc.{p_end}
 {phang2}— PIB por método de utilización (consumo, inversión, gobierno, exportaciones netas){p_end}
 
 {pstd}{bf:Archivos guardados:}{p_end}
-{phang2}— {cmd:04_master/SCN.dta} — Base completa 1993–2070{p_end}
+{phang2}— {cmd:master/SCN.dta} — Base completa 1993–2070{p_end}
 {phang2}— Gráficos PNG en {cmd:users/$id/graphs/}{p_end}
 
 {hline}
@@ -208,11 +208,11 @@ transporte, salud, educación, recreación, etc.{p_end}
 {title:Ver también}
 
 {pstd}
-{view "06_helps/PIBDeflactor.sthlp":PIBDeflactor} {c |}
-{view "06_helps/LIF.sthlp":LIF} {c |}
-{view "06_helps/PEF.sthlp":PEF} {c |}
-{view "06_helps/TasasEfectivas.sthlp":TasasEfectivas} {c |}
-{view "06_helps/GastoPC.sthlp":GastoPC}
+{view "help/Stata/PIBDeflactor.sthlp":PIBDeflactor} {c |}
+{view "help/Stata/LIF.sthlp":LIF} {c |}
+{view "help/Stata/PEF.sthlp":PEF} {c |}
+{view "help/Stata/TasasEfectivas.sthlp":TasasEfectivas} {c |}
+{view "help/Stata/GastoPC.sthlp":GastoPC}
 {p_end}
 
 {smcl_end}

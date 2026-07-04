@@ -226,10 +226,10 @@ Para cada componente solicitado, el comando muestra una tabla con:
 {title:Ver también}
 
 {pstd}
-{view "06_helps/PEF.sthlp":PEF} {c |}
-{view "06_helps/TasasEfectivas.sthlp":TasasEfectivas} {c |}
-{view "06_helps/PIBDeflactor.sthlp":PIBDeflactor} {c |}
-{view "06_helps/Poblacion.sthlp":Poblacion}
+{view "help/Stata/PEF.sthlp":PEF} {c |}
+{view "help/Stata/TasasEfectivas.sthlp":TasasEfectivas} {c |}
+{view "help/Stata/PIBDeflactor.sthlp":PIBDeflactor} {c |}
+{view "help/Stata/Poblacion.sthlp":Poblacion}
 {p_end}
 
 {smcl_end}

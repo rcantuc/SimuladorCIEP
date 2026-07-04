@@ -65,8 +65,8 @@ Para consultar el balance público desde 2015:
 {phang2}{cmd:. DatosAbiertos XAA, desde(2015)}{p_end}
 
 {pstd}
-{bf:¿No sabes la clave?} Consulta la sección {view "06_helps/DatosAbiertos.sthlp##findkey":Cómo encontrar una clave}
-o la lista de {view "06_helps/DatosAbiertos.sthlp##series":Series comunes}.
+{bf:¿No sabes la clave?} Consulta la sección {view "help/Stata/DatosAbiertos.sthlp##findkey":Cómo encontrar una clave}
+o la lista de {view "help/Stata/DatosAbiertos.sthlp##series":Series comunes}.
 {p_end}
 
 {hline}
@@ -206,7 +206,7 @@ vs el año anterior, en términos nominales y reales.{p_end}
 {phang2}{bf:acum_prom} — Proporción mensual promedio histórica{p_end}
 
 {pstd}{bf:Archivos guardados:}{p_end}
-{phang2}— {cmd:04_master/DatosAbiertos.dta} — Base completa de series ESTOPOR{p_end}
+{phang2}— {cmd:master/DatosAbiertos.dta} — Base completa de series ESTOPOR{p_end}
 {phang2}— Gráficos PNG en {cmd:users/$id/graphs/}{p_end}
 
 {hline}
@@ -232,11 +232,11 @@ vs el año anterior, en términos nominales y reales.{p_end}
 {title:Ver también}
 
 {pstd}
-{view "06_helps/LIF.sthlp":LIF} {c |}
-{view "06_helps/PEF.sthlp":PEF} {c |}
-{view "06_helps/SHRFSP.sthlp":SHRFSP} {c |}
-{view "06_helps/AccesoBIE.sthlp":AccesoBIE} {c |}
-{view "06_helps/PIBDeflactor.sthlp":PIBDeflactor}
+{view "help/Stata/LIF.sthlp":LIF} {c |}
+{view "help/Stata/PEF.sthlp":PEF} {c |}
+{view "help/Stata/SHRFSP.sthlp":SHRFSP} {c |}
+{view "help/Stata/AccesoBIE.sthlp":AccesoBIE} {c |}
+{view "help/Stata/PIBDeflactor.sthlp":PIBDeflactor}
 {p_end}
 
 {smcl_end}

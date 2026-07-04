@@ -83,7 +83,7 @@ Por defecto usa el año actual.
 
 {phang}
 {opt aniofinal(#)} — Año de cierre del análisis. Rango válido: 1951–2070.
-Por defecto usa el año actual + 1.
+Por defecto usa el último año disponible en la base (2070).
 {p_end}
 
 {dlgtab:Filtros (condición if)}
@@ -164,8 +164,8 @@ Al ejecutar el comando obtienes tres elementos:
 
 {pstd}{bf:Archivos guardados:}{p_end}
 
-{phang2}— {cmd:04_master/Poblacion.dta} — Base completa por edad, sexo, año y entidad{p_end}
-{phang2}— {cmd:04_master/Poblaciontot.dta} — Base colapsada por año (totales nacionales){p_end}
+{phang2}— {cmd:master/Poblacion.dta} — Base completa por edad, sexo, año y entidad{p_end}
+{phang2}— {cmd:master/Poblaciontot.dta} — Base colapsada por año (totales nacionales){p_end}
 {phang2}— Gráficos PNG en {cmd:users/$id/graphs/}{p_end}
 
 {hline}
@@ -220,11 +220,11 @@ Al ejecutar el comando obtienes tres elementos:
 {title:Ver también}
 
 {pstd}
-{view "06_helps/PIBDeflactor.sthlp":PIBDeflactor} {c |} 
-{view "06_helps/SCN.sthlp":SCN} {c |} 
-{view "06_helps/LIF.sthlp":LIF} {c |} 
-{view "06_helps/PEF.sthlp":PEF} {c |} 
-{view "06_helps/DatosAbiertos.sthlp":DatosAbiertos}
+{view "help/Stata/PIBDeflactor.sthlp":PIBDeflactor} {c |} 
+{view "help/Stata/SCN.sthlp":SCN} {c |} 
+{view "help/Stata/LIF.sthlp":LIF} {c |} 
+{view "help/Stata/PEF.sthlp":PEF} {c |} 
+{view "help/Stata/DatosAbiertos.sthlp":DatosAbiertos}
 {p_end}
 
 {smcl_end}
