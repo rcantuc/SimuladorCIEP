@@ -4,7 +4,8 @@
 *!***    Sistema de Cuentas Nacionales   ****
 *!***    BIE/INEGI                       ****
 *!***    Autor: Ricardo                  ****
-*!***    Fecha: 17/Oct/22                ****
+*!***    Version: 8.0                    ****
+*!***    Última actualización: 03jul2026 ****
 *!***                                    ****
 *!*******************************************
 program define SCN, return

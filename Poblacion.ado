@@ -4,7 +4,8 @@
 *!***    Poblacion y defunciones         ****
 *!***    Bases: CONAPO 1950-2070         ****
 *!***    Autor: Ricardo                  ****
-*!***    Fecha: 28/09/2025               ****
+*!***    Version: 8.0                    ****
+*!***    Última actualización: 03jul2026 ****
 *!***                                    ****
 *!***    Sintaxis:                       ****
 *!***    Poblacion [if] [, ANIOinicial(int) ANIOFinal(int) NOGraphs UPDATE]

@@ -4,7 +4,8 @@
 *!***    PIB, deflactor e inflación      ****
 *!***    Fuente: BIE/INEGI               ****
 *!***    Autor: Ricardo                  ****
-*!***    Fecha: 28/08/2025               ****
+*!***    Version: 8.0                    ****
+*!***    Última actualización: 03jul2026 ****
 *!***                                    ****
 *!*******************************************
 program define PIBDeflactor, return
