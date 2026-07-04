@@ -39,7 +39,10 @@ try:
 	site_dir = Path(r"""`c(sysdir_site)'""".strip())
 	manifest_path = site_dir / "manifest.json"
 	changelog_path = site_dir / "CHANGELOG.md"
-	state_path = Path.home() / ".simulador_ciep_state"
+	username = os.environ.get("USER", "unknown")
+	user_dir = site_dir / "users" / username
+	user_dir.mkdir(parents=True, exist_ok=True)
+	state_path = user_dir / ".simulador_state"
 
 	if not manifest_path.exists():
 		raise FileNotFoundError("manifest.json no está en la Carpeta del Simulador")
@@ -74,15 +77,47 @@ try:
 	if mode in ("welcome", "update") and changelog_path.exists():
 		changelog_text = changelog_path.read_text(encoding="utf-8")
 		nl = chr(10)
-		escaped_ver = re.escape(sim_version)
-		section_pattern = "^## " + chr(92) + "[" + escaped_ver + chr(92) + "][^" + nl + "]*" + nl + "(.*?)(?=^## " + chr(92) + "[|" + chr(92) + "Z)"
-		section_match = re.search(section_pattern, changelog_text, re.MULTILINE | re.DOTALL)
-		if section_match:
-			raw = section_match.group(1).strip()
-			raw_lines = [line.strip() for line in raw.splitlines() if line.strip()]
-			display_lines = []
-			for line in raw_lines[:15]:
-				clean = line
+		# Parsear todas las entradas ## [vX.Y.Z] del CHANGELOG en orden de aparición
+		version_header_re = re.compile(r"^## " + chr(92) + "[(v[^" + chr(92) + "]]+)" + chr(92) + "][^" + nl + "]*" + nl, re.MULTILINE)
+		all_matches = list(version_header_re.finditer(changelog_text))
+		# Cada entry: (version_str, header_line, body_start_pos, body_end_pos)
+		entries = []
+		for idx, m in enumerate(all_matches):
+			ver = m.group(1)
+			header_line = m.group(0).strip()
+			body_start = m.end()
+			body_end = all_matches[idx + 1].start() if idx + 1 < len(all_matches) else len(changelog_text)
+			entries.append((ver, header_line, body_start, body_end))
+		# Filtrar: acumular entradas entre previous_version (exclusivo) y sim_version (inclusivo)
+		# En welcome mode: solo la entrada de sim_version.
+		# En update mode: todas las que están arriba (más nuevas) hasta previous_version.
+		selected = []
+		if mode == "welcome":
+			for ver, header, s, e in entries:
+				if ver == sim_version:
+					selected.append((ver, header, s, e))
+					break
+		else:
+			# mode == update: acumular desde el tope hasta encontrar previous_version
+			for ver, header, s, e in entries:
+				if ver == previous_version:
+					break
+				selected.append((ver, header, s, e))
+		# Renderizar líneas con sanitización de Markdown y separador entre versiones
+		display_lines = []
+		max_lines = 25
+		for ver, header, s, e in selected:
+			if len(display_lines) >= max_lines:
+				break
+			# Header de versión (siempre, aunque haya varias)
+			display_lines.append("")
+			display_lines.append("{bf:" + header.replace("## ", "").replace("`", "") + "}")
+			body = changelog_text[s:e].strip()
+			body_lines = [ln.strip() for ln in body.splitlines() if ln.strip()]
+			for ln in body_lines:
+				if len(display_lines) >= max_lines:
+					break
+				clean = ln
 				is_header = False
 				if clean.startswith("### "):
 					clean = clean[4:].upper()
@@ -94,8 +129,10 @@ try:
 				clean = clean.replace("`", "")
 				if is_header and display_lines:
 					display_lines.append("")
+					if len(display_lines) >= max_lines:
+						break
 				display_lines.append(clean[:120])
-			Macro.setLocal("sim_changes", " | ".join(display_lines))
+		Macro.setLocal("sim_changes", " | ".join(display_lines))
 
 	nl = chr(10)
 	ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
