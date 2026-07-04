@@ -12,7 +12,8 @@
 {title:Poblacion — Proyecciones demográficas de México (CONAPO)}
 
 {pstd}
-{bf:Centro de Investigación Económica y Presupuestaria, A.C.} {c |} {browse "https://ciep.mx":ciep.mx}
+{bf:Centro de Investigación Económica y Presupuestaria, A.C.} {c |} {browse "https://ciep.mx":ciep.mx}{break}
+Ricardo Cantú Calderón {c |} {browse "mailto:ricardocantu@ciep.mx":ricardocantu@ciep.mx}
 {p_end}
 
 {hline}
