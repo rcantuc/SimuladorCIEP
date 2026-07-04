@@ -79,10 +79,17 @@ try:
 		section_match = re.search(section_pattern, changelog_text, re.MULTILINE | re.DOTALL)
 		if section_match:
 			raw = section_match.group(1).strip()
-			lines = [line.strip() for line in raw.splitlines() if line.strip()]
+			raw_lines = [line.strip() for line in raw.splitlines() if line.strip()]
 			display_lines = []
-			for line in lines[:15]:
-				display_lines.append(line[:120])
+			for line in raw_lines[:15]:
+				clean = line
+				if clean.startswith("### "):
+					clean = clean[4:].upper()
+				elif clean.startswith("## "):
+					clean = clean[3:]
+				clean = re.sub(r"\*\*(.+?)\*\*", r"{bf:\1}", clean)
+				clean = clean.replace("`", "")
+				display_lines.append(clean[:120])
 			Macro.setLocal("sim_changes", " | ".join(display_lines))
 
 	nl = chr(10)
@@ -144,11 +151,11 @@ if "`sim_version'" != "" {
 		local changes_display "`sim_changes'"
 		while strpos("`changes_display'", " | ") > 0 {
 			local segment = substr("`changes_display'", 1, strpos("`changes_display'", " | ") - 1)
-			noisily di in g "    `segment'"
+			noisily di in y "    `segment'"
 			local changes_display = substr("`changes_display'", strpos("`changes_display'", " | ") + 3, .)
 		}
 		if "`changes_display'" != "" {
-			noisily di in g "    `changes_display'"
+			noisily di in y "    `changes_display'"
 		}
 	}
 }
