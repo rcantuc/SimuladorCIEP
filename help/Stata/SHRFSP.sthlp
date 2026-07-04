@@ -40,6 +40,23 @@ tradicional, incluye pasivos fuera del presupuesto:
 {phang2}— {bf:RFSP} (Requerimientos): Flujo anual de endeudamiento neto{p_end}
 
 {pstd}
+Ambos se relacionan por la identidad contable:
+{p_end}
+
+{phang2}{cmd:SHRFSP(t) = SHRFSP(t-1) + RFSP(t) + ajustes cambiarios(t)}{p_end}
+
+{pstd}
+{bf:Componentes del RFSP} (además del balance presupuestario tradicional):
+{p_end}
+
+{phang2}— {bf:PIDIREGAS}: proyectos de infraestructura con impacto diferido en el gasto{p_end}
+{phang2}— {bf:IPAB}: Instituto para la Protección al Ahorro Bancario{p_end}
+{phang2}— {bf:FONADIN}: Fondo Nacional de Infraestructura{p_end}
+{phang2}— {bf:Programa de Deudores}: apoyos a deudores de la banca{p_end}
+{phang2}— {bf:Banca de Desarrollo}: programas de la banca de fomento{p_end}
+{phang2}— {bf:Adecuaciones}: otros ajustes y registros{p_end}
+
+{pstd}
 {bf:¿Para qué sirve?} Permite analizar la sostenibilidad de las finanzas públicas,
 comparar la deuda como % del PIB y per cápita, y descomponer los requerimientos
 financieros en sus componentes (balance presupuestario, PIDIREGAS, IPAB, etc.).
@@ -202,6 +219,17 @@ Al ejecutar el comando obtienes una tabla en pantalla, siete gráficas y una bas
 {pstd}{bf:RFSP vs Balance presupuestario:}{p_end}
 {phang2}— RFSP > Balance: Hay pasivos fuera del presupuesto (PIDIREGAS, IPAB, etc.){p_end}
 {phang2}— RFSP = Balance: Solo hay déficit presupuestario tradicional{p_end}
+{phang2}— RFSP < Balance: Hay ingresos extraordinarios o prepagos de deuda{p_end}
+
+{pstd}{bf:Composición interna vs externa:}{p_end}
+{phang2}— Alta deuda {bf:externa}: mayor vulnerabilidad a choques cambiarios{p_end}
+{phang2}— Alta deuda {bf:interna}: mayor competencia con el sector privado por financiamiento{p_end}
+
+{pstd}{bf:Alertas de sostenibilidad} (señales que ameritan atención):{p_end}
+{phang2}— El SHRFSP crece más rápido que el PIB{p_end}
+{phang2}— El costo de la deuda supera la tasa de crecimiento económico{p_end}
+{phang2}— Concentración excesiva en deuda de corto plazo{p_end}
+{phang2}— Dependencia excesiva de financiamiento externo{p_end}
 
 {pstd}{bf:Nota metodológica:} La tasa efectiva de interés se calcula dividiendo
 el costo financiero (intereses pagados) entre el saldo de la deuda del mismo año.

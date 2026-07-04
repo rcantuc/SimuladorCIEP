@@ -15,7 +15,7 @@ timer on 1
 ***
 
 ** 0.1 Token del BIE/INEGI
-* Se carga desde set_token.do (gitignored, ver help/AccesoBIE.md).
+* Se carga desde set_token.do (gitignored, ver "help AccesoBIE" en Stata).
 * Si el archivo no existe, AccesoBIE fallará con un error explícito al primer uso.
 capture do "`c(sysdir_site)'/set_token.do"
 

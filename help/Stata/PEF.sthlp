@@ -8,6 +8,7 @@
 {viewerjumpto "Ejemplos" "PEF##examples"}{...}
 {viewerjumpto "Resultados" "PEF##output"}{...}
 {viewerjumpto "Variables y scalars" "PEF##variables"}{...}
+{viewerjumpto "Notas y limitaciones" "PEF##notes"}{...}
 {viewerjumpto "Referencias" "PEF##references"}{...}
 
 {title:PEF — Presupuesto de Egresos de la Federación}
@@ -155,6 +156,19 @@ La clasificación predeterminada agrupa el gasto en las siguientes categorías:
 {phang2}{bf:Infraestructura} — Transporte, comunicaciones, obra pública{p_end}
 {phang2}{bf:Otros} — Funciones no clasificadas en las anteriores{p_end}
 
+{pstd}
+{bf:Ramos presupuestarios principales} (útiles con {opt by(ramo)}):
+{p_end}
+
+{phang2}{bf:Ramo 7} — SEDENA{p_end}
+{phang2}{bf:Ramo 19} — Aportaciones a Seguridad Social{p_end}
+{phang2}{bf:Ramo 28} — Participaciones a entidades federativas{p_end}
+{phang2}{bf:Ramo 33} — Aportaciones federales{p_end}
+{phang2}{bf:Ramo 50} — IMSS{p_end}
+{phang2}{bf:Ramo 51} — ISSSTE{p_end}
+{phang2}{bf:Ramo 52} — PEMEX{p_end}
+{phang2}{bf:Ramo 53} — CFE{p_end}
+
 {hline}
 
 {marker examples}{...}
@@ -238,6 +252,28 @@ el año de análisis y el año de comparación{p_end}
 {phang2}{bf:r(Energia)} — Gasto en energía{p_end}
 {phang2}{bf:r(Seguridad)} — Gasto en seguridad{p_end}
 {phang2}{bf:r(rc)} — "NoData" si no hay información para el año solicitado{p_end}
+
+{hline}
+
+{marker notes}{...}
+{title:Notas y limitaciones}
+
+{pstd}{bf:Definiciones clave:}{p_end}
+
+{phang2}— {bf:Gasto no programable}: participaciones a entidades federativas (Ramo 28)
+y costo financiero de la deuda (capítulo 9000). Lo marca la variable {cmd:noprogramable}.{p_end}
+{phang2}— {bf:Transferencias del Gobierno Federal}: aportaciones que el Gobierno Federal
+hace a otros ejecutores (Ramos 28, 33 y parte del 19). Se excluyen del gasto neto
+para evitar la doble contabilización. Las marca la variable {cmd:transf_gf}.{p_end}
+
+{pstd}{bf:Limitaciones conocidas:}{p_end}
+
+{phang2}— Los datos históricos comienzan en {bf:2013} por un cambio metodológico en
+las fuentes de la SHCP.{p_end}
+{phang2}— Las {bf:reclasificaciones presupuestarias} entre años pueden afectar la
+comparabilidad histórica de algunas categorías.{p_end}
+{phang2}— La {bf:Cuenta Pública} se publica con rezago: el año más reciente suele
+basarse en gasto aprobado o proyecto, no ejercido.{p_end}
 
 {hline}
 

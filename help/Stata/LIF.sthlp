@@ -7,6 +7,7 @@
 {viewerjumpto "Ejemplos" "LIF##examples"}{...}
 {viewerjumpto "Resultados" "LIF##output"}{...}
 {viewerjumpto "Variables y scalars" "LIF##variables"}{...}
+{viewerjumpto "Nota metodológica" "LIF##methodology"}{...}
 {viewerjumpto "Referencias" "LIF##references"}{...}
 
 {title:LIF — Ley de Ingresos de la Federación}
@@ -226,6 +227,28 @@ por año, con cada rubro en distinto color.{p_end}
 {phang2}{bf:r(IEPS)} — Recaudación del IEPS{p_end}
 {phang2}{bf:r(Petroleros)} — Ingresos petroleros{p_end}
 {phang2}{bf:r(rc)} — "NoData" si no hay información para el año solicitado{p_end}
+
+{hline}
+
+{marker methodology}{...}
+{title:Nota metodológica}
+
+{pstd}
+{bf:Tasa de crecimiento} (anualizada entre el año de comparación y el de análisis):
+{p_end}
+
+{phang2}{cmd:tasa = ((valor_final/valor_inicial)^(1/núm_años) - 1) × 100}{p_end}
+
+{pstd}
+{bf:Elasticidad} de cada rubro respecto al PIB:
+{p_end}
+
+{phang2}{cmd:elasticidad = tasa_crecimiento_impuesto / tasa_crecimiento_PIB}{p_end}
+
+{pstd}{bf:Cómo interpretarla:}{p_end}
+{phang2}— Elasticidad {bf:> 1}: el impuesto crece más rápido que el PIB{p_end}
+{phang2}— Elasticidad {bf:= 1}: el impuesto crece al mismo ritmo que el PIB{p_end}
+{phang2}— Elasticidad {bf:< 1}: el impuesto crece más lento que el PIB{p_end}
 
 {hline}
 

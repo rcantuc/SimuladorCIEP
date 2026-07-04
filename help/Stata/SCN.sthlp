@@ -7,6 +7,7 @@
 {viewerjumpto "Ejemplos" "SCN##examples"}{...}
 {viewerjumpto "Resultados" "SCN##output"}{...}
 {viewerjumpto "Variables y scalars" "SCN##variables"}{...}
+{viewerjumpto "Nota metodológica" "SCN##methodology"}{...}
 {viewerjumpto "Referencias" "SCN##references"}{...}
 
 {title:SCN — Sistema de Cuentas Nacionales de México (INEGI)}
@@ -175,6 +176,12 @@ transporte, salud, educación, recreación, etc.{p_end}
 {phang2}{bf:ConsPriv} — Consumo privado total{p_end}
 {phang2}{bf:ConsGob} — Consumo de gobierno{p_end}
 
+{pstd}
+La base incluye además el {bf:PIB por sector económico} en variables
+{cmd:PIB_11} a {cmd:PIB_93} (agricultura, minería, manufacturas, comercio,
+transportes, servicios, etc.), con la clave SCIAN de cada actividad.
+{p_end}
+
 {pstd}{bf:Scalars generados} (en millones MXN y % del PIB):
 {p_end}
 
@@ -184,6 +191,27 @@ transporte, salud, educación, recreación, etc.{p_end}
 {phang2}{bf:ConHogPIB} — Consumo de hogares como % del PIB{p_end}
 {phang2}{bf:pibY} — PIB nominal del año de referencia{p_end}
 {phang2}(y muchos más por cada componente de las cuentas){p_end}
+
+{hline}
+
+{marker methodology}{...}
+{title:Nota metodológica}
+
+{pstd}
+La base 1993–2070 combina tres tramos:
+{p_end}
+
+{phang2}— {bf:Período histórico}: datos observados del INEGI desde 1993{p_end}
+{phang2}— {bf:Retropolación} (primeros años del tramo histórico donde faltan cuentas
+detalladas): se reconstruye usando los patrones de crecimiento del PIB nominal{p_end}
+{phang2}— {bf:Período proyectado}: forecast basado en las tasas de crecimiento del PIB
+definidas en el {cmd:profile.do}{p_end}
+
+{pstd}
+{bf:Consistencia contable:} en todos los años se garantiza que
+{cmd:Yl + CapIncImp + CapFij = PIB} (la suma de ingreso laboral, ingreso de
+capital y depreciación agota el 100% del PIB).
+{p_end}
 
 {hline}
 

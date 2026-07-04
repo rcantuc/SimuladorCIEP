@@ -168,6 +168,18 @@ Al ejecutar el comando obtienes tres elementos:
 {phang2}— {cmd:master/Poblaciontot.dta} — Base colapsada por año (totales nacionales){p_end}
 {phang2}— Gráficos PNG en {cmd:users/$id/graphs/}{p_end}
 
+{pstd}
+{bf:Nomenclatura de los PNG} (donde {it:año1}, {it:año2} y {it:entidad} son los
+del análisis):
+{p_end}
+
+{phang2}{cmd:PP_[año1]_[año2]_[entidad].png} — Pirámides demográficas combinadas{p_end}
+{phang2}{cmd:PA_[año1]_[año2]_[entidad].png} — Pirámide del año inicial{p_end}
+{phang2}{cmd:PB_[año1]_[año2]_[entidad].png} — Pirámide del año final{p_end}
+{phang2}{cmd:ET_[año1]_[año2]_[entidad].png} — Transición demográfica y tasa de dependencia{p_end}
+{phang2}{cmd:E_[año1]_[año2]_[entidad].png} — Solo transición demográfica{p_end}
+{phang2}{cmd:T_[año1]_[año2]_[entidad].png} — Solo tasa de dependencia{p_end}
+
 {hline}
 
 {marker variables}{...}

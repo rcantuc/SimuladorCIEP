@@ -106,6 +106,14 @@ el PIB en años sin datos exógenos. Por defecto: primer año disponible.
 Análogo a {opt geopib} pero para el índice de precios implícitos.
 {p_end}
 
+{pstd}
+{bf:Cómo funciona la proyección con promedio geométrico:} el promedio se calcula
+desde el año elegido hasta el último año con datos, y con esa tasa se estima el
+año siguiente. La ventana de cálculo es {bf:móvil}: al avanzar cada año de la
+proyección, incorpora el dato más reciente (ya proyectado) y descarta el más
+antiguo, de modo que la tasa se ajusta dinámicamente año tras año.
+{p_end}
+
 {phang}
 {opt discount(#)} — {bf:Tasa de descuento} (%) para calcular el valor presente
 del PIB futuro. Por defecto: 5%.

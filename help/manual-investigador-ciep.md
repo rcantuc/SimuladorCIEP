@@ -405,7 +405,7 @@ Con eso, el diagnóstico casi siempre es inmediato. Sin eso, empieza un ping-pon
    help Poblacion
    ```
 
-   Cada ayuda tiene descripción, ejemplos listos para copiar, opciones y referencias a las fuentes oficiales.
+   Cada ayuda tiene descripción, ejemplos listos para copiar, opciones y referencias a las fuentes oficiales. Es la **fuente única de verdad** sobre cada comando: se audita contra el código real y no existe documentación paralela por comando en otro formato.
 
 2. **Este manual** — para las reglas del proyecto y los problemas comunes.
 

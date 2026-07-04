@@ -138,7 +138,7 @@ Los enlaces `06_helps/` aparecían en los 10 archivos y hacían que la navegaci�
 
 1. ~~**`profile.do` anuncia una opción inexistente:** el menú de bienvenida muestra `DatosAbiertos {claves} [, NOGraphs DESDE(real) MES]`.~~ ✅ **Resuelto (03jul2026):** se eliminó la mención a `MES` del menú.
 2. ~~**Contradicción de ruta canónica:** `sysprofile.do` vs `governance/arquitectura-distribucion.md`.~~ ✅ **Resuelto (commit c840d2a):** el repo conserva solo `sysprofile-template.do`; el `sysprofile.do` real vive en la instalación de Stata de cada investigador, fuera del repo.
-3. **`README.md` referencia imágenes inexistentes:** las rutas `manuales/images/ReadMe/*.png` del README no existen en el repo.
+3. ~~**`README.md` referencia imágenes inexistentes:** las rutas `manuales/images/ReadMe/*.png` del README no existen en el repo.~~ ✅ **Resuelto (03jul2026, consolidación de ayuda):** las rutas del README se corrigieron a los archivos reales en `help/images/` y se eliminaron los bloques de imágenes sin archivo correspondiente (`Grafica1-4.png`, `imagen1.png`).
 
 ---
 

@@ -34,7 +34,7 @@ El Simulador Fiscal CIEP facilita el acceso a toda la información económica re
     </div>
 </div>
 
-![Paso1](video2.gif)
+![Demostración del Simulador](help/images/Video2.gif)
 <div style="display: flex;">
     <div style="flex: 1; padding: 10px;">
         <ul>
@@ -60,23 +60,16 @@ Además de facilitar la descarga de indicadores económicos, el simulador tiene 
 **1. Pre-análisis:** Destaca automáticamente la información más relevante en un formato estructurado, claro y comprensible.
 
 <div style="display: flex; justify-content: center; align-items: center;">
-    <img src="manuales/images/ReadMe/Ventana de Resultados.png" style="width: 50%; height: auto;" alt="Paso1">
+    <img src="help/images/Ventana de Resultados.png" style="width: 50%; height: auto;" alt="Ventana de Resultados">
 </div>
 
 
 **2. Gráficas:** El simulador proporciona acceso a gráficas que mejoran la comprensión de los datos.
 
-<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
-    <img src="manuales/images/ReadMe/Grafica1.png" style="width: 100%;">
-    <img src="manuales/images/ReadMe/Grafica2.png" style="width: 100%;">
-    <img src="manuales/images/ReadMe/Grafica3.png" style="width: 100%;">
-    <img src="manuales/images/ReadMe/Grafica4.png" style="width: 100%;">
-</div>
-
 **3. Base de Datos procesada:** El simulador analiza los datos e incorpora indicadores adicionales. Por ejemplo, el programa PIBDeflactor facilita el acceso a datos como el PIB Nominal, PIB Real, PIB per cápita, y PIB por población ocupada, entre otros
 
 <div style="display: flex; justify-content: center; align-items: center;">
-    <img src="manuales/images/ReadMe/video3.gif" style="width: 50%; height: auto;" alt="Paso1">
+    <img src="help/images/Video3.gif" style="width: 50%; height: auto;" alt="Base de datos procesada">
 </div>
 
 
@@ -117,16 +110,16 @@ Ve a la página de [github.com/apps/desktop](https://github.com/apps/desktop) y 
  
  
  <div style="display: flex; justify-content: center; align-items: center;">
-    <img src="manuales/images/Paso1.png" style="width: 50%; height: auto;" alt="Paso1">
+    <img src="help/images/Paso1.png" style="width: 50%; height: auto;" alt="Paso1">
 </div>
  
 3. Ingresa el URL `https://github.com/rcantuc/SimuladorCIEP` y haz click en Clone
  <div style="display: flex; justify-content: center; align-items: center;">
-    <img src="manuales/images/Paso2.png" style="width: 50%; height: auto;" alt="Paso2">
+    <img src="help/images/Paso2.png" style="width: 50%; height: auto;" alt="Paso2">
 </div>
 4. El repositorio empezará a descargarse en tu computadora
  <div style="display: flex; justify-content: center; align-items: center;">
-    <img src="manuales/images/Paso3.png" style="width: 50%; height: auto;" alt="Paso3">
+    <img src="help/images/Paso3.png" style="width: 50%; height: auto;" alt="Paso3">
 </div>
  
 </details>
@@ -163,12 +156,7 @@ Este programa está diseñado para proporcionar acceso estructurado a cualquier 
 
 Para llamar al programa es necesario escribir un comando en la consola de Stata. Cada comando tiene una sintaxis específica y puede incluir *options*, instrucciones específicas que permiten refinar tu búsqueda para adaptarlo a lo que buscas.
 
-<div style="display: flex; justify-content: center; align-items: center;">
-    <img src="manuales/images/imagen1.png" style="width: 50%; height: auto;" alt="Paso1">
-</div>
-
-
-Llamar al programa con la sintaxis correcta puede resultar complejo. Por ello, cada programa esta acompañado de un *ReadMe file* que detalla sus alcances y funcionalidades. Además, este archivo cuenta con una herramienta de cálculo de Prompts, que facilita su diseño sin incurrir en errores de sintaxis. Se recomienda revisar este archivo antes de ejecutar cualquier comando.
+Llamar al programa con la sintaxis correcta puede resultar complejo. Por ello, cada programa cuenta con su ayuda oficial dentro de Stata: escribe `help` seguido del nombre del comando (por ejemplo, `help LIF`) para ver su descripción, sintaxis, opciones y ejemplos listos para copiar. Esa ayuda es la fuente única de verdad sobre cada comando. Se recomienda consultarla antes de ejecutar cualquier comando.
 
 
 <h2 style="color: #ff7020;">Somos tu mejor aliado en la investigación</h2>
@@ -244,7 +232,7 @@ Archivo de configuración inicial que se ejecuta automáticamente al iniciar Sta
 3. Ejecuta el script completo o por secciones
 4. Los resultados se guardan en `users/$id/`
 
-Para más información técnica, consulta la carpeta `00_manuales/`.
+Para más información, consulta el [manual del investigador](help/manual-investigador-ciep.md) y la documentación de gobernanza en [`governance/`](governance/).
 
 
 

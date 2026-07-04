@@ -235,6 +235,23 @@ vs el año anterior, en términos nominales y reales.{p_end}
 {phang2}— {cmd:master/DatosAbiertos.dta} — Base completa de series ESTOPOR{p_end}
 {phang2}— Gráficos PNG en {cmd:users/$id/graphs/}{p_end}
 
+{pstd}{bf:Cálculos mostrados según el tipo de serie:}{p_end}
+
+{pstd}Para series de {bf:flujo} (ingresos, gastos):{p_end}
+{phang2}— Comparación del último mes vs el mismo mes del año anterior (nominal y real){p_end}
+{phang2}— Comparación del acumulado hasta el último mes vs el año anterior{p_end}
+{phang2}— Tasas de crecimiento real interanual{p_end}
+
+{pstd}Para series de {bf:saldo} (deuda, posiciones de balance):{p_end}
+{phang2}— Saldo al último mes disponible vs diciembre del año anterior{p_end}
+{phang2}— Saldo deflactado a pesos constantes y su crecimiento real{p_end}
+
+{pstd}
+{bf:Nota sobre escalas:} la fuente original reporta los montos en {bf:miles de pesos
+nominales}; el comando los muestra en {bf:millones de pesos} (nominales y reales),
+como % del PIB anual, y per cápita en pesos reales por habitante.
+{p_end}
+
 {hline}
 
 {marker references}{...}

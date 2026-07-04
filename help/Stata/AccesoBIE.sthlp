@@ -214,6 +214,11 @@ Las variables incluyen {bf:etiquetas descriptivas} obtenidas automáticamente
 de los metadatos del INEGI.
 {p_end}
 
+{pstd}{bf:Procesamiento automático de los datos:}{p_end}
+{phang2}— Limpieza de períodos: elimina los sufijos {cmd:/p} (preliminar) y {cmd:/r} (revisado) que reporta el INEGI{p_end}
+{phang2}— Conversión de tipos: los valores {cmd:"N/E"} y {cmd:"ND"} se convierten a missing{p_end}
+{phang2}— Detección automática de la frecuencia de la serie (anual, trimestral o mensual){p_end}
+
 {pstd}{bf:Archivos temporales generados:}{p_end}
 {phang2}— {cmd:temp/AccesoBIE/[serie].csv} — Archivo CSV por serie descargada{p_end}
 
