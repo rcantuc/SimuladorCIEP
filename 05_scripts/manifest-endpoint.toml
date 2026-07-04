@@ -28,24 +28,24 @@ ado_files = [
 ]
 
 sthlp_files = [
-    "help/Stata/AccesoBIE.sthlp",
-    "help/Stata/DatosAbiertos.sthlp",
-    "help/Stata/LIF.sthlp",
-    "help/Stata/PEF.sthlp",
-    "help/Stata/PIBDeflactor.sthlp",
-    "help/Stata/Poblacion.sthlp",
-    "help/Stata/SCN.sthlp",
-    "help/Stata/SHRFSP.sthlp",
+    "03_help/Stata/AccesoBIE.sthlp",
+    "03_help/Stata/DatosAbiertos.sthlp",
+    "03_help/Stata/LIF.sthlp",
+    "03_help/Stata/PEF.sthlp",
+    "03_help/Stata/PIBDeflactor.sthlp",
+    "03_help/Stata/Poblacion.sthlp",
+    "03_help/Stata/SCN.sthlp",
+    "03_help/Stata/SHRFSP.sthlp",
 ]
 
 pkg_files = [
-    "DatosAbiertos.pkg",
-    "LIF.pkg",
-    "PEF.pkg",
-    "PIBDeflactor.pkg",
-    "Poblacion.pkg",
-    "SCN.pkg",
-    "SHRFSP.pkg",
+    "05_scripts/DatosAbiertos.pkg",
+    "05_scripts/LIF.pkg",
+    "05_scripts/PEF.pkg",
+    "05_scripts/PIBDeflactor.pkg",
+    "05_scripts/Poblacion.pkg",
+    "05_scripts/SCN.pkg",
+    "05_scripts/SHRFSP.pkg",
 ]
 
 [toc]
@@ -71,8 +71,8 @@ SHRFSP = "Saldo Histórico de los Requerimientos Financieros del Sector Público
 # Lista declarativa para auto-documentar decisión.
 
 ensure_asset_ado = "ensure_asset.ado — infraestructura interna del simulador, no del paquete público"
-manifest_json = "manifest.json — manifiesto del data sidecar, no del sub-canal Stata"
+manifest_json = "05_scripts/manifest.json — manifiesto del data sidecar, no del sub-canal Stata"
 sim_do = "SIM.do — entrada del simulador local, no se distribuye vía net install"
 set_token_template_do = "set_token.template.do — plantilla local, no del paquete público"
-gastopc_ado = "GastoPC.ado y help/Stata/GastoPC.sthlp — módulo en construcción (work-in-progress), no se incluye en paquete público hasta que esté maduro y tenga .pkg correspondiente"
-tasasefectivas_ado = "TasasEfectivas.ado y help/Stata/TasasEfectivas.sthlp — módulo en construcción (work-in-progress), no se incluye en paquete público hasta que esté maduro y tenga .pkg correspondiente"
+gastopc_ado = "GastoPC.ado y 03_help/Stata/GastoPC.sthlp — módulo en construcción (work-in-progress), no se incluye en paquete público hasta que esté maduro y tenga .pkg correspondiente"
+tasasefectivas_ado = "TasasEfectivas.ado y 03_help/Stata/TasasEfectivas.sthlp — módulo en construcción (work-in-progress), no se incluye en paquete público hasta que esté maduro y tenga .pkg correspondiente"

@@ -136,7 +136,7 @@ reporta en negativo (ej. algunos componentes de gasto).
 
 {phang}
 {opt files} — {bf:Reconstruye la base desde los archivos locales} ya descargados
-en {cmd:temp/Datos Abiertos/}, sin conexión a internet. Útil para ahorrar tiempo
+en {cmd:raw/temp/Datos Abiertos/}, sin conexión a internet. Útil para ahorrar tiempo
 cuando los archivos fuente ya están en tu máquina.
 {p_end}
 

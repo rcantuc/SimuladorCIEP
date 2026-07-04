@@ -20,49 +20,49 @@ if "`1'" == "update" {
 	DatosAbiertos XKD0106, nog
 	rename monto Ventas
 	keep anio Ventas
-	save "temp/XKD0106.dta", replace
+	save "raw/temp/XKD0106.dta", replace
 
 	** 1.2. Otros ingresos **
 	DatosAbiertos XKD0179, nog
 	rename monto OtrosIngresos
 	keep anio OtrosIngresos
-	save "temp/XKD0179.dta", replace
+	save "raw/temp/XKD0179.dta", replace
 
 	** 1.3. Subsidios **
 	DatosAbiertos XKD0122, nog
 	rename monto Subsidios
 	keep anio Subsidios
-	save "temp/XKD0122.dta", replace
+	save "raw/temp/XKD0122.dta", replace
 
 	** 2.1. Transferencias al gobierno federal **
 	DatosAbiertos XKD0113, nog
 	rename monto Transferencias
 	keep anio Transferencias
-	save "temp/XKD0113.dta", replace
+	save "raw/temp/XKD0113.dta", replace
 
 	** 2.2. Gasto programable **
 	DatosAbiertos XKD0131, nog
 	rename monto Programable
 	keep anio Programable
-	save "temp/XKD0131.dta", replace
+	save "raw/temp/XKD0131.dta", replace
 
 	** 2.2.1 Pensiones y jubilaciones **
 	DatosAbiertos XKD0139, nog
 	rename monto Pensiones
 	keep anio Pensiones
-	save "temp/XKD0139.dta", replace
+	save "raw/temp/XKD0139.dta", replace
 
 	** 2.2.2. Gastos de inversión **
 	DatosAbiertos XKD0145, nog
 	rename monto Inversion
 	keep anio Inversion
-	save "temp/XKD0145.dta", replace
+	save "raw/temp/XKD0145.dta", replace
 
 	** 2.3. Gasto no programable **
 	DatosAbiertos XKD0157, nog
 	rename monto NoProgramable
 	keep anio NoProgramable
-	save "temp/XKD0157.dta", replace
+	save "raw/temp/XKD0157.dta", replace
 }
 
 
@@ -74,9 +74,9 @@ forvalues anio = 2019(1)2025 {
 	*** Eje 1: Ingresos propios (CFE) ***
 	***                              ***
 	************************************
-	use "temp/XKD0106.dta", clear
-	append using "temp/XKD0179.dta"
-	append using "temp/XKD0122.dta"
+	use "raw/temp/XKD0106.dta", clear
+	append using "raw/temp/XKD0179.dta"
+	append using "raw/temp/XKD0122.dta"
 
 	collapse (sum) Ing_Propios__Ventas=Ventas ///
 		Ing_Propios_Otros_Ingresos=OtrosIngresos ///
@@ -109,11 +109,11 @@ forvalues anio = 2019(1)2025 {
 	*** Eje 2: Gastos operativos, financieros e impuestos ***
 	***                                                   ***
 	*********************************************************
-	use "temp/XKD0113.dta", clear
-	append using "temp/XKD0131.dta"
-	append using "temp/XKD0157.dta"
-	append using "temp/XKD0139.dta"
-	append using "temp/XKD0145.dta"
+	use "raw/temp/XKD0113.dta", clear
+	append using "raw/temp/XKD0131.dta"
+	append using "raw/temp/XKD0157.dta"
+	append using "raw/temp/XKD0139.dta"
+	append using "raw/temp/XKD0145.dta"
 
 	collapse (sum) Gastos_Transferencias=Transferencias ///
 		Gastos__Gastos_Operativos=Programable ///

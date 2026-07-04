@@ -220,7 +220,7 @@ de los metadatos del INEGI.
 {phang2}— Detección automática de la frecuencia de la serie (anual, trimestral o mensual){p_end}
 
 {pstd}{bf:Archivos temporales generados:}{p_end}
-{phang2}— {cmd:temp/AccesoBIE/[serie].csv} — Archivo CSV por serie descargada{p_end}
+{phang2}— {cmd:raw/temp/AccesoBIE/[serie].csv} — Archivo CSV por serie descargada{p_end}
 
 {hline}
 

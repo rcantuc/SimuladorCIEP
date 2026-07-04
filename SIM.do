@@ -33,7 +33,7 @@ global nographs "nographs"							// SUPRIMIR GRAFICAS
 
 //global update "update"								// UPDATE BASES DE DATOS
 if "$update" == "update" {
-	! rm -r "`c(sysdir_site)'/temp/"
+	! rm -r "`c(sysdir_site)'/raw/temp/"
 }
 
 //global output "output"							// ARCHIVO DE SALIDA (WEB)
@@ -98,22 +98,22 @@ noisily SCN, anio(`=aniovp') $textbook $nographs $update
 
 ** 3.1 Encuesta Nacional de Ingresos y Gastos de los Hogares (Usos)
 noisily di _newline in g "Actualizando: " in y "expenditures.dta"
-noisily run "`c(sysdir_site)'/01_modulos/households/Expenditure.do" `=anioPE'
+noisily run "`c(sysdir_site)'/01_modulos/Expenditure.do" `=anioPE'
 
 ** 3.2 Encuesta Nacional de Ingresos y Gastos de los Hogares (Recursos)
 noisily di _newline in g "Actualizando: " in y "households.dta"
-noisily run `"`c(sysdir_site)'/01_modulos/households/Households.do"' `=anioPE'
+noisily run `"`c(sysdir_site)'/01_modulos/Households.do"' `=anioPE'
 
 ** 3.3 Perfiles de la política económica actual (Paquete Económico)
 noisily di _newline in g "Actualizando: " in y "perfiles`anio'.dta"
-noisily run "`c(sysdir_site)'/01_modulos/profiles/PerfilesSim.do" `=anioPE'
+noisily run "`c(sysdir_site)'/01_modulos/PerfilesSim.do" `=anioPE'
 
 
 
 **/
 **# 4. SISTEMA FISCAL: INGRESOS
 ***
-set scheme ciepingresos
+set scheme ingresos
 noisily LIF if divLIF != 10, anio(`=anioPE') by(divSIM) $update $nographs `eofp'		///
 	title("Ingresos presupuestarios") 					/// Cambiar título de la gráfica
 	desde(2016) 								/// Año de inicio para el PROMEDIO
@@ -125,7 +125,7 @@ collapse (sum) recaudacion, by(anio divSIM) fast
 save `"`c(sysdir_site)'/users/$id/LIF.dta"', replace	
 
 * Evolución de las tasas efectivas *
-*do "`c(sysdir_site)'/Graphs_TE.do"
+*do "`c(sysdir_site)'/01_modulos/visualizations/Graphs_TE.do"
 
 
 ** 4.1 Parámetros: Ingresos **
@@ -216,7 +216,7 @@ matrix CSS_ISSSTE = ///
 	0.000,		0.000,			13.9)			//  Cuota social
 
 if "`cambioisrpf'" == "1" {
-	noisily run "`c(sysdir_site)'/01_modulos/tax_models/ISR_Mod.do"
+	noisily run "`c(sysdir_site)'/01_modulos/ISR_Mod.do"
 	scalar ISRAS = ISR_AS_Mod/100*scalar(pibY)
 	scalar ISRASPIB  = "`=round(ISR_AS_Mod, 0.001)'"			// NUEVA ESTIMACIÓN ISR ASALARIADOS
 	scalar ISRPF = ISR_PF_Mod/100*scalar(pibY)
@@ -266,7 +266,7 @@ matrix IEPST = (26.5	,	0 		\			/// Cerveza y alcohol 14
 		0	,	6.7865		)			// Gasolina: diésel
 
 if "`cambioiva'" == "1" {
-	noisily run "`c(sysdir_site)'/01_modulos/tax_models/IVA_Mod.do"
+	noisily run "`c(sysdir_site)'/01_modulos/IVA_Mod.do"
 	scalar IVA = IVA_Mod/100*scalar(pibY)
 	scalar IVAPIB = "`=round(IVA_Mod, 0.001)'"				// NUEVA ESTIMACIÓN IVA
 }
@@ -289,7 +289,7 @@ noisily PEF if ramo != -1, anio(`=anioPE') by(divSIM) $update 		///
 	rows(2)												// Número de filas en la leyenda
 
 * Evolución de los gastos per cápita *
-*do "`c(sysdir_site)'/Graphs_PC.do"					// <-- MUY tardado. MUY pesado.
+*do "`c(sysdir_site)'/01_modulos/visualizations/Graphs_PC.do"					// <-- MUY tardado. MUY pesado.
 
 ** 5.1 Parámetros: Gasto **
 scalar iniciaA     =   0.000    					// Inicial
@@ -394,7 +394,7 @@ forvalues k = 2026(1)2031 {
 }
 
 * SHRFSP: comando *
-set scheme ciepdeuda
+set scheme deuda
 scalar tasaEfectiva = 6.919
 noisily SHRFSP, anio(`=anioPE') ultanio(2002) $nographs $update $textbook
 
@@ -468,7 +468,7 @@ if "$textbook" == "textbook" {
 *noisily CuentasGeneracionales AportacionesNetas, anio(`=anioPE') discount(8)
 
 ** 8.1 Brecha fiscal
-set scheme ciepdeuda2
+set scheme deuda
 noisily FiscalGap, anio(`=anioPE') end(`=anioPE+5') aniomin(2016) $nographs desde(2016) discount(8)
 
 if "$textbook" == "textbook" {
@@ -477,7 +477,7 @@ if "$textbook" == "textbook" {
 
 ** 8.2 Sankey del sistema fiscal
 foreach k in decil grupoedad sexo rural escol {
-	noisily run "`c(sysdir_site)'/01_modulos/visualizations/sankey/SankeySF.do" `k' `=anioPE'
+	noisily run "`c(sysdir_site)'/01_modulos/visualizations/SankeySF.do" `k' `=anioPE'
 }
 
 
@@ -488,4 +488,4 @@ foreach k in decil grupoedad sexo rural escol {
 timer off 1
 timer list 1
 noisily di _newline(2) in g _dup(20) ":" "  " in y "TOUCH-DOWN!!!  " round(`=r(t1)/r(nt1)',.1) in g " segs  " _dup(20) ":"
-if "$output" == "output" run "`c(sysdir_site)'/output.do"
+if "$output" == "output" run "`c(sysdir_site)'/01_modulos/output.do"

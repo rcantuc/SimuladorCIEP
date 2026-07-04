@@ -3,7 +3,7 @@
 # al endpoint público https://ciep.mx/simuladorfiscal/.
 #
 # Reemplaza el flujo manual histórico (staging en Stata net/ + SCP manual).
-# Lee manifest-endpoint.toml para saber qué archivos publicar.
+# Lee 05_scripts/manifest-endpoint.toml para saber qué archivos publicar.
 #
 # Uso: publicar-endpoint.sh [opciones] <version>
 # Ver --help para detalles.
@@ -83,11 +83,11 @@ cd "$REPO_ROOT"
 
 log_step "Fase 0: Setup"
 
-if [[ ! -f endpoint-credentials.sh ]]; then
-    abort "endpoint-credentials.sh no existe en root. Copia endpoint-credentials.template.sh y rellena valores."
+if [[ ! -f 05_scripts/endpoint-credentials.sh ]]; then
+    abort "05_scripts/endpoint-credentials.sh no existe. Copia 05_scripts/endpoint-credentials.template.sh y rellena valores."
 fi
 # shellcheck source=/dev/null
-source ./endpoint-credentials.sh
+source ./05_scripts/endpoint-credentials.sh
 
 [[ -z "${SSH_ALIAS:-}" ]] && abort "SSH_ALIAS no está definido en endpoint-credentials.sh"
 [[ -z "${REMOTE_PATH:-}" ]] && abort "REMOTE_PATH no está definido en endpoint-credentials.sh"
@@ -141,12 +141,12 @@ else
     log_info "✓ Tag $VERSION existe en local y remoto"
 fi
 
-[[ ! -f manifest-endpoint.toml ]] && abort "manifest-endpoint.toml no existe en root del repo."
+[[ ! -f 05_scripts/manifest-endpoint.toml ]] && abort "05_scripts/manifest-endpoint.toml no existe en el repo."
 
 MANIFEST_JSON="$(python3 <<'PYEOF'
 import tomllib, json, sys
 try:
-    with open('manifest-endpoint.toml', 'rb') as f:
+    with open('05_scripts/manifest-endpoint.toml', 'rb') as f:
         data = tomllib.load(f)
     print(json.dumps(data))
 except Exception as e:
@@ -154,7 +154,7 @@ except Exception as e:
     sys.exit(1)
 PYEOF
 )"
-[[ -z "$MANIFEST_JSON" ]] && abort "Error parseando manifest-endpoint.toml"
+[[ -z "$MANIFEST_JSON" ]] && abort "Error parseando 05_scripts/manifest-endpoint.toml"
 log_info "✓ Manifest parseado correctamente"
 
 # Verificar que cada archivo del manifest existe en el repo
@@ -285,7 +285,7 @@ if ! rsync -avz --delete \
     log_error "rsync falló. Servidor puede estar en estado intermedio."
     log_error "Revisar log y considerar restaurar desde: $BACKUP_REMOTE_PATH"
 
-    LOG_FILE="$REPO_ROOT/governance/deploys/endpoint-stata.log"
+    LOG_FILE="$REPO_ROOT/02_governance/deploys/endpoint-stata.log"
     mkdir -p "$(dirname "$LOG_FILE")"
     echo "$TIMESTAMP $VERSION $(git rev-parse --short HEAD) $(whoami) PARTIAL $BACKUP_REMOTE_PATH" >> "$LOG_FILE"
     exit 2
@@ -319,7 +319,7 @@ fi
 
 log_step "Fase 6: Registro"
 
-LOG_FILE="$REPO_ROOT/governance/deploys/endpoint-stata.log"
+LOG_FILE="$REPO_ROOT/02_governance/deploys/endpoint-stata.log"
 mkdir -p "$(dirname "$LOG_FILE")"
 
 COMMIT_SHORT="$(git rev-parse --short HEAD)"

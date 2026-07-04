@@ -96,11 +96,11 @@ correr {cmd:sim_changelog} sin opciones para ver las versiones disponibles.
 {title:Referencias}
 
 {pstd}
-1. {bf:CHANGELOG.md} — Registro de cambios por versión, en la raíz de la Carpeta del Simulador.
+1. {bf:CHANGELOG.md} — Registro de cambios por versión, en {cmd:02_governance/} de la Carpeta del Simulador.
 {p_end}
 
 {pstd}
-2. {bf:Convenciones de versionado:} {cmd:governance/convenciones-git.md} §3 — cuándo una
+2. {bf:Convenciones de versionado:} {cmd:02_governance/convenciones-git.md} §3 — cuándo una
 versión es mayor, menor o de corrección.
 {p_end}
 

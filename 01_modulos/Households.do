@@ -80,9 +80,10 @@ if `1' >= 2014 & `1' < 2016 {
 
 ** 0.1 Log-file
 capture log close households
-capture mkdir "`c(sysdir_site)'/temp"
-capture mkdir "`c(sysdir_site)'/temp/`anioenigh'"
-log using "`c(sysdir_site)'/temp/`anioenigh'/households.smcl", replace name(households)
+capture mkdir "`c(sysdir_site)'/raw"
+capture mkdir "`c(sysdir_site)'/raw/temp"
+capture mkdir "`c(sysdir_site)'/raw/temp/`anioenigh'"
+log using "`c(sysdir_site)'/raw/temp/`anioenigh'/households.smcl", replace name(households)
 local dir_enigh "`c(sysdir_site)'/raw/`enigh'/`anioenigh'"
 
 
@@ -2739,7 +2740,7 @@ save "`c(sysdir_site)'/master/`anioenigh'/households.dta", replace
 ** Inputs: Archivo "`c(sysdir_site)'/master/`anio'/households.dta".
 ** Outputs: Archivos .json en carpeta "/var/www/html/SankeyNTA/.
 foreach k in decil sexo grupoedad escol rural {
-	run "`c(sysdir_site)'/01_modulos/visualizations/sankey/Sankey.do" `k' `anioenigh' SankeyNTA
+	run "`c(sysdir_site)'/01_modulos/visualizations/Sankey.do" `k' `anioenigh' SankeyNTA
 }
 
 

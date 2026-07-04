@@ -213,7 +213,7 @@ matrix IEPST = (26.5	,	0 		\			/// Cerveza y alcohol 14
 
 ** 3.1.6 Submódulo ISR (web) **/
 if "1" == "{{moduloCambio}}" {
-	noisily run "`c(sysdir_site)'/01_modulos/tax_models/ISR_Mod.do"
+	noisily run "`c(sysdir_site)'/01_modulos/ISR_Mod.do"
 	scalar ISRAS = ISR_AS_Mod/100*scalar(pibY)
 	scalar ISRASPIB  = "`=round(ISR_AS_Mod, 0.001)'"			// NUEVA ESTIMACIÓN ISR ASALARIADOS
 	scalar ISRPF = ISR_PF_Mod/100*scalar(pibY)
@@ -225,7 +225,7 @@ if "1" == "{{moduloCambio}}" {
 }
 ** 3.1.7 Submódulo IVA (web) **
 if "1" == "{{moduloCambioIva}}" {
-	noisily run "`c(sysdir_site)'/01_modulos/tax_models/IVA_Mod.do"
+	noisily run "`c(sysdir_site)'/01_modulos/IVA_Mod.do"
 	scalar IVA = IVA_Mod/100*scalar(pibY)
 	scalar IVAPIB = "`=round(IVA_Mod, 0.001)'"				// NUEVA ESTIMACIÓN IVA
 }
@@ -405,7 +405,7 @@ noisily FiscalGap, anio(`=anioPE') end(`=anioPE+5') aniomin(2016) $nographs desd
 
 ** 7.2 Sankey del sistema fiscal
 foreach k in decil grupoedad sexo rural escol {
-	noisily run "`c(sysdir_site)'/01_modulos/visualizations/sankey/SankeySF.do" `k' `=anioPE'
+	noisily run "`c(sysdir_site)'/01_modulos/visualizations/SankeySF.do" `k' `=anioPE'
 }
 
 
@@ -414,7 +414,7 @@ foreach k in decil grupoedad sexo rural escol {
 **** Touchdown!!!
 ****
 if "$output" == "output" ///
-	run "`c(sysdir_site)'/output.do"
+	run "`c(sysdir_site)'/01_modulos/output.do"
 timer off 1
 timer list 1
 noisily di _newline(2) in g _dup(20) ":" "  " in y "TOUCH-DOWN!!!  " round(`=r(t1)/r(nt1)',.1) in g " segs  " _dup(20) ":"

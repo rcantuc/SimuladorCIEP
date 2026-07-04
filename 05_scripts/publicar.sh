@@ -3,17 +3,17 @@
 #
 # Qué hace:
 #   1. Verifica precondiciones (master, working tree limpio, alineación con origin/master)
-#   2. Gates de validación: entrada en CHANGELOG.md, tag anotado con mensaje,
-#      manifest.json sincronizado con la versión. Si algo falla, aborta ANTES de
+#   2. Gates de validación: entrada en 02_governance/CHANGELOG.md, tag anotado con mensaje,
+#      05_scripts/manifest.json sincronizado con la versión. Si algo falla, aborta ANTES de
 #      cualquier acción con efectos (push, Release, rsync).
 #   3. Si la etiqueta de versión no existe localmente, ofrece crearla (interactivo o por flag)
 #   4. Push del tag a origin si aún no está allá
 #   5. Crea la GitHub Release <VERSION> (si no existe) con las notas extraídas del
-#      CHANGELOG.md, y sube los assets del data sidecar declarados en manifest.json
+#      02_governance/CHANGELOG.md, y sube los assets del data sidecar declarados en 05_scripts/manifest.json
 #   6. Verifica integridad post-Release: descarga cada asset y compara su SHA-256
 #      contra el manifest (--skip-post-verify lo salta; son ~1.3 GB de descarga)
 #   7. Invoca publicar-endpoint.sh con la versión, que sincroniza el sub-canal Stata al
-#      servidor Cloudways (ver §3.2 y §6.6 de governance/arquitectura-distribucion.md)
+#      servidor Cloudways (ver §3.2 y §6.6 de 02_governance/arquitectura-distribucion.md)
 #
 # Orden deliberado: primero la Release inmutable en GitHub (código + datos versionados),
 # después el endpoint operativo. Así el endpoint nunca apunta a una versión sin Release.
@@ -89,9 +89,9 @@ Ejemplos:
 
 La sincronización de la Carpeta para investigadores (Dropbox-CIEP/SimuladorCIEP)
 NO la hace este script. La maneja manualmente el investigador principal con
-'git pull' en su clon local. Ver governance/arquitectura-distribucion.md §6.7.
+'git pull' en su clon local. Ver 02_governance/arquitectura-distribucion.md §6.7.
 
-Configuración: requiere endpoint-credentials.sh con SSH_ALIAS, REMOTE_PATH y
+Configuración: requiere 05_scripts/endpoint-credentials.sh con SSH_ALIAS, REMOTE_PATH y
 ENDPOINT_URL definidos.
 EOF
 }
@@ -126,11 +126,11 @@ verify_repo_state() {
 gate_changelog() {
     local version="$1"
     local ver_re="${version//./\\.}"
-    if grep -qE "^## \[${ver_re}\] (—|-) [0-9]{4}-[0-9]{2}-[0-9]{2}" CHANGELOG.md 2>/dev/null; then
-        log_info "✓ Gate 1: CHANGELOG.md contiene entrada para $version"
+    if grep -qE "^## \[${ver_re}\] (—|-) [0-9]{4}-[0-9]{2}-[0-9]{2}" 02_governance/CHANGELOG.md 2>/dev/null; then
+        log_info "✓ Gate 1: 02_governance/CHANGELOG.md contiene entrada para $version"
         return 0
     fi
-    log_error "Gate 1: CHANGELOG.md no contiene entrada para $version. Edítalo antes de publicar."
+    log_error "Gate 1: 02_governance/CHANGELOG.md no contiene entrada para $version. Edítalo antes de publicar."
     log_error "        Se espera una sección '## [$version] — YYYY-MM-DD'."
     log_error "        Cadena de reproducibilidad rota — el banner del profile.do no podrá mostrar cambios."
     return 1
@@ -162,8 +162,8 @@ gate_tag_annotated() {
 
 gate_manifest_sync() {
     local version="$1"
-    if [[ ! -f manifest.json ]]; then
-        log_error "Gate 3: manifest.json no existe en el root del repo."
+    if [[ ! -f 05_scripts/manifest.json ]]; then
+        log_error "Gate 3: 05_scripts/manifest.json no existe en el repo."
         return 1
     fi
     local errors
@@ -171,7 +171,7 @@ gate_manifest_sync() {
 import json, sys
 version = sys.argv[1]
 try:
-    with open("manifest.json", encoding="utf-8") as f:
+    with open("05_scripts/manifest.json", encoding="utf-8") as f:
         m = json.load(f)
 except Exception as e:
     print(f"manifest.json no es JSON válido: {e}")
@@ -186,15 +186,15 @@ if not prefix.endswith(f"/{version}/"):
 PYEOF
 )"
     if [[ -n "$errors" ]]; then
-        log_error "Gate 3: manifest.json no está sincronizado con $version:"
+        log_error "Gate 3: 05_scripts/manifest.json no está sincronizado con $version:"
         while IFS= read -r line; do
             log_error "        - $line"
         done <<< "$errors"
-        log_error "        Actualiza version, release_tag y release_url_prefix en manifest.json"
+        log_error "        Actualiza version, release_tag y release_url_prefix en 05_scripts/manifest.json"
         log_error "        (y regenera los assets si la versión trae datos nuevos)."
         return 1
     fi
-    log_info "✓ Gate 3: manifest.json sincronizado con $version"
+    log_info "✓ Gate 3: 05_scripts/manifest.json sincronizado con $version"
     return 0
 }
 
@@ -269,14 +269,14 @@ extract_changelog_section() {
             if (index($0, "## [" ver "]") == 1) found = 1
         }
         found { print }
-    ' CHANGELOG.md > "$outfile"
+    ' 02_governance/CHANGELOG.md > "$outfile"
 }
 
 # Emite los assets del manifest como líneas "name<TAB>local_path<TAB>sha256".
 manifest_assets() {
     python3 <<'PYEOF'
 import json
-with open("manifest.json", encoding="utf-8") as f:
+with open("05_scripts/manifest.json", encoding="utf-8") as f:
     m = json.load(f)
 for a in m.get("assets", []):
     print(f"{a['name']}\t{a['local_path']}\t{a['sha256']}")
@@ -297,7 +297,7 @@ release_create() {
     extract_changelog_section "$version" "$notes_file"
     if [[ ! -s "$notes_file" ]]; then
         rm -f "$notes_file"
-        abort "No se pudo extraer la sección de $version del CHANGELOG.md (Gate 1 debería haberlo detectado)."
+        abort "No se pudo extraer la sección de $version del 02_governance/CHANGELOG.md (Gate 1 debería haberlo detectado)."
     fi
 
     log_info "Creando Release $version con notas del CHANGELOG..."
@@ -355,7 +355,7 @@ release_post_verify() {
     local version="$1"
     log_step "GitHub Release: verificación SHA-256 post-Release"
 
-    local log_file="$REPO_ROOT/governance/deploys/endpoint-stata.log"
+    local log_file="$REPO_ROOT/02_governance/deploys/endpoint-stata.log"
     mkdir -p "$(dirname "$log_file")"
     local short_head
     short_head="$(git rev-parse --short HEAD)"
@@ -472,7 +472,7 @@ endpoint_args=()
 [[ "$FORCE" == "true" ]] && endpoint_args+=("--force")
 endpoint_args+=("$VERSION")
 
-"$REPO_ROOT/publicar-endpoint.sh" "${endpoint_args[@]}"
+"$REPO_ROOT/05_scripts/publicar-endpoint.sh" "${endpoint_args[@]}"
 
 log_info ""
 log_info "publicar.sh: publicación completada para $VERSION"

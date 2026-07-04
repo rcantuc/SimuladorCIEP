@@ -1,6 +1,6 @@
 *! ensure_asset v1.1 - Garantiza disponibilidad de datos vinculados al repo via GitHub Releases
 *! Sintaxis: ensure_asset "<nombre>"
-*! <nombre> debe coincidir con un campo "name" en manifest.json (en la raiz del repo)
+*! <nombre> debe coincidir con un campo "name" en 05_scripts/manifest.json
 *!
 *! Verifica que el asset exista localmente con el SHA-256 declarado en el manifest.
 *! Si falta, lo descarga del GitHub Release indicado por release_url_prefix.
@@ -42,7 +42,7 @@ def _sha256_of(path):
 def ensure_asset_main(asset_name):
     asset_name = asset_name.strip().strip('"')
     sysdir_site = Macro.getGlobal('c(sysdir_site)')
-    manifest_path = os.path.join(sysdir_site, 'manifest.json')
+    manifest_path = os.path.join(sysdir_site, '05_scripts', 'manifest.json')
 
     if not os.path.isfile(manifest_path):
         _fail(

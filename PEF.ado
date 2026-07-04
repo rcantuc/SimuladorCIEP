@@ -637,7 +637,7 @@ program define UpdatePEF
 	*** 1. BASES DE DATOS ***
 	*************************
 	* 1.1. Descargar archivos *
-	capture confirm file "`c(sysdir_site)'/temp/prePEF.dta"
+	capture confirm file "`c(sysdir_site)'/raw/temp/prePEF.dta"
 	if _rc != 0 {
 		* Asegurar que los xlsx esten descargados (GitHub Release v7.0) *
 		foreach a in CP.2013.xlsx CP.2014.xlsx CP.2015.xlsx CP.2016.xlsx CP.2017.xlsx CP.2018.xlsx CP.2019.xlsx CP.2020.xlsx CP.2021.xlsx CP.2022.xlsx CP.2023.xlsx CP.2024.xlsx PEF.2025.xlsx PEF.2026.xlsx CuotasISSSTE.xlsx {
@@ -986,7 +986,7 @@ program define UpdatePEF
 		replace serie_ramo = "XOA0141" if ramo == 53
 
 		compress
-		save "`c(sysdir_site)'/temp/prePEF.dta", replace
+		save "`c(sysdir_site)'/raw/temp/prePEF.dta", replace
 	}
 
 	/* 3.3 Datos Abiertos: PEFEstOpor.dta *
@@ -1031,7 +1031,7 @@ program define UpdatePEF
 	*** 4. Modulos SIMULADOR FISCAL CIEP ***
 	***                                  ***
 	****************************************
-	use "`c(sysdir_site)'/temp/prePEF.dta", clear
+	use "`c(sysdir_site)'/raw/temp/prePEF.dta", clear
 	replace desc_funcion = -1 if ramo == -1
 
 

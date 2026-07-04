@@ -7,7 +7,7 @@ postfile GastoPC double(anio iniciaA basica medsup superi posgra eduadu otrose i
 	gascfe gaspemex gassener gasinverf gascosdeue ///
 	gasinfra gasotros gasfeder gascosto ///
 	IngBas gasmadres gascuidados) ///
-	using `"`c(sysdir_site)'/temp/GastoPC.dta"', replace
+	using `"`c(sysdir_site)'/raw/temp/GastoPC.dta"', replace
 
 capture scalar drop iniciaAPC basicaPC medsupPC superiPC posgraPC eduaduPC otrosePC inverePC culturPC investPC ///
 	ssaPC imssbienPC imssPC issstePC pemexPC issfamPC inversPC ///
@@ -30,7 +30,7 @@ postclose GastoPC
 
 
 * Abrir el archivo temporal con gasto per cápita
-use "`c(sysdir_site)'/temp/GastoPC.dta", clear
+use "`c(sysdir_site)'/raw/temp/GastoPC.dta", clear
 		
 * Gráfica: Gasto per cápita en educación
 twoway connected iniciaA basica medsup superi posgra eduadu otrose invere cultur anio, ///

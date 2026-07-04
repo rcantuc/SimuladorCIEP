@@ -2,7 +2,7 @@
 
 **Fecha de auditoría:** 2026-05-25
 **Estado del repo auditado:** commit `aec0e45` (working tree limpio)
-**Alcance:** los 10 comandos del Simulador y sus 10 archivos de ayuda en `help/Stata/`
+**Alcance:** los 10 comandos del Simulador y sus 10 archivos de ayuda en `03_help/Stata/`
 
 ---
 

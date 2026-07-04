@@ -281,10 +281,37 @@ Detalle: `help TasasEfectivas`
 |---|---|
 | No edites los archivos `.ado` ni los archivos de configuración (`profile.do`, `SIM.do`, `sysprofile-template.do`) | Son el motor compartido. Un cambio tuyo afecta a todo el equipo, porque Dropbox lo sincroniza a todas las máquinas. |
 | No guardes archivos fuera de tu carpeta `users/` | Todo lo que quede fuera se mezcla con el motor y estorba a los demás. |
-| No borres las carpetas `temp/`, `master/` ni `raw/` | Contienen datos descargados y procesados. Se pueden regenerar, pero cuesta tiempo (descargas de varios GB en algunos casos). |
+| No borres los directorios con prefijo numérico (`01_modulos/`, `02_governance/`, `03_help/`, `04_simuladorfiscal.ciep.mx/`, `05_scripts/`) | Contienen código, documentación y configuración que NO se regeneran solos. Ver sección 5.3. |
 | No "arregles" un error del Simulador por tu cuenta | Repórtalo (sección 8). Si lo parchas localmente, tu copia diverge de la del equipo y tus resultados dejan de ser comparables. |
 
 🧠 **Concepto: separación entre motor y trabajo personal.** El Simulador distingue entre el *motor* (comandos y datos compartidos, que mantiene el investigador principal) y el *trabajo personal* (tu carpeta `users/`). Mientras respetes esa frontera, es imposible que rompas algo para los demás.
+
+### 5.3 Estructura del repo para el investigador nuevo
+
+*En esta sección aprendes qué hay en cada carpeta del Simulador, cuáles puedes borrar y qué pasa si las borras.*
+
+Los directorios de la carpeta del Simulador siguen una convención de nombres que te dice, sin preguntar a nadie, qué puedes tocar:
+
+| Directorio | ¿Qué contiene? | ¿Puedes borrarlo? |
+|---|---|---|
+| `01_modulos/` | Los `.do` del pipeline (módulos de análisis y visualizaciones) y código histórico en `01_modulos/legacy/` | **No** |
+| `02_governance/` | Documentación de administración del proyecto y el `CHANGELOG.md` (registro de cambios por versión) | **No** |
+| `03_help/` | La ayuda: los `.sthlp` de cada comando, este manual y las imágenes de documentación | **No** |
+| `04_simuladorfiscal.ciep.mx/` | Archivos del sitio web público | **No** |
+| `05_scripts/` | Scripts de publicación y sus manifiestos (los usa el investigador principal) | **No** |
+| `raw/` (incluye `raw/temp/`) | Datos crudos descargados de fuentes oficiales y archivos intermedios de cada corrida | Sí |
+| `master/` | Bases procesadas listas para usar | Sí |
+| `users/tu-usuario/` | Tu espacio personal: do-files, bases derivadas, gráficas | Sí (solo el tuyo) |
+
+**La regla es simple:** los directorios **con prefijo numérico** (`01_`, `02_`…) son permanentes — no los borres ni los muevas. Los directorios **sin prefijo** son restablecibles — el propio Simulador los regenera.
+
+**Qué pasa cuando borras un directorio restablecible:**
+
+- **`raw/`** — en la siguiente corrida, el Simulador vuelve a descargar cada insumo desde el repositorio institucional en GitHub y verifica su integridad automáticamente (lo hace el comando interno `ensure_asset`). Cuesta tiempo de descarga (varios GB en algunos casos), pero no se pierde nada.
+- **`master/`** — las bases se reconstruyen corriendo el pipeline completo. También cuesta tiempo, tampoco se pierde nada.
+- **`users/tu-usuario/`** — es tu espacio personal; bórralo solo si ya no necesitas lo que hay dentro, porque **eso sí no se regenera**. Nunca borres la carpeta de otra persona.
+
+Los archivos sueltos en la raíz (los `.ado` de los comandos, los `scheme-*.scheme` de las gráficas, `SIM.do`, `profile.do`) tampoco se tocan: Stata los busca exactamente ahí y moverlos rompe los comandos para todo el equipo.
 
 ---
 
@@ -409,7 +436,7 @@ Con eso, el diagnóstico casi siempre es inmediato. Sin eso, empieza un ping-pon
 
 2. **Este manual** — para las reglas del proyecto y los problemas comunes.
 
-3. **La documentación de gobernanza** (carpeta `governance/` del Simulador) — si quieres profundizar en cómo se administra el proyecto: cómo se publican versiones, cómo se distribuye, cómo se reproduce una versión vieja. No la necesitas para el trabajo diario.
+3. **La documentación de gobernanza** (carpeta `02_governance/` del Simulador) — si quieres profundizar en cómo se administra el proyecto: cómo se publican versiones, cómo se distribuye, cómo se reproduce una versión vieja. No la necesitas para el trabajo diario.
 
 4. **El sitio web público** ([simuladorfiscal.ciep.mx](https://simuladorfiscal.ciep.mx)) — para consultas rápidas sin abrir Stata.
 

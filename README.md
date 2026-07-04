@@ -14,7 +14,7 @@ El CIEP desarrolla tres simuladores de política pública disponibles en línea 
 | **Simulador IEPS al tabaco** | [iepsaltabaco.ciep.mx](https://iepsaltabaco.ciep.mx) | Impacto fiscal y de salud de cambios al IEPS aplicado al tabaco |
 | **Simulador de tenencia vehicular** | [tenencia.ciep.mx](https://tenencia.ciep.mx) | Cálculo y análisis del derecho de tenencia o uso de vehículos por entidad federativa |
 
-Los tres son de acceso libre. **Este repositorio** contiene el código fuente del Simulador Fiscal CIEP — el motor de cálculo que corre detrás de `simuladorfiscal.ciep.mx` y que también se puede instalar directamente en Stata. Su arquitectura completa está documentada en [`governance/arquitectura-distribucion.md`](governance/arquitectura-distribucion.md).
+Los tres son de acceso libre. **Este repositorio** contiene el código fuente del Simulador Fiscal CIEP — el motor de cálculo que corre detrás de `simuladorfiscal.ciep.mx` y que también se puede instalar directamente en Stata. Su arquitectura completa está documentada en [`02_governance/arquitectura-distribucion.md`](02_governance/arquitectura-distribucion.md).
 
 <h2 style="color: #ff7020;">Simulador Fiscal CIEP</h2>
 
@@ -34,7 +34,7 @@ El Simulador Fiscal CIEP facilita el acceso a toda la información económica re
     </div>
 </div>
 
-![Demostración del Simulador](help/images/Video2.gif)
+![Demostración del Simulador](03_help/images/Video2.gif)
 <div style="display: flex;">
     <div style="flex: 1; padding: 10px;">
         <ul>
@@ -60,7 +60,7 @@ Además de facilitar la descarga de indicadores económicos, el simulador tiene 
 **1. Pre-análisis:** Destaca automáticamente la información más relevante en un formato estructurado, claro y comprensible.
 
 <div style="display: flex; justify-content: center; align-items: center;">
-    <img src="help/images/Ventana de Resultados.png" style="width: 50%; height: auto;" alt="Ventana de Resultados">
+    <img src="03_help/images/Ventana de Resultados.png" style="width: 50%; height: auto;" alt="Ventana de Resultados">
 </div>
 
 
@@ -69,7 +69,7 @@ Además de facilitar la descarga de indicadores económicos, el simulador tiene 
 **3. Base de Datos procesada:** El simulador analiza los datos e incorpora indicadores adicionales. Por ejemplo, el programa PIBDeflactor facilita el acceso a datos como el PIB Nominal, PIB Real, PIB per cápita, y PIB por población ocupada, entre otros
 
 <div style="display: flex; justify-content: center; align-items: center;">
-    <img src="help/images/Video3.gif" style="width: 50%; height: auto;" alt="Base de datos procesada">
+    <img src="03_help/images/Video3.gif" style="width: 50%; height: auto;" alt="Base de datos procesada">
 </div>
 
 
@@ -110,16 +110,16 @@ Ve a la página de [github.com/apps/desktop](https://github.com/apps/desktop) y 
  
  
  <div style="display: flex; justify-content: center; align-items: center;">
-    <img src="help/images/Paso1.png" style="width: 50%; height: auto;" alt="Paso1">
+    <img src="03_help/images/Paso1.png" style="width: 50%; height: auto;" alt="Paso1">
 </div>
  
 3. Ingresa el URL `https://github.com/rcantuc/SimuladorCIEP` y haz click en Clone
  <div style="display: flex; justify-content: center; align-items: center;">
-    <img src="help/images/Paso2.png" style="width: 50%; height: auto;" alt="Paso2">
+    <img src="03_help/images/Paso2.png" style="width: 50%; height: auto;" alt="Paso2">
 </div>
 4. El repositorio empezará a descargarse en tu computadora
  <div style="display: flex; justify-content: center; align-items: center;">
-    <img src="help/images/Paso3.png" style="width: 50%; height: auto;" alt="Paso3">
+    <img src="03_help/images/Paso3.png" style="width: 50%; height: auto;" alt="Paso3">
 </div>
  
 </details>
@@ -170,7 +170,7 @@ Si deseas que incluyamos nueva información económica o tienes sugerencias para
 
 <h2 style="color: #ff7020;">Documentación Técnica</h2>
 
-Esta sección describe los archivos técnicos del Simulador Fiscal CIEP. La arquitectura completa del ecosistema de Simuladores CIEP — incluyendo la infraestructura de distribución, los roles de gobernanza y los componentes pendientes de implementación — está documentada en [`governance/arquitectura-distribucion.md`](governance/arquitectura-distribucion.md).
+Esta sección describe los archivos técnicos del Simulador Fiscal CIEP. La arquitectura completa del ecosistema de Simuladores CIEP — incluyendo la infraestructura de distribución, los roles de gobernanza y los componentes pendientes de implementación — está documentada en [`02_governance/arquitectura-distribucion.md`](02_governance/arquitectura-distribucion.md).
 
 ### Archivos principales
 
@@ -232,7 +232,7 @@ Archivo de configuración inicial que se ejecuta automáticamente al iniciar Sta
 3. Ejecuta el script completo o por secciones
 4. Los resultados se guardan en `users/$id/`
 
-Para más información, consulta el [manual del investigador](help/manual-investigador-ciep.md) y la documentación de gobernanza en [`governance/`](governance/).
+Para más información, consulta el [manual del investigador](03_help/manual-investigador-ciep.md) y la documentación de gobernanza en [`02_governance/`](02_governance/).
 
 
 

@@ -5,7 +5,7 @@ postfile TE double(anio ISRAS ISRPF CUOTAS IngLab 				/// Impuestos al trabajo
 	ISRPM OTROSK IngCap 							/// Impuestos al capital
 	IVA ISAN IEPSNP IEPSP IMPORT Consumo 					/// Impuestos al consumo
 	FMP PEMEX CFE IMSS ISSSTE IngCapPub) 					/// Organismos y empresas públicas
-	using `"`c(sysdir_site)'/temp/TE.dta"', replace
+	using `"`c(sysdir_site)'/raw/temp/TE.dta"', replace
 
 capture scalar drop ISRASTE ISRPFTE CUOTASTE ISRPMTE OTROSKTE FMPTE ///
 	PEMEXTE CFETE IMSSTE ISSSTETE IVATE ISANTE IEPSNPTE IEPSPTE IMPORTTE
@@ -19,7 +19,7 @@ forvalues anio = 2001(1)`=anioPE' {
 postclose TE
 
 * Abrir el archivo temporal con tasas efectivas
-use "`c(sysdir_site)'/temp/TE.dta", clear
+use "`c(sysdir_site)'/raw/temp/TE.dta", clear
 
 * Gráfica: Tasas efectivas por tipo de ingreso
 twoway (connected IngLab anio) ///

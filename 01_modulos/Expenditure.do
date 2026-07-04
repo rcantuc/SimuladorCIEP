@@ -5,7 +5,7 @@
 ******************************************************************
 capture mkdir "`c(sysdir_site)'/raw"
 capture mkdir "`c(sysdir_site)'/raw/ENIGH/"
-capture mkdir "`c(sysdir_site)'/temp"
+capture mkdir "`c(sysdir_site)'/raw/temp"
 cd "`c(sysdir_site)'/raw/ENIGH/"
 if "`1'" == "" {
 	local anioenigh = 2024
@@ -78,8 +78,8 @@ else {
 
 ** 0.1 Directorios y log files **
 capture log close expenditures
-capture mkdir "`c(sysdir_site)'/temp/`anioenigh'"
-log using "`c(sysdir_site)'/temp/`anioenigh'/expenditures.smcl", replace name(expenditures)
+capture mkdir "`c(sysdir_site)'/raw/temp/`anioenigh'"
+log using "`c(sysdir_site)'/raw/temp/`anioenigh'/expenditures.smcl", replace name(expenditures)
 
 
 ** 0.2 Texto introductorio **
@@ -131,9 +131,9 @@ local pobtotNacional = r(StatTotal)[1,1]
 ***  2. DATOS MICROECONóMICOS  ***
 ***                            ***
 **********************************
-capture confirm file "`c(sysdir_site)'/temp/`anioenigh'/preconsumption.dta"
+capture confirm file "`c(sysdir_site)'/raw/temp/`anioenigh'/preconsumption.dta"
 if _rc != 0 {
-	capture confirm file "`c(sysdir_site)'/temp/`anioenigh'/pre_iva.dta"
+	capture confirm file "`c(sysdir_site)'/raw/temp/`anioenigh'/pre_iva.dta"
 	if _rc != 0 {
 
 		** 2.1. Base de datos de gastos de los hogares **
@@ -200,13 +200,13 @@ if _rc != 0 {
 			nogen keepus(descripcion `claveiva' clase_de_actividad*) keep(matched master)
 		encode iva201, gen(tiva)
 		compress
-		save "`c(sysdir_site)'/temp/`anioenigh'/pre_iva.dta", replace
+		save "`c(sysdir_site)'/raw/temp/`anioenigh'/pre_iva.dta", replace
 	}
 
 	** 2.7. Valor agregado del último eslabón — Censo Económico **
 	*  VA ratio = VACB / PBT (Valor Agregado Censal Bruto / Producción Bruta Total)
 	*  Mide qué fracción del precio final es valor creado en el sector.
-	capture confirm file "`c(sysdir_site)'/temp/`anioenigh'/va_por_clase_actividad.dta"
+	capture confirm file "`c(sysdir_site)'/raw/temp/`anioenigh'/va_por_clase_actividad.dta"
 	if _rc != 0 {
 		use "`c(sysdir_site)'/raw/ENIGH/`anioenigh'/censo_eco_municipios.dta", clear
 		rename codigo clase_de_actividad
@@ -220,14 +220,14 @@ if _rc != 0 {
 
 		keep clase_de_actividad va_ratio
 		summ va_ratio, detail
-		save "`c(sysdir_site)'/temp/`anioenigh'/va_por_clase_actividad.dta", replace
+		save "`c(sysdir_site)'/raw/temp/`anioenigh'/va_por_clase_actividad.dta", replace
 	}
 
 	** 2.8. Merge jerárquico: VA ratio → registros de gasto **
-	capture confirm file "`c(sysdir_site)'/temp/`anioenigh'/pre_iva_final.dta"
+	capture confirm file "`c(sysdir_site)'/raw/temp/`anioenigh'/pre_iva_final.dta"
 	if _rc != 0 {
 		* Construir lookup tables jerárquicos (6→5→4→3→2 dígitos)
-		use "`c(sysdir_site)'/temp/`anioenigh'/va_por_clase_actividad.dta", clear
+		use "`c(sysdir_site)'/raw/temp/`anioenigh'/va_por_clase_actividad.dta", clear
 		tostring clase_de_actividad, replace
 		tempfile LU6 LU5 LU4 LU3 LU2
 		forvalues n = 6(-1)2 {
@@ -240,7 +240,7 @@ if _rc != 0 {
 			restore
 		}
 
-		use "`c(sysdir_site)'/temp/`anioenigh'/pre_iva.dta", clear
+		use "`c(sysdir_site)'/raw/temp/`anioenigh'/pre_iva.dta", clear
 
 		forvalues k = 1/6 {
 			gen double va`k' = .
@@ -253,10 +253,10 @@ if _rc != 0 {
 			}
 		}
 
-		save "`c(sysdir_site)'/temp/`anioenigh'/pre_iva_final.dta", replace
+		save "`c(sysdir_site)'/raw/temp/`anioenigh'/pre_iva_final.dta", replace
 	}
 
-	use "`c(sysdir_site)'/temp/`anioenigh'/pre_iva_final.dta", clear
+	use "`c(sysdir_site)'/raw/temp/`anioenigh'/pre_iva_final.dta", clear
 	order folioviv-porcentaje_ieps201 *1 *2 *3 *4 *5 *6
 	if `anioenigh' >= 2024 drop clave // Quedarnos con la clave_2018
 
@@ -492,7 +492,7 @@ if _rc != 0 {
 	compress
 	sort folioviv foliohog numren clave
 
-	save "`c(sysdir_site)'/temp/`anioenigh'/preconsumption.dta", replace
+	save "`c(sysdir_site)'/raw/temp/`anioenigh'/preconsumption.dta", replace
 
 
 	** 2.19. Deducciones personales del ISR **
@@ -518,7 +518,7 @@ foreach categ in categ categ_iva categ_ieps {
 	if _rc != 0 {
 
 		** 3.1 Consumo de los individuos **
-		use "`c(sysdir_site)'/temp/`anioenigh'/preconsumption.dta", clear
+		use "`c(sysdir_site)'/raw/temp/`anioenigh'/preconsumption.dta", clear
 		drop if gasto_anual == 0 | numren == ""
 		collapse (sum) gas_ind=gasto_anual cant_ind=cantidad (mean) prop=proporcion, by(folioviv foliohog numren `categ')
 
@@ -543,7 +543,7 @@ foreach categ in categ categ_iva categ_ieps {
 
 
 		** 3.2 Consumo de los hogares **
-		use "`c(sysdir_site)'/temp/`anioenigh'/preconsumption.dta", clear
+		use "`c(sysdir_site)'/raw/temp/`anioenigh'/preconsumption.dta", clear
 		drop if gasto_anual == 0 | numren != ""
 		collapse (sum) gas_hog=gasto_anual cant_hog=cantidad (mean) prop=proporcion, by(folioviv foliohog `categ')
 

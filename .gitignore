@@ -131,7 +131,7 @@ endpoint-credentials.sh
 **/master/**
 **/graphs/**
 **/users/**
-**/simuladorfiscal.ciep.mx/**
+**/04_simuladorfiscal.ciep.mx/**
 # Backups automáticos de publicar.sh internos (tar.gz pre-rsync)
 **/_backups/**
 
