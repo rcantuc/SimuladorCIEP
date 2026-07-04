@@ -194,7 +194,7 @@ if "`sim_version'" != "" {
 
 	if "`sim_mode'" != "silent" & "`sim_change_count'" != "" & "`sim_change_count'" != "0" {
 		forvalues i = 1/`sim_change_count' {
-			noisily di in y "    `sim_change_`i''"
+			noisily di in y `"    `sim_change_`i''"'
 		}
 	}
 }
