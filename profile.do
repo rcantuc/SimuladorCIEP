@@ -33,7 +33,6 @@ _emit("sim_release_tag", "")
 _emit("sim_generated_at", "")
 _emit("sim_previous_version", "")
 _emit("sim_mode", "silent")
-_emit("sim_changes", "")
 
 try:
 	site_dir = Path(r"""`c(sysdir_site)'""".strip())

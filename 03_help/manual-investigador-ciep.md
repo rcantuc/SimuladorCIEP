@@ -316,6 +316,33 @@ Los directorios de la carpeta del Simulador siguen una convención de nombres qu
 
 Los archivos sueltos en la raíz (los `.ado` de los comandos, los `scheme-*.scheme` de las gráficas, `SIM.do`, `profile.do`) tampoco se tocan: Stata los busca exactamente ahí y moverlos rompe los comandos para todo el equipo.
 
+### 5.4 Clon experimental: probar mejoras sin afectar al equipo
+
+*En esta sección aprendes a montar una copia separada del Simulador para experimentar, sin riesgo de romper la copia que usa todo el equipo.*
+
+**Cuándo lo necesitas.** La regla de §5.2 es clara: no edites el motor compartido, porque Dropbox propaga tu cambio a todas las máquinas. Pero hay trabajo legítimo que exige tocar el motor: probar una mejora a un comando institucional, experimentar con un dataset nuevo, o desarrollar un módulo antes de proponerlo. Para eso existe el **clon experimental**: una copia completa e independiente del Simulador que vive solo en tu Mac. Lo que hagas ahí no toca la copia institucional ni le llega a nadie más.
+
+**Paso 1 — Clona el repositorio a una carpeta local.** "Clonar" significa descargar una copia completa del proyecto desde GitHub, con toda su historia. En la Terminal de tu Mac:
+
+```bash
+git clone https://github.com/rcantuc/SimuladorCIEP.git ~/experimental/SimuladorCIEP
+```
+
+Qué esperas ver: mensajes de descarga (`Cloning into...`, contadores de objetos) y al final una carpeta `~/experimental/SimuladorCIEP` con el proyecto completo. Si falla con `git: command not found`, tu máquina no tiene Git instalado; pídeselo al investigador principal.
+
+**Paso 2 — Configura tu sysprofile para elegir clon al abrir Stata.** El *sysprofile* es un pequeño archivo de configuración (`sysprofile.do`) que vive en tu instalación de Stata y le dice dónde está el Simulador. La plantilla `sysprofile-template.do` (en la raíz del Simulador) trae los dos casos documentados: un solo clon (lo normal) y un menú para elegir entre varios clones cada vez que abres Stata. Copia la plantilla como `sysprofile.do` en la carpeta de tu instalación de Stata, descomenta el menú del "CASO 2" y ajusta las rutas a tus clones.
+
+Qué esperas ver: al abrir Stata, un menú te pregunta qué proyecto cargar; escribes el número y esa sesión trabaja contra el clon elegido.
+
+**Las dos reglas de convivencia:**
+
+| Regla | Por qué |
+|---|---|
+| El clon experimental es **local a tu Mac** — nunca lo pongas dentro de la carpeta Dropbox-CIEP institucional | Si vive en Dropbox, tus experimentos se propagan a las máquinas de todo el equipo, que es exactamente lo que queremos evitar. |
+| El archivo `simulador.stpr` (el proyecto del Project Manager de Stata) se registra en Git **solo cuando lo modificas intencionalmente** (agregar items, reorganizar el árbol) | Stata lo re-guarda automáticamente cada vez que abres el proyecto, aunque no hayas cambiado nada. Registrar esos saves automáticos ensucia la historia del proyecto con cambios vacíos. |
+
+🧠 **Concepto: clon.** Git permite que existan muchas copias completas del mismo proyecto ("clones"), cada una con vida propia. El clon institucional (el de Dropbox) es la referencia del equipo; tu clon experimental es tu laboratorio. Si un experimento sale bien, se lo propones al investigador principal para que lo incorpore formalmente; si sale mal, borras la carpeta y no pasó nada.
+
 ---
 
 ## 6. Cómo sabes qué versión estás usando
