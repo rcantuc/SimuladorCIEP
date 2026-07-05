@@ -14,7 +14,7 @@
 #   6. Verifica integridad post-Release: descarga cada asset y compara su SHA-256
 #      contra el manifest (--skip-post-verify lo salta; son ~1.3 GB de descarga)
 #   7. Invoca publicar-endpoint.sh con la versión, que sincroniza el sub-canal Stata al
-#      servidor Cloudways (ver §3.2 y §6.6 de 02_governance/arquitectura-distribucion.md)
+#      servidor Cloudways (ver §3.2 y §6.6 de 02_governance/arquitectura-y-bitacoras.md)
 #
 # Orden deliberado: primero la Release inmutable en GitHub (código + datos versionados),
 # después el endpoint operativo. Así el endpoint nunca apunta a una versión sin Release.
@@ -24,7 +24,7 @@
 #
 # La sincronización de la Carpeta del Simulador para investigadores (Dropbox-CIEP/SimuladorCIEP)
 # NO es responsabilidad de este script. La maneja manualmente el investigador principal
-# mediante `git pull` en su clon local. Ver §6.7 de arquitectura-distribucion.md.
+# mediante `git pull` en su clon local. Ver §6.7 de arquitectura-y-bitacoras.md.
 
 set -euo pipefail
 
@@ -90,7 +90,7 @@ Ejemplos:
 
 La sincronización de la Carpeta para investigadores (Dropbox-CIEP/SimuladorCIEP)
 NO la hace este script. La maneja manualmente el investigador principal con
-'git pull' en su clon local. Ver 02_governance/arquitectura-distribucion.md §6.7.
+'git pull' en su clon local. Ver 02_governance/arquitectura-y-bitacoras.md §6.7.
 
 Configuración: requiere 05_scripts/endpoint-credentials.sh con SSH_ALIAS, REMOTE_PATH y
 ENDPOINT_URL definidos.

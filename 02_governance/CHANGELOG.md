@@ -2,7 +2,7 @@
 
 Este archivo registra los cambios de cada versión publicada del Simulador Fiscal CIEP.
 
-Las versiones se numeran siguiendo el esquema descrito en `governance/convenciones-git.md` §3:
+Las versiones se numeran siguiendo el esquema descrito en `02_governance/versionado-y-git.md` §3:
 mayor cuando hay cambio metodológico o institucional de fondo, menor cuando hay datos nuevos
 o funcionalidad nueva compatible, patch para correcciones sobre versión publicada.
 
@@ -110,12 +110,12 @@ movió de manuales/ a help/.
 ### Institucional
 - Los .md de ayuda de los 8 comandos del canon (AccesoBIE, DatosAbiertos, LIF, PEF,
   PIBDeflactor, Poblacion, SCN, SHRFSP) fueron consolidados en sus respectivos .sthlp
-  y eliminados. Nueva subsección 2.7 en governance/arquitectura-distribucion.md
+  y eliminados. Nueva subsección 2.7 en 02_governance/arquitectura-y-bitacoras.md
   formaliza el principio "la ayuda de comandos vive en .sthlp".
 - Manual del investigador movido de manuales/ a help/ (unifica dominio "help").
 - README.md corregido: rutas de imágenes rotas apuntan a help/images/; bloques con
   imágenes fantasma eliminados; entrada canónica a la ayuda ahora es help <comando>.
-- Hallazgo #3 de governance/auditoria-drift-sthlp.md marcado como resuelto.
+- Hallazgo #3 de 02_governance/historico/auditoria-drift-sthlp.md marcado como resuelto.
 
 ### Comandos
 - Sin cambios respecto a v8.0. Los comandos mantienen la misma sintaxis, opciones,
@@ -139,7 +139,7 @@ para producir un resultado citado del Simulador.
   huellas digitales SHA-256 y URLs de descarga.
 - `publicar.sh` publica una versión nueva al endpoint público en un solo comando.
 - Governance formal documentada en el directorio `governance/`.
-- Convenciones de Git, versionado y publicación formalizadas en `governance/convenciones-git.md`.
+- Convenciones de Git, versionado y publicación formalizadas en `02_governance/versionado-y-git.md`.
 
 ### Comandos
 - Sin cambios respecto a v7.0. Los comandos `PEF`, `LIF`, `SCN`, `Poblacion`, `PIBDeflactor`,

@@ -1,16 +1,16 @@
 #!/bin/bash
 # =============================================================================
-# governance/scripts/verify_gitignore.sh
+# 05_scripts/verify_gitignore.sh
 # =============================================================================
 # Verificación obligatoria del .gitignore antes de cualquier merge a master
 # que modifique reglas de ignorado.
 #
 # Define un conjunto de referencia de paths que DEBEN y NO deben estar ignorados, y
 # reporta divergencia. Justificación e historial de la regla: ver
-#   governance/convenciones-git.md §6
+#   02_governance/versionado-y-git.md §6 (Parte I)
 #
 # USO:
-#   bash governance/scripts/verify_gitignore.sh
+#   bash 05_scripts/verify_gitignore.sh
 #
 # EXIT CODES:
 #   0 — todos los casos pasan; .gitignore es seguro de mergear.
@@ -32,7 +32,7 @@ set -u
 # --- Verificar que estamos en raíz del repo ---
 if [ ! -f ".gitignore" ] || [ ! -d ".git" ]; then
     echo "ERROR: este script debe correrse desde la raíz del repositorio." >&2
-    echo "       cd a la raíz y ejecuta: bash governance/scripts/verify_gitignore.sh" >&2
+    echo "       cd a la raíz y ejecuta: bash 05_scripts/verify_gitignore.sh" >&2
     exit 2
 fi
 
@@ -94,7 +94,7 @@ assert_ignored "test.stswp" "Stata swap"
 assert_ignored "test.stbak" "Stata backup"
 assert_ignored "test.stsem" "Stata semaphore"
 assert_ignored "hs_err_pid12345.log" "Stata crash log"
-assert_ignored "simulador.stpr" "Stata project (paths absolutos)"
+assert_not_ignored "simulador.stpr" "Proyecto del Project Manager de Stata (decisión v1.14: se trackea como mapa del proyecto)"
 assert_ignored "ado/personal/foo.ado" "User-installed ado"
 assert_ignored "ado/plus/x.ado" "User-installed ado plus"
 
@@ -158,8 +158,8 @@ assert_not_ignored ".windsurfrules" "Contrato de governance Windsurf"
 assert_not_ignored ".gitignore" ".gitignore mismo (sí se versiona)"
 assert_not_ignored "02_governance/historico/fase-0-reconocimiento.md" "Doc governance"
 assert_not_ignored "02_governance/historico/fase-0-5-git-hygiene-audit.md" "Doc governance"
-assert_not_ignored "02_governance/convenciones-git.md" "Este documento"
-assert_not_ignored "02_governance/scripts/verify_gitignore.sh" "Este script"
+assert_not_ignored "02_governance/versionado-y-git.md" "Este documento"
+assert_not_ignored "05_scripts/verify_gitignore.sh" "Este script"
 
 echo "--- Manifest del Catálogo de datos asociados (vive en 05_scripts/) ---"
 assert_not_ignored "05_scripts/manifest.json" "Manifest del Catálogo de datos asociados"

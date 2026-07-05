@@ -101,7 +101,7 @@ correr {cmd:sim_changelog} sin opciones para ver las versiones disponibles.
 {p_end}
 
 {pstd}
-2. {bf:Convenciones de versionado:} {cmd:02_governance/convenciones-git.md} §3 — cuándo una
+2. {bf:Convenciones de versionado:} {cmd:02_governance/versionado-y-git.md} §3 — cuándo una
 versión es mayor, menor o de corrección.
 {p_end}
 

@@ -14,7 +14,7 @@ El CIEP desarrolla tres simuladores de política pública disponibles en línea 
 | **Simulador IEPS al tabaco** | [iepsaltabaco.ciep.mx](https://iepsaltabaco.ciep.mx) | Impacto fiscal y de salud de cambios al IEPS aplicado al tabaco |
 | **Simulador de tenencia vehicular** | [tenencia.ciep.mx](https://tenencia.ciep.mx) | Cálculo y análisis del derecho de tenencia o uso de vehículos por entidad federativa |
 
-Los tres son de acceso libre. **Este repositorio** contiene el código fuente del Simulador Fiscal CIEP — el motor de cálculo que corre detrás de `simuladorfiscal.ciep.mx` y que también se puede instalar directamente en Stata. Su arquitectura completa está documentada en [`02_governance/arquitectura-distribucion.md`](02_governance/arquitectura-distribucion.md).
+Los tres son de acceso libre. **Este repositorio** contiene el código fuente del Simulador Fiscal CIEP — el motor de cálculo que corre detrás de `simuladorfiscal.ciep.mx` y que también se puede instalar directamente en Stata. Su arquitectura completa está documentada en [`02_governance/arquitectura-y-bitacoras.md`](02_governance/arquitectura-y-bitacoras.md).
 
 <h2 style="color: #ff7020;">Simulador Fiscal CIEP</h2>
 
@@ -170,7 +170,7 @@ Si deseas que incluyamos nueva información económica o tienes sugerencias para
 
 <h2 style="color: #ff7020;">Documentación Técnica</h2>
 
-Esta sección describe los archivos técnicos del Simulador Fiscal CIEP. La arquitectura completa del ecosistema de Simuladores CIEP — incluyendo la infraestructura de distribución, los roles de gobernanza y los componentes pendientes de implementación — está documentada en [`02_governance/arquitectura-distribucion.md`](02_governance/arquitectura-distribucion.md).
+Esta sección describe los archivos técnicos del Simulador Fiscal CIEP. La arquitectura completa del ecosistema de Simuladores CIEP — incluyendo la infraestructura de distribución, los roles de gobernanza y los componentes pendientes de implementación — está documentada en [`02_governance/arquitectura-y-bitacoras.md`](02_governance/arquitectura-y-bitacoras.md).
 
 ### Archivos principales
 

@@ -1,4 +1,13 @@
-# Convenciones de Git del proyecto
+# Versionado y Git del Simulador Fiscal CIEP
+
+Este documento reúne dos piezas que antes vivían en archivos separados de esta carpeta (fusión del 2026-07-04; la historia de cada parte se sigue con `git log --follow` sobre este archivo):
+
+- **Parte I — Convenciones de Git**: cómo se escriben commits, cómo fluyen las ramas, cuándo sube cada número de versión y cómo se publica.
+- **Parte II — Historia de versiones**: el modelo de eras del proyecto (v7.x transición, v8.0+ institucional) y el contexto de los releases publicados en GitHub.
+
+---
+
+# Parte I — Convenciones de Git del proyecto
 
 **Versión:** v1.0
 **Fecha:** 2026-05-15
@@ -30,7 +39,7 @@
 
 **Un commit, una idea.** Un commit que actualiza la sección §4 de un documento NO debe contener también el reformateo automático de espacios que tu editor metió al guardar. Si el linter de Markdown te realineó las tablas de la bitácora porque tocó padding, esos cambios cosméticos no entran en el mismo commit que tu cambio de contenido. Si los descartas, no contaminan el diff; si los conservas, lo hacen en commit separado de formato.
 
-**Separa contenido de formato.** Caso real: durante la actualización de la bitácora de `arquitectura-distribucion.md` v1.4, el editor reformateó padding de tablas en la sección de cambios anteriores. Esos cambios no entraron al commit de v1.4: se descartaron con `git checkout governance/arquitectura-distribucion.md` (después de stagear lo que sí iba) para que el `git diff` final reflejara exclusivamente el contenido nuevo, no el ruido del editor.
+**Separa contenido de formato.** Caso real: durante la actualización de la bitácora de `arquitectura-y-bitacoras.md` v1.4, el editor reformateó padding de tablas en la sección de cambios anteriores. Esos cambios no entraron al commit de v1.4: se descartaron con `git checkout 02_governance/arquitectura-y-bitacoras.md` (después de stagear lo que sí iba) para que el `git diff` final reflejara exclusivamente el contenido nuevo, no el ruido del editor.
 
 **Verifica antes de actuar.** `git diff` antes de `git add` es obligatorio. `git status` + `git diff --cached` antes de `git commit` son obligatorios. La vista del diff es lo único que te garantiza que estás commiteando lo que crees que estás commiteando, no lo que el editor decidió por ti al guardar.
 
@@ -132,8 +141,8 @@ El Simulador Fiscal CIEP usa un esquema de tres números: `mayor.menor.parche` (
 | Número | Qué representa | Ejemplo del propio repo |
 |---|---|---|
 | **Mayor** | Cambio institucional o metodológico de fondo. Rompe comparabilidad de resultados con la versión anterior. | `v7 → v8`. v7 fue la etapa pre-governance del Simulador como proyecto del investigador principal, con conocimiento metodológico tácito y unipersonal. v8 es la primera versión institucional citable, con governance documentada, Catálogo de datos asociados, y arquitectura de cuatro capas. |
-| **Menor** | Cambios aditivos: datos anuales nuevos, módulo nuevo, refactorización compatible. Los resultados siguen siendo comparables con la versión anterior dentro del mismo mayor. | `arquitectura-distribucion.md v1.0 → v1.1`. La v1.1 agregó el sub-canal Stata público sin modificar el resto del documento. |
-| **Parche** | Corrección puntual sobre versión publicada y citada. Una errata, un dato mal capturado, un correo con typo. El contenido sustantivo no cambia. | Si en `politica-gestion-secretos.md v1.1` se detecta que un correo institucional está mal escrito, la corrección sale como `v1.1.1`: solo arregla el dato erróneo, sin cambiar el resto de la política. |
+| **Menor** | Cambios aditivos: datos anuales nuevos, módulo nuevo, refactorización compatible. Los resultados siguen siendo comparables con la versión anterior dentro del mismo mayor. | `arquitectura-y-bitacoras.md v1.0 → v1.1`. La v1.1 agregó el sub-canal Stata público sin modificar el resto del documento. |
+| **Parche** | Corrección puntual sobre versión publicada y citada. Una errata, un dato mal capturado, un correo con typo. El contenido sustantivo no cambia. | Si en `politicas-institucionales.md v1.1` se detecta que un correo institucional está mal escrito, la corrección sale como `v1.1.1`: solo arregla el dato erróneo, sin cambiar el resto de la política. |
 
 **Por qué tres números y no dos o cuatro.** Tres separan los tres tipos de cambio relevantes para el Simulador (de fondo, aditivo, errata) sin sobrediscriminar. Cuatro (estilo `v8.1.0.3`) es ruido sin ganancia para un proyecto a esta escala. Dos (estilo `v8.1`) no permite distinguir entre "agregamos una funcionalidad" y "corregimos una errata sobre versión publicada", que es justamente la distinción que el lector que cita al Simulador necesita ver.
 
@@ -151,12 +160,12 @@ Reglas concretas, con casos reales del proyecto.
 - Se incorpora un PEF nuevo, una ENIGH nueva, o cualquier dato anual nuevo sin cambiar metodología.
 - Se agrega un módulo nuevo (un impuesto nuevo, un perfil nuevo) que no rompe lo anterior.
 - Se refactoriza código sin cambiar resultados.
-- Ejemplo real: `arquitectura-distribucion.md v1.0 → v1.1 → v1.2 → v1.3 → v1.4` durante la primera semana de governance. Cada incremento agregó una capa nueva o expandió alcance (sub-canal Stata, hosting de sub-canales, expansión a Simuladores CIEP, Ecosistema CIEP) sin romper lo anterior. Cuatro versiones menores en una semana NO es excesivo: es el indicador de que la documentación está madurando rápido y se está dejando registro de cada paso.
+- Ejemplo real: `arquitectura-y-bitacoras.md v1.0 → v1.1 → v1.2 → v1.3 → v1.4` durante la primera semana de governance. Cada incremento agregó una capa nueva o expandió alcance (sub-canal Stata, hosting de sub-canales, expansión a Simuladores CIEP, Ecosistema CIEP) sin romper lo anterior. Cuatro versiones menores en una semana NO es excesivo: es el indicador de que la documentación está madurando rápido y se está dejando registro de cada paso.
 
 **El número de parche sube cuando:**
 
 - Se corrige un error puntual en una versión publicada y citada. Sin cambio de alcance, sin contenido nuevo, sin reformulación.
-- Ejemplo: si `politica-gestion-secretos.md v1.1` (publicada el 2026-05-14) contiene un correo institucional con un typo, la corrección sale como `v1.1.1`. Si en cambio el cambio agrega una sección nueva sobre un rol que aún no se había considerado, ese ya no es parche; es menor (`v1.2`).
+- Ejemplo: si `politicas-institucionales.md v1.1` (publicada el 2026-05-14) contiene un correo institucional con un typo, la corrección sale como `v1.1.1`. Si en cambio el cambio agrega una sección nueva sobre un rol que aún no se había considerado, ese ya no es parche; es menor (`v1.2`).
 
 **Cómo decides cuál es cuál cuando estás dudando.** Pregunta primero: *¿alguien que cite la versión anterior tiene que cambiar la cita?* Si la respuesta es sí (porque los números de los resultados cambiaron, la metodología cambió, el alcance cambió), es mayor. Si la respuesta es no, pero hay contenido nuevo que querrías documentar, es menor. Si la respuesta es no y solo arreglas algo mal escrito, es parche.
 
@@ -252,7 +261,7 @@ Sin esa cita, dentro de un año alguien que lea el commit `63d73cf` aislado pens
 
 Las bitácoras de los documentos de governance (la sección final típica de cada `.md` con la tabla `Versión / Fecha / Cambio`) son **append-only**: cada entrada registra lo que pasó en el momento de esa versión, y NO se reescribe después aunque la realidad cambie.
 
-**Ejemplo real:** la bitácora de `arquitectura-distribucion.md` v1.x dice, en una de sus entradas, que el Glosario CIEP vivía como sección de `.windsurfrules`. Cuando posteriormente el glosario se migró a archivo propio (`governance/glosario-ciep.md`), esa entrada vieja **no se reescribió** para reflejar la nueva ubicación. Sigue diciendo lo que decía. La migración se documentó como entrada nueva en la bitácora del archivo correspondiente y como commit propio.
+**Ejemplo real:** la bitácora de `arquitectura-y-bitacoras.md` v1.x dice, en una de sus entradas, que el Glosario CIEP vivía como sección de `.windsurfrules`. Cuando posteriormente el glosario se migró a archivo propio (`governance/glosario-ciep.md`), esa entrada vieja **no se reescribió** para reflejar la nueva ubicación. Sigue diciendo lo que decía. La migración se documentó como entrada nueva en la bitácora del archivo correspondiente y como commit propio.
 
 **Por qué.** La bitácora es registro histórico de cómo evolucionó la decisión, no fotografía del estado actual. Reescribir una entrada vieja para que "concuerde con hoy" falsifica el changelog: hace ver que la decisión actual estuvo siempre ahí, oculta la trayectoria, y le quita al lector futuro la posibilidad de entender cómo se llegó al estado actual paso a paso.
 
@@ -278,7 +287,7 @@ Pero la lección no era el escape específico. La lección era: un `.gitignore` 
 
 ### 6.2 Justificación de la regla
 
-Por eso existe `02_governance/scripts/verify_gitignore.sh`: define un conjunto de referencia de paths que **deben** estar ignorados (logs Stata, archivos de Dropbox conflicted copy, llaves `.key`, binarios de `raw/`) y paths que **no deben** estar ignorados (código del Simulador, documentos de governance, el `05_scripts/manifest.json` del Catálogo de datos asociados), y reporta cualquier divergencia.
+Por eso existe `05_scripts/verify_gitignore.sh`: define un conjunto de referencia de paths que **deben** estar ignorados (logs Stata, archivos de Dropbox conflicted copy, llaves `.key`, binarios de `raw/`) y paths que **no deben** estar ignorados (código del Simulador, documentos de governance, el `05_scripts/manifest.json` del Catálogo de datos asociados), y reporta cualquier divergencia.
 
 El script existe específicamente porque la sintaxis de gitignore no es trivial: corchetes que son clase de caracteres si no se escapan, doble asterisco que tiene significado solo entre slashes, excepciones con `!` que dependen del orden de aparición, interacción con archivos ya tracked. Cualquiera de esos puede romperse en un cambio aparentemente inocuo. La verificación automática es la única forma escalable de detectarlo antes de que entre a `master`.
 
@@ -289,7 +298,7 @@ El script existe específicamente porque la sintaxis de gitignore no es trivial:
 Cómo se corre, desde la raíz del Código del Simulador:
 
 ```bash
-bash governance/scripts/verify_gitignore.sh
+bash 05_scripts/verify_gitignore.sh
 ```
 
 Qué esperas ver al terminar:
@@ -323,7 +332,7 @@ Sin caso negativo asociado, una regla nueva puede romper algo y el script no lo 
 
 ### 6.5 Nota de alcance: vocabulario interno del script
 
-El script en su forma actual (`governance/scripts/verify_gitignore.sh`) usa internamente la palabra "canónico" en algunos comentarios (define un *"set canónico de paths que DEBEN y NO deben estar ignorados"*). El Glosario CIEP eliminó "canónico" del vocabulario de prosa institucional. La descripción correcta en este documento es **conjunto de referencia**. La limpieza del vocabulario interno del script es pendiente menor separado y no afecta su funcionalidad: en el momento del primer commit del script, las 55 aserciones pasan en verde.
+El script en su forma actual (`05_scripts/verify_gitignore.sh`) usa internamente la palabra "canónico" en algunos comentarios (define un *"set canónico de paths que DEBEN y NO deben estar ignorados"*). El Glosario CIEP eliminó "canónico" del vocabulario de prosa institucional. La descripción correcta en este documento es **conjunto de referencia**. La limpieza del vocabulario interno del script es pendiente menor separado y no afecta su funcionalidad: en el momento del primer commit del script, las 55 aserciones pasan en verde.
 
 ---
 
@@ -347,4 +356,41 @@ El script en su forma actual (`governance/scripts/verify_gitignore.sh`) usa inte
 
 | Versión | Fecha      | Cambio                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | ---------| ------------| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| v1.0    | 2026-05-15 | Creación del documento (Acción 8 de la Fase 0.5, pendiente desde el inicio del proyecto de governance). Codifica las convenciones Git que el Simulador Fiscal CIEP ya practica en sus 18+ commits de la primera semana de governance: mensajes con tipo y ámbito (`docs`, `infra`, `chore`, `legacy`), cuerpo con múltiples banderas `-m` (no heredoc, frágil aquí), commits atómicos con separación explícita de contenido y formato, flujo de ramas y pull request (activo cuando entre el primer investigador colaborador), versionado con tres números `mayor.menor.parche`, etiquetas anotadas y publicaciones de GitHub inmutables, reescritura de historia segura mientras bus factor = 1, documentación negativa con cita de incidentes por SHA, bitácoras append-only, verificación obligatoria del `.gitignore` con script, y trampas reales del entorno macOS/zsh. La numeración (§2 ramas y PR, §3.2 cuándo sube cada número, §3.3 etiqueta y publicación con paso 2 = publicación en GitHub, §6 verificación gitignore) se eligió para sanar las referencias rotas de `arquitectura-distribucion.md` y del propio `verify_gitignore.sh` sin tener que modificar esos archivos. En el mismo commit se formaliza `governance/scripts/verify_gitignore.sh` (pasa de untracked a tracked); su §6 ya existe en este documento y lo justifica. La limpieza del vocabulario interno del script (usa "canónico", término eliminado del Glosario CIEP para prosa) queda como pendiente menor separado. |
+| v1.0    | 2026-05-15 | Creación del documento (Acción 8 de la Fase 0.5, pendiente desde el inicio del proyecto de governance). Codifica las convenciones Git que el Simulador Fiscal CIEP ya practica en sus 18+ commits de la primera semana de governance: mensajes con tipo y ámbito (`docs`, `infra`, `chore`, `legacy`), cuerpo con múltiples banderas `-m` (no heredoc, frágil aquí), commits atómicos con separación explícita de contenido y formato, flujo de ramas y pull request (activo cuando entre el primer investigador colaborador), versionado con tres números `mayor.menor.parche`, etiquetas anotadas y publicaciones de GitHub inmutables, reescritura de historia segura mientras bus factor = 1, documentación negativa con cita de incidentes por SHA, bitácoras append-only, verificación obligatoria del `.gitignore` con script, y trampas reales del entorno macOS/zsh. La numeración (§2 ramas y PR, §3.2 cuándo sube cada número, §3.3 etiqueta y publicación con paso 2 = publicación en GitHub, §6 verificación gitignore) se eligió para sanar las referencias rotas de `arquitectura-y-bitacoras.md` y del propio `verify_gitignore.sh` sin tener que modificar esos archivos. En el mismo commit se formaliza `05_scripts/verify_gitignore.sh` (pasa de untracked a tracked); su §6 ya existe en este documento y lo justifica. La limpieza del vocabulario interno del script (usa "canónico", término eliminado del Glosario CIEP para prosa) queda como pendiente menor separado. |
+
+---
+
+# Parte II — Historia de versiones del SimuladorCIEP
+
+Este documento traza la evolución del Simulador Fiscal CIEP desde proyecto personal hacia infraestructura institucional. Sirve como contexto para entender los releases publicados en GitHub y la trayectoria del proyecto.
+
+## Modelo de versiones
+
+El proyecto distingue dos eras:
+
+**Era v7.x — transición.** Cubre los pasos sucesivos desde el Simulador como proyecto personal del investigador principal hacia el Simulador como infraestructura institucional documentada. Cada release v7.x marca un avance específico de esa transición; ninguno representa el estado final.
+
+**Era v8.0+ — institucional completo.** v8.0 marcará la primera versión donde el Simulador opera completamente bajo arquitectura institucional: data sidecar publicado, código migrado a la lógica manifest-driven, tests pasando end-to-end, governance documentada y verificada. Las versiones citables y replicables empiezan en v8.0; los releases posteriores (v8.1, v8.2.1, etc.) son los apropiados para citarse en publicaciones académicas y análisis institucionales.
+
+## El estado previo a la transición — snapshot pre-rewrite
+
+Antes de mayo de 2026, el Simulador Fiscal CIEP existió por aproximadamente 16 años (2010-2026) como conjunto de archivos en la computadora del investigador principal y como cuerpo de decisiones metodológicas en su cabeza. Era código funcional pero no infraestructura institucional: no había política explícita de gestión de secretos, no había arquitectura de distribución documentada, los datos binarios pesados se distribuían vía URLs personales de Dropbox, y el conocimiento operativo dependía epistémica y operativamente de una sola persona.
+
+Esa etapa quedó marcada internamente como "v7.0 — Último estado del Simulador como proyecto personal" en un tag de Git que apuntaba al commit `2f46d92` ("Carpeta Raw", 30 de abril de 2026). Ese commit y ese tag forman parte del historial pre-rewrite del repositorio. El rewrite de seguridad de mayo de 2026 (que purgó credenciales expuestas y binarios pesados de la historia) reescribió todos los SHAs del repo; el commit `2f46d92` ya no es referenciable desde la rama `master` actual.
+
+Este documento preserva la narrativa de ese momento histórico sin depender de un tag de Git apuntando a un commit huérfano.
+
+## Releases publicados en GitHub
+
+Cada release publicado representa un punto específico en la transición. Su contexto, alcance, y referencias a commits están documentados en las notas del release respectivo en GitHub Releases (`https://github.com/rcantuc/SimuladorCIEP/releases`).
+
+A partir de v8.0, esta sección se actualizará para clarificar qué versiones son aptas para citarse en publicaciones formales.
+
+## Notas para futuras versiones
+
+Cuando la era v8.x inicie, vale considerar:
+
+- Documentar explícitamente qué constituye un release "completo" (criterios de cierre para una versión)
+- Establecer convención de cuándo bumpear major vs minor vs patch (v8.x.y semver-style)
+- Política sobre cómo se referencia el Simulador en publicaciones académicas del CIEP
+- Eventualmente, considerar publicación con DOI vía Zenodo o similar para los releases citables
