@@ -16,6 +16,31 @@ Formato de cada entrada:
 - **Datos:** cambios en fuentes, actualizaciones de PEFs, LIFs, ENIGH, u otras fuentes
 - **Correcciones:** bugs corregidos que afectaban resultados o funcionamiento
 
+## [v8.0.6] — 2026-07-07
+
+Fixes estéticos coherentes en las gráficas de dos comandos del canon
+(PIBDeflactor y SCN): eliminar del eje temporal los años que solo contenían
+datos missing, que hacían que las gráficas se vieran incompletas y con
+huecos visuales. Cero impacto en resultados numéricos.
+
+### Institucional
+- PIBDeflactor.ado (gráfica de Productividad): filtro del `if` y del `tlabel`
+  ajustados para mostrar solo años con datos válidos. Bloque `yline` + `text`
+  de diferencia 2005-aniofinal preservado comentado (decisión del
+  investigador principal para posible reactivación futura).
+- SCN.ado (2 gráficas): `xlabel` del eje X ahora llega hasta `latest`
+  (último año con datos reales) en lugar de `aniomax` (año máximo teórico).
+- SIM.do: cambio de comportamiento default — por defecto muestra gráficas
+  (`global nographs` comentado). Antes suprimía gráficas por default.
+  Solo afecta a investigadores CIEP internos que corren SIM.do.
+
+### Comandos
+- Sin cambios en sintaxis, opciones ni datasets de PIBDeflactor y SCN.
+  Los cambios son puramente visuales en las gráficas generadas.
+
+### Datos
+- Sin cambios respecto a v8.0.5.
+
 ## [v8.0.5] — 2026-07-04
 
 Nuevo Gate 4 en pipeline de publicación: validación de existencia de archivos

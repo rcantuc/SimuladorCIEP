@@ -447,7 +447,7 @@ quietly {
 			text(0 `=`latest'+2.5' "{bf:$paqueteEconomico}", color("111 111 111") place(1) justification(left) bcolor(white) box size(medlarge)) ///
 			text(0 `=anio[1]' "{bf:billones MXN `anio'}", color("111 111 111") place(1) justification(left) bcolor(white) box size(medlarge)) ///
 			///text(`=`Depreciacion'[1]*.05' `=anio[_N]-7.5' "{bf:Proyecci{c o'}n CIEP}", place(ne) color(white)) ///
-			xlabel(`=round(anio[1],5)'(5)`aniomax' `anio') ///
+			xlabel(`=round(anio[1],5)'(5)`latest' `anio') ///
 			ylabel(, format(%5.0fc)) ///
 			ytitle("") ///
 			yscale(range(0)) xscale(range(1993)) ///
@@ -596,7 +596,7 @@ quietly {
 			text(0 `=`latest'+2.5' "{bf:$paqueteEconomico}", color("111 111 111") place(1) justification(left) bcolor(white) box size(medlarge)) ///
 			text(0 `=anio[1]' "{bf:billones MXN `anio'}", color("111 111 111") place(1) justification(left) bcolor(white) box size(medlarge)) ///
 			///text(`=`AhorroN'[1]*0' `=anio[_N]-7.5' "{bf:Proyecci{c o'}n CIEP}", place(ne) color(white)) ///
-			xlabel(`=round(anio[1],5)'(5)`aniomax' `anio') ///
+			xlabel(`=round(anio[1],5)'(5)`latest' `anio') ///
 			ylabel(, format(%5.0fc)) ///
 			ytitle("") ///
 			yscale(range(0)) xscale(range(1993)) ///

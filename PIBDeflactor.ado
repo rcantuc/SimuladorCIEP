@@ -402,13 +402,13 @@ quietly {
 				lcolor(none) mlabsize(medium) yaxis(2) barwidth(.33) pstyle(p1)) ///
 			(connected `gPO2' anio, yaxis(3) mlabel(`gPO2') mlabposition(12) mlabcolor("111 111 111") mlabgap(0pt) ///
 				mlabsize(medium) pstyle(p3)) ///)
-			if pibPO != . & anio <= `aniofinal', ///
+			if pibPO != ., ///
 			title(`graphtitle') ///
 			ytitle("", axis(1)) ///
 			ytitle("", axis(2)) ///
 			ytitle("", axis(3)) ///
 			xtitle("") ///
-			tlabel(2005(1)`aniofinal', labsize(medium)) ///
+			tlabel(2005(1)`=`aniofinal'-1', labsize(medium)) ///
 			ylabel(none, format(%20.0fc) axis(1)) ///
 			ylabel(none, format(%20.0fc) axis(2)) ///
 			ylabel(none, format(%20.0fc) axis(3)) ///
@@ -418,9 +418,9 @@ quietly {
 			legend(on label(1 "PIB (billones `=currency' `aniovp')") ///
 			label(2 "Población Ocupada (millones)") ///
 			label(3 "Productividad (miles `=currency' `aniovp')") size(medlarge))	///
-			yline(`crecpo2', axis(3)) ///
-			text(`=`crecpo2'-10' 2005 `"Dif. 2005 - `aniofinal': {bf:`=string(`crecpo2'-`crecpo3',"%7.0fc")'}"', ///
-			justification(left) place(5) color("111 111 111") size(medlarge) yaxis(3)) ///
+			///yline(`crecpo2', axis(3)) ///
+			///text(`=`crecpo2'-10' 2005 `"Dif. 2005 - `aniofinal': {bf:`=string(`crecpo2'-`crecpo3',"%7.0fc")'}"', ///
+			///justification(left) place(5) color("111 111 111") size(medlarge) yaxis(3)) ///
 			caption("`graphfuente'") ///
 			name(Productividad`aniofinal', replace)
 
