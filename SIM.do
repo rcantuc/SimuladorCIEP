@@ -20,6 +20,7 @@ timer on 1
 capture do "`c(sysdir_site)'/set_token.do"
 
 ** 0.2 Parámetros
+global id = "`c(username)'"
 scalar aniovp = 2026								// ANIO VALOR PRESENTE
 scalar anioPE = 2026								// ANIO PAQUETE ECONÓMICO
 scalar anioenigh = 2024								// ANIO ENIGH
@@ -29,7 +30,7 @@ capture mkdir "`c(sysdir_site)'/users/"
 capture mkdir "`c(sysdir_site)'/users/$id"
 
 ** 0.4 Opciones (descomentar para activar)
-global nographs "nographs"							// SUPRIMIR GRAFICAS
+//global nographs "nographs"							// SUPRIMIR GRAFICAS
 
 //global update "update"								// UPDATE BASES DE DATOS
 if "$update" == "update" {
