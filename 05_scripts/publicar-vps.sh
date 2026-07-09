@@ -3,9 +3,10 @@
 # publicar-vps.sh — Pipeline de deployment al VPS de simuladorfiscal.ciep.mx
 # =============================================================================
 #
-# Qué hace: propaga el código local (PHP del sitio + motor Stata + .dta
-# procesados) al VPS IONOS, hace cutover atómico vía symlink `current`,
-# verifica el sitio con un health check y hace rollback automático si falla.
+# Qué hace: respalda la config Apache del VPS (Fase 0, vía backup-vps.sh),
+# propaga el código local (PHP del sitio + motor Stata + .dta procesados)
+# al VPS IONOS, hace cutover atómico vía symlink `current`, verifica el
+# sitio con un health check y hace rollback automático si falla.
 #
 # Diseño registrado en 02_governance/arquitectura-y-bitacoras.md §7.1-§7.2
 # (decisiones D.1-D.9, bitácoras v1.20-v1.21). Estructura del VPS documentada
@@ -222,6 +223,36 @@ else
           sudo chown ${VPS_USER}:${VPS_USER} '$VPS_HTML_ROOT/$VPS_HTML_VERSION' '$VPS_SIM_ROOT/$VPS_SIM_VERSION'
         y vuelve a correr el script.
         Ojo con la convención asimétrica: sitio CON 'v' ($VPS_HTML_VERSION), canon SIN 'v' ($VPS_SIM_VERSION)."
+    fi
+fi
+
+# =============================================================================
+# FASE 0 — Backup pre-deploy (config Apache, vía backup-vps.sh)
+# =============================================================================
+# Regla institucional (D.3 del diseño de backup, §7.2): sin backup exitoso no
+# hay deploy. El backup automático cubre SOLO la config Apache; las llaves SSL
+# se respaldan manualmente con backup-vps.sh --llaves cuando rotan (I.1).
+log_info "Fase 0: backup pre-deploy (config Apache)."
+
+BACKUP_SCRIPT="${SCRIPT_DIR}/backup-vps.sh"
+[[ -x "$BACKUP_SCRIPT" ]] || die "No existe o no es ejecutable: $BACKUP_SCRIPT
+        El backup pre-deploy es obligatorio (sin backup no hay deploy).
+        Verifica el repo o restaura el archivo: git checkout -- 05_scripts/backup-vps.sh"
+
+BACKUP_ARGS=()
+[[ $DRY_RUN -eq 1 ]] && BACKUP_ARGS+=(--dry-run)
+
+if "$BACKUP_SCRIPT" ${BACKUP_ARGS[@]+"${BACKUP_ARGS[@]}"} 2>&1 | tee -a "$LOG_FILE"; then
+    log_ok "Fase 0: backup pre-deploy completado$( [[ $DRY_RUN -eq 1 ]] && echo ' (simulado)' )."
+else
+    if [[ $DRY_RUN -eq 1 ]]; then
+        log_warn "Fase 0: el backup simulado falló. Dry-run continúa, pero revisa
+el mensaje de arriba — en un deploy real esto ABORTARÍA el pipeline."
+    else
+        die "Fase 0: el backup pre-deploy falló. SIN BACKUP EXITOSO NO HAY DEPLOY.
+        Nada se ha transferido ni activado. Revisa el mensaje del backup arriba
+        (causas típicas: BACKUP_ROOT sin definir en el credentials, VPS sin red,
+        ningún .conf descargado) y vuelve a correr el script."
     fi
 fi
 

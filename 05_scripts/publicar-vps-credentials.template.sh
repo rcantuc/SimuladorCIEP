@@ -25,5 +25,10 @@ export LOCAL_SITE_ROOT="/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/Ricardo
 # Path absoluto al repo del Simulador (para localizar .ado y master/)
 export LOCAL_REPO_ROOT="/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP"
 
+# Directorio raíz de backups del VPS (Dropbox u otro storage local)
+# Lo usa backup-vps.sh (Fase 0 del deploy y modo standalone)
+# PRECAUCIÓN: si el path tiene espacios, no quitar las comillas
+export BACKUP_ROOT="/ruta/a/tu/carpeta/de/backups"
+
 # Path a las llaves SSH si aplica (opcional)
 # export SSH_KEY_PATH="$HOME/.ssh/ionos_ciepmx"
