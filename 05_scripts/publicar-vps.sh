@@ -268,8 +268,24 @@ log_info "Fase 2: rsync del sitio PHP → $VPS_HTML_ROOT/$VPS_HTML_VERSION/"
 #   .DS_Store            basura de Finder
 #   DEPLOYED_COMMIT      lo escribe la Fase 4, no el rsync
 #   0*/                  sesiones web efímeras, por si existieran en el docroot
+#
+# --chmod (SIEMPRE después de -a, para que gane sobre el -p implícito de -a):
+# declara directorios 775 y archivos 664 en el destino, sin importar los
+# permisos del origen (Mac/Dropbox). Es la protección contra el HTTP 403 del
+# primer deploy (2026-07-09), cuando rsync preservó permisos 700/600 y Apache
+# (www-data) no pudo leer el sitio — mismo patrón ya documentado en
+# arquitectura-y-bitacoras.md §troubleshooting "Permisos rsync --chmod".
+# DOS advertencias del rsync de macOS (que en realidad es openrsync de Apple,
+# anunciado como "2.6.9 compatible"; verificado con pruebas locales 2026-07-09):
+#   1. La sintaxis octal (D775,F664) la rechaza con "invalid argument";
+#      por eso se usa la forma simbólica.
+#   2. openrsync ACEPTA la forma simbólica pero la IGNORA en silencio.
+#      Por eso la garantía real contra el 403 es la Fase 3c (chmod remoto
+#      post-transferencia). El --chmod se conserva declarativo: aplica si el
+#      cliente es un rsync 3.x real (p. ej. Homebrew) y no estorba en openrsync.
 RSYNC_SITE_OPTS=(
     -avz
+    --chmod=Du=rwx,Dg=rwx,Do=rx,Fu=rw,Fg=rw,Fo=r
     --delete
     --exclude='.DS_Store'
     --exclude='ssl/'
@@ -304,8 +320,11 @@ log_info "Fase 3a: rsync del motor Stata → $VPS_SIM_ROOT/$VPS_SIM_VERSION/"
 # necesita para correr — .ado/.do/.scheme del root del repo + 01_modulos/
 # (incluye Web.Stata.do y output.do). NO se propaga governance, help, sitio,
 # scripts, users/ ni raw/.
+# --chmod después de -a, forma simbólica = 775/664 (ver nota completa en la
+# Fase 2; la garantía real es la Fase 3c porque openrsync ignora --chmod).
 RSYNC_ENGINE_OPTS=(
     -avz
+    --chmod=Du=rwx,Dg=rwx,Do=rx,Fu=rw,Fg=rw,Fo=r
     --delete
     --include='/*.ado'
     --include='/*.do'
@@ -337,8 +356,11 @@ log_info "Fase 3b: rsync de .dta procesados → $VPS_SIM_ROOT/$VPS_SIM_VERSION/m
 # eficientar red y disco del VPS. La Mac es la fuente de verdad (D.3, R.5).
 # --progress (no --info=progress2): el rsync de macOS es 2.6.9 y no conoce
 # la sintaxis moderna. --progress funciona en ambos extremos.
+# --chmod después de -a, forma simbólica = 775/664 (ver nota completa en la
+# Fase 2; la garantía real es la Fase 3c porque openrsync ignora --chmod).
 RSYNC_MASTER_OPTS=(
     -az
+    --chmod=Du=rwx,Dg=rwx,Do=rx,Fu=rw,Fg=rw,Fo=r
     --progress
     --delete
     --include='/*.dta'
@@ -359,6 +381,23 @@ else
     else
         die "Fase 3b: rsync de master/ falló. Nada se ha activado."
     fi
+fi
+
+# =============================================================================
+# FASE 3c — Normalización de permisos en el VPS (garantía anti-403)
+# =============================================================================
+# El rsync de macOS (openrsync) ignora --chmod en silencio (verificado con
+# transferencias locales el 2026-07-09), así que los permisos restrictivos del
+# origen pueden llegar intactos (700/600) y Apache no podría leer — el HTTP 403
+# del primer deploy. Este chmod remoto replica el fix manual que dejó a v8.0
+# sirviendo en producción y es determinista sin importar el cliente rsync.
+log_info "Fase 3c: normalización de permisos en el VPS (u=rwX,g=rwX,o=rX)."
+if [[ $DRY_RUN -eq 1 ]]; then
+    log_info "[dry-run] Se ejecutaría:"
+    log_info "  chmod -R u=rwX,g=rwX,o=rX '$VPS_HTML_ROOT/$VPS_HTML_VERSION' '$VPS_SIM_ROOT/$VPS_SIM_VERSION'"
+else
+    ssh_vps "chmod -R u=rwX,g=rwX,o=rX '$VPS_HTML_ROOT/$VPS_HTML_VERSION' '$VPS_SIM_ROOT/$VPS_SIM_VERSION'"
+    log_ok "Fase 3c: permisos normalizados."
 fi
 
 # =============================================================================
@@ -416,11 +455,19 @@ fi
 # =============================================================================
 # FASE 6 — Verificación post-deploy (health check)
 # =============================================================================
+# HEALTH_LAST_CODE guarda el último código HTTP visto, para que el mensaje de
+# fallo distinga entre "no conecta" (000) y "el servidor respondió con error"
+# (403/404/500). En el primer deploy (2026-07-09) el curl con -f colapsó un
+# 403 real (permisos) a 000 y el diagnóstico se fue por red/SSL: bug corregido.
+HEALTH_LAST_CODE="000"
 health_check() {
-    # Reintentos: 3 intentos con 2s de espera (da margen a Apache/caché)
+    # Reintentos: 3 intentos con 2s de espera (da margen a Apache/caché).
+    # curl SIN -f (para capturar el código real en vez de colapsar a 000) y
+    # con -L (el puerto 80 hace 301 a HTTPS).
     local attempt http_code
     for attempt in 1 2 3; do
-        http_code=$(curl -sf -o /dev/null --max-time 10 -w "%{http_code}" "$VPS_HEALTH_URL" 2>/dev/null) || http_code="000"
+        http_code=$(curl -sL -o /dev/null -w "%{http_code}" --max-time 10 "$VPS_HEALTH_URL" 2>/dev/null || echo "000")
+        HEALTH_LAST_CODE="$http_code"
         if [[ "$http_code" == "200" ]]; then
             return 0
         fi
@@ -431,7 +478,7 @@ health_check() {
 }
 
 health_commit_matches() {
-    curl -s --max-time 10 "$VPS_HEALTH_URL" 2>/dev/null | grep -q "Commit: $CURRENT_COMMIT"
+    curl -sL --max-time 10 "$VPS_HEALTH_URL" 2>/dev/null | grep -q "Commit: $CURRENT_COMMIT"
 }
 
 HEALTH_PASSED=1
@@ -452,7 +499,12 @@ else
             HEALTH_PASSED=0
         fi
     else
-        log_error "Health check falló (sin HTTP 200 tras 3 intentos)."
+        if [[ "$HEALTH_LAST_CODE" == "000" ]]; then
+            log_error "Health check falló: no se pudo conectar (red, SSL o timeout). Verifica conectividad y el certificado."
+        else
+            log_error "Health check falló: el sitio respondió HTTP $HEALTH_LAST_CODE. Revisa permisos y contenido del deployment en $VPS_HTML_ROOT/$VPS_HTML_VERSION."
+            log_error "(El bug de permisos del 2026-07-09 daba exactamente 403.)"
+        fi
         HEALTH_PASSED=0
     fi
 fi
