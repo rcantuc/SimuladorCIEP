@@ -197,6 +197,7 @@ Calendario sugerido (afinable con el investigador principal según riesgo del se
 | Fecha | Secreto afectado | Modo de exposición | Respuesta tomada | Mejora aplicada |
 |---|---|---|---|---|
 | 2018-10-29 a 2026-05-12 | Token API del Banco de Indicadores Económicos (BIE) de INEGI, cuenta institucional CIEP. | Hardcoded en `AccesoBIE.ado` y publicado en repositorio público de GitHub durante aproximadamente 7.5 años. | (1) Solicitud formal de revocación a INEGI por correo a `atencion.usuarios@inegi.org.mx` (2026-05-12). (2) Solicitud de token nuevo bajo correo distinto al original. (3) Pendiente: sustitución en código y reescritura de historia Git. | (4) Creación de esta política como respuesta institucional al incidente. (5) Decisión arquitectónica: tokens API jamás hardcoded; se leen de variable de entorno con fallback documentado. (6) `.gitignore` reforzado en mayo 2026 para prevenir entrada de archivos `.env` y similares al repositorio. |
+| 2026-01-28 a 2026-07-09 | Llaves privadas SSL de `simuladorfiscal.ciep.mx` y `iepsaltabaco.ciep.mx` (las del certificado activo entre enero y mayo de 2026 — no las llaves activas post-mayo, que nunca estuvieron expuestas). | Colocadas en `/var/www/html/v7/ssl/` durante la renovación de certificados 2026 y quedadas ahí con permisos 664 dentro del docroot público. Servidas por HTTP durante ~5 meses: verificado con `curl -I` que el recurso respondía HTTP 200. Detectado por el reconocimiento estructural del VPS de la Fase 2 del roadmap de deployment (`reconocimiento-vps.md` §7.2, 2026-07-09) y cerrado el mismo día por el investigador principal directo en el VPS. Sin evidencia de compromiso; impacto potencial acotado a descifrado retroactivo de tráfico enero-mayo 2026, que solo contiene datos públicos por diseño del sitio. | (1) Rotación de password del usuario del VPS (`passwd`). (2) Eliminación de `/var/www/html/v7/ssl/` y verificación externa con `curl` de HTTP 404. (3) Apretar permisos de llaves activas `/etc/ssl/private/2026a/` de 644 a 640 con grupo `ssl-cert`; directorio a 710 con grupo `ssl-cert`. (4) `www-data` agregado al grupo `ssl-cert`. (5) Restart de Apache y verificación externa de HTTP 200 en ambos dominios post-restart. (6) Registro de este incidente en la presente bitácora. | (7) Aprendizaje institucional durable: **llaves privadas SSL NUNCA en docroot público, incluso temporalmente durante renovación**. La renovación de certificados debe usar directorios fuera del docroot (`/etc/ssl/private/<año>/` como convención institucional). (8) Verificación externa por `curl` es paso obligatorio después de operaciones sobre certificados o directorios de llaves. (9) El reconocimiento estructural periódico del VPS (formalizado en Fase 2 del roadmap de deployment) es el gate humano que destapó este incidente. |
 
 Nuevos incidentes se registran como filas adicionales en la tabla, en orden cronológico ascendente.
 
@@ -298,6 +299,10 @@ Daniel Orduña es el primer caso del rol "desarrollador externo de infraestructu
 **Pendiente institucional abierto:** elegir gestor de secretos compartible con el equipo CIEP y migrar credenciales del VPS y demás secretos institucionales. Sin fecha de compromiso a la fecha de redacción de esta entrada.
 
 **Fecha de registro de la brecha reconocida:** 2026-07-07
+
+**Historial de rotación de la password del usuario `ciepmx` del VPS:**
+
+- 2026-07-09: rotación realizada por el investigador principal via `passwd` directo en SSH, tras el incidente de exposición de llaves SSL registrado en §6 de esta política. Guardada en Firefox Password Manager con Primary Password activo y cuenta Mozilla con 2FA verificado.
 
 ---
 
