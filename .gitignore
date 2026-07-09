@@ -134,8 +134,14 @@ endpoint-credentials.sh
 **/graphs/**
 **/users/**
 **/04_simuladorfiscal.ciep.mx/**
+# Excepción: health.php SÍ se versiona (infraestructura del pipeline de
+# deployment al VPS, sin secretos; el resto del clon local sigue ignorado)
+!**/04_simuladorfiscal.ciep.mx/health.php
 # Backups automáticos de publicar.sh internos (tar.gz pre-rsync)
 **/_backups/**
+
+# Credenciales del pipeline VPS (deployment a IONOS)
+05_scripts/publicar-vps-credentials.sh
 
 
 # Windsurf IDE workflows locales (instalados por el IDE, no institucionales)
