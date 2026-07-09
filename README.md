@@ -166,6 +166,33 @@ Como cualquier herramienta, el proceso de adaptación al Simulador Fiscal CIEP t
 Si deseas que incluyamos nueva información económica o tienes sugerencias para cualquiera de los Simuladores CIEP, no dudes en enviarnos un correo a `ricardocantu@ciep.mx`. Estamos comprometidos en hacer estos simuladores lo más robustos posible y estamos abiertos a todas tus sugerencias.
 
 
+<h2 style="color: #ff7020;">Cómo reproducir resultados de una versión específica</h2>
+
+Si necesitas replicar un análisis hecho con una versión anterior del Simulador Fiscal CIEP (por ejemplo, para verificar los resultados de una publicación, revisar un artículo, o comparar cambios entre versiones), este es el proceso:
+
+#### 1. Clona el repositorio y ubícate en la versión deseada
+
+```bash
+git clone https://github.com/rcantuc/SimuladorCIEP.git
+cd SimuladorCIEP
+git checkout v8.0.2   # sustituye por la versión que necesites
+```
+
+Puedes ver todas las versiones publicadas en la sección [Releases](https://github.com/rcantuc/SimuladorCIEP/releases) del repositorio.
+
+#### 2. Abre el proyecto en Stata
+
+Al abrir Stata dentro del clon, `profile.do` se ejecuta automáticamente y descarga los datos raw correspondientes a esa versión desde los assets del Release en GitHub. Cada asset se verifica contra el SHA-256 declarado en `05_scripts/manifest.json` de esa versión, garantizando que los archivos son idénticos a los publicados originalmente.
+
+#### 3. Corre `SIM.do`
+
+Los resultados serán equivalentes a los del análisis original.
+
+#### Nota sobre datos que se descargan de APIs
+
+Algunos comandos (como `AccesoBIE` y `DatosAbiertos`) extraen datos en tiempo real de las APIs de INEGI y SHCP. Estas fuentes hacen revisiones estadísticas periódicas a sus series históricas, por lo que valores específicos pueden diferir mínimamente entre la fecha del análisis original y la fecha de replicación. Los resultados serán equivalentes en su interpretación general pero pueden no ser bit-a-bit idénticos.
+
+
 ---
 
 <h2 style="color: #ff7020;">Documentación Técnica</h2>

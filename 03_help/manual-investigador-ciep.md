@@ -387,12 +387,14 @@ Además del código corto, el Simulador tiene un número de versión pública (h
 
 **Cuándo lo necesitas:** te piden defender un número publicado hace un año, o quieres comparar cuánto cambió una proyección entre dos versiones del Simulador.
 
-**Qué hacer hoy:** pídeselo al investigador principal, dándole dos datos:
+**La vía más simple:** pídeselo al investigador principal, dándole dos datos:
 
 1. El código de versión con el que se generó el resultado (el que anotaste siguiendo la sección 6.2 — o la fecha aproximada de la corrida, si no lo tienes).
 2. Qué comando o análisis quieres reproducir.
 
 El investigador principal puede reconstruir el Simulador exactamente como estaba en esa versión, con los datos de entonces, y correr el análisis.
+
+**Si quieres hacerlo tú:** el proceso son tres pasos — ubicarte en la versión que necesitas con `git checkout v8.0.X`, abrir Stata (el `profile.do` descarga automáticamente los datos de esa versión desde GitHub, verificados contra su huella digital), y correr `SIM.do`. El proceso completo está documentado en la sección "Cómo reproducir resultados de una versión específica" del [README](../README.md) del repositorio. Importante: hazlo en un clon aparte del repositorio en tu computadora, **nunca en la carpeta compartida de Dropbox** — esa copia la administra el investigador principal.
 
 **La regla de oro:** nunca intentes reconstruir una versión vieja a mano (bajando datos antiguos, comentando líneas, ajustando parámetros "como estaban"). Es la receta perfecta para producir un número que *parece* el de antes pero no lo es.
 
