@@ -19,6 +19,7 @@
 7. [Observaciones operativas](#7-observaciones-operativas)
 8. [Fingerprint del estado actual](#8-fingerprint-del-estado-actual)
 9. [Anexo: comandos ejecutados](#9-anexo-comandos-ejecutados)
+10. [Respuestas a preguntas abiertas del reconocimiento](#10-respuestas-a-preguntas-abiertas-del-reconocimiento-agregado-2026-07-10)
 
 ---
 
@@ -446,3 +447,21 @@ du -sb /var/www/html/v7/ /SIM/OUT/7/; sha256sum *.php *.ado ...; stat -c "%y %n"
 ```
 
 **Lo que NO se ejecutó:** ningún comando de escritura, edición, permisos, instalación ni reinicio. `sudo` solo se sondeó con `sudo -n true` para confirmar que exige password (no se elevó). El contenido de las llaves privadas SSL no se leyó.
+
+---
+
+## 10. Respuestas a preguntas abiertas del reconocimiento (agregado 2026-07-10)
+
+*Qué aprendes en esta sección:* las decisiones que cierran las 5 preguntas abiertas de §7.10.
+
+Después del reconocimiento del 2026-07-09, Ricardo respondió las 5 preguntas abiertas de §7.10 el 2026-07-10:
+
+**R.1 — SSL 2026a local aplicado en servidor:** confirmado. El material SSL 2026a del clon local está aplicado en el VPS (verificado durante la operación de cierre del incidente SSL — `/etc/ssl/private/2026a/` existe con las llaves activas). Ricardo puede optar por borrar el material SSL 2026a del clon local o preservarlo como backup personal.
+
+**R.2 — Mecanismo de limpieza de `/SIM/OUT/7/users/`:** la convención institucional es: los ID de usuario web empiezan con "0". El cron que limpia sesiones web elimina todo directorio bajo `/SIM/OUT/7/users/` que empiece con `0*`. Directorios que NO empiezan con "0" (como `ciepmx/`) son persistentes. Pendiente por verificar en próxima SSH el cron específico que ejecuta esta limpieza (`sudo crontab -l -u www-data`, `/etc/cron.*`, `/etc/crontab`).
+
+**R.3 — Sesión SSH del 11-may desde IP 132.248.237.220 (UNAM):** confirmada como sesión de Humberto (desarrollador PHP del sitio web con acceso al VPS bajo credenciales del investigador principal). El proceso zombi PID 1975745 (`more` colgado al 100% CPU) es artefacto de su sesión inadvertidamente cerrada. Autorizado kill del PID en próxima SSH. Pendiente institucional adicional: Humberto tiene acceso al VPS con credenciales compartidas, sin usuario propio para trazabilidad — vale considerar creación de usuario secundario en próxima iteración.
+
+**R.4 — `claude.ado`, `chatbot.js`, `Web.Claude.do`:** retirar. Son artefactos de experimento no versionado que quedaron en producción. La retirada se ejecutará durante el primer deploy limpio v7→v8 (Fase 6 del roadmap actualizado), no antes, para no tocar producción manualmente sin proceso formal.
+
+**R.5 — `.dta` procesados de `/SIM/OUT/7/master/`:** camino B: subir procesados desde la Mac del investigador principal. La Mac es la fuente de verdad de los `.dta` procesados. Regeneración periódica controlada localmente (~30 minutos). Deploy = rsync desde Mac al VPS. Los `.dta` NO se regeneran en el VPS durante deploy. Los `.dta` NO viven versionados en Git.
