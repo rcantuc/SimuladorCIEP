@@ -23,14 +23,29 @@
 # Un deployment agrupa múltiples releases del código; el commit exacto queda
 # registrado en el archivo DEPLOYED_COMMIT que este script escribe en el VPS.
 #
-# Precondición de infraestructura (el operador la crea UNA vez por versión):
-#   ssh ciepmx@VPS "mkdir -p /var/www/html/vN.M /SIM/OUT/N.M"
+# Precondición de infraestructura (el operador la crea UNA vez por versión,
+# respetando la convención asimétrica de paths: sitio CON "v", canon SIN "v"):
+#   sudo mkdir /var/www/html/vN.M /SIM/OUT/N.M
+#   sudo chown ciepmx:ciepmx /var/www/html/vN.M /SIM/OUT/N.M
 #
 # Credenciales: viven en publicar-vps-credentials.sh (gitignored), junto a
 # este script. Plantilla: publicar-vps-credentials.template.sh.
 # =============================================================================
 
 set -euo pipefail
+
+# =============================================================================
+# CONVENCIÓN INSTITUCIONAL DE PATHS EN EL VPS
+# =============================================================================
+# El VPS de IONOS tiene inconsistencia histórica preservada por decisión firme
+# del investigador principal el 2026-07-10:
+#   - /var/www/html/ usa nombres CON "v" (v6/, v7/, v8.0/, ...)
+#   - /SIM/OUT/ usa nombres SIN "v" (7/, 8.0/, ...)
+#
+# Este script traduce el argumento del usuario (vN.M) a los 2 formatos:
+#   VPS_HTML_VERSION="${VERSION_ARG}"      # v8.0 (para el sitio)
+#   VPS_SIM_VERSION="${VERSION_ARG#v}"     # 8.0 (para el canon)
+# =============================================================================
 
 # -----------------------------------------------------------------------------
 # Constantes y setup
@@ -82,7 +97,7 @@ EOF
 # -----------------------------------------------------------------------------
 # Parseo de argumentos
 # -----------------------------------------------------------------------------
-DEPLOY_VERSION=""
+VERSION_ARG=""
 DRY_RUN=0
 FORCE=0
 SKIP_HEALTH=0
@@ -95,31 +110,33 @@ for arg in "$@"; do
         --help|-h)     usage ;;
         -*)            log_error "Opción desconocida: $arg"; usage ;;
         *)
-            if [[ -n "$DEPLOY_VERSION" ]]; then
-                log_error "Solo se acepta un argumento de versión (recibido: '$DEPLOY_VERSION' y '$arg')."
+            if [[ -n "$VERSION_ARG" ]]; then
+                log_error "Solo se acepta un argumento de versión (recibido: '$VERSION_ARG' y '$arg')."
                 usage
             fi
-            DEPLOY_VERSION="$arg"
+            VERSION_ARG="$arg"
             ;;
     esac
 done
 
-[[ -n "$DEPLOY_VERSION" ]] || usage
+[[ -n "$VERSION_ARG" ]] || usage
 
 # Gate 3 (adelantado al parseo) — Formato de versión válido: vN.M exactamente.
 # Se valida antes que las credenciales para que el error de formato sea
 # siempre el primero que ve el operador (no depende del entorno).
-if [[ ! "$DEPLOY_VERSION" =~ ^v[0-9]+\.[0-9]+$ ]]; then
-    die "Versión inválida: '$DEPLOY_VERSION'. El formato es vN.M (ej. v8.0, v8.1).
+if [[ ! "$VERSION_ARG" =~ ^v[0-9]+\.[0-9]+$ ]]; then
+    die "Versión inválida: '$VERSION_ARG'. El formato es vN.M (ej. v8.0, v8.1).
         Recuerda: es la versión de DEPLOYMENT, no la del código.
         v8.0.6 es versión de código; el deployment que la sirve es v8.0."
 fi
 
-# Versión sin prefijo 'v' para los paths de /SIM/OUT/ (v8.0 → 8.0)
-SIM_VERSION="${DEPLOY_VERSION#v}"
+# Traducción a los 2 formatos de la convención asimétrica del VPS (ver bloque
+# de comentario al inicio del script): sitio CON "v", canon Stata SIN "v".
+VPS_HTML_VERSION="${VERSION_ARG}"      # v8.0 -> /var/www/html/v8.0/
+VPS_SIM_VERSION="${VERSION_ARG#v}"     # 8.0  -> /SIM/OUT/8.0/
 
 log_info "Log de esta corrida: $LOG_FILE"
-log_info "Deployment solicitado: $DEPLOY_VERSION (motor Stata: $SIM_VERSION)"
+log_info "Deployment solicitado: $VERSION_ARG (motor Stata: $VPS_SIM_VERSION)"
 [[ $DRY_RUN -eq 1 ]] && log_warn "MODO DRY-RUN: ningún cambio se aplicará al VPS."
 
 # -----------------------------------------------------------------------------
@@ -191,18 +208,20 @@ log_ok "Gate 5: fuentes locales verificadas."
 # pero si el VPS no es alcanzable se degrada a warning para poder simular
 # el resto del pipeline sin red.
 check_vps_structure() {
-    ssh_vps "test -d '$VPS_HTML_ROOT/$DEPLOY_VERSION' && test -d '$VPS_SIM_ROOT/$SIM_VERSION'"
+    ssh_vps "test -d '$VPS_HTML_ROOT/$VPS_HTML_VERSION' && test -d '$VPS_SIM_ROOT/$VPS_SIM_VERSION'"
 }
 if check_vps_structure; then
-    log_ok "Gate 4: estructura del VPS verificada ($VPS_HTML_ROOT/$DEPLOY_VERSION y $VPS_SIM_ROOT/$SIM_VERSION)."
+    log_ok "Gate 4: estructura del VPS verificada ($VPS_HTML_ROOT/$VPS_HTML_VERSION y $VPS_SIM_ROOT/$VPS_SIM_VERSION)."
 else
     if [[ $DRY_RUN -eq 1 ]]; then
         log_warn "Gate 4: no se pudo verificar la estructura del VPS (¿sin red o no existe aún?). Dry-run continúa."
     else
-        die "La estructura del VPS no existe (o el VPS no responde).
-        Crea los directorios UNA vez por versión, por SSH:
-          ssh ${VPS_USER}@${VPS_HOST} \"mkdir -p '$VPS_HTML_ROOT/$DEPLOY_VERSION' '$VPS_SIM_ROOT/$SIM_VERSION'\"
-        y vuelve a correr el script."
+        die "Estructura VPS faltante (o el VPS no responde). Ejecuta en el VPS:
+          sudo mkdir '$VPS_HTML_ROOT/$VPS_HTML_VERSION'
+          sudo mkdir '$VPS_SIM_ROOT/$VPS_SIM_VERSION'
+          sudo chown ${VPS_USER}:${VPS_USER} '$VPS_HTML_ROOT/$VPS_HTML_VERSION' '$VPS_SIM_ROOT/$VPS_SIM_VERSION'
+        y vuelve a correr el script.
+        Ojo con la convención asimétrica: sitio CON 'v' ($VPS_HTML_VERSION), canon SIN 'v' ($VPS_SIM_VERSION)."
     fi
 fi
 
@@ -238,7 +257,7 @@ PREVIOUS_SIM="${PREVIOUS_DEPLOYMENT#v}"
 # =============================================================================
 # FASE 2 — Rsync del sitio PHP
 # =============================================================================
-log_info "Fase 2: rsync del sitio PHP → $VPS_HTML_ROOT/$DEPLOY_VERSION/"
+log_info "Fase 2: rsync del sitio PHP → $VPS_HTML_ROOT/$VPS_HTML_VERSION/"
 
 # Exclusiones (revisadas contra el diff local↔remoto de reconocimiento-vps.md §6):
 #   ssl/                 el clon local aún contiene material SSL de renovación;
@@ -264,7 +283,7 @@ RSYNC_SITE_OPTS=(
 run_rsync_site() {
     rsync "${RSYNC_SITE_OPTS[@]}" -e "$RSYNC_SSH" \
         "$LOCAL_SITE_ROOT/" \
-        "${VPS_USER}@${VPS_HOST}:$VPS_HTML_ROOT/$DEPLOY_VERSION/" 2>&1 | tee -a "$LOG_FILE"
+        "${VPS_USER}@${VPS_HOST}:$VPS_HTML_ROOT/$VPS_HTML_VERSION/" 2>&1 | tee -a "$LOG_FILE"
 }
 if run_rsync_site; then
     log_ok "Fase 2: rsync del sitio completado$( [[ $DRY_RUN -eq 1 ]] && echo ' (simulado)' )."
@@ -279,7 +298,7 @@ fi
 # =============================================================================
 # FASE 3 — Rsync del motor Stata y de los .dta procesados
 # =============================================================================
-log_info "Fase 3a: rsync del motor Stata → $VPS_SIM_ROOT/$SIM_VERSION/"
+log_info "Fase 3a: rsync del motor Stata → $VPS_SIM_ROOT/$VPS_SIM_VERSION/"
 
 # Alcance del motor (aprobado 2026-07-10): árbol completo que el canal web
 # necesita para correr — .ado/.do/.scheme del root del repo + 01_modulos/
@@ -299,7 +318,7 @@ RSYNC_ENGINE_OPTS=(
 run_rsync_engine() {
     rsync "${RSYNC_ENGINE_OPTS[@]}" -e "$RSYNC_SSH" \
         "$LOCAL_REPO_ROOT/" \
-        "${VPS_USER}@${VPS_HOST}:$VPS_SIM_ROOT/$SIM_VERSION/" 2>&1 | tee -a "$LOG_FILE"
+        "${VPS_USER}@${VPS_HOST}:$VPS_SIM_ROOT/$VPS_SIM_VERSION/" 2>&1 | tee -a "$LOG_FILE"
 }
 if run_rsync_engine; then
     log_ok "Fase 3a: rsync del motor completado$( [[ $DRY_RUN -eq 1 ]] && echo ' (simulado)' )."
@@ -311,7 +330,7 @@ else
     fi
 fi
 
-log_info "Fase 3b: rsync de .dta procesados → $VPS_SIM_ROOT/$SIM_VERSION/master/"
+log_info "Fase 3b: rsync de .dta procesados → $VPS_SIM_ROOT/$VPS_SIM_VERSION/master/"
 
 # Alcance mínimo aprobado 2026-07-10: SOLO los .dta de primer nivel de master/
 # (~2.7 GB). Los subdirectorios anuales (2014/…2024/) NO se propagan para
@@ -330,7 +349,7 @@ RSYNC_MASTER_OPTS=(
 run_rsync_master() {
     rsync "${RSYNC_MASTER_OPTS[@]}" -e "$RSYNC_SSH" \
         "$LOCAL_REPO_ROOT/master/" \
-        "${VPS_USER}@${VPS_HOST}:$VPS_SIM_ROOT/$SIM_VERSION/master/" 2>&1 | tee -a "$LOG_FILE"
+        "${VPS_USER}@${VPS_HOST}:$VPS_SIM_ROOT/$VPS_SIM_VERSION/master/" 2>&1 | tee -a "$LOG_FILE"
 }
 if run_rsync_master; then
     log_ok "Fase 3b: rsync de master/ completado$( [[ $DRY_RUN -eq 1 ]] && echo ' (simulado)' )."
@@ -351,20 +370,20 @@ DEPLOYED_COMMIT_TMP=$(mktemp /tmp/DEPLOYED_COMMIT.XXXXXX)
 cat > "$DEPLOYED_COMMIT_TMP" <<EOF
 Commit: $CURRENT_COMMIT
 Timestamp: $(date -u +%Y-%m-%dT%H:%M:%SZ)
-Deployment: $DEPLOY_VERSION
+Deployment: $VERSION_ARG
 Deployed by: ${VPS_USER} via publicar-vps.sh
 EOF
 
 if [[ $DRY_RUN -eq 1 ]]; then
-    log_info "[dry-run] Se escribiría en $VPS_HTML_ROOT/$DEPLOY_VERSION/DEPLOYED_COMMIT y $VPS_SIM_ROOT/$SIM_VERSION/DEPLOYED_COMMIT:"
+    log_info "[dry-run] Se escribiría en $VPS_HTML_ROOT/$VPS_HTML_VERSION/DEPLOYED_COMMIT y $VPS_SIM_ROOT/$VPS_SIM_VERSION/DEPLOYED_COMMIT:"
     tee -a "$LOG_FILE" < "$DEPLOYED_COMMIT_TMP"
 else
     # Se escribe en ambos directorios de deployment (D.7): el del sitio (lo lee
     # health.php) y el del motor (trazabilidad del lado Stata).
     rsync -az -e "$RSYNC_SSH" "$DEPLOYED_COMMIT_TMP" \
-        "${VPS_USER}@${VPS_HOST}:$VPS_HTML_ROOT/$DEPLOY_VERSION/DEPLOYED_COMMIT" 2>&1 | tee -a "$LOG_FILE"
+        "${VPS_USER}@${VPS_HOST}:$VPS_HTML_ROOT/$VPS_HTML_VERSION/DEPLOYED_COMMIT" 2>&1 | tee -a "$LOG_FILE"
     rsync -az -e "$RSYNC_SSH" "$DEPLOYED_COMMIT_TMP" \
-        "${VPS_USER}@${VPS_HOST}:$VPS_SIM_ROOT/$SIM_VERSION/DEPLOYED_COMMIT" 2>&1 | tee -a "$LOG_FILE"
+        "${VPS_USER}@${VPS_HOST}:$VPS_SIM_ROOT/$VPS_SIM_VERSION/DEPLOYED_COMMIT" 2>&1 | tee -a "$LOG_FILE"
     log_ok "Fase 4: DEPLOYED_COMMIT escrito ($CURRENT_COMMIT_SHORT)."
 fi
 rm -f "$DEPLOYED_COMMIT_TMP"
@@ -376,11 +395,11 @@ log_info "Fase 5: swap del symlink current."
 
 if [[ $DRY_RUN -eq 1 ]]; then
     log_info "[dry-run] Se ejecutaría:"
-    log_info "  ln -sfn '$VPS_HTML_ROOT/$DEPLOY_VERSION' '$VPS_HTML_ROOT/current'"
-    log_info "  ln -sfn '$VPS_SIM_ROOT/$SIM_VERSION' '$VPS_SIM_ROOT/current'"
+    log_info "  ln -sfn '$VPS_HTML_ROOT/$VPS_HTML_VERSION' '$VPS_HTML_ROOT/current'"
+    log_info "  ln -sfn '$VPS_SIM_ROOT/$VPS_SIM_VERSION' '$VPS_SIM_ROOT/current'"
 else
     if [[ $FORCE -eq 0 ]]; then
-        log_warn "A punto de cambiar el symlink current: ${PREVIOUS_DEPLOYMENT:-"(ninguno — primer deploy)"} → $DEPLOY_VERSION"
+        log_warn "A punto de cambiar el symlink current: ${PREVIOUS_DEPLOYMENT:-"(ninguno — primer deploy)"} → $VERSION_ARG"
         answer=""
         read -r -p "¿Continuar con el cutover? [y/N] " answer || true
         if [[ ! "$answer" =~ ^[yY]$ ]]; then
@@ -390,8 +409,8 @@ else
     # ln -sfn (no -sf): sin -n, si current ya es symlink a un directorio, ln
     # crearía el symlink nuevo DENTRO del directorio apuntado en vez de
     # reemplazar el symlink. -n trata el destino como el symlink mismo.
-    ssh_vps "ln -sfn '$VPS_HTML_ROOT/$DEPLOY_VERSION' '$VPS_HTML_ROOT/current' && ln -sfn '$VPS_SIM_ROOT/$SIM_VERSION' '$VPS_SIM_ROOT/current'"
-    log_ok "Fase 5: symlinks current → $DEPLOY_VERSION activados."
+    ssh_vps "ln -sfn '$VPS_HTML_ROOT/$VPS_HTML_VERSION' '$VPS_HTML_ROOT/current' && ln -sfn '$VPS_SIM_ROOT/$VPS_SIM_VERSION' '$VPS_SIM_ROOT/current'"
+    log_ok "Fase 5: symlinks current → $VERSION_ARG activados."
 fi
 
 # =============================================================================
@@ -451,13 +470,13 @@ if [[ $HEALTH_PASSED -eq 0 ]]; then
             log_error "El sitio NO responde tras el rollback. INTERVENCIÓN MANUAL REQUERIDA."
             log_error "Revisa por SSH: readlink $VPS_HTML_ROOT/current ; systemctl status apache2"
         fi
-        die "Deploy de $DEPLOY_VERSION revertido. Revisa el log: $LOG_FILE"
+        die "Deploy de $VERSION_ARG revertido. Revisa el log: $LOG_FILE"
     else
-        # Primer deploy: no hay a dónde regresar. Se retiran los symlinks
-        # recién creados para no dejar un `current` roto a medias.
-        log_warn "Fase 7: primer deploy sin deployment previo — no hay rollback posible."
-        ssh_vps "rm -f '$VPS_HTML_ROOT/current' '$VPS_SIM_ROOT/current'"
-        die "Health check falló en el primer deploy. Symlinks current retirados.
+        # Primer deploy: no hay deployment anterior al cual regresar. Los
+        # symlinks recién creados se dejan como están para inspección manual.
+        log_warn "ADVERTENCIA: No hay deployment anterior. Rollback imposible."
+        log_warn "El sitio queda en estado post-fallo. Investigación manual requerida."
+        die "Health check falló en el primer deploy (sin rollback posible).
         Nota: si el vhost de Apache aún no apunta a $VPS_HTML_ROOT/current,
         el health check por dominio NO puede pasar todavía (ver bitácora v1.21).
         Opciones: ajustar el vhost (cutover, Fase 5 del roadmap) o correr con
@@ -470,7 +489,7 @@ fi
 # =============================================================================
 log ""
 log_ok "=============================================="
-log_ok " Deployment $DEPLOY_VERSION completado$( [[ $DRY_RUN -eq 1 ]] && echo ' (DRY-RUN: nada se aplicó)' )"
+log_ok " Deployment $VERSION_ARG completado$( [[ $DRY_RUN -eq 1 ]] && echo ' (DRY-RUN: nada se aplicó)' )"
 log_ok "=============================================="
 log_ok " Commit desplegado:  $CURRENT_COMMIT_SHORT"
 log_ok " Deployment previo:  ${PREVIOUS_DEPLOYMENT:-"(ninguno — primer deploy)"}"
