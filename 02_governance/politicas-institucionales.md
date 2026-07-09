@@ -216,6 +216,14 @@ Hasta la fecha de v1.1, la infraestructura Cloudways del CIEP tiene bus factor m
 
 Si al cumplirse el plazo el bus factor sigue siendo 1 para tareas avanzadas, la política se actualiza para reflejar la realidad.
 
+### 7.2 — Elección e implementación de gestor de secretos institucional
+
+Reconocido explícitamente en A.6: las credenciales del VPS IONOS (simuladorfiscal.ciep.mx) hoy viven en el gestor personal del investigador principal (Firefox Password Manager con Primary Password y 2FA). Este arreglo no cumple el criterio §3.1 ("gestor institucional compartible y auditado") de esta política.
+
+**Alcance del compromiso:** elegir un gestor de secretos compartible con el equipo CIEP, migrar las credenciales del VPS, y establecer política de rotación, acceso por rol, y auditoría de accesos según §4-§5 de esta política.
+
+**Sin fecha de compromiso.** Se registra como pendiente abierto que desbloquea la propagación institucional del proceso de deployment al VPS (actualmente concentrado en el investigador principal).
+
 ---
 
 ## Apéndice A — Aplicación a los Simuladores CIEP y su infraestructura
@@ -268,6 +276,28 @@ Daniel Orduña es el primer caso del rol "desarrollador externo de infraestructu
 **Naturaleza de esta iteración:** punto de partida, no versión final. La política v1.1 se elabora con la información disponible al investigador principal. El investigador principal va a conversar con Daniel sobre el contenido de este documento — particularmente A.5 y §5.6 — para incorporar precisiones operativas que solo Daniel conoce (qué tareas específicas hace, qué procesos sigue, cómo resuelve clases de incidencias, qué decisiones técnicas pasadas merece documentar). Esa conversación está agendada como pendiente institucional. La política v1.2 capturará el conocimiento operativo que de ella surja.
 
 **Compromiso institucional asociado:** el §7 de esta política establece el plazo de 6-12 meses para reducir el bus factor de Cloudways a ≥ 2. La conversación con Daniel descrita arriba es el primer paso de ese compromiso.
+
+### A.6 — Credenciales del VPS de simuladorfiscal.ciep.mx (IONOS)
+
+**Ubicación institucional actual:** las credenciales del VPS IONOS que sirve `simuladorfiscal.ciep.mx` (acceso por panel web + SFTP) viven en el gestor de contraseñas nativo de Firefox del investigador principal, protegido con Primary Password. Firefox Sync está activo, por lo que las credenciales también existen en los servidores de Mozilla cifradas en tránsito y al reposo bajo la master password.
+
+**Reconocimiento explícito:** este arreglo no cumple con el criterio §3.1 de esta política ("gestor institucional compartible y auditado"). Es solución intermedia consciente hasta que la institución adopte un gestor institucional formal.
+
+**Nivel de exposición actual:**
+
+- Bus factor 1: solo el investigador principal tiene acceso al VPS
+- Compromiso de la master password → compromiso de todas las credenciales guardadas en Firefox del investigador principal
+- Compromiso de la cuenta Mozilla → posible compromiso de credenciales vía Sync
+
+**Mitigaciones operativas activas:**
+
+- Primary Password activado en Firefox
+- Cuenta Mozilla con 2FA activo (verificado 2026-07-07)
+- No compartir credenciales del VPS por canales informales bajo ninguna circunstancia
+
+**Pendiente institucional abierto:** elegir gestor de secretos compartible con el equipo CIEP y migrar credenciales del VPS y demás secretos institucionales. Sin fecha de compromiso a la fecha de redacción de esta entrada.
+
+**Fecha de registro de la brecha reconocida:** 2026-07-07
 
 ---
 
