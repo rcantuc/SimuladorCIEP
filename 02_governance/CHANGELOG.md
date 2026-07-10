@@ -16,6 +16,36 @@ Formato de cada entrada:
 - **Datos:** cambios en fuentes, actualizaciones de PEFs, LIFs, ENIGH, u otras fuentes
 - **Correcciones:** bugs corregidos que afectaban resultados o funcionamiento
 
+## [v8.0.8] — 2026-07-10
+
+La cadena del token BIE/INEGI se endurece de punta a punta: SIM.do deja
+de tragarse errores reales al cargar el token, profile.do lo carga al
+abrir Stata (los investigadores CIEP ya no necesitan correr SIM.do para
+usar AccesoBIE), y el mensaje de error de AccesoBIE ahora dice qué hacer
+según quién seas. Cero impacto en resultados numéricos.
+
+### Institucional
+- SIM.do: el `capture do set_token.do` ciego (que ocultaba errores de un
+  token mal configurado) se reemplaza por `confirm file` + `run` sin
+  capture. Ahora distingue archivo ausente (aviso amable con el camino:
+  copiar `set_token.template.do` a `set_token.do`) de archivo roto (el
+  error se ve en su origen). SIM.do sigue siendo autocontenido: carga su
+  propio token después del `macro drop _all` del arranque.
+- profile.do: carga el token al arranque interactivo con el mismo patrón.
+  Si falta, la bienvenida incluye una nota amable con el camino para
+  configurarlo — sin error rojo, el arranque no se interrumpe.
+
+### Comandos
+- AccesoBIE: mensaje de error mejorado cuando falta el token. Ahora sirve
+  a dos audiencias: usuario externo (cómo fijar `global BIE_API_TOKEN` y
+  el link del INEGI para obtener token) e investigadores CIEP (correr
+  set_token.do o reiniciar Stata). La validación con `exit 198` ya
+  existía; solo cambió la redacción. Sin cambios en sintaxis ni
+  resultados.
+
+### Datos
+- Sin cambios respecto a v8.0.7.
+
 ## [v8.0.7] — 2026-07-09
 
 SCN deja de depender de un directorio externo para su intermedio de PIB:

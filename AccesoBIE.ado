@@ -12,10 +12,10 @@ program define AccesoBIE
 	// Token requerido vía global Stata $BIE_API_TOKEN
 	if "`token'" == "" {
 		if "$BIE_API_TOKEN" == "" {
-			display as error "AccesoBIE requiere el token del BIE/INEGI fijado como global Stata."
-			display as error "Fija el token antes de usar este comando:"
-			display as error `"  global BIE_API_TOKEN "tu-token-aqui""'
+			display as error "AccesoBIE requiere el token del BIE/INEGI. Fíjalo con:"
+			display as error `"  global BIE_API_TOKEN "tu-token""'
 			display as error "Solicita o gestiona tu token en: https://www.inegi.org.mx/app/api/denue/v1/tokenVerify.aspx"
+			display as error "(Investigadores CIEP: corre set_token.do o reinicia Stata; profile.do lo carga al arranque.)"
 			exit 198
 		}
 		local token "$BIE_API_TOKEN"

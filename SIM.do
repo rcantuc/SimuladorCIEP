@@ -16,8 +16,17 @@ timer on 1
 
 ** 0.1 Token del BIE/INEGI
 * Se carga desde set_token.do (gitignored, ver "help AccesoBIE" en Stata).
-* Si el archivo no existe, AccesoBIE fallará con un error explícito al primer uso.
-capture do "`c(sysdir_site)'/set_token.do"
+* confirm file distingue archivo ausente (aviso amable) de archivo roto
+* (run SIN capture: si el token está mal formado, el error se ve en su origen).
+capture confirm file "`c(sysdir_site)'/set_token.do"
+if _rc == 0 {
+	run "`c(sysdir_site)'/set_token.do"
+}
+else {
+	display as text "Nota: set_token.do no encontrado. AccesoBIE y otros " ///
+		"comandos que usan BIE requieren el token. Copia " ///
+		"set_token.template.do a set_token.do y configúralo."
+}
 
 ** 0.2 Parámetros
 global id = "`c(username)'"

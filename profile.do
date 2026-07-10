@@ -154,6 +154,19 @@ end
 ******************************
 cd `"`c(sysdir_site)'"'
 
+** 2.0 Token del BIE/INEGI **
+* Se carga desde set_token.do (gitignored) para que AccesoBIE funcione desde
+* el arranque. confirm file distingue archivo ausente (nota amable en la
+* bienvenida) de archivo roto (run SIN capture: el error se ve en su origen).
+local sim_token_missing = 0
+capture confirm file "`c(sysdir_site)'/set_token.do"
+if _rc == 0 {
+	run "`c(sysdir_site)'/set_token.do"
+}
+else {
+	local sim_token_missing = 1
+}
+
 ** 2.1 Entidades Federativas **
 global entidadesL `" "Aguascalientes" "Baja California" "Baja California Sur" "Campeche" "Coahuila" "Colima" "Chiapas" "Chihuahua" "Ciudad de México" "Durango" "Guanajuato" "Guerrero" "Hidalgo" "Jalisco" "Estado de México" "Michoacán" "Morelos" "Nayarit" "Nuevo León" "Oaxaca" "Puebla" "Querétaro" "Quintana Roo" "San Luis Potosí" "Sinaloa" "Sonora" "Tabasco" "Tamaulipas" "Tlaxcala" "Veracruz" "Yucatán" "Zacatecas" "Nacional" "'
 global entidadesC "Ags BC BCS Camp Coah Col Chis Chih CDMX Dgo Gto Gro Hgo Jal EdoMex Mich Mor Nay NL Oax Pue Qro QRoo SLP Sin Son Tab Tamps Tlax Ver Yuc Zac Nac"
@@ -213,6 +226,12 @@ noisily di `" {stata "TasasEfectivas":TasasEfectivas} [, ANIO(int)] {view "03_he
 noisily di `" {stata "GastoPC":GastoPC} [, ANIO(int)] {view "03_help/Stata/GastoPC.sthlp":({it:help})}"'
 noisily di `" {stata "AccesoBIE 734407, nombres(pibQ)":AccesoBIE} {it:serie} [, nombres()] {view "03_help/Stata/AccesoBIE.sthlp":({it:help})}"' 
 noisily di `" {stata "sim_changelog":sim_changelog} [, VERsion(str)] {view "03_help/Stata/sim_changelog.sthlp":({it:help})}"'
+
+if `sim_token_missing' {
+	noisily di _newline in g "  Nota: falta configurar el token del BIE/INEGI, necesario para los"
+	noisily di in g "  comandos que consultan el BIE (como AccesoBIE). Copia"
+	noisily di in g "  set_token.template.do a set_token.do y coloca ah{c i'} tu token."
+}
 
 
 
