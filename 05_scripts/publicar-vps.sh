@@ -625,11 +625,25 @@ fi
 # =============================================================================
 log_info "Fase 4: escribir DEPLOYED_COMMIT."
 
+# Tag semántico del commit desplegado (bitácora v1.28): lo lee el footer del
+# sitio (index.php / index-en.php) para mostrar la versión que sirve ESTE
+# servidor — auto-actualizable en cada deploy, cero hardcode en el sitio.
+# --exact-match da el tag limpio (v8.0.7) si HEAD es exactamente el tag; el
+# fallback da v8.0.7-N-gHASH si hay commits encima (señal honesta de que se
+# desplegó código posterior al tag); sin tags, cadena vacía (el footer
+# simplemente no pinta versión — nunca rompe la página).
+DEPLOYED_TAG=$(git -C "$LOCAL_REPO_ROOT" describe --tags --exact-match HEAD 2>/dev/null \
+    || git -C "$LOCAL_REPO_ROOT" describe --tags HEAD 2>/dev/null || echo "")
+
+# Formato: solo se AÑADE la línea "Version:" — health.php vuelca el archivo
+# completo (no parsea por claves) y health_commit_matches() busca el substring
+# "Commit: <hash>", así que la línea nueva no rompe a ningún consumidor.
 DEPLOYED_COMMIT_TMP=$(mktemp /tmp/DEPLOYED_COMMIT.XXXXXX)
 cat > "$DEPLOYED_COMMIT_TMP" <<EOF
 Commit: $CURRENT_COMMIT
 Timestamp: $(date -u +%Y-%m-%dT%H:%M:%SZ)
 Deployment: $VERSION_ARG
+Version: $DEPLOYED_TAG
 Deployed by: ${VPS_USER} via publicar-vps.sh
 EOF
 
