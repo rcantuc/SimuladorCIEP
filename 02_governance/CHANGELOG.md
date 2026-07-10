@@ -16,6 +16,30 @@ Formato de cada entrada:
 - **Datos:** cambios en fuentes, actualizaciones de PEFs, LIFs, ENIGH, u otras fuentes
 - **Correcciones:** bugs corregidos que afectaban resultados o funcionamiento
 
+## [v8.0.7] — 2026-07-09
+
+SCN deja de depender de un directorio externo para su intermedio de PIB:
+el archivo temporal `raw/temp/basepib.dta` se reemplaza por un `tempfile`
+de Stata. En instalaciones donde `raw/temp/` no existía (por ejemplo, un
+deployment limpio del servidor web), SCN tronaba con r(603) al intentar
+guardar ahí. Cero impacto en resultados numéricos.
+
+### Institucional
+- SCN.ado: el intermedio `basepib` ahora vive en un `tempfile` (Stata lo
+  crea donde corresponde y lo limpia solo), en lugar de escribir y leer
+  `raw/temp/basepib.dta`. Mismo principio que `ensure_asset`: los comandos
+  no asumen estado de directorios externo.
+- Detectado durante el debugging del primer deploy del motor web v8.0 al
+  VPS (2026-07-09); el pipeline de deployment también se endureció en el
+  mismo commit (fases de permisos y assets — no afecta a los comandos).
+
+### Comandos
+- Sin cambios en sintaxis, opciones ni resultados de SCN. El cambio es
+  interno (dónde vive un archivo temporal).
+
+### Datos
+- Sin cambios respecto a v8.0.6.
+
 ## [v8.0.6] — 2026-07-07
 
 Fixes estéticos coherentes en las gráficas de dos comandos del canon

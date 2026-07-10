@@ -19,6 +19,7 @@
 7. [Cómo reproduces un análisis viejo](#7-cómo-reproduces-un-análisis-viejo)
 8. [Qué hacer si algo falla](#8-qué-hacer-si-algo-falla)
 9. [Recursos y contactos](#9-recursos-y-contactos)
+10. [Cómo se publica el sitio web (deployment)](#10-cómo-se-publica-el-sitio-web-deployment)
 
 ---
 
@@ -473,3 +474,92 @@ Con eso, el diagnóstico casi siempre es inmediato. Sin eso, empieza un ping-pon
 4. **El sitio web público** ([simuladorfiscal.ciep.mx](https://simuladorfiscal.ciep.mx)) — para consultas rápidas sin abrir Stata.
 
 **Contacto:** Ricardo Cantú Calderón — <ricardocantu@ciep.mx>
+
+---
+
+## 10. Cómo se publica el sitio web (deployment)
+
+*En esta sección aprendes cómo llega el Simulador a sus dos caras públicas y cómo operar los scripts que lo publican. Es para quien mantiene el proyecto; para el trabajo diario de análisis no la necesitas.*
+
+### 10.1 El modelo: dos caras públicas, dos scripts
+
+El mismo motor de Stata que usas tú se publica hacia afuera por dos canales, cada uno con su propio script:
+
+| Canal | Qué publica | Script | Dónde vive |
+|---|---|---|---|
+| Endpoint Stata (`net install`) | Los comandos para investigadores externos | `05_scripts/publicar.sh` | Servidor Cloudways |
+| Sitio web + motor de simulación | [simuladorfiscal.ciep.mx](https://simuladorfiscal.ciep.mx) completo | `05_scripts/publicar-vps.sh` | Servidor VPS de IONOS |
+
+En el VPS, la versión activa se decide con un **symlink** llamado `current` — un symlink es un acceso directo: un nombre fijo que apunta a una carpeta que puedes cambiar. Apache siempre sirve `current`; publicar una versión nueva es apuntar `current` a la carpeta nueva (instantáneo), y regresar a la anterior es apuntarlo de vuelta (el "rollback").
+
+**Convención asimétrica de nombres** (histórica, decisión firme — no la "corrijas"):
+
+| Árbol | Formato | Ejemplo |
+|---|---|---|
+| `/var/www/html/` (sitio) | CON `v` | `/var/www/html/v8.0/` |
+| `/SIM/OUT/` (motor Stata) | SIN `v` | `/SIM/OUT/8.0/` |
+
+### 10.2 `publicar-vps.sh`: qué necesita y qué hace
+
+**Antes de correrlo necesitas:**
+
+- El archivo `05_scripts/publicar-vps-credentials.sh` con tus variables (usuario y host del VPS, rutas locales y remotas, URL del health check y `BACKUP_ROOT`). Está fuera de Git a propósito; la plantilla `publicar-vps-credentials.template.sh` trae cada variable con ejemplo.
+- Working tree limpio (todo commiteado): el script se niega a desplegar código no versionado.
+
+**Cómo se corre:**
+
+```bash
+cd 05_scripts
+./publicar-vps.sh v8.0 --dry-run   # primero simula: muestra qué haría sin tocar nada
+./publicar-vps.sh v8.0             # deploy real (pide confirmación antes del cutover)
+```
+
+La versión es de *deployment* (`v8.0`, `v8.1`), no de código (`v8.0.7` la rechaza).
+
+**Qué hace, en orden:** valida sus **gates** (credenciales, working tree limpio, formato de versión, fuentes locales, estructura del VPS) y luego corre sus fases:
+
+| Fase | Qué hace |
+|---|---|
+| 0 | Backup de la config Apache (vía `backup-vps.sh`). **Si el backup falla, no hay deploy.** |
+| 1 | Snapshot: anota el commit local y el deployment previo (destino del rollback) |
+| 2 | Sube el sitio PHP |
+| 3a-3b | Sube el motor Stata y los `.dta` de `master/` (recursivo, incluye los subdirectorios anuales) |
+| 3b-bis | Sube el **escenario base** (`users/ricardo/bootstraps/`) que el motor consume en cada simulación |
+| 3c | Normaliza permisos y garantiza los directorios donde escribe Apache (ver 10.4) |
+| 4 | Escribe `DEPLOYED_COMMIT` (la huella del commit desplegado) y lo deja legible |
+| 5 | Cutover: apunta los symlinks `current` a la versión nueva |
+| 6-7 | Health check; si falla, **rollback automático** al deployment previo |
+
+**Si el health check falla,** el código HTTP que reporta orienta el diagnóstico:
+
+| Código | Significado probable | Primer lugar donde mirar |
+|---|---|---|
+| 000 | No hubo conexión (red, SSL, timeout) | Conectividad y certificado |
+| 403 | Apache no puede LEER los archivos | Permisos del deployment |
+| 404 | El contenido no está donde Apache espera | Symlink `current` y rutas |
+| 500 | El PHP truena al ejecutar | `error_7.log` del vhost (ver 10.4) |
+
+**El health check solo cubre HTTP.** Que el sitio responda 200 no garantiza que el motor Stata funcione: después de cada deploy, corre una **simulación real en el navegador** y verifica que produce resultados. Esa prueba funcional humana es el gate final (lección del 2026-07-09, cuando el sitio respondía perfecto y el motor tronaba por dentro — bitácora v1.26 de `02_governance/arquitectura-y-bitacoras.md`).
+
+### 10.3 `backup-vps.sh`: el respaldo del VPS
+
+Corre solo como Fase 0 de cada deploy, y también a mano:
+
+| Modo | Cuándo |
+|---|---|
+| `./backup-vps.sh` | Respaldo de config Apache (el mismo que corre en cada deploy) |
+| `./backup-vps.sh --llaves` | Cuando rotan las llaves SSL (~2 veces/año). Pide password de sudo y la passphrase gpg |
+| `./backup-vps.sh --dry-run` | Simula sin escribir nada |
+| `./backup-vps.sh --solo-poda` | Solo aplica la retención (mantenimiento) |
+
+Detalles operativos: la passphrase del cifrado gpg vive en Firefox (entrada "GPG - Backup llaves SSL VPS CIEP"); se conservan los **90 backups** más recientes (la poda es automática); y cada trimestre toca una **prueba de restauración** (descifrar el `.gpg` más reciente y verificar el contenido — decisión D.5 de governance). Un backup que nunca se ha restaurado no es un backup: es una esperanza.
+
+### 10.4 Troubleshooting del VPS
+
+- **Los logs del vhost** son `/var/log/apache2/access_7.log` y `error_7.log` — los nombres traen el `7` heredado de la época v7; son los logs actuales aunque sirvas v8.x.
+- **El patrón de permisos:** Apache (usuario `www-data`) solo LEE el deployment (todo queda `775` directorios / `664` archivos), con TRES excepciones donde escribe y necesitan `777`: `users/` del motor (sesiones de simulación), `raw/temp/` del motor (temporales de comandos) y `logs/` del sitio. La Fase 3c los garantiza en cada deploy. Si un 500 aparece después de mover archivos a mano, sospecha primero de permisos: todo lo creado por SSH nace ilegible para Apache.
+- **Las sesiones web** viven en `/SIM/OUT/current/users/0*/` (una carpeta por simulación, nombre que inicia en `0`) y un cron de root las limpia periódicamente. El **escenario base** vive en `users/ricardo/bootstraps/` — no es una sesión: no lo borres.
+
+### 10.5 Dónde está el detalle
+
+Esta sección es el mapa, no el territorio. El detalle vive en `02_governance/`: `arquitectura-y-bitacoras.md` §7 (diseño del pipeline, backup y bitácoras de cada deploy) y `reconocimiento-vps.md` (estructura completa del VPS).

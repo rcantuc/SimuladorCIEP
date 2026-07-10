@@ -43,14 +43,20 @@ quietly {
 	local anio_exo = r(anio_exo)
 	//local geo = r(geo)
 
-	save "`c(sysdir_site)'/raw/temp/basepib.dta", replace
+	* tempfile en lugar de un intermedio en disco (v8.0.7): antes se guardaba
+	* basepib.dta en un subdirectorio de temporales del sitio, que en
+	* deployments limpios del VPS no existía y SCN tronaba con r(603). El
+	* tempfile vive donde Stata decide y se limpia solo (mismo principio que
+	* ensure_asset: cero estado de directorios externo).
+	tempfile basepib
+	save `"`basepib'"', replace
 
 
 
 	**************************
 	** 1.1. Merge databases **
 	use "`c(sysdir_site)'/master/SCN.dta", clear
-	merge 1:1 (anio) using "`c(sysdir_site)'/raw/temp/basepib.dta", nogen keep(matched)
+	merge 1:1 (anio) using `"`basepib'"', nogen keep(matched)
 	scalar aniomax = `aniomax'
 	tsset anio
 

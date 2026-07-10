@@ -199,6 +199,7 @@ log_ok "Gate 2: working tree limpio."
 [[ -d "$LOCAL_SITE_ROOT" ]]         || die "No existe LOCAL_SITE_ROOT: $LOCAL_SITE_ROOT"
 [[ -d "$LOCAL_REPO_ROOT" ]]         || die "No existe LOCAL_REPO_ROOT: $LOCAL_REPO_ROOT"
 [[ -d "$LOCAL_REPO_ROOT/master" ]]  || die "No existe $LOCAL_REPO_ROOT/master (los .dta procesados). ¿Corriste el pipeline local?"
+[[ -d "$LOCAL_REPO_ROOT/users/ricardo/bootstraps" ]] || die "No existe $LOCAL_REPO_ROOT/users/ricardo/bootstraps (el escenario base que consume el motor web). Sin él, el motor truena con r(601) — falla 6 del debugging 2026-07-09."
 [[ -f "$LOCAL_SITE_ROOT/health.php" ]] || die "No existe $LOCAL_SITE_ROOT/health.php. El health check post-deploy depende de él."
 log_ok "Gate 5: fuentes locales verificadas."
 
@@ -353,10 +354,19 @@ log_info "Fase 3a: rsync del motor Stata → $VPS_SIM_ROOT/$VPS_SIM_VERSION/"
 # scripts, users/ ni raw/.
 # --chmod después de -a, forma simbólica = 775/664 (ver nota completa en la
 # Fase 2; la garantía real es la Fase 3c porque openrsync ignora --chmod).
+# Los --exclude explícitos de abajo son redundantes con el catch-all final
+# (--exclude='*' ya protege todo lo no incluido de la transferencia Y del
+# --delete), pero se listan para autodocumentar qué vive en el destino sin
+# venir de este rsync: users/ (sesiones + escenario base, Fase 3b-bis),
+# raw/ (temporales de runtime), master/ (Fase 3b) y DEPLOYED_COMMIT (Fase 4).
 RSYNC_ENGINE_OPTS=(
     -avz
     --chmod=Du=rwx,Dg=rwx,Do=rx,Fu=rw,Fg=rw,Fo=r
     --delete
+    --exclude='/users/'
+    --exclude='/raw/'
+    --exclude='/master/'
+    --exclude='/DEPLOYED_COMMIT'
     --include='/*.ado'
     --include='/*.do'
     --include='/*.scheme'
@@ -382,9 +392,14 @@ fi
 
 log_info "Fase 3b: rsync de .dta procesados → $VPS_SIM_ROOT/$VPS_SIM_VERSION/master/"
 
-# Alcance mínimo aprobado 2026-07-10: SOLO los .dta de primer nivel de master/
-# (~2.7 GB). Los subdirectorios anuales (2014/…2024/) NO se propagan para
-# eficientar red y disco del VPS. La Mac es la fuente de verdad (D.3, R.5).
+# Alcance RECURSIVO (corregido 2026-07-09, falla 5 del debugging del motor):
+# el alcance original "solo .dta de primer nivel" (aprobado 2026-07-10) dejó
+# fuera los subdirectorios anuales (2014/…2024/) — pero el motor SÍ los
+# consume (GastoPC tronó con r(601) por master/2024/households.dta). Ahora se
+# propagan los .dta de TODO el árbol de master/. La Mac sigue siendo la
+# fuente de verdad (D.3, R.5).
+# NOTA: la primera corrida tras este fix subirá los subdirs de años que
+# falten en el VPS (varios GB — el dry-run muestra el volumen exacto).
 # --progress (no --info=progress2): el rsync de macOS es 2.6.9 y no conoce
 # la sintaxis moderna. --progress funciona en ambos extremos.
 # --chmod después de -a, forma simbólica = 775/664 (ver nota completa en la
@@ -394,7 +409,9 @@ RSYNC_MASTER_OPTS=(
     --chmod=Du=rwx,Dg=rwx,Do=rx,Fu=rw,Fg=rw,Fo=r
     --progress
     --delete
-    --include='/*.dta'
+    --exclude='.DS_Store'
+    --include='*/'
+    --include='*.dta'
     --exclude='*'
 )
 [[ $DRY_RUN -eq 1 ]] && RSYNC_MASTER_OPTS+=(--dry-run)
@@ -415,6 +432,49 @@ else
 fi
 
 # =============================================================================
+# FASE 3b-bis — Rsync del escenario base (users/ricardo/bootstraps/)
+# =============================================================================
+# Falla 6 del debugging 2026-07-09: users/ricardo/bootstraps/1/ (~5 MB, 217
+# archivos: CFEREC.dta etc.) es el ESCENARIO BASE que el motor web consume en
+# cada simulación — NO son datos de sesión, son un asset de deployment que el
+# pipeline no llevaba (el motor tronaba con r(601)). Convención v8: el motor
+# busca users/ricardo/ (el snapshot v7 usaba users/ciepmx/).
+# Tras el rsync: chmod -R con o=rX sobre users/ricardo/ — www-data solo LEE
+# el escenario base (las sesiones de escritura viven en users/0*/, no aquí).
+log_info "Fase 3b-bis: rsync del escenario base → $VPS_SIM_ROOT/$VPS_SIM_VERSION/users/ricardo/bootstraps/"
+
+RSYNC_BOOTSTRAPS_OPTS=(
+    -az
+    --chmod=Du=rwx,Dg=rwx,Do=rx,Fu=rw,Fg=rw,Fo=r
+    --progress
+    --delete
+    --exclude='.DS_Store'
+)
+[[ $DRY_RUN -eq 1 ]] && RSYNC_BOOTSTRAPS_OPTS+=(--dry-run)
+
+run_rsync_bootstraps() {
+    # rsync no crea los directorios padre del destino: se garantizan primero.
+    if [[ $DRY_RUN -eq 0 ]]; then
+        ssh_vps "mkdir -p '$VPS_SIM_ROOT/$VPS_SIM_VERSION/users/ricardo/bootstraps'" || return 1
+    fi
+    rsync "${RSYNC_BOOTSTRAPS_OPTS[@]}" -e "$RSYNC_SSH" \
+        "$LOCAL_REPO_ROOT/users/ricardo/bootstraps/" \
+        "${VPS_USER}@${VPS_HOST}:$VPS_SIM_ROOT/$VPS_SIM_VERSION/users/ricardo/bootstraps/" 2>&1 | tee -a "$LOG_FILE"
+}
+if run_rsync_bootstraps; then
+    if [[ $DRY_RUN -eq 0 ]]; then
+        ssh_vps "chmod -R u=rwX,g=rwX,o=rX '$VPS_SIM_ROOT/$VPS_SIM_VERSION/users/ricardo'"
+    fi
+    log_ok "Fase 3b-bis: escenario base propagado$( [[ $DRY_RUN -eq 1 ]] && echo ' (simulado)' )."
+else
+    if [[ $DRY_RUN -eq 1 ]]; then
+        log_warn "Fase 3b-bis: rsync simulado no pudo conectar al VPS. Dry-run continúa."
+    else
+        die "Fase 3b-bis: rsync del escenario base falló. Nada se ha activado."
+    fi
+fi
+
+# =============================================================================
 # FASE 3c — Normalización de permisos en el VPS (garantía anti-403)
 # =============================================================================
 # El rsync de macOS (openrsync) ignora --chmod en silencio (verificado con
@@ -429,6 +489,25 @@ if [[ $DRY_RUN -eq 1 ]]; then
 else
     ssh_vps "chmod -R u=rwX,g=rwX,o=rX '$VPS_HTML_ROOT/$VPS_HTML_VERSION' '$VPS_SIM_ROOT/$VPS_SIM_VERSION'"
     log_ok "Fase 3c: permisos normalizados."
+fi
+
+# Lista de ESCRITURA de www-data (fallas 1-3 del debugging 2026-07-09).
+# Patrón raíz: todo lo creado en el VPS después del chmod de arriba nace
+# ilegible o inescribible para Apache (www-data corre como "others": o=rX).
+# Estos son los ÚNICOS directorios donde www-data escribe, y se re-fuerzan
+# 777 al final de la fase para que el orden de operaciones no importe:
+#   $VPS_SIM_ROOT/$VPS_SIM_VERSION/users/    sesiones web (mkdir de calculaStata.php)
+#   $VPS_SIM_ROOT/$VPS_SIM_VERSION/raw/temp/ temporales de .ado (AccesoBIE, DatosAbiertos)
+#   $VPS_HTML_ROOT/$VPS_HTML_VERSION/logs/   bitácoras de runtime (logCalcular.php)
+# El 777 de users/ NO es recursivo: users/ricardo/ (escenario base, solo
+# lectura) conserva el o=rX que le dejó la Fase 3b-bis.
+WWWDATA_WRITE_DIRS_CMD="mkdir -p '$VPS_SIM_ROOT/$VPS_SIM_VERSION/users' '$VPS_SIM_ROOT/$VPS_SIM_VERSION/raw/temp' '$VPS_HTML_ROOT/$VPS_HTML_VERSION/logs' && chmod 777 '$VPS_SIM_ROOT/$VPS_SIM_VERSION/users' '$VPS_SIM_ROOT/$VPS_SIM_VERSION/raw/temp' '$VPS_HTML_ROOT/$VPS_HTML_VERSION/logs'"
+if [[ $DRY_RUN -eq 1 ]]; then
+    log_info "[dry-run] Se ejecutaría (directorios de escritura de www-data):"
+    log_info "  $WWWDATA_WRITE_DIRS_CMD"
+else
+    ssh_vps "$WWWDATA_WRITE_DIRS_CMD"
+    log_ok "Fase 3c: directorios de escritura de www-data garantizados (users/, raw/temp/, logs/)."
 fi
 
 # =============================================================================
@@ -454,7 +533,13 @@ else
         "${VPS_USER}@${VPS_HOST}:$VPS_HTML_ROOT/$VPS_HTML_VERSION/DEPLOYED_COMMIT" 2>&1 | tee -a "$LOG_FILE"
     rsync -az -e "$RSYNC_SSH" "$DEPLOYED_COMMIT_TMP" \
         "${VPS_USER}@${VPS_HOST}:$VPS_SIM_ROOT/$VPS_SIM_VERSION/DEPLOYED_COMMIT" 2>&1 | tee -a "$LOG_FILE"
-    log_ok "Fase 4: DEPLOYED_COMMIT escrito ($CURRENT_COMMIT_SHORT)."
+    # chmod explícito (falla 1 del debugging 2026-07-09): este archivo se
+    # escribe DESPUÉS del chmod masivo de la Fase 3c, así que nació 600 (el
+    # mktemp local es 600 y rsync -a preserva permisos) → health.php no pudo
+    # leerlo y el health check disparó un rollback falso. La garantía es este
+    # chmod explícito, independiente del orden de fases.
+    ssh_vps "chmod 664 '$VPS_HTML_ROOT/$VPS_HTML_VERSION/DEPLOYED_COMMIT' '$VPS_SIM_ROOT/$VPS_SIM_VERSION/DEPLOYED_COMMIT'"
+    log_ok "Fase 4: DEPLOYED_COMMIT escrito y legible ($CURRENT_COMMIT_SHORT)."
 fi
 rm -f "$DEPLOYED_COMMIT_TMP"
 
