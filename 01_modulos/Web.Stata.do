@@ -20,7 +20,7 @@ if "`c(username)'" == "ricardo" {						// Mac
 	sysdir set SITE "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/"
 }
 else {
-	sysdir set SITE "/SIM/OUT/7/"
+	sysdir set SITE "/SIM/OUT/current/"
 }
 cd "`c(sysdir_site)'/users/$id"
 
