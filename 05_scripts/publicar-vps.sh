@@ -14,11 +14,14 @@
 #
 # Uso:
 #   ./publicar-vps.sh <version-deployment> [--dry-run] [--force] [--skip-health]
+#   ./publicar-vps.sh <version-deployment> --limpiar-master-vps
 #
 # Ejemplos:
 #   ./publicar-vps.sh v8.0            # deploy real, con confirmación
 #   ./publicar-vps.sh v8.0 --dry-run  # simula: muestra qué haría, no cambia nada
 #   ./publicar-vps.sh v8.1 --force    # deploy real sin pausa de confirmación
+#   ./publicar-vps.sh v8.0 --limpiar-master-vps  # propone (NO ejecuta) la
+#                                     # limpieza de años/perfiles no vigentes
 #
 # La versión es de DEPLOYMENT (v8.0, v8.1), no de código (v8.0.6 se rechaza).
 # Un deployment agrupa múltiples releases del código; el commit exacto queda
@@ -55,6 +58,22 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CREDENTIALS_FILE="${SCRIPT_DIR}/publicar-vps-credentials.sh"
 LOG_FILE="/tmp/publicar-vps-$(date +%Y%m%d-%H%M%S).log"
 
+# -----------------------------------------------------------------------------
+# Whitelist del canon web (decisión 2026-07-09, bitácora v1.27)
+# -----------------------------------------------------------------------------
+# El flujo WEB solo consume el año ENIGH vigente (master/2024/) y el perfil
+# vigente (perfiles2026.dta). Los años previos (2014-2022) y sus perfiles son
+# insumos SOLO-LOCALES (trabajo del investigador en su Mac): no viajan al VPS.
+# El VPS solo aloja lo que el web sirve.
+#
+# ACTUALIZAR ESTAS 2 VARIABLES cuando avance el ENIGH vigente (~cada 2 años).
+# Es intencional que la regla viva explícita aquí, no en symlinks ni en
+# infraestructura: un cambio de vigencia es una decisión editable en el código
+# y auditable en Git. Las leen la Fase 3b (deploy) y el modo
+# --limpiar-master-vps (limpieza), de la MISMA fuente: nunca se contradicen.
+WEB_MASTER_YEAR="2024"
+WEB_PERFIL="perfiles2026.dta"
+
 # Colores solo si stdout es una terminal
 if [[ -t 1 ]]; then
     RED=$'\033[0;31m'; GREEN=$'\033[0;32m'; YELLOW=$'\033[0;33m'
@@ -77,6 +96,7 @@ usage() {
     cat <<'EOF'
 Uso:
   ./publicar-vps.sh <version-deployment> [--dry-run] [--force] [--skip-health]
+  ./publicar-vps.sh <version-deployment> --limpiar-master-vps
 
 Argumentos:
   <version-deployment>  Requerido. Formato vN.M (semver de deployment: v8.0,
@@ -91,6 +111,11 @@ Opciones:
   --skip-health         Salta la verificación post-deploy (el rollback
                         automático también se salta). Solo para debugging,
                         NUNCA en producción real.
+  --limpiar-master-vps  NO despliega. Inspecciona master/ en el VPS y propone
+                        (imprime, NUNCA ejecuta) los comandos rm para borrar
+                        años y perfiles que NO están en la whitelist vigente
+                        (WEB_MASTER_YEAR / WEB_PERFIL). Borrar en producción
+                        es acción manual del operador.
 EOF
     exit 1
 }
@@ -102,12 +127,14 @@ VERSION_ARG=""
 DRY_RUN=0
 FORCE=0
 SKIP_HEALTH=0
+LIMPIAR_MASTER=0
 
 for arg in "$@"; do
     case "$arg" in
         --dry-run)     DRY_RUN=1 ;;
         --force)       FORCE=1 ;;
         --skip-health) SKIP_HEALTH=1 ;;
+        --limpiar-master-vps) LIMPIAR_MASTER=1 ;;
         --help|-h)     usage ;;
         -*)            log_error "Opción desconocida: $arg"; usage ;;
         *)
@@ -181,6 +208,61 @@ cleanup() {
     ssh -O exit -o "ControlPath=$SSH_CONTROL_PATH" "${VPS_USER}@${VPS_HOST}" 2>/dev/null || true
 }
 trap cleanup EXIT
+
+# =============================================================================
+# MODO --limpiar-master-vps — propone la limpieza de años/perfiles no vigentes
+# =============================================================================
+# Contexto (bitácora v1.27): la Fase 3b recursiva original subió TODOS los
+# años (2014-2024) y TODOS los perfiles*.dta al VPS. La whitelist de la Fase
+# 3b previene FUTURAS subidas, pero no borra lo ya presente. Este modo lista
+# lo sobrante y propone los rm exactos — NUNCA los ejecuta: borrar en
+# producción es acción manual del operador (mismo principio que el cutover).
+#
+# Qué CONSERVAR se deriva de las MISMAS variables que usa el deploy
+# (WEB_MASTER_YEAR, WEB_PERFIL): limpieza y deploy no pueden contradecirse.
+# Los .dta planos de la raíz jamás se proponen: los patrones solo capturan
+# subdirectorios de 4 dígitos y archivos perfiles*.dta.
+if [[ $LIMPIAR_MASTER -eq 1 ]]; then
+    MASTER_REMOTO="$VPS_SIM_ROOT/$VPS_SIM_VERSION/master"
+    log_info "Modo limpieza: inspeccionando $MASTER_REMOTO/ en el VPS."
+    log_info "Whitelist vigente: año $WEB_MASTER_YEAR, perfil $WEB_PERFIL."
+
+    # ls -1p: una entrada por línea; los directorios llevan '/' al final.
+    LISTADO_MASTER=$(ssh_vps "ls -1p '$MASTER_REMOTO/'") \
+        || die "No se pudo listar $MASTER_REMOTO/ en el VPS.
+        Verifica que la versión exista (¿ya corriste un deploy de $VERSION_ARG?)
+        y que el VPS responda: ssh ${VPS_USER}@${VPS_HOST} ls '$MASTER_REMOTO/'"
+
+    PROPUESTA_RM=()
+    while IFS= read -r entrada; do
+        [[ -n "$entrada" ]] || continue
+        # GUARD: el año y el perfil VIGENTES jamás entran a la propuesta,
+        # aunque los patrones de abajo cambien en el futuro.
+        case "$entrada" in
+            "${WEB_MASTER_YEAR}/"|"$WEB_PERFIL") continue ;;
+        esac
+        if [[ "$entrada" =~ ^[0-9]{4}/$ ]]; then
+            PROPUESTA_RM+=("rm -rf '$MASTER_REMOTO/${entrada%/}'")
+        elif [[ "$entrada" =~ ^perfiles.*\.dta$ ]]; then
+            PROPUESTA_RM+=("rm -f '$MASTER_REMOTO/$entrada'")
+        fi
+    done <<< "$LISTADO_MASTER"
+
+    if [[ ${#PROPUESTA_RM[@]} -eq 0 ]]; then
+        log_ok "Nada que limpiar: master/ en el VPS ya coincide con la whitelist."
+    else
+        log_warn "Encontrados ${#PROPUESTA_RM[@]} sobrantes (años/perfiles NO vigentes)."
+        log ""
+        log "Ejecuta estos comandos por SSH para limpiar:"
+        for cmd_rm in "${PROPUESTA_RM[@]}"; do
+            log "  $cmd_rm"
+        done
+        log ""
+        log_info "Este modo NUNCA borra por sí mismo. Copia los comandos en una"
+        log_info "sesión SSH (ssh ${VPS_USER}@${VPS_HOST}) tras verificarlos."
+    fi
+    exit 0
+fi
 
 # -----------------------------------------------------------------------------
 # Gate 2 — Working tree limpio
@@ -392,14 +474,28 @@ fi
 
 log_info "Fase 3b: rsync de .dta procesados → $VPS_SIM_ROOT/$VPS_SIM_VERSION/master/"
 
-# Alcance RECURSIVO (corregido 2026-07-09, falla 5 del debugging del motor):
-# el alcance original "solo .dta de primer nivel" (aprobado 2026-07-10) dejó
-# fuera los subdirectorios anuales (2014/…2024/) — pero el motor SÍ los
-# consume (GastoPC tronó con r(601) por master/2024/households.dta). Ahora se
-# propagan los .dta de TODO el árbol de master/. La Mac sigue siendo la
-# fuente de verdad (D.3, R.5).
-# NOTA: la primera corrida tras este fix subirá los subdirs de años que
-# falten en el VPS (varios GB — el dry-run muestra el volumen exacto).
+# Alcance WHITELIST (refinado 2026-07-09, bitácora v1.27): el alcance
+# recursivo total (fix de la falla 5) sobre-aprovisionaba — subía TODAS las
+# subcarpetas de año (2014-2024) y TODOS los perfiles*.dta, pero el flujo web
+# solo consume el año ENIGH vigente y su perfil (hoy: master/2024/ y
+# perfiles2026.dta; ver WEB_MASTER_YEAR/WEB_PERFIL al inicio del script).
+# Los años previos son insumos solo-locales: el VPS solo aloja lo que el web
+# sirve. La Mac sigue siendo la fuente de verdad (D.3, R.5).
+#
+# LOS FILTROS SE EVALÚAN EN ORDEN, PRIMER MATCH GANA — los --include
+# específicos van ANTES de los --exclude generales:
+#   1. /$WEB_MASTER_YEAR/***   el año vigente completo SÍ viaja
+#   2. /[0-9][0-9][0-9][0-9]/  los demás años NO (el vigente ya matcheó arriba)
+#   3. /$WEB_PERFIL            el perfil vigente SÍ
+#   4. /perfiles*.dta          los demás perfiles NO
+#   5. /*.dta                  los .dta PLANOS de la raíz SÍ (DatosAbiertos,
+#                              PEF, Poblacion, Poblaciontot, SCN, SHRFSP, LIF,
+#                              Deflactor, PIBDeflactor — ninguno matchea los
+#                              patrones de años ni de perfiles)
+#   6. *                       catch-all: nada más viaja, y protege del
+#                              --delete lo excluido en el receptor (los años
+#                              viejos ya subidos NO se borran: para eso está
+#                              el modo --limpiar-master-vps)
 # --progress (no --info=progress2): el rsync de macOS es 2.6.9 y no conoce
 # la sintaxis moderna. --progress funciona en ambos extremos.
 # --chmod después de -a, forma simbólica = 775/664 (ver nota completa en la
@@ -410,8 +506,11 @@ RSYNC_MASTER_OPTS=(
     --progress
     --delete
     --exclude='.DS_Store'
-    --include='*/'
-    --include='*.dta'
+    --include="/${WEB_MASTER_YEAR}/***"
+    --exclude='/[0-9][0-9][0-9][0-9]/'
+    --include="/${WEB_PERFIL}"
+    --exclude='/perfiles*.dta'
+    --include='/*.dta'
     --exclude='*'
 )
 [[ $DRY_RUN -eq 1 ]] && RSYNC_MASTER_OPTS+=(--dry-run)
@@ -482,13 +581,24 @@ fi
 # origen pueden llegar intactos (700/600) y Apache no podría leer — el HTTP 403
 # del primer deploy. Este chmod remoto replica el fix manual que dejó a v8.0
 # sirviendo en producción y es determinista sin importar el cliente rsync.
-log_info "Fase 3c: normalización de permisos en el VPS (u=rwX,g=rwX,o=rX)."
+#
+# SOLO SOBRE LO QUE EL DEPLOY POSEE (fix 2026-07-09, segundo re-deploy): el
+# chmod -R ciego original tronaba con "Operation not permitted" — el árbol
+# mezcla dos poblaciones con dueños distintos: las fuentes que sube el deploy
+# (${VPS_USER}) y el runtime que crea Apache (www-data: sesiones en users/0*,
+# sankeys, logs, raw/temp). ${VPS_USER} no puede chmodear lo de www-data, y
+# con set -e el deploy abortaba a medias ANTES del swap. El find -user filtra
+# por dueño: solo toca lo de ${VPS_USER} y es autoajustable — cualquier
+# archivo runtime futuro queda excluido por ownership, sin mantener listas.
+# Con -exec … {} + no se invoca chmod si no hay matches (exit 0 limpio).
+FASE3C_CHMOD_CMD="find '$VPS_HTML_ROOT/$VPS_HTML_VERSION' '$VPS_SIM_ROOT/$VPS_SIM_VERSION' -user '$VPS_USER' -exec chmod u=rwX,g=rwX,o=rX {} +"
+log_info "Fase 3c: normalización de permisos en el VPS (u=rwX,g=rwX,o=rX, solo archivos de ${VPS_USER})."
 if [[ $DRY_RUN -eq 1 ]]; then
     log_info "[dry-run] Se ejecutaría:"
-    log_info "  chmod -R u=rwX,g=rwX,o=rX '$VPS_HTML_ROOT/$VPS_HTML_VERSION' '$VPS_SIM_ROOT/$VPS_SIM_VERSION'"
+    log_info "  $FASE3C_CHMOD_CMD"
 else
-    ssh_vps "chmod -R u=rwX,g=rwX,o=rX '$VPS_HTML_ROOT/$VPS_HTML_VERSION' '$VPS_SIM_ROOT/$VPS_SIM_VERSION'"
-    log_ok "Fase 3c: permisos normalizados."
+    ssh_vps "$FASE3C_CHMOD_CMD"
+    log_ok "Fase 3c: permisos normalizados (runtime de www-data intacto por diseño)."
 fi
 
 # Lista de ESCRITURA de www-data (fallas 1-3 del debugging 2026-07-09).

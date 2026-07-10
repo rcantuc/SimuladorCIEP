@@ -523,9 +523,9 @@ La versión es de *deployment* (`v8.0`, `v8.1`), no de código (`v8.0.7` la rech
 | 0 | Backup de la config Apache (vía `backup-vps.sh`). **Si el backup falla, no hay deploy.** |
 | 1 | Snapshot: anota el commit local y el deployment previo (destino del rollback) |
 | 2 | Sube el sitio PHP |
-| 3a-3b | Sube el motor Stata y los `.dta` de `master/` (recursivo, incluye los subdirectorios anuales) |
+| 3a-3b | Sube el motor Stata y los `.dta` de `master/` que el web consume: los planos de la raíz + SOLO el año ENIGH vigente y su perfil (hoy `2024/` y `perfiles2026.dta`; los años previos son insumos solo-locales y no viajan) |
 | 3b-bis | Sube el **escenario base** (`users/ricardo/bootstraps/`) que el motor consume en cada simulación |
-| 3c | Normaliza permisos y garantiza los directorios donde escribe Apache (ver 10.4) |
+| 3c | Normaliza permisos — solo sobre lo que el deploy posee, sin tocar lo que Apache crea en runtime — y garantiza los directorios donde escribe Apache (ver 10.4) |
 | 4 | Escribe `DEPLOYED_COMMIT` (la huella del commit desplegado) y lo deja legible |
 | 5 | Cutover: apunta los symlinks `current` a la versión nueva |
 | 6-7 | Health check; si falla, **rollback automático** al deployment previo |
@@ -540,6 +540,12 @@ La versión es de *deployment* (`v8.0`, `v8.1`), no de código (`v8.0.7` la rech
 | 500 | El PHP truena al ejecutar | `error_7.log` del vhost (ver 10.4) |
 
 **El health check solo cubre HTTP.** Que el sitio responda 200 no garantiza que el motor Stata funcione: después de cada deploy, corre una **simulación real en el navegador** y verifica que produce resultados. Esa prueba funcional humana es el gate final (lección del 2026-07-09, cuando el sitio respondía perfecto y el motor tronaba por dentro — bitácora v1.26 de `02_governance/arquitectura-y-bitacoras.md`).
+
+**Cuándo avanza el ENIGH vigente** (~cada 2 años), actualiza las variables `WEB_MASTER_YEAR` y `WEB_PERFIL` al inicio de `publicar-vps.sh` — son la única fuente de la regla "qué año/perfil viaja al VPS". Y si quedaron años viejos en el VPS de deploys anteriores, el modo de limpieza te da la lista de lo sobrante SIN borrar nada (borrar en producción siempre es acción manual tuya):
+
+```bash
+./publicar-vps.sh v8.0 --limpiar-master-vps   # imprime los rm exactos; tú decides
+```
 
 ### 10.3 `backup-vps.sh`: el respaldo del VPS
 
@@ -558,6 +564,7 @@ Detalles operativos: la passphrase del cifrado gpg vive en Firefox (entrada "GPG
 
 - **Los logs del vhost** son `/var/log/apache2/access_7.log` y `error_7.log` — los nombres traen el `7` heredado de la época v7; son los logs actuales aunque sirvas v8.x.
 - **El patrón de permisos:** Apache (usuario `www-data`) solo LEE el deployment (todo queda `775` directorios / `664` archivos), con TRES excepciones donde escribe y necesitan `777`: `users/` del motor (sesiones de simulación), `raw/temp/` del motor (temporales de comandos) y `logs/` del sitio. La Fase 3c los garantiza en cada deploy. Si un 500 aparece después de mover archivos a mano, sospecha primero de permisos: todo lo creado por SSH nace ilegible para Apache.
+- **Dos dueños conviven en el árbol:** lo que sube el deploy es de `ciepmx`; lo que Apache crea en runtime (sesiones, sankeys, logs) es de `www-data`, y `ciepmx` NO puede cambiarle permisos. Por eso la Fase 3c filtra por dueño (`find -user ciepmx`) en vez de un `chmod -R` ciego — un `chmod -R` tuyo por SSH sobre el árbol completo va a tronar con "Operation not permitted" en los archivos de `www-data`; es esperado, no es señal de que algo esté roto.
 - **Las sesiones web** viven en `/SIM/OUT/current/users/0*/` (una carpeta por simulación, nombre que inicia en `0`) y un cron de root las limpia periódicamente. El **escenario base** vive en `users/ricardo/bootstraps/` — no es una sesión: no lo borres.
 
 ### 10.5 Dónde está el detalle
