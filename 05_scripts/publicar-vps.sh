@@ -625,25 +625,32 @@ fi
 # =============================================================================
 log_info "Fase 4: escribir DEPLOYED_COMMIT."
 
-# Versión del MOTOR (bitácora v1.30): la línea "Version:" trae el campo
-# `version` de 05_scripts/manifest.json — la fuente de verdad del código
-# Stata, la misma que valida el Gate 3 de publicar.sh. El hero y el footer
-# del sitio la pintan como "Versión del simulador": significa "qué versión
-# del modelo produjo estos números", no "qué deploy es este" (eso lo dicen
-# Commit: y Deployment:, que siguen aquí para diagnóstico). Parseo con
-# python3 + json (patrón de casa, mismo del Gate 3): parser real, inmune a
-# formato/orden de campos. Cualquier falla (archivo ausente, JSON inválido,
-# campo faltante) colapsa a cadena vacía SIN abortar el deploy — el sitio
-# simplemente no pinta versión; nunca rompe la página.
-ENGINE_VERSION=$(python3 - "$LOCAL_REPO_ROOT/05_scripts/manifest.json" <<'PYEOF' 2>/dev/null || echo ""
+# Versión del MOTOR (bitácora v1.30) y fecha de los DATOS (bitácora v1.31):
+# ambas salen de 05_scripts/manifest.json — la fuente de verdad que valida el
+# Gate 3 de publicar.sh. `version` → línea "Version:" (el hero y el footer la
+# pintan como "Versión del simulador": "qué versión del modelo produjo estos
+# números"). `data_updated` (ISO YYYY-MM-DD) → línea "DataUpdated:" (el hero
+# la pinta como "Última actualización", reformateada por idioma: frescura de
+# los DATOS precargados; se bumpea solo al reprocesar datos, no en releases
+# de código). "Qué deploy es este" lo siguen diciendo Commit: y Deployment:.
+# Parseo con python3 + json (patrón de casa, mismo del Gate 3): parser real,
+# inmune a formato/orden de campos. Cualquier falla (archivo ausente, JSON
+# inválido, campo faltante) colapsa a cadena vacía SIN abortar el deploy —
+# el sitio no pinta versión y usa su fecha de respaldo; nunca rompe.
+# Una sola pasada: imprime dos líneas (version, data_updated).
+MANIFEST_FIELDS=$(python3 - "$LOCAL_REPO_ROOT/05_scripts/manifest.json" <<'PYEOF' 2>/dev/null || printf '\n\n'
 import json, sys
 try:
     with open(sys.argv[1], encoding="utf-8") as f:
-        print(json.load(f).get("version", "") or "")
+        m = json.load(f)
 except Exception:
-    print("")
+    m = {}
+print(m.get("version", "") or "")
+print(m.get("data_updated", "") or "")
 PYEOF
 )
+ENGINE_VERSION=$(printf '%s\n' "$MANIFEST_FIELDS" | sed -n '1p')
+DATA_UPDATED=$(printf '%s\n' "$MANIFEST_FIELDS" | sed -n '2p')
 
 # Formato: la línea "Version:" convive con las demás — health.php vuelca el
 # archivo completo (no parsea por claves) y health_commit_matches() busca el
@@ -654,6 +661,7 @@ Commit: $CURRENT_COMMIT
 Timestamp: $(date -u +%Y-%m-%dT%H:%M:%SZ)
 Deployment: $VERSION_ARG
 Version: $ENGINE_VERSION
+DataUpdated: $DATA_UPDATED
 Deployed by: ${VPS_USER} via publicar-vps.sh
 EOF
 
@@ -661,6 +669,11 @@ if [[ -z "$ENGINE_VERSION" ]]; then
     log_warn "Fase 4: no pude leer 'version' de 05_scripts/manifest.json — la línea
 Version: queda VACÍA (el sitio no pintará versión). El deploy continúa, pero
 revisa el manifest: ¿existe, es JSON válido, tiene el campo 'version'?"
+fi
+if [[ -z "$DATA_UPDATED" ]]; then
+    log_warn "Fase 4: no pude leer 'data_updated' de 05_scripts/manifest.json — la línea
+DataUpdated: queda VACÍA (el hero usará su fecha de respaldo hardcodeada, que
+puede estar VIEJA). El deploy continúa, pero revisa el campo en el manifest."
 fi
 
 if [[ $DRY_RUN -eq 1 ]]; then
@@ -679,10 +692,10 @@ else
     # leerlo y el health check disparó un rollback falso. La garantía es este
     # chmod explícito, independiente del orden de fases.
     ssh_vps "chmod 664 '$VPS_HTML_ROOT/$VPS_HTML_VERSION/DEPLOYED_COMMIT' '$VPS_SIM_ROOT/$VPS_SIM_VERSION/DEPLOYED_COMMIT'"
-    if [[ -n "$ENGINE_VERSION" ]]; then
-        log_ok "Fase 4: DEPLOYED_COMMIT escrito y legible ($CURRENT_COMMIT_SHORT, motor $ENGINE_VERSION)."
+    if [[ -n "$ENGINE_VERSION" && -n "$DATA_UPDATED" ]]; then
+        log_ok "Fase 4: DEPLOYED_COMMIT escrito y legible ($CURRENT_COMMIT_SHORT, motor $ENGINE_VERSION, datos $DATA_UPDATED)."
     else
-        log_warn "Fase 4: DEPLOYED_COMMIT escrito y legible ($CURRENT_COMMIT_SHORT) — [WARN] SIN versión de motor (manifest.json ilegible o sin campo 'version')."
+        log_warn "Fase 4: DEPLOYED_COMMIT escrito y legible ($CURRENT_COMMIT_SHORT) — [WARN] motor '${ENGINE_VERSION:-VACÍA}', datos '${DATA_UPDATED:-VACÍA}' (manifest.json ilegible o campo faltante)."
     fi
 fi
 rm -f "$DEPLOYED_COMMIT_TMP"
