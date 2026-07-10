@@ -637,8 +637,8 @@ log_info "Fase 4: escribir DEPLOYED_COMMIT."
 # inmune a formato/orden de campos. Cualquier falla (archivo ausente, JSON
 # inválido, campo faltante) colapsa a cadena vacía SIN abortar el deploy —
 # el sitio no pinta versión y usa su fecha de respaldo; nunca rompe.
-# Una sola pasada: imprime dos líneas (version, data_updated).
-MANIFEST_FIELDS=$(python3 - "$LOCAL_REPO_ROOT/05_scripts/manifest.json" <<'PYEOF' 2>/dev/null || printf '\n\n'
+# Una sola pasada: imprime tres líneas (version, data_updated, release_url_prefix).
+MANIFEST_FIELDS=$(python3 - "$LOCAL_REPO_ROOT/05_scripts/manifest.json" <<'PYEOF' 2>/dev/null || printf '\n\n\n'
 import json, sys
 try:
     with open(sys.argv[1], encoding="utf-8") as f:
@@ -647,10 +647,30 @@ except Exception:
     m = {}
 print(m.get("version", "") or "")
 print(m.get("data_updated", "") or "")
+print(m.get("release_url_prefix", "") or "")
 PYEOF
 )
 ENGINE_VERSION=$(printf '%s\n' "$MANIFEST_FIELDS" | sed -n '1p')
 DATA_UPDATED=$(printf '%s\n' "$MANIFEST_FIELDS" | sed -n '2p')
+RELEASE_PREFIX=$(printf '%s\n' "$MANIFEST_FIELDS" | sed -n '3p')
+
+# URL del GitHub Release de la versión del motor (bitácora v1.32): el número
+# de versión del hero/footer enlaza a su release exacto — señal de código
+# abierto. Derivada de release_url_prefix (que el Gate 3 de publicar.sh
+# garantiza terminado en /<version>/): se recorta el sufijo
+# 'releases/download/<version>/' y se arma 'releases/tag/<version>' — el tag
+# real de los releases usa el MISMO formato que manifest.version (con 'v';
+# publicar.sh hace gh release create "$version"). Si el prefix no tiene la
+# forma esperada, queda vacía: el sitio pinta la versión como texto plano,
+# nunca un link roto.
+RELEASE_URL=""
+if [[ -n "$ENGINE_VERSION" && "$RELEASE_PREFIX" == https://github.com/*/releases/download/* ]]; then
+    RELEASE_URL="${RELEASE_PREFIX%releases/download/*}releases/tag/${ENGINE_VERSION}"
+elif [[ -n "$ENGINE_VERSION" ]]; then
+    log_warn "Fase 4: release_url_prefix del manifest no tiene la forma esperada
+(https://github.com/<owner>/<repo>/releases/download/…) — la línea ReleaseUrl:
+queda VACÍA y el sitio mostrará la versión sin link. El deploy continúa."
+fi
 
 # Formato: la línea "Version:" convive con las demás — health.php vuelca el
 # archivo completo (no parsea por claves) y health_commit_matches() busca el
@@ -662,6 +682,7 @@ Timestamp: $(date -u +%Y-%m-%dT%H:%M:%SZ)
 Deployment: $VERSION_ARG
 Version: $ENGINE_VERSION
 DataUpdated: $DATA_UPDATED
+ReleaseUrl: $RELEASE_URL
 Deployed by: ${VPS_USER} via publicar-vps.sh
 EOF
 
