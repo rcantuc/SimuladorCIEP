@@ -50,6 +50,19 @@ auxiliar. Cero impacto en resultados numéricos.
 ### Datos
 - Sin cambios respecto a v8.0.8.
 
+### Correcciones
+- DatosAbiertos: la primera corrida en una instalación fresca tronaba con
+  r(170) — `mkdir` de Stata no es recursivo y el árbol
+  `site/raw/temp/Datos Abiertos/` no se creaba si faltaba algún nivel
+  (una instalación nueva no trae ni `site/`). Ahora el árbol se crea
+  nivel por nivel antes de usarse.
+- DatosAbiertos: las descargas ahora van con `copy` (que acepta URLs en
+  cualquier versión de Stata) en lugar de `unzipfile`/`import delimited`
+  con URL directa, que no son portables entre versiones — en algunas, el
+  intento de zip fallaba al instante sin llegar a la red. Los mensajes de
+  la cadena de respaldos ahora incluyen el código de error de Stata para
+  poder diagnosticar la causa (conexión, servidor, archivo inexistente).
+
 ## [v8.0.8] — 2026-07-10
 
 La cadena del token BIE/INEGI se endurece de punta a punta: SIM.do deja

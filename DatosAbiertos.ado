@@ -444,6 +444,10 @@ program define UpdateDatosAbiertos, return
 	local aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 	local mesvp = substr(`"`=trim("`fecha'")'"',6,2)
 
+	** mkdir no es recursivo: hay que crear el árbol nivel por nivel **
+	** (una instalación fresca no trae ni el directorio site/) **
+	capture mkdir "`c(sysdir_site)'"
+	capture mkdir "`c(sysdir_site)'/raw/"
 	capture mkdir "`c(sysdir_site)'/raw/temp/"
 	capture mkdir "`c(sysdir_site)'/raw/temp/Datos Abiertos/"
 	capture use "`c(sysdir_site)'/master/DatosAbiertos.dta", clear
@@ -940,39 +944,59 @@ program define _DAdescarga
 		local enc "encoding(`encoding')"
 	}
 
+	** mkdir no es recursivo: crea el árbol nivel por nivel antes de usarlo **
+	capture mkdir "`c(sysdir_site)'"
+	capture mkdir "`c(sysdir_site)'/raw/"
+	capture mkdir "`c(sysdir_site)'/raw/temp/"
+	capture mkdir "`dir'"
+
 	local exito = 0
 
 	** 1. Zip: más eficiente; 2 intentos por errores transitorios de conexión **
+	** La descarga va con copy (funciona con URLs en cualquier versión de   **
+	** Stata; unzipfile con URL directa no es portable entre versiones).    **
 	if "`modo'" == "descarga" {
 		forvalues intento = 1/2 {
 			if `exito' == 0 {
 				quietly cd "`dir'"
-				capture unzipfile "`url'/`nombre'.zip", replace
-				if _rc == 0 {
+				capture copy "`url'/`nombre'.zip" "`dir'/`nombre'.zip", replace
+				local rc = _rc
+				if `rc' == 0 {
+					capture unzipfile "`dir'/`nombre'.zip", replace
+					local rc = _rc
+					capture erase "`dir'/`nombre'.zip"
+				}
+				if `rc' == 0 {
 					capture import delimited "`dir'/`nombre'.csv", clear `enc'
-					if _rc == 0 {
-						local exito = 1
-					}
+					local rc = _rc
+				}
+				if `rc' == 0 {
+					local exito = 1
 				}
 				if `exito' == 0 & `intento' == 1 {
-					noisily di in g "Datos Abiertos: fall{c o'} el zip de " in y "`nombre'" in g ". Reintentando..."
+					noisily di in g "Datos Abiertos: fall{c o'} el zip de " in y "`nombre'" in g " (error `rc'). Reintentando..."
 					sleep 2000
 				}
 			}
 		}
 		if `exito' == 0 {
-			noisily di in g "Datos Abiertos: el zip de " in y "`nombre'" in g " fall{c o'} dos veces. Intentando csv directo..."
+			noisily di in g "Datos Abiertos: el zip de " in y "`nombre'" in g " fall{c o'} dos veces (error `rc'). Intentando csv directo..."
 		}
 	}
 
 	** 2. Csv directo: respaldo del zip, o vía principal con la opción csvfile **
 	if "`modo'" != "local" & `exito' == 0 {
-		capture import delimited "`url'/`nombre'.csv", clear `enc'
-		if _rc == 0 {
+		capture copy "`url'/`nombre'.csv" "`dir'/`nombre'.csv", replace
+		local rc = _rc
+		if `rc' == 0 {
+			capture import delimited "`dir'/`nombre'.csv", clear `enc'
+			local rc = _rc
+		}
+		if `rc' == 0 {
 			local exito = 1
 		}
 		else {
-			noisily di in g "Datos Abiertos: el csv de " in y "`nombre'" in g " tambi{c e'}n fall{c o'}. Usando archivos locales de raw/temp/."
+			noisily di in g "Datos Abiertos: el csv de " in y "`nombre'" in g " tambi{c e'}n fall{c o'} (error `rc'). Usando archivos locales de raw/temp/."
 		}
 	}
 
