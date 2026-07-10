@@ -625,27 +625,43 @@ fi
 # =============================================================================
 log_info "Fase 4: escribir DEPLOYED_COMMIT."
 
-# Tag semántico del commit desplegado (bitácora v1.28): lo lee el footer del
-# sitio (index.php / index-en.php) para mostrar la versión que sirve ESTE
-# servidor — auto-actualizable en cada deploy, cero hardcode en el sitio.
-# --exact-match da el tag limpio (v8.0.7) si HEAD es exactamente el tag; el
-# fallback da v8.0.7-N-gHASH si hay commits encima (señal honesta de que se
-# desplegó código posterior al tag); sin tags, cadena vacía (el footer
-# simplemente no pinta versión — nunca rompe la página).
-DEPLOYED_TAG=$(git -C "$LOCAL_REPO_ROOT" describe --tags --exact-match HEAD 2>/dev/null \
-    || git -C "$LOCAL_REPO_ROOT" describe --tags HEAD 2>/dev/null || echo "")
+# Versión del MOTOR (bitácora v1.30): la línea "Version:" trae el campo
+# `version` de 05_scripts/manifest.json — la fuente de verdad del código
+# Stata, la misma que valida el Gate 3 de publicar.sh. El hero y el footer
+# del sitio la pintan como "Versión del simulador": significa "qué versión
+# del modelo produjo estos números", no "qué deploy es este" (eso lo dicen
+# Commit: y Deployment:, que siguen aquí para diagnóstico). Parseo con
+# python3 + json (patrón de casa, mismo del Gate 3): parser real, inmune a
+# formato/orden de campos. Cualquier falla (archivo ausente, JSON inválido,
+# campo faltante) colapsa a cadena vacía SIN abortar el deploy — el sitio
+# simplemente no pinta versión; nunca rompe la página.
+ENGINE_VERSION=$(python3 - "$LOCAL_REPO_ROOT/05_scripts/manifest.json" <<'PYEOF' 2>/dev/null || echo ""
+import json, sys
+try:
+    with open(sys.argv[1], encoding="utf-8") as f:
+        print(json.load(f).get("version", "") or "")
+except Exception:
+    print("")
+PYEOF
+)
 
-# Formato: solo se AÑADE la línea "Version:" — health.php vuelca el archivo
-# completo (no parsea por claves) y health_commit_matches() busca el substring
-# "Commit: <hash>", así que la línea nueva no rompe a ningún consumidor.
+# Formato: la línea "Version:" convive con las demás — health.php vuelca el
+# archivo completo (no parsea por claves) y health_commit_matches() busca el
+# substring "Commit: <hash>", así que ningún consumidor se rompe.
 DEPLOYED_COMMIT_TMP=$(mktemp /tmp/DEPLOYED_COMMIT.XXXXXX)
 cat > "$DEPLOYED_COMMIT_TMP" <<EOF
 Commit: $CURRENT_COMMIT
 Timestamp: $(date -u +%Y-%m-%dT%H:%M:%SZ)
 Deployment: $VERSION_ARG
-Version: $DEPLOYED_TAG
+Version: $ENGINE_VERSION
 Deployed by: ${VPS_USER} via publicar-vps.sh
 EOF
+
+if [[ -z "$ENGINE_VERSION" ]]; then
+    log_warn "Fase 4: no pude leer 'version' de 05_scripts/manifest.json — la línea
+Version: queda VACÍA (el sitio no pintará versión). El deploy continúa, pero
+revisa el manifest: ¿existe, es JSON válido, tiene el campo 'version'?"
+fi
 
 if [[ $DRY_RUN -eq 1 ]]; then
     log_info "[dry-run] Se escribiría en $VPS_HTML_ROOT/$VPS_HTML_VERSION/DEPLOYED_COMMIT y $VPS_SIM_ROOT/$VPS_SIM_VERSION/DEPLOYED_COMMIT:"
@@ -663,7 +679,11 @@ else
     # leerlo y el health check disparó un rollback falso. La garantía es este
     # chmod explícito, independiente del orden de fases.
     ssh_vps "chmod 664 '$VPS_HTML_ROOT/$VPS_HTML_VERSION/DEPLOYED_COMMIT' '$VPS_SIM_ROOT/$VPS_SIM_VERSION/DEPLOYED_COMMIT'"
-    log_ok "Fase 4: DEPLOYED_COMMIT escrito y legible ($CURRENT_COMMIT_SHORT)."
+    if [[ -n "$ENGINE_VERSION" ]]; then
+        log_ok "Fase 4: DEPLOYED_COMMIT escrito y legible ($CURRENT_COMMIT_SHORT, motor $ENGINE_VERSION)."
+    else
+        log_warn "Fase 4: DEPLOYED_COMMIT escrito y legible ($CURRENT_COMMIT_SHORT) — [WARN] SIN versión de motor (manifest.json ilegible o sin campo 'version')."
+    fi
 fi
 rm -f "$DEPLOYED_COMMIT_TMP"
 
