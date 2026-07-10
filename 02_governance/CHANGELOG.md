@@ -16,6 +16,40 @@ Formato de cada entrada:
 - **Datos:** cambios en fuentes, actualizaciones de PEFs, LIFs, ENIGH, u otras fuentes
 - **Correcciones:** bugs corregidos que afectaban resultados o funcionamiento
 
+## [v8.0.9] — 2026-07-10
+
+DatosAbiertos aprende a descargar con respaldos: la opción `update` ahora
+intenta el zip (dos veces, por errores transitorios de conexión), si falla
+cae al csv directo, y si también falla usa los archivos locales de
+`raw/temp/`. Antes, `update` sin más opciones ni siquiera descargaba —
+leía los archivos locales en silencio. La opción `files` se renombra a
+`local` y los 33 bloques repetidos de descarga se colapsan en un programa
+auxiliar. Cero impacto en resultados numéricos.
+
+### Institucional
+- DatosAbiertos.ado: los 33 bloques idénticos `csvfile/zipfile/else`
+  (~550 líneas, uno por base del portal SHCP) se colapsan en el programa
+  auxiliar `_DAdescarga`, que concentra la cadena de respaldos en un solo
+  lugar. Arreglar un problema de descarga ahora es un cambio de una línea,
+  no de 33.
+
+### Comandos
+- DatosAbiertos, `update`: ahora descarga de verdad, con cadena de
+  respaldos automática (zip con reintento → csv directo → archivos
+  locales). Cada caída de la cadena se anuncia en pantalla; si tampoco hay
+  archivo local, el error truena en su origen.
+- DatosAbiertos, `zipfile`: se conserva por compatibilidad; hoy equivale a
+  la cadena completa de `update`.
+- DatosAbiertos, `csvfile`: brinca el zip y va directo al csv en línea;
+  si falla, usa los archivos locales.
+- DatosAbiertos, `local` (nueva): reconstruye la base desde los archivos
+  ya descargados en `raw/temp/`, sin internet. Sustituye a `files`, que
+  se retira — quien la use recibirá el error estándar "option files not
+  allowed".
+
+### Datos
+- Sin cambios respecto a v8.0.8.
+
 ## [v8.0.8] — 2026-07-10
 
 La cadena del token BIE/INEGI se endurece de punta a punta: SIM.do deja

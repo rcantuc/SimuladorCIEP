@@ -76,7 +76,7 @@ o la lista de {view "help/Stata/DatosAbiertos.sthlp##series":Series comunes}.
 {title:Sintaxis}
 
 {p 8 16 2}
-{cmd:DatosAbiertos} {it:clave} [{it:if}] [{cmd:,} {opt DESDE(#)} {opt PIBVP(#)} {opt PIBVF(#)} {opt NOGraphs} {opt UPDATE} {opt PROYeccion} {opt REVERSE} {opt ZIPFILE} {opt CSVFILE} {opt FILES}]
+{cmd:DatosAbiertos} {it:clave} [{it:if}] [{cmd:,} {opt DESDE(#)} {opt PIBVP(#)} {opt PIBVF(#)} {opt NOGraphs} {opt UPDATE} {opt PROYeccion} {opt REVERSE} {opt ZIPFILE} {opt CSVFILE} {opt LOCal}]
 {p_end}
 
 {pstd}
@@ -112,8 +112,10 @@ una estimación oficial pero todavía no hay cifra realizada.
 {p_end}
 
 {phang}
-{opt update} — Descarga los datos más recientes de las Estadísticas Oportunas SHCP.
-Requiere conexión a internet.
+{opt update} — Descarga los datos más recientes de las Estadísticas Oportunas SHCP,
+con cadena de respaldos automática: intenta el ZIP (dos veces, por errores
+transitorios de conexión), si falla intenta el CSV directo, y si también falla
+usa los archivos locales ya descargados en {cmd:raw/temp/Datos Abiertos/}.
 {p_end}
 
 {phang}
@@ -127,16 +129,18 @@ reporta en negativo (ej. algunos componentes de gasto).
 {p_end}
 
 {phang}
-{opt zipfile} — Descarga los datos desde los archivos ZIP del portal SHCP
-(más rápido para actualizaciones completas).
+{opt zipfile} — Igual que {opt update}: usa la cadena de respaldos completa
+(ZIP con reintento, luego CSV, luego archivos locales). Se conserva por
+compatibilidad con código existente.
 {p_end}
 
 {phang}
-{opt csvfile} — Descarga los datos directamente desde archivos CSV en línea.
+{opt csvfile} — Descarga los datos directamente desde los archivos CSV en línea
+(brinca el ZIP); si la descarga falla, usa los archivos locales.
 {p_end}
 
 {phang}
-{opt files} — {bf:Reconstruye la base desde los archivos locales} ya descargados
+{opt local} — {bf:Reconstruye la base desde los archivos locales} ya descargados
 en {cmd:raw/temp/Datos Abiertos/}, sin conexión a internet. Útil para ahorrar tiempo
 cuando los archivos fuente ya están en tu máquina.
 {p_end}
@@ -202,7 +206,7 @@ Pasos para localizar el código de cualquier serie en las Estadísticas Oportuna
 {pstd}Sustituye el año actual con 23.5% del PIB y grafica 23.9% para el año siguiente.{p_end}
 
 {pstd}{bf:Ejemplo 8 — Reconstruir la base sin internet}{p_end}
-{phang2}{cmd:. DatosAbiertos XAA, files}{p_end}
+{phang2}{cmd:. DatosAbiertos XAA, local}{p_end}
 
 {hline}
 
