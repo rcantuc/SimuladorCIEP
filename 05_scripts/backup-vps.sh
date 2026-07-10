@@ -135,6 +135,22 @@ fi
 log_ok "Gate 1: credenciales cargadas ($VPS_USER@$VPS_HOST; destino: $BACKUP_ROOT)."
 
 # -----------------------------------------------------------------------------
+# Gate 2 — gpg disponible (solo modo --llaves)
+# -----------------------------------------------------------------------------
+# Se verifica ANTES de tocar el VPS: en la primera ejecución real (2026-07-09)
+# el script asumió gpg instalado y reventó a mitad de la operación con
+# "gpg: command not found" — las precondiciones se validan antes de empezar,
+# no se descubren a medio camino (bitácora v1.24).
+if [[ $LLAVES -eq 1 ]]; then
+    if ! command -v gpg >/dev/null 2>&1; then
+        die "gpg no está instalado y el modo --llaves lo necesita para cifrar.
+        En macOS: brew install gnupg
+        Nada se ha tocado (ni local ni VPS)."
+    fi
+    log_ok "Gate 2: gpg disponible ($(command -v gpg))."
+fi
+
+# -----------------------------------------------------------------------------
 # Conexión SSH — comparte el ControlPath de publicar-vps.sh
 # -----------------------------------------------------------------------------
 # Mismo ControlPath que publicar-vps.sh: cuando este script corre como Fase 0
@@ -272,20 +288,37 @@ if [[ $LLAVES -eq 1 ]]; then
         log_info "  gpg --symmetric --cipher-algo AES256 --output '$GPG_OUT' '$LOCAL_TAR'"
         log_info "  rm -f '$LOCAL_TAR' ; ssh ${VPS_USER}@${VPS_HOST} \"rm -f '$REMOTE_TAR'\""
     else
-        # Empaquetar en el VPS con sudo interactivo (-t asigna terminal)
-        ssh -t "${SSH_OPTS[@]}" "${VPS_USER}@${VPS_HOST}" \
-            "sudo tar czf '$REMOTE_TAR' -C /etc/ssl/private . && sudo chown ${VPS_USER} '$REMOTE_TAR'" \
-            || die "Paso 3: el empaquetado con sudo en el VPS falló."
+        # Empaquetar en el VPS con sudo interactivo (-t asigna terminal).
+        # Con ssh -t el exit code que llega es el del comando remoto: si sudo
+        # falla (3 intentos de password devuelven 1), el tar NUNCA se creó y
+        # hay que abortar AQUÍ — no seguir al cifrado (bug del 2026-07-09).
+        if ! ssh -t "${SSH_OPTS[@]}" "${VPS_USER}@${VPS_HOST}" \
+            "sudo tar czf '$REMOTE_TAR' -C /etc/ssl/private . && sudo chown ${VPS_USER} '$REMOTE_TAR'"; then
+            die "Paso 3: el empaquetado remoto falló — probablemente password de
+        sudo incorrecta. No se creó ningún tar, no hay nada que limpiar.
+        Vuelve a correr ./backup-vps.sh --llaves cuando tengas la password."
+        fi
 
         # Descargar el tar (aún sin cifrar) a local
         rsync -az -e "$RSYNC_SSH" \
             "${VPS_USER}@${VPS_HOST}:$REMOTE_TAR" "$LOCAL_TAR" 2>&1 | tee -a "$LOG_FILE" \
             || die "Paso 3: la descarga del tar de llaves falló."
 
-        # Cifrar con gpg simétrico (passphrase interactiva, D.6)
+        # Cifrar con gpg simétrico (passphrase interactiva, D.6). Si falla,
+        # el mensaje de limpieza solo menciona tars que EXISTEN de verdad
+        # (en el intento fallido del 2026-07-09 el mensaje genérico instruyó
+        # borrar tars que nunca se crearon).
         mkdir -p "${TS_DIR}/llaves-cifradas"
-        gpg --symmetric --cipher-algo AES256 --output "$GPG_OUT" "$LOCAL_TAR" \
-            || die "Paso 3: el cifrado gpg falló. El tar sin cifrar sigue en $LOCAL_TAR y en el VPS ($REMOTE_TAR): bórralos manualmente."
+        if ! gpg --symmetric --cipher-algo AES256 --output "$GPG_OUT" "$LOCAL_TAR"; then
+            log_error "Paso 3: el cifrado gpg falló."
+            if [[ -e "$LOCAL_TAR" ]]; then
+                log_error "Queda un tar SIN cifrar en local: $LOCAL_TAR — bórralo manualmente."
+            fi
+            if ssh_vps "test -e '$REMOTE_TAR'" 2>/dev/null; then
+                log_error "Queda un tar SIN cifrar en el VPS: $REMOTE_TAR — bórralo por SSH."
+            fi
+            exit 1
+        fi
 
         # Borrar los tar SIN cifrar en ambos lados
         rm -f "$LOCAL_TAR"
