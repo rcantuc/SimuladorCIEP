@@ -71,6 +71,15 @@ LOG_FILE="/tmp/publicar-vps-$(date +%Y%m%d-%H%M%S).log"
 # infraestructura: un cambio de vigencia es una decisión editable en el código
 # y auditable en Git. Las leen la Fase 3b (deploy) y el modo
 # --limpiar-master-vps (limpieza), de la MISMA fuente: nunca se contradicen.
+#
+# INVARIANTE (bitácora v1.36 — leer antes de tocar esta whitelist): el VPS
+# NUNCA debe arrancar con master/ vacío. Los Update* de los .ado se disparan
+# solos cuando master/ está vacío (o con la global $update, que el VPS jamás
+# setea): si esta whitelist dejara de garantizar los master/*.dta, el motor
+# reconstruiría EN PRODUCCIÓN (descargas en vivo de SHCP/INEGI a media
+# petición web). El guard c(console) que antes bloqueaba eso por accidente se
+# retiró en v8.0.11 por redundante con ESTA garantía — quien modifique la
+# whitelist hereda la responsabilidad de mantenerla.
 WEB_MASTER_YEAR="2024"
 WEB_PERFIL="perfiles2026.dta"
 
