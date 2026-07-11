@@ -30,13 +30,19 @@ Ricardo Cantú Calderón {c |} {browse "mailto:ricardocantu@ciep.mx":ricardocant
 {p_end}
 
 {pstd}
-El comando usa la {bf:API oficial del INEGI} con un sistema robusto de respaldo:
+El comando tiene {bf:dos vías de acceso} a los datos, con respaldo automático:
 {p_end}
 
-{phang2}1. Intenta primero con la API del BIE{p_end}
-{phang2}2. Si falla, intenta con la API del BISE{p_end}
-{phang2}3. Si ambas fallan, extrae los datos mediante web scraping del portal{p_end}
-{phang2}4. Hasta 3 reintentos automáticos con 2 segundos de espera entre cada uno{p_end}
+{phang2}1. {bf:API oficial del INEGI} (requiere token gratuito): intenta el banco BIE y luego el BISE. Es la vía {bf:recomendada} — contrato formal y estable con el INEGI.{p_end}
+{phang2}2. {bf:Consulta pública de exportación (.aspx)}: el mecanismo con que el portal del BIE exporta series a Excel, abierto y sin token. Se usa como respaldo si la API falla — o como vía única si no hay token configurado, avisando en pantalla.{p_end}
+{phang2}3. Hasta 3 reintentos automáticos de la cadena completa, con 2 segundos de espera entre cada uno.{p_end}
+
+{pstd}
+{bf:Ambas vías entregan exactamente el mismo formato de datos.} La diferencia es
+de robustez: la consulta pública lee la tabla de una página web del INEGI, que
+podría cambiar de forma sin aviso; la API es un servicio formal. Por eso el
+token es la vía recomendada, aunque el comando funcione sin él.
+{p_end}
 
 {pstd}
 {bf:¿Para qué sirve?} Permite cargar cualquier indicador económico del INEGI
@@ -48,8 +54,9 @@ correspondientes.
 {pstd}
 {bf:Nota técnica:} Requiere Python con las librerías {cmd:requests} y
 {cmd:beautifulsoup4}. A partir de v8.0, el token de acceso al BIE/INEGI
-{ul:no} viene incluido en el código del comando: debe fijarse como global
-Stata antes de usarse (ver {it:Configuración del token} más abajo).
+{ul:no} viene incluido en el código del comando: se fija como global
+Stata (ver {it:Configuración del token} más abajo). Sin token, el comando
+funciona por la consulta pública, con aviso.
 {p_end}
 
 {hline}
@@ -58,10 +65,12 @@ Stata antes de usarse (ver {it:Configuración del token} más abajo).
 {title:Configuración del token del BIE}
 
 {pstd}
-A partir de v8.0, {cmd:AccesoBIE} requiere que el token del BIE/INEGI esté
-fijado como global Stata {cmd:BIE_API_TOKEN} antes de usarse. Si el global
-no está fijado y tampoco se pasa la opción {opt token()}, el comando aborta
-con error.
+{cmd:AccesoBIE} lee el token del BIE/INEGI de la global Stata
+{cmd:BIE_API_TOKEN} (o de la opción {opt token()}). {bf:Si no hay token, el
+comando NO aborta}: usa la consulta pública (.aspx) del INEGI como vía única
+y te lo avisa en pantalla — así siempre sabes por cuál vía obtuviste los
+datos. El comando solo aborta con error si la serie no se pudo obtener por
+{bf:ninguna} vía (sin conexión, o clave de serie inexistente).
 {p_end}
 
 {pstd}
@@ -138,7 +147,8 @@ separados por espacio. Si no se especifica, se usan los nombres de los metadatos
 {phang}
 {opt token(string)} — Token de acceso para la API del INEGI. Si se omite, el
 comando lee el global Stata {cmd:$BIE_API_TOKEN}. Si tampoco está fijado el
-global, el comando aborta con error. Ver {it:Configuración del token} arriba.
+global, el comando usa la consulta pública (.aspx) con un aviso en pantalla.
+Ver {it:Configuración del token} arriba.
 {p_end}
 
 {hline}

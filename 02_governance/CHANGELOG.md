@@ -16,6 +16,50 @@ Formato de cada entrada:
 - **Datos:** cambios en fuentes, actualizaciones de PEFs, LIFs, ENIGH, u otras fuentes
 - **Correcciones:** bugs corregidos que afectaban resultados o funcionamiento
 
+## [v8.0.10] — 2026-07-10
+
+AccesoBIE deja de exigir token para funcionar: sin token, usa la consulta
+pública de exportación (.aspx) del INEGI — una vía que YA existía como
+respaldo automático cuando la API falla, pero que era inalcanzable sin
+token porque el comando abortaba antes de intentarla. Los comandos
+publicados del Simulador dejan de depender de que el usuario externo
+tenga token. Cero impacto en resultados numéricos.
+
+### Institucional
+- Nota de diseño sobre la vía pública (.aspx), con honestidad sobre su
+  fragilidad: el *mecanismo* es oficial y abierto (el endpoint de
+  exportación a Excel del propio portal del BIE, sin auth), pero la
+  *implementación* parsea la tabla HTML de la respuesta con
+  BeautifulSoup — más frágil que el JSON de la API: se rompe si INEGI
+  cambia el layout de esa tabla. Es aceptable distribuirla porque (a) ya
+  era camino de producción activo (corría cada vez que la API fallaba),
+  (b) no introduce dependencias nuevas, y (c) el fallo es visible, no
+  silencioso. Por esa fragilidad, la API con token sigue siendo la vía
+  recomendada.
+
+### Comandos
+- AccesoBIE sin token: ya no aborta con exit 198 inmediato. Usa la
+  consulta pública (.aspx) como vía única, con aviso visible de por cuál
+  vía se obtuvieron los datos y de cómo conseguir el token gratuito.
+  Sin token NO se golpea la API (no se hacen requests con token vacío).
+  Ambas vías entregan exactamente el mismo formato de salida.
+- AccesoBIE: exit 198 pasa a ser el fallo FINAL — solo cuando una serie
+  no se pudo obtener por ninguna vía — con mensaje que nombra la serie y,
+  si no hay token, explica que solo se intentó la vía pública.
+
+### Datos
+- Sin cambios respecto a v8.0.9.
+
+### Correcciones
+- AccesoBIE: si una serie no se obtenía (p.ej. clave inexistente), el
+  comando mostraba un error y seguía (continue), dejando tempfiles
+  indefinidos que después tronaban en el use/merge con un error críptico
+  lejos de la causa. Ahora el error truena en su origen, claro y
+  nombrando la serie.
+- AccesoBIE: mismo bug de instalación fresca que v8.0.9 en DatosAbiertos
+  — mkdir no recursivo —: el árbol site/raw/temp/AccesoBIE/ ahora se crea
+  nivel por nivel.
+
 ## [v8.0.9] — 2026-07-10
 
 DatosAbiertos aprende a descargar con respaldos: la opción `update` ahora

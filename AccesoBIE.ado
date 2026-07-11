@@ -1,5 +1,6 @@
 *! version 8.0 CIEP 03jul2026
-*! AccesoBIE - Acceso al Banco de Indicadores del INEGI via API
+*! AccesoBIE - Acceso al Banco de Indicadores del INEGI via API oficial
+*! (con respaldo automático vía la consulta pública de exportación .aspx)
 *! Sintaxis: AccesoBIE serie1 [serie2 ...] [, nombres(string) token(string)]
 *! Ejemplo: AccesoBIE 628194              <- obtiene serie con nombre automático
 *! Ejemplo: AccesoBIE 628194 444612, nombres(PIB Desempleo)
@@ -9,20 +10,26 @@ program define AccesoBIE
 	
 	syntax anything(name=series) [, Nombres(string) Token(string)]
 	
-	// Token requerido vía global Stata $BIE_API_TOKEN
+	// Token vía global Stata $BIE_API_TOKEN. Sin token NO se aborta: se salta
+	// la API oficial y se usa la consulta pública de exportación (.aspx) del
+	// INEGI, avisando al usuario por cuál vía obtuvo los datos.
+	local sintoken = 0
 	if "`token'" == "" {
 		if "$BIE_API_TOKEN" == "" {
-			display as error "AccesoBIE requiere el token del BIE/INEGI. Fíjalo con:"
-			display as error `"  global BIE_API_TOKEN "tu-token""'
-			display as error "Solicita o gestiona tu token en: https://www.inegi.org.mx/app/api/denue/v1/tokenVerify.aspx"
-			display as error "(Investigadores CIEP: corre set_token.do o reinicia Stata; profile.do lo carga al arranque.)"
-			exit 198
+			local sintoken = 1
+			display as text "AccesoBIE: sin token del BIE/INEGI — usando la consulta p{c u'}blica (.aspx) del INEGI."
+			display as text "Para la v{c i'}a oficial (recomendada), configura tu token gratuito:"
+			display as text `"  global BIE_API_TOKEN "tu-token"  — solicita el tuyo en: https://www.inegi.org.mx/app/api/denue/v1/tokenVerify.aspx"'
+			display as text "(Investigadores CIEP: corre set_token.do o reinicia Stata; profile.do lo carga al arranque.)"
 		}
 		local token "$BIE_API_TOKEN"
 	}
 	
 	quietly {
-		// Crear directorios temporales
+		// Crear directorios temporales (mkdir no es recursivo: nivel por nivel;
+		// una instalación fresca no trae ni el directorio site/)
+		capture mkdir "`c(sysdir_site)'"
+		capture mkdir "`c(sysdir_site)'/raw/"
 		capture mkdir "`c(sysdir_site)'/raw/temp/"
 		capture mkdir "`c(sysdir_site)'/raw/temp/AccesoBIE/"
 		
@@ -42,10 +49,18 @@ program define AccesoBIE
 			// Importar los datos
 			import delimited "`c(sysdir_site)'/raw/temp/AccesoBIE/`serie'.csv", clear varnames(1) encoding(utf-8)
 			
-			// Verificar que hay datos
+			// Verificar que hay datos. Si una serie no se obtuvo por NINGUNA
+			// vía, el error truena aquí, claro y en su origen — no después,
+			// como error críptico del merge/use con tempfiles indefinidos.
 			if _N == 0 {
-				noisily display as error "  Error: No se obtuvieron datos para la serie `serie'"
-				continue
+				noisily display as error "AccesoBIE: no se pudo obtener la serie `serie' por ninguna v{c i'}a (API oficial y consulta p{c u'}blica agotadas)."
+				noisily display as error "Verifica tu conexi{c o'}n a internet y la clave de la serie."
+				if `sintoken' {
+					noisily display as error "Sin token solo se intenta la consulta p{c u'}blica. Para la v{c i'}a oficial (API), configura tu token gratuito:"
+					noisily display as error `"  global BIE_API_TOKEN "tu-token"  — solicita el tuyo en: https://www.inegi.org.mx/app/api/denue/v1/tokenVerify.aspx"'
+					noisily display as error "(Investigadores CIEP: corre set_token.do o reinicia Stata; profile.do lo carga al arranque.)"
+				}
+				exit 198
 			}
 			
 			// Obtener el nombre de la variable
@@ -191,12 +206,13 @@ def inegi_api(serie, token):
     """
     
     for intento in range(1, MAX_RETRIES + 1):
-        # Intentar con API oficial
-        if try_api(serie, token):
+        # Intentar con API oficial (solo si hay token; sin token no se
+        # golpea la API y se va directo a la consulta publica .aspx)
+        if token and try_api(serie, token):
             return
         
-        # Si la API falla, usar scraping
-        if intento == 1:
+        # Si la API falla (o no hay token), usar el portal de exportacion
+        if intento == 1 and token:
             print("  API no disponible, usando portal web...")
         if try_scraping(serie):
             return
