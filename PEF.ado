@@ -1026,6 +1026,7 @@ program define UpdatePEF
 		saveold "`c(sysdir_site)'/master/GastoEstOpor.dta", replace version(13)
 	}
 	else {
+		capture mkdir "`c(sysdir_site)'/master/"
 		save "`c(sysdir_site)'/master/GastoEstOpor.dta", replace
 	}*/
 
@@ -1196,5 +1197,6 @@ program define UpdatePEF
 	capture order proyecto, last
 	capture drop __*
 	compress
+	capture mkdir "`c(sysdir_site)'/master/"
 	save "`c(sysdir_site)'/master/PEF.dta", replace
 end

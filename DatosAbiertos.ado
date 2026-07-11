@@ -464,10 +464,6 @@ program define UpdateDatosAbiertos, return
 	noisily di _newline in g "Datos Abiertos: " in y "ACTUALIZANDO. Favor de esperar... (5 min. aprox.)"
 	*noisily di in g "{c U'}ltimo dato: " in y "`=anio[_N]'m`=mes[_N]'."
 
-	if "`c(console)'" == "console" {
-		exit
-	}
-
 	*****************************************
 	** 1.1 Ingreso, gasto y financiamiento **
 	_DAdescarga, nombre(ingreso_gasto_finan) modo(`modo') encoding(utf-8)
@@ -918,6 +914,7 @@ quietly {
 	noisily di in g "  Último anio: " in y anio[_N]
 	noisily di in g "  Último mes: " in y mes[_N]
 
+	capture mkdir "`c(sysdir_site)'/master/"
 	save "`c(sysdir_site)'/master/Deflactor.dta", replace
 }
 end

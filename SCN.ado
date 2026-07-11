@@ -2618,5 +2618,6 @@ program define UpdateSCN
 	order anio
 	sort anio
 	tsset anio
+	capture mkdir "`c(sysdir_site)'/master/"
 	save "`c(sysdir_site)'/master/SCN.dta", replace
 end

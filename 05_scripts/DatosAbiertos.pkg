@@ -8,3 +8,6 @@ d ricardocantu@ciep.mx
 f DatosAbiertos.ado
 f DatosAbiertos.sthlp
 f AccesoBIE.ado
+f PIBDeflactor.ado
+f Poblacion.ado
+f ensure_asset.ado

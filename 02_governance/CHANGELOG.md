@@ -16,6 +16,72 @@ Formato de cada entrada:
 - **Datos:** cambios en fuentes, actualizaciones de PEFs, LIFs, ENIGH, u otras fuentes
 - **Correcciones:** bugs corregidos que afectaban resultados o funcionamiento
 
+## [v8.0.11] — 2026-07-10
+
+El endpoint público se vuelve autosuficiente: un usuario externo que instala
+un comando vía `net install` puede reconstruir los datos desde cero en SU
+máquina, sin repo ni clone. Corrige un bug de arquitectura presente desde el
+primer deploy del endpoint: los comandos publicados invocaban helpers y
+dependencias que el endpoint no entregaba — nunca funcionó para un externo;
+solo parecía funcionar porque siempre se probó desde el repo. Cero impacto
+en resultados numéricos.
+
+### Institucional
+- Decisión de arquitectura: el endpoint DEBE permitir reconstruir datos desde
+  cero — es abierto, reconstruir es la gracia. La solución es un ensure_asset
+  de doble entorno con pin de versión quemado al publicar (ver Comandos), de
+  modo que código y datos del externo siempre casan: reconstruye contra los
+  assets del Release de SU versión instalada.
+- AGUJERO CONOCIDO PENDIENTE (no corregido en este bump): `scalarlatex` es
+  invocado por PIBDeflactor, Poblacion, SCN y SHRFSP bajo la opción `textbook`
+  (insumos LaTeX internos CIEP) y NO se publica al endpoint — un externo que
+  active esa opción verá "command scalarlatex is unrecognized". Fix futuro:
+  `capture which scalarlatex` + aviso amable de que textbook es solo-repo.
+
+### Comandos
+- ensure_asset ahora funciona sin repo (doble entorno): si encuentra
+  `05_scripts/manifest.json` en el site (caso repo), comportamiento intacto;
+  si no, usa el pin de versión que publicar-endpoint.sh quema en la copia
+  publicada para descargar el manifest de GitHub por tag
+  (raw.githubusercontent.com/<repo>/<tag>/05_scripts/manifest.json), lo
+  cachea por versión en `raw/temp/manifest-<tag>.json`, valida que la
+  versión del manifest coincida con el pin (drift → error ruidoso nombrando
+  la URL) y continúa con la descarga de assets ya existente. El .ado del
+  REPO lleva el pin VACÍO — solo la copia publicada lo lleva relleno.
+- ensure_asset se publica al endpoint (sale de la lista de exclusión de
+  manifest-endpoint.toml); viaja dentro de los .pkg que lo necesitan, sin
+  paquete propio de cara al usuario.
+
+### Datos
+- Sin cambios respecto a v8.0.10.
+
+### Correcciones
+- Clausura transitiva de dependencias en 6 .pkg: cada paquete ahora declara
+  TODAS sus dependencias .ado (quien instala PEF recibe también
+  DatosAbiertos, AccesoBIE, Poblacion y ensure_asset; análogo para
+  DatosAbiertos, LIF, PIBDeflactor, SCN y SHRFSP). Antes, instalar un
+  paquete individual dejaba fuera eslabones de su cadena de reconstrucción
+  y el comando tronaba con "command ... is unrecognized".
+- publicar-endpoint.sh verifica la inyección del pin y ABORTA si el marcador
+  no está — imposible publicar un ensure_asset sin pin por accidente.
+- Hallazgos del test de "máquina virgen" (instalar SOLO desde el endpoint y
+  reconstruir), corregidos de paso — tres bugs que solo muerden fuera del
+  repo:
+  - ensure_asset descarga con `requests` en lugar de `urllib`: urllib truena
+    con CERTIFICATE_VERIFY_FAILED en Pythons sin certificados configurados
+    (caso típico de instalación de python.org en macOS); requests trae sus
+    propios certificados (certifi) y ya es dependencia dura de la suite
+    (AccesoBIE la importa).
+  - `mkdir master/` antes de cada save de la cadena de reconstrucción (LIF,
+    PEF ×2, SCN, SHRFSP, Deflactor): en una máquina sin repo el directorio
+    no existe y el save tronaba con r(603) — mismo bug de instalación fresca
+    que v8.0.9/v8.0.10, en otra capa.
+  - Eliminado un guard `if c(console)==console { exit }` en
+    UpdateDatosAbiertos que abortaba la reconstrucción EN SILENCIO en Stata
+    console/batch — el comando anunciaba "ACTUALIZANDO..." y salía sin
+    hacer nada, dejando un r(601) críptico aguas abajo. Hacía imposible
+    reconstruir en batch (p.ej. servidores).
+
 ## [v8.0.10] — 2026-07-10
 
 AccesoBIE deja de exigir token para funcionar: sin token, usa la consulta

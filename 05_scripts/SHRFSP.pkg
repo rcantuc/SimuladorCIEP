@@ -11,3 +11,4 @@ f PIBDeflactor.ado
 f AccesoBIE.ado
 f Poblacion.ado
 f DatosAbiertos.ado
+f ensure_asset.ado

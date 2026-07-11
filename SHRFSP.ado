@@ -1433,6 +1433,7 @@ program define UpdateSHRFSP
 
 	* Guardar *
 	compress
+	capture mkdir `"`c(sysdir_site)'/master/"'
 	if `c(version)' > 13.1 {
 		saveold `"`c(sysdir_site)'/master/SHRFSP.dta"', replace version(13)
 	}

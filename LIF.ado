@@ -701,5 +701,6 @@ program define UpdateLIF
 	capture order div* nombre serie anio LIF ILIF monto
 	compress
 	sort div* nombre serie anio
+	capture mkdir "`c(sysdir_site)'/master/"
 	save "`c(sysdir_site)'/master/LIF.dta", replace
 end

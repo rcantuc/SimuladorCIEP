@@ -25,6 +25,7 @@ ado_files = [
     "Poblacion.ado",
     "SCN.ado",
     "SHRFSP.ado",
+    "ensure_asset.ado",
 ]
 
 sthlp_files = [
@@ -71,7 +72,6 @@ SHRFSP = "Saldo Histórico de los Requerimientos Financieros del Sector Público
 # Archivos que SÍ existen en el repo pero NO se publican.
 # Lista declarativa para auto-documentar decisión.
 
-ensure_asset_ado = "ensure_asset.ado — infraestructura interna del simulador, no del paquete público"
 manifest_json = "05_scripts/manifest.json — manifiesto del data sidecar, no del sub-canal Stata"
 sim_do = "SIM.do — entrada del simulador local, no se distribuye vía net install"
 set_token_template_do = "set_token.template.do — plantilla local, no del paquete público"

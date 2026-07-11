@@ -209,6 +209,19 @@ done
 FILE_COUNT="${#ALL_FILES[@]}"
 log_info "✓ $FILE_COUNT archivos copiados al tmp dir"
 
+# Inyectar el PIN de versión en la COPIA publicada de ensure_asset.ado.
+# El archivo del repo queda intacto (pin vacío): solo la copia distribuida
+# lleva la versión quemada, para que un usuario sin repo reconstruya datos
+# contra los assets del Release de SU versión instalada.
+if [[ ! -f "$TMP_DIR/ensure_asset.ado" ]]; then
+    abort "ensure_asset.ado no está en el tmp dir. ¿Falta en ado_files de manifest-endpoint.toml?"
+fi
+sed -i '' "s|^\([[:space:]]*\)local PINNED_VERSION \"\"|\1local PINNED_VERSION \"$VERSION\"|" "$TMP_DIR/ensure_asset.ado"
+if ! grep -q "local PINNED_VERSION \"$VERSION\"" "$TMP_DIR/ensure_asset.ado"; then
+    abort "Inyección del pin falló: el marcador 'local PINNED_VERSION \"\"' no está en ensure_asset.ado. ¿Se renombró la línea en el repo?"
+fi
+log_info "✓ Pin de versión $VERSION inyectado en ensure_asset.ado (solo copia publicada)"
+
 # Generar stata.toc
 TODAY="$(date -u +%Y-%m-%d)"
 TITLE="$(echo "$MANIFEST_JSON" | python3 -c "import json,sys; print(json.load(sys.stdin)['toc']['title'])")"
