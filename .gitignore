@@ -134,6 +134,8 @@ endpoint-credentials.sh
 **/graphs/**
 **/users/**
 **/04_simuladorfiscal.ciep.mx/**
+**/06_libro/**
+
 # Excepción: health.php SÍ se versiona (infraestructura del pipeline de
 # deployment al VPS, sin secretos; el resto del clon local sigue ignorado)
 !**/04_simuladorfiscal.ciep.mx/health.php
