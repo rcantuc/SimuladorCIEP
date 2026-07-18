@@ -1,4 +1,11 @@
-*! version 1.0.0  Registrador central de escalares para scalarlatex (v8.0.12)
+*! version 1.1.0  Registrador central de escalares para scalarlatex (v8.0.13)
+*
+* CONTRATO (governance, v8.0.13): todo lo que alimenta el libro pasa por
+* escalar. scalarlatex compara los sin-registrar contra el baseline
+* auditado 02_governance/scalarlatex-baseline.txt (228 en v8.0.13, ver
+* CHANGELOG); nombres NUEVOS respecto al baseline se reportan en rojo:
+* drift real (typo scalar/escalar o scalar sin migrar), no ruido.
+* Ver 03_help/PROGRAMAS_AUXILIARES.md par.16.
 *
 * Sintaxis:   escalar <tipo> <nombre> = <expresion>
 *

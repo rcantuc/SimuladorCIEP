@@ -16,6 +16,58 @@ Formato de cada entrada:
 - **Datos:** cambios en fuentes, actualizaciones de PEFs, LIFs, ENIGH, u otras fuentes
 - **Correcciones:** bugs corregidos que afectaban resultados o funcionamiento
 
+## [v8.0.13] — 2026-07-18
+
+Cierra la migración a `escalar` con `Simulador.ado` (excluido explícitamente
+en v8.0.12): sus 9 sitios `string()` alimentan el alias `perf`, el mayor
+consumidor del libro (414 usos). Con esto queda vigente el CONTRATO de
+governance: **todo lo que alimenta el libro pasa por `escalar`** (regla
+escrita donde vive el catálogo: header de `escalar.ado` y
+`03_help/PROGRAMAS_AUXILIARES.md` §16). Cobertura verificada con censo
+contra el libro: los 17 productores textbook + `Simulador.ado` registran
+todo lo que el libro consume con formato; el residual "sin registrar" del
+resumen (228 scalars en memoria) se auditó nombre por nombre — 211 son
+scalars de trabajo internos que el libro NO referencia y 17 los consume
+as-is numéricos con valor correcto (años de sesión `aniovp/anioPE/anioenigh/
+aniofinal` y agregados `RFSPmax*`, `*gene*`, `pibVECES*`) — candidatos a
+migración puntual en un ciclo futuro para dejar el resumen en 0 real.
+
+### Comandos
+- `Simulador.ado`: migrados los 9 sitios `string()` → `escalar` con tipos del
+  catálogo: `<var>GPIB`→pctpib; `<var><decil>` (pesos por hogar)→mxnpc;
+  `dis/inc<var><decil>`→pct; `<var>GIV/GVIIX/GX`→pct; `<var>GH/GM`→pct.
+  Estos sitios corren también en cada simulación web (secciones 2, 4 y
+  `poblaciongini` son incondicionales), no solo bajo textbook.
+- `scalarlatex.ado` v2.1.0: el resumen de cobertura compara los sin-registrar
+  contra el baseline auditado `02_governance/scalarlatex-baseline.txt` (228
+  nombres) — dentro del baseline, línea informativa sin dump; nombres NUEVOS,
+  aviso en rojo solo con esos nombres (la señal ya no se ahoga en 228 líneas
+  permanentes). Procedimiento de actualización legítima en el header del
+  baseline; sin el archivo (repo incompleto), cae al listado histórico.
+
+### Correcciones
+- Hallazgo de Fase A: `Simulador.ado:469` leía el scalar por-decil con
+  `subinstr()` (función de strings) para armar la línea `INCD:` del flujo
+  web — con el scalar ya numérico habría tronado con r(109) en CADA
+  simulación web. Adaptado a `string(<scalar>,"%10.0f")`, que produce el
+  mismo entero sin comas. Equivalencia demostrada empíricamente (lección del
+  incidente v1.39): corrida batch con `$output=="output"` antes y después de
+  la migración — líneas `INCD:`/`INCD2:`/`INCD3:` (y `APORT*`/`PROY*`)
+  byte-idénticas.
+
+### Test dorado (perfiles + acumulación)
+- Los 9 `.tex` regenerados (corrida textbook completa, export a /tmp) y
+  comparados getter por getter contra los vigentes: **519 getters cambiados,
+  el 100% de la clase esperada** `*GIV/*GVIIX/*GX` entero → 1 decimal (108 en
+  perfiles/fiscalgap/shrfsp, 90 en gastopc/tasas, 15 en households, por
+  acumulación del registro global); **cero diffs de valor, cero getters
+  nuevos**. Los 414 getters `perf` que usa el libro: 380 existen con el mismo
+  nombre; los 34 restantes (`OtrosGastos*` sin T, `GATA*`) ya faltaban en el
+  baseline — drift libro↔modelo preexistente, no regresión.
+- Nota del test batch: `aniotdmin/aniotdmax` no se generan bajo `nographs`
+  (se definen dentro del bloque de gráficas de `Poblacion.ado:197`) — artefacto
+  del harness, preexistente; la corrida real del libro va con gráficas.
+
 ## [v8.0.12] — 2026-07-18
 
 Pipeline textbook declarativo: los ~670 scalars que alimentan los documentos

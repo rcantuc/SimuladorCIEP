@@ -259,6 +259,20 @@ Reemplaza al patrón fósil `noisily di %fmt = scalar(...)` + relectura de log.
   para que el `\def` LaTeX sea válido (antes esas macros quedaban rotas en silencio)
 
 **Reglas para colaboradores:**
+- **CONTRATO (governance, v8.0.13): todo lo que alimenta el libro pasa por
+  `escalar`.** No es una regla de homogeneidad de estilo: es el contrato que
+  garantiza que cada valor del libro tiene precisión completa y tipo semántico
+  declarado. Corolario operativo: los sin-registrar de cada corrida se
+  comparan AUTOMÁTICAMENTE contra el **baseline auditado**
+  `02_governance/scalarlatex-baseline.txt` (228 en v8.0.13: 211 scalars de
+  trabajo que el libro no referencia + 17 consumidos as-is numéricos, ver
+  CHANGELOG v8.0.13). Dentro del baseline → línea informativa (sin dump);
+  nombres NUEVOS → aviso en rojo con esos nombres: drift real (typo
+  `scalar`/`escalar` o scalar nuevo sin migrar), no ruido tolerable. Cómo
+  actualizar el baseline cuando cambie legítimamente: procedimiento en el
+  header del propio archivo (regenerar desde la corrida textbook, auditar
+  los nuevos contra el libro, commitear con justificación en CHANGELOG).
+  Meta de ciclo futuro: migrar los 17 y bajar a solo scalars de trabajo.
 - Todo scalar nuevo destinado a textbook DEBE declararse con `escalar`, nunca
   con `noisily di` + formato manual
 - Preferir nombres sin dígitos; si los hay, documentar la conversión A–J en el
