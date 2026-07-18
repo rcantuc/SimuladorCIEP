@@ -97,14 +97,14 @@ noisily di _newline(2) in g _dup(20) "." "{bf:   Economía generacional: " in y 
 
 ** 1.1 Sistema de Cuentas Nacionales **
 SCN, anio(`anioenigh') nographs
-local PIB = real(subinstr(scalar(PIB),",","",.))*1000000
-local ConHog = real(subinstr(scalar(ConHog),",","",.))*1000000
+local PIB = scalar(PIB)
+local ConHog = scalar(ConHog)
 
 
 ** 1.2 SHCP: Datos Abiertos **
 LIF, anio(`anioenigh') by(divCIEP) nographs min(0)
-local IVA = real(subinstr(scalar(IVA),",","",.))
-local IEPSNP = real(subinstr(scalar(IEPS__no_petrolero_),",","",.))
+local IVA = scalar(IVA)
+local IEPSNP = scalar(IEPS__no_petrolero_)
 local IepsTabaco = scalar(Tabacos)
 local IepsJuegos = scalar(Juegos)
 local IepsTelecom = scalar(Telecom)
@@ -857,7 +857,7 @@ label var gastpc "Gasto total per cápita"
 
 Gini gastpc, hogar(folioviv foliohog) factor(factor)
 local gini_gastpc = r(gini_gastpc)
-scalar ginigastopc = string(`gini_gastpc',"%7.3f")
+escalar pctpib ginigastopc = `gini_gastpc'
 
 scalar MTot = 0
 *local scnname = "Alim BebN BebA Taba Vest Calz Alqu Agua Elec HogaT SaluT Vehi FTra STra ComuT RecrT EducT RestT DiveT"
@@ -867,24 +867,24 @@ local scnvalue = 1
 foreach k of varlist prop* {
 	local varname = substr("`k'",5,11)
 	rename `k' prop`varname'
-	local ``scnvalue'' = real(subinstr(scalar(``scnvalue''),",","",.))*1000000
+	local ``scnvalue'' = scalar(``scnvalue'')
 
 	di in g "`varname' : ``scnvalue''"
 
 	tabstat gas_pc_`varname' [aw=factor], stat(sum) f(%20.0fc) save
 	scalar M``scnvalue'' = r(StatTotal)[1,1]
-	scalar E``scnvalue''PIB = string((M``scnvalue''/`PIB'*100),"%7.3f")
-	scalar S``scnvalue''PIB = string((```scnvalue'''/`PIB'*100),"%7.3f")
+	escalar pctpib E``scnvalue''PIB = M``scnvalue''/`PIB'*100
+	escalar pctpib S``scnvalue''PIB = ```scnvalue'''/`PIB'*100
 	scalar E``scnvalue''PC = M``scnvalue''/`pobtotNacional'
 
 	Gini gas_pc_`varname', hogar(folioviv foliohog) factor(factor)
 	local gini``scnvalue'' = r(gini_gas_pc_`varname')
-	scalar gini``scnvalue'' = string(`gini``scnvalue''',"%7.3f")
+	escalar pctpib gini``scnvalue'' = `gini``scnvalue'''
 
 	scalar MTot = MTot + M``scnvalue''
 	local ++scnvalue
 }
-scalar ETotPIB = string(MTot/`PIB'*100,"%7.3f")
+escalar pctpib ETotPIB = MTot/`PIB'*100
 scalar ETotPC = MTot/`pobtotNacional'
 
 
@@ -1003,18 +1003,18 @@ foreach k in Alim BebN BebA Taba Vest Calz Alqu Agua Elec HogaT SaluT Vehi FTra 
 	scalar TT`k' = (M`k'/``k'')^(-1)
 	scalar Dif`k' = ((M`k'/``k'')-1)*100
 	replace gas_pc_`k' = gas_pc_`k'*scalar(TT`k')
-	scalar TT`k' = string((M`k'/``k'')^(-1),"%7.1f")
+	escalar pct TT`k' = (M`k'/``k'')^(-1)
 
 	tabstat gas_pc_`k' [aw=factor], stat(sum) f(%20.0fc) save
 	scalar MM`k' = r(StatTotal)[1,1]
-	scalar EE`k'PIB = string(MM`k'/`PIB'*100,"%7.3f")
+	escalar pctpib EE`k'PIB = MM`k'/`PIB'*100
 	scalar EE`k'PC = MM`k'/`pobtotNacional'
 
 	scalar MMTot = MMTot + MM`k'
 }
-scalar EETotPIB = string(MMTot/`PIB'*100,"%7.3f")
+escalar pctpib EETotPIB = MMTot/`PIB'*100
 scalar EETotPC = MMTot/`pobtotNacional'
-scalar TTConHog = string((MTot/`ConHog')^(-1),"%7.1f")
+escalar pct TTConHog = (MTot/`ConHog')^(-1)
 
 ** 4.2 Display de resultados **
 noisily di _newline in g "{bf: B. Gasto ajustado" ///
@@ -1171,13 +1171,13 @@ foreach k of local categs {
 tabstat IVA [aw=factor], stat(sum) f(%20.0fc) save
 di in g "IVA Observado: " in y %20.0fc `IVA'
 
-scalar IVAHHSPIB = string((r(StatTotal)[1,1]/`PIB'*100),"%7.1f")
-scalar IVASCNPIB = string((`IVA'/`PIB'*100),"%7.1f")
-scalar DifIVA = string(((real(IVAHHSPIB) - real(IVASCNPIB))/real(IVAHHSPIB)*100),"%7.1f")
+escalar pct IVAHHSPIB = r(StatTotal)[1,1]/`PIB'*100
+escalar pct IVASCNPIB = `IVA'/`PIB'*100
+escalar pct DifIVA = (scalar(IVAHHSPIB) - scalar(IVASCNPIB))/scalar(IVAHHSPIB)*100
 
 Gini IVA, hogar(folioviv foliohog) factor(factor)
 local gini_IVA = r(gini_IVA)
-scalar giniIVA = string(`gini_IVA',"%7.3f")
+escalar pctpib giniIVA = `gini_IVA'
 
 
 ** 5.3. Display de resultados **
@@ -1259,9 +1259,9 @@ foreach k of local categs {
 
 tabstat IEPS [aw=factor], stat(sum) f(%20.0fc) save by(categs)
 
-scalar IEPSNPHHSPIB = string((r(StatTotal)[1,1]/`PIB'*100),"%7.1f")
-scalar IEPSNPSCNPIB = string((`IEPSNP'/`PIB'*100),"%7.1f")
-scalar DifIEPSNP = string(((real(IEPSNPHHSPIB) - real(IEPSNPSCNPIB))/real(IEPSNPHHSPIB)*100),"%7.1f")
+escalar pct IEPSNPHHSPIB = r(StatTotal)[1,1]/`PIB'*100
+escalar pct IEPSNPSCNPIB = `IEPSNP'/`PIB'*100
+escalar pct DifIEPSNP = (scalar(IEPSNPHHSPIB) - scalar(IEPSNPSCNPIB))/scalar(IEPSNPHHSPIB)*100
 
 foreach k of local categs {
 	local j = 1
@@ -1279,7 +1279,7 @@ foreach k of local categs {
 
 Gini IEPS, hogar(folioviv foliohog) factor(factor)
 local giniIEPS = r(gini_IEPS)
-scalar giniIEPS = string(`giniIEPS',"%7.3f")
+escalar pctpib giniIEPS = `giniIEPS'
 
 ** 6.3. Display de resultados **
 noisily di _newline in g "{bf: D. IEPS" ///

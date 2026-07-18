@@ -139,14 +139,14 @@ noisily di _newline in g "Población `1': " %12.0fc in y `ajustepob'
 ***        ***
 **************
 SCN, anio(`1') nographs
-local PIN = real(subinstr(scalar(PIN),",","",.))*1000000
-local ConHog = real(subinstr(scalar(ConHog),",","",.))*1000000
-local Yl = real(subinstr(scalar(Yl),",","",.))*1000000
-local MixK = real(subinstr(scalar(MixK),",","",.))*1000000
-local RemSal = real(subinstr(scalar(RemSal),",","",.))*1000000
-local ImpNetProduccionL = real(subinstr(scalar(ImpNetProduccionL),",","",.))*1000000
-local ExNOpSoc = real(subinstr(scalar(ExNOpSoc),",","",.))*1000000
-local ImpNet = real(subinstr(scalar(ImpNet),",","",.))*1000000
+local PIN = scalar(PIN)
+local ConHog = scalar(ConHog)
+local Yl = scalar(Yl)
+local MixK = scalar(MixK)
+local RemSal = scalar(RemSal)
+local ImpNetProduccionL = scalar(ImpNetProduccionL)
+local ExNOpSoc = scalar(ExNOpSoc)
+local ImpNet = scalar(ImpNet)
 
 
 

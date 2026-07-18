@@ -290,7 +290,7 @@ quietly {
 
 	g PIBPob = pibYR/Poblacion/1000
 	format PIBPob %20.0fc
-	scalar pibYPC = string(PIBPob[`obsvp']*1000,"%10.1fc")
+	escalar mxnpc pibYPC = PIBPob[`obsvp']*1000
 
 
 
@@ -301,22 +301,22 @@ quietly {
 	noisily di in g " PIB " in y anio[`obslast'] in g " per c{c a'}pita (edades laborales) " in y _col(43) %10.0fc OutputPerWorker[`obslast'] in g " `=currency[`obslast']' (16-65 a{c n~}os)"
 
 	local crecimientoProm = ((pibYR[`obsvp']/pibYR[`obsPIB'])^(1/(`obsvp'-`obsPIB'))-1)*100
-	scalar crecimientoProm = string(`crecimientoProm',"%7.1fc")
+	escalar pct crecimientoProm = `crecimientoProm'
 
 	local crecimientoPobProm = ((PIBPob[`obsvp']/PIBPob[`obsPIB'])^(1/(`obsvp'-`obsPIB'))-1)*100
-	scalar crecimientoPobProm = string(`crecimientoPobProm',"%7.1fc")
+	escalar pct crecimientoPobProm = `crecimientoPobProm'
 
 	local deflactorProm = ((deflator[`obsvp']/deflator[`obsDEF'])^(1/(`obsvp'-`obsDEF'))-1)*100
-	scalar deflactorProm = string(`deflactorProm',"%7.1fc")
+	escalar pct deflactorProm = `deflactorProm'
 
 	local inflacionProm = ((inpc[`obsvp']/inpc[`obsDEF'])^(1/(`obsvp'-`obsDEF'))-1)*100
-	scalar inflacionProm = string(`inflacionProm',"%7.1fc")
+	escalar pct inflacionProm = `inflacionProm'
 
 	noisily di _newline in g " Crecimiento promedio " in y anio[`obsPIB'] "-" anio[`obs_exo'] _col(43) %10.4f ((pibYR[`obs_exo']/pibYR[`obsPIB'])^(1/(`obs_exo'-`obsPIB'))-1)*100 in g " %" 
 	noisily di in g " Crecimiento productividad " in y anio[`obsPIB'] "-" anio[`obs_exo'] _col(43) %10.4f scalar(llambda) in g " % (working age)" 
 	*noisily di in g " Lambda por trabajador " in y anio[1] "-" anio[`obs_exo'] _col(35) %10.4f scalar(LLambda) in g " %" 
 	
-	scalar llambda = string(((OutputPerWorker[`obs_exo']/OutputPerWorker[`obsPIB'])^(1/(`obs_exo'-`obsPIB'))-1)*100,"%7.1fc")
+	escalar pct llambda = ((OutputPerWorker[`obs_exo']/OutputPerWorker[`obsPIB'])^(1/(`obs_exo'-`obsPIB'))-1)*100
 
 	local grow_rate_LR = (pibYR[_N]/pibYR[_N-10])^(1/10)-1
 	*scalar pibINF = pibYR[_N]*(1+`grow_rate_LR')*(1+`discount'/100)^(`=anio[`obsvp']'-`=anio[_N]')/((`discount'/100)-`grow_rate_LR'+((`discount'/100)*`grow_rate_LR'))
@@ -327,25 +327,25 @@ quietly {
 	matrix `pibYVP' = r(StatTotal)
 
 	scalar pibVPINF = `pibYVP'[1,1] + pibINF
-	scalar pibY = string(pibY[`obsvp']/1000000,"%10.0fc")
+	escalar mxn pibY = pibY[`obsvp']
 	scalar pibVECES = round((pibYR[`obsvp']/pibYR[`obsPIB']),.1)
 	scalar pibLP = round((pibYR[_N]/pibYR[`obsvp']-1)*100,.1)
 	
 	scalar pibVECESPC = round((PIBPob[`obsvp']/PIBPob[`obsPIB']),.1)
 	scalar pibLPPC = round((PIBPob[_N]/PIBPob[`obsvp']-1)*100,.1)
 
-	scalar deflactorLP = string((deflator[`obs_exo']/deflator[`obsvp'] - 1)*100,"%7.1fc")
-	scalar deflactorVECES = string(round((deflator[`obsvp']/deflator[`obsDEF']),.1),"%7.1fc")
+	escalar pct deflactorLP = (deflator[`obs_exo']/deflator[`obsvp'] - 1)*100
+	escalar pct deflactorVECES = round((deflator[`obsvp']/deflator[`obsDEF']),.1)
 	scalar anioLP = anio[_N]
 
-	scalar inflacionLP = string((deflatorpp[`obs_exo']/deflatorpp[`obsvp'] - 1)*100,"%7.1fc")
-	scalar inflacionVECES = string(round((deflatorpp[`obsvp']/deflatorpp[`obsDEF']),.1),"%7.1fc")
+	escalar pct inflacionLP = (deflatorpp[`obs_exo']/deflatorpp[`obsvp'] - 1)*100
+	escalar pct inflacionVECES = round((deflatorpp[`obsvp']/deflatorpp[`obsDEF']),.1)
 
 	scalar anioPWI = anio[`obsPIB']
 	scalar anioPWF = anio[`obs_exo']
-	scalar outputPWI = string(OutputPerWorker[`obsPIB'],"%10.0fc")
-	scalar outputPW = string(OutputPerWorker[`obsvp'],"%10.0fc")
-	scalar outputPWVECES = string(round(((OutputPerWorker[`obsvp']/OutputPerWorker[`obsPIB']-1)*100),.1),"%7.1fc")
+	escalar mxnpc outputPWI = OutputPerWorker[`obsPIB']
+	escalar mxnpc outputPW = OutputPerWorker[`obsvp']
+	escalar pct outputPWVECES = round(((OutputPerWorker[`obsvp']/OutputPerWorker[`obsPIB']-1)*100),.1)
 	scalar lambdaNW = ((pibYR[`obs_exo']/pibYR[`=`obs_exo'-`difpib''])^(1/(`difpib'))-1)*100
 	scalar LambdaNW = ((pibYR[`obs_exo']/pibYR[1])^(1/(`obs_exo'))-1)*100
 
@@ -901,7 +901,13 @@ quietly {
 	scalar aniolast = `aniofinal'
 
 	if "`textbook'" == "textbook" {
-		noisily scalarlatex, log(pibdeflactor) alt(pib)
+		capture which scalarlatex
+		if _rc {
+			noisily di in g "Nota: la opcion textbook (scalarlatex) es solo-repo; no viaja al endpoint publico."
+		}
+		else {
+			noisily scalarlatex, log(pibdeflactor) alt(pib)
+		}
 	}
 	
 	timer off 3

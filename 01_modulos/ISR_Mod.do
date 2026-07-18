@@ -32,7 +32,7 @@ local smdf = 248.93 			// SM 2024
 ** INFORMACIÓN PIB **
 *********************
 SCN, nographs
-local pibY = real(subinstr(scalar(PIB),",","",.))*1000000
+local pibY = scalar(PIB)
 
 
 

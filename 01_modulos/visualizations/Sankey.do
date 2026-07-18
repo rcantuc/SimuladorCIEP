@@ -25,18 +25,18 @@ SCN, anio(`2') nographs
 ****************
 ** 1 Ingresos **
 LIF, anio(`2') nographs min(0) by(divCIEP)
-local CuotasIMSS = real(subinstr(scalar(Cuotas_IMSS),",","",.))
-local IMSSpropio = real(subinstr(scalar(IMSS),",","",.)) //-`CuotasIMSS'
-local ISSSTEpropio = real(subinstr(scalar(ISSSTE),",","",.))
-local CFEpropio = real(subinstr(scalar(CFE),",","",.))
-local Pemexpropio = real(subinstr(scalar(Pemex),",","",.))
-local FMP = real(subinstr(scalar(FMP_Derechos),",","",.))
-local Mejoras = real(subinstr(scalar(Contrib_de_mejora),",","",.))
-local Derechos = real(subinstr(scalar(Derechos),",","",.))
-local Productos = real(subinstr(scalar(Productos),",","",.))
-local Aprovechamientos = real(subinstr(scalar(Aprovechamientos),",","",.))
-local OtrosTributarios = real(subinstr(scalar(Otros_tributarios),",","",.))
-local OtrasEmpresas = real(subinstr(scalar(Otras_empresas),",","",.))
+local CuotasIMSS = scalar(Cuotas_IMSS)
+local IMSSpropio = scalar(IMSS) //-`CuotasIMSS'
+local ISSSTEpropio = scalar(ISSSTE)
+local CFEpropio = scalar(CFE)
+local Pemexpropio = scalar(Pemex)
+local FMP = scalar(FMP_Derechos)
+local Mejoras = scalar(Contrib_de_mejora)
+local Derechos = scalar(Derechos)
+local Productos = scalar(Productos)
+local Aprovechamientos = scalar(Aprovechamientos)
+local OtrosTributarios = scalar(Otros_tributarios)
+local OtrasEmpresas = scalar(Otras_empresas)
 
 
 
@@ -71,19 +71,19 @@ replace to = 2 in -1
 set obs `=_N+2'
 replace from = -1 if from == .
 replace to = 3 in -1
-replace profile = real(subinstr(scalar(ROWRem),",","",.))*1000000 in -1
+replace profile = scalar(ROWRem) in -1
 label define `1' -1 "El mundo", add
 
 replace to = 101 in -2
-replace profile = real(subinstr(scalar(ROWTrans),",","",.))*1000000 in -2
+replace profile = scalar(ROWTrans) in -2
 label define to 101 "Remesas", add
 
 * Compras Netas *
-if real(subinstr(scalar(ComprasN),",","",.)) < 0 {
+if scalar(ComprasN) < 0 {
 	set obs `=_N+1'
 	replace from = -1 if from == .
 	replace to = 102 in -1
-	replace profile = -real(subinstr(scalar(ComprasN),",","",.))*1000000 in -1
+	replace profile = -scalar(ComprasN) in -1
 	label define to 102 "Turistas extranjeros", add
 }
 
@@ -129,13 +129,13 @@ set obs `=_N+3'
 replace to = -1 if from == .
 label define `1' -1 "Bienes_públicos", add
 
-replace profile = real(subinstr(scalar(SerEGob),",","",.))*1000000 in -1
+replace profile = scalar(SerEGob) in -1
 replace from = 4 in -1
 
-replace profile = real(subinstr(scalar(SaluGob),",","",.))*1000000 in -2
+replace profile = scalar(SaluGob) in -2
 replace from = 3 in -2
 
-replace profile = real(subinstr(scalar(ConGob),",","",.))*1000000 - real(subinstr(scalar(SerEGob),",","",.))*1000000 - real(subinstr(scalar(SaluGob),",","",.))*1000000 in -3
+replace profile = scalar(ConGob) - scalar(SerEGob) - scalar(SaluGob) in -3
 replace from = 7 in -3
 
 * Ahorro *
@@ -143,7 +143,7 @@ set obs `=_N+1'
 drop if from == 98
 replace from = 98 in -1
 replace to = -2 in -1 
-replace profile = real(subinstr(scalar(AhorroN),",","",.))*1000000 in -1
+replace profile = scalar(AhorroN) in -1
 label define `1' -2 "_Futuro", add
 label define from 98 "Ahorro", add
 
@@ -152,7 +152,7 @@ set obs `=_N+1'
 replace to = -3 if from == .
 label define `1' -3 "__El mundo", add
 replace from = 99 in -1
-replace profile = -real(subinstr(scalar(ROWProp),",","",.))*1000000 in -1
+replace profile = -scalar(ROWProp) in -1
 label define from 99 "_Ing a la propiedad", add
 
 

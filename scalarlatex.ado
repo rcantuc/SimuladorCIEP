@@ -1,118 +1,131 @@
+*! version 2.0.0  Exporta escalares a LaTeX con el catalogo central de tipos (v8.0.12)
+*
+* Sintaxis:  scalarlatex [, Logname(string) ALTname(string)]
+*
+* Recorre TODOS los escalares vivos en memoria (registro GLOBAL-ACUMULADO:
+* contrato deliberado, el libro consume escalares de un modulo desde el .tex
+* de otro — p.ej. \aniovpscn; ver governance) y escribe
+* $export/statalatex_<logname>.tex en UNA pasada con el patron historico:
+*
+*     \def\d<nombre><alt>#1{\gdef\<nombre><alt>{#1}}
+*     \d<nombre><alt>{<valor>}
+*
+* El formato del valor sale del catalogo de tipos registrado via escalar.ado
+* en $scalarlatex_reg (pctpib %7.3fc | pct %7.1fc | mxn /1e6 %12.1fc |
+* mxnpc %10.0fc | personas %15.0fc | anio %4.0f | custom(%fmt)). Escalares
+* SIN registrar se exportan tal cual (as-is), igual que siempre. Si el mismo
+* nombre se registro varias veces, gana la ULTIMA entrada.
+*
+* Nombres con digitos: LaTeX no admite digitos en nombres de macro (el patron
+* viejo los emitia como macros delimitadas inservibles, en silencio). Al
+* escribir el .tex cada digito se convierte a letra con la tabla fija
+* 0>A 1>B 2>C 3>D 4>E 5>F 6>G 7>H 8>I 9>J (ej. ConsPriv21PIB -> ConsPrivCBPIB).
+* Solo cambia el nombre del lado LaTeX; en Stata el escalar conserva su nombre.
+
 program define scalarlatex
 
 	if "$export" != "" {
 		syntax [, Logname(string) ALTname(string)]
 
-		*capture log off overall
-
-		* Scalar list *
+		* Enumerar los escalares en memoria (una sola captura de log) *
 		noisily di _newline(3) in g "{bf:LaTeX scalar list}"
 		tempfile scalarstata
-		quietly log using `scalarstata', name(scalar) replace text
+		quietly log using `scalarstata', name(scalarlist) replace text
 		noisily scalar list
-		quietly log close scalar
+		quietly log close scalarlist
 
 		tempname myfile
-		file open `myfile' using `scalarstata', read write text
+		file open `myfile' using `scalarstata', read text
 		file read `myfile' line
 		while r(eof) == 0 {
 			local name = word("`line'",1)
-			local scalars "`scalars' `name'"
+			* Solo nombres validos de escalar: descarta ruido del log
+			* (rulers, continuaciones) sin tronar a mitad del .tex *
+			capture confirm name `name'
+			if _rc == 0 & `: word count `name'' == 1 {
+				local scalars "`scalars' `name'"
+			}
 			file read `myfile' line
 		}
 		file close `myfile'
 
-		* New log *
-		quietly log using "$export/statalatex_`logname'.tex", name(`logname') replace text
-		quietly log close `logname'
-
-		* LaTeX-friendly log *
-		foreach name in `scalars' {
-
-			quietly log using "$export/statalatex_`logname'.tex", name(`logname') append text
-
-			*if `"`=substr("`name'",1,4)'"' == "anio" | `"`=substr("`name'",1,4)'"' == "defl" ///
-				| `"`=substr("`name'",1,4)'"' == "trim" | `"`=substr("`name'",1,4)'"' == "infl" ///
-				| `"`=substr("`name'",1,6)'"' == "output" | `"`=substr("`name'",1,4)'"' == "asis" ///
-				| `"`=substr("`name'",1,7)'"' == "pibYEnt" | `"`=substr("`name'",-5,5)'"' == "VECES" ///
-				| `"`=substr("`name'",-4,4)'"' == "Prom" | `"`=substr("`name'",-2,2)'"' == "LP" ///
-				| (`"`=substr("`name'",1,4)'"' == "rfsp" & `"`=substr("`name'",-3,3)'"' != "PIB") {
-				local value = scalar(`name')
-				di in w "\def\d`name'`altname'#1{\gdef\\`name'`altname'{#1}}"
-				di in w `"\d`name'`altname'{`value'}"'
-			*}
-
-			*else if (`"`=substr("`name'",-3,3)'"' == "PIB" & `"`=substr("`name'",1,3)'"' != "PIB") ///
-				| `"`=substr("`name'",1,6)'"' == "lambda" | `"`=substr("`name'",1,2)'"' == "TT" ///
-				| `"`=substr("`name'",1,7)'"' == "llambda" | `"`=substr("`name'",1,6)'"' == "Lambda" {
-				*if scalar(`name') != . {
-					*local value = scalar(`name')
-				*}
-				*else {
-					*local value = 0
-				*}
-				*di in w "\def\d`name'`altname'#1{\gdef\\`name'`altname'{#1}}"
-				*di in w `"\d`name'`altname'{`=string(`value',"%06.3fc")'}"'
-			*}
-
-			*else if "`name'" == "ISRAS" | "`name'" == "ISRPF" | "`name'" == "CUOTAS" ///
-				| "`name'" == "IVA" | "`name'" == "ISAN" | "`name'" == "IEPSNP" | "`name'" == "IEPSP" ///
-				| "`name'" == "IMPORT" | "`name'" == "ISRPM" | "`name'" == "FMP" ///
-				| "`name'" == "CFE" | "`name'" == "PEMEX" | "`name'" == "IMSS" | "`name'" == "ISSSTE" ///
-				| "`name'" == "OTROSK" | `"`=substr("`name'",1,9)'"' == "GasFedPIB" ///
-				| `"`=substr("`name'",1,9)'"' == "LIETotPIB" | `"`=substr("`name'",1,6)'"' == "ImpPIB" ///
-				| `"`=substr("`name'",1,7)'"' == "RePrPIB" | `"`=substr("`name'",1,4)'"' == "gini" {
-				*local value = scalar(`name')
-				*di in w "\def\d`name'`altname'#1{\gdef\\`name'`altname'{#1}}"
-				*di in w `"\d`name'`altname'{`=string(`value',"%7.3fc")'}"'
-			*}
-
-			*else if `"`=substr("`name'",-1,1)'"' == "I" | `"`=substr("`name'",-1,1)'"' == "V" ///
-				| `"`=substr("`name'",-1,1)'"' == "X" | `"`=substr("`name'",-1,1)'"' == "H" ///
-				| `"`=substr("`name'",-1,1)'"' == "M" | `"`=substr("`name'",-3,3)'"' == "Nac" ///
-				| `"`=substr("`name'",-2,2)'"' == "PC" | "`name'" == "basica" | "`name'" == "medsup" ///
-				| "`name'" == "superi" ///
-				| `"`=substr("`name'",1,3)'"' == "pob" ///
-				| "`name'" == "posgra" | "`name'" == "eduadu" | "`name'" == "otrose" ///
-				| "`name'" == "ssa" | "`name'" == "segpop" | "`name'" == "imss" ///
-				| "`name'" == "issste" | "`name'" == "prospe" | "`name'" == "pemex" ///
-				| "`name'" == "bienestar" | "`name'" == "penims" | "`name'" == "peniss" ///
-				| "`name'" == "penotr" | "`name'" == "servpers" | "`name'" == "matesumi" ///
-				| "`name'" == "gastgene" | "`name'" == "substran" | "`name'" == "bienmueb" ///
-				| "`name'" == "obrapubl" | "`name'" == "invefina" | "`name'" == "partapor" ///
-				| "`name'" == "costodeu" | "`name'" == "educacion" | "`name'" == "salud" ///
-				| "`name'" == "pensiones" | "`name'" == "otrosgastos" | `"`=substr("`name'",1,3)'"' == "jer" ///
-				| `"`=substr("`name'",1,4)'"' == "Part" | `"`=substr("`name'",1,4)'"' == "Apor" ///
-				| `"`=substr("`name'",1,4)'"' == "Conv"| `"`=substr("`name'",1,4)'"' == "Prov" ///
-				| `"`=substr("`name'",1,4)'"' == "Prot" | `"`=substr("`name'",1,6)'"' == "GasFed" ///
-				| `"`=substr("`name'",1,3)'"' == "LIE" | `"`=substr("`name'",1,2)'"' == "RP" ///
-				/*| `"`=substr("`name'",1,3)'"' == "Imp"*/ {
-				*local value = scalar(`name')
-				*di in w "\def\d`name'`altname'#1{\gdef\\`name'`altname'{#1}}"
-				*di in w `"\d`name'`altname'{`=string(`value',"%15.0fc")'}"'
-			*}
-			
-			*else if `"`=substr("`name'",-3,3)'"' == "GEO" ///
-				| `"`=substr("`name'",-3,3)'"' == "Por" | `"`=substr("`name'",1,5)'"' == "Depen" ///
-				| `"`=substr("`name'",1,3)'"' == "Dif" {
-				*local value = scalar(`name')
-				*di in w "\def\d`name'`altname'#1{\gdef\\`name'`altname'{#1}}"
-				*di in w `"\d`name'`altname'{`=string(`value',"%15.1fc")'}"'
-			*}
-
-			*else {
-				*if scalar(`name') != . {
-					*local value = scalar(`name')/1000000
-				*}
-				*else {
-					*local value = 0
-				*}
-				*di in w "\def\d`name'`altname'#1{\gdef\\`name'`altname'{#1}}"
-				*di in w `"\d`name'`altname'{`=string(`value',"%12.1fc")'}"'
-			*}
-			quietly log close `logname'
+		* Mapa nombre->tipo desde el registro (last wins) *
+		foreach e of global scalarlatex_reg {
+			tokenize `"`e'"', parse(":")
+			local t_`1' "`3'"
+			local f_`1' "`5'"
 		}
-		*scalar drop _all
-		*capture log on overall
+
+		* Escritura del .tex en UNA pasada *
+		local nreg = 0
+		local nsin = 0
+		local sinlist ""
+		local nbad = 0
+		local badlist ""
+		tempname fh
+		file open `fh' using "$export/statalatex_`logname'.tex", write replace text
+		foreach name in `scalars' {
+			local tipo "`t_`name''"
+			if "`tipo'" != "" {
+				local nreg = `nreg' + 1
+			}
+			else {
+				local nsin = `nsin' + 1
+				local sinlist "`sinlist' `name'"
+			}
+			local xfmt ""
+			local xdiv = 1
+			if "`tipo'" == "pctpib" 		local xfmt "%7.3fc"
+			else if "`tipo'" == "pct" 		local xfmt "%7.1fc"
+			else if "`tipo'" == "mxn" {
+				local xfmt "%12.1fc"
+				local xdiv = 1000000
+			}
+			else if "`tipo'" == "mxnpc" 	local xfmt "%10.0fc"
+			else if "`tipo'" == "personas" 	local xfmt "%15.0fc"
+			else if "`tipo'" == "anio" 		local xfmt "%4.0f"
+			else if "`tipo'" == "custom" 	local xfmt "`f_`name''"
+			if "`xfmt'" != "" {
+				* Registrado: formato canonico. Si el valor NO es numerico
+				* (nombre registrado pisado por un scalar string, p.ej.
+				* Simulador.ado/SIM.do guardan strings preformateados),
+				* NO tronar: exportar as-is y reportarlo al final. *
+				capture local value = string(scalar(`name')/`xdiv',"`xfmt'")
+				if _rc {
+					local value = scalar(`name')
+					local nbad = `nbad' + 1
+					local badlist "`badlist' `name'"
+				}
+			}
+			else {
+				* sin registrar: tal cual, comportamiento historico *
+				capture local value = scalar(`name')
+				if _rc {
+					continue
+				}
+			}
+
+			* Digitos -> letras para el nombre LaTeX *
+			local texname "`name'"
+			if regexm("`texname'","[0-9]") {
+				foreach par in "0A" "1B" "2C" "3D" "4E" "5F" "6G" "7H" "8I" "9J" {
+					local texname = subinstr("`texname'", substr("`par'",1,1), substr("`par'",2,1), .)
+				}
+			}
+
+			file write `fh' "\def\d`texname'`altname'#1{\gdef\\`texname'`altname'{#1}}" _n
+			file write `fh' `"\d`texname'`altname'{`value'}"' _n
+		}
+		file close `fh'
+
+		* Resumen de cobertura: el drift de escalares sin tipo es fallo
+		* suave silencioso (typo scalar/escalar) — hacerlo visible *
+		noisily di in g "scalarlatex (`logname'): " in y `nreg' in g " registrados, " in y `nsin' in g " sin registrar (as-is)"
+		if `nsin' > 0 {
+			noisily di in g "  sin registrar:`sinlist'"
+		}
+		if `nbad' > 0 {
+			noisily di as err "  ATENCION: `nbad' registrados con valor NO numerico (exportados as-is):`badlist'"
+		}
 	}
 end

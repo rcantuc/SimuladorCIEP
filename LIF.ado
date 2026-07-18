@@ -188,9 +188,9 @@ quietly {
 		local name = strtoname(`"`disptext'"')
 
 		* Display *
-		scalar `name' = string(`mat`k''[1,1], "%20.0fc")
-		scalar `name'PIB = string(`mat`k''[1,2], "%7.3fc")
-		scalar `name'Tot = string(`mat`k''[1,1]/`mattot'[1,1]*100, "%7.1fc")
+		escalar custom(%20.0fc) `name' = `mat`k''[1,1]	// custom: pesos completos: el libro los cita en pesos, /1e6 cambiaria el significado
+		escalar pctpib `name'PIB = `mat`k''[1,2]
+		escalar pct `name'Tot = `mat`k''[1,1]/`mattot'[1,1]*100
 		local `by' `"``by'' `name'"'
 
 		noisily di in g `"  (+) `disptext'"' ///
@@ -254,9 +254,9 @@ quietly {
 		local name = strtoname(`"`disptext'"')
 
 		* Display *
-		scalar `=strtoname("`=r(name`k')'")' = string(`mat`k''[1,1], "%20.0fc")
-		scalar `=strtoname("`=r(name`k')'")'PIB = string(`mat`k''[1,2], "%7.3fc")
-		scalar `=strtoname("`=r(name`k')'")'C = string((((`mat`k''[1,1]/`pre`k''[1,1])^(1/(`=`anio'-`desde''))-1)*100), "%7.1fc")
+		escalar custom(%20.0fc) `=strtoname("`=r(name`k')'")' = `mat`k''[1,1]	// custom: pesos completos: el libro los cita en pesos, /1e6 cambiaria el significado
+		escalar pctpib `=strtoname("`=r(name`k')'")'PIB = `mat`k''[1,2]
+		escalar pct `=strtoname("`=r(name`k')'")'C = (((`mat`k''[1,1]/`pre`k''[1,1])^(1/(`=`anio'-`desde''))-1)*100)
 		local divResumido `"`divResumido' `=strtoname(abbrev("`=r(name`k')'",7))'"'
 
 		noisily di in g "  (+) `=r(name`k')'" ///
@@ -383,8 +383,8 @@ quietly {
 				_col(52) in y %7.3fc (((`mattot'[1,1]/`mattot5'[1,1])^(1/(`=`anio'-`desde''))-1)*100)/ ///
 				(((`pibYR`anio''/`pibYR`desde'')^(1/(`=`anio'-`desde''))-1)*100) "}"
 		
-		scalar EIngresosTotales = string((((`mattot'[1,1]/`mattot5'[1,1])^(1/(`=`anio'-`desde''))-1)*100)/ ///
-				(((`pibYR`anio''/`pibYR`desde'')^(1/(`=`anio'-`desde''))-1)*100), "%7.3fc")
+		escalar pctpib EIngresosTotales = (((`mattot'[1,1]/`mattot5'[1,1])^(1/(`=`anio'-`desde''))-1)*100)/ ///
+				(((`pibYR`anio''/`pibYR`desde'')^(1/(`=`anio'-`desde''))-1)*100)
 				
 	}
 
@@ -395,7 +395,7 @@ quietly {
 	capture tabstat recaudacion recaudacionPIB if anio == `anio' & nombre == "Ingreso de Finanzas Públicas Cuotas a la Seguridad Social (IMSS)", stat(sum) f(%20.1fc) save
 	tempname cuotas
 	matrix `cuotas' = r(StatTotal)
-	scalar Cuotas_IMSS = string(`cuotas'[1,1],"%20.0fc")
+	escalar custom(%20.0fc) Cuotas_IMSS = `cuotas'[1,1]	// custom: pesos completos: el libro los cita en pesos, /1e6 cambiaria el significado
 
 	capture tabstat recaudacion recaudacionPIB if anio == `anio' & divCIEP == 12, stat(sum) by(nombre) f(%20.1fc) save
 	

@@ -213,20 +213,56 @@ Este manual documenta los programas auxiliares del Simulador CIEP que complement
 
 ## 15. scalarlatex.ado
 
-**Descripción:** Exporta scalars de Stata a formato LaTeX.
+**Descripción:** Exporta a LaTeX los scalars registrados vía `escalar` (ver §16).
 
 **Sintaxis:** `scalarlatex [, log(string) alt(string)]`
 
-**Función:** 
-- Convierte scalars numéricos a comandos LaTeX
-- Facilita integración con documentos académicos
-- Formato automático de números y porcentajes
+**Función:**
+- Recorre TODOS los scalars vivos en memoria (contrato global-acumulado: el
+  libro consume scalars de un módulo desde el .tex de otro)
+- A los registrados en `$scalarlatex_reg` (vía `escalar`) les aplica el formato
+  canónico de su tipo; los NO registrados se exportan tal cual (as-is)
+- El valor exportado es el scalar real, no su impresión en pantalla
 
 **Opciones:**
-- `log(nombre)`: Especifica nombre del archivo log
-- `alt(prefijo)`: Prefijo alternativo para comandos LaTeX
+- `log(nombre)`: Nombre del archivo .tex de salida (`statalatex_<nombre>.tex`)
+- `alt(sufijo)`: Sufijo de los comandos LaTeX generados (`\d<Nombre><sufijo>`)
 
-**Output:** Archivo .tex con definiciones de comandos para usar en LaTeX.
+**Output:** `$export/statalatex_<log>.tex` con `\def`s para documentos internos CIEP.
+
+**Nota:** solo-repo (opción `textbook`). No viaja al endpoint público; los
+productores publicados lo invocan tras `capture which scalarlatex`.
+
+---
+
+## 16. escalar.ado
+
+**Descripción:** Registra un scalar con clase semántica para exportación textbook.
+Reemplaza al patrón fósil `noisily di %fmt = scalar(...)` + relectura de log.
+
+**Sintaxis:** `escalar <tipo> <nombre> = <expresión>`
+
+**Tipos y formato canónico al exportar:**
+- `pctpib` — % del PIB, `%7.3fc`
+- `pct` — % de un total / tasas, `%7.1fc`
+- `mxn` — pesos (se exporta entre 1e6, en millones), `%12.1fc`
+- `mxnpc` — pesos per cápita, `%10.0fc`
+- `personas` — conteos de población, `%15.0fc`
+- `anio` — años calendario, `%4.0f`
+- `custom(%fmt)` — excepción documentada; comentar el porqué en el call site
+
+**Función:**
+- Define `scalar <nombre> = <exp>` con precisión completa (los cómputos aguas
+  abajo lo usan directo; el formato se aplica UNA vez, al escribir el .tex)
+- Registra `nombre:tipo` en `$scalarlatex_reg` (last wins si se re-registra)
+- En `scalarlatex`, los dígitos del nombre se convierten a letras (0→A ... 9→J)
+  para que el `\def` LaTeX sea válido (antes esas macros quedaban rotas en silencio)
+
+**Reglas para colaboradores:**
+- Todo scalar nuevo destinado a textbook DEBE declararse con `escalar`, nunca
+  con `noisily di` + formato manual
+- Preferir nombres sin dígitos; si los hay, documentar la conversión A–J en el
+  texto LaTeX que los consuma
 
 ---
 

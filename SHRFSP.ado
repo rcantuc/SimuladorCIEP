@@ -162,108 +162,108 @@ quietly {
 	format shrfsp_lif %7.0fc
 
 	** Escalares Balance presupuestario **
-	scalar rfspBalanceMonto = string(rfspBalance[`obsvp']/1000000, "%20.1fc")
-	scalar rfspBalancePIB = string(rfspBalance[`obsvp']/pibY[`obsvp']*100, "%7.1fc")
-	scalar rfspBalancePorTot = string(rfspBalance[`obsvp']/rfsp[`obsvp']*100, "%7.1fc")
-	scalar rfspBalancePC = string(rfspBalance[`obsvp']/Poblacion_ajustada[`obsvp'], "%10.0fc")
+	escalar mxn rfspBalanceMonto = rfspBalance[`obsvp']
+	escalar pctpib rfspBalancePIB = rfspBalance[`obsvp']/pibY[`obsvp']*100
+	escalar pct rfspBalancePorTot = rfspBalance[`obsvp']/rfsp[`obsvp']*100
+	escalar mxnpc rfspBalancePC = rfspBalance[`obsvp']/Poblacion_ajustada[`obsvp']
 
 	** Escalares PIDIREGAS **
-	scalar rfspPIDIREGASMonto = string(rfspPIDIREGAS[`obsvp']/1000000, "%20.1fc")
-	scalar rfspPIDIREGASPIB = string(rfspPIDIREGAS[`obsvp']/pibY[`obsvp']*100, "%7.1fc")
-	scalar rfspPIDIREGASPorTot = string(rfspPIDIREGAS[`obsvp']/rfsp[`obsvp']*100, "%7.1fc")
-	scalar rfspPIDIREGASPC = string(rfspPIDIREGAS[`obsvp']/Poblacion_ajustada[`obsvp'], "%10.0fc")
+	escalar mxn rfspPIDIREGASMonto = rfspPIDIREGAS[`obsvp']
+	escalar pctpib rfspPIDIREGASPIB = rfspPIDIREGAS[`obsvp']/pibY[`obsvp']*100
+	escalar pct rfspPIDIREGASPorTot = rfspPIDIREGAS[`obsvp']/rfsp[`obsvp']*100
+	escalar mxnpc rfspPIDIREGASPC = rfspPIDIREGAS[`obsvp']/Poblacion_ajustada[`obsvp']
 
 	** Escalares IPAB **
-	scalar rfspIPABMonto = string(rfspIPAB[`obsvp']/1000000, "%20.1fc")
-	scalar rfspIPABPIB = string(rfspIPAB[`obsvp']/pibY[`obsvp']*100, "%7.1fc")
-	scalar rfspIPABPorTot = string(rfspIPAB[`obsvp']/rfsp[`obsvp']*100, "%7.1fc")
-	scalar rfspIPABPC = string(rfspIPAB[`obsvp']/Poblacion_ajustada[`obsvp'], "%10.0fc")
+	escalar mxn rfspIPABMonto = rfspIPAB[`obsvp']
+	escalar pctpib rfspIPABPIB = rfspIPAB[`obsvp']/pibY[`obsvp']*100
+	escalar pct rfspIPABPorTot = rfspIPAB[`obsvp']/rfsp[`obsvp']*100
+	escalar mxnpc rfspIPABPC = rfspIPAB[`obsvp']/Poblacion_ajustada[`obsvp']
 
 	** Escalares FONADIN **
-	scalar rfspFONADINMonto = string(rfspFONADIN[`obsvp']/1000000, "%20.1fc")
-	scalar rfspFONADINPIB = string(rfspFONADIN[`obsvp']/pibY[`obsvp']*100, "%7.1fc")
-	scalar rfspFONADINPorTot = string(rfspFONADIN[`obsvp']/rfsp[`obsvp']*100, "%7.1fc")
-	scalar rfspFONADINPC = string(rfspFONADIN[`obsvp']/Poblacion_ajustada[`obsvp'], "%10.0fc")
+	escalar mxn rfspFONADINMonto = rfspFONADIN[`obsvp']
+	escalar pctpib rfspFONADINPIB = rfspFONADIN[`obsvp']/pibY[`obsvp']*100
+	escalar pct rfspFONADINPorTot = rfspFONADIN[`obsvp']/rfsp[`obsvp']*100
+	escalar mxnpc rfspFONADINPC = rfspFONADIN[`obsvp']/Poblacion_ajustada[`obsvp']
 
 	** Escalares Programa de Deudores **
-	scalar rfspDeudoresMonto = string(rfspDeudores[`obsvp']/1000000, "%20.1fc")
-	scalar rfspDeudoresPIB = string(rfspDeudores[`obsvp']/pibY[`obsvp']*100, "%7.1fc")
-	scalar rfspDeudoresPorTot = string(rfspDeudores[`obsvp']/rfsp[`obsvp']*100, "%7.1fc")
-	scalar rfspDeudoresPC = string(rfspDeudores[`obsvp']/Poblacion_ajustada[`obsvp'], "%10.0fc")
+	escalar mxn rfspDeudoresMonto = rfspDeudores[`obsvp']
+	escalar pctpib rfspDeudoresPIB = rfspDeudores[`obsvp']/pibY[`obsvp']*100
+	escalar pct rfspDeudoresPorTot = rfspDeudores[`obsvp']/rfsp[`obsvp']*100
+	escalar mxnpc rfspDeudoresPC = rfspDeudores[`obsvp']/Poblacion_ajustada[`obsvp']
 
 	** Escalares Banca de Desarrollo **
-	scalar rfspBancaMonto = string(rfspBanca[`obsvp']/1000000, "%20.1fc")
-	scalar rfspBancaPIB = string(rfspBanca[`obsvp']/pibY[`obsvp']*100, "%7.1fc")
-	scalar rfspBancaPorTot = string(rfspBanca[`obsvp']/rfsp[`obsvp']*100, "%7.1fc")
-	scalar rfspBancaPC = string(rfspBanca[`obsvp']/Poblacion_ajustada[`obsvp'], "%10.0fc")
+	escalar mxn rfspBancaMonto = rfspBanca[`obsvp']
+	escalar pctpib rfspBancaPIB = rfspBanca[`obsvp']/pibY[`obsvp']*100
+	escalar pct rfspBancaPorTot = rfspBanca[`obsvp']/rfsp[`obsvp']*100
+	escalar mxnpc rfspBancaPC = rfspBanca[`obsvp']/Poblacion_ajustada[`obsvp']
 
 	** Escalares Adecuaciones **
-	scalar rfspAdecuacionesMonto = string(rfspAdecuaciones[`obsvp']/1000000, "%20.1fc")
-	scalar rfspAdecuacionesPIB = string(rfspAdecuaciones[`obsvp']/pibY[`obsvp']*100, "%7.1fc")
-	scalar rfspAdecuacionesPorTot = string(rfspAdecuaciones[`obsvp']/rfsp[`obsvp']*100, "%7.1fc")
-	scalar rfspAdecuacionesPC = string(rfspAdecuaciones[`obsvp']/Poblacion_ajustada[`obsvp'], "%10.0fc")
+	escalar mxn rfspAdecuacionesMonto = rfspAdecuaciones[`obsvp']
+	escalar pctpib rfspAdecuacionesPIB = rfspAdecuaciones[`obsvp']/pibY[`obsvp']*100
+	escalar pct rfspAdecuacionesPorTot = rfspAdecuaciones[`obsvp']/rfsp[`obsvp']*100
+	escalar mxnpc rfspAdecuacionesPC = rfspAdecuaciones[`obsvp']/Poblacion_ajustada[`obsvp']
 
 	** Escalares RFSP **
-	scalar RFSPMonto = string(rfsp[`obsvp']/1000000, "%20.1fc")
-	scalar RFSPPIB = string(rfsp[`obsvp']/pibY[`obsvp']*100, "%7.1fc")
-	scalar RFSPPorTot = string(rfsp[`obsvp']/rfsp[`obsvp']*100, "%7.1fc")
-	scalar RFSPPC = string(rfsp[`obsvp']/Poblacion_ajustada[`obsvp'], "%10.0fc")
+	escalar mxn RFSPMonto = rfsp[`obsvp']
+	escalar pctpib RFSPPIB = rfsp[`obsvp']/pibY[`obsvp']*100
+	escalar pct RFSPPorTot = rfsp[`obsvp']/rfsp[`obsvp']*100
+	escalar mxnpc RFSPPC = rfsp[`obsvp']/Poblacion_ajustada[`obsvp']
 
 	** Escalares SHRFSP Interna **
-	scalar SHRFSPInternoMonto = string(shrfspInterno[`obsvp']/1000000, "%20.1fc")
-	scalar SHRFSPInternoPIB = string(shrfspInterno[`obsvp']/pibY[`obsvp']*100, "%7.1fc")
-	scalar SHRFSPInternoPorTot = string(shrfspInterno[`obsvp']/shrfsp[`obsvp']*100, "%7.1fc")
-	scalar SHRFSPInternoPC = string(shrfspInterno[`obsvp']/Poblacion_ajustada[`obsvp'], "%10.0fc")
+	escalar mxn SHRFSPInternoMonto = shrfspInterno[`obsvp']
+	escalar pctpib SHRFSPInternoPIB = shrfspInterno[`obsvp']/pibY[`obsvp']*100
+	escalar pct SHRFSPInternoPorTot = shrfspInterno[`obsvp']/shrfsp[`obsvp']*100
+	escalar mxnpc SHRFSPInternoPC = shrfspInterno[`obsvp']/Poblacion_ajustada[`obsvp']
 
 	** Escalares SHRFSP Externa **
-	scalar SHRFSPExternoMonto = string(shrfspExterno[`obsvp']/1000000, "%20.1fc")
-	scalar SHRFSPExternoPIB = string(shrfspExterno[`obsvp']/pibY[`obsvp']*100, "%7.1fc")
-	scalar SHRFSPExternoPorTot = string(shrfspExterno[`obsvp']/shrfsp[`obsvp']*100, "%7.1fc")
-	scalar SHRFSPExternoPC = string(shrfspExterno[`obsvp']/Poblacion_ajustada[`obsvp'], "%10.0fc")
+	escalar mxn SHRFSPExternoMonto = shrfspExterno[`obsvp']
+	escalar pctpib SHRFSPExternoPIB = shrfspExterno[`obsvp']/pibY[`obsvp']*100
+	escalar pct SHRFSPExternoPorTot = shrfspExterno[`obsvp']/shrfsp[`obsvp']*100
+	escalar mxnpc SHRFSPExternoPC = shrfspExterno[`obsvp']/Poblacion_ajustada[`obsvp']
 
 	** Escalares SHRFSP **
-	scalar SHRFSPMonto = string(shrfsp[`obsvp']/1000000, "%20.1fc")
-	scalar SHRFSPPIB = string(shrfsp[`obsvp']/pibY[`obsvp']*100, "%7.1fc")
-	scalar SHRFSPPorTot = string(shrfsp[`obsvp']/shrfsp[`obsvp']*100, "%7.1fc")
-	scalar SHRFSPPC = string(shrfsp[`obsvp']/Poblacion_ajustada[`obsvp'], "%10.0fc")
-	scalar SHRFSPLIF = string(shrfsp_lif[`obsvp'], "%7.0fc")
+	escalar mxn SHRFSPMonto = shrfsp[`obsvp']
+	escalar pctpib SHRFSPPIB = shrfsp[`obsvp']/pibY[`obsvp']*100
+	escalar pct SHRFSPPorTot = shrfsp[`obsvp']/shrfsp[`obsvp']*100
+	escalar mxnpc SHRFSPPC = shrfsp[`obsvp']/Poblacion_ajustada[`obsvp']
+	escalar pct SHRFSPLIF = shrfsp_lif[`obsvp']
 	
 
 	** Escalares Deuda Gobierno federal **
-	scalar DeudaGobFedMonto = string(shrfspGobFed[`obsvp']/1000000, "%20.1fc")
-	scalar DeudaGobFedPIB = string(shrfspGobFed[`obsvp']/pibY[`obsvp']*100, "%7.1fc")
-	scalar DeudaGobFedPorTot = string(shrfspGobFed[`obsvp']/shrfsp[`obsvp']*100, "%7.1fc")
-	scalar DeudaGobFedPC = string(shrfspGobFed[`obsvp']/Poblacion_ajustada[`obsvp'], "%10.0fc")
+	escalar mxn DeudaGobFedMonto = shrfspGobFed[`obsvp']
+	escalar pctpib DeudaGobFedPIB = shrfspGobFed[`obsvp']/pibY[`obsvp']*100
+	escalar pct DeudaGobFedPorTot = shrfspGobFed[`obsvp']/shrfsp[`obsvp']*100
+	escalar mxnpc DeudaGobFedPC = shrfspGobFed[`obsvp']/Poblacion_ajustada[`obsvp']
 
 	** Escalares Deuda OyE **
-	scalar DeudaOyEMonto = string(shrfspOyE[`obsvp']/1000000, "%20.1fc")
-	scalar DeudaOyEPIB = string(shrfspOyE[`obsvp']/pibY[`obsvp']*100, "%7.1fc")
-	scalar DeudaOyEPorTot = string(shrfspOyE[`obsvp']/shrfsp[`obsvp']*100, "%7.1fc")
-	scalar DeudaOyEPC = string(shrfspOyE[`obsvp']/Poblacion_ajustada[`obsvp'], "%10.0fc")
+	escalar mxn DeudaOyEMonto = shrfspOyE[`obsvp']
+	escalar pctpib DeudaOyEPIB = shrfspOyE[`obsvp']/pibY[`obsvp']*100
+	escalar pct DeudaOyEPorTot = shrfspOyE[`obsvp']/shrfsp[`obsvp']*100
+	escalar mxnpc DeudaOyEPC = shrfspOyE[`obsvp']/Poblacion_ajustada[`obsvp']
 
 	** Escalares Deuda Banca de desarrollo **
-	scalar DeudaBancaMonto = string(shrfspBanca[`obsvp']/1000000, "%20.1fc")
-	scalar DeudaBancaPIB = string(shrfspBanca[`obsvp']/pibY[`obsvp']*100, "%7.1fc")
-	scalar DeudaBancaPorTot = string(shrfspBanca[`obsvp']/shrfsp[`obsvp']*100, "%7.1fc")
-	scalar DeudaBancaPC = string(shrfspBanca[`obsvp']/Poblacion_ajustada[`obsvp'], "%10.0fc")
+	escalar mxn DeudaBancaMonto = shrfspBanca[`obsvp']
+	escalar pctpib DeudaBancaPIB = shrfspBanca[`obsvp']/pibY[`obsvp']*100
+	escalar pct DeudaBancaPorTot = shrfspBanca[`obsvp']/shrfsp[`obsvp']*100
+	escalar mxnpc DeudaBancaPC = shrfspBanca[`obsvp']/Poblacion_ajustada[`obsvp']
 
 	** Escalares Deuda bruta **
-	scalar DeudaBrutaMonto = string(deudabruta[`obsvp']/1000000, "%20.1fc")
-	scalar DeudaBrutaPIB = string(deudabruta[`obsvp']/pibY[`obsvp']*100, "%7.1fc")
-	scalar DeudaBrutaPorTot = string(deudabruta[`obsvp']/shrfsp[`obsvp']*100, "%7.1fc")
-	scalar DeudaBrutaPC = string(deudabruta[`obsvp']/Poblacion_ajustada[`obsvp'], "%10.0fc")
+	escalar mxn DeudaBrutaMonto = deudabruta[`obsvp']
+	escalar pctpib DeudaBrutaPIB = deudabruta[`obsvp']/pibY[`obsvp']*100
+	escalar pct DeudaBrutaPorTot = deudabruta[`obsvp']/shrfsp[`obsvp']*100
+	escalar mxnpc DeudaBrutaPC = deudabruta[`obsvp']/Poblacion_ajustada[`obsvp']
 
 	** Escalares Deuda corto plazo **
-	scalar DeudaCPMonto = string(shrfspCP[`obsvp']/1000000, "%20.1fc")
-	scalar DeudaCPPIB = string(shrfspCP[`obsvp']/pibY[`obsvp']*100, "%7.1fc")
-	scalar DeudaCPPorTot = string(shrfspCP[`obsvp']/shrfsp[`obsvp']*100, "%7.1fc")
-	scalar DeudaCPPC = string(shrfspCP[`obsvp']/Poblacion_ajustada[`obsvp'], "%10.0fc")
+	escalar mxn DeudaCPMonto = shrfspCP[`obsvp']
+	escalar pctpib DeudaCPPIB = shrfspCP[`obsvp']/pibY[`obsvp']*100
+	escalar pct DeudaCPPorTot = shrfspCP[`obsvp']/shrfsp[`obsvp']*100
+	escalar mxnpc DeudaCPPC = shrfspCP[`obsvp']/Poblacion_ajustada[`obsvp']
 
 	** Escalares Deuda largo plazo **
-	scalar DeudaLPMonto = string(shrfspLP[`obsvp']/1000000, "%20.1fc")
-	scalar DeudaLPPIB = string(shrfspLP[`obsvp']/pibY[`obsvp']*100, "%7.1fc")
-	scalar DeudaLPPorTot = string(shrfspLP[`obsvp']/shrfsp[`obsvp']*100, "%7.1fc")
-	scalar DeudaLPPC = string(shrfspLP[`obsvp']/Poblacion_ajustada[`obsvp'], "%10.0fc")
+	escalar mxn DeudaLPMonto = shrfspLP[`obsvp']
+	escalar pctpib DeudaLPPIB = shrfspLP[`obsvp']/pibY[`obsvp']*100
+	escalar pct DeudaLPPorTot = shrfspLP[`obsvp']/shrfsp[`obsvp']*100
+	escalar mxnpc DeudaLPPC = shrfspLP[`obsvp']/Poblacion_ajustada[`obsvp']
 
 	noisily di in g "  (+) Balance presupuestario" ///
 		_col(33) in y %20s rfspBalanceMonto ///
@@ -719,10 +719,10 @@ quietly {
 	*************************
 
 	** Escalares Costo financiero **
-	scalar CostoFinancieroMonto = string(costodeudaTot[`obsvp']/1000000, "%20.1fc")
-	scalar CostoFinancieroPIB = string(costodeudaTot[`obsvp']/pibY[`obsvp']*100, "%7.1fc")
-	scalar CostoFinancieroPorTot = string(costodeudaTot[`obsvp']/costodeudaTot[`obsvp']*100, "%7.1fc")
-	scalar CostoFinancieroPC = string(costodeudaTot[`obsvp']/Poblacion_ajustada[`obsvp'], "%10.0fc")
+	escalar mxn CostoFinancieroMonto = costodeudaTot[`obsvp']
+	escalar pctpib CostoFinancieroPIB = costodeudaTot[`obsvp']/pibY[`obsvp']*100
+	escalar pct CostoFinancieroPorTot = costodeudaTot[`obsvp']/costodeudaTot[`obsvp']*100
+	escalar mxnpc CostoFinancieroPC = costodeudaTot[`obsvp']/Poblacion_ajustada[`obsvp']
 
 	noisily di in g _dup(85) "="
 	noisily di in g "  {bf:(*) Costo financiero" ///
@@ -960,9 +960,9 @@ quietly {
 	scalar anioLP = `lastexo'
 	sort anio
 
-	scalar SHRFSPlastPIB = string(shrfsp_pib[`obslastexo'],"%7.1fc")
-	scalar SHRFSPlastPC = string(shrfsp_pc[`obslastexo'],"%10.0fc")
-	scalar SHRFSPlastLIF = string(shrfsp_lif[`obslastexo'],"%10.0fc")
+	escalar pctpib SHRFSPlastPIB = shrfsp_pib[`obslastexo']
+	escalar mxnpc SHRFSPlastPC = shrfsp_pc[`obslastexo']
+	escalar mxnpc SHRFSPlastLIF = shrfsp_lif[`obslastexo']
 
 	*replace balprimario_pib = -balprimario_pib + rfspOtros_pib
 
@@ -1044,7 +1044,13 @@ quietly {
 	*** END ***
 	***********
 	if "$textbook" == "textbook" {
-		noisily scalarlatex, log(shrfsp) alt(shrfsp)
+		capture which scalarlatex
+		if _rc {
+			noisily di in g "Nota: la opcion textbook (scalarlatex) es solo-repo; no viaja al endpoint publico."
+		}
+		else {
+			noisily scalarlatex, log(shrfsp) alt(shrfsp)
+		}
 	}
 	capture drop __*
 	timer off 5

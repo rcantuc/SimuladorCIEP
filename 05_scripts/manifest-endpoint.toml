@@ -26,6 +26,7 @@ ado_files = [
     "SCN.ado",
     "SHRFSP.ado",
     "ensure_asset.ado",
+    "escalar.ado",
 ]
 
 sthlp_files = [

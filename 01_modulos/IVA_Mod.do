@@ -18,7 +18,6 @@ keep if anio == 2022 | anio == scalar(anioPE)
 local lambda = lambda[1]
 local deflator = deflator[1]
 local pibY = pibY[_N]
-scalar pibY = real(subinstr(scalar(pibY),",","",.))*1000000
 
 
 

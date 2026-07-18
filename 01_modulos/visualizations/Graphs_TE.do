@@ -11,10 +11,10 @@ capture scalar drop ISRASTE ISRPFTE CUOTASTE ISRPMTE OTROSKTE FMPTE ///
 	PEMEXTE CFETE IMSSTE ISSSTETE IVATE ISANTE IEPSNPTE IEPSPTE IMPORTTE
 forvalues anio = 2001(1)`=anioPE' {
 	noisily TasasEfectivas, anio(`anio')
-	post TE (`anio') (`=real(ISRASTE)') (`=real(ISRPFTE)') (`=real(CUOTASTE)') (`=real(YlImpTE)') ///
-		(`=real(ISRPMTE)') (`=real(OTROSKTE)') (`=real(IngKPrivadoTotTE)') ///
-		(`=real(IVATE)') (`=real(ISANTE)') (`=real(IEPSNPTE)') (`=real(IEPSPTE)') (`=real(IMPORTTE)') (`=real(ingconsumoTE)') ///
-		(`=real(FMPTE)') (`=real(PEMEXTE)') (`=real(CFETE)') (`=real(IMSSTE)') (`=real(ISSSTETE)') (`=real(IngKPublicosTotTE)')
+	post TE (`anio') (`=scalar(ISRASTE)') (`=scalar(ISRPFTE)') (`=scalar(CUOTASTE)') (`=scalar(YlImpTE)') ///
+		(`=scalar(ISRPMTE)') (`=scalar(OTROSKTE)') (`=scalar(IngKPrivadoTotTE)') ///
+		(`=scalar(IVATE)') (`=scalar(ISANTE)') (`=scalar(IEPSNPTE)') (`=scalar(IEPSPTE)') (`=scalar(IMPORTTE)') (`=scalar(ingconsumoTE)') ///
+		(`=scalar(FMPTE)') (`=scalar(PEMEXTE)') (`=scalar(CFETE)') (`=scalar(IMSSTE)') (`=scalar(ISSSTETE)') (`=scalar(IngKPublicosTotTE)')
 }
 postclose TE
 

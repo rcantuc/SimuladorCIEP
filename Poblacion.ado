@@ -90,10 +90,10 @@ quietly {
 		tempname POBTOT
 		matrix `POBTOT' = r(StatTotal)
 		if `k' == `anioinicial' {
-			scalar pobtot`entidadGName' = string(`POBTOT'[1,1],"%15.0fc")
+			escalar personas pobtot`entidadGName' = `POBTOT'[1,1]
 		}
 		if `k' == `aniofinal' {
-			scalar pobfin`entidadGName' = string(`POBTOT'[1,1],"%15.0fc")
+			escalar personas pobfin`entidadGName' = `POBTOT'[1,1]
 		}
 		
 		capture tabstat poblacion if anio == `k' & sexo == 1, f(%20.0fc) stat(sum) save
@@ -106,12 +106,12 @@ quietly {
 		}
 
 		if "`k'" == "`anioinicial'" {
-			scalar pobhomI`entidadGName' = string(`POBHOM'[1,1],"%15.0fc")
-			scalar pobhompropI`entidadGName' = string(`POBHOM'[1,1]/`POBTOT'[1,1]*100,"%7.1fc")
+			escalar personas pobhomI`entidadGName' = `POBHOM'[1,1]
+			escalar pct pobhompropI`entidadGName' = `POBHOM'[1,1]/`POBTOT'[1,1]*100
 		}
 		if "`k'" == "`aniofinal'" {
-			scalar pobhomF`entidadGName' = string(`POBHOM'[1,1],"%15.0fc")
-			scalar pobhompropF`entidadGName' = string(`POBHOM'[1,1]/`POBTOT'[1,1]*100,"%7.1fc")
+			escalar personas pobhomF`entidadGName' = `POBHOM'[1,1]
+			escalar pct pobhompropF`entidadGName' = `POBHOM'[1,1]/`POBTOT'[1,1]*100
 		}
 		
 		capture tabstat poblacion if anio == `k' & sexo == 2, f(%20.0fc) stat(sum) save
@@ -124,12 +124,12 @@ quietly {
 		}
 
 		if "`k'" == "`anioinicial'" {
-			scalar pobmujI`entidadGName' = string(`POBMUJ'[1,1],"%15.0fc")
-			scalar pobmujpropI`entidadGName' = string(`POBMUJ'[1,1]/`POBTOT'[1,1]*100,"%7.1fc")
+			escalar personas pobmujI`entidadGName' = `POBMUJ'[1,1]
+			escalar pct pobmujpropI`entidadGName' = `POBMUJ'[1,1]/`POBTOT'[1,1]*100
 		}
 		if "`k'" == "`aniofinal'" {
-			scalar pobmujF`entidadGName' = string(`POBMUJ'[1,1],"%15.0fc")
-			scalar pobmujpropF`entidadGName' = string(`POBMUJ'[1,1]/`POBTOT'[1,1]*100,"%7.1fc")
+			escalar personas pobmujF`entidadGName' = `POBMUJ'[1,1]
+			escalar pct pobmujpropF`entidadGName' = `POBMUJ'[1,1]/`POBTOT'[1,1]*100
 		}
 		
 		capture tabstat poblacion if anio == `k' & edad < 18, f(%20.0fc) stat(sum) save
@@ -142,12 +142,12 @@ quietly {
 		}
 
 		if "`k'" == "`anioinicial'" {
-			scalar pobMenoresI`entidadGName' = string(`POB017'[1,1],"%15.0fc")
-			scalar pobMenorespropI`entidadGName' = string(`POB017'[1,1]/`POBTOT'[1,1]*100,"%7.1fc")
+			escalar personas pobMenoresI`entidadGName' = `POB017'[1,1]
+			escalar pct pobMenorespropI`entidadGName' = `POB017'[1,1]/`POBTOT'[1,1]*100
 		}
 		if "`k'" == "`aniofinal'" {
-			scalar pobMenoresF`entidadGName' = string(`POB017'[1,1],"%15.0fc")
-			scalar pobMenorespropF`entidadGName' = string(`POB017'[1,1]/`POBTOT'[1,1]*100,"%7.1fc")
+			escalar personas pobMenoresF`entidadGName' = `POB017'[1,1]
+			escalar pct pobMenorespropF`entidadGName' = `POB017'[1,1]/`POBTOT'[1,1]*100
 		}
 		
 		capture tabstat poblacion if anio == `k' & edad >= 18 & edad < 65, f(%20.0fc) stat(sum) save
@@ -160,12 +160,12 @@ quietly {
 		}
 
 		if "`k'" == "`anioinicial'" {
-			scalar pobPrimeI`entidadGName' = string(`POB1864'[1,1],"%15.0fc")
-			scalar pobPrimepropI`entidadGName' = string(`POB1864'[1,1]/`POBTOT'[1,1]*100,"%7.1fc")
+			escalar personas pobPrimeI`entidadGName' = `POB1864'[1,1]
+			escalar pct pobPrimepropI`entidadGName' = `POB1864'[1,1]/`POBTOT'[1,1]*100
 		}
 		if "`k'" == "`aniofinal'" {
-			scalar pobPrimeF`entidadGName' = string(`POB1864'[1,1],"%15.0fc")
-			scalar pobPrimepropF`entidadGName' = string(`POB1864'[1,1]/`POBTOT'[1,1]*100,"%7.1fc")
+			escalar personas pobPrimeF`entidadGName' = `POB1864'[1,1]
+			escalar pct pobPrimepropF`entidadGName' = `POB1864'[1,1]/`POBTOT'[1,1]*100
 		}
 
 		capture tabstat poblacion if anio == `k' & edad >= 65, f(%20.0fc) stat(sum) save
@@ -178,12 +178,12 @@ quietly {
 		}
 
 		if "`k'" == "`anioinicial'" {
-			scalar pobMayoresI`entidadGName' = string(`POB65'[1,1],"%15.0fc")
-			scalar pobMayorespropI`entidadGName' = string(`POB65'[1,1]/`POBTOT'[1,1]*100,"%7.1fc")
+			escalar personas pobMayoresI`entidadGName' = `POB65'[1,1]
+			escalar pct pobMayorespropI`entidadGName' = `POB65'[1,1]/`POBTOT'[1,1]*100
 		}
 		if "`k'" == "`aniofinal'" {
-			scalar pobMayoresF`entidadGName' = string(`POB65'[1,1],"%15.0fc")
-			scalar pobMayorespropF`entidadGName' = string(`POB65'[1,1]/`POBTOT'[1,1]*100,"%7.1fc")
+			escalar personas pobMayoresF`entidadGName' = `POB65'[1,1]
+			escalar pct pobMayorespropF`entidadGName' = `POB65'[1,1]/`POBTOT'[1,1]*100
 		}
 
 		noisily di in g " " `k' _col(8) in y %12.0fc `POBTOT'[1,1] _col(21) in y %12.0fc `POBHOM'[1,1] _col(34) in y %12.0fc `POBMUJ'[1,1] _col(47) in y %12.0fc `POB017'[1,1] _col(60) in y %12.0fc `POB1864'[1,1] _col(73) in y %12.0fc `POB65'[1,1]
@@ -619,7 +619,13 @@ quietly {
 	}
 
 	if "`textbook'" == "textbook" {
-		noisily scalarlatex, log(poblacion) alt(pob)
+		capture which scalarlatex
+		if _rc {
+			noisily di in g "Nota: la opcion textbook (scalarlatex) es solo-repo; no viaja al endpoint publico."
+		}
+		else {
+			noisily scalarlatex, log(poblacion) alt(pob)
+		}
 	}
 
 	** END **

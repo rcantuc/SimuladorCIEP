@@ -44,7 +44,7 @@ noisily di in w "INGRESOS: " in w "["  ///
 	%8.3f scalar(PEMEXPIB) "," /// Pemex - 16
 	%8.3f scalar(CFEPIB) "," /// CFE - 17
 	%8.3f scalar(IngKPublicosTotPIB) "," /// Total Organismos y Empresas - 18
-	%8.3f real(YlImpPIB)+real(ImpKPrivadoPIB)+real(ingconsumoPIB)+real(ImpKPublicosPIB) /// Total INGRESOS - 19
+	%8.3f scalar(YlImpPIB)+scalar(ImpKPrivadoPIB)+scalar(ingconsumoPIB)+scalar(ImpKPublicosPIB) /// Total INGRESOS - 19
 "]"
 
 
@@ -111,52 +111,52 @@ noisily di in w "GASTOS: ["  ///
 	%8.3f gasmadresPIB "," /// Apoyo a madres trabajadoras 37
 	%8.3f gascuidadosPIB "," /// Gasto en cuidados 38
 	%8.3f transfPIB "," /// Total Transferencias 39
-	%8.3f real(EducacPIB)+real(saludPIB)+real(pensionPIB)+real(gasenergiaPIB)+real(otrosgasPIB)+real(transfPIB) /// Total GASTO 40
+	%8.3f scalar(EducacPIB)+scalar(saludPIB)+scalar(pensionPIB)+scalar(gasenergiaPIB)+scalar(otrosgasPIB)+scalar(transfPIB) /// Total GASTO 40
 "]"
 
 noisily di in w "GASTOSPC: ["  ///
-	%8.0f real(subinstr(iniciaAPC,",","",.)) "," /// Educación inicial 0
-	%8.0f real(subinstr(basicaPC,",","",.)) "," /// Educación básica 1
-	%8.0f real(subinstr(medsupPC,",","",.)) "," /// Educación media superior 2
-	%8.0f real(subinstr(superiPC,",","",.)) "," /// Educación superior 3
-	%8.0f real(subinstr(posgraPC,",","",.)) "," /// Educación Posgrado 4
-	%8.0f real(subinstr(eduaduPC,",","",.)) "," /// Educación para adultos 5
-	%8.0f real(subinstr(otrosePC,",","",.)) "," /// Otros gastos educativos 6
-	%8.0f real(subinstr(inverePC,",","",.)) "," /// Inversión educativa 7
-	%8.0f real(subinstr(culturPC,",","",.)) "," /// Cultura 8
-	%8.0f real(subinstr(investPC,",","",.)) "," /// Inversión en ciencia y tecnología 9
-	%8.0f real(subinstr(EducacPC,",","",.)) "," /// Total Educación 10
-	%8.0f real(subinstr(ssaPC,",","",.)) "," /// Secretaría de Salud 11
-	%8.0f real(subinstr(imssbienPC,",","",.)) "," /// IMSS-Bienestar 12
-	%8.0f real(subinstr(imssPC,",","",.)) "," /// IMSS 13
-	%8.0f real(subinstr(issstePC,",","",.)) "," /// ISSSTE 14
-	%8.0f real(subinstr(pemexPC,",","",.)) "," /// Pemex 15
-	%8.0f real(subinstr(issfamPC,",","",.)) "," /// ISSFAM 16
-	%8.0f real(subinstr(inversPC,",","",.)) "," /// Inversión en salud 17
-	%8.0f real(subinstr(saludPC,",","",.)) "," /// Total Salud 18
-	%8.0f real(subinstr(pamPC,",","",.)) "," /// Pensión Bienestar 19
-	%8.0f real(subinstr(penimssPC,",","",.)) "," /// Pensión IMSS 20
-	%8.0f real(subinstr(penisssPC,",","",.)) "," /// Pensión ISSSTE 21
-	%8.0f real(subinstr(penpemePC,",","",.)) "," /// Pensión Pemex 22
-	%8.0f real(subinstr(penotroPC,",","",.)) "," /// Pensión CFE, LFC, ISSFAM, Otros 23
-	%8.0f real(subinstr(pensionPC,",","",.)) "," /// Total Pensiones 24
-	%8.0f real(subinstr(gascfePC,",","",.)) "," /// Gasto en CFE 25
-	%8.0f real(subinstr(gaspemexPC,",","",.)) "," /// Gasto en Pemex 26
-	%8.0f real(subinstr(gassenerPC,",","",.)) "," /// Gasto en SENER 27
-	%8.0f real(subinstr(gasinverfPC,",","",.)) "," /// Gasto en Inversión (energía) 28
-	%8.0f real(subinstr(gascosdeuePC,",","",.)) "," /// Gasto en Costo de la deuda (energía) 29
-	%8.0f real(subinstr(gasenergiaPC,",","",.)) "," /// Total Energía 30
-	%8.0f real(subinstr(gasinfraPC,",","",.)) "," /// Gasto en Inversión 31
-	%8.0f real(subinstr(gasotrosPC,",","",.)) "," /// Otros gastos 32
-	%8.0f real(subinstr(gasfederPC,",","",.)) "," /// Participaciones y aportaciones 33
-	%8.0f real(subinstr(gascostoPC,",","",.)) "," /// Gasto en costo de la deuda 34
-	%8.0f real(subinstr(otrosgasPC,",","",.)) "," /// Total Otros gastos 35
-	%8.0f real(subinstr(IngBasPC,",","",.)) "," /// Ingreso Básico 36
+	%8.0f scalar(iniciaAPC) "," /// Educación inicial 0
+	%8.0f scalar(basicaPC) "," /// Educación básica 1
+	%8.0f scalar(medsupPC) "," /// Educación media superior 2
+	%8.0f scalar(superiPC) "," /// Educación superior 3
+	%8.0f scalar(posgraPC) "," /// Educación Posgrado 4
+	%8.0f scalar(eduaduPC) "," /// Educación para adultos 5
+	%8.0f scalar(otrosePC) "," /// Otros gastos educativos 6
+	%8.0f scalar(inverePC) "," /// Inversión educativa 7
+	%8.0f scalar(culturPC) "," /// Cultura 8
+	%8.0f scalar(investPC) "," /// Inversión en ciencia y tecnología 9
+	%8.0f scalar(EducacPC) "," /// Total Educación 10
+	%8.0f scalar(ssaPC) "," /// Secretaría de Salud 11
+	%8.0f scalar(imssbienPC) "," /// IMSS-Bienestar 12
+	%8.0f scalar(imssPC) "," /// IMSS 13
+	%8.0f scalar(issstePC) "," /// ISSSTE 14
+	%8.0f scalar(pemexPC) "," /// Pemex 15
+	%8.0f scalar(issfamPC) "," /// ISSFAM 16
+	%8.0f scalar(inversPC) "," /// Inversión en salud 17
+	%8.0f scalar(saludPC) "," /// Total Salud 18
+	%8.0f scalar(pamPC) "," /// Pensión Bienestar 19
+	%8.0f scalar(penimssPC) "," /// Pensión IMSS 20
+	%8.0f scalar(penisssPC) "," /// Pensión ISSSTE 21
+	%8.0f scalar(penpemePC) "," /// Pensión Pemex 22
+	%8.0f scalar(penotroPC) "," /// Pensión CFE, LFC, ISSFAM, Otros 23
+	%8.0f scalar(pensionPC) "," /// Total Pensiones 24
+	%8.0f scalar(gascfePC) "," /// Gasto en CFE 25
+	%8.0f scalar(gaspemexPC) "," /// Gasto en Pemex 26
+	%8.0f scalar(gassenerPC) "," /// Gasto en SENER 27
+	%8.0f scalar(gasinverfPC) "," /// Gasto en Inversión (energía) 28
+	%8.0f scalar(gascosdeuePC) "," /// Gasto en Costo de la deuda (energía) 29
+	%8.0f scalar(gasenergiaPC) "," /// Total Energía 30
+	%8.0f scalar(gasinfraPC) "," /// Gasto en Inversión 31
+	%8.0f scalar(gasotrosPC) "," /// Otros gastos 32
+	%8.0f scalar(gasfederPC) "," /// Participaciones y aportaciones 33
+	%8.0f scalar(gascostoPC) "," /// Gasto en costo de la deuda 34
+	%8.0f scalar(otrosgasPC) "," /// Total Otros gastos 35
+	%8.0f scalar(IngBasPC) "," /// Ingreso Básico 36
 	%8.0f ingbasico18 "," /// Checkbox "menores de 18 años" 37
 	%8.0f ingbasico65 "," /// Checkbox "mayores de 65 años" 38
-	%8.0f real(subinstr(gasmadresPC,",","",.)) "," /// Apoyo a madres trabajadoras 39
-	%8.0f real(subinstr(gascuidadosPC,",","",.)) "," /// Gasto en cuidados 40
-	%8.0f real(subinstr(transfPC,",","",.)) /// Total Transferencias 41
+	%8.0f scalar(gasmadresPC) "," /// Apoyo a madres trabajadoras 39
+	%8.0f scalar(gascuidadosPC) "," /// Gasto en cuidados 40
+	%8.0f scalar(transfPC) /// Total Transferencias 41
 "]"
 
 noisily di in w "ISRTASA: [" ///

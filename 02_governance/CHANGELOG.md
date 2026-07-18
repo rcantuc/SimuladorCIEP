@@ -16,6 +16,69 @@ Formato de cada entrada:
 - **Datos:** cambios en fuentes, actualizaciones de PEFs, LIFs, ENIGH, u otras fuentes
 - **Correcciones:** bugs corregidos que afectaban resultados o funcionamiento
 
+## [v8.0.12] — 2026-07-18
+
+Pipeline textbook declarativo: los ~670 scalars que alimentan los documentos
+LaTeX internos dejan de definirse con `noisily di %fmt` + relectura de logs de
+pantalla (patrón fósil, frágil ante cualquier cambio cosmético de impresión) y
+pasan a declararse con el nuevo comando `escalar <tipo> <nombre> = <exp>`,
+que registra nombre y tipo semántico; `scalarlatex` exporta desde ese registro
+con formato canónico por tipo. Cero impacto en el endpoint público. Los `.tex`
+internos sí cambian de valores: la precisión completa y dos bugs corregidos
+(ver Correcciones) mueven los agregados por decil de los módulos ENIGH.
+
+### Comandos
+- Nuevo `escalar.ado` (solo-repo): define el scalar y lo registra para
+  exportación textbook con el catálogo de tipos pctpib, pct, mxn, mxnpc,
+  personas, anio y custom(%fmt). Ver `03_help/PROGRAMAS_AUXILIARES.md` §16.
+- `scalarlatex.ado` reescrito: aplica el formato canónico del registro
+  `$scalarlatex_reg` en vez de releer `users/$id/*.txt`; ya no depende de
+  `log on/off` ni de formatos de impresión. Los scalars sin registrar se
+  exportan tal cual y se reportan (drift visible). Interfaz intacta
+  (`log()`, `alt()`).
+- Migrados los 17 archivos productores textbook (~670 sitios): PIBDeflactor, Poblacion,
+  SCN, SHRFSP, TasasEfectivas, GastoPC, LIF, FiscalGap y módulos Households,
+  PerfilesSim, Expenditure, ISR_Mod, IVA_Mod, output, Sankey(SF), Graphs_TE.
+- El censo de cierre cazó 17 sitios omitidos en `Expenditure.do` (incluidos los
+  round-trips `DifIVA`/`DifIEPSNP`, misma clase del bug del arrendamiento) y 10 en
+  `FiscalGap.ado` (`tt*/td*/tn*` + años): migrados. El `real()` de FiscalGap:132
+  sobre los params `*PIB` de SIM.do queda con comentario-INVARIANTE: son strings
+  por diseño (interfaz web), igual que en SankeySF — no migrar.
+- `Simulador.ado` (9 sitios `string()`, nombres dinámicos por decil) NO se migra
+  en v8.0.12: corre en el VPS por cada simulación y exige ciclo propio con
+  validación web. Registrado en bitácora v1.38 como candidato.
+
+### Correcciones
+- Cierra el AGUJERO CONOCIDO de v8.0.11: PIBDeflactor, Poblacion, SCN y SHRFSP
+  publicados ahora hacen `capture which scalarlatex` bajo `textbook` y avisan
+  amablemente que la opción es solo-repo, en vez de tronar con "command
+  scalarlatex is unrecognized" en el endpoint.
+- Los `\def` LaTeX con dígitos en el nombre (p.ej. `\dConsPriv21PIBscn`) se
+  generaban rotos en silencio; `escalar` convierte dígitos a letras (0→A…9→J)
+  y ahora esas macros son válidas.
+- Los scalars "% del PIB" del SHRFSP se exportaban con 1 decimal (formato de
+  pantalla); ahora 3 decimales canónicos. Padding accidental de `%07.1fc` y
+  redondeos compuestos de la relectura de logs eliminados.
+- BUG NUMÉRICO corregido (silencioso desde el origen del patrón): en
+  `Households.do` el split arrendamiento pf/PM (`ing_t4_cap3pf`/`PM`) usaba
+  `real(scalar(AlojT))` sin quitar comas; `real("940,573.4")` = missing, así
+  que TODO el capítulo 3 (arrendamiento) se caía en silencio del ingreso mixto
+  y del ingreso de capital (`rsum` trata missing como 0). Con el valor real,
+  el ingreso mixto captado sube ~30% (MixLHHSPIB 1.861→2.421% PIB;
+  DifMixL −86.5→−82.5%) y se recorren deciles, ahorro, cortes de formalidad
+  ISR y la brecha fiscal (diffs de ±1–4% en fiscalgap/gastopc/households/
+  perfiles/shrfsp/tasasEfectivas del test dorado).
+  Causalidad DEMOSTRADA por prueba de aislamiento: código viejo + únicamente
+  el fix del `subinstr` reproduce 4,315 de los ~4,900 valores que cambian
+  (base→viejo+parche); el resto es precisión/formato del pipeline nuevo
+  (viejo+parche→nuevo: 96 diffs = 16 escalares×6 alias, todos auditados:
+  mismo valor con decimal nuevo o fin del redondeo a 0.1 mdp de la
+  relectura). Residuo inexplicado: 0.
+- Durante la migración, `SCN.ado` registraba `PIB` en millones con tipo
+  `pctpib` mientras sus consumidores (Households, Expenditure, ISR_Mod)
+  esperan pesos: ratios `*HHSPIB` salían 1e6 veces más grandes. Corregido a
+  `escalar mxn PIB = PIB[obs]` (pesos, display idéntico al histórico).
+
 ## [v8.0.11] — 2026-07-10
 
 El endpoint público se vuelve autosuficiente: un usuario externo que instala

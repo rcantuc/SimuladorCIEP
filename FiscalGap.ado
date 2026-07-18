@@ -9,8 +9,8 @@ quietly {
 		ANIOMIN(int 2000) DIScount(real 5) DESDE(int `=`=aniovp'-1')]
 	noisily di _newline(2) in g "{bf: FISCAL GAP:" in y " $pais `anio' }"
 
-	scalar aniodesde = "`desde'"
-	scalar anioend = "`end'"
+	escalar anio aniodesde = `desde'
+	escalar anio anioend = `end'
 
 	*************
 	***       ***
@@ -22,7 +22,7 @@ quietly {
 	replace Poblacion0 = Poblacion0*lambda
 	keep if anio <= `end'
 	local currency = currency[1]
-	local llambda = real(llambda)
+	local llambda = scalar(llambda)
 	tempfile PIB
 	save `PIB'
 
@@ -92,7 +92,6 @@ quietly {
 	replace divCIEP = strtoname(divCIEP)
 
 	** 4.2 Proyección futura de los ingresos **/
-	scalar pibY = real(subinstr(scalar(pibY),",","",.))*1000000
 	foreach k in CFE CUOTAS FMP IEPSNP IEPSP IMPORT IMSS ISAN ISRAS ISRPF ISRPM ISSSTE IVA OTROSK PEMEX {
 		use `"`c(sysdir_site)'/users/ricardo/bootstraps/1/`k'REC.dta"', clear
 		collapse estimacion contribuyentes, by(anio modulo aniobase)
@@ -111,7 +110,7 @@ quietly {
 		* Tendencia total = ``k'C'
 		* Componente demográfico = `tasa_demo'
 		* Componente no demográfico (per cápita) = ``k'C' - `tasa_demo'
-		local tendencia = real(scalar(`k'C)) - `tasa_demo'
+		local tendencia = scalar(`k'C) - `tasa_demo'
 		if `tendencia' > 5 {
 			local tendencia = 5
 		}
@@ -121,16 +120,16 @@ quietly {
 		
 		* Mensaje informativo *
 		noisily di in g "  `k': " ///
-		_col(35) "Tasa total =" in y %7.2f real(scalar(`k'C)) "%" ///
+		_col(35) "Tasa total =" in y %7.2f scalar(`k'C) "%" ///
 		_col(60) in g "Demográfica =" in y %7.2f `tasa_demo' "%" ///
 		_col(85) in g "Económica =" in y %7.2f `tendencia' "%"
 
-		scalar tt`=strtoname("`k'")' = string(real(scalar(`k'C)),"%5.1fc")
-		scalar td`=strtoname("`k'")' = string(`tasa_demo',"%5.1fc")
-		scalar tn`=strtoname("`k'")' = string(`tendencia',"%5.1fc")
+		escalar pct tt`=strtoname("`k'")' = scalar(`k'C)
+		escalar pct td`=strtoname("`k'")' = `tasa_demo'
+		escalar pct tn`=strtoname("`k'")' = `tendencia'
 
 		* Nueva fórmula SIN doble contabilización *
-		replace estimacion = (real(`k'PIB)/100*scalar(pibY)) if anio == `anio'	// Estimación como % del PIB (Parámetros)
+		replace estimacion = (real(`k'PIB)/100*scalar(pibY)) if anio == `anio'	// INVARIANTE: los `k'PIB son params de interfaz de SIM.do/Web.Stata.do: strings POR DISEÑO (flujo web); real() a la lectura es el patrón correcto, igual que SankeySF — NO migrar a escalar
 		replace estimacion = L.estimacion * 									///
 			(contribuyentes/L.contribuyentes) *									/// Cambio demográfico PURO (contribuyentes)
 			(1+`tendencia'/100)													/// Tendencia
@@ -378,9 +377,9 @@ quietly {
 				_col(60) in g "Demográfica =" in y %5.2f `tasa_demo' "%" ///
 				_col(85) in g "Económica =" in y %5.2f `tendencia' "%"
 
-			scalar tt`=subinstr(strtoname("`k'"),"_","",.)' = string(``=strtoname("`k'")'C',"%5.1fc")
-			scalar td`=subinstr(strtoname("`k'"),"_","",.)' = string(`tasa_demo',"%5.1fc")
-			scalar tn`=subinstr(strtoname("`k'"),"_","",.)' = string(`tendencia',"%5.1fc")
+			escalar pct tt`=subinstr(strtoname("`k'"),"_","",.)' = ``=strtoname("`k'")'C'
+			escalar pct td`=subinstr(strtoname("`k'"),"_","",.)' = `tasa_demo'
+			escalar pct tn`=subinstr(strtoname("`k'"),"_","",.)' = `tendencia'
 			
 			* Nueva fórmula SIN doble contabilización *
 			replace estimacion = `HH`=strtoname("`k'")''[1,1] if anio == `anio'	// Gasto total del año base (GastoPC.ado)
