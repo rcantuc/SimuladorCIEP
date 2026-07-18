@@ -16,6 +16,22 @@ set charset latin1, permanently
 *** 1.5 VERSIÓN Y CAMBIOS   ***
 ***                         ***
 *******************************
+* Guard de Python (mismo principio que el guard del token BIE, v8.0.8):
+* python which fuerza la inicialización real de Python ANTES de entrar al
+* bloque python:. Si Stata no puede inicializar Python (r(7100) en Windows
+* sin configurar), se salta el bloque completo — cero "Unknown #command" —
+* y la bienvenida muestra los pasos de configuración.
+* RESTRICCIÓN: el bloque python: de abajo NO debe contener líneas que
+* empiecen con # (comentarios de Python). Stata procesa las #directivas al
+* LEER el do-file, incluso dentro de un if falso que se salta, y cada una
+* truena con "Unknown #command". Por eso los comentarios del bloque van
+* como strings de Python (no-op), no con #.
+local sim_python_missing = 0
+capture python which sys
+if _rc {
+	local sim_python_missing = 1
+}
+if !`sim_python_missing' {
 quietly {
 	python:
 import json
@@ -76,10 +92,10 @@ try:
 	if mode in ("welcome", "update") and changelog_path.exists():
 		changelog_text = changelog_path.read_text(encoding="utf-8")
 		nl = chr(10)
-		# Parsear todas las entradas ## [vX.Y.Z] del CHANGELOG en orden de aparición
+		"Parsear todas las entradas ## [vX.Y.Z] del CHANGELOG en orden de aparición"
 		version_header_re = re.compile(r"^## " + chr(92) + "[(v[^" + chr(92) + "]]+)" + chr(92) + "][^" + nl + "]*" + nl, re.MULTILINE)
 		all_matches = list(version_header_re.finditer(changelog_text))
-		# Cada entry: (version_str, header_line, body_start_pos, body_end_pos)
+		"Cada entry: (version_str, header_line, body_start_pos, body_end_pos)"
 		entries = []
 		for idx, m in enumerate(all_matches):
 			ver = m.group(1)
@@ -87,9 +103,9 @@ try:
 			body_start = m.end()
 			body_end = all_matches[idx + 1].start() if idx + 1 < len(all_matches) else len(changelog_text)
 			entries.append((ver, header_line, body_start, body_end))
-		# Filtrar: acumular entradas entre previous_version (exclusivo) y sim_version (inclusivo)
-		# En welcome mode: solo la entrada de sim_version.
-		# En update mode: todas las que están arriba (más nuevas) hasta previous_version.
+		"Filtrar: acumular entradas entre previous_version (exclusivo) y sim_version (inclusivo)"
+		"En welcome mode: solo la entrada de sim_version."
+		"En update mode: todas las que están arriba (más nuevas) hasta previous_version."
 		selected = []
 		if mode == "welcome":
 			for ver, header, s, e in entries:
@@ -97,18 +113,18 @@ try:
 					selected.append((ver, header, s, e))
 					break
 		else:
-			# mode == update: acumular desde el tope hasta encontrar previous_version
+			"mode == update: acumular desde el tope hasta encontrar previous_version"
 			for ver, header, s, e in entries:
 				if ver == previous_version:
 					break
 				selected.append((ver, header, s, e))
-		# Renderizar líneas con sanitización de Markdown y separador entre versiones
+		"Renderizar líneas con sanitización de Markdown y separador entre versiones"
 		display_lines = []
 		max_lines = 100
 		for ver, header, s, e in selected:
 			if len(display_lines) >= max_lines:
 				break
-			# Header de versión (siempre, aunque haya varias)
+			"Header de versión (siempre, aunque haya varias)"
 			display_lines.append("")
 			display_lines.append("{bf:" + header.replace("## ", "").replace("`", "") + "}")
 			body = changelog_text[s:e].strip()
@@ -131,7 +147,7 @@ try:
 					if len(display_lines) >= max_lines:
 						break
 				display_lines.append(clean[:120])
-		# Emitir cada linea como local individual (evita limite de longitud).
+		"Emitir cada linea como local individual (evita limite de longitud)."
 		for i, line in enumerate(display_lines, 1):
 			Macro.setLocal("sim_change_" + str(i), line)
 		Macro.setLocal("sim_change_count", str(len(display_lines)))
@@ -143,6 +159,7 @@ try:
 except Exception:
 	pass
 end
+}
 }
 
 
@@ -231,6 +248,21 @@ if `sim_token_missing' {
 	noisily di _newline in g "  Nota: falta configurar el token del BIE/INEGI, necesario para los"
 	noisily di in g "  comandos que consultan el BIE (como AccesoBIE). Copia"
 	noisily di in g "  set_token.template.do a set_token.do y coloca ah{c i'} tu token."
+}
+
+if `sim_python_missing' {
+	noisily di _newline in g "  Nota: Python no est{c a'} configurado en Stata. AccesoBIE, los comandos"
+	noisily di in g "  que consultan el BIE y sim_changelog lo requieren. Para configurarlo:"
+	noisily di in g "    1. python search            (lista los Python instalados)"
+	noisily di in g `"    2. python set exec "C:\ruta\a\python.exe", permanently"'
+	noisily di in g "    3. python query             (verifica)"
+	noisily di in g "    4. Reinicia Stata."
+	noisily di in g "  Si python search no encuentra nada: instala desde python.org marcando"
+	noisily di in g "  'Add python.exe to PATH' (NO desde Microsoft Store) y repite."
+	noisily di in g "  Dependencias (en cmd, con TU ruta):"
+	noisily di in g "    C:\ruta\a\python.exe -m pip install requests beautifulsoup4"
+	noisily di in g "  Gu{c i'}a completa: 03_help/manual-investigador-ciep.md, secci{c o'}n 2.3"
+	noisily di in g `"  'Configurar Python': {browse "https://github.com/rcantuc/SimuladorCIEP/blob/master/03_help/manual-investigador-ciep.md#23-configurar-python-en-stata-windows-una-sola-vez":ver en GitHub}"'
 }
 
 

@@ -69,7 +69,51 @@ Para que Stata "vea" la Carpeta del Simulador, el investigador principal deja un
 
 Si vas a usar el comando `AccesoBIE` (descarga series del INEGI), también necesitas un **token**: una clave personal de acceso, como una contraseña, que el INEGI te da gratis. La configuración del token también es parte de la instalación inicial; el detalle está en `help AccesoBIE` dentro de Stata.
 
-### 2.3 Cómo verificas que está funcionando
+### 2.3 Configurar Python en Stata (Windows, una sola vez)
+
+Varios comandos del Simulador usan Python por dentro: `AccesoBIE` y los que consultan el BIE del INEGI, `sim_changelog`, y la descarga y verificación automática de los datos pesados que usan `SCN`, `LIF`, `PEF` y `DatosAbiertos` (la de la [sección 3.3](#33-la-primera-corrida-descarga-datos-y-es-normal-que-tarde)). Python es gratuito y probablemente ya está en tu máquina; lo único que falta es **decirle a Stata dónde está**. Se hace una sola vez.
+
+> En macOS Stata casi siempre encuentra Python solo. Esta sección aplica sobre todo a Windows.
+
+**Los cuatro pasos** (copia y pega en la consola de Stata, uno por uno):
+
+1. Pregunta a Stata qué Python encuentra instalados:
+
+   ```stata
+   python search
+   ```
+
+   Qué esperas ver: una lista de rutas, algo como `C:\Users\tu-usuario\AppData\Local\Programs\Python\Python312\python.exe`. Si no lista nada, brinca al recuadro "Si `python search` no encuentra nada" más abajo.
+
+2. Dile a Stata cuál usar, con la ruta que te dio el paso 1 (`permanently` hace que la configuración sobreviva al cerrar Stata):
+
+   ```stata
+   python set exec "C:\Users\tu-usuario\AppData\Local\Programs\Python\Python312\python.exe", permanently
+   ```
+
+3. Verifica:
+
+   ```stata
+   python query
+   ```
+
+   Qué esperas ver: la línea `set python_exec` con la ruta que acabas de poner.
+
+4. Reinicia Stata. El mensaje de bienvenida debe salir completo y sin la nota sobre Python.
+
+**Si `python search` no encuentra nada:** instala Python desde [python.org](https://www.python.org/downloads/) y, en la primera pantalla del instalador, **marca la casilla "Add python.exe to PATH"**. Después repite los cuatro pasos. ⚠️ **No lo instales desde la Microsoft Store**: esa versión vive en una carpeta aislada del sistema que a Stata le da problemas encontrar y usar.
+
+**Instala las dependencias** que el Simulador necesita, en **el mismo Python que Stata usa**. Abre el Símbolo del sistema de Windows (cmd) y corre, con TU ruta (la misma del paso 2):
+
+```
+C:\Users\tu-usuario\AppData\Local\Programs\Python\Python312\python.exe -m pip install requests beautifulsoup4
+```
+
+🧠 **Concepto: el gotcha de los dos Python.** Si en tu máquina hay más de un Python (pasa más seguido de lo que crees) y corres solo `pip install ...`, las librerías pueden caer en OTRO Python distinto al que Stata usa — y Stata seguirá sin encontrarlas. Por eso el comando de arriba empieza con la ruta completa: garantiza que instalas exactamente donde Stata busca.
+
+**Cómo se ve el error si Python falta:** al abrir Stata llueven errores en rojo tipo `Unknown #command` (uno por cada línea de un bloque interno de Python) y/o aparece `r(7100)`. En las versiones recientes del Simulador ya no ves la lluvia: el arranque sale normal con una nota que te manda a esta sección. Si un comando individual (por ejemplo `AccesoBIE`) truena con `r(7100)`, es el mismo problema: sigue los cuatro pasos.
+
+### 2.4 Cómo verificas que está funcionando
 
 Abre Stata. Deberías ver un mensaje de bienvenida parecido a este:
 
@@ -436,13 +480,19 @@ Si el resultado **no** es la ruta de la Carpeta del Simulador (algo como `.../Si
 **Qué hacer:**
 
 1. Verifica que tienes internet y vuelve a correr el comando (las descargas se reintentan desde donde quedaron).
-2. Si falla de nuevo con el mismo mensaje, repórtalo (sección 8.6). No intentes descargar el archivo a mano.
+2. Si falla de nuevo con el mismo mensaje, repórtalo (sección 8.7). No intentes descargar el archivo a mano.
 
 ### 8.5 Un comando corre pero el resultado se ve raro
 
 Números que no cuadran, años faltantes, gráficas vacías. **No lo parches por tu cuenta**: puede ser un cambio en la fuente oficial que el Simulador aún no absorbe. Repórtalo.
 
-### 8.6 Cómo reportar un problema
+### 8.6 Al abrir Stata llueven errores `Unknown #command` en rojo (o sale `r(7100)`)
+
+**Cómo se ve:** al abrir Stata aparecen muchos errores rojos `Unknown #command`, o un comando truena con `r(7100)`. En versiones recientes del Simulador, en lugar de la lluvia ves una nota en la bienvenida que dice que Python no está configurado.
+
+**Qué hacer:** Stata no sabe dónde está Python en tu máquina. La solución paso a paso está en la [sección 2.3](#23-configurar-python-en-stata-windows-una-sola-vez).
+
+### 8.7 Cómo reportar un problema
 
 Manda al investigador principal estos cuatro datos (los primeros tres los copias de tu consola):
 
