@@ -448,8 +448,9 @@ log_info "Fase 3a: rsync del motor Stata → $VPS_SIM_ROOT/$VPS_SIM_VERSION/"
 # Los --exclude explícitos de abajo son redundantes con el catch-all final
 # (--exclude='*' ya protege todo lo no incluido de la transferencia Y del
 # --delete), pero se listan para autodocumentar qué vive en el destino sin
-# venir de este rsync: users/ (sesiones + escenario base, Fase 3b-bis),
-# raw/ (temporales de runtime), master/ (Fase 3b) y DEPLOYED_COMMIT (Fase 4).
+# venir de este rsync: users/ (sesiones + escenario base, Fase 3b-bis, y el
+# default de la página, Fase 3b-ter), raw/ (temporales de runtime), master/
+# (Fase 3b) y DEPLOYED_COMMIT (Fase 4).
 RSYNC_ENGINE_OPTS=(
     -avz
     --chmod=Du=rwx,Dg=rwx,Do=rx,Fu=rw,Fg=rw,Fo=r
@@ -579,6 +580,88 @@ else
         log_warn "Fase 3b-bis: rsync simulado no pudo conectar al VPS. Dry-run continúa."
     else
         die "Fase 3b-bis: rsync del escenario base falló. Nada se ha activado."
+    fi
+fi
+
+# =============================================================================
+# FASE 3b-ter — Default de la página (users/ciepmx/output.txt)
+# =============================================================================
+# Hallazgo 2026-07-19 (bitácora v1.42): cargaDefault.php pinta la página
+# inicial leyendo {$TMP_PATH}ciepmx/output.txt — es decir, users/ciepmx/
+# output.txt del deployment del motor. Ese archivo era un FÓSIL: quedó del
+# snapshot del 19 de marzo (era pre-v8, cuando el usuario de la convención era
+# ciepmx) y NINGUNA fase del pipeline lo actualizaba desde el cambio de
+# convención ciepmx→ricardo (reorg v1.12) — la página abría con números viejos
+# aunque el motor calculara bien (divergencia display-vs-cálculo).
+#
+# Fuente local de verdad, CONFIRMADA en el código: SIM.do abre el log
+# `users/$id/output.txt` (con $id = c(username) = ricardo en la corrida local
+# del investigador principal) y 01_modulos/output.do escribe en él las líneas
+# `CLAVE: [...]` que el PHP parsea. El contrato del PHP NO se toca: el archivo
+# fresco se publica EN la ruta vieja users/ciepmx/output.txt.
+log_info "Fase 3b-ter: default de la página → $VPS_SIM_ROOT/$VPS_SIM_VERSION/users/ciepmx/output.txt"
+
+LOCAL_DEFAULT_OUTPUT="$LOCAL_REPO_ROOT/users/ricardo/output.txt"
+LOCAL_PEF_DTA="$LOCAL_REPO_ROOT/master/PEF.dta"
+
+# Gate de frescura: el default debe existir y NO ser más viejo que el
+# master/PEF.dta local — si el master se reprocesó después de la última
+# corrida completa de SIM.do, el default describiría datos que ya no son los
+# del master que esta misma corrida sube en la Fase 3b. -ot compara mtime;
+# mtimes iguales pasan (ni -ot ni -nt). El gate muere también en dry-run:
+# es una precondición local, como los Gates 1-5.
+if [[ ! -f "$LOCAL_DEFAULT_OUTPUT" ]]; then
+    die "Fase 3b-ter: no existe $LOCAL_DEFAULT_OUTPUT.
+        corre SIM.do completo antes de desplegar (regenera el default)."
+fi
+if [[ -f "$LOCAL_PEF_DTA" && "$LOCAL_DEFAULT_OUTPUT" -ot "$LOCAL_PEF_DTA" ]]; then
+    die "Fase 3b-ter: users/ricardo/output.txt es más VIEJO que master/PEF.dta —
+        el default describiría datos que ya no son los del master que este
+        deploy sube (la divergencia display-vs-cálculo que esta fase existe
+        para impedir). corre SIM.do completo antes de desplegar (regenera el
+        default)."
+fi
+log_ok "Fase 3b-ter: default local fresco (mtime >= master/PEF.dta)."
+
+RSYNC_DEFAULT_OPTS=(
+    -az
+    --chmod=Fu=rw,Fg=rw,Fo=r
+)
+[[ $DRY_RUN -eq 1 ]] && RSYNC_DEFAULT_OPTS+=(--dry-run)
+
+run_rsync_default() {
+    # rsync no crea los directorios padre del destino: se garantizan primero.
+    if [[ $DRY_RUN -eq 0 ]]; then
+        ssh_vps "mkdir -p '$VPS_SIM_ROOT/$VPS_SIM_VERSION/users/ciepmx'" || return 1
+    fi
+    rsync "${RSYNC_DEFAULT_OPTS[@]}" -e "$RSYNC_SSH" \
+        "$LOCAL_DEFAULT_OUTPUT" \
+        "${VPS_USER}@${VPS_HOST}:$VPS_SIM_ROOT/$VPS_SIM_VERSION/users/ciepmx/output.txt" 2>&1 | tee -a "$LOG_FILE"
+}
+if run_rsync_default; then
+    if [[ $DRY_RUN -eq 0 ]]; then
+        # Gotcha de permisos de la casa (patrón raíz del debugging 2026-07-09):
+        # todo lo creado en el VPS después de la normalización nace ilegible
+        # para Apache (www-data lee como "others"). chmod explícito,
+        # independiente del cliente rsync (openrsync ignora --chmod en
+        # silencio) y del orden de fases: o=rx en el directorio, o=r en el
+        # archivo. (La Fase 3c corre después y también lo cubriría — la
+        # garantía explícita evita depender del orden, como con
+        # DEPLOYED_COMMIT en la Fase 4.)
+        ssh_vps "chmod u=rwx,g=rwx,o=rx '$VPS_SIM_ROOT/$VPS_SIM_VERSION/users/ciepmx' && chmod u=rw,g=rw,o=r '$VPS_SIM_ROOT/$VPS_SIM_VERSION/users/ciepmx/output.txt'"
+    fi
+    log_ok "Fase 3b-ter: default propagado y legible para Apache$( [[ $DRY_RUN -eq 1 ]] && echo ' (simulado)' )."
+    # Verificación funcional: aquí NO se puede — el symlink current todavía
+    # apunta al deployment anterior (un curl a cargaDefault.php probaría el
+    # default viejo) y en dry-run nada viajó. Queda para el gate humano
+    # post-deploy, junto con la prueba de humo en navegador:
+    log_info "Gate humano post-deploy: curl -s '${VPS_HEALTH_URL%/*}/cargaDefault.php' | head -c 300"
+    log_info "(debe regresar JSON con los números de la corrida local fresca, no los del 19-mar)."
+else
+    if [[ $DRY_RUN -eq 1 ]]; then
+        log_warn "Fase 3b-ter: rsync simulado no pudo conectar al VPS. Dry-run continúa."
+    else
+        die "Fase 3b-ter: rsync del default falló. Nada se ha activado."
     fi
 fi
 
@@ -850,6 +933,8 @@ log_ok " Commit desplegado:  $CURRENT_COMMIT_SHORT"
 log_ok " Deployment previo:  ${PREVIOUS_DEPLOYMENT:-"(ninguno — primer deploy)"}"
 log_ok " Health check URL:   $VPS_HEALTH_URL"
 log_ok " Log de la corrida:  $LOG_FILE"
+log_info "Gate humano del default (Fase 3b-ter): curl -s '${VPS_HEALTH_URL%/*}/cargaDefault.php' | head -c 300"
+log_info "(JSON con los números de la corrida local fresca, no los del fósil del 19-mar)."
 if [[ -n "$PREVIOUS_DEPLOYMENT" && $DRY_RUN -eq 0 ]]; then
     log_info "Rollback manual si lo necesitas después:"
     log_info "  ssh ${VPS_USER}@${VPS_HOST} \"ln -sfn '$VPS_HTML_ROOT/$PREVIOUS_DEPLOYMENT' '$VPS_HTML_ROOT/current' && ln -sfn '$VPS_SIM_ROOT/$PREVIOUS_SIM' '$VPS_SIM_ROOT/current'\""
