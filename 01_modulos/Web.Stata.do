@@ -30,8 +30,8 @@ scalar aniovp = 2026								// ANIO VALOR PRESENTE
 scalar anioPE = 2026								// ANIO PAQUETE ECONÓMICO
 scalar anioenigh = 2024								// ANIO ENIGH
 
-global id = "{{idSession}}"							// IDENTIFICADOR DEL USUARIO
-global paqueteEconomico "CGPE 2026"						// POLÍTICA FISCAL
+global id = "{{idSession}}"							// IDENTIFICADOR DEL USUARIO — string POR DISEÑO (id alfanumérico de sesión: paths y nombres de archivo)
+global paqueteEconomico "Pre-CGPE 2027"				// POLÍTICA FISCAL
 
 ** Opciones
 global nographs "nographs"							// SUPRIMIR GRAFICAS
@@ -91,24 +91,29 @@ save `"`c(sysdir_site)'/users/$id/LIF.dta"', replace
 
 
 ** 3.1.1 Parámetros: Ingresos **
-scalar ISRASPIB       = "{{INGRESOS0}}"				// ISR (asalariados)
-scalar ISRPFPIB       = "{{INGRESOS1}}"				// ISR (personas f{c i'}sicas)
-scalar CUOTASPIB      = "{{INGRESOS2}}"				// Cuotas (IMSS)
+* INVARIANTE (v8.1.0): params de interfaz NUMÉRICOS — se declaran SIN comillas
+* y ambos flujos entregan numérico (local vía `escalar` en SIM.do, web vía este
+* template). Un placeholder sin sustituir truena en SINTAXIS, visible — mejor
+* que el missing silencioso del contrato string viejo. NO reintroducir real()
+* ni comillas (consumidores: FiscalGap, SankeySF, TasasEfectivas, output.do).
+scalar ISRASPIB       = {{INGRESOS0}}				// ISR (asalariados)
+scalar ISRPFPIB       = {{INGRESOS1}}				// ISR (personas f{c i'}sicas)
+scalar CUOTASPIB      = {{INGRESOS2}}				// Cuotas (IMSS)
 
-scalar ISRPMPIB       = "{{INGRESOS4}}"				// ISR (personas morales)
-scalar OTROSKPIB      = "{{INGRESOS5}}"				// Productos, derechos, aprovech.
+scalar ISRPMPIB       = {{INGRESOS4}}				// ISR (personas morales)
+scalar OTROSKPIB      = {{INGRESOS5}}				// Productos, derechos, aprovech.
 
-scalar FMPPIB         = "{{INGRESOS15}}"			// Fondo Mexicano del Petróleo
-scalar PEMEXPIB       = "{{INGRESOS16}}"			// Organismos y empresas (Pemex)
-scalar CFEPIB         = "{{INGRESOS17}}"			// Organismos y empresas (CFE)
-scalar IMSSPIB        = "{{INGRESOS13}}"			// Organismos y empresas (IMSS)
-scalar ISSSTEPIB      = "{{INGRESOS14}}"			// Organismos y empresas (ISSSTE)
+scalar FMPPIB         = {{INGRESOS15}}				// Fondo Mexicano del Petróleo
+scalar PEMEXPIB       = {{INGRESOS16}}				// Organismos y empresas (Pemex)
+scalar CFEPIB         = {{INGRESOS17}}				// Organismos y empresas (CFE)
+scalar IMSSPIB        = {{INGRESOS13}}				// Organismos y empresas (IMSS)
+scalar ISSSTEPIB      = {{INGRESOS14}}				// Organismos y empresas (ISSSTE)
 
-scalar IVAPIB         = "{{INGRESOS7}}"				// IVA
-scalar ISANPIB        = "{{INGRESOS8}}"				// ISAN
-scalar IEPSNPPIB      = "{{INGRESOS9}}"				// IEPS (no petrolero)
-scalar IEPSPPIB       = "{{INGRESOS10}}"			// IEPS (petrolero)
-scalar IMPORTPIB      = "{{INGRESOS11}}"			// Importaciones
+scalar IVAPIB         = {{INGRESOS7}}				// IVA
+scalar ISANPIB        = {{INGRESOS8}}				// ISAN
+scalar IEPSNPPIB      = {{INGRESOS9}}				// IEPS (no petrolero)
+scalar IEPSPPIB       = {{INGRESOS10}}				// IEPS (petrolero)
+scalar IMPORTPIB      = {{INGRESOS11}}				// Importaciones
 
 
 ** 3.1.2 Parámetros: ISR **
@@ -212,22 +217,26 @@ matrix IEPST = (26.5	,	0 		\			/// Cerveza y alcohol 14
 		0	,	6.7865		)			// Gasolina: diésel
 
 ** 3.1.6 Submódulo ISR (web) **/
+* {{moduloCambio}} y {{moduloCambioIva}}: flags string POR DISEÑO — se consumen
+* en igualdad de strings; sin sustituir (o con el 0 default del PHP) el módulo
+* queda apagado: degradación intencional, no error. Las reasignaciones *PIB de
+* adentro son parte del contrato NUMÉRICO de 3.1.1: sin comillas.
 if "1" == "{{moduloCambio}}" {
 	noisily run "`c(sysdir_site)'/01_modulos/ISR_Mod.do"
 	scalar ISRAS = ISR_AS_Mod/100*scalar(pibY)
-	scalar ISRASPIB  = "`=round(ISR_AS_Mod, 0.001)'"			// NUEVA ESTIMACIÓN ISR ASALARIADOS
+	scalar ISRASPIB  = round(ISR_AS_Mod, 0.001)			// NUEVA ESTIMACIÓN ISR ASALARIADOS
 	scalar ISRPF = ISR_PF_Mod/100*scalar(pibY)
-	scalar ISRPFPIB  = "`=round(ISR_PF_Mod, 0.001)'"			// NUEVA ESTIMACIÓN ISR P. FÍSICAS
+	scalar ISRPFPIB  = round(ISR_PF_Mod, 0.001)			// NUEVA ESTIMACIÓN ISR P. FÍSICAS
 	scalar ISRPM = ISR_PM_Mod/100*scalar(pibY)
-	scalar ISRPMPIB  = "`=round(ISR_PM_Mod, 0.001)'"			// NUEVA ESTIMACIÓN ISR P. MORALES
+	scalar ISRPMPIB  = round(ISR_PM_Mod, 0.001)			// NUEVA ESTIMACIÓN ISR P. MORALES
 	scalar CUOTAS = CUOTAS_Mod/100*scalar(pibY)
-	scalar CUOTASPIB = "`=round(CUOTAS_Mod, 0.001)'"			// NUEVA ESTIMACIÓN CUOTAS IMSS
+	scalar CUOTASPIB = round(CUOTAS_Mod, 0.001)			// NUEVA ESTIMACIÓN CUOTAS IMSS
 }
 ** 3.1.7 Submódulo IVA (web) **
 if "1" == "{{moduloCambioIva}}" {
 	noisily run "`c(sysdir_site)'/01_modulos/IVA_Mod.do"
 	scalar IVA = IVA_Mod/100*scalar(pibY)
-	scalar IVAPIB = "`=round(IVA_Mod, 0.001)'"				// NUEVA ESTIMACIÓN IVA
+	scalar IVAPIB = round(IVA_Mod, 0.001)				// NUEVA ESTIMACIÓN IVA
 }
 
 ** 3.1.8 Tasas Efectivas **/

@@ -9,7 +9,6 @@ quietly {
 		[B(string) C(string) D(string) E(string) ANIO(int `aniovp') FOLDER(string)]
 
 	*PIBDeflactor, anio(`anio') nographs nooutput
-	*scalar pibY = real(subinstr(scalar(pibY),",","",.))*1000000
 
 
 	******************

@@ -129,7 +129,7 @@ quietly {
 		escalar pct tn`=strtoname("`k'")' = `tendencia'
 
 		* Nueva fórmula SIN doble contabilización *
-		replace estimacion = (real(`k'PIB)/100*scalar(pibY)) if anio == `anio'	// INVARIANTE: los `k'PIB son params de interfaz de SIM.do/Web.Stata.do: strings POR DISEÑO (flujo web); real() a la lectura es el patrón correcto, igual que SankeySF — NO migrar a escalar
+		replace estimacion = (`k'PIB/100*scalar(pibY)) if anio == `anio'	// INVARIANTE (v8.1.0): los `k'PIB son params de interfaz NUMÉRICOS — Web.Stata.do los declara sin comillas y ambos flujos (local vía escalar, web vía template) entregan numérico; un placeholder sin sustituir truena en sintaxis, visible — NO reintroducir real() ni comillas
 		replace estimacion = L.estimacion * 									///
 			(contribuyentes/L.contribuyentes) *									/// Cambio demográfico PURO (contribuyentes)
 			(1+`tendencia'/100)													/// Tendencia

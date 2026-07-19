@@ -16,6 +16,104 @@ Formato de cada entrada:
 - **Datos:** cambios en fuentes, actualizaciones de PEFs, LIFs, ENIGH, u otras fuentes
 - **Correcciones:** bugs corregidos que afectaban resultados o funcionamiento
 
+## [v8.1.0] — 2026-07-19
+
+Reprocesamiento completo de PEF.dta (2013-2026) y rediseño de `UpdatePEF`:
+las divisiones (divCIEP/divSIM/divFEDE) se anclan a códigos oficiales de la
+Clasificación Funcional del Gasto del CONAC (pares finalidad/función) y a
+texto normalizado de TIPOGASTO, con verificador de deriva año-por-año que
+DETIENE el proceso ante cualquier mismatch (jamás clasificar en silencio).
+Motivador: los selectores por códigos de `encode` (alfabéticos) derivaron con
+cada categoría nueva — `desc_funcion==21` ("salud" al escribirse) apuntaba a
+"cuotas a organismos internacionales de energía" y `desc_funcion==10`
+("educación") a "asuntos financieros y hacendarios".
+
+### Datos
+- **CP 2013 entra completa por primera vez** (308,454 obs; antes 1 obs): el
+  xlsx de SHCP trae una hoja pivote antes de la hoja de datos y el import
+  tomaba la primera. `UpdatePEF` ahora detecta la hoja de datos (la de más
+  filas) sin depender de xlsx curados a mano.
+- **2025 pasa de PEF (aprobado) a Cuenta Pública** (`CP 2025.xlsx`, 210,459
+  obs con ejercido/modificado/devengado/pagado; el asset `PEF.2025.xlsx`
+  queda superseded y se elimina localmente). Gasto total 2025:
+  10,940.5 → 11,417.7 mmdp (aprobado→ejercido).
+- CP 2025 llega con esquema nuevo de SHCP (columnas sin prefijo `ID_`; el
+  ramo viene en la columna `R` — el `Diccionario.csv` de SHCP la documenta
+  como `RAMO`; discrepancia documentada en el código). El drop de columnas
+  de 2 caracteres (hack para las ~180 columnas fantasma de CP 2022) se
+  reemplaza por detección de columnas 100% vacías, que no mata UR/AI/PP/FF.
+- `manifest.json`: SHAs nuevos de `CP.2013.xlsx` (sin hoja pivote) y
+  `CuotasISSSTE.xlsx`; alta de `CP.2025.xlsx` y `Diccionario.csv`; baja de
+  `PEF.2025.xlsx`. `data_updated` → 2026-07-19.
+
+### Correcciones
+- **(a3) Reclasificación Salud/Educación/Energía**: con las reglas CONAC,
+  Salud pasa de 133.7→489.3 (2014) … 255.6→959.6 (2024) mmdp; Educación de
+  451.7→712.5 (2014) … 620.9→1,124.1 (2024) mmdp — recuperan la función
+  salud/educación en IMSS/ISSSTE/ramo 33 que la regla muerta perdía, y sale
+  de Educación el gasto hacendario (41-244 mmdp/año) que la deriva le metió.
+  Contraparte: divCIEP "Federalizado" y "Otros gastos" disminuyen en lo
+  mismo. **El gasto total por año NO cambia** (verificado al peso, 2014-2024
+  y 2026).
+- **(a4) Comparaciones muertas por mayúsculas** (la limpieza pasa todo a
+  minúsculas): FEIEF `modalidad=="Y"` (1.8-25.9 mmdp/año), INSABI/IMSS-B
+  federalizado `modalidad=="U"` (67.8-105.3 mmdp/año, divFEDE "Salud
+  (federalizado)" revive desde 2019), cuidados `ur=="V3A"/"V00"`
+  (~0.3-0.8 mmdp/año), y `ur=="TZZ"/"TOQ"` en la homologación de ramo.
+- Basura del pivote de CP 2013 eliminada: 66 obs sin año, variable
+  `combustiblesyenergía`, y los labels fantasma "row labels"/"total result"
+  en `desc_funcion`. Se limpia también la redundancia
+  `desc_entidad_federativa` (quedaba junto a `entidad`).
+- Evidencia contra anclar TIPOGASTO por id ("doble llave"): el id 4 fue
+  "participaciones" en 2013-2015 y "pensiones y jubilaciones" desde 2016
+  (SHCP renumeró el catálogo). El ancla correcta es el texto normalizado.
+
+### Comandos
+- `PEF.ado` v8.1: verificador de deriva (sección 4.0) corre en cada
+  `UpdatePEF` — asserts por año de los pares CONAC (salud, educación,
+  combustibles y energía) y whitelist de textos TIPOGASTO; mismatch → error
+  459 con año y texto encontrado.
+- Secciones 3.1/3.2 (series de Estadísticas Oportunas por códigos de encode)
+  congeladas junto con la 3.3: el bloque completo se comenta y revive junto.
+  `PEF.dta` pierde las variables muertas `serie_desc_funcion`/`serie_ramo`.
+- `SubnacionalGasto.do` (legacy): comentario de advertencia — selecciona por
+  códigos de encode que ya no significan lo que significaban.
+- Contrato r() intacto: batería dorada con los nombres que consumen
+  `GastoPC`/`Households`/`PerfilesSim`/`FiscalGap` corrida contra base vieja
+  y nueva — ningún nombre se pierde; totales (`Gasto_neto`) idénticos; solo
+  cambian los valores de las divisiones reclasificadas. Las etiquetas de los
+  encodes se mantienen en minúsculas: los nombres de r() derivan del texto
+  de las etiquetas y los consumidores dependen de su case exacto
+  (`r(educacion_basica)` y `r(Baja_California)` conviven) — el plan de
+  "etiquetas bonitas" queda diferido a un ciclo con migración de
+  consumidores.
+
+### Contrato de params de interfaz: string → NUMÉRICO
+- Los 15 params de ingresos (`ISRASPIB`…`IMPORTPIB`) que `Web.Stata.do`
+  declaraba entre comillas (string scalars) pasan a declararse SIN comillas,
+  igual que las 5 reasignaciones de los submódulos ISR/IVA
+  (`round(<Mod>, 0.001)` en vez de `"\`=round(...)'"`). Ambos flujos hablan
+  igual: local vía `escalar` (SIM.do) y web vía template — y los `real()` a
+  la lectura mueren con razón (FiscalGap:132 y los 4 sitios de SankeySF ya
+  consumían numérico directo; sin esta migración el flujo web tronaba con
+  type mismatch). Censo repo: cero `real()` sobre params restantes; los
+  `real()` de parsing legítimo (`PEF.ado:678` regex, `TarjetaRFSP.do:25`
+  fecha) no son params y quedan.
+- **Mejora del modo de falla**: un placeholder `{{X}}` sin sustituir antes
+  producía `real("{{X}}") = missing` — cero silencioso que se propagaba;
+  ahora truena en SINTAXIS (r(198), visible en el log de sesión con el
+  nombre del placeholder en la línea). Verificado con harness del contrato
+  web (positivo: 155/155 sustituidos, corrida completa sin errores, bloques
+  de `output.txt` idénticos en forma a la referencia; negativo: r(198)
+  visible, cero bloques de datos producidos). Matiz registrado sin tocar:
+  `calculaStata.php:63` sustituye `0` por default para params ausentes del
+  POST — ese modo de falla silencioso es preexistente y de otro ciclo.
+- Strings por diseño conservan comillas con comentario: `{{idSession}}`
+  (id de sesión: paths) y `{{moduloCambio}}`/`{{moduloCambioIva}}` (flags en
+  igualdad de strings; sin sustituir el módulo queda apagado — degradación
+  intencional). `calculaStata.php` no se toca: `str_replace` es textual y
+  las comillas vivían solo en el template.
+
 ## [v8.0.13] — 2026-07-18
 
 Cierra la migración a `escalar` con `Simulador.ado` (excluido explícitamente

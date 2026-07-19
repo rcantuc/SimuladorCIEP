@@ -35,9 +35,13 @@ encode `to', g(to)
 rename `1' from
 
 * IMSS e ISSSTE *
+* INVARIANTE (v8.1.0): los *PIB son params de interfaz NUMÉRICOS — Web.Stata.do
+* los declara sin comillas y ambos flujos (local vía escalar, web vía template)
+* entregan numérico; un placeholder sin sustituir truena en sintaxis, visible —
+* NO reintroducir real() ni comillas.
 set obs `=_N+1'
 replace from = 99 in -1
-replace profile = (real(IMSSPIB)+real(ISSSTEPIB))/100*scalar(pibY) in -1
+replace profile = (IMSSPIB+ISSSTEPIB)/100*scalar(pibY) in -1
 replace to = 99 in -1
 label define to 99 "Empresas públicas", add
 label define `1' 99 "IMSS, ISSSTE", add
@@ -45,21 +49,21 @@ label define `1' 99 "IMSS, ISSSTE", add
 /* CFE *
 set obs `=_N+1'
 replace from = 98 in -1
-replace profile = real(CFEPIB)/100*scalar(pibY) in -1
+replace profile = CFEPIB/100*scalar(pibY) in -1
 replace to = 99 in -1
 label define `1' 98 "CFE", add
 
 * Pemex */
 set obs `=_N+1'
 replace from = 97 in -1
-replace profile = (real(PEMEXPIB)+real(CFEPIB))/100*scalar(pibY) in -1
+replace profile = (PEMEXPIB+CFEPIB)/100*scalar(pibY) in -1
 replace to = 99 in -1
 label define `1' 97 "Pemex, CFE", add
 
 * FMP *
 set obs `=_N+1'
 replace from = 97 in -1
-replace profile = real(FMPPIB)/100*scalar(pibY) in -1
+replace profile = FMPPIB/100*scalar(pibY) in -1
 replace to = 100 in -1
 label define to 100 "FMP", add
 
