@@ -266,102 +266,102 @@ quietly {
 	escalar mxnpc DeudaLPPC = shrfspLP[`obsvp']/Poblacion_ajustada[`obsvp']
 
 	noisily di in g "  (+) Balance presupuestario" ///
-		_col(33) in y %20s rfspBalanceMonto ///
-		_col(55) in y %7s rfspBalancePIB ///
-		_col(66) in y %7s rfspBalancePorTot ///
-		_col(77) in y %9s rfspBalancePC
+		_col(33) in y %20.0fc rfspBalanceMonto ///
+		_col(55) in y %7.3f rfspBalancePIB ///
+		_col(66) in y %7.1f rfspBalancePorTot ///
+		_col(77) in y %9.0fc rfspBalancePC
 	noisily di in g "  (+) PIDIREGAS" ///
-		_col(33) in y %20s rfspPIDIREGASMonto ///
-		_col(55) in y %7s rfspPIDIREGASPIB ///
-		_col(66) in y %7s rfspPIDIREGASPorTot ///
-		_col(77) in y %9s rfspPIDIREGASPC
+		_col(33) in y %20.0fc rfspPIDIREGASMonto ///
+		_col(55) in y %7.3f rfspPIDIREGASPIB ///
+		_col(66) in y %7.1f rfspPIDIREGASPorTot ///
+		_col(77) in y %9.0fc rfspPIDIREGASPC
 	noisily di in g "  (+) IPAB" ///
-		_col(33) in y %20s rfspIPABMonto ///
-		_col(55) in y %7s rfspIPABPIB ///
-		_col(66) in y %7s rfspIPABPorTot ///
-		_col(77) in y %9s rfspIPABPC
+		_col(33) in y %20.0fc rfspIPABMonto ///
+		_col(55) in y %7.3f rfspIPABPIB ///
+		_col(66) in y %7.1f rfspIPABPorTot ///
+		_col(77) in y %9.0fc rfspIPABPC
 	noisily di in g "  (+) FONADIN" ///
-		_col(33) in y %20s rfspFONADINMonto ///
-		_col(55) in y %7s rfspFONADINPIB ///
-		_col(66) in y %7s rfspFONADINPorTot ///
-		_col(77) in y %9s rfspFONADINPC
+		_col(33) in y %20.0fc rfspFONADINMonto ///
+		_col(55) in y %7.3f rfspFONADINPIB ///
+		_col(66) in y %7.1f rfspFONADINPorTot ///
+		_col(77) in y %9.0fc rfspFONADINPC
 	noisily di in g "  (+) Programa de Deudores" ///
-		_col(33) in y %20s rfspDeudoresMonto ///
-		_col(55) in y %7s rfspDeudoresPIB ///
-		_col(66) in y %7s rfspDeudoresPorTot ///
-		_col(77) in y %9s rfspDeudoresPC
+		_col(33) in y %20.0fc rfspDeudoresMonto ///
+		_col(55) in y %7.3f rfspDeudoresPIB ///
+		_col(66) in y %7.1f rfspDeudoresPorTot ///
+		_col(77) in y %9.0fc rfspDeudoresPC
 	noisily di in g "  (+) Banca de Desarrollo" ///
-		_col(33) in y %20s rfspBancaMonto ///
-		_col(55) in y %7s rfspBancaPIB ///
-		_col(66) in y %7s rfspBancaPorTot ///
-		_col(77) in y %9s rfspBancaPC
+		_col(33) in y %20.0fc rfspBancaMonto ///
+		_col(55) in y %7.3f rfspBancaPIB ///
+		_col(66) in y %7.1f rfspBancaPorTot ///
+		_col(77) in y %9.0fc rfspBancaPC
 	noisily di in g "  (+) Adecuaciones" ///
-		_col(33) in y %20s rfspAdecuacionesMonto ///
-		_col(55) in y %7s rfspAdecuacionesPIB ///
-		_col(66) in y %7s rfspAdecuacionesPorTot ///
-		_col(77) in y %9s rfspAdecuacionesPC
+		_col(33) in y %20.0fc rfspAdecuacionesMonto ///
+		_col(55) in y %7.3f rfspAdecuacionesPIB ///
+		_col(66) in y %7.1f rfspAdecuacionesPorTot ///
+		_col(77) in y %9.0fc rfspAdecuacionesPC
 	noisily di in g _dup(85) "-"
 	noisily di in g "  {bf:(=) RFSP" ///
-		_col(33) in y %20s RFSPMonto ///
-		_col(55) in y %7s RFSPPIB ///
-		_col(66) in y %7s RFSPPorTot ///
-		_col(77) in y %9s RFSPPC "}"
+		_col(33) in y %20.0fc RFSPMonto ///
+		_col(55) in y %7.3f RFSPPIB ///
+		_col(66) in y %7.1f RFSPPorTot ///
+		_col(77) in y %9.0fc RFSPPC "}"
 	noisily di in g _dup(85) "="
 	noisily di in g "  (+) SHRFSP Interna" ///
-		_col(33) in y %20s SHRFSPInternoMonto ///
-		_col(55) in y %7s SHRFSPInternoPIB ///
-		_col(66) in y %7s SHRFSPInternoPorTot ///
-		_col(77) in y %9s SHRFSPInternoPC
+		_col(33) in y %20.0fc SHRFSPInternoMonto ///
+		_col(55) in y %7.3f SHRFSPInternoPIB ///
+		_col(66) in y %7.1f SHRFSPInternoPorTot ///
+		_col(77) in y %9.0fc SHRFSPInternoPC
 	noisily di in g "  (+) SHRFSP Externa" ///
-		_col(33) in y %20s SHRFSPExternoMonto ///
-		_col(55) in y %7s SHRFSPExternoPIB ///
-		_col(66) in y %7s SHRFSPExternoPorTot ///
-		_col(77) in y %9s SHRFSPExternoPC
+		_col(33) in y %20.0fc SHRFSPExternoMonto ///
+		_col(55) in y %7.3f SHRFSPExternoPIB ///
+		_col(66) in y %7.1f SHRFSPExternoPorTot ///
+		_col(77) in y %9.0fc SHRFSPExternoPC
 	noisily di in g _dup(85) "-"
 	noisily di in g "  {bf:(=) SHRFSP" ///
-		_col(33) in y %20s SHRFSPMonto ///
-		_col(55) in y %7s SHRFSPPIB ///
-		_col(66) in y %7s SHRFSPPorTot ///
-		_col(77) in y %9s SHRFSPPC "}"
+		_col(33) in y %20.0fc SHRFSPMonto ///
+		_col(55) in y %7.3f SHRFSPPIB ///
+		_col(66) in y %7.1f SHRFSPPorTot ///
+		_col(77) in y %9.0fc SHRFSPPC "}"
 	noisily di in g _dup(85) "="
 	noisily di in g "  (+) Deuda Gobierno federal" ///
-		_col(33) in y %20s DeudaGobFedMonto ///
-		_col(55) in y %7s DeudaGobFedPIB ///
-		_col(66) in y %7s DeudaGobFedPorTot ///
-		_col(77) in y %9s DeudaGobFedPC
+		_col(33) in y %20.0fc DeudaGobFedMonto ///
+		_col(55) in y %7.3f DeudaGobFedPIB ///
+		_col(66) in y %7.1f DeudaGobFedPorTot ///
+		_col(77) in y %9.0fc DeudaGobFedPC
 	noisily di in g "  (+) Deuda OyE" ///
-		_col(33) in y %20s DeudaOyEMonto ///
-		_col(55) in y %7s DeudaOyEPIB ///
-		_col(66) in y %7s DeudaOyEPorTot ///
-		_col(77) in y %9s DeudaOyEPC
+		_col(33) in y %20.0fc DeudaOyEMonto ///
+		_col(55) in y %7.3f DeudaOyEPIB ///
+		_col(66) in y %7.1f DeudaOyEPorTot ///
+		_col(77) in y %9.0fc DeudaOyEPC
 	noisily di in g "  (+) Deuda Banca de desarrollo" ///
-		_col(33) in y %20s DeudaBancaMonto ///
-		_col(55) in y %7s DeudaBancaPIB ///
-		_col(66) in y %7s DeudaBancaPorTot ///
-		_col(77) in y %9s DeudaBancaPC
+		_col(33) in y %20.0fc DeudaBancaMonto ///
+		_col(55) in y %7.3f DeudaBancaPIB ///
+		_col(66) in y %7.1f DeudaBancaPorTot ///
+		_col(77) in y %9.0fc DeudaBancaPC
 	noisily di in g _dup(85) "-"
 	noisily di in g "  {bf:(=) Deuda bruta" ///
-		_col(33) in y %20s DeudaBrutaMonto ///
-		_col(55) in y %7s DeudaBrutaPIB ///
-		_col(66) in y %7s DeudaBrutaPorTot ///
-		_col(77) in y %9s DeudaBrutaPC "}"
+		_col(33) in y %20.0fc DeudaBrutaMonto ///
+		_col(55) in y %7.3f DeudaBrutaPIB ///
+		_col(66) in y %7.1f DeudaBrutaPorTot ///
+		_col(77) in y %9.0fc DeudaBrutaPC "}"
 	noisily di in g _dup(85) "="
 	noisily di in g "  (+) Deuda corto plazo" ///
-		_col(33) in y %20s DeudaCPMonto ///
-		_col(55) in y %7s DeudaCPPIB ///
-		_col(66) in y %7s DeudaCPPorTot ///
-		_col(77) in y %9s DeudaCPPC
+		_col(33) in y %20.0fc DeudaCPMonto ///
+		_col(55) in y %7.3f DeudaCPPIB ///
+		_col(66) in y %7.1f DeudaCPPorTot ///
+		_col(77) in y %9.0fc DeudaCPPC
 	noisily di in g "  (+) Deuda largo plazo" ///
-		_col(33) in y %20s DeudaLPMonto ///
-		_col(55) in y %7s DeudaLPPIB ///
-		_col(66) in y %7s DeudaLPPorTot ///
-		_col(77) in y %9s DeudaLPPC
+		_col(33) in y %20.0fc DeudaLPMonto ///
+		_col(55) in y %7.3f DeudaLPPIB ///
+		_col(66) in y %7.1f DeudaLPPorTot ///
+		_col(77) in y %9.0fc DeudaLPPC
 	noisily di in g _dup(85) "-"
 	noisily di in g "  {bf:(=) Deuda bruta" ///
-		_col(33) in y %20s DeudaBrutaMonto ///
-		_col(55) in y %7s DeudaBrutaPIB ///
-		_col(66) in y %7s DeudaBrutaPorTot ///
-		_col(77) in y %9s DeudaBrutaPC "}"
+		_col(33) in y %20.0fc DeudaBrutaMonto ///
+		_col(55) in y %7.3f DeudaBrutaPIB ///
+		_col(66) in y %7.1f DeudaBrutaPorTot ///
+		_col(77) in y %9.0fc DeudaBrutaPC "}"
 
 	g costodeudaTot = costofinanciero
 	g tasaEfectiva = costodeudaTot/shrfsp*100
@@ -726,10 +726,10 @@ quietly {
 
 	noisily di in g _dup(85) "="
 	noisily di in g "  {bf:(*) Costo financiero" ///
-		_col(33) in y %20s CostoFinancieroMonto ///
-		_col(55) in y %7s CostoFinancieroPIB ///
-		_col(66) in y %7s CostoFinancieroPorTot ///
-		_col(77) in y %9s CostoFinancieroPC "}"
+		_col(33) in y %20.0fc CostoFinancieroMonto ///
+		_col(55) in y %7.3f CostoFinancieroPIB ///
+		_col(66) in y %7.1f CostoFinancieroPorTot ///
+		_col(77) in y %9.0fc CostoFinancieroPC "}"
 
 
 	** 6.1 Gráfica tasas de interés **

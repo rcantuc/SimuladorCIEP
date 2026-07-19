@@ -153,7 +153,7 @@ quietly {
 
 	g benef_invers = gas_prom_SaluT
 
-	noisily tabstat benef_ssa benef_imss benef_issste benef_pemex benef_issfam benef_otros benef_imssbien ///
+	tabstat benef_ssa benef_imss benef_issste benef_pemex benef_issfam benef_otros benef_imssbien ///
 		[fw=factor], stat(sum) f(%20.0fc) save
 	tempname Salud
 	matrix `Salud' = r(StatTotal)
@@ -433,63 +433,63 @@ quietly {
 			** 3.10 Resultados **
 			noisily di _newline(2) in g "{bf: A. Educaci{c o'}n CIEP}"
 			noisily di _newline in g "{bf:  Gasto por nivel" ///
-				_col(32) %15s in g "Alumnos" ///
-				_col(49) %7s "% PIB" ///
+				_col(32) %15.0fc in g "Alumnos" ///
+				_col(49) %7.3f "% PIB" ///
 				_col(59) %10s in g "PC (MXN `aniovp')" "}"
 			noisily di in g _dup(71) "-"
 			noisily di in g "  Inicial y comunitaria" ///
-				_col(32) %15s in y scalar(iniciaAPob) ///
-				_col(49) %7s in y scalar(iniciaAPIB) ///
-				_col(57) %15s in y scalar(iniciaAPC)
+				_col(32) %15.0fc in y scalar(iniciaAPob) ///
+				_col(49) %7.3f in y scalar(iniciaAPIB) ///
+				_col(57) %15.0fc in y scalar(iniciaAPC)
 			noisily di
 			noisily di in g "  B{c a'}sica" ///
-				_col(32) %15s in y scalar(basicaPob) ///
-				_col(49) %7s in y scalar(basicaPIB) ///
-				_col(57) %15s in y scalar(basicaPC)
+				_col(32) %15.0fc in y scalar(basicaPob) ///
+				_col(49) %7.3f in y scalar(basicaPIB) ///
+				_col(57) %15.0fc in y scalar(basicaPC)
 			noisily di in g "  Media superior" ///
-				_col(32) %15s in y scalar(medsupPob) ///
-				_col(49) %7s in y scalar(medsupPIB) ///
-				_col(57) %15s in y scalar(medsupPC)
+				_col(32) %15.0fc in y scalar(medsupPob) ///
+				_col(49) %7.3f in y scalar(medsupPIB) ///
+				_col(57) %15.0fc in y scalar(medsupPC)
 			noisily di in g "  Superior" ///
-				_col(32) %15s in y scalar(superiPob) ///
-				_col(49) %7s in y scalar(superiPIB) ///
-				_col(57) %15s in y scalar(superiPC)
+				_col(32) %15.0fc in y scalar(superiPob) ///
+				_col(49) %7.3f in y scalar(superiPIB) ///
+				_col(57) %15.0fc in y scalar(superiPC)
 			noisily di in g "  Posgrado" ///
-				_col(32) %15s in y scalar(posgraPob) ///
-				_col(49) %7s in y scalar(posgraPIB) ///
-				_col(57) %15s in y scalar(posgraPC)
+				_col(32) %15.0fc in y scalar(posgraPob) ///
+				_col(49) %7.3f in y scalar(posgraPIB) ///
+				_col(57) %15.0fc in y scalar(posgraPC)
 			noisily di in g "  Para adultos" ///
-				_col(32) %15s in y scalar(eduaduPob) ///
-				_col(49) %7s in y scalar(eduaduPIB) ///
-				_col(57) %15s in y scalar(eduaduPC)
+				_col(32) %15.0fc in y scalar(eduaduPob) ///
+				_col(49) %7.3f in y scalar(eduaduPIB) ///
+				_col(57) %15.0fc in y scalar(eduaduPC)
 			noisily di in g "  Otros gastos educativos" ///
-				_col(32) %15s in y scalar(educacPob) ///
-				_col(49) %7s in y scalar(otrosePIB) ///
-				_col(57) %15s in y scalar(otrosePC)
+				_col(32) %15.0fc in y scalar(educacPob) ///
+				_col(49) %7.3f in y scalar(otrosePIB) ///
+				_col(57) %15.0fc in y scalar(otrosePC)
 			noisily di
 			noisily di in g "  Inversión en educación" ///
-				_col(32) %15s in y scalar(educacPob) ///
-				_col(49) %7s in y scalar(inverePIB) ///
-				_col(57) %15s in y scalar(inverePC)
+				_col(32) %15.0fc in y scalar(educacPob) ///
+				_col(49) %7.3f in y scalar(inverePIB) ///
+				_col(57) %15.0fc in y scalar(inverePC)
 			noisily di in g _dup(71) "-"
 			noisily di in g "  {bf:Gasto p{c u'}blico en educación" ///
-				_col(32) %15s in y scalar(educacPob) ///
-				_col(49) %7s in y scalar(educacPIB) ///
-				_col(57) %15s in y scalar(educacPC) "}"
+				_col(32) %15.0fc in y scalar(educacPob) ///
+				_col(49) %7.3f in y scalar(educacPIB) ///
+				_col(57) %15.0fc in y scalar(educacPC) "}"
 			noisily di in g _dup(71) "-"
 			noisily di in g "  Cultura y deportes" ///
-				_col(32) %15s in y scalar(culturPob) ///
-				_col(49) %7s in y scalar(culturPIB) ///
-				_col(57) %15s in y scalar(culturPC)
+				_col(32) %15.0fc in y scalar(culturPob) ///
+				_col(49) %7.3f in y scalar(culturPIB) ///
+				_col(57) %15.0fc in y scalar(culturPC)
 			noisily di in g "  Ciencia y tecnología" ///
-				_col(32) %15s in y scalar(investPob) ///
-				_col(49) %7s in y scalar(investPIB) ///
-				_col(57) %15s in y scalar(investPC)
+				_col(32) %15.0fc in y scalar(investPob) ///
+				_col(49) %7.3f in y scalar(investPIB) ///
+				_col(57) %15.0fc in y scalar(investPC)
 			noisily di in g _dup(71) "-"
 			noisily di in g "  {bf:Gasto público total" ///
-				_col(32) %15s in y scalar(EducacPob) ///
-				_col(49) %7s in y scalar(EducacPIB) ///
-				_col(57) %15s in y scalar(EducacPC) "}"
+				_col(32) %15.0fc in y scalar(EducacPob) ///
+				_col(49) %7.3f in y scalar(EducacPIB) ///
+				_col(57) %15.0fc in y scalar(EducacPC) "}"
 
 
 			** 3.11 Put excel **
@@ -801,44 +801,44 @@ quietly {
 			** 4.9 Resultados **
 			noisily di _newline(2) in g "{bf: B. Salud CIEP}"
 			noisily di _newline in g "{bf:  Gasto por instituci{c o'}n" ///
-				_col(32) %15s in g "Asegurados" ///
-				_col(49) %7s "% PIB" ///
+				_col(32) %15.0fc in g "Asegurados" ///
+				_col(49) %7.3f "% PIB" ///
 				_col(59) %10s in g "PC (MXN `aniovp')" "}"
 			noisily di in g _dup(71) "-"
 			noisily di in g "  SSa" ///
-				_col(32) %15s in y scalar(ssaPob) ///
-				_col(49) %7s in y scalar(ssaPIB) ///
-				_col(57) %15s in y scalar(ssaPC)
+				_col(32) %15.0fc in y scalar(ssaPob) ///
+				_col(49) %7.3f in y scalar(ssaPIB) ///
+				_col(57) %15.0fc in y scalar(ssaPC)
 			noisily di in g "  IMSS-Bienestar" ///
-				_col(32) %15s in y scalar(imssbienPob) ///
-				_col(49) %7s in y scalar(imssbienPIB) ///
-				_col(57) %15s in y scalar(imssbienPC)
+				_col(32) %15.0fc in y scalar(imssbienPob) ///
+				_col(49) %7.3f in y scalar(imssbienPIB) ///
+				_col(57) %15.0fc in y scalar(imssbienPC)
 			noisily di in g "  IMSS" ///
-				_col(32) %15s in y scalar(imssPob) ///
-				_col(49) %7s in y scalar(imssPIB) ///
-				_col(57) %15s in y scalar(imssPC)
+				_col(32) %15.0fc in y scalar(imssPob) ///
+				_col(49) %7.3f in y scalar(imssPIB) ///
+				_col(57) %15.0fc in y scalar(imssPC)
 			noisily di in g "  ISSSTE" ///
-				_col(32) %15s in y scalar(issstePob) ///
-				_col(49) %7s in y scalar(issstePIB) ///
-				_col(57) %15s in y scalar(issstePC)
+				_col(32) %15.0fc in y scalar(issstePob) ///
+				_col(49) %7.3f in y scalar(issstePIB) ///
+				_col(57) %15.0fc in y scalar(issstePC)
 			noisily di in g "  Pemex" ///
-				_col(32) %15s in y scalar(pemexPob) ///
-				_col(49) %7s in y scalar(pemexPIB) ///
-				_col(57) %15s in y scalar(pemexPC)
+				_col(32) %15.0fc in y scalar(pemexPob) ///
+				_col(49) %7.3f in y scalar(pemexPIB) ///
+				_col(57) %15.0fc in y scalar(pemexPC)
 			noisily di in g "  ISSFAM" ///
-				_col(32) %15s in y scalar(issfamPob) ///
-				_col(49) %7s in y scalar(issfamPIB) ///
-				_col(57) %15s in y scalar(issfamPC)
+				_col(32) %15.0fc in y scalar(issfamPob) ///
+				_col(49) %7.3f in y scalar(issfamPIB) ///
+				_col(57) %15.0fc in y scalar(issfamPC)
 			noisily di
 			noisily di in g "  Inversión en salud" ///
-				_col(32) %15s in y scalar(inversPob) ///
-				_col(49) %7s in y scalar(inversPIB) ///
-				_col(57) %15s in y scalar(inversPC)
+				_col(32) %15.0fc in y scalar(inversPob) ///
+				_col(49) %7.3f in y scalar(inversPIB) ///
+				_col(57) %15.0fc in y scalar(inversPC)
 			noisily di in g _dup(71) "-"
 			noisily di in g "  {bf:Gasto público total" ///
-				_col(32) %15s in y scalar(saludPob) ///
-				_col(49) %7s in y scalar(saludPIB) ///
-				_col(57) %15s in y scalar(saludPC) "}"
+				_col(32) %15.0fc in y scalar(saludPob) ///
+				_col(49) %7.3f in y scalar(saludPIB) ///
+				_col(57) %15.0fc in y scalar(saludPC) "}"
 
 
 			** 4.10 Put excel **
@@ -995,35 +995,35 @@ quietly {
 			** 5.6 Resultados **
 			noisily di _newline(2) in g "{bf: C. Pensiones CIEP}"
 			noisily di _newline in g "{bf:  Gasto por instituci{c o'}n" ///
-				_col(32) %15s in g "Pensionados" ///
-				_col(49) %7s "% PIB" ///
+				_col(32) %15.0fc in g "Pensionados" ///
+				_col(49) %7.3f "% PIB" ///
 				_col(59) %10s in g "PC (MXN `aniovp')" "}"
 			noisily di in g _dup(71) "-"
 			noisily di in g "  Pensi{c o'}n Adultos Mayores" ///
-				_col(32) %15s in y scalar(pamPob) ///
-				_col(49) %7s in y scalar(pamPIB) ///
-				_col(57) %15s in y scalar(pamPC)
+				_col(32) %15.0fc in y scalar(pamPob) ///
+				_col(49) %7.3f in y scalar(pamPIB) ///
+				_col(57) %15.0fc in y scalar(pamPC)
 			noisily di in g "  IMSS" ///
-				_col(32) %15s in y scalar(penimssPob) ///
-				_col(49) %7s in y scalar(penimssPIB) ///
-				_col(57) %15s in y scalar(penimssPC)
+				_col(32) %15.0fc in y scalar(penimssPob) ///
+				_col(49) %7.3f in y scalar(penimssPIB) ///
+				_col(57) %15.0fc in y scalar(penimssPC)
 			noisily di in g "  ISSSTE" ///
-				_col(32) %15s in y scalar(penisssPob) ///
-				_col(49) %7s in y scalar(penisssPIB) ///
-				_col(57) %15s in y scalar(penisssPC)
+				_col(32) %15.0fc in y scalar(penisssPob) ///
+				_col(49) %7.3f in y scalar(penisssPIB) ///
+				_col(57) %15.0fc in y scalar(penisssPC)
 			noisily di in g "  Pemex" ///
-				_col(32) %15s in y scalar(penpemePob) ///
-				_col(49) %7s in y scalar(penpemePIB) ///
-				_col(57) %15s in y scalar(penpemePC)
+				_col(32) %15.0fc in y scalar(penpemePob) ///
+				_col(49) %7.3f in y scalar(penpemePIB) ///
+				_col(57) %15.0fc in y scalar(penpemePC)
 			noisily di in g "  CFE, LFC, Ferro, ISSFAM" ///
-				_col(32) %15s in y scalar(penotroPob) ///
-				_col(49) %7s in y scalar(penotroPIB) ///
-				_col(57) %15s in y scalar(penotroPC)
+				_col(32) %15.0fc in y scalar(penotroPob) ///
+				_col(49) %7.3f in y scalar(penotroPIB) ///
+				_col(57) %15.0fc in y scalar(penotroPC)
 			noisily di in g _dup(71) "-"
 			noisily di in g "  {bf:Gasto público total" ///
-				_col(32) %15s in y scalar(pensionPob) ///
-				_col(49) %7s in y scalar(pensionPIB) ///
-				_col(57) %15s in y scalar(pensionPC) "}"
+				_col(32) %15.0fc in y scalar(pensionPob) ///
+				_col(49) %7.3f in y scalar(pensionPIB) ///
+				_col(57) %15.0fc in y scalar(pensionPC) "}"
 
 
 			** 5.7 Put excel **/
@@ -1167,36 +1167,36 @@ quietly {
 			** 6.6 Resultados **
 			noisily di _newline(2) in g "{bf: D. Energía CIEP}"
 			noisily di _newline in g "{bf:  Gasto por organismo" ///
-				_col(32) %15s in g "Poblacion" ///
-				_col(49) %7s "% PIB" ///
+				_col(32) %15.0fc in g "Poblacion" ///
+				_col(49) %7.3f "% PIB" ///
 				_col(59) %10s in g "PC (MXN `aniovp')" "}"
 			noisily di in g _dup(71) "-"
 			noisily di in g "  CFE" ///
-				_col(32) %15s in y scalar(gascfePob) ///
-				_col(49) %7s in y scalar(gascfePIB) ///
-				_col(57) %15s in y scalar(gascfePC)
+				_col(32) %15.0fc in y scalar(gascfePob) ///
+				_col(49) %7.3f in y scalar(gascfePIB) ///
+				_col(57) %15.0fc in y scalar(gascfePC)
 			noisily di in g "  Pemex" ///
-				_col(32) %15s in y scalar(gaspemexPob) ///
-				_col(49) %7s in y scalar(gaspemexPIB) ///
-				_col(57) %15s in y scalar(gaspemexPC)
+				_col(32) %15.0fc in y scalar(gaspemexPob) ///
+				_col(49) %7.3f in y scalar(gaspemexPIB) ///
+				_col(57) %15.0fc in y scalar(gaspemexPC)
 			noisily di in g "  SENER y otros" ///
-				_col(32) %15s in y scalar(gassenerPob) ///
-				_col(49) %7s in y scalar(gassenerPIB) ///
-				_col(57) %15s in y scalar(gassenerPC)
+				_col(32) %15.0fc in y scalar(gassenerPob) ///
+				_col(49) %7.3f in y scalar(gassenerPIB) ///
+				_col(57) %15.0fc in y scalar(gassenerPC)
 			noisily di 
 			noisily di in g "  Inversión en energía" ///
-				_col(32) %15s in y scalar(gasinverfPob) ///
-				_col(49) %7s in y scalar(gasinverfPIB) ///
-				_col(57) %15s in y scalar(gasinverfPC)
+				_col(32) %15.0fc in y scalar(gasinverfPob) ///
+				_col(49) %7.3f in y scalar(gasinverfPIB) ///
+				_col(57) %15.0fc in y scalar(gasinverfPC)
 			noisily di in g "  Costo de la deuda (energía)" ///
-				_col(32) %15s in y scalar(gascosdeuePob) ///
-				_col(49) %7s in y scalar(gascosdeuePIB) ///
-				_col(57) %15s in y scalar(gascosdeuePC)
+				_col(32) %15.0fc in y scalar(gascosdeuePob) ///
+				_col(49) %7.3f in y scalar(gascosdeuePIB) ///
+				_col(57) %15.0fc in y scalar(gascosdeuePC)
 			noisily di in g _dup(71) "-"
 			noisily di in g "  {bf:Gastos público total" ///
-				_col(32) %15s in y scalar(gasenergiaPob) ///
-				_col(49) %7s in y scalar(gasenergiaPIB) ///
-				_col(57) %15s in y scalar(gasenergiaPC) "}"
+				_col(32) %15.0fc in y scalar(gasenergiaPob) ///
+				_col(49) %7.3f in y scalar(gasenergiaPIB) ///
+				_col(57) %15.0fc in y scalar(gasenergiaPC) "}"
 
 		}
 
@@ -1318,32 +1318,32 @@ quietly {
 			* Resultados *
 			noisily di _newline(2) in g "{bf: E. Otros gastos CIEP}"
 			noisily di _newline in g "{bf:  Gasto por concepto" ///
-				_col(32) %15s in g "Poblacion" ///
-				_col(49) %7s "% PIB" ///
+				_col(32) %15.0fc in g "Poblacion" ///
+				_col(49) %7.3f "% PIB" ///
 				_col(59) %10s in g "PC (MXN `aniovp')" "}"
 			noisily di in g _dup(71) "-"
 			noisily di in g "  Otras inversiones" ///
-				_col(32) %15s in y scalar(gasinfraPob) ///
-				_col(49) %7s in y scalar(gasinfraPIB) ///
-				_col(57) %15s in y scalar(gasinfraPC)
+				_col(32) %15.0fc in y scalar(gasinfraPob) ///
+				_col(49) %7.3f in y scalar(gasinfraPIB) ///
+				_col(57) %15.0fc in y scalar(gasinfraPC)
 			noisily di in g "  Resto de los gastos" ///
-				_col(32) %15s in y scalar(gasotrosPob) ///
-				_col(49) %7s in y scalar(gasotrosPIB) ///
-				_col(57) %15s in y scalar(gasotrosPC)
+				_col(32) %15.0fc in y scalar(gasotrosPob) ///
+				_col(49) %7.3f in y scalar(gasotrosPIB) ///
+				_col(57) %15.0fc in y scalar(gasotrosPC)
 			noisily di
 			noisily di in g "  Part y otras Aport" ///
-				_col(32) %15s in y scalar(gasfederPob) ///
-				_col(49) %7s in y scalar(gasfederPIB) ///
-				_col(57) %15s in y scalar(gasfederPC)
+				_col(32) %15.0fc in y scalar(gasfederPob) ///
+				_col(49) %7.3f in y scalar(gasfederPIB) ///
+				_col(57) %15.0fc in y scalar(gasfederPC)
 			noisily di in g "  Costo de la deuda (gobierno)" ///
-				_col(32) %15s in y scalar(gascostoPob) ///
-				_col(49) %7s in y scalar(gascostoPIB) ///
-				_col(57) %15s in y scalar(gascostoPC)
+				_col(32) %15.0fc in y scalar(gascostoPob) ///
+				_col(49) %7.3f in y scalar(gascostoPIB) ///
+				_col(57) %15.0fc in y scalar(gascostoPC)
 			noisily di in g _dup(71) "-"
 			noisily di in g "  {bf:Gasto público total" ///
-				_col(32) %15s in y scalar(otrosgasPob) ///
-				_col(49) %7s in y scalar(otrosgasPIB) ///
-				_col(57) %15s in y scalar(otrosgasPC) "}"
+				_col(32) %15.0fc in y scalar(otrosgasPob) ///
+				_col(49) %7.3f in y scalar(otrosgasPIB) ///
+				_col(57) %15.0fc in y scalar(otrosgasPC) "}"
 
 			*capture drop Inversión
 			*Distribucion Inversión, relativo(infra_entidad) macro(`gasinfra')
@@ -1470,28 +1470,28 @@ quietly {
 			* Resultados *
 			noisily di _newline(2) in g "{bf: F. Transferencias}" 
 			noisily di _newline in g "{bf:  Gasto por concepto" ///
-				_col(32) %15s in g "Población" ///
-				_col(49) %7s "% PIB" ///
+				_col(32) %15.0fc in g "Población" ///
+				_col(49) %7.3f "% PIB" ///
 				_col(59) %10s in g "PC (MXN `aniovp')" "}"
 			noisily di in g _dup(71) "-"
 			noisily di in g "  `bititle'" ///
-				_col(32) %15s in y scalar(IngBasPob) ///
-				_col(49) %7s in y scalar(IngBasPIB) ///
-				_col(57) %15s in y scalar(IngBasPC)
+				_col(32) %15.0fc in y scalar(IngBasPob) ///
+				_col(49) %7.3f in y scalar(IngBasPIB) ///
+				_col(57) %15.0fc in y scalar(IngBasPC)
 			noisily di in g "  Apoyo a madres trabajadoras" ///
-				_col(32) %15s in y scalar(gasmadresPob) ///
-				_col(49) %7s in y scalar(gasmadresPIB) ///
-				_col(57) %15s in y scalar(gasmadresPC)
+				_col(32) %15.0fc in y scalar(gasmadresPob) ///
+				_col(49) %7.3f in y scalar(gasmadresPIB) ///
+				_col(57) %15.0fc in y scalar(gasmadresPC)
 			noisily di in g "  Gasto en cuidados" ///
-				_col(32) %15s in y scalar(gascuidadosPob) ///
-				_col(49) %7s in y scalar(gascuidadosPIB) ///
-				_col(57) %15s in y scalar(gascuidadosPC)
+				_col(32) %15.0fc in y scalar(gascuidadosPob) ///
+				_col(49) %7.3f in y scalar(gascuidadosPIB) ///
+				_col(57) %15.0fc in y scalar(gascuidadosPC)
 
 			noisily di in g _dup(71) "-"
 			noisily di in g "  {bf:Gasto público total" "}" ///
-				_col(32) %15s in y scalar(transfPob) ///
-				_col(49) %7s in y scalar(transfPIB) ///
-				_col(57) %15s in y scalar(transfPC)
+				_col(32) %15.0fc in y scalar(transfPob) ///
+				_col(49) %7.3f in y scalar(transfPIB) ///
+				_col(57) %15.0fc in y scalar(transfPC)
 
 			replace IngBasico = IngBasico + scalar(gasmadresPC) if primi2 == 1
 			replace IngBasico = IngBasico + scalar(gascuidadosPC) if cuidados_pot == 1

@@ -1,3 +1,10 @@
+* ADVERTENCIA (v8.1, legacy sin mantenimiento): este script selecciona con
+* CODIGOS NUMERICOS de encode (divCIEP == 5, desc_funcion == 5|11|23, etc.).
+* Esos codigos son alfabeticos y CAMBIAN cada vez que UpdatePEF ingiere una
+* categoria nueva: hoy ya NO apuntan a lo que apuntaban al escribirse (ademas
+* divCIEP es string en PEF.dta actual). Antes de reusar, reescribir los
+* selectores con strings normalizados o pares finalidad/funcion (CONAC),
+* como en PEF.ado v8.1 seccion 4.
 *************************/
 *** 1. Infraestructura ***
 **************************

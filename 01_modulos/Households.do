@@ -1105,10 +1105,10 @@ escalar pctpib RemSalHHSPIB = `ing_sueldos'/`PIBSCN'*100
 escalar pctpib giniRemSal = `gini_ing_sueldos'
 escalar pct DifRemSal = (`ing_sueldos'/`RemSal'-1)*100
 noisily di _col(04) in g "(+) Remuneración de asalariados" ///
-	_col(44) in y "(" %5s giniRemSal ")" ///
-	_col(57) in y %7s RemSalHHSPIB ///
-	_col(66) in y %7s RemSalSCNPIB ///
-	_col(77) in y %7s DifRemSal "%"
+	_col(44) in y "(" %5.3f giniRemSal ")" ///
+	_col(57) in y %7.3f RemSalHHSPIB ///
+	_col(66) in y %7.3f RemSalSCNPIB ///
+	_col(77) in y %7.1f DifRemSal "%"
 
 * Contribuciones sociales
 escalar pctpib CSSSCNPIB = (`SSEmpleadores'+`SSImputada')/`PIBSCN'*100
@@ -1116,10 +1116,10 @@ escalar pctpib CSSIHHSPIB = 0
 escalar pctpib giniCSSI = 0
 escalar pct DifCSSI = (0/(`SSEmpleadores'+`SSImputada')-1)*100
 noisily di _col(04) in g "(+) Contribuc. sociales" ///
-	_col(44) in y "(" %5s giniCSSI ")" ///
-	_col(57) in y %7s CSSIHHSPIB ///
-	_col(66) in y %7s CSSSCNPIB ///
-	_col(77) in y %7s DifCSSI "%"
+	_col(44) in y "(" %5.3f giniCSSI ")" ///
+	_col(57) in y %7.3f CSSIHHSPIB ///
+	_col(66) in y %7.3f CSSSCNPIB ///
+	_col(77) in y %7.1f DifCSSI "%"
 
 * Ingreso mixto (laboral)
 escalar pctpib MixLSCNPIB = `MixL'/`PIBSCN'*100
@@ -1127,10 +1127,10 @@ escalar pctpib MixLHHSPIB = `ing_mixtoL'/`PIBSCN'*100
 escalar pctpib giniMixL = `gini_ing_mixtoL'
 escalar pct DifMixL = (`ing_mixtoL'/`MixL'-1)*100
 noisily di _col(04) in g "(+) Ingreso mixto (laboral)" ///
-	_col(44) in y "(" %5s giniMixL ")" ///
-	_col(57) in y %7s MixLHHSPIB ///
-	_col(66) in y %7s MixLSCNPIB ///
-	_col(77) in y %7s DifMixL "%"
+	_col(44) in y "(" %5.3f giniMixL ")" ///
+	_col(57) in y %7.3f MixLHHSPIB ///
+	_col(66) in y %7.3f MixLSCNPIB ///
+	_col(77) in y %7.1f DifMixL "%"
 
 * Impuestos producción (laboral)
 escalar pctpib ImpNetProduccionLSCNPIB = `ImpNetProduccionL'/`PIBSCN'*100
@@ -1138,10 +1138,10 @@ escalar pctpib ImpNetProduccionLHHSPIB = 0
 escalar pctpib giniImpNetProduccionL = 0
 escalar pct DifImpNetProduccionL = (0/`ImpNetProduccionL'-1)*100
 noisily di _col(04) in g "(+) Impuestos producción (laboral)" ///
-	_col(44) in y "(" %5s giniImpNetProduccionL ")" ///
-	_col(57) in y %7s ImpNetProduccionLHHSPIB ///
-	_col(66) in y %7s ImpNetProduccionLSCNPIB ///
-	_col(77) in y %7s DifImpNetProduccionL "%"
+	_col(44) in y "(" %5.3f giniImpNetProduccionL ")" ///
+	_col(57) in y %7.3f ImpNetProduccionLHHSPIB ///
+	_col(66) in y %7.3f ImpNetProduccionLSCNPIB ///
+	_col(77) in y %7.1f DifImpNetProduccionL "%"
 
 * Ingreso laboral (L)
 escalar pctpib IngLabSCNPIB = (`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'+`ImpNetProduccionL')/`PIBSCN'*100
@@ -1150,10 +1150,10 @@ escalar pctpib giniIngLab = `gini_ing_laboral'
 escalar pct DifIngLab = ((`ing_sueldos'+`ing_mixtoL')/(`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'+`ImpNetProduccionL')-1)*100
 noisily di in g _dup(84) "-"
 noisily di _col(04) in g "{bf:(=) Ingreso laboral (L)" ///
-	_col(44) in y "(" %5s giniIngLab ")" ///
-	_col(57) in y %7s IngLabHHSPIB ///
-	_col(66) in y %7s IngLabSCNPIB ///
-	_col(77) in y %7s DifIngLab "%}"
+	_col(44) in y "(" %5.3f giniIngLab ")" ///
+	_col(57) in y %7.3f IngLabHHSPIB ///
+	_col(66) in y %7.3f IngLabSCNPIB ///
+	_col(77) in y %7.1f DifIngLab "%}"
 
 noisily di in g _dup(84) "="
 
@@ -1163,10 +1163,10 @@ escalar pctpib SocHHSPIB = `ing_capital'/`PIBSCN'*100
 escalar pctpib giniSoc = `gini_ing_capital'
 escalar pct DifSoc = (`ing_capital'/`ExNOpSoc'-1)*100
 noisily di _col(04) in g "(+) Sociedades e ISFLSH" ///
-	_col(44) in y "(" %5s giniSoc ")" ///
-	_col(57) in y %7s SocHHSPIB ///
-	_col(66) in y %7s SocSCNPIB ///
-	_col(77) in y %7s DifSoc "%"
+	_col(44) in y "(" %5.3f giniSoc ")" ///
+	_col(57) in y %7.3f SocHHSPIB ///
+	_col(66) in y %7.3f SocSCNPIB ///
+	_col(77) in y %7.1f DifSoc "%"
 
 * Ingreso mixto (capital)
 escalar pctpib MixKSCNPIB = `MixKN'/`PIBSCN'*100
@@ -1174,10 +1174,10 @@ escalar pctpib MixKHHSPIB = (`ing_mixtoK')/`PIBSCN'*100
 escalar pctpib giniMixK = `gini_ing_mixtoK'
 escalar pct DifMixK = ((`ing_mixtoK')/`MixKN'-1)*100
 noisily di _col(04) in g "(+) Ingreso mixto (capital)" ///
-	_col(44) in y "(" %5s giniMixK ")" ///
-	_col(57) in y %7s MixKHHSPIB ///
-	_col(66) in y %7s MixKSCNPIB ///
-	_col(77) in y %7s DifMixK "%"
+	_col(44) in y "(" %5.3f giniMixK ")" ///
+	_col(57) in y %7.3f MixKHHSPIB ///
+	_col(66) in y %7.3f MixKSCNPIB ///
+	_col(77) in y %7.1f DifMixK "%"
 
 * Alquiler imputado
 escalar pctpib AlqSCNPIB = `ExNOpHog'/`PIBSCN'*100
@@ -1185,10 +1185,10 @@ escalar pctpib AlqHHSPIB = `ing_estim_alqu'/`PIBSCN'*100
 escalar pctpib giniAlq = `gini_ing_estim_alqu'
 escalar pct DifAlq = (`ing_estim_alqu'/`ExNOpHog'-1)*100
 noisily di _col(04) in g "(+) Alquiler imputado" ///
-	_col(44) in y "(" %5s giniAlq ")" ///
-	_col(57) in y %7s AlqHHSPIB ///
-	_col(66) in y %7s AlqSCNPIB ///
-	_col(77) in y %7s DifAlq "%"
+	_col(44) in y "(" %5.3f giniAlq ")" ///
+	_col(57) in y %7.3f AlqHHSPIB ///
+	_col(66) in y %7.3f AlqSCNPIB ///
+	_col(77) in y %7.1f DifAlq "%"
 
 * Gobierno
 escalar pctpib GovSCNPIB = `ExNOpGob'/`PIBSCN'*100
@@ -1196,10 +1196,10 @@ escalar pctpib GovHHSPIB = 0
 escalar pctpib giniGov = 0
 escalar pct DifGov = (0/`ExNOpGob'-1)*100
 noisily di _col(04) in g "(+) Gobierno" ///
-	_col(44) in y "(" %5s giniGov ")" ///
-	_col(57) in y %7s GovHHSPIB ///
-	_col(66) in y %7s GovSCNPIB ///
-	_col(77) in y %7s DifGov "%"
+	_col(44) in y "(" %5.3f giniGov ")" ///
+	_col(57) in y %7.3f GovHHSPIB ///
+	_col(66) in y %7.3f GovSCNPIB ///
+	_col(77) in y %7.1f DifGov "%"
 
 * Impuestos a los productos
 escalar pctpib ImpNetProductosSCNPIB = `ImpNetProductos'/`PIBSCN'*100
@@ -1207,10 +1207,10 @@ escalar pctpib ImpNetProductosHHSPIB = 0
 escalar pctpib giniImpNetProductos = 0
 escalar pct DifImpNetProductos = (0/`ImpNetProductos'-1)*100
 noisily di _col(04) in g "(+) Impuestos a los productos" ///
-	_col(44) in y "(" %5s giniImpNetProductos ")" ///
-	_col(57) in y %7s ImpNetProductosHHSPIB ///
-	_col(66) in y %7s ImpNetProductosSCNPIB ///
-	_col(77) in y %7s DifImpNetProductos "%"
+	_col(44) in y "(" %5.3f giniImpNetProductos ")" ///
+	_col(57) in y %7.3f ImpNetProductosHHSPIB ///
+	_col(66) in y %7.3f ImpNetProductosSCNPIB ///
+	_col(77) in y %7.1f DifImpNetProductos "%"
 
 * Impuestos producción (capital)
 escalar pctpib ImpNetProduccionKSCNPIB = `ImpNetProduccionK'/`PIBSCN'*100
@@ -1218,10 +1218,10 @@ escalar pctpib ImpNetProduccionKHHSPIB = 0
 escalar pctpib giniImpNetProduccionK = 0
 escalar pct DifImpNetProduccionK = (0/`ImpNetProduccionK'-1)*100
 noisily di _col(04) in g "(+) Impuestos producción (capital)" ///
-	_col(44) in y "(" %5s giniImpNetProduccionK ")" ///
-	_col(57) in y %7s ImpNetProduccionKHHSPIB ///
-	_col(66) in y %7s ImpNetProduccionKSCNPIB ///
-	_col(77) in y %7s DifImpNetProduccionK "%"
+	_col(44) in y "(" %5.3f giniImpNetProduccionK ")" ///
+	_col(57) in y %7.3f ImpNetProduccionKHHSPIB ///
+	_col(66) in y %7.3f ImpNetProduccionKSCNPIB ///
+	_col(77) in y %7.1f DifImpNetProduccionK "%"
 
 * Ingreso de capital neto (K)
 escalar pctpib IngCapSCNPIB = `ExNOpSoc'/`PIBSCN'*100
@@ -1230,10 +1230,10 @@ escalar pctpib giniIngCap = `gini_ing_capital'
 escalar pct DifIngCap = ((`ing_capital'+`ing_mixtoK')/`ExNOpSoc'-1)*100
 noisily di in g _dup(84) "-"
 noisily di _col(04) in g "{bf:(=) Ingreso de capital neto (K)" ///
-	_col(44) in y "(" %5s giniIngCap ")" ///
-	_col(57) in y %7s IngCapHHSPIB ///
-	_col(66) in y %7s IngCapSCNPIB ///
-	_col(77) in y %7s DifIngCap "%}"
+	_col(44) in y "(" %5.3f giniIngCap ")" ///
+	_col(57) in y %7.3f IngCapHHSPIB ///
+	_col(66) in y %7.3f IngCapSCNPIB ///
+	_col(77) in y %7.1f DifIngCap "%}"
 
 noisily di in g _dup(84) "="
 
@@ -1244,10 +1244,10 @@ escalar pctpib PINHHSPIB = `ing_total'/`PIBSCN'*100
 escalar pctpib giniPIN = `gini_ing_total'
 escalar pct DifPIN = (`ing_total'/(`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL'+`ImpNetProduccionL'+`ExNOpSoc'+`ExNOpHog'+`MixKN'+`ImpNetProduccionK'+`ImpNetProductos')-1)*100
 noisily di _col(04) in g "{bf:(=) Producto Interno Neto (L + K)" ///
-	_col(44) in y "(" %5s giniPIN ")" ///
-	_col(57) in y %7s PINHHSPIB ///
-	_col(66) in y %7s PINSCNPIB ///
-	_col(77) in y %7s DifPIN "%}"
+	_col(44) in y "(" %5.3f giniPIN ")" ///
+	_col(57) in y %7.3f PINHHSPIB ///
+	_col(66) in y %7.3f PINSCNPIB ///
+	_col(77) in y %7.1f DifPIN "%}"
 
 * Depreciación
 escalar pctpib DEPFSCNPIB = `ConCapFij'/`PIBSCN'*100
@@ -1255,10 +1255,10 @@ escalar pctpib DEPFHHSPIB = 0
 escalar pctpib giniDEPF = 0
 escalar pct DifDEPF = (0/`ConCapFij'-1)*100
 noisily di _col(04) in g "(+) Depreciación" ///
-	_col(44) in y "(" %5s giniDEPF ")" ///
-	_col(57) in y %7s DEPFHHSPIB ///
-	_col(66) in y %7s DEPFSCNPIB ///
-	_col(77) in y %7s DifDEPF "%"
+	_col(44) in y "(" %5.3f giniDEPF ")" ///
+	_col(57) in y %7.3f DEPFHHSPIB ///
+	_col(66) in y %7.3f DEPFSCNPIB ///
+	_col(77) in y %7.1f DifDEPF "%"
 
 noisily di in g _dup(84) "-"
 
@@ -1271,10 +1271,10 @@ escalar pct DifPIB = ((`ing_total')/(`RemSal'+`SSEmpleadores'+`SSImputada'+`MixL
 	+`ImpNetProduccionL'+`ImpNetProduccionK'+`ImpNetProductos'+`ConCapFij')-1)*100
 escalar pct DifPIBSCN = (`ing_total'/(`PIBSCN')-1)*100
 noisily di _col(04) in g "{bf:(+) Producto Interno Bruto" ///
-	_col(44) in y "(" %5s giniPIB ")" ///
-	_col(57) in y %7s PIBHHSPIB ///
-	_col(66) in y %7s PIBSCNPIB ///
-	_col(77) in y %7s DifPIB "%}"
+	_col(44) in y "(" %5.3f giniPIB ")" ///
+	_col(57) in y %7.3f PIBHHSPIB ///
+	_col(66) in y %7.3f PIBSCNPIB ///
+	_col(77) in y %7.1f DifPIB "%}"
 
 
 
@@ -1602,10 +1602,10 @@ escalar pctpib IMSSCSSHHSPIB = `SBCIMSS'[1,1]/`PIBSCN'*100
 escalar pctpib giniIMSSCSS = `gini_cuotasIMSS'
 escalar pct DifIMSSCSS = (`SBCIMSS'[1,1]/`CuotasIMSS'-1)*100
 noisily di _col(04) in g "(+) IMSS " ///
-	_col(44) in y "(" %5s giniIMSSCSS ")" ///
-	_col(57) in y %7s IMSSCSSHHSPIB ///
-	_col(66) in y %7s IMSSCSSSCNPIB ///
-	_col(77) in y %7s DifIMSSCSS "%"
+	_col(44) in y "(" %5.3f giniIMSSCSS ")" ///
+	_col(57) in y %7.3f IMSSCSSHHSPIB ///
+	_col(66) in y %7.3f IMSSCSSSCNPIB ///
+	_col(77) in y %7.1f DifIMSSCSS "%"
 
 * ISSSTE
 Gini cuotasISSSTE, hogar(folioviv foliohog) factor(factor)
@@ -1615,10 +1615,10 @@ escalar pctpib ISSSTECSSHHSPIB = `SBCISSSTE'[1,1]/`PIBSCN'*100
 escalar pctpib giniISSSTECSS = `gini_cuotasISSSTE'
 escalar pct DifISSSTECSS = (`SBCISSSTE'[1,1]/`Cuotas_ISSSTE'-1)*100
 noisily di _col(04) in g "(+) ISSSTE " ///
-	_col(44) in y "(" %5s giniISSSTECSS ")" ///
-	_col(57) in y %7s ISSSTECSSHHSPIB ///
-	_col(66) in y %7s ISSSTECSSSCNPIB ///
-	_col(77) in y %7s DifISSSTECSS "%"
+	_col(44) in y "(" %5.3f giniISSSTECSS ")" ///
+	_col(57) in y %7.3f ISSSTECSSHHSPIB ///
+	_col(66) in y %7.3f ISSSTECSSSCNPIB ///
+	_col(77) in y %7.1f DifISSSTECSS "%"
 
 * Federación
 Gini cuotasFED, hogar(folioviv foliohog) factor(factor)
@@ -1628,10 +1628,10 @@ escalar pctpib FEDCSSHHSPIB = `SBCFED'[1,1]/`PIBSCN'*100
 escalar pctpib giniFEDCSS = `gini_cuotasFED'
 escalar pct DifFEDCSS = (`SBCFED'[1,1]/`SSFederacion'-1)*100
 noisily di _col(04) in g "(+) Federación " ///
-	_col(44) in y "(" %5s giniFEDCSS ")" ///
-	_col(57) in y %7s FEDCSSHHSPIB ///
-	_col(66) in y %7s FEDCSSSCNPIB ///
-	_col(77) in y %7s DifFEDCSS "%"
+	_col(44) in y "(" %5.3f giniFEDCSS ")" ///
+	_col(57) in y %7.3f FEDCSSHHSPIB ///
+	_col(66) in y %7.3f FEDCSSSCNPIB ///
+	_col(77) in y %7.1f DifFEDCSS "%"
 
 * Otros
 Gini cuotasOTR, hogar(folioviv foliohog) factor(factor)
@@ -1641,10 +1641,10 @@ escalar pctpib OTROCSSHHSPIB = (`SBCOTR'[1,1])/`PIBSCN'*100
 escalar pctpib giniOTROCSS = `gini_cuotasOTR'
 escalar pct DifOTROCSS = ((`SBCOTR'[1,1])/((`SSEmpleadores'+`SSImputada')-`SSFederacion'-`SSImputada'-`Cuotas_ISSSTE'-`CuotasIMSS')-1)*100
 noisily di _col(04) in g "(+) Otros " ///
-	_col(44) in y "(" %5s giniOTROCSS ")" ///
-	_col(57) in y %7s OTROCSSHHSPIB ///
-	_col(66) in y %7s OTROCSSSCNPIB ///
-	_col(77) in y %7s DifOTROCSS "%"
+	_col(44) in y "(" %5.3f giniOTROCSS ")" ///
+	_col(57) in y %7.3f OTROCSSHHSPIB ///
+	_col(66) in y %7.3f OTROCSSSCNPIB ///
+	_col(77) in y %7.1f DifOTROCSS "%"
 
 * Imputada
 Gini cuotasIMP, hogar(folioviv foliohog) factor(factor)
@@ -1654,10 +1654,10 @@ escalar pctpib IMPCSSHHSPIB = (`SBCIMP'[1,1])/`PIBSCN'*100
 escalar pctpib giniIMPCSS = `gini_cuotasIMP'
 escalar pct DifIMPCSS = ((`SBCIMP'[1,1])/`SSImputada'-1)*100
 noisily di _col(04) in g "(+) Imputada " ///
-	_col(44) in y "(" %5s giniIMPCSS ")" ///
-	_col(57) in y %7s IMPCSSHHSPIB ///
-	_col(66) in y %7s IMPCSSSCNPIB ///
-	_col(77) in y %7s DifIMPCSS "%"
+	_col(44) in y "(" %5.3f giniIMPCSS ")" ///
+	_col(57) in y %7.3f IMPCSSHHSPIB ///
+	_col(66) in y %7.3f IMPCSSSCNPIB ///
+	_col(77) in y %7.1f DifIMPCSS "%"
 
 * Cuotas a la Seguridad Social
 Gini cuotasTPF, hogar(folioviv foliohog) factor(factor)
@@ -1668,10 +1668,10 @@ escalar pct DifCSSE = ((`SBCTOTAL'[1,1])/(`SSEmpleadores'+`SSImputada')-1)*100
 escalar pctpib giniCSSE = `gini_cuotasTPF'
 noisily di in g _dup(84) "-"
 noisily di _col(04) in g "{bf:(=) Cuotas a la Seguridad Social" ///
-	_col(44) in y "(" %5s giniCSSE ")" ///
-	_col(57) in y %7s CSSEHHSPIB ///
-	_col(66) in y %7s CSSESCNPIB ///
-	_col(77) in y %7s DifCSSE "%" "}"
+	_col(44) in y "(" %5.3f giniCSSE ")" ///
+	_col(57) in y %7.3f CSSEHHSPIB ///
+	_col(66) in y %7.3f CSSESCNPIB ///
+	_col(77) in y %7.1f DifCSSE "%" "}"
 
 
 ********************************************/
@@ -1759,10 +1759,10 @@ escalar pctpib YBHHSPIB = ((`GROSS'[1,1]-`GROSS'[1,2])/`PIBSCN'*100)
 escalar pctpib giniYB = `gini_ing_subor'
 escalar pct DifYB = (((`GROSS'[1,1]-`GROSS'[1,2])/`RemSal'-1)*100)
 noisily di _col(04) in g "Remuneración a asalariados" ///
-	_col(44) in y "(" %5s giniYB ")" ///
-	_col(57) in y %7s YBHHSPIB ///
-	_col(66) in y %7s YBSCNPIB ///
-	_col(77) in y %7s DifYB "%"
+	_col(44) in y "(" %5.3f giniYB ")" ///
+	_col(57) in y %7.3f YBHHSPIB ///
+	_col(66) in y %7.3f YBSCNPIB ///
+	_col(77) in y %7.1f DifYB "%"
 
 * CSS
 escalar pctpib CSSCNPIB = (`SSEmpleadores'+`SSImputada')/`PIBSCN'*100
@@ -1770,10 +1770,10 @@ escalar pctpib CSSHHSPIB = (`GROSS'[1,2]/`PIBSCN'*100)
 escalar pctpib giniCSS = `gini_cuotasTPF'
 escalar pct DifCSS = ((`GROSS'[1,2]/(`SSEmpleadores'+`SSImputada'))-1)*100
 noisily di _col(04) in g "CSS" ///
-	_col(44) in y "(" %5s giniCSS ")" ///
-	_col(57) in y %7s CSSHHSPIB ///
-	_col(66) in y %7s CSSCNPIB ///
-	_col(77) in y %7s DifCSS "%"
+	_col(44) in y "(" %5.3f giniCSS ")" ///
+	_col(57) in y %7.3f CSSHHSPIB ///
+	_col(66) in y %7.3f CSSCNPIB ///
+	_col(77) in y %7.1f DifCSS "%"
 
 * ISR retenciones a asalariados
 Gini isrE, hogar(folioviv foliohog) factor(factor)
@@ -1783,10 +1783,10 @@ escalar pctpib ISRASHHSPIB = (`GROSSISR'[1,1]/`PIBSCN'*100)
 escalar pctpib giniISRAS = `gini_isrE'
 escalar pct DifISRAS = ((`GROSSISR'[1,1]/`ISRSalarios'-1)*100)
 noisily di _col(04) in g "ISR retenciones a asalariados" ///
-	_col(44) in y "(" %5s giniISRAS ")" ///
-	_col(57) in y %7s ISRASHHSPIB ///
-	_col(66) in y %7s ISRASSCNPIB ///
-	_col(77) in y %7s DifISRAS "%"
+	_col(44) in y "(" %5.3f giniISRAS ")" ///
+	_col(57) in y %7.3f ISRASHHSPIB ///
+	_col(66) in y %7.3f ISRASSCNPIB ///
+	_col(77) in y %7.1f DifISRAS "%"
 
 * Subsidio al empleo
 Gini SE, hogar(folioviv foliohog) factor(factor)
@@ -1796,10 +1796,10 @@ escalar pctpib SEHHSPIB = (`GROSSISR'[1,2]/`PIBSCN'*100)
 escalar pctpib giniSE = `gini_SE'
 escalar pct DifSE = ((`GROSSISR'[1,2]/`SubsidioEmpleo'-1)*100)
 noisily di _col(04) in g "Subsidio al empleo" ///
-	_col(44) in y "(" %5s giniSE ")" ///
-	_col(57) in y %7s SEHHSPIB ///
-	_col(66) in y %7s SESCNPIB ///
-	_col(77) in y %7s DifSE "%"
+	_col(44) in y "(" %5.3f giniSE ")" ///
+	_col(57) in y %7.3f SEHHSPIB ///
+	_col(66) in y %7.3f SESCNPIB ///
+	_col(77) in y %7.1f DifSE "%"
 
 
 
@@ -2360,10 +2360,10 @@ escalar pctpib ISRASFHHSPIB = (`RESTAXS'[1,1]/`PIBSCN'*100)
 escalar pctpib giniISRASF = `gini_ISR_asalariados'
 escalar pct DifISRASF = ((`RESTAXS'[1,1]/`ISRSalarios'-1)*100)
 noisily di _col(04) in g "ISR retenciones a asalariados" ///
-	_col(44) in y "(" %5s giniISRASF ")" ///
-	_col(57) in y %7s ISRASFHHSPIB ///
-	_col(66) in y %7s ISRASFSCNPIB ///
-	_col(77) in y %7s DifISRASF "%"
+	_col(44) in y "(" %5.3f giniISRASF ")" ///
+	_col(57) in y %7.3f ISRASFHHSPIB ///
+	_col(66) in y %7.3f ISRASFSCNPIB ///
+	_col(77) in y %7.1f DifISRASF "%"
 
 * ISR personas físicas
 escalar pctpib ISRPFFSCNPIB = (`ISRFisicas'/`PIBSCN'*100)
@@ -2371,10 +2371,10 @@ escalar pctpib ISRPFFHHSPIB = (`RESTAXF'[1,1]/`PIBSCN'*100)
 escalar pctpib giniISRPFF = `gini_ISR_PF'
 escalar pct DifISRPFF = ((`RESTAXF'[1,1]/`ISRFisicas'-1)*100)
 noisily di _col(04) in g "ISR personas f{c i'}sicas" ///
-	_col(44) in y "(" %5s giniISRPFF ")" ///
-	_col(57) in y %7s ISRPFFHHSPIB ///
-	_col(66) in y %7s ISRPFFSCNPIB ///
-	_col(77) in y %7s DifISRPFF "%"
+	_col(44) in y "(" %5.3f giniISRPFF ")" ///
+	_col(57) in y %7.3f ISRPFFHHSPIB ///
+	_col(66) in y %7.3f ISRPFFSCNPIB ///
+	_col(77) in y %7.1f DifISRPFF "%"
 
 * ISR personas morales
 escalar pctpib ISRPMFSCNPIB = (`ISRMorales'/`PIBSCN'*100)
@@ -2382,10 +2382,10 @@ escalar pctpib ISRPMFHHSPIB = (`RESTAX'[1,1]/`PIBSCN'*100)
 escalar pctpib giniISRPMF = `gini_ISR_PM'
 escalar pct DifISRPMF = ((`RESTAX'[1,1]/`ISRMorales'-1)*100)
 noisily di _col(04) in g "ISR personas morales" ///
-	_col(44) in y "(" %5s giniISRPMF ")" ///
-	_col(57) in y %7s ISRPMFHHSPIB ///
-	_col(66) in y %7s ISRPMFSCNPIB ///
-	_col(77) in y %7s DifISRPMF "%"
+	_col(44) in y "(" %5.3f giniISRPMF ")" ///
+	_col(57) in y %7.3f ISRPMFHHSPIB ///
+	_col(66) in y %7.3f ISRPMFSCNPIB ///
+	_col(77) in y %7.1f DifISRPMF "%"
 
 * ISR total
 noisily di in g _dup(84) "-"
@@ -2394,10 +2394,10 @@ escalar pctpib ISRFHHSPIB = ((`RESTAXS'[1,1]+`RESTAXF'[1,1]+`RESTAX'[1,1])/`PIBS
 escalar pctpib giniISRF = `gini_ISR'
 escalar pct DifISRF = (((`RESTAXS'[1,1]+`RESTAXF'[1,1]+`RESTAX'[1,1])/(`ISRSalarios'+`ISRFisicas'+`ISRMorales')-1)*100)
 noisily di _col(04) in g "ISR total" ///
-	_col(44) in y "(" %5s giniISRF ")" ///
-	_col(57) in y %7s ISRFHHSPIB ///
-	_col(66) in y %7s ISRFSCNPIB ///
-	_col(77) in y %7s DifISRF "%"
+	_col(44) in y "(" %5.3f giniISRF ")" ///
+	_col(57) in y %7.3f ISRFHHSPIB ///
+	_col(66) in y %7.3f ISRFSCNPIB ///
+	_col(77) in y %7.1f DifISRF "%"
 
 
 
@@ -2482,10 +2482,10 @@ escalar pctpib REMFHHSPIB = (`ALTIMIR'[1,1]/`PIBSCN'*100)
 escalar pctpib giniREMF = `gini_ing_subor'
 escalar pctpib TaltimirSalF = TaltimirSal
 noisily di _col(04) in g "(+) Rem. asalariados + CSS + Impuestos" ///
-	_col(44) in y "(" %5s giniREMF ")" ///
-	_col(57) in y %7s REMFHHSPIB ///
-	_col(66) in y %7s REMFSCNPIB ///
-	_col(77) in y %7s TaltimirSalF
+	_col(44) in y "(" %5.3f giniREMF ")" ///
+	_col(57) in y %7.3f REMFHHSPIB ///
+	_col(66) in y %7.3f REMFSCNPIB ///
+	_col(77) in y %7.1f TaltimirSalF
 
 * Ingreso mixto + Impuestos
 escalar pctpib MIXFSCNPIB = ((`MixL'+`MixKN'+`ImpNetProduccionL'*(`MixL')/(`RemSal' ///
@@ -2495,10 +2495,10 @@ escalar pctpib MIXFHHSPIB = (`ALTIMIR'[1,2]/`PIBSCN'*100)
 escalar pctpib giniMIXF = `gini_ing_mixto'
 escalar pctpib TaltimirSelfF = TaltimirSelf
 noisily di _col(04) in g "(+) Ingreso mixto + Impuestos" ///
-	_col(44) in y "(" %5s giniMIXF ")" ///
-	_col(57) in y %7s MIXFHHSPIB ///
-	_col(66) in y %7s MIXFSCNPIB ///
-	_col(77) in y %7s TaltimirSelfF
+	_col(44) in y "(" %5.3f giniMIXF ")" ///
+	_col(57) in y %7.3f MIXFHHSPIB ///
+	_col(66) in y %7.3f MIXFSCNPIB ///
+	_col(77) in y %7.1f TaltimirSelfF
 
 * Sociedades e ISFLSH + Impuestos
 escalar pctpib SOCFSCNPIB = ((`ExNOpSoc'+`ImpNetProduccionK'*(`ExNOpSoc')/(`MixKN' ///
@@ -2508,10 +2508,10 @@ escalar pctpib SOCFHHSPIB = (`ALTIMIR'[1,3]/`PIBSCN'*100)
 escalar pctpib giniSOCF = `gini_ing_capital'
 escalar pctpib TaltimirCapF = TaltimirCap
 noisily di _col(04) in g "(+) Sociedades e ISFLSH + Impuestos" ///
-	_col(44) in y "(" %5s giniSOCF ")" ///
-	_col(57) in y %7s SOCFHHSPIB ///
-	_col(66) in y %7s SOCFSCNPIB ///
-	_col(77) in y %7s TaltimirCapF
+	_col(44) in y "(" %5.3f giniSOCF ")" ///
+	_col(57) in y %7.3f SOCFHHSPIB ///
+	_col(66) in y %7.3f SOCFSCNPIB ///
+	_col(77) in y %7.1f TaltimirCapF
 
 * Organismos y empresas públicas
 escalar pctpib EMPFSCNPIB = ((`IMSSpropio'+`ISSSTEpropio'+`CFEpropio'+`Pemexpropio'+`FMP'+`OtrasEmpresas')/`PIBSCN'*100)
@@ -2519,10 +2519,10 @@ escalar pctpib EMPFHHSPIB = (`ALTIMIR'[1,6]/`PIBSCN'*100)
 escalar pctpib giniEMPF = `gini_ing_Sector_Publico'
 escalar pctpib FactorEMPF = 1
 noisily di _col(04) in g "(+) Organismos y empresas públicas" ///
-	_col(44) in y "(" %5s giniEMPF ")" ///
-	_col(57) in y %7s EMPFHHSPIB ///
-	_col(66) in y %7s EMPFSCNPIB ///
-	_col(77) in y %7s FactorEMPF
+	_col(44) in y "(" %5.3f giniEMPF ")" ///
+	_col(57) in y %7.3f EMPFHHSPIB ///
+	_col(66) in y %7.3f EMPFSCNPIB ///
+	_col(77) in y %7.1f FactorEMPF
 
 * Alquiler imputado + Impuestos
 escalar pctpib ALQFSCNPIB = ((`ExNOpHog'+`ImpNetProduccionK'*(`ExNOpHog')/(`MixKN' ///
@@ -2531,10 +2531,10 @@ escalar pctpib ALQFHHSPIB = (`ALTIMIR'[1,4]/`PIBSCN'*100)
 escalar pctpib giniALQF = `gini_ing_estim_alqu'
 escalar pctpib TaltimirHouseF = TaltimirHouse
 noisily di _col(04) in g "(+) Alquiler imputado + Impuestos" ///
-	_col(44) in y "(" %5s giniALQF ")" ///
-	_col(57) in y %7s ALQFHHSPIB ///
-	_col(66) in y %7s ALQFSCNPIB ///
-	_col(77) in y %7s TaltimirHouseF
+	_col(44) in y "(" %5.3f giniALQF ")" ///
+	_col(57) in y %7.3f ALQFHHSPIB ///
+	_col(66) in y %7.3f ALQFSCNPIB ///
+	_col(77) in y %7.1f TaltimirHouseF
 
 * Producto Interno Neto
 noisily di in g _dup(83) "-"
@@ -2545,10 +2545,10 @@ escalar pctpib giniPINF = `gini_ingbrutotot'
 escalar pctpib TPINF = (((`ALTIMIR'[1,1]+`ALTIMIR'[1,2]+`ALTIMIR'[1,3]+`ALTIMIR'[1,4]+`ALTIMIR'[1,6])/(`RemSal'+`SSEmpleadores' ///
 		+`SSImputada'+`MixL'+`MixKN'+`ExNOpSoc'+`ExNOpHog'+`ImpNetProduccionL'+`ImpNetProduccionK'+`ImpNetProductos'))^(-1))
 noisily di _col(04) in g "(=) Producto Interno Neto" ///
-	_col(44) in y "(" %5s giniPINF ")" ///
-	_col(57) in y %7s PINFHHSPIB ///
-	_col(66) in y %7s PINFSCNPIB ///
-	_col(77) in y %7s TPINF
+	_col(44) in y "(" %5.3f giniPINF ")" ///
+	_col(57) in y %7.3f PINFHHSPIB ///
+	_col(66) in y %7.3f PINFSCNPIB ///
+	_col(77) in y %7.1f TPINF
 
 * Depreciación
 escalar pctpib DEPFSCNPIB = (`ConCapFij'/`PIBSCN'*100)
@@ -2556,10 +2556,10 @@ escalar pctpib DEPFHHSPIB = (`ALTIMIR'[1,5]/`PIBSCN'*100)
 escalar pctpib giniDEPF = `gini_gasto_anualDepreciacion'
 escalar pctpib TaltimirDepF = (`ALTIMIR'[1,5]/`ConCapFij')^(-1)
 noisily di _col(04) in g "(+) Depreciación" ///
-	_col(44) in y "(" %5s giniDEPF ")" ///
-	_col(57) in y %7s DEPFHHSPIB ///
-	_col(66) in y %7s DEPFSCNPIB ///
-	_col(77) in y %7s TaltimirDepF
+	_col(44) in y "(" %5.3f giniDEPF ")" ///
+	_col(57) in y %7.3f DEPFHHSPIB ///
+	_col(66) in y %7.3f DEPFSCNPIB ///
+	_col(77) in y %7.1f TaltimirDepF
 
 * Producto Interno Bruto
 noisily di in g _dup(83) "-"
@@ -2571,10 +2571,10 @@ escalar pctpib TPIBF = (((`ALTIMIR'[1,1]+`ALTIMIR'[1,2]+`ALTIMIR'[1,3]+`ALTIMIR'
 		+`SSEmpleadores'+`SSImputada'+`MixL'+`MixKN'+`ExNOpSoc'+`ExNOpHog'+`ImpNetProduccionL'+`ImpNetProduccionK' ///
 		+`ImpNetProductos'+`ConCapFij'))^(-1))
 noisily di _col(04) in g "(=) Producto Interno Bruto" ///
-	_col(44) in y "(" %5s giniPIBF ")" ///
-	_col(57) in y %7s FPIBHHSPIB ///
-	_col(66) in y %7s FPIBSCNPIB ///
-	_col(77) in y %7s TPIBF
+	_col(44) in y "(" %5.3f giniPIBF ")" ///
+	_col(57) in y %7.3f FPIBHHSPIB ///
+	_col(66) in y %7.3f FPIBSCNPIB ///
+	_col(77) in y %7.1f TPIBF
 
 
 

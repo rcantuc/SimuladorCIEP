@@ -1,10 +1,10 @@
 {
-  "version": "v8.0.13",
-  "data_updated": "2026-03-19",
+  "version": "v8.1.0",
+  "data_updated": "2026-07-19",
   "data_updated_regla": "Fecha de los DATOS precargados del sitio (la pinta el hero como 'Última actualización'). Se bumpea SOLO cuando se reprocesan los datos (nuevo Paquete Económico, nueva ENIGH) — NO en cada release de código, NO es la fecha de deploy.",
-  "release_tag": "v8.0.13",
-  "release_url_prefix": "https://github.com/rcantuc/SimuladorCIEP/releases/download/v8.0.13/",
-  "generated_at": "2026-07-10T03:12:54Z",
+  "release_tag": "v8.1.0",
+  "release_url_prefix": "https://github.com/rcantuc/SimuladorCIEP/releases/download/v8.1.0/",
+  "generated_at": "2026-07-19T08:55:00Z",
   "exclusion_rule": "Excluidos: archivos terminados en .xlsx_ (renombres truncados de Dropbox, no canónicos) y archivos .DS_Store (metadatos macOS, no datos).",
   "assets": [
     {
@@ -58,8 +58,8 @@
     {
       "name": "CP.2013.xlsx",
       "local_path": "raw/PEFs/CP 2013.xlsx",
-      "sha256": "99fe8c463dcb5c47a9ed01d75196ab99ab66a1292bf12f4dca825607cb934be0",
-      "size_bytes": 35584958
+      "sha256": "308190f140fc3b1f2cc9ab0e776d46f466d2b886bb33550490d7600b70f55eb2",
+      "size_bytes": 35305545
     },
     {
       "name": "CP.2014.xlsx",
@@ -130,14 +130,20 @@
     {
       "name": "CuotasISSSTE.xlsx",
       "local_path": "raw/PEFs/CuotasISSSTE.xlsx",
-      "sha256": "65816b3c21795801ef284ab5a436f64f34407a241b40a34612477757f73b1dec",
-      "size_bytes": 10785
+      "sha256": "bffce2552d7f49ff1ab7676d871f9cfa1ac206ee2af8ed0c82d3351108ce7c2c",
+      "size_bytes": 10838
     },
     {
-      "name": "PEF.2025.xlsx",
-      "local_path": "raw/PEFs/PEF 2025.xlsx",
-      "sha256": "9ee631585a4dbf302eec9a1c8d5db20fadd2f52e6642914e8b753b3a576c65bc",
-      "size_bytes": 21824817
+      "name": "CP.2025.xlsx",
+      "local_path": "raw/PEFs/CP 2025.xlsx",
+      "sha256": "6330b2a06376d8482485ce57f89a4db12faf99a49418d04403807036b20b4c3d",
+      "size_bytes": 29110060
+    },
+    {
+      "name": "Diccionario.csv",
+      "local_path": "raw/PEFs/Diccionario.csv",
+      "sha256": "e6832d37746b8216b87befd983f0c7b1c56c50a1e78c7a86fdfc32d354426b9c",
+      "size_bytes": 6527
     },
     {
       "name": "PEF.2026.xlsx",

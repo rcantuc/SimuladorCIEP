@@ -1,4 +1,4 @@
-*! version 8.0 CIEP 03jul2026
+*! version 8.1 CIEP 19jul2026
 program define PEF, return
 	capture mkdir `"`c(sysdir_site)'/users/"'
 	capture mkdir `"`c(sysdir_site)'/users/$id/"'
@@ -643,18 +643,48 @@ program define UpdatePEF
 	capture confirm file "`c(sysdir_site)'/raw/temp/prePEF.dta"
 	if _rc != 0 {
 		* Asegurar que los xlsx esten descargados (GitHub Release v7.0) *
-		foreach a in CP.2013.xlsx CP.2014.xlsx CP.2015.xlsx CP.2016.xlsx CP.2017.xlsx CP.2018.xlsx CP.2019.xlsx CP.2020.xlsx CP.2021.xlsx CP.2022.xlsx CP.2023.xlsx CP.2024.xlsx PEF.2025.xlsx PEF.2026.xlsx CuotasISSSTE.xlsx {
+		foreach a in CP.2013.xlsx CP.2014.xlsx CP.2015.xlsx CP.2016.xlsx CP.2017.xlsx ///
+			CP.2018.xlsx CP.2019.xlsx CP.2020.xlsx CP.2021.xlsx CP.2022.xlsx CP.2023.xlsx ///
+			CP.2024.xlsx CP.2025.xlsx PEF.2026.xlsx CuotasISSSTE.xlsx {
 			ensure_asset "`a'"
 		}
+		* CP 2025 (Cuenta Publica) supersede a PEF 2025 (aprobado): si un usuario *
+		* conserva el xlsx viejo, se elimina para no duplicar el anio 2025.       *
+		capture erase "`c(sysdir_site)'/raw/PEFs/PEF 2025.xlsx"
 		local archivos: dir "`c(sysdir_site)'/raw/PEFs" files "*.xlsx"		// Archivos .xlsx
 		*local archivos `""PEF 2025.dta" "CuotasISSSTE.dta""'
 
 		foreach k of local archivos {
 
 			* 1.1 Importar el archivo `k'.xlsx (Cuenta Pública) *
+			* Deteccion de la hoja de datos: SHCP publica algunas CPs con hojas   *
+			* pivote adicionales (p.ej. el archivo pristino de CP 2013 trae una   *
+			* hoja pivote ANTES de la hoja de datos). Se elige la hoja con mas    *
+			* filas; NO se depende de que el xlsx local este curado a mano.       *
 			noisily di in g "Importando: " in y "`k'"
 			tokenize `k'
-			import excel "`c(sysdir_site)'/raw/PEFs/`k'", clear firstrow case(lower) allstring
+			import excel "`c(sysdir_site)'/raw/PEFs/`k'", describe
+			local hoja = r(worksheet_1)
+			if r(N_worksheet) > 1 {
+				local nsheets = r(N_worksheet)
+				forvalues s = 1/`nsheets' {
+					local ws`s' = r(worksheet_`s')
+					local rg`s' = r(range_`s')
+				}
+				local maxfilas = 0
+				forvalues s = 1/`nsheets' {
+					local filas = 0
+					if regexm("`rg`s''", "[A-Z]+([0-9]+)$") {
+						local filas = real(regexs(1))
+					}
+					if `filas' > `maxfilas' {
+						local maxfilas = `filas'
+						local hoja "`ws`s''"
+					}
+				}
+				noisily di in g "  hoja de datos: " in y "`hoja'" in g " (de `nsheets' hojas)"
+			}
+			import excel "`c(sysdir_site)'/raw/PEFs/`k'", clear firstrow case(lower) allstring sheet("`hoja'")
 			capture drop v*
 
 			* 1.2 Limpiar observaciones *
@@ -662,11 +692,19 @@ program define UpdatePEF
 			capture rename ciclo anio
 
 			* 1.3 Limpiar nombres *
+			* Columnas fantasma: headers vacios (p.ej. CP 2022 trae ~180, que     *
+			* import excel nombra con la letra de la columna). Se detectan por    *
+			* CONTENIDO (100% vacias), no por longitud del nombre: CP 2025 trae   *
+			* columnas legitimas de 1-2 caracteres (R, UR, AI, PP, FF).           *
 			foreach j of varlist _all {
-				if strlen("`j'") == 2 {
+				capture assert missing(`j')
+				if _rc == 0 {
 					drop `j'
 				}
 			}
+			* CP 2025: la columna del ramo se llama "R" (discrepancia documentada:*
+			* el Diccionario.csv de SHCP la nombra "RAMO"; el archivo trae "R").  *
+			capture rename r ramo
 			foreach j of varlist _all {
 				if `"`=substr("`j'",1,3)'"' == "id_" {
 					local newname = `"`=substr("`j'",4,.)'"'
@@ -715,6 +753,10 @@ program define UpdatePEF
 				}
 				capture rename ejercicio ejercido
 			}
+			* La columna vieja ENTIDAD_FEDERATIVA (texto, CPs 2014-2024) queda    *
+			* como desc_entidad_federativa tras el swap de id_; homologarla aqui  *
+			* (el loop anterior itera sobre los nombres ORIGINALES y no la ve).   *
+			capture rename desc_entidad_federativa desc_entidad
 
 			* 1.4 Limpiar valores *
 			// Primero, asegurar que las variables de gasto sean numéricas. 
@@ -783,8 +825,8 @@ program define UpdatePEF
 		** 2.2 Ramo **
 		replace ramo = "50" if ramo == "GYR"
 		replace ramo = "51" if ramo == "GYN"
-		replace ramo = "52" if ramo == "TZZ" | ur == "TZZ"
-		replace ramo = "53" if ramo == "TOQ" | ur == "TOQ"
+		replace ramo = "52" if ramo == "TZZ" | ur == "tzz"	// ur ya viene en minusculas (limpieza 1.4)
+		replace ramo = "53" if ramo == "TOQ" | ur == "toq"
 		destring ramo, replace
 
 		replace desc_ramo = "Oficina de la Presidencia de la República" if ramo == 2
@@ -904,7 +946,12 @@ program define UpdatePEF
 		*** 3. ESTADÍSTICAS OPORTUNAS ***
 		***                           ***
 		*********************************
-
+		* CONGELADO (v8.1): el bloque completo de Estadisticas Oportunas       *
+		* (3.1, 3.2 y 3.3) se comenta y revive junto. Los mapeos 3.1/3.2       *
+		* dependian de los codigos del encode de desc_funcion, que cambian     *
+		* con cada categoria nueva (deriva alfabetica); al revivirlo, anclar   *
+		* a finalidad/funcion (CONAC) o a strings normalizados.                *
+		/*
 		** 3.1 Función **
 		g serie_desc_funcion = "XKG0116" if desc_funcion == -1
 		replace serie_desc_funcion = "XAC23" if desc_funcion == 1
@@ -987,6 +1034,7 @@ program define UpdatePEF
 		replace serie_ramo = "XOA0146" if ramo == 51
 		replace serie_ramo = "XKC0131" if ramo == 52
 		replace serie_ramo = "XOA0141" if ramo == 53
+		*/
 
 		compress
 		save "`c(sysdir_site)'/raw/temp/prePEF.dta", replace
@@ -1039,6 +1087,71 @@ program define UpdatePEF
 	replace desc_funcion = -1 if ramo == -1
 
 
+	**********************************************
+	** 4.0 Verificador de deriva de catálogos   **
+	**********************************************
+	* Cinturon y tirantes (v8.1): las divisiones se anclan a los CODIGOS   *
+	* oficiales (Clasificacion Funcional del Gasto del CONAC: pares        *
+	* finalidad/funcion; y TIPOGASTO por prefijo de texto normalizado).    *
+	* Por cada regla se verifica AQUI, año por año, que el texto publicado *
+	* coincide con lo esperado. Un mismatch DETIENE el proceso con año y   *
+	* texto encontrado: jamas clasificar en silencio con catalogo derivado.*
+	tempvar vfun vtg
+	decode desc_funcion, g(`vfun')
+	replace `vfun' = strtrim(ustrlower(`vfun'))
+	decode desc_tipogasto, g(`vtg')
+	replace `vtg' = strtrim(ustrlower(`vtg'))
+
+	* Toda observacion trae año (una hoja pivote importada por error no lo trae) *
+	capture assert anio != .
+	if _rc != 0 {
+		noisily di as error "ALARMA UpdatePEF: observaciones sin anio (¿hoja pivote o archivo corrupto?)."
+		error 459
+	}
+
+	levelsof anio, local(ANIOS)
+	foreach a of local ANIOS {
+
+		* CONAC finalidad 2 + funcion 3 = salud *
+		capture assert `vfun' == "salud" if anio == `a' & finalidad == 2 & funcion == 3 & ramo != -1
+		if _rc != 0 {
+			noisily di as error "ALARMA UpdatePEF (`a'): finalidad 2 & funcion 3 deberia ser 'salud'. Encontrado:"
+			noisily levelsof `vfun' if anio == `a' & finalidad == 2 & funcion == 3 & ramo != -1 & `vfun' != "salud"
+			error 459
+		}
+
+		* CONAC finalidad 2 + funcion 5 = educación *
+		capture assert `vfun' == "educación" if anio == `a' & finalidad == 2 & funcion == 5 & ramo != -1
+		if _rc != 0 {
+			noisily di as error "ALARMA UpdatePEF (`a'): finalidad 2 & funcion 5 deberia ser 'educación'. Encontrado:"
+			noisily levelsof `vfun' if anio == `a' & finalidad == 2 & funcion == 5 & ramo != -1 & `vfun' != "educación"
+			error 459
+		}
+
+		* CONAC finalidad 3 + funcion 3 = combustibles y energía *
+		capture assert `vfun' == "combustibles y energía" if anio == `a' & finalidad == 3 & funcion == 3 & ramo != -1
+		if _rc != 0 {
+			noisily di as error "ALARMA UpdatePEF (`a'): finalidad 3 & funcion 3 deberia ser 'combustibles y energía'. Encontrado:"
+			noisily levelsof `vfun' if anio == `a' & finalidad == 3 & funcion == 3 & ramo != -1 & `vfun' != "combustibles y energía"
+			error 459
+		}
+
+		* TIPOGASTO: todo texto debe ser reconocido (corriente/capital/inversión/obra/part/pensiones) *
+		capture assert strpos(`vtg',"gasto corriente") == 1 | strpos(`vtg',"gasto de capital") == 1 ///
+			| strpos(`vtg',"gasto de inversión") == 1 | strpos(`vtg',"gasto de obra") == 1 ///
+			| `vtg' == "participaciones" | `vtg' == "pensiones y jubilaciones" ///
+			| `vtg' == "cuotas issste" | `vtg' == "" if anio == `a'
+		if _rc != 0 {
+			noisily di as error "ALARMA UpdatePEF (`a'): TIPOGASTO no reconocido (¿categoria nueva de SHCP?). Encontrado:"
+			noisily levelsof `vtg' if anio == `a' & !(strpos(`vtg',"gasto corriente") == 1 ///
+				| strpos(`vtg',"gasto de capital") == 1 | strpos(`vtg',"gasto de inversión") == 1 ///
+				| strpos(`vtg',"gasto de obra") == 1 | `vtg' == "participaciones" ///
+				| `vtg' == "pensiones y jubilaciones" | `vtg' == "cuotas issste" | `vtg' == "")
+			error 459
+		}
+	}
+
+
 	*******************
 	** 4.1 Pensiones **
 	// Pensiones contributivas
@@ -1055,8 +1168,9 @@ program define UpdatePEF
 
 	***************
 	** 4.2 Salud **
+	* Salud = finalidad 2 & funcion 3 (Clasificacion Funcional del Gasto, CONAC) *
 	replace divCIEP = "Salud" if divCIEP == "" ///
-		& (desc_funcion == 21 | ramo == 12 | ramo == 56)
+		& ((finalidad == 2 & funcion == 3) | ramo == 12 | ramo == 56)
 	replace divCIEP = "Salud" if divCIEP == "" ///
 		& (ramo == 50 | ramo == 51) & (pp == 4 | pp == 15 | pp == 8) & funcion == 8
 	replace divCIEP = "Salud" if divCIEP == "" ///
@@ -1071,9 +1185,10 @@ program define UpdatePEF
 
 	*****************
 	** 4.3 Energía **
+	* Combustibles y energía = finalidad 3 & funcion 3 (CONAC) *
 	replace divCIEP = "Energía" if divCIEP == "" ///
 		& (ramo == 18 | ramo == 45 | ramo == 46 | ramo == 52 | ramo == 53 ///
-		| (ramo == 23 & desc_funcion == 7))
+		| (ramo == 23 & finalidad == 3 & funcion == 3))
 
 	replace divSIM = "Energía" if divCIEP == "Energía"
 
@@ -1089,19 +1204,23 @@ program define UpdatePEF
 
 	*******************
 	** 4.5 Educación **
+	* Educación = finalidad 2 & funcion 5 (CONAC) *
 	replace divCIEP = "Educación" if divCIEP == "" ///
-		& (desc_funcion == 10 | ramo == 11 | ramo == 48 | ramo == 38)
+		& ((finalidad == 2 & funcion == 5) | ramo == 11 | ramo == 48 | ramo == 38)
 
 	replace divSIM = "Educación" if divCIEP == "Educación"
 
 
 	*************************************
 	** 4.6 Inversión e Infraestructura **
+	* Inversión = TIPOGASTO de capital/inversión/obra, por prefijo del texto  *
+	* normalizado (los codigos del encode derivan con cada categoria nueva;   *
+	* todo texto no reconocido lo detiene el verificador 4.0)                 *
 	replace divCIEP = "Otras inversiones" if divCIEP == "" ///
-		& (desc_tipogasto == 4 | desc_tipogasto == 5 | desc_tipogasto == 6 | desc_tipogasto == 7 | desc_tipogasto == 8)
+		& (strpos(`vtg',"gasto de capital") == 1 | strpos(`vtg',"gasto de inversión") == 1 | strpos(`vtg',"gasto de obra") == 1)
 
 	replace divSIM = "Inversión" ///
-		if (desc_tipogasto == 4 | desc_tipogasto == 5 | desc_tipogasto == 6 | desc_tipogasto == 7 | desc_tipogasto == 8)
+		if (strpos(`vtg',"gasto de capital") == 1 | strpos(`vtg',"gasto de inversión") == 1 | strpos(`vtg',"gasto de obra") == 1)
 
 
 	**********************
@@ -1119,11 +1238,11 @@ program define UpdatePEF
 	replace divCIEP = "Federalizado" if divCIEP == "" ///
 		& (objeto == 46101 & ramo == 23 & pp == 80)           // FEIEF
 	replace divCIEP = "Federalizado" if divCIEP == "" ///
-		& (ramo == 23 & pp == 4 & modalidad == "Y")           // FEIEF
+		& (ramo == 23 & pp == 4 & modalidad == "y")           // FEIEF (minusculas: limpieza 1.4)
 	replace divCIEP = "Federalizado" if divCIEP == "" ///
 		& (ramo == 23 & pp == 141)                            // FIES
 	replace divCIEP = "Federalizado" if divCIEP == "" ///
-		& (pp == 13 & (ramo == 12 | ramo == 47) & modalidad == "U") // INSABI/Seguro Popular/IMSS-Bienestar
+		& (pp == 13 & (ramo == 12 | ramo == 47) & modalidad == "u") // INSABI/Seguro Popular/IMSS-Bienestar
 
 	g divFEDE = "Participaciones" if (ramo == 28) // Part
 	replace divFEDE = "Aportaciones" if (ramo == 33 | ramo == 25)    // Aport
@@ -1131,10 +1250,10 @@ program define UpdatePEF
 	replace divFEDE = "Convenios" if (objeto == 85101)               // Convenios de reasignación
 	replace divFEDE = "Convenios" if (objeto == 43101 & ramo == 8 & pp == 263 & entidad != 34) // Convenios de reasignación
 	replace divFEDE = "Subsidios" if (objeto == 46101 & ramo == 23 & pp == 80) // FEIEF
-	replace divFEDE = "Subsidios" if (ramo == 23 & pp == 4 & modalidad == "Y") // FEIEF
+	replace divFEDE = "Subsidios" if (ramo == 23 & pp == 4 & modalidad == "y") // FEIEF
 	replace divFEDE = "Subsidios" if (ramo == 23 & pp == 141) // FIES
 	replace divFEDE = "Subsidios" if (ramo == 23 & objeto == 43801)
-	replace divFEDE = "Salud (federalizado)" if (pp == 13 & (ramo == 12 | ramo == 47) & modalidad == "U") // INSABI/Seguro Popular/IMSS-Bienestar
+	replace divFEDE = "Salud (federalizado)" if (pp == 13 & (ramo == 12 | ramo == 47) & modalidad == "u") // INSABI/Seguro Popular/IMSS-Bienestar
 
 
 	**********************************
@@ -1143,8 +1262,8 @@ program define UpdatePEF
 		| (ramo == 11 & pp == 66) ///
 		| (ramo == 20 & pp == 174) | (ramo == 51 & pp == 48) | (ramo == 50 & pp == 7) ///
 		| (ramo == 20 & pp == 241) ///
-		| (ramo == 12 & pp == 41) | (ramo == 20 & pp == 3 & ur == "V3A") | (ramo == 33 & pp == 6) ///
-		| (ramo == 4 & pp == 12  & ur == "V00") | (ramo == 51 & pp == 42) | (ramo == 12 & pp == 39) ///
+		| (ramo == 12 & pp == 41) | (ramo == 20 & pp == 3 & ur == "v3a") | (ramo == 33 & pp == 6) ///
+		| (ramo == 4 & pp == 12  & ur == "v00") | (ramo == 51 & pp == 42) | (ramo == 12 & pp == 39) ///
 		| (ramo == 12 & pp == 40) | (ramo == 11 & pp == 221) | (ramo == 25 & pp == 221) ///
 		| (ramo == 51 & subfuncion == 3 & anio <= 2019) | (ramo == 20 & pp == 12 & anio >= 2019 & anio <= 2022)
 

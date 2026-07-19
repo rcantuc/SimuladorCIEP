@@ -547,11 +547,11 @@ quietly {
 		tabstat tasaDependencia, stat(min max) save
 		forvalues k = 1(1)`=_N' {
 			if tasaDependencia[`k'] == r(StatTotal)[1,1] {
-				scalar aniotdmin = anio[`k']
+				escalar anio aniotdmin = anio[`k']
 				local aniotdmin = `k'
 			}
 			if tasaDependencia[`k'] == r(StatTotal)[2,1] {
-				scalar aniotdmax = anio[`k']
+				escalar anio aniotdmax = anio[`k']
 				local aniotdmax = `k'
 			}
 			if anio[`k'] == `anioinicial' {
