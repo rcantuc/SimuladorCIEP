@@ -1,10 +1,10 @@
 {
-  "version": "v8.1.0",
+  "version": "v8.2.0",
   "data_updated": "2026-07-19",
   "data_updated_regla": "Fecha de los DATOS precargados del sitio (la pinta el hero como 'Última actualización'). Se bumpea SOLO cuando se reprocesan los datos (nuevo Paquete Económico, nueva ENIGH) — NO en cada release de código, NO es la fecha de deploy.",
-  "release_tag": "v8.1.0",
-  "release_url_prefix": "https://github.com/rcantuc/SimuladorCIEP/releases/download/v8.1.0/",
-  "generated_at": "2026-07-19T08:55:00Z",
+  "release_tag": "v8.2.0",
+  "release_url_prefix": "https://github.com/rcantuc/SimuladorCIEP/releases/download/v8.2.0/",
+  "generated_at": "2026-07-19T18:20:00Z",
   "exclusion_rule": "Excluidos: archivos terminados en .xlsx_ (renombres truncados de Dropbox, no canónicos) y archivos .DS_Store (metadatos macOS, no datos).",
   "assets": [
     {

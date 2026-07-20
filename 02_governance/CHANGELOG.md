@@ -16,6 +16,80 @@ Formato de cada entrada:
 - **Datos:** cambios en fuentes, actualizaciones de PEFs, LIFs, ENIGH, u otras fuentes
 - **Correcciones:** bugs corregidos que afectaban resultados o funcionamiento
 
+## [v8.2.0] — 2026-07-19
+
+**Cambio de metodología del PC de salud: el denominador pasa de
+hogares-equivalentes a PERSONAS para mantener consistencia con los demás
+rubros del gasto.** Y unificación de los conteos de población del sitio: los
+19 `data-pop`/columnas quemados en el HTML migran a viajar por `output.txt`
+(bloques nuevos `GASTOSPOB1`/`GASTOSPOB2`).
+
+### Comandos
+- `GastoPC.ado`: conteos de PERSONAS para display/PC/web (matriz `SaludPer`,
+  ENIGH 2024 con el factor de perfiles ya proyectado a población CONAPO del
+  año PE — reescalado calculado en la corrida, no hardcodeado). Definiciones
+  documentadas en el código: SSA/Inversión/Total = población CONAPO
+  (coherente con Energía/Cultura); IMSS `inst_1`; ISSSTE `inst_2`;
+  Pemex/ISSFAM `inst_4` partido con el ancla administrativa 602513/1169476;
+  otros `inst_6`; IMSS-Bienestar = residuo sin seguridad social, con `inst_3`
+  (ISSSTE estatal, ~2.0M personas) DENTRO del residuo por continuidad
+  metodológica — candidato de refinamiento registrado en bitácora. La doble
+  afiliación declarada (0.7%) se cuenta en AMBAS instituciones, como en los
+  registros administrativos. Los `*Pob`/`*PC` de salud pasan a personas
+  (IMSS: 12,091,141 hogares-eq → 55,311,028 personas; PC 43,008 → 9,402);
+  los `*PIB` no cambian.
+- **Desacople de la incidencia**: la imputación por persona
+  (`Salud = Σ PC×benef_*`) conserva el cociente hogares-equivalentes como
+  tempname scalar interno (`*PCinc`, double exacto — un local stringifica y
+  mueve el último bit); `benef_*` INTACTOS. Guardián: Sankeys y deciles
+  byte-idénticos.
+- `01_modulos/output.do`: bloques `GASTOSPOB1`/`GASTOSPOB2` con los 42 conteos
+  (indexado espejo de `GASTOSPC`; en DOS bloques porque el linesize máximo de
+  Stata (255) partiría la línea con `> ` y `checkStataStatus.php` no maneja
+  continuaciones). Parser PHP genérico: cero cambios en PHP.
+- Display de `GastoPC`: header "Asegurados" → "Derechohabientes".
+- TODOs sembrados en las anclas administrativas sin fuente/corte documentados
+  (`602513/1169476` salud Pemex/ISSFAM; `110000/181290` pensiones Pemex).
+
+### Correcciones
+- **Bug vivo del botón ± de Salud**: el HTML traía conteos quemados grandes
+  (`data-pop`) mientras el PC publicado usaba denominador chico
+  (hogares-equivalentes): un click de +$1,000 en IMSS saltaba el gasto de
+  1.374% a ~6.4% del PIB. Con el PC por persona y `data-pop` del motor:
+  1.374% → 1.520% (Δ +0.146 pp), verificado con la aritmética exacta del
+  handler.
+- **Procedencia de los fósiles del sitio RECUPERADA**: los conteos quemados
+  (IMSS 55,311,028; IMSS-B 57,363,801; ISSSTE 7,171,893; Pemex 619,741;
+  ISSFAM 583,175) eran exactamente esta misma construcción — personas ENIGH
+  con el factor proyectado a CONAPO — y el motor nuevo los reproduce dígito
+  por dígito (ese era el test de la construcción). La clase de fósil HTML
+  muere: `poblarConteos()` en ambos JS sobreescribe la columna visible
+  (spans `.pob-value`) y los `data-pop` desde `GASTOSPOB` en cada carga y en
+  cada simulación; los números del HTML quedan como placeholder-snapshot con
+  guard para motores sin el bloque.
+- Sitio (ambos index): etiqueta "Asegurados"/"Insured" → "Derechohabientes
+  (ENIGH 2024)"/"Beneficiaries (ENIGH 2024)" con tooltip ("Estimación ENIGH
+  2024 ajustada a población CONAPO"); los 6 links de headers que apuntaban a
+  ENIGH 2022 → 2024; el JS inglés NO tenía el handler del ± (gap preexistente
+  del tablero) — portado idéntico al español.
+
+### Datos
+- Sin cambios de fuentes: misma ENIGH 2024 / CGPE 2026 (`data_updated`
+  intacto — cambia la metodología de un derivado, no los datos).
+
+Tests (todas las clases esperadas verificadas con harness batch old-vs-new,
+ids aislados `users/cbase820`/`users/cnew820`): (a) conteos y PC de salud
+según la tabla aprobada; (b) 5 `sankey-*.json` BYTE-IDÉNTICOS
+(incidencia/deciles intactos) y `output.txt` byte-idéntico salvo los 8 PC de
+salud de `GASTOSPC`; (c) par de `statalatex_gastopc` harness: SOLO los 16
+getters `*Pob/*PC` de salud cambian, `*PIBgpc` intactos — el `.tex` trackeado
+del libro (registro global-acumulado de la corrida textbook completa, ~4,400
+líneas vs 368 del harness) se refresca en la próxima corrida real del libro;
+(d) bloques `GASTOSPOB` bien formados (196/193 chars, 21+21 slots, cero
+elementos no numéricos) y digeridos por los parsers de
+`cargaDefault.php`/`checkStataStatus.php` simulados en PHP; (e) test del ±
+declarado y observado: 1.520% (Δ +0.146 pp).
+
 ## [v8.1.0] — 2026-07-19
 
 Reprocesamiento completo de PEF.dta (2013-2026) y rediseño de `UpdatePEF`:

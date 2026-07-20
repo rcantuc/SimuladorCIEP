@@ -133,6 +133,11 @@ quietly {
 	
 	g benef_pemex = gas_prom_SaluT if inst_4 == "4"
 	replace benef_pemex = 0 if benef_pemex == .
+	* TODO(Ricardo): ancla administrativa 602513/1169476 = derechohabientes
+	* Pemex / total inst_4 (Pemex+Defensa+Marina) para partir la afiliación
+	* ENIGH. FALTA documentar fuente y corte (¿anuario estadístico
+	* Pemex/ISSFAM, año?) antes de recalibrar. La misma ancla parte el
+	* conteo de personas en 4.5.1/4.6.1.
 	replace benef_pemex = benef_pemex*602513/1169476
 	
 	g benef_issfam = gas_prom_SaluT if inst_4 == "4"
@@ -158,12 +163,43 @@ quietly {
 	tempname Salud
 	matrix `Salud' = r(StatTotal)
 
+	** 2.2.1 Derechohabientes (personas) — v8.2.0 **
+	* Conteos de PERSONAS para display/PC/web (los benef_* de arriba son
+	* participaciones del gasto en salud del hogar y quedan SOLO como pesos
+	* de incidencia). El factor de perfiles ya está proyectado a la población
+	* CONAPO del año PE (reescalado ENIGH→CONAPO calculado en la corrida,
+	* no hardcodeado). La doble afiliación declarada (~0.7%) se cuenta en
+	* AMBAS instituciones, como en los registros administrativos.
+	* TODO(Ricardo): inst_3 (ISSSTE estatal, ~2.0M personas) queda DENTRO del
+	* residuo IMSS-Bienestar por continuidad metodológica — candidato de
+	* refinamiento registrado en bitácora (v8.2.0).
+	g der_imss = inst_1 == "1"
+	g der_issste = inst_2 == "2"
+	g der_pemdef = inst_4 == "4"
+	capture confirm variable inst_6
+	if _rc != 0 {
+		g der_otros = inst_5 == "5"
+	}
+	else {
+		g der_otros = inst_6 == "6"
+	}
+	g der_imssbien = der_imss == 0 & der_issste == 0 & der_pemdef == 0 & der_otros == 0
+
+	tabstat der_imss der_issste der_pemdef der_otros der_imssbien ///
+		[fw=factor], stat(sum) f(%20.0fc) save
+	tempname SaludPer
+	matrix `SaludPer' = r(StatTotal)
+	drop der_imss der_issste der_pemdef der_otros der_imssbien
+
 	** 2.3 Pensionados **
 	capture drop pens_*
 	g pens_pam = /*ing_PAM != 0 &*/ edad >= 65
 	g pens_imss = ing_jubila != 0 & formal == 1 & jubilado == 1
 	g pens_issste = ing_jubila != 0 & formal == 2 & jubilado == 1
 	g pens_pemex = ing_jubila != 0 & formal == 3 & jubilado == 1
+	* TODO(Ricardo): ancla administrativa 110000/181290 = pensionados Pemex /
+	* total pensionados con formal==3. FALTA documentar fuente y corte antes
+	* de recalibrar.
 		replace pens_pemex = pens_pemex*110000/181290
 	g pens_otro = ing_jubila != 0 & formal == 3 & jubilado == 1
 		replace pens_otro = pens_otro - pens_pemex
@@ -604,9 +640,17 @@ quietly {
 			}
 
 			* 4.1.1 Scalars *
-			escalar mxnpc imssbienPC = ((`imssbien')/`Salud'[1,7])/`deflator'
+			* v8.2.0: Pob/PC sobre PERSONAS (residuo sin seguridad social);
+			* el cociente hogares-equivalentes queda como tempname scalar
+			* *PCinc (double exacto, NO local: un local stringifica y mueve
+			* el último bit de la incidencia) SOLO para la imputación de
+			* incidencia — benef_* intactos. Se dropea tras su único uso
+			* para no contaminar scalarlatex.
+			escalar mxnpc imssbienPC = ((`imssbien')/`SaludPer'[1,5])/`deflator'
 			escalar pctpib imssbienPIB = (`imssbien')/`PIB'*100
-			escalar mxnpc imssbienPob = `Salud'[1,7]
+			escalar mxnpc imssbienPob = `SaludPer'[1,5]
+			tempname imssbienPCinc
+			scalar `imssbienPCinc' = ((`imssbien')/`Salud'[1,7])/`deflator'
 
 			* 4.1.2 Asignación de gasto en variable *
 			tempvar gas_pc_imssbien
@@ -618,7 +662,8 @@ quietly {
 			capture drop Salud
 			egen equivalenciasSalu = sum(gas_pc_Salu), by(folioviv foliohog)
 			egen tot_integ = count(factor), by(folioviv foliohog)
-			g Salud = scalar(imssbienPC)*benef_imssbien
+			g Salud = scalar(`imssbienPCinc')*benef_imssbien
+			scalar drop `imssbienPCinc'
 
 
 			** 4.2 Secretaría de Salud **
@@ -648,9 +693,13 @@ quietly {
 			}
 
 			* 4.2.1 Scalars *
-			escalar mxnpc ssaPC = (`ssa'/`Salud'[1,1])/`deflator'
+			* v8.2.0: SSa sobre población total (CONAPO del año PE, coherente
+			* con Energía/Cultura); incidencia con hogares-equivalentes.
+			escalar mxnpc ssaPC = (`ssa'/`pobenigh'[1,1])/`deflator'
 			escalar pctpib ssaPIB = (`ssa')/`PIB'*100
-			escalar mxnpc ssaPob = `Salud'[1,1]
+			escalar mxnpc ssaPob = `pobenigh'[1,1]
+			tempname ssaPCinc
+			scalar `ssaPCinc' = (`ssa'/`Salud'[1,1])/`deflator'
 
 			* 4.2.2 Asignación de gasto en variable *
 			tempvar gas_pc_ssa
@@ -658,7 +707,8 @@ quietly {
 			replace `gas_pc_ssa' = 0 if `gas_pc_ssa' == .
 			Distribucion ssa, relativo(`gas_pc_ssa') macro(`ssa')
 			replace ssa = 0 if ssa == .
-			replace Salud = Salud + scalar(ssaPC)*benef_ssa
+			replace Salud = Salud + scalar(`ssaPCinc')*benef_ssa
+			scalar drop `ssaPCinc'
 
 
 			** 4.3 IMSS (salud) **
@@ -674,9 +724,11 @@ quietly {
 			}
 
 			* 4.3.1 Scalars *
-			escalar mxnpc imssPC = (`imss'/`Salud'[1,2])/`deflator'
+			escalar mxnpc imssPC = (`imss'/`SaludPer'[1,1])/`deflator'
 			escalar pctpib imssPIB = (`imss')/`PIB'*100
-			escalar mxnpc imssPob = `Salud'[1,2]
+			escalar mxnpc imssPob = `SaludPer'[1,1]
+			tempname imssPCinc
+			scalar `imssPCinc' = (`imss'/`Salud'[1,2])/`deflator'
 
 			* 4.3.2 Asignación de gasto en variable *	
 			tempvar gas_pc_imss
@@ -684,7 +736,8 @@ quietly {
 			replace `gas_pc_imss' = 0 if `gas_pc_imss' == .
 			Distribucion imss, relativo(`gas_pc_imss') macro(`imss')
 			replace imss = 0 if imss == .
-			replace Salud = Salud + scalar(imssPC)*benef_imss
+			replace Salud = Salud + scalar(`imssPCinc')*benef_imss
+			scalar drop `imssPCinc'
 
 
 			** 4.4 ISSSTE Federal (salud) **
@@ -700,9 +753,11 @@ quietly {
 			}
 
 			* 4.4.1 Scalars *
-			escalar mxnpc issstePC = (`issste'/`Salud'[1,3])/`deflator'
+			escalar mxnpc issstePC = (`issste'/`SaludPer'[1,2])/`deflator'
 			escalar pctpib issstePIB = (`issste')/`PIB'*100
-			escalar mxnpc issstePob = `Salud'[1,3]
+			escalar mxnpc issstePob = `SaludPer'[1,2]
+			tempname issstePCinc
+			scalar `issstePCinc' = (`issste'/`Salud'[1,3])/`deflator'
 
 			* 4.4.2 Asignación de gasto en variable *	
 			tempvar gas_pc_issste
@@ -710,7 +765,8 @@ quietly {
 			replace `gas_pc_issste' = 0 if `gas_pc_issste' == .
 			Distribucion issste, relativo(`gas_pc_issste') macro(`issste')
 			replace issste = 0 if issste == .
-			replace Salud = Salud + scalar(issstePC)*benef_issste
+			replace Salud = Salud + scalar(`issstePCinc')*benef_issste
+			scalar drop `issstePCinc'
 
 
 			** 4.5 Pemex (salud) **
@@ -726,9 +782,13 @@ quietly {
 			}
 
 			* 4.5.1 Scalars *
-			escalar mxnpc pemexPC = (`pemex'/`Salud'[1,4])/`deflator'
+			* Ancla administrativa 602513/1169476: ver TODO en 2.2 (benef_pemex).
+			local pemexPer = `SaludPer'[1,3]*602513/1169476
+			escalar mxnpc pemexPC = (`pemex'/`pemexPer')/`deflator'
 			escalar pctpib pemexPIB = (`pemex')/`PIB'*100
-			escalar mxnpc pemexPob = `Salud'[1,4]
+			escalar mxnpc pemexPob = `pemexPer'
+			tempname pemexPCinc
+			scalar `pemexPCinc' = (`pemex'/`Salud'[1,4])/`deflator'
 
 			* 4.5.2 Asignación de gasto en variable *	
 			tempvar gas_pc_pemex
@@ -736,7 +796,8 @@ quietly {
 			replace `gas_pc_pemex' = 0 if `gas_pc_pemex' == .
 			Distribucion pemex, relativo(`gas_pc_pemex') macro(`pemex')
 			replace pemex = 0 if pemex == .
-			replace Salud = Salud + scalar(pemexPC)*benef_pemex
+			replace Salud = Salud + scalar(`pemexPCinc')*benef_pemex
+			scalar drop `pemexPCinc'
 
 			
 			** 4.6 ISSFAM (salud) **
@@ -752,9 +813,12 @@ quietly {
 			}
 
 			* 4.6.1 Scalars *
-			escalar mxnpc issfamPC = (`issfam'/`Salud'[1,5])/`deflator'
+			local issfamPer = `SaludPer'[1,3] - `pemexPer'
+			escalar mxnpc issfamPC = (`issfam'/`issfamPer')/`deflator'
 			escalar pctpib issfamPIB = (`issfam')/`PIB'*100
-			escalar mxnpc issfamPob = `Salud'[1,5]
+			escalar mxnpc issfamPob = `issfamPer'
+			tempname issfamPCinc
+			scalar `issfamPCinc' = (`issfam'/`Salud'[1,5])/`deflator'
 
 			* 4.6.2 Asignación de gasto en variable *	
 			tempvar gas_pc_issfam
@@ -763,7 +827,8 @@ quietly {
 			Distribucion issfam, relativo(`gas_pc_issfam') macro(`issfam')
 			replace issfam = 0 if issfam == .
 
-			replace Salud = Salud + scalar(issfamPC)*benef_issfam
+			replace Salud = Salud + scalar(`issfamPCinc')*benef_issfam
+			scalar drop `issfamPCinc'
 
 
 			** 4.7 Inversión en salud **
@@ -779,9 +844,11 @@ quietly {
 			}
 
 			* 4.7.1 Scalars *
-			escalar mxnpc inversPC = (`invers'/`Salud'[1,1])/`deflator'
+			escalar mxnpc inversPC = (`invers'/`pobenigh'[1,1])/`deflator'
 			escalar pctpib inversPIB = (`invers')/`PIB'*100
-			escalar mxnpc inversPob = `Salud'[1,1]
+			escalar mxnpc inversPob = `pobenigh'[1,1]
+			tempname inversPCinc
+			scalar `inversPCinc' = (`invers'/`Salud'[1,1])/`deflator'
 
 			* 4.7.2 Asignación de gasto en variable *
 			tempvar gas_pc_invers
@@ -789,19 +856,20 @@ quietly {
 			replace `gas_pc_invers' = 0 if `gas_pc_invers' == .
 			Distribucion invers, relativo(`gas_pc_invers') macro(`invers')
 			replace invers = 0 if invers == .
-			replace Salud = Salud + scalar(inversPC)*benef_invers
+			replace Salud = Salud + scalar(`inversPCinc')*benef_invers
+			scalar drop `inversPCinc'
 
 
 			** 4.8 Total SALUD **
 			escalar pctpib saludPIB = scalar(ssaPIB)+scalar(imssbienPIB)+scalar(imssPIB)+scalar(issstePIB)+scalar(pemexPIB)+scalar(issfamPIB)+scalar(inversPIB)
-			escalar mxnpc saludPC = (scalar(saludPIB)/100*`PIB'/`Salud'[1,1])/`deflator'
-			escalar mxnpc saludPob = `Salud'[1,1]
+			escalar mxnpc saludPC = (scalar(saludPIB)/100*`PIB'/`pobenigh'[1,1])/`deflator'
+			escalar mxnpc saludPob = `pobenigh'[1,1]
 
 
 			** 4.9 Resultados **
 			noisily di _newline(2) in g "{bf: B. Salud CIEP}"
 			noisily di _newline in g "{bf:  Gasto por instituci{c o'}n" ///
-				_col(32) %15.0fc in g "Asegurados" ///
+				_col(32) %15.0fc in g "Derechohabientes" ///
 				_col(49) %7.3f "% PIB" ///
 				_col(59) %10s in g "PC (MXN `aniovp')" "}"
 			noisily di in g _dup(71) "-"

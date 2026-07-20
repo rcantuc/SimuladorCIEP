@@ -159,6 +159,61 @@ noisily di in w "GASTOSPC: ["  ///
 	%8.0f scalar(transfPC) /// Total Transferencias 41
 "]"
 
+* GASTOSPOB (v8.2.0): conteos de población/beneficiarios del motor para la
+* columna visible y los data-pop de los botones ± del sitio — mismo indexado
+* que GASTOSPC (0-41; 37/38 = 0, relleno de los checkboxes de ingreso básico).
+* Va en DOS bloques porque el linesize máximo de Stata (255) parte una línea
+* de 42 conteos con "> " y checkStataStatus.php NO maneja continuaciones
+* (cargaDefault.php sí). Formato %12.0f SIN coma: el parser separa por comas.
+* El JS reconstruye: POB = GASTOSPOB1.concat(GASTOSPOB2).
+noisily di in w "GASTOSPOB1: ["  ///
+	%12.0f scalar(iniciaAPob) "," /// Educación inicial 0
+	%12.0f scalar(basicaPob) "," /// Educación básica 1
+	%12.0f scalar(medsupPob) "," /// Educación media superior 2
+	%12.0f scalar(superiPob) "," /// Educación superior 3
+	%12.0f scalar(posgraPob) "," /// Educación Posgrado 4
+	%12.0f scalar(eduaduPob) "," /// Educación para adultos 5
+	%12.0f scalar(otrosePob) "," /// Otros gastos educativos 6
+	%12.0f scalar(inverePob) "," /// Inversión educativa 7
+	%12.0f scalar(culturPob) "," /// Cultura 8
+	%12.0f scalar(investPob) "," /// Inversión en ciencia y tecnología 9
+	%12.0f scalar(EducacPob) "," /// Total Educación 10
+	%12.0f scalar(ssaPob) "," /// Secretaría de Salud 11
+	%12.0f scalar(imssbienPob) "," /// IMSS-Bienestar 12
+	%12.0f scalar(imssPob) "," /// IMSS 13
+	%12.0f scalar(issstePob) "," /// ISSSTE 14
+	%12.0f scalar(pemexPob) "," /// Pemex 15
+	%12.0f scalar(issfamPob) "," /// ISSFAM 16
+	%12.0f scalar(inversPob) "," /// Inversión en salud 17
+	%12.0f scalar(saludPob) "," /// Total Salud 18
+	%12.0f scalar(pamPob) "," /// Pensión Bienestar 19
+	%12.0f scalar(penimssPob) /// Pensión IMSS 20
+"]"
+
+noisily di in w "GASTOSPOB2: ["  ///
+	%12.0f scalar(penisssPob) "," /// Pensión ISSSTE 21
+	%12.0f scalar(penpemePob) "," /// Pensión Pemex 22
+	%12.0f scalar(penotroPob) "," /// Pensión CFE, LFC, ISSFAM, Otros 23
+	%12.0f scalar(pensionPob) "," /// Total Pensiones 24
+	%12.0f scalar(gascfePob) "," /// Gasto en CFE 25
+	%12.0f scalar(gaspemexPob) "," /// Gasto en Pemex 26
+	%12.0f scalar(gassenerPob) "," /// Gasto en SENER 27
+	%12.0f scalar(gasinverfPob) "," /// Gasto en Inversión (energía) 28
+	%12.0f scalar(gascosdeuePob) "," /// Gasto en Costo de la deuda (energía) 29
+	%12.0f scalar(gasenergiaPob) "," /// Total Energía 30
+	%12.0f scalar(gasinfraPob) "," /// Gasto en Inversión 31
+	%12.0f scalar(gasotrosPob) "," /// Otros gastos 32
+	%12.0f scalar(gasfederPob) "," /// Participaciones y aportaciones 33
+	%12.0f scalar(gascostoPob) "," /// Gasto en costo de la deuda 34
+	%12.0f scalar(otrosgasPob) "," /// Total Otros gastos 35
+	%12.0f scalar(IngBasPob) "," /// Ingreso Básico 36
+	%12.0f 0 "," /// Relleno (checkbox "menores de 18 años" en GASTOSPC) 37
+	%12.0f 0 "," /// Relleno (checkbox "mayores de 65 años" en GASTOSPC) 38
+	%12.0f scalar(gasmadresPob) "," /// Apoyo a madres trabajadoras 39
+	%12.0f scalar(gascuidadosPob) "," /// Gasto en cuidados 40
+	%12.0f scalar(transfPob) /// Total Transferencias 41
+"]"
+
 noisily di in w "ISRTASA: [" ///
 	%10.2f ISR[1,4] "," ///
 	%10.2f ISR[2,4] "," ///
