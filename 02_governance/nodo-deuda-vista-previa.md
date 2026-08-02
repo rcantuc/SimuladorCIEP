@@ -14,8 +14,18 @@ código.
 | Exportador | `scalarjson.ado` | **versionado** |
 | Driver del nodo | `01_modulos/nodos/nodo-deuda.do` | **versionado** |
 | Página (fuente) | `01_modulos/nodos/nodo-deuda.html` | **versionado** |
+| Driver de la portada | `01_modulos/nodos/portada.do` | **versionado** |
+| Portada (fuente) | `01_modulos/nodos/portada.html` | **versionado** |
 | Contrato | `04_1_paqueteeconomico.ciep.mx/public_html/nodos/statajson_deuda-publica.json` | generado, ignorado |
 | Página (copia servible) | `04_1_paqueteeconomico.ciep.mx/public_html/nodos/nodo-deuda.html` | generado, ignorado |
+| Contrato de la portada | `04_1_paqueteeconomico.ciep.mx/public_html/nodos/statajson_portada.json` | generado, ignorado |
+| Portada (copia servible) | `04_1_paqueteeconomico.ciep.mx/public_html/nodos/index.html` | generado, ignorado |
+
+La portada (`/nodos/`) presenta la ecuación fundamental — gasto = ingresos +
+financiamiento, cifras del motor vía su propio contrato
+`ciep.nodo.portada/v1` — y el término Financiamiento enlaza al nodo de deuda.
+Su driver corre LIF y PEF y deriva los tres totales; verificación:
+`bash 05_scripts/verify_nodo.sh portada`.
 
 Es el mismo estatus que los `statalatex_*.tex` de `06_libro/images`: se
 versiona lo que **produce** el artefacto, no el artefacto. La copia de la

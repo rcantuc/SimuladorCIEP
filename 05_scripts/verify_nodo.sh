@@ -10,6 +10,9 @@
 #
 # USO:
 #   bash 05_scripts/verify_nodo.sh [nodo]        (por defecto: deuda-publica)
+#   bash 05_scripts/verify_nodo.sh portada       (la portada: esquema ciep.nodo.portada/v1;
+#                                                 reglas 4/5 sustituidas por cierre exacto
+#                                                 y declaraciones por término)
 #   bash 05_scripts/verify_nodo.sh --sin-stata   (salta la regla 3)
 #
 # EXIT CODES:
@@ -67,7 +70,21 @@ fi
 # y este script te lo dice en vez de fallar de forma críptica.
 NODOS_DIR="04_1_paqueteeconomico.ciep.mx/public_html/nodos"
 JSON="${NODOS_DIR}/statajson_${NODO}.json"
-PAGINA="01_modulos/nodos/nodo-deuda.html"
+# Cada nodo declara su página fuente y su driver. La portada (esquema
+# ciep.nodo.portada/v1, sin serie anual) sustituye las reglas 4/5 por sus
+# equivalentes: cierre exacto de la ecuación y unidades declaradas.
+case "$NODO" in
+	portada)
+		PAGINA="01_modulos/nodos/portada.html"
+		DRIVER="01_modulos/nodos/portada.do"
+		ESQUEMA="portada"
+		;;
+	*)
+		PAGINA="01_modulos/nodos/nodo-deuda.html"
+		DRIVER="01_modulos/nodos/nodo-deuda.do"
+		ESQUEMA="serie"
+		;;
+esac
 
 FALLAS=0
 ok()   { printf '  \033[0;32m[OK]\033[0m    %s\n' "$1"; }
@@ -83,7 +100,7 @@ if [ ! -f "$JSON" ]; then
 	echo "verify_nodo: no existe $JSON" >&2
 	echo "  Es una SALIDA generada, no vive en git (${NODOS_DIR}/ está ignorada)." >&2
 	echo "  Prodúcela corriendo el driver en Stata:" >&2
-	echo "    do \"\$(pwd)/01_modulos/nodos/nodo-deuda.do\"" >&2
+	echo "    do \"\$(pwd)/${DRIVER}\"" >&2
 	exit 2
 fi
 if [ ! -f "$PAGINA" ]; then echo "verify_nodo: no existe la fuente $PAGINA" >&2; exit 2; fi
@@ -120,15 +137,20 @@ fi
 echo
 echo "REGLA 2 — procedencia completa en el JSON"
 # =============================================================================
-SALIDA=$("$PY" - "$JSON" <<'PYEOF'
+SALIDA=$("$PY" - "$JSON" "$ESQUEMA" <<'PYEOF'
 import json, sys
 d = json.load(open(sys.argv[1], encoding='utf-8'))
+esquema = sys.argv[2]
 p = d.get('procedencia', {})
-req = ['version_simulador','corte_datos','corte_serie','log','origen','dataset_serie','generado_en']
+if esquema == 'portada':
+    req = ['version_simulador','corte_datos','log','origen','generado_en']
+else:
+    req = ['version_simulador','corte_datos','corte_serie','log','origen','dataset_serie','generado_en']
 faltan = [k for k in req if k not in p]
 vacios = [k for k in req if k in p and p[k] in ('', None)]
-sub = p.get('corte_serie', {})
-faltan += ['corte_serie.'+k for k in ('anio','mes','etiqueta') if k not in sub]
+if esquema != 'portada':
+    sub = p.get('corte_serie', {})
+    faltan += ['corte_serie.'+k for k in ('anio','mes','etiqueta') if k not in sub]
 # `log` puede venir vacío SOLO si está declarado en faltantes.
 declarados = set(d.get('faltantes', []))
 vacios = [k for k in vacios if ('procedencia.'+k) not in declarados]
@@ -139,7 +161,7 @@ PYEOF
 F2=$(echo "$SALIDA" | sed -n 's/^FALTAN=//p')
 V2=$(echo "$SALIDA" | sed -n 's/^VACIOS_NO_DECLARADOS=//p')
 if [ -z "$F2" ] && [ -z "$V2" ]; then
-	ok "los siete campos de procedencia presentes (vacíos solo si están declarados como faltantes)"
+	ok "los campos de procedencia del esquema presentes (vacíos solo si están declarados como faltantes)"
 else
 	[ -n "$F2" ] && fail "campos de procedencia ausentes: $F2"
 	[ -n "$V2" ] && fail "campos de procedencia vacíos y NO declarados en faltantes: $V2"
@@ -167,6 +189,10 @@ elif [ -z "$STATA" ]; then
 else
 	TMP=$(mktemp -d)
 	REPO="$PWD"
+	# Prep por nodo: deuda necesita SHRFSP en memoria; la portada corre LIF
+	# y PEF DENTRO de su driver, así que no lleva prep.
+	PREP='quietly SHRFSP'
+	if [ "$ESQUEMA" = "portada" ]; then PREP=''; fi
 	cat > "$TMP/det.do" <<EOF
 sysdir set SITE "$REPO"
 adopath ++ "$REPO"
@@ -174,11 +200,11 @@ cd "$REPO"
 run "$REPO/profile.do"
 global nographs "nographs"
 global textbook ""
-quietly SHRFSP
+$PREP
 global nodo_saving "$TMP/a.json"
-quietly do "$REPO/01_modulos/nodos/nodo-deuda.do"
+quietly do "$REPO/$DRIVER"
 global nodo_saving "$TMP/b.json"
-quietly do "$REPO/01_modulos/nodos/nodo-deuda.do"
+quietly do "$REPO/$DRIVER"
 global nodo_saving ""
 EOF
 	( cd "$TMP" && "$STATA" -b do "$TMP/det.do" >/dev/null 2>&1 )
@@ -202,8 +228,40 @@ fi
 
 # =============================================================================
 echo
+if [ "$ESQUEMA" = "portada" ]; then
+echo "REGLA 4 (portada) — la ecuación cierra y la referencia declara su brecha"
+# La portada no tiene serie anual: su equivalente estructural es el CIERRE.
+# gasto - ingresos - financiamiento == 0 POR CONSTRUCCIÓN en el motor (el
+# driver deriva financiamiento como resta). En el JSON los % del PIB viajan
+# con 12 dígitos significativos (los agregados de LIF/PEF no son
+# bit-estables; ver el emisor _pjpib del driver), así que el cierre emitido
+# vale hasta 1e-9. Los MONTOS son enteros exactos: su cierre es cero o nada.
+SALIDA=$("$PY" - "$JSON" <<'PYEOF'
+import json, sys
+d = json.load(open(sys.argv[1], encoding='utf-8'))
+t = d['ecuacion']['terminos']
+errs = []
+cierre = t['gasto']['pib'] - t['ingresos']['pib'] - t['financiamiento']['pib']
+if abs(cierre) > 1e-9: errs.append('cierre_pib=' + repr(cierre))
+cierrem = t['gasto']['monto'] - t['ingresos']['monto'] - t['financiamiento']['monto']
+if cierrem != 0: errs.append('cierre_monto=' + repr(cierrem))
+ref = t['financiamiento'].get('referencia_lif')
+if not ref or 'brecha_pib' not in ref: errs.append('referencia_lif.brecha_pib ausente')
+si = sum(f['pib'] for f in d['desagregaciones']['ingresos'])
+if abs(si - t['ingresos']['pib']) > 1e-9: errs.append('suma_ingresos!=' + repr(si))
+sg = sum(f['pib'] for f in d['desagregaciones']['gasto'])
+if abs(sg - t['gasto']['pib']) > 1e-9: errs.append('suma_gasto!=' + repr(sg))
+print('ERRS=' + ';'.join(errs))
+PYEOF
+)
+E4=$(echo "$SALIDA" | sed -n 's/^ERRS=//p')
+if [ -z "$E4" ]; then
+	ok "cierre exacto (pib y monto), sumas de desagregaciones cuadran, brecha LIF declarada"
+else
+	fail "la ecuación no cierra o las sumas no cuadran: $E4"
+fi
+else
 echo "REGLA 4 — sin huecos de año no declarados"
-# =============================================================================
 SALIDA=$("$PY" - "$JSON" <<'PYEOF'
 import json, sys
 d = json.load(open(sys.argv[1], encoding='utf-8'))
@@ -230,11 +288,40 @@ else
 	[ -n "$D4" ] && fail "años declarados como faltantes que sí están: $D4"
 	[ -n "$C4" ] && fail "el bloque cobertura no cuadra con las filas: $C4"
 fi
+fi
 
 # =============================================================================
 echo
+if [ "$ESQUEMA" = "portada" ]; then
+echo "REGLA 5 (portada) — términos, desagregaciones y capas declaran unidad y procedencia"
+SALIDA=$("$PY" - "$JSON" <<'PYEOF'
+import json, sys
+d = json.load(open(sys.argv[1], encoding='utf-8'))
+errs = []
+E = d['ecuacion']
+for k in ('unidad_pib','unidad_monto','formato_pib','formato_pib_detalle','formato_monto','regla'):
+    if not E.get(k): errs.append('ecuacion.'+k)
+for k, t in E['terminos'].items():
+    if not t.get('fuente'): errs.append('terminos.%s.fuente' % k)
+for lado in ('ingresos','gasto'):
+    for f in d['desagregaciones'][lado]:
+        if not (f.get('escalar') or f.get('retorno')):
+            errs.append('desagregaciones.%s.%s sin escalar/retorno' % (lado, f.get('etiqueta')))
+for c in d.get('capas_declaradas', []):
+    if not c.get('unidad'): errs.append('capa.%s.unidad' % c.get('id'))
+    pr = c.get('procedencia', {})
+    if not pr.get('definida_en'): errs.append('capa.%s.definida_en' % c.get('id'))
+print('ERRS=' + ';'.join(errs))
+PYEOF
+)
+E5=$(echo "$SALIDA" | sed -n 's/^ERRS=//p')
+if [ -z "$E5" ]; then
+	ok "unidades, formatos, fuentes por término y procedencia de capas presentes"
+else
+	fail "declaraciones ausentes: $E5"
+fi
+else
 echo "REGLA 5 — toda serie declara su unidad"
-# =============================================================================
 SALIDA=$("$PY" - "$JSON" <<'PYEOF'
 import json, sys
 d = json.load(open(sys.argv[1], encoding='utf-8'))
@@ -260,6 +347,7 @@ else
 	[ -n "$E5" ]  && fail "series sin entrada en unidades: $E5"
 	[ -n "$T5" ]  && fail "series con unidad vacía y no declarada: $T5"
 	[ -n "$FM5" ] && fail "series sin formato sugerido y no declarado: $FM5"
+fi
 fi
 
 # =============================================================================

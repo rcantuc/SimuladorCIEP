@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paquete Económico — CIEP</title>
+<style>
+/* ---------------------------------------------------------------------------
+   Portada del Paquete: la ecuación fundamental, en el lenguaje ultra-austero
+   aprobado para el nodo (título, la pieza central, una línea personal y el
+   sello; costura y procedencia plegadas; cero texto suelto).
+
+   Referencia CONCEPTUAL: la sección "La ecuación fundamental" de
+   libro.ciep.mx (tres términos con jerarquía visual y operadores entre
+   ellos). Se re-implementa al estilo nodo: aquí los términos LLEVAN el
+   número del motor y cada uno se desagrega al pasar el cursor (hover) o
+   tocarlo (tap). El término Financiamiento enlaza al nodo de deuda.
+
+   Todo valor numérico viene de statajson_portada.json (y la línea personal,
+   de statajson_deuda-publica.json, el contrato del nodo). Las únicas cifras
+   de este archivo son geometría y tipografía, dentro de <style>:
+   05_scripts/verify_nodo.sh exime este bloque y truena ante cualquier
+   literal numérico de cuatro dígitos o con decimales fuera de él.
+--------------------------------------------------------------------------- */
+:root {
+  color-scheme: light;
+  --paper:  #fbfbf9;
+  --panel:  #ffffff;
+  --rule:   #d9d7ce;
+  --rule-strong: #8a8880;
+  --ink:    #14140f;
+  --ink-2:  #55534b;
+  --ink-3:  #86847a;
+  --accent: #2a78d6;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --paper:  #131311;
+    --panel:  #1b1b18;
+    --rule:   #34342f;
+    --rule-strong: #6f6d64;
+    --ink:    #f4f3ec;
+    --ink-2:  #b9b7ac;
+    --ink-3:  #85837a;
+    --accent: #3987e5;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--paper); color: var(--ink);
+  font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+main { max-width: 58rem; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+
+.titulo {
+  display: flex; align-items: center; gap: .8rem;
+  margin: 0 0 .3rem; font-size: 1.15rem; letter-spacing: .04em;
+  text-transform: uppercase; font-weight: 700;
+}
+.titulo::before, .titulo::after {
+  content: ""; flex: 1 1 auto; height: 0;
+  border-top: 2px dotted var(--rule);
+}
+.corte { text-align: center; color: var(--ink-2); font-size: .95rem; margin: 0 0 2.2rem; }
+.corte b { color: var(--ink); }
+
+/* --- la ecuación --- */
+.ecuacion {
+  display: flex; align-items: stretch; justify-content: center;
+  gap: .6rem; flex-wrap: wrap; margin: 0 0 .4rem;
+}
+.termino {
+  flex: 0 1 15rem; min-width: 11rem;
+  background: var(--panel); border: 1px solid var(--rule); border-radius: 10px;
+  padding: .9rem 1rem .8rem; text-align: center; cursor: pointer;
+  border-bottom: 3px solid var(--rule);
+}
+.termino:hover, .termino.abierto { border-bottom-color: var(--accent); }
+.termino .nombre {
+  font-size: .8rem; letter-spacing: .07em; text-transform: uppercase;
+  color: var(--ink-2); font-weight: 600;
+}
+.termino .cifra {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 2.3rem; font-weight: 700; line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+.termino a { color: inherit; text-decoration: none; }
+.operador {
+  align-self: center; font-size: 1.9rem; font-weight: 700; color: var(--ink-3);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+/* --- panel de desagregación (hover/tap) --- */
+.panel {
+  max-width: 34rem; margin: 1rem auto 0;
+  background: var(--panel); border: 1px solid var(--rule); border-radius: 10px;
+  padding: .8rem 1rem;
+}
+.panel[hidden] { display: none; }
+table.desglose {
+  border-collapse: collapse; width: 100%;
+  font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1;
+}
+table.desglose td { padding: .22rem .4rem; white-space: nowrap; }
+td.pref {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color: var(--ink-3); width: 2.2rem; padding-right: 0;
+}
+td.concepto { text-align: left; color: var(--ink-2); width: 100%; }
+td.num {
+  text-align: right;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: .93rem; color: var(--ink);
+}
+tr.total td { font-weight: 700; border-top: 1px solid var(--rule); }
+tr.total td.concepto, tr.total td.pref { color: var(--ink); }
+.panel .liga { margin: .5rem 0 0; font-size: .9rem; }
+.panel .liga a { color: var(--accent); }
+.panel .capa-linea { margin: .45rem 0 0; font-size: .85rem; color: var(--ink-3); }
+.panel .capa-linea .val {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-weight: 700; color: var(--ink-2);
+}
+
+/* --- la línea personal --- */
+.personal {
+  text-align: center; margin: 2.2rem 0 0; font-size: .95rem; color: var(--ink-2);
+}
+.personal input {
+  width: 5.2rem; padding: .25rem .4rem; border: 1px solid var(--rule);
+  border-radius: 6px; background: var(--panel); color: var(--ink);
+  font: inherit; font-variant-numeric: tabular-nums; text-align: center;
+}
+.personal .resp { display: block; margin-top: .35rem; min-height: 1.4rem; }
+.personal .val {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-weight: 700; color: var(--ink);
+}
+.personal .pend { color: var(--ink-3); font-style: italic; }
+
+/* --- costura plegada --- */
+details.costura { margin: 1.6rem 0 0; font-size: .85rem; color: var(--ink-3); text-align: center; }
+details.costura summary { cursor: pointer; list-style: none; display: inline-block; }
+details.costura summary::-webkit-details-marker { display: none; }
+details.costura summary::before { content: "▸ "; }
+details.costura[open] summary::before { content: "▾ "; }
+details.costura .cuerpo {
+  margin-top: .5rem; padding: .7rem .9rem; text-align: left;
+  background: var(--panel); border: 1px solid var(--rule); border-radius: 8px;
+  color: var(--ink-2); font-size: .88rem;
+}
+.pend { color: var(--ink-3); font-style: italic; }
+
+footer {
+  margin-top: 2.6rem; padding-top: .9rem; border-top: 1px solid var(--rule);
+  font-size: .85rem; color: var(--ink-3);
+}
+footer a, details.costura a { color: var(--accent); }
+.nota { font-size: .9rem; color: var(--ink-2); }
+.err { background: var(--panel); border: 1px solid var(--rule); border-radius: 8px; padding: 1rem; }
+@media (max-width: 40rem) {
+  .termino .cifra { font-size: 1.7rem; }
+  .operador { font-size: 1.4rem; }
+}
+</style>
+</head>
+<body>
+<main>
+
+  <h1 class="titulo" id="titulo">Paquete Económico</h1>
+  <p class="corte" id="corte">Cargando el contrato de la portada…</p>
+
+  <noscript>
+    <div class="err">
+      <p><b>Esta página no trae ninguna cifra escrita.</b> Todos sus números
+      salen de <code>statajson_portada.json</code>, producido por el Simulador
+      Fiscal CIEP. Para verlos hace falta JavaScript, o abre el
+      <a href="statajson_portada.json">contrato JSON</a> directo.</p>
+    </div>
+  </noscript>
+
+  <div class="ecuacion" id="ecuacion" hidden>
+    <div class="termino" id="t-gasto" data-panel="p-gasto">
+      <div class="nombre" id="n-gasto"></div>
+      <div class="cifra" id="v-gasto"></div>
+    </div>
+    <div class="operador">=</div>
+    <div class="termino" id="t-ingresos" data-panel="p-ingresos">
+      <div class="nombre" id="n-ingresos"></div>
+      <div class="cifra" id="v-ingresos"></div>
+    </div>
+    <div class="operador">+</div>
+    <div class="termino" id="t-financiamiento" data-panel="p-financiamiento">
+      <div class="nombre" id="n-financiamiento"></div>
+      <div class="cifra" id="v-financiamiento"></div>
+    </div>
+  </div>
+
+  <div class="panel" id="p-gasto" hidden></div>
+  <div class="panel" id="p-ingresos" hidden></div>
+  <div class="panel" id="p-financiamiento" hidden></div>
+
+  <p class="personal" id="personal" hidden>
+    <label id="personal-label" for="anio-nac"></label>
+    <input id="anio-nac" inputmode="numeric" autocomplete="off">
+    <span class="resp" id="personal-resp"></span>
+  </p>
+
+  <details class="costura" id="costura" hidden>
+    <summary id="costura-linea"></summary>
+    <div class="cuerpo" id="costura-cuerpo"></div>
+  </details>
+
+  <footer id="sello">
+    <p id="sello-txt"></p>
+    <p id="faltantes-txt"></p>
+  </footer>
+
+</main>
+
+<script>
+/* ===========================================================================
+   portada.html — lector del contrato ciep.nodo.portada/v1
+   La ecuación fundamental con los números del motor; cada término se
+   desagrega con hover (desktop) o tap (móvil); Financiamiento enlaza al
+   nodo de deuda, cuyo contrato alimenta la línea personal.
+   Esta página NO CALCULA y NO CONTIENE CIFRAS.
+   =========================================================================== */
+
+const RUTA = 'statajson_portada.json';
+let D = null;      /* contrato de la portada */
+let DN = null;     /* contrato del nodo de deuda (línea personal) */
+
+function fmt(v, spec) {
+  if (v === null || v === undefined) return '—';
+  const m = /%\d*\.(\d+)f(c?)/.exec(spec || '');
+  const dec = m ? parseInt(m[1], 10) : 0;
+  const mil = m ? m[2] === 'c' : true;
+  return v.toLocaleString('es-MX', {
+    minimumFractionDigits: dec, maximumFractionDigits: dec, useGrouping: mil
+  });
+}
+
+/* ===================== la ecuación ===================== */
+function renderEcuacion() {
+  const E = D.ecuacion;
+  ['gasto', 'ingresos', 'financiamiento'].forEach(k => {
+    const t = E.terminos[k];
+    document.getElementById('n-' + k).textContent = t.etiqueta;
+    document.getElementById('v-' + k).textContent = fmt(t.pib, E.formato_pib);
+  });
+  document.getElementById('ecuacion').hidden = false;
+}
+
+function tablaDesglose(filas, total, E) {
+  let h = '<table class="desglose">';
+  filas.forEach(f => {
+    h += '<tr><td class="pref">(+)</td><td class="concepto">' + f.etiqueta
+      + '</td><td class="num">' + fmt(f.pib, E.formato_pib_detalle) + '</td></tr>';
+  });
+  h += '<tr class="total"><td class="pref">(=)</td><td class="concepto">'
+    + total.etiqueta + '</td><td class="num">'
+    + fmt(total.pib, E.formato_pib_detalle) + '</td></tr>';
+  return h + '</table>';
+}
+
+function renderPaneles() {
+  const E = D.ecuacion;
+  document.getElementById('p-ingresos').innerHTML =
+    tablaDesglose(D.desagregaciones.ingresos, E.terminos.ingresos, E);
+  document.getElementById('p-gasto').innerHTML =
+    tablaDesglose(D.desagregaciones.gasto, E.terminos.gasto, E);
+
+  /* Financiamiento: el cierre, su referencia LIF declarada, la capa CGPE
+     y la liga al nodo. */
+  const F = E.terminos.financiamiento;
+  let h = '<table class="desglose">';
+  h += '<tr class="total"><td class="pref">(=)</td><td class="concepto">'
+    + F.etiqueta + '</td><td class="num">' + fmt(F.pib, E.formato_pib_detalle)
+    + '</td></tr>';
+  if (F.referencia_lif) {
+    h += '<tr><td class="pref"></td><td class="concepto">' + F.referencia_lif.escalar
+      + '</td><td class="num">' + fmt(F.referencia_lif.pib, E.formato_pib_detalle) + '</td></tr>';
+  }
+  h += '</table>';
+  D.capas_declaradas.forEach(c => {
+    h += '<p class="capa-linea">' + c.etiqueta + ' — ';
+    if (c.disponible) {
+      h += '<span class="val">' + fmt(c.valores.rfsp, E.formato_pib) + '</span> ' + c.unidad;
+    } else {
+      h += '<span class="pend">sin cifra en este corte</span>';
+    }
+    h += '</p>';
+  });
+  h += '<p class="liga"><a href="' + D.nodo_deuda.href + '">Ver el nodo de deuda →</a></p>';
+  document.getElementById('p-financiamiento').innerHTML = h;
+}
+
+/* hover en desktop, tap en móvil: mismo mecanismo (pointer events) */
+function conectarPaneles() {
+  const terminos = document.querySelectorAll('.termino');
+  function abrir(id) {
+    document.querySelectorAll('.panel').forEach(p => { p.hidden = (p.id !== id); });
+    terminos.forEach(t => t.classList.toggle('abierto', t.dataset.panel === id));
+  }
+  terminos.forEach(t => {
+    t.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') abrir(t.dataset.panel); });
+    t.addEventListener('click', () => {
+      const p = document.getElementById(t.dataset.panel);
+      if (p.hidden) abrir(t.dataset.panel);
+      else { p.hidden = true; t.classList.remove('abierto'); }
+    });
+  });
+}
+
+/* ===================== la línea personal (contrato del nodo) ===================== */
+function renderPersonal() {
+  if (!DN) return;
+  const anios = DN.series.map(f => f.anio);
+  const amin = Math.min.apply(null, anios);
+  const amax = Math.max.apply(null, anios);
+  const P = document.getElementById('personal');
+  document.getElementById('personal-label').textContent =
+    'Tu año de nacimiento:';
+  const inp = document.getElementById('anio-nac');
+  const resp = document.getElementById('personal-resp');
+  const meta = (DN.unidades && DN.unidades.saldo_pc_real) || {};
+  const uPC = meta.unidad || '';
+  const fPC = meta.formato_sugerido || '';
+  function contesta() {
+    const y = parseInt(inp.value, 10);
+    resp.textContent = '';
+    if (!inp.value) return;
+    if (isNaN(y)) return;
+    if (y < amin || y > amax) {
+      resp.innerHTML = '<span class="pend">La serie en pesos del contrato inicia en '
+        + amin + ' y corre hasta ' + amax + '; fuera de ese rango no se inventa nada.</span>';
+      return;
+    }
+    const f0 = DN.series.find(f => f.anio === y);
+    const f1 = DN.series.find(f => f.anio === amax);
+    resp.innerHTML = 'Deuda por persona: <span class="val">$' + fmt(f0.saldo_pc_real, fPC)
+      + '</span> en ' + y + ' → <span class="val">$' + fmt(f1.saldo_pc_real, fPC)
+      + '</span> en ' + amax + ' <span class="pend">(' + uPC + ')</span>';
+  }
+  inp.addEventListener('input', contesta);
+  P.hidden = false;
+}
+
+/* ===================== costura plegada ===================== */
+function renderCostura() {
+  const det = document.getElementById('costura');
+  const linea = document.getElementById('costura-linea');
+  const cuerpo = document.getElementById('costura-cuerpo');
+  const E = D.ecuacion;
+  const vivas = D.capas_declaradas.filter(c => c.disponible);
+  linea.textContent = vivas.length
+    ? vivas[0].etiqueta + ': ' + fmt(vivas[0].valores.rfsp, E.formato_pib)
+      + ' ' + vivas[0].unidad + ' · capas y procedencia'
+    : 'Capas declaradas y procedencia';
+
+  let h = '';
+  D.capas_declaradas.forEach(c => {
+    h += '<p><b>' + c.etiqueta + '</b> — ';
+    if (c.disponible) {
+      h += 'RFSP <span class="val">' + fmt(c.valores.rfsp, E.formato_pib) + '</span>'
+        + ' · ingresos <span class="val">' + fmt(c.valores.ingresos, E.formato_pib) + '</span>'
+        + ' · gasto <span class="val">' + fmt(c.valores.gasto, E.formato_pib) + '</span>'
+        + ' ' + c.unidad;
+    } else {
+      h += '<span class="pend">sin cifra en este corte</span>';
+    }
+    h += '<br><span class="nota">' + c.procedencia.origen + ' · '
+      + c.procedencia.definida_en + '</span></p>';
+  });
+  ['gasto', 'ingresos', 'financiamiento'].forEach(k => {
+    const t = E.terminos[k];
+    h += '<p><b>' + t.etiqueta + '</b> — ' + t.fuente;
+    if (t.referencia_lif) {
+      h += ' · ' + t.referencia_lif.nota + ' Brecha: '
+        + fmt(t.referencia_lif.brecha_pib, E.formato_pib_detalle) + ' ' + E.unidad_pib + '.';
+    }
+    h += '</p>';
+  });
+  cuerpo.innerHTML = h;
+  det.hidden = false;
+}
+
+/* ===================== sello ===================== */
+function renderSello() {
+  const p = D.procedencia;
+  document.getElementById('sello-txt').innerHTML =
+    'Producido con Simulador Fiscal CIEP <b>' + p.version_simulador
+    + '</b> · corte de datos <b>' + p.corte_datos + '</b> · '
+    + (p.log ? 'log: ' + p.log : '<span class="pend">log no declarado en este corte</span>')
+    + ' · <a href="' + RUTA + '">contrato JSON</a>'
+    + ' · <a href="' + D.nodo_deuda.contrato + '">contrato del nodo de deuda</a>'
+    + '<br><span class="nota">Exportación sellada ' + p.generado_en
+    + ' · ' + p.origen + '</span>';
+  document.getElementById('faltantes-txt').textContent = D.faltantes.length
+    ? 'Campos que este corte declara faltantes (' + D.faltantes.length + '): '
+      + D.faltantes.join(', ') + '.'
+    : 'Este corte no declara faltantes.';
+}
+
+/* ===================== arranque ===================== */
+function arranque(d) {
+  D = d;
+  document.getElementById('titulo').textContent = D.titulo + ' ' + D.anio_referencia;
+  document.getElementById('corte').innerHTML =
+    'La ecuación fundamental · <b>' + D.ecuacion.unidad_pib + '</b>';
+  renderEcuacion();
+  renderPaneles();
+  conectarPaneles();
+  renderCostura();
+  renderSello();
+}
+
+fetch(RUTA)
+  .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+  .then(arranque)
+  .catch(e => {
+    document.getElementById('corte').innerHTML =
+      '<span class="err">No se pudo leer <code>' + RUTA + '</code> (' + e.message
+      + '). Esta página no trae cifras propias: sin el contrato no hay nada que '
+      + 'mostrar. Sírvela desde su carpeta de render bajo el docroot del Paquete '
+      + '(ver 02_governance/nodo-deuda-vista-previa.md).</span>';
+  });
+
+/* La línea personal se alimenta del contrato del NODO; si no está, la línea
+   simplemente no aparece (la portada no la inventa). */
+fetch('statajson_deuda-publica.json')
+  .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+  .then(d => { DN = d; renderPersonal(); })
+  .catch(() => {});
+</script>
+</body>
+</html>
