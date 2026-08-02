@@ -6,12 +6,16 @@
 * calcula algo, y calcula exactamente dos cosas: saldo_pc_nominal y
 * saldo_real.
 *
-* DÓNDE VIVE CADA COSA (decisión de Ricardo, 2026-08-01)
+* DÓNDE VIVE CADA COSA (decisión de Ricardo, 2026-08-01; destino movido al
+* docroot del Paquete el 2026-08-02 — cierre de 04_3_nodos/)
 *   FUENTE (versionada, aquí):  01_modulos/nodos/nodo-deuda.do
 *                               01_modulos/nodos/nodo-deuda.html
-*   SALIDA (ignorada, generada): 04_3_nodos/statajson_<nodo>.json
-*                                04_3_nodos/nodo-deuda.html  (copia servible)
-* 04_3_nodos/ está en .gitignore junto a las demás carpetas de operación
+*   SALIDA (ignorada, generada):
+*     04_1_paqueteeconomico.ciep.mx/public_html/nodos/statajson_<nodo>.json
+*     04_1_paqueteeconomico.ciep.mx/public_html/nodos/nodo-deuda.html  (copia servible)
+* El destino vive BAJO EL DOCROOT del WordPress local del Paquete (patrón
+* 6yt5ppa3hb: estáticos servidos junto al sitio, jamás dentro de Elementor)
+* y está en .gitignore junto a las demás carpetas de operación
 * local: es un destino de render desechable, reconstruible con una corrida —
 * exactamente el mismo estatus que los statalatex_*.tex de 06_libro/images,
 * que tampoco se versionan. Lo que se versiona es lo que los PRODUCE.
@@ -52,6 +56,17 @@ preserve
 
 local site `"`c(sysdir_site)'"'
 local piso = 2000
+
+* La etiqueta de moneda del encabezado del display es una VARIABLE del
+* dataset en memoria, no un escalar, así que hay que tomarla ANTES del use
+* de abajo. Se lee de la ÚLTIMA observación, no de la primera: en el dataset
+* ya mergeado de SHRFSP la fila 1 es 1990 y no casó con PIBDeflactor, así
+* que currency[1] viene VACÍA (39 de 42 obs la traen; la última siempre).
+* SHRFSP.ado:47 usa currency[1] y funciona sólo porque ahí todavía está
+* cargado el dataset del PIB, antes del merge.
+* Si el driver corre solo (sin SHRFSP previo) queda vacía y se declara.
+local moneda ""
+capture local moneda = currency[_N]
 
 *** 1 AÑO DE REFERENCIA ***
 capture confirm scalar aniovp
@@ -127,17 +142,35 @@ quietly input str16 bloque str32 clave str200 texto
 "fuente" "saldo_nominal"     "SHCP, Estadísticas Oportunas de Finanzas Públicas (datos abiertos), serie SHRF5000, vía DatosAbiertos.ado"
 "fuente" "poblacion"         "CONAPO, proyecciones 1950-2070 (pry23), vía Poblacion.ado; master/Poblaciontot.dta"
 "fuente" "indice_precios"    "INEGI/BIE serie 910392 (INPC), vía AccesoBIE; master/Deflactor.dta"
-"fuente" "saldo_real"        "Derivada en 04_3_nodos/nodo-deuda.do: saldo_nominal / indice_precios"
-"fuente" "saldo_pc_nominal"  "Derivada en 04_3_nodos/nodo-deuda.do: saldo_nominal / poblacion"
+"fuente" "saldo_real"        "Derivada en 01_modulos/nodos/nodo-deuda.do: saldo_nominal / indice_precios"
+"fuente" "saldo_pc_nominal"  "Derivada en 01_modulos/nodos/nodo-deuda.do: saldo_nominal / poblacion"
 "fuente" "saldo_pc_real"     "master/SHRFSP.dta, variable monto_pc (DatosAbiertos.ado:105)"
 "fuente" "saldo_pib"         "master/SHRFSP.dta, variable monto_pib (DatosAbiertos.ado:112)"
 "criterio" "denominador_pib"      "PIB anual = promedio de los cuatro trimestres de pibQ (INEGI/BIE serie 734407), DatosAbiertos.ado:112. No es el PIB proyectado del escenario."
 "criterio" "poblacion_denominador" "Población total a mitad de año, CONAPO. No lleva el factor lambda de productividad que SHRFSP.ado aplica a sus escalares."
 "criterio" "deflactor"            "INPC mensual, base = último mes disponible de la serie. No es el deflactor implícito del PIB que usa el escenario."
+"presentacion" "titulo_display"   "Sistema Fiscal: DEUDA"
+"presentacion" "moneda"           ""
+"presentacion" "escala_monto"     "Pesos completos, tal como los imprime el display. NO aplicar divisor_sugerido: el catálogo marca 1e6 porque el libro cita millones, el display no."
+"presentacion" "col_monto"        ""
+"presentacion" "col_pib"          "% PIB"
+"presentacion" "col_portot"       "% Tot"
+"presentacion" "col_pc"           "Per cápita"
+"presentacion" "fmt_monto"        "%20.0fc"
+"presentacion" "fmt_pib"          "%7.3f"
+"presentacion" "fmt_portot"       "%7.1f"
+"presentacion" "fmt_pc"           "%9.0fc"
+"presentacion" "pct_tot_1"        "% del RFSP"
+"presentacion" "pct_tot_2"        "% del SHRFSP"
+"presentacion" "pct_tot_3"        "% del SHRFSP"
+"presentacion" "pct_tot_4"        "% del SHRFSP"
+"presentacion" "pct_tot_5"        "% del costo financiero"
+"presentacion" "nota_pct_tot"     "En los bloques de deuda bruta el denominador es el SHRFSP, no la deuda bruta: por eso esas filas pasan de 100%."
 end
 quietly replace texto = "índice INPC, base = último mes de la serie (`nommes' `corteanio' = 1)" if bloque == "unidad" & clave == "indice_precios"
 quietly replace texto = "MXN constantes de `nommes' de `corteanio' por persona" if bloque == "unidad" & clave == "saldo_pc_real"
 quietly replace texto = "MXN constantes de `nommes' de `corteanio'" if bloque == "unidad" & clave == "saldo_real"
+quietly replace texto = "`moneda'" if bloque == "presentacion" & inlist(clave, "moneda", "col_monto")
 tempfile meta
 quietly save `"`meta'"'
 
@@ -165,13 +198,63 @@ quietly replace definida_en = "SIM.do:362 (matrix shrfsp) -> global shrfsp`anior
 tempfile capas
 quietly save `"`capas'"'
 
-*** 5 EXPORTACIÓN ***
+*** 5 LA TABLA DEL DISPLAY ***
+* Espejo EXACTO de lo que SHRFSP.ado imprime (blueprint aprobado): mismo
+* orden de bloques, mismas filas, mismos prefijos, negritas en (=) y (*).
+* Vive en el contrato y no en la página para que la tabla del sitio no
+* pueda divergir en silencio de la que se ve en Stata. Las celdas
+* tautológicas (RFSPPorTot, SHRFSPPorTot, CostoFinancieroPorTot = 100 por
+* construcción) se conservan: el display ES la especificación.
+* DeudaBruta aparece dos veces a propósito — bloques 3 y 4 son dos
+* descomposiciones del mismo total.
+clear
+quietly input byte bloque str40 etiqueta str4 prefijo str24 familia str8 enfasis
+1 "Balance presupuestario"     "(+)" "rfspBalance"       "false"
+1 "PIDIREGAS"                  "(+)" "rfspPIDIREGAS"     "false"
+1 "IPAB"                       "(+)" "rfspIPAB"          "false"
+1 "FONADIN"                    "(+)" "rfspFONADIN"       "false"
+1 "Programa de Deudores"       "(+)" "rfspDeudores"      "false"
+1 "Banca de Desarrollo"        "(+)" "rfspBanca"         "false"
+1 "Adecuaciones"               "(+)" "rfspAdecuaciones"  "false"
+1 "RFSP"                       "(=)" "RFSP"              "true"
+2 "SHRFSP Interna"             "(+)" "SHRFSPInterno"     "false"
+2 "SHRFSP Externa"             "(+)" "SHRFSPExterno"     "false"
+2 "SHRFSP"                     "(=)" "SHRFSP"            "true"
+3 "Deuda Gobierno federal"     "(+)" "DeudaGobFed"       "false"
+3 "Deuda OyE"                  "(+)" "DeudaOyE"          "false"
+3 "Deuda Banca de desarrollo"  "(+)" "DeudaBanca"        "false"
+3 "Deuda bruta"                "(=)" "DeudaBruta"        "true"
+4 "Deuda corto plazo"          "(+)" "DeudaCP"           "false"
+4 "Deuda largo plazo"          "(+)" "DeudaLP"           "false"
+4 "Deuda bruta"                "(=)" "DeudaBruta"        "true"
+5 "Costo financiero"           "(*)" "CostoFinanciero"   "true"
+end
+tempfile tabla
+quietly save `"`tabla'"'
+
+* Los 72 escalares salen de la MISMA tabla: contrato y display no pueden
+* desincronizarse porque no hay dos listas que mantener.
+levelsof familia, local(fams) clean
+local esclist ""
+foreach f of local fams {
+	foreach c in Monto PIB PorTot PC {
+		local esclist `"`esclist' `f'`c'"'
+	}
+}
+
+*** 6 EXPORTACIÓN ***
 * Override de destino para 05_scripts/verify_nodo.sh (regla 3): la prueba de
 * determinismo exporta dos veces a un temporal y NO puede pisar el contrato
-* versionado. Vacío = destino normal (04_3_nodos/statajson_<nodo>.json).
+* versionado. Vacío = destino normal
+* (04_1_paqueteeconomico.ciep.mx/public_html/nodos/statajson_<nodo>.json).
 local saveopt ""
 if `"$nodo_saving"' != "" {
 	local saveopt saving(`"$nodo_saving"')
+}
+else {
+	* scalarjson escribe con file open y no crea carpetas: el destino
+	* bajo el docroot debe existir ANTES de exportar.
+	capture mkdir `"`site'/04_1_paqueteeconomico.ciep.mx/public_html/nodos"'
 }
 
 scalarjson, nodo("deuda-publica") ///
@@ -183,21 +266,21 @@ scalarjson, nodo("deuda-publica") ///
 	cortemes(`cortemes') ///
 	cortetexto(`"`cortetexto'"') ///
 	serie(`"`serie'"') ///
-	origenserie("master/SHRFSP.dta via 04_3_nodos/nodo-deuda.do") ///
+	origenserie("master/SHRFSP.dta via 01_modulos/nodos/nodo-deuda.do") ///
 	metadatos(`"`meta'"') ///
 	capas(`"`capas'"') ///
-	escalares("SHRFSPMonto SHRFSPPIB SHRFSPPC SHRFSPInternoPIB SHRFSPExternoPIB DeudaBrutaPIB DeudaBrutaMonto CostoFinancieroPIB CostoFinancieroMonto") ///
+	tabla(`"`tabla'"') ///
+	escalares(`"`esclist'"') ///
 	`saveopt'
 
-*** 6 DESTINO SERVIBLE ***
+*** 7 DESTINO SERVIBLE ***
 * La página lee el JSON por ruta relativa, así que ambos tienen que quedar
 * en la misma carpeta. La fuente vive versionada en 01_modulos/nodos/; aquí
 * se deja la copia de render junto a su contrato. Se salta cuando el destino
 * fue redirigido (prueba de determinismo del verificador).
 if `"$nodo_saving"' == "" {
-	capture mkdir `"`site'/04_3_nodos"'
 	capture copy `"`site'/01_modulos/nodos/nodo-deuda.html"' ///
-		`"`site'/04_3_nodos/nodo-deuda.html"', replace
+		`"`site'/04_1_paqueteeconomico.ciep.mx/public_html/nodos/nodo-deuda.html"', replace
 	if _rc {
 		noisily di in g "nodo-deuda: no se pudo copiar la página al destino de render."
 	}

@@ -6,193 +6,155 @@
 <title>Deuda pública — Nodo CIEP</title>
 <style>
 /* ---------------------------------------------------------------------------
-   Todo valor numerico de esta pagina viene del JSON. Las unicas cifras que
-   viven aqui son geometria y tipografia, y por eso viven DENTRO de <style>:
+   La página espeja la tabla que SHRFSP.ado imprime en Stata: mismo orden de
+   bloques, mismas filas, mismos prefijos, mismas reglas. La estructura viaja
+   en el contrato (clave "tabla"), no aquí, para que no puedan divergir.
+
+   Todo valor numérico viene del JSON. Las únicas cifras que viven en este
+   archivo son geometría y tipografía, y por eso viven DENTRO de <style>:
    05_scripts/verify_nodo.sh exime este bloque y truena ante cualquier
-   literal numerico de cuatro digitos o con decimales fuera de el.
-   Paleta: slot categorico 1 (azul), validada en ambos modos contra su
-   superficie (validate_palette.js: los cinco checks en PASS).
+   literal numérico de cuatro dígitos o con decimales fuera de él.
+
+   Lenguaje visual: el display de Stata es tabular y monoespaciado; aquí se
+   conserva el ESPÍRITU (cifras alineadas por dígito, reglas horizontales que
+   separan bloques, prefijos (+)/(=)/(*) como columna propia) sobre papel
+   claro, no verde-sobre-negro.
 --------------------------------------------------------------------------- */
 :root {
   color-scheme: light;
-  --surface-0: #ffffff;
-  --surface-1: #fcfcfb;
-  --surface-2: #f2f2ef;
-  --border:    #dedcd5;
-  --text-primary:   #0b0b0b;
-  --text-secondary: #52514e;
-  --text-muted:     #7a7873;
-  --series-1: #2a78d6;
-  --grid: #e6e5df;
+  --paper:  #fbfbf9;
+  --panel:  #ffffff;
+  --rule:   #d9d7ce;
+  --rule-strong: #8a8880;
+  --ink:    #14140f;
+  --ink-2:  #55534b;
+  --ink-3:  #86847a;
+  --accent: #2a78d6;
 }
 @media (prefers-color-scheme: dark) {
   :root:where(:not([data-theme="light"])) {
     color-scheme: dark;
-    --surface-0: #121211;
-    --surface-1: #1a1a19;
-    --surface-2: #242422;
-    --border:    #3a3a37;
-    --text-primary:   #ffffff;
-    --text-secondary: #c3c2b7;
-    --text-muted:     #94938a;
-    --series-1: #3987e5;
-    --grid: #2e2e2b;
+    --paper:  #131311;
+    --panel:  #1b1b18;
+    --rule:   #34342f;
+    --rule-strong: #6f6d64;
+    --ink:    #f4f3ec;
+    --ink-2:  #b9b7ac;
+    --ink-3:  #85837a;
+    --accent: #3987e5;
   }
 }
 * { box-sizing: border-box; }
 body {
-  margin: 0;
-  background: var(--surface-0);
-  color: var(--text-primary);
-  font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  margin: 0; background: var(--paper); color: var(--ink);
+  font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
-main { max-width: 46rem; margin: 0 auto; padding: 1.25rem 1rem 4rem; }
-h1 { font-size: 1.6rem; line-height: 1.2; margin: 0 0 .25rem; }
-h2 { font-size: 1.1rem; margin: 2.25rem 0 .5rem; padding-top: 1.1rem; border-top: 1px solid var(--border); }
-h3 { font-size: .95rem; margin: 1.1rem 0 .35rem; color: var(--text-secondary); }
-p  { margin: .5rem 0; }
-.sub { color: var(--text-secondary); margin: 0 0 1rem; }
-.card {
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: .9rem 1rem;
-  margin: .75rem 0;
+main { max-width: 54rem; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+
+/* --- cabecera --- */
+.titulo {
+  display: flex; align-items: center; gap: .8rem;
+  margin: 0 0 .3rem; font-size: 1.15rem; letter-spacing: .04em;
+  text-transform: uppercase; font-weight: 700;
 }
-.hero { font-size: 1.35rem; line-height: 1.35; }
-.hero .val { font-weight: 700; color: var(--text-primary); white-space: nowrap; }
-label { display: block; font-size: .9rem; color: var(--text-secondary); margin-bottom: .3rem; }
-input[type=number] {
-  font: inherit; padding: .45rem .6rem; width: 8rem;
-  border: 1px solid var(--border); border-radius: 8px;
-  background: var(--surface-0); color: var(--text-primary);
+.titulo::before, .titulo::after {
+  content: ""; flex: 1 1 auto; height: 0;
+  border-top: 2px dotted var(--rule);
 }
-.controls { display: flex; flex-wrap: wrap; gap: .4rem; margin: .5rem 0 .25rem; }
-.controls button {
-  font: inherit; font-size: .88rem; padding: .4rem .7rem; cursor: pointer;
-  border: 1px solid var(--border); border-radius: 999px;
-  background: var(--surface-0); color: var(--text-secondary);
+.corte { text-align: center; color: var(--ink-2); font-size: .95rem; margin: 0 0 1.4rem; }
+.corte b { color: var(--ink); }
+
+/* --- la tabla --- */
+.tabla-wrap { overflow-x: auto; }
+table.display {
+  border-collapse: collapse; width: 100%; min-width: 34rem;
+  font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1;
 }
-.controls button[aria-pressed=true] {
-  background: var(--series-1); border-color: var(--series-1); color: #ffffff;
+table.display th, table.display td { padding: .28rem .5rem; white-space: nowrap; }
+table.display thead th {
+  font-size: .78rem; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--ink-3); font-weight: 600; text-align: right;
+  border-bottom: 1px solid var(--rule-strong); padding-bottom: .45rem;
 }
-.eleccion { font-size: .9rem; color: var(--text-secondary); margin: .35rem 0 0; }
-.eleccion b { color: var(--text-primary); }
-figure { margin: .75rem 0 0; }
-figcaption { font-size: .85rem; color: var(--text-muted); margin-top: .4rem; }
-.chartwrap { position: relative; overflow-x: auto; }
-svg { display: block; width: 100%; height: auto; touch-action: pan-y; }
-.grid line { stroke: var(--grid); stroke-width: 1; }
-.axis text { fill: var(--text-muted); font-size: 11px; }
-.line { fill: none; stroke: var(--series-1); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
-.dot { fill: var(--series-1); stroke: var(--surface-1); stroke-width: 2; }
-.crosshair { stroke: var(--text-muted); stroke-width: 1; stroke-dasharray: 3 3; }
-.endlabel { fill: var(--text-primary); font-size: 12px; font-weight: 600; }
-.tip {
-  position: absolute; pointer-events: none; z-index: 2;
-  background: var(--surface-0); border: 1px solid var(--border);
-  border-radius: 8px; padding: .35rem .55rem; font-size: .85rem;
-  color: var(--text-primary); box-shadow: 0 2px 8px rgba(0,0,0,.12);
-  white-space: nowrap; transform: translate(-50%, -120%);
+table.display thead th.concepto { text-align: left; }
+td.pref {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color: var(--ink-3); width: 2.6rem; padding-right: 0;
 }
-table { border-collapse: collapse; width: 100%; font-size: .88rem; }
-th, td { text-align: right; padding: .3rem .45rem; border-bottom: 1px solid var(--border); }
-th:first-child, td:first-child { text-align: left; }
-thead th { color: var(--text-secondary); font-weight: 600; }
-details { margin: .6rem 0; }
-summary { cursor: pointer; color: var(--text-secondary); font-size: .9rem; }
-dl { margin: .4rem 0; }
-dt { font-weight: 600; font-size: .9rem; margin-top: .6rem; }
-dd { margin: .15rem 0 0; color: var(--text-secondary); font-size: .92rem; }
-.pend { color: var(--text-muted); font-style: italic; }
-.nota { font-size: .9rem; color: var(--text-secondary); }
-.capa { border-left: 3px solid var(--border); padding-left: .7rem; margin: .7rem 0; }
-.capa.viva { border-left-color: var(--series-1); }
+td.concepto { text-align: left; color: var(--ink-2); }
+td.num {
+  text-align: right;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: .93rem; color: var(--ink);
+}
+tr.total td { font-weight: 700; }
+tr.total td.concepto, tr.total td.pref { color: var(--ink); }
+tr.rule-min td { border-top: 1px solid var(--rule); padding-top: 0; height: .35rem; }
+tr.rule-max td { border-top: 3px double var(--rule-strong); padding-top: 0; height: .55rem; }
+td.nota-bloque {
+  font-size: .76rem; color: var(--ink-3); text-align: right;
+  padding-top: 0; padding-bottom: .5rem; font-style: italic;
+}
+
+/* --- secciones --- */
+h2 {
+  font-size: .95rem; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--ink-2); margin: 2.4rem 0 .6rem;
+  padding-bottom: .35rem; border-bottom: 1px solid var(--rule);
+}
+p { margin: .5rem 0; }
+.nota { font-size: .9rem; color: var(--ink-2); }
+.pend { color: var(--ink-3); font-style: italic; }
+.capa {
+  background: var(--panel); border: 1px solid var(--rule);
+  border-left: 3px solid var(--rule); border-radius: 8px;
+  padding: .7rem .9rem; margin: .6rem 0;
+}
+.capa.viva { border-left-color: var(--accent); }
+.capa .val {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-weight: 700; font-variant-numeric: tabular-nums;
+}
+dl { margin: .3rem 0; }
+dt { font-weight: 600; font-size: .88rem; margin-top: .7rem; color: var(--ink); }
+dd { margin: .1rem 0 0; color: var(--ink-2); font-size: .9rem; }
 footer {
-  margin-top: 2.5rem; padding-top: 1rem; border-top: 1px solid var(--border);
-  font-size: .85rem; color: var(--text-muted);
+  margin-top: 2.6rem; padding-top: .9rem; border-top: 1px solid var(--rule);
+  font-size: .85rem; color: var(--ink-3);
 }
-footer a, .nota a { color: var(--series-1); }
-.err { background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; }
+footer a, .nota a { color: var(--accent); }
+.err {
+  background: var(--panel); border: 1px solid var(--rule);
+  border-radius: 8px; padding: 1rem;
+}
+@media (max-width: 34rem) {
+  table.display th, table.display td { padding: .26rem .35rem; }
+  td.num { font-size: .84rem; }
+}
 </style>
 </head>
 <body>
 <main>
 
-  <h1 id="titulo">Deuda pública</h1>
-  <p class="sub" id="subtitulo">Cargando el contrato del nodo…</p>
+  <h1 class="titulo" id="titulo">Deuda pública</h1>
+  <p class="corte" id="corte">Cargando el contrato del nodo…</p>
 
   <noscript>
     <div class="err">
-      <p><b>Esta página no trae ninguna cifra escrita.</b> Todos los números
-      salen del archivo <code>statajson_deuda-publica.json</code>, que produce
-      el Simulador Fiscal CIEP directamente desde Stata. Para verlos hace falta
-      JavaScript.</p>
-      <p>Sin JavaScript puedes leer el contrato completo —serie, unidades,
-      fuentes, criterios de conciliación y sello— abriendo el JSON:
+      <p><b>Esta página no trae ninguna cifra escrita.</b> Reproduce la tabla
+      que el módulo <code>SHRFSP</code> imprime en Stata, y todos sus números
+      salen de <code>statajson_deuda-publica.json</code>, producido por el
+      Simulador Fiscal CIEP. Para verlos hace falta JavaScript.</p>
+      <p>Sin JavaScript puedes leer el contrato completo —la tabla, la serie,
+      unidades, fuentes, criterios de conciliación y sello— abriendo el JSON:
       <a href="statajson_deuda-publica.json">statajson_deuda-publica.json</a>.
       Es el mismo dato, sin intermediario.</p>
     </div>
   </noscript>
 
-  <!-- ============ 1. Entrada personal ============ -->
-  <section id="s-personal" hidden>
-    <div class="card">
-      <label for="anio-nac">¿En qué año naciste?</label>
-      <input type="number" id="anio-nac" inputmode="numeric" placeholder="año">
-      <p class="hero" id="personal-out"></p>
-      <p class="nota" id="personal-nota"></p>
-    </div>
-  </section>
+  <div class="tabla-wrap"><table class="display" id="tabla"></table></div>
+  <p class="nota" id="nota-tabla"></p>
 
-  <!-- ============ 2. Unidad ============ -->
-  <section id="s-unidad" hidden>
-    <h2>¿En qué unidad?</h2>
-    <p class="nota">La elección cambia todos los números de esta página. No hay
-    una unidad “neutral”: cada una responde una pregunta distinta.</p>
-    <div class="controls" id="ctl-unidad" role="group" aria-label="Unidad"></div>
-    <p class="eleccion" id="unidad-eleccion"></p>
-  </section>
-
-  <!-- ============ 3. Evolución ============ -->
-  <section id="s-evolucion" hidden>
-    <h2>Evolución</h2>
-    <div class="controls" id="ctl-medida" role="group" aria-label="Medida"></div>
-    <figure>
-      <div class="chartwrap" id="chartwrap"></div>
-      <figcaption id="chart-cap"></figcaption>
-    </figure>
-    <details>
-      <summary>Ver la serie como tabla</summary>
-      <div id="tabla"></div>
-    </details>
-  </section>
-
-  <!-- ============ 4. Incidencia ============ -->
-  <section id="s-incidencia" hidden>
-    <h2>Incidencia</h2>
-    <p><b>No aplica a esta medida.</b> La incidencia responde a quién le toca
-    qué, por decil de ingreso. Un saldo de deuda no se distribuye por decil: es
-    un acervo del sector público, no un flujo que llegue a los hogares. El
-    número por persona que ves arriba es una división aritmética entre la
-    población total —un promedio, no un reparto—, y no dice que a cada quien le
-    corresponda pagar esa cantidad.</p>
-    <p class="nota">Lo que sí tiene incidencia es el <i>costo financiero</i>
-    (el gasto anual en intereses), porque compite con el resto del presupuesto.
-    Ese es otro nodo.</p>
-  </section>
-
-  <!-- ============ 5. Implicaciones ============ -->
-  <section id="s-implicaciones" hidden>
-    <h2>Implicaciones</h2>
-    <p id="impl-texto"></p>
-    <p class="nota">Este corte muestra la serie observada. La proyección
-    interactiva —qué pasa con el saldo bajo distintos supuestos— es un corte
-    posterior; hoy lo único que se declara sobre el futuro es la capa de
-    escenario de abajo, que no es del CIEP sino del Paquete Económico.</p>
-  </section>
-
-  <!-- ============ 6. Capas declaradas ============ -->
   <section id="s-capas" hidden>
     <h2>Qué no está incluido</h2>
     <p class="nota">La medida titular tiene un perímetro. Estas capas quedan
@@ -200,22 +162,14 @@ footer a, .nota a { color: var(--series-1); }
     <div id="capas"></div>
   </section>
 
-  <!-- ============ 7. Conciliación ============ -->
   <section id="s-conciliacion" hidden>
     <h2>Conciliación</h2>
     <p class="nota">Los siete criterios que hacen comparable —o no— esta cifra
     con otra que hayas leído en otro lado. Los que aparecen como pendientes no
-    están resueltos todavía: el motor no los declara y esta página no los
-    inventa.</p>
+    están resueltos: el motor no los declara y esta página no los inventa.</p>
     <dl id="criterios"></dl>
-    <h3>Fuentes por serie</h3>
+    <h2>Fuentes</h2>
     <dl id="fuentes"></dl>
-  </section>
-
-  <!-- ============ 8. Acervo ============ -->
-  <section id="s-acervo" hidden>
-    <h2>Acervo</h2>
-    <p class="nota" id="acervo-txt"></p>
   </section>
 
   <footer id="sello">
@@ -228,273 +182,81 @@ footer a, .nota a { color: var(--series-1); }
 <script>
 /* ===========================================================================
    nodo-deuda.html — lector del contrato ciep.nodo.serie/v1
-   Regla dura: esta pagina NO CALCULA y NO CONTIENE CIFRAS. Toda cifra sale
-   del JSON; todo formato sale de formato_sugerido/divisor_sugerido del JSON.
-   Si una combinacion (unidad x medida) no existe en el contrato, se declara
-   ausente — no se deriva aqui.
+   Espeja el display de SHRFSP.ado. La estructura de la tabla (bloques, filas,
+   etiquetas, prefijos, familia de escalar) viene del contrato, no de aquí.
+   Esta página NO CALCULA y NO CONTIENE CIFRAS.
    =========================================================================== */
 
 const RUTA = 'statajson_deuda-publica.json';
-
-/* --- estado --- */
 let D = null;
-let unidad = 'corrientes';
-let medida = 'pc';
 
-/* --- mapa (unidad x medida) -> campo del contrato ---------------------------
-   Lo que no existe en el esquema se declara ausente con su razon. La pagina
-   NUNCA deriva el campo que falta: lo dice.                                 */
-const CAMPO = {
-  corrientes: { total: 'saldo_nominal',    pc: 'saldo_pc_nominal' },
-  constantes: { total: 'saldo_real',       pc: 'saldo_pc_real'    },
-  pib:        { total: 'saldo_pib',        pc: null               }
-};
-const RAZON_AUSENTE = {
-  'pib|pc': 'El porcentaje del PIB no se expresa por persona: el PIB ya es una magnitud agregada.'
-};
-const ETIQ_UNIDAD = { corrientes: 'Pesos corrientes', constantes: 'Pesos constantes', pib: 'Porcentaje del PIB' };
-const ETIQ_MEDIDA = { total: 'Saldo total', pc: 'Por persona' };
-
-/* --- formato: sale del contrato, no de aqui --- */
-function decimalesDe(fmt) {
-  const m = /\.(\d+)f/.exec(fmt || '');
-  return m ? parseInt(m[1], 10) : 0;
-}
-function fmtValor(v, campo) {
+/* Formato: sale del contrato (presentacion.fmt_*), no de aquí. Se lee el
+   formato de Stata: los decimales son los dígitos tras el punto y la "c"
+   final pide separador de miles. Sin ejemplos literales en este comentario:
+   la regla 1 del verificador no distingue comentario de código, y hace bien. */
+function fmt(v, spec) {
   if (v === null || v === undefined) return '—';
-  const u = D.unidades[campo] || {};
-  const div = u.divisor_sugerido || 1;
-  const dec = decimalesDe(u.formato_sugerido);
-  return (v / div).toLocaleString('es-MX', { minimumFractionDigits: dec, maximumFractionDigits: dec });
-}
-function unidadDe(campo) { return (D.unidades[campo] || {}).unidad || ''; }
-
-/* --- lectura de la serie: se LEE, no se calcula --- */
-function filaDe(anio) { return D.series.find(f => f.anio === anio) || null; }
-function campoActual() { return CAMPO[unidad][medida]; }
-
-/* ===================== 1. entrada personal ===================== */
-function renderPersonal() {
-  const out = document.getElementById('personal-out');
-  const nota = document.getElementById('personal-nota');
-  const raw = document.getElementById('anio-nac').value;
-  out.textContent = ''; nota.textContent = '';
-  if (raw === '') return;
-
-  const anio = parseInt(raw, 10);
-  const piso = D.piso_serie;
-  const ref = D.anio_referencia;
-  const campo = CAMPO[unidad].pc;
-
-  if (!campo) {
-    nota.textContent = 'Para responder esta pregunta hace falta una unidad por persona. '
-      + 'Elige pesos corrientes o pesos constantes.';
-    return;
-  }
-  if (!Number.isFinite(anio)) return;
-
-  const fRef = filaDe(ref);
-  const vRef = fRef ? fRef[campo] : null;
-
-  if (anio < piso) {
-    const fPiso = filaDe(piso);
-    out.innerHTML = 'La medida que usamos empieza en <span class="val">' + piso
-      + '</span>. Ese año, cada persona en México debía <span class="val">$'
-      + fmtValor(fPiso ? fPiso[campo] : null, campo) + '</span>.';
-    nota.textContent = 'Es el límite de la serie, no una afirmación sobre lo que pasó antes. '
-      + unidadDe(campo) + '.';
-    return;
-  }
-  const f = filaDe(anio);
-  if (!f) {
-    nota.textContent = 'Ese año todavía no está en la serie. La serie llega hasta '
-      + D.cobertura.anio_max + '.';
-    return;
-  }
-  out.innerHTML = 'Cuando naciste, cada persona en México debía <span class="val">$'
-    + fmtValor(f[campo], campo) + '</span>. Hoy debe <span class="val">$'
-    + fmtValor(vRef, campo) + '</span>.';
-  nota.textContent = unidadDe(campo) + '. Hoy = ' + D.procedencia.corte_serie.etiqueta + '.';
-}
-
-/* ===================== 2. selector de unidad ===================== */
-function renderUnidad() {
-  const cont = document.getElementById('ctl-unidad');
-  cont.innerHTML = '';
-  Object.keys(ETIQ_UNIDAD).forEach(k => {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.textContent = ETIQ_UNIDAD[k];
-    b.setAttribute('aria-pressed', String(k === unidad));
-    b.onclick = () => { unidad = k; pintar(); };
-    cont.appendChild(b);
-  });
-  const campo = campoActual() || CAMPO[unidad].pc || CAMPO[unidad].total;
-  document.getElementById('unidad-eleccion').innerHTML =
-    'Estás viendo: <b>' + (campo ? unidadDe(campo) : ETIQ_UNIDAD[unidad]) + '</b>.';
-}
-
-/* ===================== 3. evolución ===================== */
-function renderMedida() {
-  const cont = document.getElementById('ctl-medida');
-  cont.innerHTML = '';
-  Object.keys(ETIQ_MEDIDA).forEach(k => {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.textContent = ETIQ_MEDIDA[k];
-    b.setAttribute('aria-pressed', String(k === medida));
-    b.onclick = () => { medida = k; pintar(); };
-    cont.appendChild(b);
+  const m = /%\d*\.(\d+)f(c?)/.exec(spec || '');
+  const dec = m ? parseInt(m[1], 10) : 0;
+  const mil = m ? m[2] === 'c' : true;
+  return v.toLocaleString('es-MX', {
+    minimumFractionDigits: dec, maximumFractionDigits: dec, useGrouping: mil
   });
 }
-
-function renderGrafica() {
-  const wrap = document.getElementById('chartwrap');
-  const cap = document.getElementById('chart-cap');
-  wrap.innerHTML = '';
-  const campo = campoActual();
-
-  if (!campo) {
-    const p = document.createElement('p');
-    p.className = 'pend';
-    p.textContent = RAZON_AUSENTE[unidad + '|' + medida] || 'No disponible en este corte.';
-    wrap.appendChild(p);
-    cap.textContent = '';
-    return;
-  }
-
-  const pts = D.series.filter(f => f[campo] !== null && f[campo] !== undefined);
-  if (!pts.length) { wrap.innerHTML = '<p class="pend">Sin datos para esta combinación.</p>'; return; }
-
-  /* geometria: enteros de tres digitos o menos, por la regla anti-fosil */
-  const W = 640, H = 260, ML = 62, MR = 46, MT = 16, MB = 28;
-  const iW = W - ML - MR, iH = H - MT - MB;
-  const xs = pts.map(p => p.anio), ys = pts.map(p => p[campo]);
-  const x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs);
-  const yLo = Math.min.apply(null, ys), yHi = Math.max.apply(null, ys);
-  const pad = (yHi - yLo) / 12 || Math.abs(yHi) / 12 || 1;
-  const y0 = Math.min(yLo - pad, yLo > 0 ? yLo - pad : yLo), y1 = yHi + pad;
-  const px = a => ML + (a - x0) / ((x1 - x0) || 1) * iW;
-  const py = v => MT + iH - (v - y0) / ((y1 - y0) || 1) * iH;
-
-  const NS = 'http://www.w3.org/2000/svg';
-  const svg = document.createElementNS(NS, 'svg');
-  svg.setAttribute('viewBox', [0, 0, W, H].join(' '));
-  svg.setAttribute('role', 'img');
-  svg.setAttribute('aria-label', ETIQ_MEDIDA[medida] + ', ' + unidadDe(campo)
-    + ', de ' + x0 + ' a ' + x1);
-
-  const g = document.createElementNS(NS, 'g'); g.setAttribute('class', 'grid');
-  const ax = document.createElementNS(NS, 'g'); ax.setAttribute('class', 'axis');
-  const TICKS = 4;
-  for (let i = 0; i <= TICKS; i++) {
-    const v = y0 + (y1 - y0) * i / TICKS, yy = py(v);
-    const ln = document.createElementNS(NS, 'line');
-    ln.setAttribute('x1', ML); ln.setAttribute('x2', ML + iW);
-    ln.setAttribute('y1', yy); ln.setAttribute('y2', yy);
-    g.appendChild(ln);
-    const t = document.createElementNS(NS, 'text');
-    t.setAttribute('x', ML - 8); t.setAttribute('y', yy + 4);
-    t.setAttribute('text-anchor', 'end');
-    t.textContent = fmtValor(v, campo);
-    ax.appendChild(t);
-  }
-  [x0, x1].forEach((a, i) => {
-    const t = document.createElementNS(NS, 'text');
-    t.setAttribute('x', px(a)); t.setAttribute('y', H - 8);
-    t.setAttribute('text-anchor', i ? 'end' : 'start');
-    t.textContent = a;
-    ax.appendChild(t);
-  });
-  svg.appendChild(g); svg.appendChild(ax);
-
-  const path = document.createElementNS(NS, 'path');
-  path.setAttribute('class', 'line');
-  path.setAttribute('d', pts.map((p, i) => (i ? 'L' : 'M') + px(p.anio) + ' ' + py(p[campo])).join(' '));
-  svg.appendChild(path);
-
-  /* etiqueta directa solo en el ultimo punto (nunca una por punto) */
-  const last = pts[pts.length - 1];
-  const dot = document.createElementNS(NS, 'circle');
-  dot.setAttribute('class', 'dot');
-  dot.setAttribute('cx', px(last.anio)); dot.setAttribute('cy', py(last[campo]));
-  dot.setAttribute('r', 4);
-  svg.appendChild(dot);
-  const el = document.createElementNS(NS, 'text');
-  el.setAttribute('class', 'endlabel');
-  el.setAttribute('x', px(last.anio) + 6);
-  el.setAttribute('y', py(last[campo]) + 4);
-  el.textContent = fmtValor(last[campo], campo);
-  svg.appendChild(el);
-
-  /* capa de hover: cruz + tooltip */
-  const ch = document.createElementNS(NS, 'line');
-  ch.setAttribute('class', 'crosshair'); ch.setAttribute('y1', MT); ch.setAttribute('y2', MT + iH);
-  ch.style.display = 'none';
-  svg.appendChild(ch);
-  const hd = document.createElementNS(NS, 'circle');
-  hd.setAttribute('class', 'dot'); hd.setAttribute('r', 5); hd.style.display = 'none';
-  svg.appendChild(hd);
-
-  const tip = document.createElement('div');
-  tip.className = 'tip'; tip.style.display = 'none';
-
-  const hit = document.createElementNS(NS, 'rect');
-  hit.setAttribute('x', ML); hit.setAttribute('y', MT);
-  hit.setAttribute('width', iW); hit.setAttribute('height', iH);
-  hit.setAttribute('fill', 'transparent');
-  svg.appendChild(hit);
-
-  function mover(ev) {
-    const r = svg.getBoundingClientRect();
-    const cx = ev.touches ? ev.touches[0].clientX : ev.clientX;
-    const rel = (cx - r.left) / r.width * W;
-    const anio = Math.round(x0 + (rel - ML) / iW * (x1 - x0));
-    const p = pts.reduce((a, b) => Math.abs(b.anio - anio) < Math.abs(a.anio - anio) ? b : a);
-    ch.setAttribute('x1', px(p.anio)); ch.setAttribute('x2', px(p.anio));
-    ch.style.display = ''; hd.style.display = '';
-    hd.setAttribute('cx', px(p.anio)); hd.setAttribute('cy', py(p[campo]));
-    tip.style.display = '';
-    tip.innerHTML = '<b>' + p.anio + '</b> · ' + fmtValor(p[campo], campo);
-    tip.style.left = (px(p.anio) / W * r.width) + 'px';
-    tip.style.top = (py(p[campo]) / H * r.height) + 'px';
-  }
-  function salir() { ch.style.display = 'none'; hd.style.display = 'none'; tip.style.display = 'none'; }
-  svg.addEventListener('mousemove', mover);
-  svg.addEventListener('mouseleave', salir);
-  svg.addEventListener('touchmove', mover, { passive: true });
-  svg.addEventListener('touchend', salir);
-
-  wrap.appendChild(svg);
-  wrap.appendChild(tip);
-  cap.textContent = ETIQ_MEDIDA[medida] + ' — ' + unidadDe(campo)
-    + '. Fuente: ' + (D.fuentes[campo] || '');
+function val(nombre) {
+  const e = D.escalares[nombre];
+  return (e && e.valor !== undefined) ? e.valor : null;
 }
+
+/* ===================== la tabla ===================== */
+const COLS = [
+  { suf: 'Monto',  fmt: 'fmt_monto',  cab: 'col_monto'  },
+  { suf: 'PIB',    fmt: 'fmt_pib',    cab: 'col_pib'    },
+  { suf: 'PorTot', fmt: 'fmt_portot', cab: 'col_portot' },
+  { suf: 'PC',     fmt: 'fmt_pc',     cab: 'col_pc'     }
+];
 
 function renderTabla() {
-  const campo = campoActual();
-  const cont = document.getElementById('tabla');
-  if (!campo) { cont.innerHTML = '<p class="pend">Sin serie para esta combinación.</p>'; return; }
-  let h = '<table><thead><tr><th>Año</th><th>' + ETIQ_MEDIDA[medida] + '</th></tr></thead><tbody>';
-  D.series.forEach(f => {
-    h += '<tr><td>' + f.anio + '</td><td>'
-      + (f[campo] === null ? '<span class="pend">—</span>' : fmtValor(f[campo], campo)) + '</td></tr>';
+  const P = D.presentacion;
+  const t = document.getElementById('tabla');
+  let h = '<thead><tr><th class="concepto" colspan="2">Concepto</th>';
+  COLS.forEach(c => { h += '<th>' + (P[c.cab] || '') + '</th>'; });
+  h += '</tr></thead><tbody>';
+
+  const filas = D.tabla;
+  filas.forEach((f, i) => {
+    const prev = i ? filas[i - 1] : null;
+    const next = (i + 1 < filas.length) ? filas[i + 1] : null;
+
+    /* regla doble entre bloques (el "=" del display) */
+    if (prev && prev.bloque !== f.bloque) {
+      h += '<tr class="rule-max"><td colspan="6"></td></tr>';
+    }
+    /* regla simple antes del total del bloque (el "-" del display) */
+    if (f.enfasis && prev && prev.bloque === f.bloque) {
+      h += '<tr class="rule-min"><td colspan="6"></td></tr>';
+    }
+
+    h += '<tr' + (f.enfasis ? ' class="total"' : '') + '>';
+    h += '<td class="pref">' + f.prefijo + '</td>';
+    h += '<td class="concepto">' + f.etiqueta + '</td>';
+    COLS.forEach(c => {
+      h += '<td class="num">' + fmt(val(f.familia + c.suf), P[c.fmt]) + '</td>';
+    });
+    h += '</tr>';
+
+    /* nota del denominador de % Tot, al cerrar cada bloque */
+    const cierra = !next || next.bloque !== f.bloque;
+    const nota = P['pct_tot_' + f.bloque];
+    if (cierra && nota) {
+      h += '<tr><td colspan="6" class="nota-bloque">% Tot: ' + nota + '</td></tr>';
+    }
   });
-  cont.innerHTML = h + '</tbody></table>';
+  t.innerHTML = h + '</tbody>';
+  document.getElementById('nota-tabla').textContent = P.nota_pct_tot || '';
 }
 
-/* ===================== 5. implicaciones ===================== */
-function renderImplicaciones() {
-  const c = D.cobertura;
-  document.getElementById('impl-texto').textContent =
-    'La serie cubre ' + c.n_anios + ' años, de ' + c.anio_min
-    + ' a ' + c.anio_max + ', sin huecos declarados'
-    + (c.anios_faltantes.length ? ' salvo ' + c.anios_faltantes.join(', ') : '')
-    + '. El dato más reciente corresponde al ' + D.procedencia.corte_serie.etiqueta
-    + '; no es un cierre de año.';
-}
-
-/* ===================== 6. capas ===================== */
+/* ===================== capas ===================== */
 function renderCapas() {
   const cont = document.getElementById('capas');
   cont.innerHTML = '';
@@ -503,13 +265,15 @@ function renderCapas() {
     d.className = 'capa' + (c.disponible ? ' viva' : '');
     let txt = '<b>' + c.etiqueta + '</b><br>';
     if (c.disponible) {
-      const dec = decimalesDe(c.formato_sugerido);
+      const m = /%\d*\.(\d+)f/.exec(c.formato_sugerido || '');
+      const dec = m ? parseInt(m[1], 10) : 1;
+      const n = c.valor.toLocaleString('es-MX',
+        { minimumFractionDigits: dec, maximumFractionDigits: dec });
       txt += 'El ' + c.etiqueta.replace(/^Escenario /, '').split(':')[0]
-        + ' proyecta <b>'
-        + c.valor.toLocaleString('es-MX', { minimumFractionDigits: dec, maximumFractionDigits: dec })
+        + ' proyecta <span class="val">' + n
         + (c.unidad.charAt(0) === '%' ? '' : ' ') + c.unidad
-        + '</b> al cierre. No está incluido en el titular: '
-        + 'el titular es lo observado, esto es un supuesto de política fiscal.';
+        + '</span> al cierre. No está incluido en el titular: el titular es lo '
+        + 'observado, esto es un supuesto de política fiscal.';
     } else {
       txt += '<span class="pend">Sin cifra en este corte.</span> '
         + 'Queda fuera de la medida titular y el motor no la declara todavía.';
@@ -521,7 +285,7 @@ function renderCapas() {
   });
 }
 
-/* ===================== 7. conciliación ===================== */
+/* ===================== conciliación ===================== */
 const NOMBRE_CRITERIO = {
   cobertura_institucional: 'Cobertura institucional',
   momento_de_registro: 'Momento de registro',
@@ -536,31 +300,28 @@ function renderConciliacion() {
   dl.innerHTML = '';
   Object.keys(NOMBRE_CRITERIO).forEach(k => {
     const t = D.criterios[k];
-    dl.insertAdjacentHTML('beforeend',
-      '<dt>' + NOMBRE_CRITERIO[k] + '</dt><dd'
-      + (t ? '>' : ' class="pend">Pendiente. No declarado por el motor en este corte.')
-      + (t ? t + '</dd>' : '</dd>'));
+    dl.insertAdjacentHTML('beforeend', '<dt>' + NOMBRE_CRITERIO[k] + '</dt>'
+      + (t ? '<dd>' + t + '</dd>'
+           : '<dd class="pend">Pendiente. No declarado por el motor en este corte.</dd>'));
   });
   const df = document.getElementById('fuentes');
   df.innerHTML = '';
   Object.keys(D.fuentes).forEach(k => {
-    df.insertAdjacentHTML('beforeend',
-      '<dt>' + k + '</dt><dd>' + (D.fuentes[k] || '<span class="pend">Pendiente.</span>')
-      + ' <span class="nota">Unidad: ' + (unidadDe(k) || '—') + '</span></dd>');
+    df.insertAdjacentHTML('beforeend', '<dt>' + k + '</dt><dd>'
+      + (D.fuentes[k] || '<span class="pend">Pendiente.</span>') + '</dd>');
   });
 }
 
-/* ===================== 8. acervo + sello ===================== */
-function renderAcervo() {
-  document.getElementById('acervo-txt').innerHTML =
-    'Este nodo todavía no publica documentos de acervo. El contrato que lo alimenta '
-    + 'sí es descargable: <a href="' + RUTA + '">' + RUTA + '</a>.';
-}
-
+/* ===================== sello + CSV ===================== */
 function csv() {
-  const cols = ['anio'].concat(Object.keys(D.unidades));
-  const cab = cols.join(',');
-  const filas = D.series.map(f => cols.map(c => (f[c] === null || f[c] === undefined) ? '' : f[c]).join(','));
+  const filas = D.tabla.map(f => {
+    const celdas = COLS.map(c => {
+      const v = val(f.familia + c.suf);
+      return (v === null) ? '' : v;
+    });
+    return [f.prefijo, '"' + f.etiqueta + '"'].concat(celdas).join(',');
+  });
+  const cab = ['prefijo', 'concepto'].concat(COLS.map(c => c.suf)).join(',');
   const blob = new Blob([cab + '\n' + filas.join('\n')], { type: 'text/csv;charset=utf-8' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -571,62 +332,47 @@ function csv() {
 
 function renderSello() {
   const p = D.procedencia;
-  const log = p.log ? p.log : null;
-  const s = document.getElementById('sello-txt');
-  s.innerHTML = 'Producido con Simulador Fiscal CIEP <b>' + p.version_simulador
+  document.getElementById('sello-txt').innerHTML =
+    'Producido con Simulador Fiscal CIEP <b>' + p.version_simulador
     + '</b> · corte de datos <b>' + p.corte_datos + '</b> · '
-    + (log ? 'log: ' + log : '<span class="pend">log no declarado en este corte</span>')
+    + (p.log ? 'log: ' + p.log : '<span class="pend">log no declarado en este corte</span>')
     + ' · <a href="#" id="csv">descargar CSV</a>'
     + ' · <a href="' + RUTA + '">contrato JSON</a>'
     + '<br><span class="nota">Exportación sellada ' + p.generado_en
-    + ' · serie: ' + p.dataset_serie + '</span>';
+    + ' · serie: ' + p.dataset_serie
+    + ' · ' + (D.presentacion.escala_monto || '') + '</span>';
   document.getElementById('csv').onclick = e => { e.preventDefault(); csv(); };
-
-  const f = document.getElementById('faltantes-txt');
-  f.innerHTML = D.faltantes.length
+  document.getElementById('faltantes-txt').textContent = D.faltantes.length
     ? 'Campos que este corte declara faltantes (' + D.faltantes.length + '): '
       + D.faltantes.join(', ') + '.'
     : 'Este corte no declara faltantes.';
 }
 
-/* ===================== pintado ===================== */
-function pintar() {
-  renderUnidad();
-  renderMedida();
-  renderGrafica();
-  renderTabla();
-  renderPersonal();
-}
-
+/* ===================== arranque ===================== */
 function arranque(d) {
   D = d;
-  document.getElementById('titulo').textContent = D.titulo;
-  document.getElementById('subtitulo').textContent =
-    D.medida_titular + ' · ' + D.procedencia.corte_serie.etiqueta
-    + ' · serie desde ' + D.piso_serie;
-  ['s-personal', 's-unidad', 's-evolucion', 's-incidencia', 's-implicaciones',
-   's-capas', 's-conciliacion', 's-acervo'].forEach(id => {
-    document.getElementById(id).hidden = false;
-  });
-  document.getElementById('anio-nac').addEventListener('input', renderPersonal);
-  renderImplicaciones();
+  document.getElementById('titulo').textContent =
+    (D.presentacion.titulo_display || D.titulo) + ' ' + D.anio_referencia;
+  document.getElementById('corte').innerHTML =
+    D.medida_titular + ' · <b>' + D.procedencia.corte_serie.etiqueta + '</b>';
+  renderTabla();
   renderCapas();
   renderConciliacion();
-  renderAcervo();
   renderSello();
-  pintar();
+  ['s-capas', 's-conciliacion'].forEach(id => {
+    document.getElementById(id).hidden = false;
+  });
 }
 
 fetch(RUTA)
   .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
   .then(arranque)
   .catch(e => {
-    document.getElementById('subtitulo').innerHTML =
-      '<span class="err">No se pudo leer <code>' + RUTA + '</code> ('
-      + e.message + '). Esta página no trae cifras propias: sin el contrato no '
-      + 'hay nada que mostrar. Sírvela con un servidor estático desde esta '
-      + 'carpeta de render 04_3_nodos/ (ver '
-      + '02_governance/nodo-deuda-vista-previa.md).</span>';
+    document.getElementById('corte').innerHTML =
+      '<span class="err">No se pudo leer <code>' + RUTA + '</code> (' + e.message
+      + '). Esta página no trae cifras propias: sin el contrato no hay nada que '
+      + 'mostrar. Sírvela con un servidor estático desde la carpeta de render '
+      + '04_3_nodos/ (ver 02_governance/nodo-deuda-vista-previa.md).</span>';
   });
 </script>
 </body>

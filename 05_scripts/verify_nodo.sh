@@ -52,19 +52,21 @@ for arg in "$@"; do
 done
 
 # --- contexto -----------------------------------------------------------------
-if [ ! -f "05_scripts/verify_nodo.sh" ] || [ ! -d "04_3_nodos" ]; then
-	echo "verify_nodo: ejecútalo desde la raíz del repo (donde viven 04_3_nodos/ y 05_scripts/)." >&2
+if [ ! -f "05_scripts/verify_nodo.sh" ] || [ ! -d "01_modulos/nodos" ]; then
+	echo "verify_nodo: ejecútalo desde la raíz del repo (donde viven 01_modulos/nodos/ y 05_scripts/)." >&2
 	exit 2
 fi
 
 # FUENTE versionada vs SALIDA generada. La página que se audita es la FUENTE
 # (01_modulos/nodos/), no la copia de render: la copia se regenera en cada
-# corrida y auditar copias es auditar el pasado. El contrato vive en
-# 04_3_nodos/, que está en .gitignore — es un destino de render desechable,
+# corrida y auditar copias es auditar el pasado. El contrato vive bajo el
+# docroot del WordPress local del Paquete (cierre de 04_3_nodos/, 2026-08-02),
+# que está en .gitignore — es un destino de render desechable,
 # mismo estatus que los statalatex_*.tex de 06_libro/images. Consecuencia
 # operativa: en un clone limpio el JSON no existe hasta que corras el driver,
 # y este script te lo dice en vez de fallar de forma críptica.
-JSON="04_3_nodos/statajson_${NODO}.json"
+NODOS_DIR="04_1_paqueteeconomico.ciep.mx/public_html/nodos"
+JSON="${NODOS_DIR}/statajson_${NODO}.json"
 PAGINA="01_modulos/nodos/nodo-deuda.html"
 
 FALLAS=0
@@ -79,7 +81,7 @@ echo
 
 if [ ! -f "$JSON" ]; then
 	echo "verify_nodo: no existe $JSON" >&2
-	echo "  Es una SALIDA generada, no vive en git (04_3_nodos/ está ignorada)." >&2
+	echo "  Es una SALIDA generada, no vive en git (${NODOS_DIR}/ está ignorada)." >&2
 	echo "  Prodúcela corriendo el driver en Stata:" >&2
 	echo "    do \"\$(pwd)/01_modulos/nodos/nodo-deuda.do\"" >&2
 	exit 2

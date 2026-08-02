@@ -2,17 +2,20 @@
 
 ## Fuente versionada vs. salida generada
 
-Decisión de Ricardo (2026-08-01): `04_3_nodos/` está en `.gitignore`, junto a
-las demás carpetas de operación local. Es un **destino de render desechable**,
-no una carpeta de código.
+Decisión de Ricardo (2026-08-01, destino actualizado 2026-08-02 con el cierre
+de `04_3_nodos/`): el destino de render vive **bajo el docroot del WordPress
+local del Paquete** (patrón 6yt5ppa3hb: estáticos servidos junto al sitio,
+jamás dentro de Elementor) y está en `.gitignore`, junto a las demás carpetas
+de operación local. Es un **destino de render desechable**, no una carpeta de
+código.
 
 | | ruta | git |
 |---|---|---|
 | Exportador | `scalarjson.ado` | **versionado** |
 | Driver del nodo | `01_modulos/nodos/nodo-deuda.do` | **versionado** |
 | Página (fuente) | `01_modulos/nodos/nodo-deuda.html` | **versionado** |
-| Contrato | `04_3_nodos/statajson_deuda-publica.json` | generado, ignorado |
-| Página (copia servible) | `04_3_nodos/nodo-deuda.html` | generado, ignorado |
+| Contrato | `04_1_paqueteeconomico.ciep.mx/public_html/nodos/statajson_deuda-publica.json` | generado, ignorado |
+| Página (copia servible) | `04_1_paqueteeconomico.ciep.mx/public_html/nodos/nodo-deuda.html` | generado, ignorado |
 
 Es el mismo estatus que los `statalatex_*.tex` de `06_libro/images`: se
 versiona lo que **produce** el artefacto, no el artefacto. La copia de la
@@ -39,8 +42,17 @@ O automáticamente al final de `SHRFSP` cuando corre el flujo del libro
 
 ## Verla
 
+Con el WordPress local del Paquete corriendo (ver `04_1_…/DEPLOY.md`):
+
+```
+http://localhost:8892/nodos/nodo-deuda.html
+```
+
+Si el WordPress no está levantado, cualquier server estático sobre la carpeta
+sirve igual:
+
 ```bash
-cd 04_3_nodos
+cd 04_1_paqueteeconomico.ciep.mx/public_html/nodos
 python3 -m http.server 8137
 # abre http://localhost:8137/nodo-deuda.html
 ```
@@ -52,7 +64,7 @@ la lectura del JSON por política de origen, y como la página no contiene
 ninguna cifra, sin contrato no hay nada que mostrar (eso mismo dice en
 pantalla si el fetch falla).
 
-Si `04_3_nodos/` está vacía o no existe, corre el driver primero.
+Si `…/public_html/nodos/` está vacía o no existe, corre el driver primero.
 
 ## Qué deberías ver
 

@@ -56,7 +56,7 @@ program define scalarjson
 	syntax , NODO(string) SERIE(string) ///
 		[ TITULO(string) MEDIDA(string) ANIOREF(int 0) PISO(int 0) ///
 		  CORTEANIO(int 0) CORTEMES(int 0) CORTETEXTO(string) ///
-		  ESCALARES(string) METADATOS(string) CAPAS(string) ///
+		  ESCALARES(string) METADATOS(string) CAPAS(string) TABLA(string) ///
 		  ORIGENSERIE(string) SAVING(string) ]
 
 	* La ruta real de serie() es un tempfile: viajaria distinta en cada
@@ -67,7 +67,7 @@ program define scalarjson
 
 	local site `"`c(sysdir_site)'"'
 	if `"`saving'"' == "" {
-		local saving `"`site'/04_3_nodos/statajson_`nodo'.json"'
+		local saving `"`site'/04_1_paqueteeconomico.ciep.mx/public_html/nodos/statajson_`nodo'.json"'
 	}
 	local faltantes ""
 	local q = char(34)
@@ -245,6 +245,56 @@ program define scalarjson
 		_sjkv `fh' "`v'" `"`t'"' 4 `coma'
 	}
 	file write `fh' "  }," _n
+
+	** 4.2.1 presentacion — lo que la pagina necesita para RENDERIZAR y que
+	* no es una cifra: etiqueta de moneda, escala, denominadores por bloque.
+	* Claves libres: el driver declara, la pagina lee. Nada de esto se
+	* escribe en el HTML. *
+	file write `fh' `"  `q'presentacion`q': {"' _n
+	local npres = 0
+	if `hasmeta' {
+		quietly count if bloque == "presentacion"
+		local npres = r(N)
+		local i = 0
+		forvalues r = 1/`=_N' {
+			if bloque[`r'] == "presentacion" {
+				local i = `i' + 1
+				local pk = clave[`r']
+				local pt = texto[`r']
+				_sjkv `fh' "`pk'" `"`pt'"' 4 `=cond(`i' < `npres', 1, 0)'
+			}
+		}
+	}
+	if `npres' == 0 local faltantes `"`faltantes' presentacion.vacia"'
+	file write `fh' "  }," _n
+
+	** 4.2.2 tabla — la ESTRUCTURA del display que la pagina espeja: que
+	* filas, en que orden, con que etiqueta, prefijo y familia de escalar.
+	* Vive en el contrato (no en la pagina) para que la tabla del sitio no
+	* pueda divergir en silencio de la que imprime el modulo en Stata. *
+	file write `fh' `"  `q'tabla`q': ["' _n
+	local nfilas = 0
+	if `"`tabla'"' != "" {
+		capture confirm file `"`tabla'"'
+		if _rc == 0 {
+			quietly use `"`tabla'"', clear
+			local nfilas = _N
+		}
+	}
+	if `nfilas' == 0 local faltantes `"`faltantes' tabla.dataset"'
+	forvalues r = 1/`nfilas' {
+		local tb  = bloque[`r']
+		local tet = etiqueta[`r']
+		local tpx = prefijo[`r']
+		local tfa = familia[`r']
+		local ten = enfasis[`r']
+		_sjesc `"`tet'"'
+		local tete `"`r(s)'"'
+		file write `fh' `"    {`q'bloque`q': `tb', `q'etiqueta`q': `q'`tete'`q', "'
+		file write `fh' `"`q'prefijo`q': `q'`tpx'`q', `q'familia`q': `q'`tfa'`q', "'
+		file write `fh' `"`q'enfasis`q': `ten'}`=cond(`r' < `nfilas', ",", "")'"' _n
+	}
+	file write `fh' "  ]," _n
 
 	** 4.3 capas declaradas — cada una con SU procedencia **
 	file write `fh' `"  `q'capas_declaradas`q': ["' _n
@@ -470,7 +520,10 @@ program define _sjnum, rclass
 	capture local ismiss = (`e' >= .)
 	if _rc exit
 	if `ismiss' exit
-	capture local s = trim(string(`e', "%22.15g"))
+	* 17 digitos significativos: es lo que garantiza round-trip exacto de un
+	* double IEEE754. Con 15 el JSON perdia el ultimo bit y la pagina redondeaba
+	* a un peso de distancia del display de Stata (SHRFSPMonto ...533 vs ...534).
+	capture local s = trim(string(`e', "%25.17g"))
 	if _rc exit
 	if substr("`s'", 1, 1) == "."  local s = "0`s'"
 	if substr("`s'", 1, 2) == "-." local s = "-0" + substr("`s'", 2, .)
