@@ -94,6 +94,54 @@ El tag llega cuando el nodo se publique, no antes.
   byte-idénticos. La paridad local–producción está demostrada; quitar el
   header rosa es una decisión de DISEÑO que aplicaría a ambos lados, y las
   opciones quedaron documentadas en el `DEPLOY.md` de la semilla.
+  **Segunda verificación y parche local (mismo día):** re-verificado en vivo
+  con cache-buster — producción HOY muestra el header rosa; NO existe
+  mecanismo de producción que emular. Por decisión de Ricardo el local lo
+  oculta con CSS del Customizer (`.site-header { display: none; }`, aplicado
+  vía `wp_update_custom_css_post`, vive en la BD local); el `DEPLOY.md` lo
+  registra como PARCHE LOCAL con la instrucción explícita de NO portarlo en
+  deploys de código (es estado de BD y lleva su propio gate).
+- **La página del nodo de deuda adopta el lenguaje ultra-austero (variante A
+  de la ronda de estilo, veredicto de Ricardo 2026-08-02):** título, la
+  tabla y el sello; la costura CGPE y la procedencia viven en un `<details>`
+  plegado de una línea; cero texto explicativo suelto. La regla 1 del
+  verificador cazó la fecha de la ronda en un comentario del `<script>`
+  durante la promoción — el anti-fósil funcionando contra su propio autor.
+- **La portada del Paquete: la ecuación fundamental con cifras del motor
+  (`/nodos/` en el localhost del sitio).** Referencia CONCEPTUAL: la sección
+  "La ecuación fundamental" de libro.ciep.mx (tres términos con jerarquía
+  visual y operadores); re-implementada al estilo nodo, no copiada: aquí los
+  términos llevan el número del motor. `01_modulos/nodos/portada.do` corre
+  LIF y PEF y deriva EXACTAMENTE tres cosas — ingresos = suma de las 7
+  familias del display B de LIF (divResumido, sin la familia Deuda); gasto =
+  suma de las 10 divisiones del display B de PEF (Resumido, Cuotas ISSSTE
+  negativa), verificada contra `r(Gasto_netoPIB)`; financiamiento = cierre
+  por construcción (gasto − ingresos). La familia Deuda de la LIF viaja como
+  REFERENCIA con su brecha declarada contra el cierre (LIF y PEF no
+  coinciden al centavo; la brecha se publica en vez de esconderse). Capa
+  CGPE declarada con el patrón del nodo (RFSP/ingresos/gasto de las matrices
+  de `SIM.do:361-405`; sin los globals de política, `disponible:false`).
+  Esquema propio `ciep.nodo.portada/v1`; página en el lenguaje A con hover
+  (desktop) / tap (móvil) para desagregar cada término, el término
+  Financiamiento enlaza al nodo de deuda, y la línea personal (año de
+  nacimiento) lee el per cápita real del CONTRATO DEL NODO — la portada no
+  calcula ni inventa. La copia servible se llama `index.html`: `/nodos/` ES
+  la portada. `router.php` local sirve `index.html` de directorios estáticos
+  antes de caer a WordPress (equivalente del `DirectoryIndex` de producción).
+- **Precisión declarada de la portada: `%20.12g` para % del PIB, `%25.17g`
+  para montos.** Los agregados de LIF/PEF no son bit-estables entre corridas
+  (sorts con empates no estables mueven el último ulp de la suma — la regla
+  3 del verificador lo cazó en la primera corrida doble); 12 dígitos
+  significativos publican el dato sin el ruido. Los montos son enteros
+  exactos en double y conservan round-trip completo. El nodo de deuda sigue
+  en `%25.17g` porque lee un `.dta` congelado, que sí es bit-estable.
+- **`verify_nodo.sh` extendido a la portada:** `bash 05_scripts/verify_nodo.sh
+  portada`. Reglas 1-3 y 6 idénticas (la 3 corre el driver dos veces: LIF y
+  PEF incluidos); las reglas 4/5 se sustituyen por sus equivalentes
+  estructurales — cierre de la ecuación (montos exactos; % PIB a la
+  precisión emitida, tolerancia 1e-9), sumas de desagregaciones contra los
+  totales, brecha LIF declarada, y unidades/formatos/fuentes por término más
+  procedencia de capas. Ambos nodos: todas las reglas pasan, exit 0.
 
 ### Comandos
 - **`scalarjson.ado` v1.0.0 — exportador de nodos a JSON, hermano de SOLO
