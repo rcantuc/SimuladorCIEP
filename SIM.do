@@ -387,7 +387,10 @@ matrix ingresos = (21.9,  22.5,  22.4,  22.4,  22.4,  22.4,  22.4)
 matrix egresos = (25.5,  26.1,  25.4,  24.9,  24.9,  24.9,  24.9)
 
 forvalues k = 2026(1)2031 {
-	local j = `k' - 2026 + 1
+	* Las matrices de arriba tienen 7 columnas rotuladas 2025..2031, asi que
+	* la columna del anio k es k-2025+1. El mapeo viejo (k-2026+1) le daba a
+	* cada anio la columna del anio ANTERIOR y nunca leia la columna 2031.
+	local j = `k' - 2025 + 1
 	global shrfsp`k' = shrfsp[1,`j']
 	global shrfspInterno`k' = shrfspInterno[1,`j']
 	global shrfspExterno`k' = shrfspExterno[1,`j']

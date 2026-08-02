@@ -91,6 +91,39 @@ El tag llega cuando el nodo se publique, no antes.
   truena con `r(198)`; el escape JSON usa `char(92)`/`char(34)` dentro de la
   expresión.)
 
+### Correcciones — escenario de política fiscal
+- **`SIM.do:389`: el mapeo de columnas le daba a cada año la columna del año
+  ANTERIOR, y nunca leía la columna 2031.** Las matrices de política fiscal
+  (`SIM.do:361-405`) tienen 7 columnas rotuladas 2025-2031, pero el
+  `forvalues k = 2026(1)2031` calculaba `j = k - 2026 + 1`: 2026 leía la
+  columna 2025, 2027 la 2026, y así hasta 2031, que leía la 2030 — la columna
+  2031 quedaba muerta. Corregido a `j = k - 2025 + 1`. Una línea.
+- **El rótulo estaba bien y el motor mal; el fósil tecleado fue el testigo.**
+  `04_2_documentos_latex/PE2026/…/3_Deuda/deuda.tex:39` —cifras tecleadas a
+  mano, sin getters— dice *"4.1% del PIB"* tanto para el costo financiero
+  como para el endeudamiento neto de 2026. El motor producía 3.8 y 4.30. Tras
+  el fix produce **4.100 y 4.100**: coinciden con el documento publicado. El
+  número que un humano escribió a mano validó al motor, no al revés.
+- **Test dorado (2 corridas del flujo textbook, `$export` a scratch, mismo
+  `master/`):** de 110 getters de `statalatex_shrfsp.tex`, **51 cambian y 59
+  no**; cero getters nuevos, cero perdidos. Los 51 caen todos en la clase
+  predicha por el triage: `CostoFinanciero*` (3.800→4.100), `RFSP*`
+  (4.300→4.100), `SHRFSPInterno*` (40.500→41.500), `SHRFSPExterno*`
+  (12.100→11.000), `rfspPIDIREGAS*`/`rfspIPAB*` (0.150→0.100),
+  `rfspAdecuaciones*` (0.400→0.300), `SHRFSPLIF` (240.2→233.8) y las familias
+  `Deuda*` por el tipo de cambio (19.6→18.9). Quedan intactos —como se
+  predijo— `SHRFSP{PIB,Monto,PC,PorTot}` (52.6 en ambas columnas),
+  `SHRFSPlast*`, `rfspBalance{PIB,Monto}` y los `rfsp*` en cero.
+- **Detectado por el nodo de deuda:** el patrón anti-fósil cazando su primer
+  bug de motor. El nodo obliga a declarar de dónde sale cada número, y al
+  declarar la procedencia de la capa de escenario (`SIM.do:362 -> global
+  shrfsp<año>`) el mapeo quedó a la vista.
+- **Archivos del libro que Ricardo debe regenerar y repasar en prosa:**
+  `06_libro/images/statalatex_{shrfsp,perfiles,fiscalgap}.tex` (el registro es
+  global-acumulado: los tres cargan escalares de SHRFSP) y los capítulos que
+  los consumen, `06_libro/4_Balance/costofinanciero.tex` y
+  `costofinancieroi.tex`.
+
 ### Candidatos registrados (no corregidos en este ciclo)
 - **`master/SHRFSP.dta` carga derivados 1990-1999 contaminados.** Esas filas
   traen `unidad_de_medida == "Dólares"`: `monto_pc` son dólares per cápita
