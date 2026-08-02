@@ -119,6 +119,25 @@ assert_ignored ".env" "Env file raíz"
 assert_ignored ".env.production" "Env variant"
 assert_ignored "set_token.do" "Token de usuario del BIE/INEGI (debe estar gitignored, nunca trackeado)"
 assert_ignored "05_scripts/endpoint-credentials.sh" "Credenciales reales del endpoint Stata (debe estar gitignored, nunca trackeado)"
+assert_ignored "wp-config.php" "Config WordPress con credenciales MySQL (raíz)"
+assert_ignored "cualquier/ruta/wp-config.php" "Config WordPress con credenciales MySQL (cualquier profundidad)"
+assert_ignored "wp-salt.php" "Salts de WordPress (raíz)"
+assert_ignored "cualquier/ruta/wp-salt.php" "Salts de WordPress (cualquier profundidad)"
+assert_ignored "cualquier/ruta/.env" "Env file a cualquier profundidad"
+
+echo "--- Paquete Económico (contenido Dropbox, Entrega 1.5) ---"
+assert_ignored "04_1_paqueteeconomico.ciep.mx/index.php" "Copia local WordPress paqueteeconomico.ciep.mx"
+assert_ignored "04_1_paqueteeconomico.ciep.mx/wp-config.php" "wp-config real dentro de 04_1 (doble cinturón)"
+assert_ignored "04_2_documentos_latex/cualquier.tex" "Archivo histórico LaTeX 2013-2027"
+
+echo "--- Semillas de sitios y destino de render de nodos (2026-08-02) ---"
+assert_ignored "04_1_paqueteeconomico.ciep.mx/db/emepykgvhz-20260802.sql" "Dump de BD del Paquete (hashes de usuarios; nunca a git)"
+assert_ignored "04_1_paqueteeconomico.ciep.mx/public_html/nodos/statajson_deuda-publica.json" "Render del nodo bajo el docroot (cierre de 04_3_nodos/)"
+assert_ignored "04_1_paqueteeconomico.ciep.mx/public_html/nodos/nodo-deuda.html" "Copia servible del nodo bajo el docroot"
+assert_ignored "04_4_libro.ciep.mx/public_html/wp-config.php" "wp-config de la semilla del libro (doble cinturón)"
+assert_ignored "04_4_libro.ciep.mx/public_html/wp-salt.php" "wp-salt de la semilla del libro (doble cinturón)"
+assert_ignored "04_4_libro.ciep.mx/db/libro_20260802.sql" "Dump de BD del libro (pedidos WooCommerce; nunca a git)"
+assert_ignored "04_5_ciep.mx/wp-config.php" "wp-config de la copia de ciep.mx (doble cinturón)"
 
 echo "--- Datos asociados en raw/ (ignorado) ---"
 assert_ignored "raw/PEFs/CP_2024.xlsx" "Asset binario en raw/"
@@ -176,6 +195,50 @@ echo "--- Archivos con caracteres del falso character class [Recovered] ---"
 assert_not_ignored "scheme-ciep.scheme" "Scheme color"
 assert_not_ignored "01_modulos/visualizations/SankeySF.do" "Sankey SF"
 assert_not_ignored "PIBDeflactor.ado" "Deflactor PIB"
+
+echo ""
+
+# =============================================================================
+# 3. ESCANEO REAL — archivos con patrones de credenciales en el working tree
+# =============================================================================
+# A diferencia de las secciones 1-2 (paths hipotéticos contra las reglas),
+# esta sección recorre el árbol REAL: todo archivo existente que matchee un
+# patrón de credenciales debe estar ignorado y NO trackeado. Añadido en la
+# Entrega 1.5 del boceto Paquete 2027 (2026-08-01), tras encontrar dos
+# wp-config.php reales dentro de carpetas untracked-y-sin-ignorar.
+# Se excluyen plantillas (*.template.*) y ejemplos (*.example): esas SÍ se
+# versionan por diseño (sección 2).
+echo "=========================================================="
+echo "3. Escaneo real de archivos de credenciales en el árbol"
+echo "=========================================================="
+
+cred_finds=$(find . -path ./.git -prune -o -type f \( \
+    -name "wp-config.php" -o -name "wp-salt.php" \
+    -o -name ".env" -o -name ".env.*" \
+    -o -name "*.key" -o -name "*.pem" -o -name "*.p12" -o -name "*.pfx" \
+    -o -name "set_token.do" -o -name "*credentials.sh" \) -print 2>/dev/null \
+    | sed 's|^\./||' | LC_ALL=C sort | grep -v -E '\.template\.|\.example$')
+
+if [ -z "$cred_finds" ]; then
+    echo "  (no se encontraron archivos con patrones de credenciales)"
+else
+    while IFS= read -r f; do
+        [ -z "$f" ] && continue
+        total=$((total+1))
+        if git ls-files --error-unmatch "$f" >/dev/null 2>&1; then
+            printf "  [FAIL]       %-58s — credencial TRACKEADA en git: sacar del índice y rotar\n" "$f"
+            failed=$((failed+1))
+            fail_log+="    - $f: credencial trackeada en git"$'\n'
+        elif git check-ignore -q "$f" 2>/dev/null; then
+            printf "  [OK ignored] %-58s — credencial real presente pero ignorada\n" "$f"
+            passed=$((passed+1))
+        else
+            printf "  [FAIL]       %-58s — credencial real SIN ignorar (riesgo de git add .)\n" "$f"
+            failed=$((failed+1))
+            fail_log+="    - $f: credencial real sin ignorar"$'\n'
+        fi
+    done <<< "$cred_finds"
+fi
 
 echo ""
 
