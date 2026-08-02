@@ -16,6 +16,93 @@ Formato de cada entrada:
 - **Datos:** cambios en fuentes, actualizaciones de PEFs, LIFs, ENIGH, u otras fuentes
 - **Correcciones:** bugs corregidos que afectaban resultados o funcionamiento
 
+## [Unreleased]
+
+Trabajo en `master` sin versión asignada. **Nada de lo que aquí se registra
+cambia el paquete distribuido** (`05_scripts/manifest-endpoint.toml` no
+incluye `scalarjson.ado`, igual que nunca incluyó `scalarlatex.ado`): el
+endpoint público y el VPS corren exactamente el mismo código que en v8.2.0.
+El tag llega cuando el nodo se publique, no antes.
+
+### Institucional
+- **Primer corte vertical de un nodo: un número sale de Stata y llega a una
+  página sin que nadie lo teclee.** Nodo de deuda pública, año de referencia
+  2026. Tres piezas versionadas — el exportador (`scalarjson.ado`), el driver
+  (`01_modulos/nodos/nodo-deuda.do`) y la página
+  (`01_modulos/nodos/nodo-deuda.html`) — y un destino de render generado,
+  `04_3_nodos/`, con el contrato (`statajson_deuda-publica.json`) y la copia
+  servible de la página.
+- **`04_3_nodos/` se ignora (decisión de Ricardo, 2026-08-01).** Es un destino
+  de render desechable, reconstruible con una corrida: el mismo estatus que
+  los `statalatex_*.tex` de `06_libro/images`, que tampoco se versionan. Se
+  versiona lo que PRODUCE el artefacto, no el artefacto. **Consecuencia
+  registrada:** el JSON no tiene historial en git, así que su diff entre
+  cortes no es auditable desde el repo — para comparar en septiembre hay que
+  guardar el corte anterior a mano antes de re-exportar.
+- **`05_scripts/verify_nodo.sh`:** seis reglas con exit ≠ 0. (1) la página no
+  contiene literales numéricos fuera de `<style>` — el verificador anti-fósil,
+  la clase que este repo acaba de extinguir en v1.42/v1.44 y v8.2.0; (2)
+  procedencia completa en el JSON; (3) exportación determinista, comprobada
+  corriendo Stata dos veces (no se salta en silencio: sin Stata y sin
+  `--sin-stata` sale con exit 2); (4) sin huecos de año no declarados; (5)
+  toda serie declara unidad y formato; (6) la raíz no contiene `.md`.
+  Audita la FUENTE de la página (`01_modulos/nodos/`), no la copia de render:
+  auditar copias es auditar el pasado. Si el contrato no existe todavía (clone
+  limpio), sale con exit 2 explicando cómo producirlo.
+- **Regla nueva: la raíz del repo no contiene archivos `.md`.** La
+  documentación vive en `02_governance/` o `03_help/`. Excepción única y
+  confirmada: `README.md` (portada convencional de GitHub; ya tratada como
+  institucional por `verify_gitignore.sh:180`). Movidos en este ciclo:
+  `plan-integracion-paquete2027.md`, `reporte-inventario-paquete2027.md` y
+  `verificacion-estado-repo.md` → `02_governance/` (cero referencias en el
+  repo, el movimiento no rompe ninguna ruta).
+
+### Comandos
+- **`scalarjson.ado` v1.0.0 — exportador de nodos a JSON, hermano de SOLO
+  LECTURA de `scalarlatex`.** Espeja tres pasos y solo tres: enumeración de
+  escalares vivos, mapa nombre→tipo desde `$scalarlatex_reg` con last-wins, y
+  el catálogo de tipos. NO espeja el dígitos→letras (restricción de nombres de
+  macro de LaTeX) ni el alias. NO toca `scalarlatex`, ni el registro, ni
+  `02_governance/scalarlatex-baseline.txt` (no lo lee siquiera: ese baseline
+  gobierna la cobertura del libro, no la de un nodo). **NO CALCULA:** todo
+  valor que escribe ya existe en el registro o en el dataset de serie que
+  recibe; lo que no existe es un faltante declarado. Donde `scalarlatex`
+  escribe strings ya formateados, `scalarjson` escribe NÚMEROS de precisión
+  completa más `formato_sugerido`/`divisor_sugerido` — el formato es una
+  sugerencia de presentación, no el dato.
+- **`SHRFSP.ado`:** la invocación del nodo entra al bloque `$textbook`
+  existente, junto a `scalarlatex`, con la misma clausura (lección v8.0.11).
+  Tres guards en serie: `$textbook` (solo-repo) + `capture which scalarjson` +
+  `capture confirm file` del driver. Degradación silenciosa si falta
+  cualquiera. `scalarjson.ado` NO se publica al endpoint: en el VPS el comando
+  no existe y el bloque solo imprime la nota.
+
+### Correcciones
+- **`scalarjson` sanea backticks al escribir (clase: inyección de macro desde
+  datos).** Las líneas de datos de `input` no expanden macros, así que un
+  `` `anioref' `` quedó guardado literal en un `.dta` de metadatos — y al
+  escribirse desde `scalarjson` se re-expandió contra las **locales de ese
+  programa**, saliendo como `2026` en el JSON. Texto de un dataset
+  ejecutándose como código. `_sjkv`/`_sjesc` eliminan `char(96)` antes de
+  escribir; los drivers construyen todo lo dinámico con `replace`, que sí
+  expande. (De paso, dos gotchas de Stata registrados: un backtick sin cerrar
+  dentro de un comentario se traga el resto del archivo sin error, y `\` no
+  puede viajar por macro a un literal entrecomillado — escapa la expansión y
+  truena con `r(198)`; el escape JSON usa `char(92)`/`char(34)` dentro de la
+  expresión.)
+
+### Candidatos registrados (no corregidos en este ciclo)
+- **`master/SHRFSP.dta` carga derivados 1990-1999 contaminados.** Esas filas
+  traen `unidad_de_medida == "Dólares"`: `monto_pc` son dólares per cápita
+  deflactados con un índice de precios MEXICANO y `monto_pib` es un cociente
+  dólares/pesos (0.23% del PIB en 1999). El saldo en pesos simplemente no
+  existe antes de 2000. El nodo lo esquiva con piso 2000 + un guard de unidad
+  que verifica el piso en cada corrida; la limpieza a missing explícito
+  corresponde a un ciclo futuro de `UpdateSHRFSP`.
+- **La columna "Total" de la matriz `rfsp` de `SIM.do` es decorativa.**
+  `global rfsp<año>` se define en `SIM.do:393` y no lo consume nadie:
+  `SHRFSP.ado:131` recalcula `rfsp` como la suma de sus siete componentes.
+
 ## [v8.2.0] — 2026-07-19
 
 **Cambio de metodología del PC de salud: el denominador pasa de
