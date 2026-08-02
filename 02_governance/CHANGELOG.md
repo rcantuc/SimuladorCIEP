@@ -56,6 +56,44 @@ El tag llega cuando el nodo se publique, no antes.
   `plan-integracion-paquete2027.md`, `reporte-inventario-paquete2027.md` y
   `verificacion-estado-repo.md` → `02_governance/` (cero referencias en el
   repo, el movimiento no rompe ninguna ruta).
+- **Mapa 04_\* (2026-08-02): cada sitio web tiene su semilla local con
+  anatomía estándar** — `public_html/` (código desplegable) + `db/` (dumps
+  fechados) + `local/` (utilería) + `DEPLOY.md`. Estado: 04_1
+  paqueteeconomico corre en `localhost:8892` (BD `paqueteeconomico_local`),
+  04_4 libro corre en `localhost:8888` (BD `libro_local`), 04_5 ciep.mx tiene
+  BD importada y código pendiente de reorganizar a `public_html/`; 04_2 es el
+  archivo histórico LaTeX. Todas gitignored; ningún `wp-config.php`,
+  `wp-salt.php` ni dump está trackeado (verificado con `git ls-files`).
+  Residuo eliminado: `wp-admin/`/`wp-content/` sueltas en la raíz de 04_1
+  (placeholders de 0 bytes, sobras de la reorganización).
+- **Regla de dumps fechados (2026-08-02, aplica a toda semilla):** toda BD
+  activada en local deja su dump fechado en el `db/` de su semilla
+  (`<base>-AAAAMMDD.sql[.gz]`). Cumplen 04_1 (`emepykgvhz-20260802.sql`) y
+  04_4 (`libro_local-20260802.sql.gz`, generado en este ciclo); 04_5 cuando
+  se active. Los dumps contienen datos reales (hashes de usuarios, pedidos
+  WooCommerce): NUNCA van a git ni salen de la máquina.
+- **Cierre de `04_3_nodos/` (decisión de Ricardo, 2026-08-02):** el destino
+  de render de los nodos se muda BAJO EL DOCROOT del WordPress local del
+  Paquete — `04_1_…/public_html/nodos/` (patrón 6yt5ppa3hb: estáticos
+  servidos junto al sitio, jamás dentro de Elementor). El nodo de deuda es
+  visible en el MISMO localhost del sitio:
+  `http://localhost:8892/nodos/nodo-deuda.html`. Piezas movidas: default de
+  `scalarjson`, driver (mkdir antes de exportar + copia servible),
+  `verify_nodo.sh` (todas las reglas pasan contra el destino nuevo, exit 0) y
+  `nodo-deuda-vista-previa.md`; `.gitignore` gana el cinturón explícito con
+  sus aserciones. `04_3_nodos/` se eliminó tras mover el corte vigente
+  (byte-idéntico). El estatus no cambia: render desechable, sin historial en
+  git — el corolario de guardar el corte anterior a mano antes de re-exportar
+  sigue vigente.
+- **El "header doble" del sitio local NO es un defecto del local (auditado
+  2026-08-02):** el header rosa del tema (hello-elementor default) aparece
+  también en producción. Evidencia: el HTML de producción emite
+  `<header id="site-header">` con y sin el caché de WP Rocket, las 17 hojas
+  CSS son byte-idénticas entre producción y local y ninguna lo oculta, y los
+  screenshots headless (Chrome 151) de producción y de `:8892` salen
+  byte-idénticos. La paridad local–producción está demostrada; quitar el
+  header rosa es una decisión de DISEÑO que aplicaría a ambos lados, y las
+  opciones quedaron documentadas en el `DEPLOY.md` de la semilla.
 
 ### Comandos
 - **`scalarjson.ado` v1.0.0 — exportador de nodos a JSON, hermano de SOLO
@@ -76,6 +114,21 @@ El tag llega cuando el nodo se publique, no antes.
   `capture confirm file` del driver. Degradación silenciosa si falta
   cualquiera. `scalarjson.ado` NO se publica al endpoint: en el VPS el comando
   no existe y el bloque solo imprime la nota.
+- **`scalarjson.ado` v1.1 — el contrato lleva el espejo del display.** Opción
+  `tabla()` nueva y dos bloques nuevos en el JSON: `presentacion` (lo que la
+  página necesita para renderizar y no es una cifra: etiqueta de moneda,
+  escala, encabezados y formatos de columna, denominadores por bloque) y
+  `tabla` (la ESTRUCTURA del display que la página espeja: qué filas, en qué
+  orden, con qué etiqueta, prefijo, familia y énfasis). Viven en el contrato
+  y no en la página para que la tabla del sitio no pueda divergir en silencio
+  de la que imprime el módulo en Stata. En el driver, los 72 escalares salen
+  de la MISMA tabla (19 filas, 5 bloques): contrato y display no pueden
+  desincronizarse porque no hay dos listas que mantener. La página
+  (`nodo-deuda.html`) se reescribió como espejo del display.
+- **`scalarjson` escribe números con `%25.17g` (antes `%22.15g`).** 17
+  dígitos significativos garantizan round-trip exacto de un double IEEE 754;
+  con 15, el JSON perdía el último bit y la página redondeaba a un peso de
+  distancia del display de Stata (`SHRFSPMonto` …533 vs …534).
 
 ### Correcciones
 - **`scalarjson` sanea backticks al escribir (clase: inyección de macro desde
