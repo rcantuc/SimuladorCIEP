@@ -1051,6 +1051,22 @@ quietly {
 		else {
 			noisily scalarlatex, log(shrfsp) alt(shrfsp)
 		}
+
+		* Nodo de deuda -> JSON. Misma clausura que scalarlatex (leccion
+		* v8.0.11): este .ado esta PUBLICADO y corre en el VPS, asi que la
+		* invocacion nunca es incondicional. Tres guards en serie:
+		* $textbook (solo-repo) + scalarjson presente + driver presente.
+		* Sin cualquiera de los tres, degradacion silenciosa. *
+		capture which scalarjson
+		if _rc {
+			noisily di in g "Nota: la opcion textbook (scalarjson) es solo-repo; no viaja al endpoint publico."
+		}
+		else {
+			capture confirm file `"`c(sysdir_site)'/01_modulos/nodos/nodo-deuda.do"'
+			if _rc == 0 {
+				noisily do `"`c(sysdir_site)'/01_modulos/nodos/nodo-deuda.do"'
+			}
+		}
 	}
 	capture drop __*
 	timer off 5
