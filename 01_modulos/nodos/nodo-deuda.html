@@ -6,19 +6,19 @@
 <title>Deuda pública — Nodo CIEP</title>
 <style>
 /* ---------------------------------------------------------------------------
+   Lenguaje visual ULTRA-AUSTERO (variante A, aprobada por Ricardo en la ronda
+   de estilo del 2026-08-02): título, la tabla y el sello. La costura CGPE y
+   la procedencia viven en un <details> plegado de una línea. Cero texto
+   explicativo suelto.
+
    La página espeja la tabla que SHRFSP.ado imprime en Stata: mismo orden de
-   bloques, mismas filas, mismos prefijos, mismas reglas. La estructura viaja
-   en el contrato (clave "tabla"), no aquí, para que no puedan divergir.
+   bloques, mismas filas, mismos prefijos. La estructura viaja en el contrato
+   (clave "tabla"), no aquí, para que no puedan divergir.
 
    Todo valor numérico viene del JSON. Las únicas cifras que viven en este
    archivo son geometría y tipografía, y por eso viven DENTRO de <style>:
    05_scripts/verify_nodo.sh exime este bloque y truena ante cualquier
    literal numérico de cuatro dígitos o con decimales fuera de él.
-
-   Lenguaje visual: el display de Stata es tabular y monoespaciado; aquí se
-   conserva el ESPÍRITU (cifras alineadas por dígito, reglas horizontales que
-   separan bloques, prefijos (+)/(=)/(*) como columna propia) sobre papel
-   claro, no verde-sobre-negro.
 --------------------------------------------------------------------------- */
 :root {
   color-scheme: light;
@@ -91,38 +91,38 @@ tr.total td { font-weight: 700; }
 tr.total td.concepto, tr.total td.pref { color: var(--ink); }
 tr.rule-min td { border-top: 1px solid var(--rule); padding-top: 0; height: .35rem; }
 tr.rule-max td { border-top: 3px double var(--rule-strong); padding-top: 0; height: .55rem; }
-td.nota-bloque {
-  font-size: .76rem; color: var(--ink-3); text-align: right;
-  padding-top: 0; padding-bottom: .5rem; font-style: italic;
-}
 
-/* --- secciones --- */
-h2 {
-  font-size: .95rem; letter-spacing: .05em; text-transform: uppercase;
-  color: var(--ink-2); margin: 2.4rem 0 .6rem;
-  padding-bottom: .35rem; border-bottom: 1px solid var(--rule);
+/* --- costura plegada: una línea discreta --- */
+details.costura {
+  margin: 1.1rem 0 0; font-size: .85rem; color: var(--ink-3);
 }
-p { margin: .5rem 0; }
-.nota { font-size: .9rem; color: var(--ink-2); }
-.pend { color: var(--ink-3); font-style: italic; }
-.capa {
-  background: var(--panel); border: 1px solid var(--rule);
-  border-left: 3px solid var(--rule); border-radius: 8px;
-  padding: .7rem .9rem; margin: .6rem 0;
+details.costura summary {
+  cursor: pointer; list-style: none; display: inline-block;
 }
-.capa.viva { border-left-color: var(--accent); }
-.capa .val {
+details.costura summary::-webkit-details-marker { display: none; }
+details.costura summary::before { content: "▸ "; color: var(--ink-3); }
+details.costura[open] summary::before { content: "▾ "; }
+details.costura .cuerpo {
+  margin-top: .5rem; padding: .7rem .9rem;
+  background: var(--panel); border: 1px solid var(--rule); border-radius: 8px;
+  color: var(--ink-2); font-size: .88rem;
+}
+details.costura .capa-linea { margin: .2rem 0; }
+details.costura .val {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-weight: 700; font-variant-numeric: tabular-nums;
+  font-weight: 700; font-variant-numeric: tabular-nums; color: var(--ink);
 }
-dl { margin: .3rem 0; }
-dt { font-weight: 600; font-size: .88rem; margin-top: .7rem; color: var(--ink); }
-dd { margin: .1rem 0 0; color: var(--ink-2); font-size: .9rem; }
+details.costura dt { font-weight: 600; margin-top: .55rem; color: var(--ink); }
+details.costura dd { margin: 0; color: var(--ink-2); }
+details.costura dl { margin: .3rem 0 0; }
+.pend { color: var(--ink-3); font-style: italic; }
+
 footer {
   margin-top: 2.6rem; padding-top: .9rem; border-top: 1px solid var(--rule);
   font-size: .85rem; color: var(--ink-3);
 }
-footer a, .nota a { color: var(--accent); }
+footer a, details.costura a { color: var(--accent); }
+.nota { font-size: .9rem; color: var(--ink-2); }
 .err {
   background: var(--panel); border: 1px solid var(--rule);
   border-radius: 8px; padding: 1rem;
@@ -141,36 +141,19 @@ footer a, .nota a { color: var(--accent); }
 
   <noscript>
     <div class="err">
-      <p><b>Esta página no trae ninguna cifra escrita.</b> Reproduce la tabla
-      que el módulo <code>SHRFSP</code> imprime en Stata, y todos sus números
+      <p><b>Esta página no trae ninguna cifra escrita.</b> Todos sus números
       salen de <code>statajson_deuda-publica.json</code>, producido por el
-      Simulador Fiscal CIEP. Para verlos hace falta JavaScript.</p>
-      <p>Sin JavaScript puedes leer el contrato completo —la tabla, la serie,
-      unidades, fuentes, criterios de conciliación y sello— abriendo el JSON:
-      <a href="statajson_deuda-publica.json">statajson_deuda-publica.json</a>.
-      Es el mismo dato, sin intermediario.</p>
+      Simulador Fiscal CIEP. Para verlos hace falta JavaScript, o abre el
+      <a href="statajson_deuda-publica.json">contrato JSON</a> directo.</p>
     </div>
   </noscript>
 
   <div class="tabla-wrap"><table class="display" id="tabla"></table></div>
-  <p class="nota" id="nota-tabla"></p>
 
-  <section id="s-capas" hidden>
-    <h2>Qué no está incluido</h2>
-    <p class="nota">La medida titular tiene un perímetro. Estas capas quedan
-    fuera de él y se declaran para que el perímetro sea visible.</p>
-    <div id="capas"></div>
-  </section>
-
-  <section id="s-conciliacion" hidden>
-    <h2>Conciliación</h2>
-    <p class="nota">Los siete criterios que hacen comparable —o no— esta cifra
-    con otra que hayas leído en otro lado. Los que aparecen como pendientes no
-    están resueltos: el motor no los declara y esta página no los inventa.</p>
-    <dl id="criterios"></dl>
-    <h2>Fuentes</h2>
-    <dl id="fuentes"></dl>
-  </section>
+  <details class="costura" id="costura" hidden>
+    <summary id="costura-linea"></summary>
+    <div class="cuerpo" id="costura-cuerpo"></div>
+  </details>
 
   <footer id="sello">
     <p id="sello-txt"></p>
@@ -182,18 +165,15 @@ footer a, .nota a { color: var(--accent); }
 <script>
 /* ===========================================================================
    nodo-deuda.html — lector del contrato ciep.nodo.serie/v1
-   Espeja el display de SHRFSP.ado. La estructura de la tabla (bloques, filas,
-   etiquetas, prefijos, familia de escalar) viene del contrato, no de aquí.
+   Lenguaje ultra-austero aprobado en la ronda de estilo: tabla desnuda +
+   costura/procedencia plegadas + sello. Espeja el display de SHRFSP.ado;
+   la estructura de la tabla viene del contrato, no de aquí.
    Esta página NO CALCULA y NO CONTIENE CIFRAS.
    =========================================================================== */
 
 const RUTA = 'statajson_deuda-publica.json';
 let D = null;
 
-/* Formato: sale del contrato (presentacion.fmt_*), no de aquí. Se lee el
-   formato de Stata: los decimales son los dígitos tras el punto y la "c"
-   final pide separador de miles. Sin ejemplos literales en este comentario:
-   la regla 1 del verificador no distingue comentario de código, y hace bien. */
 function fmt(v, spec) {
   if (v === null || v === undefined) return '—';
   const m = /%\d*\.(\d+)f(c?)/.exec(spec || '');
@@ -208,7 +188,6 @@ function val(nombre) {
   return (e && e.valor !== undefined) ? e.valor : null;
 }
 
-/* ===================== la tabla ===================== */
 const COLS = [
   { suf: 'Monto',  fmt: 'fmt_monto',  cab: 'col_monto'  },
   { suf: 'PIB',    fmt: 'fmt_pib',    cab: 'col_pib'    },
@@ -222,21 +201,15 @@ function renderTabla() {
   let h = '<thead><tr><th class="concepto" colspan="2">Concepto</th>';
   COLS.forEach(c => { h += '<th>' + (P[c.cab] || '') + '</th>'; });
   h += '</tr></thead><tbody>';
-
   const filas = D.tabla;
   filas.forEach((f, i) => {
     const prev = i ? filas[i - 1] : null;
-    const next = (i + 1 < filas.length) ? filas[i + 1] : null;
-
-    /* regla doble entre bloques (el "=" del display) */
     if (prev && prev.bloque !== f.bloque) {
       h += '<tr class="rule-max"><td colspan="6"></td></tr>';
     }
-    /* regla simple antes del total del bloque (el "-" del display) */
     if (f.enfasis && prev && prev.bloque === f.bloque) {
       h += '<tr class="rule-min"><td colspan="6"></td></tr>';
     }
-
     h += '<tr' + (f.enfasis ? ' class="total"' : '') + '>';
     h += '<td class="pref">' + f.prefijo + '</td>';
     h += '<td class="concepto">' + f.etiqueta + '</td>';
@@ -244,75 +217,73 @@ function renderTabla() {
       h += '<td class="num">' + fmt(val(f.familia + c.suf), P[c.fmt]) + '</td>';
     });
     h += '</tr>';
-
-    /* nota del denominador de % Tot, al cerrar cada bloque */
-    const cierra = !next || next.bloque !== f.bloque;
-    const nota = P['pct_tot_' + f.bloque];
-    if (cierra && nota) {
-      h += '<tr><td colspan="6" class="nota-bloque">% Tot: ' + nota + '</td></tr>';
-    }
   });
   t.innerHTML = h + '</tbody>';
-  document.getElementById('nota-tabla').textContent = P.nota_pct_tot || '';
 }
 
-/* ===================== capas ===================== */
-function renderCapas() {
-  const cont = document.getElementById('capas');
-  cont.innerHTML = '';
+/* La costura entera —capas declaradas, conciliación, fuentes— plegada tras
+   una sola línea discreta. La línea resume la capa viva si existe. */
+function renderCostura() {
+  const det = document.getElementById('costura');
+  const linea = document.getElementById('costura-linea');
+  const cuerpo = document.getElementById('costura-cuerpo');
+  const vivas = D.capas_declaradas.filter(c => c.disponible);
+  if (vivas.length) {
+    const c = vivas[0];
+    const m = /%\d*\.(\d+)f/.exec(c.formato_sugerido || '');
+    const dec = m ? parseInt(m[1], 10) : 1;
+    const n = c.valor.toLocaleString('es-MX',
+      { minimumFractionDigits: dec, maximumFractionDigits: dec });
+    linea.textContent = c.etiqueta + ': ' + n
+      + (c.unidad.charAt(0) === '%' ? '' : ' ') + c.unidad
+      + ' · capas y procedencia';
+  } else {
+    linea.textContent = 'Capas declaradas y procedencia';
+  }
+
+  let h = '';
   D.capas_declaradas.forEach(c => {
-    const d = document.createElement('div');
-    d.className = 'capa' + (c.disponible ? ' viva' : '');
-    let txt = '<b>' + c.etiqueta + '</b><br>';
+    h += '<p class="capa-linea"><b>' + c.etiqueta + '</b> — ';
     if (c.disponible) {
       const m = /%\d*\.(\d+)f/.exec(c.formato_sugerido || '');
       const dec = m ? parseInt(m[1], 10) : 1;
       const n = c.valor.toLocaleString('es-MX',
         { minimumFractionDigits: dec, maximumFractionDigits: dec });
-      txt += 'El ' + c.etiqueta.replace(/^Escenario /, '').split(':')[0]
-        + ' proyecta <span class="val">' + n
-        + (c.unidad.charAt(0) === '%' ? '' : ' ') + c.unidad
-        + '</span> al cierre. No está incluido en el titular: el titular es lo '
-        + 'observado, esto es un supuesto de política fiscal.';
+      h += '<span class="val">' + n
+        + (c.unidad.charAt(0) === '%' ? '' : ' ') + c.unidad + '</span>';
     } else {
-      txt += '<span class="pend">Sin cifra en este corte.</span> '
-        + 'Queda fuera de la medida titular y el motor no la declara todavía.';
+      h += '<span class="pend">sin cifra en este corte</span>';
     }
-    txt += '<br><span class="nota">Procedencia: ' + c.procedencia.origen
-      + (c.procedencia.definida_en ? ' · ' + c.procedencia.definida_en : '') + '</span>';
-    d.innerHTML = txt;
-    cont.appendChild(d);
+    h += ' · ' + c.procedencia.origen
+      + (c.procedencia.definida_en ? ' · ' + c.procedencia.definida_en : '')
+      + '</p>';
   });
-}
 
-/* ===================== conciliación ===================== */
-const NOMBRE_CRITERIO = {
-  cobertura_institucional: 'Cobertura institucional',
-  momento_de_registro: 'Momento de registro',
-  neto_o_bruto: 'Neto o bruto',
-  moneda_y_valuacion: 'Moneda y valuación',
-  denominador_pib: 'Denominador (PIB)',
-  poblacion_denominador: 'Denominador (población)',
-  deflactor: 'Deflactor'
-};
-function renderConciliacion() {
-  const dl = document.getElementById('criterios');
-  dl.innerHTML = '';
+  const NOMBRE_CRITERIO = {
+    cobertura_institucional: 'Cobertura institucional',
+    momento_de_registro: 'Momento de registro',
+    neto_o_bruto: 'Neto o bruto',
+    moneda_y_valuacion: 'Moneda y valuación',
+    denominador_pib: 'Denominador (PIB)',
+    poblacion_denominador: 'Denominador (población)',
+    deflactor: 'Deflactor'
+  };
+  h += '<dl>';
   Object.keys(NOMBRE_CRITERIO).forEach(k => {
     const t = D.criterios[k];
-    dl.insertAdjacentHTML('beforeend', '<dt>' + NOMBRE_CRITERIO[k] + '</dt>'
-      + (t ? '<dd>' + t + '</dd>'
-           : '<dd class="pend">Pendiente. No declarado por el motor en este corte.</dd>'));
+    h += '<dt>' + NOMBRE_CRITERIO[k] + '</dt>'
+      + (t ? '<dd>' + t + '</dd>' : '<dd class="pend">Pendiente.</dd>');
   });
-  const df = document.getElementById('fuentes');
-  df.innerHTML = '';
+  h += '</dl><dl>';
   Object.keys(D.fuentes).forEach(k => {
-    df.insertAdjacentHTML('beforeend', '<dt>' + k + '</dt><dd>'
-      + (D.fuentes[k] || '<span class="pend">Pendiente.</span>') + '</dd>');
+    h += '<dt>' + k + '</dt><dd>'
+      + (D.fuentes[k] || '<span class="pend">Pendiente.</span>') + '</dd>';
   });
+  h += '</dl>';
+  cuerpo.innerHTML = h;
+  det.hidden = false;
 }
 
-/* ===================== sello + CSV ===================== */
 function csv() {
   const filas = D.tabla.map(f => {
     const celdas = COLS.map(c => {
@@ -348,7 +319,6 @@ function renderSello() {
     : 'Este corte no declara faltantes.';
 }
 
-/* ===================== arranque ===================== */
 function arranque(d) {
   D = d;
   document.getElementById('titulo').textContent =
@@ -356,12 +326,8 @@ function arranque(d) {
   document.getElementById('corte').innerHTML =
     D.medida_titular + ' · <b>' + D.procedencia.corte_serie.etiqueta + '</b>';
   renderTabla();
-  renderCapas();
-  renderConciliacion();
+  renderCostura();
   renderSello();
-  ['s-capas', 's-conciliacion'].forEach(id => {
-    document.getElementById(id).hidden = false;
-  });
 }
 
 fetch(RUTA)
