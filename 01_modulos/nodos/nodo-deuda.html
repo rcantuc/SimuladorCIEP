@@ -74,6 +74,19 @@
   }
 }
 * { box-sizing: border-box; }
+/* --- cabecera institucional --- */
+.marca {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 1.25rem; border-bottom: 1px solid var(--rule);
+  padding-bottom: 1.25rem; margin-bottom: 2rem;
+}
+.marca img { height: 2rem; width: auto; display: block; }
+.marca .producto {
+  font-family: var(--font-body); font-weight: 600; font-size: .78rem;
+  letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3);
+}
+
+
 body {
   margin: 0; background: var(--paper); color: var(--ink);
   font: 16px/1.65 var(--font-body);
@@ -176,6 +189,15 @@ footer a, details.costura a { color: var(--accent); }
 </head>
 <body>
 <main>
+
+  <header class="marca">
+    <picture>
+      <source srcset="assets/CIEPlogoBlanco.png" media="(prefers-color-scheme: dark)">
+      <img src="assets/CIEPlogo.png" width="135" height="32"
+           alt="CIEP — Centro de Investigación Económica y Presupuestaria">
+    </picture>
+    <span class="producto">Simulador Fiscal</span>
+  </header>
 
   <h1 class="titulo" id="titulo">Deuda pública</h1>
   <p class="corte" id="corte">Cargando el contrato del nodo…</p>

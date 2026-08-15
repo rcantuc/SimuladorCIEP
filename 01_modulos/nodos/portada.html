@@ -77,11 +77,32 @@
   }
 }
 * { box-sizing: border-box; }
+/* --- cabecera institucional --- */
+.marca {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 1.25rem; border-bottom: 1px solid var(--rule);
+  padding-bottom: 1.25rem; margin-bottom: 2rem;
+}
+.marca img { height: 2rem; width: auto; display: block; }
+.marca .producto {
+  font-family: var(--font-body); font-weight: 600; font-size: .78rem;
+  letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3);
+}
+
+
 body {
   margin: 0; background: var(--paper); color: var(--ink);
   font: 16px/1.65 var(--font-body);
 }
-main { max-width: 58rem; margin: 0 auto; padding: 2rem 1.25rem 3.25rem; }
+main {
+  max-width: 58rem; margin: 0 auto; padding: 2rem 1.25rem 3.25rem;
+  position: relative;
+}
+.roseta {
+  position: absolute; left: 50%; top: 14rem; transform: translateX(-50%);
+  pointer-events: none; opacity: .10; z-index: 0;
+}
+.ecuacion, .panel, details.costura { position: relative; z-index: 1; }
 
 .titulo {
   display: flex; align-items: center; gap: .8rem;
@@ -205,6 +226,9 @@ a:hover { text-decoration: underline; }
 @media (prefers-reduced-motion: reduce) {
   .termino, .termino:hover { transform: none; transition: none; }
 }
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) .roseta { opacity: .30; }
+}
 
 footer {
   margin-top: 2.6rem; padding-top: .9rem; border-top: 1px solid var(--rule);
@@ -222,6 +246,15 @@ footer a, details.costura a { color: var(--accent); }
 <body>
 <main>
 
+  <header class="marca">
+    <picture>
+      <source srcset="assets/CIEPlogoBlanco.png" media="(prefers-color-scheme: dark)">
+      <img src="assets/CIEPlogo.png" width="135" height="32"
+           alt="CIEP — Centro de Investigación Económica y Presupuestaria">
+    </picture>
+    <span class="producto">Simulador Fiscal</span>
+  </header>
+
   <h1 class="titulo" id="titulo">Paquete Económico</h1>
   <p class="corte" id="corte">Cargando el contrato de la portada…</p>
 
@@ -234,21 +267,28 @@ footer a, details.costura a { color: var(--accent); }
     </div>
   </noscript>
 
+  <div class="roseta" aria-hidden="true">
+    <picture>
+      <source srcset="assets/roseta-blanco.png" media="(prefers-color-scheme: dark)">
+      <img src="assets/roseta-color.png" width="180" height="198" alt="">
+    </picture>
+  </div>
+
   <div class="anios" id="anios" hidden></div>
   <p class="tipo-dato" id="tipo-dato" hidden></p>
 
   <div class="ecuacion" id="ecuacion" hidden>
-    <div class="termino" id="t-gasto" data-panel="p-gasto">
+    <div class="termino" id="t-gasto" data-panel="p-gasto" tabindex="0" role="button">
       <div class="nombre" id="n-gasto"></div>
       <div class="cifra" id="v-gasto"></div>
     </div>
     <div class="operador">=</div>
-    <div class="termino" id="t-ingresos" data-panel="p-ingresos">
+    <div class="termino" id="t-ingresos" data-panel="p-ingresos" tabindex="0" role="button">
       <div class="nombre" id="n-ingresos"></div>
       <div class="cifra" id="v-ingresos"></div>
     </div>
     <div class="operador">+</div>
-    <div class="termino" id="t-financiamiento" data-panel="p-financiamiento">
+    <div class="termino" id="t-financiamiento" data-panel="p-financiamiento" tabindex="0" role="button">
       <div class="nombre" id="n-financiamiento"></div>
       <div class="cifra" id="v-financiamiento"></div>
     </div>
