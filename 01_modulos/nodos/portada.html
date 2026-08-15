@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Paquete Económico — CIEP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&family=Open+Sans:wght@400;600;700&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 /* ---------------------------------------------------------------------------
    Portada del Paquete: la ecuación fundamental, multi-año, en el lenguaje
@@ -76,27 +79,27 @@
 * { box-sizing: border-box; }
 body {
   margin: 0; background: var(--paper); color: var(--ink);
-  font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font: 16px/1.65 var(--font-body);
 }
 main { max-width: 58rem; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
 
 .titulo {
   display: flex; align-items: center; gap: .8rem;
-  margin: 0 0 .3rem; font-size: 1.15rem; letter-spacing: .04em;
-  text-transform: uppercase; font-weight: 700;
+  margin: 0 0 .3rem; font-size: 1.25rem; letter-spacing: .04em;
+  text-transform: uppercase; font-weight: 700; font-family: var(--font-display);
 }
 .titulo::before, .titulo::after {
   content: ""; flex: 1 1 auto; height: 0;
-  border-top: 2px dotted var(--rule);
+  border-top: 1px solid var(--rule);
 }
-.corte { text-align: center; color: var(--ink-2); font-size: .95rem; margin: 0 0 1.2rem; }
+.corte { text-align: center; color: var(--ink-2); font-size: .9rem; margin: 0 0 1.2rem; }
 .corte b { color: var(--ink); }
 
 /* --- el selector de años: parte de la ecuación, no un control aparte --- */
 .anios {
   display: flex; justify-content: center; align-items: baseline;
   gap: .1rem .35rem; flex-wrap: wrap; margin: 0 0 .3rem;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums; font-size: .92rem;
 }
 .anios button {
@@ -125,18 +128,18 @@ main { max-width: 58rem; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
 }
 .termino:hover, .termino.abierto { border-bottom-color: var(--accent); }
 .termino .nombre {
-  font-size: .8rem; letter-spacing: .07em; text-transform: uppercase;
-  color: var(--ink-2); font-weight: 600;
+  font-size: .8rem; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--ink-3); font-weight: 600; font-family: var(--font-body);
 }
 .termino .cifra {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-family: var(--font-mono);
   font-size: 2.3rem; font-weight: 700; line-height: 1.15;
   font-variant-numeric: tabular-nums;
 }
 .termino a { color: inherit; text-decoration: none; }
 .operador {
   align-self: center; font-size: 1.9rem; font-weight: 700; color: var(--ink-3);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-family: var(--font-mono);
 }
 
 /* --- panel de desagregación (hover/tap) --- */
@@ -152,13 +155,13 @@ table.desglose {
 }
 table.desglose td { padding: .22rem .4rem; white-space: nowrap; }
 td.pref {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-family: var(--font-mono);
   color: var(--ink-3); width: 2.2rem; padding-right: 0;
 }
 td.concepto { text-align: left; color: var(--ink-2); width: 100%; }
 td.num {
   text-align: right;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-family: var(--font-mono);
   font-size: .93rem; color: var(--ink);
 }
 tr.total td { font-weight: 700; border-top: 1px solid var(--rule); }
@@ -167,7 +170,7 @@ tr.total td.concepto, tr.total td.pref { color: var(--ink); }
 .panel .liga a { color: var(--accent); }
 .panel .capa-linea { margin: .45rem 0 0; font-size: .85rem; color: var(--ink-3); }
 .panel .capa-linea .val {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-family: var(--font-mono);
   font-weight: 700; color: var(--ink-2);
 }
 
@@ -183,14 +186,14 @@ details.costura .cuerpo {
   color: var(--ink-2); font-size: .88rem;
 }
 details.costura .val {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-family: var(--font-mono);
   font-weight: 700; color: var(--ink);
 }
 .pend { color: var(--ink-3); font-style: italic; }
 
 footer {
   margin-top: 2.6rem; padding-top: .9rem; border-top: 1px solid var(--rule);
-  font-size: .85rem; color: var(--ink-3);
+  font-size: .9rem; color: var(--ink-3);
 }
 footer a, details.costura a { color: var(--accent); }
 .nota { font-size: .9rem; color: var(--ink-2); }
