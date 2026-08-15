@@ -25,26 +25,52 @@
 --------------------------------------------------------------------------- */
 :root {
   color-scheme: light;
-  --paper:  #fbfbf9;
-  --panel:  #ffffff;
-  --rule:   #d9d7ce;
-  --rule-strong: #8a8880;
-  --ink:    #14140f;
-  --ink-2:  #55534b;
-  --ink-3:  #86847a;
-  --accent: #2a78d6;
+
+  /* Paleta institucional CIEP */
+  --ciep-orange: #d76f33;
+  --ciep-orange-light: #ff874d;
+  --ciep-gray-dark: #2d353a;
+  --ciep-black: #1F1F1F;
+  --ciep-gray: #999b9c;
+  --ciep-gray-light: #ebebeb;
+  --ciep-beige: #f3f3e9;
+  --ciep-white: #ffffff;
+
+  /* Alias existentes de la página → tokens CIEP */
+  --paper: var(--ciep-beige);
+  --panel: var(--ciep-white);
+  --rule: var(--ciep-gray-light);
+  --rule-strong: var(--ciep-gray);
+  --ink: var(--ciep-black);
+  --ink-2: #555a5e;
+  --ink-3: var(--ciep-gray);
+  --accent: var(--ciep-orange);
+
+  /* Tipografía */
+  --font-display: 'Ubuntu', system-ui, sans-serif;
+  --font-body: 'Open Sans', system-ui, sans-serif;
+  --font-mono: 'Ubuntu Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Radios y sombras */
+  --radius-sm: 0.5rem;
+  --radius-md: 1rem;
+  --radius-pill: 9999px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.10);
+  --focus-ring: 0 0 0 3px rgba(215,111,51,0.28);
 }
+
 @media (prefers-color-scheme: dark) {
   :root:where(:not([data-theme="light"])) {
     color-scheme: dark;
-    --paper:  #131311;
-    --panel:  #1b1b18;
-    --rule:   #34342f;
-    --rule-strong: #6f6d64;
-    --ink:    #f4f3ec;
-    --ink-2:  #b9b7ac;
-    --ink-3:  #85837a;
-    --accent: #3987e5;
+    --paper: #22292d;
+    --panel: #2d353a;
+    --rule: #3d464b;
+    --rule-strong: #6b7478;
+    --ink: #f4f3ec;
+    --ink-2: #c3c7c9;
+    --ink-3: #9ca3a6;
+    --accent: var(--ciep-orange-light);
   }
 }
 * { box-sizing: border-box; }
