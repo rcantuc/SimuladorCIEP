@@ -6,18 +6,19 @@
 <title>Paquete Económico — CIEP</title>
 <style>
 /* ---------------------------------------------------------------------------
-   Portada del Paquete: la ecuación fundamental, en el lenguaje ultra-austero
-   aprobado para el nodo (título, la pieza central, una línea personal y el
-   sello; costura y procedencia plegadas; cero texto suelto).
+   Portada del Paquete: la ecuación fundamental, multi-año, en el lenguaje
+   ultra-austero aprobado (título, el selector de años COMO PARTE de la
+   ecuación, la ecuación, la costura plegada y el sello; cero texto suelto).
 
    Referencia CONCEPTUAL: la sección "La ecuación fundamental" de
    libro.ciep.mx (tres términos con jerarquía visual y operadores entre
    ellos). Se re-implementa al estilo nodo: aquí los términos LLEVAN el
-   número del motor y cada uno se desagrega al pasar el cursor (hover) o
-   tocarlo (tap). El término Financiamiento enlaza al nodo de deuda.
+   número del motor para el año elegido y cada uno se desagrega al pasar el
+   cursor (hover) o tocarlo (tap). El término Financiamiento enlaza al nodo
+   de deuda. La marca discreta junto al año declara el tipo de dato de cada
+   lado (gasto: ejercido/aprobado; ingresos: observado/ley).
 
-   Todo valor numérico viene de statajson_portada.json (y la línea personal,
-   de statajson_deuda-publica.json, el contrato del nodo). Las únicas cifras
+   Todo valor numérico viene de statajson_portada.json. Las únicas cifras
    de este archivo son geometría y tipografía, dentro de <style>:
    05_scripts/verify_nodo.sh exime este bloque y truena ante cualquier
    literal numérico de cuatro dígitos o con decimales fuera de él.
@@ -62,8 +63,28 @@ main { max-width: 58rem; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
   content: ""; flex: 1 1 auto; height: 0;
   border-top: 2px dotted var(--rule);
 }
-.corte { text-align: center; color: var(--ink-2); font-size: .95rem; margin: 0 0 2.2rem; }
+.corte { text-align: center; color: var(--ink-2); font-size: .95rem; margin: 0 0 1.2rem; }
 .corte b { color: var(--ink); }
+
+/* --- el selector de años: parte de la ecuación, no un control aparte --- */
+.anios {
+  display: flex; justify-content: center; align-items: baseline;
+  gap: .1rem .35rem; flex-wrap: wrap; margin: 0 0 .3rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-variant-numeric: tabular-nums; font-size: .92rem;
+}
+.anios button {
+  border: 0; background: none; padding: .15rem .3rem; cursor: pointer;
+  font: inherit; color: var(--ink-3); border-bottom: 2px solid transparent;
+}
+.anios button:hover { color: var(--ink); }
+.anios button.activo {
+  color: var(--ink); font-weight: 700; border-bottom-color: var(--accent);
+}
+.tipo-dato {
+  text-align: center; color: var(--ink-3); font-size: .78rem;
+  letter-spacing: .03em; margin: 0 0 1.6rem;
+}
 
 /* --- la ecuación --- */
 .ecuacion {
@@ -124,22 +145,6 @@ tr.total td.concepto, tr.total td.pref { color: var(--ink); }
   font-weight: 700; color: var(--ink-2);
 }
 
-/* --- la línea personal --- */
-.personal {
-  text-align: center; margin: 2.2rem 0 0; font-size: .95rem; color: var(--ink-2);
-}
-.personal input {
-  width: 5.2rem; padding: .25rem .4rem; border: 1px solid var(--rule);
-  border-radius: 6px; background: var(--panel); color: var(--ink);
-  font: inherit; font-variant-numeric: tabular-nums; text-align: center;
-}
-.personal .resp { display: block; margin-top: .35rem; min-height: 1.4rem; }
-.personal .val {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-weight: 700; color: var(--ink);
-}
-.personal .pend { color: var(--ink-3); font-style: italic; }
-
 /* --- costura plegada --- */
 details.costura { margin: 1.6rem 0 0; font-size: .85rem; color: var(--ink-3); text-align: center; }
 details.costura summary { cursor: pointer; list-style: none; display: inline-block; }
@@ -150,6 +155,10 @@ details.costura .cuerpo {
   margin-top: .5rem; padding: .7rem .9rem; text-align: left;
   background: var(--panel); border: 1px solid var(--rule); border-radius: 8px;
   color: var(--ink-2); font-size: .88rem;
+}
+details.costura .val {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-weight: 700; color: var(--ink);
 }
 .pend { color: var(--ink-3); font-style: italic; }
 
@@ -181,6 +190,9 @@ footer a, details.costura a { color: var(--accent); }
     </div>
   </noscript>
 
+  <div class="anios" id="anios" hidden></div>
+  <p class="tipo-dato" id="tipo-dato" hidden></p>
+
   <div class="ecuacion" id="ecuacion" hidden>
     <div class="termino" id="t-gasto" data-panel="p-gasto">
       <div class="nombre" id="n-gasto"></div>
@@ -202,12 +214,6 @@ footer a, details.costura a { color: var(--accent); }
   <div class="panel" id="p-ingresos" hidden></div>
   <div class="panel" id="p-financiamiento" hidden></div>
 
-  <p class="personal" id="personal" hidden>
-    <label id="personal-label" for="anio-nac"></label>
-    <input id="anio-nac" inputmode="numeric" autocomplete="off">
-    <span class="resp" id="personal-resp"></span>
-  </p>
-
   <details class="costura" id="costura" hidden>
     <summary id="costura-linea"></summary>
     <div class="cuerpo" id="costura-cuerpo"></div>
@@ -222,16 +228,15 @@ footer a, details.costura a { color: var(--accent); }
 
 <script>
 /* ===========================================================================
-   portada.html — lector del contrato ciep.nodo.portada/v1
-   La ecuación fundamental con los números del motor; cada término se
-   desagrega con hover (desktop) o tap (móvil); Financiamiento enlaza al
-   nodo de deuda, cuyo contrato alimenta la línea personal.
-   Esta página NO CALCULA y NO CONTIENE CIFRAS.
+   portada.html — lector del contrato ciep.nodo.portada/v1 (multi-año)
+   El selector de años cambia la ecuación completa (términos +
+   desagregaciones + marca de tipo de dato). Financiamiento enlaza al nodo
+   de deuda. Esta página NO CALCULA y NO CONTIENE CIFRAS.
    =========================================================================== */
 
 const RUTA = 'statajson_portada.json';
-let D = null;      /* contrato de la portada */
-let DN = null;     /* contrato del nodo de deuda (línea personal) */
+let D = null;
+let ANIO = null;   /* año seleccionado */
 
 function fmt(v, spec) {
   if (v === null || v === undefined) return '—';
@@ -242,53 +247,77 @@ function fmt(v, spec) {
     minimumFractionDigits: dec, maximumFractionDigits: dec, useGrouping: mil
   });
 }
+function ec() { return D.ecuaciones.find(e => e.anio === ANIO); }
 
-/* ===================== la ecuación ===================== */
+/* ===================== selector de años ===================== */
+function renderAnios() {
+  const cont = document.getElementById('anios');
+  cont.innerHTML = '';
+  D.anios.forEach(y => {
+    const b = document.createElement('button');
+    b.textContent = y;
+    b.className = (y === ANIO) ? 'activo' : '';
+    b.addEventListener('click', () => { ANIO = y; renderAnio(); });
+    cont.appendChild(b);
+  });
+  cont.hidden = false;
+}
+
+function renderTipoDato() {
+  const e = ec();
+  const p = document.getElementById('tipo-dato');
+  p.textContent = 'gasto: ' + e.tipo_dato.gasto + ' · ingresos: ' + e.tipo_dato.ingresos;
+  p.hidden = false;
+}
+
+/* ===================== la ecuación del año ===================== */
 function renderEcuacion() {
-  const E = D.ecuacion;
+  const P = D.presentacion;
+  const e = ec();
   ['gasto', 'ingresos', 'financiamiento'].forEach(k => {
-    const t = E.terminos[k];
+    const t = e.terminos[k];
     document.getElementById('n-' + k).textContent = t.etiqueta;
-    document.getElementById('v-' + k).textContent = fmt(t.pib, E.formato_pib);
+    document.getElementById('v-' + k).textContent = fmt(t.pib, P.formato_pib);
   });
   document.getElementById('ecuacion').hidden = false;
 }
 
-function tablaDesglose(filas, total, E) {
+function tablaDesglose(filas, total, P) {
   let h = '<table class="desglose">';
   filas.forEach(f => {
     h += '<tr><td class="pref">(+)</td><td class="concepto">' + f.etiqueta
-      + '</td><td class="num">' + fmt(f.pib, E.formato_pib_detalle) + '</td></tr>';
+      + '</td><td class="num">' + fmt(f.pib, P.formato_pib_detalle) + '</td></tr>';
   });
   h += '<tr class="total"><td class="pref">(=)</td><td class="concepto">'
     + total.etiqueta + '</td><td class="num">'
-    + fmt(total.pib, E.formato_pib_detalle) + '</td></tr>';
+    + fmt(total.pib, P.formato_pib_detalle) + '</td></tr>';
   return h + '</table>';
 }
 
 function renderPaneles() {
-  const E = D.ecuacion;
+  const P = D.presentacion;
+  const e = ec();
   document.getElementById('p-ingresos').innerHTML =
-    tablaDesglose(D.desagregaciones.ingresos, E.terminos.ingresos, E);
+    tablaDesglose(e.desagregaciones.ingresos, e.terminos.ingresos, P);
   document.getElementById('p-gasto').innerHTML =
-    tablaDesglose(D.desagregaciones.gasto, E.terminos.gasto, E);
+    tablaDesglose(e.desagregaciones.gasto, e.terminos.gasto, P);
 
   /* Financiamiento: el cierre, su referencia LIF declarada, la capa CGPE
-     y la liga al nodo. */
-  const F = E.terminos.financiamiento;
+     del año (si la hay) y la liga al nodo. */
+  const F = e.terminos.financiamiento;
   let h = '<table class="desglose">';
   h += '<tr class="total"><td class="pref">(=)</td><td class="concepto">'
-    + F.etiqueta + '</td><td class="num">' + fmt(F.pib, E.formato_pib_detalle)
+    + F.etiqueta + '</td><td class="num">' + fmt(F.pib, P.formato_pib_detalle)
     + '</td></tr>';
   if (F.referencia_lif) {
     h += '<tr><td class="pref"></td><td class="concepto">' + F.referencia_lif.escalar
-      + '</td><td class="num">' + fmt(F.referencia_lif.pib, E.formato_pib_detalle) + '</td></tr>';
+      + '</td><td class="num">' + fmt(F.referencia_lif.pib, P.formato_pib_detalle) + '</td></tr>';
   }
   h += '</table>';
-  D.capas_declaradas.forEach(c => {
+  D.capas_declaradas.filter(c => c.anio === ANIO).forEach(c => {
     h += '<p class="capa-linea">' + c.etiqueta + ' — ';
     if (c.disponible) {
-      h += '<span class="val">' + fmt(c.valores.rfsp, E.formato_pib) + '</span> ' + c.unidad;
+      h += '<span class="val">' + fmt(c.valores.rfsp, P.formato_pib) + '</span> ' + c.unidad;
     } else {
       h += '<span class="pend">sin cifra en este corte</span>';
     }
@@ -315,59 +344,27 @@ function conectarPaneles() {
   });
 }
 
-/* ===================== la línea personal (contrato del nodo) ===================== */
-function renderPersonal() {
-  if (!DN) return;
-  const anios = DN.series.map(f => f.anio);
-  const amin = Math.min.apply(null, anios);
-  const amax = Math.max.apply(null, anios);
-  const P = document.getElementById('personal');
-  document.getElementById('personal-label').textContent =
-    'Tu año de nacimiento:';
-  const inp = document.getElementById('anio-nac');
-  const resp = document.getElementById('personal-resp');
-  const meta = (DN.unidades && DN.unidades.saldo_pc_real) || {};
-  const uPC = meta.unidad || '';
-  const fPC = meta.formato_sugerido || '';
-  function contesta() {
-    const y = parseInt(inp.value, 10);
-    resp.textContent = '';
-    if (!inp.value) return;
-    if (isNaN(y)) return;
-    if (y < amin || y > amax) {
-      resp.innerHTML = '<span class="pend">La serie en pesos del contrato inicia en '
-        + amin + ' y corre hasta ' + amax + '; fuera de ese rango no se inventa nada.</span>';
-      return;
-    }
-    const f0 = DN.series.find(f => f.anio === y);
-    const f1 = DN.series.find(f => f.anio === amax);
-    resp.innerHTML = 'Deuda por persona: <span class="val">$' + fmt(f0.saldo_pc_real, fPC)
-      + '</span> en ' + y + ' → <span class="val">$' + fmt(f1.saldo_pc_real, fPC)
-      + '</span> en ' + amax + ' <span class="pend">(' + uPC + ')</span>';
-  }
-  inp.addEventListener('input', contesta);
-  P.hidden = false;
-}
-
-/* ===================== costura plegada ===================== */
+/* ===================== costura plegada (del año elegido) ===================== */
 function renderCostura() {
   const det = document.getElementById('costura');
   const linea = document.getElementById('costura-linea');
   const cuerpo = document.getElementById('costura-cuerpo');
-  const E = D.ecuacion;
-  const vivas = D.capas_declaradas.filter(c => c.disponible);
+  const P = D.presentacion;
+  const e = ec();
+  const capas = D.capas_declaradas.filter(c => c.anio === ANIO);
+  const vivas = capas.filter(c => c.disponible);
   linea.textContent = vivas.length
-    ? vivas[0].etiqueta + ': ' + fmt(vivas[0].valores.rfsp, E.formato_pib)
+    ? vivas[0].etiqueta + ': ' + fmt(vivas[0].valores.rfsp, P.formato_pib)
       + ' ' + vivas[0].unidad + ' · capas y procedencia'
     : 'Capas declaradas y procedencia';
 
   let h = '';
-  D.capas_declaradas.forEach(c => {
+  capas.forEach(c => {
     h += '<p><b>' + c.etiqueta + '</b> — ';
     if (c.disponible) {
-      h += 'RFSP <span class="val">' + fmt(c.valores.rfsp, E.formato_pib) + '</span>'
-        + ' · ingresos <span class="val">' + fmt(c.valores.ingresos, E.formato_pib) + '</span>'
-        + ' · gasto <span class="val">' + fmt(c.valores.gasto, E.formato_pib) + '</span>'
+      h += 'RFSP <span class="val">' + fmt(c.valores.rfsp, P.formato_pib) + '</span>'
+        + ' · ingresos <span class="val">' + fmt(c.valores.ingresos, P.formato_pib) + '</span>'
+        + ' · gasto <span class="val">' + fmt(c.valores.gasto, P.formato_pib) + '</span>'
         + ' ' + c.unidad;
     } else {
       h += '<span class="pend">sin cifra en este corte</span>';
@@ -375,15 +372,21 @@ function renderCostura() {
     h += '<br><span class="nota">' + c.procedencia.origen + ' · '
       + c.procedencia.definida_en + '</span></p>';
   });
-  ['gasto', 'ingresos', 'financiamiento'].forEach(k => {
-    const t = E.terminos[k];
-    h += '<p><b>' + t.etiqueta + '</b> — ' + t.fuente;
-    if (t.referencia_lif) {
-      h += ' · ' + t.referencia_lif.nota + ' Brecha: '
-        + fmt(t.referencia_lif.brecha_pib, E.formato_pib_detalle) + ' ' + E.unidad_pib + '.';
-    }
-    h += '</p>';
-  });
+  if (!capas.length) {
+    h += '<p><span class="pend">Este año no lleva capa de escenario: el CGPE es la '
+      + 'proyección del paquete vigente (' + D.anio_default + ').</span></p>';
+  }
+  h += '<p><b>Gasto</b> — ' + P.fuente_gasto + ' Tipo de dato: '
+    + (D.presentacion.tipo_dato_leyenda[ec().tipo_dato.gasto] || ec().tipo_dato.gasto) + '.</p>';
+  h += '<p><b>Ingresos</b> — ' + P.fuente_ingresos + ' Tipo de dato: '
+    + (D.presentacion.tipo_dato_leyenda[ec().tipo_dato.ingresos] || ec().tipo_dato.ingresos) + '.</p>';
+  const F = e.terminos.financiamiento;
+  h += '<p><b>Financiamiento</b> — ' + P.fuente_financiamiento;
+  if (F.referencia_lif) {
+    h += ' · ' + P.nota_referencia_lif + ' Brecha ' + ANIO + ': '
+      + fmt(F.referencia_lif.brecha_pib, P.formato_pib_detalle) + ' ' + P.unidad_pib + '.';
+  }
+  h += '</p>';
   cuerpo.innerHTML = h;
   det.hidden = false;
 }
@@ -398,23 +401,33 @@ function renderSello() {
     + ' · <a href="' + RUTA + '">contrato JSON</a>'
     + ' · <a href="' + D.nodo_deuda.contrato + '">contrato del nodo de deuda</a>'
     + '<br><span class="nota">Exportación sellada ' + p.generado_en
-    + ' · ' + p.origen + '</span>';
+    + ' · ' + p.origen + ' · ' + D.presentacion.unidad_pib + '</span>';
   document.getElementById('faltantes-txt').textContent = D.faltantes.length
     ? 'Campos que este corte declara faltantes (' + D.faltantes.length + '): '
       + D.faltantes.join(', ') + '.'
     : 'Este corte no declara faltantes.';
 }
 
-/* ===================== arranque ===================== */
-function arranque(d) {
-  D = d;
-  document.getElementById('titulo').textContent = D.titulo + ' ' + D.anio_referencia;
-  document.getElementById('corte').innerHTML =
-    'La ecuación fundamental · <b>' + D.ecuacion.unidad_pib + '</b>';
+/* ===================== render del año elegido ===================== */
+function renderAnio() {
+  document.getElementById('titulo').textContent = D.titulo + ' ' + ANIO;
+  renderAnios();
+  renderTipoDato();
   renderEcuacion();
   renderPaneles();
-  conectarPaneles();
   renderCostura();
+}
+
+function arranque(d) {
+  D = d;
+  ANIO = D.anio_default;
+  /* deep-link por año: /nodos/#(un año del contrato) preselecciona ese año */
+  const hy = parseInt((location.hash || '').slice(1), 10);
+  if (D.anios.indexOf(hy) >= 0) ANIO = hy;
+  document.getElementById('corte').innerHTML =
+    'La ecuación fundamental · <b>' + D.presentacion.unidad_pib + '</b>';
+  renderAnio();
+  conectarPaneles();
   renderSello();
 }
 
@@ -428,13 +441,6 @@ fetch(RUTA)
       + 'mostrar. Sírvela desde su carpeta de render bajo el docroot del Paquete '
       + '(ver 02_governance/nodo-deuda-vista-previa.md).</span>';
   });
-
-/* La línea personal se alimenta del contrato del NODO; si no está, la línea
-   simplemente no aparece (la portada no la inventa). */
-fetch('statajson_deuda-publica.json')
-  .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
-  .then(d => { DN = d; renderPersonal(); })
-  .catch(() => {});
 </script>
 </body>
 </html>
