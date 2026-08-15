@@ -78,7 +78,7 @@ body {
   margin: 0; background: var(--paper); color: var(--ink);
   font: 16px/1.65 var(--font-body);
 }
-main { max-width: 54rem; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+main { max-width: 54rem; margin: 0 auto; padding: 2rem 1.25rem 3.25rem; }
 
 /* --- cabecera --- */
 .titulo {
@@ -100,6 +100,7 @@ table.display {
   font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1;
 }
 table.display th, table.display td { padding: .28rem .5rem; white-space: nowrap; }
+table.display tbody tr:hover td { background: rgba(215,111,51,0.05); }
 table.display thead th {
   font-size: .78rem; letter-spacing: .06em; text-transform: uppercase;
   color: var(--ink-3); font-weight: 600; text-align: right;
@@ -117,7 +118,7 @@ td.num {
   font-family: var(--font-mono);
   font-size: .93rem; color: var(--ink);
 }
-tr.total td { font-weight: 700; }
+tr.total td { font-weight: 700; color: var(--ink); }
 tr.total td.concepto, tr.total td.pref { color: var(--ink); }
 tr.rule-min td { border-top: 1px solid var(--rule); padding-top: 0; height: .35rem; }
 tr.rule-max td { border-top: 3px double var(--rule-strong); padding-top: 0; height: .55rem; }
@@ -130,11 +131,11 @@ details.costura summary {
   cursor: pointer; list-style: none; display: inline-block;
 }
 details.costura summary::-webkit-details-marker { display: none; }
-details.costura summary::before { content: "▸ "; color: var(--ink-3); }
-details.costura[open] summary::before { content: "▾ "; }
+details.costura summary::before { content: "▸ "; color: var(--accent); }
+details.costura[open] summary::before { content: "▾ "; color: var(--accent); }
 details.costura .cuerpo {
   margin-top: .5rem; padding: .7rem .9rem;
-  background: var(--panel); border: 1px solid var(--rule); border-radius: 8px;
+  background: var(--panel); border: 1px solid var(--rule); border-radius: var(--radius-md);
   color: var(--ink-2); font-size: .88rem;
 }
 details.costura .capa-linea { margin: .2rem 0; }
@@ -147,6 +148,15 @@ details.costura dd { margin: 0; color: var(--ink-2); }
 details.costura dl { margin: .3rem 0 0; }
 .pend { color: var(--ink-3); font-style: italic; }
 
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+details.costura summary:focus-visible, a:focus-visible {
+  outline: none; box-shadow: var(--focus-ring); border-radius: var(--radius-sm);
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transform: none !important; transition: none !important; }
+}
+
 footer {
   margin-top: 2.6rem; padding-top: .9rem; border-top: 1px solid var(--rule);
   font-size: .9rem; color: var(--ink-3);
@@ -155,7 +165,8 @@ footer a, details.costura a { color: var(--accent); }
 .nota { font-size: .9rem; color: var(--ink-2); }
 .err {
   background: var(--panel); border: 1px solid var(--rule);
-  border-radius: 8px; padding: 1rem;
+  border-left: 3px solid var(--ciep-orange);
+  border-radius: var(--radius-md); padding: 1rem;
 }
 @media (max-width: 34rem) {
   table.display th, table.display td { padding: .26rem .35rem; }
