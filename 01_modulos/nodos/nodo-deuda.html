@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Deuda pública — Nodo CIEP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&family=Open+Sans:wght@400;600;700&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 /* ---------------------------------------------------------------------------
    Lenguaje visual ULTRA-AUSTERO (variante A, aprobada por Ricardo en la ronda
@@ -22,46 +25,85 @@
 --------------------------------------------------------------------------- */
 :root {
   color-scheme: light;
-  --paper:  #fbfbf9;
-  --panel:  #ffffff;
-  --rule:   #d9d7ce;
-  --rule-strong: #8a8880;
-  --ink:    #14140f;
-  --ink-2:  #55534b;
-  --ink-3:  #86847a;
-  --accent: #2a78d6;
+
+  /* Paleta institucional CIEP */
+  --ciep-orange: #d76f33;
+  --ciep-orange-light: #ff874d;
+  --ciep-gray-dark: #2d353a;
+  --ciep-black: #1F1F1F;
+  --ciep-gray: #999b9c;
+  --ciep-gray-light: #ebebeb;
+  --ciep-beige: #f3f3e9;
+  --ciep-white: #ffffff;
+
+  /* Alias existentes de la página → tokens CIEP */
+  --paper: var(--ciep-beige);
+  --panel: var(--ciep-white);
+  --rule: var(--ciep-gray-light);
+  --rule-strong: var(--ciep-gray);
+  --ink: var(--ciep-black);
+  --ink-2: #555a5e;
+  --ink-3: var(--ciep-gray);
+  --accent: var(--ciep-orange);
+
+  /* Tipografía */
+  --font-display: 'Ubuntu', system-ui, sans-serif;
+  --font-body: 'Open Sans', system-ui, sans-serif;
+  --font-mono: 'Ubuntu Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Radios y sombras */
+  --radius-sm: 0.5rem;
+  --radius-md: 1rem;
+  --radius-pill: 9999px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.10);
+  --focus-ring: 0 0 0 3px rgba(215,111,51,0.28);
 }
+
 @media (prefers-color-scheme: dark) {
   :root:where(:not([data-theme="light"])) {
     color-scheme: dark;
-    --paper:  #131311;
-    --panel:  #1b1b18;
-    --rule:   #34342f;
-    --rule-strong: #6f6d64;
-    --ink:    #f4f3ec;
-    --ink-2:  #b9b7ac;
-    --ink-3:  #85837a;
-    --accent: #3987e5;
+    --paper: #22292d;
+    --panel: #2d353a;
+    --rule: #3d464b;
+    --rule-strong: #6b7478;
+    --ink: #f4f3ec;
+    --ink-2: #c3c7c9;
+    --ink-3: #9ca3a6;
+    --accent: var(--ciep-orange-light);
   }
 }
 * { box-sizing: border-box; }
+/* --- cabecera institucional --- */
+.marca {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 1.25rem; border-bottom: 1px solid var(--rule);
+  padding-bottom: 1.25rem; margin-bottom: 2rem;
+}
+.marca img { height: 2rem; width: auto; display: block; }
+.marca .producto {
+  font-family: var(--font-body); font-weight: 600; font-size: .78rem;
+  letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3);
+}
+
+
 body {
   margin: 0; background: var(--paper); color: var(--ink);
-  font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font: 16px/1.65 var(--font-body);
 }
-main { max-width: 54rem; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+main { max-width: 54rem; margin: 0 auto; padding: 2rem 1.25rem 3.25rem; }
 
 /* --- cabecera --- */
 .titulo {
   display: flex; align-items: center; gap: .8rem;
-  margin: 0 0 .3rem; font-size: 1.15rem; letter-spacing: .04em;
-  text-transform: uppercase; font-weight: 700;
+  margin: 0 0 .3rem; font-size: 1.25rem; letter-spacing: .04em;
+  text-transform: uppercase; font-weight: 700; font-family: var(--font-display);
 }
 .titulo::before, .titulo::after {
   content: ""; flex: 1 1 auto; height: 0;
-  border-top: 2px dotted var(--rule);
+  border-top: 1px solid var(--rule);
 }
-.corte { text-align: center; color: var(--ink-2); font-size: .95rem; margin: 0 0 1.4rem; }
+.corte { text-align: center; color: var(--ink-2); font-size: .9rem; margin: 0 0 1.4rem; }
 .corte b { color: var(--ink); }
 
 /* --- la tabla --- */
@@ -71,23 +113,25 @@ table.display {
   font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1;
 }
 table.display th, table.display td { padding: .28rem .5rem; white-space: nowrap; }
+table.display tbody tr:hover td { background: rgba(215,111,51,0.05); }
 table.display thead th {
   font-size: .78rem; letter-spacing: .06em; text-transform: uppercase;
   color: var(--ink-3); font-weight: 600; text-align: right;
+  font-family: var(--font-body);
   border-bottom: 1px solid var(--rule-strong); padding-bottom: .45rem;
 }
 table.display thead th.concepto { text-align: left; }
 td.pref {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-family: var(--font-mono);
   color: var(--ink-3); width: 2.6rem; padding-right: 0;
 }
 td.concepto { text-align: left; color: var(--ink-2); }
 td.num {
   text-align: right;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-family: var(--font-mono);
   font-size: .93rem; color: var(--ink);
 }
-tr.total td { font-weight: 700; }
+tr.total td { font-weight: 700; color: var(--ink); }
 tr.total td.concepto, tr.total td.pref { color: var(--ink); }
 tr.rule-min td { border-top: 1px solid var(--rule); padding-top: 0; height: .35rem; }
 tr.rule-max td { border-top: 3px double var(--rule-strong); padding-top: 0; height: .55rem; }
@@ -100,16 +144,16 @@ details.costura summary {
   cursor: pointer; list-style: none; display: inline-block;
 }
 details.costura summary::-webkit-details-marker { display: none; }
-details.costura summary::before { content: "▸ "; color: var(--ink-3); }
-details.costura[open] summary::before { content: "▾ "; }
+details.costura summary::before { content: "▸ "; color: var(--accent); }
+details.costura[open] summary::before { content: "▾ "; color: var(--accent); }
 details.costura .cuerpo {
   margin-top: .5rem; padding: .7rem .9rem;
-  background: var(--panel); border: 1px solid var(--rule); border-radius: 8px;
+  background: var(--panel); border: 1px solid var(--rule); border-radius: var(--radius-md);
   color: var(--ink-2); font-size: .88rem;
 }
 details.costura .capa-linea { margin: .2rem 0; }
 details.costura .val {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-family: var(--font-mono);
   font-weight: 700; font-variant-numeric: tabular-nums; color: var(--ink);
 }
 details.costura dt { font-weight: 600; margin-top: .55rem; color: var(--ink); }
@@ -117,15 +161,25 @@ details.costura dd { margin: 0; color: var(--ink-2); }
 details.costura dl { margin: .3rem 0 0; }
 .pend { color: var(--ink-3); font-style: italic; }
 
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+details.costura summary:focus-visible, a:focus-visible {
+  outline: none; box-shadow: var(--focus-ring); border-radius: var(--radius-sm);
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transform: none !important; transition: none !important; }
+}
+
 footer {
   margin-top: 2.6rem; padding-top: .9rem; border-top: 1px solid var(--rule);
-  font-size: .85rem; color: var(--ink-3);
+  font-size: .9rem; color: var(--ink-3);
 }
 footer a, details.costura a { color: var(--accent); }
 .nota { font-size: .9rem; color: var(--ink-2); }
 .err {
   background: var(--panel); border: 1px solid var(--rule);
-  border-radius: 8px; padding: 1rem;
+  border-left: 3px solid var(--ciep-orange);
+  border-radius: var(--radius-md); padding: 1rem;
 }
 @media (max-width: 34rem) {
   table.display th, table.display td { padding: .26rem .35rem; }
@@ -135,6 +189,15 @@ footer a, details.costura a { color: var(--accent); }
 </head>
 <body>
 <main>
+
+  <header class="marca">
+    <picture>
+      <source srcset="assets/CIEPlogoBlanco.png" media="(prefers-color-scheme: dark)">
+      <img src="assets/CIEPlogo.png" width="135" height="32"
+           alt="CIEP — Centro de Investigación Económica y Presupuestaria">
+    </picture>
+    <span class="producto">Simulador Fiscal</span>
+  </header>
 
   <h1 class="titulo" id="titulo">Deuda pública</h1>
   <p class="corte" id="corte">Cargando el contrato del nodo…</p>
