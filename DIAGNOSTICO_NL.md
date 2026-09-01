@@ -305,5 +305,35 @@ Los "defaults" se calculan en `ISR_Mod.do` (ISR_AS/PF/PM_Mod, CUOTAS_Mod = Σ mi
 
 **D.4 Resultados corregidos** (incidencia total, % del ingreso bruto del decil): nacional 20.7% (I: 21.5 … X: 20.7); NL en deciles nacionales 29.8% (I: 39.3, X: 33.5); NL en deciles estatales 29.8% (I: 30.7, X: 33.9). La sobre-incidencia de NL respecto al nacional está identificada: concentración del ISR PM en residentes de NL (AlCapital NL 14.6% vs 6.8% nacional), consistente con el ranking nacional de formalidad del pipeline.
 
+## Anexo F1-bis-2 — Decil I / robustez de AlConsumo y banda de sensibilidad del ISR PM (2026-08-31)
+
+### 1. Diagnóstico del decil I y robustez de AlConsumo
+
+**(a) Razón gasto corriente monetario / ingreso bruto por decil** (`razonGY<suf><dec>`): decil I nacional **212%**, NL en deciles nacionales **252%**, NL en deciles estatales **196%**; total 89/85/85%. En el decil I el gasto duplica al ingreso corriente: el denominador de la incidencia es el atípico, no el numerador.
+
+**(b) Composición del decil I nacional** (`nHogDecI*`, `PctIngBajoDecI*`, `TamHogDecI*`, `EdadJefeDecI*`):
+
+| | n hogares (muestra) | % ingreso 0 o < 25% del gasto | Integrantes | Edad del jefe |
+|---|---:|---:|---:|---:|
+| Decil I nacional (país) | 10,521 | 14.2 | 4.34 | 49.6 |
+| Decil I nacional (NL) | 426 | **25.0** | 4.15 | 50.4 |
+
+Los hogares NL del decil I nacional tienen casi el doble de probabilidad de reportar ingreso corriente ≈ 0 o muy inferior a su gasto.
+
+**(c) Robustez con gasto como denominador** (familias `AlConsumoG`/`ImpAportG`; razón declarada: **denominador** — ingreso corriente vs proxy de ingreso permanente): la incidencia de AlConsumo del decil I pasa de 14.1 (nac) / 29.7 (NL) sobre ingreso a **6.6 / 11.8 sobre gasto** — el diferencial se comprime a ~2× y los totales quedan en 9.7 (nac) / 10.9 (NL), idénticos a las TE de consumo. **La TE de consumo NL ≈ nacional (IVATEnl 6.028 vs IVATEnac 5.841); el diferencial del decil I es del denominador, no de la construcción del IVA.**
+
+### 2. Banda de sensibilidad del ISR PM (NL)
+
+Todos los escenarios reescalan al mismo total nacional (Σ `ISRPM_Sim`): cambia la incidencia, no la recaudación. Supuestos declarados en `presentacion` del JSON.
+
+| Escenario | Supuesto de incidencia | TE ISRPM NL | Part. NL en ISR PM (%) | inc AlCapital Tot | inc Total Tot |
+|---|---|---:|---:|---:|---:|
+| **S1** (cota inferior) | prorrateo a ingreso de capital, sin cut-off | 14.35 | 8.64 | 10.4 | 25.5 |
+| **S2** | 50% capital / 25% trabajo / 25% consumo | 13.04 | 7.86 | 9.8 | 24.9 |
+| **S3** | pago esperado p(probit)×impuesto potencial | 34.79 | 20.95 | 19.9 | 35.1 |
+| **S0** (método actual; cota superior de la banda) | ranking probit + cut-off LIF | 23.50 | 14.15 | 14.6 | 29.8 |
+
+**Intervalo declarado [S1, S0] para la incidencia total NL: [25.5, 29.8]% del ingreso.** S2 queda apenas por debajo de S1 (parte de la carga migra a trabajo/consumo, menos concentrados en NL). S3 (pago esperado con `prob_moral`, que sí sobrevive en `households.dta`: 47,963 obs) queda **por encima** de S0: la probabilidad de formalidad PM está aún más concentrada en NL que el cut-off; se reporta como referencia, fuera de la banda. Escalares con sufijos `nlS1/nlS2/nlS3` y `nleS1/nleS2/nleS3`; `nl` sigue siendo S0.
+
 ### Nota de no-regresión (cachés)
 `output.txt` es byte-idéntico al baseline en todas las corridas. Entre el baseline original y las corridas F1-bis, el dump crudo de `scalar list` mostró 23 escalares **adicionales** (`pob*Nacional`, de Poblacion.ado) y un reordenamiento del bloque LIF: provienen de un refresco de cachés `master/*.dta` provocado por una sesión de diagnóstico de solo lectura (SCN/Poblacion re-cachean al correr sin los globales de SIM.do), no de los archivos F1 (que SIM.do nunca invoca). Cero valores distintos en los escalares comunes; dos corridas consecutivas con el estado de cachés actual son byte-idénticas también en el dump crudo.
