@@ -17,15 +17,22 @@
 *       pasa, el driver ABORTA: ningún número de incidencia NL es válido.
 *   (4) Escalares SIN guion bajo (sufijos nac/nl/nle); output.txt INTACTO:
 *       toda salida NL va por escalar -> scalarjson.
-*   (5) ANEXOS (F1-bis-2): (a) diagnóstico del decil I y robustez de AlConsumo
-*       con gasto corriente monetario como denominador (familias *G y razonGY;
-*       razón declarada: DENOMINADOR — ingreso corriente vs proxy de ingreso
-*       permanente); (b) banda de sensibilidad del ISR PM: S0 = método actual
-*       (ranking probit + cut-off LIF; cota superior para NL), S1 = prorrateo
-*       a ingreso de capital sin cut-off (cota inferior), S2 = traslación 50%
-*       capital / 25% trabajo / 25% consumo, S3 = pago esperado p(probit) ×
-*       impuesto potencial, reescalado a LIF. Sufijos nlS1/nlS2/nlS3 (y
-*       nleS1/nleS2/nleS3 en deciles estatales); nl sigue siendo S0.
+*   (5) ANEXOS (F1-bis-2): (a) diagnóstico del decil I — descomposición de
+*       AlConsumo por impuesto, estructura de la canasta (gravado/exento/tasa
+*       cero/bienes con IEPS) y robustez con gasto corriente monetario como
+*       denominador (familias *G y razonGY). El diferencial del decil I
+*       combina DENOMINADOR (selección: ingreso corriente vs proxy de ingreso
+*       permanente) y NUMERADOR (canasta más gravada); la construcción del
+*       IVA es la misma. (b) banda de sensibilidad del ISR PM = [S1, S3]:
+*       S1 = prorrateo a ingreso de capital sin cut-off (cota inferior),
+*       S2 = traslación 50% capital / 25% trabajo / 25% consumo, S3 = pago
+*       esperado p(probit) x impuesto potencial (cota superior), S0 = método
+*       vigente (ranking probit + cut-off LIF), DENTRO de la banda. Todos son
+*       estimadores válidos reescalados al mismo total. Sufijos nlS1/nlS2/nlS3
+*       (y nleS1/nleS2/nleS3 en deciles estatales); nl sigue siendo S0.
+*   NOTA de suma en tablas de incidencia: AlCapital (pipeline) incluye OTROSK
+*   y el Total (ImpuestosAportaciones) lo excluye; se reporta la columna
+*   OTROSK por separado: AlTrabajo+AlCapital+AlConsumo-OTROSK = Total.
 *
 * USO (tras correr SIM.do en la MISMA sesión, con escalares y bases vivas):
 *   do "`c(sysdir_site)'/01_modulos/EntidadNL.do"
@@ -49,6 +56,20 @@ if _rc {
 }
 local anio = scalar(anioPE)
 local pibY = scalar(pibY)
+
+* Procedencia: sin log activo no hay exportación válida (scalarjson declara
+* procedencia.log desde `log query`). En modo batch SIM.do cierra los logs
+* (capture log close _all); el driver garantiza uno propio. *
+capture quietly log query
+if `"`r(filename)'"' == "" | `"`r(filename)'"' == "." {
+	capture mkdir `"`site'/users/$id/nodos"'
+	quietly log using `"`site'/users/$id/nodos/entidad-nl.log"', replace text
+}
+capture quietly log query
+if `"`r(filename)'"' == "" | `"`r(filename)'"' == "." {
+	di as err "EntidadNL: no hay log activo ni pudo abrirse uno; sin procedencia no hay exportación válida."
+	exit 459
+}
 
 noisily di _newline(2) in g _dup(20) "." "{bf:   ENTIDAD 19 — NUEVO LEÓN " in y `anio' in g "   }" _dup(20) "."
 
@@ -195,6 +216,45 @@ program define _ENLdecI
 		in g " · edad jefe " in y %5.1fc `edadjefe'
 end
 
+* Estructura de la canasta del decil I (anexo 1b): participación del gasto en
+* gravado / exento / tasa cero (regímenes leídos de la matriz IVAT, en el
+* MISMO orden alfabético de levelsof que usan Expenditure.do §5.2 e
+* IVA_Mod.do) y en bienes con IEPS. Escalares pct pct<Grupo>DecI<suf>. *
+capture program drop _ENLcanasta
+program define _ENLcanasta
+	args decvar suf
+	local cats `"Alimentos Alquiler CanastaBas Educación FueraHog Mascotas Medicinas Mujer Otros TransporteFor TransporteLoc"'
+	local vcero ""
+	local vexen ""
+	local vgrav ""
+	local j = 2
+	foreach k of local cats {
+		if IVAT[`j',1] == 1 local vcero "`vcero' gas_pc_`k'"
+		else if IVAT[`j',1] == 2 local vexen "`vexen' gas_pc_`k'"
+		else local vgrav "`vgrav' gas_pc_`k'"
+		local ++j
+	}
+	tempvar cero exen grav tot ieps
+	quietly {
+		egen double `cero' = rsum(`vcero')
+		egen double `exen' = rsum(`vexen')
+		egen double `grav' = rsum(`vgrav')
+		egen double `tot' = rsum(`cero' `exen' `grav')
+		egen double `ieps' = rsum(gas_pc_Cervezas gas_pc_Alcohol_20 gas_pc_Alcohol_20_ ///
+			gas_pc_Tabaco gas_pc_AltoContCal gas_pc_BebidasEner gas_pc_BebidasSabor ///
+			gas_pc_Combustibles gas_pc_Gasolinas gas_pc_Telecom)
+		tabstat `grav' `exen' `cero' `ieps' `tot' [aw=factor] if `decvar' == 1, stat(sum) save
+	}
+	escalar pct pctGravDecI`suf' = r(StatTotal)[1,1]/r(StatTotal)[1,5]*100
+	escalar pct pctExenDecI`suf' = r(StatTotal)[1,2]/r(StatTotal)[1,5]*100
+	escalar pct pctCeroDecI`suf' = r(StatTotal)[1,3]/r(StatTotal)[1,5]*100
+	escalar pct pctIEPSDecI`suf' = r(StatTotal)[1,4]/r(StatTotal)[1,5]*100
+	noisily di in g "  Canasta decil I (`suf'): gravado " in y %5.1fc scalar(pctGravDecI`suf') "%" ///
+		in g " · exento " in y %5.1fc scalar(pctExenDecI`suf') "%" ///
+		in g " · tasa cero " in y %5.1fc scalar(pctCeroDecI`suf') "%" ///
+		in g " · bienes con IEPS " in y %5.1fc scalar(pctIEPSDecI`suf') "%"
+end
+
 ** 2.1 Cargar el objeto del pipeline y espejar el deflactor de Simulador.ado **
 use `"`site'/users/$id/aportaciones.dta"', clear
 preserve
@@ -215,6 +275,11 @@ noisily di _newline in g "  Deflactor (aniope `anio' | aniovp `=scalar(aniovp)')
 * valores de perfiles<anio>.dta (verificado: sumas idénticas). *
 merge 1:1 folioviv foliohog numren using `"`site'/master/`=scalar(anioenigh)'/households.dta"', ///
 	nogen keep(master match) keepusing(gastoanualTOT prob_moral gasto_anualDepreciacion)
+* Canasta por categoría de régimen IVA y bienes con IEPS (anexo 1b) *
+merge 1:1 folioviv foliohog numren using `"`site'/master/`=scalar(anioenigh)'/consumption_categ_iva_pc.dta"', ///
+	nogen keep(master match) keepusing(gas_pc_*)
+merge 1:1 folioviv foliohog numren using `"`site'/master/`=scalar(anioenigh)'/consumption_categ_ieps_pc.dta"', ///
+	nogen keep(master match) keepusing(gas_pc_*)
 
 * Gasto corriente monetario a escala del año de política (ConHog de SCN,
 * vivo desde TasasEfectivasMicro; mismo canal que PerfilesSim.do:184) *
@@ -253,14 +318,16 @@ _ENLinci AportacionesNetas AportacionesNetas decil "" 1 `deflator'
 
 ** 2.3 Incidencia nacional de las cargas del pipeline (sufijo nac) **
 noisily di _newline in g "{bf:  Incidencia nacional (deciles nacionales) — sufijo nac}"
-foreach par in "AlTrabajo AlTrabajo" "AlCapital AlCapital" "AlConsumo AlConsumo" "ImpuestosAportaciones ImpAport" {
+foreach par in "AlTrabajo AlTrabajo" "AlCapital AlCapital" "AlConsumo AlConsumo" "ImpuestosAportaciones ImpAport" ///
+	"OTROSK OTROSK" "IVA_Sim IVA" "IEPSNP_Sim IEPSNP" "IEPSP_Sim IEPSP" "ISAN_Sim ISAN" "IMPORT_Sim IMPORT" {
 	_ENLinci `: word 1 of `par'' `: word 2 of `par'' decil nac `deflator' `deflator'
 }
 
-** 2.3b Anexos nacionales: razón gasto/ingreso, decil I y robustez con
-**      denominador de gasto (razón declarada: DENOMINADOR) **
+** 2.3b Anexos nacionales: razón gasto/ingreso, decil I (composición y
+**      canasta) y robustez con denominador de gasto **
 _ENLrazon decil nac
 _ENLdecI nac
+_ENLcanasta decil nac
 noisily di _newline in g "{bf:  Robustez nacional: incidencia con gasto como denominador (sufijo nac, familias *G)}"
 foreach par in "AlConsumo AlConsumoG" "ImpuestosAportaciones ImpAportG" {
 	_ENLinci `: word 1 of `par'' `: word 2 of `par'' decil nac `deflator' `deflator' GastoBase
@@ -278,15 +345,18 @@ g double `decpc' = `dechog'/`toti'
 xtile decilE = `decpc' [pw=factor/`toti'], n(10)
 
 noisily di _newline in g "{bf:  Incidencia NL (deciles nacionales nl / estatales nle)}"
-foreach par in "AlTrabajo AlTrabajo" "AlCapital AlCapital" "AlConsumo AlConsumo" "ImpuestosAportaciones ImpAport" {
+foreach par in "AlTrabajo AlTrabajo" "AlCapital AlCapital" "AlConsumo AlConsumo" "ImpuestosAportaciones ImpAport" ///
+	"OTROSK OTROSK" "IVA_Sim IVA" "IEPSNP_Sim IEPSNP" "IEPSP_Sim IEPSP" "ISAN_Sim ISAN" "IMPORT_Sim IMPORT" {
 	_ENLinci `: word 1 of `par'' `: word 2 of `par'' decil nl `deflator' `deflator'
 	_ENLinci `: word 1 of `par'' `: word 2 of `par'' decilE nle `deflator' `deflator'
 }
 
-** 2.5 Anexo 1 NL: razón gasto/ingreso, decil I y robustez *G **
+** 2.5 Anexo 1 NL: razón gasto/ingreso, decil I (composición y canasta) y robustez *G **
 _ENLrazon decil nl
 _ENLrazon decilE nle
 _ENLdecI nl
+_ENLcanasta decil nl
+_ENLcanasta decilE nle
 noisily di _newline in g "{bf:  Robustez NL: incidencia con gasto como denominador (familias *G)}"
 foreach par in "AlConsumo AlConsumoG" "ImpuestosAportaciones ImpAportG" {
 	_ENLinci `: word 1 of `par'' `: word 2 of `par'' decil nl `deflator' `deflator' GastoBase
@@ -379,15 +449,44 @@ foreach s in nac nl nle {
 	if "`s'" == "nle" local jlab "NL, deciles estatales"
 	noisily di _newline in g "{bf:  Incidencia (`jlab') — % del ingreso bruto del decil}"
 	noisily di in g "  Decil" _col(12) %10s "AlTrabajo" _col(26) %10s "AlCapital" ///
-		_col(40) %10s "AlConsumo" _col(54) %12s "Total (SIM)"
-	noisily di in g _dup(66) "-"
+		_col(40) %10s "AlConsumo" _col(52) %8s "OTROSK" _col(64) %12s "Total (SIM)"
+	noisily di in g _dup(76) "-"
 	foreach d in I II III IV V VI VII VIII IX X Tot {
 		noisily di in g "  `d'" ///
 			_col(12) in y %10.1fc scalar(incAlTrabajo`s'`d') ///
 			_col(26) in y %10.1fc scalar(incAlCapital`s'`d') ///
 			_col(40) in y %10.1fc scalar(incAlConsumo`s'`d') ///
-			_col(54) in y %12.1fc scalar(incImpAport`s'`d')
+			_col(52) in y %8.1fc scalar(incOTROSK`s'`d') ///
+			_col(64) in y %12.1fc scalar(incImpAport`s'`d')
 	}
+	noisily di in g "  Nota: AlCapital incluye OTROSK y el Total lo excluye:" ///
+		" AlTrabajo+AlCapital+AlConsumo-OTROSK = Total."
+}
+
+* Anexo 1b: descomposición de AlConsumo por impuesto en el decil I *
+noisily di _newline in g "{bf:  Decil I — incidencia de AlConsumo por impuesto (% del ingreso del decil)}"
+noisily di in g "  Juego" _col(12) %8s "IVA" _col(24) %8s "IEPS NP" _col(36) %8s "IEPS P" ///
+	_col(48) %8s "ISAN" _col(60) %8s "Import" _col(70) %10s "AlConsumo"
+foreach s in nac nl nle {
+	noisily di in g "  `s'" ///
+		_col(12) in y %8.1fc scalar(incIVA`s'I) ///
+		_col(24) in y %8.1fc scalar(incIEPSNP`s'I) ///
+		_col(36) in y %8.1fc scalar(incIEPSP`s'I) ///
+		_col(48) in y %8.1fc scalar(incISAN`s'I) ///
+		_col(60) in y %8.1fc scalar(incIMPORT`s'I) ///
+		_col(70) in y %10.1fc scalar(incAlConsumo`s'I)
+}
+
+* Anexo 1b: estructura de la canasta del decil I *
+noisily di _newline in g "{bf:  Decil I — estructura de la canasta (% del gasto clasificado IVA)}"
+noisily di in g "  Juego" _col(12) %8s "Gravado" _col(24) %8s "Exento" ///
+	_col(36) %10s "Tasa cero" _col(50) %12s "Bienes IEPS"
+foreach s in nac nl nle {
+	noisily di in g "  `s'" ///
+		_col(12) in y %8.1fc scalar(pctGravDecI`s') ///
+		_col(24) in y %8.1fc scalar(pctExenDecI`s') ///
+		_col(36) in y %10.1fc scalar(pctCeroDecI`s') ///
+		_col(50) in y %12.1fc scalar(pctIEPSDecI`s')
 }
 
 * Anexo 1c: robustez con gasto como denominador (AlConsumo y total, % del gasto) *
@@ -404,31 +503,33 @@ foreach s in nac nl nle {
 }
 noisily di _newline in g "  {bf:Nota anexo 1:} la TE de consumo NL ≈ nacional (IVATEnl " ///
 	in y %5.3fc scalar(IVATEnl) in g " vs IVATEnac " in y %5.3fc scalar(IVATEnac) ///
-	in g "); el diferencial del decil I es del DENOMINADOR (ingreso corriente vs proxy de ingreso permanente), no de la construcción del IVA."
+	in g "); el diferencial del decil I COMBINA denominador (selección: ingreso corriente" ///
+	in g " vs proxy de ingreso permanente) y numerador (canasta más gravada); la construcción del IVA es la misma."
 
-* Anexo 2: banda de sensibilidad ISR PM *
-noisily di _newline in g "{bf:  Banda de sensibilidad ISR PM — NL}"
-noisily di in g "  Escenario" _col(16) %10s "TE ISRPM" _col(30) %12s "Part NL (%)" ///
-	_col(46) %14s "inc AlCap Tot" _col(62) %14s "inc Total Tot"
-noisily di in g "  S1 prorrateo K" _col(16) in y %10.3fc scalar(ISRPMTEnlS1) ///
-	_col(30) in y %12.2fc scalar(PartISRPMnlS1) ///
-	_col(46) in y %14.1fc scalar(incAlCapitalnlS1Tot) ///
-	_col(62) in y %14.1fc scalar(incImpAportnlS1Tot)
-noisily di in g "  S2 50K/25L/25C" _col(16) in y %10.3fc scalar(ISRPMTEnlS2) ///
-	_col(30) in y %12.2fc scalar(PartISRPMnlS2) ///
-	_col(46) in y %14.1fc scalar(incAlCapitalnlS2Tot) ///
-	_col(62) in y %14.1fc scalar(incImpAportnlS2Tot)
-noisily di in g "  S3 p×potencial" _col(16) in y %10.3fc scalar(ISRPMTEnlS3) ///
-	_col(30) in y %12.2fc scalar(PartISRPMnlS3) ///
-	_col(46) in y %14.1fc scalar(incAlCapitalnlS3Tot) ///
-	_col(62) in y %14.1fc scalar(incImpAportnlS3Tot)
-noisily di in g "  S0 método actual" _col(16) in y %10.3fc scalar(ISRPMTEnl) ///
-	_col(30) in y %12.2fc scalar(PartISRPMnl) ///
-	_col(46) in y %14.1fc scalar(incAlCapitalnlTot) ///
-	_col(62) in y %14.1fc scalar(incImpAportnlTot)
-noisily di in g "  {bf:Intervalo incidencia total NL [S1, S0]: [" ///
+* Anexo 2: banda de sensibilidad ISR PM = [S1, S3]; S0 (método vigente) dentro *
+noisily di _newline in g "{bf:  Banda de sensibilidad ISR PM — NL (todos los escenarios son estimadores válidos)}"
+noisily di in g "  Escenario" _col(20) %10s "TE ISRPM" _col(34) %12s "Part NL (%)" ///
+	_col(50) %14s "inc AlCap Tot" _col(66) %14s "inc Total Tot"
+noisily di in g "  S1 prorrateo K (inf)" _col(20) in y %10.3fc scalar(ISRPMTEnlS1) ///
+	_col(34) in y %12.2fc scalar(PartISRPMnlS1) ///
+	_col(50) in y %14.1fc scalar(incAlCapitalnlS1Tot) ///
+	_col(66) in y %14.1fc scalar(incImpAportnlS1Tot)
+noisily di in g "  S2 50K/25L/25C" _col(20) in y %10.3fc scalar(ISRPMTEnlS2) ///
+	_col(34) in y %12.2fc scalar(PartISRPMnlS2) ///
+	_col(50) in y %14.1fc scalar(incAlCapitalnlS2Tot) ///
+	_col(66) in y %14.1fc scalar(incImpAportnlS2Tot)
+noisily di in g "  S0 método vigente" _col(20) in y %10.3fc scalar(ISRPMTEnl) ///
+	_col(34) in y %12.2fc scalar(PartISRPMnl) ///
+	_col(50) in y %14.1fc scalar(incAlCapitalnlTot) ///
+	_col(66) in y %14.1fc scalar(incImpAportnlTot)
+noisily di in g "  S3 p×potencial (sup)" _col(20) in y %10.3fc scalar(ISRPMTEnlS3) ///
+	_col(34) in y %12.2fc scalar(PartISRPMnlS3) ///
+	_col(50) in y %14.1fc scalar(incAlCapitalnlS3Tot) ///
+	_col(66) in y %14.1fc scalar(incImpAportnlS3Tot)
+noisily di in g "  {bf:Banda de incidencia total NL [S1, S3]: [" ///
 	in y %5.1fc scalar(incImpAportnlS1Tot) in g ", " ///
-	in y %5.1fc scalar(incImpAportnlTot) in g "] % del ingreso.}"
+	in y %5.1fc scalar(incImpAportnlS3Tot) in g "] % del ingreso; S0 (" ///
+	in y %5.1fc scalar(incImpAportnlTot) in g ") dentro de la banda.}"
 
 *** 5 EXPORTACIÓN — scalarjson (canal único de salida numérica NL) ***
 
@@ -493,13 +594,16 @@ quietly {
 	"presentacion" "brecha_consumo_razon" "cobertura (consumo residente vs producción territorial), denominador, momento contable"
 	"presentacion" "incidencia_nota" "objeto del pipeline (SIM.do §7.1) sobre aportaciones.dta: total = ImpuestosAportaciones (sin OTROSK ni FMP); AlCapital = ISRPM_Sim+OTROSK; compuerta D.1 validada contra INCD/INCD2/INCD3"
 	"presentacion" "deciles_leyenda" "sufijo nac = nacional; nl = hogares NL en deciles nacionales; nle = deciles recalculados solo con hogares NL (mismos criterios de ordenamiento)"
-	"presentacion" "escenario_s0" "supuesto de incidencia S0 (sufijo nl, método actual): ISR PM recae en perceptores de ingreso de capital con ranking probit de formalidad y cut-off en la recaudación LIF; cota superior para NL"
-	"presentacion" "escenario_s1" "supuesto de incidencia S1: ISR PM nacional prorrateado a ingreso de capital privado por hogar, sin cut-off por probit; cota inferior para NL"
+	"presentacion" "escenario_s0" "supuesto de incidencia S0 (sufijo nl, método vigente): ISR PM recae en perceptores de ingreso de capital con ranking probit de formalidad y cut-off en la recaudación LIF; queda dentro de la banda [S1, S3]"
+	"presentacion" "escenario_s1" "supuesto de incidencia S1: ISR PM nacional prorrateado a ingreso de capital privado por hogar, sin cut-off por probit; cota inferior de la banda"
 	"presentacion" "escenario_s2" "supuesto de incidencia S2: traslación 50% capital (prorrateo S1) / 25% trabajo (ing_subor) / 25% consumo (base de IVA)"
-	"presentacion" "escenario_s3" "supuesto de incidencia S3: pago esperado = probabilidad predicha del probit de formalidad PM (prob_moral, households.dta) x impuesto potencial [(tpm+depreciación-exenciones) x 30%], reescalado al total del pipeline"
-	"presentacion" "escenarios_nota" "todos los escenarios reescalan al mismo total nacional (suma de ISRPM_Sim): cambia la incidencia, no la recaudación; intervalo declarado [S1, S0]"
+	"presentacion" "escenario_s3" "supuesto de incidencia S3: pago esperado = probabilidad predicha del probit de formalidad PM (prob_moral, households.dta) x impuesto potencial [(tpm+depreciación-exenciones) x 30%], reescalado al total del pipeline; cota superior de la banda"
+	"presentacion" "escenarios_nota" "todos los escenarios son estimadores válidos reescalados al mismo total nacional (suma de ISRPM_Sim): cambia la incidencia, no la recaudación; banda declarada [S1, S3], con S0 (método vigente) dentro de ella"
 	"presentacion" "robustez_denominador" "familias *G y razonGY usan gasto corriente monetario (gastoanualTOT a escala ConHog) como denominador; razón declarada: denominador (ingreso corriente vs proxy de ingreso permanente)"
-	"presentacion" "decilI_nota" "la TE de consumo NL es similar a la nacional (IVATEnl vs IVATEnac); el diferencial de incidencia del decil I proviene del denominador (razón gasto/ingreso > 1 en el decil I), no de la construcción del IVA"
+	"presentacion" "decilI_nota" "la TE de consumo NL es similar a la nacional (IVATEnl vs IVATEnac) y la construcción del IVA es la misma; el diferencial de incidencia del decil I COMBINA denominador (selección: razón gasto/ingreso > 1) y numerador (canasta más gravada: pctGravDecI/pctIEPSDecI)"
+	"presentacion" "canasta_nota" "estructura de la canasta del decil I (pct*DecI*): participaciones del gasto clasificado por régimen IVA (gravado/exento/tasa cero, matriz IVAT en el orden de levelsof de Expenditure.do §5.2) y de bienes con IEPS sobre el total clasificado"
+	"presentacion" "otrosk_nota" "en las tablas de incidencia AlCapital incluye OTROSK (SIM.do:436) y el total ImpAport lo excluye (SIM.do:440); se exporta la familia OTROSK por separado: AlTrabajo+AlCapital+AlConsumo-OTROSK = Total"
+	"presentacion" "deuda_tecnica" "extender scalarjson.ado con una clave canónica supuestos (bloque propio del contrato) para que los supuestos de incidencia de escenarios no dependan del bloque libre presentacion"
 	end
 	tempfile meta
 	save `meta'
@@ -561,7 +665,8 @@ foreach c in PartSalENIGHnl PartMixENIGHnl PartKPrivENIGHnl PartConsENIGHnl Part
 	capture confirm scalar `c'
 	if _rc == 0 local esc "`esc' `c'"
 }
-foreach v in AlTrabajo AlCapital AlConsumo ImpAport AlConsumoG ImpAportG {
+foreach v in AlTrabajo AlCapital AlConsumo ImpAport AlConsumoG ImpAportG ///
+	OTROSK IVA IEPSNP IEPSP ISAN IMPORT {
 	foreach s in nac nl nle nlS1 nlS2 nlS3 nleS1 nleS2 nleS3 {
 		foreach d in I II III IV V VI VII VIII IX X Tot {
 			foreach fam in `v'`s'`d' dis`v'`s'`d' inc`v'`s'`d' {
@@ -577,8 +682,9 @@ foreach s in nac nl nle {
 		if _rc == 0 local esc "`esc' razonGY`s'`d'"
 	}
 }
-foreach s in nac nl {
-	foreach b in nHogDecI PctIngBajoDecI TamHogDecI EdadJefeDecI {
+foreach s in nac nl nle {
+	foreach b in nHogDecI PctIngBajoDecI TamHogDecI EdadJefeDecI ///
+		pctGravDecI pctExenDecI pctCeroDecI pctIEPSDecI {
 		capture confirm scalar `b'`s'
 		if _rc == 0 local esc "`esc' `b'`s'"
 	}

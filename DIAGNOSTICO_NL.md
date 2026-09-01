@@ -320,20 +320,44 @@ Los "defaults" se calculan en `ISR_Mod.do` (ISR_AS/PF/PM_Mod, CUOTAS_Mod = Σ mi
 
 Los hogares NL del decil I nacional tienen casi el doble de probabilidad de reportar ingreso corriente ≈ 0 o muy inferior a su gasto.
 
-**(c) Robustez con gasto como denominador** (familias `AlConsumoG`/`ImpAportG`; razón declarada: **denominador** — ingreso corriente vs proxy de ingreso permanente): la incidencia de AlConsumo del decil I pasa de 14.1 (nac) / 29.7 (NL) sobre ingreso a **6.6 / 11.8 sobre gasto** — el diferencial se comprime a ~2× y los totales quedan en 9.7 (nac) / 10.9 (NL), idénticos a las TE de consumo. **La TE de consumo NL ≈ nacional (IVATEnl 6.028 vs IVATEnac 5.841); el diferencial del decil I es del denominador, no de la construcción del IVA.**
+**(c) Descomposición de AlConsumo por impuesto en el decil I** (incidencia, % del ingreso del decil; familias `IVA/IEPSNP/IEPSP/ISAN/IMPORT` por sufijo):
+
+| Juego | IVA | IEPS NP | IEPS P | ISAN | Import | AlConsumo |
+|---|---:|---:|---:|---:|---:|---:|
+| nacional (nac) | 9.8 | 1.6 | 0.7 | 0.0 | 2.0 | 14.1 |
+| NL, deciles nacionales (nl) | 11.3 | 14.2 | 1.8 | 0.1 | 2.4 | 29.7 |
+| NL, deciles estatales (nle) | 9.9 | 5.9 | 0.9 | 0.0 | 1.8 | 18.6 |
+
+**(d) Estructura de la canasta del decil I** (% del gasto clasificado IVA; regímenes desde la matriz `IVAT`, mismo orden de `levelsof` que `Expenditure.do` §5.2):
+
+| Juego | Gravado | Exento | Tasa cero | Bienes con IEPS |
+|---|---:|---:|---:|---:|
+| nacional | 37.2 | 15.5 | 47.3 | 8.9 |
+| NL (nl) | 38.8 | 18.0 | 43.2 | 13.7 |
+| NL (nle) | 42.9 | 19.0 | 38.1 | 13.9 |
+
+**(e) Robustez con gasto como denominador** (familias `AlConsumoG`/`ImpAportG`; razón declarada: **denominador**): la incidencia de AlConsumo del decil I pasa de 14.1 (nac) / 29.7 (NL) sobre ingreso a **6.6 / 11.8 sobre gasto**; totales 9.7 / 10.9 ≈ las TE de consumo.
+
+**Rótulo corregido:** la TE de consumo NL ≈ nacional (IVATEnl 6.028 vs IVATEnac 5.841) y **la construcción del IVA es la misma**; el diferencial del decil I **combina denominador** (selección: razón gasto/ingreso 252% y 25% de hogares con ingreso ≈ 0) **y numerador** (canasta más gravada: 38.8% gravado y 13.7% en bienes con IEPS vs 37.2% y 8.9% nacional; la incidencia del IEPS NP del decil I NL, 14.2 vs 1.6, es el mayor contribuyente del diferencial).
 
 ### 2. Banda de sensibilidad del ISR PM (NL)
 
-Todos los escenarios reescalan al mismo total nacional (Σ `ISRPM_Sim`): cambia la incidencia, no la recaudación. Supuestos declarados en `presentacion` del JSON.
+Todos los escenarios son **estimadores válidos** reescalados al mismo total nacional (Σ `ISRPM_Sim`): cambia la incidencia, no la recaudación. Supuestos declarados en `presentacion` del JSON.
 
 | Escenario | Supuesto de incidencia | TE ISRPM NL | Part. NL en ISR PM (%) | inc AlCapital Tot | inc Total Tot |
 |---|---|---:|---:|---:|---:|
 | **S1** (cota inferior) | prorrateo a ingreso de capital, sin cut-off | 14.35 | 8.64 | 10.4 | 25.5 |
 | **S2** | 50% capital / 25% trabajo / 25% consumo | 13.04 | 7.86 | 9.8 | 24.9 |
-| **S3** | pago esperado p(probit)×impuesto potencial | 34.79 | 20.95 | 19.9 | 35.1 |
-| **S0** (método actual; cota superior de la banda) | ranking probit + cut-off LIF | 23.50 | 14.15 | 14.6 | 29.8 |
+| **S0** (método vigente) | ranking probit + cut-off LIF | 23.50 | 14.15 | 14.6 | 29.8 |
+| **S3** (cota superior) | pago esperado p(probit)×impuesto potencial | 34.79 | 20.95 | 19.9 | 35.1 |
 
-**Intervalo declarado [S1, S0] para la incidencia total NL: [25.5, 29.8]% del ingreso.** S2 queda apenas por debajo de S1 (parte de la carga migra a trabajo/consumo, menos concentrados en NL). S3 (pago esperado con `prob_moral`, que sí sobrevive en `households.dta`: 47,963 obs) queda **por encima** de S0: la probabilidad de formalidad PM está aún más concentrada en NL que el cut-off; se reporta como referencia, fuera de la banda. Escalares con sufijos `nlS1/nlS2/nlS3` y `nleS1/nleS2/nleS3`; `nl` sigue siendo S0.
+**Banda declarada [S1, S3] para la incidencia total NL: [25.5, 35.1]% del ingreso, con S0 (29.8, método vigente) dentro de ella.** S2 queda apenas por debajo de S1 (parte de la carga migra a trabajo/consumo, menos concentrados en NL). Escalares con sufijos `nlS1/nlS2/nlS3` y `nleS1/nleS2/nleS3`; `nl` sigue siendo S0.
+
+### 3. Notas de contrato
+
+- **Suma de columnas en tablas de incidencia**: `AlCapital` (pipeline, SIM.do:436) incluye OTROSK y el total `ImpAport` (SIM.do:440) lo excluye. Se exporta la **familia `OTROSK` por separado** (sufijos nac/nl/nle) de modo que `AlTrabajo+AlCapital+AlConsumo−OTROSK = Total` (verificado: 9.6+14.6+9.2−3.7 = 29.8 en nl).
+- **Procedencia en batch**: el driver garantiza un log activo (abre `users/$id/nodos/entidad-nl.log` si `SIM.do` cerró los logs) y aborta si no lo consigue: **sin procedencia no hay exportación válida**. JSON final: 1,759 escalares, **0 faltantes**.
+- **Deuda técnica**: extender `scalarjson.ado` con una clave canónica `supuestos` (bloque propio del contrato) para que los supuestos de incidencia de los escenarios no dependan del bloque libre `presentacion`.
 
 ### Nota de no-regresión (cachés)
 `output.txt` es byte-idéntico al baseline en todas las corridas. Entre el baseline original y las corridas F1-bis, el dump crudo de `scalar list` mostró 23 escalares **adicionales** (`pob*Nacional`, de Poblacion.ado) y un reordenamiento del bloque LIF: provienen de un refresco de cachés `master/*.dta` provocado por una sesión de diagnóstico de solo lectura (SCN/Poblacion re-cachean al correr sin los globales de SIM.do), no de los archivos F1 (que SIM.do nunca invoca). Cero valores distintos en los escalares comunes; dos corridas consecutivas con el estado de cachés actual son byte-idénticas también en el dump crudo.
