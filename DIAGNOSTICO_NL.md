@@ -198,3 +198,112 @@ F0 aprobado con **B1a, B2a, B3a-modificada, B4, B5 y B6**, más tres enmiendas o
 3. **`output.txt` intacto en F1**: toda salida NL va exclusivamente por `escalar` → `scalarjson.ado` (`users/$id/nodos/statajson_entidad-nl.json`).
 
 **Implementación**: `TasasEfectivasMicro.ado` (motor micro/micro con opción `entidad(numlist)`; sin invocación en el pipeline nacional) + `01_modulos/EntidadNL.do` (driver: corre tras `SIM.do` en la misma sesión). Registro de escalares solo-aditivo; proxies de conciliación (masa salarial ENOE/PL 3T2024; PIBE 2023 preliminar) declarados como parámetros con fuente y corte, brechas calculadas y **nunca forzadas**.
+
+---
+
+## Anexo F1-bis — Verificación y corrección (2026-08-31)
+
+**Premisa verificada:** la base micro reconstruye el **100.0000% del PIB** (tabla A.3). Los "faltantes por cobertura" que F1 declaró eran errores de F1 (variable equivocada o base incompleta), no limitaciones del método. F0 §0.1.1 estaba **bien descrito**: el error de F1 fue usar `ing_subor` de `perfiles<anio>.dta` sin advertir que `PerfilesSim.do:196` lo reescala a `RemSal+ImpNetProduccionL` (es decir, le quita las SS que el Altimir sí incluye).
+
+### A.1 Dónde vive cada componente de `RemSalSSPIB`
+
+| Componente | Variable micro | Se crea en | ¿Sobrevive a `perfiles<anio>.dta`? |
+|---|---|---|---|
+| Sueldos y salarios + INPL | `ing_subor` | Households.do §6.2 (post-Altimir §9; PerfilesSim.do:196 lo reescala a RemSal+INPL) | Sí |
+| Cuotas trabajador | `cuotasT` | Households.do:1530 | No (dentro de `ing_subor` bruto y de `cuotasTPF`) |
+| Cuotas patrón | `cuotasP` | Households.do:1533 | No (dentro de `cuotasTPF`) |
+| Cuotas federación | `cuotasF` | Households.do:1536 (+INFONAVIT :1539) | No (dentro de `cuotasTPF`) |
+| Total T+P+F+INFONAVIT | `cuotasTPF` | Households.do:1544-1547 | **Sí** |
+| SS imputadas | vía Altimir sobre `ing_subor` (households); mapeo `cuotasTPF`↔`SSEmp+SSImp` del propio pipeline (Households.do:1665-1667) | §6.1/§9 | vía `cuotasTPF` |
+| INPL (parte laboral) | `ImpNetProduccionL_subor` (Distribucion) | Households.do:2405 | No (implícito en el reescalado de `ing_subor`) |
+
+### A.2 Verificación de una línea (`perfiles2026` + SCN 2026, sesión SIM)
+
+| Concepto | % del PIB |
+|---|---:|
+| Σ `ing_subor` [aw=factor] | 25.24 (= RemSalPIB 24.79 + INPL 0.45) |
+| Σ (`ing_subor` + `cuotasTPF`→SSEmp+SSImp) = `BaseSalnac` (11,440 mmdp) | **30.23** |
+| `RemSalSSPIB` oficial (RemSal+SSEmp+SSImp+INPL) | **30.23** |
+
+En `households.dta` (2024, post-Altimir, PRE-PerfilesSim): Σ`ing_subor` = 30.09% del PIB 2024 ≈ RemSal 24.79 + SSEmp+SSImp 4.99 + parte laboral de INPL — **el Altimir sí incluye las SS**, como decía F0 §0.1.1. En consecuencia, `TasasEfectivasMicro.ado` v1.1 usa `BaseSal = ing_subor + Distribucion(cuotasTPF → SSEmpleadores+SSImputada)`.
+
+### A.3 Cobertura del PIB (households 2024 vs SCN 2024, % del PIB)
+
+| Componente micro | Σ micro | Agregado SCN | |
+|---|---:|---:|---|
+| `ing_subor` | 30.09 | RemSal+SS+INPL(sal) | ✓ |
+| `ing_mixto` (L 14.95 + K 7.47) | 22.42 | MixL 13.81 + MixKN 6.91 + impuestos parte | ✓ |
+| `ing_capital` | 19.80 | ExNOpSoc 20.33 + imp − EP | ✓ |
+| `ing_estim_alqu` | 3.33 | ExNOpHog 2.71 + imp parte | ✓ |
+| `ing_Sector_Publico` | 5.13 | EP (LIF) | ✓ |
+| `gasto_anualDepreciacion` | 19.23 | CapFij 19.23 | ✓ |
+| **Total** | **100.0000** | PIB | **✓** |
+| Memo: `cuotasT/P/F`+INFONAVIT = `cuotasTPF` | 0.61+2.53+1.24+0.66 = 5.03 | SSEmp+SSImp 4.99 | ✓ |
+| Memo: `ing_remesas` | 3.52 | ROWTrans 3.52 | ✓ (fuera del PIB) |
+
+### A.4 Consistencia del reescalado
+Numerador (LIF `divSIM`, `anio(2026)`, vía `Distribucion` en PerfilesSim) y denominador (SCN `anio(2026)`) comparten **el mismo año de referencia y el mismo PIB**: en la sesión de SIM.do, `scalar(PIB)` de SCN 2026 = `scalar(pibY)` de PIBDeflactor = 37.85 billones (SCN proyecta con los mismos globales `$pib*/$def*`). Desfase de momento contable LIF (caja presupuestaria estimada de la Ley) vs SCN (devengado): se declara cualitativamente; su magnitud observable es la columna `Dif*TEnac` (< 0.55% relativo en todas las bases, tabla A.5).
+
+### A.5 TE micro nacionales recalculadas (base completa) — brechas residuales con causa
+
+| Base / impuesto | Oficial | Micro nac | Dif (causa identificada) |
+|---|---:|---:|---|
+| ISR asalariados | 12.399 | 12.400 | +0.01% (redondeo del parámetro `ISRASPIB`=3.748 vs LIF exacto) |
+| Cuotas IMSS | 5.611 | 5.610 | idem |
+| ISR PF | 1.723 | 1.721 | idem (`ISRPFPIB`=0.238) |
+| ISR PM | 12.438 | 12.438 | 0 |
+| Otros K | 4.142 | 4.142 | 0 |
+| IVA | 5.841 | 5.841 | 0 |
+| Importaciones | 0.936 | 0.936 | 0 |
+| ISAN | 2.137 | 2.148 | +0.5% (monto LIF ISAN vs parámetro 0.053) |
+| IEPS NP | 48.094 | 48.098 | ~0 (juegos imputado con `gas_pc_RecrT`→Recre7132) |
+| IEPS P | 61.949 | 61.924 | −0.04% (combustibles `gas_pc_Gasolinas+Combustibles`→ConsPriv21) |
+| Laborales | 12.902 | 12.902 | 0 |
+| Consumo total | 9.650 | 9.649 | ~0 |
+
+Notas de imputación (componentes que existen en micro a granularidad más gruesa, distribuidos con el canal `Distribucion` del propio pipeline): juegos (Recre7132, 0.093% PIB) dentro de `gas_pc_RecrT` — la ENIGH 2024 no genera categoría IEPS "Juegos" separada (verificado en `consumption_categ_ieps_pc.dta`); combustibles (ConsPriv21) con `gas_pc_Gasolinas+gas_pc_Combustibles`.
+
+### B. Parámetros `*PIB` de SIM.do §4.1 vs defaults calculados vs micro
+
+Los "defaults" se calculan en `ISR_Mod.do` (ISR_AS/PF/PM_Mod, CUOTAS_Mod = Σ micro simulada/pibY, con factores de calibración internos ×3.793/3.255 etc.) e `IVA_Mod.do` (IVA_Mod, con evasión `IVAT[13]` y factor ×4.249/4.495); solo corren bajo `cambioisrpf`/`cambioiva` (política nueva). Corrida de prueba (sesión aparte, `SIM.do` sin tocar):
+
+| Parámetro | A mano (SIM.do §4.1) | Default `*_Mod` | Micro perfiles (`Rec*nac`/pibY) |
+|---|---:|---:|---:|
+| ISRASPIB | 3.748 | 3.807 | **3.748** |
+| ISRPFPIB | 0.238 | 0.374 | **0.238** |
+| ISRPMPIB | 4.126 | 4.325 | **4.126** |
+| CUOTASPIB | 1.696 | 1.655 | **1.696** |
+| IVAPIB | 4.199 | 4.190 | **4.199** |
+| OTROSK/IEPSNP/IEPSP/ISAN/IMPORT | 1.374/0.761/1.251/0.053/0.673 | — | idénticos |
+
+**Conclusión:** el numerador de `TasasEfectivasMicro` (Σ perfiles reescalada a LIF) coincide al milésimo con los parámetros a mano — que es la convención histórica publicada (bloque `INGRESOS` de `output.txt`, anclado a LIF). Los `*_Mod` son el canal de recalculo para cambios de política, no la convención publicada. **F1 replica la convención histórica.**
+
+### C. Descomposición ISR PM y mixto
+
+**ISR PM** (brecha F1: 18.23 vs 12.44 oficial = 5.79 pp):
+- Efecto numerador: Σ`ISRPM` perfiles/pibY = 4.126 = `ISRPMPIB` → **0 pp**.
+- Efecto denominador: **5.79 pp completos**. F1 usó solo `ing_bruto_tpm` (22.6% del PIB); el oficial `IngKPrivado` = `CapIncImp` − 4 públicos = 33.2%, donde `CapIncImp = ExNOpSoc+ExNOpHog+MixKN+INPK+ImpNet` (SCN.ado:229). Componentes omitidos por F1, todos con contraparte micro: alquiler imputado `ing_estim_alqu`→ExNOpHog (2.71% PIB), mixto capital `ing_mixtoK`→MixKN (6.91%), INPK (0.31%), FMP reintegrado (0.64%; PerfilesSim resta 5 públicos y la TE oficial solo 4). Con la base completa: **12.438 = oficial exacto**.
+
+**Mixto**: TE ya coincidía (1.721 vs 1.723; causa residual = redondeo del parámetro). La brecha de conciliación −3.57 pp (participación NL 4.28% del mixto vs 7.86% del PIBE) no es error de método: el ingreso mixto es la base más asociada a la informalidad y NL es la entidad con menor informalidad laboral del país (TIL2 32.9% vs ~54% nacional, ENOE 4T2024) — razón declarada: **clasificación/composición**, más denominador (PIBE total ≠ base mixta) y momento contable (PIBE 2023).
+
+### D. Incidencia — compuerta y corrección
+
+**D.1 Compuerta (PASÓ):** el driver sin `entidad()` reproduce `INCD`/`INCD2`/`INCD3` de `output.txt` (AportacionesNetas) con `reldif < 1e-6` en las 11 filas (monto por hogar, distribución e incidencia; p. ej. decil I: −80,427.99 / −26.30 / −50.72; Nac: 30,581.76 / 100.0 / 4.006). Tabla completa en el PR.
+
+**D.2 Objeto replicado (SIM.do §7.1 + Simulador.ado §1.3.3 + INCI.ado):** total = `ImpuestosAportaciones` = ISRPM_Sim+ISRAS_Sim+ISRPF_Sim+CUOTAS_Sim+IVA_Sim+IEPSNP_Sim+IEPSP_Sim+ISAN_Sim+IMPORT_Sim (**sin OTROSK ni FMP**, SIM.do:440); subtotales AlTrabajo/AlCapital/AlConsumo tal como los guarda `aportaciones.dta` (nota: `AlCapital` del pipeline sí incluye OTROSK, SIM.do:436 — se replica tal cual). Denominador: `ingbrutotot` (Σ nacional = PIN, PerfilesSim.do:177; incluye las SS vía Altimir) sumado por decil con `fw=factor` sobre el MISMO universo del numerador; colapso por hogar → decil → cociente (INCI.ado); deflactor espejo de Simulador.ado:68/82; restricción `if var != 0`.
+
+**D.3 Checklist de errores probables (versión F1):**
+| Posible error | ¿Presente en F1? |
+|---|---|
+| Doble conteo (`ISR` + `ISRAS/ISRPF/ISRPM`; `CUOTAS` + `cuotasT/P/F`) | No |
+| Cuotas patronales en numerador sin contraparte en denominador | No (`ingbrutotot` ≈ PIN incluye SS) |
+| EP o gasto público sumados como impuestos | **Sí: F1 sumó OTROSK al total** (el pipeline lo excluye de `ImpuestosAportaciones`). Corregido: 33.5% → 29.8% NL |
+| Mezcla per cápita / por hogar | No |
+| `ingbrutotot` de universo distinto al numerador | No |
+| Deciles estatales con el `xtile` de respaldo (Simulador.ado:251) | No (`ing_decil_pc`, criterios de Households.do:2591-2598) |
+| Numerador perfiles-LIF vs `*_Sim` del pipeline | Sí (menor: ≈ mismos montos); corregido usando `aportaciones.dta` (`*_Sim`) |
+
+**D.4 Resultados corregidos** (incidencia total, % del ingreso bruto del decil): nacional 20.7% (I: 21.5 … X: 20.7); NL en deciles nacionales 29.8% (I: 39.3, X: 33.5); NL en deciles estatales 29.8% (I: 30.7, X: 33.9). La sobre-incidencia de NL respecto al nacional está identificada: concentración del ISR PM en residentes de NL (AlCapital NL 14.6% vs 6.8% nacional), consistente con el ranking nacional de formalidad del pipeline.
+
+### Nota de no-regresión (cachés)
+`output.txt` es byte-idéntico al baseline en todas las corridas. Entre el baseline original y las corridas F1-bis, el dump crudo de `scalar list` mostró 23 escalares **adicionales** (`pob*Nacional`, de Poblacion.ado) y un reordenamiento del bloque LIF: provienen de un refresco de cachés `master/*.dta` provocado por una sesión de diagnóstico de solo lectura (SCN/Poblacion re-cachean al correr sin los globales de SIM.do), no de los archivos F1 (que SIM.do nunca invoca). Cero valores distintos en los escalares comunes; dos corridas consecutivas con el estado de cachés actual son byte-idénticas también en el dump crudo.
