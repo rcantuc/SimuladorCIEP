@@ -111,7 +111,7 @@ Desktop.ini
 
 # Configuración de WordPress con credenciales reales de MySQL y salts
 # (Entrega 1.5, 2026-08-01). Existen copias locales de WordPress dentro de
-# esta carpeta (04_1_paqueteeconomico.ciep.mx/, 06_libro/public_html/);
+# esta carpeta (04_4_libro.ciep.mx/, 04_5_ciep.mx/, 06_libro/public_html/);
 # estos patrones son el cinturón independiente de las reglas por carpeta:
 # si mañana un wp-config.php aparece en cualquier otra ruta, sigue ignorado.
 wp-config.php
@@ -142,31 +142,29 @@ endpoint-credentials.sh
 # -----------------------------------------------------------------------------
 # Paquete Económico — contenido en Dropbox, NO se versiona (Entrega 1.5, 2026-08-01)
 # -----------------------------------------------------------------------------
-# ~9 GB entre ambas carpetas, detectadas untracked-y-sin-ignorar en el
-# inventario del boceto Paquete 2027 (reporte-inventario-paquete2027.md §1.1).
-# 04_1: copia local completa de WordPress de paqueteeconomico.ciep.mx,
-#       INCLUYE wp-config.php con credenciales reales.
+# ~9 GB detectados untracked-y-sin-ignorar en el inventario del boceto
+# Paquete 2027 (reporte-inventario-paquete2027.md §1.1).
 # 04_2: archivo histórico de documentos LaTeX 2013-2027 (binarios pesados).
 # Un `git add .` accidental las publicaría; se ignoran como carpetas completas.
 # Los patrones de credenciales de la sección "Secretos" son el segundo
 # cinturón, independiente de estas reglas.
-04_1_paqueteeconomico.ciep.mx/
+# Nota (2026-09-08): la semilla 04_1_paqueteeconomico.ciep.mx/ se RETIRÓ del
+# repo — vive en ../CIEP_Micrositios/Paquete Económico/ (hermana del repo, con
+# su DEPLOY-semilla-04_1-legado.md); el render de los nodos la siguió ahí. El
+# slot 04_1 lo ocupa ahora el sitio del Simulador (ver sección siguiente).
 04_2_documentos_latex/
 # Semillas de sitios (reorganización 2026-08-02: sandbox → producción).
 # Contienen instalaciones WordPress con uploads y dumps de BD en db/.
 04_4_libro.ciep.mx/
 04_5_ciep.mx/
-# Destino de render de los nodos (cierre de 04_3_nodos/, 2026-08-02): vive
-# bajo el docroot del WordPress local del Paquete. Ya está cubierto por la
-# regla de carpeta 04_1_… de arriba; este cinturón explícito existe para que
-# la intención sea auditable a simple vista y sobreviva si la regla de
-# carpeta cambia.
-04_1_paqueteeconomico.ciep.mx/public_html/nodos/
 
 # -----------------------------------------------------------------------------
 # Carpetas de operación local del Simulador (NO se versionan)
 # -----------------------------------------------------------------------------
 # Outputs intermedios de cada corrida y datos del servidor de producción.
+# 04_1_simuladorfiscal.ciep.mx/ = clon local del sitio del Simulador que
+# publicar-vps.sh propaga al VPS (renombrado desde 04_simuladorfiscal.ciep.mx/
+# el 2026-09-08, commit 360ebae, al liberarse el slot 04_1).
 **/temp/**
 **/master/**
 **/graphs/**

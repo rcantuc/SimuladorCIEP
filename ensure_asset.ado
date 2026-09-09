@@ -1,4 +1,4 @@
-*! ensure_asset v1.2 - Garantiza disponibilidad de datos vinculados al repo via GitHub Releases
+*! ensure_asset v1.3 - Garantiza disponibilidad de datos vinculados al repo via GitHub Releases
 *! Sintaxis: ensure_asset "<nombre>"
 *! <nombre> debe coincidir con un campo "name" en 05_scripts/manifest.json
 *!
@@ -145,7 +145,14 @@ def ensure_asset_main(asset_name, pinned_version=""):
                 "SHA-256 no coincide para " + asset_name + ".\n"
                 "  Esperado: " + expected_sha + "\n"
                 "  Real:     " + actual_sha + "\n"
-                "Archivo corrupto o desactualizado. Borralo y vuelve a correr."
+                "  Archivo:  " + local_path + "\n"
+                "Dos casos posibles:\n"
+                "  (a) Si NO modificaste este archivo: esta corrupto o desactualizado.\n"
+                "      Borralo y vuelve a correr (se re-descarga del Release).\n"
+                "  (b) Si lo actualizaste A PROPOSITO (p.ej. nuevo Paquete Economico):\n"
+                "      el manifest debe declararlo - shasum, size_bytes, data_updated.\n"
+                "      Ver 02_governance/runbook-actualizar-assets.md.\n"
+                "      NO borres el archivo: perderias los datos nuevos."
             )
             return
     else:

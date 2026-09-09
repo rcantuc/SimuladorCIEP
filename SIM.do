@@ -97,7 +97,11 @@ global inf2031 = 3.0
 ** 2.4 PIB + Deflactores
 noisily PIBDeflactor if anio >= 2005, aniovp(`=aniovp') aniomax(2031) $textbook $nographs $update
 
-
+exit	// WIP Pre-CGPE 2027: la cadena termina aquí A PROPÓSITO hasta v8.3.0.
+		// Corrida completa del 2026-09-08 (aniovp=anioPE=2027, ILIF 2027): §2.5 y
+		// §4.1-4.6 pasan; §4.7 TasasEfectivas truena — no existe master/perfiles2027.dta
+		// (§3 Hogares comentado) y su fallback TasasEfectivas.ado:308 apunta a una
+		// ruta muerta (PerfilesSim.do vive en 01_modulos/). Ver CHANGELOG v8.2.1.
 
 ** 2.5 Sistema de Cuentas Nacionales (sin inputs)
 noisily SCN, anio(`=aniovp') $textbook $nographs $update

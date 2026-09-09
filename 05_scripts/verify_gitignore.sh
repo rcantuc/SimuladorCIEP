@@ -110,7 +110,7 @@ assert_ignored "01_modulos/Sankey_Salud_2024 [Recovered].do" "Stata recovered su
 
 echo "--- Secretos y credenciales ---"
 assert_ignored "test.key" "Llave privada raíz"
-assert_ignored "04_simuladorfiscal.ciep.mx/ssl/foo.key" "Llave bajo ssl/"
+assert_ignored "04_1_simuladorfiscal.ciep.mx/ssl/foo.key" "Llave bajo ssl/"
 assert_ignored "test.pem" "Certificado PEM"
 assert_ignored "test.p12" "Certificado P12"
 assert_ignored "test.pfx" "Certificado PFX"
@@ -126,14 +126,13 @@ assert_ignored "cualquier/ruta/wp-salt.php" "Salts de WordPress (cualquier profu
 assert_ignored "cualquier/ruta/.env" "Env file a cualquier profundidad"
 
 echo "--- Paquete Económico (contenido Dropbox, Entrega 1.5) ---"
-assert_ignored "04_1_paqueteeconomico.ciep.mx/index.php" "Copia local WordPress paqueteeconomico.ciep.mx"
-assert_ignored "04_1_paqueteeconomico.ciep.mx/wp-config.php" "wp-config real dentro de 04_1 (doble cinturón)"
+# 2026-09-08: la semilla 04_1_paqueteeconomico.ciep.mx/ se retiró del repo
+# (vive en ../CIEP_Micrositios/Paquete Económico/, fuera del árbol); sus
+# aserciones y las del render de nodos bajo su docroot se retiraron con ella.
+# El slot 04_1 lo ocupa ahora el sitio del Simulador (sección "operación local").
 assert_ignored "04_2_documentos_latex/cualquier.tex" "Archivo histórico LaTeX 2013-2027"
 
-echo "--- Semillas de sitios y destino de render de nodos (2026-08-02) ---"
-assert_ignored "04_1_paqueteeconomico.ciep.mx/db/emepykgvhz-20260802.sql" "Dump de BD del Paquete (hashes de usuarios; nunca a git)"
-assert_ignored "04_1_paqueteeconomico.ciep.mx/public_html/nodos/statajson_deuda-publica.json" "Render del nodo bajo el docroot (cierre de 04_3_nodos/)"
-assert_ignored "04_1_paqueteeconomico.ciep.mx/public_html/nodos/nodo-deuda.html" "Copia servible del nodo bajo el docroot"
+echo "--- Semillas de sitios (2026-08-02) ---"
 assert_ignored "04_4_libro.ciep.mx/public_html/wp-config.php" "wp-config de la semilla del libro (doble cinturón)"
 assert_ignored "04_4_libro.ciep.mx/public_html/wp-salt.php" "wp-salt de la semilla del libro (doble cinturón)"
 assert_ignored "04_4_libro.ciep.mx/db/libro_20260802.sql" "Dump de BD del libro (pedidos WooCommerce; nunca a git)"
@@ -149,7 +148,8 @@ assert_ignored "raw/temp/output.csv" "raw/temp/"
 assert_ignored "master/2024/foo.dta" "master/"
 assert_ignored "graphs/grafica.png" "graphs/"
 assert_ignored "users/ricardo/algo" "users/"
-assert_ignored "04_simuladorfiscal.ciep.mx/index.html" "servidor producción"
+assert_ignored "04_1_simuladorfiscal.ciep.mx/index.html" "servidor producción (clon local del sitio; renombrado desde 04_ el 2026-09-08)"
+assert_ignored "04_1_simuladorfiscal.ciep.mx/config.php" "config.php del servidor de producción (credenciales; el susto de v1.15)"
 
 echo ""
 
@@ -170,6 +170,10 @@ assert_not_ignored "01_modulos/IVA_Mod.do" "Módulo de impuesto"
 echo "--- Plantillas de secretos (deben versionarse) ---"
 assert_not_ignored "set_token.template.do" "Plantilla de set_token (debe versionarse para guiar a usuarios)"
 assert_not_ignored "05_scripts/endpoint-credentials.template.sh" "Plantilla de credenciales del endpoint (debe versionarse para guiar a operadores)"
+assert_not_ignored "05_scripts/publicar-vps-credentials.template.sh" "Plantilla de credenciales del VPS (debe versionarse; la real está ignorada)"
+
+echo "--- Excepción del sitio: health.php SÍ se versiona ---"
+assert_not_ignored "04_1_simuladorfiscal.ciep.mx/health.php" "health.php del pipeline VPS (única pieza versionada del clon del sitio)"
 
 echo "--- Governance y meta ---"
 assert_not_ignored ".mailmap" "Normalización de identidad"

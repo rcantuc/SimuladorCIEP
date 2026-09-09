@@ -18,11 +18,139 @@ Formato de cada entrada:
 
 ## [Unreleased]
 
-Trabajo en `master` sin versión asignada. **Nada de lo que aquí se registra
-cambia el paquete distribuido** (`05_scripts/manifest-endpoint.toml` no
-incluye `scalarjson.ado`, igual que nunca incluyó `scalarlatex.ado`): el
-endpoint público y el VPS corren exactamente el mismo código que en v8.2.0.
-El tag llega cuando el nodo se publique, no antes.
+Trabajo en `master` sin versión asignada.
+
+## [v8.2.1] — 2026-09-08
+
+**Release PARCIAL del Paquete 2027: el `LIFs.xlsx` del data sidecar carga la
+ILIF 2027 y el manifest la declara; el resto de las bases 2027 (PPEF, CGPE)
+llega en v8.3.0, el release formal.** Es un patch porque lo que cambia de lo
+distribuido es un asset de datos y el mensaje de un `.ado` de
+infraestructura; el motor, el sitio y el endpoint no cambian de
+comportamiento. **El VPS NO se redeploya en este parcial** — el web sigue
+sirviendo el PE2026 correctamente hasta v8.3.0.
+
+**GATE DE CONTENIDO PENDIENTE (registrado explícitamente):** el SHA-256 del
+`LIFs.xlsx` 2027 quedó declarado en el manifest ANTES de que Ricardo validara
+con el ojo que la ILIF 2027 está bien vaciada. El hash certifica identidad
+del archivo, no corrección de los datos. El tag `v8.2.1` y `publicar.sh`
+(que re-sube los 24 assets al Release con el LIFs nuevo) quedan bloqueados
+hasta que Ricardo confirme ese gate; si el contenido falla, el fix es un
+LIFs corregido + SHA nuevo, no revertir este release.
+
+### Datos
+- **`raw/LIFs/LIFs.xlsx` → ILIF 2027 (actualización parcial del Paquete
+  2027).** Vaciado por el equipo CIEP el 2026-09-08 en su máquina.
+  `manifest.json`: `sha256` `a145d8f5…` → `81bef034…`, `size_bytes`
+  47,910 → 48,875, `data_updated` 2026-07-19 → 2026-09-08. Corrección en
+  este ciclo: el commit `3f33f8a` había declarado el SHA nuevo con el tamaño
+  viejo (47,910); `ensure_asset` no valida tamaño, así que pasaba, pero el
+  manifest quedaba a medias.
+- **El candado contuvo el incidente — primer evento multi-usuario del repo.**
+  `ensure_asset` detuvo la corrida en la máquina de los compañeros ("SHA real
+  `81bef034…` vs manifest `a145d8f5…`"): una modificación legítima pero no
+  declarada. Es exactamente lo que el candado existe para detener. Lo que
+  falló fue el mensaje (siguiente sección) y la ausencia de un procedimiento
+  escrito para el equipo (runbook nuevo).
+
+### Comandos
+- **`ensure_asset.ado` v1.3 — el error de SHA distingue los dos casos.** El
+  mensaje anterior ("Archivo corrupto o desactualizado. Bórralo y vuelve a
+  correr") es correcto para corrupción y DESTRUCTIVO para actualización
+  intencional: borrar re-descarga el archivo VIEJO del Release y pisa los
+  datos nuevos. El mensaje nuevo enumera (a) si NO modificaste el archivo:
+  bórralo y re-corre; (b) si lo actualizaste a propósito: el manifest debe
+  declararlo (shasum, `size_bytes`, `data_updated`), ver el runbook, y **NO
+  borres el archivo**. Añade la ruta del archivo al mensaje. Verificado
+  contra un SITE falso con manifest desalineado: reproduce el incidente
+  palabra por palabra y sale con `r(198)`. Sin cambios de comportamiento:
+  misma verificación, misma descarga, mismo código de error.
+
+### Institucional
+- **`02_governance/runbook-actualizar-assets.md` (nuevo, una página, para el
+  equipo):** qué es el manifest y por qué existe el candado; el flujo en
+  diez pasos (avisar → Ricardo valida CONTENIDO → shasum + size → manifest
+  → `data_updated` → probar → commit + push → release → pull en la Carpeta
+  de investigadores); qué NUNCA hacer (borrar-y-recorrer tras actualizar;
+  manifest a medias; renombrar el asset); y la regla de la carpeta
+  compartida: **git ahí lo opera UNA sola persona** (§6.7 de arquitectura).
+- **Regla nueva de operación: un ciclo, un operador por juego de archivos.**
+  Durante la auditoría de este ciclo (delegado), `manifest.json` y `SIM.do`
+  cambiaron en el working tree a las 20:57–20:58 sin aviso: era Ricardo
+  ejecutando el desbloqueo a mano en paralelo (commit `3f33f8a`). Near-miss
+  sin daño — pero dos manos sobre los mismos archivos sin declararlo es el
+  mismo incidente que el candado acaba de contener, sin candado. Si Ricardo
+  va a editar a mano archivos de un ciclo delegado, se declara antes.
+  Registrada en el runbook §4.
+- **Rename `04_simuladorfiscal.ciep.mx/` → `04_1_simuladorfiscal.ciep.mx/`
+  (commit `360ebae` del 2026-09-08), documentado aquí porque no lo estaba
+  en ningún lado.** Renumeración, no colisión: la semilla
+  `04_1_paqueteeconomico.ciep.mx/` se RETIRÓ del repo hacia
+  `../CIEP_Micrositios/Paquete Económico/` (hermana del repo, con
+  `DEPLOY-semilla-04_1-legado.md` como acta; el render de los nodos la siguió
+  ahí — `scalarjson.ado:70`, `nodo-deuda.do`, `portada.do`, `verify_nodo.sh`
+  ya apuntan a ese destino), lo que liberó el slot `04_1` para el sitio del
+  Simulador. Mapa `04_*` vigente: `04_1_simuladorfiscal.ciep.mx/`,
+  `04_2_documentos_latex/`, `04_4_libro.ciep.mx/`, `04_5_ciep.mx/` (04_3
+  cerrado el 2026-08-02). **Fallout censado y cerrado en este release:**
+  `05_scripts/publicar-vps-credentials.template.sh` (`LOCAL_SITE_ROOT` a la
+  ruta nueva, con nota para credenciales anteriores);
+  `05_scripts/verify_gitignore.sh` (93/94 con 1 FAIL → **92/92, 0 FAILS**:
+  la ruta nueva en las 2 aserciones del sitio, retiro de las 5 aserciones
+  fantasma sobre `04_1_paqueteeconomico…`, y 3 aserciones nuevas —
+  `config.php` del sitio ignorado, plantilla VPS versionada, `health.php`
+  versionado); `.gitignore` (reglas muertas de `04_1_paqueteeconomico…`
+  retiradas con nota; el clon del sitio comentado en su sección); docs vivas
+  `arquitectura-y-bitacoras.md` §2.8 y D.1, `verificacion-estado-repo.md`,
+  `reporte-inventario-paquete2027.md`, `manual-investigador-ciep.md`
+  (tabla "no borres" con el mapa 04_* completo). Las bitácoras y
+  `reconocimiento-vps.md` (2026-07-09) conservan la ruta vieja como
+  histórico. **Pendiente de Ricardo:** la línea 23 de su
+  `publicar-vps-credentials.sh` (gitignored) sigue en la ruta vieja — el
+  Gate 5 de `publicar-vps.sh` aborta con `die` si no existe, así que un
+  deploy no puede subir vacío, pero tampoco puede correr hasta editarla.
+
+### Correcciones
+- **`SIM.do`: el estado Pre-CGPE 2027 y el freno declarado.** El commit
+  `4b047ae` subió `aniovp` 2026→2027, actualizó los inputs macro
+  (`pib2027` 2.1→2.4, `def2026` 4.8→3.8, `def2027` 4.2→4.0, `inf2026`
+  3.54→3.8, `inf2027` 3.0→3.2; filas 2025 retiradas), descomentó §2.4
+  `PIBDeflactor` y dejó un `exit` sin comentario tras él; `3f33f8a` subió
+  `anioPE` 2026→2027 y retiró el `exit`. **Corrida completa de
+  verificación (2026-09-08, batch, `$id` scratch, `$export` a scratch, SIN
+  `update`, `master/` intacto):** §2.4 PIBDeflactor 2027, §2.5 SCN 2027 y
+  §4.1–4.6 (LIF 2027 con la ILIF nueva — 9,038,576.6 mdp, 22.641% del PIB —
+  ISR, IMSS/ISSSTE, IVA, IEPS) pasan; **§4.7 `TasasEfectivas, anio(2027)
+  enigh` truena con `r(601)`**: no existe `master/perfiles2027.dta` (§3
+  Hogares está comentado, así que nadie lo construye) y el fallback de
+  `TasasEfectivas.ado:308` corre `"<site>/PerfilesSim.do"` — ruta muerta
+  desde la reorganización del 2026-07-04 (el archivo vive en
+  `01_modulos/PerfilesSim.do`). **Fallback aprobado aplicado:** el `exit`
+  vuelve a su posición tras `PIBDeflactor`, ahora DECLARADO ("WIP Pre-CGPE
+  2027: la cadena termina aquí A PROPÓSITO hasta v8.3.0") con el diagnóstico
+  en el comentario. Verificado: SIM.do corre limpio hasta el freno. El mix
+  `aniovp = anioPE = 2027` con bases 2026 NO es estado válido de corrida
+  completa; lo es de la cadena §0–§2.4.
+
+### Candidatos registrados (no corregidos en este ciclo)
+- **Dos rutas muertas a `PerfilesSim.do` en el motor**, destapadas por el
+  mix: `TasasEfectivas.ado:308` (`<site>/PerfilesSim.do`) y `GastoPC.ado:74`
+  (`<site>/01_modules/profiles/PerfilesSim.do`, anterior incluso a la
+  reorganización). Ambas son fallbacks que solo corren cuando falta
+  `master/perfiles<anio>.dta`, por eso sobrevivieron desde julio. Van en el
+  ciclo v8.3.0 junto con la construcción de `perfiles2027.dta`.
+- **La opción de mover el freno a antes de §4.7** (conservando SCN 2027 y
+  LIF 2027 verificados) queda para decisión de Ricardo; este release respeta
+  el fallback aprobado.
+
+### Trabajo acumulado en `master` desde v8.2.0 (nodos y micrositio)
+
+Lo que sigue estaba registrado bajo `[Unreleased]` y queda incluido en el tag
+`v8.2.1` porque el tag es un punto de `master`. **Nada de esto cambia el
+paquete distribuido** (`05_scripts/manifest-endpoint.toml` no incluye
+`scalarjson.ado`, igual que nunca incluyó `scalarlatex.ado`): el endpoint
+público y el VPS corren el mismo motor que en v8.2.0. Los nodos se publican
+en su propio ciclo.
 
 ### Institucional
 - **Primer corte vertical de un nodo: un número sale de Stata y llega a una

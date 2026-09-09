@@ -19,8 +19,11 @@ export VPS_SIM_ROOT="/SIM/OUT"
 export VPS_HEALTH_URL="https://simuladorfiscal.ciep.mx/health.php"
 
 # Path absoluto en la Mac de Ricardo al clon local del sitio
-# (fuente de verdad para el rsync del PHP)
-export LOCAL_SITE_ROOT="/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/04_simuladorfiscal.ciep.mx"
+# (fuente de verdad para el rsync del PHP). Carpeta renombrada de
+# 04_simuladorfiscal.ciep.mx a 04_1_simuladorfiscal.ciep.mx el 2026-09-08:
+# si tu publicar-vps-credentials.sh es anterior, actualiza esta línea (el
+# Gate 5 de publicar-vps.sh aborta si la carpeta no existe).
+export LOCAL_SITE_ROOT="/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/04_1_simuladorfiscal.ciep.mx"
 
 # Path absoluto al repo del Simulador (para localizar .ado y master/)
 export LOCAL_REPO_ROOT="/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP"

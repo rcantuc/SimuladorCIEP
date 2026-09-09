@@ -1,10 +1,10 @@
 {
-  "version": "v8.2.0",
+  "version": "v8.2.1",
   "data_updated": "2026-09-08",
   "data_updated_regla": "Fecha de los DATOS precargados del sitio (la pinta el hero como 'Última actualización'). Se bumpea SOLO cuando se reprocesan los datos (nuevo Paquete Económico, nueva ENIGH) — NO en cada release de código, NO es la fecha de deploy.",
-  "release_tag": "v8.2.0",
-  "release_url_prefix": "https://github.com/rcantuc/SimuladorCIEP/releases/download/v8.2.0/",
-  "generated_at": "2026-07-19T18:20:00Z",
+  "release_tag": "v8.2.1",
+  "release_url_prefix": "https://github.com/rcantuc/SimuladorCIEP/releases/download/v8.2.1/",
+  "generated_at": "2026-09-09T03:24:00Z",
   "exclusion_rule": "Excluidos: archivos terminados en .xlsx_ (renombres truncados de Dropbox, no canónicos) y archivos .DS_Store (metadatos macOS, no datos).",
   "assets": [
     {
@@ -53,7 +53,7 @@
       "name": "LIFs.xlsx",
       "local_path": "raw/LIFs/LIFs.xlsx",
       "sha256": "81bef0348f165aecf9954d07d4d4905d8728561e694bdce0b0902901a86215b4",
-      "size_bytes": 47910
+      "size_bytes": 48875
     },
     {
       "name": "CP.2013.xlsx",
