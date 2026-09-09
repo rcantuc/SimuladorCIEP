@@ -32,7 +32,7 @@ else {
 ** 0.2 Parámetros
 global id = "`c(username)'"
 scalar aniovp = 2027								// ANIO VALOR PRESENTE
-scalar anioPE = 2026								// ANIO PAQUETE ECONÓMICO
+scalar anioPE = 2027								// ANIO PAQUETE ECONÓMICO
 scalar anioenigh = 2024								// ANIO ENIGH
 
 ** 0.3 Directorio de archivos "users"
@@ -97,7 +97,7 @@ global inf2031 = 3.0
 ** 2.4 PIB + Deflactores
 noisily PIBDeflactor if anio >= 2005, aniovp(`=aniovp') aniomax(2031) $textbook $nographs $update
 
-exit
+
 
 ** 2.5 Sistema de Cuentas Nacionales (sin inputs)
 noisily SCN, anio(`=aniovp') $textbook $nographs $update

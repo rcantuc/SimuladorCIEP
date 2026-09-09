@@ -1,6 +1,6 @@
 {
   "version": "v8.2.0",
-  "data_updated": "2026-07-19",
+  "data_updated": "2026-09-08",
   "data_updated_regla": "Fecha de los DATOS precargados del sitio (la pinta el hero como 'Última actualización'). Se bumpea SOLO cuando se reprocesan los datos (nuevo Paquete Económico, nueva ENIGH) — NO en cada release de código, NO es la fecha de deploy.",
   "release_tag": "v8.2.0",
   "release_url_prefix": "https://github.com/rcantuc/SimuladorCIEP/releases/download/v8.2.0/",
@@ -52,7 +52,7 @@
     {
       "name": "LIFs.xlsx",
       "local_path": "raw/LIFs/LIFs.xlsx",
-      "sha256": "a145d8f581311dded291998afa12f493b124da28ade867a3cbf4e25fe478333d",
+      "sha256": "81bef0348f165aecf9954d07d4d4905d8728561e694bdce0b0902901a86215b4",
       "size_bytes": 47910
     },
     {
