@@ -71,12 +71,13 @@ noisily Poblacion, anioi(`=aniovp') aniofinal(2070) $textbook $nographs
 global paqueteEconomico "Pre-CGPE 2027"				// POLÍTICA FISCAL A ANALIZAR
 
 ** 2.1 Producto Interno Bruto (inputs opcionales)
-global pib2026 = 2.3								// <-- AGREGAR O QUITAR AÑOS SEGÚN PROYECCIONES
-global pib2027 = 2.4
-global pib2028 = 2.1
-global pib2029 = 2.0
-global pib2030 = 2.0
-global pib2031 = 2.0
+global pib2026 = 1.4127								// <-- AGREGAR O QUITAR AÑOS SEGÚN PROYECCIONES
+global pib2027 = 1.9983 // 39,419.4
+global pib2028 = 1.9984
+global pib2029 = 1.9984
+global pib2030 = 1.9984
+global pib2031 = 1.9984
+global pib2032 = 1.9984
 
 ** 2.2 Deflactor (inputs opcionales)
 global def2026 = 3.8								// <-- AGREGAR O QUITAR AÑOS SEGÚN PROYECCIONES
@@ -85,6 +86,7 @@ global def2028 = 4.0
 global def2029 = 4.0
 global def2030 = 4.0
 global def2031 = 4.0
+global def2032 = 4.0
 
 ** 2.3 Inflación (inputs opcionales)
 global inf2026 = 3.8								// <-- AGREGAR O QUITAR AÑOS SEGÚN PROYECCIONES
@@ -93,6 +95,7 @@ global inf2028 = 3.0
 global inf2029 = 3.0
 global inf2030 = 3.0
 global inf2031 = 3.0
+global inf2032 = 3.0
 
 ** 2.4 PIB + Deflactores
 noisily PIBDeflactor if anio >= 2005, aniovp(`=aniovp') aniomax(2031) $textbook $nographs $update
