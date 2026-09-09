@@ -139,9 +139,96 @@ El tag llega cuando el nodo se publique, no antes.
   portada`. Reglas 1-3 y 6 idénticas (la 3 corre el driver dos veces: LIF y
   PEF incluidos); las reglas 4/5 se sustituyen por sus equivalentes
   estructurales — cierre de la ecuación (montos exactos; % PIB a la
-  precisión emitida, tolerancia 1e-9), sumas de desagregaciones contra los
+  precisión emitida), sumas de desagregaciones contra los
   totales, brecha LIF declarada, y unidades/formatos/fuentes por término más
   procedencia de capas. Ambos nodos: todas las reglas pasan, exit 0.
+- **La portada se vuelve MULTI-AÑO: selector 2013–2026 (v2.0 del driver,
+  mismo esquema `ciep.nodo.portada/v1`).** Censo previo (2026-08-02): los 14
+  años corren completos y las etiquetas son ESTABLES — las mismas 7 familias
+  de ingreso y 10 divisiones de gasto en todos los años, así que el
+  blueprint del driver es único, sin ramas por año. El bloque `ecuacion` se
+  extiende a `ecuaciones[]` por año SIN subir a v2: contrato pre-publicación
+  sin consumidor externo (decisión documentada en el header del driver: "v2
+  solo cuando exista consumidor externo publicado"). **`tipo_dato` por año Y
+  POR LADO, leído de los datos, no de una tabla tecleada:** gasto = qué
+  columna trae datos en `master/PEF.dta` según la regla del motor
+  (`PEF.ado:1295-97`: ejercido → aprobado → proyecto — 2013-2025 ejercido/CP,
+  2026 aprobado/PEF); ingresos = mes máximo observado en `master/LIF.dta`
+  (12 → observado; menor → ley/ILIF — 2026). La página lo muestra como marca
+  discreta bajo el selector ("gasto: aprobado · ingresos: ley"), sin
+  párrafos. La capa CGPE viaja SOLO en el año de referencia. Deep-link por
+  año: `/nodos/#2016`. Tiempo de corrida declarado en el header del driver:
+  ~2 min el export (PEF ~8.6 s × 14 años), ~5 min la regla 3.
+- **Dos lecciones de precisión más, cazadas por las reglas 3 y 4 en la
+  primera corrida multi-año:** (a) los MONTOS de Cuenta Pública traen
+  centavos y tampoco son bit-estables entre corridas — los montos ahora
+  viajan en MILLONES DE MXN ENTEROS (`round(x/1e6)`), seis órdenes por
+  encima del ruido, y el financiamiento se deriva DESPUÉS del redondeo, así
+  que el cierre en montos es exacto en enteros; los % del PIB bajan a
+  `%16.9g` (9 dígitos: ~5 órdenes de margen sobre el ruido, y el display usa
+  3 decimales). (b) `local x = exp` guarda el resultado como TEXTO con menos
+  dígitos — el cierre por construcción perdía los centavos al pasar por
+  locals; toda la captura del driver vive ahora en scalars (`__prt*`,
+  limpiados al final). La regla 4 verifica el cierre POR AÑO en los 14 años.
+- **Integración (a) ejecutada en el WP local (2026-08-02):** item de menú
+  "La ecuación" → `/nodos/` en `menu-paquete` (posición 1, vía
+  `wp menu item add-custom`). El hero quedó DESCARTADO por escrito (regla:
+  nada de los nodos vive dentro de Elementor). Es estado de BD: documentado
+  en el `DEPLOY.md` de la semilla como PENDIENTE DE PORTAR con el comando
+  exacto (mismo `wp` por SSH + purga de WP Rocket, prerrequisito: `/nodos/`
+  desplegada).
+- **Tercer nodo: los indicadores de los hashtags de ciep.mx (2026-08-03,
+  esquema `ciep.nodo.indicadores/v1`).** Los 26 hashtags del home de ciep.mx
+  son anclas a `/category/<slug>/` — el slug es la llave del censo: **13
+  disponibles y 11 declarados no disponibles con su razón** (FiscalGap
+  registra tasas y no niveles; y 7 hashtags sin correspondencia hoy). Un
+  **decorador estático** (`indicadores-decorador.js`, auditado por la regla 1
+  como cualquier página de nodo) lee el contrato y añade la cifra al ancla
+  cuyo slug tiene dato — los demás quedan intactos; se encola con un
+  **mu-plugin de una línea** (`indicadores-muplugin.php`, fuente versionada;
+  instalado como `wp-content/mu-plugins/ciep-indicadores.php` en la semilla:
+  viaja con el rsync, no vive en la BD). WordPress jamás guarda un número; la
+  actualización mensual es re-exportar el JSON y re-publicar un archivo.
+- **Indicadores v2 (mismo día, decisión de Ricardo tras ver v1): ÚNICAMENTE
+  datos abiertos como lo oficial, con el último mes como corte de cada
+  concepto.** v1 usaba LIF/PEF anual (ley/aprobado); v2 mapea cada slug a su
+  serie de SHCP Estadísticas Oportunas vía `DatosAbiertos.ado` con claves
+  verificadas contra `master/DatosAbiertos.dta` (XAB ingresos, XAC gasto
+  neto pagado, XAB11 tributarios, XAB12 no tributarios, XDA12 contribuciones
+  SS, XAC21 costo financiero, XOA0135 pensiones, XOA0417/XOA0419 funciones
+  Salud/Educación — los frames viejos XOA0316/XOA0315 ya no traen 2026 y el
+  guard truena si una clave se queda sin dato; `energia` = balance XAB21 −
+  XOA0425; `endeudamiento` = XAC − XAB, el cierre de siempre). **Convención
+  de % PIB del MOTOR, no inventada:** flujos con la opción `proyeccion` de
+  `DatosAbiertos.ado` (acumulado observado anualizado con `acum_prom` ÷ PIB
+  anual), `tipo_dato = proyectado_observado`; el saldo de deuda no se
+  proyecta (`observado_mensual`). Todos los conceptos cortan en **mayo de
+  2026**; guard de cortes mixtos incluido. **Ronda visual aplicada:** junto
+  al hashtag SOLO el número y el `%` (columna angosta), todo en blanco con
+  sombra sutil; la unidad y el corte NO se repiten — viven una sola vez en
+  una nota fija en la esquina superior derecha, leída del contrato; el
+  detalle por concepto (clave SHCP, fuente, tipo de dato) va al tooltip.
+  La regla 1 volvió a cazar dos fósiles del propio autor durante la ronda
+  (una fecha en comentario y un `12px/1.4`). `verify_nodo.sh indicadores`:
+  reglas 4/5 propias (cierre del endeudamiento re-derivado del contrato,
+  `ingresos == ingresospublicos`, slugs únicos, disponibles con
+  pib/corte/tipo_dato/fuente y ausentes con razón); los TRES nodos en exit 0.
+- **El decorador gana el conteo de investigaciones por hashtag (2026-08-04):**
+  dato VIVO de la API REST de WordPress (`/wp-json/wp/v2/categories`, campo
+  `count`), pintado junto a la cifra del motor (`#Salud 3.1% (122)`); los
+  hashtags sin cifra llevan solo su conteo. Nada tecleado: si la API falla,
+  no hay conteos y la página queda tal cual. El decorador ahora exige que el
+  ancla SEA un hashtag (texto que inicia con `#`) para no decorar menú/footer.
+  Los cambios de LAYOUT del home de ciep.mx (hero 2/3 + destacadas 1/3
+  vertical cuadrada a la altura del hero; Venn a columna completa con offsets
+  escalados ×1.39; las 3 secciones de /investigaciones insertadas bajo el
+  Venn con filtros colapsados a 5 items + "Más…", 9 por página, ancla
+  `#investigaciones`, y el botón "Investigaciones" fuera del menú del header)
+  viven en la BD LOCAL (`_elementor_data` + menús), documentados en el
+  DEPLOY.md de la semilla con su hallazgo crítico: el auto-update del primer
+  arranque subió Elementor a 3.35.5 y desactivó elementor-pro (por eso el
+  widget de posts salía vacío); producción sirve Elementor 4.2.1 — NO rsync
+  de plugins sin reconciliar versiones.
 
 ### Comandos
 - **`scalarjson.ado` v1.0.0 — exportador de nodos a JSON, hermano de SOLO

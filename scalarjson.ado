@@ -67,7 +67,7 @@ program define scalarjson
 
 	local site `"`c(sysdir_site)'"'
 	if `"`saving'"' == "" {
-		local saving `"`site'/04_1_paqueteeconomico.ciep.mx/public_html/nodos/statajson_`nodo'.json"'
+		local saving `"`site'/../CIEP_Micrositios/Paquete Económico/public_html/nodos/statajson_`nodo'.json"'
 	}
 	local faltantes ""
 	local q = char(34)
