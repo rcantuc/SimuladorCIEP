@@ -31,7 +31,7 @@ else {
 
 ** 0.2 Parámetros
 global id = "`c(username)'"
-scalar aniovp = 2026								// ANIO VALOR PRESENTE
+scalar aniovp = 2027								// ANIO VALOR PRESENTE
 scalar anioPE = 2026								// ANIO PAQUETE ECONÓMICO
 scalar anioenigh = 2024								// ANIO ENIGH
 
@@ -71,34 +71,33 @@ noisily Poblacion, anioi(`=aniovp') aniofinal(2070) $textbook $nographs
 global paqueteEconomico "Pre-CGPE 2027"				// POLÍTICA FISCAL A ANALIZAR
 
 ** 2.1 Producto Interno Bruto (inputs opcionales)
-global pib2025 = 0.5								// <-- AGREGAR O QUITAR AÑOS SEGÚN PROYECCIONES
 global pib2026 = 2.3								// <-- AGREGAR O QUITAR AÑOS SEGÚN PROYECCIONES
-global pib2027 = 2.1
+global pib2027 = 2.4
 global pib2028 = 2.1
 global pib2029 = 2.0
 global pib2030 = 2.0
 global pib2031 = 2.0
 
 ** 2.2 Deflactor (inputs opcionales)
-global def2025 = 4.6								// <-- AGREGAR O QUITAR AÑOS SEGÚN PROYECCIONES
-global def2026 = 4.8								// <-- AGREGAR O QUITAR AÑOS SEGÚN PROYECCIONES
-global def2027 = 4.2
+global def2026 = 3.8								// <-- AGREGAR O QUITAR AÑOS SEGÚN PROYECCIONES
+global def2027 = 4.0
 global def2028 = 4.0
 global def2029 = 4.0
 global def2030 = 4.0
 global def2031 = 4.0
 
 ** 2.3 Inflación (inputs opcionales)
-global inf2025 = 3.7								// <-- AGREGAR O QUITAR AÑOS SEGÚN PROYECCIONES
-global inf2026 = 3.54								// <-- AGREGAR O QUITAR AÑOS SEGÚN PROYECCIONES
-global inf2027 = 3.0
+global inf2026 = 3.8								// <-- AGREGAR O QUITAR AÑOS SEGÚN PROYECCIONES
+global inf2027 = 3.2
 global inf2028 = 3.0
 global inf2029 = 3.0
 global inf2030 = 3.0
 global inf2031 = 3.0
 
-/** 2.4 PIB + Deflactores
+** 2.4 PIB + Deflactores
 noisily PIBDeflactor if anio >= 2005, aniovp(`=aniovp') aniomax(2031) $textbook $nographs $update
+
+exit
 
 ** 2.5 Sistema de Cuentas Nacionales (sin inputs)
 noisily SCN, anio(`=aniovp') $textbook $nographs $update
