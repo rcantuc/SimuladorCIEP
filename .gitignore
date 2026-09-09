@@ -182,6 +182,12 @@ endpoint-credentials.sh
 # Credenciales del pipeline VPS (deployment a IONOS)
 05_scripts/publicar-vps-credentials.sh
 
+# Marker del clon de DESARROLLO (guard de identidad de publicar.sh, 2026-09-09).
+# Existe solo en el clon desde el que se publica; git no lo propaga, así que la
+# Carpeta del Simulador para investigadores nunca lo tiene. Se crea una vez:
+# touch .clon-desarrollo
+.clon-desarrollo
+
 
 # Windsurf IDE workflows locales (instalados por el IDE, no institucionales)
 .windsurf/

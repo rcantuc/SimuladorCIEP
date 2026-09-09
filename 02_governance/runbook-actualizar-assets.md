@@ -42,6 +42,76 @@ la otra mitad es declararlo.
 | 9. Release | **Ricardo** | Tag + `publicar.sh vX.Y.Z` re-sube los assets al Release para que las máquinas vírgenes y los compañeros descarguen el archivo nuevo. Hasta ese momento el Release sirve el archivo viejo — por eso el paso 10 importa. |
 | 10. Pull en la carpeta compartida | **una sola persona** | `git pull` en la Carpeta del Simulador para investigadores (Dropbox). Ver §4. |
 
+## 2b. Comandos exactos (autoservicio)
+
+Es la misma secuencia de §2, pegable. Sustituye `<archivo>` por la ruta
+relativa del asset (p.ej. `raw/LIFs/LIFs.xlsx`), `<nombre>` por su `name` en el
+manifest (`LIFs.xlsx`) y `<tag>` por el `release_tag` que trae el manifest hoy.
+Cuando `ensure_asset` te detiene, su mensaje ya trae estos valores calculados
+(SHA, tamaño, tag, fecha): cópialos de ahí.
+
+**Dónde se ejecuta — la trampa del 2026-09-08.** Hay DOS clones del repo en tu
+Mac que se ven idénticos: el **clon de desarrollo** (donde se edita, commitea y
+publica) y la **Carpeta del Simulador para investigadores**
+(`…/Dropbox-CIEP/SimuladorCIEP`, clon que Dropbox replica al equipo y donde
+git lo opera solo Ricardo con `git pull`). Todo lo que sigue va en el clon de
+desarrollo. `publicar.sh` lo verifica: aborta si la raíz no tiene el marker
+`.clon-desarrollo` (gitignored; se crea una vez con `touch .clon-desarrollo` en
+el clon correcto). Confirma dónde estás con `git rev-parse --show-toplevel`.
+
+```bash
+# 0. Clon de DESARROLLO, master limpio y alineado
+cd "<ruta-del-clon-de-desarrollo>"
+git rev-parse --show-toplevel          # NO debe terminar en Dropbox-CIEP/SimuladorCIEP
+git checkout master && git pull --ff-only origin master
+git status --porcelain                 # vacío
+
+# 1. Gate de contenido: quien edita, valida. Si no eres Ricardo, avísale ANTES.
+
+# 3. Identidad del archivo nuevo
+shasum -a 256 "<archivo>"
+stat -f%z "<archivo>"
+
+# 4. Declararlo: en 05_scripts/manifest.json, entrada "<nombre>":
+#      "sha256": "<sha>",  "size_bytes": <bytes>
+#    y, si cambiaron los datos, arriba: "data_updated": "AAAA-MM-DD"
+
+# 5. El candado debe pasar en silencio (batch, sin abrir Stata):
+printf 'sysdir set SITE "%s"\nadopath ++SITE\nensure_asset "<nombre>"\n' "$PWD" > /tmp/ea.do
+/Applications/StataNow/StataSE.app/Contents/MacOS/stata-se -b do /tmp/ea.do < /dev/null; tail -5 ea.log
+
+# 6. Commit + push (solo el manifest)
+git add 05_scripts/manifest.json
+git commit -m "fix(assets): <nombre> -> <qué cambió> (SHA <sha8>, contenido validado por <quién>)"
+git push origin master
+
+# 7. Reemplazar el asset en el Release vigente y verificar los 24
+gh release delete-asset "<tag>" "<nombre>" -y || true
+bash 05_scripts/publicar.sh "<tag>"
+
+# 8. Avisar a Ricardo: pull en la Carpeta de investigadores (solo él, §6.7)
+```
+
+Notas sobre el paso 7:
+
+- `publicar.sh` es idempotente por NOMBRE: un asset que ya está en el Release
+  se omite. Por eso hay que borrarlo primero; sin el `delete-asset` el Release
+  seguiría sirviendo el archivo viejo con el manifest nuevo, y las máquinas
+  vírgenes descargarían algo que el candado rechazaría.
+- **Reemplazar un asset en un Release existente es válido para un parcial**
+  (cadencia diaria de septiembre): el tag sigue apuntando al mismo commit y
+  el manifest de ese commit queda desalineado con el asset del Release — una
+  deriva conocida y aceptada mientras dura el Paquete. **La reconciliación
+  formal llega con el minor (v8.3.0)**: Release nuevo, assets completos,
+  manifest y tag alineados byte a byte. Cuando el asset cambia junto con
+  código distribuido (un `.ado` publicado), no se reemplaza: se corta patch
+  nuevo (así nació v8.2.2).
+- Si en vez de reemplazar vas a cortar versión nueva: CHANGELOG con la
+  entrada `## [vX.Y.Z] — AAAA-MM-DD`, manifest con `version`, `release_tag`
+  y `release_url_prefix` nuevos, `bash 05_scripts/publicar.sh --check vX.Y.Z`
+  (Gates 1, 3, 4 en verde), y Ricardo crea el tag anotado y lanza
+  `publicar.sh vX.Y.Z` (Gate 2). Ver `runbook-deploys-ciep.md`.
+
 ## 3. Qué NUNCA hacer
 
 - **Borrar el archivo y volver a correr después de actualizarlo.** Es el consejo
@@ -58,6 +128,10 @@ la otra mitad es declararlo.
 - **Renombrar o duplicar el asset** (`LIFs_2027.xlsx`, `LIFs.xlsx_`). El manifest
   y los módulos buscan el nombre exacto; los renombres truncados de Dropbox están
   excluidos por regla del manifest.
+- **Commitear o publicar desde la Carpeta de investigadores.** Es un clon git
+  idéntico al de desarrollo y por eso engaña (pasó el 2026-09-08). `publicar.sh`
+  ahora aborta ahí; para git no hay guard: mira `git rev-parse --show-toplevel`
+  antes de cualquier `git add`.
 
 ## 4. Regla de la carpeta compartida (Dropbox)
 

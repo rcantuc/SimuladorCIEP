@@ -491,6 +491,28 @@ done
 
 cd "$REPO_ROOT"
 
+# ─── Guard de identidad de clon (2026-09-09) ───
+# Se publica SOLO desde el clon de desarrollo. La Carpeta del Simulador para
+# investigadores (Dropbox-CIEP/SimuladorCIEP) también es un clon git, así que
+# `git rev-parse` no distingue uno del otro: el 2026-09-08 se lanzó publicar.sh
+# desde la Carpeta sin querer y el pre-chequeo de assets falló de forma
+# confusa. El clon de desarrollo se identifica con un marker gitignored en su
+# raíz (.clon-desarrollo); la Carpeta nunca lo tiene porque git no lo propaga.
+CLON_MARKER="$REPO_ROOT/.clon-desarrollo"
+if [[ ! -f "$CLON_MARKER" ]]; then
+    log_error "Estás en $REPO_ROOT"
+    log_error "y este clon NO está marcado como clon de desarrollo (falta .clon-desarrollo)."
+    if [[ "$REPO_ROOT" == */Dropbox-CIEP/SimuladorCIEP ]]; then
+        log_error "Esta ruta es la Carpeta del Simulador para investigadores: aquí NO se publica"
+        log_error "ni se opera git (§6.7 de arquitectura-y-bitacoras.md). Ve al clon de desarrollo."
+    else
+        log_error "Publica desde el clon de desarrollo (el que tiene el marker). Si ESTE es el"
+        log_error "clon de desarrollo y solo falta el marker, créalo una vez:"
+        log_error "    touch \"$CLON_MARKER\""
+    fi
+    exit 1
+fi
+
 # ═══ EJECUCIÓN ═══
 
 log_info "publicar.sh — versión: $VERSION"

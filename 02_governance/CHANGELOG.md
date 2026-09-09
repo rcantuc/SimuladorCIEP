@@ -20,6 +20,79 @@ Formato de cada entrada:
 
 Trabajo en `master` sin versión asignada.
 
+## [v8.2.2] — 2026-09-09
+
+**Día 2 del Paquete 2027: el flujo de actualización de assets se vuelve
+AUTOSERVICIO.** La cadencia de ediciones diarias del `LIFs.xlsx` llegó para
+quedarse durante septiembre (rev1 el 8, rev2 y rev3 el 9), y cada una dispara
+el candado con razón. La respuesta no es aflojar el candado sino que su
+mensaje traiga la secuencia completa para resolver sin ayuda. Como eso toca
+un `.ado` publicado (`ensure_asset`), es patch nuevo — no reemplazo de asset
+sobre v8.2.1. **Deja atrás la deriva de v8.2.1:** el Release `v8.2.1` sirve
+el `LIFs.xlsx` rev2 (`a29070bf…`, reemplazado post-tag) mientras el manifest
+del commit etiquetado declara rev1 (`81bef034…`) — válido para un parcial,
+pero v8.2.2 nace alineado: tag, manifest y Release con la rev3. El VPS sigue
+sin redeploy hasta v8.3.0.
+
+### Datos
+- **`raw/LIFs/LIFs.xlsx` rev3 (edición de Ricardo, 2026-09-09):** `sha256`
+  `a29070bf…` → **`84f5605c…`**, `size_bytes` 48,877 → **48,966**,
+  `data_updated` → 2026-09-09. Gate de contenido: la edición es del propio
+  Ricardo. **Corrida `LIF, anio(2027) update` en batch:** el candado pasa,
+  `master/LIF.dta` regenerado; **total ILIF 2027 rev3 = 9,156,528.9 mdp =
+  23.228% del PIB** (PIB 2027 de `SIM.do` = 39,419,415 mdp). Frente a la
+  rev1 del día anterior (9,038,576.6 mdp): OTROSK +1,800.0 mdp y PEMEX
+  +116,152.3 mdp; los 13 conceptos restantes idénticos. Nota de registro: el
+  brief del ciclo citaba una rev intermedia `d06f4614…` que ya no estaba en
+  disco; se declaró la que sí (decisión de Ricardo).
+
+### Comandos
+- **`ensure_asset.ado` v1.4 — el mensaje-runbook.** El caso (a) no cambia. El
+  caso (b) pasa de "ver el runbook" a la **secuencia completa numerada, con
+  comandos pegables y los valores YA CALCULADOS** del archivo real y del
+  manifest (SHA nuevo, tamaño, `release_tag`, fecha de hoy, número de
+  assets): (1) validar CONTENIDO — si no eres Ricardo, avisar antes; (2) cd
+  al clon de DESARROLLO, no la Carpeta, con `git rev-parse --show-toplevel`
+  para confirmarlo; (3) shasum/stat con el resultado impreso; (4) las líneas
+  exactas del manifest; (5) re-correr; (6) `git add/commit/push`; (7)
+  `gh release delete-asset <tag> <archivo> -y || true` +
+  `bash 05_scripts/publicar.sh <tag>`; (8) avisar a Ricardo para el pull en
+  la Carpeta. Marcado "solo equipo CIEP con el repo"; **en modo endpoint
+  (instalación sin repo) el caso (b) se reduce a una línea** porque ahí no
+  hay manifest que editar. Se eligió la variante completa sobre la mínima
+  (pasos 1–5 + referencia): un `errprintln` no tiene límite práctico, el
+  mensaje es ~30 líneas, y la mitad del valor está en imprimir los valores
+  calculados — con la variante mínima el operador tendría que abrir el
+  runbook precisamente para los pasos que más se equivocan (borrar el asset
+  del Release antes de re-publicar). Verificado contra un SITE falso con el
+  manifest de rev2: reproduce el bloqueo de hoy con los valores de rev3 y
+  sale `r(198)`. Refactor: el mensaje vive en `_sha_mismatch_msg()`.
+
+### Institucional
+- **Guard de identidad de clon en `publicar.sh`.** El 2026-09-08 se lanzó
+  `publicar.sh` sin querer desde la Carpeta del Simulador para
+  investigadores — también es un clon git, así que `git rev-parse` no la
+  distingue — y el pre-chequeo de assets falló de forma confusa. Ahora, antes
+  de cualquier gate (incluido `--check`), el script exige el marker
+  gitignored **`.clon-desarrollo`** en la raíz; si falta, aborta con "Estás
+  en `<ruta>`…" y, si la ruta termina en `Dropbox-CIEP/SimuladorCIEP`, lo
+  nombra: "Esta ruta es la Carpeta: aquí NO se publica ni se opera git
+  (§6.7)". El marker no viaja por git, así que la Carpeta nunca lo tiene; se
+  crea una vez con `touch .clon-desarrollo` (creado en el clon de desarrollo
+  de Ricardo en este ciclo). `.gitignore` y `verify_gitignore.sh` lo cubren
+  (**93/93, 0 FAILS**). Probado en un clon temporal en ruta genérica y en
+  una ruta `…/Dropbox-CIEP/SimuladorCIEP`.
+- **`runbook-actualizar-assets.md` §2b "Comandos exactos":** la misma
+  secuencia parametrizada (`<archivo>`, `<nombre>`, `<tag>`), pegable,
+  incluida la prueba del candado en batch sin abrir Stata; la trampa de los
+  dos clones documentada con el guard; y la regla del paso 7: `publicar.sh`
+  es idempotente por nombre, por eso el `delete-asset` va antes;
+  **reemplazar un asset en un Release existente es válido para un parcial**
+  (deriva conocida y aceptada durante el Paquete) y **la reconciliación
+  formal llega con el minor v8.3.0**; cuando el cambio toca código
+  distribuido, se corta patch nuevo. §3 gana "nunca commitear ni publicar
+  desde la Carpeta".
+
 ## [v8.2.1] — 2026-09-08
 
 **Release PARCIAL del Paquete 2027: el `LIFs.xlsx` del data sidecar carga la

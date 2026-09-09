@@ -1,4 +1,4 @@
-*! ensure_asset v1.3 - Garantiza disponibilidad de datos vinculados al repo via GitHub Releases
+*! ensure_asset v1.4 - Garantiza disponibilidad de datos vinculados al repo via GitHub Releases
 *! Sintaxis: ensure_asset "<nombre>"
 *! <nombre> debe coincidir con un campo "name" en 05_scripts/manifest.json
 *!
@@ -27,6 +27,7 @@ end
 
 
 python:
+import datetime
 import json
 import hashlib
 import os
@@ -58,6 +59,63 @@ def _sha256_of(path):
         for chunk in iter(lambda: f.read(65536), b''):
             h.update(chunk)
     return h.hexdigest()
+
+
+def _sha_mismatch_msg(asset_name, entry, expected_sha, actual_sha, local_path,
+                      manifest, pinned_mode):
+    """Mensaje-runbook del candado. Caso (a): corrupcion -> borrar y re-correr.
+    Caso (b): actualizacion intencional -> la secuencia COMPLETA para declararla
+    y republicarla (solo equipo CIEP con el repo; en modo endpoint no aplica).
+    Los valores (SHA, tamano, tag) salen del archivo real y del manifest, para
+    que el mensaje nunca quede desactualizado ni haya que teclearlos."""
+    try:
+        actual_size = os.path.getsize(local_path)
+    except OSError:
+        actual_size = '?'
+    rel_path = entry.get('local_path', asset_name)
+    tag = str(manifest.get('release_tag', '<release_tag>'))
+    today = datetime.date.today().isoformat()
+    msg = (
+        "SHA-256 no coincide para " + asset_name + ".\n"
+        "  Esperado: " + expected_sha + "\n"
+        "  Real:     " + actual_sha + "\n"
+        "  Archivo:  " + local_path + "\n"
+        "Dos casos posibles:\n"
+        "  (a) Si NO modificaste este archivo: esta corrupto o desactualizado.\n"
+        "      Borralo y vuelve a correr (se re-descarga del Release " + tag + ").\n"
+    )
+    if pinned_mode:
+        return msg + (
+            "  (b) Si lo actualizaste a proposito: esta instalacion no tiene el repo;\n"
+            "      la actualizacion se declara desde el clon de desarrollo del CIEP.\n"
+            "      NO borres el archivo: perderias los datos nuevos."
+        )
+    return msg + (
+        "  (b) Si lo actualizaste A PROPOSITO (p.ej. nuevo Paquete Economico):\n"
+        "      NO borres el archivo: perderias los datos nuevos. El manifest debe\n"
+        "      declararlo. Secuencia completa (solo equipo CIEP con el repo):\n"
+        "      1. Valida el CONTENIDO del archivo nuevo (quien edita, valida).\n"
+        "         Si no eres Ricardo, avisale ANTES de continuar.\n"
+        "      2. cd al clon de DESARROLLO (NO la Carpeta de investigadores de\n"
+        "         Dropbox-CIEP/SimuladorCIEP: ahi git lo opera solo Ricardo).\n"
+        "         Confirma con: git rev-parse --show-toplevel\n"
+        "      3. Valores ya calculados de este archivo (verificalos si quieres):\n"
+        "           shasum -a 256 \"" + rel_path + "\"   -> " + actual_sha + "\n"
+        "           stat -f%z \"" + rel_path + "\"        -> " + str(actual_size) + "\n"
+        "      4. Edita 05_scripts/manifest.json, entrada \"" + asset_name + "\":\n"
+        "           \"sha256\": \"" + actual_sha + "\",\n"
+        "           \"size_bytes\": " + str(actual_size) + ",\n"
+        "         y arriba \"data_updated\": \"" + today + "\" (si cambiaron los datos).\n"
+        "      5. Re-corre el modulo: este candado debe pasar en silencio.\n"
+        "      6. git add 05_scripts/manifest.json && git commit -m \"fix(assets): "
+        + asset_name + " ...\" && git push\n"
+        "      7. gh release delete-asset " + tag + " \"" + asset_name + "\" -y || true\n"
+        "         bash 05_scripts/publicar.sh " + tag + "\n"
+        "         (re-sube el asset al Release " + tag + " y verifica los "
+        + str(len(manifest.get('assets', []))) + " assets)\n"
+        "      8. Avisa a Ricardo: pull en la Carpeta de investigadores (solo el).\n"
+        "      Detalle y por que: 02_governance/runbook-actualizar-assets.md"
+    )
 
 
 def _fetch_pinned_manifest(sysdir_site, pin):
@@ -141,19 +199,8 @@ def ensure_asset_main(asset_name, pinned_version=""):
     if os.path.isfile(local_path):
         actual_sha = _sha256_of(local_path)
         if actual_sha != expected_sha:
-            _fail(
-                "SHA-256 no coincide para " + asset_name + ".\n"
-                "  Esperado: " + expected_sha + "\n"
-                "  Real:     " + actual_sha + "\n"
-                "  Archivo:  " + local_path + "\n"
-                "Dos casos posibles:\n"
-                "  (a) Si NO modificaste este archivo: esta corrupto o desactualizado.\n"
-                "      Borralo y vuelve a correr (se re-descarga del Release).\n"
-                "  (b) Si lo actualizaste A PROPOSITO (p.ej. nuevo Paquete Economico):\n"
-                "      el manifest debe declararlo - shasum, size_bytes, data_updated.\n"
-                "      Ver 02_governance/runbook-actualizar-assets.md.\n"
-                "      NO borres el archivo: perderias los datos nuevos."
-            )
+            _fail(_sha_mismatch_msg(asset_name, entry, expected_sha, actual_sha,
+                                    local_path, manifest, pinned_mode))
             return
     else:
         download_url = manifest['release_url_prefix'] + urllib.parse.quote(asset_name)
