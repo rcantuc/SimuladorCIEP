@@ -192,11 +192,11 @@ global id = "`c(username)'"
 ** 2.2 Valor presente **
 local fecha : di %td_CY-N-D  date("$S_DATE", "DMY")
 scalar aniovp = substr(`"`=trim("`fecha'")'"',1,4)
-scalar aniovp = 2026
+scalar aniovp = 2027
 
 ** 2.3 Año paquete económico **
 global paqueteEconomico "CGPE 2026"						// POLÍTICA FISCAL
-scalar anioPE = 2026
+scalar anioPE = 2027
 
 
 
