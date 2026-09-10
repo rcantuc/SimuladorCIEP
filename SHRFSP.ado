@@ -36,15 +36,18 @@ quietly {
 	***          ***
 	****************
 	use in 1 using `"`c(sysdir_site)'/master/SHRFSP.dta"', clear
-	syntax [if] [, ANIO(int `aniovp' ) DEPreciacion(int 5) ///
+	syntax [if] [, ANIO(int `aniovp' ) ANIOVP(int `aniovp') DEPreciacion(int 5) ///
 		NOGraphs UPDATE Base ///
 		ULTAnio(int 2001) TEXTbook]
 	
 	noisily di _newline(2) in g _dup(20) "." "{bf:  Sistema Fiscal: DEUDA $pais " in y `anio' "  }" in g _dup(20) "."
 
-	** 2.1 PIB + Deflactor **
-	PIBDeflactor, anio(`anio') nographs nooutput `update'
+	** 2.1 PIB + Deflactor (base de precios constantes = aniovp; horizonte de proyección = anio+5) **
+	PIBDeflactor, aniovp(`aniovp') aniomax(`=`anio'+5') nographs nooutput `update'
 	local currency = currency[1]
+	if `aniovp' != `anio' {
+		noisily di in g "  Valores reales expresados en `currency' constantes de " in y `aniovp' in g "."
+	}
 	g Poblacion_ajustada = Poblacion*lambda
 	tempfile PIB
 	save `PIB'
@@ -412,7 +415,7 @@ quietly {
 		format `costo_bill' %5.1fc
 
 		if `"$textbook"' == "" {
-			local graphtitle "{bf:Saldo hist{c o'}rico de RFSP}"
+			local graphtitle "{bf:Deuda pública}"
 			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP, INEGI/BIE y $paqueteEconomico."
 		}
 		else {
@@ -424,7 +427,7 @@ quietly {
 		g `pibY_bill' = pibY/1000000000000/deflator
 		format `pibY_bill' %7.1fc
 
-		tabstat `pibY_bill' shrfsp_pib `shrfsp_bill', stat(min max) by(anio) save
+		tabstat `rfsp_bill' shrfsp_pib `shrfsp_bill', stat(min max) by(anio) save
 		tempname rango
 		matrix `rango' = r(StatTotal)
 
@@ -437,24 +440,29 @@ quietly {
 		summarize anio if round(shrfsp_pib,0.001) == round(`minval',0.001) & anio >= `anioIniCentral' & anio <= `anioFinCentral'
 		local minanio = r(mean)
 
-		twoway  (bar `pibY_bill' anio if anio > 2000 & anio <= `aniofin', barwidth(.75)) ///
-			(bar `pibY_bill' anio if anio > `aniofin' & anio <= `lastexo', barwidth(.75) ///
-				pstyle(p1) lcolor(none) fintensity(50)) ///
-			(bar `shrfsp_bill' anio if anio <= `aniofin', barwidth(.35) yaxis(3) ///
+		** Valor de la línea shrfsp_pib en el primer año del paquete económico **
+		summarize shrfsp_pib if anio == `anio'
+		local valanioPE = r(mean)
+
+		twoway  (bar `shrfsp_bill' anio if anio <= `aniofin', barwidth(.5) yaxis(3) ///
 				pstyle(p2) lwidth(none)) ///
-			(bar `shrfsp_bill' anio if anio > `aniofin', barwidth(.35) yaxis(3) ///
+			(bar `shrfsp_bill' anio if anio > `aniofin', barwidth(.5) yaxis(3) ///
 				pstyle(p2) lwidth(none) fintensity(50)) ///
+			(bar `rfsp_bill' anio if anio > 2000 & anio <= `aniofin', barwidth(.15) ///
+				pstyle(p1)) ///
+			(bar `rfsp_bill' anio if anio > `aniofin' & anio <= `lastexo', barwidth(.15) ///
+				pstyle(p1) lcolor(none) fintensity(50)) ///
 			(connected shrfsp_pib anio if anio > 2000 & anio <= `aniofin', ///
 				yaxis(2) mlabel(shrfsp_pib) mlabposition(12) mlabcolor(black) pstyle(p3) ///
-				lpattern(dot) msize(small) mlabsize(small)) ///
+				lpattern(solid) lwidth(thick) msize(medium) mlabsize(small)) ///
 			(connected shrfsp_pib anio if anio > `aniofin' & anio <= `lastexo', ///
 				yaxis(2) mlabel(shrfsp_pib) mlabposition(12) mlabcolor(black) pstyle(p3) ///
-				lpattern(dot) msize(small) mlabsize(small) fintensity(40)) ///
-			(scatter `pibY_bill' anio if anio > 2000 & anio <= `lastexo', ///
-				mlabel(`pibY_bill') mlabposition(12) mlabcolor(black) msize(zero) mlabsize(small)) ///
+				lpattern(solid) lwidth(thick) msize(medium) mlabsize(small) fintensity(40)) ///
+			(scatter `rfsp_bill' anio if anio > 2000 & anio <= `lastexo', ///
+				mlabel(`rfsp_bill') mlabposition(12) mlabcolor(black) msize(zero) mlabsize(small)) ///
 			(scatter `shrfsp_bill' anio if anio > 2000 & anio <= `lastexo', ///
 				mlabel(`shrfsp_bill') mlabposition(12) mlabcolor(black) msize(zero) mlabsize(small) yaxis(3)) ///
-			if shrfsp_pib != . & anio > `ultanio', ///
+			if shrfsp_pib != . & anio > 2007, ///
 			title(`graphtitle') ///
 			caption("`graphfuente'") ///
 			ytitle("") ///
@@ -463,17 +471,19 @@ quietly {
 			ylabel(none) ///
 			ylabel(none, axis(2)) ///
 			ylabel(none, axis(3)) ///
-			yscale(range(0 `=`rango'[2,1]*1.8') axis(1) noline) ///
-			yscale(range(-20 `=`rango'[2,2]*1.15') axis(2) noline) ///
-			yscale(range(0 `=`rango'[2,3]*2.5') axis(3) noline) ///
+			yscale(range(0 `=`rango'[2,1]*3.5') axis(1) noline) ///
+			yscale(range(`=`rango'[1,2]-30' `=`rango'[2,2]*1.05') axis(2) noline) ///
+			yscale(range(0 `=`rango'[2,3]*1.5') axis(3) noline) ///
 			xtitle("") ///
-			xlabel(`=`ultanio'+1'(1)`lastexo', noticks) ///	
-			legend(on order(1 4) label(1 "PIB (billones `currency' `aniovp')") label(4 "SHRFSP (billones `currency' `aniovp')")) ///
-			text(0 `=`ultanio'+2' "{bf:Observado}", ///
-				yaxis(3) size(medium) place(1) justification(right) bcolor(white) box) ///
+			xline(`=anioPE-.5', lpattern(dash) lcolor(gs10)) ///
+			xlabel(2008(1)`lastexo', noticks) ///	
+			legend(on order(4 1) label(4 "RFSP (endeudamiento)") label(1 "SHRFSP (deuda)") ///
+				symxsize(6) symysize(4)) ///
+			text(0 2008 "{bf:billones `currency' `aniovp'}", ///
+				size(medium) place(1) justification(right) bcolor(white) box) ///
 			text(0 `=`anio'' "{bf:$paqueteEconomico}", ///
-				yaxis(3) size(medium) place(1) justification(right) bcolor(white) box) ///
-			text(`=`minval'-1' `=`minanio'' "{bf:SHRFSP % PIB}", ///
+				size(medium) place(1) justification(right) bcolor(white) box) ///
+			text(`=`valanioPE'' `=`anio'+.75' "{bf:% PIB}", ///
 				yaxis(2) size(medium) place(6) justification(center) bcolor(white) box) ///
 			name(shrfsp, replace)
 
@@ -734,12 +744,15 @@ quietly {
 
 	** 6.1 Gráfica tasas de interés **
 	if "`nographs'" != "nographs" & "$nographs" == "" {
-		capture drop costodeudaTotg
-		g costodeudaTotg = costofinanciero/pibY*100
-		format costodeudaTotg %5.1fc
+		** Variables en miles de pesos reales por persona **
+		tempvar rfsp_pcm costo_pcm ing_pcm
+		g `rfsp_pcm' = rfsp/pibY*100
+		g `costo_pcm' = costofinanciero/pibY*100
+		g `ing_pcm' = ingresos/pibY*100
+		format `rfsp_pcm' `costo_pcm' `ing_pcm' %5.1fc
 		
 		if `"$textbook"' == "" {
-			local graphtitle "{bf:Costo de la deuda pública}"
+			local graphtitle "{bf:Costo de la deuda}"
 			local graphfuente "{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de la SHCP/EOFP, INEGI/BIE y $paqueteEconomico."
 		}
 		else {
@@ -747,51 +760,67 @@ quietly {
 			local graphfuente ""
 		}
 
-		tabstat shrfsp_pib costodeudaTotg tasaEfectiva, stat(min max) by(anio) save
+		tabstat `rfsp_pcm' `costo_pcm' `ing_pcm', stat(min max) by(anio) save
 		tempname rango
 		matrix `rango' = r(StatTotal)
 
-		** Calcular el mínimo de tasaEfectiva en los 5 años centrales **
-		summarize tasaEfectiva if anio >= `anioIniCentral' & anio <= `anioFinCentral' & tasaEfectiva != .
+		** Calcular el mínimo de ingresos per cápita en los 5 años centrales **
+		summarize `ing_pcm' if anio >= `anioIniCentral' & anio <= `anioFinCentral' & `ing_pcm' != .
 		local minval5 = r(min)
-		summarize anio if round(tasaEfectiva,0.001) == round(`minval5',0.001) & anio >= `anioIniCentral' & anio <= `anioFinCentral'
+		summarize anio if round(`ing_pcm',0.001) == round(`minval5',0.001) & anio >= `anioIniCentral' & anio <= `anioFinCentral'
 		local minanio5 = r(mean)
+
+		** Posiciones desplazadas y espaciadas en x para que las barras queden lado a lado con más aire entre años **
+		local anioIni = 2008
+		local xgap = 1.25
+		tempvar xpos anioL anioR
+		g `xpos' = `anioIni' + (anio - `anioIni') * `xgap'
+		g `anioL' = `xpos' - .2
+		g `anioR' = `xpos' + .2
+
+		local xlabellist ""
+		forvalues y = `anioIni'/`lastexo' {
+			local xp = `anioIni' + (`y' - `anioIni') * `xgap'
+			local xlabellist `"`xlabellist' `xp' "`y'""'
+		}
 	
-		twoway (bar shrfsp_pib anio if anio > 2000 & anio <= `aniofin', barwidth(.75)) ///
-			(bar shrfsp_pib anio if anio > `aniofin' & anio <= `lastexo', barwidth(.75) ///
-				pstyle(p1) lcolor(none) fintensity(40)) ///
-			(bar costodeudaTotg anio if anio <= `aniofin', barwidth(.35) yaxis(3) ///
+		twoway (bar `costo_pcm' `anioR' if anio > `=`anioIni'-1' & anio <= `aniofin', barwidth(.35) yaxis(3) ///
 				pstyle(p2) lwidth(none)) ///
-			(bar costodeudaTotg anio if anio > `aniofin', barwidth(.35) yaxis(3) ///
+			(bar `costo_pcm' `anioR' if anio > `aniofin', barwidth(.35) yaxis(3) ///
 				pstyle(p2) lwidth(none) fintensity(40)) ///
-			(connected tasaEfectiva anio if anio > 2000 & anio <= `aniofin', ///
-				yaxis(2) mlabel(tasaEfectiva) mlabposition(12) mlabcolor(black) pstyle(p3) lpattern(dot) msize(small) mlabsize(small)) ///
-			(connected tasaEfectiva anio if anio > `aniofin' & anio <= `lastexo', ///
-				yaxis(2) mlabel(tasaEfectiva) mlabposition(12) mlabcolor(black) pstyle(p3) lpattern(dot) msize(small) mlabsize(small) fintensity(40)) ///
-			(scatter shrfsp_pib anio if anio > 2000 & anio <= `lastexo', ///
-				yaxis(1) mlabel(shrfsp_pib) mlabposition(12) mlabcolor(black) msize(zero) mlabsize(small)) ///
-			(scatter costodeudaTotg anio if anio > 2000 & anio <= `lastexo', ///
-				yaxis(3) mlabel(costodeudaTotg) mlabposition(12) mlabcolor(black) msize(zero) mlabsize(small)) ///
-			if tasaEfectiva != . & anio > `ultanio', ///
+			(bar `rfsp_pcm' `anioL' if anio > `=`anioIni'-1' & anio <= `aniofin', barwidth(.35) ///
+				pstyle(p1)) ///
+			(bar `rfsp_pcm' `anioL' if anio > `aniofin' & anio <= `lastexo', barwidth(.35) ///
+				pstyle(p1) lcolor(none) fintensity(40)) ///
+			(connected `ing_pcm' `xpos' if anio > `=`anioIni'-1' & anio <= `aniofin', ///
+				yaxis(2) mlabel(`ing_pcm') mlabposition(12) mlabcolor(black) pstyle(p3) lpattern(solid) lwidth(thick) ///
+				msize(small) mlabsize(small)) ///
+			(connected `ing_pcm' `xpos' if anio > `aniofin' & anio <= `lastexo', ///
+				yaxis(2) mlabel(`ing_pcm') mlabposition(12) mlabcolor(black) pstyle(p3) lpattern(solid) lwidth(thick) ///
+				msize(small) mlabsize(small) fintensity(40)) ///
+			(scatter `rfsp_pcm' `anioL' if anio > `=`anioIni'-1' & anio <= `lastexo', ///
+				yaxis(1) mlabel(`rfsp_pcm') mlabposition(12) mlabcolor(black) msize(zero) mlabsize(small)) ///
+			(scatter `costo_pcm' `anioR' if anio > `=`anioIni'-1' & anio <= `lastexo', ///
+				yaxis(3) mlabel(`costo_pcm') mlabposition(12) mlabcolor(black) msize(zero) mlabsize(small)) ///
+			if `ing_pcm' != . & anio > `ultanio', ///
 			title("`graphtitle'") ///
 			caption("`graphfuente'") ///
-			text(0 `=`ultanio'+2' "{bf:Observado}", ///
-				yaxis(3) size(medium) place(1) justification(right) bcolor(white) box) ///
-			text(0 `=`anio'' "{bf:$paqueteEconomico}", ///
-				yaxis(3) size(medium) place(1) justification(right) bcolor(white) box) ///
-			text(`=`minval5'-.5' `=`minanio5'' "{bf:Intereses promedio (%)}", ///
-				yaxis(2) size(medium) place(6) justification(center) bcolor(white) box) ///
+			text(0 `anioIni' "{bf:% PIB}", ///
+				size(medium) place(1) justification(right) bcolor(white) box) ///
+			text(0 `=`anioIni'+(`anio'-`anioIni')*`xgap'' "{bf:$paqueteEconomico}", ///
+				size(medium) place(1) justification(right) bcolor(white) box) ///
 			ylabel(none) ///
 			ylabel(none, axis(2)) ///
 			ylabel(none, axis(3)) ///
 			yscale(range(0 `=`rango'[2,1]*1.5') axis(1) noline) ///
-			yscale(range(-20 `=`rango'[2,3]*1.15') axis(2) noline) ///
-			yscale(range(0 `=`rango'[2,2]*2.5') axis(3) noline) ///
+			yscale(range(`=-`rango'[2,3]*.7' `=`rango'[2,3]*1.15') axis(2) noline) ///
+			yscale(range(0 `=`rango'[2,1]*1.5') axis(3) noline) ///
 			ytitle("") ///
 			ytitle("", axis(2)) ///
 			ytitle("", axis(3)) ///
-			legend(on order(1 4) label(1 "SHRFSP (% PIB)") label(4 "Costo financiero (% PIB)")) ///
-			xlabel(`=`ultanio'+1'(1)`lastexo', noticks) xtitle("") ///
+			legend(on order(3 1 5) label(3 "RFSP") label(1 "Costo financiero") label(5 "Recaudación")) ///
+			xline(`=`anioIni'+(anioPE-.5-`anioIni')*`xgap'', lpattern(dash) lcolor(gs10)) ///
+			xlabel(`xlabellist', noticks) xtitle("") ///
 			name(tasasdeinteres, replace)
 				
 		graph save tasasdeinteres `"`c(sysdir_site)'/users/$id/graphs/tasasdeinteres.gph"', replace
@@ -1043,10 +1072,10 @@ quietly {
 	**********/
 	*** END ***
 	***********
-	if "$textbook" == "textbook" {
+	if "$output" == "output" {
 		capture which scalarlatex
 		if _rc {
-			noisily di in g "Nota: la opcion textbook (scalarlatex) es solo-repo; no viaja al endpoint publico."
+			noisily di in g "Nota: la opcion output es solo-repo; no viaja al endpoint publico."
 		}
 		else {
 			noisily scalarlatex, log(shrfsp) alt(shrfsp)
@@ -1055,11 +1084,11 @@ quietly {
 		* Nodo de deuda -> JSON. Misma clausura que scalarlatex (leccion
 		* v8.0.11): este .ado esta PUBLICADO y corre en el VPS, asi que la
 		* invocacion nunca es incondicional. Tres guards en serie:
-		* $textbook (solo-repo) + scalarjson presente + driver presente.
+		* $output (solo-repo) + scalarjson presente + driver presente.
 		* Sin cualquiera de los tres, degradacion silenciosa. *
 		capture which scalarjson
 		if _rc {
-			noisily di in g "Nota: la opcion textbook (scalarjson) es solo-repo; no viaja al endpoint publico."
+			noisily di in g "Nota: la opcion output es solo-repo; no viaja al endpoint publico."
 		}
 		else {
 			capture confirm file `"`c(sysdir_site)'/01_modulos/nodos/nodo-deuda.do"'

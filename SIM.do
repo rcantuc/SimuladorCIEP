@@ -16,17 +16,14 @@ timer on 1
 ***
 
 ** 0.1 Token del BIE/INEGI
-* Se carga desde set_token.do (gitignored, ver "help AccesoBIE" en Stata).
-* confirm file distingue archivo ausente (aviso amable) de archivo roto
-* (run SIN capture: si el token está mal formado, el error se ve en su origen).
 capture confirm file "`c(sysdir_site)'/set_token.do"
 if _rc == 0 {
 	run "`c(sysdir_site)'/set_token.do"
 }
 else {
-	display as text "Nota: set_token.do no encontrado. AccesoBIE y otros " ///
-		"comandos que usan BIE requieren el token. Copia " ///
-		"set_token.template.do a set_token.do y configúralo."
+	display as text "Nota: set_token.do no encontrado." ///
+		"AccesoBIE requiere el token." ///
+		"Copia set_token.template.do como set_token.do y configúralo."
 }
 
 ** 0.2 Parámetros
@@ -40,22 +37,20 @@ capture mkdir "`c(sysdir_site)'/users/"
 capture mkdir "`c(sysdir_site)'/users/$id"
 
 ** 0.4 Opciones (descomentar para activar)
-global nographs "nographs"							// SUPRIMIR GRAFICAS
+//global nographs "nographs"						// SUPRIMIR GRAFICAS
+global textbook "textbook"						// SCALAR TO LATEX
+global export "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/UniversoCIEP/3. Recursos/3.1. Paquetes Económicos/Paquete Económico 2027/4. Documento CIEP/images"
 
 //global update "update"							// UPDATE BASES DE DATOS
 if "$update" == "update" {
 	! rm -r "`c(sysdir_site)'/raw/temp/"
 }
 
-global output "output"								// ARCHIVO DE SALIDA (WEB)
+//global output "output"								// ARCHIVO DE SALIDA (WEB)
 if "$output" != "" {
 	quietly log using `"`c(sysdir_site)'/users/$id/output.txt"', replace text name(output)
 	quietly log off output
 }
-
-//global textbook "textbook"						// SCALAR TO LATEX
-//global export "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/06_libro/images"
-
 
 
 ***
@@ -64,23 +59,22 @@ if "$output" != "" {
 noisily Poblacion, anioi(`=aniovp') aniofinal(2070) $textbook $nographs
 
 
-
 **/
 **# 2. ECONOMÍA
 ***
-global paqueteEconomico "Pre-CGPE 2027"				// POLÍTICA FISCAL A ANALIZAR
+global paqueteEconomico "CGPE 2027"					// POLÍTICA FISCAL
 
 ** 2.1 Producto Interno Bruto (inputs opcionales)
-global pib2026 = 1.4127								// <-- AGREGAR O QUITAR AÑOS SEGÚN PROYECCIONES
+global pib2026 = 1.4127								// AGREGAR O QUITAR AÑOS SEGÚN PROYECCIONES
 global pib2027 = 1.9983 // 39,419.4
-global pib2028 = 1.9984
-global pib2029 = 1.9984
-global pib2030 = 1.9984
-global pib2031 = 1.9984
-global pib2032 = 1.9984
+global pib2028 = 2.0000 // 41,816.1
+global pib2029 = 2.0000 // 44,358.5
+global pib2030 = 2.0000 // 47,055.5
+global pib2031 = 2.0000 // 49,916.5
+global pib2032 = 2.0000 // 52,951.4
 
 ** 2.2 Deflactor (inputs opcionales)
-global def2026 = 3.8								// <-- AGREGAR O QUITAR AÑOS SEGÚN PROYECCIONES
+global def2026 = 3.8								// AGREGAR O QUITAR AÑOS SEGÚN PROYECCIONES
 global def2027 = 4.0
 global def2028 = 4.0
 global def2029 = 4.0
@@ -89,7 +83,7 @@ global def2031 = 4.0
 global def2032 = 4.0
 
 ** 2.3 Inflación (inputs opcionales)
-global inf2026 = 3.8								// <-- AGREGAR O QUITAR AÑOS SEGÚN PROYECCIONES
+global inf2026 = 3.8								// AGREGAR O QUITAR AÑOS SEGÚN PROYECCIONES
 global inf2027 = 3.2
 global inf2028 = 3.0
 global inf2029 = 3.0
@@ -97,14 +91,8 @@ global inf2030 = 3.0
 global inf2031 = 3.0
 global inf2032 = 3.0
 
-** 2.4 PIB + Deflactores
-noisily PIBDeflactor if anio >= 2005, aniovp(`=aniovp') aniomax(2031) $textbook $nographs $update
-
-exit	// WIP Pre-CGPE 2027: la cadena termina aquí A PROPÓSITO hasta v8.3.0.
-		// Corrida completa del 2026-09-08 (aniovp=anioPE=2027, ILIF 2027): §2.5 y
-		// §4.1-4.6 pasan; §4.7 TasasEfectivas truena — no existe master/perfiles2027.dta
-		// (§3 Hogares comentado) y su fallback TasasEfectivas.ado:308 apunta a una
-		// ruta muerta (PerfilesSim.do vive en 01_modulos/). Ver CHANGELOG v8.2.1.
+/** 2.4 PIB + Deflactores
+noisily PIBDeflactor, aniovp(`=aniovp') aniomax(2032) $textbook $nographs $update
 
 ** 2.5 Sistema de Cuentas Nacionales (sin inputs)
 noisily SCN, anio(`=aniovp') $textbook $nographs $update
@@ -131,7 +119,7 @@ noisily run "`c(sysdir_site)'/01_modulos/PerfilesSim.do" `=anioPE'
 
 **/
 **# 4. SISTEMA FISCAL: INGRESOS
-***
+/***
 set scheme ingresos
 noisily LIF if divLIF != 10, anio(`=anioPE') by(divSIM) $update $nographs `eofp'		///
 	title("Ingresos presupuestarios") 				/// Cambiar título de la gráfica
@@ -147,7 +135,7 @@ save `"`c(sysdir_site)'/users/$id/LIF.dta"', replace
 *do "`c(sysdir_site)'/01_modulos/visualizations/Graphs_TE.do"
 
 
-** 4.1 Parámetros: Ingresos **
+/** 4.1 Parámetros: Ingresos **
 escalar pctpib ISRASPIB  =   3.748 					// ISR (asalariados)
 escalar pctpib ISRPFPIB  =   0.238 					// ISR (personas f{c i'}sicas)
 escalar pctpib CUOTASPIB =   1.696 					// Cuotas (IMSS)
@@ -292,7 +280,7 @@ if "`cambioiva'" == "1" {
 
 
 ** 4.7 Tasas Efectivas */
-noisily TasasEfectivas, anio(`=anioPE') enigh
+*noisily TasasEfectivas, anio(`=anioPE') enigh
 *noisily run "`c(sysdir_site)'/Ejercicio_Elasticidades_Ingresos_beta.do"
 
 
@@ -310,7 +298,7 @@ noisily PEF if ramo != -1, anio(`=anioPE') by(divSIM) $update 		///
 * Evolución de los gastos per cápita *
 *do "`c(sysdir_site)'/01_modulos/visualizations/Graphs_PC.do"					// <-- MUY tardado. MUY pesado.
 
-** 5.1 Parámetros: Gasto **/
+** 5.1 Parámetros: Gasto **
 escalar pctpib iniciaA     =   0.000    	// Inicial
 escalar pctpib basica      =   1.988    	// Educación b{c a'}sica
 escalar pctpib medsup      =   0.398    	// Educación media superior
@@ -354,7 +342,7 @@ escalar pctpib gasmadres   =   0.009   		// Apoyo a madres trabajadoras
 escalar pctpib gascuidados =   0.046   		// Gasto en cuidados
 
 
-** 5.2 Gasto per cápita **/
+** 5.2 Gasto per cápita **
 noisily GastoPC educacion salud pensiones energia resto transferencias, aniope(`=anioPE') aniovp(`=aniovp')
 
 
@@ -364,39 +352,36 @@ noisily GastoPC educacion salud pensiones energia resto transferencias, aniope(`
 ***
 
 * SHRFSP: Total, Interno, Externo (como % del PIB)
-*                	2025  2026  2027  2028  2029  2030  2031
-matrix shrfsp = 	(52.6, 52.6, 52.6, 52.6, 52.6, 52.6, 52.6)
-matrix shrfspInterno = 	(40.5, 41.5, 42.4, 42.5, 43.1, 43.5, 43.8)
-matrix shrfspExterno = 	(12.1, 11.0, 10.2, 9.8, 9.5, 9.1, 8.8)
+*                		2026  2027  2028  2029  2030  2031  2032
+matrix shrfsp = 		(54.0, 55.0, 55.6, 56.1, 56.4, 56.5, 56.5)
+matrix shrfspInterno = 	(42.5, 43.6, 44.4, 45.0, 45.5, 45.7, 45.9)
+matrix shrfspExterno = 	(11.4, 11.4, 11.2, 11.1, 10.9, 10.8, 10.6)
 * SHRFSP:      Total, PIDIREGAS, IPAB, FONADIN, Deudores, Banca, Adecuaciones, Balance (como % del PIB)
-matrix rfsp =  (4.3, 0.15, 0.15, 0.00, 0.00, 0.00, 0.40, 3.6 \ 		/// 2025
-		4.1, 0.10, 0.10, 0.00, 0.00, 0.00, 0.30, 3.6 \ 		/// 2026
-		3.5, 0.10, 0.10, 0.00,-0.10, 0.00, 0.40, 3.0 \ 		/// 2027
-		3.0, 0.10, 0.10, 0.00, 0.00, 0.00, 0.30, 2.5 \ 		/// 2028
-		3.0, 0.10, 0.10, 0.00, 0.00, 0.00, 0.30, 2.5 \ 		/// 2029
-		3.0, 0.10, 0.10,-0.10, 0.00, 0.00, 0.40, 2.5 \ 		/// 2030
-		3.0, 0.10, 0.10, 0.00, 0.00, 0.00, 0.30, 2.5) 		// 2031
+matrix rfsp =  (4.1, 0.10, 0.10, 0.10, 0.00,-0.10, 0.30, 3.6 \ 		/// 2026
+				3.9, 0.15, 0.15, 0.00,-0.10,-0.10, 0.40, 3.4 \ 		/// 2027
+				3.7, 0.10, 0.10, 0.00, 0.00,-0.10, 0.40, 3.2 \ 		/// 2028
+				3.6, 0.10, 0.10, 0.00, 0.00,-0.10, 0.40, 3.1 \ 		/// 2029
+				3.4, 0.10, 0.10, 0.00, 0.00,-0.10, 0.40, 2.9 \ 		/// 2030
+				3.2, 0.10, 0.10,-0.10, 0.00,-0.10, 0.50, 2.7 \ 		/// 2031
+				3.1, 0.10, 0.10, 0.00, 0.00,-0.10, 0.40, 2.6) 		//  2032
 * SHRFSP: Tipo de cambio (MXN/USD)
-*                      2025, 2026, 2027, 2028, 2029, 2030, 2031
-matrix tipoDeCambio = (19.6, 18.9, 18.2, 18.2, 18.2, 18.3, 18.3)
+*                      2026, 2027, 2028, 2029, 2030, 2031, 2032
+matrix tipoDeCambio = 	(17.6, 17.9, 18.1, 18.2, 18.3, 18.6, 18.6)
 * Balance primario (como % del PIB)
-*                     2025, 2026, 2027, 2028, 2029, 2030, 2031
-matrix balprimario = (-0.2, -0.5, -0.8, -0.8, -0.8, -0.8, -0.6)
+*                      2026, 2027, 2028, 2029, 2030, 2031, 2032
+matrix balprimario = 	(-0.1, -0.5, -0.5, -0.5, -0.7, -0.9, -1.0)
 * Costo de la deuda (como % del PIB)
-*                   2025, 2026, 2027, 2028, 2029, 2030, 2031
-matrix costodeuda = (3.8,  4.1,  3.8,  3.4,  3.3,  3.3,  3.1)
+*                      2026, 2027, 2028, 2029, 2030, 2031, 2032
+matrix costodeuda = 	(3.7,  4.0,  3.7,  3.6,  3.7,  3.7,  3.7)
 * Ingresos (como % del PIB)
-*                     2025, 2026, 2027, 2028, 2029, 2030, 2031
-matrix ingresos = (21.9,  22.5,  22.4,  22.4,  22.4,  22.4,  22.4)
+*                      2026, 2027, 2028, 2029, 2030, 2031, 2032
+matrix ingresos = 		(23.0,  23.2,  22.8,  22.8,  22.8,  22.8,  22.8)
 * Gastos (como % del PIB)
-*                     2025, 2026, 2027, 2028, 2029, 2030, 2031
-matrix egresos = (25.5,  26.1,  25.4,  24.9,  24.9,  24.9,  24.9)
+*                      2026, 2027, 2028, 2029, 2030, 2031, 2032
+matrix egresos = 		(26.6,  26.7,  26.0,  25.9,  25.7,  25.5,  25.4)
 
-forvalues k = 2026(1)2031 {
-	* Las matrices de arriba tienen 7 columnas rotuladas 2025..2031, asi que
-	* la columna del anio k es k-2025+1. El mapeo viejo (k-2026+1) le daba a
-	* cada anio la columna del anio ANTERIOR y nunca leia la columna 2031.
-	local j = `k' - 2025 + 1
+forvalues k = 2026(1)2032 {
+	local j = `k' - 2026 + 1
 	global shrfsp`k' = shrfsp[1,`j']
 	global shrfspInterno`k' = shrfspInterno[1,`j']
 	global shrfspExterno`k' = shrfspExterno[1,`j']
@@ -417,9 +402,9 @@ forvalues k = 2026(1)2031 {
 
 * SHRFSP: comando *
 set scheme deuda
-scalar tasaEfectiva = 6.1544
-*noisily SHRFSP, anio(`=anioPE') ultanio(2002) $nographs $update $textbook
-
+*scalar tasaEfectiva = 6.1544
+noisily SHRFSP, anio(`=anioPE') ultanio(2002) $nographs $update $textbook
+exit
 
 
 **/
