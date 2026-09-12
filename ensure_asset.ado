@@ -1,4 +1,4 @@
-*! ensure_asset v1.4 - Garantiza disponibilidad de datos vinculados al repo via GitHub Releases
+*! ensure_asset v1.5 - Garantiza disponibilidad de datos vinculados al repo via GitHub Releases
 *! Sintaxis: ensure_asset "<nombre>"
 *! <nombre> debe coincidir con un campo "name" en 05_scripts/manifest.json
 *!
@@ -9,6 +9,12 @@
 *! publicar-endpoint.sh quema en la copia publicada.
 *! Aborta con _rc=198 si no hay manifest alcanzable, asset no esta declarado,
 *! o SHA no coincide.
+*! Modo WIP de raw (v1.5): con `global rawwip "rawwip"` definido (SIM.do 0.4) y
+*! repo local, un SHA distinto NO bloquea: avisa con los valores para el
+*! manifest, anota el asset en raw/temp/assets-wip.txt y continua. Es la Fase 1
+*! del ciclo de edicion de raw/ (runbook-actualizar-assets.md 2c). Sin el
+*! global (Fase 2) y siempre en modo endpoint (sin repo) la verificacion es
+*! estricta. Un archivo AUSENTE se descarga y verifica en cualquier modo.
 
 program define ensure_asset
     version 16
@@ -22,7 +28,7 @@ program define ensure_asset
     * contra los assets de SU version instalada. NO editar esta linea a mano.
     local PINNED_VERSION ""
 
-    python: ensure_asset_main("`asset_name'", "`PINNED_VERSION'")
+    python: ensure_asset_main("`asset_name'", "`PINNED_VERSION'", "$rawwip")
 end
 
 
@@ -114,8 +120,45 @@ def _sha_mismatch_msg(asset_name, entry, expected_sha, actual_sha, local_path,
         "         (re-sube el asset al Release " + tag + " y verifica los "
         + str(len(manifest.get('assets', []))) + " assets)\n"
         "      8. Avisa a Ricardo: pull en la Carpeta de investigadores (solo el).\n"
+        "      Si raw/ esta en edicion DIARIA (Paquete) y aun no vas a declarar:\n"
+        "      global rawwip \"rawwip\" en SIM.do 0.4 = Fase 1, avisa sin bloquear;\n"
+        "      quitalo para la Fase 2 (declarar) antes de publicar.\n"
         "      Detalle y por que: 02_governance/runbook-actualizar-assets.md"
     )
+
+
+def _rawwip_notice(sysdir_site, asset_name, entry, expected_sha, actual_sha, local_path):
+    """Fase 1 (raw en edicion): aviso de una linea con los valores para el
+    manifest, y registro del asset en raw/temp/assets-wip.txt (una linea por
+    asset, ultima captura gana) para que la Fase 2 sea una lista y no una
+    caceria. publicar.sh --check lee ese archivo."""
+    try:
+        actual_size = str(os.path.getsize(local_path))
+    except OSError:
+        actual_size = '?'
+    SFIToolkit.displayln(
+        "ensure_asset [RAW WIP] " + asset_name + ": SHA difiere del manifest "
+        "(real " + actual_sha[:12] + "..., " + actual_size + " bytes) - se usa el archivo "
+        "local. Declaralo antes del release (quita el global rawwip para la Fase 2)."
+    )
+    wip_path = os.path.join(sysdir_site, 'raw', 'temp', 'assets-wip.txt')
+    try:
+        os.makedirs(os.path.dirname(wip_path), exist_ok=True)
+        rows = {}
+        if os.path.isfile(wip_path):
+            with open(wip_path, 'r', encoding='utf-8') as f:
+                for line in f:
+                    parts = line.rstrip('\n').split('\t')
+                    if len(parts) >= 2:
+                        rows[parts[0]] = line.rstrip('\n')
+        rows[asset_name] = '\t'.join([
+            asset_name, entry.get('local_path', ''), actual_sha, actual_size,
+            expected_sha, datetime.datetime.now().isoformat(timespec='seconds'),
+        ])
+        with open(wip_path, 'w', encoding='utf-8') as f:
+            f.write('\n'.join(rows[k] for k in sorted(rows)) + '\n')
+    except OSError:
+        pass
 
 
 def _fetch_pinned_manifest(sysdir_site, pin):
@@ -142,9 +185,10 @@ def _fetch_pinned_manifest(sysdir_site, pin):
     return cache_path
 
 
-def ensure_asset_main(asset_name, pinned_version=""):
+def ensure_asset_main(asset_name, pinned_version="", rawwip=""):
     asset_name = asset_name.strip().strip('"')
     pinned_version = pinned_version.strip()
+    rawwip = rawwip.strip()
     sysdir_site = Macro.getGlobal('c(sysdir_site)')
     manifest_path = os.path.join(sysdir_site, '05_scripts', 'manifest.json')
     pinned_mode = False
@@ -199,6 +243,10 @@ def ensure_asset_main(asset_name, pinned_version=""):
     if os.path.isfile(local_path):
         actual_sha = _sha256_of(local_path)
         if actual_sha != expected_sha:
+            if rawwip and not pinned_mode:
+                _rawwip_notice(sysdir_site, asset_name, entry, expected_sha,
+                               actual_sha, local_path)
+                return
             _fail(_sha_mismatch_msg(asset_name, entry, expected_sha, actual_sha,
                                     local_path, manifest, pinned_mode))
             return

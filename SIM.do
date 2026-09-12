@@ -46,6 +46,7 @@ if "$update" == "update" {
 	! rm -r "`c(sysdir_site)'/raw/temp/"
 }
 
+//global rawwip "rawwip"							// RAW EN EDICION DIARIA: ensure_asset avisa sin bloquear (Fase 1; runbook-actualizar-assets.md 2c). Quitar para declarar y publicar
 //global output "output"								// ARCHIVO DE SALIDA (WEB)
 if "$output" != "" {
 	quietly log using `"`c(sysdir_site)'/users/$id/output.txt"', replace text name(output)

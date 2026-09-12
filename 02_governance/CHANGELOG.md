@@ -20,6 +20,63 @@ Formato de cada entrada:
 
 Trabajo en `master` sin versión asignada.
 
+## [v8.2.3] — 2026-09-12
+
+**El ciclo de edición diaria de `raw/` gana un modo de trabajo con tres fases:
+actuar rápido → declarar → publicar.** Con `$update` cada corrida re-lee los
+archivos que Ricardo edita a diario (LIFs, PEFs, CuotasISSSTE) y el candado
+bloqueaba en cada edición. Se descartó, tras estresarla, la idea de saltar la
+verificación cuando hay `update`: habría dejado ciego al candado en el único
+momento en que alguien toca `raw/` a propósito (el incidente del 8-sep no se
+habría detectado), habría dejado pasar raw corrupto con `update` en la Carpeta
+y en el endpoint, y habría vuelto incoherente `LIF, update` frente a `$update`.
+La solución separa intención de mecanismo: un global propio, `rawwip`, que
+solo pone quien opera el manifest. Patch nuevo porque toca `ensure_asset`.
+
+### Comandos
+- **`ensure_asset.ado` v1.5 — modo WIP de raw.** Con `global rawwip "rawwip"`
+  definido y repo local, un SHA distinto **no bloquea**: imprime una línea
+  (`[RAW WIP] LIFs.xlsx: SHA difiere del manifest (real 84f5…, 48966 bytes) —
+  se usa el archivo local. Decláralo antes del release`) y anota el asset en
+  `raw/temp/assets-wip.txt` (nombre, ruta, SHA real, tamaño, SHA esperado,
+  hora; última captura gana). Sin el global, la verificación es estricta con
+  el mensaje-runbook de v1.4, que ahora menciona el modo. **En modo endpoint
+  (sin repo) el global se ignora siempre.** Un archivo ausente se descarga y
+  verifica en cualquier modo. Probado en batch contra SITE falso: con el
+  global avisa y sigue (`rc=0`, archivo de pendientes escrito); sin él
+  bloquea (`r(198)`).
+- **`SIM.do` §0.4:** una línea comentada `//global rawwip "rawwip"` junto a
+  `$update`, con la instrucción de quitarla para declarar y publicar. Nada
+  más de `SIM.do` cambia en este release (el trabajo del día de Ricardo en el
+  working tree no se tocó: solo esta línea entró al commit).
+
+### Institucional
+- **`publicar.sh` Gate 5 — raw declarado (~6 s).** Antes de cualquier acción
+  (también en `--check`): (a) SIM.do no puede tener `global rawwip` activo —
+  todo el equipo correría con el candado en modo aviso; (b) **todo asset del
+  manifest presente en disco debe coincidir en SHA** — sin esto `publicar.sh`
+  subiría al Release un archivo que el propio manifest rechaza y el
+  post-verify lo cazaría después de subir ~1.3 GB; (c) lista
+  `raw/temp/assets-wip.txt` si quedó de la Fase 1. **Primera corrida del gate
+  cazó un asset real sin declarar:** `raw/PEFs/CuotasISSSTE.xlsx` (disco
+  `11836aa9…`, 10,858 B; manifest `bffce255…`, 10,838 B) — la edición en
+  curso de Ricardo. Queda como **pendiente de Fase 2 antes del tag v8.2.3**.
+- **`runbook-actualizar-assets.md` §2c "Modo WIP de raw: las tres fases":**
+  la tabla de fases, por qué no se ligó a `update`, y las reglas (solo repo
+  local; nunca se commitea activo; el aviso no es opcional; `update` y
+  `rawwip` son independientes).
+- Se descartó el banner en `profile.do`: el global se define en `SIM.do`,
+  después de que `profile.do` corre, así que ahí nunca sería visible. El
+  aviso por asset de `ensure_asset` y el Gate 5 cumplen esa función.
+
+### Hallazgo registrado (no corregido aquí; lo resuelve Ricardo)
+- **El Release `v8.2.2` sirve 23 de 24 assets: falta `LIFs.xlsx`.** Un
+  `gh release delete-asset` sin el `publicar.sh` posterior (o abortado)
+  dejó el Release sin el archivo; una máquina virgen hoy no puede construir
+  `master/LIF.dta` desde v8.2.2. Como el `LIFs.xlsx` en disco SÍ coincide con
+  el manifest, el fix inmediato es `gh release upload v8.2.2 raw/LIFs/LIFs.xlsx`;
+  el fix estructural es el release v8.2.3 completo tras declarar CuotasISSSTE.
+
 ## [v8.2.2] — 2026-09-09
 
 **Día 2 del Paquete 2027: el flujo de actualización de assets se vuelve

@@ -112,6 +112,44 @@ Notas sobre el paso 7:
   (Gates 1, 3, 4 en verde), y Ricardo crea el tag anotado y lanza
   `publicar.sh vX.Y.Z` (Gate 2). Ver `runbook-deploys-ciep.md`.
 
+## 2c. Modo WIP de raw: las tres fases del ciclo de edición diaria
+
+Durante el Paquete, `raw/` cambia a diario (LIFs, PEFs, CuotasISSSTE…) y con
+`$update` cada corrida re-lee los archivos; que el candado bloquee en cada
+edición vuelve el ciclo lento. La solución NO es apagar la verificación en
+`update` (eso dejaría ciego al candado justo cuando alguien toca `raw/` — el
+incidente del 8-sep no se habría detectado), sino separar la **intención** del
+mecanismo con un global propio, que solo pone quien opera el manifest:
+
+```stata
+global rawwip "rawwip"      // SIM.do §0.4 — descomentar SOLO en Fase 1
+```
+
+| Fase | Estado en SIM.do | Comportamiento de `ensure_asset` |
+|---|---|---|
+| **1. Actuar rápido** | `global rawwip` activo (+ `$update`) | SHA distinto → **una línea de aviso y sigue** (`[RAW WIP] LIFs.xlsx: SHA difiere… real 84f5…, 48966 bytes`), y anota el asset en `raw/temp/assets-wip.txt`. Archivo ausente → descarga y verifica, como siempre. |
+| **2. Gobernanza** | `//global rawwip` comentado | Cada asset no declarado **bloquea** con el mensaje-runbook (§2b) y sus valores → editas el manifest → re-corres hasta silencio. |
+| **3. Publicar** | igual que 2 | `publicar.sh --check vX.Y.Z`: el **Gate 5** verifica que SIM.do no tenga `rawwip` activo y que TODO asset presente en disco coincida con el manifest (~6 s); lista `assets-wip.txt` si quedó. Luego tag + `publicar.sh`. |
+
+Reglas del modo:
+
+- **Solo repo local.** En modo endpoint (instalación sin repo) el global se
+  ignora: ahí nadie edita `raw/` a propósito y un SHA distinto solo puede ser
+  corrupción.
+- **Nunca se commitea activo.** SIM.do es versionado: si la línea viaja
+  descomentada, todo el equipo corre con el candado en modo aviso. El Gate 5
+  lo impide en el release, pero un commit intermedio sí puede llevarlo —
+  revisa `git diff SIM.do` antes de commitear en Fase 1.
+- **El aviso no es opcional.** Es lo que convierte la Fase 2 en una lista en
+  vez de una cacería: `raw/temp/assets-wip.txt` trae nombre, SHA real, tamaño,
+  SHA esperado y hora de cada asset que corriste sin declarar (última captura
+  gana; `$update` lo borra al arrancar porque limpia `raw/temp/`, y la corrida
+  lo vuelve a llenar).
+- **`$update` y `rawwip` son independientes.** `update` = "reconstruye desde
+  raw" (lo usa cualquiera); `rawwip` = "raw está en edición y asumo la deuda
+  de declararlo" (lo pone el operador del manifest). Un compañero con `update`
+  y sin `rawwip` sigue siendo detenido por el candado.
+
 ## 3. Qué NUNCA hacer
 
 - **Borrar el archivo y volver a correr después de actualizarlo.** Es el consejo
