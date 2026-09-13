@@ -206,25 +206,27 @@ local InfraT = r(StatTotal)
 
 ** 1.4 Macros: LIF
 LIF, anio(`anioenigh') nographs min(0) by(divCIEP)
-local ISRSalarios = scalar(ISR_Asa_)
-local ISRFisicas = scalar(ISR_PF)
-local ISRMorales = scalar(ISR_PM)
+* Por grupo LIF devuelve r() (no escalares globales); Cuotas_IMSS es un
+* escalar de "Returns Extras" y sigue global. *
+local ISRSalarios = r(ISR_Asa_)
+local ISRFisicas = r(ISR_PF)
+local ISRMorales = r(ISR_PM)
 local CuotasIMSS = scalar(Cuotas_IMSS)
-local IMSSpropio = scalar(IMSS) //-`CuotasIMSS'
-local ISSSTEpropio = scalar(ISSSTE)
-local CFEpropio = scalar(CFE)
-local Pemexpropio = scalar(Pemex)
-local FMP = scalar(FMP_Derechos)
-local Mejoras = scalar(Contrib_de_mejora)
-local Derechos = scalar(Derechos)
-local Productos = scalar(Productos)
-local Aprovechamientos = scalar(Aprovechamientos)
-local OtrosTributarios = scalar(Otros_tributarios)
-local OtrasEmpresas = scalar(Otras_empresas)
-local ISAN = scalar(ISAN)
-local Importaciones = scalar(Importaciones)
-local IVA = scalar(IVA)
-local IEPS = scalar(IEPS)
+local IMSSpropio = r(IMSS) //-`CuotasIMSS'
+local ISSSTEpropio = r(ISSSTE)
+local CFEpropio = r(CFE)
+local Pemexpropio = r(Pemex)
+local FMP = r(FMP_Derechos)
+local Mejoras = r(Contrib_de_mejora)
+local Derechos = r(Derechos)
+local Productos = r(Productos)
+local Aprovechamientos = r(Aprovechamientos)
+local OtrosTributarios = r(Otros_tributarios)
+local OtrasEmpresas = r(Otras_empresas)
+local ISAN = r(ISAN)
+local Importaciones = r(Importaciones)
+local IVA = r(IVA)
+local IEPS = r(IEPS)
 
 
 ** 1.5 Macros: ISR

@@ -12,7 +12,7 @@ quietly {
 	}
 
 	syntax [, ANIO(int `aniovp') NOGraphs CRECSIM(real 1) EOFP ENIGH]
-	noisily di _newline(2) in g _dup(20) "." "{bf:   Fiscalización INGRESOS " in y `anio' "   }" in g _dup(20) "."
+	noisily di _newline(2) in g _dup(20) "." "{bf:   Tasas Efectivas INGRESOS " in y `anio' "   }" in g _dup(20) "."
 
 
 
@@ -25,12 +25,23 @@ quietly {
 
 	*********************
 	**# 2 RECAUDACIÓN ***
-	/*********************
-	if "`enigh'" == "" {
-		noisily LIF, anio(`=anioPE') by(divSIM) $update $nographs `eofp'		///
+	*********************
+	* Sin parametros de escenario (ISRASPIB, ...), el default es lo observado
+	* en LIF `anio': se toma de r() (LIF ya no escribe escalares globales por
+	* grupo) y se declara aqui, explicitamente, como parametro. *
+	capture confirm scalar ISRASPIB
+	if _rc != 0 {
+		noisily LIF, anio(`anio') by(divSIM) $update $nographs `eofp'		///
 			title("Ingresos presupuestarios") 					/// Cambiar título de la gráfica
 			desde(2013) 								/// Año de inicio para el PROMEDIO
+			min(0)							/// % del PIB mínimo
 			rows(2)									//  Número de filas en la leyenda
+		foreach k in ISRAS ISRPF CUOTAS ISRPM OTROSK FMP PEMEX CFE IMSS ISSSTE IVA IEPSNP IEPSP ISAN IMPORT {
+			local `k'LIF = r(`k'PIB)
+		}
+		foreach k in ISRAS ISRPF CUOTAS ISRPM OTROSK FMP PEMEX CFE IMSS ISSSTE IVA IEPSNP IEPSP ISAN IMPORT {
+			escalar pctpib `k'PIB = ``k'LIF'
+		}
 	}
 
 
@@ -305,7 +316,7 @@ quietly {
 			ISRAS ISRPF CUOTAS ISRPM OTROSK FMP PEMEX CFE IMSS ISSSTE IVA IEPSNP IEPSP ISAN IMPORT) ///
 			using "`c(sysdir_site)'/master/perfiles`anio'.dta", clear 
 		if _rc != 0 {
-			noisily run "`c(sysdir_site)'/PerfilesSim.do" `anio'
+			noisily run "`c(sysdir_site)'/01_modulos/PerfilesSim.do" `=anioPE'
 			use (folioviv foliohog numren factor edad decil grupoedad sexo rural escol ingbrutotot ///
 				ISRAS ISRPF CUOTAS ISRPM OTROSK FMP PEMEX CFE IMSS ISSSTE IVA IEPSNP IEPSP ISAN IMPORT) ///
 				using "`c(sysdir_site)'/master/perfiles`anio'.dta", clear

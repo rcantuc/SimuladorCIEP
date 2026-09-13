@@ -60,7 +60,7 @@ local OtrosEdu = r(Gasto_neto) - `Basica' - `Media' - `Superior' - `Adultos' - `
 ** 1.2 Otros gastos **
 PEF, anio(`1') by(divCIEP) min(0) nographs
 local PenBienestar = r(Pension_AM)
-local OtrosGastos = r(Otros_gastos) + r(Cuotas_ISSSTE)
+local OtrosGastos = r(Otros_gastos)
 local Pensiones = r(Pensiones)
 local Educacion = r(Educacion)
 local Salud = r(Salud)
@@ -112,10 +112,11 @@ local InfraT = r(Gasto_neto)
 **********************
 LIF, anio(`1') by(divSIM) nographs min(0)
 local recursos = r(divSIM)
+* Niveles observados por grupo: r() de LIF (ya no escalares globales) *
 foreach k of local recursos {
-	if "`=scalar(`=substr("`k'",1,7)')'" != "" {
-		local `=substr("`k'",1,7)' = scalar(`=substr("`k'",1,7)')
-		local `=substr("`k'",1,7)' = subinstr("``=substr("`k'",1,7)''",",","",.)
+	local k7 = substr("`k'",1,7)
+	if r(`k7') != . {
+		local `k7' = r(`k7')
 	}
 }
 local IngKPublicos = `FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE'
@@ -511,9 +512,16 @@ noisily Simulador Federalizado if Federalizado != 0 [fw=factor], aniope(`1') ani
 noisily Gini Federalizado, hogar(folioviv foliohog) factor(factor)
 
 
+** (=) Deuda **
+Distribucion DEUDA, relativo(pob) macro(`=`DEUDA'')
+label var DEUDA "Deuda"
+noisily Simulador DEUDA if DEUDA != 0 [fw=factor], aniope(`1') aniovp(`1') reboot
+noisily Gini DEUDA, hogar(folioviv foliohog) factor(factor)
+
+
 *****************************
 ** (-) Ingreso B{c a'}sico **
-g IngBasico = 0.0000000001
+g IngBasico = 0.00000000000000000001
 label var IngBasico "Ingreso b{c a'}sico"
 noisily Simulador IngBasico if IngBasico != 0 [fw=factor], aniope(`1') aniovp(`1') reboot
 noisily Gini IngBasico, hogar(folioviv foliohog) factor(factor)

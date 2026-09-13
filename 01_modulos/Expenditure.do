@@ -103,8 +103,11 @@ local ConHog = scalar(ConHog)
 
 ** 1.2 SHCP: Datos Abiertos **
 LIF, anio(`anioenigh') by(divCIEP) nographs min(0)
-local IVA = scalar(IVA)
-local IEPSNP = scalar(IEPS__no_petrolero_)
+* Por grupo LIF devuelve r(); los IEPS por producto (Tabacos, Juegos, ...)
+* son escalares de "Returns Extras" y siguen globales. *
+local IVA = r(IVA)
+local IEPSNP = r(IEPS__no_petrolero_)
+local IepsGasolinas = r(IEPS__petrolero_)
 local IepsTabaco = scalar(Tabacos)
 local IepsJuegos = scalar(Juegos)
 local IepsTelecom = scalar(Telecom)
@@ -112,7 +115,6 @@ local IepsBebidasEner = scalar(Energiza)
 local IepsBebidasSabor = scalar(Saboriza)
 local IepsAltoContCal = scalar(AlimNoBa)
 local IepsCombustibles = scalar(Fosiles)
-local IepsGasolinas = scalar(IEPS__petrolero_)
 local IepsAlcohol_20 = scalar(Alcohol)*0.2
 local IepsAlcohol_20_ = scalar(Alcohol)*0.2
 local IepsCervezas = scalar(Alcohol)*0.6
