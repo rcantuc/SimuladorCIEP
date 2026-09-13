@@ -62,11 +62,15 @@ LOG_FILE="/tmp/publicar-vps-$(date +%Y%m%d-%H%M%S).log"
 # Whitelist del canon web (decisión 2026-07-09, bitácora v1.27)
 # -----------------------------------------------------------------------------
 # El flujo WEB solo consume el año ENIGH vigente (master/2024/) y el perfil
-# vigente (perfiles2026.dta). Los años previos (2014-2022) y sus perfiles son
+# vigente (perfiles<anioPE>.dta). Los años previos (2014-2022) y sus perfiles son
 # insumos SOLO-LOCALES (trabajo del investigador en su Mac): no viajan al VPS.
 # El VPS solo aloja lo que el web sirve.
 #
-# ACTUALIZAR ESTAS 2 VARIABLES cuando avance el ENIGH vigente (~cada 2 años).
+# ACTUALIZAR ESTAS 2 VARIABLES cuando avance el ENIGH vigente (~cada 2 años)
+# y WEB_PERFIL con CADA Paquete Económico (anioPE de Web.Stata.do): si el
+# perfil del año no viaja, TasasEfectivas §7 no lo encuentra y corre
+# PerfilesSim.do completo EN PRODUCCIÓN en cada sesión (~8 min por
+# simulación; incidente v8.3.0, 2026-09-12).
 # Es intencional que la regla viva explícita aquí, no en symlinks ni en
 # infraestructura: un cambio de vigencia es una decisión editable en el código
 # y auditable en Git. Las leen la Fase 3b (deploy) y el modo
@@ -81,7 +85,7 @@ LOG_FILE="/tmp/publicar-vps-$(date +%Y%m%d-%H%M%S).log"
 # retiró en v8.0.11 por redundante con ESTA garantía — quien modifique la
 # whitelist hereda la responsabilidad de mantenerla.
 WEB_MASTER_YEAR="2024"
-WEB_PERFIL="perfiles2026.dta"
+WEB_PERFIL="perfiles2027.dta"
 
 # Colores solo si stdout es una terminal
 if [[ -t 1 ]]; then
