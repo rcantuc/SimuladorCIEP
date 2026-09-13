@@ -253,8 +253,21 @@ if `"$nodo_saving"' != "" {
 }
 else {
 	* scalarjson escribe con file open y no crea carpetas: el destino
-	* bajo el docroot debe existir ANTES de exportar.
-	capture mkdir `"`site'/../CIEP_Micrositios/Paquete Económico/public_html/nodos"'
+	* bajo el docroot debe existir ANTES de exportar. mkdir solo crea el
+	* ultimo nivel: si los padres (CIEP_Micrositios/.../public_html) no
+	* existen —el VPS, donde SHRFSP corre via FiscalGap con $output— falla
+	* y scalarjson tronaria con r(603) matando la sesion web (incidente
+	* v8.3.0, 2026-09-12). Cuarto guard: sin destino, sin nodo. *
+	local dest `"`site'/../CIEP_Micrositios/Paquete Económico/public_html/nodos"'
+	capture mkdir `"`dest'"'
+	tempname fh
+	capture file open `fh' using `"`dest'/.nodo-deuda-test"', write replace
+	if _rc {
+		noisily di in g "nodo-deuda: destino de render no disponible (solo-repo); se omite la exportacion."
+		exit
+	}
+	file close `fh'
+	capture erase `"`dest'/.nodo-deuda-test"'
 }
 
 scalarjson, nodo("deuda-publica") ///
