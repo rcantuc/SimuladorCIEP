@@ -37,7 +37,10 @@ twoway (connected IngLab anio) ///
 	caption("{bf:Fuente}: Elaborado por el CIEP con información de la SHCP `=anioPE' e INEGI, BIE.") ///
 	name(TE, replace)
 
-graph export "$export/TE.png", replace
+if "$export" != "" {
+	graph export "$export/TE.png", replace
+}
+
 
 * Calcular estadísticos para ISR asalariados
 tabstat ISRAS if anio == `=anioPE' | anio == `=anioPE-25', by(anio) save
@@ -63,7 +66,9 @@ twoway (connected ISRAS anio) ///
 	caption("{bf:Fuente}: Elaborado por el CIEP con información de la SHCP `=anioPE' e INEGI, BIE.") ///
 	name(TE_Trabajo, replace)
 
-graph export "$export/TE_Trabajo.png", replace
+if "$export" != "" {
+	graph export "$export/TE_Trabajo.png", replace
+}
 
 
 * Calcular estadísticos para ISR personas morales
@@ -88,7 +93,9 @@ twoway (connected ISRPM anio) ///
 	caption("{bf:Fuente}: Elaborado por el CIEP con información de la SHCP `=anioPE' e INEGI, BIE.") ///
 	name(TE_Capital, replace)
 
-graph export "$export/TE_Capital.png", replace
+if "$export" != "" {
+	graph export "$export/TE_Capital.png", replace
+}
 
 
 * Gráfica: Tasas efectivas por impuestos al consumo
@@ -109,7 +116,9 @@ twoway (connected IVA anio) ///
 	caption("{bf:Fuente}: Elaborado por el CIEP con información de la SHCP `=anioPE' e INEGI, BIE.") ///
 	name(TE_Consumo, replace)
 
-graph export "$export/TE_Consumo.png", replace
+if "$export" != "" {
+	graph export "$export/TE_Consumo.png", replace
+}	
 
 
 * Gráfica: Tasas efectivas de organismos y empresas públicas
@@ -138,4 +147,6 @@ twoway (connected FMP anio) ///
 	caption("{bf:Fuente}: Elaborado por el CIEP con información de la SHCP `=anioPE' e INEGI, BIE.") ///
 	name(TE_Organismos, replace)
 
-graph export "$export/TE_Organismos.png", replace
+if "$export" != "" {
+	graph export "$export/TE_Organismos.png", replace
+}

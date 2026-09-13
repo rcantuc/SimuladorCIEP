@@ -1,23 +1,26 @@
 quietly log on output
 
+* Horizonte macro 2026-2032 (v8.3.0): mismos 7 anios que el marco del sitio
+* (inputs CRECPIB/CRECDEF) y que Web.Stata.do §2 / SIM.do §2. Mapeo POSICIONAL
+* con los inputs del DOM: al mover el horizonte hay que mover los tres a la vez.
 noisily di in w "CRECPIB: ["  ///
-	%8.1f $pib2025 ", " ///
 	%8.1f $pib2026 ", " ///
 	%8.1f $pib2027 ", " ///
 	%8.1f $pib2028 ", " ///
 	%8.1f $pib2029 ", " ///
 	%8.1f $pib2030 ", " ///
-	%8.1f $pib2031 ///
+	%8.1f $pib2031 ", " ///
+	%8.1f $pib2032 ///
 "]"
 
 noisily di in w "CRECDEF: ["  ///
-	%8.1f $def2025 ", " ///
 	%8.1f $def2026 ", " ///
 	%8.1f $def2027 ", " ///
 	%8.1f $def2028 ", " ///
 	%8.1f $def2029 ", " ///
 	%8.1f $def2030 ", " ///
-	%8.1f $def2031 ///
+	%8.1f $def2031 ", " ///
+	%8.1f $def2032 ///
 "]"
 
 noisily di in w "DEUDAPARAM: [" ///
@@ -335,8 +338,11 @@ noisily di in w "CSSISSSTE: [" ///
 	CSS_ISSSTE[8,3] ///
 "]"
 
+* scalar() explicito: la base en memoria al final de la corrida (FiscalGap)
+* tiene una VARIABLE pibY y el nombre pelado resolvia a pibY[1] (2013,
+* 1.65 billones) en vez del escalar de aniovp (v8.3.0). *
 noisily di in w "PIBY: [" ///
-	%20.2f pibY ///
+	%20.2f scalar(pibY) ///
 "]"
 
 quietly log off output

@@ -20,6 +20,120 @@ Formato de cada entrada:
 
 Trabajo en `master` sin versión asignada.
 
+## [v8.3.0] — 2026-09-13
+
+**Paquete Económico 2027 (CGPE/ILIF/PPEF 2027) como escenario base, con
+horizonte 2027–2032, y reestructura de la brecha fiscal: `FiscalGap` deja
+de proyectar a valor presente/infinito y construye una trayectoria anual
+cerrada por componentes (ingresos, gasto, costo financiero, RFSP y SHRFSP)
+que se despliega en una sola tabla `Proy_fiscal`.** Los números publicados
+cambian de forma visible (año base, PEF, horizonte y metodología), por lo
+que el release es *minor* con deployment nuevo en el VPS (`v8.3`).
+
+### Datos
+- **Paquete Económico 2027:** `raw/PEFs/PPEF 2027.xlsx` (asset nuevo),
+  `raw/LIFs/LIFs.xlsx` (ILIF 2027, SHA `7d9db942`) y
+  `raw/PEFs/CuotasISSSTE.xlsx` (SHA `68fa8f59`). `manifest.json`:
+  `data_updated = 2026-09-12`. Marco macro CGPE 2027 en `SIM.do` §2 y §6
+  (PIB 1.41/2.00%, deflactor 3.8/4.0%, inflación 3.8/3.2/3.0%, SHRFSP
+  54.0→56.5% del PIB, RFSP 4.1→3.1%, tipo de cambio, balance primario,
+  costo financiero, ingresos y gasto 2026–2032). `profile.do`:
+  `paqueteEconomico = "CGPE 2027"`, `anioPE = aniovp = 2027`.
+- `PEF.ado`: prioridad por año **CP > PEF > PPEF** — si coexisten dos
+  versiones del mismo año se usa la de mayor prioridad y se avisa (ya no hay
+  que borrar xlsx a mano cuando llega la Cuenta Pública). Diccionario único
+  `_PEFhomologa` para todos los layouts SHCP 2013–2027 (CP 2013–2024, CP 2025,
+  PEF 2026, PPEF 2027, CuotasISSSTE): elimina columnas fantasma por contenido,
+  renombra al layout canónico y **detiene** con lista explícita ante una
+  columna desconocida o una canónica faltante. `_PEFlimpia`: montos
+  numéricos, mojibake/NBSP/saltos fuera, códigos forzados, detección de
+  archivos de bloqueo de Excel.
+- `DatosAbiertos.ado`: `_DAlimpia` elimina filas corruptas de los csv de la
+  SHCP (registros truncados o pegados, CICLO no numérico, PERIODO_FINAL sin
+  AAAA-MM, MONTO no numérico) y `_DAappend` diagnostica y repara tipos
+  string/numérica antes de reintentar el `append`, reportando qué base falló.
+
+### Comandos
+- **`FiscalGap.ado` — trayectoria anual 2027–2032, sin VP/infinito.**
+  Horizonte único `end()` para PIB, SHRFSP y la matriz fiscal (antes cada
+  frame tenía el suyo y el último año salía huérfano). §4.3b y §5.3b: tablas
+  "LIF vs simulación" y "PEF vs simulación" en el año base con tasas total,
+  demográfica y económica (residuo acotado a ±5). Diferimiento de pagos
+  (LIF divCIEP 8) sale de los ingresos y viaja como serie propia (la SHCP lo
+  resta al gasto devengado). `estimacionGasto`: primero lo micro-simulado
+  (× deflator) y después las partidas macro (cuotas ISSSTE constantes como %
+  del PIB del año base; antes se inflaban dos veces). §5.9: el motor arranca
+  en `anio+1` y sobreescribe los exógenos del CGPE de ahí en adelante; el año
+  base se respeta como ancla. §5.9b `Proy_fiscal`: ingresos, gasto devengado,
+  primario, costo financiero, diferimientos, gasto pagado, balance, RFSP,
+  superávit primario y SHRFSP, calculados desde los componentes. Las
+  secciones 6–7 (balance e inequidad en VP) quedan desactivadas hasta
+  validar la trayectoria anual. Salida web: `PROY*`/`PROYSHRFSP*`/`PROYCOSTO`
+  llegan hasta `end()` (antes tope fijo 2030) y se emite `ANIOEND`.
+- **`FiscalGap.ado` §5.5 (corrección):** `gascosto` es % del PIB
+  (`SIM.do` §5.1, `GastoPC` §7.2, `GASTOS[34]` del sitio) pero se multiplicaba
+  por población (semántica per cápita vieja): el costo financiero del año
+  base salía ≈ 0 (`PROYCOSTO` 2027 = 0.0 y fila `Costo_financiero` de
+  `Proy_fiscal`). Ahora `gascosto/100 × pibY`.
+- `PEF.ado` v8.1: display simétrico con LIF — Tabla A (nivel por `by()`:
+  MXN, % PIB, % Tot, per cápita; conciliación bruto→neto con cuotas ISSSTE y
+  aportaciones) y Tabla B (crecimiento `desde()`–`anio()`, dif. % PIB,
+  crecimiento real, elasticidad). `desde() < anio()` obligatorio (mismo guard
+  que LIF). Help `PEF.sthlp` actualizado.
+- `SHRFSP.ado`: se retiran las gráficas y mínimos "de 5 años centrales";
+  `aniomax()` gobierna el horizonte del PIB (antes `anio+5` fijo).
+- `GastoPC.ado`: educación para adultos usa alumnos ADULTOS como denominador
+  (col 5; con col 6 se perdía ~99% del monto — 5,862 mill. en 2027). "Otros
+  gastos" BRUTO, sin netar cuotas ISSSTE (se restaban dos veces con
+  `PerfilesSim` §1.2). Ruta `01_modulos/PerfilesSim.do` corregida.
+- `PIBDeflactor.ado`/`Web.Stata.do`/`output.do`: horizonte macro
+  **2026–2032** (7 años) en los tres a la vez — `CRECPIB`/`CRECDEF` del sitio,
+  placeholders del template y globals `pib*`/`def*`/`inf*`. Antes el template
+  traía 2025–2031 y las matrices de deuda 2025–2031 con el loop leyendo la
+  columna 1 como 2026 (desfase de un año); ahora son las mismas matrices de
+  `SIM.do`. `output.do`: `PIBY` con `scalar()` explícito — el nombre pelado
+  resolvía a la variable `pibY[1]` (2013, 1.65 billones) del dataset de
+  FiscalGap en memoria, no al escalar de 2027.
+- **`LIF.ado` v8.1 — lo observado va en `r()`, no en escalares globales por
+  grupo (mismo contrato que `PEF`).** Antes LIF escribía `<g>`, `<g>PIB`,
+  `<g>Tot`, `<g>PC`, `<g>C` como escalares globales; con `by(divSIM)` esos
+  nombres son exactamente los parámetros de escenario del usuario
+  (`ISRASPIB`, `IVAPIB`, ...) y la corrida interna de LIF en `FiscalGap` §4.1
+  (y el fallback de `TasasEfectivas`) los pisaba después de que `SIM.do` §4.1 /
+  `ISR_Mod` / `IVA_Mod` los habían definido. Ahora hay dos espacios de nombres:
+  **observado** = `r(<g>...)` de LIF; **escenario** = escalares `<g>PIB` que
+  solo escribe el usuario (SIM.do, Web.Stata.do) o `TasasEfectivas` cuando no
+  existen (default explícito desde `r()`). Siguen globales, sin colisión:
+  `Ingresos_totales*`, `Ingresos_sin_deuda*`, elasticidades `E<g>` y "Returns
+  Extras" (`Cuotas_IMSS`, IEPS por producto). Se agregan
+  `r(Ingresos_totales*)`. Consumidores migrados a `r()`: `FiscalGap` (§4.1
+  captura `r(<g>C)`/`r(<g>PIB)` en locals; ancla §4.2 = parámetro si existe,
+  si no el observado — sigue autocontenido), `Households.do` §1.4,
+  `Expenditure.do` §1.2, `PerfilesSim.do` §2, `visualizations/Sankey.do` §1.
+  Libro: la prosa solo cita `\<g>PIBtasas` (TasasEfectivas, parámetro); las
+  definiciones `\<g>{PIB,Tot,C}{gap,ing,perf}` que dejan de emitirse no se
+  usan. Help `LIF.sthlp` actualizado (stored results). Los `legacy/` que
+  leen `scalar(<g>)` tras LIF no se tocaron.
+- **`SIM.do` §4.4/§4.6:** las reestimaciones de `ISR_Mod`/`IVA_Mod` asignaban
+  `<g>PIB` como *string* (`"`=round(...)'"`), contra el invariante numérico
+  v8.1.0 que `Web.Stata.do` ya cumplía; ahora `escalar pctpib ... = round(...)`.
+
+### Institucional
+- **Sitio (`04_1_simuladorfiscal.ciep.mx/`, fuera de git; viaja por
+  `publicar-vps.sh`):** año base 2027 y horizonte 2032. Marco macro con 7
+  filas 2026–2032 (sale la fila oculta 2025, entra 2032) en `index.php`,
+  `index-en.php`, `calculaStata.php` (`$llaves`) y el POST de
+  `stataCalcula(.js|-en.js)`; categorías de las gráficas de ingresos, gasto y
+  SHRFSP 2013–2032 (20 puntos, mismos que emite FiscalGap); el veredicto de
+  deuda compara el año base contra el último año de la serie con índices
+  dinámicos (`ANIOBASE`, `ANIOEND`) en vez de `[9]`/`[17]` quemados; "DEUDA
+  per cápita 2027/2032"; "Valores 2027"; textos y links al Paquete 2027
+  (CGPE 2027, ILIF 2027, PPEF 2027 — LIF/PEF 2027 aún no existen en la SHCP).
+- `manifest.json`: `version`/`release_tag`/`release_url_prefix` → v8.3.0.
+  Probado en local: template web sustituido con los defaults del sitio corre
+  end-to-end (34.7 s) y `output.txt` entrega 20 puntos por serie, `CRECPIB`/
+  `CRECDEF` con 7 valores y `PIBY` = 39.4 billones (2027).
+
 ## [v8.2.3] — 2026-09-12
 
 **El ciclo de edición diaria de `raw/` gana un modo de trabajo con tres fases:

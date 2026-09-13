@@ -195,7 +195,7 @@ scalar aniovp = substr(`"`=trim("`fecha'")'"',1,4)
 scalar aniovp = 2027
 
 ** 2.3 Año paquete económico **
-global paqueteEconomico "CGPE 2026"						// POLÍTICA FISCAL
+global paqueteEconomico "CGPE 2027"						// POLÍTICA FISCAL
 scalar anioPE = 2027
 
 
