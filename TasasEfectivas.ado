@@ -31,7 +31,7 @@ quietly {
 	* grupo) y se declara aqui, explicitamente, como parametro. *
 	capture confirm scalar ISRASPIB
 	if _rc != 0 {
-		noisily LIF, anio(`anio') by(divSIM) $update $nographs `eofp'		///
+		noisily LIF if divLIF != 10, anio(`anio') by(divSIM) $update $nographs `eofp'		///
 			title("Ingresos presupuestarios") 					/// Cambiar título de la gráfica
 			desde(2013) 								/// Año de inicio para el PROMEDIO
 			min(0)							/// % del PIB mínimo

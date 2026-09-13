@@ -102,7 +102,7 @@ noisily SCN, anio(`=aniovp') $textbook $nographs $update
 
 **/
 **# 3. HOGARES: ARMONIZACIÓN MACRO-MICRO
-***
+/***
 
 ** 3.1 Encuesta Nacional de Ingresos y Gastos de los Hogares (Usos)
 noisily di _newline in g "Actualizando: " in y "expenditures.dta"
@@ -418,7 +418,7 @@ if "`cambioiva'" == "1" {
 
 ** 7.1 (+) Impuestos y aportaciones
 egen AlTrabajo = rsum(ISRPF_Sim ISRAS_Sim CUOTAS_Sim)
-egen AlCapital = rsum(ISRPM_Sim OTROSK)
+egen AlCapital = rsum(ISRPM_Sim OTROSK_Sim)
 egen AlConsumo = rsum(IVA_Sim IEPSNP_Sim IEPSP_Sim ISAN_Sim IMPORT_Sim)
 
 capture drop ImpuestosAportaciones

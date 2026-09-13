@@ -110,7 +110,13 @@ local InfraT = r(Gasto_neto)
 **# 2. Macros: LIF ***
 ***                ***
 **********************
-LIF, anio(`1') by(divSIM) nographs min(0)
+* Sin financiamiento (divLIF 10): con la LIF completa el grupo divSIM OTROSK
+* absorbia el endeudamiento (~4% PIB; 2027: 2.22 vs 0.65 billones) y el perfil
+* OTROSK —y con el AlCapital del Sankey— contaba la deuda como ingreso de
+* capital (v8.3.0, 2026-09-12). Mismo filtro que FiscalGap §4.1: fuera el
+* financiamiento, salvo divCIEP 8 (diferimiento de pagos), que es lo que
+* queda en el grupo DEUDA para el perfil de abajo. *
+LIF if divLIF != 10 | divCIEP == 8, anio(`1') by(divSIM) nographs min(0)
 local recursos = r(divSIM)
 * Niveles observados por grupo: r() de LIF (ya no escalares globales) *
 foreach k of local recursos {

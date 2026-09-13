@@ -390,7 +390,7 @@ save `"`c(sysdir_site)'/users/$id/aportaciones.dta"', replace
 
 ** 7.1 (+) Impuestos y aportaciones
 egen AlTrabajo = rsum(ISRPF_Sim ISRAS_Sim CUOTAS_Sim)
-egen AlCapital = rsum(ISRPM_Sim OTROSK)
+egen AlCapital = rsum(ISRPM_Sim OTROSK_Sim)
 egen AlConsumo = rsum(IVA_Sim IEPSNP_Sim IEPSP_Sim ISAN_Sim IMPORT_Sim)
 
 capture drop ImpuestosAportaciones
