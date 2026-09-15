@@ -167,8 +167,8 @@ local ImpNet = scalar(ImpNet)
 ** 5.3 Usar base de datos conciliada **
 capture use "`c(sysdir_site)'/master/`anioenigh'/households.dta", clear
 if _rc != 0 {
-	noisily run "`c(sysdir_site)'/Expenditure.do" `anioenigh'
-	noisily run `"`c(sysdir_site)'/Households.do"' `anioenigh'
+	noisily run "`c(sysdir_site)'/01_modulos/Expenditure.do" `anioenigh'
+	noisily run `"`c(sysdir_site)'/01_modulos/Households.do"' `anioenigh'
 }
 drop if folioviv == ""
 
