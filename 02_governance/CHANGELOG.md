@@ -20,6 +20,72 @@ Formato de cada entrada:
 
 Trabajo en `master` sin versión asignada.
 
+## [v8.3.1] — 2026-09-14
+
+**Un asset publicado que nadie pedía: la máquina virgen no reconstruía el
+PPEF 2027 — sin error.** Ricardo hizo la prueba correcta tras v8.3.0: borrar
+`master/` y `raw/` y esperar la reconstrucción completa. `PPEF.2027.xlsx`
+estaba en el manifest y en la Release, pero **ningún módulo lo solicitaba**:
+`PEF.ado` mantenía la lista de `ensure_asset` como un `foreach` tecleado a
+mano (comentario "GitHub Release v7.0": ocho versiones sin tocarla) y descubre
+los años con `dir raw/PEFs *.xlsx` — un asset no pedido simplemente no
+existía para el módulo. Mismo destino tenía `Diccionario.csv`. El manifest y
+la lista del módulo eran dos fuentes de verdad, y ya habían divergido. Patch
+porque toca `.ado` publicados (`ensure_asset`, `PEF`, `LIF`). **Envuelve los
+tres commits posteriores al tag v8.3.0** (`6b5fad4` whitelist del canon web
+a `perfiles2027.dta`; `ef1678f` guard del nodo de deuda cuando no existe el
+destino de render; `08149e6` el endeudamiento del Sankey ya no se esconde en
+los impuestos al capital), que hasta hoy vivían solo en `master`.
+
+### Comandos
+- **`ensure_asset.ado` v1.6 — forma `ensure_asset, dir(<directorio>)`:**
+  pide TODOS los assets del manifest cuyo `local_path` vive bajo ese
+  directorio, con la misma lógica por asset (descarga si falta, SHA, modo
+  WIP) y un resumen (`raw/PEFs/ — 17 asset(s) verificados (17 descargados)`).
+  La lista se **deriva del manifest**, única fuente de verdad: agregar un
+  asset al manifest basta para que el módulo lo pida. Funciona en los dos
+  entornos (manifest local y manifest pineado del endpoint). `<nombre>` y
+  `dir()` son excluyentes; sin ninguno, o con un directorio que no cubre
+  ningún asset, aborta con mensaje. Refactor interno: `_load_manifest` y
+  `_ensure_one` compartidos; el marcador `local PINNED_VERSION ""` que
+  `publicar-endpoint.sh` inyecta sigue intacto.
+- **`PEF.ado`**: el `foreach` de 15 nombres muere → `ensure_asset, dir(raw/PEFs)`
+  (17 assets hoy: CP 2013–2025, PEF 2026, PPEF 2027, CuotasISSSTE,
+  Diccionario). El descubrimiento por `dir` y la prioridad CP > PEF > PPEF no
+  cambian. **`LIF.ado`** → `ensure_asset, dir(raw/LIFs)`. `DatosAbiertos`
+  (un archivo en la raíz de `raw/`) y `Expenditure.do` (un zip por ENIGH,
+  cada año exige código propio) siguen pidiendo por nombre; el Gate 6 los
+  vigila.
+- Nota de inventario: `Diccionario.csv` no lo lee ningún código — el mapeo
+  origen→canónico de PEF.ado §3 es inline; es el diccionario de la SHCP
+  guardado como documentación del esquema CP 2025 (v8.1.0). Con `dir()`
+  viaja igual que los demás.
+
+### Institucional
+- **Test de máquina virgen, formalizado en dos capas
+  (`05_scripts/test-maquina-virgen.sh`):**
+  - `--cobertura` (estático, segundos, sin red): cada asset del manifest
+    debe ser solicitado por algún módulo, por nombre (`ensure_asset "X"`) o
+    por directorio (`ensure_asset, dir(D)` con `local_path` bajo `D/`).
+    Contra el `PEF.ado` de v8.3.0 reporta **17 de 25 sin solicitante** (la
+    lista vieja pasaba los nombres por macro: opaca para cualquier auditoría
+    estática — otra razón para derivar); con el fix, 25/25.
+  - `--download` (dinámico, ~1.3 GB, requiere la Release publicada): SITE
+    falso en `/tmp` con `ensure_asset.ado` y el manifest, `raw/` VACÍO, y
+    las mismas invocaciones de `ensure_asset` que hacen los módulos
+    (derivadas del inventario, no tecleadas); verificación independiente por
+    `shasum` de cada asset. Contra la Release v8.3.0: **25/25 descargados y
+    verificados**, incluidos `PPEF.2027.xlsx` y `Diccionario.csv` (que la
+    prueba manual no ejercitó porque nadie lo lee). No toca el repo ni
+    `raw/` real. Se corre DESPUÉS de `publicar.sh vX.Y.Z` y antes de
+    anunciar; la corrida completa de SIM.do desde cero sigue siendo la
+    prueba manual de Ricardo.
+- **`publicar.sh` Gate 6 — cobertura de assets** (también en `--check`):
+  delega en `test-maquina-virgen.sh --cobertura`. Un asset huérfano bloquea
+  el tag. `--check v8.3.0` con el árbol de hoy: 6/6 gates.
+- `runbook-deploys-ciep.md`: paso post-publicación con el test de máquina
+  virgen.
+
 ## [v8.3.0] — 2026-09-13
 
 **Paquete Económico 2027 (CGPE/ILIF/PPEF 2027) como escenario base, con

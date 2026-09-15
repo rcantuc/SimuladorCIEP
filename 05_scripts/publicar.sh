@@ -5,6 +5,7 @@
 #   1. Verifica precondiciones (master, working tree limpio, alineación con origin/master)
 #   2. Gates de validación: entrada en 02_governance/CHANGELOG.md, tag anotado con mensaje,
 #      raw declarado (Gate 5: assets locales = manifest, SIM.do sin rawwip activo),
+#      cobertura de assets (Gate 6: todo asset del manifest lo solicita algun modulo),
 #      05_scripts/manifest.json sincronizado con la versión, y existencia en filesystem de
 #      cada archivo declarado en 05_scripts/manifest-endpoint.toml. Si algo falla, aborta
 #      ANTES de cualquier acción con efectos (push, Release, rsync).
@@ -143,6 +144,29 @@ gate_raw_declarado() {
         log_info "✓ Gate 5: raw declarado — $checked asset(s) locales coinciden con el manifest; SIM.do sin rawwip activo"
     fi
     return $failed
+}
+
+# Gate 6 — Cobertura de assets (2026-09-14). Cada asset del manifest debe ser
+# SOLICITADO por algun modulo: por nombre (ensure_asset "X") o por directorio
+# (ensure_asset, dir(D) con local_path bajo D/). Es la version estatica del test
+# de maquina virgen: en v8.3.0 PPEF.2027.xlsx y Diccionario.csv estaban en el
+# manifest y en la Release pero ningun modulo los pedia (lista tecleada a mano
+# en PEF.ado desde v7.0), y una reconstruccion desde cero los omitia SIN error.
+# Delegado a 05_scripts/test-maquina-virgen.sh --cobertura (misma logica, un
+# solo lugar).
+gate_cobertura_assets() {
+    if [[ ! -x 05_scripts/test-maquina-virgen.sh ]]; then
+        log_error "Gate 6 FALLO: falta 05_scripts/test-maquina-virgen.sh (o no es ejecutable)."
+        return 1
+    fi
+    local out
+    if out="$(bash 05_scripts/test-maquina-virgen.sh --cobertura 2>&1)"; then
+        log_info "✓ Gate 6: cobertura de assets — $(tail -n 1 <<< "$out")"
+        return 0
+    fi
+    log_error "Gate 6 FALLO: assets del manifest que ningun modulo solicita:"
+    while IFS= read -r line; do log_error "        $line"; done <<< "$out"
+    return 1
 }
 
 # ═══ FUNCIONES DE FLUJO ═══
@@ -574,11 +598,12 @@ if [[ "$CHECK_MODE" == "true" ]]; then
     gate_manifest_sync "$VERSION"  || GATE_FAILURES=$((GATE_FAILURES+1))
     gate_endpoint_files            || GATE_FAILURES=$((GATE_FAILURES+1))
     gate_raw_declarado             || GATE_FAILURES=$((GATE_FAILURES+1))
+    gate_cobertura_assets          || GATE_FAILURES=$((GATE_FAILURES+1))
     if (( GATE_FAILURES > 0 )); then
         log_error "--check: $GATE_FAILURES gate(s) fallaron para $VERSION."
         exit 1
     fi
-    log_info "--check: los 5 gates pasaron para $VERSION."
+    log_info "--check: los 6 gates pasaron para $VERSION."
     exit 0
 fi
 
@@ -592,6 +617,7 @@ gate_changelog "$VERSION"      || GATE_FAILURES=$((GATE_FAILURES+1))
 gate_manifest_sync "$VERSION"  || GATE_FAILURES=$((GATE_FAILURES+1))
 gate_endpoint_files            || GATE_FAILURES=$((GATE_FAILURES+1))
 gate_raw_declarado             || GATE_FAILURES=$((GATE_FAILURES+1))
+gate_cobertura_assets          || GATE_FAILURES=$((GATE_FAILURES+1))
 if (( GATE_FAILURES > 0 )); then
     abort "$GATE_FAILURES gate(s) fallaron. Corrige antes de publicar."
 fi

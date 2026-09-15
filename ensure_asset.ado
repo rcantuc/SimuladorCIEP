@@ -1,6 +1,12 @@
-*! ensure_asset v1.5 - Garantiza disponibilidad de datos vinculados al repo via GitHub Releases
-*! Sintaxis: ensure_asset "<nombre>"
-*! <nombre> debe coincidir con un campo "name" en 05_scripts/manifest.json
+*! ensure_asset v1.6 - Garantiza disponibilidad de datos vinculados al repo via GitHub Releases
+*! Sintaxis: ensure_asset "<nombre>"          (un asset, por su "name" en el manifest)
+*!           ensure_asset, dir(<directorio>)  (TODOS los assets del manifest cuyo
+*!                                            local_path vive bajo ese directorio,
+*!                                            p.ej. dir(raw/PEFs))
+*! La forma dir() deriva la lista del manifest (unica fuente de verdad): agregar
+*! un asset al manifest basta para que el modulo lo pida. Sustituye las listas
+*! tecleadas a mano en los modulos (PEF.ado la mantuvo a mano desde v7.0 y en
+*! v8.3.0 dejo fuera PPEF.2027.xlsx y Diccionario.csv; v1.6, 2026-09-14).
 *!
 *! Verifica que el asset exista localmente con el SHA-256 declarado en el manifest.
 *! Si falta, lo descarga del GitHub Release indicado por release_url_prefix.
@@ -18,17 +24,30 @@
 
 program define ensure_asset
     version 16
-    syntax anything(name=asset_name)
+    syntax [anything(name=asset_name)] [, DIR(string)]
 
     * Quitar comillas externas si las hay
     local asset_name = subinstr(`"`asset_name'"', `"""', "", .)
+    if `"`asset_name'"' == "" & `"`dir'"' == "" {
+        di as err "ensure_asset: indica un <nombre> o la opcion dir(<directorio>)."
+        exit 198
+    }
+    if `"`asset_name'"' != "" & `"`dir'"' != "" {
+        di as err "ensure_asset: <nombre> y dir() son excluyentes."
+        exit 198
+    }
 
     * PIN de version: VACIO en el repo. publicar-endpoint.sh lo rellena en la
     * copia PUBLICADA al endpoint, para que un usuario sin repo reconstruya
     * contra los assets de SU version instalada. NO editar esta linea a mano.
     local PINNED_VERSION ""
 
-    python: ensure_asset_main("`asset_name'", "`PINNED_VERSION'", "$rawwip")
+    if `"`dir'"' != "" {
+        python: ensure_asset_dir("`dir'", "`PINNED_VERSION'", "$rawwip")
+    }
+    else {
+        python: ensure_asset_main("`asset_name'", "`PINNED_VERSION'", "$rawwip")
+    }
 end
 
 
@@ -185,27 +204,22 @@ def _fetch_pinned_manifest(sysdir_site, pin):
     return cache_path
 
 
-def ensure_asset_main(asset_name, pinned_version="", rawwip=""):
-    asset_name = asset_name.strip().strip('"')
-    pinned_version = pinned_version.strip()
-    rawwip = rawwip.strip()
-    sysdir_site = Macro.getGlobal('c(sysdir_site)')
+def _load_manifest(sysdir_site, pinned_version):
+    """Devuelve (manifest, pinned_mode) o None si ya reporto el fallo."""
     manifest_path = os.path.join(sysdir_site, '05_scripts', 'manifest.json')
     pinned_mode = False
-
     if not os.path.isfile(manifest_path):
         if not pinned_version:
             _fail(
                 "no se encontro manifest.json en " + manifest_path + ".\n"
                 "Asegurate de estar en un clone del repo del Simulador."
             )
-            return
+            return None
         # Modo endpoint: sin repo, el catalogo se baja de GitHub por tag
         manifest_path = _fetch_pinned_manifest(sysdir_site, pinned_version)
         if manifest_path is None:
-            return
+            return None
         pinned_mode = True
-
     try:
         with open(manifest_path, 'r', encoding='utf-8') as f:
             manifest = json.load(f)
@@ -213,8 +227,7 @@ def ensure_asset_main(asset_name, pinned_version="", rawwip=""):
         if pinned_mode:
             os.remove(manifest_path)
         _fail("manifest.json no es JSON valido: " + str(e))
-        return
-
+        return None
     if pinned_mode and manifest.get('version') != pinned_version:
         os.remove(manifest_path)
         _fail(
@@ -224,8 +237,63 @@ def ensure_asset_main(asset_name, pinned_version="", rawwip=""):
             + pinned_version + "/05_scripts/manifest.json\n"
             "El tag pudo haberse movido. Reporta esto a ciep.mx."
         )
-        return
+        return None
+    return manifest, pinned_mode
 
+
+def _ensure_one(sysdir_site, manifest, pinned_mode, entry, rawwip):
+    """Verifica/descarga UN asset. Devuelve 'ok', 'descargado' o None (fallo ya reportado)."""
+    asset_name = entry['name']
+    local_path = os.path.join(sysdir_site, entry['local_path'])
+    expected_sha = entry['sha256']
+
+    if os.path.isfile(local_path):
+        actual_sha = _sha256_of(local_path)
+        if actual_sha != expected_sha:
+            if rawwip and not pinned_mode:
+                _rawwip_notice(sysdir_site, asset_name, entry, expected_sha,
+                               actual_sha, local_path)
+                return 'ok'
+            _fail(_sha_mismatch_msg(asset_name, entry, expected_sha, actual_sha,
+                                    local_path, manifest, pinned_mode))
+            return None
+        return 'ok'
+
+    download_url = manifest['release_url_prefix'] + urllib.parse.quote(asset_name)
+    SFIToolkit.displayln("ensure_asset: descargando " + asset_name + " desde GitHub Release...")
+    os.makedirs(os.path.dirname(local_path), exist_ok=True)
+    try:
+        _download(download_url, local_path)
+    except Exception as e:
+        if os.path.isfile(local_path):
+            os.remove(local_path)
+        _fail(
+            "descarga fallo para " + asset_name + ".\n"
+            "  URL: " + download_url + "\n  Razon: " + str(e) + "\n"
+            "Verifica conexion o que el release " + str(manifest.get('release_tag', '?')) + " este publicado."
+        )
+        return None
+
+    actual_sha = _sha256_of(local_path)
+    if actual_sha != expected_sha:
+        _fail(
+            "SHA-256 no coincide para " + asset_name + " tras descarga.\n"
+            "  Esperado: " + expected_sha + "\n"
+            "  Real:     " + actual_sha + "\n"
+            "Descarga corrupta. Vuelve a correr."
+        )
+        return None
+    SFIToolkit.displayln("ensure_asset: " + asset_name + " descargado y verificado.")
+    return 'descargado'
+
+
+def ensure_asset_main(asset_name, pinned_version="", rawwip=""):
+    asset_name = asset_name.strip().strip('"')
+    sysdir_site = Macro.getGlobal('c(sysdir_site)')
+    loaded = _load_manifest(sysdir_site, pinned_version.strip())
+    if loaded is None:
+        return
+    manifest, pinned_mode = loaded
     entry = next(
         (a for a in manifest.get('assets', []) if a.get('name') == asset_name),
         None,
@@ -236,45 +304,36 @@ def ensure_asset_main(asset_name, pinned_version="", rawwip=""):
             "Verifica el nombre o actualiza el manifest."
         )
         return
+    _ensure_one(sysdir_site, manifest, pinned_mode, entry, rawwip.strip())
 
-    local_path = os.path.join(sysdir_site, entry['local_path'])
-    expected_sha = entry['sha256']
 
-    if os.path.isfile(local_path):
-        actual_sha = _sha256_of(local_path)
-        if actual_sha != expected_sha:
-            if rawwip and not pinned_mode:
-                _rawwip_notice(sysdir_site, asset_name, entry, expected_sha,
-                               actual_sha, local_path)
-                return
-            _fail(_sha_mismatch_msg(asset_name, entry, expected_sha, actual_sha,
-                                    local_path, manifest, pinned_mode))
+def ensure_asset_dir(dirprefix, pinned_version="", rawwip=""):
+    """Forma dir(): todos los assets del manifest bajo <dirprefix>/ (local_path)."""
+    sysdir_site = Macro.getGlobal('c(sysdir_site)')
+    loaded = _load_manifest(sysdir_site, pinned_version.strip())
+    if loaded is None:
+        return
+    manifest, pinned_mode = loaded
+    prefix = dirprefix.strip().strip('"').replace('\\', '/').strip('/') + '/'
+    entries = [a for a in manifest.get('assets', [])
+               if a.get('local_path', '').replace('\\', '/').startswith(prefix)]
+    if not entries:
+        _fail(
+            "ningun asset del manifest vive bajo '" + prefix + "'. "
+            "Revisa el directorio o el manifest."
+        )
+        return
+    n_ok = 0
+    n_dl = 0
+    for entry in entries:
+        r = _ensure_one(sysdir_site, manifest, pinned_mode, entry, rawwip.strip())
+        if r is None:
             return
-    else:
-        download_url = manifest['release_url_prefix'] + urllib.parse.quote(asset_name)
-        SFIToolkit.displayln("ensure_asset: descargando " + asset_name + " desde GitHub Release...")
-        os.makedirs(os.path.dirname(local_path), exist_ok=True)
-        try:
-            _download(download_url, local_path)
-        except Exception as e:
-            if os.path.isfile(local_path):
-                os.remove(local_path)
-            _fail(
-                "descarga fallo para " + asset_name + ".\n"
-                "  URL: " + download_url + "\n  Razon: " + str(e) + "\n"
-                "Verifica conexion o que el release " + str(manifest.get('release_tag', '?')) + " este publicado."
-            )
-            return
-
-        actual_sha = _sha256_of(local_path)
-        if actual_sha != expected_sha:
-            _fail(
-                "SHA-256 no coincide para " + asset_name + " tras descarga.\n"
-                "  Esperado: " + expected_sha + "\n"
-                "  Real:     " + actual_sha + "\n"
-                "Descarga corrupta. Vuelve a correr."
-            )
-            return
-
-        SFIToolkit.displayln("ensure_asset: " + asset_name + " descargado y verificado.")
+        if r == 'descargado':
+            n_dl += 1
+        n_ok += 1
+    SFIToolkit.displayln(
+        "ensure_asset: " + prefix + " - " + str(n_ok) + " asset(s) del manifest verificados"
+        + (" (" + str(n_dl) + " descargados)" if n_dl else "") + "."
+    )
 end

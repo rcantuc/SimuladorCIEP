@@ -640,12 +640,13 @@ program define UpdatePEF
 	* 1.1. Descargar archivos *
 	capture confirm file "`c(sysdir_site)'/raw/temp/prePEF.dta"
 	if _rc != 0 {
-		* Asegurar que los xlsx esten descargados (GitHub Release v7.0) *
-		foreach a in CP.2013.xlsx CP.2014.xlsx CP.2015.xlsx CP.2016.xlsx CP.2017.xlsx ///
-			CP.2018.xlsx CP.2019.xlsx CP.2020.xlsx CP.2021.xlsx CP.2022.xlsx CP.2023.xlsx ///
-			CP.2024.xlsx CP.2025.xlsx PEF.2026.xlsx CuotasISSSTE.xlsx {
-			ensure_asset "`a'"
-		}
+		* Asegurar que los assets esten descargados: TODOS los que el manifest
+		* declara bajo raw/PEFs/ (CP/PEF/PPEF por anio, CuotasISSSTE, Diccionario).
+		* La lista se DERIVA del manifest — hasta v8.3.0 era un foreach tecleado
+		* a mano desde v7.0 y dejo fuera PPEF.2027.xlsx y Diccionario.csv: el
+		* modulo descubre anios con `dir raw/PEFs`, asi que un asset no pedido
+		* simplemente no existia, sin error (2026-09-14, v8.3.1). *
+		ensure_asset, dir(raw/PEFs)
 		* Prioridad por año: CP (Cuenta Publica, ejercido) > PEF (aprobado) >    *
 		* PPEF (proyecto). Si coexisten dos versiones del mismo año, se usa la  *
 		* de mayor prioridad y se avisa; asi no se duplica el año ni hay que    *

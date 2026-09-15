@@ -605,7 +605,7 @@ program define UpdateLIF
 	************************
 	*** 1. BASE DE DATOS ***
 	************************
-	ensure_asset "LIFs.xlsx"
+	ensure_asset, dir(raw/LIFs)			// todo lo que el manifest declare bajo raw/LIFs/ (hoy LIFs.xlsx)
 	import excel "`c(sysdir_site)'/raw/LIFs/LIFs.xlsx", clear firstrow
 	foreach k of varlist _all {
 		capture confirm string variable `k'
