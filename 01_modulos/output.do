@@ -114,7 +114,16 @@ noisily di in w "GASTOS: ["  ///
 	%8.3f gasmadresPIB "," /// Apoyo a madres trabajadoras 37
 	%8.3f gascuidadosPIB "," /// Gasto en cuidados 38
 	%8.3f transfPIB "," /// Total Transferencias 39
-	%8.3f scalar(EducacPIB)+scalar(saludPIB)+scalar(pensionPIB)+scalar(gasenergiaPIB)+scalar(otrosgasPIB)+scalar(transfPIB) /// Total GASTO 40
+	%8.3f scalar(EducacPIB)+scalar(saludPIB)+scalar(pensionPIB)+scalar(gasenergiaPIB)+scalar(otrosgasPIB)+scalar(transfPIB)-scalar(difpagosPIB) /// Total GASTO neto pagado (devengado - diferimiento de pagos) 40
+"]"
+
+* DIFPAGOS: diferimiento de pagos de anioPE (LIF divCIEP 8) como % del PIB,
+* escalar de FiscalGap 5.6. GASTOS[40] ya lo resta: la ecuacion del sitio
+* INGRESOS[19] - GASTOS[40] es el balance presupuestario (ingresos - gasto
+* neto PAGADO), igual que la fila Balance_presup de FiscalGap 5.9b. Se
+* publica aparte para que el sitio pueda mostrarlo si lo necesita.
+noisily di in w "DIFPAGOS: [" ///
+	%8.3f scalar(difpagosPIB) ///
 "]"
 
 noisily di in w "GASTOSPC: ["  ///

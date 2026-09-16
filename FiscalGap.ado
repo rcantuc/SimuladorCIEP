@@ -705,6 +705,12 @@ quietly {
 	local dif_anio = r(sum)
 	sum estimacionGasto if anio == `anio', meanonly
 	local difratio = cond(r(sum) > 0, `dif_anio'/r(sum), 0)
+	* Diferimiento de `anio' como % del PIB, para la ecuacion del sitio:
+	* output.do lo resta en GASTOS[40] (gasto neto PAGADO = devengado -
+	* diferimientos), de modo que INGRESOS - GASTOS cierre con el balance
+	* presupuestario de 5.9b y no con el devengado. 0 si la LIF no lo trae. *
+	sum pibY if anio == `anio', meanonly
+	escalar pctpib difpagosPIB = cond(r(sum) > 0, `dif_anio'/r(sum)*100, 0)
 	format estimacion* gasto* %20.0fc
 
 	* Reemplazar tasaEfectiva con la media artimética desde el año `desde' *

@@ -20,6 +20,23 @@ Formato de cada entrada:
 
 Trabajo en `master` sin versión asignada.
 
+### Correcciones
+
+- **La ecuación del sitio cierra con el balance presupuestario, no con el
+  devengado.** `GASTOS[40]` (el total de la fórmula INGRESOS − GASTOS =
+  endeudamiento del hero) sumaba los seis totales de gasto DEVENGADO
+  (26.985 % PIB con los defaults del PPEF 2027), así que el resultado
+  (−3.76) no coincidía con el balance presupuestario del CGPE 2027 (−3.4,
+  `rfspBalance`). La SHCP llega al gasto neto PAGADO restando el
+  diferimiento de pagos (LIF divCIEP 8; ILIF 2027: 121,400 mdp ≈ 0.32 %
+  PIB) — exactamente lo que FiscalGap 5.9b ya hacía en su tabla, pero el
+  sitio no. Fix: `FiscalGap.ado` §5.6 registra `escalar pctpib difpagosPIB`
+  (diferimiento de `anio` / PIB, 0 si la LIF no lo trae) y `output.do` lo
+  resta en `GASTOS[40]` → 26.665 % PIB, balance −3.44 ≈ −3.4. Se publica
+  además la clave `DIFPAGOS: [x]` en `output.txt` (el parser de
+  `checkStataStatus.php`/`cargaDefault.php` es genérico; el sitio no la
+  consume todavía). Los 40 renglones editables de GASTOS no cambian.
+
 ## [v8.3.1] — 2026-09-14
 
 **Un asset publicado que nadie pedía: la máquina virgen no reconstruía el
