@@ -41,6 +41,15 @@ Trabajo en `master` sin versión asignada.
   global `anioenigh` (2024) y no el local del año pedido. Corrida completa
   verificada: TE 2000–2027 y PC 2013–2027 sin errores; construyó
   `master/perfiles2017/2019/2021/2023/2025.dta` (no existían).
+  `Graphs_TE.do` exporta ahora a `users/$id/graphs/TE_*.png` (como
+  `Graphs_PC.do`), ya no a `$export`; etiquetas anuales en el eje x.
+  `SIM.do` §4.6/§5.1 corre ambos do-files en la corrida completa (+~2 h
+  por `Graphs_PC.do`).
+- **`publicar-vps.sh` Fase 1b (nueva):** copia las 10 gráficas del sitio
+  (`TE_*.png`, `GastoPC_*.png`) de `users/ricardo/graphs/` al docroot local
+  ANTES del rsync de la Fase 2 — misma fuente local de verdad que el default
+  de la Fase 3b-ter. Si una falta en `users/ricardo/graphs/` conserva la del
+  sitio con aviso; si no existe en ninguno, aborta (el index la enlaza).
 - **Sitio (rsync, fuera de git):** `images/TE_*.png` regeneradas
   (2000–2027; las anteriores eran de mayo 2025) y `images/GastoPC_*.png`
   nuevas (6), enlazadas con lightbox desde el encabezado "Per cápita" de

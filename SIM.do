@@ -273,7 +273,7 @@ if "`cambioiva'" == "1" {
 }
 
 * Evolución de las tasas efectivas */
-*do "`c(sysdir_site)'/01_modulos/visualizations/Graphs_TE.do"
+do "`c(sysdir_site)'/01_modulos/visualizations/Graphs_TE.do"
 
 ** 4.7 Tasas Efectivas */
 noisily TasasEfectivas, anio(`=anioPE') enigh
@@ -334,7 +334,7 @@ escalar pctpib gasmadres   =   0.009   		// Apoyo a madres trabajadoras
 escalar pctpib gascuidados =   0.047   		// Gasto en cuidados
 
 * Evolución de los gastos per cápita */
-*do "`c(sysdir_site)'/01_modulos/visualizations/Graphs_PC.do"	// <-- MUY tardado. MUY pesado.
+do "`c(sysdir_site)'/01_modulos/visualizations/Graphs_PC.do"	// <-- MUY tardado. MUY pesado.
 
 ** 5.2 Gasto per cápita **
 noisily GastoPC educacion salud pensiones energia resto transferencias, aniope(`=anioPE') aniovp(`=aniovp')

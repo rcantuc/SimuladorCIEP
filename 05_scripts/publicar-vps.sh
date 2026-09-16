@@ -382,6 +382,53 @@ fi
 PREVIOUS_SIM="${PREVIOUS_DEPLOYMENT#v}"
 
 # =============================================================================
+# FASE 1b — Gráficas históricas del sitio desde users/ricardo/graphs/
+# =============================================================================
+# index.php e index-en.php enlazan (lightbox) images/TE_*.png desde los
+# encabezados "Tasas Efectivas" e images/GastoPC_*.png desde los encabezados
+# "Per cápita" de las 6 tablas de gasto. Las produce la corrida completa de
+# SIM.do (01_modulos/visualizations/Graphs_TE.do y Graphs_PC.do) en
+# users/ricardo/graphs/ — la MISMA fuente local de verdad que el default de la
+# Fase 3b-ter. Esta fase las copia al docroot local ANTES del rsync de la
+# Fase 2, para que el sitio no dependa de un cp a mano (las TE_* del sitio
+# eran de mayo 2025 hasta v8.3.2). Regla: si la gráfica existe en
+# users/ricardo/graphs/ manda ella; si no existe ahí pero sí en el sitio, se
+# conserva la del sitio con aviso; si no existe en ninguno, el enlace del
+# index quedaría roto → aborta.
+SITE_GRAPHS=(
+    TE_Trabajo.png
+    TE_Capital.png
+    TE_Consumo.png
+    TE_Organismos.png
+    GastoPC_Educacion.png
+    GastoPC_Salud.png
+    GastoPC_Pensiones.png
+    GastoPC_Energia.png
+    GastoPC_Otros.png
+    GastoPC_Transferencias.png
+)
+LOCAL_GRAPHS_DIR="$LOCAL_REPO_ROOT/users/ricardo/graphs"
+log_info "Fase 1b: gráficas del sitio (${#SITE_GRAPHS[@]}) ← $LOCAL_GRAPHS_DIR/"
+_g_copiadas=0
+_g_conservadas=0
+for _g in "${SITE_GRAPHS[@]}"; do
+    if [[ -f "$LOCAL_GRAPHS_DIR/$_g" ]]; then
+        if [[ $DRY_RUN -eq 0 ]]; then
+            cp -p "$LOCAL_GRAPHS_DIR/$_g" "$LOCAL_SITE_ROOT/images/$_g" \
+                || die "Fase 1b: no pude copiar $_g a $LOCAL_SITE_ROOT/images/."
+        fi
+        _g_copiadas=$((_g_copiadas + 1))
+    elif [[ -f "$LOCAL_SITE_ROOT/images/$_g" ]]; then
+        log_warn "Fase 1b: $_g no está en users/ricardo/graphs/ — se conserva la del sitio ($(date -r "$LOCAL_SITE_ROOT/images/$_g" +%Y-%m-%d)). Para regenerarla: Graphs_TE.do / Graphs_PC.do activos en SIM.do."
+        _g_conservadas=$((_g_conservadas + 1))
+    else
+        die "Fase 1b: $_g no existe ni en users/ricardo/graphs/ ni en $LOCAL_SITE_ROOT/images/ —
+        index.php la enlaza y quedaría rota. Corre SIM.do con Graphs_TE.do y Graphs_PC.do activos."
+    fi
+done
+log_ok "Fase 1b: $_g_copiadas copiada(s) desde users/ricardo/graphs/, $_g_conservadas conservada(s) del sitio$( [[ $DRY_RUN -eq 1 ]] && echo ' (simulado)' )."
+
+# =============================================================================
 # FASE 2 — Rsync del sitio PHP
 # =============================================================================
 log_info "Fase 2: rsync del sitio PHP → $VPS_HTML_ROOT/$VPS_HTML_VERSION/"

@@ -54,7 +54,7 @@ twoway (connected IngLab anio) ///
 	(connected IngCapPub anio), ///
 	title("{bf:Recaudación por tipo de recurso}") ///
 	xtitle("") ytitle("Tasa efectiva (%)") ///
-	xlabel(`anioini'(2)`=anioPE') ///
+	xlabel(`anioini'(1)`=anioPE') ///
 	yscale(range(0)) ///
 	legend(label(1 "Impuestos al trabajo") ///
 	label(2 "Impuestos al capital") ///
@@ -63,9 +63,7 @@ twoway (connected IngLab anio) ///
 	caption("{bf:Fuente}: Elaborado por el CIEP con información de la SHCP `=anioPE' e INEGI, BIE.") ///
 	name(TE, replace)
 
-if "$export" != "" {
-	graph export "$export/TE.png", replace
-}
+graph export "`c(sysdir_site)'/users/$id/graphs/TE.png", replace
 
 
 * Calcular estadísticos para ISR asalariados
@@ -79,7 +77,7 @@ twoway (connected ISRAS anio) ///
 	(connected CUOTAS anio), ///
 	title("{bf:Impuestos al trabajo}") ///
 	xtitle("") ytitle("Tasa efectiva (%)") ///
-	xlabel(`anioini'(2)`=anioPE') ///
+	xlabel(`anioini'(1)`=anioPE') ///
 	yscale(range(0)) ///
 	legend(label(1 "ISR asalariados") ///
 	label(2 "ISR personas f{c i'}sicas") ///
@@ -92,9 +90,7 @@ twoway (connected ISRAS anio) ///
 	caption("{bf:Fuente}: Elaborado por el CIEP con información de la SHCP `=anioPE' e INEGI, BIE.") ///
 	name(TE_Trabajo, replace)
 
-if "$export" != "" {
-	graph export "$export/TE_Trabajo.png", replace
-}
+graph export "`c(sysdir_site)'/users/$id/graphs/TE_Trabajo.png", replace
 
 
 * Calcular estadísticos para ISR personas morales
@@ -107,7 +103,7 @@ twoway (connected ISRPM anio) ///
 	(connected OTROSK anio), ///
 	title("{bf:Impuestos al capital}") ///
 	xtitle("") ytitle("Tasa efectiva (%)") ///
-	xlabel(`anioini'(2)`=anioPE') ///
+	xlabel(`anioini'(1)`=anioPE') ///
 	yscale(range(0)) ///
 	legend(label(1 "ISR personas morales") ///
 	label(2 "Otros ingresos") rows(1)) ///
@@ -119,9 +115,7 @@ twoway (connected ISRPM anio) ///
 	caption("{bf:Fuente}: Elaborado por el CIEP con información de la SHCP `=anioPE' e INEGI, BIE.") ///
 	name(TE_Capital, replace)
 
-if "$export" != "" {
-	graph export "$export/TE_Capital.png", replace
-}
+graph export "`c(sysdir_site)'/users/$id/graphs/TE_Capital.png", replace
 
 
 * Gráfica: Tasas efectivas por impuestos al consumo
@@ -132,7 +126,7 @@ twoway (connected IVA anio) ///
 	(connected IMPORT anio), ///
 	title("{bf:Impuestos al consumo}") ///
 	xtitle("") ytitle("Tasa efectiva (%)") ///
-	xlabel(`anioini'(2)`=anioPE') ///
+	xlabel(`anioini'(1)`=anioPE') ///
 	yscale(range(0)) ///
 	legend(label(1 "IVA") ///
 	label(2 "ISAN") ///
@@ -142,9 +136,7 @@ twoway (connected IVA anio) ///
 	caption("{bf:Fuente}: Elaborado por el CIEP con información de la SHCP `=anioPE' e INEGI, BIE.") ///
 	name(TE_Consumo, replace)
 
-if "$export" != "" {
-	graph export "$export/TE_Consumo.png", replace
-}	
+graph export "`c(sysdir_site)'/users/$id/graphs/TE_Consumo.png", replace
 
 
 * Gráfica: Tasas efectivas de organismos y empresas públicas
@@ -161,7 +153,7 @@ twoway (connected FMP anio) ///
 	(connected ISSSTE anio), ///
 	title("{bf:Participación de organismos y empresas}") ///
 	xtitle("") ytitle("Tasa efectiva (%)") ///
-	xlabel(`anioini'(2)`=anioPE') ///
+	xlabel(`anioini'(1)`=anioPE') ///
 	yscale(range(0)) ///
 	legend(label(1 "Derechos petroleros") ///
 	label(2 "Pemex") ///
@@ -176,6 +168,4 @@ twoway (connected FMP anio) ///
 	caption("{bf:Fuente}: Elaborado por el CIEP con información de la SHCP `=anioPE' e INEGI, BIE.") ///
 	name(TE_Organismos, replace)
 
-if "$export" != "" {
-	graph export "$export/TE_Organismos.png", replace
-}
+graph export "`c(sysdir_site)'/users/$id/graphs/TE_Organismos.png", replace
