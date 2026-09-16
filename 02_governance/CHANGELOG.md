@@ -20,6 +20,15 @@ Formato de cada entrada:
 
 Trabajo en `master` sin versión asignada.
 
+## [v8.3.2] — 2026-09-15
+
+**El hero restaba el gasto devengado; la SHCP resta el pagado.** Patch
+sobre v8.3.1: cambia un resultado visible del sitio (el endeudamiento de la
+ecuación principal pasa de 3.8 a 3.4 % PIB con los defaults del PPEF 2027),
+sin datos nuevos. El VPS recibe este árbol en el deploy `v8.3` que quedó
+pendiente desde v8.3.1 (producción seguía en el commit `08149e6`, con
+`Version: v8.3.0` en `DEPLOYED_COMMIT`).
+
 ### Correcciones
 
 - **La ecuación del sitio cierra con el balance presupuestario, no con el
@@ -36,6 +45,12 @@ Trabajo en `master` sin versión asignada.
   además la clave `DIFPAGOS: [x]` en `output.txt` (el parser de
   `checkStataStatus.php`/`cargaDefault.php` es genérico; el sitio no la
   consume todavía). Los 40 renglones editables de GASTOS no cambian.
+
+### Institucional
+
+- `manifest.json`: `version`/`release_tag`/`release_url_prefix` → v8.3.2.
+  `data_updated` (2026-09-12) y los 25 SHAs intactos: mismos datos que
+  v8.3.0/v8.3.1; la Release re-sube los mismos assets.
 
 ## [v8.3.1] — 2026-09-14
 
