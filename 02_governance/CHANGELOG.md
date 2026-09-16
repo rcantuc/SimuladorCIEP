@@ -20,6 +20,8 @@ Formato de cada entrada:
 
 Trabajo en `master` sin versión asignada.
 
+## [v8.3.3] — 2026-09-16
+
 ### Correcciones
 
 - **`Graphs_TE.do` y `Graphs_PC.do` corren autocontenidos y con lo
@@ -56,6 +58,13 @@ Trabajo en `master` sin versión asignada.
   cada tabla de gasto en `index.php` e `index-en.php`. Liga del BIE:
   `inegi.org.mx/sistemas/bie/` → `inegi.org.mx/app/indicadores/?tm=3`
   (4 encabezados "Cuenta Nacional" por idioma).
+- **Sitio (rsync, fuera de git): banner del libro CIEP.** La sección
+  `#libro-simulador` (texto plano "EL libro del Simulador Fiscal CIEP")
+  se sustituye en `index.php` e `index-en.php` por el banner promocional de
+  *Finanzas Públicas Antropocéntricas* — mismo patrón que el banner de
+  paqueteeconomico.ciep.mx (hero amarillo + portada + CTA a libro.ciep.mx),
+  adaptado a la identidad del sitio (Roboto Mono, tarjeta redondeada).
+  Assets en `images/libro-promo/`; el ancla del menú se conserva.
 
 ## [v8.3.2] — 2026-09-15
 
