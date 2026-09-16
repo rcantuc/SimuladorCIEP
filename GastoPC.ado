@@ -70,7 +70,7 @@ quietly {
 	capture use "`c(sysdir_site)'/master/perfiles`aniope'.dta", clear	
 	if _rc != 0 {
 		noisily di _newline in g "Creando base: " in y "/master/perfiles`aniope'.dta" ///
-			in g " con " in y "ENIGH " `=anioenigh'
+			in g " con " in y "ENIGH " `anioenigh'
 		noisily run `"`c(sysdir_site)'/01_modulos/PerfilesSim.do"' `aniope'
 	}
 	merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/master/`anioenigh'/households.dta", ///

@@ -1,6 +1,21 @@
 ****
 **** Gráfica histórica de las tasas efectivas
 ****
+* Horizonte: `anioini'-anioPE (2000-2027). Todas las etiquetas, textos y
+* estadisticos de la grafica cuelgan de `anioini' — antes era anioPE-25 y el
+* loop arrancaba en 2001, dos fuentes para el mismo hecho. *
+local anioini = 2000
+
+* TasasEfectivas usa los parametros de ESCENARIO (ISRASPIB, IVAPIB, ...) si
+* existen en memoria — SIM.do 4.1 los define justo antes de este do-file — y
+* entonces los 28 anios saldrian con la recaudacion de anioPE. Aqui se quiere
+* lo OBSERVADO de cada LIF: se apartan, se borran antes de cada anio (Tasas-
+* Efectivas los vuelve a declarar desde r() de LIF) y se restauran al final. *
+local escenario ISRAS ISRPF CUOTAS ISRPM OTROSK FMP PEMEX CFE IMSS ISSSTE IVA ISAN IEPSNP IEPSP IMPORT
+foreach k of local escenario {
+	capture local `k'_esc = scalar(`k'PIB)
+}
+
 postfile TE double(anio ISRAS ISRPF CUOTAS IngLab 				/// Impuestos al trabajo
 	ISRPM OTROSK IngCap 							/// Impuestos al capital
 	IVA ISAN IEPSNP IEPSP IMPORT Consumo 					/// Impuestos al consumo
@@ -9,7 +24,10 @@ postfile TE double(anio ISRAS ISRPF CUOTAS IngLab 				/// Impuestos al trabajo
 
 capture scalar drop ISRASTE ISRPFTE CUOTASTE ISRPMTE OTROSKTE FMPTE ///
 	PEMEXTE CFETE IMSSTE ISSSTETE IVATE ISANTE IEPSNPTE IEPSPTE IMPORTTE
-forvalues anio = 2001(1)`=anioPE' {
+forvalues anio = `anioini'(1)`=anioPE' {
+	foreach k of local escenario {
+		capture scalar drop `k'PIB
+	}
 	noisily TasasEfectivas, anio(`anio')
 	post TE (`anio') (`=scalar(ISRASTE)') (`=scalar(ISRPFTE)') (`=scalar(CUOTASTE)') (`=scalar(YlImpTE)') ///
 		(`=scalar(ISRPMTE)') (`=scalar(OTROSKTE)') (`=scalar(IngKPrivadoTotTE)') ///
@@ -17,6 +35,14 @@ forvalues anio = 2001(1)`=anioPE' {
 		(`=scalar(FMPTE)') (`=scalar(PEMEXTE)') (`=scalar(CFETE)') (`=scalar(IMSSTE)') (`=scalar(ISSSTETE)') (`=scalar(IngKPublicosTotTE)')
 }
 postclose TE
+
+* Restaurar el escenario del usuario (si lo habia) *
+foreach k of local escenario {
+	capture scalar drop `k'PIB
+	if "``k'_esc'" != "" {
+		escalar pctpib `k'PIB = ``k'_esc'
+	}
+}
 
 * Abrir el archivo temporal con tasas efectivas
 use "`c(sysdir_site)'/raw/temp/TE.dta", clear
@@ -28,7 +54,7 @@ twoway (connected IngLab anio) ///
 	(connected IngCapPub anio), ///
 	title("{bf:Recaudación por tipo de recurso}") ///
 	xtitle("") ytitle("Tasa efectiva (%)") ///
-	xlabel(`=anioPE-25'(2)`=anioPE') ///
+	xlabel(`anioini'(2)`=anioPE') ///
 	yscale(range(0)) ///
 	legend(label(1 "Impuestos al trabajo") ///
 	label(2 "Impuestos al capital") ///
@@ -43,7 +69,7 @@ if "$export" != "" {
 
 
 * Calcular estadísticos para ISR asalariados
-tabstat ISRAS if anio == `=anioPE' | anio == `=anioPE-25', by(anio) save
+tabstat ISRAS if anio == `=anioPE' | anio == `anioini', by(anio) save
 tempname ISRAS
 matrix `ISRAS' = r(Stat1) \ r(Stat2)
 
@@ -53,13 +79,13 @@ twoway (connected ISRAS anio) ///
 	(connected CUOTAS anio), ///
 	title("{bf:Impuestos al trabajo}") ///
 	xtitle("") ytitle("Tasa efectiva (%)") ///
-	xlabel(`=anioPE-25'(2)`=anioPE') ///
+	xlabel(`anioini'(2)`=anioPE') ///
 	yscale(range(0)) ///
 	legend(label(1 "ISR asalariados") ///
 	label(2 "ISR personas f{c i'}sicas") ///
 	label(3 "Cuotas IMSS") rows(1)) ///
-	text(10 `=anioPE-25' ///
-	"De `=anioPE-25' a `=anioPE', la tasa efectiva" ///
+	text(10 `anioini' ///
+	"De `anioini' a `=anioPE', la tasa efectiva" ///
 	"del {bf:ISR a asalariados}" ///
 	"creció {bf:`=string(`ISRAS'[2,1]-`ISRAS'[1,1],"%5.1fc")' puntos} porcentuales.", ///
 	place(3) justification(left)) ///
@@ -72,7 +98,7 @@ if "$export" != "" {
 
 
 * Calcular estadísticos para ISR personas morales
-tabstat ISRPM if anio == `=anioPE' | anio == `=anioPE-25', by(anio) save
+tabstat ISRPM if anio == `=anioPE' | anio == `anioini', by(anio) save
 tempname ISRPM
 matrix `ISRPM' = r(Stat1) \ r(Stat2)
 
@@ -81,12 +107,12 @@ twoway (connected ISRPM anio) ///
 	(connected OTROSK anio), ///
 	title("{bf:Impuestos al capital}") ///
 	xtitle("") ytitle("Tasa efectiva (%)") ///
-	xlabel(`=anioPE-25'(2)`=anioPE') ///
+	xlabel(`anioini'(2)`=anioPE') ///
 	yscale(range(0)) ///
 	legend(label(1 "ISR personas morales") ///
 	label(2 "Otros ingresos") rows(1)) ///
-	text(7 `=anioPE-25' ///
-	"De `=anioPE-25' a `=anioPE', la tasa efectiva" ///
+	text(12 `anioini' ///
+	"De `anioini' a `=anioPE', la tasa efectiva" ///
 	"del {bf:ISR a personas morales}" ///
 	"creció {bf:`=string(`ISRPM'[2,1]-`ISRPM'[1,1],"%5.1fc")' puntos} porcentuales.", ///
 	place(3) justification(left)) ///
@@ -106,7 +132,7 @@ twoway (connected IVA anio) ///
 	(connected IMPORT anio), ///
 	title("{bf:Impuestos al consumo}") ///
 	xtitle("") ytitle("Tasa efectiva (%)") ///
-	xlabel(`=anioPE-25'(2)`=anioPE') ///
+	xlabel(`anioini'(2)`=anioPE') ///
 	yscale(range(0)) ///
 	legend(label(1 "IVA") ///
 	label(2 "ISAN") ///
@@ -122,9 +148,12 @@ if "$export" != "" {
 
 
 * Gráfica: Tasas efectivas de organismos y empresas públicas
-tabstat FMP, stat(min max) save
+* Mismo estadistico que las otras dos: `anioini' vs anioPE. Antes era
+* max-min de toda la serie (15.2 pp: pico 2008 vs 2027) con un texto que
+* decia "De `anioini' a anioPE" — cifra y enunciado no correspondian. *
+tabstat FMP if anio == `=anioPE' | anio == `anioini', by(anio) save
 tempname FMP
-matrix `FMP' = r(StatTotal)
+matrix `FMP' = r(Stat1) \ r(Stat2)
 twoway (connected FMP anio) ///
 	(connected PEMEX anio) ///
 	(connected CFE anio) ///
@@ -132,18 +161,18 @@ twoway (connected FMP anio) ///
 	(connected ISSSTE anio), ///
 	title("{bf:Participación de organismos y empresas}") ///
 	xtitle("") ytitle("Tasa efectiva (%)") ///
-	xlabel(`=anioPE-25'(2)`=anioPE') ///
+	xlabel(`anioini'(2)`=anioPE') ///
 	yscale(range(0)) ///
 	legend(label(1 "Derechos petroleros") ///
 	label(2 "Pemex") ///
 	label(3 "CFE") ///
 	label(4 "IMSS") ///
 	label(5 "ISSSTE") rows(1)) ///
-	text(3 `=anioPE-10' ///
-	"De `=anioPE-25' a `=anioPE', la tasa efectiva" ///
+	text(17 `=anioPE-12' ///
+	"De `anioini' a `=anioPE', la tasa efectiva" ///
 	"de los {bf:derechos petroleros}" ///
-	"perdió {bf:`=string(`FMP'[2,1]-`FMP'[1,1],"%5.1fc")' puntos} porcentuales.", ///
-	place(5) justification(left)) ///
+	"perdió {bf:`=string(`FMP'[1,1]-`FMP'[2,1],"%5.1fc")' puntos} porcentuales.", ///
+	place(3) justification(left)) ///
 	caption("{bf:Fuente}: Elaborado por el CIEP con información de la SHCP `=anioPE' e INEGI, BIE.") ///
 	name(TE_Organismos, replace)
 

@@ -20,6 +20,34 @@ Formato de cada entrada:
 
 Trabajo en `master` sin versión asignada.
 
+### Correcciones
+
+- **`Graphs_TE.do` y `Graphs_PC.do` corren autocontenidos y con lo
+  observado de cada año.** `TasasEfectivas` y `GastoPC` toman los parámetros
+  de escenario (`ISRASPIB`…, `basica`…) si existen en memoria, y ambos
+  do-files están llamados en `SIM.do` justo después de §4.1/§5.1: los 28 y
+  15 años habrían salido con los valores de anioPE. Ahora apartan los
+  parámetros, los borran antes de cada año (los módulos los vuelven a
+  declarar desde LIF/PEF) y los restauran al final — verificado con
+  parámetros ficticios (99.9/88.8) que no tocaron las series y volvieron
+  intactos. `Graphs_TE.do`: horizonte 2000–anioPE (antes 2001) colgado de
+  un solo `anioini` (antes `anioPE-25` en 13 sitios); el texto de derechos
+  petroleros decía "De 2000 a 2027 … perdió 15.2 pp" pero calculaba
+  max−min de toda la serie (pico 2008) — ahora compara `anioini` vs anioPE
+  como las otras dos (5.0 pp) y ya no se encima con las líneas.
+  `Graphs_PC.do`: la serie Ciencia y tecnología (`invest`) tenía leyenda
+  pero no se graficaba; leyendas en 1–3 filas (antes se encimaban).
+  `GastoPC.ado`: el aviso "Creando base … con ENIGH" imprimía el escalar
+  global `anioenigh` (2024) y no el local del año pedido. Corrida completa
+  verificada: TE 2000–2027 y PC 2013–2027 sin errores; construyó
+  `master/perfiles2017/2019/2021/2023/2025.dta` (no existían).
+- **Sitio (rsync, fuera de git):** `images/TE_*.png` regeneradas
+  (2000–2027; las anteriores eran de mayo 2025) y `images/GastoPC_*.png`
+  nuevas (6), enlazadas con lightbox desde el encabezado "Per cápita" de
+  cada tabla de gasto en `index.php` e `index-en.php`. Liga del BIE:
+  `inegi.org.mx/sistemas/bie/` → `inegi.org.mx/app/indicadores/?tm=3`
+  (4 encabezados "Cuenta Nacional" por idioma).
+
 ## [v8.3.2] — 2026-09-15
 
 **El hero restaba el gasto devengado; la SHCP resta el pagado.** Patch

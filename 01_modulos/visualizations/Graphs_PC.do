@@ -1,6 +1,21 @@
 **** 
 **** Generación histórica del gasto per cápita
 ****
+* GastoPC usa los parametros de ESCENARIO (iniciaA, basica, ..., gascuidados:
+* % del PIB) si existen en memoria — SIM.do 5.1 los define justo antes de este
+* do-file — y entonces los 15 anios saldrian con el gasto de anioPE. Aqui se
+* quiere lo OBSERVADO de cada PEF: se apartan, se borran antes de cada anio y
+* se restauran al final (mismo patron que Graphs_TE.do). *
+local escenario iniciaA basica medsup superi posgra eduadu otrose invere cultur invest ///
+	ssa imssbien imss issste pemex issfam invers ///
+	pam penimss penisss penpeme penotro ///
+	gascfe gaspemex gassener gasinverf gascosdeue ///
+	gasinfra gasotros gasfeder gascosto ///
+	IngBas gasmadres gascuidados
+foreach k of local escenario {
+	capture local `k'_esc = scalar(`k')
+}
+
 postfile GastoPC double(anio iniciaA basica medsup superi posgra eduadu otrose invere cultur invest ///
 	ssa imssbien imss issste pemex issfam invers ///
 	pam penimss penisss penpeme penotro ///
@@ -17,6 +32,9 @@ capture scalar drop iniciaAPC basicaPC medsupPC superiPC posgraPC eduaduPC otros
 	IngBasPC gasmadresPC gascuidadosPC
 
 forvalues anio = 2013(1)`=anioPE' {
+	foreach k of local escenario {
+		capture scalar drop `k'
+	}
 	noisily GastoPC, aniope(`anio') aniovp(`=aniovp')
 	post GastoPC (`anio') (`=iniciaAPC') (`=basicaPC') (`=medsupPC') (`=superiPC') ///
 		(`=posgraPC') (`=eduaduPC') (`=otrosePC') (`=inverePC') (`=culturPC') (`=investPC') ///
@@ -28,12 +46,20 @@ forvalues anio = 2013(1)`=anioPE' {
 }
 postclose GastoPC
 
+* Restaurar el escenario del usuario (si lo habia) *
+foreach k of local escenario {
+	capture scalar drop `k'
+	if "``k'_esc'" != "" {
+		escalar pctpib `k' = ``k'_esc'
+	}
+}
+
 
 * Abrir el archivo temporal con gasto per cápita
 use "`c(sysdir_site)'/raw/temp/GastoPC.dta", clear
 		
 * Gráfica: Gasto per cápita en educación
-twoway connected iniciaA basica medsup superi posgra eduadu otrose invere cultur anio, ///
+twoway connected iniciaA basica medsup superi posgra eduadu otrose invere cultur invest anio, ///
 	title("{bf:Gasto per cápita en educación}") ///
 	xtitle("") ytitle("MXN `=aniovp'") ///
 	xlabel(2013(2)`=anioPE') ///
@@ -49,7 +75,7 @@ twoway connected iniciaA basica medsup superi posgra eduadu otrose invere cultur
 	label(8 "Inversión") ///
 	label(9 "Cultura, deportes y recreación") ///
 	label(10 "Ciencia y tecnología") ///
-	rows(2)) ///
+	rows(3)) ///
 	name(GastoPC_Educacion, replace)
 
 graph export "`c(sysdir_site)'/users/$id/graphs/GastoPC_Educacion.png", replace
@@ -68,7 +94,7 @@ twoway connected ssa imssbien imss issste pemex issfam invers anio, ///
 	label(4 "ISSSTE (salud)") ///
 	label(5 "Pemex (salud)") ///
 	label(6 "ISSFAM (salud)") ///
-	label(7 "Inversión en salud")) ///
+	label(7 "Inversión en salud") rows(2)) ///
 	name(GastoPC_Salud, replace)
 	
 graph export "`c(sysdir_site)'/users/$id/graphs/GastoPC_Salud.png", replace
@@ -85,7 +111,7 @@ twoway connected pam penimss penisss penpeme penotro anio, ///
 	label(2 "IMSS") ///
 	label(3 "ISSSTE") ///
 	label(4 "Pemex") ///
-	label(5 "CFE, LFC, ISSFAM, Ferronales")) ///
+	label(5 "CFE, LFC, ISSFAM, Ferronales") rows(1)) ///
 	name(GastoPC_Pensiones, replace)
 
 graph export "`c(sysdir_site)'/users/$id/graphs/GastoPC_Pensiones.png", replace
@@ -101,7 +127,7 @@ twoway connected gascfe gaspemex gassener gasinverf gascosdeue anio, ///
 	label(2 "Pemex") ///
 	label(3 "SENER") ///
 	label(4 "Inversión (energía)") ///
-	label(5 "Costo de la deuda (energía)")) ///
+	label(5 "Costo de la deuda (energía)") rows(2)) ///
 	name(GastoPC_Energia, replace)
 
 graph export "`c(sysdir_site)'/users/$id/graphs/GastoPC_Energia.png", replace
@@ -116,7 +142,7 @@ twoway connected gasinfra gasotros gasfeder gascosto anio, ///
 	legend(label(1 "Otras inversiones") ///
 	label(2 "Otros gastos") ///
 	label(3 "Participaciones y Otras Aportaciones") ///
-	label(4 "Costo de la deuda")) ///
+	label(4 "Costo de la deuda") rows(2)) ///
 	name(GastoPC_Otros, replace)
 
 graph export "`c(sysdir_site)'/users/$id/graphs/GastoPC_Otros.png", replace
@@ -130,7 +156,7 @@ twoway connected IngBas gasmadres gascuidados anio, ///
 	ylabel(, format(%9.0fc)) ///
 	legend(label(1 "Ingreso básico") ///
 	label(2 "Apoyo a madres trabajadoras") ///
-	label(3 "Gasto en cuidados")) ///
+	label(3 "Gasto en cuidados") rows(1)) ///
 	name(GastoPC_Transferencias, replace)
 
 graph export "`c(sysdir_site)'/users/$id/graphs/GastoPC_Transferencias.png", replace
