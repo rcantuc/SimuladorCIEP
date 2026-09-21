@@ -20,6 +20,26 @@ Formato de cada entrada:
 
 Trabajo en `master` sin versión asignada.
 
+### Institucional
+
+- **Sitio (rsync, fuera de git; deploy 2026-09-21 sobre v8.3 sin bump de
+  versión):** referencias bibliográficas a los micrositios del CIEP al pie
+  de cada tabla de `index.php` e `index-en.php`, en una segunda línea
+  `<p class="notas">` junto a la nota de "títulos amarillos". Mapa:
+  Ingresos 1–4 → `ingresosenmexico.ciep.mx` (Consumo suma
+  `iepsaltabaco.ciep.mx`; Organismos suma `energiaenmexico.ciep.mx`);
+  Educación → `gastoeducativo.ciep.mx`; Salud → `salud.ciep.mx`;
+  Pensiones → `pensionesenmexico.ciep.mx`; Energía →
+  `energiaenmexico.ciep.mx`; Otros gastos → `subnacional.ciep.mx` +
+  `inversion.ciep.mx`; Transferencias → `cuidados.ciep.mx` +
+  `desarrollosostenible.ciep.mx`; tarjeta Marco Macroeconómico →
+  `paqueteeconomico.ciep.mx`. Dominios tomados de `ciep.mx/micrositios`
+  (antes `/historias`, renombrada el 2026-09-20 con 301). El clon local
+  `04_1_simuladorfiscal.ciep.mx/` se encontró sin `index.php` ni assets
+  (solo `health.php`, `plugins/`, `ssl/`, `logs/`) y se restauró desde
+  `/var/www/html/v8.3` del VPS antes de editar; con el árbol incompleto,
+  `rsync --delete` de la Fase 2 habría borrado el sitio.
+
 ## [v8.3.3] — 2026-09-16
 
 ### Correcciones
