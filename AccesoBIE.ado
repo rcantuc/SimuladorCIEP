@@ -103,7 +103,7 @@ program define AccesoBIE
 			capture replace periodo = subinstr(periodo, "r1", "", .)
 			*capture replace periodo = subinstr(periodo, "/p", "", .)
 			*capture replace periodo = subinstr(periodo, "/r", "", .)
-			replace periodo = substr(periodo,1,7)
+			capture replace periodo = substr(periodo,1,7)
 			
 			// Eliminar columna extra si existe
 			capture drop extra
