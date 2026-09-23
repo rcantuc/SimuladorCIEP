@@ -11,7 +11,7 @@
 ### 1.1 Contexto de versionado
 
 - La raíz de la carpeta **es** el repositorio git (`origin = github.com/rcantuc/SimuladorCIEP.git`, rama `master`, último commit `dc12cee` 2026-07-19, último tag `v8.2.0`).
-- El `.gitignore` excluye deliberadamente las carpetas de operación (`raw/`, `master/`, `users/`, `06_libro/`, `04_simuladorfiscal.ciep.mx/` salvo `health.php`): viven en Dropbox, fuera de git.
+- El `.gitignore` excluye deliberadamente las carpetas de operación (`raw/`, `master/`, `users/`, `06_libro/`, `04_1_simuladorfiscal.ciep.mx/` salvo `health.php`): viven en Dropbox, fuera de git.
 - **Hallazgo importante:** `04_1_paqueteeconomico.ciep.mx/` y `04_2_documentos_latex/` están **sin trackear y sin ignorar** (aparecen como `??` en `git status`). Un `git add .` accidental metería ~9 GB al repo, **incluyendo dos `wp-config.php` con credenciales reales** (ver §4 y §5). También hay 4 documentos nuevos de governance sin commitear.
 
 ### 1.2 Primer nivel
@@ -24,7 +24,7 @@
 | `03_help/` | 23 | 17 MB | sthlp (11), md (6), png | ✅ trackeado | 2026-07-18 | `gobernanza` |
 | `04_1_paqueteeconomico.ciep.mx/` | 11,125 | 443 MB | php (4,183), js, css, png | ⚠️ **untracked, no ignorado** | 2026-08-01 | `web` |
 | `04_2_documentos_latex/` | 7,078 | 8.5 GB | png (2,238), pdf (1,096), xlsx (457), tex (322) | ⚠️ **untracked, no ignorado** | 2026-07-29 | `paquete-tex` |
-| `04_simuladorfiscal.ciep.mx/` | 2,110 | 43 MB | svg (1,436), html, js | 🚫 ignorado (salvo `health.php`) | 2026-07-21 | `web` |
+| `04_1_simuladorfiscal.ciep.mx/` (entonces `04_simuladorfiscal.ciep.mx/`; renombrada 2026-09-08) | 2,110 | 43 MB | svg (1,436), html, js | 🚫 ignorado (salvo `health.php`) | 2026-07-21 | `web` |
 | `05_scripts/` | 19 | 184 KB | sh (9), pkg (8) | ✅ trackeado (17; credenciales ignoradas) | 2026-07-19 | `otro` — pipeline de publicación/deploy (endpoint Stata, GitHub Releases, VPS) |
 | `06_libro/` | 23,593 | 1.1 GB | php (12,190), js, png, json | 🚫 ignorado | 2026-07-19 | `salidas` + `otro` — ver nota A |
 | `master/` | 88 | 18 GB | dta (70), ster (18) | 🚫 ignorado | 2026-07-18 | `datos` (procesados/canon) |
@@ -174,7 +174,7 @@ Todo número que llega a un documento, gráfica o web sin pasar por `escalar` + 
 | 6 | **Micrositio estático del Paquete** | `04_1_…/6yt5ppa3hb/` ("Paquete Económico 2023") | Series numéricas incrustadas en el HTML/JS (`data-area-charts.js`) sin encabezado, unidad ni descarga — el hallazgo 1.4 de `paquete-economico-nueva-era.md` | **Medio** — es justo lo que el nodo con `statajson_*` sustituye |
 | 7 | **Contenido WordPress de paqueteeconomico.ciep.mx** | `04_1_…/wp-content/` + páginas Elementor (viven en la **BD MySQL, no presente en esta carpeta**) | Cifras en páginas del sitio en producción | **No auditable desde este inventario** (faltante: dump de BD). Esfuerzo estimado **medio** si el rediseño sustituye páginas por nodos |
 | 8 | **App Android** | `04_1_…/app/app-Paquete-Economico-v0.apk` | Números empaquetados en el APK v0 | **Alto/descartable** (artefacto congelado) |
-| 9 | **Textos fijos del Simulador web** | `04_simuladorfiscal.ciep.mx/js/stataCalcula.js` y `stataCalcula-en.js` | Los **datos** llegan del motor vía `Web.Stata.do` (plantillas `{{…}}` — dentro del espíritu del contrato), pero hay literales de presentación tecleados: años base inconsistentes en ejes ("billones MXN de 2021", "de 2024", "de 2026"), umbrales ("2030", "2050") y categorías de años | **Bajo** — parametrizar esas etiquetas desde la salida del motor |
+| 9 | **Textos fijos del Simulador web** | `04_1_simuladorfiscal.ciep.mx/js/stataCalcula.js` y `stataCalcula-en.js` | Los **datos** llegan del motor vía `Web.Stata.do` (plantillas `{{…}}` — dentro del espíritu del contrato), pero hay literales de presentación tecleados: años base inconsistentes en ejes ("billones MXN de 2021", "de 2024", "de 2026"), umbrales ("2030", "2050") y categorías de años | **Bajo** — parametrizar esas etiquetas desde la salida del motor |
 | 10 | **statalatex.tex de 2021** | `04_2_…/2021/03_documento_ciep/statalatex.tex` | Único año conformante; generado por una versión previa del motor, hoy no re-generable tal cual | **Bajo** — es el precedente, no deuda activa |
 
 **Contraejemplo (lo que sí cumple):** `06_libro/` consume exclusivamente `06_libro/images/statalatex_*.tex` (14 archivos) generados por `scalarlatex` con baseline auditado. La cadena Stata→LaTeX **ya existe y opera**; lo que nunca se conectó es el **documento del Paquete** ni la **web** a esa cadena.
@@ -191,7 +191,7 @@ Todo número que llega a un documento, gráfica o web sin pasar por `escalar` + 
 - **Despliegue:** **no hay pipeline en el repo para este sitio.** Los scripts de `05_scripts/` (`publicar.sh`, `publicar-vps.sh`, `publicar-endpoint.sh`) son exclusivos del Simulador. La relación de esta copia con producción (¿backup descargado?, ¿espejo de trabajo?, ¿de qué fecha?) no está documentada en governance — **faltante**.
 - **Riesgos:** contiene `wp-config.php` **con credenciales reales de BD** y la carpeta no está ni trackeada ni ignorada en git; `wp-salt.php` presente. Según `paquete-economico-nueva-era.md`, el sitio en producción además está en `noindex, nofollow`.
 
-### 5.2 `04_simuladorfiscal.ciep.mx/` — el Simulador
+### 5.2 `04_1_simuladorfiscal.ciep.mx/` — el Simulador
 
 - **Tecnología:** PHP plano + jQuery/Highcharts (sin framework). `index.php`/`index-en.php` (~3,900 líneas), `js/stataCalcula.js` (~2,000 líneas). `calculaStata.php` rellena las plantillas `{{…}}` de `01_modulos/Web.Stata.do` y ejecuta Stata por sesión (`users/$id/`); los Sankey se sirven de `jsonSankey*.php` leyendo los JSON generados por el motor.
 - **Despliegue:** sí tiene pipeline institucional — `05_scripts/publicar-vps.sh` a VPS IONOS con backup previo, cutover atómico por symlink, health-check (`health.php`, único archivo trackeado de la carpeta) y rollback documentado en `runbook-deploys-ciep.md`.

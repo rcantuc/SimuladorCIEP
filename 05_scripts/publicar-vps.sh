@@ -62,11 +62,15 @@ LOG_FILE="/tmp/publicar-vps-$(date +%Y%m%d-%H%M%S).log"
 # Whitelist del canon web (decisión 2026-07-09, bitácora v1.27)
 # -----------------------------------------------------------------------------
 # El flujo WEB solo consume el año ENIGH vigente (master/2024/) y el perfil
-# vigente (perfiles2026.dta). Los años previos (2014-2022) y sus perfiles son
+# vigente (perfiles<anioPE>.dta). Los años previos (2014-2022) y sus perfiles son
 # insumos SOLO-LOCALES (trabajo del investigador en su Mac): no viajan al VPS.
 # El VPS solo aloja lo que el web sirve.
 #
-# ACTUALIZAR ESTAS 2 VARIABLES cuando avance el ENIGH vigente (~cada 2 años).
+# ACTUALIZAR ESTAS 2 VARIABLES cuando avance el ENIGH vigente (~cada 2 años)
+# y WEB_PERFIL con CADA Paquete Económico (anioPE de Web.Stata.do): si el
+# perfil del año no viaja, TasasEfectivas §7 no lo encuentra y corre
+# PerfilesSim.do completo EN PRODUCCIÓN en cada sesión (~8 min por
+# simulación; incidente v8.3.0, 2026-09-12).
 # Es intencional que la regla viva explícita aquí, no en symlinks ni en
 # infraestructura: un cambio de vigencia es una decisión editable en el código
 # y auditable en Git. Las leen la Fase 3b (deploy) y el modo
@@ -81,7 +85,7 @@ LOG_FILE="/tmp/publicar-vps-$(date +%Y%m%d-%H%M%S).log"
 # retiró en v8.0.11 por redundante con ESTA garantía — quien modifique la
 # whitelist hereda la responsabilidad de mantenerla.
 WEB_MASTER_YEAR="2024"
-WEB_PERFIL="perfiles2026.dta"
+WEB_PERFIL="perfiles2027.dta"
 
 # Colores solo si stdout es una terminal
 if [[ -t 1 ]]; then
@@ -376,6 +380,53 @@ else
     fi
 fi
 PREVIOUS_SIM="${PREVIOUS_DEPLOYMENT#v}"
+
+# =============================================================================
+# FASE 1b — Gráficas históricas del sitio desde users/ricardo/graphs/
+# =============================================================================
+# index.php e index-en.php enlazan (lightbox) images/TE_*.png desde los
+# encabezados "Tasas Efectivas" e images/GastoPC_*.png desde los encabezados
+# "Per cápita" de las 6 tablas de gasto. Las produce la corrida completa de
+# SIM.do (01_modulos/visualizations/Graphs_TE.do y Graphs_PC.do) en
+# users/ricardo/graphs/ — la MISMA fuente local de verdad que el default de la
+# Fase 3b-ter. Esta fase las copia al docroot local ANTES del rsync de la
+# Fase 2, para que el sitio no dependa de un cp a mano (las TE_* del sitio
+# eran de mayo 2025 hasta v8.3.2). Regla: si la gráfica existe en
+# users/ricardo/graphs/ manda ella; si no existe ahí pero sí en el sitio, se
+# conserva la del sitio con aviso; si no existe en ninguno, el enlace del
+# index quedaría roto → aborta.
+SITE_GRAPHS=(
+    TE_Trabajo.png
+    TE_Capital.png
+    TE_Consumo.png
+    TE_Organismos.png
+    GastoPC_Educacion.png
+    GastoPC_Salud.png
+    GastoPC_Pensiones.png
+    GastoPC_Energia.png
+    GastoPC_Otros.png
+    GastoPC_Transferencias.png
+)
+LOCAL_GRAPHS_DIR="$LOCAL_REPO_ROOT/users/ricardo/graphs"
+log_info "Fase 1b: gráficas del sitio (${#SITE_GRAPHS[@]}) ← $LOCAL_GRAPHS_DIR/"
+_g_copiadas=0
+_g_conservadas=0
+for _g in "${SITE_GRAPHS[@]}"; do
+    if [[ -f "$LOCAL_GRAPHS_DIR/$_g" ]]; then
+        if [[ $DRY_RUN -eq 0 ]]; then
+            cp -p "$LOCAL_GRAPHS_DIR/$_g" "$LOCAL_SITE_ROOT/images/$_g" \
+                || die "Fase 1b: no pude copiar $_g a $LOCAL_SITE_ROOT/images/."
+        fi
+        _g_copiadas=$((_g_copiadas + 1))
+    elif [[ -f "$LOCAL_SITE_ROOT/images/$_g" ]]; then
+        log_warn "Fase 1b: $_g no está en users/ricardo/graphs/ — se conserva la del sitio ($(date -r "$LOCAL_SITE_ROOT/images/$_g" +%Y-%m-%d)). Para regenerarla: Graphs_TE.do / Graphs_PC.do activos en SIM.do."
+        _g_conservadas=$((_g_conservadas + 1))
+    else
+        die "Fase 1b: $_g no existe ni en users/ricardo/graphs/ ni en $LOCAL_SITE_ROOT/images/ —
+        index.php la enlaza y quedaría rota. Corre SIM.do con Graphs_TE.do y Graphs_PC.do activos."
+    fi
+done
+log_ok "Fase 1b: $_g_copiadas copiada(s) desde users/ricardo/graphs/, $_g_conservadas conservada(s) del sitio$( [[ $DRY_RUN -eq 1 ]] && echo ' (simulado)' )."
 
 # =============================================================================
 # FASE 2 — Rsync del sitio PHP

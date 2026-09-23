@@ -102,14 +102,21 @@ El sitio enlaza al Release tag, que debe existir primero.
 bash 05_scripts/publicar.sh vX.Y.Z
 ```
 
-Hace: gates 1-4 → Release en GitHub + assets con SHA-256 → rsync al endpoint
+Hace: gates 1-6 → Release en GitHub + assets con SHA-256 → rsync al endpoint
 con pin de versión inyectado. **Es idempotente**: si falla a medias (p. ej.
 SSH), re-correr salta lo ya hecho.
 
 Verificación:
 ```bash
 curl -sI https://ciep.mx/simuladorfiscal/PEF.ado | head -1     # HTTP 200
+bash 05_scripts/test-maquina-virgen.sh --download              # N/N assets desde la Release, SHA ok
 ```
+El segundo comando es la promesa pública del endpoint hecha prueba: SITE
+falso en `/tmp`, `raw/` vacío, y las invocaciones reales de `ensure_asset`
+de los módulos contra la Release recién publicada (~1.3 GB). Su capa
+estática (`--cobertura`: todo asset del manifest lo pide algún módulo) ya
+corre como Gate 6 dentro de `publicar.sh`; en v8.3.0 habría atrapado el
+`PPEF.2027.xlsx` publicado que ningún módulo solicitaba.
 
 ### Si falla la conexión SSH a Cloudways
 Cloudways **whitelistea IPs** para SSH. Síntoma: `Operation timed out` al 22.

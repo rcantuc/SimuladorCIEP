@@ -4,6 +4,8 @@
 # Qué hace:
 #   1. Verifica precondiciones (master, working tree limpio, alineación con origin/master)
 #   2. Gates de validación: entrada en 02_governance/CHANGELOG.md, tag anotado con mensaje,
+#      raw declarado (Gate 5: assets locales = manifest, SIM.do sin rawwip activo),
+#      cobertura de assets (Gate 6: todo asset del manifest lo solicita algun modulo),
 #      05_scripts/manifest.json sincronizado con la versión, y existencia en filesystem de
 #      cada archivo declarado en 05_scripts/manifest-endpoint.toml. Si algo falla, aborta
 #      ANTES de cualquier acción con efectos (push, Release, rsync).
@@ -95,6 +97,76 @@ NO la hace este script. La maneja manualmente el investigador principal con
 Configuración: requiere 05_scripts/endpoint-credentials.sh con SSH_ALIAS, REMOTE_PATH y
 ENDPOINT_URL definidos.
 EOF
+}
+
+# Gate 5 — Raw declarado (2026-09-12). Cierra la Fase 1 del ciclo de edición de raw/
+# (runbook-actualizar-assets.md §2c): (a) SIM.do NO puede publicarse con
+# `global rawwip` activo — todo el equipo correría con el candado en modo aviso;
+# (b) cada asset del manifest PRESENTE en disco debe tener el SHA declarado —
+# si no, publicar subiría al Release un archivo que el propio manifest rechaza
+# (el post-verify lo cazaría, pero después de subir ~1.3 GB). Además lista
+# raw/temp/assets-wip.txt si quedó de corridas en Fase 1.
+gate_raw_declarado() {
+    local failed=0
+    if grep -qE '^[[:space:]]*global[[:space:]]+rawwip([[:space:]]|$)' SIM.do; then
+        log_error "Gate 5 FALLO: SIM.do tiene 'global rawwip' ACTIVO (modo aviso del candado)."
+        log_error "        Coméntalo (//global rawwip ...) y corre SIM.do: es la Fase 2 — cada asset"
+        log_error "        no declarado bloqueará con sus valores para el manifest."
+        failed=1
+    fi
+    local mismatches=0 checked=0
+    while IFS=$'\t' read -r name local_path sha; do
+        [[ -f "$local_path" ]] || continue
+        checked=$((checked+1))
+        local actual
+        actual="$(shasum -a 256 "$local_path" | awk '{print $1}')"
+        if [[ "$actual" != "$sha" ]]; then
+            log_error "Gate 5 FALLO: $name en disco ($local_path) no coincide con el manifest."
+            log_error "        manifest: $sha"
+            log_error "        disco:    $actual  ($(stat -f%z "$local_path") bytes)"
+            mismatches=$((mismatches+1))
+        fi
+    done < <(manifest_assets)
+    if (( mismatches > 0 )); then
+        log_error "        $mismatches asset(s) sin declarar. Secuencia: runbook-actualizar-assets.md §2b."
+        failed=1
+    fi
+    if [[ -f raw/temp/assets-wip.txt ]]; then
+        log_warn "Gate 5: raw/temp/assets-wip.txt existe (assets corridos en Fase 1):"
+        while IFS=$'\t' read -r name lp actual size expected when; do
+            log_warn "  - $name  real ${actual:0:12}...  $size bytes  ($when)"
+        done < raw/temp/assets-wip.txt
+        if (( mismatches == 0 && failed == 0 )); then
+            log_warn "        Todos ya declarados; puedes borrar el archivo: rm raw/temp/assets-wip.txt"
+        fi
+    fi
+    if (( failed == 0 )); then
+        log_info "✓ Gate 5: raw declarado — $checked asset(s) locales coinciden con el manifest; SIM.do sin rawwip activo"
+    fi
+    return $failed
+}
+
+# Gate 6 — Cobertura de assets (2026-09-14). Cada asset del manifest debe ser
+# SOLICITADO por algun modulo: por nombre (ensure_asset "X") o por directorio
+# (ensure_asset, dir(D) con local_path bajo D/). Es la version estatica del test
+# de maquina virgen: en v8.3.0 PPEF.2027.xlsx y Diccionario.csv estaban en el
+# manifest y en la Release pero ningun modulo los pedia (lista tecleada a mano
+# en PEF.ado desde v7.0), y una reconstruccion desde cero los omitia SIN error.
+# Delegado a 05_scripts/test-maquina-virgen.sh --cobertura (misma logica, un
+# solo lugar).
+gate_cobertura_assets() {
+    if [[ ! -x 05_scripts/test-maquina-virgen.sh ]]; then
+        log_error "Gate 6 FALLO: falta 05_scripts/test-maquina-virgen.sh (o no es ejecutable)."
+        return 1
+    fi
+    local out
+    if out="$(bash 05_scripts/test-maquina-virgen.sh --cobertura 2>&1)"; then
+        log_info "✓ Gate 6: cobertura de assets — $(tail -n 1 <<< "$out")"
+        return 0
+    fi
+    log_error "Gate 6 FALLO: assets del manifest que ningun modulo solicita:"
+    while IFS= read -r line; do log_error "        $line"; done <<< "$out"
+    return 1
 }
 
 # ═══ FUNCIONES DE FLUJO ═══
@@ -491,6 +563,28 @@ done
 
 cd "$REPO_ROOT"
 
+# ─── Guard de identidad de clon (2026-09-09) ───
+# Se publica SOLO desde el clon de desarrollo. La Carpeta del Simulador para
+# investigadores (Dropbox-CIEP/SimuladorCIEP) también es un clon git, así que
+# `git rev-parse` no distingue uno del otro: el 2026-09-08 se lanzó publicar.sh
+# desde la Carpeta sin querer y el pre-chequeo de assets falló de forma
+# confusa. El clon de desarrollo se identifica con un marker gitignored en su
+# raíz (.clon-desarrollo); la Carpeta nunca lo tiene porque git no lo propaga.
+CLON_MARKER="$REPO_ROOT/.clon-desarrollo"
+if [[ ! -f "$CLON_MARKER" ]]; then
+    log_error "Estás en $REPO_ROOT"
+    log_error "y este clon NO está marcado como clon de desarrollo (falta .clon-desarrollo)."
+    if [[ "$REPO_ROOT" == */Dropbox-CIEP/SimuladorCIEP ]]; then
+        log_error "Esta ruta es la Carpeta del Simulador para investigadores: aquí NO se publica"
+        log_error "ni se opera git (§6.7 de arquitectura-y-bitacoras.md). Ve al clon de desarrollo."
+    else
+        log_error "Publica desde el clon de desarrollo (el que tiene el marker). Si ESTE es el"
+        log_error "clon de desarrollo y solo falta el marker, créalo una vez:"
+        log_error "    touch \"$CLON_MARKER\""
+    fi
+    exit 1
+fi
+
 # ═══ EJECUCIÓN ═══
 
 log_info "publicar.sh — versión: $VERSION"
@@ -503,11 +597,13 @@ if [[ "$CHECK_MODE" == "true" ]]; then
     gate_tag_annotated "$VERSION"  || GATE_FAILURES=$((GATE_FAILURES+1))
     gate_manifest_sync "$VERSION"  || GATE_FAILURES=$((GATE_FAILURES+1))
     gate_endpoint_files            || GATE_FAILURES=$((GATE_FAILURES+1))
+    gate_raw_declarado             || GATE_FAILURES=$((GATE_FAILURES+1))
+    gate_cobertura_assets          || GATE_FAILURES=$((GATE_FAILURES+1))
     if (( GATE_FAILURES > 0 )); then
         log_error "--check: $GATE_FAILURES gate(s) fallaron para $VERSION."
         exit 1
     fi
-    log_info "--check: los 4 gates pasaron para $VERSION."
+    log_info "--check: los 6 gates pasaron para $VERSION."
     exit 0
 fi
 
@@ -520,6 +616,8 @@ GATE_FAILURES=0
 gate_changelog "$VERSION"      || GATE_FAILURES=$((GATE_FAILURES+1))
 gate_manifest_sync "$VERSION"  || GATE_FAILURES=$((GATE_FAILURES+1))
 gate_endpoint_files            || GATE_FAILURES=$((GATE_FAILURES+1))
+gate_raw_declarado             || GATE_FAILURES=$((GATE_FAILURES+1))
+gate_cobertura_assets          || GATE_FAILURES=$((GATE_FAILURES+1))
 if (( GATE_FAILURES > 0 )); then
     abort "$GATE_FAILURES gate(s) fallaron. Corrige antes de publicar."
 fi

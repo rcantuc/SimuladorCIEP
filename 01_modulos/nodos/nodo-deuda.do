@@ -11,8 +11,8 @@
 *   FUENTE (versionada, aquí):  01_modulos/nodos/nodo-deuda.do
 *                               01_modulos/nodos/nodo-deuda.html
 *   SALIDA (ignorada, generada):
-*     04_1_paqueteeconomico.ciep.mx/public_html/nodos/statajson_<nodo>.json
-*     04_1_paqueteeconomico.ciep.mx/public_html/nodos/nodo-deuda.html  (copia servible)
+*     CIEP_Micrositios/Paquete Económico/public_html/nodos/statajson_<nodo>.json
+*     CIEP_Micrositios/Paquete Económico/public_html/nodos/nodo-deuda.html  (copia servible)
 * El destino vive BAJO EL DOCROOT del WordPress local del Paquete (patrón
 * 6yt5ppa3hb: estáticos servidos junto al sitio, jamás dentro de Elementor)
 * y está en .gitignore junto a las demás carpetas de operación
@@ -246,15 +246,28 @@ foreach f of local fams {
 * Override de destino para 05_scripts/verify_nodo.sh (regla 3): la prueba de
 * determinismo exporta dos veces a un temporal y NO puede pisar el contrato
 * versionado. Vacío = destino normal
-* (04_1_paqueteeconomico.ciep.mx/public_html/nodos/statajson_<nodo>.json).
+* (CIEP_Micrositios/Paquete Económico/public_html/nodos/statajson_<nodo>.json).
 local saveopt ""
 if `"$nodo_saving"' != "" {
 	local saveopt saving(`"$nodo_saving"')
 }
 else {
 	* scalarjson escribe con file open y no crea carpetas: el destino
-	* bajo el docroot debe existir ANTES de exportar.
-	capture mkdir `"`site'/04_1_paqueteeconomico.ciep.mx/public_html/nodos"'
+	* bajo el docroot debe existir ANTES de exportar. mkdir solo crea el
+	* ultimo nivel: si los padres (CIEP_Micrositios/.../public_html) no
+	* existen —el VPS, donde SHRFSP corre via FiscalGap con $output— falla
+	* y scalarjson tronaria con r(603) matando la sesion web (incidente
+	* v8.3.0, 2026-09-12). Cuarto guard: sin destino, sin nodo. *
+	local dest `"`site'/../CIEP_Micrositios/Paquete Económico/public_html/nodos"'
+	capture mkdir `"`dest'"'
+	tempname fh
+	capture file open `fh' using `"`dest'/.nodo-deuda-test"', write replace
+	if _rc {
+		noisily di in g "nodo-deuda: destino de render no disponible (solo-repo); se omite la exportacion."
+		exit
+	}
+	file close `fh'
+	capture erase `"`dest'/.nodo-deuda-test"'
 }
 
 scalarjson, nodo("deuda-publica") ///
@@ -280,7 +293,7 @@ scalarjson, nodo("deuda-publica") ///
 * fue redirigido (prueba de determinismo del verificador).
 if `"$nodo_saving"' == "" {
 	capture copy `"`site'/01_modulos/nodos/nodo-deuda.html"' ///
-		`"`site'/04_1_paqueteeconomico.ciep.mx/public_html/nodos/nodo-deuda.html"', replace
+		`"`site'/../CIEP_Micrositios/Paquete Económico/public_html/nodos/nodo-deuda.html"', replace
 	if _rc {
 		noisily di in g "nodo-deuda: no se pudo copiar la página al destino de render."
 	}

@@ -326,7 +326,7 @@ Detalle: `help TasasEfectivas`
 |---|---|
 | No edites los archivos `.ado` ni los archivos de configuración (`profile.do`, `SIM.do`, `sysprofile-template.do`) | Son el motor compartido. Un cambio tuyo afecta a todo el equipo, porque Dropbox lo sincroniza a todas las máquinas. |
 | No guardes archivos fuera de tu carpeta `users/` | Todo lo que quede fuera se mezcla con el motor y estorba a los demás. |
-| No borres los directorios con prefijo numérico (`01_modulos/`, `02_governance/`, `03_help/`, `04_simuladorfiscal.ciep.mx/`, `05_scripts/`) | Contienen código, documentación y configuración que NO se regeneran solos. Ver sección 5.3. |
+| No borres los directorios con prefijo numérico (`01_modulos/`, `02_governance/`, `03_help/`, `04_1_simuladorfiscal.ciep.mx/` y las demás `04_*`, `05_scripts/`) | Contienen código, documentación y configuración que NO se regeneran solos. Ver sección 5.3. |
 | No "arregles" un error del Simulador por tu cuenta | Repórtalo (sección 8). Si lo parchas localmente, tu copia diverge de la del equipo y tus resultados dejan de ser comparables. |
 
 🧠 **Concepto: separación entre motor y trabajo personal.** El Simulador distingue entre el *motor* (comandos y datos compartidos, que mantiene el investigador principal) y el *trabajo personal* (tu carpeta `users/`). Mientras respetes esa frontera, es imposible que rompas algo para los demás.
@@ -342,7 +342,8 @@ Los directorios de la carpeta del Simulador siguen una convención de nombres qu
 | `01_modulos/` | Los `.do` del pipeline (módulos de análisis y visualizaciones) y código histórico en `01_modulos/legacy/` | **No** |
 | `02_governance/` | Documentación de administración del proyecto y el `CHANGELOG.md` (registro de cambios por versión) | **No** |
 | `03_help/` | La ayuda: los `.sthlp` de cada comando, este manual y las imágenes de documentación | **No** |
-| `04_simuladorfiscal.ciep.mx/` | Archivos del sitio web público | **No** |
+| `04_1_simuladorfiscal.ciep.mx/` | Archivos del sitio web público del Simulador (antes `04_simuladorfiscal.ciep.mx/`, renombrada 2026-09-08) | **No** |
+| `04_2_documentos_latex/`, `04_4_libro.ciep.mx/`, `04_5_ciep.mx/` | Archivo LaTeX del Paquete y semillas locales de los sitios WordPress (ignorados por git) | **No** |
 | `05_scripts/` | Scripts de publicación y sus manifiestos (los usa el investigador principal) | **No** |
 | `raw/` (incluye `raw/temp/`) | Datos crudos descargados de fuentes oficiales y archivos intermedios de cada corrida | Sí |
 | `master/` | Bases procesadas listas para usar | Sí |

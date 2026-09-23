@@ -86,7 +86,7 @@ Para un año específico con histórico desde 2010:
 {title:Sintaxis}
 
 {p 8 16 2}
-{cmd:SHRFSP} [{it:if}] [{cmd:,} {opt ANIO(#)} {opt ULTAnio(#)} {opt DEPreciacion(#)} {opt NOGraphs} {opt UPDATE} {opt Base} {opt TEXTbook}]
+{cmd:SHRFSP} [{it:if}] [{cmd:,} {opt ANIO(#)} {opt ANIOVP(#)} {opt ULTAnio(#)} {opt DEPreciacion(#)} {opt NOGraphs} {opt UPDATE} {opt Base} {opt TEXTbook}]
 {p_end}
 
 {hline}
@@ -97,6 +97,14 @@ Para un año específico con histórico desde 2010:
 {phang}
 {opt anio(#)} — {bf:Año de referencia} para el análisis. Rango: 1993–año actual.
 Por defecto usa el año del paquete económico ({cmd:anioPE}).
+{p_end}
+
+{phang}
+{opt aniovp(#)} — {bf:Año base de precios constantes}. Todos los montos reales
+(billones, per cápita) se expresan en pesos constantes de este año; controla el
+{cmd:deflator} que entrega {help PIBDeflactor}. Por defecto usa el escalar
+{cmd:aniovp} (o el año en curso si no existe). Puede diferir de {opt anio()}:
+por ejemplo, {cmd:SHRFSP, anio(2032) aniovp(2027)} analiza 2032 en pesos de 2027.
 {p_end}
 
 {phang}

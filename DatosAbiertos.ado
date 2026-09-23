@@ -515,7 +515,7 @@ program define UpdateDatosAbiertos, return
 	save "`gfH'"
 	
 	***********************************************************
-	** 1.6 Asignación y ejecución del presupuesto de egresos **
+	/** 1.6 Asignación y ejecución del presupuesto de egresos **
 	_DAdescarga, nombre(asignacion_ejecucion_2025) modo(`modo')
 	tempfile asignacion2025
 	save "`asignacion2025'"
@@ -614,39 +614,22 @@ program define UpdateDatosAbiertos, return
 	*************/
 	** 2 Append **
 	**************/
+	** Cada append pasa por _DAappend: si falla, reporta QUÉ base fue y qué **
+	** variables tienen tipo distinto (string vs numérica) respecto al master. **
 	use `ing', clear
-	append using "`ingH'"
-	append using "`deuda'"
-	append using "`deudaH'"
-	append using "`shrf'"
-	append using "`shrfH'"
-	append using "`rf'"
-	append using "`rfH'"
-	append using "`gf'"
-	append using "`gfH'"
-	append using "`asignacion2025'"
-	append using "`asignacion2024'"
-	append using "`asignacion2023'"
-	append using "`asignacion2022'"
-	append using "`asignacion2021'"
-	append using "`asignacion2020'"
-	append using "`asignacion2019'"
-	append using "`asignacion2018'"
-	append using "`asignacion2017'"
-	append using "`asignacion2016'"
-	append using "`asignacion2015'"
-	append using "`asignacion2014'"
-	append using "`asignacion2013'"
-	append using "`asignacion2012'"
-	append using "`asignacion2011'"
-	append using "`asignacion2010'"
-	append using "`asignacion2009'"
-	append using "`asignacion2008'"
-	append using "`asignacion2007'"
-	append using "`asignacion2006'"
-	append using "`asignacion2005'"
-	append using "`asignacion2004'"
-	append using "`asignacion2003'"
+	_DAappend using "`ingH'", nombre(ingreso_gasto_finan_hist)
+	_DAappend using "`deuda'", nombre(deuda_publica)
+	_DAappend using "`deudaH'", nombre(deuda_publica_hist)
+	_DAappend using "`shrf'", nombre(shrfsp_deuda_amplia_actual)
+	_DAappend using "`shrfH'", nombre(shrfsp_deuda_amplia_antes_2014)
+	_DAappend using "`rf'", nombre(rfsp)
+	_DAappend using "`rfH'", nombre(rfsp_metodologia_anterior)
+	_DAappend using "`gf'", nombre(transferencias_entidades_fed)
+	_DAappend using "`gfH'", nombre(transferencias_entidades_fed_hist)
+	forvalues y = 2025(-1)2004 {
+		*_DAappend using "`asignacion`y''", nombre(asignacion_ejecucion_`y')
+	}
+	*_DAappend using "`asignacion2003'", nombre(asignacion_ejecucion_2003)
 
 
 
@@ -997,13 +980,221 @@ program define _DAdescarga
 		}
 	}
 
-	** Descarga exitosa: refresca el respaldo local **
-	if `exito' == 1 {
-		save "`dir'/`nombre'.dta", replace
-	}
-
 	** 3. Archivos locales: sin internet (modo local) o último respaldo **
 	if `exito' == 0 {
 		import delimited "`dir'/`nombre'.csv", clear `enc'
 	}
+
+	** 4. Filas corruptas: los csv de la SHCP traen ocasionalmente registros    **
+	** truncados ("tor Público,Sector Público Federal,...,0") o dos registros   **
+	** pegados en una línea (15 ó 19 campos en vez de 16). Efectos: CICLO se   **
+	** vuelve string (rompe el append) o, si alguna fila trae más campos que el **
+	** encabezado, import delimited descarta el encabezado e importa v1..v19.   **
+	** En ese caso se reimporta forzando el encabezado (varnames(1)).           **
+	capture confirm variable ciclo
+	if _rc != 0 {
+		import delimited "`dir'/`nombre'.csv", clear `enc' varnames(1)
+	}
+	_DAlimpiafilas, nombre(`nombre')
+
+	** Descarga exitosa: refresca el respaldo local ya limpio **
+	if `exito' == 1 {
+		save "`dir'/`nombre'.dta", replace
+	}
+end
+
+
+*************************************************************
+**** Elimina filas corruptas de un csv de Datos Abiertos  ****
+*************************************************************
+* Espera en memoria el resultado de import delimited (con encabezado). Valida
+* la estructura de cada fila y elimina las que no la cumplen, reportando cuántas:
+*   - columnas sobrantes sin nombre (v16, v17, ...): contenido = fila pegada.
+*   - CICLO año de 4 dígitos; MES nombre de mes; TIPO_DE_INFORMACION no vacío;
+*     PERIODO_FINAL con formato AAAA-MM; MONTO numérico (o vacío).
+* Con eso CICLO y MONTO quedan numéricos y el append entre bases es consistente.
+* Sirve para los dos layouts de la SHCP (eopf de 16 columnas y asignación de 15).
+program define _DAlimpiafilas
+
+	syntax , NOMbre(string)
+
+	capture confirm variable ciclo
+	if _rc != 0 {
+		noisily di as err "Datos Abiertos: `nombre' no tiene la columna CICLO; revisar el csv en raw/temp/Datos Abiertos/."
+		error 459
+	}
+
+	tempvar bad
+	quietly g byte `bad' = 0
+
+	** 4.2 Columnas sobrantes (v16, v17, ...) = filas con registros pegados **
+	** (asignacion_ejecucion trae un v16 legítimo pero siempre vacío)        **
+	foreach v of varlist _all {
+		if regexm("`v'", "^v[0-9]+$") {
+			capture confirm string variable `v'
+			if _rc == 0 {
+				quietly replace `bad' = 1 if trim(`v') != ""
+			}
+			else {
+				quietly replace `bad' = 1 if `v' != .
+			}
+			drop `v'
+		}
+	}
+
+	** 4.3 CICLO: año de 4 dígitos **
+	capture confirm string variable ciclo
+	if _rc == 0 {
+		quietly replace `bad' = 1 if !regexm(trim(ciclo), "^[0-9][0-9][0-9][0-9]$")
+		quietly replace ciclo = "" if `bad' == 1
+		quietly destring ciclo, replace
+	}
+
+	** 4.4 MES: nombre de mes. TIPO_DE_INFORMACION: no vacío (además de Flujo y **
+	**     Saldo, deuda_publica trae Disposición, Amortización, etc.)           **
+	capture confirm string variable mes
+	if _rc == 0 {
+		quietly replace `bad' = 1 if !inlist(trim(mes), "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio") ///
+			& !inlist(trim(mes), "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre")
+	}
+	capture confirm string variable tipo_de_informacion
+	if _rc == 0 {
+		quietly replace `bad' = 1 if trim(tipo_de_informacion) == ""
+	}
+
+	** 4.4b PERIODO_FINAL: AAAA-MM (detecta filas con campos corridos) **
+	capture confirm string variable periodo_final
+	if _rc == 0 {
+		quietly replace `bad' = 1 if !regexm(trim(periodo_final), "^[0-9][0-9][0-9][0-9]-[0-9][0-9]$")
+	}
+
+	** 4.5 MONTO: numérico o vacío **
+	capture confirm string variable monto
+	if _rc == 0 {
+		tempvar m
+		quietly g double `m' = real(subinstr(trim(monto), ",", "", .))
+		quietly replace `bad' = 1 if `m' == . & trim(monto) != ""
+		drop monto
+		rename `m' monto
+	}
+
+	** 4.6 Reporte y eliminación **
+	quietly count if `bad' == 1
+	local nbad = r(N)
+	if `nbad' > 0 {
+		noisily di in g "Datos Abiertos: " in y "`nombre'" in g " trae " in y "`nbad'" in g " fila(s) corrupta(s) (truncadas o pegadas); se eliminan."
+		quietly drop if `bad' == 1
+	}
+	drop `bad'
+end
+
+
+*************************************************************
+**** Append con diagnóstico y reparación de tipos           ****
+*************************************************************
+* Hace `append using` y, si falla, reporta el nombre de la base de Datos
+* Abiertos y las variables cuyo tipo (string vs numérica) no coincide con el
+* master en memoria. Después intenta repararlo:
+*   - el lado string se intenta destring (quitando comas, espacios, $ y %);
+*     el caso típico es una numérica leída como string por comas/comillas.
+*   - si no se puede convertir a número (contenido genuinamente no numérico),
+*     el lado numérico se pasa a string para no perder información.
+* Reintenta el append con el archivo reparado. Si aun así falla, aborta con
+* el código de error original, ya con el nombre de la base en pantalla.
+program define _DAappend
+
+	syntax using/, NOMbre(string)
+
+	capture append using "`using'"
+	local rc = _rc
+	if `rc' == 0 {
+		exit
+	}
+
+	noisily di as err _newline "Datos Abiertos: fall{c o'} el append de la base {bf:`nombre'} (error r(`rc'))."
+
+	** 1. Tipos del master en memoria **
+	local vmaster
+	foreach v of varlist _all {
+		local vmaster `vmaster' `v'
+		local tm_`v' : type `v'
+	}
+
+	** 2. Diagnóstico: variables comunes con tipo string/numérica distinto **
+	local fix_using		// string en la base, numérica en master -> destring en la base
+	local fix_master	// string en master, numérica en la base -> destring en master
+	preserve
+	use "`using'", clear
+	foreach v of varlist _all {
+		if `: list v in vmaster' {
+			local tu : type `v'
+			local tm `tm_`v''
+			local strm = substr("`tm'",1,3) == "str"
+			local stru = substr("`tu'",1,3) == "str"
+			if `strm' != `stru' {
+				noisily di as err "  variable {bf:`v'}: en master es " in y "`tm'" as err ", en `nombre' es " in y "`tu'"
+				if `stru' local fix_using `fix_using' `v'
+				else      local fix_master `fix_master' `v'
+			}
+		}
+	}
+
+	if "`fix_using'`fix_master'" == "" {
+		restore
+		noisily di as err "  No hay conflicto string/num{c e'}rica en variables comunes; revisar el csv de " in y "`nombre'" as err " en raw/temp/Datos Abiertos/."
+		error `rc'
+	}
+
+	** 3. Reparación en la base: destring de las string; si no se puede, se **
+	**    anota para pasar a string la contraparte del master.              **
+	local tostr_master
+	foreach v of local fix_using {
+		capture quietly destring `v', replace ignore(", $%")
+		if substr("`: type `v''",1,3) == "str" {
+			noisily di as err "    {bf:`v'}: no se pudo convertir a num{c e'}rica en `nombre' (contenido no num{c e'}rico); master pasa a string."
+			local tostr_master `tostr_master' `v'
+		}
+		else {
+			noisily di in g "    {bf:`v'}: destring en `nombre' " in y "OK" in g "."
+		}
+	}
+	tempfile fixed
+	quietly save "`fixed'"
+	restore
+
+	** 4. Reparación en el master: destring de las string; si no se puede, **
+	**    la contraparte de la base pasa a string.                           **
+	local tostr_using
+	foreach v of local fix_master {
+		capture quietly destring `v', replace ignore(", $%")
+		if substr("`: type `v''",1,3) == "str" {
+			noisily di as err "    {bf:`v'}: no se pudo convertir a num{c e'}rica en master (contenido no num{c e'}rico); `nombre' pasa a string."
+			local tostr_using `tostr_using' `v'
+		}
+		else {
+			noisily di in g "    {bf:`v'}: destring en master " in y "OK" in g "."
+		}
+	}
+	foreach v of local tostr_master {
+		quietly tostring `v', replace force
+	}
+	if "`tostr_using'" != "" {
+		preserve
+		use "`fixed'", clear
+		foreach v of local tostr_using {
+			quietly tostring `v', replace force
+		}
+		quietly save "`fixed'", replace
+		restore
+	}
+
+	** 5. Reintento **
+	capture append using "`fixed'"
+	local rc2 = _rc
+	if `rc2' == 0 {
+		noisily di in g "  Base {bf:`nombre'} reparada y anexada. " as err "Revisar el csv en raw/temp/Datos Abiertos/ para corregir el origen."
+		exit
+	}
+	noisily di as err "  La reparaci{c o'}n autom{c a'}tica no fue suficiente para `nombre' (error r(`rc2'))."
+	error `rc2'
 end

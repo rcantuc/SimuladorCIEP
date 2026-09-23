@@ -42,7 +42,9 @@ quietly {
 	noisily di _newline(2) in g _dup(20) "." "{bf:  Sistema Fiscal: GASTOS " in y `anio' "  }" in g _dup(20) "."
 
 	* 1.1 Valor año mínimo *
-	if `desde' == -1 {
+	* desde() debe ser < anio() (mismo guard que LIF, 2026-09-12): con desde >= anio
+	* la tabla B dividiria entre nyears = 0 y las graficas perderian el anio. *
+	if `desde' == -1 | `desde' >= `anio' {
 		local desde = `anio'-9
 	}
 
@@ -140,8 +142,10 @@ quietly {
 		g double `k'PIB = `k'/pibY*100
 	}
 	g double gastoR = gasto/deflator
+	g double gastoPC = gasto/Poblacion					// per capita: `currency' por persona (Poblacion de PIBDeflactor)
 	format *PIB %10.3fc
 	format gastoR gastoTOT CuoTOT %20.0fc
+	format gastoPC %10.0fc
 
 
 
@@ -172,16 +176,23 @@ quietly {
 	*replace resumido = `"< `=string(`minimum',"%5.1fc")'% PIB"' if abs(`gastoPIB') < `minimum' & resumido != "Cuotas ISSSTE"
 
 
-	********************
-	** 5. Display PEF **
-	
-	** 5.1 Division `by' **
-	noisily di _newline in g "{bf: A. Gasto bruto (`by') " ///
-		_col(44) in g %20s "`currency'" ///
-		_col(66) %7s "% PIB" ///
-		_col(77) %7s "% Total" "}"
+	*******************************************************************
+	** 5. Display PEF — simetrico con LIF (2026-09-12):                 **
+	**    A. Nivel `anio' por `by' (MXN, % PIB, % Tot, MXN per capita) y
+	**       conciliacion bruto -> neto (cuotas ISSSTE, aportaciones).  **
+	**    B. Crecimiento `desde'-`anio' por grupo resumido (dif % PIB,  **
+	**       %G real, elasticidad). Los r() conservan nombres y valores. **
+	*******************************************************************
 
-	capture tabstat gasto gastoPIB if anio == `anio' & lower(`by') != "cuotas issste", by(`by') stat(sum) f(%20.0fc) save
+	** 5.1 A. Nivel por `by' **
+	noisily di _newline in g "{bf: A. Gasto bruto (`by')}" ///
+		_newline ///
+		_col(37) in g %18s "`currency'" ///
+		_col(56) %7s "% PIB" ///
+		_col(64) %6s "% Tot" ///
+		_col(71) %8s "`currency' PC"
+
+	capture tabstat gasto gastoPIB gastoPC if anio == `anio' & lower(`by') != "cuotas issste", by(`by') stat(sum) f(%20.0fc) save
 	if _rc != 0 {
 		noisily di in g " No hay informaci{c o'}n para el a{c n~}o `anio'."
 		return local rc = "NoData"
@@ -208,31 +219,35 @@ quietly {
 		*return scalar `name' = `mat`k''[1,1]
 		local `by' `"``by'' `name'"'
 
-		noisily di in g `"  (+) `disptext'"' ///
-			_col(44) in y %20.0fc `mat`k''[1,1] ///
-			_col(66) in y %7.3fc `mat`k''[1,2] ///
-			_col(77) in y %7.1fc `mat`k''[1,1]/`mattot'[1,1]*100
+		noisily di in g `"  (+) `=substr(`"`disptext'"',1,30)'"' ///
+			_col(37) in y %18.0fc `mat`k''[1,1] ///
+			_col(56) in y %7.3fc `mat`k''[1,2] ///
+			_col(64) in y %6.1fc `mat`k''[1,1]/`mattot'[1,1]*100 ///
+			_col(71) in y %8.0fc `mat`k''[1,3]
 		local ++k
 	}
 	return local `by' `"``by''"'
 
-	noisily di in g _dup(83) "-"
+	noisily di in g _dup(78) "-"
 	noisily di in g "{bf:  (=) Gasto bruto" ///
-		_col(44) in y %20.0fc `mattot'[1,1] ///
-		_col(66) in y %7.3fc `mattot'[1,2] ///
-		_col(77) in y %7.1fc `mattot'[1,1]/`mattot'[1,1]*100 "}"
+		_col(37) in y %18.0fc `mattot'[1,1] ///
+		_col(56) in y %7.3fc `mattot'[1,2] ///
+		_col(64) in y %6.1fc 100 ///
+		_col(71) in y %8.0fc `mattot'[1,3] "}"
 	
 	return scalar Gasto_bruto = `mattot'[1,1]
+	return scalar Gasto_brutoPIB = `mattot'[1,2]
+	return scalar Gasto_brutoPC = `mattot'[1,3]
 
 	** 5.2 Gasto neto **
 	* Aportaciones y cuotas de la Federacion *
-	capture tabstat gasto gastoPIB if anio == `anio' & transf_gf == 1, stat(sum) f(%20.0fc) save by(`by')
+	capture tabstat gasto gastoPIB gastoPC if anio == `anio' & transf_gf == 1, stat(sum) f(%20.0fc) save by(`by')
 	tempname Aportaciones_Federacion
 	if _rc == 0 {
 		matrix `Aportaciones_Federacion' = r(StatTotal)
 	}
 	else {
-		matrix `Aportaciones_Federacion' = J(1,2,0)
+		matrix `Aportaciones_Federacion' = J(1,3,0)
 	}
 	return scalar Aportaciones_a_Seguridad_Social = `Aportaciones_Federacion'[1,1]
 	local k = 1
@@ -261,58 +276,73 @@ quietly {
 		local ++k
 	}
 
-	capture tabstat gasto gastoPIB if lower(`by') == "cuotas issste" & anio == `anio', stat(sum) f(%20.0fc) save
+	capture tabstat gasto gastoPIB gastoPC if lower(`by') == "cuotas issste" & anio == `anio', stat(sum) f(%20.0fc) save
 	tempname Cuotas_ISSSTE
 	if _rc == 0 {
 		matrix `Cuotas_ISSSTE' = r(StatTotal)
 		return scalar Cuotas_ISSSTE = `Cuotas_ISSSTE'[1,1]
 	}
 	else {
-		matrix `Cuotas_ISSSTE' = J(1,2,0)		
+		matrix `Cuotas_ISSSTE' = J(1,3,0)		
 	}
 
-	* Display *
-	noisily di in g `"  (-) `=substr("Cuotas ISSSTE",1,35)'"' ///
-		_col(44) in y %20.0fc `Cuotas_ISSSTE'[1,1] ///
-		_col(66) in y %7.3fc `Cuotas_ISSSTE'[1,2] ///
-		_col(77) in y %7.1fc `Cuotas_ISSSTE'[1,1]/`mattot'[1,1]*100
-	noisily di in g `"  (-) `=substr("Aportaciones a la seguridad social",1,35)'"' ///
-		_col(44) in y %20.0fc `Aportaciones_Federacion'[1,1] ///
-		_col(66) in y %7.3fc `Aportaciones_Federacion'[1,2] ///
-		_col(77) in y %7.1fc `Aportaciones_Federacion'[1,1]/`mattot'[1,1]*100
-	noisily di in g _dup(83) "-"
-	noisily di in g "{bf:  (=) Gasto neto" ///
-		_col(44) in y %20.0fc `mattot'[1,1]-`Cuotas_ISSSTE'[1,1]-`Aportaciones_Federacion'[1,1] ///
-		_col(66) in y %7.3fc  `mattot'[1,2]-`Cuotas_ISSSTE'[1,2]-`Aportaciones_Federacion'[1,2] ///
-		_col(77) in y %7.1fc (`mattot'[1,1]-`Cuotas_ISSSTE'[1,1]-`Aportaciones_Federacion'[1,1])/`mattot'[1,1]*100 "}"
+	* Conciliacion bruto -> neto (solo las lineas con monto) *
+	if `Cuotas_ISSSTE'[1,1] != 0 {
+		noisily di in g "  (-) Cuotas ISSSTE" ///
+			_col(37) in y %18.0fc `Cuotas_ISSSTE'[1,1] ///
+			_col(56) in y %7.3fc `Cuotas_ISSSTE'[1,2] ///
+			_col(64) in y %6.1fc `Cuotas_ISSSTE'[1,1]/`mattot'[1,1]*100 ///
+			_col(71) in y %8.0fc `Cuotas_ISSSTE'[1,3]
+	}
+	if `Aportaciones_Federacion'[1,1] != 0 {
+		noisily di in g "  (-) Aportaciones a la seg. social" ///
+			_col(37) in y %18.0fc `Aportaciones_Federacion'[1,1] ///
+			_col(56) in y %7.3fc `Aportaciones_Federacion'[1,2] ///
+			_col(64) in y %6.1fc `Aportaciones_Federacion'[1,1]/`mattot'[1,1]*100 ///
+			_col(71) in y %8.0fc `Aportaciones_Federacion'[1,3]
+	}
+	if `Cuotas_ISSSTE'[1,1] != 0 | `Aportaciones_Federacion'[1,1] != 0 {
+		noisily di in g _dup(78) "-"
+		noisily di in g "{bf:  (=) Gasto neto" ///
+			_col(37) in y %18.0fc `mattot'[1,1]-`Cuotas_ISSSTE'[1,1]-`Aportaciones_Federacion'[1,1] ///
+			_col(56) in y %7.3fc  `mattot'[1,2]-`Cuotas_ISSSTE'[1,2]-`Aportaciones_Federacion'[1,2] ///
+			_col(64) in y %6.1fc (`mattot'[1,1]-`Cuotas_ISSSTE'[1,1]-`Aportaciones_Federacion'[1,1])/`mattot'[1,1]*100 ///
+			_col(71) in y %8.0fc `mattot'[1,3]-`Cuotas_ISSSTE'[1,3]-`Aportaciones_Federacion'[1,3] "}"
+	}
 
 
-	****************************
-	** 4.2. Division Resumido **
-	noisily di _newline in g "{bf: B. Gasto bruto (Resumido) " ///
-		_col(44) in g %20s "`currency'" ///
-		_col(66) %7s "% PIB" ///
-		_col(77) %7s "Dif% Real" "}"
-
+	**********************************************************************
+	** 5.2 B. Crecimiento `desde'-`anio' por grupo resumido               **
+	** (el dataset resumido —cuotas ISSSTE en negativo, grupos < minimum   **
+	**  agregados, balanceado por reshape— es el que consumen los graficos **
+	**  y los r() por rubro: name, namePIB, nameTot, namePC, nameC, Ename) **
+	**********************************************************************
 	replace gasto = -gasto if lower(resumido) == "cuotas issste"
 	replace gastoR = -gastoR if lower(resumido) == "cuotas issste"
 	replace gastoPIB = -gastoPIB if lower(resumido) == "cuotas issste"
+	replace gastoPC = -gastoPC if lower(resumido) == "cuotas issste"
 	
 	replace gasto = 0 if gasto == .
 	replace gastoR = 0 if gastoR == .
 	replace gastoPIB = 0 if gastoPIB == .
+	replace gastoPC = 0 if gastoPC == .
 
 	rename resumido resumido2
 	replace resumido2 = strtoname(resumido2)
 	replace resumido2 = substr(resumido2,1,24)
-	collapse (sum) gasto gastoPIB gastoR (max) pibY deflator lambda Poblacion if transf_gf == 0, by(anio resumido2)
+	collapse (sum) gasto gastoPIB gastoR gastoPC (max) pibY deflator lambda Poblacion if transf_gf == 0, by(anio resumido2)
 	reshape wide gasto*, i(anio) j(resumido2) string
 	reshape long
 	replace resumido2 = subinstr(resumido2,"_"," ",.)
 	encode resumido2, g(resumido)
+	local nyears = `aniovp'-`desde'
 	
-	capture tabstat gastoR if anio == `desde', by(resumido) stat(sum) f(%20.1fc) save missing
-	if _rc == 0 {
+	* Anio base: matrices por posicion k (el reshape balancea los grupos,
+	* asi que la k-esima fila de `desde' y de `anio' es el mismo grupo) *
+	local haspre = 0
+	capture tabstat gastoR gastoPIB if anio == `desde', by(resumido) stat(sum) f(%20.1fc) save missing
+	if _rc == 0 & "`pibYR`desde''" != "" {
+		local haspre = 1
 		tempname pregastot
 		matrix `pregastot' = r(StatTotal)
 		local k = 1
@@ -321,15 +351,27 @@ quietly {
 			matrix `pre`k'' = r(Stat`k')
 			local ++k
 		}
+		local gpib = ((`pibYR`anio''/`pibYR`desde'')^(1/`nyears')-1)*100
 	}
 
-	capture tabstat gasto gastoPIB if anio == `anio', by(resumido) stat(sum) f(%20.1fc) save missing
+	capture tabstat gasto gastoPIB gastoR gastoPC if anio == `anio', by(resumido) stat(sum) f(%20.1fc) save missing
 	tempname mattot
 	if _rc == 0 {
 		matrix `mattot' = r(StatTotal)
 	}
 	else {
-		matrix `mattot' = J(1,1,0)
+		matrix `mattot' = J(1,4,0)
+	}
+
+	if `haspre' {
+		noisily di _newline in g "{bf: B. Crecimiento:" in y " `desde' - `anio'" in g " (gasto neto, grupos resumidos)}" ///
+			_newline ///
+			_col(35) %7s "`desde'" ///
+			_col(44) %7s "`anio'" ///
+			_col(53) %7s "Dif PIB" ///
+			_col(62) %7s "%G real" ///
+			_col(71) %7s "Elastic"
+		noisily di in g _col(35) %7s "% PIB" _col(44) %7s "% PIB" _col(53) %7s "pp" _col(62) %7s "anual" _col(71) %7s "vs PIB"
 	}
 
 	local k = 1
@@ -338,18 +380,7 @@ quietly {
 		matrix `mat`k'' = r(Stat`k')
 		
 		if `mat`k''[1,1] == . {
-			matrix `mat`k'' = J(1,1,0)
-		}
-
-		capture confirm matrix `pre`k''
-		if _rc != 0 {
-			tempname pre`k'
-			matrix `pre`k'' = J(1,1,0)
-		}
-		capture confirm matrix `pregastot'
-		if _rc != 0 {
-			tempname pregastot
-			matrix `pregastot' = J(1,1,0)
+			matrix `mat`k'' = J(1,4,0)
 		}
 
 		* Display text *
@@ -364,91 +395,58 @@ quietly {
 		local disptext = ustrregexra(`"`disptext'"',`"[^a-zA-Z0-9 ]"',"")
 		local name = strtoname(`"`disptext'"')
 
-		* Display *
+		* Returns de nivel *
 		return scalar `name' = `mat`k''[1,1]
 		return scalar `name'PIB = `mat`k''[1,2]
-		return scalar `name'C = (abs(`mat`k''[1,1]/`pre`k''[1,1])^(1/(`=`aniovp'-`desde''))-1)*100
+		return scalar `name'Tot = `mat`k''[1,1]/`mattot'[1,1]*100
+		return scalar `name'PC = `mat`k''[1,4]
 		local divResumido `"`divResumido' `name'"'
 
-		noisily di in g `"  (+) `disptext'"' ///
-			_col(44) in y %20.0fc `mat`k''[1,1] ///
-			_col(66) in y %7.3fc `mat`k''[1,2] ///
-			_col(77) in y %7.1fc (abs(`mat`k''[1,1]/`pre`k''[1,1])^(1/(`=`aniovp'-`desde''))-1)*100
+		* Crecimiento real (geometrico) y elasticidad, si hay anio base *
+		if `haspre' {
+			capture confirm matrix `pre`k''
+			if _rc != 0 {
+				tempname pre`k'
+				matrix `pre`k'' = J(1,2,0)
+			}
+			local g = (abs(`mat`k''[1,3]/`pre`k''[1,1])^(1/`nyears')-1)*100
+			return scalar `name'C = `g'
+			if `gpib' != 0 {
+				return scalar E`name' = `g'/`gpib'
+			}
+			noisily di in g `"  (+) `=substr("`disptext'",1,28)'"' ///
+				_col(35) in y %7.3fc `pre`k''[1,2] ///
+				_col(44) in y %7.3fc `mat`k''[1,2] ///
+				_col(53) in y %7.3fc `mat`k''[1,2]-`pre`k''[1,2] ///
+				_col(62) in y %7.3fc `g' ///
+				_col(71) in y %7.3fc cond(`gpib' != 0, `g'/`gpib', .)
+		}
 		local ++k
 	}
 	return local divResumido `"`divResumido'"'
 
-	noisily di in g _dup(83) "-"
-	noisily di in g "{bf:  (=) Gasto neto" ///
-		_col(44) in y %20.0fc `mattot'[1,1] ///
-		_col(66) in y %7.3fc `mattot'[1,2] ///
-		_col(77) in y %7.1fc ((`mattot'[1,1]/`pregastot'[1,1])^(1/(`=`aniovp'-`desde''))-1)*100 "}"
-	
 	return scalar Gasto_neto = `mattot'[1,1]
 	return scalar Gasto_netoPIB = `mattot'[1,2]
-	return scalar Gasto_netoC = ((`mattot'[1,1]/`pregastot'[1,1])^(1/(`=`aniovp'-`desde''))-1)*100
+	return scalar Gasto_netoPC = `mattot'[1,4]
+	if `haspre' {
+		local gtot = ((`mattot'[1,3]/`pregastot'[1,1])^(1/`nyears')-1)*100
+		return scalar Gasto_netoC = `gtot'
+		if `gpib' != 0 {
+			return scalar EGasto_neto = `gtot'/`gpib'
+		}
+		noisily di in g _dup(78) "-"
+		noisily di in g "{bf:  (=) Gasto neto" ///
+			_col(35) in y %7.3fc `pregastot'[1,2] ///
+			_col(44) in y %7.3fc `mattot'[1,2] ///
+			_col(53) in y %7.3fc `mattot'[1,2]-`pregastot'[1,2] ///
+			_col(62) in y %7.3fc `gtot' ///
+			_col(71) in y %7.3fc cond(`gpib' != 0, `gtot'/`gpib', .) "}"
+		noisily di in g "  PIB real: " in y %5.3fc `gpib' in g " % anual (`desde'-`anio'). Crecimientos sobre gasto real (deflactor `aniovp')."
+	}
 
 	tempname Resumido_total
 	matrix `Resumido_total' = r(StatTotal)
 	return scalar Resumido_total = `Resumido_total'[1,1]
-
-
-	** 4.3 Crecimientos **
-	noisily di _newline in g "{bf: C. Cambios:" in y " `=`desde'' - `anio'" in g ///
-		_col(44) %7s "% PIB `anio'" ///
-		_col(55) %7s "% PIB `=`desde''" ///
-		_col(66) %7s "Dif pts" ///
-		_col(77) %7s "Dif %" "}"
-
-	capture tabstat gasto gastoPIB if anio == `desde', by(resumido) stat(sum) f(%20.1fc) missing save
-	tempname mattot
-	matrix `mattot' = r(StatTotal)
-
-	local k = 1
-	while `"`=r(name`k')'"' != "." {
-		tempname mat`k'
-		matrix `mat`k'' = r(Stat`k')
-		local ++k
-	}
-
-	capture tabstat gasto gastoPIB if anio == `anio', by(resumido) stat(sum) f(%20.1fc) missing save
-	if _rc == 0 {
-		tempname mattot5
-		matrix `mattot5' = r(StatTotal)
-
-		local k = 1
-		while `"`=r(name`k')'"' != "." {
-			tempname mat5`k'
-			matrix `mat5`k'' = r(Stat`k')
-
-			* Display text *
-			local disptext = r(name`k')
-			local disptext = subinstr(`"`disptext'"',"á","a",.)
-			local disptext = subinstr(`"`disptext'"',"é","e",.)
-			local disptext = subinstr(`"`disptext'"',"í","i",.)
-			local disptext = subinstr(`"`disptext'"',"ó","o",.)
-			local disptext = subinstr(`"`disptext'"',"ú","u",.)
-			local disptext = subinstr(`"`disptext'"',"ñ","n",.)
-			local disptext = subinstr(`"`disptext'"',"ü","u",.)
-			local disptext = ustrregexra(`"`disptext'"',`"[^a-zA-Z0-9 ]"',"")
-			local name = strtoname(`"`disptext'"')
-			
-			noisily di in g `"  (+) `disptext'"' ///
-				_col(44) in y %7.3fc `mat5`k''[1,2] ///
-				_col(55) in y %7.3fc `mat`k''[1,2] ///
-				_col(66) in y %7.3fc `mat5`k''[1,2]-`mat`k''[1,2] ///
-				_col(77) in y %7.1fc (`mat5`k''[1,2]-`mat`k''[1,2])/`mat`k''[1,2]*100
-
-			local ++k
-		}
-
-		noisily di in g _dup(83) "-"
-		noisily di in g "{bf:  (=) Total" ///
-			_col(44) in y %7.3fc `mattot5'[1,2] ///
-			_col(55) in y %7.3fc `mattot'[1,2] ///
-			_col(66) in y %7.3fc `mattot5'[1,2]-`mattot'[1,2] ///
-			_col(77) in y %7.1fc (`mattot5'[1,2]-`mattot'[1,2])/`mattot'[1,2]*100 "}"
-	}
 
 
 	*******************
@@ -642,17 +640,43 @@ program define UpdatePEF
 	* 1.1. Descargar archivos *
 	capture confirm file "`c(sysdir_site)'/raw/temp/prePEF.dta"
 	if _rc != 0 {
-		* Asegurar que los xlsx esten descargados (GitHub Release v7.0) *
-		foreach a in CP.2013.xlsx CP.2014.xlsx CP.2015.xlsx CP.2016.xlsx CP.2017.xlsx ///
-			CP.2018.xlsx CP.2019.xlsx CP.2020.xlsx CP.2021.xlsx CP.2022.xlsx CP.2023.xlsx ///
-			CP.2024.xlsx CP.2025.xlsx PEF.2026.xlsx CuotasISSSTE.xlsx {
-			ensure_asset "`a'"
+		* Asegurar que los assets esten descargados: TODOS los que el manifest
+		* declara bajo raw/PEFs/ (CP/PEF/PPEF por anio, CuotasISSSTE, Diccionario).
+		* La lista se DERIVA del manifest — hasta v8.3.0 era un foreach tecleado
+		* a mano desde v7.0 y dejo fuera PPEF.2027.xlsx y Diccionario.csv: el
+		* modulo descubre anios con `dir raw/PEFs`, asi que un asset no pedido
+		* simplemente no existia, sin error (2026-09-14, v8.3.1). *
+		ensure_asset, dir(raw/PEFs)
+		* Prioridad por año: CP (Cuenta Publica, ejercido) > PEF (aprobado) >    *
+		* PPEF (proyecto). Si coexisten dos versiones del mismo año, se usa la  *
+		* de mayor prioridad y se avisa; asi no se duplica el año ni hay que    *
+		* borrar xlsx a mano cuando llega la CP.                                *
+		local todos: dir "`c(sysdir_site)'/raw/PEFs" files "*.xlsx"
+		local archivos
+		foreach k of local todos {
+			* Archivos de bloqueo de Excel (~$nombre.xlsx): el xlsx esta abierto. *
+			* macval() evita que Stata expanda el "$" como macro global.         *
+			if strpos(`"`macval(k)'"', "~$") == 1 {
+				noisily di in g "Omitiendo archivo de bloqueo de Excel (cerrar el xlsx abierto)."
+				continue
+			}
+			if regexm(`"`k'"', "^(CP|PEF|PPEF) ([0-9][0-9][0-9][0-9])\.xlsx$") {
+				local tipo = regexs(1)
+				local yr = regexs(2)
+				local mejor "`tipo'"
+				foreach t in CP PEF PPEF {
+					if `: list posof `"`t' `yr'.xlsx"' in todos' > 0 {
+						local mejor "`t'"
+						continue, break
+					}
+				}
+				if "`tipo'" != "`mejor'" {
+					noisily di in g "Omitiendo " in y "`k'" in g ": lo supersede " in y "`mejor' `yr'.xlsx" in g "."
+					continue
+				}
+			}
+			local archivos `"`archivos' `"`k'"'"'
 		}
-		* CP 2025 (Cuenta Publica) supersede a PEF 2025 (aprobado): si un usuario *
-		* conserva el xlsx viejo, se elimina para no duplicar el anio 2025.       *
-		capture erase "`c(sysdir_site)'/raw/PEFs/PEF 2025.xlsx"
-		local archivos: dir "`c(sysdir_site)'/raw/PEFs" files "*.xlsx"		// Archivos .xlsx
-		*local archivos `""PEF 2025.dta" "CuotasISSSTE.dta""'
 
 		foreach k of local archivos {
 
@@ -687,105 +711,25 @@ program define UpdatePEF
 			import excel "`c(sysdir_site)'/raw/PEFs/`k'", clear firstrow case(lower) allstring sheet("`hoja'")
 			capture drop v*
 
-			* 1.2 Limpiar observaciones *
-			capture drop if ciclo == ""
-			capture rename ciclo anio
-
-			* 1.3 Limpiar nombres *
-			* Columnas fantasma: headers vacios (p.ej. CP 2022 trae ~180, que     *
-			* import excel nombra con la letra de la columna). Se detectan por    *
-			* CONTENIDO (100% vacias), no por longitud del nombre: CP 2025 trae   *
-			* columnas legitimas de 1-2 caracteres (R, UR, AI, PP, FF).           *
-			foreach j of varlist _all {
-				capture assert missing(`j')
-				if _rc == 0 {
-					drop `j'
-				}
+			* 1.2 Limpiar observaciones: filas sin CICLO (CP 2022 trae 1,000 vacias) *
+			capture confirm variable ciclo
+			if _rc != 0 {
+				noisily di as error "ALARMA UpdatePEF (`k'): el archivo no trae la columna CICLO."
+				error 459
 			}
-			* CP 2025: la columna del ramo se llama "R" (discrepancia documentada:*
-			* el Diccionario.csv de SHCP la nombra "RAMO"; el archivo trae "R").  *
-			capture rename r ramo
-			foreach j of varlist _all {
-				if `"`=substr("`j'",1,3)'"' == "id_" {
-					local newname = `"`=substr("`j'",4,.)'"'
-					capture rename `j' `newname'
-					if _rc != 0 {
-						rename `newname' desc_`newname'
-						rename `j' `newname'				
-					}
-					local j = "`newname'"
-				}
-				if `"`=substr("`j'",1,6)'"' == "monto_" {
-					local newname = `"`=substr("`j'",7,.)'"'
-					rename `j' `newname'	
-					local j = "`newname'"
-				}
-				if "`j'" == "objeto_del_gasto" | "`j'" == "partida_especifica" {
-					rename `j' objeto
-					local j = "objeto"
-				}
-				if "`j'" == "desc_objeto_del_gasto" | "`j'" == "desc_partida_especifica" {
-					rename `j' desc_objeto
-					local j = "desc_objeto"
-				}
-				if "`j'" == "desc_gpo_funcional" {
-					rename `j' desc_finalidad
-					local j = "desc_finalidad"
-				}
-				if "`j'" == "gpo_funcional" {
-					rename `j' finalidad
-					local j = "finalidad"
-				}
-				if "`j'" == "ff" {
-					rename `j' fuente
-					local j = "fuente"
-				}
-				if "`j'" == "desc_ff" {
-					rename `j' desc_fuente
-					local j = "desc_fuente"
-				}
-				if "`j'" == "desc_entidad_federativa" {
-					rename `j' desc_entidad
-					local j = "desc_entidad"
-				}
-				if "`j'" == "entidad_federativa" {
-					capture rename `j' entidad
-				}
-				capture rename ejercicio ejercido
-			}
-			* La columna vieja ENTIDAD_FEDERATIVA (texto, CPs 2014-2024) queda    *
-			* como desc_entidad_federativa tras el swap de id_; homologarla aqui  *
-			* (el loop anterior itera sobre los nombres ORIGINALES y no la ve).   *
-			capture rename desc_entidad_federativa desc_entidad
-
-			* 1.4 Limpiar valores *
-			// Primero, asegurar que las variables de gasto sean numéricas. 
-			foreach j in aprobado modificado devengado pagado adefas ejercido proyecto {
-				capture destring `j', replace ignore(",")
-				if _rc == 0 {
-					format `j' %20.0fc
-					replace `j' = 0 if `j' == .
-				}
+			quietly count if trim(ciclo) == ""
+			if r(N) > 0 {
+				noisily di in g "  filas sin CICLO eliminadas: " in y r(N)
+				drop if trim(ciclo) == ""
 			}
 
-			// Segundo, limpiar
-			foreach j of varlist _all {
-				if "`j'" != "ejercido" & "`j'" != "aprobado" & "`j'" != "proyecto" ///
-					& "`j'" != "modificado" & "`j'" != "devengado" & "`j'" != "pagado" ///
-					& "`j'" != "adefas" & "`j'" != "ramo" {	
-					noisily di "`j'"
-					replace `j' = trim(`j')
-					replace `j' = lower(`j')
-					replace `j' = subinstr(`j',`"""',"",.)
-					replace `j' = subinstr(`j',"  "," ",.)
-					replace `j' = subinstr(`j',"Ê"," ",.)	// <--Algunas CPs tienen este caracter "raro".
-					replace `j' = subinstr(`j',"Â","",.) 	// <--Algunas CPs tienen este caracter "raro".
-					replace `j' = subinstr(`j'," "," ",.)
-					format `j' %30s
-				}
-				destring `j', replace				// Tercero, hacer numéricas las variables posibles
-			}
-			capture tostring ramo, replace
+			* 1.3 Homologar nombres de columna al layout canonico y validar *
+			* (diccionario unico para todos los layouts SHCP 2013-2027; una  *
+			* columna desconocida o una canonica faltante DETIENE el proceso) *
+			_PEFhomologa, archivo(`"`k'"')
+
+			* 1.4 Limpiar valores: montos numericos, caracteres raros, codigos *
+			_PEFlimpia, archivo(`"`k'"')
 
 			* 1.5 Save *
 			tempfile `=strtoname("`k'")'				// strtoname convierte el texto en Stata var_type_name
@@ -802,9 +746,18 @@ program define UpdatePEF
 				local ++j
 			}
 			else {
-				append using ``=strtoname("`k'")''
+				capture append using ``=strtoname("`k'")''
+				if _rc != 0 {
+					local rc = _rc
+					noisily di as error "ALARMA UpdatePEF: fallo el append de `k' (error r(`rc')). Tipos en conflicto:"
+					_PEFtipos using ``=strtoname("`k'")''
+					error `rc'
+				}
 			}
 		}
+
+		* Quinto, verificar comparabilidad intertemporal (año por año) *
+		_PEFverifica
 
 
 		***********************************
@@ -825,8 +778,8 @@ program define UpdatePEF
 		** 2.2 Ramo **
 		replace ramo = "50" if ramo == "GYR"
 		replace ramo = "51" if ramo == "GYN"
-		replace ramo = "52" if ramo == "TZZ" | ur == "tzz"	// ur ya viene en minusculas (limpieza 1.4)
-		replace ramo = "53" if ramo == "TOQ" | ur == "toq"
+		replace ramo = "52" if ramo == "TZZ" | ur == "Tzz"	// ur viene en Title Case (limpieza 1.4)
+		replace ramo = "53" if ramo == "TOQ" | ur == "Toq"
 		destring ramo, replace
 
 		replace desc_ramo = "Oficina de la Presidencia de la República" if ramo == 2
@@ -842,7 +795,7 @@ program define UpdatePEF
 		replace desc_ramo = "Instituto Nacional de Transparencia, Acceso a la Información y Protección de Datos Personales" if ramo == 44
 		replace desc_ramo = "Petróleos Mexicanos" if ramo == 52
 		replace desc_ramo = "Comisión Federal de Electricidad" if ramo == 53
-		replace desc_ramo = lower(desc_ramo)
+		*replace desc_ramo = lower(desc_ramo)
 
 		labmask ramo, values(desc_ramo)
 		drop desc_ramo
@@ -1160,9 +1113,9 @@ program define UpdatePEF
 
 	// Pensión para adultos mayores
 	replace divCIEP = "Pensión AM" if divCIEP == "" ///
-		& (desc_pp == "pensión para adultos mayores" ///
-		| desc_pp == "pensión para el bienestar de las personas adultas mayores" ///
-		| desc_pp == "pensión para el bienestar de las personas con discapacidad permanente")
+		& (desc_pp == "Pensión para Adultos Mayores" ///
+		| desc_pp == "Pensión para el Bienestar de las Personas Adultas Mayores" ///
+		| desc_pp == "Pensión para el Bienestar de las Personas con Discapacidad Permanente")
 	replace divSIM = "Pensiones" if divCIEP == "Pensión AM"
 
 
@@ -1176,7 +1129,7 @@ program define UpdatePEF
 	replace divCIEP = "Salud" if divCIEP == "" ///
 		& ramo == 52 & ai == 231
 	replace divCIEP = "Salud" if divCIEP == "" ///
-		& ramo == 47 & ur == "ayo"
+		& ramo == 47 & ur == "Ayo"
 	replace divCIEP = "Salud" if divCIEP == "" ///
 		& ramo == 20 & pp == 317
 
@@ -1238,11 +1191,11 @@ program define UpdatePEF
 	replace divCIEP = "Federalizado" if divCIEP == "" ///
 		& (objeto == 46101 & ramo == 23 & pp == 80)           // FEIEF
 	replace divCIEP = "Federalizado" if divCIEP == "" ///
-		& (ramo == 23 & pp == 4 & modalidad == "y")           // FEIEF (minusculas: limpieza 1.4)
+		& (ramo == 23 & pp == 4 & modalidad == "Y")           // FEIEF (Title Case: limpieza 1.4)
 	replace divCIEP = "Federalizado" if divCIEP == "" ///
 		& (ramo == 23 & pp == 141)                            // FIES
 	replace divCIEP = "Federalizado" if divCIEP == "" ///
-		& (pp == 13 & (ramo == 12 | ramo == 47) & modalidad == "u") // INSABI/Seguro Popular/IMSS-Bienestar
+		& (pp == 13 & (ramo == 12 | ramo == 47) & modalidad == "U") // INSABI/Seguro Popular/IMSS-Bienestar
 
 	g divFEDE = "Participaciones" if (ramo == 28) // Part
 	replace divFEDE = "Aportaciones" if (ramo == 33 | ramo == 25)    // Aport
@@ -1250,10 +1203,10 @@ program define UpdatePEF
 	replace divFEDE = "Convenios" if (objeto == 85101)               // Convenios de reasignación
 	replace divFEDE = "Convenios" if (objeto == 43101 & ramo == 8 & pp == 263 & entidad != 34) // Convenios de reasignación
 	replace divFEDE = "Subsidios" if (objeto == 46101 & ramo == 23 & pp == 80) // FEIEF
-	replace divFEDE = "Subsidios" if (ramo == 23 & pp == 4 & modalidad == "y") // FEIEF
+	replace divFEDE = "Subsidios" if (ramo == 23 & pp == 4 & modalidad == "Y") // FEIEF
 	replace divFEDE = "Subsidios" if (ramo == 23 & pp == 141) // FIES
 	replace divFEDE = "Subsidios" if (ramo == 23 & objeto == 43801)
-	replace divFEDE = "Salud (federalizado)" if (pp == 13 & (ramo == 12 | ramo == 47) & modalidad == "u") // INSABI/Seguro Popular/IMSS-Bienestar
+	replace divFEDE = "Salud (federalizado)" if (pp == 13 & (ramo == 12 | ramo == 47) & modalidad == "U") // INSABI/Seguro Popular/IMSS-Bienestar
 
 
 	**********************************
@@ -1262,8 +1215,8 @@ program define UpdatePEF
 		| (ramo == 11 & pp == 66) ///
 		| (ramo == 20 & pp == 174) | (ramo == 51 & pp == 48) | (ramo == 50 & pp == 7) ///
 		| (ramo == 20 & pp == 241) ///
-		| (ramo == 12 & pp == 41) | (ramo == 20 & pp == 3 & ur == "v3a") | (ramo == 33 & pp == 6) ///
-		| (ramo == 4 & pp == 12  & ur == "v00") | (ramo == 51 & pp == 42) | (ramo == 12 & pp == 39) ///
+		| (ramo == 12 & pp == 41) | (ramo == 20 & pp == 3 & ur == "V3a") | (ramo == 33 & pp == 6) ///
+		| (ramo == 4 & pp == 12  & ur == "V00") | (ramo == 51 & pp == 42) | (ramo == 12 & pp == 39) ///
 		| (ramo == 12 & pp == 40) | (ramo == 11 & pp == 221) | (ramo == 25 & pp == 221) ///
 		| (ramo == 51 & subfuncion == 3 & anio <= 2019) | (ramo == 20 & pp == 12 & anio >= 2019 & anio <= 2022)
 
@@ -1296,7 +1249,7 @@ program define UpdatePEF
 	replace gasto = aprobado if ejercido == . & aprobado != .
 	replace gasto = proyecto if ejercido == . & aprobado == . & proyecto != .
 
-	g byte transf_gf = (ramo == 19 & ur == "gyn") | (ramo == 19 & ur == "gyr")
+	g byte transf_gf = (ramo == 19 & ur == "Gyn") | (ramo == 19 & ur == "Gyr")
 
 	g byte noprogramable = ramo == 28 | capitulo == 9
 	replace noprogramable = 0 if ramo == -1
@@ -1318,4 +1271,417 @@ program define UpdatePEF
 	compress
 	capture mkdir "`c(sysdir_site)'/master/"
 	save "`c(sysdir_site)'/master/PEF.dta", replace
+end
+
+
+
+****************************************************************
+**** _PEFhomologa: nombres de columna SHCP -> layout canonico ****
+****************************************************************
+* Un solo diccionario para todos los layouts que ha publicado la SHCP:
+*   CP 2013-2024  : ID_xxx / DESC_xxx, MONTO_xxx, EJERCICIO, ENTIDAD_FEDERATIVA (texto)
+*   CP 2025       : sin prefijo ID_, "R" para ramo, ENTIDAD_FEDERATIVA (numerica)
+*   PEF 2026      : ID_PARTIDA_ESPECIFICA en vez de OBJETO_DEL_GASTO, + capitulo/concepto
+*   PPEF 2027     : RAMO_DESCRIPCION, UNIDAD, PROGR_PRES, TIPO_GASTO, FUENTE_FINAN,
+*                   IMPORTE_PROYECTO, ..._DESCRIPCION
+*   CuotasISSSTE  : ciclo ramo desc_ramo proyecto aprobado ejercido
+* Recibe la base con nombres en minusculas (case(lower)). Elimina columnas
+* fantasma (100% vacias), renombra segun el diccionario y DETIENE con lista
+* explicita si queda una columna desconocida o falta una canonica requerida.
+program define _PEFhomologa
+
+	syntax , ARCHivo(string)
+
+	** 1. Columnas fantasma: headers vacios que import excel nombra con la     **
+	** letra de la columna (CP 2019: 73, CP 2021: 1,024, CP 2022: 212). Se    **
+	** detectan por CONTENIDO (100% vacias), no por nombre: CP 2025 trae      **
+	** columnas legitimas de 1-2 letras (R, UR, AI, PP, FF).                  **
+	local fantasma = 0
+	foreach j of varlist _all {
+		capture assert missing(`j')
+		if _rc == 0 {
+			drop `j'
+			local ++fantasma
+		}
+	}
+	if `fantasma' > 0 {
+		noisily di in g "  columnas fantasma (vacias) eliminadas: " in y `fantasma'
+	}
+
+	** 2. ENTIDAD_FEDERATIVA es TEXTO cuando existe ID_ENTIDAD_FEDERATIVA      **
+	** (CP 2013-2024) y NUMERICA cuando no (CP 2025, PPEF 2027).              **
+	capture confirm variable id_entidad_federativa, exact
+	if _rc == 0 {
+		capture rename entidad_federativa desc_entidad
+	}
+
+	** 3. Diccionario origen -> canonico **
+	local dic ///
+		ciclo:anio ///
+		id_ramo:ramo r:ramo ///
+		desc_ramo:desc_ramo ramo_descripcion:desc_ramo ///
+		id_ur:ur unidad:ur ///
+		desc_ur:desc_ur unidad_descripcion:desc_ur ///
+		gpo_funcional:finalidad grupo_funcional:finalidad ///
+		desc_gpo_funcional:desc_finalidad grupo_fun_descripcion:desc_finalidad ///
+		id_funcion:funcion ///
+		desc_funcion:desc_funcion funcionl_descripcion:desc_funcion ///
+		id_subfuncion:subfuncion ///
+		desc_subfuncion:desc_subfuncion subfuncionl_descripcion:desc_subfuncion ///
+		id_ai:ai actividad_inst:ai ///
+		desc_ai:desc_ai actividad_inst_descripcion:desc_ai ///
+		id_modalidad:modalidad ///
+		desc_modalidad:desc_modalidad modalidad_descripcion:desc_modalidad ///
+		id_pp:pp progr_pres:pp ///
+		desc_pp:desc_pp progr_pres_descripcion:desc_pp ///
+		id_capitulo:capitulo ///
+		desc_capitulo:desc_capitulo capitulo_desc:desc_capitulo ///
+		id_concepto:concepto ///
+		desc_concepto:desc_concepto concepto_desc:desc_concepto ///
+		id_partida_generica:partida_generica ///
+		desc_partida_generica:desc_partida_generica partida_generica_desc:desc_partida_generica ///
+		id_objeto_del_gasto:objeto objeto_del_gasto:objeto id_partida_especifica:objeto partida_especifica:objeto ///
+		desc_objeto_del_gasto:desc_objeto desc_partida_especifica:desc_objeto partida_descripcion:desc_objeto ///
+		id_tipogasto:tipogasto tipo_gasto:tipogasto ///
+		desc_tipogasto:desc_tipogasto tipo_gasto_descripcion:desc_tipogasto ///
+		id_ff:fuente ff:fuente fuente_finan:fuente ///
+		desc_ff:desc_fuente fuente_finan_descripcion:desc_fuente ///
+		id_entidad_federativa:entidad entidad_federativa:entidad ///
+		desc_entidad_federativa:desc_entidad entidad_fed_descripcion:desc_entidad ///
+		id_clave_cartera:clave_cartera ///
+		monto_aprobado:aprobado ///
+		monto_modificado:modificado ///
+		monto_devengado:devengado ///
+		monto_pagado:pagado ///
+		monto_adefas:adefas ///
+		monto_ejercicio:ejercido ejercicio:ejercido monto_ejercido:ejercido ///
+		importe_proyecto:proyecto
+
+	local canonicas anio ramo desc_ramo ur desc_ur finalidad desc_finalidad funcion desc_funcion ///
+		subfuncion desc_subfuncion ai desc_ai modalidad desc_modalidad pp desc_pp ///
+		capitulo desc_capitulo concepto desc_concepto partida_generica desc_partida_generica ///
+		objeto desc_objeto tipogasto desc_tipogasto fuente desc_fuente entidad desc_entidad ///
+		clave_cartera aprobado modificado devengado pagado adefas ejercido proyecto
+
+	local desconocidas
+	foreach j of varlist _all {
+		local destino
+		foreach par of local dic {
+			gettoken origen destino2 : par, parse(":")
+			local destino2 = subinstr("`destino2'", ":", "", 1)
+			if "`j'" == "`origen'" {
+				local destino `destino2'
+			}
+		}
+		if "`destino'" != "" {
+			if "`destino'" != "`j'" {
+				capture confirm variable `destino', exact
+				if _rc == 0 {
+					noisily di as error "ALARMA UpdatePEF (`archivo'): `j' y `destino' mapean a la misma columna canonica `destino'."
+					error 459
+				}
+				rename `j' `destino'
+			}
+		}
+		else if !`: list j in canonicas' {
+			local desconocidas `desconocidas' `j'
+		}
+	}
+	if "`desconocidas'" != "" {
+		noisily di as error "ALARMA UpdatePEF (`archivo'): columnas NO reconocidas (¿layout nuevo de SHCP?): " in y "`desconocidas'"
+		noisily di as error "  Agregarlas al diccionario de _PEFhomologa en PEF.ado antes de continuar."
+		error 459
+	}
+
+	** 4. Canonicas requeridas segun el tipo de archivo **
+	capture confirm variable ur, exact
+	if _rc != 0 {
+		* CuotasISSSTE: solo ciclo ramo desc_ramo + montos *
+		local requeridas anio ramo desc_ramo
+	}
+	else {
+		local requeridas anio ramo desc_ramo ur desc_ur finalidad desc_finalidad funcion desc_funcion ///
+			subfuncion desc_subfuncion ai desc_ai modalidad desc_modalidad pp desc_pp ///
+			objeto desc_objeto tipogasto desc_tipogasto fuente desc_fuente entidad desc_entidad clave_cartera
+	}
+	local faltantes
+	foreach v of local requeridas {
+		capture confirm variable `v', exact
+		if _rc != 0 {
+			local faltantes `faltantes' `v'
+		}
+	}
+	if "`faltantes'" != "" {
+		noisily di as error "ALARMA UpdatePEF (`archivo'): faltan columnas canonicas: " in y "`faltantes'"
+		error 459
+	}
+	local montos = 0
+	foreach v in aprobado ejercido proyecto {
+		capture confirm variable `v', exact
+		if _rc == 0 {
+			local ++montos
+		}
+	}
+	if `montos' == 0 {
+		noisily di as error "ALARMA UpdatePEF (`archivo'): no trae ninguna columna de monto (aprobado/ejercido/proyecto)."
+		error 459
+	}
+end
+
+
+****************************************************************
+**** _PEFlimpia: montos numericos, caracteres raros, codigos  ****
+****************************************************************
+* Recibe la base ya homologada (todo string, por allstring). Deja:
+*   - montos numericos (coma de miles fuera), vacios = 0, formato %20.0fc
+*   - textos sin NBSP / saltos de linea / tabs / mojibake (Ê, Â), sin comillas,
+*     un solo espacio, trim, minusculas, acentos graves corregidos (ò -> ó:
+*     CP 2013 trae "investigaciòn"), normalizados a NFC
+*   - ramo STRING sin lower (codigos GYR/GYN/TZZ/TOQ se mapean en 2.2)
+*   - codigos numericos forzados (anio finalidad funcion ... entidad): si no
+*     convierten, DETIENE con los valores no numericos
+*   - ur / modalidad / clave_cartera / desc_* forzados a string
+program define _PEFlimpia
+
+	syntax , ARCHivo(string)
+
+	local montos aprobado modificado devengado pagado adefas ejercido proyecto
+	local codigos anio finalidad funcion subfuncion ai pp capitulo concepto partida_generica ///
+		objeto tipogasto fuente entidad
+	local textos ur modalidad clave_cartera
+
+	** 1. Montos **
+	foreach j of local montos {
+		capture confirm variable `j', exact
+		if _rc == 0 {
+			capture confirm string variable `j', exact
+			if _rc == 0 {
+				quietly replace `j' = subinstr(trim(`j'), ",", "", .)
+				capture destring `j', replace
+				if _rc != 0 {
+					noisily di as error "ALARMA UpdatePEF (`archivo'): `j' trae valores no numericos:"
+					noisily levelsof `j' if real(`j') == . & `j' != "", clean
+					error 459
+				}
+			}
+			format `j' %20.0fc
+			quietly replace `j' = 0 if `j' == .
+		}
+	}
+
+	** 2. Textos: todo lo que no es monto ni ramo **
+	foreach j of varlist _all {
+		if `: list j in montos' | "`j'" == "ramo" {
+			continue
+		}
+		capture confirm string variable `j', exact
+		if _rc != 0 {
+			continue
+		}
+		quietly {
+			replace `j' = ustrnormalize(`j', "nfc")
+			replace `j' = subinstr(`j', char(160), " ", .)		// NBSP (todas las CPs)
+			replace `j' = subinstr(`j', char(10), " ", .)		// salto de linea (PEF 2026, PPEF 2027)
+			replace `j' = subinstr(`j', char(13), " ", .)
+			replace `j' = subinstr(`j', char(9), " ", .)
+			replace `j' = subinstr(`j', "Ê", " ", .)			// mojibake de algunas CPs
+			replace `j' = subinstr(`j', "Â", "", .)
+			replace `j' = subinstr(`j', `"""', "", .)
+			replace `j' = ustrregexra(`j', " +", " ")
+			replace `j' = trim(`j')
+			replace `j' = ustrtitle(lower(`j'))
+			* Corregir artículos y preposiciones en español (no deben ir en mayúscula):
+			replace `j' = subinstr(`j', " De ", " de ", .)
+			replace `j' = subinstr(`j', " Del ", " del ", .)
+			replace `j' = subinstr(`j', " La ", " la ", .)
+			replace `j' = subinstr(`j', " El ", " el ", .)
+			replace `j' = subinstr(`j', " Los ", " los ", .)
+			replace `j' = subinstr(`j', " Las ", " las ", .)
+			replace `j' = subinstr(`j', " Y ", " y ", .)
+			replace `j' = subinstr(`j', " A ", " a ", .)
+			replace `j' = subinstr(`j', " En ", " en ", .)
+			replace `j' = subinstr(`j', " Para ", " para ", .)
+			replace `j' = subinstr(`j', " Con ", " con ", .)
+			replace `j' = subinstr(`j', " Por ", " por ", .)
+			replace `j' = subinstr(`j', " Al ", " al ", .)
+			if substr("`j'", 1, 5) == "desc_" {
+				replace `j' = subinstr(`j', "à", "á", .)		// acentos graves: no existen en español
+				replace `j' = subinstr(`j', "è", "é", .)
+				replace `j' = subinstr(`j', "ì", "í", .)
+				replace `j' = subinstr(`j', "ò", "ó", .)
+				replace `j' = subinstr(`j', "ù", "ú", .)
+			}
+			format `j' %30s
+		}
+	}
+
+	** 3. Codigos numericos: forzados; un valor no numerico detiene **
+	foreach j of local codigos {
+		capture confirm string variable `j', exact
+		if _rc == 0 {
+			capture destring `j', replace
+			if _rc != 0 {
+				noisily di as error "ALARMA UpdatePEF (`archivo'): el codigo `j' trae valores no numericos:"
+				noisily levelsof `j' if real(`j') == . & `j' != "", clean
+				error 459
+			}
+		}
+	}
+
+	** 4. Strings forzados: aunque un año venga 100% numerico, siguen string **
+	** (ur mezcla 100/GYR; clave_cartera mezcla 0/alfanumerico)               **
+	foreach j of local textos {
+		capture confirm numeric variable `j', exact
+		if _rc == 0 {
+			quietly tostring `j', replace
+		}
+	}
+	quietly tostring ramo, replace
+	quietly replace ramo = trim(ramo)
+
+	** 5. Un archivo CP/PEF/PPEF = un año (CuotasISSSTE trae todos los años) **
+	capture confirm variable ur, exact
+	if _rc == 0 {
+		quietly levelsof anio, local(anios)
+		if `: word count `anios'' != 1 {
+			noisily di as error "ALARMA UpdatePEF (`archivo'): el archivo trae mas de un CICLO: `anios'"
+			error 459
+		}
+	}
+end
+
+
+****************************************************************
+**** _PEFtipos: diagnostico de tipos cuando falla un append   ****
+****************************************************************
+program define _PEFtipos
+
+	syntax using/
+
+	foreach v of varlist _all {
+		local tm_`v' : type `v'
+		local vmaster `vmaster' `v'
+	}
+	preserve
+	use "`using'", clear
+	foreach v of varlist _all {
+		if `: list v in vmaster' {
+			local tu : type `v'
+			local tm `tm_`v''
+			if (substr("`tm'",1,3) == "str") != (substr("`tu'",1,3) == "str") {
+				noisily di as error "  {bf:`v'}: acumulado es " in y "`tm'" as err ", archivo es " in y "`tu'"
+			}
+		}
+	}
+	restore
+end
+
+
+****************************************************************
+**** _PEFverifica: comparabilidad intertemporal tras el append ****
+****************************************************************
+* Año por año, sobre la base ya apilada (antes de la homologacion de terminos):
+*   - cobertura de claves (ramo ur funcion objeto tipogasto entidad) >= 99.5%
+*   - hay gasto: suma de aprobado, ejercido o proyecto > 0
+*   - ramo: numerico 1-56 o codigo alfabetico conocido (GYR GYN TZZ TOQ), o -1
+*   - modalidad: una letra; entidad: 1-34 o vacia; finalidad 1-4
+*   - desc_tipogasto: solo categorias reconocidas por 4.6 (inversion) y 4.0
+* Imprime una tabla resumen y DETIENE si alguna regla falla.
+program define _PEFverifica
+
+	tempvar okramo
+	quietly g byte `okramo' = inrange(real(ramo), 1, 56) | inlist(ramo, "GYR", "GYN", "TZZ", "TOQ", "-1")
+
+	noisily di _newline in g "{bf: Verificacion intertemporal PEF}"
+	noisily di in g "  anio" _col(10) %9s "filas" _col(22) %7s "ramo" _col(31) %7s "ur" ///
+		_col(40) %7s "funcion" _col(49) %7s "objeto" _col(58) %7s "tipogto" _col(67) %7s "entidad" ///
+		_col(76) %10s "gasto(bn)"
+
+	local fallas = 0
+	quietly levelsof anio, local(ANIOS)
+	foreach a of local ANIOS {
+		quietly count if anio == `a'
+		local ntot = r(N)
+		quietly count if anio == `a' & ramo != "-1"
+		local n = r(N)
+		local cuotas = (`n' == 0)
+
+		foreach v in ramo ur funcion objeto tipogasto entidad {
+			capture confirm string variable `v', exact
+			if _rc == 0 {
+				quietly count if anio == `a' & ramo != "-1" & trim(`v') != ""
+			}
+			else {
+				quietly count if anio == `a' & ramo != "-1" & `v' != .
+			}
+			local c_`v' = cond(`n' > 0, r(N)/`n'*100, 100)
+		}
+		quietly replace `okramo' = 1 if anio == `a' & ramo == "-1"
+		quietly count if anio == `a' & `okramo' == 0
+		local ramomal = r(N)
+
+		local gasto = 0
+		foreach v in aprobado ejercido proyecto {
+			capture confirm variable `v', exact
+			if _rc == 0 {
+				quietly summarize `v' if anio == `a', meanonly
+				local gasto = max(`gasto', r(sum))
+			}
+		}
+
+		noisily di in g "  " in y `a' _col(10) %9.0fc `ntot' _col(22) %7.1f `c_ramo' _col(31) %7.1f `c_ur' ///
+			_col(40) %7.1f `c_funcion' _col(49) %7.1f `c_objeto' _col(58) %7.1f `c_tipogasto' ///
+			_col(67) %7.1f `c_entidad' _col(76) %10.2f `gasto'/1e12
+
+		if `gasto' <= 0 {
+			noisily di as error "    -> `a': sin gasto (aprobado/ejercido/proyecto suman 0)."
+			local ++fallas
+		}
+		if `ramomal' > 0 {
+			noisily di as error "    -> `a': `ramomal' filas con ramo no reconocido:"
+			noisily levelsof ramo if anio == `a' & `okramo' == 0, clean
+			local ++fallas
+		}
+		if `cuotas' {
+			continue
+		}
+		foreach v in ramo ur funcion objeto tipogasto entidad {
+			if `c_`v'' < 99.5 {
+				noisily di as error "    -> `a': cobertura de `v' = `: di %5.1f `c_`v''' %."
+				local ++fallas
+			}
+		}
+		quietly count if anio == `a' & ramo != "-1" & !ustrregexm(modalidad, "^[A-Z]$")
+		if r(N) > 0 {
+			noisily di as error "    -> `a': `r(N)' filas con modalidad que no es una letra."
+			local ++fallas
+		}
+		quietly count if anio == `a' & ramo != "-1" & !(inrange(entidad, 1, 34) | entidad == .)
+		if r(N) > 0 {
+			noisily di as error "    -> `a': `r(N)' filas con entidad fuera de 1-34."
+			local ++fallas
+		}
+		quietly count if anio == `a' & ramo != "-1" & !inrange(finalidad, 1, 4)
+		if r(N) > 0 {
+			noisily di as error "    -> `a': `r(N)' filas con finalidad fuera de 1-4."
+			local ++fallas
+		}
+		quietly count if anio == `a' & ramo != "-1" & !(strpos(desc_tipogasto, "Gasto Corriente") == 1 ///
+			| strpos(desc_tipogasto, "Gasto de Capital") == 1 | strpos(desc_tipogasto, "Gasto de Inversión") == 1 ///
+			| strpos(desc_tipogasto, "Gasto de Obra") == 1 | desc_tipogasto == "Participaciones" ///
+			| desc_tipogasto == "Pensiones y Jubilaciones" | desc_tipogasto == "")
+		if r(N) > 0 {
+			noisily di as error "    -> `a': `r(N)' filas con desc_tipogasto no reconocido:"
+			noisily levelsof desc_tipogasto if anio == `a' & ramo != "-1" & !(strpos(desc_tipogasto, "Gasto Corriente") == 1 ///
+				| strpos(desc_tipogasto, "Gasto de Capital") == 1 | strpos(desc_tipogasto, "Gasto de Inversión") == 1 ///
+				| strpos(desc_tipogasto, "Gasto de Obra") == 1 | desc_tipogasto == "Participaciones" ///
+				| desc_tipogasto == "Pensiones y Jubilaciones" | desc_tipogasto == ""), clean
+			local ++fallas
+		}
+	}
+	if `fallas' > 0 {
+		noisily di as error "ALARMA UpdatePEF: `fallas' regla(s) de comparabilidad intertemporal fallaron (ver arriba)."
+		error 459
+	}
+	noisily di in g "  Comparabilidad intertemporal: " in y "OK" in g "."
 end

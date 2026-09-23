@@ -180,20 +180,21 @@ Por defecto: 0.5. Aumenta este valor para simplificar la gráfica.
 {title:Resultados}
 
 {pstd}
-Al ejecutar el comando obtienes cuatro tablas en pantalla, una gráfica y una base de datos:
+Al ejecutar el comando obtienes dos tablas en pantalla, una gráfica y una base de datos.
+Ambas tablas respetan el {it:if} de la sintaxis: el comando despliega exactamente la
+muestra que pides (p.ej. {cmd:if divLIF != 10} excluye la deuda; {cmd:if divLIF == 10}
+muestra solo la deuda).
 {p_end}
 
-{phang2}{bf:Tabla A — Ingresos por categoría:} Montos absolutos, % del PIB y
-% del total de ingresos para el año de análisis{p_end}
+{phang2}{bf:Tabla A — Ingresos por categoría (año de análisis):} Montos absolutos,
+% del PIB, % del total y crecimiento real anual (geométrico) desde el año de
+comparación ({opt desde()}). Al pie, el total de la muestra y, solo cuando la
+muestra incluye deuda, el total sin deuda.{p_end}
 
-{phang2}{bf:Tabla B — Ingresos resumidos:} Ingresos netos (excluye deuda y
-aportaciones de seguridad social), con crecimiento real respecto al año de comparación{p_end}
-
-{phang2}{bf:Tabla C — Cambios:} Diferencias en puntos porcentuales del PIB
-entre el año de análisis y el año de comparación{p_end}
-
-{phang2}{bf:Tabla D — Elasticidades:} Elasticidad de cada rubro de ingreso
-respecto al crecimiento del PIB{p_end}
+{phang2}{bf:Tabla B — Crecimiento (año de comparación a año de análisis):} Para
+cada rubro, % del PIB en ambos años, diferencia en puntos porcentuales, crecimiento
+real anual y elasticidad respecto al PIB real; misma lógica de totales que la Tabla A.
+Solo aparece si hay datos para el año de comparación.{p_end}
 
 {pstd}{bf:Gráfica:} Composición de los ingresos presupuestarios como % del PIB
 por año, con cada rubro en distinto color.{p_end}
@@ -219,15 +220,25 @@ por año, con cada rubro en distinto color.{p_end}
 {phang2}{bf:pibY} — PIB nominal del año{p_end}
 {phang2}{bf:deflator} — Deflactor del PIB{p_end}
 
-{pstd}{bf:Scalars r() principales:}{p_end}
+{pstd}{bf:Resultados r() por grupo de {opt by()}} (mismo contrato que {help PEF}).
+Para cada grupo {it:g} (nombre = {cmd:strtoname()} de la etiqueta; con {opt by(divSIM)}:
+ISRAS, ISRPF, CUOTAS, ISRPM, OTROSK, FMP, PEMEX, CFE, IMSS, ISSSTE, IVA, IEPSNP, IEPSP, ISAN, IMPORT):{p_end}
 
-{phang2}{bf:r(IngTot)} — Ingresos totales del año de análisis{p_end}
-{phang2}{bf:r(IngTotPIB)} — Ingresos totales como % del PIB{p_end}
-{phang2}{bf:r(ISR)} — Recaudación del ISR{p_end}
-{phang2}{bf:r(IVA)} — Recaudación del IVA{p_end}
-{phang2}{bf:r(IEPS)} — Recaudación del IEPS{p_end}
-{phang2}{bf:r(Petroleros)} — Ingresos petroleros{p_end}
-{phang2}{bf:r(rc)} — "NoData" si no hay información para el año solicitado{p_end}
+{phang2}{bf:r({it:g})} — Recaudación del año de análisis (pesos){p_end}
+{phang2}{bf:r({it:g}PIB)} — Recaudación como % del PIB{p_end}
+{phang2}{bf:r({it:g}Tot)} — Participación en el total (%){p_end}
+{phang2}{bf:r({it:g}PC)} — Recaudación per cápita{p_end}
+{phang2}{bf:r({it:g}C)} — Crecimiento real anual geométrico {opt desde()}–{opt anio()} (solo si hay año base){p_end}
+{phang2}{bf:r({it:by})} — Lista de nombres de grupo (p.ej. {cmd:r(divSIM)}){p_end}
+{phang2}{bf:r(Ingresos_totales)}, {bf:r(Ingresos_totalesPIB)}, {bf:r(Ingresos_totalesPC)}, {bf:r(Ingresos_totalesC)} — Totales{p_end}
+
+{pstd}{bf:Espacios de nombres.} LIF {it:reporta} lo observado en {cmd:r()} y {bf:no} escribe
+escalares globales por grupo. Los escalares {cmd:ISRASPIB}, {cmd:IVAPIB}, ... son
+{it:parámetros de escenario} del usuario ({cmd:SIM.do} §4.1, {cmd:Web.Stata.do} §3.1.1) y
+sobreviven a corridas posteriores de LIF (p.ej. dentro de {help FiscalGap} o
+{help TasasEfectivas}). Los escalares globales que sí persisten son los totales
+({cmd:Ingresos_totales*}, {cmd:Ingresos_sin_deuda*}), las elasticidades {cmd:E}{it:g} y los
+"Returns Extras" ({cmd:Cuotas_IMSS}, IEPS por producto: {cmd:Tabacos}, {cmd:Juegos}, ...).{p_end}
 
 {hline}
 

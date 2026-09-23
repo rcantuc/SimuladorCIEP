@@ -2,7 +2,7 @@
 **** SIMULADOR FISCAL CIEP
 **** Ricardo Cantú Calderón
 **** ricardocantu@ciep.mx
-**** 24 de septiembre de 2025
+**** 12 de septiembre de 2026
 ****
 clear all
 macro drop _all
@@ -26,12 +26,12 @@ cd "`c(sysdir_site)'/users/$id"
 
 
 ** Parámetros iniciales
-scalar aniovp = 2026								// ANIO VALOR PRESENTE
-scalar anioPE = 2026								// ANIO PAQUETE ECONÓMICO
+scalar aniovp = 2027								// ANIO VALOR PRESENTE
+scalar anioPE = 2027								// ANIO PAQUETE ECONÓMICO
 scalar anioenigh = 2024								// ANIO ENIGH
 
 global id = "{{idSession}}"							// IDENTIFICADOR DEL USUARIO — string POR DISEÑO (id alfanumérico de sesión: paths y nombres de archivo)
-global paqueteEconomico "Pre-CGPE 2027"				// POLÍTICA FISCAL
+global paqueteEconomico "CGPE 2027"					// POLÍTICA FISCAL
 
 ** Opciones
 global nographs "nographs"							// SUPRIMIR GRAFICAS
@@ -48,29 +48,33 @@ if "$output" != "" {
 **/
 **# 2. ECONOMÍA
 ***
-global pib2025 = {{CRECPIB2025}}
+* Horizonte macro 2026-2032 (v8.3.0): anioPE=2027 como base y anioPE+5=2032
+* como fin de FiscalGap. Los 7 placeholders son los 7 inputs del marco del
+* sitio (index.php) y los 7 valores de CRECPIB/CRECDEF en output.do —
+* contrato POSICIONAL: mover el horizonte = mover los tres a la vez.
 global pib2026 = {{CRECPIB2026}}
 global pib2027 = {{CRECPIB2027}}
 global pib2028 = {{CRECPIB2028}}
 global pib2029 = {{CRECPIB2029}}
 global pib2030 = {{CRECPIB2030}}
 global pib2031 = {{CRECPIB2031}}
+global pib2032 = {{CRECPIB2032}}
 
-global def2025 = {{CRECDEF2025}}
 global def2026 = {{CRECDEF2026}}
 global def2027 = {{CRECDEF2027}}
 global def2028 = {{CRECDEF2028}}
 global def2029 = {{CRECDEF2029}}
 global def2030 = {{CRECDEF2030}}
 global def2031 = {{CRECDEF2031}}
+global def2032 = {{CRECDEF2032}}
 
-global inf2025 = 4.2								// CRECIMIENTO ANUAL INFLACIÓN
-global inf2026 = 3.54								// <-- AGREGAR O QUITAR AÑOS
-global inf2027 = 3.0
+global inf2026 = 3.8								// CRECIMIENTO ANUAL INFLACIÓN (CGPE 2027)
+global inf2027 = 3.2								// <-- AGREGAR O QUITAR AÑOS
 global inf2028 = 3.0
 global inf2029 = 3.0
 global inf2030 = 3.0
 global inf2031 = 3.0
+global inf2032 = 3.0
 
 
 
@@ -313,36 +317,39 @@ noisily GastoPC educacion salud pensiones energia resto transferencias, aniope(`
 ** 3.3 Saldo Histórico de Requerimientos Financieros del Sector Público **
 **
 
+* Marco de deuda CGPE 2027 (v8.3.0): mismas matrices y mismo horizonte
+* 2026-2032 que SIM.do §6 — antes el template traia 2025-2031 y el loop
+* leia la columna 1 como 2026 (desfase de un anio). *
 * SHRFSP: Total, Interno, Externo (como % del PIB)
-*                	2025  2026  2027  2028  2029  2030  2031
-matrix shrfsp = 	(52.6, 52.6, 52.6, 52.6, 52.6, 52.6, 52.6)
-matrix shrfspInterno = 	(40.5, 41.5, 42.4, 42.5, 43.1, 43.5, 43.8)
-matrix shrfspExterno = 	(12.1, 11.0, 10.2, 9.8, 9.5, 9.1, 8.8)
+*                		2026  2027  2028  2029  2030  2031  2032
+matrix shrfsp = 		(54.0, 55.0, 55.6, 56.1, 56.4, 56.5, 56.5)
+matrix shrfspInterno = 	(42.5, 43.6, 44.4, 45.0, 45.5, 45.7, 45.9)
+matrix shrfspExterno = 	(11.4, 11.4, 11.2, 11.1, 10.9, 10.8, 10.6)
 * SHRFSP:      Total, PIDIREGAS, IPAB, FONADIN, Deudores, Banca, Adecuaciones, Balance (como % del PIB)
-matrix rfsp =  (4.3, 0.15, 0.15, 0.00, 0.00, 0.00, 0.40, 3.6 \ 		/// 2025
-		4.1, 0.10, 0.10, 0.00, 0.00, 0.00, 0.30, 3.6 \ 		/// 2026
-		3.5, 0.10, 0.10, 0.00,-0.10, 0.00, 0.40, 3.0 \ 		/// 2027
-		3.0, 0.10, 0.10, 0.00, 0.00, 0.00, 0.30, 2.5 \ 		/// 2028
-		3.0, 0.10, 0.10, 0.00, 0.00, 0.00, 0.30, 2.5 \ 		/// 2029
-		3.0, 0.10, 0.10,-0.10, 0.00, 0.00, 0.40, 2.5 \ 		/// 2030
-		3.0, 0.10, 0.10, 0.00, 0.00, 0.00, 0.30, 2.5) 		// 2031
+matrix rfsp =  (4.1, 0.10, 0.10, 0.10, 0.00,-0.10, 0.30, 3.6 \ 		/// 2026
+				3.9, 0.15, 0.15, 0.00,-0.10,-0.10, 0.40, 3.4 \ 		/// 2027
+				3.7, 0.10, 0.10, 0.00, 0.00,-0.10, 0.40, 3.2 \ 		/// 2028
+				3.6, 0.10, 0.10, 0.00, 0.00,-0.10, 0.40, 3.1 \ 		/// 2029
+				3.4, 0.10, 0.10, 0.00, 0.00,-0.10, 0.40, 2.9 \ 		/// 2030
+				3.2, 0.10, 0.10,-0.10, 0.00,-0.10, 0.50, 2.7 \ 		/// 2031
+				3.1, 0.10, 0.10, 0.00, 0.00,-0.10, 0.40, 2.6) 		//  2032
 * SHRFSP: Tipo de cambio (MXN/USD)
-*                      2025, 2026, 2027, 2028, 2029, 2030, 2031
-matrix tipoDeCambio = (19.6, 18.9, 18.2, 18.2, 18.2, 18.3, 18.3)
+*                      2026, 2027, 2028, 2029, 2030, 2031, 2032
+matrix tipoDeCambio = 	(17.6, 17.9, 18.1, 18.2, 18.3, 18.6, 18.6)
 * Balance primario (como % del PIB)
-*                     2025, 2026, 2027, 2028, 2029, 2030, 2031
-matrix balprimario = (-0.2, -0.5, -0.8, -0.8, -0.8, -0.8, -0.6)
+*                      2026, 2027, 2028, 2029, 2030, 2031, 2032
+matrix balprimario = 	(-0.1, -0.5, -0.5, -0.5, -0.7, -0.9, -1.0)
 * Costo de la deuda (como % del PIB)
-*                   2025, 2026, 2027, 2028, 2029, 2030, 2031
-matrix costodeuda = (3.8,  4.1,  3.8,  3.4,  3.3,  3.3,  3.1)
+*                      2026, 2027, 2028, 2029, 2030, 2031, 2032
+matrix costodeuda = 	(3.7,  4.04,  3.7,  3.6,  3.7,  3.7,  3.7)
 * Ingresos (como % del PIB)
-*                     2025, 2026, 2027, 2028, 2029, 2030, 2031
-matrix ingresos = (21.9,  22.5,  22.4,  22.4,  22.4,  22.4,  22.4)
+*                      2026, 2027, 2028, 2029, 2030, 2031, 2032
+matrix ingresos = 		(23.0,  23.2,  22.8,  22.8,  22.8,  22.8,  22.8)
 * Gastos (como % del PIB)
-*                     2025, 2026, 2027, 2028, 2029, 2030, 2031
-matrix egresos = (25.5,  26.1,  25.4,  24.9,  24.9,  24.9,  24.9)
+*                      2026, 2027, 2028, 2029, 2030, 2031, 2032
+matrix egresos = 		(26.6,  26.7,  26.0,  25.9,  25.7,  25.5,  25.4)
 
-forvalues k = 2026(1)2031 {
+forvalues k = 2026(1)2032 {
 	local j = `k' - 2026 + 1
 	global shrfsp`k' = shrfsp[1,`j']
 	global shrfspInterno`k' = shrfspInterno[1,`j']
@@ -383,7 +390,7 @@ save `"`c(sysdir_site)'/users/$id/aportaciones.dta"', replace
 
 ** 7.1 (+) Impuestos y aportaciones
 egen AlTrabajo = rsum(ISRPF_Sim ISRAS_Sim CUOTAS_Sim)
-egen AlCapital = rsum(ISRPM_Sim OTROSK)
+egen AlCapital = rsum(ISRPM_Sim OTROSK_Sim)
 egen AlConsumo = rsum(IVA_Sim IEPSNP_Sim IEPSP_Sim ISAN_Sim IMPORT_Sim)
 
 capture drop ImpuestosAportaciones

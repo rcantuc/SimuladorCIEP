@@ -206,17 +206,28 @@ La clasificación predeterminada agrupa el gasto en las siguientes categorías:
 {title:Resultados}
 
 {pstd}
-Al ejecutar el comando obtienes tres tablas en pantalla, una gráfica y una base de datos:
+Al ejecutar el comando obtienes dos tablas en pantalla, una gráfica y una base de datos
+(misma anatomía que {cmd:LIF}).
 {p_end}
 
-{phang2}{bf:Tabla A — Gasto bruto:} Montos absolutos, % del PIB y % del gasto total
-para el año de análisis{p_end}
+{phang2}{bf:Tabla A — Gasto bruto por categoría (año de análisis):} Montos absolutos,
+% del PIB, % del gasto bruto y gasto por persona ({it:currency} PC, población de
+{cmd:PIBDeflactor}). Al pie, la conciliación a gasto neto: (−) cuotas ISSSTE y
+(−) aportaciones a la seguridad social, cuando existen en la muestra.{p_end}
 
-{phang2}{bf:Tabla B — Gasto neto resumido:} Excluye transferencias intergubernamentales
-(Ramos 28 y 33) para evitar doble contabilización. Incluye crecimiento real.{p_end}
+{phang2}{bf:Tabla B — Crecimiento (año de comparación a año de análisis):} Por grupo
+resumido (cuotas ISSSTE en negativo; categorías menores a {opt minimum()} agrupadas),
+% del PIB en ambos años, diferencia en puntos porcentuales, crecimiento real anual
+(geométrico) y elasticidad respecto al PIB real. Solo aparece si hay datos para el
+año de comparación.{p_end}
 
-{phang2}{bf:Tabla C — Cambios:} Diferencias en puntos porcentuales del PIB entre
-el año de análisis y el año de comparación{p_end}
+{pstd}{bf:Resultados guardados ({cmd:r()})}: por grupo resumido {cmd:r(}{it:nombre}{cmd:)},
+{cmd:r(}{it:nombre}{cmd:PIB)}, {cmd:r(}{it:nombre}{cmd:Tot)}, {cmd:r(}{it:nombre}{cmd:PC)},
+{cmd:r(}{it:nombre}{cmd:C)} y {cmd:r(E}{it:nombre}{cmd:)} (los dos últimos solo con año de
+comparación); totales {cmd:r(Gasto_bruto)}, {cmd:r(Gasto_brutoPIB)}, {cmd:r(Gasto_brutoPC)},
+{cmd:r(Gasto_neto)}, {cmd:r(Gasto_netoPIB)}, {cmd:r(Gasto_netoPC)}, {cmd:r(Gasto_netoC)},
+{cmd:r(EGasto_neto)}, {cmd:r(Cuotas_ISSSTE)}, {cmd:r(Aportaciones_a_Seguridad_Social)};
+listas {cmd:r(}{it:by}{cmd:)} y {cmd:r(divResumido)}.{p_end}
 
 {pstd}{bf:Gráfica:} Composición del gasto público como % del PIB por año.{p_end}
 

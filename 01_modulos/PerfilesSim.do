@@ -60,7 +60,7 @@ local OtrosEdu = r(Gasto_neto) - `Basica' - `Media' - `Superior' - `Adultos' - `
 ** 1.2 Otros gastos **
 PEF, anio(`1') by(divCIEP) min(0) nographs
 local PenBienestar = r(Pension_AM)
-local OtrosGastos = r(Otros_gastos) + r(Cuotas_ISSSTE)
+local OtrosGastos = r(Otros_gastos)
 local Pensiones = r(Pensiones)
 local Educacion = r(Educacion)
 local Salud = r(Salud)
@@ -110,12 +110,19 @@ local InfraT = r(Gasto_neto)
 **# 2. Macros: LIF ***
 ***                ***
 **********************
-LIF, anio(`1') by(divSIM) nographs min(0)
+* Sin financiamiento (divLIF 10): con la LIF completa el grupo divSIM OTROSK
+* absorbia el endeudamiento (~4% PIB; 2027: 2.22 vs 0.65 billones) y el perfil
+* OTROSK —y con el AlCapital del Sankey— contaba la deuda como ingreso de
+* capital (v8.3.0, 2026-09-12). Mismo filtro que FiscalGap §4.1: fuera el
+* financiamiento, salvo divCIEP 8 (diferimiento de pagos), que es lo que
+* queda en el grupo DEUDA para el perfil de abajo. *
+LIF if divLIF != 10 | divCIEP == 8, anio(`1') by(divSIM) nographs min(0)
 local recursos = r(divSIM)
+* Niveles observados por grupo: r() de LIF (ya no escalares globales) *
 foreach k of local recursos {
-	if "`=scalar(`=substr("`k'",1,7)')'" != "" {
-		local `=substr("`k'",1,7)' = scalar(`=substr("`k'",1,7)')
-		local `=substr("`k'",1,7)' = subinstr("``=substr("`k'",1,7)''",",","",.)
+	local k7 = substr("`k'",1,7)
+	if r(`k7') != . {
+		local `k7' = r(`k7')
 	}
 }
 local IngKPublicos = `FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE'
@@ -160,8 +167,8 @@ local ImpNet = scalar(ImpNet)
 ** 5.3 Usar base de datos conciliada **
 capture use "`c(sysdir_site)'/master/`anioenigh'/households.dta", clear
 if _rc != 0 {
-	noisily run "`c(sysdir_site)'/Expenditure.do" `anioenigh'
-	noisily run `"`c(sysdir_site)'/Households.do"' `anioenigh'
+	noisily run "`c(sysdir_site)'/01_modulos/Expenditure.do" `anioenigh'
+	noisily run `"`c(sysdir_site)'/01_modulos/Households.do"' `anioenigh'
 }
 drop if folioviv == ""
 
@@ -511,9 +518,16 @@ noisily Simulador Federalizado if Federalizado != 0 [fw=factor], aniope(`1') ani
 noisily Gini Federalizado, hogar(folioviv foliohog) factor(factor)
 
 
+** (=) Deuda **
+Distribucion DEUDA, relativo(pob) macro(`=`DEUDA'')
+label var DEUDA "Deuda"
+noisily Simulador DEUDA if DEUDA != 0 [fw=factor], aniope(`1') aniovp(`1') reboot
+noisily Gini DEUDA, hogar(folioviv foliohog) factor(factor)
+
+
 *****************************
 ** (-) Ingreso B{c a'}sico **
-g IngBasico = 0.0000000001
+g IngBasico = 0.00000000000000000001
 label var IngBasico "Ingreso b{c a'}sico"
 noisily Simulador IngBasico if IngBasico != 0 [fw=factor], aniope(`1') aniovp(`1') reboot
 noisily Gini IngBasico, hogar(folioviv foliohog) factor(factor)

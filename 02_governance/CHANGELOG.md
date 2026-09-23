@@ -18,11 +18,547 @@ Formato de cada entrada:
 
 ## [Unreleased]
 
-Trabajo en `master` sin versión asignada. **Nada de lo que aquí se registra
-cambia el paquete distribuido** (`05_scripts/manifest-endpoint.toml` no
-incluye `scalarjson.ado`, igual que nunca incluyó `scalarlatex.ado`): el
-endpoint público y el VPS corren exactamente el mismo código que en v8.2.0.
-El tag llega cuando el nodo se publique, no antes.
+Trabajo en `master` sin versión asignada.
+
+### Institucional
+
+- **Sitio (rsync, fuera de git; deploy 2026-09-21 sobre v8.3 sin bump de
+  versión):** referencias bibliográficas a los micrositios del CIEP al pie
+  de cada tabla de `index.php` e `index-en.php`, en una segunda línea
+  `<p class="notas">` junto a la nota de "títulos amarillos". Mapa:
+  Ingresos 1–4 → `ingresosenmexico.ciep.mx` (Consumo suma
+  `iepsaltabaco.ciep.mx`; Organismos suma `energiaenmexico.ciep.mx`);
+  Educación → `gastoeducativo.ciep.mx`; Salud → `salud.ciep.mx`;
+  Pensiones → `pensionesenmexico.ciep.mx`; Energía →
+  `energiaenmexico.ciep.mx`; Otros gastos → `subnacional.ciep.mx` +
+  `inversion.ciep.mx`; Transferencias → `cuidados.ciep.mx` +
+  `desarrollosostenible.ciep.mx`; tarjeta Marco Macroeconómico →
+  `paqueteeconomico.ciep.mx`. Dominios tomados de `ciep.mx/micrositios`
+  (antes `/historias`, renombrada el 2026-09-20 con 301). El clon local
+  `04_1_simuladorfiscal.ciep.mx/` se encontró sin `index.php` ni assets
+  (solo `health.php`, `plugins/`, `ssl/`, `logs/`) y se restauró desde
+  `/var/www/html/v8.3` del VPS antes de editar; con el árbol incompleto,
+  `rsync --delete` de la Fase 2 habría borrado el sitio.
+
+## [v8.3.3] — 2026-09-16
+
+### Correcciones
+
+- **`Graphs_TE.do` y `Graphs_PC.do` corren autocontenidos y con lo
+  observado de cada año.** `TasasEfectivas` y `GastoPC` toman los parámetros
+  de escenario (`ISRASPIB`…, `basica`…) si existen en memoria, y ambos
+  do-files están llamados en `SIM.do` justo después de §4.1/§5.1: los 28 y
+  15 años habrían salido con los valores de anioPE. Ahora apartan los
+  parámetros, los borran antes de cada año (los módulos los vuelven a
+  declarar desde LIF/PEF) y los restauran al final — verificado con
+  parámetros ficticios (99.9/88.8) que no tocaron las series y volvieron
+  intactos. `Graphs_TE.do`: horizonte 2000–anioPE (antes 2001) colgado de
+  un solo `anioini` (antes `anioPE-25` en 13 sitios); el texto de derechos
+  petroleros decía "De 2000 a 2027 … perdió 15.2 pp" pero calculaba
+  max−min de toda la serie (pico 2008) — ahora compara `anioini` vs anioPE
+  como las otras dos (5.0 pp) y ya no se encima con las líneas.
+  `Graphs_PC.do`: la serie Ciencia y tecnología (`invest`) tenía leyenda
+  pero no se graficaba; leyendas en 1–3 filas (antes se encimaban).
+  `GastoPC.ado`: el aviso "Creando base … con ENIGH" imprimía el escalar
+  global `anioenigh` (2024) y no el local del año pedido. Corrida completa
+  verificada: TE 2000–2027 y PC 2013–2027 sin errores; construyó
+  `master/perfiles2017/2019/2021/2023/2025.dta` (no existían).
+  `Graphs_TE.do` exporta ahora a `users/$id/graphs/TE_*.png` (como
+  `Graphs_PC.do`), ya no a `$export`; etiquetas anuales en el eje x.
+  `SIM.do` §4.6/§5.1 corre ambos do-files en la corrida completa (+~2 h
+  por `Graphs_PC.do`).
+- **`publicar-vps.sh` Fase 1b (nueva):** copia las 10 gráficas del sitio
+  (`TE_*.png`, `GastoPC_*.png`) de `users/ricardo/graphs/` al docroot local
+  ANTES del rsync de la Fase 2 — misma fuente local de verdad que el default
+  de la Fase 3b-ter. Si una falta en `users/ricardo/graphs/` conserva la del
+  sitio con aviso; si no existe en ninguno, aborta (el index la enlaza).
+- **Sitio (rsync, fuera de git):** `images/TE_*.png` regeneradas
+  (2000–2027; las anteriores eran de mayo 2025) y `images/GastoPC_*.png`
+  nuevas (6), enlazadas con lightbox desde el encabezado "Per cápita" de
+  cada tabla de gasto en `index.php` e `index-en.php`. Liga del BIE:
+  `inegi.org.mx/sistemas/bie/` → `inegi.org.mx/app/indicadores/?tm=3`
+  (4 encabezados "Cuenta Nacional" por idioma).
+- **Sitio (rsync, fuera de git): banner del libro CIEP.** La sección
+  `#libro-simulador` (texto plano "EL libro del Simulador Fiscal CIEP")
+  se sustituye en `index.php` e `index-en.php` por el banner promocional de
+  *Finanzas Públicas Antropocéntricas* — mismo patrón que el banner de
+  paqueteeconomico.ciep.mx (hero amarillo + portada + CTA a libro.ciep.mx),
+  adaptado a la identidad del sitio (Roboto Mono, tarjeta redondeada).
+  Assets en `images/libro-promo/`; el ancla del menú se conserva.
+
+## [v8.3.2] — 2026-09-15
+
+**El hero restaba el gasto devengado; la SHCP resta el pagado.** Patch
+sobre v8.3.1: cambia un resultado visible del sitio (el endeudamiento de la
+ecuación principal pasa de 3.8 a 3.4 % PIB con los defaults del PPEF 2027),
+sin datos nuevos. El VPS recibe este árbol en el deploy `v8.3` que quedó
+pendiente desde v8.3.1 (producción seguía en el commit `08149e6`, con
+`Version: v8.3.0` en `DEPLOYED_COMMIT`).
+
+### Correcciones
+
+- **La ecuación del sitio cierra con el balance presupuestario, no con el
+  devengado.** `GASTOS[40]` (el total de la fórmula INGRESOS − GASTOS =
+  endeudamiento del hero) sumaba los seis totales de gasto DEVENGADO
+  (26.985 % PIB con los defaults del PPEF 2027), así que el resultado
+  (−3.76) no coincidía con el balance presupuestario del CGPE 2027 (−3.4,
+  `rfspBalance`). La SHCP llega al gasto neto PAGADO restando el
+  diferimiento de pagos (LIF divCIEP 8; ILIF 2027: 121,400 mdp ≈ 0.32 %
+  PIB) — exactamente lo que FiscalGap 5.9b ya hacía en su tabla, pero el
+  sitio no. Fix: `FiscalGap.ado` §5.6 registra `escalar pctpib difpagosPIB`
+  (diferimiento de `anio` / PIB, 0 si la LIF no lo trae) y `output.do` lo
+  resta en `GASTOS[40]` → 26.665 % PIB, balance −3.44 ≈ −3.4. Se publica
+  además la clave `DIFPAGOS: [x]` en `output.txt` (el parser de
+  `checkStataStatus.php`/`cargaDefault.php` es genérico; el sitio no la
+  consume todavía). Los 40 renglones editables de GASTOS no cambian.
+
+### Institucional
+
+- `manifest.json`: `version`/`release_tag`/`release_url_prefix` → v8.3.2.
+  `data_updated` (2026-09-12) y los 25 SHAs intactos: mismos datos que
+  v8.3.0/v8.3.1; la Release re-sube los mismos assets.
+
+## [v8.3.1] — 2026-09-14
+
+**Un asset publicado que nadie pedía: la máquina virgen no reconstruía el
+PPEF 2027 — sin error.** Ricardo hizo la prueba correcta tras v8.3.0: borrar
+`master/` y `raw/` y esperar la reconstrucción completa. `PPEF.2027.xlsx`
+estaba en el manifest y en la Release, pero **ningún módulo lo solicitaba**:
+`PEF.ado` mantenía la lista de `ensure_asset` como un `foreach` tecleado a
+mano (comentario "GitHub Release v7.0": ocho versiones sin tocarla) y descubre
+los años con `dir raw/PEFs *.xlsx` — un asset no pedido simplemente no
+existía para el módulo. Mismo destino tenía `Diccionario.csv`. El manifest y
+la lista del módulo eran dos fuentes de verdad, y ya habían divergido. Patch
+porque toca `.ado` publicados (`ensure_asset`, `PEF`, `LIF`). **Envuelve los
+tres commits posteriores al tag v8.3.0** (`6b5fad4` whitelist del canon web
+a `perfiles2027.dta`; `ef1678f` guard del nodo de deuda cuando no existe el
+destino de render; `08149e6` el endeudamiento del Sankey ya no se esconde en
+los impuestos al capital), que hasta hoy vivían solo en `master`.
+
+### Comandos
+- **`ensure_asset.ado` v1.6 — forma `ensure_asset, dir(<directorio>)`:**
+  pide TODOS los assets del manifest cuyo `local_path` vive bajo ese
+  directorio, con la misma lógica por asset (descarga si falta, SHA, modo
+  WIP) y un resumen (`raw/PEFs/ — 17 asset(s) verificados (17 descargados)`).
+  La lista se **deriva del manifest**, única fuente de verdad: agregar un
+  asset al manifest basta para que el módulo lo pida. Funciona en los dos
+  entornos (manifest local y manifest pineado del endpoint). `<nombre>` y
+  `dir()` son excluyentes; sin ninguno, o con un directorio que no cubre
+  ningún asset, aborta con mensaje. Refactor interno: `_load_manifest` y
+  `_ensure_one` compartidos; el marcador `local PINNED_VERSION ""` que
+  `publicar-endpoint.sh` inyecta sigue intacto.
+- **`PEF.ado`**: el `foreach` de 15 nombres muere → `ensure_asset, dir(raw/PEFs)`
+  (17 assets hoy: CP 2013–2025, PEF 2026, PPEF 2027, CuotasISSSTE,
+  Diccionario). El descubrimiento por `dir` y la prioridad CP > PEF > PPEF no
+  cambian. **`LIF.ado`** → `ensure_asset, dir(raw/LIFs)`. `DatosAbiertos`
+  (un archivo en la raíz de `raw/`) y `Expenditure.do` (un zip por ENIGH,
+  cada año exige código propio) siguen pidiendo por nombre; el Gate 6 los
+  vigila.
+- Nota de inventario: `Diccionario.csv` no lo lee ningún código — el mapeo
+  origen→canónico de PEF.ado §3 es inline; es el diccionario de la SHCP
+  guardado como documentación del esquema CP 2025 (v8.1.0). Con `dir()`
+  viaja igual que los demás.
+
+### Institucional
+- **Test de máquina virgen, formalizado en dos capas
+  (`05_scripts/test-maquina-virgen.sh`):**
+  - `--cobertura` (estático, segundos, sin red): cada asset del manifest
+    debe ser solicitado por algún módulo, por nombre (`ensure_asset "X"`) o
+    por directorio (`ensure_asset, dir(D)` con `local_path` bajo `D/`).
+    Contra el `PEF.ado` de v8.3.0 reporta **17 de 25 sin solicitante** (la
+    lista vieja pasaba los nombres por macro: opaca para cualquier auditoría
+    estática — otra razón para derivar); con el fix, 25/25.
+  - `--download` (dinámico, ~1.3 GB, requiere la Release publicada): SITE
+    falso en `/tmp` con `ensure_asset.ado` y el manifest, `raw/` VACÍO, y
+    las mismas invocaciones de `ensure_asset` que hacen los módulos
+    (derivadas del inventario, no tecleadas); verificación independiente por
+    `shasum` de cada asset. Contra la Release v8.3.0: **25/25 descargados y
+    verificados**, incluidos `PPEF.2027.xlsx` y `Diccionario.csv` (que la
+    prueba manual no ejercitó porque nadie lo lee). No toca el repo ni
+    `raw/` real. Se corre DESPUÉS de `publicar.sh vX.Y.Z` y antes de
+    anunciar; la corrida completa de SIM.do desde cero sigue siendo la
+    prueba manual de Ricardo.
+- **`publicar.sh` Gate 6 — cobertura de assets** (también en `--check`):
+  delega en `test-maquina-virgen.sh --cobertura`. Un asset huérfano bloquea
+  el tag. `--check v8.3.0` con el árbol de hoy: 6/6 gates.
+- `runbook-deploys-ciep.md`: paso post-publicación con el test de máquina
+  virgen.
+
+## [v8.3.0] — 2026-09-13
+
+**Paquete Económico 2027 (CGPE/ILIF/PPEF 2027) como escenario base, con
+horizonte 2027–2032, y reestructura de la brecha fiscal: `FiscalGap` deja
+de proyectar a valor presente/infinito y construye una trayectoria anual
+cerrada por componentes (ingresos, gasto, costo financiero, RFSP y SHRFSP)
+que se despliega en una sola tabla `Proy_fiscal`.** Los números publicados
+cambian de forma visible (año base, PEF, horizonte y metodología), por lo
+que el release es *minor* con deployment nuevo en el VPS (`v8.3`).
+
+### Datos
+- **Paquete Económico 2027:** `raw/PEFs/PPEF 2027.xlsx` (asset nuevo),
+  `raw/LIFs/LIFs.xlsx` (ILIF 2027, SHA `7d9db942`) y
+  `raw/PEFs/CuotasISSSTE.xlsx` (SHA `68fa8f59`). `manifest.json`:
+  `data_updated = 2026-09-12`. Marco macro CGPE 2027 en `SIM.do` §2 y §6
+  (PIB 1.41/2.00%, deflactor 3.8/4.0%, inflación 3.8/3.2/3.0%, SHRFSP
+  54.0→56.5% del PIB, RFSP 4.1→3.1%, tipo de cambio, balance primario,
+  costo financiero, ingresos y gasto 2026–2032). `profile.do`:
+  `paqueteEconomico = "CGPE 2027"`, `anioPE = aniovp = 2027`.
+- `PEF.ado`: prioridad por año **CP > PEF > PPEF** — si coexisten dos
+  versiones del mismo año se usa la de mayor prioridad y se avisa (ya no hay
+  que borrar xlsx a mano cuando llega la Cuenta Pública). Diccionario único
+  `_PEFhomologa` para todos los layouts SHCP 2013–2027 (CP 2013–2024, CP 2025,
+  PEF 2026, PPEF 2027, CuotasISSSTE): elimina columnas fantasma por contenido,
+  renombra al layout canónico y **detiene** con lista explícita ante una
+  columna desconocida o una canónica faltante. `_PEFlimpia`: montos
+  numéricos, mojibake/NBSP/saltos fuera, códigos forzados, detección de
+  archivos de bloqueo de Excel.
+- `DatosAbiertos.ado`: `_DAlimpia` elimina filas corruptas de los csv de la
+  SHCP (registros truncados o pegados, CICLO no numérico, PERIODO_FINAL sin
+  AAAA-MM, MONTO no numérico) y `_DAappend` diagnostica y repara tipos
+  string/numérica antes de reintentar el `append`, reportando qué base falló.
+
+### Comandos
+- **`FiscalGap.ado` — trayectoria anual 2027–2032, sin VP/infinito.**
+  Horizonte único `end()` para PIB, SHRFSP y la matriz fiscal (antes cada
+  frame tenía el suyo y el último año salía huérfano). §4.3b y §5.3b: tablas
+  "LIF vs simulación" y "PEF vs simulación" en el año base con tasas total,
+  demográfica y económica (residuo acotado a ±5). Diferimiento de pagos
+  (LIF divCIEP 8) sale de los ingresos y viaja como serie propia (la SHCP lo
+  resta al gasto devengado). `estimacionGasto`: primero lo micro-simulado
+  (× deflator) y después las partidas macro (cuotas ISSSTE constantes como %
+  del PIB del año base; antes se inflaban dos veces). §5.9: el motor arranca
+  en `anio+1` y sobreescribe los exógenos del CGPE de ahí en adelante; el año
+  base se respeta como ancla. §5.9b `Proy_fiscal`: ingresos, gasto devengado,
+  primario, costo financiero, diferimientos, gasto pagado, balance, RFSP,
+  superávit primario y SHRFSP, calculados desde los componentes. Las
+  secciones 6–7 (balance e inequidad en VP) quedan desactivadas hasta
+  validar la trayectoria anual. Salida web: `PROY*`/`PROYSHRFSP*`/`PROYCOSTO`
+  llegan hasta `end()` (antes tope fijo 2030) y se emite `ANIOEND`.
+- **`FiscalGap.ado` §5.5 (corrección):** `gascosto` es % del PIB
+  (`SIM.do` §5.1, `GastoPC` §7.2, `GASTOS[34]` del sitio) pero se multiplicaba
+  por población (semántica per cápita vieja): el costo financiero del año
+  base salía ≈ 0 (`PROYCOSTO` 2027 = 0.0 y fila `Costo_financiero` de
+  `Proy_fiscal`). Ahora `gascosto/100 × pibY`.
+- `PEF.ado` v8.1: display simétrico con LIF — Tabla A (nivel por `by()`:
+  MXN, % PIB, % Tot, per cápita; conciliación bruto→neto con cuotas ISSSTE y
+  aportaciones) y Tabla B (crecimiento `desde()`–`anio()`, dif. % PIB,
+  crecimiento real, elasticidad). `desde() < anio()` obligatorio (mismo guard
+  que LIF). Help `PEF.sthlp` actualizado.
+- `SHRFSP.ado`: se retiran las gráficas y mínimos "de 5 años centrales";
+  `aniomax()` gobierna el horizonte del PIB (antes `anio+5` fijo).
+- `GastoPC.ado`: educación para adultos usa alumnos ADULTOS como denominador
+  (col 5; con col 6 se perdía ~99% del monto — 5,862 mill. en 2027). "Otros
+  gastos" BRUTO, sin netar cuotas ISSSTE (se restaban dos veces con
+  `PerfilesSim` §1.2). Ruta `01_modulos/PerfilesSim.do` corregida.
+- `PIBDeflactor.ado`/`Web.Stata.do`/`output.do`: horizonte macro
+  **2026–2032** (7 años) en los tres a la vez — `CRECPIB`/`CRECDEF` del sitio,
+  placeholders del template y globals `pib*`/`def*`/`inf*`. Antes el template
+  traía 2025–2031 y las matrices de deuda 2025–2031 con el loop leyendo la
+  columna 1 como 2026 (desfase de un año); ahora son las mismas matrices de
+  `SIM.do`. `output.do`: `PIBY` con `scalar()` explícito — el nombre pelado
+  resolvía a la variable `pibY[1]` (2013, 1.65 billones) del dataset de
+  FiscalGap en memoria, no al escalar de 2027.
+- **`LIF.ado` v8.1 — lo observado va en `r()`, no en escalares globales por
+  grupo (mismo contrato que `PEF`).** Antes LIF escribía `<g>`, `<g>PIB`,
+  `<g>Tot`, `<g>PC`, `<g>C` como escalares globales; con `by(divSIM)` esos
+  nombres son exactamente los parámetros de escenario del usuario
+  (`ISRASPIB`, `IVAPIB`, ...) y la corrida interna de LIF en `FiscalGap` §4.1
+  (y el fallback de `TasasEfectivas`) los pisaba después de que `SIM.do` §4.1 /
+  `ISR_Mod` / `IVA_Mod` los habían definido. Ahora hay dos espacios de nombres:
+  **observado** = `r(<g>...)` de LIF; **escenario** = escalares `<g>PIB` que
+  solo escribe el usuario (SIM.do, Web.Stata.do) o `TasasEfectivas` cuando no
+  existen (default explícito desde `r()`). Siguen globales, sin colisión:
+  `Ingresos_totales*`, `Ingresos_sin_deuda*`, elasticidades `E<g>` y "Returns
+  Extras" (`Cuotas_IMSS`, IEPS por producto). Se agregan
+  `r(Ingresos_totales*)`. Consumidores migrados a `r()`: `FiscalGap` (§4.1
+  captura `r(<g>C)`/`r(<g>PIB)` en locals; ancla §4.2 = parámetro si existe,
+  si no el observado — sigue autocontenido), `Households.do` §1.4,
+  `Expenditure.do` §1.2, `PerfilesSim.do` §2, `visualizations/Sankey.do` §1.
+  Libro: la prosa solo cita `\<g>PIBtasas` (TasasEfectivas, parámetro); las
+  definiciones `\<g>{PIB,Tot,C}{gap,ing,perf}` que dejan de emitirse no se
+  usan. Help `LIF.sthlp` actualizado (stored results). Los `legacy/` que
+  leen `scalar(<g>)` tras LIF no se tocaron.
+- **`SIM.do` §4.4/§4.6:** las reestimaciones de `ISR_Mod`/`IVA_Mod` asignaban
+  `<g>PIB` como *string* (`"`=round(...)'"`), contra el invariante numérico
+  v8.1.0 que `Web.Stata.do` ya cumplía; ahora `escalar pctpib ... = round(...)`.
+
+### Institucional
+- **Sitio (`04_1_simuladorfiscal.ciep.mx/`, fuera de git; viaja por
+  `publicar-vps.sh`):** año base 2027 y horizonte 2032. Marco macro con 7
+  filas 2026–2032 (sale la fila oculta 2025, entra 2032) en `index.php`,
+  `index-en.php`, `calculaStata.php` (`$llaves`) y el POST de
+  `stataCalcula(.js|-en.js)`; categorías de las gráficas de ingresos, gasto y
+  SHRFSP 2013–2032 (20 puntos, mismos que emite FiscalGap); el veredicto de
+  deuda compara el año base contra el último año de la serie con índices
+  dinámicos (`ANIOBASE`, `ANIOEND`) en vez de `[9]`/`[17]` quemados; "DEUDA
+  per cápita 2027/2032"; "Valores 2027"; textos y links al Paquete 2027
+  (CGPE 2027, ILIF 2027, PPEF 2027 — LIF/PEF 2027 aún no existen en la SHCP).
+- `manifest.json`: `version`/`release_tag`/`release_url_prefix` → v8.3.0.
+  Probado en local: template web sustituido con los defaults del sitio corre
+  end-to-end (34.7 s) y `output.txt` entrega 20 puntos por serie, `CRECPIB`/
+  `CRECDEF` con 7 valores y `PIBY` = 39.4 billones (2027).
+
+## [v8.2.3] — 2026-09-12
+
+**El ciclo de edición diaria de `raw/` gana un modo de trabajo con tres fases:
+actuar rápido → declarar → publicar.** Con `$update` cada corrida re-lee los
+archivos que Ricardo edita a diario (LIFs, PEFs, CuotasISSSTE) y el candado
+bloqueaba en cada edición. Se descartó, tras estresarla, la idea de saltar la
+verificación cuando hay `update`: habría dejado ciego al candado en el único
+momento en que alguien toca `raw/` a propósito (el incidente del 8-sep no se
+habría detectado), habría dejado pasar raw corrupto con `update` en la Carpeta
+y en el endpoint, y habría vuelto incoherente `LIF, update` frente a `$update`.
+La solución separa intención de mecanismo: un global propio, `rawwip`, que
+solo pone quien opera el manifest. Patch nuevo porque toca `ensure_asset`.
+
+### Comandos
+- **`ensure_asset.ado` v1.5 — modo WIP de raw.** Con `global rawwip "rawwip"`
+  definido y repo local, un SHA distinto **no bloquea**: imprime una línea
+  (`[RAW WIP] LIFs.xlsx: SHA difiere del manifest (real 84f5…, 48966 bytes) —
+  se usa el archivo local. Decláralo antes del release`) y anota el asset en
+  `raw/temp/assets-wip.txt` (nombre, ruta, SHA real, tamaño, SHA esperado,
+  hora; última captura gana). Sin el global, la verificación es estricta con
+  el mensaje-runbook de v1.4, que ahora menciona el modo. **En modo endpoint
+  (sin repo) el global se ignora siempre.** Un archivo ausente se descarga y
+  verifica en cualquier modo. Probado en batch contra SITE falso: con el
+  global avisa y sigue (`rc=0`, archivo de pendientes escrito); sin él
+  bloquea (`r(198)`).
+- **`SIM.do` §0.4:** una línea comentada `//global rawwip "rawwip"` junto a
+  `$update`, con la instrucción de quitarla para declarar y publicar. Nada
+  más de `SIM.do` cambia en este release (el trabajo del día de Ricardo en el
+  working tree no se tocó: solo esta línea entró al commit).
+
+### Institucional
+- **`publicar.sh` Gate 5 — raw declarado (~6 s).** Antes de cualquier acción
+  (también en `--check`): (a) SIM.do no puede tener `global rawwip` activo —
+  todo el equipo correría con el candado en modo aviso; (b) **todo asset del
+  manifest presente en disco debe coincidir en SHA** — sin esto `publicar.sh`
+  subiría al Release un archivo que el propio manifest rechaza y el
+  post-verify lo cazaría después de subir ~1.3 GB; (c) lista
+  `raw/temp/assets-wip.txt` si quedó de la Fase 1. **Primera corrida del gate
+  cazó un asset real sin declarar:** `raw/PEFs/CuotasISSSTE.xlsx` (disco
+  `11836aa9…`, 10,858 B; manifest `bffce255…`, 10,838 B) — la edición en
+  curso de Ricardo. Queda como **pendiente de Fase 2 antes del tag v8.2.3**.
+- **`runbook-actualizar-assets.md` §2c "Modo WIP de raw: las tres fases":**
+  la tabla de fases, por qué no se ligó a `update`, y las reglas (solo repo
+  local; nunca se commitea activo; el aviso no es opcional; `update` y
+  `rawwip` son independientes).
+- Se descartó el banner en `profile.do`: el global se define en `SIM.do`,
+  después de que `profile.do` corre, así que ahí nunca sería visible. El
+  aviso por asset de `ensure_asset` y el Gate 5 cumplen esa función.
+
+### Hallazgo registrado (no corregido aquí; lo resuelve Ricardo)
+- **El Release `v8.2.2` sirve 23 de 24 assets: falta `LIFs.xlsx`.** Un
+  `gh release delete-asset` sin el `publicar.sh` posterior (o abortado)
+  dejó el Release sin el archivo; una máquina virgen hoy no puede construir
+  `master/LIF.dta` desde v8.2.2. Como el `LIFs.xlsx` en disco SÍ coincide con
+  el manifest, el fix inmediato es `gh release upload v8.2.2 raw/LIFs/LIFs.xlsx`;
+  el fix estructural es el release v8.2.3 completo tras declarar CuotasISSSTE.
+
+## [v8.2.2] — 2026-09-09
+
+**Día 2 del Paquete 2027: el flujo de actualización de assets se vuelve
+AUTOSERVICIO.** La cadencia de ediciones diarias del `LIFs.xlsx` llegó para
+quedarse durante septiembre (rev1 el 8, rev2 y rev3 el 9), y cada una dispara
+el candado con razón. La respuesta no es aflojar el candado sino que su
+mensaje traiga la secuencia completa para resolver sin ayuda. Como eso toca
+un `.ado` publicado (`ensure_asset`), es patch nuevo — no reemplazo de asset
+sobre v8.2.1. **Deja atrás la deriva de v8.2.1:** el Release `v8.2.1` sirve
+el `LIFs.xlsx` rev2 (`a29070bf…`, reemplazado post-tag) mientras el manifest
+del commit etiquetado declara rev1 (`81bef034…`) — válido para un parcial,
+pero v8.2.2 nace alineado: tag, manifest y Release con la rev3. El VPS sigue
+sin redeploy hasta v8.3.0.
+
+### Datos
+- **`raw/LIFs/LIFs.xlsx` rev3 (edición de Ricardo, 2026-09-09):** `sha256`
+  `a29070bf…` → **`84f5605c…`**, `size_bytes` 48,877 → **48,966**,
+  `data_updated` → 2026-09-09. Gate de contenido: la edición es del propio
+  Ricardo. **Corrida `LIF, anio(2027) update` en batch:** el candado pasa,
+  `master/LIF.dta` regenerado; **total ILIF 2027 rev3 = 9,156,528.9 mdp =
+  23.228% del PIB** (PIB 2027 de `SIM.do` = 39,419,415 mdp). Frente a la
+  rev1 del día anterior (9,038,576.6 mdp): OTROSK +1,800.0 mdp y PEMEX
+  +116,152.3 mdp; los 13 conceptos restantes idénticos. Nota de registro: el
+  brief del ciclo citaba una rev intermedia `d06f4614…` que ya no estaba en
+  disco; se declaró la que sí (decisión de Ricardo).
+
+### Comandos
+- **`ensure_asset.ado` v1.4 — el mensaje-runbook.** El caso (a) no cambia. El
+  caso (b) pasa de "ver el runbook" a la **secuencia completa numerada, con
+  comandos pegables y los valores YA CALCULADOS** del archivo real y del
+  manifest (SHA nuevo, tamaño, `release_tag`, fecha de hoy, número de
+  assets): (1) validar CONTENIDO — si no eres Ricardo, avisar antes; (2) cd
+  al clon de DESARROLLO, no la Carpeta, con `git rev-parse --show-toplevel`
+  para confirmarlo; (3) shasum/stat con el resultado impreso; (4) las líneas
+  exactas del manifest; (5) re-correr; (6) `git add/commit/push`; (7)
+  `gh release delete-asset <tag> <archivo> -y || true` +
+  `bash 05_scripts/publicar.sh <tag>`; (8) avisar a Ricardo para el pull en
+  la Carpeta. Marcado "solo equipo CIEP con el repo"; **en modo endpoint
+  (instalación sin repo) el caso (b) se reduce a una línea** porque ahí no
+  hay manifest que editar. Se eligió la variante completa sobre la mínima
+  (pasos 1–5 + referencia): un `errprintln` no tiene límite práctico, el
+  mensaje es ~30 líneas, y la mitad del valor está en imprimir los valores
+  calculados — con la variante mínima el operador tendría que abrir el
+  runbook precisamente para los pasos que más se equivocan (borrar el asset
+  del Release antes de re-publicar). Verificado contra un SITE falso con el
+  manifest de rev2: reproduce el bloqueo de hoy con los valores de rev3 y
+  sale `r(198)`. Refactor: el mensaje vive en `_sha_mismatch_msg()`.
+
+### Institucional
+- **Guard de identidad de clon en `publicar.sh`.** El 2026-09-08 se lanzó
+  `publicar.sh` sin querer desde la Carpeta del Simulador para
+  investigadores — también es un clon git, así que `git rev-parse` no la
+  distingue — y el pre-chequeo de assets falló de forma confusa. Ahora, antes
+  de cualquier gate (incluido `--check`), el script exige el marker
+  gitignored **`.clon-desarrollo`** en la raíz; si falta, aborta con "Estás
+  en `<ruta>`…" y, si la ruta termina en `Dropbox-CIEP/SimuladorCIEP`, lo
+  nombra: "Esta ruta es la Carpeta: aquí NO se publica ni se opera git
+  (§6.7)". El marker no viaja por git, así que la Carpeta nunca lo tiene; se
+  crea una vez con `touch .clon-desarrollo` (creado en el clon de desarrollo
+  de Ricardo en este ciclo). `.gitignore` y `verify_gitignore.sh` lo cubren
+  (**93/93, 0 FAILS**). Probado en un clon temporal en ruta genérica y en
+  una ruta `…/Dropbox-CIEP/SimuladorCIEP`.
+- **`runbook-actualizar-assets.md` §2b "Comandos exactos":** la misma
+  secuencia parametrizada (`<archivo>`, `<nombre>`, `<tag>`), pegable,
+  incluida la prueba del candado en batch sin abrir Stata; la trampa de los
+  dos clones documentada con el guard; y la regla del paso 7: `publicar.sh`
+  es idempotente por nombre, por eso el `delete-asset` va antes;
+  **reemplazar un asset en un Release existente es válido para un parcial**
+  (deriva conocida y aceptada durante el Paquete) y **la reconciliación
+  formal llega con el minor v8.3.0**; cuando el cambio toca código
+  distribuido, se corta patch nuevo. §3 gana "nunca commitear ni publicar
+  desde la Carpeta".
+
+## [v8.2.1] — 2026-09-08
+
+**Release PARCIAL del Paquete 2027: el `LIFs.xlsx` del data sidecar carga la
+ILIF 2027 y el manifest la declara; el resto de las bases 2027 (PPEF, CGPE)
+llega en v8.3.0, el release formal.** Es un patch porque lo que cambia de lo
+distribuido es un asset de datos y el mensaje de un `.ado` de
+infraestructura; el motor, el sitio y el endpoint no cambian de
+comportamiento. **El VPS NO se redeploya en este parcial** — el web sigue
+sirviendo el PE2026 correctamente hasta v8.3.0.
+
+**GATE DE CONTENIDO PENDIENTE (registrado explícitamente):** el SHA-256 del
+`LIFs.xlsx` 2027 quedó declarado en el manifest ANTES de que Ricardo validara
+con el ojo que la ILIF 2027 está bien vaciada. El hash certifica identidad
+del archivo, no corrección de los datos. El tag `v8.2.1` y `publicar.sh`
+(que re-sube los 24 assets al Release con el LIFs nuevo) quedan bloqueados
+hasta que Ricardo confirme ese gate; si el contenido falla, el fix es un
+LIFs corregido + SHA nuevo, no revertir este release.
+
+### Datos
+- **`raw/LIFs/LIFs.xlsx` → ILIF 2027 (actualización parcial del Paquete
+  2027).** Vaciado por el equipo CIEP el 2026-09-08 en su máquina.
+  `manifest.json`: `sha256` `a145d8f5…` → `81bef034…`, `size_bytes`
+  47,910 → 48,875, `data_updated` 2026-07-19 → 2026-09-08. Corrección en
+  este ciclo: el commit `3f33f8a` había declarado el SHA nuevo con el tamaño
+  viejo (47,910); `ensure_asset` no valida tamaño, así que pasaba, pero el
+  manifest quedaba a medias.
+- **El candado contuvo el incidente — primer evento multi-usuario del repo.**
+  `ensure_asset` detuvo la corrida en la máquina de los compañeros ("SHA real
+  `81bef034…` vs manifest `a145d8f5…`"): una modificación legítima pero no
+  declarada. Es exactamente lo que el candado existe para detener. Lo que
+  falló fue el mensaje (siguiente sección) y la ausencia de un procedimiento
+  escrito para el equipo (runbook nuevo).
+
+### Comandos
+- **`ensure_asset.ado` v1.3 — el error de SHA distingue los dos casos.** El
+  mensaje anterior ("Archivo corrupto o desactualizado. Bórralo y vuelve a
+  correr") es correcto para corrupción y DESTRUCTIVO para actualización
+  intencional: borrar re-descarga el archivo VIEJO del Release y pisa los
+  datos nuevos. El mensaje nuevo enumera (a) si NO modificaste el archivo:
+  bórralo y re-corre; (b) si lo actualizaste a propósito: el manifest debe
+  declararlo (shasum, `size_bytes`, `data_updated`), ver el runbook, y **NO
+  borres el archivo**. Añade la ruta del archivo al mensaje. Verificado
+  contra un SITE falso con manifest desalineado: reproduce el incidente
+  palabra por palabra y sale con `r(198)`. Sin cambios de comportamiento:
+  misma verificación, misma descarga, mismo código de error.
+
+### Institucional
+- **`02_governance/runbook-actualizar-assets.md` (nuevo, una página, para el
+  equipo):** qué es el manifest y por qué existe el candado; el flujo en
+  diez pasos (avisar → Ricardo valida CONTENIDO → shasum + size → manifest
+  → `data_updated` → probar → commit + push → release → pull en la Carpeta
+  de investigadores); qué NUNCA hacer (borrar-y-recorrer tras actualizar;
+  manifest a medias; renombrar el asset); y la regla de la carpeta
+  compartida: **git ahí lo opera UNA sola persona** (§6.7 de arquitectura).
+- **Regla nueva de operación: un ciclo, un operador por juego de archivos.**
+  Durante la auditoría de este ciclo (delegado), `manifest.json` y `SIM.do`
+  cambiaron en el working tree a las 20:57–20:58 sin aviso: era Ricardo
+  ejecutando el desbloqueo a mano en paralelo (commit `3f33f8a`). Near-miss
+  sin daño — pero dos manos sobre los mismos archivos sin declararlo es el
+  mismo incidente que el candado acaba de contener, sin candado. Si Ricardo
+  va a editar a mano archivos de un ciclo delegado, se declara antes.
+  Registrada en el runbook §4.
+- **Rename `04_simuladorfiscal.ciep.mx/` → `04_1_simuladorfiscal.ciep.mx/`
+  (commit `360ebae` del 2026-09-08), documentado aquí porque no lo estaba
+  en ningún lado.** Renumeración, no colisión: la semilla
+  `04_1_paqueteeconomico.ciep.mx/` se RETIRÓ del repo hacia
+  `../CIEP_Micrositios/Paquete Económico/` (hermana del repo, con
+  `DEPLOY-semilla-04_1-legado.md` como acta; el render de los nodos la siguió
+  ahí — `scalarjson.ado:70`, `nodo-deuda.do`, `portada.do`, `verify_nodo.sh`
+  ya apuntan a ese destino), lo que liberó el slot `04_1` para el sitio del
+  Simulador. Mapa `04_*` vigente: `04_1_simuladorfiscal.ciep.mx/`,
+  `04_2_documentos_latex/`, `04_4_libro.ciep.mx/`, `04_5_ciep.mx/` (04_3
+  cerrado el 2026-08-02). **Fallout censado y cerrado en este release:**
+  `05_scripts/publicar-vps-credentials.template.sh` (`LOCAL_SITE_ROOT` a la
+  ruta nueva, con nota para credenciales anteriores);
+  `05_scripts/verify_gitignore.sh` (93/94 con 1 FAIL → **92/92, 0 FAILS**:
+  la ruta nueva en las 2 aserciones del sitio, retiro de las 5 aserciones
+  fantasma sobre `04_1_paqueteeconomico…`, y 3 aserciones nuevas —
+  `config.php` del sitio ignorado, plantilla VPS versionada, `health.php`
+  versionado); `.gitignore` (reglas muertas de `04_1_paqueteeconomico…`
+  retiradas con nota; el clon del sitio comentado en su sección); docs vivas
+  `arquitectura-y-bitacoras.md` §2.8 y D.1, `verificacion-estado-repo.md`,
+  `reporte-inventario-paquete2027.md`, `manual-investigador-ciep.md`
+  (tabla "no borres" con el mapa 04_* completo). Las bitácoras y
+  `reconocimiento-vps.md` (2026-07-09) conservan la ruta vieja como
+  histórico. **Pendiente de Ricardo:** la línea 23 de su
+  `publicar-vps-credentials.sh` (gitignored) sigue en la ruta vieja — el
+  Gate 5 de `publicar-vps.sh` aborta con `die` si no existe, así que un
+  deploy no puede subir vacío, pero tampoco puede correr hasta editarla.
+
+### Correcciones
+- **`SIM.do`: el estado Pre-CGPE 2027 y el freno declarado.** El commit
+  `4b047ae` subió `aniovp` 2026→2027, actualizó los inputs macro
+  (`pib2027` 2.1→2.4, `def2026` 4.8→3.8, `def2027` 4.2→4.0, `inf2026`
+  3.54→3.8, `inf2027` 3.0→3.2; filas 2025 retiradas), descomentó §2.4
+  `PIBDeflactor` y dejó un `exit` sin comentario tras él; `3f33f8a` subió
+  `anioPE` 2026→2027 y retiró el `exit`. **Corrida completa de
+  verificación (2026-09-08, batch, `$id` scratch, `$export` a scratch, SIN
+  `update`, `master/` intacto):** §2.4 PIBDeflactor 2027, §2.5 SCN 2027 y
+  §4.1–4.6 (LIF 2027 con la ILIF nueva — 9,038,576.6 mdp, 22.641% del PIB —
+  ISR, IMSS/ISSSTE, IVA, IEPS) pasan; **§4.7 `TasasEfectivas, anio(2027)
+  enigh` truena con `r(601)`**: no existe `master/perfiles2027.dta` (§3
+  Hogares está comentado, así que nadie lo construye) y el fallback de
+  `TasasEfectivas.ado:308` corre `"<site>/PerfilesSim.do"` — ruta muerta
+  desde la reorganización del 2026-07-04 (el archivo vive en
+  `01_modulos/PerfilesSim.do`). **Fallback aprobado aplicado:** el `exit`
+  vuelve a su posición tras `PIBDeflactor`, ahora DECLARADO ("WIP Pre-CGPE
+  2027: la cadena termina aquí A PROPÓSITO hasta v8.3.0") con el diagnóstico
+  en el comentario. Verificado: SIM.do corre limpio hasta el freno. El mix
+  `aniovp = anioPE = 2027` con bases 2026 NO es estado válido de corrida
+  completa; lo es de la cadena §0–§2.4.
+
+### Candidatos registrados (no corregidos en este ciclo)
+- **Dos rutas muertas a `PerfilesSim.do` en el motor**, destapadas por el
+  mix: `TasasEfectivas.ado:308` (`<site>/PerfilesSim.do`) y `GastoPC.ado:74`
+  (`<site>/01_modules/profiles/PerfilesSim.do`, anterior incluso a la
+  reorganización). Ambas son fallbacks que solo corren cuando falta
+  `master/perfiles<anio>.dta`, por eso sobrevivieron desde julio. Van en el
+  ciclo v8.3.0 junto con la construcción de `perfiles2027.dta`.
+- **La opción de mover el freno a antes de §4.7** (conservando SCN 2027 y
+  LIF 2027 verificados) queda para decisión de Ricardo; este release respeta
+  el fallback aprobado.
+
+### Trabajo acumulado en `master` desde v8.2.0 (nodos y micrositio)
+
+Lo que sigue estaba registrado bajo `[Unreleased]` y queda incluido en el tag
+`v8.2.1` porque el tag es un punto de `master`. **Nada de esto cambia el
+paquete distribuido** (`05_scripts/manifest-endpoint.toml` no incluye
+`scalarjson.ado`, igual que nunca incluyó `scalarlatex.ado`): el endpoint
+público y el VPS corren el mismo motor que en v8.2.0. Los nodos se publican
+en su propio ciclo.
 
 ### Institucional
 - **Primer corte vertical de un nodo: un número sale de Stata y llega a una
@@ -139,9 +675,96 @@ El tag llega cuando el nodo se publique, no antes.
   portada`. Reglas 1-3 y 6 idénticas (la 3 corre el driver dos veces: LIF y
   PEF incluidos); las reglas 4/5 se sustituyen por sus equivalentes
   estructurales — cierre de la ecuación (montos exactos; % PIB a la
-  precisión emitida, tolerancia 1e-9), sumas de desagregaciones contra los
+  precisión emitida), sumas de desagregaciones contra los
   totales, brecha LIF declarada, y unidades/formatos/fuentes por término más
   procedencia de capas. Ambos nodos: todas las reglas pasan, exit 0.
+- **La portada se vuelve MULTI-AÑO: selector 2013–2026 (v2.0 del driver,
+  mismo esquema `ciep.nodo.portada/v1`).** Censo previo (2026-08-02): los 14
+  años corren completos y las etiquetas son ESTABLES — las mismas 7 familias
+  de ingreso y 10 divisiones de gasto en todos los años, así que el
+  blueprint del driver es único, sin ramas por año. El bloque `ecuacion` se
+  extiende a `ecuaciones[]` por año SIN subir a v2: contrato pre-publicación
+  sin consumidor externo (decisión documentada en el header del driver: "v2
+  solo cuando exista consumidor externo publicado"). **`tipo_dato` por año Y
+  POR LADO, leído de los datos, no de una tabla tecleada:** gasto = qué
+  columna trae datos en `master/PEF.dta` según la regla del motor
+  (`PEF.ado:1295-97`: ejercido → aprobado → proyecto — 2013-2025 ejercido/CP,
+  2026 aprobado/PEF); ingresos = mes máximo observado en `master/LIF.dta`
+  (12 → observado; menor → ley/ILIF — 2026). La página lo muestra como marca
+  discreta bajo el selector ("gasto: aprobado · ingresos: ley"), sin
+  párrafos. La capa CGPE viaja SOLO en el año de referencia. Deep-link por
+  año: `/nodos/#2016`. Tiempo de corrida declarado en el header del driver:
+  ~2 min el export (PEF ~8.6 s × 14 años), ~5 min la regla 3.
+- **Dos lecciones de precisión más, cazadas por las reglas 3 y 4 en la
+  primera corrida multi-año:** (a) los MONTOS de Cuenta Pública traen
+  centavos y tampoco son bit-estables entre corridas — los montos ahora
+  viajan en MILLONES DE MXN ENTEROS (`round(x/1e6)`), seis órdenes por
+  encima del ruido, y el financiamiento se deriva DESPUÉS del redondeo, así
+  que el cierre en montos es exacto en enteros; los % del PIB bajan a
+  `%16.9g` (9 dígitos: ~5 órdenes de margen sobre el ruido, y el display usa
+  3 decimales). (b) `local x = exp` guarda el resultado como TEXTO con menos
+  dígitos — el cierre por construcción perdía los centavos al pasar por
+  locals; toda la captura del driver vive ahora en scalars (`__prt*`,
+  limpiados al final). La regla 4 verifica el cierre POR AÑO en los 14 años.
+- **Integración (a) ejecutada en el WP local (2026-08-02):** item de menú
+  "La ecuación" → `/nodos/` en `menu-paquete` (posición 1, vía
+  `wp menu item add-custom`). El hero quedó DESCARTADO por escrito (regla:
+  nada de los nodos vive dentro de Elementor). Es estado de BD: documentado
+  en el `DEPLOY.md` de la semilla como PENDIENTE DE PORTAR con el comando
+  exacto (mismo `wp` por SSH + purga de WP Rocket, prerrequisito: `/nodos/`
+  desplegada).
+- **Tercer nodo: los indicadores de los hashtags de ciep.mx (2026-08-03,
+  esquema `ciep.nodo.indicadores/v1`).** Los 26 hashtags del home de ciep.mx
+  son anclas a `/category/<slug>/` — el slug es la llave del censo: **13
+  disponibles y 11 declarados no disponibles con su razón** (FiscalGap
+  registra tasas y no niveles; y 7 hashtags sin correspondencia hoy). Un
+  **decorador estático** (`indicadores-decorador.js`, auditado por la regla 1
+  como cualquier página de nodo) lee el contrato y añade la cifra al ancla
+  cuyo slug tiene dato — los demás quedan intactos; se encola con un
+  **mu-plugin de una línea** (`indicadores-muplugin.php`, fuente versionada;
+  instalado como `wp-content/mu-plugins/ciep-indicadores.php` en la semilla:
+  viaja con el rsync, no vive en la BD). WordPress jamás guarda un número; la
+  actualización mensual es re-exportar el JSON y re-publicar un archivo.
+- **Indicadores v2 (mismo día, decisión de Ricardo tras ver v1): ÚNICAMENTE
+  datos abiertos como lo oficial, con el último mes como corte de cada
+  concepto.** v1 usaba LIF/PEF anual (ley/aprobado); v2 mapea cada slug a su
+  serie de SHCP Estadísticas Oportunas vía `DatosAbiertos.ado` con claves
+  verificadas contra `master/DatosAbiertos.dta` (XAB ingresos, XAC gasto
+  neto pagado, XAB11 tributarios, XAB12 no tributarios, XDA12 contribuciones
+  SS, XAC21 costo financiero, XOA0135 pensiones, XOA0417/XOA0419 funciones
+  Salud/Educación — los frames viejos XOA0316/XOA0315 ya no traen 2026 y el
+  guard truena si una clave se queda sin dato; `energia` = balance XAB21 −
+  XOA0425; `endeudamiento` = XAC − XAB, el cierre de siempre). **Convención
+  de % PIB del MOTOR, no inventada:** flujos con la opción `proyeccion` de
+  `DatosAbiertos.ado` (acumulado observado anualizado con `acum_prom` ÷ PIB
+  anual), `tipo_dato = proyectado_observado`; el saldo de deuda no se
+  proyecta (`observado_mensual`). Todos los conceptos cortan en **mayo de
+  2026**; guard de cortes mixtos incluido. **Ronda visual aplicada:** junto
+  al hashtag SOLO el número y el `%` (columna angosta), todo en blanco con
+  sombra sutil; la unidad y el corte NO se repiten — viven una sola vez en
+  una nota fija en la esquina superior derecha, leída del contrato; el
+  detalle por concepto (clave SHCP, fuente, tipo de dato) va al tooltip.
+  La regla 1 volvió a cazar dos fósiles del propio autor durante la ronda
+  (una fecha en comentario y un `12px/1.4`). `verify_nodo.sh indicadores`:
+  reglas 4/5 propias (cierre del endeudamiento re-derivado del contrato,
+  `ingresos == ingresospublicos`, slugs únicos, disponibles con
+  pib/corte/tipo_dato/fuente y ausentes con razón); los TRES nodos en exit 0.
+- **El decorador gana el conteo de investigaciones por hashtag (2026-08-04):**
+  dato VIVO de la API REST de WordPress (`/wp-json/wp/v2/categories`, campo
+  `count`), pintado junto a la cifra del motor (`#Salud 3.1% (122)`); los
+  hashtags sin cifra llevan solo su conteo. Nada tecleado: si la API falla,
+  no hay conteos y la página queda tal cual. El decorador ahora exige que el
+  ancla SEA un hashtag (texto que inicia con `#`) para no decorar menú/footer.
+  Los cambios de LAYOUT del home de ciep.mx (hero 2/3 + destacadas 1/3
+  vertical cuadrada a la altura del hero; Venn a columna completa con offsets
+  escalados ×1.39; las 3 secciones de /investigaciones insertadas bajo el
+  Venn con filtros colapsados a 5 items + "Más…", 9 por página, ancla
+  `#investigaciones`, y el botón "Investigaciones" fuera del menú del header)
+  viven en la BD LOCAL (`_elementor_data` + menús), documentados en el
+  DEPLOY.md de la semilla con su hallazgo crítico: el auto-update del primer
+  arranque subió Elementor a 3.35.5 y desactivó elementor-pro (por eso el
+  widget de posts salía vacío); producción sirve Elementor 4.2.1 — NO rsync
+  de plugins sin reconciliar versiones.
 
 ### Comandos
 - **`scalarjson.ado` v1.0.0 — exportador de nodos a JSON, hermano de SOLO

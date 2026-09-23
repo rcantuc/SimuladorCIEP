@@ -47,16 +47,16 @@ linepattern	xyline			dash
 
 
 // Title, subtitle, caption, notes
-clockdir 	title_position		12
+clockdir 	title_position		1
 color 		heading			black
 
-clockdir 	subtitle_position	12
+clockdir 	subtitle_position	1
 color 		subheading		black
 
-clockdir 	caption_position	6
+clockdir 	caption_position	5
 color		body			black
 
-clockdir 	note_position		6
+clockdir 	note_position		5
 color		small_body		black
 
 gsize 		heading			vlarge
@@ -108,7 +108,7 @@ tickposition	axis_tick		inside
 
 
 // Legend
-clockdir 	legend_position		6
+clockdir 	legend_position		5
 linestyle 	legend			none
 gsize 		legend_key_xsize	medlarge
 gsize 		legend_key_ysize	medlarge

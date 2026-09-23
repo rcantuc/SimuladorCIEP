@@ -71,7 +71,7 @@ quietly {
 	if _rc != 0 {
 		noisily di _newline in g "Creando base: " in y "/master/perfiles`aniope'.dta" ///
 			in g " con " in y "ENIGH " `anioenigh'
-		noisily run `"`c(sysdir_site)'/01_modules/profiles/PerfilesSim.do"' `aniope'
+		noisily run `"`c(sysdir_site)'/01_modulos/PerfilesSim.do"' `aniope'
 	}
 	merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/master/`anioenigh'/households.dta", ///
 		nogen keepus(asis_esc tipoesc nivel inst_* ing_jubila jubilado ing_PAM formal) update
@@ -391,9 +391,13 @@ quietly {
 			}
 
 			** 3.6.1 Scalars **
-			escalar mxnpc eduaduPC = ((`eduadu')/`Educacion'[1,6])/`deflator'
+			* Denominador = alumnos ADULTOS (col 5), no el total de alumnos (col 6):
+			* con col 6 el per capita se multiplicaba solo por alum_adulto y el
+			* monto distribuido era ~1% del PEF (2027: 5,862 mill. perdidos;
+			* detectado en FiscalGap A, 2026-09-12). *
+			escalar mxnpc eduaduPC = ((`eduadu')/`Educacion'[1,5])/`deflator'
 			escalar pctpib eduaduPIB = (`eduadu')/`PIB'*100
-			escalar mxnpc eduaduPob = `Educacion'[1,6]
+			escalar mxnpc eduaduPob = `Educacion'[1,5]
 
 			** 3.6.2 Asignación de gasto en variable **
 			replace Educacion = Educacion + scalar(eduaduPC)*alum_adulto
@@ -1370,7 +1374,9 @@ quietly {
 			else {
 				preserve
 				PEF if anio == `aniope', by(divCIEP) anio(`aniope') min(0) nographs
-				local gasotros = r(Otros_gastos)+r(Cuotas_ISSSTE)-`gascuidados'-`gasmadres'
+				* Otros gastos BRUTO (sin netar cuotas ISSSTE; ver PerfilesSim.do 1.2, 2026-09-12),
+				* menos las transferencias que se separan en IngBasico (cuidados, madres). *
+				local gasotros = r(Otros_gastos)-`gascuidados'-`gasmadres'
 				restore
 			}
 			escalar mxnpc gasotrosPC = (`gasotros'/`Energia'[1,1])/`deflator'

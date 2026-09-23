@@ -26,17 +26,17 @@ SCN, anio(`2') nographs
 ** 1 Ingresos **
 LIF, anio(`2') nographs min(0) by(divCIEP)
 local CuotasIMSS = scalar(Cuotas_IMSS)
-local IMSSpropio = scalar(IMSS) //-`CuotasIMSS'
-local ISSSTEpropio = scalar(ISSSTE)
-local CFEpropio = scalar(CFE)
-local Pemexpropio = scalar(Pemex)
-local FMP = scalar(FMP_Derechos)
-local Mejoras = scalar(Contrib_de_mejora)
-local Derechos = scalar(Derechos)
-local Productos = scalar(Productos)
-local Aprovechamientos = scalar(Aprovechamientos)
-local OtrosTributarios = scalar(Otros_tributarios)
-local OtrasEmpresas = scalar(Otras_empresas)
+local IMSSpropio = r(IMSS) //-`CuotasIMSS'
+local ISSSTEpropio = r(ISSSTE)
+local CFEpropio = r(CFE)
+local Pemexpropio = r(Pemex)
+local FMP = r(FMP_Derechos)
+local Mejoras = r(Contrib_de_mejora)
+local Derechos = r(Derechos)
+local Productos = r(Productos)
+local Aprovechamientos = r(Aprovechamientos)
+local OtrosTributarios = r(Otros_tributarios)
+local OtrasEmpresas = r(Otras_empresas)
 
 
 

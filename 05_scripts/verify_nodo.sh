@@ -68,23 +68,31 @@ fi
 # mismo estatus que los statalatex_*.tex de 06_libro/images. Consecuencia
 # operativa: en un clone limpio el JSON no existe hasta que corras el driver,
 # y este script te lo dice en vez de fallar de forma críptica.
-NODOS_DIR="04_1_paqueteeconomico.ciep.mx/public_html/nodos"
-JSON="${NODOS_DIR}/statajson_${NODO}.json"
-# Cada nodo declara su página fuente y su driver. La portada (esquema
-# ciep.nodo.portada/v1, sin serie anual) sustituye las reglas 4/5 por sus
-# equivalentes: cierre exacto de la ecuación y unidades declaradas.
+# Cada nodo declara su carpeta de render, su página/consumidor fuente y su
+# driver. La portada (ciep.nodo.portada/v1) y los indicadores
+# (ciep.nodo.indicadores/v1) sustituyen las reglas 4/5 por sus equivalentes
+# estructurales.
 case "$NODO" in
 	portada)
+		NODOS_DIR="../CIEP_Micrositios/Paquete Económico/public_html/nodos"
 		PAGINA="01_modulos/nodos/portada.html"
 		DRIVER="01_modulos/nodos/portada.do"
 		ESQUEMA="portada"
 		;;
+	indicadores)
+		NODOS_DIR="04_5_ciep.mx/indicadores"
+		PAGINA="01_modulos/nodos/indicadores-decorador.js"
+		DRIVER="01_modulos/nodos/indicadores.do"
+		ESQUEMA="indicadores"
+		;;
 	*)
+		NODOS_DIR="../CIEP_Micrositios/Paquete Económico/public_html/nodos"
 		PAGINA="01_modulos/nodos/nodo-deuda.html"
 		DRIVER="01_modulos/nodos/nodo-deuda.do"
 		ESQUEMA="serie"
 		;;
 esac
+JSON="${NODOS_DIR}/statajson_${NODO}.json"
 
 FALLAS=0
 ok()   { printf '  \033[0;32m[OK]\033[0m    %s\n' "$1"; }
@@ -142,13 +150,13 @@ import json, sys
 d = json.load(open(sys.argv[1], encoding='utf-8'))
 esquema = sys.argv[2]
 p = d.get('procedencia', {})
-if esquema == 'portada':
+if esquema in ('portada', 'indicadores'):
     req = ['version_simulador','corte_datos','log','origen','generado_en']
 else:
     req = ['version_simulador','corte_datos','corte_serie','log','origen','dataset_serie','generado_en']
 faltan = [k for k in req if k not in p]
 vacios = [k for k in req if k in p and p[k] in ('', None)]
-if esquema != 'portada':
+if esquema not in ('portada', 'indicadores'):
     sub = p.get('corte_serie', {})
     faltan += ['corte_serie.'+k for k in ('anio','mes','etiqueta') if k not in sub]
 # `log` puede venir vacío SOLO si está declarado en faltantes.
@@ -228,35 +236,77 @@ fi
 
 # =============================================================================
 echo
-if [ "$ESQUEMA" = "portada" ]; then
-echo "REGLA 4 (portada) — la ecuación cierra y la referencia declara su brecha"
-# La portada no tiene serie anual: su equivalente estructural es el CIERRE.
-# gasto - ingresos - financiamiento == 0 POR CONSTRUCCIÓN en el motor (el
-# driver deriva financiamiento como resta). En el JSON los % del PIB viajan
-# con 12 dígitos significativos (los agregados de LIF/PEF no son
-# bit-estables; ver el emisor _pjpib del driver), así que el cierre emitido
-# vale hasta 1e-9. Los MONTOS son enteros exactos: su cierre es cero o nada.
+if [ "$ESQUEMA" = "indicadores" ]; then
+echo "REGLA 4 (indicadores) — derivaciones consistentes y slugs únicos"
+# Lo re-derivable desde el propio contrato se re-deriva: endeudamiento es
+# gasto - ingresos (cierre, misma definición que la portada) e 'ingresos'
+# e 'ingresospublicos' son el MISMO número por definición. Tolerancia 1e-6:
+# los % PIB viajan a 9 dígitos significativos (ver _pjpib del driver).
 SALIDA=$("$PY" - "$JSON" <<'PYEOF'
 import json, sys
 d = json.load(open(sys.argv[1], encoding='utf-8'))
-t = d['ecuacion']['terminos']
 errs = []
-cierre = t['gasto']['pib'] - t['ingresos']['pib'] - t['financiamiento']['pib']
-if abs(cierre) > 1e-9: errs.append('cierre_pib=' + repr(cierre))
-cierrem = t['gasto']['monto'] - t['ingresos']['monto'] - t['financiamiento']['monto']
-if cierrem != 0: errs.append('cierre_monto=' + repr(cierrem))
-ref = t['financiamiento'].get('referencia_lif')
-if not ref or 'brecha_pib' not in ref: errs.append('referencia_lif.brecha_pib ausente')
-si = sum(f['pib'] for f in d['desagregaciones']['ingresos'])
-if abs(si - t['ingresos']['pib']) > 1e-9: errs.append('suma_ingresos!=' + repr(si))
-sg = sum(f['pib'] for f in d['desagregaciones']['gasto'])
-if abs(sg - t['gasto']['pib']) > 1e-9: errs.append('suma_gasto!=' + repr(sg))
+slugs = [i['slug'] for i in d['indicadores']]
+if len(slugs) != len(set(slugs)): errs.append('slugs duplicados')
+m = {i['slug']: i for i in d['indicadores'] if i.get('disponible')}
+req = ('ingresos', 'ingresospublicos', 'gastopublico', 'endeudamiento')
+if all(k in m for k in req):
+    if m['ingresos']['pib'] != m['ingresospublicos']['pib']:
+        errs.append('ingresos != ingresospublicos')
+    cierre = m['gastopublico']['pib'] - m['ingresos']['pib'] - m['endeudamiento']['pib']
+    if abs(cierre) > 1e-6: errs.append('cierre endeudamiento=%r' % cierre)
+else:
+    errs.append('faltan slugs del cierre: ' + ','.join(k for k in req if k not in m))
+print('N_DISP=%d' % len(m))
 print('ERRS=' + ';'.join(errs))
 PYEOF
 )
 E4=$(echo "$SALIDA" | sed -n 's/^ERRS=//p')
+ND4=$(echo "$SALIDA" | sed -n 's/^N_DISP=//p')
 if [ -z "$E4" ]; then
-	ok "cierre exacto (pib y monto), sumas de desagregaciones cuadran, brecha LIF declarada"
+	ok "cierre del endeudamiento y consistencia interna en los $ND4 indicadores disponibles"
+else
+	fail "derivaciones inconsistentes: $E4"
+fi
+elif [ "$ESQUEMA" = "portada" ]; then
+echo "REGLA 4 (portada) — la ecuación cierra POR AÑO y la referencia declara su brecha"
+# La portada no tiene serie anual: su equivalente estructural es el CIERRE,
+# aplicado a CADA año del contrato. gasto - ingresos - financiamiento == 0
+# POR CONSTRUCCIÓN en el motor (el driver deriva financiamiento como resta).
+# En el JSON los % del PIB viajan con 9 dígitos significativos (los
+# agregados de LIF/PEF no son bit-estables; ver el emisor _pjpib del
+# driver), así que el cierre y las sumas emitidos valen hasta 1e-6. Los
+# MONTOS viajan en millones ENTEROS y el financiamiento se deriva DESPUÉS
+# del redondeo: su cierre es cero exacto o nada.
+SALIDA=$("$PY" - "$JSON" <<'PYEOF'
+import json, sys
+d = json.load(open(sys.argv[1], encoding='utf-8'))
+errs = []
+anios = [e['anio'] for e in d['ecuaciones']]
+if anios != d.get('anios'): errs.append('anios[] no coincide con ecuaciones[]')
+if d.get('anio_default') not in anios: errs.append('anio_default fuera de anios[]')
+if anios != sorted(anios): errs.append('ecuaciones sin orden por anio')
+for e in d['ecuaciones']:
+    y = e['anio']
+    t = e['terminos']
+    cierre = t['gasto']['pib'] - t['ingresos']['pib'] - t['financiamiento']['pib']
+    if abs(cierre) > 1e-6: errs.append('%d:cierre_pib=%r' % (y, cierre))
+    cierrem = t['gasto']['monto'] - t['ingresos']['monto'] - t['financiamiento']['monto']
+    if cierrem != 0: errs.append('%d:cierre_monto=%r' % (y, cierrem))
+    ref = t['financiamiento'].get('referencia_lif')
+    if not ref or 'brecha_pib' not in ref: errs.append('%d:referencia_lif.brecha_pib ausente' % y)
+    si = sum(f['pib'] for f in e['desagregaciones']['ingresos'])
+    if abs(si - t['ingresos']['pib']) > 1e-6: errs.append('%d:suma_ingresos!=%r' % (y, si))
+    sg = sum(f['pib'] for f in e['desagregaciones']['gasto'])
+    if abs(sg - t['gasto']['pib']) > 1e-6: errs.append('%d:suma_gasto!=%r' % (y, sg))
+print('N_ANIOS=%d' % len(anios))
+print('ERRS=' + ';'.join(errs))
+PYEOF
+)
+E4=$(echo "$SALIDA" | sed -n 's/^ERRS=//p')
+NA4=$(echo "$SALIDA" | sed -n 's/^N_ANIOS=//p')
+if [ -z "$E4" ]; then
+	ok "cierre por año en los $NA4 años (montos exactos, pib a la precisión emitida), sumas y brecha LIF declaradas"
 else
 	fail "la ecuación no cierra o las sumas no cuadran: $E4"
 fi
@@ -292,23 +342,60 @@ fi
 
 # =============================================================================
 echo
-if [ "$ESQUEMA" = "portada" ]; then
-echo "REGLA 5 (portada) — términos, desagregaciones y capas declaran unidad y procedencia"
+if [ "$ESQUEMA" = "indicadores" ]; then
+echo "REGLA 5 (indicadores) — cada slug declara todo: cifra completa o razón de ausencia"
 SALIDA=$("$PY" - "$JSON" <<'PYEOF'
 import json, sys
 d = json.load(open(sys.argv[1], encoding='utf-8'))
 errs = []
-E = d['ecuacion']
-for k in ('unidad_pib','unidad_monto','formato_pib','formato_pib_detalle','formato_monto','regla'):
-    if not E.get(k): errs.append('ecuacion.'+k)
-for k, t in E['terminos'].items():
-    if not t.get('fuente'): errs.append('terminos.%s.fuente' % k)
-for lado in ('ingresos','gasto'):
-    for f in d['desagregaciones'][lado]:
-        if not (f.get('escalar') or f.get('retorno')):
-            errs.append('desagregaciones.%s.%s sin escalar/retorno' % (lado, f.get('etiqueta')))
+P = d['presentacion']
+for k in ('unidad_pib','formato_pib','tipo_dato_leyenda'):
+    if not P.get(k): errs.append('presentacion.'+k)
+ley = P.get('tipo_dato_leyenda', {})
+for i in d['indicadores']:
+    s = i.get('slug', '?')
+    if i.get('disponible'):
+        for k in ('pib','corte','tipo_dato','fuente','etiqueta'):
+            if k not in i or i[k] in ('', None): errs.append('%s.%s' % (s, k))
+        partes = [p.strip() for p in str(i.get('tipo_dato','')).split('+')]
+        for p in partes:
+            if p and p not in ley: errs.append('%s.tipo_dato=%s fuera de la leyenda' % (s, p))
+    else:
+        if not i.get('razon'): errs.append('%s.razon' % s)
+print('ERRS=' + ';'.join(errs))
+PYEOF
+)
+E5=$(echo "$SALIDA" | sed -n 's/^ERRS=//p')
+if [ -z "$E5" ]; then
+	ok "presentación completa; disponibles con pib/corte/tipo_dato/fuente y ausentes con razón"
+else
+	fail "declaraciones ausentes: $E5"
+fi
+elif [ "$ESQUEMA" = "portada" ]; then
+echo "REGLA 5 (portada) — presentación, tipo_dato por año y por lado, y capas declaran todo"
+SALIDA=$("$PY" - "$JSON" <<'PYEOF'
+import json, sys
+d = json.load(open(sys.argv[1], encoding='utf-8'))
+errs = []
+P = d['presentacion']
+for k in ('unidad_pib','unidad_monto','formato_pib','formato_pib_detalle','formato_monto',
+          'regla','fuente_gasto','fuente_ingresos','fuente_financiamiento',
+          'nota_referencia_lif','tipo_dato_leyenda'):
+    if not P.get(k): errs.append('presentacion.'+k)
+ley = P.get('tipo_dato_leyenda', {})
+for e in d['ecuaciones']:
+    y = e['anio']
+    td = e.get('tipo_dato', {})
+    for lado in ('gasto','ingresos'):
+        if not td.get(lado): errs.append('%d:tipo_dato.%s' % (y, lado))
+        elif td[lado] not in ley: errs.append('%d:tipo_dato.%s=%s fuera de la leyenda' % (y, lado, td[lado]))
+    for lado in ('ingresos','gasto'):
+        for f in e['desagregaciones'][lado]:
+            if not (f.get('escalar') or f.get('retorno')):
+                errs.append('%d:desagregaciones.%s.%s sin escalar/retorno' % (y, lado, f.get('etiqueta')))
 for c in d.get('capas_declaradas', []):
     if not c.get('unidad'): errs.append('capa.%s.unidad' % c.get('id'))
+    if 'anio' not in c: errs.append('capa.%s.anio' % c.get('id'))
     pr = c.get('procedencia', {})
     if not pr.get('definida_en'): errs.append('capa.%s.definida_en' % c.get('id'))
 print('ERRS=' + ';'.join(errs))
@@ -316,7 +403,7 @@ PYEOF
 )
 E5=$(echo "$SALIDA" | sed -n 's/^ERRS=//p')
 if [ -z "$E5" ]; then
-	ok "unidades, formatos, fuentes por término y procedencia de capas presentes"
+	ok "presentación completa, tipo_dato por año/lado dentro de la leyenda, capas con unidad/anio/procedencia"
 else
 	fail "declaraciones ausentes: $E5"
 fi

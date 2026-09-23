@@ -69,7 +69,7 @@ Verificado contra el código vigente y contra **toda la historia de todas las ra
 
 **Por extensión:** do 31 · ado 27 · md 20 · scheme 12 · sthlp 11 · pkg 8 · sh 7 · png 4 · gif 2 · txt 1 · toml 1 · stpr 1 · json 1 · (resto: config puntual).
 
-**Por carpeta de primer nivel:** 01_modulos 33 · 03_help 23 · 05_scripts 17 · 02_governance 15 · raíz ~42 (los `.ado` del motor, `SIM.do`, `profile.do`, schemes, plantillas) · 04_simuladorfiscal.ciep.mx 1 (`health.php`).
+**Por carpeta de primer nivel:** 01_modulos 33 · 03_help 23 · 05_scripts 17 · 02_governance 15 · raíz ~42 (los `.ado` del motor, `SIM.do`, `profile.do`, schemes, plantillas) · 04_1_simuladorfiscal.ciep.mx 1 (`health.php`; carpeta renombrada desde `04_simuladorfiscal.ciep.mx/` el 2026-09-08).
 
 **Los 20 trackeados más pesados:**
 
@@ -112,7 +112,7 @@ La higiene es notablemente buena — la purga de binarios del rewrite pre-v7/v8 
 Consistente con lo que indica el investigador principal (nada de esa carpeta corre en producción desde ahí; localhost + deploy por script):
 
 **Trackeado (1 archivo):**
-- `04_simuladorfiscal.ciep.mx/health.php` — excepción deliberada (`!**/04_simuladorfiscal.ciep.mx/health.php`), infraestructura del pipeline de deploy.
+- `04_1_simuladorfiscal.ciep.mx/health.php` — excepción deliberada (`!**/04_1_simuladorfiscal.ciep.mx/health.php`), infraestructura del pipeline de deploy.
 
 **Ignorado (verificado, regla exacta):**
 
@@ -120,7 +120,7 @@ Consistente con lo que indica el investigador principal (nada de esa carpeta cor
 |---|---|
 | `04_1_paqueteeconomico.ciep.mx/**` (incl. `6yt5ppa3hb/`, `app/*.apk`, `wp-config.php`) | `.gitignore:153` → `04_1_paqueteeconomico.ciep.mx/` |
 | `04_2_documentos_latex/**` (incl. "Paquete Económico 2027") | `.gitignore:154` → `04_2_documentos_latex/` |
-| `04_simuladorfiscal.ciep.mx/**` (todo salvo health.php) | `.gitignore:164` → `**/04_simuladorfiscal.ciep.mx/**` |
+| `04_1_simuladorfiscal.ciep.mx/**` (todo salvo health.php) | `.gitignore:172` → `**/04_1_simuladorfiscal.ciep.mx/**` |
 | `06_libro/**` (incl. `public_html/`, `maindoc.tex`) | `.gitignore:166` → `06_libro/` |
 
 ⚠️ **Las reglas de las líneas 153–154 son las de la Entrega 1.5 y siguen SIN commitear** (`.gitignore` aparece como ` M `). La protección es real en esta máquina pero no viaja: otro clon del repo NO la tiene. Es el argumento más fuerte para autorizar ya el commit de la 1.5.
@@ -133,7 +133,7 @@ El criterio: **sitio como fuente** (código que alguien edita y despliega) versu
 
 | Contenido ignorado | Naturaleza | Recomendación |
 |---|---|---|
-| `04_simuladorfiscal.ciep.mx/` — `index.php`, `index-en.php`, `js/stataCalcula*.js`, `calculaStata.php`, `css/`, `jsonSankey*.php` | **FUENTE.** Es el código del sitio que `publicar-vps.sh` propaga al VPS. Hoy el código desplegado no tiene historial: un bug introducido localmente no es diffeable ni reversible por git (el rollback depende de tars `_backups/`) | **Versionar la fuente** (PHP/JS/CSS), manteniendo ignorados `ssl/`, `logs/`, `*.log`, `images/` pesadas si las hay. Es el candidato más claro de todo el análisis — y la corrección del §2.7 (etiquetas) lo necesita para hacerse con PR auditable |
+| `04_1_simuladorfiscal.ciep.mx/` — `index.php`, `index-en.php`, `js/stataCalcula*.js`, `calculaStata.php`, `css/`, `jsonSankey*.php` | **FUENTE.** Es el código del sitio que `publicar-vps.sh` propaga al VPS. Hoy el código desplegado no tiene historial: un bug introducido localmente no es diffeable ni reversible por git (el rollback depende de tars `_backups/`) | **Versionar la fuente** (PHP/JS/CSS), manteniendo ignorados `ssl/`, `logs/`, `*.log`, `images/` pesadas si las hay. Es el candidato más claro de todo el análisis — y la corrección del §2.7 (etiquetas) lo necesita para hacerse con PR auditable |
 | `06_libro/` — `maindoc.tex`, capítulos `0_Prologo`…`4_Balance`, `pandoc_export.py` | **FUENTE.** Es el documento bandera institucional; hoy su LaTeX no tiene historial de cambios | **Versionar el `.tex` + scripts**, manteniendo ignorados `images/` (628 PNG generados + statalatex — se regeneran), `Back up/`, `public_html/` (instalación), PDFs compilados y auxiliares |
 | `06_libro/images/statalatex_*.tex` | Generado (salida del contrato) | Seguir sin versionar: se regenera con la corrida; su procedencia es el log |
 | `04_1_paqueteeconomico.ciep.mx/` | **INSTALACIÓN** (WordPress: core, plugins, uploads, credenciales) | Seguir ignorada completa. La "fuente" de ese sitio vive en la BD (Elementor); no hay nada versionable ahí. Los nodos 2027 nacerán como fuente en el repo (plan §2.6-A), no dentro del WP |

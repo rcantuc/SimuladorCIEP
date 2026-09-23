@@ -1,4 +1,4 @@
-*! version 8.0 CIEP 03jul2026
+*! version 8.1 CIEP 12sep2026
 program define LIF, return
 quietly {
 	capture mkdir `"`c(sysdir_site)'/users/"'
@@ -38,7 +38,11 @@ quietly {
 	noisily di _newline(2) in g _dup(20) "." "{bf:   Sistema Fiscal:" in y " INGRESOS `anio'   }" in g _dup(20) "."
 
 	* 1.1 Valor año mínimo *
-	if `desde' == -1 {
+	* desde() debe ser < anio(): si viene igual o mayor (p.ej. Graphs_TE.do corre
+	* TasasEfectivas 2001..anioPE y esta llama LIF con desde(2013)), el collapse
+	* de las graficas vaciaba el anio y tabstat tronaba con r(2000), y la tabla B
+	* dividiria entre nyears = 0 (2026-09-12). Se recae en el default. *
+	if `desde' == -1 | `desde' >= `anio' {
 		local desde = `anio'-10
 	}
 
@@ -109,7 +113,7 @@ quietly {
 	use "`c(sysdir_site)'/master/LIF.dta", clear
 	*drop if nombre == ""
 	sort anio mes
-	merge m:1 (anio) using `PIB', nogen keepus(pibY indiceY deflatorpp lambda var_pibY) update replace keep(matched)
+	merge m:1 (anio) using `PIB', nogen keepus(pibY indiceY deflatorpp lambda var_pibY Poblacion) update replace keep(matched)
 	local aniofirst = anio[1]
 	local aniolast = anio[_N]
 
@@ -127,9 +131,11 @@ quietly {
 		g double `k'PIB = `k'/pibY*100
 	}
 	g double recaudacionR = recaudacion/deflatorpp
+	g double recaudacionPC = recaudacion/Poblacion					// per capita: `currency' por persona (Poblacion de PIBDeflactor)
 	egen double recaudacionTOT = sum(recaudacion), by(anio)
 	format *PIB %10.3fc
 	format recaudacionR recaudacionTOT %20.0fc
+	format recaudacionPC %10.0fc
 
 
 
@@ -157,237 +163,227 @@ quietly {
 	capture replace nombre = subinstr(nombre,"/","_",.)
 	
 
-	********************
-	** 4. Display LIF **
-	noisily di _newline in g "{bf: A. Ingresos presupuestarios (`by')}" ///
-		_newline ///
-		_col(30) in g %20s "`currency'" ///
-		_col(52) %7s "% PIB" ///
-		_col(61) %7s "% Tot"
+	*******************************************************************
+	** 4. Display: UNA agregacion por anio; el `if' manda en todo.   **
+	**    A. Nivel `anio' (MXN, % PIB, % Tot, MXN per capita)
+	**    B. Crecimiento `desde'-`anio' (dif % PIB, %G real, elasticidad)
+	**    Sin division "resumido" quemada: si el usuario pide solo la
+	**    deuda (if divLIF == 10) o la excluye, el comando obedece. Los
+	**    totales sin deuda se derivan de la MISMA muestra y solo se
+	**    despliegan cuando difieren del total.                          **
+	*******************************************************************
 
-	capture tabstat recaudacion recaudacionPIB if anio == `anio', by(`by') stat(sum) f(%20.0fc) save
+	** 4.1 Agregados por `by': anio de referencia y anio base **
+	capture tabstat recaudacion recaudacionPIB recaudacionR recaudacionPC if anio == `anio', by(`by') stat(sum) f(%20.0fc) save
 	if _rc != 0 {
 		noisily di in r "No hay informaci{c o'}n para el a{c n~}o `anio'."
 		exit
 	}
 	tempname mattot
 	matrix `mattot' = r(StatTotal)
-
+	local ngrp = 0
 	local k = 1
 	while "`=r(name`k')'" != "." {
+		local ++ngrp
 		tempname mat`k'
 		matrix `mat`k'' = r(Stat`k')
+		local rname`k' `"`=r(name`k')'"'
+		local ++k
+	}
 
+	* Anio base (desde): matrices indexadas por NOMBRE, no por posicion —
+	* una familia puede existir en un anio y no en el otro.
+	local haspre = 0
+	capture tabstat recaudacionR recaudacionPIB if anio == `desde', by(`by') stat(sum) save
+	if _rc == 0 & "`pibYR`desde''" != "" {
+		local haspre = 1
+		tempname pretot
+		matrix `pretot' = r(StatTotal)
+		local k = 1
+		while "`=r(name`k')'" != "." {
+			local key = strtoname(`"`=r(name`k')'"')
+			tempname pre_`key'
+			matrix `pre_`key'' = r(Stat`k')
+			local ++k
+		}
+	}
+	local nyears = `anio'-`desde'
+
+	* Totales sin deuda (misma muestra, sin el `if' quemado): solo si la muestra
+	* trae filas que NO son deuda. *
+	local hassindeuda = 0
+	local showsindeuda = 0
+	local crecsd = .
+	quietly count if anio == `anio' & divLIF != 10
+	if r(N) > 0 {
+		local hassindeuda = 1
+		tempname sd sdpib sdr sdrpre sdpc
+		quietly sum recaudacion if anio == `anio' & divLIF != 10
+		scalar `sd' = r(sum)
+		quietly sum recaudacionPC if anio == `anio' & divLIF != 10
+		scalar `sdpc' = r(sum)
+		quietly sum recaudacionPIB if anio == `anio' & divLIF != 10
+		scalar `sdpib' = r(sum)
+		quietly sum recaudacionR if anio == `anio' & divLIF != 10
+		scalar `sdr' = r(sum)
+		scalar `sdrpre' = .
+		if `haspre' {
+			quietly sum recaudacionR if anio == `desde' & divLIF != 10
+			if r(N) > 0 scalar `sdrpre' = r(sum)
+		}
+		* La linea "sin deuda" se despliega solo si difiere del total (la
+		* muestra incluye deuda); si el usuario ya la excluyo, seria la misma. *
+		local showsindeuda = (abs(`mattot'[1,1] - `sd') > 0.5)
+	}
+
+	** 4.2 A. Nivel **
+	noisily di _newline in g "{bf: A. Ingresos presupuestarios (`by')}" ///
+		_newline ///
+		_col(30) in g %20s "`currency'" ///
+		_col(52) %7s "% PIB" ///
+		_col(61) %7s "% Tot" ///
+		_col(69) %10s "`currency' PC"
+
+	forvalues k = 1/`ngrp' {
 		* Display text *
-		if substr(`"`=r(name`k')'"',1,31) ==`"'"'' {
-			local disptext = substr(`"`=r(name`k')'"',1,30)
+		if substr(`"`rname`k''"',1,31) ==`"'"'' {
+			local disptext = substr(`"`rname`k''"',1,30)
 		}
 		else {
-			local disptext = substr(`"`=r(name`k')'"',1,31)
+			local disptext = substr(`"`rname`k''"',1,31)
 		}
 		local name = strtoname(`"`disptext'"')
+		local key = strtoname(`"`rname`k''"')
 
-		* Display *
-		escalar custom(%20.0fc) `name' = `mat`k''[1,1]	// custom: pesos completos: el libro los cita en pesos, /1e6 cambiaria el significado
-		escalar pctpib `name'PIB = `mat`k''[1,2]
-		escalar pct `name'Tot = `mat`k''[1,1]/`mattot'[1,1]*100
+		* Crecimiento real anual (geometrico) desde `desde' *
+		local crec = .
+		if `haspre' & "`pre_`key''" != "" {
+			if `pre_`key''[1,1] != . & `pre_`key''[1,1] != 0 & `mat`k''[1,3] != . {
+				local crec = ((`mat`k''[1,3]/`pre_`key''[1,1])^(1/`nyears')-1)*100
+			}
+		}
+
+		* Returns por grupo (mismo contrato que PEF): LIF REPORTA lo observado
+		* en r(); NO escribe escalares globales por grupo. Con by(divSIM) los
+		* nombres coinciden con los parametros de escenario del usuario
+		* (ISRASPIB, IVAPIB, ...; SIM.do 4.1 / Web.Stata.do 3.1.1) y una segunda
+		* corrida de LIF (FiscalGap, TasasEfectivas) los pisaba. Los totales
+		* (Ingresos_totales*, Ingresos_sin_deuda*) no colisionan y siguen
+		* globales para el libro. *
+		return scalar `name' = `mat`k''[1,1]
+		return scalar `name'PIB = `mat`k''[1,2]
+		return scalar `name'Tot = `mat`k''[1,1]/`mattot'[1,1]*100
+		return scalar `name'PC = `mat`k''[1,4]
+		if `crec' != . {
+			return scalar `name'C = `crec'
+		}
 		local `by' `"``by'' `name'"'
 
 		noisily di in g `"  (+) `disptext'"' ///
 			_col(30) in y %20.0fc `mat`k''[1,1] ///
 			_col(52) in y %7.3fc `mat`k''[1,2] ///
-			_col(61) in y %7.1fc `mat`k''[1,1]/`mattot'[1,1]*100
-		local ++k
+			_col(61) in y %7.1fc `mat`k''[1,1]/`mattot'[1,1]*100 ///
+			_col(69) in y %10.0fc `mat`k''[1,4]
 	}
 	return local `by' `"``by''"'
 
-	noisily di in g _dup(68) "-"
+	* Totales *
+	local crectot = .
+	if `haspre' {						// anidado: Stata evalua A & B completo, y sin anio base `pretot' no existe
+		if `pretot'[1,1] != . & `pretot'[1,1] != 0 {
+			local crectot = ((`mattot'[1,3]/`pretot'[1,1])^(1/`nyears')-1)*100
+		}
+	}
+	noisily di in g _dup(79) "-"
 	noisily di in g "{bf:  (=) Ingresos totales" ///
 		_col(30) in y %20.0fc `mattot'[1,1] ///
 		_col(52) in y %7.3fc `mattot'[1,2] ///
-		_col(61) in y %7.1fc `mattot'[1,1]/`mattot'[1,1]*100 "}"
-
+		_col(61) in y %7.1fc 100 ///
+		_col(69) in y %10.0fc `mattot'[1,4] "}"
 	scalar Ingresos_totales = `mattot'[1,1]
+	scalar Ingresos_totalesPIB = `mattot'[1,2]
+	scalar Ingresos_totalesPC = `mattot'[1,4]
+	return scalar Ingresos_totales = `mattot'[1,1]
+	return scalar Ingresos_totalesPIB = `mattot'[1,2]
+	return scalar Ingresos_totalesPC = `mattot'[1,4]
+	if `crectot' != . {
+		scalar Ingresos_totalesC = `crectot'
+		return scalar Ingresos_totalesC = `crectot'
+	}
 
-
-	***************************
-	** 4.2 Division Resumido **
-	noisily di _newline in g "{bf: B. Ingresos presupuestarios (divResumido)}" ///
-		_newline ///
-		_col(30) in g %20s "`currency'" ///
-		_col(52) %7s "% PIB" ///
-		_col(61) %7s "% Real"
-
-	preserve
-	collapse (sum) recaudacion recaudacionPIB recaudacionR (max) recaudacionTOT pibY deflatorpp if divLIF != 10, by(anio resumido)
-	reshape wide recaudacion*, i(anio) j(resumido)
-	reshape long
-
-	capture tabstat recaudacionR if anio == `desde', by(resumido) stat(sum) f(%20.1fc) save
-	if _rc == 0 {
-		tempname sindeudatotpre
-		matrix `sindeudatotpre' = r(StatTotal)
-		local k = 1
-		while "`=r(name`k')'" != "." {
-			tempname pre`k'
-			matrix `pre`k'' = r(Stat`k')
-			local ++k
+	if `hassindeuda' {
+		if `sdrpre' != . & `sdrpre' != 0 {
+			local crecsd = ((`sdr'/`sdrpre')^(1/`nyears')-1)*100
+		}
+		scalar Ingresos_sin_deuda = `sd'
+		scalar Ingresos_sin_deudaPIB = `sdpib'
+		scalar Ingresos_sin_deudaPC = `sdpc'
+		if `crecsd' != . {
+			scalar Ingresos_sin_deudaC = `crecsd'
+		}
+		if `showsindeuda' {
+			noisily di in g "{bf:  (=) Ingresos (sin deuda)" ///
+				_col(30) in y %20.0fc `sd' ///
+				_col(52) in y %7.3fc `sdpib' ///
+				_col(61) in y %7.1fc `sd'/`mattot'[1,1]*100 ///
+				_col(69) in y %10.0fc `sdpc' "}"
 		}
 	}
 
-	tabstat recaudacion recaudacionPIB if anio == `anio', by(resumido) stat(sum) f(%20.1fc) save
-	tempname sindeudatot
-	matrix `sindeudatot' = r(StatTotal)
+	** 4.3 B. Crecimiento `desde'-`anio' (solo si hay anio base) **
+	if `haspre' {
+		local gpib = ((`pibYR`anio''/`pibYR`desde'')^(1/`nyears')-1)*100
+		noisily di _newline in g "{bf: B. Crecimiento:" in y " `desde' - `anio'" in g "}" ///
+			_newline ///
+			_col(33) %7s "`desde'" ///
+			_col(42) %7s "`anio'" ///
+			_col(51) %7s "Dif PIB" ///
+			_col(60) %7s "%G real" ///
+			_col(69) %7s "Elastic"
+		noisily di in g _col(33) %7s "% PIB" _col(42) %7s "% PIB" _col(51) %7s "pp" _col(60) %7s "anual" _col(69) %7s "vs PIB"
 
-	local k = 1
-	while "`=r(name`k')'" != "." {
-		tempname mat`k'
-		matrix `mat`k'' = r(Stat`k')
-
-		* Display text *
-		if substr(`"`=r(name`k')'"',1,25) == `"'"' {
-			local disptext = substr(`"`=r(name`k')'"',1,24)
-		}
-		else {
-			local disptext = substr(`"`=r(name`k')'"',1,25)
-		}
-		local name = strtoname(`"`disptext'"')
-
-		* Display *
-		escalar custom(%20.0fc) `=strtoname("`=r(name`k')'")' = `mat`k''[1,1]	// custom: pesos completos: el libro los cita en pesos, /1e6 cambiaria el significado
-		escalar pctpib `=strtoname("`=r(name`k')'")'PIB = `mat`k''[1,2]
-		escalar pct `=strtoname("`=r(name`k')'")'C = (((`mat`k''[1,1]/`pre`k''[1,1])^(1/(`=`anio'-`desde''))-1)*100)
-		local divResumido `"`divResumido' `=strtoname(abbrev("`=r(name`k')'",7))'"'
-
-		noisily di in g "  (+) `=r(name`k')'" ///
-			_col(30) in y %20.0fc `mat`k''[1,1] ///
-			_col(52) in y %7.3fc `mat`k''[1,2] ///
-			_col(61) in y %7.1fc ((`mat`k''[1,1]/`pre`k''[1,1])^(1/(`=`anio'-`desde''))-1)*100
-		local ++k
-	}
-	return local divResumido `"`divResumido'"'
-
-	noisily di in g _dup(68) "-"
-	noisily di in g "{bf:  (=) Ingresos (sin deuda)" ///
-		_col(30) in y %20.0fc `sindeudatot'[1,1] ///
-		_col(52) in y %7.3fc `sindeudatot'[1,2] ///
-		_col(61) in y %7.1fc ((`sindeudatot'[1,1]/`sindeudatotpre'[1,1])^(1/(`=`anio'-`desde''))-1)*100 "}"
-	
-	scalar Ingresos_sin_deuda = `sindeudatot'[1,1]
-	scalar Ingresos_sin_deudaPIB = `sindeudatot'[1,2]
-	scalar Ingresos_sin_deudaC = ((`sindeudatot'[1,1]/`sindeudatotpre'[1,1])^(1/(`=`anio'-`desde''))-1)*100
-
-
-	**********************
-	** 4.3 Crecimientos **
-	noisily di _newline in g "{bf: C. Cambios:" in y " `desde' - `anio'" in g " (% PIB)}" ///
-		_newline ///
-		_col(33) %7s "`desde'" ///
-		_col(43) %7s "`anio'" ///
-		_col(52) %7s "Dif" ///
-		_col(61) %7s "Dif %"
-
-	tabstat recaudacion recaudacionPIB if anio == `anio', by(resumido) stat(sum) f(%20.0fc) save
-	tempname mattot
-	matrix `mattot' = r(StatTotal)
-
-	local k = 1
-	while "`=r(name`k')'" != "." {
-		tempname mat`k'
-		matrix `mat`k'' = r(Stat`k')
-		local ++k
-	}
-
-	capture tabstat recaudacion recaudacionPIB if anio == `desde', by(resumido) stat(sum) f(%20.1fc) save
-	if _rc == 0 {
-		tempname mattot5
-		matrix `mattot5' = r(StatTotal)
-
-		local k = 1
-		while "`=r(name`k')'" != "." {
-			tempname mat5`k'
-			matrix `mat5`k'' = r(Stat`k')
-
-			if substr(`"`=r(name`k')'"',1,25) == `"'"' {
-				local disptext = substr(`"`=r(name`k')'"',1,24)
+		forvalues k = 1/`ngrp' {
+			local key = strtoname(`"`rname`k''"')
+			if "`pre_`key''" == "" continue
+			if `pre_`key''[1,1] == . | `pre_`key''[1,1] == 0 | `mat`k''[1,3] == . continue
+			if substr(`"`rname`k''"',1,25) == `"'"' {
+				local disptext = substr(`"`rname`k''"',1,24)
 			}
 			else {
-				local disptext = substr(`"`=r(name`k')'"',1,25)
+				local disptext = substr(`"`rname`k''"',1,25)
 			}
-
-			if `mat`k''[1,1] != . & `mat5`k''[1,1] != . {
-				noisily di in g `"  (+) `disptext'"' ///
-					_col(33) in y %7.3fc `mat5`k''[1,2] ///
-					_col(43) in y %7.3fc `mat`k''[1,2] ///
-					_col(52) in y %7.3fc `mat`k''[1,2]-`mat5`k''[1,2] ///
-					_col(61) in y %7.1fc (`mat`k''[1,2]-`mat5`k''[1,2])/`mat5`k''[1,2]*100
-			}
-			local ++k
+			local g = ((`mat`k''[1,3]/`pre_`key''[1,1])^(1/`nyears')-1)*100
+			local e = `g'/`gpib'
+			scalar E`key' = `e'
+			noisily di in g `"  (+) `disptext'"' ///
+				_col(33) in y %7.3fc `pre_`key''[1,2] ///
+				_col(42) in y %7.3fc `mat`k''[1,2] ///
+				_col(51) in y %7.3fc `mat`k''[1,2]-`pre_`key''[1,2] ///
+				_col(60) in y %7.3fc `g' ///
+				_col(69) in y %7.3fc `e'
 		}
 
-		noisily di in g _dup(68) "-"
-		noisily di in g "{bf:  (=) Ingresos" ///
-			_col(33) in y %7.3fc `mattot5'[1,2] ///
-			_col(43) in y %7.3fc `mattot'[1,2] ///
-			_col(52) in y %7.3fc `mattot'[1,2]-`mattot5'[1,2] ///
-			_col(61) in y %7.1fc (`mattot'[1,2]-`mattot5'[1,2])/`mattot5'[1,2]*100 "}"
-	}
-	restore
-
-
-	***********************
-	** 4.4 Elasticidades **
-	noisily di _newline in g "{bf: D. Elasticidades:" in y " `desde' - `anio'}" in g ///
-		_newline ///
-		_col(33) %7s "%G" ///
-		_col(43) %7s "%G pibR" ///
-		_col(52) %7s "Elastic"
-
-	tabstat recaudacionR recaudacionPIB if anio == `anio' & divLIF != 10, by(resumido) stat(sum) f(%20.3fc) save missing
-	tempname mattot
-	matrix `mattot' = r(StatTotal)
-	local k = 1
-	while "`=r(name`k')'" != "." {
-		tempname mat`k'
-		matrix `mat`k'' = r(Stat`k')
-		local ++k
-	}
-
-	capture tabstat recaudacionR recaudacionPIB if anio == `desde' & divLIF != 10, by(resumido) stat(sum) f(%20.3fc) save missing
-	if _rc == 0 {
-		tempname mattot5
-		matrix `mattot5' = r(StatTotal)
-		local k = 1
-		while "`=r(name`k')'" != "." {
-			tempname mat5`k'
-			matrix `mat5`k'' = r(Stat`k')
-			
-			if `mat`k''[1,1] != . & `mat5`k''[1,1] != . {
-				noisily di in g "  (+) `=r(name`k')'" ///
-					_col(33) in y %7.3fc (((`mat`k''[1,1]/`mat5`k''[1,1])^(1/(`=`anio'-`desde''))-1)*100) ///
-					_col(43) in y %7.3fc (((`pibYR`anio''/`pibYR`desde'')^(1/(`=`anio'-`desde''))-1)*100) ///
-					_col(52) in y %7.3fc (((`mat`k''[1,1]/`mat5`k''[1,1])^(1/(`=`anio'-`desde''))-1))/ ///
-					(((`pibYR`anio''/`pibYR`desde'')^(1/(`=`anio'-`desde''))-1))
-			}
-			scalar E`=strtoname("`=r(name`k')'")' = (((`mat`k''[1,1]/`mat5`k''[1,1])^(1/(`=`anio'-`desde''))-1))/ ///
-					(((`pibYR`anio''/`pibYR`desde'')^(1/(`=`anio'-`desde''))-1))
-			local E`=strtoname("`=r(name`k')'")' = (((`mat`k''[1,1]/`mat5`k''[1,1])^(1/(`=`anio'-`desde''))-1))/ ///
-					(((`pibYR`anio''/`pibYR`desde'')^(1/(`=`anio'-`desde''))-1))
-			local ++k
-		}
-
-		noisily di in g _dup(59) "-"
+		noisily di in g _dup(76) "-"
 		noisily di in g "{bf:  (=) Ingresos totales" ///
-				_col(33) in y %7.3fc (((`mattot'[1,1]/`mattot5'[1,1])^(1/(`=`anio'-`desde''))-1)*100) ///
-				_col(43) in y %7.3fc (((`pibYR`anio''/`pibYR`desde'')^(1/(`=`anio'-`desde''))-1)*100) ///
-				_col(52) in y %7.3fc (((`mattot'[1,1]/`mattot5'[1,1])^(1/(`=`anio'-`desde''))-1)*100)/ ///
-				(((`pibYR`anio''/`pibYR`desde'')^(1/(`=`anio'-`desde''))-1)*100) "}"
-		
-		escalar pctpib EIngresosTotales = (((`mattot'[1,1]/`mattot5'[1,1])^(1/(`=`anio'-`desde''))-1)*100)/ ///
-				(((`pibYR`anio''/`pibYR`desde'')^(1/(`=`anio'-`desde''))-1)*100)
-				
+			_col(33) in y %7.3fc `pretot'[1,2] ///
+			_col(42) in y %7.3fc `mattot'[1,2] ///
+			_col(51) in y %7.3fc `mattot'[1,2]-`pretot'[1,2] ///
+			_col(60) in y %7.3fc `crectot' ///
+			_col(69) in y %7.3fc `crectot'/`gpib' "}"
+		if `crectot' != . {
+			escalar pctpib EIngresosTotales = `crectot'/`gpib'
+		}
+		if `showsindeuda' & `crecsd' != . {
+			quietly sum recaudacionPIB if anio == `desde' & divLIF != 10
+			noisily di in g "{bf:  (=) Ingresos (sin deuda)" ///
+				_col(33) in y %7.3fc r(sum) ///
+				_col(42) in y %7.3fc `sdpib' ///
+				_col(51) in y %7.3fc `sdpib'-r(sum) ///
+				_col(60) in y %7.3fc `crecsd' ///
+				_col(69) in y %7.3fc `crecsd'/`gpib' "}"
+		}
+		noisily di in g "  PIB real: " in y %5.3fc `gpib' in g " % anual (`desde'-`anio')"
 	}
-
 
 
 	******************
@@ -443,6 +439,23 @@ quietly {
 		collapse (sum) recaudacion recaudacionR recaudacionPIB (max) recaudacionTOT pibY deflatorpp if anio >= `desde', by(anio resumido)
 		levelsof resumido, local(lev_resumido)
 		label values resumido label
+
+		* Guard (2026-09-12): la grafica exige filas de `anio' con % PIB y grupo
+		* validos; si no las hay (p.ej. `by' sin asignar en filas nuevas de la
+		* ILIF, o pibY sin `anio'), se reporta el diagnostico y se omite la grafica
+		* en vez de tronar con r(2000) dentro de tabstat. *
+		quietly count if anio == `anio'
+		local n_anio = r(N)
+		quietly count if anio == `anio' & recaudacionPIB != . & resumido != .
+		if r(N) == 0 {
+			quietly count if anio == `anio' & resumido == .
+			local n_sinby = r(N)
+			quietly count if anio == `anio' & recaudacionPIB == .
+			local n_sinpib = r(N)
+			noisily di in r "  LIF: sin gr{c a'}fica — `anio' no tiene filas graficables (filas: `n_anio'; sin `by': `n_sinby'; sin % PIB: `n_sinpib')."
+			noisily di in r "       Revisa el mapeo de `by' en master/LIF.dta para `anio' (UpdateLIF) o pibY de PIBDeflactor."
+		}
+		else {
 
 		* Ciclo para poner los paréntesis (% del total) en el legend *
 		tabstat recaudacionPIB if anio == `anio', by(resumido) stat(sum) f(%20.0fc) save
@@ -512,22 +525,25 @@ quietly {
 		tempname maxPIBTOT
 		matrix `maxPIBTOT' = r(StatTotal)
 
-		* Inicial *
-		tabstat recaudacionPIBTOT if anio == `desde', stat(max) save by(anio)
-		tempname iniPIBTOT
-		matrix `iniPIBTOT' = r(StatTotal)
-
 		* Final *
 		tabstat recaudacionPIBTOT if anio == `anio', stat(max) save by(anio)
 		tempname finPIBTOT
 		matrix `finPIBTOT' = r(StatTotal)
 
-		* Cambios * 
-		if (`finPIBTOT'[1,1]-`iniPIBTOT'[1,1]) > 0 {
-			local cambio = "aumentó"
-		}
-		else {
-			local cambio = "disminuyó"
+		* Inicial y cambios: solo si la muestra tiene el anio `desde' (con un
+		* `if' acotado — p.ej. divCIEP == 8 — puede no existir). *
+		local b1title ""
+		capture tabstat recaudacionPIBTOT if anio == `desde', stat(max) save by(anio)
+		if _rc == 0 {
+			tempname iniPIBTOT
+			matrix `iniPIBTOT' = r(StatTotal)
+			if (`finPIBTOT'[1,1]-`iniPIBTOT'[1,1]) > 0 {
+				local cambio = "aumentó"
+			}
+			else {
+				local cambio = "disminuyó"
+			}
+			local b1title `"De `desde' a `anio', la {bf:recaudación `cambio' `=string(abs(`finPIBTOT'[1,1]-`iniPIBTOT'[1,1]),"%7.1fc")'} puntos porcentuales del PIB."'
 		}
 
 		graph bar recaudacionPIB if anio <= `anio', ///
@@ -543,7 +559,7 @@ quietly {
 			///text(`=recaudacionPIBTOT[1]' `=anio[1]' "{bf:% PIB}", placement(6)) ///
 			///text(`=`recaudacionline'[1]' `=anio[1]' "{bf:% LIF}", placement(6) yaxis(2)) ///
 			///caption("{bf:Fuente}: Elaborado por el CIEP, con informaci{c o'}n de SHCP/EOFP, INEGI/BIE y $paqueteEconomico.") ///
-			b1title("De `desde' a `anio', la {bf:recaudación `cambio' `=string(abs(`finPIBTOT'[1,1]-`iniPIBTOT'[1,1]),"%7.1fc")'} puntos porcentuales del PIB.")
+			b1title(`"`b1title'"')
 
 		/*grc1leg ///
 		///graph combine ///
@@ -557,6 +573,7 @@ quietly {
 		graph save ingresos`by'PIB "`c(sysdir_site)'/users/$id/graphs/ingresos`by'PIB", replace
 		if "$export" != "" {
 			graph export "$export/ingresos`by'PIB.png", as(png) name("ingresos`by'PIB") replace
+		}
 		}
 		*restore
 	}
@@ -588,7 +605,7 @@ program define UpdateLIF
 	************************
 	*** 1. BASE DE DATOS ***
 	************************
-	ensure_asset "LIFs.xlsx"
+	ensure_asset, dir(raw/LIFs)			// todo lo que el manifest declare bajo raw/LIFs/ (hoy LIFs.xlsx)
 	import excel "`c(sysdir_site)'/raw/LIFs/LIFs.xlsx", clear firstrow
 	foreach k of varlist _all {
 		capture confirm string variable `k'
