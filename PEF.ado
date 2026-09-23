@@ -778,8 +778,8 @@ program define UpdatePEF
 		** 2.2 Ramo **
 		replace ramo = "50" if ramo == "GYR"
 		replace ramo = "51" if ramo == "GYN"
-		replace ramo = "52" if ramo == "TZZ" | ur == "tzz"	// ur ya viene en minusculas (limpieza 1.4)
-		replace ramo = "53" if ramo == "TOQ" | ur == "toq"
+		replace ramo = "52" if ramo == "TZZ" | ur == "Tzz"	// ur viene en Title Case (limpieza 1.4)
+		replace ramo = "53" if ramo == "TOQ" | ur == "Toq"
 		destring ramo, replace
 
 		replace desc_ramo = "Oficina de la Presidencia de la República" if ramo == 2
@@ -795,7 +795,7 @@ program define UpdatePEF
 		replace desc_ramo = "Instituto Nacional de Transparencia, Acceso a la Información y Protección de Datos Personales" if ramo == 44
 		replace desc_ramo = "Petróleos Mexicanos" if ramo == 52
 		replace desc_ramo = "Comisión Federal de Electricidad" if ramo == 53
-		replace desc_ramo = lower(desc_ramo)
+		*replace desc_ramo = lower(desc_ramo)
 
 		labmask ramo, values(desc_ramo)
 		drop desc_ramo
@@ -1113,9 +1113,9 @@ program define UpdatePEF
 
 	// Pensión para adultos mayores
 	replace divCIEP = "Pensión AM" if divCIEP == "" ///
-		& (desc_pp == "pensión para adultos mayores" ///
-		| desc_pp == "pensión para el bienestar de las personas adultas mayores" ///
-		| desc_pp == "pensión para el bienestar de las personas con discapacidad permanente")
+		& (desc_pp == "Pensión para Adultos Mayores" ///
+		| desc_pp == "Pensión para el Bienestar de las Personas Adultas Mayores" ///
+		| desc_pp == "Pensión para el Bienestar de las Personas con Discapacidad Permanente")
 	replace divSIM = "Pensiones" if divCIEP == "Pensión AM"
 
 
@@ -1129,7 +1129,7 @@ program define UpdatePEF
 	replace divCIEP = "Salud" if divCIEP == "" ///
 		& ramo == 52 & ai == 231
 	replace divCIEP = "Salud" if divCIEP == "" ///
-		& ramo == 47 & ur == "ayo"
+		& ramo == 47 & ur == "Ayo"
 	replace divCIEP = "Salud" if divCIEP == "" ///
 		& ramo == 20 & pp == 317
 
@@ -1191,11 +1191,11 @@ program define UpdatePEF
 	replace divCIEP = "Federalizado" if divCIEP == "" ///
 		& (objeto == 46101 & ramo == 23 & pp == 80)           // FEIEF
 	replace divCIEP = "Federalizado" if divCIEP == "" ///
-		& (ramo == 23 & pp == 4 & modalidad == "y")           // FEIEF (minusculas: limpieza 1.4)
+		& (ramo == 23 & pp == 4 & modalidad == "Y")           // FEIEF (Title Case: limpieza 1.4)
 	replace divCIEP = "Federalizado" if divCIEP == "" ///
 		& (ramo == 23 & pp == 141)                            // FIES
 	replace divCIEP = "Federalizado" if divCIEP == "" ///
-		& (pp == 13 & (ramo == 12 | ramo == 47) & modalidad == "u") // INSABI/Seguro Popular/IMSS-Bienestar
+		& (pp == 13 & (ramo == 12 | ramo == 47) & modalidad == "U") // INSABI/Seguro Popular/IMSS-Bienestar
 
 	g divFEDE = "Participaciones" if (ramo == 28) // Part
 	replace divFEDE = "Aportaciones" if (ramo == 33 | ramo == 25)    // Aport
@@ -1203,10 +1203,10 @@ program define UpdatePEF
 	replace divFEDE = "Convenios" if (objeto == 85101)               // Convenios de reasignación
 	replace divFEDE = "Convenios" if (objeto == 43101 & ramo == 8 & pp == 263 & entidad != 34) // Convenios de reasignación
 	replace divFEDE = "Subsidios" if (objeto == 46101 & ramo == 23 & pp == 80) // FEIEF
-	replace divFEDE = "Subsidios" if (ramo == 23 & pp == 4 & modalidad == "y") // FEIEF
+	replace divFEDE = "Subsidios" if (ramo == 23 & pp == 4 & modalidad == "Y") // FEIEF
 	replace divFEDE = "Subsidios" if (ramo == 23 & pp == 141) // FIES
 	replace divFEDE = "Subsidios" if (ramo == 23 & objeto == 43801)
-	replace divFEDE = "Salud (federalizado)" if (pp == 13 & (ramo == 12 | ramo == 47) & modalidad == "u") // INSABI/Seguro Popular/IMSS-Bienestar
+	replace divFEDE = "Salud (federalizado)" if (pp == 13 & (ramo == 12 | ramo == 47) & modalidad == "U") // INSABI/Seguro Popular/IMSS-Bienestar
 
 
 	**********************************
@@ -1215,8 +1215,8 @@ program define UpdatePEF
 		| (ramo == 11 & pp == 66) ///
 		| (ramo == 20 & pp == 174) | (ramo == 51 & pp == 48) | (ramo == 50 & pp == 7) ///
 		| (ramo == 20 & pp == 241) ///
-		| (ramo == 12 & pp == 41) | (ramo == 20 & pp == 3 & ur == "v3a") | (ramo == 33 & pp == 6) ///
-		| (ramo == 4 & pp == 12  & ur == "v00") | (ramo == 51 & pp == 42) | (ramo == 12 & pp == 39) ///
+		| (ramo == 12 & pp == 41) | (ramo == 20 & pp == 3 & ur == "V3a") | (ramo == 33 & pp == 6) ///
+		| (ramo == 4 & pp == 12  & ur == "V00") | (ramo == 51 & pp == 42) | (ramo == 12 & pp == 39) ///
 		| (ramo == 12 & pp == 40) | (ramo == 11 & pp == 221) | (ramo == 25 & pp == 221) ///
 		| (ramo == 51 & subfuncion == 3 & anio <= 2019) | (ramo == 20 & pp == 12 & anio >= 2019 & anio <= 2022)
 
@@ -1249,7 +1249,7 @@ program define UpdatePEF
 	replace gasto = aprobado if ejercido == . & aprobado != .
 	replace gasto = proyecto if ejercido == . & aprobado == . & proyecto != .
 
-	g byte transf_gf = (ramo == 19 & ur == "gyn") | (ramo == 19 & ur == "gyr")
+	g byte transf_gf = (ramo == 19 & ur == "Gyn") | (ramo == 19 & ur == "Gyr")
 
 	g byte noprogramable = ramo == 28 | capitulo == 9
 	replace noprogramable = 0 if ramo == -1
@@ -1489,7 +1489,21 @@ program define _PEFlimpia
 			replace `j' = subinstr(`j', `"""', "", .)
 			replace `j' = ustrregexra(`j', " +", " ")
 			replace `j' = trim(`j')
-			replace `j' = lower(`j')
+			replace `j' = ustrtitle(lower(`j'))
+			* Corregir artículos y preposiciones en español (no deben ir en mayúscula):
+			replace `j' = subinstr(`j', " De ", " de ", .)
+			replace `j' = subinstr(`j', " Del ", " del ", .)
+			replace `j' = subinstr(`j', " La ", " la ", .)
+			replace `j' = subinstr(`j', " El ", " el ", .)
+			replace `j' = subinstr(`j', " Los ", " los ", .)
+			replace `j' = subinstr(`j', " Las ", " las ", .)
+			replace `j' = subinstr(`j', " Y ", " y ", .)
+			replace `j' = subinstr(`j', " A ", " a ", .)
+			replace `j' = subinstr(`j', " En ", " en ", .)
+			replace `j' = subinstr(`j', " Para ", " para ", .)
+			replace `j' = subinstr(`j', " Con ", " con ", .)
+			replace `j' = subinstr(`j', " Por ", " por ", .)
+			replace `j' = subinstr(`j', " Al ", " al ", .)
 			if substr("`j'", 1, 5) == "desc_" {
 				replace `j' = subinstr(`j', "à", "á", .)		// acentos graves: no existen en español
 				replace `j' = subinstr(`j', "è", "é", .)
@@ -1637,7 +1651,7 @@ program define _PEFverifica
 				local ++fallas
 			}
 		}
-		quietly count if anio == `a' & ramo != "-1" & !ustrregexm(modalidad, "^[a-z]$")
+		quietly count if anio == `a' & ramo != "-1" & !ustrregexm(modalidad, "^[A-Z]$")
 		if r(N) > 0 {
 			noisily di as error "    -> `a': `r(N)' filas con modalidad que no es una letra."
 			local ++fallas
@@ -1652,16 +1666,16 @@ program define _PEFverifica
 			noisily di as error "    -> `a': `r(N)' filas con finalidad fuera de 1-4."
 			local ++fallas
 		}
-		quietly count if anio == `a' & ramo != "-1" & !(strpos(desc_tipogasto, "gasto corriente") == 1 ///
-			| strpos(desc_tipogasto, "gasto de capital") == 1 | strpos(desc_tipogasto, "gasto de inversión") == 1 ///
-			| strpos(desc_tipogasto, "gasto de obra") == 1 | desc_tipogasto == "participaciones" ///
-			| desc_tipogasto == "pensiones y jubilaciones" | desc_tipogasto == "")
+		quietly count if anio == `a' & ramo != "-1" & !(strpos(desc_tipogasto, "Gasto Corriente") == 1 ///
+			| strpos(desc_tipogasto, "Gasto de Capital") == 1 | strpos(desc_tipogasto, "Gasto de Inversión") == 1 ///
+			| strpos(desc_tipogasto, "Gasto de Obra") == 1 | desc_tipogasto == "Participaciones" ///
+			| desc_tipogasto == "Pensiones y Jubilaciones" | desc_tipogasto == "")
 		if r(N) > 0 {
 			noisily di as error "    -> `a': `r(N)' filas con desc_tipogasto no reconocido:"
-			noisily levelsof desc_tipogasto if anio == `a' & ramo != "-1" & !(strpos(desc_tipogasto, "gasto corriente") == 1 ///
-				| strpos(desc_tipogasto, "gasto de capital") == 1 | strpos(desc_tipogasto, "gasto de inversión") == 1 ///
-				| strpos(desc_tipogasto, "gasto de obra") == 1 | desc_tipogasto == "participaciones" ///
-				| desc_tipogasto == "pensiones y jubilaciones" | desc_tipogasto == ""), clean
+			noisily levelsof desc_tipogasto if anio == `a' & ramo != "-1" & !(strpos(desc_tipogasto, "Gasto Corriente") == 1 ///
+				| strpos(desc_tipogasto, "Gasto de Capital") == 1 | strpos(desc_tipogasto, "Gasto de Inversión") == 1 ///
+				| strpos(desc_tipogasto, "Gasto de Obra") == 1 | desc_tipogasto == "Participaciones" ///
+				| desc_tipogasto == "Pensiones y Jubilaciones" | desc_tipogasto == ""), clean
 			local ++fallas
 		}
 	}
