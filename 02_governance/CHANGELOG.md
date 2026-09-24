@@ -20,6 +20,29 @@ Formato de cada entrada:
 
 Trabajo en `master` sin versión asignada.
 
+## [v8.4.2] — 2026-09-23
+
+### Correcciones
+
+- **`net install Poblacion` (y `PIBDeflactor`, `SCN`) tronaba en máquina
+  virgen con "command ensure_asset is unrecognized".** En v8.4.1 `Poblacion`
+  empezó a llamar `ensure_asset` pero `Poblacion.pkg` no lo listaba, ni
+  `PIBDeflactor.pkg`/`SCN.pkg` (que llaman `Poblacion`). Lo atrapó la prueba
+  post-publicación de máquina virgen (`net from` al endpoint público + `cd` a
+  carpeta vacía); v8.4.1 estuvo ~20 minutos en el endpoint con ese hueco.
+  Los tres `.pkg` ahora traen `f ensure_asset.ado`.
+
+### Institucional
+
+- **Gate 7 en `publicar.sh`: clausura transitiva de los `.pkg`.** La regla de
+  v8.0.11 ("cada `.pkg` declara TODAS sus dependencias `.ado` transitivas")
+  solo se verificaba a mano y volvió a fallar en cuanto una dependencia
+  cambió. El gate hace grep de cada comando publicado (inicio de línea, con
+  prefijos `noisily`/`quietly`/`capture`) en cada `.ado`, cierra
+  transitivamente y compara con las líneas `f X.ado` del `.pkg`; corre en
+  `--check` y antes del tag. Probado: falla con los tres `.pkg` de v8.4.1 y
+  pasa tras corregirlos.
+
 ## [v8.4.1] — 2026-09-23
 
 ### Datos
