@@ -6,6 +6,7 @@
 #   2. Gates de validación: entrada en 02_governance/CHANGELOG.md, tag anotado con mensaje,
 #      raw declarado (Gate 5: assets locales = manifest, SIM.do sin rawwip activo),
 #      cobertura de assets (Gate 6: todo asset del manifest lo solicita algun modulo),
+#      clausura transitiva de los .pkg (Gate 7: cada .pkg lista los .ado que invoca),
 #      05_scripts/manifest.json sincronizado con la versión, y existencia en filesystem de
 #      cada archivo declarado en 05_scripts/manifest-endpoint.toml. Si algo falla, aborta
 #      ANTES de cualquier acción con efectos (push, Release, rsync).
@@ -167,6 +168,62 @@ gate_cobertura_assets() {
     log_error "Gate 6 FALLO: assets del manifest que ningun modulo solicita:"
     while IFS= read -r line; do log_error "        $line"; done <<< "$out"
     return 1
+}
+
+# Gate 7 — Clausura transitiva de los .pkg (2026-09-23, v8.4.2). Cada .pkg del
+# endpoint debe listar TODOS los .ado que su comando invoca, directa o
+# transitivamente, entre los publicados (manifest-endpoint.toml). Regla de
+# v8.0.11 que solo se verificaba a mano: en v8.4.1 Poblacion empezo a llamar
+# ensure_asset y Poblacion.pkg (y PIBDeflactor/SCN, que llaman Poblacion) no lo
+# traian; `net install Poblacion` en maquina virgen tronaba con "command
+# ensure_asset is unrecognized". Deteccion estatica: grep de cada comando
+# publicado al inicio de linea (con prefijos noisily/quietly/capture) en cada
+# .ado, cierre transitivo, y comparacion con las lineas `f X.ado` del .pkg.
+gate_pkg_clausura() {
+    local report
+    report="$(python3 <<'PYEOF'
+import re, os, sys
+try:
+    import tomllib
+except ImportError:
+    print("PARSE_ERROR: tomllib no disponible (Python 3.11+)"); sys.exit(0)
+d = tomllib.load(open("05_scripts/manifest-endpoint.toml", "rb"))
+cmds = [os.path.basename(f)[:-4] for f in d["package"]["ado_files"]]
+def calls(cmd):
+    s = open(cmd + ".ado", encoding="utf-8", errors="replace").read()
+    return {c for c in cmds if c != cmd and
+            re.search(r"(?m)^\s*(?:(?:noisily|quietly|capture|noi|qui)\s+)*" + re.escape(c) + r"\b", s)}
+def closure(cmd, seen):
+    for x in calls(cmd):
+        if x not in seen:
+            seen.add(x); closure(x, seen)
+    return seen
+fallas = []
+for pkg in d["package"]["pkg_files"]:
+    name = os.path.basename(pkg)[:-4]
+    listed = {l.split()[1][:-4] for l in open(pkg, encoding="utf-8")
+              if l.startswith("f ") and l.strip().endswith(".ado")}
+    faltan = (closure(name, set()) | {name}) - listed
+    if faltan:
+        fallas.append(f"{pkg}: faltan {', '.join(sorted(f + '.ado' for f in faltan))}")
+print("OK" if not fallas else "FALLA")
+for f in fallas: print(f)
+print(f"{len(d['package']['pkg_files'])} .pkg verificados")
+PYEOF
+)"
+    local status
+    status="$(head -n 1 <<< "$report")"
+    if [[ "$status" == PARSE_ERROR* ]]; then
+        log_error "Gate 7 FALLO: ${status#PARSE_ERROR: }"
+        return 1
+    fi
+    if [[ "$status" == "FALLA" ]]; then
+        log_error "Gate 7 FALLO: .pkg sin clausura transitiva (agrega las lineas 'f X.ado'):"
+        while IFS= read -r line; do log_error "        $line"; done < <(sed -n '2,$p' <<< "$report" | sed '$d')
+        return 1
+    fi
+    log_info "✓ Gate 7: clausura transitiva de los .pkg — $(tail -n 1 <<< "$report")"
+    return 0
 }
 
 # ═══ FUNCIONES DE FLUJO ═══
@@ -599,11 +656,12 @@ if [[ "$CHECK_MODE" == "true" ]]; then
     gate_endpoint_files            || GATE_FAILURES=$((GATE_FAILURES+1))
     gate_raw_declarado             || GATE_FAILURES=$((GATE_FAILURES+1))
     gate_cobertura_assets          || GATE_FAILURES=$((GATE_FAILURES+1))
+    gate_pkg_clausura              || GATE_FAILURES=$((GATE_FAILURES+1))
     if (( GATE_FAILURES > 0 )); then
         log_error "--check: $GATE_FAILURES gate(s) fallaron para $VERSION."
         exit 1
     fi
-    log_info "--check: los 6 gates pasaron para $VERSION."
+    log_info "--check: los 7 gates pasaron para $VERSION."
     exit 0
 fi
 
@@ -618,6 +676,7 @@ gate_manifest_sync "$VERSION"  || GATE_FAILURES=$((GATE_FAILURES+1))
 gate_endpoint_files            || GATE_FAILURES=$((GATE_FAILURES+1))
 gate_raw_declarado             || GATE_FAILURES=$((GATE_FAILURES+1))
 gate_cobertura_assets          || GATE_FAILURES=$((GATE_FAILURES+1))
+gate_pkg_clausura              || GATE_FAILURES=$((GATE_FAILURES+1))
 if (( GATE_FAILURES > 0 )); then
     abort "$GATE_FAILURES gate(s) fallaron. Corrige antes de publicar."
 fi
