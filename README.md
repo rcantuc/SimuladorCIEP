@@ -90,7 +90,9 @@ net from https://ciep.mx/simuladorfiscal/
 net install LIF
 ```
 
-Los programas disponibles son: `Poblacion`, `PIBDeflactor`, `SCN`, `SHRFSP`, `LIF`, `PEF`, `DatosAbiertos`. Una vez instalados, funcionan en tu Stata local igual que en el repositorio completo.
+Los programas disponibles son: `Poblacion`, `PIBDeflactor`, `SCN`, `SHRFSP`, `LIF`, `PEF`, `DatosAbiertos`, `AccesoBIE`. Una vez instalados, funcionan en tu Stata local igual que en el repositorio completo.
+
+Los datos (insumos oficiales en `raw/`, bases procesadas en `master/`, salidas en `users/`) se guardan en la **carpeta de trabajo** desde la que corres el primer comando (`cd "C:\Proyectos\Simulador"` antes de empezar; pesan varios GB). Para fijar otra carpeta o consultar la activa: `help SIMroot`.
 
 #### Opción C: Clonar el repositorio completo
 

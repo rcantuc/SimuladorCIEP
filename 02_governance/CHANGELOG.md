@@ -20,6 +20,76 @@ Formato de cada entrada:
 
 Trabajo en `master` sin versión asignada.
 
+## [v8.4.0] — 2026-09-23
+
+### Comandos
+
+- **Nuevo `SIMroot`: la raíz de datos del Simulador deja de ser
+  `c(sysdir_site)` y pasa a la global `$SIMROOT`.** Hasta v8.3 los ~450
+  usos de `` `c(sysdir_site)' `` en 41 archivos (`SCN` 90, `Expenditure.do`
+  61, `Simulador` 24…) usaban el directorio SITE de Stata como raíz de
+  `raw/`, `master/`, `users/` y `01_modulos/`. Eso solo funcionaba porque
+  `sysprofile.do` lo redefinía al clon; para quien instalaba desde el
+  endpoint (`net install`), SITE es `/Applications/Stata/ado/site/` o
+  `C:\Program Files\Stata18\ado\site\` — sin permisos de escritura y sin
+  que ningún `.sthlp` avisara del `sysdir set SITE` necesario. En esta
+  máquina, `/Applications/Stata/ado/site/` ya tenía `raw/temp/` y
+  `users/ricardo/` creados por corridas viejas: el síntoma en vivo.
+  `SIMroot [, dir() reset quietly]` resuelve la raíz una vez por sesión:
+  (1) `$SIMROOT` ya fijada → nada; (2) `dir()` explícito; (3) `c(sysdir_site)`
+  contiene `05_scripts/manifest.json` → es un clon apuntado por
+  `sysprofile.do` (investigadores CIEP, servidor): compatibilidad total;
+  (4) si no, el directorio de trabajo `c(pwd)`, con aviso de dónde se
+  escribirán los datos. Crea `raw/`, `raw/temp/`, `master/`, `users/`.
+  Todos los `.ado` lo invocan al arrancar (idempotente); `SIM.do` lo llama
+  tras su `macro drop _all`; `profile.do` fija la raíz a la carpeta donde
+  él mismo vive (`findfile profile.do`), no a SITE; `Web.Stata.do` la fija
+  explícitamente con `dir()`. Los bloques Python (`ensure_asset`,
+  `AccesoBIE`, `sim_changelog`, `profile.do`) leen `Macro.getGlobal('SIMROOT')`.
+  `SIMroot.ado` viaja en todos los `.pkg` (clausura transitiva, regla de
+  v8.0.11) y tiene `.sthlp` y `.pkg` propios. `sysprofile-template.do`
+  conserva `sysdir set SITE` (sigue siendo cómo Stata encuentra los `.ado`
+  y el `profile.do` del clon) y documenta que ya no decide dónde van los
+  datos.
+
+### Institucional
+
+- **`test-maquina-virgen.sh --download` prueba el camino real del externo:**
+  sin `sysdir set SITE`; `adopath ++` a la carpeta con los `.ado`, `cd` a
+  ella y `SIMroot` resuelve por `pwd`. Antes la prueba hacía el
+  `sysdir set SITE` que el usuario nunca hacía, así que "pasaba" un
+  escenario que no existía.
+- **Verificación de este release.** (A) Modo repo, StataMP 17 batch, SITE →
+  clon, `profile.do` + `PIBDeflactor`, `Poblacion`, `PEF` (`r(Pension_AM)`,
+  `r(educacion_basica)`), `LIF`, `SHRFSP`, `SCN`, `DatosAbiertos`: todo
+  pasa, `$SIMROOT` = clon. (B) Modo externo, StataNow 19.5 SE, SITE default
+  de Stata, `.ado` copiados a una carpeta ajena en el adopath con el pin
+  `v8.3.4` inyectado como hace `publicar-endpoint.sh`, `cd` a una carpeta
+  vacía: `SIMroot` cae en `pwd` con aviso, `ensure_asset` baja el manifest
+  v8.3.4 y dos assets a `pwd/raw/PEFs/` con SHA verificado, `AccesoBIE`
+  escribe sus CSV en `pwd/raw/temp/AccesoBIE/`; nada se escribe en el SITE
+  de Stata. `PIBDeflactor` en modo externo terminó en `r(603)` porque
+  `UpdatePoblacion` descarga en vivo de `conapo.segob.gob.mx`
+  (`Poblacion.ado:659,684,709`) y el servidor no respondió (también con
+  `curl`, timeout 15 s): **pendiente preexistente**, no regresión — la
+  reconstrucción externa depende de tres URLs de CONAPO fuera del sidecar
+  de datos; candidato a entrar al `manifest.json` como assets.
+- **Documentación negativa.** No se hizo `lower()`/`c(pwd)` a secas en los
+  `.ado`: `pwd` cambia con cada `cd` y partiría `raw/` y `master/` en dos
+  carpetas a media sesión; por eso la raíz se congela en la global la
+  primera vez y solo cambia con `SIMroot, reset` o `dir()`. No se quitó
+  `sysdir set SITE` de `sysprofile-template.do` ni de `Web.Stata.do`: SITE
+  sigue siendo la vía por la que Stata encuentra los `.ado` y el
+  `profile.do` del clon (adopath); lo que cambia es que ya no es la raíz de
+  datos. Los `.ado` de `01_modulos/legacy/` no se tocaron.
+- Este cambio se desarrolló en la rama de trabajo `raiz-proyecto-simroot`
+  sobre un worktree fuera de Dropbox (`~/Developer/`), para que la
+  publicación de v8.3.4 corriera desde el clon de desarrollo con árbol
+  limpio y sin riesgo de que `publicar-endpoint.sh` copiara al endpoint
+  archivos a medio refactor (Fase 2 lee del working tree). La rama se
+  integró a `master` con commits limpios y se borró (§2.1 de
+  `versionado-y-git.md`).
+
 ## [v8.3.4] — 2026-09-23
 
 ### Comandos
