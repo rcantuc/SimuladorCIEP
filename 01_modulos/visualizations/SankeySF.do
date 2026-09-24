@@ -21,7 +21,7 @@ PIBDeflactor, anio(`2') nographs nooutput
 
 **********************************/
 ** Eje 1: Generación del ingreso **
-use `"`c(sysdir_site)'/users/$id/aportaciones.dta"', clear
+use `"${SIMROOT}/users/$id/aportaciones.dta"', clear
 collapse (sum) ing_Imp_al_trabajo=AlTrabajo ing__Imp_al_consumo=AlConsumo ///
 	ing___Imp_al_capital=AlCapital /*ing____FMP=FMP_Sim*/ [fw=factor], by(`1')
 
@@ -80,7 +80,7 @@ save `eje1'
 
 ********************
 ** Eje 4: Consumo **
-use `"`c(sysdir_site)'/users/$id/aportaciones.dta"', clear
+use `"${SIMROOT}/users/$id/aportaciones.dta"', clear
 
 tabstat factor, stat(sum) f(%20.0fc) save
 tempname pobenigh

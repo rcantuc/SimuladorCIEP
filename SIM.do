@@ -9,6 +9,7 @@ macro drop _all
 capture log close _all
 set scheme ciep
 timer on 1
+SIMroot												// RAIZ DEL PROYECTO: macro drop _all la borra; se resuelve de nuevo (sysdir_site con manifest, o pwd)
 
 
 ***
@@ -16,9 +17,9 @@ timer on 1
 ***
 
 ** 0.1 Token del BIE/INEGI
-capture confirm file "`c(sysdir_site)'/set_token.do"
+capture confirm file "${SIMROOT}/set_token.do"
 if _rc == 0 {
-	run "`c(sysdir_site)'/set_token.do"
+	run "${SIMROOT}/set_token.do"
 }
 else {
 	display as text "Nota: set_token.do no encontrado." ///
@@ -33,8 +34,8 @@ scalar anioPE = 2027								// ANIO PAQUETE ECONÓMICO
 scalar anioenigh = 2024								// ANIO ENIGH
 
 ** 0.3 Directorio de archivos "users"
-capture mkdir "`c(sysdir_site)'/users/"
-capture mkdir "`c(sysdir_site)'/users/$id"
+capture mkdir "${SIMROOT}/users/"
+capture mkdir "${SIMROOT}/users/$id"
 
 ** 0.4 Opciones (descomentar para activar)
 global nographs "nographs"						// SUPRIMIR GRAFICAS
@@ -44,12 +45,12 @@ global nographs "nographs"						// SUPRIMIR GRAFICAS
 //global rawwip "rawwip"							// RAW EN WORK-IN-PROGRESS
 //global update "update"							// UPDATE BASES DE DATOS
 if "$update" == "update" {
-	! rm -r "`c(sysdir_site)'/raw/temp/"
+	! rm -r "${SIMROOT}/raw/temp/"
 }
 
 global output "output"								// ARCHIVO DE SALIDA (WEB)
 if "$output" != "" {
-	quietly log using `"`c(sysdir_site)'/users/$id/output.txt"', replace text name(output)
+	quietly log using `"${SIMROOT}/users/$id/output.txt"', replace text name(output)
 	quietly log off output
 }
 
@@ -106,15 +107,15 @@ noisily SCN, anio(`=aniovp') $textbook $nographs $update
 
 ** 3.1 Encuesta Nacional de Ingresos y Gastos de los Hogares (Usos)
 noisily di _newline in g "Actualizando: " in y "expenditures.dta"
-*noisily run "`c(sysdir_site)'/01_modulos/Expenditure.do" `=anioPE'
+*noisily run "${SIMROOT}/01_modulos/Expenditure.do" `=anioPE'
 
 ** 3.2 Encuesta Nacional de Ingresos y Gastos de los Hogares (Recursos)
 noisily di _newline in g "Actualizando: " in y "households.dta"
-*noisily run `"`c(sysdir_site)'/01_modulos/Households.do"' `=anioPE'
+*noisily run `"${SIMROOT}/01_modulos/Households.do"' `=anioPE'
 
 ** 3.3 Perfiles de la política económica actual (Paquete Económico)
 noisily di _newline in g "Actualizando: " in y "perfiles`anio'.dta"
-noisily run "`c(sysdir_site)'/01_modulos/PerfilesSim.do" `=anioPE'
+noisily run "${SIMROOT}/01_modulos/PerfilesSim.do" `=anioPE'
 
 
 
@@ -217,7 +218,7 @@ matrix CSS_ISSSTE = ///
 	0.000,		0.000,			13.9)			//  Cuota social
 
 if "`cambioisrpf'" == "1" {
-	noisily run "`c(sysdir_site)'/01_modulos/ISR_Mod.do"
+	noisily run "${SIMROOT}/01_modulos/ISR_Mod.do"
 	scalar ISRAS = ISR_AS_Mod/100*scalar(pibY)
 	escalar pctpib ISRASPIB  = round(ISR_AS_Mod, 0.001)		// NUEVA ESTIMACIÓN ISR ASALARIADOS
 	scalar ISRPF = ISR_PF_Mod/100*scalar(pibY)
@@ -267,13 +268,13 @@ matrix IEPST = (26.5	,	0 		\		/// Cerveza y alcohol 14
 		0	,	6.7865		)				// Gasolina: diésel
 
 if "`cambioiva'" == "1" {
-	noisily run "`c(sysdir_site)'/01_modulos/IVA_Mod.do"
+	noisily run "${SIMROOT}/01_modulos/IVA_Mod.do"
 	scalar IVA = IVA_Mod/100*scalar(pibY)
 	escalar pctpib IVAPIB = round(IVA_Mod, 0.001)			// NUEVA ESTIMACIÓN IVA
 }
 
 * Evolución de las tasas efectivas */
-do "`c(sysdir_site)'/01_modulos/visualizations/Graphs_TE.do"
+do "${SIMROOT}/01_modulos/visualizations/Graphs_TE.do"
 
 ** 4.7 Tasas Efectivas */
 noisily TasasEfectivas, anio(`=anioPE') enigh
@@ -334,7 +335,7 @@ escalar pctpib gasmadres   =   0.009   		// Apoyo a madres trabajadoras
 escalar pctpib gascuidados =   0.047   		// Gasto en cuidados
 
 * Evolución de los gastos per cápita */
-do "`c(sysdir_site)'/01_modulos/visualizations/Graphs_PC.do"	// <-- MUY tardado. MUY pesado.
+do "${SIMROOT}/01_modulos/visualizations/Graphs_PC.do"	// <-- MUY tardado. MUY pesado.
 
 ** 5.2 Gasto per cápita **
 noisily GastoPC educacion salud pensiones energia resto transferencias, aniope(`=anioPE') aniovp(`=aniovp')
@@ -405,14 +406,14 @@ noisily SHRFSP, anio(`=anioPE') ultanio(2002) $nographs $update $textbook
 **# 7. CICLO DE VIDA FISCAL
 ***
 set scheme ciep
-use `"`c(sysdir_site)'/users/$id/ingresos.dta"', clear
-merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/users/$id/gastos.dta", nogen
+use `"${SIMROOT}/users/$id/ingresos.dta"', clear
+merge 1:1 (folioviv foliohog numren) using "${SIMROOT}/users/$id/gastos.dta", nogen
 if "`cambioisrpf'" == "1" {
-	capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/users/$id/isr_mod.dta", ///
+	capture merge 1:1 (folioviv foliohog numren) using "${SIMROOT}/users/$id/isr_mod.dta", ///
 		nogen replace update keepus(ISRAS_Sim ISRPF_Sim ISRPM_Sim CUOTAS_Sim)
 }
 if "`cambioiva'" == "1" {
-	capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/users/$id/iva_mod.dta", ///
+	capture merge 1:1 (folioviv foliohog numren) using "${SIMROOT}/users/$id/iva_mod.dta", ///
 		nogen replace update keepus(IVA_Sim)
 }
 
@@ -455,7 +456,7 @@ foreach k of varlist /*AlTrabajo AlCapital AlConsumo ///
 	*noisily Perfiles `k' if `k' != 0 [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
 	noisily Simulador `k' if `k' != 0 [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot title("") //boot(10)
 }
-save `"`c(sysdir_site)'/users/$id/aportaciones.dta"', replace
+save `"${SIMROOT}/users/$id/aportaciones.dta"', replace
 
 if "$textbook" == "textbook" {
 	noisily scalarlatex, log(perfiles) alt(perf)
@@ -474,7 +475,7 @@ noisily FiscalGap, anio(`=anioPE') end(`=anioPE+5') aniomin(2016) $nographs desd
 
 ** 8.2 Sankey del sistema fiscal
 foreach k in decil grupoedad sexo rural escol {
-	*noisily run "`c(sysdir_site)'/01_modulos/visualizations/SankeySF.do" `k' `=anioPE'
+	*noisily run "${SIMROOT}/01_modulos/visualizations/SankeySF.do" `k' `=anioPE'
 }
 
 
@@ -485,4 +486,4 @@ foreach k in decil grupoedad sexo rural escol {
 timer off 1
 timer list 1
 noisily di _newline(2) in g _dup(20) ":" "  " in y "TOUCH-DOWN!!!  " round(`=r(t1)/r(nt1)',.1) in g " segs  " _dup(20) ":"
-if "$output" == "output" run "`c(sysdir_site)'/01_modulos/output.do"
+if "$output" == "output" run "${SIMROOT}/01_modulos/output.do"

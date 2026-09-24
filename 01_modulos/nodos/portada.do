@@ -53,12 +53,12 @@
 * llevan capa: el CGPE es la proyección del paquete vigente, no un dato
 * histórico por año.
 *
-* USO:  do "`c(sysdir_site)'/01_modulos/nodos/portada.do"
+* USO:  do "${SIMROOT}/01_modulos/nodos/portada.do"
 * Requiere: aniovp (profile.do), master/ poblado, LIF y PEF invocables.
 * Override de destino para verify_nodo.sh (regla 3): global nodo_saving.
 
 *** 0 PRELIMINARES ***
-local site `"`c(sysdir_site)'"'
+local site `"${SIMROOT}"'
 
 capture confirm scalar aniovp
 if _rc {

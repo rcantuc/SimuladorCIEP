@@ -6,6 +6,7 @@
 *! Ejemplo: AccesoBIE 628194 444612, nombres(PIB Desempleo)
 
 program define AccesoBIE
+	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 	version 17.0
 	
 	syntax anything(name=series) [, Nombres(string) Token(string)]
@@ -28,10 +29,10 @@ program define AccesoBIE
 	quietly {
 		// Crear directorios temporales (mkdir no es recursivo: nivel por nivel;
 		// una instalación fresca no trae ni el directorio site/)
-		capture mkdir "`c(sysdir_site)'"
-		capture mkdir "`c(sysdir_site)'/raw/"
-		capture mkdir "`c(sysdir_site)'/raw/temp/"
-		capture mkdir "`c(sysdir_site)'/raw/temp/AccesoBIE/"
+		capture mkdir "${SIMROOT}"
+		capture mkdir "${SIMROOT}/raw/"
+		capture mkdir "${SIMROOT}/raw/temp/"
+		capture mkdir "${SIMROOT}/raw/temp/AccesoBIE/"
 		
 		// Tokenizar las series
 		local nseries : word count `series'
@@ -47,7 +48,7 @@ program define AccesoBIE
 			python: inegi_api("`serie'", "`token'")
 			
 			// Importar los datos
-			import delimited "`c(sysdir_site)'/raw/temp/AccesoBIE/`serie'.csv", clear varnames(1) encoding(utf-8)
+			import delimited "${SIMROOT}/raw/temp/AccesoBIE/`serie'.csv", clear varnames(1) encoding(utf-8)
 			
 			// Verificar que hay datos. Si una serie no se obtuvo por NINGUNA
 			// vía, el error truena aquí, claro y en su origen — no después,
@@ -224,7 +225,7 @@ def inegi_api(serie, token):
     
     # Si todo falla después de todos los reintentos, crear archivo vacío
     print(f"  Error: No se encontraron datos para la serie {serie} después de {MAX_RETRIES} intentos")
-    csv_path = Macro.getGlobal('c(sysdir_site)') + '/raw/temp/AccesoBIE/' + serie + '.csv'
+    csv_path = Macro.getGlobal('SIMROOT') + '/raw/temp/AccesoBIE/' + serie + '.csv'
     with open(csv_path, 'w', encoding='utf-8') as f:
         f.write('periodo,valor\n')
     Macro.setGlobal(f'INEGI_VARNAME_{serie}', f'v{serie}')
@@ -337,7 +338,7 @@ def save_data_api(serie, observations, indicator_name, banco):
     label = label_base[-80:] if len(label_base) > 80 else label_base
     Macro.setGlobal(f'INEGI_LABEL_{serie}', label)
     
-    csv_path = Macro.getGlobal('c(sysdir_site)') + '/raw/temp/AccesoBIE/' + serie + '.csv'
+    csv_path = Macro.getGlobal('SIMROOT') + '/raw/temp/AccesoBIE/' + serie + '.csv'
     
     with open(csv_path, 'w', encoding='utf-8') as f:
         f.write('periodo,valor\n')
@@ -368,7 +369,7 @@ def save_data_scraping(serie, data_rows, indicator_name):
     label = label_base[-80:] if len(label_base) > 80 else label_base
     Macro.setGlobal(f'INEGI_LABEL_{serie}', label)
     
-    csv_path = Macro.getGlobal('c(sysdir_site)') + '/raw/temp/AccesoBIE/' + serie + '.csv'
+    csv_path = Macro.getGlobal('SIMROOT') + '/raw/temp/AccesoBIE/' + serie + '.csv'
     
     with open(csv_path, 'w', encoding='utf-8') as f:
         f.write('periodo,valor\n')

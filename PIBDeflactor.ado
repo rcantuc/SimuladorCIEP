@@ -9,16 +9,17 @@
 *!***                                    ****
 *!*******************************************
 program define PIBDeflactor, return
+	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 quietly {
 	timer on 3
 
-	capture mkdir `"`c(sysdir_site)'/master/"'
-	capture mkdir `"`c(sysdir_site)'/users/"'
-	capture mkdir `"`c(sysdir_site)'/users/$id/"'
-	capture mkdir `"`c(sysdir_site)'/users/$id/graphs/"'
+	capture mkdir `"${SIMROOT}/master/"'
+	capture mkdir `"${SIMROOT}/users/"'
+	capture mkdir `"${SIMROOT}/users/$id/"'
+	capture mkdir `"${SIMROOT}/users/$id/graphs/"'
 
 	** 0.1 Revisa si se puede usar la base de datos **
-	capture use "`c(sysdir_site)'/master/PIBDeflactor.dta", clear
+	capture use "${SIMROOT}/master/PIBDeflactor.dta", clear
 	if _rc != 0 {
 		UpdatePIBDeflactor
 	}
@@ -52,7 +53,7 @@ quietly {
 	************************
 	**# 2 Bases de datos ***
 	************************
-	use `if' using "`c(sysdir_site)'/master/PIBDeflactor.dta", clear
+	use `if' using "${SIMROOT}/master/PIBDeflactor.dta", clear
 	tsset aniotrimestre
 	keep if anio <= `aniomax'
 	
@@ -424,15 +425,15 @@ quietly {
 			caption("`graphfuente'") ///
 			name(Productividad`aniofinal', replace)
 
-		capture mkdir "`c(sysdir_site)'/users/"
-		capture mkdir "`c(sysdir_site)'/users/$id/"
-		capture mkdir "`c(sysdir_site)'/users/$id/graphs/"
+		capture mkdir "${SIMROOT}/users/"
+		capture mkdir "${SIMROOT}/users/$id/"
+		capture mkdir "${SIMROOT}/users/$id/graphs/"
 		
 		if "$export" != "" {
 			graph export "$export/Productividad`aniofinal'.png", replace name(Productividad`aniofinal')
 		}
 		else {
-			graph export "`c(sysdir_site)'/users/$id/graphs/Productividad`aniofinal'.png", replace name(Productividad`aniofinal')
+			graph export "${SIMROOT}/users/$id/graphs/Productividad`aniofinal'.png", replace name(Productividad`aniofinal')
 		}
 
 		** 7.2 Gráficas finales **/
@@ -527,7 +528,7 @@ quietly {
 			graph export "$export/deflactor.png", replace name(deflactor)
 		}
 		else {
-			graph export "`c(sysdir_site)'/users/$id/graphs/deflactor.png", replace name(deflactor)
+			graph export "${SIMROOT}/users/$id/graphs/deflactor.png", replace name(deflactor)
 		}
 
 
@@ -628,7 +629,7 @@ quietly {
 			graph export "$export/pib.png", replace name(pib)
 		}
 		else {
-			graph export "`c(sysdir_site)'/users/$id/graphs/pib.png", replace name(pib)
+			graph export "${SIMROOT}/users/$id/graphs/pib.png", replace name(pib)
 		}
 
 
@@ -733,7 +734,7 @@ quietly {
 			graph export "$export/pib_pc.png", replace name(pib_pc)
 		}
 		else {
-			graph export "`c(sysdir_site)'/users/$id/graphs/pib_pc.png", replace name(pib_pc)
+			graph export "${SIMROOT}/users/$id/graphs/pib_pc.png", replace name(pib_pc)
 		}
 
 
@@ -841,7 +842,7 @@ quietly {
 			graph export "$export/inflacion.png", replace name(inflacion)
 		}
 		else {
-			graph export "`c(sysdir_site)'/users/$id/graphs/inflacion.png", replace name(inflacion)
+			graph export "${SIMROOT}/users/$id/graphs/inflacion.png", replace name(inflacion)
 		}
 	}
 	return local except "`except'"
@@ -922,6 +923,7 @@ end
 **** Base de datos: PIBDeflactor.dta ****
 *****************************************
 program define UpdatePIBDeflactor
+	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 	noisily di in g "  Updating PIBDeflactor.dta..." _newline
 
 	args nographs
@@ -1012,10 +1014,10 @@ program define UpdatePIBDeflactor
 	********************
 
 	** 3.1 Población (CONAPO) **
-	capture use `"`c(sysdir_site)'/master/$pais/Poblacion.dta"', clear
+	capture use `"${SIMROOT}/master/$pais/Poblacion.dta"', clear
 	if _rc != 0 {
 		Poblacion, nographs
-		use `"`c(sysdir_site)'/master/$pais/Poblacion.dta"', clear
+		use `"${SIMROOT}/master/$pais/Poblacion.dta"', clear
 	}
 	collapse (sum) Poblacion=poblacion if entidad == "Nacional", by(anio)
 	format Poblacion %20.0fc
@@ -1023,14 +1025,14 @@ program define UpdatePIBDeflactor
 	save "`Poblacion'"
 
 	** 3.2 Working Ages (CONAPO) **
-	use `"`c(sysdir_site)'/master/$pais/Poblacion.dta"', clear
+	use `"${SIMROOT}/master/$pais/Poblacion.dta"', clear
 	collapse (sum) WorkingAge=poblacion if edad >= 15 & edad <= 65 & entidad == "Nacional", by(anio)
 	format WorkingAge %15.0fc
 	tempfile WorkingAge
 	save "`WorkingAge'"
 
 	** 3.3 Recién nacidos (CONAPO) **
-	use `"`c(sysdir_site)'/master/$pais/Poblacion.dta"', clear
+	use `"${SIMROOT}/master/$pais/Poblacion.dta"', clear
 	collapse (sum) Poblacion0=poblacion if edad == 0 & entidad == "Nacional", by(anio)
 	format Poblacion0 %15.0fc
 	tempfile Poblacion0
@@ -1095,5 +1097,5 @@ program define UpdatePIBDeflactor
 	format pib* %25.0fc
 	capture drop __*
 	sort aniotrimestre
-	save "`c(sysdir_site)'/master/PIBDeflactor.dta", replace
+	save "${SIMROOT}/master/PIBDeflactor.dta", replace
 end

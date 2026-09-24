@@ -25,6 +25,7 @@
 program define ensure_asset
     version 16
     syntax [anything(name=asset_name)] [, DIR(string)]
+    SIMroot                                     // raiz del proyecto (global SIMROOT, v8.4)
 
     * Quitar comillas externas si las hay
     local asset_name = subinstr(`"`asset_name'"', `"""', "", .)
@@ -146,7 +147,7 @@ def _sha_mismatch_msg(asset_name, entry, expected_sha, actual_sha, local_path,
     )
 
 
-def _rawwip_notice(sysdir_site, asset_name, entry, expected_sha, actual_sha, local_path):
+def _rawwip_notice(root, asset_name, entry, expected_sha, actual_sha, local_path):
     """Fase 1 (raw en edicion): aviso de una linea con los valores para el
     manifest, y registro del asset en raw/temp/assets-wip.txt (una linea por
     asset, ultima captura gana) para que la Fase 2 sea una lista y no una
@@ -160,7 +161,7 @@ def _rawwip_notice(sysdir_site, asset_name, entry, expected_sha, actual_sha, loc
         "(real " + actual_sha[:12] + "..., " + actual_size + " bytes) - se usa el archivo "
         "local. Declaralo antes del release (quita el global rawwip para la Fase 2)."
     )
-    wip_path = os.path.join(sysdir_site, 'raw', 'temp', 'assets-wip.txt')
+    wip_path = os.path.join(root, 'raw', 'temp', 'assets-wip.txt')
     try:
         os.makedirs(os.path.dirname(wip_path), exist_ok=True)
         rows = {}
@@ -180,10 +181,10 @@ def _rawwip_notice(sysdir_site, asset_name, entry, expected_sha, actual_sha, loc
         pass
 
 
-def _fetch_pinned_manifest(sysdir_site, pin):
+def _fetch_pinned_manifest(root, pin):
     """Descarga (y cachea por version) el manifest del repo publico por tag.
     Devuelve la ruta local del manifest, o None si fallo (ya reporto)."""
-    cache_path = os.path.join(sysdir_site, 'raw', 'temp', 'manifest-' + pin + '.json')
+    cache_path = os.path.join(root, 'raw', 'temp', 'manifest-' + pin + '.json')
     if os.path.isfile(cache_path):
         return cache_path
     url = ('https://raw.githubusercontent.com/rcantuc/SimuladorCIEP/'
@@ -204,9 +205,9 @@ def _fetch_pinned_manifest(sysdir_site, pin):
     return cache_path
 
 
-def _load_manifest(sysdir_site, pinned_version):
+def _load_manifest(root, pinned_version):
     """Devuelve (manifest, pinned_mode) o None si ya reporto el fallo."""
-    manifest_path = os.path.join(sysdir_site, '05_scripts', 'manifest.json')
+    manifest_path = os.path.join(root, '05_scripts', 'manifest.json')
     pinned_mode = False
     if not os.path.isfile(manifest_path):
         if not pinned_version:
@@ -216,7 +217,7 @@ def _load_manifest(sysdir_site, pinned_version):
             )
             return None
         # Modo endpoint: sin repo, el catalogo se baja de GitHub por tag
-        manifest_path = _fetch_pinned_manifest(sysdir_site, pinned_version)
+        manifest_path = _fetch_pinned_manifest(root, pinned_version)
         if manifest_path is None:
             return None
         pinned_mode = True
@@ -241,17 +242,17 @@ def _load_manifest(sysdir_site, pinned_version):
     return manifest, pinned_mode
 
 
-def _ensure_one(sysdir_site, manifest, pinned_mode, entry, rawwip):
+def _ensure_one(root, manifest, pinned_mode, entry, rawwip):
     """Verifica/descarga UN asset. Devuelve 'ok', 'descargado' o None (fallo ya reportado)."""
     asset_name = entry['name']
-    local_path = os.path.join(sysdir_site, entry['local_path'])
+    local_path = os.path.join(root, entry['local_path'])
     expected_sha = entry['sha256']
 
     if os.path.isfile(local_path):
         actual_sha = _sha256_of(local_path)
         if actual_sha != expected_sha:
             if rawwip and not pinned_mode:
-                _rawwip_notice(sysdir_site, asset_name, entry, expected_sha,
+                _rawwip_notice(root, asset_name, entry, expected_sha,
                                actual_sha, local_path)
                 return 'ok'
             _fail(_sha_mismatch_msg(asset_name, entry, expected_sha, actual_sha,
@@ -289,8 +290,8 @@ def _ensure_one(sysdir_site, manifest, pinned_mode, entry, rawwip):
 
 def ensure_asset_main(asset_name, pinned_version="", rawwip=""):
     asset_name = asset_name.strip().strip('"')
-    sysdir_site = Macro.getGlobal('c(sysdir_site)')
-    loaded = _load_manifest(sysdir_site, pinned_version.strip())
+    root = Macro.getGlobal('SIMROOT')
+    loaded = _load_manifest(root, pinned_version.strip())
     if loaded is None:
         return
     manifest, pinned_mode = loaded
@@ -304,13 +305,13 @@ def ensure_asset_main(asset_name, pinned_version="", rawwip=""):
             "Verifica el nombre o actualiza el manifest."
         )
         return
-    _ensure_one(sysdir_site, manifest, pinned_mode, entry, rawwip.strip())
+    _ensure_one(root, manifest, pinned_mode, entry, rawwip.strip())
 
 
 def ensure_asset_dir(dirprefix, pinned_version="", rawwip=""):
     """Forma dir(): todos los assets del manifest bajo <dirprefix>/ (local_path)."""
-    sysdir_site = Macro.getGlobal('c(sysdir_site)')
-    loaded = _load_manifest(sysdir_site, pinned_version.strip())
+    root = Macro.getGlobal('SIMROOT')
+    loaded = _load_manifest(root, pinned_version.strip())
     if loaded is None:
         return
     manifest, pinned_mode = loaded
@@ -326,7 +327,7 @@ def ensure_asset_dir(dirprefix, pinned_version="", rawwip=""):
     n_ok = 0
     n_dl = 0
     for entry in entries:
-        r = _ensure_one(sysdir_site, manifest, pinned_mode, entry, rawwip.strip())
+        r = _ensure_one(root, manifest, pinned_mode, entry, rawwip.strip())
         if r is None:
             return
         if r == 'descargado':

@@ -1,3 +1,24 @@
+*****************************
+***                       ***
+*** 0 Raíz del proyecto   ***
+***                       ***
+*****************************
+* La raíz es la carpeta donde vive ESTE profile.do (el clon que Stata cargó),
+* no c(sysdir_site): SITE es el directorio de ado-files de la instalación de
+* Stata y solo coincide con el clon si sysprofile.do lo redefinió. findfile lo
+* localiza en el adopath; si falla, SIMroot decide (sysdir_site con manifest,
+* o el directorio actual).
+capture findfile profile.do
+if _rc == 0 {
+	local sim_pf `"`r(fn)'"'
+	mata: st_local("sim_root_dir", pathgetparent(st_local("sim_pf")))
+	if `"`sim_root_dir'"' == "" local sim_root_dir `"`c(pwd)'"'
+	SIMroot, dir(`"`sim_root_dir'"')
+}
+else {
+	SIMroot
+}
+
 *********************
 ***               ***
 *** 1 Estilo CIEP ***
@@ -51,7 +72,7 @@ _emit("sim_previous_version", "")
 _emit("sim_mode", "silent")
 
 try:
-	site_dir = Path(r"""`c(sysdir_site)'""".strip())
+	site_dir = Path(r"""${SIMROOT}""".strip())
 	manifest_path = site_dir / "05_scripts" / "manifest.json"
 	changelog_path = site_dir / "02_governance" / "CHANGELOG.md"
 	username = os.environ.get("USER", "unknown")
@@ -169,16 +190,16 @@ end
 *** 2 PARÁMETROS GENERALES ***
 ***                        ***
 ******************************
-cd `"`c(sysdir_site)'"'
+cd `"${SIMROOT}"'
 
 ** 2.0 Token del BIE/INEGI **
 * Se carga desde set_token.do (gitignored) para que AccesoBIE funcione desde
 * el arranque. confirm file distingue archivo ausente (nota amable en la
 * bienvenida) de archivo roto (run SIN capture: el error se ve en su origen).
 local sim_token_missing = 0
-capture confirm file "`c(sysdir_site)'/set_token.do"
+capture confirm file "${SIMROOT}/set_token.do"
 if _rc == 0 {
-	run "`c(sysdir_site)'/set_token.do"
+	run "${SIMROOT}/set_token.do"
 }
 else {
 	local sim_token_missing = 1
@@ -206,7 +227,7 @@ scalar anioPE = 2027
 ***              ***
 ********************
 noisily di in w _newline(50) "{bf:Centro de Investigaci{c o'}n Econ{c o'}mica y Presupuestaria, A.C.}"
-noisily di _newline in g `"{bf:{stata `"projmanager "`c(sysdir_site)'/simulador.stpr""': Simulador Fiscal CIEP}}"'
+noisily di _newline in g `"{bf:{stata `"projmanager "${SIMROOT}/simulador.stpr""': Simulador Fiscal CIEP}}"'
 if "`sim_version'" != "" {
 	noisily di in g "  Versión: " _col(30) in y "`sim_version'"
 	if "`sim_generated_at'" != "" {

@@ -39,9 +39,9 @@ local pibY = scalar(PIB)
 ****************************
 ** INFORMACIÓN HOUSEHOLDS **
 ****************************
-capture use "`c(sysdir_site)'/master/perfiles`=anioPE'.dta", clear
+capture use "${SIMROOT}/master/perfiles`=anioPE'.dta", clear
 if _rc != 0 {
-	noisily run "`c(sysdir_site)'/PerfilesSim.do" `=anioPE'
+	noisily run "${SIMROOT}/PerfilesSim.do" `=anioPE'
 }
 drop CUOTAS ISRAS ISRPF
 
@@ -250,7 +250,7 @@ noisily di in g "  RESULTADOS Cuotas IMSS:  " _col(33) in y %10.3fc CUOTAS_Mod
 **** Touchdown!!! :) ****
 *************************
 capture drop __*
-save "`c(sysdir_site)'/users/$id/isr_mod.dta", replace
+save "${SIMROOT}/users/$id/isr_mod.dta", replace
 timer off 94
 timer list 94
 noisily di _newline(2) in g _dup(20) "." "  " in y round(`=r(t94)/r(nt94)',.1) in g " segs  " _dup(20) "."

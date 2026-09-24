@@ -22,7 +22,8 @@ if "`c(username)'" == "ricardo" {						// Mac
 else {
 	sysdir set SITE "/SIM/OUT/current/"
 }
-cd "`c(sysdir_site)'/users/$id"
+SIMroot, dir("`c(sysdir_site)'")						// RAIZ DEL PROYECTO explícita (global SIMROOT, v8.4); SITE se conserva para el adopath
+cd "${SIMROOT}/users/$id"
 
 
 ** Parámetros iniciales
@@ -38,8 +39,8 @@ global nographs "nographs"							// SUPRIMIR GRAFICAS
 global output "output"								// ARCHIVO DE SALIDA (WEB)
 
 if "$output" != "" {
-	capture mkdir "`c(sysdir_site)'/users/$id"
-	quietly log using `"`c(sysdir_site)'/users/$id/output.txt"', replace text name(output)
+	capture mkdir "${SIMROOT}/users/$id"
+	quietly log using `"${SIMROOT}/users/$id/output.txt"', replace text name(output)
 	quietly log off output
 }
 
@@ -91,7 +92,7 @@ noisily LIF if divLIF != 10, anio(`=anioPE') by(divSIM) $update $nographs 		///
 rename divSIM divCODE
 decode divCODE, g(divSIM) 
 collapse (sum) recaudacion, by(anio divSIM) fast
-save `"`c(sysdir_site)'/users/$id/LIF.dta"', replace	
+save `"${SIMROOT}/users/$id/LIF.dta"', replace	
 
 
 ** 3.1.1 Parámetros: Ingresos **
@@ -226,7 +227,7 @@ matrix IEPST = (26.5	,	0 		\			/// Cerveza y alcohol 14
 * queda apagado: degradación intencional, no error. Las reasignaciones *PIB de
 * adentro son parte del contrato NUMÉRICO de 3.1.1: sin comillas.
 if "1" == "{{moduloCambio}}" {
-	noisily run "`c(sysdir_site)'/01_modulos/ISR_Mod.do"
+	noisily run "${SIMROOT}/01_modulos/ISR_Mod.do"
 	scalar ISRAS = ISR_AS_Mod/100*scalar(pibY)
 	scalar ISRASPIB  = round(ISR_AS_Mod, 0.001)			// NUEVA ESTIMACIÓN ISR ASALARIADOS
 	scalar ISRPF = ISR_PF_Mod/100*scalar(pibY)
@@ -238,7 +239,7 @@ if "1" == "{{moduloCambio}}" {
 }
 ** 3.1.7 Submódulo IVA (web) **
 if "1" == "{{moduloCambioIva}}" {
-	noisily run "`c(sysdir_site)'/01_modulos/IVA_Mod.do"
+	noisily run "${SIMROOT}/01_modulos/IVA_Mod.do"
 	scalar IVA = IVA_Mod/100*scalar(pibY)
 	scalar IVAPIB = round(IVA_Mod, 0.001)				// NUEVA ESTIMACIÓN IVA
 }
@@ -379,13 +380,13 @@ scalar tasaEfectiva = {{DEUDA0}}
 **/
 **# 6. CICLO DE VIDA
 ***
-use `"`c(sysdir_site)'/users/$id/ingresos.dta"', clear
-merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/users/$id/gastos.dta", nogen
-capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/users/$id/isr_mod.dta", ///
+use `"${SIMROOT}/users/$id/ingresos.dta"', clear
+merge 1:1 (folioviv foliohog numren) using "${SIMROOT}/users/$id/gastos.dta", nogen
+capture merge 1:1 (folioviv foliohog numren) using "${SIMROOT}/users/$id/isr_mod.dta", ///
 	nogen replace update keepus(ISRAS_Sim ISRPF_Sim ISRPM_Sim CUOTAS_Sim)
-capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/users/$id/iva_mod.dta", ///
+capture merge 1:1 (folioviv foliohog numren) using "${SIMROOT}/users/$id/iva_mod.dta", ///
 	nogen replace update keepus(IVA_Sim)
-save `"`c(sysdir_site)'/users/$id/aportaciones.dta"', replace
+save `"${SIMROOT}/users/$id/aportaciones.dta"', replace
 
 
 ** 7.1 (+) Impuestos y aportaciones
@@ -407,7 +408,7 @@ g AportacionesNetas = ImpuestosAportaciones - Transferencias
 label var AportacionesNetas "Ciclo de vida de las aportaciones netas"
 //noisily Perfiles AportacionesNetas [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
 noisily Simulador AportacionesNetas [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot //boot(10)
-save `"`c(sysdir_site)'/users/$id/aportaciones.dta"', replace
+save `"${SIMROOT}/users/$id/aportaciones.dta"', replace
 
 
 
@@ -421,7 +422,7 @@ noisily FiscalGap, anio(`=anioPE') end(`=anioPE+5') aniomin(2016) $nographs desd
 
 ** 7.2 Sankey del sistema fiscal
 foreach k in decil grupoedad sexo rural escol {
-	noisily run "`c(sysdir_site)'/01_modulos/visualizations/SankeySF.do" `k' `=anioPE'
+	noisily run "${SIMROOT}/01_modulos/visualizations/SankeySF.do" `k' `=anioPE'
 }
 
 
@@ -430,7 +431,7 @@ foreach k in decil grupoedad sexo rural escol {
 **** Touchdown!!!
 ****
 if "$output" == "output" ///
-	run "`c(sysdir_site)'/01_modulos/output.do"
+	run "${SIMROOT}/01_modulos/output.do"
 timer off 1
 timer list 1
 noisily di _newline(2) in g _dup(20) ":" "  " in y "TOUCH-DOWN!!!  " round(`=r(t1)/r(nt1)',.1) in g " segs  " _dup(20) ":"

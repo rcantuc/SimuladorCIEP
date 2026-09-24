@@ -6,7 +6,7 @@
 clear all
 if "`c(username)'" == "ricardo" ///                             // iMac Ricardo
 	sysdir set SITE "/Users/ricardo/CIEP Dropbox/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP"
-cd "`c(sysdir_site)'"
+cd "${SIMROOT}"
 
 
 *************************

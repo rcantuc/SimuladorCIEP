@@ -53,11 +53,11 @@
 *     04_5_ciep.mx/indicadores/decorador.js  (copia servible)
 *   El mu-plugin se instala UNA vez a mano en wp-content/mu-plugins/.
 *
-* USO:  do "`c(sysdir_site)'/01_modulos/nodos/indicadores.do"
+* USO:  do "${SIMROOT}/01_modulos/nodos/indicadores.do"
 * Override de destino para verify_nodo.sh (regla 3): global nodo_saving.
 
 *** 0 PRELIMINARES ***
-local site `"`c(sysdir_site)'"'
+local site `"${SIMROOT}"'
 
 capture confirm scalar aniovp
 if _rc {

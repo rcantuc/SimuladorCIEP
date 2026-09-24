@@ -1,4 +1,5 @@
 program define CuentasGeneracionales, rclass
+	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 quietly {
 	timer on 10
 	version 13.1
@@ -24,7 +25,7 @@ quietly {
 	*******************
 	*** 1 Poblacion ***
 	*******************
-	use `"`c(sysdir_site)'/master/Poblacion.dta"', clear
+	use `"${SIMROOT}/master/Poblacion.dta"', clear
 
 	sort anio
 	local anio = anio[1]
@@ -48,7 +49,7 @@ quietly {
 	****************
 	** 2 Perfiles **
 	****************
-	use `"`c(sysdir_site)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'PERF"', clear
+	use `"${SIMROOT}/users/$pais/$id/bootstraps/`bootstrap'/`varlist'PERF"', clear
 	collapse perfil1 perfil2 contribuyentes1 contribuyentes2, by(edad)
 
 	sort edad
@@ -63,7 +64,7 @@ quietly {
 	**************************
 	*** 3 Monto per capita ***
 	**************************
-	use `"`c(sysdir_site)'/users/$pais/$id/bootstraps/`bootstrap'/`varlist'PC"', clear
+	use `"${SIMROOT}/users/$pais/$id/bootstraps/`bootstrap'/`varlist'PC"', clear
 
 	ci montopc
 	local montopc = r(mean)

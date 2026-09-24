@@ -358,11 +358,11 @@ quietly log off output
 quietly log close output
 tempfile output1 output2 output3
 if "`=c(os)'" == "Windows" {
-	capture filefilter "`c(sysdir_site)'/users/$pais/$id/${output}.txt" `output1', from(\r\n>) to("") replace // Windows
+	capture filefilter "${SIMROOT}/users/$pais/$id/${output}.txt" `output1', from(\r\n>) to("") replace // Windows
 }
 else {
-	filefilter "`c(sysdir_site)'/users/$pais/$id/${output}.txt" `output1', from(\n>) to("") replace // Mac & Linux
+	filefilter "${SIMROOT}/users/$pais/$id/${output}.txt" `output1', from(\n>) to("") replace // Mac & Linux
 }
 filefilter `output1' `output2', from(" ") to("") replace
 filefilter `output2' `output3', from("_") to(" ") replace
-filefilter `output3' "`c(sysdir_site)'/users/$pais/$id/${output}.txt", from(".,") to("0") replace
+filefilter `output3' "${SIMROOT}/users/$pais/$id/${output}.txt", from(".,") to("0") replace

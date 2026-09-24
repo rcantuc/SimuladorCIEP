@@ -1,4 +1,5 @@
 program define SankeySumSim
+	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 quietly {
 
 	** Anio valor presente **
@@ -110,7 +111,7 @@ quietly {
 	//	filefilter `sankey3' `"/var/www/html/`folder'/sankey-`name'.json"', from(".,") to("0") replace
 	//}
 	//if "`c(os)'" == "Unix" & "`c(username)'" == "root" {
-		filefilter `sankey3' `"`c(sysdir_site)'/users/$id/sankey-`name'.json"', from(".,") to("0") replace
+		filefilter `sankey3' `"${SIMROOT}/users/$id/sankey-`name'.json"', from(".,") to("0") replace
 	//}
 }
 end

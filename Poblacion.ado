@@ -11,14 +11,15 @@
 *!***    Poblacion [if] [, ANIOinicial(int) ANIOFinal(int) NOGraphs UPDATE]
 *!*******************************************
 program define Poblacion, return
+	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 quietly {
 	timer on 2
 
-	capture mkdir `"`c(sysdir_site)'/master"'
-	capture mkdir "`c(sysdir_site)'/users/$id/graphs"
+	capture mkdir `"${SIMROOT}/master"'
+	capture mkdir "${SIMROOT}/users/$id/graphs"
 
 	** 0.1 Revisa si se puede usar la base de datos **
-	capture use `"`c(sysdir_site)'/master/Poblacion.dta"', clear
+	capture use `"${SIMROOT}/master/Poblacion.dta"', clear
 	if _rc != 0 {
 		UpdatePoblacion
 	}
@@ -52,7 +53,7 @@ quietly {
 	************************
 	*** 2. Base de datos ***
 	************************
-	use `if' using `"`c(sysdir_site)'/master/Poblacion.dta"', clear
+	use `if' using `"${SIMROOT}/master/Poblacion.dta"', clear
 	if `ifentidad' == 0 {
 		keep if entidad == "Nacional"
 	}
@@ -418,21 +419,21 @@ quietly {
 			graph export "$export/PP_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(PP_`anioinicial'_`aniofinal'_`entidadGName')
 		}
 		else {
-			graph export "`c(sysdir_site)'/users/$id/graphs/PP_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(PP_`anioinicial'_`aniofinal'_`entidadGName')
+			graph export "${SIMROOT}/users/$id/graphs/PP_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(PP_`anioinicial'_`aniofinal'_`entidadGName')
 		}
 		
 		if "$export" != "" {
 			graph export "$export/PA_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(P_`anioinicial'_`aniofinal'_`entidadGName'A)
 		}
 		else {
-			graph export "`c(sysdir_site)'/users/$id/graphs/PA_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(P_`anioinicial'_`aniofinal'_`entidadGName'A)
+			graph export "${SIMROOT}/users/$id/graphs/PA_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(P_`anioinicial'_`aniofinal'_`entidadGName'A)
 		}
 		
 		if "$export" != "" {
 			graph export "$export/PB_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(P_`anioinicial'_`aniofinal'_`entidadGName'B)
 		}
 		else {
-			graph export "`c(sysdir_site)'/users/$id/graphs/PB_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(P_`anioinicial'_`aniofinal'_`entidadGName'B)
+			graph export "${SIMROOT}/users/$id/graphs/PB_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(P_`anioinicial'_`aniofinal'_`entidadGName'B)
 		}
 
 		capture window manage close graph P_`anioinicial'_`aniofinal'_`entidadGName'A
@@ -598,19 +599,19 @@ quietly {
 			graph export "$export/ET_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(ET_`anioinicial'_`aniofinal'_`entidadGName')
 		}
 		else {
-			graph export "`c(sysdir_site)'/users/$id/graphs/ET_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(ET_`anioinicial'_`aniofinal'_`entidadGName')
+			graph export "${SIMROOT}/users/$id/graphs/ET_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(ET_`anioinicial'_`aniofinal'_`entidadGName')
 		}
 		if "$export" != "" {
 			graph export "$export/T_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(T_`anioinicial'_`aniofinal'_`entidadGName')
 		}
 		else {
-			graph export "`c(sysdir_site)'/users/$id/graphs/T_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(T_`anioinicial'_`aniofinal'_`entidadGName')
+			graph export "${SIMROOT}/users/$id/graphs/T_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(T_`anioinicial'_`aniofinal'_`entidadGName')
 		}
 		if "$export" != "" {
 			graph export "$export/E_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(E_`anioinicial'_`aniofinal'_`entidadGName')
 		}
 		else {
-			graph export "`c(sysdir_site)'/users/$id/graphs/E_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(E_`anioinicial'_`aniofinal'_`entidadGName')
+			graph export "${SIMROOT}/users/$id/graphs/E_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(E_`anioinicial'_`aniofinal'_`entidadGName')
 		}
 
 		capture window manage close graph E_`anioinicial'_`aniofinal'_`entidadGName'
@@ -645,6 +646,7 @@ end
 ****                                                                                ****
 ****************************************************************************************
 program define UpdatePoblacion
+	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 	noisily di in g "  Updating Poblacion.dta..." _newline
 
 
@@ -655,7 +657,7 @@ program define UpdatePoblacion
 
 	** 1. Base de datos (online) **
 	import delimited "http://conapo.segob.gob.mx/work/models/CONAPO/Datos_Abiertos/pry23/00_Pob_Mitad_1950_2070.csv", clear
-	*import excel "`c(sysdir_site)'../BasesCIEP/CONAPO/ConDem50a19_ProyPob20a70/0_Pob_Mitad_1950_2070.xlsx", sheet("Hoja1") firstrow case(lower) clear
+	*import excel "${SIMROOT}../BasesCIEP/CONAPO/ConDem50a19_ProyPob20a70/0_Pob_Mitad_1950_2070.xlsx", sheet("Hoja1") firstrow case(lower) clear
 
 
 	** 2. Limpia **
@@ -680,7 +682,7 @@ program define UpdatePoblacion
 
 	** 1. Base de datos (online) **
 	import delimited "http://conapo.segob.gob.mx/work/models/CONAPO/Datos_Abiertos/pry23/01_Defunciones_1950_2070.csv", clear
-	*import excel "`c(sysdir_site)'../BasesCIEP/CONAPO/ConDem50a19_ProyPob20a70/1_Defunciones_1950_2070.xlsx", sheet("Hoja1") firstrow case(lower) clear
+	*import excel "${SIMROOT}../BasesCIEP/CONAPO/ConDem50a19_ProyPob20a70/1_Defunciones_1950_2070.xlsx", sheet("Hoja1") firstrow case(lower) clear
 
 
 	** 2. Limpia **
@@ -705,7 +707,7 @@ program define UpdatePoblacion
 
 	** 1. Base de datos (online) **
 	import delimited "http://conapo.segob.gob.mx/work/models/CONAPO/Datos_Abiertos/pry23/02_mig_inter_quinquen_proyecciones.csv", clear
-	*import excel "`c(sysdir_site)'../BasesCIEP/CONAPO/ConDem50a19_ProyPob20a70/2_mig_inter_quinquen_proyecciones.xlsx", sheet("Hoja1") firstrow case(lower) clear
+	*import excel "${SIMROOT}../BasesCIEP/CONAPO/ConDem50a19_ProyPob20a70/2_mig_inter_quinquen_proyecciones.xlsx", sheet("Hoja1") firstrow case(lower) clear
 
 
 	** 2. Limpia **
@@ -797,18 +799,18 @@ program define UpdatePoblacion
 	compress
 
 	if `c(version)' > 13.1 {
-		saveold "`c(sysdir_site)'/master/Poblacion.dta", replace version(13)
+		saveold "${SIMROOT}/master/Poblacion.dta", replace version(13)
 	}
 	else {
-		save "`c(sysdir_site)'/master/Poblacion.dta", replace
+		save "${SIMROOT}/master/Poblacion.dta", replace
 	}
 
 	collapse (sum) poblacion, by(anio entidad)
 	keep if entidad == "Nacional"
 	if `c(version)' > 13.1 {
-		saveold `"`c(sysdir_site)'/master/Poblaciontot.dta"', replace version(13)
+		saveold `"${SIMROOT}/master/Poblaciontot.dta"', replace version(13)
 	}
 	else {
-		save `"`c(sysdir_site)'/master/Poblaciontot.dta"', replace
+		save `"${SIMROOT}/master/Poblaciontot.dta"', replace
 	}
 end

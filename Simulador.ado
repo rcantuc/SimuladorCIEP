@@ -1,4 +1,5 @@
 program define Simulador
+	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 quietly {
 	timer on 7
 	syntax varname [if] [fweight/], ///
@@ -89,7 +90,7 @@ quietly {
 	************************
 	*** 1. Archivos POST ***
 	************************
-	capture confirm file `"`c(sysdir_site)'/users/$id/bootstraps/`bootstrap'/`varlist'REC.dta"'
+	capture confirm file `"${SIMROOT}/users/$id/bootstraps/`bootstrap'/`varlist'REC.dta"'
 	if "`reboot'" == "reboot" | _rc != 0 {
 
 
@@ -102,32 +103,32 @@ quietly {
 
 		******************
 		** 1.2 Archivos **
-		capture mkdir `"`c(sysdir_site)'/users/"'
-		capture mkdir `"`c(sysdir_site)'/users/$id/"'
-		capture mkdir `"`c(sysdir_site)'/users/$id/graphs/"'
-		capture mkdir `"`c(sysdir_site)'/users/$id/bootstraps/"'
-		capture mkdir `"`c(sysdir_site)'/users/$id/bootstraps/`bootstrap'"'
+		capture mkdir `"${SIMROOT}/users/"'
+		capture mkdir `"${SIMROOT}/users/$id/"'
+		capture mkdir `"${SIMROOT}/users/$id/graphs/"'
+		capture mkdir `"${SIMROOT}/users/$id/bootstraps/"'
+		capture mkdir `"${SIMROOT}/users/$id/bootstraps/`bootstrap'"'
 
 
 		** Per c{c a'}pita **
 		postfile PC double(estimacion contribuyentes poblacion montopc edad40) ///
-			using `"`c(sysdir_site)'/users/$id/bootstraps/`bootstrap'/`varlist'PC"', replace
+			using `"${SIMROOT}/users/$id/bootstraps/`bootstrap'/`varlist'PC"', replace
 
 
 		** Perfiles **
 		postfile PERF edad double(perfil1 perfil2 contribuyentes1 contribuyentes2 ///
 			estimacion1 estimacion2 pobcont1 pobcont2 poblacion1 poblacion2) ///
-			using `"`c(sysdir_site)'/users/$id/bootstraps/`bootstrap'/`varlist'PERF"', replace
+			using `"${SIMROOT}/users/$id/bootstraps/`bootstrap'/`varlist'PERF"', replace
 
 
 		** Incidencia por hogares **
 		postfile INCI decil double(xhogar distribucion incidencia hogares) ///
-			using `"`c(sysdir_site)'/users/$id/bootstraps/`bootstrap'/`varlist'INCI"', replace
+			using `"${SIMROOT}/users/$id/bootstraps/`bootstrap'/`varlist'INCI"', replace
 
 
 		** Ciclo de vida **
 		postfile CICLO bootstrap sexo edad decil double(poblacion `varlist') ///
-			using `"`c(sysdir_site)'/users/$id/bootstraps/`bootstrap'/`varlist'CICLO"', replace
+			using `"${SIMROOT}/users/$id/bootstraps/`bootstrap'/`varlist'CICLO"', replace
 
 
 		** Proyecciones **
@@ -136,7 +137,7 @@ quietly {
 			contribuyentes_Hom contribuyentes_Muj ///
 			contribuyentes_0_24 contribuyentes_25_49 ///
 			contribuyentes_50_74 contribuyentes_75_mas) ///
-			using `"`c(sysdir_site)'/users/$id/bootstraps/`bootstrap'/`varlist'REC"', replace
+			using `"${SIMROOT}/users/$id/bootstraps/`bootstrap'/`varlist'REC"', replace
 
 
 
@@ -284,7 +285,7 @@ quietly {
 	**************************
 	*** 2 Monto per capita ***
 	**************************
-	use `"`c(sysdir_site)'/users/$id/bootstraps/`bootstrap'/`varlist'PC"', clear
+	use `"${SIMROOT}/users/$id/bootstraps/`bootstrap'/`varlist'PC"', clear
 
 
 	***********************************
@@ -331,7 +332,7 @@ quietly {
 	******************
 	*** 3 Perfiles ***
 	******************
-	use `"`c(sysdir_site)'/users/$id/bootstraps/`bootstrap'/`varlist'PERF"', clear
+	use `"${SIMROOT}/users/$id/bootstraps/`bootstrap'/`varlist'PERF"', clear
 
 
 	*************************
@@ -434,17 +435,17 @@ quietly {
 	}
 
 	if "$nographs" != "nographs" & "`nographs'" != "nographs" {
-		graph save PerfilH`varlist' `"`c(sysdir_site)'/users/$id/graphs/PerfilH`varlist'"', replace
-		graph save PerfilM`varlist' `"`c(sysdir_site)'/users/$id/graphs/PerfilM`varlist'"', replace
-		graph save ContH`varlist' `"`c(sysdir_site)'/users/$id/graphs/ContH`varlist'"', replace
-		graph save ContH`varlist' `"`c(sysdir_site)'/users/$id/graphs/ContH`varlist'"', replace
+		graph save PerfilH`varlist' `"${SIMROOT}/users/$id/graphs/PerfilH`varlist'"', replace
+		graph save PerfilM`varlist' `"${SIMROOT}/users/$id/graphs/PerfilM`varlist'"', replace
+		graph save ContH`varlist' `"${SIMROOT}/users/$id/graphs/ContH`varlist'"', replace
+		graph save ContH`varlist' `"${SIMROOT}/users/$id/graphs/ContH`varlist'"', replace
 	}
 
 
 	**********************/
 	*** 4. Incidencia *****
 	***********************
-	use `"`c(sysdir_site)'/users/$id/bootstraps/`bootstrap'/`varlist'INCI"', clear
+	use `"${SIMROOT}/users/$id/bootstraps/`bootstrap'/`varlist'INCI"', clear
 	format xhogar %15.1fc
 	format distribucion %6.1fc
 	format incidencia %6.1fc
@@ -526,7 +527,7 @@ quietly {
 	***********************/
 	*** 5. CICLO DE VIDA ***
 	************************
-	use `"`c(sysdir_site)'/users/$id/bootstraps/`bootstrap'/`varlist'CICLO"', clear
+	use `"${SIMROOT}/users/$id/bootstraps/`bootstrap'/`varlist'CICLO"', clear
 
 	* Labels *
 	label define deciles 1 "I" 2 "II" 3 "III" 4 "IV" 5 "V" 6 "VI" 7 "VII" 8 "VIII" 9 "IX" 10 "X" 11 "Nac"
@@ -548,7 +549,7 @@ quietly {
 	**********************
 	*** 6. RECAUDACION ***
 	**********************
-	use `"`c(sysdir_site)'/users/$id/bootstraps/`bootstrap'/`varlist'REC"', clear
+	use `"${SIMROOT}/users/$id/bootstraps/`bootstrap'/`varlist'REC"', clear
 	forvalues k=1(1)`=_N' {
 		if anio[`k'] == aniobase[`k'] {
 			local ajuste = `REC'[1,1]/estimacion[`k']
@@ -556,7 +557,7 @@ quietly {
 		}
 	}
 	replace estimacion = estimacion*`ajuste'
-	save `"`c(sysdir_site)'/users/$id/bootstraps/`bootstrap'/`varlist'REC"', replace
+	save `"${SIMROOT}/users/$id/bootstraps/`bootstrap'/`varlist'REC"', replace
 
 	
 	ProyGraph `varlist' "`title'" `aniope' `nographs'
@@ -576,7 +577,7 @@ quietly {
 			///caption("{bf:Source}: Prepared by CIEP, using data from `base'.") ///
 			///note(`"{bf:Note}: Percentages in parentheses show the concentration in each group."')
 
-		graph export `"`c(sysdir_site)'/users/$id/graphs/`varlist'_`aniope'S.png"', replace name(`=substr("`varlist'",1,10)'_`aniope'S)
+		graph export `"${SIMROOT}/users/$id/graphs/`varlist'_`aniope'S.png"', replace name(`=substr("`varlist'",1,10)'_`aniope'S)
 
 		*capture window manage close graph `=substr("`varlist'",1,10)'_dec
 		capture window manage close graph `varlist'Proj
@@ -848,7 +849,7 @@ program graphpiramide
 			ycommon xcommon ///
 			title("{bf:`title'}")
 			
-		//graph export `"`c(sysdir_site)'/users/$id/graphs/`varlist'_`titleover'.png"', ///
+		//graph export `"${SIMROOT}/users/$id/graphs/`varlist'_`titleover'.png"', ///
 		capture graph export `"$export/`varlist'_`titleover'.png"', ///
 				replace name(`=substr("`varlist'",1,10)'_`=substr("`titleover'",1,3)')
 		capture window manage close graph H`varlist'
@@ -939,6 +940,7 @@ program graphpiramide
 end
 
 program define ProyGraph
+	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 
 	args varlist title aniope nographs
 
@@ -949,7 +951,7 @@ program define ProyGraph
 	local currency = currency[1]
 	local anio = r(aniovp)
 
-	use `"`c(sysdir_site)'/users/$id/bootstraps/1/`varlist'REC.dta"', clear
+	use `"${SIMROOT}/users/$id/bootstraps/1/`varlist'REC.dta"', clear
 	merge 1:1 (anio) using `PIB', nogen
 	
 	replace estimacion = estimacion*lambda/1000000000000

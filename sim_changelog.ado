@@ -40,8 +40,8 @@ def _sim_changelog_main(only_version):
 	if only_version and not only_version.startswith("v"):
 		only_version = "v" + only_version
 
-	sysdir_site = Macro.getGlobal("c(sysdir_site)")
-	changelog_path = os.path.join(sysdir_site, "02_governance", "CHANGELOG.md")
+	root = Macro.getGlobal("SIMROOT")
+	changelog_path = os.path.join(root, "02_governance", "CHANGELOG.md")
 
 	if not os.path.isfile(changelog_path):
 		_sc_fail(

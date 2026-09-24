@@ -1,5 +1,6 @@
 *! version 8.0 CIEP 03jul2026
 program define TasasEfectivas, return
+	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 quietly {
 
 	timer on 8
@@ -314,12 +315,12 @@ quietly {
 	if "`enigh'" == "enigh" {
 		capture use (folioviv foliohog numren factor edad decil grupoedad sexo rural escol ingbrutotot ///
 			ISRAS ISRPF CUOTAS ISRPM OTROSK FMP PEMEX CFE IMSS ISSSTE IVA IEPSNP IEPSP ISAN IMPORT) ///
-			using "`c(sysdir_site)'/master/perfiles`anio'.dta", clear 
+			using "${SIMROOT}/master/perfiles`anio'.dta", clear 
 		if _rc != 0 {
-			noisily run "`c(sysdir_site)'/01_modulos/PerfilesSim.do" `=anioPE'
+			noisily run "${SIMROOT}/01_modulos/PerfilesSim.do" `=anioPE'
 			use (folioviv foliohog numren factor edad decil grupoedad sexo rural escol ingbrutotot ///
 				ISRAS ISRPF CUOTAS ISRPM OTROSK FMP PEMEX CFE IMSS ISSSTE IVA IEPSNP IEPSP ISAN IMPORT) ///
-				using "`c(sysdir_site)'/master/perfiles`anio'.dta", clear
+				using "${SIMROOT}/master/perfiles`anio'.dta", clear
 		}
 
 		* 7.1 Distribuir los ingresos entre las observaciones *
@@ -337,7 +338,7 @@ quietly {
 
 		* 7.2 Guardar *
 		capture drop __*
-		save `"`c(sysdir_site)'/users/$id/ingresos.dta"', replace
+		save `"${SIMROOT}/users/$id/ingresos.dta"', replace
 	}
 
 	if "$textbook" == "textbook" {

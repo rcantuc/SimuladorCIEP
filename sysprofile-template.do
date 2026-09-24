@@ -55,6 +55,12 @@ if "`c(os)'" == "Windows" {
 * ─── Común a ambos casos ─────────────────────────────────────────────────────
 * Agrega la carpeta elegida a la ruta donde Stata busca comandos (.ado)
 * y colócate en ella. A partir de aquí corre el profile.do del clon elegido.
+*
+* Desde v8.4 la RAÍZ DE DATOS del Simulador (raw/, master/, users/) ya no es
+* c(sysdir_site) sino la global SIMROOT, que profile.do fija a la carpeta del
+* clon que cargó (ver `help SIMroot`). El `sysdir set SITE` de arriba sigue
+* siendo útil para que Stata encuentre los .ado y el profile.do del clon, pero
+* ya no es lo que decide dónde se escriben los datos.
 
 adopath ++SITE
 cd "`c(sysdir_site)'"

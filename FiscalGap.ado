@@ -1,4 +1,5 @@
 program define FiscalGap
+	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 quietly {
 
 	timer on 11
@@ -47,8 +48,8 @@ quietly {
 	**# 3 HOUSEHOLDS ***
 	***              ***
 	********************
-	use "`c(sysdir_site)'/users/$id/ingresos.dta", clear
-	merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/users/$id/gastos.dta", nogen update
+	use "${SIMROOT}/users/$id/ingresos.dta", clear
+	merge 1:1 (folioviv foliohog numren) using "${SIMROOT}/users/$id/gastos.dta", nogen update
 	capture drop _*
 
 	foreach k in Educacion Pensiones Pensión_AM Salud OtrosGastos IngBasico OtrasInversiones Federalizado Energia {
@@ -103,7 +104,7 @@ quietly {
 
 	** 4.2 Proyección futura de los ingresos **
 	foreach k in CFE CUOTAS FMP IEPSNP IEPSP IMPORT IMSS ISAN ISRAS ISRPF ISRPM ISSSTE IVA OTROSK PEMEX {
-		use `"`c(sysdir_site)'/users/ricardo/bootstraps/1/`k'REC.dta"', clear
+		use `"${SIMROOT}/users/ricardo/bootstraps/1/`k'REC.dta"', clear
 		collapse estimacion contribuyentes, by(anio modulo aniobase)
 		tsset anio
 		
@@ -413,7 +414,7 @@ quietly {
 	//foreach k in Pensiones {
 		if `"`=strtoname("`k'")'"' != "Costo_de_la_deuda" {
 			preserve
-			use `"`c(sysdir_site)'/users/ricardo/bootstraps/1/`=strtoname("`k'")'REC.dta"', clear
+			use `"${SIMROOT}/users/ricardo/bootstraps/1/`=strtoname("`k'")'REC.dta"', clear
 			collapse estimacion contribuyentes, by(anio modulo aniobase)
 			tsset anio
 			

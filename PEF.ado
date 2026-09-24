@@ -1,8 +1,9 @@
 *! version 8.1 CIEP 19jul2026
 program define PEF, return
-	capture mkdir `"`c(sysdir_site)'/users/"'
-	capture mkdir `"`c(sysdir_site)'/users/$id/"'
-	capture mkdir `"`c(sysdir_site)'/users/$id/graphs/"'
+	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
+	capture mkdir `"${SIMROOT}/users/"'
+	capture mkdir `"${SIMROOT}/users/$id/"'
+	capture mkdir `"${SIMROOT}/users/$id/graphs/"'
 timer on 5
 quietly {
 
@@ -21,7 +22,7 @@ quietly {
 	}
 
 	** 0.2 Base PEF **
-	capture confirm file "`c(sysdir_site)'/master/PEF.dta"
+	capture confirm file "${SIMROOT}/master/PEF.dta"
 	if _rc != 0 {
 		noisily UpdatePEF
 	}
@@ -31,7 +32,7 @@ quietly {
 	****************
 	*** 1 SYNTAX ***
 	****************
-	use in 1 using "`c(sysdir_site)'/master/PEF.dta", clear
+	use in 1 using "${SIMROOT}/master/PEF.dta", clear
 	syntax [if] [, ANIO(int `aniovp') BY(varname) ///
 		UPDATE NOGraphs Base ///
 		MINimum(real 1) DESDE(int -1) ///
@@ -60,7 +61,7 @@ quietly {
 
 	** 1.3 Base RAW **
 	if "`base'" == "base" {
-		use `if' using "`c(sysdir_site)'/master/PEF.dta", clear
+		use `if' using "${SIMROOT}/master/PEF.dta", clear
 		exit
 	}
 
@@ -117,7 +118,7 @@ quietly {
 	***************
 	*** 3 Merge ***
 	***************
-	use "`c(sysdir_site)'/master/PEF.dta", clear
+	use "${SIMROOT}/master/PEF.dta", clear
 
 	** 3.1 Gasto total **
 	egen double gastoTOT = sum(gasto) if transf_gf == 0, by(anio)
@@ -613,7 +614,7 @@ quietly {
 		*capture window manage close graph ingresosMXN`by'
 		*capture window manage close graph ingresos`by'PIB
 	
-		graph save gastos`by'PIB "`c(sysdir_site)'/users/$id/graphs/gastos`by'PIB", replace
+		graph save gastos`by'PIB "${SIMROOT}/users/$id/graphs/gastos`by'PIB", replace
 		if "$export" != "" {
 			graph export "$export/gastos`by'PIB.png", as(png) name("gastos`by'PIB") replace
 		}
@@ -643,12 +644,13 @@ end
 ****                 ****
 *************************
 program define UpdatePEF
+	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 
 	*************************
 	*** 1. BASES DE DATOS ***
 	*************************
 	* 1.1. Descargar archivos *
-	capture confirm file "`c(sysdir_site)'/raw/temp/prePEF.dta"
+	capture confirm file "${SIMROOT}/raw/temp/prePEF.dta"
 	if _rc != 0 {
 		* Asegurar que los assets esten descargados: TODOS los que el manifest
 		* declara bajo raw/PEFs/ (CP/PEF/PPEF por anio, CuotasISSSTE, Diccionario).
@@ -661,7 +663,7 @@ program define UpdatePEF
 		* PPEF (proyecto). Si coexisten dos versiones del mismo año, se usa la  *
 		* de mayor prioridad y se avisa; asi no se duplica el año ni hay que    *
 		* borrar xlsx a mano cuando llega la CP.                                *
-		local todos: dir "`c(sysdir_site)'/raw/PEFs" files "*.xlsx"
+		local todos: dir "${SIMROOT}/raw/PEFs" files "*.xlsx"
 		local archivos
 		foreach k of local todos {
 			* Archivos de bloqueo de Excel (~$nombre.xlsx): el xlsx esta abierto. *
@@ -697,7 +699,7 @@ program define UpdatePEF
 			* filas; NO se depende de que el xlsx local este curado a mano.       *
 			noisily di in g "Importando: " in y "`k'"
 			tokenize `k'
-			import excel "`c(sysdir_site)'/raw/PEFs/`k'", describe
+			import excel "${SIMROOT}/raw/PEFs/`k'", describe
 			local hoja = r(worksheet_1)
 			if r(N_worksheet) > 1 {
 				local nsheets = r(N_worksheet)
@@ -718,7 +720,7 @@ program define UpdatePEF
 				}
 				noisily di in g "  hoja de datos: " in y "`hoja'" in g " (de `nsheets' hojas)"
 			}
-			import excel "`c(sysdir_site)'/raw/PEFs/`k'", clear firstrow case(lower) allstring sheet("`hoja'")
+			import excel "${SIMROOT}/raw/PEFs/`k'", clear firstrow case(lower) allstring sheet("`hoja'")
 			capture drop v*
 
 			* 1.2 Limpiar observaciones: filas sin CICLO (CP 2022 trae 1,000 vacias) *
@@ -1000,7 +1002,7 @@ program define UpdatePEF
 		*/
 
 		compress
-		save "`c(sysdir_site)'/raw/temp/prePEF.dta", replace
+		save "${SIMROOT}/raw/temp/prePEF.dta", replace
 	}
 
 	/* 3.3 Datos Abiertos: PEFEstOpor.dta *
@@ -1034,11 +1036,11 @@ program define UpdatePEF
 	capture drop __*
 	compress
 	if `c(version)' > 13.1 {
-		saveold "`c(sysdir_site)'/master/GastoEstOpor.dta", replace version(13)
+		saveold "${SIMROOT}/master/GastoEstOpor.dta", replace version(13)
 	}
 	else {
-		capture mkdir "`c(sysdir_site)'/master/"
-		save "`c(sysdir_site)'/master/GastoEstOpor.dta", replace
+		capture mkdir "${SIMROOT}/master/"
+		save "${SIMROOT}/master/GastoEstOpor.dta", replace
 	}*/
 
 	***************************************/
@@ -1046,7 +1048,7 @@ program define UpdatePEF
 	*** 4. Modulos SIMULADOR FISCAL CIEP ***
 	***                                  ***
 	****************************************
-	use "`c(sysdir_site)'/raw/temp/prePEF.dta", clear
+	use "${SIMROOT}/raw/temp/prePEF.dta", clear
 	replace desc_funcion = -1 if ramo == -1
 
 
@@ -1279,8 +1281,8 @@ program define UpdatePEF
 	capture order proyecto, last
 	capture drop __*
 	compress
-	capture mkdir "`c(sysdir_site)'/master/"
-	save "`c(sysdir_site)'/master/PEF.dta", replace
+	capture mkdir "${SIMROOT}/master/"
+	save "${SIMROOT}/master/PEF.dta", replace
 end
 
 

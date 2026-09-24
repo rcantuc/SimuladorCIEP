@@ -134,7 +134,7 @@ local IngKPublicos = `FMP'+`PEMEX'+`CFE'+`IMSS'+`ISSSTE'
 **# 3. Ajuste Población ***
 ***                     *** 
 **************************
-use if anio == `1' using `"`c(sysdir_site)'/master/Poblaciontot.dta"', clear
+use if anio == `1' using `"${SIMROOT}/master/Poblaciontot.dta"', clear
 local ajustepob = poblacion
 noisily di _newline in g "Población `1': " %12.0fc in y `ajustepob'
 
@@ -165,10 +165,10 @@ local ImpNet = scalar(ImpNet)
 
 
 ** 5.3 Usar base de datos conciliada **
-capture use "`c(sysdir_site)'/master/`anioenigh'/households.dta", clear
+capture use "${SIMROOT}/master/`anioenigh'/households.dta", clear
 if _rc != 0 {
-	noisily run "`c(sysdir_site)'/01_modulos/Expenditure.do" `anioenigh'
-	noisily run `"`c(sysdir_site)'/01_modulos/Households.do"' `anioenigh'
+	noisily run "${SIMROOT}/01_modulos/Expenditure.do" `anioenigh'
+	noisily run `"${SIMROOT}/01_modulos/Households.do"' `anioenigh'
 }
 drop if folioviv == ""
 
@@ -585,5 +585,5 @@ keep ISRAS ISRPF CUOTAS ISRPM OTROSK FMP PEMEX CFE IMSS ISSSTE IVA IEPSNP IEPSP 
 	folio* numren edad sexo factor decil escol formal* ingbrutotot rural grupoedad /// Perfiles.ado
 	disc* gas_pc_Salu asis_esc tipoesc nivel inst_* ing_jubila jubilado /// GastoPC.ado
 	sbc cuotasTPF deduc_isr ing_bruto_tax *_tpm exen_tot prop* ing_subor // ISR_Mod.do
-save "`c(sysdir_site)'/master/perfiles`1'.dta", replace
+save "${SIMROOT}/master/perfiles`1'.dta", replace
 

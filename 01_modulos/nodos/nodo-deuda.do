@@ -49,12 +49,12 @@
 * cociente dólares/pesos. No viajan al JSON. El guard de abajo lo verifica
 * en cada corrida en lugar de confiar en el piso.
 *
-* USO:  do "`c(sysdir_site)'/01_modulos/nodos/nodo-deuda.do"
+* USO:  do "${SIMROOT}/01_modulos/nodos/nodo-deuda.do"
 * Se invoca desde el bloque textbook de SHRFSP.ado, tras scalarlatex.
 
 preserve
 
-local site `"`c(sysdir_site)'"'
+local site `"${SIMROOT}"'
 local piso = 2000
 
 * La etiqueta de moneda del encabezado del display es una VARIABLE del
