@@ -18,6 +18,7 @@ description = "Sub-canal Stata del Simulador Fiscal CIEP — instalación remota
 
 ado_files = [
     "AccesoBIE.ado",
+    "SIMroot.ado",
     "DatosAbiertos.ado",
     "LIF.ado",
     "PEF.ado",
@@ -31,6 +32,7 @@ ado_files = [
 
 sthlp_files = [
     "03_help/Stata/AccesoBIE.sthlp",
+    "03_help/Stata/SIMroot.sthlp",
     "03_help/Stata/DatosAbiertos.sthlp",
     "03_help/Stata/LIF.sthlp",
     "03_help/Stata/PEF.sthlp",
@@ -42,6 +44,7 @@ sthlp_files = [
 
 pkg_files = [
     "05_scripts/AccesoBIE.pkg",
+    "05_scripts/SIMroot.pkg",
     "05_scripts/DatosAbiertos.pkg",
     "05_scripts/LIF.pkg",
     "05_scripts/PEF.pkg",
@@ -61,6 +64,7 @@ description_template = "Simulador Fiscal CIEP versión {VERSION}, publicado {DAT
 # Descripción corta de cada paquete, mostrada al usuario externo al hacer `net from`.
 
 AccesoBIE = "Acceso al Banco de Información Económica de INEGI"
+SIMroot = "Raíz del proyecto (carpeta de datos) del Simulador Fiscal CIEP"
 DatosAbiertos = "Series de datos abiertos del Simulador Fiscal CIEP"
 LIF = "Ley de Ingresos de la Federación"
 PEF = "Presupuesto de Egresos de la Federación"

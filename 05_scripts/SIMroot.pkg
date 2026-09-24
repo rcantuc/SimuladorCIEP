@@ -1,14 +1,9 @@
 v 3
-d Cuentas del Sistema de Cuentas Nacionales
+d Raíz del proyecto del Simulador Fiscal CIEP (global SIMROOT)
 d Centro de Investigación Económica y Presupuestaria, A.C.
 d 15 años democratizando las finanzas públicas
 d Ricardo Cantú Calderón
 d ricardocantu@ciep.mx
 
-f SCN.ado
-f SCN.sthlp
-f AccesoBIE.ado
-f PIBDeflactor.ado
-f Poblacion.ado
-f escalar.ado
 f SIMroot.ado
+f SIMroot.sthlp
