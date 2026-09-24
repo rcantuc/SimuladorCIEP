@@ -191,7 +191,7 @@ users/tu-usuario/
 
 | Comando | Qué te da | Fuente |
 |---|---|---|
-| `Poblacion` | Población, defunciones y migración, 1950–2070 | CONAPO |
+| `Poblacion` | Población a mitad de año por entidad, sexo y edad, 1970–2070 | CONAPO (vía DGIS-Salud) |
 | `PIBDeflactor` | PIB, deflactor e inflación, con proyecciones | INEGI (BIE) |
 | `SCN` | Cuentas nacionales: composición del PIB | INEGI (BIE y CSI) |
 | `LIF` | Ingresos públicos federales desde 1993 | SHCP |
@@ -206,7 +206,7 @@ users/tu-usuario/
 
 ### 4.1 `Poblacion` — Demografía
 
-Descarga y procesa las proyecciones de población del CONAPO: habitantes por edad, sexo y entidad federativa, de 1950 a 2070. Genera pirámides poblacionales y la transición demográfica.
+Procesa las proyecciones de población del CONAPO (pry23, distribuidas como asset del Simulador): habitantes por edad, sexo y entidad federativa, de 1970 a 2070. Genera pirámides poblacionales y la transición demográfica.
 
 ```stata
 Poblacion, anioinicial(2026) aniofinal(2050)

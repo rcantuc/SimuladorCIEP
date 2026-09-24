@@ -1,10 +1,10 @@
 {
-  "version": "v8.4.0",
+  "version": "v8.4.1",
   "data_updated": "2026-09-12",
   "data_updated_regla": "Fecha de los DATOS precargados del sitio (la pinta el hero como 'Última actualización'). Se bumpea SOLO cuando se reprocesan los datos (nuevo Paquete Económico, nueva ENIGH) — NO en cada release de código, NO es la fecha de deploy.",
-  "release_tag": "v8.4.0",
-  "release_url_prefix": "https://github.com/rcantuc/SimuladorCIEP/releases/download/v8.4.0/",
-  "generated_at": "2026-09-24T04:28:36Z",
+  "release_tag": "v8.4.1",
+  "release_url_prefix": "https://github.com/rcantuc/SimuladorCIEP/releases/download/v8.4.1/",
+  "generated_at": "2026-09-24T05:05:42Z",
   "exclusion_rule": "Excluidos: archivos terminados en .xlsx_ (renombres truncados de Dropbox, no canónicos) y archivos .DS_Store (metadatos macOS, no datos).",
   "assets": [
     {
@@ -156,6 +156,12 @@
       "local_path": "raw/PEFs/PPEF 2027.xlsx",
       "sha256": "8cb9cd83fc2e2b9f2ff0beb46fe33337ee266b02c813d0d6eeccad14842bc327",
       "size_bytes": 18582847
+    },
+    {
+      "name": "Poblacion_Estimada_Mitad_Anio.zip",
+      "local_path": "raw/CONAPO/Poblacion_Estimada_Mitad_Anio.zip",
+      "sha256": "e77873cd581bc43565357543030496d4fd2379783c0eca4d7b8faa0100d4a256",
+      "size_bytes": 4866001
     }
   ]
 }
