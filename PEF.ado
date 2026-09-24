@@ -69,6 +69,13 @@ quietly {
 		local by = "divCIEP"
 	}
 
+	* 1.5 Nombres r() estables para catalogos de texto *
+	* Los desc_* se guardan en Title Case (limpieza 1.4, v8.3.4) pero el
+	* contrato publico de r() se mantiene en minusculas (r(educacion_basica)),
+	* como lo leen GastoPC.ado, Households.do y usuarios externos. divCIEP,
+	* ramo, entidad, etc. conservan su capitalizacion (r(Pension_AM)). *
+	local lowername = substr("`by'", 1, 5) == "desc_"
+
 	** 2.4 Etiquetas abreviadas **
 	label define ramo 7 "SEDENA", modify
 	label define ramo 19 "Aport a Seg Soc", modify
@@ -213,6 +220,7 @@ quietly {
 		else {
 			local disptext = substr(`"`=r(name`k')'"',1,35)
 		}
+		if `lowername' local disptext = lower(`"`disptext'"')
 		local name = strtoname(`"`disptext'"')
 
 		* Display *
@@ -269,6 +277,7 @@ quietly {
 		local disptext = subinstr(`"`disptext'"',"ñ","n",.)
 		local disptext = subinstr(`"`disptext'"',"ü","u",.)
 		local disptext = ustrregexra(`"`disptext'"',`"[^a-zA-Z0-9 ]"',"")
+		if `lowername' local disptext = lower(`"`disptext'"')
 		local name = strtoname(`"`disptext'"')
 
 		* Display *
@@ -393,6 +402,7 @@ quietly {
 		local disptext = subinstr(`"`disptext'"',"ñ","n",.)
 		local disptext = subinstr(`"`disptext'"',"ü","u",.)
 		local disptext = ustrregexra(`"`disptext'"',`"[^a-zA-Z0-9 ]"',"")
+		if `lowername' local disptext = lower(`"`disptext'"')
 		local name = strtoname(`"`disptext'"')
 
 		* Returns de nivel *
