@@ -20,8 +20,50 @@ Formato de cada entrada:
 
 Trabajo en `master` sin versión asignada.
 
+## [v8.3.4] — 2026-09-23
+
+### Comandos
+
+- **`PEF` guarda los catálogos de texto en Title Case, sin cambiar el
+  contrato `r()`.** La limpieza 1.4 de `UpdatePEF` (`_PEFlimpia`) pasa los
+  `desc_*` de minúsculas a `ustrtitle()` con artículos y preposiciones en
+  minúscula ("Pensión para el Bienestar de las Personas Adultas Mayores"),
+  y `desc_ramo` ya no se fuerza a minúsculas; todas las comparaciones
+  internas (`ur`, `modalidad`, `desc_pp`, `desc_tipogasto`, `transf_gf`,
+  `_PEFverifica`) se actualizaron al caso nuevo. Los nombres de `r()`
+  derivados con `strtoname()` **se mantienen en minúsculas cuando `by()` es
+  un `desc_*`** (`r(educacion_basica)`, `r(cuota_social_seguro_de_salud_iss)`),
+  y los demás conservan su capitalización histórica (`r(Pension_AM)`,
+  `r(Educacion)`, `r(Cuotas_ISSSTE)`, estados por `entidad`). Verificado en
+  batch contra `master/PEF.dta` regenerado: `by(desc_subfuncion)`,
+  `by(divCIEP)` y el loop de `transf_gf` (`by(desc_pp)`) devuelven los
+  nombres que leen `GastoPC.ado` y `Households.do`.
+
+### Correcciones
+
+- **`AccesoBIE` no truena con `periodo` malformado.** La limpieza de la
+  cadena `periodo` (extracción de 7 caracteres) va con `capture replace`
+  para que valores faltantes o malformados del BIE no aborten la rutina.
+- **Regresión evitada antes de publicar:** el commit `2b03cb7` (Title Case
+  en `PEF`) cambiaba de facto el contrato `r()` de `PEF ..., by(desc_*)`
+  porque `strtoname()` conserva mayúsculas: `r(educacion_basica)` pasaba a
+  `r(Educacion_Basica)`. Las ~75 lecturas de `GastoPC.ado` y las de
+  `Households.do` §1.3 seguían pidiendo minúsculas y, por sus fallbacks
+  `if == . → 0`, habrían dejado en cero las cifras per cápita de Educación y
+  Salud del `SIM.do` §5 y del sitio **sin error visible**. Se corrigió en
+  `PEF.ado` (bandera `lowername` en §1.5, aplicada en los tres sitios de
+  `strtoname`) en lugar de tocar los consumidores, para no romper a
+  usuarios externos del endpoint que leen esos `r()`. La lección: un cambio
+  de capitalización en catálogos que alimentan `strtoname()` es un cambio
+  de API, no cosmético.
+
 ### Institucional
 
+- `simulador.stpr` actualizado junto con el fix de `AccesoBIE`.
+- Este clon de desarrollo había perdido el marker gitignored
+  `.clon-desarrollo` (guard de `publicar.sh`, creado el 2026-09-09); se
+  volvió a crear con `touch`. Probable causa: Dropbox no conserva archivos
+  vacíos con punto en algunos ciclos de sincronización.
 - **Sitio (rsync, fuera de git; deploy 2026-09-21 sobre v8.3 sin bump de
   versión):** referencias bibliográficas a los micrositios del CIEP al pie
   de cada tabla de `index.php` e `index-en.php`, en una segunda línea
