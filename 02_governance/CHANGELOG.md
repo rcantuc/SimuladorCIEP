@@ -20,6 +20,36 @@ Formato de cada entrada:
 
 Trabajo en `master` sin versión asignada.
 
+## [v8.4.1] — 2026-09-23
+
+### Datos
+
+- **`Poblacion` deja de depender de CONAPO en vivo: la proyección entra al
+  data sidecar.** Los tres CSV de
+  `conapo.segob.gob.mx/work/models/CONAPO/Datos_Abiertos/pry23/` que
+  `UpdatePoblacion` leía con `import delimited` dejaron de servirse (timeout
+  también con `curl`; era el pendiente declarado en v8.4.0). La misma
+  proyección — Conciliación Demográfica 1970–2019 y Proyecciones 2020–2070,
+  `pry23` del 11-sep-2023 — la redistribuye la DGIS-Salud en
+  `dgis.salud.gob.mx/descargas/datosabiertos/poblacion/proyecciones_censo/Poblacion_Estimada_Mitad_Anio.zip`
+  (4.9 MB, CSV largo por año × entidad × edad simple × sexo). Ese zip es el
+  asset 26 de `manifest.json` (`raw/CONAPO/`, SHA-256 `e77873cd…`) y
+  `UpdatePoblacion` lo pide con `ensure_asset`, lo descomprime en
+  `raw/temp/CONAPO/` y lo importa; la fila `Nacional` (antes "República
+  Mexicana" de CONAPO) se reconstruye como suma de las 32 entidades. **Cifras
+  idénticas:** `master/Poblacion.dta` regenerado coincide celda a celda
+  (733,260 celdas, diferencia 0) con el vintage anterior en 1970–2070,
+  incluida `tasafecundidad`; `Poblaciontot.dta` idem.
+- **Lo que cambia en el esquema:** la cobertura pasa de 1950–2070 a
+  **1970–2070** (DGIS no redistribuye 1950–69) y desaparecen `defunciones`,
+  `emigrantes` e `inmigrantes`. Se verificó con `grep` en todo el árbol que
+  ningún módulo (`PIBDeflactor`, `SCN`, `DatosAbiertos`, `PerfilesSim`, `REC`,
+  `CuentasGeneracionales`, sitio) consume esas variables ni años < 1970;
+  `Poblacion.sthlp`, el manual del investigador y la ficha de fuentes del
+  nodo de deuda quedan alineados. Patch y no minor porque ni la metodología
+  ni un solo número publicado cambian; el `data_updated` del manifest no se
+  toca (mismo vintage).
+
 ## [v8.4.0] — 2026-09-23
 
 ### Comandos
