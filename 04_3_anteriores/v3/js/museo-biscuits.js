@@ -22,15 +22,16 @@
     var secciones = items.map(function (li) {
       var a = li.querySelector('a'); var h = a && a.getAttribute('href') || '';
       var id = h.split('#')[1]; var sec = id && document.getElementById(id);
-      var cbg = li.querySelector('.container > .bg'); var color = cbg ? getComputedStyle(cbg).backgroundColor : '';
-      return { li: li, a: a, sec: sec, color: color, cbg: cbg, perso: li.querySelector('.perso') };
+      var cont = li.querySelector('.container'); var cbg = li.querySelector('.container > .bg');
+      // el color de referencia es el de la FRANJA inferior de cada pestaña (border-colorN)
+      var color = cont ? getComputedStyle(cont).borderBottomColor : (cbg ? getComputedStyle(cbg).backgroundColor : '');
+      return { li: li, a: a, sec: sec, color: color, cont: cont, cbg: cbg, perso: li.querySelector('.perso') };
     });
-    if (bg) bg.style.transition = 'background-color .45s ease';
+    // color de la barra: se fija de inmediato (robusto) y la transición CSS, si el navegador la
+    // anima, suaviza el cambio. Se colorea el nav completo y su fondo.
+    [nav, bg].forEach(function (el) { if (el) el.style.transition = 'background-color .4s ease'; });
+    function pintarBarra(css) { nav.style.backgroundColor = css; if (bg) bg.style.backgroundColor = css; }
     secciones.forEach(function (s) {
-      if (s.cbg) s.cbg.style.transition = 'opacity .35s ease';
-      if (s.perso) s.perso.style.transition = 'color .35s ease, opacity .35s ease';
-      s.li.addEventListener('mouseenter', function () { if (s.cbg && !s.li.classList.contains('current')) s.cbg.style.opacity = '0.45'; });
-      s.li.addEventListener('mouseleave', function () { if (s.cbg && !s.li.classList.contains('current')) s.cbg.style.opacity = '0'; });
       if (s.a && s.sec) s.a.addEventListener('click', function (e) {
         e.preventDefault(); e.stopPropagation();
         var delta = s.sec.getBoundingClientRect().top - (TOP + BARRA);
@@ -48,13 +49,16 @@
       var linea = TOP + BARRA + 40, idx = -1;
       secciones.forEach(function (s, i) { if (s.sec && s.sec.getBoundingClientRect().top <= linea) idx = i; });
       if (idx === actual) return; actual = idx;
+      var hay = idx >= 0;
       secciones.forEach(function (s, i) {
         var on = i === idx;
         s.li.classList.toggle('current', on);
-        if (s.cbg) s.cbg.style.opacity = on ? '1' : '0';
-        if (s.perso) { s.perso.style.color = on ? '#fff' : ''; s.perso.style.opacity = on ? '1' : ''; }
+        // toda la barra toma el color de la franja; la pestaña activa se marca con un velo blanco y texto en negrita
+        if (s.cbg) s.cbg.style.opacity = '0';
+        if (s.cont) { s.cont.style.backgroundColor = on ? 'rgba(255,255,255,.28)' : 'transparent'; s.cont.style.borderBottomColor = hay ? (on ? '#fff' : 'rgba(255,255,255,.35)') : ''; }
+        if (s.perso) { s.perso.style.color = hay ? '#fff' : ''; s.perso.style.opacity = hay ? (on ? '1' : '.8') : ''; s.perso.style.fontWeight = on ? '700' : ''; }
       });
-      if (bg) bg.style.backgroundColor = (idx >= 0 && secciones[idx].color) ? secciones[idx].color : '#fff';
+      pintarBarra(hay ? secciones[idx].color : '#ffffff');
     }
     function onScroll() { if (!ticking) { ticking = true; requestAnimationFrame(aplicar); } }
     (cont || window).addEventListener('scroll', onScroll, { passive: true });
