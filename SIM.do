@@ -9,12 +9,12 @@ macro drop _all
 capture log close _all
 set scheme ciep
 timer on 1
-SIMroot												// RAIZ DEL PROYECTO: macro drop _all la borra; se resuelve de nuevo (sysdir_site con manifest, o pwd)
 
 
 ***
 **# 0. SET UP
 ***
+SIMroot												// RAIZ DEL PROYECTO
 
 ** 0.1 Token del BIE/INEGI
 capture confirm file "${SIMROOT}/set_token.do"
@@ -38,7 +38,7 @@ capture mkdir "${SIMROOT}/users/"
 capture mkdir "${SIMROOT}/users/$id"
 
 ** 0.4 Opciones (descomentar para activar)
-global nographs "nographs"						// SUPRIMIR GRAFICAS
+//global nographs "nographs"						// SUPRIMIR GRAFICAS
 //global textbook "textbook"						// SCALAR TO LATEX
 //global export "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/UniversoCIEP/3. Recursos/3.1. Paquetes Económicos/Paquete Económico 2027/4. Documento CIEP/images"
 
@@ -48,7 +48,7 @@ if "$update" == "update" {
 	! rm -r "${SIMROOT}/raw/temp/"
 }
 
-global output "output"								// ARCHIVO DE SALIDA (WEB)
+//global output "output"							// ARCHIVO DE SALIDA (WEB)
 if "$output" != "" {
 	quietly log using `"${SIMROOT}/users/$id/output.txt"', replace text name(output)
 	quietly log off output
@@ -103,15 +103,15 @@ noisily SCN, anio(`=aniovp') $textbook $nographs $update
 
 **/
 **# 3. HOGARES: ARMONIZACIÓN MACRO-MICRO
-/***
+***
 
 ** 3.1 Encuesta Nacional de Ingresos y Gastos de los Hogares (Usos)
 noisily di _newline in g "Actualizando: " in y "expenditures.dta"
-*noisily run "${SIMROOT}/01_modulos/Expenditure.do" `=anioPE'
+noisily run "${SIMROOT}/01_modulos/Expenditure.do" `=anioPE'
 
 ** 3.2 Encuesta Nacional de Ingresos y Gastos de los Hogares (Recursos)
 noisily di _newline in g "Actualizando: " in y "households.dta"
-*noisily run `"${SIMROOT}/01_modulos/Households.do"' `=anioPE'
+noisily run `"${SIMROOT}/01_modulos/Households.do"' `=anioPE'
 
 ** 3.3 Perfiles de la política económica actual (Paquete Económico)
 noisily di _newline in g "Actualizando: " in y "perfiles`anio'.dta"
@@ -274,7 +274,7 @@ if "`cambioiva'" == "1" {
 }
 
 * Evolución de las tasas efectivas */
-do "${SIMROOT}/01_modulos/visualizations/Graphs_TE.do"
+*do "${SIMROOT}/01_modulos/visualizations/Graphs_TE.do"
 
 ** 4.7 Tasas Efectivas */
 noisily TasasEfectivas, anio(`=anioPE') enigh
@@ -335,7 +335,7 @@ escalar pctpib gasmadres   =   0.009   		// Apoyo a madres trabajadoras
 escalar pctpib gascuidados =   0.047   		// Gasto en cuidados
 
 * Evolución de los gastos per cápita */
-do "${SIMROOT}/01_modulos/visualizations/Graphs_PC.do"	// <-- MUY tardado. MUY pesado.
+*do "${SIMROOT}/01_modulos/visualizations/Graphs_PC.do"	// <-- MUY tardado. MUY pesado.
 
 ** 5.2 Gasto per cápita **
 noisily GastoPC educacion salud pensiones energia resto transferencias, aniope(`=anioPE') aniovp(`=aniovp')
@@ -475,7 +475,7 @@ noisily FiscalGap, anio(`=anioPE') end(`=anioPE+5') aniomin(2016) $nographs desd
 
 ** 8.2 Sankey del sistema fiscal
 foreach k in decil grupoedad sexo rural escol {
-	*noisily run "${SIMROOT}/01_modulos/visualizations/SankeySF.do" `k' `=anioPE'
+	noisily run "${SIMROOT}/01_modulos/visualizations/SankeySF.do" `k' `=anioPE'
 }
 
 
