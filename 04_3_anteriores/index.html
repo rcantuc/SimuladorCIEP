@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Versiones anteriores · Simulador Fiscal CIEP</title>
+<meta name="description" content="Museo de las generaciones del Simulador Fiscal CIEP (2014–hoy): cómo se veía y se pensaba cada versión.">
+<link rel="icon" href="assets/favicon.ico">
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;600;700&family=Ubuntu:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --header:#2d373d; --footer-2:#28323C; --footer-1:#1E242A;
+    --amarillo:#FFD520; --amarillo-2:#ffe719; --tinta:#1F262B; --azul:#1b2959;
+    --verde:#a6ea00; --rosa:#ff1452; --gris:#f8f8f8; --texto:#2d373d; --texto-2:#6b757c; --linea:#e6e6e6;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--gris);color:var(--texto);font-family:'Roboto Mono',monospace;font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .container{max-width:1140px;margin:0 auto;padding:0 20px}
+
+  /* Header, como .page-header del sitio */
+  .page-header{background:var(--header);box-shadow:0 0 .7rem rgba(31,45,61,.3)}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:12px 0;gap:16px;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:10px;color:#fff}
+  .brand img{width:54px;height:auto}
+  .brand span{font-size:12px;line-height:1.25;letter-spacing:.3px}
+  .brand span b{display:block;font-weight:600}
+  .nav-links{display:flex;align-items:center;gap:14px}
+  .nav-links a{color:var(--amarillo-2);font-size:13px}
+  .nav-links a:hover{color:#fff}
+  .btn-sim{background:var(--amarillo);color:var(--tinta)!important;font-weight:700;padding:9px 18px;border-radius:7px;font-size:13px;transition:transform .15s,box-shadow .15s}
+  .btn-sim:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(0,0,0,.3)}
+
+  /* Hero amarillo, como la portada del Simulador */
+  .hero{background:var(--amarillo);padding:64px 0 56px;color:var(--tinta)}
+  .hero .eyebrow{display:inline-block;background:var(--tinta);color:var(--amarillo);font-size:12px;font-weight:700;letter-spacing:2px;padding:6px 14px;text-transform:uppercase;margin-bottom:18px}
+  .hero h1{font-family:'Ubuntu',sans-serif;font-weight:700;font-size:clamp(30px,4.6vw,46px);line-height:1.1;letter-spacing:.3px;margin-bottom:18px;max-width:14ch}
+  .hero p{max-width:62ch;font-size:15px}
+  .hero p b{font-weight:700}
+  .hero .meta{margin-top:22px;font-size:12.5px;color:#4d4a2d}
+  .hero .meta span{display:inline-block;background:rgba(31,38,43,.08);padding:3px 9px;border-radius:4px;margin-right:8px}
+
+  /* Línea de tiempo con tarjetas */
+  .museo{padding:48px 0 70px}
+  .intro{display:flex;gap:18px;align-items:baseline;flex-wrap:wrap;margin-bottom:28px}
+  .intro h2{font-family:'Ubuntu',sans-serif;color:var(--azul);font-size:26px;font-weight:700}
+  .intro p{color:var(--texto-2);font-size:13px}
+  .parada{display:grid;grid-template-columns:48px 1fr;gap:0 22px;position:relative}
+  .parada + .parada{margin-top:14px}
+  .rail{position:relative}
+  .rail::before{content:"";position:absolute;left:23px;top:0;bottom:-14px;width:2px;background:var(--linea)}
+  .parada:last-child .rail::before{display:none}
+  .nodo{position:relative;z-index:1;width:48px;height:48px;border-radius:50%;background:#fff;border:2px solid var(--amarillo);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:var(--azul);box-shadow:0 2px 8px rgba(0,0,0,.08)}
+  .parada.actual .nodo{background:var(--verde);border-color:var(--verde);color:var(--tinta)}
+  .card{background:#fff;border-radius:10px;box-shadow:0 2px 14px rgba(31,45,61,.08);display:grid;grid-template-columns:1fr 380px;overflow:hidden;margin-bottom:22px}
+  .card-body{padding:26px 28px 24px}
+  .chips{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+  .chip{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.6px;padding:3px 9px;border-radius:3px;text-transform:uppercase}
+  .chip-anio{background:var(--azul);color:#fff}
+  .chip-v{background:var(--amarillo);color:var(--tinta)}
+  .chip-ok{background:var(--verde);color:var(--tinta)}
+  .chip-museo{background:#eef0f2;color:var(--texto-2)}
+  .card h3{font-family:'Ubuntu',sans-serif;color:var(--azul);font-size:22px;font-weight:700;line-height:1.2;margin-bottom:10px}
+  .card p{color:var(--texto);font-size:13.5px;margin-bottom:8px}
+  .card p.limite{color:var(--texto-2)}
+  .card p.limite::before{content:"— ";color:var(--rosa);font-weight:700}
+  .card .acciones{margin-top:16px;display:flex;gap:10px;flex-wrap:wrap}
+  .btn{display:inline-block;font-weight:700;font-size:13px;padding:10px 20px;border-radius:7px;transition:transform .15s,box-shadow .15s}
+  .btn-dark{background:var(--tinta);color:#fff}
+  .btn-dark:hover{color:var(--amarillo-2);transform:translateY(-2px);box-shadow:0 8px 22px rgba(31,38,43,.3)}
+  .btn-ghost{border:1.5px solid var(--linea);color:var(--texto-2)}
+  .btn-ghost:hover{border-color:var(--azul);color:var(--azul)}
+  .card-img{position:relative;background:#eceff1;min-height:230px}
+  .card-img img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
+  .card-img a::after{content:"Ver pieza →";position:absolute;right:14px;bottom:12px;background:rgba(31,38,43,.85);color:var(--amarillo);font-size:11px;font-weight:700;padding:5px 10px;border-radius:4px;opacity:0;transition:opacity .15s}
+  .card-img a:hover::after{opacity:1}
+  .card.actual{border:2px solid var(--verde)}
+
+  /* Nota de museo */
+  .nota{background:#fff;border-left:4px solid var(--amarillo);border-radius:8px;padding:18px 22px;font-size:12.5px;color:var(--texto-2);margin-top:12px}
+  .nota b{color:var(--texto)}
+
+  /* Footer, idéntico al del sitio */
+  footer{color:#caced1;font-size:12px}
+  .row-2{background:var(--footer-2);padding:48px 0 36px}
+  .row-1{background:var(--footer-1);padding:18px 0}
+  .f-grid{display:grid;grid-template-columns:1.6fr 1.3fr 2.6fr 1.9fr;gap:28px}
+  .footer_title{font-size:11px;color:#caced1;margin-bottom:10px}
+  footer ul{list-style:none}
+  footer li{margin:5px 0 9px}
+  footer a.icon-link{color:var(--amarillo-2)}
+  footer a.icon-link::after{content:"";display:inline-block;width:9px;height:9px;margin-left:7px;border:1.5px solid var(--amarillo-2);border-radius:1px;vertical-align:-1px}
+  footer a.icon-link:hover{color:#fff}
+  .f-micro{display:grid;grid-template-columns:1fr 1fr;gap:0 18px}
+  .f-micro a.icon-link{white-space:nowrap}
+  .f-bottom{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  .social a{margin-left:14px}
+  .social img{width:20px;height:20px;vertical-align:middle}
+
+  @media (max-width:900px){
+    .card{grid-template-columns:1fr}
+    .card-img{min-height:200px;order:-1}
+    .f-grid{grid-template-columns:1fr 1fr}
+  }
+  @media (max-width:560px){
+    .parada{grid-template-columns:1fr}
+    .rail{display:none}
+    .f-grid{grid-template-columns:1fr}
+    .hero{padding:44px 0 40px}
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="container nav">
+    <a class="brand" href="https://simuladorfiscal.ciep.mx/">
+      <img src="assets/logo-sim-fiscal-ciep-b.png" alt="Simulador Fiscal CIEP">
+      <span><b>Simulador</b> Fiscal CIEP</span>
+    </a>
+    <div class="nav-links">
+      <a href="https://ciep.mx" target="_blank" rel="noopener">ciep.mx</a>
+      <a href="https://libro.ciep.mx" target="_blank" rel="noopener">El libro del simulador</a>
+      <a class="btn-sim" href="https://simuladorfiscal.ciep.mx/">Ir al simulador actual</a>
+    </div>
+  </div>
+</div>
+
+<section class="hero">
+  <div class="container">
+    <span class="eyebrow">Versiones anteriores</span>
+    <h1>Una década de versiones</h1>
+    <p>Más de diez años modelando las finanzas públicas de México, <b>a base de error y corrección</b>. Cada generación corrigió los límites de la anterior. Lo que sigue son demostraciones visuales de cómo se veía y se pensaba cada una: <b>piezas de museo</b>, no versiones funcionales.</p>
+    <div class="meta"><span>2014 → hoy</span><span>4 generaciones conservadas</span><span>Cifras oficiales de cada época</span></div>
+  </div>
+</section>
+
+<section class="museo">
+  <div class="container">
+    <div class="intro">
+      <h2>Línea de tiempo</h2>
+      <p>De los simuladores por impuesto a la armonización con Cuentas Nacionales y la ENIGH.</p>
+    </div>
+
+    <div class="parada">
+      <div class="rail"><div class="nodo">v1</div></div>
+      <article class="card">
+        <div class="card-body">
+          <div class="chips"><span class="chip chip-anio">2014</span><span class="chip chip-v">Primera generación</span><span class="chip chip-museo">Pieza de museo</span></div>
+          <h3>Todo bajo un mismo techo</h3>
+          <p>Reunió por primera vez ingresos y gastos en un solo lugar, cuando antes existía un simulador separado por cada impuesto —y ninguno de gasto público. Módulos de IVA, ISR, petroleros, seguridad social, IEPS, IETU, tarifas eléctricas, educación, salud y pensiones, con la LIF y el PEF 2014 como referencia.</p>
+          <p class="limite">Sus cálculos de largo plazo eran todavía frágiles.</p>
+          <div class="acciones"><a class="btn btn-dark" href="v1/index.php.html">Ver esta versión</a><a class="btn btn-ghost" href="v1/escenarios.php.html">Escenarios</a></div>
+        </div>
+        <div class="card-img"><a href="v1/index.php.html"><img src="assets/thumbs/v1.png" alt="Captura de la versión 1 (2014)" loading="lazy"></a></div>
+      </article>
+    </div>
+
+    <div class="parada">
+      <div class="rail"><div class="nodo">v2</div></div>
+      <article class="card">
+        <div class="card-body">
+          <div class="chips"><span class="chip chip-anio">2014</span><span class="chip chip-v">Segunda generación</span><span class="chip chip-museo">Pieza de museo</span></div>
+          <h3>La apuesta por el gasto</h3>
+          <p>Sumó tasas de cobertura y objetivos presupuestarios, con un nivel de detalle en el gasto público que antes no existía: incidencia por módulo, incidencia global, sostenibilidad fiscal y la distribución del PEF, incluidos los ramos 28 y 33.</p>
+          <p class="limite">A cambio, fallaba con facilidad y hubo que sustituirla pronto.</p>
+          <div class="acciones"><a class="btn btn-dark" href="v2/index.php.html">Ver esta versión</a><a class="btn btn-ghost" href="v2/inicio.php.html">Entrar al simulador</a></div>
+        </div>
+        <div class="card-img"><a href="v2/inicio.php.html"><img src="assets/thumbs/v2.png" alt="Captura de la versión 2 (2014, beta)" loading="lazy"></a></div>
+      </article>
+    </div>
+
+    <div class="parada">
+      <div class="rail"><div class="nodo">v3</div></div>
+      <article class="card">
+        <div class="card-body">
+          <div class="chips"><span class="chip chip-anio">2015–2016</span><span class="chip chip-v">Tercera generación</span><span class="chip chip-museo">Pieza de museo</span></div>
+          <h3>En busca de estabilidad</h3>
+          <p>Un rediseño pensado para no caerse, tras una etapa de fallas frecuentes: nueve resultados encadenados (incidencia, perfiles por edad y sexo, proyección, composición, Gini, endeudamiento, sostenibilidad y deuda) para ingresos, gasto y otros parámetros.</p>
+          <p class="limite">Fue la generación que enseñó, del modo más caro, lo frágil que era depender de una sola máquina.</p>
+          <div class="acciones"><a class="btn btn-dark" href="v3/index.php.html">Ver esta versión</a><a class="btn btn-ghost" href="v3/gasto.php.html">Gasto</a></div>
+        </div>
+        <div class="card-img"><a href="v3/index.php.html"><img src="assets/thumbs/v3.png" alt="Captura de la versión 3 (2016)" loading="lazy"></a></div>
+      </article>
+    </div>
+
+    <div class="parada">
+      <div class="rail"><div class="nodo">v4</div></div>
+      <article class="card">
+        <div class="card-body">
+          <div class="chips"><span class="chip chip-anio">2018</span><span class="chip chip-v">Cuarta generación</span><span class="chip chip-museo">Pieza de museo</span></div>
+          <h3>Cuadrar con el país</h3>
+          <p>El salto de fondo: por primera vez la información se concilió con el Sistema de Cuentas Nacionales, dando robustez a las estimaciones de recaudación y deuda. Nacieron aquí los experimentos de impuesto único, ingreso básico y pensión única (MEXTAX) sobre el Paquete Económico 2018.</p>
+          <p class="limite">El precio fue la velocidad; los cálculos tardaban una eternidad.</p>
+          <div class="acciones"><a class="btn btn-dark" href="v4/index.php.html">Ver esta versión</a><a class="btn btn-ghost" href="v4/mextax.html">MEXTAX</a></div>
+        </div>
+        <div class="card-img"><a href="v4/index.php.html"><img src="assets/thumbs/v4.png" alt="Captura de la versión 4 (2018)" loading="lazy"></a></div>
+      </article>
+    </div>
+
+    <div class="parada actual">
+      <div class="rail"><div class="nodo">hoy</div></div>
+      <article class="card actual">
+        <div class="card-body">
+          <div class="chips"><span class="chip chip-ok">Generación actual</span><span class="chip chip-v">v8</span></div>
+          <h3>El simulador de hoy</h3>
+          <p>La versión vigente armoniza Cuentas Nacionales, la ENIGH y los datos abiertos de la SHCP, con proyecciones que consideran la transición demográfica. Rápida, robusta, en línea y con código abierto: los comandos de Stata se instalan desde el propio sitio.</p>
+          <div class="acciones"><a class="btn btn-dark" href="https://simuladorfiscal.ciep.mx/">Ir al simulador actual</a><a class="btn btn-ghost" href="https://github.com/rcantuc/SimuladorCIEP" target="_blank" rel="noopener">Código en GitHub</a></div>
+        </div>
+        <div class="card-img"><a href="https://simuladorfiscal.ciep.mx/"><img src="assets/thumbs/actual.png" alt="Captura del Simulador Fiscal CIEP actual" loading="lazy"></a></div>
+      </article>
+    </div>
+
+    <div class="nota">
+      <b>Nota de museo.</b> Estas versiones se conservan como archivo histórico y se muestran tal como se veían. No realizan cálculos: los botones y formularios están inertes. Donde el original mostraba resultados calculados al vuelo, se reconstruyeron con las <b>cifras oficiales del año correspondiente</b> (LIF, PEF, SHRFSP, ENIGH) para que el recorrido sea fiel a lo que el visitante veía entonces. Entre la cuarta generación y la actual hubo versiones intermedias cuyo diseño apenas cambió; aquí se recogen solo los saltos visuales que marcaron cada etapa.
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="row-2">
+    <div class="container f-grid">
+      <div>
+        <a href="https://simuladorfiscal.ciep.mx/"><img src="assets/logo-sim-fiscal-ciep-b.png" width="110" alt="Simulador Fiscal CIEP"></a>
+      </div>
+      <div>
+        <p class="footer_title">Simuladores:</p>
+        <ul>
+          <li><a class="icon-link" href="https://simuladorfiscal.ciep.mx/" target="_blank" rel="noopener">Simulador Fiscal</a></li>
+          <li><a class="icon-link" href="https://tenencia.ciep.mx/" target="_blank" rel="noopener">Simulador de Tenencia</a></li>
+          <li><a class="icon-link" href="https://iepsaltabaco.ciep.mx/" target="_blank" rel="noopener">IEPS al Tabaco</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="footer_title">Micrositios:</p>
+        <div class="f-micro">
+          <ul>
+            <li><a class="icon-link" href="https://libro.ciep.mx/" target="_blank" rel="noopener">El libro CIEP</a></li>
+            <li><a class="icon-link" href="https://paqueteeconomico.ciep.mx/" target="_blank" rel="noopener">Paquete Económico</a></li>
+            <li><a class="icon-link" href="https://ingresosenmexico.ciep.mx/" target="_blank" rel="noopener">Ingresos Públicos</a></li>
+            <li><a class="icon-link" href="https://pensionesenmexico.ciep.mx/" target="_blank" rel="noopener">Pensiones en México</a></li>
+            <li><a class="icon-link" href="https://salud.ciep.mx/" target="_blank" rel="noopener">Salud en México</a></li>
+            <li><a class="icon-link" href="https://gastoeducativo.ciep.mx/" target="_blank" rel="noopener">Educación en México</a></li>
+          </ul>
+          <ul>
+            <li><a class="icon-link" href="https://energiaenmexico.ciep.mx/" target="_blank" rel="noopener">Energía en México</a></li>
+            <li><a class="icon-link" href="https://subnacional.ciep.mx/" target="_blank" rel="noopener">Finanzas Subnacionales</a></li>
+            <li><a class="icon-link" href="https://inversion.ciep.mx/" target="_blank" rel="noopener">Inversión en México</a></li>
+            <li><a class="icon-link" href="https://desarrollosostenible.ciep.mx/" target="_blank" rel="noopener">Desarrollo Sostenible</a></li>
+            <li><a class="icon-link" href="https://cuidados.ciep.mx/" target="_blank" rel="noopener">Cuidados</a></li>
+          </ul>
+        </div>
+      </div>
+      <div>
+        <p class="footer_title">Contacto:</p>
+        <ul>
+          <li>Puebla 151 Letra O, Col. Roma Norte,</li>
+          <li>Del. Cuauhtémoc, CDMX, C.P. 06700</li>
+          <li><a class="icon-link" href="mailto:info@ciep.mx">info@ciep.mx</a> / (55) 53.40.86.88</li>
+          <li><a class="icon-link" href="https://ciep.mx/" target="_blank" rel="noopener">ciep.mx</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="row-1">
+    <div class="container f-bottom">
+      <small>&#9400; 2026 | Simulador Fiscal CIEP - ricardocantu@ciep.mx | Museo de versiones</small>
+      <div class="social">
+        <a href="http://facebook.com/ciepmx" target="_blank" rel="noopener"><img src="assets/f-icon-facebook.svg" alt="Facebook"></a>
+        <a href="https://twitter.com/ciepmx" target="_blank" rel="noopener"><img src="assets/f-icon-twitter.svg" alt="Twitter"></a>
+        <a href="https://www.youtube.com/user/CIEPMX" target="_blank" rel="noopener"><img src="assets/f-icon-youtube.svg" alt="YouTube"></a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

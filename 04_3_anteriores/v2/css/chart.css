@@ -1,0 +1,316 @@
+/* CSS Document                             */
+/* Written by Chris Converse for lynda.com  */
+
+@charset "UTF-8";
+
+.chart-container {width: 100%; width: 92%; height:328px; float:left; position: relative; margin: 15px 0px 0px 0px;}
+
+.chart-title { background-color: #888; padding: 5px 0px 10px 15px; margin: 0px; }
+.chart-title h2 { margin: 0px; color: #fff; font-family: Georgia; }
+.chart-title p { margin: 0px; color: #222; }
+
+.chart-content { height: auto; position: relative; margin: 5px 0px 0px 0px; }
+
+.chart-y-axis {
+	width: 55px;
+	height: 240px;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+}
+.chart-leyends {
+width: 57px;
+height: 166px;
+position: absolute;
+top: 7px;
+right: -8%;
+background:url(../images/leyendas-barras.png) no-repeat center top;
+z-index:4;
+}
+.chart-y-axis p { margin: 0px 0px 0px 10px; padding:0; width: 28px; position: absolute; border-bottom:1px dashed #F49A67; right:0px; font-size:0.76em }
+
+.chart-x-axis, .chart-x-axis-pt1 { height: auto; position: absolute; top: 256px; left: 70px; width:94.5%; }
+#inline_content .chart-x-axis, #inline_content .chart-x-axis-pt1 {top: 323px; }
+.chart-x-axis-pt1 { left: 0px; width:55px; }
+
+.chart-x-axis p {top: 0px; width: auto; color:#565656; text-align: center; margin:0px; font-size:0.8em;}
+.chart-area {
+	width: 94.5%;
+	height: 235px;
+	position: absolute;
+	top: 0px;
+	left: 70px;
+}
+.chart-area2 {
+	width: 88%;
+	height: 305px;
+	position: absolute;
+	top: 0px;
+	left: 70px;
+}
+
+.chart-area .chart-bar,
+.chart-area .chart-negativo,
+.chart-area2 .chart-bar,
+.chart-area2 .chart-negativo {
+	position: absolute;
+	bottom: 0px;
+	width: 100%;
+	height: 0px;
+	background-color:#59b79f;
+	background-color:#36b796;
+	
+	border-radius: 6px;
+    -ms-border-radius: 6px;
+    -moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
+	
+	-webkit-transition: all .4s ease;
+	-moz-transition: all .4s ease;
+	transition: all .4s ease;
+}
+.chart-area .historico .chart-bar {
+	background-color:#a7c543;
+}
+
+.defaultBar {
+	/*background:url(../images/default-bar2.png) no-repeat center top;*/
+	background:#ed8953;
+	position: absolute;
+	bottom: 100px;
+	width: 8px;
+	height:8px;
+	z-index:3;
+	left: 50%;
+	margin-left: -5px;
+	border:1px solid #eaecf0;
+	
+	border-radius: 1px;
+    -ms-border-radius: 1px;
+    -moz-border-radius: 1px;
+    -webkit-border-radius: 1px;	
+	
+	-webkit-transition: all .4s ease;
+	-moz-transition: all .4s ease;
+	transition: all .4s ease;
+}
+.defaultBar:hover {
+	border:none;
+	border-bottom:1px solid transparent;
+	width:100%;
+	left:0;
+	margin-left:0;
+	
+	-webkit-transition: all .4s ease;
+	-moz-transition: all .4s ease;
+	transition: all .4s ease;
+}
+
+.defaultBar:hover + .chart-area .chart-bar {
+	display:none !important;
+}
+
+.chart-area .chart-bar:hover,
+.chart-area .chart-negativo:hover,
+.chart-area2 .chart-bar:hover,
+.chart-area2 .chart-negativo:hover {
+	background-color:#ed8953 !important;
+}
+
+.chart-area .chart-negativo,
+.chart-area2 .chart-negativo {	
+	background-color: #d2e7ca;
+	border:1px dashed #519f31;
+	width:91%;
+	
+	/*-moz-box-shadow:inset 2px 0px 2px 0px rgba(50, 50, 50, 0.40), 0px 0px 0px 0px rgba(0, 0, 0, 0);
+	-webkit-box-shadow: inset 2px 0px 2px 0px rgba(50, 50, 50, 0.40), 0px 0px 0px 0px rgba(0, 0, 0, 0);
+	box-shadow: inset 2px 0px 2px 0px rgba(50, 50, 50, 0.40), 0px 0px 0px 0px rgba(0, 0, 0, 0);*/  
+}
+.chart-area .chart-bar.chart-negativo p,
+.chart-area2 .chart-bar.chart-negativo p{
+	display:block;	
+	color:#14b9d6 !important;
+	text-decoration:blink;
+	padding:0;
+}
+.chart-area .chart-bar.chart-minimo p,
+.chart-area2 .chart-bar.chart-minimo p {
+	color:#333;
+	color:#52a993;
+	font-weight:500;
+	margin-top:-37px;
+	position:relative;
+}
+
+.chart-area .chart-bar.sporting    { background-color: rgba(12,38,32,.6); background-image: url(http://localhost:8000/images/icon_sporting.png); }
+.chart-area .chart-bar.hoursewares { background-color: rgba(65,12,137,.6); background-image: url(http://localhost:8000/images/icon_housewares.png); }
+.chart-area .chart-bar.shipping    { background-color: rgba(4,11,83,.6); background-image: url(http://localhost:8000/images/icon_shipping.png); }
+.chart-area .chart-bar.clothing    { background-color: rgba(140,6,6,.6); background-image: url(http://localhost:8000/images/icon_clothing.png); }
+.chart-area .chart-bar.jewelry     { background-color: rgba(144,8,152,.6); background-image: url(http://localhost:8000/images/icon_jewelry.png); }
+
+.chart-area .chart-bar p, .chart-area2 .chart-bar p { 
+margin: 5px 0px 0px 0px; text-align: center; color: #fff; display: none; padding:3px; line-height:1.05em;
+bottom: 2px;
+position: absolute;
+
+	-webkit-transition: all .4s ease;
+	-moz-transition: all .4s ease;
+	transition: all .4s ease;
+}
+.chart-bar:hover p { color:#ed8953;}
+.chart-minimo:hover p, .chart-area .chart-negativo:hover p { color:#eaecf0 !important;}
+
+
+.limpiar {clear:both}
+.wrapper, .wrapperX {
+	/*background: #FAFAFA;*/
+	background-color: transparent;
+	/*border:1px solid #DFDFDF;*/
+	border:1px solid #FFF;
+	border-right:none;
+	border:none;
+	
+	width: 4.65%;
+	height: 235px;
+	position: relative;
+	float:left;
+	padding:0.8%;
+}
+.barWrapper, .barWrapperX {
+    height: 235px;
+	position:relative;
+    width: 100%;
+	background:#eaecf0;
+	overflow:hidden;
+	border-radius: 6px;
+    -ms-border-radius: 6px;
+    -moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
+	background:#eaecf0; /* sobre blanco */
+	background:#e7e9ed; /* sobre gris */
+	background:#dbdcde;
+}
+.barWrapper.historico {
+	/*background:#e7e9ed url(../images/diagonales.gif);*/
+}
+#inline_content .barWrapper {
+	height:305px;
+	background-image:url(../sim-images/bg-bars2.gif.html);
+}
+.chart-x-axis .wrapper, .chart-x-axis-pt1 .wrapper, .avanzados .wrapper {
+	height:auto;
+	font-size:1em;
+	background-color:transparent;
+	/*border-color:#FFF;*/
+	color:#9fa5b1;
+}
+.chart-x-axis-pt1 .wrapper {
+	width:auto;
+	float:right;
+	padding:9px;
+	padding-right:0;
+	color:#565656;
+}
+.resultados .wrapper {
+	font-weight:normal;
+	font-size: 0.8em;
+	text-align: center;
+	color:#565656;
+	
+	padding-top: 1.9em;
+	
+	-webkit-transition: all .3s ease;
+	-moz-transition: all .3s ease;
+	transition: all .3s ease;
+}
+.resultadoFinal>.wrapper {
+	-webkit-transition: all .3s ease;
+	-moz-transition: all .3s ease;
+	transition: all .3s ease;
+}
+
+.chart-x-axis .resultadoFinal>.wrapper:hover {
+	color:#fff;
+	background-color:#F45D07;
+	padding-top:2px;
+	height:17px;
+	
+	border-radius: 4px;
+    -ms-border-radius: 4px;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+}
+#inline_content .chart-x-axis .resultadoFinal>.wrapper:hover {
+	padding-top:3px;
+	height:17px;
+}
+.chart-x-axis-pt1 .resultados .wrapper {
+	font-size: 0.7em;
+	text-align:right;
+}
+.resultadoFinal {
+	margin-top:0px;
+	overflow:hidden;
+	background-color:#F8F8F8;
+	
+	border-radius: 4px;
+    -ms-border-radius: 4px;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+	
+	-moz-box-shadow:0px 0px 0px 1px #E2E2E2;
+	-webkit-box-shadow:0px 0px 0px 1px #E2E2E2;
+	box-shadow:0px 0px 0px 1px #E2E2E2;
+}
+.chart-x-axis-pt1 .resultadoFinal {
+	background-color:transparent;
+	-moz-box-shadow:0px 0px 0px 0px #E2E2E2;
+	-webkit-box-shadow:0px 0px 0px 0px #E2E2E2;
+	box-shadow:0px 0px 0px 0px #E2E2E2;
+}
+.resultadoFinal .wrapper p{
+	font-weight:bold;
+	color:#F45D07;
+}
+.x-axis {
+	height:auto;
+	overflow:visible;
+	background-color:transparent;
+	box-shadow:none;
+}
+
+
+/*////////////// chartHorizontal //////////////*/
+.chartHorizontal {
+	height:84px
+}
+.chartHorizontal .wrapper {
+    height:20px;
+    padding: 2.5%;
+    width: 100%;
+}
+.chartHorizontal .barWrapper {
+    height: 20px;
+    position: relative;
+    width: 100%;
+	overflow:hidden;
+}
+.chartHorizontal .chart-area {
+    height: 24px;
+    left: 0;
+    width: 100%;
+}
+.txtVertical {
+	background:url(../images/txt-pib.png) no-repeat bottom center;
+	width:17px;
+	height:245px;
+	float:right;
+}
+
+.chart-area .ocultartxt .chart-bar p {
+	display:none !important;
+}
+
+
+

@@ -1,0 +1,399 @@
+.chartLeft {
+	width:auto;
+	margin-right:0%;
+	float:none;
+}
+.chartRight {
+	width: auto;
+	float: right;
+}
+.leftmenu .col2 {
+    left: 1%;
+    min-width: 130px;
+    width: 12%;
+}
+
+.leftmenu .col1 {
+    left: 97%;
+    width: 81%;
+}
+
+#menu span {
+    height: auto;
+}
+
+#menu p {
+    height: auto;
+    margin-bottom: 12px;
+	padding-bottom:0.8em;
+	padding-top:0.7em;
+	padding-left:38px;
+	font-size: 13px;
+}
+.col2 #menu a {
+	padding-left:43px;
+	padding-top:8px;
+	padding-bottom:8px;
+	height:auto;
+	min-height:30px;
+	font-size: 12px;
+}
+#menu li {
+    background-repeat: repeat-x;
+	background-color:#f2f2f2;
+}
+#menu li .inter {
+	left: -11px;
+    top: -7px;
+}
+#menu li ul li .inter {
+	top:13px;
+	left:-22px;
+}
+/*#menu>li:hover{
+	background-image:url(../sim-images/bg-menu-left-over.png);
+	background-color:#575757;
+}*/
+
+#resultados .item {
+	margin-left: 2%;
+}
+#resultados .dos,
+#resultados .tres {
+	margin-left: 0%;
+}
+#resultados .item p {
+    font-size: 125%;
+}
+#menos, #igual {
+    height: 86px;
+    width: 7.4%;
+}
+#guiarapida p.titulo {
+	margin-left:1%;
+	margin-right:3%;
+}
+#guiarapida {
+    font-size: 86%;
+}
+.paddRel {
+	padding-right:25px;
+	padding-left:25px;
+}
+.borrar{font-size:0px !important;}
+.borrar:before{
+      content: url(../sim-images/icon-trash3.png);
+}
+.borrar:hover:before{
+      content:url(../sim-images/icon-trash4.png);
+}
+#borrarCambios a.borrar {
+    width: 94%;
+	height: 39px;
+    padding-top: 5px;
+	background-image:none;
+}
+.borrar img{ top:3px; left:5px;}
+.paso {
+    width: 24%;
+}
+.nextIcon {
+    width: 4%;
+}
+
+#logoCiep a {
+    margin-left: 0;
+    width: 130px;
+}
+#tablaiva tr td.naranja1, #tablaiva tr td.naranja2, #tablaieps tr td.naranja1, #tablaieps tr td.naranja2, #tablaisr tr td.naranja1, #tablaisr tr td.naranja2, #tablaempleo tr td.naranja1, #tablaempleo tr td.naranja2 {
+    padding-left: 0.4em;
+    padding-right: 0.2em;
+}
+#menu ul li a {
+	height:auto;
+    min-height:0;
+    padding-left:14px;
+}
+/*#menu li ul li:hover a,
+#menu li ul li.selected a{
+	color:#F45D07;
+	background:url(../sim-images/icon-submenu.png) 13px 14px no-repeat;
+}*/
+
+
+
+/* MINI */
+#menu a.icoOtros, #menu a.icoEnergia, #menu a.icoNopetroleo, #menu a.icoPetroleo, #menu a.icoSsocial, #menu a.icoIva, #menu a.icoIsr, #menu a.icoGasto, #menu a.icoCrecimiento, #menu a.icoTasa, #menu a.icoPiramide, #menu a.icoEducacion, #menu a.icoSalud, #menu a.icoIetu {
+    text-indent: -1000px;
+}
+#menu li .inter {
+    text-indent: 0;
+}
+
+#menu p {
+    text-indent: 0px;
+}
+
+.leftmenu .col2 {
+    left: 1%;
+    min-width: 45px;
+    width: 4%;
+}
+#logoCiep {
+    background-position: 7px 12px;
+	width:40px;
+	position: absolute;
+    top: -57px;
+}
+#logoCiep a {
+    height: 50px;
+    margin-left: 0;
+    width: 45px;
+}
+.leftmenu .col2 {
+    left: 82.5%;
+    min-width: 45px;
+    width: 95%;
+	position:absolute;
+	margin-top:55px;
+	padding-bottom:0;
+}
+.leftmenu .col1 {
+    left: 82.5%;
+    width: 95%;
+}
+#resultados .item {
+    margin-left: 0;
+}
+#menos, #igual {
+    width: 7.4%;
+}
+#resultados .item p {
+    font-size: 125%;
+}
+#resultados .item .pt2 p {
+    font-size: 90%;
+}
+#guiarapida p.titulo {
+    font-size: 18px;
+	margin-left: 0;
+    margin-right: 2%;
+}
+.paso {
+    width: 25%;
+}
+.paso img {
+	margin-left:10px;
+}
+.nextIcon {
+    width: 2.5%;
+}
+.paso p {
+    font-size: 0.9em;
+}
+td input[readonly] {
+    padding-right: 0;
+}
+#tablaiva tr td.naranja1, #tablaiva tr td.naranja2, #tablaieps tr td.naranja1, #tablaieps tr td.naranja2, #tablaisr tr td.naranja1, #tablaisr tr td.naranja2, #tablaempleo tr td.naranja1, #tablaempleo tr td.naranja2 {
+    padding-left: 7px;
+    padding-right: 6px;
+}
+.col2 #menu li a span, .col2 a.borrar span {
+    background: none;
+    display: block;
+    height: 100%;
+    left: 0;
+    position: absolute;
+    top: 0;
+	width: 100%;
+    z-index: 20;
+}
+a.borrar span {
+	width: 55px;
+    height: 46px;
+    left: 6px;
+    top: 6px;
+}
+#menu li .iconosSubMenus {
+	display:none;
+}
+
+.col2 ul#menu li, .col2 ul#menu li ul li {
+    position: relative;
+    width: 57px;
+	height:57px;
+	float:left;
+	border-bottom: 1px solid #D5D5D5;
+}
+.col2 ul#menu li ul li {
+    width: 230px;
+	height:auto;
+	background-color:transparent;
+	background-image:url(../sim-images/trans-blanca75.png);
+	background-repeat:repeat;
+	-moz-box-shadow:2px 2px 3px 0px rgba(50, 50, 50, 0.40);
+	-webkit-box-shadow:2px 2px 3px 0px rgba(50, 50, 50, 0.40);
+	box-shadow: 2px 2px 3px 0px rgba(50, 50, 50, 0.40);
+}
+ul#menu li ul li:hover, ul#menu li ul li.selected {
+	background-color:#F7F7F7;
+	background-image:none;
+}
+ul#menu li ul li a:hover, ul#menu li ul li.selected a {
+	background-image:none;
+}
+/*ul#menu li.selected ul {
+	display:none !important;
+}
+ul#menu li.selected:hover ul, ul#menu li.selected:hover ul:hover{
+	display:block !important;
+}*/
+ul#menu > li.m1,
+ul#menu > li.m9,
+ul#menu > li.m12 {
+	border-left: 1px solid #D5D5D5;
+}
+#menu > span {
+    width: ;
+}
+#bloqueTop {
+	margin-top:190px;
+}
+.col2 #menu {
+    display: inline-block;
+	margin-top:25px;
+}
+#borrarCambios {
+    float: right;
+    height: 46px;
+    margin-top: -105px;
+    position: relative;
+    width:6%;
+}
+#layoutdims, #layoutdims2 {
+    z-index: 20;
+}
+#layoutdims2 h1 {
+	margin-left:55px;
+}
+#menu span p{
+	overflow:hidden;
+}
+#menu.menu3 span p:after {
+content:"Otros ";
+}
+.col2 #menu.menu1 {
+	width:64.1%;
+	width:60.3%
+}
+#menu.menu2 {
+	width:23.5%;
+	width:22.61%
+}
+#menu.menu3 {
+	width:11.3%;
+	width:16.01%;
+}
+.col2 ul#menu.menu1 > li{
+	width:12.25%;
+}
+ul#menu.menu2 > li{
+	width:32.54%;
+}
+ul#menu.menu3 > li{
+	width:50%;
+}
+#menu a.icoIva,
+#menu a.icoIsr,
+#menu a.icoPetroleo,
+#menu a.icoSsocial,
+#menu a.icoNopetroleo,
+#menu a.icoIetu,
+#menu a.icoEnergia,
+#menu a.icoOtros,
+#menu a.icoEducacion,
+#menu a.icoSalud,
+#menu a.icoGasto,
+#menu a.icoCrecimiento {
+	background-position:top center;
+	display: block;
+    height: 42px;
+}
+#menu a.icoIva {
+	background-image: url(../sim-images/icon-iva-B.png);
+}
+#menu a.icoIsr {
+    background-image: url(../sim-images/icon-isr-B.png);
+}
+#menu a.icoPetroleo {
+    background-image: url(../sim-images/icon-petroleros-B.png);
+}
+#menu a.icoSsocial {
+    background-image: url(../sim-images/icon-segursocial-B.png);
+}
+#menu a.icoNopetroleo {
+    background-image: url(../sim-images/icon-ieps-B.png);
+}
+#menu a.icoIetu {
+    background-image: url(../sim-images/icon-ietu-B.png);
+}
+#menu a.icoEnergia {
+    background-image: url(../sim-images/icon-electricas-B.png);
+}
+#menu a.icoOtros {
+    background-image: url(../sim-images/icon-otrosimpu-B.png);
+}
+#menu a.icoEducacion {
+    background-image: url(../sim-images/icon-educacion-B.png);
+}
+#menu a.icoSalud {
+    background-image: url(../sim-images/icon-salud-B.png);
+}
+#menu a.icoGasto {
+    background-image: url(../sim-images/icon-pensiones-B.png);
+}
+#menu a.icoCrecimiento {
+    background-image: url(../sim-images/icon-otrosparam-B.png);
+}
+
+#menu .m2 ul li:first-child {
+    border-top: 1px solid #FFF;
+}
+#menu .m3 ul li:first-child {
+    border-top: 1px solid #FFF;
+}
+#menu .m11 ul li:first-child {
+    border-top: 1px solid #FFF;
+}
+#menu .m2 ul li:last-child {
+	border-bottom:none;
+}
+#menu .m3 ul li:last-child {
+	border-bottom:none;
+}
+#menu .m11 ul li:last-child {
+	border-bottom:none;
+}
+.module .content, .module2 .content {
+    padding: 30px 210px 30px 30px !important;
+}
+td input[type='text'].extra {
+	right: 10% !important;
+}
+.body-inter2 .contenedor1 #tablaisr tr td.naranja2 {
+padding-right: 6px !important;
+}
+#guiarapida p.titulo {
+	margin-left:1%;
+}
+.inlineIconos {
+margin-top: 22px;
+}
+.inlineInfoExtra h3 {
+	padding-top:0;
+	padding-bottom:8px !important;
+	margin-top:0;
+}
+#tablaisr tr td.blanco2 {
+	padding-left:5px;
+}

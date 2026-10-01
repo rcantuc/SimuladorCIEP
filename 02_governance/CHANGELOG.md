@@ -20,6 +20,47 @@ Formato de cada entrada:
 
 Trabajo en `master` sin versión asignada.
 
+### Institucional
+
+- **Museo de versiones (`simuladorfiscal.ciep.mx/anteriores/`) rediseñado y
+  restaurado — cuarto canal del Simulador, con fuente en `04_3_anteriores/` y
+  pipeline propio (`05_scripts/publicar-anteriores.sh`, gates: auditoría
+  estática `verify_anteriores.py` + destino escribible; Apache lo sirve con
+  `Alias /anteriores /var/www/anteriores`, estático, fuera del deployment
+  `current`).** La galería `index.html` adopta el lenguaje visual del
+  Simulador actual (header `#2d373d`, hero `#FFD520`, Roboto Mono/Ubuntu,
+  tarjetas con chips y captura real de cada generación, footer del
+  ecosistema CIEP). Cada pieza (v1 2014, v2 2014, v3 2015-16, v4 2018) lleva
+  una franja fija de contexto y un interceptor que vuelve inertes botones y
+  formularios con aviso (`assets/museo.js`), y las librerías externas
+  (jQuery/jQuery UI/fancybox/Bootstrap/Chart.js) se vendorizaron en
+  `assets/vendor/` porque las piezas las cargaban por `http://` y el sitio
+  `https` las bloqueaba como *mixed content*. Regla acordada: donde el
+  original mostraba resultados calculados al vuelo, se reconstruyen con las
+  **cifras oficiales del año** y una nota visible; lo ilustrativo se declara.
+  Por pieza: **v1** — las tarjetas estaban en cero porque el JS leía
+  `default.php`/`inputsaved.php` (no capturados): ahora lee `default.xml`
+  con la LIF/PEF 2014 de `master/LIF.dta` (46 conceptos del artículo 1,
+  cuadra 3,816,747.8 y 4,467,225.8 mdp), deuda 650,478, GINI 0.48;
+  formularios a `localhost` neutralizados. **v2** — las 5 páginas interiores
+  estaban vacías (contenido por AJAX desde `parts/*.php`, nunca capturado):
+  se reconstruyeron menú lateral, incidencia del módulo IVA, perfil
+  generacional con el velocímetro original (`gauge.js`), recaudación,
+  incidencia global (los `$100…-10%` eran *placeholders* de desarrollo),
+  sostenibilidad (SHRFSP 2000-2020), distribución del PEF y Ramos 28/33
+  (la página era una copia de la portada); el demo del velocímetro tronaba
+  y jQuery 1.10 abortaba el resto de `ready`, por eso el menú se carga con
+  JS plano. **v3** — `google.com/jsapi` (retirado) → `loader.js`; el on-load
+  llamaba `defaultStata.php` con `alert()` en el error (bloqueaba la página)
+  y 86 campos: `defaultStata*.xml` generados desde los valores que la
+  página ya traía (tablas, perfiles) más proyecciones ilustrativas; `js/chart.js`
+  (barras SHRFSP) faltaba por mayúsculas en Linux → recuperado de v2; línea
+  `getRandomImage` corrompida por wget; treemaps guardados contra la carga
+  asíncrona. **v4** — GTM/Analytics retirado, `localhost` fuera. Auditoría
+  final: 0 recursos rotos, 0 hosts de desarrollo en 42 páginas. Pendiente
+  operativo: `chown ciepmx:web /var/www/anteriores` (una vez) antes del
+  primer deploy con el script.
+
 ## [v8.4.2] — 2026-09-23
 
 ### Correcciones

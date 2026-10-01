@@ -1,0 +1,11 @@
+/* Museo de versiones · Simulador Fiscal CIEP (2026-10-01)
+   Franja fija de contexto + aviso para botones inertes. Se incluye en cada pieza
+   (v1..v4) sin tocar su CSS original. */
+#museo-barra{position:fixed;left:0;right:0;bottom:0;z-index:2147483000;background:#2d373d;color:#caced1;font:12px/1.4 'Roboto Mono',Menlo,monospace;padding:8px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 -2px 10px rgba(0,0,0,.25)}
+#museo-barra b{color:#FFD520;font-weight:700}
+#museo-barra a{color:#ffe719;text-decoration:none;font-weight:700;white-space:nowrap}
+#museo-barra a:hover{color:#fff}
+#museo-barra .museo-x{background:none;border:1px solid #6b757c;color:#caced1;border-radius:4px;padding:2px 8px;cursor:pointer;font:inherit}
+#museo-toast{position:fixed;left:50%;bottom:64px;transform:translateX(-50%) translateY(20px);z-index:2147483001;background:#1F262B;color:#fff;font:13px/1.4 'Roboto Mono',Menlo,monospace;padding:12px 18px;border-left:4px solid #FFD520;border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;max-width:92vw}
+#museo-toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+body.museo-con-barra{padding-bottom:44px!important}

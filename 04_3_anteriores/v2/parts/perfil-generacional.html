@@ -1,0 +1,20 @@
+<link rel="stylesheet" href="parts/museo-parts.css">
+<div class="mp-bloque">
+  <h2>Perfil generacional <small>IVA · 2014</small></h2>
+  <p class="mp-sub">Cuánto paga en promedio una persona de cada edad (miles de pesos al año) y la sostenibilidad del módulo ante la transición demográfica.</p>
+  <div class="mp-cols">
+    <div class="c1"><div class="mp-barras"><div style="height:26%"><span>0.9</span></div><div style="height:37%"><span>1.3</span></div><div style="height:74%"><span>2.6</span></div><div style="height:94%"><span>3.3</span></div><div style="height:100%"><span>3.5</span></div><div style="height:89%"><span>3.1</span></div><div style="height:69%"><span>2.4</span></div><div style="height:46%"><span>1.6</span></div><div style="height:26%"><span>0.9</span></div></div><div class="mp-ejes"><div>0-9</div><div>10-19</div><div>20-29</div><div>30-39</div><div>40-49</div><div>50-59</div><div>60-69</div><div>70-79</div><div>80+</div></div></div>
+    <div class="c2 mp-gauge"><canvas id="gaugeMuseo" width="260" height="170"></canvas><div class="mp-gval" id="gaugeMuseoVal">0</div><div class="mp-glab">Índice de sostenibilidad (0–100)</div></div>
+  </div>
+  <p class="mp-fuente">Reconstrucción de museo (2026): perfil por edad ilustrativo con la estructura de consumo de la ENIGH 2012 y la población de CONAPO; el velocímetro usa la librería original de la pieza (gauge.js).</p>
+</div>
+<script>
+(function(){
+  function go(){
+    if (typeof Gauge === 'undefined') { return setTimeout(go, 150); }
+    var g = new Gauge(document.getElementById('gaugeMuseo')).setOptions({lines:12, angle:0.05, lineWidth:0.42, pointer:{length:0.85, strokeWidth:0.04, color:'#43484c'}, colorStart:'#6cbaa5', colorStop:'#59b79f', strokeColor:'#e1e3e6', generateGradient:true});
+    g.maxValue = 100; g.animationSpeed = 40; g.setTextField(document.getElementById('gaugeMuseoVal')); g.set(68);
+  }
+  go();
+})();
+</script>

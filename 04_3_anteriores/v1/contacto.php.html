@@ -1,0 +1,816 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<!-- HEAD -->
+    <head>
+	<title>Simulador Fiscal CIEP | Versión 1</title>
+    <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE"> <!-- quitar al FINAL -->
+	<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+	<meta name="description" content="info" />
+	<meta name="keywords" content="info" />
+	<meta name="robots" content="index, follow" />
+	<link rel="shortcut icon" href="favicon.ico.html" type="image/x-icon" />
+    
+	<link rel="stylesheet" type="text/css" href="css/screen.css" media="screen, print, projection" />
+    <link rel="stylesheet" type="text/css" media="screen, print, projection"  href="css/tablas.css" />
+    
+    <!-- Direrente resolución -->
+    <!--link rel='stylesheet' media='screen and (min-width: 1250px) and (max-width: 1210px)' href='css/medium.css' /-->
+    <link rel='stylesheet' media='print, screen and (min-width: 1001px) and (max-width: 1249px)' href='css/small.css' />
+    <link rel='stylesheet' media='print, screen and (min-width: 1px) and (max-width: 1000px)' href='css/mini.css' />
+    
+    <link href="tutorial-sim-voz-mujer-NOsubs(2)_embed.css" rel="stylesheet" type="text/css">
+ 	
+    <!-- Google fonts -->
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,400italic,600,600italic' rel='stylesheet' media="screen, print, projection" type='text/css'>
+         
+    <!-- jQuery -->
+    <script src="../assets/vendor/jquery-1.9.1.min.js"></script>
+    
+    <!-- RGraph CHARTS -->
+    <script type="text/javascript" src="js/RGraph.bipolar.js" ></script>
+    
+    <script type="text/javascript" src="js/RGraph.common.core.js" ></script>
+    <script type="text/javascript" src="js/RGraph.common.dynamic.js" ></script>
+    <script type="text/javascript" src="js/RGraph.common.effects.js" ></script>
+    <script type="text/javascript" src="js/RGraph.common.tooltips.js" ></script>
+    
+    <script type="text/javascript" src="js/RGraph.common.key.js" ></script>
+    <script type="text/javascript" src="js/RGraph.drawing.rect.js" ></script>
+    
+    <script type="text/javascript" src="js/RGraph.bar.js" ></script>
+    <script type="text/javascript" src="js/RGraph.pie.js" ></script>
+    <!--[if lt IE 9]><script src="excanvas/excanvas.js"></script><![endif]-->
+    
+    <!-- descripciones -->
+    <!--link rel="stylesheet" type="text/css" href="css/descripciones.css" /-->
+    
+    <!-- BAR CHART -->
+    <script type="text/javascript" src="chart2/chart.js"></script>
+    <link rel="stylesheet" type="text/css" href="chart2/chart.css" />
+		<!--[if lt IE 9]>
+			<link rel="stylesheet" type="text/css" href="chart2/chart_ie.css" />
+		<![endif]-->
+  
+    <!-- VELOCIMETRO -->
+	<link href="js-velocimetro/main.css" type="text/css" rel="stylesheet">
+	<script type="text/javascript" src="js-velocimetro/prettify.js"></script>
+    <!--[if lt IE 9]><script type="text/javascript" src="js-velocimetro/excanvas.compiled.js"></script><![endif]-->
+    
+    
+    <!-- Menu y submenu colapsible LEFT -->
+    <script type="text/javascript" charset="utf-8">
+    $(function(){
+        $('#menu li a').click(function(event){
+            var elem = $(this).next();
+            if(elem.is('ul')){
+                event.preventDefault();
+                $('#menu ul:visible').not(elem).slideUp();
+                elem.slideToggle();
+            }
+        });
+    });
+    </script>
+    
+	
+    <!-- Velocímetro -->
+    <script src="js-velocimetro/gauge.js"></script>
+	<script>
+	  var gauge ;
+      prettyPrint();
+      function update() {
+        var opts = {};
+        $('.opts input[min], .opts').each(function() {
+          var val = $(this).hasClass("color") ? this.value : parseFloat(this.value);
+          if($(this).hasClass("color")){
+            val = "#" + val;
+          }
+          if(this.name.indexOf("lineWidth") != -1 ||
+            this.name.indexOf("angle") != -1 ||
+            this.name.indexOf("pointer.length") != -1){
+            val /= 100;
+          }else if(this.name.indexOf("pointer.strokeWidth") != -1){
+            val /= 1000;
+          }
+          $('#opt-' + this.name.replace(".", "-")).text(val);
+          if(this.name.indexOf(".") != -1){
+            var elems = this.name.split(".");
+            var tmp_opts = opts;
+            for(var i=0; i<elems.length - 1; i++){
+                if(!(elems[i] in tmp_opts)){
+                    tmp_opts[elems[i]] = {};
+                }
+                tmp_opts = tmp_opts[elems[i]];
+            }
+            tmp_opts[elems[elems.length - 1]] = val;
+          }else if($(this).hasClass("color")){
+            // color picker is removing # from color values
+            opts[this.name] = "#" + this.value
+            $('#opt-' + this.name.replace(".", "-")).text("#" + this.value);
+          }else{
+            opts[this.name] = val;
+          }
+          if(this.name == "currval"){
+            // update current demo gauge
+            demoGauge.set(parseInt(this.value));
+            AnimationUpdater.run();
+          }
+        });
+        $('#opts input:checkbox').each(function() {
+          opts[this.name] = this.checked;
+          $('#opt-' + this.name).text(this.checked);
+        });
+        demoGauge.animationSpeed = opts.animationSpeed;
+        opts.generateGradient = true;
+        demoGauge.setOptions(opts);
+        demoGauge.ctx.clearRect(0, 0, demoGauge.ctx.canvas.width, demoGauge.ctx.canvas.height);
+        demoGauge.render();
+        if ($('#share').is(':checked')) {
+          window.location.replace('#?' + $('form').serialize());
+        }
+      }
+      function initGauge(){
+        document.getElementById("class-code-name").innerHTML = "Gauge";
+        demoGauge = new Gauge(document.getElementById("canvas-preview"));
+        demoGauge.setTextField(document.getElementById("preview-textfield"));
+        demoGauge.maxValue = 100;
+        demoGauge.set(0);
+      };
+      $(function() {
+        var params = {};
+        var hash = /^#\?(.*)/.exec(location.hash);
+        if (hash) {
+          $('#share').prop('checked', true);
+          $.each(hash[1].split(/&/), function(i, pair) {
+            var kv = pair.split(/=/);
+            params[kv[0]] = kv[kv.length-1];
+          });
+        }
+        $('.opts input[min], #opts .color').each(function() {
+          var val = params[this.name];
+          if (val !== undefined) this.value = val;
+          //this.onchange = update;
+        });
+        $('.opts input[name=currval]').mouseup(function(){
+            AnimationUpdater.run();
+        });
+    
+        $('.opts input:checkbox').each(function() {
+          this.checked = !!params[this.name];
+          //this.onclick = update;
+        });
+        $('#share').click(function() {
+          window.location.replace(this.checked ? '#?' + $('form').serialize() : '#!');
+        });
+
+		var opts = {
+		  lines: 12, // The number of lines to draw
+		  angle: 0, // The length of each line
+		  lineWidth: 0.18, // The line thickness
+		  pointer: {
+			length: 0.9, // The radius of the inner circle
+			strokeWidth: 0.035, // The rotation offset
+			//color: '#27c4e0' // Fill color BLUE
+		  },
+		  colorStart: '#0000FF',   // Colors
+		  colorStop: '#0000FF',    // just experiment with them
+		  strokeColor: '#ffffff',   // to see which ones work best for you
+		  generateGradient: true
+		};
+		var target = document.getElementById('select-1'); // your canvas element
+		gauge = new Gauge(target).setOptions(opts); // create sexy gauge!
+		gauge.maxValue = 100; // set max gauge value
+		gauge.animationSpeed = 32; // set animation speed (32 is default value)
+		gauge.set(35); // set actual value
+
+        initGauge();
+        update();
+        
+      });
+    </script>
+    
+    
+        <!-- Efectos JQuery -->
+    <script src="../assets/vendor/jquery-1.9.1.js"></script>
+    <script src="../assets/vendor/jquery-ui-1.10.1.js"></script>
+    
+    <script>
+	$(function() {
+	$( "#dialog" ).dialog({
+	autoOpen: false,
+	width: 350,
+	resizable: false,
+	show: {
+	effect: "fade",
+	duration: 500
+	},
+	hide: {
+	effect: "fade",
+	duration: 500
+	}
+	});
+	$( "#openerIncidencia" ).click(function() {
+	$( "#dialog" ).dialog( "open" );
+	$(".ui-button").removeAttr("title")
+	});
+	});
+	</script>
+    
+    <script>
+	$(function() {
+	$( "#dialog" ).dialog({
+	autoOpen: false,
+	width: 350,
+	resizable: false,
+	show: {
+	effect: "fade",
+	duration: 500
+	},
+	hide: {
+	effect: "fade",
+	duration: 500
+	}
+	});
+	$( ".openerDefaults" ).click(function() {
+	$( "#dialog" ).dialog( "open" );
+	$(".ui-button").removeAttr("title")
+	});
+	});
+	</script>
+    
+    <script>
+	$(function() {
+	$( "#dialog" ).dialog({
+	autoOpen: false,
+	width: 350,
+	resizable: false,
+	show: {
+	effect: "fade",
+	duration: 500
+	},
+	hide: {
+	effect: "fade",
+	duration: 500
+	}
+	});
+	$( "#openerTabla" ).click(function() {
+	$( "#dialog" ).dialog( "open" );
+	$(".ui-button").removeAttr("title")
+	});
+	});
+	</script>
+    
+    <script>
+	$(function() {
+	$( ".dialog2" ).dialog({
+	autoOpen: false,
+	width: 650,
+	resizable: false,
+	show: {
+	effect: "fade",
+	duration: 500
+	},
+	hide: {
+	effect: "fade",
+	duration: 500
+	}
+	});
+	$( "#openerTabla" ).click(function() {
+	$( ".dialog2" ).dialog( "open" );
+	$(".ui-button").removeAttr("title")
+	});
+	});
+	</script>
+    
+    <script>
+	$(function() {
+	$( ".dialog3" ).dialog({
+	autoOpen: false,
+	width: 601,
+	resizable: false,
+	position: ['middle',40],
+	show: {
+	effect: "fade",
+	duration: 500
+	},
+	hide: {
+	effect: "fade",
+	duration: 500
+	}
+	});
+	$( "#openerImagen" ).click(function() {
+	$( ".dialog3" ).dialog( "open" );
+	$(".ui-button").removeAttr("title")
+	});
+	});
+	</script>
+    
+    <script>
+	$(function() {
+	$( ".dialog4" ).dialog({
+	autoOpen: false,
+	width: 350,
+	resizable: false,
+	show: {
+	effect: "fade",
+	duration: 500
+	},
+	hide: {
+	effect: "fade",
+	duration: 500
+	}
+	});
+	$( "#openerCalculo" ).click(function() {
+	$( ".dialog4" ).dialog( "open" );
+	$(".ui-button").removeAttr("title")
+	});
+	});
+	</script>
+    
+    <script>
+	$(function() {
+	$( ".dialogAmp2" ).dialog({
+	autoOpen: false,
+	width: 800,
+	resizable: false,
+	position: ['middle',20],
+	show: {
+	effect: "fade",
+	duration: 500
+	},
+	hide: {
+	effect: "fade",
+	duration: 500
+	}
+	});
+	$( "#openerAmpliar2" ).click(function() {
+	$( ".dialogAmp2" ).dialog( "open" );
+	$(".ui-button").removeAttr("title")
+	});
+	});
+	</script>
+    
+    <!-- -->
+    
+    <!--  Collapsible Content (Más Información)  -->
+    <script type='text/javascript' src="js/jquery.cookie.js"></script>
+	<script type='text/javascript' src="js/jquery.collapsible.js"></script>
+    <link rel="stylesheet" type="text/css" media="screen" href="css/collapsible.css" />
+    
+    <script type='text/javascript'>
+	$(document).ready(function() {
+		$.collapsible(".header", "group1");
+		$.collapsible(".header2", "group2");
+	});
+	</script>
+
+    <!-- COLORBOX (lightbox) -->
+    <link rel="stylesheet" href="css/colorbox.css" />
+		<script src="js/jquery.colorbox.js"></script>
+		<script>
+			$(document).ready(function(){
+				//Examples of how to assign the ColorBox event to elements
+				$(".group1").colorbox({rel:'group1'});
+				$(".group2").colorbox({rel:'group2', transition:"fade"});
+				$(".group3").colorbox({rel:'group3', transition:"none", width:"75%", height:"75%"});
+				$(".group4").colorbox({rel:'group4', slideshow:true});
+				$(".ajax").colorbox();
+				$(".youtube").colorbox({iframe:true, innerWidth:425, innerHeight:344});
+				$(".vimeo").colorbox({iframe:true, innerWidth:500, innerHeight:429});
+				$(".iframe").colorbox({iframe:true, width:"80%", height:"80%"});
+				$(".inline").colorbox({inline:true, width:"85%"});
+				$(".callbacks").colorbox({
+					onOpen:function(){ alert('onOpen: colorbox is about to open'); },
+					onLoad:function(){ alert('onLoad: colorbox has started to load the targeted content'); },
+					onComplete:function(){ alert('onComplete: colorbox has displayed the loaded content'); },
+					onCleanup:function(){ alert('onCleanup: colorbox has begun the close process'); },
+					onClosed:function(){ alert('onClosed: colorbox has completely closed'); }
+				});
+
+				$('.non-retina').colorbox({rel:'group5', transition:'none'})
+				$('.retina').colorbox({rel:'group5', transition:'none', retinaImage:true, retinaUrl:true});
+				
+				//Example of preserving a JavaScript event for inline calls.
+				$("#click").click(function(){ 
+					$('#click').css({"background-color":"#f00", "color":"#fff", "cursor":"inherit"}).text("Open this window again and this message will still be here.");
+					return false;
+				});
+			});
+		</script>
+
+        <!-- COLORBOX (lightbox) -->
+		<script>
+          function lightbox(){    
+          $.colorbox({width:"90%", height:"650px", inline:true, href:"#inline_content"});
+        }
+        </script>
+    
+
+    <!--  desplazamiento Horizontal Pt1 -->
+      <script>
+	  $(function() {
+		function runEffect() {
+		  var options = {};
+		  $( ".body-inter" ).effect( "drop", 500, callback );
+		};
+		function callback() {
+		  //setTimeout(function() {
+			$( ".body-inter2" ).removeAttr( "style" ).hide().fadeIn();
+		  //}, 1000 );
+		};
+		$( "#envio2, #isrMoralesSub, #ivaSub,#iepsSub, #educacionSub, #PensionNCSub, #otrosParametrosSub, #ietuSub, #saludSub, #PetroDerechosSub, #pensionesCSub, #tarifasElectricasSub, #ecenarioPetroDerSub, #PetroDerechos3Sub,#seguridadSocialSub" ).click(function() {
+		  runEffect();
+		  return false;
+		});
+	  });
+	  </script>
+      
+      <!--  desplazamiento Horizontal Pt2 REGRESO -->
+      <script>
+	  $(function() {
+		function runEffect() {
+		  var options = {};
+		  $( ".body-inter2" ).effect( "drop", 500, callback );
+		};
+		function callback() {
+		  //setTimeout(function() {
+			$( ".body-inter" ).removeAttr( "style" ).hide().fadeIn();
+		  //}, 1000 );
+		};
+		$( "#envio4" ).click(function() {
+		  runEffect();
+		  return false;
+		});
+	  });
+	  </script>
+
+      <!-- Dialog box 4 GUIA RÁPIDA -->
+      <script>
+	  $(document).ready(function(){
+		$("#cerrarguia").click(function(){
+		$("#guiarapida").hide(1000);
+		});
+	  });
+	  </script>
+      
+      <!-- Line Chart GOOGLE -->
+      <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+
+    
+    <!-- Tooltip -->
+    <link rel="stylesheet" href="../assets/vendor/jquery-ui-1.10.1.css" />
+	  <style>
+    label {
+      display: inline-block;
+      width: 5em;
+    }
+	.ui-tooltip {
+	  background-color:#f8f8f8;
+  	}
+	.ui-tooltip {
+	  font-size:11px;
+	  background-color:#323232;
+	  color:#FFF;
+	  border:none !important;
+	  padding:1.1em !important;
+	  
+	  border-radius: 5px;
+      -ms-border-radius: 5px;
+      -moz-border-radius: 5px;
+      -webkit-border-radius: 5px;
+	  
+	  -webkit-box-shadow: 2px 2px 3px rgba(50, 50, 50, 0.60) !important;
+	  -moz-box-shadow: 2px 2px 3px rgba(50, 50, 50, 0.60)  !important;
+	  box-shadow: 2px 2px 3px rgba(50, 50, 50, 0.60) !important;
+  	}
+    </style>
+    <script>
+    $(function() {
+      $( document ).tooltip({
+        track: true
+      });
+    });
+    </script>
+
+    <!--  Funciones y css para la validación de los formularios de ISR  -->
+    <link rel="stylesheet" type="text/css" href="css/funcionesFormulario.css"  />
+    <script type="text/javascript" src="js/funcionesFormulario.js"></script>
+	
+    <!-- Highlight effects-->
+    <script>
+	  $(document).ready(function() {
+		
+	$("#guia-btn1").click(function () {
+		  $(".blanco1").effect("pulsate", {times:2}, 2000);
+		  $("label").effect("pulsate", {times:2}, 2000);
+		  //$(".blanco1").effect("highlight", {color:'#F45D07'}, 1800);
+	});
+	
+	$("#guia-btn2").click(function () {
+		  $(".botonCalcular").effect("pulsate", {times:2}, 2000);
+	});
+	
+	$("#guia-btn3").click(function () {
+		  $("#resultados").effect("pulsate", {times:2}, 2000);
+		  $(".chartLeft").effect("pulsate", {times:2}, 2000);
+		  $(".chartRight").effect("pulsate", {times:2}, 2000);
+	});
+});
+</script>
+
+    <!-- Auto selección de inputs-->
+    <script>
+	$(document).ready( function() {
+	  $("input[type=text]").click( function() {
+		$(this).select();
+	  });
+	});
+	</script>
+
+	<!-- Ingresos petroleros -->
+	<script>
+	$(document).ready( function() {
+	$('#btnRADIO1').click(function() {
+	   $('.escenario1').addClass('naranja');
+	   $('.escenario2').removeClass('naranja');
+	   $('.escenario3').removeClass('naranja');
+	   $('.escenario1txt').addClass('negro');
+	   $('.escenario2txt').removeClass('negro');
+	   $('.escenario3txt').removeClass('negro');
+	});
+	
+	$('#btnRADIO2').click(function() {
+	   $('.escenario1').removeClass('naranja');
+	   $('.escenario2').addClass('naranja');
+	   $('.escenario3').removeClass('naranja');
+	   $('.escenario1txt').removeClass('negro');
+	   $('.escenario2txt').addClass('negro');
+	   $('.escenario3txt').removeClass('negro');
+	});
+
+	$('#btnRADIO3').click(function() {
+	   $('.escenario1').removeClass('naranja');
+	   $('.escenario2').removeClass('naranja');
+	   $('.escenario3').addClass('naranja');
+	   $('.escenario1txt').removeClass('negro');
+	   $('.escenario2txt').removeClass('negro');
+	   $('.escenario3txt').addClass('negro');
+	});
+
+	});
+	</script>
+    
+    
+    <!-- custom Select elements -->
+    <script type="text/javascript" src="js/jquery.customSelect.js"></script>
+    <script type="text/javascript">
+	  $(function(){
+	  $('select.styled').customSelect();
+	  });
+	</script>
+    
+     <!-- tabla colapsible -->
+    <script type="text/javascript">
+	$(document).ready( function() {
+	
+	$('.clickme').click(function () {
+		$(this).toggleClass("expandido").toggleClass("colapsado");
+    });
+
+	});
+	</script>
+    
+    
+    <!-- Detecta navegador -->
+    <link href="css/jquery.reject.css" rel="stylesheet" type="text/css" />
+    <!--script src="../assets/vendor/jquery-2.0.0.min.js"></script-->
+	<script src="js/jquery.reject.js"></script>
+	<script>
+	$(function() {
+		// Handle external links
+		$('a[rel="external"]').click(function() {
+			var href = $(this).attr('href');
+
+			// Send external link event to Google Analaytics
+			try {
+				_gaq.push(['_trackEvent','External Links', href.split(/\/+/g)[1], href]);
+			} catch (e) {};
+
+			window.open(href,'jr_'+Math.round(Math.random()*11));
+			return false;
+		});
+
+		// Handle displaying of option links
+		$('em.option').css({
+			cursor: 'pointer',
+			fontSize: '1.1em',
+			color: '#333',
+			letterSpacing: '1px',
+			borderBottom: '1px dashed #BBB'
+		}).click(function() {
+			var self = $(this);
+			var opt = $.trim(self.text());
+
+			$('ol.dp-c:first').children('li').children('span').each(function() {
+				var self = $(this);
+				var text = self.text();
+				var srch = opt+':';
+
+				// If found, highlight and jump window to position on page
+				if (text.search(srch) !== -1) {
+					self.css('color','red');
+					window.location.hash = '#c-'+opt;
+					window.scrollTo(0,self[0].offsetTop);
+				}
+			});
+		});
+
+		/* Demo Codes */
+
+		/*$('#demo2').ready(function() {
+		  $.reject({
+			reject: { 
+			  safari: true, // Apple Safari
+			  chrome: true, // Google Chrome
+			  firefox: false, // Mozilla Firefox
+			  msie: true, // Microsoft Internet Explorer
+			  opera: true, // Opera
+			  konqueror: true, // Konqueror (Linux)
+			  unknown: true // Everything else
+			}, // Reject all renderers for demo
+			display: ['firefox'], // Displays only firefox
+			header: 'Te recomendamos utilizar Mozilla Firefox para una mejor visualización', // Header Text
+			paragraph1: '', // Paragraph 1
+			paragraph2: '',
+			closeMessage: '', // Message below close window link
+			closeCookie: true
+		}); // Customized Text
+
+			return false;
+		});*/
+	});
+	</script>
+    
+    <!-- resize iframe -->
+    <script language="javascript" type="text/javascript">
+	  function resizeIframe(obj) {
+		obj.style.height = obj.contentWindow.document.body.scrollHeight + 'px';
+	  }
+	</script>
+    
+    <!-- html to image -->
+    <script type="text/javascript" src="js/html2canvas.js"></script>
+	<script type="text/javascript" src="js/jquery.plugin.html2canvas.js"></script>
+    
+    <script type="text/javascript">
+			function capture() {
+				
+				$('#target').html2canvas({
+					onrendered: function (canvas) {
+						//Set hidden field's value to image data (base-64 string)
+						$('#img_val').val(canvas.toDataURL("image/png"));
+						//Submit the form manually
+						//document.getElementById("prueba").removeAttribute('class'); 
+						document.getElementById("myForm").submit();
+					}
+				});
+			}
+		</script>  
+    
+        <!--  Ayuda contextual-->
+	    <script>
+        $(document).ready(function() {
+        
+        $( "#btn-toggle" ).click(function() {
+            $( this ).toggleClass( "btn-activo" );
+          $( "#logoCiep" ).toggleClass( "blur" );
+          $( ".menu1" ).toggleClass( "blur" );
+          $( ".menu2" ).toggleClass( "blur" );
+          $( ".menu3" ).toggleClass( "blur" );
+          $( "#borrarCambios" ).toggleClass( "blur" );
+          $( "#bloqueTop .header h1" ).toggleClass( "blur" );
+          $( ".placeholder" ).toggleClass( "blur" );
+          $( "#bloqueTop .bloqueHead" ).toggleClass( "blur" );
+          $( ".content" ).toggleClass( "blur" );
+          $( "#guiarapida" ).toggleClass( "blur" );
+          $( "table" ).toggleClass( "blur" );
+          $( ".calculateBar" ).toggleClass( "blur" );
+          $( "#preResultados" ).toggleClass( "blur" );
+          $( "#resultados" ).toggleClass( "blur" );
+          $( ".chartLeft" ).toggleClass( "blur" );
+          $( ".chartRight" ).toggleClass( "blur" );
+		  $( "#candle_chart" ).toggleClass( "blur" );
+          $( "#trama-negra" ).toggleClass( "visible" );
+          $( ".ayuda" ).toggleClass( "visible" );
+          
+        });
+        
+        });
+        </script>
+
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,400italic,600,600italic' rel='stylesheet' media="print" type='text/css'>
+    <link rel='stylesheet' type='text/css' media='print'  href='css/tablas.css' />
+    <link rel='stylesheet' type='text/css' href='css/screen.css' media='print' />
+    <link rel='stylesheet' media='print' href='css/mini.css' />
+    <link rel='stylesheet' media='print' href='css/print.css' />
+    <link rel="stylesheet" type="text/css" href="css/descripciones.css" />
+      
+
+<link rel="stylesheet" href="../assets/museo.css">
+</head><!-- fin de HEAD -->
+
+<body>
+
+<div id="top"></div>
+<div id="mainWrapper">
+
+<div class="colmask leftmenu">
+	<div class="colleft">
+    
+	  <div class="col1">
+			<!-- Column 1 start -->
+            <div id="layoutdims">
+            <div class="inlineIconos">
+    <div class="icoTop"><a href="index.php.html" class="home" title="Inicio"></a></div>
+</div>            </div>
+        <div id="layoutdims2"><h1>Simulador Fiscal CIEP <span>-BETA-</span></h1></div>
+        <div class="limpiar"></div>
+            
+        <div class="bloque" id="bloqueTop">
+        	<div class="bloqueHead">
+        		<h2>Contacto</h2>
+                
+            </div>
+			<div class="bloqueInter">
+
+				<div class="body-inter">
+
+                  <div class="content2 contentPreguntas" style="min-width:605px !important;">
+                      <iframe src="https://ciep.mx/contacto-simulador-fiscal/" width="100%" height="540" frameBorder="0" scrolling="no"></iframe>
+                  </div>
+
+                  <div class="limpiar"></div>
+                  
+                  </div>
+                  
+            <!-- </div> fin de paddBloque -->
+            
+            <div class="limpiar"></div>
+			</div><!-- fin de BloqueInter -->
+            
+        </div><!-- fin de Bloque -->
+        <div class="limpiar"></div>
+        <!-- inicio de Bloque --><!-- fin de Bloque -->
+        
+        
+        <!-- inicio de Bloque --><!-- fin de Bloque -->
+        <div class="limpiar"></div>
+        
+			<!-- Column 1 end -->
+		</div>
+		<div class="col2">
+			<!-- Column 2 start -->
+            	
+			<div id='logoCiep'><a href='http://ciep.mx/'>HOME</a></div>
+            	<ul id='menu' class='menu1'><span>
+            	<p>Opciones</p></span>
+                
+                <li class=''><a href='como-usar.php.html' class='icoComoUsar'>¿Cómo usar el simulador?<span title='¿Cómo usar el simulador?'></span></a></li>
+                
+                	<!--li class=''><a href='#' class='icoMetodologia'>Metodología<span title='Metodología'></span></a></li-->
+                    
+                	<li class=''><a href='preguntas-frecuentes.php.html' class='icoPreguntas'>Preguntas Frecuentes<span title='Preguntas frecuentes'></span></a></li>
+                    
+                    <li class='selected'><a href='contacto.php.html' class='icoContacto'>Contacto<span title='Contacto)'></span></a></li>
+                    
+                    
+                 </ul>
+
+                 
+                 <div class='limpiar'></div>	 
+
+ 
+    
+                
+		<style type='text/css'>
+		#bloqueTop .bloqueHead {background-position:12px -648px;}
+		</style>
+					<!-- Column 2 end -->
+		</div>
+	</div>
+</div>
+
+
+</div><!-- fin de #mainWrapper -->
+
+<div id="footer">
+	<p>© 2013 Centro de Investigación Económica y Presupuestaria, A.C.</p>
+</div>
+
+
+        <div id="dialog" title="Valores default"></div>
+
+
+<script src="../assets/museo.js" data-version="v1" data-anio="2014" data-titulo="Primera generación"></script>
+</body>
+</html>
