@@ -71,6 +71,7 @@ $(document).ready(function() {
 <script>
   if (window.prettyPrint) prettyPrint(); // MUSEO: guard
   function update() {
+    if (typeof demoGauge === 'undefined' || !demoGauge) return; // MUSEO: demo del velocímetro sin canvas en esta página
     var opts = {};
     $('.opts input[min], .opts .color').each(function() {
       var val = $(this).hasClass("color") ? this.value : parseFloat(this.value);
