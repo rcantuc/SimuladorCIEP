@@ -693,6 +693,25 @@ for _art in "${DEFAULT_MANIFEST[@]}"; do
 done
 log_ok "Fase 3b-ter: manifiesto local fresco (${#DEFAULT_MANIFEST[@]}/6 archivos, mtime >= master/PEF.dta)."
 
+# Gate de CONTENIDO del output.txt (2026-10-01, deploy v8.4). El gate de
+# frescura solo mira mtime: el default del 28-sep era de una corrida que se
+# quedó en Perfiles (11 llaves: INCD/APORT*/PROY) y la página abrió con los
+# valores vacíos del JS (GASTOS[40] undefined). Se exige que estén las llaves
+# que escriben FiscalGap/output.do y Perfiles; si falta una, la corrida de
+# SIM.do no llegó al final (global output activa, §4-§8 completos).
+_llaves_req=(GASTOS INGRESOS GASTOSPC PIBY DEUDAPARAM CRECPIB CRECDEF PROYSHRFSP1 PROYSHRFSP2 PROYSHRFSP3 PROYMAX INCD APORTHIV IVA ISRTASA)
+_llaves_faltan=()
+for _k in "${_llaves_req[@]}"; do
+    grep -qE "^${_k} *[:=]" "$LOCAL_DEFAULT_DIR/output.txt" || _llaves_faltan+=("$_k")
+done
+if (( ${#_llaves_faltan[@]} > 0 )); then
+    die "Fase 3b-ter: users/ricardo/output.txt está INCOMPLETO — faltan ${#_llaves_faltan[@]} llave(s): ${_llaves_faltan[*]}.
+        La corrida de SIM.do que lo generó no llegó a FiscalGap/output.do (o
+        corrió sin 'global output'). Corre SIM.do completo con output activo
+        y revisa que termine en TOUCH-DOWN antes de desplegar."
+fi
+log_ok "Fase 3b-ter: output.txt completo (${#_llaves_req[@]}/${#_llaves_req[@]} llaves obligatorias presentes)."
+
 # Continuaciones de Stata en output.txt (2026-10-01, deploy v8.4). output.txt
 # es el log de output.do; si la corrida local tuvo linesize angosto, Stata
 # parte las líneas largas y sigue en la siguiente con "> ". cargaDefault.php
