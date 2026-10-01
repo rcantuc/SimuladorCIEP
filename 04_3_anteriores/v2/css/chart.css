@@ -196,7 +196,7 @@ position: absolute;
 }
 #inline_content .barWrapper {
 	height:305px;
-	background-image:url(../sim-images/bg-bars2.gif.html);
+	background-image:none;
 }
 .chart-x-axis .wrapper, .chart-x-axis-pt1 .wrapper, .avanzados .wrapper {
 	height:auto;

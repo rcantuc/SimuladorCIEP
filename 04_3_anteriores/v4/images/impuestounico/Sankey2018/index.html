@@ -1,10 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
   <head>
     <meta charset="utf-8">
     <title>Paquete Económico 2018</title>
 
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <script src="../../../../assets/vendor/jquery-1.11.0.min.js"></script><!-- MUSEO: jQuery vendorizado (http:// bloqueado por mixed content) -->
     <link rel="stylesheet" href="css/estilos.css">
 
     
@@ -25,10 +25,10 @@
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
   <tr>
     <td><ul class="botones1">
-      <li><a class="activo" onClick='document.getElementById("iframe-A").src="SankeyDeciles.html";'>Decil</a></li>
-      <li><a onClick='document.getElementById("iframe-A").src="SankeySexos.html";'>Sexo</a></li>
-      <li><a onClick='document.getElementById("iframe-A").src="SankeyEdades.html";'>Edad</a></li>
-      <li><a onClick='document.getElementById("iframe-A").src="SankeyEscolaridad.html";'>Escolaridad</a></li>
+      <li><a class="activo" onClick='document.getElementById("iframe-A").src="default.html";' title="Diagrama no conservado en la captura de 2018">Decil</a></li>
+      <li><a onClick='document.getElementById("iframe-A").src="default.html";' title="Diagrama no conservado en la captura de 2018">Sexo</a></li>
+      <li><a onClick='document.getElementById("iframe-A").src="default.html";' title="Diagrama no conservado en la captura de 2018">Edad</a></li>
+      <li><a onClick='document.getElementById("iframe-A").src="default.html";' title="Diagrama no conservado en la captura de 2018">Escolaridad</a></li>
     </ul></td>
   </tr>
   <tr>
@@ -41,7 +41,7 @@
 
    <script>
  function myFunction() {
-    document.getElementById("iframe-A").src="SankeyDeciles.html";
+    document.getElementById("iframe-A").src="default.html"; /* MUSEO: los Sankey*.html (D3) no fueron capturados */
 }
 myFunction();
  </script> 

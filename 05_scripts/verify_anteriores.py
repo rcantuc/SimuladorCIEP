@@ -18,11 +18,15 @@ verbose = '--verbose' in sys.argv
 
 def local(path_from, ref):
     ref = urllib.parse.unquote(ref.split('?')[0].split('#')[0])
-    return os.path.normpath(os.path.join(os.path.dirname(path_from), ref))
+    base = os.path.dirname(path_from)
+    if os.path.basename(base) == 'parts':      # los parts se inyectan por AJAX en la página padre: sus rutas son relativas a ella
+        base = os.path.dirname(base)
+    return os.path.normpath(os.path.join(base, ref))
 
 fallas = 0
 for v in ['.', 'v1', 'v2', 'v3', 'v4']:
-    htmls = sorted(glob.glob(os.path.join(ROOT, v, '*.html')))
+    htmls = sorted(glob.glob(os.path.join(ROOT, v, '*.html')) + (glob.glob(os.path.join(ROOT, v, '**', '*.html'), recursive=True) if v != '.' else []))
+    htmls = sorted(set(htmls))
     csss = glob.glob(os.path.join(ROOT, v, '**', '*.css'), recursive=True) if v != '.' else []
     refs = collections.Counter(); prohib = collections.Counter()
     for pg in htmls:

@@ -336,15 +336,15 @@ h1, h2, h3, h4, h5 {
 .underline_title {
   background-position: left bottom;
   background-repeat: repeat-x;
-  background-image: url(../img/common/header_subtitle_line_black.png.html);
+  background-image: none;
 }
 /* line 12, ../../../../../src/sass/inc/common/_ui.scss */
 .underline_title.white, .menu_white .underline_title {
-  background-image: url(../img/common/header_subtitle_line_white.png.html);
+  background-image: none;
 }
 /* line 15, ../../../../../src/sass/inc/common/_ui.scss */
 .underline_title.brown {
-  background-image: url(../img/common/header_subtitle_line_brown.png.html);
+  background-image: none;
 }
 
 /* line 20, ../../../../../src/sass/inc/common/_ui.scss */
@@ -434,7 +434,7 @@ h1, h2, h3, h4, h5 {
   margin: 4px 4px 0px 2px;
   padding-left: 16px;
   fill: #FFF;
-  background: url(../img/svg/biscuit/bt_retailer_picto_shadow.svg.html) 23px 23px no-repeat;
+  background: none 23px 23px no-repeat;
 }
 /* line 104, ../../../../../src/sass/inc/common/_ui.scss */
 .squareBt.retailerBt span.content span.picto svg {
@@ -474,7 +474,7 @@ h1, h2, h3, h4, h5 {
   height: 11px;
   margin-right: 16px;
   fill: #884F3D;
-  background: url(../img/svg/contact/contact_submit.svg.html) top left no-repeat;
+  background: none top left no-repeat;
 }
 /* line 151, ../../../../../src/sass/inc/common/_ui.scss */
 .squareBt[type="submit"].over {
@@ -836,7 +836,7 @@ header nav .menu ul li:first-child a > span span {
   width: 100%;
   height: 100%;
   text-indent: -9999px;
-  background: url(../img/common/header_logo_black.png.html) 0px 0px no-repeat;
+  background: none 0px 0px no-repeat;
 }
 /* line 244, ../../../../../src/sass/inc/views/partials/_header.scss */
 header nav .menu ul li:first-child a > span.black {
@@ -848,7 +848,7 @@ header nav .menu ul li:first-child a > span.white {
 }
 /* line 249, ../../../../../src/sass/inc/views/partials/_header.scss */
 header nav .menu ul li:first-child a > span.white span {
-  background: url(../img/common/header_logo_white.png.html) 0px 0px no-repeat;
+  background: none 0px 0px no-repeat;
 }
 
 /* line 265, ../../../../../src/sass/inc/views/partials/_header.scss */
@@ -1528,7 +1528,7 @@ footer ul li a {
   margin-top: 10px;
   width: 157px;
   height: 19px;
-  background: url(../img/about/signature_tmp.png.html) 0px 0px no-repeat;
+  background: none 0px 0px no-repeat;
 }
 /* line 50, ../../../../../src/sass/inc/views/_about.scss */
 #about section > .left, #about section > .right {
@@ -1719,7 +1719,7 @@ footer ul li a {
   display: block;
   width: 100%;
   height: 100%;
-  background: url(../img/svg/biscuits/biscuits_nav_shadow.svg.html) left top no-repeat;
+  background: none left top no-repeat;
   -moz-background-size: 100%;
   -o-background-size: 100%;
   -webkit-background-size: 100%;
@@ -1795,7 +1795,7 @@ footer ul li a {
 #biscuits ul#gammes li.gamme .title {
   top: 19%;
   text-align: center;
-  background: url(../img/biscuits/underline_gamme.png.html) center bottom no-repeat;
+  background: none center bottom no-repeat;
   padding-bottom: 15px;
 }
 /* line 193, ../../../../../src/sass/inc/views/_biscuits.scss */
@@ -1827,7 +1827,7 @@ footer ul li a {
   width: 380px;
   height: 380px;
   margin: -4px -60px 0px -60px;
-  background: url(../img/biscuits/biscuits_sep.png.html) 60px 156px no-repeat;
+  background: none 60px 156px no-repeat;
 }
 /* line 221, ../../../../../src/sass/inc/views/_biscuits.scss */
 #biscuits ul#gammes li.gamme .biscuits li:first-child {
@@ -2083,7 +2083,7 @@ footer ul li a {
 #biscuit #details .photos .details .ingredients .plus {
   width: 30px;
   height: 30px;
-  background: url(../img/biscuit/ingredients_plus.png.html) center center no-repeat;
+  background: none center center no-repeat;
 }
 /* line 163, ../../../../../src/sass/inc/views/_biscuit.scss */
 #biscuit #details .photos .details .ingredients .first, #biscuit #details .photos .details .ingredients .second {
@@ -2110,7 +2110,7 @@ footer ul li a {
 #biscuit #details .photos .details .sep {
   width: 100%;
   height: 6px;
-  background: url(../img/biscuit/underline_short_3.png.html) center center no-repeat;
+  background: none center center no-repeat;
 }
 /* line 188, ../../../../../src/sass/inc/views/_biscuit.scss */
 #biscuit #details .photos .details .desc_1 {
@@ -2321,7 +2321,7 @@ footer ul li a {
   width: 521px;
   height: 81px;
   right: -96px;
-  background: url(../img/biscuit/packaging_shadow.png.html) left top no-repeat;
+  background: none left top no-repeat;
 }
 /* line 334, ../../../../../src/sass/inc/views/_biscuit.scss */
 #biscuit #packaging .left .package {
@@ -2350,11 +2350,11 @@ footer ul li a {
   margin: 11px 0px 19px 0px;
   width: 108px;
   height: 15px;
-  background: url(../img/biscuit/underline_short_4.png.html) 0px 9px no-repeat;
+  background: none 0px 9px no-repeat;
 }
 /* line 364, ../../../../../src/sass/inc/views/_biscuit.scss */
 #biscuit #packaging .right .sep.sep_2 {
-  background: url(../img/biscuit/underline_short_5.png.html) 0px 9px no-repeat;
+  background: none 0px 9px no-repeat;
 }
 /* line 369, ../../../../../src/sass/inc/views/_biscuit.scss */
 #biscuit #packaging .right li span {
@@ -2423,15 +2423,15 @@ footer ul li a {
 }
 /* line 68, ../../../../../src/sass/inc/views/_stores.scss */
 #stores #lpqt .store:nth-child(even) .infos ul li.hours {
-  background-image: url(../img/stores/store_underline_infos_white.png.html);
+  background-image: none;
 }
 /* line 71, ../../../../../src/sass/inc/views/_stores.scss */
 #stores #lpqt .store:nth-child(even) .infos ul li.hours .picto {
-  background-image: url(../img/stores/picto_hours_white.png.html);
+  background-image: none;
 }
 /* line 77, ../../../../../src/sass/inc/views/_stores.scss */
 #stores #lpqt .store:nth-child(even) .infos ul li.address .picto {
-  background-image: url(../img/stores/picto_address_white.png.html);
+  background-image: none;
 }
 /* line 84, ../../../../../src/sass/inc/views/_stores.scss */
 #stores #lpqt .store:nth-child(even) .photos {
@@ -2453,7 +2453,7 @@ footer ul li a {
   right: -279px;
   bottom: 0px;
   opacity: 0.1;
-  background: url(../img/svg/stores/stores_angle.svg.html) 0px 0px no-repeat;
+  background: none 0px 0px no-repeat;
   -moz-background-size: cover;
   -o-background-size: cover;
   -webkit-background-size: cover;
@@ -2510,15 +2510,15 @@ footer ul li a {
 /* line 157, ../../../../../src/sass/inc/views/_stores.scss */
 #stores #lpqt .store .infos ul li.hours {
   margin-bottom: 34px;
-  background: url(../img/stores/store_underline_infos.png.html) left bottom no-repeat;
+  background: none left bottom no-repeat;
 }
 /* line 161, ../../../../../src/sass/inc/views/_stores.scss */
 #stores #lpqt .store .infos ul li.hours .picto {
-  background: url(../img/stores/picto_hours.png.html) 0px 6px no-repeat;
+  background: none 0px 6px no-repeat;
 }
 /* line 167, ../../../../../src/sass/inc/views/_stores.scss */
 #stores #lpqt .store .infos ul li.address .picto {
-  background: url(../img/stores/picto_address.png.html) 0px 0px no-repeat;
+  background: none 0px 0px no-repeat;
 }
 /* line 174, ../../../../../src/sass/inc/views/_stores.scss */
 #stores #lpqt .store .photos {
@@ -2653,7 +2653,7 @@ footer ul li a {
   width: 38px;
   height: 100%;
   cursor: pointer;
-  background: url(../img/stores/retailers_search_picto.png.html) #9f7f60 10px 8px no-repeat;
+  background: none #9f7f60 10px 8px no-repeat;
 }
 /* line 317, ../../../../../src/sass/inc/views/_stores.scss */
 .no-touch #stores #retailers .search #addressFrom .submit:hover {
@@ -2730,7 +2730,7 @@ footer ul li a {
   width: 14%;
   right: 0px;
   height: 100%;
-  background: url(../img/stores/retailers_result_arrow.png.html) 23px center no-repeat;
+  background: none 23px center no-repeat;
 }
 /* line 388, ../../../../../src/sass/inc/views/_stores.scss */
 .no-touch #stores #retailers .search #results .list li:hover {
@@ -2766,7 +2766,7 @@ footer ul li a {
   width: 11px;
   height: 11px;
   margin: 1px 0px 0px 1px;
-  background: url(../img/stores/retailers_result_next.png.html) right center no-repeat;
+  background: none right center no-repeat;
 }
 /* line 423, ../../../../../src/sass/inc/views/_stores.scss */
 .no-touch #stores #retailers .search #results .nav .prevBt:hover, .no-touch #stores #retailers .search #results .nav .nextBt:hover {
@@ -2838,7 +2838,7 @@ footer ul li a {
 }
 /* line 490, ../../../../../src/sass/inc/views/_stores.scss */
 #stores #retailers .retailerCard.noPhoto.noDesc .bottom .arrow {
-  background-image: url(../img/stores/retailers_details_bot_arrow_noDesc.png.html);
+  background-image: none;
 }
 /* line 497, ../../../../../src/sass/inc/views/_stores.scss */
 #stores #retailers .retailerCard > .container {
@@ -2978,7 +2978,7 @@ footer ul li a {
   position: absolute;
   width: 100%;
   height: 100%;
-  background: url(../img/stores/retailers_details_bot_arrow.png.html) 30% 0% no-repeat;
+  background: none 30% 0% no-repeat;
 }
 
 /* line 12, ../../../../../src/sass/inc/views/_contact.scss */
@@ -3043,7 +3043,7 @@ footer ul li a {
   height: 29px;
   margin-right: 12px;
   margin-top: 3px;
-  background: url(../img/svg/contact/contact_tel.svg.html) top left no-repeat;
+  background: none top left no-repeat;
 }
 /* line 74, ../../../../../src/sass/inc/views/_contact.scss */
 #contact .infos .container .visu {
@@ -3174,7 +3174,7 @@ footer ul li a {
   height: 8px;
   margin: 0px 0px 1px 12px;
   padding-bottom: 6px;
-  background: url(../img/common/picto_download.png.html) center center no-repeat;
+  background: none center center no-repeat;
   border-bottom: 1px solid #864a3f;
 }
 /* line 202, ../../../../../src/sass/inc/views/_contact.scss */

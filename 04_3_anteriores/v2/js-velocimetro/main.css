@@ -34,7 +34,7 @@
 #canvas-preview {
 }
 #gaugeOver {
-	background-image:url(../sim-images/gauge-over.png.html);
+	background-image:none;
 	background-repeat:no-repeat;
 	width:353px;
 	height:140px;
