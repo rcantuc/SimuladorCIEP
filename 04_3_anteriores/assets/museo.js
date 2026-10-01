@@ -25,6 +25,7 @@
   function inerte(e) {
     var el = e.target;
     while (el && el !== document) {
+      if (el.getAttribute && el.getAttribute('data-museo-msg')) { e.preventDefault(); e.stopPropagation(); toast(el.getAttribute('data-museo-msg')); return; }
       var tag = (el.tagName || '').toLowerCase();
       var tipo = (el.getAttribute && el.getAttribute('type') || '').toLowerCase();
       var href = (el.getAttribute && el.getAttribute('href')) || '';

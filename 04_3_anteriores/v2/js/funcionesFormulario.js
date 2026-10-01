@@ -171,7 +171,7 @@ $(document).ready(function() {
 			var tmpNombreCompleto = selNombre[tmpNombrePhp];
 			console.log("Leer cookie: "+tmpNombrePhp+":="+tmpNombre);
 			$("#iframeMenu").load("parts/menu-left-iva.html") /* MUSEO: menú estático reconstruido */;
-			if(href!='inicio0.php') {
+			if(href!='inicio0.php' && href!='inicio0.php.html') { // MUSEO: la pieza se sirve como .php.html
 				$("#PTI").load("parts/tabla-incidencia-del-modulo.html") /* MUSEO: parte estática reconstruida (solo IVA) */;
 				$("#PTII").load("parts/perfil-generacional.html") /* MUSEO: parte estática reconstruida (solo IVA) */;		
 				$("#pt2").load("parts/tabla-recaudacion-modulo.html") /* MUSEO: parte estática reconstruida (solo IVA) */;				
@@ -182,7 +182,7 @@ $(document).ready(function() {
 		} else {
 		
 			$("#iframeMenu").load("parts/menu-left-ingresos.html");	
-			if(href!='inicio0.php') {
+			if(href!='inicio0.php' && href!='inicio0.php.html') { // MUSEO: la pieza se sirve como .php.html
 				$("#PTI").load("parts/tabla-incidencia-del-modulo.html");
 				$("#PTII").load("parts/perfil-generacional.html");		
 				$("#pt2").load("parts/tabla-recaudacion-modulo.html");				
