@@ -2,7 +2,7 @@
 /* CSS Document */
 
 @charset "UTF-8";
-@import url(http://fonts.googleapis.com/css?family=Marck+Script&subset=latin,latin-ext,cyrillic);
+@import url(https://fonts.googleapis.com/css?family=Marck+Script&subset=latin,latin-ext,cyrillic);
 @-o-keyframes rotateSpinnerIpad {
   /* line 307, ../../../../../src/sass/inc/common/_mixins.scss */
   0% {
@@ -186,15 +186,15 @@ input::-ms-clear {
 
 @font-face {
   font-family: 'Track';
-  src: url("http://localhost:8000/css/webfonts/Track/Track.eot");
-  src: local("☺"), url("http://localhost:8000/css/webfonts/Track/Track.woff") format("woff"), url("http://localhost:8000/css/webfonts/Track/Track.ttf") format("truetype"), url("http://localhost:8000/css/webfonts/Track/Track.svg") format("svg");
+  src: local('Arial');
+  src: local("☺"), ;
   font-weight: normal;
   font-style: normal;
 }
 @font-face {
   font-family: 'TrackItalic';
-  src: url("http://localhost:8000/css/webfonts/TrackItalic/TrackItalic.eot");
-  src: local("☺"), url("http://localhost:8000/css/webfonts/TrackItalic/TrackItalic.woff") format("woff"), url("http://localhost:8000/css/webfonts/TrackItalic/TrackItalic.ttf") format("truetype"), url("http://localhost:8000/css/webfonts/TrackItalic/TrackItalic.svg") format("svg");
+  src: local('Arial');
+  src: local("☺"), ;
   font-weight: normal;
   font-style: normal;
 }
@@ -626,7 +626,7 @@ header {
   background: #ababab;
   height: auto;
   
-  	background-image: url(http://localhost:8000/images/logo-marca-de-agua.png);
+  	background-image: url(../images/logo-marca-de-agua.png);
 	background-repeat:no-repeat;
 	background-position:center;
 }
@@ -3792,14 +3792,14 @@ table.f-right {
 }
 
 .tabla-parametros table input[type='text'].pen6 {
-    background-image: url(http://localhost:8000/images/icons-pencil-big.png);
+    background-image: url(../images/icons-pencil-big.png);
     background-position: 35px -95px;
   }
 .tabla-parametros table input[type='text'].pen6:focus {
 	background-position: 35px 107px;
 }
 .tabla-parametros table input[type='text'].pen5 {
-    background-image: url(http://localhost:8000/images/icons-pencil.png);
+    background-image: url(../images/icons-pencil.png);
     background-position: 18px -411px;
     font-size:38px; width:80%; padding-left:10%; padding-right:10%; padding-bottom:4%; padding-top:4%;
   }
@@ -3807,7 +3807,7 @@ table.f-right {
 	background-position:18px -355px;
 }
 .tabla-parametros table input[type='text'].pen4 {
-    background-image: url(http://localhost:8000/images/icons-pencil.png);
+    background-image: url(../images/icons-pencil.png);
     background-position: 16px -276px;
     font-size:38px; width:80%; padding-left:10%; padding-right:10%; padding-bottom:4%; padding-top:4%;
   }
@@ -3816,7 +3816,7 @@ table.f-right {
 }
 #gasto #transitionLayer-v1 .tabla-parametros table input[type='text'].pen3,
 #gasto #transitionLayer-v2 .tabla-parametros table input[type='text'].pen3 {
-    background-image: url(http://localhost:8000/images/icons-pencil.png);
+    background-image: url(../images/icons-pencil.png);
     background-position: 12px -164px;
   }
 #gasto #transitionLayer-v1 .tabla-parametros table input[type='text'].pen3:focus,
@@ -3824,21 +3824,21 @@ table.f-right {
 	background-position: 12px -134px;
 }
 .tabla-parametros table input[type='text'].pen2 {
-    background-image: url(http://localhost:8000/images/icons-pencil.png);
+    background-image: url(../images/icons-pencil.png);
     background-position: 8px -84px;
   }
 .tabla-parametros table input[type='text'].pen2:focus {
 	background-position: 8px -62px;
 }
 .tabla-parametros table input[type='text'].pen2b {
-    background-image: url(http://localhost:8000/images/icons-pencil.png);
+    background-image: url(../images/icons-pencil.png);
     background-position: 8px -83px;
   }
 .tabla-parametros table input[type='text'].pen2b:focus {
 	background-position: 8px -61px;
 }
 .tabla-parametros table input[type='text'].pen1 {
-    background-image: url(http://localhost:8000/images/icons-pencil.png);
+    background-image: url(../images/icons-pencil.png);
     background-position: 8px -13px;
   }
 .tabla-parametros table input[type='text'].pen1:focus {
@@ -3908,11 +3908,11 @@ input[type="checkbox"] + label span {
     height:19px;
     margin:-1px 8px 0 0;
     vertical-align:middle;
-    background:url(http://localhost:8000/images/check_radio_sheet2.png) left top no-repeat;
+    background:url(../images/check_radio_sheet2.png) left top no-repeat;
     cursor:pointer;
 }
 input[type="checkbox"]:checked + label span {
-    background:url(http://localhost:8000/images/check_radio_sheet2.png) -19px top no-repeat;
+    background:url(../images/check_radio_sheet2.png) -19px top no-repeat;
 }
 
 input[type="radio"] {
@@ -3928,30 +3928,30 @@ input[type="radio"] + label span {
     height:19px;
     margin:-1px 4px 0 0;
     vertical-align:middle;
-    background: url(http://localhost:8000/images/check_radio_sheet2.png) -38px top no-repeat;
+    background: url(../images/check_radio_sheet2.png) -38px top no-repeat;
     cursor:pointer;
 	float: right;
   /*margin-right: 43px;*/}
 input[type="radio"]:checked + label span {
-    background: url(http://localhost:8000/images/check_radio_sheet2.png) -57px top no-repeat;}
+    background: url(../images/check_radio_sheet2.png) -57px top no-repeat;}
 
 
 #gasto input[type="checkbox"] + label span {
-    background:url(http://localhost:8000/images/check_radio_sheet3.png) left top no-repeat;}
+    background:url(../images/check_radio_sheet3.png) left top no-repeat;}
 #gasto input[type="checkbox"]:checked + label span {
-    background:url(http://localhost:8000/images/check_radio_sheet3.png) -19px top no-repeat;}
+    background:url(../images/check_radio_sheet3.png) -19px top no-repeat;}
 #gasto input[type="radio"] + label span {
-    background: url(http://localhost:8000/images/check_radio_sheet3.png) -38px top no-repeat;}
+    background: url(../images/check_radio_sheet3.png) -38px top no-repeat;}
 #gasto input[type="radio"]:checked + label span {
-    background: url(http://localhost:8000/images/check_radio_sheet3.png) -57px top no-repeat;}
+    background: url(../images/check_radio_sheet3.png) -57px top no-repeat;}
 
 #gasto input[type="radio"].square + label span {
     width:25px;
     height:25px;
 	margin:0 4px 0 0;
-    background: url(http://localhost:8000/images/check_box_sheet2.png) 0px top no-repeat;}
+    background: url(../images/check_box_sheet2.png) 0px top no-repeat;}
 #gasto input[type="radio"].square:checked + label span {
-    background: url(http://localhost:8000/images/check_box_sheet2.png) -30px top no-repeat;}
+    background: url(../images/check_box_sheet2.png) -30px top no-repeat;}
 
 
 input[type="text"]::selection {
@@ -4031,7 +4031,7 @@ input[type="text"]::-moz-selection {
   position: absolute;
   top: 50%;
   margin-top: -200px;
-  background: url(http://localhost:8000/images/triangulo2.png) no-repeat right center;
+  background: url(../images/triangulo2.png) no-repeat right center;
   right: 8%;
 }
 .box-inside>h3, .box-inside #tabs-1 h2, .box-inside #tabs-2 h2, .box-inside #tabs-3 h2, .box-inside #tabs-4 h2, .box-inside #tabs-5 h2 {
@@ -4437,7 +4437,7 @@ li .ui-state-default a{
 	width:24px;
 	height:20px;
 	overflow:hidden;
-	background: url(http://localhost:8000/images/btn-mas-info2.png) no-repeat 3px 2px;
+	background: url(../images/btn-mas-info2.png) no-repeat 3px 2px;
 	cursor: pointer; cursor: hand;
 	  -webkit-transition: all .2s ease;
     -moz-transition: all .2s ease;
@@ -4445,7 +4445,7 @@ li .ui-state-default a{
 	opacity: 0.75; 
 }
 .mas-info:hover {
-	background: url(http://localhost:8000/images/btn-mas-info2.png) no-repeat 3px -28px;
+	background: url(../images/btn-mas-info2.png) no-repeat 3px -28px;
 	opacity:1;
 }
 #r-incidencia table tr:hover {

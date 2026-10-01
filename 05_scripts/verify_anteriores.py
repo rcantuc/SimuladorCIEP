@@ -12,6 +12,8 @@ import glob, os, re, sys, urllib.parse, collections
 
 ROOT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '04_3_anteriores')
 PROHIBIDOS = re.compile(r'(localhost:\d+|ciep-mx\.ddns\.net|googletagmanager\.com|google-analytics\.com)', re.I)
+# mixed content: el sitio es https; cualquier recurso activo por http:// lo bloquea el navegador
+MIXED = re.compile(r'(?:src|href)=["\']\s*(http://[^"\']+)|url\(["\']?\s*(http://[^"\')]+)|@import\s+url\(["\']?(http://[^"\')]+)', re.I)
 verbose = '--verbose' in sys.argv
 
 def local(path_from, ref):
@@ -36,6 +38,9 @@ for v in ['.', 'v1', 'v2', 'v3', 'v4']:
         for m in re.findall(r'url\(["\']?([^"\')]+)["\']?\)', s_sin):
             if not re.match(r'(https?:)?//|data:', m): refs[local(pg, m)] += 1
         for m in PROHIBIDOS.findall(s_sin): prohib[m] += 1
+        for g in MIXED.findall(s_sin):
+            u = next(x for x in g if x)
+            if not u.startswith('http://ciep.mx') or True: prohib['http:// (mixed content) ' + u.split('/')[2]] += 1
         # cargas AJAX (.load / url:) de la propia pieza: tambien deben existir
         for m in re.findall(r'(?:\.load\(|url\s*:\s*)["\']((?!https?:|//)[^"\'?]+)', s_sin):
             if re.search(r'\.(html|xml|php|json)$', m): refs[local(pg, m)] += 1
@@ -46,6 +51,8 @@ for v in ['.', 'v1', 'v2', 'v3', 'v4']:
     for css in csss:
         s = open(css, encoding='utf-8', errors='replace').read()
         s = re.sub(r'/\*.*?\*/', '', s, flags=re.S)   # las url() comentadas no cuentan
+        for g in MIXED.findall(s):
+            u = next(x for x in g if x); prohib['http:// (mixed content, css) ' + u.split('/')[2]] += 1
         for m in re.findall(r'url\(["\']?([^"\')]+)["\']?\)', s):
             if not re.match(r'(https?:)?//|data:', m): refs[local(css, m)] += 1
     faltan = sorted(p for p in refs if not os.path.exists(p))

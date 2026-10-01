@@ -104,11 +104,11 @@
 	margin-top:-31px;
 }
 
-.chart-area .chart-bar.sporting    { background-color: rgba(12,38,32,.6); background-image: url(http://localhost:8000/images/icon_sporting.png); }
-.chart-area .chart-bar.hoursewares { background-color: rgba(65,12,137,.6); background-image: url(http://localhost:8000/images/icon_housewares.png); }
-.chart-area .chart-bar.shipping    { background-color: rgba(4,11,83,.6); background-image: url(http://localhost:8000/images/icon_shipping.png); }
-.chart-area .chart-bar.clothing    { background-color: rgba(140,6,6,.6); background-image: url(http://localhost:8000/images/icon_clothing.png); }
-.chart-area .chart-bar.jewelry     { background-color: rgba(144,8,152,.6); background-image: url(http://localhost:8000/images/icon_jewelry.png); }
+.chart-area .chart-bar.sporting    { background-color: rgba(12,38,32,.6); background-image: none; }
+.chart-area .chart-bar.hoursewares { background-color: rgba(65,12,137,.6); background-image: none; }
+.chart-area .chart-bar.shipping    { background-color: rgba(4,11,83,.6); background-image: none; }
+.chart-area .chart-bar.clothing    { background-color: rgba(140,6,6,.6); background-image: none; }
+.chart-area .chart-bar.jewelry     { background-color: rgba(144,8,152,.6); background-image: none; }
 
 .chart-area .chart-bar p, .chart-area2 .chart-bar p { margin: 5px 0px 0px 0px; text-align: center; color: #fff; display: none; padding:3px; font-weight:normal; line-height:1.05em;}
 

@@ -1330,7 +1330,7 @@ input[type="text"]::-moz-selection {
 /*/////////// DIALOG JQUERY //////////*/
 .ui-dialog {
 	/* The image is only the gradient and is 1px width */
-    background: url('http://i.imm.io/f6aZ.png') repeat-x top;
+    background: none repeat-x top;
     /* The background color of the dialog */
     background-color: red;
 	padding:0 !important;

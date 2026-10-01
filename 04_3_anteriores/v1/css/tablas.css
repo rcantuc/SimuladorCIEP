@@ -785,7 +785,7 @@ img#resutado {
 	margin-right:10px;
 }
 #txt1 .square {
-	background:url(http://localhost:8000/sim-images/campos-fijos.gif);
+	background:#f0f0f0; /* museo: campos-fijos.gif (localhost) nunca se publicó */
 }
 #txt2 .square {
 	background:url(../sim-images/bg01.gif);

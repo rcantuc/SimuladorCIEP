@@ -2,7 +2,7 @@
 /* CSS Document */
 
 @charset "UTF-8";
-@import url(http://fonts.googleapis.com/css?family=Marck+Script&subset=latin,latin-ext,cyrillic);
+@import url(https://fonts.googleapis.com/css?family=Marck+Script&subset=latin,latin-ext,cyrillic);
 @-o-keyframes rotateSpinnerIpad {
   /* line 307, ../../../../../src/sass/inc/common/_mixins.scss */
   0% {
@@ -174,15 +174,15 @@ input::-ms-clear {
 
 @font-face {
   font-family: 'Track';
-  src: url("http://localhost:8000/css/webfonts/Track/Track.eot");
-  src: local("☺"), url("http://localhost:8000/css/webfonts/Track/Track.woff") format("woff"), url("http://localhost:8000/css/webfonts/Track/Track.ttf") format("truetype"), url("http://localhost:8000/css/webfonts/Track/Track.svg") format("svg");
+  src: local('Arial');
+  src: local("☺"), ;
   font-weight: normal;
   font-style: normal;
 }
 @font-face {
   font-family: 'TrackItalic';
-  src: url("http://localhost:8000/css/webfonts/TrackItalic/TrackItalic.eot");
-  src: local("☺"), url("http://localhost:8000/css/webfonts/TrackItalic/TrackItalic.woff") format("woff"), url("http://localhost:8000/css/webfonts/TrackItalic/TrackItalic.ttf") format("truetype"), url("http://localhost:8000/css/webfonts/TrackItalic/TrackItalic.svg") format("svg");
+  src: local('Arial');
+  src: local("☺"), ;
   font-weight: normal;
   font-style: normal;
 }
