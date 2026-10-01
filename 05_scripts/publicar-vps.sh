@@ -693,6 +693,21 @@ for _art in "${DEFAULT_MANIFEST[@]}"; do
 done
 log_ok "Fase 3b-ter: manifiesto local fresco (${#DEFAULT_MANIFEST[@]}/6 archivos, mtime >= master/PEF.dta)."
 
+# Continuaciones de Stata en output.txt (2026-10-01, deploy v8.4). output.txt
+# es el log de output.do; si la corrida local tuvo linesize angosto, Stata
+# parte las líneas largas y sigue en la siguiente con "> ". cargaDefault.php
+# las une desde hoy, pero el archivo publicado debe ir limpio: se sube una
+# copia normalizada (no se toca el archivo del investigador) y se avisa cómo
+# evitarlo en la próxima corrida.
+DEFAULT_OUTPUT_SRC="$LOCAL_DEFAULT_DIR/output.txt"
+if grep -q '^>' "$DEFAULT_OUTPUT_SRC"; then
+    _nwrap="$(grep -c '^>' "$DEFAULT_OUTPUT_SRC")"
+    _tmpdir="$(mktemp -d -t output-default.XXXXXX)"
+    DEFAULT_OUTPUT_SRC="$_tmpdir/output.txt"          # mismo nombre: rsync lo deposita como output.txt
+    perl -0pe 's/\n>\s*//g' "$LOCAL_DEFAULT_DIR/output.txt" > "$DEFAULT_OUTPUT_SRC"
+    log_warn "Fase 3b-ter: users/ricardo/output.txt trae $_nwrap continuación(es) de Stata ('> '); se publica una copia con las líneas unidas. Para que no ocurra: 'set linesize 255' antes del log en SIM.do, o corre SIM.do en batch."
+fi
+
 RSYNC_DEFAULT_OPTS=(
     -az
     --chmod=Fu=rw,Fg=rw,Fo=r
@@ -707,7 +722,11 @@ run_rsync_default() {
     local _srcs=()
     local _art
     for _art in "${DEFAULT_MANIFEST[@]}"; do
-        _srcs+=("$LOCAL_DEFAULT_DIR/$_art")
+        if [[ "$_art" == "output.txt" ]]; then
+            _srcs+=("$DEFAULT_OUTPUT_SRC")
+        else
+            _srcs+=("$LOCAL_DEFAULT_DIR/$_art")
+        fi
     done
     rsync "${RSYNC_DEFAULT_OPTS[@]}" -e "$RSYNC_SSH" \
         "${_srcs[@]}" \
