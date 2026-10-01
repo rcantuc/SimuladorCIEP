@@ -74,6 +74,21 @@ comando publicado. El Gate 4 verifica que todos existan.
       default (`output.txt` + `sankey-*.json`). El gate de frescura
       (Fase 3b-ter del deploy) aborta si el default es más viejo que
       `master/PEF.dta`.
+      **La corrida que alimenta el sitio tiene tres condiciones** (incidente
+      del deploy v8.4, 2026-10-01: la página abrió con valores vacíos):
+      (1) `global output "output"` activa; (2) llega hasta `TOUCH-DOWN`
+      — si se interrumpe en Perfiles, `output.txt` queda con 11 llaves y
+      sin `GASTOS`/`INGRESOS`/`PIBY` (el gate de contenido de la Fase
+      3b-ter lo detiene: 15 llaves obligatorias); (3) `set linesize 255`
+      antes del `log using` (ya está en `SIM.do`) o en batch, para que
+      Stata no parta las líneas con `> `. Receta en batch, sin tocar tu
+      `SIM.do`:
+      ```bash
+      sed -e 's|^//global nographs|global nographs|' -e 's|^//global output|global output|' SIM.do > /tmp/SIM_default.do
+      printf 'sysdir set SITE "%s/"\nadopath ++SITE\ncd "%s"\ndo /tmp/SIM_default.do\n' "$PWD" "$PWD" > /tmp/wrap.do
+      /Applications/Stata/StataMP.app/Contents/MacOS/stata-mp -b do /tmp/wrap.do   # ~4 min con §3 Hogares apagado
+      grep -c '^>' users/ricardo/output.txt      # debe ser 0
+      ```
 - [ ] Cruce de cifras hecho (si el release corrige datos): las series nuevas
       contra publicaciones CIEP / fuentes oficiales. **Sin este sí, no hay tag.**
 

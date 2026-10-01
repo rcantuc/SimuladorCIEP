@@ -50,6 +50,7 @@ if "$update" == "update" {
 
 //global output "output"							// ARCHIVO DE SALIDA (WEB)
 if "$output" != "" {
+	set linesize 255								// output.txt es un log: sin esto Stata parte las líneas largas con "> " y el PHP del sitio las lee mal (deploy v8.4, 2026-10-01)
 	quietly log using `"${SIMROOT}/users/$id/output.txt"', replace text name(output)
 	quietly log off output
 }
