@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# crear-deployment — Crea la estructura de un deployment nuevo del Simulador
+# Fiscal CIEP en el VPS (IONOS), con privilegio mínimo.
+#
+# Vive en el VPS como /usr/local/sbin/crear-deployment (root:root, 0755) y es
+# el ÚNICO comando que ciepmx puede ejecutar con sudo sin contraseña
+# (/etc/sudoers.d/ciepmx-deploy). Decisión de governance I.4 (2026-10-01):
+# el pipeline publicar-vps.sh lo invoca desde el Gate 4 cuando el deployment
+# no existe; cualquier otro sudo sigue pidiendo la contraseña del operador.
+#
+# Qué hace, y nada más:
+#   mkdir  /var/www/html/vN.M   y   /SIM/OUT/N.M     (convención asimétrica)
+#   chown  ciepmx:ciepmx de ambos
+# Rechaza cualquier argumento que no sea exactamente vN.M (sin rutas, sin
+# espacios, sin patch): el argumento jamás se concatena sin validar.
+#
+# Uso:  sudo crear-deployment v8.5
+set -euo pipefail
+
+HTML_ROOT="/var/www/html"
+SIM_ROOT="/SIM/OUT"
+OWNER="ciepmx"
+
+v="${1:-}"
+if [[ ! "$v" =~ ^v[0-9]{1,2}\.[0-9]{1,2}$ ]]; then
+    echo "uso: crear-deployment vN.M   (ej. v8.5; versión de DEPLOYMENT, sin patch)" >&2
+    exit 2
+fi
+n="${v#v}"
+
+for d in "$HTML_ROOT/$v" "$SIM_ROOT/$n"; do
+    if [[ -e "$d" ]]; then
+        echo "ya existe: $d" >&2
+    else
+        mkdir "$d"
+        echo "creado: $d"
+    fi
+    chown "$OWNER:$OWNER" "$d"
+    chmod 755 "$d"
+done
+ls -ld "$HTML_ROOT/$v" "$SIM_ROOT/$n"

@@ -158,11 +158,39 @@ Fase 3 deja permisos rotos → 403). El swap preguntará `current: vA.B → vA.B
 
 ### 4b. Minor (deployment nuevo) — TRES pasos, el primero DENTRO del VPS
 
-**Paso 1 — Crear la estructura en el VPS (SSH interactivo, obligatorio).**
-El pipeline NO crea el deployment nuevo: el Gate 4 solo verifica que exista y
-aborta si no (con esta misma receta en su mensaje). Los directorios requieren
-`sudo` (viven en rutas de root) y el `chown` a `ciepmx` es indispensable — sin
-él, el rsync del pipeline no puede escribir:
+**Paso 1 — Crear la estructura en el VPS.** Los directorios viven en rutas
+de root y el `chown` a `ciepmx` es indispensable (sin él, el rsync no puede
+escribir). Hay dos caminos:
+
+**1a. Automático (I.4, desde 2026-10-01), si el VPS tiene instalado
+`crear-deployment`:** no haces nada; el Gate 4 de `publicar-vps.sh` detecta
+que el deployment no existe y lo crea con `sudo -n crear-deployment vA.B`
+— el único comando que `ciepmx` puede correr con `sudo` sin contraseña.
+Salta al Paso 2.
+
+*Instalación única de `crear-deployment` (requiere tu contraseña de `sudo`;
+la contraseña NO se comparte ni se guarda en credentials):*
+```bash
+# desde el clon de desarrollo: sube el script a tu home del VPS
+scp 05_scripts/vps/crear-deployment 05_scripts/vps/ciepmx-deploy.sudoers ciepmx@66.179.250.191:~/
+
+ssh ciepmx@66.179.250.191
+sudo install -o root -g root -m 0755 ~/crear-deployment /usr/local/sbin/crear-deployment
+sudo visudo -cf ~/ciepmx-deploy.sudoers                 # valida sintaxis: debe decir "parsed OK"
+sudo install -o root -g root -m 0440 ~/ciepmx-deploy.sudoers /etc/sudoers.d/ciepmx-deploy
+sudo -n /usr/local/sbin/crear-deployment v0.0           # prueba sin contraseña: crea v0.0 y 0.0
+sudo rm -r /var/www/html/v0.0 /SIM/OUT/0.0              # limpia la prueba
+sudo -n true                                            # debe seguir diciendo "a password is required"
+rm ~/crear-deployment ~/ciepmx-deploy.sudoers
+exit
+```
+Qué queda autorizado: exactamente `/usr/local/sbin/crear-deployment`, que
+solo acepta `vN.M` (regex estricta, sin rutas ni patch) y solo hace `mkdir` +
+`chown ciepmx` de `/var/www/html/vN.M` y `/SIM/OUT/N.M`. Todo lo demás sigue
+pidiendo contraseña. Para revocarlo: `sudo rm /etc/sudoers.d/ciepmx-deploy`.
+
+**1b. Manual (si `crear-deployment` no está instalado):** el Gate 4 aborta
+con esta misma receta en su mensaje:
 
 ```bash
 ssh ciepmx@66.179.250.191

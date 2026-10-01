@@ -27,8 +27,10 @@
 # Un deployment agrupa múltiples releases del código; el commit exacto queda
 # registrado en el archivo DEPLOYED_COMMIT que este script escribe en el VPS.
 #
-# Precondición de infraestructura (el operador la crea UNA vez por versión,
-# respetando la convención asimétrica de paths: sitio CON "v", canon SIN "v"):
+# Precondición de infraestructura (convención asimétrica de paths: sitio CON
+# "v", canon SIN "v"). Desde I.4 (2026-10-01) el Gate 4 la crea solo si el VPS
+# tiene /usr/local/sbin/crear-deployment + sudoers NOPASSWD para ese comando
+# (05_scripts/vps/); si no, el operador la crea UNA vez por versión:
 #   sudo mkdir /var/www/html/vN.M /SIM/OUT/N.M
 #   sudo chown ciepmx:ciepmx /var/www/html/vN.M /SIM/OUT/N.M
 #
@@ -307,13 +309,29 @@ log_ok "Gate 5: fuentes locales verificadas."
 check_vps_structure() {
     ssh_vps "test -d '$VPS_HTML_ROOT/$VPS_HTML_VERSION' && test -d '$VPS_SIM_ROOT/$VPS_SIM_VERSION'"
 }
+# Creación con privilegio mínimo (I.4, 2026-10-01): si el deployment no existe
+# y el VPS tiene instalado /usr/local/sbin/crear-deployment (05_scripts/vps/)
+# con su regla NOPASSWD en /etc/sudoers.d/ciepmx-deploy, se crea desde aquí
+# con `sudo -n` (nunca pide contraseña: si no está autorizado, falla limpio
+# y se cae a la receta manual). El operador no comparte su contraseña de sudo.
+crear_vps_structure() {
+    [[ $DRY_RUN -eq 1 ]] && return 1
+    ssh_vps "test -x /usr/local/sbin/crear-deployment" || return 1
+    log_info "Gate 4: deployment inexistente; creándolo con crear-deployment $VPS_HTML_VERSION (sudo sin contraseña, solo ese comando)."
+    ssh_vps "sudo -n /usr/local/sbin/crear-deployment '$VPS_HTML_VERSION'" 2>&1 | tee -a "$LOG_FILE"
+    check_vps_structure
+}
 if check_vps_structure; then
     log_ok "Gate 4: estructura del VPS verificada ($VPS_HTML_ROOT/$VPS_HTML_VERSION y $VPS_SIM_ROOT/$VPS_SIM_VERSION)."
+elif crear_vps_structure; then
+    log_ok "Gate 4: estructura del VPS creada por crear-deployment ($VPS_HTML_ROOT/$VPS_HTML_VERSION y $VPS_SIM_ROOT/$VPS_SIM_VERSION)."
 else
     if [[ $DRY_RUN -eq 1 ]]; then
         log_warn "Gate 4: no se pudo verificar la estructura del VPS (¿sin red o no existe aún?). Dry-run continúa."
     else
-        die "Estructura VPS faltante (o el VPS no responde). Ejecuta en el VPS:
+        die "Estructura VPS faltante (o el VPS no responde). Si el VPS tiene
+        instalado crear-deployment (05_scripts/vps/, ver runbook §4b), revisa
+        la salida de arriba; si no, ejecuta en el VPS:
           sudo mkdir '$VPS_HTML_ROOT/$VPS_HTML_VERSION'
           sudo mkdir '$VPS_SIM_ROOT/$VPS_SIM_VERSION'
           sudo chown ${VPS_USER}:${VPS_USER} '$VPS_HTML_ROOT/$VPS_HTML_VERSION' '$VPS_SIM_ROOT/$VPS_SIM_VERSION'
