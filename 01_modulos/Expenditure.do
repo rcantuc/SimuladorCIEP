@@ -529,16 +529,22 @@ foreach categ in categ categ_iva categ_ieps {
 		drop `categ'
 
 		levelsof categs, local(categs)
-		reshape wide gas_ind cant_ind prop, i(folioviv foliohog numren) j(categs) string
-		reshape long
 
-		replace gas_ind = 0 if gas_ind == .
-		replace cant_ind = 0 if cant_ind == .
-
+		* Toda categoría observada en la muestra debe existir para todo individuo:
+		* 0 si no la consumió, y prop = media global si no tiene observación. Antes
+		* se lograba con reshape wide -> long -> wide (el long creaba las celdas
+		* faltantes); aquí se crea la misma rejilla en un solo reshape. La media de
+		* prop es idéntica: el reshape long solo agregaba filas con prop missing.
 		tabstat prop, stat(mean) f(%20.3fc) save
-		replace prop = r(StatTotal)[1,1] if prop == .
-
+		tempname propmean
+		scalar `propmean' = r(StatTotal)[1,1]	// escalar, no local: conserva la precisión double
 		reshape wide gas_ind cant_ind prop, i(folioviv foliohog numren) j(categs) string
+		foreach v of varlist gas_ind* cant_ind* {
+			replace `v' = 0 if `v' == .
+		}
+		foreach v of varlist prop* {
+			replace `v' = scalar(`propmean') if `v' == .
+		}
 
 		tempfile gastoindividuos
 		save `gastoindividuos'
@@ -554,15 +560,18 @@ foreach categ in categ categ_iva categ_ieps {
 		drop `categ'
 
 		levelsof categs, local(categs)
-		reshape wide gas_hog cant_hog prop, i(folioviv foliohog) j(categs) string
-		reshape long
-		replace gas_hog = 0 if gas_hog == .
-		replace cant_hog = 0 if cant_hog == .
 
+		* Misma rejilla completa hogar x categoría que en 3.1 (ver nota ahí)
 		tabstat prop, stat(mean) f(%20.3fc) save
-		replace prop = r(StatTotal)[1,1] if prop == .
-
+		tempname propmean
+		scalar `propmean' = r(StatTotal)[1,1]	// escalar, no local: conserva la precisión double
 		reshape wide gas_hog cant_hog prop, i(folioviv foliohog) j(categs) string
+		foreach v of varlist gas_hog* cant_hog* {
+			replace `v' = 0 if `v' == .
+		}
+		foreach v of varlist prop* {
+			replace `v' = scalar(`propmean') if `v' == .
+		}
 
 
 		** 3.3 Consumo de los hogares + individuos **
@@ -571,6 +580,7 @@ foreach categ in categ categ_iva categ_ieps {
 		merge m:1 (folioviv foliohog) using "${SIMROOT}/raw/ENIGH/`anioenigh'/concentrado.dta", ///
 			nogen keepus(factor) keep(master match)
 		egen tot_integ = count(factor), by(folioviv foliohog)
+		egen long hhid = group(folioviv foliohog)	// id numérico del hogar para perfilpc (se borra antes de guardar)
 
 		foreach k of varlist *hog* {
 			if "`k'" == "foliohog" | "`k'" == "factor_hog" continue
@@ -586,6 +596,7 @@ foreach categ in categ categ_iva categ_ieps {
 
 		** 3.4 Gasto per cápita **
 		noisily di in g `"`categs'"'
+		local convlog				// bitácora de convergencia de perfilpc: variable, iteraciones, convergió, criterio
 		foreach k of local categs {
 			foreach vars in cant_ gas_ {
 				* Categorías *
@@ -778,33 +789,21 @@ foreach categ in categ categ_iva categ_ieps {
 						title("`label'") reboot //boot(25)
 				}
 
-				* Iteraciones *
-				noisily di in y "`k': " _cont
-				local salto = 1
-				forvalues iter=1(1)25 {
-					noisily di in w "`iter' " _cont
-					forvalues edades=0(`salto')109 {
-						forvalues sexos=1(1)2 {
-							capture tabstat `vars'pc_`k' [fw=factor] ///
-								if (edad >= `edades' & edad <= `edades'+`salto'-1) ///
-								& sexo == "`sexos'" ///
-								, stat(mean) f(%20.0fc) save
-							if _rc != 0 {
-								local valor = 0
-							}
-							else {
-								local valor = r(StatTotal)[1,1]
-							}
-							replace `vars'pc_`k' = round(`valor',.01) ///
-								if (edad >= `edades' & edad <= `edades'+`salto'-1) & sexo == "`sexos'"
-							replace `vars'pc_`k' = .01 ///
-								if `vars'pc_`k' == 0
-						}
-					}
-					capture drop equivalencias`k'
-					egen equivalencias`k' = sum(`vars'pc_`k'), by(folioviv foliohog)
-					replace `vars'pc_`k' = `vars'hog`k'*tot_integ*`vars'pc_`k'/equivalencias`k'
-				}
+				* Iteraciones: reparto intra-hogar por perfil edad-sexo (punto fijo en Mata,
+				* perfilpc.ado). Hasta v8.4.x: 25 iteraciones fijas con redondeo a centavos
+				* (220 tabstat + 440 replace por iteración, ~7 min por variable); ese modo
+				* sigue disponible con `legacy iter(25)`. Ahora: redondeo a 6 cifras
+				* significativas e iteración hasta que la fracción del gasto que cambia de
+				* celda edad-sexo baja de 1e-6 (cada variable itera lo que necesita; 100-600).
+				* equiv() conserva la variable equivalencias`k' que dejaba el bloque anterior.
+				* Nota metodológica en el encabezado de perfilpc.ado. Las gráficas (pirámide
+				* per cápita, pirámide del gasto total, convergencia) quedan en memoria y en
+				* users/$id/graphs/ para seguir el reparto iteración a iteración.
+				local pgraf
+				if "$nographs" != "nographs" local pgraf grafica(`vars'`k'_`anioenigh') title("`label'")	// gráficas `vars'`k'_`anioenigh'_{pc,tot,conv}
+				noisily perfilpc `vars'pc_`k', hogar(`vars'hog`k') integrantes(tot_integ) factor(factor) ///
+					hhid(hhid) equiv(equivalencias`k') `pgraf'
+				local convlog `"`convlog' "`vars'`k'" `=r(iter)' `=r(converged)' `=r(relL1)'"'
 				replace `vars'pc_`k' = `vars'pc_`k' + `vars'ind`k'
 				*noisily tabstat `vars'pc_`k' `vars'hog`k' `vars'ind`k' [fw=factor], stat(sum) f(%20.0fc)
 
@@ -825,6 +824,43 @@ foreach categ in categ categ_iva categ_ieps {
 			noisily tabstat preci`k' gas_pc_`k' cant_pc_`k' [fw=factor], stat(mean) f(%10.2fc)
 		}
 
+		** 3.4.1 Resumen de convergencia del reparto intra-hogar (una gráfica por grupo) **
+		* Cuántas iteraciones necesitó cada variable para que la fracción del gasto que
+		* cambia de celda edad-sexo bajara de la tolerancia; en rojo las que llegaron a
+		* maxiter sin converger. Queda en memoria (conv_`categ'_`anioenigh') y en users/$id/graphs/.
+		if "$nographs" != "nographs" {
+			preserve
+			clear
+			local nconv : word count `convlog'
+			qui set obs `=`nconv'/4'
+			qui gen str32 variable = ""
+			qui gen int iteraciones = .
+			qui gen byte convergio = .
+			qui gen double criterio = .
+			forvalues r = 1/`=`nconv'/4' {
+				qui replace variable    = `"`: word `=4*`r'-3' of `convlog''"' in `r'
+				qui replace iteraciones = `: word `=4*`r'-2' of `convlog'' in `r'
+				qui replace convergio   = `: word `=4*`r'-1' of `convlog'' in `r'
+				qui replace criterio    = `: word `=4*`r'' of `convlog'' in `r'
+			}
+			qui gen int it_ok = iteraciones if convergio
+			qui gen int it_no = iteraciones if !convergio
+			qui count if !convergio
+			local nno = r(N)
+			if `nno' == 0 local notaconv "Todas las variables convergieron."
+			else local notaconv "`nno' variable(s) sin converger: revisar su gr{c a'}fica _conv."
+			graph hbar (asis) it_ok it_no, over(variable, sort(iteraciones) descending label(labsize(vsmall))) ///
+				stack bar(1, color("255 153 0")) bar(2, color(cranberry)) ///
+				ytitle("Iteraciones hasta converger") ///
+				title("Convergencia del reparto intra-hogar: `categ', ENIGH `anioenigh'") ///
+				subtitle("Criterio: fracci{c o'}n del gasto que cambia de celda edad-sexo {&le} 1e-6; perfil redondeado a 6 cifras significativas", size(small)) ///
+				legend(order(1 "Convergi{c o'}" 2 "No convergi{c o'} (maxiter)") rows(1)) ///
+				note("`notaconv'", size(vsmall)) ///
+				name(conv_`categ'_`anioenigh', replace)
+			qui graph export "${SIMROOT}/users/$id/graphs/conv_`categ'_`anioenigh'.png", replace name(conv_`categ'_`anioenigh')
+			restore
+		}
+
 		** 3.5 Coeficientes de consumo por edades **
 		g alfa = 1 if edad != .
 		replace alfa = alfa - .6*(20-edad)/16 if edad >= 5 & edad <= 20
@@ -832,6 +868,7 @@ foreach categ in categ categ_iva categ_ieps {
 
 		** Guardar pre-base individuos **
 		capture drop __*
+		drop hhid
 		compress
 		sort folioviv foliohog numren
 		capture mkdir "${SIMROOT}/master/`anioenigh'"

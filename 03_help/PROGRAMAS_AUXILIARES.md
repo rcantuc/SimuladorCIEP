@@ -280,6 +280,89 @@ Reemplaza al patrón fósil `noisily di %fmt = scalar(...)` + relectura de log.
 
 ---
 
+## 17. perfilpc.ado
+
+**Descripción:** Reparte el gasto de cada hogar entre sus integrantes según
+un perfil edad-sexo que se estima por punto fijo (iteración de proporciones),
+en Mata. Sustituye al bloque "Iteraciones" de `01_modulos/Expenditure.do`
+(220 `tabstat` + 440 `replace` por iteración, ~7 min por variable) y, desde
+octubre de 2026, cambia el método: precisión relativa y paro por tolerancia
+en lugar de centavos y 25 iteraciones fijas.
+
+**Sintaxis:**
+```
+perfilpc varname, hogar(varname) integrantes(varname) factor(varname) hhid(varname)
+    [edad(varname) sexo(varname) sig(6) tol(1e-6) maxiter(1000) legacy iter(25)
+     equiv(name) grafica(name) title(string) nographs]
+```
+
+**Método (nota metodológica completa en el encabezado del `.ado`):**
+1. Punto de partida: reparto igualitario, `x_i = G_h / n_h`.
+2. En cada iteración: (a) media ponderada `μ_c` de `x` por celda (edad 0–109 ×
+   sexo); (b) `m_c` = `μ_c` redondeada a **6 cifras significativas**, con piso
+   `1e-6·máx m` (lo que a 6 cifras es cero, pero evita dividir entre cero);
+   (c) cada integrante recibe `m` de su celda y el gasto del hogar `G_h` se
+   reparte entre sus integrantes en proporción (`equivalencias`).
+3. **Paro:** cuando la fracción del gasto total que cambió de celda edad-sexo
+   en la iteración, `Σ_c |Δ(Σ_{i∈c} w_i x_i)| / Σ w x`, baja de `tol` (1e-6),
+   o al llegar a `maxiter`. El criterio es adimensional: gasto en pesos y
+   cantidades en unidades convergen al mismo nivel de precisión. Cada
+   variable itera lo que necesita (105–574 en ENIGH 2024, media 255; ~0.02 s
+   por iteración).
+4. Cada iteración conserva exactamente el gasto de cada hogar; solo cambia
+   cómo se reparte dentro de él.
+
+**Por qué se cambió.** El bloque original redondeaba a centavos y hacía 25
+iteraciones fijas. En gasto el redondeo era ruido de 1e-6; en cantidades per
+cápita (0.01–1 unidad por celda) la rejilla de .01 era gruesa y el proceso se
+detenía de golpe al repetirse la rejilla (Δ = 0 exacto, p. ej. en la
+iteración 19), con error de hasta ±0.005 por celda. Y las 25 iteraciones no
+eran convergencia: en Alimentos 2024 el gasto per cápita de 0–4 años seguía
+bajando (12,988 inicial → 3,732 en la 25 → 2,700 convergido; 30–64: 18,352 →
+23,423 → 23,728). **El resultado dependía de T.** Ver la discusión de
+implicaciones (reparto a los niños) en el encabezado del `.ado`.
+
+**Modo `legacy`:** reproduce el bloque original byte a byte (iter(25),
+centavos, artefacto de la primera celda); diferencias ≤ 3e-11 en ENIGH 2024.
+Sirve para el test dorado y para reproducir versiones v8.4.x.
+
+**Devuelve:** `r(iter)`, `r(converged)`, `r(tol)`, `r(relL1)` (criterio en la
+última iteración), `r(relcel)` (cambio relativo máximo en una celda,
+informativo), `r(maxdif)`, `r(meandif)`; `r(perfil)` (media per cápita y gasto
+total ponderado por celda edad-sexo en la iteración 0, la final y hasta 24
+intermedias espaciadas), `r(conv)` (por iteración: `maxdif meandif relcel
+relL1 xbar`).
+
+**Gráficas (`grafica(name)`), tres en memoria y en `users/$id/graphs/` (o
+`$export`), las dos primeras en formato de pirámide demográfica —edad 0–109
+en el eje vertical, hombres a la izquierda, mujeres a la derecha— con el
+perfil inicial en negro punteado, hasta 24 iteraciones intermedias en gris de
+claro a oscuro y el final en color:
+- `<name>_pc` — gasto **per cápita** anual por edad y sexo.
+- `<name>_tot` — **distribución del gasto total** de la encuesta por edad y
+  sexo (% del total; barras = final), el mismo contraste que la pirámide de
+  `Simulador.ado`.
+- `<name>_conv` — convergencia en términos relativos (escala log): el criterio
+  con su línea de tolerancia, el cambio relativo máximo en una celda, y
+  |Δx| máximo y medio relativos a la media de x; la nota dice en cuántas
+  iteraciones convergió.
+Además, `Expenditure.do` produce por grupo de categorías la gráfica
+`conv_<categ>_<anio>`: iteraciones que necesitó cada variable (rojo = llegó a
+`maxiter` sin converger).
+Las gráficas **se quedan en memoria con nombre** para revisarlas una por una:
+son parte del proceso pedagógico, no un subproducto. Stata admite 2,000
+sersets en memoria y un serset es una *muestra* distinta (un plot con su
+propio `if`), no un plot; por eso cada serie va en su propia variable sobre la
+misma muestra y los plots no llevan `if`: 1 serset por gráfica (5 en la de
+barras), ~250 por ENIGH.
+
+**Verificación:** `05_scripts/test-perfilpc-dorado.do` corre el bloque
+original verbatim, lo compara con `perfilpc, legacy` (debe coincidir a
+precisión de máquina) y reporta cuánto difiere el método vigente (magnitud del
+cambio metodológico). Tarda horas: es el bloque viejo.
+
+---
+
 ## Notas Técnicas Generales
 
 **Archivos de soporte común:**

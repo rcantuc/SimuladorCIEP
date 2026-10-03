@@ -20,6 +20,58 @@ Formato de cada entrada:
 
 Trabajo en `master` sin versión asignada.
 
+### Comandos
+
+- **`perfilpc.ado` (nuevo) sustituye el bloque "Iteraciones" de
+  `01_modulos/Expenditure.do` y cambia el método del reparto intra-hogar:
+  precisión relativa de 6 cifras y paro por tolerancia, en lugar de centavos
+  y 25 iteraciones fijas. CAMBIA RESULTADOS.** El reparto del gasto del hogar
+  entre sus integrantes por perfil edad-sexo (punto fijo) hacía 220 `tabstat`
+  + 440 `replace` por iteración sobre las ~309 mil personas: ~440 s por
+  variable × 84 variables ≈ 10 h por ENIGH. Ahora es una función Mata con
+  `panelsum` por celda y por hogar (~0.02 s por iteración). (1) **Fidelidad
+  demostrada:** el modo `legacy` reproduce el bloque original con
+  diferencias ≤ 3e-11 pesos (2 y 25 iteraciones, `gas_pc_Alim` 2024), sumas
+  ponderadas idénticas al peso, resultado independiente del orden físico de
+  la base; `05_scripts/test-perfilpc-dorado.do` lo verifica variable por
+  variable contra el bloque viejo verbatim. (2) **Hallazgo que motivó el
+  cambio:** el redondeo a centavos cuantizaba las cantidades per cápita
+  (0.01–1 unidad por celda): el perfil quedaba atrapado en la rejilla de .01 y
+  Δ caía a 0 exacto de golpe (`cant_pc_Alqu` en la iteración 19), con error
+  de hasta ±0.005 por celda; y las 25 iteraciones no eran convergencia: en
+  Alimentos 2024 el gasto per cápita de 0–4 años seguía bajando (12,988
+  inicial → 3,732 en la 25 → 2,700 convergido) y el de 30–64 subiendo (18,352
+  → 23,423 → 23,728); **el resultado dependía de T**. (3) **Método vigente:**
+  `m_c` se redondea a 6 cifras significativas (piso `1e-6·máx m`) y se itera
+  hasta que la fracción del gasto total que cambia de celda edad-sexo baja de
+  `tol(1e-6)` (criterio adimensional: gasto y cantidades convergen al mismo
+  nivel), con `maxiter(1000)`; en ENIGH 2024 las 82 variables convergen en
+  105–574 iteraciones (media 255), 7–9 s por variable con gráficas;
+  Expenditure.do completo con `nographs` en ~15 min. El criterio por celda (máximo
+  relativo) se descartó como paro porque lo dominan celdas con poca población
+  (ages 100+) y las que tienden a cero; se reporta como diagnóstico. (4)
+  **Gráficas**, en memoria con nombre y en `users/$id/graphs/`, tres por
+  variable (`<var>_<anio>_pc/_tot/_conv`): pirámides demográficas (edad en
+  vertical, hombres a la izquierda, mujeres a la derecha, como en
+  `Simulador.ado`) del gasto per cápita y de la distribución del gasto total
+  por edad y sexo —perfil inicial, hasta 24 iteraciones intermedias y final—
+  y la convergencia en términos relativos con la línea de tolerancia; más una
+  gráfica resumen por grupo (`conv_<categ>_<anio>`) con las iteraciones que
+  necesitó cada variable. Stata admite 2,000 sersets en memoria y un serset
+  es una muestra distinta, no un plot (la primera versión, con `if iter==t` ×
+  `by(sexo)`, gastaba ~100 por variable y abortaba con `r(1001)` en la
+  novena): cada serie va en su propia variable sobre la misma muestra. Pasar
+  la trayectoria completa como matriz de Stata (50 mil filas) tardaba más que
+  iterar: `r(perfil)` trae solo las iteraciones que se dibujan. Nota
+  metodológica en el encabezado del `.ado` y en
+  `03_help/PROGRAMAS_AUXILIARES.md` §17.
+- **Expenditure.do §3.1–3.2: el relleno de la rejilla hogar/individuo ×
+  categoría ya no usa `reshape wide → long → wide`.** Un solo `reshape wide` +
+  `replace = 0` (gasto, cantidad) y `= media global` (`prop`) produce la misma
+  base (`cf _all` idéntico sobre 91,414 hogares × 19 categorías de 2024). La
+  media de `prop` se pasa por escalar temporal, no por `local`: el `local`
+  perdía el último dígito del `double` y rompía la identidad byte a byte.
+
 ## [v8.4.3] — 2026-10-03
 
 ### Institucional
