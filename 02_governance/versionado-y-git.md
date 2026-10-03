@@ -39,7 +39,7 @@ Este documento reúne dos piezas que antes vivían en archivos separados de esta
 
 **Un commit, una idea.** Un commit que actualiza la sección §4 de un documento NO debe contener también el reformateo automático de espacios que tu editor metió al guardar. Si el linter de Markdown te realineó las tablas de la bitácora porque tocó padding, esos cambios cosméticos no entran en el mismo commit que tu cambio de contenido. Si los descartas, no contaminan el diff; si los conservas, lo hacen en commit separado de formato.
 
-**Separa contenido de formato.** Caso real: durante la actualización de la bitácora de `arquitectura-y-bitacoras.md` v1.4, el editor reformateó padding de tablas en la sección de cambios anteriores. Esos cambios no entraron al commit de v1.4: se descartaron con `git checkout 02_governance/arquitectura-y-bitacoras.md` (después de stagear lo que sí iba) para que el `git diff` final reflejara exclusivamente el contenido nuevo, no el ruido del editor.
+**Separa contenido de formato.** Caso real: durante la actualización de la bitácora de `arquitectura-y-bitacoras.md` v1.4 (hoy `historico/bitacora-arquitectura.md`), el editor reformateó padding de tablas en la sección de cambios anteriores. Esos cambios no entraron al commit de v1.4: se descartaron con `git checkout 02_governance/arquitectura-y-bitacoras.md` (después de stagear lo que sí iba) para que el `git diff` final reflejara exclusivamente el contenido nuevo, no el ruido del editor.
 
 **Verifica antes de actuar.** `git diff` antes de `git add` es obligatorio. `git status` + `git diff --cached` antes de `git commit` son obligatorios. La vista del diff es lo único que te garantiza que estás commiteando lo que crees que estás commiteando, no lo que el editor decidió por ti al guardar.
 
@@ -160,7 +160,7 @@ Reglas concretas, con casos reales del proyecto.
 - Se incorpora un PEF nuevo, una ENIGH nueva, o cualquier dato anual nuevo sin cambiar metodología.
 - Se agrega un módulo nuevo (un impuesto nuevo, un perfil nuevo) que no rompe lo anterior.
 - Se refactoriza código sin cambiar resultados.
-- Ejemplo real: `arquitectura-y-bitacoras.md v1.0 → v1.1 → v1.2 → v1.3 → v1.4` durante la primera semana de governance. Cada incremento agregó una capa nueva o expandió alcance (sub-canal Stata, hosting de sub-canales, expansión a Simuladores CIEP, Ecosistema CIEP) sin romper lo anterior. Cuatro versiones menores en una semana NO es excesivo: es el indicador de que la documentación está madurando rápido y se está dejando registro de cada paso.
+- Ejemplo real: `arquitectura-y-bitacoras.md v1.0 → v1.1 → v1.2 → v1.3 → v1.4` (bitácora hoy en `historico/bitacora-arquitectura.md`) durante la primera semana de governance. Cada incremento agregó una capa nueva o expandió alcance (sub-canal Stata, hosting de sub-canales, expansión a Simuladores CIEP, Ecosistema CIEP) sin romper lo anterior. Cuatro versiones menores en una semana NO es excesivo: es el indicador de que la documentación está madurando rápido y se está dejando registro de cada paso.
 
 **El número de parche sube cuando:**
 
@@ -261,7 +261,7 @@ Sin esa cita, dentro de un año alguien que lea el commit `63d73cf` aislado pens
 
 Las bitácoras de los documentos de governance (la sección final típica de cada `.md` con la tabla `Versión / Fecha / Cambio`) son **append-only**: cada entrada registra lo que pasó en el momento de esa versión, y NO se reescribe después aunque la realidad cambie.
 
-**Ejemplo real:** la bitácora de `arquitectura-y-bitacoras.md` v1.x dice, en una de sus entradas, que el Glosario CIEP vivía como sección de `.windsurfrules`. Cuando posteriormente el glosario se migró a archivo propio (`governance/glosario-ciep.md`), esa entrada vieja **no se reescribió** para reflejar la nueva ubicación. Sigue diciendo lo que decía. La migración se documentó como entrada nueva en la bitácora del archivo correspondiente y como commit propio.
+**Ejemplo real:** la bitácora de `arquitectura-y-bitacoras.md` v1.x (hoy `historico/bitacora-arquitectura.md`) dice, en una de sus entradas, que el Glosario CIEP vivía como sección de `.windsurfrules`. Cuando posteriormente el glosario se migró a archivo propio (`governance/glosario-ciep.md`), esa entrada vieja **no se reescribió** para reflejar la nueva ubicación. Sigue diciendo lo que decía. La migración se documentó como entrada nueva en la bitácora del archivo correspondiente y como commit propio.
 
 **Por qué.** La bitácora es registro histórico de cómo evolucionó la decisión, no fotografía del estado actual. Reescribir una entrada vieja para que "concuerde con hoy" falsifica el changelog: hace ver que la decisión actual estuvo siempre ahí, oculta la trayectoria, y le quita al lector futuro la posibilidad de entender cómo se llegó al estado actual paso a paso.
 

@@ -6,7 +6,7 @@ Esta carpeta contiene los documentos vivos que describen la arquitectura, las co
 
 **`CHANGELOG.md`** — Registro operativo de cambios por versión publicada del Simulador (qué cambió para el investigador en cada v8.x). Referencia obligatoria al publicar: el Gate 1 de `publicar.sh` exige una entrada por versión.
 
-**`arquitectura-y-bitacoras.md`** — Arquitectura de distribución del Simulador: canales de publicación (GitHub Releases, endpoint Stata, Carpeta para investigadores), estructura del repo con la convención de prefijos numéricos, y política del `.stpr`. Contiene la bitácora de decisiones institucionales durables (v1.x) — la memoria de por qué el repo es como es.
+**`arquitectura.md`** — Arquitectura de distribución del Simulador: canales de publicación (GitHub Releases, endpoint Stata, Carpeta para investigadores), estructura del repo con la convención de prefijos numéricos, y política del `.stpr`. Su bitácora histórica (v1.0–v1.57) está congelada en `historico/bitacora-arquitectura.md`; desde 2026-10-03 los cambios se registran solo en `CHANGELOG.md`.
 
 **`versionado-y-git.md`** — Parte I: convenciones de commits, ramas, etiquetas de versión, reescritura de historia y verificación del `.gitignore`. Parte II: historia de versiones (era v7.x de transición vs. era v8.0+ institucional) y contexto de los releases publicados en GitHub.
 
@@ -23,9 +23,17 @@ Esta carpeta contiene los documentos vivos que describen la arquitectura, las co
 ## Guía rápida por caso de uso
 
 - ¿Vas a publicar una versión nueva? → `CHANGELOG.md` + `versionado-y-git.md` §3
-- ¿Eres investigador nuevo en el equipo? → `arquitectura-y-bitacoras.md` primero, después `politicas-institucionales.md` (el manual práctico vive en `03_help/manual-investigador-ciep.md`)
-- ¿Necesitas entender la estructura del repo? → `arquitectura-y-bitacoras.md` §2
+- ¿Eres investigador nuevo en el equipo? → `arquitectura.md` primero, después `politicas-institucionales.md` (el manual práctico vive en `03_help/manual-investigador-ciep.md`)
+- ¿Necesitas entender la estructura del repo? → `arquitectura.md` §2
 - ¿Manejas credenciales del CIEP? → `politicas-institucionales.md` Parte I
 - ¿Decides qué hacer con un producto CIEP que envejece? → `politicas-institucionales.md` Parte II
 - ¿Vas a tocar el `.gitignore`? → `versionado-y-git.md` §6 + `05_scripts/verify_gitignore.sh`
 - ¿Términos que no reconoces? → `glosario-ciep.md`
+
+## Política de higiene de esta carpeta
+
+Reglas operativas para mantener orden en este directorio mientras crece:
+
+- **Los documentos vivos se reescriben en su lugar.** Cuando un documento cambia de versión (de `v1.0` a `v2.0`, por ejemplo), se sobrescribe el mismo archivo y la bitácora interna del documento registra el cambio. No hay archivos versionados con sufijos `_v1`, `_v2` en el directorio actual; las versiones viejas viven en la historia de Git, accesibles con `git log --follow <archivo>`.
+- **Documentos que dejan de aplicar se archivan en `02_governance/historico/`.** Esto pasa cuando la realidad o la decisión cambian y el documento ya no describe el sistema actual. Al mover, se agrega una nota corta en el archivo explicando por qué se retiró y qué documento vigente lo reemplaza (si aplica).
+- **No se borra nada permanentemente.** Aunque un documento sea obsoleto, queda en `02_governance/historico/` para que el contexto histórico de decisiones siga consultable.

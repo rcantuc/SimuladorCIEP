@@ -17,7 +17,7 @@
 #   6. Verifica integridad post-Release: descarga cada asset y compara su SHA-256
 #      contra el manifest (--skip-post-verify lo salta; son ~1.3 GB de descarga)
 #   7. Invoca publicar-endpoint.sh con la versión, que sincroniza el sub-canal Stata al
-#      servidor Cloudways (ver §3.2 y §6.6 de 02_governance/arquitectura-y-bitacoras.md)
+#      servidor Cloudways (ver §3.2 y §6.6 de 02_governance/arquitectura.md)
 #
 # Orden deliberado: primero la Release inmutable en GitHub (código + datos versionados),
 # después el endpoint operativo. Así el endpoint nunca apunta a una versión sin Release.
@@ -27,7 +27,7 @@
 #
 # La sincronización de la Carpeta del Simulador para investigadores (Dropbox-CIEP/SimuladorCIEP)
 # NO es responsabilidad de este script. La maneja manualmente el investigador principal
-# mediante `git pull` en su clon local. Ver §6.7 de arquitectura-y-bitacoras.md.
+# mediante `git pull` en su clon local. Ver §6.7 de arquitectura.md.
 
 set -euo pipefail
 
@@ -93,7 +93,7 @@ Ejemplos:
 
 La sincronización de la Carpeta para investigadores (Dropbox-CIEP/SimuladorCIEP)
 NO la hace este script. La maneja manualmente el investigador principal con
-'git pull' en su clon local. Ver 02_governance/arquitectura-y-bitacoras.md §6.7.
+'git pull' en su clon local. Ver 02_governance/arquitectura.md §6.7.
 
 Configuración: requiere 05_scripts/endpoint-credentials.sh con SSH_ALIAS, REMOTE_PATH y
 ENDPOINT_URL definidos.
@@ -633,7 +633,7 @@ if [[ ! -f "$CLON_MARKER" ]]; then
     log_error "y este clon NO está marcado como clon de desarrollo (falta .clon-desarrollo)."
     if [[ "$REPO_ROOT" == */Dropbox-CIEP/SimuladorCIEP ]]; then
         log_error "Esta ruta es la Carpeta del Simulador para investigadores: aquí NO se publica"
-        log_error "ni se opera git (§6.7 de arquitectura-y-bitacoras.md). Ve al clon de desarrollo."
+        log_error "ni se opera git (§6.7 de arquitectura.md). Ve al clon de desarrollo."
     else
         log_error "Publica desde el clon de desarrollo (el que tiene el marker). Si ESTE es el"
         log_error "clon de desarrollo y solo falta el marker, créalo una vez:"

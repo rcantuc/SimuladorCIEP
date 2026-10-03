@@ -8,7 +8,7 @@
 # al VPS IONOS, hace cutover atómico vía symlink `current`, verifica el
 # sitio con un health check y hace rollback automático si falla.
 #
-# Diseño registrado en 02_governance/arquitectura-y-bitacoras.md §7.1-§7.2
+# Diseño registrado en 02_governance/arquitectura.md §7.1-§7.2
 # (decisiones D.1-D.9, bitácoras v1.20-v1.21). Estructura del VPS documentada
 # en 02_governance/historico/reconocimiento-vps.md.
 #
@@ -466,7 +466,7 @@ log_info "Fase 2: rsync del sitio PHP → $VPS_HTML_ROOT/$VPS_HTML_VERSION/"
 # permisos del origen (Mac/Dropbox). Es la protección contra el HTTP 403 del
 # primer deploy (2026-07-09), cuando rsync preservó permisos 700/600 y Apache
 # (www-data) no pudo leer el sitio — mismo patrón ya documentado en
-# arquitectura-y-bitacoras.md §troubleshooting "Permisos rsync --chmod".
+# arquitectura.md §troubleshooting "Permisos rsync --chmod".
 # DOS advertencias del rsync de macOS (que en realidad es openrsync de Apple,
 # anunciado como "2.6.9 compatible"; verificado con pruebas locales 2026-07-09):
 #   1. La sintaxis octal (D775,F664) la rechaza con "invalid argument";

@@ -180,7 +180,7 @@ archivos versionados desde máquinas distintas, Dropbox mezcla estados y el clon
 queda en un estado que git no puede reconciliar.
 
 Por eso: **git en la carpeta compartida lo opera UNA sola persona** (hoy, Ricardo;
-modelo y comandos en `arquitectura-y-bitacoras.md` §6.7).
+modelo y comandos en `arquitectura.md` §6.7).
 El resto del equipo puede *leer* y *correr* el Simulador ahí; los datos que
 actualiza el equipo (`raw/…`) están ignorados por git, así que actualizarlos no
 toca `.git/` — pero sí dispara el candado hasta que el manifest se actualice

@@ -590,7 +590,7 @@ La versión es de *deployment* (`v8.0`, `v8.1`), no de código (`v8.0.7` la rech
 | 404 | El contenido no está donde Apache espera | Symlink `current` y rutas |
 | 500 | El PHP truena al ejecutar | `error_7.log` del vhost (ver 10.4) |
 
-**El health check solo cubre HTTP.** Que el sitio responda 200 no garantiza que el motor Stata funcione: después de cada deploy, corre una **simulación real en el navegador** y verifica que produce resultados. Esa prueba funcional humana es el gate final (lección del 2026-07-09, cuando el sitio respondía perfecto y el motor tronaba por dentro — bitácora v1.26 de `02_governance/arquitectura-y-bitacoras.md`).
+**El health check solo cubre HTTP.** Que el sitio responda 200 no garantiza que el motor Stata funcione: después de cada deploy, corre una **simulación real en el navegador** y verifica que produce resultados. Esa prueba funcional humana es el gate final (lección del 2026-07-09, cuando el sitio respondía perfecto y el motor tronaba por dentro — bitácora v1.26 en `02_governance/historico/bitacora-arquitectura.md`).
 
 **Cuándo avanza el ENIGH vigente** (~cada 2 años), actualiza las variables `WEB_MASTER_YEAR` y `WEB_PERFIL` al inicio de `publicar-vps.sh` — son la única fuente de la regla "qué año/perfil viaja al VPS". Y si quedaron años viejos en el VPS de deploys anteriores, el modo de limpieza te da la lista de lo sobrante SIN borrar nada (borrar en producción siempre es acción manual tuya):
 
@@ -620,4 +620,4 @@ Detalles operativos: la passphrase del cifrado gpg vive en Firefox (entrada "GPG
 
 ### 10.5 Dónde está el detalle
 
-Esta sección es el mapa, no el territorio. El detalle vive en `02_governance/`: `arquitectura-y-bitacoras.md` §7 (diseño del pipeline, backup y bitácoras de cada deploy) y `historico/reconocimiento-vps.md` (estructura completa del VPS al 2026-07-09).
+Esta sección es el mapa, no el territorio. El detalle vive en `02_governance/`: `arquitectura.md` §7 (pipeline y backup), `historico/bitacora-arquitectura.md` (narrativa de cada deploy) y `historico/reconocimiento-vps.md` (estructura completa del VPS al 2026-07-09).
