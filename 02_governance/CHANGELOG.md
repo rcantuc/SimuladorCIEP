@@ -61,6 +61,27 @@ Trabajo en `master` sin versión asignada.
   operativo: `chown ciepmx:web /var/www/anteriores` (una vez) antes del
   primer deploy con el script.
 
+### Correcciones
+
+- **`AccesoBIE`: `anio` salía como texto (`str7`) y `SCN, update` tronaba
+  con `r(106)` en el merge contra `IngMixto.dta`.** El BIE ahora marca la
+  cifra preliminar como `"2025 p1"` (con espacio, no `/p1`); la limpieza
+  anterior solo quitaba `r1`, así que `destring` no convertía y las 11 bases
+  del BIE se cruzaban entre sí (todas `str7`) hasta chocar con la primera
+  base de tabulados CSI con `anio` entero. Ahora `periodo` se fuerza a string
+  y se le quita cualquier nota al pie al final (`2025 p1`, `2026/01 r1`,
+  `2024/p1`, `2023 /a`) con un regex; además, `AccesoBIE` verifica al salir
+  que `anio` sea numérico y, si no, aborta con `r(109)` listando los periodos
+  que no pudo convertir, en lugar de dejar que el error aparezca aguas arriba.
+- **Leyenda de descarga de `AccesoBIE` sin la cola repetitiva.** La línea
+  `Serie | Variable | ...` mostraba los últimos 80 caracteres del nombre del
+  indicador, que casi siempre eran `(Millones de pesos a precios corrientes)
+  Anual /a`; el `replace` que debía quitarla buscaba un texto que el BIE ya no
+  usa. Ahora se eliminan notas al pie, unidad entre paréntesis y frecuencia y
+  se muestra la jerarquía completa del indicador; la etiqueta de variable
+  (`label var`, tope de 80 bytes) conserva los niveles más específicos de esa
+  jerarquía.
+
 ## [v8.4.2] — 2026-09-23
 
 ### Correcciones
