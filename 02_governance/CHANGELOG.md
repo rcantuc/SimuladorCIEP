@@ -20,6 +20,8 @@ Formato de cada entrada:
 
 Trabajo en `master` sin versión asignada.
 
+## [v8.5.0] — 2026-10-03
+
 ### Comandos
 
 - **`perfilpc.ado` (nuevo) sustituye el bloque "Iteraciones" de
@@ -65,6 +67,8 @@ Trabajo en `master` sin versión asignada.
   iterar: `r(perfil)` trae solo las iteraciones que se dibujan. Nota
   metodológica en el encabezado del `.ado` y en
   `03_help/PROGRAMAS_AUXILIARES.md` §17.
+- **`Households.do`: ruta corregida a `01_modulos/Expenditure.do`** (apuntaba al root,
+  anterior a la reorganización de prefijos).
 - **Expenditure.do §3.1–3.2: el relleno de la rejilla hogar/individuo ×
   categoría ya no usa `reshape wide → long → wide`.** Un solo `reshape wide` +
   `replace = 0` (gasto, cantidad) y `= media global` (`prop`) produce la misma
