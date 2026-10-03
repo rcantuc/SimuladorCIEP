@@ -39,6 +39,7 @@ capture mkdir "${SIMROOT}/users/$id"
 
 ** 0.4 Opciones (descomentar para activar)
 //global nographs "nographs"						// SUPRIMIR GRAFICAS
+global bootstrap 1									// RÉPLICAS BOOTSTRAP de Simulador (PerfilesSim, §6): 1 = sin EE, rápido (producción); 100 = EE e IC 95% por UPM-estrato (~25 s por variable)
 //global textbook "textbook"						// SCALAR TO LATEX
 //global export "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/UniversoCIEP/3. Recursos/3.1. Paquetes Económicos/Paquete Económico 2027/4. Documento CIEP/images"
 
@@ -455,7 +456,7 @@ foreach k of varlist /*AlTrabajo AlCapital AlConsumo ///
 	Pensiones IngBasico Educacion Salud OtrosGastos Energia ///
 	ImpuestosAportaciones Transferencias*/ AportacionesNetas {
 	*noisily Perfiles `k' if `k' != 0 [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
-	noisily Simulador `k' if `k' != 0 [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot title("") //boot(10)
+	noisily Simulador `k' if `k' != 0 [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot title("") bootstrap($bootstrap)
 }
 save `"${SIMROOT}/users/$id/aportaciones.dta"', replace
 
