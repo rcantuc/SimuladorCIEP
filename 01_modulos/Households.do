@@ -317,7 +317,7 @@ if `anioenigh' >= 2022 {
 ** 1.6 Micro 1. ENIGH. Gastos
 capture confirm file "${SIMROOT}/master/`anioenigh'/deducciones.dta"
 if _rc != 0 {
-	noisily run "${SIMROOT}/Expenditure.do" `anioenigh'
+	noisily run "${SIMROOT}/01_modulos/Expenditure.do" `anioenigh'
 }
 
 
