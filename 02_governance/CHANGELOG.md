@@ -22,6 +22,33 @@ Trabajo en `master` sin versión asignada.
 
 ### Institucional
 
+- **`02_governance/` reorganizada como norma + memoria + guía (2026-10-03, tres
+  commits).** La carpeta había llegado a 24 archivos con un índice que listaba 5,
+  y el documento de arquitectura (981 líneas) abría afirmando que `publicar.sh`,
+  el CHANGELOG y `sim_changelog` "aún no están implementados" tres meses después
+  de operar en producción, arrastrando 57 filas de bitácora que duplicaban este
+  registro. (1) Cuatro reportes one-shot ya ejecutados (reconocimiento del VPS;
+  inventario, plan de integración y verificación del repo del Paquete 2027) a
+  `historico/` con nota de retiro; los cuatro documentos de diseño del rediseño
+  de `paqueteeconomico.ciep.mx` a `paquete-economico/` con README propio;
+  `arquitectura-procedimientos-stata-web.md` → `principio-stata-produce-los-numeros.md`.
+  (2) `arquitectura-y-bitacoras.md` separado en `arquitectura.md` (vigente:
+  encabezado reescrito al estado real, §7 solo con lo pendiente, backup como
+  operando, troubleshooting como apéndice) y `historico/bitacora-arquitectura.md`
+  (tabla v1.0–v1.57 y narrativa de deploys, congeladas); la política de higiene
+  pasa al README de la carpeta y la tabla formal/coloquial al glosario (v1.1).
+  Regla nueva: ningún documento de norma registra cambios del Simulador; eso es
+  exclusivo de este CHANGELOG. (3) Nueva `guia-simulador-bien-gobernado.md`:
+  doce principios para quien construye su propio simulador (motor no script,
+  una sola fuente de números, permanente vs. regenerable, candado de datos,
+  fallar en el origen, versión inmutable, un commit una idea, demostrar no
+  razonar, compuertas al publicar, secretos fuera del repo, coincidir ≠
+  verificar, gobernar la gobernanza), cada uno con el incidente fechado que lo
+  originó y la ruta donde se ve en este repo, más una lista de arranque para la
+  primera semana; README reescrito como mapa por audiencia. Referencias
+  actualizadas en README raíz, scripts de publicación, `escalar.ado`, manual del
+  investigador y HTML de nodos; las citas dentro de este CHANGELOG quedan como
+  estaban.
 - **Museo de versiones (`simuladorfiscal.ciep.mx/anteriores/`) rediseñado y
   restaurado — cuarto canal del Simulador, con fuente en `04_3_anteriores/` y
   pipeline propio (`05_scripts/publicar-anteriores.sh`, gates: auditoría
