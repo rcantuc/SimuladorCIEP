@@ -172,23 +172,57 @@ Este manual documenta los programas auxiliares del Simulador CIEP que complement
 
 ## 13. Simulador.ado
 
-**Descripción:** Motor principal de simulaciones fiscales.
+**Descripción:** Para una variable per cápita de la base de individuos
+(ingresos, impuestos, gasto por categoría), produce y guarda el total y per
+cápita (PC), el perfil por edad y sexo (PERF), la incidencia por decil de
+hogares (INCI), el ciclo de vida sexo×edad×decil (CICLO) y la proyección
+demográfica con las poblaciones de CONAPO (REC); imprime los resultados,
+registra escalares (`escalar`) y, sin `nographs`, dibuja perfiles, pirámide
+por deciles y proyección. Con `bootstrap(#)` repite todo B veces con pesos
+remuestreados y reporta errores estándar e intervalos. Desde v2.0 (octubre
+2026) las réplicas corren en Mata.
 
-**Sintaxis:** `Simulador [, escenario(string) anio(int) parametros(string)]`
+**Sintaxis:**
+```
+Simulador varname [if] [fw=factor], [bootstrap(1) cluster(upm|hogar|persona) seed(1111)
+    aniope(#) aniovp(#) title(string) reboot nographs nooutput legacy ...]
+```
 
-**Funcionalidades:**
-- Simulación de políticas fiscales
-- Cambios paramétricos en impuestos
-- Análisis de equilibrio general
-- Microsimulación con datos ENIGH
+**Archivos (en `users/$id/bootstraps/<B>/`, una fila por réplica):**
+`<var>PC`, `<var>PERF`, `<var>INCI`, `<var>CICLO`, `<var>REC`
+(los leen `Perfiles.ado`, `FiscalGap.ado` y `CuentasGeneracionales.ado`) y
+`<var>PT` (estimadores puntuales de la muestra completa, nuevo en v2.0).
 
-**Variables simuladas:**
-- Recaudación por cambios de tasas
-- Impacto distributivo de reformas
-- Efectos sobre bienestar
-- Sostenibilidad fiscal
+**Bootstrap (v2.0):**
+- *Unidad de remuestreo* (`cluster()`): default `upm`, UPM dentro de estrato
+  de diseño (`upm`, `est_dis`; si la base no los trae se toman de
+  `raw/ENIGH/<anio>/concentrado.dta`); dentro de cada estrato se sortean con
+  reemplazo tantas UPM como tiene y el peso de cada persona se multiplica por
+  las veces que salió la suya. `hogar` y `persona` (lo que hacía v1.x con
+  `bsample _N`) están disponibles; remuestrear personas ignora que las de un
+  hogar van juntas y subestima la varianza.
+- *Inferencia*: el estimador puntual es el de la **muestra completa** (réplica
+  0, pesos originales); el EE es la desviación estándar de las B réplicas; el
+  IC 95% se imprime como ±1.96·EE relativo y percentil 2.5/97.5. Hasta v1.x el
+  puntual era la media de las réplicas y el "IC" salía de `ci means` sobre
+  ellas, que es el intervalo de la *media* de las réplicas (ancho ∝ sd/√B): se
+  encogía con B y tendía a cero —subestimaba el intervalo por un factor √B.
+- *Costo*: cada réplica son sumas ponderadas por grupo (`panelsum` sobre
+  índices precalculados; los deciles de `xtile` se reproducen en Mata sin
+  reordenar por réplica). Base de 217 variables × 308 mil personas: B=1 en
+  3.0 s (5.6 s en v1.x); **B=100 en ~24 s** (v1.x: ~3.7 s por réplica, ~6 min).
+  El motor no depende del ancho de la base: v1.x hacía `preserve`/`collapse`
+  de la base completa cuatro veces por réplica.
+- *Devuelve*: `r(monto)`, `r(monto_se)`, `r(montopc)`, `r(montopc_se)`.
 
-**Dependencias:** Prácticamente todos los módulos del simulador
+**Compatibilidad:** con `bootstrap(1)` no hay remuestreo y los cinco archivos
+coinciden con los de v1.x a precisión de máquina (diferencias relativas
+≤ 4e-14, mismas filas, mismos missing); `legacy` corre el bloque v1.x
+completo. Verificación: `05_scripts/test-simulador-dorado.do`.
+
+**Pendientes conocidos:** `Perfiles.ado` y `CuentasGeneracionales.ado`
+siguen usando `ci means` sobre las réplicas (mismo defecto √B); `ProyGraph`
+promedia las réplicas por año para la proyección puntual.
 
 ---
 

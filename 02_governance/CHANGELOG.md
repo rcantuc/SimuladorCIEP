@@ -20,6 +20,37 @@ Formato de cada entrada:
 
 Trabajo en `master` sin versión asignada.
 
+### Comandos
+
+- **`Simulador.ado` v2.0: bootstrap por diseño muestral en Mata, inferencia
+  corregida y 15× más rápido.** Hasta v1.x cada réplica corría PERF, INCI, CICLO
+  y REC como programas con `preserve`/`collapse`/`restore` sobre la base
+  completa (~3.7 s por réplica en 217 variables × 308 mil personas; B=100 × 20
+  variables de PerfilesSim ≈ 2–3 h), y remuestreaba **personas** (`bsample _N`).
+  Ahora: (1) una sola extracción de columnas, índices de grupo precalculados y
+  sumas por `panelsum`; los deciles de `xtile` ponderado se reproducen en Mata
+  (exacto: 0 diferencias en 308 mil personas) y, como son bloques contiguos en
+  el orden de la variable, INCI y CICLO no reordenan por réplica. B=1 en 3.0 s
+  (5.6 s antes); B=100 en ~24 s. (2) `cluster(upm)` por default: UPM dentro de
+  estrato de diseño (`upm`, `est_dis`, de la base o de
+  `raw/ENIGH/<anio>/concentrado.dta`), como `bsample, strata() cluster()`;
+  `hogar` y `persona` disponibles. (3) **Inferencia corregida:** el puntual es
+  el de la muestra completa (réplica 0) y el EE la desviación estándar de las
+  réplicas, con IC normal y percentil. En v1.x el puntual era la media de las
+  réplicas y el "IC" venía de `ci means` sobre ellas —el intervalo de la MEDIA
+  de las réplicas, ancho ∝ sd/√B—, que se encogía con B: subestimaba el
+  intervalo 3.2× con B=10 y 10× con B=100. Con B=100 y `gas_pc_Alim` 2024 el
+  EE relativo del total es 0.44% por UPM-estrato, 0.55% por hogar y 0.34% por
+  persona. (4) Los cinco archivos de salida conservan su esquema (los leen
+  Perfiles, FiscalGap y CuentasGeneracionales) y con B=1 coinciden con v1.x a
+  precisión de máquina (≤ 4e-14 relativo, mismas filas y missing; test en
+  `05_scripts/test-simulador-dorado.do`); nuevo `<var>PT.dta` con los
+  puntuales. `legacy` conserva el bloque v1.x. `ProyGraph` toma la carpeta del
+  B corriente (antes `bootstraps/1` fijo) y promedia réplicas por año. Nota
+  metodológica en el encabezado del `.ado` y en
+  `03_help/PROGRAMAS_AUXILIARES.md` §13. Pendiente: `Perfiles.ado` y
+  `CuentasGeneracionales.ado` siguen con `ci means` sobre réplicas.
+
 ## [v8.5.0] — 2026-10-03
 
 ### Comandos
