@@ -20,6 +20,8 @@ Formato de cada entrada:
 
 Trabajo en `master` sin versión asignada.
 
+## [v8.4.3] — 2026-10-03
+
 ### Institucional
 
 - **`02_governance/` reorganizada como norma + memoria + guía (2026-10-03, tres
