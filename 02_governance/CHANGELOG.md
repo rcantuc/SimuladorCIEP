@@ -20,6 +20,8 @@ Formato de cada entrada:
 
 Trabajo en `master` sin versión asignada.
 
+## [v8.6.0] — 2026-10-03
+
 ### Comandos
 
 - **`Simulador.ado` v2.0: bootstrap por diseño muestral en Mata, inferencia
@@ -50,6 +52,16 @@ Trabajo en `master` sin versión asignada.
   metodológica en el encabezado del `.ado` y en
   `03_help/PROGRAMAS_AUXILIARES.md` §13. Pendiente: `Perfiles.ado` y
   `CuentasGeneracionales.ado` siguen con `ci means` sobre réplicas.
+- **`global bootstrap` en `SIM.do` §0.4 (default 1):** las 35 llamadas a
+  `Simulador` de `PerfilesSim.do` y el loop de AportacionesNetas usan
+  `bootstrap($bootstrap)`. En producción el sitio corre PerfilesSim en cada
+  simulación, así que queda en 1 (sin EE); con 100 se obtienen EE e IC 95% por
+  UPM-estrato a ~25 s por variable.
+
+### Infraestructura
+
+- Deployment VPS `v8.6` (minor): primer deployment desde v8.4; incluye
+  `perfilpc` (v8.5.0) y `Simulador` v2.0.
 
 ## [v8.5.0] — 2026-10-03
 
