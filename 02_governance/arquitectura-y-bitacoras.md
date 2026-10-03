@@ -594,7 +594,7 @@ Este roadmap arrancó en julio de 2026 (bitácoras v1.17 y v1.18). El orden de f
 | Fase | Contenido | Estado |
 |---|---|---|
 | Fase 1 | Documentación de credenciales del VPS (`politicas-institucionales.md` §A.6) | ✅ Cerrada 2026-07-07 (commit `0b43117`) |
-| Fase 2 | Reconocimiento del VPS en modo solo lectura (`reconocimiento-vps.md`) | ✅ Cerrada 2026-07-09 (commit `94a2089`) |
+| Fase 2 | Reconocimiento del VPS en modo solo lectura (`historico/reconocimiento-vps.md`) | ✅ Cerrada 2026-07-09 (commit `94a2089`) |
 | Fase 3 | Diseño de pipeline `publicar-vps.sh` *(antes Fase 5)* | ✅ Cerrada 2026-07-09 (código: bitácora v1.21; deploy real: §7.3 y bitácora v1.22) |
 | Fase 4 | Backup como componente del pipeline *(antes Fase 3)* | ✅ Operando en producción: primera ejecución real 2026-07-09 (config Apache + línea base de llaves cifradas; §7.2, bitácoras v1.23-v1.24) |
 | Fase 5 | Estrategia de cutover v7 → v8 *(antes Fase 4)* | ✅ Cutover manual a modelo symlink `current` ejecutado 2026-07-09 (§7.3) |

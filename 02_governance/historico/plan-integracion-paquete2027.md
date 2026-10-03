@@ -1,5 +1,7 @@
 # Plan de integración — Boceto Paquete 2027 (Entrega 2)
 
+> **Archivado el 2026-10-03.** Entrega 2 (plan de integración, 2026-08-01) del boceto del Paquete 2027: censo de literales del documento 2026 y calendario de conexión al contrato `escalar`. Es un plan fechado, no una norma; el avance real se registra en `../CHANGELOG.md` (v8.2.x en adelante). El marco conceptual vive en `../paquete-economico/`.
+
 **Fecha:** 2026-08-01
 **Alcance:** solo lectura y análisis. Ningún cambio a código de producción.
 **Método:** catálogo de escalares extraído de los `.ado`/`.do` del motor (701 nombres registrados), lectura de `master/*.dta` vía pandas (solo lectura), censo línea por línea del documento 2026, historia git, y dos investigaciones documentales (caso 2021, `06_libro/public_html`).

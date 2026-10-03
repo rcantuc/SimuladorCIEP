@@ -1,5 +1,7 @@
 # Reconocimiento del VPS de simuladorfiscal.ciep.mx (IONOS)
 
+> **Archivado el 2026-10-03.** Reporte one-shot de la Fase 2 del roadmap de deployment automatizado (reconocimiento del VPS en solo lectura, 2026-07-09). Cumplió su función: el pipeline que motivó (`05_scripts/publicar-vps.sh`, `backup-vps.sh`) está implementado y en uso. Se conserva como radiografía del servidor en esa fecha; no describe necesariamente el estado actual. Documento vigente: `../arquitectura.md` §6-§7 y `../runbook-deploys-ciep.md`.
+
 **Fecha:** 2026-07-09
 **Ejecutado por:** Devin (bajo dirección de Ricardo Cantú)
 **Modo:** solo lectura (SSH read-only, sin escritura ni modificación)

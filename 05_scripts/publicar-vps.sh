@@ -10,7 +10,7 @@
 #
 # Diseño registrado en 02_governance/arquitectura-y-bitacoras.md §7.1-§7.2
 # (decisiones D.1-D.9, bitácoras v1.20-v1.21). Estructura del VPS documentada
-# en 02_governance/reconocimiento-vps.md.
+# en 02_governance/historico/reconocimiento-vps.md.
 #
 # Uso:
 #   ./publicar-vps.sh <version-deployment> [--dry-run] [--force] [--skip-health]
@@ -451,7 +451,7 @@ log_ok "Fase 1b: $_g_copiadas copiada(s) desde users/ricardo/graphs/, $_g_conser
 # =============================================================================
 log_info "Fase 2: rsync del sitio PHP → $VPS_HTML_ROOT/$VPS_HTML_VERSION/"
 
-# Exclusiones (revisadas contra el diff local↔remoto de reconocimiento-vps.md §6):
+# Exclusiones (revisadas contra el diff local↔remoto de historico/reconocimiento-vps.md §6):
 #   ssl/                 el clon local aún contiene material SSL de renovación;
 #                        NUNCA se propaga (incidente registrado en
 #                        politicas-institucionales.md §6)

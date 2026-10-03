@@ -620,4 +620,4 @@ Detalles operativos: la passphrase del cifrado gpg vive en Firefox (entrada "GPG
 
 ### 10.5 Dónde está el detalle
 
-Esta sección es el mapa, no el territorio. El detalle vive en `02_governance/`: `arquitectura-y-bitacoras.md` §7 (diseño del pipeline, backup y bitácoras de cada deploy) y `reconocimiento-vps.md` (estructura completa del VPS).
+Esta sección es el mapa, no el territorio. El detalle vive en `02_governance/`: `arquitectura-y-bitacoras.md` §7 (diseño del pipeline, backup y bitácoras de cada deploy) y `historico/reconocimiento-vps.md` (estructura completa del VPS al 2026-07-09).

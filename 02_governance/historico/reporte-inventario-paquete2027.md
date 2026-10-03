@@ -1,5 +1,7 @@
 # Reporte de inventario — Boceto Paquete 2027 (Entrega 1)
 
+> **Archivado el 2026-10-03.** Entrega 1 (inventario, 2026-08-01) del boceto del Paquete 2027. Reporte de solo lectura, ya consumido: sus hallazgos (carpetas sin ignorar, credenciales en `wp-config.php`, catálogo de escalares) se atendieron en `.gitignore`, en `politicas-institucionales.md` y en los releases v8.2.x. Las cifras y rutas reflejan el repo en esa fecha. El marco conceptual que lo acompañó vive en `../paquete-economico/`.
+
 **Fecha:** 2026-08-01
 **Alcance:** solo lectura sobre `Dropbox-CIEP/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP/`
 **Método:** recorrido de filesystem, `git ls-files`/`git check-ignore`, lectura de `escalar.ado`, `scalarlatex.ado` y governance, y análisis de los `.tex` de los 15 años de Paquete Económico (2013–2027).
@@ -189,7 +191,7 @@ Todo número que llega a un documento, gráfica o web sin pasar por `escalar` + 
 - **Contenido:** las páginas se construyen con Elementor y **viven en la base de datos MySQL, que NO está en esta carpeta** — el contenido editorial del sitio no es auditable desde este inventario. Lo que sí está: `wp-content/uploads/2019…2026/` (1,230 archivos, 208 MB) con los PDFs de Implicaciones 2020–2025 y las infografías JPG.
 - **Assets adicionales:** micrositio estático `6yt5ppa3hb/` (PE 2023; Materialize CSS + jQuery + owl-carousel, series numéricas incrustadas en HTML/JS) y `app/` con un APK Android v0.
 - **Despliegue:** **no hay pipeline en el repo para este sitio.** Los scripts de `05_scripts/` (`publicar.sh`, `publicar-vps.sh`, `publicar-endpoint.sh`) son exclusivos del Simulador. La relación de esta copia con producción (¿backup descargado?, ¿espejo de trabajo?, ¿de qué fecha?) no está documentada en governance — **faltante**.
-- **Riesgos:** contiene `wp-config.php` **con credenciales reales de BD** y la carpeta no está ni trackeada ni ignorada en git; `wp-salt.php` presente. Según `paquete-economico-nueva-era.md`, el sitio en producción además está en `noindex, nofollow`.
+- **Riesgos:** contiene `wp-config.php` **con credenciales reales de BD** y la carpeta no está ni trackeada ni ignorada en git; `wp-salt.php` presente. Según `../paquete-economico/nueva-era.md`, el sitio en producción además está en `noindex, nofollow`.
 
 ### 5.2 `04_1_simuladorfiscal.ciep.mx/` — el Simulador
 

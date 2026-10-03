@@ -1,5 +1,7 @@
 # Verificación de estado del repositorio — previa a la Entrega 3
 
+> **Archivado el 2026-10-03.** Verificación puntual (2026-08-01) de que las Entregas 1-2 se hicieron sobre el clon vigente (v8.2.0). Pregunta respondida; sin vigencia posterior.
+
 **Fecha:** 2026-08-01
 **Alcance:** solo lectura. Sin commits, sin cambios a `.gitignore`, sin des-trackear nada.
 **Pregunta central (A):** ¿la Entrega 2 se hizo sobre una copia atrasada?
