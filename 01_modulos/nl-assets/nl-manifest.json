@@ -1,0 +1,22 @@
+{
+  "producto": "Simulador Fiscal NL",
+  "version_nl": "NL-0.1.0",
+  "fecha": "2026-10-03",
+  "motor_sincronizado": "v8.6.0",
+  "regla_cadencia": "La capa NL hace merge de master en cada release etiquetado del nacional y pasa las tres compuertas de DIAGNOSTICO_NL.md §0.3 (paridad nacional con diff vacío, D.1, delta NL documentado) antes de subir version_nl.",
+  "regla_version": "NL-MAJOR.MINOR.PATCH: MAJOR = cambio de contrato de salida (JSON/HTML); MINOR = producto o endpoint nuevo; PATCH = corrección sin cambio de contrato. El changelog vive en DIAGNOSTICO_NL.md, sección Versionado de la capa NL.",
+  "assets": [
+    {
+      "name": "pobproy_quinq1.csv",
+      "local_path": "01_modulos/nl-assets/pobproy_quinq1.csv",
+      "fuente": "CONAPO, Reconstrucción y proyecciones de la población de los municipios de México 1990-2040 (2024): población a mitad de año por grupos quinquenales de edad y sexo, 2,475 municipios",
+      "vintage": "2024",
+      "cobertura": "1990-2040, 18 grupos quinquenales (0-4 ... 80-84, 85+), sexo",
+      "copia_de_trabajo": "Drive CoNL / 2. Simuladores CoNL / TMCA VACB real per capita regiones NL / 02_datos / pobproy_quinq1.csv (6-ago-2026); columnas fecha y etiqueta_estado añadidas por el proyecto TMCA, no se usan",
+      "sha256": "1a8f07be08de082a0c33404f0fbce9d9292845a8c8290153a6ad2e1889bab31a",
+      "checksum_stata": 3853515816,
+      "filelen": 36658654,
+      "validacion": "suma de los 51 municipios de NL = serie estatal de master/Poblacion.dta (pry23) en los 51 años comunes 1990-2040, dif = 0 (DIAGNOSTICO_NL.md, anexo F0-8.6.0 §0.4)"
+    }
+  ]
+}

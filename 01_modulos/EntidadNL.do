@@ -1,4 +1,4 @@
-*! EntidadNL.do  v1.1.0 — driver F1-bis: TE micro/micro, incidencia y conciliación para Nuevo León (entidad 19)
+*! EntidadNL.do  v1.2.0 — driver F1-bis: TE micro/micro, incidencia y conciliación para Nuevo León (entidad 19)
 *
 * QUÉ ES ESTO (contrato F1 + F1-bis, DIAGNOSTICO_NL.md):
 *   (1) TE-NL micro/micro vía TasasEfectivasMicro.ado con bases COMPLETAS
@@ -74,6 +74,14 @@ if `"`r(filename)'"' == "" | `"`r(filename)'"' == "." {
 	di as err "EntidadNL: no hay log activo ni pudo abrirse uno; sin procedencia no hay exportación válida."
 	exit 459
 }
+
+* Identidad de producto (F1, NL-0.1.0): versiones leídas de los manifiestos *
+run `"`site'/01_modulos/nl-assets/nl-identidad.do"'
+_NLidentidad, modulo("Tasas efectivas e incidencia fiscal federal")
+local nl_producto `"`r(producto)'"'
+local nl_subtitulo `"`r(subtitulo)'"'
+local nl_vmotor `"`r(version_motor)'"'
+local nl_vnl `"`r(version_nl)'"'
 
 noisily di _newline(2) in g _dup(20) "." "{bf:   ENTIDAD 19 — NUEVO LEÓN " in y `anio' in g "   }" _dup(20) "."
 
@@ -608,7 +616,16 @@ quietly {
 	"presentacion" "canasta_nota" "estructura de la canasta del decil I (pct*DecI*): participaciones del gasto clasificado por régimen IVA (gravado/exento/tasa cero, matriz IVAT en el orden de levelsof de Expenditure.do §5.2) y de bienes con IEPS sobre el total clasificado"
 	"presentacion" "otrosk_nota" "en las tablas de incidencia AlCapital incluye OTROSK (SIM.do:436) y el total ImpAport lo excluye (SIM.do:440); se exporta la familia OTROSK por separado: AlTrabajo+AlCapital+AlConsumo-OTROSK = Total"
 	"presentacion" "deuda_tecnica" "extender scalarjson.ado con una clave canónica supuestos (bloque propio del contrato) para que los supuestos de incidencia de escenarios no dependan del bloque libre presentacion"
+	"presentacion" "producto" ""
+	"presentacion" "subtitulo" ""
+	"presentacion" "version_capa_nl" ""
+	"presentacion" "version_motor" ""
 	end
+	* input no expande macros: la identidad (F1) se llena aquí, leída de los manifiestos *
+	replace texto = `"`nl_producto'"' if bloque == "presentacion" & clave == "producto"
+	replace texto = `"`nl_subtitulo'"' if bloque == "presentacion" & clave == "subtitulo"
+	replace texto = `"`nl_vnl'"' if bloque == "presentacion" & clave == "version_capa_nl"
+	replace texto = `"`nl_vmotor'"' if bloque == "presentacion" & clave == "version_motor"
 	tempfile meta
 	save `meta'
 
@@ -702,7 +719,7 @@ foreach c in PartISRPMnl PartISRPMnlS1 PartISRPMnlS2 PartISRPMnlS3 ///
 ** 5.6 Contrato JSON **
 capture mkdir `"`site'/users/$id/nodos"'
 noisily scalarjson, nodo("entidad-nl") ///
-	titulo("Tasas efectivas e incidencia fiscal federal: Nuevo León") ///
+	titulo(`"`nl_producto' — Tasas efectivas e incidencia fiscal federal: Nuevo León"') ///
 	medida("recaudación federal simulada de residentes de Nuevo León") ///
 	anioref(`anio') ///
 	serie(`serie') origenserie("master/perfiles`anio'.dta + master/households.dta + users/aportaciones.dta, corte entidad 19") ///
