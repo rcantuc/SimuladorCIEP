@@ -6,6 +6,7 @@
 *! Ejemplo: AccesoBIE 628194 444612, nombres(PIB Desempleo)
 
 program define AccesoBIE
+	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 	version 17.0
 	
 	syntax anything(name=series) [, Nombres(string) Token(string)]
@@ -28,10 +29,10 @@ program define AccesoBIE
 	quietly {
 		// Crear directorios temporales (mkdir no es recursivo: nivel por nivel;
 		// una instalación fresca no trae ni el directorio site/)
-		capture mkdir "`c(sysdir_site)'"
-		capture mkdir "`c(sysdir_site)'/raw/"
-		capture mkdir "`c(sysdir_site)'/raw/temp/"
-		capture mkdir "`c(sysdir_site)'/raw/temp/AccesoBIE/"
+		capture mkdir "${SIMROOT}"
+		capture mkdir "${SIMROOT}/raw/"
+		capture mkdir "${SIMROOT}/raw/temp/"
+		capture mkdir "${SIMROOT}/raw/temp/AccesoBIE/"
 		
 		// Tokenizar las series
 		local nseries : word count `series'
@@ -47,7 +48,7 @@ program define AccesoBIE
 			python: inegi_api("`serie'", "`token'")
 			
 			// Importar los datos
-			import delimited "`c(sysdir_site)'/raw/temp/AccesoBIE/`serie'.csv", clear varnames(1) encoding(utf-8)
+			import delimited "${SIMROOT}/raw/temp/AccesoBIE/`serie'.csv", clear varnames(1) encoding(utf-8)
 			
 			// Verificar que hay datos. Si una serie no se obtuvo por NINGUNA
 			// vía, el error truena aquí, claro y en su origen — no después,
@@ -73,11 +74,14 @@ program define AccesoBIE
 				if "`varname'" == "" local varname "v`serie'"
 			}
 			
-			// Obtener la etiqueta/descripción de los metadatos
+			// Obtener la etiqueta (<= 80 bytes, para label var) y la
+			// descripción completa (jerarquía del indicador, para pantalla)
 			local varlabel = "${INEGI_LABEL_`serie'}"
+			local vardesc = "${INEGI_DESC_`serie'}"
+			if "`vardesc'" == "" local vardesc "`varlabel'"
 			
 			// Mostrar información de descarga
-			noisily display as text "  Serie: " as result "`serie'" as text " | Variable: " as result "`varname'" as text " | " as text "`varlabel'"
+			noisily display as text "  Serie: " as result "`serie'" as text " | Variable: " as result "`varname'" as text " | " as text "`vardesc'"
 			
 			// Limpiar el nombre de la variable (solo caracteres válidos)
 			local varname = ustrregexra("`varname'", "[^a-zA-Z0-9_]", "_")
@@ -98,12 +102,15 @@ program define AccesoBIE
 				capture label var `varname' "`varlabel'"
 			}
 			
-			// Limpiar periodo
-			*capture replace periodo = subinstr(periodo, "/p1", "", .)
-			capture replace periodo = subinstr(periodo, "r1", "", .)
-			*capture replace periodo = subinstr(periodo, "/p", "", .)
-			*capture replace periodo = subinstr(periodo, "/r", "", .)
-			capture replace periodo = substr(periodo,1,7)
+			// Limpiar periodo: siempre string (si ninguna observación trae
+			// nota, import delimited lo lee numérico y el merge entre series
+			// de la misma llamada choca) y sin las notas al pie del BIE:
+			// "2025 p1", "2026/01 r1", "2024/p1", "2023 /a". Una nota que
+			// sobreviva impide destring y anio queda str7, con lo que los
+			// merge 1:1 anio de SCN y compañía truenan con r(106).
+			capture tostring periodo, replace
+			replace periodo = ustrregexra(periodo, "\s*/?\s*[A-Za-z]+\d*\s*$", "")
+			replace periodo = strtrim(periodo)
 			
 			// Eliminar columna extra si existe
 			capture drop extra
@@ -173,11 +180,23 @@ program define AccesoBIE
 			destring anio, replace
 			label var anio "Año"
 		}
+
+		// anio debe salir numérico: aguas arriba (SCN, PIBDeflactor, ...) se
+		// cruza con merge 1:1 anio contra bases con anio int, y Stata no
+		// cruza string con numérico (r(106)). Mejor tronar aquí, en el
+		// origen, mostrando los periodos que no se pudieron convertir.
+		capture confirm numeric variable anio
+		if _rc {
+			noisily display as error "AccesoBIE: anio qued{c o'} como texto; el BIE trae periodos con un formato no previsto:"
+			noisily levelsof anio if !ustrregexm(anio, "^[0-9]+$"), clean
+			exit 109
+		}
 		
 		// Limpiar variables globales temporales
 		foreach serie of local series {
 			global INEGI_VARNAME_`serie' ""
 			global INEGI_LABEL_`serie' ""
+			global INEGI_DESC_`serie' ""
 		}
 	}
 	
@@ -224,11 +243,12 @@ def inegi_api(serie, token):
     
     # Si todo falla después de todos los reintentos, crear archivo vacío
     print(f"  Error: No se encontraron datos para la serie {serie} después de {MAX_RETRIES} intentos")
-    csv_path = Macro.getGlobal('c(sysdir_site)') + '/raw/temp/AccesoBIE/' + serie + '.csv'
+    csv_path = Macro.getGlobal('SIMROOT') + '/raw/temp/AccesoBIE/' + serie + '.csv'
     with open(csv_path, 'w', encoding='utf-8') as f:
         f.write('periodo,valor\n')
     Macro.setGlobal(f'INEGI_VARNAME_{serie}', f'v{serie}')
     Macro.setGlobal(f'INEGI_LABEL_{serie}', f'Serie {serie}')
+    Macro.setGlobal(f'INEGI_DESC_{serie}', f'Serie {serie}')
 
 
 def try_api(serie, token):
@@ -329,15 +349,9 @@ def try_scraping(serie):
 
 def save_data_api(serie, observations, indicator_name, banco):
     """Guarda datos obtenidos de la API."""
-    indicator_name_clean = clean_varname(indicator_name)
+    set_metadata(serie, indicator_name)
     
-    Macro.setGlobal(f'INEGI_VARNAME_{serie}', indicator_name_clean)
-    # Guardar los últimos 80 caracteres (donde está la info relevante)
-    label_base = indicator_name.replace('(Millones de Precios corrientes) Anual', '').strip()
-    label = label_base[-80:] if len(label_base) > 80 else label_base
-    Macro.setGlobal(f'INEGI_LABEL_{serie}', label)
-    
-    csv_path = Macro.getGlobal('c(sysdir_site)') + '/raw/temp/AccesoBIE/' + serie + '.csv'
+    csv_path = Macro.getGlobal('SIMROOT') + '/raw/temp/AccesoBIE/' + serie + '.csv'
     
     with open(csv_path, 'w', encoding='utf-8') as f:
         f.write('periodo,valor\n')
@@ -360,15 +374,9 @@ def save_data_api(serie, observations, indicator_name, banco):
 
 def save_data_scraping(serie, data_rows, indicator_name):
     """Guarda datos obtenidos por scraping."""
-    indicator_name_clean = clean_varname(indicator_name)
+    set_metadata(serie, indicator_name)
     
-    Macro.setGlobal(f'INEGI_VARNAME_{serie}', indicator_name_clean)
-    # Guardar los últimos 80 caracteres (donde está la info relevante)
-    label_base = indicator_name.replace('(Millones de Precios corrientes) Anual', '').strip()
-    label = label_base[-80:] if len(label_base) > 80 else label_base
-    Macro.setGlobal(f'INEGI_LABEL_{serie}', label)
-    
-    csv_path = Macro.getGlobal('c(sysdir_site)') + '/raw/temp/AccesoBIE/' + serie + '.csv'
+    csv_path = Macro.getGlobal('SIMROOT') + '/raw/temp/AccesoBIE/' + serie + '.csv'
     
     with open(csv_path, 'w', encoding='utf-8') as f:
         f.write('periodo,valor\n')
@@ -381,6 +389,49 @@ def save_data_scraping(serie, data_rows, indicator_name):
     print(f"  Fuente: Portal web")
     print(f"  Indicador: {indicator_name}")
     print(f"  Observaciones: {len(data_rows)}")
+
+
+FRECUENCIA = r'(?:Anual|Semestral|Cuatrimestral|Trimestral|Bimestral|Mensual|Quincenal|Semanal|Diaria)'
+UNIDAD = r'(?:millones|miles|pesos|precios|[ií]ndice|porcentaje|por ciento|unidades|personas|toneladas|d[oó]lares|base \d{4})'
+NIVELES_DESC = 4  # niveles finales de la jerarquía que se muestran en pantalla
+
+
+def set_metadata(serie, indicator_name):
+    """Publica como globals de Stata el nombre de variable, la descripción
+    (últimos niveles de la jerarquía, para pantalla) y la etiqueta de
+    <= 80 bytes (para label var)."""
+    desc = clean_label(indicator_name)
+    Macro.setGlobal(f'INEGI_VARNAME_{serie}', clean_varname(indicator_name))
+    Macro.setGlobal(f'INEGI_DESC_{serie}', desc)
+    Macro.setGlobal(f'INEGI_LABEL_{serie}', label80(desc))
+
+
+def clean_label(name):
+    """Quita lo repetitivo del nombre de indicador del BIE: al final, notas al
+    pie, unidad entre paréntesis y frecuencia ("... > Total (Millones de pesos
+    a precios corrientes) Anual  /f1 /p1"); al inicio, los niveles genéricos
+    de la jerarquía ("Cuentas nacionales > Cuentas de bienes y servicios, base
+    2018 > A precios corrientes > ..."). Se conservan los últimos NIVELES_DESC
+    niveles, que son los que identifican la serie."""
+    name = re.sub(r'(?<![A-Za-z])/[a-z]\d*(?=\s|$)', '', name)
+    name = re.sub(r'\s*\([^()]*\)\s*' + FRECUENCIA + r'\s*$', '', name, flags=re.I)
+    name = re.sub(r'\s*\([^()]*' + UNIDAD + r'[^()]*\)\s*$', '', name, flags=re.I)
+    name = re.sub(r'\s+' + FRECUENCIA + r'\s*$', '', name, flags=re.I)
+    name = re.sub(r'\s+', ' ', name).strip()
+    niveles = [p.strip() for p in name.split('>') if p.strip()]
+    return ' > '.join(niveles[-NIVELES_DESC:])
+
+
+def label80(desc):
+    """Recorta la descripción a <= 80 bytes (límite de label var) quitando
+    niveles de la jerarquía desde la raíz, que es la parte genérica."""
+    partes = [p.strip() for p in desc.split('>')]
+    while len(partes) > 1 and len(' > '.join(partes).encode('utf-8')) > 80:
+        partes.pop(0)
+    label = ' > '.join(partes)
+    while len(label.encode('utf-8')) > 80:
+        label = label[1:]
+    return label.strip()
 
 
 def clean_varname(name):

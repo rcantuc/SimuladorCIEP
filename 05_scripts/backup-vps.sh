@@ -8,7 +8,7 @@
 # manual, ~2 veces al año cuando rotan). Aplica la retención de 90 backups
 # con poda automática (D.4).
 #
-# Diseño registrado en 02_governance/arquitectura-y-bitacoras.md §7.2
+# Diseño registrado en 02_governance/arquitectura.md §7.2
 # (decisiones D.1-D.8 con el ajuste I.1 del 2026-07-09: las llaves SSL salen
 # del ciclo automático porque no cambian entre deploys y su lectura requiere
 # sudo — automatizar sudo era superficie innecesaria).
@@ -239,7 +239,7 @@ fi
 log_info "Paso 2: backup de la config Apache (/etc/apache2/sites-available/)."
 
 # Se traen los *.conf y también los *.backup-pre-cutover-* (son parte de la
-# historia de la config: ver §7.3 de arquitectura-y-bitacoras.md). El pull es
+# historia de la config: ver §7.3 de 02_governance/historico/bitacora-arquitectura.md). El pull es
 # legible sin sudo (los .conf son world-readable).
 RSYNC_APACHE_OPTS=(
     -az

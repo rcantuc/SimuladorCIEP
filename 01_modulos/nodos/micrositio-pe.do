@@ -26,12 +26,12 @@
 *       pe-data.json  pe-ingresos.csv  pe-gasto.csv
 *   Override de destino: global pe_charts_dir
 *
-* USO:  do "`c(sysdir_site)'/01_modulos/nodos/micrositio-pe.do"
+* USO:  do "${SIMROOT}/01_modulos/nodos/micrositio-pe.do"
 * Requiere: aniovp y anioPE (profile.do), master/ poblado, LIF y PEF
 * invocables. Tiempo esperado: ~2-3 min (PEF ~9 s por año).
 
 *** 0 PRELIMINARES ***
-local site `"`c(sysdir_site)'"'
+local site `"${SIMROOT}"'
 
 capture confirm scalar aniovp
 if _rc {

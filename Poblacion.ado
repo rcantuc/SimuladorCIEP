@@ -1,8 +1,8 @@
 *! version 8.0 CIEP 03jul2026
 *!*******************************************
 *!***                                    ****
-*!***    Poblacion y defunciones         ****
-*!***    Bases: CONAPO 1950-2070         ****
+*!***    Poblacion a mitad de año        ****
+*!***    Bases: CONAPO pry23 1970-2070   ****
 *!***    Autor: Ricardo                  ****
 *!***    Version: 8.0                    ****
 *!***    Última actualización: 03jul2026 ****
@@ -11,14 +11,15 @@
 *!***    Poblacion [if] [, ANIOinicial(int) ANIOFinal(int) NOGraphs UPDATE]
 *!*******************************************
 program define Poblacion, return
+	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 quietly {
 	timer on 2
 
-	capture mkdir `"`c(sysdir_site)'/master"'
-	capture mkdir "`c(sysdir_site)'/users/$id/graphs"
+	capture mkdir `"${SIMROOT}/master"'
+	capture mkdir "${SIMROOT}/users/$id/graphs"
 
 	** 0.1 Revisa si se puede usar la base de datos **
-	capture use `"`c(sysdir_site)'/master/Poblacion.dta"', clear
+	capture use `"${SIMROOT}/master/Poblacion.dta"', clear
 	if _rc != 0 {
 		UpdatePoblacion
 	}
@@ -52,7 +53,7 @@ quietly {
 	************************
 	*** 2. Base de datos ***
 	************************
-	use `if' using `"`c(sysdir_site)'/master/Poblacion.dta"', clear
+	use `if' using `"${SIMROOT}/master/Poblacion.dta"', clear
 	if `ifentidad' == 0 {
 		keep if entidad == "Nacional"
 	}
@@ -418,21 +419,21 @@ quietly {
 			graph export "$export/PP_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(PP_`anioinicial'_`aniofinal'_`entidadGName')
 		}
 		else {
-			graph export "`c(sysdir_site)'/users/$id/graphs/PP_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(PP_`anioinicial'_`aniofinal'_`entidadGName')
+			graph export "${SIMROOT}/users/$id/graphs/PP_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(PP_`anioinicial'_`aniofinal'_`entidadGName')
 		}
 		
 		if "$export" != "" {
 			graph export "$export/PA_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(P_`anioinicial'_`aniofinal'_`entidadGName'A)
 		}
 		else {
-			graph export "`c(sysdir_site)'/users/$id/graphs/PA_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(P_`anioinicial'_`aniofinal'_`entidadGName'A)
+			graph export "${SIMROOT}/users/$id/graphs/PA_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(P_`anioinicial'_`aniofinal'_`entidadGName'A)
 		}
 		
 		if "$export" != "" {
 			graph export "$export/PB_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(P_`anioinicial'_`aniofinal'_`entidadGName'B)
 		}
 		else {
-			graph export "`c(sysdir_site)'/users/$id/graphs/PB_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(P_`anioinicial'_`aniofinal'_`entidadGName'B)
+			graph export "${SIMROOT}/users/$id/graphs/PB_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(P_`anioinicial'_`aniofinal'_`entidadGName'B)
 		}
 
 		capture window manage close graph P_`anioinicial'_`aniofinal'_`entidadGName'A
@@ -598,19 +599,19 @@ quietly {
 			graph export "$export/ET_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(ET_`anioinicial'_`aniofinal'_`entidadGName')
 		}
 		else {
-			graph export "`c(sysdir_site)'/users/$id/graphs/ET_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(ET_`anioinicial'_`aniofinal'_`entidadGName')
+			graph export "${SIMROOT}/users/$id/graphs/ET_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(ET_`anioinicial'_`aniofinal'_`entidadGName')
 		}
 		if "$export" != "" {
 			graph export "$export/T_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(T_`anioinicial'_`aniofinal'_`entidadGName')
 		}
 		else {
-			graph export "`c(sysdir_site)'/users/$id/graphs/T_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(T_`anioinicial'_`aniofinal'_`entidadGName')
+			graph export "${SIMROOT}/users/$id/graphs/T_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(T_`anioinicial'_`aniofinal'_`entidadGName')
 		}
 		if "$export" != "" {
 			graph export "$export/E_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(E_`anioinicial'_`aniofinal'_`entidadGName')
 		}
 		else {
-			graph export "`c(sysdir_site)'/users/$id/graphs/E_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(E_`anioinicial'_`aniofinal'_`entidadGName')
+			graph export "${SIMROOT}/users/$id/graphs/E_`anioinicial'_`aniofinal'_`entidadGName'.png", replace name(E_`anioinicial'_`aniofinal'_`entidadGName')
 		}
 
 		capture window manage close graph E_`anioinicial'_`aniofinal'_`entidadGName'
@@ -641,11 +642,26 @@ end
 
 ****************************************************************************************
 ****                                                                                ****
-****   Bases de datos de Mexico: Población, defunciones y migración internacional   ****
+****   Base de datos de Mexico: Población a mitad de año (CONAPO pry23 vía DGIS)   ****
 ****                                                                                ****
 ****************************************************************************************
 program define UpdatePoblacion
+	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 	noisily di in g "  Updating Poblacion.dta..." _newline
+
+	* FUENTE (v8.4.1). CONAPO, Conciliación Demográfica de México 1970-2019 y
+	* Proyecciones de la población de México y de las entidades federativas
+	* 2020-2070 (pry23, publicadas el 11-sep-2023). Hasta v8.4.0 se leían en vivo
+	* los tres CSV de conapo.segob.gob.mx/work/models/CONAPO/Datos_Abiertos/pry23/
+	* (00_Pob_Mitad_1950_2070, 01_Defunciones_1950_2070,
+	* 02_mig_inter_quinquen_proyecciones); CONAPO dejó de servirlos en sep-2026.
+	* La misma proyección la redistribuye la DGIS-Salud en
+	*   http://www.dgis.salud.gob.mx/descargas/datosabiertos/poblacion/proyecciones_censo/Poblacion_Estimada_Mitad_Anio.zip
+	* y viaja como asset del data sidecar (05_scripts/manifest.json, SHA-256
+	* verificado por ensure_asset), para que la reconstrucción no dependa de un
+	* servidor de gobierno. Cobertura 1970-2070 (antes 1950-2070); las 555,500
+	* celdas comunes coinciden exactamente con el vintage anterior. Ya no se
+	* traen defunciones ni migración internacional: ningún módulo las consumía.
 
 
 
@@ -653,132 +669,92 @@ program define UpdatePoblacion
 	*** A. Poblacion ***
 	********************
 
-	** 1. Base de datos (online) **
-	import delimited "http://conapo.segob.gob.mx/work/models/CONAPO/Datos_Abiertos/pry23/00_Pob_Mitad_1950_2070.csv", clear
-	*import excel "`c(sysdir_site)'../BasesCIEP/CONAPO/ConDem50a19_ProyPob20a70/0_Pob_Mitad_1950_2070.xlsx", sheet("Hoja1") firstrow case(lower) clear
+	** 1. Base de datos (asset del sidecar) **
+	ensure_asset "Poblacion_Estimada_Mitad_Anio.zip"
+	capture mkdir "${SIMROOT}/raw/temp"
+	capture mkdir "${SIMROOT}/raw/temp/CONAPO"
+	local here `"`c(pwd)'"'
+	quietly cd "${SIMROOT}/raw/temp/CONAPO"
+	unzipfile "${SIMROOT}/raw/CONAPO/Poblacion_Estimada_Mitad_Anio.zip", replace
+	quietly cd `"`here'"'
+	import delimited "${SIMROOT}/raw/temp/CONAPO/Poblacion_Estimada_Mitad_Anio.csv", ///
+		clear varnames(1) encoding(utf-8) case(lower)
 
 
 	** 2. Limpia **
-	capture drop renglon
-	capture rename año anio
-	capture rename ao anio
+	keep anio clave_entidad clave_edad clave_sexo poblacion_a_mitad_anio
+	rename (clave_entidad clave_edad clave_sexo poblacion_a_mitad_anio) (cve_geo edad sexo poblacion)
+	destring anio cve_geo edad sexo poblacion, replace
 
-	rename sexo sexo0
-	encode sexo0, generate(sexo)
-	drop sexo0
+	label define sexo 1 "Hombres" 2 "Mujeres"
+	label values sexo sexo
 
-
-	** 3. Guardar **
-	tempfile poblacion
-	save "`poblacion'"
-
-
-
-	**********************
-	*** B. Defunciones ***
-	**********************
-
-	** 1. Base de datos (online) **
-	import delimited "http://conapo.segob.gob.mx/work/models/CONAPO/Datos_Abiertos/pry23/01_Defunciones_1950_2070.csv", clear
-	*import excel "`c(sysdir_site)'../BasesCIEP/CONAPO/ConDem50a19_ProyPob20a70/1_Defunciones_1950_2070.xlsx", sheet("Hoja1") firstrow case(lower) clear
-
-
-	** 2. Limpia **
-	capture rename año anio
-	capture rename ao anio
-	capture rename aão anio
-
-	rename sexo sexo0
-	encode sexo0, generate(sexo)
-	drop *renglon sexo0
-
-
-	** 3. Guardar **
-	tempfile defunciones
-	save "`defunciones'"
-
-
-
-	**********************************
-	*** C. Migracion Internacional ***
-	**********************************
-
-	** 1. Base de datos (online) **
-	import delimited "http://conapo.segob.gob.mx/work/models/CONAPO/Datos_Abiertos/pry23/02_mig_inter_quinquen_proyecciones.csv", clear
-	*import excel "`c(sysdir_site)'../BasesCIEP/CONAPO/ConDem50a19_ProyPob20a70/2_mig_inter_quinquen_proyecciones.xlsx", sheet("Hoja1") firstrow case(lower) clear
-
-
-	** 2. Limpia **
-	capture rename año anio
-	if _rc != 0 {
-		rename ao anio
-	}
-	split anio, parse("-") destring
-	split edad, parse("--") destring
-
-	rename sexo sexo0
-	encode sexo0, generate(sexo)
-	drop renglon sexo0 anio edad
-
-	* 2.1 Se expanden los años para rellenar los espacios entre rangos. Por ejemplo: de 0-4 a 0,1,2,3,4. *
-	expand anio2-anio1
-	replace emigrantes = emigrantes/(anio2-anio1)
-	replace inmigrantes = inmigrantes/(anio2-anio1)
-	sort entidad anio1 anio2 edad1 edad2 sexo
-	by entidad anio1 anio2 edad1 edad2 sexo: g n = _n
-	replace anio1 = anio1 + n
-	drop anio2 n
-	rename anio1 anio
-
-	* 2.2 Se distribuyen entre edades *
-	expand edad2-edad1+1
-	replace emigrantes = emigrantes/(edad2-edad1+1)
-	replace inmigrantes = inmigrantes/(edad2-edad1+1)
-	sort entidad anio edad1 edad2 sexo
-	by entidad anio edad1 edad2 sexo: g n = _n
-	replace edad1 = edad1 + n - 1
-	drop edad2 n
-	rename edad1 edad
-
-
-	** 3. Guardar **
-	tempfile migracion
-	save "`migracion'"
-
-
-
-	***************/
-	*** D. Union ***
-	****************
-
-	** 1. Base de datos (temporales) **
-	use "`poblacion'", clear
-	merge 1:1 (anio edad sexo entidad) using "`defunciones'", nogen
-	merge 1:1 (anio edad sexo entidad) using "`migracion'", nogen
-
-
-	** 2. Limpia **
+	* Nombres de entidad como los usa el Simulador (mismos que el vintage CONAPO) *
+	g entidad = ""
+	replace entidad = "Aguascalientes"      if cve_geo == 1
+	replace entidad = "Baja California"     if cve_geo == 2
+	replace entidad = "Baja California Sur" if cve_geo == 3
+	replace entidad = "Campeche"            if cve_geo == 4
+	replace entidad = "Coahuila"            if cve_geo == 5
+	replace entidad = "Colima"              if cve_geo == 6
+	replace entidad = "Chiapas"             if cve_geo == 7
+	replace entidad = "Chihuahua"           if cve_geo == 8
+	replace entidad = "Ciudad de México"    if cve_geo == 9
+	replace entidad = "Durango"             if cve_geo == 10
+	replace entidad = "Guanajuato"          if cve_geo == 11
+	replace entidad = "Guerrero"            if cve_geo == 12
+	replace entidad = "Hidalgo"             if cve_geo == 13
+	replace entidad = "Jalisco"             if cve_geo == 14
+	replace entidad = "Estado de México"    if cve_geo == 15
+	replace entidad = "Michoacán"           if cve_geo == 16
+	replace entidad = "Morelos"             if cve_geo == 17
+	replace entidad = "Nayarit"             if cve_geo == 18
+	replace entidad = "Nuevo León"          if cve_geo == 19
+	replace entidad = "Oaxaca"              if cve_geo == 20
+	replace entidad = "Puebla"              if cve_geo == 21
+	replace entidad = "Querétaro"           if cve_geo == 22
+	replace entidad = "Quintana Roo"        if cve_geo == 23
+	replace entidad = "San Luis Potosí"     if cve_geo == 24
+	replace entidad = "Sinaloa"             if cve_geo == 25
+	replace entidad = "Sonora"              if cve_geo == 26
+	replace entidad = "Tabasco"             if cve_geo == 27
+	replace entidad = "Tamaulipas"          if cve_geo == 28
+	replace entidad = "Tlaxcala"            if cve_geo == 29
+	replace entidad = "Veracruz"            if cve_geo == 30
+	replace entidad = "Yucatán"             if cve_geo == 31
+	replace entidad = "Zacatecas"           if cve_geo == 32
+	assert entidad != ""
 	replace poblacion = 0 if poblacion == .
-	replace emigrantes = 0 if emigrantes == .
-	replace inmigrantes = 0 if inmigrantes == .
-
-	replace entidad = "Nacional" if substr(entidad,1,3) == "Rep"
-	replace entidad = "Estado de México" if entidad == "M?xico" | entidad == "México"
 
 
-	** 3. Labels y formato *
+	** 3. Nacional = suma de las 32 entidades (CONAPO publicaba la fila "República Mexicana") **
+	preserve
+		collapse (sum) poblacion, by(anio edad sexo)
+		g entidad = "Nacional"
+		g cve_geo = 0
+		tempfile nacional
+		save "`nacional'"
+	restore
+	append using "`nacional'"
+	isid anio edad sexo entidad
+	sort anio edad sexo entidad
+
+
+
+	***********************
+	*** B. Labels y tasa ***
+	***********************
+
+	** 1. Labels y formato *
 	label var anio "Año"
 	label var sexo "Sexo"
 	label var edad "Edad"
 	label var entidad "Entidad federativa"
 	label var poblacion "Población"
-	label var emigrantes "Emigrantes internacionales"
-	label var inmigrantes "Inmigrantes internacionales"
-	label var defunciones "Defunciones"
-	format poblacion defunciones *migrantes %15.0fc
+	format poblacion %15.0fc
 
 
-	** 4. Tasa de fertilidad **
+	** 2. Tasa de fertilidad **
 	tempvar mujeresf nacimien nacimientos mujeresfert
 	egen `mujeresf' = sum(poblacion) if edad >= 16 & edad <= 49 & sexo == 2, by(anio)
 	egen `nacimien' = sum(poblacion) if edad == 0, by(anio)
@@ -790,25 +766,25 @@ program define UpdatePoblacion
 	label var tasafecundidad "Nacimientos por cada mil mujeres"
 
 
-	** 5. Guardar bases SIM **
-	order anio sexo edad entidad poblacion defunciones
-	drop cve_geo 
+	** 3. Guardar bases SIM **
+	order anio sexo edad entidad poblacion
+	drop cve_geo
 	capture drop __*
 	compress
 
 	if `c(version)' > 13.1 {
-		saveold "`c(sysdir_site)'/master/Poblacion.dta", replace version(13)
+		saveold "${SIMROOT}/master/Poblacion.dta", replace version(13)
 	}
 	else {
-		save "`c(sysdir_site)'/master/Poblacion.dta", replace
+		save "${SIMROOT}/master/Poblacion.dta", replace
 	}
 
 	collapse (sum) poblacion, by(anio entidad)
 	keep if entidad == "Nacional"
 	if `c(version)' > 13.1 {
-		saveold `"`c(sysdir_site)'/master/Poblaciontot.dta"', replace version(13)
+		saveold `"${SIMROOT}/master/Poblaciontot.dta"', replace version(13)
 	}
 	else {
-		save `"`c(sysdir_site)'/master/Poblaciontot.dta"', replace
+		save `"${SIMROOT}/master/Poblaciontot.dta"', replace
 	}
 end

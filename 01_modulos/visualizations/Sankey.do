@@ -42,7 +42,7 @@ local OtrasEmpresas = r(Otras_empresas)
 
 **********************************/
 ** Eje 1: Generación del ingreso **
-use `"`c(sysdir_site)'/master/`2'/households.dta"', clear
+use `"${SIMROOT}/master/`2'/households.dta"', clear
 
 noisily tabstat Yl Yk ing_estim_alqu [fw=factor], stat(sum) format(%20.0fc) by(`1')
 
@@ -95,7 +95,7 @@ save `eje1'
 
 ********************
 ** Eje 4: Consumo **
-use `"`c(sysdir_site)'/master/`2'/households.dta"', clear
+use `"${SIMROOT}/master/`2'/households.dta"', clear
 collapse (sum) gas_pc* gasto_anual* gasto_anualAhorro=Ahorro [fw=factor], by(`1')
 egen gasto_Alimentos = rsum(gas_pc_Agua gas_pc_Alim gas_pc_BebN)
 egen gasto_Vestido = rsum(gas_pc_Vest gas_pc_Calz)

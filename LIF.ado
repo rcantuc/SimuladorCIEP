@@ -1,9 +1,10 @@
 *! version 8.1 CIEP 12sep2026
 program define LIF, return
+	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 quietly {
-	capture mkdir `"`c(sysdir_site)'/users/"'
-	capture mkdir `"`c(sysdir_site)'/users/$id/"'
-	capture mkdir `"`c(sysdir_site)'/users/$id/graphs/"'
+	capture mkdir `"${SIMROOT}/users/"'
+	capture mkdir `"${SIMROOT}/users/$id/"'
+	capture mkdir `"${SIMROOT}/users/$id/graphs/"'
 	timer on 4
 
 	** 0.1 Anio valor presente **
@@ -17,7 +18,7 @@ quietly {
 	}
 
 	** 0.2 Base LIF **
-	capture confirm file "`c(sysdir_site)'/master/LIF.dta"
+	capture confirm file "${SIMROOT}/master/LIF.dta"
 	if _rc != 0 {
 		noisily UpdateLIF
 	}
@@ -27,7 +28,7 @@ quietly {
 	***************
 	*** 1 SYNTAX **
 	***************
-	use in 1 using "`c(sysdir_site)'/master/LIF.dta", clear
+	use in 1 using "${SIMROOT}/master/LIF.dta", clear
 	syntax [if] [, ANIO(int `aniovp' ) BY(varname) ///
 		UPDATE NOGraphs Base ///
 		MINimum(real 0.5) DESDE(int -1) ///
@@ -58,7 +59,7 @@ quietly {
 
 	** 1.3 Base RAW **
 	if "`base'" == "base" {
-		use `if' using "`c(sysdir_site)'/master/LIF.dta", clear
+		use `if' using "${SIMROOT}/master/LIF.dta", clear
 		exit
 	}
 
@@ -88,7 +89,7 @@ quietly {
 	save `PIB'
 
 	** 2.2 Datos Abiertos **
-	capture confirm file "`c(sysdir_site)'/master/DatosAbiertos.dta"
+	capture confirm file "${SIMROOT}/master/DatosAbiertos.dta"
 	if _rc != 0 | "`update'" == "update" {
 		DatosAbiertos //, update
 		local updated = r(updated)
@@ -110,7 +111,7 @@ quietly {
 	***************
 	*** 3 Merge ***
 	***************
-	use "`c(sysdir_site)'/master/LIF.dta", clear
+	use "${SIMROOT}/master/LIF.dta", clear
 	*drop if nombre == ""
 	sort anio mes
 	merge m:1 (anio) using `PIB', nogen keepus(pibY indiceY deflatorpp lambda var_pibY Poblacion) update replace keep(matched)
@@ -570,7 +571,7 @@ quietly {
 		*capture window manage close graph ingresosMXN`by'
 		*capture window manage close graph ingresos`by'PIB
 	
-		graph save ingresos`by'PIB "`c(sysdir_site)'/users/$id/graphs/ingresos`by'PIB", replace
+		graph save ingresos`by'PIB "${SIMROOT}/users/$id/graphs/ingresos`by'PIB", replace
 		if "$export" != "" {
 			graph export "$export/ingresos`by'PIB.png", as(png) name("ingresos`by'PIB") replace
 		}
@@ -599,6 +600,7 @@ end
 ****                 ****
 *************************
 program define UpdateLIF
+	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 
 	args update
 
@@ -606,7 +608,7 @@ program define UpdateLIF
 	*** 1. BASE DE DATOS ***
 	************************
 	ensure_asset, dir(raw/LIFs)			// todo lo que el manifest declare bajo raw/LIFs/ (hoy LIFs.xlsx)
-	import excel "`c(sysdir_site)'/raw/LIFs/LIFs.xlsx", clear firstrow
+	import excel "${SIMROOT}/raw/LIFs/LIFs.xlsx", clear firstrow
 	foreach k of varlist _all {
 		capture confirm string variable `k'
 		if _rc == 0 {
@@ -718,6 +720,6 @@ program define UpdateLIF
 	capture order div* nombre serie anio LIF ILIF monto
 	compress
 	sort div* nombre serie anio
-	capture mkdir "`c(sysdir_site)'/master/"
-	save "`c(sysdir_site)'/master/LIF.dta", replace
+	capture mkdir "${SIMROOT}/master/"
+	save "${SIMROOT}/master/LIF.dta", replace
 end

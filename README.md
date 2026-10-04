@@ -14,7 +14,7 @@ El CIEP desarrolla tres simuladores de política pública disponibles en línea 
 | **Simulador IEPS al tabaco** | [iepsaltabaco.ciep.mx](https://iepsaltabaco.ciep.mx) | Impacto fiscal y de salud de cambios al IEPS aplicado al tabaco |
 | **Simulador de tenencia vehicular** | [tenencia.ciep.mx](https://tenencia.ciep.mx) | Cálculo y análisis del derecho de tenencia o uso de vehículos por entidad federativa |
 
-Los tres son de acceso libre. **Este repositorio** contiene el código fuente del Simulador Fiscal CIEP — el motor de cálculo que corre detrás de `simuladorfiscal.ciep.mx` y que también se puede instalar directamente en Stata. Su arquitectura completa está documentada en [`02_governance/arquitectura-y-bitacoras.md`](02_governance/arquitectura-y-bitacoras.md).
+Los tres son de acceso libre. **Este repositorio** contiene el código fuente del Simulador Fiscal CIEP — el motor de cálculo que corre detrás de `simuladorfiscal.ciep.mx` y que también se puede instalar directamente en Stata. Su arquitectura completa está documentada en [`02_governance/arquitectura.md`](02_governance/arquitectura.md).
 
 <h2 style="color: #ff7020;">Simulador Fiscal CIEP</h2>
 
@@ -90,7 +90,9 @@ net from https://ciep.mx/simuladorfiscal/
 net install LIF
 ```
 
-Los programas disponibles son: `Poblacion`, `PIBDeflactor`, `SCN`, `SHRFSP`, `LIF`, `PEF`, `DatosAbiertos`. Una vez instalados, funcionan en tu Stata local igual que en el repositorio completo.
+Los programas disponibles son: `Poblacion`, `PIBDeflactor`, `SCN`, `SHRFSP`, `LIF`, `PEF`, `DatosAbiertos`, `AccesoBIE`. Una vez instalados, funcionan en tu Stata local igual que en el repositorio completo.
+
+Los datos (insumos oficiales en `raw/`, bases procesadas en `master/`, salidas en `users/`) se guardan en la **carpeta de trabajo** desde la que corres el primer comando (`cd "C:\Proyectos\Simulador"` antes de empezar; pesan varios GB). Para fijar otra carpeta o consultar la activa: `help SIMroot`.
 
 #### Opción C: Clonar el repositorio completo
 
@@ -197,7 +199,7 @@ Algunos comandos (como `AccesoBIE` y `DatosAbiertos`) extraen datos en tiempo re
 
 <h2 style="color: #ff7020;">Documentación Técnica</h2>
 
-Esta sección describe los archivos técnicos del Simulador Fiscal CIEP. La arquitectura completa del ecosistema de Simuladores CIEP — incluyendo la infraestructura de distribución, los roles de gobernanza y los componentes pendientes de implementación — está documentada en [`02_governance/arquitectura-y-bitacoras.md`](02_governance/arquitectura-y-bitacoras.md).
+Esta sección describe los archivos técnicos del Simulador Fiscal CIEP. La arquitectura completa del ecosistema de Simuladores CIEP — incluyendo la infraestructura de distribución, los roles de gobernanza y los componentes pendientes de implementación — está documentada en [`02_governance/arquitectura.md`](02_governance/arquitectura.md).
 
 ### Archivos principales
 

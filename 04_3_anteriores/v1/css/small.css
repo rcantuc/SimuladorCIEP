@@ -1,0 +1,165 @@
+.chartLeft {
+	width:auto;
+	margin-right:0%;
+	float:none;
+}
+.chartRight {
+	width: auto;
+	float: right;
+}
+.leftmenu .col2 {
+    left: 1%;
+    min-width: 130px;
+    width: 12%;
+}
+
+.leftmenu .col1 {
+    left: 97%;
+    width: 81%;
+}
+
+#menu span {
+    height: auto;
+}
+
+.col2 #menu p {
+	min-height: 30px !important;
+    height: auto !important;
+    margin-bottom: 12px !important;
+	padding-bottom:0.7em !important;
+	padding-top:0.5em !important;
+	padding-left:38px !important;
+}
+.col2 #menu a {
+	padding-left:41px;
+	padding-top:8px;
+	padding-bottom:8px;
+	height:auto;
+	min-height:30px;
+	font-size: 12px;
+}
+#menu li {
+    background-repeat: repeat-x;
+	background-color:#f2f2f2;
+}
+#menu li .inter {
+	left: -5px;
+	top:16px;
+}
+#menu li ul li .inter {
+	left:-24px;
+}
+#menu li .iconosSubMenus {
+    right: 12px;
+}
+/*#menu>li:hover{
+	background-image:url(../sim-images/bg-menu-left-over.png);
+	background-color:#575757;
+}*/
+
+#resultados .item {
+	margin-left: 2%;
+}
+#resultados .dos,
+#resultados .tres {
+	margin-left: 0%;
+}
+#resultados .item p {
+    font-size: 125%;
+}
+#menos, #igual {
+    height: 86px;
+    width: 7.4%;
+}
+#guiarapida p.titulo {
+	margin-left:0.5%;
+	margin-right:2%;
+}
+#guiarapida {
+    font-size: 86%;
+}
+.paddRel {
+	padding-right:25px;
+	padding-left:25px;
+}
+.borrar{font-size:0px !important}
+.borrar:before{
+      content: "Borrar historial";
+	  font-size:12px;
+}
+.paso {
+    width: 24%;
+}
+.nextIcon {
+    width: 3.5%;
+}
+
+#logoCiep {
+    background-position: 0 8px;
+}
+
+#logoCiep a {
+    margin-left: 0;
+    width: 130px;
+}
+#tablaiva tr td.naranja1, #tablaiva tr td.naranja2, #tablaieps tr td.naranja1, #tablaieps tr td.naranja2, #tablaisr tr td.naranja1, #tablaisr tr td.naranja2, #tablaempleo tr td.naranja1, #tablaempleo tr td.naranja2 {
+    padding-left: 7px;
+    padding-right: 6px;
+}
+#menu ul li a {
+	height:auto;
+    min-height: 26px;
+    padding-left: 30px;
+}
+#menu li ul li:hover a,
+#menu li ul li.selected a{
+	color:#F45D07;
+	background:url(../sim-images/icon-submenu.png) 13px 14px no-repeat;
+}
+.module .content, .module2 .content {
+    padding: 30px 210px 30px 30px !important;
+}
+td input[type='text'].extra {
+	right: 10% !important;
+}
+.body-inter2 .contenedor1 #tablaisr tr td.naranja2 {
+padding-right: 6px !important;
+}
+#menu li .iconosSubMenus {
+width: 12px;
+}
+#menu a.icoIva {background-position:11px 8px;}
+#menu a.icoIsr {background-position:11px -34px;}
+#menu a.icoPetroleo {background-position:8px -76px;}
+#menu a.icoOtros {background-position:8px -293px;}
+#menu a.icoEnergia {background-position:8px -249px;}
+#menu a.icoNopetroleo {background-position:8px -163px;}
+#menu a.icoSsocial {background-position:8px -121px;}
+#menu a.icoIetu {background-position:8px -207px;}
+
+#menu a.icoEducacion {background-position:9px -335px;}
+#menu a.icoSalud {background-position:9px -377px;}
+#menu a.icoGasto {background-position:9px -422px;}
+
+#menu a.icoCrecimiento {background-position:9px -465px;}
+
+#menu a.icoComoUsar {background-position:8px -518px;}
+#menu a.icoMetodologia {background-position:9px -562px;}
+#menu a.icoPreguntas {background-position:8px -604px;}
+#menu a.icoContacto {background-position:8px -649px;}
+
+.inlineIconos {
+margin-top: 22px;
+}
+.inlineInfoExtra h3 {
+	padding-top:0;
+	padding-bottom:8px !important;
+	margin-top:0;
+}
+#logoCiep {
+background-image: url(../sim-images/logo-ciep2.png);
+background-position: 2px 11px;
+}
+#tablaisr tr td.blanco2 {
+	padding-left:5px;
+}

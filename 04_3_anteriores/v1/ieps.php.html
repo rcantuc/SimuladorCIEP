@@ -1,0 +1,2628 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<!-- HEAD -->
+    <head>
+	<title>Simulador Fiscal CIEP | Versión 1</title>
+    <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE"> <!-- quitar al FINAL -->
+	<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+	<meta name="description" content="info" />
+	<meta name="keywords" content="info" />
+	<meta name="robots" content="index, follow" />
+	<link rel="shortcut icon" href="favicon.ico.html" type="image/x-icon" />
+    
+	<link rel="stylesheet" type="text/css" href="css/screen.css" media="screen, print, projection" />
+    <link rel="stylesheet" type="text/css" media="screen, print, projection"  href="css/tablas.css" />
+    
+    <!-- Direrente resolución -->
+    <!--link rel='stylesheet' media='screen and (min-width: 1250px) and (max-width: 1210px)' href='css/medium.css' /-->
+    <link rel='stylesheet' media='print, screen and (min-width: 1001px) and (max-width: 1249px)' href='css/small.css' />
+    <link rel='stylesheet' media='print, screen and (min-width: 1px) and (max-width: 1000px)' href='css/mini.css' />
+    
+    <link href="tutorial-sim-voz-mujer-NOsubs(2)_embed.css" rel="stylesheet" type="text/css">
+ 	
+    <!-- Google fonts -->
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,400italic,600,600italic' rel='stylesheet' media="screen, print, projection" type='text/css'>
+         
+    <!-- jQuery -->
+    <script src="../assets/vendor/jquery-1.9.1.min.js"></script>
+    
+    <!-- RGraph CHARTS -->
+    <script type="text/javascript" src="js/RGraph.bipolar.js" ></script>
+    
+    <script type="text/javascript" src="js/RGraph.common.core.js" ></script>
+    <script type="text/javascript" src="js/RGraph.common.dynamic.js" ></script>
+    <script type="text/javascript" src="js/RGraph.common.effects.js" ></script>
+    <script type="text/javascript" src="js/RGraph.common.tooltips.js" ></script>
+    
+    <script type="text/javascript" src="js/RGraph.common.key.js" ></script>
+    <script type="text/javascript" src="js/RGraph.drawing.rect.js" ></script>
+    
+    <script type="text/javascript" src="js/RGraph.bar.js" ></script>
+    <script type="text/javascript" src="js/RGraph.pie.js" ></script>
+    <!--[if lt IE 9]><script src="excanvas/excanvas.js"></script><![endif]-->
+    
+    <!-- descripciones -->
+    <!--link rel="stylesheet" type="text/css" href="css/descripciones.css" /-->
+    
+    <!-- BAR CHART -->
+    <script type="text/javascript" src="chart2/chart.js"></script>
+    <link rel="stylesheet" type="text/css" href="chart2/chart.css" />
+		<!--[if lt IE 9]>
+			<link rel="stylesheet" type="text/css" href="chart2/chart_ie.css" />
+		<![endif]-->
+  
+    <!-- VELOCIMETRO -->
+	<link href="js-velocimetro/main.css" type="text/css" rel="stylesheet">
+	<script type="text/javascript" src="js-velocimetro/prettify.js"></script>
+    <!--[if lt IE 9]><script type="text/javascript" src="js-velocimetro/excanvas.compiled.js"></script><![endif]-->
+    
+    
+    <!-- Menu y submenu colapsible LEFT -->
+    <script type="text/javascript" charset="utf-8">
+    $(function(){
+        $('#menu li a').click(function(event){
+            var elem = $(this).next();
+            if(elem.is('ul')){
+                event.preventDefault();
+                $('#menu ul:visible').not(elem).slideUp();
+                elem.slideToggle();
+            }
+        });
+    });
+    </script>
+    
+	
+    <!-- Velocímetro -->
+    <script src="js-velocimetro/gauge.js"></script>
+	<script>
+	  var gauge ;
+      prettyPrint();
+      function update() {
+        var opts = {};
+        $('.opts input[min], .opts').each(function() {
+          var val = $(this).hasClass("color") ? this.value : parseFloat(this.value);
+          if($(this).hasClass("color")){
+            val = "#" + val;
+          }
+          if(this.name.indexOf("lineWidth") != -1 ||
+            this.name.indexOf("angle") != -1 ||
+            this.name.indexOf("pointer.length") != -1){
+            val /= 100;
+          }else if(this.name.indexOf("pointer.strokeWidth") != -1){
+            val /= 1000;
+          }
+          $('#opt-' + this.name.replace(".", "-")).text(val);
+          if(this.name.indexOf(".") != -1){
+            var elems = this.name.split(".");
+            var tmp_opts = opts;
+            for(var i=0; i<elems.length - 1; i++){
+                if(!(elems[i] in tmp_opts)){
+                    tmp_opts[elems[i]] = {};
+                }
+                tmp_opts = tmp_opts[elems[i]];
+            }
+            tmp_opts[elems[elems.length - 1]] = val;
+          }else if($(this).hasClass("color")){
+            // color picker is removing # from color values
+            opts[this.name] = "#" + this.value
+            $('#opt-' + this.name.replace(".", "-")).text("#" + this.value);
+          }else{
+            opts[this.name] = val;
+          }
+          if(this.name == "currval"){
+            // update current demo gauge
+            demoGauge.set(parseInt(this.value));
+            AnimationUpdater.run();
+          }
+        });
+        $('#opts input:checkbox').each(function() {
+          opts[this.name] = this.checked;
+          $('#opt-' + this.name).text(this.checked);
+        });
+        demoGauge.animationSpeed = opts.animationSpeed;
+        opts.generateGradient = true;
+        demoGauge.setOptions(opts);
+        demoGauge.ctx.clearRect(0, 0, demoGauge.ctx.canvas.width, demoGauge.ctx.canvas.height);
+        demoGauge.render();
+        if ($('#share').is(':checked')) {
+          window.location.replace('#?' + $('form').serialize());
+        }
+      }
+      function initGauge(){
+        document.getElementById("class-code-name").innerHTML = "Gauge";
+        demoGauge = new Gauge(document.getElementById("canvas-preview"));
+        demoGauge.setTextField(document.getElementById("preview-textfield"));
+        demoGauge.maxValue = 100;
+        demoGauge.set(0);
+      };
+      $(function() {
+        var params = {};
+        var hash = /^#\?(.*)/.exec(location.hash);
+        if (hash) {
+          $('#share').prop('checked', true);
+          $.each(hash[1].split(/&/), function(i, pair) {
+            var kv = pair.split(/=/);
+            params[kv[0]] = kv[kv.length-1];
+          });
+        }
+        $('.opts input[min], #opts .color').each(function() {
+          var val = params[this.name];
+          if (val !== undefined) this.value = val;
+          //this.onchange = update;
+        });
+        $('.opts input[name=currval]').mouseup(function(){
+            AnimationUpdater.run();
+        });
+    
+        $('.opts input:checkbox').each(function() {
+          this.checked = !!params[this.name];
+          //this.onclick = update;
+        });
+        $('#share').click(function() {
+          window.location.replace(this.checked ? '#?' + $('form').serialize() : '#!');
+        });
+
+		var opts = {
+		  lines: 12, // The number of lines to draw
+		  angle: 0, // The length of each line
+		  lineWidth: 0.18, // The line thickness
+		  pointer: {
+			length: 0.9, // The radius of the inner circle
+			strokeWidth: 0.035, // The rotation offset
+			//color: '#27c4e0' // Fill color BLUE
+		  },
+		  colorStart: '#0000FF',   // Colors
+		  colorStop: '#0000FF',    // just experiment with them
+		  strokeColor: '#ffffff',   // to see which ones work best for you
+		  generateGradient: true
+		};
+		var target = document.getElementById('select-1'); // your canvas element
+		gauge = new Gauge(target).setOptions(opts); // create sexy gauge!
+		gauge.maxValue = 100; // set max gauge value
+		gauge.animationSpeed = 32; // set animation speed (32 is default value)
+		gauge.set(35); // set actual value
+
+        initGauge();
+        update();
+        
+      });
+    </script>
+    
+    
+        <!-- Efectos JQuery -->
+    <script src="../assets/vendor/jquery-1.9.1.js"></script>
+    <script src="../assets/vendor/jquery-ui-1.10.1.js"></script>
+    
+    <script>
+	$(function() {
+	$( "#dialog" ).dialog({
+	autoOpen: false,
+	width: 350,
+	resizable: false,
+	show: {
+	effect: "fade",
+	duration: 500
+	},
+	hide: {
+	effect: "fade",
+	duration: 500
+	}
+	});
+	$( "#openerIncidencia" ).click(function() {
+	$( "#dialog" ).dialog( "open" );
+	$(".ui-button").removeAttr("title")
+	});
+	});
+	</script>
+    
+    <script>
+	$(function() {
+	$( "#dialog" ).dialog({
+	autoOpen: false,
+	width: 350,
+	resizable: false,
+	show: {
+	effect: "fade",
+	duration: 500
+	},
+	hide: {
+	effect: "fade",
+	duration: 500
+	}
+	});
+	$( ".openerDefaults" ).click(function() {
+	$( "#dialog" ).dialog( "open" );
+	$(".ui-button").removeAttr("title")
+	});
+	});
+	</script>
+    
+    <script>
+	$(function() {
+	$( "#dialog" ).dialog({
+	autoOpen: false,
+	width: 350,
+	resizable: false,
+	show: {
+	effect: "fade",
+	duration: 500
+	},
+	hide: {
+	effect: "fade",
+	duration: 500
+	}
+	});
+	$( "#openerTabla" ).click(function() {
+	$( "#dialog" ).dialog( "open" );
+	$(".ui-button").removeAttr("title")
+	});
+	});
+	</script>
+    
+    <script>
+	$(function() {
+	$( ".dialog2" ).dialog({
+	autoOpen: false,
+	width: 650,
+	resizable: false,
+	show: {
+	effect: "fade",
+	duration: 500
+	},
+	hide: {
+	effect: "fade",
+	duration: 500
+	}
+	});
+	$( "#openerTabla" ).click(function() {
+	$( ".dialog2" ).dialog( "open" );
+	$(".ui-button").removeAttr("title")
+	});
+	});
+	</script>
+    
+    <script>
+	$(function() {
+	$( ".dialog3" ).dialog({
+	autoOpen: false,
+	width: 601,
+	resizable: false,
+	position: ['middle',40],
+	show: {
+	effect: "fade",
+	duration: 500
+	},
+	hide: {
+	effect: "fade",
+	duration: 500
+	}
+	});
+	$( "#openerImagen" ).click(function() {
+	$( ".dialog3" ).dialog( "open" );
+	$(".ui-button").removeAttr("title")
+	});
+	});
+	</script>
+    
+    <script>
+	$(function() {
+	$( ".dialog4" ).dialog({
+	autoOpen: false,
+	width: 350,
+	resizable: false,
+	show: {
+	effect: "fade",
+	duration: 500
+	},
+	hide: {
+	effect: "fade",
+	duration: 500
+	}
+	});
+	$( "#openerCalculo" ).click(function() {
+	$( ".dialog4" ).dialog( "open" );
+	$(".ui-button").removeAttr("title")
+	});
+	});
+	</script>
+    
+    <script>
+	$(function() {
+	$( ".dialogAmp2" ).dialog({
+	autoOpen: false,
+	width: 800,
+	resizable: false,
+	position: ['middle',20],
+	show: {
+	effect: "fade",
+	duration: 500
+	},
+	hide: {
+	effect: "fade",
+	duration: 500
+	}
+	});
+	$( "#openerAmpliar2" ).click(function() {
+	$( ".dialogAmp2" ).dialog( "open" );
+	$(".ui-button").removeAttr("title")
+	});
+	});
+	</script>
+    
+    <!-- -->
+    
+    <!--  Collapsible Content (Más Información)  -->
+    <script type='text/javascript' src="js/jquery.cookie.js"></script>
+	<script type='text/javascript' src="js/jquery.collapsible.js"></script>
+    <link rel="stylesheet" type="text/css" media="screen" href="css/collapsible.css" />
+    
+    <script type='text/javascript'>
+	$(document).ready(function() {
+		$.collapsible(".header", "group1");
+		$.collapsible(".header2", "group2");
+	});
+	</script>
+
+    <!-- COLORBOX (lightbox) -->
+    <link rel="stylesheet" href="css/colorbox.css" />
+		<script src="js/jquery.colorbox.js"></script>
+		<script>
+			$(document).ready(function(){
+				//Examples of how to assign the ColorBox event to elements
+				$(".group1").colorbox({rel:'group1'});
+				$(".group2").colorbox({rel:'group2', transition:"fade"});
+				$(".group3").colorbox({rel:'group3', transition:"none", width:"75%", height:"75%"});
+				$(".group4").colorbox({rel:'group4', slideshow:true});
+				$(".ajax").colorbox();
+				$(".youtube").colorbox({iframe:true, innerWidth:425, innerHeight:344});
+				$(".vimeo").colorbox({iframe:true, innerWidth:500, innerHeight:429});
+				$(".iframe").colorbox({iframe:true, width:"80%", height:"80%"});
+				$(".inline").colorbox({inline:true, width:"85%"});
+				$(".callbacks").colorbox({
+					onOpen:function(){ alert('onOpen: colorbox is about to open'); },
+					onLoad:function(){ alert('onLoad: colorbox has started to load the targeted content'); },
+					onComplete:function(){ alert('onComplete: colorbox has displayed the loaded content'); },
+					onCleanup:function(){ alert('onCleanup: colorbox has begun the close process'); },
+					onClosed:function(){ alert('onClosed: colorbox has completely closed'); }
+				});
+
+				$('.non-retina').colorbox({rel:'group5', transition:'none'})
+				$('.retina').colorbox({rel:'group5', transition:'none', retinaImage:true, retinaUrl:true});
+				
+				//Example of preserving a JavaScript event for inline calls.
+				$("#click").click(function(){ 
+					$('#click').css({"background-color":"#f00", "color":"#fff", "cursor":"inherit"}).text("Open this window again and this message will still be here.");
+					return false;
+				});
+			});
+		</script>
+
+        <!-- COLORBOX (lightbox) -->
+		<script>
+          function lightbox(){    
+          $.colorbox({width:"90%", height:"650px", inline:true, href:"#inline_content"});
+        }
+        </script>
+    
+
+    <!--  desplazamiento Horizontal Pt1 -->
+      <script>
+	  $(function() {
+		function runEffect() {
+		  var options = {};
+		  $( ".body-inter" ).effect( "drop", 500, callback );
+		};
+		function callback() {
+		  //setTimeout(function() {
+			$( ".body-inter2" ).removeAttr( "style" ).hide().fadeIn();
+		  //}, 1000 );
+		};
+		$( "#envio2, #isrMoralesSub, #ivaSub,#iepsSub, #educacionSub, #PensionNCSub, #otrosParametrosSub, #ietuSub, #saludSub, #PetroDerechosSub, #pensionesCSub, #tarifasElectricasSub, #ecenarioPetroDerSub, #PetroDerechos3Sub,#seguridadSocialSub" ).click(function() {
+		  runEffect();
+		  return false;
+		});
+	  });
+	  </script>
+      
+      <!--  desplazamiento Horizontal Pt2 REGRESO -->
+      <script>
+	  $(function() {
+		function runEffect() {
+		  var options = {};
+		  $( ".body-inter2" ).effect( "drop", 500, callback );
+		};
+		function callback() {
+		  //setTimeout(function() {
+			$( ".body-inter" ).removeAttr( "style" ).hide().fadeIn();
+		  //}, 1000 );
+		};
+		$( "#envio4" ).click(function() {
+		  runEffect();
+		  return false;
+		});
+	  });
+	  </script>
+
+      <!-- Dialog box 4 GUIA RÁPIDA -->
+      <script>
+	  $(document).ready(function(){
+		$("#cerrarguia").click(function(){
+		$("#guiarapida").hide(1000);
+		});
+	  });
+	  </script>
+      
+      <!-- Line Chart GOOGLE -->
+      <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+
+    
+    <!-- Tooltip -->
+    <link rel="stylesheet" href="../assets/vendor/jquery-ui-1.10.1.css" />
+	  <style>
+    label {
+      display: inline-block;
+      width: 5em;
+    }
+	.ui-tooltip {
+	  background-color:#f8f8f8;
+  	}
+	.ui-tooltip {
+	  font-size:11px;
+	  background-color:#323232;
+	  color:#FFF;
+	  border:none !important;
+	  padding:1.1em !important;
+	  
+	  border-radius: 5px;
+      -ms-border-radius: 5px;
+      -moz-border-radius: 5px;
+      -webkit-border-radius: 5px;
+	  
+	  -webkit-box-shadow: 2px 2px 3px rgba(50, 50, 50, 0.60) !important;
+	  -moz-box-shadow: 2px 2px 3px rgba(50, 50, 50, 0.60)  !important;
+	  box-shadow: 2px 2px 3px rgba(50, 50, 50, 0.60) !important;
+  	}
+    </style>
+    <script>
+    $(function() {
+      $( document ).tooltip({
+        track: true
+      });
+    });
+    </script>
+
+    <!--  Funciones y css para la validación de los formularios de ISR  -->
+    <link rel="stylesheet" type="text/css" href="css/funcionesFormulario.css"  />
+    <script type="text/javascript" src="js/funcionesFormulario.js"></script>
+	
+    <!-- Highlight effects-->
+    <script>
+	  $(document).ready(function() {
+		
+	$("#guia-btn1").click(function () {
+		  $(".blanco1").effect("pulsate", {times:2}, 2000);
+		  $("label").effect("pulsate", {times:2}, 2000);
+		  //$(".blanco1").effect("highlight", {color:'#F45D07'}, 1800);
+	});
+	
+	$("#guia-btn2").click(function () {
+		  $(".botonCalcular").effect("pulsate", {times:2}, 2000);
+	});
+	
+	$("#guia-btn3").click(function () {
+		  $("#resultados").effect("pulsate", {times:2}, 2000);
+		  $(".chartLeft").effect("pulsate", {times:2}, 2000);
+		  $(".chartRight").effect("pulsate", {times:2}, 2000);
+	});
+});
+</script>
+
+    <!-- Auto selección de inputs-->
+    <script>
+	$(document).ready( function() {
+	  $("input[type=text]").click( function() {
+		$(this).select();
+	  });
+	});
+	</script>
+
+	<!-- Ingresos petroleros -->
+	<script>
+	$(document).ready( function() {
+	$('#btnRADIO1').click(function() {
+	   $('.escenario1').addClass('naranja');
+	   $('.escenario2').removeClass('naranja');
+	   $('.escenario3').removeClass('naranja');
+	   $('.escenario1txt').addClass('negro');
+	   $('.escenario2txt').removeClass('negro');
+	   $('.escenario3txt').removeClass('negro');
+	});
+	
+	$('#btnRADIO2').click(function() {
+	   $('.escenario1').removeClass('naranja');
+	   $('.escenario2').addClass('naranja');
+	   $('.escenario3').removeClass('naranja');
+	   $('.escenario1txt').removeClass('negro');
+	   $('.escenario2txt').addClass('negro');
+	   $('.escenario3txt').removeClass('negro');
+	});
+
+	$('#btnRADIO3').click(function() {
+	   $('.escenario1').removeClass('naranja');
+	   $('.escenario2').removeClass('naranja');
+	   $('.escenario3').addClass('naranja');
+	   $('.escenario1txt').removeClass('negro');
+	   $('.escenario2txt').removeClass('negro');
+	   $('.escenario3txt').addClass('negro');
+	});
+
+	});
+	</script>
+    
+    
+    <!-- custom Select elements -->
+    <script type="text/javascript" src="js/jquery.customSelect.js"></script>
+    <script type="text/javascript">
+	  $(function(){
+	  $('select.styled').customSelect();
+	  });
+	</script>
+    
+     <!-- tabla colapsible -->
+    <script type="text/javascript">
+	$(document).ready( function() {
+	
+	$('.clickme').click(function () {
+		$(this).toggleClass("expandido").toggleClass("colapsado");
+    });
+
+	});
+	</script>
+    
+    
+    <!-- Detecta navegador -->
+    <link href="css/jquery.reject.css" rel="stylesheet" type="text/css" />
+    <!--script src="../assets/vendor/jquery-2.0.0.min.js"></script-->
+	<script src="js/jquery.reject.js"></script>
+	<script>
+	$(function() {
+		// Handle external links
+		$('a[rel="external"]').click(function() {
+			var href = $(this).attr('href');
+
+			// Send external link event to Google Analaytics
+			try {
+				_gaq.push(['_trackEvent','External Links', href.split(/\/+/g)[1], href]);
+			} catch (e) {};
+
+			window.open(href,'jr_'+Math.round(Math.random()*11));
+			return false;
+		});
+
+		// Handle displaying of option links
+		$('em.option').css({
+			cursor: 'pointer',
+			fontSize: '1.1em',
+			color: '#333',
+			letterSpacing: '1px',
+			borderBottom: '1px dashed #BBB'
+		}).click(function() {
+			var self = $(this);
+			var opt = $.trim(self.text());
+
+			$('ol.dp-c:first').children('li').children('span').each(function() {
+				var self = $(this);
+				var text = self.text();
+				var srch = opt+':';
+
+				// If found, highlight and jump window to position on page
+				if (text.search(srch) !== -1) {
+					self.css('color','red');
+					window.location.hash = '#c-'+opt;
+					window.scrollTo(0,self[0].offsetTop);
+				}
+			});
+		});
+
+		/* Demo Codes */
+
+		/*$('#demo2').ready(function() {
+		  $.reject({
+			reject: { 
+			  safari: true, // Apple Safari
+			  chrome: true, // Google Chrome
+			  firefox: false, // Mozilla Firefox
+			  msie: true, // Microsoft Internet Explorer
+			  opera: true, // Opera
+			  konqueror: true, // Konqueror (Linux)
+			  unknown: true // Everything else
+			}, // Reject all renderers for demo
+			display: ['firefox'], // Displays only firefox
+			header: 'Te recomendamos utilizar Mozilla Firefox para una mejor visualización', // Header Text
+			paragraph1: '', // Paragraph 1
+			paragraph2: '',
+			closeMessage: '', // Message below close window link
+			closeCookie: true
+		}); // Customized Text
+
+			return false;
+		});*/
+	});
+	</script>
+    
+    <!-- resize iframe -->
+    <script language="javascript" type="text/javascript">
+	  function resizeIframe(obj) {
+		obj.style.height = obj.contentWindow.document.body.scrollHeight + 'px';
+	  }
+	</script>
+    
+    <!-- html to image -->
+    <script type="text/javascript" src="js/html2canvas.js"></script>
+	<script type="text/javascript" src="js/jquery.plugin.html2canvas.js"></script>
+    
+    <script type="text/javascript">
+			function capture() {
+				
+				$('#target').html2canvas({
+					onrendered: function (canvas) {
+						//Set hidden field's value to image data (base-64 string)
+						$('#img_val').val(canvas.toDataURL("image/png"));
+						//Submit the form manually
+						//document.getElementById("prueba").removeAttribute('class'); 
+						document.getElementById("myForm").submit();
+					}
+				});
+			}
+		</script>  
+    
+        <!--  Ayuda contextual-->
+	    <script>
+        $(document).ready(function() {
+        
+        $( "#btn-toggle" ).click(function() {
+            $( this ).toggleClass( "btn-activo" );
+          $( "#logoCiep" ).toggleClass( "blur" );
+          $( ".menu1" ).toggleClass( "blur" );
+          $( ".menu2" ).toggleClass( "blur" );
+          $( ".menu3" ).toggleClass( "blur" );
+          $( "#borrarCambios" ).toggleClass( "blur" );
+          $( "#bloqueTop .header h1" ).toggleClass( "blur" );
+          $( ".placeholder" ).toggleClass( "blur" );
+          $( "#bloqueTop .bloqueHead" ).toggleClass( "blur" );
+          $( ".content" ).toggleClass( "blur" );
+          $( "#guiarapida" ).toggleClass( "blur" );
+          $( "table" ).toggleClass( "blur" );
+          $( ".calculateBar" ).toggleClass( "blur" );
+          $( "#preResultados" ).toggleClass( "blur" );
+          $( "#resultados" ).toggleClass( "blur" );
+          $( ".chartLeft" ).toggleClass( "blur" );
+          $( ".chartRight" ).toggleClass( "blur" );
+		  $( "#candle_chart" ).toggleClass( "blur" );
+          $( "#trama-negra" ).toggleClass( "visible" );
+          $( ".ayuda" ).toggleClass( "visible" );
+          
+        });
+        
+        });
+        </script>
+
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,400italic,600,600italic' rel='stylesheet' media="print" type='text/css'>
+    <link rel='stylesheet' type='text/css' media='print'  href='css/tablas.css' />
+    <link rel='stylesheet' type='text/css' href='css/screen.css' media='print' />
+    <link rel='stylesheet' media='print' href='css/mini.css' />
+    <link rel='stylesheet' media='print' href='css/print.css' />
+    <link rel="stylesheet" type="text/css" href="css/descripciones.css" />
+      
+
+<link rel="stylesheet" href="../assets/museo.css">
+</head><!-- fin de HEAD -->
+
+<body>
+<div id="trama-negra"></div>
+
+<div id="top"></div>
+<div id="mainWrapper">    <!-- ventana Colorbox -->
+    <div style='display:none;'>
+			<div id='inline_content'>
+            <div class="bloqueHead">
+            <h2>SHRFSP</h2>
+            <p>
+            </div>
+            
+            <!--div class="paddBloque"-->
+              <div style="width:30%; float:right;">
+                <div style="padding:10%; padding-top:5px;"> 
+                  
+                  <div class="inlineInfoExtra">
+                  <h3 style="padding-bottom:17px;">Resumen</h3>
+                  <p class="debug">
+                  		<span class="maxValue">33</span><span> en <strong>0000</strong></span><br/><br/>
+                        <span class="minValue">0</span><span> en <strong>0000</strong></span><br/>
+                        
+                    <span class="chartHeight" style="display:none;">0</span>
+                    <span class="valueMultiplier" style="display:none;">0</span>
+                    <span class="highestYlabel" style="display:none;">0</span>
+                    <span class="chartHeightArea" style="display:none;">0</span>
+                    <span class="chartScale" style="display:none;">0</span>
+                  </p>
+                  </div>
+                  
+                  <div class="inlineIconos">
+                    <h3>Parámetros modificados</h3>
+                    
+                    <p>Perfiles de Ingreso:</p>
+                    <div class="limpiar"></div>
+                    <div class="icon isr activo" title="I.S.R. - MODIFICADO"></div>
+                    <div class="icon iva activo" title="I.V.A. - MODIFICADO"></div>
+                    <div class="icon petroleo activo" title="Ingresos Petroleros - MODIFICADO"></div>
+                    <div class="icon seguridad activo" title="Seguridad Social - MODIFICADO"></div>
+                    <div class="icon ieps activo" title="I.E.P.S. (no petrolero) - MODIFICADO"></div>
+                    <div class="icon electricas activo" title="Tarifas Eléctricas - MODIFICADO"></div>
+                    <div class="icon otros activo" title="Otros Impuestos - MODIFICADO"></div>
+                    <div class="limpiar"></div>
+                    
+                    <p>Gasto:</p>
+                    <div class="limpiar"></div>
+                    <div class="icon educacion activo" title="Educación - MODIFICADO"></div>
+                    <div class="icon salud activo" title="Salud - MODIFICADO"></div>
+                    <div class="icon pensiones activo" title="Pensiones - MODIFICADO"></div>
+                    <div class="limpiar"></div>
+                    
+                    <p>Otros Parámetros:</p>
+                    <div class="limpiar"></div>
+                    <div class="icon otros2 activo" title="Otros Parámetros - MODIFICADO"></div>
+                    <div class="limpiar"></div>
+                  </div>
+                  
+                </div> 
+              </div>
+            
+        		<div class="chart-container" style="float:left; padding-left: 2.5%; width: 67%;">
+			<div class="chart-content">
+				<div class="chart-y-axis" style="height:310px;">
+                	<div class="txtVertical"></div>
+					<p style="bottom:300px;"><span>100</span>%</p>
+					<p style="bottom:225px;"><span>75</span>%</p>
+					<p style="bottom:150px;"><span>50</span>%</p>
+					<p style="bottom:75px;"><span>25</span>%</p>
+					<p style="bottom:0px;"><span>0</span>%</p>
+				</div>
+				<div class="chart-area2" bar-spacing="10">
+
+                    <div class="wrapper">
+                    <div class="barWrapper">
+						<div bar-value="-39" id="barII13"   class="chart-bar" title=""></div>
+                    </div>
+                    </div>
+                    
+                    <div class="wrapper">
+                    <div class="barWrapper">
+						<div bar-value="-40.5" id="barII14"    class="chart-bar" title=""></div>
+                    </div>
+                    </div>
+                    
+                    <div class="wrapper">
+                    <div class="barWrapper">
+                    	<div bar-value="-41.2" id="barII15"    class="chart-bar" title=""></div>
+                    </div>
+                    </div>
+                    
+                    <div class="wrapper">
+                    <div class="barWrapper">
+                    	<div bar-value="-42" id="barII16"    class="chart-bar" title=""></div>
+                    </div>
+                    </div>
+                    
+                    <div class="wrapper">
+                    <div class="barWrapper">
+                    	<div bar-value="-43.1" id="barII17"    class="chart-bar" title=""></div>
+                    </div>
+                    </div>
+                    
+                    <div class="wrapper">
+                    <div class="barWrapper">
+                    	<div bar-value="-44" id="barII18"    class="chart-bar" title=""></div>
+                    </div>
+                    </div>
+                    
+                    <div class="wrapper">
+                    <div class="barWrapper">
+                    	<div bar-value="-45.2" id="barII19"    class="chart-bar" title=""></div>
+                    </div>
+                    </div>
+                    
+                    <div class="wrapper">
+                    <div class="barWrapper">
+                    	<div bar-value="0" id="barII20"    class="chart-bar" title=""></div>
+                    </div>
+                    </div>
+                    
+                    <div class="wrapper">
+                    <div class="barWrapper">
+                    	<div bar-value="0" id="barII21"    class="chart-bar" title=""></div>
+                    </div>
+                    </div>
+                    
+                    <div class="wrapper">
+                    <div class="barWrapper">
+                    	<div bar-value="0" id="barII22"    class="chart-bar" title=""></div>
+                    </div>
+                    </div>
+                    
+                    <div class="wrapper">
+                    <div class="barWrapper">
+                    	<div bar-value="0" id="barII23"    class="chart-bar" title=""></div>
+                    </div>
+                    </div>
+                    
+                    <div class="wrapper">
+                    <div class="barWrapper">
+                    	<div bar-value="0" id="barII24"    class="chart-bar" title=""></div>
+                    </div>
+                    </div>
+                    
+                    <div class="wrapper displayNone">
+                    <div class="barWrapper">
+                    	<div bar-value="0" id="barII25"    class="chart-bar" title=""></div>
+                    </div>
+                    </div>
+                    
+				</div>
+                
+                <div class="chart-x-axis-pt1">
+                	<div class="wrapper">Año</div><div class="limpiar"></div>
+                    
+                    <div class="resultados">
+                    	<div class="avanzados">
+                          <div class="wrapper">BT</div><div class="limpiar"></div>
+                          <div class="wrapper">Otros</div><div class="limpiar"></div>
+                          <div class="wrapper">RFSP</div><div class="limpiar"></div>
+                        </div>
+                        <div class="resultadoFinal">
+                          <div class="wrapper">SHRFSP</div><div class="limpiar"></div>
+                        </div>
+                    </div>
+                </div>
+                
+				<div class="chart-x-axis">
+ 
+                
+                <div class="wrapper">
+                  <p>2014</p>
+                </div>
+                
+                <div class="wrapper">
+                  <p>2015</p>
+                </div>
+                
+                <div class="wrapper">
+                  <p>2016</p>
+                </div>
+                
+                <div class="wrapper">
+                  <p>2017</p>
+                </div>
+                
+                <div class="wrapper">
+                  <p>2018</p>
+                </div>
+                
+                <div class="wrapper">
+                  <p>2019</p>
+                </div>
+                
+                <div class="wrapper">
+                  <p>2020</p>
+                </div>
+                
+                <div class="wrapper">
+                  <p></p>
+                </div>
+                
+                <div class="wrapper">
+                  <p></p>
+                </div>
+                
+                <div class="wrapper">
+                  <p></p>
+                </div>
+                
+                <div class="wrapper">
+                  <p></p>
+                </div>
+                
+                <div class="wrapper">
+                  <p></p>
+                </div>
+                
+                <div class="wrapper displayNone">
+                  <p></p>
+                </div>
+                
+                <!-- SIGUIENTE RENGLÓN -->
+                <div class="limpiar"></div>
+                <!-- -->
+                
+                <div class="resultados">
+                	
+                    <div class="avanzados">
+
+       
+                      <div class="wrapper" id="barII_BT13">
+                        -2.5</div>
+                      
+                      <div class="wrapper" id="barII_BT14">
+					  -2.3</div>
+                      
+                      <div class="wrapper" id="barII_BT15">
+                        -2                      </div>
+                      
+                      <div class="wrapper" id="barII_BT16">
+                        -1.8                      </div>
+                      
+                      <div class="wrapper" id="barII_BT17">
+                        -1.5                      </div>
+                      
+                      <div class="wrapper" id="barII_BT18">
+                        -1.2                      </div>
+                      
+                      <div class="wrapper" id="barII_BT19">
+                        -1                      </div>
+                      
+                      <div class="wrapper" id="barII_BT20">
+                                              </div>
+                      
+                      <div class="wrapper" id="barII_BT21">
+                                              </div>
+                      
+                      <div class="wrapper" id="barII_BT22">
+                                              </div>
+                      
+                      <div class="wrapper" id="barII_BT23">
+                                              </div>
+                      
+                      <div class="wrapper" id="barII_BT24">
+                                              </div>
+                      
+                      <div class="wrapper displayNone" id="barII_BT25">
+                                              </div>                        
+                        <!-- SIGUIENTE RENGLÓN -->
+                        <div class="limpiar"></div>
+                        <!-- -->
+                        
+                      <div class="wrapper" id="barII_otros13">0.0</div>
+                      
+                      <div class="wrapper" id="barII_otros14">0.0</div>
+                      
+                      <div class="wrapper" id="barII_otros15">
+                        0.0
+                      </div>
+                      
+                      <div class="wrapper" id="barII_otros16">
+                        0.0
+                      </div>
+                      
+                      <div class="wrapper" id="barII_otros17">
+                        0.0
+                      </div>
+                      
+                      <div class="wrapper" id="barII_otros18">
+                        0.0
+                      </div>
+                      
+                      <div class="wrapper" id="barII_otros19">
+                        0.0
+                      </div>
+                      
+                      <div class="wrapper" id="barII_otros20">
+                        0.0
+                      </div>
+                      
+                      <div class="wrapper" id="barII_otros21">
+                        0.0
+                      </div>
+                      
+                      <div class="wrapper" id="barII_otros22">
+                        0.0
+                      </div>
+                      
+                      <div class="wrapper" id="barII_otros23">0.0</div>
+                      
+                      <div class="wrapper" id="barII_otros24">0.0</div>
+                      
+                      <div class="wrapper displayNone" id="barII_otros25">
+                        0.0
+                      </div>                       
+                        <!-- SIGUIENTE RENGLÓN -->
+                        <div class="limpiar"></div>
+                        <!-- -->
+                        
+                      <div class="wrapper" id="barII_RFSP13">2.5</div>
+                      
+                      <div class="wrapper" id="barII_RFSP14">
+                        2.8                      </div>
+                      
+                      <div class="wrapper" id="barII_RFSP15">
+                        3                      </div>
+                      
+                      <div class="wrapper" id="barII_RFSP16">
+                        3.2                      </div>
+                      
+                      <div class="wrapper" id="barII_RFSP17">
+                        3.5                      </div>
+                      
+                      <div class="wrapper" id="barII_RFSP18">
+                        3.8                      </div>
+                      
+                      <div class="wrapper" id="barII_RFSP19">
+                        4                      </div>
+                      
+                      <div class="wrapper" id="barII_RFSP20">
+                                              </div>
+                      
+                      <div class="wrapper" id="barII_RFSP21">
+                                              </div>
+                      
+                      <div class="wrapper" id="barII_RFSP22">
+                                              </div>
+                      
+                      <div class="wrapper" id="barII_RFSP23">
+                                              </div>
+                      
+                      <div class="wrapper" id="barII_RFSP24">
+                                              </div>
+                      
+                      <div class="wrapper displayNone" id="barII_RFSP25">
+                                              </div>
+                    
+                    </div><!-- fin de AVANZADOS -->
+                    
+                    <!-- SIGUIENTE RENGLÓN -->
+                    <div class="limpiar"></div>
+                    <!-- -->
+                    
+                    <div class="resultadoFinal">
+
+                      <div class="wrapper" id="barII_shrfsp13">
+                        39                      </div>
+                      
+                      <div class="wrapper" id="barII_shrfsp14">
+                        40.5                      </div>
+                      
+                      <div class="wrapper" id="barII_shrfsp15">
+                        41.2                      </div>
+                      
+                      <div class="wrapper" id="barII_shrfsp16">
+                        42                      </div>
+                      
+                      <div class="wrapper" id="barII_shrfsp17">
+                        43.1                      </div>
+                      
+                      <div class="wrapper" id="barII_shrfsp18">
+                        44                      </div>
+                      
+                      <div class="wrapper" id="barII_shrfsp19">
+                        45.2                      </div>
+                      
+                      <div class="wrapper" id="barII_shrfsp20">
+                                              </div>
+                      
+                      <div class="wrapper" id="barII_shrfsp21">
+                                              </div>
+                      
+                      <div class="wrapper" id="barII_shrfsp22">
+                                              </div>
+                      
+                      <div class="wrapper" id="barII_shrfsp23">
+                                              </div>
+                      
+                      <div class="wrapper" id="barII_shrfsp24">
+                                              </div>
+                      
+                      <div class="wrapper displayNone" id="barII_shrfsp25">
+                                              </div>
+                      <div class="limpiar"></div>
+                    
+                    </div><!-- fin de RESULTADO final -->
+                </div><!-- fin de RESULTADOS -->
+                
+                <div class="limpiar"></div>
+                </div>
+			</div>
+		</div>
+        <!--/div--><!-- fin de paddBloque -->
+        
+			</div><!-- fin de inline_content -->
+		</div>   
+<div class="colmask leftmenu">
+	<div class="colleft">
+    
+	  <div class="col1">
+			<!-- Column 1 start -->
+            <div id="layoutdims">
+            <div class="icoTop"><a href="ieps.php.html#" id="btn-toggle" class="info" title="Ayuda contextual"></a></div>
+<!--a href="metodologia.php">Metodología</a> / <a href="preguntas-frecuentes.php">Preguntas frecuentes</a> / <a href="contacto.php">Contacto</a-->
+<div class="icoTop"><a href="contacto.php.html" class="contacto" title="Contacto"></a></div>
+<div class="icoTop"><a href="preguntas-frecuentes.php.html" class="faqs" title="Preguntas frecuentes"></a></div>
+<!--div class="icoTop"><a href="#" class="metodo" title="Metodología"></a></div-->
+<div class="icoTop"><a href="como-usar.php.html" class="comoUsar" title="¿Cómo usar el simulador?"></a></div>
+            </div>
+        <div id="layoutdims2"><h1>Simulador Fiscal CIEP <span>-BETA-</span></h1></div>
+        <div class="limpiar"></div>
+        
+        <div id="target"><!-- inicio de #TARGET -->
+        <div class="bloque" id="bloqueTop">
+        	<div class="bloqueHead">
+        		<h2>IEPS (no petrolero)</h2>
+                
+            </div>
+			<div class="bloqueInter">
+            
+            <div class="module">
+                  <div class="header expanded" style="position:relative;" id="btn-mas-info">
+                  <div id="mas-informacion" class="absolute ayuda"><img src="images%20sim1/mas-informacion.png" width="268" height="86" /></div>
+                      <h1>Más información</h1>
+                  </div>
+                  <div class="content">
+                  		
+                        <h3>Impuesto Especial sobre Producción y Servicios</h3>
+                      <p>En el Modulo  del IEPS No Petrolero se observa el estatus actual de las tasas impositivas, dentro  de la Ley del Impuesto Especial Sobre Producción y Servicios (LIEPS), y su  alcance en el mediano y largo plazo. Aunado a ello, se podrán modificar las  tasas impositivas de los diferentes productos como: bebidas alcohólicas,  cerveza,  tabaco, telecomunicaciones y juegos y sorteos. Para finalmente, mostrar el cambio en sustentabilidad,  a través del comportamiento de la deuda fiscal, el perfil de los contribuyentes  de este impuesto, la incidencia y la desigualdad de ingreso de la población  mexicana.  </p>
+                  </div>
+            </div>
+                
+                <div class="limpiar"></div>
+            
+            <div class="bloque" id="guiarapida">
+        	<p class="titulo">Guía rápida</p>
+        
+        	<div class="paso">
+              <p id="guia-btn1"><span>1.</span> Modifica los campos editables de las tablas</p>
+              <img src="sim-images/icon-gr-pt1.png" width="41" height="38" /> 
+            </div>
+            
+            <div class="nextIcon"></div>
+            
+            <div class="paso">
+              <p id="guia-btn2"><span>2.</span> Presiona el botón de <strong>Calcular perspectiva</strong></p>
+              <img src="sim-images/icon-gr-pt2.png" width="41" height="38" /> 
+            </div>
+            
+            <div class="nextIcon"></div>
+            
+            <div class="paso">
+              <p id="guia-btn3"><span>3.</span> Analiza los resultados obtenidos en las gráficas</p>
+              <img src="sim-images/icon-gr-pt3.png" width="41" height="38" /> 
+            </div>
+            
+            <div id="cerrarguia"  title="Cerrar"><img src="sim-images/icon-close.png" alt="Cerrar" width="10" height="10" /></div>
+            <div class="limpiar"></div>
+          
+        </div>
+            <!-- <div class="paddBloque"> -->
+				<div class="body-inter">
+                  <div class="loading" style="visibility: hidden;"><div class="loader"><p>Cargando...</p><h4>Tiempo de espera aproximado: <span style="color:#F45D07;">2 minutos</span></h4></div></div><!-- Código para animación de cargando ajax-->
+                  <!--div class="done" style="display:none;"> 
+                  	<div class="doneInter"><p>Ver resultados abajo<img src="sim-images/flechas-abajo.png" width="24" height="30" /></p></div>
+                  </div> <!-- Código para mensaje de hecho en automatico se quita en n seg -->
+
+                  <form id="ISR" name="ISR" method="post" action="javascript:void(0)">
+                  <div class="errorInput" id="tablaisrCaption" style="visibility:hidden; display:none;"><p>&nbsp;</p></div>
+                  
+                  <div class="contenedor3" style="width:100%;">
+                    <table width="100%" border="0" cellpadding="0" cellspacing="0" id="tablaisr">
+                      
+                            <tr>
+                            <th colspan="2" scope="col" class="bg1"><strong>IEPS (no petrolero)</strong></th>
+                          </tr>
+                    <tr>
+                      <th class="bg2"><strong>Concepto</strong></th>
+                      <th class="bg2 especial" style="width:40%"><strong>Tasa (%)</strong></th>
+                      </tr>
+                    <tr>
+                      <td class="naranja2">Alcohol hasta  14° G.L.<a href="ieps.php.html#" class="info" title="Art.-2° I. Al valor de los actos o actividades que a continuación se señalan, se aplicarán las tasas y cuotas siguientes: En la Enajenación o, en su caso, en la importación de A) bebidas con contenido alcohólico y cerveza con una graduación alcohólica de hasta 14°G.L. 25%."></a></td>
+                      <td class="blanco1">
+                        <input class="inputIsr isr_input" name="IEPSA1" type="text" id="IEPSA1" value="" />
+                      </td>
+                      </tr>
+                    <tr>
+                      <td class="naranja2">Alcohol entre 14° y 20° G.L.<a href="ieps.php.html#" class="info" title="Art.-2° I. Al valor de los actos o actividades que a continuación se señalan, se aplicarán las tasas y cuotas siguientes: En la Enajenación o, en su caso, en la importación de A) bebidas con contenido alcohólico y cerveza con una graduación alcohólica de más de 14°G.L. y hasta 20° G.L. 30%. "></a></td>
+                      <td class="blanco1"><input class="inputIsr isr_input" name="IEPSA1" type="text" id="IEPSA2" value="" /></td>
+                    </tr>
+                    <tr>
+                      <td class="naranja2">Alcohol mayor a 20° G.L.<a href="ieps.php.html#" class="info" title="Art.-2° I. Al valor de los actos o actividades que a continuación se señalan, se aplicarán las tasas y cuotas siguientes: En la Enajenación o, en su caso, en la importación de A) bebidas con contenido alcohólico y cerveza con una graduación alcohólica de más de 20°G.L. B) Alcohol, alcohol desnaturalizado y mieles incristalizables 50%."></a></td>
+                      <td class="blanco1"><input class="inputIsr isr_input" name="IEPSA1" type="text" id="IEPSA3" value="" /></td>
+                    </tr>
+                    <tr>
+                      <td class="naranja1">Cerveza<a href="ieps.php.html#" class="info" title="Art.-2° I. Al valor de los actos o actividades que a continuación se señalan, se aplicarán las tasas y cuotas siguientes: En la Enajenación o, en su caso, en la importación de A) bebidas con contenido alcohólico y cerveza con una graduación alcohólica de hasta 14°G.L. 25%."></a></td>
+                      <td class="blanco1">
+                        <input  class="inputIsr isr_input" name="IEPSA2" type="text" id="IEPSA4" value=""/>
+                      </td>
+                      </tr>
+                    <tr>
+                      <td class="naranja1">Cigarros (tasa)<a href="ieps.php.html#" class="info" title="Art.-2° I. Al valor de los actos o actividades que a continuación se señalan, se aplicarán las tasas y cuotas siguientes: En la Enajenación o, en su caso, en la importación de C) Tabacos labrados 160%."></a></td>
+                      <td class="blanco1"><input  class="inputIsr isr_input" name="IEPSA3" type="text" id="IEPSA5" value=""/></td>
+                      </tr>
+                    <tr>
+                      <td class="naranja1">Cigarros (cuota por cigarro)<a href="ieps.php.html#" class="info" title="Art.-2° I. Al valor de los actos o actividades que a continuación se señalan, se aplicarán las tasas y cuotas siguientes: En la Enajenación o, en su caso, en la importación de C) Tabacos labrados 160%. Adicionalmente, se pagará una cuota de $0.35 por cigarro enajenado o importado."></a></td>
+                      <td class="blanco1"><input  class="inputIsr isr_input" name="IEPSA4" type="text" id="IEPSA6" value=""/></td>
+                    </tr>
+                    <tr>
+                      <td class="naranja1">Juegos y Sorteos<a href="ieps.php.html#" class="info" title="Art.-2° II. En la prestación de los siguientes servicios: B) Realización de juegos con apuestas y sorteos. Quedan comprendidos los concursos en los que se ofrezcan premios y en alguna etapa de su desarrollo intervenga directa o indirectamente el azar 30%."></a></td>
+                      <td class="blanco1"><input  class="inputIsr isr_input" name="IEPSA5" type="text" id="IEPSA7" value=""/></td>
+                    </tr>
+                    <tr>
+                      <td class="naranja1">Telecomunicaciones<a href="ieps.php.html#" class="info" title="Art.-2° II. En la prestación de los siguientes servicios: C) Los que se proporcionen en territorio nacional a través de una o más redes públicas de telecomunicaciones 3%. Art.8º Fracción IV. No se pagará el impuesto establecido en esta Ley: Por los servicios de telecomunicación siguientes: a) De telefonía fija rural, consistente en el servicio de telefonía fija que se presta en poblaciones de hasta 5,00 habitantes. C) De interconexión, consistente en la conexión física o virtual, lógica y funcional, entre redes públicas de telecomunicaciones, que permite la conducción de tráfico entre dichas redes y/o entre servicios de telecomunicaciones prestados a través de las mismas."></a></td>
+                      <td class="blanco1"><input  class="inputIsr isr_input" name="IEPSA6" type="text" id="IEPSA8" value=""/></td>
+                    </tr>
+                    <tr>
+                      <td class="naranja1">Evasión telecomunicaciones<a href="ieps.php.html#" class="info" title="Tasa de evasión. 100: 100% evasión. 0:0% evasión."></a></td>
+                      <td class="blanco1"><input class="inputIsr isr_input" name="IEPSA9" type="text" id="IEPSA9" value="" /></td>
+                    </tr>
+                    <tr>
+                      <td class="naranja1">Bebidas energetizantes (tasa)<a href="ieps.php.html#" class="info" title="Tasa de evasión. 100: 100% evasión. 0:0% evasión."></a></td>
+                      <td class="blanco1"><input class="inputIsr isr_input" name="IEPSA9" type="text" id="IEPSA10" value="" /></td>
+                    </tr>
+                    <tr>
+                      <td class="naranja1">Bebidas energetizantes (cuota)<a href="ieps.php.html#" class="info" title="Tasa de evasión. 100: 100% evasión. 0:0% evasión."></a></td>
+                      <td class="blanco1"><input class="inputIsr isr_input" name="IEPSA9" type="text" id="IEPSA11" value="" /></td>
+                    </tr>
+                    <tr>
+                      <td class="naranja1">Bebidas azucaradas<a href="ieps.php.html#" class="info" title="Tasa de evasión. 100: 100% evasión. 0:0% evasión."></a></td>
+                      <td class="blanco1"><input class="inputIsr isr_input" name="IEPSA10" type="text" id="IEPSA12" value="" /></td>
+                    </tr>
+                    
+                    <tr>
+                      <td class="naranja1">Comida chatarra<a href="ieps.php.html#" class="info" title="Tasa de evasión. 100: 100% evasión. 0:0% evasión."></a></td>
+                      <td class="blanco1"><input class="inputIsr isr_input" name="IEPSA11" type="text" id="IEPSA13" value="" /></td>
+                    </tr>
+
+                    </table>
+                  </div>
+                  <!-- /form -->
+                  <!-- form id="ISRB" name="ISRB" method="post" action="" -->
+
+                  <div class="limpiar"></div>
+
+                  <div class="calculateBar">
+
+                    
+                    <input name="envio2" type="submit" class="boton botonCalcular" id="iepsSub" value="Calcular perspectiva" />
+                    <input name="ieps14" type="button" class="boton lifilif btn1" id="iepsLif14" value="LIF 2014" />
+                    <input name="envio" type="reset" class="boton" id="iepsRst" value="Valores 2013" />
+                    <input name="ieps14" type="button" class="boton lifilif btn2" id="iepsILif14" value="ILIF 2014" />
+<p class="defaults openerDefaults">Resultados 2013</p>
+                        <div class="limpiar"></div>
+
+                  </div>
+                  
+                  </form>
+                  
+                  </div>
+                  <div class="body-inter2">
+                  	<div class="contenedor2" style="width:100%; overflow-x:auto;">
+                    <table width="100%" border="0" cellpadding="0" cellspacing="0" id="tablaisr">
+                      
+                            <tr>
+                            <th colspan="8" class="bg1" scope="col"><strong>Incidencia</strong></th>
+                            <th colspan="9" class="bg1" scope="col"><p id="openerIncidencia">Ver Resultados 2013</p></th>
+                          </tr>
+                    <tr>
+                      <th class="bg2" style="width:6.6%"><strong>Decil</strong></th>
+                      <th class="bg2" style="width:6.6%">IEPS Alcohol ($)</th>
+                      <th class="bg2" style="width:6.6%">Distribución Alcohol (%)</th>
+                      <th class="bg2" style="width:6.6%">IEPS Cerveza ($)</th>
+                      <th class="bg2" style="width:6.6%">Distribución Cerveza (%)</th>
+                      <th class="bg2" style="width:6.6%">IEPS Jiuegos y sorteos ($)</th>
+                      <th class="bg2" style="width:6.6%">Dist. Juegos y sorteos (%)</th>
+                      <th class="bg2" style="width:6.6%">IEPS Tabaco ($)</th>
+                      <th class="bg2" style="width:6.6%">Distribución Tabaco (%)</th>
+                      <th class="bg2" style="width:6.6%">IEPS Telecom ($)</th>
+                      <th class="bg2" style="width:6.6%">Distribución Telecom (%)</th>
+                      <th class="bg2" style="width:6.6%">IEPS Bebidas Energizantes ($)</th>
+                      <th class="bg2" style="width:6.6%">Distribución Bebidas Energizantes (%)</th>
+                      <th class="bg2" style="width:6.6%">IEPS Bebidas Azucaradas ($)</th>
+                      <th class="bg2" style="width:6.6%">Distribución Bebidas Azucaradas (%)</th>
+                      <th class="bg2" style="width:6.6%">IEPS Alim. Chatarra ($)</th>
+                      <th class="bg2" style="width:6.6%">Distribución Alim. Chatarra (%)</th>
+                      </tr>
+                    <tr>
+                      <td class="naranja1">I</td>
+                      <td id="1Incidencia1" class="naranja2">&nbsp;</td>
+                      <td id="1Incidencia2" class="naranja2">&nbsp;</td>
+                      <td id="1Incidencia3" class="naranja2">&nbsp;</td>
+                      <td id="1Incidencia4" class="naranja2">&nbsp;</td>
+                      <td id="1Incidencia5" class="naranja2">&nbsp;</td>
+                      <td id="1Incidencia6" class="naranja2">&nbsp;</td>
+                      <td id="1Incidencia7" class="naranja2">&nbsp;</td>
+                      <td id="1Incidencia8" class="naranja2">&nbsp;</td>
+                      <td id="1Incidencia9" class="naranja2">&nbsp;</td>
+                      <td id="1Incidencia10" class="naranja2">&nbsp;</td>
+                      <td id="1Incidencia11" class="naranja2">&nbsp;</td>
+                      <td id="1Incidencia12" class="naranja2">&nbsp;</td>
+                      <td id="1Incidencia13" class="naranja2">&nbsp;</td>
+                      <td id="1Incidencia14" class="naranja2">&nbsp;</td>
+                      <td id="1Incidencia15" class="naranja2">&nbsp;</td>
+                      <td id="1Incidencia16" class="naranja2">&nbsp;</td>
+                      </tr>
+                    <tr>
+                      <td class="naranja1">II</td>
+                      <td id="2Incidencia1" class="naranja2">&nbsp;</td>
+                      <td id="2Incidencia2" class="naranja2">&nbsp;</td>
+                      <td id="2Incidencia3" class="naranja2">&nbsp;</td>
+                      <td id="2Incidencia4" class="naranja2">&nbsp;</td>
+                      <td id="2Incidencia5" class="naranja2">&nbsp;</td>
+                      <td id="2Incidencia6" class="naranja2">&nbsp;</td>
+                      <td id="2Incidencia7" class="naranja2">&nbsp;</td>
+                      <td id="2Incidencia8" class="naranja2">&nbsp;</td>
+                      <td id="2Incidencia9" class="naranja2">&nbsp;</td>
+                      <td id="2Incidencia10" class="naranja2">&nbsp;</td>
+                      <td id="2Incidencia11" class="naranja2">&nbsp;</td>
+                      <td id="2Incidencia12" class="naranja2">&nbsp;</td>
+                      <td id="2Incidencia13" class="naranja2">&nbsp;</td>
+                      <td id="2Incidencia14" class="naranja2">&nbsp;</td>
+                      <td id="2Incidencia15" class="naranja2">&nbsp;</td>
+                      <td id="2Incidencia16" class="naranja2">&nbsp;</td>
+                      </tr>
+                    <tr>
+                      <td class="naranja1">III</td>
+                      <td id="3Incidencia1" class="naranja2">&nbsp;</td>
+                      <td id="3Incidencia2" class="naranja2">&nbsp;</td>
+                      <td id="3Incidencia3" class="naranja2">&nbsp;</td>
+                      <td id="3Incidencia4" class="naranja2">&nbsp;</td>
+                      <td id="3Incidencia5" class="naranja2">&nbsp;</td>
+                      <td id="3Incidencia6" class="naranja2">&nbsp;</td>
+                      <td id="3Incidencia7" class="naranja2">&nbsp;</td>
+                      <td id="3Incidencia8" class="naranja2">&nbsp;</td>
+                      <td id="3Incidencia9" class="naranja2">&nbsp;</td>
+                      <td id="3Incidencia10" class="naranja2">&nbsp;</td>
+                      <td id="3Incidencia11" class="naranja2">&nbsp;</td>
+                      <td id="3Incidencia12" class="naranja2">&nbsp;</td>
+                      <td id="3Incidencia13" class="naranja2">&nbsp;</td>
+                      <td id="3Incidencia14" class="naranja2">&nbsp;</td>
+                      <td id="3Incidencia15" class="naranja2">&nbsp;</td>
+                      <td id="3Incidencia16" class="naranja2">&nbsp;</td>
+                      </tr>
+                    <tr>
+                      <td class="naranja1">IV</td>
+                      <td id="4Incidencia1" class="naranja2">&nbsp;</td>
+                      <td id="4Incidencia2" class="naranja2">&nbsp;</td>
+                      <td id="4Incidencia3" class="naranja2">&nbsp;</td>
+                      <td id="4Incidencia4" class="naranja2">&nbsp;</td>
+                      <td id="4Incidencia5" class="naranja2">&nbsp;</td>
+                      <td id="4Incidencia6" class="naranja2">&nbsp;</td>
+                      <td id="4Incidencia7" class="naranja2">&nbsp;</td>
+                      <td id="4Incidencia8" class="naranja2">&nbsp;</td>
+                      <td id="4Incidencia9" class="naranja2">&nbsp;</td>
+                      <td id="4Incidencia10" class="naranja2">&nbsp;</td>
+                      <td id="4Incidencia11" class="naranja2">&nbsp;</td>
+                      <td id="4Incidencia12" class="naranja2">&nbsp;</td>
+                      <td id="4Incidencia13" class="naranja2">&nbsp;</td>
+                      <td id="4Incidencia14" class="naranja2">&nbsp;</td>
+                      <td id="4Incidencia15" class="naranja2">&nbsp;</td>
+                      <td id="4Incidencia16" class="naranja2">&nbsp;</td>
+                      </tr>
+                    <tr>
+                      <td class="naranja1">V</td>
+                      <td id="5Incidencia1" class="naranja2">&nbsp;</td>
+                      <td id="5Incidencia2" class="naranja2">&nbsp;</td>
+                      <td id="5Incidencia3" class="naranja2">&nbsp;</td>
+                      <td id="5Incidencia4" class="naranja2">&nbsp;</td>
+                      <td id="5Incidencia5" class="naranja2">&nbsp;</td>
+                      <td id="5Incidencia6" class="naranja2">&nbsp;</td>
+                      <td id="5Incidencia7" class="naranja2">&nbsp;</td>
+                      <td id="5Incidencia8" class="naranja2">&nbsp;</td>
+                      <td id="5Incidencia9" class="naranja2">&nbsp;</td>
+                      <td id="5Incidencia10" class="naranja2">&nbsp;</td>
+                      <td id="5Incidencia11" class="naranja2">&nbsp;</td>
+                      <td id="5Incidencia12" class="naranja2">&nbsp;</td>
+                      <td id="5Incidencia13" class="naranja2">&nbsp;</td>
+                      <td id="5Incidencia14" class="naranja2">&nbsp;</td>
+                      <td id="5Incidencia15" class="naranja2">&nbsp;</td>
+                      <td id="5Incidencia16" class="naranja2">&nbsp;</td>
+                      </tr>
+                    <tr>
+                      <td class="naranja1">VI</td>
+                      <td id="6Incidencia1" class="naranja2">&nbsp;</td>
+                      <td id="6Incidencia2" class="naranja2">&nbsp;</td>
+                      <td id="6Incidencia3" class="naranja2">&nbsp;</td>
+                      <td id="6Incidencia4" class="naranja2">&nbsp;</td>
+                      <td id="6Incidencia5" class="naranja2">&nbsp;</td>
+                      <td id="6Incidencia6" class="naranja2">&nbsp;</td>
+                      <td id="6Incidencia7" class="naranja2">&nbsp;</td>
+                      <td id="6Incidencia8" class="naranja2">&nbsp;</td>
+                      <td id="6Incidencia9" class="naranja2">&nbsp;</td>
+                      <td id="6Incidencia10" class="naranja2">&nbsp;</td>
+                      <td id="6Incidencia11" class="naranja2">&nbsp;</td>
+                      <td id="6Incidencia12" class="naranja2">&nbsp;</td>
+                      <td id="6Incidencia13" class="naranja2">&nbsp;</td>
+                      <td id="6Incidencia14" class="naranja2">&nbsp;</td>
+                      <td id="6Incidencia15" class="naranja2">&nbsp;</td>
+                      <td id="6Incidencia16" class="naranja2">&nbsp;</td>
+                      </tr>
+                    <tr>
+                      <td class="naranja1">VII</td>
+                      <td id="7Incidencia1" class="naranja2">&nbsp;</td>
+                      <td id="7Incidencia2" class="naranja2">&nbsp;</td>
+                      <td id="7Incidencia3" class="naranja2">&nbsp;</td>
+                      <td id="7Incidencia4" class="naranja2">&nbsp;</td>
+                      <td id="7Incidencia5" class="naranja2">&nbsp;</td>
+                      <td id="7Incidencia6" class="naranja2">&nbsp;</td>
+                      <td id="7Incidencia7" class="naranja2">&nbsp;</td>
+                      <td id="7Incidencia8" class="naranja2">&nbsp;</td>
+                      <td id="7Incidencia9" class="naranja2">&nbsp;</td>
+                      <td id="7Incidencia10" class="naranja2">&nbsp;</td>
+                      <td id="7Incidencia11" class="naranja2">&nbsp;</td>
+                      <td id="7Incidencia12" class="naranja2">&nbsp;</td>
+                      <td id="7Incidencia13" class="naranja2">&nbsp;</td>
+                      <td id="7Incidencia14" class="naranja2">&nbsp;</td>
+                      <td id="7Incidencia15" class="naranja2">&nbsp;</td>
+                      <td id="7Incidencia16" class="naranja2">&nbsp;</td>
+                      </tr>
+                    <tr>
+                      <td class="naranja1">VIII</td>
+                      <td id="8Incidencia1" class="naranja2">&nbsp;</td>
+                      <td id="8Incidencia2" class="naranja2">&nbsp;</td>
+                      <td id="8Incidencia3" class="naranja2">&nbsp;</td>
+                      <td id="8Incidencia4" class="naranja2">&nbsp;</td>
+                      <td id="8Incidencia5" class="naranja2">&nbsp;</td>
+                      <td id="8Incidencia6" class="naranja2">&nbsp;</td>
+                      <td id="8Incidencia7" class="naranja2">&nbsp;</td>
+                      <td id="8Incidencia8" class="naranja2">&nbsp;</td>
+                      <td id="8Incidencia9" class="naranja2">&nbsp;</td>
+                      <td id="8Incidencia10" class="naranja2">&nbsp;</td>
+                      <td id="8Incidencia11" class="naranja2">&nbsp;</td>
+                      <td id="8Incidencia12" class="naranja2">&nbsp;</td>
+                      <td id="8Incidencia13" class="naranja2">&nbsp;</td>
+                      <td id="8Incidencia14" class="naranja2">&nbsp;</td>
+                      <td id="8Incidencia15" class="naranja2">&nbsp;</td>
+                      <td id="8Incidencia16" class="naranja2">&nbsp;</td>
+                      </tr>
+                    <tr>
+                      <td class="naranja1">IX</td>
+                      <td id="9Incidencia1" class="naranja2">&nbsp;</td>
+                      <td id="9Incidencia2" class="naranja2">&nbsp;</td>
+                      <td id="9Incidencia3" class="naranja2">&nbsp;</td>
+                      <td id="9Incidencia4" class="naranja2">&nbsp;</td>
+                      <td id="9Incidencia5" class="naranja2">&nbsp;</td>
+                      <td id="9Incidencia6" class="naranja2">&nbsp;</td>
+                      <td id="9Incidencia7" class="naranja2">&nbsp;</td>
+                      <td id="9Incidencia8" class="naranja2">&nbsp;</td>
+                      <td id="9Incidencia9" class="naranja2">&nbsp;</td>
+                      <td id="9Incidencia10" class="naranja2">&nbsp;</td>
+                      <td id="9Incidencia11" class="naranja2">&nbsp;</td>
+                      <td id="9Incidencia12" class="naranja2">&nbsp;</td>
+                      <td id="9Incidencia13" class="naranja2">&nbsp;</td>
+                      <td id="9Incidencia14" class="naranja2">&nbsp;</td>
+                      <td id="9Incidencia15" class="naranja2">&nbsp;</td>
+                      <td id="9Incidencia16" class="naranja2">&nbsp;</td>
+                     </tr>
+                    <tr>
+                      <td class="naranja1">X</td>
+                      <td id="10Incidencia1" class="naranja2">&nbsp;</td>
+                      <td id="10Incidencia2" class="naranja2">&nbsp;</td>
+                      <td id="10Incidencia3" class="naranja2">&nbsp;</td>
+                      <td id="10Incidencia4" class="naranja2">&nbsp;</td>
+                      <td id="10Incidencia5" class="naranja2">&nbsp;</td>
+                      <td id="10Incidencia6" class="naranja2">&nbsp;</td>
+                      <td id="10Incidencia7" class="naranja2">&nbsp;</td>
+                      <td id="10Incidencia8" class="naranja2">&nbsp;</td>
+                      <td id="10Incidencia9" class="naranja2">&nbsp;</td>
+                      <td id="10Incidencia10" class="naranja2">&nbsp;</td>
+                      <td id="10Incidencia11" class="naranja2">&nbsp;</td>
+                      <td id="10Incidencia12" class="naranja2">&nbsp;</td>
+                      <td id="10Incidencia13" class="naranja2">&nbsp;</td>
+                      <td id="10Incidencia14" class="naranja2">&nbsp;</td>
+                      <td id="10Incidencia15" class="naranja2">&nbsp;</td>
+                      <td id="10Incidencia16" class="naranja2">&nbsp;</td>
+                      </tr>
+                    <tr>
+                      <td class="naranja1">TOTAL</td>
+                      <td id="11Incidencia1" class="naranja2" style="font-weight:bold">&nbsp;</td>
+                      <td id="11Incidencia2" class="naranja2" style="font-weight:bold">&nbsp;</td>
+                      <td id="11Incidencia3" class="naranja2" style="font-weight:bold">&nbsp;</td>
+                      <td id="11Incidencia4" class="naranja2" style="font-weight:bold">&nbsp;</td>
+                      <td id="11Incidencia5" class="naranja2" style="font-weight:bold">&nbsp;</td>
+                      <td id="11Incidencia6" class="naranja2" style="font-weight:bold">&nbsp;</td>
+                      <td id="11Incidencia7" class="naranja2" style="font-weight:bold">&nbsp;</td>
+                      <td id="11Incidencia8" class="naranja2" style="font-weight:bold">&nbsp;</td>
+                      <td id="11Incidencia9" class="naranja2" style="font-weight:bold">&nbsp;</td>
+                      <td id="11Incidencia10" class="naranja2" style="font-weight:bold">&nbsp;</td>
+                      <td id="11Incidencia11" class="naranja2" style="font-weight:bold">&nbsp;</td>
+                      <td id="11Incidencia12" class="naranja2" style="font-weight:bold">&nbsp;</td>
+                      <td id="11Incidencia13" class="naranja2" style="font-weight:bold">&nbsp;</td>
+                      <td id="11Incidencia14" class="naranja2" style="font-weight:bold">&nbsp;</td>
+                      <td id="11Incidencia15" class="naranja2" style="font-weight:bold">&nbsp;</td>
+                      <td id="11Incidencia16" class="naranja2" style="font-weight:bold">&nbsp;</td>
+                      </tr>
+                    </table>
+                  </div>
+                  
+                  <div class="contenedor3" style="width:100%; height:auto !important;">
+                  <table width="100%" border="0" cellpadding="0" cellspacing="0" id="tablaisr">
+                      
+                            <tr>
+                            <th colspan="5" scope="col" class="bg1"><strong>Perfil generacional del IEPS no petrolero</strong></th>
+                          </tr>
+                    <tr>
+                      <th class="bg2 ancho1" style="background-color:#FFF; border:none;"></th>
+                      <th class="bg2" style="background-color:#FFF; border:none;">&nbsp;</th>
+                      <th class="bg2" style="background-color:#FFF; border:none;">&nbsp;</th>
+                      <th class="bg2" style="background-color:#FFF; border:none;">&nbsp;</th>
+                      <th class="bg2" style="background-color:#FFF; border:none;">&nbsp;</th>
+                    </tr>
+                    <tr>
+                      <td class="naranja2 ancho1"></td>
+                      <td colspan="4" rowspan="12" class="naranja2">
+                      	<div id="chart_div" style="width:100%; height:440px;"></div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="naranja2 ancho1"></td>
+                    </tr>
+                    <tr>
+                      <td class="naranja2 ancho1"></td>
+                    </tr>
+                    <tr>
+                      <td class="naranja2 ancho1"></td>
+                    </tr>
+                    <tr>
+                      <td class="naranja2 ancho1"></td>
+                    </tr>
+                    <tr>
+                      <td class="naranja2 ancho1"></td>
+                    </tr>
+                    <tr>
+                      <td class="naranja2 ancho1"></td>
+                    </tr>
+                    <tr>
+                      <td class="naranja2 ancho1"></td>
+                    </tr>
+                    <tr>
+                      <td class="naranja2 ancho1"></td>
+                    </tr>
+                    <tr>
+                      <td class="naranja2 ancho1"></td>
+                    </tr>
+                    <tr>
+                      <td class="naranja2 ancho1"></td>
+                    </tr>
+                    <tr>
+                      <td class="naranja2 ancho1"></td>
+                    </tr>
+                    </table>
+                  </div>
+                  
+                  <div class="limpiar"></div>
+
+                  <div class="calculateBar">
+                  <div class="boton2">
+                    <div class="resBarraGris1">Recaudación proyectada:</div>
+                    <div class="resBarraGris2">$<span id="recaudacionProyectada">000,000.00</span> <span>mdp</span></div>
+                  </div>
+                  <div class="boton2">
+                    <div class="resBarraGris1">Como % del PIB:</div>
+                    <div class="resBarraGris2"><span id="pibProyectado">00.00</span> <span>%</span></div>
+                  </div>
+                    <input name="envio4" type="submit" class="boton" id="envio4" value="Volver a calcular" />
+                    
+<form method="POST" enctype="multipart/form-data" action="javascript:void(0)" id="myForm" target="iframe_res">
+						<input type="hidden" name="img_val" id="img_val" value="" />
+					</form>
+                    
+                    <input type="submit" value="" onclick="capture();" id="openerImagen" title="Capturar imagen de resultados" class="foto openerImagen" />                    
+                    <div class="limpiar"></div>
+                  </div>
+                  
+                  </div>
+            <!-- </div> fin de paddBloque -->
+            
+            <div class="limpiar"></div>
+			</div><!-- fin de BloqueInter -->
+            
+        </div><!-- fin de Bloque -->
+        <div class="limpiar" style="position:relative;">
+        <div id="calcular" class="absolute ayuda"><img src="images%20sim1/calcular.png" width="289" height="73" /></div>
+        </div>
+        
+		<!-- Bloque en medio -->
+        <div style="position:relative">
+        <div id="tabla-lif" class="absolute ayuda"><img src="images%20sim1/tabla-lif.png" width="289" height="73" /></div>
+			
+        <div class="divisor" style="margin-bottom:19px;"></div>
+        
+        
+        <div id="preResultados">
+        	<div class="item">
+              		<h3><strong>Recaudación</strong></h3>
+            </div>
+            
+            <div id="menos2"></div>
+            
+            <div class="item dos">
+              		<h3><strong>Gasto</strong></h3>
+            </div>
+            
+            <div id="igual2"></div>
+
+            <div class="item tres">
+              		<h3><strong>Deuda</strong></h3>
+            </div>
+            <div class="limpiar"></div>
+        </div>
+        
+        
+
+	<div class="bloque" id="resultados">
+        	<div class="item">
+            	<div class="pt1">
+              		<h3><strong>Recaudación</strong> proyectada <span id="recaudacionLabYear">2014</span>:</h3>
+                    <p>$<span id="recaudacionMPD" class="numeric">000,000.00</span> <span>mdp</span></p>
+                </div>
+                <div class="pt2">
+              		<h3>LIF 2014</h3>
+                    
+                    <p>$3,816,747.80 <span>mdp</span></p>
+                    <p class="ampliar" id="openerAmpliar2">Ampliar</p>
+                </div>
+                <div class="limpiar"></div>
+                <div class="barra1"></div><div class="barra2"></div>
+            </div>
+            
+            <div id="menos" style="visibility:hidden;"></div>
+            
+            <div class="item dos">       
+            	<div class="pt1">
+                	<h3>
+                      <strong>Gasto</strong>
+                      proyectado <span id="gastoLabYear">2014</span>:
+                    </h3>
+
+                    <p>$<span id="gastoMPD" class="numeric">000,000.00</span> <span>mdp</span></p>
+                </div>
+                <div class="pt2">
+                	<h3>PEF 2014</h3>
+                    <p>$4,467,225.80 <span>mdp</span></p>
+                    <p class="ampliar" id="openerAmpliar3">Ampliar</p>
+                </div>
+                <div class="limpiar"></div>
+                <div class="barra1"></div><div class="barra2"></div>
+            </div>
+            
+            <div id="igual" style="visibility:hidden;"></div>
+
+            <div class="item tres">         
+            	<div class="pt1">
+              		<h3><strong>Deuda</strong> proyectada 
+                    <div style="position:relative; width:30%; display:inline-block;">
+                    <form style="display:inline;">
+                      <select name="ecuRGD" class="styled" id="ecuRGD" style="width:100%; margin-top:0;">
+                        <option value="0">2014</option>
+                        <option value="1">2015</option>
+                        <option value="2">2016</option>
+                        <option value="3">2017</option>
+                        <option value="4">2018</option>
+                        <option value="5">2019</option>
+                        <option value="6">2020</option>
+                        <option value="7">2021</option>
+                        <option value="8">2022</option>
+                        <option value="9">2023</option>
+                        <option value="10">2024</option>
+                        <option value="11">2025</option>
+                      </select>
+                    </form></div> :</h3>
+                    <div style="position:relative;">
+                    
+                    </div>
+                    <p>$<span id="deudaMPD" class="numeric">000,000.00</span> <span>mdp</span></p>
+                </div>
+                <div class="pt2">
+              		<h3>DEUDA 2014:</h3>
+                    <p>$650,478.00 <span>mdp</span></p>
+                    <p class="ampliar">Ampliar</p>
+                </div>
+                <div class="limpiar"></div>
+                <div class="barra1"></div><div class="barra2"></div>
+            </div>
+
+
+            <div class="limpiar"></div>
+        </div>
+        
+        <div class="divisor"></div>        <!-- fin de Bloque en medio -->
+        </div>
+        
+        <div style="position:relative;">
+        <div id="vista-avanzada" class="absolute ayuda"><img src="images%20sim1/vista-avanzada.png" width="210" height="89" /></div>
+        <!-- inicio de Bloque -->
+        <div class="bloque chartLeft">
+        	<div class="bloqueHead">
+        		<h2>SHRFSP</h2>
+                <p><input type="button" value="Vista avanzada" id="opener" onClick="lightbox()"/></p>
+            </div>
+            
+            <div class="contenedorLoading">
+            <div class="loading"><div class="loader"><p>Cargando...</p><h4>Tiempo de espera aproximado: <span style="color:#F45D07;">1.5 minutos</span></h4>
+            </div></div>
+            <div class="paddBloque" id="res1">
+        
+		<div class="chart-container">
+			<div class="chart-content">
+				<div class="chart-y-axis">
+                	<div class="txtVertical"></div>
+					<p style="bottom:232px;"><span>100</span>%</p>
+					<p style="bottom:175.25px;"><span>75</span>%</p>
+					<p style="bottom:117.5px;"><span>50</span>%</p>
+					<p style="bottom:59px;"><span>25</span>%</p>
+					<p style="bottom:0px;"><span>0</span>%</p>
+				</div>
+				<div class="chart-area" bar-spacing="10">
+
+                    <div class="wrapper">
+                    <div class="barWrapper">
+						<div bar-value="-39" id="barI13"   class="chart-bar" title=""></div>
+                    </div>
+                    </div>
+                    
+                    <div class="wrapper">
+                    <div class="barWrapper">
+						<div bar-value="-40.5" id="barI14"    class="chart-bar" title=""></div>
+                    </div>
+                    </div>
+                    
+                    <div class="wrapper">
+                    <div class="barWrapper">
+                    	<div bar-value="-41.2" id="barI15"    class="chart-bar" title=""></div>
+                    </div>
+                    </div>
+                    
+                    <div class="wrapper">
+                    <div class="barWrapper">
+                    	<div bar-value="-42" id="barI16"    class="chart-bar" title=""></div>
+                    </div>
+                    </div>
+                    
+                    <div class="wrapper">
+                    <div class="barWrapper">
+                    	<div bar-value="-43.1" id="barI17"    class="chart-bar" title=""></div>
+                    </div>
+                    </div>
+                    
+                    <div class="wrapper">
+                    <div class="barWrapper">
+                    	<div bar-value="-44" id="barI18"    class="chart-bar" title=""></div>
+                    </div>
+                    </div>
+                    
+                    <div class="wrapper">
+                    <div class="barWrapper">
+                    	<div bar-value="-45.2" id="barI19"    class="chart-bar" title=""></div>
+                    </div>
+                    </div>
+                    
+                    <div class="wrapper">
+                    <div class="barWrapper">
+                    	<div bar-value="0" id="barI20"    class="chart-bar" title=""></div>
+                    </div>
+                    </div>
+                    
+                    <div class="wrapper">
+                    <div class="barWrapper">
+                    	<div bar-value="0" id="barI21"    class="chart-bar" title=""></div>
+                    </div>
+                    </div>
+                    
+                    <div class="wrapper">
+                    <div class="barWrapper">
+                    	<div bar-value="0" id="barI22"    class="chart-bar" title=""></div>
+                    </div>
+                    </div>
+                    
+                    <div class="wrapper">
+                    <div class="barWrapper">
+                    	<div bar-value="0" id="barI23"    class="chart-bar" title=""></div>
+                    </div>
+                    </div>
+                    
+
+                    <div class="wrapper">
+                    <div class="barWrapper">
+                    	<div bar-value="0" id="barI24"    class="chart-bar" title=""></div>
+                    </div>
+                    </div>
+                    
+                    <div class="wrapper displayNone">
+                    <div class="barWrapper">
+                    	<div bar-value="0" id="barI25"    class="chart-bar" title=""></div>
+                    </div>
+                    </div>
+                    
+				</div>
+                
+                <div class="chart-x-axis-pt1">
+                	<div class="wrapper">Año</div><div class="limpiar"></div>
+                    
+                    <div class="resultados">
+                    	<div class="avanzados" style="display:none;">
+                          <div class="wrapper">BT</div><div class="limpiar"></div>
+                          <div class="wrapper">abcd</div><div class="limpiar"></div>
+                          <div class="wrapper">RFSP</div><div class="limpiar"></div>
+                        </div>
+                        <div class="resultadoFinal">
+                          <div class="wrapper">Balance Tradicional</div><div class="limpiar"></div>
+                        </div>
+                    </div>
+                </div>
+                
+				<div class="chart-x-axis">
+ 
+                
+                <div class="wrapper">
+                  <p>2014</p>
+                </div>
+                
+                <div class="wrapper">
+                  <p>2015</p>
+                </div>
+                
+                <div class="wrapper">
+                  <p>2016</p>
+                </div>
+                
+                <div class="wrapper">
+                  <p>2017</p>
+                </div>
+                
+                <div class="wrapper">
+                  <p>2018</p>
+                </div>
+                
+                <div class="wrapper">
+                  <p>2019</p>
+                </div>
+                
+                <div class="wrapper">
+                  <p>2020</p>
+                </div>
+                
+                <div class="wrapper">
+                  <p></p>
+                </div>
+                
+                <div class="wrapper">
+                  <p></p>
+                </div>
+                
+                <div class="wrapper">
+                  <p></p>
+                </div>
+                
+                <div class="wrapper">
+                  <p></p>
+                </div>
+                
+                <div class="wrapper">
+                  <p></p>
+                </div>
+                
+                <div class="wrapper displayNone">
+                  <p></p>
+                </div>
+                
+                <!-- SIGUIENTE RENGLÓN -->
+                <div class="limpiar"></div>
+                <!-- -->
+                
+                <div class="resultados">
+                    
+                    <!-- SIGUIENTE RENGLÓN -->
+                    <div class="limpiar"></div>
+                    <!-- -->
+                    
+                    <div class="resultadoFinal">
+
+                      <div class="wrapper" id="bar_shrfsp13">
+                        -2.5                      </div>
+                      
+                      <div class="wrapper" id="bar_shrfsp14">
+                        -2.3                      </div>
+                      
+                      <div class="wrapper" id="bar_shrfsp15">
+                        -2
+                      </div>
+                      
+                      <div class="wrapper" id="bar_shrfsp16">
+                        -1.8                      </div>
+                      
+                      <div class="wrapper" id="bar_shrfsp17">
+                        -1.5                      </div>
+                      
+                      <div class="wrapper" id="bar_shrfsp18">
+                        -1.2                      </div>
+                      
+                      <div class="wrapper" id="bar_shrfsp19">
+                        -1                      </div>
+                      
+                      <div class="wrapper" id="bar_shrfsp20">
+                                              </div>
+                      
+                      <div class="wrapper" id="bar_shrfsp21">
+                                              </div>
+                      
+                      <div class="wrapper" id="bar_shrfsp22">
+                                              </div>
+                      
+                      <div class="wrapper" id="bar_shrfsp23">
+                                              </div>
+                      
+                      <div class="wrapper" id="bar_shrfsp24">
+                                              </div>
+                      
+                      <div class="wrapper displayNone" id="bar_shrfsp25">
+                                              </div>
+                      <div class="limpiar"></div>
+                    
+                    </div><!-- fin de RESULTADO final -->
+                </div><!-- fin de RESULTADOS -->
+                
+                <div class="limpiar"></div>
+                </div>
+			</div>
+		</div>
+                    <div class="limpiar"></div>
+
+                <!--div class="SHRFSP"><div class="txtHorizontal">SHRFSP</div>30.0 35.5 37.6 39.6 41.3 43.3 33.0 30.0 35.5 37.6 39.6 41.3 43.3 33.0 35.5 37.6</div-->
+
+
+            </div>
+            </div><!-- fin de contenedorLoading -->
+        </div>    
+        <!-- fin de Bloque -->
+        </div>
+        
+        
+        <!-- inicio de Bloque -->    
+        <div style="position:relative;">
+        <div id="gini" class="absolute ayuda"><img src="images%20sim1/gini.png" width="191" height="73" /></div>
+        <!-- inicio de Bloque -->    
+        <div class="bloque chartRight">
+        	<div class="bloqueHead">
+        		<h2>Incidencia de la política fiscal</h2>
+                <!--p><input type="button" value="Vista avanzada" id="opener2"/></p-->
+            </div>
+            
+            <div class="contenedorLoading">
+            <div class="loading"><div class="loader"><p>Cargando...</p><h4>Tiempo de espera aproximado: <span style="color:#F45D07;">2 minutos</span></h4>
+            </div>
+            </div>
+            <div class="paddBloque paddRel" id="res2">
+            	
+            	  <ul class="horiz-list" id="type-select">
+                      <li class="active" type="gauge" style=""><canvas width=226 height=123 id="select-1"></canvas></li>
+                      <li type="donut" style="display:none;"><canvas width=80 height=40 id="select-2"></canvas></li>
+                  </ul>	
+                    <div id="preview">
+                      <div id="gaugeOver" ></div>
+                      <canvas width=410 height=200 id="canvas-preview"></canvas>
+                      <div id="preview-textfield"></div>
+                    </div>
+                    <div class="limpiar"></div>
+                    
+                    <div class="bloqueVelo">
+                    	<div id="texto1">GINI</div>
+                    	<div id="texto2">
+                        <table border="0" cellspacing="0" cellpadding="0" id="tablaVelocimetroTxt">
+                        <tr>
+                          <td align="right" width="50%"><span class="vel-val1">Anterior</span></td>
+                          <td width="50%"><span class="vel-val2">Actual</span></td>
+                        </tr>
+                        <tr>
+                          <td align="right"><span class="vel-val0">0.00</span></td>
+                          <td><span class="vel-val"></span></td>
+                        </tr>
+                      </table>
+
+                        </div>
+
+                        <div class="chart-container chartHorizontal" style="display:none;">
+                        <div class="chart-content">
+                        <div class="chart-area" bar-spacing="10">
+                        
+                        <div class="wrapper">
+                        <div class="barWrapper">
+                        <div class="chart-bar" title="36.4% del P.I.B." label="2016" bar-value="36.4" style="background-color: rgb(116, 129, 36); width: 200.54px; height:20px !important;">
+                        </div>
+                        </div>
+                        </div>
+                        
+                        <div class="wrapper">
+                        <div class="barWrapper">
+                        <div class="chart-bar" title="36.4% del P.I.B." label="2016" bar-value="36.4" style="background-color: rgb(116, 129, 36); width: 280.54px; height:20px !important;">
+                        </div>
+                        </div>
+                        </div>
+                        
+                        </div><!-- fin de chart-area -->
+                        </div><!-- fin de chart-content -->
+                        </div><!-- fin de chart-container -->
+                        
+                        <div class="limpiar"></div>
+                        
+                    <table border="0" id="tablaVelocimetro">
+                      <tr>
+                        <th>Perfecta igualdad</th>
+                        <th>Perfecta desigualdad</th>
+                      </tr>
+                    </table>
+
+                    </div>
+                    
+                    
+                    <form id="opts" class="opts" style="display:none;">
+            <h4>Options:</h4>
+            <label>Current Val:</label>
+            <input type="text" name="currval" min="0" max="100" step="25" value="20" /><br />
+            <label>Anim speed:</label>
+            <input type="text" name="animationSpeed" min="1" max="128" step="1" value="32" /><br /><br />
+            <label>Angle:</label>
+            <input id="input-angle" type="text" name="angle" min="0" max="100" step="1" value="0" /><br />
+            <label>Line width:</label>
+            <input id="input-line-width" type="text" name="lineWidth" min="0" max="70" value="25" /><br />
+            <label>Ptr length:</label>
+            <input id="input-ptr-len" type="text" name="pointer.length" min="0" max="100" value="90" /><br />
+            <label>Ptr color:</label>
+            <input id="input-ptr-color" type="text" class="color" name="pointer.color" value="000000" /><br />
+            <label>Ptr stroke:</label>
+            <input id="input-ptr-stroke" type="text" name="pointer.strokeWidth" min="0" max="300" value="35" /><br />
+            <label>Font size:</label>
+            <input id="input-font-size" type="text" name="fontSize" min="0" max="100" value="0" /><br />
+            <label>Color start:</label>
+            <input type="text" name="colorStart" class="color" value="69a72e" /><br />
+            <label>Color stop:</label>
+            <input type="text" name="colorStop" class="color" value="8FC0DA" /><br />
+            <label>Background:</label>
+            <input type="text" name="strokeColor" class="color" value="E0E0E0" /><br />
+            <label for="share">
+              <input type="checkbox" id="share" />
+            </label>
+          </form>
+                  <pre class="prettyprint" style="display:none">
+                  <span id="class-code-name" class="typ">Gauge</span>
+                  </pre>
+				<div class="limpiar"></div>
+            </div>
+            </div><!-- fin de contenedorLoading -->
+        </div><!-- fin de Bloque -->
+        </div>
+        <div class="limpiar"></div>
+        
+        </div><!-- fin de #TARGET -->
+        
+			<!-- Column 1 end -->
+		</div>
+		<div class="col2">
+        
+        <div id="listado-modulos" class="absolute ayuda"><img src="images%20sim1/listado-modulos.png" width="235" height="90" /></div>
+			<!-- Column 2 start -->
+            				<div id='logoCiep'><a href='https://ciep.mx/'>HOME</a></div>
+            	<ul id='menu' class='menu1'><span><p>Ingresos</p></span>
+                	<li class=' m1'><a href='index.php.html' class='icoIva'>IVA<span title='IVA'></span><div><div class='inter ON' title="MODIFICADO"></div></div></a></li>
+                    <li class=' m2'>
+                    <div class="iconosSubMenus" style="top:16px;">
+                    		<div class="sub"></div>
+                            <div class="sub"></div>
+                    </div>
+                    <a href='ieps.php.html#' class='icoIsr'>
+                    ISR<span title='ISR'></span><div><div class='inter ON' title="MODIFICADO"></div></div></a>
+                    	<ul style='display:';>
+                            <li class=''><a href='isr-fisicas.php.html'>Personas físicas<div><div class='inter ON' title="MODIFICADO"></div></div></a></li>
+                            <li class=''><a href='isr-morales.php.html'>Personas morales<div><div class='inter ON' title="MODIFICADO"></div></div></a></li>
+                        </ul>
+                    </li>
+                    <li class=' m3'>
+                    	<div class="iconosSubMenus">
+                    		<div class="sub"></div>
+                            <div class="sub"></div>
+                            <div class="sub"></div>
+                            <div class="sub"></div>
+                        </div>
+                        <a href='ieps.php.html#' class='icoPetroleo'>Ingresos Petroleros
+                        	<span title='Ingresos Petroleros'></span>
+                            	<div>
+                                	<div class='inter ON' title="MODIFICADO"></div>
+                                </div>
+                        </a>
+                        <ul style='display:';>
+                        <li class=''><a  href='escenarios.php.html'>1.- Escenarios del mercado de hidrocarburos
+                            <div><div class='inter ON' title="MODIFICADO"></div></div></a></li>
+                        <li class=''><a class="" href='ieps-petrolero.php.html'>2.- IEPS e IVA petroleros<div><div class='inter ON' title="MODIFICADO"></div></div></a></li>
+                            <li class=''><a class="" href='derechos-hidrocarburos.php.html'>3.- Derechos a los hidrocarburos e IRP<div><div class='inter ON' title="MODIFICADO"></div></div></a></li>
+
+                            <li class=''><a class="" href='ingresos-propios-pemex.php.html'>4.- Ingresos propios de PEMEX<div><div class='inter ON' title="MODIFICADO"></div></div></a></li>
+                        </ul>
+                    </li>
+                    <li class=' m4'><a href='seguridad-social.php.html' class='icoSsocial'>Seguridad Social<span title='Seguridad Social'></span><div><div class='inter ON' title="MODIFICADO"></div></div></a></li>
+                    <li class='selected m5'><a href='ieps.php.html' class='icoNopetroleo'>IEPS (no petrolero)<span title='IEPS (no petrolero)'></span><div><div class='inter ON' title="MODIFICADO"></div></div></a></li>
+                    <li class=' m6'><a href='ietu.php.html' class='icoIetu'>IETU<span title='IETU'></span><div><div class='inter ON' title="MODIFICADO"></div></div></a></li>
+                    <li class=' m7'><a href='tarifas-electricas.php.html' class='icoEnergia'>Tarifas Eléctricas<span title='Tarifas Eléctricas'></span><div><div class='inter ON' title="MODIFICADO"></div></div></a></li>
+                    <!--li class=' m8'><a href='otros-impuestos.php' class='icoOtros noDisponible'>Otros Impuestos<span title='Otros Impuestos'></span><div><div class='inter ON' title="MODIFICADO"></div></div></a></li-->
+                 </ul>
+
+                 <ul id='menu' class='menu2'><span><p>Gastos</p></span>
+                    <li class=' m9'><a href='educacion.php.html' class='icoEducacion'>Educación<span title='Educación'></span><div><div class='inter ON' title="MODIFICADO"></div></div></a></li>
+                    <li class=' m10'><a href='salud.php.html' class='icoSalud'>Salud<span title='Salud'></span><div><div class='inter ON' title="MODIFICADO"></div></div></a></li>
+                    <li class=' m11'>
+                    <div class="iconosSubMenus" style="top:16px;">
+                    		<div class="sub"></div>
+                            <div class="sub"></div>
+                     </div>
+                    <a href='ieps.php.html#' class='icoGasto'>
+                    Pensiones<span title='Pensiones'></span><div><div class='inter ON' title="MODIFICADO"></div></div></a>
+                    	<ul style='display:';>
+                            <li class=''><a href='pensiones-contributivas.php.html'>Contributivas
+                                <div><div class='inter ON' title="MODIFICADO"></div></div></a></li>
+                            <li class=''><a href='pensiones-no-contr.php.html'>No Contributivas<div><div class='inter ON' title="MODIFICADO"></div></div></a></li>
+                        </ul>
+                    </li>
+                 </ul>
+
+                 <ul id='menu' class='menu3'><span><p></p></span>
+                    <li class=' m12'><a href='otros-parametros.php.html' class='icoCrecimiento'>Otros Parámetros<span title='Otros Parámetros'></span><div><div class='inter ON' title="MODIFICADO"></div></div></a></li>
+                 </ul>
+                 
+                 <div class='divisor'></div>
+                 <div id="borrarCambios"><a href="index.php.html" class="borrar">Borrar historial de cambios<span title="Borrar historial"></span></a><div class="limpiar"></div></div>
+                 </ul>
+                 
+                 <div class='limpiar'></div>	 
+
+ 
+    
+                
+		<style type='text/css'>
+		#bloqueTop .bloqueHead {background-position:10px -162px;}
+		td input[type='text']:focus {background-color:#e66e4c;}
+		</style>
+					<!-- Column 2 end -->
+		</div>
+	</div>
+</div>
+
+
+</div><!-- fin de #mainWrapper -->
+
+<div id="footer">
+	<p>© 2013 Centro de Investigación Económica y Presupuestaria, A.C.</p>
+</div>
+
+<div id="dialog" class="dialog2" title="Resultados 2013 (pesos del 2014)">
+        <div class="contenedor1" style="width:650px;">
+                    <table width="100%" border="0" cellpadding="0" cellspacing="0" id="tablaisr">
+                      
+                            <tbody><tr>
+                            <th colspan="17" scope="col" class="bg1"><strong>Incidencia</strong></th>
+                          </tr>
+                    <tr>
+                      <th class="bg2" style="width:10%"><strong>Decil</strong></th>
+                      <th class="bg2" style="width:9%">IEPS Alcohol ($)</th>
+                      <th class="bg2" style="width:9%">Distribución Alcohol (%)</th>
+                      <th class="bg2" style="width:9%">IEPS Cerveza ($)</th>
+                      <th class="bg2" style="width:9%">Distribución Cerveza (%)</th>
+                      <th class="bg2" style="width:9%">IEPS Juegos y Sorteos ($)</th>
+                      <th class="bg2" style="width:9%">Dist. Juegos y Sorteos (%)</th>
+                      <th class="bg2" style="width:9%">IEPS Tabaco ($)</th>
+                      <th class="bg2" style="width:9%">Distribución Tabaco (%)</th>
+                      <th class="bg2" style="width:9%">IEPS Telecom ($)</th>
+                      <th class="bg2" style="width:9%">Distribución Telecom (%)</th>
+                      <th class="bg2" style="width:9%">IEPS Bebidas Energizantes ($)</th>
+                      <th class="bg2" style="width:9%">Distribución Bebidas Energizantes (%)</th>
+                      <th class="bg2" style="width:9%">IEPS Bebidas Azucaradas ($)</th>
+                      <th class="bg2" style="width:9%">Distribución Azucaradas (%)</th>
+                      <th class="bg2" style="width:9%">IEPS Alim. Chatarra ($)</th>
+                      <th class="bg2" style="width:9%">Distribución Alim. Chatarra (%)</th>
+                      </tr>
+                    <tr>
+                      <td class="naranja1">I</td>
+                      <td id="1Incidencia1" class="naranja2 positive numeric"></td>
+                      <td id="1Incidencia2" class="naranja2 positive"> %</td>
+                      <td id="1Incidencia3" class="naranja2 positive numeric"></td>
+                      <td id="1Incidencia4" class="naranja2 positive"> %</td>
+                      <td id="1Incidencia5" class="naranja2 positive numeric"></td>
+                      <td id="1Incidencia6" class="naranja2 positive"> %</td>
+                      <td id="1Incidencia7" class="naranja2 positive numeric"></td>
+                      <td id="1Incidencia8" class="naranja2 positive"> %</td>
+                      <td id="1Incidencia9" class="naranja2 positive numeric"></td>
+                      <td id="1Incidencia10" class="naranja2 positive"> %</td>
+                      <td id="1Incidencia11" class="naranja2 positive"></td>
+                      <td id="1Incidencia12" class="naranja2 positive"> %</td>
+                      <td id="1Incidencia13" class="naranja2 positive"></td>
+                      <td id="1Incidencia14" class="naranja2 positive"> %</td>
+                      <td id="1Incidencia15" class="naranja2 positive"></td>
+                      <td id="1Incidencia16" class="naranja2 positive"> %</td>
+                      </tr>
+                    <tr>
+                      <td class="naranja1">II</td>
+                      <td id="2Incidencia1" class="naranja2 positive numeric"></td>
+                      <td id="2Incidencia2" class="naranja2 positive"> %</td>
+                      <td id="2Incidencia3" class="naranja2 positive numeric"></td>
+                      <td id="2Incidencia4" class="naranja2 positive"> %</td>
+                      <td id="2Incidencia5" class="naranja2 positive numeric"></td>
+                      <td id="2Incidencia6" class="naranja2 positive"> %</td>
+                      <td id="2Incidencia7" class="naranja2 positive numeric"></td>
+                      <td id="2Incidencia8" class="naranja2 positive"> %</td>
+                      <td id="2Incidencia9" class="naranja2 positive numeric"></td>
+                      <td id="2Incidencia10" class="naranja2 positive"> %</td>
+                      <td id="2Incidencia10" class="naranja2 positive"></td>
+                      <td id="2Incidencia10" class="naranja2 positive"></td>
+                      <td id="2Incidencia10" class="naranja2 positive"></td>
+                      <td id="2Incidencia10" class="naranja2 positive"></td>
+                      <td id="2Incidencia10" class="naranja2 positive"></td>
+                      <td id="2Incidencia10" class="naranja2 positive"></td>
+                      </tr>
+                    <tr>
+                      <td class="naranja1">III</td>
+                      <td id="3Incidencia1" class="naranja2 positive numeric"></td>
+                      <td id="3Incidencia2" class="naranja2 positive"> %</td>
+                      <td id="3Incidencia3" class="naranja2 positive numeric"></td>
+                      <td id="3Incidencia4" class="naranja2 positive"> %</td>
+                      <td id="3Incidencia5" class="naranja2 positive numeric"></td>
+                      <td id="3Incidencia6" class="naranja2 positive"> %</td>
+                      <td id="3Incidencia7" class="naranja2 positive numeric"></td>
+                      <td id="3Incidencia8" class="naranja2 positive"> %</td>
+                      <td id="3Incidencia9" class="naranja2 positive numeric"></td>
+                      <td id="3Incidencia10" class="naranja2 positive"> %</td>
+                      <td id="2Incidencia10" class="naranja2 positive"></td>
+                      <td id="2Incidencia10" class="naranja2 positive"></td>
+                      <td id="2Incidencia10" class="naranja2 positive"></td>
+                      <td id="2Incidencia10" class="naranja2 positive"></td>
+                      <td id="3Incidencia10" class="naranja2 positive"></td>
+                      <td id="3Incidencia10" class="naranja2 positive"></td>
+                      </tr>
+                    <tr>
+                      <td class="naranja1">IV</td>
+                      <td id="4Incidencia1" class="naranja2 positive numeric"></td>
+                      <td id="4Incidencia2" class="naranja2 positive"> %</td>
+                      <td id="4Incidencia3" class="naranja2 positive numeric"></td>
+                      <td id="4Incidencia4" class="naranja2 positive"> %</td>
+                      <td id="4Incidencia5" class="naranja2 positive numeric"></td>
+                      <td id="4Incidencia6" class="naranja2 positive"> %</td>
+                      <td id="4Incidencia7" class="naranja2 positive numeric"></td>
+                      <td id="4Incidencia8" class="naranja2 positive"> %</td>
+                      <td id="4Incidencia9" class="naranja2 positive numeric"></td>
+                      <td id="4Incidencia10" class="naranja2 positive"> %</td>
+                      <td id="2Incidencia10" class="naranja2 positive"></td>
+                      <td id="2Incidencia10" class="naranja2 positive"></td>
+                      <td id="2Incidencia10" class="naranja2 positive"></td>
+                      <td id="2Incidencia10" class="naranja2 positive"></td>
+                      <td id="4Incidencia10" class="naranja2 positive"></td>
+                      <td id="4Incidencia10" class="naranja2 positive"></td>
+                      </tr>
+                    <tr>
+                      <td class="naranja1">V</td>
+                      <td id="5Incidencia1" class="naranja2 positive numeric"></td>
+                      <td id="5Incidencia2" class="naranja2 positive"> %</td>
+                      <td id="5Incidencia3" class="naranja2 positive numeric"></td>
+                      <td id="5Incidencia4" class="naranja2 positive"> %</td>
+                      <td id="5Incidencia5" class="naranja2 positive numeric"></td>
+                      <td id="5Incidencia6" class="naranja2 positive"> %</td>
+                      <td id="5Incidencia7" class="naranja2 positive numeric"></td>
+                      <td id="5Incidencia8" class="naranja2 positive"> %</td>
+                      <td id="5Incidencia9" class="naranja2 positive numeric"></td>
+                      <td id="5Incidencia10" class="naranja2 positive"> %</td>
+                      <td id="2Incidencia10" class="naranja2 positive"></td>
+                      <td id="2Incidencia10" class="naranja2 positive"></td>
+                      <td id="2Incidencia10" class="naranja2 positive"></td>
+                      <td id="2Incidencia10" class="naranja2 positive"></td>
+                      <td id="5Incidencia10" class="naranja2 positive"></td>
+                      <td id="5Incidencia10" class="naranja2 positive"></td>
+                      </tr>
+                    <tr>
+                      <td class="naranja1">VI</td>
+                      <td id="6Incidencia1" class="naranja2 positive numeric"></td>
+                      <td id="6Incidencia2" class="naranja2 positive"> %</td>
+                      <td id="6Incidencia3" class="naranja2 positive numeric"></td>
+                      <td id="6Incidencia4" class="naranja2 positive"> %</td>
+                      <td id="6Incidencia5" class="naranja2 positive numeric"></td>
+                      <td id="6Incidencia6" class="naranja2 positive"> %</td>
+                      <td id="6Incidencia7" class="naranja2 positive numeric"></td>
+                      <td id="6Incidencia8" class="naranja2 positive"> %</td>
+                      <td id="6Incidencia9" class="naranja2 positive numeric"></td>
+                      <td id="6Incidencia10" class="naranja2 positive"> %</td>
+                      <td id="2Incidencia10" class="naranja2 positive"></td>
+                      <td id="2Incidencia10" class="naranja2 positive"></td>
+                      <td id="2Incidencia10" class="naranja2 positive"></td>
+                      <td id="2Incidencia10" class="naranja2 positive"></td>
+                      <td id="6Incidencia10" class="naranja2 positive"></td>
+                      <td id="6Incidencia10" class="naranja2 positive"></td>
+                      </tr>
+                    <tr>
+                      <td class="naranja1">VII</td>
+                      <td id="7Incidencia1" class="naranja2 positive numeric"></td>
+                      <td id="7Incidencia2" class="naranja2 positive"> %</td>
+                      <td id="7Incidencia3" class="naranja2 positive numeric"></td>
+                      <td id="7Incidencia4" class="naranja2 positive"> %</td>
+                      <td id="7Incidencia5" class="naranja2 positive numeric"></td>
+                      <td id="7Incidencia6" class="naranja2 positive"> %</td>
+                      <td id="7Incidencia7" class="naranja2 positive numeric"></td>
+                      <td id="7Incidencia8" class="naranja2 positive"> %</td>
+                      <td id="7Incidencia9" class="naranja2 positive numeric"></td>
+                      <td id="7Incidencia10" class="naranja2 positive"> %</td>
+                      <td id="2Incidencia10" class="naranja2 positive"></td>
+                      <td id="2Incidencia10" class="naranja2 positive"></td>
+                      <td id="2Incidencia10" class="naranja2 positive"></td>
+                      <td id="2Incidencia10" class="naranja2 positive"></td>
+                      <td id="7Incidencia10" class="naranja2 positive"></td>
+                      <td id="7Incidencia10" class="naranja2 positive"></td>
+                      </tr>
+                    <tr>
+                      <td class="naranja1">VIII</td>
+                      <td id="8Incidencia1" class="naranja2 positive numeric"></td>
+                      <td id="8Incidencia2" class="naranja2 positive"> %</td>
+                      <td id="8Incidencia3" class="naranja2 positive numeric"></td>
+                      <td id="8Incidencia4" class="naranja2 positive"> %</td>
+                      <td id="8Incidencia5" class="naranja2 positive numeric"></td>
+                      <td id="8Incidencia6" class="naranja2 positive"> %</td>
+                      <td id="8Incidencia7" class="naranja2 positive numeric"></td>
+                      <td id="8Incidencia8" class="naranja2 positive"> %</td>
+                      <td id="8Incidencia9" class="naranja2 positive numeric"></td>
+                      <td id="8Incidencia10" class="naranja2 positive"> %</td>
+                      <td id="2Incidencia10" class="naranja2 positive"></td>
+                      <td id="2Incidencia10" class="naranja2 positive"></td>
+                      <td id="2Incidencia10" class="naranja2 positive"></td>
+                      <td id="2Incidencia10" class="naranja2 positive"></td>
+                      <td id="8Incidencia10" class="naranja2 positive"></td>
+                      <td id="8Incidencia10" class="naranja2 positive"></td>
+                      </tr>
+                    <tr>
+                      <td class="naranja1">IX</td>
+                      <td id="9Incidencia1" class="naranja2 positive numeric"></td>
+                      <td id="9Incidencia2" class="naranja2 positive"> %</td>
+                      <td id="9Incidencia3" class="naranja2 positive numeric"></td>
+                      <td id="9Incidencia4" class="naranja2 positive"> %</td>
+                      <td id="9Incidencia5" class="naranja2 positive numeric"></td>
+                      <td id="9Incidencia6" class="naranja2 positive"> %</td>
+                      <td id="9Incidencia7" class="naranja2 positive numeric"></td>
+                      <td id="9Incidencia8" class="naranja2 positive"> %</td>
+                      <td id="9Incidencia9" class="naranja2 positive numeric"></td>
+                      <td id="9Incidencia10" class="naranja2 positive"> %</td>
+                      <td id="2Incidencia10" class="naranja2 positive"></td>
+                      <td id="2Incidencia10" class="naranja2 positive"></td>
+                      <td id="2Incidencia10" class="naranja2 positive"></td>
+                      <td id="2Incidencia10" class="naranja2 positive"></td>
+                      <td id="9Incidencia10" class="naranja2 positive"></td>
+                      <td id="9Incidencia10" class="naranja2 positive"></td>
+                     </tr>
+                    <tr>
+                      <td class="naranja1">X</td>
+                      <td id="10Incidencia1" class="naranja2 positive numeric"></td>
+                      <td id="10Incidencia2" class="naranja2 positive"> %</td>
+                      <td id="10Incidencia3" class="naranja2 positive numeric"></td>
+                      <td id="10Incidencia4" class="naranja2 positive"> %</td>
+                      <td id="10Incidencia5" class="naranja2 positive numeric"></td>
+                      <td id="10Incidencia6" class="naranja2 positive"> %</td>
+                      <td id="10Incidencia7" class="naranja2 positive numeric"></td>
+                      <td id="10Incidencia8" class="naranja2 positive"> %</td>
+                      <td id="10Incidencia9" class="naranja2 positive numeric"></td>
+                      <td id="10Incidencia10" class="naranja2 positive"> %</td>
+                      <td id="2Incidencia10" class="naranja2 positive"></td>
+                      <td id="2Incidencia10" class="naranja2 positive"></td>
+                      <td id="2Incidencia10" class="naranja2 positive"></td>
+                      <td id="2Incidencia10" class="naranja2 positive"></td>
+                      <td id="10Incidencia10" class="naranja2 positive"></td>
+                      <td id="10Incidencia10" class="naranja2 positive"></td>
+                      </tr>
+                    <tr>
+                      <td class="naranja1">TOTAL</td>
+                      <td id="11Incidencia1" class="naranja2 positive numeric"></td>
+                      <td id="11Incidencia2" class="naranja2 positive"> %</td>
+                      <td id="11Incidencia3" class="naranja2 positive numeric"></td>
+                      <td id="11Incidencia4" class="naranja2 positive"> %</td>
+                      <td id="11Incidencia5" class="naranja2 positive numeric"></td>
+                      <td id="11Incidencia6" class="naranja2 positive"> %</td>
+                      <td id="11Incidencia7" class="naranja2 positive numeric"></td>
+                      <td id="11Incidencia8" class="naranja2 positive"> %</td>
+                      <td id="11Incidencia9" class="naranja2 positive numeric"></td>
+                      <td id="11Incidencia10" class="naranja2 positive"> %</td>
+                      <td id="2Incidencia10" class="naranja2 positive"></td>
+                      <td id="2Incidencia10" class="naranja2 positive"></td>
+                      <td id="2Incidencia10" class="naranja2 positive"></td>
+                      <td id="2Incidencia10" class="naranja2 positive"></td>
+                      <td id="11Incidencia10" class="naranja2 positive"></td>
+                      <td id="11Incidencia10" class="naranja2 positive"></td>
+                      </tr>
+                    </tbody></table>
+                  </div>
+        </div>
+
+<div id="dialog" title="Imagen de resultados" class="dialog3">
+	<div style="padding:20px;">
+		<iframe name="iframe_res" width="600" frameBorder="0" scrolling="no" onload='javascript:resizeIframe(this);'></iframe>
+	</div>
+</div>
+
+        <!-- Tabla LIF -->
+           <div id="dialog" class="dialogAmp2" title="Ley de Ingresos de la Federación">
+	<a href="ieps.php.html#" style="position:absolute; left:-9999px;">25</a> <!-- FIX, no borrar -->
+        <div class="contenedor1" style="width:100%;">
+        
+        <div class="limpiar"></div>
+        <div style="background-color:#f7f7f7;">
+        <div style="position:absolute; width:153px; margin:4px; right:368px;">
+        <form style="display:inline;">
+        	<select name="selectAmp1" id="selectAmp1" class="styled">
+            	<option value='0'>Proyección 2014</option>
+<option value='1'>Proyección 2015</option>
+<option value='2'>Proyección 2016</option>
+<option value='3'>Proyección 2017</option>
+<option value='4'>Proyección 2018</option>
+<option value='5'>Proyección 2019</option>
+<option value='6'>Proyección 2020</option>
+            </select>
+        </form>
+
+        </div>
+        <div class="limpiar"></div>
+        </div>
+
+        <div style="height:30px; background-color:#707070;">
+        	<span class="uno">Concepto</span>
+            <span class="porcentaje"></span>
+            <span class="dos">% del Total</span>
+            <span class="dos" style="position:absolute; right:218px;">Millones de pesos</span>
+        </div>
+        
+        <ul id='menu' class='menuTabla' style="margin-top:0;"><span style="display:none;"><p><strong>A.</strong> Ingresos del Gobierno Federal <span class="dos recaudacionGasto1">20.7%</span><span class="dos recaudacionGasto1-1">$x,xxx,xx.xx</span></p></span>
+        
+        			<li><a href='ieps.php.html#' class="clickme colapsado"><strong>I.</strong> Impuestos <span class="plus"></span> <span class="porcentaje"><span class="valor" id="valor2"></span></span> <span class="dos recaudacionGasto2">20.7%</span><span class="dos recaudacionGasto2-1">$1,855,858.00</span></a>
+                    	
+                   	  <ul>
+                       	<li><a href="ieps.php.html#" class="clickme colapsado"><strong>1.</strong> Impuesto sobre los ingresos
+ <span class="plus"></span> <span class="porcentaje"><span class="valor" id="valor3"></span></span>
+                            <span class="dos recaudacionGasto3">20.7%</span><span class="dos recaudacionGasto3-1">$1,039,025.60</span></a>
+                        	<ul>
+                            <li><p><strong>a.</strong> Impuesto Sobre la Renta <span class="porcentaje"><span class="valor" id="valor4"></span></span> <span class="dos recaudacionGasto4">20.7%</span><span class="dos recaudacionGasto4-1">$644,852.53</span></p></li>
+                            </ul>
+                        </li>
+                            <li><p><strong>2.</strong> Impuestos sobre el patrimonio <span class="porcentaje"><span class="valor" id="valor5"></span></span> <span class="dos recaudacionGasto5">20.7%</span><span class="dos recaudacionGasto5-1">$0.00</span></p></li>
+                            <li><a href="ieps.php.html#" class="clickme colapsado"><strong>3.</strong> Impuestos sobre la producción, el consumo y las transacciones <span class="plus"></span> <span class="porcentaje"><span class="valor" id="valor5"></span></span> <span class="dos recaudacionGasto6">20.7%</span><span class="dos recaudacionGasto6-1">$803,583.70</span></a>
+                                <ul>
+                                    <li><p><strong>a.</strong> Impuesto al Valor Agregado <span class="porcentaje"><span class="valor" id="valor7"></span></span> <span class="dos recaudacionGasto7">20.7%</span><span class="dos recaudacionGasto7-1">$541,851.60</span></p></li>
+                                    <li><a href="ieps.php.html#" class="clickme colapsado"><strong>b.</strong> Impuesto Especial Sobre Producción y Servicios <span class="plus"></span> <span class="porcentaje"><span class="valor" id="valor8"></span></span> <span class="dos recaudacionGasto8">20.7%</span><span class="dos recaudacionGasto8-1">$164,511.90</span></a>
+                                    	
+                                        <ul>
+                                            <li><p><strong>1.</strong> Gasolinas, diesel para la combustión automotriz <span class="porcentaje"><span class="valor" id="valor9"></span></span> <span class="dos recaudacionGasto9">20.7%</span><span class="dos recaudacionGasto9-1">$46,168.60</span></p></li>
+                                            <li><p><strong>2.</strong> Bebidas con contenido alcohólico y cerveza <span class="porcentaje"><span class="valor" id="valor10"></span></span> <span class="dos recaudacionGasto10">20.7%</span><span class="dos recaudacionGasto10-1">$x,xxx,xxx.xx</span></p></li>
+                                            <li><p><strong>3.</strong> Tabacos labrados <span class="porcentaje"><span class="valor" id="valor11"></span></span> <span class="dos recaudacionGasto11">20.7%</span><span class="dos recaudacionGasto11-1">$x,xxx,xxx.xx</span></p></li>
+                                            <li><p><strong>4.</strong> Juegos con apuestas y sorteos <span class="porcentaje"><span class="valor" id="valor12"></span></span> <span class="dos recaudacionGasto12">20.7%</span><span class="dos recaudacionGasto12-1">$x,xxx,xxx.xx</span></p></li>
+                                            <li><p><strong>5.</strong> Redes públicas de telecomunicaciones <span class="porcentaje"><span class="valor" id="valor13"></span></span> <span class="dos recaudacionGasto13">20.7%</span><span class="dos recaudacionGasto13-1">$x,xxx,xxx.xx</span></p></li>
+                                            <li><p><strong>6.</strong> Bebidas energizantes <span class="porcentaje"><span class="valor" id="valor14"></span></span> <span class="dos recaudacionGasto14">20.7%</span><span class="dos recaudacionGasto14-1">$x,xxx,xxx.xx</span></p></li>
+                                            <li><p><strong>7.</strong> Bebidas azucaradas <span class="porcentaje"><span class="valor" id="valor15"></span></span> <span class="dos recaudacionGasto15">20.7%</span><span class="dos recaudacionGasto15-1">$x,xxx,xxx.xx</span></p></li>
+                                            <li>
+                                              <p><strong>8.</strong> Comida chatarra <span class="porcentaje"><span class="valor" id="valor16"></span></span> <span class="dos recaudacionGasto16">20.7%</span><span class="dos recaudacionGasto16-1">$x,xxx,xxx.xx</span></p></li>
+                                            <li>
+                                              <p><strong>9.</strong> Plaguicidas <span class="porcentaje"><span class="valor" id="valor17"></span></span> <span class="dos recaudacionGasto17">20.7%</span><span class="dos recaudacionGasto17-1">$x,xxx,xxx.xx</span></p></li>
+                                            <li>
+                                              <p><strong>10.</strong> Carbono <span class="porcentaje"><span class="valor" id="valor18"></span></span> <span class="dos recaudacionGasto18">20.7%</span><span class="dos recaudacionGasto18-1">$x,xxx,xxx.xx</span></p></li>
+                                        </ul>
+                                    </li>
+                                    <li><p><strong>c.</strong> Impuesto sobre automóviles nuevos <span class="porcentaje"><span class="valor" id="valor19"></span></span> <span class="dos recaudacionGasto19">20.7%</span><span class="dos recaudacionGasto19-1">$x,xxx,xxx.xx</span></p></li>
+                                    
+                                </ul>
+                             </li>
+                             	
+                            <li><a href='ieps.php.html#' class="clickme colapsado"><strong>4.</strong> Impuesto al comercio exterior <span class="plus"></span> <span class="porcentaje"><span class="valor" id="valor20"></span></span>
+                            <span class="dos recaudacionGasto20">20.7%</span><span class="dos recaudacionGasto20-1">$2,498,646.50</span> 
+                             </a>
+                            	<ul>
+                               	  <li><p><strong>a.</strong> Impuesto al comercio exterior <span class="porcentaje"><span class="valor" id="valor21"></span></span> <span class="dos recaudacionGasto21">20.7%</span><span class="dos recaudacionGasto21-1">$2,498,646.50</span></p></li>
+                                </ul>
+                            </li>
+                            <li><p><strong>5.</strong> Impuestos sobre Nóminas y Asimilables <span class="porcentaje"><span class="valor" id="valor22"></span></span> <span class="dos recaudacionGasto22">20.7%</span><span class="dos recaudacionGasto22-1">$2,498,646.50</span></p></li>
+                            <li><p><strong>6.</strong> Impuestos Ecológicos <span class="porcentaje"><span class="valor" id="valor23"></span></span> <span class="dos recaudacionGasto23">20.7%</span><span class="dos recaudacionGasto23-1">$2,498,646.50</span></p></li>
+                            <li><p><strong>7.</strong> Accesorios <span class="porcentaje"><span class="valor" id="valor24"></span></span> <span class="dos recaudacionGasto24">20.7%</span><span class="dos recaudacionGasto24-1">$2,498,646.50</span></p></li>
+                            <li><p><strong>8.</strong> Otros impuestos <span class="porcentaje"><span class="valor" id="valor25"></span></span> <span class="dos recaudacionGasto25">20.7%</span><span class="dos recaudacionGasto25-1">$2,498,646.50</span></p></li>
+                            <li><p><strong>9.</strong> Impuestos no comprendidos en las fracciones de la Ley de Ingresos causados <br />en ejercicios fiscales anteriores pendientes de liquidación o pago <span class="porcentaje"><span class="valor" id="valor26"></span></span> <span class="dos recaudacionGasto26">20.7%</span><span class="dos recaudacionGasto26-1">$2,498,646.50</span></p></li>
+                            <li>
+                              <p><strong>10.</strong> IETU <span class="porcentaje"><span class="valor" id="valor27"></span></span><span class="dos recaudacionGasto27">20.7%</span><span class="dos recaudacionGasto27-1">$2,498,646.50</span></p></li>
+                        </ul>
+                    </li>
+                    
+                    <li><a href='ieps.php.html#' class="clickme colapsado"><strong>II.</strong> Cuotas y aportaciones de seguridad social <span class="plus"></span><span class="porcentaje"><span class="valor" id="valor28"></span></span> <span class="dos recaudacionGasto28">20.7%</span><span class="dos recaudacionGasto28-1">$2,498,646.50</span></a>
+                    	<ul>
+                       	  <li><p><strong>1.</strong> Aportaciones para Fondos de Vivienda <span class="porcentaje"><span class="valor" id="valor29"></span></span> <span class="dos recaudacionGasto29">20.7%</span><span class="dos recaudacionGasto29-1">$2,498,646.50</span></p></li>
+                          <li><p><strong>2.</strong> Cuotas para el Seguro Social <span class="porcentaje"><span class="valor" id="valor30"></span></span> <span class="dos recaudacionGasto30">20.7%</span><span class="dos recaudacionGasto30-1">$2,498,646.50</span></p></li>
+                          <li><p><strong>3.</strong> Cuotas de Ahorro para el Retiro <span class="porcentaje"><span class="valor" id="valor31"></span></span> <span class="dos recaudacionGasto31">20.7%</span><span class="dos recaudacionGasto31-1">$2,498,646.50</span></p></li>
+                          <li><p><strong>4.</strong> Otras Cuotas y Aportaciones para la seguridad social <span class="porcentaje"><span class="valor" id="valor32"></span></span> <span class="dos recaudacionGasto32">20.7%</span><span class="dos recaudacionGasto32-1">$2,498,646.50</span></p></li>
+                          <li><p><strong>5.</strong> Accesorios <span class="porcentaje"><span class="valor" id="valor33"></span></span> <span class="dos recaudacionGasto33">20.7%</span><span class="dos recaudacionGasto33-1">$2,498,646.50</span></p></li>
+                            
+                          
+                          </ul>
+                    </li>
+                    
+                    <li><a href='ieps.php.html#' class="clickme colapsado"><strong>III.</strong> Contribuciones de mejoras <span class="plus"></span> <span class="porcentaje"><span class="valor" id="valor34"></span></span> <span class="dos recaudacionGasto34">20.7%</span><span class="dos recaudacionGasto34-1">$2,498,646.50</span></a>
+                    	<ul>
+                       	  <li><p><strong>1.</strong> Contribución de mejores por obras públicas <span class="porcentaje"><span class="valor" id="valor35"></span></span> <span class="dos recaudacionGasto35">20.7%</span><span class="dos recaudacionGasto35-1">$2,498,646.50</span></p></li>
+                            
+                        </ul>
+                    </li>
+                    <li><a href='ieps.php.html#' class="clickme colapsado"><strong>IV.</strong> Derechos <span class="plus"></span> <span class="porcentaje"><span class="valor" id="valor36"></span></span> <span class="dos recaudacionGasto36">20.7%</span><span class="dos recaudacionGasto36-1">$2,498,646.50</span></a>
+                    <ul>
+                       	<li><p><strong>1.</strong> Derechos por el uso o aprovechamiento de bienes <br />del dominio público <span class="porcentaje"><span class="valor" id="valor37"></span></span> <span class="dos recaudacionGasto37">20.7%</span><span class="dos recaudacionGasto37-1">$2,498,646.50</span></p></li>
+                        <li><p><strong>2.</strong> Derechos a los hidrocarburos <span class="porcentaje"><span class="valor" id="valor38"></span></span> <span class="dos recaudacionGasto38">20.7%</span><span class="dos recaudacionGasto38-1">$2,498,646.50</span></p></li> 
+                        <li><p><strong>3.</strong> Derechos por prestación de servicios <span class="porcentaje"><span class="valor" id="valor39"></span></span> <span class="dos recaudacionGasto39">20.7%</span><span class="dos recaudacionGasto39-1">$2,498,646.50</span></p></li> 
+                        <li><p><strong>4.</strong> Otros Derechos <span class="porcentaje"><span class="valor" id="valor40"></span></span> <span class="dos recaudacionGasto40">20.7%</span><span class="dos recaudacionGasto40-1">$2,498,646.50</span></p></li>
+                        <li><p><strong>5.</strong> Accesorios <span class="porcentaje"><span class="valor" id="valor41"></span></span> <span class="dos recaudacionGasto41">20.7%</span><span class="dos recaudacionGasto41-1">$2,498,646.50</span></p></li>
+                        <li><p><strong>6.</strong> Derechos no comprendidos en las fracciones de la Ley de Ingresos causados <br />en ejercicios fiscales anteriores pendientes de liquidación o pago <span class="porcentaje"><span class="valor" id="valor42"></span></span> <span class="dos recaudacionGasto42">20.7%</span><span class="dos recaudacionGasto42-1">$2,498,646.50</span></p></li>
+                          
+                    </ul>
+                    
+                    </li>
+                    <li><a href='ieps.php.html#' class="clickme colapsado"><strong>V.</strong> Productos <span class="plus"></span> <span class="porcentaje"><span class="valor" id="valor43"></span></span> <span class="dos recaudacionGasto43">20.7%</span><span class="dos recaudacionGasto43-1">$2,498,646.50</span></a>
+                    	<ul>
+                       	  <li><p><strong>1.</strong> Productos de tipo corriente <span class="porcentaje"><span class="valor" id="valor44"></span></span> <span class="dos recaudacionGasto44">20.7%</span><span class="dos recaudacionGasto44-1">$2,498,646.50</span></p></li>
+                          <li><p><strong>2.</strong> Productos de capital <span class="porcentaje"><span class="valor" id="valor45"></span></span> <span class="dos recaudacionGasto45">20.7%</span><span class="dos recaudacionGasto45-1">$2,498,646.50</span></p></li>
+                          <li><p><strong>3.</strong> Productos no comprendidos en las fracciones de la Ley de Ingresos causados <br />en ejercicios fiscales anteriores pendientes de liquidación o pago <span class="porcentaje"><span class="valor" id="valor46"></span></span> <span class="dos recaudacionGasto46">20.7%</span><span class="dos recaudacionGasto46-1">$2,498,646.50</span></p></li>
+                        </ul>
+                    </li>
+                    <li>
+                      <a href='ieps.php.html#' class="clickme colapsado"><strong>VI.</strong> Aprovechamientos <span class="plus"></span> <span class="porcentaje"><span class="valor" id="valor47"></span></span> <span class="dos recaudacionGasto47">20.7%</span><span class="dos recaudacionGasto47-1">$2,498,646.50</span></a>
+                      	<ul>
+                       	  <li><p><strong>1.</strong> Aprovechamientos de tipo corriente <span class="porcentaje"><span class="valor" id="valor48"></span></span> <span class="dos recaudacionGasto48">20.7%</span><span class="dos recaudacionGasto48-1">$2,498,646.50</span></p></li>
+                          <li><p><strong>2.</strong> Aprovechamientos de capital <span class="porcentaje"><span class="valor" id="valor49"></span></span> <span class="dos recaudacionGasto49">20.7%</span><span class="dos recaudacionGasto49-1">$2,498,646.50</span></p></li>
+                        </ul>
+                      </li>
+                      
+                      <li>
+                      <a href='ieps.php.html#' class="clickme colapsado"><strong>VII.</strong> Ingresos por ventas de bienes y servicios <span class="plus"></span><span class="porcentaje"><span class="valor" id="valor50"></span></span> <span class="dos recaudacionGasto50">20.7%</span><span class="dos recaudacionGasto50-1">$2,498,646.50</span></a>
+                      	<ul>
+                       	  <li><a href='ieps.php.html#' class="clickme colapsado"><strong>1.</strong> Ingresos por ventas de bienes y servicios de organismos <br />descentralizados <span class="plus"></span> <span class="porcentaje"><span class="valor" id="valor51"></span></span> <span class="dos recaudacionGasto51">20.7%</span><span class="dos recaudacionGasto51-1">$2,498,646.50</span></a>
+                          	<ul>
+                               	<li><p><strong>a.</strong> Instituto Mexicano del Seguro Social <span class="porcentaje"><span class="valor" id="valor52"></span></span> <span class="dos recaudacionGasto52">20.7%</span><span class="dos recaudacionGasto52-1">$2,498,646.50</span></p></li>
+                                <li><p><strong>b.</strong> Instituto de Seguridad y Servicios Sociales para los <br />Trabajadores del Estado <span class="porcentaje"><span class="valor" id="valor53"></span></span> <span class="dos recaudacionGasto53">20.7%</span><span class="dos recaudacionGasto53-1">$2,498,646.50</span></p></li>
+                            </ul>
+                          
+                          </li>
+                          <li><a href='ieps.php.html#' class="clickme colapsado"><strong>2.</strong> Ingresos de operación de entidades paraestatales <br />empresariales <span class="plus"></span> <span class="porcentaje"><span class="valor" id="valor54"></span></span> <span class="dos recaudacionGasto54">20.7%</span><span class="dos recaudacionGasto54-1">$2,498,646.50</span></a>
+                          	<ul>
+                               	<li><p><strong>a.</strong> Petróleos Mexicanos <span class="porcentaje"><span class="valor" id="valor55"></span></span> <span class="dos recaudacionGasto55">20.7%</span><span class="dos recaudacionGasto55-1">$2,498,646.50</span></p></li>
+                                <li><p><strong>b.</strong> Comisión Federal de Electricidad <span class="porcentaje"><span class="valor" id="valor56"></span></span> <span class="dos recaudacionGasto56">20.7%</span><span class="dos recaudacionGasto56-1">$2,498,646.50</span></p></li>
+                                <li><p><strong>b.</strong> Otros ingresos de empresas de participación estatal <span class="porcentaje"><span class="valor" id="valor57"></span></span> <span class="dos recaudacionGasto57">20.7%</span><span class="dos recaudacionGasto57-1">$2,498,646.50</span></p></li>
+                            </ul>
+                          </li>
+                          <li><p><strong>3.</strong> Ingresos por ventas de bienes y servicios producidos en <br />establecimientos del Gobierno Central<span class="porcentaje"><span class="valor" id="valor58"></span></span> <span class="dos recaudacionGasto58">20.7%</span><span class="dos recaudacionGasto58-1">$2,498,646.50</span></p></li>
+                        </ul>
+                      </li>
+                      
+                      <li>
+                      <p><strong>VIII.</strong> Participaciones y aportaciones <span class="porcentaje"><span class="valor" id="valor59"></span></span> <span class="dos recaudacionGasto59">20.7%</span><span class="dos recaudacionGasto59-1">$2,498,646.50</span></p>
+                      	
+                      </li>
+                      
+                      <li>
+                      <p><strong>IX.</strong> Transferencias, asignaciones, subsidios y otras ayudas <span class="porcentaje"><span class="valor" id="valor60"></span></span> <span class="dos recaudacionGasto60">20.7%</span><span class="dos recaudacionGasto60-1">$2,498,646.50</span></p>
+                      	
+                      </li>
+                         
+                 </ul>
+
+                 
+                 <div style="height:38px; padding-top:7px; background-color:#FFF; border-radius: 4px; -ms-border-radius: 4px; -moz-border-radius: 4px; -webkit-border-radius: 4px;">
+        	<span class="uno" style="color:#333; font-size:0.9em;">Total de Ingresos del Sector Público</span>
+            <span class="porcentaje" style=" margin-top:6px; margin-right:23px; background-color:#ececec;"><div class="valor" id="valor61"></div></span>
+            <span class="dos recaudacionGasto61" style="color:#333; font-size:0.9em;">00.0%</span>
+            <span class="dos recaudacionGasto61-1" style="color:#333; font-size:0.9em; position:absolute; right:218px;">$0,000,000.00</span>
+        </div>
+                 
+        </div>
+        
+        
+        
+        
+        
+        </div>        <!-- fin de Tabla LIF -->
+
+<script src="../assets/museo.js" data-version="v1" data-anio="2014" data-titulo="Primera generación"></script>
+</body>
+</html>
+

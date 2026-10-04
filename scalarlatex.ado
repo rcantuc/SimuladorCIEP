@@ -23,6 +23,7 @@
 * Solo cambia el nombre del lado LaTeX; en Stata el escalar conserva su nombre.
 
 program define scalarlatex
+	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 
 	if "$export" != "" {
 		syntax [, Logname(string) ALTname(string)]
@@ -126,7 +127,7 @@ program define scalarlatex
 		* baseline la lista completa (228 nombres) ahogaria la senal. *
 		noisily di in g "scalarlatex (`logname'): " in y `nreg' in g " registrados, " in y `nsin' in g " sin registrar (as-is)"
 		if `nsin' > 0 {
-			local basefile "`c(sysdir_site)'/02_governance/scalarlatex-baseline.txt"
+			local basefile "${SIMROOT}/02_governance/scalarlatex-baseline.txt"
 			capture confirm file "`basefile'"
 			if _rc == 0 {
 				local baseline ""

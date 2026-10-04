@@ -49,12 +49,12 @@
 * cociente dólares/pesos. No viajan al JSON. El guard de abajo lo verifica
 * en cada corrida en lugar de confiar en el piso.
 *
-* USO:  do "`c(sysdir_site)'/01_modulos/nodos/nodo-deuda.do"
+* USO:  do "${SIMROOT}/01_modulos/nodos/nodo-deuda.do"
 * Se invoca desde el bloque textbook de SHRFSP.ado, tras scalarlatex.
 
 preserve
 
-local site `"`c(sysdir_site)'"'
+local site `"${SIMROOT}"'
 local piso = 2000
 
 * La etiqueta de moneda del encabezado del display es una VARIABLE del
@@ -140,7 +140,7 @@ quietly input str16 bloque str32 clave str200 texto
 "divisor" "saldo_nominal"    "1000000"
 "divisor" "saldo_real"       "1000000"
 "fuente" "saldo_nominal"     "SHCP, Estadísticas Oportunas de Finanzas Públicas (datos abiertos), serie SHRF5000, vía DatosAbiertos.ado"
-"fuente" "poblacion"         "CONAPO, proyecciones 1950-2070 (pry23), vía Poblacion.ado; master/Poblaciontot.dta"
+"fuente" "poblacion"         "CONAPO, proyecciones 1970-2070 (pry23, vía DGIS-Salud), Poblacion.ado; master/Poblaciontot.dta"
 "fuente" "indice_precios"    "INEGI/BIE serie 910392 (INPC), vía AccesoBIE; master/Deflactor.dta"
 "fuente" "saldo_real"        "Derivada en 01_modulos/nodos/nodo-deuda.do: saldo_nominal / indice_precios"
 "fuente" "saldo_pc_nominal"  "Derivada en 01_modulos/nodos/nodo-deuda.do: saldo_nominal / poblacion"

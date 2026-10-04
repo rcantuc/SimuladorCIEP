@@ -1,0 +1,71 @@
+
+#preview {
+  position: relative;
+  clear: both;
+  height: 300px;
+  width:520px;
+  margin:auto;
+}
+#canvas-preview{
+  width:520px;
+  height:auto; 
+  top:50px;
+  position: relative;
+}
+#preview-textfield{
+  position: absolute; 
+  top: 0px; left: 0; right: 0;
+  text-align: center; font-size: 2em; font-weight: bold;
+  color: black; font-family: 'Amaranth', sans-serif;
+  height:auto;
+}
+.donut #preview-textfield{
+  top: 110px; font-size: 1.3em;
+}
+.donut #opts-donut{
+  display: block;
+}
+.gauge #opts-gauge{
+  display: block;
+}
+#opts-gauge, #opts-donut{
+  display: none;
+}
+#canvas-preview {
+}
+#gaugeOver {
+	background-image:none;
+	background-repeat:no-repeat;
+	width:353px;
+	height:140px;
+	position: absolute;
+	left:14px;
+	top:53px;
+	z-index:99;
+}
+
+#giniValor1 {
+	color:#727476;
+	font-size:2.2em;
+	font-weight:bold;
+}
+#giniValor2 {
+	color:#14b9d6;
+	font-size:2.2em;
+	font-weight:bold;
+}
+#tablaIncidencia td,
+#tablaIncidencia th{
+	padding:3px;
+	text-align:right;
+}
+#tablaIncidencia td {
+font-size: 0.9em;
+}
+
+#tablaIncidencia th{
+	text-align:center;
+}
+#tablaIncidencia .azul {
+	color:#14b9d6;
+}

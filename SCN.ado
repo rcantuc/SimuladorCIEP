@@ -9,6 +9,7 @@
 *!***                                    ****
 *!*******************************************
 program define SCN, return
+	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 quietly {
 	timer on 33
 
@@ -22,7 +23,7 @@ quietly {
 		local aniovp = substr(`"`=trim("`aniovp'")'"',1,4)
 	}
 
-	capture use in 1 using "`c(sysdir_site)'/master/SCN.dta", clear
+	capture use in 1 using "${SIMROOT}/master/SCN.dta", clear
 	syntax [, ANIO(int `aniovp') ANIOMAX(int 2050) NOGraphs UPDATE TEXTBOOK]
 
 	noisily di _newline(2) in g _dup(20) "." "{bf:   Econom{c i'}a:" in y " SCN `anio'   }" in g _dup(20) "." _newline
@@ -32,7 +33,7 @@ quietly {
 	***
 	*** 1. Databases and variable definitions
 	***
-	capture confirm file "`c(sysdir_site)'/master/SCN.dta"
+	capture confirm file "${SIMROOT}/master/SCN.dta"
 	if _rc != 0 | "`update'" == "update" {
 		noisily di in g "  Updating SCN.dta... Este proceso puede demorar varios minutos." _newline
 		noisily UpdateSCN `update'
@@ -55,7 +56,7 @@ quietly {
 
 	**************************
 	** 1.1. Merge databases **
-	use "`c(sysdir_site)'/master/SCN.dta", clear
+	use "${SIMROOT}/master/SCN.dta", clear
 	merge 1:1 (anio) using `"`basepib'"', nogen keep(matched)
 	scalar aniomax = `aniomax'
 	tsset anio
@@ -460,15 +461,15 @@ quietly {
 			note("{bf:{c U'}ltimo dato reportado}: `latest'.") ///
 			name(gdp_generacion, replace)
 
-		capture mkdir "`c(sysdir_site)'/users/"
-		capture mkdir "`c(sysdir_site)'/users/$id/"
-		capture mkdir "`c(sysdir_site)'/users/$id/graphs/"
+		capture mkdir "${SIMROOT}/users/"
+		capture mkdir "${SIMROOT}/users/$id/"
+		capture mkdir "${SIMROOT}/users/$id/graphs/"
 		
 		if "$export" != "" {
 			graph export "$export/gdp_generacion.png", replace name(gdp_generacion)
 		}
 		else {
-			graph export "`c(sysdir_site)'/users/$id/graphs/gdp_generacion.png", replace name(gdp_generacion)
+			graph export "${SIMROOT}/users/$id/graphs/gdp_generacion.png", replace name(gdp_generacion)
 		}
 	}
 
@@ -609,7 +610,7 @@ quietly {
 			note("{bf:{c U'}ltimo dato reportado}: `latest'.") ///
 			name(gdp_utilizacion, replace)
 
-		graph export "`c(sysdir_site)'/users/$id/graphs/gdp_utilizacion.png", replace name(gdp_utilizacion)
+		graph export "${SIMROOT}/users/$id/graphs/gdp_utilizacion.png", replace name(gdp_utilizacion)
 	}
 
 
@@ -1138,11 +1139,12 @@ end
 
 
 program define UpdateSCN
+	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 
 	args update
 
-	capture mkdir "`c(sysdir_site)'/raw/temp/"
-	capture mkdir "`c(sysdir_site)'/raw/temp/SCN/"
+	capture mkdir "${SIMROOT}/raw/temp/"
+	capture mkdir "${SIMROOT}/raw/temp/SCN/"
 
 	***
 	**# 1.1. Importar Cuenta de generación del ingreso
@@ -1171,7 +1173,7 @@ program define UpdateSCN
 
 	** 1.5 Guardar **
 	compress
-	save "`c(sysdir_site)'/raw/temp/GenIng.dta", replace
+	save "${SIMROOT}/raw/temp/GenIng.dta", replace
 
 
 	***
@@ -1211,7 +1213,7 @@ program define UpdateSCN
 
 	** 2.5 Guardar **
 	compress
-	save "`c(sysdir_site)'/raw/temp/ProdBru.dta", replace
+	save "${SIMROOT}/raw/temp/ProdBru.dta", replace
 
 
 	***
@@ -1241,7 +1243,7 @@ program define UpdateSCN
 
 	** 3.5 Guardar **
 	compress
-	save "`c(sysdir_site)'/raw/temp/IngNacDis.dta", replace
+	save "${SIMROOT}/raw/temp/IngNacDis.dta", replace
 
 
 	***
@@ -1317,7 +1319,7 @@ program define UpdateSCN
 
 	** 4.5 Guardar **
 	compress
-	save "`c(sysdir_site)'/raw/temp/ConHog.dta", replace
+	save "${SIMROOT}/raw/temp/ConHog.dta", replace
 
 
 	***
@@ -1342,7 +1344,7 @@ program define UpdateSCN
 
 	** 5.5 Guardar **
 	compress
-	save "`c(sysdir_site)'/raw/temp/GastPriv.dta", replace
+	save "${SIMROOT}/raw/temp/GastPriv.dta", replace
 
 
 	***
@@ -1383,7 +1385,7 @@ program define UpdateSCN
 
 	**  6.5 Guardar **
 	compress
-	save "`c(sysdir_site)'/raw/temp/GovCons.dta", replace
+	save "${SIMROOT}/raw/temp/GovCons.dta", replace
 
 
 	***
@@ -1498,7 +1500,7 @@ program define UpdateSCN
 
 	**  7.1.5 Guardar **
 	compress
-	save "`c(sysdir_site)'/raw/temp/PIBAE1.dta", replace
+	save "${SIMROOT}/raw/temp/PIBAE1.dta", replace
 
 
 	***
@@ -1617,7 +1619,7 @@ program define UpdateSCN
 
 	**  7.2.5 Guardar **
 	compress
-	save "`c(sysdir_site)'/raw/temp/PIBAE2.dta", replace
+	save "${SIMROOT}/raw/temp/PIBAE2.dta", replace
 
 
 	***
@@ -1720,7 +1722,7 @@ program define UpdateSCN
 
 	** 7.3.5 Guardar **
 	compress
-	save "`c(sysdir_site)'/raw/temp/PIBAE3.dta", replace
+	save "${SIMROOT}/raw/temp/PIBAE3.dta", replace
 
 
 	***
@@ -1863,7 +1865,7 @@ program define UpdateSCN
 
 	** 7.4.5 Guardar **
 	compress
-	save "`c(sysdir_site)'/raw/temp/PIBAE4.dta", replace
+	save "${SIMROOT}/raw/temp/PIBAE4.dta", replace
 
 
 	***
@@ -1994,7 +1996,7 @@ program define UpdateSCN
 
 	** 7.5.5 Guardar **
 	compress
-	save "`c(sysdir_site)'/raw/temp/PIBAE5.dta", replace
+	save "${SIMROOT}/raw/temp/PIBAE5.dta", replace
 
 
 	***
@@ -2035,18 +2037,18 @@ program define UpdateSCN
 
 	** 8.5 Guardar **
 	compress
-	save "`c(sysdir_site)'/raw/temp/SecExt.dta", replace
+	save "${SIMROOT}/raw/temp/SecExt.dta", replace
 
 	**/
 	**# 9. Ingreso mixto bruto
 	***
-	capture confirm file "`c(sysdir_site)'/raw/temp/SCN/CSI_103.xlsx"
+	capture confirm file "${SIMROOT}/raw/temp/SCN/CSI_103.xlsx"
 	if _rc != 0 | "`update'" == "update" {
-		cd "`c(sysdir_site)'/raw/temp/SCN/"
+		cd "${SIMROOT}/raw/temp/SCN/"
 		unzipfile "https://www.inegi.org.mx/contenidos/programas/si/2018/tabulados/ori/tabulados_CSI.zip", replace
 	}
 
-	import excel using "`c(sysdir_site)'/raw/temp/SCN/CSI_103.xlsx", cellrange(B60:AS60) clear
+	import excel using "${SIMROOT}/raw/temp/SCN/CSI_103.xlsx", cellrange(B60:AS60) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2071,13 +2073,13 @@ program define UpdateSCN
 	order anio
 	format IngMixto %20.0fc
 	
-	save "`c(sysdir_site)'/raw/temp/IngMixto.dta", replace
+	save "${SIMROOT}/raw/temp/IngMixto.dta", replace
 
 
 	***
 	**# 10. Cuotas a la seguridad social imputada
 	***
-	import excel using "`c(sysdir_site)'/raw/temp/SCN/CSI_103.xlsx", cellrange(B41:AS41) clear
+	import excel using "${SIMROOT}/raw/temp/SCN/CSI_103.xlsx", cellrange(B41:AS41) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2103,13 +2105,13 @@ program define UpdateSCN
 	order anio
 	format SSImputada %20.0fc
 
-	save "`c(sysdir_site)'/raw/temp/SSImputada.dta", replace
+	save "${SIMROOT}/raw/temp/SSImputada.dta", replace
 
 
 	***
 	**# 11. Subsidios a los productos, producci{c o'}n e importaciones
 	***
-	import excel using "`c(sysdir_site)'/raw/temp/SCN/CSI_103.xlsx", cellrange(B54:AS54) clear
+	import excel using "${SIMROOT}/raw/temp/SCN/CSI_103.xlsx", cellrange(B54:AS54) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2135,13 +2137,13 @@ program define UpdateSCN
 	order anio
 	format SubProductos %20.0fc
 
-	save "`c(sysdir_site)'/raw/temp/SubProductos.dta", replace
+	save "${SIMROOT}/raw/temp/SubProductos.dta", replace
 
 
 	***
 	**# 12. Otros subsidios a la producci{c o'}n
 	***
-	import excel using "`c(sysdir_site)'/raw/temp/SCN/CSI_103.xlsx", cellrange(B58:AS58) clear
+	import excel using "${SIMROOT}/raw/temp/SCN/CSI_103.xlsx", cellrange(B58:AS58) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2167,13 +2169,13 @@ program define UpdateSCN
 	order anio
 	format SubProduccion %20.0fc
 
-	save "`c(sysdir_site)'/raw/temp/SubProduccion.dta", replace
+	save "${SIMROOT}/raw/temp/SubProduccion.dta", replace
 
 
 	***
 	**# 13. Depreciaci{c o'}n del ingreso mixto
 	***
-	import excel using "`c(sysdir_site)'/raw/temp/SCN/CSI_103.xlsx", cellrange(B62:AS62) clear
+	import excel using "${SIMROOT}/raw/temp/SCN/CSI_103.xlsx", cellrange(B62:AS62) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2199,13 +2201,13 @@ program define UpdateSCN
 	order anio
 	format DepMix %20.0fc
 
-	save "`c(sysdir_site)'/raw/temp/DepMix.dta", replace
+	save "${SIMROOT}/raw/temp/DepMix.dta", replace
 
 
 	***
 	**# 14. Excedente bruto de operaci{c o'}n No Financiero
 	***
-	import excel using "`c(sysdir_site)'/raw/temp/SCN/CSI_106.xlsx", cellrange(B59:AS59) clear
+	import excel using "${SIMROOT}/raw/temp/SCN/CSI_106.xlsx", cellrange(B59:AS59) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2231,13 +2233,13 @@ program define UpdateSCN
 	order anio
 	format ExBOpNoFin %20.0fc
 
-	save "`c(sysdir_site)'/raw/temp/ExBOpNoFin.dta", replace
+	save "${SIMROOT}/raw/temp/ExBOpNoFin.dta", replace
 
 
 	***
 	**# 15. Excedente bruto de operaci{c o'}n Financiero
 	***
-	import excel using "`c(sysdir_site)'/raw/temp/SCN/CSI_109.xlsx", cellrange(B59:AS59) clear
+	import excel using "${SIMROOT}/raw/temp/SCN/CSI_109.xlsx", cellrange(B59:AS59) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2263,13 +2265,13 @@ program define UpdateSCN
 	order anio
 	format ExBOpFin %20.0fc
 
-	save "`c(sysdir_site)'/raw/temp/ExBOpFin.dta", replace
+	save "${SIMROOT}/raw/temp/ExBOpFin.dta", replace
 
 
 	***
 	**# 16. Excedente bruto de operaci{c o'}n ISFLSH
 	***
-	import excel using "`c(sysdir_site)'/raw/temp/SCN/CSI_118.xlsx", cellrange(B59:AS59) clear
+	import excel using "${SIMROOT}/raw/temp/SCN/CSI_118.xlsx", cellrange(B59:AS59) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2295,13 +2297,13 @@ program define UpdateSCN
 	order anio
 	format ExBOpISFLSH %20.0fc
 
-	save "`c(sysdir_site)'/raw/temp/ExBOpISFLSH.dta", replace
+	save "${SIMROOT}/raw/temp/ExBOpISFLSH.dta", replace
 
 
 	***
 	**# 17. Excedente bruto de operaci{c o'}n Hogares
 	***
-	import excel using "`c(sysdir_site)'/raw/temp/SCN/CSI_115.xlsx", cellrange(B59:AS59) clear
+	import excel using "${SIMROOT}/raw/temp/SCN/CSI_115.xlsx", cellrange(B59:AS59) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2327,13 +2329,13 @@ program define UpdateSCN
 	order anio
 	format ExBOpHog %20.0fc
 
-	save "`c(sysdir_site)'/raw/temp/ExBOpHog.dta", replace
+	save "${SIMROOT}/raw/temp/ExBOpHog.dta", replace
 
 
 	***
 	**# 18. Excedente bruto de operaci{c o'}n Gobierno
 	***
-	import excel using "`c(sysdir_site)'/raw/temp/SCN/CSI_112.xlsx", cellrange(B59:AS59) clear
+	import excel using "${SIMROOT}/raw/temp/SCN/CSI_112.xlsx", cellrange(B59:AS59) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2359,13 +2361,13 @@ program define UpdateSCN
 	order anio
 	format ExBOpGob %20.0fc
 
-	save "`c(sysdir_site)'/raw/temp/ExBOpGob.dta", replace
+	save "${SIMROOT}/raw/temp/ExBOpGob.dta", replace
 
 
 	***
 	**# 19. Excedente neto de operaci{c o'}n No Financiero
 	***
-	import excel using "`c(sysdir_site)'/raw/temp/SCN/CSI_106.xlsx", cellrange(B63:AS63) clear
+	import excel using "${SIMROOT}/raw/temp/SCN/CSI_106.xlsx", cellrange(B63:AS63) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2391,13 +2393,13 @@ program define UpdateSCN
 	order anio
 	format ExNOpNoFin %20.0fc
 
-	save "`c(sysdir_site)'/raw/temp/ExNOpNoFin.dta", replace
+	save "${SIMROOT}/raw/temp/ExNOpNoFin.dta", replace
 
 
 	***
 	**# 20. Excedente neto de operaci{c o'}n Financiero
 	***
-	import excel using "`c(sysdir_site)'/raw/temp/SCN/CSI_109.xlsx", cellrange(B63:AS63) clear
+	import excel using "${SIMROOT}/raw/temp/SCN/CSI_109.xlsx", cellrange(B63:AS63) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2423,13 +2425,13 @@ program define UpdateSCN
 	order anio
 	format ExNOpFin %20.0fc
 
-	save "`c(sysdir_site)'/raw/temp/ExNOpFin.dta", replace
+	save "${SIMROOT}/raw/temp/ExNOpFin.dta", replace
 
 
 	***
 	**# 21. Excedente neto de operaci{c o'}n ISFLSH
 	***
-	import excel using "`c(sysdir_site)'/raw/temp/SCN/CSI_118.xlsx", cellrange(B63:AS63) clear
+	import excel using "${SIMROOT}/raw/temp/SCN/CSI_118.xlsx", cellrange(B63:AS63) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2455,13 +2457,13 @@ program define UpdateSCN
 	order anio
 	format ExNOpISFLSH %20.0fc
 
-	save "`c(sysdir_site)'/raw/temp/ExNOpISFLSH.dta", replace
+	save "${SIMROOT}/raw/temp/ExNOpISFLSH.dta", replace
 
 
 	***
 	**# 22. Excedente neto de operaci{c o'}n Hogares
 	***
-	import excel using "`c(sysdir_site)'/raw/temp/SCN/CSI_115.xlsx", cellrange(B63:AS63) clear
+	import excel using "${SIMROOT}/raw/temp/SCN/CSI_115.xlsx", cellrange(B63:AS63) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2487,13 +2489,13 @@ program define UpdateSCN
 	order anio
 	format ExNOpHog %20.0fc
 
-	save "`c(sysdir_site)'/raw/temp/ExNOpHog.dta", replace
+	save "${SIMROOT}/raw/temp/ExNOpHog.dta", replace
 
 
 	***
 	**# 23. Excedente neto de operaci{c o'}n Gobierno
 	***
-	import excel using "`c(sysdir_site)'/raw/temp/SCN/CSI_112.xlsx", cellrange(B63:AS63) clear
+	import excel using "${SIMROOT}/raw/temp/SCN/CSI_112.xlsx", cellrange(B63:AS63) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2519,13 +2521,13 @@ program define UpdateSCN
 	order anio
 	format ExNOpGob %20.0fc
 
-	save "`c(sysdir_site)'/raw/temp/ExNOpGob.dta", replace
+	save "${SIMROOT}/raw/temp/ExNOpGob.dta", replace
 
 
 	***
 	**# 24. Ahorro bruto
 	***
-	import excel using "`c(sysdir_site)'/raw/temp/SCN/CSI_103.xlsx", cellrange(B170:AS170) clear
+	import excel using "${SIMROOT}/raw/temp/SCN/CSI_103.xlsx", cellrange(B170:AS170) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2551,13 +2553,13 @@ program define UpdateSCN
 	order anio
 	format AhorroB %20.0fc
 
-	save "`c(sysdir_site)'/raw/temp/AhorroB.dta", replace
+	save "${SIMROOT}/raw/temp/AhorroB.dta", replace
 
 
 	***
 	**# 25. Ingreso disponible bruto
 	***
-	import excel using "`c(sysdir_site)'/raw/temp/SCN/CSI_103.xlsx", cellrange(B152:AS152) clear
+	import excel using "${SIMROOT}/raw/temp/SCN/CSI_103.xlsx", cellrange(B152:AS152) clear
 	local anio = 2003
 	local dos = 1
 	foreach k of varlist _all {
@@ -2583,47 +2585,47 @@ program define UpdateSCN
 	order anio
 	format IngDisp %20.0fc
 
-	save "`c(sysdir_site)'/raw/temp/IngDisp.dta", replace
+	save "${SIMROOT}/raw/temp/IngDisp.dta", replace
 
 
 	***
 	**# 26. Merge bases
 	***
-	use "`c(sysdir_site)'/raw/temp/GenIng.dta", clear
-	merge 1:1 anio using "`c(sysdir_site)'/raw/temp/ProdBru.dta", nogen
-	merge 1:1 anio using "`c(sysdir_site)'/raw/temp/IngNacDis.dta", nogen
-	merge 1:1 anio using "`c(sysdir_site)'/raw/temp/ConHog.dta", nogen
-	merge 1:1 anio using "`c(sysdir_site)'/raw/temp/GastPriv.dta", nogen
-	merge 1:1 anio using "`c(sysdir_site)'/raw/temp/GovCons.dta", nogen
-	merge 1:1 anio using "`c(sysdir_site)'/raw/temp/PIBAE1.dta", nogen
-	merge 1:1 anio using "`c(sysdir_site)'/raw/temp/PIBAE2.dta", nogen
-	merge 1:1 anio using "`c(sysdir_site)'/raw/temp/PIBAE3.dta", nogen
-	merge 1:1 anio using "`c(sysdir_site)'/raw/temp/PIBAE4.dta", nogen
-	merge 1:1 anio using "`c(sysdir_site)'/raw/temp/PIBAE5.dta", nogen
-	merge 1:1 anio using "`c(sysdir_site)'/raw/temp/SecExt.dta", nogen
-	merge 1:1 anio using "`c(sysdir_site)'/raw/temp/IngMixto.dta", nogen
-	merge 1:1 anio using "`c(sysdir_site)'/raw/temp/SSImputada.dta", nogen
-	merge 1:1 anio using "`c(sysdir_site)'/raw/temp/SubProductos.dta", nogen
-	merge 1:1 anio using "`c(sysdir_site)'/raw/temp/SubProduccion.dta", nogen
-	merge 1:1 anio using "`c(sysdir_site)'/raw/temp/DepMix.dta", nogen
-	merge 1:1 anio using "`c(sysdir_site)'/raw/temp/ExBOpNoFin.dta", nogen
-	merge 1:1 anio using "`c(sysdir_site)'/raw/temp/ExBOpFin.dta", nogen
-	merge 1:1 anio using "`c(sysdir_site)'/raw/temp/ExBOpISFLSH.dta", nogen
-	merge 1:1 anio using "`c(sysdir_site)'/raw/temp/ExBOpHog.dta", nogen
-	merge 1:1 anio using "`c(sysdir_site)'/raw/temp/ExBOpGob.dta", nogen
-	merge 1:1 anio using "`c(sysdir_site)'/raw/temp/ExNOpNoFin.dta", nogen
-	merge 1:1 anio using "`c(sysdir_site)'/raw/temp/ExNOpFin.dta", nogen
-	merge 1:1 anio using "`c(sysdir_site)'/raw/temp/ExNOpISFLSH.dta", nogen
-	merge 1:1 anio using "`c(sysdir_site)'/raw/temp/ExNOpHog.dta", nogen
-	merge 1:1 anio using "`c(sysdir_site)'/raw/temp/ExNOpGob.dta", nogen
-	merge 1:1 anio using "`c(sysdir_site)'/raw/temp/AhorroB.dta", nogen
-	merge 1:1 anio using "`c(sysdir_site)'/raw/temp/IngDisp.dta", nogen
-	merge 1:1 (anio) using "`c(sysdir_site)'/master/Poblaciontot.dta", nogen //keep(matched)
+	use "${SIMROOT}/raw/temp/GenIng.dta", clear
+	merge 1:1 anio using "${SIMROOT}/raw/temp/ProdBru.dta", nogen
+	merge 1:1 anio using "${SIMROOT}/raw/temp/IngNacDis.dta", nogen
+	merge 1:1 anio using "${SIMROOT}/raw/temp/ConHog.dta", nogen
+	merge 1:1 anio using "${SIMROOT}/raw/temp/GastPriv.dta", nogen
+	merge 1:1 anio using "${SIMROOT}/raw/temp/GovCons.dta", nogen
+	merge 1:1 anio using "${SIMROOT}/raw/temp/PIBAE1.dta", nogen
+	merge 1:1 anio using "${SIMROOT}/raw/temp/PIBAE2.dta", nogen
+	merge 1:1 anio using "${SIMROOT}/raw/temp/PIBAE3.dta", nogen
+	merge 1:1 anio using "${SIMROOT}/raw/temp/PIBAE4.dta", nogen
+	merge 1:1 anio using "${SIMROOT}/raw/temp/PIBAE5.dta", nogen
+	merge 1:1 anio using "${SIMROOT}/raw/temp/SecExt.dta", nogen
+	merge 1:1 anio using "${SIMROOT}/raw/temp/IngMixto.dta", nogen
+	merge 1:1 anio using "${SIMROOT}/raw/temp/SSImputada.dta", nogen
+	merge 1:1 anio using "${SIMROOT}/raw/temp/SubProductos.dta", nogen
+	merge 1:1 anio using "${SIMROOT}/raw/temp/SubProduccion.dta", nogen
+	merge 1:1 anio using "${SIMROOT}/raw/temp/DepMix.dta", nogen
+	merge 1:1 anio using "${SIMROOT}/raw/temp/ExBOpNoFin.dta", nogen
+	merge 1:1 anio using "${SIMROOT}/raw/temp/ExBOpFin.dta", nogen
+	merge 1:1 anio using "${SIMROOT}/raw/temp/ExBOpISFLSH.dta", nogen
+	merge 1:1 anio using "${SIMROOT}/raw/temp/ExBOpHog.dta", nogen
+	merge 1:1 anio using "${SIMROOT}/raw/temp/ExBOpGob.dta", nogen
+	merge 1:1 anio using "${SIMROOT}/raw/temp/ExNOpNoFin.dta", nogen
+	merge 1:1 anio using "${SIMROOT}/raw/temp/ExNOpFin.dta", nogen
+	merge 1:1 anio using "${SIMROOT}/raw/temp/ExNOpISFLSH.dta", nogen
+	merge 1:1 anio using "${SIMROOT}/raw/temp/ExNOpHog.dta", nogen
+	merge 1:1 anio using "${SIMROOT}/raw/temp/ExNOpGob.dta", nogen
+	merge 1:1 anio using "${SIMROOT}/raw/temp/AhorroB.dta", nogen
+	merge 1:1 anio using "${SIMROOT}/raw/temp/IngDisp.dta", nogen
+	merge 1:1 (anio) using "${SIMROOT}/master/Poblaciontot.dta", nogen //keep(matched)
 	
 	drop periodo
 	order anio
 	sort anio
 	tsset anio
-	capture mkdir "`c(sysdir_site)'/master/"
-	save "`c(sysdir_site)'/master/SCN.dta", replace
+	capture mkdir "${SIMROOT}/master/"
+	save "${SIMROOT}/master/SCN.dta", replace
 end

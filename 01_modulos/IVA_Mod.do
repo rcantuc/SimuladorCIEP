@@ -22,7 +22,7 @@ local pibY = pibY[_N]
 
 
 * Households *
-use "`c(sysdir_site)'/master/`=anioenigh'/categ_iva.dta", clear
+use "${SIMROOT}/master/`=anioenigh'/categ_iva.dta", clear
 
 
 ** 5.2. Cálculo del IVA **
@@ -66,7 +66,7 @@ noisily di in g " GASTO EXENTO GRAVADO: " _col(29)  in y %10.3fc `IVA2'[1,5]/`pi
 noisily di in g " GASTO GRAVADO: " _col(29)  in y %10.3fc `IVA2'[1,4]/`pibY'*100*/
 
 keep folioviv foliohog numren IVA
-save `"`c(sysdir_site)'/users/$pais/$id/iva_mod.dta"', replace
+save `"${SIMROOT}/users/$pais/$id/iva_mod.dta"', replace
 
 
 

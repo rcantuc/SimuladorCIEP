@@ -1,0 +1,53 @@
+/* Museo (2026-10-01): reconstrucción estática de los "parts" que la v2 cargaba por AJAX desde PHP y que la
+   captura de 2026-07 no conservó. Vocabulario visual de la propia v2 (main.css): fondos #34393d/#43484c/#2a2e31,
+   acento naranja #ed8953/#f1a67d, verde #6cbaa5/#59b79f, cian #14b9d6, fuente Ubuntu/Bitter. */
+.mp-menu{font-family:'Ubuntu',Arial,sans-serif;color:#d3d1cf;font-size:12px;line-height:1.3}
+.mp-menu .mp-logo{height:62px;background:#34393d}
+.mp-menu .mp-grupo{display:flex;border-bottom:1px solid #2a2e31}
+.mp-menu .mp-grupo a{flex:1;display:block;text-align:center;padding:14px 4px 10px;color:#9fa5b1;text-decoration:none;text-transform:uppercase;letter-spacing:.5px;font-size:11px}
+.mp-menu .mp-grupo a.selected,.mp-menu .mp-grupo a:hover{background:#43484c;color:#d3d1cf}
+.mp-menu .mp-sel{background:#43484c;border-bottom:1px solid #2a2e31;padding:10px 11px}
+.mp-menu .mp-sel .mp-lab{display:block;color:#9fa5b1;font-size:10px;text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px}
+.mp-menu .mp-sel .mp-val{display:block;color:#f1a67d;font-size:15px}
+.mp-menu .mp-mods{list-style:none;margin:0;padding:0;background:#34393d}
+.mp-menu .mp-mods li{border-bottom:1px solid #2a2e31}
+.mp-menu .mp-mods a{display:block;padding:9px 11px;color:#d3d1cf;text-decoration:none}
+.mp-menu .mp-mods a.selected{background:#43484c;color:#f1a67d;border-left:3px solid #ed8953}
+.mp-menu .mp-mods a:hover{background:#3d4347}
+.mp-menu .mp-params{background:#2a2e31;padding:10px 11px}
+.mp-menu .mp-params h4{margin:0 0 8px;font-weight:normal;color:#9fa5b1;font-size:10px;text-transform:uppercase;letter-spacing:.6px}
+.mp-menu .mp-params table{width:100%;border-collapse:collapse}
+.mp-menu .mp-params td{padding:5px 0;border-bottom:1px solid #34393d;color:#d3d1cf;font-size:11.5px}
+.mp-menu .mp-params td.n{text-align:right;color:#f1a67d;font-family:'Bitter',Georgia,serif;font-weight:bold}
+.mp-menu .mp-params td.n span{display:inline-block;background:#1c1f21;border:1px solid #4b413d;border-radius:3px;padding:2px 8px;min-width:34px;text-align:right}
+.mp-menu .mp-botones{padding:11px;background:#2a2e31}
+.mp-menu .mp-botones button{width:100%;height:28px;border:none;text-transform:uppercase;color:#fff;background:#6cbaa5;cursor:pointer;font-family:inherit;font-size:11px;letter-spacing:.5px;margin-bottom:6px}
+.mp-menu .mp-botones button.gris{background:#4b5155}
+.mp-menu .mp-nota{padding:10px 11px 18px;color:#8c929c;font-size:10.5px;line-height:1.35}
+/* contenido */
+.mp-bloque{font-family:'Ubuntu',Arial,sans-serif;color:#555;padding:28px 5% 10px}
+.mp-bloque h2{font-size:22px;font-weight:normal;color:#43484c;margin:0 0 4px;text-transform:uppercase;letter-spacing:.5px}
+.mp-bloque h2 small{font-size:12px;color:#9fa5b1;text-transform:none;letter-spacing:0;margin-left:10px}
+.mp-bloque .mp-sub{color:#9fa5b1;font-size:12px;margin:0 0 18px}
+.mp-cols{display:flex;gap:4%;align-items:flex-start;flex-wrap:wrap}
+.mp-cols .c1{flex:1 1 56%}.mp-cols .c2{flex:1 1 30%;min-width:240px}
+table.mp-tabla{width:100%;border-collapse:collapse;font-size:12.5px}
+table.mp-tabla th{text-align:right;font-weight:normal;color:#9fa5b1;padding:6px 8px;border-bottom:2px solid #e1e3e6;font-size:11px;text-transform:uppercase;letter-spacing:.4px}
+table.mp-tabla th:first-child,table.mp-tabla td:first-child{text-align:left}
+table.mp-tabla td{padding:5px 8px;border-bottom:1px solid #eef0f2;text-align:right;font-family:'Bitter',Georgia,serif;color:#14b9d6}
+table.mp-tabla td:first-child{font-family:'Ubuntu',Arial,sans-serif;color:#8c929c}
+table.mp-tabla tr.total td{font-weight:bold;color:#43484c;border-top:2px solid #e1e3e6}
+.mp-box{margin-bottom:22px}
+.mp-box .txt1{font-size:13px;color:#8c929c}
+.mp-box .valor1{font-size:28px;font-family:'Bitter',Georgia,serif;color:#59b79f;font-weight:bold;line-height:1.15}
+.mp-box .valor1 span{font-size:12px;color:#9fa5b1;font-weight:normal}
+.mp-barras{display:flex;align-items:flex-end;gap:6px;height:140px;margin:8px 0 4px;border-bottom:1px solid #e1e3e6;padding-bottom:0}
+.mp-barras div{flex:1;background:#ed8953;position:relative;min-width:12px}
+.mp-barras div span{position:absolute;top:-16px;left:0;right:0;text-align:center;font-size:10px;color:#8c929c;font-family:'Bitter',Georgia,serif}
+.mp-ejes{display:flex;gap:6px;font-size:10px;color:#9fa5b1}
+.mp-ejes div{flex:1;text-align:center}
+.mp-gauge{text-align:center}
+.mp-gauge canvas{max-width:100%}
+.mp-gauge .mp-gval{font-family:'Bitter',Georgia,serif;font-size:30px;color:#59b79f;font-weight:bold;margin-top:-12px}
+.mp-gauge .mp-glab{font-size:11px;color:#9fa5b1;text-transform:uppercase;letter-spacing:.6px}
+.mp-fuente{font-size:10.5px;color:#9fa5b1;margin-top:14px;border-top:1px dashed #e1e3e6;padding-top:8px}

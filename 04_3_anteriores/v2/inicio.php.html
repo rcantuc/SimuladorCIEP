@@ -1,0 +1,189 @@
+ 
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Simulador Fiscal CIEP | Versión 2</title>
+<link href="css/main.css" rel="stylesheet" type="text/css" />
+
+
+<link href='https://fonts.googleapis.com/css?family=Ubuntu:300,400,500,700,300italic,400italic,500italic,700italic' rel='stylesheet' type='text/css'>
+<link href='https://fonts.googleapis.com/css?family=Bitter:400,700,400italic' rel='stylesheet' type='text/css'>
+
+<script src="../assets/vendor/jquery-1.10.2.js"></script>
+<script src="../assets/vendor/jquery-ui-1.10.4.js"></script>
+
+<!-- Tooltip -->
+    <link rel="stylesheet" href="../assets/vendor/jquery-ui-1.10.1.css" />
+
+<!-- Transitions -->
+<script type="text/javascript" src="js/transitions.js"></script>
+
+      <!-- Line Chart GOOGLE -->
+      <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+
+    <!--  Funciones y css para la validación de los formularios de ISR  -->
+    <!-- link rel="stylesheet" type="text/css" href="css/funcionesFormulario.css"  / -->
+    <script type="text/javascript" src="js/funcionesFormulario.js"></script>
+<script src="js-velocimetro/gauge.js"></script><!-- MUSEO: velocímetro del perfil generacional -->
+
+<!-- VELOCIMETRO -->
+	<link href="js-velocimetro/main.css" type="text/css" rel="stylesheet">
+
+<!-- Cargador -->
+<!--script src="js/modernizr.custom.js"></script-->
+<link rel="stylesheet" type="text/css" href="css/component.css" />
+
+
+<link rel="stylesheet" href="../assets/museo.css">
+</head>
+
+<body>
+<div class="la-anim-10"></div>
+<!-- Cargador -->
+<script src="js/classie.js"></script>
+<script>
+	var loader = document.getElementById('la-anim-6-loader')
+		, border = document.getElementById('la-anim-6-border')
+		, α = 0
+		, π = Math.PI
+		, t = 15
+		
+		, tdraw;
+
+	function PieDraw() {
+		α++;
+		α %= 360;
+		var r = ( α * π / 180 )
+		, x = Math.sin( r ) * 250
+		, y = Math.cos( r ) * - 250
+		, mid = ( α > 180 ) ? 1 : 0
+		, anim = 'M 0 0 v -250 A 250 250 1 ' 
+			   + mid + ' 1 ' 
+			   +  x  + ' ' 
+			   +  y  + ' z';
+
+		loader.setAttribute( 'd', anim );
+		border.setAttribute( 'd', anim );
+		if( α != 0 )
+		tdraw = setTimeout(PieDraw, t); // Redraw
+	}
+
+	function PieReset() {
+		clearTimeout(tdraw);
+		var anim = 'M 0 0 v -250 A 250 250 1 0 1 0 -250 z';
+		loader.setAttribute( 'd', anim );
+		border.setAttribute( 'd', anim );
+	}
+
+	var inProgress = false;
+
+</script>
+
+<div id="error">
+    <div class="error-text"><img id="img-error" src="images/icon-error.png" width="24" height="22" />ERROR <span>Ocurrió un error en el cálculo, por favor intente de nuevo más tarde.</span></div>
+</div>
+
+<div id="top">
+	
+<div id="arrow-txt3" style="display:"></div>
+
+
+
+<a href="index.php.html" id="logo">Inicio</a>
+
+<a href="inicio.php.html#" id="cancelar">Cancelar</a>
+
+<div id="menu-top" style="display:">
+
+
+    
+    <a href="ramo-28-33.php.html" id="ramos" class="
+        link">Ramos<br />28 y 33<span></span></a>
+    
+    
+    <div class="divisor-top"></div>
+    
+    
+    <a href="pef.php.html" id="pef" class="
+        link">Distribuci&oacuten<br />PEF<span></span></a>
+    
+    
+    
+    <a href="sostentabilidad.php.html" id="sostentabilidad" class="
+        link">Sostentabilidad<br />fiscal<span></span></a>
+    
+    
+    
+    <a href="incidencia.php.html" id="incidencia" class="
+        link">Incidencia<br />global<span></span></a>
+    
+    
+    <a href="inicio.php.html" id="incidencia-modulo" class="
+    selected    link">Incidencia<br />del módulo<span></span></a>
+    
+    
+    <a href="inicio0.php.html" id="inicio" class="
+        link"><br />Inicio<span></span></a>
+
+</div></div>
+<div id="menu-left-base"></div>
+<div id="iframeMenu" style="height:100%;width:19%; z-index:3; position:absolute;overflow:scroll;" frameborder="0" name=""></div>
+<script>
+$(document).ready(function() {
+    $("#iframeMenu").load("parts/menu-left-iva.html");
+    $("#PTI").load("parts/tabla-incidencia-del-modulo.html");
+    $("#PTII").load("parts/perfil-generacional.html");
+    $("#pt2").load("parts/tabla-recaudacion-modulo.html");
+});
+</script>
+
+<div id="content">
+	<div id="spacer"></div>
+    <div id="pt1">
+    <div id="PTI">
+		&nbsp;
+    </div>
+    <div id="PTII">
+    </div>
+ <div class="limpiar">
+
+        </div>
+        
+        
+    	<div class="limpiar"></div>
+    </div><!-- FIN de #pt1 -->
+    
+    <div id="pt2">
+    </div>
+    
+    <div class="limpiar"></div>
+    
+	<div id="pt2">
+    </div><!-- FIN de #pt2 -->
+    
+    <div class="limpiar"></div>
+    
+</div>
+
+
+
+
+<script id="museo-menu-fallback">
+/* MUSEO (2026-10-01): el menú lateral venía por AJAX desde PHP. Se carga aquí con JS plano, al margen de la cadena
+   de $(document).ready de la página (en incidencia, el demo del velocímetro truena y jQuery 1.10 aborta el resto). */
+(function(){
+  function carga(){
+    var el = document.getElementById('iframeMenu'); if (!el || el.querySelector('.mp-menu')) return;
+    var x = new XMLHttpRequest(); x.open('GET', 'parts/menu-left-iva.html', true);
+    x.onload = function(){ if (x.status === 200 && !el.querySelector('.mp-menu')) el.innerHTML = x.responseText; };
+    x.send();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ setTimeout(carga, 300); }); else setTimeout(carga, 300);
+})();
+</script>
+<script src="../assets/museo.js" data-version="v2" data-anio="2014" data-titulo="Segunda generación"></script>
+</body>
+
+</html>

@@ -1,13 +1,14 @@
 *! version 8.0 CIEP 03jul2026
 program define DatosAbiertos, return
+	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 quietly {
 
 	** 0.1 Revisa si se puede usar la base de datos **
-	capture use "`c(sysdir_site)'/master/DatosAbiertos.dta", clear
+	capture use "${SIMROOT}/master/DatosAbiertos.dta", clear
 	if _rc != 0 {
 		noisily UpdateDatosAbiertos, zipfile
 	}
-	capture use "`c(sysdir_site)'/master/Deflactor.dta", clear
+	capture use "${SIMROOT}/master/Deflactor.dta", clear
 	if _rc != 0 {
 		noisily UpdateDeflactor
 	}
@@ -38,11 +39,11 @@ quietly {
 	
 	PIBDeflactor, nographs
 	
-	use if clave_de_concepto == "`anything'" using "`c(sysdir_site)'/master/DatosAbiertos.dta", clear
+	use if clave_de_concepto == "`anything'" using "${SIMROOT}/master/DatosAbiertos.dta", clear
 	*drop in -1
-	merge 1:1 (anio mes) using "`c(sysdir_site)'/master/Deflactor.dta", nogen keep(matched)
-	merge m:1 (anio) using "`c(sysdir_site)'/master/Poblaciontot.dta", nogen keep(matched)
-	merge m:1 (anio trimestre) using "`c(sysdir_site)'/master/PIBDeflactor.dta", nogen
+	merge 1:1 (anio mes) using "${SIMROOT}/master/Deflactor.dta", nogen keep(matched)
+	merge m:1 (anio) using "${SIMROOT}/master/Poblaciontot.dta", nogen keep(matched)
+	merge m:1 (anio trimestre) using "${SIMROOT}/master/PIBDeflactor.dta", nogen
 
 	** Limpiar **
 	tsset aniomes
@@ -60,7 +61,7 @@ quietly {
 	*replace poblacion = poblacion*lambda
 
 	if "`anything'" == "" {
-		use "`c(sysdir_site)'/master/DatosAbiertos.dta", clear
+		use "${SIMROOT}/master/DatosAbiertos.dta", clear
 		exit
 	}
 	if `=_N' == 0 {
@@ -420,6 +421,7 @@ end
 
 
 program define UpdateDatosAbiertos, return
+	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 
 	syntax [, UPDATE ZIPFILE CSVFILE LOCal]
 
@@ -446,11 +448,11 @@ program define UpdateDatosAbiertos, return
 
 	** mkdir no es recursivo: hay que crear el árbol nivel por nivel **
 	** (una instalación fresca no trae ni el directorio site/) **
-	capture mkdir "`c(sysdir_site)'"
-	capture mkdir "`c(sysdir_site)'/raw/"
-	capture mkdir "`c(sysdir_site)'/raw/temp/"
-	capture mkdir "`c(sysdir_site)'/raw/temp/Datos Abiertos/"
-	capture use "`c(sysdir_site)'/master/DatosAbiertos.dta", clear
+	capture mkdir "${SIMROOT}"
+	capture mkdir "${SIMROOT}/raw/"
+	capture mkdir "${SIMROOT}/raw/temp/"
+	capture mkdir "${SIMROOT}/raw/temp/Datos Abiertos/"
+	capture use "${SIMROOT}/master/DatosAbiertos.dta", clear
 	if (_rc == 0 & "`update'" != "update" & "`local'" != "local") {	
 		sort anio mes
 		return local ultanio = anio[_N]
@@ -689,7 +691,7 @@ program define UpdateDatosAbiertos, return
 	***************************************************
 	** 4.1 ISR fisicas, morales, asalariados y otros **
 	ensure_asset "ISRInformesTrimestrales.xlsx"
-	import excel "`c(sysdir_site)'/raw/ISRInformesTrimestrales.xlsx", ///
+	import excel "${SIMROOT}/raw/ISRInformesTrimestrales.xlsx", ///
 		clear sheet("TipoDeContribuyente") firstrow case(lower)
 	tsset anio trimestre
 	drop total
@@ -868,8 +870,8 @@ program define UpdateDatosAbiertos, return
 	replace nombre = trim(nombre)
 	compress
 
-	capture mkdir "`c(sysdir_site)'/master/"
-	save "`c(sysdir_site)'/master/DatosAbiertos.dta", replace
+	capture mkdir "${SIMROOT}/master/"
+	save "${SIMROOT}/master/DatosAbiertos.dta", replace
 
 	noisily di in g "{c U'}ltimo dato: " in y "`=anio[_N]'m`=mes[_N]'."
 end
@@ -879,6 +881,7 @@ end
 **** Base de datos: Deflactor.dta ****
 **************************************
 program define UpdateDeflactor
+	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 quietly {
 	noisily di in g "  Updating Deflactor.dta..." _newline
 
@@ -897,8 +900,8 @@ quietly {
 	noisily di in g "  Último anio: " in y anio[_N]
 	noisily di in g "  Último mes: " in y mes[_N]
 
-	capture mkdir "`c(sysdir_site)'/master/"
-	save "`c(sysdir_site)'/master/Deflactor.dta", replace
+	capture mkdir "${SIMROOT}/master/"
+	save "${SIMROOT}/master/Deflactor.dta", replace
 }
 end
 
@@ -918,16 +921,16 @@ program define _DAdescarga
 	syntax , NOMbre(string) MODO(string) [ENCoding(string)]
 
 	local url "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf"
-	local dir "`c(sysdir_site)'/raw/temp/Datos Abiertos"
+	local dir "${SIMROOT}/raw/temp/Datos Abiertos"
 	local enc ""
 	if "`encoding'" != "" {
 		local enc "encoding(`encoding')"
 	}
 
 	** mkdir no es recursivo: crea el árbol nivel por nivel antes de usarlo **
-	capture mkdir "`c(sysdir_site)'"
-	capture mkdir "`c(sysdir_site)'/raw/"
-	capture mkdir "`c(sysdir_site)'/raw/temp/"
+	capture mkdir "${SIMROOT}"
+	capture mkdir "${SIMROOT}/raw/"
+	capture mkdir "${SIMROOT}/raw/temp/"
 	capture mkdir "`dir'"
 
 	local exito = 0

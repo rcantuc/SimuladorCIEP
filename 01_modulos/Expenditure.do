@@ -3,18 +3,18 @@
 **** A.2. MACRO + MICRO HARMONIZATION: HOUSEHOLD EXPENDITURES ****
 ****                                                          ****
 ******************************************************************
-capture mkdir "`c(sysdir_site)'/raw"
-capture mkdir "`c(sysdir_site)'/raw/ENIGH/"
-capture mkdir "`c(sysdir_site)'/raw/temp"
-cd "`c(sysdir_site)'/raw/ENIGH/"
+capture mkdir "${SIMROOT}/raw"
+capture mkdir "${SIMROOT}/raw/ENIGH/"
+capture mkdir "${SIMROOT}/raw/temp"
+cd "${SIMROOT}/raw/ENIGH/"
 if "`1'" == "" {
 	local anioenigh = 2024
 	local aniovp = 2024
 	local claveiva = "*2018"
-	capture confirm file "`c(sysdir_site)'/raw/ENIGH/`anioenigh'/gastospersona.dta"
+	capture confirm file "${SIMROOT}/raw/ENIGH/`anioenigh'/gastospersona.dta"
 	if _rc != 0 {
 		ensure_asset "2024.zip"
-		unzipfile "`c(sysdir_site)'/raw/ENIGH/2024.zip", replace
+		unzipfile "${SIMROOT}/raw/ENIGH/2024.zip", replace
 	}
 }
 timer on 15
@@ -22,55 +22,55 @@ else {
 	if `1' >= 2024 {
 		local anioenigh = 2024
 		local claveiva = "*2018"
-		capture confirm file "`c(sysdir_site)'/raw/ENIGH/`anioenigh'/gastospersona.dta"
+		capture confirm file "${SIMROOT}/raw/ENIGH/`anioenigh'/gastospersona.dta"
 		if _rc != 0 {
 			ensure_asset "2024.zip"
-			unzipfile "`c(sysdir_site)'/raw/ENIGH/2024.zip", replace
+			unzipfile "${SIMROOT}/raw/ENIGH/2024.zip", replace
 		}
 	}
 	if `1' >= 2022 & `1' < 2024 {
 		local anioenigh = 2022
 		local claveiva = "*2018"
-		capture confirm file "`c(sysdir_site)'/raw/ENIGH/`anioenigh'/gastospersona.dta"
+		capture confirm file "${SIMROOT}/raw/ENIGH/`anioenigh'/gastospersona.dta"
 		if _rc != 0 {
 			ensure_asset "2022.zip"
-			unzipfile "`c(sysdir_site)'/raw/ENIGH/2022.zip", replace
+			unzipfile "${SIMROOT}/raw/ENIGH/2022.zip", replace
 		}
 	}
 	if `1' >= 2020 & `1' < 2022 {
 		local anioenigh = 2020
 		local claveiva = "*2018"
-		capture confirm file "`c(sysdir_site)'/raw/ENIGH/`anioenigh'/gastospersona.dta"
+		capture confirm file "${SIMROOT}/raw/ENIGH/`anioenigh'/gastospersona.dta"
 		if _rc != 0 {
 			ensure_asset "2020.zip"
-			unzipfile "`c(sysdir_site)'/raw/ENIGH/2020.zip", replace
+			unzipfile "${SIMROOT}/raw/ENIGH/2020.zip", replace
 		}
 	}
 	if `1' >= 2018 & `1' < 2020 {
 		local anioenigh = 2018
 		local claveiva = "*2018"
-		capture confirm file "`c(sysdir_site)'/raw/ENIGH/`anioenigh'/gastospersona.dta"
+		capture confirm file "${SIMROOT}/raw/ENIGH/`anioenigh'/gastospersona.dta"
 		if _rc != 0 {
 			ensure_asset "2018.zip"
-			unzipfile "`c(sysdir_site)'/raw/ENIGH/2018.zip", replace
+			unzipfile "${SIMROOT}/raw/ENIGH/2018.zip", replace
 		}
 	}
 	if `1' >= 2016 & `1' < 2018 {
 		local anioenigh = 2016
 		local claveiva = "*2014"
-		capture confirm file "`c(sysdir_site)'/raw/ENIGH/`anioenigh'/gastospersona.dta"
+		capture confirm file "${SIMROOT}/raw/ENIGH/`anioenigh'/gastospersona.dta"
 		if _rc != 0 {
 			ensure_asset "2016.zip"
-			unzipfile "`c(sysdir_site)'/raw/ENIGH/2016.zip", replace
+			unzipfile "${SIMROOT}/raw/ENIGH/2016.zip", replace
 		}
 	}
 	if `1' >= 2013 & `1' < 2016 {
 		local anioenigh = 2014
 		local claveiva = "*2014"
-		capture confirm file "`c(sysdir_site)'/raw/ENIGH/`anioenigh'/gastospersona.dta"
+		capture confirm file "${SIMROOT}/raw/ENIGH/`anioenigh'/gastospersona.dta"
 		if _rc != 0 {
 			ensure_asset "2014.zip"
-			unzipfile "`c(sysdir_site)'/raw/ENIGH/2014.zip", replace
+			unzipfile "${SIMROOT}/raw/ENIGH/2014.zip", replace
 		}
 	}
 }
@@ -78,8 +78,8 @@ else {
 
 ** 0.1 Directorios y log files **
 capture log close expenditures
-capture mkdir "`c(sysdir_site)'/raw/temp/`anioenigh'"
-log using "`c(sysdir_site)'/raw/temp/`anioenigh'/expenditures.smcl", replace name(expenditures)
+capture mkdir "${SIMROOT}/raw/temp/`anioenigh'"
+log using "${SIMROOT}/raw/temp/`anioenigh'/expenditures.smcl", replace name(expenditures)
 
 
 ** 0.2 Texto introductorio **
@@ -133,16 +133,16 @@ local pobtotNacional = r(StatTotal)[1,1]
 ***  2. DATOS MICROECONóMICOS  ***
 ***                            ***
 **********************************
-capture confirm file "`c(sysdir_site)'/raw/temp/`anioenigh'/preconsumption.dta"
+capture confirm file "${SIMROOT}/raw/temp/`anioenigh'/preconsumption.dta"
 if _rc != 0 {
-	capture confirm file "`c(sysdir_site)'/raw/temp/`anioenigh'/pre_iva.dta"
+	capture confirm file "${SIMROOT}/raw/temp/`anioenigh'/pre_iva.dta"
 	if _rc != 0 {
 
 		** 2.1. Base de datos de gastos de los hogares **
-		use "`c(sysdir_site)'/raw/ENIGH/`anioenigh'/gastospersona.dta", clear
-		append using "`c(sysdir_site)'/raw/ENIGH/`anioenigh'/gastohogar.dta"
-		append using "`c(sysdir_site)'/raw/ENIGH/`anioenigh'/gastotarjetas.dta"
-		append using "`c(sysdir_site)'/raw/ENIGH/`anioenigh'/erogaciones.dta"
+		use "${SIMROOT}/raw/ENIGH/`anioenigh'/gastospersona.dta", clear
+		append using "${SIMROOT}/raw/ENIGH/`anioenigh'/gastohogar.dta"
+		append using "${SIMROOT}/raw/ENIGH/`anioenigh'/gastotarjetas.dta"
+		append using "${SIMROOT}/raw/ENIGH/`anioenigh'/erogaciones.dta"
 
 		** 2.2. Gasto anual **
 		egen gasto_anual = rsum(gas_nm_tri gasto_tri)
@@ -150,9 +150,9 @@ if _rc != 0 {
 		format gasto_anual %10.2fc
 
 		** 2.3. Variables sociodemograficas **
-		merge m:1 (folioviv foliohog) using "`c(sysdir_site)'/raw/ENIGH/`anioenigh'/concentrado.dta", ///
+		merge m:1 (folioviv foliohog) using "${SIMROOT}/raw/ENIGH/`anioenigh'/concentrado.dta", ///
 			nogen keepus(factor)
-		merge m:1 (folioviv) using "`c(sysdir_site)'/raw/ENIGH/`anioenigh'/vivienda.dta", ///
+		merge m:1 (folioviv) using "${SIMROOT}/raw/ENIGH/`anioenigh'/vivienda.dta", ///
 			nogen keepus(ubica_geo tenencia)
 		capture rename factor_hog factor
 
@@ -198,19 +198,19 @@ if _rc != 0 {
 		}
 
 		** 2.6. Unión de claves de IVA y IEPS **
-		merge m:1 (clave) using "`c(sysdir_site)'/raw/ENIGH/`anioenigh'/clave_iva.dta", ///
+		merge m:1 (clave) using "${SIMROOT}/raw/ENIGH/`anioenigh'/clave_iva.dta", ///
 			nogen keepus(descripcion `claveiva' clase_de_actividad*) keep(matched master)
 		encode iva201, gen(tiva)
 		compress
-		save "`c(sysdir_site)'/raw/temp/`anioenigh'/pre_iva.dta", replace
+		save "${SIMROOT}/raw/temp/`anioenigh'/pre_iva.dta", replace
 	}
 
 	** 2.7. Valor agregado del último eslabón — Censo Económico **
 	*  VA ratio = VACB / PBT (Valor Agregado Censal Bruto / Producción Bruta Total)
 	*  Mide qué fracción del precio final es valor creado en el sector.
-	capture confirm file "`c(sysdir_site)'/raw/temp/`anioenigh'/va_por_clase_actividad.dta"
+	capture confirm file "${SIMROOT}/raw/temp/`anioenigh'/va_por_clase_actividad.dta"
 	if _rc != 0 {
-		use "`c(sysdir_site)'/raw/ENIGH/`anioenigh'/censo_eco_municipios.dta", clear
+		use "${SIMROOT}/raw/ENIGH/`anioenigh'/censo_eco_municipios.dta", clear
 		rename codigo clase_de_actividad
 
 		collapse (sum) A111A A131A, by(clase_de_actividad)
@@ -222,14 +222,14 @@ if _rc != 0 {
 
 		keep clase_de_actividad va_ratio
 		summ va_ratio, detail
-		save "`c(sysdir_site)'/raw/temp/`anioenigh'/va_por_clase_actividad.dta", replace
+		save "${SIMROOT}/raw/temp/`anioenigh'/va_por_clase_actividad.dta", replace
 	}
 
 	** 2.8. Merge jerárquico: VA ratio → registros de gasto **
-	capture confirm file "`c(sysdir_site)'/raw/temp/`anioenigh'/pre_iva_final.dta"
+	capture confirm file "${SIMROOT}/raw/temp/`anioenigh'/pre_iva_final.dta"
 	if _rc != 0 {
 		* Construir lookup tables jerárquicos (6→5→4→3→2 dígitos)
-		use "`c(sysdir_site)'/raw/temp/`anioenigh'/va_por_clase_actividad.dta", clear
+		use "${SIMROOT}/raw/temp/`anioenigh'/va_por_clase_actividad.dta", clear
 		tostring clase_de_actividad, replace
 		tempfile LU6 LU5 LU4 LU3 LU2
 		forvalues n = 6(-1)2 {
@@ -242,7 +242,7 @@ if _rc != 0 {
 			restore
 		}
 
-		use "`c(sysdir_site)'/raw/temp/`anioenigh'/pre_iva.dta", clear
+		use "${SIMROOT}/raw/temp/`anioenigh'/pre_iva.dta", clear
 
 		forvalues k = 1/6 {
 			gen double va`k' = .
@@ -255,10 +255,10 @@ if _rc != 0 {
 			}
 		}
 
-		save "`c(sysdir_site)'/raw/temp/`anioenigh'/pre_iva_final.dta", replace
+		save "${SIMROOT}/raw/temp/`anioenigh'/pre_iva_final.dta", replace
 	}
 
-	use "`c(sysdir_site)'/raw/temp/`anioenigh'/pre_iva_final.dta", clear
+	use "${SIMROOT}/raw/temp/`anioenigh'/pre_iva_final.dta", clear
 	order folioviv-porcentaje_ieps201 *1 *2 *3 *4 *5 *6
 	if `anioenigh' >= 2024 drop clave // Quedarnos con la clave_2018
 
@@ -494,7 +494,7 @@ if _rc != 0 {
 	compress
 	sort folioviv foliohog numren clave
 
-	save "`c(sysdir_site)'/raw/temp/`anioenigh'/preconsumption.dta", replace
+	save "${SIMROOT}/raw/temp/`anioenigh'/preconsumption.dta", replace
 
 
 	** 2.19. Deducciones personales del ISR **
@@ -502,8 +502,8 @@ if _rc != 0 {
 	replace numren = "01"
 	collapse (sum) deduc_*, by(folioviv foliohog numren)
 
-	capture mkdir "`c(sysdir_site)'/master/`anioenigh'"
-	save "`c(sysdir_site)'/master/`anioenigh'/deducciones.dta", replace
+	capture mkdir "${SIMROOT}/master/`anioenigh'"
+	save "${SIMROOT}/master/`anioenigh'/deducciones.dta", replace
 }
 
 
@@ -516,11 +516,11 @@ if _rc != 0 {
 ***                                                  ***
 ********************************************************
 foreach categ in categ categ_iva categ_ieps {
-	capture confirm file "`c(sysdir_site)'/master/`anioenigh'/consumption_`categ'_pc.dta"
+	capture confirm file "${SIMROOT}/master/`anioenigh'/consumption_`categ'_pc.dta"
 	if _rc != 0 {
 
 		** 3.1 Consumo de los individuos **
-		use "`c(sysdir_site)'/raw/temp/`anioenigh'/preconsumption.dta", clear
+		use "${SIMROOT}/raw/temp/`anioenigh'/preconsumption.dta", clear
 		drop if gasto_anual == 0 | numren == ""
 		collapse (sum) gas_ind=gasto_anual cant_ind=cantidad (mean) prop=proporcion, by(folioviv foliohog numren `categ')
 
@@ -529,23 +529,29 @@ foreach categ in categ categ_iva categ_ieps {
 		drop `categ'
 
 		levelsof categs, local(categs)
-		reshape wide gas_ind cant_ind prop, i(folioviv foliohog numren) j(categs) string
-		reshape long
 
-		replace gas_ind = 0 if gas_ind == .
-		replace cant_ind = 0 if cant_ind == .
-
+		* Toda categoría observada en la muestra debe existir para todo individuo:
+		* 0 si no la consumió, y prop = media global si no tiene observación. Antes
+		* se lograba con reshape wide -> long -> wide (el long creaba las celdas
+		* faltantes); aquí se crea la misma rejilla en un solo reshape. La media de
+		* prop es idéntica: el reshape long solo agregaba filas con prop missing.
 		tabstat prop, stat(mean) f(%20.3fc) save
-		replace prop = r(StatTotal)[1,1] if prop == .
-
+		tempname propmean
+		scalar `propmean' = r(StatTotal)[1,1]	// escalar, no local: conserva la precisión double
 		reshape wide gas_ind cant_ind prop, i(folioviv foliohog numren) j(categs) string
+		foreach v of varlist gas_ind* cant_ind* {
+			replace `v' = 0 if `v' == .
+		}
+		foreach v of varlist prop* {
+			replace `v' = scalar(`propmean') if `v' == .
+		}
 
 		tempfile gastoindividuos
 		save `gastoindividuos'
 
 
 		** 3.2 Consumo de los hogares **
-		use "`c(sysdir_site)'/raw/temp/`anioenigh'/preconsumption.dta", clear
+		use "${SIMROOT}/raw/temp/`anioenigh'/preconsumption.dta", clear
 		drop if gasto_anual == 0 | numren != ""
 		collapse (sum) gas_hog=gasto_anual cant_hog=cantidad (mean) prop=proporcion, by(folioviv foliohog `categ')
 
@@ -554,23 +560,27 @@ foreach categ in categ categ_iva categ_ieps {
 		drop `categ'
 
 		levelsof categs, local(categs)
-		reshape wide gas_hog cant_hog prop, i(folioviv foliohog) j(categs) string
-		reshape long
-		replace gas_hog = 0 if gas_hog == .
-		replace cant_hog = 0 if cant_hog == .
 
+		* Misma rejilla completa hogar x categoría que en 3.1 (ver nota ahí)
 		tabstat prop, stat(mean) f(%20.3fc) save
-		replace prop = r(StatTotal)[1,1] if prop == .
-
+		tempname propmean
+		scalar `propmean' = r(StatTotal)[1,1]	// escalar, no local: conserva la precisión double
 		reshape wide gas_hog cant_hog prop, i(folioviv foliohog) j(categs) string
+		foreach v of varlist gas_hog* cant_hog* {
+			replace `v' = 0 if `v' == .
+		}
+		foreach v of varlist prop* {
+			replace `v' = scalar(`propmean') if `v' == .
+		}
 
 
 		** 3.3 Consumo de los hogares + individuos **
-		merge 1:m (folioviv foliohog) using "`c(sysdir_site)'/raw/ENIGH/`anioenigh'/poblacion.dta", ///
+		merge 1:m (folioviv foliohog) using "${SIMROOT}/raw/ENIGH/`anioenigh'/poblacion.dta", ///
 			nogen keepus(numren edad sexo) keep(master match)
-		merge m:1 (folioviv foliohog) using "`c(sysdir_site)'/raw/ENIGH/`anioenigh'/concentrado.dta", ///
+		merge m:1 (folioviv foliohog) using "${SIMROOT}/raw/ENIGH/`anioenigh'/concentrado.dta", ///
 			nogen keepus(factor) keep(master match)
 		egen tot_integ = count(factor), by(folioviv foliohog)
+		egen long hhid = group(folioviv foliohog)	// id numérico del hogar para perfilpc (se borra antes de guardar)
 
 		foreach k of varlist *hog* {
 			if "`k'" == "foliohog" | "`k'" == "factor_hog" continue
@@ -578,7 +588,7 @@ foreach categ in categ categ_iva categ_ieps {
 		}
 
 		merge 1:1 (folioviv foliohog numren) using `gastoindividuos', nogen keepus(*_ind* prop*) keep(master match)
-		capture merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/master/`anioenigh'/households.dta", ///
+		capture merge 1:1 (folioviv foliohog numren) using "${SIMROOT}/master/`anioenigh'/households.dta", ///
 			nogen keepus(decil) keep(master match)
 		if _rc != 0 {
 			local nohouseholds = "nohouseholds"
@@ -586,6 +596,7 @@ foreach categ in categ categ_iva categ_ieps {
 
 		** 3.4 Gasto per cápita **
 		noisily di in g `"`categs'"'
+		local convlog				// bitácora de convergencia de perfilpc: variable, iteraciones, convergió, criterio
 		foreach k of local categs {
 			foreach vars in cant_ gas_ {
 				* Categorías *
@@ -778,33 +789,21 @@ foreach categ in categ categ_iva categ_ieps {
 						title("`label'") reboot //boot(25)
 				}
 
-				* Iteraciones *
-				noisily di in y "`k': " _cont
-				local salto = 1
-				forvalues iter=1(1)25 {
-					noisily di in w "`iter' " _cont
-					forvalues edades=0(`salto')109 {
-						forvalues sexos=1(1)2 {
-							capture tabstat `vars'pc_`k' [fw=factor] ///
-								if (edad >= `edades' & edad <= `edades'+`salto'-1) ///
-								& sexo == "`sexos'" ///
-								, stat(mean) f(%20.0fc) save
-							if _rc != 0 {
-								local valor = 0
-							}
-							else {
-								local valor = r(StatTotal)[1,1]
-							}
-							replace `vars'pc_`k' = round(`valor',.01) ///
-								if (edad >= `edades' & edad <= `edades'+`salto'-1) & sexo == "`sexos'"
-							replace `vars'pc_`k' = .01 ///
-								if `vars'pc_`k' == 0
-						}
-					}
-					capture drop equivalencias`k'
-					egen equivalencias`k' = sum(`vars'pc_`k'), by(folioviv foliohog)
-					replace `vars'pc_`k' = `vars'hog`k'*tot_integ*`vars'pc_`k'/equivalencias`k'
-				}
+				* Iteraciones: reparto intra-hogar por perfil edad-sexo (punto fijo en Mata,
+				* perfilpc.ado). Hasta v8.4.x: 25 iteraciones fijas con redondeo a centavos
+				* (220 tabstat + 440 replace por iteración, ~7 min por variable); ese modo
+				* sigue disponible con `legacy iter(25)`. Ahora: redondeo a 6 cifras
+				* significativas e iteración hasta que la fracción del gasto que cambia de
+				* celda edad-sexo baja de 1e-6 (cada variable itera lo que necesita; 100-600).
+				* equiv() conserva la variable equivalencias`k' que dejaba el bloque anterior.
+				* Nota metodológica en el encabezado de perfilpc.ado. Las gráficas (pirámide
+				* per cápita, pirámide del gasto total, convergencia) quedan en memoria y en
+				* users/$id/graphs/ para seguir el reparto iteración a iteración.
+				local pgraf
+				if "$nographs" != "nographs" local pgraf grafica(`vars'`k'_`anioenigh') title("`label'")	// gráficas `vars'`k'_`anioenigh'_{pc,tot,conv}
+				noisily perfilpc `vars'pc_`k', hogar(`vars'hog`k') integrantes(tot_integ) factor(factor) ///
+					hhid(hhid) equiv(equivalencias`k') `pgraf'
+				local convlog `"`convlog' "`vars'`k'" `=r(iter)' `=r(converged)' `=r(relL1)'"'
 				replace `vars'pc_`k' = `vars'pc_`k' + `vars'ind`k'
 				*noisily tabstat `vars'pc_`k' `vars'hog`k' `vars'ind`k' [fw=factor], stat(sum) f(%20.0fc)
 
@@ -825,6 +824,43 @@ foreach categ in categ categ_iva categ_ieps {
 			noisily tabstat preci`k' gas_pc_`k' cant_pc_`k' [fw=factor], stat(mean) f(%10.2fc)
 		}
 
+		** 3.4.1 Resumen de convergencia del reparto intra-hogar (una gráfica por grupo) **
+		* Cuántas iteraciones necesitó cada variable para que la fracción del gasto que
+		* cambia de celda edad-sexo bajara de la tolerancia; en rojo las que llegaron a
+		* maxiter sin converger. Queda en memoria (conv_`categ'_`anioenigh') y en users/$id/graphs/.
+		if "$nographs" != "nographs" {
+			preserve
+			clear
+			local nconv : word count `convlog'
+			qui set obs `=`nconv'/4'
+			qui gen str32 variable = ""
+			qui gen int iteraciones = .
+			qui gen byte convergio = .
+			qui gen double criterio = .
+			forvalues r = 1/`=`nconv'/4' {
+				qui replace variable    = `"`: word `=4*`r'-3' of `convlog''"' in `r'
+				qui replace iteraciones = `: word `=4*`r'-2' of `convlog'' in `r'
+				qui replace convergio   = `: word `=4*`r'-1' of `convlog'' in `r'
+				qui replace criterio    = `: word `=4*`r'' of `convlog'' in `r'
+			}
+			qui gen int it_ok = iteraciones if convergio
+			qui gen int it_no = iteraciones if !convergio
+			qui count if !convergio
+			local nno = r(N)
+			if `nno' == 0 local notaconv "Todas las variables convergieron."
+			else local notaconv "`nno' variable(s) sin converger: revisar su gr{c a'}fica _conv."
+			graph hbar (asis) it_ok it_no, over(variable, sort(iteraciones) descending label(labsize(vsmall))) ///
+				stack bar(1, color("255 153 0")) bar(2, color(cranberry)) ///
+				ytitle("Iteraciones hasta converger") ///
+				title("Convergencia del reparto intra-hogar: `categ', ENIGH `anioenigh'") ///
+				subtitle("Criterio: fracci{c o'}n del gasto que cambia de celda edad-sexo {&le} 1e-6; perfil redondeado a 6 cifras significativas", size(small)) ///
+				legend(order(1 "Convergi{c o'}" 2 "No convergi{c o'} (maxiter)") rows(1)) ///
+				note("`notaconv'", size(vsmall)) ///
+				name(conv_`categ'_`anioenigh', replace)
+			qui graph export "${SIMROOT}/users/$id/graphs/conv_`categ'_`anioenigh'.png", replace name(conv_`categ'_`anioenigh')
+			restore
+		}
+
 		** 3.5 Coeficientes de consumo por edades **
 		g alfa = 1 if edad != .
 		replace alfa = alfa - .6*(20-edad)/16 if edad >= 5 & edad <= 20
@@ -832,10 +868,11 @@ foreach categ in categ categ_iva categ_ieps {
 
 		** Guardar pre-base individuos **
 		capture drop __*
+		drop hhid
 		compress
 		sort folioviv foliohog numren
-		capture mkdir "`c(sysdir_site)'/master/`anioenigh'"
-		save "`c(sysdir_site)'/master/`anioenigh'/consumption_`categ'_pc.dta", replace
+		capture mkdir "${SIMROOT}/master/`anioenigh'"
+		save "${SIMROOT}/master/`anioenigh'/consumption_`categ'_pc.dta", replace
 	}
 }
 
@@ -848,8 +885,8 @@ foreach categ in categ categ_iva categ_ieps {
 ***  4. Aggregated values  ***
 ***                        ***
 ******************************
-use "`c(sysdir_site)'/master/`anioenigh'/consumption_categ_pc.dta", replace
-merge m:1 (folioviv foliohog) using "`c(sysdir_site)'/raw/ENIGH/`anioenigh'/concentrado.dta", nogen keepus(factor)
+use "${SIMROOT}/master/`anioenigh'/consumption_categ_pc.dta", replace
+merge m:1 (folioviv foliohog) using "${SIMROOT}/raw/ENIGH/`anioenigh'/concentrado.dta", nogen keepus(factor)
 capture rename factor_hog factor
 order folioviv foliohog numren
 drop *_hog* *_ind*
@@ -1109,10 +1146,10 @@ noisily di in g "  (=) Total Consumo " ///
 
 ** 4.3. Guardar base **
 if `c(version)' > 13.1 {
-	saveold "`c(sysdir_site)'/master/`anioenigh'/expenditures.dta", replace version(13)
+	saveold "${SIMROOT}/master/`anioenigh'/expenditures.dta", replace version(13)
 }
 else {
-	save "`c(sysdir_site)'/master/`anioenigh'/expenditures.dta", replace
+	save "${SIMROOT}/master/`anioenigh'/expenditures.dta", replace
 }
 
 
@@ -1139,13 +1176,13 @@ if `anioenigh' >= 2014 {
 		7.77)   //  13  Evasion e informalidad IVA, input[0-100]
 }
 
-use "`c(sysdir_site)'/master/`anioenigh'/consumption_categ_iva_pc.dta", clear
-merge m:1 (folioviv foliohog) using "`c(sysdir_site)'/raw/ENIGH/`anioenigh'/concentrado.dta", nogen keepus(factor) keep(master match)
+use "${SIMROOT}/master/`anioenigh'/consumption_categ_iva_pc.dta", clear
+merge m:1 (folioviv foliohog) using "${SIMROOT}/raw/ENIGH/`anioenigh'/concentrado.dta", nogen keepus(factor) keep(master match)
 capture rename factor_hog factor
 order folioviv foliohog numren
 drop *_hog* *_ind*
 
-*merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/01_raw/CONEVAL/2022/Base final/pobreza_20.dta", nogen keepus(decil)
+*merge 1:1 (folioviv foliohog numren) using "${SIMROOT}/01_raw/CONEVAL/2022/Base final/pobreza_20.dta", nogen keepus(decil)
 reshape long gas_pc_ cant_pc_ prop, i(folioviv foliohog numren) j(categs) string
 
 
@@ -1194,9 +1231,9 @@ noisily di in g "  Total " ///
 	_col(66) %7.3fc scalar(IVASCNPIB) ///
 	_col(77) %6.1fc scalar(DifIVA) "%"
 
-save "`c(sysdir_site)'/master/`anioenigh'/categ_iva.dta", replace
+save "${SIMROOT}/master/`anioenigh'/categ_iva.dta", replace
 collapse (sum) IVA, by(folioviv foliohog numren)
-save "`c(sysdir_site)'/master/`anioenigh'/consumption_categ_iva.dta", replace
+save "${SIMROOT}/master/`anioenigh'/consumption_categ_iva.dta", replace
 
 
 
@@ -1220,10 +1257,10 @@ if `anioenigh' >= 2014 {
 		3.0		,		0 			) //  Telecomunicaciones
 }
 
-use "`c(sysdir_site)'/master/`anioenigh'/consumption_categ_ieps_pc.dta", clear
+use "${SIMROOT}/master/`anioenigh'/consumption_categ_ieps_pc.dta", clear
 drop gas_hog* cant_hog* gas_ind* cant_ind*
 
-*merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/01_raw/CONEVAL/2022/Base final/pobreza_20.dta", nogen keepus(decil)
+*merge 1:1 (folioviv foliohog numren) using "${SIMROOT}/01_raw/CONEVAL/2022/Base final/pobreza_20.dta", nogen keepus(decil)
 reshape long gas_pc_ cant_pc_ prop, i(folioviv foliohog numren) j(categs) string
 
 
@@ -1307,7 +1344,7 @@ noisily di in g "  Total " ///
 	_col(77) %6.1fc scalar(DifIEPSNP) "%"
 
 collapse (sum) IEPS, by(folioviv foliohog numren)
-save "`c(sysdir_site)'/master/`anioenigh'/consumption_categ_ieps.dta", replace
+save "${SIMROOT}/master/`anioenigh'/consumption_categ_ieps.dta", replace
 
 
 *** TOUCH DOWN ***/

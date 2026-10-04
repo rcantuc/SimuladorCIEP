@@ -22,13 +22,25 @@ Ricardo Cantú Calderón {c |} {browse "mailto:ricardocantu@ciep.mx":ricardocant
 {title:Descripción}
 
 {pstd}
-{cmd:Poblacion} descarga y procesa automáticamente las proyecciones demográficas del
-{bf:Consejo Nacional de Población (CONAPO)}, integrando tres bases de datos oficiales:
+{cmd:Poblacion} procesa las proyecciones demográficas del
+{bf:Consejo Nacional de Población (CONAPO)}: Conciliación Demográfica de México
+1970–2019 y Proyecciones de la población de México y de las entidades federativas
+2020–2070 ({it:pry23}, publicadas el 11 de septiembre de 2023).
 {p_end}
 
-{phang2}1. {bf:Población} — Estimación de habitantes a mitad de cada año (1950–2070){p_end}
-{phang2}2. {bf:Defunciones} — Estimación de defunciones anuales (1950–2070){p_end}
-{phang2}3. {bf:Migración Internacional} — Inmigrantes y emigrantes (1950–2069){p_end}
+{phang2}{bf:Población} — Estimación de habitantes a mitad de cada año (1970–2070),
+por entidad federativa, sexo y edad simple.{p_end}
+
+{pstd}
+{bf:Fuente de los datos (v8.4.1).} Los CSV originales de {cmd:conapo.segob.gob.mx}
+dejaron de servirse en septiembre de 2026. La misma proyección la redistribuye la
+Dirección General de Información en Salud (DGIS) en
+{browse "http://www.dgis.salud.gob.mx/descargas/datosabiertos/poblacion/proyecciones_censo/Poblacion_Estimada_Mitad_Anio.zip"};
+ese archivo viaja como asset del Simulador (verificado por SHA-256 con
+{help ensure_asset}), así que la reconstrucción no depende de un servidor externo.
+Hasta v8.4.0 la base incluía 1950–1969, defunciones y migración internacional;
+ningún módulo del Simulador las consumía.
+{p_end}
 
 {pstd}
 El resultado es una base de datos unificada con información histórica y proyecciones
@@ -55,8 +67,8 @@ la proyección nacional 2025–2050:
 
 {pstd}
 Esto generará automáticamente la base de datos, las gráficas y los scalars
-con totales poblacionales. Si quieres actualizar los datos del CONAPO antes
-de correr el análisis, agrega la opción {opt update}:
+con totales poblacionales. Si quieres reconstruir {cmd:master/Poblacion.dta}
+desde el asset antes de correr el análisis, agrega la opción {opt update}:
 {p_end}
 
 {phang2}{cmd:. Poblacion, anioinicial(2025) aniofinal(2050) update}{p_end}
@@ -78,7 +90,7 @@ de correr el análisis, agrega la opción {opt update}:
 {dlgtab:Rango temporal}
 
 {phang}
-{opt anioinicial(#)} — Año de inicio del análisis. Rango válido: 1950–2069.
+{opt anioinicial(#)} — Año de inicio del análisis. Rango válido: 1970–2069.
 Por defecto usa el año actual.
 {p_end}
 
@@ -106,8 +118,9 @@ la base de datos o los scalars.
 {p_end}
 
 {phang}
-{opt update} — Descarga los datos más recientes del CONAPO antes de ejecutar
-el análisis. Requiere conexión a internet.
+{opt update} — Reconstruye {cmd:master/Poblacion.dta} y {cmd:master/Poblaciontot.dta}
+desde el asset {cmd:Poblacion_Estimada_Mitad_Anio.zip} (lo descarga de la Release
+si no está en {cmd:raw/CONAPO/}). Requiere conexión a internet solo la primera vez.
 {p_end}
 
 {phang}
@@ -188,14 +201,11 @@ del análisis):
 
 {pstd}{bf:Variables en la base de datos:}{p_end}
 
-{phang2}{bf:anio} — Año (1950–2070){p_end}
+{phang2}{bf:anio} — Año (1970–2070){p_end}
 {phang2}{bf:sexo} — 1 = Hombres, 2 = Mujeres{p_end}
 {phang2}{bf:edad} — Edad simple (0–109 años){p_end}
 {phang2}{bf:entidad} — Entidad federativa o "Nacional"{p_end}
 {phang2}{bf:poblacion} — Número de habitantes a mitad de año{p_end}
-{phang2}{bf:defunciones} — Defunciones estimadas{p_end}
-{phang2}{bf:emigrantes} — Emigrantes internacionales{p_end}
-{phang2}{bf:inmigrantes} — Inmigrantes internacionales{p_end}
 {phang2}{bf:tasafecundidad} — Nacimientos por cada mil mujeres (16–49 años){p_end}
 
 {pstd}{bf:Scalars generados por entidad} (donde {it:Ent} es el código de entidad, ej. {cmd:Nac}, {cmd:Jal}):

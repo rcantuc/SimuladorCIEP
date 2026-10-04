@@ -1,5 +1,6 @@
 *! version 8.0 CIEP 03jul2026
 program define GastoPC, return
+	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 quietly {
 	// 0.1 Inicia un temporizador para medir el rendimiento
 	timer on 9
@@ -67,13 +68,13 @@ quietly {
 	else if `aniope' >= 2008 & `aniope' < 2010 local anioenigh = 2008
 
 	// Carga la base de datos de ENIGH correspondiente al año de referencia
-	capture use "`c(sysdir_site)'/master/perfiles`aniope'.dta", clear	
+	capture use "${SIMROOT}/master/perfiles`aniope'.dta", clear	
 	if _rc != 0 {
 		noisily di _newline in g "Creando base: " in y "/master/perfiles`aniope'.dta" ///
 			in g " con " in y "ENIGH " `anioenigh'
-		noisily run `"`c(sysdir_site)'/01_modulos/PerfilesSim.do"' `aniope'
+		noisily run `"${SIMROOT}/01_modulos/PerfilesSim.do"' `aniope'
 	}
-	merge 1:1 (folioviv foliohog numren) using "`c(sysdir_site)'/master/`anioenigh'/households.dta", ///
+	merge 1:1 (folioviv foliohog numren) using "${SIMROOT}/master/`anioenigh'/households.dta", ///
 		nogen keepus(asis_esc tipoesc nivel inst_* ing_jubila jubilado ing_PAM formal) update
 	capture drop __*
 
@@ -1592,9 +1593,9 @@ quietly {
 	*** 9 Base SIM ***
 	******************
 	capture drop __*
-	capture mkdir `"`c(sysdir_site)'/users/"'
-	capture mkdir `"`c(sysdir_site)'/users/$id/"'
-	save `"`c(sysdir_site)'/users/$id/gastos.dta"', replace	
+	capture mkdir `"${SIMROOT}/users/"'
+	capture mkdir `"${SIMROOT}/users/$id/"'
+	save `"${SIMROOT}/users/$id/gastos.dta"', replace	
 
 
 	if "$textbook" == "textbook" {

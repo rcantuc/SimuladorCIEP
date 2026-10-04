@@ -85,6 +85,20 @@ Con explicación inline la primera vez: `Git`, `GitHub`, `commit`, `push`, `pull
 
 **Gestor de secretos institucional:** herramienta especializada donde viven los valores reales de las credenciales del CIEP. Ejemplos: 1Password Teams, Bitwarden Teams. La adopción formal está pendiente de decisión administrativa.
 
+## Registro formal vs. coloquial
+
+La documentación formal del CIEP usa términos cortos y técnicos. La conversación, las presentaciones generales y la comunicación al público pueden usar formas más descriptivas. Ninguno está mal; cada uno tiene su lugar.
+
+**Equivalencias documentadas:**
+
+| Formal (documentación)   | Coloquial (conversación, presentaciones) |
+| ------------------------- | ----------------------------------------- |
+| Simuladores CIEP         | Simuladores fiscales CIEP                |
+| Ecosistema CIEP          | Ecosistema digital del CIEP              |
+| Micrositios              | Micrositios narrativos                   |
+
+Quien lea documentación formal puede esperar precisión técnica. Quien escuche conversación interna o presentación pública puede esperar las dos formas. Ambas se aceptan, no se castigan.
+
 ## Cómo se modifica este glosario
 
 Todo cambio de vocabulario se hace primero en este archivo (fuente canónica). Si el cambio afecta al subconjunto compacto que vive en `.windsurfrules`, se sincroniza ahí en el mismo trabajo. La bitácora de abajo registra cada cambio.
@@ -94,3 +108,4 @@ Todo cambio de vocabulario se hace primero en este archivo (fuente canónica). S
 | Versión | Fecha | Cambio |
 |---|---|---|
 | v1.0 | 2026-05-15 | Creación del documento. Migración del Glosario CIEP desde `.windsurfrules` (donde vivía en las líneas 85–141) a archivo propio como artefacto canónico autónomo. Contenido preservado verbatim. `.windsurfrules` conserva el subconjunto operativo compacto (tablas) con nota de fuente canónica. |
+| v1.1 | 2026-10-03 | Se incorpora la sección «Registro formal vs. coloquial» (equivalencias formal/coloquial), antes en `arquitectura-y-bitacoras.md`, al separarse ese documento en `arquitectura.md` + `historico/bitacora-arquitectura.md`. |

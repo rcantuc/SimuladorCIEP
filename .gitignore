@@ -143,7 +143,7 @@ endpoint-credentials.sh
 # Paquete Económico — contenido en Dropbox, NO se versiona (Entrega 1.5, 2026-08-01)
 # -----------------------------------------------------------------------------
 # ~9 GB detectados untracked-y-sin-ignorar en el inventario del boceto
-# Paquete 2027 (reporte-inventario-paquete2027.md §1.1).
+# Paquete 2027 (02_governance/historico/reporte-inventario-paquete2027.md §1.1).
 # 04_2: archivo histórico de documentos LaTeX 2013-2027 (binarios pesados).
 # Un `git add .` accidental las publicaría; se ignoran como carpetas completas.
 # Los patrones de credenciales de la sección "Secretos" son el segundo

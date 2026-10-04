@@ -172,23 +172,57 @@ Este manual documenta los programas auxiliares del Simulador CIEP que complement
 
 ## 13. Simulador.ado
 
-**Descripción:** Motor principal de simulaciones fiscales.
+**Descripción:** Para una variable per cápita de la base de individuos
+(ingresos, impuestos, gasto por categoría), produce y guarda el total y per
+cápita (PC), el perfil por edad y sexo (PERF), la incidencia por decil de
+hogares (INCI), el ciclo de vida sexo×edad×decil (CICLO) y la proyección
+demográfica con las poblaciones de CONAPO (REC); imprime los resultados,
+registra escalares (`escalar`) y, sin `nographs`, dibuja perfiles, pirámide
+por deciles y proyección. Con `bootstrap(#)` repite todo B veces con pesos
+remuestreados y reporta errores estándar e intervalos. Desde v2.0 (octubre
+2026) las réplicas corren en Mata.
 
-**Sintaxis:** `Simulador [, escenario(string) anio(int) parametros(string)]`
+**Sintaxis:**
+```
+Simulador varname [if] [fw=factor], [bootstrap(1) cluster(upm|hogar|persona) seed(1111)
+    aniope(#) aniovp(#) title(string) reboot nographs nooutput legacy ...]
+```
 
-**Funcionalidades:**
-- Simulación de políticas fiscales
-- Cambios paramétricos en impuestos
-- Análisis de equilibrio general
-- Microsimulación con datos ENIGH
+**Archivos (en `users/$id/bootstraps/<B>/`, una fila por réplica):**
+`<var>PC`, `<var>PERF`, `<var>INCI`, `<var>CICLO`, `<var>REC`
+(los leen `Perfiles.ado`, `FiscalGap.ado` y `CuentasGeneracionales.ado`) y
+`<var>PT` (estimadores puntuales de la muestra completa, nuevo en v2.0).
 
-**Variables simuladas:**
-- Recaudación por cambios de tasas
-- Impacto distributivo de reformas
-- Efectos sobre bienestar
-- Sostenibilidad fiscal
+**Bootstrap (v2.0):**
+- *Unidad de remuestreo* (`cluster()`): default `upm`, UPM dentro de estrato
+  de diseño (`upm`, `est_dis`; si la base no los trae se toman de
+  `raw/ENIGH/<anio>/concentrado.dta`); dentro de cada estrato se sortean con
+  reemplazo tantas UPM como tiene y el peso de cada persona se multiplica por
+  las veces que salió la suya. `hogar` y `persona` (lo que hacía v1.x con
+  `bsample _N`) están disponibles; remuestrear personas ignora que las de un
+  hogar van juntas y subestima la varianza.
+- *Inferencia*: el estimador puntual es el de la **muestra completa** (réplica
+  0, pesos originales); el EE es la desviación estándar de las B réplicas; el
+  IC 95% se imprime como ±1.96·EE relativo y percentil 2.5/97.5. Hasta v1.x el
+  puntual era la media de las réplicas y el "IC" salía de `ci means` sobre
+  ellas, que es el intervalo de la *media* de las réplicas (ancho ∝ sd/√B): se
+  encogía con B y tendía a cero —subestimaba el intervalo por un factor √B.
+- *Costo*: cada réplica son sumas ponderadas por grupo (`panelsum` sobre
+  índices precalculados; los deciles de `xtile` se reproducen en Mata sin
+  reordenar por réplica). Base de 217 variables × 308 mil personas: B=1 en
+  3.0 s (5.6 s en v1.x); **B=100 en ~24 s** (v1.x: ~3.7 s por réplica, ~6 min).
+  El motor no depende del ancho de la base: v1.x hacía `preserve`/`collapse`
+  de la base completa cuatro veces por réplica.
+- *Devuelve*: `r(monto)`, `r(monto_se)`, `r(montopc)`, `r(montopc_se)`.
 
-**Dependencias:** Prácticamente todos los módulos del simulador
+**Compatibilidad:** con `bootstrap(1)` no hay remuestreo y los cinco archivos
+coinciden con los de v1.x a precisión de máquina (diferencias relativas
+≤ 4e-14, mismas filas, mismos missing); `legacy` corre el bloque v1.x
+completo. Verificación: `05_scripts/test-simulador-dorado.do`.
+
+**Pendientes conocidos:** `Perfiles.ado` y `CuentasGeneracionales.ado`
+siguen usando `ci means` sobre las réplicas (mismo defecto √B); `ProyGraph`
+promedia las réplicas por año para la proyección puntual.
 
 ---
 
@@ -277,6 +311,89 @@ Reemplaza al patrón fósil `noisily di %fmt = scalar(...)` + relectura de log.
   con `noisily di` + formato manual
 - Preferir nombres sin dígitos; si los hay, documentar la conversión A–J en el
   texto LaTeX que los consuma
+
+---
+
+## 17. perfilpc.ado
+
+**Descripción:** Reparte el gasto de cada hogar entre sus integrantes según
+un perfil edad-sexo que se estima por punto fijo (iteración de proporciones),
+en Mata. Sustituye al bloque "Iteraciones" de `01_modulos/Expenditure.do`
+(220 `tabstat` + 440 `replace` por iteración, ~7 min por variable) y, desde
+octubre de 2026, cambia el método: precisión relativa y paro por tolerancia
+en lugar de centavos y 25 iteraciones fijas.
+
+**Sintaxis:**
+```
+perfilpc varname, hogar(varname) integrantes(varname) factor(varname) hhid(varname)
+    [edad(varname) sexo(varname) sig(6) tol(1e-6) maxiter(1000) legacy iter(25)
+     equiv(name) grafica(name) title(string) nographs]
+```
+
+**Método (nota metodológica completa en el encabezado del `.ado`):**
+1. Punto de partida: reparto igualitario, `x_i = G_h / n_h`.
+2. En cada iteración: (a) media ponderada `μ_c` de `x` por celda (edad 0–109 ×
+   sexo); (b) `m_c` = `μ_c` redondeada a **6 cifras significativas**, con piso
+   `1e-6·máx m` (lo que a 6 cifras es cero, pero evita dividir entre cero);
+   (c) cada integrante recibe `m` de su celda y el gasto del hogar `G_h` se
+   reparte entre sus integrantes en proporción (`equivalencias`).
+3. **Paro:** cuando la fracción del gasto total que cambió de celda edad-sexo
+   en la iteración, `Σ_c |Δ(Σ_{i∈c} w_i x_i)| / Σ w x`, baja de `tol` (1e-6),
+   o al llegar a `maxiter`. El criterio es adimensional: gasto en pesos y
+   cantidades en unidades convergen al mismo nivel de precisión. Cada
+   variable itera lo que necesita (105–574 en ENIGH 2024, media 255; ~0.02 s
+   por iteración).
+4. Cada iteración conserva exactamente el gasto de cada hogar; solo cambia
+   cómo se reparte dentro de él.
+
+**Por qué se cambió.** El bloque original redondeaba a centavos y hacía 25
+iteraciones fijas. En gasto el redondeo era ruido de 1e-6; en cantidades per
+cápita (0.01–1 unidad por celda) la rejilla de .01 era gruesa y el proceso se
+detenía de golpe al repetirse la rejilla (Δ = 0 exacto, p. ej. en la
+iteración 19), con error de hasta ±0.005 por celda. Y las 25 iteraciones no
+eran convergencia: en Alimentos 2024 el gasto per cápita de 0–4 años seguía
+bajando (12,988 inicial → 3,732 en la 25 → 2,700 convergido; 30–64: 18,352 →
+23,423 → 23,728). **El resultado dependía de T.** Ver la discusión de
+implicaciones (reparto a los niños) en el encabezado del `.ado`.
+
+**Modo `legacy`:** reproduce el bloque original byte a byte (iter(25),
+centavos, artefacto de la primera celda); diferencias ≤ 3e-11 en ENIGH 2024.
+Sirve para el test dorado y para reproducir versiones v8.4.x.
+
+**Devuelve:** `r(iter)`, `r(converged)`, `r(tol)`, `r(relL1)` (criterio en la
+última iteración), `r(relcel)` (cambio relativo máximo en una celda,
+informativo), `r(maxdif)`, `r(meandif)`; `r(perfil)` (media per cápita y gasto
+total ponderado por celda edad-sexo en la iteración 0, la final y hasta 24
+intermedias espaciadas), `r(conv)` (por iteración: `maxdif meandif relcel
+relL1 xbar`).
+
+**Gráficas (`grafica(name)`), tres en memoria y en `users/$id/graphs/` (o
+`$export`), las dos primeras en formato de pirámide demográfica —edad 0–109
+en el eje vertical, hombres a la izquierda, mujeres a la derecha— con el
+perfil inicial en negro punteado, hasta 24 iteraciones intermedias en gris de
+claro a oscuro y el final en color:
+- `<name>_pc` — gasto **per cápita** anual por edad y sexo.
+- `<name>_tot` — **distribución del gasto total** de la encuesta por edad y
+  sexo (% del total; barras = final), el mismo contraste que la pirámide de
+  `Simulador.ado`.
+- `<name>_conv` — convergencia en términos relativos (escala log): el criterio
+  con su línea de tolerancia, el cambio relativo máximo en una celda, y
+  |Δx| máximo y medio relativos a la media de x; la nota dice en cuántas
+  iteraciones convergió.
+Además, `Expenditure.do` produce por grupo de categorías la gráfica
+`conv_<categ>_<anio>`: iteraciones que necesitó cada variable (rojo = llegó a
+`maxiter` sin converger).
+Las gráficas **se quedan en memoria con nombre** para revisarlas una por una:
+son parte del proceso pedagógico, no un subproducto. Stata admite 2,000
+sersets en memoria y un serset es una *muestra* distinta (un plot con su
+propio `if`), no un plot; por eso cada serie va en su propia variable sobre la
+misma muestra y los plots no llevan `if`: 1 serset por gráfica (5 en la de
+barras), ~250 por ENIGH.
+
+**Verificación:** `05_scripts/test-perfilpc-dorado.do` corre el bloque
+original verbatim, lo compara con `perfilpc, legacy` (debe coincidir a
+precisión de máquina) y reporta cuánto difiere el método vigente (magnitud del
+cambio metodológico). Tarda horas: es el bloque viejo.
 
 ---
 

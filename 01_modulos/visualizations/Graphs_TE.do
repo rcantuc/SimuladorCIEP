@@ -20,7 +20,7 @@ postfile TE double(anio ISRAS ISRPF CUOTAS IngLab 				/// Impuestos al trabajo
 	ISRPM OTROSK IngCap 							/// Impuestos al capital
 	IVA ISAN IEPSNP IEPSP IMPORT Consumo 					/// Impuestos al consumo
 	FMP PEMEX CFE IMSS ISSSTE IngCapPub) 					/// Organismos y empresas públicas
-	using `"`c(sysdir_site)'/raw/temp/TE.dta"', replace
+	using `"${SIMROOT}/raw/temp/TE.dta"', replace
 
 capture scalar drop ISRASTE ISRPFTE CUOTASTE ISRPMTE OTROSKTE FMPTE ///
 	PEMEXTE CFETE IMSSTE ISSSTETE IVATE ISANTE IEPSNPTE IEPSPTE IMPORTTE
@@ -45,7 +45,7 @@ foreach k of local escenario {
 }
 
 * Abrir el archivo temporal con tasas efectivas
-use "`c(sysdir_site)'/raw/temp/TE.dta", clear
+use "${SIMROOT}/raw/temp/TE.dta", clear
 
 * Gráfica: Tasas efectivas por tipo de ingreso
 twoway (connected IngLab anio) ///
@@ -63,7 +63,7 @@ twoway (connected IngLab anio) ///
 	caption("{bf:Fuente}: Elaborado por el CIEP con información de la SHCP `=anioPE' e INEGI, BIE.") ///
 	name(TE, replace)
 
-graph export "`c(sysdir_site)'/users/$id/graphs/TE.png", replace
+graph export "${SIMROOT}/users/$id/graphs/TE.png", replace
 
 
 * Calcular estadísticos para ISR asalariados
@@ -90,7 +90,7 @@ twoway (connected ISRAS anio) ///
 	caption("{bf:Fuente}: Elaborado por el CIEP con información de la SHCP `=anioPE' e INEGI, BIE.") ///
 	name(TE_Trabajo, replace)
 
-graph export "`c(sysdir_site)'/users/$id/graphs/TE_Trabajo.png", replace
+graph export "${SIMROOT}/users/$id/graphs/TE_Trabajo.png", replace
 
 
 * Calcular estadísticos para ISR personas morales
@@ -115,7 +115,7 @@ twoway (connected ISRPM anio) ///
 	caption("{bf:Fuente}: Elaborado por el CIEP con información de la SHCP `=anioPE' e INEGI, BIE.") ///
 	name(TE_Capital, replace)
 
-graph export "`c(sysdir_site)'/users/$id/graphs/TE_Capital.png", replace
+graph export "${SIMROOT}/users/$id/graphs/TE_Capital.png", replace
 
 
 * Gráfica: Tasas efectivas por impuestos al consumo
@@ -136,7 +136,7 @@ twoway (connected IVA anio) ///
 	caption("{bf:Fuente}: Elaborado por el CIEP con información de la SHCP `=anioPE' e INEGI, BIE.") ///
 	name(TE_Consumo, replace)
 
-graph export "`c(sysdir_site)'/users/$id/graphs/TE_Consumo.png", replace
+graph export "${SIMROOT}/users/$id/graphs/TE_Consumo.png", replace
 
 
 * Gráfica: Tasas efectivas de organismos y empresas públicas
@@ -168,4 +168,4 @@ twoway (connected FMP anio) ///
 	caption("{bf:Fuente}: Elaborado por el CIEP con información de la SHCP `=anioPE' e INEGI, BIE.") ///
 	name(TE_Organismos, replace)
 
-graph export "`c(sysdir_site)'/users/$id/graphs/TE_Organismos.png", replace
+graph export "${SIMROOT}/users/$id/graphs/TE_Organismos.png", replace

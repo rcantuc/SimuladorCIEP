@@ -1,0 +1,6 @@
+# /etc/sudoers.d/ciepmx-deploy — privilegio mínimo para publicar-vps.sh
+# Instalar SOLO con: sudo visudo -f /etc/sudoers.d/ciepmx-deploy  (valida sintaxis)
+# ciepmx puede ejecutar sin contraseña únicamente /usr/local/sbin/crear-deployment,
+# que solo crea /var/www/html/vN.M y /SIM/OUT/N.M y los asigna a ciepmx.
+# Cualquier otro sudo sigue pidiendo contraseña.
+ciepmx ALL=(root) NOPASSWD: /usr/local/sbin/crear-deployment

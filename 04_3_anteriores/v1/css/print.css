@@ -1,0 +1,108 @@
+/* -- Hide screen specific elements -- */
+#top, .col2, #layoutdims, #layoutdims2, .module, #guiarapida, #openerIncidencia, #opener, #openerAmpliar2, #gaugeOver, #preResultados,
+.divisor {
+    display: none !important;
+}
+
+#envio4 {
+	visibility:hidden;
+}
+
+
+/* -- Typography -- */
+body {
+    /*background: #FFF;*/
+    color: #000;
+    line-height: 1.2;
+}
+
+
+/* -- Style site -- */
+#bloqueTop {
+margin-top: 0;
+}
+#layoutdims2 {
+	margin-bottom: 10px;
+}
+#layoutdims2 h1 {
+	
+}
+#bloqueTop .bloqueHead {
+	background:transparent !important;
+}
+.body-inter2 .contenedor1, .body-inter2 .contenedor2, .body-inter2 .contenedor3 {
+width: 100%;
+}
+.barWrapper, .barWrapperX, #resultados .item, .chart-area .chart-bar, .barWrapper, .resultadoFinal {
+	-moz-box-shadow: none;
+	-webkit-box-shadow: none;
+	box-shadow: none;  
+}
+#resultados .item .pt1 p, th strong {
+	text-shadow:none;
+}
+.chart-area .chart-bar {
+	-webkit-print-color-adjust: exact; 
+	background-color:#bbb !important;
+}
+.barWrapper {
+	-webkit-print-color-adjust: exact; 
+	background-image:none;
+	background-color: #e0e0e0 !important;
+}
+	
+    
+
+/* -- Add message re print -- */
+#layoutdims:before {
+    content: "Texto de prueba";
+    display: block;
+    border: 1px solid #ccc;
+    font-style: italic;
+    margin: 0 0 1em;
+    padding: 8px 10px;
+}
+
+a:link:after,
+a:visited:after {
+  content: " (" attr(href) ") ";
+  font-size: 80%;
+  text-decoration: none;
+}
+#bloqueTop {
+	margin-top:40px;
+	margin-bottom:100px;
+	display: block;
+	float:none;
+	page-break-after:always !important;
+}
+#resultados {
+	padding-top:40px;
+}
+.bloque, .bloqueHead {
+	border-right:none;
+	border-bottom:none;
+}
+.chartRight {
+	float:left;
+}
+span.vel-val0, span.vel-val1 {
+	color: #636363;
+}
+th.bg2:last-child, th.bg1:last-child {
+	border-right:none !important;
+}
+.contenedor1 {
+	padding-bottom:30px;
+	margin-bottom:20px;
+	border-bottom:1px dashed #999999;
+}
+th.bg1, th.bg2{
+	border-bottom: 1px solid #DDDDDD;
+}
+.contenedor3 th.bg1 {
+	border-bottom: none;
+}
+
+
+

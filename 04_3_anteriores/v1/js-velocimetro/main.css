@@ -1,0 +1,61 @@
+
+#preview {
+  position: relative;
+  /*float: right;*/
+  clear: both;
+  height: 205px; /*temporal*/
+  width:380px;
+  margin:auto;
+  top: 15px;
+  margin-top:20px;
+  z-index:6;
+}
+#canvas-preview{
+  width:380px; top:20px;
+  position: relative;
+}
+#preview-textfield{
+  position: absolute; 
+  top: 0px; left: 0; right: 0;
+  text-align: center; font-size: 2em; font-weight: bold;
+  color: black; font-family: 'Amaranth', sans-serif;
+  height:auto;
+}
+.donut #preview-textfield{
+  top: 110px; font-size: 1.3em;
+}
+.donut #opts-donut{
+  display: block;
+}
+.gauge #opts-gauge{
+  display: block;
+}
+#opts-gauge, #opts-donut{
+  display: none;
+}
+#canvas-preview {
+}
+#gaugeOver {
+	background-image:url(../sim-images/gauge-over.png);
+	background-repeat:no-repeat;
+	width:353px;
+	height:140px;
+	position: absolute;
+	left:14px;
+	top:53px;
+	z-index:5;
+}
+#select-1 {
+	position:absolute;
+	margin:auto;
+	top:136px;
+	left:50%;
+	margin-left:-113px;
+	z-index:4;
+	
+	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=55)";
+	filter: alpha(opacity=55);
+	-moz-opacity: 0.55;
+	-khtml-opacity: 0.55;
+	opacity: 0.55;
+}

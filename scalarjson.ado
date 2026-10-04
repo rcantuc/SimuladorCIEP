@@ -51,6 +51,7 @@
 * procedencia para que un diff de una sola linea lo distinga del contenido.
 
 program define scalarjson
+	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 	version 14
 
 	syntax , NODO(string) SERIE(string) ///
@@ -65,7 +66,7 @@ program define scalarjson
 	* el archivo temporal).
 	if `"`origenserie'"' == "" local origenserie `"`serie'"'
 
-	local site `"`c(sysdir_site)'"'
+	local site `"${SIMROOT}"'
 	if `"`saving'"' == "" {
 		local saving `"`site'/../CIEP_Micrositios/Paquete Económico/public_html/nodos/statajson_`nodo'.json"'
 	}

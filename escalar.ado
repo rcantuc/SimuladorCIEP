@@ -24,7 +24,7 @@
 * nombre:tipo en la global $scalarlatex_reg — metadato EN MEMORIA, paralelo a
 * los escalares, con su mismo ciclo de vida (clear all / macro drop _all borran
 * ambos a la par). El registro es GLOBAL-ACUMULADO por contrato (ver
-* 02_governance/arquitectura-y-bitacoras.md): el libro consume escalares de un
+* 02_governance/arquitectura.md): el libro consume escalares de un
 * modulo desde el .tex de otro. El formato se aplica UNA sola vez, en
 * scalarlatex, al escribir el .tex.
 *

@@ -22,7 +22,7 @@ postfile GastoPC double(anio iniciaA basica medsup superi posgra eduadu otrose i
 	gascfe gaspemex gassener gasinverf gascosdeue ///
 	gasinfra gasotros gasfeder gascosto ///
 	IngBas gasmadres gascuidados) ///
-	using `"`c(sysdir_site)'/raw/temp/GastoPC.dta"', replace
+	using `"${SIMROOT}/raw/temp/GastoPC.dta"', replace
 
 capture scalar drop iniciaAPC basicaPC medsupPC superiPC posgraPC eduaduPC otrosePC inverePC culturPC investPC ///
 	ssaPC imssbienPC imssPC issstePC pemexPC issfamPC inversPC ///
@@ -56,7 +56,7 @@ foreach k of local escenario {
 
 
 * Abrir el archivo temporal con gasto per cápita
-use "`c(sysdir_site)'/raw/temp/GastoPC.dta", clear
+use "${SIMROOT}/raw/temp/GastoPC.dta", clear
 		
 * Gráfica: Gasto per cápita en educación
 twoway connected iniciaA basica medsup superi posgra eduadu otrose invere cultur invest anio, ///
@@ -78,7 +78,7 @@ twoway connected iniciaA basica medsup superi posgra eduadu otrose invere cultur
 	rows(3)) ///
 	name(GastoPC_Educacion, replace)
 
-graph export "`c(sysdir_site)'/users/$id/graphs/GastoPC_Educacion.png", replace
+graph export "${SIMROOT}/users/$id/graphs/GastoPC_Educacion.png", replace
 
 
 * Gráfica: Gasto per cápita en salud
@@ -97,7 +97,7 @@ twoway connected ssa imssbien imss issste pemex issfam invers anio, ///
 	label(7 "Inversión en salud") rows(2)) ///
 	name(GastoPC_Salud, replace)
 	
-graph export "`c(sysdir_site)'/users/$id/graphs/GastoPC_Salud.png", replace
+graph export "${SIMROOT}/users/$id/graphs/GastoPC_Salud.png", replace
 
 
 * Gráfica: Gasto per cápita en pensiones
@@ -114,7 +114,7 @@ twoway connected pam penimss penisss penpeme penotro anio, ///
 	label(5 "CFE, LFC, ISSFAM, Ferronales") rows(1)) ///
 	name(GastoPC_Pensiones, replace)
 
-graph export "`c(sysdir_site)'/users/$id/graphs/GastoPC_Pensiones.png", replace
+graph export "${SIMROOT}/users/$id/graphs/GastoPC_Pensiones.png", replace
 
 * Gráfica: Gasto per cápita en energía
 twoway connected gascfe gaspemex gassener gasinverf gascosdeue anio, ///
@@ -130,7 +130,7 @@ twoway connected gascfe gaspemex gassener gasinverf gascosdeue anio, ///
 	label(5 "Costo de la deuda (energía)") rows(2)) ///
 	name(GastoPC_Energia, replace)
 
-graph export "`c(sysdir_site)'/users/$id/graphs/GastoPC_Energia.png", replace
+graph export "${SIMROOT}/users/$id/graphs/GastoPC_Energia.png", replace
 
 * Gráfica: Gasto per cápita en otros gastos
 twoway connected gasinfra gasotros gasfeder gascosto anio, ///
@@ -145,7 +145,7 @@ twoway connected gasinfra gasotros gasfeder gascosto anio, ///
 	label(4 "Costo de la deuda") rows(2)) ///
 	name(GastoPC_Otros, replace)
 
-graph export "`c(sysdir_site)'/users/$id/graphs/GastoPC_Otros.png", replace
+graph export "${SIMROOT}/users/$id/graphs/GastoPC_Otros.png", replace
 
 * Gráfica: Gasto per cápita en transferencias
 twoway connected IngBas gasmadres gascuidados anio, ///
@@ -159,4 +159,4 @@ twoway connected IngBas gasmadres gascuidados anio, ///
 	label(3 "Gasto en cuidados") rows(1)) ///
 	name(GastoPC_Transferencias, replace)
 
-graph export "`c(sysdir_site)'/users/$id/graphs/GastoPC_Transferencias.png", replace
+graph export "${SIMROOT}/users/$id/graphs/GastoPC_Transferencias.png", replace

@@ -1,0 +1,229 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es">
+<head>
+<!-- meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" / -->
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Ramos 28 y 33 · Simulador Ingresos-Gasto</title>
+
+
+<!-- CSS -->
+<link href="css/main.css" rel="stylesheet" type="text/css" />
+<link href="css/pef.css" rel="stylesheet" type="text/css" />
+
+<!-- Direrente resolución -->
+<link rel='stylesheet' media='print, screen and (min-width: 1px) and (max-width: 1044px)' href='css/small.css' />
+
+<!-- Google fonts -->
+<link href='https://fonts.googleapis.com/css?family=Open+Sans:400,400italic,600,600italic' rel='stylesheet' media="screen, print, projection" type='text/css'>
+<link href='https://fonts.googleapis.com/css?family=Ubuntu:300,400,500,700,300italic,400italic,500italic,700italic' rel='stylesheet' type='text/css'>
+<link href='https://fonts.googleapis.com/css?family=Bitter:400,700,400italic' rel='stylesheet' type='text/css'>
+
+<!-- jQuery -->
+<link rel="stylesheet" href="../assets/vendor/jquery-ui-1.10.3-smoothness.css" />
+<script src="../assets/vendor/jquery-1.10.2.js"></script>
+<script src="../assets/vendor/jquery-ui-1.10.4.js"></script>
+<script src="js/jquery.cookie.js"></script>
+
+      <!-- Line Chart GOOGLE -->
+      <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+
+<!-- Transitions -->
+<script type="text/javascript" src="js/transitions.js"></script>
+<script type="text/javascript" src="js/funciones-generales.js"></script>
+<script type="text/javascript" src="js/funcionesFormulario.js"></script>
+
+    <!-- Tooltip -->
+    <link rel="stylesheet" href="../assets/vendor/jquery-ui-1.10.1.css" />
+
+<!-- ventanas PEF -->
+<script src="js/ventanas.js"></script>
+
+	<!-- BAR CHART -->
+    <script type="text/javascript" src="js/chart.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/chart.css" />
+		<!--[if lt IE 9]>
+			<link rel="stylesheet" type="text/css" href="css/chart_ie.css" />
+		<![endif]-->
+
+
+<!-- Resize -->
+<script >
+<!--
+$(document).ready(function() {
+	
+	var cw = $('#content').height();
+	$('#wrapper').css({
+		'height': cw*0.73 + 'px'
+	});
+	
+});
+-->
+</script>
+
+
+
+<link rel="stylesheet" href="../assets/museo.css">
+</head>
+
+<body id="pef">
+
+<div id="top">
+	
+<div id="arrow-txt3" style="display:"></div>
+
+
+
+<a href="index.php.html" id="logo">Inicio</a>
+
+<a href="pef.php.html#" id="cancelar">Cancelar</a>
+
+<div id="menu-top" style="display:">
+
+
+    
+    <a href="ramo-28-33.php.html" id="ramos" class="selected 
+        link">Ramos<br />28 y 33<span></span></a>
+    
+    
+    <div class="divisor-top"></div>
+    
+    
+    <a href="pef.php.html" id="pef" class="
+        link">Distribuci&oacuten<br />PEF<span></span></a>
+    
+    
+    
+    <a href="sostentabilidad.php.html" id="sostentabilidad" class="
+        link">Sostentabilidad<br />fiscal<span></span></a>
+    
+    
+    
+    <a href="incidencia.php.html" id="incidencia" class="
+        link">Incidencia<br />global<span></span></a>
+    
+    
+    <a href="inicio.php.html" id="incidencia-modulo" class="
+        link">Incidencia<br />del módulo<span></span></a>
+    
+    
+    <a href="inicio0.php.html" id="inicio" class="
+        link"><br />Inicio<span></span></a>
+
+</div></div>
+
+<div id="menu-left-base"></div>
+
+<div id="iframeMenu" style="height:100%;width:19%; z-index:3; position:absolute;overflow:scroll;" frameborder="0" name=""></div>
+<script>
+$(document).ready(function() {
+    $("#iframeMenu").load("parts/menu-left-gasto.html");
+});
+</script>
+
+<div id="cuenta">
+<table width="90%" border="0" cellspacing="0" cellpadding="0" class="tamano-deuda-mini" style="margin:auto; margin-top:115px;">
+              <tbody>
+              <tr>
+                <td width="10%" align="center" style="position:relative;"><span style="color:#14b9d6; font-size:65px;"> </span></td>
+                <td width="4%">&nbsp;</td>
+                <td width="38%" style="color:#379f46; font-weight:bold;">Ingresos</td>
+                <td width="4%" class="valor">&nbsp;</td>
+                <td width="48%" class="valor" style="color:#379f46; font-weight:bold;">3,816,747.80<span> mdp</span></td>
+                </tr>
+              <tr>
+                <td align="center" style="position:relative;">&nbsp;</td>
+                <td>&nbsp;</td>
+                <td colspan="3" style="position:relative;">
+               	  <div class="contendor-billverde" style="width:50%;">
+                    	<div class="bill-pt1"><img src="images/bill-verde-pt1.png" width="20" height="48" /></div>
+                        <div class="bill-pt2"><img src="images/bill-verde-pt2.png" width="45" height="48" /></div>
+                        <div class="bill-pt3"><img src="images/bill-verde-pt3.png" width="20" height="48" /></div>
+                    </div>
+                </td>
+                </tr>
+              <tr>
+                <td width="10%" align="center" style="position:relative;"><span style="color:#14b9d6; font-size:62px; position:absolute; top:-38px; left:48%; font-weight:500;">-</span></td>
+                <td>&nbsp;</td>
+                <td style="color:#bb3c31; font-weight:bold;">Gasto</td>
+                <td class="valor">&nbsp;</td>
+                <td class="valor" style="color:#bb3c31; font-weight:bold;" id="gastoValor">4,467,225.80<span> mdp</span></td>
+                </tr>
+              <tr>
+                <td align="center" style="border-bottom:3px solid #9fa5b1; position:relative;">&nbsp;</td>
+                <td style="border-bottom:3px solid #9fa5b1;">&nbsp;</td>
+                <td colspan="3" style="border-bottom:3px solid #9fa5b1; position:relative; padding-bottom:12px;">
+                	<div class="contendor-billrojo" style="width:57%;">
+                    	<div class="bill-pt1"><img src="images/bill-rojo-pt1.png" width="20" height="48" /></div>
+                        <div class="bill-pt2"><img src="images/bill-rojo-pt2.png" width="45" height="48" /></div>
+                        <div class="bill-pt3"><img src="images/bill-rojo-pt3.png" width="20" height="48" /></div>
+                    </div>
+                </td>
+                </tr>
+              <tr>
+                <td height="38"><span style="color:#14b9d6; font-size:49px; position: absolute; top: -1px; left: 41%; font-weight:600;">=</span></td>
+                <td>&nbsp;</td>
+                <td style="font-weight:bold;">Balance <br />tradicional</td>
+                <td class="valor">&nbsp;</td>
+                <td class="valor color-bill-rojo" style="font-weight:bold; font-size:20px;" id="balanceValor">-650,478.00<span> mdp</span></td>
+                </tr>
+              
+            </tbody></table>
+
+
+<div style=" margin-top:60px; margin-bottom:60px; clear:both; height:1px; border-bottom:1px solid #edb698;"></div>
+
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0" class="tamano-deuda-mini" style="margin:auto;">
+              <tbody>
+              <tr>
+                <td width="12%" rowspan="3" align="center" class="icon-diferencia" style="position:relative;"><img src="images/icon-diferencia.png" width="17" height="73" /></td>
+                <td width="2%">&nbsp;</td>
+                <td width="38%">PEF Aprobado</td>
+                <td width="4%" class="valor">&nbsp;</td>
+                <td width="48%" class="valor" id="gastoAprobado">4,467,225<span> mdp</span></td>
+                </tr>
+              <tr>
+                <td>&nbsp;</td>
+                <td style="padding-bottom:20px;">PEF Simulado</td>
+                <td class="valor">&nbsp;</td>
+                <td style="padding-bottom:20px;" class="valor" id="gastoSimulado">4,467,225.80<span> mdp</span></td>
+                </tr>
+              <tr>
+                <td>&nbsp;</td>
+                <td style="font-weight:bold;">Diferencia</td>
+                <td class="valor">&nbsp;</td>
+                <td class="valor" style="color:#df491e; font-weight:bold; font-size:20px;" id="diferenciaSimulado">0.00<span> mdp</span></td>
+                </tr>
+              
+            </tbody></table>
+</div>
+<div id="content">
+	<div id="spacer"></div>
+    <div id="pt1">
+
+
+
+
+
+
+<div> <!-- no quitar -->
+    
+
+
+
+<script id="museo-menu-fallback">
+/* MUSEO (2026-10-01): el menú lateral venía por AJAX desde PHP. Se carga aquí con JS plano, al margen de la cadena
+   de $(document).ready de la página (en incidencia, el demo del velocímetro truena y jQuery 1.10 aborta el resto). */
+(function(){
+  function carga(){
+    var pt = document.getElementById('pt1');
+    if (pt && !pt.querySelector('.mp-bloque')) { var y = new XMLHttpRequest(); y.open('GET', 'parts/ramos.html', true); y.onload = function(){ if (y.status === 200) pt.innerHTML = y.responseText; }; y.send(); }
+    var el = document.getElementById('iframeMenu'); if (!el || el.querySelector('.mp-menu')) return;
+    var x = new XMLHttpRequest(); x.open('GET', 'parts/menu-left-gasto.html', true);
+    x.onload = function(){ if (x.status === 200 && !el.querySelector('.mp-menu')) el.innerHTML = x.responseText; };
+    x.send();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ setTimeout(carga, 300); }); else setTimeout(carga, 300);
+})();
+</script>
+<script src="../assets/museo.js" data-version="v2" data-anio="2014" data-titulo="Segunda generación"></script>

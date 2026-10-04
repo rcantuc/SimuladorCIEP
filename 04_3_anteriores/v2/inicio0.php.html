@@ -1,0 +1,241 @@
+ 
+
+
+
+	
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Simulador Ingresos-Gasto</title>
+<link href="css/main.css" rel="stylesheet" type="text/css" />
+
+
+<link href='https://fonts.googleapis.com/css?family=Ubuntu:300,400,500,700,300italic,400italic,500italic,700italic' rel='stylesheet' type='text/css'>
+<link href='https://fonts.googleapis.com/css?family=Bitter:400,700,400italic' rel='stylesheet' type='text/css'>
+
+<script src="../assets/vendor/jquery-1.10.2.js"></script>
+<script src="../assets/vendor/jquery-ui-1.10.4.js"></script>
+
+<!-- Cargador -->
+<script src="js/modernizr.custom.js"></script>
+<link rel="stylesheet" type="text/css" href="css/component.css" />
+
+<!-- Tooltip -->
+    <link rel="stylesheet" href="../assets/vendor/jquery-ui-1.10.1.css" />
+
+<!-- Transitions -->
+<script type="text/javascript" src="js/transitions.js"></script>
+
+      <!-- Line Chart GOOGLE -->
+      <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+
+    <!--  Funciones y css para la validación de los formularios de ISR  -->
+    <!-- link rel="stylesheet" type="text/css" href="css/funcionesFormulario.css"  / -->
+    <script type="text/javascript" src="js/funcionesFormulario.js"></script>
+
+<!-- VELOCIMETRO -->
+	<link href="js-velocimetro/main.css" type="text/css" rel="stylesheet">
+	<script type="text/javascript">
+	$( document ).ready(function() {
+	
+		$('.code-wrapper').on( "mousemove", function(e) {
+	  var offsets = $(this).offset();
+	  var fullWidth = $(this).width();
+	  var mouseX = e.pageX - offsets.left;
+	 
+	  if (mouseX < 0) { mouseX = 0; }
+	  else if (mouseX > fullWidth) { mouseX = fullWidth }
+	 
+	 
+	  $(this).parent().find('.divider-bar').css({
+		left: mouseX,
+		transition: 'none'
+	  });
+	  $(this).find('.design-wrapper').css({
+		transform: 'translateX(' + (mouseX) + 'px)',
+		transition: 'none'
+	  });
+	  $(this).find('.design-image').css({
+		transform: 'translateX(' + (-1*mouseX) + 'px)',
+		transition: 'none'
+	  });
+	});
+	$('.divider-wrapper').on( "mouseleave", function() {
+	  $(this).parent().find('.divider-bar').css({
+		left: '50%',
+		transition: 'all .3s'
+	  });
+	  $(this).find('.design-wrapper').css({
+		transform: 'translateX(50%)',
+		transition: 'all .3s'
+	  });
+	  $(this).find('.design-image').css({
+		transform: 'translateX(-50%)',
+		transition: 'all .3s'
+	  });
+	});
+	
+	});
+	</script>
+
+
+<link rel="stylesheet" href="../assets/museo.css">
+</head>
+
+<body>
+
+<div id="top">
+	
+<div id="arrow-txt3" style="display:block"></div>
+
+
+
+<a href="index.php.html" id="logo">Inicio</a>
+
+<a href="inicio0.php.html#" id="cancelar">Cancelar</a>
+
+<div id="menu-top" style="display:">
+
+
+    
+    <a href="ramo-28-33.php.html" id="ramos" class="
+        link">Ramos<br />28 y 33<span></span></a>
+    
+    
+    <div class="divisor-top"></div>
+    
+    
+    <a href="pef.php.html" id="pef" class="
+        link">Distribuci&oacuten<br />PEF<span></span></a>
+    
+    
+    
+    <a href="sostentabilidad.php.html" id="sostentabilidad" class="
+        link">Sostentabilidad<br />fiscal<span></span></a>
+    
+    
+    
+    <a href="incidencia.php.html" id="incidencia" class="
+        link">Incidencia<br />global<span></span></a>
+    
+    
+    <a href="inicio.php.html" id="incidencia-modulo" class="
+        link">Incidencia<br />del módulo<span></span></a>
+    
+    
+    <a href="inicio0.php.html" id="inicio" class="
+    selected    link"><br />Inicio<span></span></a>
+
+</div></div>
+<div id="menu-left-base"></div>
+<div id="iframeMenu" style="height:100%;width:19%; z-index:3; position:absolute;overflow:scroll;" frameborder="0" name=""></div>
+
+
+<div id="content">
+	<div id="spacer"></div>
+    <div id="pt1">
+    <div id="PTI">
+	  <div id="pt2-1" style="width:90%;">
+      
+      <div id="arrow-txt1"></div>
+      <div id="arrow-txt2"></div>
+      
+      
+      <h2 style="margin-bottom:29px;">INTRODUCCIÓN</h2>
+      
+      <div class="divider-wrapper">
+      <div class="code-wrapper"><img src="images/design-screen3.jpg" width="750" height="469" />
+        <div class="design-wrapper">
+          <div class="design-image"><img src="images/code-screen2.jpg" width="750" height="469" /></div>
+        </div>
+      </div>
+
+      <div class="divider-bar"></div>
+    </div>
+      
+       
+       <div id="txt-intro">
+       <p><img src="images/ciep-gris2.png" width="184" height="44" />En el <a href="https://ciep.mx/" target="_blank" class="some-bold" style="color:#ff8a4f; border-bottom: 1px dotted #d7530e;">Centro de Investigación Económica y Presupuestaria, A.C.</a> (CIEP), nos interesa analizar y, por ende, entender todas las diferentes vías en las que el gasto público (i.e. el Presupuesto de Egresos de la Federación, PEF) y los ingresos presupuestarios (i.e. la Ley de Ingresos de la Federación, LIF) interactúan y alteran el nivel de bienestar de la población mexicana. Además, es nuestro mandato institucional el evaluar la sostenibilidad de dicho sistema fiscal, propiciando el diálogo informado sobre quiénes, cómo y por cuánto tiempo es que éste se financiará, considerando la legislación vigente y la estructura demográfica del país. Es nuestro objetivo el delinear cómo es que los recursos presupuestarios del sector público son recolectados de entre la población y de entre las empresas, tanto privadas como paraestatales; así como cuánto de éstos terminan como beneficio directo a los hogares, mediante el ejercicio del gasto público.</p> 
+       </div>
+       
+       	
+	  </div>
+    </div>
+    <!-- iframe id="PTII" src="" style="height:100%;width:50%; z-index:3; position:absolute;" height="100%" width="18%" frameborder="0">Tu navegador no admite frames :/</iframe -->
+    <div id="PTII">
+    </div>
+ <div class="limpiar">
+
+        </div>
+        
+        
+    	<div class="limpiar"></div>
+    </div><!-- FIN de #pt1 -->
+    
+    <div id="pt2">
+    	<div id="pt1-1" style="color:#565656;">
+        	<h2>OBJETIVOS</h2>
+
+
+              <p style="font-size: 1.16em;">El Simulador Fiscal CIEP v2.0 ha sido rediseñado con el propósito de atender los siguientes <span class="some-bold" style="color:#ff8a4f">cuatro ejes</span>:</p>
+              
+              <div id="list-4elements">
+
+              <div class="elements50">
+                <p><img src="images/icon-inicio-01.png" width="80" height="80" />Cómo los diferentes impuestos/ingresos y los diferentes programas presupuestarios, a nivel individual, inciden en los diferentes contribuyentes o beneficiarios de los mismos <span class="some-bold">[incidencia del módulo]</span>.</p></div>
+              
+              <div class="elements50">
+                <p><img src="images/icon-inicio-02.png" width="80" height="80" />Cómo afecta el sistema fiscal mexicano (ingresos + gasto) en la redistribución del ingreso nacional <span class="some-bold">[incidencia global]</span>.</p></div>
+              <div class="limpiar"></div>
+              
+              <div class="elements50">
+                <p><img src="images/icon-inicio-03.png" width="80" height="80" />Cuánto representa la deuda (Saldo Histórico de Requerimientos Financieros del Sector Público, SHRFSP) como porcentaje del PIB y como proporción de los ingresos de los hogares <span class="some-bold">[sostenibilidad fiscal]</span>.</p></div>
+              
+              <div class="elements50">
+                <p><img src="images/icon-inicio-04.png" width="80" height="80" />Cuál es la distribución del gasto, en sus diferentes niveles de finalidad, función, subfunción y en sus específicos programas presupuestarios <span class="some-bold">[distribución PEF]</span>.</p></div>
+              <div class="limpiar"></div>
+
+
+              </div>
+        </div>
+    </div>
+    
+    <div class="limpiar"></div>
+    
+	<div id="pt2" style="background-color:#e4e4e4;">
+    	<div id="pt1-1" style="color:#565656;">
+        
+        	<div class="elements50" style="width:100%;">
+                <p><img src="images/icon-inicio-05.png" width="50" height="45" />Además, como un quinto eje, el Simulador también cuenta con una sección especializada para los <span class="some-bold" style="color:#ff8a4f">Ramos 28 y 33</span> (el gasto federalizado), en donde se pueden hacer simulaciones sobre las transferencias que recibirían las diferentes Entidades Federativas del país, según la modificación de diferentes parámetros.</p></div>
+
+              
+              <p>El objetivo sigue siendo el mismo que el de la versión anterior: incorporar la mayor cantidad de módulos que analizan y estiman recaudaciones y transferencias de y hacia los diferentes estratos socioeconómicos; buscando, de esta forma, observar cómo es que los cambios en los diferentes parámetros, dentro de los módulos programados, impactan en los cuatro ejes antes mencionados. Es decir, esta nueva versión vincula los efectos, tanto de los ingresos de la LIF, como del gasto público en el PEF, pudiendo modificar los módulos en lo individual y observar sus efectos en lo general. Sólo es cuestión de seleccionar un módulo, modificar sus parámetros y observar sus efectos estimados.</p>
+              
+              <!--p>Esperamos sea de su agrado. Para cualquier comentario o pregunta sobre el mismo, favor de contactarse directamente con Alejandra Martínez-Álamo, al correo electrónico <span class="some-bold" style="color:#ff8a4f">info@ciep.mx</span>.</p-->
+        </div>
+        <div class="limpiar"></div>
+    </div><!-- FIN de #pt2 -->
+    
+    
+  <div id="pt2" style="background-color:#bdbdbd;">
+    	<div id="pt1-1" style="color:#fff; margin-top:2px; margin-bottom:2px; min-height:1px;">
+              
+              <p style="font-weight: 100;">Para cualquier comentario o pregunta, favor de contactarse al correo electrónico <a href="mailto:info@ciep.mx" style="color:#d7530e; font-weight:400; border-bottom: 1px dotted #d7530e;">info@ciep.mx</a>.<img id="simu-mini" src="images/icono-simu-mini.png" width="25" height="32" /></p>
+    </div>
+        <div class="limpiar"></div>
+    </div><!-- FIN de #pt2 -->
+    
+    <div class="limpiar"></div>
+    
+</div>
+
+
+
+<script src="../assets/museo.js" data-version="v2" data-anio="2014" data-titulo="Segunda generación"></script>
+</body>
+
+</html>

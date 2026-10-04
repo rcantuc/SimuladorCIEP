@@ -108,7 +108,7 @@ fi
 
 SITE="$(mktemp -d /tmp/simulador-virgen.XXXXXX)"
 mkdir -p "$SITE/05_scripts" "$SITE/raw/temp"
-cp ensure_asset.ado "$SITE/"
+cp ensure_asset.ado SIMroot.ado "$SITE/"
 cp 05_scripts/manifest.json "$SITE/05_scripts/"
 tag="$(python3 -c "import json;print(json.load(open('05_scripts/manifest.json'))['release_tag'])")"
 echo "SITE virgen: $SITE  (manifest $tag; raw/ vacio)"
@@ -116,9 +116,11 @@ echo "SITE virgen: $SITE  (manifest $tag; raw/ vacio)"
 # Las invocaciones REALES de los modulos, derivadas del inventario: cada
 # directorio con ensure_asset, dir() y cada asset pedido por nombre.
 {
-    echo "sysdir set SITE \"$SITE\""
-    echo 'adopath ++SITE'
-    echo 'cd "`c(sysdir_site)'"'"'"'
+    # Camino REAL del externo (v8.4): sin sysdir set SITE. Los .ado estan en el
+    # adopath (aqui la carpeta misma; en un usuario real, PLUS via net install) y
+    # la raiz del proyecto la resuelve SIMroot como el directorio de trabajo.
+    echo "adopath ++ \"$SITE\""
+    echo "cd \"$SITE\""
     awk -F'\t' '$1!="TOTAL" && $3 ~ /\[dir\(/ {sub(/.*\[dir\(/,"",$3); sub(/\)\]$/,"",$3); print $3}' <<< "$cob" | sort -u \
         | while read -r d; do echo "noisily ensure_asset, dir($d)"; done
     awk -F'\t' '$1!="TOTAL" && $3 !~ /\[dir\(/ {print $1}' <<< "$cob" \

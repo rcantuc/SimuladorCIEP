@@ -20,8 +20,363 @@ Formato de cada entrada:
 
 Trabajo en `master` sin versión asignada.
 
+## [v8.6.0] — 2026-10-03
+
+### Comandos
+
+- **`Simulador.ado` v2.0: bootstrap por diseño muestral en Mata, inferencia
+  corregida y 15× más rápido.** Hasta v1.x cada réplica corría PERF, INCI, CICLO
+  y REC como programas con `preserve`/`collapse`/`restore` sobre la base
+  completa (~3.7 s por réplica en 217 variables × 308 mil personas; B=100 × 20
+  variables de PerfilesSim ≈ 2–3 h), y remuestreaba **personas** (`bsample _N`).
+  Ahora: (1) una sola extracción de columnas, índices de grupo precalculados y
+  sumas por `panelsum`; los deciles de `xtile` ponderado se reproducen en Mata
+  (exacto: 0 diferencias en 308 mil personas) y, como son bloques contiguos en
+  el orden de la variable, INCI y CICLO no reordenan por réplica. B=1 en 3.0 s
+  (5.6 s antes); B=100 en ~24 s. (2) `cluster(upm)` por default: UPM dentro de
+  estrato de diseño (`upm`, `est_dis`, de la base o de
+  `raw/ENIGH/<anio>/concentrado.dta`), como `bsample, strata() cluster()`;
+  `hogar` y `persona` disponibles. (3) **Inferencia corregida:** el puntual es
+  el de la muestra completa (réplica 0) y el EE la desviación estándar de las
+  réplicas, con IC normal y percentil. En v1.x el puntual era la media de las
+  réplicas y el "IC" venía de `ci means` sobre ellas —el intervalo de la MEDIA
+  de las réplicas, ancho ∝ sd/√B—, que se encogía con B: subestimaba el
+  intervalo 3.2× con B=10 y 10× con B=100. Con B=100 y `gas_pc_Alim` 2024 el
+  EE relativo del total es 0.44% por UPM-estrato, 0.55% por hogar y 0.34% por
+  persona. (4) Los cinco archivos de salida conservan su esquema (los leen
+  Perfiles, FiscalGap y CuentasGeneracionales) y con B=1 coinciden con v1.x a
+  precisión de máquina (≤ 4e-14 relativo, mismas filas y missing; test en
+  `05_scripts/test-simulador-dorado.do`); nuevo `<var>PT.dta` con los
+  puntuales. `legacy` conserva el bloque v1.x. `ProyGraph` toma la carpeta del
+  B corriente (antes `bootstraps/1` fijo) y promedia réplicas por año. Nota
+  metodológica en el encabezado del `.ado` y en
+  `03_help/PROGRAMAS_AUXILIARES.md` §13. Pendiente: `Perfiles.ado` y
+  `CuentasGeneracionales.ado` siguen con `ci means` sobre réplicas.
+- **`global bootstrap` en `SIM.do` §0.4 (default 1):** las 35 llamadas a
+  `Simulador` de `PerfilesSim.do` y el loop de AportacionesNetas usan
+  `bootstrap($bootstrap)`. En producción el sitio corre PerfilesSim en cada
+  simulación, así que queda en 1 (sin EE); con 100 se obtienen EE e IC 95% por
+  UPM-estrato a ~25 s por variable.
+
+### Infraestructura
+
+- Deployment VPS `v8.6` (minor): primer deployment desde v8.4; incluye
+  `perfilpc` (v8.5.0) y `Simulador` v2.0.
+
+## [v8.5.0] — 2026-10-03
+
+### Comandos
+
+- **`perfilpc.ado` (nuevo) sustituye el bloque "Iteraciones" de
+  `01_modulos/Expenditure.do` y cambia el método del reparto intra-hogar:
+  precisión relativa de 6 cifras y paro por tolerancia, en lugar de centavos
+  y 25 iteraciones fijas. CAMBIA RESULTADOS.** El reparto del gasto del hogar
+  entre sus integrantes por perfil edad-sexo (punto fijo) hacía 220 `tabstat`
+  + 440 `replace` por iteración sobre las ~309 mil personas: ~440 s por
+  variable × 84 variables ≈ 10 h por ENIGH. Ahora es una función Mata con
+  `panelsum` por celda y por hogar (~0.02 s por iteración). (1) **Fidelidad
+  demostrada:** el modo `legacy` reproduce el bloque original con
+  diferencias ≤ 3e-11 pesos (2 y 25 iteraciones, `gas_pc_Alim` 2024), sumas
+  ponderadas idénticas al peso, resultado independiente del orden físico de
+  la base; `05_scripts/test-perfilpc-dorado.do` lo verifica variable por
+  variable contra el bloque viejo verbatim. (2) **Hallazgo que motivó el
+  cambio:** el redondeo a centavos cuantizaba las cantidades per cápita
+  (0.01–1 unidad por celda): el perfil quedaba atrapado en la rejilla de .01 y
+  Δ caía a 0 exacto de golpe (`cant_pc_Alqu` en la iteración 19), con error
+  de hasta ±0.005 por celda; y las 25 iteraciones no eran convergencia: en
+  Alimentos 2024 el gasto per cápita de 0–4 años seguía bajando (12,988
+  inicial → 3,732 en la 25 → 2,700 convergido) y el de 30–64 subiendo (18,352
+  → 23,423 → 23,728); **el resultado dependía de T**. (3) **Método vigente:**
+  `m_c` se redondea a 6 cifras significativas (piso `1e-6·máx m`) y se itera
+  hasta que la fracción del gasto total que cambia de celda edad-sexo baja de
+  `tol(1e-6)` (criterio adimensional: gasto y cantidades convergen al mismo
+  nivel), con `maxiter(1000)`; en ENIGH 2024 las 82 variables convergen en
+  105–574 iteraciones (media 255), 7–9 s por variable con gráficas;
+  Expenditure.do completo con `nographs` en ~15 min. El criterio por celda (máximo
+  relativo) se descartó como paro porque lo dominan celdas con poca población
+  (ages 100+) y las que tienden a cero; se reporta como diagnóstico. (4)
+  **Gráficas**, en memoria con nombre y en `users/$id/graphs/`, tres por
+  variable (`<var>_<anio>_pc/_tot/_conv`): pirámides demográficas (edad en
+  vertical, hombres a la izquierda, mujeres a la derecha, como en
+  `Simulador.ado`) del gasto per cápita y de la distribución del gasto total
+  por edad y sexo —perfil inicial, hasta 24 iteraciones intermedias y final—
+  y la convergencia en términos relativos con la línea de tolerancia; más una
+  gráfica resumen por grupo (`conv_<categ>_<anio>`) con las iteraciones que
+  necesitó cada variable. Stata admite 2,000 sersets en memoria y un serset
+  es una muestra distinta, no un plot (la primera versión, con `if iter==t` ×
+  `by(sexo)`, gastaba ~100 por variable y abortaba con `r(1001)` en la
+  novena): cada serie va en su propia variable sobre la misma muestra. Pasar
+  la trayectoria completa como matriz de Stata (50 mil filas) tardaba más que
+  iterar: `r(perfil)` trae solo las iteraciones que se dibujan. Nota
+  metodológica en el encabezado del `.ado` y en
+  `03_help/PROGRAMAS_AUXILIARES.md` §17.
+- **`Households.do`: ruta corregida a `01_modulos/Expenditure.do`** (apuntaba al root,
+  anterior a la reorganización de prefijos).
+- **Expenditure.do §3.1–3.2: el relleno de la rejilla hogar/individuo ×
+  categoría ya no usa `reshape wide → long → wide`.** Un solo `reshape wide` +
+  `replace = 0` (gasto, cantidad) y `= media global` (`prop`) produce la misma
+  base (`cf _all` idéntico sobre 91,414 hogares × 19 categorías de 2024). La
+  media de `prop` se pasa por escalar temporal, no por `local`: el `local`
+  perdía el último dígito del `double` y rompía la identidad byte a byte.
+
+## [v8.4.3] — 2026-10-03
+
 ### Institucional
 
+- **`02_governance/` reorganizada como norma + memoria + guía (2026-10-03, tres
+  commits).** La carpeta había llegado a 24 archivos con un índice que listaba 5,
+  y el documento de arquitectura (981 líneas) abría afirmando que `publicar.sh`,
+  el CHANGELOG y `sim_changelog` "aún no están implementados" tres meses después
+  de operar en producción, arrastrando 57 filas de bitácora que duplicaban este
+  registro. (1) Cuatro reportes one-shot ya ejecutados (reconocimiento del VPS;
+  inventario, plan de integración y verificación del repo del Paquete 2027) a
+  `historico/` con nota de retiro; los cuatro documentos de diseño del rediseño
+  de `paqueteeconomico.ciep.mx` a `paquete-economico/` con README propio;
+  `arquitectura-procedimientos-stata-web.md` → `principio-stata-produce-los-numeros.md`.
+  (2) `arquitectura-y-bitacoras.md` separado en `arquitectura.md` (vigente:
+  encabezado reescrito al estado real, §7 solo con lo pendiente, backup como
+  operando, troubleshooting como apéndice) y `historico/bitacora-arquitectura.md`
+  (tabla v1.0–v1.57 y narrativa de deploys, congeladas); la política de higiene
+  pasa al README de la carpeta y la tabla formal/coloquial al glosario (v1.1).
+  Regla nueva: ningún documento de norma registra cambios del Simulador; eso es
+  exclusivo de este CHANGELOG. (3) Nueva `guia-simulador-bien-gobernado.md`:
+  doce principios para quien construye su propio simulador (motor no script,
+  una sola fuente de números, permanente vs. regenerable, candado de datos,
+  fallar en el origen, versión inmutable, un commit una idea, demostrar no
+  razonar, compuertas al publicar, secretos fuera del repo, coincidir ≠
+  verificar, gobernar la gobernanza), cada uno con el incidente fechado que lo
+  originó y la ruta donde se ve en este repo, más una lista de arranque para la
+  primera semana; README reescrito como mapa por audiencia. Referencias
+  actualizadas en README raíz, scripts de publicación, `escalar.ado`, manual del
+  investigador y HTML de nodos; las citas dentro de este CHANGELOG quedan como
+  estaban.
+- **Museo de versiones (`simuladorfiscal.ciep.mx/anteriores/`) rediseñado y
+  restaurado — cuarto canal del Simulador, con fuente en `04_3_anteriores/` y
+  pipeline propio (`05_scripts/publicar-anteriores.sh`, gates: auditoría
+  estática `verify_anteriores.py` + destino escribible; Apache lo sirve con
+  `Alias /anteriores /var/www/anteriores`, estático, fuera del deployment
+  `current`).** La galería `index.html` adopta el lenguaje visual del
+  Simulador actual (header `#2d373d`, hero `#FFD520`, Roboto Mono/Ubuntu,
+  tarjetas con chips y captura real de cada generación, footer del
+  ecosistema CIEP). Cada pieza (v1 2014, v2 2014, v3 2015-16, v4 2018) lleva
+  una franja fija de contexto y un interceptor que vuelve inertes botones y
+  formularios con aviso (`assets/museo.js`), y las librerías externas
+  (jQuery/jQuery UI/fancybox/Bootstrap/Chart.js) se vendorizaron en
+  `assets/vendor/` porque las piezas las cargaban por `http://` y el sitio
+  `https` las bloqueaba como *mixed content*. Regla acordada: donde el
+  original mostraba resultados calculados al vuelo, se reconstruyen con las
+  **cifras oficiales del año** y una nota visible; lo ilustrativo se declara.
+  Por pieza: **v1** — las tarjetas estaban en cero porque el JS leía
+  `default.php`/`inputsaved.php` (no capturados): ahora lee `default.xml`
+  con la LIF/PEF 2014 de `master/LIF.dta` (46 conceptos del artículo 1,
+  cuadra 3,816,747.8 y 4,467,225.8 mdp), deuda 650,478, GINI 0.48;
+  formularios a `localhost` neutralizados. **v2** — las 5 páginas interiores
+  estaban vacías (contenido por AJAX desde `parts/*.php`, nunca capturado):
+  se reconstruyeron menú lateral, incidencia del módulo IVA, perfil
+  generacional con el velocímetro original (`gauge.js`), recaudación,
+  incidencia global (los `$100…-10%` eran *placeholders* de desarrollo),
+  sostenibilidad (SHRFSP 2000-2020), distribución del PEF y Ramos 28/33
+  (la página era una copia de la portada); el demo del velocímetro tronaba
+  y jQuery 1.10 abortaba el resto de `ready`, por eso el menú se carga con
+  JS plano. **v3** — `google.com/jsapi` (retirado) → `loader.js`; el on-load
+  llamaba `defaultStata.php` con `alert()` en el error (bloqueaba la página)
+  y 86 campos: `defaultStata*.xml` generados desde los valores que la
+  página ya traía (tablas, perfiles) más proyecciones ilustrativas; `js/chart.js`
+  (barras SHRFSP) faltaba por mayúsculas en Linux → recuperado de v2; línea
+  `getRandomImage` corrompida por wget; treemaps guardados contra la carga
+  asíncrona. **v4** — GTM/Analytics retirado, `localhost` fuera. Auditoría
+  final: 0 recursos rotos, 0 hosts de desarrollo en 42 páginas. Pendiente
+  operativo: `chown ciepmx:web /var/www/anteriores` (una vez) antes del
+  primer deploy con el script.
+
+### Correcciones
+
+- **`AccesoBIE`: `anio` salía como texto (`str7`) y `SCN, update` tronaba
+  con `r(106)` en el merge contra `IngMixto.dta`.** El BIE ahora marca la
+  cifra preliminar como `"2025 p1"` (con espacio, no `/p1`); la limpieza
+  anterior solo quitaba `r1`, así que `destring` no convertía y las 11 bases
+  del BIE se cruzaban entre sí (todas `str7`) hasta chocar con la primera
+  base de tabulados CSI con `anio` entero. Ahora `periodo` se fuerza a string
+  y se le quita cualquier nota al pie al final (`2025 p1`, `2026/01 r1`,
+  `2024/p1`, `2023 /a`) con un regex; además, `AccesoBIE` verifica al salir
+  que `anio` sea numérico y, si no, aborta con `r(109)` listando los periodos
+  que no pudo convertir, en lugar de dejar que el error aparezca aguas arriba.
+- **Leyenda de descarga de `AccesoBIE` sin la cola repetitiva.** La línea
+  `Serie | Variable | ...` mostraba los últimos 80 caracteres del nombre del
+  indicador, que casi siempre eran `(Millones de pesos a precios corrientes)
+  Anual /a`; el `replace` que debía quitarla buscaba un texto que el BIE ya no
+  usa. Ahora se eliminan notas al pie, unidad entre paréntesis y frecuencia y
+  se muestra la jerarquía completa del indicador; la etiqueta de variable
+  (`label var`, tope de 80 bytes) conserva los niveles más específicos de esa
+  jerarquía.
+
+## [v8.4.2] — 2026-09-23
+
+### Correcciones
+
+- **`net install Poblacion` (y `PIBDeflactor`, `SCN`) tronaba en máquina
+  virgen con "command ensure_asset is unrecognized".** En v8.4.1 `Poblacion`
+  empezó a llamar `ensure_asset` pero `Poblacion.pkg` no lo listaba, ni
+  `PIBDeflactor.pkg`/`SCN.pkg` (que llaman `Poblacion`). Lo atrapó la prueba
+  post-publicación de máquina virgen (`net from` al endpoint público + `cd` a
+  carpeta vacía); v8.4.1 estuvo ~20 minutos en el endpoint con ese hueco.
+  Los tres `.pkg` ahora traen `f ensure_asset.ado`.
+
+### Institucional
+
+- **Gate 7 en `publicar.sh`: clausura transitiva de los `.pkg`.** La regla de
+  v8.0.11 ("cada `.pkg` declara TODAS sus dependencias `.ado` transitivas")
+  solo se verificaba a mano y volvió a fallar en cuanto una dependencia
+  cambió. El gate hace grep de cada comando publicado (inicio de línea, con
+  prefijos `noisily`/`quietly`/`capture`) en cada `.ado`, cierra
+  transitivamente y compara con las líneas `f X.ado` del `.pkg`; corre en
+  `--check` y antes del tag. Probado: falla con los tres `.pkg` de v8.4.1 y
+  pasa tras corregirlos.
+
+## [v8.4.1] — 2026-09-23
+
+### Datos
+
+- **`Poblacion` deja de depender de CONAPO en vivo: la proyección entra al
+  data sidecar.** Los tres CSV de
+  `conapo.segob.gob.mx/work/models/CONAPO/Datos_Abiertos/pry23/` que
+  `UpdatePoblacion` leía con `import delimited` dejaron de servirse (timeout
+  también con `curl`; era el pendiente declarado en v8.4.0). La misma
+  proyección — Conciliación Demográfica 1970–2019 y Proyecciones 2020–2070,
+  `pry23` del 11-sep-2023 — la redistribuye la DGIS-Salud en
+  `dgis.salud.gob.mx/descargas/datosabiertos/poblacion/proyecciones_censo/Poblacion_Estimada_Mitad_Anio.zip`
+  (4.9 MB, CSV largo por año × entidad × edad simple × sexo). Ese zip es el
+  asset 26 de `manifest.json` (`raw/CONAPO/`, SHA-256 `e77873cd…`) y
+  `UpdatePoblacion` lo pide con `ensure_asset`, lo descomprime en
+  `raw/temp/CONAPO/` y lo importa; la fila `Nacional` (antes "República
+  Mexicana" de CONAPO) se reconstruye como suma de las 32 entidades. **Cifras
+  idénticas:** `master/Poblacion.dta` regenerado coincide celda a celda
+  (733,260 celdas, diferencia 0) con el vintage anterior en 1970–2070,
+  incluida `tasafecundidad`; `Poblaciontot.dta` idem.
+- **Lo que cambia en el esquema:** la cobertura pasa de 1950–2070 a
+  **1970–2070** (DGIS no redistribuye 1950–69) y desaparecen `defunciones`,
+  `emigrantes` e `inmigrantes`. Se verificó con `grep` en todo el árbol que
+  ningún módulo (`PIBDeflactor`, `SCN`, `DatosAbiertos`, `PerfilesSim`, `REC`,
+  `CuentasGeneracionales`, sitio) consume esas variables ni años < 1970;
+  `Poblacion.sthlp`, el manual del investigador y la ficha de fuentes del
+  nodo de deuda quedan alineados. Patch y no minor porque ni la metodología
+  ni un solo número publicado cambian; el `data_updated` del manifest no se
+  toca (mismo vintage).
+
+## [v8.4.0] — 2026-09-23
+
+### Comandos
+
+- **Nuevo `SIMroot`: la raíz de datos del Simulador deja de ser
+  `c(sysdir_site)` y pasa a la global `$SIMROOT`.** Hasta v8.3 los ~450
+  usos de `` `c(sysdir_site)' `` en 41 archivos (`SCN` 90, `Expenditure.do`
+  61, `Simulador` 24…) usaban el directorio SITE de Stata como raíz de
+  `raw/`, `master/`, `users/` y `01_modulos/`. Eso solo funcionaba porque
+  `sysprofile.do` lo redefinía al clon; para quien instalaba desde el
+  endpoint (`net install`), SITE es `/Applications/Stata/ado/site/` o
+  `C:\Program Files\Stata18\ado\site\` — sin permisos de escritura y sin
+  que ningún `.sthlp` avisara del `sysdir set SITE` necesario. En esta
+  máquina, `/Applications/Stata/ado/site/` ya tenía `raw/temp/` y
+  `users/ricardo/` creados por corridas viejas: el síntoma en vivo.
+  `SIMroot [, dir() reset quietly]` resuelve la raíz una vez por sesión:
+  (1) `$SIMROOT` ya fijada → nada; (2) `dir()` explícito; (3) `c(sysdir_site)`
+  contiene `05_scripts/manifest.json` → es un clon apuntado por
+  `sysprofile.do` (investigadores CIEP, servidor): compatibilidad total;
+  (4) si no, el directorio de trabajo `c(pwd)`, con aviso de dónde se
+  escribirán los datos. Crea `raw/`, `raw/temp/`, `master/`, `users/`.
+  Todos los `.ado` lo invocan al arrancar (idempotente); `SIM.do` lo llama
+  tras su `macro drop _all`; `profile.do` fija la raíz a la carpeta donde
+  él mismo vive (`findfile profile.do`), no a SITE; `Web.Stata.do` la fija
+  explícitamente con `dir()`. Los bloques Python (`ensure_asset`,
+  `AccesoBIE`, `sim_changelog`, `profile.do`) leen `Macro.getGlobal('SIMROOT')`.
+  `SIMroot.ado` viaja en todos los `.pkg` (clausura transitiva, regla de
+  v8.0.11) y tiene `.sthlp` y `.pkg` propios. `sysprofile-template.do`
+  conserva `sysdir set SITE` (sigue siendo cómo Stata encuentra los `.ado`
+  y el `profile.do` del clon) y documenta que ya no decide dónde van los
+  datos.
+
+### Institucional
+
+- **`test-maquina-virgen.sh --download` prueba el camino real del externo:**
+  sin `sysdir set SITE`; `adopath ++` a la carpeta con los `.ado`, `cd` a
+  ella y `SIMroot` resuelve por `pwd`. Antes la prueba hacía el
+  `sysdir set SITE` que el usuario nunca hacía, así que "pasaba" un
+  escenario que no existía.
+- **Verificación de este release.** (A) Modo repo, StataMP 17 batch, SITE →
+  clon, `profile.do` + `PIBDeflactor`, `Poblacion`, `PEF` (`r(Pension_AM)`,
+  `r(educacion_basica)`), `LIF`, `SHRFSP`, `SCN`, `DatosAbiertos`: todo
+  pasa, `$SIMROOT` = clon. (B) Modo externo, StataNow 19.5 SE, SITE default
+  de Stata, `.ado` copiados a una carpeta ajena en el adopath con el pin
+  `v8.3.4` inyectado como hace `publicar-endpoint.sh`, `cd` a una carpeta
+  vacía: `SIMroot` cae en `pwd` con aviso, `ensure_asset` baja el manifest
+  v8.3.4 y dos assets a `pwd/raw/PEFs/` con SHA verificado, `AccesoBIE`
+  escribe sus CSV en `pwd/raw/temp/AccesoBIE/`; nada se escribe en el SITE
+  de Stata. `PIBDeflactor` en modo externo terminó en `r(603)` porque
+  `UpdatePoblacion` descarga en vivo de `conapo.segob.gob.mx`
+  (`Poblacion.ado:659,684,709`) y el servidor no respondió (también con
+  `curl`, timeout 15 s): **pendiente preexistente**, no regresión — la
+  reconstrucción externa depende de tres URLs de CONAPO fuera del sidecar
+  de datos; candidato a entrar al `manifest.json` como assets.
+- **Documentación negativa.** No se hizo `lower()`/`c(pwd)` a secas en los
+  `.ado`: `pwd` cambia con cada `cd` y partiría `raw/` y `master/` en dos
+  carpetas a media sesión; por eso la raíz se congela en la global la
+  primera vez y solo cambia con `SIMroot, reset` o `dir()`. No se quitó
+  `sysdir set SITE` de `sysprofile-template.do` ni de `Web.Stata.do`: SITE
+  sigue siendo la vía por la que Stata encuentra los `.ado` y el
+  `profile.do` del clon (adopath); lo que cambia es que ya no es la raíz de
+  datos. Los `.ado` de `01_modulos/legacy/` no se tocaron.
+- Este cambio se desarrolló en la rama de trabajo `raiz-proyecto-simroot`
+  sobre un worktree fuera de Dropbox (`~/Developer/`), para que la
+  publicación de v8.3.4 corriera desde el clon de desarrollo con árbol
+  limpio y sin riesgo de que `publicar-endpoint.sh` copiara al endpoint
+  archivos a medio refactor (Fase 2 lee del working tree). La rama se
+  integró a `master` con commits limpios y se borró (§2.1 de
+  `versionado-y-git.md`).
+
+## [v8.3.4] — 2026-09-23
+
+### Comandos
+
+- **`PEF` guarda los catálogos de texto en Title Case, sin cambiar el
+  contrato `r()`.** La limpieza 1.4 de `UpdatePEF` (`_PEFlimpia`) pasa los
+  `desc_*` de minúsculas a `ustrtitle()` con artículos y preposiciones en
+  minúscula ("Pensión para el Bienestar de las Personas Adultas Mayores"),
+  y `desc_ramo` ya no se fuerza a minúsculas; todas las comparaciones
+  internas (`ur`, `modalidad`, `desc_pp`, `desc_tipogasto`, `transf_gf`,
+  `_PEFverifica`) se actualizaron al caso nuevo. Los nombres de `r()`
+  derivados con `strtoname()` **se mantienen en minúsculas cuando `by()` es
+  un `desc_*`** (`r(educacion_basica)`, `r(cuota_social_seguro_de_salud_iss)`),
+  y los demás conservan su capitalización histórica (`r(Pension_AM)`,
+  `r(Educacion)`, `r(Cuotas_ISSSTE)`, estados por `entidad`). Verificado en
+  batch contra `master/PEF.dta` regenerado: `by(desc_subfuncion)`,
+  `by(divCIEP)` y el loop de `transf_gf` (`by(desc_pp)`) devuelven los
+  nombres que leen `GastoPC.ado` y `Households.do`.
+
+### Correcciones
+
+- **`AccesoBIE` no truena con `periodo` malformado.** La limpieza de la
+  cadena `periodo` (extracción de 7 caracteres) va con `capture replace`
+  para que valores faltantes o malformados del BIE no aborten la rutina.
+- **Regresión evitada antes de publicar:** el commit `2b03cb7` (Title Case
+  en `PEF`) cambiaba de facto el contrato `r()` de `PEF ..., by(desc_*)`
+  porque `strtoname()` conserva mayúsculas: `r(educacion_basica)` pasaba a
+  `r(Educacion_Basica)`. Las ~75 lecturas de `GastoPC.ado` y las de
+  `Households.do` §1.3 seguían pidiendo minúsculas y, por sus fallbacks
+  `if == . → 0`, habrían dejado en cero las cifras per cápita de Educación y
+  Salud del `SIM.do` §5 y del sitio **sin error visible**. Se corrigió en
+  `PEF.ado` (bandera `lowername` en §1.5, aplicada en los tres sitios de
+  `strtoname`) en lugar de tocar los consumidores, para no romper a
+  usuarios externos del endpoint que leen esos `r()`. La lección: un cambio
+  de capitalización en catálogos que alimentan `strtoname()` es un cambio
+  de API, no cosmético.
+
+### Institucional
+
+- `simulador.stpr` actualizado junto con el fix de `AccesoBIE`.
+- Este clon de desarrollo había perdido el marker gitignored
+  `.clon-desarrollo` (guard de `publicar.sh`, creado el 2026-09-09); se
+  volvió a crear con `touch`. Probable causa: Dropbox no conserva archivos
+  vacíos con punto en algunos ciclos de sincronización.
 - **Sitio (rsync, fuera de git; deploy 2026-09-21 sobre v8.3 sin bump de
   versión):** referencias bibliográficas a los micrositios del CIEP al pie
   de cada tabla de `index.php` e `index-en.php`, en una segunda línea

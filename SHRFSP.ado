@@ -1,9 +1,10 @@
 *! version 8.0 CIEP 03jul2026
 program define SHRFSP, return
+	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 quietly {
-	capture mkdir `"`c(sysdir_site)'/users/"'
-	capture mkdir `"`c(sysdir_site)'/users/$id/"'
-	capture mkdir `"`c(sysdir_site)'/users/$id/graphs/"'
+	capture mkdir `"${SIMROOT}/users/"'
+	capture mkdir `"${SIMROOT}/users/$id/"'
+	capture mkdir `"${SIMROOT}/users/$id/graphs/"'
 
 	timer on 5
 
@@ -23,7 +24,7 @@ quietly {
 	**# 1 BASE DE DATOS ***
 	***                 ***
 	***********************
-	capture confirm file `"`c(sysdir_site)'/master/SHRFSP.dta"'
+	capture confirm file `"${SIMROOT}/master/SHRFSP.dta"'
 	if _rc != 0 {
 		noisily UpdateSHRFSP
 	}
@@ -35,7 +36,7 @@ quietly {
 	**# 2 SYNTAX ***
 	***          ***
 	****************
-	use in 1 using `"`c(sysdir_site)'/master/SHRFSP.dta"', clear
+	use in 1 using `"${SIMROOT}/master/SHRFSP.dta"', clear
 	syntax [if] [, ANIO(int `aniovp' ) ANIOVP(int `aniovp') DEPreciacion(int 5) ///
 		NOGraphs UPDATE Base ///
 		ULTAnio(int 2001) TEXTbook ANIOMAX(int -1)]
@@ -61,7 +62,7 @@ quietly {
 	}
 
 	** 2.3 Bases RAW **
-	use `if' using `"`c(sysdir_site)'/master/SHRFSP.dta"', clear
+	use `if' using `"${SIMROOT}/master/SHRFSP.dta"', clear
 	if "`base'" == "base" {
 		exit
 	}
@@ -490,7 +491,7 @@ quietly {
 				yaxis(2) size(medium) place(6) justification(center) bcolor(white) box) ///
 			name(shrfsp, replace)
 
-		graph save shrfsp `"`c(sysdir_site)'/users/$id/graphs/shrfsp.gph"', replace
+		graph save shrfsp `"${SIMROOT}/users/$id/graphs/shrfsp.gph"', replace
 		capture confirm existence $export
 		if _rc == 0 {
 			graph export "$export/shrfsp.png", replace name(shrfsp)
@@ -546,7 +547,7 @@ quietly {
 				yaxis(2) size(medium) place(6) justification(center) bcolor(white) box) ///
 			name(shrfsppc, replace)
 
-		graph save shrfsppc `"`c(sysdir_site)'/users/$id/graphs/shrfsppc.gph"', replace
+		graph save shrfsppc `"${SIMROOT}/users/$id/graphs/shrfsppc.gph"', replace
 		capture confirm existence $export
 		if _rc == 0 {
 			graph export "$export/shrfsppc.png", replace name(shrfsppc)
@@ -654,7 +655,7 @@ quietly {
 			xlabel(`xlabellist', noticks) xtitle("") ///
 			name(tasasdeinteres, replace)
 				
-		graph save tasasdeinteres `"`c(sysdir_site)'/users/$id/graphs/tasasdeinteres.gph"', replace
+		graph save tasasdeinteres `"${SIMROOT}/users/$id/graphs/tasasdeinteres.gph"', replace
 		capture confirm existence $export
 		if _rc == 0 {
 			graph export "$export/tasasdeinteres.png", replace name(tasasdeinteres)
@@ -778,9 +779,9 @@ quietly {
 			noisily di in g "Nota: la opcion output es solo-repo; no viaja al endpoint publico."
 		}
 		else {
-			capture confirm file `"`c(sysdir_site)'/01_modulos/nodos/nodo-deuda.do"'
+			capture confirm file `"${SIMROOT}/01_modulos/nodos/nodo-deuda.do"'
 			if _rc == 0 {
-				noisily do `"`c(sysdir_site)'/01_modulos/nodos/nodo-deuda.do"'
+				noisily do `"${SIMROOT}/01_modulos/nodos/nodo-deuda.do"'
 			}
 		}
 	}
@@ -795,6 +796,7 @@ end
 
 
 program define UpdateSHRFSP
+	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 	**********************************
 	***                            ***
 	**#     1 SHRFSP (acervos)     ***
@@ -1171,11 +1173,11 @@ program define UpdateSHRFSP
 
 	* Guardar *
 	compress
-	capture mkdir `"`c(sysdir_site)'/master/"'
+	capture mkdir `"${SIMROOT}/master/"'
 	if `c(version)' > 13.1 {
-		saveold `"`c(sysdir_site)'/master/SHRFSP.dta"', replace version(13)
+		saveold `"${SIMROOT}/master/SHRFSP.dta"', replace version(13)
 	}
 	else {
-		save `"`c(sysdir_site)'/master/SHRFSP.dta"', replace
+		save `"${SIMROOT}/master/SHRFSP.dta"', replace
 	}
 end

@@ -8,9 +8,9 @@
 # al VPS IONOS, hace cutover atómico vía symlink `current`, verifica el
 # sitio con un health check y hace rollback automático si falla.
 #
-# Diseño registrado en 02_governance/arquitectura-y-bitacoras.md §7.1-§7.2
+# Diseño registrado en 02_governance/arquitectura.md §7.1-§7.2
 # (decisiones D.1-D.9, bitácoras v1.20-v1.21). Estructura del VPS documentada
-# en 02_governance/reconocimiento-vps.md.
+# en 02_governance/historico/reconocimiento-vps.md.
 #
 # Uso:
 #   ./publicar-vps.sh <version-deployment> [--dry-run] [--force] [--skip-health]
@@ -27,8 +27,10 @@
 # Un deployment agrupa múltiples releases del código; el commit exacto queda
 # registrado en el archivo DEPLOYED_COMMIT que este script escribe en el VPS.
 #
-# Precondición de infraestructura (el operador la crea UNA vez por versión,
-# respetando la convención asimétrica de paths: sitio CON "v", canon SIN "v"):
+# Precondición de infraestructura (convención asimétrica de paths: sitio CON
+# "v", canon SIN "v"). Desde I.4 (2026-10-01) el Gate 4 la crea solo si el VPS
+# tiene /usr/local/sbin/crear-deployment + sudoers NOPASSWD para ese comando
+# (05_scripts/vps/); si no, el operador la crea UNA vez por versión:
 #   sudo mkdir /var/www/html/vN.M /SIM/OUT/N.M
 #   sudo chown ciepmx:ciepmx /var/www/html/vN.M /SIM/OUT/N.M
 #
@@ -307,13 +309,29 @@ log_ok "Gate 5: fuentes locales verificadas."
 check_vps_structure() {
     ssh_vps "test -d '$VPS_HTML_ROOT/$VPS_HTML_VERSION' && test -d '$VPS_SIM_ROOT/$VPS_SIM_VERSION'"
 }
+# Creación con privilegio mínimo (I.4, 2026-10-01): si el deployment no existe
+# y el VPS tiene instalado /usr/local/sbin/crear-deployment (05_scripts/vps/)
+# con su regla NOPASSWD en /etc/sudoers.d/ciepmx-deploy, se crea desde aquí
+# con `sudo -n` (nunca pide contraseña: si no está autorizado, falla limpio
+# y se cae a la receta manual). El operador no comparte su contraseña de sudo.
+crear_vps_structure() {
+    [[ $DRY_RUN -eq 1 ]] && return 1
+    ssh_vps "test -x /usr/local/sbin/crear-deployment" || return 1
+    log_info "Gate 4: deployment inexistente; creándolo con crear-deployment $VPS_HTML_VERSION (sudo sin contraseña, solo ese comando)."
+    ssh_vps "sudo -n /usr/local/sbin/crear-deployment '$VPS_HTML_VERSION'" 2>&1 | tee -a "$LOG_FILE"
+    check_vps_structure
+}
 if check_vps_structure; then
     log_ok "Gate 4: estructura del VPS verificada ($VPS_HTML_ROOT/$VPS_HTML_VERSION y $VPS_SIM_ROOT/$VPS_SIM_VERSION)."
+elif crear_vps_structure; then
+    log_ok "Gate 4: estructura del VPS creada por crear-deployment ($VPS_HTML_ROOT/$VPS_HTML_VERSION y $VPS_SIM_ROOT/$VPS_SIM_VERSION)."
 else
     if [[ $DRY_RUN -eq 1 ]]; then
         log_warn "Gate 4: no se pudo verificar la estructura del VPS (¿sin red o no existe aún?). Dry-run continúa."
     else
-        die "Estructura VPS faltante (o el VPS no responde). Ejecuta en el VPS:
+        die "Estructura VPS faltante (o el VPS no responde). Si el VPS tiene
+        instalado crear-deployment (05_scripts/vps/, ver runbook §4b), revisa
+        la salida de arriba; si no, ejecuta en el VPS:
           sudo mkdir '$VPS_HTML_ROOT/$VPS_HTML_VERSION'
           sudo mkdir '$VPS_SIM_ROOT/$VPS_SIM_VERSION'
           sudo chown ${VPS_USER}:${VPS_USER} '$VPS_HTML_ROOT/$VPS_HTML_VERSION' '$VPS_SIM_ROOT/$VPS_SIM_VERSION'
@@ -433,7 +451,7 @@ log_ok "Fase 1b: $_g_copiadas copiada(s) desde users/ricardo/graphs/, $_g_conser
 # =============================================================================
 log_info "Fase 2: rsync del sitio PHP → $VPS_HTML_ROOT/$VPS_HTML_VERSION/"
 
-# Exclusiones (revisadas contra el diff local↔remoto de reconocimiento-vps.md §6):
+# Exclusiones (revisadas contra el diff local↔remoto de historico/reconocimiento-vps.md §6):
 #   ssl/                 el clon local aún contiene material SSL de renovación;
 #                        NUNCA se propaga (incidente registrado en
 #                        politicas-institucionales.md §6)
@@ -448,7 +466,7 @@ log_info "Fase 2: rsync del sitio PHP → $VPS_HTML_ROOT/$VPS_HTML_VERSION/"
 # permisos del origen (Mac/Dropbox). Es la protección contra el HTTP 403 del
 # primer deploy (2026-07-09), cuando rsync preservó permisos 700/600 y Apache
 # (www-data) no pudo leer el sitio — mismo patrón ya documentado en
-# arquitectura-y-bitacoras.md §troubleshooting "Permisos rsync --chmod".
+# arquitectura.md §troubleshooting "Permisos rsync --chmod".
 # DOS advertencias del rsync de macOS (que en realidad es openrsync de Apple,
 # anunciado como "2.6.9 compatible"; verificado con pruebas locales 2026-07-09):
 #   1. La sintaxis octal (D775,F664) la rechaza con "invalid argument";
@@ -693,6 +711,40 @@ for _art in "${DEFAULT_MANIFEST[@]}"; do
 done
 log_ok "Fase 3b-ter: manifiesto local fresco (${#DEFAULT_MANIFEST[@]}/6 archivos, mtime >= master/PEF.dta)."
 
+# Gate de CONTENIDO del output.txt (2026-10-01, deploy v8.4). El gate de
+# frescura solo mira mtime: el default del 28-sep era de una corrida que se
+# quedó en Perfiles (11 llaves: INCD/APORT*/PROY) y la página abrió con los
+# valores vacíos del JS (GASTOS[40] undefined). Se exige que estén las llaves
+# que escriben FiscalGap/output.do y Perfiles; si falta una, la corrida de
+# SIM.do no llegó al final (global output activa, §4-§8 completos).
+_llaves_req=(GASTOS INGRESOS GASTOSPC PIBY DEUDAPARAM CRECPIB CRECDEF PROYSHRFSP1 PROYSHRFSP2 PROYSHRFSP3 PROYMAX INCD APORTHIV IVA ISRTASA)
+_llaves_faltan=()
+for _k in "${_llaves_req[@]}"; do
+    grep -qE "^${_k} *[:=]" "$LOCAL_DEFAULT_DIR/output.txt" || _llaves_faltan+=("$_k")
+done
+if (( ${#_llaves_faltan[@]} > 0 )); then
+    die "Fase 3b-ter: users/ricardo/output.txt está INCOMPLETO — faltan ${#_llaves_faltan[@]} llave(s): ${_llaves_faltan[*]}.
+        La corrida de SIM.do que lo generó no llegó a FiscalGap/output.do (o
+        corrió sin 'global output'). Corre SIM.do completo con output activo
+        y revisa que termine en TOUCH-DOWN antes de desplegar."
+fi
+log_ok "Fase 3b-ter: output.txt completo (${#_llaves_req[@]}/${#_llaves_req[@]} llaves obligatorias presentes)."
+
+# Continuaciones de Stata en output.txt (2026-10-01, deploy v8.4). output.txt
+# es el log de output.do; si la corrida local tuvo linesize angosto, Stata
+# parte las líneas largas y sigue en la siguiente con "> ". cargaDefault.php
+# las une desde hoy, pero el archivo publicado debe ir limpio: se sube una
+# copia normalizada (no se toca el archivo del investigador) y se avisa cómo
+# evitarlo en la próxima corrida.
+DEFAULT_OUTPUT_SRC="$LOCAL_DEFAULT_DIR/output.txt"
+if grep -q '^>' "$DEFAULT_OUTPUT_SRC"; then
+    _nwrap="$(grep -c '^>' "$DEFAULT_OUTPUT_SRC")"
+    _tmpdir="$(mktemp -d -t output-default.XXXXXX)"
+    DEFAULT_OUTPUT_SRC="$_tmpdir/output.txt"          # mismo nombre: rsync lo deposita como output.txt
+    perl -0pe 's/\n>\s*//g' "$LOCAL_DEFAULT_DIR/output.txt" > "$DEFAULT_OUTPUT_SRC"
+    log_warn "Fase 3b-ter: users/ricardo/output.txt trae $_nwrap continuación(es) de Stata ('> '); se publica una copia con las líneas unidas. Para que no ocurra: 'set linesize 255' antes del log en SIM.do, o corre SIM.do en batch."
+fi
+
 RSYNC_DEFAULT_OPTS=(
     -az
     --chmod=Fu=rw,Fg=rw,Fo=r
@@ -707,7 +759,11 @@ run_rsync_default() {
     local _srcs=()
     local _art
     for _art in "${DEFAULT_MANIFEST[@]}"; do
-        _srcs+=("$LOCAL_DEFAULT_DIR/$_art")
+        if [[ "$_art" == "output.txt" ]]; then
+            _srcs+=("$DEFAULT_OUTPUT_SRC")
+        else
+            _srcs+=("$LOCAL_DEFAULT_DIR/$_art")
+        fi
     done
     rsync "${RSYNC_DEFAULT_OPTS[@]}" -e "$RSYNC_SSH" \
         "${_srcs[@]}" \

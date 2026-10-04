@@ -1,0 +1,478 @@
+ 
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Simulador Ingresos-Gasto</title>
+<link href="css/main.css" rel="stylesheet" type="text/css" />
+
+
+<link href='https://fonts.googleapis.com/css?family=Ubuntu:300,400,500,700,300italic,400italic,500italic,700italic' rel='stylesheet' type='text/css'>
+<link href='https://fonts.googleapis.com/css?family=Bitter:400,700,400italic' rel='stylesheet' type='text/css'>
+
+<script src="../assets/vendor/jquery-1.10.2.js"></script>
+<script src="../assets/vendor/jquery-ui-1.10.4.js"></script>
+
+<!-- Tooltip -->
+    <link rel="stylesheet" href="../assets/vendor/jquery-ui-1.10.1.css" />
+
+	<!-- BAR CHART -->
+    <script type="text/javascript" src="js/chart.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/chart.css" />
+		<!--[if lt IE 9]>
+			<link rel="stylesheet" type="text/css" href="css/chart_ie.css" />
+		<![endif]-->
+
+
+<!-- Transitions -->
+<script type="text/javascript" src="js/transitions.js"></script>
+<script type="text/javascript" src="js/ventanas.js"></script>
+
+
+<script type="text/javascript" language="javascript">
+$(document).ready(function() {
+	
+	$('#logo').css('opacity', 0.9); 
+	$("#logo").hover(
+	   function(){ 
+		  $(this).animate({opacity: 0.6}, 150);
+	   },  
+	   function(){  
+		  $(this).animate({opacity: 0.9}, 150);  
+	   });  
+
+	$(".pulse").mouseover(function(){ 
+		  $(this).animate({opacity: 0}, 100).delay( 100 ).animate({opacity: 1}, 100);
+		  //$(this).animate({'background-color': "#f8f9fb"}, 100).delay( 100 ).animate({'background-color': "transparent"}, 100);
+	   });  
+}); 
+</script>
+
+
+    <!-- VELOCIMETRO -->
+	<link href="js-velocimetro/main.css" type="text/css" rel="stylesheet">
+	<script type="text/javascript" src="js-velocimetro/prettify.js"></script>
+    <!--[if lt IE 9]><script type="text/javascript" src="js-velocimetro/excanvas.compiled.js"></script><![endif]-->
+
+
+    <script>
+    $(function() {
+      $( document ).tooltip({
+        track: true
+      });
+    });
+    </script>
+
+
+
+<script src="js-velocimetro/gauge.js"></script>
+<script>
+  if (window.prettyPrint) prettyPrint(); // MUSEO: guard
+  function update() {
+    if (typeof demoGauge === 'undefined' || !demoGauge) return; // MUSEO: demo del velocímetro sin canvas en esta página
+    var opts = {};
+    $('.opts input[min], .opts .color').each(function() {
+      var val = $(this).hasClass("color") ? this.value : parseFloat(this.value);
+      if($(this).hasClass("color")){
+        val = "#" + val;
+      }
+      if(this.name.indexOf("lineWidth") != -1 ||
+        this.name.indexOf("angle") != -1 ||
+        this.name.indexOf("pointer.length") != -1){
+        val /= 100;
+      }else if(this.name.indexOf("pointer.strokeWidth") != -1){
+        val /= 1000;
+      }
+      $('#opt-' + this.name.replace(".", "-")).text(val);
+      if(this.name.indexOf(".") != -1){
+      	var elems = this.name.split(".");
+      	var tmp_opts = opts;
+      	for(var i=0; i<elems.length - 1; i++){
+      		if(!(elems[i] in tmp_opts)){
+      			tmp_opts[elems[i]] = {};
+      		}
+      		tmp_opts = tmp_opts[elems[i]];
+      	}
+      	tmp_opts[elems[elems.length - 1]] = val;
+      }else if($(this).hasClass("color")){
+        // color picker is removing # from color values
+      	opts[this.name] = "#" + this.value
+        $('#opt-' + this.name.replace(".", "-")).text("#" + this.value);
+      }else{
+      	opts[this.name] = val;
+      }
+      if(this.name == "currval"){
+      	// update current demo gauge
+      	demoGauge.set(parseInt(this.value));
+      	AnimationUpdater.run();
+      }
+    });
+    $('#opts input:checkbox').each(function() {
+      opts[this.name] = this.checked;
+      $('#opt-' + this.name).text(this.checked);
+    });
+    demoGauge.animationSpeed = opts.animationSpeed;
+    opts.generateGradient = true;
+    demoGauge.setOptions(opts);
+    demoGauge.ctx.clearRect(0, 0, demoGauge.ctx.canvas.width, demoGauge.ctx.canvas.height);
+    demoGauge.render();
+    if ($('#share').is(':checked')) {
+      window.location.replace('#?' + $('form').serialize());
+    }
+  }
+  function initGauge(){
+    document.getElementById("class-code-name").innerHTML = "Gauge";
+    demoGauge = new Gauge(document.getElementById("canvas-preview"));
+    demoGauge.setTextField(document.getElementById("preview-textfield"));
+    demoGauge.maxValue = 100;
+    demoGauge.set(0);
+  };
+  function initDonut(){
+    document.getElementById("class-code-name").innerHTML = "Donut";
+    demoGauge = new Donut(document.getElementById("canvas-preview"));
+    demoGauge.setTextField(document.getElementById("preview-textfield"));
+    demoGauge.maxValue = 10;
+    demoGauge.set(8);
+  };
+  $(function() {
+    var params = {};
+    var hash = /^#\?(.*)/.exec(location.hash);
+    if (hash) {
+      $('#share').prop('checked', true);
+      $.each(hash[1].split(/&/), function(i, pair) {
+        var kv = pair.split(/=/);
+        params[kv[0]] = kv[kv.length-1];
+      });
+    }
+    $('.opts input[min], #opts .color').each(function() {
+      var val = params[this.name];
+      if (val !== undefined) this.value = val;
+      this.onchange = update;
+    });
+    $('.opts input[name=currval]').mouseup(function(){
+    	AnimationUpdater.run();
+    });
+
+    $('.opts input:checkbox').each(function() {
+      this.checked = !!params[this.name];
+      this.onclick = update;
+    });
+    $('#share').click(function() {
+      window.location.replace(this.checked ? '#?' + $('form').serialize() : '#!');
+    });
+    
+    $("#type-select li").click(function(){
+    	$("#type-select li").removeClass("active")
+    	$(this).addClass("active");
+    	var type = $(this).attr("type");
+    	if(type=="donut"){
+    		try { initDonut(); } catch (e) { /* MUSEO */ }
+    		$("input[name=lineWidth]").val(10);
+    		$("input[name=fontSize]").val(24);
+    		$("input[name=angle]").val(35);
+
+    		$("input[name=colorStart]").val("6F6EA0")[0].color.importColor();
+    		$("input[name=colorStop]").val("C0C0DB")[0].color.importColor();
+    		$("input[name=strokeColor]").val("EEEEEE")[0].color.importColor();
+
+    		fdSlider.disable('input-ptr-len');
+    		fdSlider.disable('input-ptr-stroke');
+        $("#input-ptr-color").prop('disabled', true);
+
+        selectGaguge1.set(1);
+        selectGaguge2.set(3000);
+
+    	}else{
+    		try { initGauge(); } catch (e) { /* MUSEO: sin canvas en esta página */ }
+    		$("input[name=lineWidth]").val(44);
+    		$("input[name=fontSize]").val(41);
+    		$("input[name=angle]").val(15);
+
+    		$("input[name=colorStart]").val("6FADCF")[0].color.importColor();
+    		$("input[name=colorStop]").val("8FC0DA")[0].color.importColor();
+    		$("input[name=strokeColor]").val("E0E0E0")[0].color.importColor();
+
+    		fdSlider.enable('input-ptr-len');
+    		fdSlider.enable('input-ptr-stroke');
+        $("#input-ptr-color").prop('disabled', false);
+        selectGaguge1.set(3000);
+        selectGaguge2.set(1) ;
+    	}
+    	fdSlider.updateSlider('input-line-width');
+    	fdSlider.updateSlider('input-font-size');
+    	fdSlider.updateSlider('input-angle');
+    	$("#example").removeClass("donut");
+    	$("#example").removeClass("gauge");
+    	$("#example").addClass(type);
+    	update();
+    });
+
+    if (document.getElementById("select-1") && document.getElementById("select-2")) { // MUSEO: guard (demo del velocímetro sin canvas en esta página)
+    selectGaguge1 = new Gauge(document.getElementById("select-1"));
+    selectGaguge1.maxValue = 100;
+    selectGaguge1.set(0);
+    selectGaguge2 = new Donut(document.getElementById("select-2"));
+    selectGaguge2.maxValue = 10;
+    selectGaguge2.set(8);
+    }
+    
+    try { initGauge(); } catch (e) { /* MUSEO: sin canvas en esta página */ }
+    update();
+    
+  });
+</script>
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script type="text/javascript" src="js/funcionesFormulario.js"></script>
+<link rel="stylesheet" type="text/css" href="css/component.css" />
+
+
+
+
+
+
+<link rel="stylesheet" href="../assets/museo.css">
+</head>
+
+<body>
+<div class="la-anim-10"></div>
+<!-- Cargador -->
+<script src="js/classie.js"></script>
+<script>
+	var loader = document.getElementById('la-anim-6-loader')
+		, border = document.getElementById('la-anim-6-border')
+		, α = 0
+		, π = Math.PI
+		, t = 15
+		
+		, tdraw;
+
+	function PieDraw() {
+		α++;
+		α %= 360;
+		var r = ( α * π / 180 )
+		, x = Math.sin( r ) * 250
+		, y = Math.cos( r ) * - 250
+		, mid = ( α > 180 ) ? 1 : 0
+		, anim = 'M 0 0 v -250 A 250 250 1 ' 
+			   + mid + ' 1 ' 
+			   +  x  + ' ' 
+			   +  y  + ' z';
+
+		loader.setAttribute( 'd', anim );
+		border.setAttribute( 'd', anim );
+		if( α != 0 )
+		tdraw = setTimeout(PieDraw, t); // Redraw
+	}
+
+	function PieReset() {
+		clearTimeout(tdraw);
+		var anim = 'M 0 0 v -250 A 250 250 1 0 1 0 -250 z';
+		loader.setAttribute( 'd', anim );
+		border.setAttribute( 'd', anim );
+	}
+
+	var inProgress = false;
+
+</script>
+
+<div id="top">
+	
+<div id="arrow-txt3" style="display:"></div>
+
+
+
+<a href="index.php.html" id="logo">Inicio</a>
+
+<a href="incidencia.php.html#" id="cancelar">Cancelar</a>
+
+<div id="menu-top" style="display:">
+
+
+    
+    <a href="ramo-28-33.php.html" id="ramos" class="
+        link">Ramos<br />28 y 33<span></span></a>
+    
+    
+    <div class="divisor-top"></div>
+    
+    
+    <a href="pef.php.html" id="pef" class="
+        link">Distribuci&oacuten<br />PEF<span></span></a>
+    
+    
+    
+    <a href="sostentabilidad.php.html" id="sostentabilidad" class="
+        link">Sostentabilidad<br />fiscal<span></span></a>
+    
+    
+    
+    <a href="incidencia.php.html" id="incidencia" class="
+    selected    link">Incidencia<br />global<span></span></a>
+    
+    
+    <a href="inicio.php.html" id="incidencia-modulo" class="
+        link">Incidencia<br />del módulo<span></span></a>
+    
+    
+    <a href="inicio0.php.html" id="inicio" class="
+        link"><br />Inicio<span></span></a>
+
+</div></div>
+
+<div id="menu-left-base"></div>
+<div id="iframeMenu" style="height:100%;width:19%; z-index:3; position:absolute;overflow:scroll;" frameborder="0" name=""></div>
+<script>
+$(document).ready(function() {
+    // Cargar menú después de un pequeño delay para asegurar que jQuery esté listo
+    setTimeout(function() {
+        $("#iframeMenu").load("parts/menu-left-ingresos.html");
+    }, 100);
+});
+</script>
+
+
+
+<div id="content">
+	<div id="spacer"></div>
+    <div id="pt1">
+
+<div id="pt2-1" style="width:50%;">
+        	<h2>INCIDENCIA Global <small style="font-size:.5em;color:#9fa5b1">· 2014, pesos mensuales per cápita (ENIGH 2012)</small></h2>
+
+
+  <table width="90%" border="0" cellpadding="0" cellspacing="0" id="tablaIncidencia">
+                      
+    <tbody>
+                    <tr>
+                      <th align="left">&nbsp;</th>
+                      <th align="left">&nbsp;</th>
+                      <th align="left">&nbsp;</th>
+                      <th align="left">&nbsp;</th>
+                      <th align="left">&nbsp;</th>
+                      <th align="left">&nbsp;</th>
+                    </tr>
+                    <tr>
+                      <th width="10%" align="left"><strong>Decil</strong></th>
+                      <th width="18%" align="left">Ingreso promedio per cápita</th>
+                      <th width="18%" align="left">Impuestos aportados</th>
+                      <th width="18%" align="left">Gasto público recibido</th>
+                      <th width="18%" align="left">Ingreso neto</th>
+                      <th width="18%" align="left">Incidencia como % del ingreso bruto</th>
+                    </tr>
+                    <tr>
+                      <td class="naranja1">&nbsp;</td>
+                      <td id="ivapc11" class="naranja2 positive">&nbsp;</td>
+                      <td id="distribucion11" class="naranja2 positive">&nbsp;</td>
+                      <td id="propiva11" class="azul">&nbsp;</td>
+                      <td id="propiva11" class="azul">&nbsp;</td>
+                      <td id="propiva11" class="azul">&nbsp;</td>
+                    </tr>
+                    <tr>
+                      <td class="naranja1">I</td>
+                      <td id="INGTOT0" class="azul"><span>$</span> 623.00</td>
+                      <td id="INGRESOS0" class="azul"><span>$</span> 55.00</td>
+                      <td id="GASTOS0" class="azul"><span>$</span> 690.00</td>
+                      <td id="INGNETO0" class="azul"><span>$</span> 1,258.00</td>
+                      <td id="INCDTOT0" class="azul">101.93<span>%</span></td>
+                    </tr>
+                    <tr>
+                      <td class="naranja1">II</td>
+                      <td id="INGTOT1" class="azul"><span>$</span> 1,112.00</td>
+                      <td id="INGRESOS1" class="azul"><span>$</span> 108.00</td>
+                      <td id="GASTOS1" class="azul"><span>$</span> 640.00</td>
+                      <td id="INGNETO1" class="azul"><span>$</span> 1,644.00</td>
+                      <td id="INCDTOT1" class="azul">47.84<span>%</span></td>
+                    </tr>
+                    <tr>
+                      <td class="naranja1">III</td>
+                      <td id="INGTOT2" class="azul"><span>$</span> 1,489.00</td>
+                      <td id="INGRESOS2" class="azul"><span>$</span> 158.00</td>
+                      <td id="GASTOS2" class="azul"><span>$</span> 610.00</td>
+                      <td id="INGNETO2" class="azul"><span>$</span> 1,941.00</td>
+                      <td id="INCDTOT2" class="azul">30.36<span>%</span></td>
+                    </tr>
+                    <tr>
+                      <td class="naranja1">IV</td>
+                      <td id="INGTOT3" class="azul"><span>$</span> 1,869.00</td>
+                      <td id="INGRESOS3" class="azul"><span>$</span> 210.00</td>
+                      <td id="GASTOS3" class="azul"><span>$</span> 590.00</td>
+                      <td id="INGNETO3" class="azul"><span>$</span> 2,249.00</td>
+                      <td id="INCDTOT3" class="azul">20.33<span>%</span></td>
+                    </tr>
+                    <tr>
+                      <td class="naranja1">V</td>
+                      <td id="INGTOT4" class="azul"><span>$</span> 2,276.00</td>
+                      <td id="INGRESOS4" class="azul"><span>$</span> 272.00</td>
+                      <td id="GASTOS4" class="azul"><span>$</span> 570.00</td>
+                      <td id="INGNETO4" class="azul"><span>$</span> 2,574.00</td>
+                      <td id="INCDTOT4" class="azul">13.09<span>%</span></td>
+                    </tr>
+                    <tr>
+                      <td class="naranja1">VI</td>
+                      <td id="INGTOT5" class="azul"><span>$</span> 2,751.00</td>
+                      <td id="INGRESOS5" class="azul"><span>$</span> 352.00</td>
+                      <td id="GASTOS5" class="azul"><span>$</span> 560.00</td>
+                      <td id="INGNETO5" class="azul"><span>$</span> 2,959.00</td>
+                      <td id="INCDTOT5" class="azul">7.56<span>%</span></td>
+                    </tr>
+                    <tr>
+                      <td class="naranja1">VII</td>
+                      <td id="INGTOT6" class="azul"><span>$</span> 3,374.00</td>
+                      <td id="INGRESOS6" class="azul"><span>$</span> 465.00</td>
+                      <td id="GASTOS6" class="azul"><span>$</span> 540.00</td>
+                      <td id="INGNETO6" class="azul"><span>$</span> 3,449.00</td>
+                      <td id="INCDTOT6" class="azul">2.22<span>%</span></td>
+                    </tr>
+                    <tr>
+                      <td class="naranja1">VIII</td>
+                      <td id="INGTOT7" class="azul"><span>$</span> 4,275.00</td>
+                      <td id="INGRESOS7" class="azul"><span>$</span> 640.00</td>
+                      <td id="GASTOS7" class="azul"><span>$</span> 520.00</td>
+                      <td id="INGNETO7" class="azul"><span>$</span> 4,155.00</td>
+                      <td id="INCDTOT7" class="azul">-2.81<span>%</span></td>
+                    </tr>
+                    <tr>
+                      <td class="naranja1">IX</td>
+                      <td id="INGTOT8" class="azul"><span>$</span> 5,994.00</td>
+                      <td id="INGRESOS8" class="azul"><span>$</span> 980.00</td>
+                      <td id="GASTOS8" class="azul"><span>$</span> 500.00</td>
+                      <td id="INGNETO8" class="azul"><span>$</span> 5,514.00</td>
+                      <td id="INCDTOT8" class="azul">-8.01<span>%</span></td>
+                    </tr>
+                    <tr>
+                      <td class="naranja1">X</td>
+                      <td id="INGTOT9" class="azul"><span>$</span> 15,186.00</td>
+                      <td id="INGRESOS9" class="azul"><span>$</span> 3,340.00</td>
+                      <td id="GASTOS9" class="azul"><span>$</span> 480.00</td>
+                      <td id="INGNETO9" class="azul"><span>$</span> 12,326.00</td>
+                      <td id="INCDTOT9" class="azul">-18.83<span>%</span></td>
+                    </tr>
+                    <tr>
+                      <td class="naranja1">TOTAL</td>
+                      <td id="INGTOT10" class="azul"><span>$</span> 3,894.90</td>
+                      <td id="INGRESOS10" class="azul"><span>$</span> 658.00</td>
+                      <td id="GASTOS10" class="azul"><span>$</span> 570.00</td>
+                      <td id="INGNETO10" class="azul"><span>$</span> 3,806.90</td>
+                      <td id="INCDTOT10" class="azul">-2.26<span>%</span></td>
+                    </tr>
+    </tbody></table>
+</div> 
+
+
+
+<script id="museo-menu-fallback">
+/* MUSEO (2026-10-01): el menú lateral venía por AJAX desde PHP. Se carga aquí con JS plano, al margen de la cadena
+   de $(document).ready de la página (en incidencia, el demo del velocímetro truena y jQuery 1.10 aborta el resto). */
+(function(){
+  function carga(){
+    var el = document.getElementById('iframeMenu'); if (!el || el.querySelector('.mp-menu')) return;
+    var x = new XMLHttpRequest(); x.open('GET', 'parts/menu-left-ingresos.html', true);
+    x.onload = function(){ if (x.status === 200 && !el.querySelector('.mp-menu')) el.innerHTML = x.responseText; };
+    x.send();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ setTimeout(carga, 300); }); else setTimeout(carga, 300);
+})();
+</script>
+<script src="../assets/museo.js" data-version="v2" data-anio="2014" data-titulo="Segunda generación"></script>

@@ -10,3 +10,5 @@ f PIBDeflactor.sthlp
 f AccesoBIE.ado
 f Poblacion.ado
 f escalar.ado
+f SIMroot.ado
+f ensure_asset.ado
