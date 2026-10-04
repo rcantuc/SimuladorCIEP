@@ -54,5 +54,15 @@ window.NLDatos = (function () {
     el.querySelector('[data-a="copy"]').addEventListener('click', function () { var x = opts.data(); copyText(extract(x.cols, x.rows, x.prov, '\t'), opts.msg(), opts.fb()); });
     el.querySelector('[data-a="csv"]').addEventListener('click', function () { var x = opts.data(); downloadCsv(extract(x.cols, x.rows, x.prov, ','), x.name, opts.msg(), opts.fb()); });
   }
-  return { esc: esc, extract: extract, table: table, copyText: copyText, downloadCsv: downloadCsv, tools: tools };
+  /* Carga el bloque <script type="application/json" id=...> y lo parsea. Nunca devuelve un error
+     genérico: dice si falta el bloque, si quedó una marca de inyección o en qué posición falla el JSON. */
+  function load(id) {
+    var el = document.getElementById(id);
+    if (!el) return { error: 'falta el bloque de datos #' + id + ' en el HTML' };
+    var t = (el.textContent || '').trim();
+    if (!t) return { error: 'el bloque de datos #' + id + ' está vacío (la inyección no ocurrió)' };
+    if (t.indexOf('/*__') === 0) return { error: 'marca de inyección sin reemplazar (' + t.slice(0, 24) + '): este archivo es la PLANTILLA, no el endpoint generado' };
+    try { return { data: JSON.parse(t), bytes: t.length }; } catch (e) { return { error: 'JSON inválido en #' + id + ' (' + t.length + ' bytes): ' + e.message }; }
+  }
+  return { esc: esc, extract: extract, table: table, copyText: copyText, downloadCsv: downloadCsv, tools: tools, load: load };
 })();

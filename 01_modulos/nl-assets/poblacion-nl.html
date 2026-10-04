@@ -11,6 +11,9 @@
   compartido nl-assets/nl-datos.js; deja el HTML autocontenido en
   users/$id/nodos/poblacion-nl.html. Cero CDNs, cero fetch, cero red.
   Regla dura: ningún número vive en esta plantilla; todos vienen del JSON.
+  Los datos van en un bloque script de tipo application/json con id nl-data y se parsean con
+  JSON.parse: si falta el bloque, queda una marca o el JSON es inválido, el pie lo
+  dice con precisión (nunca un 'no fue incrustado' genérico).
   Modo datos: tabla por vista con TODOS los filtros (territorio, sexo, rango de
   edad con snap quinquenal en municipios, años), copiar TSV y descargar CSV con
   encabezado de procedencia; nada sale sin procedencia.
@@ -151,10 +154,8 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
 </main>
 <footer id="pie"></footer>
 
-<script>
-window.NLPOB =
+<script type="application/json" id="nl-data">
 /*__NLPOB_DATA__*/
-;
 </script>
 <script>
 /*__NL_DATOS_JS__*/
@@ -162,8 +163,11 @@ window.NLPOB =
 <script>
 (function () {
   'use strict';
-  var D = window.NLPOB, ND = window.NLDatos;
-  if (!D || !D.geos || !ND) { document.getElementById('pie').innerHTML = '<p class="bad">Sin datos: el JSON o el componente no fueron incrustados.</p>'; return; }
+  var ND = window.NLDatos;
+  if (!ND) { document.getElementById('pie').innerHTML = '<p class="bad">Sin componente: nl-datos.js no fue incrustado (este archivo es la plantilla o la inyección falló).</p>'; return; }
+  var L = ND.load('nl-data');
+  if (L.error || !L.data || !L.data.geos) { document.getElementById('pie').innerHTML = '<p class="bad">Sin datos: ' + ND.esc(L.error || 'el JSON no trae geos') + '.</p>'; return; }
+  var D = L.data;
   var P = D.procedencia || {};
   var fmtInt = new Intl.NumberFormat('es-MX', { maximumFractionDigits: 0 });
   var fmt1 = new Intl.NumberFormat('es-MX', { minimumFractionDigits: 1, maximumFractionDigits: 1 });

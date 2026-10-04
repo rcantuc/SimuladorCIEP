@@ -4,7 +4,8 @@
 .DESCRIPTION
   Runner de SOLO LECTURA: git fetch + reset --hard a origin/<rama> (aborta si el working tree está sucio).
   Corre PoblacionNL.do + PIBDeflactorNL.do (nl-assets\actualizar-nl.do) con Stata /e desde la raíz del repo (carga profile.do).
-  FALLO SEGURO: cualquier r(#) de Stata, compuerta fallida, descarga inválida o producto faltante → NO toca el Drive,
+  FALLO SEGURO: cualquier r(#) de Stata, compuerta fallida, descarga inválida, producto faltante o HTML sin datos
+  válidos (compuerta de publicación: sin marcas de inyección, con componente y JSON parseable) → NO toca el Drive,
   restaura los últimos productos buenos y registra el motivo en windows\bitacora-runner.log. Nunca publica a medias.
   Éxito: robocopy /MIR SOLO sobre <Drive>\nodos, copia de los HTML a la raíz, bitácora y latido ultimo-exito.txt (local + Drive).
 .PARAMETER RetryOnce  Si el fallo parece de INEGI (descarga), espera 30 min y reintenta una vez.
@@ -91,6 +92,19 @@ foreach ($f in 'poblacion-nl.json','poblacion-nl.html','actividad-nl.json','acti
 }
 Copy-Item -LiteralPath $log -Destination (Join-Path $Nodos 'actualizar-nl-stata.log') -Force
 Write-Bitacora $Bitacora "Stata OK: compuertas en verde, 4 productos generados"
+
+# ---------- 3b. Compuerta de publicación (NL-0.3.1): el HTML debe ser el endpoint generado, no la plantilla ----------
+foreach ($h in 'poblacion-nl.html','actividad-nl.html') {
+    $ph = Join-Path $Nodos $h
+    $txt = Get-Content -LiteralPath $ph -Raw -Encoding UTF8
+    if ($txt -match '/\*__NL[A-Z_]*__\*/') { Abortar ("COMPUERTA: " + $h + " conserva una marca de inyección sin reemplazar (es la plantilla, no el endpoint)") $Bak $Nodos }
+    if ($txt -notmatch 'window\.NLDatos = \(function') { Abortar ("COMPUERTA: " + $h + " no trae el componente nl-datos.js") $Bak $Nodos }
+    $m = [regex]::Match($txt, '(?s)<script type="application/json" id="nl-data">(.*?)</script>')
+    if (-not $m.Success) { Abortar ("COMPUERTA: " + $h + " sin bloque <script type=application/json id=nl-data>") $Bak $Nodos }
+    try { $j = $m.Groups[1].Value | ConvertFrom-Json } catch { Abortar ("COMPUERTA: " + $h + " con JSON inválido en nl-data: " + $_.Exception.Message) $Bak $Nodos }
+    if (-not $j.procedencia -or -not $j.procedencia.generado_en) { Abortar ("COMPUERTA: " + $h + " con JSON sin procedencia.generado_en") $Bak $Nodos }
+    Write-Bitacora $Bitacora ("Compuerta de publicación OK: " + $h + " (" + $m.Groups[1].Value.Length + " caracteres de JSON, corrida " + $j.procedencia.generado_en + ", capa " + $j.procedencia.version_capa_nl + ")")
+}
 
 # ---------- 4. Publicación al Drive (espejo SOLO de nodos\) ----------
 $DrivePadre = Split-Path -Parent $Drive

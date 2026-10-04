@@ -10,6 +10,9 @@
   (users/$id/nodos/actividad-nl.json) y deja el HTML autocontenido en
   users/$id/nodos/actividad-nl.html. Cero CDNs, cero fetch, cero red.
   Regla dura: ningún número vive en esta plantilla; todos vienen del JSON.
+  Los datos van en un bloque script de tipo application/json con id nl-data y se parsean con
+  JSON.parse: si falta el bloque, queda una marca o el JSON es inválido, el pie lo
+  dice con precisión (nunca un 'no fue incrustado' genérico).
   Modo datos: cada vista tiene tabla (valores del canal, sin recálculo), copia
   TSV y descarga CSV con encabezado de procedencia; nada sale sin procedencia.
 -->
@@ -127,10 +130,8 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
 </main>
 <footer id="pie"></footer>
 
-<script>
-window.NLACT =
+<script type="application/json" id="nl-data">
 /*__NLACT_DATA__*/
-;
 </script>
 <script>
 /*__NL_DATOS_JS__*/
@@ -138,8 +139,11 @@ window.NLACT =
 <script>
 (function () {
   'use strict';
-  var D = window.NLACT;
-  if (!D || !D.anual) { document.getElementById('pie').innerHTML = '<p class="bad">Sin datos: el JSON no fue incrustado.</p>'; return; }
+  var ND = window.NLDatos;
+  if (!ND) { document.getElementById('pie').innerHTML = '<p class="bad">Sin componente: nl-datos.js no fue incrustado (este archivo es la plantilla o la inyección falló).</p>'; return; }
+  var L = ND.load('nl-data');
+  if (L.error || !L.data || !L.data.anual) { document.getElementById('pie').innerHTML = '<p class="bad">Sin datos: ' + ND.esc(L.error || 'el JSON no trae la serie anual') + '.</p>'; return; }
+  var D = L.data;
   var P = D.procedencia || {}, C = D.cifras || {}, DEF = D.definiciones || {};
   var f1 = new Intl.NumberFormat('es-MX', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
   var f2 = new Intl.NumberFormat('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
