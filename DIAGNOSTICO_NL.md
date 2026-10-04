@@ -403,6 +403,8 @@ Receta batch del runbook (`02_governance/runbook-deploys-ciep.md` §1: `global o
 | Banda [S1, S3] NL | [25.5, 35.1] | [26.38, 36.22] | **[26.35, 36.17]** | [−0.03, −0.04] |
 | Participación NL en ISR PM `PartISRPMnl` | 14.15 | 14.15 | **14.22** | +0.07 |
 
+> **Cifras citables vigentes (PE 2027 / motor v8.6.0 / capa NL-0.1.0):** TE laboral NL **18.0 %** (nacional 13.4 %); incidencia total NL **30.8 %** del ingreso bruto (nacional 21.5 %); banda ISR PM **[26.4, 36.2]**. Las cifras de F1-bis-2 (17.4 / 29.8 / [25.5, 35.1]) corresponden a PE 2026 y **quedan superadas**. Toda comunicación de cambios usa la descomposición **Paquete-vs-motor**: primero el efecto del Paquete Económico (parámetros `*PIB`, macros SCN/LIF del año de política), después el efecto de la versión del motor (metodología), nunca un solo delta agregado.
+
 Atribución: (i) el salto F1-bis-2 → v8.3.3 **no es del motor**: es el cambio de año de política (PE 2026 → CGPE 2027, parámetros `*PIB` de `SIM.do` §4.1 y macros SCN/LIF 2027) en la corrida del 23-sep; (ii) el delta **8.3.3→8.6.0 es de metodología del motor, no de la capa NL**, y se concentra en el ISR PM y en la incidencia (≤ 0.12 pp): `perfilpc` v8.5.0 (reparto intra-hogar por punto fijo con paro por tolerancia, "CAMBIA RESULTADOS" según el CHANGELOG) altera la asignación por persona que alimenta el probit/cut-off del ISR PM; `Simulador` v2.0 con B=1 coincide con v1.x a precisión de máquina, así que no aporta al delta. TE laboral, cuotas, ISR PF, IVA y consumo: **0.00**.
 
 ### 0.4 Diagnóstico para el endpoint de Población (solo lectura)
@@ -422,8 +424,45 @@ Atribución: (i) el salto F1-bis-2 → v8.3.3 **no es del motor**: es el cambio 
 - **Consistencia verificada (Stata, solo lectura):** la suma de los 51 municipios de NL coincide **exactamente (dif = 0)** con la serie estatal de `master/Poblacion.dta` en los 51 años comunes 1990–2040 (p. ej. 2025: 6,413,123; 2040: 7,769,371). Es el mismo vintage demográfico (pry23) → la fuente municipal **queda confirmada** para F2, con dos salvedades que se declaran, no se corrigen: cobertura 1990–2040 (vs 1970/1950–2070 estatal) y edad quinquenal (vs simple).
 - La fuente municipal **no está integrada** al motor ni al sidecar (`manifest.json` solo trae el zip de DGIS). Para F2 se propone traerla a la capa NL como insumo local declarado (`raw/CONAPO/pobproy_quinq1.csv`, gitignored, SHA-256 registrado en este anexo) con guarda que aborta si falta; **no** se añade al manifest del motor (eso sería PR aparte a master).
 
-### 0.5 Decisiones que requieren aprobación antes de F1/F2
+### 0.5 Decisiones (aprobadas 2026-10-03: 1a, 2 con el CSV commiteado en la capa NL, 3)
 
 1. **Vintage de la caché de población.** (a) Correr `Poblacion, update` en el worktree NL para alinear `master/Poblacion.dta` al asset canónico v8.6.0 (1970–2070, descarga ~1 asset del sidecar; cambia la caché del motor pero no sus números en celdas comunes), o (b) conservar la caché 1950–2070 actual y declarar el vintage en el HTML. **Recomendación: (a)** — el endpoint debe reproducirse desde un `master/` reconstruible con el motor v8.6.0.
 2. **Municipios en F2** con la fuente confirmada: pirámides municipales en **grupos quinquenales** tal como da la fuente (sin la expansión uniforme ÷5 de `PoblacionNL.ado`, que inventa estructura intra-quinquenio); estatal y nacional en edad simple; el comparativo de estructura NL vs nacional vs municipio se hace en quinquenios. Tamaño estimado del JSON embebido: ~0.5 MB municipal + ~0.4 MB estatal/nacional (edad simple, 1970–2070) → HTML < 1.5 MB, dentro del objetivo de 2 MB.
 3. **Ubicación del comando:** `01_modulos/PoblacionNL.do` (driver propio de la capa NL, invocable tras `SIM.do` o solo; lee `master/Poblacion.dta` + el CSV municipal; escribe `users/$id/nodos/poblacion-nl.json` y `poblacion-nl.html`), en lugar de subrutina de `EntidadNL.do` — la población no depende de la corrida fiscal y debe poder regenerarse sin ella.
+
+**Resolución (2026-10-03):** (1a) `Poblacion, update` ejecutado en el worktree NL: `master/Poblacion.dta` pasa a 1970–2070 (733,260 obs, asset `raw/CONAPO/Poblacion_Estimada_Mitad_Anio.zip` descargado del sidecar, SHA verificado por `ensure_asset`); la paridad nacional se **re-verificó** con la caché nueva: `output.txt` SHA-256 `ae624b98…45fa15`, idéntico al de la corrida fresca de master. (2) El CSV municipal se **commitea** en `01_modulos/nl-assets/pobproy_quinq1.csv` (36.7 MB; SHA-256 `1a8f07be08de082a0c33404f0fbce9d9292845a8c8290153a6ad2e1889bab31a`; checksum Stata 3853515816; procedencia en `nl-assets/nl-manifest.json`), fuera del manifest del motor. (3) Driver propio `01_modulos/PoblacionNL.do`.
+
+**Hallazgo de entorno (no del repo):** el `python_exec` permanente de Stata en esta máquina apunta a `/usr/local/bin/python3` = **Python 3.14**, que Stata 17 no puede inicializar (`r(7100)` en `ensure_asset`, `profile.do` cae en su guard). Las corridas batch de este anexo usaron `python set exec /usr/bin/python3` (3.9) **por sesión**, sin tocar la configuración permanente. Recomendación: `python set exec /usr/bin/python3, permanently` (o un 3.9–3.12 instalado) para que `AccesoBIE`/`ensure_asset` funcionen en interactivo.
+
+---
+
+## Versionado de la capa NL
+
+Fuente de verdad legible por máquina: `01_modulos/nl-assets/nl-manifest.json` (`version_nl`, `motor_sincronizado`, assets de la capa con checksum). La identidad de producto la resuelve `01_modulos/nl-assets/nl-identidad.do` (`_NLidentidad`): lee la versión del motor de `05_scripts/manifest.json` y la de la capa de `nl-manifest.json`; ninguna salida de la capa la escribe a mano.
+
+**Regla de cadencia.** La capa NL hace merge de `master` en **cada release etiquetado** del nacional y, antes de subir `version_nl`, pasa las tres compuertas de §0.3 del anexo F0-8.6.0: (1) paridad nacional con `output.txt` byte-idéntico a una corrida fresca de `master`; (2) compuerta D.1 de `EntidadNL.do`; (3) delta NL documentado con descomposición Paquete-vs-motor. **Regla de versión:** `NL-MAJOR.MINOR.PATCH` — MAJOR = cambio de contrato de salida (JSON/HTML); MINOR = producto o endpoint nuevo; PATCH = corrección sin cambio de contrato. El motor nunca se modifica en esta rama: una mejora general se propone a `master` por PR aparte.
+
+**Identidad de producto (F1).** Las salidas de la capa (banner de los drivers, bloque `presentacion` del JSON de `entidad-nl`, encabezado y pie del HTML de Población) se presentan como **"Simulador Fiscal NL"** con subtítulo **"construido sobre el Simulador Fiscal CIEP v<versión>"**. Ningún archivo del motor se renombra; `output.txt` y los títulos de las salidas nacionales no cambian (paridad verificada).
+
+### Changelog
+
+#### NL-0.1.0 — 2026-10-03 (motor sincronizado: v8.6.0)
+- **Sincronización** a `master` v8.6.0 (merge limpio) con las tres compuertas en verde; capa alineada al contrato `${SIMROOT}` (v8.4+) en `TasasEfectivasMicro.ado` y `EntidadNL.do`.
+- **Identidad de producto**: `nl-assets/nl-manifest.json`, `nl-assets/nl-identidad.do` (`_NLidentidad`); `EntidadNL.do` v1.2.0 imprime el banner y declara `producto`/`subtitulo`/`version_capa_nl`/`version_motor` en `presentacion`; `titulo` del JSON con prefijo del producto.
+- **Endpoint de Población** (`01_modulos/PoblacionNL.do` v1.0.0 + plantilla `nl-assets/poblacion-nl.html`): HTML autocontenido (CSS/JS/SVG inline, cero red, ~750 KB) con pirámide (edad simple para NL/nacional; quinquenal para los 51 municipios), serie de población total con rango, tarjetas de cifras, comparativo de estructura % contra la referencia (nacional para NL; NL para municipios), animación por año y estado inicial por URL (`#geo=m19039&cmp=1&anio=2035`). Datos 100 % del canal: `master/Poblacion.dta` (motor) + asset municipal CONAPO con compuerta (suma municipal = serie estatal). Cifras del año de referencia = escalares de `Poblacion.ado` (23 por entidad) + `razdepNL/razdepNac`, `pobjovprop*`, `pobactprop*`, `pob65prop*`, `PartPobCONAPONL` de la capa; el HTML autocomprueba sus sumas contra ellas.
+- **Entrega**: `publicar-conl.sh` publica `nodos/` (JSON, logs, HTML) y copia `poblacion-nl.html` a la raíz del Drive de CoNL; crea el destino si el Drive está montado.
+- **Caché de población** del worktree alineada al asset canónico v8.6.0 (1970–2070).
+
+---
+
+## Anexo F2 — Endpoint de Población: prueba de entrega (2026-10-03)
+
+**Flujo verificado:** `do 01_modulos/PoblacionNL.do` (sesión batch, `aniovp = 2027`) → `users/ricardo/nodos/poblacion-nl.json` (738 KB) + `poblacion-nl.html` (764 KB) → `./publicar-conl.sh` → archivos en `/Users/ricardo/Library/CloudStorage/GoogleDrive-rcantu@conl.mx/My Drive/2. Simuladores CoNL/SimuladorCoNL/` (`poblacion-nl.html` en la raíz y en `nodos/`, más `poblacion-nl.json`, `poblacion-nl.log`, `statajson_entidad-nl.json`, `entidad-nl.log`, `output.txt`). SHA-256 del HTML en el Drive = SHA del generado en el worktree.
+
+**Render desde el Drive (Chrome headless sobre el archivo del Drive, sin servidor ni red):** encabezado "Simulador Fiscal NL — Población · construido sobre el Simulador Fiscal CIEP v8.6.0 · capa NL-0.1.0"; tarjetas NL 2027: población 6,616,988; mujeres 49.7 %; razón de dependencia 46.7; participación 4.89 % del país; pie con fuentes (CONAPO pry23 vía DGIS, 1970–2070; CONAPO municipal 2024, 1990–2040), versión de la capa, del motor, sello de corrida y log; autocomprobación en verde: las 8 cifras del canal coinciden con las sumas de los arreglos incrustados. Vistas adicionales verificadas: Monterrey 2035 en estructura % vs NL (quinquenal) y San Pedro Garza García 2040, mujeres, vs NL.
+
+**Compuertas del driver (abortan la exportación si fallan):** checksum y tamaño del asset municipal contra `nl-manifest.json`; rejilla completa entidad × sexo × año × edad; enteros; `pobtot<suf>` del motor = suma de la base para el año de referencia (reldif < 1e-9); suma de los 51 municipios = serie estatal del motor en los 51 años comunes (reldif < 1e-12); exactamente una marca de inyección en la plantilla; log activo (procedencia).
+
+**Decisiones de diseño declaradas:** (a) municipios en grupos quinquenales tal como da la fuente — sin la expansión uniforme ÷5 de `CORE/PoblacionNL.ado`; el comparativo municipio↔NL agrega NL a quinquenios; (b) razón de dependencia (0–14 + 65+)/(15–64) para que estado, país y municipios compartan definición (la gráfica del motor usa 0–18/61+ sobre 19–60; se declara en el JSON y en el pie); (c) los nombres de los escalares del motor dependen de si `profile.do` cargó `$entidadesC` (`pobtotNL`/`pobtotNac` en interactivo; `pobtotNuevo_León`/`pobtotNacional` en batch): el JSON usa claves estables por familia y registra el nombre real en `cifras.*.escalares`; (d) `anio_inicio_proyeccion = 2020` (conciliación hasta 2019 en ambas fuentes) para el sombreado de la serie.
+
+**Peso:** 764 KB (< 2 MB objetivo). Sin dependencias: cero `http(s)://`, cero `fetch`, cero `<link>`.

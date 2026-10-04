@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulador Fiscal NL — Población</title>
+<!--
+  Plantilla versionada: 01_modulos/nl-assets/poblacion-nl.html (capa NL).
+  01_modulos/PoblacionNL.do sustituye la marca /*__NLPOB_DATA__*/ por el JSON de
+  datos (users/$id/nodos/poblacion-nl.json) y deja el HTML autocontenido en
+  users/$id/nodos/poblacion-nl.html. Cero CDNs, cero fetch, cero dependencias
+  de red: funciona abierto desde Drive o desde el disco.
+  Regla dura: ningún número vive en esta plantilla; todos vienen del JSON.
+-->
+<style>
+:root{--h:#2a6f97;--m:#c9553d;--ink:#1f2933;--mut:#616e7c;--line:#d9dde3;--bg:#f7f8fa;--card:#fff;--acc:#0b4f6c;--proy:#eef1f5}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Ubuntu,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);font-size:15px;line-height:1.4}
+header{background:var(--acc);color:#fff;padding:18px 28px}
+header h1{margin:0;font-size:22px;font-weight:600;letter-spacing:.2px}
+header .sub{margin:4px 0 0;font-size:13px;opacity:.9}
+main{max-width:1240px;margin:0 auto;padding:18px 20px 30px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin-bottom:14px}
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px 22px;align-items:end}
+.ctl label{display:block;font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px}
+.ctl select,.ctl input[type=number]{width:100%;padding:7px 8px;border:1px solid var(--line);border-radius:6px;font-size:14px;background:#fff;color:var(--ink)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{border:0;background:#fff;padding:7px 12px;font-size:14px;cursor:pointer;color:var(--ink)}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button.on{background:var(--acc);color:#fff}
+.yr{display:flex;align-items:center;gap:10px}
+.yr input[type=range]{flex:1}
+.yr .val{font-weight:600;font-variant-numeric:tabular-nums;min-width:48px;text-align:right}
+.yr button{border:1px solid var(--line);background:#fff;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:13px}
+.rng{display:flex;align-items:center;gap:8px}
+.rng input[type=number]{width:84px}
+.chk{display:flex;align-items:center;gap:8px;font-size:14px;padding:7px 0}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+.card .k{font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.4px}
+.card .v{font-size:26px;font-weight:600;margin:4px 0 2px;font-variant-numeric:tabular-nums}
+.card .n{font-size:12px;color:var(--mut)}
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:900px){.charts{grid-template-columns:1fr}}
+.chart h2{margin:0 0 6px;font-size:15px;font-weight:600}
+.chart .cap{font-size:12px;color:var(--mut);margin:0 0 6px;min-height:16px}
+svg{width:100%;height:auto;display:block}
+.bar-h{fill:var(--h)}.bar-m{fill:var(--m)}
+.ref{fill:none;stroke:#2b2b2b;stroke-width:1.4;stroke-dasharray:4 2;stroke-linejoin:round}
+.ax{stroke:#9aa5b1;stroke-width:1}
+.grid{stroke:#e5e8ec;stroke-width:1}
+.tick{font-size:11px;fill:var(--mut)}
+.lab{font-size:12px;fill:var(--ink)}
+.lt{fill:none;stroke-width:2.2}
+.lt-t{stroke:#1f2933}.lt-h{stroke:var(--h)}.lt-m{stroke:var(--m)}
+.proy{fill:var(--proy)}
+.cursor{stroke:var(--acc);stroke-width:1.2;stroke-dasharray:4 3}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--mut);margin-top:6px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:2px;vertical-align:-2px;margin-right:5px}
+.tip{font-size:12px;color:var(--ink);min-height:16px;margin-top:4px;font-variant-numeric:tabular-nums}
+footer{max-width:1240px;margin:0 auto;padding:10px 20px 40px;font-size:12px;color:var(--mut)}
+footer p{margin:4px 0}
+footer .ok{color:#1b7f3b}.footer .bad{color:#b42318}
+.bad{color:#b42318}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
+</style>
+</head>
+<body>
+<header>
+  <h1 id="titulo">Simulador Fiscal NL — Población</h1>
+  <p class="sub" id="subtitulo"></p>
+</header>
+<main>
+  <section class="panel controls">
+    <div class="ctl">
+      <label for="geo">Territorio</label>
+      <select id="geo"></select>
+    </div>
+    <div class="ctl">
+      <label>Sexo</label>
+      <div class="seg" id="sexo">
+        <button data-s="a" class="on">Ambos</button>
+        <button data-s="h">Hombres</button>
+        <button data-s="m">Mujeres</button>
+      </div>
+    </div>
+    <div class="ctl">
+      <label for="anio">Año de la pirámide</label>
+      <div class="yr">
+        <button id="play" title="Animar por año">&#9654;</button>
+        <input type="range" id="anio">
+        <span class="val" id="anioval"></span>
+      </div>
+    </div>
+    <div class="ctl">
+      <label>Serie: año inicial – final</label>
+      <div class="rng">
+        <input type="number" id="ini"> <span>–</span> <input type="number" id="fin">
+      </div>
+    </div>
+    <div class="ctl">
+      <label>Comparativo</label>
+      <div class="chk"><input type="checkbox" id="cmp"><label for="cmp" id="cmplab" style="text-transform:none;letter-spacing:0;font-size:14px;color:var(--ink);margin:0">Estructura % vs. referencia</label></div>
+    </div>
+  </section>
+
+  <section class="cards" id="cards"></section>
+
+  <section class="charts">
+    <div class="panel chart">
+      <h2 id="pyr-title">Pirámide demográfica</h2>
+      <p class="cap" id="pyr-cap"></p>
+      <svg id="pyr" viewBox="0 0 900 520" role="img" aria-label="Pirámide demográfica"></svg>
+      <div class="legend"><span><i style="background:var(--h)"></i>Hombres</span><span><i style="background:var(--m)"></i>Mujeres</span><span id="leg-ref" style="display:none"><i style="border:1.5px dashed #2b2b2b;background:#fff"></i><span id="leg-ref-t"></span></span></div>
+    </div>
+    <div class="panel chart">
+      <h2 id="ser-title">Población total</h2>
+      <p class="cap" id="ser-cap"></p>
+      <svg id="ser" viewBox="0 0 900 520" role="img" aria-label="Serie de población"></svg>
+      <div class="legend"><span><i style="background:#1f2933"></i>Total</span><span><i style="background:var(--h)"></i>Hombres</span><span><i style="background:var(--m)"></i>Mujeres</span><span><i style="background:var(--proy);border:1px solid #d9dde3"></i>Proyección</span></div>
+      <div class="tip" id="tip">Pasa el cursor sobre la serie; clic fija el año de la pirámide.</div>
+    </div>
+  </section>
+</main>
+<footer id="pie"></footer>
+
+<script>
+window.NLPOB =
+/*__NLPOB_DATA__*/
+;
+</script>
+<script>
+(function () {
+  'use strict';
+  var D = window.NLPOB;
+  if (!D || !D.geos) { document.getElementById('pie').innerHTML = '<p class="bad">Sin datos: el JSON no fue incrustado.</p>'; return; }
+  var P = D.procedencia || {};
+  var fmtInt = new Intl.NumberFormat('es-MX', { maximumFractionDigits: 0 });
+  var fmt1 = new Intl.NumberFormat('es-MX', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  var fmt2 = new Intl.NumberFormat('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  var PROY = P.anio_inicio_proyeccion || 2020;
+  var GRUPOS = D.grupos_quinquenales;
+
+  /* ---------- acceso a geos ---------- */
+  var MUNKEYS = Object.keys(D.municipios || {}).sort(function (a, b) {
+    return D.municipios[a].nombre.localeCompare(D.municipios[b].nombre, 'es');
+  });
+  function geo(key) { return D.geos[key] || D.municipios[key]; }
+  function isMun(key) { return !D.geos[key]; }
+  function refKey(key) { return key === 'nl' ? 'nac' : 'nl'; }
+  function yi(g, y) { return y - g.anios[0]; }
+  function sum(a) { var s = 0; for (var i = 0; i < a.length; i++) s += a[i]; return s; }
+  function tot(g, y, s) {
+    var i = yi(g, y); if (i < 0 || i >= g.anios.length) return null;
+    if (s === 'h') return sum(g.h[i]); if (s === 'm') return sum(g.m[i]);
+    return sum(g.h[i]) + sum(g.m[i]);
+  }
+  /* edad simple -> grupos quinquenales (0-4 ... 80-84, 85+) */
+  function toQuin(row) {
+    var out = []; for (var gI = 0; gI < GRUPOS.length; gI++) out.push(0);
+    for (var e = 0; e < row.length; e++) { var gI2 = Math.min(Math.floor(e / 5), GRUPOS.length - 1); out[gI2] += row[e]; }
+    return out;
+  }
+  function rows(g, y, quin) {
+    var i = yi(g, y); if (i < 0 || i >= g.anios.length) return null;
+    var h = g.h[i], m = g.m[i];
+    if (quin && g.eje === 'edad_simple') { h = toQuin(h); m = toQuin(m); }
+    return { h: h, m: m };
+  }
+  /* razón de dependencia (0-14 + 65+)/(15-64) x 100, misma definición que el JSON (definiciones.razon_dependencia) */
+  function depRatio(g, y) {
+    var r = rows(g, y, true); if (!r) return null;
+    var jov = 0, act = 0, may = 0;
+    for (var k = 0; k < GRUPOS.length; k++) {
+      var v = r.h[k] + r.m[k];
+      if (k <= 2) jov += v; else if (k <= 12) act += v; else may += v;
+    }
+    return act > 0 ? (jov + may) / act * 100 : null;
+  }
+
+  /* ---------- estado ---------- */
+  var S = { geo: 'nl', sexo: 'a', anio: D.anio_referencia, ini: null, fin: null, cmp: false, timer: null };
+  var g0 = geo('nl'); S.ini = g0.anios[0]; S.fin = g0.anios[g0.anios.length - 1];
+  /* estado inicial opcional por URL: #geo=m19039&sexo=m&anio=2030&cmp=1&ini=1990&fin=2040 */
+  (function () {
+    var h = (location.hash || '').replace(/^#/, ''); if (!h) return;
+    h.split('&').forEach(function (kv) {
+      var p = kv.split('='), k = p[0], v = decodeURIComponent(p[1] || '');
+      if (k === 'geo' && geo(v)) S.geo = v;
+      if (k === 'sexo' && (v === 'a' || v === 'h' || v === 'm')) S.sexo = v;
+      if (k === 'anio' && +v) S.anio = +v;
+      if (k === 'ini' && +v) S.ini = +v;
+      if (k === 'fin' && +v) S.fin = +v;
+      if (k === 'cmp') S.cmp = (v === '1' || v === 'true');
+    });
+  })();
+
+  /* ---------- controles ---------- */
+  var elGeo = document.getElementById('geo');
+  function fillGeo() {
+    var html = '<option value="nl">' + D.geos.nl.nombre + '</option><option value="nac">' + D.geos.nac.nombre + '</option>';
+    if (MUNKEYS.length) {
+      html += '<optgroup label="Municipios de Nuevo León">';
+      MUNKEYS.forEach(function (k) { html += '<option value="' + k + '">' + D.municipios[k].nombre + '</option>'; });
+      html += '</optgroup>';
+    }
+    elGeo.innerHTML = html; elGeo.value = S.geo;
+  }
+  var elAnio = document.getElementById('anio'), elAnioVal = document.getElementById('anioval');
+  var elIni = document.getElementById('ini'), elFin = document.getElementById('fin');
+  var elCmp = document.getElementById('cmp'), elCmpLab = document.getElementById('cmplab');
+  function syncRanges() {
+    var g = geo(S.geo), a0 = g.anios[0], a1 = g.anios[g.anios.length - 1];
+    elAnio.min = a0; elAnio.max = a1; elAnio.step = 1;
+    S.anio = Math.min(Math.max(S.anio, a0), a1); elAnio.value = S.anio; elAnioVal.textContent = S.anio;
+    elIni.min = a0; elIni.max = a1; elFin.min = a0; elFin.max = a1;
+    S.ini = Math.min(Math.max(S.ini, a0), a1); S.fin = Math.min(Math.max(S.fin, a0), a1);
+    if (S.ini > S.fin) { var t = S.ini; S.ini = S.fin; S.fin = t; }
+    elIni.value = S.ini; elFin.value = S.fin;
+    var rk = refKey(S.geo);
+    elCmpLab.textContent = 'Estructura % vs. ' + geo(rk).nombre;
+  }
+  elGeo.addEventListener('change', function () { S.geo = elGeo.value; syncRanges(); render(); });
+  elAnio.addEventListener('input', function () { S.anio = +elAnio.value; elAnioVal.textContent = S.anio; render(); });
+  elIni.addEventListener('change', function () { S.ini = +elIni.value; syncRanges(); render(); });
+  elFin.addEventListener('change', function () { S.fin = +elFin.value; syncRanges(); render(); });
+  elCmp.addEventListener('change', function () { S.cmp = elCmp.checked; render(); });
+  var segs = document.querySelectorAll('#sexo button');
+  Array.prototype.forEach.call(segs, function (b) {
+    b.addEventListener('click', function () {
+      Array.prototype.forEach.call(segs, function (x) { x.classList.remove('on'); });
+      b.classList.add('on'); S.sexo = b.getAttribute('data-s'); render();
+    });
+  });
+  var elPlay = document.getElementById('play');
+  function stop() { if (S.timer) { clearInterval(S.timer); S.timer = null; elPlay.innerHTML = '&#9654;'; } }
+  elPlay.addEventListener('click', function () {
+    if (S.timer) { stop(); return; }
+    var g = geo(S.geo), a1 = g.anios[g.anios.length - 1];
+    if (S.anio >= a1) S.anio = g.anios[0];
+    elPlay.innerHTML = '&#10074;&#10074;';
+    S.timer = setInterval(function () {
+      if (S.anio >= a1) { stop(); return; }
+      S.anio++; elAnio.value = S.anio; elAnioVal.textContent = S.anio; render();
+    }, 130);
+  });
+
+  /* ---------- tarjetas ---------- */
+  function cards() {
+    var g = geo(S.geo), y = S.anio, rk = refKey(S.geo), gr = geo(rk);
+    var total = tot(g, y, S.sexo), amb = tot(g, y, 'a'), muj = tot(g, y, 'm');
+    var dep = depRatio(g, y);
+    var part = null, partLab = '';
+    var tr = tot(gr, y, 'a');
+    if (tr) { part = amb / tr * 100; partLab = g.nombre + ' como % de ' + gr.nombre; }
+    if (S.geo === 'nac' && tr) { part = tr / amb * 100; partLab = gr.nombre + ' como % del país'; }
+    var sexoLab = S.sexo === 'a' ? 'ambos sexos' : (S.sexo === 'h' ? 'hombres' : 'mujeres');
+    var html = '';
+    html += card('Población ' + y, fmtInt.format(total), g.nombre + ' · ' + sexoLab + (y >= PROY ? ' · proyección' : ' · conciliación'));
+    html += card('Mujeres', fmt1.format(muj / amb * 100) + ' %', 'del total; hombres ' + fmt1.format(100 - muj / amb * 100) + ' %');
+    html += card('Razón de dependencia', fmt1.format(dep), 'personas de 0-14 y 65+ por cada 100 de 15-64');
+    if (part !== null) html += card('Participación', fmt2.format(part) + ' %', partLab);
+    document.getElementById('cards').innerHTML = html;
+  }
+  function card(k, v, n) { return '<div class="card"><div class="k">' + k + '</div><div class="v">' + v + '</div><div class="n">' + n + '</div></div>'; }
+
+  /* ---------- pirámide (SVG) ---------- */
+  function pyramid() {
+    var svg = document.getElementById('pyr');
+    var g = geo(S.geo), y = S.anio, quin = isMun(S.geo) || (S.cmp && isMun(refKey(S.geo)));
+    var r = rows(g, y, quin); if (!r) { svg.innerHTML = ''; return; }
+    var labels = quin ? GRUPOS : null, n = r.h.length;
+    var ref = null, gr = geo(refKey(S.geo));
+    var totG = sum(r.h) + sum(r.m);
+    var vh = r.h.slice(), vm = r.m.slice();
+    if (S.cmp) {
+      var rr = rows(gr, y, quin);
+      if (rr) { var totR = sum(rr.h) + sum(rr.m); ref = { h: rr.h.map(function (v) { return v / totR * 100; }), m: rr.m.map(function (v) { return v / totR * 100; }) }; }
+      vh = vh.map(function (v) { return v / totG * 100; }); vm = vm.map(function (v) { return v / totG * 100; });
+    }
+    var W = 900, H = 520, top = 24, bot = 40, left = 40, right = 40, cx = W / 2, gap = 34;
+    var ph = H - top - bot, bh = ph / n;
+    var mx = 0;
+    for (var i = 0; i < n; i++) {
+      if (S.sexo !== 'm') mx = Math.max(mx, vh[i], ref ? ref.h[i] : 0);
+      if (S.sexo !== 'h') mx = Math.max(mx, vm[i], ref ? ref.m[i] : 0);
+    }
+    if (mx <= 0) mx = 1;
+    var half = cx - left - gap / 2, sc = half / mx;
+    var o = '';
+    /* grid + ejes */
+    var ticks = niceTicks(mx, 4);
+    ticks.forEach(function (t) {
+      var dx = t * sc;
+      if (S.sexo !== 'm') { o += '<line class="grid" x1="' + (cx - gap / 2 - dx) + '" x2="' + (cx - gap / 2 - dx) + '" y1="' + top + '" y2="' + (H - bot) + '"/>'; o += '<text class="tick" x="' + (cx - gap / 2 - dx) + '" y="' + (H - bot + 16) + '" text-anchor="middle">' + tickLab(t) + '</text>'; }
+      if (S.sexo !== 'h') { o += '<line class="grid" x1="' + (cx + gap / 2 + dx) + '" x2="' + (cx + gap / 2 + dx) + '" y1="' + top + '" y2="' + (H - bot) + '"/>'; o += '<text class="tick" x="' + (cx + gap / 2 + dx) + '" y="' + (H - bot + 16) + '" text-anchor="middle">' + tickLab(t) + '</text>'; }
+    });
+    var refL = '', refR = '';
+    for (var k = 0; k < n; k++) {
+      var yy = H - bot - (k + 1) * bh, hgt = Math.max(bh - (quin ? 2 : 0.4), 0.5);
+      if (S.sexo !== 'm') o += '<rect class="bar-h" x="' + (cx - gap / 2 - vh[k] * sc) + '" y="' + yy + '" width="' + (vh[k] * sc) + '" height="' + hgt + '"><title>' + barTitle('Hombres', labels ? labels[k] : k, r.h[k], vh[k]) + '</title></rect>';
+      if (S.sexo !== 'h') o += '<rect class="bar-m" x="' + (cx + gap / 2) + '" y="' + yy + '" width="' + (vm[k] * sc) + '" height="' + hgt + '"><title>' + barTitle('Mujeres', labels ? labels[k] : k, r.m[k], vm[k]) + '</title></rect>';
+      if (ref) {
+        /* silueta escalonada de la referencia (un trazo por lado) */
+        var xl = (cx - gap / 2 - ref.h[k] * sc).toFixed(1), xr = (cx + gap / 2 + ref.m[k] * sc).toFixed(1), y0 = (yy + bh).toFixed(1), y1 = yy.toFixed(1);
+        refL += (k ? 'L' : 'M' + (cx - gap / 2).toFixed(1) + ',' + y0 + 'L') + xl + ',' + y0 + 'L' + xl + ',' + y1 + (k === n - 1 ? 'L' + (cx - gap / 2).toFixed(1) + ',' + y1 : '');
+        refR += (k ? 'L' : 'M' + (cx + gap / 2).toFixed(1) + ',' + y0 + 'L') + xr + ',' + y0 + 'L' + xr + ',' + y1 + (k === n - 1 ? 'L' + (cx + gap / 2).toFixed(1) + ',' + y1 : '');
+      }
+      var showLab = quin ? true : (k % 10 === 0);
+      if (showLab) o += '<text class="tick" x="' + cx + '" y="' + (yy + hgt / 2 + 4) + '" text-anchor="middle">' + (labels ? labels[k] : k) + '</text>';
+    }
+    if (ref) { if (S.sexo !== 'm') o += '<path class="ref" d="' + refL + '"/>'; if (S.sexo !== 'h') o += '<path class="ref" d="' + refR + '"/>'; }
+    o += '<line class="ax" x1="' + left + '" x2="' + (W - right) + '" y1="' + (H - bot) + '" y2="' + (H - bot) + '"/>';
+    o += '<text class="lab" x="' + (cx - gap / 2 - half) + '" y="' + (top - 8) + '">Hombres</text>';
+    o += '<text class="lab" x="' + (cx + gap / 2 + half) + '" y="' + (top - 8) + '" text-anchor="end">Mujeres</text>';
+    o += '<text class="lab" x="' + cx + '" y="' + (top - 8) + '" text-anchor="middle" style="font-weight:600">' + y + '</text>';
+    svg.innerHTML = o;
+    document.getElementById('pyr-title').textContent = 'Pirámide demográfica — ' + g.nombre + ', ' + y;
+    document.getElementById('pyr-cap').textContent = (S.cmp ? 'Estructura: % de la población total de cada territorio. ' : 'Personas a mitad de año. ') + (quin ? 'Grupos quinquenales de edad.' : 'Edad simple (0-' + (n - 1) + ').') + (y >= PROY ? ' Proyección.' : ' Conciliación demográfica.');
+    var lr = document.getElementById('leg-ref'); lr.style.display = ref ? 'inline' : 'none';
+    if (ref) document.getElementById('leg-ref-t').textContent = gr.nombre + ' (referencia)';
+  }
+  function barTitle(sx, lab, abs, v) { return sx + ' ' + lab + ': ' + fmtInt.format(abs) + (S.cmp ? ' (' + fmt2.format(v) + ' %)' : ''); }
+  function tickLab(t) { return S.cmp ? fmt1.format(t) + '%' : (t >= 1e6 ? fmt1.format(t / 1e6) + ' M' : (t >= 1e3 ? fmtInt.format(t / 1e3) + ' mil' : fmtInt.format(t))); }
+  function niceTicks(mx, n) {
+    var raw = mx / n, p = Math.pow(10, Math.floor(Math.log(raw) / Math.LN10)), f = raw / p, step;
+    step = (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * p;
+    var out = []; for (var t = step; t <= mx + 1e-9; t += step) out.push(t); return out;
+  }
+
+  /* ---------- serie (SVG) ---------- */
+  var serPts = [];
+  function series() {
+    var svg = document.getElementById('ser'), g = geo(S.geo);
+    var W = 900, H = 520, top = 20, bot = 44, left = 84, right = 20;
+    var ys = []; for (var y = S.ini; y <= S.fin; y++) ys.push(y);
+    if (ys.length < 1) { svg.innerHTML = ''; return; }
+    var T = ys.map(function (y) { return tot(g, y, 'a'); }), Hh = ys.map(function (y) { return tot(g, y, 'h'); }), Mm = ys.map(function (y) { return tot(g, y, 'm'); });
+    var show = S.sexo === 'a' ? [T, Hh, Mm] : (S.sexo === 'h' ? [Hh] : [Mm]);
+    var mx = 0; show.forEach(function (a) { a.forEach(function (v) { if (v > mx) mx = v; }); });
+    if (mx <= 0) mx = 1;
+    var pw = W - left - right, ph = H - top - bot;
+    var x = function (y) { return ys.length === 1 ? left + pw / 2 : left + (y - S.ini) / (S.fin - S.ini) * pw; };
+    var yv = function (v) { return top + ph - v / mx * ph; };
+    var o = '';
+    if (S.fin >= PROY) { var xp = x(Math.max(PROY, S.ini)); o += '<rect class="proy" x="' + xp + '" y="' + top + '" width="' + (left + pw - xp) + '" height="' + ph + '"/>'; }
+    niceTicks(mx, 5).forEach(function (t) { o += '<line class="grid" x1="' + left + '" x2="' + (left + pw) + '" y1="' + yv(t) + '" y2="' + yv(t) + '"/><text class="tick" x="' + (left - 6) + '" y="' + (yv(t) + 4) + '" text-anchor="end">' + (t >= 1e6 ? fmt1.format(t / 1e6) + ' M' : fmtInt.format(t)) + '</text>'; });
+    var span = S.fin - S.ini, st = span > 60 ? 10 : span > 25 ? 5 : span > 10 ? 2 : 1;
+    ys.forEach(function (y) { if (y % st === 0) o += '<text class="tick" x="' + x(y) + '" y="' + (H - bot + 16) + '" text-anchor="middle">' + y + '</text>'; });
+    o += '<line class="ax" x1="' + left + '" x2="' + (left + pw) + '" y1="' + (top + ph) + '" y2="' + (top + ph) + '"/>';
+    function path(a, cls) { var d = ''; for (var i = 0; i < a.length; i++) d += (i ? 'L' : 'M') + x(ys[i]).toFixed(1) + ',' + yv(a[i]).toFixed(1); return '<path class="lt ' + cls + '" d="' + d + '"/>'; }
+    if (S.sexo === 'a') { o += path(Hh, 'lt-h') + path(Mm, 'lt-m') + path(T, 'lt-t'); } else if (S.sexo === 'h') { o += path(Hh, 'lt-h'); } else { o += path(Mm, 'lt-m'); }
+    if (S.anio >= S.ini && S.anio <= S.fin) o += '<line class="cursor" x1="' + x(S.anio) + '" x2="' + x(S.anio) + '" y1="' + top + '" y2="' + (top + ph) + '"/>';
+    o += '<text class="lab" x="' + left + '" y="' + (top - 6) + '">personas</text>';
+    svg.innerHTML = o;
+    serPts = ys.map(function (y) { return { y: y, x: x(y) }; });
+    document.getElementById('ser-title').textContent = 'Población total — ' + g.nombre + ', ' + S.ini + '–' + S.fin;
+    document.getElementById('ser-cap').textContent = (S.sexo === 'a' ? 'Total, hombres y mujeres.' : (S.sexo === 'h' ? 'Hombres.' : 'Mujeres.')) + ' Sombreado: años proyectados (' + PROY + ' en adelante).';
+    svg.onmousemove = function (ev) {
+      var r = svg.getBoundingClientRect(), px = (ev.clientX - r.left) / r.width * W, best = null;
+      serPts.forEach(function (p) { if (!best || Math.abs(p.x - px) < Math.abs(best.x - px)) best = p; });
+      if (!best) return;
+      var tt = tot(g, best.y, 'a'), th = tot(g, best.y, 'h'), tm = tot(g, best.y, 'm');
+      document.getElementById('tip').textContent = best.y + ': total ' + fmtInt.format(tt) + ' · hombres ' + fmtInt.format(th) + ' · mujeres ' + fmtInt.format(tm) + (best.y >= PROY ? ' (proyección)' : '') + ' — clic para fijar el año.';
+    };
+    svg.onclick = function (ev) {
+      var r = svg.getBoundingClientRect(), px = (ev.clientX - r.left) / r.width * W, best = null;
+      serPts.forEach(function (p) { if (!best || Math.abs(p.x - px) < Math.abs(best.x - px)) best = p; });
+      if (best) { stop(); S.anio = best.y; elAnio.value = S.anio; elAnioVal.textContent = S.anio; render(); }
+    };
+  }
+
+  /* ---------- pie: procedencia + autocomprobación contra las cifras del canal ---------- */
+  function pie() {
+    var c = D.cifras || {}, yref = c.anio, ok = [], bad = [];
+    function chk(nombre, canal, calc) {
+      if (canal === null || canal === undefined) return;
+      var rel = Math.abs(calc - canal) / Math.max(Math.abs(canal), 1e-12);
+      (rel < 1e-9 ? ok : bad).push(nombre + ' (' + fmt2.format(canal) + ')');
+    }
+    function nm(b, f) { return (b.escalares && b.escalares[f]) ? b.escalares[f] : f; }
+    if (c.nl) { var gN = geo('nl'); chk(nm(c.nl, 'pobtot'), c.nl.pobtot, tot(gN, yref, 'a')); chk(nm(c.nl, 'pobmujpropI'), c.nl.pobmujpropI, tot(gN, yref, 'm') / tot(gN, yref, 'a') * 100); chk(nm(c.nl, 'pobMayoresI'), c.nl.pobMayoresI, sum(toQuin(gN.h[yi(gN, yref)]).slice(13)) + sum(toQuin(gN.m[yi(gN, yref)]).slice(13))); chk(nm(c.nl, 'razdep'), c.nl.razdep, depRatio(gN, yref)); if (c.nac) chk(nm(c.nl, 'PartPob'), c.nl.PartPob, tot(gN, yref, 'a') / tot(geo('nac'), yref, 'a') * 100); }
+    if (c.nac) { var gC = geo('nac'); chk(nm(c.nac, 'pobtot'), c.nac.pobtot, tot(gC, yref, 'a')); chk(nm(c.nac, 'pobmujpropI'), c.nac.pobmujpropI, tot(gC, yref, 'm') / tot(gC, yref, 'a') * 100); chk(nm(c.nac, 'razdep'), c.nac.razdep, depRatio(gC, yref)); }
+    var h = '';
+    h += '<p><strong>' + (D.producto || 'Simulador Fiscal NL') + '</strong> · ' + (D.subtitulo || '') + ' · capa <code>' + (P.version_capa_nl || '—') + '</code> · motor <code>' + (P.version_motor || '—') + '</code> · corrida ' + (P.generado_en || '—') + ' · log <code>' + (P.log || '—') + '</code> · ' + (P.driver || '') + '</p>';
+    h += '<p><strong>Fuente estatal y nacional:</strong> ' + (P.fuente_estatal || '') + '. Cobertura: ' + (P.cobertura_estatal || '') + '.</p>';
+    h += '<p><strong>Fuente municipal:</strong> ' + (P.fuente_municipal || '') + '. Cobertura: ' + (P.cobertura_municipal || '') + '. Compuerta: ' + (P.compuerta_municipal || '') + '.</p>';
+    h += '<p><strong>Definiciones:</strong> ' + ((D.definiciones || {}).razon_dependencia || '') + '. ' + ((D.definiciones || {}).nota_motor || '') + ' Unidad: ' + ((D.definiciones || {}).unidad || '') + '. Año de referencia del canal: ' + yref + '.</p>';
+    h += '<p>' + (bad.length ? '<span class="bad">Autocomprobación: ' + bad.length + ' cifra(s) del canal NO coinciden con los arreglos: ' + bad.join(', ') + '.</span>' : '<span class="ok">Autocomprobación: las ' + ok.length + ' cifras del canal para ' + yref + ' coinciden con las sumas de los arreglos incrustados (' + ok.join(', ') + ').</span>') + '</p>';
+    document.getElementById('pie').innerHTML = h;
+  }
+
+  function render() { cards(); pyramid(); series(); }
+  document.getElementById('titulo').textContent = D.titulo || 'Simulador Fiscal NL — Población';
+  document.getElementById('subtitulo').textContent = (D.subtitulo || '') + (P.version_capa_nl ? ' · capa ' + P.version_capa_nl : '');
+  document.title = D.titulo || document.title;
+  fillGeo(); elCmp.checked = S.cmp;
+  Array.prototype.forEach.call(segs, function (x) { x.classList.toggle('on', x.getAttribute('data-s') === S.sexo); });
+  syncRanges(); render(); pie();
+})();
+</script>
+</body>
+</html>
