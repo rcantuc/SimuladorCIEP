@@ -1,6 +1,6 @@
 {
   "producto": "Simulador Fiscal NL",
-  "version_nl": "NL-0.2.0",
+  "version_nl": "NL-0.3.0",
   "fecha": "2026-10-03",
   "motor_sincronizado": "v8.6.0",
   "regla_cadencia": "La capa NL hace merge de master en cada release etiquetado del nacional y pasa las tres compuertas de DIAGNOSTICO_NL.md §0.3 (paridad nacional con diff vacío, D.1, delta NL documentado) antes de subir version_nl.",

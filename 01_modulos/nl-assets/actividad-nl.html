@@ -133,6 +133,9 @@ window.NLACT =
 ;
 </script>
 <script>
+/*__NL_DATOS_JS__*/
+</script>
+<script>
 (function () {
   'use strict';
   var D = window.NLACT;
@@ -145,7 +148,7 @@ window.NLACT =
   function pct(v) { return v === null || v === undefined ? '—' : f2.format(v) + ' %'; }
   function sgn(v) { return v === null || v === undefined ? '—' : (v >= 0 ? '+' : '') + f2.format(v) + ' pp'; }
   function cls(v) { return v === null || v === undefined ? '' : (v >= 0 ? 'pos' : 'neg'); }
-  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+  var esc = window.NLDatos.esc;
 
   var A = D.anual, Q = D.trimestral, M = D.mensual;
   var A0 = A[0].anio, A1 = A[A.length - 1].anio;
@@ -244,44 +247,19 @@ window.NLACT =
     L.push('# Valores del canal (JSON actividad-nl.json), sin recálculo en el navegador; precisión completa');
     return L;
   }
-  function tsv(which, titulo, sep) {
-    var cols = colsFor(which), rows = dataFor(which), out = provLines(which, titulo).map(function (l) { return sep === ',' ? '"' + l.replace(/"/g, '""') + '"' : l; });
-    out.push(cols.map(function (c) { return c[1]; }).join(sep));
-    rows.forEach(function (r) { out.push(cols.map(function (c) { var v = r[c[0]]; return (v === null || v === undefined) ? '' : (typeof v === 'number' ? String(v) : String(v)); }).join(sep)); });
-    return out.join('\n');
-  }
-  function copyText(txt, msgEl, fbEl) {
-    function fallback() {
-      fbEl.value = txt; fbEl.style.display = 'block'; fbEl.focus(); fbEl.select();
-      var ok = false; try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
-      msgEl.textContent = ok ? 'Copiado (selección). Pega en Excel con Ctrl/Cmd+V.' : 'El navegador bloqueó el portapapeles: el texto está seleccionado abajo, usa Ctrl/Cmd+C.';
-    }
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(txt).then(function () { msgEl.textContent = 'Tabla copiada (TSV con procedencia). Pega en Excel con Ctrl/Cmd+V.'; fbEl.style.display = 'none'; }, fallback);
-    } else fallback();
-  }
-  function downloadCsv(txt, name, msgEl, fbEl) {
-    try {
-      var blob = new Blob(['\ufeff' + txt], { type: 'text/csv;charset=utf-8' });
-      var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); document.body.removeChild(a);
-      setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
-      msgEl.textContent = 'CSV generado: ' + name + '. Si el visor bloqueó la descarga, usa "Copiar tabla".';
-    } catch (e) { msgEl.textContent = 'Descarga bloqueada por el visor; copiando al portapapeles.'; copyText(txt, msgEl, fbEl); }
-  }
+  function tsv(which, titulo, sep) { return window.NLDatos.extract(colsFor(which), dataFor(which), provLines(which, titulo), sep); }
   function tools(id, which, titulo) {
-    var el = document.getElementById(id + '-tools');
-    el.innerHTML = '<div class="seg2"><button data-m="grafica"' + (S.modo === 'grafica' ? ' class="on"' : '') + '>Gráfica</button><button data-m="tabla"' + (S.modo === 'tabla' ? ' class="on"' : '') + '>Tabla</button></div><button data-a="copy">Copiar tabla</button><button data-a="csv">Descargar CSV</button>';
-    Array.prototype.forEach.call(el.querySelectorAll('.seg2 button'), function (b) { b.addEventListener('click', function () { S.modo = b.getAttribute('data-m'); sync(); render(); }); });
-    var msg = document.getElementById(id + '-tip'), fb = document.getElementById(id + '-fb');
-    el.querySelector('[data-a="copy"]').addEventListener('click', function () { copyText(tsv(which, titulo, '\t'), msg, fb); });
-    el.querySelector('[data-a="csv"]').addEventListener('click', function () { downloadCsv(tsv(which, titulo, ','), 'actividad-nl_' + which + '_' + S.ini + '-' + S.fin + '.csv', msg, fb); });
+    window.NLDatos.tools(document.getElementById(id + '-tools'), {
+      modo: S.modo,
+      onModo: function (m) { S.modo = m; sync(); render(); },
+      data: function () { return { cols: colsFor(which), rows: dataFor(which), prov: provLines(which, titulo), name: 'actividad-nl_' + which + '_' + S.ini + '-' + S.fin + '.csv' }; },
+      msg: function () { return document.getElementById(id + '-tip'); },
+      fb: function () { return document.getElementById(id + '-fb'); }
+    });
   }
   function table(id, which, titulo) {
-    var cols = colsFor(which), rows = dataFor(which);
-    var h = '<div class="tbl-wrap"><table><thead><tr>' + cols.map(function (c) { return '<th>' + esc(c[1]) + '</th>'; }).join('') + '</tr></thead><tbody>';
-    rows.forEach(function (r) { h += '<tr class="' + rowClass(r, which) + '">' + cols.map(function (c) { return '<td>' + esc(fmtCell(c, r[c[0]])) + '</td>'; }).join('') + '</tr>'; });
-    h += '</tbody></table></div><div class="prov">' + esc(provLines(which, titulo).join('\n')) + '</div><textarea class="fb" id="' + id + '-fb"></textarea>';
-    document.getElementById(id + '-body').innerHTML = h;
+    var cols = colsFor(which).map(function (c) { return [c[0], c[1], function (v) { return fmtCell(c, v); }]; });
+    document.getElementById(id + '-body').innerHTML = window.NLDatos.table(cols, dataFor(which), provLines(which, titulo), function (r) { return rowClass(r, which); }) + '<textarea class="fb" id="' + id + '-fb"></textarea>';
     document.getElementById(id + '-leg').innerHTML = '';
   }
 

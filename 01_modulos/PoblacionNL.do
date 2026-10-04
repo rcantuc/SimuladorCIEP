@@ -35,6 +35,8 @@
 *   do "${SIMROOT}/01_modulos/PoblacionNL.do"
 * OJO: destruye los datos en memoria.
 
+version 17										// candado: misma interpretación en Stata 17 (Mac) y 19.5 (runner Windows)
+
 *** 0 RAÍZ, LOG (procedencia), IDENTIDAD ***
 SIMroot
 local site `"${SIMROOT}"'
@@ -109,27 +111,6 @@ void nlpob_geo(string scalar fn, string scalar key, string scalar nombre, string
 	nlpob_rows(fh, "m", M, 0)
 	fput(fh, "    }" + (coma ? "," : ""))
 	fclose(fh)
-}
-void nlpob_inject(string scalar tpl, string scalar json, string scalar out, string scalar marca)
-{
-	real scalar fi, fo, fj, hits
-	string scalar line, l2
-	fi = fopen(tpl, "r")
-	unlink(out)								// fopen(,"w") no pisa archivos: se regenera siempre
-	fo = fopen(out, "w")
-	hits = 0
-	while ((line = fget(fi)) != J(0, 0, "")) {
-		if (strtrim(line) == marca) {
-			hits++
-			fj = fopen(json, "r")
-			while ((l2 = fget(fj)) != J(0, 0, "")) fput(fo, l2)
-			fclose(fj)
-		}
-		else fput(fo, line)
-	}
-	fclose(fi)
-	fclose(fo)
-	st_numscalar("r(hits)", hits)
 }
 end
 
@@ -398,9 +379,16 @@ if _rc {
 	di as err "PoblacionNL: falta la plantilla 01_modulos/nl-assets/poblacion-nl.html."
 	exit 601
 }
-mata: nlpob_inject(st_local("tpl"), st_local("json"), st_local("html"), "/*__NLPOB_DATA__*/")
-if r(hits) != 1 {
-	di as err "PoblacionNL: la plantilla debe tener exactamente una marca /*__NLPOB_DATA__*/ (encontradas: `r(hits)')."
+run `"`site'/01_modulos/nl-assets/nl-html.do"'
+local js `"`site'/01_modulos/nl-assets/nl-datos.js"'
+capture confirm file `"`js'"'
+if _rc {
+	di as err "PoblacionNL: falta el componente 01_modulos/nl-assets/nl-datos.js."
+	exit 601
+}
+mata: nlhtml_inject(st_local("tpl"), st_local("json"), st_local("js"), st_local("html"), "/*__NLPOB_DATA__*/")
+if r(hits_data) != 1 | r(hits_js) != 1 {
+	di as err "PoblacionNL: la plantilla debe tener exactamente una marca /*__NLPOB_DATA__*/ y una /*__NL_DATOS_JS__*/ (encontradas: `r(hits_data)' y `r(hits_js)')."
 	exit 459
 }
 

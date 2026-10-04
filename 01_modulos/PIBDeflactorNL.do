@@ -52,6 +52,8 @@
 *   global nlbie_offline 1  -> reutiliza la caché sin descargar (desarrollo).
 * OJO: destruye los datos en memoria.
 
+version 17										// candado: misma interpretación en Stata 17 (Mac) y 19.5 (runner Windows)
+
 *** 0 RAÍZ, LOG, IDENTIDAD ***
 SIMroot
 local site `"${SIMROOT}"'
@@ -657,30 +659,6 @@ file write `fh' "}" _n
 file close `fh'
 
 *** 8 HTML AUTOCONTENIDO ***
-capture mata: mata drop nlact_inject()
-mata:
-void nlact_inject(string scalar tpl, string scalar json, string scalar out, string scalar marca)
-{
-	real scalar fi, fo, fj, hits
-	string scalar line, l2
-	fi = fopen(tpl, "r")
-	unlink(out)
-	fo = fopen(out, "w")
-	hits = 0
-	while ((line = fget(fi)) != J(0, 0, "")) {
-		if (strtrim(line) == marca) {
-			hits++
-			fj = fopen(json, "r")
-			while ((l2 = fget(fj)) != J(0, 0, "")) fput(fo, l2)
-			fclose(fj)
-		}
-		else fput(fo, line)
-	}
-	fclose(fi)
-	fclose(fo)
-	st_numscalar("r(hits)", hits)
-}
-end
 local tpl `"`site'/01_modulos/nl-assets/actividad-nl.html"'
 local html `"`site'/users/$id/nodos/actividad-nl.html"'
 capture confirm file `"`tpl'"'
@@ -688,9 +666,16 @@ if _rc {
 	di as err "PIBDeflactorNL: falta la plantilla 01_modulos/nl-assets/actividad-nl.html."
 	exit 601
 }
-mata: nlact_inject(st_local("tpl"), st_local("json"), st_local("html"), "/*__NLACT_DATA__*/")
-if r(hits) != 1 {
-	di as err "PIBDeflactorNL: la plantilla debe tener exactamente una marca /*__NLACT_DATA__*/ (encontradas: `r(hits)')."
+run `"`site'/01_modulos/nl-assets/nl-html.do"'
+local js `"`site'/01_modulos/nl-assets/nl-datos.js"'
+capture confirm file `"`js'"'
+if _rc {
+	di as err "PIBDeflactorNL: falta el componente 01_modulos/nl-assets/nl-datos.js."
+	exit 601
+}
+mata: nlhtml_inject(st_local("tpl"), st_local("json"), st_local("js"), st_local("html"), "/*__NLACT_DATA__*/")
+if r(hits_data) != 1 | r(hits_js) != 1 {
+	di as err "PIBDeflactorNL: la plantilla debe tener exactamente una marca /*__NLACT_DATA__*/ y una /*__NL_DATOS_JS__*/ (encontradas: `r(hits_data)' y `r(hits_js)')."
 	exit 459
 }
 

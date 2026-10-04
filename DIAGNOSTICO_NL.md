@@ -446,6 +446,11 @@ Fuente de verdad legible por máquina: `01_modulos/nl-assets/nl-manifest.json` (
 
 ### Changelog
 
+#### NL-0.3.0 — 2026-10-03 (motor sincronizado: v8.6.0)
+- **Retrofit de `poblacion-nl.html`**: modo datos (Gráfica/Tabla por vista, Copiar TSV, Descargar CSV con encabezado de procedencia: fuentes CONAPO y cobertura, filtros geo/sexo/edades/años, versión NL, corrida); filtro de **rango de edad** (edad simple en NL/nacional; en municipios **snap explícito a los grupos quinquenales** de la fuente, sin interpolar) y **sexo** aplicables a toda vista y tabla; tablas con columnas H / M / Total; tarjetas que respetan el filtro (población del rango, % del total, % mujeres del rango; la razón de dependencia se declara sobre toda la población) con autocomprobación de filtros (tarjeta = suma de la tabla) además de la del canal. 782 KB (+18 KB).
+- **Componente compartido `nl-assets/nl-datos.js`** (extracto TSV/CSV con procedencia, tabla, portapapeles con fallbacks, descarga) y constructor `nl-assets/nl-html.do` (`nlhtml_inject`: marca de datos + marca `NL_DATOS_JS`); `actividad-nl.html` migrado al componente. Candado `version 17` en ambos drivers.
+- **Runner Windows** (`windows/`): instalador idempotente con deploy key de solo lectura, port `actualizar-nl.ps1` con fallo seguro, verificador integral y README; ver anexo "Runner Windows".
+
 #### NL-0.2.0 — 2026-10-03 (motor sincronizado: v8.6.0)
 - **Endpoint de actividad económica y precios** (`01_modulos/PIBDeflactorNL.do` v1.0.0 + plantilla `nl-assets/actividad-nl.html`): PIBE nominal/real y deflactor implícito NL, crecimiento real con ancla PIBE + nowcast ITAEE, inflación INPC Nuevo León (promedio, dic/dic, vigente), comparativos nacionales con las mismas transformaciones, proyección corta al año de política con los criterios de `PIBDeflactor.ado`; 4 compuertas; JSON `nl.actividad/v1` + HTML autocontenido (150 KB) con **modo datos** (tabla con filtros, copiar TSV, descargar CSV, encabezado de procedencia en cada extracto).
 - **Lectores INEGI de la capa** (`nl-assets/nl-bie.do` + `nl_bie.py`): `_NLbie indicador, area()` (BIE por área geográfica, misma vía pública que `AccesoBIE`) y `_NLinpc serie, estructura()` (programa INPC de INEGI). Motivo en el anexo PIBDeflactorNL §0.2; propuesta a `master` por PR aparte: opción `area()` en `AccesoBIE`.
