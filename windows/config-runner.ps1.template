@@ -1,0 +1,10 @@
+﻿# config-runner.ps1 — configuración LOCAL del runner Windows (generada por instalar-runner.ps1).
+# NO se commitea (windows/.gitignore). Rutas con espacios siempre entre comillas simples.
+$RunnerConfig = @{
+    Repo    = '__REPO__'       # clon local de solo lectura, p. ej. C:\Users\<user>\SimuladorCIEP-NL
+    Stata   = '__STATA__'      # ejecutable detectado, p. ej. C:\Program Files\Stata19\StataMP-64.exe
+    Drive   = '__DRIVE__'      # G:\Mi unidad\2. Simuladores CoNL\SimuladorCoNL
+    Rama    = '__RAMA__'       # feature/entidad-nl
+    SshHost = '__SSHHOST__'    # alias en ~/.ssh/config (deploy key de solo lectura)
+    RepoSsh = '__REPOSSH__'    # git@<alias>:rcantuc/SimuladorCIEP.git
+}

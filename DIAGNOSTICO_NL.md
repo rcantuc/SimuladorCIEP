@@ -565,3 +565,27 @@ Un comando. Corre Stata en batch desde la raíz del worktree (carga `profile.do`
 </dict></plist>
 ```
 Carga: `launchctl load ~/Library/LaunchAgents/mx.conl.simulador-nl.plist`. Día 5 de cada mes, 9:30 (tras la publicación del INPC del mes anterior ~día 9 conviene ajustar al 12; ITAEE y PIBE caen cuando caen: el script publica lo que INEGI tenga). Si la máquina está apagada a esa hora, launchd corre al siguiente arranque con sesión.
+
+---
+
+## Anexo Runner Windows — la máquina de CoNL ejecuta y publica sola (2026-10-03, capa NL-0.3.0)
+
+**Arquitectura.** La laptop HP de CoNL (Windows 11, Stata 19.5 StataNow, Git con `core.autocrlf false`, Tailscale, Google Drive Desktop) es un *runner* de **solo lectura**: clon de una sola rama (`feature/entidad-nl`) por **deploy key sin escritura**, `git reset --hard origin/<rama>` en cada corrida (aborta si el working tree está sucio: señal de que alguien editó donde no debía), drivers NL en Stata batch (`/e do`) desde la raíz del repo (carga `profile.do`), publicación al Drive **de esa máquina** (`G:\Mi unidad\2. Simuladores CoNL\SimuladorCoNL`). Jamás desarrolla, jamás pushea. Carpeta `windows/` de la capa NL:
+
+| Archivo | Función |
+|---|---|
+| `runner-common.ps1` | funciones compartidas: `Find-Stata` (C:\Program Files\Stata19\ MP > SE > BE, luego StataNow*), `Invoke-StataBatch`, `Invoke-Native` (git/ssh/robocopy sin que PowerShell 5.1 convierta stderr en excepción), `Test-StataLogError`, bitácora y tabla verde/rojo |
+| `instalar-runner.ps1` | idempotente: prerrequisitos (git, autocrlf, OpenSSH, Drive montado + escritura de prueba + proceso GoogleDriveFS, Stata), deploy key ed25519 en `%USERPROFILE%\.ssh\simulador_nl_deploy` + alias en `~/.ssh/config` + known_hosts + prueba `ssh -T`, clon `--branch --single-branch`, `config-runner.ps1` desde la plantilla, tarea programada vía XML (`Register-ScheduledTask`) |
+| `actualizar-nl.ps1` | port de `actualizar-nl.sh`: fetch/reset, respaldo de productos, Stata batch, verificación del log (`r(#)`, 3 marcadores, 4 productos), reintento único a los 30 min si el fallo parece de INEGI (`-RetryOnce`), `robocopy /MIR` **solo** sobre `nodos\`, copia de HTML a la raíz, bitácora `windows\bitacora-runner.log` y latido `ultimo-exito.txt` (local + Drive) |
+| `verificar-runner.ps1` | chequeo integral: config, prerrequisitos, clon (rama, limpio, al día, remoto por deploy key, archivos clave), Stata batch (`display`, Python, `requests`/`bs4`, `SIMroot`), escritura/borrado de prueba en el Drive, tarea y próxima ejecución, corrida completa de prueba; tabla verde/rojo en `windows\verificacion-runner.log` + qué pegar a Devin/Claude |
+| `config-runner.ps1.template` → `config-runner.ps1` | rutas (repo, Stata, Drive, rama, alias SSH); la real queda fuera de git (`windows/.gitignore`, propio de la capa: el `.gitignore` del motor no se toca) |
+| `README-runner.md` | checklist de 10 pasos, política del runner, tarea y credenciales |
+
+**Verificación posible desde el Mac (sin Windows):** los cinco `.ps1` pasan el parser de PowerShell (7.6, portátil en `/tmp`, sin instalar nada) con 0 errores; UTF-8 con BOM y CRLF verificados; funciones compartidas (`Show-Resumen`, `Get-RunnerConfig`) probadas; `actualizar-nl.ps1` ejercitó en Mac el camino de **aborto seguro por working tree sucio** (exit 1, bitácora, Drive intacto). Lo que solo Ricardo puede verificar en la HP lo cubre `verificar-runner.ps1` con salida inequívoca.
+
+**Deploy key.** ed25519 sin passphrase, alias `github-simulador-nl` (`IdentitiesOnly yes`), registrada en GitHub → `rcantuc/SimuladorCIEP` → Settings → Deploy keys **sin** "Allow write access". El instalador se detiene (exit 2) hasta que GitHub la acepta y se vuelve a correr.
+
+**Tarea programada.** `SimuladorNL-Actualizar`: mensual día 5, 03:00; `StartWhenAvailable` (si se omitió, corre en cuanto pueda), `WakeToRun`, `RunOnlyIfNetworkAvailable`, sin bloqueo por batería, `MultipleInstancesPolicy=IgnoreNew`, límite 3 h; acción `powershell.exe -NoProfile -ExecutionPolicy Bypass -File ...\actualizar-nl.ps1 -RetryOnce`.
+**Limitaciones conocidas:** (1) corre con **InteractiveToken** (sesión iniciada, puede estar bloqueada) porque `G:\` de Google Drive Desktop solo existe dentro de la sesión del usuario; "ejecutar aunque el usuario no haya iniciado sesión" (S4U/contraseña guardada) perdería la unidad y, además, exigiría re-registrar la tarea tras cada cambio de contraseña — con InteractiveToken no se guardan credenciales y el cambio de contraseña no la afecta. (2) `Register-ScheduledTask` puede requerir PowerShell como administrador; el instalador lo reporta en rojo con la instrucción. (3) Python de Stata en Windows: debe configurarse una vez (`python set exec ..., permanently`, 3.9–3.12) con `requests` y `beautifulsoup4` para `AccesoBIE`; `verificar-runner.ps1` lo comprueba. (4) En la primera corrida de una máquina virgen, `master/Poblacion.dta` no existe: `PoblacionNL.do` invoca `Poblacion` del motor, que lo construye desde el asset del sidecar (descarga y SHA vía `ensure_asset`); `PIBDeflactorNL.do` declara "no evaluada" la compuerta de control contra `master/PIBDeflactor.dta` si ese caché no existe.
+
+**Fila pendiente (recordatorio):** el PR a `master` con la opción `area()` en `AccesoBIE` sigue **pendiente, por separado** (estrictamente aditivo; sin la opción, byte-idéntico).
