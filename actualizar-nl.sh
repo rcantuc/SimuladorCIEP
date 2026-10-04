@@ -1,0 +1,86 @@
+#!/bin/zsh
+# actualizar-nl.sh — actualización de los endpoints NL en UN comando (capa NL-0.2.0).
+#
+#   1. Corre Stata en batch desde la raíz del worktree (profile.do carga aniovp,
+#      anioPE, entidades y token): PoblacionNL.do + PIBDeflactorNL.do.
+#   2. FALLO SEGURO: si INEGI no responde, una compuerta aborta o el log trae un
+#      error de Stata, NO publica, restaura los últimos JSON/HTML buenos en
+#      users/ricardo/nodos/ y deja el detalle en users/ricardo/actualizar-nl.log
+#      (los productos del Drive no se tocan). Nunca publica un endpoint a medias.
+#   3. Si todo pasa: ./publicar-conl.sh y una línea en
+#      01_modulos/nl-assets/bitacora-publicaciones.log (fecha, vintages, SHAs).
+#
+# Uso: ./actualizar-nl.sh [--offline]      (--offline: reutiliza la caché INEGI)
+set -u
+ROOT="$HOME/CIEP_Simuladores/SimuladorCIEP-NL"
+STATA="/Applications/Stata/StataMP.app/Contents/MacOS/stata-mp"
+NODOS="$ROOT/users/ricardo/nodos"
+LOCAL_LOG="$ROOT/users/ricardo/actualizar-nl.log"
+BITACORA="$ROOT/01_modulos/nl-assets/bitacora-publicaciones.log"
+DRIVE="/Users/ricardo/Library/CloudStorage/GoogleDrive-rcantu@conl.mx/My Drive/2. Simuladores CoNL/SimuladorCoNL"
+OFFLINE=0
+[[ "${1:-}" == "--offline" ]] && OFFLINE=1
+
+log() { print -r -- "$(date '+%Y-%m-%d %H:%M:%S') $*" | tee -a "$LOCAL_LOG"; }
+fail() {
+  log "ABORTA: $*"
+  if [[ -d "$BAK" ]]; then
+    rm -f "$NODOS"/*.json "$NODOS"/*.html
+    cp -p "$BAK"/* "$NODOS"/ 2>/dev/null
+    log "Restaurados los últimos JSON/HTML buenos en $NODOS (el Drive no se tocó)."
+  fi
+  exit 1
+}
+
+mkdir -p "$NODOS"
+log "== actualizar-nl inicio (offline=$OFFLINE) =="
+[[ -x "$STATA" ]] || fail "no se encontró Stata en $STATA"
+[[ -f "$ROOT/profile.do" && -f "$ROOT/01_modulos/PIBDeflactorNL.do" ]] || fail "raíz del worktree incompleta: $ROOT"
+
+# Respaldo de los últimos productos buenos
+BAK="$(mktemp -d "${TMPDIR:-/tmp}/nl-nodos-bak.XXXXXX")"
+cp -p "$NODOS"/*.json "$NODOS"/*.html "$BAK"/ 2>/dev/null
+log "Respaldo de productos previos en $BAK"
+
+# Corrida Stata en batch desde la raíz (carga profile.do)
+cd "$ROOT" || fail "no se pudo entrar a $ROOT"
+rm -f "$ROOT/actualizar-nl-stata.log"            # Stata batch deja el log en el cwd
+WRAP="$ROOT/users/ricardo/actualizar-nl-stata.do"
+{
+  [[ $OFFLINE -eq 1 ]] && echo 'global nlbie_offline 1'
+  echo "do \"$ROOT/01_modulos/nl-assets/actualizar-nl.do\""
+} > "$WRAP"
+"$STATA" -b do "$WRAP"
+RC=$?
+SLOG="$ROOT/actualizar-nl-stata.log"
+[[ -f "$SLOG" ]] || fail "Stata no dejó log ($SLOG), rc=$RC"
+if grep -q -E '^r\([0-9]+\);' "$SLOG"; then
+  ERR="$(grep -n -E '^r\([0-9]+\);' "$SLOG" | head -1)"
+  CTX="$(grep -B4 -m1 -E '^r\([0-9]+\);' "$SLOG" | head -5 | tr '\n' ' ')"
+  fail "error de Stata ($ERR): $CTX"
+fi
+grep -q 'PoblacionNL: listo' "$SLOG" || fail "PoblacionNL.do no llegó al final"
+grep -q 'PIBDeflactorNL: listo' "$SLOG" || fail "PIBDeflactorNL.do no llegó al final"
+grep -q 'AMBOS DRIVERS TERMINARON' "$SLOG" || fail "la corrida conjunta no terminó"
+for f in poblacion-nl.json poblacion-nl.html actividad-nl.json actividad-nl.html; do
+  [[ -s "$NODOS/$f" ]] || fail "falta o está vacío $NODOS/$f"
+done
+mv -f "$SLOG" "$NODOS/actualizar-nl-stata.log"
+log "Stata OK: compuertas en verde, 4 productos generados"
+
+# Publicación
+[[ -d "${DRIVE:h}" ]] || fail "Drive de CoNL no montado (${DRIVE:h}); no se publica"
+"$ROOT/publicar-conl.sh" > "$ROOT/users/ricardo/publicar-conl.out" 2>&1 || fail "publicar-conl.sh devolvió error (ver users/ricardo/publicar-conl.out)"
+for f in poblacion-nl.html actividad-nl.html; do
+  [[ -s "$DRIVE/$f" ]] || fail "no quedó $f en el Drive"
+done
+
+# Bitácora (commiteada): fecha, vintages y SHAs publicados
+VINT_POB="$(python3 -c "import json;j=json.load(open('$NODOS/poblacion-nl.json'));p=j['procedencia'];print('pob: ' + p['cobertura_estatal'] + '; mun ' + p['cobertura_municipal'].split(',')[0] + '; corrida ' + p['generado_en'])")"
+VINT_ACT="$(python3 -c "import json;j=json.load(open('$NODOS/actividad-nl.json'));p=j['procedencia'];s={x['variable']:x for x in p['series']};print('act: PIBE hasta ' + s['pibeNnl']['ultimo'] + '; ITAEE ' + s['itaeenl']['ultimo'] + '; INPC NL ' + s['inpcnl']['ultimo'] + '; INPC nac ' + s['inpcnac']['ultimo'] + '; consulta INEGI ' + s['pibeNnl']['consulta'] + '; corrida ' + p['generado_en'])")"
+SHAS="$(cd "$DRIVE" && shasum -a 256 poblacion-nl.html actividad-nl.html nodos/poblacion-nl.json nodos/actividad-nl.json | awk '{printf "%s=%s ", $2, substr($1,1,12)}')"
+VNL="$(python3 -c "import json;print(json.load(open('$ROOT/01_modulos/nl-assets/nl-manifest.json'))['version_nl'])")"
+print -r -- "$(date '+%Y-%m-%dT%H:%M:%S') capa=$VNL | $VINT_POB | $VINT_ACT | sha256(12): $SHAS" >> "$BITACORA"
+log "Publicado y registrado en bitácora: $(tail -1 "$BITACORA")"
+rm -rf "$BAK"
+log "== actualizar-nl fin OK =="

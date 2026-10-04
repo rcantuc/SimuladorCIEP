@@ -1,6 +1,6 @@
 {
   "producto": "Simulador Fiscal NL",
-  "version_nl": "NL-0.1.0",
+  "version_nl": "NL-0.2.0",
   "fecha": "2026-10-03",
   "motor_sincronizado": "v8.6.0",
   "regla_cadencia": "La capa NL hace merge de master en cada release etiquetado del nacional y pasa las tres compuertas de DIAGNOSTICO_NL.md §0.3 (paridad nacional con diff vacío, D.1, delta NL documentado) antes de subir version_nl.",
@@ -18,5 +18,56 @@
       "filelen": 36658654,
       "validacion": "suma de los 51 municipios de NL = serie estatal de master/Poblacion.dta (pry23) en los 51 años comunes 1990-2040, dif = 0 (DIAGNOSTICO_NL.md, anexo F0-8.6.0 §0.4)"
     }
-  ]
+  ],
+  "series_inegi": [
+    {
+      "id": "750453",
+      "fuente": "BIE",
+      "descripcion": "PIBE valores corrientes, millones de pesos, a precios de mercado (areas 19 y 00)",
+      "lector": "_NLbie"
+    },
+    {
+      "id": "746097",
+      "fuente": "BIE",
+      "descripcion": "PIBE valores constantes de 2018, millones de pesos (areas 19 y 00)",
+      "lector": "_NLbie"
+    },
+    {
+      "id": "753357",
+      "fuente": "BIE",
+      "descripcion": "PIBE indice de precios implicitos 2018=100 (compuerta del deflactor)",
+      "lector": "_NLbie"
+    },
+    {
+      "id": "741180",
+      "fuente": "BIE",
+      "descripcion": "ITAEE serie original, indice de volumen fisico 2018=100, con petroleo (area 19)",
+      "lector": "_NLbie"
+    },
+    {
+      "id": "741927",
+      "fuente": "BIE",
+      "descripcion": "ITAEE serie desestacionalizada, indice 2018=100 (area 19)",
+      "lector": "_NLbie"
+    },
+    {
+      "id": "734407+735143",
+      "fuente": "BIE (AccesoBIE del motor)",
+      "descripcion": "PIB trimestral nominal e indice implicito nacional: comparativo del ITAEE",
+      "lector": "AccesoBIE"
+    },
+    {
+      "id": "910392",
+      "fuente": "BIE (AccesoBIE del motor)",
+      "descripcion": "INPC nacional mensual",
+      "lector": "AccesoBIE"
+    },
+    {
+      "id": "902690",
+      "fuente": "INPC-INEGI (app/indicesdeprecios, estructura 112001700070)",
+      "descripcion": "INPC Nuevo Leon por entidad federativa, mensual, base 2Q jul 2018, Actualizacion 2024",
+      "lector": "_NLinpc"
+    }
+  ],
+  "nota_bie": "El BIE 2025 exporta cada indicador con las 33 areas apiladas; AccesoBIE (motor) no filtra el area y la API oficial responde 401. La capa NL lee con nl-assets/nl-bie.do (misma via publica, filtra el area). Propuesta a master por PR aparte: opcion area() en AccesoBIE."
 }

@@ -446,6 +446,14 @@ Fuente de verdad legible por máquina: `01_modulos/nl-assets/nl-manifest.json` (
 
 ### Changelog
 
+#### NL-0.2.0 — 2026-10-03 (motor sincronizado: v8.6.0)
+- **Endpoint de actividad económica y precios** (`01_modulos/PIBDeflactorNL.do` v1.0.0 + plantilla `nl-assets/actividad-nl.html`): PIBE nominal/real y deflactor implícito NL, crecimiento real con ancla PIBE + nowcast ITAEE, inflación INPC Nuevo León (promedio, dic/dic, vigente), comparativos nacionales con las mismas transformaciones, proyección corta al año de política con los criterios de `PIBDeflactor.ado`; 4 compuertas; JSON `nl.actividad/v1` + HTML autocontenido (150 KB) con **modo datos** (tabla con filtros, copiar TSV, descargar CSV, encabezado de procedencia en cada extracto).
+- **Lectores INEGI de la capa** (`nl-assets/nl-bie.do` + `nl_bie.py`): `_NLbie indicador, area()` (BIE por área geográfica, misma vía pública que `AccesoBIE`) y `_NLinpc serie, estructura()` (programa INPC de INEGI). Motivo en el anexo PIBDeflactorNL §0.2; propuesta a `master` por PR aparte: opción `area()` en `AccesoBIE`.
+- **Actualizador** `actualizar-nl.sh` (un comando: PoblacionNL + PIBDeflactorNL en batch con `profile.do`, fallo seguro con respaldo/restauración, publicación y bitácora `nl-assets/bitacora-publicaciones.log`).
+- `publicar-conl.sh` publica también `actividad-nl.html` en la raíz del Drive.
+- Drivers con log de procedencia propio y con nombre (`name(nlpob)`/`name(nlact)`): coexisten con el log de batch y entre sí.
+- Python de Stata fijado a `/usr/bin/python3` (3.9) de forma permanente (aprobado).
+
 #### NL-0.1.0 — 2026-10-03 (motor sincronizado: v8.6.0)
 - **Sincronización** a `master` v8.6.0 (merge limpio) con las tres compuertas en verde; capa alineada al contrato `${SIMROOT}` (v8.4+) en `TasasEfectivasMicro.ado` y `EntidadNL.do`.
 - **Identidad de producto**: `nl-assets/nl-manifest.json`, `nl-assets/nl-identidad.do` (`_NLidentidad`); `EntidadNL.do` v1.2.0 imprime el banner y declara `producto`/`subtitulo`/`version_capa_nl`/`version_motor` en `presentacion`; `titulo` del JSON con prefijo del producto.
@@ -466,3 +474,86 @@ Fuente de verdad legible por máquina: `01_modulos/nl-assets/nl-manifest.json` (
 **Decisiones de diseño declaradas:** (a) municipios en grupos quinquenales tal como da la fuente — sin la expansión uniforme ÷5 de `CORE/PoblacionNL.ado`; el comparativo municipio↔NL agrega NL a quinquenios; (b) razón de dependencia (0–14 + 65+)/(15–64) para que estado, país y municipios compartan definición (la gráfica del motor usa 0–18/61+ sobre 19–60; se declara en el JSON y en el pie); (c) los nombres de los escalares del motor dependen de si `profile.do` cargó `$entidadesC` (`pobtotNL`/`pobtotNac` en interactivo; `pobtotNuevo_León`/`pobtotNacional` en batch): el JSON usa claves estables por familia y registra el nombre real en `cifras.*.escalares`; (d) `anio_inicio_proyeccion = 2020` (conciliación hasta 2019 en ambas fuentes) para el sombreado de la serie.
 
 **Peso:** 764 KB (< 2 MB objetivo). Sin dependencias: cero `http(s)://`, cero `fetch`, cero `<link>`.
+
+---
+
+## Anexo PIBDeflactorNL — Actividad económica y precios de NL (2026-10-03, capa NL-0.2.0)
+
+**Guardia de frontera (respetada):** `PIBDeflactorNL.do` es un sidecar macro (contexto, nowcast, deflactación de entregables NL). No toca `TasasEfectivasMicro.ado`, ni los factores Altimir, ni introduce reajuste alguno contra el PIBE; el reajuste biproporcional sigue siendo una fase futura explícita. Ningún archivo del motor cambió (`git diff --name-only origin/master HEAD` = solo capa NL).
+
+### 0.1 Criterios heredados del `PIBDeflactor` nacional (motor)
+
+| Elemento | `PIBDeflactor.ado` (motor) | Réplica en `PIBDeflactorNL.do` |
+|---|---|---|
+| Series | PIB trimestral nominal `734407`, índice de precios implícitos `735143`, ENOE `446562/446565/446566`, INPC `910392` | PIBE anual nominal `750453` y real 2018 `746097` (áreas 19 y 00), índice implícito `753357` (compuerta), ITAEE `741180`/`741927` (área 19), INPC NL `902690` (programa INPC), INPC nacional `910392` y PIB trimestral `734407+735143` vía `AccesoBIE` |
+| Anualización | índice y PIB = media de trimestres; INPC anual = **diciembre** (dic/dic) | PIBE ya es anual; INPC: dic/dic como el motor **y** promedio anual (declarados ambos) |
+| Deflactor | `deflator = indiceY/indiceY[aniovp]` (base aniovp = 1); `deflatorpp` con INPC | `deflatornl/nac` = deflactor implícito / valor en aniovp; `deflatorpp` con INPC de diciembre |
+| Proyección a `aniomax` | exógeno `$pib/$def/$inf<año>` (CGPE) si existe; si no, `L.var_G` = **promedio geométrico desde el inicio de la serie** (`geopib/geodef = anioinicial`); el año parcial se sustituye por el exógeno; nominal = real × deflactor | sin CGPE estatal: exógeno = **nowcast ITAEE** (promedio de trimestres disponibles vs. mismos trimestres del año anterior) en los años con dato; después promedio geométrico 2003–2024; deflactor e inflación dic/dic: geométrico; nominal = real × deflactor. Mismo criterio para el comparativo nacional de este driver (declarado) |
+| Escalares | `pibY`, `pibYPC`, `crecimientoProm`, `deflactorProm`, `inflacionProm`, `llambda`, `deflactorLP/VECES`, `inflacionLP/VECES`, `outputPW*` | `crecPIBEnl/nac`, `defPIBEnl/nac`, `pibeNnl`, `pibeRnl`, `partPIBEnl`, `deflatorPIBEnl`, `crecPIBEnlgeo`, `*PE` (año de política), `nowITAEEnl`, `crecITAEEnl`, `crecITAEEsaQnl`, `inflacionNLvig/dd/prom`, `inflacionNacvig/dd/prom`, `difCrecPIBEnl`, `difCrecITAEEnl`, `difInflacionNLvig/dd`, `anio*`, `inpcNLult` — sin guion bajo |
+
+### 0.2 Inventario de series (verificado con llamadas reales a INEGI, 2026-10-03)
+
+| Familia | Fuente / ID | Frecuencia, base | Cobertura, último dato | Rezago |
+|---|---|---|---|---|
+| PIBE NL valores corrientes | BIE `750453` área 19 (clásico `750472`) | anual, millones MXN | 2003–**2024 r1** | ~12 meses |
+| PIBE NL valores constantes 2018 | BIE `746097` área 19 (clásico `746116`) | anual, millones MXN 2018 | 2003–2024 r1 | idem |
+| PIBE NL índice de precios implícitos | BIE `753357` área 19 (clásico `753376`) | anual, 2018 = 100 | 2003–2024 | compuerta del deflactor |
+| ITAEE NL original (con petróleo) | BIE `741180` área 19 (clásico `741198`) | trimestral, IVF 2018 = 100 | 1980T1–**2026T1 p1** | ~3 meses |
+| ITAEE NL desestacionalizado | BIE `741927` área 19 (clásico `742053`) | trimestral, 2018 = 100 | 1980T1–2026T1 | idem |
+| ITAEE nacional | **no existe en el BIE** (las tablas son solo estatales: 741180 trae 9 estados petroleros, 741927 los 32) | — | — | se usa PIB trimestral real `734407/735143` normalizado 2018 = 100 (declarado); sin serie desestacionalizada nacional |
+| INPC por entidad federativa | **no está en el BIE** (árbol INPC 189113: 63 indicadores nacionales) | — | — | — |
+| INPC Nuevo León | **programa INPC de INEGI** (`app/indicesdeprecios`, estructura `112001700070` "por entidad federativa", serie `902690`, Actualización de Canasta y Ponderadores 2024) | mensual, 2Q jul 2018 = 100 | jul-2018–**ago-2026** | ~10 días |
+| INPC Monterrey (proxy no necesario) | misma app, estructura `112001700060`, serie `884954` | mensual | jul-2018–ago-2026 | — |
+| INPC nacional | BIE `910392` vía `AccesoBIE` (motor) | mensual, 2Q jul 2018 = 100 | ene-1969–ago-2026 | — |
+
+**Hallazgo 1 — `AccesoBIE` y el BIE 2025.** El BIE exporta cada *indicador* con las 33 áreas apiladas en una columna "Área geográfica"; los IDs clásicos por estado ya no responden y `ag=` se ignora; la API oficial responde **401** con el token vigente (el motor ya opera por la vía pública). `AccesoBIE` lee periodo/valor sin mirar el área → mezclaría 33 estados. Solución en la capa NL: `nl-assets/nl-bie.do` + `nl_bie.py` (`_NLbie`), misma vía pública, filtra el área, cachea en `raw/temp/AccesoBIE/nl_<id>_<área>.csv` + `.meta` (título, fecha de consulta INEGI, último periodo) y devuelve checksum. Las series nacionales siguen por `AccesoBIE`. **Propuesta a master (PR aparte):** opción `area()` en `AccesoBIE` con el parser de columna de área.
+
+**Hallazgo 2 — INPC estatal.** Fuera del BIE; en el programa INPC de INEGI con exportación CSV por POST (`Exportacion.aspx?INPtipoExporta=CSV`, `_tipo=Niveles`). Las estructuras `1120013000xx` son el vintage pre-actualización (terminan jul-2024); las vigentes son `1120017000xx` (mensual, hasta ago-2026). Se usa **INPC por entidad (Nuevo León)**, mejor que el proxy Monterrey; no se necesitó el fallback.
+
+### 0.3 Compuertas del driver (abortan la exportación)
+
+1. **Deflactor implícito:** nominal/real × 100 reproduce el índice de precios implícitos del BIE (`753357`) en los 22 años, NL y nacional (reldif < 1e-6). **PASÓ.**
+2. **Cifra de control del BIE:** PIBE nacional corriente (`750453/00`) vs PIB anual del motor (promedio de `pibQ`, `master/PIBDeflactor.dta`): reldif máx **0.000 %** en 2003–2024 (tolerancia 1 %). **PASÓ.**
+3. **INPC nacional BIE ≈ INPC del motor:** `910392` vs `master/PIBDeflactor.dta` (fin de trimestre), reldif máx **0** en 186 trimestres (tolerancia 1e-3). **PASÓ.**
+4. **Rejillas sin huecos** (`tsset` anual, trimestral, mensual): verificadas; cualquier hueco aborta.
+Además: checksum y vintage por serie en el JSON (`procedencia.series`), y autocomprobación del HTML (12 cifras del canal = recálculo desde los arreglos) en verde.
+
+### 0.4 Resultados de la corrida (2026-10-03; cifras del canal)
+
+| Cifra | NL | Nacional | Dif. (pp) | Tipo |
+|---|---:|---:|---:|---|
+| Crecimiento real PIBE 2024 | **3.37 %** | 1.46 % | +1.91 | observado |
+| Nowcast ITAEE 2026T1 (a/a, original) | **1.18 %** | 0.20 % (PIB trim.) | +0.98 | preliminar |
+| Nowcast anual 2025 (4 trim. ITAEE) | 1.73 % | 0.50 % | +1.23 | nowcast |
+| Deflactor PIBE 2024 (var. %) | 4.31 % | 3.85 % | +0.46 | observado |
+| Inflación INPC ago-2026 (a/a) | **2.94 %** | 3.26 % | −0.32 | observado |
+| Inflación dic/dic 2025 | 3.51 % | 3.69 % | −0.18 | observado |
+| Proyección 2027: crecimiento / deflactor / inflación dic/dic | 2.26 / 5.17 / 4.64 % | 1.68 / 5.14 / 4.80 % | — | geométrico 2003–2024 (inflación 2019–2025) |
+| Participación NL en el PIB nacional 2024 | 8.05 % | — | — | observado |
+
+### 0.5 Endpoint `actividad-nl.html` y prueba de entrega
+
+- **Vistas:** Crecimiento (PIBE real anual NL vs nacional con barras por tipo y sombreado de años sin PIBE; ITAEE reciente a/a con último dato destacado; ITAEE desestacionalizado t/t y nivel) y Precios (inflación dic/dic, promedio anual o mensual a/a NL vs nacional; deflactor PIBE vs INPC dic/dic con nota producción vs consumo). Tarjetas: crecimiento PIBE, nowcast ITAEE, inflación vigente, deflactor, proyección — cada una con el diferencial NL−nacional. Estado por URL (`#vista=precios&serie=dd&ini=2019&fin=2027&cmp=1&modo=tabla`).
+- **Modo datos (addendum):** toggle Gráfica/Tabla por vista; la tabla respeta vista, serie, rango y comparativo y muestra **valores del canal sin recálculo** (precisión completa en el extracto); "Copiar tabla" (TSV al portapapeles; si el navegador bloquea `navigator.clipboard`, selección + `execCommand('copy')` y, si también falla, el texto queda seleccionado para Ctrl/Cmd+C) y "Descargar CSV" (Blob; si el visor bloquea la descarga, el mensaje remite a Copiar). Todo extracto lleva como primeras filas (`#`, entrecomilladas en CSV) producto, versión de la capa y del motor, corrida, fuentes con consulta INEGI y último dato, filtros aplicados y leyenda de tipos.
+- **Reglas duras:** un archivo, inline, cero `http(s)://`/`fetch`/`<link>`; **150 KB** (< 2 MB).
+- **Evidencia:** flujo `./actualizar-nl.sh` → `users/ricardo/nodos/actividad-nl.{json,html}` → `publicar-conl.sh` → `/My Drive/2. Simuladores CoNL/SimuladorCoNL/actividad-nl.html` (y `nodos/`), SHA-256 del HTML en el Drive = SHA local. Render verificado con Chrome headless **abriendo el archivo del Drive montado** (vistas crecimiento/ITAEE/precios/tabla). Copiar/descargar verificados ejecutando el JS de la página con un DOM simulado en Node: TSV de 17 líneas (7 de procedencia + encabezado + 9 filas) para `vista=precios&serie=dd&rango 2019–2027`; CSV disparado. **Pendiente de confirmar por Ricardo desde el visor web de Drive** (previsualización en navegador, con cuentas de CoNL): si el visor bloquea el portapapeles o la descarga, los fallbacks están implementados (selección para Ctrl+C) y el HTML lo indica en pantalla.
+
+### 0.6 Actualizador `actualizar-nl.sh` (F3)
+
+Un comando. Corre Stata en batch desde la raíz del worktree (carga `profile.do`: `aniovp/anioPE`, `$entidadesC`, token) con `nl-assets/actualizar-nl.do` (PoblacionNL + PIBDeflactorNL). **Fallo seguro:** respalda los últimos JSON/HTML buenos, y si INEGI no responde, una compuerta aborta, el log trae `r(#)` o falta un producto, **no publica**, restaura los productos locales y escribe el motivo en `users/ricardo/actualizar-nl.log` (el Drive no se toca; el primer intento de esta sesión ejercitó exactamente ese camino). Si todo pasa: `publicar-conl.sh` y una línea en `nl-assets/bitacora-publicaciones.log` (fecha, capa, vintages CONAPO/INEGI, SHA-256(12) de los 4 productos). `--offline` reutiliza la caché INEGI (desarrollo). Corrida completa con descargas frescas: ~20 s.
+
+**Programación mensual (especificación, NO implementada; decide Ricardo):** `launchd` de usuario, `~/Library/LaunchAgents/mx.conl.simulador-nl.plist`, requiere sesión iniciada (LaunchAgent, no Daemon), Stata MP con licencia local, Drive de CoNL montado y red:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+  <key>Label</key><string>mx.conl.simulador-nl.actualizar</string>
+  <key>ProgramArguments</key><array><string>/bin/zsh</string><string>-lc</string><string>/Users/ricardo/CIEP_Simuladores/SimuladorCIEP-NL/actualizar-nl.sh</string></array>
+  <key>StartCalendarInterval</key><dict><key>Day</key><integer>5</integer><key>Hour</key><integer>9</integer><key>Minute</key><integer>30</integer></dict>
+  <key>StandardOutPath</key><string>/Users/ricardo/CIEP_Simuladores/SimuladorCIEP-NL/users/ricardo/launchd-actualizar-nl.out</string>
+  <key>StandardErrorPath</key><string>/Users/ricardo/CIEP_Simuladores/SimuladorCIEP-NL/users/ricardo/launchd-actualizar-nl.err</string>
+  <key>RunAtLoad</key><false/>
+</dict></plist>
+```
+Carga: `launchctl load ~/Library/LaunchAgents/mx.conl.simulador-nl.plist`. Día 5 de cada mes, 9:30 (tras la publicación del INPC del mes anterior ~día 9 conviene ajustar al 12; ITAEE y PIBE caen cuando caen: el script publica lo que INEGI tenga). Si la máquina está apagada a esa hora, launchd corre al siguiente arranque con sesión.

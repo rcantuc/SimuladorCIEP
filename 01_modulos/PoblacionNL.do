@@ -53,18 +53,16 @@ else {
 	local anioref = year(date("$S_DATE", "DMY"))
 }
 
-* Sin log activo no hay exportación válida (misma regla que EntidadNL.do) *
-capture quietly log query
-if `"`r(filename)'"' == "" | `"`r(filename)'"' == "." {
-	quietly log using `"`site'/users/$id/nodos/poblacion-nl.log"', replace text
-}
-capture quietly log query
-local lf `"`r(filename)'"'
-if `"`lf'"' == "" | `"`lf'"' == "." {
-	di as err "PoblacionNL: no hay log activo ni pudo abrirse uno; sin procedencia no hay exportación válida."
+* Procedencia: log PROPIO y con nombre (coexiste con el log de batch o con el de
+* otro driver de la capa); se cierra al final. Sin él no hay exportación válida. *
+capture log close nlpob
+quietly log using `"`site'/users/$id/nodos/poblacion-nl.log"', replace text name(nlpob)
+capture quietly log query nlpob
+if `"`r(filename)'"' == "" {
+	di as err "PoblacionNL: no pudo abrirse el log de procedencia; sin procedencia no hay exportación válida."
 	exit 459
 }
-local logfile = substr(`"`lf'"', length(`"`lf'"') - strpos(reverse(`"`lf'"'), "/") + 2, .)
+local logfile "poblacion-nl.log"
 
 run `"`site'/01_modulos/nl-assets/nl-identidad.do"'
 _NLidentidad, modulo("Población")
@@ -414,3 +412,4 @@ noisily di in g "  JSON: " in y `"`json'"'
 noisily di in g "  HTML: " in y `"`html'"' in g " (`kb' KB)"
 noisily di in g "  `nl_titulo' — `nl_subtitulo' · capa `nl_vnl' · año de referencia `anioref'"
 noisily di in g "  NL `anioref': " in y %15.0fc scalar(pobtot`sufNL') in g " personas; mujeres " in y %5.1f scalar(pobmujpropI`sufNL') in g "%; razón de dependencia " in y %5.1f scalar(razdepNL)
+quietly log close nlpob
