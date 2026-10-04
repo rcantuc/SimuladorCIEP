@@ -77,7 +77,7 @@ done
 
 # Bitácora (commiteada): fecha, vintages y SHAs publicados
 VINT_POB="$(python3 -c "import json;j=json.load(open('$NODOS/poblacion-nl.json'));p=j['procedencia'];print('pob: ' + p['cobertura_estatal'] + '; mun ' + p['cobertura_municipal'].split(',')[0] + '; corrida ' + p['generado_en'])")"
-VINT_ACT="$(python3 -c "import json;j=json.load(open('$NODOS/actividad-nl.json'));p=j['procedencia'];s={x['variable']:x for x in p['series']};print('act: PIBE hasta ' + s['pibeNnl']['ultimo'] + '; ITAEE ' + s['itaeenl']['ultimo'] + '; INPC NL ' + s['inpcnl']['ultimo'] + '; INPC nac ' + s['inpcnac']['ultimo'] + '; consulta INEGI ' + s['pibeNnl']['consulta'] + '; corrida ' + p['generado_en'])")"
+VINT_ACT="$(python3 -c "import json;j=json.load(open('$NODOS/actividad-nl.json'));p=j['procedencia'];s={x['variable']:x for x in p['series']};u=lambda k:(s[k]['ultimo']+(' '+s[k]['sello_ultimo'] if s[k].get('sello_ultimo') else ''));print('act: PIBE hasta ' + u('pibeNnl') + '; ITAEE ' + u('itaeenl') + '; INPC NL ' + u('inpcnl') + '; INPC nac ' + u('inpcnac') + '; consulta INEGI ' + s['pibeNnl']['consulta'] + '; corrida ' + p['generado_en'])")"
 SHAS="$(cd "$DRIVE" && shasum -a 256 poblacion-nl.html actividad-nl.html nodos/poblacion-nl.json nodos/actividad-nl.json | awk '{printf "%s=%s ", $2, substr($1,1,12)}')"
 VNL="$(python3 -c "import json;print(json.load(open('$ROOT/01_modulos/nl-assets/nl-manifest.json'))['version_nl'])")"
 print -r -- "$(date '+%Y-%m-%dT%H:%M:%S') capa=$VNL | $VINT_POB | $VINT_ACT | sha256(12): $SHAS" >> "$BITACORA"

@@ -124,6 +124,7 @@ foreach spec in "750453 19 pibeNnl" "750453 00 pibeNnac" "746097 19 pibeRnl" "74
 	local f`kk'_ultimo `"`r(ultimo)'"'
 	local f`kk'_chk = r(checksum)
 	local f`kk'_n = r(n)
+	local f`kk'_sello `"`r(sello)'"'
 	local f`kk'_fuente "BIE"
 	tempfile s`kk'
 	quietly save `s`kk''
@@ -138,6 +139,7 @@ local f`kk'_fecha `"`r(fecha)'"'
 local f`kk'_ultimo `"`r(ultimo)'"'
 local f`kk'_chk = r(checksum)
 local f`kk'_n = r(n)
+local f`kk'_sello ""
 local f`kk'_fuente "INPC-INEGI"
 local kinpcnl = `kk'
 tempfile sinpcnl
@@ -168,6 +170,7 @@ quietly {
 	checksum `"`site'/raw/temp/AccesoBIE/734407.csv"'
 	local f`kk'_chk = r(checksum)
 	local f`kk'_n = _N
+	local f`kk'_sello ""
 	local f`kk'_fuente "BIE (AccesoBIE)"
 	tempfile sitaeenac
 	save `sitaeenac'
@@ -188,6 +191,7 @@ quietly {
 	checksum `"`site'/raw/temp/AccesoBIE/910392.csv"'
 	local f`kk'_chk = r(checksum)
 	local f`kk'_n = _N
+	local f`kk'_sello ""
 	local f`kk'_fuente "BIE (AccesoBIE)"
 	local kinpcnac = `kk'
 	tempfile sinpcnac
@@ -203,6 +207,9 @@ quietly {
 		merge 1:1 anio using `s`k'', nogen
 	}
 	drop if pibeNnl == . & pibeRnl == .
+	rename sellopibeNnl selloPIBEnl
+	rename sellopibeNnac selloPIBEnac
+	drop sellopibeR* sellodefIdx*
 	sort anio
 	tsset anio
 	foreach g in nl nac {
@@ -277,6 +284,8 @@ quietly {
 	merge 1:1 anio trimestre using `s8', nogen
 	merge 1:1 anio trimestre using `sitaeenac', nogen
 	drop if itaeenl == .
+	rename selloitaeenl selloITAEEnl
+	drop selloitaeeSAnl
 	g aniotrim = yq(anio, trimestre)
 	format aniotrim %tq
 	tsset aniotrim
@@ -560,7 +569,7 @@ forvalues k = 1/`nfuentes' {
 	local tt `"`f`k'_titulo'"'
 	local tt = subinstr(`"`tt'"', char(34), "'", .)
 	local tt = subinstr(`"`tt'"', char(92), "/", .)
-	file write `fh' `"      {`q'id`q': `q'`f`k'_id'`q', `q'area`q': `q'`f`k'_area'`q', `q'variable`q': `q'`f`k'_var'`q', `q'fuente`q': `q'`f`k'_fuente'`q', `q'titulo`q': `q'`tt'`q', `q'consulta`q': `q'`f`k'_fecha'`q', `q'ultimo`q': `q'`f`k'_ultimo'`q', `q'n`q': `f`k'_n', `q'checksum`q': `f`k'_chk'}`=cond(`k' < `nfuentes', ",", "")'"' _n
+	file write `fh' `"      {`q'id`q': `q'`f`k'_id'`q', `q'area`q': `q'`f`k'_area'`q', `q'variable`q': `q'`f`k'_var'`q', `q'fuente`q': `q'`f`k'_fuente'`q', `q'titulo`q': `q'`tt'`q', `q'consulta`q': `q'`f`k'_fecha'`q', `q'ultimo`q': `q'`f`k'_ultimo'`q', `q'sello_ultimo`q': `q'`f`k'_sello'`q', `q'n`q': `f`k'_n', `q'checksum`q': `f`k'_chk'}`=cond(`k' < `nfuentes', ",", "")'"' _n
 }
 file write `fh' "    ]" _n
 file write `fh' "  }," _n
@@ -569,7 +578,13 @@ file write `fh' `"    `q'pibe`q': `q'PIBE a precios de mercado, millones de peso
 file write `fh' `"    `q'deflactor`q': `q'índice de precios implícitos del PIBE = nominal/real x 100 (2018 = 100): mide precios de la PRODUCCIÓN estatal, no del consumo`q',"' _n
 file write `fh' `"    `q'itaee`q': `q'índice de volumen físico 2018 = 100; serie original (variación anual) y desestacionalizada (variación trimestral); es un adelanto preliminar del PIBE. Comparativo nacional = PIB trimestral real (734407/735143) normalizado 2018 = 100; el BIE no publica total nacional del ITAEE ni, por tanto, su serie desestacionalizada aquí`q',"' _n
 file write `fh' `"    `q'inpc`q': `q'INPC base 2Q jul 2018 = 100; NL por entidad federativa (programa INPC de INEGI); inflación anual = promedio anual y dic/dic; vigente = último mes a/a: mide precios del CONSUMO`q',"' _n
-file write `fh' `"    `q'tipo`q': {`q'observado`q': `q'dato publicado por INEGI`q', `q'nowcast ITAEE`q': `q'preliminar: estimado con los trimestres disponibles del ITAEE`q', `q'proyección geométrica`q': `q'supuesto de la capa NL con el criterio del motor`q'}"' _n
+file write `fh' `"    `q'tipo`q': {`q'observado`q': `q'dato publicado por INEGI`q', `q'nowcast ITAEE`q': `q'preliminar: estimado con los trimestres disponibles del ITAEE`q', `q'proyección geométrica`q': `q'supuesto de la capa NL con el criterio del motor`q'},"' _n
+file write `fh' `"    `q'sellos_inegi`q': `q'sello de revisión de INEGI por observación tal como viene del BIE: p = cifra preliminar, r = cifra revisada (p1, r1, ...); vacío = definitiva`q'"' _n
+file write `fh' "  }," _n
+file write `fh' `"  `q'presentacion`q': {"' _n
+file write `fh' `"    `q'criterio_proyeccion`q': `q'sin exógenos CGPE estatales: la proyección NL usa el nowcast ITAEE donde hay trimestres y después el promedio geométrico del motor (PIBDeflactor.ado, geopib/geodef = anioinicial); el comparativo nacional de este endpoint sigue el mismo criterio`q',"' _n
+file write `fh' `"    `q'frontera`q': `q'sidecar macro: contexto, nowcast y deflactación de entregables NL; no recalibra la base micro`q',"' _n
+file write `fh' `"    `q'lectura_sellos`q': `q'PIBE con sello r1 = cifra revisada sujeta a nueva revisión; ITAEE con sello p1 = preliminar`q'"' _n
 file write `fh' "  }," _n
 
 ** 7.1 Cifras (escalares vivos) **
@@ -585,8 +600,13 @@ local j = 0
 foreach s of local lista {
 	local ++j
 	_nlnum "scalar(`s')"
-	file write `fh' `"    `q'`s'`q': `r(n)'`=cond(`j' < `n', ",", "")'"' _n
+	file write `fh' `"    `q'`s'`q': `r(n)',"' _n
 }
+* Sellos de revisión INEGI del último dato (texto: no son escalares numéricos) *
+local kP = 1
+local kI = 7
+file write `fh' `"    `q'selloPIBEult`q': `q'`f`kP'_sello'`q',"' _n
+file write `fh' `"    `q'selloITAEEult`q': `q'`f`kI'_sello'`q'"' _n
 file write `fh' "  }," _n
 
 ** 7.2 Series: anual **
@@ -594,7 +614,7 @@ quietly use `P', clear
 file write `fh' `"  `q'anual`q': ["' _n
 local vars pibeNnl pibeRnl deflnl crecPIBEnl varDeflnl deflatornl pibeNnac pibeRnac deflnac crecPIBEnac varDeflnac deflatornac partPIBEnl difCrec difDefl nowITAEEnl nowITAEEnac ntrim inpcPromnl inpcPromnac dicnl dicnac inflPromnl inflPromnac inflDDnl inflDDnac difInflDD difInflProm
 forvalues i = 1/`=_N' {
-	file write `fh' `"    {`q'anio`q': `=anio[`i']', `q'tipoCrec`q': `q'`=tipoCrec[`i']'`q', `q'tipoDefl`q': `q'`=tipoDefl[`i']'`q', `q'tipoInfl`q': `q'`=cond(tipoInfl[`i']=="", "sin dato", tipoInfl[`i'])'`q'"'
+	file write `fh' `"    {`q'anio`q': `=anio[`i']', `q'tipoCrec`q': `q'`=tipoCrec[`i']'`q', `q'tipoDefl`q': `q'`=tipoDefl[`i']'`q', `q'tipoInfl`q': `q'`=cond(tipoInfl[`i']=="", "sin dato", tipoInfl[`i'])'`q', `q'selloPIBEnl`q': `q'`=selloPIBEnl[`i']'`q', `q'selloPIBEnac`q': `q'`=selloPIBEnac[`i']'`q'"'
 	foreach v of local vars {
 		_nlnum "`v'[`i']"
 		file write `fh' `", `q'`v'`q': `r(n)'"'
@@ -608,7 +628,7 @@ quietly use `Q', clear
 file write `fh' `"  `q'trimestral`q': ["' _n
 local vars itaeenl itaeenac itaeeSAnl itaeeSAnac yoyITAEEnl yoyITAEEnac qoqITAEESAnl qoqITAEESAnac yoyITAEESAnl yoyITAEESAnac
 forvalues i = 1/`=_N' {
-	file write `fh' `"    {`q'anio`q': `=anio[`i']', `q'trimestre`q': `=trimestre[`i']'"'
+	file write `fh' `"    {`q'anio`q': `=anio[`i']', `q'trimestre`q': `=trimestre[`i']', `q'selloITAEEnl`q': `q'`=selloITAEEnl[`i']'`q'"'
 	foreach v of local vars {
 		_nlnum "`v'[`i']"
 		file write `fh' `", `q'`v'`q': `r(n)'"'

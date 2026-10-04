@@ -17,8 +17,11 @@
 * COMANDOS (definidos al correr este archivo con `run`):
 *   _NLbie <indicador>, AREa(cc) NOMbre(var) [OFFline]
 *       cc = clave de 2 dígitos del área (00 nacional, 19 Nuevo León).
-*       Deja en memoria: anio [trimestre|mes] <var>; r(titulo) r(fecha) r(n)
-*       r(ultimo) r(cache) r(checksum).
+*       Cachea la TABLA COMPLETA del indicador (33 áreas, sello de revisión por
+*       observación) una vez por sesión y filtra el área al consumir: el
+*       comparativo nacional sale del mismo pull. Deja en memoria:
+*       anio [trimestre|mes] <var> sello<var>; r(titulo) r(fecha) r(n) r(ultimo)
+*       r(sello) r(cache) r(checksum) [checksum = tabla completa].
 *   _NLinpc <serie>, ESTructura(id) NOMbre(var) [OFFline]
 *       Deja en memoria: anio mes <var> (mensual); mismos r().
 *   offline: usa la caché si existe en lugar de descargar (desarrollo).
@@ -47,7 +50,7 @@ program define _NLmeta
 	while r(eof) == 0 {
 		local k = substr(`"`line'"', 1, strpos(`"`line'"', "=") - 1)
 		local v = substr(`"`line'"', strpos(`"`line'"', "=") + 1, .)
-		if inlist("`k'", "titulo", "fecha_consulta", "area", "ultimo", "n") {
+		if inlist("`k'", "titulo", "fecha_consulta", "area", "areas", "ultimo", "n") {
 			c_local nl_`=cond("`k'"=="fecha_consulta","fecha","`k'")' `"`v'"'
 		}
 		file read `mh' line
@@ -63,30 +66,39 @@ program define _NLbie, rclass
 	capture mkdir "${SIMROOT}/raw"
 	capture mkdir "${SIMROOT}/raw/temp"
 	capture mkdir "${SIMROOT}/raw/temp/AccesoBIE"
-	local csv `"${SIMROOT}/raw/temp/AccesoBIE/nl_`indicador'_`area'.csv"'
-	local meta `"${SIMROOT}/raw/temp/AccesoBIE/nl_`indicador'_`area'.meta"'
-	local usecache = 0
-	if "`offline'" != "" {
-		capture confirm file `"`csv'"'
-		if _rc == 0 local usecache = 1
-	}
-	if `usecache' {
-		_NLmeta `"`meta'"'
-		noisily di as text "  nl-bie (caché): " as result "`indicador'" as text " área " as result "`nl_area'" as text " | `nl_titulo'"
-	}
-	else {
-		python: import sys, importlib; sys.path.insert(0, r"""${SIMROOT}/01_modulos/nl-assets"""); import nl_bie; _r = importlib.reload(nl_bie); nl_bie.nlbie_fetch("`indicador'", "`area'", r"""`csv'""", r"""`meta'""")
-		foreach k in titulo fecha area ultimo n {
+	* Caché = TABLA COMPLETA del indicador (33 áreas, con sello de revisión por
+	* observación). Se descarga UNA vez por sesión; cada área la filtra al consumir. *
+	local csv `"${SIMROOT}/raw/temp/AccesoBIE/nl_`indicador'.csv"'
+	local meta `"${SIMROOT}/raw/temp/AccesoBIE/nl_`indicador'.meta"'
+	local descargar = 1
+	capture confirm file `"`csv'"'
+	if _rc == 0 & ("`offline'" != "" | "${NLBIE_SESION_`indicador'}" == "1") local descargar = 0
+	if `descargar' {
+		python: import sys, importlib; sys.path.insert(0, r"""${SIMROOT}/01_modulos/nl-assets"""); import nl_bie; _r = importlib.reload(nl_bie); nl_bie.nlbie_fetch("`indicador'", r"""`csv'""", r"""`meta'""")
+		global NLBIE_SESION_`indicador' "1"
+		foreach k in titulo fecha n {
 			local nl_`k' `"${NLBIE_`k'}"'
 			global NLBIE_`k'
 		}
-		noisily di as text "  nl-bie: " as result "`indicador'" as text " área " as result "`nl_area'" as text " | `nl_titulo'"
-		noisily di as text "          consulta INEGI `nl_fecha' · `nl_n' obs · último `nl_ultimo'"
+		noisily di as text "  nl-bie: " as result "`indicador'" as text " tabla completa (`nl_n' filas, consulta INEGI `nl_fecha') | `nl_titulo'"
+	}
+	else {
+		_NLmeta `"`meta'"'
 	}
 	quietly {
-		import delimited `"`csv'"', clear varnames(1) encoding(utf-8) stringcols(1)
+		checksum `"`csv'"'
+		local chk = r(checksum)
+		import delimited `"`csv'"', clear varnames(1) encoding(utf-8) stringcols(1 2 4)
+		keep if area == "`area'"
+		count
+		if r(N) == 0 {
+			noisily di as err "nl-bie: el indicador `indicador' no trae filas para el área `area'."
+			exit 459
+		}
 		rename valor `nombre'
-		capture tostring periodo, replace
+		rename nota sello`nombre'
+		replace sello`nombre' = "" if sello`nombre' == "."
+		drop area
 		replace periodo = strtrim(periodo)
 		split periodo, destring p("/")
 		rename periodo1 anio
@@ -99,13 +111,27 @@ program define _NLbie, rclass
 		}
 		drop periodo
 		order anio
-		checksum `"`csv'"'
-		local chk = r(checksum)
+		sort anio
+		local ultobs = _N
+		forvalues i = `=_N'(-1)1 {
+			if `nombre'[`i'] != . {
+				local ultobs = `i'
+				continue, break
+			}
+		}
+		local ultimo = string(anio[`ultobs'])
+		capture confirm variable trimestre
+		if _rc == 0 local ultimo = "`ultimo'/" + string(trimestre[`ultobs'], "%02.0f")
+		capture confirm variable mes
+		if _rc == 0 local ultimo = "`ultimo'/" + string(mes[`ultobs'], "%02.0f")
+		local sello = sello`nombre'[`ultobs']
 	}
+	noisily di as text "          área " as result "`area'" as text " -> `nombre': último `ultimo'" as result " `sello'" as text " · checksum tabla `chk'"
 	return local titulo `"`nl_titulo'"'
 	return local fecha `"`nl_fecha'"'
-	return local area `"`nl_area'"'
-	return local ultimo `"`nl_ultimo'"'
+	return local area "`area'"
+	return local ultimo "`ultimo'"
+	return local sello "`sello'"
 	return local cache `"`csv'"'
 	return scalar n = `nl_n'
 	return scalar checksum = `chk'

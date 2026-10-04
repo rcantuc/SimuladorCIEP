@@ -194,10 +194,10 @@ window.NLACT =
   /* ---------- tarjetas ---------- */
   function cards() {
     var h = '';
-    h += card('Crecimiento real ' + C.anioPIBEult + ' (PIBE)', pct(C.crecPIBEnl), 'Nuevo León · dato publicado', C.difCrecPIBEnl, 'vs. nacional ' + pct(C.crecPIBEnac));
-    h += card('Nowcast ITAEE ' + C.anioITAEEult + 'T' + C.trimITAEEult, pct(C.crecITAEEnl), 'variación anual, serie original · preliminar', C.difCrecITAEEnl, 'vs. PIB nacional ' + pct(C.crecITAEEnac) + ' · desest. t/t ' + pct(C.crecITAEEsaQnl));
+    h += card('Crecimiento real ' + C.anioPIBEult + (C.selloPIBEult ? ' ' + C.selloPIBEult : '') + ' (PIBE)', pct(C.crecPIBEnl), 'Nuevo León · dato publicado' + (C.selloPIBEult ? ' · sello INEGI ' + C.selloPIBEult + ' (revisado)' : ''), C.difCrecPIBEnl, 'vs. nacional ' + pct(C.crecPIBEnac));
+    h += card('Nowcast ITAEE ' + C.anioITAEEult + 'T' + C.trimITAEEult + (C.selloITAEEult ? ' ' + C.selloITAEEult : ''), pct(C.crecITAEEnl), 'variación anual, serie original · preliminar' + (C.selloITAEEult ? ' · sello INEGI ' + C.selloITAEEult : ''), C.difCrecITAEEnl, 'vs. PIB nacional ' + pct(C.crecITAEEnac) + ' · desest. t/t ' + pct(C.crecITAEEsaQnl));
     h += card('Inflación NL ' + MES[C.mesINPCult - 1] + ' ' + C.anioINPCult, pct(C.inflacionNLvig), 'INPC Nuevo León, variación anual', C.difInflacionNLvig, 'vs. nacional ' + pct(C.inflacionNacvig) + ' · dic/dic ' + C.anioInflDDult + ': ' + pct(C.inflacionNLdd));
-    h += card('Deflactor PIBE ' + C.anioPIBEult, pct(C.defPIBEnl), 'precios de la producción estatal (implícito)', C.difDefPIBEnl, 'vs. nacional ' + pct(C.defPIBEnac));
+    h += card('Deflactor PIBE ' + C.anioPIBEult + (C.selloPIBEult ? ' ' + C.selloPIBEult : ''), pct(C.defPIBEnl), 'precios de la producción estatal (implícito)', C.difDefPIBEnl, 'vs. nacional ' + pct(C.defPIBEnac));
     h += card('Proyección ' + C.anioPE + ' (NL)', pct(C.crecPIBEnlPE), 'crecimiento real · criterio del motor', null, 'deflactor ' + pct(C.defPIBEnlPE) + ' · inflación dic/dic ' + pct(C.inflacionNLddPE));
     document.getElementById('cards').innerHTML = h;
   }
@@ -210,13 +210,13 @@ window.NLACT =
   /* definición de columnas por serie: [clave, etiqueta, formateador] */
   function colsFor(which) {
     var nac = S.cmp;
-    if (which === 'pibe') { var c = [['anio', 'Año', String], ['tipoCrec', 'Tipo', String], ['pibeNnl', 'PIBE NL nominal (mdp)', f0.format], ['pibeRnl', 'PIBE NL real 2018 (mdp)', f0.format], ['crecPIBEnl', 'Crec. real NL %', f2.format], ['nowITAEEnl', 'Nowcast ITAEE NL %', f2.format], ['ntrim', 'Trim. ITAEE', String]]; if (nac) c.push(['crecPIBEnac', 'Crec. real nacional %', f2.format], ['difCrec', 'Dif. NL−nac pp', f2.format], ['nowITAEEnac', 'Nowcast PIB nac %', f2.format]); c.push(['partPIBEnl', 'Part. NL en PIB %', f2.format]); return c; }
-    if (which === 'itaee') { var c2 = [['per', 'Trimestre', String], ['itaeenl', 'ITAEE NL (2018=100)', f2.format], ['yoyITAEEnl', 'Var. anual NL %', f2.format]]; if (nac) c2.push(['itaeenac', 'PIB trim. nac (2018=100)', f2.format], ['yoyITAEEnac', 'Var. anual nac %', f2.format]); return c2; }
-    if (which === 'itaeesa') { return [['per', 'Trimestre', String], ['itaeeSAnl', 'ITAEE NL desest. (2018=100)', f2.format], ['qoqITAEESAnl', 'Var. trimestral NL %', f2.format], ['yoyITAEESAnl', 'Var. anual desest. NL %', f2.format]]; }
+    if (which === 'pibe') { var c = [['anio', 'Año', String], ['tipoCrec', 'Tipo', String], ['selloPIBEnl', 'Sello INEGI', String], ['pibeNnl', 'PIBE NL nominal (mdp)', f0.format], ['pibeRnl', 'PIBE NL real 2018 (mdp)', f0.format], ['crecPIBEnl', 'Crec. real NL %', f2.format], ['nowITAEEnl', 'Nowcast ITAEE NL %', f2.format], ['ntrim', 'Trim. ITAEE', String]]; if (nac) c.push(['crecPIBEnac', 'Crec. real nacional %', f2.format], ['difCrec', 'Dif. NL−nac pp', f2.format], ['nowITAEEnac', 'Nowcast PIB nac %', f2.format]); c.push(['partPIBEnl', 'Part. NL en PIB %', f2.format]); return c; }
+    if (which === 'itaee') { var c2 = [['per', 'Trimestre', String], ['selloITAEEnl', 'Sello INEGI', String], ['itaeenl', 'ITAEE NL (2018=100)', f2.format], ['yoyITAEEnl', 'Var. anual NL %', f2.format]]; if (nac) c2.push(['itaeenac', 'PIB trim. nac (2018=100)', f2.format], ['yoyITAEEnac', 'Var. anual nac %', f2.format]); return c2; }
+    if (which === 'itaeesa') { return [['per', 'Trimestre', String], ['selloITAEEnl', 'Sello INEGI', String], ['itaeeSAnl', 'ITAEE NL desest. (2018=100)', f2.format], ['qoqITAEESAnl', 'Var. trimestral NL %', f2.format], ['yoyITAEESAnl', 'Var. anual desest. NL %', f2.format]]; }
     if (which === 'dd') { var c3 = [['anio', 'Año', String], ['tipoInfl', 'Tipo', String], ['dicnl', 'INPC NL dic', f2.format], ['inflDDnl', 'Inflación dic/dic NL %', f2.format]]; if (nac) c3.push(['dicnac', 'INPC nac dic', f2.format], ['inflDDnac', 'Inflación dic/dic nac %', f2.format], ['difInflDD', 'Dif. NL−nac pp', f2.format]); return c3; }
     if (which === 'prom') { var c4 = [['anio', 'Año', String], ['inpcPromnl', 'INPC NL promedio', f2.format], ['inflPromnl', 'Inflación promedio NL %', f2.format]]; if (nac) c4.push(['inpcPromnac', 'INPC nac promedio', f2.format], ['inflPromnac', 'Inflación promedio nac %', f2.format], ['difInflProm', 'Dif. NL−nac pp', f2.format]); return c4; }
     if (which === 'men') { var c5 = [['per', 'Mes', String], ['inpcnl', 'INPC NL', f2.format], ['yoyINPCnl', 'Inflación anual NL %', f2.format]]; if (nac) c5.push(['inpcnac', 'INPC nacional', f2.format], ['yoyINPCnac', 'Inflación anual nac %', f2.format]); return c5; }
-    if (which === 'defl') { var c6 = [['anio', 'Año', String], ['tipoDefl', 'Tipo', String], ['deflnl', 'Deflactor PIBE NL (2018=100)', f2.format], ['varDeflnl', 'Var. deflactor NL %', f2.format], ['inflDDnl', 'Inflación dic/dic NL %', f2.format]]; if (nac) c6.push(['deflnac', 'Deflactor nac (2018=100)', f2.format], ['varDeflnac', 'Var. deflactor nac %', f2.format], ['difDefl', 'Dif. NL−nac pp', f2.format]); return c6; }
+    if (which === 'defl') { var c6 = [['anio', 'Año', String], ['tipoDefl', 'Tipo', String], ['selloPIBEnl', 'Sello INEGI', String], ['deflnl', 'Deflactor PIBE NL (2018=100)', f2.format], ['varDeflnl', 'Var. deflactor NL %', f2.format], ['inflDDnl', 'Inflación dic/dic NL %', f2.format]]; if (nac) c6.push(['deflnac', 'Deflactor nac (2018=100)', f2.format], ['varDeflnac', 'Var. deflactor nac %', f2.format], ['difDefl', 'Dif. NL−nac pp', f2.format]); return c6; }
     return [];
   }
   function dataFor(which) {
@@ -230,13 +230,15 @@ window.NLACT =
   /* ---------- procedencia de extractos ---------- */
   function fuentesTxt(which) {
     var ids = { pibe: ['750453', '746097', '753357', '741180', '734407+735143'], itaee: ['741180', '734407+735143'], itaeesa: ['741927'], dd: ['902690', '910392'], prom: ['902690', '910392'], men: ['902690', '910392'], defl: ['750453', '746097', '753357', '902690'] }[which] || [];
-    return (P.series || []).filter(function (s) { return ids.indexOf(s.id) >= 0; }).map(function (s) { return s.fuente + ' ' + s.id + (s.area !== '00' ? '/área ' + s.area : '') + ' (consulta INEGI ' + s.consulta + ', último ' + s.ultimo + ')'; });
+    return (P.series || []).filter(function (s) { return ids.indexOf(s.id) >= 0; }).map(function (s) { return s.fuente + ' ' + s.id + (s.area !== '00' ? '/área ' + s.area : '') + ' (consulta INEGI ' + s.consulta + ', último ' + s.ultimo + (s.sello_ultimo ? ' ' + s.sello_ultimo : '') + ')'; });
   }
   function provLines(which, titulo) {
     var L = [];
     L.push('# ' + (D.producto || 'Simulador Fiscal NL') + ' — ' + titulo);
     L.push('# ' + (D.subtitulo || '') + ' · capa ' + (P.version_capa_nl || '') + ' · motor ' + (P.version_motor || '') + ' · corrida ' + (P.generado_en || '') + ' · ' + (P.driver || ''));
     fuentesTxt(which).forEach(function (f) { L.push('# Fuente: ' + f); });
+    L.push('# Sellos INEGI: ' + (DEF.sellos_inegi || 'p = preliminar, r = revisado'));
+    L.push('# Criterio de proyección: ' + ((D.presentacion || {}).criterio_proyeccion || ''));
     L.push('# Filtros: vista=' + S.vista + '; serie=' + S.serie + '; rango=' + S.ini + '-' + S.fin + '; comparativo nacional=' + (S.cmp ? 'sí' : 'no'));
     L.push('# Tipos: observado = dato INEGI; nowcast ITAEE = preliminar con trimestres disponibles; proyección geométrica = supuesto de la capa NL (criterio PIBDeflactor)');
     L.push('# Valores del canal (JSON actividad-nl.json), sin recálculo en el navegador; precisión completa');
@@ -400,13 +402,13 @@ window.NLACT =
     var ny = Q.filter(function (r) { return r.anio === C.anioITAEEult; }), s1 = 0, s0 = 0; ny.forEach(function (r) { var prev = Q.filter(function (x) { return x.anio === r.anio - 1 && x.trimestre === r.trimestre; })[0]; if (prev) { s1 += r.itaeenl; s0 += prev.itaeenl; } }); if (s0 > 0) chk('nowITAEEnl', C.nowITAEEnl, (s1 / s0 - 1) * 100);
     var h = '';
     h += '<p><strong>' + (D.producto || 'Simulador Fiscal NL') + '</strong> · ' + (D.subtitulo || '') + ' · capa <code>' + (P.version_capa_nl || '—') + '</code> · motor <code>' + (P.version_motor || '—') + '</code> · corrida ' + (P.generado_en || '—') + ' · log <code>' + (P.log || '—') + '</code> · ' + (P.driver || '') + '</p>';
-    h += '<p><strong>Fuentes (INEGI):</strong></p><ul style="margin:2px 0 6px 18px;padding:0">' + (P.series || []).map(function (s) { return '<li>' + esc(s.fuente) + ' <code>' + esc(s.id) + '</code>' + (s.area !== '00' ? ' área ' + esc(s.area) : '') + ' — ' + esc(s.titulo) + ' · consulta ' + esc(s.consulta) + ' · último ' + esc(s.ultimo) + ' · ' + s.n + ' obs · checksum ' + s.checksum + '</li>'; }).join('') + '</ul>';
+    h += '<p><strong>Fuentes (INEGI):</strong></p><ul style="margin:2px 0 6px 18px;padding:0">' + (P.series || []).map(function (s) { return '<li>' + esc(s.fuente) + ' <code>' + esc(s.id) + '</code>' + (s.area !== '00' ? ' área ' + esc(s.area) : '') + ' — ' + esc(s.titulo) + ' · consulta ' + esc(s.consulta) + ' · último ' + esc(s.ultimo) + (s.sello_ultimo ? ' <code>' + esc(s.sello_ultimo) + '</code>' : '') + ' · ' + s.n + ' obs · checksum ' + s.checksum + '</li>'; }).join('') + '</ul>';
     h += '<p><strong>Definiciones:</strong> ' + esc(DEF.pibe || '') + '. ' + esc(DEF.deflactor || '') + '. ' + esc(DEF.itaee || '') + '. ' + esc(DEF.inpc || '') + '.</p>';
     var sp = P.supuestos_proyeccion || {};
     h += '<p><strong>Criterios heredados del motor:</strong> ' + esc(P.criterios_motor || '') + '. <strong>Supuestos de proyección:</strong> crecimiento — ' + esc(sp.crecimiento || '') + '; deflactor — ' + esc(sp.deflactor || '') + '; inflación — ' + esc(sp.inflacion || '') + '; ' + esc(sp.sin_exogeno_estatal || '') + '.</p>';
     var cp = P.compuertas || {};
     h += '<p><strong>Compuertas del driver:</strong> ' + esc(cp.deflactor_implicito || '') + '; ' + esc(cp.control_pib || '') + '; ' + esc(cp.inpc_vs_motor || '') + '; ' + esc(cp.rejillas || '') + '.</p>';
-    h += '<p><strong>Frontera:</strong> ' + esc(P.frontera || '') + '.</p>';
+    h += '<p><strong>Frontera:</strong> ' + esc(P.frontera || '') + '. <strong>Criterio de proyección (presentación):</strong> ' + esc((D.presentacion || {}).criterio_proyeccion || '') + '. <strong>Sellos INEGI:</strong> ' + esc(DEF.sellos_inegi || '') + '.</p>';
     h += '<p>' + (bad.length ? '<span class="bad">Autocomprobación: ' + bad.length + ' cifra(s) del canal NO coinciden con el recálculo desde los arreglos: ' + bad.join(', ') + '.</span>' : '<span class="ok">Autocomprobación: las ' + ok.length + ' cifras del canal coinciden con el recálculo desde los arreglos incrustados (' + ok.join(', ') + ').</span>') + '</p>';
     document.getElementById('pie').innerHTML = h;
   }

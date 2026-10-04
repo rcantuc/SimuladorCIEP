@@ -44,8 +44,11 @@ def _clean_num(s):
 	except Exception:
 		return ""
 
-def nlbie_fetch(indicador, area, csv_path, meta_path):
-	"""Exporta un indicador del BIE (todas las areas) y filtra el area pedida."""
+def nlbie_fetch(indicador, csv_path, meta_path):
+	"""Exporta un indicador del BIE con TODAS sus areas geograficas (tabla completa)
+	y la cachea con el sello de revision de cada observacion (p1, r1, ...).
+	El filtro por area lo hace el consumidor (_NLbie). Escritura atomica: si el
+	formato es inesperado se aborta y el ultimo cache bueno queda intacto."""
 	params = {"cveser": indicador, "bie": "false", "aamin": "1980", "aamax": "9999",
 		"ordena": "a", "ordenaPeriodo": "ap", "orientacion": "v", "frecuencia": "Todo",
 		"estadistico": "false", "FileFormat": "iqy", "ag": "0", "subapp": "BIE",
@@ -58,37 +61,39 @@ def nlbie_fetch(indicador, area, csv_path, meta_path):
 		t = raw.decode("windows-1252", "replace")
 	m = re.search(r'<table[^>]*id="tableContainerSinScroll"[^>]*>(.*?)</table>', t, re.S)
 	if not m:
-		raise RuntimeError("BIE: el indicador %s no devolvio tabla" % indicador)
+		raise RuntimeError("BIE: el indicador %s no devolvio tabla (formato inesperado); se conserva el ultimo cache" % indicador)
 	rows = re.findall(r"<tr[^>]*>(.*?)</tr>", m.group(1), re.S)
 	ths = [html.unescape(re.sub("<[^>]+>", "", x)).strip() for x in re.findall(r"<th[^>]*>(.*?)</th>", rows[0], re.S)]
-	titulo = ths[-1] if ths else ("Indicador " + indicador)
+	if len(ths) < 3 or "rea geogr" not in ths[1].lower():
+		raise RuntimeError("BIE: el indicador %s no trae la columna de area geografica (formato inesperado); se conserva el ultimo cache" % indicador)
+	titulo = ths[-1]
 	fm = re.search(r"Fecha de consulta:\s*([0-9/]+\s+[0-9:]+)", t)
 	fecha = fm.group(1) if fm else ""
 	out = []
-	area_nombre = ""
+	areas = {}
 	for r in rows[1:]:
 		cells = [html.unescape(re.sub("<[^>]+>", "", c)).strip() for c in re.findall(r"<td[^>]*>(.*?)</td>", r, re.S)]
 		if len(cells) < 3:
 			continue
 		periodo, ageo, valor = cells[0], cells[1], cells[2]
-		if ageo[:2] != area:
-			continue
-		area_nombre = ageo
+		nm = re.search(r"\s*/?\s*([A-Za-z]+\d*)\s*$", periodo)
+		nota = nm.group(1) if nm else ""
 		periodo = re.sub(r"\s*/?\s*[A-Za-z]+\d*\s*$", "", periodo).strip()
-		out.append((periodo, _clean_num(valor)))
+		areas[ageo[:2]] = ageo
+		out.append((periodo, ageo[:2], _clean_num(valor), nota))
 	if not out:
-		raise RuntimeError("BIE: el indicador %s no trae filas para el area %s" % (indicador, area))
-	with open(csv_path, "w", encoding="utf-8") as f:
-		f.write("periodo,valor\n")
-		for p, v in out:
-			f.write("%s,%s\n" % (p, v))
-	ultimo = [p for p, v in out if v != ""][-1]
-	with open(meta_path, "w", encoding="utf-8") as f:
-		f.write("titulo=%s\nfecha_consulta=%s\narea=%s\nultimo=%s\nn=%d\nurl=%s\n" % (titulo, fecha, area_nombre, ultimo, len(out), url))
+		raise RuntimeError("BIE: el indicador %s no trae filas (formato inesperado); se conserva el ultimo cache" % indicador)
+	tmp = csv_path + ".tmp"
+	with open(tmp, "w", encoding="utf-8") as f:
+		f.write("periodo,area,valor,nota\n")
+		for p, a, v, n in out:
+			f.write("%s,%s,%s,%s\n" % (p, a, v, n))
+	os.replace(tmp, csv_path)
+	with open(meta_path + ".tmp", "w", encoding="utf-8") as f:
+		f.write("titulo=%s\nfecha_consulta=%s\nareas=%s\nn=%d\nurl=%s\n" % (titulo, fecha, ";".join(sorted(areas.values())), len(out), url))
+	os.replace(meta_path + ".tmp", meta_path)
 	Macro.setGlobal("NLBIE_titulo", titulo)
 	Macro.setGlobal("NLBIE_fecha", fecha)
-	Macro.setGlobal("NLBIE_area", area_nombre)
-	Macro.setGlobal("NLBIE_ultimo", ultimo)
 	Macro.setGlobal("NLBIE_n", str(len(out)))
 
 _MESES = {"Ene": 1, "Feb": 2, "Mar": 3, "Abr": 4, "May": 5, "Jun": 6, "Jul": 7, "Ago": 8, "Sep": 9, "Oct": 10, "Nov": 11, "Dic": 12}
@@ -103,7 +108,7 @@ def nlinpc_fetch(serie, estructura, csv_path, meta_path):
 		headers={"Content-Type": "application/x-www-form-urlencoded"})
 	t = raw.decode("windows-1252", "replace")
 	if "<html" in t[:300].lower():
-		raise RuntimeError("INPC: la exportacion de la serie %s devolvio HTML (error del servidor)" % serie)
+		raise RuntimeError("INPC: la exportacion de la serie %s devolvio HTML (formato inesperado); se conserva el ultimo cache" % serie)
 	titulo = ""
 	fecha = ""
 	out = []
@@ -121,12 +126,14 @@ def nlinpc_fetch(serie, estructura, csv_path, meta_path):
 			if v != "":
 				out.append((int(mm.group(2)), _MESES[mm.group(1)], v))
 	if not out:
-		raise RuntimeError("INPC: la serie %s no trae observaciones" % serie)
+		raise RuntimeError("INPC: la serie %s no trae observaciones (formato inesperado); se conserva el ultimo cache" % serie)
 	out.sort()
-	with open(csv_path, "w", encoding="utf-8") as f:
+	tmp = csv_path + ".tmp"
+	with open(tmp, "w", encoding="utf-8") as f:
 		f.write("anio,mes,valor\n")
 		for a, m, v in out:
 			f.write("%d,%d,%s\n" % (a, m, v))
+	os.replace(tmp, csv_path)
 	ultimo = "%d/%02d" % (out[-1][0], out[-1][1])
 	with open(meta_path, "w", encoding="utf-8") as f:
 		f.write("titulo=%s\nfecha_consulta=%s\nserie=%s\nestructura=%s\nultimo=%s\nn=%d\nurl=%s\n" % (titulo, fecha, serie, estructura, ultimo, len(out), url))
