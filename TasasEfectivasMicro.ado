@@ -52,6 +52,7 @@
 * OJO: destruye los datos en memoria (carga perfiles<anio>.dta).
 
 program define TasasEfectivasMicro
+	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 quietly {
 	version 14
 	syntax [, ANIO(int -1) ENTidad(numlist integer min=1 >=1 <=32) SUFijo(string)]
@@ -108,11 +109,11 @@ quietly {
 	local ConsPriv21 = scalar(ConsPriv21PIB)/100*`PIBS'
 
 	** 2. Base micro post-ajuste (numeradores) + bases de households (denominadores) **
-	use "`c(sysdir_site)'/master/perfiles`anio'.dta", clear
-	merge 1:1 folioviv foliohog numren using "`c(sysdir_site)'/master/`anioenigh'/households.dta", ///
+	use "${SIMROOT}/master/perfiles`anio'.dta", clear
+	merge 1:1 folioviv foliohog numren using "${SIMROOT}/master/`anioenigh'/households.dta", ///
 		nogen keep(master match) keepusing(ing_mixtoL ing_mixtoK ing_estim_alqu ///
 		gastoanualTOT gas_pc_Vehi gas_pc_BebA gas_pc_Taba gas_pc_RecrT)
-	merge 1:1 folioviv foliohog numren using "`c(sysdir_site)'/master/`anioenigh'/consumption_categ_ieps_pc.dta", ///
+	merge 1:1 folioviv foliohog numren using "${SIMROOT}/master/`anioenigh'/consumption_categ_ieps_pc.dta", ///
 		nogen keep(master match) keepusing(gas_pc_Gasolinas gas_pc_Combustibles)
 
 	** 2.1 Bases al año de política — mismo canal nacional (Distribucion, factores nacionales) **

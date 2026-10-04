@@ -361,3 +361,69 @@ Todos los escenarios son **estimadores válidos** reescalados al mismo total nac
 
 ### Nota de no-regresión (cachés)
 `output.txt` es byte-idéntico al baseline en todas las corridas. Entre el baseline original y las corridas F1-bis, el dump crudo de `scalar list` mostró 23 escalares **adicionales** (`pob*Nacional`, de Poblacion.ado) y un reordenamiento del bloque LIF: provienen de un refresco de cachés `master/*.dta` provocado por una sesión de diagnóstico de solo lectura (SCN/Poblacion re-cachean al correr sin los globales de SIM.do), no de los archivos F1 (que SIM.do nunca invoca). Cero valores distintos en los escalares comunes; dos corridas consecutivas con el estado de cachés actual son byte-idénticas también en el dump crudo.
+
+---
+
+## Anexo F0-8.6.0 — Sincronización a v8.6.0 y diagnóstico del endpoint de Población (2026-10-03)
+
+**Worktree:** `/Users/ricardo/CIEP_Simuladores/SimuladorCIEP-NL` (rama `feature/entidad-nl`, disco local). El worktree de `master` (Dropbox) no se tocó.
+
+### 0.1 Estado del PR #9 y de la capa NL en `master`
+
+- **PR #9 sigue OPEN** (no mergeado, ni total ni parcialmente). `origin/master` @ `0bb0ca3` (v8.6.0) **no contiene ningún archivo de la capa NL**: `git ls-tree origin/master` no lista `EntidadNL.do`, `TasasEfectivasMicro.ado`, `DIAGNOSTICO_NL.md` ni `publicar-conl.sh`.
+- La única mención a `entidad` en `Simulador.ado` de master es el filtro `entidad == "Nacional"` sobre `Poblacion.dta` (preexistente); la opción `entidad()` vive **solo** en `TasasEfectivasMicro.ado` (capa NL). El motor nunca recibió cambios desde esta rama.
+- Antes del merge, la rama difería de su merge-base (`2b03cb7`, v8.3.3) **exclusivamente** en los 4 archivos de la capa NL. Consecuencia: el merge no podía producir conflictos en el motor.
+
+### 0.2 Merge `origin/master` (v8.6.0) → `feature/entidad-nl`
+
+`git checkout -- simulador.stpr` (estado de sesión) y `git merge origin/master`: **merge limpio, cero conflictos** (`6ead554`; 32 commits de master, v8.3.3→v8.6.0: v8.4.x SIMroot/sidecar/CONAPO vía DGIS, v8.5.0 `perfilpc`, v8.6.0 `Simulador` v2.0). Post-merge, `git diff --name-only origin/master HEAD` = los 4 archivos de la capa NL. **Ningún archivo del motor difiere de master.**
+
+**Ajuste de la capa NL al contrato v8.4 (`${SIMROOT}`):** `TasasEfectivasMicro.ado` (3 rutas) y `EntidadNL.do` (`local site`) leían `c(sysdir_site)`; desde v8.4.0 la raíz de datos es `${SIMROOT}` (`SIMroot.ado`). Se cambió solo en la capa NL (misma corrección que master aplicó a `scalarjson.ado`/`PerfilesSim.do`). Sin ello, en una sesión interactiva con `SITE` apuntando a otro clon, el driver leería las bases de otro árbol.
+
+### 0.3 Compuertas post-merge
+
+Receta batch del runbook (`02_governance/runbook-deploys-ciep.md` §1: `global output` + `global nographs`, `set linesize 255`, `stata-mp -b`), `global bootstrap 1`, PE 2027.
+
+| Compuerta | Resultado | Evidencia |
+|---|---|---|
+| **Paridad nacional** | **PASÓ — diff vacío** | Árbol limpio de `origin/master` (`git archive` a `~/CIEP_Simuladores/_paridad-master-8.6.0`, `raw/` compartido por symlink, copia propia de `master/`) vs. el worktree NL. `users/ricardo/output.txt`: 48,810 bytes en ambos, SHA-256 `ae624b9885b7ac67a901ce858d2a5046d6e2750b6a7e02727ac64dbeb945fa15` idéntico; los 5 `sankey-*.json` también idénticos. 0 líneas con `> `. TOUCH-DOWN 612.7 s (master) / 767.3 s (NL). |
+| **D.1 (EntidadNL.do)** | **PASÓ** | Misma sesión batch tras SIM.do: "Compuerta D.1: PASÓ (xhogar, distribución e incidencia idénticos al pipeline)"; `scalarjson (entidad-nl): 1759 escalares, 1 año de serie, 4 capas, 0 faltantes`. Log: `users/ricardo/nodos/entidad-nl.log`. |
+| **Delta NL documentado** | ver tabla | `statajson_entidad-nl.json` v8.3.3 (corrida 2026-09-23, PE 2027) vs v8.6.0 (2026-10-03, PE 2027); mismas 1,759 claves. |
+
+**Delta NL** (% salvo indicación; `nl` = S0, deciles nacionales):
+
+| Escalar | F1-bis-2 (2026-08-31, PE 2026, v8.3.x) | v8.3.3 (2026-09-23, PE 2027) | **v8.6.0 (2026-10-03, PE 2027)** | Δ motor 8.3.3→8.6.0 |
+|---|---:|---:|---:|---:|
+| TE laboral NL `YlImpTEnl` | 17.4 | 18.03 | **18.03** | 0.00 |
+| TE laboral nacional `YlImpTEnac` | 12.9 | 13.36 | **13.36** | 0.00 |
+| TE ISR PM NL `ISRPMTEnl` | 23.5 | 24.25 | **24.38** | +0.12 |
+| TE IVA NL `IVATEnl` | 6.0 | 6.44 | **6.44** | 0.00 |
+| Incidencia total NL `incImpAportnlTot` | 29.8 | 30.77 | **30.80** | +0.02 |
+| Incidencia total nacional `incImpAportnacTot` | 20.7 | 21.48 | **21.48** | 0.00 |
+| Banda [S1, S3] NL | [25.5, 35.1] | [26.38, 36.22] | **[26.35, 36.17]** | [−0.03, −0.04] |
+| Participación NL en ISR PM `PartISRPMnl` | 14.15 | 14.15 | **14.22** | +0.07 |
+
+Atribución: (i) el salto F1-bis-2 → v8.3.3 **no es del motor**: es el cambio de año de política (PE 2026 → CGPE 2027, parámetros `*PIB` de `SIM.do` §4.1 y macros SCN/LIF 2027) en la corrida del 23-sep; (ii) el delta **8.3.3→8.6.0 es de metodología del motor, no de la capa NL**, y se concentra en el ISR PM y en la incidencia (≤ 0.12 pp): `perfilpc` v8.5.0 (reparto intra-hogar por punto fijo con paro por tolerancia, "CAMBIA RESULTADOS" según el CHANGELOG) altera la asignación por persona que alimenta el probit/cut-off del ISR PM; `Simulador` v2.0 con B=1 coincide con v1.x a precisión de máquina, así que no aporta al delta. TE laboral, cuotas, ISR PF, IVA y consumo: **0.00**.
+
+### 0.4 Diagnóstico para el endpoint de Población (solo lectura)
+
+**Módulo del motor.** `Poblacion.ado` v8.0 (`Poblacion [if] [, ANIOinicial ANIOFinal NOGraphs UPDATE TEXTBOOK]`) + subrutina `UpdatePoblacion`. Fuente (v8.4.1): CONAPO, Conciliación Demográfica 1970-2019 y Proyecciones 2020-2070 (**pry23**, 11-sep-2023), redistribuida por DGIS-Salud como `Poblacion_Estimada_Mitad_Anio.zip` (asset del sidecar, SHA verificado por `ensure_asset`; CONAPO dejó de servir los CSV en vivo en sep-2026). Bases: `master/Poblacion.dta` — **edad simple (0–109) × sexo (1 H / 2 M) × entidad (32 + "Nacional" = suma) × año**, variable `poblacion` (+ `tasafecundidad`); `master/Poblaciontot.dta` — total nacional por año (lo consume `PerfilesSim.do:138` para reescalar el factor). `SIM.do` §1 lo invoca con `anioi(aniovp) aniofinal(2070)`; `Simulador.ado:403` lee las matrices edad×año nacionales para REC.
+
+**Estado de la caché local (hallazgo).** `master/Poblacion.dta` del worktree NL (y la copia usada en la paridad) es del **24-may-2026**: vintage pre-v8.4.1 (CSV en vivo de CONAPO), **1950–2070**, 737,660 obs, 9 variables. El motor v8.6.0 reconstruye desde el zip de DGIS con cobertura **1970–2070** solo si la caché falta o con `update`; según el CHANGELOG v8.4.1 las 555,500 celdas comunes coinciden exactamente. `raw/CONAPO/` no existe en el worktree NL (el asset no se ha descargado). Decisión pendiente para F2 (ver abajo).
+
+**Escalares/JSON de población que exporta hoy el canal.** `Poblacion.ado` registra vía `escalar` 23 escalares por entidad (`pob*<Entidad>`, aquí `Nacional`): `personas` — `pobtot`, `pobfin`, `pobhomI/F`, `pobmujI/F`, `pobMenoresI/F`, `pobPrimeI/F`, `pobMayoresI/F`; `pct` — `pobhompropI/F`, `pobmujpropI/F`, `pobMenorespropI/F`, `pobPrimepropI/F`, `pobMayorespropI/F`; `anio` — `aniotdmin`, `aniotdmax` (solo con gráficas). A `output.txt` no viaja ningún bloque demográfico (solo conteos de beneficiarios `GASTOSPOB1/2`). Ningún nodo `scalarjson` exporta población como serie salvo `poblacion` como denominador en `nodo-deuda` (`master/Poblaciontot.dta`) y `Pobnl` (ENIGH expandida) en `entidad-nl`. **No existe hoy un JSON de población por edad/sexo/año**: el endpoint F2 lo crea en la capa NL leyendo `master/Poblacion.dta` sin tocar el `.ado`.
+
+**Serie NL vs nacional (caché actual):** 1970: 1.79 M (3.5 % del país) · 2000: 3.91 M (3.9 %) · 2020: 5.91 M (4.6 %) · 2025: 6.41 M (4.8 %) · 2040: 7.77 M (5.4 %) · 2070: 9.08 M (6.4 %).
+
+**Trabajo municipal previo.** En el repo (ramas, historial, nombres de archivo con `municip`): **nada** — `git log --all --grep=municip` y `git log --all --name-only | grep -i municip` vacíos; `raw/ENIGH/*/censo_eco_municipios.dta` es el Censo Económico (VA-ratio), no población. **Fuera del repo** sí existe:
+
+- `Drive CoNL / 2. Simuladores CoNL / CORE / PoblacionNL.ado` (7-may-2026, 24.5 KB) + `INICIO.do` (7-may-2026, Simulador NL embrionario con `sysdir set SITE` al Drive): clon de `Poblacion.ado` por municipio (`PoblacionNL [if mun == "…"]`, 51 municipios), con `UpdatePoblacionNL` que lee `raw/CONAPO/pobproy_quinq1.csv`, filtra `clave_ent == 19`, hace `reshape long` de los 18 quinquenios y **expande a edades simples repartiendo uniformemente (÷5; 85+ repartido en 85–109)**. Escribe `master/PoblacionNL.dta` y `PoblacionNLtot.dta` en `c(sysdir_site)` (contrato pre-v8.4). Las bases generadas **no están** en el Drive (la carpeta `SimuladorCoNL/` está vacía salvo `graphs/` de hoy).
+- Fuente municipal localizada: `Drive CoNL / 2. Simuladores CoNL / TMCA VACB real per capita regiones NL / 02_datos / pobproy_quinq1.csv` (36.7 MB, 6-ago-2026): **CONAPO, "Reconstrucción y proyecciones de la población de los municipios de México 1990-2040" (2024)**, población a mitad de año por **grupos quinquenales (0-4 … 80-84, 85+) × sexo × municipio × año 1990–2040**, 2,475 municipios (incluye los de creación reciente, p. ej. Ñuu Savi). NL: 51 municipios × 2 sexos × 51 años = 5,202 filas × 18 grupos = **93,636 celdas**.
+- **Consistencia verificada (Stata, solo lectura):** la suma de los 51 municipios de NL coincide **exactamente (dif = 0)** con la serie estatal de `master/Poblacion.dta` en los 51 años comunes 1990–2040 (p. ej. 2025: 6,413,123; 2040: 7,769,371). Es el mismo vintage demográfico (pry23) → la fuente municipal **queda confirmada** para F2, con dos salvedades que se declaran, no se corrigen: cobertura 1990–2040 (vs 1970/1950–2070 estatal) y edad quinquenal (vs simple).
+- La fuente municipal **no está integrada** al motor ni al sidecar (`manifest.json` solo trae el zip de DGIS). Para F2 se propone traerla a la capa NL como insumo local declarado (`raw/CONAPO/pobproy_quinq1.csv`, gitignored, SHA-256 registrado en este anexo) con guarda que aborta si falta; **no** se añade al manifest del motor (eso sería PR aparte a master).
+
+### 0.5 Decisiones que requieren aprobación antes de F1/F2
+
+1. **Vintage de la caché de población.** (a) Correr `Poblacion, update` en el worktree NL para alinear `master/Poblacion.dta` al asset canónico v8.6.0 (1970–2070, descarga ~1 asset del sidecar; cambia la caché del motor pero no sus números en celdas comunes), o (b) conservar la caché 1950–2070 actual y declarar el vintage en el HTML. **Recomendación: (a)** — el endpoint debe reproducirse desde un `master/` reconstruible con el motor v8.6.0.
+2. **Municipios en F2** con la fuente confirmada: pirámides municipales en **grupos quinquenales** tal como da la fuente (sin la expansión uniforme ÷5 de `PoblacionNL.ado`, que inventa estructura intra-quinquenio); estatal y nacional en edad simple; el comparativo de estructura NL vs nacional vs municipio se hace en quinquenios. Tamaño estimado del JSON embebido: ~0.5 MB municipal + ~0.4 MB estatal/nacional (edad simple, 1970–2070) → HTML < 1.5 MB, dentro del objetivo de 2 MB.
+3. **Ubicación del comando:** `01_modulos/PoblacionNL.do` (driver propio de la capa NL, invocable tras `SIM.do` o solo; lee `master/Poblacion.dta` + el CSV municipal; escribe `users/$id/nodos/poblacion-nl.json` y `poblacion-nl.html`), en lugar de subrutina de `EntidadNL.do` — la población no depende de la corrida fiscal y debe poder regenerarse sin ella.
