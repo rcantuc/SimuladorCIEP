@@ -1,10 +1,11 @@
 {smcl}
-{* *! version 8.0 CIEP 03jul2026}{...}
+{* *! version 8.1 CIEP 04oct2026}{...}
 {viewerjumpto "Descripción" "AccesoBIE##description"}{...}
 {viewerjumpto "Configuración del token" "AccesoBIE##token"}{...}
 {viewerjumpto "Primeros pasos" "AccesoBIE##quickstart"}{...}
 {viewerjumpto "Sintaxis" "AccesoBIE##syntax"}{...}
 {viewerjumpto "Opciones" "AccesoBIE##options"}{...}
+{viewerjumpto "Indicadores por área geográfica" "AccesoBIE##area"}{...}
 {viewerjumpto "Cómo encontrar una clave" "AccesoBIE##findkey"}{...}
 {viewerjumpto "Series comunes" "AccesoBIE##series"}{...}
 {viewerjumpto "Ejemplos" "AccesoBIE##examples"}{...}
@@ -124,7 +125,7 @@ Para descargar tres series a la vez:
 {title:Sintaxis}
 
 {p 8 16 2}
-{cmd:AccesoBIE} {it:serie} [{it:serie2} ...] [{cmd:,} {opt Nombres(string)} {opt Token(string)}]
+{cmd:AccesoBIE} {it:serie} [{it:serie2} ...] [{cmd:,} {opt Nombres(string)} {opt Token(string)} {opt AREa(##)}]
 {p_end}
 
 {pstd}
@@ -150,6 +151,54 @@ comando lee el global Stata {cmd:$BIE_API_TOKEN}. Si tampoco está fijado el
 global, el comando usa la consulta pública (.aspx) con un aviso en pantalla.
 Ver {it:Configuración del token} arriba.
 {p_end}
+
+{phang}
+{opt area(##)} — {bf:Área geográfica} del indicador (v8.1): {cmd:00} nacional,
+{cmd:01}–{cmd:32} entidades federativas en el orden del INEGI ({cmd:19} = Nuevo
+León). Para indicadores que el BIE publica por entidad (PIBE, ITAEE, ...).
+Aplica a todas las series de la llamada. Ver {it:Indicadores por área geográfica}.
+Sin esta opción el comando se comporta exactamente igual que antes.
+{p_end}
+
+{hline}
+
+{marker area}{...}
+{title:Indicadores por área geográfica}
+
+{pstd}
+El BIE exporta cada {it:indicador} con las 33 áreas geográficas apiladas en una
+columna "Área geográfica" (nacional + 32 entidades); las claves clásicas por
+estado ya no responden. Sin {opt area()}, {cmd:AccesoBIE} lee periodo y valor sin
+mirar el área: correcto para las series nacionales (que solo traen el área
+{cmd:00}), pero un indicador estatal mezclaría las 33 áreas. Con {opt area(##)}:
+{p_end}
+
+{phang2}1. Descarga la {bf:tabla completa} del indicador por la consulta pública
+(.aspx) {bf:una sola vez por sesión} y la guarda en
+{cmd:raw/temp/AccesoBIE/[serie]_areas.csv} ({cmd:periodo, area, valor, nota})
+más {cmd:[serie]_areas.meta} (título, fecha de consulta del INEGI, áreas
+disponibles, n, URL). La escritura es atómica: si la respuesta no trae tabla,
+ni columna de área, ni filas, el comando aborta con mensaje claro y el último
+caché bueno queda intacto.{p_end}
+{phang2}2. Filtra el área pedida al cargar. Pedir después otra área del mismo
+indicador (p. ej. el comparativo nacional, {cmd:area(00)}) no vuelve a
+descargar: sale del mismo pull. En pantalla se muestran filas de la tabla,
+fecha de consulta y {cmd:checksum} del caché completo (procedencia).{p_end}
+{phang2}3. La base resultante tiene la misma forma que sin la opción
+({cmd:anio} [{cmd:trimestre}|{cmd:mes}] {it:nombre}); el sello de revisión del
+INEGI de cada observación ({cmd:p1}, {cmd:r1}) queda en la columna {cmd:nota}
+del caché.{p_end}
+
+{pstd}
+Si el indicador no trae filas para el área pedida (p. ej. una serie nacional
+con {cmd:area(19)}), el comando aborta listando las áreas disponibles. Para
+forzar una descarga nueva en la misma sesión: {cmd:macro drop INEGI_AREAS_[serie]}.
+{p_end}
+
+{phang2}{cmd:. AccesoBIE 750453, nombres(PIBE) area(19)}{p_end}
+{pstd}PIB de Nuevo León a precios corrientes (base 2018), anual.{p_end}
+{phang2}{cmd:. AccesoBIE 741180 741927, nombres(ITAEE ITAEEsa) area(19)}{p_end}
+{pstd}ITAEE de Nuevo León, original y desestacionalizado, trimestral.{p_end}
 
 {hline}
 
@@ -205,6 +254,11 @@ Pasos para localizar el código numérico de cualquier serie en el BIE:
 {pstd}{bf:Ejemplo 5 — Con token personalizado}{p_end}
 {phang2}{cmd:. AccesoBIE 628194, token(mi-token-personal)}{p_end}
 
+{pstd}{bf:Ejemplo 6 — Indicador estatal: PIBE de Nuevo León y nacional}{p_end}
+{phang2}{cmd:. AccesoBIE 750453, nombres(PIBEnl) area(19)}{p_end}
+{phang2}{cmd:. AccesoBIE 750453, nombres(PIBEnac) area(00)}{p_end}
+{pstd}La segunda llamada no vuelve a descargar: filtra el área 00 de la tabla ya cacheada.{p_end}
+
 {hline}
 
 {marker output}{...}
@@ -232,6 +286,7 @@ de los metadatos del INEGI.
 
 {pstd}{bf:Archivos temporales generados:}{p_end}
 {phang2}— {cmd:raw/temp/AccesoBIE/[serie].csv} — Archivo CSV por serie descargada{p_end}
+{phang2}— {cmd:raw/temp/AccesoBIE/[serie]_areas.csv} y {cmd:.meta} — Tabla completa por área geográfica (solo con {opt area()}){p_end}
 
 {hline}
 

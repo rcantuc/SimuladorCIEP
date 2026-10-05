@@ -20,6 +20,43 @@ Formato de cada entrada:
 
 Trabajo en `master` sin versión asignada.
 
+## [v8.7.0] — 2026-10-05
+
+### Comandos
+
+- **`AccesoBIE` v8.1: opción `area(##)` para indicadores por entidad
+  federativa.** El BIE (versión 2025) exporta cada indicador con las 33 áreas
+  geográficas apiladas en la columna "Área geográfica" (00 nacional, 01–32
+  entidades); las claves clásicas por estado ya no responden y `ag=` se
+  ignora. `AccesoBIE` leía periodo/valor sin mirar el área: correcto para las
+  series nacionales (solo traen el área 00), pero un indicador estatal (PIBE,
+  ITAEE) mezclaría los 33 estados. La capa NL lo resolvió con un lector
+  propio (`_NLbie`, NL-0.2.0); este cambio lleva la capacidad al motor.
+  **Estrictamente aditivo:** sin `area()` el código que corre es el mismo
+  (byte-idéntico). Con `area(##)`: descarga la **tabla completa** del
+  indicador por la consulta pública una vez por sesión (global
+  `INEGI_AREAS_<serie>`), la cachea en `raw/temp/AccesoBIE/<serie>_areas.csv`
+  (`periodo, area, valor, nota`) + `.meta` (título, fecha de consulta INEGI,
+  áreas, n, URL) con **escritura atómica** (`.tmp` → `os.replace`; si la
+  respuesta no trae tabla, columna de área o filas, aborta con mensaje y el
+  último caché bueno queda intacto), filtra el área al cargar y muestra filas,
+  fecha de consulta y `checksum` de la tabla completa. El comparativo nacional
+  (`area(00)`) sale del mismo pull. Falla con mensaje claro si el indicador no
+  trae el área pedida (lista las disponibles) o si `area()` no es 00–32.
+  Nueva sección "Indicadores por área geográfica" y ejemplo 6 en
+  `AccesoBIE.sthlp`. Propuesto en `DIAGNOSTICO_NL.md` (anexo PIBDeflactorNL
+  §0.2, hallazgo 1); detectado durante la construcción de la capa NL.
+- **Compuertas.** (1) No-regresión nacional: las descargas que usa el motor
+  (`734407 735143 446562 446565 446566`, `910392`, bloque SCN
+  `724014–724025`, `734407` con nombre automático) antes y después del cambio
+  producen **18 cachés `.csv` con SHA-256 idéntico** y 4 bases `cf _all`
+  idénticas. (2) Validación cruzada: `AccesoBIE <id>, area(19)` reproduce con
+  **igualdad exacta** los valores de `_NLbie <id>, area(19)` para las series
+  NL en producción — PIBE corriente `750453` y real `746097` (22 años), ITAEE
+  original `741180` y desestacionalizado `741927` (185 trimestres). (3)
+  Negativos: `910392, area(19)` → `r(459)` "no trae filas para el área 19;
+  disponibles: 00"; `area(99)` y `area(ab)` → `r(198)`.
+
 ## [v8.6.1] — 2026-10-04
 
 ### Correcciones
