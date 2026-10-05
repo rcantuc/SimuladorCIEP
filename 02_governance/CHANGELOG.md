@@ -20,6 +20,36 @@ Formato de cada entrada:
 
 Trabajo en `master` sin versión asignada.
 
+## [v8.7.1] — 2026-10-05
+
+### Correcciones
+
+- **`PIBDeflactor` v8.1: años de valor presente anteriores a (último trimestre
+  publicado − 5) ya no truenan.** §2.1 detecta el "último trimestre observado"
+  buscando la primera fila con `pibQ` faltante dentro del rango
+  `anio <= aniomax`, y `aniomax` por default es `aniovp + 5`. Si `aniovp + 5`
+  queda antes del último trimestre publicado (hoy 2026q2), ninguna fila del
+  rango tiene `pibQ` faltante, `aniofinal`/`obsfinal` no se definen y la
+  rutina aborta con `pibQ not found` (`r(111)`). Como `SCN.ado` llama
+  `PIBDeflactor, anio(`anio')` sin `aniomax` y `Households.do` llama
+  `PIBDeflactor, aniovp(anioenigh)`, **`SCN, anio(2016|2018|2020)` y la
+  armonización de las ENIGH 2016, 2018 y 2020 fallaban** en v8.6.0–v8.7.0
+  (caso borde nunca ejercitado: el nacional corre con `aniovp >= 2024`;
+  2022 y 2024 sí pasaban porque `aniovp + 5 > 2026`). Corrección mínima: si
+  el bucle no definió `obsfinal`, el último observado es la última fila del
+  rango (4 líneas). **Sin efecto en producción:** con `aniovp >= 2024` el
+  bucle sí define `obsfinal` y el bloque nuevo no se ejecuta.
+- **Compuertas.** (1) `PIBDeflactor, aniovp(2016|2018|2020|2022)` y
+  `SCN, anio(...)` corren (antes `r(111)` en 2016–2020; PIB 2016 =
+  20,758,790,507,000 MXN). (2) No-regresión: la base de `PIBDeflactor,
+  aniovp(2027) aniomax(2032)` antes y después del cambio es idéntica
+  (`cf _all`). (3) Paridad nacional: `SIM.do` completo (PE 2027, receta
+  batch del runbook) produce `users/ricardo/output.txt` con SHA-256
+  idéntico al de v8.6.0/v8.7.0 (`ae624b98…45fa15`). Detectado durante la
+  construcción de la capa NL (`DIAGNOSTICO_NL.md`, anexo Participaciones
+  históricas F0 §0.5-A): la capa necesita correr el motor sobre cada ENIGH
+  bienal con calibración contemporánea (`anioPE = aniovp = anioenigh`).
+
 ## [v8.7.0] — 2026-10-05
 
 ### Comandos
