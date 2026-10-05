@@ -191,6 +191,8 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
   var VINT = (D.vintages || []).slice().sort(function (a, b) { return a.enigh - b.enigh; }); var byV = {}; VINT.forEach(function (v) { byV[v.enigh] = v; });
   var SP = P.supuestos || {};
   var supuestoPart = SP.participaciones_bienales || SP.incidencia_fija || '';
+  /* versión corta para el letrero (la completa va al pie y a los extractos) */
+  var supuestoCorto = VINT.length ? 'participaciones de NL por impuesto estimadas con cada ENIGH bienal (' + VINT[0].enigh + '–' + VINT[VINT.length - 1].enigh + ', cada una calibrada a la economía de su año), asignadas por bienio sin interpolar (antes de ' + VINT[0].enigh + ', las de la ENIGH ' + VINT[0].enigh + ') y aplicadas a la recaudación observada de cada año; sensibilidad muestral del ISR PM declarada por vintage' : supuestoPart;
   function partAnio(anio, k) { var r = byPA[anio]; if (r && r[k] !== undefined && r[k] !== null) return r[k]; var p = PART.filter(function (x) { return x.impuesto === k; })[0]; return p ? p.part : null; }
   function notaPart(anio) {
     var r = byPA[anio]; if (!r) return '';
@@ -283,7 +285,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
   function corto(s, n) { s = String(s || ''); return s.length > n ? s.slice(0, n - 1) + '…' : s; }
 
   /* ---------- letrero de alcance (siempre visible) ---------- */
-  document.getElementById('alcance').innerHTML = '<b>Alcance declarado — ' + esc(AL.declarado || 'balanza de flujos identificables') + '.</b> ' + esc(AL.leyenda || PR.letrero_alcance || '') + ' <span style="color:var(--mut)">Supuesto: ' + esc(supuestoPart) + '.</span>';
+  document.getElementById('alcance').innerHTML = '<b>Alcance declarado — ' + esc(AL.declarado || 'balanza de flujos identificables') + '.</b> ' + esc(AL.leyenda || PR.letrero_alcance || '') + ' <span style="color:var(--mut)">Supuesto: ' + esc(supuestoCorto) + '.</span>';
 
   /* ---------- tarjetas (persona-escala por defecto; subtítulo macro) ----------
      PATRÓN: familia per cápita del motor (PIBDeflactor pib_pc, GastoPC, columna MXN PC de PEF/LIF). */
