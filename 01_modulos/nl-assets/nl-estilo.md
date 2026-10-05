@@ -85,7 +85,9 @@ Convenciones transversales observadas: títulos en `{bf:}`; `xtitle("")` siempre
 | Incidencia (`EntidadNL.do` §4) | Decil · AlTrabajo · AlCapital · AlConsumo · OTROSK · Total | `Tot` al final; nota de suma | `%10.1fc` |
 | `scalarjson` (`tabla[]`) | la **estructura** viaja en el contrato: `bloque`, `etiqueta`, `prefijo` (`(+)/(−)/(=)`), `familia`, `enfasis`; la página la espeja (`nodo-deuda.html` renderTabla) | `rule-max` entre bloques, `rule-min` antes del énfasis | `formato_sugerido`/`divisor_sugerido` por escalar; catálogo `escalar.ado`: `pctpib %7.3fc`, `pct %7.1fc`, `mxn %12.1fc ÷1e6`, `mxnpc %10.0fc`, `personas %15.0fc`, `anio %4.0f` |
 
-## 3. Tokens fijos de la capa NL (propuesta; se fijan al aprobarse)
+## 3. Tokens fijos de la capa NL (propuesta; se fijan al aprobarse — resolución 2026-10-04: NO fijar hasta la pasada de Ricardo)
+
+**Dónde viven:** `nl-assets/nl-datos.js`, bloque `NLEstilo` (único lugar). `federacion-nl.html` ya consume `var(--nl)`, `var(--nac)`, `var(--banda)`, `var(--recibe)`, `var(--paga)`, `var(--paquete)`, `var(--proy)`, `var(--acento)`; cambiar los valores ahí aplica la decisión a todos los endpoints que llamen `NLEstilo.apply()` (retrofit de `poblacion-nl`/`actividad-nl` en NL-0.4.1). Los valores actuales son los de esta tabla, marcados **provisionales** en el pie de cada endpoint.
 
 Derivados de la paleta `scheme-ciep` para que un lector del libro/portada reconozca la familia. Hoy `poblacion-nl.html` y `actividad-nl.html` usan tokens propios (`--nl #0b4f6c`, `--nac #c9553d`, `--h #2a6f97`, `--m #c9553d`, `--now #e8a33d`, `--proy #9aa5b1`): **se migran** a estos en NL-0.4.x.
 

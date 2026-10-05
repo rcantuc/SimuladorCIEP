@@ -446,6 +446,13 @@ Fuente de verdad legible por máquina: `01_modulos/nl-assets/nl-manifest.json` (
 
 ### Changelog
 
+#### NL-0.4.0 — 2026-10-04 (motor sincronizado: v8.6.0) — endpoint "La Federación y Nuevo León"
+- **Driver `01_modulos/FederacionNL.do` v1.0.0**: transferencias federales a NL por fondo (SHCP, Estadísticas Oportunas, lector propio `_NLeopf` con caché completa de 32 entidades + No distribuible + total, `Last-Modified`, checksum, escritura atómica), carga federal de residentes por incidencia (`Part<X>nl` × recaudación observada de `LIF.dta`; sin OTROSK; cuotas IMSS aparte) y **balanza de flujos identificables** como banda [S1, S3] con S0; nominal / real (deflactor implícito PIBE NL) / per cápita (CONAPO) / % PIBE; lugar de NL entre las 32; anclas CP/PEF/PPEF por entidad (`PEF.dta`, `divFEDE`); 9 compuertas; JSON `nl.federacion/v1`.
+- **Arquitectura B**: `nl-assets/federacion-sello.json` (extracto del canal con identidad y SHA) escrito en modo canal (Mac) y consumido en modo sello (runner) solo si capa, motor y `anioPE` coinciden; igualdad reldif 1e-9 exigida cuando el canal existe.
+- **Endpoint `federacion-nl.html`** (412 KB, inline, cero red): letrero de alcance permanente; tarjetas en persona-escala con banda; **Sankey** de ida y vuelta con nodo "aportación neta en flujos identificables" y halo de la banda del ISR PM; serie con tramos observado / Paquete / en curso; recibe por fondo y subfondos; conciliación del lado paga; modo datos; autocomprobación (16 cifras); estado por URL común (`reg|medida|esc|anio|ini|fin|cmp|modo`).
+- **Gramática de comunicación**: borrador `nl-assets/nl-estilo.md` (canon del motor, doctrina de registro, tokens) pendiente de la pasada de Ricardo; tokens parametrizados en `NLEstilo` (`nl-datos.js`).
+- `EntidadNL.do` v1.3.0: `Part<X>nl`, `RecImp*`, `PartImp*` (aditivo; paridad `output.txt` intacta, D.1 PASÓ). `nl-fed.do`/`nl_fed.py`: lectores EOPF/JSON/SHA. Actualizadores con el tercer driver; runner con `robocopy /E` (sin borrado) en lugar de `/MIR`. Fuentes y defectos del caché `DatosAbiertos` del motor documentados (issue para `master`).
+
 #### NL-0.3.2 — 2026-10-04 (motor sincronizado: v8.6.0) — instalación del runner Windows (primera máquina real)
 - Primera instalación en la HP de CoNL (usuario con espacio, OpenSSH 9.5, Git 2.56); defectos hallados y corregidos en `windows/`: `IdentityFile` sin comillas; `ssh-keyscan` falla contra GitHub (KEX sntrup761) → clave ed25519 fija verificada por huella; `KexAlgorithms` compatible y reescritura de un bloque `Host` mal formado; `04_3_anteriores/` trae nombres con `?` inválidos en Windows → sparse-checkout + `core.protectNTFS false` solo en ese clon (Git rechaza la ruta al armar el índice aunque esté excluida); `Start-Process` sin comillas en la corrida de prueba; chequeo de `SIMroot` tolerante a CRLF.
 - **Verificado en Windows 11 (HP, Stata 19.5 BE):** corrida completa descarga INEGI → compuertas → publicación al Drive → bitácora, sin intervención.
@@ -602,7 +609,7 @@ Carga: `launchctl load ~/Library/LaunchAgents/mx.conl.simulador-nl.plist`. Día 
 
 ---
 
-## Anexo Federación↔NL — F0: inventario y diseño del endpoint "La Federación y Nuevo León" (2026-10-04, capa NL-0.3.2; PROPUESTA pendiente de aprobación)
+## Anexo Federación↔NL — F0: inventario y diseño del endpoint "La Federación y Nuevo León" (2026-10-04; F0 APROBADO con las resoluciones de §0.6; implementado en NL-0.4.0, ver §1–§4 abajo)
 
 **Objeto.** Tercer endpoint: cuánto recibe NL de la Federación (gasto federalizado identificable por entidad), cuánto pagan sus residentes en impuestos federales (incidencia micro de la capa NL) y la **balanza de flujos identificables** entre ambos. Las reglas de diseño del prompt (alcance declarado, lado "paga" desde la incidencia y nunca por domicilio fiscal, banda S1–S3 propagada, petroleros/no tributarios fuera, sidecars para transformaciones, comparabilidad nacional) se toman como dadas; aquí se documenta qué hay, qué falta y cómo se arma. Solo lectura: ningún archivo del motor ni de la capa cambió en F0.
 
@@ -711,3 +718,69 @@ Familias de escalares del driver (registro solo-aditivo vía `escalar`, sin guio
 **Hallazgo colateral (pre-existente, no se corrige aquí):** `windows/actualizar-nl.ps1` hace `robocopy /MIR` sobre `nodos\`: en la primera corrida del runner **borrará del Drive** `statajson_entidad-nl.json` y `entidad-nl.log` (que solo produce el Mac) y haría lo mismo con `federacion-nl.*` bajo la opción A. Hay que cambiar `/MIR` por copia sin borrado (o excluir los productos del Mac) en F2.
 
 **Decisiones que se piden antes de F1:** (1) alcance del "paga": impuestos sin cuotas IMSS (renglón aparte) — ¿de acuerdo?; (2) arquitectura A/B/C; (3) deflactor para "reales": implícito del PIBE NL (coherente con % PIBE) o INPC NL; (4) año de referencia de las tarjetas: último año **completo con ambos lados observados** (hoy 2025) y el Paquete (2027) como vista adicional — ¿o el año de política como en los otros endpoints?; (5) `actualizar-nl.sh`/`.ps1`: incorporar `FederacionNL.do` (según 2) y sustituir `/MIR`; (6) **aprobación/corrección del borrador `nl-assets/nl-estilo.md`** (tokens §3: NL azul CIEP profundo vs. naranja CIEP; nacional gris atenuado; recibe jade / paga rojo institucional; oración-resumen bajo cada gráfica); (7) **Sankey como vista principal de la balanza** con la serie temporal como secundaria (evaluación arriba) — ¿de acuerdo?; (8) producto por trabajador NL en NL-0.4.1: solo si aparece el ID BIE estatal, o lector del tabulado ENOE.
+
+### 0.6 Resoluciones (Ricardo, 2026-10-04) — vinculantes
+
+| # | Decisión | Resolución |
+|---|---|---|
+| 1 | Alcance "paga" | **Aprobado**: sin OTROSK; cuotas IMSS en renglón aparte, no sumadas; la simetría (cuotas excluidas ↔ gasto IMSS excluido) se explica en el letrero de alcance. |
+| 2 | Arquitectura | **B**: sello de corrida commiteado desde el Mac con validación de versión de capa, de motor y `anioPE` (aborta si incompatible). Razón adicional: C pondría derivados de la ENIGH en infraestructura de CoNL — frontera motor/producto. |
+| 3 | Deflactor | **Implícito del PIBE NL** (coherencia con % PIBE y convención fiscal del motor); el INPC no se usa en flujos fiscales. |
+| 4 | Año de referencia | **Último año completo observado** (2025); el Paquete 2027 como vista adicional etiquetada "año de política". |
+| 5 | Runner | **Copia sin borrado** (`robocopy /E`) en lugar de `/MIR` sobre `nodos\`; el `rsync --delete` del Mac se queda (el Mac produce el conjunto completo). |
+| 6 | `nl-estilo.md` | Ricardo lo corrige en el archivo esta semana; **los tokens de color NO se fijan** hasta su pasada. F1 no depende de ellos; F2 los deja **parametrizados** en `NLEstilo` (`nl-datos.js`) para aplicar su decisión sin retrabajo. |
+| 7 | Sankey | **Aprobado** como vista principal; el nodo de saldo se etiqueta siempre **"aportación neta en flujos identificables"**, nunca sin el calificador. |
+| 8 | Producto por trabajador | **Fuera de NL-0.4.1**, a la fila. |
+| — | Defectos de `DatosAbiertos` del motor | **No se tocan desde esta rama**; issue documentado con evidencia en §5 para levantarlo en `master` por separado. |
+
+### 1. Implementación F1 — `01_modulos/FederacionNL.do` v1.0.0 (commit `9c0e983`)
+
+**Lectores de la capa** (`nl-assets/nl-fed.do` + `nl_fed.py`): `_NLeopf, fondos(lista) [offline]` baja los dos ZIP de Estadísticas Oportunas (vigente + histórico), filtra por **lista explícita** de 41 claves (`XAC28`+13 subfondos, `XAC33`+15, `XACCD`+3, `XACCR`, `XAC23`+3, `XACPSS`, `XACGF`) con entidad `00`–`33` exacta, convierte miles→pesos, exige base de registro "Pagado", resuelve el traslape histórico/vigente a favor del vigente, y escribe `raw/temp/EOPF/nl_transferencias.csv` (+ `_fondos.csv` con los nombres SHCP y `.meta` con `Last-Modified` de cada ZIP, periodo final, n, URL) con escritura atómica: un formato inesperado aborta y conserva el último caché bueno. `_NLjsonget/_NLjsonarr/_NLjsonesc` leen JSON del canal a `r()`/datos (Stata no parsea JSON); `_NLsha256` y `_NLfileinfo` dan huella y vintage. Verificado en vivo: 453,292 filas útiles, periodo final 2026-08, `Last-Modified` 30-sep-2026.
+
+**Fórmulas (todo del canal):** `recibe[f,t]` = EOFP pagado NL por fondo y año (año en curso = acumulado al mes 8, tipo `parcial`); `ancla[d,t]` = `PEF.dta` por `divFEDE` × entidad (CP 2013–2025 ejercido, PEF 2026 aprobado, PPEF 2027 proyecto); `paga[x,t]` = `Part<x>nl` × recaudación observada de `LIF.dta` (filtro `divLIF != 10 | divCIEP == 8` de PerfilesSim §2, sin financiamiento) y `pagaLif[x,t]` = `Part<x>nl` × LIF/ILIF; `pagaS1/S3` sustituyen solo el ISR PM; `balanza[t]` = `nlTot − paga` cuando ambos lados son observados completos, `balanzaPaq[t]` = `anclaTot − pagaLif` para 2026 (PEF vs LIF) y 2027 (PPEF vs ILIF). Transformaciones por fila: `Pc` (÷ `pobNL` CONAPO), `R` (÷ `deflatornl` del sidecar, base 2027 = 1), `PIBE` (÷ `pibeNnl` × 100, desde 2003); nacional per cápita; **lugar de NL entre las 32** per cápita por fondo y año (población de las 32 del motor). `EntidadNL.do` v1.3.0 exporta aditivamente `Part<X>nl` (10), `RecImp{nac,nl}`, `RecImpnlS1-3`, `PartImpnl{,S1,S2,S3}` (+18 escalares; 1,777 en total).
+
+**Compuertas (todas abortan; resultado de la corrida 2026-10-04):**
+
+| # | Compuerta | Tolerancia | Resultado |
+|---|---|---|---|
+| 1 | Σ 32 entidades + No distribuible = total nacional, por fondo y año 2000–2026 | 1e-4 | **PASÓ**, reldif máx 1.17e-05 |
+| 2 | Ancla CP: R28 EOFP = `PEF.dta`; R33; convenios+subsidios+salud informativo | 1e-3 / 0.025 / — | **PASÓ**: R28 1.1e-06; R33 0.0177 (2022: R25 y devengado vs pagado); conv. −12.1 % a −0.2 % (clasificaciones distintas) |
+| 3 | Recaudación = la del motor; `Rec<X>nac` de EntidadNL = ILIF 2027 de `LIF.dta`, 10 impuestos | 1e-6 | **PASÓ** (requirió el mismo filtro sin financiamiento que PerfilesSim: OTROSK de LIF.dta incluye el endeudamiento) |
+| 4 | `Part<X>nl` = `Rec<X>nl/Rec<X>nac` recalculado | 1e-9 | **PASÓ** |
+| 5 | Vintage: EntidadNL (PE 2027, NL-0.4.0, v8.6.0), sidecars y sello = sesión; 5b sello = canal | igualdad / 1e-9 | **PASÓ**; negativos probados: sello NL-0.3.9 → aborta; sello con `part` ×1.001 → aborta ("difiere del canal en 1 elemento; re-corre con `nlfed_sellar 1`") |
+| 6 | Rejillas: anual 2000–2026 seis agregados NL y nacional (0 solo donde el nacional es 0); mensual 24 meses | — | **PASÓ** |
+| 7 | Total GF de SHCP = R28+R33+CD+CR+R23+PSS, nacional y NL | 1e-6 | **PASÓ**, reldif máx 1.0e-07 |
+| 8 | Denominador: población 2027 de `master/Poblacion.dta` = `poblacion-nl.json` (NL 6,616,988; nacional 135,391,662); Σ 32 = nacional todos los años | 1e-9 | **PASÓ** |
+| 9 | Log de procedencia activo | — | `users/ricardo/nodos/federacion-nl.log` |
+
+**Sello de corrida** `01_modulos/nl-assets/federacion-sello.json` (`nl.federacion-sello/v1`, 38 KB, commiteado): identidad (capa NL-0.4.0, motor v8.6.0, PE 2027, `generado_en`, SHA-256 de `statajson_entidad-nl.json`, mtime y último mes de `LIF.dta`, mtime y años CP/PEF/PPEF de `PEF.dta`), `participaciones` (10 × part/S1/S2/S3/recNac/recNL), `recaudacion` (280 filas año × impuesto: mes, observado, LIF/ILIF), `anclas` (67 filas año × divFEDE: fuente, NL, nacional, no distribuible). **Modo sello probado** quitando temporalmente `statajson_entidad-nl.json`: 0 diferencias en `cifras` y en las 28 filas de `anual` respecto al modo canal.
+
+**Cifras del canal (año de referencia 2025, observado; `federacion-nl.json`):**
+
+| Concepto | mmdp | MXN por habitante | % PIBE NL |
+|---|---:|---:|---:|
+| Recibe (R28 71,752.7 · R33 35,834.8 · convenios 8,229.7 · R23+PSS 1,541.3) | **117,358.5** | **18,300** (nacional 20,239; lugar **27 de 32**; R28 lugar 6, R33 lugar 32) | 4.06 |
+| Pagan los residentes, S0 (impuestos federales) | **496,192.8** [414,455.1, 595,042.6] | **77,371** [64,626, 92,785] (nacional 39,373) | 17.15 |
+| Cuotas IMSS (aparte, no sumadas) | 59,277.7 | 9,243 | — |
+| **Aportación neta en flujos identificables, S0** | **−378,834.3** [−477,684.2, −297,096.6] | **−59,072** [−74,485, −46,326] | **−13.09** [−16.51, −10.27] |
+| Participación de NL | recibe 4.35 % del gasto federalizado · paga 9.45 % de los impuestos federales | | |
+| Año de política 2027 (PPEF por entidad vs ILIF) | recibe 129,288.5 · paga 577,411.9 [484,063.7, 690,302.9] · neto −448,123.4 | −67,723 por habitante | −13.53 |
+
+### 2. Implementación F2 — `nl-assets/federacion-nl.html` (commit `f406f45`)
+
+Un archivo, inline, cero `http(s)://`, **412 KB**; `NLDatos.load` + compuerta de publicación; estado por URL **común a los endpoints**: `#vista=balanza|recibe|paga&reg=pc|macro&medida=nominal|real|pibe&esc=S0|S1|S3&anio=&ini=&fin=&cmp=&modo=`. Letrero de alcance permanente bajo el encabezado (incluye la simetría de las cuotas y el supuesto de incidencia fija). Tarjetas en persona-escala (titular per cápita con banda y escenario, subtítulo macro mmdp y % PIBE, tercera línea nacional per cápita / lugar de 32 / participación), con etiqueta "en curso" (2026) o "año de política" (2027). Vistas con su patrón declarado (comentarios `PATRÓN` en la plantilla y `presentacion.patrones` en el JSON): **Sankey** de 3 columnas (impuestos → Federación → fondos + "aportación neta en flujos identificables"; la columna izquierda **reserva el espacio de S3** para el ISR PM y el halo punteado marca [S1, S3]; cuotas IMSS como flujo aparte punteado; por habitante o mmdp sin cambiar anchos); **serie de la aportación neta** (barra S0, franja [S1, S3], tramos observado / Paquete / en curso con `xline`, oración-resumen generada desde el canal); **recibe por fondo** (apilado de mayor a menor dentro de cada año, línea nacional per cápita, tabla de subfondos con lugar); **paga** (tabla de conciliación `(+)/(=)/(·)` con participaciones y banda; apilado por impuesto con banda del total). Modo datos con encabezado de procedencia (fuentes con `Last-Modified`/vintage/SHA, alcance, supuesto, registro, escenario, filtros). **Autocomprobación: 16 cifras** del canal = recálculo (Σ fondos, Σ impuestos, balanza = recibe − paga en S0/S1/S3, per cápita, % PIBE, participación, S1 ≤ S0 ≤ S3, `Part` = rec/rec, Σ entradas = Σ salidas del Sankey, PPEF − ILIF). Tokens de color **solo** desde `NLEstilo` (`nl-datos.js`), provisionales hasta la pasada de estilo.
+
+**Actualizadores:** `actualizar-nl.do` corre los tres drivers ("LOS TRES DRIVERS TERMINARON"); `actualizar-nl.sh` exige `FederacionNL: listo`, 6 productos, y registra en la bitácora modo/EOFP/sello; `publicar-conl.sh` publica `federacion-nl.html` (compuerta de publicación incluida); `windows/actualizar-nl.ps1` incorpora el driver (modo sello), el tercer HTML y **`robocopy /E` sin borrado** (parser PowerShell 7.4: 0 errores en ambos `.ps1`); `verificar-runner.ps1` comprueba los archivos nuevos del clon; README actualizado.
+
+### 3. Evidencia de entrega (2026-10-04)
+
+`./actualizar-nl.sh` con descargas frescas (INEGI + SHCP): "Stata OK: compuertas en verde, 6 productos generados"; bitácora `2026-10-04T22:04:26 capa=NL-0.4.0 | … | fed: modo canal; EOFP hasta 2026-08 (Last-Modified Wed, 30 Sep 2026 21:06:24 GMT); ref 2025; sello 4-Oct-2026T21:51:43 | sha256(12): … federacion-nl.html=c5074ebf0f19 nodos/federacion-nl.json=bb04a825c544`. Compuerta de publicación: `federacion-nl.html (347543 bytes de JSON, corrida 4-Oct-2026T22:04:24, capa NL-0.4.0)`. **Desde el Drive** (`/My Drive/2. Simuladores CoNL/SimuladorCoNL/federacion-nl.html`, también en `nodos/`): SHA-256 `c5074ebf0f19aca2…` idéntico al local; render con Chrome headless abriendo el archivo del Drive, sin red: encabezado "Simulador Fiscal NL — La Federación y Nuevo León · construido sobre el Simulador Fiscal CIEP v8.6.0 · capa NL-0.4.0 · año de referencia 2025 · Paquete 2027"; tarjetas 18,300 / 77,371 S0 [64,626, 92,785] / −59,072 S0 [−74,485, −46,326] MXN por habitante; pie con fuentes, compuertas, supuestos y **autocomprobación en verde (16 cifras)**; vistas recibe (macro % PIBE, 2024), paga (pc, S3, 2027) y balanza (2026, tabla) verificadas por DOM. El Drive conserva `statajson_entidad-nl.json` y `entidad-nl.log` del Mac.
+
+### 4. Paridad y frontera
+
+`SIM.do` + `EntidadNL.do` v1.3.0 re-corridos en batch (receta del runbook, PE 2027): `users/ricardo/output.txt` SHA-256 `ae624b98…45fa15`, **idéntico** al de la paridad de v8.6.0; compuerta D.1 **PASÓ**. `git diff --name-only origin/master HEAD` = solo capa NL (ningún archivo del motor). Registro de escalares solo-aditivo.
+
+### 5. Issue para `master` (no se toca desde esta rama): `UpdateDatosAbiertos` y las transferencias por entidad
+
+Evidencia (Stata sobre `master/DatosAbiertos.dta` del 22-sep-2026 vs CSV fresco de SHCP del 30-sep-2026): (a) `DatosAbiertos.ado` §4.7 **apendiza** una clave derivada `XACGF00` (= `XAC2800 + XAC3300`, nombre "Gasto Federalizado") que coexiste con la clave homónima de SHCP ("Total: Total Gasto Federalizado") → `duplicates report anio mes if clave == "XACGF00"`: 355 pares duplicados; el total nacional queda ~2× (2024: 4.88 vs 2.59 billones) y además omite convenios/R23/PSS en su definición; (b) en **2011** las filas nacionales de varios subfondos no cuadran con la suma por entidad (R28 −6.93 %, FAIS −46.9 %, FAM −30.0/−53.1 %, FAFEF −40.5 %, FAETA −11.7 %), mientras el CSV fresco cuadra a 5e-9 en 2011: artefacto de la costura `_hist`/vigente (probablemente filas 2011 en ambos archivos con `nombre` distinto que el `collapse (mean) … by(nombre clave)` no agrupa). Propuesta para `master` (PR aparte): renombrar la clave derivada (p. ej. `XACGF_R2833`) o eliminarla, y deduplicar la costura por `(anio, mes, clave)` con prioridad al archivo vigente. Ningún producto de la capa depende hoy de ese caché.
+
