@@ -1,4 +1,4 @@
-*! nl-vintage.do  v0.1.0 (NL-0.5.0, F0) — corrida del motor sobre UNA ENIGH bienal con calibración contemporánea + EntidadNL
+*! nl-vintage.do  v1.0.0 (NL-0.5.0; v0.1.0 F0) — corrida del motor sobre UNA ENIGH bienal con calibración contemporánea + EntidadNL
 *
 * QUÉ ES ESTO (DIAGNOSTICO_NL.md, anexo Participaciones históricas F0)
 *   El lado "paga" de FederacionNL usa Part<X>nl de UNA corrida (ENIGH 2024, PE 2027).
@@ -25,6 +25,11 @@
 *
 * USO (batch desde la raíz del worktree):
 *   do "01_modulos/nl-assets/nl-vintage.do" 2016      (2016 | 2018 | 2020 | 2022 | 2024)
+*   global nlvint_light 1  -> modo LIGERO (desarrollo): si ya existe users/$id/aportaciones.dta
+*     de ese vintage, salta la reconstrucción (§3–§5, §7) y solo re-registra los escalares de
+*     la sesión (Simulador AportacionesNetas sobre el mismo objeto) y re-corre EntidadNL.do.
+*     Mismos números que la corrida completa (mismo aportaciones.dta y perfiles<t>.dta); las
+*     corridas DEFINITIVAS del sello se hacen SIN este global.
 * OJO: destruye los datos en memoria y los escalares/matrices de la sesión (clear all).
 
 version 17
@@ -35,6 +40,7 @@ if "`1'" == "" {
 	exit 198
 }
 scalar nlv_anio = real("`1'")
+scalar nlv_light = ("$nlvint_light" == "1")
 if !inlist(scalar(nlv_anio), 2016, 2018, 2020, 2022, 2024) {
 	di as err "nl-vintage: vintage `1' fuera de la serie 2016–2024 (la ENIGH 2014 queda fuera por el cambio de diseño 2016)."
 	exit 198
@@ -48,6 +54,7 @@ timer on 1
 SIMroot
 adopath ++ `"${SIMROOT}"'									// Expenditure.do hace cd a raw/ENIGH/: sin esto "." deja de ver los .ado del motor (ensure_asset)
 local anio = scalar(nlv_anio)
+local light = scalar(nlv_light)
 capture confirm file "${SIMROOT}/set_token.do"
 if _rc == 0 run "${SIMROOT}/set_token.do"
 
@@ -66,6 +73,14 @@ capture log close nlvint
 quietly log using "${SIMROOT}/users/$id/nodos/nl-vintage.log", replace text name(nlvint)
 noisily di _newline in g _dup(20) "." "{bf:   nl-vintage: ENIGH " in y `anio' in g " — anioPE = aniovp = anioenigh = " in y `anio' in g "   }" _dup(20) "."
 noisily di in g "  usuario de la corrida: " in y "$id" in g " · SIMROOT: " in y "${SIMROOT}"
+if `light' {
+	capture confirm file "${SIMROOT}/users/$id/aportaciones.dta"
+	if _rc {
+		di as err "nl-vintage: modo ligero pedido pero no existe users/$id/aportaciones.dta; corre primero la corrida completa."
+		exit 601
+	}
+	noisily di in g "  {bf:MODO LIGERO}: se reutiliza users/$id/aportaciones.dta (desarrollo; no sella)."
+}
 
 *** 1 DEMOGRAFÍA ***
 noisily Poblacion, anioi(`=aniovp') aniofinal(2070) $nographs
@@ -97,17 +112,21 @@ noisily PIBDeflactor, aniovp(`=aniovp') aniomax(2032) $nographs
 noisily SCN, anio(`=aniovp') $nographs
 
 *** 3 HOGARES: ARMONIZACIÓN MACRO-MICRO (cachés master/<vintage>/ y perfiles<vintage>.dta) ***
-noisily di _newline in g "Actualizando: " in y "expenditures.dta (ENIGH `anio')"
-noisily run "${SIMROOT}/01_modulos/Expenditure.do" `=anioPE'
-noisily di _newline in g "Actualizando: " in y "households.dta (ENIGH `anio')"
-noisily run `"${SIMROOT}/01_modulos/Households.do"' `=anioPE'
-noisily di _newline in g "Actualizando: " in y "perfiles`anio'.dta"
-noisily run "${SIMROOT}/01_modulos/PerfilesSim.do" `=anioPE'
+if !`light' {
+	noisily di _newline in g "Actualizando: " in y "expenditures.dta (ENIGH `anio')"
+	noisily run "${SIMROOT}/01_modulos/Expenditure.do" `=anioPE'
+	noisily di _newline in g "Actualizando: " in y "households.dta (ENIGH `anio')"
+	noisily run `"${SIMROOT}/01_modulos/Households.do"' `=anioPE'
+	noisily di _newline in g "Actualizando: " in y "perfiles`anio'.dta"
+	noisily run "${SIMROOT}/01_modulos/PerfilesSim.do" `=anioPE'
+}
 
 *** 4 SISTEMA FISCAL: INGRESOS ***
 set scheme ingresos
-noisily LIF if divLIF != 10, anio(`=anioPE') by(divCIEP) $nographs ///
-	title("Ingresos presupuestarios") desde(2016) min(0.75) rows(2)
+if !`light' {
+	noisily LIF if divLIF != 10, anio(`=anioPE') by(divCIEP) $nographs ///
+		title("Ingresos presupuestarios") desde(2016) min(0.75) rows(2)
+}
 
 * §4.1 de SIM.do OMITIDO A PROPÓSITO: sin escalares <X>PIB, TasasEfectivas.ado §2 toma
 * lo observado en LIF `anio' y lo declara como parámetro (calibración contemporánea). *
@@ -137,16 +156,21 @@ matrix IVAT = (16 \     ///  1  Tasa general
 	3  \     							/// 12  Transporte foraneo, idem
 	23.0)   							//  13  Evasion e informalidad IVA, input[0-100]
 
-noisily TasasEfectivas, anio(`=anioPE') enigh
+if !`light' noisily TasasEfectivas, anio(`=anioPE') enigh
+else noisily TasasEfectivas, anio(`=anioPE')
 
 *** 5 SISTEMA FISCAL: EGRESOS (§5.1 de SIM.do OMITIDO: GastoPC toma el PEF `anio') ***
 set scheme ciep
-noisily PEF, anio(`=anioPE') by(divSIM) title(" ") desde(2016) min(0) rows(2)
-scalar ingbasico18 = 1
-scalar ingbasico65 = 1
-noisily GastoPC educacion salud pensiones energia resto transferencias, aniope(`=anioPE') aniovp(`=aniovp')
+if !`light' {
+	noisily PEF, anio(`=anioPE') by(divSIM) title(" ") desde(2016) min(0) rows(2)
+	scalar ingbasico18 = 1
+	scalar ingbasico65 = 1
+	noisily GastoPC educacion salud pensiones energia resto transferencias, aniope(`=anioPE') aniovp(`=aniovp')
+}
 
 *** 7 CICLO DE VIDA FISCAL (espejo exacto de SIM.do §7) ***
+if `light' use `"${SIMROOT}/users/$id/aportaciones.dta"', clear
+else {
 use `"${SIMROOT}/users/$id/ingresos.dta"', clear
 merge 1:1 (folioviv foliohog numren) using "${SIMROOT}/users/$id/gastos.dta", nogen
 
@@ -171,6 +195,7 @@ label var Salud "Salud"
 label var OtrosGastos "Otros gastos"
 label var Transferencias "Transferencias públicas"
 label var AportacionesNetas "Ciclo de vida de las aportaciones netas"
+}
 foreach k of varlist AportacionesNetas {
 	noisily Simulador `k' if `k' != 0 [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot title("") bootstrap($bootstrap)
 }

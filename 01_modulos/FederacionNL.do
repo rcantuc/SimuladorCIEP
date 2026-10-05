@@ -1,4 +1,4 @@
-*! FederacionNL.do  v1.1.0 (NL-0.4.1: participacionesAnual con vintage ENIGH; v1.0.0 NL-0.4.0) — La Federación y Nuevo León: transferencias, carga federal de residentes y balanza de flujos identificables (capa NL-0.4.0)
+*! FederacionNL.do  v1.2.0 (NL-0.5.0: participaciones por vintage ENIGH bienal 2016–2024 desde nl-assets/participaciones-vintages.json; v1.1.0 NL-0.4.1 participacionesAnual; v1.0.0 NL-0.4.0) — La Federación y Nuevo León: transferencias, carga federal de residentes y balanza de flujos identificables
 *
 * QUÉ ES ESTO (DIAGNOSTICO_NL.md, anexo Federación↔NL; F0 aprobado 2026-10-04)
 *   Tercer endpoint de la capa NL. Tres preguntas:
@@ -24,9 +24,16 @@
 *   contributivas, IMSS/ISSSTE, CFE, inversión física federal, sueldos
 *   federales): fase futura explícita.
 *
-* SUPUESTO DECLARADO: la participación de NL en cada impuesto se toma CONSTANTE
-*   en el tiempo (vintage ENIGH / año de política de la corrida de EntidadNL):
-*   es una retropolación de incidencia, no una serie observada ("incidencia fija").
+* PARTICIPACIONES POR AÑO (NL-0.5.0, resoluciones F0 §0.8 del anexo Participaciones
+*   históricas): Part<X>nl se toma del VINTAGE ENIGH asignado a cada año según el
+*   sello nl-assets/participaciones-vintages.json (nl-vintage.do + nl-vintages-sello.do:
+*   cada ENIGH bienal corrida con anioPE = aniovp = anioenigh, calibración
+*   contemporánea). Asignación escalonada sin interpolación: 2016→2016–17,
+*   2018→2018–19, 2020→2020–21 (sello pandémico), 2022→2022–23, 2024→2024 en
+*   adelante (metodo bienal); años < 2016 = ENIGH 2016 (metodo extrapolado). La
+*   corrida vigente (PE, ENIGH 2024) sigue siendo la fuente de `participaciones`
+*   (cifras del Paquete) y se LIGA al vintage 2024 (compuerta 12, reldif 1e-3).
+*   Sensibilidad muestral declarada por impuesto y vintage (concTop1), no corregida.
 *
 * ARQUITECTURA B (resolución 2026-10-04): el lado "paga" y las anclas dependen de
 *   cachés del motor que solo tiene el Mac (statajson_entidad-nl.json ← SIM.do;
@@ -52,7 +59,11 @@
 *   vintage compatible (EntidadNL / sello / sidecars = versión de capa, motor y
 *   anioPE de la sesión); (6) rejillas sin huecos; (7) total GF de SHCP = Σ
 *   agregados; (8) denominador: población del JSON de Población = Poblacion.dta;
-*   (9) log activo.
+*   (9) log activo; (10) Rec<X>nac de cada vintage = recaudación observada del año
+*   (1e-6); (11) Part = Rec/Rec por vintage (1e-9); (12) ligadura vintage 2024 vs
+*   corrida vigente (1e-3); (13) sello de vintages de la misma capa y motor que la
+*   sesión (y, en modo canal, SHA de cada JSON de vintage presente = sello).
+*   Informativo (procedencia): saltos entre vintages consecutivos y concentración top-1.
 *
 * SALIDAS (generadas, gitignored): users/$id/nodos/federacion-nl.json,
 *   federacion-nl.log (y federacion-nl.html cuando exista la plantilla, F2).
@@ -437,6 +448,16 @@ noisily di in g "  PIBE y deflactor implícito NL (sidecar actividad, `pibe0'-`a
 
 *** 3 PAGA Y ANCLAS: CANAL (Mac) O SELLO (runner) ***
 noisily di _newline in g "{bf:3. Lado paga y anclas: canal del motor o sello de corrida}"
+* Sello de vintages (NL-0.5.0): su SHA viaja en la identidad del sello de corrida (§3.4) para que
+* ambos sellos se verifiquen como par; el contenido se lee y se valida en §3b. *
+local vsello `"`site'/01_modulos/nl-assets/participaciones-vintages.json"'
+capture confirm file `"`vsello'"'
+if _rc {
+	di as err "FederacionNL: falta 01_modulos/nl-assets/participaciones-vintages.json (lo escribe nl-vintages-sello.do en el Mac tras nl-vintage.do 2016–2024). No se exporta."
+	exit 601
+}
+_NLsha256 `"`vsello'"'
+local vs_sha0 "`r(sha256)'"
 local entjson `"`site'/users/$id/nodos/statajson_entidad-nl.json"'
 local sello `"`site'/01_modulos/nl-assets/federacion-sello.json"'
 local canal = 1
@@ -596,15 +617,17 @@ if `canal' {
 	local escribir = 0
 	if !`haysello' local escribir = 1
 	if `haysello' {
-		_NLjsonget using `"`sello'"', keys(identidad.version_capa_nl identidad.version_motor identidad.anioPE identidad.entidadnl_sha256 identidad.generado_en identidad.enigh)
+		_NLjsonget using `"`sello'"', keys(identidad.version_capa_nl identidad.version_motor identidad.anioPE identidad.entidadnl_sha256 identidad.generado_en identidad.enigh identidad.vintages_sha256)
 		local s_vnl "`r(v1)'"
 		local s_vmotor "`r(v2)'"
 		local s_pe "`r(v3)'"
 		local s_sha "`r(v4)'"
 		local s_gen `"`r(v5)'"'
 		local s_enigh "`r(v6)'"
+		local s_vsha "`r(v7)'"
 		local difs = 0
 		if "`s_vnl'" != "`nl_vnl'" | "`s_vmotor'" != "`nl_vmotor'" | "`s_pe'" != "`aniope'" | "`s_sha'" != "`ent_sha'" | "`s_enigh'" != "`enigh'" local ++difs
+		if "`s_vsha'" != "`vs_sha0'" local ++difs				// NL-0.5.0: el sello ata el sello de vintages con el que se corrió
 		quietly {
 			_NLjsonarr using `"`sello'"', array(participaciones) fields(impuesto part partS1 partS2 partS3 recNac recNL)
 			rename (part partS1 partS2 partS3 recNac recNL) (s_part s_partS1 s_partS2 s_partS3 s_recNac s_recNL)
@@ -647,7 +670,7 @@ if `canal' {
 		file write `sh' "{" _n
 		file write `sh' `"  `q'esquema`q': `q'nl.federacion-sello/v1`q',"' _n
 		file write `sh' `"  `q'nota`q': `q'Extracto SELLADO del canal del motor para el endpoint Federación↔NL (arquitectura B). Lo escribe FederacionNL.do en el Mac desde statajson_entidad-nl.json, master/LIF.dta y master/PEF.dta; el runner lo consume solo si versión de capa, de motor y anioPE coinciden con su sesión. Ningún número se teclea.`q',"' _n
-		file write `sh' `"  `q'identidad`q': {`q'version_capa_nl`q': `q'`nl_vnl'`q', `q'version_motor`q': `q'`nl_vmotor'`q', `q'anioPE`q': `aniope', `q'aniovp`q': `aniovp', `q'enigh`q': `enigh', `q'generado_en`q': `q'`sello_gen'`q', `q'entidadnl_generado_en`q': `q'`ent_gen'`q', `q'entidadnl_sha256`q': `q'`ent_sha'`q', `q'lif_dta_mtime`q': `q'`lif_mtime'`q', `q'lif_observado_hasta`q': `lif_ult', `q'pef_dta_mtime`q': `q'`pef_mtime'`q', `q'pef_cp`q': `q'`pef_cp'`q', `q'pef_pef`q': `q'`pef_pef'`q', `q'pef_ppef`q': `q'`pef_ppef'`q'},"' _n
+		file write `sh' `"  `q'identidad`q': {`q'version_capa_nl`q': `q'`nl_vnl'`q', `q'version_motor`q': `q'`nl_vmotor'`q', `q'anioPE`q': `aniope', `q'aniovp`q': `aniovp', `q'enigh`q': `enigh', `q'generado_en`q': `q'`sello_gen'`q', `q'entidadnl_generado_en`q': `q'`ent_gen'`q', `q'entidadnl_sha256`q': `q'`ent_sha'`q', `q'lif_dta_mtime`q': `q'`lif_mtime'`q', `q'lif_observado_hasta`q': `lif_ult', `q'pef_dta_mtime`q': `q'`pef_mtime'`q', `q'pef_cp`q': `q'`pef_cp'`q', `q'pef_pef`q': `q'`pef_pef'`q', `q'pef_ppef`q': `q'`pef_ppef'`q', `q'vintages_sha256`q': `q'`vs_sha0'`q'},"' _n
 		quietly use `PART', clear
 		file write `sh' `"  `q'participaciones`q': ["' _n
 		forvalues i = 1/`=_N' {
@@ -693,8 +716,12 @@ if `canal' {
 }
 else {
 	** 3.5 Modo sello (runner): identidad compatible o abortar **
-	_NLjsonget using `"`sello'"', keys(identidad.version_capa_nl identidad.version_motor identidad.anioPE identidad.generado_en identidad.entidadnl_generado_en identidad.entidadnl_sha256 identidad.lif_dta_mtime identidad.lif_observado_hasta identidad.pef_dta_mtime identidad.pef_cp identidad.pef_pef identidad.pef_ppef identidad.enigh)
+	_NLjsonget using `"`sello'"', keys(identidad.version_capa_nl identidad.version_motor identidad.anioPE identidad.generado_en identidad.entidadnl_generado_en identidad.entidadnl_sha256 identidad.lif_dta_mtime identidad.lif_observado_hasta identidad.pef_dta_mtime identidad.pef_cp identidad.pef_pef identidad.pef_ppef identidad.enigh identidad.vintages_sha256)
 	local enigh "`r(v13)'"
+	if "`r(v14)'" != "`vs_sha0'" {
+		di as err "FederacionNL: el sello de corrida no fue escrito con el sello de vintages commiteado (identidad.vintages_sha256 ≠ SHA de participaciones-vintages.json). Re-sellar en el Mac (nlfed_sellar 1). No se exporta."
+		exit 459
+	}
 	if "`enigh'" == "" {
 		di as err "FederacionNL: el sello no trae identidad.enigh (vintage de la incidencia); hay que re-sellar en el Mac (NL-0.4.1). No se exporta."
 		exit 459
@@ -732,6 +759,137 @@ else {
 	noisily di in g "  Compuerta 5 (sello compatible: capa `s_vnl', motor `s_vmotor', PE `s_pe'): " in y "PASÓ" in g " (sello de `s_gen')."
 }
 
+*** 3b PARTICIPACIONES POR VINTAGE ENIGH (NL-0.5.0; sello commiteado, ambos modos) ***
+noisily di _newline in g "{bf:3b. Participaciones por vintage ENIGH (nl-assets/participaciones-vintages.json)}"
+_NLjsonget using `"`vsello'"', keys(identidad.version_capa_nl identidad.version_motor identidad.generado_en identidad.vintages identidad.usuario asignacion.regla asignacion.sello_2020 asignacion.sensibilidad_muestral)
+local vs_vnl "`r(v1)'"
+local vs_vmotor "`r(v2)'"
+local vs_gen `"`r(v3)'"'
+local vs_vint "`r(v4)'"
+local vs_usuario "`r(v5)'"
+local vs_regla `"`r(v6)'"'
+local vs_sello2020 `"`r(v7)'"'
+local vs_sensib `"`r(v8)'"'
+if "`vs_vnl'" != "`nl_vnl'" | "`vs_vmotor'" != "`nl_vmotor'" {
+	di as err "FederacionNL: participaciones-vintages.json es de la capa `vs_vnl' / motor `vs_vmotor'; la sesión es `nl_vnl' / `nl_vmotor'. Re-corre nl-vintage.do + nl-vintages-sello.do en el Mac. No se exporta."
+	exit 459
+}
+if "`vs_vint'" == "" {
+	di as err "FederacionNL: el sello de vintages no declara identidad.vintages. No se exporta."
+	exit 459
+}
+local vs_sha "`vs_sha0'"
+local vint1 : word 1 of `vs_vint'
+local vintN : word `=wordcount("`vs_vint'")' of `vs_vint'
+quietly {
+	_NLjsonarr using `"`vsello'"', array(vintages) fields(enigh anioPE generado_en statajson_sha256 statajson nHognl nPersnl nHogDecMinnl concTop1KPrivnl partImp partImpS1 partImpS3 sello)
+	destring enigh anioPE nHognl nPersnl nHogDecMinnl concTop1KPrivnl partImp partImpS1 partImpS3, replace
+	capture confirm string variable sello
+	if _rc {
+		tostring sello, replace
+		replace sello = "" if sello == "."
+	}
+	capture confirm string variable statajson
+	if _rc tostring statajson, replace
+	tempfile VV
+	save `VV'
+	_NLjsonarr using `"`vsello'"', array(participaciones) fields(enigh impuesto part partS1 partS2 partS3 recNac recNL lifObs concTop1 nPos)
+	destring enigh part partS1 partS2 partS3 recNac recNL lifObs concTop1 nPos, replace
+	tempfile PV
+	save `PV'
+	* Compuerta 13b (modo canal): si el JSON de un vintage está en esta máquina, su SHA = sello *
+	local nsha = 0
+	if `canal' {
+		use `VV', clear
+		forvalues i = 1/`=_N' {
+			local f `"`site'/`=statajson[`i']'"'
+			capture confirm file `"`f'"'
+			if _rc == 0 {
+				_NLsha256 `"`f'"'
+				if "`r(sha256)'" != "`=statajson_sha256[`i']'" local ++nsha
+			}
+		}
+	}
+	* Compuerta 10: recNac(vintage) = recaudación observada del año (REC: canal o sello) *
+	use `PV', clear
+	rename enigh anio
+	merge m:1 anio impuesto using `REC', keep(master match) keepusing(observado mes)
+	count if _merge != 3 | mes != 12
+	local nf10 = r(N)
+	count if _merge == 3 & reldif(recNac, observado) > 1e-6
+	local nf10 = `nf10' + r(N)
+	summarize anio, meanonly
+	* Compuerta 11: part = recNL/recNac *
+	count if reldif(part, recNL/recNac) > 1e-9
+	local nf11 = r(N)
+	* Compuerta 12: ligadura vintage último (2024) vs corrida vigente *
+	rename anio enigh
+	keep if enigh == `vintN'
+	rename part partV
+	merge 1:1 impuesto using `PART', keep(match) nogen keepusing(part)
+	g double rdlig = reldif(partV, part)
+	summarize rdlig, meanonly
+	local rdlig = r(max)
+	count if rdlig > 1e-3
+	local nf12 = r(N)
+	* Informativo: saltos entre vintages consecutivos y concentración top-1 *
+	use `PV', clear
+	sort impuesto enigh
+	by impuesto: g double salto = (part - part[_n-1])*100
+	g double asalto = abs(salto)
+	collapse (max) saltoMaxPp = asalto concTop1Max = concTop1, by(impuesto)
+	tempfile SALT
+	save `SALT'
+	local saltos_txt ""
+	forvalues i = 1/`=_N' {
+		local saltos_txt "`saltos_txt'`=impuesto[`i']' `=string(saltoMaxPp[`i'], "%5.2f")' pp (top-1 máx `=string(concTop1Max[`i'], "%5.1f")' %); "
+	}
+	use `PV', clear
+	keep if impuesto == "ISRPM"
+	sort enigh
+	local isrpm_txt ""
+	forvalues i = 1/`=_N' {
+		local isrpm_txt "`isrpm_txt'`=enigh[`i']': `=string(part[`i']*100, "%5.2f")' % [`=string(partS1[`i']*100, "%5.2f")', `=string(partS3[`i']*100, "%5.2f")'], top-1 `=string(concTop1[`i'], "%4.1f")' %; "
+	}
+}
+if `nsha' > 0 {
+	di as err "FederacionNL: `nsha' JSON de vintage presentes en esta máquina difieren del SHA del sello de vintages. Re-corre nl-vintages-sello.do (o borra las corridas viejas). No se exporta."
+	exit 459
+}
+if `nf10' > 0 {
+	di as err "FederacionNL: Rec<X>nac del sello de vintages no es la recaudación observada del año (mes 12) en `nf10' celdas (1e-6). No se exporta."
+	exit 459
+}
+if `nf11' > 0 {
+	di as err "FederacionNL: part ≠ recNL/recNac en `nf11' celdas del sello de vintages (1e-9). No se exporta."
+	exit 459
+}
+if `nf12' > 0 {
+	di as err "FederacionNL: la ligadura vintage `vintN' vs corrida vigente falla en `nf12' impuestos (reldif máx `rdlig' > 1e-3). No se exporta."
+	exit 459
+}
+noisily di in g "  Compuerta 13 (sello de vintages: capa `vs_vnl', motor `vs_vmotor', vintages `vs_vint', sellado `vs_gen'" cond(`canal', ", SHA de JSON presentes = sello", "") "): " in y "PASÓ" in g "."
+noisily di in g "  Compuerta 10 (Rec<X>nac por vintage = recaudación observada del año, 1e-6): " in y "PASÓ" in g "."
+noisily di in g "  Compuerta 11 (Part = Rec/Rec por vintage, 1e-9): " in y "PASÓ" in g "."
+noisily di in g "  Compuerta 12 (ligadura vintage `vintN' vs corrida vigente PE `aniope', 1e-3): " in y "PASÓ" in g " (reldif máx " in y %9.2e `rdlig' in g ")."
+noisily di in g "  Informativo — saltos máximos entre vintages consecutivos: " in y "`saltos_txt'"
+noisily di in g "  Informativo — ISR PM por vintage S0 [S1, S3] y concentración top-1: " in y "`isrpm_txt'"
+
+* Asignación año -> vintage (escalonada, sin interpolación) *
+quietly {
+	clear
+	set obs `=`aniope' - `anio0' + 1'
+	g int anio = `anio0' + _n - 1
+	g int enigh = .
+	foreach v of local vs_vint {
+		replace enigh = `v' if anio >= `v'
+	}
+	replace enigh = `vint1' if anio < `vint1'
+	g metodo = cond(anio < `vint1', "extrapolado", "bienal")
+	tempfile ASIG
+	save `ASIG'
+}
+
 *** 4 SERIES ANUALES: RECIBE, ANCLAS, PAGA, BALANZA Y TRANSFORMACIONES ***
 noisily di _newline in g "{bf:4. Series anuales `anio0'-`aniope'}"
 quietly {
@@ -748,9 +906,11 @@ quietly {
 	tempfile ANCw
 	save `ANCw'
 
-	* 4.2 Paga en ancho: part × recaudación (observada y LIF) *
+	* 4.2 Paga en ancho: part del VINTAGE asignado al año × recaudación (observada y LIF) *
 	use `REC', clear
-	merge m:1 impuesto using `PART', nogen keep(match) keepusing(part partS1 partS3 recNac)
+	merge m:1 anio using `ASIG', nogen keep(match) keepusing(enigh metodo)
+	merge m:1 enigh impuesto using `PV', nogen keep(match) keepusing(part partS1 partS3)
+	drop enigh metodo
 	g double paga = part*observado
 	g double pagaLif = part*lif
 	g double pagaS1 = partS1*observado
@@ -1081,7 +1241,7 @@ file write `fh' `"  `q'procedencia`q': {"' _n
 file write `fh' `"    `q'version_motor`q': `q'`nl_vmotor'`q',"' _n
 file write `fh' `"    `q'version_capa_nl`q': `q'`nl_vnl'`q',"' _n
 file write `fh' `"    `q'repositorio`q': `q'`nl_repo'`q',"' _n
-file write `fh' `"    `q'driver`q': `q'01_modulos/FederacionNL.do v1.1.0`q',"' _n
+file write `fh' `"    `q'driver`q': `q'01_modulos/FederacionNL.do v1.2.0`q',"' _n
 file write `fh' `"    `q'log`q': `q'`logfile'`q',"' _n
 file write `fh' `"    `q'generado_en`q': `q'`sellocorrida'`q',"' _n
 file write `fh' `"    `q'modo`q': `q'`modo'`q',"' _n
@@ -1093,6 +1253,8 @@ file write `fh' `"      {`q'id`q': `q'pef_dta`q', `q'fuente`q': `q'SHCP/Transpar
 file write `fh' `"      {`q'id`q': `q'lif_dta`q', `q'fuente`q': `q'recaudación observada por impuesto (divSIM) y LIF/ILIF; master/LIF.dta del motor (UpdateLIF vía DatosAbiertos)`q', `q'vintage`q': `q'`lif_mtime'`q', `q'observado_hasta`q': `lif_ult', `q'via`q': `q'`sello_desc'`q'},"' _n
 file write `fh' `"      {`q'id`q': `q'entidad_nl`q', `q'fuente`q': `q'statajson_entidad-nl.json (EntidadNL.do sobre SIM.do): participación de NL en cada impuesto por incidencia micro (ENIGH), banda S1/S3 del ISR PM`q', `q'generado_en`q': `q'`ent_gen'`q', `q'sha256`q': `q'`ent_sha'`q', `q'via`q': `q'`sello_desc'`q'},"' _n
 file write `fh' `"      {`q'id`q': `q'sello`q', `q'fuente`q': `q'01_modulos/nl-assets/federacion-sello.json`q', `q'generado_en`q': `q'`sello_gen_use'`q'},"' _n
+_nltxt `"`vs_regla'"'
+file write `fh' `"      {`q'id`q': `q'participaciones_vintages`q', `q'fuente`q': `q'01_modulos/nl-assets/participaciones-vintages.json (nl-vintage.do + nl-vintages-sello.do): Part<X>nl y banda S1/S2/S3 del ISR PM por ENIGH bienal `vs_vint', cada una corrida con anioPE = aniovp = anioenigh (calibración contemporánea), con muestra NL y concentración top-1 por impuesto`q', `q'generado_en`q': `q'`vs_gen'`q', `q'sha256`q': `q'`vs_sha'`q', `q'vintages`q': `q'`vs_vint'`q', `q'asignacion`q': `q'`r(t)'`q'},"' _n
 file write `fh' `"      {`q'id`q': `q'poblacion`q', `q'fuente`q': `q'CONAPO (pry23) vía master/Poblacion.dta, la misma de PoblacionNL.do; 32 entidades + nacional`q', `q'vintage`q': `q'`pob_mtime'`q', `q'poblacion_nl_json`q': `q'`pobj_gen'`q'},"' _n
 file write `fh' `"      {`q'id`q': `q'actividad`q', `q'fuente`q': `q'actividad-nl.json (PIBDeflactorNL.do): PIBE nominal NL y nacional y deflactor implícito del PIBE NL base `aniovp' = 1, con tipo por año`q', `q'generado_en`q': `q'`actj_gen'`q'}"' _n
 file write `fh' "    ]," _n
@@ -1104,10 +1266,23 @@ file write `fh' `"      `q'part_igual_rec`q': `q'Part<X>nl = Rec<X>nl/Rec<X>nac 
 file write `fh' `"      `q'vintage`q': `q'EntidadNL/sello, poblacion-nl.json y actividad-nl.json con la misma versión de capa (`nl_vnl'), motor (`nl_vmotor') y año de política (`aniope') que la sesión; modo `modo'`q',"' _n
 file write `fh' `"      `q'rejillas`q': `q'anual `anio0'-`anio1' seis agregados NL y nacional sin huecos (0 solo donde el nacional es 0); mensual 24 meses sin huecos`q',"' _n
 file write `fh' `"      `q'identidad_gf`q': `q'total gasto federalizado SHCP = R28+R33+CD+CR+R23+PSS, nacional y NL, reldif máx `=string(`rdGF', "%9.2e")' (tol 1e-6)`q',"' _n
-file write `fh' `"      `q'denominador`q': `q'población `pobj_anio' de master/Poblacion.dta = poblacion-nl.json de la misma corrida (NL y nacional, reldif 1e-9); Σ 32 entidades = nacional en todos los años`q'"' _n
+file write `fh' `"      `q'denominador`q': `q'población `pobj_anio' de master/Poblacion.dta = poblacion-nl.json de la misma corrida (NL y nacional, reldif 1e-9); Σ 32 entidades = nacional en todos los años`q',"' _n
+file write `fh' `"      `q'vintages_sello`q': `q'participaciones-vintages.json de la misma capa (`vs_vnl') y motor (`vs_vmotor') que la sesión, sellado `vs_gen'; su SHA viaja en la identidad del sello de corrida; en modo canal el SHA de cada statajson de vintage presente = sello`q',"' _n
+file write `fh' `"      `q'recaudacion_vintage`q': `q'Rec<X>nac de cada vintage = recaudación observada del año (mes 12) del canal, reldif 1e-6, 10 impuestos × `=wordcount("`vs_vint'")' vintages`q',"' _n
+file write `fh' `"      `q'part_vintage`q': `q'part = recNL/recNac por vintage e impuesto, reldif 1e-9`q',"' _n
+file write `fh' `"      `q'ligadura`q': `q'vintage `vintN' (PE `vintN') vs corrida vigente (PE `aniope'): reldif máx `=string(`rdlig', "%9.2e")' en los 10 impuestos (tolerancia 1e-3): las participaciones dependen del vintage ENIGH, no del año de política`q',"' _n
+_nltxt `"`saltos_txt'"'
+file write `fh' `"      `q'saltos_informativo`q': `q'salto máximo de participación entre vintages consecutivos (pp) y concentración top-1 máxima por impuesto — se documenta, no se corrige: `r(t)'`q',"' _n
+_nltxt `"`isrpm_txt'"'
+file write `fh' `"      `q'isrpm_por_vintage`q': `q'ISR PM S0 [S1, S3] y top-1 por vintage: `r(t)'`q'"' _n
 file write `fh' "    }," _n
 file write `fh' `"    `q'supuestos`q': {"' _n
-file write `fh' `"      `q'incidencia_fija`q': `q'la participación de NL en cada impuesto (Part<X>nl, corrida PE `aniope' sobre ENIGH) se aplica a la recaudación observada de cada año: retropolación de incidencia, no serie observada; tipo = incidencia fija`q',"' _n
+_nltxt `"`vs_regla'"'
+file write `fh' `"      `q'participaciones_bienales`q': `q'la participación de NL en cada impuesto se toma del vintage ENIGH asignado a cada año (`vs_vint'); `r(t)'; cada vintage nace de la economía de su año (anioPE = aniovp = anioenigh); se aplica a la recaudación observada de cada año: sigue siendo una retropolación de incidencia, no una serie observada`q',"' _n
+_nltxt `"`vs_sello2020'"'
+file write `fh' `"      `q'sello_2020`q': `q'`r(t)'`q',"' _n
+_nltxt `"`vs_sensib'"'
+file write `fh' `"      `q'sensibilidad_muestral`q': `q'`r(t)' (resolución F0 §0.8-2: se publica tal cual con sello; concTop1<X> por año en participacionesAnual)`q',"' _n
 file write `fh' `"      `q'paga_definicion`q': `q'pesos pagados por residentes = Part<X>nl × recaudación nacional observada del impuesto (LIF.dta); nunca recaudación por domicilio fiscal`q',"' _n
 file write `fh' `"      `q'banda`q': `q'S1 y S3 sustituyen solo el ISR PM (prorrateo a capital sin cut-off; pago esperado p×potencial); S0 = método vigente, dentro de la banda; los totales y la balanza se reportan como [S1, S3] con S0 marcado`q',"' _n
 file write `fh' `"      `q'deflactor`q': `q'reales con el deflactor implícito del PIBE NL (actividad-nl.json), base `aniovp' = 1; coherente con % PIBE y con la convención fiscal del motor; el INPC no se usa en flujos fiscales`q',"' _n
@@ -1115,7 +1290,7 @@ file write `fh' `"      `q'poblacion`q': `q'per cápita con población CONAPO a 
 file write `fh' `"      `q'anio_parcial`q': `q'el año en curso lleva EOFP acumulado al mes `mes1' (tipoRecibe parcial) y recaudación acumulada (tipoPaga parcial): no se calcula balanza observada; se calcula balanza del Paquete (PEF aprobado vs LIF)`q',"' _n
 file write `fh' `"      `q'paquete`q': `q'año de política: recibe = PPEF/PEF por entidad (PEF.dta, divFEDE); paga = Part<X>nl × ILIF; etiquetado Paquete`q',"' _n
 file write `fh' `"      `q'anio_referencia`q': `q'último año con ambos lados observados completos (12 meses EOFP y recaudación a diciembre)`q',"' _n
-file write `fh' `"      `q'participaciones_por_anio`q': `q'participaciones estimadas con ENIGH `enigh' (corrida PE `aniope'), supuestas constantes en todos los años (metodo = constante); el arreglo participacionesAnual lleva una fila por año con enigh/metodo para que, cuando existan estimaciones por ENIGH bienal, cambien los datos y no el HTML`q',"' _n
+file write `fh' `"      `q'participaciones_por_anio`q': `q'participacionesAnual lleva una fila por año `anio0'-`aniope' con enigh (vintage asignado), metodo (bienal | extrapolado), sello (2020 pandémica), muestra NL del vintage, las 13 participaciones y concTop1 por impuesto; vintages lleva una fila por ENIGH con identidad, muestra, participaciones, banda y SHA de su corrida`q',"' _n
 file write `fh' `"      `q'ieps_petrolero_negativo`q': `q'cuando el IEPS a gasolinas es negativo (estímulo fiscal) el paga de ese renglón es negativo ese año; se declara, no se trunca`q'"' _n
 file write `fh' "    }" _n
 file write `fh' "  }," _n
@@ -1144,7 +1319,7 @@ forvalues i = 1/`=_N' {
 file write `fh' "    ]," _n
 file write `fh' `"    `q'impuestos`q': {`q'ISRAS`q': `q'ISR a asalariados`q', `q'ISRPF`q': `q'ISR de personas físicas`q', `q'ISRPM`q': `q'ISR de personas morales`q', `q'IVA`q': `q'IVA`q', `q'IEPSNP`q': `q'IEPS no petrolero`q', `q'IEPSP`q': `q'IEPS petrolero (gasolinas)`q', `q'ISAN`q': `q'ISAN`q', `q'IMPORT`q': `q'impuestos a la importación`q', `q'CUOTAS`q': `q'cuotas IMSS (aparte, no sumadas)`q', `q'OTROSK`q': `q'productos, derechos y aprovechamientos (aparte, no sumados)`q'},"' _n
 file write `fh' `"    `q'escenarios`q': {`q'S0`q': `q'método vigente: ISR PM a perceptores de ingreso de capital con ranking probit y cut-off LIF`q', `q'S1`q': `q'cota inferior: ISR PM prorrateado a ingreso de capital sin cut-off`q', `q'S3`q': `q'cota superior: pago esperado = p(probit) × impuesto potencial`q'},"' _n
-file write `fh' `"    `q'tipo`q': {`q'observado`q': `q'año completo publicado (12 meses EOFP; recaudación a diciembre)`q', `q'parcial`q': `q'año en curso acumulado al último mes publicado`q', `q'Paquete`q': `q'PEF/PPEF por entidad vs LIF/ILIF: cifras del Paquete Económico, no observadas`q', `q'incidencia fija`q': `q'participación de NL de la corrida vigente aplicada a otro año`q', `q'sin dato`q': `q'sin fuente para ese año`q'},"' _n
+file write `fh' `"    `q'tipo`q': {`q'observado`q': `q'año completo publicado (12 meses EOFP; recaudación a diciembre)`q', `q'parcial`q': `q'año en curso acumulado al último mes publicado`q', `q'Paquete`q': `q'PEF/PPEF por entidad vs LIF/ILIF: cifras del Paquete Económico, no observadas`q', `q'bienal`q': `q'participación de NL estimada con la ENIGH del bienio del año (vintage propio)`q', `q'extrapolado`q': `q'año anterior a la primera ENIGH de la serie (2016): participaciones de la ENIGH 2016`q', `q'incidencia fija`q': `q'(histórico, NL-0.4.x) participación de NL de la corrida vigente aplicada a otro año`q', `q'sin dato`q': `q'sin fuente para ese año`q'},"' _n
 file write `fh' `"    `q'denominadores`q': {`q'pobNL`q': `q'población NL a mitad de año, CONAPO (master/Poblacion.dta)`q', `q'pobNac`q': `q'población nacional, misma fuente`q', `q'pibeNnl`q': `q'PIBE nominal NL en pesos (actividad-nl.json; tipo por año)`q', `q'deflatornl`q': `q'deflactor implícito PIBE NL, `aniovp' = 1`q'},"' _n
 file write `fh' `"    `q'unidades`q': {`q'niveles`q': `q'pesos corrientes`q', `q'Pc`q': `q'pesos corrientes por habitante`q', `q'R`q': `q'pesos de `aniovp' (deflactor implícito PIBE NL)`q', `q'PIBE`q': `q'% del PIBE nominal de NL`q', `q'lugar`q': `q'posición de NL entre las 32 entidades por monto per cápita (1 = mayor)`q'}"' _n
 file write `fh' "  }," _n
@@ -1189,31 +1364,66 @@ forvalues i = 1/`=_N' {
 }
 file write `fh' "  ]," _n
 
-** 6.4b Participaciones por año (estructura estable: hoy constantes = corrida vigente, con su vintage ENIGH) **
+** 6.4b Participaciones por año: vintage ENIGH asignado a cada año (NL-0.5.0; antes constantes) **
 quietly {
-	use `PART', clear
-	foreach x in `impuestos' `extras' {
-		summarize part if impuesto == "`x'", meanonly
-		local pa`x' = r(mean)
-	}
-	summarize partS1 if impuesto == "ISRPM", meanonly
-	local paS1 = r(mean)
-	summarize partS2 if impuesto == "ISRPM", meanonly
-	local paS2 = r(mean)
-	summarize partS3 if impuesto == "ISRPM", meanonly
-	local paS3 = r(mean)
-	use `T', clear
+	use `PV', clear
+	keep enigh impuesto part partS1 partS2 partS3 concTop1
+	reshape wide part partS1 partS2 partS3 concTop1, i(enigh) j(impuesto) string
+	tempfile PVw
+	save `PVw'
+	use `ASIG', clear
+	merge m:1 enigh using `PVw', nogen keep(match)
+	merge m:1 enigh using `VV', nogen keep(match) keepusing(sello nHognl nHogDecMinnl)
+	keep if anio >= `anio0' & anio <= `aniope'
+	sort anio
 }
 file write `fh' `"  `q'participacionesAnual`q': ["' _n
 forvalues i = 1/`=_N' {
-	file write `fh' `"    {`q'anio`q': `=anio[`i']', `q'enigh`q': `enigh', `q'metodo`q': `q'constante`q'"'
+	_nltxt `"`=sello[`i']'"'
+	file write `fh' `"    {`q'anio`q': `=anio[`i']', `q'enigh`q': `=enigh[`i']', `q'metodo`q': `q'`=metodo[`i']'`q', `q'sello`q': `q'`r(t)'`q', `q'nHogNL`q': `=nHognl[`i']', `q'nHogDecMin`q': `=nHogDecMinnl[`i']'"'
 	foreach x in `impuestos' `extras' {
-		_nlnum "`pa`x''"
+		_nlnum "part`x'[`i']"
 		file write `fh' `", `q'`x'`q': `r(n)'"'
 	}
 	foreach sfx in S1 S2 S3 {
-		_nlnum "`pa`sfx''"
+		_nlnum "part`sfx'ISRPM[`i']"
 		file write `fh' `", `q'ISRPM`sfx'`q': `r(n)'"'
+	}
+	foreach x in `impuestos' `extras' {
+		_nlnum "concTop1`x'[`i']"
+		file write `fh' `", `q'concTop1`x'`q': `r(n)'"'
+	}
+	file write `fh' "}`=cond(`i' < _N, ",", "")'" _n
+}
+file write `fh' "  ]," _n
+
+** 6.4c Vintages: una fila por ENIGH (identidad, muestra, participaciones y banda; insumo de la vista "carga federal a través del tiempo") **
+quietly {
+	use `VV', clear
+	merge 1:1 enigh using `PVw', nogen keep(match)
+	sort enigh
+}
+file write `fh' `"  `q'vintages`q': ["' _n
+forvalues i = 1/`=_N' {
+	_nltxt `"`=sello[`i']'"'
+	local selloT `"`r(t)'"'
+	_nltxt `"`=generado_en[`i']'"'
+	file write `fh' `"    {`q'enigh`q': `=enigh[`i']', `q'anioPE`q': `=anioPE[`i']', `q'generado_en`q': `q'`r(t)'`q', `q'statajson_sha256`q': `q'`=statajson_sha256[`i']'`q', `q'sello`q': `q'`selloT'`q'"'
+	foreach v in nHognl nPersnl nHogDecMinnl concTop1KPrivnl partImp partImpS1 partImpS3 {
+		_nlnum "`v'[`i']"
+		file write `fh' `", `q'`v'`q': `r(n)'"'
+	}
+	foreach x in `impuestos' `extras' {
+		_nlnum "part`x'[`i']"
+		file write `fh' `", `q'`x'`q': `r(n)'"'
+	}
+	foreach sfx in S1 S2 S3 {
+		_nlnum "part`sfx'ISRPM[`i']"
+		file write `fh' `", `q'ISRPM`sfx'`q': `r(n)'"'
+	}
+	foreach x in `impuestos' `extras' {
+		_nlnum "concTop1`x'[`i']"
+		file write `fh' `", `q'concTop1`x'`q': `r(n)'"'
 	}
 	file write `fh' "}`=cond(`i' < _N, ",", "")'" _n
 }

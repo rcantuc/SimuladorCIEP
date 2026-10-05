@@ -1,4 +1,4 @@
-*! EntidadNL.do  v1.3.0 — driver F1-bis: TE micro/micro, incidencia y conciliación para Nuevo León (entidad 19); v1.3.0 añade Part<X>nl y RecImp* (insumo de FederacionNL)
+*! EntidadNL.do  v1.4.0 — driver F1-bis: TE micro/micro, incidencia y conciliación para Nuevo León (entidad 19); v1.3.0 añade Part<X>nl y RecImp* (insumo de FederacionNL); v1.4.0 (NL-0.5.0) añade muestra NL (nHognl, nPersnl, nHogDecMinnl), concentración top-1 por impuesto (concTop1<X>nl, nPos<X>nl) y textos con el vintage ENIGH de la corrida
 *
 * QUÉ ES ESTO (contrato F1 + F1-bis, DIAGNOSTICO_NL.md):
 *   (1) TE-NL micro/micro vía TasasEfectivasMicro.ado con bases COMPLETAS
@@ -415,6 +415,48 @@ forvalues i = 1/3 {
 	escalar pct PartImpnlS`i' = scalar(RecImpnlS`i')/scalar(RecImpnac)*100
 }
 escalar pct PartImpnl = scalar(RecImpnl)/scalar(RecImpnac)*100
+
+** 2.7b Muestra NL y sensibilidad muestral (NL-0.5.0, resolución F0 §0.8-2/5; aditivo) **
+* nHognl / nPersnl = hogares y personas de NL en la muestra post-ajuste; nHogDecMinnl =
+* mínimo de hogares NL por decil nacional (umbral de referencia del proyecto: 100).
+* concTop1<X>nl = participación de la persona de NL con mayor <X>_Sim×factor en el total
+* <X> de NL (%); nPos<X>nl = personas de NL (muestra) con <X>_Sim > 0. La ENIGH es
+* representativa por entidad en ingresos corrientes, no en la cola de ingresos de
+* capital: una sola observación puede sostener el ISR PM de NL (F0 §0.5-B). Se declara,
+* no se corrige. *
+quietly {
+	tempvar hog1 nh
+	bysort folioviv foliohog: g byte `hog1' = _n == 1
+	count if `hog1'
+	escalar personas nHognl = r(N)
+	count
+	escalar personas nPersnl = r(N)
+	egen `nh' = total(`hog1'), by(decil)
+	summarize `nh' if `hog1', meanonly
+	escalar personas nHogDecMinnl = r(min)
+	foreach k in ISRAS ISRPF ISRPM CUOTAS IVA IEPSNP IEPSP ISAN IMPORT OTROSK {
+		tempvar w
+		g double `w' = `k'_Sim*factor
+		count if `k'_Sim > 0 & `k'_Sim != .
+		escalar personas nPos`k'nl = r(N)
+		summarize `w', meanonly
+		local tot = r(sum)
+		local mx = r(max)
+		escalar pct concTop1`k'nl = cond(`tot' != 0, `mx'/`tot'*100, .)
+		drop `w'
+	}
+	tempvar wk
+	g double `wk' = ing_bruto_tpm*factor
+	summarize `wk', meanonly
+	escalar pct concTop1KPrivnl = cond(r(sum) != 0, r(max)/r(sum)*100, .)
+}
+noisily di _newline in g "{bf:  Muestra NL: " in y %6.0fc scalar(nHognl) in g " hogares · " in y %6.0fc scalar(nPersnl) in g " personas · mínimo por decil nacional " in y %4.0f scalar(nHogDecMinnl) in g " hogares}"
+noisily di in g "  Sensibilidad muestral (top-1 de NL como % del impuesto de NL · personas con impuesto > 0):"
+foreach k in ISRAS ISRPF ISRPM CUOTAS IVA IEPSNP IEPSP ISAN IMPORT OTROSK {
+	noisily di in g "  `k'" _col(12) in y %6.1fc scalar(concTop1`k'nl) in g " %" _col(24) in y %6.0fc scalar(nPos`k'nl)
+}
+noisily di in g "  capital privado (ing_bruto_tpm)" _col(36) in y %6.1fc scalar(concTop1KPrivnl) in g " %"
+
 noisily di _newline in g "{bf:  Participación de NL por impuesto (%, insumo de FederacionNL)}"
 foreach k in ISRAS ISRPF ISRPM CUOTAS IVA IEPSNP IEPSP ISAN IMPORT OTROSK {
 	noisily di in g "  `k'" _col(12) in y %7.2fc scalar(Part`k'nl)
@@ -644,6 +686,7 @@ quietly {
 	"presentacion" "otrosk_nota" "en las tablas de incidencia AlCapital incluye OTROSK (SIM.do:436) y el total ImpAport lo excluye (SIM.do:440); se exporta la familia OTROSK por separado: AlTrabajo+AlCapital+AlConsumo-OTROSK = Total"
 	"presentacion" "deuda_tecnica" "extender scalarjson.ado con una clave canónica supuestos (bloque propio del contrato) para que los supuestos de incidencia de escenarios no dependan del bloque libre presentacion"
 	"presentacion" "participacion_nota" "Part<X>nl = Rec<X>nl/Rec<X>nac: fracción de la recaudación nacional de cada impuesto pagada por residentes de NL (incidencia micro); RecImp* = impuestos sin OTROSK ni cuotas IMSS, banda S1/S3 del ISR PM; insumo de FederacionNL.do"
+	"presentacion" "sensibilidad_muestral_nota" "concTop1<X>nl = participación de la persona de NL con mayor <X>_Sim x factor en el total <X> de NL; nPos<X>nl = personas de NL con <X>_Sim > 0 (muestra). La ENIGH es representativa por entidad en ingresos corrientes, no en la cola de ingresos de capital: el ISR PM de NL puede depender de una observación. Se declara, no se corrige (NL-0.5.0, F0 §0.8-2)"
 	"presentacion" "enigh_vintage" ""
 	"presentacion" "producto" ""
 	"presentacion" "subtitulo" ""
@@ -652,6 +695,8 @@ quietly {
 	end
 	* input no expande macros: la identidad (F1) se llena aquí, leída de los manifiestos *
 	replace texto = string(scalar(anioenigh)) if bloque == "presentacion" & clave == "enigh_vintage"
+	* Los textos del contrato citan el vintage de ESTA corrida (v1.4.0: antes "ENIGH 2024" literal) *
+	replace texto = subinstr(texto, "ENIGH 2024", "ENIGH " + string(scalar(anioenigh)), .)
 	replace texto = `"`nl_producto'"' if bloque == "presentacion" & clave == "producto"
 	replace texto = `"`nl_subtitulo'"' if bloque == "presentacion" & clave == "subtitulo"
 	replace texto = `"`nl_vnl'"' if bloque == "presentacion" & clave == "version_capa_nl"
@@ -743,9 +788,16 @@ foreach s in nac nl nle {
 foreach c in PartISRPMnl PartISRPMnlS1 PartISRPMnlS2 PartISRPMnlS3 ///
 	ISRPMTEnlS1 ISRPMTEnlS2 ISRPMTEnlS3 RecISRPMnlS1 RecISRPMnlS2 RecISRPMnlS3 ///
 	PartISRASnl PartCUOTASnl PartISRPFnl PartOTROSKnl PartIVAnl PartIEPSNPnl PartIEPSPnl PartISANnl PartIMPORTnl ///
-	RecImpnac RecImpnl RecImpnlS1 RecImpnlS2 RecImpnlS3 PartImpnl PartImpnlS1 PartImpnlS2 PartImpnlS3 {
+	RecImpnac RecImpnl RecImpnlS1 RecImpnlS2 RecImpnlS3 PartImpnl PartImpnlS1 PartImpnlS2 PartImpnlS3 ///
+	nHognl nPersnl nHogDecMinnl concTop1KPrivnl {
 	capture confirm scalar `c'
 	if _rc == 0 local esc "`esc' `c'"
+}
+foreach k in ISRAS ISRPF ISRPM CUOTAS IVA IEPSNP IEPSP ISAN IMPORT OTROSK {
+	foreach fam in concTop1`k'nl nPos`k'nl {
+		capture confirm scalar `fam'
+		if _rc == 0 local esc "`esc' `fam'"
+	}
 }
 
 ** 5.6 Contrato JSON **
