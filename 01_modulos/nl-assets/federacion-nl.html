@@ -20,19 +20,17 @@
                   &anio=AAAA&ini=AAAA&fin=AAAA&cmp=1|0&modo=grafica|tabla
 -->
 <style>
-:root{--nl:#004ec6;--nac:#afaeb4;--banda:rgba(0,78,198,.25);--recibe:#00b393;--paga:#ba2240;--paquete:#ffbd00;--proy:rgba(255,128,0,.55);--acento:#d76f33;--ink:#1f1f1f;--mut:#6f6f6f;--line:#c8c8c8;--bg:#f7f8fa;--card:#fff}
+:root{--nl:#5a2148;--nac:#7f7f7f;--banda:rgba(90,33,72,.25);--recibe:#00b1af;--recibeTexto:#008381;--paga:#e76b24;--pagaTexto:#c75108;--paquete:#fbb818;--proy:rgba(90,33,72,.55);--nowcast:rgba(90,33,72,.7);--acento:#872675;--acento2:#00b1af;--alerta:#d52b4d;--h:#0a6db6;--m:#f27794;--ink:#212121;--mut:#666666;--line:#d0d0d0;--bg:#f6f6f6;--card:#fff;--fuenteTitulo:"Poppins",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;--fuenteCuerpo:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
 *{box-sizing:border-box}
-body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Ubuntu,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);font-size:15px;line-height:1.4}
-header{background:var(--nl);color:#fff;padding:18px 28px}
-header h1{margin:0;font-size:22px;font-weight:600}
-header .sub{margin:4px 0 0;font-size:13px;opacity:.9}
+body{margin:0;font-family:var(--fuenteCuerpo);color:var(--ink);background:var(--bg);font-size:15px;line-height:1.4}
+header{background:var(--nl);color:#fff}
 main{max-width:1240px;margin:0 auto;padding:18px 20px 30px}
 .panel{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin-bottom:14px}
 .alcance{border-left:5px solid var(--acento);background:#fff;padding:12px 16px;margin-bottom:14px;border-radius:0 8px 8px 0;font-size:14px}
 .alcance b{color:var(--acento)}
 .tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
 .tabs button{border:1px solid var(--line);background:#fff;border-radius:20px;padding:8px 16px;font-size:14px;cursor:pointer;color:var(--ink)}
-.tabs button.on{background:var(--nl);color:#fff;border-color:var(--nl)}
+.tabs button.on{background:var(--nl);color:#fff;border-color:var(--nl);box-shadow:inset 0 -3px 0 var(--acento2)}
 .controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px 20px;align-items:end}
 .ctl label{display:block;font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px}
 .ctl select,.ctl input[type=number]{padding:7px 8px;border:1px solid var(--line);border-radius:6px;font-size:14px;background:#fff;color:var(--ink)}
@@ -42,7 +40,7 @@ main{max-width:1240px;margin:0 auto;padding:18px 20px 30px}
 .seg button{border:0;background:#fff;padding:7px 12px;font-size:14px;cursor:pointer;color:var(--ink)}
 .seg button+button{border-left:1px solid var(--line)}
 .seg button.on{background:var(--nl);color:#fff}
-.seg.reg button.on{background:var(--acento)}
+.seg.reg button.on{background:var(--acento);box-shadow:inset 0 -3px 0 var(--acento2)}
 .chk{display:flex;align-items:center;gap:8px;font-size:14px;padding:7px 0}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-bottom:14px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:12px 14px;border-top:4px solid var(--nl)}
@@ -78,20 +76,17 @@ th,td{padding:5px 8px;border-bottom:1px solid var(--line);text-align:right;white
 th{position:sticky;top:0;background:#f1f3f6;color:var(--mut);font-weight:600;text-align:right}
 td:first-child,th:first-child{text-align:left}
 td:nth-child(2),th:nth-child(2){text-align:left;white-space:normal;min-width:180px}
-tr.r-paq td{background:#fff7d6}tr.r-par td{background:#fff1e6}tr.r-tot td{font-weight:600;border-top:2px solid var(--ink)}tr.r-aparte td{color:var(--mut);font-style:italic}
+tr.r-paq td{background:#fef1d1}tr.r-par td{background:#efe6ec}tr.r-tot td{font-weight:600;border-top:2px solid var(--ink)}tr.r-aparte td{color:var(--mut);font-style:italic}
 .prov{font-size:11.5px;color:var(--mut);margin:6px 0 0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap}
 textarea.fb{width:100%;height:160px;font-family:ui-monospace,Menlo,monospace;font-size:11px;margin-top:6px;display:none}
 footer{max-width:1240px;margin:0 auto;padding:10px 20px 40px;font-size:12px;color:var(--mut)}
 footer p{margin:4px 0}
-.ok{color:#1b7f3b}.bad{color:#b42318}
+.ok{color:var(--recibeTexto)}.bad{color:var(--alerta)}
 code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
 </style>
 </head>
 <body>
-<header>
-  <h1 id="titulo">Simulador Fiscal NL — La Federación y Nuevo León</h1>
-  <p class="sub" id="subtitulo"></p>
-</header>
+<header id="cab"></header>
 <main>
   <div class="alcance" id="alcance"></div>
 
@@ -157,6 +152,9 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
 
 <script type="application/json" id="nl-data">
 /*__NLFED_DATA__*/
+</script>
+<script>
+/*__NL_ESTILO_ASSETS__*/
 </script>
 <script>
 /*__NL_DATOS_JS__*/
@@ -518,7 +516,6 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
     /* Σ de los enlaces del Sankey = totales de cada lado (año de referencia, S0) */
     if (r) { var totL = IMP.reduce(function (a, k) { return a + (r['paga' + k] || 0); }, 0), totR = FONDOS.reduce(function (a, k) { return a + (r['nl' + k] || 0); }, 0) + Math.abs(r.nlTot - r.pagaS0); chk('Sankey: Σ entradas = Σ salidas', totL, totR); }
     var h = '';
-    h += '<p><strong>' + esc(D.producto || 'Simulador Fiscal NL') + '</strong> · ' + esc(D.subtitulo || '') + ' · capa <code>' + esc(P.version_capa_nl || '—') + '</code> · motor <code>' + esc(P.version_motor || '—') + '</code> · corrida ' + esc(P.generado_en || '—') + ' · modo <code>' + esc(P.modo || '') + '</code> · log <code>' + esc(P.log || '—') + '</code> · ' + esc(P.driver || '') + '</p>';
     h += '<p><strong>Alcance:</strong> ' + esc(AL.leyenda || '') + ' <strong>Excluye:</strong> ' + esc(AL.excluye || '') + '</p>';
     h += '<p><strong>Fuentes:</strong></p><ul style="margin:2px 0 6px 18px;padding:0">' + (P.fuentes || []).map(function (f) { return '<li><code>' + esc(f.id) + '</code> — ' + esc(f.fuente) + (f.lector ? ' · lector ' + esc(f.lector) : '') + (f.descarga ? ' · descarga ' + esc(f.descarga) : '') + (f.last_modified ? ' · Last-Modified ' + esc(f.last_modified) : '') + (f.periodo_final ? ' · periodo final ' + esc(f.periodo_final) : '') + (f.vintage ? ' · vintage ' + esc(f.vintage) : '') + (f.cp ? ' · CP ' + esc(f.cp) + ' · PEF ' + esc(f.pef) + ' · PPEF ' + esc(f.ppef) : '') + (f.observado_hasta ? ' · observado hasta ' + esc(f.observado_hasta) : '') + (f.generado_en ? ' · generado ' + esc(f.generado_en) : '') + (f.sha256 ? ' · sha256 <code>' + esc(String(f.sha256).slice(0, 12)) + '…</code>' : '') + (f.n ? ' · ' + f.n + ' filas · checksum ' + f.checksum : '') + (f.via ? ' · vía ' + esc(f.via) : '') + '</li>'; }).join('') + '</ul>';
     var cp = P.compuertas || {};
@@ -528,11 +525,10 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
     h += '<p><strong>Escenarios:</strong> ' + Object.keys(DEF.escenarios || {}).map(function (k) { return k + ' = ' + esc(DEF.escenarios[k]); }).join('; ') + '. <strong>Denominadores:</strong> ' + Object.keys(DEF.denominadores || {}).map(function (k) { return k + ' = ' + esc(DEF.denominadores[k]); }).join('; ') + '.</p>';
     h += '<p><strong>Patrones del canon (nl-estilo.md):</strong> ' + (PR.patrones || []).map(function (x) { return '<em>' + esc(x.vista) + '</em>: ' + esc(x.patron); }).join('; ') + '. <strong>Tokens:</strong> ' + esc(PR.tokens || '') + (window.NLEstilo ? ' (' + esc(window.NLEstilo.estado) + ')' : '') + '.</p>';
     h += '<p>' + (bad.length ? '<span class="bad">Autocomprobación: ' + bad.length + ' cifra(s) del canal NO coinciden con el recálculo desde los arreglos: ' + bad.join(', ') + '.</span>' : '<span class="ok">Autocomprobación: las ' + ok.length + ' cifras del canal coinciden con el recálculo desde los arreglos incrustados (' + ok.join(', ') + ').</span>') + '</p>';
-    document.getElementById('pie').innerHTML = h;
+    document.getElementById('pie').innerHTML = (window.NLEstilo ? window.NLEstilo.atribucion(D) : '') + h;
   }
 
-  document.getElementById('titulo').textContent = D.titulo || 'Simulador Fiscal NL — La Federación y Nuevo León';
-  document.getElementById('subtitulo').textContent = (D.subtitulo || '') + (P.version_capa_nl ? ' · capa ' + P.version_capa_nl : '') + ' · año de referencia ' + (C.anioRefFed || '') + ' · Paquete ' + (D.anio_politica || '');
+  window.NLEstilo.cabecera(document.getElementById('cab'), D.titulo || 'Simulador Fiscal NL — La Federación y Nuevo León', (D.subtitulo || '') + (P.version_capa_nl ? ' · capa ' + P.version_capa_nl : '') + ' · año de referencia ' + (C.anioRefFed || '') + ' · Paquete ' + (D.anio_politica || ''));
   document.title = D.titulo || document.title;
   sync(); render(); pie();
 })();

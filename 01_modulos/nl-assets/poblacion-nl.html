@@ -19,10 +19,10 @@
   encabezado de procedencia; nada sale sin procedencia.
 -->
 <style>
-:root{--h:#2a6f97;--m:#c9553d;--ink:#1f2933;--mut:#616e7c;--line:#d9dde3;--bg:#f7f8fa;--card:#fff;--acc:#0b4f6c;--proy:#eef1f5}
+:root{--nl:#5a2148;--nac:#7f7f7f;--banda:rgba(90,33,72,.25);--recibe:#00b1af;--recibeTexto:#008381;--paga:#e76b24;--pagaTexto:#c75108;--paquete:#fbb818;--proy:rgba(90,33,72,.55);--nowcast:rgba(90,33,72,.7);--acento:#872675;--acento2:#00b1af;--alerta:#d52b4d;--h:#0a6db6;--m:#f27794;--ink:#212121;--mut:#666666;--line:#d0d0d0;--bg:#f6f6f6;--card:#fff;--fuenteTitulo:"Poppins",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;--fuenteCuerpo:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
 *{box-sizing:border-box}
-body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Ubuntu,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);font-size:15px;line-height:1.4}
-header{background:var(--acc);color:#fff;padding:18px 28px}
+body{margin:0;font-family:var(--fuenteCuerpo);color:var(--ink);background:var(--bg);font-size:15px;line-height:1.4}
+header{background:var(--nl);color:#fff}
 header h1{margin:0;font-size:22px;font-weight:600;letter-spacing:.2px}
 header .sub{margin:4px 0 0;font-size:13px;opacity:.9}
 main{max-width:1240px;margin:0 auto;padding:18px 20px 30px}
@@ -35,7 +35,7 @@ main{max-width:1240px;margin:0 auto;padding:18px 20px 30px}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
 .seg button{border:0;background:#fff;padding:7px 12px;font-size:14px;cursor:pointer;color:var(--ink)}
 .seg button+button{border-left:1px solid var(--line)}
-.seg button.on{background:var(--acc);color:#fff}
+.seg button.on{background:var(--acento);color:#fff}
 .yr{display:flex;align-items:center;gap:10px}
 .yr input[type=range]{flex:1}
 .yr .val{font-weight:600;font-variant-numeric:tabular-nums;min-width:48px;text-align:right}
@@ -57,7 +57,7 @@ main{max-width:1240px;margin:0 auto;padding:18px 20px 30px}
 .chart .bar{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
 svg{width:100%;height:auto;display:block}
 .bar-h{fill:var(--h)}.bar-m{fill:var(--m)}
-.ref{fill:none;stroke:#2b2b2b;stroke-width:1.4;stroke-dasharray:4 2;stroke-linejoin:round}
+.ref{fill:none;stroke:var(--ink);stroke-width:1.4;stroke-dasharray:4 2;stroke-linejoin:round}
 .ax{stroke:#9aa5b1;stroke-width:1}
 .grid{stroke:#e5e8ec;stroke-width:1}
 .tick{font-size:11px;fill:var(--mut)}
@@ -65,33 +65,30 @@ svg{width:100%;height:auto;display:block}
 .lt{fill:none;stroke-width:2.2}
 .lt-t{stroke:#1f2933}.lt-h{stroke:var(--h)}.lt-m{stroke:var(--m)}
 .proy{fill:var(--proy)}
-.cursor{stroke:var(--acc);stroke-width:1.2;stroke-dasharray:4 3}
+.cursor{stroke:var(--acento);stroke-width:1.2;stroke-dasharray:4 3}
 .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--mut);margin-top:6px}
 .legend i{display:inline-block;width:12px;height:12px;border-radius:2px;vertical-align:-2px;margin-right:5px}
 .tip{font-size:12px;color:var(--ink);min-height:16px;margin-top:4px;font-variant-numeric:tabular-nums}
 .tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .tools button,.seg2 button{border:1px solid var(--line);background:#fff;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:13px;color:var(--ink)}
 .seg2{display:inline-flex;border-radius:6px;overflow:hidden}
-.seg2 button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.seg2 button.on{background:var(--acento);color:#fff;border-color:var(--acento)}
 .tbl-wrap{max-height:460px;overflow:auto;border:1px solid var(--line);border-radius:6px}
 table{border-collapse:collapse;width:100%;font-size:12.5px;font-variant-numeric:tabular-nums}
 th,td{padding:5px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
 th{position:sticky;top:0;background:#f1f3f6;color:var(--mut);font-weight:600;text-align:right}
 td:first-child,th:first-child{text-align:left}
-tr.r-proy td{background:#f3f4f6;color:#5b6773}
+tr.r-proy td{background:#f6f6f6;color:#666666}
 .prov{font-size:11.5px;color:var(--mut);margin:6px 0 0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap}
 textarea.fb{width:100%;height:160px;font-family:ui-monospace,Menlo,monospace;font-size:11px;margin-top:6px;display:none}
 footer{max-width:1240px;margin:0 auto;padding:10px 20px 40px;font-size:12px;color:var(--mut)}
 footer p{margin:4px 0}
-.ok{color:#1b7f3b}.bad{color:#b42318}
+.ok{color:var(--recibeTexto)}.bad{color:var(--alerta)}
 code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
 </style>
 </head>
 <body>
-<header>
-  <h1 id="titulo">Simulador Fiscal NL — Población</h1>
-  <p class="sub" id="subtitulo"></p>
-</header>
+<header id="cab"></header>
 <main>
   <section class="panel controls">
     <div class="ctl">
@@ -158,6 +155,9 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
 /*__NLPOB_DATA__*/
 </script>
 <script>
+/*__NL_ESTILO_ASSETS__*/
+</script>
+<script>
 /*__NL_DATOS_JS__*/
 </script>
 <script>
@@ -165,6 +165,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
   'use strict';
   var ND = window.NLDatos;
   if (!ND) { document.getElementById('pie').innerHTML = '<p class="bad">Sin componente: nl-datos.js no fue incrustado (este archivo es la plantilla o la inyección falló).</p>'; return; }
+  if (window.NLEstilo) window.NLEstilo.apply();
   var L = ND.load('nl-data');
   if (L.error || !L.data || !L.data.geos) { document.getElementById('pie').innerHTML = '<p class="bad">Sin datos: ' + ND.esc(L.error || 'el JSON no trae geos') + '.</p>'; return; }
   var D = L.data;
@@ -406,7 +407,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
     o += '<text class="lab" x="' + cx + '" y="' + (top - 8) + '" text-anchor="middle" style="font-weight:600">' + y + '</text>';
     svg.innerHTML = o;
     document.getElementById('pyr-cap').textContent = (S.cmp ? 'Estructura: % de la población total de cada territorio. ' : 'Personas a mitad de año. ') + (quin ? 'Grupos quinquenales (' + r.ix.txt + ').' : (filtroActivo() ? 'Edad simple ' + S.e0 + '–' + S.e1 + '.' : 'Edad simple (0–' + EMAX + ').')) + (y >= PROY ? ' Proyección.' : ' Conciliación demográfica.');
-    var lg = []; if (S.sexo !== 'm') lg.push(['Hombres', 'background:var(--h)']); if (S.sexo !== 'h') lg.push(['Mujeres', 'background:var(--m)']); if (ref) lg.push([gr.nombre + ' (referencia)', 'border:1.5px dashed #2b2b2b;background:#fff']);
+    var lg = []; if (S.sexo !== 'm') lg.push(['Hombres', 'background:var(--h)']); if (S.sexo !== 'h') lg.push(['Mujeres', 'background:var(--m)']); if (ref) lg.push([gr.nombre + ' (referencia)', 'border:1.5px dashed var(--ink);background:#fff']);
     legend('c1', lg);
   }
   function barTitle(sx, lab, abs, v) { return esc(sx + ' ' + lab + ': ' + fmtInt.format(abs) + (S.cmp ? ' (' + fmt2.format(v) + ' %)' : '')); }
@@ -440,7 +441,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
     svg.innerHTML = o;
     serPts = ys.map(function (y) { return { y: y, x: x(y) }; });
     document.getElementById('ser-cap').textContent = (S.sexo === 'a' ? 'Total, hombres y mujeres' : (S.sexo === 'h' ? 'Hombres' : 'Mujeres')) + (filtroActivo() ? ', ' + edadLab() : '') + '. Sombreado: años proyectados (' + PROY + ' en adelante).';
-    var lg = []; if (S.sexo === 'a') lg.push(['Total', 'background:#1f2933']); if (S.sexo !== 'm') lg.push(['Hombres', 'background:var(--h)']); if (S.sexo !== 'h') lg.push(['Mujeres', 'background:var(--m)']); lg.push(['Proyección', 'background:var(--proy);border:1px solid #d9dde3']);
+    var lg = []; if (S.sexo === 'a') lg.push(['Total', 'background:var(--ink)']); if (S.sexo !== 'm') lg.push(['Hombres', 'background:var(--h)']); if (S.sexo !== 'h') lg.push(['Mujeres', 'background:var(--m)']); lg.push(['Proyección', 'background:var(--proy);border:1px solid var(--line)']);
     legend('c2', lg);
     svg.onmousemove = function (ev) {
       var r = svg.getBoundingClientRect(), px = (ev.clientX - r.left) / r.width * W, best = null;
@@ -503,16 +504,14 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
     if (c.nl) { var gN = geo('nl'); chk(nm(c.nl, 'pobtot'), c.nl.pobtot, totAll(gN, yref, 'a')); chk(nm(c.nl, 'pobmujpropI'), c.nl.pobmujpropI, totAll(gN, yref, 'm') / totAll(gN, yref, 'a') * 100); chk(nm(c.nl, 'pobMayoresI'), c.nl.pobMayoresI, sum(toQuin(gN.h[yi(gN, yref)]).slice(13)) + sum(toQuin(gN.m[yi(gN, yref)]).slice(13))); chk(nm(c.nl, 'razdep'), c.nl.razdep, depRatio(gN, yref)); if (c.nac) chk(nm(c.nl, 'PartPob'), c.nl.PartPob, totAll(gN, yref, 'a') / totAll(geo('nac'), yref, 'a') * 100); }
     if (c.nac) { var gC = geo('nac'); chk(nm(c.nac, 'pobtot'), c.nac.pobtot, totAll(gC, yref, 'a')); chk(nm(c.nac, 'pobmujpropI'), c.nac.pobmujpropI, totAll(gC, yref, 'm') / totAll(gC, yref, 'a') * 100); chk(nm(c.nac, 'razdep'), c.nac.razdep, depRatio(gC, yref)); }
     var h = '';
-    h += '<p><strong>' + (D.producto || 'Simulador Fiscal NL') + '</strong> · ' + (D.subtitulo || '') + ' · capa <code>' + (P.version_capa_nl || '—') + '</code> · motor <code>' + (P.version_motor || '—') + '</code> · corrida ' + (P.generado_en || '—') + ' · log <code>' + (P.log || '—') + '</code> · ' + (P.driver || '') + '</p>';
     h += '<p><strong>Fuente estatal y nacional:</strong> ' + esc(P.fuente_estatal || '') + '. Cobertura: ' + esc(P.cobertura_estatal || '') + '.</p>';
     h += '<p><strong>Fuente municipal:</strong> ' + esc(P.fuente_municipal || '') + '. Cobertura: ' + esc(P.cobertura_municipal || '') + '. Compuerta: ' + esc(P.compuerta_municipal || '') + '.</p>';
     h += '<p><strong>Definiciones:</strong> ' + esc((D.definiciones || {}).razon_dependencia || '') + '. ' + esc((D.definiciones || {}).nota_motor || '') + ' Unidad: ' + esc((D.definiciones || {}).unidad || '') + '. Año de referencia del canal: ' + yref + '. <strong>Filtros de edad:</strong> en Nuevo León y nacional la edad es simple; en municipios el rango se ajusta (snap) a los grupos quinquenales de CONAPO, nunca se interpola a edad simple; la razón de dependencia se calcula siempre sobre toda la población.</p>';
     h += '<p>' + (bad.length ? '<span class="bad">Autocomprobación: ' + bad.length + ' cifra(s) del canal NO coinciden con los arreglos: ' + bad.join(', ') + '.</span>' : '<span class="ok">Autocomprobación: las ' + ok.length + ' cifras del canal para ' + yref + ' coinciden con las sumas de los arreglos incrustados (' + ok.join(', ') + ').</span>') + '</p>';
-    document.getElementById('pie').innerHTML = h;
+    document.getElementById('pie').innerHTML = (window.NLEstilo ? window.NLEstilo.atribucion(D) : '') + h;
   }
 
-  document.getElementById('titulo').textContent = D.titulo || 'Simulador Fiscal NL — Población';
-  document.getElementById('subtitulo').textContent = (D.subtitulo || '') + (P.version_capa_nl ? ' · capa ' + P.version_capa_nl : '');
+  window.NLEstilo.cabecera(document.getElementById('cab'), D.titulo || 'Simulador Fiscal NL — Población', (D.subtitulo || '') + (P.version_capa_nl ? ' · capa ' + P.version_capa_nl : ''));
   document.title = D.titulo || document.title;
   fillGeo(); sync(); render(); pie();
 })();

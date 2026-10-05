@@ -1,4 +1,4 @@
-*! PIBDeflactorNL.do  v1.0.0 — actividad económica y precios de Nuevo León: Simulador Fiscal NL (capa NL-0.2.0)
+*! PIBDeflactorNL.do  v1.1.0 — actividad económica y precios de Nuevo León: Simulador Fiscal NL (capa NL-0.2.0; v1.1.0 NL-0.4.1: PIBE per cápita con población CONAPO de la misma corrida)
 *
 * QUÉ ES ESTO
 *   El equivalente NL del segundo comando de SIM.do (PIBDeflactor): PIBE nominal
@@ -90,6 +90,7 @@ local nl_titulo `"`r(titulo)'"'
 local nl_subtitulo `"`r(subtitulo)'"'
 local nl_vmotor `"`r(version_motor)'"'
 local nl_vnl `"`r(version_nl)'"'
+local nl_repo `"`r(repositorio)'"'
 
 run `"`site'/01_modulos/nl-assets/nl-bie.do"'
 capture confirm file `"`site'/set_token.do"'
@@ -456,6 +457,79 @@ quietly {
 	save `P'
 }
 
+*** 5b PER CÁPITA (retrofit NL-0.4.1; patrón pib_pc del motor) ***
+* Denominador con procedencia: población CONAPO a mitad de año de master/Poblacion.dta — la MISMA
+* que PoblacionNL.do; compuerta contra poblacion-nl.json de esta corrida (NL y nacional en su año de
+* referencia). Per cápita = PIBE / población; real en pesos de 2018 (como el PIBE real) y nominal. *
+noisily di _newline in g "{bf:5b. PIBE per cápita (población CONAPO, misma corrida que PoblacionNL)}"
+capture confirm file `"`site'/master/Poblacion.dta"'
+if _rc {
+	di as err "PIBDeflactorNL: falta master/Poblacion.dta (la construye Poblacion.ado / PoblacionNL.do). No se exporta."
+	exit 601
+}
+local pobjson `"`site'/users/$id/nodos/poblacion-nl.json"'
+capture confirm file `"`pobjson'"'
+if _rc {
+	di as err "PIBDeflactorNL: falta users/$id/nodos/poblacion-nl.json (corre PoblacionNL.do primero): el denominador debe ser de la misma corrida. No se exporta."
+	exit 601
+}
+run `"`site'/01_modulos/nl-assets/nl-fed.do"'
+_NLjsonget using `"`pobjson'"', keys(cifras.anio cifras.nl.pobtot cifras.nac.pobtot procedencia.version_capa_nl)
+local pobj_anio = `r(v1)'
+local pobj_nl = `r(v2)'
+local pobj_nac = `r(v3)'
+local pobj_vnl "`r(v4)'"
+if "`pobj_vnl'" != "`nl_vnl'" {
+	di as err "PIBDeflactorNL: poblacion-nl.json es de la capa `pobj_vnl' y la sesión es `nl_vnl'. Regenera PoblacionNL antes. No se exporta."
+	exit 459
+}
+quietly {
+	use entidad anio poblacion using `"`site'/master/Poblacion.dta"', clear
+	keep if inlist(entidad, "Nuevo León", "Nacional")
+	collapse (sum) pob = poblacion, by(entidad anio)
+	g double pobNL = pob if entidad == "Nuevo León"
+	g double pobNac = pob if entidad == "Nacional"
+	collapse (max) pobNL pobNac, by(anio)
+	summarize pobNL if anio == `pobj_anio', meanonly
+	local pnl = r(mean)
+	summarize pobNac if anio == `pobj_anio', meanonly
+	local pnac = r(mean)
+	if reldif(`pnl', `pobj_nl') > 1e-9 | reldif(`pnac', `pobj_nac') > 1e-9 {
+		noisily di as err "PIBDeflactorNL: la población de master/Poblacion.dta (`pobj_anio': NL `pnl', nac `pnac') no coincide con poblacion-nl.json (`pobj_nl', `pobj_nac'): denominador de otra corrida. No se exporta."
+		exit 459
+	}
+	tempfile POB
+	save `POB'
+	_NLfileinfo `"`site'/master/Poblacion.dta"'
+	local pob_mtime "`r(mtime)'"
+	use `P', clear
+	merge 1:1 anio using `POB', nogen keep(master match)
+	count if pobNL == . | pobNac == .
+	if r(N) > 0 {
+		noisily di as err "PIBDeflactorNL: población faltante en `r(N)' años del panel. No se exporta."
+		exit 459
+	}
+	tsset anio
+	foreach g in nl nac {
+		local G = cond("`g'" == "nl", "NL", "Nac")
+		g double pibeRpc`g' = pibeR`g'*1e6/pob`G'				// pesos de 2018 por habitante
+		g double pibeNpc`g' = pibeN`g'*1e6/pob`G'				// pesos corrientes por habitante
+		g double crecPc`g' = (pibeRpc`g'/L.pibeRpc`g' - 1)*100
+		g double crecPob`g' = (pob`G'/L.pob`G' - 1)*100
+	}
+	g double razonPc = pibeRpcnl/pibeRpcnac*100				// NL como % del nacional per cápita
+	g double difCrecPc = crecPcnl - crecPcnac
+	* Promedio geométrico per cápita en la ventana observada (yline del patrón pib_pc) *
+	foreach g in nl nac {
+		summarize pibeRpc`g' if anio == `pibe0', meanonly
+		local a0 = r(mean)
+		summarize pibeRpc`g' if anio == `pibe1', meanonly
+		local geoPc`g' = ((r(mean)/`a0')^(1/(`pibe1'-`pibe0')) - 1)*100
+	}
+	save `P', replace
+}
+noisily di in g "  Compuerta denominador (PoblacionNL de la misma corrida, `pobj_anio'): " in y "PASÓ" in g " (NL " in y %12.0fc `pnl' in g ", nacional " in y %14.0fc `pnac' in g ")."
+
 *** 6 ESCALARES DEL CANAL ***
 quietly {
 	use `P', clear
@@ -491,6 +565,24 @@ quietly {
 	}
 	summarize partPIBEnl if anio == `pibe1', meanonly
 	escalar pct partPIBEnl = r(mean)
+	* Per cápita (retrofit NL-0.4.1) *
+	foreach g in nl nac {
+		local G = cond("`g'" == "nl", "nl", "nac")
+		summarize pibeRpc`g' if anio == `pibe1', meanonly
+		escalar mxnpc pibeRpc`G' = r(mean)
+		summarize pibeNpc`g' if anio == `pibe1', meanonly
+		escalar mxnpc pibeNpc`G' = r(mean)
+		summarize crecPc`g' if anio == `pibe1', meanonly
+		escalar pct crecPc`G' = r(mean)
+		summarize pibeRpc`g' if anio == `aniope', meanonly
+		escalar mxnpc pibeRpc`G'PE = r(mean)
+		escalar pct crecPc`G'geo = `geoPc`g''
+		summarize pob`=cond("`g'"=="nl","NL","Nac")' if anio == `pibe1', meanonly
+		escalar personas pob`=cond("`g'"=="nl","NL","Nac")'Act = r(mean)
+	}
+	summarize razonPc if anio == `pibe1', meanonly
+	escalar pct razonPcNL = r(mean)
+	escalar pct difCrecPcNL = scalar(crecPcnl) - scalar(crecPcnac)
 	escalar pct difCrecPIBEnl = scalar(crecPIBEnl) - scalar(crecPIBEnac)
 	escalar pct difDefPIBEnl = scalar(defPIBEnl) - scalar(defPIBEnac)
 	escalar pct difInflacionNLdd = scalar(inflacionNLdd) - scalar(inflacionNacdd)
@@ -549,7 +641,8 @@ file write `fh' `"  `q'anio_politica`q': `aniope',"' _n
 file write `fh' `"  `q'procedencia`q': {"' _n
 file write `fh' `"    `q'version_motor`q': `q'`nl_vmotor'`q',"' _n
 file write `fh' `"    `q'version_capa_nl`q': `q'`nl_vnl'`q',"' _n
-file write `fh' `"    `q'driver`q': `q'01_modulos/PIBDeflactorNL.do v1.0.0`q',"' _n
+file write `fh' `"    `q'repositorio`q': `q'`nl_repo'`q',"' _n
+file write `fh' `"    `q'driver`q': `q'01_modulos/PIBDeflactorNL.do v1.1.0`q',"' _n
 file write `fh' `"    `q'log`q': `q'`logfile'`q',"' _n
 file write `fh' `"    `q'generado_en`q': `q'`sello'`q',"' _n
 file write `fh' `"    `q'frontera`q': `q'sidecar macro: contexto, nowcast y deflactación de entregables NL; no recalibra la base micro ni introduce reajuste contra el PIBE`q',"' _n
@@ -557,7 +650,8 @@ file write `fh' `"    `q'compuertas`q': {"' _n
 file write `fh' `"      `q'deflactor_implicito`q': `q'nominal/real reproduce el índice de precios implícitos del BIE (753357) en todos los años, reldif < 1e-6`q',"' _n
 file write `fh' `"      `q'control_pib`q': `q'`ctrl_txt'`q',"' _n
 file write `fh' `"      `q'inpc_vs_motor`q': `q'`inpc_ctrl_txt'`q',"' _n
-file write `fh' `"      `q'rejillas`q': `q'anual PIBE, trimestral ITAEE y mensual INPC sin huecos (tsset verificado)`q'"' _n
+file write `fh' `"      `q'rejillas`q': `q'anual PIBE, trimestral ITAEE y mensual INPC sin huecos (tsset verificado)`q',"' _n
+file write `fh' `"      `q'denominador`q': `q'población `pobj_anio' de master/Poblacion.dta = poblacion-nl.json de la misma corrida (NL y nacional, reldif 1e-9)`q'"' _n
 file write `fh' "    }," _n
 file write `fh' `"    `q'criterios_motor`q': `q'PIBDeflactor.ado: INPC anual = diciembre (dic/dic); deflactor base aniovp = 1; proyección = exógeno si existe, si no promedio geométrico desde el inicio de la serie (geopib/geodef = anioinicial); nominal = real x deflactor`q',"' _n
 file write `fh' `"    `q'supuestos_proyeccion`q': {"' _n
@@ -581,7 +675,9 @@ file write `fh' `"    `q'deflactor`q': `q'índice de precios implícitos del PIB
 file write `fh' `"    `q'itaee`q': `q'índice de volumen físico 2018 = 100; serie original (variación anual) y desestacionalizada (variación trimestral); es un adelanto preliminar del PIBE. Comparativo nacional = PIB trimestral real (734407/735143) normalizado 2018 = 100; el BIE no publica total nacional del ITAEE ni, por tanto, su serie desestacionalizada aquí`q',"' _n
 file write `fh' `"    `q'inpc`q': `q'INPC base 2Q jul 2018 = 100; NL por entidad federativa (programa INPC de INEGI); inflación anual = promedio anual y dic/dic; vigente = último mes a/a: mide precios del CONSUMO`q',"' _n
 file write `fh' `"    `q'tipo`q': {`q'observado`q': `q'dato publicado por INEGI`q', `q'nowcast ITAEE`q': `q'preliminar: estimado con los trimestres disponibles del ITAEE`q', `q'proyección geométrica`q': `q'supuesto de la capa NL con el criterio del motor`q'},"' _n
-file write `fh' `"    `q'sellos_inegi`q': `q'sello de revisión de INEGI por observación tal como viene del BIE: p = cifra preliminar, r = cifra revisada (p1, r1, ...); vacío = definitiva`q'"' _n
+file write `fh' `"    `q'sellos_inegi`q': `q'sello de revisión de INEGI por observación tal como viene del BIE: p = cifra preliminar, r = cifra revisada (p1, r1, ...); vacío = definitiva`q',"' _n
+file write `fh' `"    `q'per_capita`q': `q'PIBE / población a mitad de año (CONAPO pry23, master/Poblacion.dta, la misma de PoblacionNL): real en pesos de 2018 por habitante y nominal en pesos corrientes por habitante; crecimiento per cápita = variación del real per cápita; razonPc = NL como % del nacional per cápita`q',"' _n
+file write `fh' `"    `q'denominadores`q': {`q'pobNL`q': `q'población NL a mitad de año, CONAPO (master/Poblacion.dta, vintage `pob_mtime'); compuerta: igual a poblacion-nl.json de esta corrida en `pobj_anio' (reldif 1e-9)`q', `q'pobNac`q': `q'población nacional, misma fuente`q'}"' _n
 file write `fh' "  }," _n
 file write `fh' `"  `q'presentacion`q': {"' _n
 file write `fh' `"    `q'criterio_proyeccion`q': `q'sin exógenos CGPE estatales: la proyección NL usa el nowcast ITAEE donde hay trimestres y después el promedio geométrico del motor (PIBDeflactor.ado, geopib/geodef = anioinicial); el comparativo nacional de este endpoint sigue el mismo criterio`q',"' _n
@@ -596,7 +692,8 @@ local lista anioPIBEult anioPE anioVP anioITAEEult trimITAEEult nowITAEEtrim ani
 	deflatorPIBEnl deflatorPIBEnac crecPIBEnlgeo crecPIBEnacgeo defPIBEnlgeo defPIBEnacgeo inflacionNLgeo inflacionNacgeo ///
 	crecPIBEnlPE crecPIBEnacPE defPIBEnlPE defPIBEnacPE inflacionNLddPE inflacionNacddPE ///
 	nowITAEEnl nowITAEEnac crecITAEEnl crecITAEEnac difCrecITAEEnl crecITAEEsaQnl crecITAEEsaQnac crecITAEEsaYnl crecITAEEsaYnac ///
-	inflacionNLvig inflacionNacvig difInflacionNLvig inflacionNLdd inflacionNacdd difInflacionNLdd inflacionNLprom inflacionNacprom inpcNLult inpcNacult
+	inflacionNLvig inflacionNacvig difInflacionNLvig inflacionNLdd inflacionNacdd difInflacionNLdd inflacionNLprom inflacionNacprom inpcNLult inpcNacult ///
+	pibeRpcnl pibeRpcnac pibeNpcnl pibeNpcnac crecPcnl crecPcnac pibeRpcnlPE pibeRpcnacPE crecPcnlgeo crecPcnacgeo pobNLAct pobNacAct razonPcNL difCrecPcNL
 local n : word count `lista'
 local j = 0
 foreach s of local lista {
@@ -614,7 +711,7 @@ file write `fh' "  }," _n
 ** 7.2 Series: anual **
 quietly use `P', clear
 file write `fh' `"  `q'anual`q': ["' _n
-local vars pibeNnl pibeRnl deflnl crecPIBEnl varDeflnl deflatornl pibeNnac pibeRnac deflnac crecPIBEnac varDeflnac deflatornac partPIBEnl difCrec difDefl nowITAEEnl nowITAEEnac ntrim inpcPromnl inpcPromnac dicnl dicnac inflPromnl inflPromnac inflDDnl inflDDnac difInflDD difInflProm
+local vars pibeNnl pibeRnl deflnl crecPIBEnl varDeflnl deflatornl pibeNnac pibeRnac deflnac crecPIBEnac varDeflnac deflatornac partPIBEnl difCrec difDefl nowITAEEnl nowITAEEnac ntrim inpcPromnl inpcPromnac dicnl dicnac inflPromnl inflPromnac inflDDnl inflDDnac difInflDD difInflProm pobNL pobNac pibeRpcnl pibeRpcnac pibeNpcnl pibeNpcnac crecPcnl crecPcnac crecPobnl crecPobnac razonPc difCrecPc
 forvalues i = 1/`=_N' {
 	file write `fh' `"    {`q'anio`q': `=anio[`i']', `q'tipoCrec`q': `q'`=tipoCrec[`i']'`q', `q'tipoDefl`q': `q'`=tipoDefl[`i']'`q', `q'tipoInfl`q': `q'`=cond(tipoInfl[`i']=="", "sin dato", tipoInfl[`i'])'`q', `q'selloPIBEnl`q': `q'`=selloPIBEnl[`i']'`q', `q'selloPIBEnac`q': `q'`=selloPIBEnac[`i']'`q'"'
 	foreach v of local vars {
@@ -673,9 +770,15 @@ if _rc {
 	di as err "PIBDeflactorNL: falta el componente 01_modulos/nl-assets/nl-datos.js."
 	exit 601
 }
-mata: nlhtml_inject(st_local("tpl"), st_local("json"), st_local("js"), st_local("html"), "/*__NLACT_DATA__*/")
-if r(hits_data) != 1 | r(hits_js) != 1 {
-	di as err "PIBDeflactorNL: la plantilla debe tener exactamente una marca /*__NLACT_DATA__*/ y una /*__NL_DATOS_JS__*/ (encontradas: `r(hits_data)' y `r(hits_js)')."
+local assets `"`site'/01_modulos/nl-assets/nl-estilo-assets.js"'
+capture confirm file `"`assets'"'
+if _rc {
+	di as err "PIBDeflactorNL: falta 01_modulos/nl-assets/nl-estilo-assets.js (generar con nl-estilo-build.py)."
+	exit 601
+}
+mata: nlhtml_inject(st_local("tpl"), st_local("json"), st_local("js"), st_local("html"), "/*__NLACT_DATA__*/", st_local("assets"))
+if r(hits_data) != 1 | r(hits_js) != 1 | r(hits_assets) != 1 {
+	di as err "PIBDeflactorNL: la plantilla debe tener exactamente una marca /*__NLACT_DATA__*/, una /*__NL_DATOS_JS__*/ y una /*__NL_ESTILO_ASSETS__*/ (encontradas: `r(hits_data)', `r(hits_js)' y `r(hits_assets)')."
 	exit 459
 }
 

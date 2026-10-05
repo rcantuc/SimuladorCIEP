@@ -11,6 +11,7 @@
 *   local vmotor `r(version_motor)'            // p. ej. v8.6.0
 *   local vnl    `r(version_nl)'               // p. ej. NL-0.1.0
 *   local sub    `"`r(subtitulo)'"'            // construido sobre el Simulador Fiscal CIEP v8.6.0
+*   local repo   `"`r(repositorio)'"'          // URL de GitHub de la capa (nl-manifest.json), para la atribución
 *
 * El motor no se toca: esto es presentación de la capa de producto. Las
 * salidas nacionales (output.txt, títulos de los .ado) conservan su identidad.
@@ -40,6 +41,7 @@ program define _NLidentidad, rclass
 	* Versión de la capa NL (nl-manifest.json) *
 	local vnl ""
 	local producto ""
+	local repositorio ""
 	capture confirm file `"${SIMROOT}/01_modulos/nl-assets/nl-manifest.json"'
 	if _rc == 0 {
 		tempname nh
@@ -51,6 +53,9 @@ program define _NLidentidad, rclass
 			}
 			if regexm(`"`line'"', `"`q'producto`q'[ ]*:[ ]*`q'([^`q']*)`q'"') & `"`producto'"' == "" {
 				local producto = regexs(1)
+			}
+			if regexm(`"`line'"', `"`q'repositorio`q'[ ]*:[ ]*`q'([^`q']*)`q'"') & `"`repositorio'"' == "" {
+				local repositorio = regexs(1)
 			}
 			file read `nh' line
 		}
@@ -76,4 +81,5 @@ program define _NLidentidad, rclass
 	return local subtitulo `"`subtitulo'"'
 	return local version_motor "`vmotor'"
 	return local version_nl "`vnl'"
+	return local repositorio `"`repositorio'"'
 end

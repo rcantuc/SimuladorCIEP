@@ -99,6 +99,7 @@ local nl_titulo `"`r(titulo)'"'
 local nl_subtitulo `"`r(subtitulo)'"'
 local nl_vmotor `"`r(version_motor)'"'
 local nl_vnl `"`r(version_nl)'"'
+local nl_repo `"`r(repositorio)'"'
 if "`nl_vnl'" == "" | "`nl_vmotor'" == "" {
 	di as err "FederacionNL: sin versión de capa o de motor declarada no puede verificarse el vintage. No se exporta."
 	exit 459
@@ -1062,6 +1063,7 @@ file write `fh' "  }," _n
 file write `fh' `"  `q'procedencia`q': {"' _n
 file write `fh' `"    `q'version_motor`q': `q'`nl_vmotor'`q',"' _n
 file write `fh' `"    `q'version_capa_nl`q': `q'`nl_vnl'`q',"' _n
+file write `fh' `"    `q'repositorio`q': `q'`nl_repo'`q',"' _n
 file write `fh' `"    `q'driver`q': `q'01_modulos/FederacionNL.do v1.0.0`q',"' _n
 file write `fh' `"    `q'log`q': `q'`logfile'`q',"' _n
 file write `fh' `"    `q'generado_en`q': `q'`sellocorrida'`q',"' _n
@@ -1234,9 +1236,15 @@ if _rc == 0 {
 		di as err "FederacionNL: falta el componente 01_modulos/nl-assets/nl-datos.js."
 		exit 601
 	}
-	mata: nlhtml_inject(st_local("tpl"), st_local("json"), st_local("js"), st_local("html"), "/*__NLFED_DATA__*/")
-	if r(hits_data) != 1 | r(hits_js) != 1 {
-		di as err "FederacionNL: la plantilla debe tener exactamente una marca /*__NLFED_DATA__*/ y una /*__NL_DATOS_JS__*/ (encontradas: `r(hits_data)' y `r(hits_js)')."
+	local assets `"`site'/01_modulos/nl-assets/nl-estilo-assets.js"'
+	capture confirm file `"`assets'"'
+	if _rc {
+		di as err "FederacionNL: falta 01_modulos/nl-assets/nl-estilo-assets.js (generar con nl-estilo-build.py)."
+		exit 601
+	}
+	mata: nlhtml_inject(st_local("tpl"), st_local("json"), st_local("js"), st_local("html"), "/*__NLFED_DATA__*/", st_local("assets"))
+	if r(hits_data) != 1 | r(hits_js) != 1 | r(hits_assets) != 1 {
+		di as err "FederacionNL: la plantilla debe tener exactamente una marca /*__NLFED_DATA__*/, una /*__NL_DATOS_JS__*/ y una /*__NL_ESTILO_ASSETS__*/ (encontradas: `r(hits_data)', `r(hits_js)' y `r(hits_assets)')."
 		exit 459
 	}
 	quietly checksum `"`html'"'

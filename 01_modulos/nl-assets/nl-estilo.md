@@ -85,7 +85,7 @@ Convenciones transversales observadas: títulos en `{bf:}`; `xtitle("")` siempre
 | Incidencia (`EntidadNL.do` §4) | Decil · AlTrabajo · AlCapital · AlConsumo · OTROSK · Total | `Tot` al final; nota de suma | `%10.1fc` |
 | `scalarjson` (`tabla[]`) | la **estructura** viaja en el contrato: `bloque`, `etiqueta`, `prefijo` (`(+)/(−)/(=)`), `familia`, `enfasis`; la página la espeja (`nodo-deuda.html` renderTabla) | `rule-max` entre bloques, `rule-min` antes del énfasis | `formato_sugerido`/`divisor_sugerido` por escalar; catálogo `escalar.ado`: `pctpib %7.3fc`, `pct %7.1fc`, `mxn %12.1fc ÷1e6`, `mxnpc %10.0fc`, `personas %15.0fc`, `anio %4.0f` |
 
-## 3. Tokens fijos de la capa NL (propuesta; se fijan al aprobarse — resolución 2026-10-04: NO fijar hasta la pasada de Ricardo)
+## 3. Tokens fijos de la capa NL — FIJADOS en NL-0.4.1 con la identidad CoNL (§6; resoluciones 2026-10-04). La tabla de abajo es la propuesta histórica derivada de `scheme-ciep`; los valores vigentes son los de §6.3 y viven en `NLEstilo` (`nl-datos.js`).
 
 **Dónde viven:** `nl-assets/nl-datos.js`, bloque `NLEstilo` (único lugar). `federacion-nl.html` ya consume `var(--nl)`, `var(--nac)`, `var(--banda)`, `var(--recibe)`, `var(--paga)`, `var(--paquete)`, `var(--proy)`, `var(--acento)`; cambiar los valores ahí aplica la decisión a todos los endpoints que llamen `NLEstilo.apply()` (retrofit de `poblacion-nl`/`actividad-nl` en NL-0.4.1). Los valores actuales son los de esta tabla, marcados **provisionales** en el pie de cada endpoint.
 
@@ -186,11 +186,23 @@ Cada vista se documenta así, en `DIAGNOSTICO_NL.md` y en la plantilla HTML:
 ```
 La leyenda se toma **tal cual** de `_NLidentidad` (`r(subtitulo)` → `procedencia`/`subtitulo` del JSON), nunca se reescribe; la versión de la capa y el enlace salen de `nl-manifest.json` (`version_nl` + clave nueva `repositorio` que F1 añade al manifest), no de la plantilla. Mismo bloque en los tres endpoints (cabecera: logo blanco + título; pie: logo morado + atribución).
 
-### 6.7 Qué queda como aproximación hasta tener el BrandBook
+### 6.6b Lo que dice el BrandBook 2020 (leído el 2026-10-04 desde `Shared drives/Revisión Plan Estratégico 2019-2021/Materiales para diseño/Identidad Consejo Nuevo León/BrandBook_Consejo_NL .pdf`, Algoritmo Design, nov-2020, 16 pp.) — el manual manda sobre lo inferido del sitio
 
-Zona de respeto del logo (provisional); logo en PNG en lugar de vector; posibles reglas del manual sobre usos del aqua/amarillo que el sitio no explicita. Todo lo demás (paleta exacta, variantes WCAG, tipografía y sus pesos, licencia) está **verificado en la fuente oficial viva (conl.mx) y en la publicación insignia (PE 2040)**.
+| Regla del manual | Cómo se aplica en NL-0.4.1 |
+|---|---|
+| **§4 Espacio blanco**: "la mínima cantidad de espacio blanco es equivalente a la mitad del tamaño del logotipo" (área de protección = una unidad del símbolo; extrema = dos) | logo de cabecera a 44 px con relleno de 22 px; logo del pie a 36 px con 18 px; nada dentro de esa franja (sustituye la zona provisional de F0) |
+| **§5 Aplicación cromática**: "puede ser utilizado en blanco siempre y cuando no afecte su legibilidad" (muestra: blanco sobre morado) | cabecera morada con logotipo blanco (como conl.mx); pie claro con logotipo en color |
+| **§6 Usos incorrectos**: no rotar, no colores fuera de la paleta, no efectos, no distorsionar | el SVG se escala proporcionalmente (`height` fijo, `width:auto`), sin filtros ni recoloreos; el blanco es la variante del propio manual |
+| **§8 Paleta primaria**: amarillo Pantone 130 C (RGB 253,185,19), aqua Pantone 326 C (RGB 0,177,176), morado Pantone 518 C (RGB 90,33,73); los hex impresos (#F5BC43 / #4FADAF / #4D1B45) son conversiones CMYK desaturadas y **no coinciden con su propio RGB** | se usan los RGB del manual, que coinciden ±2 por canal con los tokens oficiales del sitio (`--cn-morado #5a2148`, `--cn-aqua #00b1af`, `--cn-amarillo #fbb818`) y con el PE 2040; se toman los hex del sitio como forma canónica |
+| **§9 Paleta secundaria**: verde #00B259, púrpura #872175, naranja #F47D30, azul #2C70B9, celeste #3ECADD, rojo #E03657; **§11–12 comisiones**: Finanzas Públicas = naranja (#E78245 / #E86A23) | púrpura y rojo coinciden con el sitio; el naranja del sitio (#e76b24) es el de la comisión de Finanzas Públicas del propio manual → `--paga` naranja queda además alineado temáticamente; azul del sitio (#0a6db6) difiere del manual (#2C70B9): se usa el del sitio (vigente) |
+| **§7 Tipografías**: primaria **Basis Grotesque Pro Light** (titulares), secundaria **Public Sans Light** (párrafos) | **discrepancia declarada**: el sitio (2025) y el PE 2040 (2024) usan Poppins + Inter; Basis Grotesque es comercial (Colophon) y no puede embeberse; se aplica Poppins/Inter (OFL) como identidad vigente y se deja la confirmación al BrandBook 2023 (no legible) |
+| Logotipo vectorial | tomado de `consejonl_logotipo.ai` (misma carpeta): contornos (sin texto vivo), separaciones Pantone 518/326/130 C mapeadas al RGB de marca; convertido a SVG (47 trazos, 17 KB) con la variante blanca derivada |
 
-**FRENA F0:** se piden a Ricardo (1) aprobación del mapeo 6.3 (en particular `--paga` naranja vs rojo y `--m` rosa vs púrpura), (2) del plan tipográfico 6.4 (3 pesos embebidos, ≈ 57 KB por endpoint), (3) del bloque de atribución 6.6, y (4) la descarga local del BrandBook y del logotipo vectorial del Drive (o confirmar que se sigue con PNG).
+### 6.7 Qué queda como aproximación hasta tener el BrandBook 2023
+
+Tipografía (Poppins/Inter vigentes en sitio y PE 2040 vs. Basis Grotesque/Public Sans del manual 2020); azul del sitio vs. azul del manual; el BrandBook 2023 del repositorio de Comunicación sigue sin ser legible desde esta máquina. Resuelto con el manual 2020: zona de respeto, uso en blanco, usos incorrectos, logotipo vectorial, RGB de la paleta primaria.
+
+**F0 cerrado (resoluciones 2026-10-04):** mapeo §6.3 aprobado con `--paga` naranja y `--m` rosa (el púrpura colisiona con la familia del morado protagonista; el rojo queda para alertas); 3 pesos embebidos; atribución §6.6 tal cual; legibilidad del pie medida en la verificación desde el Drive (NL-0.4.1). Texto original de la petición: se piden a Ricardo (1) aprobación del mapeo 6.3 (en particular `--paga` naranja vs rojo y `--m` rosa vs púrpura), (2) del plan tipográfico 6.4 (3 pesos embebidos, ≈ 57 KB por endpoint), (3) del bloque de atribución 6.6, y (4) la descarga local del BrandBook y del logotipo vectorial del Drive (o confirmar que se sigue con PNG).
 
 ## 5. Pendientes abiertos de este borrador
 

@@ -73,6 +73,7 @@ local nl_titulo `"`r(titulo)'"'
 local nl_subtitulo `"`r(subtitulo)'"'
 local nl_vmotor `"`r(version_motor)'"'
 local nl_vnl `"`r(version_nl)'"'
+local nl_repo `"`r(repositorio)'"'
 
 * Checksum declarado del asset municipal (nl-manifest.json) *
 local chk_decl ""
@@ -280,6 +281,7 @@ file write `fh' `"  `q'anio_referencia`q': `anioref',"' _n
 file write `fh' `"  `q'procedencia`q': {"' _n
 file write `fh' `"    `q'version_motor`q': `q'`nl_vmotor'`q',"' _n
 file write `fh' `"    `q'version_capa_nl`q': `q'`nl_vnl'`q',"' _n
+file write `fh' `"    `q'repositorio`q': `q'`nl_repo'`q',"' _n
 file write `fh' `"    `q'driver`q': `q'01_modulos/PoblacionNL.do v1.0.0`q',"' _n
 file write `fh' `"    `q'log`q': `q'`logfile'`q',"' _n
 file write `fh' `"    `q'fuente_estatal`q': `q'CONAPO, Conciliación Demográfica de México 1970-2019 y Proyecciones de la población de México y de las entidades federativas 2020-2070 (pry23), vía DGIS-Salud; Poblacion.ado del motor, master/Poblacion.dta`q',"' _n
@@ -386,9 +388,15 @@ if _rc {
 	di as err "PoblacionNL: falta el componente 01_modulos/nl-assets/nl-datos.js."
 	exit 601
 }
-mata: nlhtml_inject(st_local("tpl"), st_local("json"), st_local("js"), st_local("html"), "/*__NLPOB_DATA__*/")
-if r(hits_data) != 1 | r(hits_js) != 1 {
-	di as err "PoblacionNL: la plantilla debe tener exactamente una marca /*__NLPOB_DATA__*/ y una /*__NL_DATOS_JS__*/ (encontradas: `r(hits_data)' y `r(hits_js)')."
+local assets `"`site'/01_modulos/nl-assets/nl-estilo-assets.js"'
+capture confirm file `"`assets'"'
+if _rc {
+	di as err "PoblacionNL: falta 01_modulos/nl-assets/nl-estilo-assets.js (generar con nl-estilo-build.py)."
+	exit 601
+}
+mata: nlhtml_inject(st_local("tpl"), st_local("json"), st_local("js"), st_local("html"), "/*__NLPOB_DATA__*/", st_local("assets"))
+if r(hits_data) != 1 | r(hits_js) != 1 | r(hits_assets) != 1 {
+	di as err "PoblacionNL: la plantilla debe tener exactamente una marca /*__NLPOB_DATA__*/, una /*__NL_DATOS_JS__*/ y una /*__NL_ESTILO_ASSETS__*/ (encontradas: `r(hits_data)', `r(hits_js)' y `r(hits_assets)')."
 	exit 459
 }
 

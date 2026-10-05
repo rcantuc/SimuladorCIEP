@@ -66,20 +66,81 @@ window.NLDatos = (function () {
   }
   return { esc: esc, extract: extract, table: table, copyText: copyText, downloadCsv: downloadCsv, tools: tools, load: load };
 })();
-/* NLEstilo — tokens de color de la capa NL (NL-0.4.0). ÚNICO lugar donde viven: cada plantilla
-   llama NLEstilo.apply() y consume var(--nl), var(--nac), var(--banda), var(--recibe), var(--paga),
-   var(--paquete), var(--proy), var(--acento), var(--h), var(--m), var(--ink), var(--mut), var(--line).
-   Valores PROVISIONALES = propuesta de nl-estilo.md §3 (derivados de scheme-ciep: p11 azul CIEP
-   profundo, p23 gris, p10 jade, p6 rojo institucional, p2 amarillo, p1 naranja). La pasada de estilo
-   de Ricardo cambia AQUÍ los valores y todos los endpoints los heredan sin retrabajo. */
+/* NLEstilo — identidad visual de la capa NL (NL-0.4.1): 100 % Consejo Nuevo León.
+   ÚNICO lugar donde viven los tokens de color, la tipografía y el bloque de atribución; cada plantilla llama
+   NLEstilo.apply() y consume var(--nl), var(--nac), var(--banda), var(--recibe), var(--paga), var(--paquete),
+   var(--proy), var(--nowcast), var(--acento), var(--h), var(--m), var(--ink), var(--mut), var(--line), var(--bg).
+   Fuente de los valores (nl-estilo.md §6, aprobado 2026-10-04): tokens oficiales --cn-* de conl.mx, coincidentes
+   con la paleta del PE 2040 y con el RGB del BrandBook 2020 (morado 90,33,73 · aqua 0,177,176 · amarillo 253,185,19).
+   Semántica (no cambia): NL = morado primario (sujeto); nacional = gris de referencia; recibe = aqua (símbolo del
+   logo); paga = naranja (daltonismo: aqua/naranja ΔE 60/75 protan/deutan; el rojo queda para alertas); Paquete =
+   amarillo (p2 del motor); proyección y nowcast = el mismo morado atenuado (eco del fintensity del motor);
+   acento = púrpura con borde aqua (patrón .btn-morado del sitio); H/M = azul/rosa.
+   Tipografía: Poppins SemiBold (títulos) e Inter Regular/SemiBold (cuerpo, números tabulares), SIL OFL 1.1,
+   embebidas como subsets desde NLEstiloAssets (nl-estilo-assets.js); pila de respaldo del sistema.
+   Logo: vector oficial (consejonl_logotipo.ai) en color y blanco; zona de respeto = ½ de la altura del logotipo
+   (BrandBook 2020 §4); se usa en blanco sobre morado (§5) y nunca rotado, distorsionado ni recoloreado (§6). */
 window.NLEstilo = (function () {
   'use strict';
   var T = {
-    nl: 'rgb(0,78,198)', nac: 'rgb(175,174,180)', banda: 'rgba(0,78,198,0.25)',
-    recibe: 'rgb(0,179,147)', paga: 'rgb(186,34,64)', paquete: 'rgb(255,189,0)', proy: 'rgba(255,128,0,0.55)',
-    acento: '#d76f33', h: 'rgb(23,151,201)', m: 'rgb(150,6,92)',
-    ink: '#1F1F1F', mut: 'rgb(111,111,111)', line: 'rgb(200,200,200)', bg: '#f7f8fa', card: '#ffffff'
+    nl: 'rgb(90,33,72)', nac: 'rgb(127,127,127)', banda: 'rgba(90,33,72,0.25)',
+    recibe: 'rgb(0,177,175)', recibeTexto: 'rgb(0,131,129)', paga: 'rgb(231,107,36)', pagaTexto: 'rgb(199,81,8)',
+    paquete: 'rgb(251,184,24)', proy: 'rgba(90,33,72,0.55)', nowcast: 'rgba(90,33,72,0.7)',
+    acento: 'rgb(135,38,117)', acento2: 'rgb(0,177,175)', alerta: 'rgb(213,43,77)',
+    h: 'rgb(10,109,182)', m: 'rgb(242,119,148)',
+    ink: '#212121', mut: '#666666', line: '#d0d0d0', bg: '#f6f6f6', card: '#ffffff',
+    fuenteTitulo: '"Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+    fuenteCuerpo: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
   };
-  function apply() { var r = document.documentElement.style; Object.keys(T).forEach(function (k) { r.setProperty('--' + k, T[k]); }); }
-  return { tokens: T, apply: apply, estado: 'provisional: nl-estilo.md §3, pendiente de la pasada de estilo' };
+  var A = window.NLEstiloAssets || null;
+  function apply() {
+    var r = document.documentElement.style;
+    Object.keys(T).forEach(function (k) { r.setProperty('--' + k, T[k]); });
+    if (A && !document.getElementById('nl-estilo-fuentes')) {
+      var css = '';
+      if (A.poppins600) css += '@font-face{font-family:"Poppins";font-style:normal;font-weight:600;font-display:swap;src:url(' + A.poppins600 + ') format("woff2")}';
+      if (A.inter400) css += '@font-face{font-family:"Inter";font-style:normal;font-weight:400;font-display:swap;src:url(' + A.inter400 + ') format("woff2")}';
+      if (A.inter600) css += '@font-face{font-family:"Inter";font-style:normal;font-weight:600;font-display:swap;src:url(' + A.inter600 + ') format("woff2")}';
+      var st = document.createElement('style'); st.id = 'nl-estilo-fuentes'; st.textContent = css; document.head.appendChild(st);
+    }
+  }
+  function esc(s) { return String(s === null || s === undefined ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
+  /* Logo oficial como <img> data: URI. variante: 'blanco' (fondo morado) | 'color' (fondo claro). La zona de
+     respeto (½ de la altura) la aporta el margen del contenedor: alto h => padding >= h/2. */
+  function logo(variante, h) {
+    if (!A) return '';
+    var src = variante === 'blanco' ? A.logoBlanco : A.logo;
+    if (!src) return '';
+    return '<img class="nl-logo" src="' + src + '" alt="Consejo Nuevo León" style="height:' + (h || 44) + 'px;width:auto;display:block">';
+  }
+  /* Cabecera común: logo blanco sobre morado + título + subtítulo (la leyenda de _NLidentidad, tal cual). */
+  function cabecera(el, titulo, sub) {
+    el.innerHTML = '<div class="nl-cab">' + logo('blanco', 44) + '<div><h1 id="titulo">' + esc(titulo) + '</h1><p class="sub" id="subtitulo">' + esc(sub) + '</p></div></div>';
+  }
+  /* Bloque de atribución (intocable): logo CoNL + producto — módulo · "construido sobre el Simulador Fiscal CIEP v<motor>"
+     (tal cual de _NLidentidad, viaja en D.subtitulo) · capa NL-x.y.z · GitHub (enlace, no carga) · corrida · log · driver. */
+  function atribucion(D) {
+    var P = (D && D.procedencia) || {};
+    var repo = P.repositorio || '';
+    var h = '<div class="nl-atrib">' + logo('color', 36) + '<div>';
+    h += '<p class="nl-atrib-1"><strong>' + esc(D.producto || 'Simulador Fiscal NL') + '</strong>' + (D.titulo && D.producto && D.titulo.indexOf(D.producto) === 0 ? esc(D.titulo.slice(D.producto.length)) : '') + '</p>';
+    h += '<p class="nl-atrib-2">' + esc(D.subtitulo || '') + ' · capa <code>' + esc(P.version_capa_nl || '—') + '</code> · motor <code>' + esc(P.version_motor || '—') + '</code>' + (repo ? ' · <a href="' + esc(repo) + '" rel="noopener">GitHub ↗</a>' : '') + '</p>';
+    h += '<p class="nl-atrib-3">corrida ' + esc(P.generado_en || '—') + ' · log <code>' + esc(P.log || '—') + '</code> · ' + esc(P.driver || '') + (P.modo ? ' · modo <code>' + esc(P.modo) + '</code>' : '') + '</p>';
+    h += '</div></div>';
+    return h;
+  }
+  /* CSS común de cabecera/pie/tipografía: lo inyecta apply() para que las tres plantillas compartan la misma ropa. */
+  function cssComun() {
+    return 'body{font-family:var(--fuenteCuerpo)}h1,h2,.card .v{font-family:var(--fuenteTitulo)}' +
+      'table,.card .v,.card .n,.card .d,.tip,.nodo text,.tick{font-variant-numeric:tabular-nums}' +
+      'header{background:var(--nl);color:#fff;padding:0}.nl-cab{max-width:1240px;margin:0 auto;display:flex;align-items:center;gap:26px;padding:22px 28px}' +
+      '.nl-cab h1{margin:0;font-size:22px;font-weight:600;color:#fff}.nl-cab .sub{margin:4px 0 0;font-size:13px;opacity:.92}' +
+      '.nl-atrib{display:flex;align-items:flex-start;gap:20px;padding:18px 0 10px;border-top:3px solid var(--nl);margin-top:14px}' +
+      '.nl-atrib p{margin:2px 0}.nl-atrib-1{font-size:14px;color:var(--ink)}.nl-atrib-2{font-size:12.5px;color:var(--ink)}.nl-atrib-3{font-size:12px;color:var(--mut)}' +
+      '.nl-atrib a{color:var(--acento);text-decoration:underline;font-weight:600}' +
+      'footer{color:var(--mut)}footer a{color:var(--acento)}';
+  }
+  function applyAll() { apply(); if (!document.getElementById('nl-estilo-comun')) { var st = document.createElement('style'); st.id = 'nl-estilo-comun'; st.textContent = cssComun(); document.head.appendChild(st); } }
+  return { tokens: T, apply: applyAll, logo: logo, cabecera: cabecera, atribucion: atribucion, assets: A ? A.meta : null,
+    estado: 'identidad CoNL fijada (nl-estilo.md §6, 2026-10-04): tokens de conl.mx/PE 2040, RGB del BrandBook 2020; tipografía Poppins/Inter OFL embebida' };
 })();
