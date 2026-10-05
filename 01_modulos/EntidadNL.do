@@ -644,12 +644,14 @@ quietly {
 	"presentacion" "otrosk_nota" "en las tablas de incidencia AlCapital incluye OTROSK (SIM.do:436) y el total ImpAport lo excluye (SIM.do:440); se exporta la familia OTROSK por separado: AlTrabajo+AlCapital+AlConsumo-OTROSK = Total"
 	"presentacion" "deuda_tecnica" "extender scalarjson.ado con una clave canónica supuestos (bloque propio del contrato) para que los supuestos de incidencia de escenarios no dependan del bloque libre presentacion"
 	"presentacion" "participacion_nota" "Part<X>nl = Rec<X>nl/Rec<X>nac: fracción de la recaudación nacional de cada impuesto pagada por residentes de NL (incidencia micro); RecImp* = impuestos sin OTROSK ni cuotas IMSS, banda S1/S3 del ISR PM; insumo de FederacionNL.do"
+	"presentacion" "enigh_vintage" ""
 	"presentacion" "producto" ""
 	"presentacion" "subtitulo" ""
 	"presentacion" "version_capa_nl" ""
 	"presentacion" "version_motor" ""
 	end
 	* input no expande macros: la identidad (F1) se llena aquí, leída de los manifiestos *
+	replace texto = string(scalar(anioenigh)) if bloque == "presentacion" & clave == "enigh_vintage"
 	replace texto = `"`nl_producto'"' if bloque == "presentacion" & clave == "producto"
 	replace texto = `"`nl_subtitulo'"' if bloque == "presentacion" & clave == "subtitulo"
 	replace texto = `"`nl_vnl'"' if bloque == "presentacion" & clave == "version_capa_nl"

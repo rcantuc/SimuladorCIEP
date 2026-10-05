@@ -136,7 +136,7 @@ def eopf_fetch(fondos, csv_path, meta_path):
 	os.replace(tmp, csv_path)
 	fpath = csv_path[:-4] + "_fondos.csv"
 	with open(fpath + ".tmp", "w", encoding="utf-8", newline="") as f:
-		w = csv.writer(f)
+		w = csv.writer(f, lineterminator="\n")
 		w.writerow(["fondo", "nombre"])
 		for fo in pref:
 			w.writerow([fo, nombres[fo]])
@@ -197,7 +197,7 @@ def json_arr(path, arr_key, fields, out_csv):
 		raise RuntimeError("json_arr: %s no es un arreglo en %s" % (arr_key, path))
 	cols = fields.split()
 	with open(out_csv, "w", encoding="utf-8", newline="") as f:
-		w = csv.writer(f)
+		w = csv.writer(f, lineterminator="\n")
 		w.writerow(cols)
 		for o in arr:
 			row = []
@@ -223,7 +223,7 @@ def json_escalares(path, out_csv, prefijos):
 	pref = tuple(prefijos.split())
 	n = 0
 	with open(out_csv, "w", encoding="utf-8", newline="") as f:
-		w = csv.writer(f)
+		w = csv.writer(f, lineterminator="\n")
 		w.writerow(["nombre", "tipo", "valor"])
 		for k in sorted(esc):
 			if k.startswith(pref):

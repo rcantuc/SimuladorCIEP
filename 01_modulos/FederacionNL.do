@@ -1,4 +1,4 @@
-*! FederacionNL.do  v1.0.0 — La Federación y Nuevo León: transferencias, carga federal de residentes y balanza de flujos identificables (capa NL-0.4.0)
+*! FederacionNL.do  v1.1.0 (NL-0.4.1: participacionesAnual con vintage ENIGH; v1.0.0 NL-0.4.0) — La Federación y Nuevo León: transferencias, carga federal de residentes y balanza de flujos identificables (capa NL-0.4.0)
 *
 * QUÉ ES ESTO (DIAGNOSTICO_NL.md, anexo Federación↔NL; F0 aprobado 2026-10-04)
 *   Tercer endpoint de la capa NL. Tres preguntas:
@@ -122,9 +122,11 @@ end
 * Texto a JSON (comillas dobles -> simples; sin saltos) *
 capture program drop _nltxt
 program define _nltxt, rclass
-	local s `"`0'"'
+	gettoken s : 0				// quita las comillas compuestas envolventes del argumento
 	local s = subinstr(`"`s'"', `"""', "'", .)
 	local s = subinstr(`"`s'"', char(10), " ", .)
+	local s = subinstr(`"`s'"', char(13), "", .)
+	local s = trim(`"`s'"')
 	return local t `"`s'"'
 end
 
@@ -166,7 +168,7 @@ quietly {
 	save `E'
 	import delimited `"`eopf_fondos'"', clear varnames(1) encoding(utf-8) stringcols(1 2)
 	forvalues i = 1/`=_N' {
-		local nom`=fondo[`i']' `"`=nombre[`i']'"'
+		local nom`=fondo[`i']' `"`=subinstr(nombre[`i'], char(13), "", .)'"'
 	}
 	use `E', clear
 	* Último mes publicado (del total nacional de participaciones) *
@@ -453,11 +455,20 @@ noisily di in g "  Modo: " in y "`modo'" in g cond(`haysello', " (sello presente
 
 if `canal' {
 	** 3.1 EntidadNL: identidad y escalares **
-	_NLjsonget using `"`entjson'"', keys(anio_referencia presentacion.version_capa_nl presentacion.version_motor procedencia.generado_en)
+	_NLjsonget using `"`entjson'"', keys(anio_referencia presentacion.version_capa_nl presentacion.version_motor procedencia.generado_en presentacion.enigh_vintage criterios.momento_de_registro)
 	local ent_anio = `r(v1)'
 	local ent_vnl "`r(v2)'"
 	local ent_vmotor "`r(v3)'"
 	local ent_gen `"`r(v4)'"'
+	* Vintage ENIGH de la incidencia: clave presentacion.enigh_vintage (EntidadNL v1.3.1+) o, en
+	* corridas anteriores, el criterio momento_de_registro ("... ENIGH 2024 ...") del mismo JSON. *
+	local enigh ""
+	if "`r(ok5)'" == "1" & "`r(v5)'" != "" local enigh = "`r(v5)'"
+	else if regexm(`"`r(v6)'"', "ENIGH ([0-9][0-9][0-9][0-9])") local enigh = regexs(1)
+	if "`enigh'" == "" {
+		di as err "FederacionNL: no pudo determinarse el vintage ENIGH de la incidencia (ni presentacion.enigh_vintage ni criterios.momento_de_registro). No se exporta."
+		exit 459
+	}
 	if `ent_anio' != `aniope' | "`ent_vnl'" != "`nl_vnl'" | "`ent_vmotor'" != "`nl_vmotor'" {
 		di as err "FederacionNL: statajson_entidad-nl.json es de PE `ent_anio' / capa `ent_vnl' / motor `ent_vmotor'; la sesión es `aniope' / `nl_vnl' / `nl_vmotor'. Re-corre SIM.do + EntidadNL.do. No se exporta."
 		exit 459
@@ -585,14 +596,15 @@ if `canal' {
 	local escribir = 0
 	if !`haysello' local escribir = 1
 	if `haysello' {
-		_NLjsonget using `"`sello'"', keys(identidad.version_capa_nl identidad.version_motor identidad.anioPE identidad.entidadnl_sha256 identidad.generado_en)
+		_NLjsonget using `"`sello'"', keys(identidad.version_capa_nl identidad.version_motor identidad.anioPE identidad.entidadnl_sha256 identidad.generado_en identidad.enigh)
 		local s_vnl "`r(v1)'"
 		local s_vmotor "`r(v2)'"
 		local s_pe "`r(v3)'"
 		local s_sha "`r(v4)'"
 		local s_gen `"`r(v5)'"'
+		local s_enigh "`r(v6)'"
 		local difs = 0
-		if "`s_vnl'" != "`nl_vnl'" | "`s_vmotor'" != "`nl_vmotor'" | "`s_pe'" != "`aniope'" | "`s_sha'" != "`ent_sha'" local ++difs
+		if "`s_vnl'" != "`nl_vnl'" | "`s_vmotor'" != "`nl_vmotor'" | "`s_pe'" != "`aniope'" | "`s_sha'" != "`ent_sha'" | "`s_enigh'" != "`enigh'" local ++difs
 		quietly {
 			_NLjsonarr using `"`sello'"', array(participaciones) fields(impuesto part partS1 partS2 partS3 recNac recNL)
 			rename (part partS1 partS2 partS3 recNac recNL) (s_part s_partS1 s_partS2 s_partS3 s_recNac s_recNL)
@@ -635,7 +647,7 @@ if `canal' {
 		file write `sh' "{" _n
 		file write `sh' `"  `q'esquema`q': `q'nl.federacion-sello/v1`q',"' _n
 		file write `sh' `"  `q'nota`q': `q'Extracto SELLADO del canal del motor para el endpoint Federación↔NL (arquitectura B). Lo escribe FederacionNL.do en el Mac desde statajson_entidad-nl.json, master/LIF.dta y master/PEF.dta; el runner lo consume solo si versión de capa, de motor y anioPE coinciden con su sesión. Ningún número se teclea.`q',"' _n
-		file write `sh' `"  `q'identidad`q': {`q'version_capa_nl`q': `q'`nl_vnl'`q', `q'version_motor`q': `q'`nl_vmotor'`q', `q'anioPE`q': `aniope', `q'aniovp`q': `aniovp', `q'generado_en`q': `q'`sello_gen'`q', `q'entidadnl_generado_en`q': `q'`ent_gen'`q', `q'entidadnl_sha256`q': `q'`ent_sha'`q', `q'lif_dta_mtime`q': `q'`lif_mtime'`q', `q'lif_observado_hasta`q': `lif_ult', `q'pef_dta_mtime`q': `q'`pef_mtime'`q', `q'pef_cp`q': `q'`pef_cp'`q', `q'pef_pef`q': `q'`pef_pef'`q', `q'pef_ppef`q': `q'`pef_ppef'`q'},"' _n
+		file write `sh' `"  `q'identidad`q': {`q'version_capa_nl`q': `q'`nl_vnl'`q', `q'version_motor`q': `q'`nl_vmotor'`q', `q'anioPE`q': `aniope', `q'aniovp`q': `aniovp', `q'enigh`q': `enigh', `q'generado_en`q': `q'`sello_gen'`q', `q'entidadnl_generado_en`q': `q'`ent_gen'`q', `q'entidadnl_sha256`q': `q'`ent_sha'`q', `q'lif_dta_mtime`q': `q'`lif_mtime'`q', `q'lif_observado_hasta`q': `lif_ult', `q'pef_dta_mtime`q': `q'`pef_mtime'`q', `q'pef_cp`q': `q'`pef_cp'`q', `q'pef_pef`q': `q'`pef_pef'`q', `q'pef_ppef`q': `q'`pef_ppef'`q'},"' _n
 		quietly use `PART', clear
 		file write `sh' `"  `q'participaciones`q': ["' _n
 		forvalues i = 1/`=_N' {
@@ -681,7 +693,12 @@ if `canal' {
 }
 else {
 	** 3.5 Modo sello (runner): identidad compatible o abortar **
-	_NLjsonget using `"`sello'"', keys(identidad.version_capa_nl identidad.version_motor identidad.anioPE identidad.generado_en identidad.entidadnl_generado_en identidad.entidadnl_sha256 identidad.lif_dta_mtime identidad.lif_observado_hasta identidad.pef_dta_mtime identidad.pef_cp identidad.pef_pef identidad.pef_ppef)
+	_NLjsonget using `"`sello'"', keys(identidad.version_capa_nl identidad.version_motor identidad.anioPE identidad.generado_en identidad.entidadnl_generado_en identidad.entidadnl_sha256 identidad.lif_dta_mtime identidad.lif_observado_hasta identidad.pef_dta_mtime identidad.pef_cp identidad.pef_pef identidad.pef_ppef identidad.enigh)
+	local enigh "`r(v13)'"
+	if "`enigh'" == "" {
+		di as err "FederacionNL: el sello no trae identidad.enigh (vintage de la incidencia); hay que re-sellar en el Mac (NL-0.4.1). No se exporta."
+		exit 459
+	}
 	local s_vnl "`r(v1)'"
 	local s_vmotor "`r(v2)'"
 	local s_pe "`r(v3)'"
@@ -1064,7 +1081,7 @@ file write `fh' `"  `q'procedencia`q': {"' _n
 file write `fh' `"    `q'version_motor`q': `q'`nl_vmotor'`q',"' _n
 file write `fh' `"    `q'version_capa_nl`q': `q'`nl_vnl'`q',"' _n
 file write `fh' `"    `q'repositorio`q': `q'`nl_repo'`q',"' _n
-file write `fh' `"    `q'driver`q': `q'01_modulos/FederacionNL.do v1.0.0`q',"' _n
+file write `fh' `"    `q'driver`q': `q'01_modulos/FederacionNL.do v1.1.0`q',"' _n
 file write `fh' `"    `q'log`q': `q'`logfile'`q',"' _n
 file write `fh' `"    `q'generado_en`q': `q'`sellocorrida'`q',"' _n
 file write `fh' `"    `q'modo`q': `q'`modo'`q',"' _n
@@ -1098,6 +1115,7 @@ file write `fh' `"      `q'poblacion`q': `q'per cápita con población CONAPO a 
 file write `fh' `"      `q'anio_parcial`q': `q'el año en curso lleva EOFP acumulado al mes `mes1' (tipoRecibe parcial) y recaudación acumulada (tipoPaga parcial): no se calcula balanza observada; se calcula balanza del Paquete (PEF aprobado vs LIF)`q',"' _n
 file write `fh' `"      `q'paquete`q': `q'año de política: recibe = PPEF/PEF por entidad (PEF.dta, divFEDE); paga = Part<X>nl × ILIF; etiquetado Paquete`q',"' _n
 file write `fh' `"      `q'anio_referencia`q': `q'último año con ambos lados observados completos (12 meses EOFP y recaudación a diciembre)`q',"' _n
+file write `fh' `"      `q'participaciones_por_anio`q': `q'participaciones estimadas con ENIGH `enigh' (corrida PE `aniope'), supuestas constantes en todos los años (metodo = constante); el arreglo participacionesAnual lleva una fila por año con enigh/metodo para que, cuando existan estimaciones por ENIGH bienal, cambien los datos y no el HTML`q',"' _n
 file write `fh' `"      `q'ieps_petrolero_negativo`q': `q'cuando el IEPS a gasolinas es negativo (estímulo fiscal) el paga de ese renglón es negativo ese año; se declara, no se trunca`q'"' _n
 file write `fh' "    }" _n
 file write `fh' "  }," _n
@@ -1171,6 +1189,36 @@ forvalues i = 1/`=_N' {
 }
 file write `fh' "  ]," _n
 
+** 6.4b Participaciones por año (estructura estable: hoy constantes = corrida vigente, con su vintage ENIGH) **
+quietly {
+	use `PART', clear
+	foreach x in `impuestos' `extras' {
+		summarize part if impuesto == "`x'", meanonly
+		local pa`x' = r(mean)
+	}
+	summarize partS1 if impuesto == "ISRPM", meanonly
+	local paS1 = r(mean)
+	summarize partS2 if impuesto == "ISRPM", meanonly
+	local paS2 = r(mean)
+	summarize partS3 if impuesto == "ISRPM", meanonly
+	local paS3 = r(mean)
+	use `T', clear
+}
+file write `fh' `"  `q'participacionesAnual`q': ["' _n
+forvalues i = 1/`=_N' {
+	file write `fh' `"    {`q'anio`q': `=anio[`i']', `q'enigh`q': `enigh', `q'metodo`q': `q'constante`q'"'
+	foreach x in `impuestos' `extras' {
+		_nlnum "`pa`x''"
+		file write `fh' `", `q'`x'`q': `r(n)'"'
+	}
+	foreach sfx in S1 S2 S3 {
+		_nlnum "`pa`sfx''"
+		file write `fh' `", `q'ISRPM`sfx'`q': `r(n)'"'
+	}
+	file write `fh' "}`=cond(`i' < _N, ",", "")'" _n
+}
+file write `fh' "  ]," _n
+
 ** 6.5 Series: anual **
 quietly use `T', clear
 file write `fh' `"  `q'anual`q': ["' _n
@@ -1178,7 +1226,7 @@ local vars nmeses nlR28 nlR33 nlCD nlCR nlR23 nlPSS nlTot nacR28 nacR33 nacCD na
 	anclaR28 anclaR33 anclaConv anclaSubs anclaSalud anclaTot anclaNacR28 anclaNacR33 anclaNacConv anclaNacSubs anclaNacSalud anclaNacTot rdR28 rdR33 difConv ///
 	recibePaq recibePaqNac mesPaga pagaISRAS pagaISRPF pagaISRPM pagaIVA pagaIEPSNP pagaIEPSP pagaISAN pagaIMPORT pagaCUOTAS pagaOTROSK pagaS0 pagaS1 pagaS3 ///
 	pagaLifISRAS pagaLifISRPF pagaLifISRPM pagaLifIVA pagaLifIEPSNP pagaLifIEPSP pagaLifISAN pagaLifIMPORT pagaLifCUOTAS pagaLifOTROSK pagaLifS0 pagaLifS1 pagaLifS3 ///
-	recNacS0 recNacLifS0 balanzaS0 balanzaS1 balanzaS3 balanzaPaqS0 balanzaPaqS1 balanzaPaqS3 ///
+	recNacS0 recNacLifS0 recNacObsISRAS recNacObsISRPF recNacObsISRPM recNacObsIVA recNacObsIEPSNP recNacObsIEPSP recNacObsISAN recNacObsIMPORT recNacObsCUOTAS recNacObsOTROSK balanzaS0 balanzaS1 balanzaS3 balanzaPaqS0 balanzaPaqS1 balanzaPaqS3 ///
 	pobNL pobNac pibeNnl pibeNnac deflatornl deflatornac partRecibe partPaga lugarR28 lugarR33 lugarTot
 foreach v of local nivelesNL {
 	local vars `vars' `v'Pc `v'R `v'PIBE

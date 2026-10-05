@@ -18,6 +18,9 @@
   color SOLO desde NLEstilo (nl-datos.js), nunca aquí.
   Estado por URL: #vista=balanza|recibe|paga&reg=pc|macro&medida=nominal|real|pibe&esc=S0|S1|S3
                   &anio=AAAA&ini=AAAA&fin=AAAA&cmp=1|0&modo=grafica|tabla
+  Layout (NL-0.4.1): zona fija = identidad + alcance + parámetros globales (registro, medida, escenario, año) + tarjetas;
+  los botones de sección y los controles de vista viven pegados a los paneles, que van apilados a ancho completo.
+  El Sankey es navegable por año: participacionesAnual trae las participaciones por año con enigh/metodo.
 -->
 <style>
 :root{--nl:#5a2148;--nac:#7f7f7f;--banda:rgba(90,33,72,.25);--recibe:#00b1af;--recibeTexto:#008381;--paga:#e76b24;--pagaTexto:#c75108;--paquete:#fbb818;--proy:rgba(90,33,72,.55);--nowcast:rgba(90,33,72,.7);--acento:#872675;--acento2:#00b1af;--alerta:#d52b4d;--h:#0a6db6;--m:#f27794;--ink:#212121;--mut:#666666;--line:#d0d0d0;--bg:#f6f6f6;--card:#fff;--fuenteTitulo:"Poppins",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;--fuenteCuerpo:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
@@ -52,8 +55,9 @@ main{max-width:1240px;margin:0 auto;padding:18px 20px 30px}
 .card .d{font-size:12px;color:var(--mut);margin-top:3px}
 .card .tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:10px;background:#eee;color:var(--ink);margin-left:6px;vertical-align:middle}
 .tag.paq{background:var(--paquete)}.tag.par{background:var(--proy)}
-.charts{display:grid;grid-template-columns:1fr 1fr;gap:14px}.charts.tabla,.charts.uno{grid-template-columns:1fr}.chart{min-width:0}
-@media (max-width:900px){.charts{grid-template-columns:1fr}}
+.charts{display:grid;grid-template-columns:1fr;gap:14px}.chart{min-width:0}
+.seccion{margin-top:6px;border-top:1px solid var(--line);padding-top:14px}
+.controls.vista{background:#fbfbfb}.ctl.nota{font-size:12.5px;color:var(--mut);align-self:center}
 .chart h2{margin:0 0 6px;font-size:15px;font-weight:600}
 .chart .cap{font-size:12px;color:var(--mut);margin:0 0 6px;min-height:16px}
 .chart .bar{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
@@ -90,13 +94,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
 <main>
   <div class="alcance" id="alcance"></div>
 
-  <div class="tabs" id="tabs">
-    <button data-v="balanza" class="on">La balanza</button>
-    <button data-v="recibe">¿Cuánto recibe NL?</button>
-    <button data-v="paga">¿Cuánto pagan los neoloneses?</button>
-  </div>
-
-  <section class="panel controls">
+  <section class="panel controls global">
     <div class="ctl">
       <label>Registro</label>
       <div class="seg reg" id="reg"><button data-r="pc" class="on">Por habitante</button><button data-r="macro">Macro</button></div>
@@ -106,47 +104,58 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
       <select id="medida"><option value="nominal">Pesos corrientes (mmdp)</option><option value="real">Pesos constantes (mmdp)</option><option value="pibe">% del PIBE de NL</option></select>
     </div>
     <div class="ctl">
-      <label for="anio">Año (tarjetas, Sankey y tablas)</label>
-      <select id="anio"></select>
-    </div>
-    <div class="ctl">
       <label>Escenario ISR PM</label>
       <div class="seg" id="esc"><button data-e="S1">S1</button><button data-e="S0" class="on">S0 vigente</button><button data-e="S3">S3</button></div>
     </div>
     <div class="ctl">
-      <label>Rango de años (series)</label>
-      <div class="rng"><input type="number" id="ini"> <span>–</span> <input type="number" id="fin"></div>
-    </div>
-    <div class="ctl">
-      <label>Comparativo</label>
-      <div class="chk"><input type="checkbox" id="cmp" checked><label for="cmp" style="text-transform:none;letter-spacing:0;font-size:14px;color:var(--ink);margin:0">Mostrar nacional</label></div>
-    </div>
-    <div class="ctl">
-      <label>Modo</label>
-      <div class="seg" id="modo"><button data-m="grafica" class="on">Gráfica</button><button data-m="tabla">Tabla</button></div>
+      <label for="anio">Año de las tarjetas, el Sankey y las tablas</label>
+      <select id="anio"></select>
     </div>
   </section>
 
   <section class="cards" id="cards"></section>
 
-  <section class="charts" id="charts">
-    <div class="panel chart" id="c1">
-      <div class="bar"><h2 id="c1-title"></h2><div class="tools" id="c1-tools"></div></div>
-      <p class="cap" id="c1-cap"></p>
-      <div id="c1-body"></div>
-      <div class="legend" id="c1-leg"></div>
-      <p class="frase" id="c1-frase"></p>
-      <div class="tip" id="c1-tip"></div>
+  <!-- Sección: los botones de vista viven pegados a lo que controlan -->
+  <div class="seccion">
+    <div class="tabs" id="tabs">
+      <button data-v="balanza" class="on">La balanza</button>
+      <button data-v="recibe">¿Cuánto recibe NL?</button>
+      <button data-v="paga">¿Cuánto pagan los neoloneses?</button>
     </div>
-    <div class="panel chart" id="c2">
-      <div class="bar"><h2 id="c2-title"></h2><div class="tools" id="c2-tools"></div></div>
-      <p class="cap" id="c2-cap"></p>
-      <div id="c2-body"></div>
-      <div class="legend" id="c2-leg"></div>
-      <p class="frase" id="c2-frase"></p>
-      <div class="tip" id="c2-tip"></div>
-    </div>
-  </section>
+    <section class="panel controls vista">
+      <div class="ctl">
+        <label>Rango de años (series)</label>
+        <div class="rng"><input type="number" id="ini"> <span>–</span> <input type="number" id="fin"></div>
+      </div>
+      <div class="ctl">
+        <label>Comparativo</label>
+        <div class="chk"><input type="checkbox" id="cmp" checked><label for="cmp" style="text-transform:none;letter-spacing:0;font-size:14px;color:var(--ink);margin:0">Mostrar nacional</label></div>
+      </div>
+      <div class="ctl">
+        <label>Modo</label>
+        <div class="seg" id="modo"><button data-m="grafica" class="on">Gráfica</button><button data-m="tabla">Tabla</button></div>
+      </div>
+      <div class="ctl nota" id="nota-anio"></div>
+    </section>
+    <section class="charts" id="charts">
+      <div class="panel chart" id="c1">
+        <div class="bar"><h2 id="c1-title"></h2><div class="tools" id="c1-tools"></div></div>
+        <p class="cap" id="c1-cap"></p>
+        <div id="c1-body"></div>
+        <div class="legend" id="c1-leg"></div>
+        <p class="frase" id="c1-frase"></p>
+        <div class="tip" id="c1-tip"></div>
+      </div>
+      <div class="panel chart" id="c2">
+        <div class="bar"><h2 id="c2-title"></h2><div class="tools" id="c2-tools"></div></div>
+        <p class="cap" id="c2-cap"></p>
+        <div id="c2-body"></div>
+        <div class="legend" id="c2-leg"></div>
+        <p class="frase" id="c2-frase"></p>
+        <div class="tip" id="c2-tip"></div>
+      </div>
+    </section>
+  </div>
 </main>
 <footer id="pie"></footer>
 
@@ -173,7 +182,10 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
   var f1 = new Intl.NumberFormat('es-MX', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
   var f2 = new Intl.NumberFormat('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   var MES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
-  var A = D.anual, SF = D.subfondos || [], M = D.mensual || [], PART = D.participaciones || [];
+  var A = D.anual, SF = D.subfondos || [], M = D.mensual || [], PART = D.participaciones || [], PA = D.participacionesAnual || [];
+  var byPA = {}; PA.forEach(function (r) { byPA[r.anio] = r; });
+  function partAnio(anio, k) { var r = byPA[anio]; if (r && r[k] !== undefined && r[k] !== null) return r[k]; var p = PART.filter(function (x) { return x.impuesto === k; })[0]; return p ? p.part : null; }
+  function notaPart(anio) { var r = byPA[anio]; if (!r) return ''; return 'participaciones estimadas con ENIGH ' + r.enigh + (r.metodo === 'constante' ? ', supuestas constantes' : ', método ' + r.metodo) + (anio !== D.anio_politica ? ' (corrida PE ' + D.anio_politica + ' aplicada a la recaudación observada de ' + anio + ')' : ''); }
   var byY = {}; A.forEach(function (r) { byY[r.anio] = r; });
   var A0 = A[0].anio, A1 = A[A.length - 1].anio;
   var FONDOS = ['R28', 'R33', 'CD', 'CR', 'R23', 'PSS'];
@@ -283,6 +295,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
     (P.fuentes || []).forEach(function (f) { L.push('# Fuente ' + f.id + ': ' + f.fuente + (f.periodo_final ? ' · periodo final ' + f.periodo_final : '') + (f.last_modified ? ' · Last-Modified ' + f.last_modified : '') + (f.vintage ? ' · vintage ' + f.vintage : '') + (f.generado_en ? ' · generado ' + f.generado_en : '') + (f.sha256 ? ' · sha256 ' + f.sha256 : '')); });
     L.push('# Supuesto: ' + ((P.supuestos || {}).incidencia_fija || '') + ' · deflactor: ' + ((P.supuestos || {}).deflactor || ''));
     L.push('# Registro: ' + (S.reg === 'pc' ? 'por habitante' : 'macro, ' + S.medida) + ' · escenario ' + S.esc + ' · año ' + S.anio + ' · rango ' + S.ini + '-' + S.fin + (extra ? ' · ' + extra : ''));
+    if (notaPart(S.anio)) L.push('# Lado paga del año ' + S.anio + ': ' + notaPart(S.anio));
     L.push('# Tipos: observado = año completo publicado; parcial = acumulado al mes ' + (D.mes_ultimo || '') + '; Paquete = PEF/PPEF vs LIF/ILIF; valores del canal sin recálculo');
     return L;
   }
@@ -312,16 +325,16 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
   function nomSub(clave) { var d = (DEF.subfondos || []).filter(function (x) { return x.clave === clave; })[0]; return d ? d.nombre : clave; }
   function colsPaga() {
     var u = unit();
-    return [['pref', '', String], ['concepto', 'Concepto', String], ['v', S.anio + ' (' + u + ')', function (v) { return v === null ? '—' : fmtv(v); }], ['part', 'Participación de NL (%)', function (v) { return v === null ? '' : f2.format(v); }], ['nota', 'Nota', String]];
+    return [['pref', '', String], ['concepto', 'Concepto', String], ['v', S.anio + ' (' + u + ')', function (v) { return v === null ? '—' : fmtv(v); }], ['part', 'Participación de NL (%) · ' + ((byPA[S.anio] || {}).enigh ? 'ENIGH ' + byPA[S.anio].enigh : ''), function (v) { return v === null ? '' : f2.format(v); }], ['nota', 'Nota', String]];
   }
   function rowsPaga() {
     var r = byY[S.anio]; if (!r) return [];
     var v = vals(r), pre = v.obs ? 'paga' : 'pagaLif', s = suf(), out = [], i = escIdx();
-    IMP.forEach(function (k) { var p = PART.filter(function (x) { return x.impuesto === k; })[0]; out.push({ pref: '(+)', concepto: ILAB[k] || k, v: get(r, pre + k), part: p ? p.part * 100 : null, nota: k === 'ISRPM' ? 'S0; banda [S1, S3] ' + bandTxt(v.paga.map(function (b, j) { return b - v.paga[1] + get(r, pre + 'ISRPM'); })) : '', cls: '' }); });
+    IMP.forEach(function (k) { var pk = partAnio(S.anio, k); out.push({ pref: '(+)', concepto: ILAB[k] || k, v: get(r, pre + k), part: pk === null ? null : pk * 100, nota: k === 'ISRPM' ? 'S0; banda [S1, S3] ' + bandTxt(v.paga.map(function (b, j) { return b - v.paga[1] + get(r, pre + 'ISRPM'); })) : '', cls: '' }); });
     out.push({ pref: '(=)', concepto: 'Impuestos federales pagados por residentes de NL — ' + S.esc, v: v.paga[i], part: r.partPaga !== null && v.obs ? r.partPaga : null, nota: 'banda [S1, S3] ' + bandTxt(v.paga), cls: 'r-tot' });
-    var pc = PART.filter(function (x) { return x.impuesto === 'CUOTAS'; })[0], po = PART.filter(function (x) { return x.impuesto === 'OTROSK'; })[0];
-    out.push({ pref: '(·)', concepto: 'Cuotas IMSS — aparte, no sumadas', v: v.cuotas, part: pc ? pc.part * 100 : null, nota: 'contraparte de gasto (IMSS) fuera del alcance', cls: 'r-aparte' });
-    out.push({ pref: '(·)', concepto: 'Productos, derechos y aprovechamientos (OTROSK) — aparte, no sumados', v: get(r, (v.obs ? 'paga' : 'pagaLif') + 'OTROSK'), part: po ? po.part * 100 : null, nota: 'no tributarios / petroleros no atribuibles', cls: 'r-aparte' });
+    var pc = partAnio(S.anio, 'CUOTAS'), po = partAnio(S.anio, 'OTROSK');
+    out.push({ pref: '(·)', concepto: 'Cuotas IMSS — aparte, no sumadas', v: v.cuotas, part: pc === null ? null : pc * 100, nota: 'contraparte de gasto (IMSS) fuera del alcance', cls: 'r-aparte' });
+    out.push({ pref: '(·)', concepto: 'Productos, derechos y aprovechamientos (OTROSK) — aparte, no sumados', v: get(r, (v.obs ? 'paga' : 'pagaLif') + 'OTROSK'), part: po === null ? null : po * 100, nota: 'no tributarios / petroleros no atribuibles', cls: 'r-aparte' });
     return out;
   }
   function tools(id, data, titulo, name) {
@@ -356,9 +369,13 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
     var left = IMP.map(function (k) { var x = r[pre + k]; if (k === 'ISRPM') x = r[pre + k] - r[pre + 'S0'] + r[pre + S.esc]; return { k: k, lab: ILAB[k] || k, v: x, c: CI[k] }; }).filter(function (n) { return n.v !== null && n.v !== undefined && n.v !== 0; });
     var recibeK = v.obs ? FONDOS.map(function (k) { return { k: k, lab: FLAB[k], v: r['nl' + k], c: CF[k] }; }) : [{ k: 'R28', lab: FLAB.R28, v: r.anclaR28, c: CF.R28 }, { k: 'R33', lab: FLAB.R33, v: r.anclaR33, c: CF.R33 }, { k: 'Conv', lab: 'Convenios', v: r.anclaConv, c: CF.CD }, { k: 'Subs', lab: 'Subsidios R23', v: r.anclaSubs, c: CF.R23 }, { k: 'Salud', lab: 'Salud federalizado', v: r.anclaSalud, c: CF.PSS }];
     recibeK = recibeK.filter(function (n) { return n.v !== null && n.v !== undefined && n.v !== 0; });
-    var totPaga = left.reduce(function (a, n) { return a + n.v; }, 0), totRec = recibeK.reduce(function (a, n) { return a + n.v; }, 0);
-    var neto = totPaga - totRec; /* > 0: NL aporta más de lo que recibe */
-    var right = recibeK.slice(); right.push({ k: 'neto', lab: (PR.nodo_saldo || 'aportación neta en flujos identificables'), v: Math.abs(neto), c: TK.nl, neto: true });
+    /* Un impuesto NEGATIVO (IEPS a gasolinas con estímulo fiscal: 2013, 2014, 2022) es un flujo de la Federación hacia los
+       residentes: se dibuja a la derecha como devolución, no como entrada negativa; el saldo lo absorbe (total paga S0 ya lo incluye). */
+    var devol = left.filter(function (n) { return n.v < 0; }).map(function (n) { return { k: n.k, lab: n.lab.replace(' (gasolinas)', '') + ': estímulo fiscal (devolución)', v: -n.v, c: shade(TK.paga, 0.45), devol: true }; });
+    left = left.filter(function (n) { return n.v > 0; });
+    var totPaga = left.reduce(function (a, n) { return a + n.v; }, 0), totRec = recibeK.reduce(function (a, n) { return a + n.v; }, 0), totDev = devol.reduce(function (a, n) { return a + n.v; }, 0);
+    var neto = totPaga - totDev - totRec; /* > 0: NL aporta más de lo que recibe */
+    var right = recibeK.concat(devol); right.push({ k: 'neto', lab: (PR.nodo_saldo || 'aportación neta en flujos identificables'), v: Math.abs(neto), c: TK.nl, neto: true });
     var W = 1180, H = 600, padT = 30, padB = 70, nodeW = 14, gap = 10, colX = [300, 580, 850];
     var s1 = r[pre + 'S1'] - r[pre + 'S0'] + r[pre + 'ISRPM'], s3 = r[pre + 'S3'] - r[pre + 'S0'] + r[pre + 'ISRPM'];
     var isrSel = left.filter(function (n) { return n.k === 'ISRPM'; })[0];
@@ -375,7 +392,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
     var yin = mid.y0, yout = mid.y0;
     var val = function (x) { return pc ? f0.format(x / den) + ' MXN/hab' : f1.format(x / 1e6) + ' mmdp'; };
     left.forEach(function (n) { o += link(n.x, n.y0, n.h, mid.x, yin, n.h, TK.paga, n.lab + ' → Federación: ' + val(n.v)); yin += n.h; });
-    right.forEach(function (n) { o += link(mid.x, yout, n.h, n.x, n.y0, n.h, n.neto ? TK.nl : TK.recibe, 'Federación → ' + n.lab + ': ' + val(n.v)); yout += n.h; });
+    right.forEach(function (n) { o += link(mid.x, yout, n.h, n.x, n.y0, n.h, n.neto ? TK.nl : (n.devol ? shade(TK.paga, 0.45) : TK.recibe), 'Federación → ' + n.lab + ': ' + val(n.v)); yout += n.h; });
     function labelY(nodes) { var last = -1e9; nodes.forEach(function (n) { var yc = n.y0 + n.h / 2 + 4; if (yc - last < 14) yc = last + 14; n.ly = yc; last = yc; }); }
     labelY(left); labelY(right);
     left.forEach(function (n) { o += '<g class="nodo"><rect x="' + n.x + '" y="' + n.y0 + '" width="' + nodeW + '" height="' + Math.max(n.h, 1) + '" fill="' + n.c + '"/><text x="' + (n.x - 8) + '" y="' + n.ly + '" text-anchor="end">' + esc(n.lab) + ' <tspan class="v">' + esc(val(n.v)) + '</tspan></text></g>'; });
@@ -388,10 +405,10 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
     var cuotasNom = r[pre + 'CUOTAS'];
     if (cuotasNom !== null && cuotasNom !== undefined) { var cy = H - padB + 18; o += '<line x1="' + (colX[0] + nodeW) + '" y1="' + cy + '" x2="' + colX[1] + '" y2="' + cy + '" stroke="var(--mut)" stroke-dasharray="6 4" stroke-width="2"/><text class="lab2" x="' + (colX[0] - 8) + '" y="' + (cy + 4) + '" text-anchor="end">Cuotas IMSS (aparte, no sumadas) ' + esc(val(cuotasNom)) + '</text><text class="lab2" x="' + (colX[1] + 6) + '" y="' + (cy + 4) + '">→ IMSS: contraparte de gasto fuera del alcance</text>'; }
     o += '<text class="lab2" x="40" y="' + (H - 20) + '">Izquierda: impuestos federales pagados por residentes de NL (incidencia; escenario ' + S.esc + '). Derecha: gasto federalizado pagado a NL' + (v.obs ? ' (EOFP)' : ' (' + (r.fuenteAncla || 'PPEF') + ' por entidad)') + ' y el saldo.</text>';
-    o += '<text class="lab2" x="40" y="' + (H - 6) + '">Halo punteado = banda [S1, S3] del ISR PM: la columna izquierda reserva el espacio de S3; el nodo y los flujos usan el escenario elegido.</text>';
+    o += '<text class="lab2" x="40" y="' + (H - 6) + '">Halo punteado = banda [S1, S3] del ISR PM: la columna izquierda reserva el espacio de S3; el nodo y los flujos usan el escenario elegido.' + (devol.length ? ' Un impuesto negativo (estímulo al IEPS de gasolinas) se dibuja a la derecha como devolución; el nodo Federación suma las entradas brutas.' : '') + '</text>';
     o += '</svg>';
     document.getElementById(id + '-body').innerHTML = o;
-    return { totPaga: totPaga, totRec: totRec, neto: neto };
+    return { totPaga: totPaga, totRec: totRec, totDev: totDev, neto: neto };
   }
 
   /* ---------- barras con banda (serie de la balanza) ----------
@@ -460,12 +477,11 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
     cards();
     var r = byY[S.anio], v = vals(r);
     var c1t, c1cap, c2t, c2cap, c1data, c2data, c1name, c2name;
-    document.getElementById('charts').classList.toggle('tabla', S.modo === 'tabla');
-    document.getElementById('charts').classList.toggle('uno', S.vista === 'balanza' && S.modo === 'grafica');
     document.getElementById('c1-frase').textContent = ''; document.getElementById('c2-frase').textContent = '';
+    document.getElementById('nota-anio').textContent = 'Año seleccionado: ' + S.anio + (v.obs ? ' (observado)' : ' (' + v.etiqueta + ')') + ' · ' + notaPart(S.anio) + '.';
     if (S.vista === 'balanza') {
       c1t = 'Ida y vuelta: lo que pagan los neoloneses y lo que regresa como gasto federalizado — ' + S.anio + (v.obs ? '' : ' (' + v.etiqueta + ')');
-      c1cap = 'Sankey de flujos identificables. El nodo "' + (PR.nodo_saldo || 'aportación neta en flujos identificables') + '" cierra la cuenta: es lo que NL aporta a la Federación por encima de lo que recibe por estos fondos. Registro: ' + (S.reg === 'pc' ? 'MXN por habitante (los anchos no cambian)' : 'mmdp') + '.';
+      c1cap = 'Sankey de flujos identificables, navegable por año (selector arriba). El nodo "' + (PR.nodo_saldo || 'aportación neta en flujos identificables') + '" cierra la cuenta: es lo que NL aporta a la Federación por encima de lo que recibe por estos fondos. Lado recibe: observado del año (EOFP). Lado paga: ' + notaPart(S.anio) + '. Registro: ' + (S.reg === 'pc' ? 'MXN por habitante (los anchos no cambian)' : 'mmdp') + '.';
       c1data = function () { return { cols: colsPaga(), rows: rowsPaga(), extra: 'tabla de conciliación del lado paga', rowClass: function (x) { return x.cls || ''; } }; }; c1name = 'balanza-sankey';
       if (S.modo === 'grafica') { var sk = sankey('c1', r); legend('c1', [['Impuestos pagados por residentes de NL', 'background:' + TK.paga], ['Gasto federalizado pagado a NL', 'background:' + TK.recibe], [cap1(PR.nodo_saldo || 'aportación neta'), 'background:' + TK.nl], ['Banda [S1, S3] del ISR PM', 'background:var(--banda);border:1px dashed var(--nl)']]); }
       c2t = 'La aportación neta de Nuevo León en el tiempo'; c2cap = 'Recibe − paga por año (barra = S0; franja = banda [S1, S3]). Observado hasta el último año con ambos lados completos; después, Paquete (PEF/PPEF vs. LIF/ILIF) y año en curso atenuados. Negativo = NL aporta más de lo que recibe.';
@@ -510,11 +526,12 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
       if (!(r.pagaS1 <= r.pagaS0 && r.pagaS0 <= r.pagaS3)) bad.push('orden S1 ≤ S0 ≤ S3'); else ok.push('S1 ≤ S0 ≤ S3');
       var pIsr = PART.filter(function (x) { return x.impuesto === 'ISRPM'; })[0];
       if (pIsr) { chk('Part ISRPM = recNL/recNac', pIsr.part, pIsr.recNL / pIsr.recNac); }
+      if (byPA[C.anioRefFed] && pIsr) { chk('participacionesAnual[ref].ISRPM = corrida', byPA[C.anioRefFed].ISRPM, pIsr.part); chk('paga ISRPM(ref) = part(ref) × recaudación nacional', r.pagaISRPM, byPA[C.anioRefFed].ISRPM * r.recNacObsISRPM); }
     }
     var p = byY[C.anioPEFed];
     if (p) { chk('balanzaPES0NL = PPEF − ILIF', C.balanzaPES0NL, p.recibePaq - p.pagaLifS0); chk('recibePENL = Σ ancla PPEF', C.recibePENL, (p.anclaR28 || 0) + (p.anclaR33 || 0) + (p.anclaConv || 0) + (p.anclaSubs || 0) + (p.anclaSalud || 0)); }
     /* Σ de los enlaces del Sankey = totales de cada lado (año de referencia, S0) */
-    if (r) { var totL = IMP.reduce(function (a, k) { return a + (r['paga' + k] || 0); }, 0), totR = FONDOS.reduce(function (a, k) { return a + (r['nl' + k] || 0); }, 0) + Math.abs(r.nlTot - r.pagaS0); chk('Sankey: Σ entradas = Σ salidas', totL, totR); }
+    if (r) { var totL = IMP.reduce(function (a, k) { return a + Math.max(r['paga' + k] || 0, 0); }, 0), totDev = IMP.reduce(function (a, k) { return a + Math.max(-(r['paga' + k] || 0), 0); }, 0), totR = FONDOS.reduce(function (a, k) { return a + (r['nl' + k] || 0); }, 0) + totDev + Math.abs(r.nlTot - r.pagaS0); chk('Sankey: Σ entradas = Σ salidas', totL, totR); }
     var h = '';
     h += '<p><strong>Alcance:</strong> ' + esc(AL.leyenda || '') + ' <strong>Excluye:</strong> ' + esc(AL.excluye || '') + '</p>';
     h += '<p><strong>Fuentes:</strong></p><ul style="margin:2px 0 6px 18px;padding:0">' + (P.fuentes || []).map(function (f) { return '<li><code>' + esc(f.id) + '</code> — ' + esc(f.fuente) + (f.lector ? ' · lector ' + esc(f.lector) : '') + (f.descarga ? ' · descarga ' + esc(f.descarga) : '') + (f.last_modified ? ' · Last-Modified ' + esc(f.last_modified) : '') + (f.periodo_final ? ' · periodo final ' + esc(f.periodo_final) : '') + (f.vintage ? ' · vintage ' + esc(f.vintage) : '') + (f.cp ? ' · CP ' + esc(f.cp) + ' · PEF ' + esc(f.pef) + ' · PPEF ' + esc(f.ppef) : '') + (f.observado_hasta ? ' · observado hasta ' + esc(f.observado_hasta) : '') + (f.generado_en ? ' · generado ' + esc(f.generado_en) : '') + (f.sha256 ? ' · sha256 <code>' + esc(String(f.sha256).slice(0, 12)) + '…</code>' : '') + (f.n ? ' · ' + f.n + ' filas · checksum ' + f.checksum : '') + (f.via ? ' · vía ' + esc(f.via) : '') + '</li>'; }).join('') + '</ul>';
