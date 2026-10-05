@@ -1,4 +1,4 @@
-*! EntidadNL.do  v1.2.0 — driver F1-bis: TE micro/micro, incidencia y conciliación para Nuevo León (entidad 19)
+*! EntidadNL.do  v1.3.0 — driver F1-bis: TE micro/micro, incidencia y conciliación para Nuevo León (entidad 19); v1.3.0 añade Part<X>nl y RecImp* (insumo de FederacionNL)
 *
 * QUÉ ES ESTO (contrato F1 + F1-bis, DIAGNOSTICO_NL.md):
 *   (1) TE-NL micro/micro vía TasasEfectivasMicro.ado con bases COMPLETAS
@@ -395,6 +395,33 @@ forvalues i = 1/3 {
 }
 escalar pct PartISRPMnl = `RNL'[1,4]/`MPM'*100
 
+** 2.7 Participación de NL por impuesto (F1 Federación↔NL, NL-0.4.0; aditivo) **
+* Part<X>nl = Rec<X>nl / Rec<X>nac: la fracción de la recaudación nacional de
+* cada impuesto que pagan los residentes de NL según la incidencia micro. Es el
+* insumo del lado "paga" de FederacionNL.do (× recaudación observada del
+* motor). RecImp* = impuestos federales stricto sensu: sin OTROSK (no
+* tributarios) ni cuotas IMSS (contribuciones; su contraparte de gasto IMSS
+* queda fuera del alcance de flujos identificables). Banda S1/S3 del ISR PM
+* propagada a los totales. *
+foreach k in ISRAS CUOTAS ISRPF ISRPM OTROSK IVA IEPSNP IEPSP ISAN IMPORT {
+	escalar pct Part`k'nl = scalar(Rec`k'nl)/scalar(Rec`k'nac)*100
+}
+foreach s in nac nl {
+	escalar mxn RecImp`s' = scalar(RecISRAS`s')+scalar(RecISRPF`s')+scalar(RecISRPM`s') ///
+		+scalar(RecIVA`s')+scalar(RecIEPSNP`s')+scalar(RecIEPSP`s')+scalar(RecISAN`s')+scalar(RecIMPORT`s')
+}
+forvalues i = 1/3 {
+	escalar mxn RecImpnlS`i' = scalar(RecImpnl) - scalar(RecISRPMnl) + scalar(RecISRPMnlS`i')
+	escalar pct PartImpnlS`i' = scalar(RecImpnlS`i')/scalar(RecImpnac)*100
+}
+escalar pct PartImpnl = scalar(RecImpnl)/scalar(RecImpnac)*100
+noisily di _newline in g "{bf:  Participación de NL por impuesto (%, insumo de FederacionNL)}"
+foreach k in ISRAS ISRPF ISRPM CUOTAS IVA IEPSNP IEPSP ISAN IMPORT OTROSK {
+	noisily di in g "  `k'" _col(12) in y %7.2fc scalar(Part`k'nl)
+}
+noisily di in g "  Impuestos (sin OTROSK ni cuotas): " in y %7.2fc scalar(PartImpnl) ///
+	in g " · banda [S1, S3] = [" in y %5.2fc scalar(PartImpnlS1) in g ", " in y %5.2fc scalar(PartImpnlS3) in g "]"
+
 *** 3 CONCILIACIÓN POR BASE (brechas DECLARADAS, nunca forzadas) ***
 * Participaciones de NL en el agregado ENIGH ajustado (micro, post-CN) *
 escalar pct PartSalENIGHnl = scalar(BaseSalnl)/scalar(BaseSalnac)*100
@@ -616,6 +643,7 @@ quietly {
 	"presentacion" "canasta_nota" "estructura de la canasta del decil I (pct*DecI*): participaciones del gasto clasificado por régimen IVA (gravado/exento/tasa cero, matriz IVAT en el orden de levelsof de Expenditure.do §5.2) y de bienes con IEPS sobre el total clasificado"
 	"presentacion" "otrosk_nota" "en las tablas de incidencia AlCapital incluye OTROSK (SIM.do:436) y el total ImpAport lo excluye (SIM.do:440); se exporta la familia OTROSK por separado: AlTrabajo+AlCapital+AlConsumo-OTROSK = Total"
 	"presentacion" "deuda_tecnica" "extender scalarjson.ado con una clave canónica supuestos (bloque propio del contrato) para que los supuestos de incidencia de escenarios no dependan del bloque libre presentacion"
+	"presentacion" "participacion_nota" "Part<X>nl = Rec<X>nl/Rec<X>nac: fracción de la recaudación nacional de cada impuesto pagada por residentes de NL (incidencia micro); RecImp* = impuestos sin OTROSK ni cuotas IMSS, banda S1/S3 del ISR PM; insumo de FederacionNL.do"
 	"presentacion" "producto" ""
 	"presentacion" "subtitulo" ""
 	"presentacion" "version_capa_nl" ""
@@ -711,7 +739,9 @@ foreach s in nac nl nle {
 	}
 }
 foreach c in PartISRPMnl PartISRPMnlS1 PartISRPMnlS2 PartISRPMnlS3 ///
-	ISRPMTEnlS1 ISRPMTEnlS2 ISRPMTEnlS3 RecISRPMnlS1 RecISRPMnlS2 RecISRPMnlS3 {
+	ISRPMTEnlS1 ISRPMTEnlS2 ISRPMTEnlS3 RecISRPMnlS1 RecISRPMnlS2 RecISRPMnlS3 ///
+	PartISRASnl PartCUOTASnl PartISRPFnl PartOTROSKnl PartIVAnl PartIEPSNPnl PartIEPSPnl PartISANnl PartIMPORTnl ///
+	RecImpnac RecImpnl RecImpnlS1 RecImpnlS2 RecImpnlS3 PartImpnl PartImpnlS1 PartImpnlS2 PartImpnlS3 {
 	capture confirm scalar `c'
 	if _rc == 0 local esc "`esc' `c'"
 }

@@ -1,7 +1,7 @@
 {
   "producto": "Simulador Fiscal NL",
-  "version_nl": "NL-0.3.2",
-  "fecha": "2026-10-03",
+  "version_nl": "NL-0.4.0",
+  "fecha": "2026-10-04",
   "motor_sincronizado": "v8.6.0",
   "regla_cadencia": "La capa NL hace merge de master en cada release etiquetado del nacional y pasa las tres compuertas de DIAGNOSTICO_NL.md §0.3 (paridad nacional con diff vacío, D.1, delta NL documentado) antes de subir version_nl.",
   "regla_version": "NL-MAJOR.MINOR.PATCH: MAJOR = cambio de contrato de salida (JSON/HTML); MINOR = producto o endpoint nuevo; PATCH = corrección sin cambio de contrato. El changelog vive en DIAGNOSTICO_NL.md, sección Versionado de la capa NL.",
@@ -69,5 +69,24 @@
       "lector": "_NLinpc"
     }
   ],
-  "nota_bie": "El BIE 2025 exporta cada indicador con las 33 areas apiladas; AccesoBIE (motor) no filtra el area y la API oficial responde 401. La capa NL lee con nl-assets/nl-bie.do (misma via publica, filtra el area). Propuesta a master por PR aparte: opcion area() en AccesoBIE."
+  "nota_bie": "El BIE 2025 exporta cada indicador con las 33 areas apiladas; AccesoBIE (motor) no filtra el area y la API oficial responde 401. La capa NL lee con nl-assets/nl-bie.do (misma via publica, filtra el area). Propuesta a master por PR aparte: opcion area() en AccesoBIE.",
+  "sellos": [
+    {
+      "name": "federacion-sello.json",
+      "local_path": "01_modulos/nl-assets/federacion-sello.json",
+      "escribe": "01_modulos/FederacionNL.do en modo canal (Mac, tras SIM.do + EntidadNL.do); se reescribe solo con global nlfed_sellar 1 cuando difiere del canal",
+      "contenido": "extracto del canal del motor: participaciones de NL por impuesto (statajson_entidad-nl.json), recaudación observada y LIF/ILIF por impuesto y año (master/LIF.dta), anclas CP/PEF/PPEF por divFEDE (master/PEF.dta); identidad con versión de capa, de motor, anioPE y SHA-256 de la fuente",
+      "consume": "FederacionNL.do en modo sello (runner Windows, sin cachés del motor) solo si versión de capa, de motor y anioPE coinciden con la sesión; en modo canal se exige igualdad reldif 1e-9 con el canal vivo",
+      "regla": "arquitectura B (DIAGNOSTICO_NL.md, anexo Federación↔NL): los números siguen saliendo del canal; el sello nunca se edita a mano"
+    }
+  ],
+  "fuentes_shcp": [
+    {
+      "id": "eopf_transferencias",
+      "url": "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/transferencias_entidades_fed.zip (+ _hist.zip)",
+      "descripcion": "Estadísticas Oportunas de Finanzas Públicas: transferencias a entidades federativas y municipios por fondo y entidad, mensual, flujo pagado, miles de pesos",
+      "lector": "_NLeopf (nl-assets/nl-fed.do + nl_fed.py); caché raw/temp/EOPF/nl_transferencias.csv + .meta",
+      "nota": "el motor ingiere la misma fuente en master/DatosAbiertos.dta, pero ese caché duplica XACGF00 y rompe la costura 2011; issue documentado para master, no se toca desde la capa"
+    }
+  ]
 }
