@@ -50,4 +50,4 @@ Todos los `.ps1` están en UTF-8 con BOM (PowerShell 5 los lee bien con acentos)
 
 ## Nota: clon sin `04_3_anteriores/`
 
-Ese directorio contiene archivos con `?` en el nombre (inválidos en Windows). El instalador usa sparse-checkout para excluirlo; el runner no lo necesita.
+Ese directorio contiene archivos con `?` en el nombre (inválidos en Windows). El instalador usa sparse-checkout y fija `core.protectNTFS false` solo en ese clon (Git para Windows rechaza esas rutas al armar el índice aunque estén excluidas). El runner no necesita esa carpeta.

@@ -78,14 +78,21 @@ Write-Host "  Registra ESTA llave pública en GitHub (una sola vez):" -Foregroun
 Write-Host ("  https://github.com/" + $RepoGitHub + "/settings/keys  →  Add deploy key  →  Title: runner-conl-" + $env:COMPUTERNAME + "  →  SIN 'Allow write access'") -ForegroundColor Yellow
 Write-Host ""; Write-Host ("  " + $pub.Trim()) -ForegroundColor White; Write-Host ""
 $cfg = Join-Path $sshDir 'config'
-$bloque = @("Host $SshHost", "    HostName github.com", "    User git", "    IdentityFile $KeyPath", "    IdentitiesOnly yes", "")
-$existe = (Test-Path -LiteralPath $cfg) -and ((Get-Content -LiteralPath $cfg -Raw) -match ('(?m)^Host\s+' + [regex]::Escape($SshHost) + '\s*$'))
-if (-not $existe) { Add-Content -LiteralPath $cfg -Value ($bloque -join "`r`n") -Encoding ASCII; Write-Ok ("Alias SSH agregado a " + $cfg) } else { Write-Ok ("Alias SSH ya existía en " + $cfg) }
+$keyFwd = $KeyPath.Replace('\', '/')
+$bloque = "Host $SshHost`r`n    HostName github.com`r`n    User git`r`n    IdentityFile `"$keyFwd`"`r`n    IdentitiesOnly yes`r`n    KexAlgorithms curve25519-sha256,ecdh-sha2-nistp256`r`n"
+$actual = ''
+if (Test-Path -LiteralPath $cfg) { $actual = Get-Content -LiteralPath $cfg -Raw }
+$patron = '(?ms)^Host\s+' + [regex]::Escape($SshHost) + '\s*\r?\n(?:[ \t]+\S.*\r?\n?)*'
+if ($actual -match $patron) { $nuevo = [regex]::Replace($actual, $patron, $bloque) } else { $nuevo = $actual + $(if ($actual -and -not $actual.EndsWith("`n")) { "`r`n" } else { '' }) + $bloque }
+if ($nuevo -ne $actual) { Set-Content -LiteralPath $cfg -Value $nuevo -Encoding ASCII -NoNewline; Write-Ok ("Alias SSH escrito/corregido en " + $cfg + " (ruta entre comillas, KEX compatible)") } else { Write-Ok ("Alias SSH correcto en " + $cfg) }
 $kh = Join-Path $sshDir 'known_hosts'
-if (-not ((Test-Path -LiteralPath $kh) -and ((Get-Content -LiteralPath $kh -Raw) -match 'github\.com'))) {
-    $r = Invoke-Native 'ssh-keyscan -t ed25519 github.com'
-    $scan = ($r.Out -split "`r`n") | Where-Object { $_ -match '^github\.com\s+ssh-ed25519' }
-    if ($scan) { Add-Content -LiteralPath $kh -Value $scan -Encoding ASCII; Write-Ok "github.com agregado a known_hosts" } else { Write-Warn "No se pudo hacer ssh-keyscan de github.com (¿sin red?); el primer clone pedirá confirmación." }
+# ssh-keyscan de OpenSSH 9.5 en Windows falla con GitHub (KEX sntrup761); se usa la clave ed25519 publicada por GitHub
+# (https://docs.github.com/en/authentication/keeping-your-account-secure/githubs-ssh-key-fingerprints), huella SHA256:+DiY3wvvV6TuJJhbpZisF/zLDA0zPMSvHdkr4UvCOqU
+$ghLinea = 'github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl'
+if (-not ((Test-Path -LiteralPath $kh) -and ((Get-Content -LiteralPath $kh -Raw) -match 'github\.com\s+ssh-ed25519\s+AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0'))) {
+    $tmpKh = Join-Path $env:TEMP 'gh-known-host.tmp'; Set-Content -LiteralPath $tmpKh -Value $ghLinea -Encoding ASCII
+    $fp = (Invoke-Native ('ssh-keygen -lf "' + $tmpKh + '"')).Out; Remove-Item -LiteralPath $tmpKh -Force
+    if ($fp -match 'SHA256:\+DiY3wvvV6TuJJhbpZisF/zLDA0zPMSvHdkr4UvCOqU') { Add-Content -LiteralPath $kh -Value $ghLinea -Encoding ASCII; Write-Ok "github.com agregado a known_hosts (huella verificada)" } else { Write-Fail ("La huella de la clave de GitHub no coincide: " + $fp); exit 2 }
 } else { Write-Ok "github.com ya está en known_hosts" }
 # Prueba de autenticación (GitHub devuelve código 1 con 'successfully authenticated' cuando la llave es válida)
 $auth = (Invoke-Native ('ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new -T git@' + $SshHost)).Out
@@ -107,11 +114,14 @@ if (-not (Test-Path -LiteralPath (Join-Path $Repo '.git'))) {
     $r = Invoke-Native ('git -C ' + $g + ' fetch origin ' + $Rama); if ($r.Code -ne 0) { Write-Fail ("Falló fetch: " + $r.Out); exit 3 }
     Write-Ok "Clon existente: fetch correcto"
 }
+# Git para Windows rechaza al armar el índice rutas con '?' (core.protectNTFS) aunque el sparse-checkout las excluya;
+# se desactiva SOLO en este clon (repo propio, deploy key de solo lectura). Verificado en la HP de CoNL.
 # Patrones escritos directo al archivo (sin pasar por cmd.exe, que puede mutilar las comillas y el '!')
 $infoDir = Join-Path $Repo '.git\info'
 if (-not (Test-Path -LiteralPath $infoDir)) { New-Item -ItemType Directory -Path $infoDir -Force | Out-Null }
 Set-Content -LiteralPath (Join-Path $infoDir 'sparse-checkout') -Value @('/*', '!/04_3_anteriores/') -Encoding ASCII
 $pasos = @(
+    ('git -C ' + $g + ' config core.protectNTFS false'),
     ('git -C ' + $g + ' config core.sparseCheckout true'),
     ('git -C ' + $g + ' checkout -q -f -B ' + $Rama + ' origin/' + $Rama)
 )
