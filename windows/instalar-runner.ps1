@@ -94,17 +94,26 @@ else { Write-Fail "GitHub aún NO acepta la llave (registra la clave pública de
 
 # ---------- 3. Clon de solo lectura (una sola rama) ----------
 Write-Paso "3. Clon de la rama $Rama"
+# 04_3_anteriores/ trae archivos históricos con '?' en el nombre (p. ej. TweenMax.min.js?ver=3.9.3), inválidos en
+# Windows; ni el motor ni la capa NL los usan. Se excluyen con sparse-checkout (sin tocar el repo).
+$g = '"' + $Repo + '"'
 if (-not (Test-Path -LiteralPath (Join-Path $Repo '.git'))) {
-    $r = Invoke-Native ('git clone --branch ' + $Rama + ' --single-branch ' + $RepoSsh + ' "' + $Repo + '"')
+    $r = Invoke-Native ('git clone --no-checkout --branch ' + $Rama + ' --single-branch ' + $RepoSsh + ' "' + $Repo + '"')
     Write-Host $r.Out
     if ($r.Code -ne 0) { Write-Fail ("git clone falló (código " + $r.Code + "). Revisa la salida anterior."); exit 3 }
-    Write-Ok ("Clonado en " + $Repo)
+    Write-Ok ("Clonado (sin checkout) en " + $Repo)
 } else {
-    $g = '"' + $Repo + '"'
-    $pasos = @(('git -C ' + $g + ' remote set-url origin ' + $RepoSsh), ('git -C ' + $g + ' fetch origin ' + $Rama), ('git -C ' + $g + ' checkout -q ' + $Rama), ('git -C ' + $g + ' reset -q --hard origin/' + $Rama))
-    foreach ($cmdl in $pasos) { $r = Invoke-Native $cmdl; if ($r.Code -ne 0) { Write-Fail ("Falló: " + $cmdl + " -> " + $r.Out); exit 3 } }
-    Write-Ok ("Clon existente actualizado a origin/" + $Rama)
+    $r = Invoke-Native ('git -C ' + $g + ' remote set-url origin ' + $RepoSsh); if ($r.Code -ne 0) { Write-Fail ("Falló remote set-url: " + $r.Out); exit 3 }
+    $r = Invoke-Native ('git -C ' + $g + ' fetch origin ' + $Rama); if ($r.Code -ne 0) { Write-Fail ("Falló fetch: " + $r.Out); exit 3 }
+    Write-Ok "Clon existente: fetch correcto"
 }
+$pasos = @(
+    ('git -C ' + $g + ' config core.sparseCheckout true'),
+    ('git -C ' + $g + ' sparse-checkout set --no-cone "/*" "!/04_3_anteriores/"'),
+    ('git -C ' + $g + ' checkout -q -f -B ' + $Rama + ' origin/' + $Rama)
+)
+foreach ($cmdl in $pasos) { $r = Invoke-Native $cmdl; if ($r.Code -ne 0) { Write-Fail ("Falló: " + $cmdl + " -> " + $r.Out); exit 3 } }
+Write-Ok ("Rama " + $Rama + " en origin/" + $Rama + " (sin 04_3_anteriores/, inválido en Windows)")
 $runnerEnRepo = Join-Path $Repo 'windows'
 if (-not (Test-Path -LiteralPath (Join-Path $runnerEnRepo 'actualizar-nl.ps1'))) { Write-Fail "El clon no trae windows\actualizar-nl.ps1: ¿rama correcta?"; exit 3 }
 

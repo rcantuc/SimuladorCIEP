@@ -47,3 +47,7 @@ La laptop HP de CoNL (Windows 11, Stata 19.5 StataNow, Git, Tailscale, Google Dr
 | `bitacora-runner.log`, `ultimo-exito.txt`, `*.log` | bitácora y latido locales | **no** |
 
 Todos los `.ps1` están en UTF-8 con BOM (PowerShell 5 los lee bien con acentos) y no requieren PowerShell 7.
+
+## Nota: clon sin `04_3_anteriores/`
+
+Ese directorio contiene archivos con `?` en el nombre (inválidos en Windows). El instalador usa sparse-checkout para excluirlo; el runner no lo necesita.
