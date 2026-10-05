@@ -903,3 +903,13 @@ ISR salarios, cuotas, IVA e importaciones son series coherentes con el peso econ
 | 5 | Métrica de concentración como escalar declarado (`concTop1<X>nl`) para los 10 impuestos | sí / no | **sí** (aditivo; alimenta la compuerta informativa 14 y el letrero) |
 
 *F1 no inicia hasta la resolución de 1 y 2.*
+
+### 0.8 Resoluciones (Ricardo, 2026-10-05) — vinculantes; F0 APROBADO con ellas
+
+| # | Decisión | Resolución |
+|---|---|---|
+| 1 | Bug `PIBDeflactor` | **PR a `master` + release + merge a la capa.** Las cachés 2016/2018/2020 se rehacen con el motor etiquetado antes de las corridas definitivas. |
+| 2 | ISR PM dominado por una observación | **Publicar tal cual con sello de sensibilidad muestral**: serie del ISR PM por vintage con banda, escalar declarado de concentración por impuesto y vintage (`concTop1<X>nl`: "una observación aporta el x % del impuesto de NL"), letrero visible en la vista y en procedencia; 2000–2017 heredan el 41.6 % de 2016 con el letrero. No se suaviza, no se excluye, no se corrige. |
+| 3 | Fila 2024+ | **Corrida vintage 2024 (PE 2024)** con compuerta de ligadura contra la corrida vigente (reldif ≤ 1e-3). |
+| 4 | Extrapolación 2000–2015 con ENIGH 2016 | Tal cual (decisión heredada), con el sello de la resolución 2. |
+| 5 | `concTop1<X>nl` como escalar declarado | **Sí** (aditivo en `EntidadNL.do`; alimenta la compuerta informativa de saltos y el letrero). |
