@@ -107,12 +107,16 @@ if (-not (Test-Path -LiteralPath (Join-Path $Repo '.git'))) {
     $r = Invoke-Native ('git -C ' + $g + ' fetch origin ' + $Rama); if ($r.Code -ne 0) { Write-Fail ("Falló fetch: " + $r.Out); exit 3 }
     Write-Ok "Clon existente: fetch correcto"
 }
+# Patrones escritos directo al archivo (sin pasar por cmd.exe, que puede mutilar las comillas y el '!')
+$infoDir = Join-Path $Repo '.git\info'
+if (-not (Test-Path -LiteralPath $infoDir)) { New-Item -ItemType Directory -Path $infoDir -Force | Out-Null }
+Set-Content -LiteralPath (Join-Path $infoDir 'sparse-checkout') -Value @('/*', '!/04_3_anteriores/') -Encoding ASCII
 $pasos = @(
     ('git -C ' + $g + ' config core.sparseCheckout true'),
-    ('git -C ' + $g + ' sparse-checkout set --no-cone "/*" "!/04_3_anteriores/"'),
     ('git -C ' + $g + ' checkout -q -f -B ' + $Rama + ' origin/' + $Rama)
 )
 foreach ($cmdl in $pasos) { $r = Invoke-Native $cmdl; if ($r.Code -ne 0) { Write-Fail ("Falló: " + $cmdl + " -> " + $r.Out); exit 3 } }
+if (Test-Path -LiteralPath (Join-Path $Repo '04_3_anteriores')) { Write-Fail "04_3_anteriores/ sigue presente: el sparse-checkout no se aplicó"; exit 3 }
 Write-Ok ("Rama " + $Rama + " en origin/" + $Rama + " (sin 04_3_anteriores/, inválido en Windows)")
 $runnerEnRepo = Join-Path $Repo 'windows'
 if (-not (Test-Path -LiteralPath (Join-Path $runnerEnRepo 'actualizar-nl.ps1'))) { Write-Fail "El clon no trae windows\actualizar-nl.ps1: ¿rama correcta?"; exit 3 }
