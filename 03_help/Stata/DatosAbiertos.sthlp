@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 8.0 CIEP 03jul2026}{...}
+{* *! version 8.1 CIEP 04oct2026}{...}
 {viewerjumpto "Descripción" "DatosAbiertos##description"}{...}
 {viewerjumpto "Primeros pasos" "DatosAbiertos##quickstart"}{...}
 {viewerjumpto "Sintaxis" "DatosAbiertos##syntax"}{...}
@@ -239,6 +239,24 @@ vs el año anterior, en términos nominales y reales.{p_end}
 {pstd}{bf:Archivos guardados:}{p_end}
 {phang2}— {cmd:master/DatosAbiertos.dta} — Base completa de series ESTOPOR{p_end}
 {phang2}— Gráficos PNG en {cmd:users/$id/graphs/}{p_end}
+
+{pstd}{bf:Construcción de la base} ({cmd:UpdateDatosAbiertos}, v8.1):{p_end}
+{phang2}— Diez archivos de la SHCP (ingreso-gasto-financiamiento, deuda, SHRFSP,
+RFSP y transferencias a entidades, cada uno con su histórico). Si un
+(clave, año, mes, tipo) viene en el histórico y en el vigente, {bf:manda el
+vigente}.{p_end}
+{phang2}— Series derivadas por el CIEP, con clave propia que no colisiona con
+las de la SHCP: {cmd:XNA0120_m/_f/_s/_pf} (ISR por tipo de contribuyente),
+{cmd:XNA0120_nopet}, {cmd:FMP_Derechos}, {cmd:deficit_epe}, {cmd:deficit_oye},
+{cmd:XOA0108_2} y {cmd:OtrosIngresosC}. La clave derivada {cmd:XACGF00}
+(= R28 + R33) que existió hasta v8.0 se eliminó: duplicaba la clave homónima
+de la SHCP ("Total: Total Gasto Federalizado", que además incluye convenios,
+R23 y PSS).{p_end}
+{phang2}— {bf:Compuertas} que abortan la actualización y conservan el caché
+anterior: (1) en los archivos de transferencias, cada fondo×mes trae las 32
+entidades y la fila nacional ({cmd:00}) es la suma de las entidades
+(tolerancia 1e-3 relativa o 10 mil pesos); (2) una sola fila por (clave, año,
+mes, tipo) en la base final.{p_end}
 
 {pstd}{bf:Cálculos mostrados según el tipo de serie:}{p_end}
 
