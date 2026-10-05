@@ -1,4 +1,4 @@
-*! version 8.0 CIEP 03jul2026
+*! version 8.1 CIEP 05oct2026
 *!*******************************************
 *!***                                    ****
 *!***    PIB, deflactor e inflación      ****
@@ -73,6 +73,17 @@ quietly {
 			local obsfinal = `k'-1
 			continue, break
 		}
+	}
+	* Si aniomax (default aniovp+5) queda antes del ultimo trimestre publicado, ninguna
+	* fila del rango tiene pibQ faltante y el bucle no define aniofinal/obsfinal
+	* ("pibQ not found" al correr con aniovp <= ultimo observado - 5, p. ej. SCN anio(2016)
+	* para armonizar una ENIGH historica). El ultimo observado es entonces la ultima
+	* fila del rango. Con aniovp >= 2024 este bloque no se ejecuta (v8.7.1). *
+	if "`obsfinal'" == "" {
+		local aniofinal = anio[_N]
+		local trim_last = trimestre[_N]
+		scalar trimlast = trimestre[_N]
+		local obsfinal = _N
 	}
 
 	

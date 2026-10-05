@@ -20,6 +20,124 @@ Formato de cada entrada:
 
 Trabajo en `master` sin versión asignada.
 
+## [v8.7.1] — 2026-10-05
+
+### Correcciones
+
+- **`PIBDeflactor` v8.1: años de valor presente anteriores a (último trimestre
+  publicado − 5) ya no truenan.** §2.1 detecta el "último trimestre observado"
+  buscando la primera fila con `pibQ` faltante dentro del rango
+  `anio <= aniomax`, y `aniomax` por default es `aniovp + 5`. Si `aniovp + 5`
+  queda antes del último trimestre publicado (hoy 2026q2), ninguna fila del
+  rango tiene `pibQ` faltante, `aniofinal`/`obsfinal` no se definen y la
+  rutina aborta con `pibQ not found` (`r(111)`). Como `SCN.ado` llama
+  `PIBDeflactor, anio(`anio')` sin `aniomax` y `Households.do` llama
+  `PIBDeflactor, aniovp(anioenigh)`, **`SCN, anio(2016|2018|2020)` y la
+  armonización de las ENIGH 2016, 2018 y 2020 fallaban** en v8.6.0–v8.7.0
+  (caso borde nunca ejercitado: el nacional corre con `aniovp >= 2024`;
+  2022 y 2024 sí pasaban porque `aniovp + 5 > 2026`). Corrección mínima: si
+  el bucle no definió `obsfinal`, el último observado es la última fila del
+  rango (4 líneas). **Sin efecto en producción:** con `aniovp >= 2024` el
+  bucle sí define `obsfinal` y el bloque nuevo no se ejecuta.
+- **Compuertas.** (1) `PIBDeflactor, aniovp(2016|2018|2020|2022)` y
+  `SCN, anio(...)` corren (antes `r(111)` en 2016–2020; PIB 2016 =
+  20,758,790,507,000 MXN). (2) No-regresión: la base de `PIBDeflactor,
+  aniovp(2027) aniomax(2032)` antes y después del cambio es idéntica
+  (`cf _all`). (3) Paridad nacional: `SIM.do` completo (PE 2027, receta
+  batch del runbook) produce `users/ricardo/output.txt` con SHA-256
+  idéntico al de v8.6.0/v8.7.0 (`ae624b98…45fa15`). Detectado durante la
+  construcción de la capa NL (`DIAGNOSTICO_NL.md`, anexo Participaciones
+  históricas F0 §0.5-A): la capa necesita correr el motor sobre cada ENIGH
+  bienal con calibración contemporánea (`anioPE = aniovp = anioenigh`).
+
+## [v8.7.0] — 2026-10-05
+
+### Comandos
+
+- **`AccesoBIE` v8.1: opción `area(##)` para indicadores por entidad
+  federativa.** El BIE (versión 2025) exporta cada indicador con las 33 áreas
+  geográficas apiladas en la columna "Área geográfica" (00 nacional, 01–32
+  entidades); las claves clásicas por estado ya no responden y `ag=` se
+  ignora. `AccesoBIE` leía periodo/valor sin mirar el área: correcto para las
+  series nacionales (solo traen el área 00), pero un indicador estatal (PIBE,
+  ITAEE) mezclaría los 33 estados. La capa NL lo resolvió con un lector
+  propio (`_NLbie`, NL-0.2.0); este cambio lleva la capacidad al motor.
+  **Estrictamente aditivo:** sin `area()` el código que corre es el mismo
+  (byte-idéntico). Con `area(##)`: descarga la **tabla completa** del
+  indicador por la consulta pública una vez por sesión (global
+  `INEGI_AREAS_<serie>`), la cachea en `raw/temp/AccesoBIE/<serie>_areas.csv`
+  (`periodo, area, valor, nota`) + `.meta` (título, fecha de consulta INEGI,
+  áreas, n, URL) con **escritura atómica** (`.tmp` → `os.replace`; si la
+  respuesta no trae tabla, columna de área o filas, aborta con mensaje y el
+  último caché bueno queda intacto), filtra el área al cargar y muestra filas,
+  fecha de consulta y `checksum` de la tabla completa. El comparativo nacional
+  (`area(00)`) sale del mismo pull. Falla con mensaje claro si el indicador no
+  trae el área pedida (lista las disponibles) o si `area()` no es 00–32.
+  Nueva sección "Indicadores por área geográfica" y ejemplo 6 en
+  `AccesoBIE.sthlp`. Propuesto en `DIAGNOSTICO_NL.md` (anexo PIBDeflactorNL
+  §0.2, hallazgo 1); detectado durante la construcción de la capa NL.
+- **Compuertas.** (1) No-regresión nacional: las descargas que usa el motor
+  (`734407 735143 446562 446565 446566`, `910392`, bloque SCN
+  `724014–724025`, `734407` con nombre automático) antes y después del cambio
+  producen **18 cachés `.csv` con SHA-256 idéntico** y 4 bases `cf _all`
+  idénticas. (2) Validación cruzada: `AccesoBIE <id>, area(19)` reproduce con
+  **igualdad exacta** los valores de `_NLbie <id>, area(19)` para las series
+  NL en producción — PIBE corriente `750453` y real `746097` (22 años), ITAEE
+  original `741180` y desestacionalizado `741927` (185 trimestres). (3)
+  Negativos: `910392, area(19)` → `r(459)` "no trae filas para el área 19;
+  disponibles: 00"; `area(99)` y `area(ab)` → `r(198)`.
+
+## [v8.6.1] — 2026-10-04
+
+### Correcciones
+
+- **`DatosAbiertos.ado` v8.1: `UpdateDatosAbiertos` ya no fabrica la clave
+  `XACGF00` y vigila la costura histórico/vigente y las transferencias por
+  entidad.** Detectado durante la construcción de la capa NL
+  (`DIAGNOSTICO_NL.md`, anexo Federación↔NL F0 §5, rama `feature/entidad-nl`).
+  (1) **`XACGF00` duplicada.** §4.7 apendizaba una serie derivada
+  `XACGF00` = `XAC2800 + XAC3300` ("Gasto Federalizado") que colisionaba con
+  la clave homónima de la SHCP ("Total: Total Gasto Federalizado" = R28 + R33
+  + convenios + R23 + PSS, publicada desde 1997): 356 periodos con dos filas
+  y un total nacional ~2× (2024: 4.88 vs 2.59 billones). La derivada era
+  redundante y de definición más estrecha; **se elimina** (440 filas menos en
+  el caché). (2) **Costura 2011.** El caché del 22-sep-2026 traía en 2011
+  filas nacionales de R28 (−6.9 %), FAIS (−47 %), FAM (−30/−53 %), FAFEF
+  (−41 %) y FAETA (−12 %) por debajo de la suma de entidades. La causa **no
+  era la costura `_hist`/vigente** (los diez archivos de la SHCP no se
+  traslapan: 0 claves en común) sino el csv vigente de ese día: la SHCP lo
+  publicó truncado — 5,611 filas de 2011 ausentes (1,046 de transferencias,
+  4,565 de deuda pública) y bloques de filas repetidas — y el motor lo
+  absorbió sin aviso; el csv del 30-sep-2026 está completo y el caché del
+  3-oct ya cuadraba. Para que no vuelva a pasar en silencio: (a) **compuerta
+  `_DAcompuertaEntidades`** sobre los dos archivos de transferencias: cada
+  fondo×mes trae ≥ 32 entidades y la fila nacional (`00`) es la suma de las
+  entidades (|Σ − nacional| ≤ max(1e-3·|nacional|, 10 mil pesos); el ruido de
+  redondeo de la SHCP es ≤ 1e-4 y ≤ 3.1 mil pesos); si falla, lista los
+  peores casos y aborta con `r(459)` **conservando el caché anterior**
+  (probada en negativo con el csv del 22-sep: 102 fondo-mes alarmados, todos
+  de 2011); (b) **costura explícita** tras el append: si un (clave, ciclo,
+  mes, tipo) viene en el histórico y en el vigente, manda el vigente (hoy es
+  no-op; probada con 1,326 filas sintéticas traslapadas → caché idéntico);
+  (c) **`isid clave anio mes tipo`** antes de guardar, que habría atrapado
+  (1) al nacer.
+- **Impacto en salidas publicadas: ninguno.** Ningún `.ado`, módulo, nodo ni
+  escalar consume `XACGF00` (solo `legacy/Subnacional.do`, sin mantenimiento,
+  y un bloque congelado de `PEF.ado`). Las 132 filas de 2011 de claves
+  consumidas que faltaban en el caché del 22-sep (11 componentes de deuda
+  bruta de `SHRFSP`) solo entran a escalares del año de política (exógenos),
+  no a 2011; el caché de producción se regeneró el 3-oct con el csv completo.
+- **Compuertas del fix** (caché regenerado en modo `local` con los csv del
+  30-sep-2026, byte-idénticos a la descarga del 4-oct): caché nuevo =
+  caché anterior menos las 440 filas derivadas (`cf _all`: 0 diferencias);
+  454,380 filas fondo×entidad×periodo del csv fresco = caché (reldif 0);
+  Σ entidades = nacional en los 1,157 fondo×año (máx 1.17e-5, 2011 incluido);
+  `UpdateSHRFSP` y `UpdateLIF` producen `SHRFSP.dta` y `LIF.dta` idénticos;
+  `SIM.do` (receta del runbook, PE 2027) produce `output.txt` y los cinco
+  `sankey-*.json` con el mismo SHA-256 antes y después.
+- `DatosAbiertos.sthlp`: nota "Construcción de la base" (series derivadas,
+  costura y compuertas).
+
 ## [v8.6.0] — 2026-10-03
 
 ### Comandos

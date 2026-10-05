@@ -1,4 +1,4 @@
-*! version 8.0 CIEP 03jul2026
+*! version 8.1 CIEP 04oct2026
 program define DatosAbiertos, return
 	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 quietly {
@@ -508,11 +508,18 @@ program define UpdateDatosAbiertos, return
 
 	*************************************************
 	** 1.5 Transferencias a Entidades y Municipios **
+	** Compuerta (v8.1): cada fondo×mes trae las 32 entidades y la fila    **
+	** nacional (00) = suma de entidades. El csv de la SHCP del 22-sep-2026 **
+	** llegó truncado en 2011 (1,046 filas menos) y el caché lo absorbió en **
+	** silencio; con la compuerta, un archivo así aborta la actualización y  **
+	** conserva el caché anterior.                                           **
 	_DAdescarga, nombre(transferencias_entidades_fed) modo(`modo') encoding(utf-8)
+	_DAcompuertaEntidades, nombre(transferencias_entidades_fed)
 	tempfile gf
 	save "`gf'"
 
 	_DAdescarga, nombre(transferencias_entidades_fed_hist) modo(`modo') encoding(utf-8)
+	_DAcompuertaEntidades, nombre(transferencias_entidades_fed_hist)
 	tempfile gfH
 	save "`gfH'"
 	
@@ -618,20 +625,46 @@ program define UpdateDatosAbiertos, return
 	**************/
 	** Cada append pasa por _DAappend: si falla, reporta QUÉ base fue y qué **
 	** variables tienen tipo distinto (string vs numérica) respecto al master. **
+	** `vigente' marca de qué archivo viene cada fila (1 = vigente, 0 = **
+	** histórico) para resolver la costura en 2.1.                      **
+	tempvar vigente envigente
 	use `ing', clear
+	g byte `vigente' = 1
 	_DAappend using "`ingH'", nombre(ingreso_gasto_finan_hist)
+	replace `vigente' = 0 if `vigente' == .
 	_DAappend using "`deuda'", nombre(deuda_publica)
+	replace `vigente' = 1 if `vigente' == .
 	_DAappend using "`deudaH'", nombre(deuda_publica_hist)
+	replace `vigente' = 0 if `vigente' == .
 	_DAappend using "`shrf'", nombre(shrfsp_deuda_amplia_actual)
+	replace `vigente' = 1 if `vigente' == .
 	_DAappend using "`shrfH'", nombre(shrfsp_deuda_amplia_antes_2014)
+	replace `vigente' = 0 if `vigente' == .
 	_DAappend using "`rf'", nombre(rfsp)
+	replace `vigente' = 1 if `vigente' == .
 	_DAappend using "`rfH'", nombre(rfsp_metodologia_anterior)
+	replace `vigente' = 0 if `vigente' == .
 	_DAappend using "`gf'", nombre(transferencias_entidades_fed)
+	replace `vigente' = 1 if `vigente' == .
 	_DAappend using "`gfH'", nombre(transferencias_entidades_fed_hist)
+	replace `vigente' = 0 if `vigente' == .
 	forvalues y = 2025(-1)2004 {
 		*_DAappend using "`asignacion`y''", nombre(asignacion_ejecucion_`y')
 	}
 	*_DAappend using "`asignacion2003'", nombre(asignacion_ejecucion_2003)
+
+	** 2.1 Costura histórico/vigente (v8.1) **
+	** Si un (clave, ciclo, mes, tipo) viene en el archivo histórico y en el  **
+	** vigente, manda el vigente. Antes el collapse (mean) de §3 promediaba   **
+	** ambos (mismo nombre) o dejaba dos filas (nombre distinto). Hoy los     **
+	** cinco pares de la SHCP no se traslapan (0 filas): es red de seguridad. **
+	bysort clave_de_concepto ciclo mes tipo_de_informacion: egen byte `envigente' = max(`vigente')
+	quietly count if `vigente' == 0 & `envigente' == 1
+	if r(N) > 0 {
+		noisily di in g "Datos Abiertos: costura hist{c o'}rico/vigente: " in y r(N) in g " fila(s) del hist{c o'}rico ya vienen en el archivo vigente; se descartan."
+		drop if `vigente' == 0 & `envigente' == 1
+	}
+	drop `vigente' `envigente'
 
 
 
@@ -822,17 +855,15 @@ program define UpdateDatosAbiertos, return
 	save "`diferencias'"
 
 
-	****************************
-	** 4.7 Gasto federalizado **
-	use if clave_de_concepto == "XAC2800" | clave_de_concepto == "XAC3300" using `datosabiertos', clear
-	collapse (sum) monto, by(anio mes trimestre aniotrimestre aniomes)
-
-	g clave_de_concepto = "XACGF00"
-	g nombre = "Gasto Federalizado"
-	g tipo_de_informacion = "Flujo"
-
-	tempfile gastofed
-	save "`gastofed'"
+	** 4.7 Gasto federalizado: ELIMINADO en v8.1. Hasta v8.0 aquí se        **
+	** apendizaba una clave derivada XACGF00 = XAC2800 + XAC3300 ("Gasto    **
+	** Federalizado") que colisionaba con la clave homónima de la SHCP       **
+	** ("Total: Total Gasto Federalizado" = R28 + R33 + convenios + R23 +    **
+	** PSS, publicada desde 1997): dos filas por periodo y un total nacional **
+	** ~2× (2024: 4.88 vs 2.59 billones). La serie de la SHCP ya trae el     **
+	** total completo; la derivada era redundante, de definición más          **
+	** estrecha y sin consumidor en el motor. Detectado en la capa NL        **
+	** (DIAGNOSTICO_NL.md, anexo Federación↔NL F0 §5).                       **
 
 
 	************************
@@ -861,7 +892,6 @@ program define UpdateDatosAbiertos, return
 	append using "`deficit_epe'"
 	append using "`deficit_oye'"
 	append using "`diferencias'"
-	append using "`gastofed'"
 	append using "`otrosingresos'"
 
 	*drop if monto == .
@@ -869,6 +899,18 @@ program define UpdateDatosAbiertos, return
 	replace nombre = subinstr(nombre,"  "," ",.)
 	replace nombre = trim(nombre)
 	compress
+
+	** 5.1 Compuerta (v8.1): una fila por (clave, anio, mes, tipo). Una clave **
+	** derivada que colisione con una de la SHCP (XACGF00 hasta v8.0) o una   **
+	** costura mal resuelta duplicaría periodos; aborta sin tocar el caché.   **
+	capture isid clave_de_concepto anio mes tipo_de_informacion
+	if _rc != 0 {
+		noisily di as error "ALARMA UpdateDatosAbiertos: hay m{c a'}s de una fila por (clave, anio, mes, tipo). Claves:"
+		tempvar dup
+		duplicates tag clave_de_concepto anio mes tipo_de_informacion, g(`dup')
+		noisily levelsof clave_de_concepto if `dup' > 0
+		error 459
+	}
 
 	capture mkdir "${SIMROOT}/master/"
 	save "${SIMROOT}/master/DatosAbiertos.dta", replace
@@ -1089,6 +1131,60 @@ program define _DAlimpiafilas
 		quietly drop if `bad' == 1
 	}
 	drop `bad'
+end
+
+
+*************************************************************
+**** Compuerta: transferencias por entidad cuadran (v8.1) ****
+*************************************************************
+* Espera en memoria un archivo de transferencias (transferencias_entidades_fed
+* o _hist) ya limpio. Cada clave es fondo + entidad de dos dígitos (00 = total
+* nacional, 01-32 entidades, 33 = no distribuible). Para cada fondo × ciclo ×
+* mes exige:
+*   (a) al menos 32 filas de entidad (la SHCP publica 32 ó 33, con ceros);
+*   (b) fila nacional presente;
+*   (c) |suma de entidades - nacional| <= max(1e-3 * |nacional|, 10) miles
+*       de pesos. El ruido de redondeo de la SHCP es <= 1e-4 relativo y
+*       <= 3.1 miles de pesos (csv del 30-sep-2026, 13,716 fondo×mes).
+* Si algo falla, lista los peores casos y aborta con r(459): el caché
+* anterior queda intacto. Motivo: el csv del 22-sep-2026 llegó sin 1,046
+* filas de 2011 (54 nacionales) y el total nacional de R28 quedó 6.9% abajo
+* de la suma de entidades (FAIS -47%, FAM -30/-53%, FAFEF -41%).
+program define _DAcompuertaEntidades
+
+	syntax , NOMbre(string)
+
+	preserve
+	quietly {
+		duplicates drop					// filas repetidas idénticas: inocuas (el collapse de §3 las absorbe)
+		keep ciclo mes clave_de_concepto monto
+		g fondo = substr(clave_de_concepto, 1, length(clave_de_concepto) - 2)
+		g ent = substr(clave_de_concepto, -2, 2)
+		keep if regexm(ent, "^[0-9][0-9]$")
+		g byte nac = ent == "00"
+		replace monto = 0 if monto == .
+		collapse (sum) monto (count) n = monto, by(fondo ciclo mes nac)
+		reshape wide monto n, i(fondo ciclo mes) j(nac)
+		rename (monto0 n0 monto1 n1) (entidades n_ent nacional n_nac)
+		replace n_ent = 0 if n_ent == .
+		replace entidades = 0 if entidades == .
+		g double dif = abs(entidades - nacional)
+		g byte falla = n_ent < 32 & n_ent > 0
+		replace falla = 1 if n_nac == . & n_ent > 0
+		replace falla = 1 if dif > max(1e-3 * abs(nacional), 10) & nacional != .
+		count if falla
+		local nfalla = r(N)
+	}
+	if `nfalla' > 0 {
+		noisily di as error _newline "ALARMA UpdateDatosAbiertos (`nombre'): `nfalla' fondo(s)-mes donde las entidades no cuadran con la fila nacional o faltan filas."
+		noisily di as error "Archivo incompleto o corrupto de la SHCP; se conserva el cach{c e'} anterior. Peores casos (montos en miles de pesos):"
+		gsort -falla -dif
+		format entidades nacional dif %16.1fc
+		noisily list fondo ciclo mes n_ent entidades nacional dif if falla in 1/`=min(20, _N)', noobs abbrev(10)
+		error 459
+	}
+	noisily di in g "Datos Abiertos: " in y "`nombre'" in g " cuadra: " in y _N in g " fondo-mes con 32+ entidades y suma = nacional."
+	restore
 end
 
 

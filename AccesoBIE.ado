@@ -1,15 +1,34 @@
-*! version 8.0 CIEP 03jul2026
+*! version 8.1 CIEP 04oct2026
 *! AccesoBIE - Acceso al Banco de Indicadores del INEGI via API oficial
 *! (con respaldo automático vía la consulta pública de exportación .aspx)
-*! Sintaxis: AccesoBIE serie1 [serie2 ...] [, nombres(string) token(string)]
+*! Sintaxis: AccesoBIE serie1 [serie2 ...] [, nombres(string) token(string) area(##)]
 *! Ejemplo: AccesoBIE 628194              <- obtiene serie con nombre automático
 *! Ejemplo: AccesoBIE 628194 444612, nombres(PIB Desempleo)
+*! Ejemplo: AccesoBIE 750453, nombres(PIBE) area(19)   <- indicador estatal, Nuevo León
 
 program define AccesoBIE
 	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 	version 17.0
 	
-	syntax anything(name=series) [, Nombres(string) Token(string)]
+	syntax anything(name=series) [, Nombres(string) Token(string) AREa(string)]
+
+	// area() (v8.1): el BIE exporta cada indicador con las 33 áreas geográficas
+	// apiladas en la columna "Área geográfica" (00 nacional, 01-32 entidades).
+	// Sin area() el comando lee periodo/valor como siempre (correcto para las
+	// series nacionales, que solo traen el área 00). Con area(##) descarga la
+	// TABLA COMPLETA del indicador una vez por sesión, la cachea en
+	// raw/temp/AccesoBIE/<serie>_areas.csv (+ .meta: título, fecha de consulta
+	// INEGI, áreas, n) con escritura atómica y filtra el área pedida al cargar.
+	if "`area'" != "" {
+		capture confirm integer number `area'
+		local ok = _rc == 0
+		if `ok' local ok = `area' >= 0 & `area' <= 32
+		if !`ok' {
+			display as error "AccesoBIE: area() debe ser la clave de dos d{c i'}gitos del {c a'}rea geogr{c a'}fica del BIE (00 nacional, 01-32 entidades); recibi{c o'} `area'."
+			exit 198
+		}
+		local area : di %02.0f `area'
+	}
 	
 	// Token vía global Stata $BIE_API_TOKEN. Sin token NO se aborta: se salta
 	// la API oficial y se usa la consulta pública de exportación (.aspx) del
@@ -44,11 +63,37 @@ program define AccesoBIE
 		local j = 1
 		foreach serie of local series {
 			
-			// Llamar a Python para obtener datos via API oficial
-			python: inegi_api("`serie'", "`token'")
-			
-			// Importar los datos
-			import delimited "${SIMROOT}/raw/temp/AccesoBIE/`serie'.csv", clear varnames(1) encoding(utf-8)
+			if "`area'" != "" {
+				// Modo area(): tabla completa del indicador (consulta pública),
+				// cacheada una vez por sesión; aquí se filtra el área pedida.
+				local csvareas "${SIMROOT}/raw/temp/AccesoBIE/`serie'_areas.csv"
+				global INEGI_AREAS_ERR_`serie' ""
+				python: inegi_area("`serie'")
+				if "${INEGI_AREAS_ERR_`serie'}" != "" {
+					noisily display as error "AccesoBIE: ${INEGI_AREAS_ERR_`serie'}"
+					global INEGI_AREAS_ERR_`serie' ""
+					exit 459
+				}
+				checksum "`csvareas'"
+				local chk = r(checksum)
+				import delimited "`csvareas'", clear varnames(1) encoding(utf-8) stringcols(1 2 4)
+				local nfilas = _N
+				keep if area == "`area'"
+				if _N == 0 {
+					noisily display as error "AccesoBIE: el indicador `serie' no trae filas para el {c a'}rea `area'. {c A'}reas disponibles: ${INEGI_AREAS_LIST_`serie'}"
+					exit 459
+				}
+				drop area
+				capture drop nota
+				noisily display as text "  {c A'}rea " as result "`area'" as text " de `serie' | tabla completa: `nfilas' filas, consulta INEGI ${INEGI_AREAS_FECHA_`serie'}, checksum `chk'"
+			}
+			else {
+				// Llamar a Python para obtener datos via API oficial
+				python: inegi_api("`serie'", "`token'")
+				
+				// Importar los datos
+				import delimited "${SIMROOT}/raw/temp/AccesoBIE/`serie'.csv", clear varnames(1) encoding(utf-8)
+			}
 			
 			// Verificar que hay datos. Si una serie no se obtuvo por NINGUNA
 			// vía, el error truena aquí, claro y en su origen — no después,
@@ -192,11 +237,14 @@ program define AccesoBIE
 			exit 109
 		}
 		
-		// Limpiar variables globales temporales
+		// Limpiar variables globales temporales (INEGI_AREAS_<serie> = 1 se
+		// conserva: marca que la tabla completa ya se descargó en esta sesión)
 		foreach serie of local series {
 			global INEGI_VARNAME_`serie' ""
 			global INEGI_LABEL_`serie' ""
 			global INEGI_DESC_`serie' ""
+			global INEGI_AREAS_LIST_`serie' ""
+			global INEGI_AREAS_FECHA_`serie' ""
 		}
 	}
 	
@@ -208,6 +256,7 @@ python:
 import requests
 import json
 import re
+import os
 import time
 import unicodedata
 from bs4 import BeautifulSoup
@@ -215,6 +264,121 @@ from sfi import Macro
 
 MAX_RETRIES = 3
 RETRY_DELAY = 2  # segundos entre reintentos
+
+EXPORT_URL = 'https://www.inegi.org.mx/app/indicadores/exportacion.aspx'
+
+
+def inegi_area(serie):
+    """Modo area() (v8.1): tabla COMPLETA del indicador (las 33 áreas
+    geográficas apiladas) desde la consulta pública de exportación, cacheada
+    por indicador una vez por sesión en raw/temp/AccesoBIE/<serie>_areas.csv
+    (+ .meta). El filtro por área lo hace Stata al cargar. Escritura atómica:
+    si la respuesta no trae tabla, ni columna de área, ni filas, se publica el
+    error en INEGI_AREAS_ERR_<serie> y el último caché bueno queda intacto."""
+    root = Macro.getGlobal('SIMROOT') + '/raw/temp/AccesoBIE/'
+    csv_path = root + serie + '_areas.csv'
+    meta_path = root + serie + '_areas.meta'
+
+    if Macro.getGlobal(f'INEGI_AREAS_{serie}') == '1' and os.path.exists(csv_path) and os.path.exists(meta_path):
+        meta = read_meta(meta_path)
+        set_metadata(serie, meta.get('titulo', f'Serie {serie}'))
+        Macro.setGlobal(f'INEGI_AREAS_LIST_{serie}', meta.get('areas', ''))
+        Macro.setGlobal(f'INEGI_AREAS_FECHA_{serie}', meta.get('fecha_consulta', ''))
+        return
+
+    error = ''
+    for intento in range(1, MAX_RETRIES + 1):
+        try:
+            tabla = fetch_area_table(serie)
+            write_area_cache(serie, tabla, csv_path, meta_path)
+            Macro.setGlobal(f'INEGI_AREAS_{serie}', '1')
+            Macro.setGlobal(f'INEGI_AREAS_LIST_{serie}', tabla['areas'])
+            Macro.setGlobal(f'INEGI_AREAS_FECHA_{serie}', tabla['fecha'])
+            set_metadata(serie, tabla['titulo'])
+            print(f"  Fuente: Portal web (tabla completa por área geográfica)")
+            print(f"  Indicador: {tabla['titulo']}")
+            print(f"  Observaciones: {len(tabla['filas'])} en {tabla['nareas']} área(s); consulta INEGI {tabla['fecha']}")
+            return
+        except FormatoInesperado as e:
+            error = str(e)
+            break
+        except Exception as e:
+            error = f'error de conexión con el INEGI ({e})'
+            if intento < MAX_RETRIES:
+                print(f"  Reintentando ({intento}/{MAX_RETRIES})...")
+                time.sleep(RETRY_DELAY)
+    Macro.setGlobal(f'INEGI_AREAS_ERR_{serie}', f'indicador {serie}: {error}; se conserva el último caché.')
+
+
+class FormatoInesperado(Exception):
+    pass
+
+
+def fetch_area_table(serie):
+    """Consulta pública del indicador (mismos parámetros que try_scraping);
+    devuelve la tabla completa parseada."""
+    params = {
+        'cveser': serie, 'bie': 'false', 'aamin': '1980', 'aamax': '9999',
+        'ordena': 'a', 'ordenaPeriodo': 'ap', 'orientacion': 'v',
+        'frecuencia': 'Todo', 'estadistico': 'false', 'FileFormat': 'iqy',
+        'ag': '0', 'subapp': 'BIE', 'tematica': '3', 'tyExp': '1', 'view': 'filas'}
+    response = requests.get(EXPORT_URL, params=params, timeout=60)
+    response.raise_for_status()
+    soup = BeautifulSoup(response.text, 'html.parser')
+    table = soup.find('table', {'id': 'tableContainerSinScroll'})
+    if not table:
+        raise FormatoInesperado('la consulta pública no devolvió tabla (¿clave inexistente?)')
+    rows = table.find_all('tr')
+    header = [th.get_text(strip=True) for th in rows[0].find_all('th')] if rows else []
+    if len(header) < 3 or 'rea geogr' not in header[1].lower():
+        raise FormatoInesperado('la tabla no trae la columna "Área geográfica"; este indicador no se exporta por área')
+    titulo = re.sub(r'\s*/[fp]\d+', '', header[2])
+    fm = re.search(r'Fecha de consulta:\s*([0-9/]+\s+[0-9:]+)', response.text)
+    fecha = fm.group(1) if fm else ''
+    filas = []
+    areas = {}
+    for row in rows[1:]:
+        cells = [td.get_text(strip=True) for td in row.find_all('td')]
+        if len(cells) < 3:
+            continue
+        periodo, ageo, valor = cells[0], cells[1], cells[2]
+        nm = re.search(r'\s*/?\s*([A-Za-z]+\d*)\s*$', periodo)
+        nota = nm.group(1) if nm else ''
+        periodo = re.sub(r'\s*/?\s*[A-Za-z]+\d*\s*$', '', periodo).strip()
+        valor = valor.replace(',', '').replace(' ', '')
+        if valor in ['ND', 'N/E', 'N/D', '-']:
+            valor = ''
+        areas[ageo[:2]] = ageo
+        filas.append((periodo, ageo[:2], valor, nota))
+    if not filas:
+        raise FormatoInesperado('la tabla no trae filas')
+    return {'titulo': titulo, 'fecha': fecha, 'filas': filas, 'nareas': len(areas),
+            'areas': ' '.join(sorted(areas)), 'url': response.url}
+
+
+def write_area_cache(serie, tabla, csv_path, meta_path):
+    """Escribe <serie>_areas.csv y .meta de forma atómica (.tmp -> os.replace)."""
+    tmp = csv_path + '.tmp'
+    with open(tmp, 'w', encoding='utf-8') as f:
+        f.write('periodo,area,valor,nota\n')
+        for periodo, area, valor, nota in tabla['filas']:
+            f.write(f'{periodo},{area},{valor},{nota}\n')
+    os.replace(tmp, csv_path)
+    tmp = meta_path + '.tmp'
+    with open(tmp, 'w', encoding='utf-8') as f:
+        f.write(f"titulo={tabla['titulo']}\nfecha_consulta={tabla['fecha']}\nareas={tabla['areas']}\n")
+        f.write(f"n={len(tabla['filas'])}\nurl={tabla['url']}\n")
+    os.replace(tmp, meta_path)
+
+
+def read_meta(meta_path):
+    meta = {}
+    with open(meta_path, encoding='utf-8') as f:
+        for line in f:
+            if '=' in line:
+                k, v = line.rstrip('\n').split('=', 1)
+                meta[k] = v
+    return meta
 
 def inegi_api(serie, token):
     """
