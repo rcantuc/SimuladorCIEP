@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulador Fiscal NL — Actividad económica y precios</title>
+<!--
+  Plantilla versionada: 01_modulos/nl-assets/actividad-nl.html (capa NL).
+  01_modulos/PIBDeflactorNL.do sustituye la marca de datos por el JSON
+  (users/$id/nodos/actividad-nl.json) y deja el HTML autocontenido en
+  users/$id/nodos/actividad-nl.html. Cero CDNs, cero fetch, cero red.
+  Regla dura: ningún número vive en esta plantilla; todos vienen del JSON.
+  Los datos van en un bloque script de tipo application/json con id nl-data y se parsean con
+  JSON.parse: si falta el bloque, queda una marca o el JSON es inválido, el pie lo
+  dice con precisión (nunca un 'no fue incrustado' genérico).
+  Modo datos: cada vista tiene tabla (valores del canal, sin recálculo), copia
+  TSV y descarga CSV con encabezado de procedencia; nada sale sin procedencia.
+-->
+<style>
+:root{--nl:#5a2148;--nac:#7f7f7f;--banda:rgba(90,33,72,.25);--recibe:#00b1af;--recibeTexto:#008381;--paga:#e76b24;--pagaTexto:#c75108;--paquete:#fbb818;--proy:rgba(90,33,72,.55);--nowcast:rgba(90,33,72,.7);--acento:#872675;--acento2:#00b1af;--alerta:#d52b4d;--h:#0a6db6;--m:#f27794;--ink:#212121;--mut:#666666;--line:#d0d0d0;--bg:#f6f6f6;--card:#fff;--fuenteTitulo:"Poppins",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;--fuenteCuerpo:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;font-family:var(--fuenteCuerpo);color:var(--ink);background:var(--bg);font-size:15px;line-height:1.4}
+header{background:var(--nl);color:#fff}
+main{max-width:1240px;margin:0 auto;padding:18px 20px 30px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin-bottom:14px}
+.tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.tabs button{border:1px solid var(--line);background:#fff;border-radius:20px;padding:8px 16px;font-size:14px;cursor:pointer;color:var(--ink)}
+.tabs button.on{background:var(--nl);color:#fff;border-color:var(--nl);box-shadow:inset 0 -3px 0 var(--acento2)}
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px 22px;align-items:end}
+.ctl label{display:block;font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px}
+.ctl select,.ctl input[type=number]{padding:7px 8px;border:1px solid var(--line);border-radius:6px;font-size:14px;background:#fff;color:var(--ink)}
+.ctl select{width:100%}
+.rng{display:flex;align-items:center;gap:8px}.rng input{width:84px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{border:0;background:#fff;padding:7px 12px;font-size:14px;cursor:pointer;color:var(--ink)}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button.on{background:var(--nl);color:#fff}
+.seg.reg button.on{background:var(--acento);box-shadow:inset 0 -3px 0 var(--acento2)}
+.chk{display:flex;align-items:center;gap:8px;font-size:14px;padding:7px 0}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:12px;margin-bottom:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+.card .k{font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.4px}
+.card .v{font-size:26px;font-weight:600;margin:4px 0 2px;font-variant-numeric:tabular-nums}
+.card .n{font-size:12px;color:var(--mut)}
+.card .d{font-size:13px;margin-top:2px;font-variant-numeric:tabular-nums}
+.pos{color:var(--recibeTexto)}.neg{color:var(--pagaTexto)}
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:14px}.charts.tabla{grid-template-columns:1fr}.chart{min-width:0}
+@media (max-width:900px){.charts{grid-template-columns:1fr}}
+.chart h2{margin:0 0 6px;font-size:15px;font-weight:600}
+.chart .cap{font-size:12px;color:var(--mut);margin:0 0 6px;min-height:16px}
+.chart .bar{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+svg{width:100%;height:auto;display:block}
+.ax{stroke:#9aa5b1;stroke-width:1}.grid{stroke:#e5e8ec;stroke-width:1}.zero{stroke:#6b7785;stroke-width:1.2}
+.tick{font-size:11px;fill:var(--mut)}.lab{font-size:12px;fill:var(--ink)}
+.b-obs{fill:var(--nl)}.b-now{fill:var(--nowcast)}.b-proy{fill:var(--proy)}.b-last{stroke:var(--ink);stroke-width:1.5}
+.lt{fill:none;stroke-width:2.2}.lt-nac{stroke:var(--nac)}.lt-nl{stroke:var(--nl)}.lt-def{stroke:var(--acento);stroke-dasharray:5 3}
+.dot-nac{fill:var(--nac)}.dot-nl{fill:var(--nl)}
+.shade{fill:#efe6ec}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--mut);margin-top:6px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:2px;vertical-align:-2px;margin-right:5px}
+.tip{font-size:12px;color:var(--ink);min-height:16px;margin-top:4px;font-variant-numeric:tabular-nums}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.tools button,.seg2 button{border:1px solid var(--line);background:#fff;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:13px;color:var(--ink)}
+.seg2{display:inline-flex;border-radius:6px;overflow:hidden}
+.seg2 button.on{background:var(--nl);color:#fff;border-color:var(--nl)}
+.tbl-wrap{max-height:460px;overflow:auto;border:1px solid var(--line);border-radius:6px}
+table{border-collapse:collapse;width:100%;font-size:12.5px;font-variant-numeric:tabular-nums}
+th,td{padding:5px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th{position:sticky;top:0;background:#f1f3f6;color:var(--mut);font-weight:600;text-align:right}
+td:first-child,th:first-child{text-align:left}
+tr.r-now td{background:#f3edf1}tr.r-proy td{background:#f6f6f6;color:#666666}
+.prov{font-size:11.5px;color:var(--mut);margin:6px 0 0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap}
+.msg{font-size:12px;color:var(--mut);min-height:16px}
+textarea.fb{width:100%;height:160px;font-family:ui-monospace,Menlo,monospace;font-size:11px;margin-top:6px;display:none}
+footer{max-width:1240px;margin:0 auto;padding:10px 20px 40px;font-size:12px;color:var(--mut)}
+footer p{margin:4px 0}
+.ok{color:var(--recibeTexto)}.bad{color:var(--alerta)}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
+</style>
+</head>
+<body>
+<header id="cab"></header>
+<main>
+  <div class="tabs" id="tabs">
+    <button data-v="percapita" class="on">PIBE por habitante</button>
+    <button data-v="crecimiento">Crecimiento</button>
+    <button data-v="precios">Precios</button>
+  </div>
+
+  <section class="panel controls">
+    <div class="ctl" id="ctl-reg">
+      <label>Registro</label>
+      <div class="seg reg" id="reg"><button data-r="pc" class="on">Por habitante</button><button data-r="macro">Macro</button></div>
+    </div>
+    <div class="ctl">
+      <label>Rango de años (series anuales)</label>
+      <div class="rng"><input type="number" id="ini"> <span>–</span> <input type="number" id="fin"></div>
+    </div>
+    <div class="ctl" id="ctl-serie">
+      <label for="serie">Serie</label>
+      <select id="serie"></select>
+    </div>
+    <div class="ctl">
+      <label>Comparativo</label>
+      <div class="chk"><input type="checkbox" id="cmp" checked><label for="cmp" style="text-transform:none;letter-spacing:0;font-size:14px;color:var(--ink);margin:0">Mostrar nacional</label></div>
+    </div>
+    <div class="ctl">
+      <label>Modo</label>
+      <div class="seg" id="modo"><button data-m="grafica" class="on">Gráfica</button><button data-m="tabla">Tabla</button></div>
+    </div>
+  </section>
+
+  <section class="cards" id="cards"></section>
+
+  <section class="charts" id="charts">
+    <div class="panel chart" id="c1">
+      <div class="bar"><h2 id="c1-title"></h2><div class="tools" id="c1-tools"></div></div>
+      <p class="cap" id="c1-cap"></p>
+      <div id="c1-body"></div>
+      <div class="legend" id="c1-leg"></div>
+      <div class="tip" id="c1-tip"></div>
+    </div>
+    <div class="panel chart" id="c2">
+      <div class="bar"><h2 id="c2-title"></h2><div class="tools" id="c2-tools"></div></div>
+      <p class="cap" id="c2-cap"></p>
+      <div id="c2-body"></div>
+      <div class="legend" id="c2-leg"></div>
+      <div class="tip" id="c2-tip"></div>
+    </div>
+  </section>
+</main>
+<footer id="pie"></footer>
+
+<script type="application/json" id="nl-data">
+/*__NLACT_DATA__*/
+</script>
+<script>
+/*__NL_ESTILO_ASSETS__*/
+</script>
+<script>
+/*__NL_DATOS_JS__*/
+</script>
+<script>
+(function () {
+  'use strict';
+  var ND = window.NLDatos;
+  if (!ND) { document.getElementById('pie').innerHTML = '<p class="bad">Sin componente: nl-datos.js no fue incrustado (este archivo es la plantilla o la inyección falló).</p>'; return; }
+  if (window.NLEstilo) window.NLEstilo.apply();
+  var L = ND.load('nl-data');
+  if (L.error || !L.data || !L.data.anual) { document.getElementById('pie').innerHTML = '<p class="bad">Sin datos: ' + ND.esc(L.error || 'el JSON no trae la serie anual') + '.</p>'; return; }
+  var D = L.data;
+  var P = D.procedencia || {}, C = D.cifras || {}, DEF = D.definiciones || {};
+  var f1 = new Intl.NumberFormat('es-MX', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  var f2 = new Intl.NumberFormat('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  var f0 = new Intl.NumberFormat('es-MX', { maximumFractionDigits: 0 });
+  var MES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+  function pct(v) { return v === null || v === undefined ? '—' : f2.format(v) + ' %'; }
+  function sgn(v) { return v === null || v === undefined ? '—' : (v >= 0 ? '+' : '') + f2.format(v) + ' pp'; }
+  function cls(v) { return v === null || v === undefined ? '' : (v >= 0 ? 'pos' : 'neg'); }
+  var esc = window.NLDatos.esc;
+
+  var A = D.anual, Q = D.trimestral, M = D.mensual;
+  var A0 = A[0].anio, A1 = A[A.length - 1].anio;
+  var SERIES = {
+    percapita: [['pc', 'PIBE por habitante (real, pesos de 2018) y crecimiento per cápita'], ['razon', 'NL como % del PIBE por habitante nacional']],
+    crecimiento: [['pibe', 'Crecimiento real anual (PIBE) y nowcast ITAEE'], ['itaee', 'ITAEE trimestral: variación anual (original)'], ['itaeesa', 'ITAEE trimestral: variación trimestral (desestacionalizada)']],
+    precios: [['dd', 'Inflación dic/dic (INPC)'], ['prom', 'Inflación promedio anual (INPC)'], ['men', 'Inflación mensual anual a/a (INPC)']]
+  };
+
+  /* ---------- estado ---------- */
+  var S = { vista: 'percapita', reg: 'pc', ini: Math.max(A0, A1 - 20), fin: A1, serie: 'pc', cmp: true, modo: 'grafica' };
+  (function () {
+    var h = (location.hash || '').replace(/^#/, ''); if (!h) return;
+    h.split('&').forEach(function (kv) {
+      var p = kv.split('='), k = p[0], v = decodeURIComponent(p[1] || '');
+      if (k === 'vista' && SERIES[v]) S.vista = v;
+      if (k === 'ini' && +v) S.ini = +v;
+      if (k === 'fin' && +v) S.fin = +v;
+      if (k === 'serie') S.serie = v;
+      if (k === 'reg' && (v === 'pc' || v === 'macro')) S.reg = v;
+      if (k === 'cmp') S.cmp = (v === '1' || v === 'true');
+      if (k === 'modo' && (v === 'grafica' || v === 'tabla')) S.modo = v;
+      if (k === 'rango') { var r = v.split('-'); if (+r[0]) S.ini = +r[0]; if (+r[1]) S.fin = +r[1]; }
+    });
+  })();
+  function validSerie() { var ok = SERIES[S.vista].some(function (s) { return s[0] === S.serie; }); if (!ok) S.serie = SERIES[S.vista][0][0]; }
+  function pushHash() { location.replace('#vista=' + S.vista + '&reg=' + S.reg + '&serie=' + S.serie + '&ini=' + S.ini + '&fin=' + S.fin + '&cmp=' + (S.cmp ? 1 : 0) + '&modo=' + S.modo); }
+
+  /* ---------- controles ---------- */
+  var elIni = document.getElementById('ini'), elFin = document.getElementById('fin'), elSerie = document.getElementById('serie'), elCmp = document.getElementById('cmp');
+  elIni.min = A0; elIni.max = A1; elFin.min = A0; elFin.max = A1;
+  function sync() {
+    validSerie();
+    S.ini = Math.min(Math.max(S.ini, A0), A1); S.fin = Math.min(Math.max(S.fin, A0), A1); if (S.ini > S.fin) { var t = S.ini; S.ini = S.fin; S.fin = t; }
+    elIni.value = S.ini; elFin.value = S.fin; elCmp.checked = S.cmp;
+    elSerie.innerHTML = SERIES[S.vista].map(function (s) { return '<option value="' + s[0] + '">' + s[1] + '</option>'; }).join(''); elSerie.value = S.serie;
+    Array.prototype.forEach.call(document.querySelectorAll('#tabs button'), function (b) { b.classList.toggle('on', b.getAttribute('data-v') === S.vista); });
+    Array.prototype.forEach.call(document.querySelectorAll('#reg button'), function (b) { b.classList.toggle('on', b.getAttribute('data-r') === S.reg); });
+    document.getElementById('ctl-reg').style.opacity = S.vista === 'percapita' ? '1' : '.45';
+    Array.prototype.forEach.call(document.querySelectorAll('#modo button'), function (b) { b.classList.toggle('on', b.getAttribute('data-m') === S.modo); });
+    pushHash();
+  }
+  elIni.addEventListener('change', function () { S.ini = +elIni.value; sync(); render(); });
+  elFin.addEventListener('change', function () { S.fin = +elFin.value; sync(); render(); });
+  elSerie.addEventListener('change', function () { S.serie = elSerie.value; sync(); render(); });
+  elCmp.addEventListener('change', function () { S.cmp = elCmp.checked; sync(); render(); });
+  Array.prototype.forEach.call(document.querySelectorAll('#reg button'), function (b) { b.addEventListener('click', function () { S.reg = b.getAttribute('data-r'); sync(); render(); }); });
+  Array.prototype.forEach.call(document.querySelectorAll('#tabs button'), function (b) { b.addEventListener('click', function () { S.vista = b.getAttribute('data-v'); S.serie = SERIES[S.vista][0][0]; sync(); render(); }); });
+  Array.prototype.forEach.call(document.querySelectorAll('#modo button'), function (b) { b.addEventListener('click', function () { S.modo = b.getAttribute('data-m'); sync(); render(); }); });
+
+  /* ---------- tarjetas ---------- */
+  function cards() {
+    var h = '';
+    if (C.pibeRpcnl !== undefined && C.pibeRpcnl !== null) {
+      h += card('PIBE por habitante ' + C.anioPIBEult + (C.selloPIBEult ? ' ' + C.selloPIBEult : ''), f0.format(C.pibeRpcnl) + ' <span style="font-size:14px;color:var(--mut)">MXN 2018</span>', 'Nuevo León · real por habitante · nominal ' + f0.format(C.pibeNpcnl) + ' MXN corrientes · ' + f1.format(C.pibeRnl / 1e6) + ' mmdp 2018 en total', C.difCrecPcNL, 'crec. per cápita ' + pct(C.crecPcnl) + ' vs. nacional ' + pct(C.crecPcnac) + ' · NL = ' + f1.format(C.razonPcNL) + ' % del nacional por habitante (' + f0.format(C.pibeRpcnac) + ' MXN 2018)');
+    }
+    h += card('Crecimiento real ' + C.anioPIBEult + (C.selloPIBEult ? ' ' + C.selloPIBEult : '') + ' (PIBE)', pct(C.crecPIBEnl), 'Nuevo León · dato publicado' + (C.selloPIBEult ? ' · sello INEGI ' + C.selloPIBEult + ' (revisado)' : ''), C.difCrecPIBEnl, 'vs. nacional ' + pct(C.crecPIBEnac));
+    h += card('Nowcast ITAEE ' + C.anioITAEEult + 'T' + C.trimITAEEult + (C.selloITAEEult ? ' ' + C.selloITAEEult : ''), pct(C.crecITAEEnl), 'variación anual, serie original · preliminar' + (C.selloITAEEult ? ' · sello INEGI ' + C.selloITAEEult : ''), C.difCrecITAEEnl, 'vs. PIB nacional ' + pct(C.crecITAEEnac) + ' · desest. t/t ' + pct(C.crecITAEEsaQnl));
+    h += card('Inflación NL ' + MES[C.mesINPCult - 1] + ' ' + C.anioINPCult, pct(C.inflacionNLvig), 'INPC Nuevo León, variación anual', C.difInflacionNLvig, 'vs. nacional ' + pct(C.inflacionNacvig) + ' · dic/dic ' + C.anioInflDDult + ': ' + pct(C.inflacionNLdd));
+    h += card('Deflactor PIBE ' + C.anioPIBEult + (C.selloPIBEult ? ' ' + C.selloPIBEult : ''), pct(C.defPIBEnl), 'precios de la producción estatal (implícito)', C.difDefPIBEnl, 'vs. nacional ' + pct(C.defPIBEnac));
+    h += card('Proyección ' + C.anioPE + ' (NL)', pct(C.crecPIBEnlPE), 'crecimiento real · criterio del motor', null, 'deflactor ' + pct(C.defPIBEnlPE) + ' · inflación dic/dic ' + pct(C.inflacionNLddPE));
+    document.getElementById('cards').innerHTML = h;
+  }
+  function card(k, v, n, d, dt) { return '<div class="card"><div class="k">' + k + '</div><div class="v">' + v + '</div><div class="n">' + n + '</div><div class="d">' + (d === null ? '' : '<span class="' + cls(d) + '">' + sgn(d) + '</span> ') + '<span style="color:var(--mut)">' + dt + '</span></div></div>'; }
+
+  /* ---------- datos filtrados (valores del canal, sin recálculo) ---------- */
+  function rowsAnual() { return A.filter(function (r) { return r.anio >= S.ini && r.anio <= S.fin; }); }
+  function rowsTrim() { return Q.filter(function (r) { return r.anio >= S.ini && r.anio <= S.fin; }); }
+  function rowsMen() { return M.filter(function (r) { return r.anio >= S.ini && r.anio <= S.fin; }); }
+  /* definición de columnas por serie: [clave, etiqueta, formateador] */
+  function colsFor(which) {
+    var nac = S.cmp;
+    if (which === 'pc') { var cp = [['anio', 'Año', String], ['tipoCrec', 'Tipo', String], ['selloPIBEnl', 'Sello INEGI', String], ['pobNL', 'Población NL', f0.format], ['pibeRpcnl', 'PIBE real por habitante NL (MXN 2018)', f0.format], ['pibeNpcnl', 'PIBE nominal por habitante NL (MXN)', f0.format], ['crecPcnl', 'Crec. per cápita NL %', f2.format], ['crecPobnl', 'Crec. población NL %', f2.format], ['pibeRnl', 'PIBE NL real 2018 (mdp)', f0.format]]; if (nac) cp.push(['pobNac', 'Población nacional', f0.format], ['pibeRpcnac', 'PIBE real por habitante nacional (MXN 2018)', f0.format], ['crecPcnac', 'Crec. per cápita nacional %', f2.format], ['difCrecPc', 'Dif. NL−nac pp', f2.format], ['razonPc', 'NL % del nacional por habitante', f2.format]); return cp; }
+    if (which === 'razon') { return [['anio', 'Año', String], ['tipoCrec', 'Tipo', String], ['pibeRpcnl', 'NL (MXN 2018 por hab.)', f0.format], ['pibeRpcnac', 'Nacional (MXN 2018 por hab.)', f0.format], ['razonPc', 'NL % del nacional', f2.format], ['partPIBEnl', 'Part. NL en PIB %', f2.format]]; }
+    if (which === 'pibe') { var c = [['anio', 'Año', String], ['tipoCrec', 'Tipo', String], ['selloPIBEnl', 'Sello INEGI', String], ['pibeNnl', 'PIBE NL nominal (mdp)', f0.format], ['pibeRnl', 'PIBE NL real 2018 (mdp)', f0.format], ['crecPIBEnl', 'Crec. real NL %', f2.format], ['nowITAEEnl', 'Nowcast ITAEE NL %', f2.format], ['ntrim', 'Trim. ITAEE', String]]; if (nac) c.push(['crecPIBEnac', 'Crec. real nacional %', f2.format], ['difCrec', 'Dif. NL−nac pp', f2.format], ['nowITAEEnac', 'Nowcast PIB nac %', f2.format]); c.push(['partPIBEnl', 'Part. NL en PIB %', f2.format]); return c; }
+    if (which === 'itaee') { var c2 = [['per', 'Trimestre', String], ['selloITAEEnl', 'Sello INEGI', String], ['itaeenl', 'ITAEE NL (2018=100)', f2.format], ['yoyITAEEnl', 'Var. anual NL %', f2.format]]; if (nac) c2.push(['itaeenac', 'PIB trim. nac (2018=100)', f2.format], ['yoyITAEEnac', 'Var. anual nac %', f2.format]); return c2; }
+    if (which === 'itaeesa') { return [['per', 'Trimestre', String], ['selloITAEEnl', 'Sello INEGI', String], ['itaeeSAnl', 'ITAEE NL desest. (2018=100)', f2.format], ['qoqITAEESAnl', 'Var. trimestral NL %', f2.format], ['yoyITAEESAnl', 'Var. anual desest. NL %', f2.format]]; }
+    if (which === 'dd') { var c3 = [['anio', 'Año', String], ['tipoInfl', 'Tipo', String], ['dicnl', 'INPC NL dic', f2.format], ['inflDDnl', 'Inflación dic/dic NL %', f2.format]]; if (nac) c3.push(['dicnac', 'INPC nac dic', f2.format], ['inflDDnac', 'Inflación dic/dic nac %', f2.format], ['difInflDD', 'Dif. NL−nac pp', f2.format]); return c3; }
+    if (which === 'prom') { var c4 = [['anio', 'Año', String], ['inpcPromnl', 'INPC NL promedio', f2.format], ['inflPromnl', 'Inflación promedio NL %', f2.format]]; if (nac) c4.push(['inpcPromnac', 'INPC nac promedio', f2.format], ['inflPromnac', 'Inflación promedio nac %', f2.format], ['difInflProm', 'Dif. NL−nac pp', f2.format]); return c4; }
+    if (which === 'men') { var c5 = [['per', 'Mes', String], ['inpcnl', 'INPC NL', f2.format], ['yoyINPCnl', 'Inflación anual NL %', f2.format]]; if (nac) c5.push(['inpcnac', 'INPC nacional', f2.format], ['yoyINPCnac', 'Inflación anual nac %', f2.format]); return c5; }
+    if (which === 'defl') { var c6 = [['anio', 'Año', String], ['tipoDefl', 'Tipo', String], ['selloPIBEnl', 'Sello INEGI', String], ['deflnl', 'Deflactor PIBE NL (2018=100)', f2.format], ['varDeflnl', 'Var. deflactor NL %', f2.format], ['inflDDnl', 'Inflación dic/dic NL %', f2.format]]; if (nac) c6.push(['deflnac', 'Deflactor nac (2018=100)', f2.format], ['varDeflnac', 'Var. deflactor nac %', f2.format], ['difDefl', 'Dif. NL−nac pp', f2.format]); return c6; }
+    return [];
+  }
+  function dataFor(which) {
+    if (which === 'itaee' || which === 'itaeesa') return rowsTrim().map(function (r) { var o = Object.assign({}, r); o.per = r.anio + 'T' + r.trimestre; return o; });
+    if (which === 'men') return rowsMen().map(function (r) { var o = Object.assign({}, r); o.per = r.anio + '-' + String(r.mes).padStart(2, '0'); return o; });
+    return rowsAnual();
+  }
+  function fmtCell(c, v) { if (v === null || v === undefined) return ''; return c[2](v); }
+  function rowClass(r, which) { var t = (which === 'dd' || which === 'prom' || which === 'men') ? (r.tipoInfl || '') : (which === 'defl' ? (r.tipoDefl || '') : (r.tipoCrec || '')); return t.indexOf('nowcast') === 0 ? 'r-now' : (t.indexOf('proy') === 0 ? 'r-proy' : ''); }
+
+  /* ---------- procedencia de extractos ---------- */
+  function fuentesTxt(which) {
+    var ids = { pibe: ['750453', '746097', '753357', '741180', '734407+735143'], itaee: ['741180', '734407+735143'], itaeesa: ['741927'], dd: ['902690', '910392'], prom: ['902690', '910392'], men: ['902690', '910392'], defl: ['750453', '746097', '753357', '902690'] }[which] || [];
+    return (P.series || []).filter(function (s) { return ids.indexOf(s.id) >= 0; }).map(function (s) { return s.fuente + ' ' + s.id + (s.area !== '00' ? '/área ' + s.area : '') + ' (consulta INEGI ' + s.consulta + ', último ' + s.ultimo + (s.sello_ultimo ? ' ' + s.sello_ultimo : '') + ')'; });
+  }
+  function provLines(which, titulo) {
+    var L = [];
+    L.push('# ' + (D.producto || 'Simulador Fiscal NL') + ' — ' + titulo);
+    L.push('# ' + (D.subtitulo || '') + ' · capa ' + (P.version_capa_nl || '') + ' · motor ' + (P.version_motor || '') + ' · corrida ' + (P.generado_en || '') + ' · ' + (P.driver || ''));
+    fuentesTxt(which).forEach(function (f) { L.push('# Fuente: ' + f); });
+    L.push('# Sellos INEGI: ' + (DEF.sellos_inegi || 'p = preliminar, r = revisado'));
+    L.push('# Criterio de proyección: ' + ((D.presentacion || {}).criterio_proyeccion || ''));
+    L.push('# Filtros: vista=' + S.vista + '; serie=' + S.serie + '; rango=' + S.ini + '-' + S.fin + '; comparativo nacional=' + (S.cmp ? 'sí' : 'no'));
+    L.push('# Tipos: observado = dato INEGI; nowcast ITAEE = preliminar con trimestres disponibles; proyección geométrica = supuesto de la capa NL (criterio PIBDeflactor)');
+    L.push('# Valores del canal (JSON actividad-nl.json), sin recálculo en el navegador; precisión completa');
+    return L;
+  }
+  function tsv(which, titulo, sep) { return window.NLDatos.extract(colsFor(which), dataFor(which), provLines(which, titulo), sep); }
+  function tools(id, which, titulo) {
+    window.NLDatos.tools(document.getElementById(id + '-tools'), {
+      modo: S.modo,
+      onModo: function (m) { S.modo = m; sync(); render(); },
+      data: function () { return { cols: colsFor(which), rows: dataFor(which), prov: provLines(which, titulo), name: 'actividad-nl_' + which + '_' + S.ini + '-' + S.fin + '.csv' }; },
+      msg: function () { return document.getElementById(id + '-tip'); },
+      fb: function () { return document.getElementById(id + '-fb'); }
+    });
+  }
+  function table(id, which, titulo) {
+    var cols = colsFor(which).map(function (c) { return [c[0], c[1], function (v) { return fmtCell(c, v); }]; });
+    document.getElementById(id + '-body').innerHTML = window.NLDatos.table(cols, dataFor(which), provLines(which, titulo), function (r) { return rowClass(r, which); }) + '<textarea class="fb" id="' + id + '-fb"></textarea>';
+    document.getElementById(id + '-leg').innerHTML = '';
+  }
+
+  /* ---------- SVG helpers ---------- */
+  var W = 900, H = 440;
+  function ticks(mn, mx, n) { var raw = (mx - mn) / n, p = Math.pow(10, Math.floor(Math.log(raw) / Math.LN10)), f = raw / p, st = (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * p, out = [], t0 = Math.ceil(mn / st) * st; for (var t = t0; t <= mx + 1e-9; t += st) out.push(+t.toFixed(10)); return out; }
+  function extent(vals) { var mn = 0, mx = 0; vals.forEach(function (v) { if (v === null || v === undefined) return; if (v < mn) mn = v; if (v > mx) mx = v; }); if (mx === mn) mx = mn + 1; var pad = (mx - mn) * 0.08; return [mn - (mn < 0 ? pad : 0), mx + pad]; }
+  /* barras (NL) por periodo + línea nacional; items: {lab, v, tipo, nac} */
+  /* PATRÓN: PIBDeflactor.ado pib_pc (687-731): barras del nivel per cápita por tramo observado / nowcast /
+     proyección, variación anual como línea punteada en eje propio, yline del promedio geométrico con su
+     etiqueta "Crec. prom. a–b", y el dato escrito sobre la barra; nacional como referencia atenuada. */
+  function pcChart(id, items, opts) {
+    var left = 74, right = 64, top = 30, bot = 48, pw = W - left - right, ph = H - top - bot;
+    var lv = items.map(function (i) { return i.v; }).concat(S.cmp ? items.map(function (i) { return i.nac; }) : []);
+    var e = extent(lv), mn = 0, mx = e[1], y = function (v) { return top + ph - (v - mn) / (mx - mn) * ph; };
+    var gv = items.map(function (i) { return i.g; }).concat(S.cmp ? items.map(function (i) { return i.gnac; }) : []).concat([opts.geo]);
+    var ge = extent(gv), gmn = ge[0], gmx = ge[1], gy = function (v) { return top + ph - (v - gmn) / (gmx - gmn) * ph; };
+    var n = items.length, bw = pw / Math.max(n, 1), o = '';
+    ticks(mn, mx, 5).forEach(function (t) { o += '<line class="grid" x1="' + left + '" x2="' + (left + pw) + '" y1="' + y(t) + '" y2="' + y(t) + '"/><text class="tick" x="' + (left - 6) + '" y="' + (y(t) + 4) + '" text-anchor="end">' + f0.format(t) + '</text>'; });
+    ticks(gmn, gmx, 5).forEach(function (t) { o += '<text class="tick" x="' + (left + pw + 8) + '" y="' + (gy(t) + 4) + '" text-anchor="start">' + f1.format(t) + ' %</text>'; });
+    var firstNon = -1; items.forEach(function (it, i) { if (firstNon < 0 && it.tipo !== 'observado') firstNon = i; });
+    if (firstNon >= 0) o += '<rect class="shade" x="' + (left + firstNon * bw) + '" y="' + top + '" width="' + ((n - firstNon) * bw) + '" height="' + ph + '"/>';
+    items.forEach(function (it, i) {
+      var x = left + i * bw + bw * 0.15, w = bw * 0.7;
+      if (it.v !== null && it.v !== undefined) {
+        var c = it.tipo === 'observado' ? 'b-obs' : (it.tipo.indexOf('nowcast') === 0 ? 'b-now' : 'b-proy');
+        o += '<rect class="' + c + '" x="' + x + '" y="' + y(it.v) + '" width="' + w + '" height="' + Math.max(y(0) - y(it.v), 0.5) + '"><title>' + esc(it.lab + ': ' + f0.format(it.v) + ' ' + opts.unit + ' (' + it.tipo + ')' + (it.g !== null && it.g !== undefined ? ' · crec. ' + f2.format(it.g) + ' %' : '') + (S.cmp && it.nac !== null && it.nac !== undefined ? ' · nacional ' + f0.format(it.nac) : '')) + '</title></rect>';
+        if (n <= 16 || i === n - 1) o += '<text class="lab2" x="' + (x + w / 2) + '" y="' + (y(it.v) - 4) + '" text-anchor="middle">' + (opts.fmtBar ? opts.fmtBar(it.v) : f0.format(it.v)) + '</text>';
+      }
+      var step = n > 40 ? 8 : n > 24 ? 4 : n > 12 ? 2 : 1;
+      if (i === n - 1 || (i % step === 0 && n - 1 - i >= step / 2)) o += '<text class="tick" x="' + (left + i * bw + bw / 2) + '" y="' + (H - bot + 16) + '" text-anchor="middle">' + esc(it.lab) + '</text>';
+    });
+    if (S.cmp) { var dn = '', sn = false; items.forEach(function (it, i) { if (it.nac === null || it.nac === undefined) return; var px = left + i * bw + bw / 2; dn += (sn ? 'L' : 'M') + px.toFixed(1) + ',' + y(it.nac).toFixed(1); sn = true; o += '<circle class="dot-nac" cx="' + px + '" cy="' + y(it.nac) + '" r="3"><title>' + esc(it.lab + ': nacional ' + f0.format(it.nac) + ' ' + opts.unit) + '</title></circle>'; }); o += '<path class="lt lt-nac" d="' + dn + '"/>'; }
+    var dg = '', sg = false; items.forEach(function (it, i) { if (it.g === null || it.g === undefined) return; var px = left + i * bw + bw / 2; dg += (sg ? 'L' : 'M') + px.toFixed(1) + ',' + gy(it.g).toFixed(1); sg = true; o += '<circle cx="' + px + '" cy="' + gy(it.g) + '" r="2.5" fill="var(--ink)"><title>' + esc(it.lab + ': crecimiento ' + f2.format(it.g) + ' %') + '</title></circle>'; });
+    o += '<path d="' + dg + '" fill="none" stroke="var(--ink)" stroke-width="1.6" stroke-dasharray="3 3"/>';
+    if (opts.geo !== null && opts.geo !== undefined) { o += '<line x1="' + left + '" x2="' + (left + pw) + '" y1="' + gy(opts.geo) + '" y2="' + gy(opts.geo) + '" stroke="var(--mut)" stroke-dasharray="6 4"/><text class="lab2" x="' + (left + 4) + '" y="' + (gy(opts.geo) - 5) + '">Crec. prom. ' + esc(opts.geoLab) + ': ' + f2.format(opts.geo) + ' %</text>'; }
+    o += '<text class="lab" x="' + left + '" y="' + (top - 12) + '">' + esc(opts.unit) + '</text><text class="lab" x="' + (left + pw) + '" y="' + (top - 12) + '" text-anchor="end">crecimiento anual (línea punteada), %</text>';
+    document.getElementById(id + '-body').innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img">' + o + '</svg>';
+  }
+  function barLine(id, items, opts) {
+    var left = 64, right = 20, top = 22, bot = 48, pw = W - left - right, ph = H - top - bot;
+    var vals = items.map(function (i) { return i.v; }).concat(S.cmp ? items.map(function (i) { return i.nac; }) : []);
+    var e = extent(vals), mn = e[0], mx = e[1], y = function (v) { return top + ph - (v - mn) / (mx - mn) * ph; };
+    var n = items.length, bw = pw / Math.max(n, 1), o = '';
+    ticks(mn, mx, 6).forEach(function (t) { o += '<line class="grid" x1="' + left + '" x2="' + (left + pw) + '" y1="' + y(t) + '" y2="' + y(t) + '"/><text class="tick" x="' + (left - 6) + '" y="' + (y(t) + 4) + '" text-anchor="end">' + f1.format(t) + '</text>'; });
+    var firstNon = -1; items.forEach(function (it, i) { if (firstNon < 0 && it.tipo !== 'observado') firstNon = i; });
+    if (firstNon >= 0 && !opts.noShade) o += '<rect class="shade" x="' + (left + firstNon * bw) + '" y="' + top + '" width="' + ((n - firstNon) * bw) + '" height="' + ph + '"/>';
+    items.forEach(function (it, i) {
+      var x = left + i * bw + bw * 0.15, w = bw * 0.7;
+      if (it.v !== null && it.v !== undefined) {
+        var c = opts.colorAll ? opts.colorAll : (it.tipo === 'observado' ? 'b-obs' : (it.tipo.indexOf('nowcast') === 0 ? 'b-now' : 'b-proy'));
+        o += '<rect class="' + c + (i === n - 1 && opts.lastMark ? ' b-last' : '') + '" x="' + x + '" y="' + Math.min(y(it.v), y(0)) + '" width="' + w + '" height="' + Math.abs(y(it.v) - y(0)) + '"><title>' + esc(it.lab + ': NL ' + f2.format(it.v) + ' % (' + it.tipo + ')' + (S.cmp && it.nac !== null && it.nac !== undefined ? ' · nacional ' + f2.format(it.nac) + ' %' : '')) + '</title></rect>';
+      }
+      var step = n > 40 ? 8 : n > 24 ? 4 : n > 12 ? 2 : 1;
+      if (i === n - 1 || (i % step === 0 && n - 1 - i >= step / 2)) o += '<text class="tick" x="' + (left + i * bw + bw / 2) + '" y="' + (H - bot + 16) + '" text-anchor="middle">' + esc(it.lab) + '</text>';
+    });
+    o += '<line class="zero" x1="' + left + '" x2="' + (left + pw) + '" y1="' + y(0) + '" y2="' + y(0) + '"/>';
+    if (S.cmp) {
+      var d = '', started = false;
+      items.forEach(function (it, i) { if (it.nac === null || it.nac === undefined) return; var px = left + i * bw + bw / 2; d += (started ? 'L' : 'M') + px.toFixed(1) + ',' + y(it.nac).toFixed(1); started = true; o += '<circle class="dot-nac" cx="' + px + '" cy="' + y(it.nac) + '" r="3"><title>' + esc(it.lab + ': nacional ' + f2.format(it.nac) + ' %') + '</title></circle>'; });
+      o += '<path class="lt lt-nac" d="' + d + '"/>';
+    }
+    if (opts.lastMark && n) { var last = items[n - 1]; if (last.v !== null) o += '<text class="lab" x="' + (left + (n - 1) * bw + bw / 2) + '" y="' + (y(Math.max(last.v, 0)) - 6) + '" text-anchor="end" style="font-weight:600">' + f2.format(last.v) + ' %' + (last.tipo !== 'observado' ? ' (' + last.tipo + ')' : '') + '</text>'; }
+    o += '<text class="lab" x="' + left + '" y="' + (top - 8) + '">%</text>';
+    document.getElementById(id + '-body').innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img">' + o + '</svg>';
+  }
+  /* dos líneas (NL y nacional) + opcional línea secundaria */
+  function lines(id, items, opts) {
+    var left = 64, right = 20, top = 22, bot = 48, pw = W - left - right, ph = H - top - bot;
+    var vals = items.map(function (i) { return i.v; }).concat(S.cmp ? items.map(function (i) { return i.nac; }) : []).concat(opts.sec ? items.map(function (i) { return i.sec; }) : []);
+    var e = extent(vals), mn = e[0], mx = e[1], y = function (v) { return top + ph - (v - mn) / (mx - mn) * ph; };
+    var n = items.length, x = function (i) { return n === 1 ? left + pw / 2 : left + i / (n - 1) * pw; }, o = '';
+    ticks(mn, mx, 6).forEach(function (t) { o += '<line class="grid" x1="' + left + '" x2="' + (left + pw) + '" y1="' + y(t) + '" y2="' + y(t) + '"/><text class="tick" x="' + (left - 6) + '" y="' + (y(t) + 4) + '" text-anchor="end">' + f1.format(t) + '</text>'; });
+    var firstNon = -1; items.forEach(function (it, i) { if (firstNon < 0 && it.tipo && it.tipo !== 'observado') firstNon = i; });
+    if (firstNon > 0) o += '<rect class="shade" x="' + x(firstNon - 1) + '" y="' + top + '" width="' + (x(n - 1) - x(firstNon - 1)) + '" height="' + ph + '"/>';
+    o += '<line class="zero" x1="' + left + '" x2="' + (left + pw) + '" y1="' + y(0) + '" y2="' + y(0) + '"/>';
+    function path(key, cls2) { var d = '', st = false; items.forEach(function (it, i) { var v = it[key]; if (v === null || v === undefined) { return; } d += (st ? 'L' : 'M') + x(i).toFixed(1) + ',' + y(v).toFixed(1); st = true; }); return '<path class="lt ' + cls2 + '" d="' + d + '"/>'; }
+    if (opts.sec) o += path('sec', 'lt-def');
+    if (S.cmp) o += path('nac', 'lt-nac');
+    o += path('v', 'lt-nl');
+    items.forEach(function (it, i) {
+      var step = n > 60 ? 12 : n > 30 ? 6 : n > 14 ? 2 : 1;
+      if (i === n - 1 || (i % step === 0 && n - 1 - i >= step / 2)) o += '<text class="tick" x="' + x(i) + '" y="' + (H - bot + 16) + '" text-anchor="middle">' + esc(it.lab) + '</text>';
+      if (it.v !== null && it.v !== undefined) o += '<circle class="dot-nl" cx="' + x(i) + '" cy="' + y(it.v) + '" r="' + (n > 40 ? 1.6 : 3) + '"><title>' + esc(it.lab + ': NL ' + f2.format(it.v) + ' %' + (S.cmp && it.nac !== null && it.nac !== undefined ? ' · nacional ' + f2.format(it.nac) + ' %' : '') + (opts.sec && it.sec !== null && it.sec !== undefined ? ' · ' + opts.secLab + ' ' + f2.format(it.sec) + ' %' : '') + (it.tipo && it.tipo !== 'observado' ? ' (' + it.tipo + ')' : '')) + '</title></circle>';
+    });
+    if (n) { var last = items[n - 1]; if (last.v !== null && last.v !== undefined) o += '<text class="lab" x="' + x(n - 1) + '" y="' + (y(last.v) - 8) + '" text-anchor="end" style="font-weight:600">' + f2.format(last.v) + ' %</text>'; }
+    o += '<text class="lab" x="' + left + '" y="' + (top - 8) + '">%</text>';
+    document.getElementById(id + '-body').innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img">' + o + '</svg>';
+  }
+  function legend(id, items) { document.getElementById(id + '-leg').innerHTML = items.map(function (it) { return '<span><i style="' + it[1] + '"></i>' + it[0] + '</span>'; }).join(''); }
+
+  /* ---------- vistas ---------- */
+  function render() {
+    cards();
+    var c1t, c1cap, c1which, c2t, c2cap, c2which;
+    if (S.vista === 'percapita') {
+      var pc = S.reg === 'pc';
+      c1which = 'pc'; c1t = pc ? 'PIBE por habitante — Nuevo León vs. nacional' : 'PIBE real — Nuevo León (nivel) vs. nacional por habitante'; c1cap = pc ? 'Barras: PIBE real por habitante (MXN de 2018); línea punteada: crecimiento anual per cápita; referencia: promedio geométrico ' + A0 + '–' + C.anioPIBEult + '. Nacional como línea atenuada. Población CONAPO a mitad de año, la misma que el endpoint de Población.' : 'Registro macro: barras = PIBE real de NL (millones de pesos de 2018); línea punteada: crecimiento real anual. Nacional per cápita no se dibuja en este registro (otra unidad).';
+      if (S.modo === 'grafica') {
+        var items = rowsAnual().map(function (r) { return pc ? { lab: String(r.anio), v: r.pibeRpcnl, nac: r.pibeRpcnac, g: r.crecPcnl, gnac: r.crecPcnac, tipo: r.tipoCrec } : { lab: String(r.anio), v: r.pibeRnl, nac: null, g: r.crecPIBEnl, gnac: null, tipo: r.tipoCrec }; });
+        var cmp0 = S.cmp; if (!pc) S.cmp = false;
+        pcChart('c1', items, { unit: pc ? 'MXN de 2018 por habitante' : 'millones de MXN de 2018', geo: pc ? C.crecPcnlgeo : C.crecPIBEnlgeo, geoLab: A0 + '–' + C.anioPIBEult, fmtBar: pc ? function (v) { return f0.format(Math.round(v / 1000)) + 'k'; } : function (v) { return f0.format(Math.round(v / 1000)) + 'k'; } });
+        S.cmp = cmp0;
+        legend('c1', [['NL observado', 'background:var(--nl)'], ['NL nowcast ITAEE', 'background:var(--nowcast)'], ['NL proyección', 'background:var(--proy)'], ['Crecimiento anual (eje derecho)', 'border-top:2px dashed var(--ink);height:0;vertical-align:middle']].concat(pc && S.cmp ? [['Nacional por habitante', 'background:var(--nac)']] : []));
+      }
+      c2which = 'razon'; c2t = 'Nuevo León como % del PIBE por habitante nacional'; c2cap = 'Razón entre el PIBE real por habitante de NL y el nacional (100 = igual al promedio del país). Observado hasta ' + C.anioPIBEult + '; después nowcast/proyección.';
+      if (S.modo === 'grafica') { var cmp1 = S.cmp; S.cmp = false; lines('c2', rowsAnual().map(function (r) { return { lab: String(r.anio), v: r.razonPc, nac: null, tipo: r.tipoCrec }; }), {}); S.cmp = cmp1; legend('c2', [['NL % del nacional por habitante', 'background:var(--nl)']]); }
+    } else if (S.vista === 'crecimiento') {
+      if (S.serie === 'pibe') {
+        c1which = 'pibe'; c1t = 'Crecimiento real anual — Nuevo León vs. nacional'; c1cap = 'PIBE a precios de 2018, variación anual %. Barras: NL (azul = dato, ámbar = nowcast ITAEE, gris = proyección geométrica). Línea: nacional. Sombreado: años sin PIBE publicado.';
+        if (S.modo === 'grafica') { barLine('c1', rowsAnual().map(function (r) { return { lab: String(r.anio), v: r.crecPIBEnl, tipo: r.tipoCrec, nac: r.crecPIBEnac }; }), { lastMark: true }); legend('c1', [['NL observado', 'background:var(--nl)'], ['NL nowcast ITAEE', 'background:var(--nowcast)'], ['NL proyección', 'background:var(--proy)'], ['Nacional', 'background:var(--nac)']]); }
+        c2which = 'itaee'; c2t = 'ITAEE reciente — variación anual trimestral'; c2cap = 'Serie original, % vs. mismo trimestre del año anterior; último dato destacado (preliminar). Línea: PIB trimestral nacional real.';
+        if (S.modo === 'grafica') { var q = rowsTrim().slice(-16); barLine('c2', q.map(function (r) { return { lab: r.anio + 'T' + r.trimestre, v: r.yoyITAEEnl, tipo: 'ITAEE preliminar', nac: r.yoyITAEEnac }; }), { lastMark: true, noShade: true, colorAll: 'b-now' }); legend('c2', [['NL ITAEE (preliminar)', 'background:var(--nowcast)'], ['Nacional PIB trimestral', 'background:var(--nac)']]); }
+      } else if (S.serie === 'itaee') {
+        c1which = 'itaee'; c1t = 'ITAEE — variación anual (serie original)'; c1cap = '% vs. mismo trimestre del año anterior, rango de años seleccionado. Línea: PIB trimestral nacional real.';
+        if (S.modo === 'grafica') { barLine('c1', rowsTrim().map(function (r) { return { lab: r.anio + 'T' + r.trimestre, v: r.yoyITAEEnl, tipo: 'ITAEE preliminar', nac: r.yoyITAEEnac }; }), { lastMark: true, noShade: true, colorAll: 'b-now' }); legend('c1', [['NL ITAEE', 'background:var(--nowcast)'], ['Nacional PIB trimestral', 'background:var(--nac)']]); }
+        c2which = 'pibe'; c2t = 'Crecimiento real anual (PIBE)'; c2cap = 'Ancla definitiva anual; nowcast y proyección sombreados.';
+        if (S.modo === 'grafica') { barLine('c2', rowsAnual().map(function (r) { return { lab: String(r.anio), v: r.crecPIBEnl, tipo: r.tipoCrec, nac: r.crecPIBEnac }; }), { lastMark: true }); legend('c2', [['NL observado', 'background:var(--nl)'], ['NL nowcast ITAEE', 'background:var(--nowcast)'], ['NL proyección', 'background:var(--proy)'], ['Nacional', 'background:var(--nac)']]); }
+      } else {
+        c1which = 'itaeesa'; c1t = 'ITAEE desestacionalizado — variación trimestral'; c1cap = '% vs. trimestre anterior, serie desestacionalizada NL. El BIE no publica el total nacional del ITAEE desestacionalizado.';
+        if (S.modo === 'grafica') { var cmp0 = S.cmp; S.cmp = false; barLine('c1', rowsTrim().map(function (r) { return { lab: r.anio + 'T' + r.trimestre, v: r.qoqITAEESAnl, tipo: 'ITAEE desestacionalizado', nac: null }; }), { lastMark: true, noShade: true, colorAll: 'b-now' }); S.cmp = cmp0; legend('c1', [['NL ITAEE desest. t/t', 'background:var(--nowcast)']]); }
+        c2which = 'itaeesa'; c2t = 'ITAEE desestacionalizado — nivel'; c2cap = 'Índice de volumen físico 2018 = 100, serie desestacionalizada NL.';
+        if (S.modo === 'grafica') { var cmp1 = S.cmp; S.cmp = false; lines('c2', rowsTrim().map(function (r) { return { lab: r.anio + 'T' + r.trimestre, v: r.itaeeSAnl, nac: null, tipo: 'observado' }; }), {}); S.cmp = cmp1; legend('c2', [['NL ITAEE desest. (2018=100)', 'background:var(--nl)']]); }
+      }
+    } else {
+      if (S.serie === 'dd') {
+        c1which = 'dd'; c1t = 'Inflación dic/dic — Nuevo León vs. nacional'; c1cap = 'INPC base 2Q jul 2018; variación diciembre a diciembre, %. Sombreado: proyección geométrica (criterio del motor).';
+        if (S.modo === 'grafica') { lines('c1', rowsAnual().filter(function (r) { return r.inflDDnl !== null; }).map(function (r) { return { lab: String(r.anio), v: r.inflDDnl, nac: r.inflDDnac, tipo: r.tipoInfl }; }), {}); legend('c1', [['Nuevo León', 'background:var(--nl)'], ['Nacional', 'background:var(--nac)']]); }
+      } else if (S.serie === 'prom') {
+        c1which = 'prom'; c1t = 'Inflación promedio anual — Nuevo León vs. nacional'; c1cap = 'Promedio del INPC del año vs. promedio del año anterior, %, años completos.';
+        if (S.modo === 'grafica') { lines('c1', rowsAnual().filter(function (r) { return r.inflPromnl !== null; }).map(function (r) { return { lab: String(r.anio), v: r.inflPromnl, nac: r.inflPromnac, tipo: 'observado' }; }), {}); legend('c1', [['Nuevo León', 'background:var(--nl)'], ['Nacional', 'background:var(--nac)']]); }
+      } else {
+        c1which = 'men'; c1t = 'Inflación anual mensual — Nuevo León vs. nacional'; c1cap = 'INPC, variación % vs. mismo mes del año anterior.';
+        if (S.modo === 'grafica') { lines('c1', rowsMen().filter(function (r) { return r.yoyINPCnl !== null; }).map(function (r) { return { lab: MES[r.mes - 1] + ' ' + String(r.anio).slice(2), v: r.yoyINPCnl, nac: r.yoyINPCnac, tipo: 'observado' }; }), {}); legend('c1', [['Nuevo León', 'background:var(--nl)'], ['Nacional', 'background:var(--nac)']]); }
+      }
+      c2which = 'defl'; c2t = 'Deflactor del PIBE NL vs. inflación dic/dic NL'; c2cap = 'Línea punteada: variación % del deflactor implícito del PIBE (precios de la PRODUCCIÓN estatal). Línea sólida: INPC NL dic/dic (precios del CONSUMO). Miden cosas distintas; se muestran juntas como contexto.';
+      if (S.modo === 'grafica') { var cmp2 = S.cmp; S.cmp = false; lines('c2', rowsAnual().filter(function (r) { return r.varDeflnl !== null; }).map(function (r) { return { lab: String(r.anio), v: r.inflDDnl, nac: null, sec: r.varDeflnl, tipo: r.tipoDefl }; }), { sec: true, secLab: 'deflactor' }); S.cmp = cmp2; legend('c2', [['INPC NL dic/dic', 'background:var(--nl)'], ['Deflactor PIBE NL (var. %)', 'background:var(--acento)']]); }
+    }
+    document.getElementById('c1-title').textContent = c1t; document.getElementById('c1-cap').textContent = c1cap;
+    document.getElementById('c2-title').textContent = c2t; document.getElementById('c2-cap').textContent = c2cap;
+    document.getElementById('charts').classList.toggle('tabla', S.modo === 'tabla');
+    if (S.modo === 'tabla') { table('c1', c1which, c1t); table('c2', c2which, c2t); }
+    else { ['c1', 'c2'].forEach(function (id) { var b = document.getElementById(id + '-body'); if (!b.querySelector('textarea')) b.insertAdjacentHTML('beforeend', '<textarea class="fb" id="' + id + '-fb"></textarea>'); }); }
+    tools('c1', c1which, c1t); tools('c2', c2which, c2t);
+    document.getElementById('c1-tip').textContent = ''; document.getElementById('c2-tip').textContent = '';
+  }
+
+  /* ---------- pie: procedencia + autocomprobación ---------- */
+  function pie() {
+    var ok = [], bad = [];
+    function chk(nombre, canal, calc) { if (canal === null || canal === undefined || calc === null || calc === undefined || isNaN(calc)) return; var rel = Math.abs(calc - canal) / Math.max(Math.abs(canal), 1e-12); (rel < 1e-9 ? ok : bad).push(nombre + ' (' + f2.format(canal) + ')'); }
+    var byY = {}; A.forEach(function (r) { byY[r.anio] = r; });
+    var u = byY[C.anioPIBEult], p = byY[C.anioPIBEult - 1];
+    if (u && p && u.pobNL) { chk('pibeRpcnl = PIBE real / población', C.pibeRpcnl, u.pibeRnl * 1e6 / u.pobNL); chk('razonPcNL', C.razonPcNL, (u.pibeRnl * 1e6 / u.pobNL) / (u.pibeRnac * 1e6 / u.pobNac) * 100); chk('crecPcnl', C.crecPcnl, ((u.pibeRnl * 1e6 / u.pobNL) / (p.pibeRnl * 1e6 / p.pobNL) - 1) * 100); }
+    if (u && p) { chk('crecPIBEnl', C.crecPIBEnl, (u.pibeRnl / p.pibeRnl - 1) * 100); chk('crecPIBEnac', C.crecPIBEnac, (u.pibeRnac / p.pibeRnac - 1) * 100); chk('defPIBEnl', C.defPIBEnl, (u.pibeNnl / u.pibeRnl / (p.pibeNnl / p.pibeRnl) - 1) * 100); chk('partPIBEnl', C.partPIBEnl, u.pibeNnl / u.pibeNnac * 100); chk('difCrecPIBEnl', C.difCrecPIBEnl, (u.pibeRnl / p.pibeRnl - 1) * 100 - (u.pibeRnac / p.pibeRnac - 1) * 100); }
+    var ql = Q[Q.length - 1], q4 = Q.filter(function (r) { return r.anio === ql.anio - 1 && r.trimestre === ql.trimestre; })[0];
+    if (ql && q4) { chk('crecITAEEnl', C.crecITAEEnl, (ql.itaeenl / q4.itaeenl - 1) * 100); chk('crecITAEEnac', C.crecITAEEnac, (ql.itaeenac / q4.itaeenac - 1) * 100); }
+    var ml = M[M.length - 1], m12 = M.filter(function (r) { return r.anio === ml.anio - 1 && r.mes === ml.mes; })[0];
+    if (ml && m12) { chk('inflacionNLvig', C.inflacionNLvig, (ml.inpcnl / m12.inpcnl - 1) * 100); chk('inflacionNacvig', C.inflacionNacvig, (ml.inpcnac / m12.inpcnac - 1) * 100); }
+    var d1 = byY[C.anioInflDDult], d0 = byY[C.anioInflDDult - 1];
+    if (d1 && d0) { chk('inflacionNLdd', C.inflacionNLdd, (d1.dicnl / d0.dicnl - 1) * 100); chk('inflacionNacdd', C.inflacionNacdd, (d1.dicnac / d0.dicnac - 1) * 100); }
+    var ny = Q.filter(function (r) { return r.anio === C.anioITAEEult; }), s1 = 0, s0 = 0; ny.forEach(function (r) { var prev = Q.filter(function (x) { return x.anio === r.anio - 1 && x.trimestre === r.trimestre; })[0]; if (prev) { s1 += r.itaeenl; s0 += prev.itaeenl; } }); if (s0 > 0) chk('nowITAEEnl', C.nowITAEEnl, (s1 / s0 - 1) * 100);
+    var h = '';
+    h += '<p><strong>Fuentes (INEGI):</strong></p><ul style="margin:2px 0 6px 18px;padding:0">' + (P.series || []).map(function (s) { return '<li>' + esc(s.fuente) + ' <code>' + esc(s.id) + '</code>' + (s.area !== '00' ? ' área ' + esc(s.area) : '') + ' — ' + esc(s.titulo) + ' · consulta ' + esc(s.consulta) + ' · último ' + esc(s.ultimo) + (s.sello_ultimo ? ' <code>' + esc(s.sello_ultimo) + '</code>' : '') + ' · ' + s.n + ' obs · checksum ' + s.checksum + '</li>'; }).join('') + '</ul>';
+    h += '<p><strong>Definiciones:</strong> ' + esc(DEF.pibe || '') + '. ' + esc(DEF.per_capita || '') + '. ' + esc(DEF.deflactor || '') + '. ' + esc(DEF.itaee || '') + '. ' + esc(DEF.inpc || '') + '.</p>';
+    var sp = P.supuestos_proyeccion || {};
+    h += '<p><strong>Criterios heredados del motor:</strong> ' + esc(P.criterios_motor || '') + '. <strong>Supuestos de proyección:</strong> crecimiento — ' + esc(sp.crecimiento || '') + '; deflactor — ' + esc(sp.deflactor || '') + '; inflación — ' + esc(sp.inflacion || '') + '; ' + esc(sp.sin_exogeno_estatal || '') + '.</p>';
+    var cp = P.compuertas || {};
+    h += '<p><strong>Compuertas del driver:</strong> ' + esc(cp.deflactor_implicito || '') + '; ' + esc(cp.control_pib || '') + '; ' + esc(cp.inpc_vs_motor || '') + '; ' + esc(cp.rejillas || '') + (cp.denominador ? '; ' + esc(cp.denominador) : '') + '.</p>';
+    h += '<p><strong>Frontera:</strong> ' + esc(P.frontera || '') + '. <strong>Criterio de proyección (presentación):</strong> ' + esc((D.presentacion || {}).criterio_proyeccion || '') + '. <strong>Sellos INEGI:</strong> ' + esc(DEF.sellos_inegi || '') + '.</p>';
+    h += '<p>' + (bad.length ? '<span class="bad">Autocomprobación: ' + bad.length + ' cifra(s) del canal NO coinciden con el recálculo desde los arreglos: ' + bad.join(', ') + '.</span>' : '<span class="ok">Autocomprobación: las ' + ok.length + ' cifras del canal coinciden con el recálculo desde los arreglos incrustados (' + ok.join(', ') + ').</span>') + '</p>';
+    document.getElementById('pie').innerHTML = (window.NLEstilo ? window.NLEstilo.atribucion(D) : '') + h;
+  }
+
+  window.NLEstilo.cabecera(document.getElementById('cab'), D.titulo || 'Simulador Fiscal NL — Actividad económica y precios', (D.subtitulo || '') + (P.version_capa_nl ? ' · capa ' + P.version_capa_nl : ''));
+  document.title = D.titulo || document.title;
+  sync(); render(); pie();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,139 @@
+{
+  "producto": "Simulador Fiscal NL",
+  "version_nl": "NL-0.4.1",
+  "fecha": "2026-10-05",
+  "motor_sincronizado": "v8.6.0",
+  "repositorio": "https://github.com/rcantuc/SimuladorCIEP/tree/feature/entidad-nl",
+  "identidad_visual": {
+    "canon": "100 % Consejo Nuevo León (nl-estilo.md §6, aprobado 2026-10-04); atribución intocable: leyenda de _NLidentidad + versión/enlace GitHub de la capa",
+    "fuentes": "BrandBook_Consejo_NL.pdf (Algoritmo Design, nov-2020; Shared drives/Revisión Plan Estratégico 2019-2021/Materiales para diseño/Identidad Consejo Nuevo León) para logo, zona de respeto y usos; tokens --cn-* de conl.mx (tema conl, 2025) y paleta del PE 2040 para los valores RGB; 2023_CNL_BrandBook.pdf del repositorio de Comunicación no legible desde esta máquina",
+    "tipografia": "Poppins SemiBold + Inter Regular/SemiBold (SIL OFL 1.1), subsets embebidos vía nl-estilo-assets.js; el BrandBook 2020 citaba Basis Grotesque Pro Light (comercial) + Public Sans Light; el sitio y el PE 2040 usan Poppins/Inter — aproximación declarada hasta confirmar con el BrandBook 2023",
+    "generador": "01_modulos/nl-assets/nl-estilo-build.py -> nl-estilo-assets.js"
+  },
+  "regla_cadencia": "La capa NL hace merge de master en cada release etiquetado del nacional y pasa las tres compuertas de DIAGNOSTICO_NL.md §0.3 (paridad nacional con diff vacío, D.1, delta NL documentado) antes de subir version_nl.",
+  "regla_version": "NL-MAJOR.MINOR.PATCH: MAJOR = cambio de contrato de salida (JSON/HTML); MINOR = producto o endpoint nuevo; PATCH = corrección sin cambio de contrato. El changelog vive en DIAGNOSTICO_NL.md, sección Versionado de la capa NL.",
+  "assets": [
+    {
+      "name": "pobproy_quinq1.csv",
+      "local_path": "01_modulos/nl-assets/pobproy_quinq1.csv",
+      "fuente": "CONAPO, Reconstrucción y proyecciones de la población de los municipios de México 1990-2040 (2024): población a mitad de año por grupos quinquenales de edad y sexo, 2,475 municipios",
+      "vintage": "2024",
+      "cobertura": "1990-2040, 18 grupos quinquenales (0-4 ... 80-84, 85+), sexo",
+      "copia_de_trabajo": "Drive CoNL / 2. Simuladores CoNL / TMCA VACB real per capita regiones NL / 02_datos / pobproy_quinq1.csv (6-ago-2026); columnas fecha y etiqueta_estado añadidas por el proyecto TMCA, no se usan",
+      "sha256": "1a8f07be08de082a0c33404f0fbce9d9292845a8c8290153a6ad2e1889bab31a",
+      "checksum_stata": 3853515816,
+      "filelen": 36658654,
+      "validacion": "suma de los 51 municipios de NL = serie estatal de master/Poblacion.dta (pry23) en los 51 años comunes 1990-2040, dif = 0 (DIAGNOSTICO_NL.md, anexo F0-8.6.0 §0.4)"
+    },
+    {
+      "name": "Poppins-SemiBold.sub.woff2",
+      "local_path": "01_modulos/nl-assets/identidad/Poppins-SemiBold.sub.woff2",
+      "fuente": "conl.mx/wp-content/themes/conl/webfonts/Poppins-SemiBold.woff2 (v4.004)",
+      "descripcion": "Poppins SemiBold 600, subset Latin/Latin Ext-A/puntuación, tnum; OFL 1.1 (identidad/OFL-poppins.txt)",
+      "sha256": "d6bc43f73ddd823fb9e896bfe3722538b0252e1a6b1be93c661382ada2942241",
+      "filelen": 9452
+    },
+    {
+      "name": "Inter-Regular.sub.woff2",
+      "local_path": "01_modulos/nl-assets/identidad/Inter-Regular.sub.woff2",
+      "fuente": "conl.mx/wp-content/themes/conl/webfonts/Inter_24pt-Regular.woff2 (v4.001)",
+      "descripcion": "Inter 24pt Regular 400, subset; OFL 1.1 (identidad/OFL-inter.txt)",
+      "sha256": "2be18eae77298f66a771ccbf03587f98bc21b33c57fdad7cb9fa14c7499495d5",
+      "filelen": 16508
+    },
+    {
+      "name": "Inter-SemiBold.sub.woff2",
+      "local_path": "01_modulos/nl-assets/identidad/Inter-SemiBold.sub.woff2",
+      "fuente": "conl.mx/wp-content/themes/conl/webfonts/Inter_24pt-SemiBold.woff2 (v4.001)",
+      "descripcion": "Inter 24pt SemiBold 600, subset; OFL 1.1",
+      "sha256": "039db56ae53047d0ac83728f1bfac3915ec6f3750de3509a5a4b0812ec149835",
+      "filelen": 17048
+    },
+    {
+      "name": "conl-logotipo.svg",
+      "local_path": "01_modulos/nl-assets/identidad/conl-logotipo.svg",
+      "fuente": "Drive: Materiales para diseño/Identidad Consejo Nuevo León/consejonl_logotipo.ai (nov-2020)",
+      "descripcion": "logotipo oficial con descriptor, texto morado; vector convertido de consejonl_logotipo.ai (Pantone 518/326/130 C -> RGB de marca)",
+      "sha256": "b9101c41d2bc3aa2e7702b1f90acf9e45178f5b290bd677882c0a3d5b3fd8094",
+      "filelen": 17049
+    },
+    {
+      "name": "conl-logotipo-blanco.svg",
+      "local_path": "01_modulos/nl-assets/identidad/conl-logotipo-blanco.svg",
+      "fuente": "derivado del anterior",
+      "descripcion": "logotipo en blanco (aplicación cromática del BrandBook §5)",
+      "sha256": "6ad980e47af9dc4c8880d197ff701e0e4cf9cd9169693fe72fc08e1c981e88dd",
+      "filelen": 17049
+    }
+  ],
+  "series_inegi": [
+    {
+      "id": "750453",
+      "fuente": "BIE",
+      "descripcion": "PIBE valores corrientes, millones de pesos, a precios de mercado (areas 19 y 00)",
+      "lector": "_NLbie"
+    },
+    {
+      "id": "746097",
+      "fuente": "BIE",
+      "descripcion": "PIBE valores constantes de 2018, millones de pesos (areas 19 y 00)",
+      "lector": "_NLbie"
+    },
+    {
+      "id": "753357",
+      "fuente": "BIE",
+      "descripcion": "PIBE indice de precios implicitos 2018=100 (compuerta del deflactor)",
+      "lector": "_NLbie"
+    },
+    {
+      "id": "741180",
+      "fuente": "BIE",
+      "descripcion": "ITAEE serie original, indice de volumen fisico 2018=100, con petroleo (area 19)",
+      "lector": "_NLbie"
+    },
+    {
+      "id": "741927",
+      "fuente": "BIE",
+      "descripcion": "ITAEE serie desestacionalizada, indice 2018=100 (area 19)",
+      "lector": "_NLbie"
+    },
+    {
+      "id": "734407+735143",
+      "fuente": "BIE (AccesoBIE del motor)",
+      "descripcion": "PIB trimestral nominal e indice implicito nacional: comparativo del ITAEE",
+      "lector": "AccesoBIE"
+    },
+    {
+      "id": "910392",
+      "fuente": "BIE (AccesoBIE del motor)",
+      "descripcion": "INPC nacional mensual",
+      "lector": "AccesoBIE"
+    },
+    {
+      "id": "902690",
+      "fuente": "INPC-INEGI (app/indicesdeprecios, estructura 112001700070)",
+      "descripcion": "INPC Nuevo Leon por entidad federativa, mensual, base 2Q jul 2018, Actualizacion 2024",
+      "lector": "_NLinpc"
+    }
+  ],
+  "nota_bie": "El BIE 2025 exporta cada indicador con las 33 areas apiladas; AccesoBIE (motor) no filtra el area y la API oficial responde 401. La capa NL lee con nl-assets/nl-bie.do (misma via publica, filtra el area). Propuesta a master por PR aparte: opcion area() en AccesoBIE.",
+  "sellos": [
+    {
+      "name": "federacion-sello.json",
+      "local_path": "01_modulos/nl-assets/federacion-sello.json",
+      "escribe": "01_modulos/FederacionNL.do en modo canal (Mac, tras SIM.do + EntidadNL.do); se reescribe solo con global nlfed_sellar 1 cuando difiere del canal",
+      "contenido": "extracto del canal del motor: participaciones de NL por impuesto (statajson_entidad-nl.json), recaudación observada y LIF/ILIF por impuesto y año (master/LIF.dta), anclas CP/PEF/PPEF por divFEDE (master/PEF.dta); identidad con versión de capa, de motor, anioPE y SHA-256 de la fuente",
+      "consume": "FederacionNL.do en modo sello (runner Windows, sin cachés del motor) solo si versión de capa, de motor y anioPE coinciden con la sesión; en modo canal se exige igualdad reldif 1e-9 con el canal vivo",
+      "regla": "arquitectura B (DIAGNOSTICO_NL.md, anexo Federación↔NL): los números siguen saliendo del canal; el sello nunca se edita a mano"
+    }
+  ],
+  "fuentes_shcp": [
+    {
+      "id": "eopf_transferencias",
+      "url": "https://www.secciones.hacienda.gob.mx/work/models/estadisticas_oportunas/datos_abiertos_eopf/transferencias_entidades_fed.zip (+ _hist.zip)",
+      "descripcion": "Estadísticas Oportunas de Finanzas Públicas: transferencias a entidades federativas y municipios por fondo y entidad, mensual, flujo pagado, miles de pesos",
+      "lector": "_NLeopf (nl-assets/nl-fed.do + nl_fed.py); caché raw/temp/EOPF/nl_transferencias.csv + .meta",
+      "nota": "el motor ingiere la misma fuente en master/DatosAbiertos.dta, pero ese caché duplica XACGF00 y rompe la costura 2011; issue documentado para master, no se toca desde la capa"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+# Configuración real y productos locales del runner Windows: nunca en git.
+config-runner.ps1
+bitacora-runner.log
+ultimo-exito.txt
+*.log
+*.tmp
