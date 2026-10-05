@@ -113,6 +113,85 @@ Cada vista se documenta así, en `DIAGNOSTICO_NL.md` y en la plantilla HTML:
 
 > **Pregunta** que contesta → **Patrón del canon** (§2.x, archivo:líneas) → **Por qué ese y no otro** → **Registro** (pc/macro) → **Tokens** (§3) → **Anotaciones** (líneas de referencia, tramos, oración-resumen).
 
+## 6. Identidad CoNL (F0 de identidad visual, 2026-10-04 — PROPUESTA, frena hasta aprobación)
+
+**Decisión de canon (Ricardo):** la identidad visual de los endpoints es 100 % Consejo Nuevo León (paleta, tipografía, logo); la **estructura** de este documento (patrones, gramática, doble registro, semántica) no cambia, cambia la fuente de los valores. Intocables de atribución: la leyenda que ya imprime `_NLidentidad` ("construido sobre el Simulador Fiscal CIEP v<motor>", tal cual) y la versión/enlace de GitHub de la capa.
+
+### 6.1 Fuentes consultadas, por autoridad
+
+| # | Fuente | Qué se encontró | Estado |
+|---|---|---|---|
+| 1 | **Drive de CoNL** — `Shared drives/REPOSITORIO GENERAL CONL/6.Comunicación/Manual de identidad/LOGOS CONL/` | **Existe el manual oficial**: `2023_CNL_BrandBook (1).pdf` (Drive id `1T3EhKASNhDbR3KNRpJf1FmWOpznQBJ5q`) y el paquete de logos en PDF/PNG/JPG con la nomenclatura oficial: *Logotipo* (texto morado / texto negro, con y sin *Descriptor*), *Sello*, *Siglas*, *Wordmark*, *Descriptor*; `logos/logo-rgb.eps`, `logo cmyk (para imprimir).eps`. | **No legibles desde esta máquina**: todos los binarios de esa unidad compartida son stubs `.gdrive` de 158 bytes (Drive for Desktop no los transmite: permiso de solo visualización o unidad sin disponibilidad local) y la descarga por URL exige sesión de Google. **Se pide a Ricardo**: descargar `2023_CNL_BrandBook (1).pdf` y `Logotipo (Texto Morado)/Con Descriptor` (PDF o EPS) a una carpeta local para F1 (vector → SVG y zona de respeto oficial). |
+| 2 | **conl.mx** (tema WordPress `conl` de Brainwave, `style.css` v1.0.0; leído el 2026-10-04) | Tokens CSS oficiales `--cn-*` con variantes WCAG declaradas por el propio sitio (ver 6.2); tipografía autoalojada **Poppins** (títulos) e **Inter 24pt** (cuerpo) en `/wp-content/themes/conl/webfonts/*.woff2`; logos `images/logo_blanco.png` (263×112, blanco sobre morado) y `uploads/2025/10/conl.png` (250×100, texto morado); favicon = símbolo (aqua + amarillo). Encabezado del sitio: fondo morado con logo blanco; botón primario `.btn-morado` = fondo morado + borde inferior aqua. | **Fuente efectiva de los valores** mientras el manual no sea legible. |
+| 3 | **Publicaciones oficiales** — `My Drive/PE_2040_Versión Completa.pdf` (Plan Estratégico 2040, 492 pp.) y `CONL_Indicadores CVNL 2026.pdf` | Fuentes embebidas del PE 2040: **Poppins** (Bold, SemiBold, Medium, Regular, ExtraBold, BoldItalic) e **Inter** (Regular, Light, SemiBold, Bold, ExtraBold). Colores de los flujos de contenido (130 páginas muestreadas): gris texto `#4a4a49` (397 usos), aqua `#00b0b0` (213), morado `#592147` (160), púrpura `#872675` (130), rojo `#e03859` (108), naranja `#e86b24` (104), amarillo `#fcb817` (95), celeste `#a3dbe8` (85), azul `#0a6eb5` (48), verde `#179447` (21), rosa `#f27894` (16). **Coinciden con los tokens web ±1 en cada canal**: la paleta web es la paleta editorial. El PDF de indicadores usa colores de Google Sheets (no es referencia de marca). |
+| 4 | Redes (verificación cruzada) | Favicon y símbolo del logo: aqua `#08b0b0` / amarillo `#ffb811`; `sameAs`: x.com/ConsejoNL, instagram.com/consejonl, facebook.com/ConsejoNL, youtube.com/c/consejonuevoleon. Las redes exigen sesión; no se muestreó su contenido. | Consistente con 2 y 3. |
+
+### 6.2 Paleta CoNL (hex exactos de `conl.mx/style.css :root`; rol observado; evidencia)
+
+| Rol | Token CoNL | Hex | Variante WCAG (del sitio) | Evidencia |
+|---|---|---|---|---|
+| **Primario** | `--cn-morado` | `#5a2148` | — (12.0:1 sobre blanco) | fondo del encabezado y de los `card_title`, botones, paginación, texto `.text-morado`; logo "Texto Morado"; PE 2040 `#592147` |
+| Primario 2 | `--cn-purpura` / `--cn-morado3` | `#872675` | — (8.2:1) | `.bg-purpura`, categoría "seguridad y justicia", círculos; PE 2040 (130 usos) |
+| Primario atenuado | `--cn-morado2` | `#6d5866` | — | `.bg-morado-light`, bordes |
+| Secundario 1 | `--cn-aqua` | `#00b1af` | `--cn-aqua-wcag #008381` | símbolo del logo, borde inferior de botones, favicon; PE 2040 (213 usos) |
+| Secundario 2 | `--cn-amarillo` | `#fbb818` | `--cn-amarillo-wcag #9B6E05` | símbolo del logo, `.btn-amarillo` (texto morado); PE 2040 |
+| Acento | `--cn-naranja` | `#e76b24` | `--cn-naranja-wcag #C75108` | temático; PE 2040 (104) |
+| Acento | `--cn-rojo` | `#e13758` | `--cn-rojo-wcag #D52B4D` | temático; PE 2040 (108) |
+| Acento | `--cn-azul` | `#0a6db6` | — (5.4:1) | temático; PE 2040 |
+| Acento | `--cn-celeste` | `#a2dce9` | `--cn-celeste-wcag #2F807E` | temático |
+| Acento | `--cn-verde` | `#189347` | `--cn-verde-wcag #10873D` | temático |
+| Acento | `--cn-rosa` | `#f27794` | `--cn-rosa-wcag #B55A6F` | temático |
+| Neutros | `--cn-negro20` / `--cn-negro10` / `--cn-gris20` | `#212121` / `#2f303b` / `#666666` | — | texto; PE 2040 gris texto `#4a4a49`, grises de apoyo `#7f7f7f`, `#9d9d9c`, `#d0d0d0`, fondo `#f6f6f6` |
+| Claros | `*-light` | amarillo `#fef1d1`, aqua `#ccefef`, azul `#d0e2f0`, celeste `#ecf8fb`, púrpura `#e7d4e3`, naranja `#fae1d3`, rojo `#f9d7de`, rosa `#fce4ea`, verde `#d1e9da` | — | fondos de tarjetas temáticas |
+
+### 6.3 Mapeo semántico propuesto a los tokens de `NLEstilo` (misma historia, distinta ropa)
+
+| Token | Semántica (no cambia) | Valor CoNL propuesto | Contraste sobre blanco (`#f6f6f6`) | Nota |
+|---|---|---|---|---|
+| `--nl` | Nuevo León, sujeto; línea S0; cabecera | **morado `#5a2148`** | 12.0 (11.1) — AA texto ✓ | el primario de la marca es el protagonista |
+| `--nac` | nacional, referencia atenuada | **gris `#7f7f7f`** (PDF) | 4.0 (3.7) — AA gráfico ✓ | `#9d9d9c` falla 3:1 como gráfico; `#666666` queda para texto secundario |
+| `--banda` | banda [S1, S3] | morado al 25 % `rgba(90,33,72,.25)` | — | nunca color propio |
+| `--recibe` | Federación → NL | **aqua `#00b1af`** (texto: `#008381`) | 2.7 relleno / 4.6 texto-wcag ✓ | color del símbolo del logo; en etiquetas sobre blanco se usa la variante WCAG |
+| `--paga` | NL → Federación | **naranja `#e76b24`** (texto: `#C75108`) — alternativa rojo `#e13758` (`#D52B4D`) | 3.2 / 4.6 ✓ | ver daltonismo abajo: naranja domina al rojo frente al aqua |
+| `--paquete` | año de política (PEF/PPEF/ILIF) | **amarillo `#fbb818`** | 1.75 — solo relleno, nunca texto | misma semántica que el `p2` amarillo del motor |
+| `--proy` / parcial | proyección / año en curso | **morado al 45 %** `rgba(90,33,72,.45)` | — | eco fiel del `fintensity(40-50)` del motor (mismo color, atenuado) en lugar de un matiz distinto; libera el naranja para `--paga` |
+| `--acento` | interfaz (toggle activo, foco, letrero de alcance) | **púrpura `#872675`** con borde inferior aqua (patrón `.btn-morado`) | 8.2 ✓ (blanco sobre él 8.2) | el aqua solo no soporta texto blanco (2.7) |
+| `--h` / `--m` | hombres / mujeres (Población) | **azul `#0a6db6` / rosa `#f27794`** — alternativa M = púrpura `#872675` | 5.4 / 2.7 (relleno) | ver daltonismo; rosa es más distinguible, púrpura más neutro; **decide Ricardo** |
+| `--ink` / `--mut` / `--line` / `--bg` / `--card` | texto / secundario / reglas / fondo / tarjeta | `#212121` / `#666666` / `#d0d0d0` / `#f6f6f6` / `#ffffff` | 16.1 / 5.7 ✓ | neutros del sitio y del PE 2040 |
+| escalonado de fondos / impuestos | familias dentro de recibe/paga | aclarados del token (como hoy) | — | sin colores nuevos |
+
+**Daltonismo (simulación Machado 2009, ΔE CIE76 normal / protan / deutan / tritan; > 20 = distinguible):** aqua vs **naranja** 107 / 60 / 75 / 113 ✓✓; aqua vs rojo 109 / 29 / 44 / 127 ✓ (protan justo); verde vs rojo 115 / 35 / **5** / 121 ✗ (descartado); morado vs gris `#7f7f7f` 54 / 48 / 41 / 51 ✓; amarillo (Paquete) vs morado 45 % — distintos por luminosidad ✓; azul vs rosa 74 / 41 / 67 / 90 ✓; azul vs púrpura 53 / **21** / 31 / 73 (protan justo). Contrastes: texto blanco sobre morado 12.0 ✓, sobre púrpura 8.2 ✓, sobre aqua 2.7 ✗ (por eso el acento es púrpura, no aqua).
+
+### 6.4 Tipografía
+
+- **Oficial** (sitio y PE 2040): **Poppins** para títulos (h1 = Poppins SemiBold 600 en el sitio; Bold/ExtraBold en portadas del PE) e **Inter** para cuerpo (Inter 24pt Regular 400; Medium/SemiBold/Bold para énfasis). Ambas bajo **SIL Open Font License 1.1** (declarado en la tabla `name` de los archivos del sitio: Poppins 4.004, Inter 4.001) → **embebibles**. Los archivos están en el servidor de CoNL (`conl.mx/wp-content/themes/conl/webfonts/`), no en el Drive legible; descargados y verificados hoy (Poppins 50 KB c/u, Inter 116–119 KB c/u).
+- **Plan cero-red (propuesto):** subset WOFF2 embebido como `data:` URI en `nl-datos.js` (bloque `NLEstilo.fuentes`), rango Latin + Latin Ext-A + puntuación tipográfica + `− → ≤ ≥ € · ×`, con `kern, liga, tnum, pnum, lnum` (números tabulares para tarjetas y tablas), sin hinting. Costo medido con fontTools: **Poppins SemiBold 9.5 KB → 12.6 KB base64; Inter Regular 16.3 → 21.8; Inter SemiBold 16.8 → 22.4; Inter Medium 16.7 → 22.3**. Tres pesos (títulos + cuerpo + negritas) = **≈ 57 KB**; cuatro (con Medium) ≈ 77 KB por endpoint. `font-display: swap` con pila de respaldo `-apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif`. Propuesta: **3 pesos**.
+- Jerarquía: h1/h2 y titulares de tarjeta en Poppins SemiBold; cuerpo, tablas, pie y extractos en Inter Regular; énfasis/totales en Inter SemiBold; números con `font-variant-numeric: tabular-nums` (Inter `tnum`).
+
+### 6.5 Logo
+
+- Variantes disponibles hoy: `conl.png` (logotipo horizontal con descriptor, texto morado, 250×100, 10.5 KB → 14 KB base64) y `logo_blanco.png` (263×112, 5.9 KB → 8 KB base64), ambos del sitio oficial; favicon 32×32 = símbolo. En el Drive existen las versiones vectoriales (PDF/EPS) y el BrandBook con la zona de respeto oficial: **pendientes de que Ricardo las baje**.
+- Propuesta: encabezado morado con **`logo_blanco`** (como conl.mx) a 44–48 px de alto, a la izquierda del título; pie con **`conl.png`** (texto morado) a 36 px. Zona de respeto **provisional** = la mitad de la altura del símbolo alrededor (se sustituye por la del BrandBook). Al tener el vector: SVG data-URI (menor y nítido); hasta entonces PNG @2x (los tamaños de uso son ≤ 125×50 CSS px, así que 250×100 rinde a 2×).
+
+### 6.6 Bloque de atribución (maqueta del pie, intocable)
+
+```
+┌──────────────────────────────────────────────────────────────────────────────────────────┐
+│ [logo CoNL texto morado, 36 px]  Simulador Fiscal NL — <módulo>                           │
+│ construido sobre el Simulador Fiscal CIEP v8.6.0  ·  capa NL-0.4.1  ·  GitHub ↗           │
+│ (enlace: https://github.com/rcantuc/SimuladorCIEP/tree/feature/entidad-nl — es un <a>, no │
+│  una carga: cero red se mantiene)                                                        │
+│ corrida <sello> · log <archivo> · <driver>                                                │
+└──────────────────────────────────────────────────────────────────────────────────────────┘
+```
+La leyenda se toma **tal cual** de `_NLidentidad` (`r(subtitulo)` → `procedencia`/`subtitulo` del JSON), nunca se reescribe; la versión de la capa y el enlace salen de `nl-manifest.json` (`version_nl` + clave nueva `repositorio` que F1 añade al manifest), no de la plantilla. Mismo bloque en los tres endpoints (cabecera: logo blanco + título; pie: logo morado + atribución).
+
+### 6.7 Qué queda como aproximación hasta tener el BrandBook
+
+Zona de respeto del logo (provisional); logo en PNG en lugar de vector; posibles reglas del manual sobre usos del aqua/amarillo que el sitio no explicita. Todo lo demás (paleta exacta, variantes WCAG, tipografía y sus pesos, licencia) está **verificado en la fuente oficial viva (conl.mx) y en la publicación insignia (PE 2040)**.
+
+**FRENA F0:** se piden a Ricardo (1) aprobación del mapeo 6.3 (en particular `--paga` naranja vs rojo y `--m` rosa vs púrpura), (2) del plan tipográfico 6.4 (3 pesos embebidos, ≈ 57 KB por endpoint), (3) del bloque de atribución 6.6, y (4) la descarga local del BrandBook y del logotipo vectorial del Drive (o confirmar que se sigue con PNG).
+
 ## 5. Pendientes abiertos de este borrador
 
 - Confirmar tokens §3 (en particular NL = azul CIEP profundo vs. naranja CIEP; nacional gris vs. color).
