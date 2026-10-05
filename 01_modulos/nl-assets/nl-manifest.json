@@ -1,6 +1,6 @@
 {
   "producto": "Simulador Fiscal NL",
-  "version_nl": "NL-0.4.1",
+  "version_nl": "NL-0.5.0",
   "fecha": "2026-10-05",
   "motor_sincronizado": "v8.6.0",
   "repositorio": "https://github.com/rcantuc/SimuladorCIEP/tree/feature/entidad-nl",
@@ -125,6 +125,14 @@
       "contenido": "extracto del canal del motor: participaciones de NL por impuesto (statajson_entidad-nl.json), recaudación observada y LIF/ILIF por impuesto y año (master/LIF.dta), anclas CP/PEF/PPEF por divFEDE (master/PEF.dta); identidad con versión de capa, de motor, anioPE y SHA-256 de la fuente",
       "consume": "FederacionNL.do en modo sello (runner Windows, sin cachés del motor) solo si versión de capa, de motor y anioPE coinciden con la sesión; en modo canal se exige igualdad reldif 1e-9 con el canal vivo",
       "regla": "arquitectura B (DIAGNOSTICO_NL.md, anexo Federación↔NL): los números siguen saliendo del canal; el sello nunca se edita a mano"
+    },
+    {
+      "name": "participaciones-vintages.json",
+      "local_path": "01_modulos/nl-assets/participaciones-vintages.json",
+      "escribe": "01_modulos/nl-assets/nl-vintages-sello.do (Mac) tras nl-vintage.do para 2016 2018 2020 2022 2024 (./nl-vintages.sh): cada ENIGH bienal corrida con anioPE = aniovp = anioenigh (calibración contemporánea, sin los parámetros del Paquete) + EntidadNL.do",
+      "contenido": "por vintage: identidad (PE, corrida, SHA-256 del statajson), muestra NL (hogares, personas, mínimo por decil), participaciones de NL por impuesto con banda S1/S2/S3 del ISR PM, Rec nacional/NL y LIF observada, concentración top-1 (sensibilidad muestral declarada), sello pandémico 2020; asignación escalonada año→vintage; saltos entre vintages (informativo)",
+      "consume": "FederacionNL.do v1.2.0 en ambos modos (participacionesAnual y lado paga por año; compuertas 10–13); el SHA del sello viaja en la identidad de federacion-sello.json",
+      "regla": "resoluciones F0 del anexo Participaciones históricas (2026-10-05): sin interpolación, 2014 fuera, 2020 declarado, ISR PM publicado tal cual con sello de sensibilidad; el sello nunca se edita a mano"
     }
   ],
   "fuentes_shcp": [

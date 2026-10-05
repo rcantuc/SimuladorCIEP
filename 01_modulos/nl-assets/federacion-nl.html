@@ -21,6 +21,9 @@
   Layout (NL-0.4.1): zona fija = identidad + alcance + parámetros globales (registro, medida, escenario, año) + tarjetas;
   los botones de sección y los controles de vista viven pegados a los paneles, que van apilados a ancho completo.
   El Sankey es navegable por año: participacionesAnual trae las participaciones por año con enigh/metodo.
+  NL-0.5.0: las participaciones vienen del vintage ENIGH bienal asignado a cada año (participaciones-vintages.json,
+  metodo bienal | extrapolado; sello pandémico 2020; concTop1 = sensibilidad muestral declarada) y existe la vista
+  "La carga federal de NL a través del tiempo" (arreglo vintages). Estado por URL: vista=…|vintages.
 -->
 <style>
 :root{--nl:#5a2148;--nac:#7f7f7f;--banda:rgba(90,33,72,.25);--recibe:#00b1af;--recibeTexto:#008381;--paga:#e76b24;--pagaTexto:#c75108;--paquete:#fbb818;--proy:rgba(90,33,72,.55);--nowcast:rgba(90,33,72,.7);--acento:#872675;--acento2:#00b1af;--alerta:#d52b4d;--h:#0a6db6;--m:#f27794;--ink:#212121;--mut:#666666;--line:#d0d0d0;--bg:#f6f6f6;--card:#fff;--fuenteTitulo:"Poppins",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;--fuenteCuerpo:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
@@ -121,6 +124,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
       <button data-v="balanza" class="on">La balanza</button>
       <button data-v="recibe">¿Cuánto recibe NL?</button>
       <button data-v="paga">¿Cuánto pagan los neoloneses?</button>
+      <button data-v="vintages">La carga federal de NL a través del tiempo</button>
     </div>
     <section class="panel controls vista">
       <div class="ctl">
@@ -184,8 +188,19 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
   var MES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
   var A = D.anual, SF = D.subfondos || [], M = D.mensual || [], PART = D.participaciones || [], PA = D.participacionesAnual || [];
   var byPA = {}; PA.forEach(function (r) { byPA[r.anio] = r; });
+  var VINT = (D.vintages || []).slice().sort(function (a, b) { return a.enigh - b.enigh; }); var byV = {}; VINT.forEach(function (v) { byV[v.enigh] = v; });
+  var SP = P.supuestos || {};
+  var supuestoPart = SP.participaciones_bienales || SP.incidencia_fija || '';
   function partAnio(anio, k) { var r = byPA[anio]; if (r && r[k] !== undefined && r[k] !== null) return r[k]; var p = PART.filter(function (x) { return x.impuesto === k; })[0]; return p ? p.part : null; }
-  function notaPart(anio) { var r = byPA[anio]; if (!r) return ''; return 'participaciones estimadas con ENIGH ' + r.enigh + (r.metodo === 'constante' ? ', supuestas constantes' : ', método ' + r.metodo) + (anio !== D.anio_politica ? ' (corrida PE ' + D.anio_politica + ' aplicada a la recaudación observada de ' + anio + ')' : ''); }
+  function notaPart(anio) {
+    var r = byPA[anio]; if (!r) return '';
+    var t = 'participaciones estimadas con ENIGH ' + r.enigh + ', método ' + (r.metodo || 'constante');
+    if (r.metodo === 'extrapolado') t += ' (año anterior a la primera ENIGH de la serie: hereda la de ' + r.enigh + ')';
+    if (r.metodo === 'constante') t += ' (corrida PE ' + D.anio_politica + ')';
+    if (r.sello) t += ' · ENIGH ' + r.sello;
+    if (r.concTop1ISRPM !== undefined && r.concTop1ISRPM !== null) t += ' · sensibilidad muestral: una persona de la muestra aporta el ' + f1.format(r.concTop1ISRPM) + ' % del ISR PM de NL';
+    return t;
+  }
   var byY = {}; A.forEach(function (r) { byY[r.anio] = r; });
   var A0 = A[0].anio, A1 = A[A.length - 1].anio;
   var FONDOS = ['R28', 'R33', 'CD', 'CR', 'R23', 'PSS'];
@@ -204,7 +219,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
     var h = (location.hash || '').replace(/^#/, ''); if (!h) return;
     h.split('&').forEach(function (kv) {
       var p = kv.split('='), k = p[0], v = decodeURIComponent(p[1] || '');
-      if (k === 'vista' && ['balanza', 'recibe', 'paga'].indexOf(v) >= 0) S.vista = v;
+      if (k === 'vista' && ['balanza', 'recibe', 'paga', 'vintages'].indexOf(v) >= 0) S.vista = v;
       if (k === 'reg' && (v === 'pc' || v === 'macro')) S.reg = v;
       if (k === 'medida' && ['nominal', 'real', 'pibe'].indexOf(v) >= 0) S.medida = v;
       if (k === 'esc' && ['S0', 'S1', 'S3'].indexOf(v) >= 0) S.esc = v;
@@ -268,7 +283,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
   function corto(s, n) { s = String(s || ''); return s.length > n ? s.slice(0, n - 1) + '…' : s; }
 
   /* ---------- letrero de alcance (siempre visible) ---------- */
-  document.getElementById('alcance').innerHTML = '<b>Alcance declarado — ' + esc(AL.declarado || 'balanza de flujos identificables') + '.</b> ' + esc(AL.leyenda || PR.letrero_alcance || '') + ' <span style="color:var(--mut)">Supuesto: ' + esc((P.supuestos || {}).incidencia_fija || '') + '.</span>';
+  document.getElementById('alcance').innerHTML = '<b>Alcance declarado — ' + esc(AL.declarado || 'balanza de flujos identificables') + '.</b> ' + esc(AL.leyenda || PR.letrero_alcance || '') + ' <span style="color:var(--mut)">Supuesto: ' + esc(supuestoPart) + '.</span>';
 
   /* ---------- tarjetas (persona-escala por defecto; subtítulo macro) ----------
      PATRÓN: familia per cápita del motor (PIBDeflactor pib_pc, GastoPC, columna MXN PC de PEF/LIF). */
@@ -293,7 +308,9 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
     L.push('# Capa NL ' + (P.version_capa_nl || '') + ' · motor ' + (P.version_motor || '') + ' · corrida ' + (P.generado_en || '') + ' · modo ' + (P.modo || '') + ' · ' + (P.driver || ''));
     L.push('# Alcance: ' + (AL.declarado || '') + ' — ' + (AL.leyenda || ''));
     (P.fuentes || []).forEach(function (f) { L.push('# Fuente ' + f.id + ': ' + f.fuente + (f.periodo_final ? ' · periodo final ' + f.periodo_final : '') + (f.last_modified ? ' · Last-Modified ' + f.last_modified : '') + (f.vintage ? ' · vintage ' + f.vintage : '') + (f.generado_en ? ' · generado ' + f.generado_en : '') + (f.sha256 ? ' · sha256 ' + f.sha256 : '')); });
-    L.push('# Supuesto: ' + ((P.supuestos || {}).incidencia_fija || '') + ' · deflactor: ' + ((P.supuestos || {}).deflactor || ''));
+    L.push('# Supuesto: ' + supuestoPart + ' · deflactor: ' + (SP.deflactor || ''));
+    if (SP.sensibilidad_muestral) L.push('# Sensibilidad muestral: ' + SP.sensibilidad_muestral);
+    if (SP.sello_2020) L.push('# ENIGH 2020: ' + SP.sello_2020);
     L.push('# Registro: ' + (S.reg === 'pc' ? 'por habitante' : 'macro, ' + S.medida) + ' · escenario ' + S.esc + ' · año ' + S.anio + ' · rango ' + S.ini + '-' + S.fin + (extra ? ' · ' + extra : ''));
     if (notaPart(S.anio)) L.push('# Lado paga del año ' + S.anio + ': ' + notaPart(S.anio));
     L.push('# Tipos: observado = año completo publicado; parcial = acumulado al mes ' + (D.mes_ultimo || '') + '; Paquete = PEF/PPEF vs LIF/ILIF; valores del canal sin recálculo');
@@ -462,6 +479,68 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
     document.getElementById(id + '-body').innerHTML = o;
   }
 
+  /* ---------- serie por vintage ENIGH (vista "a través del tiempo") ----------
+     PATRÓN: serie del canon (PIBDeflactor / SHRFSP: líneas con marcador por observación, xline en el corte, nada
+     interpolado): un punto por ENIGH bienal, tramos horizontales = bienio que cubre cada vintage (asignación
+     escalonada declarada, jamás interpolada), franja = banda [S1, S3] del ISR PM, anillo + etiqueta en 2020
+     (sello pandémico), tooltip con muestra y sensibilidad muestral (top-1). */
+  var VIMP = ['ISRAS', 'ISRPF', 'ISRPM', 'IVA', 'IEPSNP', 'IEPSP', 'CUOTAS'];
+  var VLAB = { ISRAS: 'ISR salarios', ISRPF: 'ISR personas físicas', ISRPM: 'ISR personas morales (S0; banda S1–S3)', IVA: 'IVA', IEPSNP: 'IEPS no petrolero', IEPSP: 'IEPS petrolero', CUOTAS: 'Cuotas IMSS (aparte)' };
+  var CV = { ISRAS: CI.ISRAS, ISRPF: CI.ISRPF, ISRPM: TK.nl, IVA: CI.IVA, IEPSNP: CI.IEPSNP, IEPSP: CI.IEPSP, CUOTAS: 'var(--mut)' };
+  function lineasVint(id) {
+    if (!VINT.length) { document.getElementById(id + '-body').innerHTML = '<p class="bad">El JSON no trae el arreglo vintages.</p>'; return; }
+    var W = 1180, H = 420, left = 60, right = 230, top = 24, bottom = 44, pw = W - left - right, ph = H - top - bottom;
+    var x0 = VINT[0].enigh, x1 = Math.max(VINT[VINT.length - 1].enigh + 2, A1), xs = function (a) { return left + (a - x0) / (x1 - x0) * pw; };
+    var vals = []; VINT.forEach(function (v) { VIMP.forEach(function (k) { if (v[k] !== null && v[k] !== undefined) vals.push(v[k] * 100); }); vals.push(v.ISRPMS1 * 100, v.ISRPMS3 * 100); });
+    var e = extent(vals), mn = 0, mx = e[1], y = function (v) { return top + ph - (v - mn) / (mx - mn) * ph; };
+    var o = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Participación de Nuevo León en cada impuesto federal por vintage ENIGH">';
+    ticks(mn, mx, 6).forEach(function (t) { o += '<line class="grid" x1="' + left + '" x2="' + (left + pw) + '" y1="' + y(t) + '" y2="' + y(t) + '"/><text class="tick" x="' + (left - 6) + '" y="' + (y(t) + 4) + '" text-anchor="end">' + f1.format(t) + ' %</text>'; });
+    for (var a = x0; a <= x1; a++) { o += '<text class="tick" x="' + xs(a) + '" y="' + (top + ph + 16) + '" text-anchor="middle">' + a + '</text>'; }
+    /* banda ISR PM por bienio (franja) */
+    VINT.forEach(function (v, i) { var xa = xs(v.enigh), xb = xs(i + 1 < VINT.length ? VINT[i + 1].enigh : x1), lo = Math.min(v.ISRPMS1, v.ISRPMS3) * 100, hi = Math.max(v.ISRPMS1, v.ISRPMS3) * 100; o += '<rect x="' + xa + '" y="' + y(hi) + '" width="' + Math.max(xb - xa, 1) + '" height="' + Math.max(y(lo) - y(hi), 1) + '" fill="var(--banda)"><title>' + esc('ENIGH ' + v.enigh + ' · ISR PM banda [S1, S3] = [' + f2.format(lo) + ', ' + f2.format(hi) + '] %') + '</title></rect>'; });
+    /* tramos escalonados y marcadores */
+    VIMP.forEach(function (k) {
+      var d = '';
+      VINT.forEach(function (v, i) { if (v[k] === null || v[k] === undefined) return; var xa = xs(v.enigh), xb = xs(i + 1 < VINT.length ? VINT[i + 1].enigh : x1), yy = y(v[k] * 100); d += 'M' + xa.toFixed(1) + ',' + yy.toFixed(1) + 'L' + xb.toFixed(1) + ',' + yy.toFixed(1); });
+      o += '<path d="' + d + '" fill="none" stroke="' + CV[k] + '" stroke-width="' + (k === 'ISRPM' ? 2.6 : 2) + '"' + (k === 'CUOTAS' ? ' stroke-dasharray="6 4"' : '') + '/>';
+      VINT.forEach(function (v) { if (v[k] === null || v[k] === undefined) return; var cx = xs(v.enigh), cy = y(v[k] * 100); var tip = 'ENIGH ' + v.enigh + ' (PE ' + v.anioPE + ') · ' + (VLAB[k] || k) + ': ' + f2.format(v[k] * 100) + ' %' + (k === 'ISRPM' ? ' · banda [' + f2.format(v.ISRPMS1 * 100) + ', ' + f2.format(v.ISRPMS3 * 100) + ']' : '') + ' · sensibilidad: una persona = ' + f1.format(v['concTop1' + k]) + ' % del impuesto de NL · muestra NL ' + f0.format(v.nHognl) + ' hogares' + (v.sello ? ' · ' + v.sello : ''); o += '<circle cx="' + cx + '" cy="' + cy + '" r="' + (k === 'ISRPM' ? 5 : 4) + '" fill="' + CV[k] + '"><title>' + esc(tip) + '</title></circle>'; if (v.sello) o += '<circle cx="' + cx + '" cy="' + cy + '" r="9" fill="none" stroke="var(--alerta)" stroke-dasharray="2 2"/>'; });
+    });
+    VINT.forEach(function (v) { if (!v.sello) return; var cx = xs(v.enigh); o += '<line x1="' + cx + '" x2="' + cx + '" y1="' + top + '" y2="' + (top + ph) + '" stroke="var(--alerta)" stroke-dasharray="4 4"/><text class="lab2" x="' + (cx + 4) + '" y="' + (top + 10) + '" style="fill:var(--alerta)">ENIGH ' + v.enigh + ' pandémica</text>'; });
+    /* etiquetas a la derecha (último valor) */
+    var lastV = VINT[VINT.length - 1], labs = VIMP.filter(function (k) { return lastV[k] !== null && lastV[k] !== undefined; }).map(function (k) { return { k: k, y: y(lastV[k] * 100) }; }).sort(function (a, b) { return a.y - b.y; }); var lastY = -1e9; labs.forEach(function (l) { if (l.y - lastY < 14) l.y = lastY + 14; lastY = l.y; o += '<text class="lab" x="' + (left + pw + 8) + '" y="' + (l.y + 4) + '" style="fill:' + CV[l.k] + '">' + esc(corto(VLAB[l.k] || l.k, 34) + ' ' + f1.format(lastV[l.k] * 100) + ' %') + '</text>'; });
+    o += '<text class="lab2" x="' + left + '" y="' + (H - 6) + '">Participación de NL en la recaudación nacional de cada impuesto (%) por ENIGH bienal; cada tramo horizontal es el bienio que cubre ese vintage (asignación escalonada, sin interpolar). Franja: banda [S1, S3] del ISR PM.</text>';
+    o += '</svg>';
+    document.getElementById(id + '-body').innerHTML = o;
+  }
+  /* líneas por impuesto en pesos del registro vigente (persona-escala por defecto), años desde el primer vintage */
+  function lineasAnual(id, rows) {
+    var W = 1180, H = 380, left = 70, right = 230, top = 20, bottom = 46, pw = W - left - right, ph = H - top - bottom, s = suf();
+    rows = rows.filter(function (r) { return r.tipoPaga === 'observado' || r.tipoPaga === 'parcial'; });
+    if (rows.length < 2) { document.getElementById(id + '-body').innerHTML = '<p class="cap">Sin años suficientes en el rango.</p>'; return; }
+    var x0 = rows[0].anio, x1 = rows[rows.length - 1].anio, xs = function (a) { return left + (a - x0) / Math.max(x1 - x0, 1) * pw; };
+    var vals = []; rows.forEach(function (r) { IMP.forEach(function (k) { var v = scaleV(r['paga' + k + s]); if (v !== null && v !== undefined) vals.push(v); }); });
+    var e = extent(vals), mn = Math.min(0, e[0]), mx = e[1], y = function (v) { return top + ph - (v - mn) / (mx - mn) * ph; };
+    var o = '<svg viewBox="0 0 ' + W + ' ' + H + '">';
+    ticks(mn, mx, 6).forEach(function (t) { o += '<line class="grid" x1="' + left + '" x2="' + (left + pw) + '" y1="' + y(t) + '" y2="' + y(t) + '"/><text class="tick" x="' + (left - 6) + '" y="' + (y(t) + 4) + '" text-anchor="end">' + tickFmt(t) + '</text>'; });
+    rows.forEach(function (r) { o += '<text class="tick" x="' + xs(r.anio) + '" y="' + (top + ph + 16) + '" text-anchor="middle">' + r.anio + '</text>'; });
+    /* cortes de vintage: línea vertical donde cambia la ENIGH asignada */
+    rows.forEach(function (r, i) { if (i === 0) return; var a = byPA[r.anio], b = byPA[rows[i - 1].anio]; if (a && b && a.enigh !== b.enigh) { var cx = xs(r.anio) - (xs(r.anio) - xs(rows[i - 1].anio)) / 2; o += '<line x1="' + cx + '" x2="' + cx + '" y1="' + top + '" y2="' + (top + ph) + '" stroke="var(--mut)" stroke-dasharray="3 3"/><text class="lab2" x="' + (cx + 3) + '" y="' + (top + 10) + '">ENIGH ' + a.enigh + (a.sello ? ' ⚠' : '') + '</text>'; } });
+    IMP.forEach(function (k) { var d = '', st = false; rows.forEach(function (r) { var v = scaleV(r['paga' + k + s]); if (v === null || v === undefined) return; d += (st ? 'L' : 'M') + xs(r.anio).toFixed(1) + ',' + y(v).toFixed(1); st = true; o += '<circle cx="' + xs(r.anio) + '" cy="' + y(v) + '" r="3" fill="' + CI[k] + '"' + (r.tipoPaga === 'parcial' ? ' fill-opacity=".5"' : '') + '><title>' + esc(r.anio + ' · ' + (ILAB[k] || k) + ': ' + fmtv(v * (S.reg === 'macro' && S.medida !== 'pibe' ? 1e6 : 1)) + ' ' + unit() + ' · ' + notaPart(r.anio)) + '</title></circle>'; }); o += '<path d="' + d + '" fill="none" stroke="' + CI[k] + '" stroke-width="2"/>'; });
+    var last = rows[rows.length - 1], labs = IMP.map(function (k) { var v = scaleV(last['paga' + k + s]); return v === null || v === undefined ? null : { k: k, y: y(v) }; }).filter(Boolean).sort(function (a, b) { return a.y - b.y; }); var lastY = -1e9; labs.forEach(function (l) { if (l.y - lastY < 14) l.y = lastY + 14; lastY = l.y; o += '<text class="lab" x="' + (left + pw + 8) + '" y="' + (l.y + 4) + '" style="fill:' + CI[l.k] + '">' + esc(corto(ILAB[l.k] || l.k, 34)) + '</text>'; });
+    o += '<line class="zero" x1="' + left + '" x2="' + (left + pw) + '" y1="' + y(0) + '" y2="' + y(0) + '"/>';
+    o += '<text class="lab2" x="' + left + '" y="' + (H - 6) + '">' + esc('Pagan los residentes de NL por impuesto · ' + unit() + ' · participación del vintage ENIGH asignado a cada año × recaudación observada; las líneas punteadas marcan el cambio de vintage') + '</text></svg>';
+    document.getElementById(id + '-body').innerHTML = o;
+  }
+  function colsVint() {
+    var c = [['enigh', 'ENIGH', String], ['anioPE', 'Año de calibración', String], ['sello', 'Sello', String], ['nHognl', 'Hogares NL (muestra)', f0.format], ['nPersnl', 'Personas NL (muestra)', f0.format], ['nHogDecMinnl', 'Mín. hogares NL por decil nacional', f0.format]];
+    VIMP.concat(['ISAN', 'IMPORT', 'OTROSK']).forEach(function (k) { c.push([function (v) { return v[k] === null || v[k] === undefined ? null : v[k] * 100; }, 'Part. NL ' + (ILAB[k] || k) + ' (%)', function (v) { return v === null ? '—' : f2.format(v); }]); });
+    c.push([function (v) { return v.ISRPMS1 * 100; }, 'ISR PM S1 (%)', f2.format], [function (v) { return v.ISRPMS3 * 100; }, 'ISR PM S3 (%)', f2.format]);
+    c.push([function (v) { return v.partImp * 100; }, 'Impuestos sin OTROSK ni cuotas, S0 (%)', f2.format], [function (v) { return v.partImpS1 * 100; }, 'Ídem S1 (%)', f2.format], [function (v) { return v.partImpS3 * 100; }, 'Ídem S3 (%)', f2.format]);
+    VIMP.forEach(function (k) { c.push(['concTop1' + k, 'Top-1 ' + (ILAB[k] || k) + ' (% del impuesto de NL)', f1.format]); });
+    c.push(['concTop1KPrivnl', 'Top-1 ingreso de capital NL (%)', f1.format], ['generado_en', 'Corrida', String], [function (v) { return String(v.statajson_sha256 || '').slice(0, 12); }, 'SHA statajson', String]);
+    return c;
+  }
+
   /* ---------- oración-resumen (b1title del motor), generada desde el canal ---------- */
   function frase(rows, base, lab) {
     var obs = rows.filter(function (r) { return r.tipoBalanza === 'observado' || (base === 'nlTot' && r.tipoRecibe === 'observado'); });
@@ -494,11 +573,20 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
       c2t = 'Detalle por fondo — ' + S.anio + (byY[S.anio].tipoRecibe === 'parcial' ? ' (acumulado a ' + MES[(D.mes_ultimo || 12) - 1] + ')' : ''); c2cap = 'Subfondos de R28, R33, convenios y R23 (EOFP): NL, nacional, participación de NL y lugar per cápita entre las 32 entidades (1 = mayor). Cada fondo desde su año de inicio.';
       c2data = function () { var rows = SF.filter(function (x) { return x.anio === S.anio; }).sort(function (a, b) { return (b.nl || 0) - (a.nl || 0); }); return { cols: colsSub(), rows: rows, extra: 'subfondos del año ' + S.anio }; }; c2name = 'recibe-subfondos';
       if (S.modo === 'grafica') { table('c2', c2data, c2t); }
+    } else if (S.vista === 'vintages') {
+      var v0 = VINT.length ? VINT[0].enigh : '', vN = VINT.length ? VINT[VINT.length - 1].enigh : '';
+      c1t = 'La carga federal de NL a través del tiempo: participación de NL en cada impuesto, ENIGH ' + v0 + '–' + vN;
+      c1cap = 'Un punto por ENIGH bienal, cada una corrida con la economía de su año (calibración contemporánea); el tramo horizontal es el bienio que cubre (asignación escalonada: nunca se interpola). Franja = banda [S1, S3] del ISR PM. ' + (SP.sensibilidad_muestral ? 'Sensibilidad muestral declarada: ' + SP.sensibilidad_muestral + ' ' : '') + (SP.sello_2020 ? 'ENIGH 2020: ' + SP.sello_2020 + '.' : '');
+      c1data = function () { return { cols: colsVint(), rows: VINT, extra: 'ficha por vintage ENIGH', rowClass: function (v) { return v.sello ? 'r-par' : ''; } }; }; c1name = 'vintages-participaciones';
+      if (S.modo === 'grafica') { lineasVint('c1'); legend('c1', VIMP.map(function (k) { return [VLAB[k] || k, 'background:' + CV[k]]; }).concat([['Banda [S1, S3] del ISR PM', 'background:var(--banda);border:1px dashed var(--nl)'], ['ENIGH 2020 pandémica', 'border:2px dashed var(--alerta);background:#fff']])); var vi = byV[2016] || VINT[0], vf = VINT[VINT.length - 1]; if (vi && vf) document.getElementById('c1-frase').textContent = 'De la ENIGH ' + vi.enigh + ' a la ' + vf.enigh + ', la participación de NL en el ISR de salarios pasó de ' + f2.format(vi.ISRAS * 100) + ' % a ' + f2.format(vf.ISRAS * 100) + ' % y en el IVA de ' + f2.format(vi.IVA * 100) + ' % a ' + f2.format(vf.IVA * 100) + ' %; en el ISR PM, de ' + f2.format(vi.ISRPM * 100) + ' % a ' + f2.format(vf.ISRPM * 100) + ' % (una sola persona de la muestra aporta el ' + f1.format(vi.concTop1ISRPM) + ' % y el ' + f1.format(vf.concTop1ISRPM) + ' % del ISR PM de NL en cada vintage: la serie del ISR PM es sensible a la muestra y se publica tal cual).'; }
+      c2t = 'Lo que pagan los neoloneses por impuesto, con el vintage de cada año'; c2cap = 'Pesos pagados por residentes de NL = participación del vintage ENIGH asignado al año × recaudación nacional observada; registro ' + (S.reg === 'pc' ? 'por habitante' : 'macro') + '. Las líneas punteadas marcan dónde cambia la ENIGH que alimenta la participación (⚠ = 2020 pandémica). Rango de años arriba.';
+      c2data = function () { return { cols: colsAnual(), rows: rowsAnual().filter(function (x) { return x.anio >= (VINT.length ? VINT[0].enigh : A0); }), extra: 'serie anual desde el primer vintage', rowClass: rowClass }; }; c2name = 'vintages-paga-serie';
+      if (S.modo === 'grafica') { lineasAnual('c2', rowsAnual().filter(function (x) { return x.anio >= (VINT.length ? VINT[0].enigh : A0); })); legend('c2', IMP.map(function (k) { return [ILAB[k] || k, 'background:' + CI[k]]; })); }
     } else {
-      c1t = '¿Por qué impuestos sale el dinero? — ' + S.anio + (v.obs ? '' : ' (' + v.etiqueta + ')'); c1cap = 'Conciliación: (+) impuestos federales sumados, (=) total con banda, (·) renglones aparte no sumados. Pesos pagados = participación de NL (incidencia, corrida vigente) × recaudación nacional observada del impuesto.';
+      c1t = '¿Por qué impuestos sale el dinero? — ' + S.anio + (v.obs ? '' : ' (' + v.etiqueta + ')'); c1cap = 'Conciliación: (+) impuestos federales sumados, (=) total con banda, (·) renglones aparte no sumados. Pesos pagados = participación de NL del vintage ENIGH asignado al año (incidencia) × recaudación nacional observada del impuesto.';
       c1data = function () { return { cols: colsPaga(), rows: rowsPaga(), extra: 'conciliación del lado paga', rowClass: function (x) { return x.cls || ''; } }; }; c1name = 'paga-conciliacion';
       if (S.modo === 'grafica') { table('c1', c1data, c1t); }
-      c2t = 'Carga federal de los residentes de NL en el tiempo'; c2cap = 'Por impuesto (de mayor a menor dentro de cada año); barra lateral = banda [S1, S3] del total. Supuesto: participación de NL fija (incidencia de la corrida vigente) × recaudación observada de cada año.';
+      c2t = 'Carga federal de los residentes de NL en el tiempo'; c2cap = 'Por impuesto (de mayor a menor dentro de cada año); barra lateral = banda [S1, S3] del total. Participación de NL del vintage ENIGH asignado a cada año (bienal; extrapolado antes de ' + (VINT.length ? VINT[0].enigh : '') + ') × recaudación observada de cada año.';
       c2data = function () { return { cols: colsAnual(), rows: rowsAnual(), extra: 'serie anual', rowClass: rowClass }; }; c2name = 'paga-serie';
       if (S.modo === 'grafica') { stacked('c2', rowsAnual().filter(function (x) { return x.tipoPaga === 'observado' || x.tipoPaga === 'parcial'; }), IMP, ILAB, CI, 'paga', S.reg === 'pc' && S.cmp ? 'recNacS0Pc' : null, 'impuestos federales por habitante, nacional', 'paga'); legend('c2', IMP.map(function (k) { return [ILAB[k] || k, 'background:' + CI[k]]; }).concat([['Banda [S1, S3] del total', 'background:var(--nl)']]).concat(S.reg === 'pc' && S.cmp ? [['Nacional por habitante', 'background:var(--nac)']] : [])); document.getElementById('c2-frase').textContent = frase(rowsAnual(), 'pagaS0', 'la carga federal de los neoloneses (S0)'); }
     }
@@ -526,7 +614,9 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
       if (!(r.pagaS1 <= r.pagaS0 && r.pagaS0 <= r.pagaS3)) bad.push('orden S1 ≤ S0 ≤ S3'); else ok.push('S1 ≤ S0 ≤ S3');
       var pIsr = PART.filter(function (x) { return x.impuesto === 'ISRPM'; })[0];
       if (pIsr) { chk('Part ISRPM = recNL/recNac', pIsr.part, pIsr.recNL / pIsr.recNac); }
-      if (byPA[C.anioRefFed] && pIsr) { chk('participacionesAnual[ref].ISRPM = corrida', byPA[C.anioRefFed].ISRPM, pIsr.part); chk('paga ISRPM(ref) = part(ref) × recaudación nacional', r.pagaISRPM, byPA[C.anioRefFed].ISRPM * r.recNacObsISRPM); }
+      if (byPA[C.anioRefFed]) { var pr = byPA[C.anioRefFed], vv = byV[pr.enigh]; if (vv) chk('participacionesAnual[ref].ISRPM = vintages[' + pr.enigh + '].ISRPM', pr.ISRPM, vv.ISRPM); chk('paga ISRPM(ref) = part(ref) × recaudación nacional', r.pagaISRPM, pr.ISRPM * r.recNacObsISRPM); }
+      if (pIsr && VINT.length) { var vU = VINT[VINT.length - 1]; var relL = Math.abs(vU.ISRPM - pIsr.part) / Math.max(Math.abs(pIsr.part), 1e-9); (relL <= 1e-3 ? ok : bad).push('ligadura vintage ' + vU.enigh + ' ≈ corrida vigente (ISR PM, 1e-3)'); }
+      VINT.forEach(function (vv) { var sum = IMP.reduce(function (a, k) { return a + (vv[k] !== null && vv[k] !== undefined ? 1 : 0); }, 0); (sum === IMP.length && vv.ISRPMS1 <= vv.ISRPMS3 ? ok : bad).push('vintage ' + vv.enigh + ': 8 impuestos y S1 ≤ S3'); });
     }
     var p = byY[C.anioPEFed];
     if (p) { chk('balanzaPES0NL = PPEF − ILIF', C.balanzaPES0NL, p.recibePaq - p.pagaLifS0); chk('recibePENL = Σ ancla PPEF', C.recibePENL, (p.anclaR28 || 0) + (p.anclaR33 || 0) + (p.anclaConv || 0) + (p.anclaSubs || 0) + (p.anclaSalud || 0)); }

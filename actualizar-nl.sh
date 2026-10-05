@@ -1,5 +1,5 @@
 #!/bin/zsh
-# actualizar-nl.sh — actualización de los endpoints NL en UN comando (capa NL-0.4.0).
+# actualizar-nl.sh — actualización de los endpoints NL en UN comando (capa NL-0.5.0).
 #
 #   1. Corre Stata en batch desde la raíz del worktree (profile.do carga aniovp,
 #      anioPE, entidades y token): PoblacionNL.do + PIBDeflactorNL.do + FederacionNL.do
@@ -81,7 +81,7 @@ done
 # Bitácora (commiteada): fecha, vintages y SHAs publicados
 VINT_POB="$(python3 -c "import json;j=json.load(open('$NODOS/poblacion-nl.json'));p=j['procedencia'];print('pob: ' + p['cobertura_estatal'] + '; mun ' + p['cobertura_municipal'].split(',')[0] + '; corrida ' + p['generado_en'])")"
 VINT_ACT="$(python3 -c "import json;j=json.load(open('$NODOS/actividad-nl.json'));p=j['procedencia'];s={x['variable']:x for x in p['series']};u=lambda k:(s[k]['ultimo']+(' '+s[k]['sello_ultimo'] if s[k].get('sello_ultimo') else ''));print('act: PIBE hasta ' + u('pibeNnl') + '; ITAEE ' + u('itaeenl') + '; INPC NL ' + u('inpcnl') + '; INPC nac ' + u('inpcnac') + '; consulta INEGI ' + s['pibeNnl']['consulta'] + '; corrida ' + p['generado_en'])")"
-VINT_FED="$(python3 -c "import json;j=json.load(open('$NODOS/federacion-nl.json'));p=j['procedencia'];f={x['id']:x for x in p['fuentes']};print('fed: modo ' + p['modo'] + '; EOFP hasta ' + f['eopf_transferencias']['periodo_final'] + ' (Last-Modified ' + f['eopf_transferencias']['last_modified'].split(';')[0].split('=')[-1] + '); ref ' + str(j['anio_referencia']) + '; sello ' + f['sello']['generado_en'] + '; corrida ' + p['generado_en'])")"
+VINT_FED="$(python3 -c "import json;j=json.load(open('$NODOS/federacion-nl.json'));p=j['procedencia'];f={x['id']:x for x in p['fuentes']};print('fed: modo ' + p['modo'] + '; EOFP hasta ' + f['eopf_transferencias']['periodo_final'] + ' (Last-Modified ' + f['eopf_transferencias']['last_modified'].split(';')[0].split('=')[-1] + '); ref ' + str(j['anio_referencia']) + '; sello ' + f['sello']['generado_en'] + '; vintages ' + f.get('participaciones_vintages',{}).get('vintages','?') + ' (sellados ' + f.get('participaciones_vintages',{}).get('generado_en','?') + '); corrida ' + p['generado_en'])")"
 SHAS="$(cd "$DRIVE" && shasum -a 256 poblacion-nl.html actividad-nl.html federacion-nl.html nodos/poblacion-nl.json nodos/actividad-nl.json nodos/federacion-nl.json | awk '{printf "%s=%s ", $2, substr($1,1,12)}')"
 VNL="$(python3 -c "import json;print(json.load(open('$ROOT/01_modulos/nl-assets/nl-manifest.json'))['version_nl'])")"
 print -r -- "$(date '+%Y-%m-%dT%H:%M:%S') capa=$VNL | $VINT_POB | $VINT_ACT | $VINT_FED | sha256(12): $SHAS" >> "$BITACORA"

@@ -38,7 +38,7 @@ if (Test-Path -LiteralPath (Join-Path $C.Repo '.git')) {
     } else { Write-Fail "git fetch falló: ¿sin red o deploy key no registrada/revocada? Revisa ssh -T git@github-simulador-nl" }
     $ro = (& git remote get-url origin).Trim(); if ($ro -like 'git@github-simulador-nl:*') { Write-Ok ("Remoto por deploy key: " + $ro) } else { Write-Warn ("Remoto inesperado: " + $ro) }
     Pop-Location
-    foreach ($f in '01_modulos\PoblacionNL.do','01_modulos\PIBDeflactorNL.do','01_modulos\FederacionNL.do','01_modulos\nl-assets\nl-fed.do','01_modulos\nl-assets\nl_fed.py','01_modulos\nl-assets\federacion-sello.json','01_modulos\nl-assets\federacion-nl.html','01_modulos\nl-assets\nl-estilo-assets.js','01_modulos\nl-assets\identidad\conl-logotipo.svg','01_modulos\nl-assets\actualizar-nl.do','profile.do','01_modulos\nl-assets\pobproy_quinq1.csv') { if (Test-Path -LiteralPath (Join-Path $C.Repo $f)) { Write-Ok ("Existe " + $f) } else { Write-Fail ("Falta " + $f + " en el clon") } }
+    foreach ($f in '01_modulos\PoblacionNL.do','01_modulos\PIBDeflactorNL.do','01_modulos\FederacionNL.do','01_modulos\nl-assets\nl-fed.do','01_modulos\nl-assets\nl_fed.py','01_modulos\nl-assets\federacion-sello.json','01_modulos\nl-assets\participaciones-vintages.json','01_modulos\nl-assets\federacion-nl.html','01_modulos\nl-assets\nl-estilo-assets.js','01_modulos\nl-assets\identidad\conl-logotipo.svg','01_modulos\nl-assets\actualizar-nl.do','profile.do','01_modulos\nl-assets\pobproy_quinq1.csv') { if (Test-Path -LiteralPath (Join-Path $C.Repo $f)) { Write-Ok ("Existe " + $f) } else { Write-Fail ("Falta " + $f + " en el clon") } }
 } else { Write-Fail ("No hay clon en " + $C.Repo + ". Corre instalar-runner.ps1.") }
 
 Write-Paso "4. Stata en batch (display, Python, requests/bs4)"
