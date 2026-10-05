@@ -1,8 +1,10 @@
 #!/bin/zsh
-# actualizar-nl.sh — actualización de los endpoints NL en UN comando (capa NL-0.2.0).
+# actualizar-nl.sh — actualización de los endpoints NL en UN comando (capa NL-0.4.0).
 #
 #   1. Corre Stata en batch desde la raíz del worktree (profile.do carga aniovp,
-#      anioPE, entidades y token): PoblacionNL.do + PIBDeflactorNL.do.
+#      anioPE, entidades y token): PoblacionNL.do + PIBDeflactorNL.do + FederacionNL.do
+#      (este último en modo canal si existen statajson_entidad-nl.json, LIF.dta y PEF.dta;
+#      si no, en modo sello con nl-assets/federacion-sello.json).
 #   2. FALLO SEGURO: si INEGI no responde, una compuerta aborta o el log trae un
 #      error de Stata, NO publica, restaura los últimos JSON/HTML buenos en
 #      users/ricardo/nodos/ y deja el detalle en users/ricardo/actualizar-nl.log
@@ -61,26 +63,28 @@ if grep -q -E '^r\([0-9]+\);' "$SLOG"; then
 fi
 grep -q 'PoblacionNL: listo' "$SLOG" || fail "PoblacionNL.do no llegó al final"
 grep -q 'PIBDeflactorNL: listo' "$SLOG" || fail "PIBDeflactorNL.do no llegó al final"
-grep -q 'AMBOS DRIVERS TERMINARON' "$SLOG" || fail "la corrida conjunta no terminó"
-for f in poblacion-nl.json poblacion-nl.html actividad-nl.json actividad-nl.html; do
+grep -q 'FederacionNL: listo' "$SLOG" || fail "FederacionNL.do no llegó al final"
+grep -q 'LOS TRES DRIVERS TERMINARON' "$SLOG" || fail "la corrida conjunta no terminó"
+for f in poblacion-nl.json poblacion-nl.html actividad-nl.json actividad-nl.html federacion-nl.json federacion-nl.html; do
   [[ -s "$NODOS/$f" ]] || fail "falta o está vacío $NODOS/$f"
 done
 mv -f "$SLOG" "$NODOS/actualizar-nl-stata.log"
-log "Stata OK: compuertas en verde, 4 productos generados"
+log "Stata OK: compuertas en verde, 6 productos generados"
 
 # Publicación
 [[ -d "${DRIVE:h}" ]] || fail "Drive de CoNL no montado (${DRIVE:h}); no se publica"
 "$ROOT/publicar-conl.sh" > "$ROOT/users/ricardo/publicar-conl.out" 2>&1 || fail "publicar-conl.sh devolvió error (ver users/ricardo/publicar-conl.out)"
-for f in poblacion-nl.html actividad-nl.html; do
+for f in poblacion-nl.html actividad-nl.html federacion-nl.html; do
   [[ -s "$DRIVE/$f" ]] || fail "no quedó $f en el Drive"
 done
 
 # Bitácora (commiteada): fecha, vintages y SHAs publicados
 VINT_POB="$(python3 -c "import json;j=json.load(open('$NODOS/poblacion-nl.json'));p=j['procedencia'];print('pob: ' + p['cobertura_estatal'] + '; mun ' + p['cobertura_municipal'].split(',')[0] + '; corrida ' + p['generado_en'])")"
 VINT_ACT="$(python3 -c "import json;j=json.load(open('$NODOS/actividad-nl.json'));p=j['procedencia'];s={x['variable']:x for x in p['series']};u=lambda k:(s[k]['ultimo']+(' '+s[k]['sello_ultimo'] if s[k].get('sello_ultimo') else ''));print('act: PIBE hasta ' + u('pibeNnl') + '; ITAEE ' + u('itaeenl') + '; INPC NL ' + u('inpcnl') + '; INPC nac ' + u('inpcnac') + '; consulta INEGI ' + s['pibeNnl']['consulta'] + '; corrida ' + p['generado_en'])")"
-SHAS="$(cd "$DRIVE" && shasum -a 256 poblacion-nl.html actividad-nl.html nodos/poblacion-nl.json nodos/actividad-nl.json | awk '{printf "%s=%s ", $2, substr($1,1,12)}')"
+VINT_FED="$(python3 -c "import json;j=json.load(open('$NODOS/federacion-nl.json'));p=j['procedencia'];f={x['id']:x for x in p['fuentes']};print('fed: modo ' + p['modo'] + '; EOFP hasta ' + f['eopf_transferencias']['periodo_final'] + ' (Last-Modified ' + f['eopf_transferencias']['last_modified'].split(';')[0].split('=')[-1] + '); ref ' + str(j['anio_referencia']) + '; sello ' + f['sello']['generado_en'] + '; corrida ' + p['generado_en'])")"
+SHAS="$(cd "$DRIVE" && shasum -a 256 poblacion-nl.html actividad-nl.html federacion-nl.html nodos/poblacion-nl.json nodos/actividad-nl.json nodos/federacion-nl.json | awk '{printf "%s=%s ", $2, substr($1,1,12)}')"
 VNL="$(python3 -c "import json;print(json.load(open('$ROOT/01_modulos/nl-assets/nl-manifest.json'))['version_nl'])")"
-print -r -- "$(date '+%Y-%m-%dT%H:%M:%S') capa=$VNL | $VINT_POB | $VINT_ACT | sha256(12): $SHAS" >> "$BITACORA"
+print -r -- "$(date '+%Y-%m-%dT%H:%M:%S') capa=$VNL | $VINT_POB | $VINT_ACT | $VINT_FED | sha256(12): $SHAS" >> "$BITACORA"
 log "Publicado y registrado en bitácora: $(tail -1 "$BITACORA")"
 rm -rf "$BAK"
 log "== actualizar-nl fin OK =="

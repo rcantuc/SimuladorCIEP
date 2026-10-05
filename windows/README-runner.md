@@ -25,7 +25,7 @@ La laptop HP de CoNL (Windows 11, Stata 19.5 StataNow, Git, Tailscale, Google Dr
 - **Solo lectura**: deploy key sin escritura, clon de una sola rama, `git reset --hard origin/feature/entidad-nl` en cada corrida. El runner nunca tiene cambios propios; si los detecta, aborta y lo reporta.
 - **Nunca desarrollar ahí**: cualquier cambio se hace en el Mac y llega por `git push`; el runner lo toma en el siguiente ciclo.
 - **Fallo seguro**: si INEGI no responde, una compuerta falla, Stata devuelve `r(#)` o falta un producto, **no se toca el Drive**; se restauran los últimos JSON/HTML buenos y queda el motivo en `windows\bitacora-runner.log`. Reintento único a los 30 minutos si el fallo parece de INEGI (`-RetryOnce`). Nunca publica a medias.
-- **Publicación**: `robocopy /MIR` **solo** sobre `...\SimuladorCoNL\nodos\` (espejo, como el rsync del Mac); los HTML se copian a la raíz; `ultimo-exito.txt` es el latido.
+- **Publicación**: `robocopy /E` (copia **sin borrado**, NL-0.4.0) sobre `...\SimuladorCoNL\nodos\`: el runner no produce `statajson_entidad-nl.json` ni `entidad-nl.log` (solo el Mac, que sí espeja con `--delete`), así que no debe borrarlos; los HTML (`poblacion-nl`, `actividad-nl`, `federacion-nl`) se copian a la raíz; `ultimo-exito.txt` es el latido. `FederacionNL.do` corre en **modo sello** (`nl-assets/federacion-sello.json`, commiteado desde el Mac): aborta si la versión de capa, de motor o el año de política del sello no coinciden con la sesión.
 - **Motor intacto**: el runner solo ejecuta; la capa NL no modifica archivos del motor.
 
 ## Tarea programada y credenciales

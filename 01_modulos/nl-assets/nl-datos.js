@@ -66,3 +66,20 @@ window.NLDatos = (function () {
   }
   return { esc: esc, extract: extract, table: table, copyText: copyText, downloadCsv: downloadCsv, tools: tools, load: load };
 })();
+/* NLEstilo — tokens de color de la capa NL (NL-0.4.0). ÚNICO lugar donde viven: cada plantilla
+   llama NLEstilo.apply() y consume var(--nl), var(--nac), var(--banda), var(--recibe), var(--paga),
+   var(--paquete), var(--proy), var(--acento), var(--h), var(--m), var(--ink), var(--mut), var(--line).
+   Valores PROVISIONALES = propuesta de nl-estilo.md §3 (derivados de scheme-ciep: p11 azul CIEP
+   profundo, p23 gris, p10 jade, p6 rojo institucional, p2 amarillo, p1 naranja). La pasada de estilo
+   de Ricardo cambia AQUÍ los valores y todos los endpoints los heredan sin retrabajo. */
+window.NLEstilo = (function () {
+  'use strict';
+  var T = {
+    nl: 'rgb(0,78,198)', nac: 'rgb(175,174,180)', banda: 'rgba(0,78,198,0.25)',
+    recibe: 'rgb(0,179,147)', paga: 'rgb(186,34,64)', paquete: 'rgb(255,189,0)', proy: 'rgba(255,128,0,0.55)',
+    acento: '#d76f33', h: 'rgb(23,151,201)', m: 'rgb(150,6,92)',
+    ink: '#1F1F1F', mut: 'rgb(111,111,111)', line: 'rgb(200,200,200)', bg: '#f7f8fa', card: '#ffffff'
+  };
+  function apply() { var r = document.documentElement.style; Object.keys(T).forEach(function (k) { r.setProperty('--' + k, T[k]); }); }
+  return { tokens: T, apply: apply, estado: 'provisional: nl-estilo.md §3, pendiente de la pasada de estilo' };
+})();

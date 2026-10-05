@@ -7,7 +7,7 @@
   FALLO SEGURO: cualquier r(#) de Stata, compuerta fallida, descarga inválida, producto faltante o HTML sin datos
   válidos (compuerta de publicación: sin marcas de inyección, con componente y JSON parseable) → NO toca el Drive,
   restaura los últimos productos buenos y registra el motivo en windows\bitacora-runner.log. Nunca publica a medias.
-  Éxito: robocopy /MIR SOLO sobre <Drive>\nodos, copia de los HTML a la raíz, bitácora y latido ultimo-exito.txt (local + Drive).
+  Éxito: robocopy /E (sin borrado) sobre <Drive>\nodos, copia de los HTML a la raíz, bitácora y latido ultimo-exito.txt (local + Drive).
 .PARAMETER RetryOnce  Si el fallo parece de INEGI (descarga), espera 30 min y reintenta una vez.
 .PARAMETER Offline    Reutiliza la caché INEGI (desarrollo/diagnóstico).
 .PARAMETER Manual     Modo manual (verificación): misma lógica, salida más verbosa.
@@ -72,7 +72,7 @@ while ($true) {
     try { $log = Invoke-StataBatch -Stata $Stata -DoFile $wrap -WorkDir $Repo -TimeoutMin 90 } catch { Abortar $_.Exception.Message $Bak $Nodos }
     $err = Test-StataLogError $log
     $faltan = @()
-    foreach ($m in 'PoblacionNL: listo', 'PIBDeflactorNL: listo', 'AMBOS DRIVERS TERMINARON') { if (-not (Select-String -LiteralPath $log -Pattern ([regex]::Escape($m)) -Quiet)) { $faltan += $m } }
+    foreach ($m in 'PoblacionNL: listo', 'PIBDeflactorNL: listo', 'FederacionNL: listo', 'LOS TRES DRIVERS TERMINARON') { if (-not (Select-String -LiteralPath $log -Pattern ([regex]::Escape($m)) -Quiet)) { $faltan += $m } }
     if (-not $err -and $faltan.Count -eq 0) { break }
     $ctx = ''
     if ($err) { $ctx = ((Get-Content -LiteralPath $log)[([Math]::Max(0, $err.LineNumber - 6))..($err.LineNumber - 1)] -join ' | ') }
@@ -86,15 +86,15 @@ while ($true) {
     }
     Abortar $motivo $Bak $Nodos
 }
-foreach ($f in 'poblacion-nl.json','poblacion-nl.html','actividad-nl.json','actividad-nl.html') {
+foreach ($f in 'poblacion-nl.json','poblacion-nl.html','actividad-nl.json','actividad-nl.html','federacion-nl.json','federacion-nl.html') {
     $pf = Join-Path $Nodos $f
     if (-not (Test-Path -LiteralPath $pf) -or (Get-Item -LiteralPath $pf).Length -eq 0) { Abortar ("Falta o está vacío el producto " + $pf) $Bak $Nodos }
 }
 Copy-Item -LiteralPath $log -Destination (Join-Path $Nodos 'actualizar-nl-stata.log') -Force
-Write-Bitacora $Bitacora "Stata OK: compuertas en verde, 4 productos generados"
+Write-Bitacora $Bitacora "Stata OK: compuertas en verde, 6 productos generados"
 
 # ---------- 3b. Compuerta de publicación (NL-0.3.1): el HTML debe ser el endpoint generado, no la plantilla ----------
-foreach ($h in 'poblacion-nl.html','actividad-nl.html') {
+foreach ($h in 'poblacion-nl.html','actividad-nl.html','federacion-nl.html') {
     $ph = Join-Path $Nodos $h
     $txt = Get-Content -LiteralPath $ph -Raw -Encoding UTF8
     if ($txt -match '/\*__NL[A-Z_]*__\*/') { Abortar ("COMPUERTA: " + $h + " conserva una marca de inyección sin reemplazar (es la plantilla, no el endpoint)") $Bak $Nodos }
@@ -106,16 +106,18 @@ foreach ($h in 'poblacion-nl.html','actividad-nl.html') {
     Write-Bitacora $Bitacora ("Compuerta de publicación OK: " + $h + " (" + $m.Groups[1].Value.Length + " caracteres de JSON, corrida " + $j.procedencia.generado_en + ", capa " + $j.procedencia.version_capa_nl + ")")
 }
 
-# ---------- 4. Publicación al Drive (espejo SOLO de nodos\) ----------
+# ---------- 4. Publicación al Drive (copia SIN borrado sobre nodos\; NL-0.4.0) ----------
+# Antes era robocopy /MIR: habría borrado del Drive los productos que solo produce el Mac
+# (statajson_entidad-nl.json, entidad-nl.log). El Mac sí espeja con --delete porque produce el conjunto completo.
 $DrivePadre = Split-Path -Parent $Drive
 if (-not (Test-Path -LiteralPath $DrivePadre)) { Abortar ("Drive de CoNL no montado (" + $DrivePadre + "); no se publica") $Bak $Nodos }
 if (-not (Test-Path -LiteralPath $Drive)) { New-Item -ItemType Directory -Path $Drive -Force | Out-Null }
 $DriveNodos = Join-Path $Drive 'nodos'
-$r = Invoke-Native ('robocopy "' + $Nodos + '" "' + $DriveNodos + '" /MIR /R:2 /W:5 /NFL /NDL /NJH /NJS /NP')
+$r = Invoke-Native ('robocopy "' + $Nodos + '" "' + $DriveNodos + '" /E /R:2 /W:5 /NFL /NDL /NJH /NJS /NP')
 $rc = $r.Code
-if ($rc -ge 8) { Abortar ("robocopy /MIR a " + $DriveNodos + " devolvió " + $rc) $Bak $Nodos }
-foreach ($h in 'poblacion-nl.html','actividad-nl.html') { Copy-Item -LiteralPath (Join-Path $Nodos $h) -Destination (Join-Path $Drive $h) -Force }
-foreach ($h in 'poblacion-nl.html','actividad-nl.html') { if (-not (Test-Path -LiteralPath (Join-Path $Drive $h))) { Abortar ("No quedó " + $h + " en el Drive") $Bak $Nodos } }
+if ($rc -ge 8) { Abortar ("robocopy /E a " + $DriveNodos + " devolvió " + $rc) $Bak $Nodos }
+foreach ($h in 'poblacion-nl.html','actividad-nl.html','federacion-nl.html') { Copy-Item -LiteralPath (Join-Path $Nodos $h) -Destination (Join-Path $Drive $h) -Force }
+foreach ($h in 'poblacion-nl.html','actividad-nl.html','federacion-nl.html') { if (-not (Test-Path -LiteralPath (Join-Path $Drive $h))) { Abortar ("No quedó " + $h + " en el Drive") $Bak $Nodos } }
 
 # ---------- 5. Bitácora y latido ----------
 $pob = Get-Content -LiteralPath (Join-Path $Nodos 'poblacion-nl.json') -Raw -Encoding UTF8 | ConvertFrom-Json
@@ -123,12 +125,15 @@ $act = Get-Content -LiteralPath (Join-Path $Nodos 'actividad-nl.json') -Raw -Enc
 $ser = @{}; foreach ($s in $act.procedencia.series) { $ser[$s.variable] = $s }
 function U([string]$k) { $s = $ser[$k]; $t = $s.ultimo; if ($s.sello_ultimo) { $t += ' ' + $s.sello_ultimo }; return $t }
 $shas = @()
-foreach ($f in @((Join-Path $Drive 'poblacion-nl.html'), (Join-Path $Drive 'actividad-nl.html'), (Join-Path $DriveNodos 'poblacion-nl.json'), (Join-Path $DriveNodos 'actividad-nl.json'))) {
+$fed = Get-Content -LiteralPath (Join-Path $Nodos 'federacion-nl.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+$fedF = @{}; foreach ($x in $fed.procedencia.fuentes) { $fedF[$x.id] = $x }
+foreach ($f in @((Join-Path $Drive 'poblacion-nl.html'), (Join-Path $Drive 'actividad-nl.html'), (Join-Path $Drive 'federacion-nl.html'), (Join-Path $DriveNodos 'poblacion-nl.json'), (Join-Path $DriveNodos 'actividad-nl.json'), (Join-Path $DriveNodos 'federacion-nl.json'))) {
     $shas += ((Split-Path -Leaf $f) + '=' + (Get-FileHash -LiteralPath $f -Algorithm SHA256).Hash.Substring(0, 12).ToLower())
 }
 $linea = (Get-Date -Format 'yyyy-MM-ddTHH:mm:ss') + ' runner=' + $env:COMPUTERNAME + ' capa=' + $pob.procedencia.version_capa_nl + ' motor=' + $pob.procedencia.version_motor + ' git=' + $head +
     ' | pob: ' + $pob.procedencia.cobertura_estatal + '; mun ' + ($pob.procedencia.cobertura_municipal -split ',')[0] + '; corrida ' + $pob.procedencia.generado_en +
     ' | act: PIBE hasta ' + (U 'pibeNnl') + '; ITAEE ' + (U 'itaeenl') + '; INPC NL ' + (U 'inpcnl') + '; INPC nac ' + (U 'inpcnac') + '; consulta INEGI ' + $ser['pibeNnl'].consulta + '; corrida ' + $act.procedencia.generado_en +
+    ' | fed: modo ' + $fed.procedencia.modo + '; EOFP hasta ' + $fedF['eopf_transferencias'].periodo_final + '; ref ' + $fed.anio_referencia + '; sello ' + $fedF['sello'].generado_en + '; corrida ' + $fed.procedencia.generado_en +
     ' | sha256(12): ' + ($shas -join ' ')
 Add-Content -LiteralPath $Bitacora -Value $linea -Encoding UTF8
 $latidoTxt = @(

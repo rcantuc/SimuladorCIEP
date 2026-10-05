@@ -1,7 +1,8 @@
 #!/bin/zsh
 # Publica los productos de la corrida NL al Drive de CoNL. Solo entregables, nunca el motor.
-#   nodos/   -> JSON de contratos (statajson_entidad-nl.json, poblacion-nl.json, actividad-nl.json),
-#               logs de procedencia y los HTML autocontenidos (poblacion-nl.html, actividad-nl.html).
+#   nodos/   -> JSON de contratos (statajson_entidad-nl.json, poblacion-nl.json, actividad-nl.json,
+#               federacion-nl.json), logs de procedencia y los HTML autocontenidos (poblacion-nl.html,
+#               actividad-nl.html, federacion-nl.html).
 #   raíz     -> output.txt del contrato web (si existe) y una copia de cada HTML para abrirlos con
 #               doble clic sin entrar a nodos/.
 # COMPUERTA DE PUBLICACIÓN (NL-0.3.1): antes de copiar nada, cada HTML debe (a) no conservar ninguna
@@ -11,7 +12,7 @@
 set -u
 ORIGEN="$HOME/CIEP_Simuladores/SimuladorCIEP-NL/users/ricardo"
 DESTINO="/Users/ricardo/Library/CloudStorage/GoogleDrive-rcantu@conl.mx/My Drive/2. Simuladores CoNL/SimuladorCoNL"
-HTMLS=(poblacion-nl.html actividad-nl.html)
+HTMLS=(poblacion-nl.html actividad-nl.html federacion-nl.html)
 
 verificar_html() {
   local f="$1"
