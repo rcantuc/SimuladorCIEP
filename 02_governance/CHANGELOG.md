@@ -20,6 +20,57 @@ Formato de cada entrada:
 
 Trabajo en `master` sin versión asignada.
 
+## [v8.6.1] — 2026-10-04
+
+### Correcciones
+
+- **`DatosAbiertos.ado` v8.1: `UpdateDatosAbiertos` ya no fabrica la clave
+  `XACGF00` y vigila la costura histórico/vigente y las transferencias por
+  entidad.** Detectado durante la construcción de la capa NL
+  (`DIAGNOSTICO_NL.md`, anexo Federación↔NL F0 §5, rama `feature/entidad-nl`).
+  (1) **`XACGF00` duplicada.** §4.7 apendizaba una serie derivada
+  `XACGF00` = `XAC2800 + XAC3300` ("Gasto Federalizado") que colisionaba con
+  la clave homónima de la SHCP ("Total: Total Gasto Federalizado" = R28 + R33
+  + convenios + R23 + PSS, publicada desde 1997): 356 periodos con dos filas
+  y un total nacional ~2× (2024: 4.88 vs 2.59 billones). La derivada era
+  redundante y de definición más estrecha; **se elimina** (440 filas menos en
+  el caché). (2) **Costura 2011.** El caché del 22-sep-2026 traía en 2011
+  filas nacionales de R28 (−6.9 %), FAIS (−47 %), FAM (−30/−53 %), FAFEF
+  (−41 %) y FAETA (−12 %) por debajo de la suma de entidades. La causa **no
+  era la costura `_hist`/vigente** (los diez archivos de la SHCP no se
+  traslapan: 0 claves en común) sino el csv vigente de ese día: la SHCP lo
+  publicó truncado — 5,611 filas de 2011 ausentes (1,046 de transferencias,
+  4,565 de deuda pública) y bloques de filas repetidas — y el motor lo
+  absorbió sin aviso; el csv del 30-sep-2026 está completo y el caché del
+  3-oct ya cuadraba. Para que no vuelva a pasar en silencio: (a) **compuerta
+  `_DAcompuertaEntidades`** sobre los dos archivos de transferencias: cada
+  fondo×mes trae ≥ 32 entidades y la fila nacional (`00`) es la suma de las
+  entidades (|Σ − nacional| ≤ max(1e-3·|nacional|, 10 mil pesos); el ruido de
+  redondeo de la SHCP es ≤ 1e-4 y ≤ 3.1 mil pesos); si falla, lista los
+  peores casos y aborta con `r(459)` **conservando el caché anterior**
+  (probada en negativo con el csv del 22-sep: 102 fondo-mes alarmados, todos
+  de 2011); (b) **costura explícita** tras el append: si un (clave, ciclo,
+  mes, tipo) viene en el histórico y en el vigente, manda el vigente (hoy es
+  no-op; probada con 1,326 filas sintéticas traslapadas → caché idéntico);
+  (c) **`isid clave anio mes tipo`** antes de guardar, que habría atrapado
+  (1) al nacer.
+- **Impacto en salidas publicadas: ninguno.** Ningún `.ado`, módulo, nodo ni
+  escalar consume `XACGF00` (solo `legacy/Subnacional.do`, sin mantenimiento,
+  y un bloque congelado de `PEF.ado`). Las 132 filas de 2011 de claves
+  consumidas que faltaban en el caché del 22-sep (11 componentes de deuda
+  bruta de `SHRFSP`) solo entran a escalares del año de política (exógenos),
+  no a 2011; el caché de producción se regeneró el 3-oct con el csv completo.
+- **Compuertas del fix** (caché regenerado en modo `local` con los csv del
+  30-sep-2026, byte-idénticos a la descarga del 4-oct): caché nuevo =
+  caché anterior menos las 440 filas derivadas (`cf _all`: 0 diferencias);
+  454,380 filas fondo×entidad×periodo del csv fresco = caché (reldif 0);
+  Σ entidades = nacional en los 1,157 fondo×año (máx 1.17e-5, 2011 incluido);
+  `UpdateSHRFSP` y `UpdateLIF` producen `SHRFSP.dta` y `LIF.dta` idénticos;
+  `SIM.do` (receta del runbook, PE 2027) produce `output.txt` y los cinco
+  `sankey-*.json` con el mismo SHA-256 antes y después.
+- `DatosAbiertos.sthlp`: nota "Construcción de la base" (series derivadas,
+  costura y compuertas).
+
 ## [v8.6.0] — 2026-10-03
 
 ### Comandos
