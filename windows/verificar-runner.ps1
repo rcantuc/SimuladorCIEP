@@ -52,7 +52,7 @@ if (Test-Path -LiteralPath $C.Stata) {
         if ($txt -match 'STATA_OK') { Write-Ok ("Stata ejecuta do-files en batch (" + (([regex]::Match($txt, '(?m)^\s*(1[0-9]\.\d+ \w+)').Groups[1].Value)) + ")") } else { Write-Fail ("Stata corrió pero no imprimió STATA_OK; log: " + $log) }
         if ($txt -match 'PYTHON_OK') { Write-Ok "Python de Stata inicializa" } elseif ($txt -match 'PYTHON_NO') { Write-Fail "Stata no inicializa Python: en Stata corre 'python search' y luego 'python set exec <ruta\python.exe>, permanently' (Python 3.9–3.12). Sin Python no hay descargas INEGI." } else { Write-Warn "No se pudo determinar el estado de Python (ver log)" }
         if ($txt -match 'REQUESTS_OK') { Write-Ok "Módulos requests y bs4 disponibles (AccesoBIE del motor)" } elseif ($txt -match 'REQUESTS_NO') { Write-Fail "Faltan requests/beautifulsoup4 en el Python de Stata: <ruta\python.exe> -m pip install requests beautifulsoup4" }
-        if ($txt -match '(?m)^SIMROOT=([^\$\s"][^\r\n]*)$') { Write-Ok ("SIMroot resuelve la raíz: " + $Matches[1].Trim()) } else { Write-Fail "SIMroot no resolvió la raíz (¿profile.do no cargó desde el directorio del repo?). Revisa el log de Stata: $log" }
+        if ($txt -match '(?m)^SIMROOT=([^\$\s"][^\r\n]*?)\r?$') { Write-Ok ("SIMroot resuelve la raíz: " + $Matches[1].Trim()) } else { Write-Fail "SIMroot no resolvió la raíz (¿profile.do no cargó desde el directorio del repo?). Líneas con SIMROOT en el log: " + ((Select-String -LiteralPath $log -Pattern "SIMROOT|r\(\d+\)" | Select-Object -First 4 | ForEach-Object { $_.Line.Trim() }) -join " | ") + " (log: " + $log + ")" }
     } catch { Write-Fail ("Stata batch falló: " + $_.Exception.Message) }
 }
 
