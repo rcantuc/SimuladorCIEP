@@ -1,5 +1,5 @@
 #!/bin/zsh
-# actualizar-nl.sh — actualización de los endpoints NL en UN comando (capa NL-0.5.0).
+# actualizar-nl.sh — actualización de los endpoints NL en UN comando (capa NL-0.5.1).
 #
 #   1. Corre Stata en batch desde la raíz del worktree (profile.do carga aniovp,
 #      anioPE, entidades y token): PoblacionNL.do + PIBDeflactorNL.do + FederacionNL.do

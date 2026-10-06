@@ -1,5 +1,5 @@
 #!/bin/zsh
-# nl-vintages.sh — participaciones de NL por vintage ENIGH bienal en UN comando (capa NL-0.5.0; solo Mac).
+# nl-vintages.sh — participaciones de NL por vintage ENIGH bienal en UN comando (capa NL-0.5.1; solo Mac).
 #
 #   1. Corre, en batch y en serie, nl-vintage.do para cada ENIGH (2016 2018 2020 2022 2024):
 #      motor con anioPE = aniovp = anioenigh = vintage (calibración contemporánea, sin los

@@ -1,13 +1,15 @@
 {
   "producto": "Simulador Fiscal NL",
-  "version_nl": "NL-0.5.0",
-  "fecha": "2026-10-05",
-  "motor_sincronizado": "v8.7.1",
+  "version_nl": "NL-0.5.1",
+  "fecha": "2026-10-06",
+  "motor_sincronizado": "v8.7.2",
   "repositorio": "https://github.com/rcantuc/SimuladorCIEP/tree/feature/entidad-nl",
   "identidad_visual": {
-    "canon": "100 % Consejo Nuevo León (nl-estilo.md §6, aprobado 2026-10-04); atribución intocable: leyenda de _NLidentidad + versión/enlace GitHub de la capa",
-    "fuentes": "BrandBook_Consejo_NL.pdf (Algoritmo Design, nov-2020; Shared drives/Revisión Plan Estratégico 2019-2021/Materiales para diseño/Identidad Consejo Nuevo León) para logo, zona de respeto y usos; tokens --cn-* de conl.mx (tema conl, 2025) y paleta del PE 2040 para los valores RGB; 2023_CNL_BrandBook.pdf del repositorio de Comunicación no legible desde esta máquina",
-    "tipografia": "Poppins SemiBold + Inter Regular/SemiBold (SIL OFL 1.1), subsets embebidos vía nl-estilo-assets.js; el BrandBook 2020 citaba Basis Grotesque Pro Light (comercial) + Public Sans Light; el sitio y el PE 2040 usan Poppins/Inter — aproximación declarada hasta confirmar con el BrandBook 2023",
+    "canon": "100 % Consejo Nuevo León (nl-estilo.md §6, aprobado 2026-10-04; pasada del Manual de Identidad 2023 en NL-0.5.1, §6.6c); atribución intocable en contenido: leyenda de _NLidentidad + versión/enlace GitHub de la capa; en forma, lockup de co-branding (socio principal, marcas externas tecleadas)",
+    "fuentes": "Manual de Identidad 2023 (2023_CNL_BrandBook (1)-1-1.pdf, Brandital v3.0, 15 láminas; My Drive) para paleta (hex exactos #5A2248/#00B1AF/#FCB817 y secundarios), imagotipo con eslogan (vector extraído de la lámina 2), área de protección (X = isotipo) y tipografía (Poppins/Inter); Guías visuales de co-branding (20250122_Co-branding_Brandbook_ConsejoNL-2.pdf, Brandital, ene-2025; My Drive) para el separador (línea negra <= 2 px, ½X) y las marcas externas tecleadas en Inter Regular; BrandBook 2020 (Algoritmo Design) y tokens --cn-* de conl.mx quedan como antecedente",
+    "paleta_primaria": {"morado_colorin": "#5A2248", "turquesa_santa_lucia": "#00B1AF", "amarillo_cielo_soleado": "#FCB817"},
+    "logo": "imagotipo 2023, versión completa con eslogan 'Para la planeación estratégica' (manual §1: obligatoria en documentos oficiales y publicaciones) en cabecera (blanco, 50 px) y atribución (color, 72 px)",
+    "tipografia": "Poppins SemiBold + Inter Regular/SemiBold (SIL OFL 1.1), subsets embebidos vía nl-estilo-assets.js; confirmadas por el manual 2023 §4 ('únicamente Poppins e Inter')",
     "generador": "01_modulos/nl-assets/nl-estilo-build.py -> nl-estilo-assets.js"
   },
   "regla_cadencia": "La capa NL hace merge de master en cada release etiquetado del nacional y pasa las tres compuertas de DIAGNOSTICO_NL.md §0.3 (paridad nacional con diff vacío, D.1, delta NL documentado) antes de subir version_nl.",
@@ -52,18 +54,18 @@
     {
       "name": "conl-logotipo.svg",
       "local_path": "01_modulos/nl-assets/identidad/conl-logotipo.svg",
-      "fuente": "Drive: Materiales para diseño/Identidad Consejo Nuevo León/consejonl_logotipo.ai (nov-2020)",
-      "descripcion": "logotipo oficial con descriptor, texto morado; vector convertido de consejonl_logotipo.ai (Pantone 518/326/130 C -> RGB de marca)",
-      "sha256": "b9101c41d2bc3aa2e7702b1f90acf9e45178f5b290bd677882c0a3d5b3fd8094",
-      "filelen": 17049
+      "fuente": "My Drive/2023_CNL_BrandBook (1)-1-1.pdf (Brandital v3.0, 2023), lámina 2 'Área de protección': trazos vectoriales del imagotipo extraídos con PyMuPDF (47 trazos: 2 aqua, 2 amarillo, 16 logotipo, 27 eslogan)",
+      "descripcion": "imagotipo 2023 versión completa (isotipo + logotipo + eslogan 'Para la planeación estratégica'), a color; rellenos llevados a los hex del manual §5 (#5A2248/#00B1AF/#FCB817); viewBox 419.6 x 167.1, X (isotipo) = 89.4 = 0.535 del alto; reemplaza al wordmark 2020 de consejonl_logotipo.ai usado en NL-0.4.1–0.5.0",
+      "sha256": "20da52cdeba4c770e0f24b1cf0b3fab762de4e76ca6c30975f96e8e21f9549ca",
+      "filelen": 12877
     },
     {
       "name": "conl-logotipo-blanco.svg",
       "local_path": "01_modulos/nl-assets/identidad/conl-logotipo-blanco.svg",
-      "fuente": "derivado del anterior",
-      "descripcion": "logotipo en blanco (aplicación cromática del BrandBook §5)",
-      "sha256": "6ad980e47af9dc4c8880d197ff701e0e4cf9cd9169693fe72fc08e1c981e88dd",
-      "filelen": 17049
+      "fuente": "derivado del anterior (mismos trazos, relleno #FFFFFF)",
+      "descripcion": "imagotipo 2023 en blanco para la cabecera morada (co-branding 2025: la versión color/blanco depende del fondo; manual 2020 §5)",
+      "sha256": "aecae3790192fa101b6e27480c452c2ae28410534bbf384d26769b3aa5749750",
+      "filelen": 12877
     }
   ],
   "series_inegi": [

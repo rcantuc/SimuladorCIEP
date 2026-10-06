@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""nl-estilo-build.py - genera nl-assets/nl-estilo-assets.js (NL-0.4.1).
+"""nl-estilo-build.py - genera nl-assets/nl-estilo-assets.js (NL-0.4.1; logo 2023 desde NL-0.5.1).
 
 Toma los activos de identidad CoNL versionados en nl-assets/identidad/ (subsets WOFF2 de
 Poppins SemiBold, Inter Regular e Inter SemiBold — SIL OFL 1.1, licencias incluidas — y el
-logotipo vectorial oficial en color y en blanco) y los escribe como data: URI en un solo
+imagotipo 2023 del BrandBook en color y en blanco) y los escribe como data: URI en un solo
 archivo JS que los drivers inyectan en la marca /*__NL_ESTILO_ASSETS__*/ de cada plantilla.
 Así el HTML final sigue siendo UN archivo sin red. Se corre a mano cuando cambian los activos;
 el resultado se commitea. Registra SHA-256 y bytes de cada activo para la procedencia.
@@ -19,8 +19,8 @@ ASSETS = [
 	("poppins600", "Poppins-SemiBold.sub.woff2", "font/woff2", "Poppins SemiBold 600 (títulos); subset Latin + Latin Ext-A + puntuación; OFL 1.1"),
 	("inter400", "Inter-Regular.sub.woff2", "font/woff2", "Inter 24pt Regular 400 (cuerpo); subset; tnum/pnum/lnum; OFL 1.1"),
 	("inter600", "Inter-SemiBold.sub.woff2", "font/woff2", "Inter 24pt SemiBold 600 (énfasis, totales); subset; OFL 1.1"),
-	("logo", "conl-logotipo.svg", "image/svg+xml", "Logotipo Consejo Nuevo León con descriptor, texto morado (vector oficial consejonl_logotipo.ai, Pantone 518/326/130 C -> RGB de marca)"),
-	("logoBlanco", "conl-logotipo-blanco.svg", "image/svg+xml", "Logotipo en blanco para fondo morado (aplicación cromática permitida por el BrandBook)"),
+	("logo", "conl-logotipo.svg", "image/svg+xml", "Imagotipo Consejo Nuevo León 2023, versión completa con eslogan (isotipo + logotipo + 'Para la planeación estratégica'), a color; vector extraído del BrandBook 2023 (Brandital, v3.0) lámina 2, rellenos llevados a los hex del manual #5A2248/#00B1AF/#FCB817"),
+	("logoBlanco", "conl-logotipo-blanco.svg", "image/svg+xml", "Mismo imagotipo 2023 en blanco para fondo morado (co-branding 2025: 'logo en blanco' según el fondo)"),
 ]
 
 def sha(p):
