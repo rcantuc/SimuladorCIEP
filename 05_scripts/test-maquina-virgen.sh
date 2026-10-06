@@ -251,7 +251,7 @@ global output "output"
 global update "update"
 global fuentes "$FUENTES"
 EOF2
-    printf 'set processors 1\nsysdir set SITE "%s/"\nadopath ++SITE\ncd "%s"\ndi "STATA_VERSION=" c(stata_version) " EDICION=" c(flavor) " PROCESSORS=" c(processors)\ndo "%s/SIM.do"\n' "$SIMDIR" "$SIMDIR" "$SIMDIR" > "$BASE/wrap.do"
+    printf 'capture set processors 1\nsysdir set SITE "%s/"\nadopath ++SITE\ncd "%s"\ndi "STATA_VERSION=" c(stata_version) " EDICION=" c(flavor) " PROCESSORS=" c(processors)\ndo "%s/SIM.do"\n' "$SIMDIR" "$SIMDIR" "$SIMDIR" > "$BASE/wrap.do"
     echo "Receta canonica en $SIMDIR (fuentes $FUENTES; Stata $STATA; ~80 min)..."
     T0=$(date +%s)
     ( cd "$SIMDIR" && "$STATA" -b do "$BASE/wrap.do" < /dev/null )

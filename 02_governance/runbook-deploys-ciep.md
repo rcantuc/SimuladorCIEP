@@ -88,7 +88,7 @@ comando publicado. El Gate 4 verifica que todos existan.
       desarrollo, sin tocar tu `SIM.do`, usa `SIM-local.do` (§9.5):
       ```bash
       printf 'global nographs "nographs"\nglobal output "output"\n' > SIM-local.do   # toggles personales, gitignored
-      printf 'set processors 1\nsysdir set SITE "%s/"\nadopath ++SITE\ncd "%s"\ndo SIM.do\n' "$PWD" "$PWD" > /tmp/wrap.do
+      printf 'capture set processors 1\nsysdir set SITE "%s/"\nadopath ++SITE\ncd "%s"\ndo SIM.do\n' "$PWD" "$PWD" > /tmp/wrap.do
       /Applications/StataNow/StataSE.app/Contents/MacOS/stata-se -b do /tmp/wrap.do   # ~11 min con cachés
       grep -c '^>' users/ricardo/output.txt      # debe ser 0
       ```
@@ -393,7 +393,7 @@ global fuentes "AAAA-MM-DD"        // fuentes vivas congeladas = fecha del relea
 ```
 
 desde **estado cero** (sin `master/`, `users/<id>/`, `raw/temp/`; `raw/` solo con
-los assets del Release), en **StataNow 19.5** con **`set processors 1`**, en batch
+los assets del Release), en **StataNow 19.5** con **`set processors 1`** (`capture`: en SE no aplica y ya es 1), en batch
 (`stata-se -b do wrap.do`, con `cd` a la raíz y `sysdir set SITE`). Lo que fija cada
 pieza, medido en F0:
 
