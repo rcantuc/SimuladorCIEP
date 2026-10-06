@@ -82,15 +82,39 @@ global bootstrap 1									// RÉPLICAS BOOTSTRAP de Simulador (PerfilesSim, §6
 
 //global rawwip "rawwip"							// RAW EN WORK-IN-PROGRESS
 //global update "update"							// UPDATE BASES DE DATOS
+//global fuentes "2026-10-06"						// FUENTES VIVAS CONGELADAS (INEGI BIE/CSI y SHCP) a esa fecha: asset fuentes-AAAA-MM-DD.zip del release (runbook-deploys-ciep.md §9); vacío = descargas en vivo
+//global output "output"							// ARCHIVO DE SALIDA (WEB)
+//global hasta "3"									// PARO TEMPRANO: termina al cerrar la sección indicada (1-7)
+
+** 0.5 Panel local (v8.8.0): SIM-local.do, NO versionado (gitignored), sobreescribe
+* los toggles de 0.4 de quien corre (output, bootstrap, paros tempranos...). Sin el
+* archivo, el comportamiento es byte-idéntico. Plantilla: SIM-local.template.do. *
+capture confirm file "${SIMROOT}/SIM-local.do"
+if _rc == 0 run "${SIMROOT}/SIM-local.do"
+
 if "$update" == "update" {
 	! rm -r "${SIMROOT}/raw/temp/"
+	* Los cachés micro de master/<anioenigh>/ solo se crean si faltan (Expenditure.do
+	* §2-3): sin esto, update los heredaba de versiones anteriores del código (v8.8.0). *
+	foreach f in deducciones consumption_categ_pc consumption_categ_iva_pc consumption_categ_ieps_pc {
+		capture erase "${SIMROOT}/master/`=anioenigh'/`f'.dta"
+	}
+}
+if "$fuentes" != "" {
+	ensure_asset "fuentes-${fuentes}.zip"
+	capture mkdir "${SIMROOT}/raw/temp"
+	quietly cd "${SIMROOT}/raw/temp"
+	quietly unzipfile "${SIMROOT}/raw/fuentes/fuentes-${fuentes}.zip", replace
+	quietly cd "${SIMROOT}"
+	noisily di in g "Fuentes vivas congeladas al " in y "$fuentes" in g ": AccesoBIE, SCN y DatosAbiertos leen raw/temp/ sin descargar."
 }
 
-//global output "output"							// ARCHIVO DE SALIDA (WEB)
 if "$output" != "" {
 	set linesize 255								// output.txt es un log: sin esto Stata parte las líneas largas con "> " y el PHP del sitio las lee mal (deploy v8.4, 2026-10-01)
-	quietly log using `"${SIMROOT}/users/$id/output.txt"', replace text name(output)
-	quietly log off output
+	quietly {										// bloque: con `do` el eco del comando ya no cae dentro del log (paridad do/run, v8.8.0)
+		log using `"${SIMROOT}/users/$id/output.txt"', replace text name(output)
+		log off output
+	}
 }
 
 
@@ -98,6 +122,7 @@ if "$output" != "" {
 **# 1. DEMOGRAFÍA
 ***
 noisily Poblacion, anioi(`=aniovp') aniofinal(2070) $textbook $nographs
+if "$hasta" == "1" exit								// paro temprano (0.4 / SIM-local.do): termina tras la sección 1
 
 
 **/
@@ -137,6 +162,7 @@ noisily PIBDeflactor, aniovp(`=aniovp') aniomax(2032) $textbook $nographs $updat
 
 ** 2.5 Sistema de Cuentas Nacionales (sin inputs)
 noisily SCN, anio(`=aniovp') $textbook $nographs $update
+if "$hasta" == "2" exit
 
 
 
@@ -155,6 +181,7 @@ noisily run `"${SIMROOT}/01_modulos/Households.do"' `=anioPE'
 ** 3.3 Perfiles de la política económica actual (Paquete Económico)
 noisily di _newline in g "Actualizando: " in y "perfiles`anio'.dta"
 noisily run "${SIMROOT}/01_modulos/PerfilesSim.do" `=anioPE'
+if "$hasta" == "3" exit
 
 
 
@@ -317,6 +344,7 @@ if "`cambioiva'" == "1" {
 
 ** 4.7 Tasas Efectivas */
 noisily TasasEfectivas, anio(`=anioPE') enigh
+if "$hasta" == "4" exit
 
 
 
@@ -378,6 +406,7 @@ escalar pctpib gascuidados =   0.047   		// Gasto en cuidados
 
 ** 5.2 Gasto per cápita **
 noisily GastoPC educacion salud pensiones energia resto transferencias, aniope(`=anioPE') aniovp(`=aniovp')
+if "$hasta" == "5" exit
 
 
 
@@ -438,6 +467,7 @@ forvalues k = 2026(1)2032 {
 set scheme deuda
 *scalar tasaEfectiva = 6.1544
 noisily SHRFSP, anio(`=anioPE') ultanio(2002) $nographs $update $textbook
+if "$hasta" == "6" exit
 
 
 
@@ -500,6 +530,7 @@ save `"${SIMROOT}/users/$id/aportaciones.dta"', replace
 if "$textbook" == "textbook" {
 	noisily scalarlatex, log(perfiles) alt(perf)
 }
+if "$hasta" == "7" exit
 
 
 

@@ -1,4 +1,4 @@
-*! version 8.1 CIEP 04oct2026
+*! version 8.2 CIEP 06oct2026
 program define DatosAbiertos, return
 	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 quietly {
@@ -429,6 +429,12 @@ program define UpdateDatosAbiertos, return
 	**   descarga -> zip con reintento -> csv directo -> archivos locales (default con update/zipfile)
 	**   csv      -> csv directo -> archivos locales (opción csvfile)
 	**   local    -> usa raw/temp/ sin conexión a internet (opción local)
+	** Fuentes congeladas (v8.2, SIM.do 0.4 `global fuentes "AAAA-MM-DD"`): los csv
+	** de la SHCP vienen del asset fuentes-<fecha>.zip ya descomprimido en raw/temp/;
+	** se leen en modo local, sin red. Sin el global, el flujo es el de siempre. **
+	if "$fuentes" != "" {
+		local local "local"
+	}
 	if "`local'" == "local" {
 		local modo "local"
 	}
@@ -1011,12 +1017,17 @@ program define _DAdescarga
 
 	** 2. Csv directo: respaldo del zip, o vía principal con la opción csvfile **
 	if "`modo'" != "local" & `exito' == 0 {
-		capture copy "`url'/`nombre'.csv" "`dir'/`nombre'.csv", replace
+		** Descarga a .tmp y solo entonces reemplaza: `copy ..., replace` borra el
+		** destino ANTES de fallar (Stata 17, r(603) con la SHCP), y se llevaba el
+		** respaldo local que el paso 3 necesita (v8.2, 2026-10-06). **
+		capture copy "`url'/`nombre'.csv" "`dir'/`nombre'.csv.tmp", replace
 		local rc = _rc
 		if `rc' == 0 {
+			copy "`dir'/`nombre'.csv.tmp" "`dir'/`nombre'.csv", replace
 			capture import delimited "`dir'/`nombre'.csv", clear `enc'
 			local rc = _rc
 		}
+		capture erase "`dir'/`nombre'.csv.tmp"
 		if `rc' == 0 {
 			local exito = 1
 		}
