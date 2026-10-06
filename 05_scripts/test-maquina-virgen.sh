@@ -33,9 +33,23 @@
 #                investigador). Con --completo, el modo (2) corre SIM.do entero
 #                (descarga ~1.3 GB y construye todo: ~1 h) y exige TOUCH-DOWN.
 #
+#   --reproducibilidad  (dinamico, ~80 min, sin red con --assets-locales)  La promesa
+#                de v8.8.0: la RECETA CANONICA (runbook-deploys-ciep.md 9) produce, en
+#                cualquier maquina, el output.txt y los sankey-*.json con el SHA-256
+#                declarado en 05_scripts/ancla-reproducibilidad.json. Arma una copia
+#                `git archive` en /tmp con estado cero (sin master/, users/, raw/temp),
+#                escribe el SIM-local.do canonico (nographs, output, update, fuentes =
+#                fecha del ancla) y corre SIM.do en batch con `set processors 1`.
+#                Los 27 assets los baja ensure_asset de la Release (o se copian del raw/
+#                local con --assets-locales, para verificar ANTES de publicar). Compara
+#                SHAs y la version de Stata contra el ancla. Con --anclar, en vez de
+#                comparar, ESCRIBE el ancla con los SHAs de esta corrida: es la unica
+#                forma legitima de re-anclar (el ancla nace siempre de la receta).
+#
 # Uso: bash 05_scripts/test-maquina-virgen.sh --cobertura
 #      bash 05_scripts/test-maquina-virgen.sh --download [--stata <ruta stata-se>]
 #      bash 05_scripts/test-maquina-virgen.sh --zip [--completo] [--stata <ruta>]
+#      bash 05_scripts/test-maquina-virgen.sh --reproducibilidad [--assets-locales] [--anclar] [--stata <ruta>]
 # Exit 0 si pasa; 1 si falla (lista lo que falta).
 
 set -uo pipefail
@@ -47,17 +61,22 @@ cd "$REPO_ROOT"
 MODE=""
 STATA=""
 COMPLETO=false
+ASSETS_LOCALES=false
+ANCLAR=false
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --cobertura) MODE="cobertura"; shift ;;
         --download)  MODE="download"; shift ;;
         --zip)       MODE="zip"; shift ;;
+        --reproducibilidad) MODE="reproducibilidad"; shift ;;
         --completo)  COMPLETO=true; shift ;;
+        --assets-locales) ASSETS_LOCALES=true; shift ;;
+        --anclar)    ANCLAR=true; shift ;;
         --stata)     STATA="$2"; shift 2 ;;
         *) echo "Argumento desconocido: $1" >&2; exit 1 ;;
     esac
 done
-[[ -z "$MODE" ]] && { echo "Uso: $0 --cobertura | --download [--stata <ruta>] | --zip [--completo]" >&2; exit 1; }
+[[ -z "$MODE" ]] && { echo "Uso: $0 --cobertura | --download [--stata <ruta>] | --zip [--completo] | --reproducibilidad [--assets-locales] [--anclar]" >&2; exit 1; }
 
 # ─── Inventario del manifest y de las invocaciones de ensure_asset ───
 # Emite lineas "name<TAB>local_path<TAB>solicitado_por" (solicitado_por vacio = huerfano).
@@ -65,20 +84,26 @@ cobertura() {
 python3 - <<'PYEOF'
 import json, re, glob, os, sys
 m = json.load(open("05_scripts/manifest.json", encoding="utf-8"))
-fuentes = glob.glob("*.ado") + glob.glob("01_modulos/*.do")
+fuentes = glob.glob("*.ado") + glob.glob("01_modulos/*.do") + ["SIM.do"]
 por_nombre, por_dir = {}, {}
+congeladas = ""   # SIM.do pide `ensure_asset "fuentes-${fuentes}.zip"` (fecha dinamica, v8.8.0)
 for f in fuentes:
     if os.path.basename(f) == "ensure_asset.ado":
         continue
     txt = open(f, encoding="utf-8", errors="replace").read()
     for n in re.findall(r'ensure_asset\s+"([^"]+)"', txt):
-        por_nombre.setdefault(n, f)
+        if re.fullmatch(r'fuentes-\$\{?fuentes\}?\.zip', n):
+            congeladas = f
+        else:
+            por_nombre.setdefault(n, f)
     for d in re.findall(r'ensure_asset\s*,\s*dir\(\s*"?([^")]+?)"?\s*\)', txt):
         por_dir.setdefault(d.strip().strip("/") + "/", f)
 huerfanos = 0
 for a in m["assets"]:
     n, lp = a["name"], a["local_path"].replace("\\", "/")
     quien = por_nombre.get(n, "")
+    if not quien and congeladas and re.fullmatch(r'fuentes-\d{4}-\d{2}-\d{2}\.zip', n):
+        quien = congeladas + ' [fuentes-$fuentes.zip]'
     if not quien:
         for d, f in por_dir.items():
             if lp.startswith(d):
@@ -175,6 +200,119 @@ if [[ "$MODE" == "zip" ]]; then
         echo "ZIP SIN GIT: $fallas prueba(s) fallaron. Copia conservada en $BASE."; exit 1
     fi
     echo "ZIP SIN GIT: las tres vias de ejecucion pasan (copia en $BASE; borrala cuando quieras)."
+    exit 0
+fi
+
+# ─── Modo --reproducibilidad: la receta canonica contra el ancla (v8.8.0) ───
+if [[ "$MODE" == "reproducibilidad" ]]; then
+    ANCLA="05_scripts/ancla-reproducibilidad.json"
+    if [[ "$ANCLAR" == "false" && ! -f "$ANCLA" ]]; then
+        echo "No existe $ANCLA; para crearla corre con --anclar." >&2; exit 1
+    fi
+    # Fecha de las fuentes congeladas: del ancla (comparar) o del manifest (anclar).
+    FUENTES="$(python3 -c "
+import json,sys
+m = json.load(open('05_scripts/manifest.json'))
+try:
+    a = json.load(open('$ANCLA'))
+except OSError:
+    a = {}
+f = a.get('fuentes') if '$ANCLAR' == 'false' else m.get('fuentes_congeladas_al')
+print(f or '')")"
+    [[ -z "$FUENTES" ]] && { echo "No hay fecha de fuentes congeladas (manifest.fuentes_congeladas_al / ancla.fuentes)." >&2; exit 1; }
+    FUENTES_ASSET="fuentes-$FUENTES.zip"
+    if ! python3 -c "
+import json,sys
+m = json.load(open('05_scripts/manifest.json'))
+sys.exit(0 if any(a['name']=='$FUENTES_ASSET' for a in m['assets']) else 1)"; then
+        echo "El manifest no declara el asset $FUENTES_ASSET." >&2; exit 1
+    fi
+
+    BASE="$(mktemp -d /tmp/simulador-repro.XXXXXX)"
+    SIMDIR="$BASE/SimuladorCIEP"
+    mkdir -p "$SIMDIR"
+    git archive HEAD | tar -x -C "$SIMDIR"               # estado cero: sin master/, users/, raw/
+    [[ -f set_token.do ]] && cp set_token.do "$SIMDIR/"  # no hace falta con fuentes congeladas; por si acaso
+    if [[ "$ASSETS_LOCALES" == "true" ]]; then
+        copiados=0
+        while IFS=$'\t' read -r name lp sha; do
+            [[ -f "$lp" ]] || continue
+            mkdir -p "$SIMDIR/$(dirname "$lp")"; cp "$lp" "$SIMDIR/$lp"; copiados=$((copiados+1))
+        done < <(python3 -c "
+import json
+for a in json.load(open('05_scripts/manifest.json'))['assets']:
+    print(a['name'], a['local_path'], a['sha256'], sep='\t')")
+        echo "Assets copiados del raw/ local: $copiados (ensure_asset verifica SHA; los que falten los baja de la Release)"
+    fi
+    # Receta canonica = SIM.do + este SIM-local.do (runbook-deploys-ciep.md 9.1)
+    cat > "$SIMDIR/SIM-local.do" <<EOF2
+global nographs "nographs"
+global output "output"
+global update "update"
+global fuentes "$FUENTES"
+EOF2
+    printf 'set processors 1\nsysdir set SITE "%s/"\nadopath ++SITE\ncd "%s"\ndi "STATA_VERSION=" c(stata_version) " EDICION=" c(flavor) " PROCESSORS=" c(processors)\ndo "%s/SIM.do"\n' "$SIMDIR" "$SIMDIR" "$SIMDIR" > "$BASE/wrap.do"
+    echo "Receta canonica en $SIMDIR (fuentes $FUENTES; Stata $STATA; ~80 min)..."
+    T0=$(date +%s)
+    ( cd "$SIMDIR" && "$STATA" -b do "$BASE/wrap.do" < /dev/null )
+    LOG="$SIMDIR/wrap.log"
+    if ! grep -q 'TOUCH-DOWN!!!  [0-9]' "$LOG" || grep -qE '^r\([0-9]+\);' "$LOG"; then
+        echo "REPRODUCIBILIDAD: SIM.do no llego a TOUCH-DOWN; ver $LOG" >&2
+        grep -B4 -E '^r\([0-9]+\);' "$LOG" | head -12 >&2; exit 1
+    fi
+    stata_version="$(grep -o 'STATA_VERSION=[0-9.]*' "$LOG" | head -1 | cut -d= -f2)"
+    stata_flavor="$(grep -o 'EDICION=[A-Za-z]*' "$LOG" | head -1 | cut -d= -f2)"
+    OUT="$SIMDIR/users/$(whoami)"
+    if [[ "$ANCLAR" == "true" ]]; then
+        python3 - "$OUT" "$FUENTES" "$stata_version" "$stata_flavor" "$ANCLA" <<'PYEOF'
+import hashlib, json, sys, subprocess, datetime, os
+out, fuentes, sv, fl, ancla = sys.argv[1:6]
+sha = lambda f: hashlib.sha256(open(f, 'rb').read()).hexdigest()
+m = json.load(open('05_scripts/manifest.json'))
+d = {
+  "version": m["version"],
+  "fuentes": fuentes,
+  "stata": {"version": sv, "edicion": fl, "processors": 1},
+  "receta": "SIM.do (PE 2027) + SIM-local.do {nographs, output, update, fuentes} desde estado cero (sin master/, users/, raw/temp), batch `stata -b do`, `set processors 1`; ver runbook-deploys-ciep.md 9",
+  "output_txt_sha256": sha(os.path.join(out, 'output.txt')),
+  "sankeys_sha256": {k: sha(os.path.join(out, k)) for k in sorted(os.listdir(out)) if k.startswith('sankey-') and k.endswith('.json')},
+  "commit": subprocess.run(['git', 'rev-parse', '--short', 'HEAD'], capture_output=True, text=True).stdout.strip(),
+  "anclado_el": datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
+}
+json.dump(d, open(ancla, 'w'), indent=2, ensure_ascii=False); open(ancla, 'a').write('\n')
+print("ANCLA escrita en", ancla); print(json.dumps(d, indent=2, ensure_ascii=False))
+PYEOF
+        echo "Duracion: $((($(date +%s)-T0)/60)) min. Copia en $BASE (borrala cuando quieras). Ahora: CHANGELOG con el delta y commit del ancla."
+        exit 0
+    fi
+    fallas="$(python3 - "$OUT" "$stata_version" "$ANCLA" <<'PYEOF'
+import hashlib, json, sys, os
+out, sv, ancla = sys.argv[1:4]
+a = json.load(open(ancla))
+sha = lambda f: hashlib.sha256(open(f, 'rb').read()).hexdigest()
+fallas = 0
+if sv != a['stata']['version']:
+    print(f"  - Stata {sv} != {a['stata']['version']} del ancla: la version de Stata mueve output.txt (F0 2026-10-06: 17 vs 19.5 = 52 valores)"); fallas += 1
+o = sha(os.path.join(out, 'output.txt'))
+if o == a['output_txt_sha256']: print(f"  output.txt  {o[:16]}...  OK")
+else: print(f"  - output.txt {o[:16]}... != ancla {a['output_txt_sha256'][:16]}..."); fallas += 1
+for k, v in a['sankeys_sha256'].items():
+    h = sha(os.path.join(out, k))
+    if h == v: print(f"  {k}  OK")
+    else: print(f"  - {k} {h[:16]}... != ancla {v[:16]}..."); fallas += 1
+print(f"FALLAS={fallas}")
+PYEOF
+)"
+    echo "$fallas"
+    n="$(sed -n 's/^FALLAS=//p' <<< "$fallas")"
+    echo "Duracion: $((($(date +%s)-T0)/60)) min."
+    if (( n > 0 )); then
+        echo "REPRODUCIBILIDAD: $n diferencia(s) contra $ANCLA. Copia conservada en $BASE (users/*/output.txt para diff; cmp por familia: diff <(grep -o '^[A-Z0-9]*' ...) )." >&2
+        echo "Si el cambio es legitimo (release de datos / cambio de codigo que mueve numeros): documenta el delta en el CHANGELOG y re-ancla con --anclar." >&2
+        exit 1
+    fi
+    echo "REPRODUCIBILIDAD: output.txt y sankeys reproducen el ancla ($(python3 -c "import json;print(json.load(open('$ANCLA'))['version'])"), fuentes $FUENTES, Stata $stata_version)."
+    rm -rf "$BASE"
     exit 0
 fi
 
