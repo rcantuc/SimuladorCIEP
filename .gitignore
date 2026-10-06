@@ -137,6 +137,13 @@ endpoint-credentials.sh
 # sólo versiona el manifiesto (apuntador con SHA-256 y URLs), que vive en
 # `manifest.json` en la raíz del repo (la carpeta raw/ se borra/regenera).
 **/raw/**
+# La ENTRADA raw/ misma (y master/, users/) tambien se ignora: `**/raw/**` solo cubre
+# el contenido, y un symlink llamado `raw` (worktrees de prueba que enlazan a otro
+# clon) se colaba con `git add -A` — paso en fd7caa1 (2026-10-05) y viajo en el ZIP
+# de GitHub como enlace roto hacia una ruta de la maquina de Ricardo.
+/raw
+/master
+/users
 
 
 # -----------------------------------------------------------------------------
