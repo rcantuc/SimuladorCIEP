@@ -13,8 +13,10 @@ noisily di _newline(2) in g "   MODULO: " in y "IVA"
 *********************
 ** Microsimulacion **
 *********************
+* Precios de la ENIGH vigente (anioenigh) llevados al año del Paquete: hasta v8.7.2
+* el año base estaba fijo en 2022 (ENIGH 2022), heredado del Paquete 2022 (v8.8.0). *
 PIBDeflactor, nog nooutput
-keep if anio == 2022 | anio == scalar(anioPE)
+keep if anio == scalar(anioenigh) | anio == scalar(anioPE)
 local lambda = lambda[1]
 local deflator = deflator[1]
 local pibY = pibY[_N]
@@ -50,8 +52,17 @@ replace IVA_Sim = IVA*(1-IVAT[13,1]/100)
 tabstat IVA_Sim [fw=factor], stat(sum) f(%20.0fc) save
 tempname IVA_Sim
 matrix `IVA_Sim' = r(StatTotal)
-scalar IVA_Mod = `IVA_Sim'[1,1]/scalar(pibY)*100*4.249/4.495
+* Sin factor de ajuste: hasta v8.7.2 se multiplicaba por 4.249/4.495, calibración
+* ad hoc del Paquete 2022 que cerraba contra la recaudación proyectada de entonces sin
+* tocar la informalidad observada (IVAT[13]). La brecha simulación vs proyección LIF
+* se declara como residuo documentado (CHANGELOG v8.8.0, runbook-deploys-ciep.md §9.4),
+* nunca se absorbe con factores silenciosos. *
+scalar IVA_Mod = `IVA_Sim'[1,1]/scalar(pibY)*100
 noisily di _newline in g "   RESULTADOS IVA: " _col(33) in y %10.3fc IVA_Mod
+capture confirm scalar IVAPIB
+if _rc == 0 {
+	noisily di in g "   IVA observado/proyectado (LIF): " _col(33) in y %10.3fc scalar(IVAPIB) in g "   brecha: " in y %6.3f IVA_Mod-scalar(IVAPIB) in g " pp (residuo documentado)"
+}
 
 
 /* RESULTS GASTO *
