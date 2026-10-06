@@ -254,6 +254,14 @@ Archivo de configuración inicial que se ejecuta automáticamente al iniciar Sta
 - Cuentas generacionales
 - Diagramas de Sankey por grupo demográfico
 
+### Inicio rápido para estudiantes (ZIP de GitHub, sin Git)
+
+1. Descarga el ZIP (`Code → Download ZIP`), descomprímelo donde quieras (queda una carpeta `SimuladorCIEP-master`) y **no la muevas después**.
+2. En Stata: `File → Change Working Directory…` y elige esa carpeta (o escribe `cd "ruta/SimuladorCIEP-master"`).
+3. Escribe `do "SIM.do"` (o ábrelo con doble clic y pulsa *Do*). La primera vez descarga ~1.3 GB de datos del Release de GitHub y tarda ~1 h; después, ~10 min.
+4. Los resultados quedan en `users/<tu usuario>/`. Si SIM.do dice "no encuentro la carpeta del Simulador", repite el paso 2.
+5. Para salir de Stata escribe `exit, clear` (no `end`: ese no es un comando de Stata).
+
 ### Cómo usar SIM.do
 
 1. Abre el archivo en Stata
