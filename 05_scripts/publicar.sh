@@ -8,8 +8,9 @@
 #      cobertura de assets (Gate 6: todo asset del manifest lo solicita algun modulo),
 #      clausura transitiva de los .pkg (Gate 7: cada .pkg lista los .ado que invoca),
 #      05_scripts/manifest.json sincronizado con la versión, y existencia en filesystem de
-#      cada archivo declarado en 05_scripts/manifest-endpoint.toml. Si algo falla, aborta
-#      ANTES de cualquier acción con efectos (push, Release, rsync).
+#      cada archivo declarado en 05_scripts/manifest-endpoint.toml, y Release remota
+#      completa (Gate 8: si la Release ya existe, trae todos los assets del manifest).
+#      Si algo falla, aborta ANTES de cualquier acción con efectos (push, Release, rsync).
 #   3. Si la etiqueta de versión no existe localmente, ofrece crearla (interactivo o por flag)
 #   4. Push del tag a origin si aún no está allá
 #   5. Crea la GitHub Release <VERSION> (si no existe) con las notas extraídas del
@@ -42,6 +43,7 @@ ENDPOINT_DRY_RUN=false
 FORCE=false
 CHECK_MODE=false
 SKIP_POST_VERIFY=false
+SOLO_ASSETS=false
 
 # Colores (desactivados si stdout no es tty)
 if [[ -t 1 ]]; then
@@ -81,7 +83,9 @@ Opciones:
   --tag-message=MSG     Mensaje del tag inline (evita abrir editor)
   --endpoint-dry-run    Dry-run del endpoint (no toca el servidor)
   --skip-post-verify    Salta la verificación SHA-256 post-Release (descarga ~1.3 GB).
-                        Úsalo cuando republicas una versión ya verificada.
+  --solo-assets         Reparación: sube a la Release <VERSION> ya existente los assets del
+                        manifest que falten y verifica (sin tag, sin push, sin endpoint).
+                        Para Releases creadas a mano desde el tag (incidente v8.7.1).
   --force               Permite republish de versión existente
   -h, --help            Ayuda
 
@@ -332,6 +336,45 @@ PYEOF
 # Cada archivo de ado_files, sthlp_files y pkg_files debe existir en el filesystem
 # del repo (path relativo a REPO_ROOT). Motivador: el bug de AccesoBIE.pkg (v8.0.3)
 # — un .pkg ausente del filesystem llegó anunciado al endpoint público.
+# Gate 8 — Release remota completa (2026-10-05, incidente v8.6.1/v8.7.0/v8.7.1).
+# ensure_asset descarga de manifest.release_url_prefix = Release <VERSION>. Si esa
+# Release ya existe en GitHub (creada a mano desde el tag, sin pasar por este
+# script) pero no trae los assets del manifest, TODA instalacion limpia y toda
+# maquina sin raw/ queda con 404 ("descarga fallo ... verifica que el release
+# este publicado"). En --check: FALLA si la Release existe y le falta algun asset
+# o difiere el tamano; si la Release aun no existe, informa (la creara este script).
+# Reparacion: re-correr `publicar.sh <VERSION>` (release_create se omite y
+# assets_upload sube solo lo que falta) o `publicar.sh <VERSION> --solo-assets`.
+gate_release_remota() {
+    local version="$1"
+    if ! command -v gh >/dev/null 2>&1; then
+        log_warn "Gate 8: gh no esta instalado; no se puede verificar la Release remota."
+        return 0
+    fi
+    local remote
+    if ! remote="$(gh release view "$version" --json assets --jq '.assets[] | "\(.name)\t\(.size)"' 2>/dev/null)"; then
+        log_info "Gate 8: la Release $version aun no existe en GitHub (la creara publicar.sh con sus assets)."
+        return 0
+    fi
+    local missing="" name local_path sha
+    while IFS=$'\t' read -r name local_path sha; do
+        local rsize
+        rsize="$(awk -F'\t' -v n="$name" '$1==n{print $2}' <<< "$remote")"
+        if [[ -z "$rsize" ]]; then
+            missing+=$'\n'"  - $name (ausente en la Release)"
+        elif [[ -f "$local_path" ]] && [[ "$(stat -f%z "$local_path" 2>/dev/null || stat -c%s "$local_path")" != "$rsize" ]]; then
+            missing+=$'\n'"  - $name (tamano remoto $rsize != local)"
+        fi
+    done < <(manifest_assets)
+    if [[ -n "$missing" ]]; then
+        log_error "Gate 8 FALLO: la Release $version existe pero no trae los assets del manifest:$missing"
+        log_error "        ensure_asset descargara de releases/download/$version/ y recibira 404."
+        log_error "        Reparacion: bash 05_scripts/publicar.sh $version --solo-assets"
+        return 1
+    fi
+    log_info "✓ Gate 8: Release $version remota completa — $(manifest_assets | wc -l | tr -d ' ') assets presentes con el tamano del manifest"
+}
+
 # Corre una vez por invocación, tanto en --check como en la publicación real
 # (son procesos separados sin estado compartido; saltarlo en la publicación real
 # abriría el hueco de publicar sin haber corrido --check).
@@ -608,6 +651,7 @@ while [[ $# -gt 0 ]]; do
         --tag-message=*)        TAG_MESSAGE="${1#*=}"; shift ;;
         --endpoint-dry-run)     ENDPOINT_DRY_RUN=true; shift ;;
         --skip-post-verify)     SKIP_POST_VERIFY=true; shift ;;
+        --solo-assets)          SOLO_ASSETS=true; shift ;;
         --force)                FORCE=true; shift ;;
         -h|--help)              usage; exit 0 ;;
         v*)                     VERSION="$1"; shift ;;
@@ -657,11 +701,23 @@ if [[ "$CHECK_MODE" == "true" ]]; then
     gate_raw_declarado             || GATE_FAILURES=$((GATE_FAILURES+1))
     gate_cobertura_assets          || GATE_FAILURES=$((GATE_FAILURES+1))
     gate_pkg_clausura              || GATE_FAILURES=$((GATE_FAILURES+1))
+    gate_release_remota "$VERSION" || GATE_FAILURES=$((GATE_FAILURES+1))
     if (( GATE_FAILURES > 0 )); then
         log_error "--check: $GATE_FAILURES gate(s) fallaron para $VERSION."
         exit 1
     fi
-    log_info "--check: los 7 gates pasaron para $VERSION."
+    log_info "--check: los 8 gates pasaron para $VERSION."
+    exit 0
+fi
+
+# ─── Modo --solo-assets: reparar una Release existente sin assets ───
+if [[ "$SOLO_ASSETS" == "true" ]]; then
+    log_step "Modo --solo-assets: subir a la Release $VERSION los assets del manifest que falten"
+    gh release view "$VERSION" >/dev/null 2>&1 || abort "La Release $VERSION no existe en GitHub; usa publicar.sh $VERSION completo."
+    gate_raw_declarado || abort "Gate 5 falló: los assets locales no coinciden con el manifest."
+    assets_upload "$VERSION"
+    if [[ "$SKIP_POST_VERIFY" == "true" ]]; then log_warn "--skip-post-verify activo"; else release_post_verify "$VERSION"; fi
+    gate_release_remota "$VERSION" || exit 1
     exit 0
 fi
 

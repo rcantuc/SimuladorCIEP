@@ -20,6 +20,24 @@ Formato de cada entrada:
 
 Trabajo en `master` sin versión asignada.
 
+### Institucional
+
+- **Proceso de release de punta a punta y Gate 8 "Release remota completa"**
+  (`05_scripts/publicar.sh`, `02_governance/runbook-deploys-ciep.md`). Incidente
+  2026-10-05: las Releases v8.6.1, v8.7.0 y v8.7.1 se crearon a mano desde los
+  tags, sin assets; como el manifest ya apuntaba `release_url_prefix` a ellas,
+  `ensure_asset` recibió 404 en el `SIM.do` nacional hasta espejar los 26 assets
+  a v8.7.1. `publicar.sh --check` ahora consulta GitHub y falla si la Release de
+  la versión existe sin los assets del manifest (o con otro tamaño); nuevo modo
+  `--solo-assets` para reparar una Release existente (sube lo que falta y
+  verifica SHA, sin tag/push/endpoint). El runbook deja escrita la secuencia
+  completa (PR → merge → tag → `publicar.sh` inmediato → `test-maquina-virgen
+  --download` → VPS → gate humano → pull de la Carpeta) y la decisión de
+  **mantener el prefix por versión** (Release inmutable = código + datos) en
+  lugar de anclar los assets a una Release fija, con el trade-off documentado.
+  v8.6.1 y v8.7.0 siguen sin assets: `publicar.sh v8.6.1 --solo-assets` y
+  `v8.7.0 --solo-assets` las completan (o se declaran superadas en sus notas).
+
 ## [v8.7.1] — 2026-10-05
 
 ### Correcciones
