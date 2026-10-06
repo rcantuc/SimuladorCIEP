@@ -20,6 +20,20 @@ Formato de cada entrada:
 
 Trabajo en `master` sin versión asignada.
 
+## [v8.8.0] — 2026-10-06
+
+### Datos
+
+- **IVAT evasión/informalidad 23.0 → 23.1 (`SIM.do` §4.5).** Recalibración
+  interna, no estimación externa: es la fila "Informalidad %" de `Expenditure.do`
+  §5, (IVA potencial ENIGH − IVA observado)/potencial en % del PIB 2024. Con las
+  fuentes del 22-sep: 5.443/4.193 → 22.96 % ("23.0"); con las del 6-oct:
+  5.44094/4.18208 → **23.137 %** ("23.1"). **Causa principal: la revisión del PIB
+  2024 de INEGI** (IVA observado/PIB 4.193 → 4.182); los perfiles v8.5.0 mueven el
+  potencial solo de 5.443 a 5.441. Regla nueva en el runbook (§9.6): este
+  parámetro se recalibra y documenta cada vez que cambie lo que mueve el cierre
+  (perfiles o fuentes), nunca se hereda a ciegas.
+
 ## [v8.7.2] — 2026-10-06
 
 ### Correcciones

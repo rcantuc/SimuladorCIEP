@@ -282,7 +282,7 @@ matrix IVAT = (16 \     ///  1  Tasa general
 	3  \     							/// 10  Otros, idem
 	2  \     							/// 11  Transporte local, idem
 	3  \     							/// 12  Transporte foraneo, idem
-	23.0)   							//  13  Evasion e informalidad IVA, input[0-100]
+	23.1)   							//  13  Evasion e informalidad IVA, input[0-100]: recalibrado 2026-10-06 (Expenditure.do §5 "Informalidad %"; runbook-deploys-ciep.md §9.6)
 
 
 ** 4.6 Parámetros: IEPS **
