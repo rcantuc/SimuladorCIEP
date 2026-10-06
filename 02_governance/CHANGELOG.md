@@ -20,6 +20,52 @@ Formato de cada entrada:
 
 Trabajo en `master` sin versión asignada.
 
+## [v8.7.2] — 2026-10-06
+
+### Correcciones
+
+- **`SIM.do` se autolocaliza: el simulador corre desde el ZIP de GitHub sin
+  `profile.do` ni `sysdir set SITE`.** Reproducido con el ZIP real
+  (`SimuladorCIEP-master`, ruta con espacios, sin profile.do cargado): (1)
+  `do "…/SIM.do"` desde otra carpeta de trabajo → `command SIMroot is
+  unrecognized` (y `scheme ciep not found`), porque los `.ado` solo se veían por
+  `"."`; (2) doble clic en `SIM.do` o `cd` previo → arranca, pero `Expenditure.do`
+  hace `cd raw/ENIGH` y el siguiente `.ado` aún no cargado truena (`command LIF
+  is unrecognized`; en la máquina del alumno, `perfilpc`). Producción no lo
+  sufría porque la receta batch del runbook hace `sysdir set SITE`. Ahora
+  `SIM.do` §0.0 localiza su carpeta **antes** de `set scheme` (carpeta de
+  trabajo con `SIMroot.ado` + `05_scripts/manifest.json`, o SITE), la mete al
+  adopath y llama `SIMroot, dir()`; si no la encuentra, se detiene con la
+  instrucción en español (`File > Change Working Directory…` o `cd`, y luego
+  `do "SIM.do"`; r(601)). **`SIMroot` v8.5** hace lo mismo para cualquier otro
+  punto de entrada (interactivo, drivers, `Web.Stata.do`): si la raíz es un clon
+  (trae `SIMroot.ado`), entra al adopath (idempotente). Gancho `SIM_SMOKE=1`
+  (variable de entorno) para la prueba sin correr el pipeline.
+- **Compuertas.** `output.txt` SHA-256 `ae624b98…45fa15` **idéntico** (a) con la
+  receta `sysdir set SITE` y (b) sin ella con `profile.do` (flujo del
+  investigador); el ZIP sin profile.do en `/tmp/Prueba Alumno/SimuladorCIEP-master`
+  llega a TOUCH-DOWN (701 s con cachés). `test-maquina-virgen.sh --zip` (nuevo):
+  arma la copia `git archive` sin git en una ruta con espacios y prueba las tres
+  vías (otra carpeta → mensaje r(601); carpeta del simulador sin profile.do →
+  autolocalización y `.ado` visibles tras `cd`; con profile.do → ídem);
+  `--completo` corre SIM.do entero. README: "Inicio rápido para estudiantes"
+  (5 pasos) con la salida correcta de Stata (`exit, clear`): el "end
+  unrecognized" al cerrar no lo emite SIM.do ni profile.do en ninguna vía — es
+  exactamente el mensaje de teclear `end`, que no es un comando de Stata.
+- **Symlink `raw/` commiteado por error en `fd7caa1`** (eliminado; `.gitignore`
+  ahora ignora las entradas `/raw`, `/master`, `/users` y no solo su contenido):
+  apuntaba a una ruta local de la máquina de Ricardo y viajó en el ZIP de GitHub
+  como enlace roto; en otra máquina `mkdir raw` y `ensure_asset` fallan.
+- **Hallazgo abierto (no se corrige aquí): el `output.txt` por defecto depende de
+  intermedios de `raw/temp/2024/` del 22-sep-2026.** `Expenditure.do` reutiliza
+  `pre_iva.dta`, `pre_iva_final.dta`, `preconsumption.dta` y
+  `va_por_clase_actividad.dta` si existen; una máquina limpia los reconstruye y
+  obtiene un `output.txt` distinto (`635b14dc…`: diferencias de ~1e-4 en los
+  bloques INCD/APORT del ciclo de vida), mientras que con los intermedios del
+  22-sep se reproduce `ae624b98…`. Hay que regenerar `raw/temp` (`global
+  update`) en el próximo release de datos y fijar el default con intermedios
+  frescos; mientras, la paridad se mide con los intermedios vigentes.
+
 ### Institucional
 
 - **Proceso de release de punta a punta y Gate 8 "Release remota completa"**
