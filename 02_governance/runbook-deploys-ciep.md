@@ -107,6 +107,18 @@ git push origin vX.Y.Z
 Los tags son **inmutables** una vez publicado el Release: si algo se olvidó,
 es commit nuevo y (si amerita) versión nueva — el tag no se mueve.
 
+> **El tag NO es el release.** `05_scripts/manifest.json` apunta
+> `release_url_prefix` a `releases/download/vX.Y.Z/`: desde que `master`
+> lleva ese manifest, **toda** máquina sin `raw/` (instalación limpia, clon
+> nuevo, caché borrada, el runner) descarga los assets de la Release
+> `vX.Y.Z`. Si la Release no existe o está vacía, `ensure_asset` da 404 y
+> `SIM.do` aborta. Por eso el paso §3 (`publicar.sh`) es **obligatorio e
+> inmediato** tras el tag, y **nunca** se crea la Release a mano
+> (`gh release create`, botón "Draft a new release"): eso deja una Release
+> sin assets que parece terminada. Incidente 2026-10-05: v8.6.1, v8.7.0 y
+> v8.7.1 se crearon desde los tags sin assets; el `SIM.do` nacional pidió
+> los ZIP de la ENIGH a v8.7.1 y recibió 404 hasta espejar los 26 assets.
+
 ---
 
 ## 3. Endpoint Stata (Cloudways) — siempre ANTES que el VPS
@@ -117,9 +129,51 @@ El sitio enlaza al Release tag, que debe existir primero.
 bash 05_scripts/publicar.sh vX.Y.Z
 ```
 
-Hace: gates 1-6 → Release en GitHub + assets con SHA-256 → rsync al endpoint
-con pin de versión inyectado. **Es idempotente**: si falla a medias (p. ej.
-SSH), re-correr salta lo ya hecho.
+Hace: gates 1-8 → Release en GitHub + **los 26 assets del data sidecar**
+(todos, en cada versión: el Release es inmutable y autocontenido, código +
+datos) → verificación SHA-256 post-Release → rsync al endpoint con pin de
+versión inyectado. **Es idempotente**: si falla a medias (p. ej. SSH),
+re-correr salta lo ya hecho; si la Release ya existe la respeta y solo sube
+los assets que falten.
+
+**Gate 8 — Release remota completa** (`--check` y publicación): si la Release
+`vX.Y.Z` ya existe en GitHub pero le falta algún asset del manifest (o difiere
+el tamaño), aborta y dice cómo repararlo. Reparación de una Release creada a
+mano o interrumpida:
+```bash
+bash 05_scripts/publicar.sh vX.Y.Z --solo-assets   # sube lo que falta y verifica SHA; sin tag, sin push, sin endpoint
+```
+Antes de dar por cerrado cualquier release: `bash 05_scripts/publicar.sh vX.Y.Z --check`
+debe decir "los 8 gates pasaron" (el 8 consulta GitHub).
+
+**Secuencia completa de un release, de punta a punta** (la que falló en
+v8.6.1–v8.7.1 por saltarse el paso 4):
+
+| # | Paso | Comando / artefacto | Quién |
+|---|---|---|---|
+| 1 | CHANGELOG + manifest (`version`, `release_tag`, `release_url_prefix`) en el PR | §1 pre-flight | autor del cambio |
+| 2 | Merge a `master` | GitHub | Ricardo |
+| 3 | Tag anotado + push del tag | §2 | Ricardo |
+| 4 | **Release + 26 assets + verificación SHA + endpoint** | `bash 05_scripts/publicar.sh vX.Y.Z` (en el clon de desarrollo, no en la Carpeta de investigadores) | Ricardo, **inmediatamente después del tag** |
+| 5 | Prueba de la promesa pública | `bash 05_scripts/test-maquina-virgen.sh --download` (N/N assets desde la Release) | Ricardo |
+| 6 | VPS según tipo de release | §4 | Ricardo |
+| 7 | Gate humano | §6 | Ricardo |
+| 8 | Pull en la Carpeta de investigadores (Dropbox) y aviso a la capa NL (merge de cadencia) | manual | Ricardo |
+
+**¿Por qué no anclar los assets a una Release fija y dejar de subir 1.3 GB
+por versión?** Se evaluó el 2026-10-05 y se descartó por ahora: (i) el
+contrato de v8.0 es "código + datos + endpoint reproducibles en la misma
+versión" (`git checkout vX.Y.Z` basta), y el modo *pinned* de `ensure_asset`
+lee el manifest del tag instalado — una Release de datos aparte añade un
+segundo eje de versiones (datos vs código) que hoy nadie gobierna y que
+`publicar.sh` (gate de prefix, post-verify), `test-maquina-virgen.sh` y el
+endpoint tendrían que aprender; (ii) el costo real es ~10 min de subida
+idempotente por release y GitHub no cobra ni limita el almacenamiento de
+assets (2 GB por archivo); (iii) el fallo no fue de diseño sino de proceso: el
+paso existía y no se ejecutó. Si en el futuro los assets crecen (varias ENIGH
+nuevas, >5 GB) se reabre con una propuesta formal: campo
+`assets_release_tag` en el manifest, bumpeado solo cuando cambia
+`data_updated`, con los tres scripts adaptados en el mismo PR.
 
 Verificación:
 ```bash
@@ -325,3 +379,4 @@ re-desplegar), no rollback.
 | Todo lo creado post-normalización | Nace ilegible para Apache: chmod explícito siempre. |
 | SSH Cloudways | Whitelist por IPv4 — ver §3. |
 | Mtime del default | Si el gate de frescura aborta: correr SIM.do completo primero (no tocar el mtime a mano). |
+| Release creada a mano desde el tag (sin assets) | NUNCA: el manifest ya apunta a ella y `ensure_asset` da 404 en toda máquina sin `raw/`. Siempre `publicar.sh vX.Y.Z`; si ya pasó, `publicar.sh vX.Y.Z --solo-assets` (incidente v8.6.1/v8.7.0/v8.7.1, 2026-10-05). |

@@ -20,6 +20,70 @@ Formato de cada entrada:
 
 Trabajo en `master` sin versión asignada.
 
+## [v8.7.2] — 2026-10-06
+
+### Correcciones
+
+- **`SIM.do` se autolocaliza: el simulador corre desde el ZIP de GitHub sin
+  `profile.do` ni `sysdir set SITE`.** Reproducido con el ZIP real
+  (`SimuladorCIEP-master`, ruta con espacios, sin profile.do cargado): (1)
+  `do "…/SIM.do"` desde otra carpeta de trabajo → `command SIMroot is
+  unrecognized` (y `scheme ciep not found`), porque los `.ado` solo se veían por
+  `"."`; (2) doble clic en `SIM.do` o `cd` previo → arranca, pero `Expenditure.do`
+  hace `cd raw/ENIGH` y el siguiente `.ado` aún no cargado truena (`command LIF
+  is unrecognized`; en la máquina del alumno, `perfilpc`). Producción no lo
+  sufría porque la receta batch del runbook hace `sysdir set SITE`. Ahora
+  `SIM.do` §0.0 localiza su carpeta **antes** de `set scheme` (carpeta de
+  trabajo con `SIMroot.ado` + `05_scripts/manifest.json`, o SITE), la mete al
+  adopath y llama `SIMroot, dir()`; si no la encuentra, se detiene con la
+  instrucción en español (`File > Change Working Directory…` o `cd`, y luego
+  `do "SIM.do"`; r(601)). **`SIMroot` v8.5** hace lo mismo para cualquier otro
+  punto de entrada (interactivo, drivers, `Web.Stata.do`): si la raíz es un clon
+  (trae `SIMroot.ado`), entra al adopath (idempotente). Gancho `SIM_SMOKE=1`
+  (variable de entorno) para la prueba sin correr el pipeline.
+- **Compuertas.** `output.txt` SHA-256 `ae624b98…45fa15` **idéntico** (a) con la
+  receta `sysdir set SITE` y (b) sin ella con `profile.do` (flujo del
+  investigador); el ZIP sin profile.do en `/tmp/Prueba Alumno/SimuladorCIEP-master`
+  llega a TOUCH-DOWN (701 s con cachés). `test-maquina-virgen.sh --zip` (nuevo):
+  arma la copia `git archive` sin git en una ruta con espacios y prueba las tres
+  vías (otra carpeta → mensaje r(601); carpeta del simulador sin profile.do →
+  autolocalización y `.ado` visibles tras `cd`; con profile.do → ídem);
+  `--completo` corre SIM.do entero. README: "Inicio rápido para estudiantes"
+  (5 pasos) con la salida correcta de Stata (`exit, clear`): el "end
+  unrecognized" al cerrar no lo emite SIM.do ni profile.do en ninguna vía — es
+  exactamente el mensaje de teclear `end`, que no es un comando de Stata.
+- **Symlink `raw/` commiteado por error en `fd7caa1`** (eliminado; `.gitignore`
+  ahora ignora las entradas `/raw`, `/master`, `/users` y no solo su contenido):
+  apuntaba a una ruta local de la máquina de Ricardo y viajó en el ZIP de GitHub
+  como enlace roto; en otra máquina `mkdir raw` y `ensure_asset` fallan.
+- **Hallazgo abierto (no se corrige aquí): el `output.txt` por defecto depende de
+  intermedios de `raw/temp/2024/` del 22-sep-2026.** `Expenditure.do` reutiliza
+  `pre_iva.dta`, `pre_iva_final.dta`, `preconsumption.dta` y
+  `va_por_clase_actividad.dta` si existen; una máquina limpia los reconstruye y
+  obtiene un `output.txt` distinto (`635b14dc…`: diferencias de ~1e-4 en los
+  bloques INCD/APORT del ciclo de vida), mientras que con los intermedios del
+  22-sep se reproduce `ae624b98…`. Hay que regenerar `raw/temp` (`global
+  update`) en el próximo release de datos y fijar el default con intermedios
+  frescos; mientras, la paridad se mide con los intermedios vigentes.
+
+### Institucional
+
+- **Proceso de release de punta a punta y Gate 8 "Release remota completa"**
+  (`05_scripts/publicar.sh`, `02_governance/runbook-deploys-ciep.md`). Incidente
+  2026-10-05: las Releases v8.6.1, v8.7.0 y v8.7.1 se crearon a mano desde los
+  tags, sin assets; como el manifest ya apuntaba `release_url_prefix` a ellas,
+  `ensure_asset` recibió 404 en el `SIM.do` nacional hasta espejar los 26 assets
+  a v8.7.1. `publicar.sh --check` ahora consulta GitHub y falla si la Release de
+  la versión existe sin los assets del manifest (o con otro tamaño); nuevo modo
+  `--solo-assets` para reparar una Release existente (sube lo que falta y
+  verifica SHA, sin tag/push/endpoint). El runbook deja escrita la secuencia
+  completa (PR → merge → tag → `publicar.sh` inmediato → `test-maquina-virgen
+  --download` → VPS → gate humano → pull de la Carpeta) y la decisión de
+  **mantener el prefix por versión** (Release inmutable = código + datos) en
+  lugar de anclar los assets a una Release fija, con el trade-off documentado.
+  v8.6.1 y v8.7.0 siguen sin assets: `publicar.sh v8.6.1 --solo-assets` y
+  `v8.7.0 --solo-assets` las completan (o se declaran superadas en sus notas).
+
 ## [v8.7.1] — 2026-10-05
 
 ### Correcciones

@@ -1,4 +1,4 @@
-*! version 8.4 CIEP 23sep2026
+*! version 8.5 CIEP 05oct2026
 *
 * SIMroot — Raíz del proyecto del Simulador Fiscal CIEP (global $SIMROOT).
 *
@@ -62,6 +62,13 @@ program define SIMroot, rclass
 
 	global SIMROOT `"`root'"'
 	return local root `"`root'"'
+
+	* Si la raiz es un clon del repo (trae los .ado), entra al adopath (v8.7.2): asi los
+	* modulos se encuentran aunque un .do haga cd (Expenditure.do -> raw/ENIGH) y aunque
+	* la carpeta de trabajo cambie; sin profile.do ni sysdir set SITE. Idempotente. *
+	if fileexists(`"`root'/SIMroot.ado"') & !strpos(`"`c(adopath)'"', `"`root'"') {
+		quietly adopath ++ `"`root'"'
+	}
 
 	* Subcarpetas de datos (la creacion de users/$id la hace cada comando) *
 	capture mkdir `"`root'/raw"'
