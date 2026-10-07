@@ -85,7 +85,7 @@ git add 05_scripts/manifest.json
 git commit -m "fix(assets): <nombre> -> <qué cambió> (SHA <sha8>, contenido validado por <quién>)"
 git push origin master
 
-# 7. Reemplazar el asset en el Release vigente y verificar los 24
+# 7. Reemplazar el asset en el Release vigente y verificar los 27
 gh release delete-asset "<tag>" "<nombre>" -y || true
 bash 05_scripts/publicar.sh "<tag>"
 
@@ -149,6 +149,19 @@ Reglas del modo:
   raw" (lo usa cualquiera); `rawwip` = "raw está en edición y asumo la deuda
   de declararlo" (lo pone el operador del manifest). Un compañero con `update`
   y sin `rawwip` sigue siendo detenido por el candado.
+
+## 2d. El asset de fuentes congeladas (`raw/fuentes/fuentes-AAAA-MM-DD.zip`, desde v8.8.0)
+
+Es un asset más del manifest, pero no lo edita nadie a mano: lo **produce** una
+corrida en vivo de `SIM.do` (`global update`, `global fuentes` vacío, StataNow 19.5)
+y lo empaca el operador del release de datos (`runbook-deploys-ciep.md` §9.4).
+Contiene las descargas de INEGI (BIE `*.csv` + `*.meta`, tabulados `CSI_*.xlsx`) y
+de la SHCP (`Datos Abiertos/*.csv`) de ESA fecha; `SIM.do` lo descomprime en
+`raw/temp/` cuando `global fuentes "AAAA-MM-DD"` está activo. Reglas: (a) el
+nombre lleva la fecha y la fecha va también en `fuentes_congeladas_al` y
+`data_updated` del manifest; (b) nunca se "actualiza" un zip existente: fecha nueva
+= asset nuevo (las versiones publicadas siguen apuntando al suyo); (c) cambiar de
+fecha es release de datos: re-ancla (§9.3) y CHANGELOG con el delta.
 
 ## 3. Qué NUNCA hacer
 

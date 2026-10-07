@@ -9,7 +9,8 @@
 #      clausura transitiva de los .pkg (Gate 7: cada .pkg lista los .ado que invoca),
 #      05_scripts/manifest.json sincronizado con la versión, y existencia en filesystem de
 #      cada archivo declarado en 05_scripts/manifest-endpoint.toml, y Release remota
-#      completa (Gate 8: si la Release ya existe, trae todos los assets del manifest).
+#      completa (Gate 8: si la Release ya existe, trae todos los assets del manifest),
+#      y ancla de reproducibilidad declarada para la version (Gate 9).
 #      Si algo falla, aborta ANTES de cualquier acción con efectos (push, Release, rsync).
 #   3. Si la etiqueta de versión no existe localmente, ofrece crearla (interactivo o por flag)
 #   4. Push del tag a origin si aún no está allá
@@ -375,6 +376,39 @@ gate_release_remota() {
     log_info "✓ Gate 8: Release $version remota completa — $(manifest_assets | wc -l | tr -d ' ') assets presentes con el tamano del manifest"
 }
 
+# Gate 9 — Ancla de reproducibilidad declarada (2026-10-06, v8.8.0). El output.txt
+# publicado tiene un SHA-256 canonico en 05_scripts/ancla-reproducibilidad.json, que
+# solo escribe `test-maquina-virgen.sh --reproducibilidad --anclar` (la receta misma).
+# Aqui se verifica lo barato: que el ancla exista, sea de ESTA version, apunte a la
+# misma fecha de fuentes congeladas que el manifest y que el asset fuentes-<fecha>.zip
+# este declarado. La prueba larga (~80 min) es `--reproducibilidad` (runbook 9.3).
+gate_ancla() {
+    local version="$1" out
+    if ! out="$(python3 - "$version" <<'PYEOF'
+import json, sys
+v = sys.argv[1]
+m = json.load(open("05_scripts/manifest.json", encoding="utf-8"))
+try:
+    a = json.load(open("05_scripts/ancla-reproducibilidad.json", encoding="utf-8"))
+except OSError:
+    print("no existe 05_scripts/ancla-reproducibilidad.json"); sys.exit(1)
+errs = []
+if a.get("version") != v: errs.append(f"ancla.version={a.get('version')} != {v} (re-ancla: test-maquina-virgen.sh --reproducibilidad --anclar)")
+if a.get("fuentes") != m.get("fuentes_congeladas_al"): errs.append(f"ancla.fuentes={a.get('fuentes')} != manifest.fuentes_congeladas_al={m.get('fuentes_congeladas_al')}")
+if not any(x["name"] == f"fuentes-{a.get('fuentes')}.zip" for x in m["assets"]): errs.append(f"el manifest no declara fuentes-{a.get('fuentes')}.zip")
+if len(a.get("output_txt_sha256", "")) != 64: errs.append("ancla sin output_txt_sha256")
+if errs:
+    print("\n".join(errs)); sys.exit(1)
+print(f"output.txt {a['output_txt_sha256'][:16]}... | fuentes {a['fuentes']} | Stata {a['stata']['version']} procs {a['stata']['processors']} | {len(a.get('sankeys_sha256', {}))} sankeys")
+PYEOF
+    )"; then
+        log_error "Gate 9 FALLO: ancla de reproducibilidad no declarada o desalineada:"
+        while IFS= read -r line; do log_error "        $line"; done <<< "$out"
+        return 1
+    fi
+    log_info "✓ Gate 9: ancla de reproducibilidad — $out"
+}
+
 # Corre una vez por invocación, tanto en --check como en la publicación real
 # (son procesos separados sin estado compartido; saltarlo en la publicación real
 # abriría el hueco de publicar sin haber corrido --check).
@@ -702,11 +736,12 @@ if [[ "$CHECK_MODE" == "true" ]]; then
     gate_cobertura_assets          || GATE_FAILURES=$((GATE_FAILURES+1))
     gate_pkg_clausura              || GATE_FAILURES=$((GATE_FAILURES+1))
     gate_release_remota "$VERSION" || GATE_FAILURES=$((GATE_FAILURES+1))
+    gate_ancla "$VERSION"          || GATE_FAILURES=$((GATE_FAILURES+1))
     if (( GATE_FAILURES > 0 )); then
         log_error "--check: $GATE_FAILURES gate(s) fallaron para $VERSION."
         exit 1
     fi
-    log_info "--check: los 8 gates pasaron para $VERSION."
+    log_info "--check: los 9 gates pasaron para $VERSION."
     exit 0
 fi
 
@@ -733,6 +768,7 @@ gate_endpoint_files            || GATE_FAILURES=$((GATE_FAILURES+1))
 gate_raw_declarado             || GATE_FAILURES=$((GATE_FAILURES+1))
 gate_cobertura_assets          || GATE_FAILURES=$((GATE_FAILURES+1))
 gate_pkg_clausura              || GATE_FAILURES=$((GATE_FAILURES+1))
+gate_ancla "$VERSION"          || GATE_FAILURES=$((GATE_FAILURES+1))
 if (( GATE_FAILURES > 0 )); then
     abort "$GATE_FAILURES gate(s) fallaron. Corrige antes de publicar."
 fi

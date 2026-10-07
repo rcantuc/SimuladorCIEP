@@ -20,6 +20,143 @@ Formato de cada entrada:
 
 Trabajo en `master` sin versión asignada.
 
+## [v8.8.0] — 2026-10-06
+
+Release de **datos** (fuentes INEGI/SHCP al 2026-10-06, `data_updated` =
+`2026-10-06`) y de **reproducibilidad**: el `output.txt` publicado vuelve a tener
+un ancla que cualquier máquina puede reproducir con una receta, no con suerte.
+Diagnóstico completo (F0, tres anclas, siete corridas): `02_governance/historico/F0-reproducibilidad-ancla-2026-10-06.md`.
+
+### Datos
+
+- **Fuentes vivas congeladas al 2026-10-06: asset `fuentes-2026-10-06.zip`**
+  (`raw/fuentes/`, 27.º asset del manifest; ~540 series del BIE con sus `.meta`,
+  tabulados CSI de INEGI y los 10 csv de Datos Abiertos de la SHCP). Entre el
+  22-sep (ancla anterior) y el 5-oct INEGI revisó el PIB 2024 (33,582.9 →
+  33,667.0 mmdp) y publicó 2025, y la SHCP agregó meses; `data_updated` pasa de
+  `2026-09-12` a `2026-10-06`. Con `global fuentes "2026-10-06"` (SIM.do §0.4)
+  los módulos leen esas descargas desde `raw/temp/` en vez de la red.
+- **Delta del `output.txt` por defecto (PE 2027) respecto al ancla anterior
+  `ae624b98…`** — 2,890 de ~5,000 valores en 16 llaves, por tres causas
+  separables (F0 §3.1):
+
+  | Familia | Cambio | Causa |
+  |---|---|---|
+  | `INGRESOSTEF` | IEPSP 67.6→76.3, IEPSNP 46.5→47.9, ISRAS 12.8→12.7, ISRPM 12.8→12.9, ISAN 1.8→1.7, consumo 10.0→9.9 | INEGI: SCN 2024 revisado (denominadores) |
+  | `DEUDAPARAM` 6.599→6.667; `PROYSHRFSP2/3`; `PROYCOSTO` 2026 2.0→2.2 | | SHCP: meses nuevos en `DatosAbiertos` → `SHRFSP` |
+  | `INCD/INCD2/INCD3` (41 bloques) | hasta 11 % | SCN 2024 revisado → armonización macro-micro de `Households.do`; cachés micro regenerados |
+  | `APORTH*/APORTM*` (ciclo de vida) | hasta 0.9 pp | cachés `master/2024/consumption_*_pc` del ancla anterior eran **anteriores a `perfilpc` (v8.5.0)** y nunca se habían regenerado (`update` no los tocaba); ahora reflejan el reparto intra-hogar vigente |
+  | `PROY`/`PROYMAX` | hasta 1.2 (6 %); un máximo 2027→2028 | las dos anteriores vía `perfiles2027` |
+  | `IVA:[…,23.1]` | 23.0→23.1 | recalibración de la informalidad (abajo) |
+  | sin cambio | `INGRESOS`, `GASTOS`, `GASTOSPC`, `PIBY`, `ISR*`, `CSS*`, `CRECPIB/DEF`, `PROY{LABOR…INVER}`, `PROYSHRFSP1` | parámetros de `SIM.do` y PEF (assets) |
+
+  Ningún número se corrige en silencio: este cuadro es la trazabilidad de por qué
+  el default de hoy no es el de septiembre.
+- **IVAT evasión/informalidad 23.0 → 23.1 (`SIM.do` §4.5).** Recalibración
+  interna, no estimación externa: es la fila "Informalidad %" de `Expenditure.do`
+  §5, (IVA potencial ENIGH − IVA observado)/potencial en % del PIB 2024. Con las
+  fuentes del 22-sep: 5.443/4.193 → 22.96 % ("23.0"); con las del 6-oct:
+  5.44094/4.18208 → **23.137 %** ("23.1"). **Causa principal: la revisión del PIB
+  2024 de INEGI** (IVA observado/PIB 4.193 → 4.182); los perfiles v8.5.0 mueven el
+  potencial solo de 5.443 a 5.441. Regla nueva en el runbook (§9.6): este
+  parámetro se recalibra y documenta cada vez que cambie lo que mueve el cierre
+  (perfiles o fuentes), nunca se hereda a ciegas.
+
+### Correcciones
+
+- **`IVA_Mod.do` (módulo IVA del sitio): sin factor `4.249/4.495` ni año base
+  fijo 2022.** El resultado se multiplicaba por `4.249/4.495`, calibración ad hoc
+  del Paquete 2022 que cerraba contra la recaudación proyectada de entonces sin
+  tocar la informalidad observada, y deflactaba precios con `anio == 2022` (ENIGH
+  2022) aunque la ENIGH vigente es 2024. Ahora: precios de `anioenigh` llevados al
+  año del Paquete y **sin factor**. Cierre documentado (PE 2027, fuentes 6-oct,
+  informalidad 23.1): simulado **4.128 % del PIB vs 4.485 proyectado en la LIF
+  2027 → residuo −0.357 pp (−8.0 %)**; con 23.0 sería 4.134. Antes (factor + año
+  2022): 4.243 (−5.4 %) / 4.248. El residuo se declara (y `IVA_Mod.do` lo imprime),
+  no se absorbe: regla en el runbook §9.6. Afecta solo a las simulaciones web que
+  cambian el IVA; el default (`output.txt`) distribuye la recaudación de la LIF.
+- **`global update` también rehace los cachés micro de `master/<anioenigh>/`**
+  (`deducciones`, `consumption_categ_pc`, `consumption_categ_iva_pc`,
+  `consumption_categ_ieps_pc`). Solo se creaban si faltaban, así que una máquina
+  con cachés viejos "actualizaba" con perfiles de otra versión del código; eso
+  hizo irreproducible el ancla `ae624b98`. Mejora futura anotada: sellar cada
+  caché con la versión del código que lo generó y rechazarlo si no coincide.
+- **`DatosAbiertos` `_DAdescarga`: la descarga del csv va a `.tmp` y solo entonces
+  reemplaza.** `copy …, replace` borra el destino **antes** de fallar (Stata 17 da
+  r(603) con `secciones.hacienda.gob.mx`), así que el fallback "archivos locales
+  de `raw/temp/`" encontraba el archivo recién borrado. Con el fix, el respaldo
+  local sobrevive a una descarga fallida.
+- **`SIM.do` §0.4: el log de `output.txt` se abre dentro de `quietly { }`.** Con
+  `do` el eco del comando caía dentro del log (`.quietlylogoffoutput` como primera
+  línea); con `run` o desde el Do-file Editor no. Ahora `do` y `run` producen los
+  mismos bytes.
+- **`SIM.do` §0.0 → `SIMroot` v8.6 (opciones `scheme` y `smoke`).** La
+  autolocalización de v8.7.2 vivía entera en `SIM.do` (validación, mensaje de error,
+  `set scheme`, prueba de humo). Por el huevo y la gallina (`SIMroot.ado` no se puede
+  ejecutar antes de encontrarlo) en `SIM.do` queda solo lo irreducible: localizar la
+  carpeta (carpeta de trabajo o `SITE`), un error de dos líneas que apunta al README,
+  `adopath ++` y `SIMroot, dir() scheme`. `SIMroot` valida que la raíz sea la carpeta
+  completa del simulador (`SIM.do`, `SIMroot.ado`, `scheme-ciep.scheme`,
+  `05_scripts/manifest.json`; si no, la instrucción exacta y r(601)), hace `set scheme
+  ciep` y, con `smoke` o `SIM_SMOKE=1`, corre la prueba de humo y devuelve
+  `r(smoke)=1` para que `SIM.do` termine sin pipeline. `test-maquina-virgen.sh --zip`
+  sigue probando las tres vías vía `SIM.do`. Sin efecto en números.
+- **`ISR_Mod.do` no cambia en este release.** Sus factores `3.793/3.255`,
+  `0.241/0.553`, `4.176/2.781`, `1.675/1.525` y `.1492/.098` (de v7, marzo 2026)
+  se quedan tal cual; la decisión por fila se pospone a una auditoría de
+  descomposición de la brecha (base, tarifa, formalidad, precios), entregable
+  aparte. Solo afecta a las simulaciones web que cambian el ISR; no toca `output.txt`.
+
+### Comandos
+
+- **`global fuentes "AAAA-MM-DD"` (SIM.do §0.4; vacío = en vivo, byte-idéntico a
+  antes).** `SIM.do` descarga/verifica `fuentes-<fecha>.zip` (`ensure_asset`) y lo
+  descomprime en `raw/temp/`; `AccesoBIE` v8.2 usa `raw/temp/AccesoBIE/<serie>.csv`
+  + `.meta` (nuevo: nombre crudo del indicador, para reproducir nombre y etiqueta
+  sin red) en vez de descargar; `DatosAbiertos` v8.2 entra en modo `local`; `SCN`
+  v8.1 no vuelve a bajar `tabulados_CSI.zip` aunque haya `update`. Hace viable
+  Stata 17 (no descarga de la SHCP) y la máquina sin red.
+- **`SIM-local.do`: panel local de toggles, no versionado** (`.gitignore`;
+  plantilla `SIM-local.template.do`). `SIM.do` §0.5 lo ejecuta si existe, tras los
+  defaults de §0.4; ahí viven `output`, `bootstrap`, `nographs`, `update`,
+  `fuentes`, `textbook`, `export` y el nuevo **`global hasta "N"`** (paro temprano:
+  termina al cerrar la sección 1-7). Sin el archivo, comportamiento byte-idéntico.
+  Fin de los diffs locales en el `SIM.do` de la Carpeta de investigadores.
+
+### Institucional
+
+- **Ancla de reproducibilidad y receta canónica (`runbook-deploys-ciep.md` §9).**
+  `05_scripts/ancla-reproducibilidad.json` declara versión, fecha de fuentes, Stata
+  (19.5, 1 procesador), receta y SHA-256 de `output.txt` y de los 5
+  `sankey-*.json`; **solo lo escribe la receta** (`test-maquina-virgen.sh
+  --reproducibilidad --anclar`). Nuevo modo `test-maquina-virgen.sh
+  --reproducibilidad [--assets-locales]` (~80 min): copia `git archive` en estado
+  cero, `SIM-local.do` canónico, `set processors 1`, y compara SHAs y versión de
+  Stata contra el ancla. Nuevo **Gate 9** en `publicar.sh`: ancla declarada para la
+  versión, alineada con `fuentes_congeladas_al` del manifest y con el asset de
+  fuentes. Política: se re-ancla en cada release de datos y cuando el código mueva
+  números, nunca en silencio, con el delta en este CHANGELOG.
+- **Lo que fija la receta, medido (F0):** misma receta dos veces desde cero (SE
+  19.5) → `output.txt` y sankeys idénticos al byte, con 815 descargas idénticas;
+  Stata 17 vs 19.5 → 52 de ~5,000 valores distintos (el "~1e-4 en INCD/APORT"
+  que v8.7.2 atribuyó a `635b14dc`); MP con 1 vs 10 procesadores → `output.txt`
+  idéntico, sankeys distintos (`collapse (sum)` por hilos); `sort` rompe empates
+  con un RNG propio (`sortseed`) que avanza con cada `sort` de la sesión, así que
+  los bits de un `collapse` dependen de qué corrió antes (ruido que `output.txt`
+  absorbe y los sankeys a 16 dígitos no).
+- **Ancla v8.8.0:** `output.txt` SHA-256
+  `e40af4a6dda77d3a042228a291d55443fc020d3bf431698b179e7c11385a4d27` (fuentes
+  2026-10-06, StataNow 19.5 SE, `set processors 1`, IVAT 23.1; 62 min desde
+  estado cero con fuentes congeladas, sin red salvo assets); los 5 sankeys en el
+  json. Compuerta: esa corrida congelada reproduce **al byte** los 5 sankeys de la
+  regeneración en vivo del mismo día y su `output.txt` salvo las dos líneas
+  esperadas (línea 1 del fix `do`/`run` e `IVA:[…,23.1]`). Para la capa NL: ver el
+  anexo del PR (actualizar la cita `ae624b98` y re-verificar D.1).
+  **Ancla definitiva (2026-10-07, commit `1ce94de`):** la receta se volvió a correr
+  desde estado cero tras mover `SIM.do` §0.0 a `SIMroot` v8.6 y con `ISR_Mod.do`
+  congelado: `output.txt` y los 5 sankeys **idénticos al byte** a la corrida anterior
+  (65 min); el json solo cambia `commit` y `anclado_el`.
+
 ## [v8.7.2] — 2026-10-06
 
 ### Correcciones

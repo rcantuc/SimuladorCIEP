@@ -122,6 +122,8 @@ wp-salt.php
 # Token API del BIE/INEGI — archivo local por usuario, NUNCA trackeado.
 # Cada usuario copia set_token.template.do como set_token.do y pone su token.
 set_token.do
+# Panel local de SIM.do (toggles personales; plantilla versionada: SIM-local.template.do)
+SIM-local.do
 
 # Credenciales del endpoint Stata `net from` — valores reales del servidor.
 # Cada operador copia endpoint-credentials.template.sh como endpoint-credentials.sh

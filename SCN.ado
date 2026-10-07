@@ -1,4 +1,4 @@
-*! version 8.0 CIEP 03jul2026
+*! version 8.1 CIEP 06oct2026
 *!*******************************************
 *!***                                    ****
 *!***    Sistema de Cuentas Nacionales   ****
@@ -2042,8 +2042,11 @@ program define UpdateSCN
 	**/
 	**# 9. Ingreso mixto bruto
 	***
+	* Tabulados CSI: se reutilizan si existen, salvo con update. Con fuentes
+	* congeladas (SIM.do 0.4 `global fuentes`) vienen del asset fuentes-<fecha>.zip
+	* y no se vuelven a bajar aunque haya update (v8.1, 2026-10-06). *
 	capture confirm file "${SIMROOT}/raw/temp/SCN/CSI_103.xlsx"
-	if _rc != 0 | "`update'" == "update" {
+	if _rc != 0 | ("`update'" == "update" & "$fuentes" == "") {
 		cd "${SIMROOT}/raw/temp/SCN/"
 		unzipfile "https://www.inegi.org.mx/contenidos/programas/si/2018/tabulados/ori/tabulados_CSI.zip", replace
 	}

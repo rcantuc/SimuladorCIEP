@@ -1,4 +1,4 @@
-*! version 8.1 CIEP 04oct2026
+*! version 8.2 CIEP 06oct2026
 *! AccesoBIE - Acceso al Banco de Indicadores del INEGI via API oficial
 *! (con respaldo automático vía la consulta pública de exportación .aspx)
 *! Sintaxis: AccesoBIE serie1 [serie2 ...] [, nombres(string) token(string) area(##)]
@@ -88,8 +88,17 @@ program define AccesoBIE
 				noisily display as text "  {c A'}rea " as result "`area'" as text " de `serie' | tabla completa: `nfilas' filas, consulta INEGI ${INEGI_AREAS_FECHA_`serie'}, checksum `chk'"
 			}
 			else {
-				// Llamar a Python para obtener datos via API oficial
-				python: inegi_api("`serie'", "`token'")
+				// Fuentes congeladas (v8.2, SIM.do 0.4 `global fuentes "AAAA-MM-DD"`):
+				// si el csv de la serie ya está en raw/temp/AccesoBIE/ (descomprimido
+				// del asset fuentes-<fecha>.zip) se usa tal cual, con su .meta, sin
+				// tocar la red. Sin el global, descarga siempre, como hasta ahora.
+				if "$fuentes" != "" & fileexists("${SIMROOT}/raw/temp/AccesoBIE/`serie'.csv") {
+					python: inegi_congelada("`serie'")
+				}
+				else {
+					// Llamar a Python para obtener datos via API oficial
+					python: inegi_api("`serie'", "`token'")
+				}
 				
 				// Importar los datos
 				import delimited "${SIMROOT}/raw/temp/AccesoBIE/`serie'.csv", clear varnames(1) encoding(utf-8)
@@ -560,14 +569,38 @@ UNIDAD = r'(?:millones|miles|pesos|precios|[ií]ndice|porcentaje|por ciento|unid
 NIVELES_DESC = 4  # niveles finales de la jerarquía que se muestran en pantalla
 
 
-def set_metadata(serie, indicator_name):
+def set_metadata(serie, indicator_name, escribir_meta=True):
     """Publica como globals de Stata el nombre de variable, la descripción
     (últimos niveles de la jerarquía, para pantalla) y la etiqueta de
-    <= 80 bytes (para label var)."""
+    <= 80 bytes (para label var). Guarda el nombre crudo del indicador en
+    raw/temp/AccesoBIE/<serie>.meta para que el modo de fuentes congeladas
+    reproduzca nombre y etiqueta sin red (v8.2)."""
     desc = clean_label(indicator_name)
     Macro.setGlobal(f'INEGI_VARNAME_{serie}', clean_varname(indicator_name))
     Macro.setGlobal(f'INEGI_DESC_{serie}', desc)
     Macro.setGlobal(f'INEGI_LABEL_{serie}', label80(desc))
+    if escribir_meta:
+        meta_path = Macro.getGlobal('SIMROOT') + '/raw/temp/AccesoBIE/' + serie + '.meta'
+        with open(meta_path, 'w', encoding='utf-8') as f:
+            f.write(indicator_name + '\n')
+
+
+def inegi_congelada(serie):
+    """Modo de fuentes congeladas: el csv ya existe; solo repone los metadatos
+    desde <serie>.meta (si falta, nombre genérico, como el fallback de inegi_api)."""
+    meta_path = Macro.getGlobal('SIMROOT') + '/raw/temp/AccesoBIE/' + serie + '.meta'
+    try:
+        with open(meta_path, encoding='utf-8') as f:
+            indicator_name = f.readline().rstrip('\n')
+    except OSError:
+        indicator_name = ''
+    if indicator_name:
+        set_metadata(serie, indicator_name, escribir_meta=False)
+    else:
+        Macro.setGlobal(f'INEGI_VARNAME_{serie}', f'v{serie}')
+        Macro.setGlobal(f'INEGI_LABEL_{serie}', f'Serie {serie}')
+        Macro.setGlobal(f'INEGI_DESC_{serie}', f'Serie {serie}')
+    print(f"  Fuente: congelada ({Macro.getGlobal('fuentes')}) raw/temp/AccesoBIE/{serie}.csv")
 
 
 def clean_label(name):
