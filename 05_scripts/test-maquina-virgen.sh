@@ -251,7 +251,7 @@ global output "output"
 global update "update"
 global fuentes "$FUENTES"
 EOF2
-    printf 'capture set processors 1\nsysdir set SITE "%s/"\nadopath ++SITE\ncd "%s"\ndi "STATA_VERSION=" c(stata_version) " EDICION=" c(flavor) " PROCESSORS=" c(processors)\ndo "%s/SIM.do"\n' "$SIMDIR" "$SIMDIR" "$SIMDIR" > "$BASE/wrap.do"
+    printf 'capture set processors 1\nsysdir set SITE "%s/"\nadopath ++SITE\ncd "%s"\ndi "STATA_VERSION=" c(stata_version) " PROCESSORS=" c(processors)\ndo "%s/SIM.do"\n' "$SIMDIR" "$SIMDIR" "$SIMDIR" > "$BASE/wrap.do"
     echo "Receta canonica en $SIMDIR (fuentes $FUENTES; Stata $STATA; ~80 min)..."
     T0=$(date +%s)
     ( cd "$SIMDIR" && "$STATA" -b do "$BASE/wrap.do" < /dev/null )
@@ -260,8 +260,8 @@ EOF2
         echo "REPRODUCIBILIDAD: SIM.do no llego a TOUCH-DOWN; ver $LOG" >&2
         grep -B4 -E '^r\([0-9]+\);' "$LOG" | head -12 >&2; exit 1
     fi
-    stata_version="$(grep -o 'STATA_VERSION=[0-9.]*' "$LOG" | head -1 | cut -d= -f2)"
-    stata_flavor="$(grep -o 'EDICION=[A-Za-z]*' "$LOG" | head -1 | cut -d= -f2)"
+    stata_version="$(grep -o '^STATA_VERSION=[0-9.]* ' "$LOG" | head -1 | cut -d= -f2 | tr -d ' ')"   # la linea de salida, no el eco del comando
+    stata_flavor="$(grep -m1 -oE '^(StataNow )?[0-9.]+$|(MP|SE|BE|IC)—[A-Za-z]+ Edition' "$LOG" | grep -oE '^(MP|SE|BE|IC)' | head -1)"   # del banner (c(edition) no es fiable)
     OUT="$SIMDIR/users/$(whoami)"
     if [[ "$ANCLAR" == "true" ]]; then
         python3 - "$OUT" "$FUENTES" "$stata_version" "$stata_flavor" "$ANCLA" <<'PYEOF'
