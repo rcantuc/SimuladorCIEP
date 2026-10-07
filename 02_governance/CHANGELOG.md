@@ -25,7 +25,7 @@ Trabajo en `master` sin versión asignada.
 Release de **datos** (fuentes INEGI/SHCP al 2026-10-06, `data_updated` =
 `2026-10-06`) y de **reproducibilidad**: el `output.txt` publicado vuelve a tener
 un ancla que cualquier máquina puede reproducir con una receta, no con suerte.
-Diagnóstico completo (F0, tres anclas, siete corridas) en el PR de esta versión.
+Diagnóstico completo (F0, tres anclas, siete corridas): `02_governance/historico/F0-reproducibilidad-ancla-2026-10-06.md`.
 
 ### Datos
 
