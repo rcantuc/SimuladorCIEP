@@ -30,8 +30,11 @@
 #                cd previo) con SIM_SMOKE=1 -> autolocalizacion OK y los .ado se
 #                encuentran despues de un cd (la clase de falla "command LIF is
 #                unrecognized"); (3) idem con profile.do presente (flujo del
-#                investigador). Con --completo, el modo (2) corre SIM.do entero
-#                (descarga ~1.3 GB y construye todo: ~1 h) y exige TOUCH-DOWN.
+#                investigador). Desde v8.8.0 la logica vive en SIMroot v8.6 (opciones
+#                scheme y smoke; SIM.do 0.0 solo localiza la carpeta, mete el adopath
+#                y delega): SIM_SMOKE=1 lo lee SIMroot y SIM.do termina con r(smoke).
+#                Con --completo, el modo (2) corre SIM.do entero (descarga ~1.3 GB y
+#                construye todo: ~1 h) y exige TOUCH-DOWN.
 #
 #   --reproducibilidad  (dinamico, ~80 min, sin red con --assets-locales)  La promesa
 #                de v8.8.0: la RECETA CANONICA (runbook-deploys-ciep.md 9) produce, en
@@ -165,7 +168,7 @@ if [[ "$MODE" == "zip" ]]; then
     # (2) carpeta de trabajo = el simulador, SIN profile.do (doble clic en SIM.do / cd previo)
     mv "$ZIPDIR/profile.do" "$ZIPDIR/profile.do.off"
     ( cd "$ZIPDIR" && SIM_SMOKE=1 "$STATA" -b do SIM.do < /dev/null )
-    if grep -q "SIM.do: autolocalizaci" "$ZIPDIR/SIM.log" && ! grep -qE '^r\([0-9]+\);' "$ZIPDIR/SIM.log"; then
+    if grep -q "SIMroot: autolocalizaci.*OK" "$ZIPDIR/SIM.log" && ! grep -qE '^r\([0-9]+\);' "$ZIPDIR/SIM.log"; then
         echo "  (2) carpeta de trabajo = simulador, sin profile.do: autolocalizacion y .ado visibles tras cd  OK"
     else
         echo "  (2) carpeta de trabajo = simulador, sin profile.do: FALLO; ver $ZIPDIR/SIM.log" >&2
@@ -176,7 +179,7 @@ if [[ "$MODE" == "zip" ]]; then
     # (3) idem CON profile.do (Stata arrancado en la carpeta: flujo del investigador)
     rm -f "$ZIPDIR/SIM.log"
     ( cd "$ZIPDIR" && SIM_SMOKE=1 "$STATA" -b do SIM.do < /dev/null )
-    if grep -q "SIM.do: autolocalizaci" "$ZIPDIR/SIM.log" && ! grep -qE '^r\([0-9]+\);' "$ZIPDIR/SIM.log"; then
+    if grep -q "SIMroot: autolocalizaci.*OK" "$ZIPDIR/SIM.log" && ! grep -qE '^r\([0-9]+\);' "$ZIPDIR/SIM.log"; then
         echo "  (3) carpeta de trabajo = simulador, con profile.do: OK"
     else
         echo "  (3) con profile.do: FALLO; ver $ZIPDIR/SIM.log" >&2; fallas=$((fallas+1))

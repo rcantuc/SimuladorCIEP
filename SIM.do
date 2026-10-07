@@ -11,47 +11,22 @@ capture log close _all
 ***
 **# 0. SET UP
 ***
-** 0.0 Autolocalización de la carpeta del simulador (v8.7.2) **
-* Los .ado, los schemes y los módulos viven en ESTA carpeta. Stata solo los ve si
-* la carpeta está en el adopath; "." (la carpeta de trabajo) no basta porque los
-* módulos hacen cd (Expenditure.do -> raw/ENIGH) y, desde una carpeta de trabajo
-* distinta, ni siquiera SIMroot ni scheme-ciep se encuentran. Sin profile.do ni
-* sysdir set SITE (ZIP descargado de GitHub, doble clic en SIM.do, Do-file Editor):
-*   (1) la carpeta de trabajo es el simulador (doble clic: Stata abre ahí; o cd previo);
-*   (2) SITE apunta al clon (sysprofile.do o `sysdir set SITE` de un investigador);
-*   si no, se detiene con la instrucción exacta. profile.do y los worktrees siguen
-*   igual: ahí la carpeta de trabajo ya es la raíz. *
-local simroot ""
-if fileexists(`"`c(pwd)'/SIMroot.ado"') & fileexists(`"`c(pwd)'/05_scripts/manifest.json"') local simroot `"`c(pwd)'"'
-else if fileexists(`"`c(sysdir_site)'SIMroot.ado"') & fileexists(`"`c(sysdir_site)'05_scripts/manifest.json"') local simroot = substr(`"`c(sysdir_site)'"', 1, length(`"`c(sysdir_site)'"') - 1)
-if `"`simroot'"' == "" {
-	display as error _newline "SIM.do: no encuentro la carpeta del Simulador Fiscal CIEP (la que contiene SIM.do, SIMroot.ado y 05_scripts/manifest.json)."
-	display as error `"  Carpeta de trabajo actual: `c(pwd)'"'
-	display as error "  Solución (cualquiera de las dos):"
-	display as error `"    a) En Stata: File > Change Working Directory... > elige la carpeta del simulador, y luego escribe:  do "SIM.do""'
-	display as error `"    b) En la ventana de comandos:  cd "<ruta de la carpeta del simulador>"   y luego   do "SIM.do""'
-	display as error "  (Si descargaste el ZIP de GitHub, la carpeta se llama SimuladorCIEP-master. Para salir de Stata: exit, clear)"
+** 0.0 Carpeta del simulador (v8.7.2; desde v8.8.0 la lógica vive en SIMroot v8.6) **
+* Huevo y gallina: SIMroot.ado no se puede ejecutar antes de encontrarlo. Aquí solo se
+* localiza la carpeta (la de trabajo —doble clic en SIM.do o cd previo— o el SITE del
+* sysprofile), se mete al adopath y se delega a SIMroot: validación, mensaje accionable,
+* set scheme ciep y prueba de humo (SIM_SMOKE=1 / opción smoke; test-maquina-virgen.sh --zip). *
+local simroot `"`c(pwd)'"'
+if !fileexists(`"`simroot'/SIMroot.ado"') local simroot = substr(`"`c(sysdir_site)'"', 1, length(`"`c(sysdir_site)'"') - 1)
+if !fileexists(`"`simroot'/SIMroot.ado"') {
+	display as error _newline `"SIM.do: no encuentro la carpeta del Simulador Fiscal CIEP (carpeta de trabajo actual: `c(pwd)')."'
+	display as error `"  Colócate en ella (File > Change Working Directory... o cd "<ruta>") y repite  do "SIM.do"  — README, «Inicio rápido para estudiantes»."'
 	exit 601
 }
 if !strpos(`"`c(adopath)'"', `"`simroot'"') quietly adopath ++ `"`simroot'"'	// los .ado se encuentran aunque un módulo haga cd
-SIMroot, dir(`"`simroot'"')								// RAIZ DEL PROYECTO
-set scheme ciep
+SIMroot, dir(`"`simroot'"') scheme						// RAIZ DEL PROYECTO: valida la carpeta, set scheme ciep, smoke
+if "`r(smoke)'" == "1" exit								// prueba de humo: termina sin correr el pipeline
 timer on 1
-
-* Prueba de humo (05_scripts/test-maquina-virgen.sh --zip): con la variable de entorno
-* SIM_SMOKE=1 solo se verifica que, desde otra carpeta de trabajo, los .ado del motor se
-* siguen encontrando (la clase de falla "command LIF is unrecognized" tras el cd de
-* Expenditure.do) y se termina SIN correr el pipeline. En uso normal no hace nada. *
-local smoke : environment SIM_SMOKE
-if "`smoke'" == "1" {
-	quietly cd `"${SIMROOT}/raw/temp"'
-	foreach a in SIMroot ensure_asset Poblacion PIBDeflactor SCN LIF PEF TasasEfectivas GastoPC perfilpc Simulador FiscalGap escalar {
-		which `a'
-	}
-	quietly cd `"${SIMROOT}"'
-	display as result _newline `"SIM.do: autolocalización OK — carpeta del simulador: ${SIMROOT}"'
-	exit
-}
 
 ** 0.1 Token del BIE/INEGI
 capture confirm file "${SIMROOT}/set_token.do"

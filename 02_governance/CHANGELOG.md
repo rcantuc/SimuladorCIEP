@@ -90,6 +90,22 @@ Diagnóstico completo (F0, tres anclas, siete corridas): `02_governance/historic
   `do` el eco del comando caía dentro del log (`.quietlylogoffoutput` como primera
   línea); con `run` o desde el Do-file Editor no. Ahora `do` y `run` producen los
   mismos bytes.
+- **`SIM.do` §0.0 → `SIMroot` v8.6 (opciones `scheme` y `smoke`).** La
+  autolocalización de v8.7.2 vivía entera en `SIM.do` (validación, mensaje de error,
+  `set scheme`, prueba de humo). Por el huevo y la gallina (`SIMroot.ado` no se puede
+  ejecutar antes de encontrarlo) en `SIM.do` queda solo lo irreducible: localizar la
+  carpeta (carpeta de trabajo o `SITE`), un error de dos líneas que apunta al README,
+  `adopath ++` y `SIMroot, dir() scheme`. `SIMroot` valida que la raíz sea la carpeta
+  completa del simulador (`SIM.do`, `SIMroot.ado`, `scheme-ciep.scheme`,
+  `05_scripts/manifest.json`; si no, la instrucción exacta y r(601)), hace `set scheme
+  ciep` y, con `smoke` o `SIM_SMOKE=1`, corre la prueba de humo y devuelve
+  `r(smoke)=1` para que `SIM.do` termine sin pipeline. `test-maquina-virgen.sh --zip`
+  sigue probando las tres vías vía `SIM.do`. Sin efecto en números.
+- **`ISR_Mod.do` no cambia en este release.** Sus factores `3.793/3.255`,
+  `0.241/0.553`, `4.176/2.781`, `1.675/1.525` y `.1492/.098` (de v7, marzo 2026)
+  se quedan tal cual; la decisión por fila se pospone a una auditoría de
+  descomposición de la brecha (base, tarifa, formalidad, precios), entregable
+  aparte. Solo afecta a las simulaciones web que cambian el ISR; no toca `output.txt`.
 
 ### Comandos
 
