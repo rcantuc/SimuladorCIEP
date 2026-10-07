@@ -152,6 +152,10 @@ Diagnóstico completo (F0, tres anclas, siete corridas): `02_governance/historic
   regeneración en vivo del mismo día y su `output.txt` salvo las dos líneas
   esperadas (línea 1 del fix `do`/`run` e `IVA:[…,23.1]`). Para la capa NL: ver el
   anexo del PR (actualizar la cita `ae624b98` y re-verificar D.1).
+  **Ancla definitiva (2026-10-07, commit `1ce94de`):** la receta se volvió a correr
+  desde estado cero tras mover `SIM.do` §0.0 a `SIMroot` v8.6 y con `ISR_Mod.do`
+  congelado: `output.txt` y los 5 sankeys **idénticos al byte** a la corrida anterior
+  (65 min); el json solo cambia `commit` y `anclado_el`.
 
 ## [v8.7.2] — 2026-10-06
 
