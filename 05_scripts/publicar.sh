@@ -11,6 +11,10 @@
 #      cada archivo declarado en 05_scripts/manifest-endpoint.toml, y Release remota
 #      completa (Gate 8: si la Release ya existe, trae todos los assets del manifest),
 #      y ancla de reproducibilidad declarada para la version (Gate 9).
+#      Fuente remota (2026-10-06, v8.8.0): si un asset del manifest NO esta en raw/ local pero
+#      la Release ya lo trae con el digest sha256 del manifest, cuenta como verificado y no se
+#      re-sube: la maquina de produccion ya no necesita raw/ completo (los Releases son la
+#      fuente de verdad). --poblar-raw baja a raw/ local los que falten, verificando SHA.
 #      Si algo falla, aborta ANTES de cualquier acción con efectos (push, Release, rsync).
 #   3. Si la etiqueta de versión no existe localmente, ofrece crearla (interactivo o por flag)
 #   4. Push del tag a origin si aún no está allá
@@ -45,6 +49,7 @@ FORCE=false
 CHECK_MODE=false
 SKIP_POST_VERIFY=false
 SOLO_ASSETS=false
+POBLAR_RAW=false
 
 # Colores (desactivados si stdout no es tty)
 if [[ -t 1 ]]; then
@@ -84,6 +89,8 @@ Opciones:
   --tag-message=MSG     Mensaje del tag inline (evita abrir editor)
   --endpoint-dry-run    Dry-run del endpoint (no toca el servidor)
   --skip-post-verify    Salta la verificación SHA-256 post-Release (descarga ~1.3 GB).
+  --poblar-raw          Descarga a raw/ local, desde la Release <VERSION>, los assets del manifest
+                        que falten (verifica SHA-256; no toca los presentes). Sin tag, sin push.
   --solo-assets         Reparación: sube a la Release <VERSION> ya existente los assets del
                         manifest que falten y verifica (sin tag, sin push, sin endpoint).
                         Para Releases creadas a mano desde el tag (incidente v8.7.1).
@@ -353,27 +360,25 @@ gate_release_remota() {
         return 0
     fi
     local remote
-    if ! remote="$(gh release view "$version" --json assets --jq '.assets[] | "\(.name)\t\(.size)"' 2>/dev/null)"; then
+    if ! gh release view "$version" >/dev/null 2>&1; then
         log_info "Gate 8: la Release $version aun no existe en GitHub (la creara publicar.sh con sus assets)."
         return 0
     fi
-    local missing="" name local_path sha
+    remote="$(remote_assets "$version")"
+    local missing="" name local_path sha why con_digest=0
     while IFS=$'\t' read -r name local_path sha; do
-        local rsize
-        rsize="$(awk -F'\t' -v n="$name" '$1==n{print $2}' <<< "$remote")"
-        if [[ -z "$rsize" ]]; then
-            missing+=$'\n'"  - $name (ausente en la Release)"
-        elif [[ -f "$local_path" ]] && [[ "$(stat -f%z "$local_path" 2>/dev/null || stat -c%s "$local_path")" != "$rsize" ]]; then
-            missing+=$'\n'"  - $name (tamano remoto $rsize != local)"
+        if ! why="$(remote_asset_ok "$name" "$sha" "$local_path" "$remote")"; then
+            missing+=$'\n'"  - $name ($why)"
         fi
+        [[ -n "$(awk -F'\t' -v n="$name" '$1==n{print $3}' <<< "$remote")" ]] && con_digest=$((con_digest+1))
     done < <(manifest_assets)
     if [[ -n "$missing" ]]; then
         log_error "Gate 8 FALLO: la Release $version existe pero no trae los assets del manifest:$missing"
-        log_error "        ensure_asset descargara de releases/download/$version/ y recibira 404."
+        log_error "        ensure_asset descargara de releases/download/$version/ y recibira 404 o un SHA que rechazara."
         log_error "        Reparacion: bash 05_scripts/publicar.sh $version --solo-assets"
         return 1
     fi
-    log_info "✓ Gate 8: Release $version remota completa — $(manifest_assets | wc -l | tr -d ' ') assets presentes con el tamano del manifest"
+    log_info "✓ Gate 8: Release $version remota completa — $(manifest_assets | wc -l | tr -d ' ') assets presentes; $con_digest con digest sha256 igual al manifest"
 }
 
 # Gate 9 — Ancla de reproducibilidad declarada (2026-10-06, v8.8.0). El output.txt
@@ -560,6 +565,28 @@ for a in m.get("assets", []):
 PYEOF
 }
 
+# Assets de la Release remota: "name<TAB>size<TAB>sha256" (digest que GitHub calcula
+# al subir; vacio en assets antiguos sin digest). Fuente de verdad del modo remoto.
+remote_assets() {
+    gh release view "$1" --json assets \
+        --jq '.assets[] | "\(.name)\t\(.size)\t\(.digest // "" | sub("^sha256:"; ""))"' 2>/dev/null
+}
+
+# ¿El asset remoto coincide con el manifest? 0 = si (digest igual; o, sin digest,
+# tamano igual), 1 = no. Imprime el motivo en caso negativo.
+remote_asset_ok() {
+    local name="$1" sha="$2" local_path="$3" remote="$4" rsize rsha
+    rsize="$(awk -F'\t' -v n="$name" '$1==n{print $2}' <<< "$remote")"
+    rsha="$(awk -F'\t' -v n="$name" '$1==n{print $3}' <<< "$remote")"
+    [[ -z "$rsize" ]] && { echo "ausente en la Release"; return 1; }
+    if [[ -n "$rsha" ]]; then
+        [[ "$rsha" == "$sha" ]] || { echo "digest remoto ${rsha:0:12}... != manifest ${sha:0:12}..."; return 1; }
+    elif [[ -f "$local_path" ]]; then
+        [[ "$(stat -f%z "$local_path" 2>/dev/null || stat -c%s "$local_path")" == "$rsize" ]] || { echo "tamano remoto $rsize != local"; return 1; }
+    fi
+    return 0
+}
+
 release_create() {
     local version="$1"
     log_step "GitHub Release: creación"
@@ -588,23 +615,35 @@ assets_upload() {
     local version="$1"
     log_step "GitHub Release: subida de assets del data sidecar"
 
-    # Pre-chequeo: TODOS los archivos locales deben existir antes de subir nada
-    local missing="" name local_path sha
+    # Assets ya presentes en la Release, con digest (idempotencia: no se re-suben).
+    local remote
+    remote="$(remote_assets "$version" || true)"
+
+    # Pre-chequeo (modo fuente remota, v8.8.0): cada asset del manifest debe estar
+    # en raw/ local O en la Release con el digest sha256 del manifest. Lo que falte
+    # en los dos lados aborta ANTES de subir nada; lo que solo esta remoto cuenta
+    # como verificado (para traerlo a raw/: --poblar-raw).
+    local missing="" remotos=0 name local_path sha why
     while IFS=$'\t' read -r name local_path sha; do
-        [[ -f "$local_path" ]] || missing+=$'\n'"  - $local_path"
+        [[ -f "$local_path" ]] && continue
+        if why="$(remote_asset_ok "$name" "$sha" "$local_path" "$remote")"; then
+            remotos=$((remotos+1))
+        else
+            missing+=$'\n'"  - $name ($local_path; Release: $why)"
+        fi
     done < <(manifest_assets)
     if [[ -n "$missing" ]]; then
-        abort "Assets declarados en manifest.json faltan localmente:$missing"
+        abort "Assets del manifest que no estan ni en raw/ local ni en la Release $version con su SHA:$missing"
     fi
-    log_info "✓ Todos los assets del manifest existen localmente"
-
-    # Assets ya presentes en la Release (idempotencia: no se re-suben)
-    local existing
-    existing="$(gh release view "$version" --json assets --jq '.assets[].name' 2>/dev/null || true)"
+    if (( remotos > 0 )); then
+        log_info "✓ $remotos asset(s) sin copia local verificados en la Release por digest sha256 (fuente remota; --poblar-raw los trae a raw/)"
+    else
+        log_info "✓ Todos los assets del manifest existen localmente"
+    fi
 
     local uploaded=0 skipped=0
     while IFS=$'\t' read -r name local_path sha; do
-        if grep -qxF "$name" <<< "$existing"; then
+        if [[ -n "$(awk -F'\t' -v n="$name" '$1==n{print $2}' <<< "$remote")" ]]; then
             skipped=$((skipped+1))
             continue
         fi
@@ -646,9 +685,19 @@ release_post_verify() {
     local tmp_dir
     tmp_dir="$(mktemp -d -t publicar-verify-XXXXXX)"
 
-    local drift=() verified=0 name local_path sha actual
+    # Digest sha256 que GitHub calcula al subir: verificacion sin descargar (v8.8.0).
+    # Solo se descarga el asset que no traiga digest (Releases antiguas).
+    local remote
+    remote="$(remote_assets "$version" || true)"
+
+    local drift=() verified=0 por_digest=0 name local_path sha actual rsha
     while IFS=$'\t' read -r name local_path sha; do
-        log_info "Verificando $name..."
+        rsha="$(awk -F'\t' -v n="$name" '$1==n{print $3}' <<< "$remote")"
+        if [[ -n "$rsha" ]]; then
+            if [[ "$rsha" == "$sha" ]]; then verified=$((verified+1)); por_digest=$((por_digest+1)); else drift+=("$name"); fi
+            continue
+        fi
+        log_info "Verificando $name (sin digest remoto: descarga)..."
         rm -f "$tmp_dir/$name"
         if ! gh release download "$version" --pattern "$name" --dir "$tmp_dir" 2>/dev/null; then
             log_warn "No se pudo descargar $name para verificación"
@@ -672,7 +721,7 @@ release_post_verify() {
         log_warn "La Release quedó publicada; investiga el drift antes de anunciar la versión."
         echo "$TIMESTAMP $version $short_head $(whoami) RELEASE-VERIFY DRIFT:$drift_list" >> "$log_file"
     else
-        log_info "✓ $verified assets verificados contra manifest.json"
+        log_info "✓ $verified assets verificados contra manifest.json ($por_digest por digest sha256 de GitHub, $((verified-por_digest)) por descarga)"
         echo "$TIMESTAMP $version $short_head $(whoami) RELEASE-VERIFY OK" >> "$log_file"
     fi
 }
@@ -686,6 +735,7 @@ while [[ $# -gt 0 ]]; do
         --endpoint-dry-run)     ENDPOINT_DRY_RUN=true; shift ;;
         --skip-post-verify)     SKIP_POST_VERIFY=true; shift ;;
         --solo-assets)          SOLO_ASSETS=true; shift ;;
+        --poblar-raw)           POBLAR_RAW=true; shift ;;
         --force)                FORCE=true; shift ;;
         -h|--help)              usage; exit 0 ;;
         v*)                     VERSION="$1"; shift ;;
@@ -742,6 +792,35 @@ if [[ "$CHECK_MODE" == "true" ]]; then
         exit 1
     fi
     log_info "--check: los 9 gates pasaron para $VERSION."
+    exit 0
+fi
+
+# ─── Modo --poblar-raw: traer a raw/ local los assets que falten, desde la Release ───
+if [[ "$POBLAR_RAW" == "true" ]]; then
+    log_step "Modo --poblar-raw: assets del manifest ausentes en raw/ local, desde la Release $VERSION"
+    require_gh
+    gh release view "$VERSION" >/dev/null 2>&1 || abort "La Release $VERSION no existe en GitHub."
+    tmp_dir="$(mktemp -d -t publicar-poblar-XXXXXX)"
+    bajados=0 presentes=0 fallas=0
+    while IFS=$'\t' read -r name local_path sha; do
+        if [[ -f "$local_path" ]]; then presentes=$((presentes+1)); continue; fi
+        log_info "Descargando $name -> $local_path ..."
+        rm -f "$tmp_dir/$name"
+        if ! gh release download "$VERSION" --pattern "$name" --dir "$tmp_dir" 2>/dev/null; then
+            log_error "  - $name: no se pudo descargar de la Release $VERSION"; fallas=$((fallas+1)); continue
+        fi
+        actual="$(shasum -a 256 "$tmp_dir/$name" | awk '{print $1}')"
+        if [[ "$actual" != "$sha" ]]; then
+            log_error "  - $name: SHA descargado ${actual:0:12}... != manifest ${sha:0:12}... (no se instala)"; fallas=$((fallas+1)); rm -f "$tmp_dir/$name"; continue
+        fi
+        mkdir -p "$(dirname "$local_path")"
+        mv "$tmp_dir/$name" "$local_path"
+        bajados=$((bajados+1))
+    done < <(manifest_assets)
+    rm -rf "$tmp_dir"
+    log_info "--poblar-raw: $bajados descargados y verificados, $presentes ya estaban, $fallas fallas."
+    (( fallas > 0 )) && exit 1
+    gate_raw_declarado || exit 1
     exit 0
 fi
 

@@ -125,6 +125,14 @@ Diagnóstico completo (F0, tres anclas, siete corridas): `02_governance/historic
 
 ### Institucional
 
+- **`publicar.sh` en modo fuente remota.** Ya no exige `raw/` local completo: un
+  asset del manifest ausente en disco pero presente en la Release con el digest
+  sha256 de GitHub igual al del manifest cuenta como verificado y no se re-sube;
+  solo aborta lo que falta en los dos lados. Gate 8 y la verificación post-Release
+  comparan ese digest (descargan solo assets sin digest, de Releases antiguas).
+  Nuevo `--poblar-raw`: baja a `raw/` los assets que falten, verificando SHA.
+  Motivo: la máquina de producción ya no tiene `raw/` completo; los Releases son
+  la fuente de verdad. Runbook §3.
 - **Ancla de reproducibilidad y receta canónica (`runbook-deploys-ciep.md` §9).**
   `05_scripts/ancla-reproducibilidad.json` declara versión, fecha de fuentes, Stata
   (19.5, 1 procesador), receta y SHA-256 de `output.txt` y de los 5

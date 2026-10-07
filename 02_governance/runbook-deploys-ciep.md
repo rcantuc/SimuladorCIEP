@@ -150,6 +150,21 @@ Antes de dar por cerrado cualquier release: `bash 05_scripts/publicar.sh vX.Y.Z 
 debe decir "los 9 gates pasaron" (el 8 consulta GitHub; el 9 exige el ancla de
 reproducibilidad de la versión, §9).
 
+**Modo fuente remota (desde v8.8.0).** `publicar.sh` ya no exige `raw/` local
+completo: la máquina de producción puede no tenerlo (los Releases son la fuente de
+verdad). Para cada asset del manifest, si no está en `raw/` local pero la Release
+ya lo trae con el **digest sha256 que GitHub calcula al subir** igual al del
+manifest, cuenta como verificado y no se re-sube; solo aborta lo que falta en los
+dos lados. El Gate 8 y la verificación post-Release también comparan ese digest
+(descargan únicamente los assets de Releases antiguas sin digest). Para volver a
+tener los archivos en la máquina:
+```bash
+bash 05_scripts/publicar.sh vX.Y.Z --poblar-raw     # baja a raw/ los assets del manifest que falten, verifica SHA; sin tag, sin push
+```
+Prueba 2026-10-06: 26/26 assets de v8.7.2 coinciden por digest con el manifest;
+un digest adulterado se detecta; `--poblar-raw` restauró `LIFs.xlsx` y
+`Diccionario.csv` con el SHA del manifest.
+
 **Secuencia completa de un release, de punta a punta** (la que falló en
 v8.6.1–v8.7.1 por saltarse el paso 4):
 
@@ -158,7 +173,7 @@ v8.6.1–v8.7.1 por saltarse el paso 4):
 | 1 | CHANGELOG + manifest (`version`, `release_tag`, `release_url_prefix`) en el PR | §1 pre-flight | autor del cambio |
 | 2 | Merge a `master` | GitHub | Ricardo |
 | 3 | Tag anotado + push del tag | §2 | Ricardo |
-| 4 | **Release + 27 assets + verificación SHA + endpoint** | `bash 05_scripts/publicar.sh vX.Y.Z` (en el clon de desarrollo, no en la Carpeta de investigadores) | Ricardo, **inmediatamente después del tag** |
+| 4 | **Release + 27 assets + verificación SHA + endpoint** | `bash 05_scripts/publicar.sh vX.Y.Z` (en el clon de desarrollo, no en la Carpeta de investigadores; sin `raw/` completo, los assets ya publicados se verifican por digest) | Ricardo, **inmediatamente después del tag** |
 | 5 | Prueba de la promesa pública | `bash 05_scripts/test-maquina-virgen.sh --download` (N/N assets desde la Release); en release de datos además `--reproducibilidad` (§9.3) | Ricardo |
 | 6 | VPS según tipo de release | §4 | Ricardo |
 | 7 | Gate humano | §6 | Ricardo |
