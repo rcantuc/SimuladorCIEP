@@ -20,6 +20,41 @@ Formato de cada entrada:
 
 Trabajo en `master` sin versión asignada.
 
+## [v8.8.1] — 2026-10-08
+
+Hotfix sin efecto en números: `output.txt` y los 5 `sankey-*.json` de v8.8.0 siguen
+siendo el ancla (`e40af4a6…`; receta §9.1 re-verificada el 2026-10-08 desde estado
+cero con el merge de cadencia de la capa NL: byte-idénticos). Detectado durante ese
+merge (`DIAGNOSTICO_NL.md`, entrada de cadencia v8.8.x, rama `feature/entidad-nl`).
+
+### Correcciones
+
+- **`05_scripts/manifest.json` v8.8.0 rompía `scalarjson.ado` y los tres nodos del
+  micrositio con `r(132) too few quotes`.** La regla `fuentes_congeladas_regla`
+  (nueva en v8.8.0) traía un acento grave (`` `global fuentes "<fecha>"` ``).
+  `scalarjson.ado` §1, `nodos/micrositio-pe.do`, `nodos/portada.do` y
+  `nodos/indicadores.do` leen el manifest línea por línea (`file read` +
+  ``regexm(`"`mline'"', …)``): al expandir el macro, el acento grave abre una
+  referencia a macro que se traga la comilla de cierre. Efecto: `SHRFSP.ado` →
+  `nodo-deuda.do` → `scalarjson` aborta `SIM.do` en §6 **en cualquier clon con
+  `../CIEP_Micrositios/Paquete Económico/public_html/nodos` presente** (el clon de
+  Dropbox; la receta del ancla no lo tenía y por eso el nodo se omitió "solo-repo" y
+  el ancla salió bien). Reproducido aislado: línea 2 del manifest OK, línea 6 r(132).
+  Dos cinturones: (1) **`scalarjson.ado` v1.0.1 y los tres nodos** quitan el acento
+  grave de cada línea leída **antes** de expandirla (`local mline : subinstr local
+  mline "`=char(96)'" "", all`, que opera sin expandir); en `scalarjson` también en
+  la enumeración de escalares vivos (`scalar list`). (2) **El texto del manifest ya
+  no lleva acentos graves** y lo declara como regla del archivo. Verificación: las
+  175 líneas del manifest v8.8.0 se leen sin error con ambas formas; `which
+  scalarjson` carga v1.0.1. `ensure_asset` no estaba afectado (parsea en Python).
+- **Ancla de reproducibilidad:** este hotfix no mueve números, así que
+  `05_scripts/ancla-reproducibilidad.json` conserva `version: v8.8.0` y el SHA
+  `e40af4a6…`. Para publicar v8.8.1 el Gate 9 exige `ancla.version == v8.8.1`:
+  re-anclar con `test-maquina-virgen.sh --reproducibilidad --assets-locales
+  --anclar` (esperado: SHAs idénticos; solo cambian `version`, `commit`,
+  `anclado_el`) o decidir que un patch sin cambio de números hereda el ancla
+  (ajuste de política del Gate 9, pendiente de Ricardo).
+
 ## [v8.8.0] — 2026-10-06
 
 Release de **datos** (fuentes INEGI/SHCP al 2026-10-06, `data_updated` =
