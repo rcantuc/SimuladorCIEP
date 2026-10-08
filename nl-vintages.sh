@@ -13,9 +13,10 @@
 #
 # Uso: ./nl-vintages.sh [2016 2018 ...]     (sin argumentos: los cinco)
 #      NLVINT_LIGHT=1 ./nl-vintages.sh       (desarrollo: modo ligero de nl-vintage.do; NO sellar para publicar)
+#      STATA=<ruta a stata-se|stata-mp> ... (NL-0.5.2: ejecutable de Stata; default StataMP 17. El ancla v8.8.0 se declaró con StataNow 19.5 SE y 1 procesador)
 set -u
 ROOT="$HOME/CIEP_Simuladores/SimuladorCIEP-NL"
-STATA="/Applications/Stata/StataMP.app/Contents/MacOS/stata-mp"
+STATA="${STATA:-/Applications/Stata/StataMP.app/Contents/MacOS/stata-mp}"   # override: STATA=/Applications/StataNow/StataSE.app/Contents/MacOS/stata-se (motor del ancla v8.8.0: StataNow 19.5 SE, 1 procesador)
 LOCAL_LOG="$ROOT/users/ricardo/nl-vintages.log"
 VINTAGES=("$@"); [[ ${#VINTAGES[@]} -eq 0 ]] && VINTAGES=(2016 2018 2020 2022 2024)
 LIGHT="${NLVINT_LIGHT:-0}"
@@ -28,7 +29,7 @@ log "== nl-vintages inicio: ${VINTAGES[*]} (light=$LIGHT) =="
 cd "$ROOT" || fail "no se pudo entrar a $ROOT"
 for y in "${VINTAGES[@]}"; do
   WRAP="$ROOT/users/ricardo/vintages/run-v$y.do"
-  { echo 'set linesize 200'; [[ "$LIGHT" == "1" ]] && echo 'global nlvint_light 1'; echo "do \"$ROOT/01_modulos/nl-assets/nl-vintage.do\" $y"; } > "$WRAP"
+  { echo 'capture set processors 1'; echo 'set linesize 200'; [[ "$LIGHT" == "1" ]] && echo 'global nlvint_light 1'; echo "do \"$ROOT/01_modulos/nl-assets/nl-vintage.do\" $y"; } > "$WRAP"
   rm -f "$ROOT/run-v$y.log"
   T0=$(date +%s)
   "$STATA" -b do "$WRAP"

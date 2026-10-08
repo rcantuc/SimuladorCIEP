@@ -1,4 +1,4 @@
-*! nl-identidad.do  v1.0.0 — identidad de producto de la capa NL (F1, NL-0.1.0)
+*! nl-identidad.do  v1.0.1 — identidad de producto de la capa NL (F1, NL-0.1.0; v1.0.1 NL-0.5.2: lectura de los manifiestos robusta a acentos graves)
 *
 * Define _NLidentidad: lee la versión del MOTOR desde 05_scripts/manifest.json
 * (la misma fuente de verdad que profile.do y scalarjson.ado) y la versión de
@@ -21,6 +21,9 @@ program define _NLidentidad, rclass
 	syntax [, MODulo(string) Quietly]
 	SIMroot
 	local q = char(34)
+	local bt = char(96)								// acento grave: se quita de cada línea leída ANTES de expandirla en regexm;
+													// si no, abre una referencia a macro que se traga la comilla de cierre ->
+													// r(132) "too few quotes" (manifest.json v8.8.0; hotfix v8.8.1 en el motor)
 
 	* Versión del motor (manifest.json; misma regex que scalarjson.ado) *
 	local vmotor ""
@@ -30,6 +33,7 @@ program define _NLidentidad, rclass
 		file open `mh' using `"${SIMROOT}/05_scripts/manifest.json"', read text
 		file read `mh' line
 		while r(eof) == 0 {
+			local line : subinstr local line "`bt'" "", all
 			if regexm(`"`line'"', `"`q'version`q'[ ]*:[ ]*`q'([^`q']*)`q'"') & "`vmotor'" == "" {
 				local vmotor = regexs(1)
 			}
@@ -48,6 +52,7 @@ program define _NLidentidad, rclass
 		file open `nh' using `"${SIMROOT}/01_modulos/nl-assets/nl-manifest.json"', read text
 		file read `nh' line
 		while r(eof) == 0 {
+			local line : subinstr local line "`bt'" "", all
 			if regexm(`"`line'"', `"`q'version_nl`q'[ ]*:[ ]*`q'([^`q']*)`q'"') & "`vnl'" == "" {
 				local vnl = regexs(1)
 			}

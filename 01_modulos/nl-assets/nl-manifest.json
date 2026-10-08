@@ -1,8 +1,8 @@
 {
   "producto": "Simulador Fiscal NL",
-  "version_nl": "NL-0.5.1",
-  "fecha": "2026-10-06",
-  "motor_sincronizado": "v8.7.2",
+  "version_nl": "NL-0.5.2",
+  "fecha": "2026-10-08",
+  "motor_sincronizado": "v8.8.1",
   "repositorio": "https://github.com/rcantuc/SimuladorCIEP/tree/feature/entidad-nl",
   "identidad_visual": {
     "canon": "100 % Consejo Nuevo León (nl-estilo.md §6, aprobado 2026-10-04; pasada del Manual de Identidad 2023 en NL-0.5.1, §6.6c); atribución intocable en contenido: leyenda de _NLidentidad + versión/enlace GitHub de la capa; en forma, lockup de co-branding (socio principal, marcas externas tecleadas)",

@@ -13,9 +13,10 @@
 #      01_modulos/nl-assets/bitacora-publicaciones.log (fecha, vintages, SHAs).
 #
 # Uso: ./actualizar-nl.sh [--offline]      (--offline: reutiliza la caché INEGI)
+#      STATA=<ruta a stata-se|stata-mp> ... (NL-0.5.2: ejecutable de Stata; default StataMP 17. El ancla v8.8.0 se declaró con StataNow 19.5 SE y 1 procesador)
 set -u
 ROOT="$HOME/CIEP_Simuladores/SimuladorCIEP-NL"
-STATA="/Applications/Stata/StataMP.app/Contents/MacOS/stata-mp"
+STATA="${STATA:-/Applications/Stata/StataMP.app/Contents/MacOS/stata-mp}"   # override: STATA=/Applications/StataNow/StataSE.app/Contents/MacOS/stata-se (motor del ancla v8.8.0: StataNow 19.5 SE, 1 procesador)
 NODOS="$ROOT/users/ricardo/nodos"
 LOCAL_LOG="$ROOT/users/ricardo/actualizar-nl.log"
 BITACORA="$ROOT/01_modulos/nl-assets/bitacora-publicaciones.log"

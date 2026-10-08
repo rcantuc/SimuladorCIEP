@@ -82,6 +82,7 @@ tempname nh
 file open `nh' using `"`site'/01_modulos/nl-assets/nl-manifest.json"', read text
 file read `nh' line
 while r(eof) == 0 {
+	local line : subinstr local line "`=char(96)'" "", all		// acento grave: evita r(132) al expandir (NL-0.5.2; cf. hotfix v8.8.1)
 	if regexm(`"`line'"', `"`q'checksum_stata`q'[ ]*:[ ]*([0-9]+)"') & "`chk_decl'" == "" local chk_decl = regexs(1)
 	if regexm(`"`line'"', `"`q'filelen`q'[ ]*:[ ]*([0-9]+)"') & "`len_decl'" == "" local len_decl = regexs(1)
 	file read `nh' line
