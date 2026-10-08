@@ -81,12 +81,15 @@ comando publicado. El Gate 4 verifica que todos existan.
       sin `GASTOS`/`INGRESOS`/`PIBY` (el gate de contenido de la Fase
       3b-ter lo detiene: 15 llaves obligatorias); (3) `set linesize 255`
       antes del `log using` (ya está en `SIM.do`) o en batch, para que
-      Stata no parta las líneas con `> `. Receta en batch, sin tocar tu
-      `SIM.do`:
+      Stata no parta las líneas con `> `. **La corrida que se publica es la de
+      la receta canónica de §9** (estado cero, fuentes congeladas, StataNow 19.5,
+      `set processors 1`): su SHA debe coincidir con
+      `05_scripts/ancla-reproducibilidad.json`. Para una corrida rápida de
+      desarrollo, sin tocar tu `SIM.do`, usa `SIM-local.do` (§9.5):
       ```bash
-      sed -e 's|^//global nographs|global nographs|' -e 's|^//global output|global output|' SIM.do > /tmp/SIM_default.do
-      printf 'sysdir set SITE "%s/"\nadopath ++SITE\ncd "%s"\ndo /tmp/SIM_default.do\n' "$PWD" "$PWD" > /tmp/wrap.do
-      /Applications/Stata/StataMP.app/Contents/MacOS/stata-mp -b do /tmp/wrap.do   # ~4 min con §3 Hogares apagado
+      printf 'global nographs "nographs"\nglobal output "output"\n' > SIM-local.do   # toggles personales, gitignored
+      printf 'capture set processors 1\nsysdir set SITE "%s/"\nadopath ++SITE\ncd "%s"\ndo SIM.do\n' "$PWD" "$PWD" > /tmp/wrap.do
+      /Applications/StataNow/StataSE.app/Contents/MacOS/stata-se -b do /tmp/wrap.do   # ~11 min con cachés
       grep -c '^>' users/ricardo/output.txt      # debe ser 0
       ```
 - [ ] Cruce de cifras hecho (si el release corrige datos): las series nuevas
@@ -129,7 +132,7 @@ El sitio enlaza al Release tag, que debe existir primero.
 bash 05_scripts/publicar.sh vX.Y.Z
 ```
 
-Hace: gates 1-8 → Release en GitHub + **los 26 assets del data sidecar**
+Hace: gates 1-9 → Release en GitHub + **los 27 assets del data sidecar**
 (todos, en cada versión: el Release es inmutable y autocontenido, código +
 datos) → verificación SHA-256 post-Release → rsync al endpoint con pin de
 versión inyectado. **Es idempotente**: si falla a medias (p. ej. SSH),
@@ -144,7 +147,23 @@ mano o interrumpida:
 bash 05_scripts/publicar.sh vX.Y.Z --solo-assets   # sube lo que falta y verifica SHA; sin tag, sin push, sin endpoint
 ```
 Antes de dar por cerrado cualquier release: `bash 05_scripts/publicar.sh vX.Y.Z --check`
-debe decir "los 8 gates pasaron" (el 8 consulta GitHub).
+debe decir "los 9 gates pasaron" (el 8 consulta GitHub; el 9 exige el ancla de
+reproducibilidad de la versión, §9).
+
+**Modo fuente remota (desde v8.8.0).** `publicar.sh` ya no exige `raw/` local
+completo: la máquina de producción puede no tenerlo (los Releases son la fuente de
+verdad). Para cada asset del manifest, si no está en `raw/` local pero la Release
+ya lo trae con el **digest sha256 que GitHub calcula al subir** igual al del
+manifest, cuenta como verificado y no se re-sube; solo aborta lo que falta en los
+dos lados. El Gate 8 y la verificación post-Release también comparan ese digest
+(descargan únicamente los assets de Releases antiguas sin digest). Para volver a
+tener los archivos en la máquina:
+```bash
+bash 05_scripts/publicar.sh vX.Y.Z --poblar-raw     # baja a raw/ los assets del manifest que falten, verifica SHA; sin tag, sin push
+```
+Prueba 2026-10-06: 26/26 assets de v8.7.2 coinciden por digest con el manifest;
+un digest adulterado se detecta; `--poblar-raw` restauró `LIFs.xlsx` y
+`Diccionario.csv` con el SHA del manifest.
 
 **Secuencia completa de un release, de punta a punta** (la que falló en
 v8.6.1–v8.7.1 por saltarse el paso 4):
@@ -154,8 +173,8 @@ v8.6.1–v8.7.1 por saltarse el paso 4):
 | 1 | CHANGELOG + manifest (`version`, `release_tag`, `release_url_prefix`) en el PR | §1 pre-flight | autor del cambio |
 | 2 | Merge a `master` | GitHub | Ricardo |
 | 3 | Tag anotado + push del tag | §2 | Ricardo |
-| 4 | **Release + 26 assets + verificación SHA + endpoint** | `bash 05_scripts/publicar.sh vX.Y.Z` (en el clon de desarrollo, no en la Carpeta de investigadores) | Ricardo, **inmediatamente después del tag** |
-| 5 | Prueba de la promesa pública | `bash 05_scripts/test-maquina-virgen.sh --download` (N/N assets desde la Release) | Ricardo |
+| 4 | **Release + 27 assets + verificación SHA + endpoint** | `bash 05_scripts/publicar.sh vX.Y.Z` (en el clon de desarrollo, no en la Carpeta de investigadores; sin `raw/` completo, los assets ya publicados se verifican por digest) | Ricardo, **inmediatamente después del tag** |
+| 5 | Prueba de la promesa pública | `bash 05_scripts/test-maquina-virgen.sh --download` (N/N assets desde la Release); en release de datos además `--reproducibilidad` (§9.3) | Ricardo |
 | 6 | VPS según tipo de release | §4 | Ricardo |
 | 7 | Gate humano | §6 | Ricardo |
 | 8 | Pull en la Carpeta de investigadores (Dropbox) y aviso a la capa NL (merge de cadencia) | manual | Ricardo |
@@ -368,6 +387,127 @@ re-desplegar), no rollback.
 
 ---
 
+## 9. Reproducibilidad del ancla (`output.txt` canónico) — desde v8.8.0
+
+La paridad al byte de `users/ricardo/output.txt` es el contrato de verificación de
+cada release. Hasta v8.7.2 el "ancla" (`ae624b98…`) era el output de un estado
+congelado de una máquina (cachés del 22-sep anteriores a `perfilpc`, descargas de
+ese día), no de una receta: ninguna máquina limpia podía reproducirlo
+(diagnóstico F0, 2026-10-06, en el PR de v8.8.0). Desde v8.8.0 el ancla nace de una
+receta y se verifica con ella.
+
+### 9.1 La receta canónica
+
+`output.txt` canónico = el que produce `SIM.do` (PE 2027) con este `SIM-local.do`:
+
+```stata
+global nographs "nographs"
+global output "output"
+global update "update"             // estado cero: también borra master/<anioenigh>/*_pc y deducciones
+global fuentes "AAAA-MM-DD"        // fuentes vivas congeladas = fecha del release de datos (manifest.fuentes_congeladas_al)
+```
+
+desde **estado cero** (sin `master/`, `users/<id>/`, `raw/temp/`; `raw/` solo con
+los assets del Release), en **StataNow 19.5** con **`set processors 1`** (`capture`: en SE no aplica y ya es 1), en batch
+(`stata-se -b do wrap.do`, con `cd` a la raíz y `sysdir set SITE`). Lo que fija cada
+pieza, medido en F0:
+
+| Pieza | Por qué | Si se cambia |
+|---|---|---|
+| Fuentes congeladas (`fuentes-<fecha>.zip`: ~540 csv del BIE, tabulados CSI, 10 csv de la SHCP) | INEGI revisa el PIB y la SHCP agrega meses: entre el 22-sep y el 5-oct cambiaron INCD, INGRESOSTEF, DEUDAPARAM | otra fecha = otro `output.txt` (release de datos) |
+| Estado cero | `master/<anioenigh>/*_pc` y `deducciones` solo se creaban si faltaban: el ancla vieja arrastraba cachés pre-`perfilpc` | cachés viejos = números viejos sin aviso |
+| StataNow 19.5 | Stata 17 vs 19.5 difieren en 52 de ~5,000 valores (xtile/probit/Mata) y Stata 17 no descarga de la SHCP | otra versión = otro `output.txt` |
+| `set processors 1` | MP suma en paralelo: `collapse (sum)` depende del número de hilos; con 1, MP = SE al bit | solo mueve los `sankey-*.json` (16 dígitos), no `output.txt` |
+| Batch `do` + `quietly { log using }` | con `do` el eco del comando caía dentro del log (`.quietlylogoffoutput`) y con `run` no | desde v8.8.0 `do` y `run` dan los mismos bytes |
+| `bootstrap 1`, PE 2027, IVAT y escalares de `SIM.do` | parámetros del motor | cambio de código → re-anclar |
+
+Ruido de último bit que **no** se fija por construcción (sí por la receta):
+`sort` rompe empates con un RNG propio (`sortseed`) que avanza con cada `sort` de la
+sesión, así que `collapse (sum)` devuelve bits distintos según qué corrió antes;
+`output.txt` (3 decimales) lo absorbe; los sankeys a 16 dígitos no. Por eso el
+ancla de los sankeys solo vale bajo la receta exacta (misma versión, misma ruta de
+ejecución). Mejora futura anotada: `sort …, stable` antes de cada `collapse`/`egen sum`.
+
+### 9.2 El ancla
+
+`05_scripts/ancla-reproducibilidad.json`: versión, fecha de fuentes, Stata
+(versión, edición, procesadores), receta, SHA-256 de `output.txt` y de los 5
+`sankey-*.json`, commit y fecha. **Solo la escribe la receta**
+(`test-maquina-virgen.sh --reproducibilidad --anclar`): nunca se edita a mano ni se
+copia de una corrida de escritorio. El Gate 9 de `publicar.sh` exige que el ancla sea
+de la versión que se publica y apunte a la misma fecha de fuentes que el manifest.
+
+### 9.3 Verificar y re-anclar
+
+```bash
+# Verificar (máquina virgen o tu clon; ~80 min; sin red si --assets-locales y los 27 assets están en raw/)
+bash 05_scripts/test-maquina-virgen.sh --reproducibilidad --assets-locales
+bash 05_scripts/test-maquina-virgen.sh --reproducibilidad                  # tras publicar: assets desde la Release
+
+# Re-anclar (SOLO en release de datos o cambio de código que mueve números; nunca en silencio)
+bash 05_scripts/test-maquina-virgen.sh --reproducibilidad --assets-locales --anclar
+git add 05_scripts/ancla-reproducibilidad.json 02_governance/CHANGELOG.md
+```
+
+Política: el ancla se re-declara **en cada release de datos** (nueva fecha de
+fuentes, nueva ENIGH, nuevo Paquete) y cuando un cambio de código mueva números
+(`perfilpc`, parámetros de `SIM.do`…). Cada re-anclaje lleva en el CHANGELOG el
+delta por familia de llaves (`INCD`, `APORT*`, `PROY`, `INGRESOSTEF`, `DEUDAPARAM`…)
+y su causa (revisión de fuente vs. cambio de código). Si `--reproducibilidad` falla
+sin que haya release de datos ni cambio de código, es un bug: no se re-ancla, se
+investiga.
+
+### 9.4 Congelar fuentes nuevas (release de datos)
+
+1. Corre `SIM.do` con `global update` y `global fuentes` **vacío** (descarga en vivo,
+   StataNow 19.5): deja en `raw/temp/` los csv del BIE (+ `.meta`), los `CSI_*.xlsx`
+   y los csv de la SHCP.
+2. Empaca: `cd raw/temp && zip -r ../fuentes/fuentes-AAAA-MM-DD.zip AccesoBIE/*.csv AccesoBIE/*.meta SCN/ "Datos Abiertos"/*.csv`
+   (~70 MB). El zip es un asset más: `shasum -a 256`, `stat -f%z`, entrada en el
+   manifest (`name`, `local_path raw/fuentes/…`, `sha256`, `size_bytes`),
+   `fuentes_congeladas_al` y `data_updated` = esa fecha. Las fechas anteriores se
+   quedan en el manifest mientras alguna versión publicada las use.
+3. `SIM.do` §0.4: `global fuentes "AAAA-MM-DD"` sigue comentado en el repo (vacío =
+   en vivo); la receta lo activa vía `SIM-local.do`.
+4. Re-ancla (§9.3) y documenta el delta. Cierre del IVA (§9.6).
+
+Las tres guardas del motor (`AccesoBIE` → usa `raw/temp/AccesoBIE/<serie>.csv` +
+`.meta`; `DatosAbiertos` → modo `local`; `SCN` → no re-baja `tabulados_CSI.zip`)
+solo actúan con `$fuentes` definido; sin él, el motor es byte-idéntico al de antes.
+Con fuentes congeladas no hace falta token del BIE ni red (salvo los assets).
+
+### 9.5 `SIM-local.do`: el panel local
+
+`SIM.do` §0.5 ejecuta `SIM-local.do` (raíz del simulador, **gitignored**) si existe,
+después de los defaults de §0.4 y antes de usarlos. Ahí viven los toggles de quien
+corre (`output`, `bootstrap`, `nographs`, `update`, `fuentes`, `hasta` = paro temprano
+tras la sección 1-7, `textbook`, `export`); plantilla en `SIM-local.template.do`.
+Sin el archivo, `SIM.do` es byte-idéntico. Reglas: (a) solo globals de §0.4 — un
+parámetro del modelo (IVAT, escalares) es cambio del motor y va por commit; (b) el
+`SIM.do` versionado y el de la Carpeta de investigadores se quedan limpios
+(`git diff SIM.do` vacío); (c) la receta canónica es un `SIM-local.do` concreto
+(§9.1), así que "lo que corre el gate" y "lo que corre Ricardo" difieren solo en ese
+archivo.
+
+### 9.6 Reglas de calibración del IVA (desde v8.8.0)
+
+- **Informalidad/evasión (`IVAT[13]`, `SIM.do` §4.5)** es la fila "Informalidad %"
+  que imprime `Expenditure.do` §5: (IVA potencial ENIGH − IVA observado)/potencial,
+  ambos en % del PIB del año de la ENIGH. **Se recalibra y documenta cada vez que
+  cambie lo que mueve ese cierre** — los perfiles (`perfilpc`, nueva ENIGH) o las
+  fuentes (PIB del SCN, recaudación observada) — y **nunca se hereda a ciegas**: al
+  congelar fuentes nuevas, se lee la fila y, si cambia el redondeo a un decimal, se
+  commitea con su causa (2026-10-06: 22.96 % → 23.14 % por la revisión del PIB 2024
+  de INEGI; perfiles 5.443 → 5.441).
+- **Brecha simulación vs. proyección LIF (`IVA_Mod.do`)**: el IVA simulado del año
+  del Paquete (potencial ENIGH a precios del Paquete × (1 − informalidad)) **no se
+  fuerza** a la recaudación proyectada de la LIF. La diferencia se declara como
+  residuo documentado (CHANGELOG, y `IVA_Mod.do` la imprime: "brecha … pp (residuo
+  documentado)"); nunca se absorbe con factores silenciosos como el `4.249/4.495`
+  que v8.8.0 retiró (calibración ad hoc del Paquete 2022).
+
+---
+
 ## Gotchas de deploy (los que ya mordieron)
 
 | Gotcha | Regla |
@@ -379,4 +519,6 @@ re-desplegar), no rollback.
 | Todo lo creado post-normalización | Nace ilegible para Apache: chmod explícito siempre. |
 | SSH Cloudways | Whitelist por IPv4 — ver §3. |
 | Mtime del default | Si el gate de frescura aborta: correr SIM.do completo primero (no tocar el mtime a mano). |
+| Paridad medida contra un estado, no contra una receta | El ancla sale SOLO de `test-maquina-virgen.sh --reproducibilidad --anclar` (§9); un `output.txt` de escritorio que "coincide" no prueba nada si sus cachés no nacieron del código vigente (F0 2026-10-06: `ae624b98` arrastraba `master/2024/*_pc` pre-`perfilpc`). |
+| `global update` en Stata 17 | No descarga de la SHCP (r(603)); la regeneración viva exige StataNow 19.5 o fuentes congeladas (`global fuentes`). |
 | Release creada a mano desde el tag (sin assets) | NUNCA: el manifest ya apunta a ella y `ensure_asset` da 404 en toda máquina sin `raw/`. Siempre `publicar.sh vX.Y.Z`; si ya pasó, `publicar.sh vX.Y.Z --solo-assets` (incidente v8.6.1/v8.7.0/v8.7.1, 2026-10-05). |

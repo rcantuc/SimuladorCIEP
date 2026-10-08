@@ -11,47 +11,22 @@ capture log close _all
 ***
 **# 0. SET UP
 ***
-** 0.0 Autolocalización de la carpeta del simulador (v8.7.2) **
-* Los .ado, los schemes y los módulos viven en ESTA carpeta. Stata solo los ve si
-* la carpeta está en el adopath; "." (la carpeta de trabajo) no basta porque los
-* módulos hacen cd (Expenditure.do -> raw/ENIGH) y, desde una carpeta de trabajo
-* distinta, ni siquiera SIMroot ni scheme-ciep se encuentran. Sin profile.do ni
-* sysdir set SITE (ZIP descargado de GitHub, doble clic en SIM.do, Do-file Editor):
-*   (1) la carpeta de trabajo es el simulador (doble clic: Stata abre ahí; o cd previo);
-*   (2) SITE apunta al clon (sysprofile.do o `sysdir set SITE` de un investigador);
-*   si no, se detiene con la instrucción exacta. profile.do y los worktrees siguen
-*   igual: ahí la carpeta de trabajo ya es la raíz. *
-local simroot ""
-if fileexists(`"`c(pwd)'/SIMroot.ado"') & fileexists(`"`c(pwd)'/05_scripts/manifest.json"') local simroot `"`c(pwd)'"'
-else if fileexists(`"`c(sysdir_site)'SIMroot.ado"') & fileexists(`"`c(sysdir_site)'05_scripts/manifest.json"') local simroot = substr(`"`c(sysdir_site)'"', 1, length(`"`c(sysdir_site)'"') - 1)
-if `"`simroot'"' == "" {
-	display as error _newline "SIM.do: no encuentro la carpeta del Simulador Fiscal CIEP (la que contiene SIM.do, SIMroot.ado y 05_scripts/manifest.json)."
-	display as error `"  Carpeta de trabajo actual: `c(pwd)'"'
-	display as error "  Solución (cualquiera de las dos):"
-	display as error `"    a) En Stata: File > Change Working Directory... > elige la carpeta del simulador, y luego escribe:  do "SIM.do""'
-	display as error `"    b) En la ventana de comandos:  cd "<ruta de la carpeta del simulador>"   y luego   do "SIM.do""'
-	display as error "  (Si descargaste el ZIP de GitHub, la carpeta se llama SimuladorCIEP-master. Para salir de Stata: exit, clear)"
+** 0.0 Carpeta del simulador (v8.7.2; desde v8.8.0 la lógica vive en SIMroot v8.6) **
+* Huevo y gallina: SIMroot.ado no se puede ejecutar antes de encontrarlo. Aquí solo se
+* localiza la carpeta (la de trabajo —doble clic en SIM.do o cd previo— o el SITE del
+* sysprofile), se mete al adopath y se delega a SIMroot: validación, mensaje accionable,
+* set scheme ciep y prueba de humo (SIM_SMOKE=1 / opción smoke; test-maquina-virgen.sh --zip). *
+local simroot `"`c(pwd)'"'
+if !fileexists(`"`simroot'/SIMroot.ado"') local simroot = substr(`"`c(sysdir_site)'"', 1, length(`"`c(sysdir_site)'"') - 1)
+if !fileexists(`"`simroot'/SIMroot.ado"') {
+	display as error _newline `"SIM.do: no encuentro la carpeta del Simulador Fiscal CIEP (carpeta de trabajo actual: `c(pwd)')."'
+	display as error `"  Colócate en ella (File > Change Working Directory... o cd "<ruta>") y repite  do "SIM.do"  — README, «Inicio rápido para estudiantes»."'
 	exit 601
 }
 if !strpos(`"`c(adopath)'"', `"`simroot'"') quietly adopath ++ `"`simroot'"'	// los .ado se encuentran aunque un módulo haga cd
-SIMroot, dir(`"`simroot'"')								// RAIZ DEL PROYECTO
-set scheme ciep
+SIMroot, dir(`"`simroot'"') scheme						// RAIZ DEL PROYECTO: valida la carpeta, set scheme ciep, smoke
+if "`r(smoke)'" == "1" exit								// prueba de humo: termina sin correr el pipeline
 timer on 1
-
-* Prueba de humo (05_scripts/test-maquina-virgen.sh --zip): con la variable de entorno
-* SIM_SMOKE=1 solo se verifica que, desde otra carpeta de trabajo, los .ado del motor se
-* siguen encontrando (la clase de falla "command LIF is unrecognized" tras el cd de
-* Expenditure.do) y se termina SIN correr el pipeline. En uso normal no hace nada. *
-local smoke : environment SIM_SMOKE
-if "`smoke'" == "1" {
-	quietly cd `"${SIMROOT}/raw/temp"'
-	foreach a in SIMroot ensure_asset Poblacion PIBDeflactor SCN LIF PEF TasasEfectivas GastoPC perfilpc Simulador FiscalGap escalar {
-		which `a'
-	}
-	quietly cd `"${SIMROOT}"'
-	display as result _newline `"SIM.do: autolocalización OK — carpeta del simulador: ${SIMROOT}"'
-	exit
-}
 
 ** 0.1 Token del BIE/INEGI
 capture confirm file "${SIMROOT}/set_token.do"
@@ -82,15 +57,39 @@ global bootstrap 1									// RÉPLICAS BOOTSTRAP de Simulador (PerfilesSim, §6
 
 //global rawwip "rawwip"							// RAW EN WORK-IN-PROGRESS
 //global update "update"							// UPDATE BASES DE DATOS
+//global fuentes "2026-10-06"						// FUENTES VIVAS CONGELADAS (INEGI BIE/CSI y SHCP) a esa fecha: asset fuentes-AAAA-MM-DD.zip del release (runbook-deploys-ciep.md §9); vacío = descargas en vivo
+//global output "output"							// ARCHIVO DE SALIDA (WEB)
+//global hasta "3"									// PARO TEMPRANO: termina al cerrar la sección indicada (1-7)
+
+** 0.5 Panel local (v8.8.0): SIM-local.do, NO versionado (gitignored), sobreescribe
+* los toggles de 0.4 de quien corre (output, bootstrap, paros tempranos...). Sin el
+* archivo, el comportamiento es byte-idéntico. Plantilla: SIM-local.template.do. *
+capture confirm file "${SIMROOT}/SIM-local.do"
+if _rc == 0 run "${SIMROOT}/SIM-local.do"
+
 if "$update" == "update" {
 	! rm -r "${SIMROOT}/raw/temp/"
+	* Los cachés micro de master/<anioenigh>/ solo se crean si faltan (Expenditure.do
+	* §2-3): sin esto, update los heredaba de versiones anteriores del código (v8.8.0). *
+	foreach f in deducciones consumption_categ_pc consumption_categ_iva_pc consumption_categ_ieps_pc {
+		capture erase "${SIMROOT}/master/`=anioenigh'/`f'.dta"
+	}
+}
+if "$fuentes" != "" {
+	ensure_asset "fuentes-${fuentes}.zip"
+	capture mkdir "${SIMROOT}/raw/temp"
+	quietly cd "${SIMROOT}/raw/temp"
+	quietly unzipfile "${SIMROOT}/raw/fuentes/fuentes-${fuentes}.zip", replace
+	quietly cd "${SIMROOT}"
+	noisily di in g "Fuentes vivas congeladas al " in y "$fuentes" in g ": AccesoBIE, SCN y DatosAbiertos leen raw/temp/ sin descargar."
 }
 
-//global output "output"							// ARCHIVO DE SALIDA (WEB)
 if "$output" != "" {
 	set linesize 255								// output.txt es un log: sin esto Stata parte las líneas largas con "> " y el PHP del sitio las lee mal (deploy v8.4, 2026-10-01)
-	quietly log using `"${SIMROOT}/users/$id/output.txt"', replace text name(output)
-	quietly log off output
+	quietly {										// bloque: con `do` el eco del comando ya no cae dentro del log (paridad do/run, v8.8.0)
+		log using `"${SIMROOT}/users/$id/output.txt"', replace text name(output)
+		log off output
+	}
 }
 
 
@@ -98,6 +97,7 @@ if "$output" != "" {
 **# 1. DEMOGRAFÍA
 ***
 noisily Poblacion, anioi(`=aniovp') aniofinal(2070) $textbook $nographs
+if "$hasta" == "1" exit								// paro temprano (0.4 / SIM-local.do): termina tras la sección 1
 
 
 **/
@@ -137,6 +137,7 @@ noisily PIBDeflactor, aniovp(`=aniovp') aniomax(2032) $textbook $nographs $updat
 
 ** 2.5 Sistema de Cuentas Nacionales (sin inputs)
 noisily SCN, anio(`=aniovp') $textbook $nographs $update
+if "$hasta" == "2" exit
 
 
 
@@ -155,6 +156,7 @@ noisily run `"${SIMROOT}/01_modulos/Households.do"' `=anioPE'
 ** 3.3 Perfiles de la política económica actual (Paquete Económico)
 noisily di _newline in g "Actualizando: " in y "perfiles`anio'.dta"
 noisily run "${SIMROOT}/01_modulos/PerfilesSim.do" `=anioPE'
+if "$hasta" == "3" exit
 
 
 
@@ -282,7 +284,7 @@ matrix IVAT = (16 \     ///  1  Tasa general
 	3  \     							/// 10  Otros, idem
 	2  \     							/// 11  Transporte local, idem
 	3  \     							/// 12  Transporte foraneo, idem
-	23.0)   							//  13  Evasion e informalidad IVA, input[0-100]
+	23.1)   							//  13  Evasion e informalidad IVA, input[0-100]: recalibrado 2026-10-06 (Expenditure.do §5 "Informalidad %"; runbook-deploys-ciep.md §9.6)
 
 
 ** 4.6 Parámetros: IEPS **
@@ -317,6 +319,7 @@ if "`cambioiva'" == "1" {
 
 ** 4.7 Tasas Efectivas */
 noisily TasasEfectivas, anio(`=anioPE') enigh
+if "$hasta" == "4" exit
 
 
 
@@ -378,6 +381,7 @@ escalar pctpib gascuidados =   0.047   		// Gasto en cuidados
 
 ** 5.2 Gasto per cápita **
 noisily GastoPC educacion salud pensiones energia resto transferencias, aniope(`=anioPE') aniovp(`=aniovp')
+if "$hasta" == "5" exit
 
 
 
@@ -438,6 +442,7 @@ forvalues k = 2026(1)2032 {
 set scheme deuda
 *scalar tasaEfectiva = 6.1544
 noisily SHRFSP, anio(`=anioPE') ultanio(2002) $nographs $update $textbook
+if "$hasta" == "6" exit
 
 
 
@@ -500,6 +505,7 @@ save `"${SIMROOT}/users/$id/aportaciones.dta"', replace
 if "$textbook" == "textbook" {
 	noisily scalarlatex, log(perfiles) alt(perf)
 }
+if "$hasta" == "7" exit
 
 
 
