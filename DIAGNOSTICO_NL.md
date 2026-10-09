@@ -1107,3 +1107,21 @@ Toda corrida de la capa con el motor congelado lleva **los dos candados**: `glob
 
 `FederacionNLQuintiles.do` v0.1.0 (capa de datos del Sankey por quintil, sesión C1; ver borrador de la entrada NL-0.6.0 en `diag-sankey-nl-2026-10-08/C1/`) corrió con ambos globals; procedencia `fuentes_congeladas_motor = 2026-10-06`, `fuentes_congeladas_capa = 2026-10-08`. Cero descargas en la sesión (timestamps de `raw/temp/AccesoBIE/` del motor 6-oct 17:01–17:16; propios 8-oct 13:37–13:38).
 
+
+### 6. Compuerta Q.2 de `FederacionNLQuintiles.do` — causa por impuesto (resolución de Ricardo, 2026-10-08)
+
+Σ `<X>_Sim×factor` (objeto de incidencia `aportaciones.dta`) no iguala `Rec<X>nl` (`TasasEfectivasMicro`, Σ `<X>` de `perfiles2027.dta`). Diagnóstico (`C1/q2-diag.do/.log`): (i) Σ `<X>` es **idéntica al peso** en `perfiles2027.dta` y en `aportaciones.dta`, nacional y NL (misma muestra de 308,598 / 12,586 personas, mismo `factor`): no es base ni muestra; (ii) `Simulador … bootstrap(1)` no remuestrea (pesos originales): no es bootstrap; (iii) el cociente `<X>_Sim/<X>` es **el mismo número en cada persona** (sd 0; 0 personas con `X≠0` y `X_Sim=0` o viceversa) y coincide nacional y NL, porque `TasasEfectivas.ado` §7.1 hace `Distribucion <X>_Sim, relativo(<X>) macro(<X>PIB/100×pibY)`: `<X>_Sim = <X> × (<X>PIB/100 × pibY)/ILIF_<X>`, con `<X>PIB` = parámetro del Paquete de `SIM.do` §4.1 **declarado con 3 decimales de % del PIB** y `<X>` = ILIF 2027 en pesos (`PerfilesSim.do`, `Distribucion` a `LIF.dta`). La brecha es, impuesto por impuesto, el **redondeo del parámetro `*PIB` a 3 decimales** (`pibY` 2027 = 39,419,415.3 mdp):
+
+| Impuesto | `<X>PIB` §4.1 (% PIB) | ILIF 2027 (mdp) | ILIF en % PIB | `<X>PIB·pibY/100` (mdp) | cociente `X_Sim/X` | reldif |
+|---|---:|---:|---:|---:|---:|---:|
+| ISRAS | 3.855 | 1,519,750.0 | 3.85533 | 1,519,618.5 | 0.999913 | 8.7e-05 |
+| ISRPF | 0.244 | 96,352.8 | 0.24443 | 96,183.4 | 0.998241 | 1.8e-03 |
+| ISRPM | 4.244 | 1,672,872.5 | 4.24378 | 1,672,960.0 | 1.000052 | 5.2e-05 |
+| CUOTAS | 1.782 | 702,564.7 | 1.78228 | 702,454.0 | 0.999842 | 1.6e-04 |
+| IVA | 4.485 | 1,768,017.3 | 4.48514 | 1,767,960.8 | 0.999968 | 3.2e-05 |
+| IEPSNP | 0.735 | 289,706.8 | 0.73493 | 289,732.7 | 1.000089 | 8.9e-05 |
+| IEPSP | 1.366 | 538,549.2 | 1.36620 | 538,469.2 | 0.999851 | 1.5e-04 |
+| ISAN | 0.044 | 17,426.1 | 0.04421 | 17,344.5 | 0.995320 | 4.7e-03 |
+| IMPORT | 0.590 | 232,511.2 | 0.58984 | 232,574.6 | 1.000272 | 2.7e-04 |
+
+El máximo es **ISAN 4.7e-3**: el parámetro 0.044 % frente a 0.04421 % del ILIF (17,426.1 mdp); le siguen ISR PF 1.8e-3 (0.244 vs 0.24443 %) e importaciones 2.7e-4; los grandes (ISR asalariados, ISR PM, IVA) quedan en 3e-5 a 9e-5 porque el redondeo a milésimas pesa menos en montos de 4 % del PIB. Consecuencias: (a) las **participaciones por quintil son invariantes** a este factor (es una constante nacional por impuesto, se cancela en el cociente); (b) los **montos** de los flujos vienen del contrato (`Part<X>nl × LIF/ILIF`), no de Σ `<X>_Sim`; (c) la compuerta se mantiene **declarada** (tolerancia 1e-2, reldif por impuesto en `procedencia.compuertas.Q2_coherencia`) y aborta si el pipeline cambiara la mecánica del reescalado. Es el mismo fenómeno ya registrado en `statajson_entidad-nl.json` → `presentacion.brechas_residuales_causa` ("numerador con montos LIF (divSIM) vía Distribucion vs parámetros de SIM.do §4.1"); no se corrige en la capa (el motor no se toca).
