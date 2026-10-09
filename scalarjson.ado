@@ -1,4 +1,4 @@
-*! version 1.0.0  Exporta un nodo (escalares + serie) a JSON — hermano de scalarlatex (v8.2.0)
+*! version 1.0.1  Exporta un nodo (escalares + serie) a JSON — hermano de scalarlatex (v8.2.0; v1.0.1 v8.8.1: lectura del manifest robusta a acentos graves)
 *
 * REGLA DURA (governance): scalarjson es un exportador HERMANO DE SOLO LECTURA.
 * NO modifica scalarlatex.ado, NI el registro $scalarlatex_reg, NI el baseline
@@ -72,6 +72,10 @@ program define scalarjson
 	}
 	local faltantes ""
 	local q = char(34)
+	local bt = char(96)								// acento grave (v1.0.1): se quita de cada linea leida ANTES de expandirla
+													// en regexm/word; si no, abre una referencia a macro que se traga la
+													// comilla de cierre -> r(132) "too few quotes" (manifest.json v8.8.0, linea
+													// fuentes_congeladas_regla). `: subinstr local` opera sin expandir.
 
 	*** 1 PROCEDENCIA: manifiesto (unica fuente de verdad de version/corte) ***
 	local mversion ""
@@ -83,6 +87,7 @@ program define scalarjson
 		file open `mh' using `"`manifest'"', read text
 		file read `mh' mline
 		while r(eof) == 0 {
+			local mline : subinstr local mline "`bt'" "", all
 			if regexm(`"`mline'"', `""version"[ ]*:[ ]*"([^"]*)""') & "`mversion'" == "" {
 				local mversion = regexs(1)
 			}
@@ -117,6 +122,7 @@ program define scalarjson
 	file open `sh' using `"`scalarstata'"', read text
 	file read `sh' line
 	while r(eof) == 0 {
+		local line : subinstr local line "`bt'" "", all
 		local nm = word(`"`line'"', 1)
 		capture confirm name `nm'
 		if _rc == 0 & `: word count `nm'' == 1 {

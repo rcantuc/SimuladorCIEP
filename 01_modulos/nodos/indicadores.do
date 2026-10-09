@@ -122,6 +122,7 @@ if _rc == 0 {
 	file open `mh' using `"`manifest'"', read text
 	file read `mh' mline
 	while r(eof) == 0 {
+		local mline : subinstr local mline "`=char(96)'" "", all		// acento grave: sin esto la expansion abre una referencia a macro -> r(132) (v8.8.1)
 		if regexm(`"`mline'"', `""version"[ ]*:[ ]*"([^"]*)""') & "`mversion'" == "" {
 			local mversion = regexs(1)
 		}
