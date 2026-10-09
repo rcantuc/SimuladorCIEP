@@ -104,7 +104,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
     </div>
     <div class="ctl" id="ctl-medida">
       <label for="medida">Medida (macro)</label>
-      <select id="medida"><option value="nominal">Pesos corrientes (mmdp)</option><option value="real">Pesos constantes (mmdp)</option><option value="pibe">% del PIBE de NL</option></select>
+      <select id="medida"><option value="nominal">Pesos corrientes (mdp)</option><option value="real">Pesos constantes (mdp)</option><option value="pibe">% del PIBE de NL</option></select>
     </div>
     <div class="ctl">
       <label>Escenario ISR PM</label>
@@ -185,6 +185,12 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
   var f0 = new Intl.NumberFormat('es-MX', { maximumFractionDigits: 0 });
   var f1 = new Intl.NumberFormat('es-MX', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
   var f2 = new Intl.NumberFormat('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  /* Unidad macro de TODA la página, en un solo lugar: los montos del canal están en pesos; ÷1e6 = mdp (millones), ÷1e9 = mmdp
+     (miles de millones). NL-0.6.0 corrige el hallazgo heredado (C1): se dividía entre 1e6 y se etiquetaba "mmdp". La
+     autocomprobación del pie exige que la etiqueta corresponda al divisor y que el selector de medida diga lo mismo. */
+  var MACRO_DIV = 1e6, MACRO_UNIT = 'mdp';
+  var UNIT_OK = ({ '1000000': 'mdp', '1000000000': 'mmdp' })[String(MACRO_DIV)] === MACRO_UNIT && Array.prototype.every.call(document.querySelectorAll('#medida option'), function (op) { return op.value === 'pibe' || op.text.indexOf('(' + MACRO_UNIT + ')') >= 0; });
+  function mdp(x) { return f1.format(x / MACRO_DIV) + ' ' + MACRO_UNIT; }
   var MES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
   var A = D.anual, SF = D.subfondos || [], M = D.mensual || [], PART = D.participaciones || [], PA = D.participacionesAnual || [];
   var byPA = {}; PA.forEach(function (r) { byPA[r.anio] = r; });
@@ -259,9 +265,9 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
 
   /* ---------- registro: cómo se lee una cifra del canal (sin recálculo: las transformaciones ya vienen en el JSON) ---------- */
   function suf() { return S.reg === 'pc' ? 'Pc' : (S.medida === 'nominal' ? '' : (S.medida === 'real' ? 'R' : 'PIBE')); }
-  function unit() { return S.reg === 'pc' ? 'MXN por habitante' : (S.medida === 'pibe' ? '% del PIBE de NL' : 'mmdp' + (S.medida === 'real' ? ' de ' + (D.anio_vp || '') : '')); }
-  function fmtv(v) { if (v === null || v === undefined) return '—'; if (S.reg === 'pc') return f0.format(v); if (S.medida === 'pibe') return f2.format(v); return f1.format(v / 1e6); }
-  function scaleV(v) { if (v === null || v === undefined) return null; return (S.reg === 'macro' && S.medida !== 'pibe') ? v / 1e6 : v; }
+  function unit() { return S.reg === 'pc' ? 'MXN por habitante' : (S.medida === 'pibe' ? '% del PIBE de NL' : MACRO_UNIT + (S.medida === 'real' ? ' de ' + (D.anio_vp || '') : '')); }
+  function fmtv(v) { if (v === null || v === undefined) return '—'; if (S.reg === 'pc') return f0.format(v); if (S.medida === 'pibe') return f2.format(v); return f1.format(v / MACRO_DIV); }
+  function scaleV(v) { if (v === null || v === undefined) return null; return (S.reg === 'macro' && S.medida !== 'pibe') ? v / MACRO_DIV : v; }
   function get(r, base) { var v = r[base + suf()]; return (v === undefined) ? null : v; }
   function band(r, base) { return [get(r, base + 'S1'), get(r, base + 'S0'), get(r, base + 'S3')]; }
   function bandTxt(b) { return '[' + fmtv(Math.min(b[0], b[2])) + ', ' + fmtv(Math.max(b[0], b[2])) + ']'; }
@@ -292,7 +298,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
   function cards() {
     var r = byY[S.anio]; if (!r) return;
     var v = vals(r), i = escIdx();
-    var macro = function (base, idx) { var x = base === 'recibe' ? (v.obs ? r.nlTot : r.recibePaq) : base === 'paga' ? (v.obs ? r['paga' + ['S1', 'S0', 'S3'][idx]] : r['pagaLif' + ['S1', 'S0', 'S3'][idx]]) : (v.obs ? r['balanza' + ['S1', 'S0', 'S3'][idx]] : r['balanzaPaq' + ['S1', 'S0', 'S3'][idx]]); var pib = base === 'recibe' ? (v.obs ? r.nlTotPIBE : r.recibePaqPIBE) : base === 'paga' ? (v.obs ? r['paga' + ['S1', 'S0', 'S3'][idx] + 'PIBE'] : r['pagaLif' + ['S1', 'S0', 'S3'][idx] + 'PIBE']) : (v.obs ? r['balanza' + ['S1', 'S0', 'S3'][idx] + 'PIBE'] : r['balanzaPaq' + ['S1', 'S0', 'S3'][idx] + 'PIBE']); return (x === null || x === undefined ? '—' : f1.format(x / 1e6) + ' mmdp') + (pib === null || pib === undefined ? '' : ' · ' + f2.format(pib) + ' % del PIBE'); };
+    var macro = function (base, idx) { var x = base === 'recibe' ? (v.obs ? r.nlTot : r.recibePaq) : base === 'paga' ? (v.obs ? r['paga' + ['S1', 'S0', 'S3'][idx]] : r['pagaLif' + ['S1', 'S0', 'S3'][idx]]) : (v.obs ? r['balanza' + ['S1', 'S0', 'S3'][idx]] : r['balanzaPaq' + ['S1', 'S0', 'S3'][idx]]); var pib = base === 'recibe' ? (v.obs ? r.nlTotPIBE : r.recibePaqPIBE) : base === 'paga' ? (v.obs ? r['paga' + ['S1', 'S0', 'S3'][idx] + 'PIBE'] : r['pagaLif' + ['S1', 'S0', 'S3'][idx] + 'PIBE']) : (v.obs ? r['balanza' + ['S1', 'S0', 'S3'][idx] + 'PIBE'] : r['balanzaPaq' + ['S1', 'S0', 'S3'][idx] + 'PIBE']); return (x === null || x === undefined ? '—' : mdp(x)) + (pib === null || pib === undefined ? '' : ' · ' + f2.format(pib) + ' % del PIBE'); };
     var tag = v.obs ? '' : '<span class="tag ' + (r.tipoRecibe === 'parcial' ? 'par' : 'paq') + '">' + (r.tipoRecibe === 'parcial' ? 'en curso' : 'año de política') + '</span>';
     var h = '';
     h += '<div class="card recibe"><div class="k">Recibe NL de la Federación · ' + S.anio + tag + '</div><div class="v">' + fmtv(v.recibe) + '</div><div class="b">' + esc(unit()) + (S.reg === 'pc' ? '' : '') + '</div><div class="n">' + macro('recibe', 1) + '</div><div class="d">Nacional por habitante: ' + (v.recibeNacPc === null ? '—' : f0.format(v.recibeNacPc) + ' MXN') + (v.lugar ? ' · NL lugar ' + v.lugar + ' de 32' : '') + (v.partRecibe ? ' · ' + f2.format(v.partRecibe) + ' % del gasto federalizado' : '') + (v.recibeParcial !== null ? ' · acumulado observado ' + fmtv(v.recibeParcial) : '') + '</div></div>';
@@ -409,7 +415,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
     function link(x0, y0, h0, x1, y1, h1, color, title) { var c = (x0 + x1) / 2; return '<path class="link" fill="' + color + '" d="M' + (x0 + nodeW) + ',' + y0 + ' C' + c + ',' + y0 + ' ' + c + ',' + y1 + ' ' + x1 + ',' + y1 + ' L' + x1 + ',' + (y1 + h1) + ' C' + c + ',' + (y1 + h1) + ' ' + c + ',' + (y0 + h0) + ' ' + (x0 + nodeW) + ',' + (y0 + h0) + ' Z"><title>' + esc(title) + '</title></path>'; }
     var o = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Sankey de flujos entre los residentes de Nuevo León y la Federación">';
     var yin = mid.y0, yout = mid.y0;
-    var val = function (x) { return pc ? f0.format(x / den) + ' MXN/hab' : f1.format(x / 1e6) + ' mmdp'; };
+    var val = function (x) { return pc ? f0.format(x / den) + ' MXN/hab' : mdp(x); };
     left.forEach(function (n) { o += link(n.x, n.y0, n.h, mid.x, yin, n.h, TK.paga, n.lab + ' → Federación: ' + val(n.v)); yin += n.h; });
     right.forEach(function (n) { o += link(mid.x, yout, n.h, n.x, n.y0, n.h, n.neto ? TK.nl : (n.devol ? shade(TK.paga, 0.45) : TK.recibe), 'Federación → ' + n.lab + ': ' + val(n.v)); yout += n.h; });
     function labelY(nodes) { var last = -1e9; nodes.forEach(function (n) { var yc = n.y0 + n.h / 2 + 4; if (yc - last < 14) yc = last + 14; n.ly = yc; last = yc; }); }
@@ -449,7 +455,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
       if (it.lo !== null && it.hi !== null) { var yl = y(Math.max(it.lo, it.hi)), yh = y(Math.min(it.lo, it.hi)); o += '<rect x="' + (x0 - 3) + '" y="' + yl + '" width="' + (w + 6) + '" height="' + Math.max(yh - yl, 1) + '" fill="var(--banda)"/>'; }
       var fill = it.obs ? 'var(--nl)' : (it.par ? 'var(--proy)' : 'var(--paquete)');
       var yv = y(it.v), y0 = y(0);
-      o += '<rect x="' + x0 + '" y="' + Math.min(yv, y0) + '" width="' + w + '" height="' + Math.max(Math.abs(y0 - yv), 1) + '" fill="' + fill + '"><title>' + esc(it.anio + ' (' + it.tipo + '): S0 ' + fmtv(it.v * (S.reg === 'macro' && S.medida !== 'pibe' ? 1e6 : 1)) + ' · [S1, S3] ' + fmtv(Math.min(it.lo, it.hi) * (S.reg === 'macro' && S.medida !== 'pibe' ? 1e6 : 1)) + ' – ' + fmtv(Math.max(it.lo, it.hi) * (S.reg === 'macro' && S.medida !== 'pibe' ? 1e6 : 1))) + '</title></rect>';
+      o += '<rect x="' + x0 + '" y="' + Math.min(yv, y0) + '" width="' + w + '" height="' + Math.max(Math.abs(y0 - yv), 1) + '" fill="' + fill + '"><title>' + esc(it.anio + ' (' + it.tipo + '): S0 ' + fmtv(it.v * (S.reg === 'macro' && S.medida !== 'pibe' ? MACRO_DIV : 1)) + ' · [S1, S3] ' + fmtv(Math.min(it.lo, it.hi) * (S.reg === 'macro' && S.medida !== 'pibe' ? MACRO_DIV : 1)) + ' – ' + fmtv(Math.max(it.lo, it.hi) * (S.reg === 'macro' && S.medida !== 'pibe' ? MACRO_DIV : 1))) + '</title></rect>';
       if (n <= 30 || k % 2 === 0) o += '<text class="tick" x="' + (left + k * bw + bw / 2) + '" y="' + (top + ph + 16) + '" text-anchor="middle">' + it.anio + '</text>';
     });
     o += '<line class="zero" x1="' + left + '" x2="' + (left + pw) + '" y1="' + y(0) + '" y2="' + y(0) + '"/>';
@@ -471,7 +477,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
     items.forEach(function (it, k) {
       var x0 = left + k * bw + bw * 0.16, w = bw * 0.68, acc = 0;
       var ordered = it.parts.slice().sort(function (a, b) { return b.v - a.v; }); /* mayor abajo, como el motor */
-      ordered.forEach(function (p) { if (p.v === 0) return; var y1 = y(acc + p.v), y0 = y(acc); o += '<rect x="' + x0 + '" y="' + y1 + '" width="' + w + '" height="' + Math.max(y0 - y1, 0.5) + '" fill="' + colors[p.k] + '"' + (it.tipo === 'parcial' ? ' fill-opacity=".55"' : '') + '><title>' + esc(it.anio + ' · ' + labs[p.k] + ': ' + fmtv(p.v * (S.reg === 'macro' && S.medida !== 'pibe' ? 1e6 : 1)) + (it.tipo === 'parcial' ? ' (parcial)' : '')) + '</title></rect>'; acc += p.v; });
+      ordered.forEach(function (p) { if (p.v === 0) return; var y1 = y(acc + p.v), y0 = y(acc); o += '<rect x="' + x0 + '" y="' + y1 + '" width="' + w + '" height="' + Math.max(y0 - y1, 0.5) + '" fill="' + colors[p.k] + '"' + (it.tipo === 'parcial' ? ' fill-opacity=".55"' : '') + '><title>' + esc(it.anio + ' · ' + labs[p.k] + ': ' + fmtv(p.v * (S.reg === 'macro' && S.medida !== 'pibe' ? MACRO_DIV : 1)) + (it.tipo === 'parcial' ? ' (parcial)' : '')) + '</title></rect>'; acc += p.v; });
       if (it.hi !== null && it.lo !== null) { var yl = y(Math.max(it.lo, it.hi)), yh = y(Math.min(it.lo, it.hi)); o += '<rect x="' + (x0 + w + 2) + '" y="' + yl + '" width="4" height="' + Math.max(yh - yl, 1) + '" fill="var(--nl)" fill-opacity=".6"><title>' + esc(it.anio + ': banda total [S1, S3]') + '</title></rect>'; }
       if (n <= 30 || k % 2 === 0) o += '<text class="tick" x="' + (left + k * bw + bw / 2) + '" y="' + (top + ph + 16) + '" text-anchor="middle">' + it.anio + '</text>';
     });
@@ -527,7 +533,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
     rows.forEach(function (r) { o += '<text class="tick" x="' + xs(r.anio) + '" y="' + (top + ph + 16) + '" text-anchor="middle">' + r.anio + '</text>'; });
     /* cortes de vintage: línea vertical donde cambia la ENIGH asignada */
     rows.forEach(function (r, i) { if (i === 0) return; var a = byPA[r.anio], b = byPA[rows[i - 1].anio]; if (a && b && a.enigh !== b.enigh) { var cx = xs(r.anio) - (xs(r.anio) - xs(rows[i - 1].anio)) / 2; o += '<line x1="' + cx + '" x2="' + cx + '" y1="' + top + '" y2="' + (top + ph) + '" stroke="var(--mut)" stroke-dasharray="3 3"/><text class="lab2" x="' + (cx + 3) + '" y="' + (top + 10) + '">ENIGH ' + a.enigh + (a.sello ? ' ⚠' : '') + '</text>'; } });
-    IMP.forEach(function (k) { var d = '', st = false; rows.forEach(function (r) { var v = scaleV(r['paga' + k + s]); if (v === null || v === undefined) return; d += (st ? 'L' : 'M') + xs(r.anio).toFixed(1) + ',' + y(v).toFixed(1); st = true; o += '<circle cx="' + xs(r.anio) + '" cy="' + y(v) + '" r="3" fill="' + CI[k] + '"' + (r.tipoPaga === 'parcial' ? ' fill-opacity=".5"' : '') + '><title>' + esc(r.anio + ' · ' + (ILAB[k] || k) + ': ' + fmtv(v * (S.reg === 'macro' && S.medida !== 'pibe' ? 1e6 : 1)) + ' ' + unit() + ' · ' + notaPart(r.anio)) + '</title></circle>'; }); o += '<path d="' + d + '" fill="none" stroke="' + CI[k] + '" stroke-width="2"/>'; });
+    IMP.forEach(function (k) { var d = '', st = false; rows.forEach(function (r) { var v = scaleV(r['paga' + k + s]); if (v === null || v === undefined) return; d += (st ? 'L' : 'M') + xs(r.anio).toFixed(1) + ',' + y(v).toFixed(1); st = true; o += '<circle cx="' + xs(r.anio) + '" cy="' + y(v) + '" r="3" fill="' + CI[k] + '"' + (r.tipoPaga === 'parcial' ? ' fill-opacity=".5"' : '') + '><title>' + esc(r.anio + ' · ' + (ILAB[k] || k) + ': ' + fmtv(v * (S.reg === 'macro' && S.medida !== 'pibe' ? MACRO_DIV : 1)) + ' ' + unit() + ' · ' + notaPart(r.anio)) + '</title></circle>'; }); o += '<path d="' + d + '" fill="none" stroke="' + CI[k] + '" stroke-width="2"/>'; });
     var last = rows[rows.length - 1], labs = IMP.map(function (k) { var v = scaleV(last['paga' + k + s]); return v === null || v === undefined ? null : { k: k, y: y(v) }; }).filter(Boolean).sort(function (a, b) { return a.y - b.y; }); var lastY = -1e9; labs.forEach(function (l) { if (l.y - lastY < 14) l.y = lastY + 14; lastY = l.y; o += '<text class="lab" x="' + (left + pw + 8) + '" y="' + (l.y + 4) + '" style="fill:' + CI[l.k] + '">' + esc(corto(ILAB[l.k] || l.k, 34)) + '</text>'; });
     o += '<line class="zero" x1="' + left + '" x2="' + (left + pw) + '" y1="' + y(0) + '" y2="' + y(0) + '"/>';
     o += '<text class="lab2" x="' + left + '" y="' + (H - 6) + '">' + esc('Pagan los residentes de NL por impuesto · ' + unit() + ' · participación del vintage ENIGH asignado a cada año × recaudación observada; las líneas punteadas marcan el cambio de vintage') + '</text></svg>';
@@ -562,7 +568,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
     document.getElementById('nota-anio').textContent = 'Año seleccionado: ' + S.anio + (v.obs ? ' (observado)' : ' (' + v.etiqueta + ')') + ' · ' + notaPart(S.anio) + '.';
     if (S.vista === 'balanza') {
       c1t = 'Ida y vuelta: lo que pagan los neoloneses y lo que regresa como gasto federalizado — ' + S.anio + (v.obs ? '' : ' (' + v.etiqueta + ')');
-      c1cap = 'Sankey de flujos identificables, navegable por año (selector arriba). El nodo "' + (PR.nodo_saldo || 'aportación neta en flujos identificables') + '" cierra la cuenta: es lo que NL aporta a la Federación por encima de lo que recibe por estos fondos. Lado recibe: observado del año (EOFP). Lado paga: ' + notaPart(S.anio) + '. Registro: ' + (S.reg === 'pc' ? 'MXN por habitante (los anchos no cambian)' : 'mmdp') + '.';
+      c1cap = 'Sankey de flujos identificables, navegable por año (selector arriba). El nodo "' + (PR.nodo_saldo || 'aportación neta en flujos identificables') + '" cierra la cuenta: es lo que NL aporta a la Federación por encima de lo que recibe por estos fondos. Lado recibe: observado del año (EOFP). Lado paga: ' + notaPart(S.anio) + '. Registro: ' + (S.reg === 'pc' ? 'MXN por habitante (los anchos no cambian)' : MACRO_UNIT) + '.';
       c1data = function () { return { cols: colsPaga(), rows: rowsPaga(), extra: 'tabla de conciliación del lado paga', rowClass: function (x) { return x.cls || ''; } }; }; c1name = 'balanza-sankey';
       if (S.modo === 'grafica') { var sk = sankey('c1', r); legend('c1', [['Impuestos pagados por residentes de NL', 'background:' + TK.paga], ['Gasto federalizado pagado a NL', 'background:' + TK.recibe], [cap1(PR.nodo_saldo || 'aportación neta'), 'background:' + TK.nl], ['Banda [S1, S3] del ISR PM', 'background:var(--banda);border:1px dashed var(--nl)']]); }
       c2t = 'La aportación neta de Nuevo León en el tiempo'; c2cap = 'Recibe − paga por año (barra = S0; franja = banda [S1, S3]). Observado hasta el último año con ambos lados completos; después, Paquete (PEF/PPEF vs. LIF/ILIF) y año en curso atenuados. Negativo = NL aporta más de lo que recibe.';
@@ -614,6 +620,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
       chk('partRecibeNL', C.partRecibeNL, r.nlTot / r.nacTot * 100);
       chk('recibeNacpc', C.recibeNacpc, r.nacTot / r.pobNac);
       if (!(r.pagaS1 <= r.pagaS0 && r.pagaS0 <= r.pagaS3)) bad.push('orden S1 ≤ S0 ≤ S3'); else ok.push('S1 ≤ S0 ≤ S3');
+      (UNIT_OK ? ok : bad).push('etiqueta macro "' + MACRO_UNIT + '" = divisor ' + MACRO_DIV.toExponential(0) + ' (página y selector)');
       var pIsr = PART.filter(function (x) { return x.impuesto === 'ISRPM'; })[0];
       if (pIsr) { chk('Part ISRPM = recNL/recNac', pIsr.part, pIsr.recNL / pIsr.recNac); }
       if (byPA[C.anioRefFed]) { var pr = byPA[C.anioRefFed], vv = byV[pr.enigh]; if (vv) chk('participacionesAnual[ref].ISRPM = vintages[' + pr.enigh + '].ISRPM', pr.ISRPM, vv.ISRPM); chk('paga ISRPM(ref) = part(ref) × recaudación nacional', r.pagaISRPM, pr.ISRPM * r.recNacObsISRPM); }
