@@ -1,4 +1,4 @@
-*! nl-bie.do  v1.0.0 — acceso a series INEGI por área geográfica para la capa NL (NL-0.2.0)
+*! nl-bie.do  v1.1.0 — acceso a series INEGI por área geográfica para la capa NL (NL-0.2.0; v1.1.0 NL-0.6.0: candado $nlfuentes, lee nl-fuentes-<fecha>.zip sin descargar)
 *
 * POR QUÉ EXISTE (DIAGNOSTICO_NL.md, anexo PIBDeflactorNL §0.2):
 *   El BIE (versión 2025) exporta cada INDICADOR con las 33 áreas geográficas
@@ -25,6 +25,9 @@
 *   _NLinpc <serie>, ESTructura(id) NOMbre(var) [OFFline]
 *       Deja en memoria: anio mes <var> (mensual); mismos r().
 *   offline: usa la caché si existe en lugar de descargar (desarrollo).
+*   global nlfuentes "AAAA-MM-DD" (NL-0.6.0, nl-fuentes.do): los dos comandos leen
+*       el estado empacado en nl-assets/nl-fuentes-<fecha>.zip y NUNCA descargan;
+*       vacío = comportamiento idéntico al anterior.
 *
 * PROCEDENCIA: cada descarga guarda <cache>.csv y <cache>.meta (título, fecha
 * de consulta INEGI, último periodo) en raw/temp/AccesoBIE/; el driver registra
@@ -38,6 +41,10 @@ if _rc {
 
 * Las funciones Python viven en nl_bie.py (mismo directorio): el codigo Python
 * definido en un do-file no es visible desde programas; se importa como modulo. *
+
+* Candado de fuentes propias de la capa (_NLfuentes, NL-0.6.0) *
+SIMroot
+run "${SIMROOT}/01_modulos/nl-assets/nl-fuentes.do"
 
 
 * Lee <cache>.meta (clave=valor) a locals nl_* *
@@ -73,6 +80,15 @@ program define _NLbie, rclass
 	local descargar = 1
 	capture confirm file `"`csv'"'
 	if _rc == 0 & ("`offline'" != "" | "${NLBIE_SESION_`indicador'}" == "1") local descargar = 0
+	_NLfuentes
+	if r(congelado) {
+		capture confirm file `"`csv'"'
+		if _rc {
+			di as err "nl-bie: nl-fuentes-${nlfuentes}.zip no trae nl_`indicador'.csv; con fuentes congeladas no se descarga."
+			exit 601
+		}
+		local descargar = 0
+	}
 	if `descargar' {
 		python: import sys, importlib; sys.path.insert(0, r"""${SIMROOT}/01_modulos/nl-assets"""); import nl_bie; _r = importlib.reload(nl_bie); nl_bie.nlbie_fetch("`indicador'", r"""`csv'""", r"""`meta'""")
 		global NLBIE_SESION_`indicador' "1"
@@ -151,6 +167,15 @@ program define _NLinpc, rclass
 	if "`offline'" != "" {
 		capture confirm file `"`csv'"'
 		if _rc == 0 local usecache = 1
+	}
+	_NLfuentes
+	if r(congelado) {
+		capture confirm file `"`csv'"'
+		if _rc {
+			di as err "nl-inpc: nl-fuentes-${nlfuentes}.zip no trae nl_inpc_`serie'.csv; con fuentes congeladas no se descarga."
+			exit 601
+		}
+		local usecache = 1
 	}
 	if `usecache' {
 		_NLmeta `"`meta'"'

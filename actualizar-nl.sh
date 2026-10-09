@@ -14,6 +14,9 @@
 #
 # Uso: ./actualizar-nl.sh [--offline]      (--offline: reutiliza la caché INEGI)
 #      STATA=<ruta a stata-se|stata-mp> ... (NL-0.5.2: ejecutable de Stata; default StataMP 17. El ancla v8.8.0 se declaró con StataNow 19.5 SE y 1 procesador)
+#      FUENTES=AAAA-MM-DD ...               (NL-0.5.2: congela las series del MOTOR al asset fuentes-<fecha>.zip)
+#      NLFUENTES=AAAA-MM-DD ...             (NL-0.6.0: congela las series PROPIAS de la capa — nl_*.csv, INPC NL, EOPF — al
+#                                             asset nl-assets/nl-fuentes-<fecha>.zip; los lectores no descargan. Vacío = en vivo)
 set -u
 ROOT="$HOME/CIEP_Simuladores/SimuladorCIEP-NL"
 STATA="${STATA:-/Applications/Stata/StataMP.app/Contents/MacOS/stata-mp}"   # override: STATA=/Applications/StataNow/StataSE.app/Contents/MacOS/stata-se (motor del ancla v8.8.0: StataNow 19.5 SE, 1 procesador)
@@ -22,6 +25,7 @@ LOCAL_LOG="$ROOT/users/ricardo/actualizar-nl.log"
 BITACORA="$ROOT/01_modulos/nl-assets/bitacora-publicaciones.log"
 DRIVE="/Users/ricardo/Library/CloudStorage/GoogleDrive-rcantu@conl.mx/My Drive/2. Simuladores CoNL/SimuladorCoNL"
 FUENTES="${FUENTES:-}"   # NL-0.5.2: fecha de fuentes congeladas del motor (vacío = en vivo, comportamiento idéntico)
+NLFUENTES="${NLFUENTES:-}"   # NL-0.6.0: fecha de fuentes congeladas de la capa (nl-fuentes.do; vacío = en vivo, comportamiento idéntico)
 OFFLINE=0
 [[ "${1:-}" == "--offline" ]] && OFFLINE=1
 
@@ -37,7 +41,7 @@ fail() {
 }
 
 mkdir -p "$NODOS"
-log "== actualizar-nl inicio (offline=$OFFLINE) =="
+log "== actualizar-nl inicio (offline=$OFFLINE fuentes=${FUENTES:-vivo} nlfuentes=${NLFUENTES:-vivo}) =="
 [[ -x "$STATA" ]] || fail "no se encontró Stata en $STATA"
 [[ -f "$ROOT/profile.do" && -f "$ROOT/01_modulos/PIBDeflactorNL.do" ]] || fail "raíz del worktree incompleta: $ROOT"
 
@@ -53,6 +57,7 @@ WRAP="$ROOT/users/ricardo/actualizar-nl-stata.do"
 {
   [[ $OFFLINE -eq 1 ]] && echo 'global nlbie_offline 1'
   [[ -n "$FUENTES" ]] && printf 'global fuentes "%s"\n' "$FUENTES"
+  [[ -n "$NLFUENTES" ]] && printf 'global nlfuentes "%s"\n' "$NLFUENTES"
   echo "do \"$ROOT/01_modulos/nl-assets/actualizar-nl.do\""
 } > "$WRAP"
 "$STATA" -b do "$WRAP"

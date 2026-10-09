@@ -1,4 +1,4 @@
-*! nl-fed.do  v1.0.0 — lectores de la capa NL para el endpoint Federación↔NL (NL-0.4.0)
+*! nl-fed.do  v1.1.0 — lectores de la capa NL para el endpoint Federación↔NL (NL-0.4.0; v1.1.0 NL-0.6.0: candado $nlfuentes en _NLeopf)
 *
 * POR QUÉ EXISTE (DIAGNOSTICO_NL.md, anexo Federación↔NL §0.1):
 *   El motor ya ingiere las transferencias SHCP por fondo × entidad en
@@ -21,12 +21,19 @@
 *   _NLsha256 <archivo>                       -> r(sha256) r(bytes)
 *   _NLfileinfo <archivo>                     -> r(mtime) r(bytes)  [vintage de cachés .dta]
 *   offline: usa la caché si existe en lugar de descargar (desarrollo).
+*   global nlfuentes "AAAA-MM-DD" (NL-0.6.0, nl-fuentes.do): _NLeopf lee la caché
+*       empacada en nl-assets/nl-fuentes-<fecha>.zip y NUNCA descarga; vacío =
+*       comportamiento idéntico al anterior.
 
 capture python which sys
 if _rc {
 	di as err "nl-fed: Stata no puede inicializar Python (python query). Sin Python no hay lectura de SHCP ni de JSON."
 	exit 7100
 }
+
+* Candado de fuentes propias de la capa (_NLfuentes, NL-0.6.0) *
+SIMroot
+run "${SIMROOT}/01_modulos/nl-assets/nl-fuentes.do"
 
 capture program drop _NLfedpy
 program define _NLfedpy
@@ -64,6 +71,15 @@ program define _NLeopf, rclass
 	local descargar = 1
 	capture confirm file `"`csv'"'
 	if _rc == 0 & ("`offline'" != "" | "${NLEOPF_SESION}" == "1") local descargar = 0
+	_NLfuentes
+	if r(congelado) {
+		capture confirm file `"`csv'"'
+		if _rc {
+			di as err "nl-fed: nl-fuentes-${nlfuentes}.zip no trae EOPF/nl_transferencias.csv; con fuentes congeladas no se descarga."
+			exit 601
+		}
+		local descargar = 0
+	}
 	if `descargar' {
 		noisily di as text "  nl-fed: descargando Estadísticas Oportunas (transferencias a entidades, vigente + histórico)..."
 		_NLfedpy eopf_fetch("`fondos'", r"""`csv'""", r"""`meta'""")

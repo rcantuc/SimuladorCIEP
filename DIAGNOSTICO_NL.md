@@ -1077,3 +1077,33 @@ El lado "recibe" no cambia (EOPF hasta 2026-08, Last-Modified 30-sep-2026; `_NLe
 3. Hotfix v8.8.1 (PR #18) necesario para que `EntidadNL`/`scalarjson` corran; fusionado localmente en la rama antes de la compuerta 2.
 4. Drivers NL (`actualizar-nl.do`) con StataNow: wrap con `python set exec /usr/bin/python3` + `run profile.do` explícito (Python 3.14 de StataNow no valida el certificado de la SHCP), `global fuentes "2026-10-06"` (series nacionales congeladas = motor) y `global nlfed_sellar 1`. Los csv congelados de `raw/temp/AccesoBIE/` se restauraron del zip tras la primera corrida sin `$fuentes`.
 5. `nl-vintage.do` conserva `IVAT[13] = 23.0` (el motor pasó a 23.1 en `SIM.do` §4.5): `EntidadNL` solo lee los regímenes (filas 1–12) de la matriz, así que no afecta números; se anota como asimetría a resolver cuando se toque el driver.
+
+---
+
+## Anexo Fuentes congeladas de la capa NL — candado `nlfuentes` (2026-10-08, sprint NL-0.6.0, sesión C1) — BORRADOR, pendiente de aprobación
+
+**Objeto (item 1 del sprint).** Las series que la capa trae por su cuenta —`_NLbie` (`raw/temp/AccesoBIE/nl_<indicador>.csv` + `.meta`), `_NLinpc` (`nl_inpc_<serie>.csv` + `.meta`) y `_NLeopf` (`raw/temp/EOPF/nl_transferencias.csv` + `.meta` + `_fondos.csv`)— corrían **siempre en vivo**, mientras el motor va congelado al 2026-10-06 (`global fuentes`). Eso tumbó dos compuertas en 48 h (INPC 2026-09 publicado el 7-oct; EOFP re-descargado el 8-oct, hallazgo de diseño de la entrada NL-0.5.2). Resolución: la capa congela sus fuentes con la **misma convención de fecha** que el motor.
+
+### 1. Qué se empacó
+
+`01_modulos/nl-assets/nl-fuentes-2026-10-08.zip` (2,878,315 bytes; SHA-256 `5304051c385910e1fa598788adfc79498447c4979107ee57cbf90d2b03cd7309`; `checksum_stata` 472376347) = el estado **vigente** de las cachés que produjo los sellos del 8-oct (`federacion-sello.json` 13:38, `participaciones-vintages.json` 13:27, publicación 17:57): 15 archivos, 13,193,886 bytes sin comprimir —`AccesoBIE/nl_750453`, `nl_746097`, `nl_753357`, `nl_741180`, `nl_741927` (consulta INEGI 08/10/2026 13:37), `nl_inpc_902690` (INPC NL hasta 2026/09, 13:38) y `EOPF/nl_transferencias.*` (descarga 2026-10-08 13:38:06, Last-Modified 30-sep-2026, periodo final 2026-08, 453,292 filas). Los SHA-256 de los 15 archivos (`diag-sankey-nl-2026-10-08/C1/nl-fuentes-shasums.txt`) coinciden con las cachés vivas. Declarado en `nl-manifest.json`: `fuentes_nl_congeladas_al = 2026-10-08`, `fuentes_nl_regla` y entrada en `assets` (name, sha256, checksum_stata, filelen, contenido, consume, validacion).
+
+### 2. Candado en los lectores
+
+- `nl-assets/nl-fuentes.do` v1.0.0 define `_NLfuentes`: con `global nlfuentes "AAAA-MM-DD"` verifica que `nl-fuentes-<fecha>.zip` esté declarado en `nl-manifest.json` y que `checksum_stata` y `filelen` coincidan (zip pisado o sin declarar → aborta), lo extrae **una vez por sesión** en `raw/temp/` con `replace` (espejo de SIM.do §0.4 con el asset del motor) y devuelve `r(congelado) = 1`; con el global vacío devuelve 0 y no hace nada.
+- `nl-bie.do` v1.1.0 (`_NLbie`, `_NLinpc`) y `nl-fed.do` v1.1.0 (`_NLeopf`): tras resolver la caché llaman `_NLfuentes`; si está congelado, **no descargan** (abortan si el zip no trae el archivo pedido). Con el global vacío el comportamiento es **idéntico** al anterior (en vivo, u `offline` con la caché que haya).
+- `actualizar-nl.sh`: acepta `NLFUENTES=AAAA-MM-DD` y escribe `global nlfuentes` en el wrap, al lado de `FUENTES=` (motor). Vacío = en vivo.
+- No se rediseña `ensure_asset` (el zip viaja commiteado en `nl-assets/`, como `pobproy_quinq1.csv`) ni se toca el motor.
+
+### 3. Prueba del candado (`C1/test-nlfuentes.log`)
+
+Cachés vivas apartadas, red bloqueada con un proxy inválido (`https_proxy=http://127.0.0.1:9`), `global nlfuentes "2026-10-08"`: `_NLbie 750453` extrajo el zip (checksum verificado), leyó la caché (último 2024 r1, checksum tabla 3636773412), `_NLinpc 902690` (último 2026/09) y `_NLeopf` (453,292 filas, periodo final 2026-08, descarga 2026-10-08 13:38:06) leyeron sin red; la segunda llamada no re-extrajo. Los 15 archivos restaurados reproducen los SHA-256 vigentes (`shasum -c`: 15 OK). Después se devolvieron las cachés originales (mismos bytes, timestamps 13:37–13:38).
+
+### 4. Regla operativa
+
+Toda corrida de la capa con el motor congelado lleva **los dos candados**: `global fuentes "2026-10-06"` (motor) y `global nlfuentes "2026-10-08"` (capa), o `FUENTES=… NLFUENTES=… ./actualizar-nl.sh --offline`. Mover la fecha de la capa es un **release de datos de la capa**: nuevo zip con el estado que se quiere sellar, SHA-256 + `checksum_stata` + `filelen` en `nl-manifest.json`, `fuentes_nl_congeladas_al`, y entrada en este documento. Los sellos (`federacion-sello.json`, `participaciones-vintages.json`) **no se mueven** con este anexo.
+
+### 5. Primera corrida con el candado
+
+`FederacionNLQuintiles.do` v0.1.0 (capa de datos del Sankey por quintil, sesión C1; ver borrador de la entrada NL-0.6.0 en `diag-sankey-nl-2026-10-08/C1/`) corrió con ambos globals; procedencia `fuentes_congeladas_motor = 2026-10-06`, `fuentes_congeladas_capa = 2026-10-08`. Cero descargas en la sesión (timestamps de `raw/temp/AccesoBIE/` del motor 6-oct 17:01–17:16; propios 8-oct 13:37–13:38).
+

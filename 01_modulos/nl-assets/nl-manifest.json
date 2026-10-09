@@ -3,6 +3,8 @@
   "version_nl": "NL-0.5.2",
   "fecha": "2026-10-08",
   "motor_sincronizado": "v8.8.1",
+  "fuentes_nl_congeladas_al": "2026-10-08",
+  "fuentes_nl_regla": "Fecha de las descargas PROPIAS de la capa NL (INEGI BIE por area via _NLbie, INPC NL via _NLinpc, SHCP EOPF via _NLeopf) empacadas en el asset 01_modulos/nl-assets/nl-fuentes-<fecha>.zip; con global nlfuentes <fecha> (nl-fuentes.do) los tres lectores extraen el zip a raw/temp/ y NO descargan; vacio = en vivo (comportamiento anterior). Es la contraparte de fuentes_congeladas_al del motor (05_scripts/manifest.json): el motor se congela con global fuentes, la capa con global nlfuentes; actualizar-nl.sh los recibe como FUENTES= y NLFUENTES=. Cambiar la fecha es un release de datos de la capa: nuevo zip, SHA-256 y checksum_stata aqui, y entrada en DIAGNOSTICO_NL.md. Sin acentos graves en este archivo (lo leen file read + regexm: nl-identidad.do, nl-fuentes.do, PoblacionNL.do).",
   "repositorio": "https://github.com/rcantuc/SimuladorCIEP/tree/feature/entidad-nl",
   "identidad_visual": {
     "canon": "100 % Consejo Nuevo León (nl-estilo.md §6, aprobado 2026-10-04; pasada del Manual de Identidad 2023 en NL-0.5.1, §6.6c); atribución intocable en contenido: leyenda de _NLidentidad + versión/enlace GitHub de la capa; en forma, lockup de co-branding (socio principal, marcas externas tecleadas)",
@@ -66,6 +68,17 @@
       "descripcion": "imagotipo 2023 en blanco para la cabecera morada (co-branding 2025: la versión color/blanco depende del fondo; manual 2020 §5)",
       "sha256": "aecae3790192fa101b6e27480c452c2ae28410534bbf384d26769b3aa5749750",
       "filelen": 12877
+    },
+    {
+      "name": "nl-fuentes-2026-10-08.zip",
+      "local_path": "01_modulos/nl-assets/nl-fuentes-2026-10-08.zip",
+      "fuente": "fuentes propias de la capa NL congeladas al 2026-10-08: estado vigente de las caches que produjo los sellos del 8-oct (federacion-sello.json 13:38, participaciones-vintages.json 13:27, publicacion 17:57)",
+      "contenido": "AccesoBIE/nl_750453 (PIBE corrientes), nl_746097 (PIBE constantes 2018), nl_753357 (indice implicito PIBE), nl_741180 (ITAEE original), nl_741927 (ITAEE desestacionalizado), nl_inpc_902690 (INPC NL hasta 2026/09), cada uno .csv + .meta (consulta INEGI 08/10/2026 13:37-13:38); EOPF/nl_transferencias.csv + .meta + _fondos.csv (SHCP Estadisticas Oportunas, descarga 2026-10-08 13:38:06, Last-Modified 30-sep-2026, periodo final 2026-08, 453,292 filas)",
+      "consume": "nl-fuentes.do (_NLfuentes) desde nl-bie.do (_NLbie, _NLinpc) y nl-fed.do (_NLeopf) cuando global nlfuentes = 2026-10-08; se extrae en raw/temp/ con replace una vez por sesion tras verificar checksum_stata y filelen contra esta entrada",
+      "sha256": "5304051c385910e1fa598788adfc79498447c4979107ee57cbf90d2b03cd7309",
+      "checksum_stata": 472376347,
+      "filelen": 2878315,
+      "validacion": "SHA-256 de los 15 archivos extraidos = SHA-256 de las caches vivas del 2026-10-08 (diag-sankey-nl-2026-10-08/C1/nl-fuentes-shasums.txt); prueba del candado en C1/test-nlfuentes.log"
     }
   ],
   "series_inegi": [
