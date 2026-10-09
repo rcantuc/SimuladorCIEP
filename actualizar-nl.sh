@@ -21,6 +21,7 @@ NODOS="$ROOT/users/ricardo/nodos"
 LOCAL_LOG="$ROOT/users/ricardo/actualizar-nl.log"
 BITACORA="$ROOT/01_modulos/nl-assets/bitacora-publicaciones.log"
 DRIVE="/Users/ricardo/Library/CloudStorage/GoogleDrive-rcantu@conl.mx/My Drive/2. Simuladores CoNL/SimuladorCoNL"
+FUENTES="${FUENTES:-}"   # NL-0.5.2: fecha de fuentes congeladas del motor (vacío = en vivo, comportamiento idéntico)
 OFFLINE=0
 [[ "${1:-}" == "--offline" ]] && OFFLINE=1
 
@@ -51,6 +52,7 @@ rm -f "$ROOT/actualizar-nl-stata.log"            # Stata batch deja el log en el
 WRAP="$ROOT/users/ricardo/actualizar-nl-stata.do"
 {
   [[ $OFFLINE -eq 1 ]] && echo 'global nlbie_offline 1'
+  [[ -n "$FUENTES" ]] && printf 'global fuentes "%s"\n' "$FUENTES"
   echo "do \"$ROOT/01_modulos/nl-assets/actualizar-nl.do\""
 } > "$WRAP"
 "$STATA" -b do "$WRAP"
