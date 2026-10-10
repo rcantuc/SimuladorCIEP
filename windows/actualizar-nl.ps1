@@ -98,6 +98,7 @@ foreach ($h in 'poblacion-nl.html','actividad-nl.html','federacion-nl.html') {
     $ph = Join-Path $Nodos $h
     $txt = Get-Content -LiteralPath $ph -Raw -Encoding UTF8
     if ($txt -match '/\*__NL[A-Z_]*__\*/') { Abortar ("COMPUERTA: " + $h + " conserva una marca de inyección sin reemplazar (es la plantilla, no el endpoint)") $Bak $Nodos }
+    if ($txt -match '"inventario_habilitado": *true') { Abortar ("COMPUERTA: " + $h + " trae el modo inventario del render habilitado (inventario_habilitado = true: BORRADOR con anclas sin fijar, no publicable)") $Bak $Nodos }
     if ($txt -notmatch 'window\.NLDatos = \(function') { Abortar ("COMPUERTA: " + $h + " no trae el componente nl-datos.js") $Bak $Nodos }
     $m = [regex]::Match($txt, '(?s)<script type="application/json" id="nl-data">(.*?)</script>')
     if (-not $m.Success) { Abortar ("COMPUERTA: " + $h + " sin bloque <script type=application/json id=nl-data>") $Bak $Nodos }

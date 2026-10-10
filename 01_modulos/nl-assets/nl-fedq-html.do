@@ -1,4 +1,4 @@
-*! nl-fedq-html.do  v1.0.0 — segunda inyección del endpoint Federación↔NL: el JSON hermano de quintiles (NL-0.6.0, sesión C2)
+*! nl-fedq-html.do  v1.1.0 — segunda inyección del endpoint Federación↔NL: el JSON hermano de quintiles (NL-0.6.0, sesión C2)
 *
 * Sustituye la marca /*__NLFEDQ_DATA__*/ de users/$id/nodos/federacion-nl.html (ya generado por FederacionNL.do §7 desde la
 * plantilla) por users/$id/nodos/federacion-nl-quintiles.json (FederacionNLQuintiles.do), en el mismo archivo, inline, sin red.
@@ -10,6 +10,7 @@
 * Compuertas (abortan sin tocar el HTML):
 *   H1 existen el HTML, el JSON hermano y el contrato base federacion-nl.json;
 *   H2 el JSON hermano declara contrato_base.generado_en = procedencia.generado_en del contrato base y la misma capa / motor;
+*   H2b (C4) inventario_habilitado = true en el hermano solo con global nlq_inventario 1 (render local): la publicación nunca lo lleva;
 *   H3 contrato_base.sha256 = SHA-256 del federacion-nl.json en disco (shasum en Mac/Unix; certutil en Windows, no probado);
 *   H4 el HTML trae exactamente UNA marca /*__NLFEDQ_DATA__*/ y, después de inyectar, ninguna marca /*__NL…__*/.
 * Toda lectura de archivos es en Mata (nl-html.do v1.2.0): ningún $ ni acento grave del JSON se expande como macro.
@@ -46,6 +47,13 @@ capture noisily {
 	}
 	if `"`q_gen'"' != `"`b_gen'"' | `"`q_capa'"' != `"`b_capa'"' | `"`q_motor'"' != `"`b_motor'"' {
 		di as err `"nl-fedq-html (H2): el JSON hermano se calculó con el contrato base generado `q_gen' (capa `q_capa', motor `q_motor'); el contrato base en disco es `b_gen' (capa `b_capa', motor `b_motor'). Re-corre FederacionNLQuintiles.do. No se inyecta."'
+		exit 459
+	}
+
+	*** H2b modo inventario (NL-0.6.x C4): el JSON hermano con inventario_habilitado = true solo se inyecta en un render LOCAL (global nlq_inventario 1) ***
+	mata: nlhtml_grep1(st_local("jsonq"), "", `""inventario_habilitado": *(true|false)"', "q_inv")
+	if "`q_inv'" == "true" & "$nlq_inventario" != "1" {
+		di as err "nl-fedq-html (H2b): el JSON hermano trae inventario_habilitado = true (modo inventario del render: BORRADOR con anclas sin fijar, no publicable) y esta sesión no es un render local (global nlq_inventario 1). Re-corre FederacionNLQuintiles.do sin el global. No se inyecta."
 		exit 459
 	}
 

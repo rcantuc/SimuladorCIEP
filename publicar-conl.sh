@@ -7,7 +7,8 @@
 #               doble clic sin entrar a nodos/.
 # COMPUERTA DE PUBLICACIÓN (NL-0.3.1): antes de copiar nada, cada HTML debe (a) no conservar ninguna
 # marca de inyección /*__NL..__*/, (b) traer el componente nl-datos.js y (c) traer el bloque
-# <script type="application/json" id="nl-data"> con JSON válido y procedencia. Si falla, se aborta
+# <script type="application/json" id="nl-data"> con JSON válido y procedencia, y (d, NL-0.6.x C4) no traer el modo
+# inventario del render habilitado (inventario_habilitado = true en el JSON hermano). Si falla, se aborta
 # sin tocar el Drive: lo vigente ahí se conserva. Un artefacto fallido nunca vuelve a cruzar.
 set -u
 ORIGEN="$HOME/CIEP_Simuladores/SimuladorCIEP-NL/users/ricardo"
@@ -18,6 +19,7 @@ verificar_html() {
   local f="$1"
   [[ -s "$f" ]] || { echo "COMPUERTA: no existe o está vacío $f"; return 1; }
   if grep -q -E '/\*__NL[A-Z_]*__\*/' "$f"; then echo "COMPUERTA: $f conserva una marca de inyección sin reemplazar (es la plantilla, no el endpoint)"; return 1; fi
+  if grep -q -E '"inventario_habilitado": *true' "$f"; then echo "COMPUERTA: $f trae el modo inventario del render habilitado (inventario_habilitado = true: BORRADOR con anclas sin fijar, no publicable; re-corre FederacionNLQuintiles.do sin global nlq_inventario)"; return 1; fi
   grep -q 'window.NLDatos = (function' "$f" || { echo "COMPUERTA: $f no trae el componente nl-datos.js"; return 1; }
   python3 - "$f" <<'PY' || return 1
 import re, sys, json

@@ -1,4 +1,4 @@
-*! FederacionNLQuintiles.do  v0.2.0 (C3, sprint NL-0.6.x "Ida y vuelta por quintil") — capa de datos del Sankey ida-y-vuelta por QUINTIL ESTATAL dirigida por la PALETA de flujos (01_modulos/nl-flujos.do): qué flujos entran, de qué lado, si van abiertos, cerrados o solo en inventario, con qué variable se reparten y con qué ancla cierran lo decide Ricardo en la paleta; este driver reparte, cierra, sella y exporta. Contrato hermano: users/$id/nodos/federacion-nl-quintiles.json (esquema nl.federacion-quintiles/v2)
+*! FederacionNLQuintiles.do  v0.3.0 (C4, sprint NL-0.6.x "Ida y vuelta por quintil") — capa de datos del Sankey ida-y-vuelta por QUINTIL ESTATAL dirigida por la PALETA de flujos: filas HEREDADAS de la configuración del Sankey nacional (01_modulos/nl-flujos-herencia.do lee SankeySF.do + SIM.do §7.1 y las verifica contra sankey-decil.json) + overrides y filas propias de NL (01_modulos/nl-flujos.do): qué flujos entran, de qué lado, si van abiertos, cerrados o solo en inventario, con qué variable se reparten y con qué ancla cierran lo decide Ricardo en la paleta; este driver reparte, cierra, sella y exporta. Contrato hermano: users/$id/nodos/federacion-nl-quintiles.json (esquema nl.federacion-quintiles/v2)
 *
 * QUÉ ES ESTO (DIAGNOSTICO_NL.md; C1 2026-10-08, C2 2026-10-08, C3 2026-10-09):
 *   D1 eje = quintiles ESTATALES (re-ranking dentro de la muestra NL con el criterio exacto de
@@ -11,8 +11,13 @@
 *      Ricardo las enciende en la paleta. Nada se re-imputa.
 *   D3 salud: clave = afiliación SSA (inst_6); divergencia con la clave del motor DECLARADA.
 *   D4 quintiles en ambos extremos; D5 solo anio_referencia (observado) y anio_politica (Paquete).
-*   La PALETA (nl-flujos.do) es el único bloque editable: abrir 0 = inventario (no entra a la página ni al
-*   balance), 1 = en página sin abrir (nodo cerrado con sellos), 2 = abierto por quintil (celdas con sellos).
+*   La PALETA es el único bloque editable: la lista de flujos la HEREDA del Sankey nacional (nl-flujos-herencia.do,
+*   C4: mismos ids, etiquetas, lados, agrupación y bases; restringida a NL y colapsada a quintil estatal) y
+*   nl-flujos.do solo trae overrides por fila (_nloverride) y filas propias de NL (subcomponentes con ancla EOFP/PEF,
+*   _nlflujo con padre()). abrir 0 = inventario (no entra a la página ni al balance), 1 = en página sin abrir (nodo
+*   cerrado con sellos), 2 = abierto por quintil (celdas con sellos). Un padre y su hijo no pueden estar ambos en
+*   página (doble conteo) salvo parámetro anidados 1. global nlq_inventario 1 habilita el modo inventario del render
+*   LOCAL (inventario_habilitado en el JSON; la publicación lo bloquea).
 *   Anclas de total por flujo y año: fed:<campo> | eofp:<clave> | pef:[<ramo>/]<pp> | statajson:<escalar> | suma (SUPUESTO).
 *   La caja gris se CALCULA: tarjeta recibe − Σ flujos recibe con abrir ≥ 1.
 *
@@ -70,7 +75,7 @@ if `"`r(filename)'"' == "" {
 	exit 459
 }
 local logfile "federacion-nl-quintiles.log"
-local driver_v "0.2.0"
+local driver_v "0.3.0"
 run `"`site'/01_modulos/nl-assets/nl-identidad.do"'
 _NLidentidad, modulo("La Federación y Nuevo León — ida y vuelta por quintil")
 local nl_producto `"`r(producto)'"'
@@ -111,7 +116,7 @@ end
 
 *** 0.1 PALETA: programas _nlparam / _nlflujo y lectura de nl-flujos.do ***
 capture frame drop nlq_pal
-frame create nlq_pal int orden str32 id str8 lado byte abrir str80 variable str200 ancla_ref str200 ancla_pe str244 etiqueta str32 grupo byte banda str80 unidad str2045 clave str2045 nota str2045 anclas
+frame create nlq_pal int orden str32 id str8 lado byte abrir str120 variable str200 ancla_ref str200 ancla_pe str244 etiqueta str32 grupo byte banda str80 unidad str2045 clave str2045 nota str2045 anclas str16 origen str32 padre byte eje str244 nodo double totalnac
 global NLQ_npal = 0
 global NLQ_params ""
 capture program drop _nlparam
@@ -136,7 +141,8 @@ program define _nlflujo
 	gettoken ancla_ref 0 : 0
 	gettoken ancla_pe 0 : 0
 	gettoken etiqueta 0 : 0
-	syntax [, GRupo(string) BANda UNidad(string) CLave(string) NOta(string) ANclas(string)]
+	syntax [, GRupo(string) BANda UNidad(string) CLave(string) NOta(string) ANclas(string) ORigen(string) PAdre(string) EJe(int 0) NOdo(string) TOtalnac(real -1)]
+	if "`origen'" == "" local origen "nl"
 	if "`id'" == "" | "`lado'" == "" | "`abrir'" == "" | "`variable'" == "" | "`ancla_ref'" == "" | "`ancla_pe'" == "" | `"`etiqueta'"' == "" {
 		di as err "nl-flujos (P.0): _nlflujo requiere <id> <lado> <abrir> <variable> <ancla_ref> <ancla_pe> " `"""' "<etiqueta>" `"""' " (flujo `id')."
 		exit 198
@@ -149,8 +155,53 @@ program define _nlflujo
 		di as err "nl-flujos (P.0): abrir '`abrir'' del flujo `id' no es 0 | 1 | 2."
 		exit 198
 	}
+	frame nlq_pal: quietly count if id == "`id'"
+	if r(N) > 0 {
+		di as err "nl-flujos (P.0): el id `id' ya existe en la paleta (heredado o propio); para cambiarlo usa _nloverride `id', …"
+		exit 198
+	}
 	global NLQ_npal = $NLQ_npal + 1
-	frame post nlq_pal ($NLQ_npal) ("`id'") ("`lado'") (`abrir') ("`variable'") ("`ancla_ref'") ("`ancla_pe'") (`"`etiqueta'"') ("`grupo'") (`=("`banda'" != "")') (`"`unidad'"') (`"`clave'"') (`"`nota'"') (`"`anclas'"')
+	frame post nlq_pal ($NLQ_npal) ("`id'") ("`lado'") (`abrir') ("`variable'") ("`ancla_ref'") ("`ancla_pe'") (`"`etiqueta'"') ("`grupo'") (`=("`banda'" != "")') (`"`unidad'"') (`"`clave'"') (`"`nota'"') (`"`anclas'"') ("`origen'") ("`padre'") (`eje') (`"`nodo'"') (`=cond(`totalnac' < 0, ., `totalnac')')
+end
+* _nloverride <id>, [campo(valor) …]: cambia campos de una fila ya existente (heredada o propia); nunca crea filas *
+capture program drop _nloverride
+program define _nloverride
+	gettoken id 0 : 0, parse(" ,")
+	syntax [, ABrir(string) LAdo(string) VARiable(string) ANCLA_ref(string) ANCLA_pe(string) ETiqueta(string) GRupo(string) BANda NOBANda UNidad(string) CLave(string) NOta(string) ANclas(string) PAdre(string)]
+	frame nlq_pal: quietly count if id == "`id'"
+	if r(N) != 1 {
+		di as err "nl-flujos (P.0): _nloverride `id': ese id no existe en la paleta (ids heredados: ver el log de herencia)."
+		exit 198
+	}
+	frame nlq_pal {
+		if "`abrir'" != "" {
+			if !inlist("`abrir'", "0", "1", "2") {
+				di as err "nl-flujos (P.0): abrir '`abrir'' del override `id' no es 0 | 1 | 2."
+				exit 198
+			}
+			quietly replace abrir = `abrir' if id == "`id'"
+		}
+		if "`lado'" != "" {
+			if !inlist("`lado'", "paga", "recibe", "aparte") {
+				di as err "nl-flujos (P.0): lado '`lado'' del override `id' no es paga | recibe | aparte."
+				exit 198
+			}
+			quietly replace lado = "`lado'" if id == "`id'"
+		}
+		if "`variable'" != "" quietly replace variable = "`variable'" if id == "`id'"
+		if "`ancla_ref'" != "" quietly replace ancla_ref = "`ancla_ref'" if id == "`id'"
+		if "`ancla_pe'" != "" quietly replace ancla_pe = "`ancla_pe'" if id == "`id'"
+		if `"`etiqueta'"' != "" quietly replace etiqueta = `"`etiqueta'"' if id == "`id'"
+		if "`grupo'" != "" quietly replace grupo = cond("`grupo'" == ".", "", "`grupo'") if id == "`id'"
+		if "`banda'" != "" quietly replace banda = 1 if id == "`id'"
+		if "`nobanda'" != "" quietly replace banda = 0 if id == "`id'"
+		if `"`unidad'"' != "" quietly replace unidad = `"`unidad'"' if id == "`id'"
+		if `"`clave'"' != "" quietly replace clave = `"`clave'"' if id == "`id'"
+		if `"`nota'"' != "" quietly replace nota = `"`nota'"' if id == "`id'"
+		if `"`anclas'"' != "" quietly replace anclas = `"`anclas'"' if id == "`id'"
+		if "`padre'" != "" quietly replace padre = cond("`padre'" == ".", "", "`padre'") if id == "`id'"
+		quietly replace origen = origen + "+override" if id == "`id'" & strpos(origen, "override") == 0
+	}
 end
 local paleta `"`site'/01_modulos/nl-flujos.do"'
 capture confirm file `"`paleta'"'
@@ -158,19 +209,30 @@ if _rc {
 	di as err "FederacionNLQuintiles: falta la paleta 01_modulos/nl-flujos.do. No se exporta."
 	exit 601
 }
-noisily di _newline in g "{bf:0. Paleta de flujos: 01_modulos/nl-flujos.do}"
+noisily di _newline in g "{bf:0. Paleta de flujos: herencia del Sankey nacional (nl-flujos-herencia.do) + overrides y filas propias (nl-flujos.do)}"
+local herencia `"`site'/01_modulos/nl-flujos-herencia.do"'
+capture confirm file `"`herencia'"'
+if _rc {
+	di as err "FederacionNLQuintiles: falta 01_modulos/nl-flujos-herencia.do (la lista de flujos se hereda del Sankey nacional). No se exporta."
+	exit 601
+}
+run `"`herencia'"'
+local NPher = $NLQ_npal
 run `"`paleta'"'
 _NLsha256 `"`paleta'"'
 local paleta_sha "`r(sha256)'"
 _NLfileinfo `"`paleta'"'
 local paleta_mtime "`r(mtime)'"
+_NLsha256 `"`herencia'"'
+local herencia_sha "`r(sha256)'"
+local inventario = ("$nlq_inventario" == "1")
 local NP = $NLQ_npal
 if `NP' == 0 {
 	di as err "FederacionNLQuintiles (P.0): la paleta no declara ningún flujo. No se exporta."
 	exit 459
 }
 * Parámetros con default (si la paleta no los declara, default marcado supuesto) *
-foreach p in umbral_n:100 sello_top1:25 neta_por_quintil:0 gris_negativo:0 {
+foreach p in umbral_n:100 sello_top1:25 neta_por_quintil:0 gris_negativo:0 anidados:0 {
 	local pn = substr("`p'", 1, strpos("`p'", ":") - 1)
 	local pv = substr("`p'", strpos("`p'", ":") + 1, .)
 	if "${NLQP_`pn'}" == "" {
@@ -183,11 +245,12 @@ local umbral = ${NLQP_umbral_n}
 local selloTop1 = ${NLQP_sello_top1}
 local netaQ = ${NLQP_neta_por_quintil}
 local grisNeg = ${NLQP_gris_negativo}
+local anidados = ${NLQP_anidados}
 * La paleta a locals: pal_<campo><i> *
 frame nlq_pal {
 	sort orden
 	forvalues i = 1/`NP' {
-		foreach c in id lado abrir variable ancla_ref ancla_pe etiqueta grupo banda unidad clave nota anclas {
+		foreach c in id lado abrir variable ancla_ref ancla_pe etiqueta grupo banda unidad clave nota anclas origen padre eje nodo totalnac {
 			local pal_`c'`i' = `c'[`i']
 		}
 	}
@@ -212,17 +275,37 @@ forvalues i = 1/`NP' {
 		di as err "FederacionNLQuintiles (P.0): fuente '`pal_vfuente`i''' del flujo `pal_id`i'' no es aport | perfiles | ind."
 		exit 459
 	}
-	if "`pal_vfuente`i''" == "ind" & !inlist("`pal_vnombre`i''", "alum_basica", "afil_ssa") {
-		di as err "FederacionNLQuintiles (P.0): indicador '`pal_vnombre`i''' del flujo `pal_id`i'' no está definido (alum_basica | afil_ssa)."
+	if "`pal_vfuente`i''" == "ind" & !inlist("`pal_vnombre`i''", "alum_basica", "afil_ssa", "persona") {
+		di as err "FederacionNLQuintiles (P.0): indicador '`pal_vnombre`i''' del flujo `pal_id`i'' no está definido (alum_basica | afil_ssa | persona)."
 		exit 459
 	}
 	if "`pal_vfuente`i''" == "perfiles" local usaPerfiles = 1
+	local pal_vlista`i' = subinstr("`pal_vnombre`i''", "+", " ", .)				// variable puede ser una suma: v1+v2
+	local pal_tiposuma`i' = cond("`pal_vfuente`i''" == "ind", "unidades", "pesos")
 	local pal_estado`i' = cond(`pal_abrir`i'' == 2, "abierto", cond(`pal_abrir`i'' == 1, "cerrado", "inventario"))
 }
-noisily di in g "  Paleta: " in y "`NP'" in g " flujos (sha256 `=substr("`paleta_sha'", 1, 12)'…) · parámetros:" in y "$NLQ_params" in g " · umbral n = `umbral' · sello top-1 ≥ `selloTop1' % · neta por quintil = `netaQ' · gris negativo = `grisNeg'"
-noisily di in g "  id" _col(16) "lado" _col(24) "estado" _col(36) "variable" _col(62) "ancla observado" _col(88) "ancla Paquete" _col(112) "grupo/banda"
+* P.1: padre e hijo no pueden estar ambos en página (doble conteo), salvo parámetro anidados 1 *
 forvalues i = 1/`NP' {
-	noisily di in y "  `pal_id`i''" _col(16) "`pal_lado`i''" _col(24) "`pal_estado`i''" _col(36) "`pal_variable`i''" _col(62) "`pal_ancla_ref`i''" _col(88) "`pal_ancla_pe`i''" _col(112) "`pal_grupo`i''" cond(`pal_banda`i'', " banda", "")
+	if "`pal_padre`i''" == "" continue
+	local hay = 0
+	forvalues j = 1/`NP' {
+		if "`pal_id`j''" == "`pal_padre`i''" {
+			local hay = 1
+			if `pal_abrir`i'' >= 1 & `pal_abrir`j'' >= 1 & !`anidados' {
+				di as err "FederacionNLQuintiles (P.1): `pal_id`i'' (hijo) y su padre `pal_padre`i'' están ambos en página (abrir ≥ 1): doble conteo. Apaga uno o declara _nlparam anidados 1. No se exporta."
+				exit 459
+			}
+		}
+	}
+	if !`hay' {
+		di as err "FederacionNLQuintiles (P.0): el padre `pal_padre`i'' de `pal_id`i'' no existe en la paleta. No se exporta."
+		exit 459
+	}
+}
+noisily di in g "  Paleta: " in y "`NP'" in g " flujos (`NPher' heredados del Sankey nacional; overrides/propios en nl-flujos.do sha256 `=substr("`paleta_sha'", 1, 12)'…) · parámetros:" in y "$NLQ_params" in g " · umbral n = `umbral' · sello top-1 ≥ `selloTop1' % · neta por quintil = `netaQ' · gris negativo = `grisNeg' · anidados = `anidados' · modo inventario del render: " in y cond(`inventario', "HABILITADO (solo render local)", "no")
+noisily di in g "  id" _col(20) "lado" _col(28) "estado" _col(40) "origen" _col(60) "padre" _col(76) "variable" _col(108) "ancla observado" _col(134) "ancla Paquete" _col(160) "grupo/banda"
+forvalues i = 1/`NP' {
+	noisily di in y "  `pal_id`i''" _col(20) "`pal_lado`i''" _col(28) "`pal_estado`i''" _col(40) "`pal_origen`i''" _col(60) "`pal_padre`i''" _col(76) "`pal_variable`i''" _col(108) "`pal_ancla_ref`i''" _col(134) "`pal_ancla_pe`i''" _col(160) "`pal_grupo`i''" cond(`pal_banda`i'', " banda", "")
 }
 
 local impuestos "ISRAS ISRPF ISRPM IVA IEPSNP IEPSP ISAN IMPORT"	// compuertas Q.2/Q.3 contra el statajson (no dependen de la paleta)
@@ -405,7 +488,7 @@ local perfVars : list uniq perfVars
 * variables de gasto presentes en ambos objetos (inventario: Σ de cada fuente y reldif, sin elegir) *
 local invVars "Educacion Salud Pension_AM Pensiones infra_entidad Otras_inversiones Otros_gastos Energia Federalizado IngBasico"
 forvalues i = 1/`NP' {
-	if inlist("`pal_vfuente`i''", "aport", "perfiles") local invVars "`invVars' `pal_vnombre`i''"
+	if inlist("`pal_vfuente`i''", "aport", "perfiles") local invVars "`invVars' `pal_vlista`i''"
 }
 local invVars : list uniq invVars
 if `usaPerfiles' | "`invVars'" != "" {
@@ -488,18 +571,25 @@ forvalues i = 1/`NP' {
 	local id "`pal_id`i''"
 	local f "`pal_vfuente`i''"
 	local vn "`pal_vnombre`i''"
-	if "`f'" == "aport" {
-		capture confirm variable `vn'
-		if _rc {
-			di as err "FederacionNLQuintiles (P.0): la variable aport:`vn' del flujo `id' no existe en aportaciones.dta. No se exporta."
-			exit 459
+	if "`f'" == "aport" | "`f'" == "perfiles" {
+		local pre = cond("`f'" == "perfiles", "pf_", "")
+		local ex ""
+		local ep ""
+		foreach v of local pal_vlista`i' {
+			capture confirm variable `pre'`v'
+			if _rc {
+				di as err "FederacionNLQuintiles (P.0): la variable `f':`v' del flujo `id' no existe en `=cond("`f'" == "perfiles", "perfiles`aniope'.dta", "aportaciones.dta")'. No se exporta."
+				exit 459
+			}
+			local ex "`ex'`=cond("`ex'" != "", "+", "")'cond(`pre'`v' == ., 0, `pre'`v')"
+			local ep "`ep'`=cond("`ep'" != "", "|", "")'(`pre'`v' > 0 & `pre'`v' != .)"
 		}
-		g double w_`id' = `vn'*factor
-		g byte p_`id' = `vn' > 0 & `vn' != .
+		g double w_`id' = (`ex')*factor
+		g byte p_`id' = `ep'
 	}
-	else if "`f'" == "perfiles" {
-		g double w_`id' = pf_`vn'*factor
-		g byte p_`id' = pf_`vn' > 0 & pf_`vn' != .
+	else if "`vn'" == "persona" {
+		g byte p_`id' = 1												// per cápita: toda persona de la muestra (renglones macro del nacional)
+		g double w_`id' = factor
 	}
 	else if "`vn'" == "alum_basica" {
 		g byte p_`id' = alum_basica == 1							// alumno de educación básica pública (GastoPC.ado)
@@ -807,8 +897,16 @@ forvalues i = 1/`NP' {
 				local sj = 1
 			}
 			else if "`tipo'" == "suma" {
+				if "`pal_tiposuma`i''" == "unidades" {
+					di as err "FederacionNLQuintiles (P.0): el flujo `id' reparte por un indicador (`pal_variable`i'') y no tiene Σ en pesos: el ancla suma no aplica; fija una ancla (fed:/eofp:/pef:/statajson:). No se exporta."
+					exit 459
+				}
 				local x = `suma_`id''
 				local sup = 1
+			}
+			else if "`tipo'" == "pendiente" {
+				di as err "FederacionNLQuintiles (P.0): el flujo `id' está en página (abrir = `pal_abrir`i'') con ancla pendiente: fija el ancla en nl-flujos.do (_nloverride `id', ancla_ref() ancla_pe()). No se exporta."
+				exit 459
 			}
 			else {
 				di as err "FederacionNLQuintiles (P.0): tipo de ancla '`tipo'' (flujo `id') no es fed | eofp | pef | statajson | suma. No se exporta."
@@ -1127,7 +1225,7 @@ noisily di _newline in g "{bf:7. Exportación}"
 local json `"`site'/users/$id/nodos/federacion-nl-quintiles.json"'
 local sellocorrida = subinstr(trim(`"`c(current_date)'"'), " ", "-", .) + "T" + trim(`"`c(current_time)'"')
 * listas del alcance *
-foreach l in pagaAb pagaCe aparte recAb recCe inv supAnc grupos {
+foreach l in pagaAb pagaCe aparte recAb recCe inv supAnc grupos her prop {
 	local L_`l' ""
 }
 local gruposVistos ""
@@ -1141,6 +1239,8 @@ forvalues i = 1/`NP' {
 	else if "`lado'" == "paga" & `ab' == 1 local L_pagaCe `"`L_pagaCe', "`id'""'
 	else if "`lado'" == "recibe" & `ab' == 2 local L_recAb `"`L_recAb', "`id'""'
 	else if "`lado'" == "recibe" & `ab' == 1 local L_recCe `"`L_recCe', "`id'""'
+	if strpos("`pal_origen`i''", "nacional") > 0 local L_her `"`L_her', "`id'""'
+	else local L_prop `"`L_prop', "`id'""'
 	if `ab' >= 1 {
 		foreach t in `anioref' `aniope' {
 			if `sup_`id'_`t'' local L_supAnc `"`L_supAnc', {"id": "`id'", "anio": `t', "ancla": "`spec_`id'_`t''"}"'
@@ -1159,7 +1259,7 @@ forvalues i = 1/`NP' {
 		}
 	}
 }
-foreach l in pagaAb pagaCe aparte recAb recCe inv supAnc grupos {
+foreach l in pagaAb pagaCe aparte recAb recCe inv supAnc grupos her prop {
 	local L_`l' = substr(`"`L_`l''"', 3, .)
 }
 local L_params ""
@@ -1176,6 +1276,7 @@ capture erase `"`json'"'
 file open `fh' using `"`json'"', write text replace
 file write `fh' "{" _n
 file write `fh' `"  `q'esquema`q': `q'nl.federacion-quintiles/v2`q',"' _n
+file write `fh' `"  `q'inventario_habilitado`q': `=cond(`inventario', "true", "false")',"' _n
 file write `fh' `"  `q'contrato_base`q': {`q'esquema`q': `q'`fed_esq'`q', `q'archivo`q': `q'federacion-nl.json`q', `q'sha256`q': `q'`fed_sha'`q', `q'generado_en`q': `q'`fed_gen'`q', `q'modo`q': `q'`fed_modo'`q'},"' _n
 file write `fh' `"  `q'producto`q': `q'`nl_producto'`q',"' _n
 file write `fh' `"  `q'titulo`q': `q'`nl_titulo'`q',"' _n
@@ -1186,7 +1287,7 @@ file write `fh' `"  `q'eje`q': {`q'tipo`q': `q'quintil`q', `q'ambito`q': `q'esta
 file write `fh' `"  `q'parametros`q': {`L_params', `q'supuestos`q': [`L_paramsSup'], `q'nota`q': `q'parámetros de la paleta (01_modulos/nl-flujos.do, _nlparam); los marcados supuesto llevan default del agente y los fija Ricardo`q'},"' _n
 file write `fh' `"  `q'procedencia`q': {"' _n
 file write `fh' `"    `q'version_motor`q': `q'`nl_vmotor'`q', `q'version_capa_nl`q': `q'`nl_vnl'`q', `q'version_capa_driver`q': `q'`nl_vdriver'`q', `q'repositorio`q': `q'`nl_repo'`q',"' _n
-file write `fh' `"    `q'driver`q': `q'01_modulos/FederacionNLQuintiles.do v`driver_v'`q', `q'paleta`q': {`q'archivo`q': `q'01_modulos/nl-flujos.do`q', `q'sha256`q': `q'`paleta_sha'`q', `q'mtime`q': `q'`paleta_mtime'`q', `q'flujos`q': `NP'}, `q'log`q': `q'`logfile'`q', `q'generado_en`q': `q'`sellocorrida'`q',"' _n
+file write `fh' `"    `q'driver`q': `q'01_modulos/FederacionNLQuintiles.do v`driver_v'`q', `q'paleta`q': {`q'archivo`q': `q'01_modulos/nl-flujos.do`q', `q'sha256`q': `q'`paleta_sha'`q', `q'mtime`q': `q'`paleta_mtime'`q', `q'flujos`q': `NP', `q'heredados`q': `NPher', `q'rol`q': `q'overrides por fila (_nloverride) y filas propias de NL (_nlflujo con padre); la lista se hereda`q'}, `q'herencia`q': {`q'archivo`q': `q'01_modulos/nl-flujos-herencia.do`q', `q'sha256`q': `q'`herencia_sha'`q', `q'configuracion_nacional`q': `q'01_modulos/visualizations/SankeySF.do (ejes 1 y 4) + SIM.do §7.1 (familias del ingreso)`q', `q'sankeysf_sha256`q': `q'$NLQH_sfdo_sha`q', `q'json_nacional`q': `q'users/$id/sankey-decil.json`q', `q'json_nacional_sha256`q': `q'$NLQH_sjson_sha`q', `q'micro`q': $NLQH_nmic, `q'macro`q': $NLQH_nmac, `q'familias`q': $NLQH_nfam, `q'compuerta_H1`q': `q'cada fila heredada reproduce, sobre toda la muestra nacional (por decil nacional las micro; en total las macro), el enlace de sankey-decil.json; reldif máx `=string($NLQH_rdH1, "%9.2e")' (tol 1e-6)`q', `q'nota`q': `q'el motor nacional es solo lectura: la capa consume su configuración; la propuesta de archivo único de configuración (parámetro del Simulador) va por PR a master aparte`q'}, `q'log`q': `q'`logfile'`q', `q'generado_en`q': `q'`sellocorrida'`q',"' _n
 file write `fh' `"    `q'fuentes_congeladas_motor`q': `q'$fuentes`q', `q'fuentes_congeladas_capa`q': `q'$nlfuentes`q',"' _n
 file write `fh' `"    `q'frontera`q': `q'producto de la capa NL sobre el canal del motor y el contrato federacion-nl.json, dirigido por la paleta de flujos: reparte por quintil estatal los montos anclados que la paleta declare; ningún monto nuevo se calcula fuera del canal salvo las anclas suma (marcadas supuesto); el motor no se modifica; la metodología (qué flujos, qué claves, qué anclas) la fija Ricardo en la paleta`q',"' _n
 file write `fh' `"    `q'fuentes`q': ["' _n
@@ -1277,7 +1378,11 @@ forvalues i = 1/`NP' {
 	local cN "`r(n)'"
 	_nlqnum "`unid_`id''"
 	local uN "`r(n)'"
-	file write `fh' `"    {`q'orden`q': `i', `q'id`q': `q'`id'`q', `q'lado`q': `q'`pal_lado`i''`q', `q'abrir`q': `pal_abrir`i'', `q'estado`q': `q'`pal_estado`i''`q', `q'grupo`q': `q'`pal_grupo`i''`q', `q'banda`q': `=cond(`pal_banda`i'', "true", "false")', `q'etiqueta`q': `q'`tEt'`q', `q'variable`q': {`q'fuente`q': `q'`pal_vfuente`i''`q', `q'nombre`q': `q'`pal_vnombre`i''`q'}, `q'clave`q': `q'`tCl'`q', `q'nota`q': `q'`tNo'`q', `q'anclas_candidatas`q': `q'`tAn'`q', `q'ancla_ref`q': `q'`pal_ancla_ref`i''`q', `q'ancla_pe`q': `q'`pal_ancla_pe`i''`q', `q'unidad`q': `q'`pal_unidad`i''`q', `q'sumaNL`q': `sN', `q'concTop1NL`q': `cN', `q'nMin`q': `nMin_`id'', `q'nNL`q': `nNL_`id'', `q'unidades`q': `uN', `q'celdasBajoUmbral`q': [`bajo'], `q'celdasTop1`q': [`top'], `q'fuentes_alternas`q': `alt'}`=cond(`i' < `NP', ",", "")'"' _n
+	_nlqtxt `"`pal_nodo`i''"'
+	local tNd `"`r(t)'"'
+	_nlqnum "`pal_totalnac`i''"
+	local tNac "`r(n)'"
+	file write `fh' `"    {`q'orden`q': `i', `q'id`q': `q'`id'`q', `q'lado`q': `q'`pal_lado`i''`q', `q'abrir`q': `pal_abrir`i'', `q'estado`q': `q'`pal_estado`i''`q', `q'origen`q': `q'`pal_origen`i''`q', `q'padre`q': `q'`pal_padre`i''`q', `q'eje`q': `pal_eje`i'', `q'nodoNacional`q': `q'`tNd'`q', `q'totalNacional`q': `tNac', `q'tipoSuma`q': `q'`pal_tiposuma`i''`q', `q'grupo`q': `q'`pal_grupo`i''`q', `q'banda`q': `=cond(`pal_banda`i'', "true", "false")', `q'etiqueta`q': `q'`tEt'`q', `q'variable`q': {`q'fuente`q': `q'`pal_vfuente`i''`q', `q'nombre`q': `q'`pal_vnombre`i''`q'}, `q'clave`q': `q'`tCl'`q', `q'nota`q': `q'`tNo'`q', `q'anclas_candidatas`q': `q'`tAn'`q', `q'ancla_ref`q': `q'`pal_ancla_ref`i''`q', `q'ancla_pe`q': `q'`pal_ancla_pe`i''`q', `q'unidad`q': `q'`pal_unidad`i''`q', `q'sumaNL`q': `sN', `q'concTop1NL`q': `cN', `q'nMin`q': `nMin_`id'', `q'nNL`q': `nNL_`id'', `q'unidades`q': `uN', `q'celdasBajoUmbral`q': [`bajo'], `q'celdasTop1`q': [`top'], `q'fuentes_alternas`q': `alt'}`=cond(`i' < `NP', ",", "")'"' _n
 }
 file write `fh' "  ]," _n
 
@@ -1399,7 +1504,7 @@ _nlqtxt `"`fed_excluye'"'
 local tEx `"`r(t)'"'
 _nlqtxt `"`fed_saldo'"'
 local tSa `"`r(t)'"'
-file write `fh' `"  `q'alcance`q': {`q'paga_abiertos`q': [`L_pagaAb'], `q'paga_cerrados`q': [`L_pagaCe'], `q'aparte`q': [`L_aparte'], `q'recibe_abiertos`q': [`L_recAb'], `q'recibe_cerrados`q': [`L_recCe'], `q'inventario`q': [`L_inv'], `q'grupos`q': [`L_grupos'], `q'anclas_supuesto`q': [`L_supAnc'], `q'neta_por_quintil`q': `=cond(`netaQ', "true", "false")', `q'nodo_saldo`q': `q'`tSa'`q', `q'excluye`q': `q'`tEx'`q', `q'nota`q': `q'listas derivadas de la paleta: la vista arma el letrero de alcance con ellas y no puede decir una lista distinta de la que dibuja`q'}"' _n
+file write `fh' `"  `q'alcance`q': {`q'paga_abiertos`q': [`L_pagaAb'], `q'paga_cerrados`q': [`L_pagaCe'], `q'aparte`q': [`L_aparte'], `q'recibe_abiertos`q': [`L_recAb'], `q'recibe_cerrados`q': [`L_recCe'], `q'inventario`q': [`L_inv'], `q'heredados`q': [`L_her'], `q'propios`q': [`L_prop'], `q'grupos`q': [`L_grupos'], `q'anclas_supuesto`q': [`L_supAnc'], `q'neta_por_quintil`q': `=cond(`netaQ', "true", "false")', `q'nodo_saldo`q': `q'`tSa'`q', `q'excluye`q': `q'`tEx'`q', `q'nota`q': `q'listas derivadas de la paleta: la vista arma el letrero de alcance con ellas y no puede decir una lista distinta de la que dibuja`q'}"' _n
 file write `fh' "}" _n
 file close `fh'
 
@@ -1414,6 +1519,7 @@ foreach l in pagaAb pagaCe aparte recAb recCe inv {
 local nSup : list sizeof L_supAnc
 noisily di in g "  Paleta: `NP' flujos — paga abiertos [`D_pagaAb'] cerrados [`D_pagaCe'] · aparte [`D_aparte'] · recibe abiertos [`D_recAb'] cerrados [`D_recCe'] · inventario [`D_inv']"
 noisily di in g "  Caja gris calculada: " in y %5.1f `grisPct_`anioref'' in g " % (`anioref') · " in y %5.1f `grisPct_`aniope'' in g " % (`aniope') del recibe. Anclas supuesto en página: " in y "`=cond(`"`L_supAnc'"' == "", "ninguna", `"`L_supAnc'"')'"
+noisily di in g "  Herencia: `NPher' filas del Sankey nacional (compuerta H.1 reldif máx `=string($NLQH_rdH1, "%9.2e")'); modo inventario del render: " in y cond(`inventario', "HABILITADO (inventario_habilitado = true; la publicación aborta)", "no") in g "."
 noisily di in g "  Sin HTML: la vista itera el contrato (nl-fedq-html.do inyecta este JSON tras FederacionNL.do)."
 capture frame drop nlq_pal
 quietly log close nlfq
