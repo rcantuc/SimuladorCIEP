@@ -36,6 +36,9 @@
   celdas y sellos por celda; cerrados como nodos "sin abrir" por grupo; inventario solo en tablas y letrero), calcula y recomprueba
   la caja gris (tarjeta recibe − Σ flujos recibe en página), arma el letrero de alcance de alcance{} y los sellos de parametros{}
   (umbral_n, sello_top1, neta_por_quintil). Ninguna lista de flujos vive en esta plantilla: añadir un flujo = una línea en la paleta.
+  C4 (2026-10-09): la paleta se HEREDA del Sankey nacional (paleta[].origen, padre, totalNacional) y existe el modo inventario
+  (#vista=quintil&modo=inventario) SOLO cuando el JSON hermano trae inventario_habilitado = true (render local): todas las filas
+  como abiertas con ancla provisional suma, marca de agua BORRADOR, sin caja gris ni saldo; la compuerta de publicación lo bloquea.
 -->
 <style>
 :root{--nl:#5a2248;--nac:#7f7f7f;--banda:rgba(90,34,72,.25);--recibe:#00b1af;--recibeTexto:#008381;--paga:#e76b24;--pagaTexto:#c75108;--paquete:#fcb817;--proy:rgba(90,34,72,.55);--nowcast:rgba(90,34,72,.7);--acento:#872675;--acento2:#00b1af;--alerta:#d52b4d;--h:#0a6db6;--m:#f27794;--ink:#212121;--mut:#666666;--line:#d0d0d0;--bg:#f6f6f6;--card:#fff;--fuenteTitulo:"Poppins",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;--fuenteCuerpo:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
@@ -259,7 +262,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
       if (k === 'ini' && +v >= A0 && +v <= A1) S.ini = +v;
       if (k === 'fin' && +v >= A0 && +v <= A1) S.fin = +v;
       if (k === 'cmp') S.cmp = v === '1';
-      if (k === 'modo' && (v === 'grafica' || v === 'tabla')) S.modo = v;
+      if (k === 'modo' && (v === 'grafica' || v === 'tabla' || v === 'inventario')) S.modo = v; /* inventario: solo si el JSON hermano lo habilita (render local) */
     });
     if (S.ini > S.fin) { var t = S.ini; S.ini = S.fin; S.fin = t; }
   })();
@@ -614,9 +617,23 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
   /* Escala de quintiles: tintes del Morado Colorín (co-branding 2025) ordenados por luminosidad (Q1 más claro → Q5 pleno). */
   var QCOL = [0.52, 0.39, 0.26, 0.13, 0].map(function (t) { return shade(TK.nl, t); });
   var QRECCOL = [CF.R33, CF.PSS, CF.R28, CF.CD, CF.CR, CF.R23].filter(function (c) { return !!c; });
+  var QFLOWS_OVERRIDE = null; /* modo inventario: lista de pseudo-flujos (todas las filas de la paleta) que sustituye a flujos[] mientras se dibuja */
+  var QINV = !!(QD && QD.inventario_habilitado);
   function qPal(id) { return QPI[id] || {}; }
   function qOrden(f) { return qPal(f.id).orden || 999; }
-  function qFlows(anio, lado) { return QF.filter(function (f) { return f.anio === anio && (!lado || f.lado === lado); }).sort(function (p, q) { return qOrden(p) - qOrden(q); }); }
+  function qFlows(anio, lado) { var src = QFLOWS_OVERRIDE || QF; return src.filter(function (f) { return f.anio === anio && (!lado || f.lado === lado); }).sort(function (p, q) { return qOrden(p) - qOrden(q); }); }
+  /* Modo inventario (render local, QD.inventario_habilitado): TODAS las filas de la paleta como flujos abiertos con ancla provisional
+     suma (Σ de la muestra NL por quintil, claves[].sumaQ); las filas en página conservan su flujo real; las filas con clave en
+     unidades (ind:) no tienen monto en pesos y van como nodos "sin monto NL". No hay caja gris ni saldo: sin anclas fijas no significan nada. */
+  function qInvFlows(anio) {
+    return QPAL.map(function (p) {
+      var real = qFlow(anio, p.id);
+      if (real) return real;
+      if (p.tipoSuma !== 'pesos') return { anio: anio, id: p.id, lado: p.lado, abrir: 0, estado: 'sin monto NL', abierto: false, grupo: '', banda: false, etiqueta: p.etiqueta, total: 0, totalS1: null, totalS3: null, ancla: { spec: p.ancla_ref + ' (pendiente)', valor: 0, supuesto: true, detalle: 'clave en unidades (' + (p.variable || {}).fuente + ':' + (p.variable || {}).nombre + '); sin Σ en pesos; ancla por fijar', reclama: [] }, costoUnidad: null, unidad: '', concTop1NL: p.concTop1NL, nMin: p.nMin, celdas: [], inventario: true, sinMonto: true };
+      return { anio: anio, id: p.id, lado: p.lado, abrir: 2, estado: 'inventario (provisional)', abierto: true, grupo: '', banda: false, etiqueta: p.etiqueta, total: p.sumaNL, totalS1: null, totalS3: null, ancla: { spec: 'suma (provisional)', valor: p.sumaNL, supuesto: true, detalle: 'Σ ' + (p.variable || {}).fuente + ':' + (p.variable || {}).nombre + ' × factor en la muestra NL, pesos del PE', reclama: [] }, costoUnidad: null, unidad: '', concTop1NL: p.concTop1NL, nMin: p.nMin, inventario: true,
+        celdas: QL.map(function (lab, i) { var c = QC[p.id + ':' + (i + 1)] || {}; return { q: i + 1, v: c.sumaQ || 0, vS1: null, vS3: null, share: c.share || 0, n: c.n || 0, nHog: c.nHog || 0, concTop1: c.concTop1 || 0, cumpleN: c.cumpleN !== false, selloTop1: !!c.selloTop1 }; }) };
+    });
+  }
   function qFlow(anio, id) { for (var i = 0; i < QF.length; i++) { if (QF[i].anio === anio && QF[i].id === id) return QF[i]; } return null; }
   function qEsc(base, s1, s3) { if (S.esc === 'S1' && s1 !== null && s1 !== undefined) return s1; if (S.esc === 'S3' && s3 !== null && s3 !== undefined) return s3; return base; }
   function qTot(f) { return f.banda ? qEsc(f.total, f.totalS1, f.totalS3) : f.total; }
@@ -716,7 +733,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
   }
 
   /* ---------- Sankey a 5 columnas, dirigido por flujos[] ---------- */
-  function sankeyQ(id, a) {
+  function sankeyQ(id, a, inv) {
     var anio = a.anio, pc = S.reg === 'pc';
     var W = 1180, H = 800, padT = 40, padB = 165, nodeW = 14, gap = 9, colX = [262, 450, 672, 838, 1034];
     var fed = qPaga(a), neto = fed - a.recibe;
@@ -732,8 +749,10 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
     var c2 = [{ id: 'FED', lab: 'Federación', v: fed, slot: fed, c: 'var(--mut)', col: 2 }];
     /* columna 3: flujos recibe (abiertos → quintiles; cerrados → terminales) + caja gris + saldo */
     var c3 = FR.map(function (f, i) { return { id: f.id, f: f, lab: qLab(f), v: f.total, slot: f.total, c: f.abierto ? QRECCOL[i % QRECCOL.length] : 'url(#qhatch)', col: 3, cerrado: !f.abierto }; });
-    c3.push({ id: 'GRIS', lab: 'Caja gris', v: a.gris, slot: a.gris, c: TK.nac, col: 3, gris: true, pregap: 12 });
-    c3.push({ id: 'NETO', lab: cap1(QAL.nodo_saldo || PR.nodo_saldo || 'aportación neta en flujos identificables') + (neto < 0 ? ' (a favor de NL)' : ''), v: Math.abs(neto), slot: Math.abs(neto), c: TK.nl, col: 3, neto: true, pregap: 12 });
+    if (!inv) {
+      c3.push({ id: 'GRIS', lab: 'Caja gris', v: a.gris, slot: a.gris, c: TK.nac, col: 3, gris: true, pregap: 12 });
+      c3.push({ id: 'NETO', lab: cap1(QAL.nodo_saldo || PR.nodo_saldo || 'aportación neta en flujos identificables') + (neto < 0 ? ' (a favor de NL)' : ''), v: Math.abs(neto), slot: Math.abs(neto), c: TK.nl, col: 3, neto: true, pregap: 12 });
+    } else { neto = 0; }
     var c4 = QL.map(function (lab, i) { var q = i + 1, v = 0; FR.forEach(function (f) { var c = f.abierto ? qCell(f, q) : null; if (c) v += c.v; }); return { id: 'R' + q, q: q, lab: lab, v: v, slot: v, c: QCOL[i], col: 4 }; });
     var cols = [c0, c1, c2, c3, c4], ph = H - padT - padB, scale = Infinity;
     cols.forEach(function (nodes) { var tot = 0, gaps = 0; nodes.forEach(function (n, i) { tot += n.slot; gaps += (i ? gap : 0) + (n.pregap || 0); }); var sc = (ph - gaps) / Math.max(tot, 1e-9); if (sc < scale) scale = sc; });
@@ -800,8 +819,16 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
     var badges = links.filter(function (l) { return !!l.sello; }).map(function (l) { return { l: l, by: l.y1 - 9, t: l.t }; }).sort(function (p, q) { return p.t < q.t ? -1 : p.t > q.t ? 1 : p.by - q.by; });
     var lastT = null, lastBy = -1e9; badges.forEach(function (b) { if (b.t !== lastT) { lastT = b.t; lastBy = -1e9; } if (b.by - lastBy < 16) b.by = lastBy + 16; lastBy = b.by; });
     badges.forEach(function (b) { var l = b.l, w = Math.max(44, 8 + l.sello.length * 5.6), bx = l.tn.x - w - 6; o += '<rect x="' + bx + '" y="' + b.by + '" width="' + w + '" height="15" rx="7" fill="#fff" stroke="var(--alerta)"/><text class="sello" x="' + (bx + w / 2) + '" y="' + (b.by + 11) + '" text-anchor="middle">' + esc(l.sello) + '</text>'; });
+    /* marca de agua del modo inventario */
+    if (inv) o += '<text x="' + (W / 2) + '" y="' + (H / 2) + '" text-anchor="middle" transform="rotate(-18 ' + (W / 2) + ' ' + (H / 2) + ')" style="font-family:var(--fuenteTitulo);font-size:46px;font-weight:600;fill:var(--alerta);fill-opacity:.22;letter-spacing:2px">BORRADOR — anclas sin fijar, no publicable</text>';
     /* pies de figura (del contrato) */
-    var fy = H - padB + 36, sup = (QAL.anclas_supuesto || []).filter(function (x) { return x.anio === anio; }).map(function (x) { return x.id + ' (' + x.ancla + ')'; }), pies = [
+    var fy = H - padB + 36, sup = (QAL.anclas_supuesto || []).filter(function (x) { return x.anio === anio; }).map(function (x) { return x.id + ' (' + x.ancla + ')'; }), pies = inv ? [
+      'MODO INVENTARIO (render local, no publicable): TODAS las filas de la paleta heredada del Sankey nacional (' + QPAL.length + ') dibujadas como abiertas por quintil con ancla provisional suma = Σ de la muestra NL (pesos del PE ' + QD.anio_politica + '); las filas en página conservan su flujo real y su ancla.',
+      'Sin caja gris ni saldo: sin anclas fijas, su % no significa nada (pendiente de paleta). Federación = Σ paga provisional; el lado recibe no cierra contra la tarjeta. Filas sin monto NL (clave en unidades, ancla pendiente): ' + (FP.concat(FR).filter(function (f) { return f.sinMonto; }).map(function (f) { return f.id; }).join(', ') || 'ninguna') + '.',
+      'Sellos por celda como siempre: badge con n < ' + QUMB + ' o top-1 ≥ ' + f1.format(QTOP) + ' %. Origen de cada fila: paleta[].origen (nacional | nl), base: paleta[].variable; Σ nacional de referencia en paleta[].totalNacional.',
+      'Para fijar la paleta: _nloverride <id>, abrir() ancla_ref() ancla_pe() en 01_modulos/nl-flujos.do; después re-correr FederacionNLQuintiles.do SIN global nlq_inventario (la publicación aborta si inventario_habilitado = true).',
+      pc ? 'Por habitante: MXN/hab. = monto ÷ (población NL CONAPO ÷ ' + QL.length + ') en quintiles; ÷ población NL en agregados.' : 'Unidades: ' + MACRO_UNIT + ' (pesos corrientes ÷ ' + MACRO_DIV.toExponential(0).replace('e+', 'e') + ').',
+      ''] : [
       'Izquierda: Q1–Q5 = quintiles ESTATALES por ingreso bruto del hogar por integrante (ENIGH ' + (QE.enigh || '') + ', re-rankeados en NL; Q1 = más pobre). Flujos paga abiertos: ' + FP.filter(function (f) { return f.abierto; }).map(function (f) { return f.id; }).join(', ') + (FP.some(function (f) { return !f.abierto; }) ? '; sin abrir (nodos propios): ' + FP.filter(function (f) { return !f.abierto; }).map(function (f) { return f.id; }).join(', ') : '') + (FA.length ? '; aparte: ' + FA.map(function (f) { return f.id; }).join(', ') : '') + '.',
       'Centro: Federación = Σ flujos paga (escenario ' + S.esc + ') = tarjeta. Derecha: flujos recibe en página: ' + (FR.length ? FR.map(function (f) { return f.id + (f.abierto ? '' : ' (sin abrir)'); }).join(', ') : 'ninguno') + '; caja gris CALCULADA = tarjeta recibe − Σ de ellos (' + f1.format(a.grisPct) + ' %), termina en la columna de fondos. ' + qEtiqAnio(a) + '.',
       'Sellos: badge en toda celda con n < ' + QUMB + ' o top-1 ≥ ' + f1.format(QTOP) + ' % (parámetros de la paleta); halo punteado = banda [S1, S3] de los flujos con banda (' + (FP.filter(function (f) { return f.banda; }).map(function (f) { return f.id; }).join(', ') || 'ninguno') + '); trazo punteado morado = celda con banda. ' + (QNETA ? 'Neta por quintil ENCENDIDA (parámetro): en la tabla.' : 'No existe neta por quintil: el saldo sigue agregado (tarjetas y nodo).'),
@@ -845,6 +872,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
     L.push('# Eje: quintiles ' + (QE.ambito || '') + ' (' + (QE.ingreso || '') + '; ' + (QE.ponderacion || '') + '); umbral n = ' + QUMB + '; ENIGH ' + (QE.enigh || ''));
     (QP.fuentes || []).forEach(function (f) { L.push('# Fuente quintiles ' + f.id + ': ' + f.fuente + (f.sha256 ? ' · sha256 ' + f.sha256 : '') + (f.mtime ? ' · mtime ' + f.mtime : '')); });
     Object.keys(QSP).forEach(function (k) { L.push('# Supuesto ' + k + ': ' + QSP[k]); });
+    if (QFLOWS_OVERRIDE) L.push('# MODO INVENTARIO (render local, no publicable): todas las filas de la paleta con ancla provisional suma; sin caja gris ni saldo');
     L.push('# Registro de esta tabla: ' + (S.reg === 'pc' ? 'MXN por habitante; celdas y nodos de quintil = monto ÷ (población NL CONAPO del año ÷ ' + QL.length + '), agregados = monto ÷ población NL' : 'pesos corrientes del año (÷1e6 = mdp)') + ' · escenario ' + S.esc + ' · neta por quintil: ' + (QNETA ? 'encendida por parámetro' : 'no existe (parámetro apagado)'));
     return L;
   }
@@ -908,9 +936,11 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
   function qLeyenda(anio) { var L = QL.map(function (lab, i) { return [lab + (i === 0 ? ' (más pobre)' : i === QL.length - 1 ? ' (más rico)' : ''), 'background:' + QCOL[i]]; }); var cer = qFlows(anio).filter(function (f) { return !f.abierto; }); return L.concat(cer.length ? [['Sin abrir por quintil (' + cer.map(function (f) { return f.id; }).join(', ') + ')', 'background:repeating-linear-gradient(45deg,#fff 0 2px,var(--mut) 2px 4px);border:1px dashed var(--mut)']] : []).concat([['Flujos paga → Federación', 'background:' + TK.paga], ['Federación → flujos recibe (con etiqueta de persona)', 'background:' + TK.recibe], ['Caja gris calculada (termina en fondos)', 'background:' + TK.nac], [cap1(QAL.nodo_saldo || PR.nodo_saldo || 'aportación neta') + ' (solo agregada)', 'background:' + TK.nl], ['Banda [S1, S3]', 'background:var(--banda);border:1px dashed var(--nl)'], ['Sello: celda con n < ' + QUMB + ' o top-1 ≥ ' + f1.format(QTOP) + ' %', 'background:#fff;border:1px dashed var(--alerta)']]); }
   if (QD) document.getElementById('alcance').innerHTML += ' <b>' + esc(QP.version_capa_driver || QP.version_capa_nl || '') + ':</b> la pestaña "Ida y vuelta por quintil" abre por quintil estatal los flujos que declara la paleta de Stata (' + QD.anio_referencia + ' observado y ' + QD.anio_politica + ' Paquete) con su propio alcance' + (QNETA ? '' : '; no existe neta por quintil') + '.';
   var QSHA = { sha: null, ok: null };
+  if (QINV) { var mbI = document.getElementById('modo'), bI = document.createElement('button'); bI.setAttribute('data-m', 'inventario'); bI.textContent = 'Inventario (borrador)'; bI.title = 'Render local: todas las filas de la paleta heredada con anclas provisionales; no publicable'; bI.addEventListener('click', function () { S.modo = 'inventario'; if (S.vista !== 'quintil') { S.vista = 'quintil'; if (!byQ[S.anio]) S.anio = QD.anio_referencia; S.medida = 'nominal'; } sync(); render(); }); mbI.appendChild(bI); }
 
   /* ---------- render ---------- */
   function render() {
+    if (S.modo === 'inventario' && !(S.vista === 'quintil' && QINV)) { S.modo = 'grafica'; sync(); }
     if (S.vista === 'quintil' && S.medida !== 'nominal') { S.medida = 'nominal'; sync(); }
     document.getElementById('alcance-q').style.display = 'none';
     cards();
@@ -927,6 +957,16 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
       c2t = 'La aportación neta de Nuevo León en el tiempo'; c2cap = 'Recibe − paga por año (barra = S0; franja = banda [S1, S3]). Observado hasta el último año con ambos lados completos; después, Paquete (PEF/PPEF vs. LIF/ILIF) y año en curso atenuados. Negativo = NL aporta más de lo que recibe.';
       c2data = function () { return { cols: colsAnual(), rows: rowsAnual(), extra: 'serie anual', rowClass: rowClass }; }; c2name = 'balanza-serie';
       if (S.modo === 'grafica') { barsBand('c2', rowsAnual(), 'balanza', 'balanzaPaq', PR.nodo_saldo || 'aportación neta'); legend('c2', [['Observado (S0)', 'background:var(--nl)'], ['Banda [S1, S3]', 'background:var(--banda)'], ['Paquete (PEF/PPEF vs LIF/ILIF)', 'background:var(--paquete)'], ['En curso (PEF aprobado vs LIF)', 'background:var(--proy)']]); document.getElementById('c2-frase').textContent = frase(rowsAnual(), 'balanzaS0', 'la aportación neta de NL (S0)'); }
+    } else if (S.vista === 'quintil' && S.modo === 'inventario') {
+      var ai = byQ[S.anio];
+      c1t = 'INVENTARIO (BORRADOR, no publicable): todos los flujos heredados del Sankey nacional, abiertos por quintil estatal con anclas provisionales — ' + S.anio;
+      c1cap = 'Render local para VER los montos antes de fijar la paleta: las ' + QPAL.length + ' filas (' + (QAL.heredados || []).length + ' heredadas de SankeySF.do + ' + (QAL.propios || []).length + ' propias de NL) como si todas tuvieran abrir 2, con ancla provisional suma (Σ de la muestra NL, pesos del PE). Las filas que ya están en página conservan su flujo y ancla reales. Sin caja gris ni saldo. Escenario y registro: ' + S.esc + ', ' + (S.reg === 'pc' ? 'por habitante' : MACRO_UNIT) + '.';
+      c1data = function () { QFLOWS_OVERRIDE = ai ? qInvFlows(ai.anio) : null; var r = { cols: colsQFlujos(), rows: ai ? rowsQFlujos(ai) : [], extra: 'INVENTARIO provisional por quintil estatal, año ' + S.anio, rowClass: function (x) { return x.cls || ''; } }; QFLOWS_OVERRIDE = null; return r; }; c1name = 'quintil-inventario';
+      c2t = 'Celdas quintil × flujo de toda la paleta — ' + S.anio; c2cap = 'Participación, Σ de la muestra, n, hogares, top-1, umbral, estado, origen y variable de cada fila; con esto se decide qué se enciende y con qué ancla.';
+      c2data = function () { return { cols: colsQCeldas(), rows: rowsQCeldas(), extra: 'celdas quintil × flujo (toda la paleta)', rowClass: function (x) { return x.cls || ''; } }; }; c2name = 'quintil-inventario-celdas';
+      var aqDivI = document.getElementById('alcance-q'); aqDivI.style.display = 'block'; aqDivI.innerHTML = '<b style="color:var(--alerta)">BORRADOR — modo inventario del render local: anclas sin fijar, no publicable.</b> Lista heredada del Sankey nacional (' + esc((QP.herencia || {}).configuracion_nacional || 'SankeySF.do') + '; compuerta H.1: ' + esc((QP.herencia || {}).compuerta_H1 || '') + '). Heredadas: ' + esc((QAL.heredados || []).join(', ')) + '. Propias de NL: ' + esc((QAL.propios || []).join(', ')) + '. En página hoy (paleta): ' + esc((QAL.paga_abiertos || []).concat(QAL.paga_cerrados || [], QAL.aparte || [], QAL.recibe_abiertos || [], QAL.recibe_cerrados || []).join(', ')) + '. La caja gris y el saldo no se calculan en este modo: pendiente de paleta.';
+      if (!ai) { document.getElementById('c1-body').innerHTML = '<div class="errbox" style="color:var(--ink)">El inventario existe solo para ' + QD.anio_referencia + ' y ' + QD.anio_politica + '.</div>'; document.getElementById('c2-body').innerHTML = ''; legend('c1', []); legend('c2', []); }
+      else { QFLOWS_OVERRIDE = qInvFlows(ai.anio); sankeyQ('c1', ai, true); legend('c1', qLeyenda(ai.anio).filter(function (l) { return l[0].indexOf('Caja gris') < 0 && l[0].indexOf('neta') < 0; })); document.getElementById('c1-frase').textContent = 'Inventario ' + S.anio + ': Σ paga provisional ' + qVal(qPaga(ai), ai.anio) + ' (tarjeta paga ' + qVal(ai.tjPaga, ai.anio) + ') · Σ recibe provisional ' + qVal(qSumLado(ai, 'recibe'), ai.anio) + ' (tarjeta recibe ' + qVal(ai.tjRec, ai.anio) + '): las Σ de la muestra NO son anclas de las tarjetas; solo sirven para ver el tamaño relativo de cada flujo antes de fijarlas.'; QFLOWS_OVERRIDE = null; table('c2', c2data, c2t); legend('c2', []); document.getElementById('c2-frase').textContent = 'Modo inventario: sin autocomprobaciones de balance (no hay anclas); los sellos por celda y la identidad del contrato base siguen vigentes.'; }
     } else if (S.vista === 'quintil') {
       var aq = QD ? byQ[S.anio] : null, chq = QD ? checksQ(S.anio) : { ok: [], bad: ['sin JSON de quintiles: ' + QERR] };
       if (QSHA.ok === false) chq.bad.push('SHA-256 del contrato base incrustado ≠ quintiles.contrato_base.sha256');
@@ -967,7 +1007,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
     }
     document.getElementById('c1-title').textContent = c1t; document.getElementById('c1-cap').textContent = c1cap;
     document.getElementById('c2-title').textContent = c2t; document.getElementById('c2-cap').textContent = c2cap;
-    if (S.modo === 'tabla') { table('c1', c1data, c1t); table('c2', c2data, c2t); legend('c1', []); legend('c2', []); } else { ensureFb('c1'); ensureFb('c2'); }
+    if (S.modo === 'tabla') { table('c1', c1data, c1t); table('c2', c2data, c2t); legend('c1', []); legend('c2', []); } else { ensureFb('c1'); if (S.modo !== 'inventario') ensureFb('c2'); }
     tools('c1', c1data, c1t, c1name); tools('c2', c2data, c2t, c2name);
     document.getElementById('c1-tip').textContent = ''; document.getElementById('c2-tip').textContent = '';
   }
