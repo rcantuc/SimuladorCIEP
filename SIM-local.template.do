@@ -18,6 +18,10 @@ global bootstrap 100					// réplicas bootstrap de Simulador: EE e IC 95% por UP
 //global nographs "nographs"			// sin gráficas (batch)
 //global update "update"				// reconstruye raw/temp/, master/*.dta y los cachés micro de master/<anioenigh>/
 //global fuentes "2026-10-06"			// fuentes vivas congeladas a esa fecha (asset fuentes-AAAA-MM-DD.zip); vacío = en vivo
+//global entidad "Nuevo León"			// entidad federativa (nombre exacto de $entidadesL): Poblacion de la entidad y Sankey por quintil estatal en users/$id/<ABREV>/; los archivos nacionales no cambian
+//global entidad_vintages "0"			// banda de vintages ENIGH del Sankey de entidad: vacío = 2016-2024 (los que existan en users/$id-v<t>/), "0" = sin banda
+//global sello_n 100					// sello de muestra (n mínimo por celda) y de concentración (% máximo de una persona) del Sankey de entidad
+//global sello_top1 25
 //global hasta "3"						// paro temprano: termina al cerrar la sección 1-7 (3 = tras PerfilesSim)
 //global textbook "textbook"			// escalares a LaTeX
 //global export "/ruta/a/images"		// exporta gráficas

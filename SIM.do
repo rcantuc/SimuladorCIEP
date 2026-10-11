@@ -58,6 +58,12 @@ global bootstrap 1									// RÉPLICAS BOOTSTRAP de Simulador (PerfilesSim, §6
 //global rawwip "rawwip"							// RAW EN WORK-IN-PROGRESS
 //global update "update"							// UPDATE BASES DE DATOS
 //global fuentes "2026-10-06"						// FUENTES VIVAS CONGELADAS (INEGI BIE/CSI y SHCP) a esa fecha: asset fuentes-AAAA-MM-DD.zip del release (runbook-deploys-ciep.md §9); vacío = descargas en vivo
+//global entidad "Nuevo León"						// ENTIDAD FEDERATIVA (2026-10-10): nombre exacto de $entidadesL (SIMentidad). Vacío = solo nacional, byte-idéntico al ancla. Con entidad: Poblacion de la entidad (§1) y Sankey por quintil ESTATAL + cortes en users/$id/<ABREV>/ (§8.2); runbook-deploys-ciep.md §9.7
+//global entidad_vintages "2016 2018 2020 2022 2024"	// BANDA del Sankey de entidad: vintages ENIGH en users/$id-v<t>/aportaciones.dta (los que existan); vacío = los cinco; "0" = sin banda
+//global entidad_macro "pob"							// RENGLONES MACRO del Sankey de entidad (supuesto S-P3, pendiente de firma): "pob" = nacional × población ENIGH de la entidad / nacional; "omitir" = no se dibujan
+//global entidad_cuotas "aparte"						// CUOTAS IMSS en el Sankey de entidad: vacío = dentro de "Imp al trabajo" (como el nacional); "aparte" = nodo propio "Cuotas IMSS" (regla heredada de la paleta NL, P5)
+//global sello_n 100									// SELLO DE MUESTRA (Sankey de entidad): n mínimo de personas con el flujo en la celda; default 100 (regla NL, P5)
+//global sello_top1 25								// SELLO DE CONCENTRACIÓN (Sankey de entidad): % máximo de una persona en el flujo de la celda; default 25 (regla NL, P5)
 //global output "output"							// ARCHIVO DE SALIDA (WEB)
 //global hasta "3"									// PARO TEMPRANO: termina al cerrar la sección indicada (1-7)
 
@@ -66,6 +72,17 @@ global bootstrap 1									// RÉPLICAS BOOTSTRAP de Simulador (PerfilesSim, §6
 * archivo, el comportamiento es byte-idéntico. Plantilla: SIM-local.template.do. *
 capture confirm file "${SIMROOT}/SIM-local.do"
 if _rc == 0 run "${SIMROOT}/SIM-local.do"
+
+** 0.6 Entidad federativa (2026-10-10): regla de oro — todo lo de entidad vive dentro de
+* if "$entidad" != "". Con el global vacío no corre ni una línea nueva ni se escribe un
+* archivo nuevo. SIMentidad valida el nombre contra $entidadesL (error accionable si no
+* existe) y da la abreviatura de la carpeta de salida users/$id/<ABREV>/ (P1). *
+if "$entidad" != "" {
+	SIMentidad "$entidad"
+	global entidad "`r(nombre)'"
+	capture mkdir "${SIMROOT}/users/$id/`r(abrev)'"
+	noisily di _newline in g "Entidad federativa: " in y "`r(nombre)'" in g " (clave INEGI " in y "`r(clave)'" in g ", abreviatura " in y "`r(abrev)'" in g ") {c -} outputs de entidad en " in y "users/$id/`r(abrev)'/" in g "; los nacionales no cambian."
+}
 
 if "$update" == "update" {
 	! rm -r "${SIMROOT}/raw/temp/"
@@ -97,6 +114,7 @@ if "$output" != "" {
 **# 1. DEMOGRAFÍA
 ***
 noisily Poblacion, anioi(`=aniovp') aniofinal(2070) $textbook $nographs
+if "$entidad" != "" noisily Poblacion if entidad == "$entidad", anioi(`=aniovp') aniofinal(2070) $textbook $nographs	// entidad (2026-10-10): Poblacion ya es entidad-consciente (escalares pob*<ABREV>, pirámide en graphs/); nada nacional cambia
 if "$hasta" == "1" exit								// paro temprano (0.4 / SIM-local.do): termina tras la sección 1
 
 
@@ -521,6 +539,11 @@ noisily FiscalGap, anio(`=anioPE') end(`=anioPE+5') aniomin(2016) $nographs desd
 ** 8.2 Sankey del sistema fiscal
 foreach k in decil grupoedad sexo rural escol {
 	noisily run "${SIMROOT}/01_modulos/visualizations/SankeySF.do" `k' `=anioPE'
+}
+if "$entidad" != "" {									// entidad (2026-10-10): mismos cortes, con el decil sustituido por el QUINTIL ESTATAL (P2); outputs en users/$id/<ABREV>/ (P1)
+	foreach k in quintil grupoedad sexo rural escol {
+		noisily run "${SIMROOT}/01_modulos/visualizations/SankeySF.do" `k' `=anioPE' "$entidad"
+	}
 }
 
 
