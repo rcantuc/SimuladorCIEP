@@ -13,7 +13,8 @@
   5 cortes). Cada bloque de resultados del nacional es: antetítulo (h6) · título (h2) · "Fuente: Elaborado con el
   Simulador Fiscal CIEP" · gráfica · subtítulo (h4) · uno o dos párrafos. Aquí se conserva ese orden y esa jerarquía.
   Datos: SOLO el contrato del motor-entidad (feat/entidad, v8.8.2): users/<id>/NL/sankey-{quintil,grupoedad,sexo,rural,
-  escol}.json + users/<id>/sankey-decil.json (nacional, para "% del nacional"), convertidos a un JSON único
+  escol}.json + users/<id>/sankey-decil.json (nacional, para "% del nacional") + users/<id>/NL/ciclo-vida.json (CicloEntidad.do, F3
+  2026-10-11: pirámide de ciclo de vida calcada del nacional, que sustituye los cortes grupoedad y sexo en la vista), convertidos a un JSON único
   (esquema nl.espejo/v1) que se incrusta en el bloque script application/json con id nl-data. Regla dura: ningún número
   vive en esta plantilla; todos vienen del JSON y la página los recalcula desde los enlaces del Sankey (autocomprobación).
   Dieta de texto: cuerpo = titulares, cifras, gráficas y una línea de lectura por sección; sellos (n < sello_n,
@@ -22,7 +23,7 @@
   Identidad: 100 % CoNL (NLEstilo en nl-datos.js: tokens, imagotipo 2023, lockup de co-branding). Cero CDNs, cero fetch.
   Inyección: tres marcas en líneas propias (datos NLFED, componente nl-datos.js, activos nl-estilo-assets.js), las
   mismas que resuelve nl-html.do; para el prototipo las resuelve diag-pivote-entidad-2026-10-10/F2/render-f2.mjs.
-  Estado por URL: #reg=pc|macro|pibe&corte=quintil|grupoedad|escol|rural|sexo
+  Estado por URL: #reg=pc|macro|pibe&corte=quintil|grupoedad|escol|rural|sexo&pir=pct|reg (unidad de la pirámide)
   Pulido 2026-10-10 (noche): conciliación nacional-vs-entidad como contenido (R6), pie de cierre en las tablas, etiquetas
   del residual del motor (Aportación neta a la Federación → Federación y futuro), registro % del PIBE (R-2), per cápita de
   totales con CONAPO (R-3), nacional = sankeys del ancla v8.8.2 (R-7), textos adaptados marcados con data-r4 y [R-4].
@@ -93,6 +94,7 @@ tr.cierre td{font-size:12px;color:var(--mut);white-space:normal;border-bottom:0;
 svg{width:100%;height:auto;display:block}
 .tick{font-size:11px;fill:var(--mut)}.lab{font-size:12px;fill:var(--ink)}.lab2{font-size:11px;fill:var(--mut)}.grid{stroke:#e5e8ec;stroke-width:1;stroke-dasharray:3 3}.zero{stroke:var(--mut);stroke-width:1.2}
 .nodo text{font-size:12px;fill:var(--ink)}.nodo .v{font-size:11px;fill:var(--mut)}.link{fill-opacity:.35}.link:hover{fill-opacity:.65}
+.piramide{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--mut);margin-top:8px}.legend i{display:inline-block;width:12px;height:12px;border-radius:2px;vertical-align:-2px;margin-right:5px}
 .titulos{display:grid;grid-template-columns:repeat(4,1fr);font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px;margin:6px 0 4px}
 .titulos div:nth-child(2),.titulos div:nth-child(3){text-align:center}.titulos div:last-child{text-align:right}
@@ -123,7 +125,7 @@ footer p{margin:4px 0}.ok{color:var(--recibeTexto)}.bad{color:var(--alerta)}
 code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
 ol.notas{font-size:12.5px;color:var(--mut);margin:8px 0 0 18px;padding:0}ol.notas li{margin:3px 0}
 #selftest{display:none}
-@media (max-width:900px){.formula{grid-template-columns:1fr}.op{display:none}.hero,.dos,.res-grid,.res-grid.inv{grid-template-columns:1fr}.pc{grid-template-columns:1fr}}
+@media (max-width:900px){.formula{grid-template-columns:1fr}.op{display:none}.hero,.dos,.res-grid,.res-grid.inv{grid-template-columns:1fr}.pc{grid-template-columns:1fr}.piramide{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -206,13 +208,18 @@ ol.notas{font-size:12.5px;color:var(--mut);margin:8px 0 0 18px;padding:0}ol.nota
     </div></details>
   </section>
 
-  <!-- R2 · molde: "Los contratos fiscales" / "La carga fiscal por edades" (pirámide por edad y sexo) -->
+  <!-- R2 · molde: "Los contratos fiscales" / "La carga fiscal por edades" (pirámide por quinquenio × sexo × deciles, calcada del sitio nacional). F3 2026-10-11: sustituye los dos cortes Sankey de grupoedad y sexo que mostraba esta sección -->
   <h6 class="eyebrow">Los contratos fiscales</h6>
   <section class="res">
-    <div class="res-head"><h2>La carga fiscal por edades</h2></div>
+    <div class="res-head"><h2>La carga fiscal por edades</h2><div class="ctl-bar" style="margin:0"><span>Unidad</span><div class="seg" id="pir-unidad"><button data-pu="pct" class="on">% del neto total (como el nacional)</button><button data-pu="reg">Registro de la página</button></div></div></div>
     <p class="fuente"><b>Fuente</b>: Elaborado con el Simulador Fiscal CIEP.</p>
     <div class="res-grid full">
-      <div class="chart"><div id="ch-edades"></div><div class="legend" id="leg-edades"></div><p class="lectura" id="lec-edades"></p><div id="datos-edades"></div></div>
+      <div class="chart">
+        <div class="piramide"><div id="ch-piramide-h"></div><div id="ch-piramide-m"></div></div>
+        <div class="legend" id="leg-piramide"></div>
+        <p class="lectura" id="lec-piramide"></p>
+        <div id="datos-piramide"></div>
+      </div>
     </div>
     <div class="res-grid inv" style="margin-top:16px">
       <div class="texto">
@@ -221,11 +228,14 @@ ol.notas{font-size:12.5px;color:var(--mut);margin:8px 0 0 18px;padding:0}ol.nota
         <!-- [R-4] -->
         <p data-r4="adaptado">Además, los roles de género, las diferencias salariales y las oportunidades desiguales entre <b>hombres</b> y <b>mujeres</b> también modifican el comportamiento económico y las obligaciones fiscales de cada persona.</p>
       </div>
-      <div class="chart"><div id="ch-sexo"></div><p class="lectura" id="lec-sexo"></p><div id="datos-sexo"></div></div>
+      <div class="texto">
+        <p data-r4="nuevo"><b>Cómo se lee.</b> Cada barra es un quinquenio de edad: a la derecha del cero la edad <b>aporta</b> en neto (paga más impuestos de los que recibe en gasto público); a la izquierda, <b>recibe</b> en neto. Los tramos de cada barra son los deciles nacionales de ingreso (I–V, VI–IX y X), como en el sitio nacional. La unidad del nacional es el porcentaje del neto total: la suma de todas las barras de Nuevo León es 100. El sello <span class="bdg s" tabindex="0">⚑</span> marca quinquenios con pocas personas en la ENIGH o donde una sola persona concentra el flujo: se declaran, no se suavizan.</p>
+      </div>
     </div>
     <details class="met"><summary>Metodología y alcance</summary><div>
-      <p>El nacional dibuja una pirámide por edad simple y sexo, separando deciles I–V, VI–IX y X. El contrato de entidad trae cinco grupos de edad (0–4, 5–17, 18–24, 25–64, 65 y más) y dos sexos, con las mismas familias del Sankey: aquí se muestra, por grupo, lo que aporta, lo que recibe y el neto por persona del grupo. Las gráficas del nacional incluyen las transferencias intrahogar e interhogar (de padres a hijos, de abuelos a nietos); el Sankey de entidad no las lleva.</p>
-      <p>Sellos por grupo de edad: <span data-sellos="grupoedad"></span>; por sexo: <span data-sellos="sexo"></span>. Población expandida por grupo: <span data-celdas-ge></span>.</p>
+      <p data-r4="nuevo">Misma gráfica, misma definición y mismo orden que "La carga fiscal por edades" de simuladorfiscal.ciep.mx (<code>Simulador.ado</code> → familias <code>APORT*</code> de <code>output.txt</code>), calculada con la muestra de Nuevo León por <code>CicloEntidad.do</code> (<code>users/&lt;id&gt;/NL/ciclo-vida.json</code>, PR feat/ciclo-entidad). Neto = <span data-ciclo-def-neto></span>. Aporta = <span data-ciclo-def-aporta></span>. Recibe = <span data-ciclo-def-recibe></span>. Barras por quinquenio (0–4 … 105–109; el 110+ se dibuja solo si trae muestra) × sexo × <span data-ciclo-grupos></span>. Unidad del nacional: % del neto total de aportaciones netas (Σ = 100). El registro de la página (MXN por persona de la celda, mdp o % del PIBE) se ofrece como alternativa; en MXN por persona los tramos no son aditivos y la barra va entera.</p>
+      <p data-r4="nuevo">Sellos por celda (n &lt; <span data-sello-n></span> personas de la muestra, o una sola persona con más del <span data-sello-top1></span> % del aporta o del recibe de la celda; regla P5): <span data-ciclo-sellos></span>. Celdas sin muestra: <span data-ciclo-vacias></span>. El neto nacional de referencia es el del <code>output.txt</code> del ancla; las transferencias intrahogar e interhogar que menciona el nacional están implícitas en la asignación por persona del motor.</p>
+      <p data-r4="nuevo">Qué salió de esta sección: los dos cortes Sankey de grupos de edad y de sexo (hasta el pulido F2). El motor sigue produciéndolos (<code>sankey-grupoedad.json</code>, <code>sankey-sexo.json</code>) y la página los usa como testigo: el recibe de 0–4 y de 65 y más, y el de hombres y mujeres, coincide con el gasto micro de esas celdas del Sankey (autocomprobación).</p>
     </div></details>
   </section>
 
@@ -398,9 +408,9 @@ ol.notas{font-size:12.5px;color:var(--mut);margin:8px 0 0 18px;padding:0}ol.nota
   function sellosDe(c) { var out = []; Object.keys(K[c].familias).forEach(function (f) { var F = K[c].familias[f]; if (!F.micro) return; Object.keys(F.celdas).forEach(function (k) { if (F.celdas[k].sello === 1) out.push({ fam: f, celda: k, n: F.celdas[k].n, top1: F.celdas[k].top1 }); }); }); return out; }
 
   /* ---------- estado por URL ---------- */
-  var S = { reg: 'pc', corte: 'quintil' };
-  (location.hash || '').replace(/^#/, '').split('&').forEach(function (kv) { var p = kv.split('='); if (p[0] === 'reg' && (p[1] === 'pc' || p[1] === 'macro' || (p[1] === 'pibe' && PIBE && PIBN))) S.reg = p[1]; if (p[0] === 'corte' && K[p[1]]) S.corte = p[1]; });
-  function pushHash() { location.replace('#reg=' + S.reg + '&corte=' + S.corte); }
+  var S = { reg: 'pc', corte: 'quintil', pir: 'pct' };
+  (location.hash || '').replace(/^#/, '').split('&').forEach(function (kv) { var p = kv.split('='); if (p[0] === 'reg' && (p[1] === 'pc' || p[1] === 'macro' || (p[1] === 'pibe' && PIBE && PIBN))) S.reg = p[1]; if (p[0] === 'corte' && K[p[1]]) S.corte = p[1]; if (p[0] === 'pir' && (p[1] === 'pct' || p[1] === 'reg')) S.pir = p[1]; });
+  function pushHash() { location.replace('#reg=' + S.reg + '&corte=' + S.corte + '&pir=' + S.pir); }
   function pc() { return S.reg === 'pc'; }
   function pibe() { return S.reg === 'pibe'; }
   function mdp(x) { return f1.format(x / MACRO_DIV) + ' ' + MACRO_UNIT; }
@@ -508,39 +518,66 @@ ol.notas{font-size:12.5px;color:var(--mut);margin:8px 0 0 18px;padding:0}ol.nota
   function extent(vals) { var mn = 0, mx = 0; vals.forEach(function (v) { if (v === null || v === undefined || isNaN(v)) return; if (v < mn) mn = v; if (v > mx) mx = v; }); if (mx === mn) mx = mn + 1; var pad = (mx - mn) * 0.08; return [mn - (mn < 0 ? pad : 0), mx + pad]; }
   function legend(id, items) { document.getElementById(id).innerHTML = items.map(function (it) { return '<span><i style="' + it[1] + '"></i>' + esc(it[0]) + '</span>'; }).join(''); }
 
-  /* ---------- R2. carga fiscal por edades y por sexo (barras agrupadas: aporta / recibe / neto) ---------- */
-  function barrasGrupos(id, corte, titulo) {
-    var cel = K[corte].celdas, items = cel.map(function (c) { var ing = celdaTot(corte, 'ingreso', c.celda), gas = celdaTot(corte, 'gasto', c.celda); return { lab: c.celda, pob: c.pob, ing: ing, gas: gas, neto: ing - gas }; });
-    var W = 1180, H = 360, left = 80, right = 20, top = 24, bottom = 56, pw = W - left - right, ph = H - top - bottom;
-    var vals = []; items.forEach(function (it) { vals.push(scale(it.ing, it.pob), -scale(it.gas, it.pob), scale(it.neto, it.pob)); });
-    var e = extent(vals), mn = e[0], mx = e[1], y = function (v) { return top + ph - (v - mn) / (mx - mn) * ph; };
-    var n = items.length, bw = pw / n, o = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(titulo) + '">';
-    ticks(mn, mx, 6).forEach(function (t) { o += '<line class="grid" x1="' + left + '" x2="' + (left + pw) + '" y1="' + y(t) + '" y2="' + y(t) + '"/><text class="tick" x="' + (left - 6) + '" y="' + (y(t) + 4) + '" text-anchor="end">' + tickFmt(t) + '</text>'; });
-    var sel = sellosDe(corte);
-    items.forEach(function (it, k) {
-      var x0 = left + k * bw + bw * 0.12, w = bw * 0.76 / 3;
-      [['ing', TK.paga, 'aporta'], ['gas', TK.recibe, 'recibe'], ['neto', TK.nl, 'neto']].forEach(function (s, j) { var v = s[0] === 'gas' ? -scale(it.gas, it.pob) : scale(it[s[0]], it.pob); var yv = y(v), y0 = y(0); o += '<rect x="' + (x0 + j * w) + '" y="' + Math.min(yv, y0) + '" width="' + (w - 3) + '" height="' + Math.max(Math.abs(y0 - yv), 1) + '" fill="' + s[1] + '"><title>' + esc(it.lab + ' · ' + s[2] + ': ' + money(Math.abs(it[s[0]]), it.pob) + (pc() ? ' por persona del grupo' : '') + ' · población ' + f0.format(it.pob)) + '</title></rect>'; });
-      var sl = sel.filter(function (x) { return x.celda === it.lab; });
-      o += '<text class="tick" x="' + (left + k * bw + bw / 2) + '" y="' + (top + ph + 18) + '" text-anchor="middle">' + esc(it.lab) + (sl.length ? ' ⚑' : '') + '</text>';
-      o += '<text class="lab2" x="' + (left + k * bw + bw / 2) + '" y="' + (top + ph + 34) + '" text-anchor="middle">neto ' + esc(money(it.neto, it.pob)) + '</text>';
-    });
-    o += '<line class="zero" x1="' + left + '" x2="' + (left + pw) + '" y1="' + y(0) + '" y2="' + y(0) + '"/>';
-    o += '<text class="lab2" x="' + left + '" y="' + (H - 4) + '">' + esc(unit() + (pc() ? ' del grupo' : '') + ' · aporta (impuestos) arriba, recibe (gasto) abajo, neto = aporta − recibe · ⚑ = alguna celda con sello muestral') + '</text></svg>';
-    document.getElementById(id).innerHTML = o;
-    return items;
+  /* ---------- R2. ciclo de vida: pirámide por quinquenio × sexo × deciles, calcada del sitio nacional (F3, 2026-10-11) ---------- */
+  var CV = D.ciclo || null;
+  function pirPct() { return S.pir === 'pct'; }
+  function pirStacked() { return pirPct() || !pc(); }
+  function pirV(neto, pct, pob) { return pirPct() ? pct : pc() ? (pob > 0 ? neto / pob : 0) : scale(neto, 1); }
+  function pirUnit() { return pirPct() ? '% del neto total de Nuevo León (Σ = 100; unidad del nacional)' : pc() ? 'MXN por persona de la celda (neto / población ENIGH de la celda)' : unit(); }
+  function pirFmt(v) { return pirPct() ? f2.format(v) + ' %' : pc() ? f0.format(v) + ' MXN' : pibe() ? f2.format(v) + ' %' : f1.format(v) + ' ' + MACRO_UNIT; }
+  function piramide() {
+    if (!CV) { ['ch-piramide-h', 'ch-piramide-m'].forEach(function (id) { document.getElementById(id).innerHTML = '<p class="bad">Sin ciclo-vida.json en el JSON de datos.</p>'; }); return []; }
+    var cel = CV.celdas, G = CV.grupos.etiquetas, stacked = pirStacked();
+    var hay110 = cel.some(function (x) { return x.g === 23 && x.n > 0; });
+    var filas = []; for (var g = (hay110 ? 23 : 22); g >= 1; g--) filas.push(g);   /* 105-109 arriba … 0-4 abajo, como el sitio */
+    var byS = { 1: {}, 2: {} }; cel.forEach(function (x) { byS[x.s][x.g] = x; });
+    /* dominio común a los dos paneles (xcommon del nacional) */
+    var mn = 0, mx = 0;
+    cel.forEach(function (x) { if (stacked) { var pos = 0, neg = 0; x.grupos.forEach(function (gr) { var v = pirV(gr.neto, gr.pct, x.pob); if (v >= 0) pos += v; else neg += v; }); mn = Math.min(mn, neg); mx = Math.max(mx, pos); } else { var v1 = pirV(x.neto, x.pct, x.pob); mn = Math.min(mn, v1); mx = Math.max(mx, v1); } });
+    var pad = (mx - mn) * 0.06; mn -= pad; mx += pad; if (mx === mn) mx = mn + 1;
+    var sellos = cel.filter(function (x) { return x.sello === 1; });
+    function selloTxt(x) { return x.sello ? ' · SELLO:' + (x.n < CV.parametros.sello_n ? ' n < ' + CV.parametros.sello_n : '') + (x.top1_aporta > CV.parametros.sello_top1 ? ' una persona pone ' + f1.format(x.top1_aporta) + ' % del aporta' : '') + (x.top1_recibe > CV.parametros.sello_top1 ? ' una persona recibe ' + f1.format(x.top1_recibe) + ' % del recibe' : '') : ''; }
+    function panel(id, s, titulo) {
+      var W = 590, rowH = 16, top = 30, bottom = 44, left = 74, right = 14, H = top + filas.length * rowH + bottom, pw = W - left - right;
+      var xx = function (v) { return left + (v - mn) / (mx - mn) * pw; };
+      var o = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(titulo) + '">';
+      o += '<text class="lab" x="' + (left + pw / 2) + '" y="16" text-anchor="middle" font-weight="600">' + esc(titulo) + '</text>';
+      ticks(mn, mx, 6).forEach(function (t) { o += '<line class="grid" x1="' + xx(t) + '" x2="' + xx(t) + '" y1="' + top + '" y2="' + (top + filas.length * rowH) + '"/><text class="tick" x="' + xx(t) + '" y="' + (top + filas.length * rowH + 14) + '" text-anchor="middle">' + (pirPct() || pibe() ? f1.format(t) : f0.format(t)) + '</text>'; });
+      filas.forEach(function (g, i) {
+        var x = byS[s][g], y0 = top + i * rowH + 2, h = rowH - 4;
+        o += '<text class="tick" x="' + (left - 6) + '" y="' + (y0 + h - 3) + '" text-anchor="end">' + esc(x.quinquenio + (x.sello ? ' ⚑' : '')) + '</text>';
+        var tip = x.sexo + ' ' + x.quinquenio + ' · neto ' + pirFmt(pirV(x.neto, x.pct, x.pob)) + ' (' + f2.format(x.pct) + ' % del neto de NL; ' + mdp(x.neto) + ') · aporta ' + mdp(x.aporta) + ' · recibe ' + mdp(x.recibe) + ' · n = ' + f0.format(x.n) + ' personas, población ' + f0.format(x.pob) + selloTxt(x);
+        if (stacked) {
+          var posX = xx(0), negX = xx(0);
+          x.grupos.forEach(function (gr, j) { var v = pirV(gr.neto, gr.pct, x.pob); if (!v) return; var w = Math.abs(xx(v) - xx(0)), col = v > 0 ? shade(TK.paga, j * 0.3) : shade(TK.recibe, j * 0.3), x0 = v > 0 ? posX : negX - w; o += '<rect x="' + x0 + '" y="' + y0 + '" width="' + Math.max(w, 0.5) + '" height="' + h + '" fill="' + col + '" stroke="#fff" stroke-width="1"><title>' + esc(gr.grupo + ': ' + pirFmt(v) + ' (n = ' + f0.format(gr.n) + ') · ' + tip) + '</title></rect>'; if (v > 0) posX += w; else negX -= w; });
+        } else {
+          var v2 = pirV(x.neto, x.pct, x.pob), w2 = Math.abs(xx(v2) - xx(0));
+          o += '<rect x="' + Math.min(xx(v2), xx(0)) + '" y="' + y0 + '" width="' + Math.max(w2, 0.5) + '" height="' + h + '" fill="' + (v2 >= 0 ? TK.paga : TK.recibe) + '"><title>' + esc(tip) + '</title></rect>';
+        }
+      });
+      o += '<line class="zero" x1="' + xx(0) + '" x2="' + xx(0) + '" y1="' + top + '" y2="' + (top + filas.length * rowH) + '"/>';
+      o += '<text class="lab2" x="' + left + '" y="' + (H - 6) + '">' + esc('← recibe en neto · aporta en neto → · ' + pirUnit()) + '</text></svg>';
+      document.getElementById(id).innerHTML = o;
+    }
+    panel('ch-piramide-h', 1, 'Perfil de HOMBRES'); panel('ch-piramide-m', 2, 'Perfil de MUJERES');
+    var leg = G.map(function (g, j) { return [g, 'background:linear-gradient(90deg,' + shade(TK.recibe, j * 0.3) + ' 50%,' + shade(TK.paga, j * 0.3) + ' 50%)']; });
+    leg.push([stacked ? 'izquierda del cero = recibe en neto (verde-azul), derecha = aporta en neto (naranja)' : 'MXN por persona: tramos no aditivos, barra entera (recibe en verde-azul, aporta en naranja)', 'background:linear-gradient(90deg,' + TK.recibe + ' 50%,' + TK.paga + ' 50%)']);
+    leg.push(['⚑ celda con sello muestral (n < ' + CV.parametros.sello_n + ' o top1 > ' + CV.parametros.sello_top1 + ' %)', 'background:#fef1d1']);
+    legend('leg-piramide', leg);
+    var topA = cel.slice().sort(function (a, b) { return b.pct - a.pct; })[0], topR = cel.slice().sort(function (a, b) { return a.pct - b.pct; })[0];
+    var tramoPos = function (s) { return cel.filter(function (x) { return x.s === s && x.neto > 0; }).map(function (x) { return x.g; }); };
+    var rango = function (gs) { if (!gs.length) return 'ninguno'; var a = Math.min.apply(null, gs), b = Math.max.apply(null, gs); return CV.quinquenios[a - 1].split('-')[0] + '–' + (b === 23 ? '110+' : CV.quinquenios[b - 1].split('-')[1]); };
+    document.getElementById('lec-piramide').textContent = 'Nuevo León: ' + f0.format(CV.totales.entidad.n) + ' personas de la ENIGH ' + CV.anio_enigh + '; neto ' + mdp(CV.totales.entidad.neto) + ' = ' + f2.format(CV.totales.nacional.share_neto * 100) + ' % del neto nacional (' + mdp(CV.totales.nacional.neto) + '). Aportan en neto los hombres de ' + rango(tramoPos(1)) + ' años y las mujeres de ' + rango(tramoPos(2)) + '; el resto recibe. El quinquenio que más aporta es ' + topA.quinquenio + ' ' + topA.sexo.toLowerCase() + ' (' + f1.format(topA.pct) + ' % del neto de NL' + (topA.sello ? '; ⚑ una sola persona pone ' + f1.format(topA.top1_aporta) + ' % del aporta de la celda' : '') + '); el que más recibe en neto, ' + topR.quinquenio + ' ' + topR.sexo.toLowerCase() + ' (' + f1.format(Math.abs(topR.pct)) + ' % del neto, con signo negativo). ' + sellos.length + ' de 46 celdas llevan sello.';
+    var NA = CV.nacional_aport;
+    function nacVal(x, j) { if (!NA) return null; var vec = NA.vectores[NA.nombres[x.sexo + '|' + G[j]]]; if (!vec) return null; var idx = NA.quinquenios.indexOf(x.quinquenio); return idx >= 0 ? vec[idx] : null; }
+    var cols = [['sexo', 'Sexo', String], ['quinquenio', 'Edad', String], ['n', 'n (personas ENIGH)', f0.format], ['pob', 'Población expandida', f0.format], ['aporta', 'Aporta (pesos)', f0.format], ['recibe', 'Recibe (pesos)', f0.format], ['neto', 'Neto (pesos)', f0.format], [function (r) { return r.pob > 0 ? r.neto / r.pob : 0; }, 'Neto por persona (MXN)', f0.format], ['pct', '% del neto NL', function (v) { return f2.format(v); }], ['pct_nac', '% del neto nacional', function (v) { return f2.format(v); }]];
+    G.forEach(function (g, j) { cols.push([function (r) { return r.grupos[j].pct; }, g + ' · % neto NL', function (v) { return f2.format(v); }]); });
+    if (NA) G.forEach(function (g, j) { cols.push([function (r) { return nacVal(r, j); }, g + ' · nacional (% neto nacional)', function (v) { return v === null ? '—' : f2.format(v); }]); });
+    cols.push(['top1_aporta', 'top1 aporta %', f1.format], ['top1_recibe', 'top1 recibe %', f1.format], ['sello', 'Sello', String]);
+    datos('datos-piramide', 'La carga fiscal por edades (ciclo de vida, Nuevo León)', 'ciclo-vida', cols, cel.filter(function (x) { return x.g <= 22 || hay110; }));
+    return cel;
   }
-  function edades() {
-    var it = barrasGrupos('ch-edades', 'grupoedad', 'La carga fiscal por edades');
-    legend('leg-edades', [['Aporta (impuestos al trabajo, consumo y capital)', 'background:' + TK.paga], ['Recibe (educación, salud, pensiones, transferencias, inversión)', 'background:' + TK.recibe], ['Neto', 'background:' + TK.nl]]);
-    var maxN = it.slice().sort(function (a, b) { return b.neto / b.pob - a.neto / a.pob; })[0], minN = it.slice().sort(function (a, b) { return a.neto / a.pob - b.neto / b.pob; })[0];
-    document.getElementById('lec-edades').textContent = 'El grupo "' + maxN.lab + '" es el que más aporta en neto por persona (' + f0.format(maxN.neto / maxN.pob) + ' MXN); "' + minN.lab + '" es el que más recibe en neto (' + f0.format(-minN.neto / minN.pob) + ' MXN por persona).';
-    datos('datos-edades', 'La carga fiscal por edades', 'edades', [['lab', 'Grupo de edad', String], ['pob', 'Población expandida', f0.format], ['ing', 'Aporta (pesos)', f0.format], ['gas', 'Recibe (pesos)', f0.format], ['neto', 'Neto (pesos)', f0.format], [function (r) { return r.neto / r.pob; }, 'Neto por persona (MXN)', f0.format]], it);
-    var is = barrasGrupos('ch-sexo', 'sexo', 'La carga fiscal por sexo');
-    var h = is[0], m = is[1];
-    document.getElementById('lec-sexo').textContent = 'Por sexo: ' + h.lab.toLowerCase() + ' aportan en neto ' + f0.format(h.neto / h.pob) + ' MXN por persona y ' + m.lab.toLowerCase() + ' ' + f0.format(m.neto / m.pob) + ' MXN.';
-    datos('datos-sexo', 'La carga fiscal por sexo', 'sexo', [['lab', 'Sexo', String], ['pob', 'Población expandida', f0.format], ['ing', 'Aporta (pesos)', f0.format], ['gas', 'Recibe (pesos)', f0.format], ['neto', 'Neto (pesos)', f0.format], [function (r) { return r.neto / r.pob; }, 'Neto por persona (MXN)', f0.format]], is);
-    return it;
-  }
+
 
   /* ---------- R3. participación de NL por familia y vintage (líneas escalonadas) ---------- */
   var VINT = E.vintages.slice().sort(function (a, b) { return a - b; });
@@ -697,8 +734,7 @@ ol.notas{font-size:12.5px;color:var(--mut);margin:8px 0 0 18px;padding:0}ol.nota
     fill('[data-pob]', f0.format(POB)); fill('[data-pob-conapo]', f0.format(POBC)); fill('[data-share]', f2.format(E.share * 100)); fill('[data-cuotas]', esc(E.cuotas)); fill('[data-sello-n]', E.selloN); fill('[data-sello-top1]', E.selloTop1);
     fill('[data-vintages]', VINT.join(', '));
     fill('[data-celdas]', Q.celdas.map(function (c) { return c.celda + ' ' + f0.format(c.n) + ' / ' + f0.format(c.hog) + ' / ' + f0.format(c.pob); }).join(' · '));
-    fill('[data-celdas-ge]', K.grupoedad.celdas.map(function (c) { return c.celda + ': ' + f0.format(c.pob); }).join(' · '));
-    ['grupoedad', 'sexo'].forEach(function (c) { var s = sellosDe(c); fill('[data-sellos=' + c + ']', s.length ? s.map(function (x) { return x.celda + ' → ' + FLAB[x.fam] + ' (n = ' + x.n + ', top1 ' + f1.format(x.top1) + ' %)'; }).join('; ') : 'ninguno'); });
+    if (CV) { fill('[data-ciclo-def-neto]', esc(CV.definicion.neto)); fill('[data-ciclo-def-aporta]', esc(CV.definicion.aporta)); fill('[data-ciclo-def-recibe]', esc(CV.definicion.recibe)); fill('[data-ciclo-grupos]', esc(CV.grupos.titulo + ': ' + CV.grupos.etiquetas.join(', '))); var csl = CV.celdas.filter(function (x) { return x.sello === 1; }); fill('[data-ciclo-sellos]', csl.length ? csl.map(function (x) { return x.sexo.slice(0, 1) + ' ' + x.quinquenio + ' (n = ' + x.n + (x.top1_aporta > CV.parametros.sello_top1 ? ', top1 aporta ' + f1.format(x.top1_aporta) + ' %' : '') + (x.top1_recibe > CV.parametros.sello_top1 ? ', top1 recibe ' + f1.format(x.top1_recibe) + ' %' : '') + ')'; }).join('; ') : 'ninguno'); fill('[data-ciclo-vacias]', CV.celdas.filter(function (x) { return x.n === 0; }).map(function (x) { return x.sexo.slice(0, 1) + ' ' + x.quinquenio; }).join(', ') || 'ninguna'); }
     fill('[data-sellos-todos]', Object.keys(K).map(function (c) { return c + ' ' + sellosDe(c).length + ' de ' + Object.keys(K[c].familias).filter(function (f) { return K[c].familias[f].micro; }).reduce(function (a, f) { return a + Object.keys(K[c].familias[f].celdas).length; }, 0); }).join(' · '));
     Array.prototype.forEach.call(document.querySelectorAll('[data-fam]'), function (el) { var f = el.getAttribute('data-fam'); el.textContent = FAM[f] ? mdp(FAM[f].total) : '—'; });
     Array.prototype.forEach.call(document.querySelectorAll('[data-fam-share]'), function (el) { var f = el.getAttribute('data-fam-share'); el.textContent = FAM[f] && N.familias[f] ? f2.format(FAM[f].total / N.familias[f].total * 100) : '—'; });
@@ -741,7 +777,26 @@ ol.notas{font-size:12.5px;color:var(--mut);margin:8px 0 0 18px;padding:0}ol.nota
     (P.ancla && P.ancla.nacional_coincide_con_ancla && P.ancla.output_txt_coincide_con_ancla ? ST.ok : ST.bad).push('R-7: el nacional de referencia es el del ancla ' + (P.ancla && P.ancla.version) + ' (sankey-decil.json y output.txt con el SHA del ancla)');
     (/Aportaci|Recepci/.test(Q.residual.tipo || '') && Object.keys(K).every(function (c) { return K[c].residual.tipo === Q.residual.tipo; }) ? ST.ok : ST.bad).push('etiqueta del residual de entidad del motor (' + Q.residual.tipo + ' → ' + (Q.residual.destino || '') + ') igual en los 5 cortes');
     (VINT.length === E.vintages.length && VINT.every(function (v, i) { return i === 0 || v > VINT[i - 1]; }) ? ST.ok : ST.bad).push('vintages declarados ordenados y sin repetir (' + VINT.join(' ') + ')');
-    var faltanTxt = ['tbl-aporta', 'tbl-recibe', 'tbl-neto', 'ch-edades', 'ch-sexo', 'ch-vint', 'ch-ing', 'ch-gas', 'ch-bal', 'ch-sankey'].filter(function (id) { return !document.getElementById(id).innerHTML; });
+    /* F3 — ciclo de vida: contrato interno, simetría entre sexos y testigo contra los cortes Sankey que salieron de la vista */
+    if (CV) {
+      var cc = CV.celdas, PAR = CV.parametros;
+      chk('ciclo: Σ pct de las 46 celdas = 100 (unidad del nacional)', cc.reduce(function (a, x) { return a + x.pct; }, 0), 100, 1e-6);
+      chk('ciclo: Σ neto de las celdas = neto total de NL del contrato', cc.reduce(function (a, x) { return a + x.neto; }, 0), CV.totales.entidad.neto, 1e-9);
+      chk('ciclo: Σ población de las celdas = población ENIGH de NL (la del Sankey)', cc.reduce(function (a, x) { return a + x.pob; }, 0), POB, 1e-9);
+      chk('ciclo: Σ pct_nac = participación de NL en el neto nacional', cc.reduce(function (a, x) { return a + x.pct_nac; }, 0), CV.totales.nacional.share_neto * 100, 1e-5);
+      (cc.every(function (x) { return Math.abs(x.neto - (x.aporta - x.recibe)) <= 0.05 && Math.abs(x.neto - x.grupos.reduce(function (a, g) { return a + g.neto; }, 0)) <= 0.05 && x.n === x.grupos.reduce(function (a, g) { return a + g.n; }, 0); }) ? ST.ok : ST.bad).push('ciclo: neto = aporta − recibe y celda = Σ grupos (neto y n) en las 46 celdas');
+      var qs = { 1: [], 2: [] }; cc.forEach(function (x) { if (qs[x.s]) qs[x.s].push(x.g); });
+      ([1, 2].every(function (sx) { var a = qs[sx].slice().sort(function (p, q) { return p - q; }); return a.length === 23 && a.every(function (v, i) { return v === i + 1; }); }) && cc.length === 46 ? ST.ok : ST.bad).push('ciclo: simetría hombres/mujeres — los mismos 23 quinquenios en cada sexo, sin huecos');
+      (cc.every(function (x) { return x.sello === ((x.n < PAR.sello_n || x.top1_aporta > PAR.sello_top1 || x.top1_recibe > PAR.sello_top1) ? 1 : 0); }) ? ST.ok : ST.bad).push('ciclo: regla del sello (n < ' + PAR.sello_n + ' o top1 > ' + PAR.sello_top1 + ' %) en las 46 celdas');
+      chk('ciclo vs Sankey grupoedad: recibe 0–4 = Σ gasto micro de la celda "De 0 a 4"', cc.filter(function (x) { return x.g === 1; }).reduce(function (a, x) { return a + x.recibe; }, 0), celdaTot('grupoedad', 'gasto', 'De 0 a 4'), 1e-9);
+      chk('ciclo vs Sankey grupoedad: recibe 65 y más = Σ gasto micro de la celda "De 65 y más"', cc.filter(function (x) { return x.g >= 14; }).reduce(function (a, x) { return a + x.recibe; }, 0), celdaTot('grupoedad', 'gasto', 'De 65 y más'), 1e-9);
+      chk('ciclo vs Sankey sexo: recibe hombres = Σ gasto micro de la celda "Hombres"', cc.filter(function (x) { return x.s === 1; }).reduce(function (a, x) { return a + x.recibe; }, 0), celdaTot('sexo', 'gasto', 'Hombres'), 1e-9);
+      chk('ciclo vs Sankey sexo: recibe mujeres = Σ gasto micro de la celda "Mujeres"', cc.filter(function (x) { return x.s === 2; }).reduce(function (a, x) { return a + x.recibe; }, 0), celdaTot('sexo', 'gasto', 'Mujeres'), 1e-9);
+      if (CV.nacional_aport) { var sN = 0; Object.keys(CV.nacional_aport.vectores).forEach(function (k) { CV.nacional_aport.vectores[k].forEach(function (v) { sN += v; }); }); chk('nacional: Σ de los 6 vectores APORT* del output.txt del ancla = 100 (la unidad del nacional es % del neto total)', sN, 100, 1e-4); }
+      var nb = document.querySelectorAll('#ch-piramide-h rect').length + document.querySelectorAll('#ch-piramide-m rect').length;
+      (nb >= 44 ? ST.ok : ST.bad).push('ciclo: los dos paneles de la pirámide dibujan barras (' + nb + ' tramos; unidad ' + S.pir + '/' + S.reg + ')');
+    } else ST.bad.push('ciclo: sin bloque ciclo en el JSON de datos');
+    var faltanTxt = ['tbl-aporta', 'tbl-recibe', 'tbl-neto', 'ch-piramide-h', 'ch-piramide-m', 'ch-vint', 'ch-ing', 'ch-gas', 'ch-bal', 'ch-sankey'].filter(function (id) { return !document.getElementById(id).innerHTML; });
     (faltanTxt.length ? ST.bad : ST.ok).push('los 10 contenedores de gráficas y tablas tienen contenido' + (faltanTxt.length ? ' (faltan: ' + faltanTxt.join(', ') + ')' : ''));
     /* SHA-256 del bloque de datos incrustado (crypto.subtle; en file:// está disponible en Chrome) */
     var raw = (document.getElementById('nl-data').textContent || '').trim();
@@ -763,6 +818,7 @@ ol.notas{font-size:12.5px;color:var(--mut);margin:8px 0 0 18px;padding:0}ol.nota
     h += '<p>La versión publicada hasta hoy respondía otra pregunta con otras fuentes: <i>"Alcance declarado — balanza de flujos identificables. Flujos identificables: gasto federalizado pagado a Nuevo León (participaciones R28, aportaciones R33, convenios de descentralización y reasignación, R23 y protección social en salud; SHCP, Estadísticas Oportunas) contra los impuestos federales pagados por residentes de NL por incidencia (ISR asalariados, ISR personas físicas, ISR personas morales, IVA, IEPS no petrolero y petrolero, ISAN e importaciones; cuotas IMSS y OTROSK aparte, no sumados). Excluye el gasto federal directo ejercido en NL (pensiones contributivas, IMSS/ISSSTE patronal, CFE, inversión física federal directa, sueldos federales)."</i> Su cierre, "aportación neta en flujos identificables", era negativo (NL aporta más de lo que recibe por esos fondos), con banda S1–S3 del ISR PM (S1 prorrateo a capital sin cut-off, S0 método vigente, S3 pago esperado probit), participaciones por impuesto estimadas con cada ENIGH bienal (2016–2024) asignadas por bienio sin interpolar, per cápita con población CONAPO, medidas real y % del PIBE, vistas por fondo y subfondo (EOFP), serie anual 2000–2027 y la pestaña "La carga federal de NL a través del tiempo".</p>';
     h += '<p><b>R-1 (2026-10-10): el espejo convive con la balanza publicada, no la reemplaza.</b> Las dos páginas responden preguntas distintas con fuentes distintas y seguirán publicadas juntas hasta que la balanza de flujos identificables migre al motor (Fase B del mapa de migración).</p>';
     h += '<p>Esta página toma el molde del sitio nacional y <b>solo</b> el contrato del motor-entidad: las familias del Sankey, el residual como cierre, bandas por vintage sobre las mismas familias, sellos por celda y per cápita con población ENIGH. No hay escenario S1/S3 (el motor simula el ISR PM con su método vigente), ni fondos EOFP, ni deflactor ni PIBE (viven en <code>actividad-nl.json</code>, capa NL). La vista por fondo y la balanza de flujos identificables siguen en el producto NL-0.5.2 hasta que migren al motor (Fase B del mapa de migración). Ninguna cifra de aquella versión se reproduce aquí; se compara en la evidencia de F2.</p>';
+    h += '<p data-r4="nuevo"><b>F3 (2026-10-11): la sección "La carga fiscal por edades" ya no muestra los dos cortes Sankey de grupos de edad y de sexo</b>; muestra la misma pirámide de ciclo de vida del sitio nacional (quinquenios × sexo × deciles nacionales, % del neto total), calculada con la muestra de Nuevo León por <code>CicloEntidad.do</code> (PR feat/ciclo-entidad, <code>users/&lt;id&gt;/NL/ciclo-vida.json</code>). El motor sigue produciendo <code>sankey-grupoedad.json</code> y <code>sankey-sexo.json</code>; la página los conserva como testigo de la pirámide (recibe por edades y por sexo).</p>';
     h += '</div></details>';
     h += '<details class="met"><summary>Fuentes y procedencia</summary><div>';
     h += '<p>Motor: Simulador Fiscal CIEP ' + esc(P.version_motor) + ' (rama <code>' + esc(P.rama_motor) + '</code> @ <code>' + esc(P.commit_motor) + '</code>), ENIGH ' + VINT.join('/') + ' (INEGI), Paquete Económico ' + ANIO + ' (SHCP), ' + esc(P.contrato) + '. Ancla de reproducibilidad ' + esc(P.ancla && P.ancla.version) + ': <code>output.txt</code> ' + esc(String(P.ancla && P.ancla.output_txt_sha256 || '').slice(0, 12)) + '…; el <code>sankey-decil.json</code> nacional usado aquí ' + (P.ancla && P.ancla.nacional_coincide_con_ancla ? 'coincide byte a byte con el ancla (R-7: receta de estado cero, ' + esc(P.ancla.origen_nacional || '') + ')' : 'NO coincide byte a byte con el ancla (mismas cifras v8.8.2, otra sesión; sus totales por familia se cotejan en la evidencia F2)') + '. Los Sankeys de Nuevo León salen de la rama <code>' + esc(P.rama_motor) + '</code> @ <code>' + esc(P.commit_motor) + '</code> (etiqueta dinámica del residual; valores idénticos a los de <code>feat/entidad</code>).' + (PUB ? ' Balanza publicada de referencia: <code>federacion-nl.json</code> ' + esc(PUB.version_capa_nl) + ', ' + esc(PUB.generado_en) + ', sha256 ' + esc(String(PUB.sha256_federacion_nl_json).slice(0, 12)) + '….' : '') + '</p>';
@@ -774,7 +830,7 @@ ol.notas{font-size:12.5px;color:var(--mut);margin:8px 0 0 18px;padding:0}ol.nota
     h += '<details class="met"><summary>' + (bad.length ? '<span class="bad">Autocomprobación: ' + bad.length + ' comprobación(es) fallan</span>' : '<span class="ok">Autocomprobación: ' + ok.length + ' comprobaciones coinciden (canal vs recálculo desde los enlaces)</span>') + (ST.sha256_datos ? ' · sha256 del bloque de datos <code>' + ST.sha256_datos.slice(0, 16) + '…</code>' : '') + '</summary><div>';
     if (bad.length) h += '<p class="bad">Fallan: ' + esc(bad.join('; ')) + '.</p>';
     h += '<ul>' + ok.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></div></details>';
-    document.getElementById('pie').innerHTML = (window.NLEstilo ? window.NLEstilo.atribucion({ producto: D.producto, titulo: D.titulo, subtitulo: D.subtitulo, procedencia: { version_capa_nl: 'prototipo F2 (espejo) sobre ' + P.version_capa_nl, version_motor: P.version_motor, repositorio: P.repositorio, generado_en: P.generado_en, log: 'users/ricardo/NL/*.json', driver: 'SankeySF.do + SankeySumSim.ado (motor) · ' + P.convertidor, modo: 'prototipo' } }) : '') + h;
+    document.getElementById('pie').innerHTML = (window.NLEstilo ? window.NLEstilo.atribucion({ producto: D.producto, titulo: D.titulo, subtitulo: D.subtitulo, procedencia: { version_capa_nl: 'prototipo F2 (espejo) sobre ' + P.version_capa_nl, version_motor: P.version_motor, repositorio: P.repositorio, generado_en: P.generado_en, log: 'users/ricardo/NL/*.json', driver: 'SankeySF.do + SankeySumSim.ado + CicloEntidad.do (motor) · ' + P.convertidor, modo: 'prototipo' } }) : '') + h;
   }
 
   /* ---------- render ---------- */
@@ -782,10 +838,12 @@ ol.notas{font-size:12.5px;color:var(--mut);margin:8px 0 0 18px;padding:0}ol.nota
     pushHash();
     Array.prototype.forEach.call(document.querySelectorAll('#reg button'), function (b) { b.classList.toggle('on', b.getAttribute('data-r') === S.reg); });
     Array.prototype.forEach.call(document.querySelectorAll('#tabs-corte button'), function (b) { b.classList.toggle('on', b.getAttribute('data-c') === S.corte); });
-    formula(); tablas(); neto(); edades(); vintages(); ingresosT(); gastosT(); balanza(); sankey(S.corte); spans();
+    Array.prototype.forEach.call(document.querySelectorAll('#pir-unidad button'), function (b) { b.classList.toggle('on', b.getAttribute('data-pu') === S.pir); });
+    formula(); tablas(); neto(); piramide(); vintages(); ingresosT(); gastosT(); balanza(); sankey(S.corte); spans();
   }
   Array.prototype.forEach.call(document.querySelectorAll('#reg button'), function (b) { b.addEventListener('click', function () { S.reg = b.getAttribute('data-r'); render(); autocomprobar(); }); });
   Array.prototype.forEach.call(document.querySelectorAll('#tabs-corte button'), function (b) { b.addEventListener('click', function () { S.corte = b.getAttribute('data-c'); render(); autocomprobar(); }); });
+  Array.prototype.forEach.call(document.querySelectorAll('#pir-unidad button'), function (b) { b.addEventListener('click', function () { S.pir = b.getAttribute('data-pu'); render(); autocomprobar(); }); });
   window.NLEstilo.cabecera(document.getElementById('cab'), D.titulo || 'Simulador Fiscal NL — La Federación y Nuevo León', (D.subtitulo || '') + ' · Paquete Económico ' + ANIO + ' · prototipo espejo del sitio nacional');
   document.title = D.titulo || document.title;
   render(); autocomprobar();
