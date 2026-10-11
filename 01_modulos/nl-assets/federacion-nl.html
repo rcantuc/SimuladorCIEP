@@ -22,7 +22,10 @@
   Identidad: 100 % CoNL (NLEstilo en nl-datos.js: tokens, imagotipo 2023, lockup de co-branding). Cero CDNs, cero fetch.
   Inyección: tres marcas en líneas propias (datos NLFED, componente nl-datos.js, activos nl-estilo-assets.js), las
   mismas que resuelve nl-html.do; para el prototipo las resuelve diag-pivote-entidad-2026-10-10/F2/render-f2.mjs.
-  Estado por URL: #reg=pc|macro&corte=quintil|grupoedad|escol|rural|sexo
+  Estado por URL: #reg=pc|macro|pibe&corte=quintil|grupoedad|escol|rural|sexo
+  Pulido 2026-10-10 (noche): conciliación nacional-vs-entidad como contenido (R6), pie de cierre en las tablas, etiquetas
+  del residual del motor (Aportación neta a la Federación → Federación y futuro), registro % del PIBE (R-2), per cápita de
+  totales con CONAPO (R-3), nacional = sankeys del ancla v8.8.2 (R-7), textos adaptados marcados con data-r4 y [R-4].
   Fuera de alcance (P11, fase futura): la capa interactiva del nacional (Paso 1/Paso 2, Calcular, Web.Stata.do).
 -->
 <style>
@@ -84,6 +87,9 @@ tr.sub td:first-child{padding-left:22px;color:var(--mut)}
 .lectura{font-size:13.5px;margin:10px 0 0;border-top:1px dashed var(--line);padding-top:8px;font-variant-numeric:tabular-nums}
 .alerta{margin-top:12px;border-radius:10px;padding:12px 14px;background:#f9d7de;border:1px solid var(--alerta);color:#7a1230;font-size:14px;font-variant-numeric:tabular-nums}
 .alerta.ok{background:#ccefef;border-color:var(--recibe);color:#0b4f4e}
+.concil{margin-top:12px;border-radius:10px;padding:14px 16px;background:#e7d4e3;border-left:5px solid var(--nl);font-size:15px;line-height:1.5;font-variant-numeric:tabular-nums}
+.concil b{color:var(--nl)}.concil .sub{display:block;margin-top:6px;font-size:12.5px;color:var(--mut)}
+tr.cierre td{font-size:12px;color:var(--mut);white-space:normal;border-bottom:0;padding-top:8px;line-height:1.4}
 svg{width:100%;height:auto;display:block}
 .tick{font-size:11px;fill:var(--mut)}.lab{font-size:12px;fill:var(--ink)}.lab2{font-size:11px;fill:var(--mut)}.grid{stroke:#e5e8ec;stroke-width:1;stroke-dasharray:3 3}.zero{stroke:var(--mut);stroke-width:1.2}
 .nodo text{font-size:12px;fill:var(--ink)}.nodo .v{font-size:11px;fill:var(--mut)}.link{fill-opacity:.35}.link:hover{fill-opacity:.65}
@@ -125,27 +131,28 @@ ol.notas{font-size:12.5px;color:var(--mut);margin:8px 0 0 18px;padding:0}ol.nota
 <main>
 
   <!-- ===== 1. FÓRMULA FIJA (molde: INGRESOS 20.8 % − GASTOS 23.0 % = ENDEUDAMIENTO 2.2 % · DEUDA per cápita) ===== -->
-  <div class="ctl-bar"><span>Registro</span><div class="seg" id="reg"><button data-r="pc" class="on">Por habitante</button><button data-r="macro">Macro (mdp)</button></div><span id="reg-nota"></span></div>
+  <div class="ctl-bar"><span>Registro</span><div class="seg" id="reg"><button data-r="pc" class="on">Por habitante</button><button data-r="macro">Macro (mdp)</button><button data-r="pibe" id="btn-pibe">% del PIBE</button></div><span id="reg-nota"></span></div>
   <section class="formula" aria-label="Aporta menos recibe igual a ahorro">
     <div class="stat paga"><div class="k">Aporta Nuevo León</div><div class="v" data-v="ingresos"></div><div class="u" data-u></div><div class="n" data-n="ingresos"></div></div>
     <div class="op">−</div>
     <div class="stat recibe"><div class="k">Recibe Nuevo León</div><div class="v" data-v="gastos"></div><div class="u" data-u></div><div class="n" data-n="gastos"></div></div>
     <div class="op">=</div>
-    <div class="stat bal"><div class="k" id="k-residual">Ahorro</div><div class="v" data-v="residual"></div><div class="u" data-u></div><div class="n" data-n="residual"></div></div>
+    <div class="stat bal"><div class="k" id="k-residual">Aportación neta</div><div class="v" data-v="residual"></div><div class="u" data-u></div><div class="n" data-n="residual"></div></div>
   </section>
   <section class="pc" aria-label="Por habitante">
-    <div class="stat"><div class="k">Aporta por habitante · <span data-anio></span></div><div class="v" data-v="ingresosPc"></div><div class="u">MXN por habitante de Nuevo León</div><div class="n" data-n="ingresosPc"></div></div>
-    <div class="stat"><div class="k">Recibe por habitante · <span data-anio></span></div><div class="v" data-v="gastosPc"></div><div class="u">MXN por habitante de Nuevo León</div><div class="n" data-n="gastosPc"></div></div>
+    <div class="stat"><div class="k">Aporta por habitante · <span data-anio></span></div><div class="v" data-v="ingresosPc"></div><div class="u">MXN por habitante de Nuevo León (CONAPO <span data-anio></span>)</div><div class="n" data-n="ingresosPc"></div></div>
+    <div class="stat"><div class="k">Recibe por habitante · <span data-anio></span></div><div class="v" data-v="gastosPc"></div><div class="u">MXN por habitante de Nuevo León (CONAPO <span data-anio></span>)</div><div class="n" data-n="gastosPc"></div></div>
   </section>
 
   <!-- ===== 2. HERO (molde: "Simulador Fiscal CIEP — Herramienta digital e interactiva…"; Paso 1/Paso 2 = capa interactiva, fuera de alcance P11) ===== -->
   <section class="hero">
     <div>
       <h2>Nuevo León en el Simulador Fiscal CIEP</h2>
-      <p>Cuánto aportan los neoloneses al sistema fiscal federal, cuánto regresa a Nuevo León como gasto público y quién, dentro del estado, paga y recibe. Los valores son del <b>Paquete Económico <span data-anio></span></b>, calculados con el motor del Simulador Fiscal CIEP para la población de Nuevo León.</p>
-      <p class="meta">Motor <span data-motor></span> · corrida <span data-corrida></span> · población de Nuevo León en la ENIGH: <span data-pob></span> personas (<span data-share></span> % del país).</p>
+      <!-- [R-4] texto adaptado por el agente: Ricardo lo reescribe -->
+      <p data-r4="adaptado">Cuánto aportan los neoloneses al sistema fiscal federal, cuánto regresa a Nuevo León como gasto público y quién, dentro del estado, paga y recibe. Los valores son del <b>Paquete Económico <span data-anio></span></b>, calculados con el motor del Simulador Fiscal CIEP para la población de Nuevo León.</p>
+      <p class="meta">Motor <span data-motor></span> · corrida <span data-corrida></span> · población de Nuevo León <span data-anio></span>: <span data-pob-conapo></span> (CONAPO); en la ENIGH, <span data-pob></span> personas (<span data-share></span> % del país).</p>
     </div>
-    <div class="recuerda"><div class="t">Recuerda</div><div class="f"><b>APORTA</b> menos <i>RECIBE</i> es igual a <u>AHORRO</u></div><p style="margin:6px 0 0;font-size:13px;color:var(--mut)">Si el resultado fuera negativo, Nuevo León recibiría más de lo que aporta: endeudamiento.</p></div>
+    <div class="recuerda" data-r4="adaptado"><div class="t">Recuerda</div><div class="f"><b>APORTA</b> menos <i>RECIBE</i> es igual a <u>APORTACIÓN NETA</u></div><p style="margin:6px 0 0;font-size:13px;color:var(--mut)">Si el resultado fuera negativo sería una recepción neta: la entidad recibiría de la Federación más de lo que aporta.</p></div>
   </section>
 
   <!-- ===== 3. LO QUE APORTAN / LO QUE RECIBE (molde: tablas de Paso 1, 4 grupos de ingresos y 6 de gastos; aquí solo lectura) ===== -->
@@ -189,7 +196,8 @@ ol.notas{font-size:12.5px;color:var(--mut);margin:8px 0 0 18px;padding:0}ol.nota
       <div class="texto">
         <h4>Resultado de <b>sumar</b> las obligaciones y <b>restar</b> los beneficios</h4>
         <p><b>Sumando</b> todas las <b>contribuciones</b> (obligaciones fiscales) que entregan las personas y <b>restando</b> todas las <b>transferencias</b> (beneficios públicos) que reciben, obtenemos la <b>aportación neta</b>. Un sistema fiscal progresivo debería mostrar que las personas con más recursos aporten más (resultado positivo), mientras que las de menos recursos reciban más de lo que aportan (resultado negativo).</p>
-        <p>La primera columna es el <b>quintil</b> de ingreso de los hogares de Nuevo León (del I más pobre al V más rico). La segunda muestra lo que una <b>persona aportaría al año</b> al sistema fiscal federal. La tercera indica cómo se <b>distribuye</b> la carga neta entre quintiles.</p>
+        <!-- [R-4] -->
+        <p data-r4="adaptado">La primera columna es el <b>quintil</b> de ingreso de los hogares de Nuevo León (del I más pobre al V más rico). La segunda muestra lo que una <b>persona aportaría al año</b> al sistema fiscal federal. La tercera indica cómo se <b>distribuye</b> la carga neta entre quintiles.</p>
       </div>
     </div>
     <details class="met"><summary>Metodología y alcance</summary><div>
@@ -210,7 +218,8 @@ ol.notas{font-size:12.5px;color:var(--mut);margin:8px 0 0 18px;padding:0}ol.nota
       <div class="texto">
         <h4>Cómo aportaría un individuo <b>a lo largo de su vida</b></h4>
         <p>Las <b>personas producen</b> y <b>consumen</b> de manera diferente en cada <b>etapa de su vida</b>. Los jóvenes se dedican principalmente a estudiar, los adultos participan activamente en el mercado laboral y los adultos mayores comienzan a jubilarse. Este patrón de ciclo de vida es similar en <b>todo el mundo</b>.</p>
-        <p>Además, los roles de género, las diferencias salariales y las oportunidades desiguales entre <b>hombres</b> y <b>mujeres</b> también modifican el comportamiento económico y las obligaciones fiscales de cada persona.</p>
+        <!-- [R-4] -->
+        <p data-r4="adaptado">Además, los roles de género, las diferencias salariales y las oportunidades desiguales entre <b>hombres</b> y <b>mujeres</b> también modifican el comportamiento económico y las obligaciones fiscales de cada persona.</p>
       </div>
       <div class="chart"><div id="ch-sexo"></div><p class="lectura" id="lec-sexo"></p><div id="datos-sexo"></div></div>
     </div>
@@ -225,9 +234,10 @@ ol.notas{font-size:12.5px;color:var(--mut);margin:8px 0 0 18px;padding:0}ol.nota
   <section class="res">
     <div class="res-grid inv">
       <div class="texto">
-        <h4>Una <b>ENIGH por bienio</b>, cada una con la economía de su año</h4>
-        <p>El nacional mira hacia adelante: proyecta el bono fiscal con la transición demográfica. Para Nuevo León la pregunta es hacia atrás: ¿qué parte del país ha sido Nuevo León en cada impuesto y en cada gasto? El motor se corre con cada ENIGH bienal (<span data-vintages></span>), calibrada a su propio año, y se lee la participación de Nuevo León en el total nacional de cada familia.</p>
-        <p>La participación se asigna por bienio y <b>nunca se interpola</b>; el punto <span data-anio></span> es la corrida vigente del Paquete Económico.</p>
+        <!-- [R-4] sección nueva (sustituye al revés demográfico) -->
+        <h4 data-r4="nuevo">Una <b>ENIGH por bienio</b>, cada una con la economía de su año</h4>
+        <p data-r4="nuevo">El nacional mira hacia adelante: proyecta el bono fiscal con la transición demográfica. Para Nuevo León la pregunta es hacia atrás: ¿qué parte del país ha sido Nuevo León en cada impuesto y en cada gasto? El motor se corre con cada ENIGH bienal (<span data-vintages></span>), calibrada a su propio año, y se lee la participación de Nuevo León en el total nacional de cada familia.</p>
+        <p data-r4="nuevo">La participación se asigna por bienio y <b>nunca se interpola</b>; el punto <span data-anio></span> es la corrida vigente del Paquete Económico.</p>
       </div>
       <div>
         <div class="res-head"><h2>La carga federal de Nuevo León a través del tiempo</h2></div>
@@ -251,7 +261,8 @@ ol.notas{font-size:12.5px;color:var(--mut);margin:8px 0 0 18px;padding:0}ol.nota
       <div class="texto">
         <h4>Demografía <b>+</b> Economía</h4>
         <p>Los impuestos al <b>trabajo</b> y al <b>consumo</b> están directamente influenciados por la composición demográfica de la población y su nivel de productividad. Los impuestos e ingresos relacionados con el <b>capital</b> dependen principalmente de la actividad económica y la rentabilidad de las inversiones.</p>
-        <p>Nuevo León pesa más en los impuestos al capital que en su población: es la familia donde más se separa del promedio nacional, y también la más sensible a la muestra.</p>
+        <!-- [R-4] -->
+        <p data-r4="nuevo">Nuevo León pesa más en los impuestos al capital que en su población: es la familia donde más se separa del promedio nacional, y también la más sensible a la muestra.</p>
       </div>
     </div>
     <details class="met"><summary>Metodología y alcance</summary><div>
@@ -266,7 +277,8 @@ ol.notas{font-size:12.5px;color:var(--mut);margin:8px 0 0 18px;padding:0}ol.nota
       <div class="texto">
         <h4><b>Obligaciones</b> públicas</h4>
         <p>Los gastos en <b>salud</b>, <b>educación</b>, <b>pensiones</b>, <b>pensión para adultos mayores</b> y otros programas sociales están fuertemente influenciados por la composición demográfica de la población. Por su parte, el costo financiero de la deuda pública depende de variables financieras como los saldos acumulados, las tasas de interés vigentes y el tipo de cambio.</p>
-        <p>En Nuevo León el gasto que llega por persona es menor que el nacional en casi todas las familias: una población más joven, más formal y con más ingreso recibe menos educación pública, menos pensión no contributiva y menos transferencias por habitante.</p>
+        <!-- [R-4] -->
+        <p data-r4="nuevo">En Nuevo León el gasto que llega por persona es menor que el nacional en casi todas las familias: una población más joven, más formal y con más ingreso recibe menos educación pública, menos pensión no contributiva y menos transferencias por habitante.</p>
       </div>
       <div>
         <div class="res-head"><h2>Los compromisos que recibe Nuevo León</h2></div>
@@ -280,20 +292,23 @@ ol.notas{font-size:12.5px;color:var(--mut);margin:8px 0 0 18px;padding:0}ol.nota
   </section>
 
   <!-- R6 · molde: "= Deuda" / "La sostenibilidad fiscal" (trayectoria de deuda) → la balanza de Nuevo León con la Federación -->
-  <h6 class="eyebrow" id="eb-residual">= Ahorro</h6>
+  <h6 class="eyebrow" id="eb-residual">= Aportación neta</h6>
   <section class="res">
     <div class="res-head"><h2>La balanza con la Federación</h2></div>
     <p class="fuente"><b>Fuente</b>: Elaborado con el Simulador Fiscal CIEP.</p>
     <div class="res-grid">
       <div class="chart"><div id="ch-bal"></div><div class="legend" id="leg-bal"></div><p class="lectura" id="lec-bal"></p><div id="datos-bal"></div></div>
       <div class="texto">
-        <h4>Lo que Nuevo León <b>aporta de más</b></h4>
-        <p>El cierre contable del Sankey nacional es el <b>endeudamiento</b>: lo que el gasto excede a los ingresos y se traslada al futuro. En una entidad el cierre cambia de signo de lectura: si los residentes aportan más de lo que el estado recibe, la diferencia es un <b>ahorro</b> que financia al resto del país; si reciben más, es endeudamiento que otros financian.</p>
+        <!-- [R-4] sección nueva: conciliación nacional vs entidad (hallazgo de Ricardo, 2026-10-10) -->
+        <h4 data-r4="nuevo">Dos cierres, <b>una sola cuenta</b></h4>
+        <div class="concil" id="concil" data-r4="nuevo"></div>
+        <p data-r4="nuevo">El cierre contable del Sankey nacional es el <b>endeudamiento</b>: lo que el gasto excede a los ingresos y se traslada al futuro. El de una entidad es su <b>aportación neta a la Federación</b> (o su recepción neta, si recibe más de lo que aporta): lo que sus residentes ponen por encima de lo que regresa. Los 32 cierres de entidad suman el nacional.</p>
         <div class="alerta" id="al-bal"></div>
       </div>
     </div>
     <details class="met"><summary>Metodología y alcance</summary><div>
-      <p>Residual de la entidad = ingresos − gastos de Nuevo León en el Sankey (supuesto <b>S-P3c</b>), con los renglones macro repartidos por población (S-P3a/b). Con esa regla la suma de los 32 residuales reproduce el residual nacional (compuerta 2 de F1, reldif 8.5e-14). Esta balanza <b>no</b> es la "balanza de flujos identificables" de la versión publicada NL-0.5.2 (gasto federalizado pagado a NL por fondo vs impuestos por incidencia, con banda S1–S3 del ISR PM): aquella medía otra cosa, con otras fuentes (EOFP), y sigue disponible en su propio producto hasta que migre al motor. Ver "Qué cambió" al pie.</p>
+      <p>Residual de la entidad = ingresos − gastos de Nuevo León en el Sankey (supuesto <b>S-P3c</b>), con los renglones macro repartidos por población (S-P3a/b). Con esa regla la suma de los 32 residuales reproduce el residual nacional (compuerta 2 de F1, reldif 8.5e-14). Etiquetas del motor (pulido pre-v8.9.0): ingreso &gt; gasto = "Aportación neta a la Federación" → "Federación y futuro"; gasto &gt; ingreso = "Recepción neta de la Federación".</p>
+      <p id="met-dos-marcos"></p>
     </div></details>
   </section>
 
@@ -313,7 +328,8 @@ ol.notas{font-size:12.5px;color:var(--mut);margin:8px 0 0 18px;padding:0}ol.nota
       <div class="texto">
         <h4>Este es el <b>principio</b> y el <b>fin</b> del sistema fiscal</h4>
         <p>Las <b>personas</b> son el principio y el fin del sistema fiscal. Son su fundamento y su razón de ser. Los individuos son quienes generan los recursos públicos a través de sus contribuciones y, al mismo tiempo, quienes reciben y se benefician de los servicios y programas públicos.</p>
-        <p>En el extremo izquierdo de la gráfica se observa cómo las personas de Nuevo León <b>contribuyen</b> al sistema mediante impuestos e ingresos públicos. En el centro, el Paquete Económico concentra y administra esos recursos. En el extremo derecho, las políticas públicas y los programas sociales <b>redistribuyen</b> los recursos hacia las personas de Nuevo León y otros sectores; el ahorro cierra la cuenta.</p>
+        <!-- [R-4] -->
+        <p data-r4="adaptado">En el extremo izquierdo de la gráfica se observa cómo las personas de Nuevo León <b>contribuyen</b> al sistema mediante impuestos e ingresos públicos. En el centro, el Paquete Económico concentra y administra esos recursos. En el extremo derecho, las políticas públicas y los programas sociales <b>redistribuyen</b> los recursos hacia las personas de Nuevo León y otros sectores; la aportación neta a la Federación cierra la cuenta.</p>
       </div>
       <div class="texto"><p class="lectura" style="border:0;padding:0;margin:0" id="lec-sankey2"></p></div>
     </div>
@@ -362,6 +378,13 @@ ol.notas{font-size:12.5px;color:var(--mut);margin:8px 0 0 18px;padding:0}ol.nota
   var TK = (window.NLEstilo && window.NLEstilo.tokens) || { nl: 'rgb(90,34,72)', nac: 'rgb(127,127,127)', recibe: 'rgb(0,177,175)', paga: 'rgb(231,107,36)', paquete: 'rgb(252,184,23)', banda: 'rgba(90,34,72,.25)' };
   function shade(rgb, k) { var m = /(\d+),\s*(\d+),\s*(\d+)/.exec(rgb); if (!m) return rgb; var r = +m[1], g = +m[2], b = +m[3]; return 'rgb(' + Math.round(r + (255 - r) * k) + ',' + Math.round(g + (255 - g) * k) + ',' + Math.round(b + (255 - b) * k) + ')'; }
   var ANIO = D.anio_politica, POB = E.pobEnt, POBN = E.pobNac;
+  /* R-3: per cápita de los totales con CONAPO (como el sitio nacional); dentro de los cortes, población ENIGH de la celda.
+     R-2: % del PIBE de NL para NL; % del PIB (PIBY del motor) para el país. Si el JSON no trae denominadores, se cae a ENIGH y
+     el registro % del PIBE se oculta. */
+  var DEN = D.denominadores || null, PUB = D.publicada || null;
+  var POBC = DEN ? DEN.pobNL_conapo : POB, POBNC = DEN ? DEN.pobNac_conapo : POBN;
+  var PIBE = DEN ? DEN.pibeNL : null, PIBN = (N.pib || (DEN && DEN.pibNac_motor)) || null;
+  if (!PIBE || !PIBN) { var bp = document.getElementById('btn-pibe'); if (bp) bp.style.display = 'none'; }
   /* familias: orden del molde nacional y etiquetas largas; id = etiqueta normalizada del motor */
   var FING = ['Imp al trabajo', 'Imp al consumo', 'Imp al capital', 'Empresas públicas', 'FMP'];
   var FGAS = ['Educación', 'Salud', 'Pensiones', 'Transferencias', 'Inversión', 'Part y otras Aport', 'Otros gastos', 'Energía', 'Costo de la deuda'];
@@ -376,14 +399,16 @@ ol.notas{font-size:12.5px;color:var(--mut);margin:8px 0 0 18px;padding:0}ol.nota
 
   /* ---------- estado por URL ---------- */
   var S = { reg: 'pc', corte: 'quintil' };
-  (location.hash || '').replace(/^#/, '').split('&').forEach(function (kv) { var p = kv.split('='); if (p[0] === 'reg' && (p[1] === 'pc' || p[1] === 'macro')) S.reg = p[1]; if (p[0] === 'corte' && K[p[1]]) S.corte = p[1]; });
+  (location.hash || '').replace(/^#/, '').split('&').forEach(function (kv) { var p = kv.split('='); if (p[0] === 'reg' && (p[1] === 'pc' || p[1] === 'macro' || (p[1] === 'pibe' && PIBE && PIBN))) S.reg = p[1]; if (p[0] === 'corte' && K[p[1]]) S.corte = p[1]; });
   function pushHash() { location.replace('#reg=' + S.reg + '&corte=' + S.corte); }
   function pc() { return S.reg === 'pc'; }
+  function pibe() { return S.reg === 'pibe'; }
   function mdp(x) { return f1.format(x / MACRO_DIV) + ' ' + MACRO_UNIT; }
-  function money(x, den) { return pc() ? f0.format(x / den) + ' MXN' : mdp(x); }
-  function unit() { return pc() ? 'MXN por habitante' : MACRO_UNIT + ' (millones de pesos corrientes)'; }
-  function scale(x, den) { return pc() ? x / den : x / MACRO_DIV; }
-  function tickFmt(t) { return f0.format(t); }
+  /* money(x, den, pib): den = población del denominador (CONAPO para totales, ENIGH para celdas); pib = PIBE de NL (default) o PIB nacional */
+  function money(x, den, pib) { return pc() ? f0.format(x / den) + ' MXN' : pibe() ? f2.format(x / (pib || PIBE) * 100) + ' %' : mdp(x); }
+  function unit() { return pc() ? 'MXN por habitante' : pibe() ? '% del PIBE de Nuevo León (el país: % de su PIB)' : MACRO_UNIT + ' (millones de pesos corrientes)'; }
+  function scale(x, den, pib) { return pc() ? x / den : pibe() ? x / (pib || PIBE) * 100 : x / MACRO_DIV; }
+  function tickFmt(t) { return pibe() ? f1.format(t) : f0.format(t); }
   function pct(x) { return f2.format(x * 100) + ' %'; }
   function fill(sel, val) { Array.prototype.forEach.call(document.querySelectorAll(sel), function (el) { el.innerHTML = val; }); }
 
@@ -413,22 +438,24 @@ ol.notas{font-size:12.5px;color:var(--mut);margin:8px 0 0 18px;padding:0}ol.nota
   }
 
   /* ---------- 1. fórmula fija ---------- */
+  function vNL(x) { return pc() ? f0.format(x / POBC) : pibe() ? f2.format(x / PIBE * 100) : f1.format(x / MACRO_DIV); }
+  function vNac(x) { return pc() ? f0.format(x / POBNC) + ' MXN' : pibe() ? f2.format(x / PIBN * 100) + ' % de su PIB' : mdp(x); }
+  function corto(tipo) { return /Aportaci/i.test(tipo) ? 'Aportación neta' : /Recepci/i.test(tipo) ? 'Recepción neta' : (tipo || 'Residual'); }
+  function lc1(s) { s = String(s || ''); return s.charAt(0).toLowerCase() + s.slice(1); }   /* "aportación neta a la Federación": el nombre propio conserva su mayúscula */
   function formula() {
-    var resid = Q.residual.valor, tipo = Q.residual.tipo;
-    fill('[data-v=ingresos]', pc() ? f0.format(Q.ingresos / POB) : f1.format(Q.ingresos / MACRO_DIV));
-    fill('[data-v=gastos]', pc() ? f0.format(Q.gastos / POB) : f1.format(Q.gastos / MACRO_DIV));
-    fill('[data-v=residual]', pc() ? f0.format(Math.abs(resid) / POB) : f1.format(Math.abs(resid) / MACRO_DIV));
-    fill('[data-u]', pc() ? 'MXN por habitante · ' + ANIO : MACRO_UNIT + ' · ' + ANIO);
-    fill('[data-n=ingresos]', 'Nacional por habitante: ' + f0.format(N.ingresos / POBN) + ' MXN · NL es el ' + pct(Q.ingresos / N.ingresos) + ' de los ingresos del país');
-    fill('[data-n=gastos]', 'Nacional por habitante: ' + f0.format(N.gastos / POBN) + ' MXN · NL recibe el ' + pct(Q.gastos / N.gastos) + ' del gasto del país');
-    fill('[data-n=residual]', (resid >= 0 ? 'NL aporta más de lo que recibe. ' : 'NL recibe más de lo que aporta. ') + 'El país, por habitante: ' + (N.residual.tipo || 'residual').toLowerCase() + ' de ' + f0.format(Math.abs(N.residual.valor) / POBN) + ' MXN');
+    var resid = Q.residual.valor, tipo = Q.residual.tipo, nacDef = N.gastos - N.ingresos;
+    fill('[data-v=ingresos]', vNL(Q.ingresos)); fill('[data-v=gastos]', vNL(Q.gastos)); fill('[data-v=residual]', vNL(Math.abs(resid)));
+    fill('[data-u]', (pc() ? 'MXN por habitante' : pibe() ? '% del PIBE de NL' : MACRO_UNIT) + ' · ' + ANIO);
+    fill('[data-n=ingresos]', 'El país: ' + vNac(N.ingresos) + (pc() ? ' por habitante' : '') + ' · NL es el ' + pct(Q.ingresos / N.ingresos) + ' de los ingresos del país');
+    fill('[data-n=gastos]', 'El país: ' + vNac(N.gastos) + (pc() ? ' por habitante' : '') + ' · NL recibe el ' + pct(Q.gastos / N.gastos) + ' del gasto del país');
+    fill('[data-n=residual]', (resid >= 0 ? 'NL aporta más de lo que recibe. ' : 'NL recibe más de lo que aporta. ') + 'El país: ' + (nacDef > 0 ? 'déficit' : 'superávit') + ' de ' + vNac(Math.abs(nacDef)) + (pc() ? ' por habitante' : '') + (nacDef > 0 ? ', financiado con deuda' : ''));
     document.getElementById('k-residual').textContent = tipo || 'Residual';
-    document.getElementById('eb-residual').textContent = '= ' + (tipo || 'Residual');
-    fill('[data-v=ingresosPc]', f0.format(Q.ingresos / POB)); fill('[data-v=gastosPc]', f0.format(Q.gastos / POB));
-    fill('[data-n=ingresosPc]', f2.format((Q.ingresos / POB) / (N.ingresos / POBN)) + ' veces el promedio nacional por habitante');
-    fill('[data-n=gastosPc]', f2.format((Q.gastos / POB) / (N.gastos / POBN)) + ' veces el promedio nacional por habitante');
-    document.getElementById('reg-nota').textContent = pc() ? 'por habitante = ÷ población ENIGH expandida (' + f0.format(POB) + ' personas en NL)' : 'macro = millones de pesos corrientes de ' + ANIO;
-    fill('[data-unit-corta]', pc() ? 'MXN/hab' : MACRO_UNIT);
+    document.getElementById('eb-residual').textContent = '= ' + corto(tipo);
+    fill('[data-v=ingresosPc]', f0.format(Q.ingresos / POBC)); fill('[data-v=gastosPc]', f0.format(Q.gastos / POBC));
+    fill('[data-n=ingresosPc]', f2.format((Q.ingresos / POBC) / (N.ingresos / POBNC)) + ' veces el promedio nacional por habitante (' + f0.format(N.ingresos / POBNC) + ' MXN)');
+    fill('[data-n=gastosPc]', f2.format((Q.gastos / POBC) / (N.gastos / POBNC)) + ' veces el promedio nacional por habitante (' + f0.format(N.gastos / POBNC) + ' MXN)');
+    document.getElementById('reg-nota').textContent = pc() ? 'por habitante = ÷ población CONAPO ' + ANIO + ' (' + f0.format(POBC) + ' en NL); dentro de los cortes, población ENIGH de cada celda' : pibe() ? '% del PIBE de NL ' + ANIO + ' (' + mdp(PIBE) + ', ' + (DEN ? DEN.tipoPIBE : '') + '); el país, % de su PIB (' + mdp(PIBN) + ')' : 'macro = millones de pesos corrientes de ' + ANIO;
+    fill('[data-unit-corta]', pc() ? 'MXN/hab' : pibe() ? '% PIBE' : MACRO_UNIT);
   }
 
   /* ---------- 3. tablas del molde (solo lectura) ---------- */
@@ -439,15 +466,18 @@ ol.notas{font-size:12.5px;color:var(--mut);margin:8px 0 0 18px;padding:0}ol.nota
     var bd = F.micro ? '' : bSup(lado === 'ingreso' ? 'S-P3a' : 'S-P3b');
     var sel = F.micro ? sellosDe('quintil').filter(function (s) { return s.fam === f; }) : [];
     if (sel.length) bd += badge('s', 'muestra ' + sel.map(function (s) { return s.celda; }).join(','), 'Quintiles con sello muestral en ' + FLAB[f] + ': ' + sel.map(function (s) { return s.celda + ' (n = ' + s.n + ', top1 ' + f1.format(s.top1) + ' %)'; }).join('; '));
-    var h = '<tr><td>' + esc(FLAB[f] || f) + bd + '</td><td>' + money(F.total, POB) + '</td><td>' + (sh === null ? '—' : f2.format(sh * 100)) + '</td><td>' + (nac ? money(nac.total, POBN) : '—') + '</td></tr>';
+    var h = '<tr><td>' + esc(FLAB[f] || f) + bd + '</td><td>' + money(F.total, POBC) + '</td><td>' + (sh === null ? '—' : f2.format(sh * 100)) + '</td><td>' + (nac ? money(nac.total, POBNC, PIBN) : '—') + '</td></tr>';
     var sub = F.alimentadores || F.destinos || [];
-    sub.forEach(function (s) { var lab = s.de || s.a; var lab2 = (f === 'Energía' && lab === 'Sistema financiero') ? 'Costo de la deuda (energía)' : lab === 'CFE Pemex SENER' ? 'CFE, Pemex, SENER e inversión' : lab.replace('IMSS ISSSTE', 'IMSS, ISSSTE').replace('Pemex CFE', 'Pemex, CFE'); h += '<tr class="sub"><td>' + esc(lab2) + '</td><td>' + money(s.value, POB) + '</td><td></td><td></td></tr>'; });
+    sub.forEach(function (s) { var lab = s.de || s.a; var lab2 = (f === 'Energía' && lab === 'Sistema financiero') ? 'Costo de la deuda (energía)' : lab === 'CFE Pemex SENER' ? 'CFE, Pemex, SENER e inversión' : lab.replace('IMSS ISSSTE', 'IMSS, ISSSTE').replace('Pemex CFE', 'Pemex, CFE'); h += '<tr class="sub"><td>' + esc(lab2) + '</td><td>' + money(s.value, POBC) + '</td><td></td><td></td></tr>'; });
     return h;
   }
   function tablaMolde(id, grupos, lado, tot, totNac) {
-    var h = '<table><thead><tr><th>Concepto</th><th>Nuevo León<br>(' + (pc() ? 'MXN/hab' : MACRO_UNIT) + ')</th><th>% del<br>nacional</th><th>Nacional<br>(' + (pc() ? 'MXN/hab' : MACRO_UNIT) + ')</th></tr></thead><tbody>';
+    var h = '<table><thead><tr><th>Concepto</th><th>Nuevo León<br>(' + (pc() ? 'MXN/hab' : pibe() ? '% PIBE' : MACRO_UNIT) + ')</th><th>% del<br>nacional</th><th>Nacional<br>(' + (pc() ? 'MXN/hab' : pibe() ? '% PIB' : MACRO_UNIT) + ')</th></tr></thead><tbody>';
     grupos.forEach(function (g) { h += '<tr><td colspan="4" class="grupo" style="border:0;padding-top:10px">' + esc(g[0]) + '</td></tr>'; g[1].forEach(function (f) { if (FAM[f]) h += filaFam(f, lado); }); });
-    h += '<tr class="tot"><td>Total</td><td>' + money(tot, POB) + '</td><td>' + f2.format(tot / totNac * 100) + '</td><td>' + money(totNac, POBN) + '</td></tr></tbody></table>';
+    h += '<tr class="tot"><td>Total</td><td>' + money(tot, POBC) + '</td><td>' + f2.format(tot / totNac * 100) + '</td><td>' + money(totNac, POBNC, PIBN) + '</td></tr>';
+    /* pie de cierre (Parte B.2): por qué la referencia nacional y NL cierran con signos opuestos */
+    var rNL = Q.residual.valor, rN = N.ingresos - N.gastos;
+    h += '<tr class="cierre"><td colspan="4">Cierre · <b>Nuevo León</b>: aporta − recibe = ' + (rNL >= 0 ? '+' : '−') + money(Math.abs(rNL), POBC) + ' (' + esc(lc1(Q.residual.tipo)) + ') · <b>País</b>: ingresos − gastos = ' + (rN >= 0 ? '+' : '−') + money(Math.abs(rN), POBNC, PIBN) + ' (' + (rN < 0 ? 'déficit, ' + esc((N.residual.tipo || 'endeudamiento').toLowerCase()) + ' financiado con deuda' : 'superávit') + ')</td></tr></tbody></table>';
     document.getElementById(id).innerHTML = h;
   }
   function tablas() {
@@ -552,14 +582,14 @@ ol.notas{font-size:12.5px;color:var(--mut);margin:8px 0 0 18px;padding:0}ol.nota
     var cols = VINT.map(function (v) { return { lab: 'ENIGH ' + v, parts: fams.map(function (f) { return { f: f, v: sumCeldas('quintil', f, v) }; }).filter(function (p) { return p.v !== null; }), vig: false }; });
     cols.push({ lab: 'PE ' + ANIO, parts: fams.map(function (f) { return { f: f, v: FAM[f] ? FAM[f].total : null }; }).filter(function (p) { return p.v !== null; }), vig: true });
     var W = 1180, H = 360, left = 80, right = 20, top = 24, bottom = 50, pw = W - left - right, ph = H - top - bottom;
-    var tots = cols.map(function (c) { return c.parts.reduce(function (a, p) { return a + scale(p.v, POB); }, 0); });
+    var tots = cols.map(function (c) { return c.parts.reduce(function (a, p) { return a + scale(p.v, POBC); }, 0); });
     var e = extent(tots), mn = 0, mx = e[1], y = function (v) { return top + ph - (v - mn) / (mx - mn) * ph; };
     var n = cols.length, bw = pw / n, o = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(titulo) + '">';
     ticks(mn, mx, 6).forEach(function (t) { o += '<line class="grid" x1="' + left + '" x2="' + (left + pw) + '" y1="' + y(t) + '" y2="' + y(t) + '"/><text class="tick" x="' + (left - 6) + '" y="' + (y(t) + 4) + '" text-anchor="end">' + tickFmt(t) + '</text>'; });
     var COL = lado === 'ingreso' ? CI : CG, faltan = [];
     cols.forEach(function (c, k) {
       var x0 = left + k * bw + bw * 0.18, w = bw * 0.64, acc = 0;
-      c.parts.slice().sort(function (a, b) { return b.v - a.v; }).forEach(function (p) { var y1 = y(acc + scale(p.v, POB)), y0 = y(acc); o += '<rect x="' + x0 + '" y="' + y1 + '" width="' + w + '" height="' + Math.max(y0 - y1, 0.5) + '" fill="' + COL[p.f] + '"' + (c.vig ? '' : ' fill-opacity=".8"') + '><title>' + esc(c.lab + ' · ' + FLAB[p.f] + ': ' + money(p.v, POB)) + '</title></rect>'; acc += scale(p.v, POB); });
+      c.parts.slice().sort(function (a, b) { return b.v - a.v; }).forEach(function (p) { var y1 = y(acc + scale(p.v, POBC)), y0 = y(acc); o += '<rect x="' + x0 + '" y="' + y1 + '" width="' + w + '" height="' + Math.max(y0 - y1, 0.5) + '" fill="' + COL[p.f] + '"' + (c.vig ? '' : ' fill-opacity=".8"') + '><title>' + esc(c.lab + ' · ' + FLAB[p.f] + ': ' + money(p.v, POBC)) + '</title></rect>'; acc += scale(p.v, POBC); });
       var missing = fams.filter(function (f) { return !c.parts.some(function (p) { return p.f === f; }); });
       if (missing.length && !c.vig) faltan = missing;
       o += '<text class="tick" x="' + (left + k * bw + bw / 2) + '" y="' + (top + ph + 16) + '" text-anchor="middle">' + esc(c.lab) + (missing.length && !c.vig ? ' *' : '') + '</text>';
@@ -576,35 +606,44 @@ ol.notas{font-size:12.5px;color:var(--mut);margin:8px 0 0 18px;padding:0}ol.nota
   function ingresosT() {
     var cols = apilado('ch-ing', 'leg-ing', 'lec-ing', 'datos-ing', FING, 'ingreso', 'Los recursos que aporta Nuevo León');
     var micro = FING.filter(isMicro), t16 = micro.reduce(function (a, f) { return a + (sumCeldas('quintil', f, VINT[0]) || 0); }, 0), t24 = micro.reduce(function (a, f) { return a + (sumCeldas('quintil', f, VINT[VINT.length - 1]) || 0); }, 0), tv = micro.reduce(function (a, f) { return a + FAM[f].total; }, 0);
-    document.getElementById('lec-ing').textContent = 'A pesos del Paquete ' + ANIO + ', los impuestos pagados por residentes de Nuevo León pasan de ' + money(t16, POB) + ' con la ENIGH ' + VINT[0] + ' a ' + money(t24, POB) + ' con la ' + VINT[VINT.length - 1] + ' (vigente ' + money(tv, POB) + '); los renglones macro añaden ' + money(Q.ingresos - tv, POB) + ' solo en la corrida vigente.';
+    document.getElementById('lec-ing').textContent = 'A pesos del Paquete ' + ANIO + ', los impuestos pagados por residentes de Nuevo León pasan de ' + money(t16, POBC) + ' con la ENIGH ' + VINT[0] + ' a ' + money(t24, POBC) + ' con la ' + VINT[VINT.length - 1] + ' (vigente ' + money(tv, POBC) + '); los renglones macro añaden ' + money(Q.ingresos - tv, POBC) + ' solo en la corrida vigente.';
     return cols;
   }
   function gastosT() {
     var cols = apilado('ch-gas', 'leg-gas', 'lec-gas', 'datos-gas', FGAS, 'gasto', 'Los compromisos que recibe Nuevo León');
     var sinB = FGAS.filter(function (f) { return isMicro(f) && sumCeldas('quintil', f, VINT[0]) === null; });
     var tv = FGAS.filter(isMicro).reduce(function (a, f) { return a + FAM[f].total; }, 0);
-    document.getElementById('lec-gas').textContent = 'El gasto distribuible persona a persona en Nuevo León es ' + money(tv, POB) + ' en ' + ANIO + '; ' + (sinB.length ? sinB.map(function (f) { return FLAB[f]; }).join(' y ') + ' no tienen banda de vintages (F-P4) y ' : '') + 'los renglones macro (' + money(Q.gastos - tv, POB) + ') se reparten por población.';
+    document.getElementById('lec-gas').textContent = 'El gasto distribuible persona a persona en Nuevo León es ' + money(tv, POBC) + ' en ' + ANIO + '; ' + (sinB.length ? sinB.map(function (f) { return FLAB[f]; }).join(' y ') + ' no tienen banda de vintages (F-P4) y ' : '') + 'los renglones macro (' + money(Q.gastos - tv, POBC) + ') se reparten por población.';
     return cols;
   }
 
   /* ---------- R6. balanza (barras: aporta, recibe, residual; NL vs nacional por habitante) ---------- */
   function balanza() {
     var resid = Q.residual.valor, tipo = Q.residual.tipo;
-    var items = [{ lab: 'Aporta NL', v: scale(Q.ingresos, POB), c: TK.paga, raw: Q.ingresos, den: POB }, { lab: 'Recibe NL', v: scale(Q.gastos, POB), c: TK.recibe, raw: Q.gastos, den: POB }, { lab: tipo + ' NL', v: scale(resid, POB), c: TK.nl, raw: resid, den: POB }, { lab: 'Ingresos país', v: scale(N.ingresos, POBN), c: shade(TK.paga, .55), raw: N.ingresos, den: POBN }, { lab: 'Gastos país', v: scale(N.gastos, POBN), c: shade(TK.recibe, .55), raw: N.gastos, den: POBN }, { lab: (N.residual.tipo || 'Residual') + ' país', v: scale(N.residual.valor, POBN), c: shade(TK.nl, .55), raw: N.residual.valor, den: POBN }];
-    if (!pc()) items = items.slice(0, 3);
+    var items = [{ lab: 'Aporta NL', v: scale(Q.ingresos, POBC), c: TK.paga, raw: Q.ingresos, den: POBC, pib: PIBE }, { lab: 'Recibe NL', v: scale(Q.gastos, POBC), c: TK.recibe, raw: Q.gastos, den: POBC, pib: PIBE }, { lab: corto(tipo) + ' NL', v: scale(resid, POBC), c: TK.nl, raw: resid, den: POBC, pib: PIBE }, { lab: 'Ingresos país', v: scale(N.ingresos, POBNC, PIBN), c: shade(TK.paga, .55), raw: N.ingresos, den: POBNC, pib: PIBN }, { lab: 'Gastos país', v: scale(N.gastos, POBNC, PIBN), c: shade(TK.recibe, .55), raw: N.gastos, den: POBNC, pib: PIBN }, { lab: (N.residual.tipo || 'Residual') + ' país', v: scale(N.residual.valor, POBNC, PIBN), c: shade(TK.nl, .55), raw: N.residual.valor, den: POBNC, pib: PIBN }];
+    if (S.reg === 'macro') items = items.slice(0, 3);
     var W = 1180, H = 340, left = 90, right = 20, top = 24, bottom = 46, pw = W - left - right, ph = H - top - bottom;
     var e = extent(items.map(function (i) { return i.v; })), mn = e[0], mx = e[1], y = function (v) { return top + ph - (v - mn) / (mx - mn) * ph; };
     var n = items.length, bw = pw / n, o = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="La balanza con la Federación">';
     ticks(mn, mx, 6).forEach(function (t) { o += '<line class="grid" x1="' + left + '" x2="' + (left + pw) + '" y1="' + y(t) + '" y2="' + y(t) + '"/><text class="tick" x="' + (left - 6) + '" y="' + (y(t) + 4) + '" text-anchor="end">' + tickFmt(t) + '</text>'; });
-    items.forEach(function (it, k) { var x0 = left + k * bw + bw * 0.2, w = bw * 0.6, yv = y(it.v), y0 = y(0); o += '<rect x="' + x0 + '" y="' + Math.min(yv, y0) + '" width="' + w + '" height="' + Math.max(Math.abs(y0 - yv), 1) + '" fill="' + it.c + '"><title>' + esc(it.lab + ': ' + money(it.raw, it.den)) + '</title></rect><text class="tick" x="' + (left + k * bw + bw / 2) + '" y="' + (top + ph + 16) + '" text-anchor="middle">' + esc(it.lab) + '</text><text class="lab" x="' + (left + k * bw + bw / 2) + '" y="' + (it.v >= 0 ? yv - 6 : yv + 14) + '" text-anchor="middle">' + esc(pc() ? f0.format(it.v) : f1.format(it.v)) + '</text>'; });
-    if (pc()) o += '<line x1="' + (left + 3 * bw) + '" x2="' + (left + 3 * bw) + '" y1="' + top + '" y2="' + (top + ph) + '" stroke="var(--mut)" stroke-dasharray="5 4"/>';
+    items.forEach(function (it, k) { var x0 = left + k * bw + bw * 0.2, w = bw * 0.6, yv = y(it.v), y0 = y(0); o += '<rect x="' + x0 + '" y="' + Math.min(yv, y0) + '" width="' + w + '" height="' + Math.max(Math.abs(y0 - yv), 1) + '" fill="' + it.c + '"><title>' + esc(it.lab + ': ' + money(it.raw, it.den, it.pib)) + '</title></rect><text class="tick" x="' + (left + k * bw + bw / 2) + '" y="' + (top + ph + 16) + '" text-anchor="middle">' + esc(it.lab) + '</text><text class="lab" x="' + (left + k * bw + bw / 2) + '" y="' + (it.v >= 0 ? yv - 6 : yv + 14) + '" text-anchor="middle">' + esc(pc() ? f0.format(it.v) : pibe() ? f2.format(it.v) : f1.format(it.v)) + '</text>'; });
+    if (S.reg !== 'macro') o += '<line x1="' + (left + 3 * bw) + '" x2="' + (left + 3 * bw) + '" y1="' + top + '" y2="' + (top + ph) + '" stroke="var(--mut)" stroke-dasharray="5 4"/>';
     o += '<line class="zero" x1="' + left + '" x2="' + (left + pw) + '" y1="' + y(0) + '" y2="' + y(0) + '"/>';
-    o += '<text class="lab2" x="' + left + '" y="' + (H - 4) + '">' + esc(unit() + ' · ' + ANIO + (pc() ? ' · izquierda Nuevo León, derecha el país (su residual es endeudamiento: negativo)' : '')) + '</text></svg>';
+    o += '<text class="lab2" x="' + left + '" y="' + (H - 4) + '">' + esc(unit() + ' · ' + ANIO + (S.reg !== 'macro' ? ' · izquierda Nuevo León, derecha el país (su residual es endeudamiento: negativo)' : '')) + '</text></svg>';
     document.getElementById('ch-bal').innerHTML = o;
-    legend('leg-bal', [['Aporta / ingresos', 'background:' + TK.paga], ['Recibe / gastos', 'background:' + TK.recibe], ['Residual (ahorro > 0, endeudamiento < 0)', 'background:' + TK.nl]]);
+    legend('leg-bal', [['Aporta / ingresos', 'background:' + TK.paga], ['Recibe / gastos', 'background:' + TK.recibe], ['Cierre (aportación neta > 0; recepción neta o endeudamiento < 0)', 'background:' + TK.nl]]);
     document.getElementById('lec-bal').textContent = 'Por cada peso que recibe, Nuevo León aporta ' + f2.format(Q.ingresos / Q.gastos) + '; el país, ' + f2.format(N.ingresos / N.gastos) + '.';
-    var al = document.getElementById('al-bal'); al.className = 'alerta' + (resid >= 0 ? ' ok' : ''); al.innerHTML = 'En ' + ANIO + ', Nuevo León ' + (resid >= 0 ? 'aporta ' : 'recibe ') + '<b>' + esc(mdp(Math.abs(resid))) + '</b> más de lo que ' + (resid >= 0 ? 'recibe' : 'aporta') + ': <b>' + esc(f0.format(Math.abs(resid) / POB)) + ' MXN por habitante</b>' + bSup('S-P3c') + '. Los 32 residuales suman el ' + esc((N.residual.tipo || 'residual').toLowerCase()) + ' nacional.';
-    datos('datos-bal', 'La balanza con la Federación', 'balanza', [['lab', 'Concepto', String], ['raw', 'Pesos', f0.format], ['den', 'Población (denominador)', f0.format], [function (r) { return r.raw / r.den; }, 'MXN por habitante', f0.format]], items);
+    /* Parte B.1 — la conciliación como contenido: los dos cierres salen de los mismos campos que pintan tablas y Sankey */
+    var nacDef = N.gastos - N.ingresos;
+    ST.concil = { nac: nacDef, nl: resid };
+    var cEl = document.getElementById('concil');
+    cEl.innerHTML = 'La Federación ' + (nacDef > 0 ? 'gasta más de lo que recauda (<b>déficit nacional de ' + esc(mdp(nacDef)) + '</b>, financiado con deuda)' : 'recauda más de lo que gasta (<b>superávit nacional de ' + esc(mdp(-nacDef)) + '</b>)') + '; aun así, Nuevo León ' + (resid >= 0 ? 'aporta <b>' + esc(mdp(resid)) + '</b> más de lo que recibe' : 'recibe <b>' + esc(mdp(-resid)) + '</b> más de lo que aporta') + '. Las dos cosas ocurren a la vez.' +
+      '<span class="sub">Por habitante (CONAPO ' + ANIO + '): ' + (nacDef > 0 ? 'déficit' : 'superávit') + ' nacional de ' + esc(f0.format(Math.abs(nacDef) / POBNC)) + ' MXN; ' + esc(corto(tipo).toLowerCase()) + ' de Nuevo León de ' + esc(f0.format(Math.abs(resid) / POBC)) + ' MXN' + (PIBE && PIBN ? ' · en % del producto: ' + esc(f2.format(Math.abs(nacDef) / PIBN * 100)) + ' % del PIB nacional y ' + esc(f2.format(Math.abs(resid) / PIBE * 100)) + ' % del PIBE de Nuevo León' : '') + '.</span>';
+    var al = document.getElementById('al-bal'); al.className = 'alerta' + (resid >= 0 ? ' ok' : ''); al.innerHTML = 'En ' + ANIO + ', Nuevo León ' + (resid >= 0 ? 'aporta ' : 'recibe ') + '<b>' + esc(mdp(Math.abs(resid))) + '</b> más de lo que ' + (resid >= 0 ? 'recibe' : 'aporta') + ': <b>' + esc(f0.format(Math.abs(resid) / POBC)) + ' MXN por habitante</b>' + bSup('S-P3c') + '. Los 32 residuales suman el ' + esc((N.residual.tipo || 'residual').toLowerCase()) + ' nacional.';
+    /* acordeón: 287.4 (marco completo del Sistema Fiscal) vs 378.3 (flujos identificables, producto EOFP) = una historia en dos marcos */
+    var md = document.getElementById('met-dos-marcos');
+    if (md) md.innerHTML = PUB ? '<b>La misma historia en dos marcos.</b> En el <b>marco completo</b> del Sistema Fiscal (esta página, motor ' + esc(P.version_motor) + ', Paquete ' + ANIO + ') Nuevo León aporta ' + esc(mdp(Math.abs(resid))) + ' más de lo que recibe (' + esc(f0.format(Math.abs(resid) / POBC)) + ' MXN por habitante). En el marco de <b>flujos identificables</b> de la balanza publicada (' + esc(PUB.version_capa_nl) + ', motor ' + esc(PUB.version_motor) + ': gasto federalizado pagado a NL por fondo, EOFP, contra impuestos federales por incidencia) la aportación neta fue de ' + esc(mdp(Math.abs(PUB.balanzaS0NL))) + ' en ' + PUB.anioRef + ' (observado; S0) y de ' + esc(mdp(Math.abs(PUB.balanzaPES0NL))) + ' en el Paquete ' + PUB.anioPE + '. No se contradicen: el marco completo añade a lo que recibe NL el gasto federal directo (pensiones contributivas, salud, educación, inversión, energía, costo de la deuda, repartidos por población o persona a persona) que la balanza de flujos identificables excluye por diseño, y los renglones macro de ingreso (empresas públicas, FMP) que aquella no atribuye. <b>R-1:</b> ambas páginas conviven. Fuente de la cifra publicada: <code>federacion-nl.json</code> ' + esc(PUB.generado_en) + ' (sha256 ' + esc(String(PUB.sha256_federacion_nl_json).slice(0, 12)) + '…).' : 'Sin referencia de la balanza publicada en el JSON (el convertidor no recibió la carpeta nodos/).';
+    datos('datos-bal', 'La balanza con la Federación', 'balanza', [['lab', 'Concepto', String], ['raw', 'Pesos', f0.format], ['den', 'Población (denominador, CONAPO)', f0.format], [function (r) { return r.raw / r.den; }, 'MXN por habitante', f0.format], [function (r) { return r.raw / r.pib * 100; }, '% del PIBE / PIB', f2.format]], items);
   }
 
   /* ---------- R7. Sankey del motor, por corte (SVG propio, cero CDNs) ---------- */
@@ -628,12 +667,12 @@ ol.notas{font-size:12.5px;color:var(--mut);margin:8px 0 0 18px;padding:0}ol.nota
     var o = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Sankey del Sistema Fiscal de Nuevo León, corte ' + esc(Kc.corte) + '">';
     var ordered = links.slice().sort(function (a, b) { return (byId[a.from].i - byId[b.from].i) || (byId[a.to].i - byId[b.to].i); });
     ordered.forEach(function (l) { var a = byId[l.from], b = byId[l.to], h = l.value * scaleK, x0 = a.x + nodeW, x1 = b.x, ya = a.yout, yb = b.yin, c = (x0 + x1) / 2; a.yout += h; b.yin += h;
-      var den = celdaIds[l.from] ? celdaIds[l.from].pob : celdaIds[l.to] ? celdaIds[l.to].pob : POB;
-      var tip = a.lab + ' → ' + b.lab + ': ' + money(l.value, den) + (pc() ? (celdaIds[l.from] || celdaIds[l.to] ? ' por persona de la celda' : ' por habitante de NL') : '') + (l.n !== null && l.n !== undefined ? ' · n = ' + f0.format(l.n) + ' · top1 ' + f1.format(l.top1) + ' %' + (l.sello === 1 ? ' · SELLO muestral' : '') : '') + (l.banda ? ' · banda ' + money(l.banda.bmin, den) + ' – ' + money(l.banda.bmax, den) : '');
+      var den = celdaIds[l.from] ? celdaIds[l.from].pob : celdaIds[l.to] ? celdaIds[l.to].pob : POBC;
+      var tip = a.lab + ' → ' + b.lab + ': ' + money(l.value, den) + (pc() ? (celdaIds[l.from] || celdaIds[l.to] ? ' por persona de la celda (ENIGH)' : ' por habitante de NL (CONAPO)') : '') + (l.n !== null && l.n !== undefined ? ' · n = ' + f0.format(l.n) + ' · top1 ' + f1.format(l.top1) + ' %' + (l.sello === 1 ? ' · SELLO muestral' : '') : '') + (l.banda ? ' · banda ' + money(l.banda.bmin, den) + ' – ' + money(l.banda.bmax, den) : '');
       o += '<path class="link" fill="' + color(l) + '" d="M' + x0 + ',' + ya + ' C' + c + ',' + ya + ' ' + c + ',' + yb + ' ' + x1 + ',' + yb + ' L' + x1 + ',' + (yb + h) + ' C' + c + ',' + (yb + h) + ' ' + c + ',' + (ya + h) + ' ' + x0 + ',' + (ya + h) + ' Z"><title>' + esc(tip) + '</title></path>'; });
     var sel = sellosDe(corte), selCeldas = {}; sel.forEach(function (s) { selCeldas[s.celda] = (selCeldas[s.celda] || []).concat([s]); selCeldas[s.celda + '·r'] = selCeldas[s.celda]; });
     layers.forEach(function (ns, k) { ns.forEach(function (n) {
-      var den = celdaIds[n.id] ? celdaIds[n.id].pob : POB, isC = !!celdaIds[n.id], fillC = n.id === pq ? 'var(--nl)' : (k < byId[pq].layer ? TK.paga : (n.id === Kc.residual.tipo || n.id === 'Futuro' ? TK.nl : TK.recibe));
+      var den = celdaIds[n.id] ? celdaIds[n.id].pob : POBC, isC = !!celdaIds[n.id], fillC = n.id === pq ? 'var(--nl)' : (k < byId[pq].layer ? TK.paga : (n.id === Kc.residual.tipo || /futuro/i.test(n.id) ? TK.nl : TK.recibe));
       o += '<g class="nodo"><rect x="' + n.x + '" y="' + n.y0 + '" width="' + nodeW + '" height="' + n.h + '" fill="' + fillC + '"><title>' + esc(n.lab + ': ' + money(n.v, den)) + '</title></rect>';
       var flag = isC && selCeldas[n.id] && (k === 0 ? selCeldas[n.id].some(function (s) { return FAM[s.fam] && FAM[s.fam].lado === 'ingreso'; }) : selCeldas[n.id].some(function (s) { return FAM[s.fam] && FAM[s.fam].lado === 'gasto'; }));
       var txt = n.lab + (flag ? ' ⚑' : ''), val = (isC || k === byId[pq].layer || n.layer === 1 || n.layer === LMAX - 1) ? money(n.v, den) : '';
@@ -644,10 +683,10 @@ ol.notas{font-size:12.5px;color:var(--mut);margin:8px 0 0 18px;padding:0}ol.nota
       o += '</g>'; }); });
     o += '</svg>';
     document.getElementById('ch-sankey').innerHTML = o;
-    legend('leg-sankey', [['Ingresos: lo que aportan las personas y las empresas públicas', 'background:' + TK.paga], ['Gasto: lo que reciben las personas y los otros destinos', 'background:' + TK.recibe], [Kc.residual.tipo + ' → Futuro (cierre contable)', 'background:' + TK.nl]]);
+    legend('leg-sankey', [['Ingresos: lo que aportan las personas y las empresas públicas', 'background:' + TK.paga], ['Gasto: lo que reciben las personas y los otros destinos', 'background:' + TK.recibe], [Kc.residual.tipo + ' → ' + (Kc.residual.destino || Kc.residual.origen || 'Futuro') + ' (cierre contable)', 'background:' + TK.nl]]);
     var rows = links.map(function (l) { return { from: byId[l.from].lab, to: byId[l.to].lab, value: l.value, n: l.n, top1: l.top1, sello: l.sello, bmin: l.banda ? l.banda.bmin : null, bmax: l.banda ? l.banda.bmax : null }; });
     datos('datos-sankey', 'Sankey ' + Kc.corte, 'sankey-' + corte, [['from', 'De', String], ['to', 'A', String], ['value', 'Pesos', f0.format], ['n', 'n (personas)', function (x) { return x === null || x === undefined ? '' : f0.format(x); }], ['top1', 'top1 (%)', function (x) { return x === null || x === undefined ? '' : f1.format(x); }], ['sello', 'Sello', function (x) { return x === null || x === undefined ? '' : x; }], ['bmin', 'Banda mín (pesos)', function (x) { return x === null ? '' : f0.format(x); }], ['bmax', 'Banda máx (pesos)', function (x) { return x === null ? '' : f0.format(x); }]], rows);
-    document.getElementById('lec-sankey').textContent = 'Corte ' + Kc.corte + ': ' + f0.format(Kc.links.length) + ' flujos, ' + f0.format(sel.length) + ' con sello muestral (⚑ en la celda). Entran ' + mdp(Kc.ingresos) + ' y salen ' + mdp(Kc.gastos) + ' hacia personas y destinos de Nuevo León; la diferencia, ' + mdp(Kc.residual.valor) + ', es el ' + Kc.residual.tipo.toLowerCase() + '.';
+    document.getElementById('lec-sankey').textContent = 'Corte ' + Kc.corte + ': ' + f0.format(Kc.links.length) + ' flujos, ' + f0.format(sel.length) + ' con sello muestral (⚑ en la celda). Entran ' + mdp(Kc.ingresos) + ' y salen ' + mdp(Kc.gastos) + ' hacia personas y destinos de Nuevo León; la diferencia, ' + mdp(Kc.residual.valor) + ', es la ' + lc1(Kc.residual.tipo) + '.';
     var top = Kc.celdas.slice().sort(function (a, b) { return celdaTot(corte, 'ingreso', b.celda) - celdaTot(corte, 'ingreso', a.celda); })[0];
     document.getElementById('lec-sankey2').textContent = 'La celda que más aporta en este corte es "' + top.celda + '": ' + mdp(celdaTot(corte, 'ingreso', top.celda)) + ' en impuestos (' + f0.format(celdaTot(corte, 'ingreso', top.celda) / top.pob) + ' MXN por persona), y recibe ' + mdp(celdaTot(corte, 'gasto', top.celda)) + ' (' + f0.format(celdaTot(corte, 'gasto', top.celda) / top.pob) + ' MXN por persona).';
   }
@@ -655,7 +694,7 @@ ol.notas{font-size:12.5px;color:var(--mut);margin:8px 0 0 18px;padding:0}ol.nota
   /* ---------- textos con datos (spans) ---------- */
   function spans() {
     fill('[data-anio]', ANIO); fill('[data-motor]', esc(P.version_motor || '—')); fill('[data-corrida]', esc((P.generado_en || '').replace('T', ' ').slice(0, 16) + ' UTC'));
-    fill('[data-pob]', f0.format(POB)); fill('[data-share]', f2.format(E.share * 100)); fill('[data-cuotas]', esc(E.cuotas)); fill('[data-sello-n]', E.selloN); fill('[data-sello-top1]', E.selloTop1);
+    fill('[data-pob]', f0.format(POB)); fill('[data-pob-conapo]', f0.format(POBC)); fill('[data-share]', f2.format(E.share * 100)); fill('[data-cuotas]', esc(E.cuotas)); fill('[data-sello-n]', E.selloN); fill('[data-sello-top1]', E.selloTop1);
     fill('[data-vintages]', VINT.join(', '));
     fill('[data-celdas]', Q.celdas.map(function (c) { return c.celda + ' ' + f0.format(c.n) + ' / ' + f0.format(c.hog) + ' / ' + f0.format(c.pob); }).join(' · '));
     fill('[data-celdas-ge]', K.grupoedad.celdas.map(function (c) { return c.celda + ': ' + f0.format(c.pob); }).join(' · '));
@@ -689,6 +728,18 @@ ol.notas{font-size:12.5px;color:var(--mut);margin:8px 0 0 18px;padding:0}ol.nota
     chk('población NL / nacional = share declarado', POB / POBN, E.share);
     Object.keys(C.netoQuintil).forEach(function (q) { chk('aportación neta quintil ' + q + ' = Σ micro ingreso − Σ micro gasto', C.netoQuintil[q].neto, celdaTot('quintil', 'ingreso', q) - celdaTot('quintil', 'gasto', q)); });
     (UNIT_OK ? ST.ok : ST.bad).push('etiqueta macro "' + MACRO_UNIT + '" = divisor ' + MACRO_DIV.toExponential(0));
+    /* Parte B.5 — conciliación: el bloque reproduce tablas y Sankey (déficit nacional y aportación neta desde los enlaces crudos) */
+    /* en el nacional el residual entra como familia de ingreso (Futuro → Endeudamiento → CGPE): se excluye de Σ →CGPE */
+    var nacIn = N.decil.links.filter(function (l) { return l.to === N.paquete && l.from !== N.residual.tipo; }).reduce(function (a, l) { return a + l.value; }, 0), nacOut = N.decil.links.filter(function (l) { return l.from === N.paquete && l.to !== N.residual.tipo; }).reduce(function (a, l) { return a + l.value; }, 0);
+    var nlIn = Q.links.filter(function (l) { return l.to === Q.paquete; }).reduce(function (a, l) { return a + l.value; }, 0), nlOut = Q.links.filter(function (l) { return l.from === Q.paquete; }).reduce(function (a, l) { return a + l.value; }, 0);
+    var resLink = Q.links.filter(function (l) { return l.from === Q.residual.tipo && /futuro/i.test(l.to); })[0];
+    if (ST.concil) { chk('conciliación: déficit nacional del bloque = Σ enlaces CGPE→ − Σ →CGPE (decil del ancla)', ST.concil.nac, nacOut - nacIn); chk('conciliación: aportación neta del bloque = enlace ' + Q.residual.tipo + ' → ' + (Q.residual.destino || '') + ' del Sankey', ST.concil.nl, resLink ? resLink.value : null); chk('conciliación: aportación neta = Σ →CGPE − Σ CGPE→ sin el residual (NL)', ST.concil.nl, nlIn - (nlOut - (resLink ? resLink.value : 0))); }
+    var cTxt = (document.getElementById('concil') || {}).textContent || '';
+    (cTxt.indexOf(mdp(Math.abs(ST.concil ? ST.concil.nac : NaN))) >= 0 && cTxt.indexOf(mdp(Math.abs(ST.concil ? ST.concil.nl : NaN))) >= 0 ? ST.ok : ST.bad).push('conciliación: el texto del bloque lleva las mismas cifras (mdp) que las tarjetas de la fórmula');
+    var cierres = document.querySelectorAll('tr.cierre'); (cierres.length === 2 ? ST.ok : ST.bad).push('pie de cierre nacional en las 2 tablas (' + cierres.length + ')');
+    if (DEN) { chk('R-3: cifras.ingresosNLpcConapo = ingresos / CONAPO', C.ingresosNLpcConapo, Q.ingresos / DEN.pobNL_conapo); chk('R-3: cifras.residualNacpcConapo = residual nacional / CONAPO', C.residualNacpcConapo, N.residual.valor / DEN.pobNac_conapo); chk('R-2: cifras.ingresosNLpibe = ingresos / PIBE × 100', C.ingresosNLpibe, Q.ingresos / DEN.pibeNL * 100); chk('R-2: cifras.gastosNacpib = gastos nacionales / PIBY × 100', C.gastosNacpib, N.gastos / PIBN * 100); (DEN.pobNL_conapo > 0 && DEN.pobNac_conapo > DEN.pobNL_conapo ? ST.ok : ST.bad).push('R-3: denominadores CONAPO presentes y coherentes (' + f0.format(DEN.pobNL_conapo) + ' / ' + f0.format(DEN.pobNac_conapo) + ')'); }
+    (P.ancla && P.ancla.nacional_coincide_con_ancla && P.ancla.output_txt_coincide_con_ancla ? ST.ok : ST.bad).push('R-7: el nacional de referencia es el del ancla ' + (P.ancla && P.ancla.version) + ' (sankey-decil.json y output.txt con el SHA del ancla)');
+    (/Aportaci|Recepci/.test(Q.residual.tipo || '') && Object.keys(K).every(function (c) { return K[c].residual.tipo === Q.residual.tipo; }) ? ST.ok : ST.bad).push('etiqueta del residual de entidad del motor (' + Q.residual.tipo + ' → ' + (Q.residual.destino || '') + ') igual en los 5 cortes');
     (VINT.length === E.vintages.length && VINT.every(function (v, i) { return i === 0 || v > VINT[i - 1]; }) ? ST.ok : ST.bad).push('vintages declarados ordenados y sin repetir (' + VINT.join(' ') + ')');
     var faltanTxt = ['tbl-aporta', 'tbl-recibe', 'tbl-neto', 'ch-edades', 'ch-sexo', 'ch-vint', 'ch-ing', 'ch-gas', 'ch-bal', 'ch-sankey'].filter(function (id) { return !document.getElementById(id).innerHTML; });
     (faltanTxt.length ? ST.bad : ST.ok).push('los 10 contenedores de gráficas y tablas tienen contenido' + (faltanTxt.length ? ' (faltan: ' + faltanTxt.join(', ') + ')' : ''));
@@ -704,15 +755,17 @@ ol.notas{font-size:12.5px;color:var(--mut);margin:8px 0 0 18px;padding:0}ol.nota
     h += '<p><b>Qué mide esta página.</b> El Sistema Fiscal federal visto desde Nuevo León con el motor del Simulador Fiscal CIEP (<code>global entidad "Nuevo León"</code>): los ingresos públicos que pagan sus residentes y las empresas públicas repartidas, el gasto público que reciben o se ejerce en el estado, y el cierre contable (' + esc((Q.residual.tipo || '').toLowerCase()) + '). Paquete Económico ' + ANIO + ' (' + esc(Q.paquete) + '); motor ' + esc(P.version_motor) + ', fuentes congeladas al ' + esc(P.fuentes_congeladas_al || '—') + '.</p>';
     h += '<p><b>Supuestos.</b></p><ul>' + Object.keys(P.supuestos || {}).map(function (k) { return '<li><b>' + esc(k) + '</b>: ' + esc(P.supuestos[k]) + '</li>'; }).join('') + '</ul>';
     h += '<p><b>Divergencias declaradas.</b></p><ul>' + (P.divergencias_declaradas || []).map(function (d) { return '<li>' + esc(d) + '</li>'; }).join('') + '</ul>';
+    h += '<p><b>Denominadores (R-2/R-3).</b> ' + (DEN ? esc(DEN.fuente) + ' ' + esc(DEN.regla) + ' Población CONAPO ' + ANIO + ': NL ' + f0.format(DEN.pobNL_conapo) + ', nacional ' + f0.format(DEN.pobNac_conapo) + '; PIBE NL ' + mdp(DEN.pibeNL) + ' (' + esc(DEN.tipoPIBE) + '); PIB nacional ' + mdp(PIBN) + '.' : 'sin denominadores CONAPO/PIBE en el JSON: per cápita con población ENIGH.') + '</p>';
     h += '<p><b>Parámetros del motor.</b> ' + Object.keys(P.parametros || {}).map(function (k) { return '<code>' + esc(k) + '</code> = ' + esc(JSON.stringify(P.parametros[k])); }).join(' · ') + '.</p>';
     h += '<p><b>Alcance.</b> Entran las familias del Sankey del Sistema Fiscal (impuestos al trabajo, al consumo y al capital; IMSS/ISSSTE, Pemex/CFE y FMP; educación, salud, pensiones, transferencias, inversión, participaciones y otras aportaciones, otros gastos, energía, costo de la deuda). No entran: tasas efectivas por entidad, incidencia como % del ingreso, deuda y proyecciones de largo plazo (intrínsecamente nacionales), ni la capa interactiva del nacional (P11).</p>';
     h += '</div></details>';
     h += '<details class="met"><summary>Qué cambió respecto a la versión publicada (NL-0.5.2, "balanza de flujos identificables")</summary><div>';
     h += '<p>La versión publicada hasta hoy respondía otra pregunta con otras fuentes: <i>"Alcance declarado — balanza de flujos identificables. Flujos identificables: gasto federalizado pagado a Nuevo León (participaciones R28, aportaciones R33, convenios de descentralización y reasignación, R23 y protección social en salud; SHCP, Estadísticas Oportunas) contra los impuestos federales pagados por residentes de NL por incidencia (ISR asalariados, ISR personas físicas, ISR personas morales, IVA, IEPS no petrolero y petrolero, ISAN e importaciones; cuotas IMSS y OTROSK aparte, no sumados). Excluye el gasto federal directo ejercido en NL (pensiones contributivas, IMSS/ISSSTE patronal, CFE, inversión física federal directa, sueldos federales)."</i> Su cierre, "aportación neta en flujos identificables", era negativo (NL aporta más de lo que recibe por esos fondos), con banda S1–S3 del ISR PM (S1 prorrateo a capital sin cut-off, S0 método vigente, S3 pago esperado probit), participaciones por impuesto estimadas con cada ENIGH bienal (2016–2024) asignadas por bienio sin interpolar, per cápita con población CONAPO, medidas real y % del PIBE, vistas por fondo y subfondo (EOFP), serie anual 2000–2027 y la pestaña "La carga federal de NL a través del tiempo".</p>';
+    h += '<p><b>R-1 (2026-10-10): el espejo convive con la balanza publicada, no la reemplaza.</b> Las dos páginas responden preguntas distintas con fuentes distintas y seguirán publicadas juntas hasta que la balanza de flujos identificables migre al motor (Fase B del mapa de migración).</p>';
     h += '<p>Esta página toma el molde del sitio nacional y <b>solo</b> el contrato del motor-entidad: las familias del Sankey, el residual como cierre, bandas por vintage sobre las mismas familias, sellos por celda y per cápita con población ENIGH. No hay escenario S1/S3 (el motor simula el ISR PM con su método vigente), ni fondos EOFP, ni deflactor ni PIBE (viven en <code>actividad-nl.json</code>, capa NL). La vista por fondo y la balanza de flujos identificables siguen en el producto NL-0.5.2 hasta que migren al motor (Fase B del mapa de migración). Ninguna cifra de aquella versión se reproduce aquí; se compara en la evidencia de F2.</p>';
     h += '</div></details>';
     h += '<details class="met"><summary>Fuentes y procedencia</summary><div>';
-    h += '<p>Motor: Simulador Fiscal CIEP ' + esc(P.version_motor) + ' (rama <code>' + esc(P.rama_motor) + '</code> @ <code>' + esc(P.commit_motor) + '</code>), ENIGH ' + VINT.join('/') + ' (INEGI), Paquete Económico ' + ANIO + ' (SHCP), ' + esc(P.contrato) + '. Ancla de reproducibilidad ' + esc(P.ancla && P.ancla.version) + ': <code>output.txt</code> ' + esc(String(P.ancla && P.ancla.output_txt_sha256 || '').slice(0, 12)) + '…; el <code>sankey-decil.json</code> nacional usado aquí ' + (P.ancla && P.ancla.nacional_coincide_con_ancla ? 'coincide byte a byte con el ancla' : 'NO coincide byte a byte con el ancla (mismas cifras v8.8.2, otra sesión; sus totales por familia se cotejan en la evidencia F2)') + '.</p>';
+    h += '<p>Motor: Simulador Fiscal CIEP ' + esc(P.version_motor) + ' (rama <code>' + esc(P.rama_motor) + '</code> @ <code>' + esc(P.commit_motor) + '</code>), ENIGH ' + VINT.join('/') + ' (INEGI), Paquete Económico ' + ANIO + ' (SHCP), ' + esc(P.contrato) + '. Ancla de reproducibilidad ' + esc(P.ancla && P.ancla.version) + ': <code>output.txt</code> ' + esc(String(P.ancla && P.ancla.output_txt_sha256 || '').slice(0, 12)) + '…; el <code>sankey-decil.json</code> nacional usado aquí ' + (P.ancla && P.ancla.nacional_coincide_con_ancla ? 'coincide byte a byte con el ancla (R-7: receta de estado cero, ' + esc(P.ancla.origen_nacional || '') + ')' : 'NO coincide byte a byte con el ancla (mismas cifras v8.8.2, otra sesión; sus totales por familia se cotejan en la evidencia F2)') + '. Los Sankeys de Nuevo León salen de la rama <code>' + esc(P.rama_motor) + '</code> @ <code>' + esc(P.commit_motor) + '</code> (etiqueta dinámica del residual; valores idénticos a los de <code>feat/entidad</code>).' + (PUB ? ' Balanza publicada de referencia: <code>federacion-nl.json</code> ' + esc(PUB.version_capa_nl) + ', ' + esc(PUB.generado_en) + ', sha256 ' + esc(String(PUB.sha256_federacion_nl_json).slice(0, 12)) + '….' : '') + '</p>';
     h += '<ul>' + Object.keys(A).map(function (k) { return '<li><code>' + esc(k) + '</code> · ' + f0.format(A[k].bytes) + ' bytes · ' + esc(A[k].mtime) + ' · sha256 <code>' + esc(String(A[k].sha256).slice(0, 16)) + '…</code></li>'; }).join('') + '</ul>';
     h += '<p>Conversión: ' + esc(P.convertidor) + ' · corrida ' + esc(P.generado_en) + ' · ' + esc(P.modo) + '. Compuertas de F1 (evidencia <code>diag-pivote-entidad-2026-10-10/F1/</code>): paridad nacional con entidad vacía (output.txt y 5 sankeys = ancla v8.8.2), aditividad Σ32 entidades = nacional (reldif 8.5e-14), testigo NL vs sprint (1.9e-15), segundo estado (Jalisco).</p>';
     h += '<p>Identidad: ' + esc(window.NLEstilo ? window.NLEstilo.estado : '') + '. Patrones del canon (nl-estilo.md): fórmula y tarjetas = familia per cápita del motor; tablas = displays PEF/LIF (Concepto · nivel · % · per cápita); barras = graph bar over() del motor con NL saturado y referencia atenuada; Sankey = Sankey Sistema Fiscal (SankeySF.do) con el cierre contable siempre como nodo; vintages = serie escalonada sin interpolar.</p>';
