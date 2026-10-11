@@ -20,6 +20,93 @@ Formato de cada entrada:
 
 Trabajo en `master` sin versión asignada.
 
+### Ciclo de vida de entidad: `CicloEntidad.do` (PR feat/ciclo-entidad, 2026-10-11)
+
+Decisión de Ricardo (2026-10-11): el espejo NL deja de mostrar los cortes grupoedad y sexo y muestra
+**la misma gráfica de ciclo de vida del sitio nacional** ("La carga fiscal por edades") filtrada a la
+entidad. Unificación, no invención: la definición es la del nacional y no se rediseña. **Todo vive
+dentro de `if "$entidad" != ""`** (`SIM.do` §8.2, una línea después de los Sankeys de entidad): con
+el global vacío no corre ni una línea nueva ni se escribe un archivo nuevo, así que la receta
+canónica y el ancla v8.9.0 no cambian.
+
+#### Comandos
+
+- **`01_modulos/visualizations/CicloEntidad.do`** (nuevo) — `run CicloEntidad.do <anioPE> "<entidad>"`.
+  Lee `users/$id/aportaciones.dta` (la misma base del nacional), filtra por clave INEGI
+  (`substr(folioviv,1,2)`, como `SankeySF.do`) y escribe `users/$id/<ABREV>/ciclo-vida.json`
+  (JSON plano, no script FusionCharts).
+- **`SIM.do` §0.4** — `//global entidad_ciclo_grupos "decil"`: series apiladas de la gráfica.
+  `decil` (default) = grupos de deciles **nacionales** I-V / VI-IX / X, exactamente como el
+  nacional; `quintil` = quintil estatal I…V (re-ranking de `SankeySF.do`, P2); `ninguno` = una
+  sola serie. Reutiliza `sello_n` (100) y `sello_top1` (25).
+
+#### Definición heredada del nacional (radiografía; no se rediseña)
+
+- La gráfica del sitio (`js/stataCalcula.js`, ApexCharts `#chart-duo-pt1/2`, barras horizontales
+  apiladas, hombres y mujeres, 22 quinquenios de 105-109 a 0-4) lee las familias `APORTHIV`,
+  `APORTHVIIX`, `APORTHX`, `APORTMIV`, `APORTMVIIX`, `APORTMX` de `output.txt`; `cargaDefault.php`
+  pisa las claves repetidas, así que el bloque que manda es el **último**: el de
+  `Simulador AportacionesNetas` (`SIM.do` §7.3).
+- `AportacionesNetas = ImpuestosAportaciones − Transferencias` por persona, `[fw=factor]`.
+  `ImpuestosAportaciones = ISRPM + ISRAS + ISRPF + CUOTAS + IVA + IEPSNP + IEPSP + ISAN + IMPORT`
+  (`*_Sim`; sin FMP ni OTROSK). `Transferencias = Pensiones (con Pensión_AM) + IngBasico + Educacion
+  + Salud + OtrasInversiones` (sin OtrosGastos ni Energia).
+- Celda = `grupo_edad` 1..23 (0-4 … 105-109, 110+) × sexo × `over` (deciles I-V, VI-IX, X).
+  **Unidad: porcentaje del total nacional de aportaciones netas** (`graphpiramide`: `POR =
+  neto/Σneto×100`; Σ de las 132 celdas = 100; `%8.3f`). Negativo = la celda recibe más de lo que
+  aporta. Valor presente: `Simulador.ado` divide la variable por el deflactor de anioPE respecto a
+  anioVP antes de guardar `aportaciones.dta` (con anioVP = anioPE = 2027 es 1); `CicloEntidad.do`
+  aplica el mismo cociente a aporta y recibe.
+- Hallazgos del nacional, declarados y no corregidos aquí (sitio fuera del alcance del motor): los
+  tooltips dicen "MXN" (hombres) y "% PIB" (mujeres) cuando el dato es % del neto total; la etiqueta
+  del grupo 23 en `graphpiramide` dice "109+" (es 110+); los dos primeros bloques `APORT*` de
+  `output.txt` (otras variables de `PerfilesSim`) no son los que el sitio dibuja.
+
+#### Contrato de `ciclo-vida.json`
+
+Por celda quinquenio × sexo (rejilla completa, 46 celdas, las vacías con `n = 0`, nunca omitidas):
+`n` (personas de la muestra de la entidad, sin ponderar), `pob` (Σ factor), `aporta`, `recibe`,
+`neto` (pesos de anioVP), `pct` (% del neto total de la entidad, Σ = 100), `pct_nac` (% del neto
+total nacional: **Σ de las 32 entidades, celda a celda = `APORT*`**), `top1_aporta`/`top1_recibe`
+(% del aporta/recibe de la celda que pone una sola persona), `sello` (1 si `n < sello_n` o
+`top1_* > sello_top1`; regla P5) y `grupos[]` con el desglose por serie. Más `totales` (entidad y
+nacional: n, pob, aporta, recibe, neto, PIB nacional `pibY`, participaciones), `definicion`,
+`parametros`, `quinquenios`, `grupos` y `procedencia`.
+
+#### Compuertas (evidencia `diag-pivote-entidad-2026-10-10/F3-ciclo/`)
+
+1. **Paridad nacional**: todo el diff vive dentro de `if "$entidad" != ""` (SIM.do: dos líneas, una
+   comentada en §0.4 y la llamada en §8.2; archivo nuevo); receta rápida `--zip`.
+2. **Aditividad** (`gate-aditividad.py`): Σ de las 32 entidades de `pct_nac`, celda a celda, contra
+   los 6 vectores `APORT*` del `output.txt` del ancla (último bloque): diferencia máxima **0.000495**
+   con tolerancia 0.0005 (medio milésimo del `%8.3f`); Σ32 neto = neto nacional **1,249,989.66 mdp**
+   (reldif 0); 32/32 JSON con rejilla completa, Σ pct = 100, neto = aporta − recibe, celdas = Σ grupos
+   y regla del sello verificada. Reconstrucción independiente con pandas sobre `aportaciones.dta`:
+   mismos vectores (máx 0.0005).
+3. **Testigo NL** (`ent/NL-ciclo-vida.json`): 12,586 personas, población ENIGH 6,375,312 (4.71 %),
+   neto **354,608.5 mdp = 28.37 % del neto nacional**; 16 de 46 celdas con sello (4 vacías: 105-109 y
+   110+ de ambos sexos; n < 100 en 80-84 H, 85-89 H/M y de 90-94 en adelante; concentración: en
+   **60-64 H una sola persona pone el 83.8 % del aporta de la celda y la celda es el 34.1 % del neto
+   de NL**; 65-69 H 70.1 %; 80-84 M 50.3 %). No existe referencia nacional por edades para NL: el
+   testigo es la aditividad y la reconstrucción con pandas.
+4. **Segundo estado**: Jalisco 8,617 personas, 19.77 % del neto nacional, 19 sellos; CDMX 18 sellos.
+
+#### FLAGs (decisiones de Ricardo; defaults declarados)
+
+- **C-1 Series por default**: deciles nacionales (herencia exacta) vs quintil estatal (regla P2 de los
+  Sankeys de entidad). Parámetro `entidad_ciclo_grupos`, default `decil`.
+- **C-2 Definición de `n`**: personas de la muestra en la celda (todas); el nacional llama a
+  `Simulador` con `if AportacionesNetas != 0`, pero en la ENIGH 2024 ninguna persona tiene neto
+  exactamente 0 (`n_neto_cero` viaja en `totales`).
+- **C-3 Sello de concentración en el ciclo de vida**: se reutiliza `sello_top1` (25 %) sobre aporta y
+  recibe de la celda; el neto, por ser signado, no lleva top1.
+- **C-4 Nombre del archivo** `ciclo-vida.json` y **unidad por default en el espejo** (% del neto total,
+  como el nacional, frente a MXN por persona o mdp que la página ya ofrece como registros).
+- **Bandas de vintages**: no entran (el nacional no las muestra en esta gráfica); extensión posible
+  como una fila de paleta (misma mecánica que `_SFsellos`: filtrar `users/$id-v<t>/aportaciones.dta`,
+  participación de la celda × neto nacional vigente), costo ~1 sesión; no es un rediseño.
+
+
 ## [v8.9.0] — 2026-10-11
 
 Release **menor** (funcionalidad nueva compatible, `versionado-y-git.md` §3.2) **sin efecto en

@@ -521,11 +521,13 @@ cambian. Con el global puesto:
 | `SIM.do` §0.6 | `SIMentidad` valida el nombre contra el catálogo (`$entidadesL`; posición = clave INEGI de la ENIGH, `substr(folioviv,1,2)`) y deriva la abreviatura (`$entidadesC`, la misma que `Poblacion.ado` usa en sus escalares). Nombre mal escrito = error accionable con el catálogo | `users/<id>/<ABREV>/` |
 | `SIM.do` §1 | `Poblacion if entidad == "<nombre>"` (CONAPO): tarjeta demográfica y escalares `pob*<ABREV>` | `graphs/` (si hay gráficas) |
 | `SIM.do` §8.2 → `SankeySF.do` | tras los 5 Sankeys nacionales, los de la entidad: `keep if` por clave INEGI sobre `aportaciones.dta`; corte **quintil estatal** (re-ranking dentro de la entidad con el criterio de ingreso de `Households.do` §12, el mismo del sprint NL) en lugar del decil nacional, más grupoedad, sexo, rural y escol; renglones per cápita con la población ENIGH de la entidad (fórmula actual) y renglones `% PIB × pibY` repartidos por población (`entidad_macro`, supuesto declarado en el CHANGELOG); banda de vintages ENIGH y sellos de muestra como campos del JSON | `users/<id>/<ABREV>/sankey-{quintil,grupoedad,sexo,rural,escol}.json` |
+| `SIM.do` §8.2 → `CicloEntidad.do` (2026-10-11) | tras los Sankeys de entidad, la gráfica "La carga fiscal por edades" del sitio nacional (`Simulador.ado` `graphpiramide` → `APORT*` de `output.txt`) filtrada a la entidad: `AportacionesNetas = ImpuestosAportaciones − Transferencias` por quinquenio × sexo × grupo de deciles nacionales, en % del neto total de la entidad (`pct`) y del nacional (`pct_nac`: Σ de las 32 entidades = `APORT*`), con `n`, `pob`, `aporta`, `recibe`, `top1_*` y `sello` por celda; rejilla completa (46 celdas), nada se suaviza | `users/<id>/<ABREV>/ciclo-vida.json` (JSON plano) |
 
 Parámetros (SIM.do §0.4, todos opcionales): `entidad_vintages` (vintages ENIGH para la
 banda, leídos de `users/<id>-v<t>/aportaciones.dta` si existen; `"0"` = sin banda),
 `entidad_macro` (`pob` | `omitir`), `entidad_cuotas` (`aparte` = nodo propio "Cuotas IMSS"),
-`sello_n` (default 100 personas) y `sello_top1` (default 25 %). El JSON de entidad lleva
+`sello_n` (default 100 personas), `sello_top1` (default 25 %) y `entidad_ciclo_grupos` (`decil` |
+`quintil` | `ninguno`, series de `ciclo-vida.json`). El JSON de entidad lleva
 un bloque `entidad:{nombre, clave, abrev, corte, pobEnt, pobNac, macro, cuotas, selloN,
 selloTop1, vintages, celdas:[{celda, n, hog, pob}]}` y, en cada enlace micro, `n`, `top1`,
 `sello` (0/1), `bmin`, `bmax` y `v<t>` (valor de la celda con cada vintage: participación
