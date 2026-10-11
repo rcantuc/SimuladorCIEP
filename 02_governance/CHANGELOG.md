@@ -20,6 +20,35 @@ Formato de cada entrada:
 
 Trabajo en `master` sin versión asignada.
 
+### Etiqueta dinámica del residual de entidad (pulido pre-v8.9.0, 2026-10-10)
+
+Solo etiquetas, ningún valor. Decisión de Ricardo (2026-10-10 noche): el cierre contable del Sankey de una
+entidad deja de llamarse "Ahorro" y se nombra por signo.
+
+#### Comandos
+
+- **`SankeySF.do`** (bloque "DEUDA o AHORRO"): con `entidad`, ingreso > gasto → nodo **"Aportación neta a la
+  Federación"** → **"Federación y futuro"**; gasto > ingreso → **"Federación y futuro"** → **"Recepción neta de la
+  Federación"** (p. ej. Chiapas, 240,918.9 mdp en PE 2027). Sin `entidad`, el nacional conserva
+  "Ahorro"/"Endeudamiento" ↔ "Futuro".
+- **`SankeySumSim.ado`**: la clave interna del nodo (`substr(…,1,20)` + `strtoname`, nombre de macro
+  `node<clave>`) se separa del texto que va al JSON (etiqueta completa, espacios → `_` como antes). Motivo: con
+  31 caracteres `strtoname` truncaba a 32 bytes y el nombre de macro reventaba (`r(198)`); el JSON salía
+  "Aportación neta a l". Para etiquetas ≤ 20 bytes (todas las nacionales) el texto es idéntico al de antes.
+- **`05_scripts/compuertas-entidad.py`**: reconoce las etiquetas nuevas del residual (`RESID_POS`/`RESID_NEG`).
+
+#### Compuertas (evidencia `diag-pivote-entidad-2026-10-10/F2/parteA/`)
+
+- **Receta de estado cero** (`test-maquina-virgen.sh --reproducibilidad --assets-locales` sobre el commit,
+  StataNow 19.5 SE, 1 procesador, fuentes 2026-10-06): `output.txt` `e40af4a6…` y los 5 `sankey-*.json`
+  **byte-idénticos al ancla v8.8.2**; 60 min (`compuerta-reproducibilidad.out`).
+- Harness de `SankeySF.do` con `entidad "Nuevo León"`, 5 cortes: solo cambian 2 etiquetas por corte; valores,
+  `n`, `top1`, `sello`, bandas y `entidad{…}` idénticos campo a campo. Chiapas (quintil) exhibe la etiqueta
+  negativa. Nacional en el harness antes/después del `.ado`: byte-idéntico.
+- Observación: en el harness, el cambio de texto de `SankeySF.do` mueve la última cifra (reldif ≤ 4.6e-14) de
+  81/104 enlaces micro del `sankey-decil.json` nacional (orden de suma en `collapse`); la receta completa no
+  lo exhibe (ancla reproducida). La compuerta byte a byte es la de la receta.
+
 ### `global entidad`: el motor entidad-consciente (PR feat/entidad, 2026-10-10)
 
 Decisión del 2026-10-10 (mapa F0 `diag-pivote-entidad-2026-10-10/mapa-migracion.md`): la capa NL
