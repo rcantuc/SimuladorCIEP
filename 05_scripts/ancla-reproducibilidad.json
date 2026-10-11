@@ -1,5 +1,5 @@
 {
-  "version": "v8.8.1",
+  "version": "v8.8.2",
   "fuentes": "2026-10-06",
   "stata": {
     "version": "19.5",
@@ -9,12 +9,12 @@
   "receta": "SIM.do (PE 2027) + SIM-local.do {nographs, output, update, fuentes} desde estado cero (sin master/, users/, raw/temp), batch `stata -b do`, `set processors 1`; ver runbook-deploys-ciep.md 9",
   "output_txt_sha256": "e40af4a6dda77d3a042228a291d55443fc020d3bf431698b179e7c11385a4d27",
   "sankeys_sha256": {
-    "sankey-decil.json": "9e99bc33b68f65525febcb723e179f634c1e9d29ce51ca70a5f8f5a0740ac69d",
-    "sankey-escol.json": "eb19eb8b3a6ee6aca98c0cc7ba98a5d55a762f9fdddd68ee9a4a4fcd2a6e4605",
-    "sankey-grupoedad.json": "bf3b62364569ce41601dc2a01bfa535573cbcb4b22df8fc00621befd87eac946",
-    "sankey-rural.json": "7cf63b33ee5567937f58e7a3e74c28c5cfc12ac36ce9d607c2705ca7f5f0fb4e",
-    "sankey-sexo.json": "4e3d3e2e31b71799a167a45d5b905cc0e0fb45e91542ce4ae8a533918f20c1e9"
+    "sankey-decil.json": "8952d14ef4d220bf81816ec3bcf134cfef6f9c5b310eff29e7b8f0c89e1aa2fe",
+    "sankey-escol.json": "fd059f8c6b56014b0f05ea7a22ba25141cd2f8ac76afb6b3827934ad80561ee9",
+    "sankey-grupoedad.json": "14ce05b145796239ddb3c5c35be82e4518175b7c36e2c6c987f59b892036d60c",
+    "sankey-rural.json": "02dd7ac04d74d0dc0018d16e23fd70ab4eac4cee50b026c841f24c894188aad7",
+    "sankey-sexo.json": "bf49cec7734011fcb0a1b19bcbd5b845efaf000ff3f8665faaafb32c5d881771"
   },
-  "commit": "668cdc3",
-  "anclado_el": "2026-10-09T17:09:22Z"
+  "commit": "60a7ffe",
+  "anclado_el": "2026-10-11T01:40:20Z"
 }

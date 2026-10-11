@@ -94,7 +94,13 @@ tabstat factor, stat(sum) f(%20.0fc) save
 tempname pobtot
 matrix `pobtot' = r(StatTotal)
 
-replace Pensiones = Pensiones + Pensión_AM
+* Pensiones de aportaciones.dta YA incluye Pensión_AM: SIM.do §7.2 la suma una vez
+* antes de guardar la base (y Web.Stata.do hace lo mismo en la vía web). Hasta v8.8.1
+* esta línea la volvía a sumar: el nodo "Pensiones" del Sankey (3,002,971.1 mdp, PE 2027)
+* excedía en exactamente `pam` (1.474 % del PIB = 581,042.2 mdp) al gasto parametrizado
+* en SIM.do §5.1, y el enlace residual de endeudamiento cargaba el mismo exceso contra el
+* financiamiento de la ILIF 2027. Prueba de endeudamiento del 2026-10-10
+* (diag-pivote-entidad-2026-10-10/prueba-pam/); corrección en v8.8.2 (CHANGELOG). *
 
 collapse (sum) gas_Educación=Educacion gas_Salud=Salud /*gas__Salarios_de_gobierno=Salarios*/ ///
 	gas___Pensiones=Pensiones gas____Transferencias=IngBasico ///
