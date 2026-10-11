@@ -1,5 +1,5 @@
 {
-  "version": "v8.8.2",
+  "version": "v8.9.0",
   "fuentes": "2026-10-06",
   "stata": {
     "version": "19.5",
@@ -15,6 +15,6 @@
     "sankey-rural.json": "02dd7ac04d74d0dc0018d16e23fd70ab4eac4cee50b026c841f24c894188aad7",
     "sankey-sexo.json": "bf49cec7734011fcb0a1b19bcbd5b845efaf000ff3f8665faaafb32c5d881771"
   },
-  "commit": "60a7ffe",
-  "anclado_el": "2026-10-11T01:40:20Z"
+  "commit": "af2eaf9",
+  "anclado_el": "2026-10-11T19:14:17Z"
 }
