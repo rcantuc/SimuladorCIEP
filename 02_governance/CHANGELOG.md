@@ -20,6 +20,65 @@ Formato de cada entrada:
 
 Trabajo en `master` sin versión asignada.
 
+## [v8.8.2] — 2026-10-10
+
+Patch **con efecto en números publicados**: los 5 `sankey-*.json` del sitio cambian;
+`output.txt` no (no pasa por `SankeySF.do`; la receta §9.1 lo reprodujo byte-idéntico,
+`e40af4a6…`). Ancla re-declarada por la receta. Detectado y cuantificado en la capa NL
+(`feature/entidad-nl`, sesión C4 del 2026-10-09) y confirmado el 2026-10-10 con la prueba
+de endeudamiento (`~/CIEP_Simuladores/diag-pivote-entidad-2026-10-10/prueba-pam/`).
+
+### Correcciones
+
+- **El nodo "Pensiones" del Sankey del sistema fiscal contaba `Pensión_AM` dos veces.**
+  `GastoPC.ado` §5 construye `Pensiones` con las cuatro contributivas (IMSS, ISSSTE, Pemex,
+  otras) y `Pensión_AM` aparte; `SIM.do` §7.2 suma `Pensiones + Pensión_AM` **una vez**
+  antes de guardar `aportaciones.dta` (desde `afac956`, 2025-11-27, cuando `Pensión_AM`
+  salió de `Transferencias` y entró a `Pensiones`); `SankeySF.do` abría esa base y la volvía
+  a sumar (línea heredada de `0afac4e`, 2025-09-02, cuando aún no venía sumada). La
+  duplicación existe desde `afac956`: afecta a todo v7.0–v8.8.1. Se retira la re-suma de
+  `SankeySF.do`; `SIM.do` §7.2 y `Web.Stata.do` §7.2 (misma suma legítima en la vía web, que
+  también corre `SankeySF.do`) no cambian.
+
+  Efecto, PE 2027 (mdp; PIB 39,419,415.3):
+
+  | Enlace del Sankey (los 5 cortes) | Antes | Después | Δ |
+  |---|---:|---:|---:|
+  | CGPE 2027 → Pensiones | 3,002,971.1 (7.618 % PIB) | 2,421,928.9 (6.144 %) | −581,042.2 |
+  | Pensiones → cortes (decil, edad, sexo, rural, escolaridad) | Σ 3,002,971.1 | Σ 2,421,928.9 | −581,042.2, repartido como `Pensión_AM` |
+  | Futuro → Endeudamiento → CGPE 2027 (residual) | 2,062,029.6 (5.231 %) | 1,480,987.4 (3.757 %) | −581,042.2 |
+  | Σ gasto (eje 3) | 11,218,371.4 (28.459 %) | 10,637,329.2 (26.985 % = Σ §5.1) | −581,042.2 |
+  | todo lo demás (eje de ingresos, Educación, Salud, Inversión, Transferencias, renglones macro) | | | 0 |
+
+  La Δ es exactamente `pam` (1.474 % del PIB, `SIM.do` §5.1). El residual de endeudamiento
+  ahora cierra contra el déficit implícito de los parámetros del propio `SIM.do`
+  (Σ §5.1 − Σ §4.1 = 3.757 %) y queda a 1,028 mdp (0.003 pp) del financiamiento de la ILIF
+  2027 (`LIF.dta`, divLIF 10: 3.754 %); antes excedía ambos en ~1.47 pp. Por decil, cada enlace
+  Pensiones → decil baja en la Σ de `Pensión_AM` de ese decil (I −65,055.6 … X −52,923.8).
+
+### Reproducibilidad
+
+- Ancla re-declarada (`05_scripts/ancla-reproducibilidad.json`): `output_txt_sha256`
+  **idéntico** (`e40af4a6…`); `sankeys_sha256` nuevos:
+  `sankey-decil.json` `8952d14ef4d2…`, `sankey-escol.json` `fd059f8c6b56…`,
+  `sankey-grupoedad.json` `14ce05b14579…`, `sankey-rural.json` `02dd7ac04d74…`,
+  `sankey-sexo.json` `bf49cec77340…`. Receta §9.1 desde estado cero, fuentes 2026-10-06,
+  StataNow 19.5 SE, `set processors 1`.
+- Compuertas del PR (evidencia en `diag-pivote-entidad-2026-10-10/fix-pam/`): residual =
+  Σ §5.1 − Σ §4.1 (reldif < 1e-9); nodo Pensiones = 6.144 % del PIB; aditividad del delta en
+  los 5 cortes (solo se mueven los enlaces de Pensiones y el residual, en −`pam`);
+  `test-maquina-virgen.sh --zip` en las tres vías.
+
+### Pendiente (documentado, sin cambio de código)
+
+- **`Pension_AM` (sin acento, `PerfilesSim.do` §5)** suma 904,680 mdp con un ancla declarada de
+  580,935: `Distribucion.ado`, cuando la variable **ya existe**, multiplica la variable vieja (no
+  el `relativo`) por `macro/Σ(relativo)`, y `PerfilesSim.do:457` la crea antes de llamarla con
+  `relativo(ing_pam)` → total `macro²/Σ(ing_pam·factor)` (reproducido al 0.001 %). Es la única
+  llamada del motor en ese patrón; hoy la variable solo alimenta su perfil por edad y no entra a
+  `output.txt` ni al Sankey. Hechos en `fix-pam/anexo-gemelo-Pension_AM.md`; la definición es de
+  Ricardo.
+
 ## [v8.8.1] — 2026-10-08
 
 Hotfix sin efecto en números: `output.txt` y los 5 `sankey-*.json` de v8.8.0 siguen
