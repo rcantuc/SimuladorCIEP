@@ -43,7 +43,11 @@ def leer_sankey(path):
               **{k: v for k, v in l.items() if k not in ("from", "to", "value")}} for l in d["links"]]
     return {"nodes": nodes, "links": links, "meta": d.get("entidad")}
 
-RESID = {"Endeudamiento", "Ahorro", "Futuro"}
+# Residual: nacional "Endeudamiento"/"Ahorro" ↔ "Futuro"; entidad (pulido pre-v8.9.0) "Recepción neta de la Federación"/
+# "Aportación neta a la Federación" ↔ "Federación y futuro". Solo cambian etiquetas; los valores se comparan igual.
+RESID_POS = {"Endeudamiento", "Recepción neta de la Federación"}   # gasto > ingreso (+)
+RESID_NEG = {"Ahorro", "Aportación neta a la Federación"}           # ingreso > gasto (−)
+RESID = RESID_POS | RESID_NEG | {"Futuro", "Federación y futuro"}
 
 def por_enlace(sk):
     """Enlaces (from, to) -> valor, sin los del residual (se comparan aparte con residual())."""
@@ -57,8 +61,8 @@ def residual(sk):
     """Endeudamiento (+) o Ahorro (−) del Sankey."""
     r = 0.0
     for l in sk["links"]:
-        if l["to"] == "Endeudamiento": r += l["value"]
-        if l["from"] == "Ahorro": r -= l["value"]
+        if l["to"] in RESID_POS: r += l["value"]
+        if l["from"] in RESID_NEG: r -= l["value"]
     return r
 
 def es_micro(l):

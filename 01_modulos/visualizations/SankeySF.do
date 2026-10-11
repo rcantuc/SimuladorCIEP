@@ -427,8 +427,16 @@ if `gastot'[1,1]-`ingtot'[1,1] > 0 {
 	replace profile = (`gastot'[1,1]-`ingtot'[1,1]) in -1
 	replace to = 101 in -1
 
-	label define `1' 101 "Futuro", add
-	label define to 101 "Endeudamiento", add
+	* Etiqueta del residual: nacional = Endeudamiento ← Futuro; entidad (2026-10-10, pulido pre-v8.9.0) = dinámica
+	* por signo: gasto > ingreso = "Recepción neta de la Federación" ← "Federación y futuro". Solo etiquetas. *
+	local lab_origen "Futuro"
+	local lab_resid "Endeudamiento"
+	if `"`entidad'"' != "" {
+		local lab_origen "Federación y futuro"
+		local lab_resid "Recepción neta de la Federación"
+	}
+	label define `1' 101 "`lab_origen'", add
+	label define to 101 "`lab_resid'", add
 
 	save `eje1', replace
 }
@@ -441,8 +449,15 @@ else {
 	replace profile = (`ingtot'[1,1]-`gastot'[1,1]) in -1
 	replace to = 15 in -1
 
-	label define `1' 15 "Futuro", add
-	label define from 102 "Ahorro", add
+	* Nacional = Ahorro → Futuro; entidad = "Aportación neta a la Federación" → "Federación y futuro" (ingreso > gasto). *
+	local lab_destino "Futuro"
+	local lab_resid "Ahorro"
+	if `"`entidad'"' != "" {
+		local lab_destino "Federación y futuro"
+		local lab_resid "Aportación neta a la Federación"
+	}
+	label define `1' 15 "`lab_destino'", add
+	label define from 102 "`lab_resid'", add
 
 	save `eje4', replace
 }

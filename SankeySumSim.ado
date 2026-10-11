@@ -42,10 +42,14 @@ quietly {
 		** Nodes and Flows **
 		forvalues k=1(1)`=_N' {
 
-			* FROM Nodes *
-			local faccountname : label (from) `=from[`k']'
-			local faccountname = substr("`faccountname'",1,20)
+			* FROM Nodes: clave interna (<= 20 bytes, nombre de macro node<clave>, como siempre) y texto del nodo
+			* completo (2026-10-10: las etiquetas del residual de entidad pasan de 20 bytes y strtoname trunca a 32;
+			* para etiquetas <= 20 bytes el texto es idéntico al de antes) *
+			local fraw : label (from) `=from[`k']'
+			local faccountname = substr("`fraw'",1,20)
 			local faccountname = strtoname("`faccountname'")
+			local flabel = ustrregexra("`fraw'", "[^\p{L}\p{N}_]", "_")
+			if ustrregexm("`flabel'", "^\p{N}") local flabel "_`flabel'"
 
 			capture confirm existence `node`faccountname''
 
@@ -58,19 +62,22 @@ quietly {
 				tempname profile
 				matrix `profile' = r(StatTotal)
 
-				local nodes `"`nodes'{label:"`faccountname'"},"'
+				local nodes `"`nodes'{label:"`flabel'"},"'
 				local node`faccountname' = `number'
-				local `node`faccountname'' = "`faccountname'"
+				local `node`faccountname'' = "`flabel'"
 				local ++number
 			}
 
-			* TO Nodes *
-			local taccountname : label (to) `=to[`k']'
-			local taccountname = subinstr("`taccountname'"," ","_",.)
-			local taccountname = substr("`taccountname'",1,20)
+			* TO Nodes (misma separación clave / texto) *
+			local traw : label (to) `=to[`k']'
+			local traw = subinstr("`traw'"," ","_",.)
+			local taccountname = substr("`traw'",1,20)
 			local taccountname = strtoname("`taccountname'")
+			local tlabel = ustrregexra("`traw'", "[^\p{L}\p{N}_]", "_")
+			if ustrregexm("`tlabel'", "^\p{N}") local tlabel "_`tlabel'"
 			if "`cycle'" != "" & "`base'" == "`d'" {
 				local taccountname = "_`taccountname'"
+				local tlabel = "_`tlabel'"
 			}
 			capture confirm existence `node`taccountname''
 
@@ -83,9 +90,9 @@ quietly {
 				tempname profile
 				matrix `profile' = r(StatTotal)
 
-				local nodes `"`nodes'{label:"`taccountname'"},"'
+				local nodes `"`nodes'{label:"`tlabel'"},"'
 				local node`taccountname' = `number'
-				local `node`taccountname'' = "`taccountname'"
+				local `node`taccountname'' = "`tlabel'"
 				local ++number
 			}
 
