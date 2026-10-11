@@ -64,6 +64,7 @@ global bootstrap 1									// RÉPLICAS BOOTSTRAP de Simulador (PerfilesSim, §6
 //global entidad_cuotas "aparte"						// CUOTAS IMSS en el Sankey de entidad: vacío = dentro de "Imp al trabajo" (como el nacional); "aparte" = nodo propio "Cuotas IMSS" (regla heredada de la paleta NL, P5)
 //global sello_n 100									// SELLO DE MUESTRA (Sankey de entidad): n mínimo de personas con el flujo en la celda; default 100 (regla NL, P5)
 //global sello_top1 25								// SELLO DE CONCENTRACIÓN (Sankey de entidad): % máximo de una persona en el flujo de la celda; default 25 (regla NL, P5)
+//global entidad_ciclo_grupos "decil"				// SERIES de la gráfica de ciclo de vida de entidad (2026-10-11, users/$id/<ABREV>/ciclo-vida.json): "decil" = grupos de deciles NACIONALES I-V/VI-IX/X como el nacional (default); "quintil" = quintil ESTATAL I…V (P2); "ninguno" = una sola serie
 //global output "output"							// ARCHIVO DE SALIDA (WEB)
 //global hasta "3"									// PARO TEMPRANO: termina al cerrar la sección indicada (1-7)
 
@@ -544,6 +545,7 @@ if "$entidad" != "" {									// entidad (2026-10-10): mismos cortes, con el dec
 	foreach k in quintil grupoedad sexo rural escol {
 		noisily run "${SIMROOT}/01_modulos/visualizations/SankeySF.do" `k' `=anioPE' "$entidad"
 	}
+	noisily run "${SIMROOT}/01_modulos/visualizations/CicloEntidad.do" `=anioPE' "$entidad"	// entidad (2026-10-11): ciclo de vida (APORT* del nacional) filtrado a la entidad → users/$id/<ABREV>/ciclo-vida.json
 }
 
 

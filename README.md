@@ -235,6 +235,7 @@ Archivo de configuración inicial que se ejecuta automáticamente al iniciar Sta
 - `update`: Determina si se actualizan las bases de datos (toma tiempo); desde v8.8.0 también rehace los cachés micro de `master/<anioenigh>/`
 - `fuentes`: Fecha `AAAA-MM-DD` de las fuentes vivas congeladas (INEGI BIE/CSI y SHCP) que se leen del asset `fuentes-<fecha>.zip` en vez de descargarse; vacío = en vivo
 - `entidad`: Nombre exacto de una entidad federativa (catálogo `$entidadesL`, comando `SIMentidad`). Vacío = solo nacional, byte-idéntico al ancla. Con entidad: `Poblacion` de la entidad (§1) y el Sankey del sistema fiscal de la entidad por **quintil estatal** más los cortes grupoedad/sexo/rural/escol en `users/<id>/<ABREV>/` (p. ej. `users/ricardo/NL/sankey-quintil.json`), con banda de vintages ENIGH y sellos de muestra como campos del JSON; los archivos nacionales no cambian. Parámetros asociados (todos con default): `entidad_vintages`, `entidad_macro`, `entidad_cuotas`, `sello_n`, `sello_top1` (SIM.do §0.4; runbook §9.7)
+- `entidad_ciclo_grupos`: Series de la gráfica de ciclo de vida de la entidad (`users/<id>/<ABREV>/ciclo-vida.json`, `CicloEntidad.do`, misma definición que las familias `APORT*` del nacional): `decil` (default) = grupos de deciles nacionales I-V/VI-IX/X como el nacional; `quintil` = quintil estatal I…V; `ninguno` = una sola serie
 - `hasta`: Paro temprano para desarrollo: termina al cerrar la sección indicada (1-7)
 - `bootstrap`: Réplicas bootstrap de `Simulador` (1 = producción; 100 = EE e IC 95 %)
 
