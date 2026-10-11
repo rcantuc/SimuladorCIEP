@@ -508,6 +508,37 @@ archivo.
 
 ---
 
+### 9.7 `global entidad`: el motor entidad-consciente (2026-10-10)
+
+`SIM.do` §0.4 trae `//global entidad "Nuevo León"` comentado, junto a `$fuentes`, y se
+activa desde `SIM-local.do` (§9.5) como cualquier toggle. **Regla de oro:** todo lo de
+entidad vive dentro de `if "$entidad" != ""`; con el global vacío no corre ni una línea
+nueva ni se escribe un archivo nuevo, así que la receta canónica (§9.1) y el ancla no
+cambian. Con el global puesto:
+
+| Pieza | Qué hace | Dónde escribe |
+|---|---|---|
+| `SIM.do` §0.6 | `SIMentidad` valida el nombre contra el catálogo (`$entidadesL`; posición = clave INEGI de la ENIGH, `substr(folioviv,1,2)`) y deriva la abreviatura (`$entidadesC`, la misma que `Poblacion.ado` usa en sus escalares). Nombre mal escrito = error accionable con el catálogo | `users/<id>/<ABREV>/` |
+| `SIM.do` §1 | `Poblacion if entidad == "<nombre>"` (CONAPO): tarjeta demográfica y escalares `pob*<ABREV>` | `graphs/` (si hay gráficas) |
+| `SIM.do` §8.2 → `SankeySF.do` | tras los 5 Sankeys nacionales, los de la entidad: `keep if` por clave INEGI sobre `aportaciones.dta`; corte **quintil estatal** (re-ranking dentro de la entidad con el criterio de ingreso de `Households.do` §12, el mismo del sprint NL) en lugar del decil nacional, más grupoedad, sexo, rural y escol; renglones per cápita con la población ENIGH de la entidad (fórmula actual) y renglones `% PIB × pibY` repartidos por población (`entidad_macro`, supuesto declarado en el CHANGELOG); banda de vintages ENIGH y sellos de muestra como campos del JSON | `users/<id>/<ABREV>/sankey-{quintil,grupoedad,sexo,rural,escol}.json` |
+
+Parámetros (SIM.do §0.4, todos opcionales): `entidad_vintages` (vintages ENIGH para la
+banda, leídos de `users/<id>-v<t>/aportaciones.dta` si existen; `"0"` = sin banda),
+`entidad_macro` (`pob` | `omitir`), `entidad_cuotas` (`aparte` = nodo propio "Cuotas IMSS"),
+`sello_n` (default 100 personas) y `sello_top1` (default 25 %). El JSON de entidad lleva
+un bloque `entidad:{nombre, clave, abrev, corte, pobEnt, pobNac, macro, cuotas, selloN,
+selloTop1, vintages, celdas:[{celda, n, hog, pob}]}` y, en cada enlace micro, `n`, `top1`,
+`sello` (0/1), `bmin`, `bmax` y `v<t>` (valor de la celda con cada vintage: participación
+de la celda de la entidad en el total nacional de la familia × total nacional vigente).
+
+Compuertas de salida del PR (evidencia en `diag-pivote-entidad-2026-10-10/F1/`):
+1. paridad nacional con `entidad` vacío: `test-maquina-virgen.sh --reproducibilidad --assets-locales` y `--zip`;
+2. aditividad: Σ de los 32 Sankeys de entidad = Sankey nacional (`05_scripts/compuertas-entidad.sh`, que corre
+   `SIM.do` + `compuertas-entidad.do` en una sesión y verifica con `compuertas-entidad.py`);
+3. testigo: NL por quintil estatal reproduce las participaciones selladas del sprint (`dis<fam>nle<dec>` del
+   `statajson_entidad-nl.json`, 90 celdas, reldif ~1e-15);
+4. segundo estado (Jalisco u otro): produce outputs y sus sellos de muestra se activan donde n < umbral.
+
 ## Gotchas de deploy (los que ya mordieron)
 
 | Gotcha | Regla |

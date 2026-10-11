@@ -20,6 +20,88 @@ Formato de cada entrada:
 
 Trabajo en `master` sin versión asignada.
 
+### `global entidad`: el motor entidad-consciente (PR feat/entidad, 2026-10-10)
+
+Decisión del 2026-10-10 (mapa F0 `diag-pivote-entidad-2026-10-10/mapa-migracion.md`): la capa NL
+(`*NL.do`, `nl-assets/`) deja de crecer y su conocimiento pasa al motor como opción del panel
+`SIM.do` §0.4. **Con `entidad` vacío el motor es byte-idéntico al ancla v8.8.2** (`output.txt`
+`e40af4a6…` y los 5 `sankey-*.json`; compuerta 1 abajo): todo lo nuevo vive dentro de
+`if "$entidad" != ""` y no se escribe ningún archivo nuevo.
+
+#### Comandos
+
+- **`SIM.do` §0.4** — `//global entidad "Nuevo León"` comentado por defecto, junto a `$fuentes`,
+  sobreescribible desde `SIM-local.do`; **§0.6** valida el nombre con `SIMentidad` (error
+  accionable con el catálogo si no existe) y crea `users/$id/<ABREV>/`. Parámetros opcionales
+  del Sankey de entidad, todos con default: `entidad_vintages`, `entidad_macro`,
+  `entidad_cuotas`, `sello_n` (100), `sello_top1` (25).
+- **`SIMentidad.ado`** (nuevo) — catálogo de entidades (`$entidadesL`/`$entidadesC`, única
+  fuente de verdad; `profile.do` §2.1 lo carga de aquí) y resolución nombre → clave INEGI
+  (posición en la lista = `substr(folioviv,1,2)` de la ENIGH) y abreviatura (la que
+  `Poblacion.ado` ya usa).
+- **`SIM.do` §1** — con entidad, `Poblacion if entidad == "$entidad"` (ya era
+  entidad-consciente): tarjeta demográfica y escalares `pob*<ABREV>`.
+- **`SIM.do` §8.2 → `SankeySF.do`** — tras los 5 Sankeys nacionales (intactos), los de la
+  entidad con un tercer argumento: `keep if` por clave INEGI tras cada `use aportaciones.dta`;
+  corte **quintil estatal** (re-ranking dentro de la entidad con el criterio de ingreso de
+  `Households.do` §12: ingreso bruto del hogar por integrante, `xtile n(5)` con
+  `pw = factor/integrantes` — la construcción sellada del sprint NL C1, 2026-10-08) en lugar
+  del decil nacional, más grupoedad, sexo, rural y escol; outputs en
+  `users/$id/<ABREV>/sankey-{quintil,grupoedad,sexo,rural,escol}.json`.
+- **`SankeySumSim.ado`** — opción `folder()` (existía sin uso) escribe en
+  `users/$id/<folder>/`; opción `meta()` inserta un bloque `entidad:{…}` en `dataSource`;
+  las variables `j_*` de los ejes viajan como campos del enlace (`n`, `top1`, `sello`,
+  `bmin`, `bmax`, `v<t>`). Sin `folder()`/`meta()`/`j_*` el JSON es byte-idéntico.
+- **Banda de vintages (P4)** — para cada enlace micro, la participación de la celda de la
+  entidad en el total nacional de la familia observada en cada ENIGH
+  (`users/$id-v<t>/aportaciones.dta`, t = 2016…2024, bases del 8-oct, motor v8.8.1, fuentes
+  2026-10-06; se filtran, no se re-corren) × el total nacional vigente: `v<t>` por vintage,
+  `bmin`/`bmax` = halo, el vigente = punto. Distinta de la banda S1–S3 del ISR PM (método),
+  que no entra al motor. Sin bases de vintages no hay banda (se declara en `vintages`).
+- **Sellos de muestra (P5)** — por enlace micro: `n` = personas con el flujo en la celda,
+  `top1` = % del flujo de la celda que aporta una sola persona, `sello` = 1 si `n < sello_n`
+  o `top1 > sello_top1`. Umbrales = parámetros del motor con los defaults de la paleta NL.
+- **Compuertas** — `05_scripts/compuertas-entidad.{sh,do,py}`: 32 entidades × 5 cortes en
+  una sesión de `SIM.do`, aditividad contra el nacional, testigo NL contra el statajson
+  sellado y sellos del segundo estado.
+
+#### Supuestos declarados para firma (P3: renglones macro del Sankey de entidad)
+
+Población ENIGH de la entidad / nacional (Σ factor de `aportaciones.dta`; NL = 6,375,312 /
+135,391,415 = 4.7088 %) es la única clave nueva. PE 2027, mdp:
+
+| Renglón | Nacional | NL | Con entidad | Supuesto |
+|---|---:|---:|---|---|
+| Imp al trabajo / consumo / capital (micro) | 2,318,255.8 / 2,846,081.8 / 2,323,380.3 | 209,477.2 / 199,574.5 / 328,850.2 | `keep if` + collapse por quintil estatal | ninguno (mecánico, = C1) |
+| IMSS, ISSSTE · Pemex, CFE · FMP (`% PIB × pibY`) | 174,233.8 · 1,283,496.2 · 210,893.9 | 8,204.3 · 60,437.3 · 9,930.6 | nacional × población de la entidad / nacional | **S-P3a** (`entidad_macro "pob"`; alternativa `"omitir"`) |
+| Educación · Salud · Pensiones · Transferencias · Inversión (micro) | 1,387,957.6 · 1,137,250.1 · 2,421,928.9 · 22,074.9 · 618,096.4 | 59,230.7 · 50,415.3 · 130,331.6 · 1,041.9 · 50,213.7 | `keep if` + collapse | ninguno (Pensiones = 154,210.9 de C4 − 23,879.3 de la doble suma de v8.8.2) |
+| Costo de la deuda · Part y otras Aport · Otros gastos · Energía (2) (`gas*PC × pobtot`) | 1,453,393.8 · 1,651,673.5 · 675,648.8 · 1,066,295.2 + 203,010.0 | 68,437.4 · 77,774.0 · 31,815.0 · 50,209.7 + 9,559.3 | la fórmula actual con `pobtot` = Σ factor de la entidad | **S-P3b** (equivale a reparto por población; alternativa CONAPO de la entidad rompería la aditividad) |
+| Residual Futuro ↔ Endeudamiento / Ahorro | +1,480,987.4 | **−287,445.4 (ahorro)** | `gastot − ingtot` de la entidad | **S-P3c**: con S-P3a/b, Σ 32 residuales = residual nacional |
+
+Tabla completa renglón por renglón, FLAGs (nombre `sankey-quintil.json`; banda del lado gasto: `Salud` y
+`Pensiones` vienen vacías en las bases de vintages del 8-oct y la de Inversión refleja la clave
+`infra_entidad` del PEF de cada año, no la muestra; cuotas aparte; umbrales; definición de la banda) en
+`diag-pivote-entidad-2026-10-10/F1/reporte-F1.md`.
+
+#### Compuertas de salida (evidencia en `diag-pivote-entidad-2026-10-10/F1/`)
+
+| # | Compuerta | Resultado | Evidencia |
+|---|---|---|---|
+| 1 | Paridad nacional con `entidad` vacío: `test-maquina-virgen.sh --reproducibilidad --assets-locales` (receta §9.1 desde estado cero, StataNow 19.5 SE, 1 procesador) | **PASÓ**: `output.txt` `e40af4a6…` y los 5 `sankey-*.json` con el SHA del ancla v8.8.2; 56 min; Stata 19.5 | `F1/compuerta1-reproducibilidad.out` |
+| 1 | `--zip`: las tres vías de ejecución (otra carpeta → r(601); carpeta del simulador sin `profile.do`; con `profile.do`, que ahora carga `SIMentidad`) | **PASÓ** | `F1/compuerta1-zip.out` |
+| 1 | Informativa: corrida con `entidad "Nuevo León"` sobre cachés (no estado cero): `output.txt` = ancla `e40af4a6…`; los 5 sankeys nacionales byte-idénticos a la corrida v8.8.1 del 8-oct salvo exactamente los enlaces de Pensiones y el residual (fix v8.8.2) | **los archivos nacionales no cambian con entidad puesta** | `F1/compuertas/compuertas-entidad.md` §1 |
+| 2 | Aditividad: Σ de los 32 Sankeys de entidad = nacional, enlace por enlace en grupoedad/sexo/rural/escol y por familia + 7 renglones macro + residual en quintil (224 comparaciones, 5 cortes) | **PASÓ**, reldif máx **8.5e-14** (tol 1e-9) | `F1/compuertas/aditividad.csv` |
+| 3 | Testigo NL: `users/ricardo/NL/sankey-quintil.json` vs `statajson_entidad-nl.json` del sprint (8-oct): 15 celdas quintil×familia = Σ pares `dis<fam>nle<dec>` y las 90 celdas decil×familia reconstruidas con el criterio de `Households.do` §12; quintil = ceil(decil/2) en las 12,586 personas | **PASÓ**, reldif máx **1.9e-15** (15) y **3.4e-15** (90) | `F1/compuertas/nl-dis-nle-recalc.csv`, `F1/statajson_entidad-nl-2026-10-08.json` |
+| 4 | Segundo estado (Jalisco, clave 14, 6.70 % de la población): 5 JSON sin error; 32 enlaces micro con sello (p. ej. Imp al capital Q1–Q4 con n = 38/54/53/79; rural Indígena → Pensiones n = 1, top1 100 %). En las 32 entidades × 5 cortes: 4,950 enlaces micro con `n/top1/sello`, 715 sellados; banda ENIGH solo en NL (la entidad de la corrida) | **PASÓ** | `F1/compuertas/compuertas-entidad.md` §4 |
+
+Tiempos: `SIM.do` completo con entidad (sin `update`) 9 min + `compuertas-entidad.do` (160 Sankeys de entidad + 90 celdas) 68 s.
+
+#### Fuera del alcance de este PR
+
+Retiro de la copia NL-0.4.1 de la capa NL que vive en master (PR aparte); `PIBDeflactor`
+por entidad (el INPC estatal no existe en el BIE); los HTML de CoNL; el runner; cualquier
+cambio a los números nacionales.
+
 ## [v8.8.2] — 2026-10-10
 
 Patch **con efecto en números publicados**: los 5 `sankey-*.json` del sitio cambian;
