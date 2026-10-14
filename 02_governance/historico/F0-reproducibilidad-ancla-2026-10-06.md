@@ -1,10 +1,10 @@
-> Reporte one-shot del diagnóstico F0 (2026-10-06) que motivó el release de datos v8.8.0 y la receta canónica de `runbook-deploys-ciep.md` §9. Evidencia (corridas, logs, scripts) en la máquina de Ricardo: `~/CIEP_Simuladores/diag-release-datos-2026-10-06/`. Se conserva como memoria; la norma vigente está en el runbook.
+> Reporte one-shot del diagnóstico F0 (2026-10-06) que motivó el release de datos v8.8.0 y la receta canónica de `runbook-deploys-ciep.md` §9. Evidencia (corridas, logs, scripts) en la máquina de Ricardo: `~/CIEP_Simuladores/_archivo/diag-release-datos-2026-10-06/`. Se conserva como memoria; la norma vigente está en el runbook.
 
 # F0 — Diagnóstico de las tres anclas (`output.txt`, PE 2027)
 
 Worktree: `~/CIEP_Simuladores/SimuladorCIEP-datos` (rama `fix/release-datos` desde
 `origin/master` = 158f737, v8.7.2). Evidencia, scripts y corridas en
-`~/CIEP_Simuladores/diag-release-datos-2026-10-06/` (`run_sim.sh`, `cmp_output.py`,
+`~/CIEP_Simuladores/_archivo/diag-release-datos-2026-10-06/` (`run_sim.sh`, `cmp_output.py`,
 `dsig*.do`, `R*/` con `output.txt`, `wrap.log`, `resumen.txt`, `estado.txt`).
 Dropbox y worktree NL: solo lectura.
 
