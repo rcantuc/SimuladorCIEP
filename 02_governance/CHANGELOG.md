@@ -20,6 +20,277 @@ Formato de cada entrada:
 
 Trabajo en `master` sin versión asignada.
 
+### Ciclo de vida de entidad: `CicloEntidad.do` (PR feat/ciclo-entidad, 2026-10-11)
+
+Decisión de Ricardo (2026-10-11): el espejo NL deja de mostrar los cortes grupoedad y sexo y muestra
+**la misma gráfica de ciclo de vida del sitio nacional** ("La carga fiscal por edades") filtrada a la
+entidad. Unificación, no invención: la definición es la del nacional y no se rediseña. **Todo vive
+dentro de `if "$entidad" != ""`** (`SIM.do` §8.2, una línea después de los Sankeys de entidad): con
+el global vacío no corre ni una línea nueva ni se escribe un archivo nuevo, así que la receta
+canónica y el ancla v8.9.0 no cambian.
+
+#### Comandos
+
+- **`01_modulos/visualizations/CicloEntidad.do`** (nuevo) — `run CicloEntidad.do <anioPE> "<entidad>"`.
+  Lee `users/$id/aportaciones.dta` (la misma base del nacional), filtra por clave INEGI
+  (`substr(folioviv,1,2)`, como `SankeySF.do`) y escribe `users/$id/<ABREV>/ciclo-vida.json`
+  (JSON plano, no script FusionCharts).
+- **`SIM.do` §0.4** — `//global entidad_ciclo_grupos "decil"`: series apiladas de la gráfica.
+  `decil` (default) = grupos de deciles **nacionales** I-V / VI-IX / X, exactamente como el
+  nacional; `quintil` = quintil estatal I…V (re-ranking de `SankeySF.do`, P2); `ninguno` = una
+  sola serie. Reutiliza `sello_n` (100) y `sello_top1` (25).
+
+#### Definición heredada del nacional (radiografía; no se rediseña)
+
+- La gráfica del sitio (`js/stataCalcula.js`, ApexCharts `#chart-duo-pt1/2`, barras horizontales
+  apiladas, hombres y mujeres, 22 quinquenios de 105-109 a 0-4) lee las familias `APORTHIV`,
+  `APORTHVIIX`, `APORTHX`, `APORTMIV`, `APORTMVIIX`, `APORTMX` de `output.txt`; `cargaDefault.php`
+  pisa las claves repetidas, así que el bloque que manda es el **último**: el de
+  `Simulador AportacionesNetas` (`SIM.do` §7.3).
+- `AportacionesNetas = ImpuestosAportaciones − Transferencias` por persona, `[fw=factor]`.
+  `ImpuestosAportaciones = ISRPM + ISRAS + ISRPF + CUOTAS + IVA + IEPSNP + IEPSP + ISAN + IMPORT`
+  (`*_Sim`; sin FMP ni OTROSK). `Transferencias = Pensiones (con Pensión_AM) + IngBasico + Educacion
+  + Salud + OtrasInversiones` (sin OtrosGastos ni Energia).
+- Celda = `grupo_edad` 1..23 (0-4 … 105-109, 110+) × sexo × `over` (deciles I-V, VI-IX, X).
+  **Unidad: porcentaje del total nacional de aportaciones netas** (`graphpiramide`: `POR =
+  neto/Σneto×100`; Σ de las 132 celdas = 100; `%8.3f`). Negativo = la celda recibe más de lo que
+  aporta. Valor presente: `Simulador.ado` divide la variable por el deflactor de anioPE respecto a
+  anioVP antes de guardar `aportaciones.dta` (con anioVP = anioPE = 2027 es 1); `CicloEntidad.do`
+  aplica el mismo cociente a aporta y recibe.
+- Hallazgos del nacional, declarados y no corregidos aquí (sitio fuera del alcance del motor): los
+  tooltips dicen "MXN" (hombres) y "% PIB" (mujeres) cuando el dato es % del neto total; la etiqueta
+  del grupo 23 en `graphpiramide` dice "109+" (es 110+); los dos primeros bloques `APORT*` de
+  `output.txt` (otras variables de `PerfilesSim`) no son los que el sitio dibuja.
+
+#### Contrato de `ciclo-vida.json`
+
+Por celda quinquenio × sexo (rejilla completa, 46 celdas, las vacías con `n = 0`, nunca omitidas):
+`n` (personas de la muestra de la entidad, sin ponderar), `pob` (Σ factor), `aporta`, `recibe`,
+`neto` (pesos de anioVP), `pct` (% del neto total de la entidad, Σ = 100), `pct_nac` (% del neto
+total nacional: **Σ de las 32 entidades, celda a celda = `APORT*`**), `top1_aporta`/`top1_recibe`
+(% del aporta/recibe de la celda que pone una sola persona), `sello` (1 si `n < sello_n` o
+`top1_* > sello_top1`; regla P5) y `grupos[]` con el desglose por serie. Más `totales` (entidad y
+nacional: n, pob, aporta, recibe, neto, PIB nacional `pibY`, participaciones), `definicion`,
+`parametros`, `quinquenios`, `grupos` y `procedencia`.
+
+#### Compuertas (evidencia `diag-pivote-entidad-2026-10-10/F3-ciclo/`)
+
+1. **Paridad nacional**: todo el diff vive dentro de `if "$entidad" != ""` (SIM.do: dos líneas, una
+   comentada en §0.4 y la llamada en §8.2; archivo nuevo); receta rápida `--zip`.
+2. **Aditividad** (`gate-aditividad.py`): Σ de las 32 entidades de `pct_nac`, celda a celda, contra
+   los 6 vectores `APORT*` del `output.txt` del ancla (último bloque): diferencia máxima **0.000495**
+   con tolerancia 0.0005 (medio milésimo del `%8.3f`); Σ32 neto = neto nacional **1,249,989.66 mdp**
+   (reldif 0); 32/32 JSON con rejilla completa, Σ pct = 100, neto = aporta − recibe, celdas = Σ grupos
+   y regla del sello verificada. Reconstrucción independiente con pandas sobre `aportaciones.dta`:
+   mismos vectores (máx 0.0005).
+3. **Testigo NL** (`ent/NL-ciclo-vida.json`): 12,586 personas, población ENIGH 6,375,312 (4.71 %),
+   neto **354,608.5 mdp = 28.37 % del neto nacional**; 16 de 46 celdas con sello (4 vacías: 105-109 y
+   110+ de ambos sexos; n < 100 en 80-84 H, 85-89 H/M y de 90-94 en adelante; concentración: en
+   **60-64 H una sola persona pone el 83.8 % del aporta de la celda y la celda es el 34.1 % del neto
+   de NL**; 65-69 H 70.1 %; 80-84 M 50.3 %). No existe referencia nacional por edades para NL: el
+   testigo es la aditividad y la reconstrucción con pandas.
+4. **Segundo estado**: Jalisco 8,617 personas, 19.77 % del neto nacional, 19 sellos; CDMX 18 sellos.
+
+#### FLAGs (decisiones de Ricardo; defaults declarados)
+
+- **C-1 Series por default**: deciles nacionales (herencia exacta) vs quintil estatal (regla P2 de los
+  Sankeys de entidad). Parámetro `entidad_ciclo_grupos`, default `decil`.
+- **C-2 Definición de `n`**: personas de la muestra en la celda (todas); el nacional llama a
+  `Simulador` con `if AportacionesNetas != 0`, pero en la ENIGH 2024 ninguna persona tiene neto
+  exactamente 0 (`n_neto_cero` viaja en `totales`).
+- **C-3 Sello de concentración en el ciclo de vida**: se reutiliza `sello_top1` (25 %) sobre aporta y
+  recibe de la celda; el neto, por ser signado, no lleva top1.
+- **C-4 Nombre del archivo** `ciclo-vida.json` y **unidad por default en el espejo** (% del neto total,
+  como el nacional, frente a MXN por persona o mdp que la página ya ofrece como registros).
+- **Bandas de vintages**: no entran (el nacional no las muestra en esta gráfica); extensión posible
+  como una fila de paleta (misma mecánica que `_SFsellos`: filtrar `users/$id-v<t>/aportaciones.dta`,
+  participación de la celda × neto nacional vigente), costo ~1 sesión; no es un rediseño.
+
+
+## [v8.9.0] — 2026-10-11
+
+Release **menor** (funcionalidad nueva compatible, `versionado-y-git.md` §3.2) **sin efecto en
+los números publicados**: con `entidad` vacío, `output.txt` (`e40af4a6…`) y los 5 `sankey-*.json`
+nacionales son byte-idénticos al ancla v8.8.2. Consolida dos PR mergeados en `master`:
+**#20 `feat/entidad`** (`e99d963`, 2026-10-10: el motor entidad-consciente) y **#21
+`fix/etiqueta-residual-entidad`** (`af2eaf9`, 2026-10-11: etiquetas por signo del residual de
+entidad y separación clave/texto en `SankeySumSim.ado`). Ancla re-declarada por la receta §9.1
+sobre `af2eaf9` con los mismos SHAs (abajo). **No es release de datos**: `data_updated` y
+`fuentes_congeladas_al` siguen en 2026-10-06 y los 27 assets del manifest no cambian. Deploy del
+VPS por §4b del runbook (minor: deployment nuevo `v8.9`).
+
+### Institucional
+
+- **Pivote a `global entidad`** (decisión del 2026-10-10, mapa F0
+  `diag-pivote-entidad-2026-10-10/mapa-migracion.md`): la capa NL (`*NL.do`, `nl-assets/`) deja de
+  crecer y su conocimiento pasa al motor como opción del panel `SIM.do` §0.4. Todo lo nuevo vive
+  dentro de `if "$entidad" != ""` y sin entidad no se escribe ningún archivo nuevo. Uso documentado
+  en `runbook-deploys-ciep.md` §9.7.
+- **Etiqueta del residual de entidad por signo** (decisión de Ricardo, 2026-10-10 noche): el cierre
+  contable del Sankey de una entidad deja de llamarse "Ahorro" y se nombra "Aportación neta a la
+  Federación" o "Recepción neta de la Federación" según el signo. Solo etiquetas, ningún valor.
+- **`05_scripts/compuertas-entidad.sh`, `.do` y `.py`** (nuevos): 32 entidades × 5 cortes en una sesión de
+  `SIM.do`, aditividad contra el nacional, testigo NL contra el statajson sellado y sellos del
+  segundo estado; reconocen las etiquetas nuevas del residual (`RESID_POS`/`RESID_NEG`).
+
+### Comandos
+
+- **`SIM.do` §0.4** — `//global entidad "Nuevo León"` comentado por defecto, junto a `$fuentes`,
+  sobreescribible desde `SIM-local.do`; **§0.6** valida el nombre con `SIMentidad` (error
+  accionable con el catálogo si no existe) y crea `users/$id/<ABREV>/`. Parámetros opcionales
+  del Sankey de entidad, todos con default: `entidad_vintages`, `entidad_macro`,
+  `entidad_cuotas`, `sello_n` (100), `sello_top1` (25).
+- **`SIMentidad.ado`** (nuevo) — catálogo de entidades (`$entidadesL`/`$entidadesC`, única
+  fuente de verdad; `profile.do` §2.1 lo carga de aquí) y resolución nombre → clave INEGI
+  (posición en la lista = `substr(folioviv,1,2)` de la ENIGH) y abreviatura (la que
+  `Poblacion.ado` ya usa).
+- **`SIM.do` §1** — con entidad, `Poblacion if entidad == "$entidad"` (ya era
+  entidad-consciente): tarjeta demográfica y escalares `pob*<ABREV>`.
+- **`SIM.do` §8.2 → `SankeySF.do`** — tras los 5 Sankeys nacionales (intactos), los de la
+  entidad con un tercer argumento: `keep if` por clave INEGI tras cada `use aportaciones.dta`;
+  corte **quintil estatal** (re-ranking dentro de la entidad con el criterio de ingreso de
+  `Households.do` §12: ingreso bruto del hogar por integrante, `xtile n(5)` con
+  `pw = factor/integrantes` — la construcción sellada del sprint NL C1, 2026-10-08) en lugar
+  del decil nacional, más grupoedad, sexo, rural y escol; outputs en
+  `users/$id/<ABREV>/sankey-<corte>.json` (quintil, grupoedad, sexo, rural, escol).
+- **`SankeySF.do`** (bloque "DEUDA o AHORRO") — con `entidad`, ingreso > gasto → nodo
+  **"Aportación neta a la Federación"** → **"Federación y futuro"**; gasto > ingreso →
+  **"Federación y futuro"** → **"Recepción neta de la Federación"** (p. ej. Chiapas, 240,918.9 mdp
+  en PE 2027). Sin `entidad`, el nacional conserva "Ahorro"/"Endeudamiento" ↔ "Futuro".
+- **`SankeySumSim.ado`** — opción `folder()` (existía sin uso) escribe en `users/$id/<folder>/`;
+  opción `meta()` inserta un bloque `entidad` en `dataSource`; las variables `j_*` de los
+  ejes viajan como campos del enlace (`n`, `top1`, `sello`, `bmin`, `bmax`, `v<t>`). Sin
+  `folder()`/`meta()`/`j_*` el JSON es byte-idéntico. **Fix de truncado (#21):** la clave interna
+  del nodo (`substr(…,1,20)` + `strtoname`, nombre de macro `node<clave>`) se separa del texto que
+  va al JSON (etiqueta completa, espacios → `_` como antes). Motivo: con 31 caracteres `strtoname`
+  truncaba a 32 bytes y el nombre de macro reventaba (`r(198)`); el JSON salía "Aportación neta a
+  l". Para etiquetas ≤ 20 bytes (todas las nacionales) el texto es idéntico al de antes.
+- **Banda de vintages (P4)** — para cada enlace micro, la participación de la celda de la
+  entidad en el total nacional de la familia observada en cada ENIGH
+  (`users/$id-v<t>/aportaciones.dta`, t = 2016…2024, bases del 8-oct, motor v8.8.1, fuentes
+  2026-10-06; se filtran, no se re-corren) × el total nacional vigente: `v<t>` por vintage,
+  `bmin`/`bmax` = halo, el vigente = punto. Distinta de la banda S1–S3 del ISR PM (método),
+  que no entra al motor. Sin bases de vintages no hay banda (se declara en `vintages`).
+- **Sellos de muestra (P5)** — por enlace micro: `n` = personas con el flujo en la celda,
+  `top1` = % del flujo de la celda que aporta una sola persona, `sello` = 1 si `n < sello_n`
+  o `top1 > sello_top1`. Umbrales = parámetros del motor con los defaults de la paleta NL.
+
+### Supuestos declarados para firma (P3: renglones macro del Sankey de entidad)
+
+Población ENIGH de la entidad / nacional (Σ factor de `aportaciones.dta`; NL = 6,375,312 /
+135,391,415 = 4.7088 %) es la única clave nueva. PE 2027, mdp:
+
+| Renglón | Nacional | NL | Con entidad | Supuesto |
+|---|---:|---:|---|---|
+| Imp al trabajo / consumo / capital (micro) | 2,318,255.8 / 2,846,081.8 / 2,323,380.3 | 209,477.2 / 199,574.5 / 328,850.2 | `keep if` + collapse por quintil estatal | ninguno (mecánico, = C1) |
+| IMSS, ISSSTE · Pemex, CFE · FMP (`% PIB × pibY`) | 174,233.8 · 1,283,496.2 · 210,893.9 | 8,204.3 · 60,437.3 · 9,930.6 | nacional × población de la entidad / nacional | **S-P3a** (`entidad_macro "pob"`; alternativa `"omitir"`) |
+| Educación · Salud · Pensiones · Transferencias · Inversión (micro) | 1,387,957.6 · 1,137,250.1 · 2,421,928.9 · 22,074.9 · 618,096.4 | 59,230.7 · 50,415.3 · 130,331.6 · 1,041.9 · 50,213.7 | `keep if` + collapse | ninguno (Pensiones = 154,210.9 de C4 − 23,879.3 de la doble suma de v8.8.2) |
+| Costo de la deuda · Part y otras Aport · Otros gastos · Energía (2) (`gas*PC × pobtot`) | 1,453,393.8 · 1,651,673.5 · 675,648.8 · 1,066,295.2 + 203,010.0 | 68,437.4 · 77,774.0 · 31,815.0 · 50,209.7 + 9,559.3 | la fórmula actual con `pobtot` = Σ factor de la entidad | **S-P3b** (equivale a reparto por población; alternativa CONAPO de la entidad rompería la aditividad) |
+| Residual Federación y futuro ↔ Aportación / Recepción neta | +1,480,987.4 (Endeudamiento) | **−287,445.4 (Aportación neta a la Federación)** | `gastot − ingtot` de la entidad | **S-P3c**: con S-P3a/b, Σ 32 residuales = residual nacional |
+
+Tabla completa renglón por renglón y FLAGs abiertos (nombre `sankey-quintil.json`; banda del lado
+gasto: `Salud` y `Pensiones` vienen vacías en las bases de vintages del 8-oct y la de Inversión
+refleja la clave `infra_entidad` del PEF de cada año, no la muestra; cuotas aparte; umbrales;
+definición de la banda) en `diag-pivote-entidad-2026-10-10/F1/reporte-F1.md`. La decisión por
+fila es de Ricardo.
+
+### Compuertas (evidencia en `diag-pivote-entidad-2026-10-10/F1/` y `F2/parteA/`)
+
+| # | Compuerta | Resultado | Evidencia |
+|---|---|---|---|
+| 1 | Paridad nacional con `entidad` vacío: `test-maquina-virgen.sh --reproducibilidad --assets-locales` (receta §9.1 desde estado cero, StataNow 19.5 SE, 1 procesador), sobre `c10fff0` (#20) y sobre `a93e179` (#21) | **PASÓ** las dos veces: `output.txt` `e40af4a6…` y los 5 `sankey-*.json` con el SHA del ancla v8.8.2; 56 y 60 min | `F1/compuerta1-reproducibilidad.out`, `F2/parteA/compuerta-reproducibilidad.out` |
+| 1 | `--zip`: las tres vías de ejecución (otra carpeta → r(601); carpeta del simulador sin `profile.do`; con `profile.do`, que ahora carga `SIMentidad`) | **PASÓ** | `F1/compuerta1-zip.out` |
+| 1 | Informativa: corrida con `entidad "Nuevo León"` sobre cachés (no estado cero): `output.txt` = ancla `e40af4a6…`; los 5 sankeys nacionales byte-idénticos a la corrida v8.8.1 del 8-oct salvo exactamente los enlaces de Pensiones y el residual (fix v8.8.2) | **los archivos nacionales no cambian con entidad puesta** | `F1/compuertas/compuertas-entidad.md` §1 |
+| 2 | Aditividad: Σ de los 32 Sankeys de entidad = nacional, enlace por enlace en grupoedad/sexo/rural/escol y por familia + 7 renglones macro + residual en quintil (224 comparaciones, 5 cortes) | **PASÓ**, reldif máx **8.5e-14** (tol 1e-9) | `F1/compuertas/aditividad.csv` |
+| 3 | Testigo NL: `users/ricardo/NL/sankey-quintil.json` vs `statajson_entidad-nl.json` del sprint (8-oct): 15 celdas quintil×familia = Σ pares `dis<fam>nle<dec>` y las 90 celdas decil×familia reconstruidas con el criterio de `Households.do` §12; quintil = ceil(decil/2) en las 12,586 personas | **PASÓ**, reldif máx **1.9e-15** (15) y **3.4e-15** (90) | `F1/compuertas/nl-dis-nle-recalc.csv`, `F1/statajson_entidad-nl-2026-10-08.json` |
+| 4 | Segundo estado (Jalisco, clave 14, 6.70 % de la población): 5 JSON sin error; 32 enlaces micro con sello (p. ej. Imp al capital Q1–Q4 con n = 38/54/53/79; rural Indígena → Pensiones n = 1, top1 100 %). En las 32 entidades × 5 cortes: 4,950 enlaces micro con `n/top1/sello`, 715 sellados; banda ENIGH solo en NL (la entidad de la corrida) | **PASÓ** | `F1/compuertas/compuertas-entidad.md` §4 |
+| 5 | Etiquetas (#21): harness de `SankeySF.do` con `entidad "Nuevo León"`, 5 cortes, antes vs después: solo cambian 2 etiquetas por corte; valores, `n`, `top1`, `sello`, bandas y bloque `entidad` idénticos campo a campo. Chiapas (quintil) exhibe la etiqueta negativa. Nacional antes/después del `.ado`: byte-idéntico (5/5) | **PASÓ** | `F2/parteA/` |
+
+Tiempos: `SIM.do` completo con entidad (sin `update`) 9 min + `compuertas-entidad.do` (160 Sankeys
+de entidad + 90 celdas) 68 s. Observación: en el harness, el cambio de texto de `SankeySF.do` mueve
+la última cifra (reldif ≤ 4.6e-14) de 81/104 enlaces micro del `sankey-decil.json` nacional (orden
+de suma en `collapse`); la receta completa no lo exhibe (ancla reproducida). La compuerta byte a
+byte es la de la receta.
+
+### Reproducibilidad
+
+- **Ancla re-declarada por la receta** (`test-maquina-virgen.sh --reproducibilidad --assets-locales
+  --anclar` sobre `af2eaf9` = `master` tras #21; estado cero, fuentes 2026-10-06, StataNow 19.5 SE,
+  `set processors 1`, 51 min, `anclado_el 2026-10-11T19:14:17Z`): `output_txt_sha256` **idéntico**
+  (`e40af4a6…`) y los 5 `sankeys_sha256` **idénticos a v8.8.2** (`sankey-decil.json` `8952d14ef4d2…`,
+  `sankey-escol.json` `fd059f8c6b56…`, `sankey-grupoedad.json` `14ce05b14579…`, `sankey-rural.json`
+  `02dd7ac04d74…`, `sankey-sexo.json` `bf49cec77340…`). Solo cambian `version`, `commit` y
+  `anclado_el`, como en v8.8.1. Evidencia: `diag-pivote-entidad-2026-10-10/release-v8.9.0/`.
+- La política de que un release sin cambio de números herede el ancla (anotada en v8.8.1) sigue
+  pendiente de Ricardo; mientras, el Gate 9 exige `ancla.version == version` y se re-ancla con la
+  receta, nunca a mano.
+
+### Pendiente (documentado, sin cambio de código)
+
+- Retiro de la copia NL-0.4.1 de la capa NL que vive en `master` (PR aparte; Fase B del mapa F0);
+  `PIBDeflactor` por entidad (el INPC estatal no existe en el BIE); los HTML de CoNL; el runner.
+- FLAGs de F1 (arriba) y el gemelo `Pension_AM` de `PerfilesSim.do` §5 (anotado en v8.8.2) siguen
+  abiertos; la definición es de Ricardo.
+
+## [v8.8.2] — 2026-10-10
+
+Patch **con efecto en números publicados**: los 5 `sankey-*.json` del sitio cambian;
+`output.txt` no (no pasa por `SankeySF.do`; la receta §9.1 lo reprodujo byte-idéntico,
+`e40af4a6…`). Ancla re-declarada por la receta. Detectado y cuantificado en la capa NL
+(`feature/entidad-nl`, sesión C4 del 2026-10-09) y confirmado el 2026-10-10 con la prueba
+de endeudamiento (`~/CIEP_Simuladores/diag-pivote-entidad-2026-10-10/prueba-pam/`).
+
+### Correcciones
+
+- **El nodo "Pensiones" del Sankey del sistema fiscal contaba `Pensión_AM` dos veces.**
+  `GastoPC.ado` §5 construye `Pensiones` con las cuatro contributivas (IMSS, ISSSTE, Pemex,
+  otras) y `Pensión_AM` aparte; `SIM.do` §7.2 suma `Pensiones + Pensión_AM` **una vez**
+  antes de guardar `aportaciones.dta` (desde `afac956`, 2025-11-27, cuando `Pensión_AM`
+  salió de `Transferencias` y entró a `Pensiones`); `SankeySF.do` abría esa base y la volvía
+  a sumar (línea heredada de `0afac4e`, 2025-09-02, cuando aún no venía sumada). La
+  duplicación existe desde `afac956`: afecta a todo v7.0–v8.8.1. Se retira la re-suma de
+  `SankeySF.do`; `SIM.do` §7.2 y `Web.Stata.do` §7.2 (misma suma legítima en la vía web, que
+  también corre `SankeySF.do`) no cambian.
+
+  Efecto, PE 2027 (mdp; PIB 39,419,415.3):
+
+  | Enlace del Sankey (los 5 cortes) | Antes | Después | Δ |
+  |---|---:|---:|---:|
+  | CGPE 2027 → Pensiones | 3,002,971.1 (7.618 % PIB) | 2,421,928.9 (6.144 %) | −581,042.2 |
+  | Pensiones → cortes (decil, edad, sexo, rural, escolaridad) | Σ 3,002,971.1 | Σ 2,421,928.9 | −581,042.2, repartido como `Pensión_AM` |
+  | Futuro → Endeudamiento → CGPE 2027 (residual) | 2,062,029.6 (5.231 %) | 1,480,987.4 (3.757 %) | −581,042.2 |
+  | Σ gasto (eje 3) | 11,218,371.4 (28.459 %) | 10,637,329.2 (26.985 % = Σ §5.1) | −581,042.2 |
+  | todo lo demás (eje de ingresos, Educación, Salud, Inversión, Transferencias, renglones macro) | | | 0 |
+
+  La Δ es exactamente `pam` (1.474 % del PIB, `SIM.do` §5.1). El residual de endeudamiento
+  ahora cierra contra el déficit implícito de los parámetros del propio `SIM.do`
+  (Σ §5.1 − Σ §4.1 = 3.757 %) y queda a 1,028 mdp (0.003 pp) del financiamiento de la ILIF
+  2027 (`LIF.dta`, divLIF 10: 3.754 %); antes excedía ambos en ~1.47 pp. Por decil, cada enlace
+  Pensiones → decil baja en la Σ de `Pensión_AM` de ese decil (I −65,055.6 … X −52,923.8).
+
+### Reproducibilidad
+
+- Ancla re-declarada (`05_scripts/ancla-reproducibilidad.json`): `output_txt_sha256`
+  **idéntico** (`e40af4a6…`); `sankeys_sha256` nuevos:
+  `sankey-decil.json` `8952d14ef4d2…`, `sankey-escol.json` `fd059f8c6b56…`,
+  `sankey-grupoedad.json` `14ce05b14579…`, `sankey-rural.json` `02dd7ac04d74…`,
+  `sankey-sexo.json` `bf49cec77340…`. Receta §9.1 desde estado cero, fuentes 2026-10-06,
+  StataNow 19.5 SE, `set processors 1`.
+- Compuertas del PR (evidencia en `diag-pivote-entidad-2026-10-10/fix-pam/`): residual =
+  Σ §5.1 − Σ §4.1 (reldif < 1e-9); nodo Pensiones = 6.144 % del PIB; aditividad del delta en
+  los 5 cortes (solo se mueven los enlaces de Pensiones y el residual, en −`pam`);
+  `test-maquina-virgen.sh --zip` en las tres vías.
+
+### Pendiente (documentado, sin cambio de código)
+
+- **`Pension_AM` (sin acento, `PerfilesSim.do` §5)** suma 904,680 mdp con un ancla declarada de
+  580,935: `Distribucion.ado`, cuando la variable **ya existe**, multiplica la variable vieja (no
+  el `relativo`) por `macro/Σ(relativo)`, y `PerfilesSim.do:457` la crea antes de llamarla con
+  `relativo(ing_pam)` → total `macro²/Σ(ing_pam·factor)` (reproducido al 0.001 %). Es la única
+  llamada del motor en ese patrón; hoy la variable solo alimenta su perfil por edad y no entra a
+  `output.txt` ni al Sankey. Hechos en `fix-pam/anexo-gemelo-Pension_AM.md`; la definición es de
+  Ricardo.
+
 ## [v8.8.1] — 2026-10-08
 
 Hotfix sin efecto en números: `output.txt` y los 5 `sankey-*.json` de v8.8.0 siguen
