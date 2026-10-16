@@ -1,10 +1,11 @@
-*! version 8.2 CIEP 06oct2026
+*! version 8.3 CIEP 16oct2026
 *! AccesoBIE - Acceso al Banco de Indicadores del INEGI via API oficial
 *! (con respaldo automático vía la consulta pública de exportación .aspx)
 *! Sintaxis: AccesoBIE serie1 [serie2 ...] [, nombres(string) token(string) area(##)]
 *! Ejemplo: AccesoBIE 628194              <- obtiene serie con nombre automático
 *! Ejemplo: AccesoBIE 628194 444612, nombres(PIB Desempleo)
 *! Ejemplo: AccesoBIE 750453, nombres(PIBE) area(19)   <- indicador estatal, Nuevo León
+*! Ejemplo: AccesoBIE 6200093954, nombres(PO) area(19) <- indicador BISE (10 dígitos) por entidad, vía API
 
 program define AccesoBIE
 	version 17.0
@@ -62,7 +63,28 @@ program define AccesoBIE
 		local j = 1
 		foreach serie of local series {
 			
-			if "`area'" != "" {
+			if "`area'" != "" & strlen("`serie'") >= 10 {
+				// Modo area() para indicadores del BISE (clave de 10 dígitos, p. ej.
+				// 6200093954 = población ocupada ENOE por entidad): no existen en la
+				// consulta pública del BIE, solo en la API oficial, que recibe el área
+				// geográfica como parámetro (00 nacional, 01-32 entidades). Sin token
+				// no hay vía alterna: se avisa y se aborta.
+				if "`token'" == "" {
+					noisily display as error "AccesoBIE: el indicador `serie' (BISE) por {c a'}rea solo est{c a'} disponible v{c i'}a la API oficial y no hay token configurado."
+					noisily display as error `"  global BIE_API_TOKEN "tu-token"  — solicita el tuyo en: https://www.inegi.org.mx/app/api/denue/v1/tokenVerify.aspx"'
+					exit 198
+				}
+				global INEGI_AREAS_ERR_`serie' ""
+				python: inegi_bise_area("`serie'", "`area'", "`token'")
+				if "${INEGI_AREAS_ERR_`serie'}" != "" {
+					noisily display as error "AccesoBIE: ${INEGI_AREAS_ERR_`serie'}"
+					global INEGI_AREAS_ERR_`serie' ""
+					exit 459
+				}
+				import delimited "${SIMROOT}/raw/temp/AccesoBIE/`serie'_`area'.csv", clear varnames(1) encoding(utf-8) stringcols(1)
+				noisily display as text "  {c A'}rea " as result "`area'" as text " de `serie' | API (BISE): `=_N' observaciones"
+			}
+			else if "`area'" != "" {
 				// Modo area(): tabla completa del indicador (consulta pública),
 				// cacheada una vez por sesión; aquí se filtra el área pedida.
 				local csvareas "${SIMROOT}/raw/temp/AccesoBIE/`serie'_areas.csv"
@@ -311,6 +333,59 @@ def inegi_area(serie):
 
 class FormatoInesperado(Exception):
     pass
+
+
+def inegi_bise_area(serie, area, token):
+    """Indicador del BISE (clave de 10 dígitos) para UN área geográfica vía la
+    API oficial (INDICATOR/<serie>/es/<area>/false/BISE/2.0/<token>). Caché por
+    sesión en raw/temp/AccesoBIE/<serie>_<area>.csv (periodo,valor) con
+    escritura atómica; si la API no responde se publica el error en
+    INEGI_AREAS_ERR_<serie> y el último caché bueno queda intacto. La API no
+    devuelve el nombre del indicador (CL_INDICATOR exige otro tipo de token),
+    así que la etiqueta es genérica; el llamador la fija con nombres()."""
+    root = Macro.getGlobal('SIMROOT') + '/raw/temp/AccesoBIE/'
+    csv_path = root + serie + '_' + area + '.csv'
+    titulo = f'Indicador BISE {serie}, área geográfica {area}'
+    if Macro.getGlobal(f'INEGI_BISE_{serie}_{area}') == '1' and os.path.exists(csv_path):
+        set_metadata(serie, titulo)
+        return
+    base_url = 'https://www.inegi.org.mx/app/api/indicadores/desarrolladores/jsonxml'
+    url = f'{base_url}/INDICATOR/{serie}/es/{area}/false/BISE/2.0/{token}?type=json'
+    error = ''
+    for intento in range(1, MAX_RETRIES + 1):
+        try:
+            response = requests.get(url, timeout=60)
+            data = response.json()
+            if isinstance(data, list):
+                raise FormatoInesperado(f'la API respondió {"; ".join(str(d) for d in data)}')
+            observations = data['Series'][0].get('OBSERVATIONS', [])
+            if not observations:
+                raise FormatoInesperado('la API no devolvió observaciones')
+            tmp = csv_path + '.tmp'
+            with open(tmp, 'w', encoding='utf-8') as f:
+                f.write('periodo,valor\n')
+                for obs in observations:
+                    valor = obs.get('OBS_VALUE', '')
+                    try:
+                        valor = str(float(valor))
+                    except (TypeError, ValueError):
+                        valor = ''
+                    f.write(f"{obs.get('TIME_PERIOD', '')},{valor}\n")
+            os.replace(tmp, csv_path)
+            Macro.setGlobal(f'INEGI_BISE_{serie}_{area}', '1')
+            set_metadata(serie, titulo)
+            print(f"  Fuente: API (BISE), área geográfica {area}")
+            print(f"  Observaciones: {len(observations)}; última actualización INEGI {data['Series'][0].get('LASTUPDATE', '')}")
+            return
+        except FormatoInesperado as e:
+            error = str(e)
+            break
+        except Exception as e:
+            error = f'error de conexión con el INEGI ({e})'
+            if intento < MAX_RETRIES:
+                print(f"  Reintentando ({intento}/{MAX_RETRIES})...")
+                time.sleep(RETRY_DELAY)
+    Macro.setGlobal(f'INEGI_AREAS_ERR_{serie}', f'indicador {serie} área {area}: {error}; se conserva el último caché.')
 
 
 def fetch_area_table(serie):

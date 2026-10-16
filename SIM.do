@@ -39,17 +39,16 @@ capture mkdir "${SIMROOT}/users/$id"
 //global nographs "nographs"						// SUPRIMIR GRAFICAS
 //global textbook "textbook"						// SCALAR TO LATEX
 //global export "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/UniversoCIEP/3. Recursos/3.1. Paquetes Económicos/Paquete Económico 2027/4. Documento CIEP/images"
-
 //global rawwip "rawwip"							// RAW EN WORK-IN-PROGRESS
-
-//global hasta "3"									// PARO TEMPRANO
+global hasta "3"									// PARO TEMPRANO
 
 ** 0.5 Entidad federativa
-//global entidad "Nuevo León"						// ENTIDAD FEDERATIVA. Vacío = Nacional
+global entidad "Nuevo León"							// ENTIDAD FEDERATIVA. Vacío = Nacional
 if "$entidad" != "" {
 	SIMentidad "$entidad"
 	global entidad "`r(nombre)'"
 	capture mkdir "${SIMROOT}/users/$id/`r(abrev)'"
+	local ifentidad `"if entidad == "$entidad""'
 	noisily di _newline in g "Entidad federativa: " in y "`r(nombre)'" in g " (clave INEGI " in y "`r(clave)'" in g ", abreviatura " in y "`r(abrev)'" in g ")"
 }
 
@@ -65,8 +64,8 @@ if "$update" == "update" {
 ** 0.7 Output file (web)
 //global output "output"							// ARCHIVO DE SALIDA (WEB)
 if "$output" != "" {
-	set linesize 255								// sin esto Stata parte las líneas largas con "> " y el PHP del sitio las lee mal
-	quietly {										// en bloque: con `do`, el eco del comando caería dentro de output.txt
+	set linesize 255								
+	quietly {
 		log using `"${SIMROOT}/users/$id/output.txt"', replace text name(output)
 		log off output
 	}
@@ -76,9 +75,8 @@ if "$output" != "" {
 ***
 **# 1. DEMOGRAFÍA
 ***
-noisily Poblacion, anioi(`=aniovp') aniofinal(2070) $textbook $nographs
-if "$entidad" != "" noisily Poblacion if entidad == "$entidad", anioi(`=aniovp') aniofinal(2070) $textbook $nographs	// entidad (2026-10-10): Poblacion ya es entidad-consciente (escalares pob*<ABREV>, pirámide en graphs/); nada nacional cambia
-if "$hasta" == "1" exit								// paro temprano (0.4): termina tras la sección 1
+noisily Poblacion `ifentidad', anioi(`=aniovp') aniofinal(2070) $textbook $nographs
+if "$hasta" == "1" exit
 
 
 **/
@@ -114,8 +112,8 @@ global inf2031 = 3.0
 global inf2032 = 3.0
 
 ** 2.4 PIB + Deflactores
-noisily PIBDeflactor, aniovp(`=aniovp') aniomax(2032) $textbook $nographs $update
-
+noisily PIBDeflactor `ifentidad', aniovp(`=aniovp') aniomax(2032) $textbook $nographs $update
+ex
 ** 2.5 Sistema de Cuentas Nacionales (sin inputs)
 noisily SCN, anio(`=aniovp') $textbook $nographs $update
 if "$hasta" == "2" exit
@@ -516,6 +514,9 @@ if "$entidad" != "" {									// entidad (2026-10-10): mismos cortes, con el dec
 **** Touchdown!!!
 ****
 timer off 1
+timer list 1
+noisily di _newline(2) in g _dup(20) ":" "  " in y "TOUCH-DOWN!!!  " round(`=r(t1)/r(nt1)',.1) in g " segs  " _dup(20) ":"
+if "$output" == "output" run "${SIMROOT}/01_modulos/output.do"
 timer list 1
 noisily di _newline(2) in g _dup(20) ":" "  " in y "TOUCH-DOWN!!!  " round(`=r(t1)/r(nt1)',.1) in g " segs  " _dup(20) ":"
 if "$output" == "output" run "${SIMROOT}/01_modulos/output.do"

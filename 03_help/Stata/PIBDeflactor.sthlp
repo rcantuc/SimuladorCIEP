@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 8.0 CIEP 03jul2026}{...}
+{* *! version 8.2 CIEP 16oct2026}{...}
 {viewerjumpto "Descripción" "PIBDeflactor##description"}{...}
 {viewerjumpto "Primeros pasos" "PIBDeflactor##quickstart"}{...}
 {viewerjumpto "Sintaxis" "PIBDeflactor##syntax"}{...}
@@ -75,6 +75,24 @@ con los parámetros del paquete económico vigente.
 
 {p 8 16 2}
 {cmd:PIBDeflactor} [{it:if}] [{cmd:,} {opt ANIOvp(#)} {opt ANIOMAX(#)} {opt GEOPIB(#)} {opt GEODEF(#)} {opt DIScount(#)} {opt NOGraphs} {opt UPDATE} {opt NOOutput} {opt TEXTbook}]
+{p_end}
+
+{p 8 16 2}
+{cmd:PIBDeflactor} {cmd:if entidad ==} {cmd:"}{it:Nombre}{cmd:"} [{cmd:,} {it:opciones}]
+{p_end}
+
+{pstd}
+La segunda forma (misma convención que {cmd:Poblacion}; en {cmd:SIM.do} la arma la
+{cmd:global entidad}) corre el módulo para una {bf:entidad federativa}: PIBE nominal
+e índice de precios implícitos del BIE (750453/753357, anuales desde 2003, replicados
+en los cuatro trimestres), población ocupada y desocupada de la ENOE por entidad
+(BISE 6200093954/6200093973 vía la API oficial; requiere {cmd:$BIE_API_TOKEN}), INPC de
+la entidad (programa INPC de INEGI, estructura 112001700070; existe desde julio de 2018,
+por lo que la inflación promedio se calcula desde el primer año observado) y población
+CONAPO de la entidad. La base es {cmd:master/PIBDeflactor}{it:Abrev}{cmd:.dta}, y gráficas
+y escalares llevan la abreviatura como sufijo ({cmd:pibNL.png}, {cmd:pibYNL}); la base
+nacional no se modifica. Los exógenos {cmd:$pib}/{cmd:$def}/{cmd:$inf} se aplican igual
+que en el nacional. El nombre va exacto y con acentos (ver {cmd:SIMentidad}).
 {p_end}
 
 {hline}
@@ -180,6 +198,12 @@ Requiere conexión a internet.
 {pstd}{bf:Ejemplo 6 — Filtrar años específicos}{p_end}
 {phang2}{cmd:. PIBDeflactor if anio >= 2020 & anio <= 2031, geopib(2015)}{p_end}
 
+{pstd}{bf:Ejemplo 7 — Entidad federativa}{p_end}
+{phang2}{cmd:. PIBDeflactor if entidad == "Nuevo León", aniovp(2027) aniomax(2032)}{p_end}
+{pstd}PIBE, deflactor implícito, productividad laboral e inflación de Nuevo León; genera
+{cmd:master/PIBDeflactorNL.dta} y las gráficas {cmd:Productividad2024NL.png}, {cmd:deflactorNL.png},
+{cmd:pibNL.png}, {cmd:pib_pcNL.png} e {cmd:inflacionNL.png}.{p_end}
+
 {hline}
 
 {marker output}{...}
@@ -197,6 +221,7 @@ Al ejecutar el comando obtienes:
 {pstd}{bf:Archivos guardados:}{p_end}
 
 {phang2}— {cmd:master/PIBDeflactor.dta} — Base consolidada con series macroeconómicas{p_end}
+{phang2}— {cmd:master/PIBDeflactor}{it:Abrev}{cmd:.dta} — Base de la entidad federativa (p. ej. {cmd:PIBDeflactorNL.dta}){p_end}
 {phang2}— Gráficos PNG en {cmd:users/$id/graphs/}{p_end}
 
 {hline}
