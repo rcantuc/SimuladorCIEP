@@ -286,7 +286,7 @@ quietly {
 		}
 	}
 	file write `fh' `"],"' _n
-	file write `fh' `""procedencia":{"modulo":"01_modulos/visualizations/CicloEntidad.do v1.0","base":"users/$id/aportaciones.dta (la misma del nacional)","fuentes_congeladas_al":"$fuentes","generado_el":"`fecha' `hora'","stata":"`c(stata_version)' `c(edition_real)'","definicion_de":"Simulador.ado graphpiramide (nacional); filtro substr(folioviv,1,2) == clave INEGI, como SankeySF.do (PR #20)"}}"' _n
+	file write `fh' `""procedencia":{"modulo":"01_modulos/visualizations/CicloEntidad.do v1.0","base":"users/$id/aportaciones.dta (la misma del nacional)","generado_el":"`fecha' `hora'","stata":"`c(stata_version)' `c(edition_real)'","definicion_de":"Simulador.ado graphpiramide (nacional); filtro substr(folioviv,1,2) == clave INEGI, como SankeySF.do (PR #20)"}}"' _n
 	file close `fh'
 }
 

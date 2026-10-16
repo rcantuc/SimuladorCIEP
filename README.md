@@ -192,7 +192,7 @@ Los resultados serán equivalentes a los del análisis original.
 
 #### Nota sobre datos que se descargan de APIs
 
-Algunos comandos (como `AccesoBIE` y `DatosAbiertos`) extraen datos en tiempo real de las APIs de INEGI y SHCP. Estas fuentes hacen revisiones estadísticas periódicas a sus series históricas, por lo que valores específicos pueden diferir entre la fecha del análisis original y la fecha de replicación. Para reproducir **al byte** el `output.txt` publicado, cada release de datos congela esas descargas en el asset `fuentes-AAAA-MM-DD.zip` del Release: agrega `global fuentes "AAAA-MM-DD"` en `SIM.do` §0.4 y sigue la receta canónica de [`02_governance/runbook-deploys-ciep.md`](02_governance/runbook-deploys-ciep.md) §9 (estado cero, StataNow 19.5 con `set processors 1`). El SHA-256 esperado está en `05_scripts/ancla-reproducibilidad.json`.
+Algunos comandos (como `AccesoBIE` y `DatosAbiertos`) extraen datos en tiempo real de las APIs de INEGI y SHCP. Estas fuentes hacen revisiones estadísticas periódicas a sus series históricas, por lo que valores específicos pueden diferir entre la fecha del análisis original y la fecha de replicación. El Simulador descarga siempre en vivo: el `output.txt` publicado corresponde a las fuentes del día en que se corrió y no se garantiza reproducirlo al byte después (decisión 2026-10-15; [`02_governance/runbook-deploys-ciep.md`](02_governance/runbook-deploys-ciep.md) §9).
 
 
 ---

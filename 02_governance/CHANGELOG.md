@@ -46,6 +46,20 @@ por deciles nacionales); la banda pasa a ser el 4.º argumento de `SankeySF.do` 
 (EE e IC 95 % en los perfiles; el ancla de reproducibilidad deberá re-declararse). `fuentes` sigue existiendo (receta canónica
 del ancla) pero `SIM.do` ya no lo lista. Con `$entidad` vacío el nacional no cambia.
 
+### Se retiran las fuentes congeladas y el ancla de reproducibilidad (2026-10-15)
+
+Decisión de Ricardo: el motor descarga **siempre en vivo** de INEGI (BIE, tabulados CSI) y
+SHCP; se asume que el `output.txt` publicado es el de las fuentes del día y que no se
+garantiza regenerarlo al byte después. Desaparecen `global fuentes` y su bloque en `SIM.do`
+§0, las guardas en `AccesoBIE.ado` (`inegi_congelada`, `.meta`), `SCN.ado` y
+`DatosAbiertos.ado`, el campo `fuentes_congeladas_al` del JSON de `CicloEntidad.do`, el asset
+`fuentes-2026-10-06.zip` y los campos `fuentes_congeladas_*` del manifest (el asset sigue en
+la Release v8.9.0 como histórico), `05_scripts/ancla-reproducibilidad.json`, el modo
+`--reproducibilidad` de `test-maquina-virgen.sh`, el Gate 9 de `publicar.sh` y la paridad
+informativa contra el ancla en `compuertas-entidad.py`. Runbook §9 queda como nota de la
+decisión y conserva las piezas que sí mueven números (estado cero, StataNow 19.5,
+`set processors 1`, `log` en bloque `quietly`).
+
 ### Se retira `SIM-local.do` (SIM.do §0.5, v8.8.0) (2026-10-15)
 
 El panel local gitignored y su plantilla `SIM-local.template.do` desaparecen: los toggles se

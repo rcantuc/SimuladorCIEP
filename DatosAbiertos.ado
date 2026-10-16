@@ -427,12 +427,6 @@ program define UpdateDatosAbiertos, return
 	**   descarga -> zip con reintento -> csv directo -> archivos locales (default con update/zipfile)
 	**   csv      -> csv directo -> archivos locales (opción csvfile)
 	**   local    -> usa raw/temp/ sin conexión a internet (opción local)
-	** Fuentes congeladas (v8.2, SIM.do 0.4 `global fuentes "AAAA-MM-DD"`): los csv
-	** de la SHCP vienen del asset fuentes-<fecha>.zip ya descomprimido en raw/temp/;
-	** se leen en modo local, sin red. Sin el global, el flujo es el de siempre. **
-	if "$fuentes" != "" {
-		local local "local"
-	}
 	if "`local'" == "local" {
 		local modo "local"
 	}

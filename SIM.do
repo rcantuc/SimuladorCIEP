@@ -41,44 +41,32 @@ capture mkdir "${SIMROOT}/users/$id"
 //global export "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/UniversoCIEP/3. Recursos/3.1. Paquetes Económicos/Paquete Económico 2027/4. Documento CIEP/images"
 
 //global rawwip "rawwip"							// RAW EN WORK-IN-PROGRESS
-//global update "update"							// UPDATE BASES DE DATOS
 
-//global entidad "Nuevo León"						// ENTIDAD FEDERATIVA. Vacío = Nacional
-
-//global output "output"							// ARCHIVO DE SALIDA (WEB)
 //global hasta "3"									// PARO TEMPRANO
 
-** 0.5 Entidad federativa (2026-10-10): regla de oro — todo lo de entidad vive dentro de
-* if "$entidad" != "". Con el global vacío no corre ni una línea nueva ni se escribe un
-* archivo nuevo. SIMentidad valida el nombre contra $entidadesL (error accionable si no
-* existe) y da la abreviatura de la carpeta de salida users/$id/<ABREV>/ (P1). *
+** 0.5 Entidad federativa
+//global entidad "Nuevo León"						// ENTIDAD FEDERATIVA. Vacío = Nacional
 if "$entidad" != "" {
 	SIMentidad "$entidad"
 	global entidad "`r(nombre)'"
 	capture mkdir "${SIMROOT}/users/$id/`r(abrev)'"
-	noisily di _newline in g "Entidad federativa: " in y "`r(nombre)'" in g " (clave INEGI " in y "`r(clave)'" in g ", abreviatura " in y "`r(abrev)'" in g ") {c -} outputs de entidad en " in y "users/$id/`r(abrev)'/" in g "; los nacionales no cambian."
+	noisily di _newline in g "Entidad federativa: " in y "`r(nombre)'" in g " (clave INEGI " in y "`r(clave)'" in g ", abreviatura " in y "`r(abrev)'" in g ")"
 }
 
+** 0.6 Update datasets
+//global update "update"							// UPDATE BASES DE DATOS
 if "$update" == "update" {
 	! rm -r "${SIMROOT}/raw/temp/"
-	* Los cachés micro de master/<anioenigh>/ solo se crean si faltan (Expenditure.do
-	* §2-3): sin esto, update los heredaba de versiones anteriores del código (v8.8.0). *
 	foreach f in deducciones consumption_categ_pc consumption_categ_iva_pc consumption_categ_ieps_pc {
 		capture erase "${SIMROOT}/master/`=anioenigh'/`f'.dta"
 	}
 }
-if "$fuentes" != "" {
-	ensure_asset "fuentes-${fuentes}.zip"
-	capture mkdir "${SIMROOT}/raw/temp"
-	quietly cd "${SIMROOT}/raw/temp"
-	quietly unzipfile "${SIMROOT}/raw/fuentes/fuentes-${fuentes}.zip", replace
-	quietly cd "${SIMROOT}"
-	noisily di in g "Fuentes vivas congeladas al " in y "$fuentes" in g ": AccesoBIE, SCN y DatosAbiertos leen raw/temp/ sin descargar."
-}
 
+** 0.7 Output file (web)
+//global output "output"							// ARCHIVO DE SALIDA (WEB)
 if "$output" != "" {
-	set linesize 255								// output.txt es un log: sin esto Stata parte las líneas largas con "> " y el PHP del sitio las lee mal (deploy v8.4, 2026-10-01)
-	quietly {										// bloque: con `do` el eco del comando ya no cae dentro del log (paridad do/run, v8.8.0)
+	set linesize 255								// sin esto Stata parte las líneas largas con "> " y el PHP del sitio las lee mal
+	quietly {										// en bloque: con `do`, el eco del comando caería dentro de output.txt
 		log using `"${SIMROOT}/users/$id/output.txt"', replace text name(output)
 		log off output
 	}

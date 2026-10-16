@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """compuertas-entidad.py  v1.0 (global entidad, 2026-10-10) — verifica las compuertas de salida
-2–4 del Sankey de entidad sobre los JSON que deja compuertas-entidad.do, y la paridad de los
-archivos nacionales con el ancla (informativa aquí; la compuerta 1 formal es
-test-maquina-virgen.sh --reproducibilidad). Escribe <evidencia>/compuertas-entidad.md.
+2–4 del Sankey de entidad sobre los JSON que deja compuertas-entidad.do. Escribe
+<evidencia>/compuertas-entidad.md.
 
   2. Aditividad: Σ de los 32 Sankeys de entidad = Sankey nacional, enlace por enlace en los
      cortes que no re-rankean (grupoedad, sexo, rural, escol) y por familia en quintil vs decil.
@@ -17,7 +16,7 @@ Uso: compuertas-entidad.py --root <SIMROOT> --id <usuario> --evidencia <dir>
         [--tol-add 1e-9] [--tol-testigo 1e-12]
 Exit 0 si todas pasan; 1 si alguna falla (el .md dice cuál).
 """
-import argparse, hashlib, json, os, re, sys, csv
+import argparse, json, os, re, sys, csv
 
 ABREVS = ("Ags BC BCS Camp Coah Col Chis Chih CDMX Dgo Gto Gro Hgo Jal EdoMex Mich Mor Nay NL "
           "Oax Pue Qro QRoo SLP Sin Son Tab Tamps Tlax Ver Yuc Zac").split()
@@ -83,20 +82,6 @@ def main():
         if not cond: fallas.append(txt)
 
     md.append("# Compuertas de salida — global entidad (compuertas-entidad.py)\n")
-
-    # ---- Paridad nacional (informativa: con entidad puesta, los archivos nacionales no cambian) ----
-    md.append("## 1 (informativa) Archivos nacionales vs ancla, con entidad puesta\n")
-    try:
-        ancla = json.load(open(os.path.join(a.root, "05_scripts", "ancla-reproducibilidad.json"), encoding="utf-8"))
-        sha = lambda f: hashlib.sha256(open(f, "rb").read()).hexdigest()
-        for f, h in [("output.txt", ancla["output_txt_sha256"])] + sorted(ancla["sankeys_sha256"].items()):
-            p = os.path.join(U, f)
-            if os.path.exists(p):
-                hh = sha(p); md.append(f"- {'✓' if hh == h else '≠'} {f}: {hh[:16]}… {'= ancla' if hh == h else 'distinto del ancla ' + h[:16] + '… (esperado si la corrida no es la receta canónica desde estado cero)'}")
-            else:
-                md.append(f"- (no existe {f})")
-    except Exception as e:
-        md.append(f"- no se pudo leer el ancla: {e}")
 
     # ---- Cargar nacional y entidades ----
     nac = {c: leer_sankey(os.path.join(U, f"sankey-{c}.json")) for c in ["decil"] + CORTES[1:]}

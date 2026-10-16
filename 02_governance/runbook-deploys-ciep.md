@@ -81,10 +81,9 @@ comando publicado. El Gate 4 verifica que todos existan.
       sin `GASTOS`/`INGRESOS`/`PIBY` (el gate de contenido de la Fase
       3b-ter lo detiene: 15 llaves obligatorias); (3) `set linesize 255`
       antes del `log using` (ya está en `SIM.do`) o en batch, para que
-      Stata no parta las líneas con `> `. **La corrida que se publica es la de
-      la receta canónica de §9** (estado cero, fuentes congeladas, StataNow 19.5,
-      `set processors 1`): su SHA debe coincidir con
-      `05_scripts/ancla-reproducibilidad.json`. Para una corrida rápida de
+      Stata no parta las líneas con `> `. **La corrida que se publica** se hace
+      desde estado cero (`global update`), en StataNow 19.5 y con `set processors 1`
+      (§9); las fuentes INEGI/SHCP son las del día. Para una corrida rápida de
       desarrollo, descomenta `global nographs` y `global output` en `SIM.do` §0.4
       (o genera una copia con ellos, como hacen los scripts: §9.5) y corre en batch:
       ```bash
@@ -147,8 +146,7 @@ mano o interrumpida:
 bash 05_scripts/publicar.sh vX.Y.Z --solo-assets   # sube lo que falta y verifica SHA; sin tag, sin push, sin endpoint
 ```
 Antes de dar por cerrado cualquier release: `bash 05_scripts/publicar.sh vX.Y.Z --check`
-debe decir "los 9 gates pasaron" (el 8 consulta GitHub; el 9 exige el ancla de
-reproducibilidad de la versión, §9).
+debe decir "los 8 gates pasaron" (el 8 consulta GitHub).
 
 **Modo fuente remota (desde v8.8.0).** `publicar.sh` ya no exige `raw/` local
 completo: la máquina de producción puede no tenerlo (los Releases son la fuente de
@@ -174,7 +172,7 @@ v8.6.1–v8.7.1 por saltarse el paso 4):
 | 2 | Merge a `master` | GitHub | Ricardo |
 | 3 | Tag anotado + push del tag | §2 | Ricardo |
 | 4 | **Release + 27 assets + verificación SHA + endpoint** | `bash 05_scripts/publicar.sh vX.Y.Z` (en el clon de desarrollo, no en la Carpeta de investigadores; sin `raw/` completo, los assets ya publicados se verifican por digest) | Ricardo, **inmediatamente después del tag** |
-| 5 | Prueba de la promesa pública | `bash 05_scripts/test-maquina-virgen.sh --download` (N/N assets desde la Release); en release de datos además `--reproducibilidad` (§9.3) | Ricardo |
+| 5 | Prueba de la promesa pública | `bash 05_scripts/test-maquina-virgen.sh --download` (N/N assets desde la Release) | Ricardo |
 | 6 | VPS según tipo de release | §4 | Ricardo |
 | 7 | Gate humano | §6 | Ricardo |
 | 8 | Pull en la Carpeta de investigadores (Dropbox) y aviso a la capa NL (merge de cadencia) | manual | Ricardo |
@@ -387,107 +385,40 @@ re-desplegar), no rollback.
 
 ---
 
-## 9. Reproducibilidad del ancla (`output.txt` canónico) — desde v8.8.0
+## 9. Fuentes vivas y reproducibilidad — decisión 2026-10-15
 
-La paridad al byte de `users/ricardo/output.txt` es el contrato de verificación de
-cada release. Hasta v8.7.2 el "ancla" (`ae624b98…`) era el output de un estado
-congelado de una máquina (cachés del 22-sep anteriores a `perfilpc`, descargas de
-ese día), no de una receta: ninguna máquina limpia podía reproducirlo
-(diagnóstico F0, 2026-10-06, en el PR de v8.8.0). Desde v8.8.0 el ancla nace de una
-receta y se verifica con ella.
+`AccesoBIE`, `SCN` y `DatosAbiertos` bajan **en vivo** del BIE de INEGI, de los
+tabulados CSI y de la SHCP cada vez que corre `SIM.do`. INEGI y la SHCP revisan sus
+series (el PIB 2024 cambió entre el 22-sep y el 6-oct de 2026; la SHCP agrega meses),
+así que dos corridas en fechas distintas pueden dar `output.txt` distintos sin que el
+código cambie. **Se asume esa consecuencia:** el `output.txt` que se publica es el del
+INEGI/SHCP del día en que se corrió, y no se garantiza regenerarlo al byte después.
 
-### 9.1 La receta canónica
+Entre v8.2 y v8.9 existió un mecanismo de "fuentes congeladas" (`global fuentes`,
+asset `fuentes-AAAA-MM-DD.zip`, `05_scripts/ancla-reproducibilidad.json`, modo
+`test-maquina-virgen.sh --reproducibilidad`, Gate 9 de `publicar.sh`) que fijaba esas
+descargas a una fecha para reproducir el ancla publicada. Se retiró por decisión de
+Ricardo (minimalismo): el motor siempre descarga en vivo; el asset
+`fuentes-2026-10-06.zip` sigue en la Release v8.9.0 solo como histórico. Lo que sí se
+conserva de aquella etapa, porque mueve números con independencia de las fuentes:
 
-`output.txt` canónico = el que produce `SIM.do` (PE 2027) con estos globals activos
-(`test-maquina-virgen.sh --reproducibilidad` los inserta en una copia `SIM_run.do`, §9.5):
-
-```stata
-global nographs "nographs"
-global output "output"
-global update "update"             // estado cero: también borra master/<anioenigh>/*_pc y deducciones
-global fuentes "AAAA-MM-DD"        // fuentes vivas congeladas = fecha del release de datos (manifest.fuentes_congeladas_al)
-```
-
-desde **estado cero** (sin `master/`, `users/<id>/`, `raw/temp/`; `raw/` solo con
-los assets del Release), en **StataNow 19.5** con **`set processors 1`** (`capture`: en SE no aplica y ya es 1), en batch
-(`stata-se -b do wrap.do`, con `cd` a la raíz y `sysdir set SITE`). Lo que fija cada
-pieza, medido en F0:
-
-| Pieza | Por qué | Si se cambia |
-|---|---|---|
-| Fuentes congeladas (`fuentes-<fecha>.zip`: ~540 csv del BIE, tabulados CSI, 10 csv de la SHCP) | INEGI revisa el PIB y la SHCP agrega meses: entre el 22-sep y el 5-oct cambiaron INCD, INGRESOSTEF, DEUDAPARAM | otra fecha = otro `output.txt` (release de datos) |
-| Estado cero | `master/<anioenigh>/*_pc` y `deducciones` solo se creaban si faltaban: el ancla vieja arrastraba cachés pre-`perfilpc` | cachés viejos = números viejos sin aviso |
-| StataNow 19.5 | Stata 17 vs 19.5 difieren en 52 de ~5,000 valores (xtile/probit/Mata) y Stata 17 no descarga de la SHCP | otra versión = otro `output.txt` |
-| `set processors 1` | MP suma en paralelo: `collapse (sum)` depende del número de hilos; con 1, MP = SE al bit | solo mueve los `sankey-*.json` (16 dígitos), no `output.txt` |
-| Batch `do` + `quietly { log using }` | con `do` el eco del comando caía dentro del log (`.quietlylogoffoutput`) y con `run` no | desde v8.8.0 `do` y `run` dan los mismos bytes |
-| `bootstrap 1`, PE 2027, IVAT y escalares de `SIM.do` | parámetros del motor | cambio de código → re-anclar |
-
-Ruido de último bit que **no** se fija por construcción (sí por la receta):
-`sort` rompe empates con un RNG propio (`sortseed`) que avanza con cada `sort` de la
-sesión, así que `collapse (sum)` devuelve bits distintos según qué corrió antes;
-`output.txt` (3 decimales) lo absorbe; los sankeys a 16 dígitos no. Por eso el
-ancla de los sankeys solo vale bajo la receta exacta (misma versión, misma ruta de
-ejecución). Mejora futura anotada: `sort …, stable` antes de cada `collapse`/`egen sum`.
-
-### 9.2 El ancla
-
-`05_scripts/ancla-reproducibilidad.json`: versión, fecha de fuentes, Stata
-(versión, edición, procesadores), receta, SHA-256 de `output.txt` y de los 5
-`sankey-*.json`, commit y fecha. **Solo la escribe la receta**
-(`test-maquina-virgen.sh --reproducibilidad --anclar`): nunca se edita a mano ni se
-copia de una corrida de escritorio. El Gate 9 de `publicar.sh` exige que el ancla sea
-de la versión que se publica y apunte a la misma fecha de fuentes que el manifest.
-
-### 9.3 Verificar y re-anclar
-
-```bash
-# Verificar (máquina virgen o tu clon; ~80 min; sin red si --assets-locales y los 27 assets están en raw/)
-bash 05_scripts/test-maquina-virgen.sh --reproducibilidad --assets-locales
-bash 05_scripts/test-maquina-virgen.sh --reproducibilidad                  # tras publicar: assets desde la Release
-
-# Re-anclar (SOLO en release de datos o cambio de código que mueve números; nunca en silencio)
-bash 05_scripts/test-maquina-virgen.sh --reproducibilidad --assets-locales --anclar
-git add 05_scripts/ancla-reproducibilidad.json 02_governance/CHANGELOG.md
-```
-
-Política: el ancla se re-declara **en cada release de datos** (nueva fecha de
-fuentes, nueva ENIGH, nuevo Paquete) y cuando un cambio de código mueva números
-(`perfilpc`, parámetros de `SIM.do`…). Cada re-anclaje lleva en el CHANGELOG el
-delta por familia de llaves (`INCD`, `APORT*`, `PROY`, `INGRESOSTEF`, `DEUDAPARAM`…)
-y su causa (revisión de fuente vs. cambio de código). Si `--reproducibilidad` falla
-sin que haya release de datos ni cambio de código, es un bug: no se re-ancla, se
-investiga.
-
-### 9.4 Congelar fuentes nuevas (release de datos)
-
-1. Corre `SIM.do` con `global update` y `global fuentes` **vacío** (descarga en vivo,
-   StataNow 19.5): deja en `raw/temp/` los csv del BIE (+ `.meta`), los `CSI_*.xlsx`
-   y los csv de la SHCP.
-2. Empaca: `cd raw/temp && zip -r ../fuentes/fuentes-AAAA-MM-DD.zip AccesoBIE/*.csv AccesoBIE/*.meta SCN/ "Datos Abiertos"/*.csv`
-   (~70 MB). El zip es un asset más: `shasum -a 256`, `stat -f%z`, entrada en el
-   manifest (`name`, `local_path raw/fuentes/…`, `sha256`, `size_bytes`),
-   `fuentes_congeladas_al` y `data_updated` = esa fecha. Las fechas anteriores se
-   quedan en el manifest mientras alguna versión publicada las use.
-3. `SIM.do` no declara `global fuentes` (vacío = en vivo); la receta lo inserta en su
-   copia `SIM_run.do` (§9.5).
-4. Re-ancla (§9.3) y documenta el delta. Cierre del IVA (§9.6).
-
-Las tres guardas del motor (`AccesoBIE` → usa `raw/temp/AccesoBIE/<serie>.csv` +
-`.meta`; `DatosAbiertos` → modo `local`; `SCN` → no re-baja `tabulados_CSI.zip`)
-solo actúan con `$fuentes` definido; sin él, el motor es byte-idéntico al de antes.
-Con fuentes congeladas no hace falta token del BIE ni red (salvo los assets).
+| Pieza | Por qué importa |
+|---|---|
+| Estado cero al publicar (`global update`: borra `raw/temp/` y `master/<anioenigh>/*_pc`, `deducciones`) | los cachés micro solo se crean si faltan; sin `update` se heredan de versiones anteriores del código |
+| StataNow 19.5 | Stata 17 vs 19.5 difieren en ~52 de ~5,000 valores (xtile/probit/Mata) y Stata 17 no descarga de la SHCP |
+| `set processors 1` en batch | `collapse (sum)` en MP depende del número de hilos; con 1, MP = SE al bit (solo afecta los `sankey-*.json` a 16 dígitos) |
+| `quietly { log using … log off }` en bloque | con `do`, el eco del comando caía dentro de `output.txt` |
 
 ### 9.5 Toggles en batch: la copia `SIM_run.do`
 
-Los toggles de `SIM.do` §0.4 (`nographs`, `output`, `update`, `fuentes`, `entidad`,
-`hasta`, `textbook`, `export`) se activan descomentando la línea en `SIM.do`. Los
-scripts que corren en batch **no tocan `SIM.do`**: generan una copia `SIM_run.do` con
-(a) la ruta de la copia/clon en la línea `global SIMROOT` y (b) los globals que
-necesitan insertados justo después de `macro drop _all` (así sobreviven al borrado de
-macros y mandan sobre los `//global` comentados). Lo hacen `test-maquina-virgen.sh`
-(`sim_run`, modos `--zip` y `--reproducibilidad`) y `compuertas-entidad.sh`. La receta
-canónica (§9.1) es `SIM.do` + esos cuatro globals, nada más. (Hasta 2026-10-15 esto se
-hacía con un `SIM-local.do` gitignored que `SIM.do` §0.5 ejecutaba; se retiró.)
+Los toggles de `SIM.do` §0.4 (`nographs`, `output`, `update`, `entidad`, `hasta`,
+`textbook`, `export`) se activan descomentando la línea en `SIM.do`. Los scripts que
+corren en batch **no tocan `SIM.do`**: generan una copia `SIM_run.do` con (a) la ruta
+de la copia/clon en la línea `global SIMROOT` y (b) los globals que necesitan
+insertados justo después de `macro drop _all` (así sobreviven al borrado de macros y
+mandan sobre los `//global` comentados). Lo hacen `test-maquina-virgen.sh` (`sim_run`,
+modo `--zip`) y `compuertas-entidad.sh`. (Hasta 2026-10-15 esto se hacía con un
+`SIM-local.do` gitignored que `SIM.do` §0.5 ejecutaba; se retiró.)
 
 ### 9.6 Reglas de calibración del IVA (desde v8.8.0)
 
@@ -513,8 +444,7 @@ hacía con un `SIM-local.do` gitignored que `SIM.do` §0.5 ejecutaba; se retiró
 `SIM.do` §0.4 trae `//global entidad "Nuevo León"` comentado y se activa descomentándolo
 (o en la copia `SIM_run.do` de los scripts, §9.5). **Regla de oro:** todo lo de
 entidad vive dentro de `if "$entidad" != ""`; con el global vacío no corre ni una línea
-nueva ni se escribe un archivo nuevo, así que la receta canónica (§9.1) y el ancla no
-cambian. Con el global puesto:
+nueva ni se escribe un archivo nuevo, así que los archivos nacionales no cambian. Con el global puesto:
 
 | Pieza | Qué hace | Dónde escribe |
 |---|---|---|
@@ -535,7 +465,7 @@ selloTop1, vintages, celdas:[{celda, n, hog, pob}]}` y, en cada enlace micro, `n
 de la celda de la entidad en el total nacional de la familia × total nacional vigente).
 
 Compuertas de salida del PR (evidencia en `diag-pivote-entidad-2026-10-10/F1/`):
-1. paridad nacional con `entidad` vacío: `test-maquina-virgen.sh --reproducibilidad --assets-locales` y `--zip`;
+1. paridad nacional con `entidad` vacío: `test-maquina-virgen.sh --zip`;
 2. aditividad: Σ de los 32 Sankeys de entidad = Sankey nacional (`05_scripts/compuertas-entidad.sh`, que corre
    `SIM.do` + `compuertas-entidad.do` en una sesión y verifica con `compuertas-entidad.py`);
 3. testigo: NL por quintil estatal reproduce las participaciones selladas del sprint (`dis<fam>nle<dec>` del
@@ -553,6 +483,5 @@ Compuertas de salida del PR (evidencia en `diag-pivote-entidad-2026-10-10/F1/`):
 | Todo lo creado post-normalización | Nace ilegible para Apache: chmod explícito siempre. |
 | SSH Cloudways | Whitelist por IPv4 — ver §3. |
 | Mtime del default | Si el gate de frescura aborta: correr SIM.do completo primero (no tocar el mtime a mano). |
-| Paridad medida contra un estado, no contra una receta | El ancla sale SOLO de `test-maquina-virgen.sh --reproducibilidad --anclar` (§9); un `output.txt` de escritorio que "coincide" no prueba nada si sus cachés no nacieron del código vigente (F0 2026-10-06: `ae624b98` arrastraba `master/2024/*_pc` pre-`perfilpc`). |
-| `global update` en Stata 17 | No descarga de la SHCP (r(603)); la regeneración viva exige StataNow 19.5 o fuentes congeladas (`global fuentes`). |
+| `global update` en Stata 17 | No descarga de la SHCP (r(603)); la regeneración exige StataNow 19.5. |
 | Release creada a mano desde el tag (sin assets) | NUNCA: el manifest ya apunta a ella y `ensure_asset` da 404 en toda máquina sin `raw/`. Siempre `publicar.sh vX.Y.Z`; si ya pasó, `publicar.sh vX.Y.Z --solo-assets` (incidente v8.6.1/v8.7.0/v8.7.1, 2026-10-05). |

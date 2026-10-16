@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # compuertas-entidad.sh — compuertas de salida 2–4 del PR global entidad (2026-10-10).
 #
-# Corre SIM.do con los globals {nographs, output, fuentes = la del ancla, entidad = <nombre>}
+# Corre SIM.do con los globals {nographs, output, entidad = <nombre>}
 # (copia <evidencia>/SIM_run.do) sobre ESTE clon (usa sus master/, raw/ y users/<id>/ existentes;
 # no es la receta desde estado cero: esa es --reproducibilidad), y en la MISMA sesión
 # de Stata corre 05_scripts/compuertas-entidad.do (32 entidades × 5 cortes + celdas NL).
@@ -31,8 +31,7 @@ done
 [[ -z "$EVID" ]] && { echo "Uso: $0 --evidencia <dir> [--entidad <nombre>] [--statajson <json>] [--stata <ruta>] [--sin-sim]" >&2; exit 1; }
 mkdir -p "$EVID"
 ID="$(whoami)"
-FUENTES="$(python3 -c "import json;print(json.load(open('05_scripts/ancla-reproducibilidad.json')).get('fuentes',''))")"
-GLOBALS=('global nographs "nographs"' 'global output "output"' "global fuentes \"$FUENTES\"" "global entidad \"$ENTIDAD\"")
+GLOBALS=('global nographs "nographs"' 'global output "output"' "global entidad \"$ENTIDAD\"")
 # SIM_run.do = SIM.do con la raiz de este clon y los globals tras `macro drop _all` (misma
 # mecanica que test-maquina-virgen.sh sim_run); SIM.do versionado no se toca.
 python3 - "$REPO_ROOT/SIM.do" "$EVID/SIM_run.do" "$REPO_ROOT" "${GLOBALS[@]}" <<'PYEOF'
@@ -65,7 +64,7 @@ WRAP="$EVID/wrap-compuertas.do"
     fi
     printf 'do "%s/05_scripts/compuertas-entidad.do" "%s"\n' "$REPO_ROOT" "$EVID"
 } > "$WRAP"
-echo "Stata: SIM.do (entidad $ENTIDAD, fuentes $FUENTES) + compuertas-entidad.do → $EVID (~30 min)..."
+echo "Stata: SIM.do (entidad $ENTIDAD) + compuertas-entidad.do → $EVID (~30 min)..."
 T0=$(date +%s)
 ( "$STATA" -b do "$WRAP" < /dev/null )
 LOG="$REPO_ROOT/wrap-compuertas.log"
