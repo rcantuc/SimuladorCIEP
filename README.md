@@ -192,7 +192,7 @@ Los resultados serán equivalentes a los del análisis original.
 
 #### Nota sobre datos que se descargan de APIs
 
-Algunos comandos (como `AccesoBIE` y `DatosAbiertos`) extraen datos en tiempo real de las APIs de INEGI y SHCP. Estas fuentes hacen revisiones estadísticas periódicas a sus series históricas, por lo que valores específicos pueden diferir entre la fecha del análisis original y la fecha de replicación. Para reproducir **al byte** el `output.txt` publicado, cada release de datos congela esas descargas en el asset `fuentes-AAAA-MM-DD.zip` del Release: activa `global fuentes "AAAA-MM-DD"` en `SIM.do` §0.4 (o en tu `SIM-local.do`) y sigue la receta canónica de [`02_governance/runbook-deploys-ciep.md`](02_governance/runbook-deploys-ciep.md) §9 (estado cero, StataNow 19.5 con `set processors 1`). El SHA-256 esperado está en `05_scripts/ancla-reproducibilidad.json`.
+Algunos comandos (como `AccesoBIE` y `DatosAbiertos`) extraen datos en tiempo real de las APIs de INEGI y SHCP. Estas fuentes hacen revisiones estadísticas periódicas a sus series históricas, por lo que valores específicos pueden diferir entre la fecha del análisis original y la fecha de replicación. Para reproducir **al byte** el `output.txt` publicado, cada release de datos congela esas descargas en el asset `fuentes-AAAA-MM-DD.zip` del Release: agrega `global fuentes "AAAA-MM-DD"` en `SIM.do` §0.4 y sigue la receta canónica de [`02_governance/runbook-deploys-ciep.md`](02_governance/runbook-deploys-ciep.md) §9 (estado cero, StataNow 19.5 con `set processors 1`). El SHA-256 esperado está en `05_scripts/ancla-reproducibilidad.json`.
 
 
 ---
@@ -238,7 +238,7 @@ Archivo de configuración inicial que se ejecuta automáticamente al iniciar Sta
 - `hasta`: Paro temprano para desarrollo: termina al cerrar la sección indicada (1-7)
 - `bootstrap`: Réplicas bootstrap de `Simulador` (1 = producción; 100 = EE e IC 95 %)
 
-Los toggles personales (output, bootstrap, paros tempranos…) viven en `SIM-local.do`, un archivo **no versionado** que `SIM.do` ejecuta en §0.5 si existe; plantilla en `SIM-local.template.do`. Así el `SIM.do` del repo se queda limpio y la carpeta compartida no acumula diffs locales.
+Los toggles (output, paros tempranos…) se activan descomentando su línea en `SIM.do` §0.4; los scripts batch (`05_scripts/`) los insertan en una copia `SIM_run.do` sin tocar `SIM.do`.
 
 ### Estructura del flujo de trabajo
 

@@ -6,7 +6,7 @@
     "edicion": "SE",
     "processors": 1
   },
-  "receta": "SIM.do (PE 2027) + SIM-local.do {nographs, output, update, fuentes} desde estado cero (sin master/, users/, raw/temp), batch `stata -b do`, `set processors 1`; ver runbook-deploys-ciep.md 9",
+  "receta": "SIM.do (PE 2027) con globals {nographs, output, update, fuentes} desde estado cero (sin master/, users/, raw/temp), batch `stata -b do`, `set processors 1`; ver runbook-deploys-ciep.md 9",
   "output_txt_sha256": "e40af4a6dda77d3a042228a291d55443fc020d3bf431698b179e7c11385a4d27",
   "sankeys_sha256": {
     "sankey-decil.json": "8952d14ef4d220bf81816ec3bcf134cfef6f9c5b310eff29e7b8f0c89e1aa2fe",

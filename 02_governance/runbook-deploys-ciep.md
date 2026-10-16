@@ -85,9 +85,9 @@ comando publicado. El Gate 4 verifica que todos existan.
       la receta canónica de §9** (estado cero, fuentes congeladas, StataNow 19.5,
       `set processors 1`): su SHA debe coincidir con
       `05_scripts/ancla-reproducibilidad.json`. Para una corrida rápida de
-      desarrollo, sin tocar tu `SIM.do`, usa `SIM-local.do` (§9.5):
+      desarrollo, descomenta `global nographs` y `global output` en `SIM.do` §0.4
+      (o genera una copia con ellos, como hacen los scripts: §9.5) y corre en batch:
       ```bash
-      printf 'global nographs "nographs"\nglobal output "output"\n' > SIM-local.do   # toggles personales, gitignored
       printf 'capture set processors 1\nsysdir set SITE "%s/"\nadopath ++SITE\ncd "%s"\ndo SIM.do\n' "$PWD" "$PWD" > /tmp/wrap.do
       /Applications/StataNow/StataSE.app/Contents/MacOS/stata-se -b do /tmp/wrap.do   # ~11 min con cachés
       grep -c '^>' users/ricardo/output.txt      # debe ser 0
@@ -398,7 +398,8 @@ receta y se verifica con ella.
 
 ### 9.1 La receta canónica
 
-`output.txt` canónico = el que produce `SIM.do` (PE 2027) con este `SIM-local.do`:
+`output.txt` canónico = el que produce `SIM.do` (PE 2027) con estos globals activos
+(`test-maquina-virgen.sh --reproducibilidad` los inserta en una copia `SIM_run.do`, §9.5):
 
 ```stata
 global nographs "nographs"
@@ -467,8 +468,8 @@ investiga.
    manifest (`name`, `local_path raw/fuentes/…`, `sha256`, `size_bytes`),
    `fuentes_congeladas_al` y `data_updated` = esa fecha. Las fechas anteriores se
    quedan en el manifest mientras alguna versión publicada las use.
-3. `SIM.do` §0.4: `global fuentes "AAAA-MM-DD"` sigue comentado en el repo (vacío =
-   en vivo); la receta lo activa vía `SIM-local.do`.
+3. `SIM.do` no declara `global fuentes` (vacío = en vivo); la receta lo inserta en su
+   copia `SIM_run.do` (§9.5).
 4. Re-ancla (§9.3) y documenta el delta. Cierre del IVA (§9.6).
 
 Las tres guardas del motor (`AccesoBIE` → usa `raw/temp/AccesoBIE/<serie>.csv` +
@@ -476,18 +477,17 @@ Las tres guardas del motor (`AccesoBIE` → usa `raw/temp/AccesoBIE/<serie>.csv`
 solo actúan con `$fuentes` definido; sin él, el motor es byte-idéntico al de antes.
 Con fuentes congeladas no hace falta token del BIE ni red (salvo los assets).
 
-### 9.5 `SIM-local.do`: el panel local
+### 9.5 Toggles en batch: la copia `SIM_run.do`
 
-`SIM.do` §0.5 ejecuta `SIM-local.do` (raíz del simulador, **gitignored**) si existe,
-después de los defaults de §0.4 y antes de usarlos. Ahí viven los toggles de quien
-corre (`output`, `bootstrap`, `nographs`, `update`, `fuentes`, `hasta` = paro temprano
-tras la sección 1-7, `textbook`, `export`); plantilla en `SIM-local.template.do`.
-Sin el archivo, `SIM.do` es byte-idéntico. Reglas: (a) solo globals de §0.4 — un
-parámetro del modelo (IVAT, escalares) es cambio del motor y va por commit; (b) el
-`SIM.do` versionado y el de la Carpeta de investigadores se quedan limpios
-(`git diff SIM.do` vacío); (c) la receta canónica es un `SIM-local.do` concreto
-(§9.1), así que "lo que corre el gate" y "lo que corre Ricardo" difieren solo en ese
-archivo.
+Los toggles de `SIM.do` §0.4 (`nographs`, `output`, `update`, `fuentes`, `entidad`,
+`hasta`, `textbook`, `export`) se activan descomentando la línea en `SIM.do`. Los
+scripts que corren en batch **no tocan `SIM.do`**: generan una copia `SIM_run.do` con
+(a) la ruta de la copia/clon en la línea `global SIMROOT` y (b) los globals que
+necesitan insertados justo después de `macro drop _all` (así sobreviven al borrado de
+macros y mandan sobre los `//global` comentados). Lo hacen `test-maquina-virgen.sh`
+(`sim_run`, modos `--zip` y `--reproducibilidad`) y `compuertas-entidad.sh`. La receta
+canónica (§9.1) es `SIM.do` + esos cuatro globals, nada más. (Hasta 2026-10-15 esto se
+hacía con un `SIM-local.do` gitignored que `SIM.do` §0.5 ejecutaba; se retiró.)
 
 ### 9.6 Reglas de calibración del IVA (desde v8.8.0)
 
@@ -510,8 +510,8 @@ archivo.
 
 ### 9.7 `global entidad`: el motor entidad-consciente (2026-10-10)
 
-`SIM.do` §0.4 trae `//global entidad "Nuevo León"` comentado, junto a `$fuentes`, y se
-activa desde `SIM-local.do` (§9.5) como cualquier toggle. **Regla de oro:** todo lo de
+`SIM.do` §0.4 trae `//global entidad "Nuevo León"` comentado y se activa descomentándolo
+(o en la copia `SIM_run.do` de los scripts, §9.5). **Regla de oro:** todo lo de
 entidad vive dentro de `if "$entidad" != ""`; con el global vacío no corre ni una línea
 nueva ni se escribe un archivo nuevo, así que la receta canónica (§9.1) y el ancla no
 cambian. Con el global puesto:

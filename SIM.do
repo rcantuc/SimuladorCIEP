@@ -46,15 +46,9 @@ capture mkdir "${SIMROOT}/users/$id"
 //global entidad "Nuevo León"						// ENTIDAD FEDERATIVA. Vacío = Nacional
 
 //global output "output"							// ARCHIVO DE SALIDA (WEB)
-//global hasta "3"									// PARO TEMPRANO: termina al cerrar la sección indicada (1-7)
+//global hasta "3"									// PARO TEMPRANO
 
-** 0.5 Panel local (v8.8.0): SIM-local.do, NO versionado (gitignored), sobreescribe
-* los toggles de 0.4 de quien corre (output, fuentes congeladas, paros tempranos...). Sin el
-* archivo, el comportamiento es byte-idéntico. Plantilla: SIM-local.template.do. *
-capture confirm file "${SIMROOT}/SIM-local.do"
-if _rc == 0 run "${SIMROOT}/SIM-local.do"
-
-** 0.6 Entidad federativa (2026-10-10): regla de oro — todo lo de entidad vive dentro de
+** 0.5 Entidad federativa (2026-10-10): regla de oro — todo lo de entidad vive dentro de
 * if "$entidad" != "". Con el global vacío no corre ni una línea nueva ni se escribe un
 * archivo nuevo. SIMentidad valida el nombre contra $entidadesL (error accionable si no
 * existe) y da la abreviatura de la carpeta de salida users/$id/<ABREV>/ (P1). *
@@ -96,7 +90,7 @@ if "$output" != "" {
 ***
 noisily Poblacion, anioi(`=aniovp') aniofinal(2070) $textbook $nographs
 if "$entidad" != "" noisily Poblacion if entidad == "$entidad", anioi(`=aniovp') aniofinal(2070) $textbook $nographs	// entidad (2026-10-10): Poblacion ya es entidad-consciente (escalares pob*<ABREV>, pirámide en graphs/); nada nacional cambia
-if "$hasta" == "1" exit								// paro temprano (0.4 / SIM-local.do): termina tras la sección 1
+if "$hasta" == "1" exit								// paro temprano (0.4): termina tras la sección 1
 
 
 **/

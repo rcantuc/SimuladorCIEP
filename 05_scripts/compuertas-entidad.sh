@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # compuertas-entidad.sh — compuertas de salida 2–4 del PR global entidad (2026-10-10).
 #
-# Corre SIM.do con un SIM-local.do temporal {nographs, output, fuentes = la del ancla,
-# entidad = <nombre>} sobre ESTE clon (usa sus master/, raw/ y users/<id>/ existentes;
+# Corre SIM.do con los globals {nographs, output, fuentes = la del ancla, entidad = <nombre>}
+# (copia <evidencia>/SIM_run.do) sobre ESTE clon (usa sus master/, raw/ y users/<id>/ existentes;
 # no es la receta desde estado cero: esa es --reproducibilidad), y en la MISMA sesión
 # de Stata corre 05_scripts/compuertas-entidad.do (32 entidades × 5 cortes + celdas NL).
 # Después compuertas-entidad.py compara los JSON y escribe <evidencia>/compuertas-entidad.md.
@@ -32,13 +32,20 @@ done
 mkdir -p "$EVID"
 ID="$(whoami)"
 FUENTES="$(python3 -c "import json;print(json.load(open('05_scripts/ancla-reproducibilidad.json')).get('fuentes',''))")"
-if [[ -f SIM-local.do ]]; then cp SIM-local.do "$EVID/SIM-local.do.bak"; fi
-cat > SIM-local.do <<EOF2
-global nographs "nographs"
-global output "output"
-global fuentes "$FUENTES"
-global entidad "$ENTIDAD"
-EOF2
+GLOBALS=('global nographs "nographs"' 'global output "output"' "global fuentes \"$FUENTES\"" "global entidad \"$ENTIDAD\"")
+# SIM_run.do = SIM.do con la raiz de este clon y los globals tras `macro drop _all` (misma
+# mecanica que test-maquina-virgen.sh sim_run); SIM.do versionado no se toca.
+python3 - "$REPO_ROOT/SIM.do" "$EVID/SIM_run.do" "$REPO_ROOT" "${GLOBALS[@]}" <<'PYEOF'
+import re, sys
+src, dst, root, *globs = sys.argv[1:]
+t = open(src, encoding="utf-8").read()
+t, n = re.subn(r'^global SIMROOT ".*?"', 'global SIMROOT "%s"' % root, t, count=1, flags=re.M)
+if n != 1:
+    sys.exit("compuertas-entidad: no se encontro 'global SIMROOT \"...\"' en SIM.do")
+marca = "macro drop _all\n"
+t = t.replace(marca, marca + "".join(g + "\n" for g in globs), 1)
+open(dst, "w", encoding="utf-8").write(t)
+PYEOF
 ABREV="$(python3 - "$ENTIDAD" <<'PYEOF'
 import sys
 L=["Aguascalientes","Baja California","Baja California Sur","Campeche","Coahuila","Colima","Chiapas","Chihuahua","Ciudad de México","Durango","Guanajuato","Guerrero","Hidalgo","Jalisco","Estado de México","Michoacán","Morelos","Nayarit","Nuevo León","Oaxaca","Puebla","Querétaro","Quintana Roo","San Luis Potosí","Sinaloa","Sonora","Tabasco","Tamaulipas","Tlaxcala","Veracruz","Yucatán","Zacatecas"]
@@ -50,9 +57,11 @@ WRAP="$EVID/wrap-compuertas.do"
 {
     printf 'capture set processors 1\nset linesize 200\nsysdir set SITE "%s/"\nadopath ++SITE\ncd "%s"\ndi "STATA_VERSION=" c(stata_version) " PROCESSORS=" c(processors)\n' "$REPO_ROOT" "$REPO_ROOT"
     if [[ "$SIN_SIM" == "true" ]]; then
-        printf 'global SIMROOT "%s"\nglobal id "%s"\nrun "%s/SIM-local.do"\ndo "%s/escalares.do"\n' "$REPO_ROOT" "$ID" "$REPO_ROOT" "$EVID"
+        printf 'global SIMROOT "%s"\nglobal id "%s"\n' "$REPO_ROOT" "$ID"
+        printf '%s\n' "${GLOBALS[@]}"
+        printf 'do "%s/escalares.do"\n' "$EVID"
     else
-        printf 'do "%s/SIM.do"\n' "$REPO_ROOT"
+        printf 'do "%s/SIM_run.do"\n' "$EVID"
     fi
     printf 'do "%s/05_scripts/compuertas-entidad.do" "%s"\n' "$REPO_ROOT" "$EVID"
 } > "$WRAP"
@@ -65,9 +74,7 @@ LOG="$EVID/wrap-compuertas.log"
 if grep -qE '^r\([0-9]+\);' "$LOG"; then
     echo "compuertas-entidad: Stata terminó con error; ver $LOG" >&2
     grep -B6 -E '^r\([0-9]+\);' "$LOG" | head -30 >&2
-    [[ -f "$EVID/SIM-local.do.bak" ]] && mv -f "$EVID/SIM-local.do.bak" SIM-local.do
     exit 1
 fi
-[[ -f "$EVID/SIM-local.do.bak" ]] && mv -f "$EVID/SIM-local.do.bak" SIM-local.do
 echo "Stata: $((($(date +%s)-T0)/60)) min. Verificando JSON..."
 python3 05_scripts/compuertas-entidad.py --root "$REPO_ROOT" --id "$ID" --evidencia "$EVID" --testigo "$ABREV" ${STATAJSON:+--statajson "$STATAJSON"}

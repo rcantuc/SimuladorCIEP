@@ -44,7 +44,16 @@ por deciles nacionales); la banda pasa a ser el 4.º argumento de `SankeySF.do` 
 `compuertas-entidad.do` siga omitiéndola en las 31 entidades que no son la de la sesión.
 `bootstrap` deja de ser global: `SIM.do` §7 usa `bootstrap(1)` y `PerfilesSim.do` `bootstrap(250)`
 (EE e IC 95 % en los perfiles; el ancla de reproducibilidad deberá re-declararse). `fuentes` sigue existiendo (receta canónica
-del ancla) pero solo se declara en `SIM-local.do`. Con `$entidad` vacío el nacional no cambia.
+del ancla) pero `SIM.do` ya no lo lista. Con `$entidad` vacío el nacional no cambia.
+
+### Se retira `SIM-local.do` (SIM.do §0.5, v8.8.0) (2026-10-15)
+
+El panel local gitignored y su plantilla `SIM-local.template.do` desaparecen: los toggles se
+activan descomentando su línea en `SIM.do` §0.4. Los scripts batch (`test-maquina-virgen.sh`
+`--zip`/`--reproducibilidad`, `compuertas-entidad.sh`) ya no escriben un `SIM-local.do`: generan
+una copia `SIM_run.do` con la raíz en `global SIMROOT` y sus globals insertados tras
+`macro drop _all` (`sim_run`); `SIM.do` versionado no se toca. Runbook §9.1/§9.5, README y las
+cadenas `receta` del ancla y del manifest se actualizan.
 
 ### Ciclo de vida de entidad: `CicloEntidad.do` (PR feat/ciclo-entidad, 2026-10-11)
 

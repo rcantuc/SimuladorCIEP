@@ -36,8 +36,8 @@
 #                cualquier maquina, el output.txt y los sankey-*.json con el SHA-256
 #                declarado en 05_scripts/ancla-reproducibilidad.json. Arma una copia
 #                `git archive` en /tmp con estado cero (sin master/, users/, raw/temp),
-#                escribe el SIM-local.do canonico (nographs, output, update, fuentes =
-#                fecha del ancla) y corre SIM.do en batch con `set processors 1`.
+#                genera SIM_run.do (SIM.do con los globals nographs, output, update,
+#                fuentes = fecha del ancla) y lo corre en batch con `set processors 1`.
 #                Los 27 assets los baja ensure_asset de la Release (o se copian del raw/
 #                local con --assets-locales, para verificar ANTES de publicar). Compara
 #                SHAs y la version de Stata contra el ancla. Con --anclar, en vez de
@@ -75,6 +75,26 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 [[ -z "$MODE" ]] && { echo "Uso: $0 --cobertura | --download [--stata <ruta>] | --zip [--completo] | --reproducibilidad [--assets-locales] [--anclar]" >&2; exit 1; }
+
+# ─── sim_run <SIM.do origen> <destino> <raiz> [global ...] ───
+# Copia de SIM.do para correr en batch: la raiz va en la linea `global SIMROOT` (lo unico
+# que edita un usuario) y los globals pedidos se insertan tras `macro drop _all`, asi
+# sobreviven al borrado de macros y mandan sobre los `//global` comentados de 0.4.
+sim_run() {
+python3 - "$@" <<'PYEOF'
+import re, sys
+src, dst, root, *globs = sys.argv[1:]
+t = open(src, encoding="utf-8").read()
+t, n = re.subn(r'^global SIMROOT ".*?"', 'global SIMROOT "%s"' % root, t, count=1, flags=re.M)
+if n != 1:
+    sys.exit("sim_run: no se encontro la linea 'global SIMROOT \"...\"' en " + src)
+marca = "macro drop _all\n"
+if marca not in t:
+    sys.exit("sim_run: no se encontro 'macro drop _all' en " + src)
+t = t.replace(marca, marca + "".join(g + "\n" for g in globs), 1)
+open(dst, "w", encoding="utf-8").write(t)
+PYEOF
+}
 
 # ─── Inventario del manifest y de las invocaciones de ensure_asset ───
 # Emite lineas "name<TAB>local_path<TAB>solicitado_por" (solicitado_por vacio = huerfano).
@@ -152,10 +172,7 @@ if [[ "$MODE" == "zip" ]]; then
     echo "ZIP sin git en: $ZIPDIR"
 
     # Lo que hace el alumno: escribir su carpeta en la linea `global SIMROOT` de SIM.do
-    sed -e "s|^global SIMROOT \".*\"|global SIMROOT \"$ZIPDIR\"|" "$ZIPDIR/SIM.do" > "$ZIPDIR/SIM_zip.do"
-    if ! grep -qF "global SIMROOT \"$ZIPDIR\"" "$ZIPDIR/SIM_zip.do"; then
-        echo "ZIP: no se encontro la linea 'global SIMROOT \"...\"' en SIM.do para sustituirla." >&2; exit 1
-    fi
+    sim_run "$ZIPDIR/SIM.do" "$ZIPDIR/SIM_zip.do" "$ZIPDIR" 'global nographs "nographs"'   # batch: sin ventana de graficas
     mv "$ZIPDIR/profile.do" "$ZIPDIR/profile.do.off"   # sin profile.do: solo el setup de SIM.do 0
 
     # Humo: el setup de SIM.do 0 (global + adopath + scheme) y los .ado visibles tras un cd
@@ -177,7 +194,6 @@ if [[ "$MODE" == "zip" ]]; then
 
     if [[ "$COMPLETO" == "true" && $fallas -eq 0 ]]; then
         echo "  (completo) SIM.do entero sin profile.do ni SITE (descarga assets y construye; ~1 h)..."
-        sed -i.bak -e 's|^//global nographs|global nographs|' "$ZIPDIR/SIM_zip.do"   # batch: sin ventana de graficas
         ( cd "$ZIPDIR" && "$STATA" -b do SIM_zip.do < /dev/null )
         if grep -q "TOUCH-DOWN" "$ZIPDIR/SIM_zip.log" && ! grep -qE '^r\([0-9]+\);' "$ZIPDIR/SIM_zip.log"; then
             echo "  (completo) TOUCH-DOWN  OK"
@@ -236,14 +252,11 @@ for a in json.load(open('05_scripts/manifest.json'))['assets']:
     print(a['name'], a['local_path'], a['sha256'], sep='\t')")
         echo "Assets copiados del raw/ local: $copiados (ensure_asset verifica SHA; los que falten los baja de la Release)"
     fi
-    # Receta canonica = SIM.do + este SIM-local.do (runbook-deploys-ciep.md 9.1)
-    cat > "$SIMDIR/SIM-local.do" <<EOF2
-global nographs "nographs"
-global output "output"
-global update "update"
-global fuentes "$FUENTES"
-EOF2
-    printf 'capture set processors 1\nsysdir set SITE "%s/"\nadopath ++SITE\ncd "%s"\ndi "STATA_VERSION=" c(stata_version) " PROCESSORS=" c(processors)\ndo "%s/SIM.do"\n' "$SIMDIR" "$SIMDIR" "$SIMDIR" > "$BASE/wrap.do"
+    # Receta canonica = SIM.do con estos toggles (runbook-deploys-ciep.md 9.1): copia SIM_run.do
+    # con la raiz de la copia en `global SIMROOT` y los globals insertados tras `macro drop _all`.
+    sim_run "$SIMDIR/SIM.do" "$SIMDIR/SIM_run.do" "$SIMDIR" \
+        'global nographs "nographs"' 'global output "output"' 'global update "update"' "global fuentes \"$FUENTES\""
+    printf 'capture set processors 1\nsysdir set SITE "%s/"\nadopath ++SITE\ncd "%s"\ndi "STATA_VERSION=" c(stata_version) " PROCESSORS=" c(processors)\ndo "%s/SIM_run.do"\n' "$SIMDIR" "$SIMDIR" "$SIMDIR" > "$BASE/wrap.do"
     echo "Receta canonica en $SIMDIR (fuentes $FUENTES; Stata $STATA; ~80 min)..."
     T0=$(date +%s)
     ( cd "$SIMDIR" && "$STATA" -b do "$BASE/wrap.do" < /dev/null )
@@ -265,7 +278,7 @@ d = {
   "version": m["version"],
   "fuentes": fuentes,
   "stata": {"version": sv, "edicion": fl, "processors": 1},
-  "receta": "SIM.do (PE 2027) + SIM-local.do {nographs, output, update, fuentes} desde estado cero (sin master/, users/, raw/temp), batch `stata -b do`, `set processors 1`; ver runbook-deploys-ciep.md 9",
+  "receta": "SIM.do (PE 2027) con globals {nographs, output, update, fuentes} desde estado cero (sin master/, users/, raw/temp), batch `stata -b do`, `set processors 1`; ver runbook-deploys-ciep.md 9",
   "output_txt_sha256": sha(os.path.join(out, 'output.txt')),
   "sankeys_sha256": {k: sha(os.path.join(out, k)) for k in sorted(os.listdir(out)) if k.startswith('sankey-') and k.endswith('.json')},
   "commit": subprocess.run(['git', 'rev-parse', '--short', 'HEAD'], capture_output=True, text=True).stdout.strip(),
