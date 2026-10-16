@@ -1,5 +1,4 @@
 program define FiscalGap
-	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 quietly {
 
 	timer on 11

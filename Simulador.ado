@@ -37,7 +37,6 @@
 * en producción. legacy corre el bloque v1.x completo (lento) para comparaciones.
 
 program define Simulador, rclass
-	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 quietly {
 	timer on 7
 	syntax varname [if] [fweight/], ///
@@ -1167,7 +1166,6 @@ program graphpiramide
 end
 
 program define ProyGraph
-	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 
 	args varlist title aniope bootstrap nographs
 	if "`bootstrap'" == "" local bootstrap 1

@@ -44,7 +44,6 @@
 * c(sysdir_site). Alineado al merge de 8.6.0 (DIAGNOSTICO_NL.md, anexo F0-8.6.0).
 
 *** 0 GUARDAS (estado del motor vivo; sin él no hay validación posible) ***
-SIMroot
 local site `"${SIMROOT}"'
 foreach s in anioPE aniovp anioenigh pibY ISRASTE IVATE AportacionesNetasI incAportacionesNetasNac {
 	capture confirm scalar `s'

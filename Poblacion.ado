@@ -11,7 +11,6 @@
 *!***    Poblacion [if] [, ANIOinicial(int) ANIOFinal(int) NOGraphs UPDATE]
 *!*******************************************
 program define Poblacion, return
-	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 quietly {
 	timer on 2
 
@@ -646,7 +645,6 @@ end
 ****                                                                                ****
 ****************************************************************************************
 program define UpdatePoblacion
-	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 	noisily di in g "  Updating Poblacion.dta..." _newline
 
 	* FUENTE (v8.4.1). CONAPO, Conciliación Demográfica de México 1970-2019 y

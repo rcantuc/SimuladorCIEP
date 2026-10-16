@@ -9,7 +9,6 @@
 *!***                                    ****
 *!*******************************************
 program define SCN, return
-	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 quietly {
 	timer on 33
 
@@ -1139,7 +1138,6 @@ end
 
 
 program define UpdateSCN
-	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 
 	args update
 

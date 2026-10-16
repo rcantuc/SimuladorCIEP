@@ -25,7 +25,6 @@
 program define ensure_asset
     version 16
     syntax [anything(name=asset_name)] [, DIR(string)]
-    SIMroot                                     // raiz del proyecto (global SIMROOT, v8.4)
 
     * Quitar comillas externas si las hay
     local asset_name = subinstr(`"`asset_name'"', `"""', "", .)

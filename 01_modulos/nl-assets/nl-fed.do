@@ -31,7 +31,6 @@ if _rc {
 capture program drop _NLfedpy
 program define _NLfedpy
 	* Importa (o recarga) el módulo y ejecuta la llamada que viene como argumento *
-	SIMroot
 	python: import sys, importlib; sys.path.insert(0, r"""${SIMROOT}/01_modulos/nl-assets"""); import nl_fed; _r = importlib.reload(nl_fed); nl_fed.`0'
 end
 
@@ -55,7 +54,6 @@ end
 capture program drop _NLeopf
 program define _NLeopf, rclass
 	syntax , FONdos(string) [OFFline]
-	SIMroot
 	capture mkdir "${SIMROOT}/raw"
 	capture mkdir "${SIMROOT}/raw/temp"
 	capture mkdir "${SIMROOT}/raw/temp/EOPF"

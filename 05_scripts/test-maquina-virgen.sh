@@ -23,18 +23,13 @@
 #   --zip        (dinamico, ~1 min, sin red)  La via del ALUMNO (2026-10-05): ZIP de
 #                GitHub sin git, carpeta con nombre arbitrario y espacios, sin
 #                profile.do cargado, sin sysdir set SITE. Se arma una copia
-#                `git archive` del arbol en /tmp y se corre SIM.do en los tres
-#                modos de ejecucion reales: (1) `do` desde OTRA carpeta de
-#                trabajo -> debe detenerse con la instruccion en espanol (r(601));
-#                (2) carpeta de trabajo = el simulador (doble clic en SIM.do, o
-#                cd previo) con SIM_SMOKE=1 -> autolocalizacion OK y los .ado se
-#                encuentran despues de un cd (la clase de falla "command LIF is
-#                unrecognized"); (3) idem con profile.do presente (flujo del
-#                investigador). Desde v8.8.0 la logica vive en SIMroot v8.6 (opciones
-#                scheme y smoke; SIM.do 0.0 solo localiza la carpeta, mete el adopath
-#                y delega): SIM_SMOKE=1 lo lee SIMroot y SIM.do termina con r(smoke).
-#                Con --completo, el modo (2) corre SIM.do entero (descarga ~1.3 GB y
-#                construye todo: ~1 h) y exige TOUCH-DOWN.
+#                `git archive` del arbol en /tmp, se escribe la ruta de esa copia en
+#                la linea `global SIMROOT` de SIM.do (la unica instruccion que da el
+#                README al alumno) y se verifica que, con el setup de SIM.do 0
+#                (global + adopath + scheme), los .ado del motor se encuentran despues
+#                de un cd (la clase de falla "command LIF is unrecognized"). Con
+#                --completo, corre SIM.do entero (descarga ~1.3 GB y construye todo:
+#                ~1 h) y exige TOUCH-DOWN.
 #
 #   --reproducibilidad  (dinamico, ~80 min, sin red con --assets-locales)  La promesa
 #                de v8.8.0: la RECETA CANONICA (runbook-deploys-ciep.md 9) produce, en
@@ -156,53 +151,47 @@ if [[ "$MODE" == "zip" ]]; then
     fallas=0
     echo "ZIP sin git en: $ZIPDIR"
 
-    # (1) `do` desde OTRA carpeta de trabajo: debe detenerse con la instruccion, sin tocar nada
-    printf 'do "%s/SIM.do"\n' "$ZIPDIR" > "$BASE/otra-carpeta.do"
-    ( cd "$BASE" && "$STATA" -b do "$BASE/otra-carpeta.do" < /dev/null )
-    if grep -q "SIM.do: no encuentro la carpeta del Simulador" "$BASE/otra-carpeta.log" && grep -q "^r(601);" "$BASE/otra-carpeta.log"; then
-        echo "  (1) do desde otra carpeta de trabajo: se detiene con la instruccion en espanol (r(601))  OK"
-    else
-        echo "  (1) do desde otra carpeta de trabajo: NO dio el mensaje accionable; ver $BASE/otra-carpeta.log" >&2; fallas=$((fallas+1))
+    # Lo que hace el alumno: escribir su carpeta en la linea `global SIMROOT` de SIM.do
+    sed -e "s|^global SIMROOT \".*\"|global SIMROOT \"$ZIPDIR\"|" "$ZIPDIR/SIM.do" > "$ZIPDIR/SIM_zip.do"
+    if ! grep -qF "global SIMROOT \"$ZIPDIR\"" "$ZIPDIR/SIM_zip.do"; then
+        echo "ZIP: no se encontro la linea 'global SIMROOT \"...\"' en SIM.do para sustituirla." >&2; exit 1
     fi
+    mv "$ZIPDIR/profile.do" "$ZIPDIR/profile.do.off"   # sin profile.do: solo el setup de SIM.do 0
 
-    # (2) carpeta de trabajo = el simulador, SIN profile.do (doble clic en SIM.do / cd previo)
-    mv "$ZIPDIR/profile.do" "$ZIPDIR/profile.do.off"
-    ( cd "$ZIPDIR" && SIM_SMOKE=1 "$STATA" -b do SIM.do < /dev/null )
-    if grep -q "SIMroot: autolocalizaci.*OK" "$ZIPDIR/SIM.log" && ! grep -qE '^r\([0-9]+\);' "$ZIPDIR/SIM.log"; then
-        echo "  (2) carpeta de trabajo = simulador, sin profile.do: autolocalizacion y .ado visibles tras cd  OK"
+    # Humo: el setup de SIM.do 0 (global + adopath + scheme) y los .ado visibles tras un cd
+    {
+        printf 'global SIMROOT "%s"\nadopath ++ "${SIMROOT}"\nset scheme ciep\n' "$ZIPDIR"
+        printf 'capture mkdir "${SIMROOT}/raw"\ncapture mkdir "${SIMROOT}/raw/temp"\ncd "${SIMROOT}/raw/temp"\n'
+        for a in ensure_asset Poblacion PIBDeflactor SCN LIF PEF TasasEfectivas GastoPC perfilpc Simulador FiscalGap escalar; do
+            printf 'which %s\n' "$a"
+        done
+        printf 'di "SMOKE_OK"\n'
+    } > "$ZIPDIR/smoke.do"
+    ( cd "$ZIPDIR" && "$STATA" -b do smoke.do < /dev/null )
+    if grep -q "SMOKE_OK" "$ZIPDIR/smoke.log" && ! grep -qE '^r\([0-9]+\);' "$ZIPDIR/smoke.log"; then
+        echo "  (humo) global SIMROOT + adopath: scheme y .ado visibles tras cd  OK"
     else
-        echo "  (2) carpeta de trabajo = simulador, sin profile.do: FALLO; ver $ZIPDIR/SIM.log" >&2
-        grep -B3 -E 'unrecognized|^r\([0-9]+\);' "$ZIPDIR/SIM.log" | head -12 >&2; fallas=$((fallas+1))
-    fi
-    mv "$ZIPDIR/profile.do.off" "$ZIPDIR/profile.do"
-
-    # (3) idem CON profile.do (Stata arrancado en la carpeta: flujo del investigador)
-    rm -f "$ZIPDIR/SIM.log"
-    ( cd "$ZIPDIR" && SIM_SMOKE=1 "$STATA" -b do SIM.do < /dev/null )
-    if grep -q "SIMroot: autolocalizaci.*OK" "$ZIPDIR/SIM.log" && ! grep -qE '^r\([0-9]+\);' "$ZIPDIR/SIM.log"; then
-        echo "  (3) carpeta de trabajo = simulador, con profile.do: OK"
-    else
-        echo "  (3) con profile.do: FALLO; ver $ZIPDIR/SIM.log" >&2; fallas=$((fallas+1))
+        echo "  (humo) FALLO; ver $ZIPDIR/smoke.log" >&2
+        grep -B3 -E 'unrecognized|not found|^r\([0-9]+\);' "$ZIPDIR/smoke.log" | head -12 >&2; fallas=$((fallas+1))
     fi
 
     if [[ "$COMPLETO" == "true" && $fallas -eq 0 ]]; then
-        echo "  (2-completo) SIM.do entero sin profile.do ni SITE (descarga assets y construye; ~1 h)..."
-        mv "$ZIPDIR/profile.do" "$ZIPDIR/profile.do.off"
-        sed -e 's|^//global nographs|global nographs|' "$ZIPDIR/SIM.do" > "$ZIPDIR/SIM_zip.do"   # batch: sin ventana de graficas
+        echo "  (completo) SIM.do entero sin profile.do ni SITE (descarga assets y construye; ~1 h)..."
+        sed -i.bak -e 's|^//global nographs|global nographs|' "$ZIPDIR/SIM_zip.do"   # batch: sin ventana de graficas
         ( cd "$ZIPDIR" && "$STATA" -b do SIM_zip.do < /dev/null )
-        mv "$ZIPDIR/profile.do.off" "$ZIPDIR/profile.do"
         if grep -q "TOUCH-DOWN" "$ZIPDIR/SIM_zip.log" && ! grep -qE '^r\([0-9]+\);' "$ZIPDIR/SIM_zip.log"; then
-            echo "  (2-completo) TOUCH-DOWN  OK"
+            echo "  (completo) TOUCH-DOWN  OK"
         else
-            echo "  (2-completo) FALLO; ver $ZIPDIR/SIM_zip.log" >&2
+            echo "  (completo) FALLO; ver $ZIPDIR/SIM_zip.log" >&2
             grep -B4 -E '^r\([0-9]+\);' "$ZIPDIR/SIM_zip.log" | head -12 >&2; fallas=$((fallas+1))
         fi
     fi
+    mv "$ZIPDIR/profile.do.off" "$ZIPDIR/profile.do"
 
     if (( fallas > 0 )); then
         echo "ZIP SIN GIT: $fallas prueba(s) fallaron. Copia conservada en $BASE."; exit 1
     fi
-    echo "ZIP SIN GIT: las tres vias de ejecucion pasan (copia en $BASE; borrala cuando quieras)."
+    echo "ZIP SIN GIT: la via del alumno pasa (copia en $BASE; borrala cuando quieras)."
     exit 0
 fi
 
@@ -329,7 +318,7 @@ fi
 
 SITE="$(mktemp -d /tmp/simulador-virgen.XXXXXX)"
 mkdir -p "$SITE/05_scripts" "$SITE/raw/temp"
-cp ensure_asset.ado SIMroot.ado "$SITE/"
+cp ensure_asset.ado "$SITE/"
 cp 05_scripts/manifest.json "$SITE/05_scripts/"
 tag="$(python3 -c "import json;print(json.load(open('05_scripts/manifest.json'))['release_tag'])")"
 echo "SITE virgen: $SITE  (manifest $tag; raw/ vacio)"
@@ -339,7 +328,8 @@ echo "SITE virgen: $SITE  (manifest $tag; raw/ vacio)"
 {
     # Camino REAL del externo (v8.4): sin sysdir set SITE. Los .ado estan en el
     # adopath (aqui la carpeta misma; en un usuario real, PLUS via net install) y
-    # la raiz del proyecto la resuelve SIMroot como el directorio de trabajo.
+    # la raiz del proyecto es la global SIMROOT.
+    echo "global SIMROOT \"$SITE\""
     echo "adopath ++ \"$SITE\""
     echo "cd \"$SITE\""
     awk -F'\t' '$1!="TOTAL" && $3 ~ /\[dir\(/ {sub(/.*\[dir\(/,"",$3); sub(/\)\]$/,"",$3); print $3}' <<< "$cob" | sort -u \

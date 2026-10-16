@@ -38,7 +38,6 @@
 version 17										// candado: misma interpretación en Stata 17 (Mac) y 19.5 (runner Windows)
 
 *** 0 RAÍZ, LOG (procedencia), IDENTIDAD ***
-SIMroot
 local site `"${SIMROOT}"'
 if "$id" == "" global id = "`c(username)'"
 capture mkdir `"`site'/users"'

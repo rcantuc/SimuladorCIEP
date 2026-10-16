@@ -1,6 +1,5 @@
 *! version 8.1 CIEP 19jul2026
 program define PEF, return
-	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 	capture mkdir `"${SIMROOT}/users/"'
 	capture mkdir `"${SIMROOT}/users/$id/"'
 	capture mkdir `"${SIMROOT}/users/$id/graphs/"'
@@ -644,7 +643,6 @@ end
 ****                 ****
 *************************
 program define UpdatePEF
-	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 
 	*************************
 	*** 1. BASES DE DATOS ***

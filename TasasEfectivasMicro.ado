@@ -52,7 +52,6 @@
 * OJO: destruye los datos en memoria (carga perfiles<anio>.dta).
 
 program define TasasEfectivasMicro
-	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 quietly {
 	version 14
 	syntax [, ANIO(int -1) ENTidad(numlist integer min=1 >=1 <=32) SUFijo(string)]

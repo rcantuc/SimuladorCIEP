@@ -7,7 +7,6 @@
 *! Ejemplo: AccesoBIE 750453, nombres(PIBE) area(19)   <- indicador estatal, Nuevo León
 
 program define AccesoBIE
-	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 	version 17.0
 	
 	syntax anything(name=series) [, Nombres(string) Token(string) AREa(string)]

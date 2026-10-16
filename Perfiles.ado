@@ -1,5 +1,4 @@
 program define Perfiles
-	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 quietly {
 	timer on 7
 	syntax varname [if] [fweight/], ///
@@ -900,7 +899,6 @@ program graphpiramide
 end
 
 program define ProyGraph
-	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 
 	args varlist aniope bootstrap nographs
 

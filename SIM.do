@@ -7,26 +7,15 @@
 clear all
 macro drop _all
 capture log close _all
+timer on 1
+
 
 ***
 **# 0. SET UP
 ***
-** 0.0 Carpeta del simulador (v8.7.2; desde v8.8.0 la lógica vive en SIMroot v8.6) **
-* Huevo y gallina: SIMroot.ado no se puede ejecutar antes de encontrarlo. Aquí solo se
-* localiza la carpeta (la de trabajo —doble clic en SIM.do o cd previo— o el SITE del
-* sysprofile), se mete al adopath y se delega a SIMroot: validación, mensaje accionable,
-* set scheme ciep y prueba de humo (SIM_SMOKE=1 / opción smoke; test-maquina-virgen.sh --zip). *
-local simroot `"`c(pwd)'"'
-if !fileexists(`"`simroot'/SIMroot.ado"') local simroot = substr(`"`c(sysdir_site)'"', 1, length(`"`c(sysdir_site)'"') - 1)
-if !fileexists(`"`simroot'/SIMroot.ado"') {
-	display as error _newline `"SIM.do: no encuentro la carpeta del Simulador Fiscal CIEP (carpeta de trabajo actual: `c(pwd)')."'
-	display as error `"  Colócate en ella (File > Change Working Directory... o cd "<ruta>") y repite  do "SIM.do"  — README, «Inicio rápido para estudiantes»."'
-	exit 601
-}
-if !strpos(`"`c(adopath)'"', `"`simroot'"') quietly adopath ++ `"`simroot'"'	// los .ado se encuentran aunque un módulo haga cd
-SIMroot, dir(`"`simroot'"') scheme						// RAIZ DEL PROYECTO: valida la carpeta, set scheme ciep, smoke
-if "`r(smoke)'" == "1" exit								// prueba de humo: termina sin correr el pipeline
-timer on 1
+global SIMROOT "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP"				// CARPETA DEL REPOSITORIO
+adopath ++ "${SIMROOT}"
+set scheme ciep
 
 ** 0.1 Token del BIE/INEGI
 capture confirm file "${SIMROOT}/set_token.do"

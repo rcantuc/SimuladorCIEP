@@ -50,7 +50,7 @@ WRAP="$EVID/wrap-compuertas.do"
 {
     printf 'capture set processors 1\nset linesize 200\nsysdir set SITE "%s/"\nadopath ++SITE\ncd "%s"\ndi "STATA_VERSION=" c(stata_version) " PROCESSORS=" c(processors)\n' "$REPO_ROOT" "$REPO_ROOT"
     if [[ "$SIN_SIM" == "true" ]]; then
-        printf 'SIMroot\nglobal id "%s"\nrun "%s/SIM-local.do"\ndo "%s/escalares.do"\n' "$ID" "$REPO_ROOT" "$EVID"
+        printf 'global SIMROOT "%s"\nglobal id "%s"\nrun "%s/SIM-local.do"\ndo "%s/escalares.do"\n' "$REPO_ROOT" "$ID" "$REPO_ROOT" "$EVID"
     else
         printf 'do "%s/SIM.do"\n' "$REPO_ROOT"
     fi

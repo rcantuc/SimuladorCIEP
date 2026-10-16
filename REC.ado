@@ -1,5 +1,4 @@
 program define REC
-	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 quietly {
 	version 13.1
 	syntax varname, POBlacion(string) ANIObase(int) [BOOTstrap(int 1) POST title(string)]

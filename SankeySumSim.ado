@@ -1,5 +1,4 @@
 program define SankeySumSim
-	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 quietly {
 
 	** Anio valor presente **

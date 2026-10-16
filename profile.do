@@ -6,18 +6,15 @@
 * La raíz es la carpeta donde vive ESTE profile.do (el clon que Stata cargó),
 * no c(sysdir_site): SITE es el directorio de ado-files de la instalación de
 * Stata y solo coincide con el clon si sysprofile.do lo redefinió. findfile lo
-* localiza en el adopath; si falla, SIMroot decide (sysdir_site con manifest,
-* o el directorio actual).
+* localiza en el adopath; si falla, se usa el directorio actual.
 capture findfile profile.do
 if _rc == 0 {
 	local sim_pf `"`r(fn)'"'
 	mata: st_local("sim_root_dir", pathgetparent(st_local("sim_pf")))
-	if `"`sim_root_dir'"' == "" local sim_root_dir `"`c(pwd)'"'
-	SIMroot, dir(`"`sim_root_dir'"')
 }
-else {
-	SIMroot
-}
+if `"`sim_root_dir'"' == "" local sim_root_dir `"`c(pwd)'"'
+global SIMROOT `"`sim_root_dir'"'
+adopath ++ `"${SIMROOT}"'
 
 *********************
 ***               ***

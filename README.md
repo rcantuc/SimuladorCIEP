@@ -92,7 +92,7 @@ net install LIF
 
 Los programas disponibles son: `Poblacion`, `PIBDeflactor`, `SCN`, `SHRFSP`, `LIF`, `PEF`, `DatosAbiertos`, `AccesoBIE`. Una vez instalados, funcionan en tu Stata local igual que en el repositorio completo.
 
-Los datos (insumos oficiales en `raw/`, bases procesadas en `master/`, salidas en `users/`) se guardan en la **carpeta de trabajo** desde la que corres el primer comando (`cd "C:\Proyectos\Simulador"` antes de empezar; pesan varios GB). Para fijar otra carpeta o consultar la activa: `help SIMroot`.
+Los datos (insumos oficiales en `raw/`, bases procesadas en `master/`, salidas en `users/`) se guardan en la **carpeta de trabajo** desde la que corres el primer comando (`cd "C:\Proyectos\Simulador"` antes de empezar; pesan varios GB). Para fijar otra carpeta: `global SIMROOT "<ruta>"` antes del primer comando (en el repositorio completo la fija `SIM.do` §0 / `profile.do`).
 
 #### Opción C: Clonar el repositorio completo
 

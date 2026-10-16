@@ -1,6 +1,5 @@
 *! version 8.0 CIEP 03jul2026
 program define GastoPC, return
-	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 quietly {
 	// 0.1 Inicia un temporizador para medir el rendimiento
 	timer on 9

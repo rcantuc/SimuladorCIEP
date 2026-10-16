@@ -58,7 +58,7 @@ if "`c(os)'" == "Windows" {
 *
 * Desde v8.4 la RAÍZ DE DATOS del Simulador (raw/, master/, users/) ya no es
 * c(sysdir_site) sino la global SIMROOT, que profile.do fija a la carpeta del
-* clon que cargó (ver `help SIMroot`). El `sysdir set SITE` de arriba sigue
+* clon que cargó (profile.do §0). El `sysdir set SITE` de arriba sigue
 * siendo útil para que Stata encuentre los .ado y el profile.do del clon, pero
 * ya no es lo que decide dónde se escriben los datos.
 

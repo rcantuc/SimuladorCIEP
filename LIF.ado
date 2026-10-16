@@ -1,6 +1,5 @@
 *! version 8.1 CIEP 12sep2026
 program define LIF, return
-	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 quietly {
 	capture mkdir `"${SIMROOT}/users/"'
 	capture mkdir `"${SIMROOT}/users/$id/"'
@@ -600,7 +599,6 @@ end
 ****                 ****
 *************************
 program define UpdateLIF
-	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 
 	args update
 

@@ -20,6 +20,19 @@ Formato de cada entrada:
 
 Trabajo en `master` sin versión asignada.
 
+### Raíz del proyecto: se retira el comando `SIMroot` (2026-10-15)
+
+Decisión de Ricardo: la raíz del simulador es **una sola línea** en `SIM.do` §0, `global SIMROOT
+"<carpeta del repositorio>"`, seguida de `adopath ++ "${SIMROOT}"` y `set scheme ciep`. Se elimina
+`SIMroot.ado` (resolución en cuatro pasos, `dir()/reset/scheme/smoke`, validación de la carpeta,
+prueba de humo `SIM_SMOKE`), su ayuda y su `.pkg`; la línea `SIMroot` que abría cada `.ado` y los
+drivers NL desaparece (los comandos leen `${SIMROOT}` tal cual). `profile.do` fija el global con la
+carpeta donde vive (`findfile profile.do`; si falla, `c(pwd)`) y mete el adopath; `Web.Stata.do` lo
+fija desde SITE. `test-maquina-virgen.sh --zip` ahora sustituye la ruta en la línea `global SIMROOT`
+de la copia y comprueba que los `.ado` se ven tras un `cd`; `compuertas-entidad.sh --sin-sim` y
+`verificar-runner.ps1` dejan de invocar el comando. Los `.pkg` del endpoint ya no arrastran
+`SIMroot.ado`.
+
 ### Ciclo de vida de entidad: `CicloEntidad.do` (PR feat/ciclo-entidad, 2026-10-11)
 
 Decisión de Ricardo (2026-10-11): el espejo NL deja de mostrar los cortes grupoedad y sexo y muestra

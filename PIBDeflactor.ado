@@ -9,7 +9,6 @@
 *!***                                    ****
 *!*******************************************
 program define PIBDeflactor, return
-	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 quietly {
 	timer on 3
 
@@ -934,7 +933,6 @@ end
 **** Base de datos: PIBDeflactor.dta ****
 *****************************************
 program define UpdatePIBDeflactor
-	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 	noisily di in g "  Updating PIBDeflactor.dta..." _newline
 
 	args nographs

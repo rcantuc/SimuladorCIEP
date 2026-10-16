@@ -1,6 +1,5 @@
 *! version 8.2 CIEP 06oct2026
 program define DatosAbiertos, return
-	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 quietly {
 
 	** 0.1 Revisa si se puede usar la base de datos **
@@ -421,7 +420,6 @@ end
 
 
 program define UpdateDatosAbiertos, return
-	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 
 	syntax [, UPDATE ZIPFILE CSVFILE LOCal]
 
@@ -929,7 +927,6 @@ end
 **** Base de datos: Deflactor.dta ****
 **************************************
 program define UpdateDeflactor
-	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 quietly {
 	noisily di in g "  Updating Deflactor.dta..." _newline
 

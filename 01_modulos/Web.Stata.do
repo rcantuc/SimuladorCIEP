@@ -22,7 +22,7 @@ if "`c(username)'" == "ricardo" {						// Mac
 else {
 	sysdir set SITE "/SIM/OUT/current/"
 }
-SIMroot, dir("`c(sysdir_site)'")						// RAIZ DEL PROYECTO explícita (global SIMROOT, v8.4); SITE se conserva para el adopath
+global SIMROOT = substr("`c(sysdir_site)'", 1, length("`c(sysdir_site)'") - 1)	// RAIZ DEL PROYECTO (sin diagonal final); SITE se conserva para el adopath
 cd "${SIMROOT}/users/$id"
 
 

@@ -5,7 +5,7 @@
 * la CAPA NL desde 01_modulos/nl-assets/nl-manifest.json. Nada se escribe a
 * mano: si un manifiesto falta, la versión sale vacía y se declara.
 *
-* Uso (desde un driver de la capa NL, tras SIMroot):
+* Uso (desde un driver de la capa NL, con $SIMROOT fijado):
 *   run "${SIMROOT}/01_modulos/nl-assets/nl-identidad.do"
 *   _NLidentidad, modulo("Población")          // imprime el encabezado
 *   local vmotor `r(version_motor)'            // p. ej. v8.6.0
@@ -19,7 +19,6 @@
 capture program drop _NLidentidad
 program define _NLidentidad, rclass
 	syntax [, MODulo(string) Quietly]
-	SIMroot
 	local q = char(34)
 
 	* Versión del motor (manifest.json; misma regex que scalarjson.ado) *

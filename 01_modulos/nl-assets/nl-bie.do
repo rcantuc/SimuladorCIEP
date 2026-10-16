@@ -62,7 +62,6 @@ end
 capture program drop _NLbie
 program define _NLbie, rclass
 	syntax anything(name=indicador) , AREa(string) NOMbre(name) [OFFline]
-	SIMroot
 	capture mkdir "${SIMROOT}/raw"
 	capture mkdir "${SIMROOT}/raw/temp"
 	capture mkdir "${SIMROOT}/raw/temp/AccesoBIE"
@@ -141,7 +140,6 @@ end
 capture program drop _NLinpc
 program define _NLinpc, rclass
 	syntax anything(name=serie) , ESTructura(string) NOMbre(name) [OFFline]
-	SIMroot
 	capture mkdir "${SIMROOT}/raw"
 	capture mkdir "${SIMROOT}/raw/temp"
 	capture mkdir "${SIMROOT}/raw/temp/AccesoBIE"

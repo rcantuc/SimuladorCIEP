@@ -1,6 +1,5 @@
 *! version 8.0 CIEP 03jul2026
 program define TasasEfectivas, return
-	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 quietly {
 
 	timer on 8

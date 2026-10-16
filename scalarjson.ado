@@ -51,7 +51,6 @@
 * procedencia para que un diff de una sola linea lo distinga del contenido.
 
 program define scalarjson
-	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 	version 14
 
 	syntax , NODO(string) SERIE(string) ///

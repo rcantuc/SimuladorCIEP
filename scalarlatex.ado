@@ -23,7 +23,6 @@
 * Solo cambia el nombre del lado LaTeX; en Stata el escalar conserva su nombre.
 
 program define scalarlatex
-	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 
 	if "$export" != "" {
 		syntax [, Logname(string) ALTname(string)]

@@ -1,5 +1,4 @@
 program define CuentasGeneracionales, rclass
-	SIMroot										// raiz del proyecto (global SIMROOT, v8.4)
 quietly {
 	timer on 10
 	version 13.1
