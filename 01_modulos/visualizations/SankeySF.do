@@ -14,54 +14,42 @@ if "`1'" == "" {
 *     motor (Households.do §12: ingreso bruto del hogar por integrante, xtile n(5) con
 *     pw = factor/integrantes): P2 = la construcción sellada del sprint NL (C1, 2026-10-08);
 *   - los renglones per cápita usan la población ENIGH de la entidad con su fórmula actual
-*     (pobtot) y los renglones "% PIB × pibY" se reparten por población (supuesto S-P3,
-*     $entidad_macro "pob" | "omitir"; pendiente de firma en el CHANGELOG);
+*     (pobtot) y los renglones "% PIB × pibY" se reparten por población (supuesto S-P3);
+*   - las cuotas IMSS van dentro de "Imp al trabajo", como en el nacional;
 *   - los outputs van a users/$id/<ABREV>/ con los mismos nombres (P1, SankeySumSim folder());
 *   - cada enlace micro lleva su banda de vintages ENIGH (P4: participación de la celda de la
 *     entidad en el total nacional de la familia, observada en users/$id-v<t>/aportaciones.dta,
 *     × total nacional vigente; mín/máx = halo, el vigente = punto) y sus sellos de muestra
-*     (P5: n < $sello_n personas o concTop1 > $sello_top1 %) como campos del JSON.
+*     (P5: n < 100 personas o concTop1 > 25 %) como campos del JSON.
+* Cuarto argumento opcional = vintages de la banda: vacío = 2016-2024 (los que existan);
+* "0" = sin banda (lo usa compuertas-entidad.do para las 31 entidades que no son la de la sesión).
 * Sin tercer argumento no se ejecuta ni una línea de los bloques de entidad. *
 local entidad : subinstr local 3 `"""' "", all		// el argumento de un do-file llega con sus comillas
 local entidad = trim(`"`entidad'"')
-local cuotas_spec ""
 local sankey_extra ""
 if `"`entidad'"' != "" {
 	SIMentidad `"`entidad'"'
 	local enombre `"`r(nombre)'"'
 	local eclave "`r(clave)'"
 	local eabrev "`r(abrev)'"
-	local sello_n = cond("$sello_n" == "", 100, real("$sello_n"))
-	local sello_top1 = cond("$sello_top1" == "", 25, real("$sello_top1"))
-	local macro_regla = cond("$entidad_macro" == "", "pob", "$entidad_macro")
-	if !inlist("`macro_regla'", "pob", "omitir") {
-		di as err `"SankeySF: global entidad_macro "`macro_regla'" no es "pob" ni "omitir" (SIM.do §0.4)."'
-		exit 198
-	}
-	local cuotas_aparte = ("$entidad_cuotas" == "aparte")
-	local vintages "2016 2018 2020 2022 2024"
-	if "$entidad_vintages" == "0" local vintages ""
-	else if "$entidad_vintages" != "" local vintages "$entidad_vintages"
+	local sello_n = 100
+	local sello_top1 = 25
+	local vintages : subinstr local 4 `"""' "", all
+	local vintages = trim(`"`vintages'"')
+	if "`vintages'" == "" local vintages "2016 2018 2020 2022 2024"
+	else if "`vintages'" == "0" local vintages ""
 
 	* Familias micro de cada eje: variable de aportaciones.dta y el sufijo con el que el
 	* reshape de abajo las nombra (etiqueta del nodo con "_" por espacio; los "_" iniciales
-	* solo ordenan). Cuotas aparte (P5, regla NL): nodo propio y se restan de Imp al trabajo. *
+	* solo ordenan). *
 	local fams1 "AlTrabajo AlConsumo AlCapital"
 	local sufs1 "Imp_al_trabajo _Imp_al_consumo __Imp_al_capital"
-	if `cuotas_aparte' {
-		local fams1 "`fams1' CUOTAS_Sim"
-		local sufs1 "`sufs1' ___Cuotas_IMSS"
-		local cuotas_spec "ing____Cuotas_IMSS=CUOTAS_Sim"
-	}
 	local fams4 "Educacion Salud Pensiones IngBasico OtrasInversiones"
 	local sufs4 "Educación Salud __Pensiones ___Transferencias ___Inversión"
 
 	* Totales nacionales vigentes (base completa, sin filtrar): población ENIGH y Σ familia *
 	quietly {
-		local uvars "factor CUOTAS_Sim `fams1' `fams4'"
-		local uvars : list uniq uvars
-		use `uvars' using `"${SIMROOT}/users/$id/aportaciones.dta"', clear
-		if `cuotas_aparte' replace AlTrabajo = AlTrabajo - CUOTAS_Sim
+		use factor `fams1' `fams4' using `"${SIMROOT}/users/$id/aportaciones.dta"', clear
 		summarize factor, meanonly
 		local pobnac = r(sum)
 		foreach e in 1 4 {
@@ -100,7 +88,7 @@ if `"`entidad'"' != "" {
 	* escribe como campos del enlace; devuelve r(vintages) usados y r(celdas) (JSON). *
 	capture program drop _SFsellos
 	program define _SFsellos, rclass
-		syntax, CORTE(string) FAMS(string) SUFS(string) CLAVE(string) APARTE(integer) ///
+		syntax, CORTE(string) FAMS(string) SUFS(string) CLAVE(string) ///
 			NACVIG(string) SELLON(real) SELLOTOP1(real) OUT(string) IDV(string) [VINTAGES(string)]
 		preserve
 		local nf : word count `fams'
@@ -150,7 +138,6 @@ if `"`entidad'"' != "" {
 				}
 				local cvar = cond("`corte'" == "quintil", "", "`corte'")
 				local uvars "folioviv foliohog factor edad ingbrutotot `cvar' `fams'"
-				if `aparte' local uvars "`uvars' AlTrabajo CUOTAS_Sim"
 				local uvars : list uniq uvars
 				capture use `uvars' using `"`base'"', clear
 				if _rc {
@@ -163,7 +150,6 @@ if `"`entidad'"' != "" {
 					}
 					rename factor_hog factor
 				}
-				if `aparte' replace AlTrabajo = AlTrabajo - CUOTAS_Sim
 				forvalues i = 1/`nf' {
 					local f : word `i' of `fams'
 					g double w_`i' = `f'*factor
@@ -216,23 +202,20 @@ PIBDeflactor, anio(`2') nographs nooutput
 ** Eje 1: Generación del ingreso **
 use `"${SIMROOT}/users/$id/aportaciones.dta"', clear
 if `"`entidad'"' != "" {
-	if `cuotas_aparte' replace AlTrabajo = AlTrabajo - CUOTAS_Sim
 	_SFentidad `eclave' `1'
 	tempfile sellos1
-	_SFsellos, corte(`1') fams(`fams1') sufs(`sufs1') clave(`eclave') aparte(`cuotas_aparte') ///
+	_SFsellos, corte(`1') fams(`fams1') sufs(`sufs1') clave(`eclave') ///
 		vintages(`vintages') nacvig(`nacvig1') sellon(`sello_n') sellotop1(`sello_top1') out(`sellos1') idv($id)
 	local vint_usados "`r(vintages)'"
 	local vint_omitidos "`r(omitidos)'"
 	local celdas `"`r(celdas)'"'
 	summarize factor, meanonly
 	local pobent = r(sum)
-	local eshare = `pobent'/`pobnac'
-	local eshare1 = cond("`macro_regla'" == "pob", `eshare', 0)	// renglones % PIB × pibY (S-P3)
-	local eshare4 = cond("`macro_regla'" == "pob", 1, 0)			// renglones per cápita: pobtot ya es el de la entidad
-	noisily di _newline in g "  Sankey de entidad: " in y "`enombre'" in g " (`eabrev', clave `eclave') {c -} corte " in y "`1'" in g ", población ENIGH " in y %12.0fc `pobent' in g " (" in y %5.2f `eshare'*100 in g " % del nacional), renglones macro: " in y "`macro_regla'" in g ", cuotas: " in y "`=cond(`cuotas_aparte', "aparte", "en Imp al trabajo")'" in g ", banda ENIGH: " in y "`=cond("`vint_usados'" == "", "sin banda", trim("`vint_usados'"))'" in g ", sellos n<`sello_n' | top1>`sello_top1' %."
+	local eshare = `pobent'/`pobnac'								// renglones % PIB × pibY se reparten por población (S-P3); los per cápita ya usan pobtot de la entidad
+	noisily di _newline in g "  Sankey de entidad: " in y "`enombre'" in g " (`eabrev', clave `eclave') {c -} corte " in y "`1'" in g ", población ENIGH " in y %12.0fc `pobent' in g " (" in y %5.2f `eshare'*100 in g " % del nacional), banda ENIGH: " in y "`=cond("`vint_usados'" == "", "sin banda", trim("`vint_usados'"))'" in g ", sellos n<`sello_n' | top1>`sello_top1' %."
 }
 collapse (sum) ing_Imp_al_trabajo=AlTrabajo ing__Imp_al_consumo=AlConsumo ///
-	ing___Imp_al_capital=AlCapital /*ing____FMP=FMP_Sim*/ `cuotas_spec' [fw=factor], by(`1')
+	ing___Imp_al_capital=AlCapital /*ing____FMP=FMP_Sim*/ [fw=factor], by(`1')
 
 * to *
 tempvar to
@@ -259,7 +242,7 @@ rename `1' from
 set obs `=_N+1'
 replace from = 99 in -1
 replace profile = (IMSSPIB+ISSSTEPIB)/100*scalar(pibY) in -1
-if `"`entidad'"' != "" replace profile = profile*`eshare1' in -1
+if `"`entidad'"' != "" replace profile = profile*`eshare' in -1
 replace to = 99 in -1
 label define to 99 "Empresas públicas", add
 label define `1' 99 "IMSS, ISSSTE", add
@@ -275,7 +258,7 @@ label define `1' 98 "CFE", add
 set obs `=_N+1'
 replace from = 97 in -1
 replace profile = (PEMEXPIB+CFEPIB)/100*scalar(pibY) in -1
-if `"`entidad'"' != "" replace profile = profile*`eshare1' in -1
+if `"`entidad'"' != "" replace profile = profile*`eshare' in -1
 replace to = 99 in -1
 label define `1' 97 "Pemex, CFE", add
 
@@ -283,7 +266,7 @@ label define `1' 97 "Pemex, CFE", add
 set obs `=_N+1'
 replace from = 97 in -1
 replace profile = FMPPIB/100*scalar(pibY) in -1
-if `"`entidad'"' != "" replace profile = profile*`eshare1' in -1
+if `"`entidad'"' != "" replace profile = profile*`eshare' in -1
 replace to = 100 in -1
 label define to 100 "FMP", add
 
@@ -304,7 +287,7 @@ use `"${SIMROOT}/users/$id/aportaciones.dta"', clear
 if `"`entidad'"' != "" {
 	_SFentidad `eclave' `1'
 	tempfile sellos4
-	_SFsellos, corte(`1') fams(`fams4') sufs(`sufs4') clave(`eclave') aparte(0) ///
+	_SFsellos, corte(`1') fams(`fams4') sufs(`sufs4') clave(`eclave') ///
 		vintages(`vintages') nacvig(`nacvig4') sellon(`sello_n') sellotop1(`sello_top1') out(`sellos4') idv($id)
 }
 
@@ -399,9 +382,6 @@ replace from = 96 in -5
 replace profile = scalar(gascosdeuePC)*`pobtot'[1,1] in -5
 
 replace to = 14 in -5
-
-* Entidad: renglones per cápita × población ENIGH de la entidad (fórmula actual) u omitidos (S-P3) *
-if `"`entidad'"' != "" replace profile = profile*`eshare4' in -5/-1
 
 
 * Gasto total */
@@ -501,7 +481,7 @@ save `eje3'
 ** Sankey **
 if `"`entidad'"' != "" {
 	* Metadatos del JSON de entidad (sin espacios ni paréntesis: "_" = espacio tras el filtro de SankeySumSim) *
-	local meta `"entidad:{nombre:"`=subinstr(`"`enombre'"', " ", "_", .)'",clave:"`eclave'",abrev:"`eabrev'",corte:"`1'`=cond("`1'" == "quintil", "_estatal", "")'",anio:"`2'",pobEnt:"`pobent'",pobNac:"`pobnac'",macro:"`macro_regla'",cuotas:"`=cond(`cuotas_aparte', "aparte", "en_Imp_al_trabajo")'",selloN:"`sello_n'",selloTop1:"`sello_top1'",vintages:"`=subinstr(trim("`vint_usados'"), " ", "_", .)'",vintagesOmitidos:"`=subinstr(trim("`vint_omitidos'"), " ", "_", .)'",celdas:[`celdas']}"'
+	local meta `"entidad:{nombre:"`=subinstr(`"`enombre'"', " ", "_", .)'",clave:"`eclave'",abrev:"`eabrev'",corte:"`1'`=cond("`1'" == "quintil", "_estatal", "")'",anio:"`2'",pobEnt:"`pobent'",pobNac:"`pobnac'",macro:"pob",cuotas:"en_Imp_al_trabajo",selloN:"`sello_n'",selloTop1:"`sello_top1'",vintages:"`=subinstr(trim("`vint_usados'"), " ", "_", .)'",vintagesOmitidos:"`=subinstr(trim("`vint_omitidos'"), " ", "_", .)'",celdas:[`celdas']}"'
 	local sankey_extra `"folder(`eabrev') meta(`"`meta'"')"'
 }
 noisily SankeySumSim, anio(`2') name(`1') a(`eje1') b(`eje2') c(`eje3') d(`eje4') `sankey_extra'

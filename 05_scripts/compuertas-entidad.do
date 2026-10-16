@@ -13,7 +13,7 @@
 *   Los números se comparan en compuertas-entidad.py (lee los JSON); aquí solo se producen.
 *
 * USO: do "${SIMROOT}/05_scripts/compuertas-entidad.do" "<carpeta de evidencia>"
-* OJO: destruye los datos en memoria; respeta los globals de la sesión (entidad_macro, entidad_cuotas, sello_*).
+* OJO: destruye los datos en memoria.
 
 local evidencia `"`1'"'
 if `"`evidencia'"' == "" {
@@ -24,22 +24,21 @@ capture mkdir `"`evidencia'"'
 timer clear 8
 timer on 8
 SIMentidad
-local vint_sesion "$entidad_vintages"
 
 *** 1 Las 32 entidades × 5 cortes ***
+* La banda de vintages (4.º argumento de SankeySF.do) solo se calcula para la entidad de la
+* sesión; las otras 31 van sin banda ("0") para no recorrer los cinco vintages 31 veces. *
 noisily di _newline in g "{bf:compuertas-entidad 1/2: Sankey de entidad para las 32 entidades (quintil estatal, grupoedad, sexo, rural, escol)}"
 local j = 1
 foreach ent of global entidadesL {
 	if `j' > 32 continue, break
-	if `"`ent'"' == `"$entidad"' global entidad_vintages "`vint_sesion'"
-	else global entidad_vintages "0"
+	local vint = cond(`"`ent'"' == `"$entidad"', "", "0")
 	foreach k in quintil grupoedad sexo rural escol {
-		quietly run "${SIMROOT}/01_modulos/visualizations/SankeySF.do" `k' `=anioPE' `"`ent'"'
+		quietly run "${SIMROOT}/01_modulos/visualizations/SankeySF.do" `k' `=anioPE' `"`ent'"' "`vint'"
 	}
 	noisily di in g "  `j'/32 " in y `"`ent'"' in g " listo."
 	local ++j
 }
-global entidad_vintages "`vint_sesion'"
 
 *** 2 Testigo NL: 90 celdas dis<fam>nle<dec> por decil estatal ***
 noisily di _newline in g "{bf:compuertas-entidad 2/2: reconstrucción de dis<fam>nle<dec> (Nuevo León, decil estatal)}"

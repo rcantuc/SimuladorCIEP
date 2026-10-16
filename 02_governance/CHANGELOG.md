@@ -33,6 +33,19 @@ de la copia y comprueba que los `.ado` se ven tras un `cd`; `compuertas-entidad.
 `verificar-runner.ps1` dejan de invocar el comando. Los `.pkg` del endpoint ya no arrastran
 `SIMroot.ado`.
 
+### `SIM.do` §0.4 sin parámetros de entidad ni `bootstrap` (2026-10-15)
+
+Decisión de Ricardo (minimalismo): los siete globals opcionales que documentaba §0.4 dejan de
+existir. `entidad_vintages`, `entidad_macro`, `entidad_cuotas`, `sello_n`, `sello_top1` y
+`entidad_ciclo_grupos` se **congelan en su default** dentro de `SankeySF.do` y `CicloEntidad.do`
+(banda ENIGH 2016-2024, renglones macro por población —se firma `pob`—, cuotas IMSS dentro de
+"Imp al trabajo" como el nacional —se retira la rama `aparte`—, sellos n<100 / top1>25 %, series
+por deciles nacionales); la banda pasa a ser el 4.º argumento de `SankeySF.do` para que
+`compuertas-entidad.do` siga omitiéndola en las 31 entidades que no son la de la sesión.
+`bootstrap` deja de ser global: `SIM.do` §7 usa `bootstrap(1)` y `PerfilesSim.do` `bootstrap(250)`
+(EE e IC 95 % en los perfiles; el ancla de reproducibilidad deberá re-declararse). `fuentes` sigue existiendo (receta canónica
+del ancla) pero solo se declara en `SIM-local.do`. Con `$entidad` vacío el nacional no cambia.
+
 ### Ciclo de vida de entidad: `CicloEntidad.do` (PR feat/ciclo-entidad, 2026-10-11)
 
 Decisión de Ricardo (2026-10-11): el espejo NL deja de mostrar los cortes grupoedad y sexo y muestra

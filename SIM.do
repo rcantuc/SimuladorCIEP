@@ -18,14 +18,11 @@ adopath ++ "${SIMROOT}"
 set scheme ciep
 
 ** 0.1 Token del BIE/INEGI
-capture confirm file "${SIMROOT}/set_token.do"
-if _rc == 0 {
-	run "${SIMROOT}/set_token.do"
-}
-else {
-	display as text "Nota: set_token.do no encontrado." ///
-		"AccesoBIE requiere el token." ///
+capture run "${SIMROOT}/set_token.do"
+if _rc != 0 {
+	noisily di _newline in r "Archivo set_token.do no encontrado. " ///
 		"Copia set_token.template.do como set_token.do y configúralo."
+	exit
 }
 
 ** 0.2 Parámetros
@@ -40,25 +37,19 @@ capture mkdir "${SIMROOT}/users/$id"
 
 ** 0.4 Opciones (descomentar para activar)
 //global nographs "nographs"						// SUPRIMIR GRAFICAS
-global bootstrap 1									// RÉPLICAS BOOTSTRAP de Simulador (PerfilesSim, §6): 1 = sin EE, rápido (producción); 100 = EE e IC 95% por UPM-estrato (~25 s por variable)
 //global textbook "textbook"						// SCALAR TO LATEX
 //global export "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/UniversoCIEP/3. Recursos/3.1. Paquetes Económicos/Paquete Económico 2027/4. Documento CIEP/images"
 
 //global rawwip "rawwip"							// RAW EN WORK-IN-PROGRESS
 //global update "update"							// UPDATE BASES DE DATOS
-//global fuentes "2026-10-06"						// FUENTES VIVAS CONGELADAS (INEGI BIE/CSI y SHCP) a esa fecha: asset fuentes-AAAA-MM-DD.zip del release (runbook-deploys-ciep.md §9); vacío = descargas en vivo
-//global entidad "Nuevo León"						// ENTIDAD FEDERATIVA (2026-10-10): nombre exacto de $entidadesL (SIMentidad). Vacío = solo nacional, byte-idéntico al ancla. Con entidad: Poblacion de la entidad (§1) y Sankey por quintil ESTATAL + cortes en users/$id/<ABREV>/ (§8.2); runbook-deploys-ciep.md §9.7
-//global entidad_vintages "2016 2018 2020 2022 2024"	// BANDA del Sankey de entidad: vintages ENIGH en users/$id-v<t>/aportaciones.dta (los que existan); vacío = los cinco; "0" = sin banda
-//global entidad_macro "pob"							// RENGLONES MACRO del Sankey de entidad (supuesto S-P3, pendiente de firma): "pob" = nacional × población ENIGH de la entidad / nacional; "omitir" = no se dibujan
-//global entidad_cuotas "aparte"						// CUOTAS IMSS en el Sankey de entidad: vacío = dentro de "Imp al trabajo" (como el nacional); "aparte" = nodo propio "Cuotas IMSS" (regla heredada de la paleta NL, P5)
-//global sello_n 100									// SELLO DE MUESTRA (Sankey de entidad): n mínimo de personas con el flujo en la celda; default 100 (regla NL, P5)
-//global sello_top1 25								// SELLO DE CONCENTRACIÓN (Sankey de entidad): % máximo de una persona en el flujo de la celda; default 25 (regla NL, P5)
-//global entidad_ciclo_grupos "decil"				// SERIES de la gráfica de ciclo de vida de entidad (2026-10-11, users/$id/<ABREV>/ciclo-vida.json): "decil" = grupos de deciles NACIONALES I-V/VI-IX/X como el nacional (default); "quintil" = quintil ESTATAL I…V (P2); "ninguno" = una sola serie
+
+//global entidad "Nuevo León"						// ENTIDAD FEDERATIVA. Vacío = Nacional
+
 //global output "output"							// ARCHIVO DE SALIDA (WEB)
 //global hasta "3"									// PARO TEMPRANO: termina al cerrar la sección indicada (1-7)
 
 ** 0.5 Panel local (v8.8.0): SIM-local.do, NO versionado (gitignored), sobreescribe
-* los toggles de 0.4 de quien corre (output, bootstrap, paros tempranos...). Sin el
+* los toggles de 0.4 de quien corre (output, fuentes congeladas, paros tempranos...). Sin el
 * archivo, el comportamiento es byte-idéntico. Plantilla: SIM-local.template.do. *
 capture confirm file "${SIMROOT}/SIM-local.do"
 if _rc == 0 run "${SIMROOT}/SIM-local.do"
@@ -506,7 +497,7 @@ foreach k of varlist /*AlTrabajo AlCapital AlConsumo ///
 	Pensiones IngBasico Educacion Salud OtrosGastos Energia ///
 	ImpuestosAportaciones Transferencias*/ AportacionesNetas {
 	*noisily Perfiles `k' if `k' != 0 [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
-	noisily Simulador `k' if `k' != 0 [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot title("") bootstrap($bootstrap)
+	noisily Simulador `k' if `k' != 0 [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot title("") bootstrap(1)
 }
 save `"${SIMROOT}/users/$id/aportaciones.dta"', replace
 

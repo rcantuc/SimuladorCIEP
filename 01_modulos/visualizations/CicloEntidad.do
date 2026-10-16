@@ -34,18 +34,16 @@
 *     pct    % del neto total de la ENTIDAD (Σ celdas = 100)
 *     pct_nac % del neto total NACIONAL (Σ de las 32 entidades, celda a celda = APORT* del output.txt)
 *     top1_aporta, top1_recibe  % del aporta (del recibe) de la celda que pone UNA sola persona
-*     sello  1 si n < $sello_n (default 100) o top1_* > $sello_top1 (default 25): regla P5 de
-*            SankeySF.do; la celda se DECLARA delgada o concentrada, no se suaviza
+*     sello  1 si n < 100 o top1_* > 25 %: regla P5 de SankeySF.do; la celda se DECLARA
+*            delgada o concentrada, no se suaviza
 *     grupos desglose por grupo de deciles (mismos campos, sin top1)
 *   La rejilla es completa (23 quinquenios × 2 sexos × grupos): las celdas sin muestra van con
 *   n = 0 y ceros, nunca se omiten (sin huecos silenciosos).
 *
-* PARÁMETROS (SIM.do §0.4, todos con default):
-*   $entidad_ciclo_grupos  "decil" (default) = grupos de deciles NACIONALES I-V / VI-IX / X, como el
-*                          nacional; "quintil" = quintil ESTATAL I…V (re-ranking de SankeySF.do, P2);
-*                          "ninguno" = una sola serie (Total)
-*   $sello_n               umbral del sello de muestra por celda quinquenio × sexo (default 100)
-* FLAGs abiertos (CHANGELOG Unreleased): grupos por default, definición de n, nombre del archivo.
+* Series: grupos de deciles NACIONALES I-V / VI-IX / X, como el nacional (local grupos = "decil";
+* el código conserva "quintil" = quintil ESTATAL y "ninguno" = una sola serie por si se decide
+* cambiar). Sellos: n < 100 personas por celda quinquenio × sexo, top1 > 25 %.
+* FLAGs abiertos (CHANGELOG Unreleased): definición de n, nombre del archivo.
 
 timer on 12
 local anio = `1'
@@ -59,13 +57,9 @@ SIMentidad `"`entidad'"'
 local enombre `"`r(nombre)'"'
 local eclave "`r(clave)'"
 local eabrev "`r(abrev)'"
-local sello_n = cond("$sello_n" == "", 100, real("$sello_n"))
-local sello_top1 = cond("$sello_top1" == "", 25, real("$sello_top1"))
-local grupos = cond("$entidad_ciclo_grupos" == "", "decil", "$entidad_ciclo_grupos")
-if !inlist("`grupos'", "decil", "quintil", "ninguno") {
-	di as err `"CicloEntidad: global entidad_ciclo_grupos "`grupos'" no es "decil", "quintil" ni "ninguno" (SIM.do §0.4)."'
-	exit 198
-}
+local sello_n = 100
+local sello_top1 = 25
+local grupos "decil"
 
 quietly {
 	***********************************************************
