@@ -40,7 +40,7 @@ capture mkdir "${SIMROOT}/users/$id"
 //global textbook "textbook"						// SCALAR TO LATEX
 //global export "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/UniversoCIEP/3. Recursos/3.1. Paquetes Económicos/Paquete Económico 2027/4. Documento CIEP/images"
 //global rawwip "rawwip"							// RAW EN WORK-IN-PROGRESS
-global hasta "3"									// PARO TEMPRANO
+//global hasta "3"									// PARO TEMPRANO
 
 ** 0.5 Entidad federativa
 global entidad "Nuevo León"							// ENTIDAD FEDERATIVA. Vacío = Nacional
@@ -113,7 +113,7 @@ global inf2032 = 3.0
 
 ** 2.4 PIB + Deflactores
 noisily PIBDeflactor `ifentidad', aniovp(`=aniovp') aniomax(2032) $textbook $nographs $update
-ex
+
 ** 2.5 Sistema de Cuentas Nacionales (sin inputs)
 noisily SCN, anio(`=aniovp') $textbook $nographs $update
 if "$hasta" == "2" exit
@@ -514,9 +514,6 @@ if "$entidad" != "" {									// entidad (2026-10-10): mismos cortes, con el dec
 **** Touchdown!!!
 ****
 timer off 1
-timer list 1
-noisily di _newline(2) in g _dup(20) ":" "  " in y "TOUCH-DOWN!!!  " round(`=r(t1)/r(nt1)',.1) in g " segs  " _dup(20) ":"
-if "$output" == "output" run "${SIMROOT}/01_modulos/output.do"
 timer list 1
 noisily di _newline(2) in g _dup(20) ":" "  " in y "TOUCH-DOWN!!!  " round(`=r(t1)/r(nt1)',.1) in g " segs  " _dup(20) ":"
 if "$output" == "output" run "${SIMROOT}/01_modulos/output.do"
