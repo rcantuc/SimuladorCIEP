@@ -43,7 +43,7 @@ capture mkdir "${SIMROOT}/users/$id"
 //global hasta "3"									// PARO TEMPRANO
 
 ** 0.5 Entidad federativa
-global entidad "Nuevo León"							// ENTIDAD FEDERATIVA. Vacío = Nacional
+//global entidad "Nuevo León"   // edición local; el default versionado es vacío (nacional)
 if "$entidad" != "" {
 	SIMentidad "$entidad"
 	global entidad "`r(nombre)'"

@@ -756,7 +756,7 @@ if [[ "$CHECK_MODE" == "true" ]]; then
         log_error "--check: $GATE_FAILURES gate(s) fallaron para $VERSION."
         exit 1
     fi
-    log_info "--check: los 9 gates pasaron para $VERSION."
+    log_info "--check: los 8 gates pasaron para $VERSION."
     exit 0
 fi
 

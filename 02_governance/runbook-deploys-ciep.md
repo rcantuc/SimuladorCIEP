@@ -427,7 +427,7 @@ modo `--zip`) y `compuertas-entidad.sh`. (Hasta 2026-10-15 esto se hacía con un
   ambos en % del PIB del año de la ENIGH. **Se recalibra y documenta cada vez que
   cambie lo que mueve ese cierre** — los perfiles (`perfilpc`, nueva ENIGH) o las
   fuentes (PIB del SCN, recaudación observada) — y **nunca se hereda a ciegas**: al
-  congelar fuentes nuevas, se lee la fila y, si cambia el redondeo a un decimal, se
+  actualizar las fuentes, se lee la fila y, si cambia el redondeo a un decimal, se
   commitea con su causa (2026-10-06: 22.96 % → 23.14 % por la revisión del PIB 2024
   de INEGI; perfiles 5.443 → 5.441).
 - **Brecha simulación vs. proyección LIF (`IVA_Mod.do`)**: el IVA simulado del año
