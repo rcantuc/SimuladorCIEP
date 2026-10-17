@@ -27,9 +27,13 @@ if _rc != 0 {
 
 ** 0.2 Parámetros
 global id = "`c(username)'"
+global idbase "$id"									// ESCENARIO BASE que lee FiscalGap: users/<idbase>/bootstraps/<bootstrap>/*RECprom.dta. Local: el propio id. Web.Stata.do lo fija en el escenario publicado
 scalar aniovp = 2027								// ANIO VALOR PRESENTE
 scalar anioPE = 2027								// ANIO PAQUETE ECONÓMICO
 scalar anioenigh = 2024								// ANIO ENIGH
+global bootstrap "250"								// RÉPLICAS BOOTSTRAP de Simulador (PerfilesSim, Expenditure, Households): EE e IC 95 %; FiscalGap consume el PROMEDIO de las réplicas (PerfilesSim §8). §7 corre con bootstrap(1): contrato del sitio (Web.Stata.do)
+global seed "1111"									// SEMILLA del remuestreo (Simulador seed(); la misma desde v1.x). Misma semilla + mismas fuentes = mismo output.txt
+set seed $seed
 
 ** 0.3 Directorio de archivos "users"
 capture mkdir "${SIMROOT}/users/"
@@ -40,10 +44,10 @@ capture mkdir "${SIMROOT}/users/$id"
 //global textbook "textbook"						// SCALAR TO LATEX
 //global export "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/UniversoCIEP/3. Recursos/3.1. Paquetes Económicos/Paquete Económico 2027/4. Documento CIEP/images"
 //global rawwip "rawwip"							// RAW EN WORK-IN-PROGRESS
-global hasta "3"									// PARO TEMPRANO
+//global hasta "3"									// PARO TEMPRANO
 
 ** 0.5 Entidad federativa
-global entidad "Nuevo León"							// ENTIDAD FEDERATIVA. Vacío = Nacional
+//global entidad "Nuevo León"   // edición local; el default versionado es vacío (nacional)
 if "$entidad" != "" {
 	SIMentidad "$entidad"
 	global entidad "`r(nombre)'"
@@ -113,7 +117,7 @@ global inf2032 = 3.0
 
 ** 2.4 PIB + Deflactores
 noisily PIBDeflactor `ifentidad', aniovp(`=aniovp') aniomax(2032) $textbook $nographs $update
-ex
+
 ** 2.5 Sistema de Cuentas Nacionales (sin inputs)
 noisily SCN, anio(`=aniovp') $textbook $nographs $update
 if "$hasta" == "2" exit
@@ -477,7 +481,7 @@ foreach k of varlist /*AlTrabajo AlCapital AlConsumo ///
 	Pensiones IngBasico Educacion Salud OtrosGastos Energia ///
 	ImpuestosAportaciones Transferencias*/ AportacionesNetas {
 	*noisily Perfiles `k' if `k' != 0 [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs //boot(10)
-	noisily Simulador `k' if `k' != 0 [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot title("") bootstrap(1)
+	noisily Simulador `k' if `k' != 0 [fw=factor], aniovp(`=aniovp') aniope(`=anioPE') $nographs reboot title("") bootstrap(1)	// sin réplicas: misma llamada que Web.Stata.do; los APORT* de output.txt salen de esta pasada
 }
 save `"${SIMROOT}/users/$id/aportaciones.dta"', replace
 
@@ -514,9 +518,6 @@ if "$entidad" != "" {									// entidad (2026-10-10): mismos cortes, con el dec
 **** Touchdown!!!
 ****
 timer off 1
-timer list 1
-noisily di _newline(2) in g _dup(20) ":" "  " in y "TOUCH-DOWN!!!  " round(`=r(t1)/r(nt1)',.1) in g " segs  " _dup(20) ":"
-if "$output" == "output" run "${SIMROOT}/01_modulos/output.do"
 timer list 1
 noisily di _newline(2) in g _dup(20) ":" "  " in y "TOUCH-DOWN!!!  " round(`=r(t1)/r(nt1)',.1) in g " segs  " _dup(20) ":"
 if "$output" == "output" run "${SIMROOT}/01_modulos/output.do"

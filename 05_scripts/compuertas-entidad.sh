@@ -3,7 +3,7 @@
 #
 # Corre SIM.do con los globals {nographs, output, entidad = <nombre>}
 # (copia <evidencia>/SIM_run.do) sobre ESTE clon (usa sus master/, raw/ y users/<id>/ existentes;
-# no es la receta desde estado cero: esa es --reproducibilidad), y en la MISMA sesión
+# no es una receta desde estado cero), y en la MISMA sesión
 # de Stata corre 05_scripts/compuertas-entidad.do (32 entidades × 5 cortes + celdas NL).
 # Después compuertas-entidad.py compara los JSON y escribe <evidencia>/compuertas-entidad.md.
 #

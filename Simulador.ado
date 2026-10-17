@@ -46,7 +46,9 @@ quietly {
 		MACro(string) ///
 		POBlacion(string) FOLIO(string) ///
 		NOKernel POBGraph ANIOVP(int -1) ANIOPE(int -1) TITLE(string) TEXTBOOK ///
-		CLuster(string) SEed(int 1111) LEGacy]
+		CLuster(string) SEed(string) LEGacy]
+	if "`seed'" == "" local seed = cond("$seed" != "", "$seed", "1111")	// semilla del panel (SIM.do §0.2, global seed); 1111 = la de v1.x
+	confirm integer number `seed'
 
 
 
@@ -190,7 +192,7 @@ quietly {
 
 			*******************
 			** 1.3 Bootstrap **
-			set seed 1111
+			set seed `seed'
 			forvalues k = 1(1)`bootstrap' {
 				if `bootstrap' != 1 {
 					noisily di in y . _cont

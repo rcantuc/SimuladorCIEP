@@ -20,6 +20,132 @@ Formato de cada entrada:
 
 Trabajo en `master` sin versión asignada.
 
+## [v8.10.0] — 2026-10-16
+
+Release **menor** (`versionado-y-git.md` §3.2). Consolida lo que entró a `master` después de
+v8.9.0: el PR **#23 `feat/ciclo-entidad`** (ciclo de vida de entidad) y seis commits directos
+(`62ec15d`…`0692d9c`: retiro de `SIMroot`, `SIM.do` §0.4 sin parámetros de entidad ni
+`bootstrap`, retiro de `SIM-local.do`, retiro de las fuentes congeladas y del ancla,
+`PIBDeflactor` por entidad y bootstrap de 250 réplicas en la corrida), más las correcciones
+de abajo y el rediseño del consumo de las réplicas (`global bootstrap` restaurado, semilla
+versionada, `FiscalGap` sobre el promedio de las réplicas). **No es release de datos**: `data_updated` no cambia y los 26 assets del manifest
+siguen siendo los mismos (el manifest de v8.9.0 declaraba 27: `fuentes-2026-10-06.zip` salió
+en el retiro de las fuentes congeladas). No es v9.0.0: la versión 9 se reserva para cambios más
+profundos (decisión de Ricardo, 2026-10-16). Deploy del VPS por §4b del runbook (minor:
+deployment nuevo `v8.10`).
+
+**Régimen de la corrida desde este release: fuentes vivas, sin ancla.** El motor descarga
+siempre en vivo de INEGI y SHCP; el `output.txt` publicado es el del día de la corrida, no hay
+SHA contra el cual medirlo ni se calcula delta contra v8.9.0. Las menciones a «el ancla» en las
+entradas fechadas antes del 2026-10-15 (ciclo de vida de entidad, v8.9.0 y anteriores) describen
+el régimen que existía entonces y se conservan como historia.
+
+### Cambio declarado en los números publicados (sin ancla que lo mida)
+
+Regla de la casa: nada cambia en silencio. Con respecto a v8.9.0, la corrida de `SIM.do` y sus
+salidas cambian por cuatro causas que **no se pueden separar contra una referencia** (ya no hay
+ancla):
+
+1. **Errores estándar con `bootstrap(250)`.** Cada perfil de `PerfilesSim.do` (35 llamadas a
+   `Simulador` con `reboot bootstrap(250)`) y los perfiles ENIGH de `Expenditure.do` y
+   `Households.do` (`reboot boot(250)`) reportan EE e IC 95 % (normal y percentil) en el **log de
+   la corrida**; antes no tenían bootstrap. `Simulador` fija el estimador puntual en la muestra
+   completa, así que el puntual no depende de B. **`output.txt` no gana líneas de EE/IC**: `Simulador`
+   las imprime a consola, fuera del log `output` (verificado en la corrida de este release: cero
+   líneas de EE/IC en `output.txt`). La corrida es **más larga** (esperado, no es un cuelgue).
+2. **Fuentes vivas.** INEGI (BIE, tabulados CSI) y SHCP revisan sus series: los valores que
+   dependen de ellas (PIB del SCN, deflactores, recaudación observada, LIF/PEF de Datos Abiertos)
+   pueden moverse respecto a v8.9.0 sin que el código cambie, y con ellos `output.txt` y los JSON.
+3. **`Households.do` reactiva** el ingreso laboral ROW, las cuotas a la seguridad social y la
+   variable `Ciclodevida` (`Yl + Yk + remesas + ROW − gasto`), antes comentados; ahora pasan por
+   `Simulador` y, con `$output` activo, añaden sus bloques `INCD*`/`APORT*`/`PROY` a `output.txt`
+   (el sitio lee el último de cada clave, el de `AportacionesNetas`, §7.3).
+4. **`FiscalGap` consume el promedio de las 250 réplicas, no una réplica suelta.** Hasta v8.9,
+   la proyección de ingresos (4.2) y gastos (5.2) de `FiscalGap` leía
+   `users/ricardo/bootstraps/1/<var>REC.dta`: la única pasada con `bootstrap(1)`. Desde este
+   release lee `<var>RECprom.dta`: el promedio por año de las 250 réplicas (misma convención que
+   `ProyGraph` usa desde `Simulador` v2.0 para la proyección puntual). La brecha fiscal, el
+   bloque `GASTOSPC`/`PROY` que de ahí sale y los Sankeys que dependen de `FiscalGap` cambian
+   en el orden del sesgo bootstrap de los perfiles: pequeño, no cero (comparación informativa
+   sobre el REC de CFE: la media de las 250 réplicas difiere de la pasada única de v8.9 —la del
+   6-oct, con otras fuentes— en menos de 0.03 % en todos los años). **Se declara; no hay ancla
+   contra la cual medirlo.**
+
+### `global bootstrap` restaurado, semilla versionada y escenario base de `FiscalGap` (`44da4ed`)
+
+Decisión de Ricardo (2026-10-16, firmada): se restaura el global y se rediseña el consumo.
+
+- **`SIM.do` §0.2:** `global bootstrap "250"` (réplicas de `Simulador` en `PerfilesSim.do`,
+  `Expenditure.do` y `Households.do`; las 45 llamadas pasan `bootstrap($bootstrap)`),
+  `global seed "1111"` + `set seed $seed` y `global idbase "$id"`. **Semilla 1111** porque es la
+  que `Simulador` (y `Perfiles`) fijan por llamada desde v1.x: las réplicas de este release son
+  las mismas que las de la corrida `0692d9c`, y la compuerta de determinismo de abajo las
+  reproduce. `Simulador` `seed()` deja de ser un entero fijo: vacío = `$seed` del panel (1111 si
+  no hay panel); el bloque `legacy` usa la misma semilla. **`SIM.do` §7 (`AportacionesNetas`)
+  sigue en `bootstrap(1)`**: es la misma llamada de `Web.Stata.do` y de esa pasada salen los
+  `APORT*` que el sitio dibuja; no se cambia el contrato del sitio aquí.
+- **`PerfilesSim.do` §8 (nuevo prepaso):** tras los perfiles, colapsa cada `<var>REC.dta`
+  (250 réplicas × 101 años) a su promedio por (`modulo`, `anio`, `aniobase`) y lo guarda como
+  **`users/<id>/bootstraps/<bootstrap>/<var>RECprom.dta`** (mismo directorio que las réplicas,
+  sufijo `prom`, columna `replicas` = B; un `collapse` por variable, cero réplicas adicionales).
+  Con B = 1 el promedio es la única pasada.
+- **`FiscalGap` 4.2 y 5.2:** leen `<var>RECprom.dta` de `users/<idbase>/bootstraps/<bootstrap>/`
+  (programa `_FGrecprom`). **Sin fallback silencioso:** si falta `global bootstrap` aborta con
+  r(198) y si falta el producto aborta con r(601) diciendo exactamente qué correr (`SIM.do` con
+  `global bootstrap "<B>"` e id `<idbase>` desde §3). **`users/ricardo/` fijo desaparece** del
+  motor: `idbase` = `$idbase` (local: el propio `id`; vacío = el `id` de la sesión).
+- **`Web.Stata.do`:** `global bootstrap "250"` y `global idbase "ricardo"` (el escenario base
+  publicado). **`publicar-vps.sh` Fase 3b-bis** sincroniza solo `*RECprom.dta` (las réplicas
+  crudas pesan ≈ 0.8 GB con B = 250) y el Gate 5 exige que existan para la B de `Web.Stata.do`.
+  No probado contra el VPS en esta sesión (el ritual es de Ricardo).
+- Consumidores de `bootstraps/` que **no** cambian (clasificados): `Perfiles.ado` y
+  `CuentasGeneracionales.ado` (sus llamadas en `SIM.do` están comentadas; opción `bootstrap()`
+  propia), `05_scripts/test-simulador-dorado.do` (test dorado, B = 1 por diseño sobre
+  `users/dorado_*`), `Simulador.ado` (escribe y lee con su propia opción).
+
+### Correcciones
+
+- **Default de `entidad` (D1).** Entre `62ec15d` y `0692d9c` el default versionado de
+  `global entidad` en `SIM.do` §0 quedó en `"Nuevo León"` (descuido: era la edición local de
+  quien desarrollaba la entidad): quien clonara `master` corría Nuevo León sin saberlo. Corregido:
+  la línea queda comentada (`//global entidad "Nuevo León"`, edición local) y **el default
+  versionado es vacío = nacional**.
+- **Restos de sesión en `SIM.do` (`d76d5af`).** El mismo commit que activó la entidad (`deff8c9`)
+  dejó (1) un `ex` suelto tras `PIBDeflactor` (§2.4) que terminaba la corrida antes del SCN,
+  (2) `global hasta "3"` activo en §0.4 (paro temprano tras §3: sin Sankeys ni `output.txt`) y
+  (3) el bloque final `TOUCH-DOWN` + `output.do` duplicado (con `$output` activo `output.do`
+  corría dos veces). Con ellos, el `SIM.do` versionado no corría de punta a punta. Corregidos.
+- **Restos del régimen retirado** (limpieza de texto, sin efecto en cálculo): `README.md` deja
+  de documentar los globals `fuentes` y `bootstrap` y la frase «byte-idéntico al ancla»;
+  `runbook-actualizar-assets.md` pierde el §2d (asset de fuentes congeladas); comentarios en
+  `compuertas-entidad.sh` y `EntidadNL.do`; `publicar.sh --check` dice «los 8 gates» (el Gate 9
+  ya no existe).
+
+### `PIBDeflactor` por entidad federativa (`deff8c9`, 2026-10-16)
+
+`PIBDeflactor` acepta `if entidad == "<Nombre>"` (misma convención que `Poblacion`; `SIM.do`
+§2.4 pasa `ifentidad`). Con entidad construye `master/PIBDeflactor<abrev>.dta` con: PIBE
+corriente (BIE 750453) e índice de precios implícito (753357), anuales replicados en cuatro
+trimestres; población ocupada y desocupada de la ENOE (6200093954 / 6200093973, BISE vía API por
+área); INPC de la entidad (programa INPC de INEGI, estructura 112001700070; existe desde
+jul-2018); y población CONAPO de la entidad. Gráficas y escalares llevan la abreviatura como
+sufijo; **la base nacional no se toca**. Años posteriores al último PIBE sin exógeno `$pib`:
+nowcast con el ITAEE (741177 / 741180 según área) y, si no hay, promedio geométrico; el nivel se
+encadena para no romper la serie. `AccesoBIE` v8.3: con `area()` y clave de 10 dígitos usa la
+API BISE (`inegi_bise_area`).
+
+**Corrección con alcance nacional** (declarada por el autor): el respaldo de las tasas
+proyectadas (`L.var_XG == .`) sobrescribía el promedio geométrico con la última tasa; afecta
+**solo** a los años posteriores al último exógeno.
+
+### `bootstrap(250)` en la salida de la corrida (`0692d9c`, 2026-10-16)
+
+Las llamadas a `Simulador` de los perfiles ENIGH (gasto por categoría en `Expenditure.do`;
+ingreso laboral, de capital, bruto, gasto total, ahorro, cuotas y ciclo de vida en
+`Households.do`) pasan de `reboot` sin bootstrap (`boot(25)` comentado) a `reboot boot(250)`,
+de modo que la corrida reporta errores estándar de los perfiles con 250 réplicas. Efecto
+declarado arriba.
+
 ### Raíz del proyecto: se retira el comando `SIMroot` (2026-10-15)
 
 Decisión de Ricardo: la raíz del simulador es **una sola línea** en `SIM.do` §0, `global SIMROOT
@@ -43,8 +169,7 @@ existir. `entidad_vintages`, `entidad_macro`, `entidad_cuotas`, `sello_n`, `sell
 por deciles nacionales); la banda pasa a ser el 4.º argumento de `SankeySF.do` para que
 `compuertas-entidad.do` siga omitiéndola en las 31 entidades que no son la de la sesión.
 `bootstrap` deja de ser global: `SIM.do` §7 usa `bootstrap(1)` y `PerfilesSim.do` `bootstrap(250)`
-(EE e IC 95 % en los perfiles; el ancla de reproducibilidad deberá re-declararse). `fuentes` sigue existiendo (receta canónica
-del ancla) pero `SIM.do` ya no lo lista. Con `$entidad` vacío el nacional no cambia.
+(EE e IC 95 % en los perfiles). Con `$entidad` vacío no corre ninguna rama de entidad.
 
 ### Se retiran las fuentes congeladas y el ancla de reproducibilidad (2026-10-15)
 

@@ -40,7 +40,7 @@
 * SALIDA: users/$id/nodos/statajson_entidad-nl.json (generada, gitignored).
 * OJO: destruye los datos en memoria (igual que el tramo 7 de SIM.do).
 *
-* RUTAS (v8.4+ del motor): la raíz de datos es ${SIMROOT} (SIMroot.ado), no
+* RUTAS (v8.4+ del motor): la raíz de datos es ${SIMROOT}, no
 * c(sysdir_site). Alineado al merge de 8.6.0 (DIAGNOSTICO_NL.md, anexo F0-8.6.0).
 
 *** 0 GUARDAS (estado del motor vivo; sin él no hay validación posible) ***

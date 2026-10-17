@@ -786,7 +786,7 @@ foreach categ in categ categ_iva categ_ieps {
 					noisily Simulador o`vars'pc_`k' [fw=factor] ///
 						if o`vars'pc_`k' != 0 & hogar_outlier == 0 & ind_outlier == 0, ///
 						aniope(`anioenigh') ///
-						title("`label'") reboot boot(250)
+						title("`label'") reboot boot($bootstrap)
 				}
 
 				* Iteraciones: reparto intra-hogar por perfil edad-sexo (punto fijo en Mata,
@@ -815,7 +815,7 @@ foreach categ in categ categ_iva categ_ieps {
 					noisily Simulador `vars'pc_`k' [fw=factor] ///
 						if `vars'pc_`k' != 0 & hogar_outlier == 0 & ind_outlier == 0, ///
 						aniope(`anioenigh') ///
-						title("`label'") reboot boot(250)
+						title("`label'") reboot boot($bootstrap)
 				}
 				capture g preci`k' = gas_pc_`k'/cant_pc_`k'
 				capture drop *outlier
