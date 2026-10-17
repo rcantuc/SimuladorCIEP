@@ -87,8 +87,9 @@ La segunda forma (misma convención que {cmd:Poblacion}; en {cmd:SIM.do} la arma
 e índice de precios implícitos del BIE (750453/753357, anuales desde 2003, replicados
 en los cuatro trimestres), población ocupada y desocupada de la ENOE por entidad
 (BISE 6200093954/6200093973 vía la API oficial; requiere {cmd:$BIE_API_TOKEN}), INPC de
-la entidad (programa INPC de INEGI, estructura 112001700070; existe desde julio de 2018,
-por lo que la inflación promedio se calcula desde el primer año observado) y población
+la entidad (programa INPC de INEGI, estructura 112001700070, vía {cmd:AccesoINPCEntidad};
+existe desde julio de 2018, por lo que la inflación promedio se calcula desde el primer
+año observado) y población
 CONAPO de la entidad. La base es {cmd:master/PIBDeflactor}{it:Abrev}{cmd:.dta}, y gráficas
 y escalares llevan la abreviatura como sufijo ({cmd:pibNL.png}, {cmd:pibYNL}); la base
 nacional no se modifica. Los exógenos {cmd:$pib}/{cmd:$def}/{cmd:$inf} se aplican igual

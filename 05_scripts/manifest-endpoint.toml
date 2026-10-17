@@ -18,6 +18,7 @@ description = "Sub-canal Stata del Simulador Fiscal CIEP — instalación remota
 
 ado_files = [
     "AccesoBIE.ado",
+    "AccesoINPCEntidad.ado",
     "DatosAbiertos.ado",
     "LIF.ado",
     "PEF.ado",

@@ -9,6 +9,7 @@ f SCN.ado
 f SCN.sthlp
 f AccesoBIE.ado
 f PIBDeflactor.ado
+f AccesoINPCEntidad.ado
 f Poblacion.ado
 f escalar.ado
 f ensure_asset.ado

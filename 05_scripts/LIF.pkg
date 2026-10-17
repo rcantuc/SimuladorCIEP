@@ -9,6 +9,7 @@ f LIF.ado
 f LIF.sthlp
 f DatosAbiertos.ado
 f PIBDeflactor.ado
+f AccesoINPCEntidad.ado
 f AccesoBIE.ado
 f Poblacion.ado
 f ensure_asset.ado
