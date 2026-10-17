@@ -2654,36 +2654,36 @@ egen double Yl = rsum(ing_subor ing_mixtoL)
 label var Yl "Ingreso laboral (anual)"
 
 *noisily Perfiles Yl [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ingreso laboral")
-noisily Simulador Yl [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ingreso laboral (anual)") reboot boot(250)
+noisily Simulador Yl [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ingreso laboral (anual)") reboot boot($bootstrap)
 
 egen double Yk = rsum(ing_capital ing_mixtoK ing_estim_alqu gasto_anualDepreciacion)
 label var Yk "Ingresos de capital (anual)"
 *noisily Perfiles Yk [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ingreso de capital")
-noisily Simulador Yk [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ingresos de capital (anual)") reboot boot(250)
+noisily Simulador Yk [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ingresos de capital (anual)") reboot boot($bootstrap)
 
 *noisily Perfiles ingbrutotot [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ingreso bruto total")
-noisily Simulador ingbrutotot [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ingreso bruto total") reboot boot(250)
+noisily Simulador ingbrutotot [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ingreso bruto total") reboot boot($bootstrap)
 
 *noisily Perfiles gastoanualTOT [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Gasto anual total")
-noisily Simulador gastoanualTOT [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Gasto total (anual)") reboot boot(250)
+noisily Simulador gastoanualTOT [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Gasto total (anual)") reboot boot($bootstrap)
 
 *noisily Perfiles ing_suborROW [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ingreso laboral ROW")
-noisily Simulador ing_suborROW [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ingreso laboral ROW") reboot boot(250)
+noisily Simulador ing_suborROW [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ingreso laboral ROW") reboot boot($bootstrap)
 
 g Ciclodevida = Yl + Yk + ing_remesas + ing_suborROW - gastoanualTOT
 label var Ciclodevida "Ciclo de vida"
 *noisily Perfiles Ciclodevida [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ciclo de vida")
-noisily Simulador Ciclodevida [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ciclo de vida") reboot boot(250)
+noisily Simulador Ciclodevida [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ciclo de vida") reboot boot($bootstrap)
 
 g Ahorro = ingbrutotot + ing_capitalROW + ing_suborROW + ing_remesas ///
 	- gastoanualTOT //- gasto_anualComprasN - gasto_anualGobierno
 label var Ahorro "Ahorro (anual)"
 *noisily Perfiles Ahorro [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ahorro")
-noisily Simulador Ahorro [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ahorro (anual)") reboot boot(250)
+noisily Simulador Ahorro [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Ahorro (anual)") reboot boot($bootstrap)
 
 label var cuotasTPF "Cuotas a la Seguridad Social"
 *noisily Perfiles cuotasTPF [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Cuotas a la Seguridad Social")
-noisily Simulador cuotasTPF [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Cuotas a la Seguridad Social") reboot boot(250)
+noisily Simulador cuotasTPF [fw=factor], aniope(`anioenigh') aniovp(`anioenigh') title("Cuotas a la Seguridad Social") reboot boot($bootstrap)
 
 if "$export" == "" {
 	local graphtitle "{bf:Entradas (recursos)}"

@@ -37,6 +37,8 @@ global paqueteEconomico "CGPE 2027"					// POLÍTICA FISCAL
 ** Opciones
 global nographs "nographs"							// SUPRIMIR GRAFICAS
 global output "output"								// ARCHIVO DE SALIDA (WEB)
+global bootstrap "250"								// RÉPLICAS del escenario base que lee FiscalGap (SIM.do §0.2)
+global idbase "ricardo"								// ESCENARIO BASE: users/ricardo/bootstraps/$bootstrap/*RECprom.dta (publicar-vps.sh Fase 3b-bis)
 
 if "$output" != "" {
 	capture mkdir "${SIMROOT}/users/$id"

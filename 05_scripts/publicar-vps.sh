@@ -297,6 +297,13 @@ log_ok "Gate 2: working tree limpio."
 [[ -d "$LOCAL_REPO_ROOT" ]]         || die "No existe LOCAL_REPO_ROOT: $LOCAL_REPO_ROOT"
 [[ -d "$LOCAL_REPO_ROOT/master" ]]  || die "No existe $LOCAL_REPO_ROOT/master (los .dta procesados). ¿Corriste el pipeline local?"
 [[ -d "$LOCAL_REPO_ROOT/users/ricardo/bootstraps" ]] || die "No existe $LOCAL_REPO_ROOT/users/ricardo/bootstraps (el escenario base que consume el motor web). Sin él, el motor truena con r(601) — falla 6 del debugging 2026-07-09."
+# v8.10.0: FiscalGap lee users/ricardo/bootstraps/<B>/<var>RECprom.dta (promedio de las B
+# réplicas, PerfilesSim.do §8) con B = global bootstrap de Web.Stata.do. Sin ellos, r(601).
+_B_WEB="$(sed -nE 's/^global bootstrap "([0-9]+)".*/\1/p' "$LOCAL_REPO_ROOT/01_modulos/Web.Stata.do" | head -1)"
+[[ -n "$_B_WEB" ]] || die "Web.Stata.do no define 'global bootstrap \"<B>\"' (lo lee FiscalGap para ubicar el escenario base)."
+_N_PROM="$(find "$LOCAL_REPO_ROOT/users/ricardo/bootstraps/$_B_WEB" -maxdepth 1 -name '*RECprom.dta' 2>/dev/null | wc -l | tr -d ' ')"
+[[ "$_N_PROM" -gt 0 ]] || die "No hay users/ricardo/bootstraps/$_B_WEB/*RECprom.dta (escenario base de FiscalGap, v8.10.0). Corre SIM.do con global bootstrap \"$_B_WEB\" (PerfilesSim.do §8 los escribe)."
+log_info "Gate 5: escenario base: $_N_PROM archivo(s) *RECprom.dta en users/ricardo/bootstraps/$_B_WEB/ (B = $_B_WEB, Web.Stata.do)."
 [[ -f "$LOCAL_SITE_ROOT/health.php" ]] || die "No existe $LOCAL_SITE_ROOT/health.php. El health check post-deploy depende de él."
 log_ok "Gate 5: fuentes locales verificadas."
 
@@ -617,6 +624,9 @@ fi
 # cada simulación — NO son datos de sesión, son un asset de deployment que el
 # pipeline no llevaba (el motor tronaba con r(601)). Convención v8: el motor
 # busca users/ricardo/ (el snapshot v7 usaba users/ciepmx/).
+# v8.10.0: el motor (FiscalGap) lee SOLO users/ricardo/bootstraps/<B>/*RECprom.dta
+# (promedio de las B réplicas; global idbase/bootstrap de Web.Stata.do). Las
+# réplicas crudas (*REC.dta, ~0.8 GB con B = 250) no viajan: include/exclude.
 # Tras el rsync: chmod -R con o=rX sobre users/ricardo/ — www-data solo LEE
 # el escenario base (las sesiones de escritura viven en users/0*/, no aquí).
 log_info "Fase 3b-bis: rsync del escenario base → $VPS_SIM_ROOT/$VPS_SIM_VERSION/users/ricardo/bootstraps/"
@@ -627,6 +637,10 @@ RSYNC_BOOTSTRAPS_OPTS=(
     --progress
     --delete
     --exclude='.DS_Store'
+    --include='*/'
+    --include='*RECprom.dta'
+    --exclude='*'
+    --prune-empty-dirs
 )
 [[ $DRY_RUN -eq 1 ]] && RSYNC_BOOTSTRAPS_OPTS+=(--dry-run)
 

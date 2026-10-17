@@ -183,31 +183,31 @@ capture g pob = 1
 ** 5.4 (+) Ingreso bruto **
 Distribucion ingbrutotot, relativo(ingbrutotot) macro(`PIN')
 label var ingbrutotot "Ingreso bruto total"
-noisily Simulador ingbrutotot if ingbrutotot != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap(250)
+noisily Simulador ingbrutotot if ingbrutotot != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap($bootstrap)
 noisily Gini ingbrutotot, hogar(folioviv foliohog) factor(factor)
 
 
 ** 5.5 (-) Consumo total **
 Distribucion gastoanualTOT, relativo(gastoanualTOT) macro(`ConHog')
 label var gastoanualTOT "Consumo total"
-noisily Simulador gastoanualTOT if gastoanualTOT != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap(250)
+noisily Simulador gastoanualTOT if gastoanualTOT != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap($bootstrap)
 noisily Gini gastoanualTOT, hogar(folioviv foliohog) factor(factor)
 
 
 ** 5.6 (*) Ingresos para el módulo ISR **
 Distribucion ing_bruto_tax, relativo(ing_bruto_tax) macro(`=`Yl'+`MixK'')
 label var ing_bruto_tax "Ingresos laborales"
-noisily Simulador ing_bruto_tax if ing_bruto_tax != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap(250)
+noisily Simulador ing_bruto_tax if ing_bruto_tax != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap($bootstrap)
 noisily Gini ing_bruto_tax, hogar(folioviv foliohog) factor(factor)
 
 Distribucion ing_subor, relativo(ing_subor) macro(`=`RemSal'+`ImpNetProduccionL'')
 label var ing_subor "Remuneración de asalariados"
-noisily Simulador ing_subor if ing_subor != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap(250)
+noisily Simulador ing_subor if ing_subor != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap($bootstrap)
 noisily Gini ing_subor, hogar(folioviv foliohog) factor(factor)
 
 Distribucion ing_bruto_tpm, relativo(ing_bruto_tpm) macro(`=`ExNOpSoc'+`ImpNet'-`IngKPublicos'')
 label var ing_bruto_tpm "Ingresos de capital privado"
-noisily Simulador ing_bruto_tpm if ing_bruto_tpm != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap(250)
+noisily Simulador ing_bruto_tpm if ing_bruto_tpm != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap($bootstrap)
 noisily Gini ing_bruto_tpm, hogar(folioviv foliohog) factor(factor)
 
 
@@ -217,20 +217,20 @@ noisily Gini ing_bruto_tpm, hogar(folioviv foliohog) factor(factor)
 ** (+) ISR Asalariados **
 Distribucion ISRAS, relativo(ISR_asalariados) macro(`ISRAS')
 label var ISRAS "ISR (sueldos y salarios)"
-noisily Simulador ISRAS if ISRAS != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap(250)
+noisily Simulador ISRAS if ISRAS != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap($bootstrap)
 noisily Gini ISRAS, hogar(folioviv foliohog) factor(factor)
 
 ** (+) ISR Personas Físicas **
 Distribucion ISRPF, relativo(ISR_PF) macro(`ISRPF')
 label var ISRPF "ISR (personas f{c i'}sicas)"
-noisily Simulador ISRPF if ISRPF != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap(250)
+noisily Simulador ISRPF if ISRPF != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap($bootstrap)
 noisily Gini ISRPF, hogar(folioviv foliohog) factor(factor)
 
 ** (+) Cuotas obrero-patronal IMSS **
 Distribucion CUOTAS if formal2 == 1, relativo(cuotasTP) macro(`CUOTAS')
 replace CUOTAS = 0 if CUOTAS == .
 label var CUOTAS "Cuotas IMSS"
-noisily Simulador CUOTAS if CUOTAS != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap(250)
+noisily Simulador CUOTAS if CUOTAS != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap($bootstrap)
 noisily Gini CUOTAS, hogar(folioviv foliohog) factor(factor)
 
 ** (+) Impuestos laborales **
@@ -238,7 +238,7 @@ egen laboral = rsum(ISRAS ISRPF CUOTAS)
 replace laboral = 0 if laboral == .
 Distribucion Laboral, relativo(laboral) macro(`=`ISRAS'+`ISRPF'+`CUOTAS'')
 label var Laboral "Impuestos laborales"
-noisily Simulador Laboral if Laboral != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap(250)
+noisily Simulador Laboral if Laboral != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap($bootstrap)
 noisily Gini Laboral, hogar(folioviv foliohog) factor(factor)
 
 
@@ -249,19 +249,19 @@ noisily Gini Laboral, hogar(folioviv foliohog) factor(factor)
 ** (+) ISR Personas Morales **
 Distribucion ISRPM, relativo(ISR_PM) macro(`ISRPM')
 label var ISRPM "ISR (personas morales)"
-noisily Simulador ISRPM if ISRPM != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap(250)
+noisily Simulador ISRPM if ISRPM != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap($bootstrap)
 noisily Gini ISRPM, hogar(folioviv foliohog) factor(factor)
 
 ** (+) Otros de capital **
 Distribucion OTROSK, relativo(ISR_PM) macro(`OTROSK')
 label var OTROSK "Productos, derechos, aprovechamientos..."
-noisily Simulador OTROSK if OTROSK != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap(250)
+noisily Simulador OTROSK if OTROSK != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap($bootstrap)
 noisily Gini OTROSK, hogar(folioviv foliohog) factor(factor)
 
 ** (+) Impuestos de capital privado **
 Distribucion KPrivado, relativo(ISR_PM) macro(`=`OTROSK'+`ISRPM'')
 label var KPrivado "Impuestos al capital privado"
-noisily Simulador KPrivado if KPrivado != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap(250)
+noisily Simulador KPrivado if KPrivado != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap($bootstrap)
 noisily Gini KPrivado, hogar(folioviv foliohog) factor(factor)
 
 
@@ -272,7 +272,7 @@ noisily Gini KPrivado, hogar(folioviv foliohog) factor(factor)
 ** (+) IVA **
 Distribucion IVA, relativo(IVA) macro(`IVA')
 label var IVA "IVA"
-noisily Simulador IVA if IVA != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap(250)
+noisily Simulador IVA if IVA != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap($bootstrap)
 noisily Gini IVA, hogar(folioviv foliohog) factor(factor)
 
 ** (+) ISAN **
@@ -281,25 +281,25 @@ g `ISANH' = ISAN
 drop ISAN
 Distribucion ISAN, relativo(`ISANH') macro(`ISAN')
 label var ISAN "ISAN"
-noisily Simulador ISAN if ISAN != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap(250)
+noisily Simulador ISAN if ISAN != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap($bootstrap)
 noisily Gini ISAN, hogar(folioviv foliohog) factor(factor)
 
 ** (+) IEPS (no petrolero) **
 Distribucion IEPSNP, relativo(gas_pc_BebA) macro(`IEPSNP')
 label var IEPSNP "IEPS (no petrolero)"
-noisily Simulador IEPSNP if IEPSNP != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap(250)
+noisily Simulador IEPSNP if IEPSNP != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap($bootstrap)
 noisily Gini IEPSNP, hogar(folioviv foliohog) factor(factor)
 
 ** (+) IEPS (petrolero) **
 Distribucion IEPSP, relativo(gas_pc_Vehi) macro(`IEPSP')
 label var IEPSP "IEPS (petrolero)"
-noisily Simulador IEPSP if IEPSP != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap(250)
+noisily Simulador IEPSP if IEPSP != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap($bootstrap)
 noisily Gini IEPSP, hogar(folioviv foliohog) factor(factor)
 
 ** (+) Importaciones **
 Distribucion IMPORT, relativo(Importaciones) macro(`IMPORT')
 label var IMPORT "Importaciones"
-noisily Simulador IMPORT if IMPORT != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap(250)
+noisily Simulador IMPORT if IMPORT != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap($bootstrap)
 noisily Gini IMPORT, hogar(folioviv foliohog) factor(factor)
 
 ** (+) Impuestos al consumo **
@@ -307,7 +307,7 @@ egen consumo = rsum(IVA ISAN IEPSNP IEPSP IMPORT)
 replace consumo = 0 if consumo == .
 Distribucion Consumo, relativo(consumo) macro(`=`IEPSP'+`IEPSNP'+`IMPORT'+`ISAN'+`IVA'')
 label var Consumo "Impuestos al consumo"
-noisily Simulador Consumo if Consumo != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap(250)
+noisily Simulador Consumo if Consumo != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap($bootstrap)
 noisily Gini Consumo, hogar(folioviv foliohog) factor(factor)
 
 
@@ -318,43 +318,43 @@ noisily Gini Consumo, hogar(folioviv foliohog) factor(factor)
 ** (+) Fondo Mexicano del Petróleo **
 Distribucion FMP, relativo(pob) macro(`=`FMP'')
 label var FMP "FMP"
-noisily Simulador FMP if FMP != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap(250)
+noisily Simulador FMP if FMP != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap($bootstrap)
 noisily Gini FMP, hogar(folioviv foliohog) factor(factor)
 
 ** (+) IMSS **
 Distribucion IMSS, relativo(pob) macro(`=`IMSS'')
 label var IMSS "IMSS"
-noisily Simulador IMSS if IMSS != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap(250)
+noisily Simulador IMSS if IMSS != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap($bootstrap)
 noisily Gini IMSS, hogar(folioviv foliohog) factor(factor)
 
 ** (+) ISSSTE **
 Distribucion ISSSTE, relativo(pob) macro(`=`ISSSTE'')
 label var ISSSTE "ISSSTE"
-noisily Simulador ISSSTE if ISSSTE != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap(250)
+noisily Simulador ISSSTE if ISSSTE != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap($bootstrap)
 noisily Gini ISSSTE, hogar(folioviv foliohog) factor(factor)
 
 Distribucion Cuotas_ISSSTE, relativo(pob) macro(`=`Cuotas_ISSSTE'')
 label var Cuotas_ISSSTE "Cuotas_ISSSTE"
-noisily Simulador Cuotas_ISSSTE if Cuotas_ISSSTE != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap(250)
+noisily Simulador Cuotas_ISSSTE if Cuotas_ISSSTE != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap($bootstrap)
 noisily Gini Cuotas_ISSSTE, hogar(folioviv foliohog) factor(factor)
 
 ** (+) CFE **
 Distribucion CFE, relativo(pob) macro(`=`CFE'')
 label var CFE "CFE"
-noisily Simulador CFE if CFE != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap(250)
+noisily Simulador CFE if CFE != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap($bootstrap)
 noisily Gini CFE, hogar(folioviv foliohog) factor(factor)
 
 ** (+) PEMEX **
 Distribucion PEMEX, relativo(pob) macro(`=`PEMEX'')
 label var PEMEX "PEMEX"
-noisily Simulador PEMEX if PEMEX != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap(250)
+noisily Simulador PEMEX if PEMEX != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap($bootstrap)
 noisily Gini PEMEX, hogar(folioviv foliohog) factor(factor)
 
 ** (+) Impuestos y aportaciones **
 capture drop ImpuestosAportaciones
 egen ImpuestosAportaciones = rsum(ISRAS ISRPF CUOTAS ISRPM OTROSK IVA IEPSNP IEPSP ISAN IMPORT)
 label var ImpuestosAportaciones "Impuestos y aportaciones"
-noisily Simulador ImpuestosAportaciones if ImpuestosAportaciones != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap(250)
+noisily Simulador ImpuestosAportaciones if ImpuestosAportaciones != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap($bootstrap)
 noisily Gini ImpuestosAportaciones, hogar(folioviv foliohog) factor(factor)
 
 
@@ -432,13 +432,13 @@ replace educacion = 0 if educacion == .
 
 Distribucion Educacion, relativo(educacion) macro(`Educacion')
 label var Educacion "Educación"
-noisily Simulador Educacion if Educacion != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap(250)
+noisily Simulador Educacion if Educacion != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap($bootstrap)
 noisily Gini Educacion, hogar(folioviv foliohog) factor(factor)
 
 ** (-) Salud **
 Distribucion Salud, relativo(gas_pc_Salu) macro(`Salud')
 label var Salud "Salud"
-noisily Simulador Salud if Salud != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap(250) //poblacion(defunciones)
+noisily Simulador Salud if Salud != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap($bootstrap) //poblacion(defunciones)
 noisily Gini Salud, hogar(folioviv foliohog) factor(factor)
 
 ** (-) Pension Bienestar **
@@ -459,7 +459,7 @@ tabstat Pension_AM [fw=factor], stat(sum) f(%20.0fc)
 
 Distribucion Pension_AM, relativo(ing_pam) macro(`PenBienestar')
 label var Pension_AM "Pensi{c o'}n para adultos mayores"
-noisily Simulador Pension_AM if Pension_AM != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap(250)
+noisily Simulador Pension_AM if Pension_AM != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap($bootstrap)
 noisily Gini Pension_AM, hogar(folioviv foliohog) factor(factor)
 
 ** (-) Pensiones **
@@ -472,7 +472,7 @@ capture drop Pensiones
 Distribucion Pensiones, relativo(ing_jubila_pub) macro(`Pensiones')
 replace Pensiones = Pensiones //+ Pension_AM
 label var Pensiones "Pensiones"
-noisily Simulador Pensiones if Pensiones != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap(250)
+noisily Simulador Pensiones if Pensiones != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap($bootstrap)
 noisily Gini Pensiones, hogar(folioviv foliohog) factor(factor)
 
 
@@ -496,32 +496,32 @@ foreach k in Aguas BajaN BajaS Campe Coahu Colim Chiap Chihu Ciuda Duran Guana /
 egen infra_entidad = rsum(Infra_*)
 Distribucion Otras_inversiones, relativo(infra_entidad) macro(`InfraT')
 label var Otras_inversiones "Otras inversiones"
-noisily Simulador Otras_inversiones if Otras_inversiones != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap(250)
+noisily Simulador Otras_inversiones if Otras_inversiones != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap($bootstrap)
 noisily Gini Otras_inversiones, hogar(folioviv foliohog) factor(factor)
 
 ** (-) Otros gastos **
 Distribucion Otros_gastos, relativo(pob) macro(`=`OtrosGastos'')
 label var Otros_gastos "Otros gastos"
-noisily Simulador Otros_gastos if Otros_gastos != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap(250)
+noisily Simulador Otros_gastos if Otros_gastos != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap($bootstrap)
 noisily Gini Otros_gastos, hogar(folioviv foliohog) factor(factor)
 
 ** (-) Energía **
 Distribucion Energia, relativo(pob) macro(`=`Energía'')
 label var Energia "Energia"
-noisily Simulador Energia if Energia != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap(250)
+noisily Simulador Energia if Energia != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap($bootstrap)
 noisily Gini Energia, hogar(folioviv foliohog) factor(factor)
 
 ** (-) Otras Participaciones y Aportaciones **
 Distribucion Federalizado, relativo(pob) macro(`=`Federalizado'')
 label var Federalizado "Participaciones y otras aportaciones"
-noisily Simulador Federalizado if Federalizado != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap(250)
+noisily Simulador Federalizado if Federalizado != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap($bootstrap)
 noisily Gini Federalizado, hogar(folioviv foliohog) factor(factor)
 
 
 ** (=) Deuda **
 Distribucion DEUDA, relativo(pob) macro(`=`DEUDA'')
 label var DEUDA "Deuda"
-noisily Simulador DEUDA if DEUDA != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap(250)
+noisily Simulador DEUDA if DEUDA != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap($bootstrap)
 noisily Gini DEUDA, hogar(folioviv foliohog) factor(factor)
 
 
@@ -529,7 +529,7 @@ noisily Gini DEUDA, hogar(folioviv foliohog) factor(factor)
 ** (-) Ingreso B{c a'}sico **
 g IngBasico = 0.00000000000000000001
 label var IngBasico "Ingreso b{c a'}sico"
-noisily Simulador IngBasico if IngBasico != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap(250)
+noisily Simulador IngBasico if IngBasico != 0 [fw=factor], aniope(`1') aniovp(`1') reboot bootstrap($bootstrap)
 noisily Gini IngBasico, hogar(folioviv foliohog) factor(factor)
 
 
@@ -587,3 +587,36 @@ keep ISRAS ISRPF CUOTAS ISRPM OTROSK FMP PEMEX CFE IMSS ISSSTE IVA IEPSNP IEPSP 
 	sbc cuotasTPF deduc_isr ing_bruto_tax *_tpm exen_tot prop* ing_subor // ISR_Mod.do
 save "${SIMROOT}/master/perfiles`1'.dta", replace
 
+
+
+
+*****************************************************/
+***                                               ***
+**# 8 PROMEDIO DE RÉPLICAS (escenario base de FiscalGap) ***
+***                                               ***
+******************************************************
+* Cada Simulador con bootstrap(B > 1) deja B réplicas por año en
+* users/$id/bootstraps/B/<var>REC.dta (la réplica 0, muestra completa, no se guarda
+* en ese archivo). FiscalGap no debe leer una réplica suelta ni promediar en cada
+* llamada: aquí se colapsan UNA vez a su promedio por (modulo, anio, aniobase) y se
+* guardan como <var>RECprom.dta en la misma carpeta (un collapse por variable; cero
+* réplicas adicionales). Con B = 1 el promedio es la única pasada. *
+if "$bootstrap" == "" {
+	noisily di as err "PerfilesSim: falta la global bootstrap (SIM.do §0.2, global bootstrap \"250\")."
+	exit 198
+}
+local dirboot `"${SIMROOT}/users/$id/bootstraps/$bootstrap"'
+local recs : dir `"`dirboot'"' files "*REC.dta", respectcase
+preserve
+local nprom 0
+foreach f of local recs {
+	use `"`dirboot'/`f'"', clear
+	capture drop __*
+	collapse (mean) estimacion contribuyentes poblacion montopc contribuyentes_*, by(modulo anio aniobase)
+	g int replicas = $bootstrap
+	label var replicas "R{c e'}plicas bootstrap promediadas"
+	save `"`dirboot'/`=subinstr("`f'", "REC.dta", "RECprom.dta", 1)'"', replace
+	local ++nprom
+}
+restore
+noisily di _newline in g "Promedio de r{c e'}plicas (B = " in y "$bootstrap" in g "): " in y "`nprom'" in g " archivo(s) *RECprom.dta en users/$id/bootstraps/$bootstrap/"

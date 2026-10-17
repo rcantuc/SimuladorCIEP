@@ -9,6 +9,19 @@ quietly {
 		ANIOMIN(int 2000) DIScount(real 5) DESDE(int `=`=aniovp'-1')]
 	noisily di _newline(2) in g "{bf: FISCAL GAP:" in y " $pais `anio' }"
 
+	* Escenario base (4.2 y 5.2): el PROMEDIO de las réplicas de Simulador que escribe
+	* PerfilesSim.do §8, users/<idbase>/bootstraps/<bootstrap>/<var>RECprom.dta. Hasta
+	* v8.9 se leía una réplica suelta de users/ricardo/bootstraps/1/. Sin fallback: si
+	* el producto falta, _FGrecprom aborta diciendo qué correr. idbase = $idbase
+	* (SIM.do §0.2; Web.Stata.do lo fija en el escenario publicado); vacío = el id de
+	* la sesión. *
+	if "$bootstrap" == "" {
+		noisily di as err `"FiscalGap: falta la global bootstrap (réplicas de Simulador). Defínela en SIM.do §0.2 (global bootstrap "250") y corre SIM.do desde §3 (PerfilesSim.do)."'
+		exit 198
+	}
+	local idbase = cond("$idbase" != "", "$idbase", "$id")
+	local dirprom `"${SIMROOT}/users/`idbase'/bootstraps/$bootstrap"'
+
 	escalar anio aniodesde = `desde'
 	escalar anio anioend = `end'
 
@@ -103,7 +116,7 @@ quietly {
 
 	** 4.2 Proyección futura de los ingresos **
 	foreach k in CFE CUOTAS FMP IEPSNP IEPSP IMPORT IMSS ISAN ISRAS ISRPF ISRPM ISSSTE IVA OTROSK PEMEX {
-		use `"${SIMROOT}/users/ricardo/bootstraps/1/`k'REC.dta"', clear
+		_FGrecprom `"`dirprom'"' `k' $bootstrap `idbase'
 		collapse estimacion contribuyentes, by(anio modulo aniobase)
 		tsset anio
 		
@@ -413,7 +426,7 @@ quietly {
 	//foreach k in Pensiones {
 		if `"`=strtoname("`k'")'"' != "Costo_de_la_deuda" {
 			preserve
-			use `"${SIMROOT}/users/ricardo/bootstraps/1/`=strtoname("`k'")'REC.dta"', clear
+			_FGrecprom `"`dirprom'"' `=strtoname("`k'")' $bootstrap `idbase'
 			collapse estimacion contribuyentes, by(anio modulo aniobase)
 			tsset anio
 			
@@ -1270,4 +1283,18 @@ program define _fg_matdisplay
 		}
 		local j = `jmax'+1
 	}
+end
+
+
+**** Escenario base: carga <var>RECprom.dta o aborta con la receta (sin fallback) ****
+program define _FGrecprom
+	args dirprom var bootstrap idbase
+	capture confirm file `"`dirprom'/`var'RECprom.dta"'
+	if _rc {
+		noisily di as err `"FiscalGap: no existe `dirprom'/`var'RECprom.dta"'
+		noisily di as err `"  Es el promedio de las `bootstrap' r{c e'}plicas de Simulador `var' que escribe PerfilesSim.do §8 para el id `idbase'."'
+		noisily di as err `"  Corre SIM.do con global bootstrap "`bootstrap'" e id `idbase' desde §3 (noisily run 01_modulos/PerfilesSim.do <anioPE>), o ajusta global idbase / global bootstrap en SIM.do §0.2."'
+		exit 601
+	}
+	use `"`dirprom'/`var'RECprom.dta"', clear
 end
