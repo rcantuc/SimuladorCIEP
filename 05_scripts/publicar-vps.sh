@@ -291,6 +291,38 @@ fi
 log_ok "Gate 2: working tree limpio."
 
 # -----------------------------------------------------------------------------
+# Gate 6 — El manifest del commit local corresponde al deployment solicitado
+# -----------------------------------------------------------------------------
+# Lección del deploy v8.8 (2026-10-07): se corrió `publicar-vps.sh v8.8` desde
+# un árbol cuyo manifest decía v8.7.2 y el VPS sirvió código v8.7.2 bajo el
+# letrero v8.8. La regla es la del runbook §0: el deployment vN.M sirve código
+# vN.M.x — el `version` de 05_scripts/manifest.json (la misma fuente que la
+# Fase 4 escribe en DEPLOYED_COMMIT) debe empezar por el deployment pedido.
+# Si el manifest no se puede leer, también aborta: sin manifest no hay forma
+# de saber qué se está desplegando. Corre en dry-run (precondición local).
+MANIFEST_LOCAL="$LOCAL_REPO_ROOT/05_scripts/manifest.json"
+MANIFEST_VERSION="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8")).get("version", ""))' "$MANIFEST_LOCAL" 2>/dev/null || true)"
+if [[ -z "$MANIFEST_VERSION" ]]; then
+    die "Gate 6: no pude leer 'version' de $MANIFEST_LOCAL.
+        Sin manifest legible no se sabe qué versión del código se desplegaría.
+        Revisa que exista, sea JSON válido y tenga el campo 'version' (vN.M.P)."
+fi
+if [[ ! "$MANIFEST_VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    die "Gate 6: manifest.json declara version '$MANIFEST_VERSION', que no es vN.M.P.
+        El Gate 3 de publicar.sh exige ese formato; corrige el manifest antes de desplegar."
+fi
+if [[ "${MANIFEST_VERSION%.*}" != "$VERSION_ARG" ]]; then
+    die "Gate 6: el código local es $MANIFEST_VERSION (manifest.json), que corresponde al
+        deployment ${MANIFEST_VERSION%.*}, pero pediste desplegar $VERSION_ARG.
+        Un deployment vN.M sirve código vN.M.x (runbook §0): así el VPS no vuelve a
+        anunciar una versión y servir otra (deploy v8.8 que shipeó v8.7.2, 2026-10-07).
+        Opciones: (a) si el código es el correcto, corre: $0 ${MANIFEST_VERSION%.*}
+                  (b) si querías desplegar $VERSION_ARG, haz checkout del commit/tag
+                      cuyo manifest diga $VERSION_ARG.x y vuelve a correr."
+fi
+log_ok "Gate 6: manifest $MANIFEST_VERSION ↔ deployment $VERSION_ARG (código ${MANIFEST_VERSION%.*}.x)."
+
+# -----------------------------------------------------------------------------
 # Gate 5 — Fuente local existe (antes que el gate remoto: falla rápido y barato)
 # -----------------------------------------------------------------------------
 [[ -d "$LOCAL_SITE_ROOT" ]]         || die "No existe LOCAL_SITE_ROOT: $LOCAL_SITE_ROOT"
@@ -306,6 +338,77 @@ _N_PROM="$(find "$LOCAL_REPO_ROOT/users/ricardo/bootstraps/$_B_WEB" -maxdepth 1 
 log_info "Gate 5: escenario base: $_N_PROM archivo(s) *RECprom.dta en users/ricardo/bootstraps/$_B_WEB/ (B = $_B_WEB, Web.Stata.do)."
 [[ -f "$LOCAL_SITE_ROOT/health.php" ]] || die "No existe $LOCAL_SITE_ROOT/health.php. El health check post-deploy depende de él."
 log_ok "Gate 5: fuentes locales verificadas."
+
+# -----------------------------------------------------------------------------
+# Gate 7 — Sitio auto-contenido: el docroot local trae TODO lo que git versiona
+# -----------------------------------------------------------------------------
+# Incidente del deploy v8.10 (2026-10-16): se desplegó desde un worktree cuyo
+# 04_1_simuladorfiscal.ciep.mx/ solo tenía lo copiado a mano; la Fase 2 subió
+# un sitio sin css/, js/ ni plugins/ y la Fase 6 lo declaró sano porque solo
+# miraba health.php. Desde v8.11a el sitio completo vive en git, así que la
+# fuente de verdad de "qué debe haber en el docroot" es `git ls-files`: cada
+# archivo versionado bajo 04_1/ debe existir en LOCAL_SITE_ROOT, y cada archivo
+# que la Fase 2 subiría debe estar versionado (un fantasma nuevo se detecta
+# aquí, no en producción). Si LOCAL_SITE_ROOT no es el 04_1 del repo (credentials
+# apuntando a otro clon del sitio), solo se verifica la existencia.
+SITE_REL="04_1_simuladorfiscal.ciep.mx"
+_site_tracked="$(git -C "$LOCAL_REPO_ROOT" ls-files -- "$SITE_REL")"
+[[ -n "$_site_tracked" ]] || die "Gate 7: git no versiona nada bajo $SITE_REL/ en $LOCAL_REPO_ROOT. ¿Checkout anterior a v8.11a?"
+_faltan=()
+while IFS= read -r _f; do
+    [[ -f "$LOCAL_REPO_ROOT/$_f" ]] || _faltan+=("$_f")
+done <<< "$_site_tracked"
+if (( ${#_faltan[@]} > 0 )); then
+    die "Gate 7: ${#_faltan[@]} archivo(s) versionado(s) del sitio NO existen en el checkout:
+        $(printf '          %s\n' "${_faltan[@]:0:10}")$( (( ${#_faltan[@]} > 10 )) && echo "          … y $(( ${#_faltan[@]} - 10 )) más")
+        Un deploy desde aquí subiría un sitio incompleto. Restaura con:
+          git -C '$LOCAL_REPO_ROOT' checkout -- '$SITE_REL'"
+fi
+_n_tracked="$(printf '%s\n' "$_site_tracked" | wc -l | tr -d ' ')"
+if [[ "$(cd "$LOCAL_SITE_ROOT" && pwd -P)" == "$(cd "$LOCAL_REPO_ROOT/$SITE_REL" && pwd -P)" ]]; then
+    # Lo que la Fase 2 subiría (mismas exclusiones) y git no versiona = fantasma.
+    # --exclude-per-directory=.gitignore (no --exclude-standard): solo cuentan las
+    # reglas versionadas del repo, no .git/info/exclude ni el gitignore global
+    # de la máquina — un exclude local ocultaría fantasmas que otro clon sí vería.
+    _fantasmas="$(cd "$LOCAL_REPO_ROOT" && git ls-files --others --exclude-per-directory=.gitignore -- "$SITE_REL" \
+        | grep -vE '(^|/)(\.DS_Store|DEPLOYED_COMMIT|calcular_clicks\.log)$|/(ssl|logs)/|/0[^/]*/' || true)"
+    if [[ -n "$_fantasmas" ]]; then
+        die "Gate 7: el docroot trae archivo(s) que la Fase 2 subiría pero git NO versiona:
+$(printf '%s\n' "$_fantasmas" | head -10 | sed 's/^/          /')
+        El sitio debe ser auto-contenido desde un checkout fresco (v8.11a): agrégalos a git
+        (git add <archivo>, explícito) o, si son runtime, añádelos al .gitignore y a las
+        exclusiones de la Fase 2 en este script."
+    fi
+    log_ok "Gate 7: sitio auto-contenido — $_n_tracked archivos versionados presentes, ningún fantasma en el docroot."
+else
+    log_warn "Gate 7: LOCAL_SITE_ROOT ($LOCAL_SITE_ROOT) no es el $SITE_REL del repo; se verificó solo que los $_n_tracked archivos versionados existan en el repo."
+fi
+
+# Activos de humo del sitio: uno por clase (css, js, plugin, imagen, favicon,
+# PHP de datos). Los lee la Fase 6 contra el VPS (HTTP 200) — hoy el health
+# check de PHPs declaró sano un sitio sin esqueleto — y aquí se exige que
+# existan en el docroot local, para que la lista no envejezca en silencio si
+# un archivo se renombra.
+SITE_SMOKE_ASSETS=(
+    css/custom.css
+    css/admin2.css
+    js/stataCalcula.js
+    js/connect.js
+    plugins/bootstrap/css/bootstrap.min.css
+    plugins/font-awesome/css/all.min.css
+    plugins/jquery/jquery-3.4.1.min.js
+    plugins/apexcharts/dist/apexcharts.min.js
+    images/ciep-logo1.png
+    images/TE_Trabajo.png
+    favicon.ico
+    cargaDefault.php
+    jsonSankey.php
+)
+for _a in "${SITE_SMOKE_ASSETS[@]}"; do
+    [[ -f "$LOCAL_SITE_ROOT/$_a" ]] || die "Gate 7: el activo de humo $_a no existe en $LOCAL_SITE_ROOT.
+        Si se renombró, actualiza SITE_SMOKE_ASSETS en este script; si falta, el sitio está incompleto."
+done
+log_ok "Gate 7: ${#SITE_SMOKE_ASSETS[@]} activos de humo presentes en el docroot local."
 
 # -----------------------------------------------------------------------------
 # Gate 4 — Estructura VPS existe
@@ -420,6 +523,16 @@ PREVIOUS_SIM="${PREVIOUS_DEPLOYMENT#v}"
 # users/ricardo/graphs/ manda ella; si no existe ahí pero sí en el sitio, se
 # conserva la del sitio con aviso; si no existe en ninguno, el enlace del
 # index quedaría roto → aborta.
+# Desde v8.11a images/ vive en git (snapshot de las 10), así que un checkout
+# fresco siempre cae en "se conserva la del sitio": el deploy no aborta por
+# ellas, pero la gráfica publicada es la del snapshot hasta que una corrida
+# con la receta la refresque (y ese refresco se commitea: Gate 7 exige que el
+# docroot y git coincidan). Receta: runbook-deploys-ciep.md §1 "Gráficas del sitio".
+GRAPHS_RECETA="Receta (runbook §1 'Gráficas del sitio'): en SIM.do descomenta
+        'do \"\${SIMROOT}/01_modulos/visualizations/Graphs_TE.do\"' (§4.6, antes de 4.7)
+        y 'do \"\${SIMROOT}/01_modulos/visualizations/Graphs_PC.do\"' (§5.1; tardado),
+        corre SIM.do completo SIN 'global nographs' → escribe users/<id>/graphs/TE_*.png
+        y GastoPC_*.png; vuelve a comentar las dos líneas antes de commitear."
 SITE_GRAPHS=(
     TE_Trabajo.png
     TE_Capital.png
@@ -444,13 +557,28 @@ for _g in "${SITE_GRAPHS[@]}"; do
         fi
         _g_copiadas=$((_g_copiadas + 1))
     elif [[ -f "$LOCAL_SITE_ROOT/images/$_g" ]]; then
-        log_warn "Fase 1b: $_g no está en users/ricardo/graphs/ — se conserva la del sitio ($(date -r "$LOCAL_SITE_ROOT/images/$_g" +%Y-%m-%d)). Para regenerarla: Graphs_TE.do / Graphs_PC.do activos en SIM.do."
+        log_warn "Fase 1b: $_g no está en users/ricardo/graphs/ — se conserva la del sitio (snapshot en git, mtime $(date -r "$LOCAL_SITE_ROOT/images/$_g" +%Y-%m-%d))."
         _g_conservadas=$((_g_conservadas + 1))
     else
         die "Fase 1b: $_g no existe ni en users/ricardo/graphs/ ni en $LOCAL_SITE_ROOT/images/ —
-        index.php la enlaza y quedaría rota. Corre SIM.do con Graphs_TE.do y Graphs_PC.do activos."
+        index.php la enlaza y quedaría rota. Desde v8.11a images/$_g está versionada: si el
+        checkout la perdió, restáurala con
+          git -C '$LOCAL_REPO_ROOT' checkout -- '04_1_simuladorfiscal.ciep.mx/images/$_g'
+        Para regenerarla con datos frescos en lugar del snapshot:
+        $GRAPHS_RECETA"
     fi
 done
+if (( _g_conservadas > 0 )); then
+    log_warn "Fase 1b: $_g_conservadas gráfica(s) salen del snapshot versionado, no de una corrida fresca. Para refrescarlas:"
+    log_warn "        $GRAPHS_RECETA"
+fi
+# Si la copia refrescó gráficas, el docroot ya no coincide con git: lo publicado
+# debe quedar versionado (el Gate 2 del próximo deploy lo exigiría igual).
+_g_modificadas="$(git -C "$LOCAL_REPO_ROOT" status --porcelain -- "04_1_simuladorfiscal.ciep.mx/images" 2>/dev/null | wc -l | tr -d ' ')"
+if (( _g_modificadas > 0 )); then
+    log_warn "Fase 1b: $_g_modificadas gráfica(s) del docroot difieren de git tras la copia. Al terminar el deploy, commitea lo publicado:"
+    log_warn "        git -C '$LOCAL_REPO_ROOT' add 04_1_simuladorfiscal.ciep.mx/images && git -C '$LOCAL_REPO_ROOT' commit -m 'chore(sitio): gráficas TE_/GastoPC_ de la corrida <fecha>'"
+fi
 log_ok "Fase 1b: $_g_copiadas copiada(s) desde users/ricardo/graphs/, $_g_conservadas conservada(s) del sitio$( [[ $DRY_RUN -eq 1 ]] && echo ' (simulado)' )."
 
 # =============================================================================
@@ -1013,12 +1141,29 @@ health_commit_matches() {
     curl -sL --max-time 10 "$VPS_HEALTH_URL" 2>/dev/null | grep -q "Commit: $CURRENT_COMMIT"
 }
 
+# Esqueleto del sitio (v8.11a): health.php y el commit solo prueban que el PHP
+# corre y que el deploy escribió su marca; el deploy v8.10 (2026-10-16) pasó
+# ambos sirviendo un sitio sin css/, js/ ni plugins/. Cada activo de
+# SITE_SMOKE_ASSETS (una muestra por clase, verificada en el docroot local por
+# el Gate 7) debe responder 200 bajo la misma base que el health check.
+SITE_SMOKE_FALLAS=()
+health_assets_check() {
+    local base="${VPS_HEALTH_URL%/*}" a code
+    SITE_SMOKE_FALLAS=()
+    for a in "${SITE_SMOKE_ASSETS[@]}"; do
+        code=$(curl -sL -o /dev/null -w "%{http_code}" --max-time 15 "$base/$a" 2>/dev/null || echo "000")
+        [[ "$code" == "200" ]] || SITE_SMOKE_FALLAS+=("$a → HTTP $code")
+    done
+    (( ${#SITE_SMOKE_FALLAS[@]} == 0 ))
+}
+
 HEALTH_PASSED=1
 if [[ $SKIP_HEALTH -eq 1 ]]; then
     log_warn "Fase 6: SALTADA por --skip-health. El rollback automático también queda saltado."
     log_warn "Verifica el sitio manualmente: $VPS_HEALTH_URL"
 elif [[ $DRY_RUN -eq 1 ]]; then
     log_info "[dry-run] Fase 6: se verificaría HTTP 200 y 'Commit: ${CURRENT_COMMIT_SHORT}...' en $VPS_HEALTH_URL"
+    log_info "[dry-run] Fase 6: y HTTP 200 en ${#SITE_SMOKE_ASSETS[@]} activos del esqueleto bajo ${VPS_HEALTH_URL%/*}/: ${SITE_SMOKE_ASSETS[*]}"
 else
     log_info "Fase 6: verificación post-deploy contra $VPS_HEALTH_URL"
     if health_check; then
@@ -1028,6 +1173,14 @@ else
         else
             log_error "El sitio responde 200 pero NO reporta el commit esperado."
             log_error "Posibles causas: DEPLOYED_COMMIT no se propagó, o el vhost de Apache no apunta a current todavía."
+            HEALTH_PASSED=0
+        fi
+        if health_assets_check; then
+            log_ok "Health check: esqueleto del sitio completo (${#SITE_SMOKE_ASSETS[@]}/${#SITE_SMOKE_ASSETS[@]} activos css/js/plugins/imágenes/PHP responden 200)."
+        else
+            log_error "Health check: ${#SITE_SMOKE_FALLAS[@]} activo(s) del esqueleto NO responden 200 bajo ${VPS_HEALTH_URL%/*}/:"
+            for _f in "${SITE_SMOKE_FALLAS[@]}"; do log_error "  $_f"; done
+            log_error "El sitio cargaría sin estilos/JS (incidente v8.10, 2026-10-16). Revisa la Fase 2 (rsync del sitio) y los permisos (Fase 3c)."
             HEALTH_PASSED=0
         fi
     else
