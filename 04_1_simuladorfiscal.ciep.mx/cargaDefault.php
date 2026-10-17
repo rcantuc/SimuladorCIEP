@@ -346,11 +346,22 @@ foreach ($lineas_output as $linea) {
 		if( strpos($linea, ':')) {
 			$valores=preg_split('/:/', $linea, -1, PREG_SPLIT_OFFSET_CAPTURE);
 	if($debug) print __LINE__ ." : " ."{$valores[0][0]} : {$valores[1][0]}<br>";
-			$t=str_replace("[", "array(", $valores[1][0]);
-			$t=str_replace("]", ");", $t);
-			$t=str_replace(" ", "", $t);
+			// Revisión de seguridad v8.11a (2026-10-16): antes se construía
+			// '$arrarT=array(...);' y se pasaba a eval(). output.txt lo escribe el
+			// deploy (fuente confiable), pero un eval en un PHP público es deuda:
+			// se parsea el "[a, b, null, ...]" a mano con los mismos tipos que
+			// producía eval (int, float, null, string).
+			$t=str_replace(" ", "", $valores[1][0]);
 	if($debug) print __LINE__ ." : " ."{$valores[0][0]}={$t}<br>";
-			eval('$arrarT='.$t);
+			if (preg_match('/^\[(.*)\]$/s', $t, $m)) {
+				$arrarT = array_map(function($el) {
+					if ($el === 'null') return null;
+					if (preg_match('/^-?\d+$/', $el)) return (int)$el;
+					return is_numeric($el) ? (float)$el : $el;
+				}, $m[1] === '' ? array() : explode(",", $m[1]));
+			} else {
+				$arrarT = ($t === 'null') ? null : (preg_match('/^-?\d+$/', $t) ? (int)$t : (is_numeric($t) ? (float)$t : $t));
+			}
 			$jsondata[trim($valores[0][0])]=$arrarT;
 		} 
 	}

@@ -35,6 +35,21 @@ Trabajo en `master` sin versión asignada.
   (huérfano de 1.5 MB). `config.php` auditado: detecta rutas local/VPS, sin credenciales.
   Inventario (77 archivos enlazados, 1 en git, 74 fantasmas) y prueba de auto-contención en
   `~/CIEP_Simuladores/diag-v8.11a-fantasmas-2026-10-16/`.
+- **Revisión de seguridad de los 13 PHP al volverse públicos (compuerta de Ricardo).** Dos
+  hallazgos explotables en `calculaStata.php`, presentes en producción desde el origen del sitio:
+  (1) **inyección de código Stata** — los ~150 valores del formulario se interpolaban sin
+  validar en el `.do` que Stata ejecuta como `www-data` (`INGRESOS0=0\nshell …` corría comandos);
+  (2) **path traversal en `idSession`** (`../x` creaba directorios y escribía el `.do` fuera de
+  `users/`). Corrección en `config.php` (`lee_idSession()`: alfanumérico 1-32; `lee_numero()`:
+  solo números, `12%`→`12`, ausente→`0`; lo demás → HTTP 400 sin correr Stata) aplicada en
+  `calculaStata.php`, `checkStataStatus.php` (también `ctype_digit` del pid antes de `ps -p`) y
+  los cinco `jsonSankey*.php` (inválido → escenario default). Endurecimientos menores:
+  `cargaDefault.php` sin `eval()` (parser con salida byte-idéntica), `logCalcular.php` sin
+  inyección de renglones ni rutas del servidor en la respuesta, `rm -f` por shell → `unlink`.
+  Tabla input→sanitización→veredicto y pruebas (php -S + Stata falso, código viejo vs nuevo) en
+  `diag-v8.11a-fantasmas-2026-10-16/seguridad-php.md`. Fuera de alcance: rate-limit de
+  `calculaStata.php` (DoS por abuso de CPU). **Mientras no se despliegue este PR, producción
+  corre el código vulnerable.** Se retira `js/pages/charts-v2.js_` (variante 2024 sin enlace).
 - **`publicar-vps.sh`:** Gate 6 — `manifest.version` debe ser vN.M.x del deployment pedido
   (el deploy v8.8 shipeó código v8.7.2); Gate 7 — el docroot coincide con `git ls-files 04_1/`
   (nada versionado falta, ningún fantasma sobra) y los activos de humo existen; Fase 6 — además

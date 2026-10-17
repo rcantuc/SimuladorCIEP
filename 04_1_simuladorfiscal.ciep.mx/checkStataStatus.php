@@ -7,12 +7,9 @@ include_once("config.php");
 
 header('Content-type: application/json; charset=utf-8');
 
-$idSession = isset($_POST['idSession']) ? $_POST['idSession'] : (isset($_GET['idSession']) ? $_GET['idSession'] : '');
-
-if (empty($idSession)) {
-    echo json_encode(['error' => 'idSession is required', 'status' => 'error']);
-    exit;
-}
+// Revisión de seguridad v8.11a: idSession solo alfanumérico (es nombre de
+// directorio bajo $TMP_PATH); inválido o ausente → 400 (helper en config.php).
+$idSession = lee_idSession();
 
 $working_dir = $TMP_PATH . $idSession;
 $done_file = $working_dir . "/" . $idSession . ".done";
@@ -84,9 +81,14 @@ if (file_exists($done_file)) {
         $pid = trim(file_get_contents($pid_file));
         $response['pid'] = $pid;
         
-        // Verificar si el proceso existe
-        exec("ps -p $pid", $output, $return_var);
-        $response['process_alive'] = ($return_var === 0);
+        // Verificar si el proceso existe (solo si el .pid trae un entero: el
+        // archivo vive en el directorio de sesión y no se interpola nada más)
+        if (ctype_digit($pid)) {
+            exec("ps -p " . escapeshellarg($pid), $output, $return_var);
+            $response['process_alive'] = ($return_var === 0);
+        } else {
+            $response['process_alive'] = false;
+        }
     }
 }
 

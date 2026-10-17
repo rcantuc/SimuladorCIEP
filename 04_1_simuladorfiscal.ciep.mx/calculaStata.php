@@ -49,7 +49,11 @@ $llaves=array(
 	
 
 
-$idSession=(isset($_GET['idSession'])) ? $_GET['idSession'] : $_POST['idSession'];
+// Revisión de seguridad v8.11a (2026-10-16): idSession solo alfanumérico (es
+// nombre de directorio y del .do) y cada valor del formulario solo numérico
+// (se interpola tal cual en el .do que corre Stata como www-data). Lo inválido
+// responde 400 y termina (helpers en config.php).
+$idSession = lee_idSession();
 
 $guardar=array();
 
@@ -59,13 +63,9 @@ if($debug) print __LINE__ ." : " . $idSession."*\n<br>";
 $jsondata=array();
 
 foreach($llaves as $k) {
-//	$guardar[$k]=(isset($_GET[$k])) ? $_GET[$k] : ((isset($_POST[$k])) ? $_POST[$k]: 0);
-	$tGuardar=(isset($_GET[$k])) ? $_GET[$k] : ((isset($_POST[$k])) ? $_POST[$k]: 0);
-	if(strpos($tGuardar, '%'))
-		$tGuardar=substr($tGuardar, 0, -1);
+	$tGuardar = ($k === 'idSession') ? $idSession : lee_numero($k);
 
 	$guardar[$k]=$tGuardar;
-//	if(!$guardar[$k]) $guardar[$k]="0";
 
 	$jsondata[$k]=$tGuardar;;
 if($debug) print __LINE__ ." : " . $k . "=>" .$guardar[$k] ."\n<br />" ;
@@ -73,9 +73,10 @@ if($debug) print __LINE__ ." : " . $k . "=>" .$guardar[$k] ."\n<br />" ;
 }
 
 
-$cmd = "rm -f " . escapeshellarg($TMP_PATH . $idSession) . "/*" ;
-if($debug) print  __LINE__ ." : " ."$cmd<br />";
-shell_exec( $cmd );
+// Limpia la sesión anterior sin pasar por el shell (antes: shell_exec("rm -f ..."))
+foreach (glob($TMP_PATH . $idSession . "/*") ?: array() as $_viejo) {
+	if (is_file($_viejo)) unlink($_viejo);
+}
 
 mkdir($TMP_PATH.$idSession,0755,true);
 if($debug) print  __LINE__ ." : " ."mkdir $TMP_PATH$idSession<br />";

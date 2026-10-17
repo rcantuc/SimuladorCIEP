@@ -23,6 +23,45 @@ $Cabecera_Stata_Dos_a_Cuatro = '
 ';													
 
 $idSession='T202210H'; //valor temporal
+
+/************** Validación de entradas (revisión de seguridad v8.11a, 2026-10-16) ********************/
+// idSession viaja en GET/POST y se usa como nombre de directorio bajo $TMP_PATH,
+// como nombre del .do y dentro del .do (global id). Solo se admite el formato
+// que produce generaId(): alfanumérico, sin separadores de ruta ni comillas.
+// Devuelve el id si es válido; null si no.
+function idSession_valido($id) {
+	return (is_string($id) && preg_match('/^[A-Za-z0-9]{1,32}$/', $id)) ? $id : null;
+}
+// Lee idSession de GET/POST; si falta o es inválido responde 400 JSON y termina
+// (calculaStata.php, checkStataStatus.php) o cae al escenario default 'ciepmx'
+// (jsonSankey*.php, solo lectura), según $default.
+function lee_idSession($default = null) {
+	$raw = $_GET['idSession'] ?? $_POST['idSession'] ?? '';
+	$id = idSession_valido($raw);
+	if ($id !== null) return $id;
+	if ($default !== null) return $default;
+	header('Content-type: application/json; charset=utf-8', true, 400);
+	echo json_encode(['error' => 'idSession inválido: se esperan 1-32 caracteres alfanuméricos', 'status' => 'error']);
+	exit;
+}
+// Valores del formulario que se interpolan en el .do de Stata ({{llave}}):
+// Web.Stata.do los asigna a scalars/globals numéricos (y dos flags "0"/"1"), así
+// que cualquier cosa que no sea un número es un intento de inyectar código Stata
+// (`shell`, `!`, ...) que correría como www-data. Se conserva el comportamiento
+// histórico: ausente → "0", "12%" → "12". Lo demás → 400 y fin.
+function lee_numero($llave) {
+	$v = $_GET[$llave] ?? $_POST[$llave] ?? '0';
+	if (!is_string($v)) $v = '0';
+	$v = trim($v);
+	if ($v === '') $v = '0';
+	if (substr($v, -1) === '%') $v = rtrim(substr($v, 0, -1));
+	if (!is_numeric($v) || preg_match('/[^0-9eE+\-.]/', $v)) {
+		header('Content-type: application/json; charset=utf-8', true, 400);
+		echo json_encode(['error' => "valor no numérico para $llave", 'status' => 'error']);
+		exit;
+	}
+	return $v;
+}
 /************** Valores iniciales por default ********************/
 
 # generar id unico

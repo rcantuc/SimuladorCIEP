@@ -37,8 +37,14 @@ try {
     $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? 'unknown';
     
     // Obtener datos adicionales del POST
+    // Revisión de seguridad v8.11a: lo que entra a la bitácora se acota a un
+    // token corto sin saltos de línea ni controles (una línea por clic; sin
+    // inyección de renglones falsos). Lo que no cumple se registra como 'invalid'.
     $sessionId = $_POST['sessionId'] ?? $_GET['sessionId'] ?? 'unknown';
     $pageVersion = $_POST['pageVersion'] ?? $_GET['pageVersion'] ?? 'es';
+    $sessionId = (is_string($sessionId) && preg_match('/^[A-Za-z0-9_-]{1,32}$/', $sessionId)) ? $sessionId : 'invalid';
+    $pageVersion = (is_string($pageVersion) && preg_match('/^[a-z]{2}$/', $pageVersion)) ? $pageVersion : 'invalid';
+    $userAgent = preg_replace('/[^\x20-\x7E]/', '?', $userAgent);
     
     $debugInfo['receivedData'] = [
         'sessionId' => $sessionId,
@@ -63,11 +69,12 @@ try {
     $debugInfo['bytesWritten'] = $success;
     
     if ($success !== false) {
+        // v8.11a: sin 'debug' en la respuesta pública (traía rutas del servidor);
+        // el JS no lo consume.
         echo json_encode([
             'status' => 'success',
             'message' => 'Click registrado correctamente',
-            'timestamp' => $timestamp,
-            'debug' => $debugInfo
+            'timestamp' => $timestamp
         ]);
     } else {
         throw new Exception("file_put_contents retornó false");

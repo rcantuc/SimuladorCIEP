@@ -4,7 +4,9 @@ $debug =false;
 $lineaNode = "";
 $lineaLinks = "";
 
-$idSession=(isset($_GET['idSession'])) ? $_GET['idSession'] : $_POST['idSession'];
+// Revisión de seguridad v8.11a: idSession solo alfanumérico (forma la ruta del
+// JSON bajo users/); inválido o ausente → escenario default 'ciepmx' (helper en config.php).
+$idSession = lee_idSession('ciepmx');
 if($debug) print __LINE__ ." : " . $idSession."*\n<br>";
 
 // Check if running on localhost
