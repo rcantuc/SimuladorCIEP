@@ -210,7 +210,7 @@ v8.6.1–v8.7.1 por saltarse el paso 4):
 | 5 | Prueba de la promesa pública | `bash 05_scripts/test-maquina-virgen.sh --download` (N/N assets desde la Release) | Ricardo |
 | 6 | VPS según tipo de release | §4 | Ricardo |
 | 7 | Gate humano | §6 | Ricardo |
-| 8 | Pull en la Carpeta de investigadores (Dropbox) y aviso a la capa NL (merge de cadencia) | manual | Ricardo |
+| 8 | Pull en la Carpeta de investigadores (Dropbox) | manual | Ricardo |
 
 **¿Por qué no anclar los assets a una Release fija y dejar de subir 1.3 GB
 por versión?** Se evaluó el 2026-10-05 y se descartó por ahora: (i) el
