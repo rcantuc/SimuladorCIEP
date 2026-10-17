@@ -9,6 +9,7 @@ f DatosAbiertos.ado
 f DatosAbiertos.sthlp
 f AccesoBIE.ado
 f PIBDeflactor.ado
+f AccesoINPCEntidad.ado
 f Poblacion.ado
 f ensure_asset.ado
 f escalar.ado
