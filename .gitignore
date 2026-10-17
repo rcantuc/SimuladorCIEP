@@ -169,20 +169,27 @@ endpoint-credentials.sh
 # Carpetas de operación local del Simulador (NO se versionan)
 # -----------------------------------------------------------------------------
 # Outputs intermedios de cada corrida y datos del servidor de producción.
-# 04_1_simuladorfiscal.ciep.mx/ = clon local del sitio del Simulador que
-# publicar-vps.sh propaga al VPS (renombrado desde 04_simuladorfiscal.ciep.mx/
-# el 2026-09-08, commit 360ebae, al liberarse el slot 04_1).
 **/temp/**
 **/master/**
 **/graphs/**
 **/users/**
-**/04_1_simuladorfiscal.ciep.mx/**
 **/06_libro/**
 06_libro/
 
-# Excepción: health.php SÍ se versiona (infraestructura del pipeline de
-# deployment al VPS, sin secretos; el resto del clon local sigue ignorado)
-!**/04_1_simuladorfiscal.ciep.mx/health.php
+# 04_1_simuladorfiscal.ciep.mx/ = el sitio del Simulador que publicar-vps.sh
+# (Fase 2) propaga al VPS. Desde 360ebae (2026-09-08) estuvo ignorado completo
+# salvo health.php; tres deploys seguidos (v8.8, v8.9, v8.10) tropezaron con
+# archivos que el sitio enlaza y git no versionaba, y el deploy v8.10 desde un
+# worktree (2026-10-16) sirvió el sitio sin css/js/plugins. Decisión de Ricardo
+# (2026-10-16, v8.11a): el sitio COMPLETO se versiona — PHP, css/, js/, images/,
+# favicon.ico, .htaccess y plugins/ (vendor como pin de reproducibilidad). Lo
+# que sigue fuera es runtime o material sin uso:
+#   ssl/                 material de renovación SSL (ya cubierto por **/ssl/**)
+#   logs/                bitácoras de runtime del servidor (logCalcular.php)
+#   calcular_clicks.log  log suelto (ya cubierto por *.log)
+#   simuladorfiscalv7.png  huérfano de 1.5 MB: ningún HTML/CSS lo enlaza
+/04_1_simuladorfiscal.ciep.mx/logs/
+/04_1_simuladorfiscal.ciep.mx/simuladorfiscalv7.png
 # Backups automáticos de publicar.sh internos (tar.gz pre-rsync)
 **/_backups/**
 
