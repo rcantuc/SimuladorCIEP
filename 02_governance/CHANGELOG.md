@@ -20,6 +20,36 @@ Formato de cada entrada:
 
 Trabajo en `master` sin versión asignada.
 
+### Institucional — el sitio del Simulador entra a git completo (v8.11a, 2026-10-16)
+
+- **Fin de los fantasmas del VPS.** Tres deploys seguidos (v8.8, v8.9, v8.10) tropezaron con
+  archivos que `index.php` enlaza y git no versionaba; el deploy v8.10 (2026-10-16) desde el
+  worktree del release sirvió el sitio **sin `css/`, `js/` ni `plugins/`** (404) con el health
+  check verde, hasta completarlo a mano desde Dropbox. Causa: `.gitignore` ignoraba
+  `**/04_1_simuladorfiscal.ciep.mx/**` entero salvo `health.php` (desde `360ebae`), así que un
+  checkout fresco nunca tuvo el sitio. Decisión de Ricardo: **`04_1_simuladorfiscal.ciep.mx/`
+  se versiona completo** — 13 PHP, `css/` (5), `js/` (14), `images/` (86, incluidas las 10
+  `TE_*`/`GastoPC_*` como snapshot), `plugins/` (1,991, vendor versionado como pin de
+  reproducibilidad), `favicon.ico`, `.htaccess` — tal cual estaba en el 04_1 del clon de Dropbox
+  que reparó producción. Siguen fuera `ssl/`, `logs/`, `*.log` y `simuladorfiscalv7.png`
+  (huérfano de 1.5 MB). `config.php` auditado: detecta rutas local/VPS, sin credenciales.
+  Inventario (77 archivos enlazados, 1 en git, 74 fantasmas) y prueba de auto-contención en
+  `~/CIEP_Simuladores/diag-v8.11a-fantasmas-2026-10-16/`.
+- **`publicar-vps.sh`:** Gate 6 — `manifest.version` debe ser vN.M.x del deployment pedido
+  (el deploy v8.8 shipeó código v8.7.2); Gate 7 — el docroot coincide con `git ls-files 04_1/`
+  (nada versionado falta, ningún fantasma sobra) y los activos de humo existen; Fase 6 — además
+  de `health.php` y el commit, un activo por clase (css, js, plugins, imagen, favicon,
+  `cargaDefault.php`, `jsonSankey.php`) debe responder 200 o hay rollback; Fase 1b — mensajes
+  con la receta exacta de `Graphs_TE.do`/`Graphs_PC.do` y aviso de commitear las gráficas
+  refrescadas.
+- **`test-maquina-virgen.sh --download --from <tag> [--into <dir>]`:** baja (con `gh`, sin
+  Stata) los assets de otra Release a su `local_path` del manifest con SHA verificado contra
+  el manifest local — para el huevo-y-gallina de un release cuya Release aún no existe y para
+  poblar `raw/` de un worktree sin copiar de otro clon.
+- Runbook: §1 checklist del sitio y receta «Gráficas del sitio»; §3 `--from`; §4 tabla de
+  gates locales; §5 curl del esqueleto; gotchas nuevos. `verify_gitignore.sh` con los asserts
+  invertidos para `04_1/`.
+
 ## [v8.10.0] — 2026-10-16
 
 Release **menor** (`versionado-y-git.md` §3.2). Consolida lo que entró a `master` después de

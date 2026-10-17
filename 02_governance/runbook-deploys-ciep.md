@@ -93,6 +93,41 @@ comando publicado. El Gate 4 verifica que todos existan.
       ```
 - [ ] Cruce de cifras hecho (si el release corrige datos): las series nuevas
       contra publicaciones CIEP / fuentes oficiales. **Sin este sí, no hay tag.**
+- [ ] **El sitio está en git y coincide con el docroot** (desde v8.11a el
+      `04_1_simuladorfiscal.ciep.mx/` completo se versiona — PHP, `css/`, `js/`,
+      `images/`, `plugins/`, `favicon.ico`, `.htaccess`; fuera quedan `ssl/`,
+      `logs/`, `*.log` y `simuladorfiscalv7.png`). Si editaste el sitio, va en
+      el commit del release; el Gate 7 de `publicar-vps.sh` aborta si el docroot
+      trae archivos sin versionar o si falta alguno versionado. **Nunca** se
+      completa un docroot copiando de Dropbox a mano: esa práctica causó los
+      fantasmas de v8.8–v8.10.
+
+### Gráficas del sitio (`images/TE_*.png`, `images/GastoPC_*.png`)
+
+Las 10 gráficas históricas que `index.php` abre en lightbox (4 tasas efectivas, 6
+gastos per cápita) **no** las produce la corrida estándar de `SIM.do`: salen de
+`01_modulos/visualizations/Graphs_TE.do` y `Graphs_PC.do`, cuyas líneas `do` están
+**comentadas** en `SIM.do` (§4.6 justo antes de «4.7 Tasas Efectivas», y §5.1 antes
+de «5.2 Gasto per cápita»; la de PC es muy tardada). Viven en git como **snapshot**
+(`04_1_simuladorfiscal.ciep.mx/images/`), así que un checkout fresco despliega sin
+abortar; la Fase 1b de `publicar-vps.sh` las sustituye por las de
+`users/ricardo/graphs/` cuando existen y avisa cuántas salen del snapshot.
+
+Receta para refrescarlas (cuando cambian los datos que grafican — nueva LIF/PEF,
+nueva ENIGH — o al menos una vez por Paquete):
+
+```bash
+# 1. En SIM.do, descomenta las dos líneas (quita el * inicial):
+#      do "${SIMROOT}/01_modulos/visualizations/Graphs_TE.do"
+#      do "${SIMROOT}/01_modulos/visualizations/Graphs_PC.do"
+# 2. Corre SIM.do completo SIN `global nographs` (las gráficas necesitan ventana
+#    de gráficos; en batch funciona igual, solo no actives nographs).
+#    → escribe users/<id>/graphs/TE_Trabajo|Capital|Consumo|Organismos.png
+#      y GastoPC_Educacion|Salud|Pensiones|Energia|Otros|Transferencias.png
+# 3. Vuelve a comentar las dos líneas antes de commitear SIM.do.
+# 4. El deploy (Fase 1b) copia las 10 al docroot y te recuerda commitearlas:
+git add 04_1_simuladorfiscal.ciep.mx/images && git commit -m "chore(sitio): gráficas TE_/GastoPC_ de la corrida <fecha>"
+```
 
 ---
 
@@ -204,6 +239,17 @@ estática (`--cobertura`: todo asset del manifest lo pide algún módulo) ya
 corre como Gate 6 dentro de `publicar.sh`; en v8.3.0 habría atrapado el
 `PPEF.2027.xlsx` publicado que ningún módulo solicitaba.
 
+**Durante un release en curso** (el manifest ya dice vX.Y.Z pero la Release
+aún no existe — el huevo-y-gallina del 2026-10-16) o para poblar el `raw/` de
+un worktree sin copiar nada de otro clon:
+```bash
+bash 05_scripts/test-maquina-virgen.sh --download --from v8.9.0               # prueba: ¿los assets de la Release anterior siguen siendo los del manifest?
+bash 05_scripts/test-maquina-virgen.sh --download --from v8.9.0 --into "$PWD"  # además los deja en raw/<local_path> del worktree
+```
+Sin Stata (usa `gh`); cada asset se deposita en su `local_path` del manifest y
+se verifica con el SHA del manifest **local**: un asset que cambió entre la
+Release `--from` y el manifest de hoy se reporta y no se instala.
+
 ### Si falla la conexión SSH a Cloudways
 Cloudways **whitelistea IPs** para SSH. Síntoma: `Operation timed out` al 22.
 ```bash
@@ -217,6 +263,24 @@ Panel Cloudways → servidor → **Security** → agregar la IPv4 actual. Espera
 ---
 
 ## 4. VPS (IONOS) — según el tipo de release
+
+Gates locales que `publicar-vps.sh` corre antes de tocar el VPS (abortan con la
+receta en el mensaje; todos corren también en `--dry-run`):
+
+| Gate | Qué exige | Incidente que lo originó |
+|---|---|---|
+| 2 | working tree sin cambios | — |
+| 6 | `manifest.json` `version` = vN.M.x del deployment pedido (`v8.10` sirve `v8.10.x`) | deploy v8.8 que shipeó código v8.7.2 (2026-10-07) |
+| 5 | `master/`, `users/ricardo/bootstraps/<B>/*RECprom.dta`, `health.php` | r(601) del 2026-07-09; v8.10.0 |
+| 7 | docroot = `git ls-files 04_1/` (nada versionado falta, nada sin versionar sobra) + activos de humo presentes | deploy v8.10 sin css/js/plugins (2026-10-16) |
+| 4 | estructura `vN.M` / `N.M` en el VPS (o la crea con `crear-deployment`) | — |
+
+Y tras el cutover, la **Fase 6** exige HTTP 200 de `health.php`, el commit
+desplegado **y un activo por clase del esqueleto** (css, js, plugins, imagen,
+favicon, `cargaDefault.php`, `jsonSankey.php`); si alguno falla, rollback
+automático. Correr desde el clon cuyo `04_1_simuladorfiscal.ciep.mx/` es el
+del repo (credentials `LOCAL_SITE_ROOT` = `LOCAL_REPO_ROOT/04_1_…`); si
+apunta a otro sitio, el Gate 7 solo verifica existencia y lo avisa.
 
 ### 4a. Patch (mismo deployment)
 
@@ -301,6 +365,11 @@ curl -s https://simuladorfiscal.ciep.mx/cargaDefault.php | head -c 300
 
 curl -s https://simuladorfiscal.ciep.mx/jsonSankey.php | head -c 300
 # → JSON no vacío del escenario fresco
+
+for p in css/custom.css js/stataCalcula.js plugins/bootstrap/css/bootstrap.min.css images/TE_Trabajo.png favicon.ico; do
+  printf '%-45s %s\n' "$p" "$(curl -sL -o /dev/null -w '%{http_code}' "https://simuladorfiscal.ciep.mx/$p")"
+done
+# → 200 en todos (la Fase 6 ya lo exige; aquí es la comprobación a ojo del esqueleto)
 ```
 
 ---
@@ -485,3 +554,6 @@ Compuertas de salida del PR (evidencia en `diag-pivote-entidad-2026-10-10/F1/`):
 | Mtime del default | Si el gate de frescura aborta: correr SIM.do completo primero (no tocar el mtime a mano). |
 | `global update` en Stata 17 | No descarga de la SHCP (r(603)); la regeneración exige StataNow 19.5. |
 | Release creada a mano desde el tag (sin assets) | NUNCA: el manifest ya apunta a ella y `ensure_asset` da 404 en toda máquina sin `raw/`. Siempre `publicar.sh vX.Y.Z`; si ya pasó, `publicar.sh vX.Y.Z --solo-assets` (incidente v8.6.1/v8.7.0/v8.7.1, 2026-10-05). |
+| Deploy desde un worktree o clon con el docroot incompleto | El sitio vive en git (v8.11a): un checkout fresco trae el `04_1` completo. Si el Gate 7 aborta, se restaura con `git checkout -- 04_1_simuladorfiscal.ciep.mx`, **nunca** copiando de Dropbox a mano (deploy v8.10, 2026-10-16: sitio sin css/js/plugins con health check verde). |
+| Deployment vN.M con código de otra versión | El Gate 6 aborta si `manifest.version` no es vN.M.x (deploy v8.8 que shipeó v8.7.2). Si el código es el correcto, el deployment pedido está mal, no al revés. |
+| `.git/info/exclude` o gitignore global con reglas sobre `04_1/` | Ocultan fantasmas a `git status` solo en esa máquina. Bórralas: el `.gitignore` versionado es la única fuente de reglas (el Gate 7 las ignora a propósito con `--exclude-per-directory=.gitignore`). |
