@@ -26,8 +26,9 @@ Release **menor** (`versionado-y-git.md` §3.2). Consolida lo que entró a `mast
 v8.9.0: el PR **#23 `feat/ciclo-entidad`** (ciclo de vida de entidad) y seis commits directos
 (`62ec15d`…`0692d9c`: retiro de `SIMroot`, `SIM.do` §0.4 sin parámetros de entidad ni
 `bootstrap`, retiro de `SIM-local.do`, retiro de las fuentes congeladas y del ancla,
-`PIBDeflactor` por entidad y bootstrap de 250 réplicas en la corrida), más la corrección
-de abajo. **No es release de datos**: `data_updated` no cambia y los 26 assets del manifest
+`PIBDeflactor` por entidad y bootstrap de 250 réplicas en la corrida), más las correcciones
+de abajo y el rediseño del consumo de las réplicas (`global bootstrap` restaurado, semilla
+versionada, `FiscalGap` sobre el promedio de las réplicas). **No es release de datos**: `data_updated` no cambia y los 26 assets del manifest
 siguen siendo los mismos (el manifest de v8.9.0 declaraba 27: `fuentes-2026-10-06.zip` salió
 en el retiro de las fuentes congeladas). No es v9.0.0: la versión 9 se reserva para cambios más
 profundos (decisión de Ricardo, 2026-10-16). Deploy del VPS por §4b del runbook (minor:
@@ -42,7 +43,7 @@ el régimen que existía entonces y se conservan como historia.
 ### Cambio declarado en los números publicados (sin ancla que lo mida)
 
 Regla de la casa: nada cambia en silencio. Con respecto a v8.9.0, la corrida de `SIM.do` y sus
-salidas cambian por tres causas que **no se pueden separar contra una referencia** (ya no hay
+salidas cambian por cuatro causas que **no se pueden separar contra una referencia** (ya no hay
 ancla):
 
 1. **Errores estándar con `bootstrap(250)`.** Cada perfil de `PerfilesSim.do` (35 llamadas a
@@ -59,6 +60,48 @@ ancla):
    variable `Ciclodevida` (`Yl + Yk + remesas + ROW − gasto`), antes comentados; ahora pasan por
    `Simulador` y, con `$output` activo, añaden sus bloques `INCD*`/`APORT*`/`PROY` a `output.txt`
    (el sitio lee el último de cada clave, el de `AportacionesNetas`, §7.3).
+4. **`FiscalGap` consume el promedio de las 250 réplicas, no una réplica suelta.** Hasta v8.9,
+   la proyección de ingresos (4.2) y gastos (5.2) de `FiscalGap` leía
+   `users/ricardo/bootstraps/1/<var>REC.dta`: la única pasada con `bootstrap(1)`. Desde este
+   release lee `<var>RECprom.dta`: el promedio por año de las 250 réplicas (misma convención que
+   `ProyGraph` usa desde `Simulador` v2.0 para la proyección puntual). La brecha fiscal, el
+   bloque `GASTOSPC`/`PROY` que de ahí sale y los Sankeys que dependen de `FiscalGap` cambian
+   en el orden del sesgo bootstrap de los perfiles: pequeño, no cero (comparación informativa
+   sobre el REC de CFE: la media de las 250 réplicas difiere de la pasada única de v8.9 —la del
+   6-oct, con otras fuentes— en menos de 0.03 % en todos los años). **Se declara; no hay ancla
+   contra la cual medirlo.**
+
+### `global bootstrap` restaurado, semilla versionada y escenario base de `FiscalGap` (`44da4ed`)
+
+Decisión de Ricardo (2026-10-16, firmada): se restaura el global y se rediseña el consumo.
+
+- **`SIM.do` §0.2:** `global bootstrap "250"` (réplicas de `Simulador` en `PerfilesSim.do`,
+  `Expenditure.do` y `Households.do`; las 45 llamadas pasan `bootstrap($bootstrap)`),
+  `global seed "1111"` + `set seed $seed` y `global idbase "$id"`. **Semilla 1111** porque es la
+  que `Simulador` (y `Perfiles`) fijan por llamada desde v1.x: las réplicas de este release son
+  las mismas que las de la corrida `0692d9c`, y la compuerta de determinismo de abajo las
+  reproduce. `Simulador` `seed()` deja de ser un entero fijo: vacío = `$seed` del panel (1111 si
+  no hay panel); el bloque `legacy` usa la misma semilla. **`SIM.do` §7 (`AportacionesNetas`)
+  sigue en `bootstrap(1)`**: es la misma llamada de `Web.Stata.do` y de esa pasada salen los
+  `APORT*` que el sitio dibuja; no se cambia el contrato del sitio aquí.
+- **`PerfilesSim.do` §8 (nuevo prepaso):** tras los perfiles, colapsa cada `<var>REC.dta`
+  (250 réplicas × 101 años) a su promedio por (`modulo`, `anio`, `aniobase`) y lo guarda como
+  **`users/<id>/bootstraps/<bootstrap>/<var>RECprom.dta`** (mismo directorio que las réplicas,
+  sufijo `prom`, columna `replicas` = B; un `collapse` por variable, cero réplicas adicionales).
+  Con B = 1 el promedio es la única pasada.
+- **`FiscalGap` 4.2 y 5.2:** leen `<var>RECprom.dta` de `users/<idbase>/bootstraps/<bootstrap>/`
+  (programa `_FGrecprom`). **Sin fallback silencioso:** si falta `global bootstrap` aborta con
+  r(198) y si falta el producto aborta con r(601) diciendo exactamente qué correr (`SIM.do` con
+  `global bootstrap "<B>"` e id `<idbase>` desde §3). **`users/ricardo/` fijo desaparece** del
+  motor: `idbase` = `$idbase` (local: el propio `id`; vacío = el `id` de la sesión).
+- **`Web.Stata.do`:** `global bootstrap "250"` y `global idbase "ricardo"` (el escenario base
+  publicado). **`publicar-vps.sh` Fase 3b-bis** sincroniza solo `*RECprom.dta` (las réplicas
+  crudas pesan ≈ 0.8 GB con B = 250) y el Gate 5 exige que existan para la B de `Web.Stata.do`.
+  No probado contra el VPS en esta sesión (el ritual es de Ricardo).
+- Consumidores de `bootstraps/` que **no** cambian (clasificados): `Perfiles.ado` y
+  `CuentasGeneracionales.ado` (sus llamadas en `SIM.do` están comentadas; opción `bootstrap()`
+  propia), `05_scripts/test-simulador-dorado.do` (test dorado, B = 1 por diseño sobre
+  `users/dorado_*`), `Simulador.ado` (escribe y lee con su propia opción).
 
 ### Correcciones
 
