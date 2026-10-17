@@ -19,6 +19,14 @@
 #                los modulos. Exito = todos los assets del manifest descargados y
 #                con SHA verificado (N/N). Correr DESPUES de publicar.sh vX.Y.Z y
 #                antes de anunciar. No toca el repo ni raw/ real.
+#                --from <tag>  (v8.11a) baja los assets de la Release <tag> en lugar
+#                de la del manifest: para el huevo-y-gallina de un release en curso
+#                (el manifest ya dice vX.Y.Z pero publicar.sh aun no creo su
+#                Release; 2026-10-16). Los SHA se verifican contra el manifest
+#                LOCAL: pasa solo si los assets no cambiaron entre <tag> y hoy.
+#                --into <dir>  deposita cada asset en <dir>/<local_path> (p. ej.
+#                la raiz de un worktree sin raw/) y lo conserva; sin --into el
+#                SITE es temporal y se borra al pasar.
 #
 #   --zip        (dinamico, ~1 min, sin red)  La via del ALUMNO (2026-10-05): ZIP de
 #                GitHub sin git, carpeta con nombre arbitrario y espacios, sin
@@ -33,6 +41,7 @@
 #
 # Uso: bash 05_scripts/test-maquina-virgen.sh --cobertura
 #      bash 05_scripts/test-maquina-virgen.sh --download [--stata <ruta stata-se>]
+#      bash 05_scripts/test-maquina-virgen.sh --download --from <tag> [--into <dir>]
 #      bash 05_scripts/test-maquina-virgen.sh --zip [--completo] [--stata <ruta>]
 # Exit 0 si pasa; 1 si falla (lista lo que falta).
 
@@ -45,6 +54,8 @@ cd "$REPO_ROOT"
 MODE=""
 STATA=""
 COMPLETO=false
+FROM_TAG=""
+INTO_DIR=""
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --cobertura) MODE="cobertura"; shift ;;
@@ -52,10 +63,21 @@ while [[ $# -gt 0 ]]; do
         --zip)       MODE="zip"; shift ;;
         --completo)  COMPLETO=true; shift ;;
         --stata)     STATA="$2"; shift 2 ;;
+        --from)      FROM_TAG="${2:-}"; shift 2 ;;
+        --into)      INTO_DIR="${2:-}"; shift 2 ;;
         *) echo "Argumento desconocido: $1" >&2; exit 1 ;;
     esac
 done
-[[ -z "$MODE" ]] && { echo "Uso: $0 --cobertura | --download [--stata <ruta>] | --zip [--completo]" >&2; exit 1; }
+[[ -z "$MODE" ]] && { echo "Uso: $0 --cobertura | --download [--stata <ruta>] [--from <tag> [--into <dir>]] | --zip [--completo]" >&2; exit 1; }
+if [[ -n "$FROM_TAG" || -n "$INTO_DIR" ]] && [[ "$MODE" != "download" ]]; then
+    echo "--from/--into solo aplican con --download." >&2; exit 1
+fi
+if [[ -n "$INTO_DIR" && -z "$FROM_TAG" ]]; then
+    echo "--into requiere --from <tag> (la via sin Stata que deposita los assets en su local_path)." >&2; exit 1
+fi
+if [[ -n "$FROM_TAG" && ! "$FROM_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    echo "--from espera un tag de Release vN.M.P (recibido: '$FROM_TAG')." >&2; exit 1
+fi
 
 # ─── sim_run <SIM.do origen> <destino> <raiz> [global ...] ───
 # Copia de SIM.do para correr en batch: la raiz va en la linea `global SIMROOT` (lo unico
@@ -119,6 +141,67 @@ if [[ "$MODE" == "cobertura" ]]; then
         exit 1
     fi
     echo "$total/$total assets del manifest solicitados por algun modulo."
+    exit 0
+fi
+
+# ─── --download --from <tag>: los assets de OTRA Release, cada uno en su local_path ───
+# Sin Stata: ensure_asset solo sabe bajar de la Release del manifest (release_url_prefix),
+# que durante un release en curso aun no existe. Aqui se baja con gh de la Release <tag>
+# (patron de publicar.sh --poblar-raw), se deposita en <dest>/<local_path> — no plano en
+# raw/ — y se verifica el SHA contra el manifest LOCAL: si un asset cambio entre <tag> y
+# el manifest de hoy, se reporta y no se instala. Con --into <dir> los assets se quedan
+# (p. ej. --into "$PWD" en un worktree sin raw/); sin --into, el destino es temporal.
+if [[ "$MODE" == "download" && -n "$FROM_TAG" ]]; then
+    command -v gh >/dev/null 2>&1 || { echo "--from requiere gh (GitHub CLI) autenticado." >&2; exit 1; }
+    gh release view "$FROM_TAG" >/dev/null 2>&1 || { echo "La Release $FROM_TAG no existe en GitHub (gh release list)." >&2; exit 1; }
+    tag_manifest="$(python3 -c "import json;print(json.load(open('05_scripts/manifest.json'))['release_tag'])")"
+    if [[ -n "$INTO_DIR" ]]; then
+        mkdir -p "$INTO_DIR" || { echo "No pude crear $INTO_DIR." >&2; exit 1; }
+        DEST="$(cd "$INTO_DIR" && pwd)"
+    else
+        DEST="$(mktemp -d /tmp/simulador-virgen-from.XXXXXX)"
+    fi
+    echo "Assets de la Release $FROM_TAG → $DEST/<local_path>  (manifest local: $tag_manifest; SHA contra el manifest local)"
+    tmp_dl="$(mktemp -d /tmp/simulador-virgen-dl.XXXXXX)"
+    bajados=0; presentes=0; fallas=0; total=0
+    while IFS=$'\t' read -r name lp sha; do
+        total=$((total+1))
+        f="$DEST/$lp"
+        if [[ -f "$f" ]]; then
+            actual="$(shasum -a 256 "$f" | awk '{print $1}')"
+            if [[ "$actual" == "$sha" ]]; then presentes=$((presentes+1)); continue; fi
+            echo "  - $name: ya existe en $lp con SHA distinto al manifest (${actual:0:12}...); no se toca" >&2
+            fallas=$((fallas+1)); continue
+        fi
+        rm -f "$tmp_dl/$name"
+        if ! gh release download "$FROM_TAG" --pattern "$name" --dir "$tmp_dl" 2>/dev/null || [[ ! -f "$tmp_dl/$name" ]]; then
+            echo "  - $name: no esta en la Release $FROM_TAG (o la descarga fallo)" >&2
+            fallas=$((fallas+1)); continue
+        fi
+        actual="$(shasum -a 256 "$tmp_dl/$name" | awk '{print $1}')"
+        if [[ "$actual" != "$sha" ]]; then
+            echo "  - $name: SHA en $FROM_TAG ${actual:0:12}... != manifest local ${sha:0:12}... (el asset cambio entre versiones; no se instala)" >&2
+            fallas=$((fallas+1)); rm -f "$tmp_dl/$name"; continue
+        fi
+        mkdir -p "$(dirname "$f")"
+        mv "$tmp_dl/$name" "$f"
+        echo "  + $name → $lp"
+        bajados=$((bajados+1))
+    done < <(python3 -c "
+import json
+for a in json.load(open('05_scripts/manifest.json'))['assets']:
+    print(a['name'], a['local_path'].replace('\\\\', '/'), a['sha256'], sep='\t')")
+    rm -rf "$tmp_dl"
+    if (( fallas > 0 )); then
+        echo "MAQUINA VIRGEN (--from $FROM_TAG): $fallas de $total asset(s) fallaron; $bajados descargados, $presentes ya estaban. Destino conservado: $DEST"
+        exit 1
+    fi
+    if [[ -n "$INTO_DIR" ]]; then
+        echo "MAQUINA VIRGEN (--from $FROM_TAG): $total/$total assets en $DEST/<local_path> con el SHA del manifest ($bajados descargados, $presentes ya estaban)."
+    else
+        echo "MAQUINA VIRGEN (--from $FROM_TAG): $total/$total assets de la Release $FROM_TAG coinciden con el manifest $tag_manifest ($bajados descargados)."
+        rm -rf "$DEST"
+    fi
     exit 0
 fi
 
