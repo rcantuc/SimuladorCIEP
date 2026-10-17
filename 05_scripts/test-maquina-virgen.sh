@@ -153,7 +153,15 @@ fi
 # (p. ej. --into "$PWD" en un worktree sin raw/); sin --into, el destino es temporal.
 if [[ "$MODE" == "download" && -n "$FROM_TAG" ]]; then
     command -v gh >/dev/null 2>&1 || { echo "--from requiere gh (GitHub CLI) autenticado." >&2; exit 1; }
-    gh release view "$FROM_TAG" >/dev/null 2>&1 || { echo "La Release $FROM_TAG no existe en GitHub (gh release list)." >&2; exit 1; }
+    # El repo de GitHub sale del manifest (release_url_prefix), no del remoto: un
+    # worktree o clon de prueba puede no tener remoto hacia GitHub y gh fallaria.
+    GH_REPO_SLUG="$(python3 -c "
+import json, re
+p = json.load(open('05_scripts/manifest.json'))['release_url_prefix']
+m = re.match(r'https://github\.com/([^/]+/[^/]+)/releases/download/', p)
+print(m.group(1) if m else '')")"
+    [[ -n "$GH_REPO_SLUG" ]] || { echo "release_url_prefix del manifest no tiene la forma https://github.com/<owner>/<repo>/releases/download/…" >&2; exit 1; }
+    gh release view "$FROM_TAG" --repo "$GH_REPO_SLUG" >/dev/null 2>&1 || { echo "La Release $FROM_TAG no existe en $GH_REPO_SLUG (gh release list --repo $GH_REPO_SLUG)." >&2; exit 1; }
     tag_manifest="$(python3 -c "import json;print(json.load(open('05_scripts/manifest.json'))['release_tag'])")"
     if [[ -n "$INTO_DIR" ]]; then
         mkdir -p "$INTO_DIR" || { echo "No pude crear $INTO_DIR." >&2; exit 1; }
@@ -174,7 +182,7 @@ if [[ "$MODE" == "download" && -n "$FROM_TAG" ]]; then
             fallas=$((fallas+1)); continue
         fi
         rm -f "$tmp_dl/$name"
-        if ! gh release download "$FROM_TAG" --pattern "$name" --dir "$tmp_dl" 2>/dev/null || [[ ! -f "$tmp_dl/$name" ]]; then
+        if ! gh release download "$FROM_TAG" --repo "$GH_REPO_SLUG" --pattern "$name" --dir "$tmp_dl" 2>/dev/null || [[ ! -f "$tmp_dl/$name" ]]; then
             echo "  - $name: no esta en la Release $FROM_TAG (o la descarga fallo)" >&2
             fallas=$((fallas+1)); continue
         fi
