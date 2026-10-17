@@ -65,6 +65,32 @@ Trabajo en `master` sin versión asignada.
   gates locales; §5 curl del esqueleto; gotchas nuevos. `verify_gitignore.sh` con los asserts
   invertidos para `04_1/`.
 
+### Institucional — retiro de la capa NL de la era del runner (v8.11b, 2026-10-16)
+
+- **Se retira de `master` la capa NL-0.4.x** (39 rutas): los drivers `01_modulos/EntidadNL.do`,
+  `FederacionNL.do`, `PIBDeflactorNL.do` y `PoblacionNL.do`; `01_modulos/nl-assets/` completa
+  (lectores `nl-bie.do`/`nl-fed.do`, `nl-html.do`, `nl-identidad.do`, `actualizar-nl.do`,
+  plantillas HTML, `nl-datos.js`, identidad CoNL, `nl-manifest.json`, `federacion-sello.json`,
+  bitácora y `pobproy_quinq1.csv`); `actualizar-nl.sh` y `publicar-conl.sh`; el runner Windows
+  `windows/` (instalador, `actualizar-nl.ps1`, verificador, README); y `DIAGNOSTICO_NL.md`.
+  **Por qué:** la capa quedó superada por el motor `global entidad` (v8.8–v8.10: `SIMentidad`,
+  `Poblacion`/`PIBDeflactor` por entidad, `compuertas-entidad.*`) y su código en `master` no podía
+  correr: sus scripts apuntaban al worktree `SimuladorCIEP-NL` y el runner clonaba
+  `feature/entidad-nl`, rama que ya no existe. Nada se pierde: la capa entera, en su versión más
+  reciente (NL-0.5.x/0.6.0, espejo del sitio, `nl-fuentes`), está archivada en la rama
+  **`archive/entidad-nl-capa-y-espejo`** (b9ac315, 2026-10-16), de la que `master` solo
+  difería por dos ediciones mecánicas (62ec15d, a99eb19). El motor no se toca: lo prueban la
+  corrida completa de `SIM.do`, `compuertas-entidad.sh` (Nuevo León) y `publicar.sh --check`
+  tras el retiro (evidencia en `~/CIEP_Simuladores/diag-v8.11b-retiro-capa-2026-10-16/`).
+- **`TasasEfectivasMicro.ado` queda huérfano a propósito.** Su único llamador era
+  `EntidadNL.do`; se conserva intacto en la raíz (v1.1.0) hasta su re-cableo al motor vía
+  `SIMentidad` en v8.13. No es un olvido del barrido.
+- Citas que se conservan como historia: `DatosAbiertos.ado` §4.7 y `TasasEfectivasMicro.ado`
+  citan `DIAGNOSTICO_NL.md`; `PIBDeflactor.ado` y su `.sthlp` hablan de `master/PIBDeflactorNL.dta`
+  (base por entidad del motor, no de la capa); `compuertas-entidad.{sh,py}` aceptan un
+  `statajson_entidad-nl.json` como testigo opcional. Runbook de deploys: el paso 8 del checklist
+  ya no avisa a la capa NL (merge de cadencia).
+
 ## [v8.10.0] — 2026-10-16
 
 Release **menor** (`versionado-y-git.md` §3.2). Consolida lo que entró a `master` después de
