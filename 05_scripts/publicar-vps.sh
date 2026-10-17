@@ -352,7 +352,9 @@ log_ok "Gate 5: fuentes locales verificadas."
 # aquí, no en producción). Si LOCAL_SITE_ROOT no es el 04_1 del repo (credentials
 # apuntando a otro clon del sitio), solo se verifica la existencia.
 SITE_REL="04_1_simuladorfiscal.ciep.mx"
-_site_tracked="$(git -C "$LOCAL_REPO_ROOT" ls-files -- "$SITE_REL")"
+# -c core.quotePath=false: sin ella git escapa los nombres no ASCII
+# ("Educaci\303\263n_2025.png") y el test -f no los encuentra.
+_site_tracked="$(git -C "$LOCAL_REPO_ROOT" -c core.quotePath=false ls-files -- "$SITE_REL")"
 [[ -n "$_site_tracked" ]] || die "Gate 7: git no versiona nada bajo $SITE_REL/ en $LOCAL_REPO_ROOT. ¿Checkout anterior a v8.11a?"
 _faltan=()
 while IFS= read -r _f; do
@@ -370,7 +372,7 @@ if [[ "$(cd "$LOCAL_SITE_ROOT" && pwd -P)" == "$(cd "$LOCAL_REPO_ROOT/$SITE_REL"
     # --exclude-per-directory=.gitignore (no --exclude-standard): solo cuentan las
     # reglas versionadas del repo, no .git/info/exclude ni el gitignore global
     # de la máquina — un exclude local ocultaría fantasmas que otro clon sí vería.
-    _fantasmas="$(cd "$LOCAL_REPO_ROOT" && git ls-files --others --exclude-per-directory=.gitignore -- "$SITE_REL" \
+    _fantasmas="$(cd "$LOCAL_REPO_ROOT" && git -c core.quotePath=false ls-files --others --exclude-per-directory=.gitignore -- "$SITE_REL" \
         | grep -vE '(^|/)(\.DS_Store|DEPLOYED_COMMIT|calcular_clicks\.log)$|/(ssl|logs)/|/0[^/]*/' || true)"
     if [[ -n "$_fantasmas" ]]; then
         die "Gate 7: el docroot trae archivo(s) que la Fase 2 subiría pero git NO versiona:
