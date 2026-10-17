@@ -1,0 +1,21 @@
+/* Animaciones para el efecto data-shadow */
+@keyframes shad-anim {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 4px -4px;
+  }
+}
+
+.box-resultados h2:after, .footer-box h2:after {
+  animation: shad-anim 20s linear infinite !important;
+  -webkit-animation: shad-anim 20s linear infinite !important;
+  background-size: 2px 2px !important;
+}
+
+/* Aseguramos que el efecto sea visible */
+.box-resultados h2, .footer-box h2 {
+  position: relative;
+  z-index: 1;
+}
