@@ -11,5 +11,3 @@ if (file_exists($version_file)) {
 
 echo "Timestamp: " . gmdate('c') . "\n";
 ?>
-
-<?php echo 'rojo' 

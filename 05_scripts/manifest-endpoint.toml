@@ -17,7 +17,6 @@ description = "Sub-canal Stata del Simulador Fiscal CIEP — instalación remota
 # Todos deben existir en el root del repo al momento de publicar.
 
 ado_files = [
-    "NoExisteRojo.ado",
     "AccesoBIE.ado",
     "AccesoINPCEntidad.ado",
     "DatosAbiertos.ado",

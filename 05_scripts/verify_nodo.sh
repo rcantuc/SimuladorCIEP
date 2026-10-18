@@ -463,5 +463,3 @@ else
 	printf '\033[0;31mverify_nodo: %s regla(s) con falla. NO publicar.\033[0m\n' "$FALLAS"
 	exit 1
 fi
-
-if [ 1 -eq 1 ]; then echo "rojo"
