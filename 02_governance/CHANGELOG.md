@@ -16,6 +16,32 @@ Formato de cada entrada:
 - **Datos:** cambios en fuentes, actualizaciones de PEFs, LIFs, ENIGH, u otras fuentes
 - **Correcciones:** bugs corregidos que afectaban resultados o funcionamiento
 
+## [Unreleased]
+
+### Institucional — sitio: triage de Dependabot y freno de abuso de CPU (v8.11c, 2026-10-18)
+
+- **Dependabot: 3 avisos abiertos → 0.** Los tres son el mismo paquete, `grunt`, devDependency
+  del `package.json` del plugin vendor `plugins/idle-timer/` (herramienta de build del plugin;
+  el sitio sirve `idle-timer/dist` y nunca ejecuta grunt). Se sube a la mínima versión parchada,
+  no al último major: `grunt` 0.4.2 → **1.5.3** (cierra CVE-2020-7729 high, CVE-2022-0436
+  moderate y CVE-2022-1537 high). grunt 1.x obliga a subir los `grunt-contrib-*` a la mínima
+  versión cuyo peer lo admite (jshint 0.9.2→0.11.1, concat 0.3.0→0.5.1, uglify 0.4.0→0.8.0,
+  watch 0.6.0→1.0.0, coveralls 0.3.0→1.0.1) y a sustituir en `Gruntfile.js` el único `_.pluck`
+  (lodash 4 de grunt 1.x ya no lo trae). Instalar el toolchain requiere `--legacy-peer-deps`
+  (el peer de `grunt-qunit-istanbul`, sin aviso, no admite 1.5.3). Ningún archivo servido cambió:
+  capturas antes/después (desktop, móvil, EN, resultado de «Calcular») sin diferencias visibles.
+- **Freno de abuso de CPU en `calculaStata.php`.** Cada «Calcular» lanza un Stata (~35 s de CPU)
+  y no había tope: N peticiones = N Stata en paralelo. Ahora, antes de lanzar Stata y después
+  de validar las entradas: `MAX_STATA_SIMULTANEOS = 3` (guardia real contra DoS por CPU) y
+  `LIMITE_CORRIDAS_POR_IP = 10` por `VENTANA_SEG = 600` (constantes en `config.php`; defaults
+  firmados, a afinar). PHP plano, contadores por archivo con `flock` en `users/_ratelimit/`, sin
+  dependencias. Exceso → HTTP 429 con `Retry-After` y JSON `{error, error_en, motivo,
+  retry_after}`; el front-end (`stataCalcula.js` y `-en.js`) muestra el mensaje, apaga el
+  spinner y conserva los flags del submódulo ISR/IVA para el reintento. La IP es `REMOTE_ADDR`
+  (no las cabeceras `X-Forwarded-For`, que el cliente falsifica). Lo inválido sigue
+  respondiendo 400 sin consumir cupo. Sin excepciones por IP (eximir a Ricardo/localhost queda
+  pendiente de decisión). Pruebas rojo/verde con `php -S` + Stata falso en el PR.
+
 ## [v8.11.0] — 2026-10-17
 
 ### Institucional — el sitio del Simulador entra a git completo (v8.11a, 2026-10-16)

@@ -73,6 +73,29 @@ if($debug) print __LINE__ ." : " . $k . "=>" .$guardar[$k] ."\n<br />" ;
 }
 
 
+// Freno de abuso de CPU (v8.11c): tope de corridas por IP y de Stata simultáneos
+// (constantes en config.php). Va DESPUÉS de validar las entradas (lo inválido ya
+// respondió 400 sin costo) y ANTES de tocar el disco o lanzar Stata. Exceso → 429
+// con Retry-After y un JSON que el front-end muestra (calculaStata responde JSON
+// siempre; nunca queda el spinner esperando).
+$admision = stata_admision($TMP_PATH);
+if (!$admision['ok']) {
+	$retry = (int)$admision['retry'];
+	$msg = ($admision['motivo'] === 'ip')
+		? array('es' => "Has hecho muchos cálculos en poco tiempo. Vuelve a intentarlo en $retry segundos.",
+		        'en' => "You have run too many calculations in a short time. Please try again in $retry seconds.")
+		: array('es' => "El simulador está ocupado con otros cálculos. Vuelve a intentarlo en $retry segundos.",
+		        'en' => "The simulator is busy with other calculations. Please try again in $retry seconds.");
+	http_response_code(429);
+	header('Retry-After: ' . $retry);
+	header('Content-type: application/json; charset=utf-8');
+	echo json_encode(array('error' => $msg['es'], 'error_en' => $msg['en'], 'motivo' => $admision['motivo'], 'retry_after' => $retry, 'status' => 'error'));
+	exit;
+}
+$slot_stata = $admision['slot'];
+register_shutdown_function('stata_libera', $slot_stata);
+
+
 // Limpia la sesión anterior sin pasar por el shell (antes: shell_exec("rm -f ..."))
 foreach (glob($TMP_PATH . $idSession . "/*") ?: array() as $_viejo) {
 	if (is_file($_viejo)) unlink($_viejo);
