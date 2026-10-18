@@ -10,10 +10,10 @@ module.exports = function(grunt) {
       "<%= grunt.template.today('yyyy-mm-dd') %>\n" +
       "<%= pkg.homepage ? '* ' + pkg.homepage + '\\n' : '' %>" +
       "* Copyright (c) <%= grunt.template.today('yyyy') %> <%= pkg.author.name %>;" +
-      " Licensed <%= _.pluck(pkg.licenses, 'type').join(', ') %> */\n",
+      " Licensed <%= pkg.licenses.map(function(l) { return l.type; }).join(', ') %> */\n",
     minbanner: "/*! <%= pkg.title || pkg.name %> v<%= pkg.version %> <%= grunt.template.today('yyyy-mm-dd') %> | " +
       "<%= pkg.homepage ? pkg.homepage : '' %> | (c) <%= grunt.template.today('yyyy') %> <%= pkg.author.name %> | " + 
-      "Licensed <%= _.pluck(pkg.licenses, 'type').join(', ') %> */\n",
+      "Licensed <%= pkg.licenses.map(function(l) { return l.type; }).join(', ') %> */\n",
     // Task configuration.
     concat: {
       options: {
