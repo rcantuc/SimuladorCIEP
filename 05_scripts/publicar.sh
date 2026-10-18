@@ -46,6 +46,7 @@ TAG_MESSAGE=""
 ENDPOINT_DRY_RUN=false
 FORCE=false
 CHECK_MODE=false
+CI_MODE=false
 SKIP_POST_VERIFY=false
 SOLO_ASSETS=false
 POBLAR_RAW=false
@@ -85,6 +86,12 @@ Opciones:
   --check               Ejecuta SOLO los gates de validación (CHANGELOG, tag anotado,
                         manifest sincronizado, archivos del manifest-endpoint existen)
                         sin acciones con efectos. Exit 0 si todos pasan, 1 si alguno falla.
+  --ci                  (v8.11c) Variante de --check para GitHub Actions: sin el marker
+                        .clon-desarrollo, con <version> opcional (default: la del
+                        manifest.json) y SIN el Gate 2 (el tag lo crea publicar.sh al
+                        publicar; un PR de release lleva el manifest bumpeado antes del tag).
+                        Gates 1, 3, 4, 5 (solo rawwip: en CI no hay raw/), 6, 7 y 8 (lectura
+                        de la Release con gh; necesita GH_TOKEN). Exit 0/1 como --check.
   --tag-message=MSG     Mensaje del tag inline (evita abrir editor)
   --endpoint-dry-run    Dry-run del endpoint (no toca el servidor)
   --skip-post-verify    Salta la verificación SHA-256 post-Release (descarga ~1.3 GB).
@@ -697,6 +704,7 @@ release_post_verify() {
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --check)                CHECK_MODE=true; shift ;;
+        --ci)                   CHECK_MODE=true; CI_MODE=true; shift ;;
         --tag-message=*)        TAG_MESSAGE="${1#*=}"; shift ;;
         --endpoint-dry-run)     ENDPOINT_DRY_RUN=true; shift ;;
         --skip-post-verify)     SKIP_POST_VERIFY=true; shift ;;
@@ -709,6 +717,9 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+if [[ -z "$VERSION" && "$CI_MODE" == "true" && -f "$REPO_ROOT/05_scripts/manifest.json" ]]; then
+    VERSION="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("version",""))' "$REPO_ROOT/05_scripts/manifest.json")"
+fi
 [[ -z "$VERSION" ]] && { log_error "Falta <version>"; usage; exit 1; }
 [[ -z "$REPO_ROOT" ]] && abort "No se pudo detectar root del repo Git."
 
@@ -722,7 +733,7 @@ cd "$REPO_ROOT"
 # confusa. El clon de desarrollo se identifica con un marker gitignored en su
 # raíz (.clon-desarrollo); la Carpeta nunca lo tiene porque git no lo propaga.
 CLON_MARKER="$REPO_ROOT/.clon-desarrollo"
-if [[ ! -f "$CLON_MARKER" ]]; then
+if [[ ! -f "$CLON_MARKER" && "$CI_MODE" != "true" ]]; then   # --ci: el runner no es ningún clon; solo corre gates de lectura
     log_error "Estás en $REPO_ROOT"
     log_error "y este clon NO está marcado como clon de desarrollo (falta .clon-desarrollo)."
     if [[ "$REPO_ROOT" == */Dropbox-CIEP/SimuladorCIEP ]]; then
@@ -745,7 +756,11 @@ if [[ "$CHECK_MODE" == "true" ]]; then
     log_step "Modo --check: gates de validación (sin acciones)"
     GATE_FAILURES=0
     gate_changelog "$VERSION"      || GATE_FAILURES=$((GATE_FAILURES+1))
-    gate_tag_annotated "$VERSION"  || GATE_FAILURES=$((GATE_FAILURES+1))
+    if [[ "$CI_MODE" == "true" ]]; then
+        log_warn "Gate 2 omitido en --ci: el tag $VERSION lo crea publicar.sh al publicar (gate de sesión)."
+    else
+        gate_tag_annotated "$VERSION"  || GATE_FAILURES=$((GATE_FAILURES+1))
+    fi
     gate_manifest_sync "$VERSION"  || GATE_FAILURES=$((GATE_FAILURES+1))
     gate_endpoint_files            || GATE_FAILURES=$((GATE_FAILURES+1))
     gate_raw_declarado             || GATE_FAILURES=$((GATE_FAILURES+1))
@@ -753,10 +768,14 @@ if [[ "$CHECK_MODE" == "true" ]]; then
     gate_pkg_clausura              || GATE_FAILURES=$((GATE_FAILURES+1))
     gate_release_remota "$VERSION" || GATE_FAILURES=$((GATE_FAILURES+1))
     if (( GATE_FAILURES > 0 )); then
-        log_error "--check: $GATE_FAILURES gate(s) fallaron para $VERSION."
+        log_error "--check: $GATE_FAILURES gate(s) fallaron para $VERSION."   # también en --ci
         exit 1
     fi
-    log_info "--check: los 8 gates pasaron para $VERSION."
+    if [[ "$CI_MODE" == "true" ]]; then
+        log_info "--ci: los 7 gates sin Stata ni assets pasaron para $VERSION (Gate 2 omitido)."
+    else
+        log_info "--check: los 8 gates pasaron para $VERSION."
+    fi
     exit 0
 fi
 

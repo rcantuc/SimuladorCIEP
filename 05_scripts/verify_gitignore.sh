@@ -30,7 +30,7 @@
 set -u
 
 # --- Verificar que estamos en raíz del repo ---
-if [ ! -f ".gitignore" ] || [ ! -d ".git" ]; then
+if [ ! -f ".gitignore" ] || [ ! -e ".git" ]; then   # -e: en un worktree .git es un archivo, no un directorio (CI y sesiones de agente, v8.11c)
     echo "ERROR: este script debe correrse desde la raíz del repositorio." >&2
     echo "       cd a la raíz y ejecuta: bash 05_scripts/verify_gitignore.sh" >&2
     exit 2
