@@ -49,6 +49,19 @@ Formato de cada entrada:
     `02_governance/perf/fase2-precache-2026-10-18.md` con la propuesta de hacer esas sumas
     independientes del orden.
 
+### Comandos — v8.12 fase 2b: forma cerrada tras interruptor (APAGADO por default)
+
+- `global algebra` (`SIM.do` §0.4 comentado; `Web.Stata.do` §0 vacío). Encendido, en el
+  mismo `.ado` para batch y web (sin fork): `FiscalGap` §3 obtiene los totales HH del año
+  base como Σ escalares/100·pibY/deflator (con el mismo `PIBDeflactor` de `GastoPC` §1) en
+  vez de recorrer la micro, y `GastoPC` §3–6 genera `Educacion`, `Salud`, `Pensiones` y
+  `Energia` en una sola pasada (`_GPCsuma`/`_GPCcierra`) en vez de 26 `replace`.
+- Medido con el interruptor encendido (3 corridas web + 1 batch): **0 diferencias al byte**
+  en `output.txt` y en los 5 sankeys respecto al interruptor apagado; los totales HH
+  coinciden con la ruta micro a ≤ 3.8e-16 relativo (1–2 ulp). Tiempo 2a+2b ≈ 16 s
+  (vs 19 s con 2a sola). Tabla completa de deltas en el reporte de fase 2. **El default se
+  queda apagado**: encenderlo es decisión de Ricardo con la tabla enfrente.
+
 ## [v8.11.0] — 2026-10-17
 
 ### Institucional — el sitio del Simulador entra a git completo (v8.11a, 2026-10-16)

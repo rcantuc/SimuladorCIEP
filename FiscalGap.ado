@@ -60,6 +60,41 @@ quietly {
 	**# 3 HOUSEHOLDS ***
 	***              ***
 	********************
+	if "$algebra" != "" {
+		* v8.12 fase 2b (interruptor $algebra, apagado por default): los totales HH<k> del
+		* año base son, por construcción de GastoPC (PC = x/conteo/deflator; Σ factor·PC·ind
+		* = x/deflator; Distribucion reparte exactamente el macro), la suma de los escalares
+		* del escenario en pesos de aniovp: Σ_c scalar(c)/100·pibY(anio) / deflator(anio),
+		* con el MISMO PIBDeflactor que usa GastoPC §1. Se evita recorrer la micro
+		* (use ingresos + merge gastos + 9 tabstat). Las diferencias con la ruta micro son de
+		* orden de operaciones en coma flotante: las mide el reporte de fase 2.
+		PIBDeflactor, aniovp(`=aniovp') nographs nooutput
+		keep if anio == `anio'
+		local PIBg = pibY[1]
+		local deflg = deflator[1]
+		local esc_Educacion "iniciaA basica medsup superi posgra eduadu otrose invere cultur invest"
+		local esc_Pensiones "penimss penisss penpeme penotro"
+		local esc_Pension_AM "pam"
+		local esc_Salud "ssa imssbien imss issste pemex issfam invers"
+		local esc_Otros_gastos "gasotros"
+		local esc_IngBasico "IngBas gasmadres gascuidados"
+		local esc_Otras_inversiones "gasinfra"
+		local esc_Federalizado "gasfeder"
+		local esc_Energia "gascfe gaspemex gassener gasinverf gascosdeue"
+		foreach k in Educacion Pensiones Pension_AM Salud Otros_gastos IngBasico Otras_inversiones Federalizado Energia {
+			tempname HH`k'
+			matrix `HH`k'' = J(1, 1, 0)
+			foreach c of local esc_`k' {
+				capture confirm scalar `c'
+				if _rc {
+					di as err "FiscalGap (algebra): falta el escalar `c' del escenario (SIM.do §5.1 / Web.Stata.do §3.2.1)."
+					exit 198
+				}
+				matrix `HH`k'' = `HH`k'' + J(1, 1, (scalar(`c')/100*`PIBg')/`deflg')
+			}
+		}
+	}
+	else {
 	use "${SIMROOT}/users/$id/ingresos.dta", clear
 	merge 1:1 (folioviv foliohog numren) using "${SIMROOT}/users/$id/gastos.dta", nogen update
 	capture drop _*
@@ -82,6 +117,7 @@ quietly {
 		
 		tempname HH`k'
 		matrix `HH`k'' = r(StatTotal)
+	}
 	}
 
 
