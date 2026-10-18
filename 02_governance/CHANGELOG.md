@@ -16,9 +16,7 @@ Formato de cada entrada:
 - **Datos:** cambios en fuentes, actualizaciones de PEFs, LIFs, ENIGH, u otras fuentes
 - **Correcciones:** bugs corregidos que afectaban resultados o funcionamiento
 
-## [Unreleased]
-
-Trabajo en `master` sin versión asignada.
+## [v8.11.0] — 2026-10-17
 
 ### Institucional — el sitio del Simulador entra a git completo (v8.11a, 2026-10-16)
 
@@ -90,6 +88,85 @@ Trabajo en `master` sin versión asignada.
   (base por entidad del motor, no de la capa); `compuertas-entidad.{sh,py}` aceptan un
   `statajson_entidad-nl.json` como testigo opcional. Runbook de deploys: el paso 8 del checklist
   ya no avisa a la capa NL (merge de cadencia).
+
+### Corrección — restaura el run interactivo nacional («Calcular»), roto desde v8.10.0 (hotfix 2026-10-17)
+
+Restaura el run interactivo nacional del sitio («Calcular»), roto en producción desde el deploy
+de v8.10.0 (2026-10-16). Producción quedó estable con el rollback a v8.9 (`current → v8.9`)
+mientras se preparó la corrección; se despliega con v8.11.0 (deployment nuevo `v8.11`, §4b),
+junto con el sitio versionado y el retiro de la capa. El endpoint, que con el pin v8.10.0 seguía
+sirviendo el `PIBDeflactor.ado` roto, se re-publica en v8.11.0.
+
+### Incidente
+
+- Toda corrida del VPS, incluida la nacional (`global entidad` vacío; el `.do` generado no
+  menciona INPC ni entidad), moría al cargar `PIBDeflactor.ado` con `r(7102)`
+  `IndentationError: expected an indented block after function definition on line 1`. El
+  archivo del deployment era byte-idéntico a git: no hubo corrupción.
+- **Causa.** `deff8c9` (v8.10.0) añadió al final de `PIBDeflactor.ado` el bloque `python:` de
+  nivel superior que define `inegi_inpc_entidad` (INPC por entidad federativa). Un bloque de
+  nivel superior se ejecuta **al cargar el `.ado`**, así que también lo pagaba el camino
+  nacional. Y el entorno de producción no es el de validación: el VPS corre **Stata/MP 17.0
+  revisión 17-ene-2022** (binario de dic-2021) con **Python 3.10.12** (Ubuntu 24.04; el
+  `python3` del sistema es 3.12.3, pero Stata quedó ligado a la libpython 3.10 del Ubuntu
+  anterior); los agentes validan en **StataNow 19.5**. Esa revisión de Stata 17 no parsea
+  bloques python multilínea con Python ≥ 3.10 (incompatibilidad conocida de las revisiones
+  tempranas de Stata 17 con el parser de Python 3.10, Statalist #1686450): el `def` llega a
+  Python sin su cuerpo. Verificado en esta sesión: el mismo `.ado` carga sin error en
+  StataNow 19.5 y en **Stata/MP 17 revisión 21-may-2024** (la Mac de Ricardo) con Python
+  3.9, 3.10, 3.11, 3.12 y 3.13; y en el VPS (consulta de solo lectura: `about`,
+  `python query`) la revisión es la de ene-2022.
+
+### Correcciones
+
+- **`AccesoINPCEntidad.ado` (nuevo, v1.0):** el programa `AccesoINPCEntidad` y su bloque
+  `python:` (`inegi_inpc_entidad`, `import requests`) salen de `PIBDeflactor.ado` a su propio
+  archivo, **byte a byte** (sin cambios en la lógica ni en la definición). La pereza la da el
+  autoload de Stata: el `.ado` solo se carga —y el bloque solo se manda a Python— cuando
+  `UpdatePIBDeflactor` lo invoca, es decir, en la rama de entidad federativa. Con `entidad`
+  vacío, Stata no envía ni un byte de la maquinaria de entidad a Python en ningún momento del
+  ciclo de vida de `PIBDeflactor.ado` (que ya no contiene código Python). `PIBDeflactor.ado`
+  v8.2.1 (solo encabezado + retiro del bloque); `PIBDeflactor.sthlp` cita el comando.
+- **Endpoint:** `AccesoINPCEntidad.ado` entra a `manifest-endpoint.toml` y a los `.pkg` cuya
+  clausura incluye `PIBDeflactor` (PIBDeflactor, LIF, PEF, SCN, SHRFSP, DatosAbiertos; Gate 7).
+- No se toca la lógica numérica del deflactor nacional ni la metodología de entidad.
+
+### Compuertas (evidencia en `~/CIEP_Simuladores/diag-v8.10.1-hotfix-2026-10-17/`)
+
+- **Nacional byte-idéntico:** `SIM.do` completo con `entidad` vacío (`nographs`+`output`,
+  StataNow 19.5 SE, 1 procesador, semilla 1111, bootstrap 250, `raw/`/`master/` clonados del
+  worktree del release) → TOUCH-DOWN, 0 `r()`; `output.txt` (`566c31ea…`) y los 5
+  `sankey-*.json` **byte-idénticos** a las corridas 1 y 2 del release v8.10.0 y a la de v8.11b
+  (`corrida-nacional/sha256.txt`). Tras la corrida, `program dir` no lista `AccesoINPCEntidad`.
+- **Parseo perezoso (estructural):** la misma llamada nacional que hace `LIF.ado`
+  (`PIBDeflactor, anio(2027) nographs nooutput`) con el `.ado` del hotfix deja `python query`
+  en `initialized no` y `AccesoINPCEntidad` sin cargar (`program list` → r(111)), en 19.5 y en
+  Stata 17; con el `.ado` de v8.10.0 la misma llamada deja Python `initialized yes` (el bloque
+  se ejecutó al cargar aunque `entidad` esté vacío). Prueba fuerte en Stata 17: con un Python
+  **inutilizable** (3.14, que Stata 17 no inicializa: `python:` → r(7100)) el `.ado` viejo
+  falla al cargar (`r(7100)`) y el del hotfix completa el run nacional (`estructural/`).
+- **Entidad sigue vivo:** `PIBDeflactor if entidad == "Nuevo León", update` en 19.5 (y en
+  Stata 17 rev. 2024 + Python 3.12) carga `AccesoINPCEntidad`, ejecuta el bloque (INPC
+  entidad 19, serie 902690, 99 meses, último 2026/09; `inpc_19.meta`) y construye
+  `PIBDeflactorNL.dta` (`entidad-sandbox/`).
+- `publicar.sh v8.10.1 --check`: Gates 1, 3, 4, 5, 6, 7 verdes (Gate 4: 11 `.ado`, 8 `.sthlp`,
+  8 `.pkg`); Gate 2 falla solo porque el tag anotado `v8.10.1` lo crea el ritual; Gate 8
+  informa que la Release aún no existe (esperado).
+- **No verificado aquí (ritual de Ricardo):** que «Calcular» revive en el VPS con Stata 17
+  rev. ene-2022. Esta sesión no corrió Stata en el VPS (decisión de Ricardo).
+
+### FLAGs (reportados, no resueltos aquí)
+
+- El endpoint Cloudways (`net install`) sirve el `.ado` roto con pin v8.10.0 hasta el ritual.
+- **Stata 17 (prod) vs StataNow 19.5 (validación)** es un hallazgo mayor para el plan v9.0:
+  la revisión del VPS no corre **ningún** bloque python multilínea con su Python 3.10 —hoy el
+  flujo web no carga `AccesoBIE.ado` ni `ensure_asset.ado` (ambos con bloques así), pero
+  cualquier `.ado` nuevo con Python los rompería igual. Dos salidas, ambas fuera de este PR:
+  `update all` de Stata 17 en el VPS (la revisión 21-may-2024 carga estos bloques con Python
+  3.10) o validar también en Stata 17 antes de cada deploy.
+- `SIMentidad.ado` (que `PIBDeflactor` llama en la rama de entidad) no está en
+  `manifest-endpoint.toml` ni en ningún `.pkg`: un investigador externo con `net install` no
+  puede correr la rama de entidad (preexistente; Gate 7 no lo ve porque no es comando publicado).
 
 ## [v8.10.0] — 2026-10-16
 
