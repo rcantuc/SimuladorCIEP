@@ -26,11 +26,12 @@ commitean sin bump.
 
 ## 1. Pre-flight (siempre, antes de todo)
 
-Todo se corre desde la raíz del repo (el clon de desarrollo):
+Todo se corre desde la raíz del **worktree de publicación** (fuera de Dropbox;
+qué es y cómo se pone en el commit correcto: §10):
 
 ```bash
-cd "$HOME/Library/CloudStorage/Dropbox-CIEP/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP"
-git status          # ¿qué hay sin commitear? ¿todo es del release?
+cd "$HOME/CIEP_Simuladores/SimuladorCIEP-release-vX.Y.Z"   # el worktree de publicación, NO el clon de Dropbox
+git status          # ¿árbol limpio? ¿HEAD es el commit de master que se publica?
 git log --oneline -3
 ```
 
@@ -134,9 +135,13 @@ git add 04_1_simuladorfiscal.ciep.mx/images && git commit -m "chore(sitio): grá
 ## 2. Commit + tag
 
 ```bash
-git add -A                      # o selectivo, según el pre-flight
-git commit -m "feat(...): descripcion (vX.Y.Z)"
-git push
+# el commit del release (manifest, CHANGELOG, ...) entra a master por PR, como todo (branch
+# protection: no hay push directo). Candado: jamás `git add -A` — siempre archivos explícitos.
+git add 05_scripts/manifest.json 02_governance/CHANGELOG.md <lo demás del release>
+git commit -m "release(vX.Y.Z): ..."
+git push -u origin release/vX.Y.Z && gh pr create --base master   # CI (gates-sin-stata) se pone verde/rojo aquí
+# tras el merge, en el worktree de publicación (§10.3):
+git fetch origin && git checkout --detach origin/master
 git tag -a vX.Y.Z -m "vX.Y.Z: resumen del release"
 git push origin vX.Y.Z
 ```
@@ -540,6 +545,124 @@ Compuertas de salida del PR (evidencia en `diag-pivote-entidad-2026-10-10/F1/`):
 3. testigo: NL por quintil estatal reproduce las participaciones selladas del sprint (`dis<fam>nle<dec>` del
    `statajson_entidad-nl.json`, 90 celdas, reldif ~1e-15);
 4. segundo estado (Jalisco u otro): produce outputs y sus sellos de muestra se activan donde n < umbral.
+
+## 10. Topología de trabajo: dónde vive cada cosa y el «baile de master»
+
+Lo que hubo que preguntar tres veces la semana del 13 al 18 de octubre de 2026; queda escrito.
+Un solo repositorio git con **varios árboles de trabajo** (`git worktree`): comparten objetos,
+ramas y tags (un commit o un tag hecho en cualquiera lo ven todos al instante, sin fetch),
+pero cada uno tiene su propio checkout y **una rama no puede estar extraída en dos árboles a
+la vez** — de ahí el baile.
+
+### 10.1 Los tres tipos de árbol
+
+| Árbol | Dónde | Qué tiene extraído | Para qué sirve | Qué NO se hace ahí |
+|---|---|---|---|---|
+| **Clon de Dropbox — la casa de `master`** | `~/Library/CloudStorage/Dropbox-CIEP/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP` (el repo principal: su `.git` es el de todos los worktrees) | la rama `master`, siempre | ser la copia de referencia que Dropbox mantiene sincronizada (la que abre el IDE y la opción 1 «master, Dropbox» del `sysprofile.do`); `git pull --ff-only` después de cada merge; leer, buscar, consultar | **ninguna operación pesada**: Dropbox sube en vivo cada archivo que cambia (una corrida de `SIM.do` escribe GB en `users/`, `publicar.sh` baja/sube assets, los worktrees de sesión generan logs). Tampoco credenciales (`publicar-vps-credentials.sh`, `endpoint-credentials.sh`, `set_token.do` con token real): Dropbox las copiaría a la nube. Tampoco commits de trabajo ni `git add -A` (archivos `conflicted copy`, `.DS_Store`). |
+| **Worktree de publicación** | fuera de Dropbox: `~/CIEP_Simuladores/SimuladorCIEP-release-vX.Y.Z` | **HEAD desprendido** (`detached`) en el commit de `master` que se publica, o en el tag | correr los rituales que necesitan Stata, assets o credenciales: `SIM.do` completo, `publicar.sh vX.Y.Z` (`--check` y real), `publicar-vps.sh`, `test-maquina-virgen.sh --download`, `perfilar-web.sh`, `compuertas-entidad.sh`. Tiene el marker `.clon-desarrollo`, los dos `*-credentials.sh`, `raw/`, `master/` y `users/ricardo/` (bootstraps, `*RECprom.dta`). Es el único árbol que habla con el VPS y con Cloudways. | extraer `master` (está en Dropbox: git lo rechaza, y así debe ser); editar código a mano (si hay que corregir, es un PR desde un worktree de sesión). |
+| **Worktrees de sesión** (agentes y ramas de Ricardo) | fuera de Dropbox: `~/CIEP_Simuladores/SimuladorCIEP-<tema>` | una rama propia (`perf/...`, `fix/...`, `ci/...`) creada desde `origin/master` | desarrollar, probar, abrir el PR. Desechables: no tienen `raw/` ni `users/` ni credenciales; si la sesión necesita assets, los pide con `test-maquina-virgen.sh --download --into "$PWD"` o apunta `--root` al worktree de publicación (como hace `perfilar-web.sh`). | tocar `master`; publicar; copiar credenciales. Se borran al mergear (`git worktree remove`). |
+
+> Pendiente (FLAG, 2026-10-18): `Web.Stata.do` §0.1 y el `sysprofile.do` de la Mac todavía apuntan
+> el SITE de Stata al clon de Dropbox; mientras no se muevan al worktree de publicación, una corrida
+> local del flujo web escribe `users/<id>/` (≈ 900 MB) dentro de Dropbox. `perfilar-web.sh --root`
+> ya lo evita para el perfilado; el resto es decisión de Ricardo.
+
+Regla de bolsillo: **Dropbox = leer; publicación = rituales; sesión = cambiar.** `master` solo se
+mueve en GitHub, por PR (branch protection); ningún árbol local hace `git push origin master`.
+
+### 10.2 Crear y tirar un worktree de sesión
+
+```bash
+cd "$HOME/Library/CloudStorage/Dropbox-CIEP/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP"   # cualquier árbol del repo sirve
+git fetch origin
+git worktree add -b fix/<tema> "$HOME/CIEP_Simuladores/SimuladorCIEP-<tema>" origin/master
+cd "$HOME/CIEP_Simuladores/SimuladorCIEP-<tema>"       # trabajar, commitear (archivos explícitos), push, gh pr create
+# al terminar (PR mergeado o descartado):
+git worktree remove "$HOME/CIEP_Simuladores/SimuladorCIEP-<tema>"
+git branch -d fix/<tema>                                   # -D si se descartó sin mergear
+git worktree list                                          # inventario: qué árboles existen y en qué están
+```
+
+### 10.3 El «baile de master» (cada vez que un PR entra)
+
+1. **GitHub**: el PR se mergea a `master` (con el check `gates-sin-stata` verde, §11).
+2. **Clon de Dropbox** (casa de `master`): traer el merge, nada más.
+   ```bash
+   cd "$HOME/Library/CloudStorage/Dropbox-CIEP/Ricardo Cantú/CIEP_Simuladores/SimuladorCIEP"
+   git status                       # debe estar limpio; si Dropbox dejó basura, NO se commitea
+   git pull --ff-only origin master # ff-only: si no avanza en línea recta, algo se commiteó aquí por error
+   ```
+3. **Worktree de publicación**: ponerlo en ese mismo commit **sin extraer la rama** (la rama
+   vive en Dropbox; aquí siempre HEAD desprendido).
+   ```bash
+   cd "$HOME/CIEP_Simuladores/SimuladorCIEP-release-vX.Y.Z"
+   git status                       # limpio (lo que generan los rituales está en .gitignore: users/, raw/, master/, logs)
+   git fetch origin --tags
+   git checkout --detach origin/master      # o: git checkout --detach vX.Y.Z, si el tag ya existe
+   git log --oneline -1                     # debe ser el mismo hash que acaba de llegar a Dropbox
+   ```
+   Desde aquí corren §1–§5 (pre-flight, tag, `publicar.sh`, `publicar-vps.sh`). El tag creado
+   aquí (`git tag -a ... && git push origin vX.Y.Z`) lo ven todos los árboles: no hay que
+   repetirlo en Dropbox.
+4. **Minor con deployment nuevo**: en vez de reutilizar el worktree anterior, se crea uno
+   (`git worktree add --detach "$HOME/CIEP_Simuladores/SimuladorCIEP-release-vX.Y.0" origin/master`)
+   y se le copian a mano, **una vez**, `.clon-desarrollo` y los dos `*-credentials.sh` del
+   anterior (gitignored; no viajan solos). `raw/` se puebla con `test-maquina-virgen.sh --download --into "$PWD"`;
+   `master/` y `users/ricardo/` los produce `SIM.do`. El worktree viejo se queda como rollback
+   local hasta que el deployment nuevo esté verificado (§5–§6); después, `git worktree remove`.
+5. **Worktrees de sesión** abiertos: no se tocan; cada rama se rebasa o se vuelve a crear desde
+   `origin/master` cuando toque.
+
+Síntomas y causa:
+
+| Síntoma | Causa | Qué hacer |
+|---|---|---|
+| `fatal: 'master' is already checked out at '…/Dropbox-CIEP/…'` | se intentó extraer `master` en un worktree | usar `git checkout --detach origin/master` (10.3.3); `master` solo vive en Dropbox |
+| `git pull` en Dropbox dice "Not possible to fast-forward" | alguien commiteó en el clon de Dropbox | `git log origin/master..master` para ver qué es; moverlo a una rama (`git branch rescate/<tema>`) y `git reset --hard origin/master` |
+| `publicar.sh` aborta "NO está marcado como clon de desarrollo" | se corrió desde Dropbox o desde un worktree de sesión | ir al worktree de publicación; si es uno nuevo, `touch .clon-desarrollo` (10.3.4) |
+| El sitio o `raw/` están incompletos en el worktree de publicación | se creó el worktree y se copió a mano | `git checkout -- 04_1_simuladorfiscal.ciep.mx` (nunca copiar de Dropbox); `test-maquina-virgen.sh --download --into "$PWD"` |
+
+---
+
+## 11. Qué gate corre dónde: CI (GitHub Actions) vs. sesión
+
+Desde v8.11c, `.github/workflows/gates-sin-stata.yml` corre en **cada PR a `master`** (y en cada
+push a `master`) todo lo que se puede verificar sin Stata, sin assets pesados y sin
+credenciales. Lo demás sigue siendo ritual de sesión (Stata no está en CI: licencia).
+
+| Gate | En CI | Fuera de CI (sesión / ritual) | Por qué |
+|---|---|---|---|
+| `shellcheck` de `05_scripts/*.sh` | **sí**, severidad `error` bloquea; `warning` se imprime y no bloquea (17 avisos heredados, la mayoría falsos positivos: comas dentro de `--chmod=…`, `do` literal en strings) | — | estático |
+| `verify_gitignore.sh` (85 casos) | **sí** | — | estático |
+| `php -l` de los PHP del sitio | **sí** | — | estático |
+| Harness de seguridad del sitio (`test-sitio-seguridad.sh`: `php -S` + Stata falso; payloads de inyección/traversal → 400, válido → 200 con `.do` limpio) | **sí** | — | no necesita Stata: el falso registra la llamada y el `.do` nunca se ejecuta |
+| Sitio auto-contenido (`verify_sitio_autocontenido.sh`: docroot == `git ls-files 04_1/`, sin fantasmas, activos referenciados existen; roturas conocidas en `05_scripts/sitio-referencias-rotas-conocidas.txt`) | **sí** | el Gate 7 de `publicar-vps.sh` lo repite sobre el worktree de publicación antes del rsync | estático; en CI protege contra el enlace a un archivo que no viaja en git |
+| `publicar.sh` Gate 1 (CHANGELOG tiene la versión del manifest) | **sí** (`--ci`) | — | estático |
+| `publicar.sh` Gate 2 (tag anotado) | **no** | `publicar.sh vX.Y.Z --check` en el worktree de publicación, tras crear el tag | el tag lo crea el ritual; un PR de release lleva el manifest bumpeado antes del tag |
+| `publicar.sh` Gate 3 (manifest sincronizado) | **sí** | — | estático |
+| `publicar.sh` Gate 4 (archivos del manifest-endpoint existen) | **sí** | — | estático |
+| `publicar.sh` Gate 5 (raw declarado) | **parcial**: solo `SIM.do` sin `global rawwip` activo | SHA de cada asset presente en `raw/`: `--check` en el worktree de publicación | en CI no hay `raw/` |
+| `publicar.sh` Gate 6 (cobertura de assets, `test-maquina-virgen.sh --cobertura`) | **sí** | — | estático (grep de `ensure_asset`) |
+| `publicar.sh` Gate 7 (clausura transitiva de los `.pkg`) | **sí** | — | estático |
+| `publicar.sh` Gate 8 (Release remota completa) | **sí** (solo lectura con `gh` y el token del workflow) | — | red, sin descarga; si la Release aún no existe, pasa |
+| Corridas: `SIM.do`, `Web.Stata.do`, `perfilar-web.sh`, `compuertas-entidad.sh` | **no** | worktree de publicación | Stata |
+| Paridad local/web, aditividad de entidades, byte-identidad de `output.txt` y de los escalares (`scalarlatex-baseline.txt`) | **no** | sesión, con su evidencia en `diag-*/` y en el PR | Stata |
+| `test-maquina-virgen.sh --download` (1.3 GB desde la Release) | **no** | después de `publicar.sh`, antes de anunciar | assets |
+| `publicar-vps.sh` (gates con VPS, rsync, health) | **no** | ritual de deploy | credenciales, SSH, producción |
+| Gate humano del navegador (§6) | **no** | Ricardo | humano |
+
+Correr lo mismo que CI, localmente, antes de abrir el PR (todo en segundos):
+```bash
+shellcheck -S error 05_scripts/*.sh && bash 05_scripts/verify_gitignore.sh && \
+for f in 04_1_simuladorfiscal.ciep.mx/*.php; do php -l "$f" >/dev/null || echo "ERR $f"; done && \
+bash 05_scripts/test-sitio-seguridad.sh && bash 05_scripts/verify_sitio_autocontenido.sh && bash 05_scripts/publicar.sh --ci
+```
+
+**Branch protection (lo hace Ricardo, a mano, una vez que vea el check verde en un PR):** Settings →
+Branches → `master` → *Require status checks to pass before merging* → marcar los seis checks de
+`gates-sin-stata` (`shellcheck`, `gitignore`, `php-lint`, `sitio-seguridad`, `sitio-autocontenido`, `publicar-check`).
+
+---
 
 ## Gotchas de deploy (los que ya mordieron)
 
