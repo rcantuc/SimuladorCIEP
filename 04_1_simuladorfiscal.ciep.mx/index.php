@@ -994,22 +994,6 @@ if ($deployed_version !== "") {
 							</div>
 						</div>
 
-							<!--div class="carousel-item">
-								<div class="main-wrapper container box-resultados">
-									<div class="row align-items-center">
-										<div class="col-xl-4">
-											<h2 data-shadow="Paso 2." class="card-title title-small">Paso 2.</h2>
-											<h2 data-shadow="Actualiza tus valores" class="card-title">Actualiza tus valores</h2>
-											<p class="card-text">
-												Con los valores propuestos, <span class="txt-bold">presiona el botón</span> <span class="txt-actualizar">Actualizar</span> para conocer el nuevo balance presupuestario. Esto únicamente actualizará los valores de la fórmula de ingresos, gastos y deuda. <span class="txt-bold">Repite</span> el paso <span class="txt-bold">1</span> y <span class="txt-bold">2</span> las veces que creas necesarias hasta que hayas encontrado tu simulación favorita.
-											</p>
-										</div>
-										<div class="col-xl-8 pl-5 img-slider text-center">
-											<img src="images/top-slide-2-v2b.png" alt=" ">
-										</div>
-									</div>
-								</div>
-							</div-->
 
 						<div class="carousel-item">
 							<div class="main-wrapper container box-resultados">
