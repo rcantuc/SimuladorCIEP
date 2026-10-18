@@ -362,8 +362,15 @@ escalar pctpib gascuidados =   0.047   		// Gasto en cuidados
 * Evolución de los gastos per cápita */
 *do "${SIMROOT}/01_modulos/visualizations/Graphs_PC.do"	// <-- MUY tardado. MUY pesado.
 
+** 5.1b Precache de lo invariante (v8.12 fase 2a) **
+* Lo que el flujo web recalculaba en cada clic sin depender del formulario (colapso de
+* master/PEF.dta, base de hogares de GastoPC §2, colapsos de los *RECprom) se calcula aquí
+* UNA vez y queda en users/$id/cache/ con sello; GastoPC, cache / FiscalGap lo exigen (igual
+* que los *RECprom: sin fallback). Va después de PEF (master/PEF.dta existe) y de §3 (RECprom).
+noisily Precache, aniope(`=anioPE') aniovp(`=aniovp')
+
 ** 5.2 Gasto per cápita **
-noisily GastoPC educacion salud pensiones energia resto transferencias, aniope(`=anioPE') aniovp(`=aniovp')
+noisily GastoPC educacion salud pensiones energia resto transferencias, aniope(`=anioPE') aniovp(`=aniovp') cache
 if "$hasta" == "5" exit
 
 

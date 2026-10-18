@@ -336,6 +336,16 @@ _B_WEB="$(sed -nE 's/^global bootstrap "([0-9]+)".*/\1/p' "$LOCAL_REPO_ROOT/01_m
 _N_PROM="$(find "$LOCAL_REPO_ROOT/users/ricardo/bootstraps/$_B_WEB" -maxdepth 1 -name '*RECprom.dta' 2>/dev/null | wc -l | tr -d ' ')"
 [[ "$_N_PROM" -gt 0 ]] || die "No hay users/ricardo/bootstraps/$_B_WEB/*RECprom.dta (escenario base de FiscalGap, v8.10.0). Corre SIM.do con global bootstrap \"$_B_WEB\" (PerfilesSim.do §8 los escribe)."
 log_info "Gate 5: escenario base: $_N_PROM archivo(s) *RECprom.dta en users/ricardo/bootstraps/$_B_WEB/ (B = $_B_WEB, Web.Stata.do)."
+# v8.12 fase 2a: el motor web exige además users/ricardo/cache/ (Precache, SIM.do §5.1b):
+# sello.txt + cada item que el sello declara. Sin él, GastoPC/FiscalGap abortan con r(601).
+_CACHE_DIR="$LOCAL_REPO_ROOT/users/ricardo/cache"
+[[ -f "$_CACHE_DIR/sello.txt" ]] || die "No hay $_CACHE_DIR/sello.txt (cache de lo invariante, v8.12). Corre SIM.do (§5.1b Precache) o, con master/ y bootstraps hechos, Precache en Stata."
+_CACHE_FALTAN="$(awk -F'\t' '$1=="item" {print $3}' "$_CACHE_DIR/sello.txt" | while IFS= read -r _f; do [[ -f "$_CACHE_DIR/$_f" ]] || echo "$_f"; done)"
+[[ -z "$_CACHE_FALTAN" ]] || die "El sello de users/ricardo/cache/ declara items que no existen: $(echo "$_CACHE_FALTAN" | tr '\n' ' ')"
+_CACHE_DU="$(awk -F'\t' '$1=="sello" && $2=="data_updated" {print $3}' "$_CACHE_DIR/sello.txt")"
+_MAN_DU="$(sed -nE 's/^[[:space:]]*"data_updated"[[:space:]]*:[[:space:]]*"([^"]*)".*/\1/p' "$LOCAL_REPO_ROOT/05_scripts/manifest.json" | head -1)"
+[[ "$_CACHE_DU" == "$_MAN_DU" ]] || die "users/ricardo/cache/sello.txt se generó con data_updated=$_CACHE_DU y manifest.json dice $_MAN_DU: regenera el cache (Precache) antes de publicar."
+log_info "Gate 5: cache de lo invariante: $(awk -F'\t' '$1=="item"' "$_CACHE_DIR/sello.txt" | wc -l | tr -d ' ') item(s) en users/ricardo/cache/ (sello: data_updated $_CACHE_DU, commit $(awk -F'\t' '$1=="sello" && $2=="commit" {print $3}' "$_CACHE_DIR/sello.txt"))."
 [[ -f "$LOCAL_SITE_ROOT/health.php" ]] || die "No existe $LOCAL_SITE_ROOT/health.php. El health check post-deploy depende de él."
 log_ok "Gate 5: fuentes locales verificadas."
 
@@ -783,16 +793,34 @@ run_rsync_bootstraps() {
         "$LOCAL_REPO_ROOT/users/ricardo/bootstraps/" \
         "${VPS_USER}@${VPS_HOST}:$VPS_SIM_ROOT/$VPS_SIM_VERSION/users/ricardo/bootstraps/" 2>&1 | tee -a "$LOG_FILE"
 }
-if run_rsync_bootstraps; then
+# v8.12 fase 2a: users/ricardo/cache/ (sello.txt + items de Precache, ~210 MB) viaja con el
+# escenario base: FiscalGap/GastoPC lo exigen con el mismo candado que los *RECprom.
+RSYNC_CACHE_OPTS=(
+    -az
+    --chmod=Du=rwx,Dg=rwx,Do=rx,Fu=rw,Fg=rw,Fo=r
+    --progress
+    --delete
+    --exclude='.DS_Store'
+)
+[[ $DRY_RUN -eq 1 ]] && RSYNC_CACHE_OPTS+=(--dry-run)
+run_rsync_cache() {
+    if [[ $DRY_RUN -eq 0 ]]; then
+        ssh_vps "mkdir -p '$VPS_SIM_ROOT/$VPS_SIM_VERSION/users/ricardo/cache'" || return 1
+    fi
+    rsync "${RSYNC_CACHE_OPTS[@]}" -e "$RSYNC_SSH" \
+        "$LOCAL_REPO_ROOT/users/ricardo/cache/" \
+        "${VPS_USER}@${VPS_HOST}:$VPS_SIM_ROOT/$VPS_SIM_VERSION/users/ricardo/cache/" 2>&1 | tee -a "$LOG_FILE"
+}
+if run_rsync_bootstraps && run_rsync_cache; then
     if [[ $DRY_RUN -eq 0 ]]; then
         ssh_vps "chmod -R u=rwX,g=rwX,o=rX '$VPS_SIM_ROOT/$VPS_SIM_VERSION/users/ricardo'"
     fi
-    log_ok "Fase 3b-bis: escenario base propagado$( [[ $DRY_RUN -eq 1 ]] && echo ' (simulado)' )."
+    log_ok "Fase 3b-bis: escenario base + cache de lo invariante propagados$( [[ $DRY_RUN -eq 1 ]] && echo ' (simulado)' )."
 else
     if [[ $DRY_RUN -eq 1 ]]; then
         log_warn "Fase 3b-bis: rsync simulado no pudo conectar al VPS. Dry-run continúa."
     else
-        die "Fase 3b-bis: rsync del escenario base falló. Nada se ha activado."
+        die "Fase 3b-bis: rsync del escenario base o del cache falló. Nada se ha activado."
     fi
 fi
 

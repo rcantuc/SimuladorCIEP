@@ -26,7 +26,14 @@ quietly {
 
 	// 0.5 Define los inputs que este script acepta
 	// 0.5.1 ANIOvp y ANIOPE son enteros opcionales que por defecto son aniovp y aniope
-	syntax [anything] [, ANIOVP(int `aniovp') ANIOpe(int `aniope') EXCEL]
+	syntax [anything] [, ANIOVP(int `aniovp') ANIOpe(int `aniope') EXCEL CACHE PRECACHEar(string)]
+	* cache / precachear(dir) (v8.12 fase 2a): §2 (perfiles + households + conteos de
+	* población) no depende de ningún input del escenario y cuesta ~2 s por clic.
+	* precachear(dir) corre §1-2, guarda la micro y las matrices de conteos en dir/ y
+	* termina (lo llama Precache en el batch); cache las lee de users/$idbase/cache/
+	* vía _precache_usa (aborta con receta si falta o caducó) y salta §2. §1 (PIB y
+	* deflator, que sí dependen de CRECPIB/CRECDEF) corre siempre.
+	local matrices_s2 "pobenigh Educacion Salud SaludPer Pension MADRES Resto Energia"
 	tokenize `anything'
 	local word_count = wordcount("`anything'")
 
@@ -66,6 +73,39 @@ quietly {
 	else if `aniope' >= 2010 & `aniope' < 2012 local anioenigh = 2010
 	else if `aniope' >= 2008 & `aniope' < 2010 local anioenigh = 2008
 
+	if "`cache'" == "cache" {
+		* v8.12 fase 2a: la base de §2 ya hecha por Precache (misma micro, mismas matrices de conteos)
+		_precache_usa GastoPC_base_`aniope'
+		local fn_mat `"`r(fn_mat)'"'
+		use `"`r(fn)'"', clear
+		preserve
+		use `"`fn_mat'"', clear
+		sort matriz columna
+		foreach m of local matrices_s2 {
+			tempname `m'
+			quietly count if matriz == "`m'"
+			matrix ``m'' = J(1, r(N), .)
+			local nombres ""
+		}
+		forvalues k = 1/`=_N' {
+			local m = matriz[`k']
+			local j = columna[`k']
+			matrix ``m''[1, `j'] = valor[`k']	// copia exacta del double guardado
+			local nombres_`m' "`nombres_`m'' `=nombre[`k']'"
+		}
+		foreach m of local matrices_s2 {
+			matrix colnames ``m'' = `nombres_`m''
+			matrix rownames ``m'' = sum
+		}
+		restore
+		local pens_pam = `Pension'[1,1]
+		local pens_imss = `Pension'[1,2]
+		local pens_issste = `Pension'[1,3]
+		local pens_pemex = `Pension'[1,4]
+		local pens_otro = `Pension'[1,5]
+	}
+	else {
+	* (v8.12 fase 2a: §2 completo; sin re-indentar para que el diff sea legible)
 	// Carga la base de datos de ENIGH correspondiente al año de referencia
 	capture use "${SIMROOT}/master/perfiles`aniope'.dta", clear	
 	if _rc != 0 {
@@ -254,6 +294,39 @@ quietly {
 	tabstat pob [fw=factor], stat(sum) f(%20.0fc) save
 	tempname Energia
 	matrix `Energia' = r(StatTotal)
+
+	if `"`precachear'"' != "" {
+		* v8.12 fase 2a: guardar la micro de §2 y las matrices de conteos (unidades crudas) y salir
+		quietly save `"`precachear'/GastoPC_base_`aniope'.dta"', replace
+		local nvars = c(k)
+		preserve
+		clear
+		quietly set obs 0
+		quietly gen str32 matriz = ""
+		quietly gen int columna = .
+		quietly gen str32 nombre = ""
+		quietly gen double valor = .
+		foreach m of local matrices_s2 {
+			local kk = colsof(``m'')
+			local cn : colnames ``m''
+			forvalues j = 1/`kk' {
+				local N1 = _N + 1
+				quietly set obs `N1'
+				quietly replace matriz = "`m'" in `N1'
+				quietly replace columna = `j' in `N1'
+				quietly replace nombre = "`: word `j' of `cn''" in `N1'
+				quietly replace valor = ``m''[1, `j'] in `N1'
+			}
+		}
+		quietly save `"`precachear'/GastoPC_base_`aniope'_mat.dta"', replace
+		restore
+		return local precache_item "GastoPC_base_`aniope'"
+		return local precache_archivo "GastoPC_base_`aniope'.dta"
+		return local precache_insumos "master/perfiles`aniope'.dta master/`anioenigh'/households.dta"
+		return local precache_nvars "`nvars'"
+		exit
+	}
+	}
 
 
 	*******************

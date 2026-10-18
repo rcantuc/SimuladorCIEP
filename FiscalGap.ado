@@ -116,8 +116,7 @@ quietly {
 
 	** 4.2 Proyección futura de los ingresos **
 	foreach k in CFE CUOTAS FMP IEPSNP IEPSP IMPORT IMSS ISAN ISRAS ISRPF ISRPM ISSSTE IVA OTROSK PEMEX {
-		_FGrecprom `"`dirprom'"' `k' $bootstrap `idbase'
-		collapse estimacion contribuyentes, by(anio modulo aniobase)
+		_FGreccol `k'	// v8.12 fase 2a: = _FGrecprom + collapse estimacion contribuyentes, by(anio modulo aniobase), ya hecho por Precache
 		tsset anio
 		
 		g divSIM = "`k'"
@@ -398,7 +397,7 @@ quietly {
 
 	*********************************************
 	** 5.1 Información histórica de los gastos **
-	PEF if transf_gf == 0, anio(`anio') by(divCIEP) nographs desde(`desde')
+	PEF if transf_gf == 0, anio(`anio') by(divCIEP) nographs desde(`desde') cache	// v8.12 fase 2a: el colapso de master/PEF.dta viene de users/`idbase'/cache/ (Precache); la misma llamada lo produjo
 	local divCIEP "`=r(divCIEP)' IngBasico"
 	*replace gasto = -gasto if resumido2 == "Cuotas ISSSTE"
 
@@ -426,8 +425,7 @@ quietly {
 	//foreach k in Pensiones {
 		if `"`=strtoname("`k'")'"' != "Costo_de_la_deuda" {
 			preserve
-			_FGrecprom `"`dirprom'"' `=strtoname("`k'")' $bootstrap `idbase'
-			collapse estimacion contribuyentes, by(anio modulo aniobase)
+			_FGreccol `=strtoname("`k'")'	// v8.12 fase 2a: ídem, desde users/`idbase'/cache/REC_<var>.dta
 			tsset anio
 			
 			* Calcular tasa de crecimiento demográfico (contribuyentes/beneficiarios) *
@@ -1285,6 +1283,16 @@ program define _fg_matdisplay
 	}
 end
 
+
+**** Escenario base colapsado (v8.12 fase 2a): users/<idbase>/cache/REC_<var>.dta = lo que
+**** _FGrecprom + `collapse estimacion contribuyentes, by(anio modulo aniobase)` producían
+**** en cada clic (24 veces). Lo escribe Precache (SIM.do §5.1b); _precache_usa aborta con
+**** la receta si falta o si el *RECprom cambió desde que se generó (sin fallback). ****
+program define _FGreccol
+	args var
+	_precache_usa REC_`var'
+	use `"`r(fn)'"', clear
+end
 
 **** Escenario base: carga <var>RECprom.dta o aborta con la receta (sin fallback) ****
 program define _FGrecprom

@@ -16,6 +16,39 @@ Formato de cada entrada:
 - **Datos:** cambios en fuentes, actualizaciones de PEFs, LIFs, ENIGH, u otras fuentes
 - **Correcciones:** bugs corregidos que afectaban resultados o funcionamiento
 
+## [Unreleased]
+
+### Comandos — v8.12 fase 2a: precache de lo invariante (mejora de rendimiento sin cambio de números)
+
+- **El «Calcular» pasa de ~32 s a ~19 s** (local, StataNow 19.5; el reparto relativo es lo
+  transferible al VPS) sin mover un número: lo que no depende del formulario y se recalculaba
+  en cada clic (perfil de fase 1, `02_governance/perf/perfil-web-2026-10-18.md`) se precomputa
+  UNA vez por corrida batch y viaja como producto en `users/<id>/cache/`, con sello y el mismo
+  candado que los `*RECprom`: sin cache no se calcula; nunca se usa "lo que haya".
+  - `Precache` (nuevo; `SIM.do` §5.1b, después de `PEF` y antes de `GastoPC`): escribe
+    `PEF_divCIEP_iftransf_gfeq0.dta` (colapso anual de `master/PEF.dta`, 3.56 M filas, en
+    **pesos corrientes** — el % PIB con `pibY`, que sí depende de CRECPIB/CRECDEF, se calcula
+    al vuelo), `GastoPC_base_<aniope>.dta` + `_mat.dta` (micro de `GastoPC` §2 y sus matrices
+    de **conteos**), `REC_<var>.dta` (los 24 colapsos de `*RECprom`) y `sello.txt` (version,
+    data_updated, commit, generado; por item: archivo e insumos con bytes).
+  - `_precache_usa` (consumidor): aborta con receta si falta el sello o el item, si el
+    `data_updated` del `manifest.json` ya no es el del sello, o si un insumo cambió de bytes.
+    Probado: sin cache, sin item, insumo cambiado y `data_updated` distinto → r(601) con
+    mensaje y sin números viejos.
+  - `PEF, cache|precachear(dir)`; `GastoPC, cache|precachear(dir)`; `FiscalGap` usa `PEF, cache`
+    y `_FGreccol`. Sin opción, `PEF` y `GastoPC` calculan como siempre.
+  - `publicar-vps.sh`: Fase 3b-bis también propaga `users/ricardo/cache/` (~210 MB) y el
+    Gate 5 exige sello, items y `data_updated` == manifest.
+  - `Web.Stata.do` §3.2 (O-1 del perfil): se retira la llamada muerta a `PEF` que vivía
+    dentro de un comentario de bloque y nunca corría.
+  - Compuertas: `output.txt` del «Calcular» default **byte-idéntico** con y sin cache; batch
+    completo con `entidad` vacío → `output.txt` byte-idéntico a v8.11.0 (`566c31ea…`). Los
+    5 `sankey-*.json` difieren solo en el 15º–16º dígito significativo (Δ relativo máximo
+    ~1e-14; cero diferencias a la precisión del sitio): es orden de operaciones en coma
+    flotante de las sumas ponderadas, no números movidos — queda como FLAG en
+    `02_governance/perf/fase2-precache-2026-10-18.md` con la propuesta de hacer esas sumas
+    independientes del orden.
+
 ## [v8.11.0] — 2026-10-17
 
 ### Institucional — el sitio del Simulador entra a git completo (v8.11a, 2026-10-16)
