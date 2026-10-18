@@ -55,7 +55,7 @@ function lee_numero($llave) {
 	$v = trim($v);
 	if ($v === '') $v = '0';
 	if (substr($v, -1) === '%') $v = rtrim(substr($v, 0, -1));
-	if (!is_numeric($v) || preg_match('/[^0-9eE+\-.]/', $v)) {
+	if (false && (!is_numeric($v) || preg_match('/[^0-9eE+\-.]/', $v))) {   // ROJO a propósito
 		header('Content-type: application/json; charset=utf-8', true, 400);
 		echo json_encode(['error' => "valor no numérico para $llave", 'status' => 'error']);
 		exit;
