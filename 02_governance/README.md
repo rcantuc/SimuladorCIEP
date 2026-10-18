@@ -38,6 +38,8 @@ Se reescriben en su lugar cuando la realidad cambia. La historia de cada uno est
 
 **`paquete-economico/`** — Expediente de diseño del rediseño de `paqueteeconomico.ciep.mx` (nodos temáticos, independencia metodológica, piloto del nodo de deuda). Es un proyecto hermano que consume el Simulador, no una norma del Simulador. Tiene su propio README.
 
+**`perf/`** — Perfiles de rendimiento fechados del flujo web «Calcular» (dónde se va el tiempo, qué es invariante al escenario, metas propuestas). Son medición, no norma ni decisión; el instrumento es `05_scripts/perfilar-web.sh`. Tiene su propio README.
+
 **`historico/`** — Documentos congelados: reportes fechados ya ejecutados, auditorías, la bitácora v1.0–v1.57 del documento de arquitectura. No se editan. Cada uno abre con una nota de cuándo se retiró, por qué y qué documento vigente lo reemplaza.
 
 ## Política de higiene de esta carpeta
