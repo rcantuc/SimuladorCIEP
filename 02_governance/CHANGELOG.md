@@ -16,9 +16,7 @@ Formato de cada entrada:
 - **Datos:** cambios en fuentes, actualizaciones de PEFs, LIFs, ENIGH, u otras fuentes
 - **Correcciones:** bugs corregidos que afectaban resultados o funcionamiento
 
-## [Unreleased]
-
-Trabajo en `master` sin versión asignada.
+## [v8.11.0] — 2026-10-17
 
 ### Institucional — el sitio del Simulador entra a git completo (v8.11a, 2026-10-16)
 
@@ -91,13 +89,13 @@ Trabajo en `master` sin versión asignada.
   `statajson_entidad-nl.json` como testigo opcional. Runbook de deploys: el paso 8 del checklist
   ya no avisa a la capa NL (merge de cadencia).
 
-## [v8.10.1] — 2026-10-17
+### Corrección — restaura el run interactivo nacional («Calcular»), roto desde v8.10.0 (hotfix 2026-10-17)
 
-Hotfix **sin efecto en números**: restaura el run interactivo nacional del sitio
-(«Calcular»), roto en producción desde el deploy de v8.10.0 (2026-10-16). Producción quedó
-estable con el rollback a v8.9 (`current → v8.9`) mientras se preparó este patch. Deploy por
-§4a del runbook (mismo deployment `v8.10`; solo cambian `.ado`) y re-publicación del endpoint,
-que con el pin v8.10.0 sigue sirviendo el `PIBDeflactor.ado` roto.
+Restaura el run interactivo nacional del sitio («Calcular»), roto en producción desde el deploy
+de v8.10.0 (2026-10-16). Producción quedó estable con el rollback a v8.9 (`current → v8.9`)
+mientras se preparó la corrección; se despliega con v8.11.0 (deployment nuevo `v8.11`, §4b),
+junto con el sitio versionado y el retiro de la capa. El endpoint, que con el pin v8.10.0 seguía
+sirviendo el `PIBDeflactor.ado` roto, se re-publica en v8.11.0.
 
 ### Incidente
 
