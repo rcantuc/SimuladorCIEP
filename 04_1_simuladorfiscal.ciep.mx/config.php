@@ -105,9 +105,12 @@ function get_client_ip() {
 //   MAX_STATA_SIMULTANEOS  guardia real contra DoS por CPU: Stata corriendo a la vez.
 //   LIMITE_CORRIDAS_POR_IP corridas aceptadas por IP en cada VENTANA_SEG (nadie acapara).
 // Un usuario legítimo (un escenario cada tanto) no los toca. Defaults firmados por
-// Ricardo el 2026-10-18; se afinan AQUÍ. Sin excepciones por IP: no hay nada
-// hardcodeado (eximir la IP de Ricardo/localhost es decisión pendiente, FLAG).
-define('LIMITE_CORRIDAS_POR_IP', 10);
+// Ricardo el 2026-10-18 (100/10 min: las aulas y talleres del CIEP salen por una sola
+// IP pública; 10 era poco). Se afinan AQUÍ. Única exención: 127.0.0.1 (pruebas locales
+// y el harness de CI) queda fuera del tope por IP; el de simultáneos aplica a todos,
+// porque protege la CPU de la máquina, no a un usuario.
+define('LIMITE_CORRIDAS_POR_IP', 100);
+define('IPS_EXENTAS_LIMITE_IP', '127.0.0.1');	// lista separada por comas; solo loopback IPv4
 define('VENTANA_SEG', 600);
 define('MAX_STATA_SIMULTANEOS', 3);
 define('RETRY_SIMULTANEOS_SEG', 30);	// Retry-After cuando el tope es de simultáneos (una corrida dura ~35 s)
@@ -137,6 +140,7 @@ function stata_admision($tmp_path) {
 		$vivos++;
 	}
 	$ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+	$exenta = in_array($ip, array_map('trim', explode(',', IPS_EXENTAS_LIMITE_IP)), true);
 	$archivo_ip = $dir . 'ip-' . sha1($ip);
 	$marcas = array();
 	foreach (@file($archivo_ip, FILE_IGNORE_NEW_LINES) ?: array() as $t) {
@@ -145,11 +149,13 @@ function stata_admision($tmp_path) {
 	$res = null;
 	if ($vivos >= MAX_STATA_SIMULTANEOS) {
 		$res = array('ok' => false, 'motivo' => 'simultaneos', 'retry' => RETRY_SIMULTANEOS_SEG);
-	} elseif (count($marcas) >= LIMITE_CORRIDAS_POR_IP) {
+	} elseif (!$exenta && count($marcas) >= LIMITE_CORRIDAS_POR_IP) {
 		$res = array('ok' => false, 'motivo' => 'ip', 'retry' => max(1, min($marcas) + VENTANA_SEG - $ahora));
 	} else {
-		$marcas[] = $ahora;
-		file_put_contents($archivo_ip, implode("\n", $marcas) . "\n");
+		if (!$exenta) {
+			$marcas[] = $ahora;
+			file_put_contents($archivo_ip, implode("\n", $marcas) . "\n");
+		}
 		$slot = $dir . 'slot-' . getmypid() . '-' . bin2hex(random_bytes(4));
 		touch($slot);
 		$res = array('ok' => true, 'slot' => $slot);
