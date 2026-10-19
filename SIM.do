@@ -45,7 +45,7 @@ capture mkdir "${SIMROOT}/users/$id"
 //global export "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/UniversoCIEP/3. Recursos/3.1. Paquetes Económicos/Paquete Económico 2027/4. Documento CIEP/images"
 //global rawwip "rawwip"							// RAW EN WORK-IN-PROGRESS
 //global hasta "3"									// PARO TEMPRANO
-//global algebra "algebra"						// v8.12 fase 2b: FORMA CERRADA en FiscalGap §3 (totales HH desde los escalares) y GastoPC §3-6 (una pasada por variable). APAGADO por default: encenderlo es decisión con la tabla de deltas enfrente (02_governance/perf/)
+global algebra "algebra"							// v8.12 fase 2b: FORMA CERRADA en FiscalGap §3 (totales HH desde los escalares) y GastoPC §3-6 (una pasada por variable). ENCENDIDO por default desde v8.12.0 (decisión 2026-10-18 con la tabla de deltas: 0 diferencias; red: sankeys dentro de 1e-9 relativo). Vaciarlo ("") = ruta micro de siempre
 
 ** 0.5 Entidad federativa
 //global entidad "Nuevo León"   // edición local; el default versionado es vacío (nacional)

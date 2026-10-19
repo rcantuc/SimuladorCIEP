@@ -18,8 +18,6 @@ Formato de cada entrada:
 
 ## [Unreleased]
 
-## [Unreleased]
-
 ### Institucional — sitio: triage de Dependabot y freno de abuso de CPU (v8.11c, 2026-10-18)
 
 - **Dependabot: 3 avisos abiertos → 0, sin bumps.** Los tres apuntaban a `grunt`, devDependency

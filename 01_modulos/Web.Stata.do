@@ -39,7 +39,7 @@ global nographs "nographs"							// SUPRIMIR GRAFICAS
 global output "output"								// ARCHIVO DE SALIDA (WEB)
 global bootstrap "250"								// RÉPLICAS del escenario base que lee FiscalGap (SIM.do §0.2)
 global idbase "ricardo"								// ESCENARIO BASE: users/ricardo/bootstraps/$bootstrap/*RECprom.dta (publicar-vps.sh Fase 3b-bis)
-global algebra ""									// v8.12 fase 2b: "" = APAGADO (ruta micro de siempre); "algebra" = forma cerrada en FiscalGap §3 y GastoPC §3-6 (misma .ado que el batch; decisión de Ricardo con la tabla de deltas)
+global algebra "algebra"							// v8.12 fase 2b: forma cerrada en FiscalGap §3 y GastoPC §3-6 (misma .ado que el batch). ENCENDIDO desde v8.12.0 (decisión 2026-10-18); "" = ruta micro de siempre
 
 if "$output" != "" {
 	capture mkdir "${SIMROOT}/users/$id"
