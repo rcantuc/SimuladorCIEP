@@ -2,9 +2,6 @@
 # decide qué hacer con cada una. Una línea por referencia: <archivo que referencia>\t<ruta referida>.
 # Quitar la línea cuando se arregle (si vuelve a romperse, el gate se pone rojo).
 #
-# v8.11c (2026-10-18): la imagen 2 del carrusel del hero no existe en ningún clon ni en producción
-# (https://simuladorfiscal.ciep.mx/images/top-slide-2-v2b.png -> 404). Existen top-slide-2.png y
-# top-slide-2-v2.png; los slides 0, 1, 3 y 4 sí tienen su "-v2b". Decidir: recortar la v2b que falta
-# o apuntar el <img> a top-slide-2-v2.png. Es contenido, no código: FLAG.
-index.php	04_1_simuladorfiscal.ciep.mx/images/top-slide-2-v2b.png
-index-en.php	04_1_simuladorfiscal.ciep.mx/images/top-slide-2-v2b.png
+# (2026-10-18, PR #29) La única entrada que hubo —images/top-slide-2-v2b.png— era markup muerto: el <img>
+# vivía dentro de un <!--div class="carousel-item"> … div--> (el carrusel pasó de 3 a 2 slides) y el
+# navegador nunca lo pedía. Se borró el bloque comentado y el gate ahora ignora los comentarios HTML.

@@ -96,4 +96,80 @@ function get_client_ip() {
 		$ipaddress = 'UNKNOWN';
 	return $ipaddress;
 }
+
+/************** Freno de abuso de CPU (v8.11c, 2026-10-18) ********************/
+// calculaStata.php lanza un Stata (~35 s de CPU) por cada «Calcular»: sin freno,
+// N peticiones = N Stata en paralelo. Dos topes, PHP plano, estado en archivos
+// bajo $TMP_PATH/_ratelimit/ con flock (un idSession es alfanumérico: '_ratelimit'
+// no puede chocar con ninguna sesión):
+//   MAX_STATA_SIMULTANEOS  guardia real contra DoS por CPU: Stata corriendo a la vez.
+//   LIMITE_CORRIDAS_POR_IP corridas aceptadas por IP en cada VENTANA_SEG (nadie acapara).
+// Un usuario legítimo (un escenario cada tanto) no los toca. Defaults firmados por
+// Ricardo el 2026-10-18 (100/10 min: las aulas y talleres del CIEP salen por una sola
+// IP pública; 10 era poco). Se afinan AQUÍ. Única exención: 127.0.0.1 (pruebas locales
+// y el harness de CI) queda fuera del tope por IP; el de simultáneos aplica a todos,
+// porque protege la CPU de la máquina, no a un usuario.
+define('LIMITE_CORRIDAS_POR_IP', 100);
+define('IPS_EXENTAS_LIMITE_IP', '127.0.0.1');	// lista separada por comas; solo loopback IPv4
+define('VENTANA_SEG', 600);
+define('MAX_STATA_SIMULTANEOS', 3);
+define('RETRY_SIMULTANEOS_SEG', 30);	// Retry-After cuando el tope es de simultáneos (una corrida dura ~35 s)
+define('STATA_SLOT_TTL', 600);		// un slot que nadie liberó (proceso muerto) deja de contar a los 10 min
+
+// Admisión de una corrida. IP = REMOTE_ADDR (NO get_client_ip(): esa lee cabeceras
+// X-Forwarded-For/Client-IP que el cliente falsifica; el sitio va directo en Apache,
+// sin proxy delante — misma fuente que usa logCalcular.php).
+// Devuelve ['ok'=>true, 'slot'=>ruta] (hay que liberarlo con stata_libera) o
+// ['ok'=>false, 'motivo'=>'ip'|'simultaneos', 'retry'=>segundos]. Si el estado no se
+// puede abrir, deja pasar (el sitio no se cae por el freno) y lo anota en error_log.
+function stata_admision($tmp_path) {
+	$dir = $tmp_path . '_ratelimit/';
+	if (!is_dir($dir) && !@mkdir($dir, 0755, true) && !is_dir($dir)) {
+		error_log('ratelimit: no se pudo crear ' . $dir);
+		return array('ok' => true, 'slot' => null);
+	}
+	$lock = @fopen($dir . 'lock', 'c');
+	if (!$lock || !flock($lock, LOCK_EX)) {
+		error_log('ratelimit: no se pudo bloquear ' . $dir . 'lock');
+		return array('ok' => true, 'slot' => null);
+	}
+	$ahora = time();
+	$vivos = 0;
+	foreach (glob($dir . 'slot-*') ?: array() as $f) {
+		if ($ahora - (int)@filemtime($f) > STATA_SLOT_TTL) { @unlink($f); continue; }
+		$vivos++;
+	}
+	$ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+	$exenta = in_array($ip, array_map('trim', explode(',', IPS_EXENTAS_LIMITE_IP)), true);
+	$archivo_ip = $dir . 'ip-' . sha1($ip);
+	$marcas = array();
+	foreach (@file($archivo_ip, FILE_IGNORE_NEW_LINES) ?: array() as $t) {
+		if ($ahora - (int)$t < VENTANA_SEG) $marcas[] = (int)$t;
+	}
+	$res = null;
+	if ($vivos >= MAX_STATA_SIMULTANEOS) {
+		$res = array('ok' => false, 'motivo' => 'simultaneos', 'retry' => RETRY_SIMULTANEOS_SEG);
+	} elseif (!$exenta && count($marcas) >= LIMITE_CORRIDAS_POR_IP) {
+		$res = array('ok' => false, 'motivo' => 'ip', 'retry' => max(1, min($marcas) + VENTANA_SEG - $ahora));
+	} else {
+		if (!$exenta) {
+			$marcas[] = $ahora;
+			file_put_contents($archivo_ip, implode("\n", $marcas) . "\n");
+		}
+		$slot = $dir . 'slot-' . getmypid() . '-' . bin2hex(random_bytes(4));
+		touch($slot);
+		$res = array('ok' => true, 'slot' => $slot);
+		if (mt_rand(1, 50) === 1) {	// barrido ocasional de IPs inactivas
+			foreach (glob($dir . 'ip-*') ?: array() as $f) {
+				if ($ahora - (int)@filemtime($f) > VENTANA_SEG) @unlink($f);
+			}
+		}
+	}
+	flock($lock, LOCK_UN);
+	fclose($lock);
+	return $res;
+}
+function stata_libera($slot) {
+	if ($slot) @unlink($slot);
+}
 ?>

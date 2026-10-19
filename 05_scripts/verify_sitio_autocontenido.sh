@@ -67,6 +67,7 @@ def local(u):
     return u
 for php in ('index.php', 'index-en.php'):
     t = open(os.path.join(site, php), encoding='utf-8', errors='replace').read()
+    t = re.sub(r'<!--.*?-->', '', t, flags=re.S)          # markup comentado: el navegador no lo parsea ni lo pide
     for m in re.finditer(r'<(?:script|link|img|source)\b[^>]*?\s(?:src|href)\s*=\s*["\']([^"\']+)["\']', t, re.I):
         u = local(m.group(1))
         if u and re.search(r'\.(css|js|png|jpe?g|gif|svg|ico|webp|woff2?|ttf|json)$', u, re.I):
@@ -111,8 +112,9 @@ if (( ${#rotos[@]} > 0 )); then
 else
     echo "OK 3: los $n_refs activos locales que referencian index.php, index-en.php y css/ existen y están en git (salvo los tolerados abajo)."
 fi
-for x in "${toleradas[@]}"; do echo "  TOLERADA (decisión pendiente, ver $CONOCIDAS): $x"; done
-for x in "${avisos[@]}"; do echo "  AVISO (url() de css, no bloquea): $x"; done
+# (${arr[@]+"${arr[@]}"}: con set -u, un array vacío truena en bash < 4.4 — el 3.2 de macOS)
+for x in ${toleradas[@]+"${toleradas[@]}"}; do echo "  TOLERADA (decisión pendiente, ver $CONOCIDAS): $x"; done
+for x in ${avisos[@]+"${avisos[@]}"}; do echo "  AVISO (url() de css, no bloquea): $x"; done
 
 # activos de humo (copia de SITE_SMOKE_ASSETS de publicar-vps.sh: si se renombra uno, se actualiza allá y aquí)
 humo=(css/custom.css css/admin2.css js/stataCalcula.js js/connect.js plugins/bootstrap/css/bootstrap.min.css

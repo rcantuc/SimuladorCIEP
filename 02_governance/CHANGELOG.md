@@ -16,6 +16,42 @@ Formato de cada entrada:
 - **Datos:** cambios en fuentes, actualizaciones de PEFs, LIFs, ENIGH, u otras fuentes
 - **Correcciones:** bugs corregidos que afectaban resultados o funcionamiento
 
+## [Unreleased]
+
+### Institucional — sitio: triage de Dependabot y freno de abuso de CPU (v8.11c, 2026-10-18)
+
+- **Dependabot: 3 avisos abiertos → 0, sin bumps.** Los tres apuntaban a `grunt`, devDependency
+  del `package.json` del plugin vendor `plugins/idle-timer/` (herramienta de build que el sitio
+  no ejecuta ni sirve). Decisión de Ricardo: en vez de mantener al día un toolchain que nadie
+  corre, se borra del vendor lo que no se sirve — `idle-timer/` pierde `Gruntfile.js`,
+  `package.json`, `bower.json`, `.sln/.suo`, `test/`, `demos/`, `libs/`, `src/` (queda `dist/` +
+  licencia/README/CHANGELOG) y `apexcharts/` pierde `package.json` y `samples/` (queda `dist/`);
+  302 archivos. Sin manifest no hay aviso. `verify_sitio_autocontenido.sh`: todo lo que
+  referencian `index.php`, `index-en.php` y `css/` sigue existiendo en git. (`idle-timer` no lo
+  carga hoy ninguna página; `font-awesome` trae 17 MB de `scss/less/svgs/sprites` que tampoco se
+  sirven pero son distribución, no toolchain: ambas quedan como decisión aparte.)
+- **Hero: markup muerto fuera.** El `<img src="images/top-slide-2-v2b.png">` que el gate de
+  auto-contención toleraba vivía dentro de un `<!--div class="carousel-item"> … div-->` (el
+  carrusel pasó de 3 a 2 pasos): el navegador ni lo parsea ni lo pide. Confirmado con capturas
+  del hero antes/después idénticas (4 slides en el DOM, mismas 4 imágenes pedidas); se borra el
+  bloque comentado en `index.php` e `index-en.php`, se retira la entrada de
+  `sitio-referencias-rotas-conocidas.txt` y el gate ahora ignora los comentarios HTML (y ya no
+  truena con arrays vacíos en el bash 3.2 de macOS).
+- **Freno de abuso de CPU en `calculaStata.php`.** Cada «Calcular» lanza un Stata (~35 s de CPU)
+  y no había tope: N peticiones = N Stata en paralelo. Ahora, antes de lanzar Stata y después
+  de validar las entradas: `MAX_STATA_SIMULTANEOS = 3` (guardia real contra DoS por CPU) y
+  `LIMITE_CORRIDAS_POR_IP = 100` por `VENTANA_SEG = 600` (constantes en `config.php`; firmados
+  el 2026-10-18 — 100 porque las aulas y talleres del CIEP salen por una sola IP pública).
+  Única exención: `127.0.0.1` (`IPS_EXENTAS_LIMITE_IP`) queda fuera del tope por IP, no del de
+  simultáneos, que protege la CPU y aplica a todos. PHP plano, contadores por archivo con `flock` en `users/_ratelimit/`, sin
+  dependencias. Exceso → HTTP 429 con `Retry-After` y JSON `{error, error_en, motivo,
+  retry_after}`; el front-end (`stataCalcula.js` y `-en.js`) muestra el mensaje, apaga el
+  spinner y conserva los flags del submódulo ISR/IVA para el reintento. La IP es `REMOTE_ADDR`
+  (no las cabeceras `X-Forwarded-For`, que el cliente falsifica). Lo inválido sigue
+  respondiendo 400 sin consumir cupo. Pruebas rojo/verde con `php -S` + Stata falso en el PR:
+  la petición 101 de una IP → 429; 101 desde 127.0.0.1 → todas pasan; el 4º Stata simultáneo →
+  429 aunque venga de 127.0.0.1; pasada la ventana vuelve a pasar.
+
 ## [v8.11.0] — 2026-10-17
 
 ### Institucional — el sitio del Simulador entra a git completo (v8.11a, 2026-10-16)

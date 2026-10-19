@@ -1466,6 +1466,9 @@ $("#FormGastos").validate({
 
 /*Aqui va el ajax para enviar los valores y se invoca al .post con el php
 */
+	// v8.11c: si el cálculo falla (p. ej. 429 del freno de calculaStata.php) no se borran los flags del submódulo ISR/IVA,
+	// para que el reintento del usuario conserve lo que había cambiado.
+	var calculoFallido = false;
 	
    	$.ajax({
         async: true,
@@ -1972,8 +1975,10 @@ $("#FormGastos").validate({
  complete:function () {
 
 	/****************** Actualiza valores   Redistribución de los recursos públicos *******************/
-	$('#moduloCambio').val(0);
-	$('#moduloCambioIva').val(0);
+	if (!calculoFallido) {
+		$('#moduloCambio').val(0);
+		$('#moduloCambioIva').val(0);
+	}
 
 	// v8.2.0 fix: el refresh post-simulación solo pedía 2 de los 5 Sankeys
 	// (decil y grupoedad; escol quedó comentado a medias) — escol, rural y
@@ -2017,7 +2022,10 @@ $("#FormGastos").validate({
 		$('#cargando-notify').removeClass('active');		
  		},
         error: function (request, status, error) {
-            alert(jQuery.parseJSON(request.responseText).Message);
+            calculoFallido = true;
+            var msg = 'No se pudo calcular. Inténtalo de nuevo en unos segundos.';
+            try { var r = JSON.parse(request.responseText); if (r && r.error) msg = r.error; } catch (e) {}
+            alert(msg);
         }
  
 	    });
