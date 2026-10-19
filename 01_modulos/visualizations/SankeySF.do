@@ -106,7 +106,7 @@ if `"`entidad'"' != "" {
 			}
 			bysort folioviv foliohog: g byte hog1 = _n == 1
 			g byte one = 1
-			sort `corte' folioviv foliohog numren	// v8.12 (FLAG-7): orden determinista antes del collapse — la suma ponderada acumula en el orden de las filas y el de los empates del sort depende del historial de la sesión (c(sortrngstate)); con clave única el JSON no cambia al cambiar el pipeline
+			sort `corte', stable	// v8.12 (FLAG-7): orden determinista antes del collapse (stable: conserva el orden del archivo, que es fijo; las bases por vintage no siempre traen numren) — la suma ponderada acumula en el orden de las filas y el de los empates del sort depende del historial de la sesión (c(sortrngstate)); con clave única el JSON no cambia al cambiar el pipeline
 			collapse (sum) `cs' `cn' nPers=one nHog=hog1 pob=factor (max) `cm', by(`corte')
 			local celdas ""
 			forvalues k = 1/`=_N' {
@@ -158,7 +158,7 @@ if `"`entidad'"' != "" {
 					local nac`i' = r(sum)
 				}
 				_SFentidad `clave' `corte'
-				sort `corte' folioviv foliohog numren	// v8.12 (FLAG-7): ídem
+				sort `corte', stable	// v8.12 (FLAG-7): ídem (las bases por vintage se cargan sin numren)
 				collapse (sum) w_*, by(`corte')
 				reshape long w_, i(`corte') j(fam)
 				g double j_v`t' = .
