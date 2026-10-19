@@ -212,3 +212,38 @@ byte-identidad.
 `perf-2b-off/`, `perf-2b-on/` (3 corridas c/u, `tiempos.txt`), `hh-micro-vs-cerrada.txt`,
 `candado/candado.txt`, `srt2.do/.log` (sort y sumas), `batch-2a/`, `batch-2b/`, `compuertas-nl/`,
 `comparar-productos.py`, `correr-web.sh`.
+
+---
+
+## 8. Addendum 2026-10-18 (tarde) — decisiones de Ricardo aplicadas en el mismo PR
+
+1. **FLAG-7 → resuelto con orden determinista.** `SankeySF.do`: `sort <corte> folioviv foliohog
+   numren` antes de cada `collapse` ponderado (ejes 1 y 4; `sort to from`/`sort from to` en los
+   ejes 2–3; los de entidad en `_SFsellos`/`_SFentidad`), con `keep` previo de las columnas que el
+   `collapse` suma (el `sort` mueve 8–10 columnas y no 152: +0.9 s en vez de +2.8 s por «Calcular»).
+   **Gate declarado desde v8.12.0:** `output.txt` byte-idéntico; JSON de sankey dentro de **1e-9
+   relativo** (el runbook §9 ya documentaba la dependencia de `sortseed`).
+2. **2b encendido por default** (`global algebra "algebra"` en `SIM.do` §0.4 y `Web.Stata.do` §0),
+   con la tolerancia de arriba como red.
+3. **Release v8.12.0**: `origin/master` (con #29) mergeado; `[Unreleased]` consolidado en
+   `[v8.12.0] — 2026-10-18`; `manifest.json` a v8.12.0 (`data_updated` sin cambio: el cache sigue
+   vigente). `publicar.sh v8.12.0 --check` 7/8 (solo Gate 2, por tag); `--ci` 7/7.
+
+### 8.1 Medición final (cache + algebra + sort determinista) vs v8.11.0 / ffca008
+
+| | web (3 corridas, `web-final/`) | batch `SIM.do` entidad vacío (`batch-final/`) |
+|---|---|---|
+| `output.txt` | **byte-idéntico** a ffca008 | **byte-idéntico** a v8.11.0 (`sha256 566c31ea…`) |
+| 5 sankeys, Δ relativo máximo | **1.1e-13** (`sankey-grupoedad Transferencias → De 25 a 64`); 237 de 520 enlaces distintos al byte; 0 visibles; byte-idénticos entre corridas | **1.2e-13** (`sankey-sexo Inversión → Hombres`); 235 de 8 427 valores distintos al byte; 0 visibles (`batch-final/comparacion-vs-v8.11.0.md`) |
+| tiempo | **16.3 / 16.8 / 16.5 s** (ffca008: 31.5–35 s) | 32.1 min (con la corrida NL en paralelo) |
+| `compuertas-entidad.sh` NL | — | **TODAS EN VERDE** con el código final (`compuertas-nl-final/`: 160 JSON, Σ 32 entidades = nacional, testigo NL, banda ENIGH, sellos) |
+
+Ambos Δ máximos quedan **cuatro órdenes de magnitud por debajo** de la tolerancia declarada (1e-9).
+Nota: el primer intento de `compuertas-entidad.sh` con el `sort` por clave única tronó (`r(111)`,
+`variable numren not found`): las bases por vintage que lee `_SFsellos` se cargan sin `numren`. En
+los dos `collapse` de entidad el orden determinista es `sort <corte>, stable` (conserva el orden del
+archivo, que es fijo); los nacionales conservan la clave única. El flujo nacional no cambia con esa
+corrección (web: `output.txt` y 5 sankeys byte-idénticos entre `b243b33` y `d7bcbbe`).
+
+El drift de 1e-13 es el precio único de fijar el orden: a partir de aquí los sankeys son estables al
+byte entre corridas y ante cambios del pipeline (las tres corridas web son idénticas entre sí).
