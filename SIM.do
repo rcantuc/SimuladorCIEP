@@ -303,6 +303,7 @@ if "`cambioiva'" == "1" {
 
 ** 4.7 Tasas Efectivas */
 noisily TasasEfectivas, anio(`=anioPE') enigh
+if "$entidad" != "" noisily run "${SIMROOT}/01_modulos/TasasEfectivasEntidad.do" `=anioPE' "$entidad"	// v8.13a: TE micro/micro de la entidad (TasasEfectivasMicro via SIMentidad) -> users/$id/<ABREV>/tasas-efectivas.json; con el global vacio no corre
 if "$hasta" == "4" exit
 
 

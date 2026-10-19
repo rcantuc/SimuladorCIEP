@@ -16,6 +16,30 @@ Formato de cada entrada:
 - **Datos:** cambios en fuentes, actualizaciones de PEFs, LIFs, ENIGH, u otras fuentes
 - **Correcciones:** bugs corregidos que afectaban resultados o funcionamiento
 
+## [Unreleased]
+
+### Comandos — v8.13a: el contrato de entidad corre para las 32 (motor, sin visualización)
+
+- **`TasasEfectivasMicro.ado` deja de ser huérfano** (v1.1.0, no se toca por dentro): `SIM.do` §4.7 lo
+  invoca, solo con `global entidad`, vía `01_modulos/TasasEfectivasEntidad.do` (nuevo), que traduce
+  nombre → clave con `SIMentidad`, pide `entidad(<clave>) sufijo(<abrev minúscula>)`, calcula una vez
+  el espejo nacional micro/micro (referencia de `Rel<IMP>TE<suf>`), mide los sellos de muestra con la
+  regla P5 (n de la muestra de la entidad; top-1 del numerador por impuesto) y escribe
+  `users/$id/<ABREV>/tasas-efectivas.json` (montos, bases, tasas, dif. vs oficial, rel. vs nacional,
+  sellos, procedencia). Una línea en `SIM.do`; con el global vacío no corre: nacional byte-idéntico.
+- **`05_scripts/contrato-32.{sh,do,py}`** (nuevos): una sesión de Stata recorre el catálogo
+  `SIMentidad` y produce para cada entidad Población, PIB/Deflactor (solo con base), los 5 Sankeys
+  (con banda si hay vintages), `ciclo-vida.json` y `tasas-efectivas.json`; tolerante a fallos (rc por
+  paso en `contrato-32.tsv`, log por entidad). Gates por script: paridad (sha256 vs `--refs`),
+  aditividad del ciclo de vida (port de `gate-aditividad.py`, F3), Sankeys y testigo NL
+  (`compuertas-entidad.py`, reuso), sellos (solo reportados) y la **tabla de las 32** en
+  `contrato-32.md`. Para las tasas efectivas (no aditivas) se PROPONE el gate de consistencia —
+  Σ32 montos = nacional ⇒ tasa nacional = promedio ponderado por base — y se mide; es FLAG, no gate.
+- Runbook §13: cómo correr las 32, cuánto tarda, y la receta/validación de las bases precedentes
+  (vintages, testigo NL, `PIBDeflactor<ABREV>.dta`): se validan y se imprime la receta; fabricarlas es
+  decisión de Ricardo (FLAG de #26 sigue abierto, ahora escrito).
+- Cero visualización, cero template: qué se muestra y cómo es v8.13b (Ricardo).
+
 ## [v8.12.2] — 2026-10-19
 
 ### Sitio — el cronómetro del «Calcular» dice la verdad

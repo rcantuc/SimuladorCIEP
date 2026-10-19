@@ -714,6 +714,43 @@ FLAG (hallazgo del humo): `checkStataStatus.php` solo reporta `completed` cuando
 
 ---
 
+## 13. El contrato de entidad para las 32 (v8.13a): cómo correrlo y cuánto tarda
+
+**Qué es.** Con `global entidad "<nombre>"` el motor emite, además del flujo nacional (que no
+cambia un byte), los productos de ESA entidad en `users/$id/<ABREV>/`: `sankey-{quintil,grupoedad,
+sexo,rural,escol}.json` (§8.2), `ciclo-vida.json` (§8.2), `tasas-efectivas.json` (§4.7, v8.13a:
+`TasasEfectivasEntidad.do` → `TasasEfectivasMicro`), más Población y PIB/Deflactor por entidad
+(§1–2; el PIB solo si existe `master/PIBDeflactor<ABREV>.dta`). `05_scripts/contrato-32.sh` hace lo
+mismo para las 32 en una sola sesión y corre los gates por script.
+
+**Cómo (una noche; en el worktree de publicación o en uno con `master/`, `raw/` y `users/ricardo/`):**
+```bash
+nohup bash 05_scripts/contrato-32.sh --evidencia ~/CIEP_Simuladores/diag-v8.13a-<fecha> \
+     --refs <carpeta con output.txt y sankey-*.json de la última release> > corrida.out 2>&1 &
+```
+Tiempos (StataNow 19.5, Mac, 1 procesador): SIM.do ≈ 32 min; `compuertas-entidad.do` ≈ 4 min;
+`contrato-32.do` ≈ 1–1.5 min por entidad (Sankeys con banda ≈ 25 s, ciclo ≈ 10 s, TE ≈ 10 s,
+Población ≈ 2 s) ≈ 40–50 min; Python < 1 min. **Total ≈ 80–90 min.** Salida: `<evidencia>/contrato-32.md`
+(paridad, aditividad del ciclo, consistencia de las TE, tabla de las 32), `compuertas-entidad.md`
+(Sankeys: Σ32 = nacional, testigo NL, sellos), `contrato-32.tsv`, `entidades/<ABREV>.log`.
+Tolerante a fallos: si una entidad truena en un paso, queda su rc en la tabla y sigue la siguiente.
+
+**Bases precedentes (FLAG de #26, sigue abierto): se validan y se imprime la receta, no se fabrican.**
+
+| Base | La exige | Si falta | Receta |
+|---|---|---|---|
+| `users/$id-v{2016,2018,2020,2022,2024}/aportaciones.dta` | la **banda ENIGH** de los Sankeys de entidad (`_SFsellos`, P4) | los 32 Sankeys salen **sin banda** (declarado en `contrato-32.tsv`: `banda = no`) y `compuertas-entidad.py` marca ✗ en "banda solo en la entidad de la corrida" | son los `aportaciones.dta` de corridas completas de `SIM.do` con la ENIGH de cada vintage (horas cada una; `raw/ENIGH/<año>/` completo). Hoy viven en el worktree `SimuladorCIEP-NL/users/ricardo-v<año>/`; se clonan: `for v in 2016 2018 2020 2022 2024; do mkdir -p users/ricardo-v$v; cp -c …/SimuladorCIEP-NL/users/ricardo-v$v/aportaciones.dta users/ricardo-v$v/; done`. Fabricarlas desde cero es decisión de Ricardo (qué vintages, con qué parámetros) |
+| `statajson_entidad-nl.json` (testigo NL, 2026-10-08, sha `ca453062…`) | el gate 3 de `compuertas-entidad.py` (90 celdas `dis<fam>nle<dec>` a 1e-12) | el gate queda "no verificable" (declarado) | `--statajson <ruta>`; el driver lo busca en `users/$id/nodos/` y en `diag-v8.11b-retiro-capa-2026-10-16/`. Es un sello histórico del sprint NL: no se regenera |
+| `master/PIBDeflactor<ABREV>.dta` (hoy: NL, Jal, Camp) | PIB/Deflactor por entidad (§2) | la entidad va `PIB sin base` en la tabla | `PIBDeflactor if entidad == "<nombre>", update` baja las series del BISE (token en `set_token.do`); una por entidad, con red |
+
+**Gates que corren por script y su estado:** paridad (sha256 de `output.txt` y 5 sankeys
+nacionales vs `--refs`), aditividad de Sankeys (Σ32 = nacional, 1e-9) y del ciclo de vida (Σ32
+`pct_nac` = `APORT*`, 0.0005), testigo NL, sellos (n < 100, top-1 > 25 %: solo se cuentan). Las
+tasas efectivas no son aditivas: el reporte PROPONE el gate de consistencia (Σ32 montos = nacional
+⇒ la tasa nacional es el promedio ponderado por base) y lo mide; **Ricardo decide si se vuelve gate**.
+
+---
+
 ## Gotchas de deploy (los que ya mordieron)
 
 | Gotcha | Regla |
