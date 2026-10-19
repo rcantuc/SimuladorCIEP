@@ -73,6 +73,8 @@ def main():
     ap.add_argument("--evidencia", required=True); ap.add_argument("--statajson")
     ap.add_argument("--testigo", default="NL"); ap.add_argument("--tol-add", type=float, default=1e-9)
     ap.add_argument("--tol-testigo", type=float, default=1e-12)
+    ap.add_argument("--banda", choices=["sesion", "todas"], default="sesion",
+                    help="dónde se espera la banda ENIGH: solo en la entidad de la corrida (compuertas-entidad.do, default) o en las 32 (contrato-32.do, v8.13a)")
     a = ap.parse_args()
     U = os.path.join(a.root, "users", a.id)
     os.makedirs(a.evidencia, exist_ok=True)
@@ -179,7 +181,11 @@ def main():
             resumen.append((ab, c, len(micro), len(act), sum(1 for l in micro if "bmin" in l)))
     ok(not sinsello, "todos los enlaces micro de las 32×5 traen n, top1 y sello" + ("" if not sinsello else f" (faltan en {sinsello[:6]})"))
     conbanda = [r for r in resumen if r[4] > 0]
-    ok(any(r[0] == T for r in conbanda) and all(r[0] == T for r in conbanda), f"banda ENIGH (bmin/bmax) solo en la entidad de la corrida ({T}): {sorted({r[0] for r in conbanda})}")
+    ents_banda = sorted({r[0] for r in conbanda})
+    if a.banda == "todas":
+        ok(len(ents_banda) == 32, f"banda ENIGH (bmin/bmax) en las 32 entidades (contrato-32): {len(ents_banda)}/32")
+    else:
+        ok(any(r[0] == T for r in conbanda) and all(r[0] == T for r in conbanda), f"banda ENIGH (bmin/bmax) solo en la entidad de la corrida ({T}): {ents_banda}")
     act_tot = sum(r[3] for r in resumen)
     ok(act_tot > 0, f"los sellos se activan: {act_tot} enlaces micro con sello=1 en las 32 entidades × 5 cortes ({sum(r[2] for r in resumen)} enlaces micro)")
     md.append("\n| entidad | corte | enlaces micro | con sello | con banda |\n|---|---|---:|---:|---:|")
