@@ -16,7 +16,7 @@ Formato de cada entrada:
 - **Datos:** cambios en fuentes, actualizaciones de PEFs, LIFs, ENIGH, u otras fuentes
 - **Correcciones:** bugs corregidos que afectaban resultados o funcionamiento
 
-## [Unreleased]
+## [v8.12.0] — 2026-10-18
 
 ### Institucional — sitio: triage de Dependabot y freno de abuso de CPU (v8.11c, 2026-10-18)
 
@@ -77,24 +77,35 @@ Formato de cada entrada:
     dentro de un comentario de bloque y nunca corría.
   - Compuertas: `output.txt` del «Calcular» default **byte-idéntico** con y sin cache; batch
     completo con `entidad` vacío → `output.txt` byte-idéntico a v8.11.0 (`566c31ea…`). Los
-    5 `sankey-*.json` difieren solo en el 15º–16º dígito significativo (Δ relativo máximo
-    ~1e-14; cero diferencias a la precisión del sitio): es orden de operaciones en coma
-    flotante de las sumas ponderadas, no números movidos — queda como FLAG en
-    `02_governance/perf/fase2-precache-2026-10-18.md` con la propuesta de hacer esas sumas
-    independientes del orden.
+    5 `sankey-*.json` diferían en el flujo web en el 15º–16º dígito (orden de acumulación de
+    las sumas ponderadas de `SankeySF.do`, que dependía del historial del `sort`): resuelto en
+    esta misma versión con el orden determinista de abajo (FLAG-7 del reporte
+    `02_governance/perf/fase2-precache-2026-10-18.md`).
 
-### Comandos — v8.12 fase 2b: forma cerrada tras interruptor (APAGADO por default)
+### Comandos — v8.12 fase 2b: forma cerrada, encendida por default
 
-- `global algebra` (`SIM.do` §0.4 comentado; `Web.Stata.do` §0 vacío). Encendido, en el
-  mismo `.ado` para batch y web (sin fork): `FiscalGap` §3 obtiene los totales HH del año
-  base como Σ escalares/100·pibY/deflator (con el mismo `PIBDeflactor` de `GastoPC` §1) en
-  vez de recorrer la micro, y `GastoPC` §3–6 genera `Educacion`, `Salud`, `Pensiones` y
-  `Energia` en una sola pasada (`_GPCsuma`/`_GPCcierra`) en vez de 26 `replace`.
-- Medido con el interruptor encendido (3 corridas web + 1 batch): **0 diferencias al byte**
-  en `output.txt` y en los 5 sankeys respecto al interruptor apagado; los totales HH
-  coinciden con la ruta micro a ≤ 3.8e-16 relativo (1–2 ulp). Tiempo 2a+2b ≈ 16 s
-  (vs 19 s con 2a sola). Tabla completa de deltas en el reporte de fase 2. **El default se
-  queda apagado**: encenderlo es decisión de Ricardo con la tabla enfrente.
+- `global algebra "algebra"` (`SIM.do` §0.4 y `Web.Stata.do` §0; `""` = la ruta micro de
+  siempre). En el mismo `.ado` para batch y web (sin fork): `FiscalGap` §3 obtiene los
+  totales HH del año base como Σ escalares/100·pibY/deflator (con el mismo `PIBDeflactor` de
+  `GastoPC` §1) en vez de recorrer la micro, y `GastoPC` §3–6 genera `Educacion`, `Salud`,
+  `Pensiones` y `Energia` en una sola pasada (`_GPCsuma`/`_GPCcierra`) en vez de 26 `replace`.
+- Medido antes de encenderlo (3 corridas web + 1 batch): **0 diferencias al byte** en
+  `output.txt` y en los 5 sankeys respecto al interruptor apagado; los totales HH coinciden
+  con la ruta micro a ≤ 3.8e-16 relativo (1–2 ulp). Decisión de Ricardo (2026-10-18) con esa
+  tabla enfrente: encendido por default, con la tolerancia de abajo como red.
+
+### Correcciones — sankeys con orden de acumulación determinista (FLAG-7) y gate nuevo
+
+- `SankeySF.do`: `sort <corte> folioviv foliohog numren` (clave única) antes de cada
+  `collapse` ponderado (ejes 1 y 4, ejes 2–3 por `to`/`from`, y los de entidad). Antes, el
+  orden de los empates del `sort` interno del `collapse` dependía del historial de la
+  sesión (`c(sortrngstate)`, documentado en el runbook §9) y los JSON cambiaban en el
+  15º–16º dígito con cualquier cambio del pipeline. Antes de los dos `sort` grandes se hace
+  `keep` de las columnas que el `collapse` suma (lo demás se descartaba igual).
+- **Gate declarado desde v8.12.0:** `output.txt` byte-idéntico; JSON de sankey dentro de
+  **1e-9 relativo**. Medido contra v8.11.0: `output.txt` byte-idéntico (web y batch);
+  sankeys Δ relativo máximo 1.1e-13 (web, drift único del nuevo orden) — el del batch se
+  anota en el reporte de fase 2 §3. «Calcular» default: ~32 s (v8.11.0) → **~16.5 s**.
 
 ## [v8.11.0] — 2026-10-17
 
