@@ -797,7 +797,7 @@ if ($deployed_version !== "") {
 				<span class="sr-only">Cargando...</span>
 			</div>
 			<div class="cargando-text">
-				Calculando… <b id="count">30</b>s
+				<span class="cronometro-cuenta">Calculando… <b id="count"></b>s</span><span class="cronometro-fin" style="display:none">Finalizando…</span>
 			</div>
 		</div>
 
@@ -3612,6 +3612,7 @@ if ($deployed_version !== "") {
 		<script src="js/pages/blockui.js"></script>
 
 		<!-- script src="js/pages/charts-v2.js?v=2"></script> <!--  aqui se calculan las graficas-->
+		<script src="js/config-tiempos.js"></script><!-- segundos de la cuenta regresiva: una constante por flujo (v8.12.2) -->
 		<script src="js/stataCalcula.js"></script><!--  aqui se calculan las graficas-->
 
 
@@ -3901,33 +3902,6 @@ if ($deployed_version !== "") {
 		  } );
 		</script>
 
-    <script>
-    		var countdownTimer = null;
-
-    		function startCountdown(seconds) {
-    			if (countdownTimer) clearInterval(countdownTimer);
-    			var counter = seconds;
-    			$('#count').text(counter);
-    			$('#cargando-notify').addClass('active');
-    			countdownTimer = setInterval(function() {
-    				counter--;
-    				if (counter > 0) {
-    					$('#count').text(counter);
-    				}
-    				if (counter === 0) {
-    					clearInterval(countdownTimer);
-    					countdownTimer = null;
-    				}
-    			}, 1000);
-    		}
-
-    		$( "#isrSub" ).click(function() { startCountdown(35); });
-    		$( "#Modal-ISR-1 .isrSub" ).click(function() { startCountdown(35); });
-    		$( "#Modal-cuotas-imss .isrSub" ).click(function() { startCountdown(35); });
-    		$( "#Modal-IVA .isrSub" ).click(function() { startCountdown(35); });
-    		$( "#Modal-ISR-2 .isrSub" ).click(function() { startCountdown(35); });
-
-    		</script>
 
 		<script>
 		if (navigator.appVersion.indexOf("Mac")!=-1) OSName="MacOS";

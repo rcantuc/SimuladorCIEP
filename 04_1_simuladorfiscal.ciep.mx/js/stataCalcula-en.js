@@ -1613,8 +1613,7 @@ $("#FormGastos").validate({
         },
  beforeSend:function () {
 
-		$('#cargando-notify').addClass('active');
-		$('#count').text(35);
+		CIEPCronometro.iniciar(CIEPCronometro.flujo());   // v8.12.2: cuenta cosmética; el fin lo dicta la respuesta (complete)
 //		alert("moduloCambio:" +  $("#moduloCambio").val()  + " moduloCambioIva:"+ $("#moduloCambioIva").val())
 
  },
@@ -1964,13 +1963,16 @@ $("#FormGastos").validate({
 		$(".table").removeClass( "blink-1" );
 	}, 1500);
 
-		$('#cargando-notify').removeClass('active');		
  		},
         error: function (request, status, error) {
             calculoFallido = true;
+            CIEPCronometro.terminar();   // antes del alert (bloquea): el aviso no se queda encendido
             var msg = 'The calculation could not be completed. Please try again in a few seconds.';
             try { var r = JSON.parse(request.responseText); if (r && r.error_en) msg = r.error_en; } catch (e) {}
             alert(msg);
+        },
+        complete: function () {
+            CIEPCronometro.terminar();   // v8.12.2: éxito o error, el run terminó: se corta el reloj
         }
  
 	    });

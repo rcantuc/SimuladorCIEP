@@ -460,6 +460,8 @@ re-desplegar), no rollback.
 
 ## 8. Después del deploy (según el release)
 
+> **Cronómetro del «Calcular» (v8.12.2):** los segundos de la cuenta regresiva viven en un solo archivo, `04_1_simuladorfiscal.ciep.mx/js/config-tiempos.js` (`CIEP_TIEMPOS`, una constante por flujo = tiempo del VPS + ~25 %). Si un release cambia lo que tarda el motor, re-medir (el «Calcular» de humo de la Fase 6 imprime el tiempo del principal en el VPS) y ajustar ahí; el reloj es cosmético, el fin lo dicta la respuesta.
+
 - Regenerar `.tex` (`$export`) + **compilar el libro** si los números del
   libro cambiaron; pasada de prosa donde las cifras se movieron.
 - Comunicado/nota de corrección si aplica (decisión institucional).
