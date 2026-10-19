@@ -1,0 +1,87 @@
+# gates-sin-stata.yml — los gates del Simulador que NO necesitan Stata ni assets pesados,
+# en cada PR a master (y en cada push a master), para que un PR roto se vea rojo antes de
+# que nadie lo revise. Cierra la brecha «gates como sesiones, no como CI» (plan v9.0; v8.11c).
+#
+# Stata NO está en CI (licencia). Quedan FUERA y siguen siendo rituales de sesión (ver
+# 02_governance/runbook-deploys-ciep.md §10 "Qué gate corre dónde"):
+#   - corridas (SIM.do, Web.Stata.do, perfilar-web.sh), paridad local/web, aditividad,
+#     byte-identidad de output.txt y de los escalares;
+#   - Gate 2 de publicar.sh (tag anotado: el tag lo crea publicar.sh al publicar; un PR de
+#     release lleva el manifest bumpeado ANTES de que exista el tag);
+#   - Gate 5 completo (SHA de los assets de raw/: aquí no hay raw/; solo corre su mitad
+#     estática: SIM.do sin `global rawwip` activo);
+#   - test-maquina-virgen.sh --download (1.3 GB de la Release) y los gates de publicar-vps.sh
+#     que hablan con el VPS (credenciales, SSH).
+#
+# Cada job es un gate; el nombre del job es el nombre del check en el PR. Ricardo activa
+# «Require status checks» en branch protection cuando vea el check verde (runbook §10).
+name: gates-sin-stata
+
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  shellcheck:
+    name: "shellcheck 05_scripts/*.sh (severidad error)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: shellcheck -S error (bloquea)
+        run: |
+          shellcheck --version
+          shellcheck -S error 05_scripts/*.sh
+      - name: shellcheck -S warning (informativo, no bloquea)
+        continue-on-error: true
+        run: shellcheck -S warning 05_scripts/*.sh
+
+  gitignore:
+    name: "verify_gitignore.sh (85 casos)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash 05_scripts/verify_gitignore.sh
+
+  php-lint:
+    name: "php -l de los PHP del sitio"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          php --version | head -1
+          fallos=0; n=0
+          for f in 04_1_simuladorfiscal.ciep.mx/*.php; do
+            n=$((n+1))
+            php -l "$f" || fallos=$((fallos+1))
+          done
+          echo "$n PHP revisados, $fallos con errores de sintaxis"
+          [ "$fallos" -eq 0 ]
+
+  sitio-seguridad:
+    name: "harness de seguridad del sitio (php -S + Stata falso)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash 05_scripts/test-sitio-seguridad.sh
+
+  sitio-autocontenido:
+    name: "sitio auto-contenido (docroot == git ls-files 04_1/)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash 05_scripts/verify_sitio_autocontenido.sh
+
+  publicar-check:
+    name: "publicar.sh --ci (gates 1, 3, 4, 5*, 6, 7, 8)"
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}   # Gate 8 lee la Release con gh (solo lectura)
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash 05_scripts/publicar.sh --ci

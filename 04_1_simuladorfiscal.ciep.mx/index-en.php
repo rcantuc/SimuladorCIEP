@@ -1006,22 +1006,6 @@ if ($deployed_version !== "") {
 							</div>
 						</div>
 
-						<!--div class="carousel-item">
-							<div class="main-wrapper container box-resultados">
-								<div class="row align-items-center">
-									<div class="col-xl-4">
-										<h2 data-shadow="Step 2." class="card-title title-small">Step 2.</h2>
-										<h2 data-shadow="Update your values" class="card-title">Update your values</h2>
-										<p class="card-text">
-											With the proposed values, <span class="txt-bold">press the button</span> <span class="txt-actualizar">Update</span> to see the new budget balance. This will only update the values of the revenues, expenditures, and debt formula. <span class="txt-bold">Repeat</span> steps <span class="txt-bold">1</span> and <span class="txt-bold">2</span> as many times as necessary until you find your favorite simulation.
-										</p>
-									</div>
-									<div class="col-xl-8 pl-5 img-slider text-center">
-										<img src="images/top-slide-2-v2b.png" alt=" ">
-									</div>
-								</div>
-							</div>
-						</div-->
 
 						<div class="carousel-item">
 							<div class="main-wrapper container box-resultados">
