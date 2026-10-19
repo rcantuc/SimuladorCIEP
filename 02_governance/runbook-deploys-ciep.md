@@ -666,12 +666,14 @@ Correr lo mismo que CI, localmente, antes de abrir el PR (todo en segundos):
 ```bash
 shellcheck -S error 05_scripts/*.sh && bash 05_scripts/verify_gitignore.sh && \
 for f in 04_1_simuladorfiscal.ciep.mx/*.php; do php -l "$f" >/dev/null || echo "ERR $f"; done && \
-bash 05_scripts/test-sitio-seguridad.sh && bash 05_scripts/test-humo-calcular.sh && bash 05_scripts/verify_sitio_autocontenido.sh && bash 05_scripts/publicar.sh --ci
+bash 05_scripts/test-sitio-seguridad.sh && bash 05_scripts/test-humo-calcular.sh && bash 05_scripts/test-sitio-transitorios.sh && bash 05_scripts/verify_sitio_autocontenido.sh && bash 05_scripts/publicar.sh --ci
 ```
 
 **Branch protection (lo hace Ricardo, a mano, una vez que vea el check verde en un PR):** Settings →
-Branches → `master` → *Require status checks to pass before merging* → marcar los seis checks de
-`gates-sin-stata` (`shellcheck`, `gitignore`, `php-lint`, `sitio-seguridad`, `sitio-autocontenido`, `publicar-check`).
+Branches → `master` → *Require status checks to pass before merging* → marcar los siete checks de
+`gates-sin-stata` (`shellcheck`, `gitignore`, `php-lint`, `sitio-seguridad`, `sitio-autocontenido`, `sitio-transitorios`, `publicar-check`).
+
+**Efectos transitorios (v8.12.3):** un efecto de ~1 s (el parpadeo `blink-1` de las tablas tras «Calcular», el refresco de los 5 Sankeys, «Finalizando…») no deja rastro en el DOM final, así que una captura del estado final no lo ve. `bash 05_scripts/test-sitio-transitorios.sh` los muestrea cada ~100 ms con Chrome headless y corre en CI (job `sitio-transitorios`). Todo cambio al cierre del «Calcular» (`complete`/`success` en `stataCalcula*.js`) debe pasarlo; ojo con las claves duplicadas en el objeto de `$.ajax` (la última gana en silencio).
 
 ---
 
