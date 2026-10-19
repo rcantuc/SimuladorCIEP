@@ -16,6 +16,28 @@ Formato de cada entrada:
 - **Datos:** cambios en fuentes, actualizaciones de PEFs, LIFs, ENIGH, u otras fuentes
 - **Correcciones:** bugs corregidos que afectaban resultados o funcionamiento
 
+## [v8.12.3] — 2026-10-19
+
+### Sitio — se restaura el parpadeo de las tablas, el refresco de los Sankeys y el reinicio de flags tras «Calcular»
+
+- **Regresión de v8.12.2 (`f8c2dce`, #33).** El `$.ajax` de `calculaStata.php` ya traía un `complete:function(){…}`
+  (reinicio de `moduloCambio`/`moduloCambioIva`, refresco de los 5 Sankeys, parpadeo `blink-1` de las
+  tablas). v8.12.2 añadió un segundo `complete:` para cortar el reloj: en un objeto literal la última
+  clave gana **en silencio** y el bloque original dejó de ejecutarse. Efectos para el usuario: ya no
+  parpadeaban las tablas (señal de qué se movió), **los 5 Sankeys no se refrescaban tras «Calcular»**
+  (se quedaban con los del escenario anterior) y los flags del submódulo no se reiniciaban (el
+  siguiente «Calcular» volvía a correr `ISR_Mod.do`/`IVA_Mod.do`). Pasó el gate visual porque comparaba
+  capturas del estado final y porque el Stata falso devolvía el mismo escenario.
+- Fix: un solo `complete`; el corte del reloj (`CIEPCronometro.terminar()`) va dentro del original, en
+  `stataCalcula.js` y `stataCalcula-en.js`. El efecto es el original: `blink-1` (1.0 s, opacidad) sobre
+  todas las `.table`, retirado a los 1500 ms; no se rediseña nada.
+- **Test de efectos transitorios** (`05_scripts/test-sitio-transitorios.{sh,js}`, job `sitio-transitorios` en CI):
+  Chrome headless muestrea el DOM cada ~100 ms tras el POST — las tablas adquieren y pierden `blink-1`
+  (≈ 1.5 s), se refrescan los 5 Sankeys, los flags vuelven a 0 — y repite las pruebas de v8.12.2
+  (valor del reloj por flujo, «Finalizando…», spinner apagado y flags conservados tras un 429), en ES y EN.
+  Probado en rojo contra `c921bf6` (6 fallos) y en verde. Fixture: `05_scripts/fixtures/output-default.txt`.
+- Solo front-end: sin cambios al motor ni a los números. `manifest.json` → v8.12.3.
+
 ## [v8.12.2] — 2026-10-19
 
 ### Sitio — el cronómetro del «Calcular» dice la verdad

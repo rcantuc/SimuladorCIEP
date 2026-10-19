@@ -1918,6 +1918,11 @@ $("#FormGastos").validate({
         },
  complete:function () {
 
+	// v8.12.3: UN solo `complete` en este $.ajax. v8.12.2 añadió un segundo `complete:` más abajo y, en un
+	// objeto literal, la última clave gana en silencio: este bloque (reinicio de moduloCambio, refresco de los
+	// 5 Sankeys, parpadeo blink-1 de las tablas) dejó de ejecutarse. El corte del reloj va aquí, primero.
+	CIEPCronometro.terminar();   // éxito o error, el run terminó: se corta el reloj
+
 	/****************** Actualiza valores   Redistribución de los recursos públicos *******************/
 	if (!calculoFallido) {
 		$('#moduloCambio').val(0);
@@ -1970,9 +1975,6 @@ $("#FormGastos").validate({
             var msg = 'The calculation could not be completed. Please try again in a few seconds.';
             try { var r = JSON.parse(request.responseText); if (r && r.error_en) msg = r.error_en; } catch (e) {}
             alert(msg);
-        },
-        complete: function () {
-            CIEPCronometro.terminar();   // v8.12.2: éxito o error, el run terminó: se corta el reloj
         }
  
 	    });
