@@ -37,7 +37,14 @@ quietly {
 		MINimum(real 1) DESDE(int -1) ///
 		ROWS(int 1) COLS(int 5) ///
 		HIGHlight(int 0) ///
-		TITle(string)]
+		TITle(string) ///
+		CACHE PRECACHEar(string)]
+	* cache / precachear(dir) (v8.12 fase 2a): el colapso anual de master/PEF.dta (3.56 M
+	* filas; ~8 s por llamada) es invariante al escenario. precachear(dir) lo guarda en
+	* dir/<clave>.dta y termina (lo llama Precache en el batch); cache lo lee de
+	* users/$idbase/cache/ vía _precache_usa (aborta con receta si falta o caducó).
+	* La clave sale de by() e if: la misma llamada produce y consume. Sin ninguna de
+	* las dos opciones, PEF calcula como siempre. La clave se forma en 1.4b (by ya resuelto).
 
 	noisily di _newline(2) in g _dup(20) "." "{bf:  Sistema Fiscal: GASTOS " in y `anio' "  }" in g _dup(20) "."
 
@@ -68,6 +75,10 @@ quietly {
 	if "`by'" == "" {
 		local by = "divCIEP"
 	}
+
+	** 1.4b Clave del cache (v8.12 fase 2a) **
+	_PEF_cachekey "`by'" `"`if'"'
+	local cachekey "`r(key)'"
 
 	* 1.5 Nombres r() estables para catalogos de texto *
 	* Los desc_* se guardan en Title Case (limpieza 1.4, v8.3.4) pero el
@@ -117,6 +128,12 @@ quietly {
 	***************
 	*** 3 Merge ***
 	***************
+	if "`cache'" == "cache" {
+		* v8.12 fase 2a: el colapso de abajo, ya hecho por Precache con esta misma by()/if
+		_precache_usa `cachekey'
+		use `"`r(fn)'"', clear
+	}
+	else {
 	use "${SIMROOT}/master/PEF.dta", clear
 
 	** 3.1 Gasto total **
@@ -133,6 +150,15 @@ quietly {
 		noisily di in g `" No hay informaci{c o'}n para el a{c n~}o `if'."'
 		return local rc = "NoData"
 		exit
+	}
+	if `"`precachear'"' != "" {
+		* v8.12 fase 2a: guardar el colapso (pesos corrientes; el % PIB se calcula después) y salir
+		save `"`precachear'/`cachekey'.dta"', replace
+		return local precache_item "`cachekey'"
+		return local precache_archivo "`cachekey'.dta"
+		return local precache_insumos "master/PEF.dta"
+		exit
+	}
 	}
 	sort anio `by'
 	merge m:1 (anio) using "`PIB'", nogen keepus(pibY indiceY deflator lambda Poblacion) keep(matched) sorted
@@ -1694,4 +1720,21 @@ program define _PEFverifica
 		error 459
 	}
 	noisily di in g "  Comparabilidad intertemporal: " in y "OK" in g "."
+end
+
+* v8.12 fase 2a: clave del item de cache de PEF a partir de by() e if (misma para
+* producir y consumir). "PEF_<by>_<if sin espacios, == -> eq, != -> ne, resto -> _>";
+* sin if: PEF_<by>_all.
+program define _PEF_cachekey, rclass
+	version 17
+	args by cond
+	local c = trim(`"`cond'"')
+	if `"`c'"' == "" local c "all"
+	local c = subinstr(`"`c'"', " ", "", .)
+	local c = subinstr(`"`c'"', "==", "eq", .)
+	local c = subinstr(`"`c'"', "!=", "ne", .)
+	local c = subinstr(`"`c'"', ">=", "ge", .)
+	local c = subinstr(`"`c'"', "<=", "le", .)
+	mata: st_local("c", ustrregexra(st_local("c"), "[^A-Za-z0-9_]", "_"))
+	return local key "PEF_`by'_`c'"
 end

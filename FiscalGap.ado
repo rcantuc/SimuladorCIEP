@@ -60,6 +60,41 @@ quietly {
 	**# 3 HOUSEHOLDS ***
 	***              ***
 	********************
+	if "$algebra" != "" {
+		* v8.12 fase 2b (interruptor $algebra, apagado por default): los totales HH<k> del
+		* año base son, por construcción de GastoPC (PC = x/conteo/deflator; Σ factor·PC·ind
+		* = x/deflator; Distribucion reparte exactamente el macro), la suma de los escalares
+		* del escenario en pesos de aniovp: Σ_c scalar(c)/100·pibY(anio) / deflator(anio),
+		* con el MISMO PIBDeflactor que usa GastoPC §1. Se evita recorrer la micro
+		* (use ingresos + merge gastos + 9 tabstat). Las diferencias con la ruta micro son de
+		* orden de operaciones en coma flotante: las mide el reporte de fase 2.
+		PIBDeflactor, aniovp(`=aniovp') nographs nooutput
+		keep if anio == `anio'
+		local PIBg = pibY[1]
+		local deflg = deflator[1]
+		local esc_Educacion "iniciaA basica medsup superi posgra eduadu otrose invere cultur invest"
+		local esc_Pensiones "penimss penisss penpeme penotro"
+		local esc_Pension_AM "pam"
+		local esc_Salud "ssa imssbien imss issste pemex issfam invers"
+		local esc_Otros_gastos "gasotros"
+		local esc_IngBasico "IngBas gasmadres gascuidados"
+		local esc_Otras_inversiones "gasinfra"
+		local esc_Federalizado "gasfeder"
+		local esc_Energia "gascfe gaspemex gassener gasinverf gascosdeue"
+		foreach k in Educacion Pensiones Pension_AM Salud Otros_gastos IngBasico Otras_inversiones Federalizado Energia {
+			tempname HH`k'
+			matrix `HH`k'' = J(1, 1, 0)
+			foreach c of local esc_`k' {
+				capture confirm scalar `c'
+				if _rc {
+					di as err "FiscalGap (algebra): falta el escalar `c' del escenario (SIM.do §5.1 / Web.Stata.do §3.2.1)."
+					exit 198
+				}
+				matrix `HH`k'' = `HH`k'' + J(1, 1, (scalar(`c')/100*`PIBg')/`deflg')
+			}
+		}
+	}
+	else {
 	use "${SIMROOT}/users/$id/ingresos.dta", clear
 	merge 1:1 (folioviv foliohog numren) using "${SIMROOT}/users/$id/gastos.dta", nogen update
 	capture drop _*
@@ -82,6 +117,7 @@ quietly {
 		
 		tempname HH`k'
 		matrix `HH`k'' = r(StatTotal)
+	}
 	}
 
 
@@ -116,8 +152,7 @@ quietly {
 
 	** 4.2 Proyección futura de los ingresos **
 	foreach k in CFE CUOTAS FMP IEPSNP IEPSP IMPORT IMSS ISAN ISRAS ISRPF ISRPM ISSSTE IVA OTROSK PEMEX {
-		_FGrecprom `"`dirprom'"' `k' $bootstrap `idbase'
-		collapse estimacion contribuyentes, by(anio modulo aniobase)
+		_FGreccol `k'	// v8.12 fase 2a: = _FGrecprom + collapse estimacion contribuyentes, by(anio modulo aniobase), ya hecho por Precache
 		tsset anio
 		
 		g divSIM = "`k'"
@@ -398,7 +433,7 @@ quietly {
 
 	*********************************************
 	** 5.1 Información histórica de los gastos **
-	PEF if transf_gf == 0, anio(`anio') by(divCIEP) nographs desde(`desde')
+	PEF if transf_gf == 0, anio(`anio') by(divCIEP) nographs desde(`desde') cache	// v8.12 fase 2a: el colapso de master/PEF.dta viene de users/`idbase'/cache/ (Precache); la misma llamada lo produjo
 	local divCIEP "`=r(divCIEP)' IngBasico"
 	*replace gasto = -gasto if resumido2 == "Cuotas ISSSTE"
 
@@ -426,8 +461,7 @@ quietly {
 	//foreach k in Pensiones {
 		if `"`=strtoname("`k'")'"' != "Costo_de_la_deuda" {
 			preserve
-			_FGrecprom `"`dirprom'"' `=strtoname("`k'")' $bootstrap `idbase'
-			collapse estimacion contribuyentes, by(anio modulo aniobase)
+			_FGreccol `=strtoname("`k'")'	// v8.12 fase 2a: ídem, desde users/`idbase'/cache/REC_<var>.dta
 			tsset anio
 			
 			* Calcular tasa de crecimiento demográfico (contribuyentes/beneficiarios) *
@@ -1285,6 +1319,16 @@ program define _fg_matdisplay
 	}
 end
 
+
+**** Escenario base colapsado (v8.12 fase 2a): users/<idbase>/cache/REC_<var>.dta = lo que
+**** _FGrecprom + `collapse estimacion contribuyentes, by(anio modulo aniobase)` producían
+**** en cada clic (24 veces). Lo escribe Precache (SIM.do §5.1b); _precache_usa aborta con
+**** la receta si falta o si el *RECprom cambió desde que se generó (sin fallback). ****
+program define _FGreccol
+	args var
+	_precache_usa REC_`var'
+	use `"`r(fn)'"', clear
+end
 
 **** Escenario base: carga <var>RECprom.dta o aborta con la receta (sin fallback) ****
 program define _FGrecprom

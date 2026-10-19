@@ -45,6 +45,7 @@ capture mkdir "${SIMROOT}/users/$id"
 //global export "/Users/ricardo/Library/CloudStorage/Dropbox-CIEP/UniversoCIEP/3. Recursos/3.1. Paquetes Económicos/Paquete Económico 2027/4. Documento CIEP/images"
 //global rawwip "rawwip"							// RAW EN WORK-IN-PROGRESS
 //global hasta "3"									// PARO TEMPRANO
+global algebra "algebra"							// v8.12 fase 2b: FORMA CERRADA en FiscalGap §3 (totales HH desde los escalares) y GastoPC §3-6 (una pasada por variable). ENCENDIDO por default desde v8.12.0 (decisión 2026-10-18 con la tabla de deltas: 0 diferencias; red: sankeys dentro de 1e-9 relativo). Vaciarlo ("") = ruta micro de siempre
 
 ** 0.5 Entidad federativa
 //global entidad "Nuevo León"   // edición local; el default versionado es vacío (nacional)
@@ -362,8 +363,15 @@ escalar pctpib gascuidados =   0.047   		// Gasto en cuidados
 * Evolución de los gastos per cápita */
 *do "${SIMROOT}/01_modulos/visualizations/Graphs_PC.do"	// <-- MUY tardado. MUY pesado.
 
+** 5.1b Precache de lo invariante (v8.12 fase 2a) **
+* Lo que el flujo web recalculaba en cada clic sin depender del formulario (colapso de
+* master/PEF.dta, base de hogares de GastoPC §2, colapsos de los *RECprom) se calcula aquí
+* UNA vez y queda en users/$id/cache/ con sello; GastoPC, cache / FiscalGap lo exigen (igual
+* que los *RECprom: sin fallback). Va después de PEF (master/PEF.dta existe) y de §3 (RECprom).
+noisily Precache, aniope(`=anioPE') aniovp(`=aniovp')
+
 ** 5.2 Gasto per cápita **
-noisily GastoPC educacion salud pensiones energia resto transferencias, aniope(`=anioPE') aniovp(`=aniovp')
+noisily GastoPC educacion salud pensiones energia resto transferencias, aniope(`=anioPE') aniovp(`=aniovp') cache
 if "$hasta" == "5" exit
 
 

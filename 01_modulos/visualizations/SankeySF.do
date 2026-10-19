@@ -106,6 +106,7 @@ if `"`entidad'"' != "" {
 			}
 			bysort folioviv foliohog: g byte hog1 = _n == 1
 			g byte one = 1
+			sort `corte', stable	// v8.12 (FLAG-7): orden determinista antes del collapse (stable: conserva el orden del archivo, que es fijo; las bases por vintage no siempre traen numren) — la suma ponderada acumula en el orden de las filas y el de los empates del sort depende del historial de la sesión (c(sortrngstate)); con clave única el JSON no cambia al cambiar el pipeline
 			collapse (sum) `cs' `cn' nPers=one nHog=hog1 pob=factor (max) `cm', by(`corte')
 			local celdas ""
 			forvalues k = 1/`=_N' {
@@ -157,6 +158,7 @@ if `"`entidad'"' != "" {
 					local nac`i' = r(sum)
 				}
 				_SFentidad `clave' `corte'
+				sort `corte', stable	// v8.12 (FLAG-7): ídem (las bases por vintage se cargan sin numren)
 				collapse (sum) w_*, by(`corte')
 				reshape long w_, i(`corte') j(fam)
 				g double j_v`t' = .
@@ -214,6 +216,8 @@ if `"`entidad'"' != "" {
 	local eshare = `pobent'/`pobnac'								// renglones % PIB × pibY se reparten por población (S-P3); los per cápita ya usan pobtot de la entidad
 	noisily di _newline in g "  Sankey de entidad: " in y "`enombre'" in g " (`eabrev', clave `eclave') {c -} corte " in y "`1'" in g ", población ENIGH " in y %12.0fc `pobent' in g " (" in y %5.2f `eshare'*100 in g " % del nacional), banda ENIGH: " in y "`=cond("`vint_usados'" == "", "sin banda", trim("`vint_usados'"))'" in g ", sellos n<`sello_n' | top1>`sello_top1' %."
 }
+keep `1' folioviv foliohog numren factor AlTrabajo AlConsumo AlCapital	// v8.12: solo lo que suma el collapse (lo demás se descarta igual); el sort de abajo mueve 8 columnas, no 152
+sort `1' folioviv foliohog numren	// v8.12 (FLAG-7): orden determinista antes del collapse — la suma ponderada acumula en el orden de las filas y el de los empates del sort depende del historial de la sesión (c(sortrngstate)); con clave única el JSON no cambia al cambiar el pipeline
 collapse (sum) ing_Imp_al_trabajo=AlTrabajo ing__Imp_al_consumo=AlConsumo ///
 	ing___Imp_al_capital=AlCapital /*ing____FMP=FMP_Sim*/ [fw=factor], by(`1')
 
@@ -311,6 +315,8 @@ matrix `pobtot' = r(StatTotal)
 * financiamiento de la ILIF 2027. Prueba de endeudamiento del 2026-10-10
 * (diag-pivote-entidad-2026-10-10/prueba-pam/); corrección en v8.8.2 (CHANGELOG). *
 
+keep `1' folioviv foliohog numren factor Educacion Salud Pensiones IngBasico OtrasInversiones	// v8.12: ídem
+sort `1' folioviv foliohog numren	// v8.12 (FLAG-7): ídem
 collapse (sum) gas_Educación=Educacion gas_Salud=Salud /*gas__Salarios_de_gobierno=Salarios*/ ///
 	gas___Pensiones=Pensiones gas____Transferencias=IngBasico ///
 	gas____Inversión=OtrasInversiones [fw=factor], by(`1')
@@ -448,6 +454,7 @@ else {
 ********************
 ** Eje 2: Total 1 **
 use `eje1', clear
+sort to from	// v8.12 (FLAG-7): ídem (en eje1 el corte ya se llama from)
 collapse (sum) profile, by(to)
 rename to from
 
@@ -464,6 +471,7 @@ save `eje2'
 ********************
 ** Eje 3: Total 2 **
 use `eje4', clear
+sort from to	// v8.12 (FLAG-7): ídem (en eje4 el corte ya se llama to)
 collapse (sum) profile, by(from)
 rename from to
 

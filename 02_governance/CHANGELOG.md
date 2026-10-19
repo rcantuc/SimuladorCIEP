@@ -16,7 +16,7 @@ Formato de cada entrada:
 - **Datos:** cambios en fuentes, actualizaciones de PEFs, LIFs, ENIGH, u otras fuentes
 - **Correcciones:** bugs corregidos que afectaban resultados o funcionamiento
 
-## [Unreleased]
+## [v8.12.0] — 2026-10-18
 
 ### Institucional — sitio: triage de Dependabot y freno de abuso de CPU (v8.11c, 2026-10-18)
 
@@ -51,6 +51,61 @@ Formato de cada entrada:
   respondiendo 400 sin consumir cupo. Pruebas rojo/verde con `php -S` + Stata falso en el PR:
   la petición 101 de una IP → 429; 101 desde 127.0.0.1 → todas pasan; el 4º Stata simultáneo →
   429 aunque venga de 127.0.0.1; pasada la ventana vuelve a pasar.
+
+### Comandos — v8.12 fase 2a: precache de lo invariante (mejora de rendimiento sin cambio de números)
+
+- **El «Calcular» pasa de ~32 s a ~19 s** (local, StataNow 19.5; el reparto relativo es lo
+  transferible al VPS) sin mover un número: lo que no depende del formulario y se recalculaba
+  en cada clic (perfil de fase 1, `02_governance/perf/perfil-web-2026-10-18.md`) se precomputa
+  UNA vez por corrida batch y viaja como producto en `users/<id>/cache/`, con sello y el mismo
+  candado que los `*RECprom`: sin cache no se calcula; nunca se usa "lo que haya".
+  - `Precache` (nuevo; `SIM.do` §5.1b, después de `PEF` y antes de `GastoPC`): escribe
+    `PEF_divCIEP_iftransf_gfeq0.dta` (colapso anual de `master/PEF.dta`, 3.56 M filas, en
+    **pesos corrientes** — el % PIB con `pibY`, que sí depende de CRECPIB/CRECDEF, se calcula
+    al vuelo), `GastoPC_base_<aniope>.dta` + `_mat.dta` (micro de `GastoPC` §2 y sus matrices
+    de **conteos**), `REC_<var>.dta` (los 24 colapsos de `*RECprom`) y `sello.txt` (version,
+    data_updated, commit, generado; por item: archivo e insumos con bytes).
+  - `_precache_usa` (consumidor): aborta con receta si falta el sello o el item, si el
+    `data_updated` del `manifest.json` ya no es el del sello, o si un insumo cambió de bytes.
+    Probado: sin cache, sin item, insumo cambiado y `data_updated` distinto → r(601) con
+    mensaje y sin números viejos.
+  - `PEF, cache|precachear(dir)`; `GastoPC, cache|precachear(dir)`; `FiscalGap` usa `PEF, cache`
+    y `_FGreccol`. Sin opción, `PEF` y `GastoPC` calculan como siempre.
+  - `publicar-vps.sh`: Fase 3b-bis también propaga `users/ricardo/cache/` (~210 MB) y el
+    Gate 5 exige sello, items y `data_updated` == manifest.
+  - `Web.Stata.do` §3.2 (O-1 del perfil): se retira la llamada muerta a `PEF` que vivía
+    dentro de un comentario de bloque y nunca corría.
+  - Compuertas: `output.txt` del «Calcular» default **byte-idéntico** con y sin cache; batch
+    completo con `entidad` vacío → `output.txt` byte-idéntico a v8.11.0 (`566c31ea…`). Los
+    5 `sankey-*.json` diferían en el flujo web en el 15º–16º dígito (orden de acumulación de
+    las sumas ponderadas de `SankeySF.do`, que dependía del historial del `sort`): resuelto en
+    esta misma versión con el orden determinista de abajo (FLAG-7 del reporte
+    `02_governance/perf/fase2-precache-2026-10-18.md`).
+
+### Comandos — v8.12 fase 2b: forma cerrada, encendida por default
+
+- `global algebra "algebra"` (`SIM.do` §0.4 y `Web.Stata.do` §0; `""` = la ruta micro de
+  siempre). En el mismo `.ado` para batch y web (sin fork): `FiscalGap` §3 obtiene los
+  totales HH del año base como Σ escalares/100·pibY/deflator (con el mismo `PIBDeflactor` de
+  `GastoPC` §1) en vez de recorrer la micro, y `GastoPC` §3–6 genera `Educacion`, `Salud`,
+  `Pensiones` y `Energia` en una sola pasada (`_GPCsuma`/`_GPCcierra`) en vez de 26 `replace`.
+- Medido antes de encenderlo (3 corridas web + 1 batch): **0 diferencias al byte** en
+  `output.txt` y en los 5 sankeys respecto al interruptor apagado; los totales HH coinciden
+  con la ruta micro a ≤ 3.8e-16 relativo (1–2 ulp). Decisión de Ricardo (2026-10-18) con esa
+  tabla enfrente: encendido por default, con la tolerancia de abajo como red.
+
+### Correcciones — sankeys con orden de acumulación determinista (FLAG-7) y gate nuevo
+
+- `SankeySF.do`: `sort <corte> folioviv foliohog numren` (clave única) antes de cada
+  `collapse` ponderado (ejes 1 y 4, ejes 2–3 por `to`/`from`, y los de entidad). Antes, el
+  orden de los empates del `sort` interno del `collapse` dependía del historial de la
+  sesión (`c(sortrngstate)`, documentado en el runbook §9) y los JSON cambiaban en el
+  15º–16º dígito con cualquier cambio del pipeline. Antes de los dos `sort` grandes se hace
+  `keep` de las columnas que el `collapse` suma (lo demás se descartaba igual).
+- **Gate declarado desde v8.12.0:** `output.txt` byte-idéntico; JSON de sankey dentro de
+  **1e-9 relativo**. Medido contra v8.11.0: `output.txt` byte-idéntico (web y batch);
+  sankeys Δ relativo máximo 1.1e-13 (web, drift único del nuevo orden) — el del batch se
+  anota en el reporte de fase 2 §3. «Calcular» default: ~32 s (v8.11.0) → **~16.5 s**.
 
 ## [v8.11.0] — 2026-10-17
 

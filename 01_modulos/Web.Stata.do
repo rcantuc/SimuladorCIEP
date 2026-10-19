@@ -39,6 +39,7 @@ global nographs "nographs"							// SUPRIMIR GRAFICAS
 global output "output"								// ARCHIVO DE SALIDA (WEB)
 global bootstrap "250"								// RÉPLICAS del escenario base que lee FiscalGap (SIM.do §0.2)
 global idbase "ricardo"								// ESCENARIO BASE: users/ricardo/bootstraps/$bootstrap/*RECprom.dta (publicar-vps.sh Fase 3b-bis)
+global algebra "algebra"							// v8.12 fase 2b: forma cerrada en FiscalGap §3 y GastoPC §3-6 (misma .ado que el batch). ENCENDIDO desde v8.12.0 (decisión 2026-10-18); "" = ruta micro de siempre
 
 if "$output" != "" {
 	capture mkdir "${SIMROOT}/users/$id"
@@ -254,15 +255,12 @@ noisily TasasEfectivas, anio(`=anioPE') enigh
 
 **/
 ** 3.2 Presupuesto de Egresos de la Federación **
-/**
-set scheme ciep	
-noisily PEF if ramo != -1, anio(`=anioPE') by(divSIM) $update 		///
-	title(" ") 						/// Cambiar título
-	desde(2013) 										/// Año de inicio PROMEDIO
-	min(0) 												/// Mínimo 0% del PIB (resumido)
-	rows(2)												// Número de filas en la leyenda
+* v8.12 (O-1 del perfil 2026-10-18): aquí había una llamada a PEF dentro de un bloque
+* comentario de bloque (barra-asterisco-asterisco abierto en esta sección y cerrado en el título de 3.2.1):
+* nunca corría en el flujo web. FiscalGap (§7.1) llama a PEF por su cuenta, con cache.
+* Se retira el código muerto para que el template no dé a entender que §3.2 corre.
 
-** 3.2.1 Parámetros: Gasto **/
+** 3.2.1 Parámetros: Gasto **
 scalar iniciaA     = {{iniciaA}} 				//    Inicial
 scalar basica      = {{basica}} 				//    Educación b{c a'}sica
 scalar medsup      = {{medsup}} 				//    Educación media superior
@@ -312,7 +310,7 @@ scalar gascuidados = {{gascuidados}}				//    Gasto en cuidados
 
 
 ** 3.2.2 Gasto per cápita **/
-noisily GastoPC educacion salud pensiones energia resto transferencias, aniope(`=anioPE') aniovp(`=aniovp')
+noisily GastoPC educacion salud pensiones energia resto transferencias, aniope(`=anioPE') aniovp(`=aniovp') cache	// v8.12 fase 2a: §2 desde users/$idbase/cache/ (Precache, SIM.do §5.1b)
 
 
 

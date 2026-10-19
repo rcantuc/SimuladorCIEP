@@ -26,7 +26,14 @@ quietly {
 
 	// 0.5 Define los inputs que este script acepta
 	// 0.5.1 ANIOvp y ANIOPE son enteros opcionales que por defecto son aniovp y aniope
-	syntax [anything] [, ANIOVP(int `aniovp') ANIOpe(int `aniope') EXCEL]
+	syntax [anything] [, ANIOVP(int `aniovp') ANIOpe(int `aniope') EXCEL CACHE PRECACHEar(string)]
+	* cache / precachear(dir) (v8.12 fase 2a): §2 (perfiles + households + conteos de
+	* población) no depende de ningún input del escenario y cuesta ~2 s por clic.
+	* precachear(dir) corre §1-2, guarda la micro y las matrices de conteos en dir/ y
+	* termina (lo llama Precache en el batch); cache las lee de users/$idbase/cache/
+	* vía _precache_usa (aborta con receta si falta o caducó) y salta §2. §1 (PIB y
+	* deflator, que sí dependen de CRECPIB/CRECDEF) corre siempre.
+	local matrices_s2 "pobenigh Educacion Salud SaludPer Pension MADRES Resto Energia"
 	tokenize `anything'
 	local word_count = wordcount("`anything'")
 
@@ -66,6 +73,39 @@ quietly {
 	else if `aniope' >= 2010 & `aniope' < 2012 local anioenigh = 2010
 	else if `aniope' >= 2008 & `aniope' < 2010 local anioenigh = 2008
 
+	if "`cache'" == "cache" {
+		* v8.12 fase 2a: la base de §2 ya hecha por Precache (misma micro, mismas matrices de conteos)
+		_precache_usa GastoPC_base_`aniope'
+		local fn_mat `"`r(fn_mat)'"'
+		use `"`r(fn)'"', clear
+		preserve
+		use `"`fn_mat'"', clear
+		sort matriz columna
+		foreach m of local matrices_s2 {
+			tempname `m'
+			quietly count if matriz == "`m'"
+			matrix ``m'' = J(1, r(N), .)
+			local nombres ""
+		}
+		forvalues k = 1/`=_N' {
+			local m = matriz[`k']
+			local j = columna[`k']
+			matrix ``m''[1, `j'] = valor[`k']	// copia exacta del double guardado
+			local nombres_`m' "`nombres_`m'' `=nombre[`k']'"
+		}
+		foreach m of local matrices_s2 {
+			matrix colnames ``m'' = `nombres_`m''
+			matrix rownames ``m'' = sum
+		}
+		restore
+		local pens_pam = `Pension'[1,1]
+		local pens_imss = `Pension'[1,2]
+		local pens_issste = `Pension'[1,3]
+		local pens_pemex = `Pension'[1,4]
+		local pens_otro = `Pension'[1,5]
+	}
+	else {
+	* (v8.12 fase 2a: §2 completo; sin re-indentar para que el diff sea legible)
 	// Carga la base de datos de ENIGH correspondiente al año de referencia
 	capture use "${SIMROOT}/master/perfiles`aniope'.dta", clear	
 	if _rc != 0 {
@@ -255,6 +295,39 @@ quietly {
 	tempname Energia
 	matrix `Energia' = r(StatTotal)
 
+	if `"`precachear'"' != "" {
+		* v8.12 fase 2a: guardar la micro de §2 y las matrices de conteos (unidades crudas) y salir
+		quietly save `"`precachear'/GastoPC_base_`aniope'.dta"', replace
+		local nvars = c(k)
+		preserve
+		clear
+		quietly set obs 0
+		quietly gen str32 matriz = ""
+		quietly gen int columna = .
+		quietly gen str32 nombre = ""
+		quietly gen double valor = .
+		foreach m of local matrices_s2 {
+			local kk = colsof(``m'')
+			local cn : colnames ``m''
+			forvalues j = 1/`kk' {
+				local N1 = _N + 1
+				quietly set obs `N1'
+				quietly replace matriz = "`m'" in `N1'
+				quietly replace columna = `j' in `N1'
+				quietly replace nombre = "`: word `j' of `cn''" in `N1'
+				quietly replace valor = ``m''[1, `j'] in `N1'
+			}
+		}
+		quietly save `"`precachear'/GastoPC_base_`aniope'_mat.dta"', replace
+		restore
+		return local precache_item "GastoPC_base_`aniope'"
+		return local precache_archivo "GastoPC_base_`aniope'.dta"
+		return local precache_insumos "master/perfiles`aniope'.dta master/`anioenigh'/households.dta"
+		return local precache_nvars "`nvars'"
+		exit
+	}
+	}
+
 
 	*******************
 	***             ***
@@ -291,7 +364,7 @@ quietly {
 
 			** 3.1.2 Asignación de gasto en variable **
 			capture drop Educacion
-			g Educacion = scalar(iniciaAPC)*alum_priminf
+			_GPCsuma Educacion `"scalar(iniciaAPC)*alum_priminf"'  // v8.12 fase 2b: = g Educacion = ... (apagado) o término acumulado (algebra)
 
 
 			** 3.2 Básica **
@@ -312,7 +385,7 @@ quietly {
 			escalar mxnpc basicaPob = `Educacion'[1,1]
 
 			** 3.2.2 Asignación de gasto en variable **
-			replace Educacion = Educacion + scalar(basicaPC)*alum_basica
+			_GPCsuma Educacion `"scalar(basicaPC)*alum_basica"' `""'
 
 
 			** 3.3 Media superior **
@@ -333,7 +406,7 @@ quietly {
 			escalar mxnpc medsupPob = `Educacion'[1,2]
 
 			** 3.3.2 Asignación de gasto en variable **
-			replace Educacion = Educacion + scalar(medsupPC)*alum_medsup
+			_GPCsuma Educacion `"scalar(medsupPC)*alum_medsup"' `""'
 
 
 			** 3.4 Superior **
@@ -354,7 +427,7 @@ quietly {
 			escalar mxnpc superiPob = `Educacion'[1,3]
 
 			** 3.4.2 Asignación de gasto en variable **
-			replace Educacion = Educacion + scalar(superiPC)*alum_superi
+			_GPCsuma Educacion `"scalar(superiPC)*alum_superi"' `""'
 
 
 			** 3.5 Posgrado **
@@ -375,7 +448,7 @@ quietly {
 			escalar mxnpc posgraPob = `Educacion'[1,4]
 
 			** 3.5.2 Asignación de gasto en variable **
-			replace Educacion = Educacion + scalar(posgraPC)*alum_posgra
+			_GPCsuma Educacion `"scalar(posgraPC)*alum_posgra"' `""'
 
 
 			** 3.6 Educación para adultos **
@@ -400,7 +473,7 @@ quietly {
 			escalar mxnpc eduaduPob = `Educacion'[1,5]
 
 			** 3.6.2 Asignación de gasto en variable **
-			replace Educacion = Educacion + scalar(eduaduPC)*alum_adulto
+			_GPCsuma Educacion `"scalar(eduaduPC)*alum_adulto"' `""'
 
 
 			** 3.7 Inversión educativa **
@@ -421,7 +494,7 @@ quietly {
 			escalar mxnpc inverePob = `Educacion'[1,6]
 
 			** 3.7.2 Asignación de gasto en variable **
-			replace Educacion = Educacion + scalar(inverePC) if alum_totales > 0
+			_GPCsuma Educacion `"scalar(inverePC)"' `"alum_totales > 0"'
 
 
 			** 3.8 Otros gastos educativos **
@@ -455,9 +528,10 @@ quietly {
 
 
 			** 3.8.2 Asignación de gasto en variable **
-			replace Educacion = Educacion + scalar(otrosePC) if alum_basica+alum_medsup+alum_superi+alum_posgra+alum_adulto > 0
-			replace Educacion = Educacion + scalar(culturPC)
-			replace Educacion = Educacion + scalar(investPC)
+			_GPCsuma Educacion `"scalar(otrosePC)"' `"alum_basica+alum_medsup+alum_superi+alum_posgra+alum_adulto > 0"'
+			_GPCsuma Educacion `"scalar(culturPC)"' `""'
+			_GPCsuma Educacion `"scalar(investPC)"' `""'
+			_GPCcierra Educacion	// v8.12 fase 2b: con algebra, una sola pasada: g Educacion = suma de términos
 
 
 			** 3.9 Total Educación **
@@ -666,8 +740,8 @@ quietly {
 			capture drop Salud
 			egen equivalenciasSalu = sum(gas_pc_Salu), by(folioviv foliohog)
 			egen tot_integ = count(factor), by(folioviv foliohog)
-			g Salud = scalar(`imssbienPCinc')*benef_imssbien
-			scalar drop `imssbienPCinc'
+			_GPCsuma Salud `"scalar(`imssbienPCinc')*benef_imssbien"'  // v8.12 fase 2b: = g Salud = ... (apagado) o término acumulado (algebra)
+			if "$algebra" == "" scalar drop `imssbienPCinc'	// v8.12 fase 2b: con algebra el término se evalúa al cerrar el bloque
 
 
 			** 4.2 Secretaría de Salud **
@@ -711,8 +785,8 @@ quietly {
 			replace `gas_pc_ssa' = 0 if `gas_pc_ssa' == .
 			Distribucion ssa, relativo(`gas_pc_ssa') macro(`ssa')
 			replace ssa = 0 if ssa == .
-			replace Salud = Salud + scalar(`ssaPCinc')*benef_ssa
-			scalar drop `ssaPCinc'
+			_GPCsuma Salud `"scalar(`ssaPCinc')*benef_ssa"' `""'
+			if "$algebra" == "" scalar drop `ssaPCinc'	// v8.12 fase 2b: con algebra el término se evalúa al cerrar el bloque
 
 
 			** 4.3 IMSS (salud) **
@@ -740,8 +814,8 @@ quietly {
 			replace `gas_pc_imss' = 0 if `gas_pc_imss' == .
 			Distribucion imss, relativo(`gas_pc_imss') macro(`imss')
 			replace imss = 0 if imss == .
-			replace Salud = Salud + scalar(`imssPCinc')*benef_imss
-			scalar drop `imssPCinc'
+			_GPCsuma Salud `"scalar(`imssPCinc')*benef_imss"' `""'
+			if "$algebra" == "" scalar drop `imssPCinc'	// v8.12 fase 2b: con algebra el término se evalúa al cerrar el bloque
 
 
 			** 4.4 ISSSTE Federal (salud) **
@@ -769,8 +843,8 @@ quietly {
 			replace `gas_pc_issste' = 0 if `gas_pc_issste' == .
 			Distribucion issste, relativo(`gas_pc_issste') macro(`issste')
 			replace issste = 0 if issste == .
-			replace Salud = Salud + scalar(`issstePCinc')*benef_issste
-			scalar drop `issstePCinc'
+			_GPCsuma Salud `"scalar(`issstePCinc')*benef_issste"' `""'
+			if "$algebra" == "" scalar drop `issstePCinc'	// v8.12 fase 2b: con algebra el término se evalúa al cerrar el bloque
 
 
 			** 4.5 Pemex (salud) **
@@ -800,8 +874,8 @@ quietly {
 			replace `gas_pc_pemex' = 0 if `gas_pc_pemex' == .
 			Distribucion pemex, relativo(`gas_pc_pemex') macro(`pemex')
 			replace pemex = 0 if pemex == .
-			replace Salud = Salud + scalar(`pemexPCinc')*benef_pemex
-			scalar drop `pemexPCinc'
+			_GPCsuma Salud `"scalar(`pemexPCinc')*benef_pemex"' `""'
+			if "$algebra" == "" scalar drop `pemexPCinc'	// v8.12 fase 2b: con algebra el término se evalúa al cerrar el bloque
 
 			
 			** 4.6 ISSFAM (salud) **
@@ -831,8 +905,8 @@ quietly {
 			Distribucion issfam, relativo(`gas_pc_issfam') macro(`issfam')
 			replace issfam = 0 if issfam == .
 
-			replace Salud = Salud + scalar(`issfamPCinc')*benef_issfam
-			scalar drop `issfamPCinc'
+			_GPCsuma Salud `"scalar(`issfamPCinc')*benef_issfam"' `""'
+			if "$algebra" == "" scalar drop `issfamPCinc'	// v8.12 fase 2b: con algebra el término se evalúa al cerrar el bloque
 
 
 			** 4.7 Inversión en salud **
@@ -860,8 +934,9 @@ quietly {
 			replace `gas_pc_invers' = 0 if `gas_pc_invers' == .
 			Distribucion invers, relativo(`gas_pc_invers') macro(`invers')
 			replace invers = 0 if invers == .
-			replace Salud = Salud + scalar(`inversPCinc')*benef_invers
-			scalar drop `inversPCinc'
+			_GPCsuma Salud `"scalar(`inversPCinc')*benef_invers"' `""'
+			_GPCcierra Salud	// v8.12 fase 2b: con algebra, una sola pasada: g Salud = suma de términos
+			if "$algebra" == "" scalar drop `inversPCinc'	// v8.12 fase 2b: con algebra el término se evalúa al cerrar el bloque
 
 
 			** 4.8 Total SALUD **
@@ -994,7 +1069,7 @@ quietly {
 
 			** 5.2.2 Asignación de gasto en variable **
 			capture drop Pensiones
-			g Pensiones = scalar(penimssPC)*pens_imss
+			_GPCsuma Pensiones `"scalar(penimssPC)*pens_imss"'  // v8.12 fase 2b: = g Pensiones = ... (apagado) o término acumulado (algebra)
 
 
 			** 5.3 Pensiones ISSSTE **
@@ -1015,7 +1090,7 @@ quietly {
 			escalar mxnpc penisssPob = `pens_issste'
 
 			** 5.3.2 Asignación de gasto en variable **
-			replace Pensiones = Pensiones + scalar(penisssPC)*pens_issste
+			_GPCsuma Pensiones `"scalar(penisssPC)*pens_issste"' `""'
 
 
 			** 5.4 Pensiones Pemex **
@@ -1036,7 +1111,7 @@ quietly {
 			escalar mxnpc penpemePob = `pens_pemex'
 
 			** 5.4.2 Asignación de gasto en variable **
-			replace Pensiones = Pensiones + scalar(penpemePC)*pens_pemex
+			_GPCsuma Pensiones `"scalar(penpemePC)*pens_pemex"' `""'
 
 
 			** 5.5 Pensiones CFE, LFC, Ferronales, ISSFAM **
@@ -1057,7 +1132,8 @@ quietly {
 			escalar mxnpc penotroPob = `pens_otro'
 
 			** 5.5.2 Asignación de gasto en variable **
-			replace Pensiones = Pensiones + scalar(penotroPC)*pens_otro
+			_GPCsuma Pensiones `"scalar(penotroPC)*pens_otro"' `""'
+			_GPCcierra Pensiones	// v8.12 fase 2b: con algebra, una sola pasada: g Pensiones = suma de términos
 
 			escalar pctpib pensionPIB = scalar(pamPIB)+scalar(penimssPIB)+scalar(penisssPIB)+scalar(penpemePIB)+scalar(penotroPIB)
 			escalar mxnpc pensionPob = scalar(pamPob)+scalar(penimssPob)+scalar(penisssPob)+scalar(penpemePob)+scalar(penotroPob)
@@ -1161,7 +1237,7 @@ quietly {
 			escalar mxnpc gascfePob = `Energia'[1,1]
 			
 			capture drop Energia
-			g Energia = scalar(gascfePC)
+			_GPCsuma Energia `"scalar(gascfePC)"'  // v8.12 fase 2b: = g Energia = ... (apagado) o término acumulado (algebra)
 
 
 			** 6.2 Pemex **
@@ -1178,7 +1254,7 @@ quietly {
 			escalar mxnpc gaspemexPC = (`gaspemex'/`Energia'[1,1])/`deflator'
 			escalar pctpib gaspemexPIB = `gaspemex'/`PIB'*100
 			escalar mxnpc gaspemexPob = `Energia'[1,1]
-			replace Energia = Energia + scalar(gaspemexPC)
+			_GPCsuma Energia `"scalar(gaspemexPC)"' `""'
 
 
 			** 6.3 SENER y otros **
@@ -1195,7 +1271,7 @@ quietly {
 			escalar mxnpc gassenerPC = (`gassener'/`Energia'[1,1])/`deflator'
 			escalar pctpib gassenerPIB = `gassener'/`PIB'*100
 			escalar mxnpc gassenerPob = `Energia'[1,1]
-			replace Energia = Energia + scalar(gassenerPC)
+			_GPCsuma Energia `"scalar(gassenerPC)"' `""'
 
 
 			** 6.4 Inversión en energía **
@@ -1212,7 +1288,7 @@ quietly {
 			escalar mxnpc gasinverfPC = (`gasinverf'/`Energia'[1,1])/`deflator'
 			escalar pctpib gasinverfPIB = `gasinverf'/`PIB'*100
 			escalar mxnpc gasinverfPob = `Energia'[1,1]
-			replace Energia = Energia + scalar(gasinverfPC)
+			_GPCsuma Energia `"scalar(gasinverfPC)"' `""'
 
 
 			** 6.5 Cost de la deuda (energía) **
@@ -1229,7 +1305,8 @@ quietly {
 			escalar mxnpc gascosdeuePC = (`gascosdeue'/`Energia'[1,1])/`deflator'
 			escalar pctpib gascosdeuePIB = `gascosdeue'/`PIB'*100
 			escalar mxnpc gascosdeuePob = `Energia'[1,1]
-			replace Energia = Energia + scalar(gascosdeuePC)
+			_GPCsuma Energia `"scalar(gascosdeuePC)"' `""'
+			_GPCcierra Energia	// v8.12 fase 2b: con algebra, una sola pasada: g Energia = suma de términos
 
 			escalar pctpib gasenergiaPIB = scalar(gaspemexPIB)+scalar(gascfePIB)+scalar(gassenerPIB)+scalar(gasinverfPIB)+scalar(gascosdeuePIB)
 			escalar mxnpc gasenergiaPC = scalar(gaspemexPC)+scalar(gascfePC)+scalar(gassenerPC)+scalar(gasinverfPC)+scalar(gascosdeuePC)
@@ -1610,3 +1687,43 @@ quietly {
 	noisily di _newline in g "Tiempo: " in y round(`=r(t9)/r(nt9)',.1) in g " segs."
 }
 end
+
+* v8.12 fase 2b — forma cerrada tras interruptor ($algebra, SIM.do §0.4 / Web.Stata.do §0).
+* Apagado (default): _GPCsuma ejecuta exactamente el `g`/`replace ... [if]` de siempre.
+* Encendido: acumula los términos y _GPCcierra genera la variable en UNA pasada:
+*   g Var = t1 + t2 + ... con cada término condicional como (expr)*(cond)  — misma
+* asociación izquierda-derecha que la cadena de replace, y x + 0 = x exacto donde la
+* condición no aplica. Mismo .ado para batch y web (sin fork).
+program define _GPCsuma
+	args var expr cond
+	if "$algebra" == "" {
+		capture confirm variable `var'
+		if _rc {
+			g `var' = `expr'
+		}
+		else if `"`cond'"' == "" {
+			replace `var' = `var' + `expr'
+		}
+		else {
+			replace `var' = `var' + `expr' if `cond'
+		}
+	}
+	else {
+		local t = cond(`"`cond'"' == "", `"`expr'"', `"(`expr')*(`cond')"')
+		if `"${GPC_acum_`var'}"' == "" {
+			global GPC_acum_`var' `"`t'"'
+		}
+		else {
+			global GPC_acum_`var' `"${GPC_acum_`var'} + `t'"'
+		}
+	}
+end
+program define _GPCcierra
+	args var
+	if "$algebra" != "" {
+		capture drop `var'
+		g `var' = ${GPC_acum_`var'}
+		macro drop GPC_acum_`var'
+	}
+end
+
